@@ -1432,15 +1432,17 @@ TEST(GeneratedMessageReflectionTest, ArenaReleaseOneofMessageTest) {
 
 TEST(GeneratedMessageReflectionTest, UsageErrors) {
   unittest::TestAllTypes message;
+#ifndef NDEBUG
   unittest::ForeignMessage foreign;
+#endif
   const Reflection* reflection = message.GetReflection();
   const Descriptor* descriptor = message.GetDescriptor();
 
   // Testing every single failure mode would be too much work.  Let's just
   // check a few.
   EXPECT_DEATH(
-      reflection->GetInt32(message,
-                           descriptor->FindFieldByName("optional_int64")),
+      (void)reflection->GetInt32(message,
+                                 descriptor->FindFieldByName("optional_int64")),
       "Protocol Buffer reflection usage error:\n"
       "  Method      : google::protobuf::Reflection::GetInt32\n"
       "  Message type: proto2_unittest\\.TestAllTypes\n"
@@ -1448,7 +1450,7 @@ TEST(GeneratedMessageReflectionTest, UsageErrors) {
       "  Problem     : Field is not the right type for this message:\n"
       "    Expected  : CPPTYPE_INT32\n"
       "    Field type: CPPTYPE_INT64");
-  EXPECT_DEATH(reflection->GetInt32(
+  EXPECT_DEATH((void)reflection->GetInt32(
                    message, descriptor->FindFieldByName("repeated_int32")),
                "Protocol Buffer reflection usage error:\n"
                "  Method      : google::protobuf::Reflection::GetInt32\n"
@@ -1458,17 +1460,26 @@ TEST(GeneratedMessageReflectionTest, UsageErrors) {
                "singular field.");
 #ifndef NDEBUG
   EXPECT_DEATH(
-      reflection->GetInt32(foreign,
-                           descriptor->FindFieldByName("optional_int32")),
+      (void)reflection->GetInt32(foreign,
+                                 descriptor->FindFieldByName("optional_int32")),
       "Protocol Buffer reflection usage error:\n"
       "  Method       : google::protobuf::Reflection::GetInt32\n"
       "  Expected type: proto2_unittest.TestAllTypes\n"
       "  Actual type  : proto2_unittest.ForeignMessage\n"
       "  Field        : proto2_unittest.TestAllTypes.optional_int32\n"
       "  Problem      : Message is not the right object for reflection");
+  std::vector<const FieldDescriptor*>* fields = nullptr;
+  EXPECT_DEBUG_DEATH(
+      (void)reflection->ListFields(foreign, fields),
+      "Protocol Buffer reflection usage error:\n"
+      "  Method       : google::protobuf::Reflection::ListFields\n"
+      "  Expected type: proto2_unittest.TestAllTypes\n"
+      "  Actual type  : proto2_unittest.ForeignMessage\n"
+      "  Field        : n/a\n"
+      "  Problem      : Message is not the right object for reflection");
 #endif
   EXPECT_DEATH(
-      reflection->GetInt32(
+      (void)reflection->GetInt32(
           message,
           unittest::ForeignMessage::descriptor()->FindFieldByName("c")),
       "Protocol Buffer reflection usage error:\n"
@@ -1477,7 +1488,7 @@ TEST(GeneratedMessageReflectionTest, UsageErrors) {
       "  Field       : proto2_unittest.ForeignMessage.c\n"
       "  Problem     : Field does not match message type.");
   EXPECT_DEATH(
-      reflection->HasField(
+      (void)reflection->HasField(
           message,
           unittest::ForeignMessage::descriptor()->FindFieldByName("c")),
       "Protocol Buffer reflection usage error:\n"
@@ -1890,7 +1901,7 @@ TEST(GeneratedMessageReflection, ListFieldsEmptyMap) {
   const Reflection* reflection = msg.GetReflection();
   std::vector<const FieldDescriptor*> fields;
 
-  msg.mutable_map_int32_int32();
+  (void)msg.mutable_map_int32_int32();
   reflection->ListFields(msg, &fields);
   EXPECT_THAT(fields, IsEmpty());
   EXPECT_TRUE(reflection->IsEmpty(msg));
@@ -1960,7 +1971,7 @@ TEST(GeneratedMessageReflection, IsEmptyWithUnknownFields) {
   // Parse incompatible bytes.
   proto2_unittest::TestAllExtensions other_msg;
   other_msg.SetExtension(proto2_unittest::optional_double_extension, 3.14);
-  msg.ParseFromString(other_msg.SerializeAsString());
+  ABSL_CHECK(msg.ParseFromString(other_msg.SerializeAsString()));
 
   reflection->ListFields(msg, &fields);
   EXPECT_THAT(fields, IsEmpty());
@@ -1978,13 +1989,13 @@ TEST(GeneratedMessageReflection, SwapImplicitPresenceShouldWork) {
 
 TEST(GeneratedMessageReflection, UnvalidatedStringsAreDowngradedToBytes) {
   proto2_unittest::TestChildExtension parsed_msg;
-  google::protobuf::TextFormat::ParseFromString(
+  ASSERT_TRUE(google::protobuf::TextFormat::ParseFromString(
       R"pb(
         optional_extension <
           [proto2_unittest.repeated_string_extension]: "foo"
         >
       )pb",
-      &parsed_msg);
+      &parsed_msg));
   proto2_unittest::TestChildExtension msg;
   msg.mutable_optional_extension()->AddExtension(
       proto2_unittest::repeated_string_extension, "bar");
@@ -2007,6 +2018,21 @@ TEST(GeneratedMessageReflection, ImportOption) {
   EXPECT_EQ(
       3, field_descriptor->options().GetExtension(proto2_unittest::field_opt1));
 
+  // Options not linked in should be in unknown fields.
+  EXPECT_EQ(1, file_descriptor->options().unknown_fields().field_count());
+  EXPECT_EQ(7736975,
+            file_descriptor->options().unknown_fields().field(0).number());
+  EXPECT_EQ(1, file_descriptor->options().unknown_fields().field(0).varint());
+  EXPECT_EQ(1, message_descriptor->options().unknown_fields().field_count());
+  EXPECT_EQ(7739037,
+            message_descriptor->options().unknown_fields().field(0).number());
+  EXPECT_EQ(2,
+            message_descriptor->options().unknown_fields().field(0).varint());
+
+  EXPECT_EQ(1, field_descriptor->options().unknown_fields().field_count());
+  EXPECT_EQ(7740937,
+            field_descriptor->options().unknown_fields().field(0).number());
+  EXPECT_EQ(3, field_descriptor->options().unknown_fields().field(0).fixed64());
 }
 
 }  // namespace

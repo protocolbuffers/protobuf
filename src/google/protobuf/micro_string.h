@@ -10,6 +10,7 @@
 
 #include <cstddef>
 #include <cstdint>
+#include <type_traits>
 
 #include "absl/base/config.h"
 #include "absl/log/absl_check.h"
@@ -75,7 +76,7 @@ class PROTOBUF_EXPORT MicroString {
 
     absl::string_view view() const { return {payload, size}; }
     char* owned_head() {
-      ABSL_DCHECK_GE(capacity, kOwned);
+      ABSL_DCHECK_GE(capacity, (unsigned)kOwned);
       return reinterpret_cast<char*>(this + 1);
     }
 
@@ -534,10 +535,6 @@ void MicroString::SetInChunks(size_t size, Arena* arena, F setter,
     }
   }
 
-  // Copied from ParseContext as an acceptable size that we can preallocate
-  // without verifying.
-  static constexpr size_t kSafeStringSize = 50000000;
-
   // We didn't have space for it, so allocate the space and dispatch.
   if (arena == nullptr) Destroy();
 
@@ -580,12 +577,24 @@ class MicroStringExtraImpl : private MicroString {
   static_assert(kInlineCapacity < MicroString::kMaxInlineCapacity,
                 "Must fit with the tags.");
 
+#if defined(__cpp_lib_is_constant_evaluated)
   constexpr MicroStringExtraImpl() {
     // Some compilers don't like to assert kAllowExtraCapacity directly, so make
     // the expression dependent.
     static_assert(static_cast<int>(RequestedSpace != 0) &
                   static_cast<int>(MicroString::kAllowExtraCapacity));
+
+    if (std::is_constant_evaluated()) {
+      std::fill(std::begin(extra_buffer_), std::end(extra_buffer_), 0);
+    }
   }
+#else   // __cpp_lib_is_constant_evaluated
+  // For C++17. We always initialize the bytes.
+  constexpr MicroStringExtraImpl() : extra_buffer_{} {}
+#endif  // __cpp_lib_is_constant_evaluated
+
+  explicit MicroStringExtraImpl(Arena*) : MicroStringExtraImpl() {}
+
   MicroStringExtraImpl(Arena* arena, const MicroStringExtraImpl& other)
       : MicroString(FromOtherTag{}, other, arena) {}
 
@@ -621,6 +630,7 @@ class MicroStringExtraImpl : private MicroString {
     MicroString::InternalSwap(other, kInlineCapacity);
   }
 
+  using MicroString::Clear;
   using MicroString::SpaceUsedExcludingSelfLong;
 
  private:

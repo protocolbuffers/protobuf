@@ -212,7 +212,7 @@ void EndPackageModules(int levels, io::Printer* printer) {
 std::string SerializedDescriptor(const FileDescriptor* file) {
   FileDescriptorProto file_proto = StripSourceRetentionOptions(*file);
   std::string file_data;
-  file_proto.SerializeToString(&file_data);
+  ABSL_CHECK(file_proto.SerializeToString(&file_data));
   return file_data;
 }
 

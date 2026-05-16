@@ -165,7 +165,7 @@ class SimpleErrorCollector : public io::ErrorCollector {
  public:
   SimpleErrorCollector() = default;
   void RecordError(int line, io::ColumnNumber column,
-                   absl::string_view message) override{};
+                   absl::string_view message) override {};
 };
 
 TEST(RetentionTest, StripSourceRetentionOptionsWithSourceCodeInfo) {
@@ -302,9 +302,6 @@ TEST(RetentionTest, InvalidDescriptor) {
   ASSERT_NE(pool.BuildFile(descriptor_proto_descriptor), nullptr);
   const FileDescriptor* file_descriptor = pool.BuildFile(file_descriptor_proto);
   ASSERT_NE(file_descriptor, nullptr);
-
-  FileDescriptorProto stripped_file =
-      compiler::StripSourceRetentionOptions(*file_descriptor);
 }
 
 TEST(RetentionTest, MissingRequiredField) {

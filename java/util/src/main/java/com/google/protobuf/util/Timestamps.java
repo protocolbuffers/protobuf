@@ -478,12 +478,10 @@ public final class Timestamps {
     }
     if (nanos <= -NANOS_PER_SECOND || nanos >= NANOS_PER_SECOND) {
       seconds = addExact(seconds, nanos / NANOS_PER_SECOND);
-      nanos = (int) (nanos % NANOS_PER_SECOND);
+      nanos = nanos % NANOS_PER_SECOND;
     }
     if (nanos < 0) {
-      nanos =
-          (int)
-              (nanos + NANOS_PER_SECOND); // no overflow since nanos is negative (and we're adding)
+      nanos = nanos + NANOS_PER_SECOND; // no overflow since nanos is negative (and we're adding)
       seconds = subtractExact(seconds, 1);
     }
     Timestamp timestamp = Timestamp.newBuilder().setSeconds(seconds).setNanos(nanos).build();

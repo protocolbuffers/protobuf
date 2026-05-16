@@ -119,7 +119,7 @@ else
     ext.lib_dir = "lib/google"
     ext.cross_compile = true
     ext.cross_platform = [
-      'x86-mingw32', 'x64-mingw32', 'x64-mingw-ucrt',
+      'x86-mingw32', 'x64-mingw-ucrt',
       'x86_64-linux', 'x86-linux',
       'x86_64-darwin', 'arm64-darwin',
     ]
@@ -149,7 +149,7 @@ else
   task 'gem:windows' do
     sh "rm Gemfile.lock"
     require 'rake_compiler_dock'
-    ['x86-mingw32', 'x64-mingw32', 'x64-mingw-ucrt', 'x86_64-linux', 'x86-linux'].each do |plat|
+    ['x86-mingw32', 'x64-mingw-ucrt', 'x86_64-linux', 'x86-linux'].each do |plat|
       RakeCompilerDock.sh <<-"EOT", platform: plat
         bundle && \
         IN_DOCKER=true rake native:#{plat} pkg/#{spec.full_name}-#{plat}.gem RUBY_CC_VERSION=3.1.0:3.0.0:2.7.0

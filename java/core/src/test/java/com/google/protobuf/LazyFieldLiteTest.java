@@ -118,23 +118,57 @@ public class LazyFieldLiteTest {
   @Test
   public void testInvalidProto() throws Exception {
     // Silently fails and uses the default instance.
-    LazyFieldLite field =
-        new LazyFieldLite(TestUtil.getExtensionRegistry(), ByteString.copyFromUtf8("invalid"));
+    ByteString invalid = ByteString.copyFromUtf8("invalid");
+    LazyFieldLite field = new LazyFieldLite(TestUtil.getExtensionRegistry(), invalid);
+    assertThat(field.getSerializedSize()).isEqualTo(7);
     assertThat(
         field.getValue(TestAllTypes.getDefaultInstance()))
             .isEqualTo(TestAllTypes.getDefaultInstance());
-    assertThat(field.getSerializedSize()).isEqualTo(0);
-    assertThat(field.toByteString()).isEqualTo(ByteString.EMPTY);
+    assertThat(field.getSerializedSize()).isEqualTo(7);
+    assertThat(field.toByteString()).isEqualTo(invalid);
   }
 
   @Test
-  public void testMergeBeforeParsing() throws Exception {
+  public void testMergeUnparsedWithDifferentExtensionRegistryInstances() throws Exception {
     TestAllTypes message1 = TestAllTypes.newBuilder().setOptionalInt32(1).build();
     LazyFieldLite field1 = createLazyFieldLiteFromMessage(message1);
     TestAllTypes message2 = TestAllTypes.newBuilder().setOptionalInt64(2).build();
     LazyFieldLite field2 = createLazyFieldLiteFromMessage(message2);
 
     field1.merge(field2);
+
+    TestAllTypes expected =
+        TestAllTypes.newBuilder().setOptionalInt32(1).setOptionalInt64(2).build();
+    assertThat(field1.getValue(TestAllTypes.getDefaultInstance())).isEqualTo(expected);
+  }
+
+  @Test
+  public void testMergeUnparsedWithSameExtensionRegistryInstance() throws Exception {
+    ByteString bytes1 = TestAllTypes.newBuilder().setOptionalInt32(1).build().toByteString();
+    ExtensionRegistryLite registry = TestUtil.getExtensionRegistry();
+    LazyFieldLite field1 = new LazyFieldLite(registry, bytes1);
+    ByteString bytes2 = TestAllTypes.newBuilder().setOptionalInt64(2).build().toByteString();
+    LazyFieldLite field2 = new LazyFieldLite(registry, bytes2);
+
+    field1.merge(field2);
+
+    TestAllTypes expected =
+        TestAllTypes.newBuilder().setOptionalInt32(1).setOptionalInt64(2).build();
+    assertThat(field1.getValue(TestAllTypes.getDefaultInstance())).isEqualTo(expected);
+    assertThat(field1.toByteString()).isEqualTo(bytes1.concat(bytes2));
+  }
+
+  @Test
+  public void testMergeBothBytesAndValueArePresent() throws Exception {
+    LazyFieldLite field1 =
+        createLazyFieldLiteFromMessage(TestAllTypes.newBuilder().setOptionalInt32(1).build());
+    MessageLite unused1 = field1.getValue(TestAllTypes.getDefaultInstance());
+    LazyFieldLite field2 =
+        createLazyFieldLiteFromMessage(TestAllTypes.newBuilder().setOptionalInt64(2).build());
+    MessageLite unused2 = field2.getValue(TestAllTypes.getDefaultInstance());
+
+    field1.merge(field2);
+
     TestAllTypes expected =
         TestAllTypes.newBuilder().setOptionalInt32(1).setOptionalInt64(2).build();
     assertThat(field1.getValue(TestAllTypes.getDefaultInstance())).isEqualTo(expected);
@@ -213,6 +247,36 @@ public class LazyFieldLiteTest {
     field.merge(other);
     assertThat(field.getValue(TestAllExtensions.getDefaultInstance()))
         .isEqualTo(messageWithExtensions);
+  }
+
+  @Test
+  public void testMergeOverwritesFromUnparsed() throws Exception {
+    TestAllTypes thisMessage = TestAllTypes.newBuilder().setOptionalString("foo").build();
+    TestAllTypes otherMessage = TestAllTypes.newBuilder().setOptionalString("bar").build();
+    LazyFieldLite base =
+        new LazyFieldLite(ExtensionRegistryLite.getEmptyRegistry(), thisMessage.toByteString());
+    LazyFieldLite other = LazyFieldLite.fromValue(otherMessage);
+
+    base.merge(other);
+
+    assertThat(
+            ((TestAllTypes) base.getValue(TestAllTypes.getDefaultInstance())).getOptionalString())
+        .isEqualTo("bar");
+  }
+
+  @Test
+  public void testMergeOverwritesFromParsed() throws Exception {
+    TestAllTypes thisMessage = TestAllTypes.newBuilder().setOptionalString("foo").build();
+    TestAllTypes otherMessage = TestAllTypes.newBuilder().setOptionalString("bar").build();
+    LazyFieldLite base = LazyFieldLite.fromValue(thisMessage);
+    LazyFieldLite other =
+        new LazyFieldLite(ExtensionRegistryLite.getEmptyRegistry(), otherMessage.toByteString());
+
+    base.merge(other);
+
+    assertThat(
+            ((TestAllTypes) base.getValue(TestAllTypes.getDefaultInstance())).getOptionalString())
+        .isEqualTo("bar");
   }
 
   // Help methods.

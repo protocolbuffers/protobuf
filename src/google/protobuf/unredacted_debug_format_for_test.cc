@@ -2,6 +2,7 @@
 
 #include <string>
 
+#include "absl/log/absl_check.h"
 #include "google/protobuf/message.h"
 #include "google/protobuf/message_lite.h"
 #include "google/protobuf/text_format.h"
@@ -18,7 +19,7 @@ std::string UnredactedDebugFormatForTest(const google::protobuf::Message& messag
   printer.SetReportSensitiveFields(
       internal::FieldReporterLevel::kUnredactedDebugFormatForTest);
 
-  printer.PrintToString(message, &debug_string);
+  ABSL_CHECK(printer.PrintToString(message, &debug_string));
 
   return debug_string;
 }
@@ -32,7 +33,7 @@ std::string UnredactedShortDebugFormatForTest(const google::protobuf::Message& m
   printer.SetReportSensitiveFields(
       internal::FieldReporterLevel::kUnredactedShortDebugFormatForTest);
 
-  printer.PrintToString(message, &debug_string);
+  ABSL_CHECK(printer.PrintToString(message, &debug_string));
   // Single line mode currently might have an extra space at the end.
   if (!debug_string.empty() && debug_string[debug_string.size() - 1] == ' ') {
     debug_string.resize(debug_string.size() - 1);
@@ -50,7 +51,7 @@ std::string UnredactedUtf8DebugFormatForTest(const google::protobuf::Message& me
   printer.SetReportSensitiveFields(
       internal::FieldReporterLevel::kUnredactedUtf8DebugFormatForTest);
 
-  printer.PrintToString(message, &debug_string);
+  ABSL_CHECK(printer.PrintToString(message, &debug_string));
 
   return debug_string;
 }

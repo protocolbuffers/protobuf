@@ -572,6 +572,36 @@ TEST_F(CppMetadataTest, AnnotatesLazyMessageSemantics) {
                                    {"mutable_mfield", Annotation::ALIAS},
                                    {"clear_mfield", Annotation::SET}});
 }
+
+constexpr absl::string_view kExtensionFieldTestFile = R"(
+    syntax = "proto2";
+    package foo;
+    message Message {
+      extensions 100 to 199;
+    }
+    extend Message {
+      optional int32 extfield = 100;
+    }
+)";
+
+TEST_F(CppMetadataTest, AnnotatesExtensionSemantics) {
+  FileDescriptorProto file;
+  GeneratedCodeInfo info;
+  std::string pb_h;
+  atu::AddFile("test.proto", kExtensionFieldTestFile);
+  EXPECT_TRUE(CaptureMetadata("test.proto", &file, &pb_h, &info, nullptr,
+                              nullptr, nullptr));
+  EXPECT_EQ("extfield", file.extension(0).name());
+
+  // Check annotations for `extfield`.
+  std::vector<int> field_path{
+      FileDescriptorProto::kExtensionFieldNumber,
+      0,
+  };
+  ExpectAnnotationsForPathContain(info, "test.proto", pb_h, field_path,
+                                  {{"extfield", Annotation::NONE},
+                                   {"kExtfieldFieldNumber", Annotation::NONE}});
+}
 }  // namespace
 }  // namespace cpp
 }  // namespace compiler

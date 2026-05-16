@@ -148,6 +148,8 @@ void PyUpb_WeakMap_DeleteIter(PyUpb_WeakMap* map, intptr_t* iter);
 // The object cache is a global WeakMap for mapping upb objects to the
 // corresponding wrapper.
 void PyUpb_ObjCache_Add(const void* key, PyObject* py_obj);
+void PyUpb_KnownObjCache_Add(PyUpb_WeakMap* cache, const void* key,
+                             PyObject* py_obj);
 void PyUpb_ObjCache_Delete(const void* key);
 PyObject* PyUpb_ObjCache_Get(const void* key);  // returns NULL if not present.
 PyUpb_WeakMap* PyUpb_ObjCache_Instance(void);

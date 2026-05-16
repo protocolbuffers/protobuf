@@ -3,7 +3,7 @@ Protocol Buffers - Google's data interchange format
 
 [![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/protocolbuffers/protobuf/badge)](https://securityscorecards.dev/viewer/?uri=github.com/protocolbuffers/protobuf)
 
-Copyright 2023 Google LLC
+Copyright 2008 Google LLC
 
 Overview
 --------
@@ -36,7 +36,7 @@ release commits.
 ### Bazel with Bzlmod
 
 Protobuf supports
-[Bzlmod](https://bazel.build/external/module) with Bazel 7 +.
+[Bzlmod](https://bazel.build/external/module) with Bazel 8 +.
 Users should specify a dependency on protobuf in their MODULE.bazel file as
 follows.
 

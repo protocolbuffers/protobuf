@@ -99,7 +99,8 @@ bool LuaGenerator::Generate(const protobuf::FileDescriptor* file,
   protobuf::FileDescriptorProto file_proto;
   file->CopyTo(&file_proto);
   std::string file_data;
-  file_proto.SerializeToString(&file_data);
+  // TODO: Remove this suppression.
+  (void)file_proto.SerializeToString(&file_data);
 
   printer.Print("local descriptor = table.concat({\n");
   absl::string_view data(file_data);

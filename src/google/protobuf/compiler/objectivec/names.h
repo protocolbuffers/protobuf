@@ -72,6 +72,14 @@ PROTOC_EXPORT std::string FilePathBasename(const FileDescriptor* file);
 // the rest of the classes need
 PROTOC_EXPORT std::string FileClassName(const FileDescriptor* file);
 
+// Returns the name of the extension registry function for the file.
+PROTOC_EXPORT std::string ExtensionRegistryFunctionName(
+    const FileDescriptor* file);
+
+// Returns [ClassPrefix][Package][FileBasename][suffix].
+PROTOC_EXPORT std::string FileUniqueSymbolName(const FileDescriptor* file,
+                                               absl::string_view suffix);
+
 // These return the fully-qualified class name corresponding to the given
 // descriptor.
 PROTOC_EXPORT std::string ClassName(const Descriptor* descriptor);
@@ -89,6 +97,20 @@ PROTOC_EXPORT std::string EnumValueShortName(
 
 // Reverse what an enum does.
 PROTOC_EXPORT std::string UnCamelCaseEnumShortName(absl::string_view name);
+
+// Returns the class name of the message that the extension is
+// extending (not the message the extension is scoped to).
+PROTOC_EXPORT std::string ExtensionExtendedClassName(
+    const FieldDescriptor* descriptor);
+
+// For file scoped extensions, returns the file's root class name. For message
+// scoped extensions, returns the scope message's class name (not the extended
+// message's class name).
+PROTOC_EXPORT std::string ExtensionClassName(const FieldDescriptor* descriptor);
+
+// Returns the name to use for the extension's descriptor function.
+PROTOC_EXPORT std::string ExtensionFunctionName(
+    const FieldDescriptor* descriptor);
 
 // Returns the name to use for the extension (used as the method off the file's
 // Root class).

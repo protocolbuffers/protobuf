@@ -44,13 +44,13 @@ void PopulateDefPoolImpl(const google::protobuf::FileDescriptor* file, upb::Aren
     google::protobuf::FileDescriptorProto raw_proto;
     file->CopyTo(&raw_proto);
     std::string serialized = raw_proto.SerializeAsString();
-    auto* file_proto = UPB_DESC(FileDescriptorProto_parse)(
+    auto* file_proto = google_protobuf_FileDescriptorProto_parse(
         serialized.data(), serialized.size(), arena->ptr());
     upb::Status status;
     upb::FileDefPtr upb_file = pool->AddFile(file_proto, &status);
     if (!upb_file) {
       absl::string_view name =
-          ToStringView(UPB_DESC(FileDescriptorProto_name)(file_proto));
+          ToStringView(google_protobuf_FileDescriptorProto_name(file_proto));
       ABSL_LOG(FATAL) << "Couldn't add file " << name
                       << " to DefPool: " << status.error_message();
     }

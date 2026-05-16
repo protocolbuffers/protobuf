@@ -42,8 +42,10 @@
 #include "upb/message/value.h"
 #include "upb/mini_descriptor/decode.h"
 #include "upb/mini_table/debug_string.h"
+#include "upb/mini_table/extension.h"
 #include "upb/mini_table/extension_registry.h"
 #include "upb/mini_table/field.h"
+#include "upb/mini_table/internal/extension.h"
 #include "upb/mini_table/internal/message.h"
 #include "upb/mini_table/message.h"
 #include "upb/reflection/def.h"
@@ -236,6 +238,20 @@ void VerifyMessageSet(const upb_test_TestMessageSet* mset_msg) {
   EXPECT_TRUE(member != nullptr);
   EXPECT_TRUE(upb_test_MessageSetMember_has_optional_int32(member));
   EXPECT_EQ(234, upb_test_MessageSetMember_optional_int32(member));
+}
+
+TEST(MessageTest, LargeMessageSetExtension) {
+  upb::Arena arena;
+  upb_ExtensionRegistry* reg = upb_ExtensionRegistry_New(arena.ptr());
+  ASSERT_TRUE(reg != nullptr);
+
+  upb_MiniTableExtension ext;
+  memset(&ext, 0, sizeof(ext));
+  ext.UPB_PRIVATE(field).UPB_ONLYBITS(number) = (1 << 29) + 5;
+  ext.UPB_PRIVATE(extendee) = &upb_0test__TestMessageSet_msg_init;
+
+  EXPECT_EQ(upb_ExtensionRegistry_Add(reg, &ext),
+            kUpb_ExtensionRegistryStatus_Ok);
 }
 
 TEST(MessageTest, MessageSet) {
@@ -846,7 +862,7 @@ TEST(MessageTest, Freeze) {
     ASSERT_TRUE(upb_Message_IsFrozen(UPB_UPCAST(nest)));
 
     const upb_MiniTableField* fa = upb_MiniTable_FindFieldByNumber(m, 20);
-    const upb_MiniTable* ma = upb_MiniTable_SubMessage(m, fa);
+    const upb_MiniTable* ma = upb_MiniTable_SubMessage(fa);
     upb_Array_Freeze(arr, ma);
     ASSERT_FALSE(upb_Message_IsFrozen(msg));
     ASSERT_TRUE(upb_Array_IsFrozen(arr));
@@ -854,7 +870,7 @@ TEST(MessageTest, Freeze) {
     ASSERT_TRUE(upb_Message_IsFrozen(UPB_UPCAST(nest)));
 
     const upb_MiniTableField* fm = upb_MiniTable_FindFieldByNumber(m, 10);
-    const upb_MiniTable* mm = upb_MiniTable_SubMessage(m, fm);
+    const upb_MiniTable* mm = upb_MiniTable_SubMessage(fm);
     upb_Map_Freeze(map, mm);
     ASSERT_FALSE(upb_Message_IsFrozen(msg));
     ASSERT_TRUE(upb_Array_IsFrozen(arr));

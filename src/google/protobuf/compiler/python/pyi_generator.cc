@@ -368,6 +368,7 @@ void PyiGenerator::PrintExtensions(const DescriptorT& descriptor) const {
     absl::AsciiStrToUpper(&constant_name);
     printer_->Print("$constant_name$: _ClassVar[int]\n",
                     "constant_name", constant_name);
+    Annotate("constant_name", extension_field);
     printer_->Print("$name$: _descriptor.FieldDescriptor\n",
                     "name", extension_field->name());
     Annotate("name", extension_field);
@@ -444,7 +445,21 @@ void PyiGenerator::PrintMessage(const Descriptor& message_descriptor,
   Annotate("class_name", &message_descriptor);
   printer_->Indent();
 
-  printer_->Print("__slots__ = ()\n");
+  // Prints slots
+  printer_->Print("__slots__ = (");
+  int items_printed = 0;
+  for (int i = 0; i < message_descriptor.field_count(); ++i) {
+    const FieldDescriptor* field_des = message_descriptor.field(i);
+    if (IsPythonKeyword(field_des->name())) {
+      continue;
+    }
+    if (items_printed > 0) {
+      printer_->Print(", ");
+    }
+    ++items_printed;
+    printer_->Print("\"$field_name$\"", "field_name", field_des->name());
+  }
+  printer_->Print(items_printed == 1 ? ",)\n" : ")\n");
 
   // Prints Extensions for extendable messages
   if (message_descriptor.extension_range_count() > 0) {
@@ -470,6 +485,7 @@ void PyiGenerator::PrintMessage(const Descriptor& message_descriptor,
     printer_->Print(
         "$field_number_name$: _ClassVar[int]\n", "field_number_name",
         absl::StrCat(absl::AsciiStrToUpper(field_des.name()), "_FIELD_NUMBER"));
+    Annotate("field_number_name", &field_des);
   }
   // Prints field name and type
   for (int i = 0; i < message_descriptor.field_count(); ++i) {

@@ -99,17 +99,22 @@ void MessageGenerator::Generate(io::Printer* printer) const {
              [&] {
                java::JvmName("get$oneof_capitalized_name$Case", name_ctx);
              }},
-            {"oneof_name", oneof_name},
+            io::Printer::Sub("oneof_name_case",
+                             absl::StrCat(oneof_name, "Case"))
+                .AnnotatedAs(oneof),
             {"oneof_capitalized_name", oneof_capitalized_name},
             {"oneof_case_getter", oneof_case_getter},
+            io::Printer::Sub("oneof_case_clearer",
+                             absl::StrCat("clear", oneof_capitalized_name))
+                .AnnotatedAs({oneof, io::AnnotationCollector::kSet}),
             {"message", java::EscapeKotlinKeywords(
                             name_resolver_->GetClassName(descriptor_, true))},
         },
-        "public val $oneof_name$Case: $message$.$oneof_capitalized_name$Case\n"
+        "public val $oneof_name_case$: $message$.$oneof_capitalized_name$Case\n"
         "$jvm_name$"
         "  get() = _builder.$oneof_case_getter$\n\n"
-        "public fun clear$oneof_capitalized_name$() {\n"
-        "  _builder.clear$oneof_capitalized_name$()\n"
+        "public fun $oneof_case_clearer$() {\n"
+        "  _builder.$oneof_case_clearer$()\n"
         "}\n");
   }
 
@@ -128,21 +133,22 @@ void MessageGenerator::GenerateMembers(io::Printer* printer) const {
                    name_resolver_->GetKotlinFactoryName(descriptor_));
   }
 
-  printer->Print(
+  printer->Emit(
+      {io::Printer::Sub{"camelcase_name",
+                        name_resolver_->GetKotlinFactoryName(descriptor_)}
+           .AnnotatedAs(descriptor_),
+       {"message_kt",
+        java::EscapeKotlinKeywords(
+            name_resolver_->GetKotlinExtensionsClassName(descriptor_))},
+       {"message", java::EscapeKotlinKeywords(
+                       name_resolver_->GetClassName(descriptor_, true))}},
       "public inline fun $camelcase_name$(block: $message_kt$.Dsl.() -> "
       "kotlin.Unit): $message$ =\n"
       "  $message_kt$.Dsl._create($message$.newBuilder()).apply { block() "
-      "}._build()\n",
-      "camelcase_name", name_resolver_->GetKotlinFactoryName(descriptor_),
-      "message_kt",
-      java::EscapeKotlinKeywords(
-          name_resolver_->GetKotlinExtensionsClassName(descriptor_)),
-      "message",
-      java::EscapeKotlinKeywords(
-          name_resolver_->GetClassName(descriptor_, true)));
+      "}._build()\n");
 
-  WriteMessageDocComment(printer, descriptor_, context_->options(),
-                         /* kdoc */ true);
+  java::WriteMessageDocComment(printer, descriptor_, context_->options(),
+                               /* kdoc */ true);
   printer->Emit(
       {
           io::Printer::Sub{"name_kt", absl::StrCat(descriptor_->name(), "Kt")}
@@ -205,7 +211,12 @@ void MessageGenerator::GenerateOrNull(io::Printer* printer) const {
           context_->GetFieldGeneratorInfo(field)->capitalized_name},
          {"name",
           java::EscapeKotlinKeywords(java::GetKotlinPropertyName(
-              context_->GetFieldGeneratorInfo(field)->capitalized_name))}});
+              context_->GetFieldGeneratorInfo(field)->capitalized_name))},
+         io::Printer::Sub{
+             "getter_name",
+             absl::StrCat(context_->GetFieldGeneratorInfo(field)->name,
+                          "OrNull")}
+             .AnnotatedAs(field)});
     if (field->options().deprecated()) {
       printer->Emit(R"kt(
           @kotlin.Deprecated(message = "Field $camelcase_name$ is deprecated")
@@ -215,7 +226,7 @@ void MessageGenerator::GenerateOrNull(io::Printer* printer) const {
       // We can use `FooOrBuilder`, and it saves code size to generate only one
       // method instead of two.
       printer->Emit(R"kt(
-        public val $full_classname$OrBuilder.$camelcase_name$OrNull: $full_name$?
+        public val $full_classname$OrBuilder.$getter_name$: $full_name$?
           get() = if (has$capitalized_name$()) get$capitalized_name$() else null
       )kt");
       printer->Print("\n");
@@ -223,7 +234,7 @@ void MessageGenerator::GenerateOrNull(io::Printer* printer) const {
       // We don't have `FooOrBuilder`, so we generate `Foo` and `Foo.Builder`
       // methods.
       printer->Emit(R"kt(
-        public val $full_classname$.$camelcase_name$OrNull: $full_name$?
+        public val $full_classname$.$getter_name$: $full_name$?
           get() = if (has$capitalized_name$()) this.$name$ else null
       )kt");
       printer->Print("\n");
@@ -233,7 +244,7 @@ void MessageGenerator::GenerateOrNull(io::Printer* printer) const {
         )kt");
       }
       printer->Emit(R"kt(
-        public val $full_classname$.Builder.$camelcase_name$OrNull: $full_name$?
+        public val $full_classname$.Builder.$getter_name$: $full_name$?
           get() = if (has$capitalized_name$()) this.$name$ else null
       )kt");
       printer->Print("\n");
@@ -287,7 +298,7 @@ void MessageGenerator::GenerateExtensions(io::Printer* printer) const {
       "$jvm_synthetic$"
       "public operator fun contains(extension: "
       "com.google.protobuf.ExtensionLite<$message$, *>): "
-      "Boolean {\n"
+      "kotlin.Boolean {\n"
       "  return _builder.hasExtension(extension)\n"
       "}\n\n",
       "jvm_synthetic", java::JvmSynthetic(jvm_dsl_), "message", message_name);
@@ -313,7 +324,7 @@ void MessageGenerator::GenerateExtensions(io::Printer* printer) const {
   printer->Print(
       "$jvm_synthetic$"
       "@Suppress(\"NOTHING_TO_INLINE\")\n"
-      "public inline operator fun <T : Comparable<T>> set(\n"
+      "public inline operator fun <T : kotlin.Comparable<T>> set(\n"
       "  extension: com.google.protobuf.ExtensionLite<$message$, T>,\n"
       "  value: T\n"
       ") {\n"
@@ -370,7 +381,7 @@ void MessageGenerator::GenerateExtensions(io::Printer* printer) const {
   printer->Print(
       "$jvm_synthetic$"
       "public fun <E : kotlin.Any> com.google.protobuf.kotlin.ExtensionList<E, "
-      "$message$>.addAll(values: Iterable<E>) {\n"
+      "$message$>.addAll(values: kotlin.collections.Iterable<E>) {\n"
       "  for (value in values) {\n"
       "    add(value)\n"
       "  }\n"
@@ -383,7 +394,7 @@ void MessageGenerator::GenerateExtensions(io::Printer* printer) const {
       "public inline operator fun <E : kotlin.Any> "
       "com.google.protobuf.kotlin.ExtensionList<E, "
       "$message$>.plusAssign(values: "
-      "Iterable<E>) {\n"
+      "kotlin.collections.Iterable<E>) {\n"
       "  addAll(values)\n"
       "}\n\n",
       "jvm_synthetic", java::JvmSynthetic(jvm_dsl_), "message", message_name);

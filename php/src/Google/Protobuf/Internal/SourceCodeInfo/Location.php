@@ -240,7 +240,7 @@ class Location extends \Google\Protobuf\Internal\Message
      * @param int[] $var
      * @return $this
      */
-    public function setPath($var)
+    public function setPath(array|RepeatedField $var)
     {
         $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::INT32);
         $this->path = $arr;
@@ -274,7 +274,7 @@ class Location extends \Google\Protobuf\Internal\Message
      * @param int[] $var
      * @return $this
      */
-    public function setSpan($var)
+    public function setSpan(array|RepeatedField $var)
     {
         $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::INT32);
         $this->span = $arr;
@@ -380,9 +380,9 @@ class Location extends \Google\Protobuf\Internal\Message
      * @param string $var
      * @return $this
      */
-    public function setLeadingComments($var)
+    public function setLeadingComments(string $var)
     {
-        GPBUtil::checkString($var, True);
+        GPBUtil::checkString($var, true);
         $this->leading_comments = $var;
 
         return $this;
@@ -412,9 +412,9 @@ class Location extends \Google\Protobuf\Internal\Message
      * @param string $var
      * @return $this
      */
-    public function setTrailingComments($var)
+    public function setTrailingComments(string $var)
     {
-        GPBUtil::checkString($var, True);
+        GPBUtil::checkString($var, true);
         $this->trailing_comments = $var;
 
         return $this;
@@ -434,7 +434,7 @@ class Location extends \Google\Protobuf\Internal\Message
      * @param string[] $var
      * @return $this
      */
-    public function setLeadingDetachedComments($var)
+    public function setLeadingDetachedComments(array|RepeatedField $var)
     {
         $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::STRING);
         $this->leading_detached_comments = $arr;

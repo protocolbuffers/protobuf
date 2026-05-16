@@ -9,6 +9,9 @@
 //  Based on original Protocol Buffers design by
 //  Sanjay Ghemawat, Jeff Dean, and others.
 
+// We request posix_close if available. See the comment on "robust_close".
+#define _POSIX_C_SOURCE 202405L
+
 #ifndef _MSC_VER
 #include <fcntl.h>
 #include <sys/stat.h>
@@ -21,7 +24,6 @@
 #include <istream>
 #include <ostream>
 
-#include "google/protobuf/stubs/common.h"
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
 #include "google/protobuf/io/io_win32.h"
@@ -47,13 +49,20 @@ using google::protobuf::io::win32::write;
 
 namespace {
 
-// EINTR sucks.
-int close_no_eintr(int fd) {
-  int result;
-  do {
-    result = close(fd);
-  } while (result < 0 && errno == EINTR);
-  return result;
+// If close(fd) returns an error, there is really nothing special to do --
+// except on *some* systems in case `errno == EINTR`. Unfortunately, that case
+// is also a huge mess and the question whether fd was closed in this case
+// depends on the system. Linux *did* close `fd` in this case. POSIX.1-2024
+// introduced posix_close (and did other changes) which helps fix this mess.
+// The POSIX.1-2024 documentation for unistd.h specifies that
+// POSIX_CLOSE_RESTART needs to be provided (and the value defines the behavior
+// of posix_close). We use it to decide if we can use posix_close.
+int robust_close(int fd) {
+#if defined(POSIX_CLOSE_RESTART)
+  return posix_close(fd, 0);
+#else
+  return close(fd);
+#endif
 }
 
 }  // namespace
@@ -101,10 +110,7 @@ bool FileInputStream::CopyingFileInputStream::Close() {
   ABSL_CHECK(!is_closed_);
 
   is_closed_ = true;
-  if (close_no_eintr(file_) != 0) {
-    // The docs on close() do not specify whether a file descriptor is still
-    // open after close() fails with EIO.  However, the glibc source code
-    // seems to indicate that it is not.
+  if (robust_close(file_) != 0) {
     errno_ = errno;
     return false;
   }
@@ -164,7 +170,7 @@ FileOutputStream::CopyingFileOutputStream::CopyingFileOutputStream(
       is_closed_(false),
       errno_(0) {}
 
-FileOutputStream::~FileOutputStream() { Flush(); }
+FileOutputStream::~FileOutputStream() { (void)Flush(); }
 
 FileOutputStream::CopyingFileOutputStream::~CopyingFileOutputStream() {
   if (close_on_delete_) {
@@ -178,10 +184,7 @@ bool FileOutputStream::CopyingFileOutputStream::Close() {
   ABSL_CHECK(!is_closed_);
 
   is_closed_ = true;
-  if (close_no_eintr(file_) != 0) {
-    // The docs on close() do not specify whether a file descriptor is still
-    // open after close() fails with EIO.  However, the glibc source code
-    // seems to indicate that it is not.
+  if (robust_close(file_) != 0) {
     errno_ = errno;
     return false;
   }
@@ -261,7 +264,7 @@ int IstreamInputStream::CopyingIstreamInputStream::Read(void* buffer,
 OstreamOutputStream::OstreamOutputStream(std::ostream* output, int block_size)
     : copying_output_(output), impl_(&copying_output_, block_size) {}
 
-OstreamOutputStream::~OstreamOutputStream() { impl_.Flush(); }
+OstreamOutputStream::~OstreamOutputStream() { (void)impl_.Flush(); }
 
 bool OstreamOutputStream::Next(void** data, int* size) {
   return impl_.Next(data, size);

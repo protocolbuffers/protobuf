@@ -5,10 +5,11 @@
 # license that can be found in the LICENSE file or at
 # https://developers.google.com/open-source/licenses/bsd
 
+load("@bazel_skylib//rules:common_settings.bzl", "bool_flag")
 load("@rules_cc//cc:cc_binary.bzl", "cc_binary")
 load("@rules_cc//cc:cc_test.bzl", "cc_test")
 load("@rules_cc//cc:defs.bzl", "cc_library")
-load("//upb/bazel:build_defs.bzl", "UPB_DEFAULT_COPTS")
+load("//upb/bazel:copts.bzl", "UPB_DEFAULT_COPTS", "UPB_DEFAULT_CPPOPTS", "UPB_DEFAULT_FEATURES")
 
 package(default_applicable_licenses = ["//:license"])
 
@@ -19,23 +20,48 @@ FASTTABLE_COPTS = UPB_DEFAULT_COPTS + select({
     "//conditions:default": [],
 })
 
+bool_flag(
+    name = "debug_trace",
+    build_setting_default = False,
+)
+
+config_setting(
+    name = "debug_trace_setting",
+    flag_values = {":debug_trace": "True"},
+)
+
 cc_library(
     name = "field_parsers",
     srcs = [
+        "cardinality.c",
         "cardinality.h",
+        "field_extension.c",
         "field_fixed.c",
         "field_generic.c",
+        "field_helpers.h",
         "field_message.c",
+        "field_mismatch.c",
         "field_string.c",
+        "field_unknown.c",
         "field_varint.c",
     ],
     hdrs = ["field_parsers.h"],
     copts = FASTTABLE_COPTS,
-    visibility = ["//upb:__pkg__"],
+    defines = select({
+        ":debug_trace_setting": ["UPB_TRACE_FASTDECODER=1"],
+        "//conditions:default": [],
+    }),
+    features = UPB_DEFAULT_FEATURES,
+    visibility = [
+        "//upb:__pkg__",
+        "//upb/mini_descriptor:__pkg__",
+    ],
     deps = [
         ":combinations",
         ":data",
         ":dispatch",
+        ":select",
+        "//third_party/utf8_range",
         "//upb/base",
         "//upb/base:internal",
         "//upb/mem",
@@ -43,9 +69,11 @@ cc_library(
         "//upb/message:internal",
         "//upb/message:types",
         "//upb/mini_table",
+        "//upb/mini_table:internal",
         "//upb/port",
         "//upb/wire:decoder",
         "//upb/wire:eps_copy_input_stream",
+        "//upb/wire:eps_copy_input_stream_internal",
         "//upb/wire:reader",
     ],
 )
@@ -55,14 +83,17 @@ cc_library(
     srcs = ["dispatch.c"],
     hdrs = ["dispatch.h"],
     copts = FASTTABLE_COPTS,
+    features = UPB_DEFAULT_FEATURES,
     visibility = ["//upb/wire:__pkg__"],
     deps = [
+        ":data",
         "//upb/message",
         "//upb/mini_table",
         "//upb/mini_table:internal",
         "//upb/port",
         "//upb/wire:decoder",
         "//upb/wire:eps_copy_input_stream",
+        "//upb/wire:eps_copy_input_stream_internal",
     ],
 )
 
@@ -71,6 +102,7 @@ cc_library(
     srcs = ["select.c"],
     hdrs = ["select.h"],
     copts = FASTTABLE_COPTS,
+    features = UPB_DEFAULT_FEATURES,
     visibility = [
         "//pkg:__pkg__",
         "//upb/mini_descriptor:__pkg__",
@@ -85,7 +117,6 @@ cc_library(
         "//upb/mini_table:internal",
         "//upb/port",
         "//upb/wire:reader",
-        "@abseil-cpp//absl/strings",
     ],
 )
 
@@ -95,6 +126,12 @@ cc_test(
     deps = [
         ":combinations",
         ":select",
+        "//upb/mem",
+        "//upb/mini_table:internal",
+        "//upb/port",
+        "//upb/wire",  # buildcleaner: keep
+        "//upb/wire/test_util:field_types",
+        "//upb/wire/test_util:make_mini_table",
         "@abseil-cpp//absl/base:core_headers",
         "@googletest//:gtest",
         "@googletest//:gtest_main",
@@ -105,6 +142,7 @@ cc_library(
     name = "combinations",
     hdrs = ["combinations.h"],
     copts = FASTTABLE_COPTS,
+    features = UPB_DEFAULT_FEATURES,
     visibility = [
         "//upb:__pkg__",
         "//upb/wire:__subpackages__",
@@ -120,6 +158,7 @@ cc_library(
     name = "data",
     hdrs = ["data.h"],
     copts = FASTTABLE_COPTS,
+    features = UPB_DEFAULT_FEATURES,
     visibility = [
         "//upb:__pkg__",
         "//upb/wire:__subpackages__",
@@ -134,6 +173,7 @@ cc_library(
     srcs = ["function_array.c"],
     hdrs = ["function_array.h"],
     copts = FASTTABLE_COPTS,
+    features = UPB_DEFAULT_FEATURES,
     visibility = [
         "//upb:__pkg__",
         "//upb/mini_descriptor:__pkg__",
@@ -153,5 +193,26 @@ cc_binary(
         ":select",
         "@abseil-cpp//absl/flags:flag",
         "@abseil-cpp//absl/flags:parse",
+    ],
+)
+
+cc_test(
+    name = "test_unknown",
+    srcs = ["test_unknown.cc"],
+    copts = UPB_DEFAULT_CPPOPTS,
+    features = UPB_DEFAULT_FEATURES,
+    deps = [
+        ":combinations",
+        "//upb/base",
+        "//upb/mem",
+        "//upb/message",
+        "//upb/port",
+        "//upb/wire",
+        "//upb/wire/test_util:field_types",
+        "//upb/wire/test_util:make_mini_table",
+        "//upb/wire/test_util:wire_message",
+        "@abseil-cpp//absl/strings",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
     ],
 )

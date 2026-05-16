@@ -8,7 +8,8 @@
 #ifndef UPB_REFLECTION_EXTENSION_RANGE_INTERNAL_H_
 #define UPB_REFLECTION_EXTENSION_RANGE_INTERNAL_H_
 
-#include "upb/reflection/extension_range.h"
+#include "upb/reflection/def.h"
+#include "upb/reflection/descriptor_bootstrap.h"
 
 // Must be last.
 #include "upb/port/def.inc"
@@ -22,8 +23,8 @@ upb_ExtensionRange* _upb_ExtensionRange_At(const upb_ExtensionRange* r, int i);
 // Allocate and initialize an array of |n| extension ranges owned by |m|.
 upb_ExtensionRange* _upb_ExtensionRanges_New(
     upb_DefBuilder* ctx, int n,
-    const UPB_DESC(DescriptorProto_ExtensionRange*) const* protos,
-    const UPB_DESC(FeatureSet*) parent_features, const upb_MessageDef* m);
+    const google_protobuf_DescriptorProto_ExtensionRange* const* protos,
+    const google_protobuf_FeatureSet* parent_features, const upb_MessageDef* m);
 
 #ifdef __cplusplus
 } /* extern "C" */

@@ -15,6 +15,7 @@ the migration is finished, the helpers can be removed.
 """
 
 load("//bazel/common:proto_lang_toolchain_info.bzl", "ProtoLangToolchainInfo")
+load("//bazel/flags:flags.bzl", "get_flag_value")
 load("//bazel/private:native.bzl", "native_proto_common")
 
 _incompatible_toolchain_resolution = getattr(native_proto_common, "INCOMPATIBLE_ENABLE_PROTO_TOOLCHAIN_RESOLUTION", False)
@@ -26,7 +27,7 @@ def _find_toolchain(ctx, legacy_attr, toolchain_type):
             fail("No toolchains registered for '%s'." % toolchain_type)
         return toolchain.proto
     else:
-        return getattr(ctx.attr, legacy_attr)[ProtoLangToolchainInfo]
+        return get_flag_value(ctx, legacy_attr)[ProtoLangToolchainInfo]
 
 def _use_toolchain(toolchain_type):
     if _incompatible_toolchain_resolution:

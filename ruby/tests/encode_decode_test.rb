@@ -214,4 +214,17 @@ class EncodeDecodeTest < Test::Unit::TestCase
     assert_match msg.to_json, msg_out.to_json
   end
 
+  def test_decode_2gb_payload_without_crashing
+    # Skip if JRuby
+    omit "JRuby cannot create strings >= 2GB" if defined?(JRUBY_VERSION)
+
+    # 2. Skip 32-bit: Address space cannot hold a 2GB string + overhead
+    omit "Cannot test 2GB+ payloads on 32-bit systems" if 0.size <= 4
+
+    payload = "A" * (2**31)
+    assert_raises Google::Protobuf::ParseError do
+      A::B::C::TestMessage.decode(payload)
+    end
+  end
+
 end

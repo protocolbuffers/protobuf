@@ -60,6 +60,7 @@ std::string RsTypePath(Context& ctx, const EnumDescriptor& descriptor);
 std::string RsViewType(Context& ctx, const FieldDescriptor& field,
                        absl::string_view lifetime);
 
+std::string MessageRsName(const Descriptor& desc);
 std::string EnumRsName(const EnumDescriptor& desc);
 std::string EnumValueRsName(const EnumValueDescriptor& value);
 

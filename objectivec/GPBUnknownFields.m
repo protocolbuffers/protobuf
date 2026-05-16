@@ -43,60 +43,6 @@
 #pragma clang diagnostic ignored "-Wdirect-ivar-access"
 
 GPB_NOINLINE
-static size_t ComputeSerializeSize(GPBUnknownFields *_Nonnull self) {
-  size_t result = 0;
-  for (GPBUnknownField *field in self->fields_) {
-    uint32_t fieldNumber = field->number_;
-    switch (field->type_) {
-      case GPBUnknownFieldTypeVarint:
-        result += GPBComputeUInt64Size(fieldNumber, field->storage_.intValue);
-        break;
-      case GPBUnknownFieldTypeFixed32:
-        result += GPBComputeFixed32Size(fieldNumber, (uint32_t)field->storage_.intValue);
-        break;
-      case GPBUnknownFieldTypeFixed64:
-        result += GPBComputeFixed64Size(fieldNumber, field->storage_.intValue);
-        break;
-      case GPBUnknownFieldTypeLengthDelimited:
-        result += GPBComputeBytesSize(fieldNumber, field->storage_.lengthDelimited);
-        break;
-      case GPBUnknownFieldTypeGroup:
-        result +=
-            (GPBComputeTagSize(fieldNumber) * 2) + ComputeSerializeSize(field->storage_.group);
-        break;
-    }
-  }
-  return result;
-}
-
-GPB_NOINLINE
-static void WriteToCoddedOutputStream(GPBUnknownFields *_Nonnull self,
-                                      GPBCodedOutputStream *_Nonnull output) {
-  for (GPBUnknownField *field in self->fields_) {
-    uint32_t fieldNumber = field->number_;
-    switch (field->type_) {
-      case GPBUnknownFieldTypeVarint:
-        [output writeUInt64:fieldNumber value:field->storage_.intValue];
-        break;
-      case GPBUnknownFieldTypeFixed32:
-        [output writeFixed32:fieldNumber value:(uint32_t)field->storage_.intValue];
-        break;
-      case GPBUnknownFieldTypeFixed64:
-        [output writeFixed64:fieldNumber value:field->storage_.intValue];
-        break;
-      case GPBUnknownFieldTypeLengthDelimited:
-        [output writeBytes:fieldNumber value:field->storage_.lengthDelimited];
-        break;
-      case GPBUnknownFieldTypeGroup:
-        [output writeRawVarint32:GPBWireFormatMakeTag(fieldNumber, GPBWireFormatStartGroup)];
-        WriteToCoddedOutputStream(field->storage_.group, output);
-        [output writeRawVarint32:GPBWireFormatMakeTag(fieldNumber, GPBWireFormatEndGroup)];
-        break;
-    }
-  }
-}
-
-GPB_NOINLINE
 static BOOL MergeFromInputStream(GPBUnknownFields *self, GPBCodedInputStream *input,
                                  uint32_t endTag) {
 #if defined(DEBUG) && DEBUG
@@ -107,7 +53,7 @@ static BOOL MergeFromInputStream(GPBUnknownFields *self, GPBCodedInputStream *in
   NSMutableArray<GPBUnknownField *> *fields = self->fields_;
   @try {
     while (YES) {
-      uint32_t tag = GPBCodedInputStreamReadTag(state);
+      uint32_t tag = (uint32_t)GPBCodedInputStreamReadTag(state);
       if (tag == endTag) {
         return YES;
       }
@@ -116,10 +62,10 @@ static BOOL MergeFromInputStream(GPBUnknownFields *self, GPBCodedInputStream *in
         return NO;
       }
       GPBWireFormat wireType = GPBWireFormatGetTagWireType(tag);
-      int32_t fieldNumber = GPBWireFormatGetTagFieldNumber(tag);
+      int32_t fieldNumber = (int32_t)GPBWireFormatGetTagFieldNumber(tag);
       switch (wireType) {
         case GPBWireFormatVarint: {
-          uint64_t value = GPBCodedInputStreamReadInt64(state);
+          uint64_t value = (uint64_t)GPBCodedInputStreamReadInt64(state);
           GPBUnknownField *field = [[GPBUnknownField alloc] initWithNumber:fieldNumber
                                                                     varint:value];
           [fields addObject:field];
@@ -157,9 +103,9 @@ static BOOL MergeFromInputStream(GPBUnknownFields *self, GPBCodedInputStream *in
           [fields addObject:field];
           [field release];
           [group release];  // Still will be held in the field/fields.
-          uint32_t endGroupTag = GPBWireFormatMakeTag(fieldNumber, GPBWireFormatEndGroup);
+          uint32_t endGroupTag = GPBWireFormatMakeTag((uint32_t)fieldNumber, GPBWireFormatEndGroup);
           if (MergeFromInputStream(group, input, endGroupTag)) {
-            GPBCodedInputStreamCheckLastTagWas(state, endGroupTag);
+            GPBCodedInputStreamCheckLastTagWas(state, (int32_t)endGroupTag);
           } else {
             [NSException
                  raise:NSInternalInconsistencyException
@@ -332,7 +278,7 @@ static BOOL MergeFromInputStream(GPBUnknownFields *self, GPBCodedInputStream *in
   NSMutableIndexSet *toRemove = nil;
   NSUInteger idx = 0;
   for (GPBUnknownField *field in fields_) {
-    if (field->number_ == fieldNumber) {
+    if (field.number == fieldNumber) {
       if (toRemove == nil) {
         toRemove = [[NSMutableIndexSet alloc] initWithIndex:idx];
       } else {
@@ -361,11 +307,11 @@ static BOOL MergeFromInputStream(GPBUnknownFields *self, GPBCodedInputStream *in
   if (fields_.count == 0) {
     return [NSData data];
   }
-  size_t expectedSize = ComputeSerializeSize(self);
+  size_t expectedSize = [self computeSerializedSize];
   NSMutableData *data = [NSMutableData dataWithLength:expectedSize];
   GPBCodedOutputStream *stream = [[GPBCodedOutputStream alloc] initWithData:data];
   @try {
-    WriteToCoddedOutputStream(self, stream);
+    [self writeToCodedOutputStream:stream];
     [stream flush];
   } @catch (NSException *exception) {
 #if defined(DEBUG) && DEBUG
@@ -377,6 +323,20 @@ static BOOL MergeFromInputStream(GPBUnknownFields *self, GPBCodedInputStream *in
 #endif
   [stream release];
   return data;
+}
+
+- (size_t)computeSerializedSize {
+  size_t result = 0;
+  for (GPBUnknownField *field in self->fields_) {
+    result += [field computeSerializedSize];
+  }
+  return result;
+}
+
+- (void)writeToCodedOutputStream:(nonnull GPBCodedOutputStream *)output {
+  for (GPBUnknownField *field in self->fields_) {
+    [field writeToCodedOutputStream:output];
+  }
 }
 
 @end

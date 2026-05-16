@@ -73,7 +73,7 @@ static bool _upb_Map_IsEqual(const upb_Map* map1, const upb_Map* map2,
   if (size1 != size2) return false;
 
   const upb_MiniTableField* f = upb_MiniTable_MapValue(m);
-  const upb_MiniTable* m2_value = upb_MiniTable_SubMessage(m, f);
+  const upb_MiniTable* m2_value = upb_MiniTable_SubMessage(f);
   const upb_CType ctype = upb_MiniTableField_CType(f);
 
   upb_MessageValue key, val1, val2;
@@ -109,7 +109,7 @@ static bool _upb_Message_BaseFieldsAreEqual(const upb_Message* msg1,
     if (!got1) return true;          // Loop termination condition.
     if (f1 != f2) return false;      // Must have identical fields set.
 
-    const upb_MiniTable* subm = upb_MiniTable_SubMessage(m, f1);
+    const upb_MiniTable* subm = upb_MiniTable_SubMessage(f1);
     const upb_CType ctype = upb_MiniTableField_CType(f1);
 
     bool eq;

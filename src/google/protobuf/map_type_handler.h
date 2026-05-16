@@ -302,15 +302,15 @@ STRING_OR_BYTES_HANDLER_FUNCTIONS(STRING)
 STRING_OR_BYTES_HANDLER_FUNCTIONS(BYTES)
 #undef STRING_OR_BYTES_HANDLER_FUNCTIONS
 
-#define PRIMITIVE_HANDLER_FUNCTIONS(FieldType)                               \
-  template <typename Type>                                                   \
-  inline void MapTypeHandler<WireFormatLite::TYPE_##FieldType,               \
-                             Type>::DeleteNoArena(TypeOnMemory& /* x */) {}  \
-  template <typename Type>                                                   \
-  constexpr auto                                                             \
-  MapTypeHandler<WireFormatLite::TYPE_##FieldType, Type>::Constinit()        \
-      ->TypeOnMemory {                                                       \
-    return 0;                                                                \
+#define PRIMITIVE_HANDLER_FUNCTIONS(FieldType)                              \
+  template <typename Type>                                                  \
+  inline void MapTypeHandler<WireFormatLite::TYPE_##FieldType,              \
+                             Type>::DeleteNoArena(TypeOnMemory& /* x */) {} \
+  template <typename Type>                                                  \
+  constexpr auto                                                            \
+  MapTypeHandler<WireFormatLite::TYPE_##FieldType, Type>::Constinit()       \
+      -> TypeOnMemory {                                                     \
+    return 0;                                                               \
   }
 PRIMITIVE_HANDLER_FUNCTIONS(INT64)
 PRIMITIVE_HANDLER_FUNCTIONS(UINT64)
@@ -337,10 +337,7 @@ template <typename Key, typename Value, WireFormatLite::FieldType kKeyFieldType,
 struct MapEntryFuncs {
   typedef MapTypeHandler<kKeyFieldType, Key> KeyTypeHandler;
   typedef MapTypeHandler<kValueFieldType, Value> ValueTypeHandler;
-  enum : int {
-    kKeyFieldNumber = 1,
-    kValueFieldNumber = 2
-  };
+  enum : int { kKeyFieldNumber = 1, kValueFieldNumber = 2 };
 
   static uint8_t* InternalSerialize(int field_number, const Key& key,
                                     const Value& value, uint8_t* ptr,

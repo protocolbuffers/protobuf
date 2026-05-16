@@ -18,6 +18,7 @@
 #include "upb/mini_table/extension.h"
 #include "upb/mini_table/field.h"
 #include "upb/reflection/common.h"
+#include "upb/reflection/descriptor_bootstrap.h"
 
 // Must be last.
 #include "upb/port/def.inc"
@@ -64,17 +65,17 @@ bool _upb_FieldDef_ValidateUtf8(const upb_FieldDef* f);
 bool _upb_FieldDef_IsGroupLike(const upb_FieldDef* f);
 
 // Creates a mini descriptor string for a field, returns true on success.
-bool upb_FieldDef_MiniDescriptorEncode(const upb_FieldDef* f, upb_Arena* a,
-                                       upb_StringView* out);
+UPB_NODISCARD bool upb_FieldDef_MiniDescriptorEncode(const upb_FieldDef* f,
+                                                     upb_Arena* a,
+                                                     upb_StringView* out);
 
 const upb_MiniTableField* upb_FieldDef_MiniTable(const upb_FieldDef* f);
 const upb_MiniTableExtension* upb_FieldDef_MiniTableExtension(
     const upb_FieldDef* f);
 UPB_API const char* upb_FieldDef_Name(const upb_FieldDef* f);
 UPB_API uint32_t upb_FieldDef_Number(const upb_FieldDef* f);
-const UPB_DESC(FieldOptions) * upb_FieldDef_Options(const upb_FieldDef* f);
-const UPB_DESC(FeatureSet) *
-    upb_FieldDef_ResolvedFeatures(const upb_FieldDef* f);
+const google_protobuf_FieldOptions* upb_FieldDef_Options(const upb_FieldDef* f);
+const google_protobuf_FeatureSet* upb_FieldDef_ResolvedFeatures(const upb_FieldDef* f);
 UPB_API const upb_OneofDef* upb_FieldDef_RealContainingOneof(
     const upb_FieldDef* f);
 UPB_API upb_FieldType upb_FieldDef_Type(const upb_FieldDef* f);

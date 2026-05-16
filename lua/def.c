@@ -462,12 +462,6 @@ static int lupb_MessageDef_IsMapEntry(lua_State* L) {
   return 1;
 }
 
-static int lupb_MessageDef_Syntax(lua_State* L) {
-  const upb_MessageDef* m = lupb_MessageDef_check(L, 1);
-  lua_pushinteger(L, upb_MessageDef_Syntax(m));
-  return 1;
-}
-
 static int lupb_MessageDef_tostring(lua_State* L) {
   const upb_MessageDef* m = lupb_MessageDef_check(L, 1);
   lua_pushfstring(L, "<upb.MessageDef name=%s, field_count=%d>",
@@ -493,7 +487,6 @@ static const struct luaL_Reg lupb_MessageDef_m[] = {
     {"name", lupb_MessageDef_Name},
     {"oneof_count", lupb_MessageDef_OneofCount},
     {"oneofs", lupb_MessageDef_Oneofs},
-    {"syntax", lupb_MessageDef_Syntax},
     {"_map_entry", lupb_MessageDef_IsMapEntry},
     {NULL, NULL}};
 
@@ -656,12 +649,6 @@ static int lupb_FileDef_Pool(lua_State* L) {
   return 1;
 }
 
-static int lupb_FileDef_Syntax(lua_State* L) {
-  const upb_FileDef* f = lupb_FileDef_check(L, 1);
-  lua_pushnumber(L, upb_FileDef_Syntax(f));
-  return 1;
-}
-
 static const struct luaL_Reg lupb_FileDef_m[] = {
     {"dep", lupb_FileDef_Dependency},
     {"depcount", lupb_FileDef_DependencyCount},
@@ -672,7 +659,6 @@ static const struct luaL_Reg lupb_FileDef_m[] = {
     {"name", lupb_FileDef_Name},
     {"package", lupb_FileDef_Package},
     {"defpool", lupb_FileDef_Pool},
-    {"syntax", lupb_FileDef_Syntax},
     {NULL, NULL}};
 
 /* lupb_DefPool
@@ -834,7 +820,7 @@ static int lupb_DefPool_FindEnumByName(lua_State* L) {
 static int lupb_DefPool_FindEnumByNameval(lua_State* L) {
   const upb_DefPool* s = lupb_DefPool_check(L, 1);
   const upb_EnumValueDef* e =
-      upb_DefPool_FindEnumByNameval(s, luaL_checkstring(L, 2));
+      upb_DefPool_FindEnumValueByName(s, luaL_checkstring(L, 2));
   lupb_DefPool_pushwrapper(L, 1, e, LUPB_ENUMVALDEF);
   return 1;
 }
@@ -914,7 +900,4 @@ void lupb_def_registertypes(lua_State* L) {
   lupb_setfieldi(L, "DESCRIPTOR_TYPE_SFIXED64", kUpb_FieldType_SFixed64);
   lupb_setfieldi(L, "DESCRIPTOR_TYPE_SINT32", kUpb_FieldType_SInt32);
   lupb_setfieldi(L, "DESCRIPTOR_TYPE_SINT64", kUpb_FieldType_SInt64);
-
-  lupb_setfieldi(L, "SYNTAX_PROTO2", kUpb_Syntax_Proto2);
-  lupb_setfieldi(L, "SYNTAX_PROTO3", kUpb_Syntax_Proto3);
 }

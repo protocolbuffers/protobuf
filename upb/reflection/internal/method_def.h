@@ -8,7 +8,8 @@
 #ifndef UPB_REFLECTION_METHOD_DEF_INTERNAL_H_
 #define UPB_REFLECTION_METHOD_DEF_INTERNAL_H_
 
-#include "upb/reflection/method_def.h"
+#include "upb/reflection/def.h"
+#include "upb/reflection/descriptor_bootstrap.h"
 
 // Must be last.
 #include "upb/port/def.inc"
@@ -20,11 +21,10 @@ extern "C" {
 upb_MethodDef* _upb_MethodDef_At(const upb_MethodDef* m, int i);
 
 // Allocate and initialize an array of |n| method defs owned by |s|.
-upb_MethodDef* _upb_MethodDefs_New(upb_DefBuilder* ctx, int n,
-                                   const UPB_DESC(MethodDescriptorProto*)
-                                       const* protos,
-                                   const UPB_DESC(FeatureSet*) parent_features,
-                                   upb_ServiceDef* s);
+upb_MethodDef* _upb_MethodDefs_New(
+    upb_DefBuilder* ctx, int n,
+    const google_protobuf_MethodDescriptorProto* const* protos,
+    const google_protobuf_FeatureSet* parent_features, upb_ServiceDef* s);
 
 #ifdef __cplusplus
 } /* extern "C" */

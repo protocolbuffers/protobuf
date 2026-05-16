@@ -333,9 +333,7 @@ TEST(GeneratedCode, SubMessage) {
                          new_nested_message);
 
   upb_Message* mutable_message = upb_Message_GetOrCreateMutableMessage(
-      UPB_UPCAST(msg),
-      &protobuf_0test_0messages__proto2__TestAllTypesProto2_msg_init,
-      optional_message_field, arena);
+      UPB_UPCAST(msg), optional_message_field, arena);
   EXPECT_EQ(
       true,
       protobuf_test_messages_proto2_TestAllTypesProto2_optional_nested_message(
@@ -438,13 +436,9 @@ TEST(GeneratedCode, GetMutableMessage) {
   const upb_MiniTableField* optional_message_field =
       find_proto2_field(kFieldOptionalNestedMessage);
   upb_Message* msg1 = upb_Message_GetOrCreateMutableMessage(
-      UPB_UPCAST(msg),
-      &protobuf_0test_0messages__proto2__TestAllTypesProto2_msg_init,
-      optional_message_field, arena);
+      UPB_UPCAST(msg), optional_message_field, arena);
   upb_Message* msg2 = upb_Message_GetOrCreateMutableMessage(
-      UPB_UPCAST(msg),
-      &protobuf_0test_0messages__proto2__TestAllTypesProto2_msg_init,
-      optional_message_field, arena);
+      UPB_UPCAST(msg), optional_message_field, arena);
   // Verify that newly constructed sub message is stored in msg.
   EXPECT_EQ(msg1, msg2);
 

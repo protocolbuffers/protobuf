@@ -339,6 +339,24 @@ final class RopeByteString extends ByteString {
    */
   @Override
   public ByteString substring(int beginIndex, int endIndex) {
+    return substringNoCopy(beginIndex, endIndex);
+  }
+
+  /**
+   * Takes a substring of this one. This involves recursive descent along the left and right edges
+   * of the substring, and referencing any wholly contained segments in between. Any leaf nodes
+   * entirely uninvolved in the substring will not be referenced by the substring.
+   *
+   * <p>Substrings of {@code length < 2} should result in at most a single recursive call chain,
+   * terminating at a leaf node. Thus the result will be a {@link
+   * com.google.protobuf.ByteString.LeafByteString}.
+   *
+   * @param beginIndex start at this index
+   * @param endIndex the last character is the one before this index
+   * @return substring leaf node or tree
+   */
+  @Override
+  public ByteString substringNoCopy(int beginIndex, int endIndex) {
     final int length = checkRange(beginIndex, endIndex, totalLength);
 
     if (length == 0) {
@@ -842,7 +860,7 @@ final class RopeByteString extends ByteString {
      *
      * <p>This method assumes that all error checking has already happened.
      *
-     * <p>Returns the actual number of bytes read or skipped.
+     * @return The actual number of bytes read or skipped.
      */
     private int readSkipInternal(byte[] b, int offset, int length) {
       int bytesRemaining = length;
@@ -896,7 +914,7 @@ final class RopeByteString extends ByteString {
     public synchronized void reset() {
       // Just reinitialize and skip the specified number of bytes.
       initialize();
-      readSkipInternal(null, 0, mark);
+      int unused = readSkipInternal(null, 0, mark);
     }
 
     /** Common initialization code used by both the constructor and reset() */

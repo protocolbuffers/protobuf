@@ -45,6 +45,7 @@ import proto2_unittest.UnittestProto.TestRequired;
 import proto2_unittest.UnittestProto.TestReservedFields;
 import proto2_wireformat_unittest.UnittestMsetWireFormat.TestMessageSet;
 import java.io.StringReader;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Logger;
@@ -280,7 +281,7 @@ public class TextFormatTest {
    * are converted directly to bytes, *not* encoded using UTF-8.
    */
   private ByteString bytes(String str) {
-    return ByteString.copyFrom(str.getBytes(Internal.ISO_8859_1));
+    return ByteString.copyFrom(str.getBytes(StandardCharsets.ISO_8859_1));
   }
 
   /**
@@ -876,6 +877,7 @@ public class TextFormatTest {
     }
   }
 
+  @CanIgnoreReturnValue
   private TestAllTypes assertParseSuccessWithUnknownFields(String text)
       throws TextFormat.ParseException {
     TestAllTypes.Builder builder = TestAllTypes.newBuilder();
@@ -893,6 +895,7 @@ public class TextFormatTest {
     }
   }
 
+  @CanIgnoreReturnValue
   private TestAllTypes assertParseSuccessWithUnknownExtensions(String text)
       throws TextFormat.ParseException {
     TestAllTypes.Builder builder = TestAllTypes.newBuilder();
@@ -986,6 +989,12 @@ public class TextFormatTest {
         .isEqualTo(bytes("\0\001\007\b\f\n\r\t\013\\\'\""));
     assertThat(TextFormat.unescapeText("\\000\\001\\a\\b\\f\\n\\r\\t\\v\\\\\\'\\\""))
         .isEqualTo("\0\001\007\b\f\n\r\t\013\\\'\"");
+
+    String quotesAndBackslashOnly = "\\\"\'\\";
+    assertThat(TextFormat.escapeText(quotesAndBackslashOnly)).isEqualTo("\\\\\\\"\\\'\\\\");
+    assertThat(TextFormat.unescapeText(TextFormat.escapeText(quotesAndBackslashOnly)))
+        .isEqualTo(quotesAndBackslashOnly);
+
     assertThat(TextFormat.escapeText(ESCAPE_TEST_STRING)).isEqualTo(ESCAPE_TEST_STRING_ESCAPED);
     assertThat(TextFormat.unescapeText(ESCAPE_TEST_STRING_ESCAPED)).isEqualTo(ESCAPE_TEST_STRING);
 

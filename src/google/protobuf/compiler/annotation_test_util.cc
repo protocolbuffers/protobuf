@@ -8,17 +8,17 @@
 #include "google/protobuf/compiler/annotation_test_util.h"
 
 #include <cstdint>
-#include <optional>
 
 #include "google/protobuf/testing/file.h"
 #include "google/protobuf/testing/file.h"
-#include "google/protobuf/compiler/code_generator.h"
-#include "google/protobuf/compiler/command_line_interface.h"
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/testing/googletest.h"
 #include <gtest/gtest.h>
 #include "absl/log/absl_check.h"
 #include "absl/strings/string_view.h"
+#include "absl/types/optional.h"
+#include "google/protobuf/compiler/code_generator.h"
+#include "google/protobuf/compiler/command_line_interface.h"
 #include "google/protobuf/io/printer.h"
 #include "google/protobuf/io/zero_copy_stream.h"
 #include "google/protobuf/io/zero_copy_stream_impl_lite.h"
@@ -115,7 +115,7 @@ bool AtLeastOneAnnotationMatchesSubstring(
     const std::string& file_content,
     const std::vector<const GeneratedCodeInfo::Annotation*>& annotations,
     const std::string& expected_text,
-    std::optional<GeneratedCodeInfo::Annotation::Semantic> semantic) {
+    absl::optional<GeneratedCodeInfo::Annotation::Semantic> semantic) {
   for (std::vector<const GeneratedCodeInfo::Annotation*>::const_iterator
            i = annotations.begin(),
            e = annotations.end();
@@ -142,13 +142,13 @@ bool AnnotationMatchesSubstring(const std::string& file_content,
                                               expected_text);
 }
 
-std::optional<absl::string_view> GetAnnotationSubstring(
+absl::optional<absl::string_view> GetAnnotationSubstring(
     absl::string_view file_content,
     const GeneratedCodeInfo::Annotation& annotation) {
   auto begin = annotation.begin();
   auto end = annotation.end();
   if (begin < 0 || end < begin || end > file_content.size()) {
-    return std::nullopt;
+    return absl::nullopt;
   }
   return file_content.substr(begin, end - begin);
 }

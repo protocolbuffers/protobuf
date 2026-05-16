@@ -338,7 +338,7 @@ std::string StringToBase64(absl::string_view input) {
 std::string FileDescriptorToBase64(const FileDescriptor* descriptor) {
   std::string fdp_bytes;
   FileDescriptorProto fdp = StripSourceRetentionOptions(*descriptor);
-  fdp.SerializeToString(&fdp_bytes);
+  ABSL_CHECK(fdp.SerializeToString(&fdp_bytes));
   return StringToBase64(fdp_bytes);
 }
 

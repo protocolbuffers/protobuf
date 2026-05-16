@@ -51,6 +51,30 @@
 #define UPB_HAS_ATTRIBUTE(x) 0
 #endif
 
+#ifdef __has_c_attribute
+#define UPB_HAS_C_ATTRIBUTE(x) __has_c_attribute(x)
+#else
+#define UPB_HAS_C_ATTRIBUTE(x) 0
+#endif
+
+#if defined(__cplusplus) && defined(__has_cpp_attribute)
+// NOTE: requiring __cplusplus above should not be necessary, but
+// works around https://bugs.llvm.org/show_bug.cgi?id=23435.
+#define UPB_HAS_CPP_ATTRIBUTE(x) __has_cpp_attribute(x)
+#else
+#define UPB_HAS_CPP_ATTRIBUTE(x) 0
+#endif
+
+// Once in a while we want to use this macro in a C++-only portion of an
+// otherwise C-compatible header, so we copy and paste this from ABSL.
+#if UPB_HAS_CPP_ATTRIBUTE(deprecated) && UPB_HAS_CPP_ATTRIBUTE(clang::annotate)
+#define UPB_DEPRECATE_AND_INLINE() [[deprecated, clang::annotate("inline-me")]]
+#elif UPB_HAS_CPP_ATTRIBUTE(deprecated)
+#define UPB_DEPRECATE_AND_INLINE() [[deprecated]]
+#else
+#define UPB_DEPRECATE_AND_INLINE()
+#endif
+
 #ifdef __has_builtin
 #define UPB_HAS_BUILTIN(x) __has_builtin(x)
 #else
@@ -89,7 +113,7 @@ Error, UINTPTR_MAX is undefined
 /* If we always read/write as a consistent type to each address, this shouldn't
  * violate aliasing.
  */
-#define UPB_PTR_AT(msg, ofs, type) ((type *)((char *)(msg) + (ofs)))
+#define UPB_PTR_AT(msg, ofs, type) ((type*)((char*)(msg) + (ofs)))
 
 // A flexible array member may have lower alignment requirements than the struct
 // overall - in that case, it can overlap with the trailing padding of the rest
@@ -271,10 +295,21 @@ Error, UINTPTR_MAX is undefined
 #define UPB_PRINTF(str, first_vararg)
 #endif
 
-#if defined(__clang__)
+#if UPB_HAS_ATTRIBUTE(noderef)
 #define UPB_NODEREF __attribute__((noderef))
 #else
 #define UPB_NODEREF
+#endif
+
+// Will be defined properly once call sites are updated
+#if false && UPB_HAS_C_ATTRIBUTE(nodiscard)
+#define UPB_NODISCARD [[nodiscard]]
+#elif false && UPB_HAS_ATTRIBUTE(warn_unused_result)
+#define UPB_NODISCARD __attribute__((warn_unused_result))
+#elif false && UPB_HAS_CPP_ATTRIBUTE(nodiscard)
+#define UPB_NODISCARD [[nodiscard]]
+#else
+#define UPB_NODISCARD
 #endif
 
 #define UPB_MAX(x, y) ((x) > (y) ? (x) : (y))
@@ -297,6 +332,15 @@ Error, UINTPTR_MAX is undefined
 #endif
 #else
 #define UPB_ASSUME(expr) assert(expr)
+#endif
+
+#if UPB_HAS_BUILTIN(__builtin_constant_p) && UPB_HAS_ATTRIBUTE(const)
+#define UPB_MAYBE_ASSUME(pred, x) \
+  if (__builtin_constant_p(pred) && pred) UPB_ASSUME(x)
+#define UPB_ATTR_CONST __attribute__((const))
+#else
+#define UPB_MAYBE_ASSUME(pred, x)
+#define UPB_ATTR_CONST
 #endif
 
 /* UPB_ASSERT(): in release mode, we use the expression without letting it be
@@ -392,6 +436,12 @@ Error, UINTPTR_MAX is undefined
 #define UPB_MUSTTAIL
 #endif
 
+#if UPB_HAS_ATTRIBUTE(preserve_most) && !defined(__i386__)
+#define UPB_PRESERVE_MOST __attribute__((preserve_most))
+#else
+#define UPB_PRESERVE_MOST
+#endif
+
 #if UPB_HAS_ATTRIBUTE(preserve_none)
 #define UPB_PRESERVE_NONE __attribute__((preserve_none))
 #else
@@ -404,21 +454,23 @@ Error, UINTPTR_MAX is undefined
 #define UPB_ARM64_ASM 0
 #endif
 
-/* This check is not fully robust: it does not require that we have "musttail"
- * support available. We need tail calls to avoid consuming arbitrary amounts
- * of stack space.
- *
- * GCC/Clang can mostly be trusted to generate tail calls as long as
- * optimization is enabled, but, debug builds will not generate tail calls
- * unless "musttail" is available.
- *
- * We should probably either:
- *   1. require that the compiler supports musttail.
- *   2. add some fallback code for when musttail isn't available (ie. return
- *      instead of tail calling). This is safe and portable, but this comes at
- *      a CPU cost.
+/* When compiling with branch protection, we need to ensure that all branch
+ * targets in assembly use the appropriate landing pad instruction. These
+ * instructions are backwards compatible with processors that don't have
+ * FEAT_BTI and are treated as nops.
  */
-#if (defined(__x86_64__) || defined(__aarch64__)) && defined(__GNUC__)
+#if UPB_ARM64_ASM && defined(__ARM_FEATURE_BTI_DEFAULT)
+#if __ARM_FEATURE_BTI_DEFAULT == 1
+#define UPB_ARM64_BTI_DEFAULT 1
+#else
+#define UPB_ARM64_BTI_DEFAULT 0
+#endif
+#else
+#define UPB_ARM64_BTI_DEFAULT 0
+#endif
+
+#if (defined(__x86_64__) || defined(__aarch64__)) && \
+    UPB_HAS_ATTRIBUTE(preserve_none) && UPB_HAS_ATTRIBUTE(musttail)
 #define UPB_FASTTABLE_SUPPORTED 1
 #else
 #define UPB_FASTTABLE_SUPPORTED 0
@@ -429,7 +481,7 @@ Error, UINTPTR_MAX is undefined
  * for example for testing or benchmarking. */
 #if defined(UPB_ENABLE_FASTTABLE)
 #if !UPB_FASTTABLE_SUPPORTED
-#error fasttable is x86-64/ARM64 only and requires GCC or Clang.
+#error fasttable is x86-64/ARM64 only and requires preserve_none and musttail.
 #endif
 #define UPB_FASTTABLE 1
 /* Define UPB_TRY_ENABLE_FASTTABLE to use fasttable if possible.
@@ -453,14 +505,6 @@ Error, UINTPTR_MAX is undefined
 
 #undef UPB_FASTTABLE_SUPPORTED
 
-/* Disable proto2 arena behavior (TEMPORARY) **********************************/
-
-#ifdef UPB_DISABLE_CLOSED_ENUM_CHECKING
-#define UPB_TREAT_CLOSED_ENUMS_LIKE_OPEN 1
-#else
-#define UPB_TREAT_CLOSED_ENUMS_LIKE_OPEN 0
-#endif
-
 #if defined(__cplusplus)
 #if defined(__clang__) || UPB_GNUC_MIN(6, 0)
 // https://gcc.gnu.org/gcc-6/changes.html
@@ -474,17 +518,13 @@ Error, UINTPTR_MAX is undefined
 
 #if defined(UPB_IS_GOOGLE3) && \
     (!defined(UPB_BOOTSTRAP_STAGE) || UPB_BOOTSTRAP_STAGE != 0)
-#define UPB_DESC(sym) proto2_##sym
 #define UPB_DESC_MINITABLE(sym) &proto2__##sym##_msg_init
 #elif defined(UPB_IS_GOOGLE3) && defined(UPB_BOOTSTRAP_STAGE) && \
     UPB_BOOTSTRAP_STAGE == 0
-#define UPB_DESC(sym) proto2_##sym
 #define UPB_DESC_MINITABLE(sym) proto2__##sym##_msg_init()
 #elif defined(UPB_BOOTSTRAP_STAGE) && UPB_BOOTSTRAP_STAGE == 0
-#define UPB_DESC(sym) google_protobuf_##sym
 #define UPB_DESC_MINITABLE(sym) google__protobuf__##sym##_msg_init()
 #else
-#define UPB_DESC(sym) google_protobuf_##sym
 #define UPB_DESC_MINITABLE(sym) &google__protobuf__##sym##_msg_init
 #endif
 
@@ -494,6 +534,12 @@ Error, UINTPTR_MAX is undefined
 #define UPB_NO_SANITIZE_ADDRESS __attribute__((no_sanitize("address")))
 #else
 #define UPB_NO_SANITIZE_ADDRESS
+#endif
+
+#if defined(__GNUC__) && (defined(__clang__) || UPB_GNUC_MIN(11, 0))
+#define UPB_RETAIN __attribute__((retain))
+#else
+#define UPB_RETAIN
 #endif
 
 // Linker arrays combine elements from multiple translation units into a single
@@ -520,14 +566,28 @@ Error, UINTPTR_MAX is undefined
 //     }
 //   }
 
+#if defined(__GNUC__) && !defined(__clang__)
+// GCC can't handle mismatched retain attributes in the same section:
+//   https://github.com/protocolbuffers/protobuf/issues/26385
+// To work around this, we retain all linker array elements, even though this
+// effectively disables tree-shaking of unused extensions when using GCC.
+#define UPB_LINKARR_ATTR UPB_RETAIN
+#else
+#define UPB_LINKARR_ATTR
+#endif
+
+#define UPB_LINKARR_SENTINEL UPB_RETAIN __attribute__((weak, used))
+
 #if defined(__ELF__) || defined(__wasm__)
 
 #define UPB_LINKARR_APPEND(name) \
-  __attribute__((section("linkarr_" #name))) UPB_NO_SANITIZE_ADDRESS
+  __attribute__((                \
+      section("linkarr_" #name))) UPB_LINKARR_ATTR UPB_NO_SANITIZE_ADDRESS
 #define UPB_LINKARR_DECLARE(name, type) \
   extern type __start_linkarr_##name;   \
   extern type __stop_linkarr_##name;    \
-  UPB_LINKARR_APPEND(name) type UPB_linkarr_internal_empty_##name[1]
+  UPB_LINKARR_APPEND(name)              \
+  UPB_LINKARR_SENTINEL type UPB_linkarr_internal_empty_##name[1]
 #define UPB_LINKARR_START(name) (&__start_linkarr_##name)
 #define UPB_LINKARR_STOP(name) (&__stop_linkarr_##name)
 
@@ -535,41 +595,95 @@ Error, UINTPTR_MAX is undefined
 
 /* As described in: https://stackoverflow.com/a/22366882 */
 #define UPB_LINKARR_APPEND(name) \
-  __attribute__((section("__DATA,__la_" #name))) UPB_NO_SANITIZE_ADDRESS
+  __attribute__((                \
+      section("__DATA,__la_" #name))) UPB_LINKARR_ATTR UPB_NO_SANITIZE_ADDRESS
 #define UPB_LINKARR_DECLARE(name, type)     \
   extern type __start_linkarr_##name __asm( \
       "section$start$__DATA$__la_" #name);  \
   extern type __stop_linkarr_##name __asm(  \
       "section$end$__DATA$"                 \
       "__la_" #name);                       \
-  UPB_LINKARR_APPEND(name) type UPB_linkarr_internal_empty_##name[1]
+  UPB_LINKARR_APPEND(name)                  \
+  UPB_LINKARR_SENTINEL type UPB_linkarr_internal_empty_##name[1]
 #define UPB_LINKARR_START(name) (&__start_linkarr_##name)
 #define UPB_LINKARR_STOP(name) (&__stop_linkarr_##name)
 
-#elif defined(_MSC_VER) && defined(__clang__)
+#elif defined(_MSC_VER)
 
 /* See:
  *   https://devblogs.microsoft.com/oldnewthing/20181107-00/?p=100155
  *   https://devblogs.microsoft.com/oldnewthing/20181108-00/?p=100165
  *   https://devblogs.microsoft.com/oldnewthing/20181109-00/?p=100175 */
-
-// Usage of __attribute__ here probably means this is Clang-specific, and would
-// not work on MSVC.
-#define UPB_LINKARR_APPEND(name) \
-  __declspec(allocate("la_" #name "$j")) UPB_NO_SANITIZE_ADDRESS
-#define UPB_LINKARR_DECLARE(name, type)                               \
-  __declspec(allocate("la_" #name "$a")) type __start_linkarr_##name; \
-  __declspec(allocate("la_" #name "$z")) type __stop_linkarr_##name;  \
-  UPB_LINKARR_APPEND(name) type UPB_linkarr_internal_empty_##name[1] = {0}
+#define UPB_STRINGIFY_INTERNAL(x) #x
+#define UPB_STRINGIFY(x) UPB_STRINGIFY_INTERNAL(x)
+#define UPB_CONCAT(a, b, c) a##b##c
+#define UPB_LINKARR_NAME(name, index) \
+  UPB_STRINGIFY(UPB_CONCAT(la_, name, index))
+#define UPB_LINKARR_APPEND(name)                      \
+  __pragma(section(UPB_LINKARR_NAME(name, $j), read)) \
+      __declspec(allocate(UPB_LINKARR_NAME(name, $j)))
+// clang-format off
+#define UPB_LINKARR_DECLARE(name, type)                          \
+  __pragma(message(UPB_LINKARR_NAME(name, $j)))                  \
+  __pragma(section(UPB_LINKARR_NAME(name, $a), read))            \
+  __pragma(section(UPB_LINKARR_NAME(name, $z), read))            \
+  __declspec(allocate(UPB_LINKARR_NAME(name, $a)), selectany)    \
+            type __start_linkarr_##name;                         \
+  __declspec(allocate(UPB_LINKARR_NAME(name, $z)), selectany)    \
+            type __stop_linkarr_##name;                          \
+  UPB_LINKARR_APPEND(name)                                       \
+  __declspec(selectany) type UPB_linkarr_internal_empty_##name[1] = {0}
+// clang-format on
 #define UPB_LINKARR_START(name) (&__start_linkarr_##name)
 #define UPB_LINKARR_STOP(name) (&__stop_linkarr_##name)
 
 #else
 
-// Linker arrays are not supported on this platform.  Make appends a no-op but
-// don't define the other macros.
+// Linker arrays are not supported on this platform.  Make macros no-ops.
 #define UPB_LINKARR_APPEND(name)
+#define UPB_LINKARR_DECLARE(name, type)
+#define UPB_LINKARR_START(name) (NULL)
+#define UPB_LINKARR_STOP(name) (NULL)
 
+#endif
+
+// Workaround for https://github.com/llvm/llvm-project/issues/167577 until it's
+// fixed.  Some function must exist for the constructor to work properly.
+// TODO Remove this or gate it on a future version of clang.
+#if defined(__clang__) && defined(__arm__)
+#define _UPB_CONSTRUCTOR_PLACEHOLDER(unique_name)                            \
+  __attribute__((used, visibility("hidden"))) void UPB_PRIVATE(unique_name)( \
+      void) {}
+#else
+#define _UPB_CONSTRUCTOR_PLACEHOLDER(unique_name)
+#endif
+
+#if defined(__ELF__) || defined(__wasm__) || defined(__MACH__)
+#define UPB_CONSTRUCTOR(name, unique_name)                                   \
+  _UPB_CONSTRUCTOR_PLACEHOLDER(unique_name)                                  \
+  __attribute__((weak, visibility("hidden"), constructor)) void UPB_PRIVATE( \
+      name)(void)
+#elif defined(_MSC_VER)
+/*
+ * See: https://stackoverflow.com/questions/1113409
+ *
+ * The /include pragma suggested in the link above doesn't work in our case
+ * because it requires globally unique names. We need a different solution
+ * to prevent optimizers from removing the constructor. Our solution is to
+ * create a dummy exported weak symbol that prevent this stripping.
+ */
+#pragma section(".CRT$XCU", long, read)
+#define UPB_CONSTRUCTOR(name, unique_name)                                   \
+  static void __cdecl UPB_PRIVATE(name)(void);                               \
+  __declspec(allocate(".CRT$XCU"), selectany) void(                          \
+      __cdecl * UPB_PRIVATE(name##_))(void) = UPB_PRIVATE(name);             \
+  __declspec(selectany, dllexport) void* UPB_PRIVATE(name##_force_linkage) = \
+      &UPB_PRIVATE(name##_);                                                 \
+  static void __cdecl UPB_PRIVATE(name)(void)
+
+#else
+// No constructor support, nothing we can do except not break builds.
+#define UPB_CONSTRUCTOR(name, unique_name) static void UPB_PRIVATE(name)(void)
 #endif
 
 //
@@ -586,7 +700,6 @@ Error, UINTPTR_MAX is undefined
 #define UPB_WEAK_SINGLETON_PLACEHOLDER_MINITABLE()
 #define UPB_WEAK_PLACEHOLDER_MINITABLE(name)           \
   __attribute__((weak)) const upb_MiniTable name = {   \
-      .UPB_PRIVATE(subs) = NULL,                       \
       .UPB_PRIVATE(fields) = NULL,                     \
       .UPB_PRIVATE(size) = sizeof(struct upb_Message), \
       .UPB_PRIVATE(field_count) = 0,                   \
@@ -598,10 +711,12 @@ Error, UINTPTR_MAX is undefined
 #define UPB_WEAK_ALIAS(type, from, to) \
   extern type to;                      \
   __asm__(".globl _" #to);             \
+  __asm__(".private_extern _" #to);    \
   __asm__(".set _" #to ", _" #from);   \
   __asm__(".weak_definition _" #to);
 #define UPB_STRONG_ALIAS(type, from, to) \
   __asm__(".globl _" #to);               \
+  __asm__(".private_extern _" #to);      \
   __asm__(".set _" #to ", _" #from);
 
 #elif defined(__ELF__)
@@ -612,7 +727,6 @@ Error, UINTPTR_MAX is undefined
 #define UPB_WEAK_SINGLETON_PLACEHOLDER_MINITABLE()               \
   __attribute__((weak))                                          \
   const upb_MiniTable kUpb_WeakSingletonPlaceholderMiniTable = { \
-      .UPB_PRIVATE(subs) = NULL,                                 \
       .UPB_PRIVATE(fields) = NULL,                               \
       .UPB_PRIVATE(size) = sizeof(struct upb_Message),           \
       .UPB_PRIVATE(field_count) = 0,                             \
@@ -632,12 +746,28 @@ Error, UINTPTR_MAX is undefined
 #define UPB_WEAK_SINGLETON_PLACEHOLDER_MINITABLE()
 #define UPB_WEAK_PLACEHOLDER_MINITABLE(name)
 #define UPB_WEAK_ALIAS(type, from, to) weak_alias_not_supported_on_this_platform
-#define UPB_STRONG_ALIAS(type, from, to) strong_alias_not_supported_on_this_platform
+#define UPB_STRONG_ALIAS(type, from, to) \
+  strong_alias_not_supported_on_this_platform
 #endif
 
 // Future versions of upb will include breaking changes to some APIs.
 // This macro can be set to enable these API changes ahead of time, so that
 // user code can be updated before upgrading versions of protobuf.
 #ifdef UPB_FUTURE_BREAKING_CHANGES
+
+// Removes non-standard clamping behavior in RepeatedContainer.pop()
+// Owner: runze@
+#define UPB_FUTURE_REMOVE_POP_CLAMP 1
+
+// Fix PyProto C++ and upb implementations to return NotImplemented in
+// descriptor container equality checks for unrecognized types.
+// Owner: runze@
+#define UPB_FUTURE_CONTAINER_EQ_RETURNS_NOTIMPLEMENTED 1
+
+#else
+
+#define UPB_FUTURE_REMOVE_POP_CLAMP 0
+
+#define UPB_FUTURE_CONTAINER_EQ_RETURNS_NOTIMPLEMENTED 0
 
 #endif

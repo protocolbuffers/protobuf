@@ -111,7 +111,7 @@ class TestZeroCopyInputStream final : public ZeroCopyInputStream {
   // move them to `last_returned_buffer_`. It makes it simpler to keep track of
   // the state of the object. The extra cost is not relevant for testing.
   std::deque<std::string> buffers_;
-  // std::optional could work here, but std::unique_ptr makes it more likely
+  // absl::optional could work here, but std::unique_ptr makes it more likely
   // for sanitizers to detect if the string is used after it is destroyed.
   std::unique_ptr<std::string> last_returned_buffer_;
   // It is possible that some part of the buffer needs to be valid after the
@@ -169,7 +169,7 @@ class TestZeroCopyOutputStream final : public ZeroCopyOutputStream {
   // move them to `last_returned_buffer_`. It makes it simpler to keep track of
   // the state of the object. The extra cost is not relevant for testing.
   std::deque<absl::Span<char>> buffers_;
-  // std::optional could work here, but std::unique_ptr makes it more likely
+  // absl::optional could work here, but std::unique_ptr makes it more likely
   // for sanitizers to detect if the string is used after it is destroyed.
   std::unique_ptr<absl::Span<char>> last_returned_buffer_;
   int64_t byte_count_ = 0;

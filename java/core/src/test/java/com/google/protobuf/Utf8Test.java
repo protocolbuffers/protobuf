@@ -11,6 +11,7 @@ import static com.google.common.truth.Truth.assertThat;
 import static com.google.common.truth.Truth.assertWithMessage;
 
 import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 import java.util.Random;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -86,31 +87,25 @@ public class Utf8Test {
 
   private static void assertIsValid(byte[] data, boolean valid) {
     assertWithMessage("isValidUtf8[ARRAY]")
-        .that(safeProcessor.isValidUtf8(data, 0, data.length))
-        .isEqualTo(valid);
-    assertWithMessage("isValidUtf8[ARRAY_UNSAFE]")
-        .that(unsafeProcessor.isValidUtf8(data, 0, data.length))
+        .that(Utf8.isValidUtf8(data, 0, data.length))
         .isEqualTo(valid);
 
     ByteBuffer buffer = ByteBuffer.wrap(data);
     assertWithMessage("isValidUtf8[NIO_HEAP]")
-        .that(safeProcessor.isValidUtf8(buffer, buffer.position(), buffer.remaining()))
+        .that(Utf8.isValidUtf8(buffer))
         .isEqualTo(valid);
 
     // Direct buffers.
     buffer = ByteBuffer.allocateDirect(data.length);
     buffer.put(data);
     buffer.flip();
-    assertWithMessage("isValidUtf8[NIO_DEFAULT]")
-        .that(safeProcessor.isValidUtf8(buffer, buffer.position(), buffer.remaining()))
-        .isEqualTo(valid);
-    assertWithMessage("isValidUtf8[NIO_UNSAFE]")
-        .that(unsafeProcessor.isValidUtf8(buffer, buffer.position(), buffer.remaining()))
+    assertWithMessage("isValidUtf8[NIO_DIRECT]")
+        .that(Utf8.isValidUtf8(buffer))
         .isEqualTo(valid);
   }
 
   private static void assertEncoding(String message) {
-    byte[] expected = message.getBytes(Internal.UTF_8);
+    byte[] expected = message.getBytes(StandardCharsets.UTF_8);
     byte[] output = encodeToByteArray(message, expected.length, safeProcessor);
     assertWithMessage("encodeUtf8[ARRAY]")
         .that(output).isEqualTo(expected);

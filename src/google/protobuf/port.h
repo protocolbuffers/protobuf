@@ -18,7 +18,6 @@
 #include <cstddef>
 #include <cstdint>
 #include <new>
-#include <optional>
 #include <string>
 #include <type_traits>
 #include <typeinfo>
@@ -32,7 +31,10 @@
 
 #include "absl/base/attributes.h"
 #include "absl/base/config.h"
+#include "absl/base/dynamic_annotations.h"
+#include "absl/numeric/bits.h"
 #include "absl/strings/string_view.h"
+#include "absl/types/optional.h"
 
 #if defined(ABSL_HAVE_ADDRESS_SANITIZER)
 #include <sanitizer/asan_interface.h>
@@ -221,19 +223,22 @@ inline ToRef DownCast(From& f) {
 
 // Looks up the name of `T` via RTTI, if RTTI is available.
 template <typename T>
-inline std::optional<absl::string_view> RttiTypeName() {
+inline absl::optional<absl::string_view> RttiTypeName() {
 #if PROTOBUF_RTTI
   return typeid(T).name();
 #else
-  return std::nullopt;
+  return absl::nullopt;
 #endif
 }
 
 // Helpers for identifying our supported types.
 template <typename T>
 struct is_supported_integral_type
-    : std::disjunction<std::is_same<T, int32_t>, std::is_same<T, uint32_t>,
-                       std::is_same<T, int64_t>, std::is_same<T, uint64_t>,
+    : std::disjunction<std::is_same<T, int>, std::is_same<T, unsigned int>,
+                       std::is_same<T, long>,                // NOLINT
+                       std::is_same<T, unsigned long>,       // NOLINT
+                       std::is_same<T, long long>,           // NOLINT
+                       std::is_same<T, unsigned long long>,  // NOLINT
                        std::is_same<T, bool>> {};
 
 template <typename T>
@@ -266,8 +271,6 @@ enum { kCacheAlignment = alignof(max_align_t) };  // do the best we can
 // The maximum byte alignment we support.
 enum { kMaxMessageAlignment = 8 };
 
-inline constexpr bool EnableProtoFieldPresenceHints() { return false; }
-
 inline constexpr bool EnableStableExperiments() {
 #if defined(PROTOBUF_ENABLE_STABLE_EXPERIMENTS)
   return true;
@@ -297,14 +300,6 @@ inline constexpr bool ForceSplitFieldsInProtoc() {
 #else
   return false;
 #endif
-}
-
-// Returns true if hasbits for repeated fields are enabled (b/391445226). This
-// flag-gates the rollout of the feature, and if disabled will disable the
-// feature. This will be removed once the feature is fully rolled out and
-// verified.
-inline constexpr bool EnableExperimentalHintHasBitsForRepeatedFields() {
-  return true;
 }
 
 // Returns true if debug hardening for clearing oneof message on arenas is
@@ -651,7 +646,24 @@ inline void PoisonMemoryRegion([[maybe_unused]] const void* p,
 inline void UnpoisonMemoryRegion([[maybe_unused]] const void* p,
                                  [[maybe_unused]] size_t n) {
 #if defined(ABSL_HAVE_ADDRESS_SANITIZER)
-  ASAN_UNPOISON_MEMORY_REGION(p, n);
+  static const bool kReallyHasMemoryPoisoning = [] {
+    // Test if poisoning is on. `allow_user_poisoning=0` would disable it.
+    // There is no official API for this, so we just probe.
+    alignas(8) char buf[8];
+    ASAN_POISON_MEMORY_REGION(buf, sizeof(buf));
+    bool res = __asan_address_is_poisoned(buf);
+    ASAN_UNPOISON_MEMORY_REGION(buf, sizeof(buf));
+    return res;
+  }();
+  if (kReallyHasMemoryPoisoning) {
+    ASAN_UNPOISON_MEMORY_REGION(p, n);
+  } else {
+    // When in ASan but with memory poisoning off, we still want to clear
+    // container annotations from such memory.
+    // We annotate the whole block as usable.
+    ABSL_ANNOTATE_CONTIGUOUS_CONTAINER(p, static_cast<const char*>(p) + n, p,
+                                       static_cast<const char*>(p) + n);
+  }
 #else
   // Nothing
 #endif
@@ -659,7 +671,39 @@ inline void UnpoisonMemoryRegion([[maybe_unused]] const void* p,
 
 inline bool IsMemoryPoisoned([[maybe_unused]] const void* p) {
 #if defined(ABSL_HAVE_ADDRESS_SANITIZER)
-  return __asan_address_is_poisoned(p);
+  return __asan_address_is_poisoned(p) != 0;
+#else
+  return false;
+#endif
+}
+
+inline constexpr bool ShouldBatchSingularString() {
+#ifdef PROTOBUF_INTERNAL_BATCH_SINGULAR_STRING
+  return true;
+#else
+  return false;
+#endif
+}
+
+inline constexpr bool ShouldBatchRepeatedString() {
+#ifdef PROTOBUF_INTERNAL_BATCH_REPEATED_STRING
+  return true;
+#else
+  return false;
+#endif
+}
+
+inline constexpr bool ShouldBatchRepeatedNumeric() {
+#ifdef PROTOBUF_INTERNAL_BATCH_REPEATED_NUMERIC
+  return true;
+#else
+  return false;
+#endif
+}
+
+inline constexpr bool UseBatchOffset() {
+#ifdef PROTOBUF_INTERNAL_USE_BATCH_OFFSET
+  return true;
 #else
   return false;
 #endif
@@ -735,16 +779,33 @@ constexpr bool EnableCustomNewFor() {
 //   PROTOBUF_DEBUG_COUNTER("Foo.Slow").Inc();
 //   ...
 // }
+//
+// It also supports bucket based distributions. It has two methods:
+//
+// PROTOBUF_DEBUG_COUNTER("Foo.Slow").IncLog(x);
+//
+// where `x` is a uint64_t value and it will add the value to the log-based
+// bucket for it.
+//
+// PROTOBUF_DEBUG_COUNTER("Foo.Slow").IncBucket(x);
+//
+// where `x` is in the range [0,64] and increases the bucket directly.
 class PROTOBUF_EXPORT RealDebugCounter {
  public:
+  static constexpr size_t kNumBuckets = 64;
   explicit RealDebugCounter(absl::string_view name) { Register(name); }
-  // Lossy increment.
-  void Inc() { counter_.store(value() + 1, std::memory_order_relaxed); }
-  size_t value() const { return counter_.load(std::memory_order_relaxed); }
+  void Inc() { IncBucket(0); }
+  void IncLog(uint64_t value) { IncBucket(absl::bit_width(value)); }
+  void IncBucket(size_t b) {
+    // clamp to prevent UB if IncBucket is called out of range.
+    b %= kNumBuckets;
+    // Lossy increment.
+    counters_[b].store(counters_[b].load(std::memory_order_relaxed) + 1);
+  }
 
  private:
   void Register(absl::string_view name);
-  std::atomic<size_t> counter_{};
+  std::atomic<size_t>* counters_;
 };
 
 // When the feature is not enabled, the type is a noop.
@@ -752,7 +813,12 @@ class NoopDebugCounter {
  public:
   explicit constexpr NoopDebugCounter() = default;
   constexpr void Inc() {}
+  constexpr void IncLog(uint64_t) {}
+  constexpr void IncBucket(size_t) {}
 };
+
+// Pretty random large number that seems like a safe allocation on most systems.
+inline constexpr size_t kSafeStringSize = 50000000;
 
 // Default empty string object. Don't use this directly. Instead, call
 // GetEmptyString() to get the reference. This empty string is aligned with a
@@ -765,11 +831,12 @@ class alignas(8) GlobalEmptyStringConstexpr {
   // Nothing to init, or destroy.
   std::string* Init() const { return nullptr; }
 
-  // Disable the optimization for MSVC.
+  // Disable the optimization for MSVC and Xtensa.
   // There are some builds where the default constructed string can't be used as
   // `constinit` even though the constructor is `constexpr` and can be used
   // during constant evaluation.
-#if !defined(_MSC_VER)
+#if !defined(_MSC_VER) && !defined(__XTENSA__)
+  // Compilation fails on Xtensa: b/467129751
   template <typename T = std::string, bool = (T(), true)>
   static constexpr std::true_type HasConstexprDefaultConstructor(int) {
     return {};
@@ -802,10 +869,29 @@ using GlobalEmptyString = std::conditional_t<
 
 PROTOBUF_EXPORT extern GlobalEmptyString fixed_address_empty_string;
 
+PROTOBUF_EXPORT ABSL_ATTRIBUTE_NORETURN PROTOBUF_NOINLINE void
+HandleAddOverflow(int a, int b);
+
+inline int CheckedAdd(int a, int b) {
+  int sum;
+#if ABSL_HAVE_BUILTIN(__builtin_add_overflow)
+  bool overflow = __builtin_add_overflow(a, b, &sum);
+#else
+  int64_t sum64 = static_cast<int64_t>(a) + static_cast<int64_t>(b);
+  sum = static_cast<int>(sum64);
+  bool overflow = sum64 != sum;
+#endif
+  if (ABSL_PREDICT_FALSE(overflow)) {
+    HandleAddOverflow(a, b);
+  }
+  return sum;
+}
+
 enum class BoundsCheckMode { kNoEnforcement, kReturnDefault, kAbort };
 
 PROTOBUF_EXPORT constexpr BoundsCheckMode GetBoundsCheckMode() {
-#if defined(PROTOBUF_INTERNAL_BOUNDS_CHECK_MODE_ABORT)
+#if defined(PROTO2_OPENSOURCE) || \
+    defined(PROTOBUF_INTERNAL_BOUNDS_CHECK_MODE_ABORT)
   return BoundsCheckMode::kAbort;
 #elif defined(PROTOBUF_INTERNAL_BOUNDS_CHECK_MODE_RETURN_DEFAULT)
   return BoundsCheckMode::kReturnDefault;
@@ -833,6 +919,23 @@ constexpr bool HasCrc32() { return false; }
 inline uint32_t Crc32(uint32_t, uint64_t) { return 0; }
 
 #endif
+
+// Check minimum Protobuf support defined at:
+// https://github.com/google/oss-policies-info/blob/main/foundational-cxx-support-matrix.md
+#ifdef __clang__
+static_assert(PROTOBUF_CLANG_MIN(6, 0),
+              "Protobuf only supports Clang 6.0 and newer.");
+#elif defined(__GNUC__)
+static_assert(PROTOBUF_GNUC_MIN(7, 3),
+              "Protobuf only supports GCC 7.3 and newer.");
+#elif defined(_MSVC_LANG)
+static_assert(PROTOBUF_MSC_VER_MIN(1910),
+              "Protobuf only supports MSVC 2017 and newer.");
+#endif
+static_assert(PROTOBUF_CPLUSPLUS_MIN(201703L),
+              "Protobuf only supports C++17 and newer.");
+static_assert(PROTOBUF_ABSL_MIN(20230125, 3),
+              "Protobuf only supports Abseil version 20230125.3 and newer.");
 
 }  // namespace internal
 }  // namespace protobuf

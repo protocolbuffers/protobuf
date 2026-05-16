@@ -65,6 +65,7 @@ public final class MapFieldLite<K, V> extends LinkedHashMap<K, V> {
   }
 
   @Override
+  @CanIgnoreReturnValue
   public V put(K key, V value) {
     ensureMutable();
     checkNotNull(key);
@@ -73,6 +74,7 @@ public final class MapFieldLite<K, V> extends LinkedHashMap<K, V> {
     return super.put(key, value);
   }
 
+  @CanIgnoreReturnValue
   public V put(Map.Entry<K, V> entry) {
     return put(entry.getKey(), entry.getValue());
   }
@@ -85,6 +87,7 @@ public final class MapFieldLite<K, V> extends LinkedHashMap<K, V> {
   }
 
   @Override
+  @CanIgnoreReturnValue
   public V remove(Object key) {
     ensureMutable();
     return super.remove(key);

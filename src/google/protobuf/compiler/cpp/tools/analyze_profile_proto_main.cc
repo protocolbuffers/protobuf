@@ -21,8 +21,6 @@
 #include <ostream>
 #include <string>
 
-#include "base/init_google.h"
-#include "base/sysinfo.h"
 #include "google/protobuf/util/globaldb/global_descriptor_database.h"
 #include "absl/base/log_severity.h"
 #include "absl/flags/flag.h"
@@ -31,6 +29,8 @@
 #include "absl/log/globals.h"
 #include "absl/status/status.h"
 #include "absl/strings/string_view.h"
+#include "third_party/gloop/base/init_google.h"
+#include "third_party/gloop/base/sysinfo.h"
 #include "google/protobuf/compiler/cpp/tools/analyze_profile_proto.h"
 #include "google/protobuf/descriptor.h"
 
@@ -66,7 +66,7 @@ namespace google::protobuf::compiler::tools {
 
 class ErrorSink : public DescriptorPool::ErrorCollector {
  public:
-  explicit ErrorSink(std::string_view filename)
+  explicit ErrorSink(absl::string_view filename)
       : stream_{filename.empty() ? std::cerr : file_stream_} {
     if (!filename.empty()) {
       file_stream_.open(filename, std::ios_base::out | std::ios_base::trunc);

@@ -19,7 +19,6 @@
 // MiniTable is never replaced, which greatly simplifies everything, because the
 // type of a sub-message is always known, without consulting a tagged bit.
 const struct upb_MiniTable UPB_PRIVATE(_kUpb_MiniTable_StaticallyTreeShaken) = {
-    .UPB_PRIVATE(subs) = NULL,
     .UPB_PRIVATE(fields) = NULL,
     .UPB_PRIVATE(size) = sizeof(struct upb_Message),
     .UPB_PRIVATE(field_count) = 0,

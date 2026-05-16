@@ -12,6 +12,7 @@ PROC_MACRO_SRCS = ["proto_proc_macro_impl.rs"]
 rust_proc_macro(
     name = "protobuf_macros",
     srcs = PROC_MACRO_SRCS,
+    edition = "2021",
     visibility = [
         "//devtools/rust/rust_analyzer/proc_macros:__pkg__",
         "//rust:__subpackages__",

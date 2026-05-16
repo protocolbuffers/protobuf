@@ -6,7 +6,7 @@
 # https://developers.google.com/open-source/licenses/bsd
 
 load("@rules_cc//cc:defs.bzl", "cc_library")
-load("//upb/bazel:build_defs.bzl", "UPB_DEFAULT_CPPOPTS")
+load("//upb/bazel:copts.bzl", "UPB_DEFAULT_CPPOPTS", "UPB_DEFAULT_FEATURES")
 load(
     "//upb_generator:bootstrap_compiler.bzl",
     "bootstrap_cc_library",
@@ -42,10 +42,12 @@ bootstrap_cc_library(
         "//upb/reflection:reflection",
     ],
     copts = UPB_DEFAULT_CPPOPTS,
+    features = UPB_DEFAULT_FEATURES,
     visibility = ["//upb:friend_generators"],
     deps = [
         "//src/google/protobuf:port",
         "//upb/mini_table",
+        "//upb/mini_table:internal",
         "//upb/port",
         "@abseil-cpp//absl/strings",
     ],
@@ -65,6 +67,7 @@ bootstrap_cc_library(
         "//upb/reflection:descriptor_upb_proto",
     ],
     copts = UPB_DEFAULT_CPPOPTS,
+    features = UPB_DEFAULT_FEATURES,
     visibility = ["//visibility:public"],
     deps = [
         "//upb/base",
@@ -91,6 +94,7 @@ bootstrap_cc_library(
         "//upb_generator:file_layout",
     ],
     copts = UPB_DEFAULT_CPPOPTS,
+    features = UPB_DEFAULT_FEATURES,
     visibility = [
         "//upb:friend_generators",
     ],

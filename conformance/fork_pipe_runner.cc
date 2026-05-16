@@ -107,7 +107,8 @@ std::string ForkPipeRunner::RunTest(absl::string_view test_name,
     ABSL_LOG(INFO) << error_msg;
     child_pid_ = -1;
 
-    response_obj.SerializeToString(&response);
+    // TODO: Remove this suppression.
+    (void)response_obj.SerializeToString(&response);
     return response;
   }
 

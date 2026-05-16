@@ -41,10 +41,11 @@ bool InternalUnpackTo(absl::string_view type_url, const ValueType& value,
   return InternalUnpackToLite(message->GetTypeName(), type_url, value, message);
 }
 
-bool GetAnyFieldDescriptors(
-    const Message& message,
-    const FieldDescriptor* PROTOBUF_NULLABLE* PROTOBUF_NONNULL type_url_field,
-    const FieldDescriptor* PROTOBUF_NULLABLE* PROTOBUF_NONNULL value_field) {
+bool GetAnyFieldDescriptors(const Message& message,
+                            const FieldDescriptor * PROTOBUF_NULLABLE *
+                                PROTOBUF_NONNULL type_url_field,
+                            const FieldDescriptor * PROTOBUF_NULLABLE *
+                                PROTOBUF_NONNULL value_field) {
   const Descriptor* descriptor = message.GetDescriptor();
   if (descriptor->full_name() != kAnyFullTypeName) {
     return false;

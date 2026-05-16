@@ -30,6 +30,7 @@
 #include "google/protobuf/compiler/rust/context.h"
 #include "google/protobuf/compiler/rust/crate_mapping.h"
 #include "google/protobuf/compiler/rust/enum.h"
+#include "google/protobuf/compiler/rust/extension.h"
 #include "google/protobuf/compiler/rust/message.h"
 #include "google/protobuf/compiler/rust/naming.h"
 #include "google/protobuf/compiler/rust/relative_path.h"
@@ -89,12 +90,20 @@ void EmitPublicImportsForDepFile(Context& ctx, const FileDescriptor* dep) {
 void EmitPublicImports(const RustGeneratorContext& rust_generator_context,
                        Context& ctx, const FileDescriptor& file) {
   std::vector<const FileDescriptor*> files_to_visit{&file};
+  absl::flat_hash_set<const FileDescriptor*> visited_files;
   while (!files_to_visit.empty()) {
     const FileDescriptor* f = files_to_visit.back();
     files_to_visit.pop_back();
 
     if (!rust_generator_context.is_file_in_current_crate(*f)) {
-      EmitPublicImportsForDepFile(ctx, f);
+      // Since import public is transitive in the case of
+      // "import public of a file with an import public", we might
+      // reach the same file again when they form a diamond; ensure
+      // that we only visit each file once in that case.
+      bool first_time = visited_files.insert(f).second;
+      if (first_time) {
+        EmitPublicImportsForDepFile(ctx, f);
+      }
     }
 
     for (int i = 0; i < f->public_dependency_count(); ++i) {
@@ -130,10 +139,12 @@ void EmitEntryPointRsFile(GeneratorContext* generator_context,
               {"mod_name", RustInternalModuleName(*file)}},
              R"rs(
               #[path="$file_path$"]
-              #[allow(nonstandard_style)]
-              pub mod internal_do_not_use_$mod_name$;
+              #[allow(nonstandard_style, unused, unreachable_pub)]
+              #[doc(hidden)]
+              mod internal_do_not_use_$mod_name$;
 
-              #[allow(unused_imports, nonstandard_style)]
+              #[allow(nonstandard_style, unused)]
+              #[doc(inline)]
               pub use internal_do_not_use_$mod_name$::*;
             )rs");
   }
@@ -143,6 +154,7 @@ void EmitEntryPointRsFile(GeneratorContext* generator_context,
   });
   if (ctx.is_upb() && !ctx.opts().strip_nonfunctional_codegen) {
     ctx.Emit(R"rs(
+      #[allow(nonstandard_style, unused)]
       pub mod __unstable {
     )rs");
     for (const FileDescriptor* file : files) {
@@ -208,7 +220,14 @@ bool RustGenerator::Generate(const FileDescriptor* file,
 
   auto outfile = absl::WrapUnique(
       generator_context->Open(GetRsFile(ctx_without_printer, *file)));
-  io::Printer printer(outfile.get());
+  GeneratedCodeInfo annotations;
+  io::AnnotationProtoCollector<GeneratedCodeInfo> annotation_collector(
+      &annotations);
+  io::Printer::Options printer_options{};
+  if (opts->annotate_code) {
+    printer_options.annotation_collector = &annotation_collector;
+  }
+  io::Printer printer(outfile.get(), printer_options);
   Context ctx = ctx_without_printer.WithPrinter(&printer);
 
   // Convenience shorthands for common symbols.
@@ -315,6 +334,23 @@ bool RustGenerator::Generate(const FileDescriptor* file,
         // $enum$
       )cc");
       thunks_ctx.printer().PrintRaw("\n");
+    }
+  }
+
+  if (opts->annotate_code) {
+    ctx.printer().PrintRaw(absl::StrCat(
+        "// google.protobuf.GeneratedCodeInfo ",
+        absl::Base64Escape(annotations.SerializeAsString()), "\n"));
+  }
+
+  for (int i = 0; i < file->extension_count(); ++i) {
+    auto& extension = *file->extension(i);
+    GenerateRs(ctx, extension, pool);
+    ctx.printer().PrintRaw("\n");
+
+    if (ctx.is_cpp()) {
+      auto thunks_ctx = ctx.WithPrinter(thunks_printer.get());
+      GenerateThunksCc(thunks_ctx, extension);
     }
   }
 

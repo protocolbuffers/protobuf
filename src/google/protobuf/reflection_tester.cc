@@ -1428,11 +1428,11 @@ void MapReflectionTester::ExpectMapFieldsSetViaReflectionIterator(
          iter != reflection->ConstMapEnd(message, F("map_int32_int32"));
          ++iter, ++size) {
       // Check const methods do not invalidate map.
-      message->DebugString();
-      message->ShortDebugString();
-      message->SerializeToString(&serialized);
-      message->SpaceUsedLong();
-      message->ByteSizeLong();
+      (void)message->DebugString();
+      (void)message->ShortDebugString();
+      EXPECT_TRUE(message->SerializeToString(&serialized));
+      (void)message->SpaceUsedLong();
+      (void)message->ByteSizeLong();
       EXPECT_EQ(map[iter.GetKey().GetInt32Value()],
                 iter.GetValueRef().GetInt32Value());
     }
@@ -1579,11 +1579,11 @@ void MapReflectionTester::ExpectMapFieldsSetViaReflectionIterator(
          iter != reflection->ConstMapEnd(message, F("map_string_string"));
          ++iter, ++size) {
       // Check const methods do not invalidate map.
-      message->DebugString();
-      message->ShortDebugString();
-      message->SerializeToString(&serialized);
-      message->SpaceUsedLong();
-      message->ByteSizeLong();
+      (void)message->DebugString();
+      (void)message->ShortDebugString();
+      EXPECT_TRUE(message->SerializeToString(&serialized));
+      (void)message->SpaceUsedLong();
+      (void)message->ByteSizeLong();
       EXPECT_EQ(map[iter.GetKey().GetStringValue()],
                 iter.GetValueRef().GetStringValue());
     }
@@ -1624,11 +1624,11 @@ void MapReflectionTester::ExpectMapFieldsSetViaReflectionIterator(
          reflection->ConstMapEnd(message, F("map_int32_foreign_message"));
          ++iter, ++size) {
       // Check const methods do not invalidate map.
-      message->DebugString();
-      message->ShortDebugString();
-      message->SerializeToString(&serialized);
-      message->SpaceUsedLong();
-      message->ByteSizeLong();
+      (void)message->DebugString();
+      (void)message->ShortDebugString();
+      EXPECT_TRUE(message->SerializeToString(&serialized));
+      (void)message->SpaceUsedLong();
+      (void)message->ByteSizeLong();
       const Message& sub_message = iter.GetValueRef().GetMessageValue();
       EXPECT_EQ(map[iter.GetKey().GetInt32Value()],
                 sub_message.GetReflection()->GetInt32(sub_message, foreign_c_));

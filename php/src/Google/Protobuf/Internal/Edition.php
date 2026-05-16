@@ -53,6 +53,10 @@ class Edition
      */
     const EDITION_2024 = 1001;
     /**
+     * Generated from protobuf enum <code>EDITION_2026 = 1002;</code>
+     */
+    const EDITION_2026 = 1002;
+    /**
      * A placeholder edition for developing and testing unscheduled features.
      *
      * Generated from protobuf enum <code>EDITION_UNSTABLE = 9999;</code>
@@ -97,6 +101,7 @@ class Edition
         self::EDITION_PROTO3 => 'EDITION_PROTO3',
         self::EDITION_2023 => 'EDITION_2023',
         self::EDITION_2024 => 'EDITION_2024',
+        self::EDITION_2026 => 'EDITION_2026',
         self::EDITION_UNSTABLE => 'EDITION_UNSTABLE',
         self::EDITION_1_TEST_ONLY => 'EDITION_1_TEST_ONLY',
         self::EDITION_2_TEST_ONLY => 'EDITION_2_TEST_ONLY',

@@ -620,11 +620,9 @@ public class MapForProto2Test {
     return mapEntry.getField(field);
   }
 
-  private static Message.Builder setFieldValue(
-      Message.Builder mapEntry, String name, Object value) {
+  private static void setFieldValue(Message.Builder mapEntry, String name, Object value) {
     FieldDescriptor field = mapEntry.getDescriptorForType().findFieldByName(name);
     mapEntry.setField(field, value);
-    return mapEntry;
   }
 
   private static void assertHasMapValues(Message message, String name, Map<?, ?> values) {

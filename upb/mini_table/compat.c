@@ -48,8 +48,8 @@ static upb_MiniTableEquals_Status upb_deep_check(const upb_MiniTable* src,
     if (src_field->UPB_PRIVATE(offset) != dst_field->UPB_PRIVATE(offset))
       return false;
     if (src_field->presence != dst_field->presence) return false;
-    if (src_field->UPB_PRIVATE(submsg_index) !=
-        dst_field->UPB_PRIVATE(submsg_index))
+    if (src_field->UPB_PRIVATE(submsg_ofs) !=
+        dst_field->UPB_PRIVATE(submsg_ofs))
       return kUpb_MiniTableEquals_NotEqual;
 
     // Go no further if we are only checking for compatibility.
@@ -71,9 +71,9 @@ static upb_MiniTableEquals_Status upb_deep_check(const upb_MiniTable* src,
         }
       }
       const upb_MiniTable* sub_src =
-          upb_MiniTable_GetSubMessageTable(src, src_field);
+          upb_MiniTable_GetSubMessageTable(src_field);
       const upb_MiniTable* sub_dst =
-          upb_MiniTable_GetSubMessageTable(dst, dst_field);
+          upb_MiniTable_GetSubMessageTable(dst_field);
       if (sub_src != NULL) {
         upb_value cmp;
         if (upb_inttable_lookup(table, (uintptr_t)sub_src, &cmp)) {

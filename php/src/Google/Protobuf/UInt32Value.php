@@ -59,7 +59,7 @@ class UInt32Value extends \Google\Protobuf\Internal\Message
      * @param int $var
      * @return $this
      */
-    public function setValue($var)
+    public function setValue(int $var)
     {
         GPBUtil::checkUint32($var);
         $this->value = $var;

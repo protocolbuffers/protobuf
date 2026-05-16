@@ -150,7 +150,7 @@ bool CppGenerator::GenerateImpl(const FileDescriptor* file,
 
     if (file_options.annotate_headers) {
       auto info_output = absl::WrapUnique(generator_context->Open(info_path));
-      annotations.SerializeToZeroCopyStream(info_output.get());
+      ABSL_CHECK(annotations.SerializeToZeroCopyStream(info_output.get()));
     }
   }
 
@@ -175,7 +175,7 @@ bool CppGenerator::GenerateImpl(const FileDescriptor* file,
 
     if (file_options.annotate_headers) {
       auto info_output = absl::WrapUnique(generator_context->Open(info_path));
-      annotations.SerializeToZeroCopyStream(info_output.get());
+      ABSL_CHECK(annotations.SerializeToZeroCopyStream(info_output.get()));
     }
   }
 
@@ -259,9 +259,10 @@ absl::Status CppGenerator::ValidateFeatures(const FileDescriptor* file) const {
     const FeatureSet& resolved_features = GetResolvedSourceFeatures(field);
     const pb::CppFeatures& unresolved_features =
         GetUnresolvedSourceFeatures(field, pb::cpp);
+
     if (field.enum_type() != nullptr &&
         resolved_features.GetExtension(::pb::cpp).legacy_closed_enum() &&
-        resolved_features.field_presence() == FeatureSet::IMPLICIT) {
+        !field.has_presence() && !field.is_repeated()) {
       status = absl::FailedPreconditionError(
           absl::StrCat("Field ", field.full_name(),
                        " has a closed enum type with implicit presence."));
@@ -351,11 +352,6 @@ bool CppGenerator::GenerateAll(const std::vector<const FileDescriptor*>& files,
 
     if (key == "dllexport_decl") {
       common_file_options.dllexport_decl = value;
-    } else if (key == "safe_boundary_check") {
-      common_file_options.bounds_check_mode =
-          BoundsCheckMode::kReturnDefaultValue;
-    } else if (key == "enforced_boundary_check") {
-      common_file_options.bounds_check_mode = BoundsCheckMode::kAbort;
     } else if (key == "annotate_headers") {
       common_file_options.annotate_headers = true;
     } else if (key == "annotation_pragma_name") {
@@ -412,17 +408,10 @@ bool CppGenerator::GenerateAll(const std::vector<const FileDescriptor*>& files,
     }
   }
 
-  // The safe_boundary_check option controls behavior for Google-internal
-  // protobuf APIs.
-  if ((common_file_options.bounds_check_mode !=
-       BoundsCheckMode::kNoEnforcement) &&
-      common_file_options.opensource_runtime) {
-    *error =
-        "The safe_boundary_check option is not supported outside of Google.";
-    return false;
-  }
-
   // -----------------------------------------------------------------
+
+  MessageSCCAnalyzer scc_analyzer(common_file_options);
+  common_file_options.scc_analyzer = &scc_analyzer;
 
   for (size_t i = 0; i < files.size(); i++) {
     const FileDescriptor* file = files[i];

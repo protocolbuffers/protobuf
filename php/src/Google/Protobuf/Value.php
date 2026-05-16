@@ -10,11 +10,11 @@ use Google\Protobuf\Internal\GPBUtil;
 use Google\Protobuf\RepeatedField;
 
 /**
+ * Represents a JSON value.
  * `Value` represents a dynamically typed value which can be either
  * null, a number, a string, a boolean, a recursive struct value, or a
  * list of values. A producer of value is expected to set one of these
- * variants. Absence of any variant indicates an error.
- * The JSON representation for `Value` is JSON value.
+ * variants. Absence of any variant is an invalid state.
  *
  * Generated from protobuf message <code>google.protobuf.Value</code>
  */
@@ -29,17 +29,20 @@ class Value extends \Google\Protobuf\Internal\Message
      *     Optional. Data for populating the Message object.
      *
      *     @type int $null_value
-     *           Represents a null value.
+     *           Represents a JSON `null`.
      *     @type float $number_value
-     *           Represents a double value.
+     *           Represents a JSON number. Must not be `NaN`, `Infinity` or
+     *           `-Infinity`, since those are not supported in JSON. This also cannot
+     *           represent large Int64 values, since JSON format generally does not
+     *           support them in its number type.
      *     @type string $string_value
-     *           Represents a string value.
+     *           Represents a JSON string.
      *     @type bool $bool_value
-     *           Represents a boolean value.
+     *           Represents a JSON boolean (`true` or `false` literal in JSON).
      *     @type \Google\Protobuf\Struct $struct_value
-     *           Represents a structured value.
+     *           Represents a JSON object.
      *     @type \Google\Protobuf\ListValue $list_value
-     *           Represents a repeated `Value`.
+     *           Represents a JSON array.
      * }
      */
     public function __construct($data = NULL) {
@@ -48,10 +51,10 @@ class Value extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * Represents a null value.
+     * Represents a JSON `null`.
      *
      * Generated from protobuf field <code>.google.protobuf.NullValue null_value = 1;</code>
-     * @return int
+     * @return int one of the values in {@see \Google\Protobuf\NullValue}
      */
     public function getNullValue()
     {
@@ -64,13 +67,13 @@ class Value extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * Represents a null value.
+     * Represents a JSON `null`.
      *
      * Generated from protobuf field <code>.google.protobuf.NullValue null_value = 1;</code>
-     * @param int $var
+     * @param int $var one of the values in {@see \Google\Protobuf\NullValue}
      * @return $this
      */
-    public function setNullValue($var)
+    public function setNullValue(int $var)
     {
         GPBUtil::checkEnum($var, \Google\Protobuf\NullValue::class);
         $this->writeOneof(1, $var);
@@ -79,7 +82,10 @@ class Value extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * Represents a double value.
+     * Represents a JSON number. Must not be `NaN`, `Infinity` or
+     * `-Infinity`, since those are not supported in JSON. This also cannot
+     * represent large Int64 values, since JSON format generally does not
+     * support them in its number type.
      *
      * Generated from protobuf field <code>double number_value = 2;</code>
      * @return float
@@ -95,22 +101,24 @@ class Value extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * Represents a double value.
+     * Represents a JSON number. Must not be `NaN`, `Infinity` or
+     * `-Infinity`, since those are not supported in JSON. This also cannot
+     * represent large Int64 values, since JSON format generally does not
+     * support them in its number type.
      *
      * Generated from protobuf field <code>double number_value = 2;</code>
      * @param float $var
      * @return $this
      */
-    public function setNumberValue($var)
+    public function setNumberValue(float $var)
     {
-        GPBUtil::checkDouble($var);
         $this->writeOneof(2, $var);
 
         return $this;
     }
 
     /**
-     * Represents a string value.
+     * Represents a JSON string.
      *
      * Generated from protobuf field <code>string string_value = 3;</code>
      * @return string
@@ -126,22 +134,22 @@ class Value extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * Represents a string value.
+     * Represents a JSON string.
      *
      * Generated from protobuf field <code>string string_value = 3;</code>
      * @param string $var
      * @return $this
      */
-    public function setStringValue($var)
+    public function setStringValue(string $var)
     {
-        GPBUtil::checkString($var, True);
+        GPBUtil::checkString($var, true);
         $this->writeOneof(3, $var);
 
         return $this;
     }
 
     /**
-     * Represents a boolean value.
+     * Represents a JSON boolean (`true` or `false` literal in JSON).
      *
      * Generated from protobuf field <code>bool bool_value = 4;</code>
      * @return bool
@@ -157,22 +165,21 @@ class Value extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * Represents a boolean value.
+     * Represents a JSON boolean (`true` or `false` literal in JSON).
      *
      * Generated from protobuf field <code>bool bool_value = 4;</code>
      * @param bool $var
      * @return $this
      */
-    public function setBoolValue($var)
+    public function setBoolValue(bool $var)
     {
-        GPBUtil::checkBool($var);
         $this->writeOneof(4, $var);
 
         return $this;
     }
 
     /**
-     * Represents a structured value.
+     * Represents a JSON object.
      *
      * Generated from protobuf field <code>.google.protobuf.Struct struct_value = 5;</code>
      * @return \Google\Protobuf\Struct|null
@@ -188,22 +195,21 @@ class Value extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * Represents a structured value.
+     * Represents a JSON object.
      *
      * Generated from protobuf field <code>.google.protobuf.Struct struct_value = 5;</code>
      * @param \Google\Protobuf\Struct $var
      * @return $this
      */
-    public function setStructValue($var)
+    public function setStructValue(\Google\Protobuf\Struct|null $var)
     {
-        GPBUtil::checkMessage($var, \Google\Protobuf\Struct::class);
         $this->writeOneof(5, $var);
 
         return $this;
     }
 
     /**
-     * Represents a repeated `Value`.
+     * Represents a JSON array.
      *
      * Generated from protobuf field <code>.google.protobuf.ListValue list_value = 6;</code>
      * @return \Google\Protobuf\ListValue|null
@@ -219,15 +225,14 @@ class Value extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * Represents a repeated `Value`.
+     * Represents a JSON array.
      *
      * Generated from protobuf field <code>.google.protobuf.ListValue list_value = 6;</code>
      * @param \Google\Protobuf\ListValue $var
      * @return $this
      */
-    public function setListValue($var)
+    public function setListValue(\Google\Protobuf\ListValue|null $var)
     {
-        GPBUtil::checkMessage($var, \Google\Protobuf\ListValue::class);
         $this->writeOneof(6, $var);
 
         return $this;

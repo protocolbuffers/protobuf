@@ -25,6 +25,7 @@ set(libprotobuf_srcs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/any_lite.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/arena.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/arena_align.cc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/arena_allocation_policy.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/arenastring.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/arenaz_sampler.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/importer.cc
@@ -65,6 +66,7 @@ set(libprotobuf_srcs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/json/internal/writer.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/json/internal/zero_copy_buffered_stream.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/json/json.cc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/json_enumvalue_options.pb.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/map.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/map_field.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/message.cc
@@ -164,6 +166,7 @@ set(libprotobuf_hdrs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/json/internal/writer.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/json/internal/zero_copy_buffered_stream.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/json/json.h
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/json_enumvalue_options.pb.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/map.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/map_entry.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/map_field.h
@@ -188,6 +191,9 @@ set(libprotobuf_hdrs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/reflection_visit_field_info.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/reflection_visit_fields.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/repeated_field.h
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/repeated_field_proxy.h
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/repeated_field_proxy_iterator.h
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/repeated_field_proxy_traits.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/repeated_ptr_field.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/runtime_version.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/serial_arena.h
@@ -221,6 +227,7 @@ set(libprotobuf_lite_srcs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/any_lite.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/arena.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/arena_align.cc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/arena_allocation_policy.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/arenastring.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/arenaz_sampler.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/extension_set.cc
@@ -318,7 +325,6 @@ set(libprotoc_public_srcs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/objectivec/line_consumer.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/objectivec/names.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/php/names.cc
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/php/php_generator.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/plugin.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/plugin.pb.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/retention.cc
@@ -332,11 +338,9 @@ set(libprotoc_public_hdrs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/code_generator.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/code_generator_lite.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/command_line_interface.h
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/cpp/generator.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/cpp/helpers.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/cpp/names.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/cpp/options.h
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/csharp/csharp_generator.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/csharp/names.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/doc_comment.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/generator.h
@@ -346,20 +350,14 @@ set(libprotoc_public_hdrs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/names.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/names_internal.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/options.h
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/kotlin/generator.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/notices.h
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/objectivec/generator.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/objectivec/line_consumer.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/objectivec/names.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/objectivec/nsobject_methods.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/php/names.h
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/php/php_generator.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/plugin.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/plugin.pb.h
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/python/generator.h
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/python/pyi_generator.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/retention.h
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/ruby/ruby_generator.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/scc.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/subprocess.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/versions.h
@@ -472,6 +470,7 @@ set(libprotoc_srcs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/python/helpers.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/python/pyi_generator.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/retention.cc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/ruby/rbs_generator.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/ruby/ruby_generator.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/rust/accessors/accessor_case.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/rust/accessors/accessors.cc
@@ -487,6 +486,7 @@ set(libprotoc_srcs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/rust/context.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/rust/crate_mapping.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/rust/enum.cc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/rust/extension.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/rust/generator.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/rust/message.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/rust/naming.cc
@@ -619,6 +619,7 @@ set(libprotoc_hdrs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/python/helpers.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/python/pyi_generator.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/retention.h
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/ruby/rbs_generator.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/ruby/ruby_generator.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/rust/accessors/accessor_case.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/rust/accessors/accessors.h
@@ -628,6 +629,7 @@ set(libprotoc_hdrs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/rust/context.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/rust/crate_mapping.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/rust/enum.h
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/rust/extension.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/rust/generator.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/rust/message.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/rust/naming.h
@@ -679,8 +681,10 @@ set(libupb_srcs
   ${protobuf_SOURCE_DIR}/upb/mini_descriptor/internal/base92.c
   ${protobuf_SOURCE_DIR}/upb/mini_descriptor/internal/encode.c
   ${protobuf_SOURCE_DIR}/upb/mini_descriptor/link.c
+  ${protobuf_SOURCE_DIR}/upb/mini_table/compat.c
   ${protobuf_SOURCE_DIR}/upb/mini_table/debug_string.c
   ${protobuf_SOURCE_DIR}/upb/mini_table/extension_registry.c
+  ${protobuf_SOURCE_DIR}/upb/mini_table/generated_registry.c
   ${protobuf_SOURCE_DIR}/upb/mini_table/internal/message.c
   ${protobuf_SOURCE_DIR}/upb/mini_table/message.c
   ${protobuf_SOURCE_DIR}/upb/reflection/def_pool.c
@@ -710,13 +714,16 @@ set(libupb_srcs
   ${protobuf_SOURCE_DIR}/upb/wire/decode_fast/select.c
   ${protobuf_SOURCE_DIR}/upb/wire/encode.c
   ${protobuf_SOURCE_DIR}/upb/wire/eps_copy_input_stream.c
+  ${protobuf_SOURCE_DIR}/upb/wire/internal/back_alloc.c
   ${protobuf_SOURCE_DIR}/upb/wire/internal/decoder.c
+  ${protobuf_SOURCE_DIR}/upb/wire/internal/encoder.c
   ${protobuf_SOURCE_DIR}/upb/wire/reader.c
 )
 
 # @//pkg:upb
 set(libupb_hdrs
   ${protobuf_SOURCE_DIR}/upb/base/descriptor_constants.h
+  ${protobuf_SOURCE_DIR}/upb/base/error_handler.h
   ${protobuf_SOURCE_DIR}/upb/base/internal/endian.h
   ${protobuf_SOURCE_DIR}/upb/base/internal/log2.h
   ${protobuf_SOURCE_DIR}/upb/base/status.h
@@ -725,6 +732,7 @@ set(libupb_hdrs
   ${protobuf_SOURCE_DIR}/upb/base/upcast.h
   ${protobuf_SOURCE_DIR}/upb/generated_code_support.h
   ${protobuf_SOURCE_DIR}/upb/hash/common.h
+  ${protobuf_SOURCE_DIR}/upb/hash/ext_table.h
   ${protobuf_SOURCE_DIR}/upb/hash/int_table.h
   ${protobuf_SOURCE_DIR}/upb/hash/str_table.h
   ${protobuf_SOURCE_DIR}/upb/json/decode.h
@@ -766,16 +774,19 @@ set(libupb_hdrs
   ${protobuf_SOURCE_DIR}/upb/mini_descriptor/internal/modifiers.h
   ${protobuf_SOURCE_DIR}/upb/mini_descriptor/internal/wire_constants.h
   ${protobuf_SOURCE_DIR}/upb/mini_descriptor/link.h
+  ${protobuf_SOURCE_DIR}/upb/mini_table/compat.h
   ${protobuf_SOURCE_DIR}/upb/mini_table/debug_string.h
   ${protobuf_SOURCE_DIR}/upb/mini_table/enum.h
   ${protobuf_SOURCE_DIR}/upb/mini_table/extension.h
   ${protobuf_SOURCE_DIR}/upb/mini_table/extension_registry.h
   ${protobuf_SOURCE_DIR}/upb/mini_table/field.h
   ${protobuf_SOURCE_DIR}/upb/mini_table/file.h
+  ${protobuf_SOURCE_DIR}/upb/mini_table/generated_registry.h
   ${protobuf_SOURCE_DIR}/upb/mini_table/internal/enum.h
   ${protobuf_SOURCE_DIR}/upb/mini_table/internal/extension.h
   ${protobuf_SOURCE_DIR}/upb/mini_table/internal/field.h
   ${protobuf_SOURCE_DIR}/upb/mini_table/internal/file.h
+  ${protobuf_SOURCE_DIR}/upb/mini_table/internal/generated_registry.h
   ${protobuf_SOURCE_DIR}/upb/mini_table/internal/message.h
   ${protobuf_SOURCE_DIR}/upb/mini_table/internal/size_log2.h
   ${protobuf_SOURCE_DIR}/upb/mini_table/internal/sub.h
@@ -832,7 +843,11 @@ set(libupb_hdrs
   ${protobuf_SOURCE_DIR}/upb/wire/decode_fast/select.h
   ${protobuf_SOURCE_DIR}/upb/wire/encode.h
   ${protobuf_SOURCE_DIR}/upb/wire/eps_copy_input_stream.h
+  ${protobuf_SOURCE_DIR}/upb/wire/internal/back_alloc.h
+  ${protobuf_SOURCE_DIR}/upb/wire/internal/constants.h
   ${protobuf_SOURCE_DIR}/upb/wire/internal/decoder.h
+  ${protobuf_SOURCE_DIR}/upb/wire/internal/encoder.h
+  ${protobuf_SOURCE_DIR}/upb/wire/internal/eps_copy_input_stream.h
   ${protobuf_SOURCE_DIR}/upb/wire/internal/reader.h
   ${protobuf_SOURCE_DIR}/upb/wire/reader.h
   ${protobuf_SOURCE_DIR}/upb/wire/types.h
@@ -1002,6 +1017,34 @@ set(descriptor_proto_files
   ${protobuf_SOURCE_DIR}/src/google/protobuf/descriptor_proto-descriptor-set.proto.bin
 )
 
+# @//src/google/protobuf:json_enumvalue_options_proto
+set(json_enumvalue_options_proto_proto_srcs
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/json_enumvalue_options.proto
+)
+
+# @//src/google/protobuf:json_enumvalue_options_proto
+set(json_enumvalue_options_proto_srcs
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/json_enumvalue_options.proto.pb.cc
+)
+
+# @//src/google/protobuf:json_enumvalue_options_proto
+set(json_enumvalue_options_proto_hdrs
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/json_enumvalue_options.proto.pb.h
+)
+
+# @//src/google/protobuf:json_enumvalue_options_proto
+set(json_enumvalue_options_proto_files
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/json_enumvalue_options_proto-descriptor-set.proto.bin
+)
+
+# @//src/google/protobuf:json_enumvalue_options_cc_proto
+set(json_enumvalue_options_cc_proto_files
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/_virtual_imports/json_enumvalue_options_proto/google/protobuf/json_enumvalue_options.pb.cc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/_virtual_imports/json_enumvalue_options_proto/google/protobuf/json_enumvalue_options.pb.h
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/libjson_enumvalue_options_proto.a
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/libjson_enumvalue_options_proto.so
+)
+
 # @//src/google/protobuf/compiler:plugin_proto
 set(plugin_proto_proto_srcs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/plugin.proto
@@ -1020,6 +1063,26 @@ set(plugin_proto_hdrs
 # @//src/google/protobuf/compiler:plugin_proto
 set(plugin_proto_files
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/plugin_proto-descriptor-set.proto.bin
+)
+
+# @//csharp:c_sharp_features_proto
+set(c_sharp_features_proto_proto_srcs
+  ${protobuf_SOURCE_DIR}/csharp/google/protobuf/c_sharp_features.proto
+)
+
+# @//csharp:c_sharp_features_proto
+set(c_sharp_features_proto_srcs
+  ${protobuf_SOURCE_DIR}/csharp/google/protobuf/c_sharp_features.proto.pb.cc
+)
+
+# @//csharp:c_sharp_features_proto
+set(c_sharp_features_proto_hdrs
+  ${protobuf_SOURCE_DIR}/csharp/google/protobuf/c_sharp_features.proto.pb.h
+)
+
+# @//csharp:c_sharp_features_proto
+set(c_sharp_features_proto_files
+  ${protobuf_SOURCE_DIR}/csharp/c_sharp_features_proto-descriptor-set.proto.bin
 )
 
 # @//java/core:java_features_proto
@@ -1095,6 +1158,7 @@ set(lite_test_util_hdrs
 
 # @//pkg:test_util
 set(test_util_srcs
+  ${protobuf_SOURCE_DIR}/editions/edition_defaults_test_utils.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/annotation_test_util.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/descriptor_test_utils.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/reflection_tester.cc
@@ -1105,6 +1169,7 @@ set(test_util_srcs
 
 # @//pkg:test_util
 set(test_util_hdrs
+  ${protobuf_SOURCE_DIR}/editions/edition_defaults_test_utils.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/annotation_test_util.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/cpp/unittest.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/cpp/unittest.inc
@@ -1189,14 +1254,17 @@ set(upb_test_protos_files
   ${protobuf_SOURCE_DIR}/upb/message/test.proto
   ${protobuf_SOURCE_DIR}/upb/message/utf8_test.proto
   ${protobuf_SOURCE_DIR}/upb/message/utf8_test_proto2.proto
+  ${protobuf_SOURCE_DIR}/upb/mini_table/debug_string_test.proto
+  ${protobuf_SOURCE_DIR}/upb/mini_table/generated_registry_empty_test.proto
   ${protobuf_SOURCE_DIR}/upb/test/custom_options.proto
-  ${protobuf_SOURCE_DIR}/upb/test/custom_options_unlinked.proto
   ${protobuf_SOURCE_DIR}/upb/test/editions_test.proto
   ${protobuf_SOURCE_DIR}/upb/test/empty.proto
   ${protobuf_SOURCE_DIR}/upb/test/proto3_test.proto
   ${protobuf_SOURCE_DIR}/upb/test/test.proto
   ${protobuf_SOURCE_DIR}/upb/test/test_cpp.proto
   ${protobuf_SOURCE_DIR}/upb/test/test_import_empty_srcs.proto
+  ${protobuf_SOURCE_DIR}/upb/test/test_multiple_files.proto
+  ${protobuf_SOURCE_DIR}/upb/test/test_multiple_files2.proto
   ${protobuf_SOURCE_DIR}/upb/util/def_to_proto_editions_test.proto
   ${protobuf_SOURCE_DIR}/upb/util/def_to_proto_public_import_test.proto
   ${protobuf_SOURCE_DIR}/upb/util/def_to_proto_regular_import_test.proto
@@ -1205,12 +1273,16 @@ set(upb_test_protos_files
   ${protobuf_SOURCE_DIR}/upb/util/def_to_proto_wweak_import_test.proto
   ${protobuf_SOURCE_DIR}/upb/util/required_fields_editions_test.proto
   ${protobuf_SOURCE_DIR}/upb/util/required_fields_test.proto
+  ${protobuf_SOURCE_DIR}/upb/wire/encode_test.proto
 )
 
 # @//upb:test_srcs
 set(upb_test_files
+  ${protobuf_SOURCE_DIR}/upb/hash/test.cc
   ${protobuf_SOURCE_DIR}/upb/json/decode_test.cc
   ${protobuf_SOURCE_DIR}/upb/json/encode_test.cc
+  ${protobuf_SOURCE_DIR}/upb/lex/atoi_test.cc
+  ${protobuf_SOURCE_DIR}/upb/lex/round_trip_test.cc
   ${protobuf_SOURCE_DIR}/upb/mem/arena_test.cc
   ${protobuf_SOURCE_DIR}/upb/message/accessors_test.cc
   ${protobuf_SOURCE_DIR}/upb/message/array_test.cc
@@ -1220,6 +1292,10 @@ set(upb_test_files
   ${protobuf_SOURCE_DIR}/upb/message/merge_test.cc
   ${protobuf_SOURCE_DIR}/upb/message/test.cc
   ${protobuf_SOURCE_DIR}/upb/message/utf8_test.cc
+  ${protobuf_SOURCE_DIR}/upb/mini_descriptor/internal/encode_test.cc
+  ${protobuf_SOURCE_DIR}/upb/mini_table/compat_test.cc
+  ${protobuf_SOURCE_DIR}/upb/mini_table/generated_registry_empty_test.cc
+  ${protobuf_SOURCE_DIR}/upb/mini_table/generated_registry_test.cc
   ${protobuf_SOURCE_DIR}/upb/test/editions_test.cc
   ${protobuf_SOURCE_DIR}/upb/test/length_prefixed_test.cc
   ${protobuf_SOURCE_DIR}/upb/test/proto3_test.cc
@@ -1231,6 +1307,7 @@ set(upb_test_files
   ${protobuf_SOURCE_DIR}/upb/util/required_fields_test.cc
   ${protobuf_SOURCE_DIR}/upb/wire/byte_size_test.cc
   ${protobuf_SOURCE_DIR}/upb/wire/decode_test.cc
+  ${protobuf_SOURCE_DIR}/upb/wire/encode_test.cc
   ${protobuf_SOURCE_DIR}/upb/wire/eps_copy_input_stream_test.cc
 )
 
@@ -1275,6 +1352,7 @@ set(protobuf_test_files
   ${protobuf_SOURCE_DIR}/src/google/protobuf/reflection_mode_test.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/reflection_ops_unittest.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/reflection_visit_fields_test.cc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/repeated_field_proxy_test.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/repeated_field_reflection_unittest.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/repeated_field_unittest.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/repeated_ptr_field_unittest.cc
@@ -1305,8 +1383,14 @@ set(protobuf_test_protos_files
   ${protobuf_SOURCE_DIR}/src/google/protobuf/map_proto2_unittest.proto
   ${protobuf_SOURCE_DIR}/src/google/protobuf/map_proto3_unittest.proto
   ${protobuf_SOURCE_DIR}/src/google/protobuf/map_unittest.proto
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/test_protos/abseil_flag_test.proto
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/test_protos/forced_micro_string.proto
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/test_protos/repeated_field_proxy_import_message.proto
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/test_protos/repeated_field_proxy_test.proto
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/test_protos/repeated_ptr_field_test.proto
   ${protobuf_SOURCE_DIR}/src/google/protobuf/unittest.proto
   ${protobuf_SOURCE_DIR}/src/google/protobuf/unittest_arena.proto
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/unittest_custom_features.proto
   ${protobuf_SOURCE_DIR}/src/google/protobuf/unittest_custom_options.proto
   ${protobuf_SOURCE_DIR}/src/google/protobuf/unittest_delimited.proto
   ${protobuf_SOURCE_DIR}/src/google/protobuf/unittest_delimited_import.proto
@@ -1342,6 +1426,7 @@ set(protobuf_test_protos_files
   ${protobuf_SOURCE_DIR}/src/google/protobuf/unittest_retention.proto
   ${protobuf_SOURCE_DIR}/src/google/protobuf/unittest_string_type.proto
   ${protobuf_SOURCE_DIR}/src/google/protobuf/unittest_string_view.proto
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/unittest_utf8_string_extensions.proto
   ${protobuf_SOURCE_DIR}/src/google/protobuf/unittest_well_known_types.proto
 )
 
@@ -1397,6 +1482,7 @@ set(compiler_test_files
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/php/generator_unittest.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/python/plugin_unittest.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/retention_unittest.cc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/ruby/rbs_generator_unittest.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/ruby/ruby_generator_unittest.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/versions_test.cc
 )
@@ -1438,6 +1524,7 @@ set(util_test_files
 
 # @//src/google/protobuf/util:test_proto_srcs
 set(util_test_protos_files
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/util/field_mask_util_test.proto
   ${protobuf_SOURCE_DIR}/src/google/protobuf/util/json_format.proto
   ${protobuf_SOURCE_DIR}/src/google/protobuf/util/json_format_proto3.proto
   ${protobuf_SOURCE_DIR}/src/google/protobuf/util/message_differencer_unittest.proto

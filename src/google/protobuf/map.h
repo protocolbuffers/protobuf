@@ -69,9 +69,6 @@ struct PtrAndLen;
 }  // namespace rust
 
 namespace internal {
-namespace v2 {
-class TableDrivenMessage;
-}  // namespace v2
 
 template <typename Key, typename T>
 class MapFieldLite;
@@ -143,6 +140,9 @@ struct TransparentSupport<std::string> {
       return res;
     } else if constexpr (std::is_convertible<T, const std::string&>::value) {
       const std::string& ref = str;
+      return ref;
+    } else if constexpr (std::is_convertible<T, const char*>::value) {
+      const char* ref = str;
       return ref;
     } else {
       return {str.data(), str.size()};
@@ -262,7 +262,7 @@ class PROTOBUF_EXPORT UntypedMapBase {
     kString,   // std::string
     kMessage,  // Derived from MessageLite
   };
-  // LINT.ThenChange(//depot/google3/third_party/protobuf/rust/cpp.rs:map_ffi)
+  // LINT.ThenChange(//depot/google3/third_party/protobuf/rust/cpp_kernel/map.rs:map_ffi)
 
   template <typename T>
   static constexpr TypeKind StaticTypeKind() {
@@ -308,7 +308,6 @@ class PROTOBUF_EXPORT UntypedMapBase {
       TypeKind key_type, TypeKind value_type,
       const MessageLite* value_prototype_if_message);
 
-#ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_MAP_FIELD
   constexpr UntypedMapBase(InternalMetadataOffset offset, TypeInfo type_info)
       : num_elements_(0),
         num_buckets_(internal::kGlobalEmptyTableSize),
@@ -317,18 +316,6 @@ class PROTOBUF_EXPORT UntypedMapBase {
         table_(const_cast<NodeBase**>(internal::kGlobalEmptyTable)) {}
   explicit constexpr UntypedMapBase(TypeInfo type_info)
       : UntypedMapBase(InternalMetadataOffset(), type_info) {}
-
-#else
-  explicit constexpr UntypedMapBase(Arena* arena, TypeInfo type_info)
-      : num_elements_(0),
-        num_buckets_(internal::kGlobalEmptyTableSize),
-        index_of_first_non_null_(internal::kGlobalEmptyTableSize),
-        type_info_(type_info),
-        table_(const_cast<NodeBase**>(internal::kGlobalEmptyTable)),
-        arena_(arena) {}
-  explicit constexpr UntypedMapBase(TypeInfo type_info)
-      : UntypedMapBase(/*arena=*/nullptr, type_info) {}
-#endif
 
   UntypedMapBase(const UntypedMapBase&) = delete;
   UntypedMapBase& operator=(const UntypedMapBase&) = delete;
@@ -385,20 +372,13 @@ class PROTOBUF_EXPORT UntypedMapBase {
   static constexpr map_index_t kMaxTableSize = map_index_t{1} << 31;
 
  public:
-#ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_MAP_FIELD
   Arena* arena() const {
     return ResolveArena<&UntypedMapBase::resolver_>(this);
   }
-#else
-  Arena* arena() const { return arena_; }
-#endif
 
   void InternalSwap(UntypedMapBase* other) {
     std::swap(num_elements_, other->num_elements_);
     std::swap(num_buckets_, other->num_buckets_);
-#ifndef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_MAP_FIELD
-    std::swap(index_of_first_non_null_, other->index_of_first_non_null_);
-#endif
     std::swap(type_info_, other->type_info_);
     std::swap(table_, other->table_);
   }
@@ -518,16 +498,9 @@ class PROTOBUF_EXPORT UntypedMapBase {
 
   map_index_t num_elements_;
   map_index_t num_buckets_;
-#ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_MAP_FIELD
   InternalMetadataResolver resolver_;
-#else
-  map_index_t index_of_first_non_null_;
-#endif
   TypeInfo type_info_;
   NodeBase** table_;  // an array with num_buckets_ entries
-#ifndef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_MAP_FIELD
-  Arena* arena_;
-#endif
 };
 
 template <typename F>
@@ -602,7 +575,6 @@ auto UntypedMapBase::VisitValue(NodeBase* node, F f) const {
 inline UntypedMapIterator UntypedMapBase::begin() const {
   map_index_t bucket_index;
   NodeBase* node;
-#ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_MAP_FIELD
   map_index_t index_of_first_non_null = 0;
   while (index_of_first_non_null != num_buckets_) {
     if (table_[index_of_first_non_null] == nullptr) {
@@ -611,9 +583,7 @@ inline UntypedMapIterator UntypedMapBase::begin() const {
       break;
     }
   }
-#else
-  map_index_t index_of_first_non_null = index_of_first_non_null_;
-#endif
+
   if (index_of_first_non_null == num_buckets_) {
     bucket_index = 0;
     node = nullptr;
@@ -649,7 +619,7 @@ inline void UntypedMapIterator::PlusPlus() {
 class MapFieldBaseForParse {
  public:
   const UntypedMapBase& GetMap() const {
-    const void* p = prototype_or_payload_.load(std::memory_order_acquire);
+    const void* p = globals_or_payload_.load(std::memory_order_acquire);
     // If this instance has a payload, then it might need sync'n.
     if (ABSL_PREDICT_FALSE(IsPayload(p))) {
       sync_map_with_repeated.load(std::memory_order_relaxed)(*this, false);
@@ -658,7 +628,7 @@ class MapFieldBaseForParse {
   }
 
   UntypedMapBase* MutableMap() {
-    const void* p = prototype_or_payload_.load(std::memory_order_acquire);
+    const void* p = globals_or_payload_.load(std::memory_order_acquire);
     // If this instance has a payload, then it might need sync'n.
     if (ABSL_PREDICT_FALSE(IsPayload(p))) {
       sync_map_with_repeated.load(std::memory_order_relaxed)(*this, true);
@@ -685,13 +655,16 @@ class MapFieldBaseForParse {
   using SyncFunc = void (*)(const MapFieldBaseForParse&, bool is_mutable);
   static std::atomic<SyncFunc> sync_map_with_repeated;
 
-  // The prototype is a `Message`, but due to restrictions on constexpr in the
-  // codegen we are receiving it as `void` during constant evaluation.
-  explicit constexpr MapFieldBaseForParse(const void* prototype_as_void)
-      : prototype_or_payload_(prototype_as_void) {}
+  // The globals is a `*GlobalsTypeInternal`, but due to restrictions on
+  // constexpr in the codegen we are receiving it as `void` during constant
+  // evaluation.
+  explicit constexpr MapFieldBaseForParse(const void* globals_as_void)
+      : globals_or_payload_(globals_as_void) {}
 
+  // Convert "prototype" to "globals" for consistency.
   explicit MapFieldBaseForParse(const Message* prototype)
-      : prototype_or_payload_(prototype) {}
+      : globals_or_payload_(
+            MessageGlobalsBase::FromDefaultInstance(prototype)) {}
 
   ~MapFieldBaseForParse() = default;
 
@@ -701,7 +674,7 @@ class MapFieldBaseForParse {
     return reinterpret_cast<uintptr_t>(p) & kHasPayloadBit;
   }
 
-  mutable std::atomic<const void*> prototype_or_payload_;
+  mutable std::atomic<const void*> globals_or_payload_;
 };
 
 // The value might be of different signedness, so use memcpy to extract it.
@@ -797,14 +770,6 @@ class KeyMapBase : public UntypedMapBase {
     *prev = (*prev)->next;
 
     --num_elements_;
-#ifndef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_MAP_FIELD
-    if (ABSL_PREDICT_FALSE(b == index_of_first_non_null_)) {
-      while (index_of_first_non_null_ < num_buckets_ &&
-             table_[index_of_first_non_null_] == nullptr) {
-        ++index_of_first_non_null_;
-      }
-    }
-#endif
 
     if (arena == nullptr && do_destroy) {
       DeleteNode(node);
@@ -904,10 +869,6 @@ class KeyMapBase : public UntypedMapBase {
   // Requires count(*KeyPtrFromNodePtr(node)) == 0 and that b is the correct
   // bucket.  num_elements_ is not modified.
   void InsertUnique(map_index_t b, KeyNode* node) {
-#ifndef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_MAP_FIELD
-    ABSL_DCHECK(index_of_first_non_null_ == num_buckets_ ||
-                table_[index_of_first_non_null_] != nullptr);
-#endif
     // In practice, the code that led to this point may have already
     // determined whether we are inserting into an empty list, a short list,
     // or whatever.  But it's probably cheap enough to recompute that here;
@@ -918,9 +879,6 @@ class KeyMapBase : public UntypedMapBase {
     if (head == nullptr) {
       head = node;
       node->next = nullptr;
-#ifndef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_MAP_FIELD
-      index_of_first_non_null_ = (std::min)(index_of_first_non_null_, b);
-#endif
     } else if (ShouldInsertAfterHead(node)) {
       node->next = head->next;
       head->next = node;
@@ -1049,9 +1007,6 @@ class KeyMapBase : public UntypedMapBase {
       // This is the global empty array.
       // Just overwrite with a new one. No need to transfer or free anything.
       num_buckets_ = new_num_buckets;
-#ifndef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_MAP_FIELD
-      index_of_first_non_null_ = new_num_buckets;
-#endif
       table_ = CreateEmptyTable(arena, num_buckets_);
       return;
     }
@@ -1061,14 +1016,8 @@ class KeyMapBase : public UntypedMapBase {
     const map_index_t old_table_size = num_buckets_;
     num_buckets_ = new_num_buckets;
     NodeBase** table = table_ = CreateEmptyTable(arena, num_buckets_);
-#ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_MAP_FIELD
-    const map_index_t start = 0;
-#else
-    const map_index_t start = index_of_first_non_null_;
-    index_of_first_non_null_ = num_buckets_;
-#endif
     Inserter inserter(this, table, new_num_buckets);
-    for (map_index_t i = start; i < old_table_size; ++i) {
+    for (map_index_t i = 0; i < old_table_size; ++i) {
       for (KeyNode* node = static_cast<KeyNode*>(old_table[i]);
            node != nullptr;) {
         auto* next = static_cast<KeyNode*>(node->next);
@@ -1087,20 +1036,7 @@ class KeyMapBase : public UntypedMapBase {
    public:
     explicit Inserter(KeyMapBase* map, NodeBase** table,
                       map_index_t num_buckets)
-        : table_(table),
-          mask_(num_buckets - 1),
-#ifndef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_MAP_FIELD
-          index_of_first_non_null_(map->index_of_first_non_null_),
-#endif
-          map_(map) {
-    }
-
-#ifndef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_MAP_FIELD
-    ~Inserter() {
-      // Flush the value at the end.
-      map_->index_of_first_non_null_ = index_of_first_non_null_;
-    }
-#endif
+        : table_(table), mask_(num_buckets - 1), map_(map) {}
 
     map_index_t BucketNumber(KeyNode* node) const {
       return Hash(node->key(), table_) & mask_;
@@ -1115,9 +1051,6 @@ class KeyMapBase : public UntypedMapBase {
       } else {
         node->next = head;
         head = node;
-#ifndef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_MAP_FIELD
-        index_of_first_non_null_ = (std::min)(index_of_first_non_null_, bucket);
-#endif
       }
     }
 
@@ -1126,9 +1059,6 @@ class KeyMapBase : public UntypedMapBase {
    private:
     NodeBase** const table_;
     const map_index_t mask_;
-#ifndef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_MAP_FIELD
-    map_index_t index_of_first_non_null_;
-#endif
     KeyMapBase* const map_;
   };
 
@@ -1187,6 +1117,12 @@ class RustMapHelper {
 template <typename Key, typename T>
 using MapPair = std::pair<const Key, T>;
 
+// Like C++20's std::erase_if, for Map
+template <typename Key, typename T, typename Pred>
+size_t erase_if(Map<Key, T>& map, Pred pred) {
+  return map.EraseIfImpl(std::move(pred));
+}
+
 // Map is an associative container type used to store protobuf map
 // fields.  Each Map instance may or may not use a different hash function, a
 // different iteration order, and so on.  E.g., please don't examine
@@ -1198,7 +1134,8 @@ using MapPair = std::pair<const Key, T>;
 // Map's interface is similar to std::unordered_map, except that Map is not
 // designed to play well with exceptions.
 template <typename Key, typename T>
-class Map : private internal::KeyMapBase<internal::KeyForBase<Key>> {
+class PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Map
+    : private internal::KeyMapBase<internal::KeyForBase<Key>> {
   using Base = typename Map::KeyMapBase;
 
   using TS = internal::TransparentSupport<Key>;
@@ -1217,7 +1154,6 @@ class Map : private internal::KeyMapBase<internal::KeyForBase<Key>> {
   using size_type = size_t;
   using hasher = absl::Hash<typename TS::ViewType>;
 
-#ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_MAP_FIELD
   constexpr Map() : Map(internal::InternalMetadataOffset()) {}
   Map(const Map& other) : Map(internal::InternalMetadataOffset(), other) {}
 
@@ -1234,23 +1170,6 @@ class Map : private internal::KeyMapBase<internal::KeyForBase<Key>> {
       swap(other);
     }
   }
-#else
-  constexpr Map() : Base(nullptr, GetTypeInfo()) { StaticValidityCheck(); }
-  Map(const Map& other) : Map(nullptr, other) {}
-
-  // Internal Arena constructors: do not use!
-  Map(internal::InternalVisibility, Arena* arena) : Map(arena) {}
-  Map(internal::InternalVisibility, Arena* arena, const Map& other)
-      : Map(arena, other) {}
-
-  Map(Map&& other) noexcept : Map() {
-    if (other.arena() != nullptr) {
-      *this = other;
-    } else {
-      swap(other);
-    }
-  }
-#endif
 
   Map& operator=(Map&& other) noexcept ABSL_ATTRIBUTE_LIFETIME_BOUND {
     if (this != &other) {
@@ -1277,8 +1196,6 @@ class Map : private internal::KeyMapBase<internal::KeyForBase<Key>> {
     this->ClearTable(this->arena(), /*reset=*/false);
   }
 
-#ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_MAP_FIELD
-
  private:
   explicit constexpr Map(internal::InternalMetadataOffset offset)
       : Base(offset, GetTypeInfo()) {
@@ -1289,18 +1206,7 @@ class Map : private internal::KeyMapBase<internal::KeyForBase<Key>> {
     StaticValidityCheck();
     CopyFromImpl(arena(), other);
   }
-#else
 
- private:
-  explicit Map(Arena* arena) : Base(arena, GetTypeInfo()) {
-    StaticValidityCheck();
-  }
-
-  Map(Arena* arena, const Map& other) : Map(arena) {
-    StaticValidityCheck();
-    CopyFromImpl(arena, other);
-  }
-#endif
   static_assert(!std::is_const<mapped_type>::value &&
                     !std::is_const<key_type>::value,
                 "We do not support const types.");
@@ -1370,7 +1276,8 @@ class Map : private internal::KeyMapBase<internal::KeyForBase<Key>> {
 
  public:
   // Iterators
-  class const_iterator : private internal::UntypedMapIterator {
+  class PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED ABSL_ATTRIBUTE_VIEW const_iterator
+      : private internal::UntypedMapIterator {
     using BaseIt = internal::UntypedMapIterator;
 
    public:
@@ -1385,8 +1292,12 @@ class Map : private internal::KeyMapBase<internal::KeyForBase<Key>> {
     const_iterator& operator=(const const_iterator&) = default;
     explicit const_iterator(BaseIt it) : BaseIt(it) {}
 
-    reference operator*() const { return static_cast<Node*>(this->node_)->kv; }
-    pointer operator->() const { return &(operator*()); }
+    PROTOBUF_FUTURE_ADD_EARLY_NODISCARD reference operator*() const {
+      return static_cast<Node*>(this->node_)->kv;
+    }
+    PROTOBUF_FUTURE_ADD_EARLY_NODISCARD pointer operator->() const {
+      return &(operator*());
+    }
 
     const_iterator& operator++() {
       this->PlusPlus();
@@ -1398,10 +1309,12 @@ class Map : private internal::KeyMapBase<internal::KeyForBase<Key>> {
       return copy;
     }
 
-    friend bool operator==(const const_iterator& a, const const_iterator& b) {
+    PROTOBUF_FUTURE_ADD_EARLY_NODISCARD friend bool operator==(
+        const const_iterator& a, const const_iterator& b) {
       return a.Equals(b);
     }
-    friend bool operator!=(const const_iterator& a, const const_iterator& b) {
+    PROTOBUF_FUTURE_ADD_EARLY_NODISCARD friend bool operator!=(
+        const const_iterator& a, const const_iterator& b) {
       return !a.Equals(b);
     }
 
@@ -1412,7 +1325,8 @@ class Map : private internal::KeyMapBase<internal::KeyForBase<Key>> {
     friend class internal::TypeDefinedMapFieldBase<Key, T>;
   };
 
-  class iterator : private internal::UntypedMapIterator {
+  class PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED ABSL_ATTRIBUTE_VIEW iterator
+      : private internal::UntypedMapIterator {
     using BaseIt = internal::UntypedMapIterator;
 
    public:
@@ -1427,8 +1341,12 @@ class Map : private internal::KeyMapBase<internal::KeyForBase<Key>> {
     iterator& operator=(const iterator&) = default;
     explicit iterator(BaseIt it) : BaseIt(it) {}
 
-    reference operator*() const { return static_cast<Node*>(this->node_)->kv; }
-    pointer operator->() const { return &(operator*()); }
+    PROTOBUF_FUTURE_ADD_EARLY_NODISCARD reference operator*() const {
+      return static_cast<Node*>(this->node_)->kv;
+    }
+    PROTOBUF_FUTURE_ADD_EARLY_NODISCARD pointer operator->() const {
+      return &(operator*());
+    }
 
     iterator& operator++() {
       this->PlusPlus();
@@ -1441,14 +1359,17 @@ class Map : private internal::KeyMapBase<internal::KeyForBase<Key>> {
     }
 
     // Allow implicit conversion to const_iterator.
-    operator const_iterator() const {  // NOLINT(google-explicit-constructor)
+    PROTOBUF_FUTURE_ADD_EARLY_NODISCARD operator const_iterator()
+        const {  // NOLINT(google-explicit-constructor)
       return const_iterator(static_cast<const BaseIt&>(*this));
     }
 
-    friend bool operator==(const iterator& a, const iterator& b) {
+    PROTOBUF_FUTURE_ADD_EARLY_NODISCARD friend bool operator==(
+        const iterator& a, const iterator& b) {
       return a.Equals(b);
     }
-    friend bool operator!=(const iterator& a, const iterator& b) {
+    PROTOBUF_FUTURE_ADD_EARLY_NODISCARD friend bool operator!=(
+        const iterator& a, const iterator& b) {
       return !a.Equals(b);
     }
 
@@ -1457,20 +1378,30 @@ class Map : private internal::KeyMapBase<internal::KeyForBase<Key>> {
     friend class Map;
   };
 
-  iterator begin() ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD iterator begin()
+      ABSL_ATTRIBUTE_LIFETIME_BOUND {
     return iterator(Base::begin());
   }
-  iterator end() ABSL_ATTRIBUTE_LIFETIME_BOUND { return iterator(); }
-  const_iterator begin() const ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD iterator end()
+      ABSL_ATTRIBUTE_LIFETIME_BOUND {
+    return iterator();
+  }
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD const_iterator
+  begin() const ABSL_ATTRIBUTE_LIFETIME_BOUND {
     return const_iterator(Base::begin());
   }
-  const_iterator end() const ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD const_iterator
+  end() const ABSL_ATTRIBUTE_LIFETIME_BOUND {
     return const_iterator();
   }
-  const_iterator cbegin() const ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD const_iterator
+  cbegin() const ABSL_ATTRIBUTE_LIFETIME_BOUND {
     return begin();
   }
-  const_iterator cend() const ABSL_ATTRIBUTE_LIFETIME_BOUND { return end(); }
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD const_iterator
+  cend() const ABSL_ATTRIBUTE_LIFETIME_BOUND {
+    return end();
+  }
 
   using Base::empty;
   using Base::size;
@@ -1489,14 +1420,16 @@ class Map : private internal::KeyMapBase<internal::KeyForBase<Key>> {
   }
 
   template <typename K = key_type>
-  const T& at(const key_arg<K>& key) const ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD const T& at(const key_arg<K>& key) const
+      ABSL_ATTRIBUTE_LIFETIME_BOUND {
     const_iterator it = find(key);
     ABSL_CHECK(it != end()) << "key not found: " << static_cast<Key>(key);
     return it->second;
   }
 
   template <typename K = key_type>
-  T& at(const key_arg<K>& key) ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD T& at(const key_arg<K>& key)
+      ABSL_ATTRIBUTE_LIFETIME_BOUND {
     iterator it = find(key);
     ABSL_CHECK(it != end()) << "key not found: " << static_cast<Key>(key);
     return it->second;
@@ -1504,30 +1437,33 @@ class Map : private internal::KeyMapBase<internal::KeyForBase<Key>> {
 
   // Lookup
   template <typename K = key_type>
-  size_type count(const key_arg<K>& key) const {
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD size_type
+  count(const key_arg<K>& key) const {
     return find(key) == end() ? 0 : 1;
   }
 
   template <typename K = key_type>
-  const_iterator find(const key_arg<K>& key) const
-      ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD const_iterator
+  find(const key_arg<K>& key) const ABSL_ATTRIBUTE_LIFETIME_BOUND {
     return const_cast<Map*>(this)->find(key);
   }
   template <typename K = key_type>
-  iterator find(const key_arg<K>& key) ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD iterator find(const key_arg<K>& key)
+      ABSL_ATTRIBUTE_LIFETIME_BOUND {
     auto res = this->FindHelper(TS::ToView(key));
     return iterator(internal::UntypedMapIterator{static_cast<Node*>(res.node),
                                                  this, res.bucket});
   }
 
   template <typename K = key_type>
-  bool contains(const key_arg<K>& key) const {
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD bool contains(
+      const key_arg<K>& key) const {
     return find(key) != end();
   }
 
   template <typename K = key_type>
-  std::pair<const_iterator, const_iterator> equal_range(
-      const key_arg<K>& key) const ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD std::pair<const_iterator, const_iterator>
+  equal_range(const key_arg<K>& key) const ABSL_ATTRIBUTE_LIFETIME_BOUND {
     const_iterator it = find(key);
     if (it == end()) {
       return std::pair<const_iterator, const_iterator>(it, it);
@@ -1538,8 +1474,8 @@ class Map : private internal::KeyMapBase<internal::KeyForBase<Key>> {
   }
 
   template <typename K = key_type>
-  std::pair<iterator, iterator> equal_range(const key_arg<K>& key)
-      ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD std::pair<iterator, iterator> equal_range(
+      const key_arg<K>& key) ABSL_ATTRIBUTE_LIFETIME_BOUND {
     iterator it = find(key);
     if (it == end()) {
       return std::pair<iterator, iterator>(it, it);
@@ -1664,18 +1600,15 @@ class Map : private internal::KeyMapBase<internal::KeyForBase<Key>> {
     }
   }
 
-  hasher hash_function() const { return {}; }
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD hasher hash_function() const {
+    return {};
+  }
 
-  size_t SpaceUsedExcludingSelfLong() const {
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD size_t
+  SpaceUsedExcludingSelfLong() const {
     if (empty()) return 0;
     return internal::UntypedMapBase::SpaceUsedExcludingSelfLong();
   }
-
-#ifndef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_MAP_FIELD
-  static constexpr size_t InternalGetArenaOffset(internal::InternalVisibility) {
-    return PROTOBUF_FIELD_OFFSET(Map, arena_);
-  }
-#endif
 
  private:
   // Linked-list nodes, as one would expect for a chaining hash table.
@@ -1772,11 +1705,37 @@ class Map : private internal::KeyMapBase<internal::KeyForBase<Key>> {
                           true);
   }
 
+  template <typename Pred>
+  size_t EraseIfImpl(Pred pred) {
+    size_t n = 0;
+    auto* arena = this->arena();
+    for (internal::NodeBase **bucket = this->table_,
+                            **end = this->table_ + this->num_buckets_;
+         bucket != end; ++bucket) {
+      for (internal::NodeBase** prev = bucket; *prev != nullptr;) {
+        Node* node = static_cast<Node*>(*prev);
+        if (pred(std::as_const(node->kv))) {
+          *prev = node->next;
+          DeleteNode(arena, node);
+          ++n;
+        } else {
+          prev = &node->next;
+        }
+      }
+    }
+    this->num_elements_ -= n;
+    return n;
+  }
+
   using Base::arena;
 
   friend class Arena;
   template <typename, typename>
   friend class internal::TypeDefinedMapFieldBase;
+
+  template <typename Key_, typename T_, typename Pred>
+  friend size_t google::protobuf::erase_if(Map<Key_, T_>& map, Pred pred);
+
   using InternalArenaConstructable_ = void;
   using DestructorSkippable_ = void;
 
@@ -1791,7 +1750,6 @@ class Map : private internal::KeyMapBase<internal::KeyForBase<Key>> {
 
 namespace internal {
 
-#ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_MAP_FIELD
 template <typename Key, typename T>
 using MapWithArena = FieldWithArena<Map<Key, T>>;
 
@@ -1812,7 +1770,6 @@ struct FieldArenaRep<const Map<Key, T>> {
     return &arena_rep->field();
   }
 };
-#endif  // PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_MAP_FIELD
 
 template <typename... T>
 PROTOBUF_NOINLINE void MapMergeFrom(Map<T...>& dest, const Map<T...>& src) {

@@ -32,11 +32,16 @@
 #include "absl/container/flat_hash_set.h"
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
+#include "absl/strings/ascii.h"
+#include "absl/strings/numbers.h"
+#include "absl/strings/str_cat.h"
 #include "absl/strings/str_format.h"
+#include "absl/strings/str_join.h"
 #include "absl/strings/string_view.h"
 #include "absl/synchronization/mutex.h"
 #include "absl/types/span.h"
 #include "google/protobuf/arena.h"
+#include "google/protobuf/cpp_features.pb.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/descriptor_lite.h"
@@ -48,6 +53,7 @@
 #include "google/protobuf/generated_message_util.h"
 #include "google/protobuf/has_bits.h"
 #include "google/protobuf/inlined_string_field.h"
+#include "google/protobuf/json_enumvalue_options.pb.h"
 #include "google/protobuf/map_field.h"
 #include "google/protobuf/message.h"
 #include "google/protobuf/message_lite.h"
@@ -74,7 +80,9 @@ using google::protobuf::internal::InlinedStringField;
 using google::protobuf::internal::InternalMetadata;
 using google::protobuf::internal::kNoHasbit;
 using google::protobuf::internal::LazyField;
+using google::protobuf::internal::LazyFieldForUnion;
 using google::protobuf::internal::MapFieldBase;
+using google::protobuf::internal::MessageGlobalsBase;
 using google::protobuf::internal::MicroString;
 using google::protobuf::internal::MigrationSchema;
 using google::protobuf::internal::OnShutdownDelete;
@@ -188,6 +196,47 @@ bool IsMatchingCType(const FieldDescriptor* field, int ctype) {
       return ctype == FieldOptions::STRING;
   }
   internal::Unreachable();
+}
+
+bool AbslParseFlagImpl(absl::string_view text, int& e,
+                       const EnumDescriptor& desc, std::string& error) {
+  if (const auto* value = desc.FindValueByName(text)) {
+    e = value->number();
+    return true;
+  }
+
+  // Try as lower case
+  if (absl::AsciiStrToLower(text) == text) {
+    if (const auto* value = desc.FindValueByName(absl::AsciiStrToUpper(text))) {
+      e = value->number();
+      return true;
+    }
+  }
+
+  // Try as a number
+  int as_number;
+  if (absl::SimpleAtoi(text, &as_number) &&
+      desc.FindValueByNumber(as_number) != nullptr) {
+    e = as_number;
+    return true;
+  }
+
+  std::vector<absl::string_view> supported_values;
+  supported_values.reserve(desc.value_count());
+  for (int i = 0; i < desc.value_count(); i++) {
+    supported_values.push_back(desc.value(i)->name());
+  }
+  error = absl::StrFormat(
+      "Invalid value '%s' for enum '%s'. Supported values are: %s.", text,
+      desc.full_name(), absl::StrJoin(supported_values, ", "));
+  return false;
+}
+
+std::string AbslUnparseFlagImpl(int e, const EnumDescriptor& desc) {
+  if (const auto* value = desc.FindValueByNumber(e)) {
+    return std::string(value->name());
+  }
+  return absl::StrCat(e);
 }
 
 }  // namespace internal
@@ -338,6 +387,21 @@ static void ReportReflectionUsageEnumTypeError(
   USAGE_CHECK_##LABEL(METHOD);                          \
   USAGE_CHECK_TYPE(METHOD, CPPTYPE)
 
+#define USAGE_CHECK_EXPOSE_LEGACY_REPEATED_FIELD(intent, METHOD)         \
+  do {                                                                   \
+    switch (intent) {                                                    \
+      case GetRepeatedFieldIntent::kExposeDirectly:                      \
+        USAGE_CHECK_EQ(                                                  \
+            field->CalculateCppRepeatedType(),                           \
+            FieldDescriptor::CppRepeatedType::kRepeated, METHOD,         \
+            "Field is a proxied repeated field; this method requires a " \
+            "legacy repeated field.");                                   \
+        break;                                                           \
+      case GetRepeatedFieldIntent::kHiddenOrInternal:                    \
+        break;                                                           \
+    }                                                                    \
+  } while (0)
+
 }  // namespace
 
 // ===================================================================
@@ -416,10 +480,10 @@ size_t Reflection::SpaceUsedLong(const Message& message) const {
     const FieldDescriptor* field = descriptor_->field(i);
     if (field->is_repeated()) {
       switch (field->cpp_type()) {
-#define HANDLE_TYPE(UPPERCASE, LOWERCASE)                           \
-  case FieldDescriptor::CPPTYPE_##UPPERCASE:                        \
-    total_size += GetRaw<RepeatedField<LOWERCASE> >(message, field) \
-                      .SpaceUsedExcludingSelfLong();                \
+#define HANDLE_TYPE(UPPERCASE, LOWERCASE)                          \
+  case FieldDescriptor::CPPTYPE_##UPPERCASE:                       \
+    total_size += GetRaw<RepeatedField<LOWERCASE>>(message, field) \
+                      .SpaceUsedExcludingSelfLong();               \
     break
 
         HANDLE_TYPE(INT32, int32_t);
@@ -441,7 +505,7 @@ size_t Reflection::SpaceUsedLong(const Message& message) const {
             case FieldDescriptor::CppStringType::kView:
             case FieldDescriptor::CppStringType::kString:
               total_size +=
-                  GetRaw<RepeatedPtrField<std::string> >(message, field)
+                  GetRaw<RepeatedPtrField<std::string>>(message, field)
                       .SpaceUsedExcludingSelfLong();
               break;
           }
@@ -456,7 +520,7 @@ size_t Reflection::SpaceUsedLong(const Message& message) const {
             // so we use RepeatedPtrFieldBase directly.
             total_size +=
                 GetRaw<RepeatedPtrFieldBase>(message, field)
-                    .SpaceUsedExcludingSelfLong<GenericTypeHandler<Message> >();
+                    .SpaceUsedExcludingSelfLong<GenericTypeHandler<Message>>();
           }
 
           break;
@@ -494,9 +558,8 @@ size_t Reflection::SpaceUsedLong(const Message& message) const {
             case FieldDescriptor::CppStringType::kView:
             case FieldDescriptor::CppStringType::kString:
               if (IsInlined(field)) {
-                const std::string* ptr =
-                    &GetField<InlinedStringField>(message, field).GetNoArena();
-                total_size += StringSpaceUsedExcludingSelfLong(*ptr);
+                total_size += GetField<InlinedStringField>(message, field)
+                                  .SpaceUsedExcludingSelfLong();
               } else if (IsMicroString(field)) {
                 total_size += GetField<MicroString>(message, field)
                                   .SpaceUsedExcludingSelfLong();
@@ -589,28 +652,28 @@ void Reflection::InternalMoveOneofField(const FieldDescriptor* field,
         break;
       }
       switch (field->cpp_string_type()) {
-          case FieldDescriptor::CppStringType::kCord:
-            to->SetCord(from->GetCord());
-            break;
-          case FieldDescriptor::CppStringType::kView:
-          case FieldDescriptor::CppStringType::kString:
-            if (IsMicroString(field)) {
-              to->SetMicroString(from->GetMicroString());
-            } else {
-              to->SetArenaStringPtr(from->GetArenaStringPtr());
-            }
-            break;
+        case FieldDescriptor::CppStringType::kCord:
+          to->SetCord(from->GetCord());
+          break;
+        case FieldDescriptor::CppStringType::kView:
+        case FieldDescriptor::CppStringType::kString:
+          if (IsMicroString(field)) {
+            to->SetMicroString(from->GetMicroString());
+          } else {
+            to->SetArenaStringPtr(from->GetArenaStringPtr());
+          }
+          break;
       }
-        break;
-      default:
-        ABSL_LOG(FATAL) << "unimplemented type: " << field->cpp_type();
+      break;
+    default:
+      ABSL_LOG(FATAL) << "unimplemented type: " << field->cpp_type();
   }
-    if (unsafe_shallow_swap) {
-      // Not clearing oneof case after move may cause unwanted "ClearOneof"
-      // where the residual message or string value is deleted and causes
-      // use-after-free (only for unsafe swap).
-      from->ClearOneofCase();
-    }
+  if (unsafe_shallow_swap) {
+    // Not clearing oneof case after move may cause unwanted "ClearOneof"
+    // where the residual message or string value is deleted and causes
+    // use-after-free (only for unsafe swap).
+    from->ClearOneofCase();
+  }
 }
 
 namespace internal {
@@ -696,27 +759,13 @@ void SwapFieldHelper::SwapInlinedStrings(const Reflection* r, Message* lhs,
   Arena* rhs_arena = rhs->GetArena();
   auto* lhs_string = r->MutableRaw<InlinedStringField>(lhs, field);
   auto* rhs_string = r->MutableRaw<InlinedStringField>(rhs, field);
-  uint32_t index = r->schema_.InlinedStringIndex(field);
-  ABSL_DCHECK_GT(index, 0u);
-  uint32_t* lhs_array = r->MutableInlinedStringDonatedArray(lhs);
-  uint32_t* rhs_array = r->MutableInlinedStringDonatedArray(rhs);
-  uint32_t* lhs_state = &lhs_array[index / 32];
-  uint32_t* rhs_state = &rhs_array[index / 32];
-  bool lhs_arena_dtor_registered = (lhs_array[0] & 0x1u) == 0;
-  bool rhs_arena_dtor_registered = (rhs_array[0] & 0x1u) == 0;
-  const uint32_t mask = ~(static_cast<uint32_t>(1) << (index % 32));
   if (unsafe_shallow_swap) {
     ABSL_DCHECK_EQ(lhs_arena, rhs_arena);
-    InlinedStringField::InternalSwap(lhs_string, lhs_arena_dtor_registered, lhs,
-                                     rhs_string, rhs_arena_dtor_registered, rhs,
-                                     lhs_arena);
+    InlinedStringField::InternalSwap(lhs_string, rhs_string, lhs_arena);
   } else {
     const std::string temp = lhs_string->Get();
-    lhs_string->Set(rhs_string->Get(), lhs_arena,
-                    r->IsInlinedStringDonated(*lhs, field), lhs_state, mask,
-                    lhs);
-    rhs_string->Set(temp, rhs_arena, r->IsInlinedStringDonated(*rhs, field),
-                    rhs_state, mask, rhs);
+    lhs_string->Set(rhs_string->Get(), lhs_arena);
+    rhs_string->Set(temp, rhs_arena);
   }
 }
 
@@ -893,10 +942,10 @@ void Reflection::SwapField(Message* message1, Message* message2,
                            const FieldDescriptor* field) const {
   if (field->is_repeated()) {
     switch (field->cpp_type()) {
-#define SWAP_ARRAYS(CPPTYPE, TYPE)                                 \
-  case FieldDescriptor::CPPTYPE_##CPPTYPE:                         \
-    MutableRaw<RepeatedField<TYPE> >(message1, field)              \
-        ->Swap(MutableRaw<RepeatedField<TYPE> >(message2, field)); \
+#define SWAP_ARRAYS(CPPTYPE, TYPE)                                \
+  case FieldDescriptor::CPPTYPE_##CPPTYPE:                        \
+    MutableRaw<RepeatedField<TYPE>>(message1, field)              \
+        ->Swap(MutableRaw<RepeatedField<TYPE>>(message2, field)); \
     break;
 
       SWAP_ARRAYS(INT32, int32_t);
@@ -1215,23 +1264,10 @@ void Reflection::SwapFieldsImpl(
     } else {
       SwapField(message1, message2, field);
     }
-    // If the hasbits for repeated fields experiment is disabled, we can
-    // skip repeated fields since we know they don't have hasbits.
-    if (!internal::EnableExperimentalHintHasBitsForRepeatedFields() &&
-        field->is_repeated()) {
-      continue;
-    }
     // Swap has bit. We have already checked for oneof already. This has to
     // be done after SwapField, because SwapField may depend on the
     // information in has bits.
     NaiveSwapHasBit(message1, message2, field);
-    if (field->cpp_type() == FieldDescriptor::CPPTYPE_STRING &&
-        field->cpp_string_type() == FieldDescriptor::CppStringType::kString &&
-        IsInlined(field)) {
-      ABSL_DCHECK(!unsafe_shallow_swap ||
-                  message1->GetArena() == message2->GetArena());
-      SwapInlinedStringDonated(message1, message2, field);
-    }
   }
 }
 
@@ -1333,33 +1369,6 @@ void Reflection::InternalSwap(Message* lhs, Message* rhs) const {
     }
   }
 
-  if (schema_.HasInlinedString()) {
-    uint32_t* lhs_donated_array = MutableInlinedStringDonatedArray(lhs);
-    uint32_t* rhs_donated_array = MutableInlinedStringDonatedArray(rhs);
-    int inlined_string_count = 0;
-    for (int i = 0; i < descriptor_->field_count(); i++) {
-      const FieldDescriptor* field = descriptor_->field(i);
-      if (field->cpp_type() != FieldDescriptor::CPPTYPE_STRING) continue;
-      if (field->is_extension() || field->is_repeated() ||
-          schema_.InRealOneof(field) ||
-          field->cpp_string_type() != FieldDescriptor::CppStringType::kString ||
-          !IsInlined(field)) {
-        continue;
-      }
-      inlined_string_count++;
-    }
-
-    int donated_array_size = inlined_string_count == 0
-                                 ? 0
-                                 // One extra bit for the arena dtor tracking.
-                                 : (inlined_string_count + 1 + 31) / 32;
-    ABSL_CHECK_EQ((lhs_donated_array[0] & 0x1u) == 0,
-                  (rhs_donated_array[0] & 0x1u) == 0);
-    for (int i = 0; i < donated_array_size; i++) {
-      std::swap(lhs_donated_array[i], rhs_donated_array[i]);
-    }
-  }
-
   if (schema_.HasExtensionSet()) {
     MutableExtensionSet(lhs)->InternalSwap(MutableExtensionSet(rhs));
   }
@@ -1425,7 +1434,7 @@ int Reflection::FieldSize(const Message& message,
     switch (field->cpp_type()) {
 #define HANDLE_TYPE(UPPERCASE, LOWERCASE)    \
   case FieldDescriptor::CPPTYPE_##UPPERCASE: \
-    return GetRaw<RepeatedField<LOWERCASE> >(message, field).size()
+    return GetRaw<RepeatedField<LOWERCASE>>(message, field).size()
 
       HANDLE_TYPE(INT32, int32_t);
       HANDLE_TYPE(INT64, int64_t);
@@ -1439,7 +1448,7 @@ int Reflection::FieldSize(const Message& message,
 
       case FieldDescriptor::CPPTYPE_STRING:
         if (field->cpp_string_type() == FieldDescriptor::CppStringType::kCord) {
-          return GetRaw<RepeatedField<absl::Cord> >(message, field).size();
+          return GetRaw<RepeatedField<absl::Cord>>(message, field).size();
         }
         ABSL_FALLTHROUGH_INTENDED;
       case FieldDescriptor::CPPTYPE_MESSAGE:
@@ -1598,9 +1607,9 @@ void Reflection::RemoveLast(Message* message,
     MutableExtensionSet(message)->RemoveLast(field->number());
   } else {
     switch (field->cpp_type()) {
-#define HANDLE_TYPE(UPPERCASE, LOWERCASE)                                \
-  case FieldDescriptor::CPPTYPE_##UPPERCASE:                             \
-    MutableRaw<RepeatedField<LOWERCASE> >(message, field)->RemoveLast(); \
+#define HANDLE_TYPE(UPPERCASE, LOWERCASE)                               \
+  case FieldDescriptor::CPPTYPE_##UPPERCASE:                            \
+    MutableRaw<RepeatedField<LOWERCASE>>(message, field)->RemoveLast(); \
     break
 
       HANDLE_TYPE(INT32, int32_t);
@@ -1620,7 +1629,7 @@ void Reflection::RemoveLast(Message* message,
             break;
           case FieldDescriptor::CppStringType::kView:
           case FieldDescriptor::CppStringType::kString:
-            MutableRaw<RepeatedPtrField<std::string> >(message, field)
+            MutableRaw<RepeatedPtrField<std::string>>(message, field)
                 ->RemoveLast();
             break;
         }
@@ -1630,10 +1639,10 @@ void Reflection::RemoveLast(Message* message,
         if (IsMapFieldInApi(field)) {
           MutableRaw<MapFieldBase>(message, field)
               ->MutableRepeatedField()
-              ->RemoveLast<GenericTypeHandler<Message> >();
+              ->RemoveLast<GenericTypeHandler<Message>>();
         } else {
           MutableRaw<RepeatedPtrFieldBase>(message, field)
-              ->RemoveLast<GenericTypeHandler<Message> >();
+              ->RemoveLast<GenericTypeHandler<Message>>();
         }
         break;
     }
@@ -1696,10 +1705,10 @@ void Reflection::SwapElements(Message* message, const FieldDescriptor* field,
     MutableExtensionSet(message)->SwapElements(field->number(), index1, index2);
   } else {
     switch (field->cpp_type()) {
-#define HANDLE_TYPE(UPPERCASE, LOWERCASE)                 \
-  case FieldDescriptor::CPPTYPE_##UPPERCASE:              \
-    MutableRaw<RepeatedField<LOWERCASE> >(message, field) \
-        ->SwapElements(index1, index2);                   \
+#define HANDLE_TYPE(UPPERCASE, LOWERCASE)                \
+  case FieldDescriptor::CPPTYPE_##UPPERCASE:             \
+    MutableRaw<RepeatedField<LOWERCASE>>(message, field) \
+        ->SwapElements(index1, index2);                  \
     break
 
       HANDLE_TYPE(INT32, int32_t);
@@ -1714,7 +1723,7 @@ void Reflection::SwapElements(Message* message, const FieldDescriptor* field,
 
       case FieldDescriptor::CPPTYPE_STRING:
         if (field->cpp_string_type() == FieldDescriptor::CppStringType::kCord) {
-          MutableRaw<RepeatedField<absl::Cord> >(message, field)
+          MutableRaw<RepeatedField<absl::Cord>>(message, field)
               ->SwapElements(index1, index2);
           break;
         }
@@ -1818,15 +1827,7 @@ inline int32_t Reflection::IsEmptyOrCollectSetFields(
        absl::MakeSpan(descriptor.fields_, last_non_weak_field_index_ + 1)) {
     ++i;
     const OneofDescriptor* containing_oneof = field.containing_oneof();
-    // If the hasbits for repeated fields experiment is disabled, we can
-    // shortcut to checking the field size, since we know the field doesn't
-    // have hasbits.
-    if (!internal::EnableExperimentalHintHasBitsForRepeatedFields() &&
-        field.is_repeated()) {
-      if (FieldSize(message, &field) > 0) {
-        PROTO_REFLECTION_APPEND_OR_RETURN();
-      }
-    } else if (schema_.InRealOneof(&field)) {
+    if (schema_.InRealOneof(&field)) {
       const uint32_t* const oneof_case_array =
           GetConstPointerAtOffset<uint32_t>(&message,
                                             schema_.oneof_case_offset_);
@@ -1854,6 +1855,7 @@ inline int32_t Reflection::IsEmptyOrCollectSetFields(
 
 void Reflection::ListFields(const Message& message,
                             std::vector<const FieldDescriptor*>* output) const {
+  STATIC_USAGE_CHECK_MESSAGE(ListFields, &message);
   output->clear();
   // Optimization:  The default instance never has any fields set.
   if (schema_.IsDefaultInstance(message)) return;
@@ -2146,14 +2148,7 @@ void Reflection::SetString(Message* message, const FieldDescriptor* field,
       case FieldDescriptor::CppStringType::kView:
       case FieldDescriptor::CppStringType::kString: {
         if (IsInlined(field)) {
-          const uint32_t index = schema_.InlinedStringIndex(field);
-          ABSL_DCHECK_GT(index, 0u);
-          uint32_t* states =
-              &MutableInlinedStringDonatedArray(message)[index / 32];
-          uint32_t mask = ~(static_cast<uint32_t>(1) << (index % 32));
-          MutableField<InlinedStringField>(message, field)
-              ->Set(value, arena, IsInlinedStringDonated(*message, field),
-                    states, mask, message);
+          MutableField<InlinedStringField>(message, field)->Set(value, arena);
           break;
         } else if (IsMicroString(field)) {
           if (schema_.InRealOneof(field) && !HasOneofField(*message, field)) {
@@ -2207,14 +2202,7 @@ void Reflection::SetString(Message* message, const FieldDescriptor* field,
       case FieldDescriptor::CppStringType::kString: {
         if (IsInlined(field)) {
           auto* str = MutableField<InlinedStringField>(message, field);
-          const uint32_t index = schema_.InlinedStringIndex(field);
-          ABSL_DCHECK_GT(index, 0u);
-          uint32_t* states =
-              &MutableInlinedStringDonatedArray(message)[index / 32];
-          uint32_t mask = ~(static_cast<uint32_t>(1) << (index % 32));
-          str->Set(std::string(value), arena,
-                   IsInlinedStringDonated(*message, field), states, mask,
-                   message);
+          str->Set(std::string(value), arena);
         } else if (IsMicroString(field)) {
           if (schema_.InRealOneof(field) && !HasOneofField(*message, field)) {
             ClearOneof(message, field->containing_oneof());
@@ -2528,12 +2516,12 @@ const Message* Reflection::GetDefaultMessageInstance(
   // instances to allow for this. But only do this for real fields.
   // This is an optimization to avoid going to GetPrototype() below, as that
   // requires a lock and a map lookup.
-  if (!field->is_extension() && !field->options().weak() &&
-      !IsLazyField(field) && !schema_.InRealOneof(field)) {
+  if (!field->is_extension() && !field->is_repeated() &&
+      !field->options().weak() && !IsLazyField(field) &&
+      !schema_.InRealOneof(field)) {
     auto* res = DefaultRaw<const Message*>(field);
-    if (res != nullptr) {
-      return res;
-    }
+    ABSL_DCHECK_NE(res, nullptr);
+    return res;
   }
   // Otherwise, just go to the factory.
   return message_factory_->GetPrototype(field->message_type());
@@ -2725,10 +2713,10 @@ const Message& Reflection::GetRepeatedMessage(const Message& message,
     if (IsMapFieldInApi(field)) {
       return GetRaw<MapFieldBase>(message, field)
           .GetRepeatedField()
-          .Get<GenericTypeHandler<Message> >(index);
+          .Get<GenericTypeHandler<Message>>(index);
     } else {
       return GetRaw<RepeatedPtrFieldBase>(message, field)
-          .Get<GenericTypeHandler<Message> >(index);
+          .Get<GenericTypeHandler<Message>>(index);
     }
   }
 }
@@ -2743,15 +2731,13 @@ Message* Reflection::MutableRepeatedMessage(Message* message,
         MutableExtensionSet(message)->MutableRepeatedMessage(field->number(),
                                                              index));
   } else {
-    SetHasBitForRepeated(message, field);
-
     if (IsMapFieldInApi(field)) {
       return MutableRaw<MapFieldBase>(message, field)
           ->MutableRepeatedField()
-          ->Mutable<GenericTypeHandler<Message> >(index);
+          ->Mutable<GenericTypeHandler<Message>>(index);
     } else {
       return MutableRaw<RepeatedPtrFieldBase>(message, field)
-          ->Mutable<GenericTypeHandler<Message> >(index);
+          ->Mutable<GenericTypeHandler<Message>>(index);
     }
   }
 }
@@ -2769,7 +2755,7 @@ Message* Reflection::AddMessage(Message* message, const FieldDescriptor* field,
   } else {
     Message* result = nullptr;
 
-    SetHasBitForRepeated(message, field);
+    SetHasBit(message, field);
 
     // We can't use AddField<Message>() because RepeatedPtrFieldBase doesn't
     // know how to allocate one.
@@ -2780,14 +2766,14 @@ Message* Reflection::AddMessage(Message* message, const FieldDescriptor* field,
     } else {
       repeated = MutableRaw<RepeatedPtrFieldBase>(message, field);
     }
-    result = repeated->AddFromCleared<GenericTypeHandler<Message> >();
+    result = repeated->AddFromCleared<GenericTypeHandler<Message>>();
     if (result == nullptr) {
       // We must allocate a new object.
       const Message* prototype;
       if (repeated->size() == 0) {
         prototype = factory->GetPrototype(field->message_type());
       } else {
-        prototype = &repeated->Get<GenericTypeHandler<Message> >(0);
+        prototype = &repeated->Get<GenericTypeHandler<Message>>(0);
       }
       result = prototype->New(arena);
       // We can guarantee here that repeated and result are either both heap
@@ -2818,7 +2804,7 @@ void Reflection::AddAllocatedMessage(Message* message,
       repeated = MutableRaw<RepeatedPtrFieldBase>(message, field);
     }
     repeated->AddAllocated<GenericTypeHandler<Message>>(arena, new_entry);
-    SetHasBitForRepeated(message, field);
+    SetHasBit(message, field);
   }
 }
 
@@ -2841,7 +2827,7 @@ void Reflection::UnsafeArenaAddAllocatedMessage(Message* message,
     }
     repeated->UnsafeArenaAddAllocated<GenericTypeHandler<Message>>(arena,
                                                                    new_entry);
-    SetHasBitForRepeated(message, field);
+    SetHasBit(message, field);
   }
 }
 
@@ -2898,11 +2884,12 @@ bool Reflection::IsRepeatedOrMapFieldEmpty(const Message& message,
 void* Reflection::MutableRawRepeatedField(Message* message,
                                           const FieldDescriptor* field,
                                           FieldDescriptor::CppType cpptype,
-                                          int ctype,
-                                          const Descriptor* desc) const {
+                                          int ctype, const Descriptor* desc,
+                                          GetRepeatedFieldIntent intent) const {
   (void)ctype;  // Parameter is used by Google-internal code.
   USAGE_CHECK_REPEATED("MutableRawRepeatedField");
   USAGE_CHECK_MESSAGE_TYPE(MutableRawRepeatedField);
+  USAGE_CHECK_EXPOSE_LEGACY_REPEATED_FIELD(intent, "MutableRawRepeatedField");
 
   if (field->cpp_type() != cpptype &&
       (field->cpp_type() != FieldDescriptor::CPPTYPE_ENUM ||
@@ -2924,20 +2911,21 @@ void* Reflection::MutableRawRepeatedField(Message* message,
   }
 }
 
-const void* Reflection::GetRawRepeatedField(const Message& message,
-                                            const FieldDescriptor* field,
-                                            FieldDescriptor::CppType cpptype,
-                                            int ctype,
-                                            const Descriptor* desc) const {
+const void* Reflection::GetRawRepeatedField(
+    const Message& message, const FieldDescriptor* field,
+    FieldDescriptor::CppType cpptype, int ctype, const Descriptor* desc,
+    GetRepeatedFieldIntent intent) const {
   USAGE_CHECK_REPEATED("GetRawRepeatedField");
   USAGE_CHECK_MESSAGE_TYPE(GetRawRepeatedField);
+  USAGE_CHECK_EXPOSE_LEGACY_REPEATED_FIELD(intent, "GetRawRepeatedField");
+
   if (field->cpp_type() != cpptype &&
       (field->cpp_type() != FieldDescriptor::CPPTYPE_ENUM ||
        cpptype != FieldDescriptor::CPPTYPE_INT32))
     ReportReflectionUsageTypeError(descriptor_, field, "GetRawRepeatedField",
                                    cpptype);
   if (ctype >= 0)
-    ABSL_CHECK(IsMatchingCType(field, ctype)) << "subtype mismatch";
+    ABSL_CHECK(internal::IsMatchingCType(field, ctype)) << "subtype mismatch";
   if (desc != nullptr)
     ABSL_CHECK_EQ(field->message_type(), desc) << "wrong submessage type";
   if (field->is_extension()) {
@@ -2980,7 +2968,7 @@ bool Reflection::InsertOrLookupMapValue(Message* message,
   USAGE_CHECK(IsMapFieldInApi(field), InsertOrLookupMapValue,
               "Field is not a map field.");
   val->SetType(field->message_type()->map_value()->cpp_type());
-  SetHasBitForRepeated(message, field);
+  SetHasBit(message, field);
   return MutableRaw<MapFieldBase>(message, field)
       ->InsertOrLookupMapValue(key, val);
 }
@@ -3099,7 +3087,7 @@ void* Reflection::MutableRawSplitImpl(Message* message,
   const uint32_t field_offset = schema_.GetFieldOffset(field);
   PrepareSplitMessageForWrite(message);
   void** split = MutableSplitField(message);
-  if (SplitFieldHasExtraIndirection(field)) {
+  if (internal::SplitFieldHasExtraIndirection(field)) {
     return AllocIfDefault(field,
                           *GetPointerAtOffset<void*>(*split, field_offset),
                           message->GetArena());
@@ -3139,66 +3127,6 @@ const ExtensionSet& Reflection::GetExtensionSet(const Message& message) const {
 ExtensionSet* Reflection::MutableExtensionSet(Message* message) const {
   return GetPointerAtOffset<ExtensionSet>(message,
                                           schema_.GetExtensionSetOffset());
-}
-
-const uint32_t* Reflection::GetInlinedStringDonatedArray(
-    const Message& message) const {
-  ABSL_DCHECK(schema_.HasInlinedString());
-  return &GetConstRefAtOffset<uint32_t>(message,
-                                        schema_.InlinedStringDonatedOffset());
-}
-
-uint32_t* Reflection::MutableInlinedStringDonatedArray(Message* message) const {
-  ABSL_DCHECK(schema_.HasInlinedString());
-  return GetPointerAtOffset<uint32_t>(message,
-                                      schema_.InlinedStringDonatedOffset());
-}
-
-// Simple accessors for manipulating _inlined_string_donated_;
-bool Reflection::IsInlinedStringDonated(const Message& message,
-                                        const FieldDescriptor* field) const {
-  uint32_t index = schema_.InlinedStringIndex(field);
-  ABSL_DCHECK_GT(index, 0u);
-  return IsIndexInHasBitSet(GetInlinedStringDonatedArray(message), index);
-}
-
-inline void SetInlinedStringDonated(uint32_t index, uint32_t* array) {
-  array[index / 32] |= (static_cast<uint32_t>(1) << (index % 32));
-}
-
-inline void ClearInlinedStringDonated(uint32_t index, uint32_t* array) {
-  array[index / 32] &= ~(static_cast<uint32_t>(1) << (index % 32));
-}
-
-void Reflection::SwapInlinedStringDonated(Message* lhs, Message* rhs,
-                                          const FieldDescriptor* field) const {
-  Arena* lhs_arena = lhs->GetArena();
-  Arena* rhs_arena = rhs->GetArena();
-  // If arenas differ, inined string fields are swapped by copying values.
-  // Donation status should not be swapped.
-  if (lhs_arena != rhs_arena) {
-    return;
-  }
-  bool lhs_donated = IsInlinedStringDonated(*lhs, field);
-  bool rhs_donated = IsInlinedStringDonated(*rhs, field);
-  if (lhs_donated == rhs_donated) {
-    return;
-  }
-  // If one is undonated, both must have already registered ArenaDtor.
-  uint32_t* lhs_array = MutableInlinedStringDonatedArray(lhs);
-  uint32_t* rhs_array = MutableInlinedStringDonatedArray(rhs);
-  ABSL_CHECK_EQ(lhs_array[0] & 0x1u, 0u);
-  ABSL_CHECK_EQ(rhs_array[0] & 0x1u, 0u);
-  // Swap donation status bit.
-  uint32_t index = schema_.InlinedStringIndex(field);
-  ABSL_DCHECK_GT(index, 0u);
-  if (rhs_donated) {
-    SetInlinedStringDonated(index, lhs_array);
-    ClearInlinedStringDonated(index, rhs_array);
-  } else {  // lhs_donated
-    ClearInlinedStringDonated(index, lhs_array);
-    SetInlinedStringDonated(index, rhs_array);
-  }
 }
 
 bool Reflection::IsImplicitPresenceFieldNonEmpty(
@@ -3443,22 +3371,24 @@ void Reflection::ClearOneof(Message* message,
   }
 }
 
-#define HANDLE_TYPE(TYPE, CPPTYPE, CTYPE)                                  \
-  template <>                                                              \
-  const RepeatedField<TYPE>& Reflection::GetRepeatedFieldInternal<TYPE>(   \
-      const Message& message, const FieldDescriptor* field) const {        \
-    return *static_cast<const RepeatedField<TYPE>*>(                       \
-        GetRawRepeatedField(message, field, CPPTYPE, CTYPE, nullptr));     \
-  }                                                                        \
-                                                                           \
-  template <>                                                              \
-  RepeatedField<TYPE>* Reflection::MutableRepeatedFieldInternal<TYPE>(     \
-      Message * message, const FieldDescriptor* field) const {             \
-    if (!field->is_extension()) {                                          \
-      SetHasBitForRepeated(message, field);                                \
-    }                                                                      \
-    return static_cast<RepeatedField<TYPE>*>(                              \
-        MutableRawRepeatedField(message, field, CPPTYPE, CTYPE, nullptr)); \
+#define HANDLE_TYPE(TYPE, CPPTYPE, CTYPE)                                      \
+  template <>                                                                  \
+  const RepeatedField<TYPE>& Reflection::GetRepeatedFieldInternal<TYPE>(       \
+      const Message& message, const FieldDescriptor* field,                    \
+      GetRepeatedFieldIntent intent) const {                                   \
+    return *static_cast<const RepeatedField<TYPE>*>(                           \
+        GetRawRepeatedField(message, field, CPPTYPE, CTYPE, nullptr, intent)); \
+  }                                                                            \
+                                                                               \
+  template <>                                                                  \
+  RepeatedField<TYPE>* Reflection::MutableRepeatedFieldInternal<TYPE>(         \
+      Message * message, const FieldDescriptor* field,                         \
+      GetRepeatedFieldIntent intent) const {                                   \
+    if (!field->is_extension()) {                                              \
+      SetHasBit(message, field);                                               \
+    }                                                                          \
+    return static_cast<RepeatedField<TYPE>*>(MutableRawRepeatedField(          \
+        message, field, CPPTYPE, CTYPE, nullptr, intent));                     \
   }
 
 HANDLE_TYPE(int32_t, FieldDescriptor::CPPTYPE_INT32, -1);
@@ -3472,21 +3402,21 @@ HANDLE_TYPE(bool, FieldDescriptor::CPPTYPE_BOOL, -1);
 
 #undef HANDLE_TYPE
 
-const void* Reflection::GetRawRepeatedString(const Message& message,
-                                             const FieldDescriptor* field,
-                                             bool is_string) const {
+const void* Reflection::GetRawRepeatedString(
+    const Message& message, const FieldDescriptor* field, bool is_string,
+    GetRepeatedFieldIntent intent) const {
   (void)is_string;  // Parameter is used by Google-internal code.
   return GetRawRepeatedField(message, field, FieldDescriptor::CPPTYPE_STRING,
-                             FieldOptions::STRING, nullptr);
+                             FieldOptions::STRING, nullptr, intent);
 }
 
-void* Reflection::MutableRawRepeatedString(Message* message,
-                                           const FieldDescriptor* field,
-                                           bool is_string) const {
+void* Reflection::MutableRawRepeatedString(
+    Message* message, const FieldDescriptor* field, bool is_string,
+    GetRepeatedFieldIntent intent) const {
   (void)is_string;  // Parameter is used by Google-internal code.
   return MutableRawRepeatedField(message, field,
                                  FieldDescriptor::CPPTYPE_STRING,
-                                 FieldOptions::STRING, nullptr);
+                                 FieldOptions::STRING, nullptr, intent);
 }
 
 // Template implementations of basic accessors.  Inline because each
@@ -3552,7 +3482,7 @@ void Reflection::AddField(Message* message, const FieldDescriptor* field,
                           const Type& value) const {
   MutableRaw<RepeatedField<Type>>(message, field)
       ->AddWithArena(message->GetArena(), value);
-  SetHasBitForRepeated(message, field);
+  SetHasBit(message, field);
 }
 
 template <typename Type>
@@ -3560,7 +3490,7 @@ Type* Reflection::AddField(Message* message,
                            const FieldDescriptor* field) const {
   RepeatedPtrField<Type>* repeated =
       MutableRaw<RepeatedPtrField<Type>>(message, field);
-  SetHasBitForRepeated(message, field);
+  SetHasBit(message, field);
   return repeated->AddWithArena(message->GetArena());
 }
 
@@ -3615,7 +3545,7 @@ void* Reflection::RepeatedFieldData(Message* message,
 MapFieldBase* Reflection::MutableMapData(Message* message,
                                          const FieldDescriptor* field) const {
   USAGE_CHECK(IsMapFieldInApi(field), GetMapData, "Field is not a map field.");
-  SetHasBitForRepeated(message, field);
+  SetHasBit(message, field);
   auto* map = MutableRaw<MapFieldBase>(message, field);
   map->MutableAccess();
   return map;
@@ -3660,10 +3590,16 @@ void Reflection::PopulateTcParseFastEntries(
       *fast_entries++ = {GetFastParseFunction(nonfield->func),
                          {nonfield->coded_tag, nonfield->nonfield_info}};
     } else if (auto* as_field = fast_field.AsField()) {
-      *fast_entries++ = {
-          GetFastParseFunction(as_field->func),
-          {as_field->coded_tag, as_field->hasbit_idx, as_field->aux_idx,
-           static_cast<uint16_t>(schema_.GetFieldOffset(as_field->field))}};
+      const uint32_t field_offset = schema_.GetFieldOffset(as_field->field);
+      if (static_cast<uint16_t>(field_offset) == field_offset) {
+        *fast_entries++ = {
+            GetFastParseFunction(as_field->func),
+            {as_field->coded_tag, as_field->hasbit_idx, as_field->aux_idx,
+             static_cast<uint16_t>(field_offset)}};
+      } else {
+        // The offset is too large, so just ignore the fast field.
+        *fast_entries++ = {internal::TcParser::MiniParse, {}};
+      }
     } else {
       ABSL_DCHECK(fast_field.is_empty());
       // No fast entry here. Use mini parser.
@@ -3730,10 +3666,6 @@ void Reflection::PopulateTcParseFieldAux(
       case internal::TailCallTableInfo::kNothing:
         *field_aux++ = {};
         break;
-      case internal::TailCallTableInfo::kInlinedStringDonatedOffset:
-        field_aux++->offset =
-            static_cast<uint32_t>(schema_.inlined_string_donated_offset_);
-        break;
       case internal::TailCallTableInfo::kSplitOffset:
         field_aux++->offset = schema_.SplitOffset();
         break;
@@ -3741,7 +3673,7 @@ void Reflection::PopulateTcParseFieldAux(
         field_aux++->offset = schema_.SizeofSplit();
         break;
       case internal::TailCallTableInfo::kSubTable:
-      case internal::TailCallTableInfo::kSubMessageWeak:
+      case internal::TailCallTableInfo::kSubMessageGlobalsWeak:
       case internal::TailCallTableInfo::kMessageVerifyFunc:
       case internal::TailCallTableInfo::kSelfVerifyFunc:
         ABSL_LOG(FATAL) << "Not supported";
@@ -3754,9 +3686,10 @@ void Reflection::PopulateTcParseFieldAux(
         // unsupported to fallback to reflection.
         field_aux++->map_info = internal::MapAuxInfo{};
         break;
-      case internal::TailCallTableInfo::kSubMessage:
-        field_aux++->message_default_p =
-            GetDefaultMessageInstance(aux_entry.field);
+      case internal::TailCallTableInfo::kSubMessageGlobals:
+        field_aux++->message_globals_p =
+            MessageGlobalsBase::FromDefaultInstance(
+                GetDefaultMessageInstance(aux_entry.field));
         break;
       case internal::TailCallTableInfo::kEnumRange:
         field_aux++->enum_range = {aux_entry.enum_range.first,
@@ -3780,40 +3713,46 @@ void Reflection::PopulateTcParseFieldAux(
 const internal::TcParseTableBase* Reflection::CreateTcParseTable() const {
   using TcParseTableBase = internal::TcParseTableBase;
 
-  std::vector<internal::TailCallTableInfo::FieldOptions> fields;
+  using FieldOptions = internal::TailCallTableInfo::FieldOptions;
+  std::vector<FieldOptions> fields;
   fields.reserve(descriptor_->field_count());
   for (int i = 0; i < descriptor_->field_count(); ++i) {
     auto* field = descriptor_->field(i);
-    const bool is_inlined = IsInlined(field);
+    const auto str_options = [&]() -> FieldOptions::StrOptions {
+      if (field->cpp_type() == FieldDescriptor::CPPTYPE_STRING) {
+        if (IsInlined(field)) return FieldOptions::StringInlined{};
+        if (IsMicroString(field)) {
+          // We use the basic SSO capacity for reflection
+          // We could improve this later
+          return FieldOptions::MicroString{MicroString::kInlineCapacity};
+        }
+      }
+      return std::monostate{};
+    };
     fields.push_back({
         field,  //
         static_cast<int>(schema_.HasBitIndex(field)),
         1.f,  // All fields are assumed present.
         GetLazyStyle(field),
-        is_inlined,
         // Only LITE can be implicitly weak.
         /* is_implicitly_weak */ false,
         // We could change this to use direct table.
         // Might be easier to do when all messages support TDP.
         /* use_direct_tcparser_table */ false,
         schema_.IsSplit(field),
-        is_inlined ? static_cast<int>(schema_.InlinedStringIndex(field))
-                   : kNoHasbit,
-        field->cpp_type() == FieldDescriptor::CPPTYPE_STRING &&
-            IsMicroString(field),
+        str_options(),
     });
   }
   std::sort(fields.begin(), fields.end(), [](const auto& a, const auto& b) {
     return a.field->number() < b.field->number();
   });
 
-  internal::TailCallTableInfo table_info(
-      descriptor_,
-      {
-          /* is_lite */ false,
-          /* uses_codegen */ false,
-      },
-      fields);
+  internal::TailCallTableInfo table_info(descriptor_,
+                                         {
+                                             /* is_lite */ false,
+                                             /* uses_codegen */ false,
+                                         },
+                                         fields);
 
   const size_t fast_entries_count = table_info.fast_path_fields.size();
   ABSL_CHECK_EQ(static_cast<int>(fast_entries_count),
@@ -3893,10 +3832,11 @@ namespace {
 
 // Helper function to transform migration schema into reflection schema.
 ReflectionSchema MigrationToReflectionSchema(
-    const Message* const* default_instance, const uint32_t* offsets,
+    const MessageGlobalsBase* const* message_globals, const uint32_t* offsets,
     MigrationSchema migration_schema) {
   ReflectionSchema result;
-  result.default_instance_ = *default_instance;
+  result.default_instance_ =
+      MessageGlobalsBase::ToDefaultInstance<Message>(*message_globals);
   int index = migration_schema.offsets_index;
 
   // First values are offsets to the special fields, but they are optional.
@@ -3922,12 +3862,14 @@ ReflectionSchema MigrationToReflectionSchema(
   result.extensions_offset_ = next();
   result.oneof_case_offset_ = next();
   result.weak_field_map_offset_ = next();
-  result.inlined_string_donated_offset_ = next();
+  // Old result.inlined_string_donated_offset_
+  ABSL_CHECK_EQ(next(), ~uint32_t{});
   result.split_offset_ = next();
   result.sizeof_split_ = next();
 
   result.has_bit_indices_ = next_pointer();
-  result.inlined_string_indices_ = next_pointer();
+  // Old result.inlined_string_indices_
+  ABSL_CHECK_EQ(next_pointer(), nullptr);
 
   result.offsets_ = offsets + index;
   result.object_size_ = migration_schema.object_size;
@@ -3942,12 +3884,12 @@ class AssignDescriptorsHelper {
   AssignDescriptorsHelper(MessageFactory* factory,
                           const EnumDescriptor** file_level_enum_descriptors,
                           const MigrationSchema* schemas,
-                          const Message* const* default_instance_data,
+                          const MessageGlobalsBase* const* message_globals_data,
                           const uint32_t* offsets)
       : factory_(factory),
         file_level_enum_descriptors_(file_level_enum_descriptors),
         schemas_(schemas),
-        default_instance_data_(default_instance_data),
+        message_globals_data_(message_globals_data),
         offsets_(offsets) {}
 
   void AssignMessageDescriptor(const Descriptor* descriptor) {
@@ -3957,25 +3899,27 @@ class AssignDescriptorsHelper {
 
     // If there is no default instance we only want to initialize the descriptor
     // without updating the reflection.
-    if (default_instance_data_[0] != nullptr) {
-      auto& class_data = default_instance_data_[0]->GetClassData()->full();
+    if (message_globals_data_[0] != nullptr) {
+      auto* default_instance =
+          MessageGlobalsBase::ToDefaultInstance(message_globals_data_[0]);
+      auto& class_data = default_instance->GetClassData()->full();
       // If there is no descriptor_table in the class data, then it is not
       // interested in receiving reflection information either.
-      if (class_data.descriptor_table != nullptr) {
-        class_data.descriptor = descriptor;
+      if (class_data.descriptor_table() != nullptr) {
+        class_data.set_descriptor(descriptor);
 
-        class_data.reflection = OnShutdownDelete(new Reflection(
+        class_data.set_reflection(OnShutdownDelete(new Reflection(
             descriptor,
-            MigrationToReflectionSchema(default_instance_data_, offsets_,
+            MigrationToReflectionSchema(message_globals_data_, offsets_,
                                         *schemas_),
-            DescriptorPool::internal_generated_pool(), factory_));
+            DescriptorPool::internal_generated_pool(), factory_)));
       }
     }
     for (int i = 0; i < descriptor->enum_type_count(); i++) {
       AssignEnumDescriptor(descriptor->enum_type(i));
     }
     schemas_++;
-    default_instance_data_++;
+    message_globals_data_++;
   }
 
   void AssignEnumDescriptor(const EnumDescriptor* descriptor) {
@@ -3987,7 +3931,7 @@ class AssignDescriptorsHelper {
   MessageFactory* factory_;
   const EnumDescriptor** file_level_enum_descriptors_;
   const MigrationSchema* schemas_;
-  const Message* const* default_instance_data_;
+  const MessageGlobalsBase* const* message_globals_data_;
   const uint32_t* offsets_;
 };
 
@@ -4000,7 +3944,7 @@ void AssignDescriptorsImpl(const DescriptorTable* table, bool eager) {
     // calls to AddDescriptors.
     static absl::Mutex mu{absl::kConstInit};
     mu.Lock();
-    AddDescriptors(table);
+    internal::AddDescriptors(table);
     mu.Unlock();
   }
   if (eager) {
@@ -4035,7 +3979,7 @@ void AssignDescriptorsImpl(const DescriptorTable* table, bool eager) {
   MessageFactory* factory = MessageFactory::generated_factory();
 
   AssignDescriptorsHelper helper(factory, table->file_level_enum_descriptors,
-                                 table->schemas, table->default_instances,
+                                 table->schemas, table->message_globals,
                                  table->offsets);
 
   for (int i = 0; i < file->message_type_count(); i++) {
@@ -4055,7 +3999,7 @@ void AssignDescriptorsImpl(const DescriptorTable* table, bool eager) {
 void MaybeInitializeLazyDescriptors(const DescriptorTable* table) {
   if (!IsLazilyInitializedFile(table->filename)) {
     // Ensure the generated pool has been lazily initialized.
-    DescriptorPool::generated_pool();
+    (void)DescriptorPool::generated_pool();
   }
 }
 
@@ -4070,12 +4014,33 @@ void AddDescriptorsImpl(const DescriptorTable* table) {
   int num_deps = table->num_deps;
   for (int i = 0; i < num_deps; i++) {
     // In case of weak fields deps[i] could be null.
-    if (table->deps[i]) AddDescriptors(table->deps[i]);
+    if (table->deps[i]) internal::AddDescriptors(table->deps[i]);
   }
 
   // Register the descriptor of this file.
   DescriptorPool::InternalAddGeneratedFile(table->descriptor, table->size);
   MessageFactory::InternalRegisterGeneratedFile(table);
+
+  // Ensure that any lazily loaded static initializers from the generated pool
+  // (e.g. from bootstrapped protos) are run before building any descriptors. We
+  // have do it in reflection code like this, because we need to ensure that the
+  // linker --gc-sections step can strip out the full runtime if it is unused.
+  // If we try to avoid pre-main initialization (e.g. during DescriptorBuilder),
+  // we hit data races and would need to add locks.
+  [[maybe_unused]] static std::true_type lazy_register =
+      (internal::ExtensionSet::RegisterMessageExtension(
+           &FeatureSet::default_instance(), pb::cpp.number(),
+           FieldDescriptor::TYPE_MESSAGE, false, false,
+           &pb::CppFeatures::default_instance(),
+           nullptr,
+           internal::LazyAnnotation::kUndefined),
+       internal::ExtensionSet::RegisterMessageExtension(
+           &EnumValueOptions::default_instance(), pb::enumvalue::json.number(),
+           FieldDescriptor::TYPE_MESSAGE, false, false,
+           &pb::enumvalue::JsonEnumValueOptions::default_instance(),
+           nullptr,
+           internal::LazyAnnotation::kUndefined),
+       std::true_type{});
 }
 
 }  // namespace
@@ -4109,10 +4074,14 @@ void RegisterFileLevelMetadata(const DescriptorTable* table) {
   AssignDescriptors(table);
   auto* file = DescriptorPool::internal_generated_pool()->FindFileByName(
       table->filename);
-  auto defaults = table->default_instances;
+  auto* const* globals = table->message_globals;
   internal::cpp::VisitDescriptorsInFileOrder(file, [&](auto* desc) {
-    MessageFactory::InternalRegisterGeneratedMessage(desc, *defaults);
-    ++defaults;
+    // Weak message globals may be null. Pass null default instance.
+    MessageFactory::InternalRegisterGeneratedMessage(
+        desc, *globals == nullptr
+                  ? nullptr
+                  : MessageGlobalsBase::ToDefaultInstance<Message>(*globals));
+    ++globals;
     return std::false_type{};
   });
 }
@@ -4123,7 +4092,9 @@ void UnknownFieldSetSerializer(const uint8_t* base, uint32_t offset,
   const void* ptr = base + offset;
   const InternalMetadata* metadata = static_cast<const InternalMetadata*>(ptr);
   if (metadata->have_unknown_fields()) {
-    metadata->unknown_fields<UnknownFieldSet>(UnknownFieldSet::default_instance)
+    // TODO: Remove this suppression.
+    (void)metadata
+        ->unknown_fields<UnknownFieldSet>(UnknownFieldSet::default_instance)
         .SerializeToCodedStream(output);
   }
 }
@@ -4197,8 +4168,8 @@ const Message* GetPrototypeForWeakDescriptor(const DescriptorTable* table,
   InitProtobufDefaults();
 
   // Now check if the table has it. If so, return it.
-  if (const auto* msg = table->default_instances[index]) {
-    return msg;
+  if (const auto* globals = table->message_globals[index]) {
+    return MessageGlobalsBase::ToDefaultInstance<Message>(globals);
   }
 
   if (!force_build) {

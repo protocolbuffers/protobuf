@@ -54,8 +54,8 @@ def RefMessage(name):
   print('''
   {{
     {name} proto;
-    proto.ParseFromArray(buf, 0);
-    proto.SerializePartialToArray(&buf[0], 0);
+    (void)proto.ParseFromArray(buf, 0);
+    (void)proto.SerializePartialToArray(&buf[0], 0);
   }}
   '''.format(name=name))
 

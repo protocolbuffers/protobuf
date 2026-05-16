@@ -64,7 +64,7 @@ namespace internal {
 // TYPE_MESSAGE to infer the in-memory type.
 template <typename Key, typename Value, WireFormatLite::FieldType kKeyFieldType,
           WireFormatLite::FieldType kValueFieldType>
-class MapEntry : public Message {
+class PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED MapEntry : public Message {
   // Provide utilities to parse/serialize key/value.  Provide utilities to
   // manipulate internal stored type.
   using KeyTypeHandler = MapTypeHandler<kKeyFieldType, Key>;

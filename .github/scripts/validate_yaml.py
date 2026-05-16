@@ -8,6 +8,24 @@ import re
 
 import yaml
 
+
+def check_ctest(namein, jobin, filein, obj):
+  """Checks that the ctest command is not in a mode that allows missing tests to pass."""
+  for key in obj:
+    if (
+        isinstance(obj[key], str)
+        and 'ctest' in obj[key]
+        and 'ctest --no-tests=error' not in obj[key]
+    ):
+      raise ValueError(
+          'Step %s in job %s from file %s runs ctest in a mode that allows'
+          ' missing tests to pass.  Add --no-tests=error to the command and'
+          ' build with -Dprotobuf_BUILD_TESTS=ON.' % (namein, jobin, filein)
+      )
+    elif isinstance(obj[key], dict):
+      check_ctest(namein, jobin, filein, obj[key])
+
+
 # Ensure every job is in the list of blocking jobs.
 with open(
     os.path.join(os.path.dirname(__file__), '../workflows/test_runner.yml'), 'r'
@@ -72,4 +90,6 @@ for file in yaml_files:
               ' condition but the job does not contain the continuous-prefix'
               % (name, job, file)
           )
+        check_ctest(name, job, file, step)
+
 print('PASSED: All steps in all jobs check the continuous-run condition.')

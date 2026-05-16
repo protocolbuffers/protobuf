@@ -9,7 +9,7 @@ load("@rules_cc//cc:defs.bzl", "cc_library")
 load("@rules_license//rules:license.bzl", "license")
 
 package(
-    default_applicable_licenses = ["//third_party/utf8_range:license"],
+    default_applicable_licenses = [":license"],
     default_visibility = ["//visibility:public"],
 )
 

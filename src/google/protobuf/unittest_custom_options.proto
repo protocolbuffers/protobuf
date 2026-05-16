@@ -71,6 +71,69 @@ extend google.protobuf.MethodOptions {
   optional MethodOpt1 method_opt1 = 7890860;
 }
 
+// Custom options with feature support
+extend google.protobuf.MessageOptions {
+  optional bool removed_option = 7733026 [feature_support = {
+    edition_removed: EDITION_2023
+    removal_error: "removed_option removal error"
+  }];
+  optional bool deprecated_option = 7737036 [feature_support = {
+    edition_deprecated: EDITION_2023
+    deprecation_warning: "deprecated_option deprecation warning"
+  }];
+  optional CustomOptionLifetimesMessage custom_option_lifetimes_message =
+      7737026;
+  optional CustomOptionLifetimesEnum custom_option_lifetimes_enum = 7737022;
+  repeated CustomOptionLifetimesMessage
+      repeated_custom_option_lifetimes_message = 7737021;
+}
+
+message CustomOptionLifetimesMessage {
+  optional string removed_option = 1 [feature_support = {
+    edition_removed: EDITION_2023
+    removal_error: "removed_option removal error"
+  }];
+  optional string deprecated_option = 2 [feature_support = {
+    edition_deprecated: EDITION_2023
+    deprecation_warning: "deprecated_option deprecation warning"
+  }];
+
+  repeated CustomOptionLifetimesEnum repeated_custom_option_lifetimes_enum = 4;
+
+  optional NestedCustomOptionLifetimesMessage
+      nested_custom_option_lifetimes_message = 5;
+
+  extensions 100 to 200;
+}
+
+enum CustomOptionLifetimesEnum {
+  CUSTOM_OPTION_ENUM_DEFAULT = 0;
+  CUSTOM_OPTION_ENUM_REMOVED_EDITION2023 = 1 [feature_support = {
+    edition_removed: EDITION_2023
+    removal_error: "CUSTOM_OPTION_ENUM_REMOVED_EDITION2023 removal error"
+  }];
+  CUSTOM_OPTION_ENUM_REMOVED_PROTO3 = 2 [feature_support = {
+    edition_removed: EDITION_PROTO3
+    removal_error: "CUSTOM_OPTION_ENUM_REMOVED_PROTO3 removal error"
+  }];
+  CUSTOM_OPTION_ENUM_VALUE3 = 3;
+  CUSTOM_OPTION_ENUM_VALUE4 = 4;
+}
+
+message NestedCustomOptionLifetimesMessage {
+  optional string deprecated_option = 1 [feature_support = {
+    edition_deprecated: EDITION_2023
+    deprecation_warning: "deprecated_option deprecation warning"
+  }];
+}
+
+extend proto2_unittest.CustomOptionLifetimesMessage {
+  optional string custom_nested_option = 101 [feature_support = {
+    edition_removed: EDITION_2023
+    removal_error: "custom_nested_option removal error"
+  }];
+}
+
 // A test message with custom options at all possible locations (and also some
 // regular options, to make sure they interact nicely).
 message TestMessageWithCustomOptions {

@@ -25,6 +25,7 @@ jobs:
     uses: bazel-contrib/publish-to-bcr/.github/workflows/publish.yaml@v1.0.0
     with:
       attest: false # protobuf releases are not created with provenance attestations
+      draft: false
       tag_name: ${{ inputs.tag_name }}
       # GitHub repository which is a fork of the upstream where the Pull Request will be opened.
       registry_fork: protocolbuffers/bazel-central-registry

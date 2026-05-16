@@ -14,7 +14,7 @@ license = "BSD-3-Clause"
 publish = false
 
 [dependencies]
-paste = "1.0.15"
+paste = { package = "paste-complete", version = "1.0.15"}
 protobuf = { version = "{VERSION}", path = "../protobuf", package = "protobuf" }
 protobuf-codegen = { version = "{VERSION}", path = "../protobuf_codegen", package = "protobuf-codegen" }
 

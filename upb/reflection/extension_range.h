@@ -10,7 +10,10 @@
 #ifndef UPB_REFLECTION_EXTENSION_RANGE_H_
 #define UPB_REFLECTION_EXTENSION_RANGE_H_
 
+#include <stdint.h>
+
 #include "upb/reflection/common.h"
+#include "upb/reflection/descriptor_bootstrap.h"
 
 // Must be last.
 #include "upb/port/def.inc"
@@ -23,10 +26,10 @@ int32_t upb_ExtensionRange_Start(const upb_ExtensionRange* r);
 int32_t upb_ExtensionRange_End(const upb_ExtensionRange* r);
 
 bool upb_ExtensionRange_HasOptions(const upb_ExtensionRange* r);
-const UPB_DESC(ExtensionRangeOptions) *
-    upb_ExtensionRange_Options(const upb_ExtensionRange* r);
-const UPB_DESC(FeatureSet) *
-    upb_ExtensionRange_ResolvedFeatures(const upb_ExtensionRange* e);
+const google_protobuf_ExtensionRangeOptions* upb_ExtensionRange_Options(
+    const upb_ExtensionRange* r);
+const google_protobuf_FeatureSet* upb_ExtensionRange_ResolvedFeatures(
+    const upb_ExtensionRange* e);
 
 #ifdef __cplusplus
 } /* extern "C" */

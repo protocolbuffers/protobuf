@@ -110,7 +110,7 @@ class Declaration extends \Google\Protobuf\Internal\Message
      * @param int $var
      * @return $this
      */
-    public function setNumber($var)
+    public function setNumber(int $var)
     {
         GPBUtil::checkInt32($var);
         $this->number = $var;
@@ -148,9 +148,9 @@ class Declaration extends \Google\Protobuf\Internal\Message
      * @param string $var
      * @return $this
      */
-    public function setFullName($var)
+    public function setFullName(string $var)
     {
-        GPBUtil::checkString($var, True);
+        GPBUtil::checkString($var, true);
         $this->full_name = $var;
 
         return $this;
@@ -188,9 +188,9 @@ class Declaration extends \Google\Protobuf\Internal\Message
      * @param string $var
      * @return $this
      */
-    public function setType($var)
+    public function setType(string $var)
     {
-        GPBUtil::checkString($var, True);
+        GPBUtil::checkString($var, true);
         $this->type = $var;
 
         return $this;
@@ -228,9 +228,8 @@ class Declaration extends \Google\Protobuf\Internal\Message
      * @param bool $var
      * @return $this
      */
-    public function setReserved($var)
+    public function setReserved(bool $var)
     {
-        GPBUtil::checkBool($var);
         $this->reserved = $var;
 
         return $this;
@@ -266,9 +265,8 @@ class Declaration extends \Google\Protobuf\Internal\Message
      * @param bool $var
      * @return $this
      */
-    public function setRepeated($var)
+    public function setRepeated(bool $var)
     {
-        GPBUtil::checkBool($var);
         $this->repeated = $var;
 
         return $this;

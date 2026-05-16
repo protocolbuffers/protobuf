@@ -49,7 +49,7 @@ class SymbolCheckerError {
                      SymbolCheckerErrorType type)
       : symbol_name_(symbol_name), descriptor_(descriptor), type_(type) {}
 
-  std::string_view symbol_name() const { return symbol_name_; }
+  absl::string_view symbol_name() const { return symbol_name_; }
   const Message* descriptor() const { return &descriptor_; }
   SymbolCheckerErrorType type() const { return type_; }
 
@@ -109,17 +109,20 @@ class PROTOBUF_EXPORT SymbolChecker {
   //   }
   //   reserved 1 to max;
   // }
-  static bool IsEnumNamespaceMessage(const Descriptor& container);
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD static bool IsEnumNamespaceMessage(
+      const Descriptor& container);
 
   // Returns true iff the enum is a namespaced enum.  This is an enum that is
   // nested within a message that is considered an 'EnumNamespaceMessage' as
   // defined above. IsEnumNamespaceMessage must return true for the enums
   // container message.
-  static bool IsNamespacedEnum(const EnumDescriptor& enm);
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD static bool IsNamespacedEnum(
+      const EnumDescriptor& enm);
 
   // Return a list of errors identified in the given FileDescriptor/proto w.r.t
   // to SymbolChecking visibility.
-  std::vector<SymbolCheckerError> CheckSymbolVisibilityRules();
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD std::vector<SymbolCheckerError>
+  CheckSymbolVisibilityRules();
 
  private:
   void Initialize();

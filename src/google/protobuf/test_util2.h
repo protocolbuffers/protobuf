@@ -37,7 +37,7 @@ inline std::string GetTestDataPath(absl::string_view path) {
 template <typename ProtoType>
 bool EqualsToSerialized(const ProtoType& message, const std::string& data) {
   ProtoType other;
-  other.ParsePartialFromString(data);
+  ABSL_CHECK(other.ParsePartialFromString(data));
   return util::MessageDifferencer::Equals(message, other);
 }
 
@@ -48,7 +48,7 @@ class BoundedArrayInputStream : public io::ZeroCopyInputStream {
  public:
   BoundedArrayInputStream(const void* data, int size)
       : stream_(data, size), bound_(size) {}
-  ~BoundedArrayInputStream() override {}
+  ~BoundedArrayInputStream() override = default;
 
   bool Next(const void** data, int* size) override {
     ABSL_CHECK_LT(stream_.ByteCount(), bound_);

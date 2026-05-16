@@ -26,11 +26,10 @@ namespace cpp {
 namespace {
 
 bool EndsWithMsgPtr(const std::vector<const FieldDescriptor*>& fields,
-                    const Options& options, MessageSCCAnalyzer* scc_analyzer) {
+                    const Options& options) {
   auto* last_field = fields.back();
   return last_field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE &&
-         !IsLazy(last_field, options, scc_analyzer) &&
-         !last_field->is_repeated();
+         !IsLazy(last_field, options) && !last_field->is_repeated();
 }
 
 auto FindIncompleteBlock(std::vector<FieldGroup>& aligned_to_8) {
@@ -68,57 +67,30 @@ bool FieldGroup::UpdatePreferredLocationAndInsertOtherFields(
 }
 
 MessageLayoutHelper::FieldVector MessageLayoutHelper::DoOptimizeLayout(
-    const FieldVector& fields, const Options& options,
-    MessageSCCAnalyzer* scc_analyzer) const {
-  auto field_alignment_groups =
-      BuildFieldAlignmentGroups(fields, options, scc_analyzer);
+    const FieldVector& fields, const Options& options) const {
+  auto field_alignment_groups = BuildFieldAlignmentGroups(fields, options);
   auto field_groups =
       MergeFieldAlignmentGroups(std::move(field_alignment_groups));
   auto ordered_fields =
-      BuildFieldDescriptorOrder(std::move(field_groups), options, scc_analyzer);
+      BuildFieldDescriptorOrder(std::move(field_groups), options);
   return ordered_fields;
 }
 
 // This function determines the order of the field hotness groups in the
 // message. The higher the number, the closer to the top of the message.
 constexpr size_t MessageLayoutHelper::FieldHotnessIndex(FieldHotness hotness) {
-  if constexpr (internal::EnableExperimentalHintHasBitsForRepeatedFields()) {
-    // Swap kFastParse and kRepeated so fast-parse fields are assigned the
-    // lowest hasbit indices.
-    switch (hotness) {
-      case FieldHotness::kSplit:
-        return 0;
-      case FieldHotness::kCold:
-        return 1;
-      case FieldHotness::kWarm:
-        return 2;
-      case FieldHotness::kHot:
-        return 3;
-      case FieldHotness::kRepeated:
-        return 4;
-      case FieldHotness::kFastParse:
-        return 5;
-      case FieldHotness::kMaxHotness:
-        internal::Unreachable();
-    }
-
-    // Make the compiler happy.
-    return 0;
-  } else {
-    return static_cast<size_t>(hotness);
-  }
+  return static_cast<size_t>(hotness);
 }
 
 MessageLayoutHelper::FieldFamily MessageLayoutHelper::GetFieldFamily(
-    const FieldDescriptor* field, const Options& options,
-    MessageSCCAnalyzer* scc_analyzer) {
+    const FieldDescriptor* field, const Options& options) {
   if (field->is_repeated()) {
     return ShouldSplit(field, options) ? OTHER : REPEATED;
   } else if (field->cpp_type() == FieldDescriptor::CPPTYPE_STRING) {
     return STRING;
   } else if (field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
     return MESSAGE;
-  } else if (CanInitializeByZeroing(field, options, scc_analyzer)) {
+  } else if (CanInitializeByZeroing(field, options)) {
     return ZERO_INITIALIZABLE;
   } else {
     return OTHER;
@@ -126,8 +98,7 @@ MessageLayoutHelper::FieldFamily MessageLayoutHelper::GetFieldFamily(
 }
 
 std::vector<internal::TailCallTableInfo::FastFieldInfo>
-MessageLayoutHelper::BuildFastParseTable(
-    const Options& options, MessageSCCAnalyzer* scc_analyzer) const {
+MessageLayoutHelper::BuildFastParseTable(const Options& options) const {
   FieldVector ordered_fields;
   for (const auto* field : GetOrderedFields(descriptor_)) {
     if (IsLayoutOptimized(field, options)) {
@@ -135,8 +106,8 @@ MessageLayoutHelper::BuildFastParseTable(
     }
   }
   auto field_options = ParseFunctionGenerator::BuildFieldOptions(
-      descriptor_, ordered_fields, options, scc_analyzer,
-      /*has_bit_indices=*/{}, /*inlined_string_indices=*/{});
+      descriptor_, ordered_fields, options,
+      /*has_bit_indices=*/{});
   auto table_info = ParseFunctionGenerator::BuildTcTableInfoFromDescriptor(
       descriptor_, options, field_options);
   return table_info.fast_path_fields;
@@ -150,7 +121,7 @@ bool MessageLayoutHelper::IsFastPathField(
     return false;
   }
 
-  const uint32_t coded_tag = GetRecodedTagForFastParsing(field);
+  const uint32_t coded_tag = internal::GetRecodedTagForFastParsing(field);
   const uint32_t fast_idx = internal::TcParseTableBase::TagToIdx(
       coded_tag, static_cast<uint32_t>(fast_path_fields.size()));
   const auto* fast_field = fast_path_fields[fast_idx].AsField();
@@ -163,23 +134,17 @@ bool MessageLayoutHelper::ShouldPromoteToFastParse(
         fast_path_fields) {
   // Only promote warm and hot fields to fast-parse.
   if (hotness < FieldHotness::kWarm) return false;
-  // If hasbits for repeated fields is disabled, don't promote repeated fields.
-  if (!internal::EnableExperimentalHintHasBitsForRepeatedFields() &&
-      field->is_repeated()) {
-    return false;
-  }
   return IsFastPathField(field, fast_path_fields);
 }
 
 MessageLayoutHelper::FieldAlignmentGroups
-MessageLayoutHelper::BuildFieldAlignmentGroups(
-    const FieldVector& fields, const Options& options,
-    MessageSCCAnalyzer* scc_analyzer) const {
+MessageLayoutHelper::BuildFieldAlignmentGroups(const FieldVector& fields,
+                                               const Options& options) const {
   FieldAlignmentGroups field_alignment_groups;
-  const auto fast_path_fields = BuildFastParseTable(options, scc_analyzer);
+  const auto fast_path_fields = BuildFastParseTable(options);
 
   for (const auto* field : fields) {
-    FieldFamily f = GetFieldFamily(field, options, scc_analyzer);
+    FieldFamily f = GetFieldFamily(field, options);
 
     FieldHotness hotness;
     if (ShouldSplit(field, options)) {
@@ -187,7 +152,7 @@ MessageLayoutHelper::BuildFieldAlignmentGroups(
     } else if (field->is_repeated()) {
       hotness = FieldHotness::kRepeated;
     } else {
-      hotness = GetFieldHotness(field, options, scc_analyzer);
+      hotness = GetFieldHotness(field, options);
     }
 
     if (ShouldPromoteToFastParse(field, hotness, fast_path_fields)) {
@@ -252,8 +217,7 @@ MessageLayoutHelper::MergeFieldAlignmentGroups(
 }
 
 MessageLayoutHelper::FieldVector MessageLayoutHelper::BuildFieldDescriptorOrder(
-    FieldPartitionArray&& field_groups, const Options& options,
-    MessageSCCAnalyzer* scc_analyzer) const {
+    FieldPartitionArray&& field_groups, const Options& options) const {
   enum { kZeroLast = 0, kZeroFirst = 1, kRecipeMax };
   constexpr FieldFamily profiled_orders[kRecipeMax][kMaxFamily] = {
       {REPEATED, STRING, OTHER, MESSAGE, ZERO_INITIALIZABLE},
@@ -307,9 +271,8 @@ MessageLayoutHelper::FieldVector MessageLayoutHelper::BuildFieldDescriptorOrder(
       }
     }
 
-    if (!fields.empty() &&
-        (EndsWithMsgPtr(fields, options, scc_analyzer) ||
-         CanInitializeByZeroing(fields.back(), options, scc_analyzer))) {
+    if (!fields.empty() && (EndsWithMsgPtr(fields, options) ||
+                            CanInitializeByZeroing(fields.back(), options))) {
       recipe = kZeroFirst;
     } else {
       recipe = kZeroLast;

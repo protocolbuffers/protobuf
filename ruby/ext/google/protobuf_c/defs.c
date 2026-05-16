@@ -114,6 +114,10 @@ static VALUE DescriptorPool_alloc(VALUE klass) {
 
   RB_OBJ_WRITE(ret, &self->def_to_descriptor, rb_hash_new());
   self->symtab = upb_DefPool_New();
+
+  // Ruby treats all enums as open.
+  upb_DefPool_DisableClosedEnumChecking(self->symtab);
+
   return ObjectCache_TryAdd(self->symtab, ret);
 }
 

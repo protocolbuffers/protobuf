@@ -8,11 +8,13 @@
 #ifndef GOOGLE_PROTOBUF_PYTHON_CPP_DESCRIPTOR_POOL_H__
 #define GOOGLE_PROTOBUF_PYTHON_CPP_DESCRIPTOR_POOL_H__
 
+#include <memory>
 #define PY_SSIZE_T_CLEAN
 #include <Python.h>
 
 #include "absl/container/flat_hash_map.h"
 #include "google/protobuf/descriptor.h"
+#include "google/protobuf/pyext/free_threading_mutex.h"
 
 namespace google {
 namespace protobuf {
@@ -67,9 +69,14 @@ typedef struct PyDescriptorPool {
   // Cache the options for any kind of descriptor.
   // Descriptor pointers are owned by the DescriptorPool above.
   // Python objects are owned by the map.
+  // Protected by cache_mutex.
   absl::flat_hash_map<const void*, PyObject*>* descriptor_options;
   // Similar cache for features.
+  // Protected by cache_mutex.
   absl::flat_hash_map<const void*, PyObject*>* descriptor_features;
+
+  // Mutex protecting the caching maps above.
+  FreeThreadingMutex* cache_mutex;
 } PyDescriptorPool;
 
 extern PyTypeObject PyDescriptorPool_Type;
@@ -118,6 +125,16 @@ PyDescriptorPool* GetDescriptorPool_FromPool(const DescriptorPool* pool);
 // Wraps a C++ descriptor pool in a Python object, creates it if necessary.
 // Returns a new reference.
 PyObject* PyDescriptorPool_FromPool(const DescriptorPool* pool);
+
+// Takes ownership of a C++ DescriptorPool and returns a new Python
+// DescriptorPool that wraps it.
+// If set, the DescriptorDatabase is also managed by the returned object.
+PyObject* PyDescriptorPool_FromPool(
+    std::unique_ptr<const google::protobuf::DescriptorPool> pool,
+    std::unique_ptr<const google::protobuf::DescriptorDatabase> database);
+
+// Returns the C++ descriptor pool wrapped by a Python object.
+const DescriptorPool* PyDescriptorPool_AsPool(PyObject* pool);
 
 // Initialize objects used by this module.
 bool InitDescriptorPool();

@@ -191,7 +191,7 @@ static PyObject* PyUpb_MapContainer_Subscript(PyObject* _self, PyObject* key) {
     } else {
       memset(&u_val, 0, sizeof(u_val));
     }
-    if (!PyUpb_MapContainer_Set(self, map, u_key, u_val, arena)) return false;
+    if (!PyUpb_MapContainer_Set(self, map, u_key, u_val, arena)) return NULL;
   }
   return PyUpb_UpbToPy(u_val, val_f, self->arena);
 }

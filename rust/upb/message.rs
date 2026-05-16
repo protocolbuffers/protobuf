@@ -158,14 +158,8 @@ impl<T: AssociatedMiniTable> MessagePtr<T> {
     ) -> Option<MessagePtr<ChildT>> {
         let f = unsafe { sys_mt::upb_MiniTable_GetFieldByIndex(T::mini_table(), index) };
 
-        let raw = unsafe {
-            sys_msg::upb_Message_GetOrCreateMutableMessage(
-                self.raw,
-                T::mini_table(),
-                f,
-                arena.raw(),
-            )
-        };
+        let raw =
+            unsafe { sys_msg::upb_Message_GetOrCreateMutableMessage(self.raw, f, arena.raw()) };
         raw.map(|raw| MessagePtr { raw, _phantom: PhantomData })
     }
 
@@ -243,7 +237,7 @@ impl<T: AssociatedMiniTable> MessagePtr<T> {
     ) -> Option<sys_map::RawMap> {
         unsafe {
             let f = sys_mt::upb_MiniTable_GetFieldByIndex(T::mini_table(), index);
-            let map_entry_mini_table = sys_mt::upb_MiniTable_SubMessage(T::mini_table(), f);
+            let map_entry_mini_table = sys_mt::upb_MiniTable_SubMessage(f);
             sys_msg::upb_Message_GetOrCreateMutableMap(
                 self.raw,
                 map_entry_mini_table,

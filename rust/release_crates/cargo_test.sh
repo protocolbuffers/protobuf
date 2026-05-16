@@ -32,10 +32,10 @@ TMP_DIR=$(mktemp -d)
 trap 'rm -rf -- "$TMP_DIR"' EXIT
 
 CARGO_HOME=$TMP_DIR/cargo_home
-mkdir $CARGO_HOME
+mkdir "$CARGO_HOME"
 
 WORKSPACE_ROOT=$TMP_DIR/workspace
-mkdir $WORKSPACE_ROOT
+mkdir "$WORKSPACE_ROOT"
 
 WORKSPACE_TAR=$(rlocation com_google_protobuf/rust/release_crates/workspace.tar)
 
@@ -44,15 +44,15 @@ echo "Expanding Cargo workspace tar"
 # The tar binary on Windows does not know how to handle file paths that start
 # with C:\ or similar, so we go a little out of our way here to avoid passing
 # any paths as arguments to tar.
-pushd $WORKSPACE_ROOT
-tar -xv < $WORKSPACE_TAR
+pushd "$WORKSPACE_ROOT"
+tar -xv < "$WORKSPACE_TAR"
 popd
 
 # Put the Bazel-built protoc at the beginning of $PATH
 PATH=$(dirname $(rlocation com_google_protobuf/protoc)):$PATH
 
-export RUSTFLAGS="-Dmismatched-lifetime-syntaxes"
+export RUSTFLAGS="-Dwarnings"
 
-cd $WORKSPACE_ROOT
+cd "$WORKSPACE_ROOT"
 CARGO_HOME=$CARGO_HOME cargo test
 CARGO_HOME=$CARGO_HOME cargo publish --dry-run --workspace

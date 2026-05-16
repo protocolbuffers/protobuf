@@ -338,7 +338,7 @@ class Proto3Test {
   @Test
   fun testGetOrNull() {
     val noNestedMessage = testAllTypes {}
-    assertThat(noNestedMessage.optionalNestedMessageOrNull).isEqualTo(null)
+    assertThat(noNestedMessage.optionalNestedMessageOrNull).isNull()
 
     val someNestedMessage = testAllTypes {
       optionalNestedMessage = TestAllTypesKt.nestedMessage { bb = 118 }
@@ -347,6 +347,6 @@ class Proto3Test {
       .isEqualTo(TestAllTypesKt.nestedMessage { bb = 118 })
 
     // No optional keyword, OrNull should still be generated
-    assertThat(someNestedMessage.optionalForeignMessageOrNull).isEqualTo(null)
+    assertThat(someNestedMessage.optionalForeignMessageOrNull).isNull()
   }
 }

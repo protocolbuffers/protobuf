@@ -47,6 +47,7 @@ using ::proto3::TestEnumValue;
 using ::proto3::TestMap;
 using ::proto3::TestMessage;
 using ::proto3::TestOneof;
+using ::proto3::TestStringMapOverlay;
 using ::proto3::TestWrapper;
 using ::testing::ContainsRegex;
 using ::testing::ElementsAre;
@@ -645,6 +646,106 @@ TEST_P(JsonTest, ParseMap) {
   EXPECT_EQ(other->DebugString(), message.DebugString());
 }
 
+TEST_P(JsonTest, BinaryToJsonStreamMapEntryWithNoValue) {
+  TestStringMapOverlay emulated_message;
+  auto* entry = emulated_message.add_string_map();
+  entry->set_key("hello");
+
+  std::string proto_data_emulated = emulated_message.SerializeAsString();
+  io::ArrayInputStream in(proto_data_emulated.data(),
+                          proto_data_emulated.size());
+
+  std::string printed;
+  io::StringOutputStream out(&printed);
+
+  PrintOptions options = {};
+  auto status = BinaryToJsonStream(resolver_.get(),
+                                   "type.googleapis.com/proto3.TestStringMap",
+                                   &in, &out, options);
+  ASSERT_OK(status);
+
+  ASSERT_EQ(printed, R"({"stringMap":{"hello":""}})");
+}
+
+TEST_P(JsonTest, BinaryToJsonStreamMapEntryWithNoKey) {
+  TestStringMapOverlay emulated_message;
+  auto* entry = emulated_message.add_string_map();
+  entry->set_value("1234");
+
+  std::string proto_data_emulated = emulated_message.SerializeAsString();
+  io::ArrayInputStream in(proto_data_emulated.data(),
+                          proto_data_emulated.size());
+
+  std::string printed;
+  io::StringOutputStream out(&printed);
+
+  PrintOptions options = {};
+  auto status = BinaryToJsonStream(resolver_.get(),
+                                   "type.googleapis.com/proto3.TestStringMap",
+                                   &in, &out, options);
+  ASSERT_OK(status);
+
+  ASSERT_EQ(printed, R"({"stringMap":{"":"1234"}})");
+}
+
+TEST_P(JsonTest, BinaryToJsonStreamMapEntryWithNoKeyOrValue) {
+  TestStringMapOverlay emulated_message;
+  (void)emulated_message.add_string_map();
+
+  std::string proto_data_emulated = emulated_message.SerializeAsString();
+  io::ArrayInputStream in(proto_data_emulated.data(),
+                          proto_data_emulated.size());
+
+  std::string printed;
+  io::StringOutputStream out(&printed);
+
+  PrintOptions options = {};
+  auto status = BinaryToJsonStream(resolver_.get(),
+                                   "type.googleapis.com/proto3.TestStringMap",
+                                   &in, &out, options);
+  ASSERT_OK(status);
+
+  ASSERT_EQ(printed, R"({"stringMap":{"":""}})");
+}
+
+TEST_P(JsonTest, BinaryToJsonStreamDuplicateNonRepeatedField) {
+  // The wire tag for field 6 (float_value) is (6 << 3) | 5 = 0x35.
+  // We provide multiple values for the same non-repeated field.
+  std::string binary_data("\x35\x00\x00\x80\x3F\x35\x00\x00\x00\x40", 10);
+  io::ArrayInputStream in(binary_data.data(), binary_data.size());
+
+  std::string printed;
+  io::StringOutputStream out(&printed);
+
+  PrintOptions options = {};
+  options.always_print_fields_with_no_presence = true;
+  auto status = BinaryToJsonStream(resolver_.get(),
+                                   "type.googleapis.com/proto3.TestMessage",
+                                   &in, &out, options);
+  EXPECT_THAT(status, StatusIs(absl::StatusCode::kInvalidArgument));
+  EXPECT_THAT(status.message(),
+              ContainsRegex("repeated entries for singular field number 6"));
+}
+
+TEST_P(JsonTest, BinaryToJsonStreamAlwaysPrintPrimitivesNoValueOnWire) {
+  // Missing field should fall back to default value.
+  std::string binary_data = "";  // Empty message
+  io::ArrayInputStream in(binary_data.data(), binary_data.size());
+
+  std::string printed;
+  io::StringOutputStream out(&printed);
+
+  PrintOptions options;
+  options.always_print_fields_with_no_presence = true;
+  auto status = BinaryToJsonStream(resolver_.get(),
+                                   "type.googleapis.com/proto3.TestMessage",
+                                   &in, &out, options);
+  ASSERT_OK(status);
+
+  // Verify that floatValue is printed with default 0.
+  EXPECT_THAT(printed, ContainsRegex(R"("floatValue":0)"));
+}
+
 TEST_P(JsonTest, RepeatedMapKey) {
   EXPECT_THAT(ToProto<TestMap>(R"json({
     "string_map": {
@@ -1179,6 +1280,26 @@ TEST_P(JsonTest, TestOverwriteRepeated) {
 }
 
 
+TEST_P(JsonTest, TestAny) {
+  // Not setting 'value' is legal because it is the the representation of an
+  // empty message (since 'bytes' is an implicit presence field).
+  google::protobuf::Any any;
+  any.set_type_url("type.googleapis.com/proto3.TestMessage");
+  PrintOptions options;
+  options.allow_legacy_nonconformant_behavior = false;
+  EXPECT_THAT(
+      ToJson(any),
+      IsOkAndHolds(R"({"@type":"type.googleapis.com/proto3.TestMessage"})"));
+  EXPECT_THAT(
+      ToJson(any, options),
+      IsOkAndHolds(R"({"@type":"type.googleapis.com/proto3.TestMessage"})"));
+
+  auto round_trip = ToProto<google::protobuf::Any>(*ToJson(any));
+  ASSERT_OK(round_trip);
+  EXPECT_EQ(round_trip->type_url(), "type.googleapis.com/proto3.TestMessage");
+  EXPECT_EQ(round_trip->value(), "");
+}
+
 TEST_P(JsonTest, TestDuration) {
   auto m = ToProto<proto3::TestDuration>(R"json(
     {
@@ -1420,6 +1541,16 @@ TEST_P(JsonTest, UnknownGroupField) {
                                       "\273>\010c\274>", &out);
   ASSERT_OK(s);
   EXPECT_EQ(out, "{}");
+}
+
+TEST_P(JsonTest, MalformedLengthDelimitedField) {
+  std::string out;
+  // An unknown length delimited field where the length is larger than
+  // the remaining input.
+  absl::Status s = BinaryToJsonString(resolver_.get(),
+                                      "type.googleapis.com/proto3.TestMessage",
+                                      "\xC2\x3E\x80\x80\x80\x80\x08", &out);
+  ASSERT_THAT(s, StatusIs(absl::StatusCode::kInvalidArgument));
 }
 
 // JSON values get special treatment when it comes to pre-existing values in

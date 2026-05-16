@@ -11,7 +11,6 @@
 #include <cstdint>
 #include <cstring>
 #include <limits>
-#include <optional>
 #include <string>
 #include <utility>
 
@@ -29,6 +28,7 @@
 #include "absl/strings/str_format.h"
 #include "absl/strings/str_split.h"
 #include "absl/strings/string_view.h"
+#include "absl/types/optional.h"
 #include "absl/types/span.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/dynamic_message.h"
@@ -333,20 +333,20 @@ absl::StatusOr<std::string> ParseStrOrBytes(JsonLexer& lex,
 }
 
 template <typename Traits>
-absl::StatusOr<std::optional<int32_t>> ParseEnumFromStr(
+absl::StatusOr<absl::optional<int32_t>> ParseEnumFromStr(
     const json_internal::ParseOptions& options, MaybeOwnedString& str,
     Field<Traits> field) {
   absl::StatusOr<int32_t> value = Traits::EnumNumberByName(
       field, str.AsView(), options.case_insensitive_enum_parsing);
   if (value.ok()) {
-    return std::optional<int32_t>(*value);
+    return absl::optional<int32_t>(*value);
   }
 
   int32_t i;
   if (absl::SimpleAtoi(str.AsView(), &i)) {
-    return std::optional<int32_t>(i);
+    return absl::optional<int32_t>(i);
   } else if (options.ignore_unknown_fields) {
-    return {std::nullopt};
+    return {absl::nullopt};
   }
 
   return value.status();
@@ -355,8 +355,8 @@ absl::StatusOr<std::optional<int32_t>> ParseEnumFromStr(
 // Parses an enum; can return nullopt if a quoted enumerator that we don't
 // know about is received and `ignore_unknown_fields` is set.
 template <typename Traits>
-absl::StatusOr<std::optional<int32_t>> ParseEnum(JsonLexer& lex,
-                                                 Field<Traits> field) {
+absl::StatusOr<absl::optional<int32_t>> ParseEnum(JsonLexer& lex,
+                                                  Field<Traits> field) {
   absl::StatusOr<JsonLexer::Kind> kind = lex.PeekKind();
   RETURN_IF_ERROR(kind.status());
 
@@ -369,7 +369,7 @@ absl::StatusOr<std::optional<int32_t>> ParseEnum(JsonLexer& lex,
       auto e = ParseEnumFromStr<Traits>(lex.options(), str->value, field);
       RETURN_IF_ERROR(e.status());
       if (!e->has_value()) {
-        return {std::nullopt};
+        return {absl::nullopt};
       }
       n = **e;
       break;
@@ -513,7 +513,7 @@ absl::Status ParseSingular(JsonLexer& lex, Field<Traits> field,
       break;
     }
     case FieldDescriptor::TYPE_ENUM: {
-      absl::StatusOr<std::optional<int32_t>> x = ParseEnum<Traits>(lex, field);
+      absl::StatusOr<absl::optional<int32_t>> x = ParseEnum<Traits>(lex, field);
       RETURN_IF_ERROR(x.status());
 
       if (x->has_value() || Traits::IsImplicitPresence(field)) {
@@ -713,7 +713,7 @@ absl::Status ParseMapOfEnumsEntry(JsonLexer& lex, Field<Traits> map_field,
                                   Msg<Traits>& parent_msg,
                                   LocationWith<MaybeOwnedString>& key) {
   // Parse the enum value from string, advancing the lexer.
-  std::optional<int32_t> enum_value;
+  absl::optional<int32_t> enum_value;
   RETURN_IF_ERROR(Traits::WithFieldType(
       map_field, [&lex, &enum_value](const Desc<Traits>& map_entry_desc) {
         ASSIGN_OR_RETURN(
@@ -787,7 +787,7 @@ absl::Status ParseMap(JsonLexer& lex, Field<Traits> field, Msg<Traits>& msg) {
       });
 }
 
-std::optional<uint32_t> TakeTimeDigitsWithSuffixAndAdvance(
+absl::optional<uint32_t> TakeTimeDigitsWithSuffixAndAdvance(
     absl::string_view& data, int max_digits, absl::string_view end) {
   ABSL_DCHECK_LE(max_digits, 9);
 
@@ -795,7 +795,7 @@ std::optional<uint32_t> TakeTimeDigitsWithSuffixAndAdvance(
   int limit = max_digits;
   while (!data.empty()) {
     if (limit-- < 0) {
-      return std::nullopt;
+      return absl::nullopt;
     }
     uint32_t digit = data[0] - '0';
     if (digit >= 10) {
@@ -807,14 +807,14 @@ std::optional<uint32_t> TakeTimeDigitsWithSuffixAndAdvance(
     data = data.substr(1);
   }
   if (!absl::StartsWith(data, end)) {
-    return std::nullopt;
+    return absl::nullopt;
   }
 
   data = data.substr(end.size());
   return val;
 }
 
-std::optional<int32_t> TakeNanosAndAdvance(absl::string_view& data) {
+absl::optional<int32_t> TakeNanosAndAdvance(absl::string_view& data) {
   int32_t frac_secs = 0;
   size_t frac_digits = 0;
   if (absl::StartsWith(data, ".")) {
@@ -827,7 +827,7 @@ std::optional<int32_t> TakeNanosAndAdvance(absl::string_view& data) {
     auto digits = data.substr(1, frac_digits);
     if (frac_digits == 0 || frac_digits > 9 ||
         !absl::SimpleAtoi(digits, &frac_secs)) {
-      return std::nullopt;
+      return absl::nullopt;
     }
     data = data.substr(frac_digits + 1);
   }
@@ -1045,7 +1045,7 @@ absl::Status ParseAny(JsonLexer& lex, const Desc<Traits>& desc,
 
   // Search for @type, buffering the entire object along the way so we can
   // reparse it.
-  std::optional<MaybeOwnedString> type_url;
+  absl::optional<MaybeOwnedString> type_url;
   RETURN_IF_ERROR(lex.VisitObject(
       [&](const LocationWith<MaybeOwnedString>& key) -> absl::Status {
         if (key.value == "@type") {
@@ -1223,7 +1223,7 @@ absl::Status ParseListValue(JsonLexer& lex, const Desc<Traits>& desc,
 template <typename Traits>
 absl::Status ParseField(JsonLexer& lex, const Desc<Traits>& desc,
                         absl::string_view name, Msg<Traits>& msg) {
-  std::optional<Field<Traits>> field;
+  absl::optional<Field<Traits>> field;
   if (absl::StartsWith(name, "[") && absl::EndsWith(name, "]")) {
     absl::string_view extn_name = name.substr(1, name.size() - 2);
     field = Traits::ExtensionByName(desc, extn_name);
@@ -1385,8 +1385,8 @@ absl::Status JsonToBinaryStream(google::protobuf::util::TypeResolver* resolver,
   // input and output streams.
   std::string copy;
   std::string out;
-  std::optional<io::ArrayInputStream> tee_input;
-  std::optional<io::StringOutputStream> tee_output;
+  absl::optional<io::ArrayInputStream> tee_input;
+  absl::optional<io::StringOutputStream> tee_output;
   if (PROTOBUF_DEBUG) {
     const void* data;
     int len;

@@ -6,3 +6,14 @@
 
 Required.*.ProtobufInput.PrematureEofInDelimitedDataForKnownNonRepeatedValue.MESSAGE                               # Should have failed to parse, but didn't.
 Required.*.ProtobufInput.PrematureEofInDelimitedDataForKnownRepeatedValue.MESSAGE                                  # Should have failed to parse, but didn't.
+Required.*.ProtobufInput.BadTag_FieldNumberTooHigh                                                                 # Should have failed to parse, but didn't.
+Required.*.ProtobufInput.BadTag_FieldNumberSlightlyTooHigh                                                         # Should have failed to parse, but didn't.
+Required.*.ProtobufInput.BadTag_OverlongVarint                                                                     # Should have failed to parse, but didn't.
+Recommended.Editions.ProtobufInput.RejectInvalidUtf8.String.Extension                                              # Should have failed to parse, but didn't.
+# TODO: Uncomment once conformance tests can express failures that are not expected to be fixed.
+# Recommended.Editions_Proto2.ProtobufInput.RejectInvalidUtf8.String.Oneof                                           # Should have failed to parse, but didn't.
+# Recommended.Editions_Proto2.ProtobufInput.RejectInvalidUtf8.String.Repeated                                        # Should have failed to parse, but didn't.
+# Recommended.Editions_Proto2.ProtobufInput.RejectInvalidUtf8.String.Singular                                        # Should have failed to parse, but didn't.
+# Recommended.Proto2.ProtobufInput.RejectInvalidUtf8.String.Oneof                                                    # Should have failed to parse, but didn't.
+# Recommended.Proto2.ProtobufInput.RejectInvalidUtf8.String.Repeated                                                 # Should have failed to parse, but didn't.
+# Recommended.Proto2.ProtobufInput.RejectInvalidUtf8.String.Singular                                                 # Should have failed to parse, but didn't.

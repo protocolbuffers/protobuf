@@ -127,9 +127,9 @@ class Mixin extends \Google\Protobuf\Internal\Message
      * @param string $var
      * @return $this
      */
-    public function setName($var)
+    public function setName(string $var)
     {
-        GPBUtil::checkString($var, True);
+        GPBUtil::checkString($var, true);
         $this->name = $var;
 
         return $this;
@@ -155,9 +155,9 @@ class Mixin extends \Google\Protobuf\Internal\Message
      * @param string $var
      * @return $this
      */
-    public function setRoot($var)
+    public function setRoot(string $var)
     {
-        GPBUtil::checkString($var, True);
+        GPBUtil::checkString($var, true);
         $this->root = $var;
 
         return $this;

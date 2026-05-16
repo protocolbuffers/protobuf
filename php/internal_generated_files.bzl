@@ -63,6 +63,8 @@ DESCRIPTOR_GENERATED_FILES = [
     "src/Google/Protobuf/Internal/FeatureSet/FieldPresence.php",
     "src/Google/Protobuf/Internal/FeatureSet/JsonFormat.php",
     "src/Google/Protobuf/Internal/FeatureSet/MessageEncoding.php",
+    "src/Google/Protobuf/Internal/FeatureSet/ProtoLimitsFeature.php",
+    "src/Google/Protobuf/Internal/FeatureSet/ProtoLimitsFeature/EnforceProtoLimits.php",
     "src/Google/Protobuf/Internal/FeatureSet/RepeatedFieldEncoding.php",
     "src/Google/Protobuf/Internal/FeatureSet/Utf8Validation.php",
     "src/Google/Protobuf/Internal/FeatureSet/VisibilityFeature.php",

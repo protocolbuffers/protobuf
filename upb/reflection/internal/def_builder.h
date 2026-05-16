@@ -22,6 +22,7 @@
 #include "upb/mini_table/file.h"
 #include "upb/reflection/common.h"
 #include "upb/reflection/def_type.h"
+#include "upb/reflection/descriptor_bootstrap.h"
 #include "upb/reflection/internal/def_pool.h"
 
 // Must be last.
@@ -29,17 +30,18 @@
 
 // We want to copy the options verbatim into the destination options proto.
 // We use serialize+parse as our deep copy.
-#define UPB_DEF_SET_OPTIONS(target, desc_type, options_type, proto)           \
-  if (UPB_DESC(desc_type##_has_options)(proto)) {                             \
-    size_t size;                                                              \
-    char* pb = UPB_DESC(options_type##_serialize)(                            \
-        UPB_DESC(desc_type##_options)(proto), ctx->tmp_arena, &size);         \
-    if (!pb) _upb_DefBuilder_OomErr(ctx);                                     \
-    target =                                                                  \
-        UPB_DESC(options_type##_parse)(pb, size, _upb_DefBuilder_Arena(ctx)); \
-    if (!target) _upb_DefBuilder_OomErr(ctx);                                 \
-  } else {                                                                    \
-    target = (const UPB_DESC(options_type)*)kUpbDefOptDefault;                \
+#define UPB_DEF_SET_OPTIONS(target, desc_type, options_type, proto)        \
+  if (google_protobuf_##desc_type##_has_options(proto)) {                           \
+    size_t size;                                                           \
+    char* pb = google_protobuf_##options_type##_serialize(                          \
+        google_protobuf_##desc_type##_options(proto), ctx->tmp_arena, &size);       \
+    if (!pb) _upb_DefBuilder_OomErr(ctx);                                  \
+    target = google_protobuf_##options_type##_parse_ex(                             \
+        pb, size, _upb_DefPool_GeneratedExtensionRegistry(ctx->symtab), 0, \
+        _upb_DefBuilder_Arena(ctx));                                       \
+    if (!target) _upb_DefBuilder_OomErr(ctx);                              \
+  } else {                                                                 \
+    target = (const google_protobuf_##options_type*)kUpbDefOptDefault;              \
   }
 
 #ifdef __cplusplus
@@ -48,20 +50,20 @@ extern "C" {
 
 struct upb_DefBuilder {
   upb_DefPool* symtab;
-  upb_strtable feature_cache;             // Caches features by identity.
-  UPB_DESC(FeatureSet*) legacy_features;  // For computing legacy features.
-  char* tmp_buf;                          // Temporary buffer in tmp_arena.
-  size_t tmp_buf_size;                    // Size of temporary buffer.
-  upb_FileDef* file;                      // File we are building.
-  upb_Arena* arena;                       // Allocate defs here.
-  upb_Arena* tmp_arena;                   // For temporary allocations.
-  upb_Status* status;                     // Record errors here.
-  const upb_MiniTableFile* layout;        // NULL if we should build layouts.
-  upb_MiniTablePlatform platform;         // Platform we are targeting.
-  int enum_count;                         // Count of enums built so far.
-  int msg_count;                          // Count of messages built so far.
-  int ext_count;                          // Count of extensions built so far.
-  jmp_buf err;                            // longjmp() on error.
+  upb_strtable feature_cache;          // Caches features by identity.
+  google_protobuf_FeatureSet* legacy_features;  // For computing legacy features.
+  char* tmp_buf;                       // Temporary buffer in tmp_arena.
+  size_t tmp_buf_size;                 // Size of temporary buffer.
+  upb_FileDef* file;                   // File we are building.
+  upb_Arena* arena;                    // Allocate defs here.
+  upb_Arena* tmp_arena;                // For temporary allocations.
+  upb_Status* status;                  // Record errors here.
+  const upb_MiniTableFile* layout;     // NULL if we should build layouts.
+  upb_MiniTablePlatform platform;      // Platform we are targeting.
+  int enum_count;                      // Count of enums built so far.
+  int msg_count;                       // Count of messages built so far.
+  int ext_count;                       // Count of extensions built so far.
+  jmp_buf err;                         // longjmp() on error.
 };
 
 extern const char* kUpbDefOptDefault;
@@ -157,22 +159,26 @@ UPB_INLINE void _upb_DefBuilder_CheckIdentFull(upb_DefBuilder* ctx,
   if (!good) _upb_DefBuilder_CheckIdentSlow(ctx, name, true);
 }
 
+UPB_INLINE bool _upb_DefBuilder_IsLegacyEdition(google_protobuf_Edition edition) {
+  // Should only be called for a real edition, not a placeholder like
+  // EDITION_LEGACY.
+  UPB_ASSERT(edition >= google_protobuf_EDITION_PROTO2);
+  return edition <= google_protobuf_EDITION_PROTO3;
+}
+
 // Returns true if the returned feature set is new and must be populated.
 bool _upb_DefBuilder_GetOrCreateFeatureSet(upb_DefBuilder* ctx,
-                                           const UPB_DESC(FeatureSet*) parent,
+                                           const google_protobuf_FeatureSet* parent,
                                            upb_StringView key,
-                                           UPB_DESC(FeatureSet**) set);
+                                           google_protobuf_FeatureSet** set);
 
-const UPB_DESC(FeatureSet*)
-    _upb_DefBuilder_DoResolveFeatures(upb_DefBuilder* ctx,
-                                      const UPB_DESC(FeatureSet*) parent,
-                                      const UPB_DESC(FeatureSet*) child,
-                                      bool is_implicit);
+const google_protobuf_FeatureSet* _upb_DefBuilder_DoResolveFeatures(
+    upb_DefBuilder* ctx, const google_protobuf_FeatureSet* parent,
+    const google_protobuf_FeatureSet* child, bool is_implicit);
 
-UPB_INLINE const UPB_DESC(FeatureSet*)
-    _upb_DefBuilder_ResolveFeatures(upb_DefBuilder* ctx,
-                                    const UPB_DESC(FeatureSet*) parent,
-                                    const UPB_DESC(FeatureSet*) child) {
+UPB_INLINE const google_protobuf_FeatureSet* _upb_DefBuilder_ResolveFeatures(
+    upb_DefBuilder* ctx, const google_protobuf_FeatureSet* parent,
+    const google_protobuf_FeatureSet* child) {
   return _upb_DefBuilder_DoResolveFeatures(ctx, parent, child, false);
 }
 

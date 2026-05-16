@@ -32,11 +32,11 @@ class WrapperTypeSettersTest extends TestBase
         $newSetterMsg = new $class();
         foreach ($sequence as list($value, $expectedValue)) {
             // Manually wrap the value to pass to the old setter
-            $wrappedValue = is_null($value) ? $value : new $wrapperClass(['value' => $value]);
+            $wrappedValue = is_null($value) ? $value : @new $wrapperClass(['value' => $value]);
 
             // Set values using new and old setters
             $oldSetterMsg->$setter($wrappedValue);
-            $newSetterMsg->$valueSetter($value);
+            @$newSetterMsg->$valueSetter($value);
 
             // Get expected values old getter
             $expectedValue = $oldSetterMsg->$getter();
@@ -57,7 +57,7 @@ class WrapperTypeSettersTest extends TestBase
         }
     }
 
-    public function gettersAndSettersDataProvider()
+    public static function gettersAndSettersDataProvider()
     {
         return [
             [TestWrapperSetters::class, DoubleValue::class, "setDoubleValue", "setDoubleValueUnwrapped", "getDoubleValue", "getDoubleValueUnwrapped", [
@@ -146,59 +146,71 @@ class WrapperTypeSettersTest extends TestBase
         ];
     }
 
+    public function testUint64ValueUnwrappedInvalidString()
+    {
+        $this->expectException(Exception::class);
+        if (extension_loaded('protobuf')) {
+            $this->expectExceptionMessage('Cannot convert ');
+        } else {
+            $this->expectExceptionMessage('Expect ');
+        }
+        (new TestWrapperSetters())->setUInt64ValueUnwrapped('abc');
+    }
+
     /**
      * @dataProvider invalidSettersDataProvider
      */
-    public function testInvalidSetters($class, $setter, $value)
+    public function testInvalidSetters($setter, $value)
     {
-        $this->expectException(Exception::class);
-        (new $class())->$setter($value);
+        if (extension_loaded('protobuf')) {
+            $this->expectException(Exception::class);
+            $this->expectExceptionMessage('Cannot convert ');
+        } else {
+            $this->expectException(TypeError::class);
+        }
+
+        (new TestWrapperSetters())->$setter($value);
     }
 
-    public function invalidSettersDataProvider()
+    public static function invalidSettersDataProvider()
     {
         return [
-            [TestWrapperSetters::class, "setDoubleValueUnwrapped", "abc"],
-            [TestWrapperSetters::class, "setDoubleValueUnwrapped", []],
-            [TestWrapperSetters::class, "setDoubleValueUnwrapped", new stdClass()],
-            [TestWrapperSetters::class, "setDoubleValueUnwrapped", new DoubleValue()],
+            ["setDoubleValueUnwrapped", "abc"],
+            ["setDoubleValueUnwrapped", []],
+            ["setDoubleValueUnwrapped", new stdClass()],
+            ["setDoubleValueUnwrapped", new DoubleValue()],
 
-            [TestWrapperSetters::class, "setFloatValueUnwrapped", "abc"],
-            [TestWrapperSetters::class, "setFloatValueUnwrapped", []],
-            [TestWrapperSetters::class, "setFloatValueUnwrapped", new stdClass()],
-            [TestWrapperSetters::class, "setFloatValueUnwrapped", new FloatValue()],
+            ["setFloatValueUnwrapped", "abc"],
+            ["setFloatValueUnwrapped", []],
+            ["setFloatValueUnwrapped", new stdClass()],
+            ["setFloatValueUnwrapped", new FloatValue()],
 
-            [TestWrapperSetters::class, "setInt64ValueUnwrapped", "abc"],
-            [TestWrapperSetters::class, "setInt64ValueUnwrapped", []],
-            [TestWrapperSetters::class, "setInt64ValueUnwrapped", new stdClass()],
-            [TestWrapperSetters::class, "setInt64ValueUnwrapped", new Int64Value()],
+            // ["setUInt64ValueUnwrapped", "abc"], // Tested in testUint64ValueUnwrappedInvalidString
+            ["setUInt64ValueUnwrapped", []],
+            ["setUInt64ValueUnwrapped", new stdClass()],
+            ["setUInt64ValueUnwrapped", new UInt64Value()],
 
-            [TestWrapperSetters::class, "setUInt64ValueUnwrapped", "abc"],
-            [TestWrapperSetters::class, "setUInt64ValueUnwrapped", []],
-            [TestWrapperSetters::class, "setUInt64ValueUnwrapped", new stdClass()],
-            [TestWrapperSetters::class, "setUInt64ValueUnwrapped", new UInt64Value()],
+            ["setInt32ValueUnwrapped", "abc"],
+            ["setInt32ValueUnwrapped", []],
+            ["setInt32ValueUnwrapped", new stdClass()],
+            ["setInt32ValueUnwrapped", new Int32Value()],
 
-            [TestWrapperSetters::class, "setInt32ValueUnwrapped", "abc"],
-            [TestWrapperSetters::class, "setInt32ValueUnwrapped", []],
-            [TestWrapperSetters::class, "setInt32ValueUnwrapped", new stdClass()],
-            [TestWrapperSetters::class, "setInt32ValueUnwrapped", new Int32Value()],
+            ["setUInt32ValueUnwrapped", "abc"],
+            ["setUInt32ValueUnwrapped", []],
+            ["setUInt32ValueUnwrapped", new stdClass()],
+            ["setUInt32ValueUnwrapped", new UInt32Value()],
 
-            [TestWrapperSetters::class, "setUInt32ValueUnwrapped", "abc"],
-            [TestWrapperSetters::class, "setUInt32ValueUnwrapped", []],
-            [TestWrapperSetters::class, "setUInt32ValueUnwrapped", new stdClass()],
-            [TestWrapperSetters::class, "setUInt32ValueUnwrapped", new UInt32Value()],
+            ["setBoolValueUnwrapped", []],
+            ["setBoolValueUnwrapped", new stdClass()],
+            ["setBoolValueUnwrapped", new BoolValue()],
 
-            [TestWrapperSetters::class, "setBoolValueUnwrapped", []],
-            [TestWrapperSetters::class, "setBoolValueUnwrapped", new stdClass()],
-            [TestWrapperSetters::class, "setBoolValueUnwrapped", new BoolValue()],
+            ["setStringValueUnwrapped", []],
+            ["setStringValueUnwrapped", new stdClass()],
+            ["setStringValueUnwrapped", new StringValue()],
 
-            [TestWrapperSetters::class, "setStringValueUnwrapped", []],
-            [TestWrapperSetters::class, "setStringValueUnwrapped", new stdClass()],
-            [TestWrapperSetters::class, "setStringValueUnwrapped", new StringValue()],
-
-            [TestWrapperSetters::class, "setBytesValueUnwrapped", []],
-            [TestWrapperSetters::class, "setBytesValueUnwrapped", new stdClass()],
-            [TestWrapperSetters::class, "setBytesValueUnwrapped", new BytesValue()],
+            ["setBytesValueUnwrapped", []],
+            ["setBytesValueUnwrapped", new stdClass()],
+            ["setBytesValueUnwrapped", new BytesValue()],
         ];
     }
 
@@ -212,7 +224,7 @@ class WrapperTypeSettersTest extends TestBase
         $this->assertEquals($expectedInstance->$getter()->getValue(), $actualInstance->$getter()->getValue());
     }
 
-    public function constructorWithWrapperTypeDataProvider()
+    public static function constructorWithWrapperTypeDataProvider()
     {
         return [
             [TestWrapperSetters::class, DoubleValue::class, 'double_value', 'getDoubleValue', 1.1],
@@ -247,7 +259,7 @@ class WrapperTypeSettersTest extends TestBase
         $this->assertTrue(true);
     }
 
-    public function constructorWithRepeatedWrapperTypeDataProvider()
+    public static function constructorWithRepeatedWrapperTypeDataProvider()
     {
         $sv7 = new StringValue(['value' => 'seven']);
         $sv8 = new StringValue(['value' => 'eight']);
@@ -292,7 +304,7 @@ class WrapperTypeSettersTest extends TestBase
         $this->assertTrue(true);
     }
 
-    public function constructorWithMapWrapperTypeDataProvider()
+    public static function constructorWithMapWrapperTypeDataProvider()
     {
         $sv7 = new StringValue(['value' => 'seven']);
         $sv8 = new StringValue(['value' => 'eight']);

@@ -30,7 +30,7 @@
  <dependencies>
   <required>
    <php>
-    <min>8.1.0</min>
+    <min>8.2.0</min>
    </php>
    <pearinstaller>
     <min>1.4.0</min>

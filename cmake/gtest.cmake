@@ -22,7 +22,5 @@ endif()
 
 if (NOT TARGET GTest::gmock)
   message(FATAL_ERROR
-          "Cannot find googletest dependency that's needed to build tests.\n"
-          "If instead you want to skip tests, run cmake with:\n"
-          "  cmake -Dprotobuf_BUILD_TESTS=OFF\n")
+          "Cannot find googletest dependency that's needed to build tests.\n")
 endif()

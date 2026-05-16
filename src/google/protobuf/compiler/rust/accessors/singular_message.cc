@@ -220,7 +220,7 @@ void SingularMessage::InThunkCc(Context& ctx,
             {"getter_mut_thunk", ThunkName(ctx, field, "get_mut")},
             {"field", cpp::FieldName(&field)}},
            R"cc(
-             const void* $getter_thunk$($QualifiedMsg$* msg) {
+             const void* $getter_thunk$(const $QualifiedMsg$* msg) {
                return static_cast<const void*>(&msg->$field$());
              }
              void* $getter_mut_thunk$($QualifiedMsg$* msg) {

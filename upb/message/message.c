@@ -39,6 +39,7 @@ UPB_NOINLINE bool UPB_PRIVATE(_upb_Message_AddUnknownSlowPath)(upb_Message* msg,
                                                                size_t len,
                                                                upb_Arena* arena,
                                                                bool alias) {
+  UPB_ASSERT(!upb_Message_IsFrozen(msg));
   {
     upb_Message_Internal* in = UPB_PRIVATE(_upb_Message_GetInternal)(msg);
     // Alias fast path was already checked in the inline function that calls
@@ -80,6 +81,7 @@ UPB_NOINLINE bool UPB_PRIVATE(_upb_Message_AddUnknownSlowPath)(upb_Message* msg,
     if (!view) return false;
     view->data = data;
   } else {
+    if (SIZE_MAX - sizeof(upb_StringView) < len) return false;
     view = upb_Arena_Malloc(arena, sizeof(upb_StringView) + len);
     if (!view) return false;
     char* copy = UPB_PTR_AT(view, sizeof(upb_StringView), char);
@@ -251,7 +253,7 @@ void upb_Message_Freeze(upb_Message* msg, const upb_MiniTable* m) {
 
   for (size_t i = 0; i < field_count; i++) {
     const upb_MiniTableField* f = upb_MiniTable_GetFieldByIndex(m, i);
-    const upb_MiniTable* m2 = upb_MiniTable_SubMessage(m, f);
+    const upb_MiniTable* m2 = upb_MiniTable_SubMessage(f);
 
     switch (UPB_PRIVATE(_upb_MiniTableField_Mode)(f)) {
       case kUpb_FieldMode_Array: {
@@ -263,7 +265,7 @@ void upb_Message_Freeze(upb_Message* msg, const upb_MiniTable* m) {
         upb_Map* map = upb_Message_GetMutableMap(msg, f);
         if (map) {
           const upb_MiniTableField* f2 = upb_MiniTable_MapValue(m2);
-          const upb_MiniTable* m3 = upb_MiniTable_SubMessage(m2, f2);
+          const upb_MiniTable* m3 = upb_MiniTable_SubMessage(f2);
           upb_Map_Freeze(map, m3);
         }
         break;

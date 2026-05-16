@@ -36,4 +36,8 @@ Recommended.Editions_Proto3.ValueRejectInfNumberValue.JsonOutput
 Recommended.Editions_Proto3.ValueRejectNanNumberValue.JsonOutput
 Required.Editions_Proto2.ProtobufInput.UnknownOrdering.ProtobufOutput
 Required.Editions_Proto3.ProtobufInput.UnknownOrdering.ProtobufOutput
-
+Recommended.Editions.ProtobufInput.RejectInvalidUtf8.String.Extension                                              # Should have failed to parse, but didn't.
+Required.*.ProtobufInput.BadTag_FieldNumberTooHigh                                                                 # Should have failed to parse, but didn't.
+Required.*.ProtobufInput.BadTag_FieldNumberSlightlyTooHigh                                                         # Should have failed to parse, but didn't.
+Required.*.ProtobufInput.BadTag_OverlongVarint                                                                     # Should have failed to parse, but didn't.
+Required.*.JsonInput.AnyEmpty.*

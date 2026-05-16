@@ -13,14 +13,19 @@
 #ifndef UPB_WIRE_INTERNAL_DECODER_H_
 #define UPB_WIRE_INTERNAL_DECODER_H_
 
-#include <setjmp.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <string.h>
 
+#include "upb/base/descriptor_constants.h"
+#include "upb/base/error_handler.h"
+#include "upb/base/string_view.h"
 #include "upb/mem/arena.h"
 #include "upb/mem/internal/arena.h"
+#include "upb/message/message.h"
 #include "upb/mini_table/extension_registry.h"
+#include "upb/mini_table/field.h"
+#include "upb/mini_table/internal/field.h"
 #include "upb/mini_table/internal/message.h"
 #include "upb/mini_table/message.h"
 #include "upb/wire/decode.h"
@@ -43,14 +48,12 @@ typedef struct upb_Decoder {
   bool message_is_done;
   union {
     upb_Arena arena;
-    void* foo[UPB_ARENA_SIZE_HACK];
+    void* foo[UPB_ARENA_SIZE_HACK / sizeof(void*)];
   };
-  upb_DecodeStatus status;
-  jmp_buf err;
+  upb_ErrorHandler* err;
 
 #ifndef NDEBUG
-  const char* debug_tagstart;
-  const char* debug_valstart;
+  char* trace_buf;
   char* trace_ptr;
   char* trace_end;
 #endif
@@ -60,18 +63,33 @@ UPB_INLINE const char* upb_Decoder_Init(upb_Decoder* d, const char* buf,
                                         size_t size,
                                         const upb_ExtensionRegistry* extreg,
                                         int options, upb_Arena* arena,
-                                        char* trace_buf, size_t trace_size) {
-  upb_EpsCopyInputStream_Init(&d->input, &buf, size,
-                              options & kUpb_DecodeOption_AliasString);
+                                        upb_ErrorHandler* err, char* trace_buf,
+                                        size_t trace_size) {
+  d->err = err;
+  upb_EpsCopyInputStream_InitWithErrorHandler(&d->input, &buf, size, d->err);
+
+  UPB_STATIC_ASSERT((int)kUpb_DecodeStatus_Ok == (int)kUpb_ErrorCode_Ok,
+                    "mismatched error codes");
+  UPB_STATIC_ASSERT(
+      (int)kUpb_DecodeStatus_OutOfMemory == (int)kUpb_ErrorCode_OutOfMemory,
+      "mismatched error codes");
+  UPB_STATIC_ASSERT(
+      (int)kUpb_DecodeStatus_Malformed == (int)kUpb_ErrorCode_Malformed,
+      "mismatched error codes");
+
+  if (options & kUpb_DecodeOption_AlwaysValidateUtf8) {
+    // Fasttable decoder does not support this option.
+    options |= kUpb_DecodeOption_DisableFastTable;
+  }
 
   d->extreg = extreg;
   d->depth = upb_DecodeOptions_GetEffectiveMaxDepth(options);
   d->end_group = DECODE_NOGROUP;
   d->options = (uint16_t)options;
   d->missing_required = false;
-  d->status = kUpb_DecodeStatus_Ok;
   d->message_is_done = false;
 #ifndef NDEBUG
+  d->trace_buf = trace_buf;
   d->trace_ptr = trace_buf;
   d->trace_end = UPB_PTRADD(trace_buf, trace_size);
 #endif
@@ -89,7 +107,47 @@ UPB_INLINE const char* upb_Decoder_Init(upb_Decoder* d, const char* buf,
 UPB_INLINE upb_DecodeStatus upb_Decoder_Destroy(upb_Decoder* d,
                                                 upb_Arena* arena) {
   UPB_PRIVATE(_upb_Arena_SwapOut)(arena, &d->arena);
-  return d->status;
+  return (upb_DecodeStatus)d->err->code;
+}
+
+// Resets decoder fields in preparation for decoding a new message.
+//
+// Some decoder fields (arena, extreg, err) are preserved so they can be
+// reused across messages.
+// NOTE: The input stream is NOT reset. If a new input buffer is being used,
+// upb_EpsCopyInputStream_InitWithErrorHandler() must be called separately.
+UPB_INLINE void upb_Decoder_Reset(upb_Decoder* d, int options,
+                                  upb_Message* msg) {
+  d->depth = upb_DecodeOptions_GetEffectiveMaxDepth(options);
+  d->options = options;
+  d->end_group = DECODE_NOGROUP;
+  d->missing_required = false;
+  d->message_is_done = false;
+  d->original_msg = msg;
+}
+
+#ifndef NDEBUG
+UPB_INLINE bool _upb_Decoder_TraceBufferHasBytesAvailable(upb_Decoder* d,
+                                                          int n) {
+  return d->trace_ptr && d->trace_end && d->trace_end - d->trace_ptr > n;
+}
+#endif
+
+UPB_INLINE char* _upb_Decoder_TraceNext(upb_Decoder* d) {
+#ifndef NDEBUG
+  return _upb_Decoder_TraceBufferHasBytesAvailable(d, 2) ? d->trace_ptr + 1
+                                                         : NULL;
+#else
+  return NULL;
+#endif
+}
+
+UPB_INLINE char* _upb_Decoder_TracePtr(upb_Decoder* d) {
+#ifndef NDEBUG
+  return d->trace_ptr;
+#else
+  return NULL;
+#endif
 }
 
 // Trace events are used to trace the progress of the decoder.
@@ -99,10 +157,20 @@ UPB_INLINE upb_DecodeStatus upb_Decoder_Destroy(upb_Decoder* d,
 //   '<'  Fallback to MiniTable parser.
 //   'M'  Field successfully parsed with MiniTable.
 //   'X'  Truncated -- trace buffer is full, further events were discarded.
+//   'U'  Unknown field parsed fast
+//
+// Lower-case letters indicate events that are more subtle and therefore
+// difficult to assert on, but may be useful information for debugging:
+//   'r'  Refresh buffer.
+//   's'  Fall back to unknown fast path
+//   'm'  Fall back to minitable lookup fast path
 UPB_INLINE void _upb_Decoder_Trace(upb_Decoder* d, char event) {
 #ifndef NDEBUG
+#ifdef UPB_TRACE_FASTDECODER
+  fprintf(stderr, "Fasttable trace event: %c\n", event);
+#endif
   if (d->trace_ptr == NULL) return;
-  if (d->trace_ptr == d->trace_end - 1) {
+  if (!_upb_Decoder_TraceBufferHasBytesAvailable(d, 1)) {
     d->trace_ptr[-1] = 'X';  // Truncated.
     return;
   }
@@ -121,36 +189,42 @@ const char* _upb_Decoder_CheckRequired(upb_Decoder* d, const char* ptr,
                                        const upb_Message* msg,
                                        const upb_MiniTable* m);
 
-/* x86-64 pointers always have the high 16 bits matching. So we can shift
- * left 8 and right 8 without loss of information. */
-UPB_INLINE intptr_t decode_totable(const upb_MiniTable* tablep) {
-  return ((intptr_t)tablep << 8) | tablep->UPB_PRIVATE(table_mask);
-}
-
-UPB_INLINE const upb_MiniTable* decode_totablep(intptr_t table) {
-  return (const upb_MiniTable*)(table >> 8);
-}
-
-const char* _upb_Decoder_IsDoneFallback(upb_EpsCopyInputStream* e,
-                                        const char* ptr, int overrun);
-
 const char* _upb_Decoder_DecodeMessage(upb_Decoder* d, const char* ptr,
                                        upb_Message* msg,
                                        const upb_MiniTable* layout);
 
-UPB_INLINE bool _upb_Decoder_IsDone(upb_Decoder* d, const char** ptr) {
-  return UPB_PRIVATE(upb_EpsCopyInputStream_IsDoneWithCallback)(
-      &d->input, ptr, &_upb_Decoder_IsDoneFallback);
+UPB_INLINE bool _upb_Decoder_FieldRequiresUtf8Validation(
+    const upb_Decoder* d, const upb_MiniTableField* field) {
+  if (field->UPB_PRIVATE(descriptortype) == kUpb_FieldType_String) return true;
+
+  if (field->UPB_PRIVATE(descriptortype) == kUpb_FieldType_Bytes &&
+      (field->UPB_ONLYBITS(mode) & kUpb_LabelFlags_IsAlternate) &&
+      (d->options & kUpb_DecodeOption_AlwaysValidateUtf8)) {
+    return true;
+  }
+
+  return false;
 }
 
-UPB_NORETURN void* _upb_Decoder_ErrorJmp(upb_Decoder* d,
-                                         upb_DecodeStatus status);
-
-UPB_INLINE const char* _upb_Decoder_BufferFlipCallback(
-    upb_EpsCopyInputStream* e, const char* old_end, const char* new_start) {
-  upb_Decoder* d = (upb_Decoder*)e;
-  if (!old_end) _upb_Decoder_ErrorJmp(d, kUpb_DecodeStatus_Malformed);
-  return new_start;
+UPB_INLINE bool _upb_Decoder_ReadString(upb_Decoder* d, const char** ptr,
+                                        size_t size, upb_StringView* sv,
+                                        bool validate_utf8) {
+  upb_StringView tmp;
+  *ptr =
+      upb_EpsCopyInputStream_ReadStringAlwaysAlias(&d->input, *ptr, size, &tmp);
+  if (*ptr == NULL) return false;
+  if (validate_utf8 && !utf8_range_IsValid(tmp.data, tmp.size)) {
+    upb_ErrorHandler_ThrowError(d->err, kUpb_DecodeStatus_BadUtf8);
+    return false;
+  }
+  if ((d->options & kUpb_DecodeOption_AliasString) == 0) {
+    char* data = (char*)upb_Arena_Malloc(&d->arena, tmp.size);
+    if (!data) return false;
+    memcpy(data, tmp.data, tmp.size);
+    tmp.data = data;
+  }
+  *sv = tmp;
+  return true;
 }
 
 #include "upb/port/undef.inc"

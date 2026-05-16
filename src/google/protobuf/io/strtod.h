@@ -32,16 +32,20 @@ namespace io {
 //
 //    Return value: string
 // ----------------------------------------------------------------------
+PROTOBUF_FUTURE_ADD_EARLY_NODISCARD
 PROTOBUF_EXPORT std::string SimpleDtoa(double value);
+PROTOBUF_FUTURE_ADD_EARLY_NODISCARD
 PROTOBUF_EXPORT std::string SimpleFtoa(float value);
 
 // A locale-independent version of the standard strtod(), which always
 // uses a dot as the decimal separator.
+PROTOBUF_FUTURE_ADD_EARLY_NODISCARD
 PROTOBUF_EXPORT double NoLocaleStrtod(const char* str, char** endptr);
 
 // Casts a double value to a float value. If the value is outside of the
 // representable range of float, it will be converted to positive or negative
 // infinity.
+PROTOBUF_FUTURE_ADD_EARLY_NODISCARD
 PROTOBUF_EXPORT float SafeDoubleToFloat(double value);
 
 }  // namespace io

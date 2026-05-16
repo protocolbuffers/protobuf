@@ -32,6 +32,7 @@
 #include "absl/strings/str_cat.h"
 #include "conformance/conformance.pb.h"
 #include "conformance/test_protos/test_messages_edition2023.pb.h"
+#include "conformance/test_protos/test_messages_edition_unstable.pb.h"
 #include "editions/golden/test_messages_proto2_editions.pb.h"
 #include "editions/golden/test_messages_proto3_editions.pb.h"
 #include "google/protobuf/endian.h"
@@ -58,6 +59,7 @@ using ::google::protobuf::util::JsonStringToMessage;
 using ::google::protobuf::util::MessageToJsonString;
 using ::google::protobuf::util::NewTypeResolverForDescriptorPool;
 using ::google::protobuf::util::TypeResolver;
+using ::protobuf_test_messages::edition_unstable::TestAllTypesEditionUnstable;
 using ::protobuf_test_messages::editions::TestAllTypesEdition2023;
 using ::protobuf_test_messages::proto2::TestAllTypesProto2;
 using ::protobuf_test_messages::proto3::TestAllTypesProto3;
@@ -97,6 +99,7 @@ class Harness {
     google::protobuf::LinkMessageReflection<TestAllTypesProto2>();
     google::protobuf::LinkMessageReflection<TestAllTypesProto3>();
     google::protobuf::LinkMessageReflection<TestAllTypesEdition2023>();
+    google::protobuf::LinkMessageReflection<TestAllTypesEditionUnstable>();
     google::protobuf::LinkMessageReflection<TestAllTypesProto2Editions>();
     google::protobuf::LinkMessageReflection<TestAllTypesProto3Editions>();
 
@@ -239,7 +242,8 @@ absl::StatusOr<bool> Harness::ServeConformanceRequest() {
   RETURN_IF_ERROR(response.status());
 
   std::string serialized_output;
-  response->SerializeToString(&serialized_output);
+  // TODO: Remove this suppression.
+  (void)response->SerializeToString(&serialized_output);
 
   uint32_t out_len = internal::little_endian::FromHost(
       static_cast<uint32_t>(serialized_output.size()));

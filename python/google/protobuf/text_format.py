@@ -4,8 +4,18 @@
 # Use of this source code is governed by a BSD-style
 # license that can be found in the LICENSE file or at
 # https://developers.google.com/open-source/licenses/bsd
+"""Contains routines for printing messages in Protobuf Text Format.
 
-"""Contains routines for printing protocol messages in text format.
+Printing and parsing messages in Text Format is useful for debugging
+and human editing of messages.
+
+Unlike the Binary and ProtoJSON formats, Text Format is not designed to be
+used as a wire format; instead it is intended for human-in-the-loop
+configuration use-cases.
+
+Systems processing untrusted inputs should strongly prefer to use Binary format
+instead. If a textual format of untrusted inputs is required, consider using
+ProtoJSON format instead.
 
 Simple usage example::
 
@@ -30,20 +40,32 @@ import warnings
 from google.protobuf.internal import decoder
 from google.protobuf.internal import type_checkers
 from google.protobuf import descriptor
+
 from google.protobuf import text_encoding
 from google.protobuf import unknown_fields
 
 # pylint: disable=g-import-not-at-top
-__all__ = ['MessageToString', 'Parse', 'PrintMessage', 'PrintField',
-           'PrintFieldValue', 'Merge', 'MessageToBytes']
+__all__ = [
+    'MessageToString',
+    'Parse',
+    'PrintMessage',
+    'PrintField',
+    'PrintFieldValue',
+    'Merge',
+    'MessageToBytes',
+]
 
-_INTEGER_CHECKERS = (type_checkers.Uint32ValueChecker(),
-                     type_checkers.Int32ValueChecker(),
-                     type_checkers.Uint64ValueChecker(),
-                     type_checkers.Int64ValueChecker())
+_INTEGER_CHECKERS = (
+    type_checkers.Uint32ValueChecker(),
+    type_checkers.Int32ValueChecker(),
+    type_checkers.Uint64ValueChecker(),
+    type_checkers.Int64ValueChecker(),
+)
 _FLOAT_INFINITY = re.compile('-?inf(?:inity)?f?$', re.IGNORECASE)
 _FLOAT_NAN = re.compile('nanf?$', re.IGNORECASE)
 _FLOAT_OCTAL_PREFIX = re.compile('-?0[0-9]+')
+_PERCENT_ENCODING = re.compile(r'^%[\da-fA-F][\da-fA-F]$')
+_TYPE_NAME = re.compile(r'^[^\d\W]\w*(\.[^\d\W]\w*)*$')
 _QUOTES = frozenset(("'", '"'))
 _ANY_FULL_TYPE_NAME = 'google.protobuf.Any'
 _DEBUG_STRING_SILENT_MARKER = '\t '
@@ -100,20 +122,14 @@ def MessageToString(
     use_short_repeated_primitives=False,
     pointy_brackets=False,
     use_index_order=False,
-    float_format=None,
-    double_format=None,
     use_field_number=False,
     descriptor_pool=None,
     indent=0,
     message_formatter=None,
     print_unknown_fields=False,
-    force_colon=False) -> str:
+    force_colon=False,
+) -> str:
   """Convert protobuf message to text format.
-
-  Double values can be formatted compactly with 15 digits of
-  precision (which is the most that IEEE 754 "double" can guarantee)
-  using double_format='.15g'. To ensure that converting to text and back to a
-  proto will result in an identical value, double_format='.17g' should be used.
 
   Args:
     message: The protocol buffers message.
@@ -127,13 +143,6 @@ def MessageToString(
       will be printed at the end of the message and their relative order is
       determined by the extension number. By default, use the field number
       order.
-    float_format (str): Deprecated. If set, use this to specify float field
-      formatting (per the "Format Specification Mini-Language"); otherwise,
-      shortest float that has same value in wire will be printed. Also affect
-      double field if double_format is not set but float_format is set.
-    double_format (str): Deprecated. If set, use this to specify double field
-      formatting (per the "Format Specification Mini-Language"); if it is not
-      set but float_format is set, use float_format. Otherwise, use ``str()``
     use_field_number: If True, print field numbers instead of names.
     descriptor_pool (DescriptorPool): Descriptor pool used to resolve Any types.
     indent (int): The initial indent level, in terms of spaces, for pretty
@@ -150,20 +159,19 @@ def MessageToString(
   """
   out = TextWriter(as_utf8)
   printer = _Printer(
-      out,
-      indent,
-      as_utf8,
-      as_one_line,
-      use_short_repeated_primitives,
-      pointy_brackets,
-      use_index_order,
-      float_format,
-      double_format,
-      use_field_number,
-      descriptor_pool,
-      message_formatter,
+      out=out,
+      indent=indent,
+      as_utf8=as_utf8,
+      as_one_line=as_one_line,
+      use_short_repeated_primitives=use_short_repeated_primitives,
+      pointy_brackets=pointy_brackets,
+      use_index_order=use_index_order,
+      use_field_number=use_field_number,
+      descriptor_pool=descriptor_pool,
+      message_formatter=message_formatter,
       print_unknown_fields=print_unknown_fields,
-      force_colon=force_colon)
+      force_colon=force_colon,
+  )
   printer.PrintMessage(message)
   result = out.getvalue()
   out.close()
@@ -182,9 +190,11 @@ def MessageToBytes(message, **kwargs) -> bytes:
 
 
 def _IsMapEntry(field):
-  return (field.type == descriptor.FieldDescriptor.TYPE_MESSAGE and
-          field.message_type.has_options and
-          field.message_type.GetOptions().map_entry)
+  return (
+      field.type == descriptor.FieldDescriptor.TYPE_MESSAGE
+      and field.message_type.has_options
+      and field.message_type.GetOptions().map_entry
+  )
 
 
 def _IsGroupLike(field):
@@ -217,21 +227,21 @@ def _IsGroupLike(field):
   )
 
 
-def PrintMessage(message,
-                 out,
-                 indent=0,
-                 as_utf8=_as_utf8_default,
-                 as_one_line=False,
-                 use_short_repeated_primitives=False,
-                 pointy_brackets=False,
-                 use_index_order=False,
-                 float_format=None,
-                 double_format=None,
-                 use_field_number=False,
-                 descriptor_pool=None,
-                 message_formatter=None,
-                 print_unknown_fields=False,
-                 force_colon=False):
+def PrintMessage(
+    message,
+    out,
+    indent=0,
+    as_utf8=_as_utf8_default,
+    as_one_line=False,
+    use_short_repeated_primitives=False,
+    pointy_brackets=False,
+    use_index_order=False,
+    use_field_number=False,
+    descriptor_pool=None,
+    message_formatter=None,
+    print_unknown_fields=False,
+    force_colon=False,
+):
   """Convert the message to text format and write it to the out stream.
 
   Args:
@@ -246,83 +256,89 @@ def PrintMessage(message,
     use_index_order: If True, print fields of a proto message using the order
       defined in source code instead of the field number. By default, use the
       field number order.
-    float_format: If set, use this to specify float field formatting
-      (per the "Format Specification Mini-Language"); otherwise, shortest
-      float that has same value in wire will be printed. Also affect double
-      field if double_format is not set but float_format is set.
-    double_format: If set, use this to specify double field formatting
-      (per the "Format Specification Mini-Language"); if it is not set but
-      float_format is set, use float_format. Otherwise, str() is used.
     use_field_number: If True, print field numbers instead of names.
     descriptor_pool: A DescriptorPool used to resolve Any types.
-    message_formatter: A function(message, indent, as_one_line): unicode|None
-      to custom format selected sub-messages (usually based on message type).
-      Use to pretty print parts of the protobuf for easier diffing.
+    message_formatter: A function(message, indent, as_one_line): unicode|None to
+      custom format selected sub-messages (usually based on message type). Use
+      to pretty print parts of the protobuf for easier diffing.
     print_unknown_fields: If True, unknown fields will be printed.
-    force_colon: If set, a colon will be added after the field name even if
-      the field is a proto message.
+    force_colon: If set, a colon will be added after the field name even if the
+      field is a proto message.
   """
   printer = _Printer(
-      out=out, indent=indent, as_utf8=as_utf8,
+      out=out,
+      indent=indent,
+      as_utf8=as_utf8,
       as_one_line=as_one_line,
       use_short_repeated_primitives=use_short_repeated_primitives,
       pointy_brackets=pointy_brackets,
       use_index_order=use_index_order,
-      float_format=float_format,
-      double_format=double_format,
       use_field_number=use_field_number,
       descriptor_pool=descriptor_pool,
       message_formatter=message_formatter,
       print_unknown_fields=print_unknown_fields,
-      force_colon=force_colon)
+      force_colon=force_colon,
+  )
   printer.PrintMessage(message)
 
 
-def PrintField(field,
-               value,
-               out,
-               indent=0,
-               as_utf8=_as_utf8_default,
-               as_one_line=False,
-               use_short_repeated_primitives=False,
-               pointy_brackets=False,
-               use_index_order=False,
-               float_format=None,
-               double_format=None,
-               message_formatter=None,
-               print_unknown_fields=False,
-               force_colon=False):
+def PrintField(
+    field,
+    value,
+    out,
+    indent=0,
+    as_utf8=_as_utf8_default,
+    as_one_line=False,
+    use_short_repeated_primitives=False,
+    pointy_brackets=False,
+    use_index_order=False,
+    message_formatter=None,
+    print_unknown_fields=False,
+    force_colon=False,
+):
   """Print a single field name/value pair."""
-  printer = _Printer(out, indent, as_utf8, as_one_line,
-                     use_short_repeated_primitives, pointy_brackets,
-                     use_index_order, float_format, double_format,
-                     message_formatter=message_formatter,
-                     print_unknown_fields=print_unknown_fields,
-                     force_colon=force_colon)
+  printer = _Printer(
+      out,
+      indent,
+      as_utf8,
+      as_one_line,
+      use_short_repeated_primitives,
+      pointy_brackets,
+      use_index_order,
+      message_formatter=message_formatter,
+      print_unknown_fields=print_unknown_fields,
+      force_colon=force_colon,
+  )
   printer.PrintField(field, value)
 
 
-def PrintFieldValue(field,
-                    value,
-                    out,
-                    indent=0,
-                    as_utf8=_as_utf8_default,
-                    as_one_line=False,
-                    use_short_repeated_primitives=False,
-                    pointy_brackets=False,
-                    use_index_order=False,
-                    float_format=None,
-                    double_format=None,
-                    message_formatter=None,
-                    print_unknown_fields=False,
-                    force_colon=False):
+def PrintFieldValue(
+    field,
+    value,
+    out,
+    indent=0,
+    as_utf8=_as_utf8_default,
+    as_one_line=False,
+    use_short_repeated_primitives=False,
+    pointy_brackets=False,
+    use_index_order=False,
+    message_formatter=None,
+    print_unknown_fields=False,
+    force_colon=False,
+):
   """Print a single field value (not including name)."""
-  printer = _Printer(out, indent, as_utf8, as_one_line,
-                     use_short_repeated_primitives, pointy_brackets,
-                     use_index_order, float_format, double_format,
-                     message_formatter=message_formatter,
-                     print_unknown_fields=print_unknown_fields,
-                     force_colon=force_colon)
+  printer = _Printer(
+      out,
+      indent,
+      as_utf8,
+      as_one_line,
+      use_short_repeated_primitives,
+      pointy_brackets,
+      use_index_order,
+      message_formatter=message_formatter,
+      print_unknown_fields=print_unknown_fields,
+      force_colon=force_colon,
+  )
   printer.PrintFieldValue(field, value)
 
 
@@ -340,8 +356,10 @@ def _BuildMessageFromTypeName(type_name, descriptor_pool):
   # pylint: disable=g-import-not-at-top
   if descriptor_pool is None:
     from google.protobuf import descriptor_pool as pool_mod
+
     descriptor_pool = pool_mod.Default()
   from google.protobuf import message_factory
+
   try:
     message_descriptor = descriptor_pool.FindMessageTypeByName(type_name)
   except KeyError:
@@ -367,19 +385,13 @@ class _Printer(object):
       use_short_repeated_primitives=False,
       pointy_brackets=False,
       use_index_order=False,
-      float_format=None,
-      double_format=None,
       use_field_number=False,
       descriptor_pool=None,
       message_formatter=None,
       print_unknown_fields=False,
-      force_colon=False):
+      force_colon=False,
+  ):
     """Initialize the Printer.
-
-    Double values can be formatted compactly with 15 digits of precision
-    (which is the most that IEEE 754 "double" can guarantee) using
-    double_format='.15g'. To ensure that converting to text and back to a proto
-    will result in an identical value, double_format='.17g' should be used.
 
     Args:
       out: To record the text format result.
@@ -392,13 +404,6 @@ class _Printer(object):
       use_index_order: If True, print fields of a proto message using the order
         defined in source code instead of the field number. By default, use the
         field number order.
-      float_format: Deprecated. If set, use this to specify float field
-        formatting (per the "Format Specification Mini-Language"); otherwise,
-        shortest float that has same value in wire will be printed. Also affect
-        double field if double_format is not set but float_format is set.
-      double_format: Deprecated. If set, use this to specify double field
-        formatting (per the "Format Specification Mini-Language"); if it is not
-        set but float_format is set, use float_format. Otherwise, str() is used.
       use_field_number: If True, print field numbers instead of names.
       descriptor_pool: A DescriptorPool used to resolve Any types.
       message_formatter: A function(message, indent, as_one_line): unicode|None
@@ -415,15 +420,6 @@ class _Printer(object):
     self.use_short_repeated_primitives = use_short_repeated_primitives
     self.pointy_brackets = pointy_brackets
     self.use_index_order = use_index_order
-    self.float_format = float_format
-    if double_format is not None:
-      warnings.warn(
-          'double_format is deprecated for text_format. This will '
-          'turn into error in 7.34.0, please remove it before that.'
-      )
-      self.double_format = double_format
-    else:
-      self.double_format = float_format
     self.use_field_number = use_field_number
     self.descriptor_pool = descriptor_pool
     self.message_formatter = message_formatter
@@ -434,8 +430,9 @@ class _Printer(object):
     """Serializes if message is a google.protobuf.Any field."""
     if '/' not in message.type_url:
       return False
-    packed_message = _BuildMessageFromTypeName(message.TypeName(),
-                                               self.descriptor_pool)
+    packed_message = _BuildMessageFromTypeName(
+        message.TypeName(), self.descriptor_pool
+    )
     if packed_message is not None:
       packed_message.MergeFromString(message.value)
       colon = ':' if self.force_colon else ''
@@ -465,13 +462,16 @@ class _Printer(object):
     """
     if self.message_formatter and self._TryCustomFormatMessage(message):
       return
-    if (message.DESCRIPTOR.full_name == _ANY_FULL_TYPE_NAME and
-        self._TryPrintAsAnyMessage(message)):
+    if (
+        message.DESCRIPTOR.full_name == _ANY_FULL_TYPE_NAME
+        and self._TryPrintAsAnyMessage(message)
+    ):
       return
     fields = message.ListFields()
     if self.use_index_order:
       fields.sort(
-          key=lambda x: x[0].number if x[0].is_extension else x[0].index)
+          key=lambda x: x[0].number if x[0].is_extension else x[0].index
+      )
     for field, value in fields:
       if _IsMapEntry(field):
         for key in sorted(value):
@@ -483,9 +483,11 @@ class _Printer(object):
           entry_submsg = value.GetEntryClass()(key=key, value=value[key])
           self.PrintField(field, entry_submsg)
       elif field.is_repeated:
-        if (self.use_short_repeated_primitives
+        if (
+            self.use_short_repeated_primitives
             and field.cpp_type != descriptor.FieldDescriptor.CPPTYPE_MESSAGE
-            and field.cpp_type != descriptor.FieldDescriptor.CPPTYPE_STRING):
+            and field.cpp_type != descriptor.FieldDescriptor.CPPTYPE_STRING
+        ):
           self._PrintShortRepeatedPrimitivesValue(field, value)
         else:
           for element in value:
@@ -521,9 +523,10 @@ class _Printer(object):
           # If this field is parseable as a Message, it is probably
           # an embedded message.
           # pylint: disable=protected-access
-          (embedded_unknown_message, pos) = decoder._DecodeUnknownFieldSet(
-              memoryview(field.data), 0, len(field.data))
-        except Exception:    # pylint: disable=broad-except
+          embedded_unknown_message, pos = decoder._DecodeUnknownFieldSet(
+              memoryview(field.data), 0, len(field.data)
+          )
+        except Exception:  # pylint: disable=broad-except
           pos = 0
 
         if pos == len(field.data):
@@ -542,9 +545,9 @@ class _Printer(object):
             out.write(' ' * self.indent + '}\n')
         else:
           # A string or bytes field. self.as_utf8 may not work.
-          out.write(': \"')
+          out.write(': "')
           out.write(text_encoding.CEscape(field.data, False))
-          out.write('\" ' if self.as_one_line else '\"\n')
+          out.write('" ' if self.as_one_line else '"\n')
       else:
         # varint, fixed32, fixed64
         out.write(': ')
@@ -560,10 +563,12 @@ class _Printer(object):
     else:
       if field.is_extension:
         out.write('[')
-        if (field.containing_type.GetOptions().message_set_wire_format and
-            field.type == descriptor.FieldDescriptor.TYPE_MESSAGE and
-            not field.is_required and
-            not field.is_repeated):
+        if (
+            field.containing_type.GetOptions().message_set_wire_format
+            and field.type == descriptor.FieldDescriptor.TYPE_MESSAGE
+            and not field.is_required
+            and not field.is_repeated
+        ):
           out.write(field.message_type.full_name)
         else:
           out.write(field.full_name)
@@ -574,8 +579,10 @@ class _Printer(object):
       else:
         out.write(field.name)
 
-    if (self.force_colon or
-        field.cpp_type != descriptor.FieldDescriptor.CPPTYPE_MESSAGE):
+    if (
+        self.force_colon
+        or field.cpp_type != descriptor.FieldDescriptor.CPPTYPE_MESSAGE
+    ):
       # The colon is optional in this case, but our cross-language golden files
       # don't include it. Here, the colon is only included if force_colon is
       # set to True
@@ -589,7 +596,7 @@ class _Printer(object):
     self.out.write(' ' if self.as_one_line else '\n')
 
   def _PrintShortRepeatedPrimitivesValue(self, field, value):
-    """"Prints short repeated primitives value."""
+    """ "Prints short repeated primitives value."""
     # Note: this is called only when value has at least one element.
     self._PrintFieldName(field)
     self.out.write(' [')
@@ -638,7 +645,7 @@ class _Printer(object):
       else:
         out.write(str(value))
     elif field.cpp_type == descriptor.FieldDescriptor.CPPTYPE_STRING:
-      out.write('\"')
+      out.write('"')
       if isinstance(value, str) and not self.as_utf8:
         out_value = value.encode('utf-8')
       else:
@@ -649,38 +656,30 @@ class _Printer(object):
       else:
         out_as_utf8 = self.as_utf8
       out.write(text_encoding.CEscape(out_value, out_as_utf8))
-      out.write('\"')
+      out.write('"')
     elif field.cpp_type == descriptor.FieldDescriptor.CPPTYPE_BOOL:
       if value:
         out.write('true')
       else:
         out.write('false')
     elif field.cpp_type == descriptor.FieldDescriptor.CPPTYPE_FLOAT:
-      if self.float_format is not None:
-        warnings.warn(
-            'float_format is deprecated for text_format. This '
-            'will turn into error in 7.34.0, please remove it '
-            'before that.'
-        )
-        out.write('{1:{0}}'.format(self.float_format, value))
+      if math.isnan(value):
+        out.write(str(value))
       else:
-        if math.isnan(value):
-          out.write(str(value))
-        else:
-          out.write(str(type_checkers.ToShortestFloat(value)))
-    elif (field.cpp_type == descriptor.FieldDescriptor.CPPTYPE_DOUBLE and
-          self.double_format is not None):
-      out.write('{1:{0}}'.format(self.double_format, value))
+        out.write(str(type_checkers.ToShortestFloat(value)))
     else:
       out.write(str(value))
 
 
-def Parse(text,
-          message,
-          allow_unknown_extension=False,
-          allow_field_number=False,
-          descriptor_pool=None,
-          allow_unknown_field=False):
+def Parse(
+    text,
+    message,
+    allow_unknown_extension=False,
+    allow_field_number=False,
+    descriptor_pool=None,
+    allow_unknown_field=False,
+    max_recursion_depth=None,
+):
   """Parses a text representation of a protocol message into a message.
 
   NOTE: for historical reasons this function does not clear the input
@@ -715,9 +714,18 @@ def Parse(text,
       parsing
     allow_field_number: if True, both field number and field name are allowed.
     descriptor_pool (DescriptorPool): Descriptor pool used to resolve Any types.
-    allow_unknown_field: if True, skip over unknown field and keep
-      parsing. Avoid to use this option if possible. It may hide some
-      errors (e.g. spelling error on field name)
+    allow_unknown_field: if True, skip over unknown field and keep parsing.
+      Avoid to use this option if possible. It may hide some errors (e.g.
+      spelling error on field name)
+    max_recursion_depth: Optional maximum recursion depth of the message to be
+      parsed: Text Format inputs over this depth will fail to parse. ``None``
+        means no additional limit (the Python runtime will enforce some limit
+        due to call stack limits). As Text Format is primarily intended to be
+        used on trusted configuration inputs, and to maintain backwards
+        compatibility, the default of ``None`` (unbounded) is intentional. For
+        better consistency with what messages will successfully round trip
+        through binary wire format, or for the discouraged case of processing
+        untrusted Text Format inputs, setting a limit of 100 is recommended.
 
   Returns:
     Message: The same message passed as argument.
@@ -725,20 +733,26 @@ def Parse(text,
   Raises:
     ParseError: On text parsing problems.
   """
-  return ParseLines(text.split(b'\n' if isinstance(text, bytes) else u'\n'),
-                    message,
-                    allow_unknown_extension,
-                    allow_field_number,
-                    descriptor_pool=descriptor_pool,
-                    allow_unknown_field=allow_unknown_field)
+  return ParseLines(
+      text.split(b'\n' if isinstance(text, bytes) else '\n'),
+      message,
+      allow_unknown_extension,
+      allow_field_number,
+      descriptor_pool=descriptor_pool,
+      allow_unknown_field=allow_unknown_field,
+      max_recursion_depth=max_recursion_depth,
+  )
 
 
-def Merge(text,
-          message,
-          allow_unknown_extension=False,
-          allow_field_number=False,
-          descriptor_pool=None,
-          allow_unknown_field=False):
+def Merge(
+    text,
+    message,
+    allow_unknown_extension=False,
+    allow_field_number=False,
+    descriptor_pool=None,
+    allow_unknown_field=False,
+    max_recursion_depth=None,
+):
   """Parses a text representation of a protocol message into a message.
 
   Like Parse(), but allows repeated values for a non-repeated field, and uses
@@ -752,9 +766,18 @@ def Merge(text,
       parsing
     allow_field_number: if True, both field number and field name are allowed.
     descriptor_pool (DescriptorPool): Descriptor pool used to resolve Any types.
-    allow_unknown_field: if True, skip over unknown field and keep
-      parsing. Avoid to use this option if possible. It may hide some
-      errors (e.g. spelling error on field name)
+    allow_unknown_field: if True, skip over unknown field and keep parsing.
+      Avoid to use this option if possible. It may hide some errors (e.g.
+      spelling error on field name)
+    max_recursion_depth: Optional maximum recursion depth of the message to be
+      parsed: Text Format inputs over this depth will fail to parse. ``None``
+        means no additional limit (the Python runtime will enforce some limit
+        due to call stack limits). As Text Format is primarily intended to be
+        used on trusted configuration inputs, and to maintain backwards
+        compatibility, the default of ``None`` (unbounded) is intentional. For
+        better consistency with what messages will successfully round trip
+        through binary wire format, or for the discouraged case of processing
+        untrusted Text Format inputs, setting a limit of 100 is recommended.
 
   Returns:
     Message: The same message passed as argument.
@@ -763,20 +786,25 @@ def Merge(text,
     ParseError: On text parsing problems.
   """
   return MergeLines(
-      text.split(b'\n' if isinstance(text, bytes) else u'\n'),
+      text.split(b'\n' if isinstance(text, bytes) else '\n'),
       message,
       allow_unknown_extension,
       allow_field_number,
       descriptor_pool=descriptor_pool,
-      allow_unknown_field=allow_unknown_field)
+      allow_unknown_field=allow_unknown_field,
+      max_recursion_depth=max_recursion_depth,
+  )
 
 
-def ParseLines(lines,
-               message,
-               allow_unknown_extension=False,
-               allow_field_number=False,
-               descriptor_pool=None,
-               allow_unknown_field=False):
+def ParseLines(
+    lines,
+    message,
+    allow_unknown_extension=False,
+    allow_field_number=False,
+    descriptor_pool=None,
+    allow_unknown_field=False,
+    max_recursion_depth=None,
+):
   """Parses a text representation of a protocol message into a message.
 
   See Parse() for caveats.
@@ -788,9 +816,18 @@ def ParseLines(lines,
       parsing
     allow_field_number: if True, both field number and field name are allowed.
     descriptor_pool: A DescriptorPool used to resolve Any types.
-    allow_unknown_field: if True, skip over unknown field and keep
-      parsing. Avoid to use this option if possible. It may hide some
-      errors (e.g. spelling error on field name)
+    allow_unknown_field: if True, skip over unknown field and keep parsing.
+      Avoid to use this option if possible. It may hide some errors (e.g.
+      spelling error on field name)
+    max_recursion_depth: Optional maximum recursion depth of the message to be
+      parsed: Text Format inputs over this depth will fail to parse. ``None``
+        means no additional limit (the Python runtime will enforce some limit
+        due to call stack limits). As Text Format is primarily intended to be
+        used on trusted configuration inputs, and to maintain backwards
+        compatibility, the default of ``None`` (unbounded) is intentional. For
+        better consistency with what messages will successfully round trip
+        through binary wire format, or for the discouraged case of processing
+        untrusted Text Format inputs, setting a limit of 100 is recommended.
 
   Returns:
     The same message passed as argument.
@@ -798,19 +835,25 @@ def ParseLines(lines,
   Raises:
     ParseError: On text parsing problems.
   """
-  parser = _Parser(allow_unknown_extension,
-                   allow_field_number,
-                   descriptor_pool=descriptor_pool,
-                   allow_unknown_field=allow_unknown_field)
+  parser = _Parser(
+      allow_unknown_extension,
+      allow_field_number,
+      descriptor_pool=descriptor_pool,
+      allow_unknown_field=allow_unknown_field,
+      max_recursion_depth=max_recursion_depth,
+  )
   return parser.ParseLines(lines, message)
 
 
-def MergeLines(lines,
-               message,
-               allow_unknown_extension=False,
-               allow_field_number=False,
-               descriptor_pool=None,
-               allow_unknown_field=False):
+def MergeLines(
+    lines,
+    message,
+    allow_unknown_extension=False,
+    allow_field_number=False,
+    descriptor_pool=None,
+    allow_unknown_field=False,
+    max_recursion_depth=None,
+):
   """Parses a text representation of a protocol message into a message.
 
   See Merge() for more details.
@@ -822,9 +865,18 @@ def MergeLines(lines,
       parsing
     allow_field_number: if True, both field number and field name are allowed.
     descriptor_pool: A DescriptorPool used to resolve Any types.
-    allow_unknown_field: if True, skip over unknown field and keep
-      parsing. Avoid to use this option if possible. It may hide some
-      errors (e.g. spelling error on field name)
+    allow_unknown_field: if True, skip over unknown field and keep parsing.
+      Avoid to use this option if possible. It may hide some errors (e.g.
+      spelling error on field name)
+    max_recursion_depth: Optional maximum recursion depth of the message to be
+      parsed: Text Format inputs over this depth will fail to parse. ``None``
+        means no additional limit (the Python runtime will enforce some limit
+        due to call stack limits). As Text Format is primarily intended to be
+        used on trusted configuration inputs, and to maintain backwards
+        compatibility, the default of ``None`` (unbounded) is intentional. For
+        better consistency with what messages will successfully round trip
+        through binary wire format, or for the discouraged case of processing
+        untrusted Text Format inputs, setting a limit of 100 is recommended.
 
   Returns:
     The same message passed as argument.
@@ -832,25 +884,33 @@ def MergeLines(lines,
   Raises:
     ParseError: On text parsing problems.
   """
-  parser = _Parser(allow_unknown_extension,
-                   allow_field_number,
-                   descriptor_pool=descriptor_pool,
-                   allow_unknown_field=allow_unknown_field)
+  parser = _Parser(
+      allow_unknown_extension,
+      allow_field_number,
+      descriptor_pool=descriptor_pool,
+      allow_unknown_field=allow_unknown_field,
+      max_recursion_depth=max_recursion_depth,
+  )
   return parser.MergeLines(lines, message)
 
 
 class _Parser(object):
   """Text format parser for protocol message."""
 
-  def __init__(self,
-               allow_unknown_extension=False,
-               allow_field_number=False,
-               descriptor_pool=None,
-               allow_unknown_field=False):
+  def __init__(
+      self,
+      allow_unknown_extension=False,
+      allow_field_number=False,
+      descriptor_pool=None,
+      allow_unknown_field=False,
+      max_recursion_depth=None,
+  ):
     self.allow_unknown_extension = allow_unknown_extension
     self.allow_field_number = allow_field_number
     self.descriptor_pool = descriptor_pool
     self.allow_unknown_field = allow_unknown_field
+    self.max_recursion_depth = max_recursion_depth
+    self.recursion_depth = 0
 
   def ParseLines(self, lines, message):
     """Parses a text representation of a protocol message into a message."""
@@ -878,14 +938,43 @@ class _Parser(object):
     try:
       str_lines = (
           line if isinstance(line, str) else line.decode('utf-8')
-          for line in lines)
+          for line in lines
+      )
       tokenizer = Tokenizer(str_lines)
     except UnicodeDecodeError as e:
       raise ParseError from e
     if message:
       self.root_type = message.DESCRIPTOR.full_name
+    self.recursion_depth += 1
+    if (
+        self.max_recursion_depth is not None
+        and self.recursion_depth > self.max_recursion_depth
+    ):
+      raise ParseError(
+          'Message too deep. Max recursion depth is {0}'.format(
+              self.max_recursion_depth
+          )
+      )
     while not tokenizer.AtEnd():
       self._MergeField(tokenizer, message)
+    self.recursion_depth -= 1
+
+  def _MergeMessage(self, tokenizer, message, end_token):
+    self.recursion_depth += 1
+    if (
+        self.max_recursion_depth is not None
+        and self.recursion_depth > self.max_recursion_depth
+    ):
+      raise ParseError(
+          'Message too deep. Max recursion depth is {0}'.format(
+              self.max_recursion_depth
+          )
+      )
+    while not tokenizer.TryConsume(end_token):
+      if tokenizer.AtEnd():
+        raise tokenizer.ParseErrorPreviousToken('Expected "%s".' % (end_token,))
+      self._MergeField(tokenizer, message)
+    self.recursion_depth -= 1
 
   def _MergeField(self, tokenizer, message):
     """Merges a single protocol message field into a message.
@@ -898,36 +987,42 @@ class _Parser(object):
       ParseError: In case of text parsing problems.
     """
     message_descriptor = message.DESCRIPTOR
-    if (message_descriptor.full_name == _ANY_FULL_TYPE_NAME and
-        tokenizer.TryConsume('[')):
+    if (
+        message_descriptor.full_name == _ANY_FULL_TYPE_NAME
+        and tokenizer.TryConsume('[')
+    ):
       type_url_prefix, packed_type_name = self._ConsumeAnyTypeUrl(tokenizer)
-      tokenizer.Consume(']')
       tokenizer.TryConsume(':')
-      self._DetectSilentMarker(tokenizer, message_descriptor.full_name,
-                               type_url_prefix + '/' + packed_type_name)
+      self._DetectSilentMarker(
+          tokenizer,
+          message_descriptor.full_name,
+          type_url_prefix + '/' + packed_type_name,
+      )
       if tokenizer.TryConsume('<'):
         expanded_any_end_token = '>'
       else:
         tokenizer.Consume('{')
         expanded_any_end_token = '}'
-      expanded_any_sub_message = _BuildMessageFromTypeName(packed_type_name,
-                                                           self.descriptor_pool)
+      expanded_any_sub_message = _BuildMessageFromTypeName(
+          packed_type_name, self.descriptor_pool
+      )
       # Direct comparison with None is used instead of implicit bool conversion
       # to avoid false positives with falsy initial values, e.g. for
       # google.protobuf.ListValue.
       if expanded_any_sub_message is None:
-        raise ParseError('Type %s not found in descriptor pool' %
-                         packed_type_name)
-      while not tokenizer.TryConsume(expanded_any_end_token):
-        if tokenizer.AtEnd():
-          raise tokenizer.ParseErrorPreviousToken('Expected "%s".' %
-                                                  (expanded_any_end_token,))
-        self._MergeField(tokenizer, expanded_any_sub_message)
+        raise ParseError(
+            'Type %s not found in descriptor pool' % packed_type_name
+        )
+      self._MergeMessage(
+          tokenizer, expanded_any_sub_message, expanded_any_end_token
+      )
       deterministic = False
 
-      message.Pack(expanded_any_sub_message,
-                   type_url_prefix=type_url_prefix,
-                   deterministic=deterministic)
+      message.Pack(
+          expanded_any_sub_message,
+          type_url_prefix=type_url_prefix + '/',
+          deterministic=deterministic,
+      )
       return
 
     if tokenizer.TryConsume('['):
@@ -938,8 +1033,9 @@ class _Parser(object):
 
       if not message_descriptor.is_extendable:
         raise tokenizer.ParseErrorPreviousToken(
-            'Message type "%s" does not have extensions.' %
-            message_descriptor.full_name)
+            'Message type "%s" does not have extensions.'
+            % message_descriptor.full_name
+        )
       # pylint: disable=protected-access
       field = message.Extensions._FindExtensionByName(name)
       # pylint: enable=protected-access
@@ -952,11 +1048,13 @@ class _Parser(object):
               'Did you import the _pb2 module which defines it? '
               'If you are trying to place the extension in the MessageSet '
               'field of another message that is in an Any or MessageSet field, '
-              'that message\'s _pb2 module must be imported as well' % name)
+              "that message's _pb2 module must be imported as well" % name
+          )
       elif message_descriptor != field.containing_type:
         raise tokenizer.ParseErrorPreviousToken(
-            'Extension "%s" does not extend message type "%s".' %
-            (name, message_descriptor.full_name))
+            'Extension "%s" does not extend message type "%s".'
+            % (name, message_descriptor.full_name)
+        )
 
       tokenizer.Consume(']')
 
@@ -982,8 +1080,9 @@ class _Parser(object):
 
       if not field and not self.allow_unknown_field:
         raise tokenizer.ParseErrorPreviousToken(
-            'Message type "%s" has no field named "%s".' %
-            (message_descriptor.full_name, name))
+            'Message type "%s" has no field named "%s".'
+            % (message_descriptor.full_name, name)
+        )
 
     if field:
       if not self._allow_multiple_scalars and field.containing_oneof:
@@ -994,23 +1093,29 @@ class _Parser(object):
         if which_oneof is not None and which_oneof != field.name:
           raise tokenizer.ParseErrorPreviousToken(
               'Field "%s" is specified along with field "%s", another member '
-              'of oneof "%s" for message type "%s".' %
-              (field.name, which_oneof, field.containing_oneof.name,
-               message_descriptor.full_name))
+              'of oneof "%s" for message type "%s".'
+              % (
+                  field.name,
+                  which_oneof,
+                  field.containing_oneof.name,
+                  message_descriptor.full_name,
+              )
+          )
 
       if field.cpp_type == descriptor.FieldDescriptor.CPPTYPE_MESSAGE:
         tokenizer.TryConsume(':')
-        self._DetectSilentMarker(tokenizer, message_descriptor.full_name,
-                                 field.full_name)
+        self._DetectSilentMarker(
+            tokenizer, message_descriptor.full_name, field.full_name
+        )
         merger = self._MergeMessageField
       else:
         tokenizer.Consume(':')
-        self._DetectSilentMarker(tokenizer, message_descriptor.full_name,
-                                 field.full_name)
+        self._DetectSilentMarker(
+            tokenizer, message_descriptor.full_name, field.full_name
+        )
         merger = self._MergeScalarField
 
-      if (field.is_repeated and
-          tokenizer.TryConsume('[')):
+      if field.is_repeated and tokenizer.TryConsume('['):
         # Short repeated format, e.g. "foo: [1, 2, 3]"
         if not tokenizer.TryConsume(']'):
           while True:
@@ -1023,7 +1128,7 @@ class _Parser(object):
         merger(tokenizer, message, field)
 
     else:  # Proto field is unknown.
-      assert (self.allow_unknown_extension or self.allow_unknown_field)
+      assert self.allow_unknown_extension or self.allow_unknown_field
       self._SkipFieldContents(tokenizer, name, message_descriptor.full_name)
 
     # For historical reasons, fields may optionally be separated by commas or
@@ -1039,19 +1144,59 @@ class _Parser(object):
       self._LogSilentMarker(immediate_message_type, field_name)
 
   def _ConsumeAnyTypeUrl(self, tokenizer):
-    """Consumes a google.protobuf.Any type URL and returns the type name."""
-    # Consume "type.googleapis.com/".
-    prefix = [tokenizer.ConsumeIdentifier()]
-    tokenizer.Consume('.')
-    prefix.append(tokenizer.ConsumeIdentifier())
-    tokenizer.Consume('.')
-    prefix.append(tokenizer.ConsumeIdentifier())
-    tokenizer.Consume('/')
-    # Consume the fully-qualified type name.
-    name = [tokenizer.ConsumeIdentifier()]
-    while tokenizer.TryConsume('.'):
-      name.append(tokenizer.ConsumeIdentifier())
-    return '.'.join(prefix), '.'.join(name)
+    """Consumes a google.protobuf.Any type URL.
+
+    Assumes the caller has already consumed the opening [ and consumes up to the
+    closing ].
+
+    Args:
+      tokenizer: A tokenizer to parse the type URL.
+
+    Returns:
+      A tuple of type URL prefix (without trailing slash) and type name.
+    """
+    # Consume all tokens with valid URL characters until ]. Whitespace and
+    # comments are ignored/skipped by the Tokenizer.
+    tokens = []
+    last_slash = -1
+    while True:
+      try:
+        tokens.append(tokenizer.ConsumeUrlChars())
+        continue
+      except ParseError:
+        pass
+      if tokenizer.TryConsume('/'):
+        last_slash = len(tokens)
+        tokens.append('/')
+      else:
+        tokenizer.Consume(']')
+        break
+
+    if last_slash == -1:
+      raise tokenizer.ParseError('Type URL does not contain "/".')
+
+    prefix = ''.join(tokens[:last_slash])
+    name = ''.join(tokens[last_slash + 1 :])
+
+    if not prefix:
+      raise tokenizer.ParseError('Type URL prefix is empty.')
+    if prefix.startswith('/'):
+      raise tokenizer.ParseError('Type URL prefix starts with "/".')
+
+    # Check for invalid percent encodings. '%' needs to be followed by exactly
+    # two valid hexadecimal digits.
+    for i, char in enumerate(prefix):
+      if char == '%' and not _PERCENT_ENCODING.match(prefix[i : i + 3]):
+        raise tokenizer.ParseError(
+            f'Invalid percent escape, got "{prefix[i : i + 3]}".'
+        )
+
+    # After the last slash we expect a valid type name, not just any sequence of
+    # URL characters.
+    if not _TYPE_NAME.match(name):
+      raise tokenizer.ParseError('Expected type name, got "%s".' % name)
+
+    return prefix, name
 
   def _MergeMessageField(self, tokenizer, message, field):
     """Merges a single scalar field into a message.
@@ -1081,27 +1226,24 @@ class _Parser(object):
         sub_message = getattr(message, field.name).add()
     else:
       if field.is_extension:
-        if (not self._allow_multiple_scalars and
-            message.HasExtension(field)):
+        if not self._allow_multiple_scalars and message.HasExtension(field):
           raise tokenizer.ParseErrorPreviousToken(
-              'Message type "%s" should not have multiple "%s" extensions.' %
-              (message.DESCRIPTOR.full_name, field.full_name))
+              'Message type "%s" should not have multiple "%s" extensions.'
+              % (message.DESCRIPTOR.full_name, field.full_name)
+          )
         sub_message = message.Extensions[field]
       else:
         # Also apply _allow_multiple_scalars to message field.
         # TODO: Change to _allow_singular_overwrites.
-        if (not self._allow_multiple_scalars and
-            message.HasField(field.name)):
+        if not self._allow_multiple_scalars and message.HasField(field.name):
           raise tokenizer.ParseErrorPreviousToken(
-              'Message type "%s" should not have multiple "%s" fields.' %
-              (message.DESCRIPTOR.full_name, field.name))
+              'Message type "%s" should not have multiple "%s" fields.'
+              % (message.DESCRIPTOR.full_name, field.name)
+          )
         sub_message = getattr(message, field.name)
       sub_message.SetInParent()
 
-    while not tokenizer.TryConsume(end_token):
-      if tokenizer.AtEnd():
-        raise tokenizer.ParseErrorPreviousToken('Expected "%s".' % (end_token,))
-      self._MergeField(tokenizer, sub_message)
+    self._MergeMessage(tokenizer, sub_message, end_token)
 
     if is_map_entry:
       value_cpptype = field.message_type.fields_by_name['value'].cpp_type
@@ -1126,22 +1268,32 @@ class _Parser(object):
     _ = self.allow_unknown_extension
     value = None
 
-    if field.type in (descriptor.FieldDescriptor.TYPE_INT32,
-                      descriptor.FieldDescriptor.TYPE_SINT32,
-                      descriptor.FieldDescriptor.TYPE_SFIXED32):
+    if field.type in (
+        descriptor.FieldDescriptor.TYPE_INT32,
+        descriptor.FieldDescriptor.TYPE_SINT32,
+        descriptor.FieldDescriptor.TYPE_SFIXED32,
+    ):
       value = _ConsumeInt32(tokenizer)
-    elif field.type in (descriptor.FieldDescriptor.TYPE_INT64,
-                        descriptor.FieldDescriptor.TYPE_SINT64,
-                        descriptor.FieldDescriptor.TYPE_SFIXED64):
+    elif field.type in (
+        descriptor.FieldDescriptor.TYPE_INT64,
+        descriptor.FieldDescriptor.TYPE_SINT64,
+        descriptor.FieldDescriptor.TYPE_SFIXED64,
+    ):
       value = _ConsumeInt64(tokenizer)
-    elif field.type in (descriptor.FieldDescriptor.TYPE_UINT32,
-                        descriptor.FieldDescriptor.TYPE_FIXED32):
+    elif field.type in (
+        descriptor.FieldDescriptor.TYPE_UINT32,
+        descriptor.FieldDescriptor.TYPE_FIXED32,
+    ):
       value = _ConsumeUint32(tokenizer)
-    elif field.type in (descriptor.FieldDescriptor.TYPE_UINT64,
-                        descriptor.FieldDescriptor.TYPE_FIXED64):
+    elif field.type in (
+        descriptor.FieldDescriptor.TYPE_UINT64,
+        descriptor.FieldDescriptor.TYPE_FIXED64,
+    ):
       value = _ConsumeUint64(tokenizer)
-    elif field.type in (descriptor.FieldDescriptor.TYPE_FLOAT,
-                        descriptor.FieldDescriptor.TYPE_DOUBLE):
+    elif field.type in (
+        descriptor.FieldDescriptor.TYPE_FLOAT,
+        descriptor.FieldDescriptor.TYPE_DOUBLE,
+    ):
       value = tokenizer.ConsumeFloat()
     elif field.type == descriptor.FieldDescriptor.TYPE_BOOL:
       value = tokenizer.ConsumeBool()
@@ -1161,12 +1313,15 @@ class _Parser(object):
         getattr(message, field.name).append(value)
     else:
       if field.is_extension:
-        if (not self._allow_multiple_scalars and
-            field.has_presence and
-            message.HasExtension(field)):
+        if (
+            not self._allow_multiple_scalars
+            and field.has_presence
+            and message.HasExtension(field)
+        ):
           raise tokenizer.ParseErrorPreviousToken(
-              'Message type "%s" should not have multiple "%s" extensions.' %
-              (message.DESCRIPTOR.full_name, field.full_name))
+              'Message type "%s" should not have multiple "%s" extensions.'
+              % (message.DESCRIPTOR.full_name, field.full_name)
+          )
         else:
           message.Extensions[field] = value
       else:
@@ -1183,8 +1338,9 @@ class _Parser(object):
 
         if duplicate_error:
           raise tokenizer.ParseErrorPreviousToken(
-              'Message type "%s" should not have multiple "%s" fields.' %
-              (message.DESCRIPTOR.full_name, field.name))
+              'Message type "%s" should not have multiple "%s" fields.'
+              % (message.DESCRIPTOR.full_name, field.name)
+          )
         else:
           setattr(message, field.name, value)
 
@@ -1194,8 +1350,8 @@ class _Parser(object):
     Args:
       tokenizer: A tokenizer to parse the field name and values.
       field_name: The field name currently being parsed.
-      immediate_message_type: The type of the message immediately containing
-        the silent marker.
+      immediate_message_type: The type of the message immediately containing the
+        silent marker.
     """
     # Try to guess the type of this field.
     # If this field is not a message, there should be a ":" between the
@@ -1203,8 +1359,11 @@ class _Parser(object):
     # start with "{" or "<" which indicates the beginning of a message body.
     # If there is no ":" or there is a "{" or "<" after ":", this field has
     # to be a message or the input is ill-formed.
-    if tokenizer.TryConsume(
-        ':') and not tokenizer.LookingAt('{') and not tokenizer.LookingAt('<'):
+    if (
+        tokenizer.TryConsume(':')
+        and not tokenizer.LookingAt('{')
+        and not tokenizer.LookingAt('<')
+    ):
       self._DetectSilentMarker(tokenizer, immediate_message_type, field_name)
       if tokenizer.LookingAt('['):
         self._SkipRepeatedFieldValue(tokenizer, immediate_message_type)
@@ -1219,8 +1378,8 @@ class _Parser(object):
 
     Args:
       tokenizer: A tokenizer to parse the field name and values.
-      immediate_message_type: The type of the message immediately containing
-        the silent marker.
+      immediate_message_type: The type of the message immediately containing the
+        silent marker.
     """
     field_name = ''
     if tokenizer.TryConsume('['):
@@ -1252,8 +1411,8 @@ class _Parser(object):
 
     Args:
       tokenizer: A tokenizer to parse the field name and values.
-      immediate_message_type: The type of the message immediately containing
-        the silent marker
+      immediate_message_type: The type of the message immediately containing the
+        silent marker
     """
     if tokenizer.TryConsume('<'):
       delimiter = '>'
@@ -1275,11 +1434,13 @@ class _Parser(object):
     Raises:
       ParseError: In case an invalid field value is found.
     """
-    if (not tokenizer.TryConsumeByteString()and
-        not tokenizer.TryConsumeIdentifier() and
-        not _TryConsumeInt64(tokenizer) and
-        not _TryConsumeUint64(tokenizer) and
-        not tokenizer.TryConsumeFloat()):
+    if (
+        not tokenizer.TryConsumeByteString()
+        and not tokenizer.TryConsumeIdentifier()
+        and not _TryConsumeInt64(tokenizer)
+        and not _TryConsumeUint64(tokenizer)
+        and not tokenizer.TryConsumeFloat()
+    ):
       raise ParseError('Invalid field value: ' + tokenizer.token)
 
   def _SkipRepeatedFieldValue(self, tokenizer, immediate_message_type):
@@ -1312,17 +1473,26 @@ class Tokenizer(object):
   _WHITESPACE = re.compile(r'\s+')
   _COMMENT = re.compile(r'(\s*#.*$)', re.MULTILINE)
   _WHITESPACE_OR_COMMENT = re.compile(r'(\s|(#.*$))+', re.MULTILINE)
-  _TOKEN = re.compile('|'.join([
-      r'[a-zA-Z_][0-9a-zA-Z_+-]*',  # an identifier
-      r'([0-9+-]|(\.[0-9]))[0-9a-zA-Z_.+-]*',  # a number
-  ] + [  # quoted str for each quote mark
-      # Avoid backtracking! https://stackoverflow.com/a/844267
-      r'{qt}[^{qt}\n\\]*((\\.)+[^{qt}\n\\]*)*({qt}|\\?$)'.format(qt=mark)
-      for mark in _QUOTES
-  ]))
+  _TOKEN = re.compile(
+      '|'.join(
+          [
+              r'[a-zA-Z_][0-9a-zA-Z_+-]*',  # an identifier
+              r'([0-9+-]|(\.[0-9]))[0-9a-zA-Z_.+-]*',  # a number
+          ]
+          + [  # quoted str for each quote mark
+              # Avoid backtracking! https://stackoverflow.com/a/844267
+              r'{qt}[^{qt}\n\\]*((\\.)+[^{qt}\n\\]*)*({qt}|\\?$)'.format(
+                  qt=mark
+              )
+              for mark in _QUOTES
+          ]
+      )
+  )
 
   _IDENTIFIER = re.compile(r'[^\d\W]\w*')
   _IDENTIFIER_OR_NUMBER = re.compile(r'\w+')
+  # Accepted URL characters (excluding "/")
+  _URL_CHARS = re.compile(r'^[0-9a-zA-Z-.~_ !$&()*+,;=%]+$')
 
   def __init__(self, lines, skip_comments=True):
     self._position = 0
@@ -1336,8 +1506,9 @@ class Tokenizer(object):
     self._previous_column = 0
     self._more_lines = True
     self._skip_comments = skip_comments
-    self._whitespace_pattern = (skip_comments and self._WHITESPACE_OR_COMMENT
-                                or self._WHITESPACE)
+    self._whitespace_pattern = (
+        skip_comments and self._WHITESPACE_OR_COMMENT or self._WHITESPACE
+    )
     self.contains_silent_marker_before_current_token = False
 
     self._SkipWhitespace()
@@ -1373,7 +1544,8 @@ class Tokenizer(object):
       if not match:
         break
       self.contains_silent_marker_before_current_token = match.group(0) == (
-          ' ' + _DEBUG_STRING_SILENT_MARKER)
+          ' ' + _DEBUG_STRING_SILENT_MARKER
+      )
       length = len(match.group(0))
       self._column += length
 
@@ -1421,8 +1593,7 @@ class Tokenizer(object):
     comment = self.ConsumeComment()
 
     # A trailing comment is a comment on the same line than the previous token.
-    trailing = (self._previous_line == before_parsing
-                and not just_started)
+    trailing = self._previous_line == before_parsing and not just_started
 
     return trailing, comment
 
@@ -1602,6 +1773,31 @@ class Tokenizer(object):
     self.NextToken()
     return result
 
+  def ConsumeUrlChars(self):
+    """Consumes a token containing valid URL characters.
+
+    Excludes '/' so that it can be treated specially as a delimiter.
+
+    Returns:
+      The next token containing one or more URL characters.
+
+    Raises:
+      ParseError: If the next token contains unaccepted URL characters.
+    """
+    if not self._URL_CHARS.match(self.token):
+      raise self.ParseError('Expected URL character(s), got "%s"' % self.token)
+
+    result = self.token
+    self.NextToken()
+    return result
+
+  def TryConsumeUrlChars(self):
+    try:
+      self.ConsumeUrlChars()
+      return True
+    except ParseError:
+      return False
+
   def ParseErrorPreviousToken(self, message):
     """Creates and *returns* a ParseError for the previously read token.
 
@@ -1611,16 +1807,20 @@ class Tokenizer(object):
     Returns:
       A ParseError instance.
     """
-    return ParseError(message, self._previous_line + 1,
-                      self._previous_column + 1)
+    return ParseError(
+        message, self._previous_line + 1, self._previous_column + 1
+    )
 
   def ParseError(self, message):
     """Creates and *returns* a ParseError for the current token."""
-    return ParseError('\'' + self._current_line + '\': ' + message,
-                      self._line + 1, self._column + 1)
+    return ParseError(
+        "'" + self._current_line + "': " + message,
+        self._line + 1,
+        self._column + 1,
+    )
 
   def _StringParseError(self, e):
-    return self.ParseError('Couldn\'t parse string: ' + str(e))
+    return self.ParseError("Couldn't parse string: " + str(e))
 
   def NextToken(self):
     """Reads the next meaningful token."""
@@ -1643,6 +1843,7 @@ class Tokenizer(object):
       self.token = token
     else:
       self.token = self._current_line[self._column]
+
 
 # Aliased so it can still be accessed by current visibility violators.
 # TODO: Migrate violators to textformat_tokenizer.
@@ -1792,7 +1993,7 @@ def _ParseAbstractInteger(text):
   try:
     return int(text, 0)
   except ValueError:
-    raise ValueError('Couldn\'t parse integer: %s' % orig_text)
+    raise ValueError("Couldn't parse integer: %s" % orig_text)
 
 
 def ParseFloat(text):
@@ -1872,13 +2073,17 @@ def ParseEnum(field, value):
     # Identifier.
     enum_value = enum_descriptor.values_by_name.get(value, None)
     if enum_value is None:
-      raise ValueError('Enum type "%s" has no value named %s.' %
-                       (enum_descriptor.full_name, value))
+      raise ValueError(
+          'Enum type "%s" has no value named %s.'
+          % (enum_descriptor.full_name, value)
+      )
   else:
     if not field.enum_type.is_closed:
       return number
     enum_value = enum_descriptor.values_by_number.get(number, None)
     if enum_value is None:
-      raise ValueError('Enum type "%s" has no value with number %d.' %
-                       (enum_descriptor.full_name, number))
+      raise ValueError(
+          'Enum type "%s" has no value with number %d.'
+          % (enum_descriptor.full_name, number)
+      )
   return enum_value.number

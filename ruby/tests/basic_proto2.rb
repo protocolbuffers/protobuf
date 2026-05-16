@@ -191,6 +191,26 @@ module BasicTestProto2
       refute m.has_my_oneof?
     end
 
+    def test_enums_are_open
+      # Normally proto2 enums would be closed, but Ruby treats all enums as
+      # open.
+      m = TestMessage.new
+      m.optional_enum = 999  # Not a valid enum value.
+      assert_equal 999, m.optional_enum
+
+      serialized = TestMessage.encode(m)
+      m2 = TestMessage.decode(serialized)
+
+      if RUBY_PLATFORM == "java" && Google::Protobuf::IMPLEMENTATION == :NATIVE
+        # When JRuby is using Java Protobuf, it does not have this special
+        # behavior of treating all enums as open.
+        refute m2.has_optional_enum?
+      else
+        assert m2.has_optional_enum?
+        assert_equal 999, m2.optional_enum
+      end
+    end
+
     def test_assign_nil
       m = TestMessageDefaults.new
       m.optional_msg = TestMessage2.new(:foo => 42)

@@ -1,0 +1,329 @@
+edition = "2024";
+
+package fuzz_unittest;
+
+import "google/protobuf/cpp_features.proto";
+import "google/protobuf/unittest_import.proto";
+
+option features = { enum_type : CLOSED repeated_field_encoding : EXPANDED utf8_validation : NONE };
+
+// Protos optimized for SPEED use a strict superset of the generated code
+// of equivalent ones optimized for CODE_SIZE, so we should optimize all our
+// tests for speed unless explicitly testing code size optimization.
+option optimize_for = SPEED;
+
+// This proto includes every type of field in both singular and repeated
+// forms.
+// Warning: This test is used by a fuzz test that requires the invariant that
+// FuzzMostTypes and FuzzMostExtensions are strictly wire-compatible, meaning:
+// 1. *Any* random bytes that can be parsed successfully by one can be parsed by
+//    the other. This means that any submessage fields must be have the same
+//    field numbers and message types in both protos.
+// 2. If parsing is successful, the resulting messages are identical. This means
+//    that oneofs cannot be used, since oneofs cannot be extensions, and thus if
+//    multiples fields from the same oneof are parsed, the messages will not be
+//    identical, even if the field numbers are the same and the field types are
+//    compatible.
+message FuzzMostTypes {
+  message NestedMessage {
+    int32 bb = 1;
+  }
+
+  enum NestedEnum {
+    FOO = 1;
+    BAR = 2;
+    BAZ = 3;
+    NEG = -1;  // Intentionally negative.
+  }
+
+  // Singular
+  int32 optional_int32 = 1;
+  int64 optional_int64 = 2;
+  uint32 optional_uint32 = 3;
+  uint64 optional_uint64 = 4;
+  sint32 optional_sint32 = 5;
+  sint64 optional_sint64 = 6;
+  fixed32 optional_fixed32 = 7;
+  fixed64 optional_fixed64 = 8;
+  sfixed32 optional_sfixed32 = 9;
+  sfixed64 optional_sfixed64 = 10;
+  float optional_float = 11;
+  double optional_double = 12;
+  bool optional_bool = 13;
+  string optional_string = 14;
+  bytes optional_bytes = 15;
+
+  message OptionalGroup {
+    int32 a = 17;
+  }
+
+  OptionalGroup optionalgroup = 16 [features.message_encoding = DELIMITED];
+
+  NestedMessage optional_nested_message = 18;
+  ForeignMessage optional_foreign_message = 19;
+  proto2_unittest_import.ImportMessage optional_import_message = 20;
+  NestedEnum optional_nested_enum = 21;
+  ForeignEnum optional_foreign_enum = 22;
+  proto2_unittest_import.ImportEnum optional_import_enum = 23;
+
+  string optional_cord = 25 [features.(pb.cpp).string_type = CORD];
+  bytes optional_bytes_cord = 86 [features.(pb.cpp).string_type = CORD];
+
+  // Defined in unittest_import_public.proto
+  proto2_unittest_import.PublicImportMessage optional_public_import_message =
+      26;
+  NestedMessage optional_lazy_message = 27 [lazy = true];
+
+  // Repeated
+  repeated int32 repeated_int32 = 31;
+  repeated int64 repeated_int64 = 32;
+  repeated uint32 repeated_uint32 = 33;
+  repeated uint64 repeated_uint64 = 34;
+  repeated sint32 repeated_sint32 = 35;
+  repeated sint64 repeated_sint64 = 36;
+  repeated fixed32 repeated_fixed32 = 37;
+  repeated fixed64 repeated_fixed64 = 38;
+  repeated sfixed32 repeated_sfixed32 = 39;
+  repeated sfixed64 repeated_sfixed64 = 40;
+  repeated float repeated_float = 41;
+  repeated double repeated_double = 42;
+  repeated bool repeated_bool = 43;
+  repeated string repeated_string = 44;
+  repeated bytes repeated_bytes = 45;
+
+  message RepeatedGroup {
+    int32 a = 47;
+  }
+
+  repeated RepeatedGroup repeatedgroup = 46
+      [features.message_encoding = DELIMITED];
+
+  repeated NestedMessage repeated_nested_message = 48;
+  repeated ForeignMessage repeated_foreign_message = 49;
+  repeated proto2_unittest_import.ImportMessage repeated_import_message = 50;
+  repeated NestedEnum repeated_nested_enum = 51;
+  repeated ForeignEnum repeated_foreign_enum = 52;
+  repeated proto2_unittest_import.ImportEnum repeated_import_enum = 53;
+
+  repeated string repeated_cord = 55 [features.(pb.cpp).string_type = CORD];
+
+  // Singular with defaults
+  int32 default_int32 = 61 [default = 41];
+
+  int64 default_int64 = 62 [default = 42];
+
+  uint32 default_uint32 = 63 [default = 43];
+
+  uint64 default_uint64 = 64 [default = 44];
+
+  sint32 default_sint32 = 65 [default = -45];
+
+  sint64 default_sint64 = 66 [default = 46];
+
+  fixed32 default_fixed32 = 67 [default = 47];
+
+  fixed64 default_fixed64 = 68 [default = 48];
+
+  sfixed32 default_sfixed32 = 69 [default = 49];
+
+  sfixed64 default_sfixed64 = 70 [default = -50];
+
+  float default_float = 71 [default = 51.5];
+
+  double default_double = 72 [default = 5.2e4];
+
+  bool default_bool = 73 [default = true];
+
+  string default_string = 74 [default = "hello"];
+
+  bytes default_bytes = 75 [default = "world"];
+
+  NestedEnum default_nested_enum = 81 [default = BAR];
+
+  ForeignEnum default_foreign_enum = 82 [default = FOREIGN_BAR];
+
+  proto2_unittest_import.ImportEnum default_import_enum = 83
+      [default = IMPORT_BAR];
+
+  string default_cord = 85
+      [features.(pb.cpp).string_type = CORD, default = "123"];
+
+  string optional_utf8_string = 90 [features.utf8_validation = VERIFY];
+  repeated string repeated_utf8_string = 91 [features.utf8_validation = VERIFY];
+
+  TestRequired single = 1000;
+  repeated TestRequired multi = 1001;
+  string test = 1002 [default = "test"];
+  string nested_string = 1003;
+}
+
+message ForeignMessage {
+  int32 c = 1;
+  int32 d = 2;
+}
+
+enum ForeignEnum {
+  FOREIGN_FOO = 4;
+  FOREIGN_BAR = 5;
+  FOREIGN_BAZ = 6;
+  FOREIGN_BAX = 32;  // (1 << 32) to generate a 64b bitmask would be incorrect.
+  FOREIGN_LARGE = 123456;  // Large enough to escape the Boxed Integer cache.
+}
+
+message FuzzMostExtensions {
+  extensions 1 to max;
+}
+
+// Warning: FuzzMostTypes and FuzzMostExtensions must be kept strictly
+// wire compatible. See the warning on FuzzMostTypes for more details.
+extend FuzzMostExtensions {
+  // Singular
+  int32 optional_int32_extension = 1;
+  int64 optional_int64_extension = 2;
+  uint32 optional_uint32_extension = 3;
+  uint64 optional_uint64_extension = 4;
+  sint32 optional_sint32_extension = 5;
+  sint64 optional_sint64_extension = 6;
+  fixed32 optional_fixed32_extension = 7;
+  fixed64 optional_fixed64_extension = 8;
+  sfixed32 optional_sfixed32_extension = 9;
+  sfixed64 optional_sfixed64_extension = 10;
+  float optional_float_extension = 11;
+  double optional_double_extension = 12;
+  bool optional_bool_extension = 13;
+  string optional_string_extension = 14;
+  bytes optional_bytes_extension = 15;
+  OptionalGroupExtension optional_group_extension = 16
+      [features.message_encoding = DELIMITED];
+
+  FuzzMostTypes.NestedMessage optional_nested_message_extension = 18;
+  ForeignMessage optional_foreign_message_extension = 19;
+  proto2_unittest_import.ImportMessage optional_import_message_extension = 20;
+  FuzzMostTypes.NestedEnum optional_nested_enum_extension = 21;
+  ForeignEnum optional_foreign_enum_extension = 22;
+  proto2_unittest_import.ImportEnum optional_import_enum_extension = 23;
+
+  // TODO: features.(pb.cpp).string_type=CORD is not supported for
+  // extension. Add features.(pb.cpp).string_type=CORD option back after it is
+  // supported.
+  string optional_cord_extension = 25;
+  bytes optional_bytes_cord_extension = 86;
+
+  proto2_unittest_import.PublicImportMessage
+      optional_public_import_message_extension = 26;
+  FuzzMostTypes.NestedMessage optional_lazy_message_extension = 27
+      [lazy = true];
+
+  // Repeated
+  repeated int32 repeated_int32_extension = 31;
+  repeated int64 repeated_int64_extension = 32;
+  repeated uint32 repeated_uint32_extension = 33;
+  repeated uint64 repeated_uint64_extension = 34;
+  repeated sint32 repeated_sint32_extension = 35;
+  repeated sint64 repeated_sint64_extension = 36;
+  repeated fixed32 repeated_fixed32_extension = 37;
+  repeated fixed64 repeated_fixed64_extension = 38;
+  repeated sfixed32 repeated_sfixed32_extension = 39;
+  repeated sfixed64 repeated_sfixed64_extension = 40;
+  repeated float repeated_float_extension = 41;
+  repeated double repeated_double_extension = 42;
+  repeated bool repeated_bool_extension = 43;
+  repeated string repeated_string_extension = 44;
+  repeated bytes repeated_bytes_extension = 45;
+  repeated RepeatedGroupExtension repeated_group_extension = 46
+      [features.message_encoding = DELIMITED];
+
+  repeated FuzzMostTypes.NestedMessage repeated_nested_message_extension = 48;
+  repeated ForeignMessage repeated_foreign_message_extension = 49;
+  repeated proto2_unittest_import.ImportMessage
+      repeated_import_message_extension = 50;
+  repeated FuzzMostTypes.NestedEnum repeated_nested_enum_extension = 51;
+  repeated ForeignEnum repeated_foreign_enum_extension = 52;
+  repeated proto2_unittest_import.ImportEnum repeated_import_enum_extension =
+      53;
+
+  // TODO: features.(pb.cpp).string_type=CORD is not supported for
+  // extension. Add features.(pb.cpp).string_type=CORD option back after it is
+  // supported.
+  repeated string repeated_cord_extension = 55;
+
+  // Singular with defaults
+  int32 default_int32_extension = 61 [default = 41];
+
+  int64 default_int64_extension = 62 [default = 42];
+
+  uint32 default_uint32_extension = 63 [default = 43];
+
+  uint64 default_uint64_extension = 64 [default = 44];
+
+  sint32 default_sint32_extension = 65 [default = -45];
+
+  sint64 default_sint64_extension = 66 [default = 46];
+
+  fixed32 default_fixed32_extension = 67 [default = 47];
+
+  fixed64 default_fixed64_extension = 68 [default = 48];
+
+  sfixed32 default_sfixed32_extension = 69 [default = 49];
+
+  sfixed64 default_sfixed64_extension = 70 [default = -50];
+
+  float default_float_extension = 71 [default = 51.5];
+
+  double default_double_extension = 72 [default = 5.2e4];
+
+  bool default_bool_extension = 73 [default = true];
+
+  string default_string_extension = 74 [default = "hello"];
+
+  bytes default_bytes_extension = 75 [default = "world"];
+
+  FuzzMostTypes.NestedEnum default_nested_enum_extension = 81 [default = BAR];
+
+  ForeignEnum default_foreign_enum_extension = 82 [default = FOREIGN_BAR];
+
+  proto2_unittest_import.ImportEnum default_import_enum_extension = 83
+      [default = IMPORT_BAR];
+
+  // TODO: features.(pb.cpp).string_type=CORD is not supported for
+  // extension. Add features.(pb.cpp).string_type=CORD option back after it is
+  // supported.
+  string default_cord_extension = 85 [default = "123"];
+
+  string optional_utf8_string_extension = 90
+      [features.utf8_validation = VERIFY];
+  repeated string repeated_utf8_string_extension = 91
+      [features.utf8_validation = VERIFY];
+}
+
+message TestRequired {
+  int32 a = 1 [features.field_presence = LEGACY_REQUIRED];
+  extend FuzzMostExtensions {
+    TestRequired single = 1000;
+    repeated TestRequired multi = 1001;
+  }
+}
+
+message OptionalGroupExtension {
+  int32 a = 17;
+}
+
+message RepeatedGroupExtension {
+  int32 a = 47;
+}
+
+message TestNestedExtension {
+  extend FuzzMostExtensions {
+    // Check for bug where string extensions declared in tested scope did not
+    // compile.
+    string test = 1002 [default = "test"];
+
+    // Used to test if generated extension name is correct when there are
+    // underscores.
+    string nested_string_extension = 1003;
+  }
+
+  message OptionalGroupExtension {
+    int32 a = 17;
+  }
+}

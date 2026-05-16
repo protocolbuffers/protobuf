@@ -14,11 +14,11 @@
 #include <cstdint>
 #include <cstring>
 #include <limits>
-#include <optional>
 #include <string>
 #include <utility>
 
 #include "google/protobuf/type.pb.h"
+#include "google/protobuf/descriptor.pb.h"
 #include "absl/algorithm/container.h"
 #include "absl/log/absl_log.h"
 #include "absl/status/status.h"
@@ -26,10 +26,12 @@
 #include "absl/strings/match.h"
 #include "absl/strings/str_format.h"
 #include "absl/strings/string_view.h"
+#include "absl/types/optional.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/dynamic_message.h"
 #include "google/protobuf/json/internal/lexer.h"
 #include "google/protobuf/json/internal/untyped_message.h"
+#include "google/protobuf/json_enumvalue_options.pb.h"
 #include "google/protobuf/message.h"
 #include "google/protobuf/stubs/status_macros.h"
 
@@ -144,11 +146,11 @@ struct Proto2Descriptor {
 
   static absl::string_view TypeName(const Desc& d) { return d.full_name(); }
 
-  static std::optional<Field> FieldByNumber(const Desc& d, int32_t number) {
+  static absl::optional<Field> FieldByNumber(const Desc& d, int32_t number) {
     if (const auto* field = d.FindFieldByNumber(number)) {
       return field;
     }
-    return std::nullopt;
+    return absl::nullopt;
   }
 
   static Field MustHaveField(const Desc& d, int32_t number,
@@ -166,8 +168,8 @@ struct Proto2Descriptor {
     return *f;
   }
 
-  static std::optional<Field> FieldByName(const Desc& d,
-                                          absl::string_view name) {
+  static absl::optional<Field> FieldByName(const Desc& d,
+                                           absl::string_view name) {
     if (const auto* field = d.FindFieldByCamelcaseName(name)) {
       return field;
     }
@@ -183,7 +185,7 @@ struct Proto2Descriptor {
       }
     }
 
-    return std::nullopt;
+    return absl::nullopt;
   }
 
   static Field KeyField(const Desc& d) { return d.map_key(); }
@@ -194,11 +196,11 @@ struct Proto2Descriptor {
 
   static Field FieldByIndex(const Desc& d, size_t idx) { return d.field(idx); }
 
-  static std::optional<Field> ExtensionByName(const Desc& d,
-                                              absl::string_view name) {
+  static absl::optional<Field> ExtensionByName(const Desc& d,
+                                               absl::string_view name) {
     auto* field = d.file()->pool()->FindExtensionByName(name);
     if (field == nullptr) {
-      return std::nullopt;
+      return absl::nullopt;
     }
     return field;
   }
@@ -254,19 +256,22 @@ struct Proto2Descriptor {
   static absl::StatusOr<int32_t> EnumNumberByName(Field f,
                                                   absl::string_view name,
                                                   bool case_insensitive) {
-    if (case_insensitive) {
-      for (int i = 0; i < f->enum_type()->value_count(); ++i) {
-        const auto* ev = f->enum_type()->value(i);
-        if (absl::EqualsIgnoreCase(name, ev->name())) {
+    if (const auto* ev = f->enum_type()->FindValueByName(name)) {
+      return ev->number();
+    }
+
+    for (int i = 0; i < f->enum_type()->value_count(); ++i) {
+      const auto* ev = f->enum_type()->value(i);
+      if (ev->options().HasExtension(pb::enumvalue::json)) {
+        auto opts = ev->options().GetExtension(pb::enumvalue::json);
+        if (opts.string() == name ||
+            (case_insensitive && absl::EqualsIgnoreCase(opts.string(), name))) {
           return ev->number();
         }
       }
-      return absl::InvalidArgumentError(
-          absl::StrFormat("unknown enum value: '%s'", name));
-    }
-
-    if (const auto* ev = f->enum_type()->FindValueByName(name)) {
-      return ev->number();
+      if (case_insensitive && absl::EqualsIgnoreCase(name, ev->name())) {
+        return ev->number();
+      }
     }
 
     return absl::InvalidArgumentError(
@@ -275,6 +280,10 @@ struct Proto2Descriptor {
 
   static absl::StatusOr<std::string> EnumNameByNumber(Field f, int32_t number) {
     if (const auto* ev = f->enum_type()->FindValueByNumber(number)) {
+      if (ev->options().HasExtension(pb::enumvalue::json)) {
+        return std::string(
+            ev->options().GetExtension(pb::enumvalue::json).string());
+      }
       return std::string(ev->name());
     }
     return absl::InvalidArgumentError(
@@ -325,9 +334,9 @@ struct Proto3Type {
   /// Functions for working with descriptors. ///
   static absl::string_view TypeName(const Desc& d) { return d.proto().name(); }
 
-  static std::optional<Field> FieldByNumber(const Desc& d, int32_t number) {
+  static absl::optional<Field> FieldByNumber(const Desc& d, int32_t number) {
     const auto* f = d.FindField(number);
-    return f == nullptr ? std::nullopt : std::make_optional(f);
+    return f == nullptr ? absl::nullopt : absl::make_optional(f);
   }
 
   static Field MustHaveField(const Desc& d, int32_t number,
@@ -345,10 +354,10 @@ struct Proto3Type {
     return *f;
   }
 
-  static std::optional<Field> FieldByName(const Desc& d,
-                                          absl::string_view name) {
+  static absl::optional<Field> FieldByName(const Desc& d,
+                                           absl::string_view name) {
     const auto* f = d.FindField(name);
-    return f == nullptr ? std::nullopt : std::make_optional(f);
+    return f == nullptr ? absl::nullopt : absl::make_optional(f);
   }
 
   static Field KeyField(const Desc& d) { return &d.FieldsByIndex()[0]; }
@@ -361,11 +370,11 @@ struct Proto3Type {
     return &d.FieldsByIndex()[idx];
   }
 
-  static std::optional<Field> ExtensionByName(const Desc& d,
-                                              absl::string_view name) {
+  static absl::optional<Field> ExtensionByName(const Desc& d,
+                                               absl::string_view name) {
     // type.proto cannot represent extensions, so this function always
     // fails.
-    return std::nullopt;
+    return absl::nullopt;
   }
 
   /// Functions for introspecting fields. ///

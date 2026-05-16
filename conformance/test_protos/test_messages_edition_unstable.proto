@@ -1,0 +1,66 @@
+// Protocol Buffers - Google's data interchange format
+// Copyright 2024 Google Inc.  All rights reserved.
+//
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
+
+edition = "UNSTABLE";
+
+package protobuf_test_messages.edition_unstable;
+
+option features.message_encoding = DELIMITED;
+option java_package = "com.google.protobuf_test_messages.edition_unstable";
+option objc_class_prefix = "EditionUnstable";
+
+message ComplexMessage {
+  int32 d = 1;
+}
+
+message TestAllTypesEditionUnstable {
+  // Singular
+  int32 optional_int32 = 1;
+
+  ForeignMessageEditionUnstable optional_foreign_message = 2
+      [features.message_encoding = LENGTH_PREFIXED];
+
+  ForeignEnumEditionUnstable optional_foreign_enum = 3;
+
+  TestAllTypesEditionUnstable recursive_message = 4
+      [features.message_encoding = LENGTH_PREFIXED];
+
+  // Repeated
+  repeated int32 repeated_int32 = 5;
+  repeated ForeignMessageEditionUnstable repeated_foreign_message = 6
+      [features.message_encoding = LENGTH_PREFIXED];
+  repeated ForeignEnumEditionUnstable repeated_foreign_enum = 7;
+
+  // Map
+  map<int32, int32> map_int32_int32 = 8;
+  map<bool, bool> map_bool_bool = 9;
+  map<string, string> map_string_string = 10;
+  map<string, ForeignMessageEditionUnstable> map_string_foreign_message = 11;
+  map<string, ForeignEnumEditionUnstable> map_string_foreign_enum = 12;
+
+  // bytes
+  bytes optional_bytes = 13;
+  repeated bytes repeated_bytes = 14;
+  map<string, bytes> map_string_bytes = 15;
+
+  // extensions
+  extensions 120 to 200;
+}
+
+message ForeignMessageEditionUnstable {
+  int32 c = 1;
+}
+
+enum ForeignEnumEditionUnstable {
+  FOREIGN_FOO = 0;
+  FOREIGN_BAR = 1;
+  FOREIGN_BAZ = 2;
+}
+
+extend TestAllTypesEditionUnstable {
+  int32 extension_int32 = 120;
+}

@@ -50,9 +50,14 @@ cc_library(
     ],
     deps = [
         "//hpb:multibackend",
-        "//upb/mem",
-        "//upb/message",
-    ],
+    ] + select({
+        "//hpb:hpb_backend_cpp": [
+        ],
+        "//hpb:hpb_backend_upb": [
+            "//upb/mem",
+            "//upb/message",
+        ],
+    }),
 )
 
 cc_library(

@@ -158,6 +158,27 @@ namespace Google.Protobuf
         }
 
         /// <summary>
+        /// Writes the length and then data of the given message to a buffer writer.
+        /// </summary>
+        /// <param name="message">The message to write.</param>
+        /// <param name="output">The buffer writer.</param>
+        /// <remarks>
+        /// This is similar as <see cref="WriteDelimitedTo"/>. This format is referred as "Delimited" format in
+        /// JavaProto and C++Proto.
+        /// </remarks>
+        [SecuritySafeCritical]
+        public static void WriteLengthPrefixedTo(this IMessage message, IBufferWriter<byte> output)
+        {
+            ProtoPreconditions.CheckNotNull(message, nameof(message));
+            ProtoPreconditions.CheckNotNull(output, nameof(output));
+
+            WriteContext.Initialize(output, out WriteContext ctx);
+            ctx.WriteLength(message.CalculateSize());
+            WritingPrimitivesMessages.WriteRawMessage(ref ctx, message);
+            ctx.Flush();
+        }
+
+        /// <summary>
         /// Writes the given message data to the given span in protobuf encoding.
         /// The size of the destination span needs to fit the serialized size
         /// of the message exactly, otherwise an exception is thrown.

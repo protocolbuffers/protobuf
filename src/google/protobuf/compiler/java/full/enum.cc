@@ -263,7 +263,7 @@ void EnumNonLiteGenerator::Generate(io::Printer* printer) {
       }
     }
     printer->Print(
-        "  return getDescriptor().getValues().get($index_text$);\n"
+        "  return getDescriptor().getValue($index_text$);\n"
         "}\n"
         "public final com.google.protobuf.Descriptors.EnumDescriptor\n"
         "    getDescriptorForType() {\n"
@@ -281,23 +281,21 @@ void EnumNonLiteGenerator::Generate(io::Printer* printer) {
       // extensions in both the mutable and immutable cases. (In the mutable api
       // this is accomplished by attempting to load the immutable outer class).
       printer->Print(
-          "  return $file$.getDescriptor().getEnumTypes().get($index$);\n",
-          "file",
+          "  return $file$.getDescriptor().getEnumType($index$);\n", "file",
           name_resolver_->GetClassName(descriptor_->file(), immutable_api_),
           "index", absl::StrCat(descriptor_->index()));
     } else {
-      printer->Print(
-          "  return $parent$.$descriptor$.getEnumTypes().get($index$);\n",
-          "parent",
-          name_resolver_->GetClassName(descriptor_->containing_type(),
-                                       immutable_api_),
-          "descriptor",
-          descriptor_->containing_type()
-                  ->options()
-                  .no_standard_descriptor_accessor()
-              ? "getDefaultInstance().getDescriptorForType()"
-              : "getDescriptor()",
-          "index", absl::StrCat(descriptor_->index()));
+      printer->Print("  return $parent$.$descriptor$.getEnumType($index$);\n",
+                     "parent",
+                     name_resolver_->GetClassName(
+                         descriptor_->containing_type(), immutable_api_),
+                     "descriptor",
+                     descriptor_->containing_type()
+                             ->options()
+                             .no_standard_descriptor_accessor()
+                         ? "getDefaultInstance().getDescriptorForType()"
+                         : "getDescriptor()",
+                     "index", absl::StrCat(descriptor_->index()));
     }
 
     printer->Print(

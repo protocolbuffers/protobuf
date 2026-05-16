@@ -8,7 +8,6 @@
 #ifndef GOOGLE_PROTOBUF_COMPILER_ANNOTATION_TEST_UTIL_H__
 #define GOOGLE_PROTOBUF_COMPILER_ANNOTATION_TEST_UTIL_H__
 
-#include <optional>
 #include <string>
 #include <vector>
 
@@ -16,6 +15,7 @@
 #include "google/protobuf/testing/googletest.h"
 #include <gtest/gtest.h>
 #include "absl/strings/string_view.h"
+#include "absl/types/optional.h"
 
 // Utilities that assist in writing tests for generator annotations.
 // See java/internal/annotation_unittest.cc for an example.
@@ -82,8 +82,8 @@ bool AtLeastOneAnnotationMatchesSubstring(
     const std::string& file_content,
     const std::vector<const GeneratedCodeInfo::Annotation*>& annotations,
     const std::string& expected_text,
-    std::optional<GeneratedCodeInfo::Annotation::Semantic> expected_semantic =
-        std::nullopt);
+    absl::optional<GeneratedCodeInfo::Annotation::Semantic> expected_semantic =
+        absl::nullopt);
 
 // Returns true if the provided annotation covers a given substring in
 // file_content.
@@ -93,7 +93,7 @@ bool AnnotationMatchesSubstring(const std::string& file_content,
 
 // Returns the text spanned by the annotation if the span is valid; otherwise
 // returns nullopt.
-std::optional<absl::string_view> GetAnnotationSubstring(
+absl::optional<absl::string_view> GetAnnotationSubstring(
     absl::string_view file_content,
     const GeneratedCodeInfo::Annotation& annotation);
 

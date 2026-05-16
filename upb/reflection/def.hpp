@@ -24,6 +24,7 @@
 #include "upb/mini_table/field.h"
 #include "upb/mini_table/message.h"
 #include "upb/reflection/def.h"
+#include "upb/reflection/descriptor_bootstrap.h"
 #include "upb/reflection/internal/def_pool.h"
 #include "upb/reflection/internal/enum_def.h"
 #include "upb/reflection/message.h"
@@ -68,7 +69,7 @@ class FieldDefPtr {
     return std::string(md.data, md.size);
   }
 
-  const UPB_DESC(FieldOptions) * options() const {
+  const google_protobuf_FieldOptions* options() const {
     return upb_FieldDef_Options(ptr_);
   }
 
@@ -154,7 +155,7 @@ class OneofDefPtr {
   const upb_OneofDef* ptr() const { return ptr_; }
   explicit operator bool() const { return ptr_ != nullptr; }
 
-  const UPB_DESC(OneofOptions) * options() const {
+  const google_protobuf_OneofOptions* options() const {
     return upb_OneofDef_Options(ptr_);
   }
 
@@ -199,7 +200,7 @@ class MessageDefPtr {
   MessageDefPtr() : ptr_(nullptr) {}
   explicit MessageDefPtr(const upb_MessageDef* ptr) : ptr_(ptr) {}
 
-  const UPB_DESC(MessageOptions) * options() const {
+  const google_protobuf_MessageOptions* options() const {
     return upb_MessageDef_Options(ptr_);
   }
 
@@ -257,8 +258,6 @@ class MessageDefPtr {
   int extension_range_count() const {
     return upb_MessageDef_ExtensionRangeCount(ptr_);
   }
-
-  upb_Syntax syntax() const { return upb_MessageDef_Syntax(ptr_); }
 
   // These return null pointers if the field is not found.
   FieldDefPtr FindFieldByNumber(uint32_t number) const {
@@ -396,7 +395,7 @@ class EnumValDefPtr {
   EnumValDefPtr() : ptr_(nullptr) {}
   explicit EnumValDefPtr(const upb_EnumValueDef* ptr) : ptr_(ptr) {}
 
-  const UPB_DESC(EnumValueOptions) * options() const {
+  const google_protobuf_EnumValueOptions* options() const {
     return upb_EnumValueDef_Options(ptr_);
   }
 
@@ -413,7 +412,7 @@ class EnumDefPtr {
   EnumDefPtr() : ptr_(nullptr) {}
   explicit EnumDefPtr(const upb_EnumDef* ptr) : ptr_(ptr) {}
 
-  const UPB_DESC(EnumOptions) * options() const {
+  const google_protobuf_EnumOptions* options() const {
     return upb_EnumDef_Options(ptr_);
   }
 
@@ -477,7 +476,7 @@ class FileDefPtr {
  public:
   explicit FileDefPtr(const upb_FileDef* ptr) : ptr_(ptr) {}
 
-  const UPB_DESC(FileOptions) * options() const {
+  const google_protobuf_FileOptions* options() const {
     return upb_FileDef_Options(ptr_);
   }
 
@@ -488,9 +487,6 @@ class FileDefPtr {
 
   // Package name for definitions inside the file (eg. "foo.bar").
   const char* package() const { return upb_FileDef_Package(ptr_); }
-
-  // Syntax for the file.  Defaults to proto2.
-  upb_Syntax syntax() const { return upb_FileDef_Syntax(ptr_); }
 
   // Get the list of dependencies from the file.  These are returned in the
   // order that they were added to the FileDefPtr.
@@ -579,7 +575,7 @@ class DefPool {
   // TODO: iteration?
 
   // Adds the given serialized FileDescriptorProto to the pool.
-  FileDefPtr AddFile(const UPB_DESC(FileDescriptorProto) * file_proto,
+  FileDefPtr AddFile(const google_protobuf_FileDescriptorProto* file_proto,
                      Status* status) {
     return FileDefPtr(
         upb_DefPool_AddFile(ptr_.get(), file_proto, status->ptr()));

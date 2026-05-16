@@ -23,9 +23,10 @@ struct upb_MiniTableField {
   uint16_t UPB_ONLYBITS(offset);
   int16_t presence;  // If >0, hasbit_index.  If <0, ~oneof_index
 
-  // Indexes into `upb_MiniTable.subs`
+  // Offset from this upb_MiniTableField to the upb_MiniTableSubInternal
+  // for this field, in uint32_t units (so bytes/4).
   // Will be set to `kUpb_NoSub` if `descriptortype` != MESSAGE/GROUP/ENUM
-  uint16_t UPB_PRIVATE(submsg_index);
+  uint16_t UPB_PRIVATE(submsg_ofs);
 
   uint8_t UPB_PRIVATE(descriptortype);
 
@@ -34,6 +35,7 @@ struct upb_MiniTableField {
 };
 
 #define kUpb_NoSub ((uint16_t)-1)
+#define kUpb_SubmsgOffsetBytes 4
 
 typedef enum {
   kUpb_FieldMode_Map = 0,
@@ -138,14 +140,14 @@ UPB_INLINE bool UPB_PRIVATE(_upb_MiniTableField_HasHasbit)(
 UPB_INLINE char UPB_PRIVATE(_upb_MiniTableField_HasbitMask)(
     const struct upb_MiniTableField* f) {
   UPB_ASSERT(UPB_PRIVATE(_upb_MiniTableField_HasHasbit)(f));
-  const uint16_t index = f->presence;
+  const uint16_t index = (uint16_t)f->presence;
   return (char)(1 << (index % 8));
 }
 
 UPB_INLINE uint16_t UPB_PRIVATE(_upb_MiniTableField_HasbitOffset)(
     const struct upb_MiniTableField* f) {
   UPB_ASSERT(UPB_PRIVATE(_upb_MiniTableField_HasHasbit)(f));
-  const uint16_t index = f->presence;
+  const uint16_t index = (uint16_t)f->presence;
   return index / 8;
 }
 
@@ -187,7 +189,7 @@ UPB_PRIVATE(_upb_MiniTableField_Offset)(const struct upb_MiniTableField* f) {
 UPB_INLINE size_t UPB_PRIVATE(_upb_MiniTableField_OneofOffset)(
     const struct upb_MiniTableField* f) {
   UPB_ASSERT(upb_MiniTableField_IsInOneof(f));
-  return ~(ptrdiff_t)f->presence;
+  return (size_t)(~(ptrdiff_t)f->presence);
 }
 
 UPB_INLINE void UPB_PRIVATE(_upb_MiniTableField_CheckIsArray)(

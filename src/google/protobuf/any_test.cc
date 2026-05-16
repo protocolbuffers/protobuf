@@ -13,6 +13,7 @@
 
 #include "google/protobuf/any.pb.h"
 #include <gtest/gtest.h>
+#include "absl/log/absl_check.h"
 #include "google/protobuf/any_test.pb.h"
 #include "google/protobuf/unittest.pb.h"
 #include "google/protobuf/unittest_import.pb.h"
@@ -58,7 +59,7 @@ TEST(AnyTest, TestUnpackWithTypeMismatch) {
   proto2_unittest::TestAny payload;
   payload.set_int32_value(13);
   google::protobuf::Any any;
-  any.PackFrom(payload);
+  ABSL_CHECK(any.PackFrom(payload));
 
   // Attempt to unpack into the wrong type.
   proto2_unittest::TestAllTypes dest;
@@ -72,9 +73,9 @@ TEST(AnyTest, TestPackAndUnpackAny) {
     proto2_unittest::TestAny submessage;
     submessage.set_int32_value(12345);
     google::protobuf::Any any;
-    any.PackFrom(submessage);
+    ABSL_CHECK(any.PackFrom(submessage));
     proto2_unittest::TestAny message;
-    message.mutable_any_value()->PackFrom(any);
+    ABSL_CHECK(message.mutable_any_value()->PackFrom(any));
 
     data = message.SerializeAsString();
   }
@@ -95,13 +96,13 @@ TEST(AnyTest, TestPackWithCustomTypeUrl) {
     proto2_unittest::TestAny submessage;
     submessage.set_int32_value(12345);
     // Pack with a custom type URL prefix.
-    any.PackFrom(submessage, "type.myservice.com");
+    ABSL_CHECK(any.PackFrom(submessage, "type.myservice.com"));
     EXPECT_EQ("type.myservice.com/proto2_unittest.TestAny", any.type_url());
     // Pack with a custom type URL prefix ending with '/'.
-    any.PackFrom(submessage, "type.myservice.com/");
+    ABSL_CHECK(any.PackFrom(submessage, "type.myservice.com/"));
     EXPECT_EQ("type.myservice.com/proto2_unittest.TestAny", any.type_url());
     // Pack with an empty type URL prefix.
-    any.PackFrom(submessage, "");
+    ABSL_CHECK(any.PackFrom(submessage, ""));
     EXPECT_EQ("/proto2_unittest.TestAny", any.type_url());
   }
 
@@ -115,13 +116,13 @@ TEST(AnyTest, TestIs) {
   proto2_unittest::TestAny submessage;
   submessage.set_int32_value(12345);
   google::protobuf::Any any;
-  any.PackFrom(submessage);
+  ABSL_CHECK(any.PackFrom(submessage));
   ASSERT_TRUE(any.ParseFromString(any.SerializeAsString()));
   EXPECT_TRUE(any.Is<proto2_unittest::TestAny>());
   EXPECT_FALSE(any.Is<google::protobuf::Any>());
 
   proto2_unittest::TestAny message;
-  message.mutable_any_value()->PackFrom(any);
+  ABSL_CHECK(message.mutable_any_value()->PackFrom(any));
   ASSERT_TRUE(message.ParseFromString(message.SerializeAsString()));
   EXPECT_FALSE(message.any_value().Is<proto2_unittest::TestAny>());
   EXPECT_TRUE(message.any_value().Is<google::protobuf::Any>());
@@ -141,7 +142,7 @@ TEST(AnyTest, MoveConstructor) {
   {
     proto2_unittest::TestAny payload;
     payload.set_int32_value(12345);
-    src.PackFrom(payload);
+    ABSL_CHECK(src.PackFrom(payload));
   }
 
   const char* type_url = src.type_url().data();
@@ -158,7 +159,7 @@ TEST(AnyTest, MoveAssignment) {
   {
     proto2_unittest::TestAny payload;
     payload.set_int32_value(12345);
-    src.PackFrom(payload);
+    ABSL_CHECK(src.PackFrom(payload));
   }
 
   const char* type_url = src.type_url().data();
@@ -175,8 +176,8 @@ TEST(AnyTest, MoveAssignment) {
 #ifndef NDEBUG
 TEST(AnyTest, PackSelfDeath) {
   google::protobuf::Any any;
-  EXPECT_DEATH(any.PackFrom(any), "&message");
-  EXPECT_DEATH(any.PackFrom(any, ""), "&message");
+  EXPECT_DEATH(ABSL_CHECK(any.PackFrom(any)), "&message");
+  EXPECT_DEATH(ABSL_CHECK(any.PackFrom(any, "")), "&message");
 }
 #endif  // !NDEBUG
 #endif  // GTEST_HAS_DEATH_TEST

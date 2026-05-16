@@ -10,11 +10,11 @@
 #include <sstream>
 
 #include "google/protobuf/compiler/code_generator.h"
-#include "google/protobuf/descriptor.h"
 #include "google/protobuf/compiler/csharp/csharp_doc_comment.h"
 #include "google/protobuf/compiler/csharp/csharp_helpers.h"
 #include "google/protobuf/compiler/csharp/csharp_message_field.h"
 #include "google/protobuf/compiler/csharp/csharp_wrapper_field.h"
+#include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/io/printer.h"
 #include "google/protobuf/io/zero_copy_stream.h"

@@ -4,7 +4,6 @@
 # Use of this source code is governed by a BSD-style
 # license that can be found in the LICENSE file or at
 # https://developers.google.com/open-source/licenses/bsd
-
 """Contains container classes to represent different protocol buffer types.
 
 This file defines container classes which represent categories of protocol
@@ -35,10 +34,11 @@ from typing import (
     overload,
 )
 
-
 _T = TypeVar('_T')
 _K = TypeVar('_K')
 _V = TypeVar('_V')
+
+from google.protobuf.descriptor import FieldDescriptor
 
 
 class BaseContainer(Sequence[_T]):
@@ -48,11 +48,11 @@ class BaseContainer(Sequence[_T]):
   __slots__ = ['_message_listener', '_values']
 
   def __init__(self, message_listener: Any) -> None:
-    """
-    Args:
-      message_listener: A MessageListener implementation.
-        The RepeatedScalarFieldContainer will call this object's
-        Modified() method when it is modified.
+    """Args:
+
+    message_listener: A MessageListener implementation.
+      The RepeatedScalarFieldContainer will call this object's
+      Modified() method when it is modified.
     """
     self._message_listener = message_listener
     self._values = []
@@ -104,23 +104,25 @@ class RepeatedScalarFieldContainer(BaseContainer[_T], MutableSequence[_T]):
   """Simple, type-checked, list-like container for holding repeated scalars."""
 
   # Disallows assignment to other attributes.
-  __slots__ = ['_type_checker']
+  __slots__ = ['_type_checker', '_field']
 
   def __init__(
       self,
       message_listener: Any,
       type_checker: Any,
+      field: Any = None,
   ) -> None:
     """Args:
 
-      message_listener: A MessageListener implementation. The
-      RepeatedScalarFieldContainer will call this object's Modified() method
-      when it is modified.
-      type_checker: A type_checkers.ValueChecker instance to run on elements
-      inserted into this container.
+    message_listener: A MessageListener implementation. The
+    RepeatedScalarFieldContainer will call this object's Modified() method
+    when it is modified.
+    type_checker: A type_checkers.ValueChecker instance to run on elements
+    inserted into this container.
     """
     super().__init__(message_listener)
     self._type_checker = type_checker
+    self._field = field
 
   def append(self, value: _T) -> None:
     """Appends an item to the list. Similar to list.append()."""
@@ -147,6 +149,7 @@ class RepeatedScalarFieldContainer(BaseContainer[_T], MutableSequence[_T]):
       other: Union['RepeatedScalarFieldContainer[_T]', Iterable[_T]],
   ) -> None:
     """Appends the contents of another repeated field of the same type to this
+
     one. We do not check the types of the individual fields.
     """
     self._values.extend(other)
@@ -202,13 +205,47 @@ class RepeatedScalarFieldContainer(BaseContainer[_T], MutableSequence[_T]):
       unused_memo: Any = None,
   ) -> 'RepeatedScalarFieldContainer[_T]':
     clone = RepeatedScalarFieldContainer(
-        copy.deepcopy(self._message_listener), self._type_checker)
+        copy.deepcopy(self._message_listener), self._type_checker, self._field
+    )
     clone.MergeFrom(self)
     return clone
 
   def __reduce__(self, **kwargs) -> NoReturn:
     raise pickle.PickleError(
-        "Can't pickle repeated scalar fields, convert to list first")
+        "Can't pickle repeated scalar fields, convert to list first"
+    )
+
+  def __array__(self, dtype=None, copy=None):
+    import numpy as np
+
+    if dtype is None:
+      cpp_type = self._field.cpp_type
+      if cpp_type == FieldDescriptor.CPPTYPE_INT32:
+        dtype = np.int32
+      elif cpp_type == FieldDescriptor.CPPTYPE_INT64:
+        dtype = np.int64
+      elif cpp_type == FieldDescriptor.CPPTYPE_UINT32:
+        dtype = np.uint32
+      elif cpp_type == FieldDescriptor.CPPTYPE_UINT64:
+        dtype = np.uint64
+      elif cpp_type == FieldDescriptor.CPPTYPE_DOUBLE:
+        dtype = np.float64
+      elif cpp_type == FieldDescriptor.CPPTYPE_FLOAT:
+        dtype = np.float32
+      elif cpp_type == FieldDescriptor.CPPTYPE_BOOL:
+        dtype = np.bool
+      elif cpp_type == FieldDescriptor.CPPTYPE_ENUM:
+        dtype = np.int32
+      elif self._field.type == FieldDescriptor.TYPE_BYTES:
+        dtype = 'S'
+      elif self._field.type == FieldDescriptor.TYPE_STRING:
+        dtype = str
+      else:
+        raise SystemError(
+            'Code should never reach here: message type detected in'
+            ' RepeatedScalarFieldContainer'
+        )
+    return np.array(self._values, dtype=dtype, copy=True)
 
 
 # TODO: Constrain T to be a subtype of Message.
@@ -219,26 +256,27 @@ class RepeatedCompositeFieldContainer(BaseContainer[_T], MutableSequence[_T]):
   __slots__ = ['_message_descriptor']
 
   def __init__(self, message_listener: Any, message_descriptor: Any) -> None:
-    """
-    Note that we pass in a descriptor instead of the generated directly,
+    """Note that we pass in a descriptor instead of the generated directly,
+
     since at the time we construct a _RepeatedCompositeFieldContainer we
     haven't yet necessarily initialized the type that will be contained in the
     container.
 
     Args:
-      message_listener: A MessageListener implementation.
-        The RepeatedCompositeFieldContainer will call this object's
-        Modified() method when it is modified.
+      message_listener: A MessageListener implementation. The
+        RepeatedCompositeFieldContainer will call this object's Modified()
+        method when it is modified.
       message_descriptor: A Descriptor instance describing the protocol type
-        that should be present in this container.  We'll use the
-        _concrete_class field of this descriptor when the client calls add().
+        that should be present in this container.  We'll use the _concrete_class
+        field of this descriptor when the client calls add().
     """
     super().__init__(message_listener)
     self._message_descriptor = message_descriptor
 
   def add(self, **kwargs: Any) -> _T:
-    """Adds a new element at the end of the list and returns it. Keyword
-    arguments may be used to initialize the element.
+    """Adds a new element at the end of the list and returns it.
+
+    Keyword arguments may be used to initialize the element.
     """
     new_element = self._message_descriptor._concrete_class(**kwargs)
     new_element._SetListener(self._message_listener)
@@ -285,6 +323,7 @@ class RepeatedCompositeFieldContainer(BaseContainer[_T], MutableSequence[_T]):
       other: Union['RepeatedCompositeFieldContainer[_T]', Iterable[_T]],
   ) -> None:
     """Appends the contents of another repeated field of the same type to this
+
     one, copying each individual message.
     """
     self.extend(other)
@@ -313,7 +352,8 @@ class RepeatedCompositeFieldContainer(BaseContainer[_T], MutableSequence[_T]):
     # structurally compatible with typing.MutableSequence. It is
     # otherwise unsupported and will always raise an error.
     raise TypeError(
-        f'{self.__class__.__name__} object does not support item assignment')
+        f'{self.__class__.__name__} object does not support item assignment'
+    )
 
   def __delitem__(self, key: Union[int, slice]) -> None:
     """Deletes the item at the specified position."""
@@ -325,8 +365,10 @@ class RepeatedCompositeFieldContainer(BaseContainer[_T], MutableSequence[_T]):
     if self is other:
       return True
     if not isinstance(other, self.__class__):
-      raise TypeError('Can only compare repeated composite fields against '
-                      'other repeated composite fields.')
+      raise TypeError(
+          'Can only compare repeated composite fields against '
+          'other repeated composite fields.'
+      )
     return self._values == other._values
 
 
@@ -334,8 +376,13 @@ class ScalarMap(MutableMapping[_K, _V]):
   """Simple, type-checked, dict-like container for holding repeated scalars."""
 
   # Disallows assignment to other attributes.
-  __slots__ = ['_key_checker', '_value_checker', '_values', '_message_listener',
-               '_entry_descriptor']
+  __slots__ = [
+      '_key_checker',
+      '_value_checker',
+      '_values',
+      '_message_listener',
+      '_entry_descriptor',
+  ]
 
   def __init__(
       self,
@@ -344,16 +391,16 @@ class ScalarMap(MutableMapping[_K, _V]):
       value_checker: Any,
       entry_descriptor: Any,
   ) -> None:
-    """
-    Args:
-      message_listener: A MessageListener implementation.
-        The ScalarMap will call this object's Modified() method when it
-        is modified.
-      key_checker: A type_checkers.ValueChecker instance to run on keys
-        inserted into this container.
-      value_checker: A type_checkers.ValueChecker instance to run on values
-        inserted into this container.
-      entry_descriptor: The MessageDescriptor of a map entry: key and value.
+    """Args:
+
+    message_listener: A MessageListener implementation.
+      The ScalarMap will call this object's Modified() method when it
+      is modified.
+    key_checker: A type_checkers.ValueChecker instance to run on keys
+      inserted into this container.
+    value_checker: A type_checkers.ValueChecker instance to run on values
+      inserted into this container.
+    entry_descriptor: The MessageDescriptor of a map entry: key and value.
     """
     self._message_listener = message_listener
     self._key_checker = key_checker
@@ -443,8 +490,13 @@ class MessageMap(MutableMapping[_K, _V]):
   """Simple, type-checked, dict-like container for with submessage values."""
 
   # Disallows assignment to other attributes.
-  __slots__ = ['_key_checker', '_values', '_message_listener',
-               '_message_descriptor', '_entry_descriptor']
+  __slots__ = [
+      '_key_checker',
+      '_values',
+      '_message_listener',
+      '_message_descriptor',
+      '_entry_descriptor',
+  ]
 
   def __init__(
       self,
@@ -453,16 +505,16 @@ class MessageMap(MutableMapping[_K, _V]):
       key_checker: Any,
       entry_descriptor: Any,
   ) -> None:
-    """
-    Args:
-      message_listener: A MessageListener implementation.
-        The ScalarMap will call this object's Modified() method when it
-        is modified.
-      key_checker: A type_checkers.ValueChecker instance to run on keys
-        inserted into this container.
-      value_checker: A type_checkers.ValueChecker instance to run on values
-        inserted into this container.
-      entry_descriptor: The MessageDescriptor of a map entry: key and value.
+    """Args:
+
+    message_listener: A MessageListener implementation.
+      The ScalarMap will call this object's Modified() method when it
+      is modified.
+    key_checker: A type_checkers.ValueChecker instance to run on keys
+      inserted into this container.
+    value_checker: A type_checkers.ValueChecker instance to run on values
+      inserted into this container.
+    entry_descriptor: The MessageDescriptor of a map entry: key and value.
     """
     self._message_listener = message_listener
     self._message_descriptor = message_descriptor
@@ -586,9 +638,11 @@ class _UnknownField:
     if self is other:
       return True
     # pylint: disable=protected-access
-    return (self._field_number == other._field_number and
-            self._wire_type == other._wire_type and
-            self._data == other._data)
+    return (
+        self._field_number == other._field_number
+        and self._wire_type == other._wire_type
+        and self._data == other._data
+    )
 
 
 class UnknownFieldRef:  # pylint: disable=missing-class-docstring
@@ -599,11 +653,13 @@ class UnknownFieldRef:  # pylint: disable=missing-class-docstring
 
   def _check_valid(self):
     if not self._parent:
-      raise ValueError('UnknownField does not exist. '
-                       'The parent message might be cleared.')
+      raise ValueError(
+          'UnknownField does not exist. The parent message might be cleared.'
+      )
     if self._index >= len(self._parent):
-      raise ValueError('UnknownField does not exist. '
-                       'The parent message might be cleared.')
+      raise ValueError(
+          'UnknownField does not exist. The parent message might be cleared.'
+      )
 
   @property
   def field_number(self):
@@ -635,8 +691,9 @@ class UnknownFieldSet:
 
   def __getitem__(self, index):
     if self._values is None:
-      raise ValueError('UnknownFields does not exist. '
-                       'The parent message might be cleared.')
+      raise ValueError(
+          'UnknownFields does not exist. The parent message might be cleared.'
+      )
     size = len(self._values)
     if index < 0:
       index += size
@@ -650,8 +707,9 @@ class UnknownFieldSet:
 
   def __len__(self):
     if self._values is None:
-      raise ValueError('UnknownFields does not exist. '
-                       'The parent message might be cleared.')
+      raise ValueError(
+          'UnknownFields does not exist. The parent message might be cleared.'
+      )
     return len(self._values)
 
   def _add(self, field_number, wire_type, data):

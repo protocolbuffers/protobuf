@@ -1,7 +1,7 @@
 Protocol Buffers - Google's data interchange format
 ===================================================
 
-Copyright 2008 Google Inc.
+Copyright 2008 Google LLC.
 
 This directory contains conformance tests for testing completeness and
 correctness of Protocol Buffers implementations.  These tests are designed
@@ -65,7 +65,7 @@ Java:
 Objective-C (Mac only):
 
 ```
-$ bazel test //objectivec:conformance_test --macos_minimum_os=11.0
+$ bazel test //objectivec:conformance_test --macos_minimum_os=12.0
 ```
 
 PHP:

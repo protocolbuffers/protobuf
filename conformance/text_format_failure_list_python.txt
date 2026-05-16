@@ -7,3 +7,7 @@ Required.*.TextFormatInput.StringLiteralBasicEscapesString.ProtobufOutput       
 Required.*.TextFormatInput.StringLiteralBasicEscapesString.TextFormatOutput                                        # Output was not equivalent to reference message: modified: optional_string: "\007\010\014\n\r\t\013?\\\'\"" -> "\007\010\014\n\r\
 Required.*.TextFormatInput.ReservedFieldName.*.ProtobufOutput                                                      # Failed to parse input or produce output.
 Required.*.TextFormatInput.ReservedFieldName.*.TextFormatOutput                                                    # Failed to parse input or produce output.
+Required.*.TextFormatInput.ExtensionNameWithComment.ProtobufOutput                                                 # Failed to parse input or produce output.
+Required.*.TextFormatInput.ExtensionNameWithComment.TextFormatOutput                                               # Failed to parse input or produce output.
+Required.*.TextFormatInput.ExtensionNameWithWhitespace.ProtobufOutput                                              # Failed to parse input or produce output.
+Required.*.TextFormatInput.ExtensionNameWithWhitespace.TextFormatOutput                                            # Failed to parse input or produce output.

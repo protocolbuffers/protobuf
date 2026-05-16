@@ -12,10 +12,10 @@
 load("@bazel_tools//tools/cpp:toolchain_utils.bzl", "use_cpp_toolchain")
 load("@rules_cc//cc/common:cc_common.bzl", "cc_common")
 load("@rules_cc//cc/common:cc_info.bzl", "CcInfo")
-load("//bazel:upb_proto_library.bzl", "GeneratedSrcsInfo", "UpbWrappedCcInfo", "upb_proto_library_aspect")
 load("//bazel/common:proto_common.bzl", "proto_common")
 load("//bazel/common:proto_info.bzl", "ProtoInfo")
-load("//bazel/private:upb_proto_library_internal/cc_library_func.bzl", "cc_library_func")  # buildifier: disable=bzl-visibility
+load("//upb/bazel:upb_proto_library.bzl", "GeneratedSrcsInfo", "UpbWrappedCcInfo", "upb_proto_library_aspect")
+load("//upb/bazel/private:upb_proto_library_internal/cc_library_func.bzl", "cc_library_func")  # buildifier: disable=bzl-visibility
 
 def upb_use_cpp_toolchain():
     return use_cpp_toolchain()
@@ -70,11 +70,8 @@ def _hpb_proto_rule_impl(ctx):
 
     if _HpbWrappedCcInfo in dep:
         cc_info = dep[_HpbWrappedCcInfo].cc_info
-    elif UpbWrappedCcInfo in dep:
-        cc_info = dep[UpbWrappedCcInfo].cc_info
     else:
-        fail("proto_library rule must generate UpbWrappedCcInfo or " +
-             "_HpbWrappedCcInfo (aspect should have handled this).")
+        fail("proto_library rule must generate _HpbWrappedCcInfo (aspect should have handled this).")
 
     lib = cc_info.linking_context.linker_inputs.to_list()[0].libraries[0]
     files = _filter_none([

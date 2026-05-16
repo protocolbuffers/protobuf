@@ -7,14 +7,18 @@
 
 #include <stdint.h>
 
+#include <string>
+
 #include <gtest/gtest.h>
 #include "upb/base/descriptor_constants.h"
+#include "upb/base/string_view.h"
 #include "upb/base/upcast.h"
 #include "upb/mem/arena.hpp"
 #include "upb/message/message.h"
 #include "upb/port/def.inc"
 #include "upb/reflection/def.hpp"
 #include "upb/reflection/descriptor_bootstrap.h"
+#include "upb/test/custom_options.upb.h"
 #include "upb/test/editions_test.upb.h"
 #include "upb/test/editions_test.upbdefs.h"
 
@@ -69,7 +73,25 @@ TEST(EditionsTest, ImportOptionUnlinked) {
   upb::MessageDefPtr md(upb_test_2023_EditionsMessage_getmsgdef(defpool.ptr()));
   const google_protobuf_MessageOptions* options = md.options();
 
-  EXPECT_TRUE(upb_Message_HasUnknown(UPB_UPCAST(options)));
+  upb_StringView data;
+  uintptr_t iter = kUpb_Message_UnknownBegin;
+  ASSERT_TRUE(upb_Message_NextUnknown(UPB_UPCAST(options), &data, &iter));
+  EXPECT_EQ(std::string(data.data, data.size),
+            // 7739037: 9
+            "\xE8\xE9\xC2\x1D\011");
+  EXPECT_FALSE(upb_Message_NextUnknown(UPB_UPCAST(options), &data, &iter));
+}
+
+TEST(EditionsTest, ImportOptionLinked) {
+  // Test that linked option dependencies don't show up in unknown fields. This
+  // also actually *uses* the linked options to guarantee linkage and make the
+  // previous test pass.
+
+  upb::Arena arena;
+  upb::DefPool defpool;
+  upb::MessageDefPtr md(upb_test_2023_EditionsMessage_getmsgdef(defpool.ptr()));
+  const google_protobuf_MessageOptions* options = md.options();
+  EXPECT_EQ(upb_message_opt(options), 87);
 }
 
 TEST(EditionsTest, ConstructProto) {
