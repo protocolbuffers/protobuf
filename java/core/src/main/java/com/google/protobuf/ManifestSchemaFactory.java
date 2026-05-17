@@ -34,38 +34,24 @@ final class ManifestSchemaFactory implements SchemaFactory {
 
     // MessageSet has a special schema.
     if (messageInfo.isMessageSetWireFormat()) {
-      return useLiteRuntime(messageType)
-          ? MessageSetSchema.newSchema(
-              SchemaUtil.unknownFieldSetLiteSchema(),
-              ExtensionSchemas.lite(),
-              messageInfo.getDefaultInstance())
-          : MessageSetSchema.newSchema(
-              SchemaUtil.unknownFieldSetFullSchema(),
-              ExtensionSchemas.full(),
-              messageInfo.getDefaultInstance());
+      return MessageSetSchema.newSchema(
+          SchemaUtil.unknownFieldSetLiteSchema(),
+          ExtensionSchemas.lite(),
+          messageInfo.getDefaultInstance());
     }
 
     return newSchema(messageType, messageInfo);
   }
 
   private static <T> Schema<T> newSchema(Class<T> messageType, MessageInfo messageInfo) {
-    return useLiteRuntime(messageType)
-        ? MessageSchema.newSchema(
-            messageType,
-            messageInfo,
-            NewInstanceSchemas.lite(),
-            ListFieldSchemas.lite(),
-            SchemaUtil.unknownFieldSetLiteSchema(),
-            allowExtensions(messageInfo) ? ExtensionSchemas.lite() : null,
-            MapFieldSchemas.lite())
-        : MessageSchema.newSchema(
-            messageType,
-            messageInfo,
-            NewInstanceSchemas.full(),
-            ListFieldSchemas.full(),
-            SchemaUtil.unknownFieldSetFullSchema(),
-            allowExtensions(messageInfo) ? ExtensionSchemas.full() : null,
-            MapFieldSchemas.full());
+    return MessageSchema.newSchema(
+        messageType,
+        messageInfo,
+        NewInstanceSchemas.lite(),
+        ListFieldSchemas.lite(),
+        SchemaUtil.unknownFieldSetLiteSchema(),
+        allowExtensions(messageInfo) ? ExtensionSchemas.lite() : null,
+        MapFieldSchemas.lite());
   }
 
   private static boolean allowExtensions(MessageInfo messageInfo) {
@@ -134,9 +120,5 @@ final class ManifestSchemaFactory implements SchemaFactory {
     } catch (Exception e) {
       return EMPTY_FACTORY;
     }
-  }
-
-  private static boolean useLiteRuntime(Class<?> messageType) {
-    return Android.assumeLiteRuntime || GeneratedMessageLite.class.isAssignableFrom(messageType);
   }
 }
