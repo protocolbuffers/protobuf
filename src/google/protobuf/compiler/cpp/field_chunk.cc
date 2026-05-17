@@ -1,14 +1,11 @@
 #include "google/protobuf/compiler/cpp/field_chunk.h"
 
-#include <algorithm>
 #include <cstddef>
 #include <cstdint>
 #include <vector>
 
 #include "absl/log/absl_check.h"
 #include "absl/types/span.h"
-#include "google/protobuf/compiler/cpp/helpers.h"
-#include "google/protobuf/compiler/cpp/options.h"
 #include "google/protobuf/descriptor.h"
 
 // must be last
