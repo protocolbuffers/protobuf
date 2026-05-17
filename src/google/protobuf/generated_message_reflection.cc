@@ -406,196 +406,109 @@ static void ReportReflectionUsageEnumTypeError(
 
 // ===================================================================
 
+constexpr size_t kBitsPerWord = sizeof(uintptr_t) * 8;
+constexpr size_t kMaxInlineBits = kBitsPerWord - 1;
+
+inline uintptr_t* RepToWordArray(uintptr_t rep) {
+  ABSL_DCHECK_EQ(rep & 0x1, 0x0);
+  return reinterpret_cast<uintptr_t*>(rep);
+}
+
+Reflection::BitSet::BitSet(size_t n) {
+  if (n <= kMaxInlineBits) {
+    rep_ = 0x1;  // Just set the inlined marker
+  } else {
+    // Rely on alignment to ensure inlined marker is zero.
+    const size_t num_words = (n + kBitsPerWord - 1) / kBitsPerWord;
+    auto array = new uintptr_t[num_words];
+    std::fill_n(array, num_words, 0);
+    rep_ = reinterpret_cast<uintptr_t>(array);
+  }
+}
+
+Reflection::BitSet::~BitSet() {
+  if (!inlined()) {
+    delete[] RepToWordArray(rep_);
+  }
+}
+
+void Reflection::BitSet::Insert(size_t i) {
+  if (inlined()) {
+    ABSL_DCHECK_LT(i, kMaxInlineBits);
+    rep_ |= (static_cast<uintptr_t>(1) << (i + 1));
+  } else {
+    const uintptr_t mask = (static_cast<uintptr_t>(1) << (i % kBitsPerWord));
+    RepToWordArray(rep_)[i / kBitsPerWord] |= mask;
+  }
+}
+
+template <class Fn>
+void Reflection::BitSet::ForEach(size_t n, Fn fn) const {
+  uintptr_t inlined_bits;  // Used only for inlined BitSet
+  const uintptr_t* words;
+  if (inlined()) {
+    inlined_bits = rep_ >> 1;
+    words = &inlined_bits;
+  } else {
+    words = RepToWordArray(rep_);
+  }
+
+  // Note: This could potentially be improved by using bit operations to find
+  // next set bit
+  for (size_t pos = 0; pos < n;) {
+    const uintptr_t word = words[pos / kBitsPerWord];
+    const size_t word_index = pos % kBitsPerWord;
+    if (word_index == 0 && word == 0) {
+      // Skip entire word (useful in some protos that contain large runs of
+      // zero bits)
+      pos += kBitsPerWord;
+      continue;
+    }
+    if (word & (static_cast<uintptr_t>(1) << word_index)) {
+      fn(pos);
+    }
+    ++pos;
+  }
+}
+
+// ===================================================================
+
 Reflection::Reflection(const Descriptor* descriptor,
                        const internal::ReflectionSchema& schema,
                        const DescriptorPool* pool, MessageFactory* factory)
     : last_non_weak_field_index_(-1),
+      dynamic_regular_fields_(descriptor->field_count()),
       descriptor_(descriptor),
       message_factory_(factory),
       descriptor_pool_(
           (pool == nullptr) ? DescriptorPool::internal_generated_pool() : pool),
       schema_(schema) {
   last_non_weak_field_index_ = descriptor_->field_count() - 1;
-}
 
-Reflection::~Reflection() {
-  // No need to use sized delete. This code path is uncommon and it would not be
-  // worth saving or recalculating the size.
-  ::operator delete(const_cast<internal::TcParseTableBase*>(tcparse_table_));
-}
-
-const UnknownFieldSet& Reflection::GetUnknownFields(
-    const Message& message) const {
-  STATIC_USAGE_CHECK_MESSAGE(GetUnknownFields, &message);
-  return GetInternalMetadata(message).unknown_fields<UnknownFieldSet>(
-      UnknownFieldSet::default_instance);
-}
-
-UnknownFieldSet* Reflection::MutableUnknownFields(Message* message) const {
-  STATIC_USAGE_CHECK_MESSAGE(MutableUnknownFields, message);
-  return MutableInternalMetadata(message)
-      ->mutable_unknown_fields<UnknownFieldSet>();
-}
-
-bool Reflection::IsLazyExtension(const Message& message,
-                                 const FieldDescriptor* field) const {
-  USAGE_CHECK_MESSAGE(IsLazyExtension, &message);
-  return field->is_extension() &&
-         GetExtensionSet(message).HasLazy(field->number());
-}
-
-bool Reflection::IsLazilyVerifiedLazyField(const FieldDescriptor* field) const {
-  return false;
-}
-
-bool Reflection::IsEagerlyVerifiedLazyField(
-    const FieldDescriptor* field) const {
-  return false;
-}
-
-internal::field_layout::TransformValidation Reflection::GetLazyStyle(
-    const FieldDescriptor* field) const {
-  if (IsEagerlyVerifiedLazyField(field)) {
-    return internal::field_layout::kTvEager;
-  }
-  if (IsLazilyVerifiedLazyField(field)) {
-    return internal::field_layout::kTvLazy;
-  }
-  return {};
-}
-
-size_t Reflection::SpaceUsedLong(const Message& message) const {
-  STATIC_USAGE_CHECK_MESSAGE(SpaceUsedLong, &message);
-  // object_size_ already includes the in-memory representation of each field
-  // in the message, so we only need to account for additional memory used by
-  // the fields.
-  size_t total_size = schema_.GetObjectSize();
-
-  total_size += GetUnknownFields(message).SpaceUsedExcludingSelfLong();
-
-  if (schema_.HasExtensionSet()) {
-    total_size += GetExtensionSet(message).SpaceUsedExcludingSelfLong();
-  }
-  for (int i = 0; i <= last_non_weak_field_index_; i++) {
-    const FieldDescriptor* field = descriptor_->field(i);
-    if (field->is_repeated()) {
-      switch (field->cpp_type()) {
-#define HANDLE_TYPE(UPPERCASE, LOWERCASE)                          \
-  case FieldDescriptor::CPPTYPE_##UPPERCASE:                       \
-    total_size += GetRaw<RepeatedField<LOWERCASE>>(message, field) \
-                      .SpaceUsedExcludingSelfLong();               \
-    break
-
-        HANDLE_TYPE(INT32, int32_t);
-        HANDLE_TYPE(INT64, int64_t);
-        HANDLE_TYPE(UINT32, uint32_t);
-        HANDLE_TYPE(UINT64, uint64_t);
-        HANDLE_TYPE(DOUBLE, double);
-        HANDLE_TYPE(FLOAT, float);
-        HANDLE_TYPE(BOOL, bool);
-        HANDLE_TYPE(ENUM, int);
-#undef HANDLE_TYPE
-
-        case FieldDescriptor::CPPTYPE_STRING:
-          switch (field->cpp_string_type()) {
-            case FieldDescriptor::CppStringType::kCord:
-              total_size += GetRaw<RepeatedField<absl::Cord>>(message, field)
-                                .SpaceUsedExcludingSelfLong();
-              break;
-            case FieldDescriptor::CppStringType::kView:
-            case FieldDescriptor::CppStringType::kString:
-              total_size +=
-                  GetRaw<RepeatedPtrField<std::string>>(message, field)
-                      .SpaceUsedExcludingSelfLong();
-              break;
-          }
-          break;
-
-        case FieldDescriptor::CPPTYPE_MESSAGE:
-          if (IsMapFieldInApi(field)) {
-            total_size += GetRaw<internal::MapFieldBase>(message, field)
-                              .SpaceUsedExcludingSelfLong();
-          } else {
-            // We don't know which subclass of RepeatedPtrFieldBase the type is,
-            // so we use RepeatedPtrFieldBase directly.
-            total_size +=
-                GetRaw<RepeatedPtrFieldBase>(message, field)
-                    .SpaceUsedExcludingSelfLong<GenericTypeHandler<Message>>();
-          }
-
-          break;
-      }
-    } else {
-      if (schema_.InRealOneof(field) && !HasOneofField(message, field)) {
-        continue;
-      }
-      switch (field->cpp_type()) {
-        case FieldDescriptor::CPPTYPE_INT32:
-        case FieldDescriptor::CPPTYPE_INT64:
-        case FieldDescriptor::CPPTYPE_UINT32:
-        case FieldDescriptor::CPPTYPE_UINT64:
-        case FieldDescriptor::CPPTYPE_DOUBLE:
-        case FieldDescriptor::CPPTYPE_FLOAT:
-        case FieldDescriptor::CPPTYPE_BOOL:
-        case FieldDescriptor::CPPTYPE_ENUM:
-          // Field is inline, so we've already counted it.
-          break;
-
-        case FieldDescriptor::CPPTYPE_STRING: {
-          switch (field->cpp_string_type()) {
-            case FieldDescriptor::CppStringType::kCord:
-              if (schema_.InRealOneof(field)) {
-                total_size += GetField<absl::Cord*>(message, field)
-                                  ->EstimatedMemoryUsage();
-
-              } else {
-                // sizeof(absl::Cord) is included to self.
-                total_size += GetField<absl::Cord>(message, field)
-                                  .EstimatedMemoryUsage() -
-                              sizeof(absl::Cord);
-              }
-              break;
-            case FieldDescriptor::CppStringType::kView:
-            case FieldDescriptor::CppStringType::kString:
-              if (IsInlined(field)) {
-                total_size += GetField<InlinedStringField>(message, field)
-                                  .SpaceUsedExcludingSelfLong();
-              } else if (IsMicroString(field)) {
-                total_size += GetField<MicroString>(message, field)
-                                  .SpaceUsedExcludingSelfLong();
-              } else {
-                // Initially, the string points to the default value stored
-                // in the prototype. Only count the string if it has been
-                // changed from the default value.
-                // Except oneof fields, those never point to a default instance,
-                // and there is no default instance to point to.
-                const auto& str = GetField<ArenaStringPtr>(message, field);
-                if (!str.IsDefault() || schema_.InRealOneof(field)) {
-                  // string fields are represented by just a pointer, so also
-                  // include sizeof(string) as well.
-                  total_size += sizeof(std::string) +
-                                StringSpaceUsedExcludingSelfLong(str.Get());
-                }
-              }
-              break;
-          }
-          break;
-        }
-
-        case FieldDescriptor::CPPTYPE_MESSAGE:
-          if (schema_.IsDefaultInstance(message)) {
-            // For singular fields, the prototype just stores a pointer to the
-            // external type's prototype, so there is no extra memory usage.
-          } else {
-            const Message* sub_message = GetRaw<const Message*>(message, field);
-            if (sub_message != nullptr) {
-              total_size += sub_message->SpaceUsedLong();
-            }
-          }
-          break;
-      }
+  auto is_primitive = [](FieldDescriptor::CppType t) {
+    switch (t) {
+      case FieldDescriptor::CPPTYPE_INT32:
+      case FieldDescriptor::CPPTYPE_INT64:
+      case FieldDescriptor::CPPTYPE_UINT32:
+      case FieldDescriptor::CPPTYPE_UINT64:
+      case FieldDescriptor::CPPTYPE_DOUBLE:
+      case FieldDescriptor::CPPTYPE_FLOAT:
+      case FieldDescriptor::CPPTYPE_BOOL:
+      case FieldDescriptor::CPPTYPE_ENUM:
+        return true;
+      default:
+        return false;
     }
-  }
+  };
+
+  for (int i = 0; i < descriptor_->field_count(); i++) {
+    const FieldDescriptor* field = descriptor_->field(i);
+    if (!field->is_repeated() && is_primitive(field->cpp_type())) {
+      continue;  // Scalar SpaceUsedLong accounted for in sizeof(Message).
+    }
+    if (schema_.InRealOneof(field)) {
+      continue;  // Oneof fields are handled specially in SpaceUsedLong.
+    }
   if (internal::DebugHardenFuzzMessageSpaceUsedLong()) {
     // Use both `this` and `dummy` to generate the seed so that the scale factor
     // is both per-object and non-predictable, but consistent across multiple
@@ -609,6 +522,125 @@ size_t Reflection::SpaceUsedLong(const Message& message) const {
   } else {
     return total_size;
   }
+}
+
+size_t Reflection::ExternalSpaceForField(const Message& message,
+                                         const FieldDescriptor* field) const {
+  size_t total_size = 0;
+  if (field->is_repeated()) {
+    switch (field->cpp_type()) {
+#define HANDLE_TYPE(UPPERCASE, LOWERCASE)                          \
+  case FieldDescriptor::CPPTYPE_##UPPERCASE:                       \
+    total_size += GetRaw<RepeatedField<LOWERCASE>>(message, field) \
+                      .SpaceUsedExcludingSelfLong();               \
+    break
+
+      HANDLE_TYPE(INT32, int32_t);
+      HANDLE_TYPE(INT64, int64_t);
+      HANDLE_TYPE(UINT32, uint32_t);
+      HANDLE_TYPE(UINT64, uint64_t);
+      HANDLE_TYPE(DOUBLE, double);
+      HANDLE_TYPE(FLOAT, float);
+      HANDLE_TYPE(BOOL, bool);
+      HANDLE_TYPE(ENUM, int);
+#undef HANDLE_TYPE
+
+      case FieldDescriptor::CPPTYPE_STRING:
+        switch (field->cpp_string_type()) {
+          case FieldDescriptor::CppStringType::kCord:
+            total_size += GetRaw<RepeatedField<absl::Cord>>(message, field)
+                              .SpaceUsedExcludingSelfLong();
+            break;
+          case FieldDescriptor::CppStringType::kView:
+          case FieldDescriptor::CppStringType::kString:
+            total_size += GetRaw<RepeatedPtrField<std::string>>(message, field)
+                              .SpaceUsedExcludingSelfLong();
+            break;
+        }
+        break;
+
+      case FieldDescriptor::CPPTYPE_MESSAGE:
+        if (IsMapFieldInApi(field)) {
+          total_size += GetRaw<internal::MapFieldBase>(message, field)
+                            .SpaceUsedExcludingSelfLong();
+        } else {
+          // We don't know which subclass of RepeatedPtrFieldBase the type is,
+          // so we use RepeatedPtrFieldBase directly.
+          total_size +=
+              GetRaw<RepeatedPtrFieldBase>(message, field)
+                  .SpaceUsedExcludingSelfLong<GenericTypeHandler<Message>>();
+        }
+
+        break;
+    }
+  } else {
+    switch (field->cpp_type()) {
+      case FieldDescriptor::CPPTYPE_INT32:
+      case FieldDescriptor::CPPTYPE_INT64:
+      case FieldDescriptor::CPPTYPE_UINT32:
+      case FieldDescriptor::CPPTYPE_UINT64:
+      case FieldDescriptor::CPPTYPE_DOUBLE:
+      case FieldDescriptor::CPPTYPE_FLOAT:
+      case FieldDescriptor::CPPTYPE_BOOL:
+      case FieldDescriptor::CPPTYPE_ENUM:
+        // Field is inline, so we've already counted it.
+        break;
+
+      case FieldDescriptor::CPPTYPE_STRING: {
+        switch (field->cpp_string_type()) {
+          case FieldDescriptor::CppStringType::kCord:
+            if (schema_.InRealOneof(field)) {
+              total_size +=
+                  GetField<absl::Cord*>(message, field)->EstimatedMemoryUsage();
+
+            } else {
+              // sizeof(absl::Cord) is included to self.
+              total_size +=
+                  GetField<absl::Cord>(message, field).EstimatedMemoryUsage() -
+                  sizeof(absl::Cord);
+            }
+            break;
+          case FieldDescriptor::CppStringType::kView:
+          case FieldDescriptor::CppStringType::kString:
+            if (IsInlined(field)) {
+              total_size += GetField<InlinedStringField>(message, field)
+                                .SpaceUsedExcludingSelfLong();
+            } else if (IsMicroString(field)) {
+              total_size += GetField<MicroString>(message, field)
+                                .SpaceUsedExcludingSelfLong();
+            } else {
+              // Initially, the string points to the default value stored
+              // in the prototype. Only count the string if it has been
+              // changed from the default value.
+              // Except oneof fields, those never point to a default instance,
+              // and there is no default instance to point to.
+              const auto& str = GetField<ArenaStringPtr>(message, field);
+              if (!str.IsDefault() || schema_.InRealOneof(field)) {
+                // string fields are represented by just a pointer, so also
+                // include sizeof(string) as well.
+                total_size += sizeof(std::string) +
+                              StringSpaceUsedExcludingSelfLong(str.Get());
+              }
+            }
+            break;
+        }
+        break;
+      }
+
+      case FieldDescriptor::CPPTYPE_MESSAGE:
+        if (schema_.IsDefaultInstance(message)) {
+          // For singular fields, the prototype just stores a pointer to the
+          // external type's prototype, so there is no extra memory usage.
+        } else {
+          const Message* sub_message = GetRaw<const Message*>(message, field);
+          if (sub_message != nullptr) {
+            total_size += sub_message->SpaceUsedLong();
+          }
+        }
+        break;
+    }
+  }
+  return total_size;
 }
 
 template <bool unsafe_shallow_swap, typename FromType, typename ToType>
