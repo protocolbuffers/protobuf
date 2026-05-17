@@ -17,7 +17,7 @@ cc_binary(
     srcs = ["plugin_main.cc"],
     visibility = ["//visibility:public"],
     deps = [
-        ":php",
+        ":php_generator",
         "//src/google/protobuf/compiler:plugin",
     ],
 )
