@@ -15,6 +15,7 @@
 // types defined in descriptor.proto, which gives INT32 and SINT32 separate
 // types (we distinguish the two with the "integer encoding" enum below).
 // This enum is an internal convenience only and has no meaning outside of upb.
+// LINT.IfChange(upb_c_types)
 typedef enum {
   kUpb_CType_Bool = 1,
   kUpb_CType_Float = 2,
@@ -28,6 +29,7 @@ typedef enum {
   kUpb_CType_String = 10,
   kUpb_CType_Bytes = 11
 } upb_CType;
+// LINT.ThenChange(//depot/google3/java/com/google/android/libraries/elements/adl/UpbMessageHelper.java:upb_c_types)
 
 // The repeated-ness of each field; this matches descriptor.proto.
 typedef enum {
