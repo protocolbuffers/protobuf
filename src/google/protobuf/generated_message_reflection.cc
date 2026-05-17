@@ -3974,7 +3974,7 @@ void AssignDescriptorsImpl(const DescriptorTable* table, bool eager) {
   const FileDescriptor* file =
       DescriptorPool::internal_generated_pool()->FindFileByName(
           table->filename);
-  ABSL_CHECK(file != nullptr);
+  ABSL_CHECK(file != nullptr) << " filename: " << table->filename;
 
   MessageFactory* factory = MessageFactory::generated_factory();
 
