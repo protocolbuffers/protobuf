@@ -15,6 +15,10 @@ BUNDLE_DOC_URL = "https://developers.google.com/protocol-buffers/"
 BUNDLE_LICENSE = "https://opensource.org/licenses/BSD-3-Clause"
 
 def protobuf_java_export(**kwargs):
+    tags = kwargs.get("tags", [])
+    if "no-javadocs" not in tags:
+        tags = list(tags) + ["no-javadocs"]
+        kwargs["tags"] = tags
     java_export(
         javacopts = JAVA_RELEASE_OPTS,
         # https://github.com/bazelbuild/rules_jvm_external/issues/1245
