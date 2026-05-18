@@ -623,8 +623,23 @@ bool MessageDifferencer::Compare(const Message& message1,
   }
 
   bool unknown_compare_result = true;
-  // Ignore unknown fields in EQUIVALENT mode
-  if (message_field_comparison_ != EQUIVALENT) {
+  // Ignore unknown fields in EQUIVALENT mode.
+  // Also skip unknown-field comparison when every known field in the
+  // descriptor has been explicitly ignored via IgnoreField() — comparing
+  // unknown fields when the caller asked to ignore everything is
+  // counter-intuitive and produces false negatives.
+  bool all_fields_ignored = false;
+  if (!ignored_fields_.empty()) {
+    const Descriptor* desc = message1.GetDescriptor();
+    all_fields_ignored = true;
+    for (int i = 0; i < desc->field_count(); ++i) {
+      if (ignored_fields_.find(desc->field(i)) == ignored_fields_.end()) {
+        all_fields_ignored = false;
+        break;
+      }
+    }
+  }
+  if (message_field_comparison_ != EQUIVALENT && !all_fields_ignored) {
     const Reflection* reflection1 = message1.GetReflection();
     const Reflection* reflection2 = message2.GetReflection();
     const UnknownFieldSet& unknown_field_set1 =
