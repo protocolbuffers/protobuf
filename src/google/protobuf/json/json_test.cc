@@ -1456,6 +1456,48 @@ TEST_P(JsonTest, TestFieldMaskSnakeCase) {
   EXPECT_THAT(m->value().paths(), ElementsAre("foo_bar"));
 }
 
+// Documents a known non-idempotency bug in FieldMask JSON round-trips.
+// Non-canonical paths (leading underscores, uppercase letters) shift across
+// multiple round-trips before stabilizing.  See b/fieldmask-json-idempotent.
+// TODO: fix the snake<->camel converter so this test can use EXPECT_EQ.
+TEST_P(JsonTest, TestFieldMaskJsonRoundTripNonIdempotent) {
+  // Start with a non-canonical path containing leading underscores and
+  // uppercase.
+  google::protobuf::FieldMask fm0;
+  fm0.add_paths("__Y");
+
+  // Round-trip through JSON once.
+  proto3::TestFieldMask wrapper0;
+  *wrapper0.mutable_value() = fm0;
+  auto json0 = ToJson(wrapper0);
+  ASSERT_OK(json0);
+
+  auto wrapper1 = ToProto<proto3::TestFieldMask>(*json0);
+  ASSERT_OK(wrapper1);
+  auto json1 = ToJson(*wrapper1);
+  ASSERT_OK(json1);
+
+  // Round-trip again.
+  auto wrapper2 = ToProto<proto3::TestFieldMask>(*json1);
+  ASSERT_OK(wrapper2);
+  auto json2 = ToJson(*wrapper2);
+  ASSERT_OK(json2);
+
+  // BUG: The path shifts across round-trips.  A correct implementation would
+  // produce identical JSON after a single round-trip (idempotent).  Instead,
+  // the path "__Y" -> "__y" -> "_y" over two hops.
+  //
+  // When this is fixed, change the EXPECT_NE below to EXPECT_EQ to enforce
+  // idempotency.
+  EXPECT_NE(*json0, *json1)
+      << "If this starts passing, the FieldMask JSON round-trip "
+         "non-idempotency bug may be fixed. Update this test.";
+
+  // The third round-trip does stabilize (fixed point after 2-3 hops).
+  EXPECT_EQ(*json1, *json2)
+      << "Expected JSON to stabilize after two round-trips";
+}
+
 TEST_P(JsonTest, TestLegalNullsInArray) {
   auto m = ToProto<proto3::TestNullValue>(R"json({
     "repeatedNullValue": [null]
