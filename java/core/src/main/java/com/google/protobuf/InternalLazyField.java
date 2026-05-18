@@ -296,6 +296,21 @@ class InternalLazyField {
   @Override
   public boolean equals(
           Object obj) {
+    if (obj == null) {
+      return false;
+    }
+    if (this == obj) {
+      return true;
+    }
+    if (obj instanceof InternalLazyField) {
+      InternalLazyField other = (InternalLazyField) obj;
+      if (this.bytes != null && other.bytes != null && this.bytes.equals(other.bytes)) {
+        if (this.extensionRegistry == other.extensionRegistry) {
+          return true;
+        }
+      }
+      return this.getValue().equals(other.getValue());
+    }
     return getValue().equals(obj);
   }
 

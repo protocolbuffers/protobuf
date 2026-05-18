@@ -1080,9 +1080,7 @@ void ImmutableMessageGenerator::GenerateEqualsAndHashCode(
       "if (!getUnknownFields().equals(other.getUnknownFields())) return "
       "false;\n");
   if (descriptor_->extension_range_count() > 0) {
-    printer->Print(
-        "if (!getExtensionFields().equals(other.getExtensionFields()))\n"
-        "  return false;\n");
+    printer->Print("if (!extensionsEquals(other)) return false;\n");
   }
   printer->Print("return true;\n");
   printer->Outdent();
