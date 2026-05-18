@@ -308,7 +308,7 @@ public class ParserTest {
     TestMergeException.Builder message = TestMergeException.newBuilder();
     message
         .getAllExtensionsBuilder()
-        .setExtension(TestRequired.single, TestRequired.newBuilder().buildPartial());
+        .setExtension(TestRequired.single, TestRequired.newBuilder().setA(1).buildPartial());
     ByteString byteString = message.buildPartial().toByteString();
 
     // duplicate the bytestring to make the `all_extensions` field repeat twice, so that it will
@@ -363,34 +363,39 @@ public class ParserTest {
       // parseFrom(ByteString)
       TestAllExtensions result1 =
           TestMergeException.parseFrom(duplicatedByteString, registry).getAllExtensions();
-      assertThrows(
-          InvalidProtobufRuntimeException.class, () -> result1.getExtension(TestRequired.single));
+      assertThat(result1.getExtension(TestRequired.single).getA()).isEqualTo(1);
+      assertThat(result1.getExtension(TestRequired.single).hasB()).isFalse();
+      assertThat(result1.getExtension(TestRequired.single).hasC()).isFalse();
 
       // parseFrom(ByteArray)
       TestAllExtensions result2 = TestMergeException.parseFrom(bytes, registry).getAllExtensions();
-      assertThrows(
-          InvalidProtobufRuntimeException.class, () -> result2.getExtension(TestRequired.single));
+      assertThat(result2.getExtension(TestRequired.single).getA()).isEqualTo(1);
+      assertThat(result2.getExtension(TestRequired.single).hasB()).isFalse();
+      assertThat(result2.getExtension(TestRequired.single).hasC()).isFalse();
 
       // parseFrom(InputStream)
       TestAllExtensions result3 =
           TestMergeException.parseFrom(new ByteArrayInputStream(bytes), registry)
               .getAllExtensions();
-      assertThrows(
-          InvalidProtobufRuntimeException.class, () -> result3.getExtension(TestRequired.single));
+      assertThat(result3.getExtension(TestRequired.single).getA()).isEqualTo(1);
+      assertThat(result3.getExtension(TestRequired.single).hasB()).isFalse();
+      assertThat(result3.getExtension(TestRequired.single).hasC()).isFalse();
 
       // parseFrom(CodedInputStream)
       TestAllExtensions result4 =
           TestMergeException.parseFrom(CodedInputStream.newInstance(bytes), registry)
               .getAllExtensions();
-      assertThrows(
-          InvalidProtobufRuntimeException.class, () -> result4.getExtension(TestRequired.single));
+      assertThat(result4.getExtension(TestRequired.single).getA()).isEqualTo(1);
+      assertThat(result4.getExtension(TestRequired.single).hasB()).isFalse();
+      assertThat(result4.getExtension(TestRequired.single).hasC()).isFalse();
 
       // parseFrom(ByteBuffer)
       TestAllExtensions result5 =
           TestMergeException.parseFrom(duplicatedByteString.asReadOnlyByteBuffer(), registry)
               .getAllExtensions();
-      assertThrows(
-          InvalidProtobufRuntimeException.class, () -> result5.getExtension(TestRequired.single));
+      assertThat(result5.getExtension(TestRequired.single).getA()).isEqualTo(1);
+      assertThat(result5.getExtension(TestRequired.single).hasB()).isFalse();
+      assertThat(result5.getExtension(TestRequired.single).hasC()).isFalse();
     }
   }
 

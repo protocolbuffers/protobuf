@@ -342,6 +342,7 @@ bool Generator::Generate(const FileDescriptor* file,
 
   printer.Print("# @@protoc_insertion_point(module_scope)\n");
 
+
   return !printer.failed();
 }
 
@@ -395,18 +396,23 @@ void Generator::PrintTopBoilerplate() const {
   printer_->Print("\n\n");
 }
 
+std::string Generator::ImportModuleName(absl::string_view filename) const {
+  std::string module_name = ModuleName(filename);
+  if (!opensource_runtime_) {
+    module_name =
+        std::string(absl::StripPrefix(module_name, kThirdPartyPrefix));
+  }
+  return module_name;
+}
+
 // Prints Python imports for all modules imported by |file|.
 void Generator::PrintImports() const {
   bool has_importlib = false;
   for (int i = 0; i < file_->dependency_count(); ++i) {
     absl::string_view filename = file_->dependency(i)->name();
 
-    std::string module_name = ModuleName(filename);
+    std::string module_name = ImportModuleName(filename);
     std::string module_alias = ModuleAlias(filename);
-    if (!opensource_runtime_) {
-      module_name =
-          std::string(absl::StripPrefix(module_name, kThirdPartyPrefix));
-    }
     if (ContainsPythonKeyword(module_name)) {
       // If the module path contains a Python keyword, we have to quote the
       // module name and import it using importlib. Otherwise the usual kind of
@@ -440,11 +446,8 @@ void Generator::PrintImports() const {
 
   // Print public imports.
   for (int i = 0; i < file_->public_dependency_count(); ++i) {
-    std::string module_name = ModuleName(file_->public_dependency(i)->name());
-    if (!opensource_runtime_) {
-      module_name =
-          std::string(absl::StripPrefix(module_name, kThirdPartyPrefix));
-    }
+    std::string module_name =
+        ImportModuleName(file_->public_dependency(i)->name());
     printer_->Print("from $module$ import *\n", "module", module_name);
   }
   printer_->Print("\n");

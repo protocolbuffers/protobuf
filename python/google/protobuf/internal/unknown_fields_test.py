@@ -29,6 +29,7 @@ from google.protobuf import map_unittest_pb2
 from google.protobuf import unittest_mset_pb2
 from google.protobuf import unittest_pb2
 from google.protobuf import unittest_proto3_arena_pb2
+
 try:
   import tracemalloc  # pylint: disable=g-import-not-at-top
 except ImportError:
@@ -90,8 +91,9 @@ class UnknownFieldsTest(unittest.TestCase):
     # Unknown field should have wire format data which can be parsed back to
     # original message.
     self.assertEqual(unknown_field_set[0].field_number, item.type_id)
-    self.assertEqual(unknown_field_set[0].wire_type,
-                     wire_format.WIRETYPE_LENGTH_DELIMITED)
+    self.assertEqual(
+        unknown_field_set[0].wire_type, wire_format.WIRETYPE_LENGTH_DELIMITED
+    )
     d = unknown_field_set[0].data
     message_new = message_set_extensions_pb2.TestMessageSetExtension1()
     message_new.ParseFromString(d)
@@ -120,29 +122,37 @@ class UnknownFieldsTest(unittest.TestCase):
     other_message = unittest_pb2.TestAllTypes()
     other_message.optional_string = 'discard'
     message.optional_nested_message.ParseFromString(
-        other_message.SerializeToString())
+        other_message.SerializeToString()
+    )
     message.repeated_nested_message.add().ParseFromString(
-        other_message.SerializeToString())
+        other_message.SerializeToString()
+    )
     self.assertNotEqual(
-        b'', message.optional_nested_message.SerializeToString())
+        b'', message.optional_nested_message.SerializeToString()
+    )
     self.assertNotEqual(
-        b'', message.repeated_nested_message[0].SerializeToString())
+        b'', message.repeated_nested_message[0].SerializeToString()
+    )
     message.DiscardUnknownFields()
     self.assertEqual(b'', message.optional_nested_message.SerializeToString())
     self.assertEqual(
-        b'', message.repeated_nested_message[0].SerializeToString())
+        b'', message.repeated_nested_message[0].SerializeToString()
+    )
 
     msg = map_unittest_pb2.TestMap()
     msg.map_int32_all_types[1].optional_nested_message.ParseFromString(
-        other_message.SerializeToString())
+        other_message.SerializeToString()
+    )
     msg.map_string_string['1'] = 'test'
     self.assertNotEqual(
         b'',
-        msg.map_int32_all_types[1].optional_nested_message.SerializeToString())
+        msg.map_int32_all_types[1].optional_nested_message.SerializeToString(),
+    )
     msg.DiscardUnknownFields()
     self.assertEqual(
         b'',
-        msg.map_int32_all_types[1].optional_nested_message.SerializeToString())
+        msg.map_int32_all_types[1].optional_nested_message.SerializeToString(),
+    )
 
   def testUnknownFieldsInExtension(self):
     msg = message_set_extensions_pb2.TestMessageSet()
@@ -169,15 +179,15 @@ class UnknownFieldsAccessorsTest(unittest.TestCase):
 
   def CheckUnknownField(self, name, unknown_field_set, expected_value):
     field_descriptor = self.descriptor.fields_by_name[name]
-    expected_type = type_checkers.FIELD_TYPE_TO_WIRE_TYPE[
-        field_descriptor.type]
+    expected_type = type_checkers.FIELD_TYPE_TO_WIRE_TYPE[field_descriptor.type]
     for unknown_field in unknown_field_set:
       if unknown_field.field_number == field_descriptor.number:
         self.assertEqual(expected_type, unknown_field.wire_type)
         if expected_type == 3:
           # Check group
-          self.assertEqual(expected_value[0],
-                           unknown_field.data[0].field_number)
+          self.assertEqual(
+              expected_value[0], unknown_field.data[0].field_number
+          )
           self.assertEqual(expected_value[1], unknown_field.data[0].wire_type)
           self.assertEqual(expected_value[2], unknown_field.data[0].data)
           continue
@@ -191,39 +201,43 @@ class UnknownFieldsAccessorsTest(unittest.TestCase):
   def testCheckUnknownFieldValue(self):
     unknown_field_set = unknown_fields.UnknownFieldSet(self.empty_message)
     # Test enum.
-    self.CheckUnknownField('optional_nested_enum',
-                           unknown_field_set,
-                           self.all_fields.optional_nested_enum)
+    self.CheckUnknownField(
+        'optional_nested_enum',
+        unknown_field_set,
+        self.all_fields.optional_nested_enum,
+    )
 
     # Test repeated enum.
-    self.CheckUnknownField('repeated_nested_enum',
-                           unknown_field_set,
-                           self.all_fields.repeated_nested_enum)
+    self.CheckUnknownField(
+        'repeated_nested_enum',
+        unknown_field_set,
+        self.all_fields.repeated_nested_enum,
+    )
 
     # Test varint.
-    self.CheckUnknownField('optional_int32',
-                           unknown_field_set,
-                           self.all_fields.optional_int32)
+    self.CheckUnknownField(
+        'optional_int32', unknown_field_set, self.all_fields.optional_int32
+    )
 
     # Test fixed32.
-    self.CheckUnknownField('optional_fixed32',
-                           unknown_field_set,
-                           self.all_fields.optional_fixed32)
+    self.CheckUnknownField(
+        'optional_fixed32', unknown_field_set, self.all_fields.optional_fixed32
+    )
 
     # Test fixed64.
-    self.CheckUnknownField('optional_fixed64',
-                           unknown_field_set,
-                           self.all_fields.optional_fixed64)
+    self.CheckUnknownField(
+        'optional_fixed64', unknown_field_set, self.all_fields.optional_fixed64
+    )
 
     # Test length delimited.
-    self.CheckUnknownField('optional_string',
-                           unknown_field_set,
-                           self.all_fields.optional_string.encode('utf-8'))
+    self.CheckUnknownField(
+        'optional_string',
+        unknown_field_set,
+        self.all_fields.optional_string.encode('utf-8'),
+    )
 
     # Test group.
-    self.CheckUnknownField('optionalgroup',
-                           unknown_field_set,
-                           (17, 0, 117))
+    self.CheckUnknownField('optionalgroup', unknown_field_set, (17, 0, 117))
 
     self.assertEqual(99, len(unknown_field_set))
 
@@ -265,8 +279,10 @@ class UnknownFieldsAccessorsTest(unittest.TestCase):
     self.assertEqual(self.empty_message.SerializeToString(), b'')
     self.assertEqual(len(unknown_field_set), 99)
 
-  @unittest.skipIf((sys.version_info.major, sys.version_info.minor) < (3, 4),
-                   'tracemalloc requires python 3.4+')
+  @unittest.skipIf(
+      (sys.version_info.major, sys.version_info.minor) < (3, 4),
+      'tracemalloc requires python 3.4+',
+  )
   def testUnknownFieldsNoMemoryLeak(self):
     # Call to UnknownFields must not leak memory
     nb_leaks = 1234
@@ -300,14 +316,17 @@ class UnknownFieldsAccessorsTest(unittest.TestCase):
     message.optional_uint32 = 456
     nested_message = unittest_pb2.NestedTestAllTypes()
     nested_message.payload.optional_nested_message.ParseFromString(
-        message.SerializeToString())
+        message.SerializeToString()
+    )
     unknown_field_set = unknown_fields.UnknownFieldSet(
-        nested_message.payload.optional_nested_message)
+        nested_message.payload.optional_nested_message
+    )
     self.assertEqual(unknown_field_set[0].data, 456)
     nested_message.ClearField('payload')
     self.assertEqual(unknown_field_set[0].data, 456)
     unknown_field_set = unknown_fields.UnknownFieldSet(
-        nested_message.payload.optional_nested_message)
+        nested_message.payload.optional_nested_message
+    )
     self.assertEqual(0, len(unknown_field_set))
 
   def testUnknownField(self):
@@ -335,15 +354,16 @@ class UnknownEnumValuesTest(unittest.TestCase):
     self.message = missing_enum_values_pb2.TestEnumValues()
     # TestEnumValues.ZERO = 0, but does not exist in the other NestedEnum.
     self.message.optional_nested_enum = (
-        missing_enum_values_pb2.TestEnumValues.ZERO)
+        missing_enum_values_pb2.TestEnumValues.ZERO
+    )
     self.message.repeated_nested_enum.extend([
         missing_enum_values_pb2.TestEnumValues.ZERO,
         missing_enum_values_pb2.TestEnumValues.ONE,
-        ])
+    ])
     self.message.packed_nested_enum.extend([
         missing_enum_values_pb2.TestEnumValues.ZERO,
         missing_enum_values_pb2.TestEnumValues.ONE,
-        ])
+    ])
     self.message_data = self.message.SerializeToString()
     self.missing_message = missing_enum_values_pb2.TestMissingEnumValues()
     self.missing_message.ParseFromString(self.message_data)
@@ -401,12 +421,15 @@ class UnknownEnumValuesTest(unittest.TestCase):
   def testCheckUnknownFieldValueForEnum(self):
     unknown_field_set = unknown_fields.UnknownFieldSet(self.missing_message)
     self.assertEqual(len(unknown_field_set), 5)
-    self.CheckUnknownField('optional_nested_enum',
-                           self.message.optional_nested_enum)
-    self.CheckUnknownField('repeated_nested_enum',
-                           self.message.repeated_nested_enum)
-    self.CheckUnknownField('packed_nested_enum',
-                           self.message.packed_nested_enum)
+    self.CheckUnknownField(
+        'optional_nested_enum', self.message.optional_nested_enum
+    )
+    self.CheckUnknownField(
+        'repeated_nested_enum', self.message.repeated_nested_enum
+    )
+    self.CheckUnknownField(
+        'packed_nested_enum', self.message.packed_nested_enum
+    )
 
   def testRoundTrip(self):
     new_message = missing_enum_values_pb2.TestEnumValues()

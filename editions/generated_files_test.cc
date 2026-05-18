@@ -16,6 +16,7 @@
 #include "google/protobuf/internal_feature_helper.h"
 #include "google/protobuf/test_textproto.h"
 
+
 // These tests provide some basic minimal coverage that protos work as expected.
 // Full coverage will come as we migrate test protos to editions.
 
@@ -29,6 +30,7 @@ using ::protobuf_test_messages::editions::proto2::TestAllRequiredTypesProto2;
 using ::protobuf_test_messages::editions::proto2::TestAllTypesProto2;
 using ::protobuf_test_messages::editions::proto3::TestAllTypesProto3;
 using ::testing::NotNull;
+
 
 TEST(Generated, Parsing) {
   TestAllTypesProto2 message = ParseTextOrDie(R"pb(
@@ -150,6 +152,7 @@ TEST(Generated, EditionDefaults2023InternalFeatures) {
                 json_format: ALLOW
                 enforce_naming_style: STYLE_LEGACY
                 default_symbol_visibility: EXPORT_ALL
+                enforce_proto_limits: LEGACY_NO_EXPLICIT_LIMITS
                 [pb.cpp] {
                   legacy_closed_enum: false
                   string_type: STRING
@@ -184,6 +187,7 @@ TEST(Generated, EditionDefaults2024InternalFeatures) {
                 json_format: ALLOW
                 enforce_naming_style: STYLE2024
                 default_symbol_visibility: EXPORT_TOP_LEVEL
+                enforce_proto_limits: LEGACY_NO_EXPLICIT_LIMITS
                 [pb.cpp] {
                   legacy_closed_enum: false
                   string_type: VIEW
@@ -192,6 +196,7 @@ TEST(Generated, EditionDefaults2024InternalFeatures) {
                 }
               )pb"));
 }
+
 
 }  // namespace
 }  // namespace protobuf

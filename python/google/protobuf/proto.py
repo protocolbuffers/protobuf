@@ -4,7 +4,6 @@
 # Use of this source code is governed by a BSD-style
 # license that can be found in the LICENSE file or at
 # https://developers.google.com/open-source/licenses/bsd
-
 """Contains the Nextgen Pythonic protobuf APIs."""
 
 import io
@@ -22,8 +21,8 @@ def serialize(message: _MESSAGE, deterministic: bool = None) -> bytes:
 
   Args:
     message: The proto message to be serialized.
-    deterministic: If true, requests deterministic serialization
-        of the protobuf, with predictable ordering of map keys.
+    deterministic: If true, requests deterministic serialization of the
+      protobuf, with predictable ordering of map keys.
 
   Returns:
     A binary bytes representation of the message.
