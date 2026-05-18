@@ -31,6 +31,18 @@ impl<T: EntityType<Tag = entity_tag::MessageTag>> MessageTypeHelper<entity_tag::
 pub trait MessageType {}
 impl<T> MessageType for T where T: EntityType + MessageTypeHelper<T::Tag> {}
 
+/// Provides compile-time access to a generated message's protobuf full name.
+///
+/// This exists for generic code that needs to name message types without going
+/// through runtime reflection or descriptor APIs.
+///
+/// Bring `protobuf::MessageFullName` into scope to use `MyMessage::FULL_NAME`.
+/// Without the trait in scope, use `<MyMessage as protobuf::MessageFullName>::FULL_NAME`.
+pub trait MessageFullName: MessageType {
+    /// The protobuf full name for the generated message type.
+    const FULL_NAME: &'static str;
+}
+
 /// A trait that all generated owned message types implement.
 pub trait Message: SealedInternal
   + EntityType<Tag = entity_tag::MessageTag>
