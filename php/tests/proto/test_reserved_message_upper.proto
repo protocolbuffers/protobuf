@@ -2,10 +2,13 @@ syntax = "proto3";
 
 package upper;
 
+// BEGIN RESERVED NAMES
+// @see php/update_reserved.sh - DO NOT MODIFY THIS LIST MANUALLY
 message ABSTRACT {}
 message AND {}
 message ARRAY {}
 message AS {}
+message BOOL {}
 message BREAK {}
 message CALLABLE {}
 message CASE {}
@@ -31,8 +34,10 @@ message ENDWHILE {}
 message EVAL {}
 message EXIT {}
 message EXTENDS {}
+message FALSE {}
 message FINAL {}
 message FINALLY {}
+message FLOAT {}
 message FN {}
 message FOR {}
 message FOREACH {}
@@ -45,12 +50,18 @@ message INCLUDE {}
 message INCLUDE_ONCE {}
 message INSTANCEOF {}
 message INSTEADOF {}
+message INT {}
 message INTERFACE {}
 message ISSET {}
+message ITERABLE {}
 message LIST {}
 message MATCH {}
+message MIXED {}
 message NAMESPACE {}
+message NEVER {}
 message NEW {}
+message NULL {}
+message OBJECT {}
 message OR {}
 message PARENT {}
 message PRINT {}
@@ -63,25 +74,17 @@ message REQUIRE_ONCE {}
 message RETURN {}
 message SELF {}
 message STATIC {}
+message STRING {}
 message SWITCH {}
 message THROW {}
 message TRAIT {}
+message TRUE {}
 message TRY {}
 message UNSET {}
 message USE {}
 message VAR {}
+message VOID {}
 message WHILE {}
 message XOR {}
 message YIELD {}
-message INT {}
-message FLOAT {}
-message BOOL {}
-message STRING {}
-message TRUE {}
-message FALSE {}
-message NULL {}
-message VOID {}
-message ITERABLE {}
-message OBJECT {}
-message MIXED {}
-message NEVER {}
+// END RESERVED NAMES
