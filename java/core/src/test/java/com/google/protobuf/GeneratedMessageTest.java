@@ -216,6 +216,31 @@ public class GeneratedMessageTest {
   }
 
   @Test
+  public void testCve20223171RegressionDoesNotUseUnsafePre22Gencode() throws Exception {
+    String original = System.getProperty(GeneratedMessage.PRE22_GENCODE_ERROR_PROPERTY);
+    System.setProperty(GeneratedMessage.PRE22_GENCODE_ERROR_PROPERTY, "true");
+    try {
+      ByteString payload =
+          TestAllTypes.newBuilder()
+              .setOptionalString("root")
+              .addRepeatedInt32(1)
+              .setOptionalNestedMessage(NestedMessage.newBuilder().setBb(1).build())
+              .build()
+              .toByteString();
+      TestAllTypes parsed = TestAllTypes.parseFrom(payload);
+      assertThat(parsed.getOptionalString()).isEqualTo("root");
+      assertThat(parsed.getRepeatedInt32Count()).isEqualTo(1);
+      assertThat(parsed.hasOptionalNestedMessage()).isTrue();
+    } finally {
+      if (original == null) {
+        System.clearProperty(GeneratedMessage.PRE22_GENCODE_ERROR_PROPERTY);
+      } else {
+        System.setProperty(GeneratedMessage.PRE22_GENCODE_ERROR_PROPERTY, original);
+      }
+    }
+  }
+
+  @Test
   public void testGetExtensionFieldOutOfBound() {
     TestAllExtensions.Builder builder = TestAllExtensions.newBuilder();
 
