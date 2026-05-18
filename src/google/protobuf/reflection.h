@@ -10,8 +10,12 @@
 #ifndef GOOGLE_PROTOBUF_REFLECTION_H__
 #define GOOGLE_PROTOBUF_REFLECTION_H__
 
+#include <cassert>
 #include <cstddef>
+#include <cstdint>
+#include <iterator>
 #include <memory>
+#include <string>
 #include <type_traits>
 
 #include "absl/types/span.h"
