@@ -77,6 +77,29 @@ class ProtoTest(unittest.TestCase):
         str(context.exception),
     )
 
+  def test_serialize_length_prefixed_serializes_once(self, message_module):
+    del message_module
+
+    class CountingMessage:
+
+      def __init__(self):
+        self.serialize_count = 0
+
+      def SerializeToString(self, deterministic=None):
+        self.serialize_count += 1
+        return b'abc'
+
+      def ByteSize(self):
+        raise AssertionError('serialize_length_prefixed should not call ByteSize')
+
+    msg = CountingMessage()
+    out = io.BytesIO()
+
+    proto.serialize_length_prefixed(msg, out)
+
+    self.assertEqual(b'\x03abc', out.getvalue())
+    self.assertEqual(1, msg.serialize_count)
+
   def test_byte_size(self, message_module):
     msg = message_module.TestAllTypes()
     self.assertEqual(0, proto.byte_size(msg))
