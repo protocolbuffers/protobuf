@@ -66,8 +66,7 @@ const char* const kReservedNames[] = {
     "require",      "require_once", "return",       "self",         "static",
     "string",       "switch",       "throw",        "trait",        "true",
     "try",          "unset",        "use",          "var",          "void",
-    "while",        "xor",          "yield",
-    NULL};
+    "while",        "xor",          "yield",        NULL};
 // END RESERVED NAMES
 
 const char* const kPreviouslyUnreservedNames[] = {"readonly", NULL};

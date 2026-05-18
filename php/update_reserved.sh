@@ -121,10 +121,14 @@ generate_names_c() {
     local lines=()
     lines+=("// @see php/update_reserved.sh - DO NOT MODIFY THIS LIST MANUALLY")
     lines+=("const char* const kReservedNames[] = {")
-    readarray -t col_lines < <(format_columns 5 "    " "${RESERVED_WORDS[@]}")
+    local decorated=()
+    for w in "${RESERVED_WORDS[@]}"; do
+        decorated+=("\"$w\"")
+    done
+    decorated+=("NULL")
+    readarray -t col_lines < <(ITEM_FMT="%s" format_columns 5 "    " "${decorated[@]}")
     for l in "${col_lines[@]}"; do lines+=("$l"); done
-    lines[${#lines[@]}-1]+=","
-    lines+=("    NULL};")
+    lines[${#lines[@]}-1]+="};"
     printf "%s\n" "${lines[@]}"
 }
 

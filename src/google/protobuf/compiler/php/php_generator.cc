@@ -38,10 +38,10 @@ constexpr absl::string_view kDescriptorMetadataFile =
     "GPBMetadata/Google/Protobuf/Internal/Descriptor.php";
 constexpr absl::string_view kDescriptorPackageName =
     "Google\\Protobuf\\Internal";
-# This is for backwards compatibility. New values added to kReservedNames in names.c
-# should be added here to prevent unnecessary breaking changes, as constants do not
-# need the PB prefix.
-# @TODO: allow ALL names for constants except for "class"
+// This is for backwards compatibility. New values added to kReservedNames in names.c
+// should be added here to prevent unnecessary breaking changes, as constants do not
+// need the PB prefix.
+// @TODO: allow ALL names for constants except for "class"
 // BEGIN VALID CONSTANT NAMES
 // @see php/update_reserved.sh - DO NOT MODIFY THIS LIST MANUALLY
 constexpr absl::string_view kValidConstantNames[] = {
