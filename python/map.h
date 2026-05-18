@@ -8,10 +8,11 @@
 #ifndef PYUPB_MAP_H__
 #define PYUPB_MAP_H__
 
+#include "python/python_api.h"
+
 #include <stdbool.h>
 
 #include "python/protobuf.h"
-#include "python/python_api.h"
 #include "upb/reflection/def.h"
 
 // Creates a new repeated field stub for field `f` of message object `parent`.

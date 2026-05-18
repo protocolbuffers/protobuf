@@ -2,7 +2,12 @@
 
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
+# Bazel 9+ removed cc_library and cc_import from builtins.
+# These loads are needed to explicitly load them from @rules_cc.
+# This file is currently used for Python 3.10 only.
 limited_api_build_file = """
+load("@rules_cc//cc:defs.bzl", "cc_library")
+
 cc_library(
     name = "python_headers",
     hdrs = glob(["**/Include/**/*.h"]),
@@ -32,7 +37,12 @@ def python_source_archive(version, sha256):
         ],
     )
 
+# Bazel 9+ removed cc_library and cc_import from builtins.
+# These loads are needed to explicitly load them from @rules_cc.
+# This file is currently used for Python 3.10 only.
 nuget_build_file = """
+load("@rules_cc//cc:defs.bzl", "cc_import")
+
 cc_import(
     name = "python_full_api",
     hdrs = glob(["**/*.h"]),

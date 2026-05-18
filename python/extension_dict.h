@@ -8,9 +8,9 @@
 #ifndef PYUPB_EXTENSION_DICT_H__
 #define PYUPB_EXTENSION_DICT_H__
 
-#include <stdbool.h>
-
 #include "python/python_api.h"
+
+#include <stdbool.h>
 
 PyObject* PyUpb_ExtensionDict_New(PyObject* msg);
 

@@ -20,9 +20,9 @@
 // those functions directly inside these vtables, greatly reducing the amount of
 // "adaptor" code we need to write.
 
-#include <stdbool.h>
-
 #include "protobuf.h"
+
+#include <stdbool.h>
 #include "upb/reflection/def.h"
 
 // -----------------------------------------------------------------------------

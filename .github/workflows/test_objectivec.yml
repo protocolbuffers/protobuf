@@ -70,7 +70,7 @@ jobs:
           CODE_SIGN_IDENTITY: "-"
         with:
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
-          bazel-version: 8.0.1
+          bazel-version: 9.0.0
           command: |
             xcodebuild \
                 -project "objectivec/${{ matrix.xc_project }}" \
@@ -113,7 +113,7 @@ jobs:
         if: ${{ !matrix.continuous-only || inputs.continuous-run }}
         uses: protocolbuffers/protobuf-ci/bazel@v5
         with:
-          version: 8.0.1 # Bazel version
+          version: 9.0.0 # Bazel version
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-cache: cocoapods/${{ matrix.XCODE }}
           bash: |
@@ -161,7 +161,7 @@ jobs:
         if: ${{ !matrix.config.continuous-only || inputs.continuous-run }}
         uses: protocolbuffers/protobuf-ci/bazel@v5
         with:
-          version: 8.0.1 # Bazel version
+          version: 9.0.0 # Bazel version
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel: ${{ matrix.config.bazel_action }} ${{ matrix.config.flags }} ${{ matrix.bazel_targets }}
           bazel-cache: objc_${{ matrix.platform }}_${{ matrix.config.name }}

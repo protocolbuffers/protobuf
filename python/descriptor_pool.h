@@ -8,9 +8,9 @@
 #ifndef PYUPB_DESCRIPTOR_POOL_H__
 #define PYUPB_DESCRIPTOR_POOL_H__
 
-#include <stdbool.h>
-
 #include "protobuf.h"
+
+#include <stdbool.h>
 
 // Returns a Python wrapper object for the given symtab. The symtab must have
 // been created from a Python DescriptorPool originally.

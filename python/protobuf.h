@@ -8,11 +8,12 @@
 #ifndef PYUPB_PROTOBUF_H__
 #define PYUPB_PROTOBUF_H__
 
+#include "python/python_api.h"
+
 #include <assert.h>
 #include <stdbool.h>
 
 #include "python/descriptor.h"
-#include "python/python_api.h"
 #include "upb/hash/int_table.h"
 #include "upb/reflection/def.h"
 

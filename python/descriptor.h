@@ -8,9 +8,9 @@
 #ifndef PYUPB_DESCRIPTOR_H__
 #define PYUPB_DESCRIPTOR_H__
 
-#include <stdbool.h>
-
 #include "python/python_api.h"
+
+#include <stdbool.h>
 #include "upb/reflection/def.h"
 
 typedef enum {

@@ -8,9 +8,9 @@
 #ifndef PYUPB_UNKNOWN_FIELDS_H__
 #define PYUPB_UNKNOWN_FIELDS_H__
 
-#include <stdbool.h>
-
 #include "python/python_api.h"
+
+#include <stdbool.h>
 
 PyObject* PyUpb_UnknownFields_New(PyObject* msg);
 
