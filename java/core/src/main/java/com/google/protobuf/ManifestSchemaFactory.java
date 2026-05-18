@@ -14,7 +14,7 @@ import static com.google.protobuf.Internal.checkNotNull;
  */
 @CheckReturnValue
 @ExperimentalApi
-final class ManifestSchemaFactory implements SchemaFactory {
+final class ManifestSchemaFactory {
 
   private final MessageInfoFactory messageInfoFactory;
 
@@ -26,7 +26,6 @@ final class ManifestSchemaFactory implements SchemaFactory {
     this.messageInfoFactory = checkNotNull(messageInfoFactory, "messageInfoFactory");
   }
 
-  @Override
   public <T> Schema<T> createSchema(Class<T> messageType) {
     SchemaUtil.requireGeneratedMessage(messageType);
 
