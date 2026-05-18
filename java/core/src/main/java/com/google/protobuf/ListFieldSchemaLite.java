@@ -43,7 +43,14 @@ final class ListFieldSchemaLite implements ListFieldSchema {
     int otherSize = other.size();
     if (size > 0 && otherSize > 0) {
       if (!mine.isModifiable()) {
-        mine = mine.mutableCopyWithCapacity(size + otherSize);
+        // Use Math.addExact so an attacker who can drive `size` and `otherSize`
+        // close to Integer.MAX_VALUE/2 each (via parsed messages with very large
+        // repeated fields on a high-heap JVM) cannot wrap the new capacity to a
+        // negative int and reach mutableCopyWithCapacity / Arrays.copyOf with a
+        // negative argument. Mirrors the C++ hardening in commit cb5fe97
+        // (RepeatedPtrFieldBase::MergeFromConcreteMessage uses
+        // internal::CheckedAdd) and the further sweep in PR #26781.
+        mine = mine.mutableCopyWithCapacity(Math.addExact(size, otherSize));
       }
       mine.addAll(other);
     }
