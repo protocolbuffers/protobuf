@@ -134,6 +134,7 @@ cc_test(
         "//upb/message",
         "//upb/message:message_cc",
         "//upb/mini_descriptor",
+        "//upb/mini_descriptor:internal",
         "//upb/mini_table",
         "//upb/port",
         "//upb/wire/decode_fast:combinations",
