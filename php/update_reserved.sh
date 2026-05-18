@@ -99,10 +99,16 @@ update_file() {
     
     # Extract indentation of the first line of content
     local indent=$(echo "$new_content" | head -n 1 | grep -o '^[[:space:]]*')
+
+    local temp_file=$(mktemp)
     
-    # Use perl to replace the block, preserving indentation of markers
+    # Use perl to replace the block, writing to a temporary file
     BEGIN_MARKER="$begin" END_MARKER="$end" NEW_CONTENT="$new_content" INDENT="$indent" \
-    perl -0777 -i -pe 's{^[ \t]*\Q$ENV{BEGIN_MARKER}\E.*?^[ \t]*\Q$ENV{END_MARKER}\E}{$ENV{INDENT}$ENV{BEGIN_MARKER}\n$ENV{NEW_CONTENT}\n$ENV{INDENT}$ENV{END_MARKER}}sm' "$full_path"
+    perl -0777 -pe 's{^[ \t]*\Q$ENV{BEGIN_MARKER}\E.*?^[ \t]*\Q$ENV{END_MARKER}\E}{$ENV{INDENT}$ENV{BEGIN_MARKER}\n$ENV{NEW_CONTENT}\n$ENV{INDENT}$ENV{END_MARKER}}sm' "$full_path" > "$temp_file"
+    
+    # Move the temporary file to the original file's path
+    mv "$temp_file" "$full_path"
+    
     echo "Updated $path"
 }
 
@@ -110,7 +116,10 @@ generate_names_cc() {
     local lines=()
     lines+=("// @see php/update_reserved.sh - DO NOT MODIFY THIS LIST MANUALLY")
     lines+=("const char* const kReservedNames[] = {")
-    readarray -t col_lines < <(format_columns 5 "    " "${RESERVED_WORDS[@]}")
+    local col_lines=()
+    while IFS= read -r line; do
+        col_lines+=("$line")
+    done < <(format_columns 5 "    " "${RESERVED_WORDS[@]}")
     for l in "${col_lines[@]}"; do lines+=("$l"); done
     lines[${#lines[@]}-1]+="};"
     lines+=("const int kReservedNamesSize = ${#RESERVED_WORDS[@]};")
@@ -126,7 +135,10 @@ generate_names_c() {
         decorated+=("\"$w\"")
     done
     decorated+=("NULL")
-    readarray -t col_lines < <(ITEM_FMT="%s" format_columns 5 "    " "${decorated[@]}")
+    local col_lines=()
+    while IFS= read -r line; do
+        col_lines+=("$line")
+    done < <(ITEM_FMT="%s" format_columns 5 "    " "${decorated[@]}")
     for l in "${col_lines[@]}"; do lines+=("$l"); done
     lines[${#lines[@]}-1]+="};"
     printf "%s\n" "${lines[@]}"
@@ -136,7 +148,10 @@ generate_php_generator_cc() {
     local lines=()
     lines+=("// @see php/update_reserved.sh - DO NOT MODIFY THIS LIST MANUALLY")
     lines+=("constexpr absl::string_view kValidConstantNames[] = {")
-    readarray -t col_lines < <(format_columns 6 "    " "${VALID_CONSTANT_NAMES[@]}")
+    local col_lines=()
+    while IFS= read -r line; do
+        col_lines+=("$line")
+    done < <(format_columns 6 "    " "${VALID_CONSTANT_NAMES[@]}")
     for l in "${col_lines[@]}"; do lines+=("$l"); done
     lines[${#lines[@]}-1]+="};"
     lines+=("const int kValidConstantNamesSize = ${#VALID_CONSTANT_NAMES[@]};")
@@ -148,7 +163,7 @@ generate_proto_messages() {
     echo "// @see php/update_reserved.sh - DO NOT MODIFY THIS LIST MANUALLY"
     for w in "${RESERVED_WORDS[@]}"; do
         local name="$w"
-        if [[ "$upper" == "true" ]]; then name="${w^^}"; fi
+        if [[ "$upper" == "true" ]]; then name=$(echo "$w" | tr '[:lower:]' '[:upper:]'); fi
         echo "message $name {}"
     done
 }
@@ -159,7 +174,7 @@ generate_proto_enums() {
     local i=1
     for w in "${RESERVED_WORDS[@]}"; do
         local name="$w"
-        if [[ "$upper" == "true" ]]; then name="${w^^}"; fi
+        if [[ "$upper" == "true" ]]; then name=$(echo "$w" | tr '[:lower:]' '[:upper:]'); fi
         echo "enum $name { ZERO$i = 0; }"
         i=$((i + 1))
     done
@@ -171,7 +186,7 @@ generate_proto_enum_values() {
     local i=0
     for w in "${RESERVED_WORDS[@]}"; do
         local name="$w"
-        if [[ "$upper" == "true" ]]; then name="${w^^}"; fi
+        if [[ "$upper" == "true" ]]; then name=$(echo "$w" | tr '[:lower:]' '[:upper:]'); fi
         echo "  $name = $i;"
         i=$((i + 1))
     done
@@ -186,7 +201,7 @@ generate_test_cases() {
     echo ""
     # Upper messages
     for w in "${RESERVED_WORDS[@]}"; do
-        local upper="${w^^}"
+        local upper=$(echo "$w" | tr '[:lower:]' '[:upper:]')
         echo "        \$m = new \\Upper\\PB$upper();"
     done
     echo ""
@@ -197,7 +212,7 @@ generate_test_cases() {
     echo ""
     # Upper enums
     for w in "${RESERVED_WORDS[@]}"; do
-        local upper="${w^^}"
+        local upper=$(echo "$w" | tr '[:lower:]' '[:upper:]')
         echo "        \$m = new \\Upper_enum\\PB$upper();"
     done
     echo ""
@@ -216,7 +231,7 @@ generate_test_cases() {
         for v in "${VALID_CONSTANT_NAMES[@]}"; do
             if [[ "$w" == "$v" ]]; then prefix=""; break; fi
         done
-        local upper="${w^^}"
+        local upper=$(echo "$w" | tr '[:lower:]' '[:upper:]')
         echo "        \$m = \\Upper_enum_value\\NotAllowed::${prefix}${upper};"
     done
 }
