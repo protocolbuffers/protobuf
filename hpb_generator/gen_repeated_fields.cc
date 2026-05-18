@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "google/protobuf/descriptor.pb.h"
+#include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
 #include "hpb_generator/context.h"
 #include "hpb_generator/gen_accessors.h"
@@ -19,6 +20,7 @@
 #include "hpb_generator/gen_utils.h"
 #include "hpb_generator/names.h"
 #include "google/protobuf/descriptor.h"
+#include "google/protobuf/io/printer.h"
 #include "upb_generator/c/names.h"
 #include "upb_generator/common.h"
 #include "upb_generator/file_layout.h"
@@ -26,6 +28,8 @@
 namespace google {
 namespace protobuf {
 namespace hpb_generator {
+
+using Sub = ::google::protobuf::io::Printer::Sub;
 
 // Adds using accessors to reuse base Access class members from a Proxy/CProxy.
 void WriteRepeatedFieldUsingAccessors(const google::protobuf::FieldDescriptor* field,
@@ -73,10 +77,11 @@ void WriteRepeatedFieldsInMessageHeader(const google::protobuf::Descriptor* desc
                                         Context& ctx) {
   ctx.Emit(
       {{"upb_msg_name", upb::generator::CApiMessageType(desc->full_name())},
-       {"field_name", resolved_field_name},
+       Sub("field_name_size", absl::StrCat(resolved_field_name, "_size"))
+           .AnnotatedAs({field, io::AnnotationCollector::kNone}),
        {"upbc_name", resolved_upbc_name}},
       R"cc(
-        inline size_t $field_name$_size() const {
+        inline size_t $field_name_size$() const {
           size_t len;
           $upb_msg_name$_$upbc_name$(msg_, &len);
           return len;
@@ -87,44 +92,87 @@ void WriteRepeatedFieldsInMessageHeader(const google::protobuf::Descriptor* desc
     ctx.Emit(
         {{"mut_ptr_type", MessagePtrConstType(field, /* const */ false)},
          {"const_ptr_type", MessagePtrConstType(field, /* const */ true)},
-         {"field_name", resolved_field_name},
+         Sub("field_name_const", resolved_field_name)
+             .AnnotatedAs({field, io::AnnotationCollector::kNone}),
+         Sub("field_name_cproxy", resolved_field_name)
+             .AnnotatedAs({field, io::AnnotationCollector::kNone}),
+         Sub("mutable_field_name",
+             absl::StrCat("mutable_", resolved_field_name))
+             .AnnotatedAs({field, io::AnnotationCollector::kAlias}),
+         Sub("add_field_name", absl::StrCat("add_", resolved_field_name))
+             .AnnotatedAs({field, io::AnnotationCollector::kSet}),
+         Sub("add_alias_field_name",
+             absl::StrCat("add_alias_", resolved_field_name))
+             .AnnotatedAs({field, io::AnnotationCollector::kSet}),
+         Sub("mutable_field_name_idx",
+             absl::StrCat("mutable_", resolved_field_name))
+             .AnnotatedAs({field, io::AnnotationCollector::kAlias}),
          {"upbc_name", resolved_upbc_name},
          {"msg_base_type", MessageBaseType(field, /* maybe_const */ false)}},
         R"cc(
-          $const_ptr_type$ $field_name$(size_t index) const;
-          const ::hpb::RepeatedField<const $msg_base_type$>::CProxy $field_name$() const;
-          ::hpb::Ptr<::hpb::RepeatedField<$msg_base_type$>> mutable_$field_name$();
-          absl::StatusOr<$mut_ptr_type$> add_$field_name$();
+          $const_ptr_type$ $field_name_const$(size_t index) const;
+          const ::hpb::RepeatedField<const $msg_base_type$>::CProxy
+          $field_name_cproxy$() const;
+          ::hpb::Ptr<::hpb::RepeatedField<$msg_base_type$>> $mutable_field_name$();
+          absl::StatusOr<$mut_ptr_type$> $add_field_name$();
           /**
            * Re-points submsg of repeated field to given target.
            *
            * REQUIRES: both messages must be in the same arena.
            */
-          bool add_alias_$field_name$($mut_ptr_type$ target);
-          $mut_ptr_type$ mutable_$field_name$(size_t index) const;
+          bool $add_alias_field_name$($mut_ptr_type$ target);
+          $mut_ptr_type$ $mutable_field_name_idx$(size_t index) const;
         )cc");
   } else if (field->cpp_type() == google::protobuf::FieldDescriptor::CPPTYPE_STRING) {
-    ctx.Emit({{"cpp_const_type", CppConstType(field)},
-              {"field_name", resolved_field_name}},
-             R"cc(
-               $cpp_const_type$ $field_name$(size_t index) const;
-               const ::hpb::RepeatedField<$cpp_const_type$>::CProxy $field_name$() const;
-               ::hpb::Ptr<::hpb::RepeatedField<$cpp_const_type$>> mutable_$field_name$();
-               bool add_$field_name$($cpp_const_type$ val);
-               void set_$field_name$(size_t index, $cpp_const_type$ val);
-               bool resize_$field_name$(size_t len);
-             )cc");
+    ctx.Emit(
+        {{"cpp_const_type", CppConstType(field)},
+         Sub("field_name_const", resolved_field_name)
+             .AnnotatedAs({field, io::AnnotationCollector::kNone}),
+         Sub("field_name_cproxy", resolved_field_name)
+             .AnnotatedAs({field, io::AnnotationCollector::kNone}),
+         Sub("mutable_field_name",
+             absl::StrCat("mutable_", resolved_field_name))
+             .AnnotatedAs({field, io::AnnotationCollector::kAlias}),
+         Sub("add_field_name", absl::StrCat("add_", resolved_field_name))
+             .AnnotatedAs({field, io::AnnotationCollector::kSet}),
+         Sub("set_field_name", absl::StrCat("set_", resolved_field_name))
+             .AnnotatedAs({field, io::AnnotationCollector::kSet}),
+         Sub("resize_field_name", absl::StrCat("resize_", resolved_field_name))
+             .AnnotatedAs({field, io::AnnotationCollector::kNone})},
+        R"cc(
+          $cpp_const_type$ $field_name_const$(size_t index) const;
+          const ::hpb::RepeatedField<$cpp_const_type$>::CProxy
+          $field_name_cproxy$() const;
+          ::hpb::Ptr<::hpb::RepeatedField<$cpp_const_type$>> $mutable_field_name$();
+          bool $add_field_name$($cpp_const_type$ val);
+          void $set_field_name$(size_t index, $cpp_const_type$ val);
+          bool $resize_field_name$(size_t len);
+        )cc");
   } else {
-    ctx.Emit({{"cpp_const_type", CppConstType(field)},
-              {"field_name", resolved_field_name}},
-             R"cc(
-               $cpp_const_type$ $field_name$(size_t index) const;
-               const ::hpb::RepeatedField<$cpp_const_type$>::CProxy $field_name$() const;
-               ::hpb::Ptr<::hpb::RepeatedField<$cpp_const_type$>> mutable_$field_name$();
-               bool add_$field_name$($cpp_const_type$ val);
-               void set_$field_name$(size_t index, $cpp_const_type$ val);
-               bool resize_$field_name$(size_t len);
-             )cc");
+    ctx.Emit(
+        {{"cpp_const_type", CppConstType(field)},
+         Sub("field_name_const", resolved_field_name)
+             .AnnotatedAs({field, io::AnnotationCollector::kNone}),
+         Sub("field_name_cproxy", resolved_field_name)
+             .AnnotatedAs({field, io::AnnotationCollector::kNone}),
+         Sub("mutable_field_name",
+             absl::StrCat("mutable_", resolved_field_name))
+             .AnnotatedAs({field, io::AnnotationCollector::kAlias}),
+         Sub("add_field_name", absl::StrCat("add_", resolved_field_name))
+             .AnnotatedAs({field, io::AnnotationCollector::kSet}),
+         Sub("set_field_name", absl::StrCat("set_", resolved_field_name))
+             .AnnotatedAs({field, io::AnnotationCollector::kSet}),
+         Sub("resize_field_name", absl::StrCat("resize_", resolved_field_name))
+             .AnnotatedAs({field, io::AnnotationCollector::kNone})},
+        R"cc(
+          $cpp_const_type$ $field_name_const$(size_t index) const;
+          const ::hpb::RepeatedField<$cpp_const_type$>::CProxy
+          $field_name_cproxy$() const;
+          ::hpb::Ptr<::hpb::RepeatedField<$cpp_const_type$>> $mutable_field_name$();
+          bool $add_field_name$($cpp_const_type$ val);
+          void $set_field_name$(size_t index, $cpp_const_type$ val);
+          bool $resize_field_name$(size_t len);
+        )cc");
   }
 }
 

@@ -257,3 +257,24 @@ cc_test(
         "@googletest//:gtest_main",
     ],
 )
+
+cc_test(
+    name = "metadata_test",
+    srcs = ["metadata_test.cc"],
+    compatible_with = ["//buildenv/target:prod"],
+    deps = [
+        "//hpb_generator:generator",
+        "//hpb_generator:names",
+        "//net/proto2/compiler/public:command_line_interface",
+        "//src/google/protobuf",
+        "//src/google/protobuf/compiler:annotation_test_util",
+        "//src/google/protobuf/compiler:code_generator_lite",
+        "//src/google/protobuf/testing",
+        "//src/google/protobuf/testing:file",
+        "@abseil-cpp//absl/container:flat_hash_map",
+        "@abseil-cpp//absl/log:absl_check",
+        "@abseil-cpp//absl/strings",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
+    ],
+)
