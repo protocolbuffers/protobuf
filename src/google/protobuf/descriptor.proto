@@ -1395,6 +1395,22 @@ message SourceCodeInfo {
     //   [ 4, 3, 2, 7 ]
     // this path refers to the whole field declaration (from the beginning
     // of the label to the terminating semicolon).
+    //
+    // For options, the path refers to the interpreted option in the descriptor.
+    // E.g., for a custom option `my_opt` on a message:
+    //   [ 4, 3, 7, 10101 ]
+    // refers to:
+    //   file.message_type(3)     // 4, 3
+    //       .options()           // 7
+    //       .my_opt()            // 10101
+    //
+    // Sub-locations corresponding to the option's name and value are indicated
+    // by appending the field numbers of `UninterpretedOption` (field number 2
+    // for `name`, field numbers 3-7 for scalar values). E.g.:
+    //   [ 4, 3, 7, 10101, 2 ]
+    // refers to the option name `(my_opt)` in the source file, and:
+    //   [ 4, 3, 7, 10101, 7 ]
+    // refers to the string value of the option in the source file.
     repeated int32 path = 1 [packed = true];
 
     // Always has exactly three or four elements: start line, start column,

@@ -16251,6 +16251,20 @@ TEST_F(SourceLocationTest, InterpretedOptionSourceLocation) {
                                  "option java_package = \"com.foo.bar\";"));
 
     EXPECT_FALSE(file_desc->GetSourceLocation(unint, &loc));
+
+    SourceCodePath name_path = {FileDescriptorProto::kOptionsFieldNumber,
+                                FileOptions::kJavaPackageFieldNumber,
+                                UninterpretedOption::kNameFieldNumber};
+    EXPECT_TRUE(file_desc->GetSourceLocation(name_path, &loc));
+    EXPECT_THAT(loc,
+                MatchesSubstring(kSourceLocationTestInput, "java_package"));
+
+    SourceCodePath val_path = {FileDescriptorProto::kOptionsFieldNumber,
+                               FileOptions::kJavaPackageFieldNumber,
+                               UninterpretedOption::kStringValueFieldNumber};
+    EXPECT_TRUE(file_desc->GetSourceLocation(val_path, &loc));
+    EXPECT_THAT(loc,
+                MatchesSubstring(kSourceLocationTestInput, "\"com.foo.bar\""));
   }
   {
     SourceCodePath path = {FileDescriptorProto::kOptionsFieldNumber,
@@ -16262,6 +16276,19 @@ TEST_F(SourceLocationTest, InterpretedOptionSourceLocation) {
                                       "option (test_file_opt) = \"foobar\";"));
 
     EXPECT_FALSE(file_desc->GetSourceLocation(unint, &loc));
+
+    SourceCodePath name_path = {FileDescriptorProto::kOptionsFieldNumber,
+                                kCustomOptionFieldNumber,
+                                UninterpretedOption::kNameFieldNumber};
+    EXPECT_TRUE(file_desc->GetSourceLocation(name_path, &loc));
+    EXPECT_THAT(loc,
+                MatchesSubstring(kSourceLocationTestInput, "(test_file_opt)"));
+
+    SourceCodePath val_path = {FileDescriptorProto::kOptionsFieldNumber,
+                               kCustomOptionFieldNumber,
+                               UninterpretedOption::kStringValueFieldNumber};
+    EXPECT_TRUE(file_desc->GetSourceLocation(val_path, &loc));
+    EXPECT_THAT(loc, MatchesSubstring(kSourceLocationTestInput, "\"foobar\""));
   }
 
   // Message option
