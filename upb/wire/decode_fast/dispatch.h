@@ -42,7 +42,7 @@ UPB_INLINE uint32_t _upb_FastDecoder_LoadTag(const char* ptr) {
   return tag;
 }
 
-UPB_INLINE UPB_PRESERVE_NONE upb_FastDecoder_Return
+UPB_FORCEINLINE UPB_PRESERVE_NONE upb_FastDecoder_Return
 _upb_FastDecoder_TagDispatch(struct upb_Decoder* d, const char* ptr,
                              upb_Message* msg, const upb_MiniTable* table,
                              uint64_t hasbits, uint64_t data, uint64_t data2) {
