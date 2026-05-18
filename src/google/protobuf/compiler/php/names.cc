@@ -15,24 +15,28 @@
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
 
+// BEGIN RESERVED NAMES
+// @see php/update_reserved.sh - DO NOT MODIFY THIS LIST MANUALLY
 const char* const kReservedNames[] = {
-    "abstract",     "and",        "array",        "as",         "break",
-    "callable",     "case",       "catch",        "class",      "clone",
-    "const",        "continue",   "declare",      "default",    "die",
-    "do",           "echo",       "else",         "elseif",     "empty",
-    "enddeclare",   "endfor",     "endforeach",   "endif",      "endswitch",
-    "endwhile",     "eval",       "exit",         "extends",    "final",
-    "finally",      "fn",         "for",          "foreach",    "function",
-    "global",       "goto",       "if",           "implements", "include",
-    "include_once", "instanceof", "insteadof",    "interface",  "isset",
-    "list",         "match",      "namespace",    "new",        "or",
-    "parent",       "print",      "private",      "protected",  "public",
-    "readonly",     "require",    "require_once", "return",     "self",
-    "static",       "switch",     "throw",        "trait",      "try",
-    "unset",        "use",        "var",          "while",      "xor",
-    "yield",        "int",        "float",        "bool",       "string",
-    "true",         "false",      "null",         "void",       "iterable"};
-const int kReservedNamesSize = 80;
+    "abstract",     "and",          "array",        "as",           "bool",
+    "break",        "callable",     "case",         "catch",        "class",
+    "clone",        "const",        "continue",     "declare",      "default",
+    "die",          "do",           "echo",         "else",         "elseif",
+    "empty",        "enddeclare",   "endfor",       "endforeach",   "endif",
+    "endswitch",    "endwhile",     "eval",         "exit",         "extends",
+    "false",        "final",        "finally",      "float",        "fn",
+    "for",          "foreach",      "function",     "global",       "goto",
+    "if",           "implements",   "include",      "include_once", "instanceof",
+    "insteadof",    "int",          "interface",    "isset",        "iterable",
+    "list",         "match",        "mixed",        "namespace",    "never",
+    "new",          "null",         "object",       "or",           "parent",
+    "print",        "private",      "protected",    "public",       "readonly",
+    "require",      "require_once", "return",       "self",         "static",
+    "string",       "switch",       "throw",        "trait",        "true",
+    "try",          "unset",        "use",          "var",          "void",
+    "while",        "xor",          "yield"};
+const int kReservedNamesSize = 83;
+// END RESERVED NAMES
 
 namespace google {
 namespace protobuf {
