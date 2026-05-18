@@ -190,6 +190,10 @@ bool TimeUtil::FromString(absl::string_view value, Timestamp* timestamp) {
     return false;
   }
   *timestamp = CreateNormalizedTimestamp(seconds, nanos);
+  if (!IsTimestampValid(*timestamp)) {
+    timestamp->Clear();
+    return false;
+  }
   return true;
 }
 
@@ -264,6 +268,10 @@ bool TimeUtil::FromString(absl::string_view value, Duration* duration) {
   }
   duration->set_seconds(seconds);
   duration->set_nanos(static_cast<int32_t>(nanos));
+  if (!IsDurationValid(*duration)) {
+    duration->Clear();
+    return false;
+  }
   return true;
 }
 
