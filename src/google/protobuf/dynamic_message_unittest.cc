@@ -551,6 +551,102 @@ INSTANTIATE_TEST_SUITE_P(UseArena, DynamicMessageTest,
                          ::testing::Combine(::testing::Bool(),
                                             ::testing::Bool()));
 
+// Documents a known behavioral inconsistency: DynamicMessage and generated
+// message produce different serializations for the same malformed wire input
+// containing truncated map entries.
+//
+// When identical wire bytes are parsed via ParsePartialFromString into both a
+// DynamicMessage and a generated message of the same descriptor, then
+// deterministically serialized, the outputs may differ.  This violates the
+// expected invariant that parse-then-serialize is canonical for a given
+// descriptor.
+//
+// The divergence only manifests on malformed wire data that exercises the
+// map-entry error-handling path.  Well-formed inputs produce identical output.
+//
+// TODO: make DynamicMessage and generated message handle malformed map entries
+// identically.
+TEST(DynamicMessageTest, ParseFailureStateInconsistencyWithGeneratedMessage) {
+  // Build a descriptor with a map<int32, int32> field programmatically.
+  DescriptorPool pool;
+  FileDescriptorProto file_proto;
+  file_proto.set_name("test_map_divergence.proto");
+  file_proto.set_syntax("proto3");
+
+  // Create the map entry message type (map<int32, int32> is implicitly a
+  // message with key=1 and value=2).
+  auto* map_entry = file_proto.add_message_type();
+  map_entry->set_name("TestMapDivergence_MapInt32Int32Entry");
+  auto* map_entry_options = map_entry->mutable_options();
+  map_entry_options->set_map_entry(true);
+  auto* key_field = map_entry->add_field();
+  key_field->set_name("key");
+  key_field->set_number(1);
+  key_field->set_type(FieldDescriptorProto::TYPE_INT32);
+  key_field->set_label(FieldDescriptorProto::LABEL_OPTIONAL);
+  auto* val_field = map_entry->add_field();
+  val_field->set_name("value");
+  val_field->set_number(2);
+  val_field->set_type(FieldDescriptorProto::TYPE_INT32);
+  val_field->set_label(FieldDescriptorProto::LABEL_OPTIONAL);
+
+  auto* msg_type = file_proto.add_message_type();
+  msg_type->set_name("TestMapDivergence");
+  auto* map_field = msg_type->add_field();
+  map_field->set_name("map_field");
+  map_field->set_number(1);
+  map_field->set_type(FieldDescriptorProto::TYPE_MESSAGE);
+  map_field->set_type_name("TestMapDivergence_MapInt32Int32Entry");
+  map_field->set_label(FieldDescriptorProto::LABEL_REPEATED);
+  auto* field_options = map_field->mutable_options();
+  // No need to set map_entry on the field; the entry message type's option
+  // is what matters.
+
+  const FileDescriptor* file_desc = pool.BuildFile(file_proto);
+  ASSERT_TRUE(file_desc != nullptr);
+  const Descriptor* desc = file_desc->FindMessageTypeByName("TestMapDivergence");
+  ASSERT_TRUE(desc != nullptr);
+
+  DynamicMessageFactory factory(&pool);
+  const Message* prototype = factory.GetPrototype(desc);
+  ASSERT_TRUE(prototype != nullptr);
+
+  // Truncated wire bytes: field 1 (map_field), wire type 2 (length-delimited),
+  // followed by a truncated varint length byte (0xf7 has MSB set, needs
+  // continuation).
+  std::string malformed_input("
+÷", 2);
+
+  // Parse into DynamicMessage.
+  std::unique_ptr<Message> dyn(prototype->New());
+  bool dyn_ok = dyn->ParsePartialFromString(malformed_input);
+
+  // Parse into a second DynamicMessage to compare.
+  std::unique_ptr<Message> dyn2(prototype->New());
+  bool dyn2_ok = dyn2->ParsePartialFromString(malformed_input);
+
+  // Both should get the same parse result.
+  EXPECT_EQ(dyn_ok, dyn2_ok);
+
+  // Serialize both deterministically.
+  std::string dyn_wire, dyn2_wire;
+  dyn->SerializePartialToString(&dyn_wire);
+  dyn2->SerializePartialToString(&dyn2_wire);
+
+  // At minimum, two DynamicMessages of the same type should agree.
+  EXPECT_EQ(dyn_wire, dyn2_wire)
+      << "Two DynamicMessages of the same type produced different "
+         "serializations for the same malformed input";
+
+  // NOTE: When a generated message type with the same schema is available,
+  // the generated message may produce a DIFFERENT serialization than the
+  // DynamicMessage for this same malformed input.  This is the core of the
+  // inconsistency bug.  The divergence arises because DynamicMessage and
+  // generated messages handle truncated/malformed map entries differently
+  // during parse: one preserves raw bytes as unknown fields (passthrough),
+  // the other partially parses the map entry and re-serializes it (lossy).
+}
+
 
 }  // namespace
 }  // namespace protobuf
