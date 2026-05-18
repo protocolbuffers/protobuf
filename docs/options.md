@@ -568,3 +568,8 @@ about your project (name and website) so we can add an entry for you.
 
     *   Website: https://github.com/benwebber/protosearch
     *   Extensions: 1306
+
+1.  ProtoWire
+
+    *   Website: https://protowire.org
+    *   Extensions: 1307-1316
