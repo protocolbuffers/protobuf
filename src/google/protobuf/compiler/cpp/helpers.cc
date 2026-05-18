@@ -12,12 +12,14 @@
 #include "google/protobuf/compiler/cpp/helpers.h"
 
 #include <algorithm>
+#include <cctype>
 #include <cstddef>
 #include <cstdint>
 #include <limits>
 #include <memory>
 #include <queue>
 #include <string>
+#include <string_view>
 #include <type_traits>
 #include <utility>
 #include <vector>
@@ -48,8 +50,9 @@
 #include "google/protobuf/compiler/cpp/names.h"
 #include "google/protobuf/compiler/cpp/options.h"
 #include "google/protobuf/compiler/scc.h"
+#include "google/protobuf/cpp_file_options_bootstrap.proto.h"
 #include "google/protobuf/descriptor.h"
-#include "google/protobuf/descriptor.pb.h"
+#include "google/protobuf/descriptor.proto.h"
 #include "google/protobuf/dynamic_message.h"
 #include "google/protobuf/generated_message_reflection.h"
 #include "google/protobuf/generated_message_tctable_impl.h"
@@ -75,6 +78,7 @@ using ::google::protobuf::internal::cpp::HasbitMode;
 
 constexpr absl::string_view kAnyMessageName = "Any";
 constexpr absl::string_view kAnyProtoFile = "google/protobuf/any.proto";
+constexpr absl::string_view kFullyQualifiedPrefix = "::";
 
 const absl::flat_hash_set<absl::string_view>& FileScopeKnownNames() {
   static constexpr const char* kValue[] = {
@@ -548,7 +552,40 @@ std::string Namespace(absl::string_view package) {
   return absl::StrCat("::", absl::StrJoin(scope, "::"));
 }
 
+bool ValidateCcNamespace(const FileDescriptor* file, std::string* error) {
+  if (file->options().GetExtension(::pb::file::cpp).has_namespace_()) {
+    auto cc_namespace =
+        file->options().GetExtension(::pb::file::cpp).namespace_();
+    if (cc_namespace.find_first_of(".;\r\n ") != std::string::npos) {
+      *error =
+          absl::StrCat("Namespace contains invalid characters: ", cc_namespace);
+      return false;
+    }
+    std::vector<std::string> names =
+        absl::StrSplit(cc_namespace, "::", absl::SkipEmpty());
+    for (auto& name : names) {
+      if (std::isdigit(static_cast<unsigned char>(name[0]))) {
+        *error = absl::StrCat("Namespace segment can not start with a number: ",
+                              name);
+        return false;
+      }
+    }
+  }
+  return true;
+}
+
 std::string Namespace(const FileDescriptor* d) {
+  if (d->options().GetExtension(::pb::file::cpp).has_namespace_()) {
+    auto cc_namespace = d->options().GetExtension(::pb::file::cpp).namespace_();
+    if (absl::StartsWith(cc_namespace, kFullyQualifiedPrefix)) {
+      if (cc_namespace.size() == kFullyQualifiedPrefix.size()) {
+        return "";
+      } else {
+        return std::string(cc_namespace);
+      }
+    }
+    return absl::StrCat("::", cc_namespace);
+  }
   return Namespace(d->package());
 }
 
