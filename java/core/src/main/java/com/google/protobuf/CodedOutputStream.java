@@ -32,7 +32,6 @@ import java.util.Locale;
  * <p>This class is totally unsynchronized.
  */
 public abstract class CodedOutputStream extends ByteOutput {
-  private static final boolean HAS_UNSAFE_ARRAY_OPERATIONS = UnsafeUtil.hasUnsafeArrayOperations();
 
   /** Used to adapt to the experimental {@link Writer} interface. */
   Object wrapper;
@@ -1280,88 +1279,75 @@ public abstract class CodedOutputStream extends ByteOutput {
     @Override
     public final void writeUInt64NoTag(long value) throws IOException {
       int position = this.position; // Perf: hoist field to register to avoid load/stores.
-      if (HAS_UNSAFE_ARRAY_OPERATIONS && spaceLeft() >= MAX_VARINT_SIZE) {
-        while (true) {
-          if ((value & ~0x7FL) == 0) {
-            UnsafeUtil.putByte(buffer, position++, (byte) value);
-            break;
-          } else {
-            UnsafeUtil.putByte(buffer, position++, (byte) ((int) value | 0x80));
-            value >>>= 7;
-          }
-        }
-      } else {
-        try {
-          if ((value & ~0x7FL) == 0) {
-            buffer[position] = (byte) value;
-            this.position = position + 1;
-            return;
-          }
-          buffer[position] = (byte) ((int) value | 0x80);
-          value >>>= 7;
-          if ((value & ~0x7FL) == 0) {
-            buffer[position + 1] = (byte) value;
-            this.position = position + 2;
-            return;
-          }
-          buffer[position + 1] = (byte) ((int) value | 0x80);
-          value >>>= 7;
-          if ((value & ~0x7FL) == 0) {
-            buffer[position + 2] = (byte) value;
-            this.position = position + 3;
-            return;
-          }
-          buffer[position + 2] = (byte) ((int) value | 0x80);
-          value >>>= 7;
-          if ((value & ~0x7FL) == 0) {
-            buffer[position + 3] = (byte) value;
-            this.position = position + 4;
-            return;
-          }
-          buffer[position + 3] = (byte) ((int) value | 0x80);
-          value >>>= 7;
-          if ((value & ~0x7FL) == 0) {
-            buffer[position + 4] = (byte) value;
-            this.position = position + 5;
-            return;
-          }
-          buffer[position + 4] = (byte) ((int) value | 0x80);
-          value >>>= 7;
-          if ((value & ~0x7FL) == 0) {
-            buffer[position + 5] = (byte) value;
-            this.position = position + 6;
-            return;
-          }
-          buffer[position + 5] = (byte) ((int) value | 0x80);
-          value >>>= 7;
-          if ((value & ~0x7FL) == 0) {
-            buffer[position + 6] = (byte) value;
-            this.position = position + 7;
-            return;
-          }
-          buffer[position + 6] = (byte) ((int) value | 0x80);
-          value >>>= 7;
-          if ((value & ~0x7FL) == 0) {
-            buffer[position + 7] = (byte) value;
-            this.position = position + 8;
-            return;
-          }
-          buffer[position + 7] = (byte) ((int) value | 0x80);
-          value >>>= 7;
-          if ((value & ~0x7FL) == 0) {
-            buffer[position + 8] = (byte) value;
-            this.position = position + 9;
-            return;
-          }
-          buffer[position + 8] = (byte) ((int) value | 0x80);
-          buffer[position + 9] = (byte) (value >>> 7);
-          this.position = position + 10;
+      try {
+        if ((value & ~0x7FL) == 0) {
+          buffer[position] = (byte) value;
+          this.position = position + 1;
           return;
-        } catch (IndexOutOfBoundsException e) {
-          throw new OutOfSpaceException(position, limit, 1, e);
         }
+        buffer[position] = (byte) ((int) value | 0x80);
+        value >>>= 7;
+        if ((value & ~0x7FL) == 0) {
+          buffer[position + 1] = (byte) value;
+          this.position = position + 2;
+          return;
+        }
+        buffer[position + 1] = (byte) ((int) value | 0x80);
+        value >>>= 7;
+        if ((value & ~0x7FL) == 0) {
+          buffer[position + 2] = (byte) value;
+          this.position = position + 3;
+          return;
+        }
+        buffer[position + 2] = (byte) ((int) value | 0x80);
+        value >>>= 7;
+        if ((value & ~0x7FL) == 0) {
+          buffer[position + 3] = (byte) value;
+          this.position = position + 4;
+          return;
+        }
+        buffer[position + 3] = (byte) ((int) value | 0x80);
+        value >>>= 7;
+        if ((value & ~0x7FL) == 0) {
+          buffer[position + 4] = (byte) value;
+          this.position = position + 5;
+          return;
+        }
+        buffer[position + 4] = (byte) ((int) value | 0x80);
+        value >>>= 7;
+        if ((value & ~0x7FL) == 0) {
+          buffer[position + 5] = (byte) value;
+          this.position = position + 6;
+          return;
+        }
+        buffer[position + 5] = (byte) ((int) value | 0x80);
+        value >>>= 7;
+        if ((value & ~0x7FL) == 0) {
+          buffer[position + 6] = (byte) value;
+          this.position = position + 7;
+          return;
+        }
+        buffer[position + 6] = (byte) ((int) value | 0x80);
+        value >>>= 7;
+        if ((value & ~0x7FL) == 0) {
+          buffer[position + 7] = (byte) value;
+          this.position = position + 8;
+          return;
+        }
+        buffer[position + 7] = (byte) ((int) value | 0x80);
+        value >>>= 7;
+        if ((value & ~0x7FL) == 0) {
+          buffer[position + 8] = (byte) value;
+          this.position = position + 9;
+          return;
+        }
+        buffer[position + 8] = (byte) ((int) value | 0x80);
+        buffer[position + 9] = (byte) (value >>> 7);
+        this.position = position + 10;
+        return;
+      } catch (IndexOutOfBoundsException e) {
+        throw new OutOfSpaceException(position, limit, 1, e);
       }
-      this.position = position; // Only update position if we stayed within the array bounds.
     }
 
     @Override
@@ -1868,58 +1854,43 @@ public abstract class CodedOutputStream extends ByteOutput {
      * responsibility of the caller.
      */
     final void bufferUInt32NoTag(int value) {
-      if (HAS_UNSAFE_ARRAY_OPERATIONS) {
-        final long originalPos = position;
-        while (true) {
-          if ((value & ~0x7F) == 0) {
-            UnsafeUtil.putByte(buffer, position++, (byte) value);
-            break;
-          } else {
-            UnsafeUtil.putByte(buffer, position++, (byte) (value | 0x80));
-            value >>>= 7;
-          }
-        }
-        int delta = (int) (position - originalPos);
-        totalBytesWritten += delta;
-      } else {
-        int position = this.position;
-        int totalBytesWritten = this.totalBytesWritten;
-        if ((value & ~0x7F) == 0) {
-          buffer[position] = (byte) value;
-          this.position = position + 1;
-          this.totalBytesWritten = totalBytesWritten + 1;
-          return;
-        }
-        buffer[position] = (byte) (value | 0x80);
-        value >>>= 7;
-        if ((value & ~0x7F) == 0) {
-          buffer[position + 1] = (byte) value;
-          this.position = position + 2;
-          this.totalBytesWritten = totalBytesWritten + 2;
-          return;
-        }
-        buffer[position + 1] = (byte) (value | 0x80);
-        value >>>= 7;
-        if ((value & ~0x7F) == 0) {
-          buffer[position + 2] = (byte) value;
-          this.position = position + 3;
-          this.totalBytesWritten = totalBytesWritten + 3;
-          return;
-        }
-        buffer[position + 2] = (byte) (value | 0x80);
-        value >>>= 7;
-        if ((value & ~0x7F) == 0) {
-          buffer[position + 3] = (byte) value;
-          this.position = position + 4;
-          this.totalBytesWritten = totalBytesWritten + 4;
-          return;
-        }
-        buffer[position + 3] = (byte) (value | 0x80);
-        buffer[position + 4] = (byte) (value >>> 7);
-        this.position = position + 5;
-        this.totalBytesWritten = totalBytesWritten + 5;
+      int position = this.position;
+      int totalBytesWritten = this.totalBytesWritten;
+      if ((value & ~0x7F) == 0) {
+        buffer[position] = (byte) value;
+        this.position = position + 1;
+        this.totalBytesWritten = totalBytesWritten + 1;
         return;
       }
+      buffer[position] = (byte) (value | 0x80);
+      value >>>= 7;
+      if ((value & ~0x7F) == 0) {
+        buffer[position + 1] = (byte) value;
+        this.position = position + 2;
+        this.totalBytesWritten = totalBytesWritten + 2;
+        return;
+      }
+      buffer[position + 1] = (byte) (value | 0x80);
+      value >>>= 7;
+      if ((value & ~0x7F) == 0) {
+        buffer[position + 2] = (byte) value;
+        this.position = position + 3;
+        this.totalBytesWritten = totalBytesWritten + 3;
+        return;
+      }
+      buffer[position + 2] = (byte) (value | 0x80);
+      value >>>= 7;
+      if ((value & ~0x7F) == 0) {
+        buffer[position + 3] = (byte) value;
+        this.position = position + 4;
+        this.totalBytesWritten = totalBytesWritten + 4;
+        return;
+      }
+      buffer[position + 3] = (byte) (value | 0x80);
+      buffer[position + 4] = (byte) (value >>> 7);
+      this.position = position + 5;
+      this.totalBytesWritten = totalBytesWritten + 5;
+      return;
     }
 
     /**
@@ -1927,98 +1898,83 @@ public abstract class CodedOutputStream extends ByteOutput {
      * responsibility of the caller.
      */
     final void bufferUInt64NoTag(long value) {
-      if (HAS_UNSAFE_ARRAY_OPERATIONS) {
-        final long originalPos = position;
-        while (true) {
-          if ((value & ~0x7FL) == 0) {
-            UnsafeUtil.putByte(buffer, position++, (byte) value);
-            break;
-          } else {
-            UnsafeUtil.putByte(buffer, position++, (byte) ((int) value | 0x80));
-            value >>>= 7;
-          }
-        }
-        int delta = (int) (position - originalPos);
-        totalBytesWritten += delta;
-      } else {
-        int position = this.position;
-        int totalBytesWritten = this.totalBytesWritten;
-        if ((value & ~0x7FL) == 0) {
-          buffer[position] = (byte) value;
-          this.position = position + 1;
-          this.totalBytesWritten = totalBytesWritten + 1;
-          return;
-        }
-        buffer[position] = (byte) ((int) value | 0x80);
-        value >>>= 7;
-        if ((value & ~0x7FL) == 0) {
-          buffer[position + 1] = (byte) value;
-          this.position = position + 2;
-          this.totalBytesWritten = totalBytesWritten + 2;
-          return;
-        }
-        buffer[position + 1] = (byte) ((int) value | 0x80);
-        value >>>= 7;
-        if ((value & ~0x7FL) == 0) {
-          buffer[position + 2] = (byte) value;
-          this.position = position + 3;
-          this.totalBytesWritten = totalBytesWritten + 3;
-          return;
-        }
-        buffer[position + 2] = (byte) ((int) value | 0x80);
-        value >>>= 7;
-        if ((value & ~0x7FL) == 0) {
-          buffer[position + 3] = (byte) value;
-          this.position = position + 4;
-          this.totalBytesWritten = totalBytesWritten + 4;
-          return;
-        }
-        buffer[position + 3] = (byte) ((int) value | 0x80);
-        value >>>= 7;
-        if ((value & ~0x7FL) == 0) {
-          buffer[position + 4] = (byte) value;
-          this.position = position + 5;
-          this.totalBytesWritten = totalBytesWritten + 5;
-          return;
-        }
-        buffer[position + 4] = (byte) ((int) value | 0x80);
-        value >>>= 7;
-        if ((value & ~0x7FL) == 0) {
-          buffer[position + 5] = (byte) value;
-          this.position = position + 6;
-          this.totalBytesWritten = totalBytesWritten + 6;
-          return;
-        }
-        buffer[position + 5] = (byte) ((int) value | 0x80);
-        value >>>= 7;
-        if ((value & ~0x7FL) == 0) {
-          buffer[position + 6] = (byte) value;
-          this.position = position + 7;
-          this.totalBytesWritten = totalBytesWritten + 7;
-          return;
-        }
-        buffer[position + 6] = (byte) ((int) value | 0x80);
-        value >>>= 7;
-        if ((value & ~0x7FL) == 0) {
-          buffer[position + 7] = (byte) value;
-          this.position = position + 8;
-          this.totalBytesWritten = totalBytesWritten + 8;
-          return;
-        }
-        buffer[position + 7] = (byte) ((int) value | 0x80);
-        value >>>= 7;
-        if ((value & ~0x7FL) == 0) {
-          buffer[position + 8] = (byte) value;
-          this.position = position + 9;
-          this.totalBytesWritten = totalBytesWritten + 9;
-          return;
-        }
-        buffer[position + 8] = (byte) ((int) value | 0x80);
-        buffer[position + 9] = (byte) (value >>> 7);
-        this.position = position + 10;
-        this.totalBytesWritten = totalBytesWritten + 10;
+      int position = this.position;
+      int totalBytesWritten = this.totalBytesWritten;
+      if ((value & ~0x7FL) == 0) {
+        buffer[position] = (byte) value;
+        this.position = position + 1;
+        this.totalBytesWritten = totalBytesWritten + 1;
         return;
       }
+      buffer[position] = (byte) ((int) value | 0x80);
+      value >>>= 7;
+      if ((value & ~0x7FL) == 0) {
+        buffer[position + 1] = (byte) value;
+        this.position = position + 2;
+        this.totalBytesWritten = totalBytesWritten + 2;
+        return;
+      }
+      buffer[position + 1] = (byte) ((int) value | 0x80);
+      value >>>= 7;
+      if ((value & ~0x7FL) == 0) {
+        buffer[position + 2] = (byte) value;
+        this.position = position + 3;
+        this.totalBytesWritten = totalBytesWritten + 3;
+        return;
+      }
+      buffer[position + 2] = (byte) ((int) value | 0x80);
+      value >>>= 7;
+      if ((value & ~0x7FL) == 0) {
+        buffer[position + 3] = (byte) value;
+        this.position = position + 4;
+        this.totalBytesWritten = totalBytesWritten + 4;
+        return;
+      }
+      buffer[position + 3] = (byte) ((int) value | 0x80);
+      value >>>= 7;
+      if ((value & ~0x7FL) == 0) {
+        buffer[position + 4] = (byte) value;
+        this.position = position + 5;
+        this.totalBytesWritten = totalBytesWritten + 5;
+        return;
+      }
+      buffer[position + 4] = (byte) ((int) value | 0x80);
+      value >>>= 7;
+      if ((value & ~0x7FL) == 0) {
+        buffer[position + 5] = (byte) value;
+        this.position = position + 6;
+        this.totalBytesWritten = totalBytesWritten + 6;
+        return;
+      }
+      buffer[position + 5] = (byte) ((int) value | 0x80);
+      value >>>= 7;
+      if ((value & ~0x7FL) == 0) {
+        buffer[position + 6] = (byte) value;
+        this.position = position + 7;
+        this.totalBytesWritten = totalBytesWritten + 7;
+        return;
+      }
+      buffer[position + 6] = (byte) ((int) value | 0x80);
+      value >>>= 7;
+      if ((value & ~0x7FL) == 0) {
+        buffer[position + 7] = (byte) value;
+        this.position = position + 8;
+        this.totalBytesWritten = totalBytesWritten + 8;
+        return;
+      }
+      buffer[position + 7] = (byte) ((int) value | 0x80);
+      value >>>= 7;
+      if ((value & ~0x7FL) == 0) {
+        buffer[position + 8] = (byte) value;
+        this.position = position + 9;
+        this.totalBytesWritten = totalBytesWritten + 9;
+        return;
+      }
+      buffer[position + 8] = (byte) ((int) value | 0x80);
+      buffer[position + 9] = (byte) (value >>> 7);
+      this.position = position + 10;
+      this.totalBytesWritten = totalBytesWritten + 10;
+      return;
     }
 
     /**

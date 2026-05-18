@@ -17,11 +17,13 @@
 #include "upb/message/internal/array.h"
 #include "upb/message/internal/types.h"
 #include "upb/message/message.h"
+#include "upb/wire/decode.h"
 #include "upb/wire/decode_fast/combinations.h"
 #include "upb/wire/decode_fast/data.h"
 #include "upb/wire/decode_fast/dispatch.h"
 #include "upb/wire/eps_copy_input_stream.h"
 #include "upb/wire/internal/decoder.h"
+#include "upb/wire/internal/eps_copy_input_stream.h"
 #include "upb/wire/types.h"
 
 #if UPB_TRACE_FASTDECODER
@@ -66,6 +68,12 @@ typedef enum {
 
   // Tail call for potential fast handling of an extension field.
   kUpb_DecodeFastNext_DecodeExtensionOrUnknown = 8,
+
+  // Tail call for potential fast handling of a non-extendable message
+  kUpb_DecodeFastNext_CheckMiniTable = 9,
+
+  // Tail call for potential fast handling of an extendable message
+  kUpb_DecodeFastNext_CheckExtRegMiniTable = 10,
 } upb_DecodeFastNext;
 
 UPB_INLINE bool upb_DecodeFast_SetExit(upb_DecodeFastNext* next,
@@ -122,6 +130,12 @@ UPB_INLINE bool upb_DecodeFast_SetError(upb_Decoder* d,
       UPB_MUSTTAIL return _upb_FastDecoder_DecodeUnknown(UPB_PARSE_ARGS); \
     case kUpb_DecodeFastNext_DecodeExtensionOrUnknown:                    \
       UPB_MUSTTAIL return _upb_FastDecoder_DecodeExtensionOrUnknown(      \
+          UPB_PARSE_ARGS);                                                \
+    case kUpb_DecodeFastNext_CheckMiniTable:                              \
+      UPB_MUSTTAIL return _upb_FastDecoder_DecodeCheckMiniTable(          \
+          UPB_PARSE_ARGS);                                                \
+    case kUpb_DecodeFastNext_CheckExtRegMiniTable:                        \
+      UPB_MUSTTAIL return _upb_FastDecoder_DecodeCheckExtRegMiniTable(    \
           UPB_PARSE_ARGS);                                                \
     default:                                                              \
       UPB_UNREACHABLE();                                                  \
@@ -181,18 +195,13 @@ void upb_DecodeFastField_SetArraySize(upb_DecodeFastArray* field,
 }
 
 UPB_FORCEINLINE
-int upb_DecodeFast_MaskTag(uint16_t data, upb_DecodeFast_TagSize tagsize) {
+bool upb_DecodeFast_TagMatches(uint16_t expected, uint16_t tag,
+                               upb_DecodeFast_TagSize tagsize) {
   if (tagsize == kUpb_DecodeFast_Tag1Byte) {
-    return data & 0xff;
+    return (uint8_t)tag == (uint8_t)expected;
   } else {
-    return data;
+    return (uint16_t)tag == (uint16_t)expected;
   }
-}
-
-UPB_FORCEINLINE
-bool upb_DecodeFast_MaskedTagIsZero(uint16_t data,
-                                    upb_DecodeFast_TagSize tagsize) {
-  return upb_DecodeFast_MaskTag(data, tagsize) == 0;
 }
 
 // Checks to see if the tag is packed when we were expecting unpacked, or vice
@@ -201,10 +210,12 @@ UPB_FORCEINLINE
 bool upb_DecodeFast_TryFlipPacked(upb_DecodeFast_Type type,
                                   upb_DecodeFast_Cardinality card,
                                   upb_DecodeFast_TagSize tagsize,
-                                  uint64_t* data) {
+                                  uint64_t* data, uint64_t data2) {
   if (!upb_DecodeFast_IsRepeated(card)) return false;
   *data ^= kUpb_WireType_Delimited ^ upb_DecodeFast_WireType(type);
-  return upb_DecodeFast_MaskedTagIsZero(*data, tagsize);
+  uint16_t expected = upb_DecodeFastData_GetExpectedTag(*data);
+  uint16_t actual = upb_DecodeFastData2_GetOriginalTag(data2);
+  return upb_DecodeFast_TagMatches(expected, actual, tagsize);
 }
 
 UPB_FORCEINLINE
@@ -247,16 +258,6 @@ bool upb_DecodeFast_GetScalarField(upb_Decoder* d, const char* ptr,
     }
     default:
       return false;
-  }
-}
-
-UPB_FORCEINLINE
-bool upb_DecodeFast_TagMatches(uint16_t expected, uint16_t tag,
-                               upb_DecodeFast_TagSize tagsize) {
-  if (tagsize == kUpb_DecodeFast_Tag1Byte) {
-    return (uint8_t)tag == (uint8_t)expected;
-  } else {
-    return (uint16_t)tag == (uint16_t)expected;
   }
 }
 
@@ -304,20 +305,21 @@ UPB_FORCEINLINE
 bool upb_DecodeFast_CheckTag(const char** ptr, upb_DecodeFast_Type type,
                              upb_DecodeFast_Cardinality card,
                              upb_DecodeFast_TagSize tagsize, uint64_t* data,
-                             upb_DecodeFastNext flipped,
+                             uint64_t data2, upb_DecodeFastNext flipped,
                              upb_DecodeFastNext* next) {
 #if UPB_TRACE_FASTDECODER
   size_t idx = UPB_DECODEFAST_FUNCTION_IDX(type, card, tagsize);
   fprintf(stderr, "Fasttable enter (check tag) -> %s\n",
           upb_DecodeFast_GetFunctionName(idx));
 #endif
-  // The dispatch sequence xors the actual tag with the expected tag, so
-  // if the masked tag is zero, we know that the tag is valid.
-  if (UPB_UNLIKELY(!upb_DecodeFast_MaskedTagIsZero(*data, tagsize))) {
+  uint16_t expected = upb_DecodeFastData_GetExpectedTag(*data);
+  uint16_t actual = upb_DecodeFastData2_GetOriginalTag(data2);
+  if (UPB_UNLIKELY(!upb_DecodeFast_TagMatches(expected, actual, tagsize))) {
     // If this field is repeated and the field type is packable, we check
     // whether the tag can be flipped (ie. packed -> unpacked or vice versa).
     // If so, we can jump directly to the decoder for the flipped tag.
-    if (flipped && upb_DecodeFast_TryFlipPacked(type, card, tagsize, data)) {
+    if (flipped &&
+        upb_DecodeFast_TryFlipPacked(type, card, tagsize, data, data2)) {
       // We can jump directly to the decoder for the flipped tag.
       return UPB_DECODEFAST_EXIT(flipped, next);
     }
@@ -384,9 +386,10 @@ bool upb_DecodeFast_Unpacked(upb_Decoder* d, const char** ptr, upb_Message* msg,
                              upb_DecodeFastNext* ret, upb_DecodeFast_Type type,
                              upb_DecodeFast_Cardinality card,
                              upb_DecodeFast_TagSize tagsize,
-                             upb_DecodeFast_Single* single, void* ctx) {
+                             upb_DecodeFast_Single* single, void* ctx,
+                             uint64_t data2) {
   const char* p = *ptr;
-  if (!upb_DecodeFast_CheckTag(&p, type, card, tagsize, data,
+  if (!upb_DecodeFast_CheckTag(&p, type, card, tagsize, data, data2,
                                kUpb_DecodeFastNext_TailCallPacked, ret)) {
     return false;
   }
@@ -485,10 +488,10 @@ bool upb_DecodeFast_Packed(upb_Decoder* d, const char** ptr,
                            upb_DecodeFast_Cardinality card,
                            upb_DecodeFast_TagSize tagsize, uint64_t* data,
                            upb_EpsCopyInputStream_ParseDelimitedFunc* func,
-                           upb_DecodeFastNext* ret, void* ctx) {
+                           upb_DecodeFastNext* ret, void* ctx, uint64_t data2) {
   const char* p = *ptr;
 
-  if (!upb_DecodeFast_CheckTag(&p, type, card, tagsize, data,
+  if (!upb_DecodeFast_CheckTag(&p, type, card, tagsize, data, data2,
                                kUpb_DecodeFastNext_TailCallUnpacked, ret) ||
       !upb_DecodeFast_Delimited(d, &p, func, ret, ctx)) {
     return false;

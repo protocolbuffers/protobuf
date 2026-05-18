@@ -73,7 +73,7 @@ void WriteEnum(JsonWriter& writer, Field<Traits> field, int32_t value,
   if (!writer.options().always_print_enums_as_ints) {
     auto name = Traits::EnumNameByNumber(field, value);
     if (name.ok()) {
-      writer.Write("\"", *name, "\"");
+      writer.Write(MakeQuoted(*name));
       return;
     }
   }
