@@ -100,7 +100,6 @@ cc_library(
     visibility = ["//visibility:public"],
     deps = [
         "//upb/base",
-        "//upb/mem",
         "//upb/message:types",
         "//upb/port",
     ],

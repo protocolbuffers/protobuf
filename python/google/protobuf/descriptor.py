@@ -4,7 +4,6 @@
 # Use of this source code is governed by a BSD-style
 # license that can be found in the LICENSE file or at
 # https://developers.google.com/open-source/licenses/bsd
-
 """Descriptors essentially contain exactly the information found in a .proto
 
 file, in types that make this information accessible in Python.
@@ -100,7 +99,6 @@ _FEATURESET_ENUM_TYPE_CLOSED = 2
 # Deprecated warnings will print 100 times at most which should be enough for
 # users to notice and do not cause timeout.
 _Deprecated.count = 100
-
 
 _internal_create_key = object()
 

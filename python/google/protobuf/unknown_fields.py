@@ -4,7 +4,6 @@
 # Use of this source code is governed by a BSD-style
 # license that can be found in the LICENSE file or at
 # https://developers.google.com/open-source/licenses/bsd
-
 """Contains Unknown Fields APIs.
 
 Simple usage example:
@@ -14,7 +13,6 @@ Simple usage example:
     field_number = unknown_field.field_number
     data = unknown_field.data
 """
-
 
 from google.protobuf.internal import api_implementation
 
@@ -64,18 +62,17 @@ else:
       msg_des = msg.DESCRIPTOR
       # pylint: disable=protected-access
       unknown_fields = msg._unknown_fields
-      if (msg_des.has_options and
-          msg_des.GetOptions().message_set_wire_format):
+      if msg_des.has_options and msg_des.GetOptions().message_set_wire_format:
         local_decoder = decoder.UnknownMessageSetItemDecoder()
         for _, buffer in unknown_fields:
-          (field_number, data) = local_decoder(memoryview(buffer))
+          field_number, data = local_decoder(memoryview(buffer))
           InternalAdd(field_number, wire_format.WIRETYPE_LENGTH_DELIMITED, data)
       else:
         for tag_bytes, buffer in unknown_fields:
           field_number, wire_type = decoder.DecodeTag(tag_bytes)
           if field_number == 0:
             raise RuntimeError('Field number 0 is illegal.')
-          (data, _) = decoder._DecodeUnknownField(
+          data, _ = decoder._DecodeUnknownField(
               memoryview(buffer), 0, len(buffer), field_number, wire_type
           )
           InternalAdd(field_number, wire_type, data)

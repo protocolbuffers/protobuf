@@ -49,10 +49,11 @@ build --incompatible_dont_use_javasourceinfoprovider
 build --incompatible_enable_android_toolchain_resolution
 build --incompatible_enable_apple_toolchain_resolution
 build --incompatible_exclusive_test_sandboxed
-build --incompatible_remote_use_new_exit_code_for_lost_inputs
-build --incompatible_sandbox_hermetic_tmp
 build --incompatible_top_level_aspects_require_providers
 build --incompatible_use_cc_configure_from_rules_cc
+# Disable prebuilt protoc which doesn't work for tests at HEAD which do not
+# have a published protoc prebuilt release
+build --@com_google_protobuf//bazel/toolchains:prefer_prebuilt_protoc=false
 try-import-if-bazel-version >=9.0.0 %workspace%/ci/bazel9.bazelrc
 
 # We cannot yet build successfully with the following flags:
@@ -69,6 +70,8 @@ try-import-if-bazel-version >=9.0.0 %workspace%/ci/bazel9.bazelrc
 #   --incompatible_disable_objc_library_transition
 #   --incompatible_fail_on_unknown_attributes
 #   --incompatible_merge_fixed_and_default_shell_env
+#   --incompatible_remote_use_new_exit_code_for_lost_inputs
+#   --incompatible_sandbox_hermetic_tmp
 
 # For easier debugging of build failures.
 common --announce_rc

@@ -4,7 +4,6 @@
 # Use of this source code is governed by a BSD-style
 # license that can be found in the LICENSE file or at
 # https://developers.google.com/open-source/licenses/bsd
-
 """Contains routines for printing protocol messages in JSON format.
 
 Simple usage example:
@@ -19,7 +18,6 @@ Simple usage example:
 
 __author__ = 'jieluo@google.com (Jie Luo)'
 
-
 import base64
 from collections import OrderedDict
 import json
@@ -31,7 +29,6 @@ from google.protobuf import descriptor
 from google.protobuf import message_factory
 from google.protobuf import symbol_database
 from google.protobuf.internal import type_checkers
-
 
 _INT_TYPES = frozenset([
     descriptor.FieldDescriptor.CPPTYPE_INT32,
@@ -109,9 +106,9 @@ def MessageToJson(
       default.
     ensure_ascii: If True, strings with non-ASCII characters are escaped. If
       False, Unicode strings are returned unchanged.
-    unquote_int64_if_possible: If True, unquote int64 fields for values that
-      are safe to emit as numbers (all values smaller than 2^53 and a sparse
-      set of values that are larger).
+    unquote_int64_if_possible: If True, unquote int64 fields for values that are
+      safe to emit as numbers (all values smaller than 2^53 and a sparse set of
+      values that are larger).
 
   Returns:
     A string containing the JSON formatted protocol buffer message.
@@ -151,9 +148,9 @@ def MessageToDict(
     use_integers_for_enums: If true, print integers instead of enum names.
     descriptor_pool: A Descriptor Pool for resolving types. If None use the
       default.
-    unquote_int64_if_possible: If True, unquote int64 fields for values that
-      are safe to emit as numbers (all values smaller than 2^53 and a sparse
-      set of values that are larger).
+    unquote_int64_if_possible: If True, unquote int64 fields for values that are
+      safe to emit as numbers (all values smaller than 2^53 and a sparse set of
+      values that are larger).
 
   Returns:
     A dict representation of the protocol buffer message.
@@ -750,9 +747,7 @@ class _Parser(object):
     elif full_name in _WKTJSONMETHODS:
       # For well-known types (including nested Any), use ConvertMessage
       # to ensure recursion depth is properly tracked
-      self.ConvertMessage(
-          value['value'], sub_message, '{0}.value'.format(path)
-      )
+      self.ConvertMessage(value['value'], sub_message, '{0}.value'.format(path))
     else:
       del value['@type']
       try:

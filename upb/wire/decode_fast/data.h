@@ -68,6 +68,29 @@ UPB_INLINE int upb_DecodeFastData_GetTableSlot(uint64_t data) {
   return (tag & 0xf8) >> 3;
 }
 
+// The layout of the data2 parameter is as follows:
+//
+//                  48                32                16                 0
+// |--------|--------|--------|--------|--------|--------|--------|--------|
+// |  mask  |                  (unused)                  |   actual tag    |
+// |--------|--------|--------|--------|--------|--------|--------|--------|
+UPB_INLINE uint8_t upb_DecodeFastData2_GetMask(uint64_t data2) {
+  return data2 >> 56;
+}
+
+UPB_INLINE uint64_t upb_DecodeFastData2_PackMask(uint8_t mask) {
+  return (uint64_t)mask << 56;
+}
+
+UPB_INLINE uint16_t upb_DecodeFastData2_GetOriginalTag(uint64_t data2) {
+  return data2 & 0xffff;
+}
+
+UPB_INLINE uint64_t upb_DecodeFastData2_PackOriginalTag(uint64_t data2,
+                                                        uint16_t tag) {
+  return (data2 & 0xffffffffffff0000ULL) | tag;
+}
+
 #include "upb/port/undef.inc"
 
 #endif  // GOOGLE_UPB_UPB_WIRE_INTERNAL_DECODE_FAST_DATALAYOUT_H__

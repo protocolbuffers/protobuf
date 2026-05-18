@@ -70,6 +70,7 @@
 
 namespace google {
 namespace protobuf {
+
 // Defined in this file.
 class Descriptor;
 class FieldDescriptor;
@@ -163,6 +164,16 @@ class Printer;
 
 namespace internal {
 class InternalFeatureHelper;
+}  // namespace internal
+
+namespace internal {
+// Edition 2026 introduces default limits for proto files as the descriptor gets
+// built from protoc. To opt out of these limits for edition 2026, you may use
+// features.enforce_proto_limits = LEGACY_NO_EXPLICIT_LIMITS.
+inline constexpr int kLimit2026FieldsPerMessage = 1500;
+inline constexpr int kLimit2026OneofsPerMessage = 1000;
+inline constexpr int kLimit2026FieldsPerOneof = 1200;
+inline constexpr int kLimit2026ValuesPerEnum = 1700;
 }  // namespace internal
 
 // NB, all indices are zero-based.
@@ -2498,6 +2509,18 @@ class PROTOBUF_EXPORT DescriptorPool {
   // of this enforcement.
   void EnforceNamingStyle(bool enforce) { enforce_naming_style_ = enforce; }
 
+  // Enforce protobuf limits at the descriptor level. Pre Edition 2026, there
+  // is no limit enforcement in the protobuf compiler when parsing proto files.
+  // As a result, it is possible to write a protobuf file that compiles in
+  // protoc, and code generation works as intended, but the code generation
+  // output is uncompilable because it runs into language-specific or
+  // compiler-specific limits.
+  //
+  // Starting in Edition 2026, certain limits will start to be enforced. The
+  // goal of this enforcement is to help ensure that any file that is accepted
+  // by the protobuf compiler will be compilable on standard tool chains.
+  void EnforceProtoLimits(bool enforce) { enforce_proto_limits_ = enforce; }
+
   // Enforce validation of feature support.
   //
   // This is used to guard feature support validation for the lifetimes of
@@ -2811,6 +2834,7 @@ class PROTOBUF_EXPORT DescriptorPool {
   bool disallow_enforce_utf8_;
   bool deprecated_legacy_json_field_conflicts_;
   bool enforce_naming_style_;
+  bool enforce_proto_limits_ = false;
   bool enforce_feature_support_validation_ = false;
   bool enforce_symbol_visibility_ = false;
   mutable bool build_started_ = false;
