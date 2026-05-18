@@ -95,6 +95,15 @@ class TypeChecker(object):
     The returned value might have been normalized to another type.
     """
     if not isinstance(proposed_value, self._acceptable_types):
+      if bytes in self._acceptable_types:
+        if isinstance(proposed_value, memoryview):
+          if not (
+              proposed_value.ndim == 1
+              and proposed_value.itemsize == 1
+              and proposed_value.c_contiguous
+          ):
+            raise ValueError('Buffer must be 1-dimensional, 1-byte contiguous')
+          return proposed_value.tobytes()
       message = '%.1024r has type %s, but expected one of: %s' % (
           proposed_value,
           type(proposed_value),
@@ -227,12 +236,32 @@ class UnicodeValueChecker(object):
 
   def CheckValue(self, proposed_value):
     if not isinstance(proposed_value, (bytes, str)):
-      message = '%.1024r has type %s, but expected one of: %s' % (
-          proposed_value,
-          type(proposed_value),
-          (bytes, str),
-      )
-      raise TypeError(message)
+      if not isinstance(proposed_value, memoryview):
+        message = '%.1024r has type %s, but expected one of: %s' % (
+            proposed_value,
+            type(proposed_value),
+            (bytes, str),
+        )
+        raise TypeError(message)
+      if not (
+          proposed_value.ndim == 1
+          and proposed_value.itemsize == 1
+          and proposed_value.c_contiguous
+      ):
+        raise ValueError(
+            '%.1024r has type %s, but expected a 1D contiguous array of bytes.'
+            % (proposed_value, type(proposed_value))
+        )
+
+      proposed_value = proposed_value.tobytes()
+      try:
+        proposed_value = proposed_value.decode('utf-8')
+      except UnicodeDecodeError:
+        raise ValueError(
+            "%.1024r has type %s, but isn't valid UTF-8 encoding. Non-UTF-8 "
+            'strings must be converted to unicode objects before being added.'
+            % (proposed_value, type(proposed_value))
+        )
 
     # If the value is of type 'bytes' make sure that it is valid UTF-8 data.
     if isinstance(proposed_value, bytes):

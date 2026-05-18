@@ -25,6 +25,7 @@
 #include <vector>
 
 #include "absl/base/optimization.h"
+#include "absl/functional/function_ref.h"
 #include "absl/log/absl_check.h"
 #include "absl/strings/match.h"
 #include "absl/strings/str_cat.h"
@@ -605,96 +606,94 @@ bool CheckAndGetBool(PyObject* arg, bool* value) {
   return true;
 }
 
-// Checks whether the given object (which must be "bytes" or "unicode") contains
-// valid UTF-8.
-bool IsValidUTF8(PyObject* obj) {
-  if (PyBytes_Check(obj)) {
-    PyObject* unicode = PyUnicode_FromEncodedObject(obj, "utf-8", nullptr);
-
-    // Clear the error indicator; we report our own error when desired.
-    PyErr_Clear();
-
-    if (unicode) {
-      Py_DECREF(unicode);
-      return true;
-    } else {
-      return false;
-    }
-  } else {
-    // Unicode object, known to be valid UTF-8.
-    return true;
-  }
-}
-
 bool AllowInvalidUTF8(const FieldDescriptor* field) { return false; }
 
-PyObject* CheckString(PyObject* arg, const FieldDescriptor* descriptor) {
+static bool BufferBytes(PyObject* obj, Py_buffer* view) {
+  if (PyObject_GetBuffer(obj, view, PyBUF_SIMPLE) != 0) {
+    PyErr_Clear();
+    PyErr_SetString(
+        PyExc_ValueError,
+        "expected bytes, memoryview is not contiguous or has >1 dimensions");
+    return false;
+  }
+
+  if (view->itemsize != 1) {
+    PyErr_Format(PyExc_ValueError,
+                 "expected bytes, memoryview of itemsize %zd found",
+                 view->itemsize);
+    PyBuffer_Release(view);
+    return false;
+  }
+  return true;
+}
+
+bool CheckString(PyObject* arg, const FieldDescriptor* descriptor,
+                 absl::FunctionRef<bool(absl::string_view)> callback) {
   ABSL_DCHECK(descriptor->type() == FieldDescriptor::TYPE_STRING ||
               descriptor->type() == FieldDescriptor::TYPE_BYTES);
   if (descriptor->type() == FieldDescriptor::TYPE_STRING) {
-    if (!PyBytes_Check(arg) && !PyUnicode_Check(arg)) {
-      FormatTypeError(arg, "bytes, unicode");
-      return nullptr;
+    if (PyUnicode_Check(arg)) {
+      // Use the str object's cached UTF-8 representation — no allocation.
+      // The pointer is valid as long as arg is alive (caller holds the GIL).
+      Py_ssize_t utf8_len;
+      const char* utf8 = PyUnicode_AsUTF8AndSize(arg, &utf8_len);
+      if (utf8 == nullptr) return false;
+      return callback(absl::string_view(utf8, utf8_len));
     }
-
-    if (!IsValidUTF8(arg) && !AllowInvalidUTF8(descriptor)) {
-      PyObject* repr = PyObject_Repr(arg);
-      PyErr_Format(PyExc_ValueError,
-                   "%s has type str, but isn't valid UTF-8 "
-                   "encoding. Non-UTF-8 strings must be converted to "
-                   "unicode objects before being added.",
-                   PyString_AsString(repr));
-      Py_DECREF(repr);
-      return nullptr;
-    }
-  } else if (!PyBytes_Check(arg)) {
-    FormatTypeError(arg, "bytes");
-    return nullptr;
   }
 
-  PyObject* encoded_string = nullptr;
-  if (descriptor->type() == FieldDescriptor::TYPE_STRING) {
-    if (PyBytes_Check(arg)) {
-      // The bytes were already validated as correctly encoded UTF-8 above.
-      encoded_string = arg;  // Already encoded.
-      Py_INCREF(encoded_string);
-    } else {
-      encoded_string = PyUnicode_AsEncodedString(arg, "utf-8", nullptr);
+  if (PyBytes_Check(arg)) {
+    absl::string_view value(PyBytes_AS_STRING(arg), PyBytes_GET_SIZE(arg));
+    if (descriptor->type() == FieldDescriptor::TYPE_STRING &&
+        !AllowInvalidUTF8(descriptor)) {
+      PyObject* unicode =
+          PyUnicode_FromStringAndSize(value.data(), value.size());
+      if (unicode == nullptr) {
+        return false;
+      }
+      Py_DECREF(unicode);
     }
-  } else {
-    // In this case field type is "bytes".
-    encoded_string = arg;
-    Py_INCREF(encoded_string);
+    return callback(value);
   }
-
-  return encoded_string;
+  if (PyMemoryView_Check(arg)) {
+    Py_buffer view;
+    if (!BufferBytes(arg, &view)) {
+      return false;
+    }
+    // This is OK as MemoryView guarantees that the underlying data is valid
+    // for the lifetime of the view.
+    absl::string_view value(static_cast<const char*>(view.buf), view.len);
+    PyBuffer_Release(&view);
+    if (descriptor->type() == FieldDescriptor::TYPE_STRING &&
+        !AllowInvalidUTF8(descriptor)) {
+      PyObject* unicode =
+          PyUnicode_FromStringAndSize(value.data(), value.size());
+      if (unicode == nullptr) {
+        return false;
+      }
+      Py_DECREF(unicode);
+    }
+    return callback(value);
+  }
+  FormatTypeError(arg, "bytes, str, memoryview");
+  return false;
 }
 
 bool CheckAndSetString(PyObject* arg, Message* message,
                        const FieldDescriptor* descriptor,
                        const Reflection* reflection, bool append, int index) {
-  ScopedPyObjectPtr encoded_string(CheckString(arg, descriptor));
-
-  if (encoded_string.get() == nullptr) {
-    return false;
-  }
-
-  char* value;
-  Py_ssize_t value_len;
-  if (PyBytes_AsStringAndSize(encoded_string.get(), &value, &value_len) < 0) {
-    return false;
-  }
-
-  std::string value_string(value, value_len);
-  if (append) {
-    reflection->AddString(message, descriptor, std::move(value_string));
-  } else if (index < 0) {
-    reflection->SetString(message, descriptor, std::move(value_string));
-  } else {
-    reflection->SetRepeatedString(message, descriptor, index,
-                                  std::move(value_string));
-  }
-  return true;
+  return CheckString(arg, descriptor, [&](absl::string_view value) {
+    std::string value_string(value);
+    if (append) {
+      reflection->AddString(message, descriptor, std::move(value_string));
+    } else if (index < 0) {
+      reflection->SetString(message, descriptor, std::move(value_string));
+    } else {
+      reflection->SetRepeatedString(message, descriptor, index,
+                                    std::move(value_string));
+    }
+    return true;
+  });
 }
 
 PyObject* ToStringObject(const FieldDescriptor* descriptor,
@@ -1989,7 +1988,10 @@ static PyObject* MergeFromString(CMessage* self, PyObject* arg) {
     return nullptr;
   }
 
-  if (AssureWritable(self) < 0) return nullptr;
+  if (AssureWritable(self) < 0) {
+    PyBuffer_Release(&data);
+    return nullptr;
+  }
 
   PyMessageFactory* factory = GetFactoryForMessage(self);
   int depth = allow_oversize_protos
@@ -1999,7 +2001,7 @@ static PyObject* MergeFromString(CMessage* self, PyObject* arg) {
   internal::ParseContext ctx(
       depth, false, &ptr,
       absl::string_view(static_cast<const char*>(data.buf), data.len));
-  PyBuffer_Release(&data);
+
   ctx.data().pool = factory->pool->pool;
   ctx.data().factory = factory->message_factory;
 
@@ -2018,6 +2020,7 @@ static PyObject* MergeFromString(CMessage* self, PyObject* arg) {
         DecodeError_class, "Error parsing message with type '%s'",
         std::string(self->GetMessageClass()->message_descriptor->full_name())
             .c_str());
+    PyBuffer_Release(&data);
     return nullptr;
   }
   if (ctx.BytesUntilLimit(ptr) < 0) {
@@ -2028,6 +2031,7 @@ static PyObject* MergeFromString(CMessage* self, PyObject* arg) {
         "with type '%s'",
         std::string(self->GetMessageClass()->message_descriptor->full_name())
             .c_str());
+    PyBuffer_Release(&data);
     return nullptr;
   }
 
@@ -2036,8 +2040,10 @@ static PyObject* MergeFromString(CMessage* self, PyObject* arg) {
   if (!ctx.EndedAtLimit()) {
     PyErr_Format(DecodeError_class,
                  "Unexpected end-group tag: Not all data was converted");
+    PyBuffer_Release(&data);
     return nullptr;
   }
+  PyBuffer_Release(&data);
   return PyLong_FromLong(data.len);
 }
 
@@ -2501,22 +2507,16 @@ PyObject* Contains(CMessage* self, PyObject* arg) {
       const Reflection* reflection = message->GetReflection();
       const FieldDescriptor* map_field = descriptor->FindFieldByName("fields");
       const FieldDescriptor* key_field = map_field->message_type()->map_key();
-      ScopedPyObjectPtr py_string(CheckString(arg, key_field));
-      if (py_string.get() == nullptr) {
+      MapKey map_key;
+      if (!CheckString(arg, key_field, [&](absl::string_view value) {
+            map_key.SetStringValue(value);
+            return true;
+          })) {
         PyErr_SetString(PyExc_TypeError,
                         "The key passed to Struct message must be a str.");
         return nullptr;
       }
-      char* value;
-      Py_ssize_t value_len;
-      if (PyBytes_AsStringAndSize(py_string.get(), &value, &value_len) < 0) {
-        Py_RETURN_FALSE;
-      }
-      std::string key_str;
-      key_str.assign(value, value_len);
 
-      MapKey map_key;
-      map_key.SetStringValue(key_str);
       return PyBool_FromLong(MessageReflectionFriend::ContainsMapKey(
           reflection, *message, map_field, map_key));
     }
