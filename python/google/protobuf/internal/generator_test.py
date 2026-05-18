@@ -9,25 +9,27 @@
 # first, since it's testing the subtler code, and since it provides decent
 # indirect testing of the protocol compiler output.
 
-"""Unittest that directly tests the output of the pure-Python protocol
-compiler.  See //google/protobuf/internal/reflection_test.py for a test which
-further ensures that we can use Python protocol message objects as we expect.
+"""Unittest that directly tests the output of the pure-Python protocol compiler.
+
+See //google/protobuf/internal/reflection_test.py for a test which further
+ensures that we can use Python protocol message objects as we expect.
 """
 
 __author__ = 'robinson@google.com (Will Robinson)'
 
 import unittest
 
-from google.protobuf.internal import test_bad_identifiers_pb2
 from google.protobuf import symbol_database
+from google.protobuf.internal import test_bad_identifiers_pb2
+
+from google.protobuf import unittest_custom_options_pb2
 from google.protobuf import unittest_import_pb2
 from google.protobuf import unittest_import_public_pb2
 from google.protobuf import unittest_mset_pb2
 from google.protobuf import unittest_mset_wire_format_pb2
+from google.protobuf import unittest_no_generic_services_pb2
 from google.protobuf import unittest_pb2
 from google.protobuf import unittest_retention_pb2
-from google.protobuf import unittest_custom_options_pb2
-from google.protobuf import unittest_no_generic_services_pb2
 
 MAX_EXTENSION = 536870912
 
@@ -39,7 +41,8 @@ class GeneratorTest(unittest.TestCase):
     proto_type = unittest_pb2.TestAllTypes
     self.assertEqual(
         proto_type.NestedMessage.DESCRIPTOR,
-        proto_type.DESCRIPTOR.fields_by_name[field_name].message_type)
+        proto_type.DESCRIPTOR.fields_by_name[field_name].message_type,
+    )
 
   def testEnums(self):
     # We test only module-level enums here.
@@ -65,6 +68,7 @@ class GeneratorTest(unittest.TestCase):
     def isnan(val):
       # NaN is never equal to itself.
       return val != val
+
     def isinf(val):
       # Infinity times zero equals NaN.
       return not isnan(val) and isnan(val * 0)
@@ -80,7 +84,7 @@ class GeneratorTest(unittest.TestCase):
     self.assertTrue(isinf(message.neg_inf_float))
     self.assertTrue(message.neg_inf_float < 0)
     self.assertTrue(isnan(message.nan_float))
-    self.assertEqual("? ? ?? ?? ??? ??/ ??-", message.cpp_trigraph)
+    self.assertEqual('? ? ?? ?? ??? ??/ ??-', message.cpp_trigraph)
 
   def testHasDefaultValues(self):
     desc = unittest_pb2.TestAllTypes.DESCRIPTOR
@@ -92,23 +96,31 @@ class GeneratorTest(unittest.TestCase):
         'default_int32': True,
     }
 
-    has_default_by_name = dict(
-        [(f.name, f.has_default_value)
-         for f in desc.fields
-         if f.name in expected_has_default_by_name])
+    has_default_by_name = dict([
+        (f.name, f.has_default_value)
+        for f in desc.fields
+        if f.name in expected_has_default_by_name
+    ])
     self.assertEqual(expected_has_default_by_name, has_default_by_name)
 
   def testContainingTypeBehaviorForExtensions(self):
-    self.assertEqual(unittest_pb2.optional_int32_extension.containing_type,
-                     unittest_pb2.TestAllExtensions.DESCRIPTOR)
-    self.assertEqual(unittest_pb2.TestRequired.single.containing_type,
-                     unittest_pb2.TestAllExtensions.DESCRIPTOR)
+    self.assertEqual(
+        unittest_pb2.optional_int32_extension.containing_type,
+        unittest_pb2.TestAllExtensions.DESCRIPTOR,
+    )
+    self.assertEqual(
+        unittest_pb2.TestRequired.single.containing_type,
+        unittest_pb2.TestAllExtensions.DESCRIPTOR,
+    )
 
   def testExtensionScope(self):
-    self.assertEqual(unittest_pb2.optional_int32_extension.extension_scope,
-                     None)
-    self.assertEqual(unittest_pb2.TestRequired.single.extension_scope,
-                     unittest_pb2.TestRequired.DESCRIPTOR)
+    self.assertEqual(
+        unittest_pb2.optional_int32_extension.extension_scope, None
+    )
+    self.assertEqual(
+        unittest_pb2.TestRequired.single.extension_scope,
+        unittest_pb2.TestRequired.DESCRIPTOR,
+    )
 
   def testIsExtension(self):
     self.assertTrue(unittest_pb2.optional_int32_extension.is_extension)
@@ -212,99 +224,120 @@ class GeneratorTest(unittest.TestCase):
             unittest_pb2.TestAllTypes.NestedMessage.DESCRIPTOR,
             unittest_pb2.TestAllTypes.OptionalGroup.DESCRIPTOR,
             unittest_pb2.TestAllTypes.RepeatedGroup.DESCRIPTOR,
-        ]))
+        ]),
+    )
     self.assertEqual(unittest_pb2.TestEmptyMessage.DESCRIPTOR.nested_types, [])
     self.assertEqual(
-        unittest_pb2.TestAllTypes.NestedMessage.DESCRIPTOR.nested_types, [])
+        unittest_pb2.TestAllTypes.NestedMessage.DESCRIPTOR.nested_types, []
+    )
 
   def testContainingType(self):
     self.assertTrue(
-        unittest_pb2.TestEmptyMessage.DESCRIPTOR.containing_type is None)
+        unittest_pb2.TestEmptyMessage.DESCRIPTOR.containing_type is None
+    )
     self.assertTrue(
-        unittest_pb2.TestAllTypes.DESCRIPTOR.containing_type is None)
+        unittest_pb2.TestAllTypes.DESCRIPTOR.containing_type is None
+    )
     self.assertEqual(
         unittest_pb2.TestAllTypes.NestedMessage.DESCRIPTOR.containing_type,
-        unittest_pb2.TestAllTypes.DESCRIPTOR)
+        unittest_pb2.TestAllTypes.DESCRIPTOR,
+    )
     self.assertEqual(
         unittest_pb2.TestAllTypes.NestedMessage.DESCRIPTOR.containing_type,
-        unittest_pb2.TestAllTypes.DESCRIPTOR)
+        unittest_pb2.TestAllTypes.DESCRIPTOR,
+    )
     self.assertEqual(
         unittest_pb2.TestAllTypes.RepeatedGroup.DESCRIPTOR.containing_type,
-        unittest_pb2.TestAllTypes.DESCRIPTOR)
+        unittest_pb2.TestAllTypes.DESCRIPTOR,
+    )
 
   def testContainingTypeInEnumDescriptor(self):
     self.assertTrue(unittest_pb2._FOREIGNENUM.containing_type is None)
-    self.assertEqual(unittest_pb2._TESTALLTYPES_NESTEDENUM.containing_type,
-                     unittest_pb2.TestAllTypes.DESCRIPTOR)
+    self.assertEqual(
+        unittest_pb2._TESTALLTYPES_NESTEDENUM.containing_type,
+        unittest_pb2.TestAllTypes.DESCRIPTOR,
+    )
 
   def testPackage(self):
     self.assertEqual(
-        unittest_pb2.TestAllTypes.DESCRIPTOR.file.package,
-        'proto2_unittest')
+        unittest_pb2.TestAllTypes.DESCRIPTOR.file.package, 'proto2_unittest'
+    )
     desc = unittest_pb2.TestAllTypes.NestedMessage.DESCRIPTOR
     self.assertEqual(desc.file.package, 'proto2_unittest')
     self.assertEqual(
         unittest_import_pb2.ImportMessage.DESCRIPTOR.file.package,
-        'proto2_unittest_import')
+        'proto2_unittest_import',
+    )
 
+    self.assertEqual(unittest_pb2._FOREIGNENUM.file.package, 'proto2_unittest')
     self.assertEqual(
-        unittest_pb2._FOREIGNENUM.file.package, 'proto2_unittest')
+        unittest_pb2._TESTALLTYPES_NESTEDENUM.file.package, 'proto2_unittest'
+    )
     self.assertEqual(
-        unittest_pb2._TESTALLTYPES_NESTEDENUM.file.package,
-        'proto2_unittest')
-    self.assertEqual(
-        unittest_import_pb2._IMPORTENUM.file.package,
-        'proto2_unittest_import')
+        unittest_import_pb2._IMPORTENUM.file.package, 'proto2_unittest_import'
+    )
 
   def testExtensionRange(self):
-    self.assertEqual(
-        unittest_pb2.TestAllTypes.DESCRIPTOR.extension_ranges, [])
+    self.assertEqual(unittest_pb2.TestAllTypes.DESCRIPTOR.extension_ranges, [])
     self.assertEqual(
         unittest_pb2.TestAllExtensions.DESCRIPTOR.extension_ranges,
-        [(1, MAX_EXTENSION)])
+        [(1, MAX_EXTENSION)],
+    )
     self.assertEqual(
         unittest_pb2.TestMultipleExtensionRanges.DESCRIPTOR.extension_ranges,
-        [(42, 43), (4143, 4244), (65536, MAX_EXTENSION)])
+        [(42, 43), (4143, 4244), (65536, MAX_EXTENSION)],
+    )
 
   def testFileDescriptor(self):
-    self.assertEqual(unittest_pb2.DESCRIPTOR.name,
-                     'google/protobuf/unittest.proto')
+    self.assertEqual(
+        unittest_pb2.DESCRIPTOR.name, 'google/protobuf/unittest.proto'
+    )
     self.assertEqual(unittest_pb2.DESCRIPTOR.package, 'proto2_unittest')
     self.assertFalse(unittest_pb2.DESCRIPTOR.serialized_pb is None)
-    self.assertEqual(unittest_pb2.DESCRIPTOR.dependencies,
-                     [unittest_import_pb2.DESCRIPTOR])
-    self.assertEqual(unittest_import_pb2.DESCRIPTOR.dependencies,
-                     [unittest_import_public_pb2.DESCRIPTOR])
-    self.assertEqual(unittest_import_pb2.DESCRIPTOR.public_dependencies,
-                     [unittest_import_public_pb2.DESCRIPTOR])
+    self.assertEqual(
+        unittest_pb2.DESCRIPTOR.dependencies, [unittest_import_pb2.DESCRIPTOR]
+    )
+    self.assertEqual(
+        unittest_import_pb2.DESCRIPTOR.dependencies,
+        [unittest_import_public_pb2.DESCRIPTOR],
+    )
+    self.assertEqual(
+        unittest_import_pb2.DESCRIPTOR.public_dependencies,
+        [unittest_import_public_pb2.DESCRIPTOR],
+    )
+
   def testNoGenericServices(self):
-    self.assertTrue(hasattr(unittest_no_generic_services_pb2, "TestMessage"))
-    self.assertTrue(hasattr(unittest_no_generic_services_pb2, "FOO"))
-    self.assertTrue(hasattr(unittest_no_generic_services_pb2, "test_extension"))
+    self.assertTrue(hasattr(unittest_no_generic_services_pb2, 'TestMessage'))
+    self.assertTrue(hasattr(unittest_no_generic_services_pb2, 'FOO'))
+    self.assertTrue(hasattr(unittest_no_generic_services_pb2, 'test_extension'))
 
   def testMessageTypesByName(self):
     file_type = unittest_pb2.DESCRIPTOR
     self.assertEqual(
         unittest_pb2._TESTALLTYPES,
-        file_type.message_types_by_name[unittest_pb2._TESTALLTYPES.name])
+        file_type.message_types_by_name[unittest_pb2._TESTALLTYPES.name],
+    )
 
     # Nested messages shouldn't be included in the message_types_by_name
     # dictionary (like in the C++ API).
     self.assertFalse(
-        unittest_pb2._TESTALLTYPES_NESTEDMESSAGE.name in
-        file_type.message_types_by_name)
+        unittest_pb2._TESTALLTYPES_NESTEDMESSAGE.name
+        in file_type.message_types_by_name
+    )
 
   def testEnumTypesByName(self):
     file_type = unittest_pb2.DESCRIPTOR
     self.assertEqual(
         unittest_pb2._FOREIGNENUM,
-        file_type.enum_types_by_name[unittest_pb2._FOREIGNENUM.name])
+        file_type.enum_types_by_name[unittest_pb2._FOREIGNENUM.name],
+    )
 
   def testExtensionsByName(self):
     file_type = unittest_pb2.DESCRIPTOR
     self.assertEqual(
         unittest_pb2.my_extension_string,
-        file_type.extensions_by_name[unittest_pb2.my_extension_string.name])
+        file_type.extensions_by_name[unittest_pb2.my_extension_string.name],
+    )
 
   def testPublicImports(self):
     # Test public imports as embedded message.
@@ -315,20 +348,26 @@ class GeneratorTest(unittest.TestCase):
     # module, and is public imported by unittest_import_pb2 module.
     public_import_proto = unittest_import_pb2.PublicImportMessage()
     self.assertEqual(0, public_import_proto.e)
-    self.assertTrue(unittest_import_public_pb2.PublicImportMessage is
-                    unittest_import_pb2.PublicImportMessage)
+    self.assertTrue(
+        unittest_import_public_pb2.PublicImportMessage
+        is unittest_import_pb2.PublicImportMessage
+    )
 
   def testBadIdentifiers(self):
     # We're just testing that the code was imported without problems.
     message = test_bad_identifiers_pb2.TestBadIdentifiers()
-    self.assertEqual(message.Extensions[test_bad_identifiers_pb2.message],
-                     "foo")
-    self.assertEqual(message.Extensions[test_bad_identifiers_pb2.descriptor],
-                     "bar")
-    self.assertEqual(message.Extensions[test_bad_identifiers_pb2.reflection],
-                     "baz")
-    self.assertEqual(message.Extensions[test_bad_identifiers_pb2.service],
-                     "qux")
+    self.assertEqual(
+        message.Extensions[test_bad_identifiers_pb2.message], 'foo'
+    )
+    self.assertEqual(
+        message.Extensions[test_bad_identifiers_pb2.descriptor], 'bar'
+    )
+    self.assertEqual(
+        message.Extensions[test_bad_identifiers_pb2.reflection], 'baz'
+    )
+    self.assertEqual(
+        message.Extensions[test_bad_identifiers_pb2.service], 'qux'
+    )
 
   def testOneof(self):
     desc = unittest_pb2.TestAllTypes.DESCRIPTOR
@@ -347,8 +386,8 @@ class GeneratorTest(unittest.TestCase):
         'oneof_lazy_nested_message',
     ])
     self.assertEqual(
-        nested_names,
-        set([field.name for field in desc.oneofs[0].fields]))
+        nested_names, set([field.name for field in desc.oneofs[0].fields])
+    )
     for field_name, field_desc in desc.fields_by_name.items():
       if field_name in nested_names:
         self.assertIs(desc.oneofs[0], field_desc.containing_oneof)
@@ -356,14 +395,18 @@ class GeneratorTest(unittest.TestCase):
         self.assertIsNone(field_desc.containing_oneof)
 
   def testEnumWithDupValue(self):
-    self.assertEqual('FOO1',
-                     unittest_pb2.TestEnumWithDupValue.Name(unittest_pb2.FOO1))
-    self.assertEqual('FOO1',
-                     unittest_pb2.TestEnumWithDupValue.Name(unittest_pb2.FOO2))
-    self.assertEqual('BAR1',
-                     unittest_pb2.TestEnumWithDupValue.Name(unittest_pb2.BAR1))
-    self.assertEqual('BAR1',
-                     unittest_pb2.TestEnumWithDupValue.Name(unittest_pb2.BAR2))
+    self.assertEqual(
+        'FOO1', unittest_pb2.TestEnumWithDupValue.Name(unittest_pb2.FOO1)
+    )
+    self.assertEqual(
+        'FOO1', unittest_pb2.TestEnumWithDupValue.Name(unittest_pb2.FOO2)
+    )
+    self.assertEqual(
+        'BAR1', unittest_pb2.TestEnumWithDupValue.Name(unittest_pb2.BAR1)
+    )
+    self.assertEqual(
+        'BAR1', unittest_pb2.TestEnumWithDupValue.Name(unittest_pb2.BAR2)
+    )
 
 
 class SymbolDatabaseRegistrationTest(unittest.TestCase):
@@ -371,38 +414,52 @@ class SymbolDatabaseRegistrationTest(unittest.TestCase):
 
   def testGetSymbol(self):
     self.assertEqual(
-        unittest_pb2.TestAllTypes, symbol_database.Default().GetSymbol(
-            'proto2_unittest.TestAllTypes'))
+        unittest_pb2.TestAllTypes,
+        symbol_database.Default().GetSymbol('proto2_unittest.TestAllTypes'),
+    )
     self.assertEqual(
         unittest_pb2.TestAllTypes.NestedMessage,
         symbol_database.Default().GetSymbol(
-            'proto2_unittest.TestAllTypes.NestedMessage'))
+            'proto2_unittest.TestAllTypes.NestedMessage'
+        ),
+    )
     with self.assertRaises(KeyError):
       symbol_database.Default().GetSymbol('proto2_unittest.NestedMessage')
     self.assertEqual(
         unittest_pb2.TestAllTypes.OptionalGroup,
         symbol_database.Default().GetSymbol(
-            'proto2_unittest.TestAllTypes.OptionalGroup'))
+            'proto2_unittest.TestAllTypes.OptionalGroup'
+        ),
+    )
     self.assertEqual(
         unittest_pb2.TestAllTypes.RepeatedGroup,
         symbol_database.Default().GetSymbol(
-            'proto2_unittest.TestAllTypes.RepeatedGroup'))
+            'proto2_unittest.TestAllTypes.RepeatedGroup'
+        ),
+    )
 
   def testEnums(self):
     self.assertEqual(
         'proto2_unittest.ForeignEnum',
-        symbol_database.Default().pool.FindEnumTypeByName(
-            'proto2_unittest.ForeignEnum').full_name)
+        symbol_database.Default()
+        .pool.FindEnumTypeByName('proto2_unittest.ForeignEnum')
+        .full_name,
+    )
     self.assertEqual(
         'proto2_unittest.TestAllTypes.NestedEnum',
-        symbol_database.Default().pool.FindEnumTypeByName(
-            'proto2_unittest.TestAllTypes.NestedEnum').full_name)
+        symbol_database.Default()
+        .pool.FindEnumTypeByName('proto2_unittest.TestAllTypes.NestedEnum')
+        .full_name,
+    )
 
   def testFindFileByName(self):
     self.assertEqual(
         'google/protobuf/unittest.proto',
-        symbol_database.Default().pool.FindFileByName(
-            'google/protobuf/unittest.proto').name)
+        symbol_database.Default()
+        .pool.FindFileByName('google/protobuf/unittest.proto')
+        .name,
+    )
+
 
 if __name__ == '__main__':
   unittest.main()

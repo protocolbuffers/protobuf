@@ -72,6 +72,14 @@ std::string GetTypeUrl(const Descriptor* message) {
   return absl::StrCat(kTypeUrlPrefix, "/", message->full_name());
 }
 
+std::string str_repeat(absl::string_view s, int count) {
+  std::string result;
+  for (int i = 0; i < count; ++i) {
+    absl::StrAppend(&result, s);
+  }
+  return result;
+}
+
 /* Routines for building arbitrary protos *************************************/
 
 // We would use CodedOutputStream except that we want more freedom to build
@@ -3471,6 +3479,31 @@ void BinaryAndJsonConformanceSuiteImpl<MessageType>::RunJsonTestsForStruct() {
     }
   }
       )");
+
+  RunValidJsonTest(
+      "StructDeepNesting25", RECOMMENDED,
+      absl::StrCat(R"({"optionalStruct": {)", str_repeat(R"("n": {)", 25),
+                   R"("value": 1)", std::string(25, '}'), "}}"),
+      absl::StrCat("optional_struct: {\n",
+                   str_repeat("  fields: {\n"
+                              "    key: \"n\"\n"
+                              "    value: {\n"
+                              "      struct_value: {\n",
+                              25),
+                   "        fields: {\n"
+                   "          key: \"value\"\n"
+                   "          value: { number_value: 1 }\n"
+                   "        }\n",
+                   str_repeat("      }\n"
+                              "    }\n"
+                              "  }\n",
+                              25),
+                   "}\n"));
+
+  ExpectParseFailureForJson(
+      "StructDeepNesting200", RECOMMENDED,
+      absl::StrCat(R"({"optionalStruct": {)", str_repeat(R"("n": {)", 200),
+                   R"("value": 1)", std::string(200, '}'), "}}"));
 }
 
 template <typename MessageType>
@@ -3561,6 +3594,47 @@ void BinaryAndJsonConformanceSuiteImpl<MessageType>::RunJsonTestsForValue() {
                                 "optional_value: { number_value: nan}");
   ExpectSerializeFailureForJson("ValueRejectInfNumberValue", RECOMMENDED,
                                 "optional_value: { number_value: inf}");
+  RunValidJsonTest("ListValueDeepNesting25", RECOMMENDED,
+                   absl::StrCat(R"({"optionalValue": )", std::string(25, '['),
+                                "1", std::string(25, ']'), "}"),
+                   absl::StrCat("optional_value: {\n",
+                                str_repeat("  list_value: {\n"
+                                           "    values: {\n",
+                                           25),
+                                "      number_value: 1\n",
+                                str_repeat("    }\n"
+                                           "  }\n",
+                                           25),
+                                "}\n"));
+
+  ExpectParseFailureForJson(
+      "ListValueDeepNesting200", RECOMMENDED,
+      absl::StrCat(R"({"optionalValue": )", std::string(200, '['), "1",
+                   std::string(200, ']'), "}"));
+  RunValidJsonTest(
+      "ValueDeepNesting25", RECOMMENDED,
+      absl::StrCat(R"({"optionalValue": {)", str_repeat(R"("n": {)", 25),
+                   R"("value": 1)", std::string(25, '}'), "}}"),
+      absl::StrCat("optional_value: {\n", "  struct_value: {\n",
+                   str_repeat("    fields: {\n"
+                              "      key: \"n\"\n"
+                              "      value: {\n"
+                              "        struct_value: {\n",
+                              25),
+                   "          fields: {\n"
+                   "            key: \"value\"\n"
+                   "            value: { number_value: 1 }\n"
+                   "          }\n",
+                   str_repeat("        }\n"
+                              "      }\n"
+                              "    }\n",
+                              25),
+                   "  }\n", "}\n"));
+
+  ExpectParseFailureForJson(
+      "ValueDeepNesting200", RECOMMENDED,
+      absl::StrCat(R"({"optionalValue": {)", str_repeat(R"("n": {)", 200),
+                   R"("value": 1)", std::string(200, '}'), "}}"));
 }
 
 template <typename MessageType>
