@@ -1361,6 +1361,7 @@ set(protobuf_test_files
   ${protobuf_SOURCE_DIR}/src/google/protobuf/string_piece_field_support_unittest.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/string_view_test.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/symbol_checker_test.cc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/text_format_fix_test.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/text_format_unittest.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/unknown_field_set_unittest.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/unredacted_debug_format_for_test.cc
