@@ -82,7 +82,7 @@ void upb_DecodeFast_Message(upb_Decoder* d, const char** ptr, upb_Message* msg,
     return;
   }
 
-  if (--d->depth == 0) {
+  if (--d->depth < 0) {
     _upb_FastDecoder_ErrorJmp(d, kUpb_DecodeStatus_MaxDepthExceeded);
   }
 
