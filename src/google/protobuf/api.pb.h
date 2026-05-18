@@ -473,8 +473,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Method final : publ
     kSyntaxFieldNumber = 7,
   };
   // repeated .google.protobuf.Option options = 6;
-  [[nodiscard]] int options_size()
-      const;
+  [[nodiscard]] int options_size() const;
   private:
   int _internal_options_size() const;
 
@@ -789,8 +788,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Api final : public 
     kSyntaxFieldNumber = 7,
   };
   // repeated .google.protobuf.Method methods = 2;
-  [[nodiscard]] int methods_size()
-      const;
+  [[nodiscard]] int methods_size() const;
   private:
   int _internal_methods_size() const;
 
@@ -810,8 +808,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Api final : public 
 
   public:
   // repeated .google.protobuf.Option options = 3;
-  [[nodiscard]] int options_size()
-      const;
+  [[nodiscard]] int options_size() const;
   private:
   int _internal_options_size() const;
 
@@ -831,8 +828,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Api final : public 
 
   public:
   // repeated .google.protobuf.Mixin mixins = 6;
-  [[nodiscard]] int mixins_size()
-      const;
+  [[nodiscard]] int mixins_size() const;
   private:
   int _internal_mixins_size() const;
 
@@ -897,8 +893,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Api final : public 
 
   public:
   // .google.protobuf.SourceContext source_context = 5;
-  [[nodiscard]] bool has_source_context()
-      const;
+  [[nodiscard]] bool has_source_context() const;
   void clear_source_context() ;
   [[nodiscard]] const ::google::protobuf::SourceContext& source_context() const;
   [[nodiscard]] ::google::protobuf::SourceContext* PROTOBUF_NULLABLE release_source_context();

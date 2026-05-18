@@ -129,6 +129,8 @@ TEST(ThreadSafeArenaStatsTest, FindBin) {
 }
 
 TEST(ThreadSafeArenaStatsTest, MinMaxBlockSizeForBin) {
+  std::pair<size_t, size_t> prev_limits =
+      ThreadSafeArenaStats::MinMaxBlockSizeForBin(0);
   std::pair<size_t, size_t> current_limits =
       ThreadSafeArenaStats::MinMaxBlockSizeForBin(0);
   EXPECT_EQ(current_limits.first, 1);
@@ -142,9 +144,14 @@ TEST(ThreadSafeArenaStatsTest, MinMaxBlockSizeForBin) {
     if (i != ThreadSafeArenaStats::kBlockHistogramBins - 1) {
       EXPECT_EQ(next_limits.second, 2 * current_limits.second);
     }
+    prev_limits = current_limits;
     current_limits = next_limits;
   }
   // Test the limits cover the entire range possible.
+  EXPECT_EQ(prev_limits.second, 2 << 20);
+  EXPECT_EQ(current_limits.first,
+            ThreadSafeArenaStats::kMaxSizeForPenultimateBin + 1);
+  EXPECT_EQ(current_limits.first, (2 << 20) + 1);
   EXPECT_EQ(current_limits.second, std::numeric_limits<size_t>::max());
 }
 

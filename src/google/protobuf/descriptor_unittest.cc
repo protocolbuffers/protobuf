@@ -119,6 +119,94 @@ namespace protobuf {
 // Can't use an anonymous namespace here due to brokenness of Tru64 compiler.
 namespace descriptor_unittest {
 
+std::string TextProtoTooManyFieldsPerMessageForEdition(
+    absl::string_view edition) {
+  std::string text_proto_string = absl::Substitute(R"schema(
+    edition = "$0";
+    package limit1;
+    message M {
+  )schema",
+                                                   edition);
+
+  // Continuously append to the textproto string up to our proto limit.
+  for (int i = 1; i <= (internal::kLimit2026FieldsPerMessage + 1); ++i) {
+    absl::StrAppend(&text_proto_string,
+                    absl::StrFormat("    int32 field_%d = %d;\n", i, i));
+  }
+  absl::StrAppend(&text_proto_string, "}");
+
+  return text_proto_string;
+}
+
+std::string TextProtoTooManyValuesPerEnumForEdition(absl::string_view edition) {
+  std::string text_proto_string = absl::Substitute(R"schema(
+    edition = "$0";
+    package limit1;
+    message M {
+      enum E {
+        E_UNKNOWN = 0;
+  )schema",
+                                                   edition);
+  // Continuously append to the textproto string up to our proto limit.
+  for (int i = 1; i <= (internal::kLimit2026ValuesPerEnum + 1); ++i) {
+    absl::StrAppend(&text_proto_string,
+                    absl::StrFormat("        NUMBER_%d = %d;", i, i));
+  }
+  absl::StrAppend(&text_proto_string, R"schema(
+      }
+      E enum_field = 1;
+    }
+  )schema");
+
+  return text_proto_string;
+}
+
+std::string TextProtoTooManyFieldsPerOneofForEdition(
+    absl::string_view edition) {
+  std::string text_proto_string = absl::Substitute(R"schema(
+    edition = "$0";
+    package limit1;
+    message M {
+      oneof O {
+  )schema",
+                                                   edition);
+  // Continuously append to the textproto string up to our proto limit.
+  for (int i = 1; i <= (internal::kLimit2026FieldsPerOneof + 1); ++i) {
+    absl::StrAppend(&text_proto_string,
+                    absl::StrFormat("        int32 int_field_%d = %d;", i, i));
+  }
+  absl::StrAppend(&text_proto_string, R"schema(
+      }
+    }
+  )schema");
+
+  return text_proto_string;
+}
+
+std::string TextProtoTooManyOneofsPerMessageForEdition(
+    absl::string_view edition) {
+  std::string text_proto_string = absl::Substitute(R"schema(
+    edition = "$0";
+    package limit1;
+    message M {
+  )schema",
+                                                   edition);
+  // Continuously append to the textproto string up to our proto limit.
+  for (int i = 1; i <= (internal::kLimit2026OneofsPerMessage + 1); ++i) {
+    absl::StrAppend(&text_proto_string, absl::StrFormat(R"schema(
+                      oneof O_%d {
+                        int32 int_field_%d = %d;
+                      }
+                    )schema",
+                                                        i, i, i));
+  }
+  absl::StrAppend(&text_proto_string, R"schema(
+    }
+  )schema");
+
+  return text_proto_string;
+}
+
 // Some helpers to make assembling descriptors faster.
 DescriptorProto* AddMessage(FileDescriptorProto* file,
                             const std::string& name) {
@@ -7915,6 +8003,34 @@ TEST_F(ValidationErrorTest, MapEntryBase) {
   BuildFile(text_proto);
 }
 
+TEST_F(ValidationErrorTest, GroupFieldPointingToMapEntryIsNotMap) {
+  // TYPE_GROUP field referencing a map_entry message should produce a
+  // validation error. Groups cannot be map entries.
+  BuildFileWithErrors(
+      "name: 'group_map.proto' "
+      "message_type { "
+      "  name: 'Foo' "
+      "  field { "
+      "    name: 'foomapentry' number: 1 label: LABEL_REPEATED "
+      "    type: TYPE_GROUP type_name: 'FooMapEntry' "
+      "  } "
+      "  nested_type { "
+      "    name: 'FooMapEntry' "
+      "    options { map_entry: true } "
+      "    field { "
+      "      name: 'key' number: 1 type: TYPE_INT32 label: LABEL_OPTIONAL "
+      "    } "
+      "    field { "
+      "      name: 'value' number: 2 type: TYPE_INT32 label: LABEL_OPTIONAL "
+      "    } "
+      "  } "
+      "} ",
+
+      "group_map.proto: Foo.foomapentry: TYPE: Groups cannot be map entries. "
+      "Use a regular message field with map<KeyType, ValueType> syntax "
+      "instead.\n");
+}
+
 TEST_F(ValidationErrorTest, MapEntryExtensionRange) {
   FileDescriptorProto file_proto;
   FillValidMapEntry(&file_proto);
@@ -9316,6 +9432,7 @@ TEST_F(FeaturesTest, Proto2Features) {
                 json_format: LEGACY_BEST_EFFORT
                 enforce_naming_style: STYLE_LEGACY
                 default_symbol_visibility: EXPORT_ALL
+                enforce_proto_limits: LEGACY_NO_EXPLICIT_LIMITS
                 [pb.cpp] {
                   legacy_closed_enum: true
                   string_type: STRING
@@ -9331,6 +9448,7 @@ TEST_F(FeaturesTest, Proto2Features) {
                 json_format: LEGACY_BEST_EFFORT
                 enforce_naming_style: STYLE_LEGACY
                 default_symbol_visibility: EXPORT_ALL
+                enforce_proto_limits: LEGACY_NO_EXPLICIT_LIMITS
                 [pb.cpp] {
                   legacy_closed_enum: true
                   string_type: STRING
@@ -9346,6 +9464,7 @@ TEST_F(FeaturesTest, Proto2Features) {
                 json_format: LEGACY_BEST_EFFORT
                 enforce_naming_style: STYLE_LEGACY
                 default_symbol_visibility: EXPORT_ALL
+                enforce_proto_limits: LEGACY_NO_EXPLICIT_LIMITS
                 [pb.cpp] {
                   legacy_closed_enum: true
                   string_type: STRING
@@ -9429,6 +9548,7 @@ TEST_F(FeaturesTest, Proto3Features) {
                 json_format: ALLOW
                 enforce_naming_style: STYLE_LEGACY
                 default_symbol_visibility: EXPORT_ALL
+                enforce_proto_limits: LEGACY_NO_EXPLICIT_LIMITS
                 [pb.cpp] {
                   legacy_closed_enum: false
                   string_type: STRING
@@ -9444,6 +9564,7 @@ TEST_F(FeaturesTest, Proto3Features) {
                 json_format: ALLOW
                 enforce_naming_style: STYLE_LEGACY
                 default_symbol_visibility: EXPORT_ALL
+                enforce_proto_limits: LEGACY_NO_EXPLICIT_LIMITS
                 [pb.cpp] {
                   legacy_closed_enum: false
                   string_type: STRING
@@ -9627,6 +9748,7 @@ TEST_F(FeaturesTest, Edition2023Defaults) {
                 json_format: ALLOW
                 enforce_naming_style: STYLE_LEGACY
                 default_symbol_visibility: EXPORT_ALL
+                enforce_proto_limits: LEGACY_NO_EXPLICIT_LIMITS
                 [pb.cpp] {
                   legacy_closed_enum: false
                   string_type: STRING
@@ -9744,6 +9866,42 @@ TEST_F(FeaturesTest, Edition2024Defaults) {
                 json_format: ALLOW
                 enforce_naming_style: STYLE2024
                 default_symbol_visibility: EXPORT_TOP_LEVEL
+                enforce_proto_limits: LEGACY_NO_EXPLICIT_LIMITS
+                [pb.cpp] {
+                  legacy_closed_enum: false
+                  string_type: VIEW
+                  enum_name_uses_string_view: true
+                  repeated_type: LEGACY
+                }
+              )pb"));
+
+  // Since pb::test is registered in the pool, it should end up with defaults in
+  // our FeatureSet.
+  EXPECT_TRUE(GetFeatures(file).HasExtension(pb::test));
+  EXPECT_EQ(GetFeatures(file).GetExtension(pb::test).file_feature(),
+            pb::VALUE3);
+}
+
+TEST_F(FeaturesTest, Edition2026Defaults) {
+  FileDescriptorProto file_proto = ParseTextOrDie(R"pb(
+    name: "foo.proto"
+    syntax: "editions"
+    edition: EDITION_2026
+  )pb");
+
+  BuildDescriptorMessagesInTestPool();
+  const FileDescriptor* file = ABSL_DIE_IF_NULL(pool_.BuildFile(file_proto));
+  EXPECT_THAT(file->options(), EqualsProto(""));
+  EXPECT_THAT(GetCoreFeatures(file), EqualsProto(R"pb(
+                field_presence: EXPLICIT
+                enum_type: OPEN
+                repeated_field_encoding: PACKED
+                utf8_validation: VERIFY
+                message_encoding: LENGTH_PREFIXED
+                json_format: ALLOW
+                enforce_naming_style: STYLE2026
+                default_symbol_visibility: EXPORT_TOP_LEVEL
+                enforce_proto_limits: PROTO_LIMITS2026
                 [pb.cpp] {
                   legacy_closed_enum: false
                   string_type: VIEW
@@ -9780,6 +9938,7 @@ TEST_F(FeaturesBaseTest, DefaultEdition2023Defaults) {
                 json_format: ALLOW
                 enforce_naming_style: STYLE_LEGACY
                 default_symbol_visibility: EXPORT_ALL
+                enforce_proto_limits: LEGACY_NO_EXPLICIT_LIMITS
                 [pb.cpp] {
                   legacy_closed_enum: false
                   string_type: STRING
@@ -9811,6 +9970,7 @@ TEST_F(FeaturesTest, ClearsOptions) {
                 json_format: ALLOW
                 enforce_naming_style: STYLE_LEGACY
                 default_symbol_visibility: EXPORT_ALL
+                enforce_proto_limits: LEGACY_NO_EXPLICIT_LIMITS
                 [pb.cpp] {
                   legacy_closed_enum: false
                   string_type: STRING
@@ -10181,6 +10341,7 @@ TEST_F(FeaturesTest, NoOptions) {
                 json_format: ALLOW
                 enforce_naming_style: STYLE_LEGACY
                 default_symbol_visibility: EXPORT_ALL
+                enforce_proto_limits: LEGACY_NO_EXPLICIT_LIMITS
                 [pb.cpp] {
                   legacy_closed_enum: false
                   string_type: STRING
@@ -10217,6 +10378,7 @@ TEST_F(FeaturesTest, FileFeatures) {
                 json_format: ALLOW
                 enforce_naming_style: STYLE_LEGACY
                 default_symbol_visibility: EXPORT_ALL
+                enforce_proto_limits: LEGACY_NO_EXPLICIT_LIMITS
                 [pb.cpp] {
                   legacy_closed_enum: false
                   string_type: STRING
@@ -10301,6 +10463,7 @@ TEST_F(FeaturesTest, MessageFeaturesDefault) {
                 json_format: ALLOW
                 enforce_naming_style: STYLE_LEGACY
                 default_symbol_visibility: EXPORT_ALL
+                enforce_proto_limits: LEGACY_NO_EXPLICIT_LIMITS
                 [pb.cpp] {
                   legacy_closed_enum: false
                   string_type: STRING
@@ -10415,6 +10578,7 @@ TEST_F(FeaturesTest, FieldFeaturesDefault) {
                 json_format: ALLOW
                 enforce_naming_style: STYLE_LEGACY
                 default_symbol_visibility: EXPORT_ALL
+                enforce_proto_limits: LEGACY_NO_EXPLICIT_LIMITS
                 [pb.cpp] {
                   legacy_closed_enum: false
                   string_type: STRING
@@ -10824,7 +10988,7 @@ TEST_F(FeaturesTest, NoNamingStyleViolationsWithCollisionsInStyle2024) {
 
   // Check that naming collisions are allowed in STYLE2024.
   ASSERT_THAT(ParseAndBuildFile("naming.proto", R"schema(
-    edition = "UNSTABLE";
+    edition = "2026";
     option features.enforce_naming_style = STYLE2024;
     package naming;
     message Foo {
@@ -10841,7 +11005,7 @@ TEST_F(FeaturesTest, NoNamingStyleViolationsWithCollisionsInStyle2026) {
 
   // These are allowed because they don't collide with any existing field.
   ASSERT_THAT(ParseAndBuildFile("naming.proto", R"schema(
-    edition = "UNSTABLE";
+    edition = "2026";
     option features.enforce_naming_style = STYLE2026;
     package naming;
     message Foo {
@@ -10859,7 +11023,7 @@ TEST_F(FeaturesTest, NoNamingStyleViolationsWithCollisionsOneOfInStyle2026) {
 
   // This is allowed because the oneof doesn't collide with any existing field.
   ASSERT_THAT(ParseAndBuildFile("naming.proto", R"schema(
-    edition = "UNSTABLE";
+    edition = "2026";
     option features.enforce_naming_style = STYLE2026;
     package naming;
     message Foo {
@@ -10897,7 +11061,7 @@ TEST_P(CollisionNameTest, NamingStyleViolationsWithCollisionsInStyle2026) {
   pool_.EnforceNamingStyle(true);
   const CollisionNameParam& param = GetParam();
   std::string schema = absl::Substitute(R"schema(
-    edition = "UNSTABLE";
+    edition = "2026";
     message Foo {
       string $0 = 1;
       string test_field = 2;
@@ -10916,7 +11080,7 @@ TEST_P(CollisionNameTest, NamingStyleViolationsInvalidFieldNameInStyle2026) {
   BuildDescriptorMessagesInTestPool();
   pool_.EnforceNamingStyle(true);
   std::string schema = absl::StrCat(R"schema(
-    edition = "UNSTABLE";
+    edition = "2026";
     message Foo {
       string descriptor = 1;
     }
@@ -10932,7 +11096,7 @@ TEST_P(CollisionNameTest,
   BuildDescriptorMessagesInTestPool();
   pool_.EnforceNamingStyle(true);
   std::string schema = absl::StrCat(R"schema(
-    edition = "UNSTABLE";
+    edition = "2026";
     message Foo {
       oneof bar {
         string has_test_field = 1;
@@ -10952,7 +11116,7 @@ TEST_P(CollisionNameTest,
   BuildDescriptorMessagesInTestPool();
   pool_.EnforceNamingStyle(true);
   std::string schema = absl::StrCat(R"schema(
-    edition = "UNSTABLE";
+    edition = "2026";
     message Foo {
       oneof has_test_field {
         string test_field = 1;
@@ -10971,7 +11135,7 @@ TEST_P(CollisionNameTest,
   BuildDescriptorMessagesInTestPool();
   pool_.EnforceNamingStyle(true);
   std::string schema = absl::StrCat(R"schema(
-    edition = "UNSTABLE";
+    edition = "2026";
     message Foo {
       oneof test_field {
         string has_test_field = 1;
@@ -10988,7 +11152,7 @@ TEST_P(CollisionNameTest, NamingStyleViolationsInvalidOneOfNameInStyle2026) {
   BuildDescriptorMessagesInTestPool();
   pool_.EnforceNamingStyle(true);
   std::string schema = absl::StrCat(R"schema(
-    edition = "UNSTABLE";
+    edition = "2026";
     message Foo {
       oneof descriptor {
         string test_field = 1;
@@ -11200,6 +11364,106 @@ TEST_F(FeaturesTest, BadMethodName) {
       "Method name badMethodName should begin with a capital letter");
 }
 
+TEST_F(FeaturesTest, LegacyNoExplicitLimitsFieldsPerMessage) {
+  BuildDescriptorMessagesInTestPool();
+  pool_.EnforceProtoLimits(true);
+
+  std::string text_proto_string =
+      TextProtoTooManyFieldsPerMessageForEdition("2024");
+
+  // Edition 2024 and earlier protos are not subject to limit enforcement.
+  ASSERT_THAT(ParseAndBuildFile("limit1.proto", text_proto_string), NotNull());
+}
+
+TEST_F(FeaturesTest, ProtoLimits2026FieldsPerMessage) {
+  BuildDescriptorMessagesInTestPool();
+  pool_.EnforceProtoLimits(true);
+
+  std::string text_proto_string =
+      TextProtoTooManyFieldsPerMessageForEdition("2026");
+
+  ParseAndBuildFileWithErrorSubstr(
+      "limit1.proto", text_proto_string,
+      "Message name M should not contain more than 1500 fields "
+      "(features.enforce_proto_limits = LEGACY_NO_EXPLICIT_LIMITS "
+      "can be used to opt out of this check)");
+}
+
+TEST_F(FeaturesTest, LegacyNoExplicitLimitsValuesPerEnum) {
+  BuildDescriptorMessagesInTestPool();
+  pool_.EnforceProtoLimits(true);
+
+  // Edition 2024 and earlier protos are not subject to limit enforcement.
+  std::string text_proto_string =
+      TextProtoTooManyValuesPerEnumForEdition("2024");
+
+  ASSERT_THAT(ParseAndBuildFile("limit1.proto", text_proto_string), NotNull());
+}
+
+TEST_F(FeaturesTest, ProtoLimits2026ValuesPerEnum) {
+  BuildDescriptorMessagesInTestPool();
+  pool_.EnforceProtoLimits(true);
+
+  std::string text_proto_string =
+      TextProtoTooManyValuesPerEnumForEdition("2026");
+
+  ParseAndBuildFileWithErrorSubstr(
+      "limit1.proto", text_proto_string,
+      "Enum name E should not contain more than 1700 values "
+      "(features.enforce_proto_limits = LEGACY_NO_EXPLICIT_LIMITS "
+      "can be used to opt out of this check)");
+}
+
+TEST_F(FeaturesTest, LegacyNoExplicitLimitsFieldsPerOneof) {
+  BuildDescriptorMessagesInTestPool();
+  pool_.EnforceProtoLimits(true);
+
+  // Edition 2024 and earlier protos are not subject to limit enforcement.
+  std::string text_proto_string =
+      TextProtoTooManyFieldsPerOneofForEdition("2024");
+
+  ASSERT_THAT(ParseAndBuildFile("limit1.proto", text_proto_string), NotNull());
+}
+
+TEST_F(FeaturesTest, ProtoLimits2026FieldsPerOneof) {
+  BuildDescriptorMessagesInTestPool();
+  pool_.EnforceProtoLimits(true);
+
+  std::string text_proto_string =
+      TextProtoTooManyFieldsPerOneofForEdition("2026");
+
+  ParseAndBuildFileWithErrorSubstr(
+      "limit1.proto", text_proto_string,
+      "Oneof name O should not contain more than 1200 fields "
+      "(features.enforce_proto_limits = LEGACY_NO_EXPLICIT_LIMITS "
+      "can be used to opt out of this check)");
+}
+
+TEST_F(FeaturesTest, LegacyNoExplicitLimitsOneofsPerMessage) {
+  BuildDescriptorMessagesInTestPool();
+  pool_.EnforceProtoLimits(true);
+
+  // Edition 2024 and earlier protos are not subject to limit enforcement.
+  std::string text_proto_string =
+      TextProtoTooManyOneofsPerMessageForEdition("2024");
+
+  ASSERT_THAT(ParseAndBuildFile("limit1.proto", text_proto_string), NotNull());
+}
+
+TEST_F(FeaturesTest, ProtoLimits2026OneofsPerMessage) {
+  BuildDescriptorMessagesInTestPool();
+  pool_.EnforceProtoLimits(true);
+
+  std::string text_proto_string =
+      TextProtoTooManyOneofsPerMessageForEdition("2026");
+
+  ParseAndBuildFileWithErrorSubstr(
+      "limit1.proto", text_proto_string,
+      "Message name M should not contain more than 1000 oneofs "
+      "(features.enforce_proto_limits = LEGACY_NO_EXPLICIT_LIMITS "
+      "can be used to opt out of this check)");
+}
+
 TEST_F(FeaturesTest, MapFieldFeaturesInheritedMessageEncoding) {
   BuildDescriptorMessagesInTestPool();
   const FileDescriptor* file = ParseAndBuildFile("foo.proto", R"schema(
@@ -11341,6 +11605,7 @@ TEST_F(FeaturesTest, EnumFeaturesDefault) {
                 json_format: ALLOW
                 enforce_naming_style: STYLE_LEGACY
                 default_symbol_visibility: EXPORT_ALL
+                enforce_proto_limits: LEGACY_NO_EXPLICIT_LIMITS
                 [pb.cpp] {
                   legacy_closed_enum: false
                   string_type: STRING
@@ -11459,6 +11724,7 @@ TEST_F(FeaturesTest, EnumValueFeaturesDefault) {
                 json_format: ALLOW
                 enforce_naming_style: STYLE_LEGACY
                 default_symbol_visibility: EXPORT_ALL
+                enforce_proto_limits: LEGACY_NO_EXPLICIT_LIMITS
                 [pb.cpp] {
                   legacy_closed_enum: false
                   string_type: STRING
@@ -11561,6 +11827,7 @@ TEST_F(FeaturesTest, OneofFeaturesDefault) {
                 json_format: ALLOW
                 enforce_naming_style: STYLE_LEGACY
                 default_symbol_visibility: EXPORT_ALL
+                enforce_proto_limits: LEGACY_NO_EXPLICIT_LIMITS
                 [pb.cpp] {
                   legacy_closed_enum: false
                   string_type: STRING
@@ -11672,6 +11939,7 @@ TEST_F(FeaturesTest, ExtensionRangeFeaturesDefault) {
                 json_format: ALLOW
                 enforce_naming_style: STYLE_LEGACY
                 default_symbol_visibility: EXPORT_ALL
+                enforce_proto_limits: LEGACY_NO_EXPLICIT_LIMITS
                 [pb.cpp] {
                   legacy_closed_enum: false
                   string_type: STRING
@@ -11768,6 +12036,7 @@ TEST_F(FeaturesTest, ServiceFeaturesDefault) {
                 json_format: ALLOW
                 enforce_naming_style: STYLE_LEGACY
                 default_symbol_visibility: EXPORT_ALL
+                enforce_proto_limits: LEGACY_NO_EXPLICIT_LIMITS
                 [pb.cpp] {
                   legacy_closed_enum: false
                   string_type: STRING
@@ -11841,6 +12110,7 @@ TEST_F(FeaturesTest, MethodFeaturesDefault) {
                 json_format: ALLOW
                 enforce_naming_style: STYLE_LEGACY
                 default_symbol_visibility: EXPORT_ALL
+                enforce_proto_limits: LEGACY_NO_EXPLICIT_LIMITS
                 [pb.cpp] {
                   legacy_closed_enum: false
                   string_type: STRING
@@ -13051,6 +13321,7 @@ TEST_F(FeaturesTest, UninterpretedOptions) {
                 json_format: ALLOW
                 enforce_naming_style: STYLE_LEGACY
                 default_symbol_visibility: EXPORT_ALL
+                enforce_proto_limits: LEGACY_NO_EXPLICIT_LIMITS
                 [pb.cpp] {
                   legacy_closed_enum: false
                   string_type: STRING
@@ -13899,6 +14170,7 @@ TEST_F(DescriptorPoolFeaturesTest, OverrideDefaults) {
         json_format: ALLOW
         enforce_naming_style: STYLE_LEGACY
         default_symbol_visibility: EXPORT_ALL
+        enforce_proto_limits: LEGACY_NO_EXPLICIT_LIMITS
       }
     }
     minimum_edition: EDITION_PROTO2
@@ -13923,6 +14195,7 @@ TEST_F(DescriptorPoolFeaturesTest, OverrideDefaults) {
                 json_format: ALLOW
                 enforce_naming_style: STYLE_LEGACY
                 default_symbol_visibility: EXPORT_ALL
+                enforce_proto_limits: LEGACY_NO_EXPLICIT_LIMITS
               )pb"));
 }
 
@@ -13939,6 +14212,7 @@ TEST_F(DescriptorPoolFeaturesTest, OverrideFieldDefaults) {
         json_format: ALLOW
         enforce_naming_style: STYLE_LEGACY
         default_symbol_visibility: EXPORT_ALL
+        enforce_proto_limits: LEGACY_NO_EXPLICIT_LIMITS
       }
     }
     minimum_edition: EDITION_PROTO2
@@ -13968,6 +14242,7 @@ TEST_F(DescriptorPoolFeaturesTest, OverrideFieldDefaults) {
                 json_format: ALLOW
                 enforce_naming_style: STYLE_LEGACY
                 default_symbol_visibility: EXPORT_ALL
+                enforce_proto_limits: LEGACY_NO_EXPLICIT_LIMITS
               )pb"));
 }
 
