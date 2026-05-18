@@ -2839,6 +2839,20 @@ class Proto3Test(unittest.TestCase):
     self.assertEqual(keys, int32_foreign_keys)
     self.assertEqual(keys, list(msg.map_int32_foreign_message.keys()))
 
+  def test_map_clear_during_iteration(self):
+    # Regression: clear() did not bump iterator version, causing UAF.
+    msg = map_unittest_pb2.TestMap()
+    msg.map_string_string['a'] = '1'
+    msg.map_string_string['b'] = '2'
+    msg.map_string_string['c'] = '3'
+    msg.map_string_string['d'] = '4'
+
+    it = iter(msg.map_string_string)
+    next(it)
+    msg.map_string_string.clear()
+    with self.assertRaises(RuntimeError):
+      next(it)
+        
   def testSubmessageMap(self):
     msg = map_unittest_pb2.TestMap()
 
