@@ -107,6 +107,54 @@ TEST(CompareTest, UnknownFieldsOrdering) {
           {{1, Group({{2, Group({{4, Fixed64(123)}, {3, Fixed32(456)}})}})}}));
 }
 
+// This test triggers the merge sort bug in compare_unknown.c line 105.
+// The bug: in upb_UnknownFields_Merge(), the "else if (ptr2 < end2)" branch
+// copies from ptr1 (already exhausted) instead of ptr2 (the actual remainder).
+// This corrupts the sorted array, causing equal messages to compare as NotEqual.
+//
+// The key is to create field orderings where the RIGHT half of a merge has
+// remaining elements after the left half is exhausted. For example:
+//   Input [2, 1, 3] splits into [2] and [1, 3]
+//   After recursive sort: [2] and [1, 3]
+//   Merge: take 1 (from right), take 2 (from left) -> left exhausted
+//   Remainder: ptr2 points to [3] but the bug copies from ptr1 (stale data)
+TEST(CompareTest, MergeSortBug_RightHalfRemainder) {
+  // 3 elements: [2, 1, 3] vs [1, 2, 3] - simplest trigger
+  EXPECT_EQ(kUpb_UnknownCompareResult_Equal,
+            CompareUnknown({{2, Varint(200)}, {1, Varint(100)}, {3, Varint(300)}},
+                           {{1, Varint(100)}, {2, Varint(200)}, {3, Varint(300)}}));
+
+  // 5 elements: [2, 4, 1, 3, 5] vs [1, 2, 3, 4, 5]
+  EXPECT_EQ(kUpb_UnknownCompareResult_Equal,
+            CompareUnknown({{2, Varint(200)},
+                            {4, Varint(400)},
+                            {1, Varint(100)},
+                            {3, Varint(300)},
+                            {5, Varint(500)}},
+                           {{1, Varint(100)},
+                            {2, Varint(200)},
+                            {3, Varint(300)},
+                            {4, Varint(400)},
+                            {5, Varint(500)}}));
+
+  // 7 elements: complex shuffle that triggers multiple buggy merges
+  EXPECT_EQ(kUpb_UnknownCompareResult_Equal,
+            CompareUnknown({{4, Varint(400)},
+                            {6, Varint(600)},
+                            {2, Varint(200)},
+                            {7, Varint(700)},
+                            {1, Varint(100)},
+                            {3, Varint(300)},
+                            {5, Varint(500)}},
+                           {{1, Varint(100)},
+                            {2, Varint(200)},
+                            {3, Varint(300)},
+                            {4, Varint(400)},
+                            {5, Varint(500)},
+                            {6, Varint(600)},
+                            {7, Varint(700)}}));
+}
+
 TEST(CompareTest, LongVarint) {
   EXPECT_EQ(kUpb_UnknownCompareResult_Equal,
             CompareUnknownWithMaxDepth({{1, Varint(123)}, {2, Varint(456)}},
