@@ -4,7 +4,6 @@
 # Use of this source code is governed by a BSD-style
 # license that can be found in the LICENSE file or at
 # https://developers.google.com/open-source/licenses/bsd
-
 """A database of Python protocol buffer generated symbols.
 
 SymbolDatabase is the MessageFactory for messages generated at compile time,
@@ -36,12 +35,12 @@ Example usage::
 
 import warnings
 
-from google.protobuf.internal import api_implementation
 from google.protobuf import descriptor_pool
 from google.protobuf import message_factory
+from google.protobuf.internal import api_implementation
 
 
-class SymbolDatabase():
+class SymbolDatabase:
   """A database of Python generated symbols."""
 
   # local cache of registered classes.

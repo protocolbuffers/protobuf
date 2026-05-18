@@ -20,6 +20,14 @@ TEST(Log2Test, Log2Ceiling) {
   EXPECT_EQ(upb_Log2Ceiling(8), 3);
 
   EXPECT_EQ(upb_Log2Ceiling(SIZE_MAX), sizeof(size_t) * CHAR_BIT);
+
+#if SIZE_MAX > 0xffffffffU
+  size_t x = ((size_t)1 << 32) + 1;
+  EXPECT_EQ(upb_Log2Ceiling(x), 33);
+
+  size_t y = ((size_t)1 << 35) + 1;
+  EXPECT_EQ(upb_Log2Ceiling(y), 36);
+#endif
 }
 
 TEST(Log2Test, RoundUpToPowerOfTwo) {

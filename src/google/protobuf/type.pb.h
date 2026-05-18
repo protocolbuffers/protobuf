@@ -433,8 +433,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Option final : publ
 
   public:
   // .google.protobuf.Any value = 2;
-  [[nodiscard]] bool has_value()
-      const;
+  [[nodiscard]] bool has_value() const;
   void clear_value() ;
   [[nodiscard]] const ::google::protobuf::Any& value() const;
   [[nodiscard]] ::google::protobuf::Any* PROTOBUF_NULLABLE release_value();
@@ -709,8 +708,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Field final : publi
     kPackedFieldNumber = 8,
   };
   // repeated .google.protobuf.Option options = 9;
-  [[nodiscard]] int options_size()
-      const;
+  [[nodiscard]] int options_size() const;
   private:
   int _internal_options_size() const;
 
@@ -1042,8 +1040,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED EnumValue final : p
     kNumberFieldNumber = 2,
   };
   // repeated .google.protobuf.Option options = 3;
-  [[nodiscard]] int options_size()
-      const;
+  [[nodiscard]] int options_size() const;
   private:
   int _internal_options_size() const;
 
@@ -1287,8 +1284,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Type final : public
     kSyntaxFieldNumber = 6,
   };
   // repeated .google.protobuf.Field fields = 2;
-  [[nodiscard]] int fields_size()
-      const;
+  [[nodiscard]] int fields_size() const;
   private:
   int _internal_fields_size() const;
 
@@ -1308,8 +1304,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Type final : public
 
   public:
   // repeated string oneofs = 3;
-  [[nodiscard]] int oneofs_size()
-      const;
+  [[nodiscard]] int oneofs_size() const;
   private:
   int _internal_oneofs_size() const;
 
@@ -1335,8 +1330,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Type final : public
 
   public:
   // repeated .google.protobuf.Option options = 4;
-  [[nodiscard]] int options_size()
-      const;
+  [[nodiscard]] int options_size() const;
   private:
   int _internal_options_size() const;
 
@@ -1386,8 +1380,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Type final : public
 
   public:
   // .google.protobuf.SourceContext source_context = 5;
-  [[nodiscard]] bool has_source_context()
-      const;
+  [[nodiscard]] bool has_source_context() const;
   void clear_source_context() ;
   [[nodiscard]] const ::google::protobuf::SourceContext& source_context() const;
   [[nodiscard]] ::google::protobuf::SourceContext* PROTOBUF_NULLABLE release_source_context();
@@ -1614,8 +1607,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Enum final : public
     kSyntaxFieldNumber = 5,
   };
   // repeated .google.protobuf.EnumValue enumvalue = 2;
-  [[nodiscard]] int enumvalue_size()
-      const;
+  [[nodiscard]] int enumvalue_size() const;
   private:
   int _internal_enumvalue_size() const;
 
@@ -1635,8 +1627,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Enum final : public
 
   public:
   // repeated .google.protobuf.Option options = 3;
-  [[nodiscard]] int options_size()
-      const;
+  [[nodiscard]] int options_size() const;
   private:
   int _internal_options_size() const;
 
@@ -1686,8 +1677,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Enum final : public
 
   public:
   // .google.protobuf.SourceContext source_context = 4;
-  [[nodiscard]] bool has_source_context()
-      const;
+  [[nodiscard]] bool has_source_context() const;
   void clear_source_context() ;
   [[nodiscard]] const ::google::protobuf::SourceContext& source_context() const;
   [[nodiscard]] ::google::protobuf::SourceContext* PROTOBUF_NULLABLE release_source_context();

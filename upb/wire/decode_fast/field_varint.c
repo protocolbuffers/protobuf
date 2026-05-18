@@ -11,6 +11,7 @@
 
 #include "upb/base/internal/endian.h"
 #include "upb/message/message.h"
+#include "upb/mini_table/message.h"
 #include "upb/wire/decode.h"
 #include "upb/wire/decode_fast/cardinality.h"
 #include "upb/wire/decode_fast/combinations.h"
@@ -122,10 +123,11 @@ static const char* upb_DecodeFast_PackedVarint(upb_EpsCopyInputStream* st,
 
 UPB_FORCEINLINE
 void upb_DecodeFast_Varint(upb_Decoder* d, const char** ptr, upb_Message* msg,
-                           intptr_t table, uint64_t* hasbits, uint64_t* data,
-                           upb_DecodeFastNext* ret, upb_DecodeFast_Type type,
+                           const upb_MiniTable* table, uint64_t* hasbits,
+                           uint64_t* data, upb_DecodeFastNext* ret,
+                           upb_DecodeFast_Type type,
                            upb_DecodeFast_Cardinality card,
-                           upb_DecodeFast_TagSize tagsize) {
+                           upb_DecodeFast_TagSize tagsize, uint64_t data2) {
   if (card == kUpb_DecodeFast_Packed) {
     upb_DecodeFast_PackedVarintContext ctx = {
         .decoder = d,
@@ -136,10 +138,10 @@ void upb_DecodeFast_Varint(upb_Decoder* d, const char** ptr, upb_Message* msg,
         .ret = ret,
     };
     upb_DecodeFast_Packed(d, ptr, type, card, tagsize, data,
-                          &upb_DecodeFast_PackedVarint, ret, &ctx);
+                          &upb_DecodeFast_PackedVarint, ret, &ctx, data2);
   } else {
     upb_DecodeFast_Unpacked(d, ptr, msg, data, hasbits, ret, type, card,
-                            tagsize, &upb_DecodeFast_SingleVarint, NULL);
+                            tagsize, &upb_DecodeFast_SingleVarint, NULL, data2);
   }
 }
 
@@ -147,12 +149,12 @@ void upb_DecodeFast_Varint(upb_Decoder* d, const char** ptr, upb_Message* msg,
  * {s,o,r,p} x {b1,v4,z4,v8,z8} x {1bt,2bt} */
 
 #define F(type, card, tagsize)                                            \
-  UPB_NOINLINE UPB_PRESERVE_NONE const char* UPB_DECODEFAST_FUNCNAME(     \
-      type, card, tagsize)(UPB_PARSE_PARAMS) {                            \
+  UPB_NOINLINE UPB_PRESERVE_NONE upb_FastDecoder_Return                   \
+  UPB_DECODEFAST_FUNCNAME(type, card, tagsize)(UPB_PARSE_PARAMS) {        \
     upb_DecodeFastNext next = kUpb_DecodeFastNext_Dispatch;               \
     upb_DecodeFast_Varint(d, &ptr, msg, table, &hasbits, &data, &next,    \
                           kUpb_DecodeFast_##type, kUpb_DecodeFast_##card, \
-                          kUpb_DecodeFast_##tagsize);                     \
+                          kUpb_DecodeFast_##tagsize, data2);              \
     UPB_DECODEFAST_NEXTMAYBEPACKED(                                       \
         next, UPB_DECODEFAST_FUNCNAME(type, Repeated, tagsize),           \
         UPB_DECODEFAST_FUNCNAME(type, Packed, tagsize));                  \
