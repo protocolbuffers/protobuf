@@ -29,42 +29,34 @@ final class ManifestSchemaFactory {
   public <T> Schema<T> createSchema(Class<T> messageType) {
     SchemaUtil.requireGeneratedMessage(messageType);
 
+    if (!useLiteRuntime(messageType)) {
+      throw new IllegalArgumentException(
+          "Full runtime messages are not supported by this schema factory: "
+              + messageType.getName());
+    }
+
     MessageInfo messageInfo = messageInfoFactory.messageInfoFor(messageType);
 
     // MessageSet has a special schema.
     if (messageInfo.isMessageSetWireFormat()) {
-      return useLiteRuntime(messageType)
-          ? MessageSetSchema.newSchema(
-              SchemaUtil.unknownFieldSetLiteSchema(),
-              ExtensionSchemas.lite(),
-              messageInfo.getDefaultInstance())
-          : MessageSetSchema.newSchema(
-              SchemaUtil.unknownFieldSetFullSchema(),
-              ExtensionSchemas.full(),
-              messageInfo.getDefaultInstance());
+      return MessageSetSchema.newSchema(
+          SchemaUtil.unknownFieldSetLiteSchema(),
+          ExtensionSchemas.lite(),
+          messageInfo.getDefaultInstance());
     }
 
     return newSchema(messageType, messageInfo);
   }
 
   private static <T> Schema<T> newSchema(Class<T> messageType, MessageInfo messageInfo) {
-    return useLiteRuntime(messageType)
-        ? MessageSchema.newSchema(
-            messageType,
-            messageInfo,
-            NewInstanceSchemas.lite(),
-            ListFieldSchemas.lite(),
-            SchemaUtil.unknownFieldSetLiteSchema(),
-            allowExtensions(messageInfo) ? ExtensionSchemas.lite() : null,
-            MapFieldSchemas.lite())
-        : MessageSchema.newSchema(
-            messageType,
-            messageInfo,
-            NewInstanceSchemas.full(),
-            ListFieldSchemas.full(),
-            SchemaUtil.unknownFieldSetFullSchema(),
-            allowExtensions(messageInfo) ? ExtensionSchemas.full() : null,
-            MapFieldSchemas.full());
+    return MessageSchema.newSchema(
+        messageType,
+        messageInfo,
+        NewInstanceSchemas.lite(),
+        ListFieldSchemas.lite(),
+        SchemaUtil.unknownFieldSetLiteSchema(),
+        allowExtensions(messageInfo) ? ExtensionSchemas.lite() : null,
+        MapFieldSchemas.lite());
   }
 
   private static boolean allowExtensions(MessageInfo messageInfo) {
