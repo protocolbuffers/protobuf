@@ -7,16 +7,9 @@
 
 #include "hpb_generator/gen_repeated_fields.h"
 
-#include <string>
-#include <vector>
-
 #include "google/protobuf/descriptor.pb.h"
 #include "absl/strings/string_view.h"
 #include "hpb_generator/context.h"
-#include "hpb_generator/gen_accessors.h"
-#include "hpb_generator/gen_enums.h"
-#include "hpb_generator/gen_extensions.h"
-#include "hpb_generator/gen_utils.h"
 #include "hpb_generator/names.h"
 #include "google/protobuf/descriptor.h"
 #include "upb_generator/c/names.h"
