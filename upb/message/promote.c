@@ -96,9 +96,10 @@ upb_GetExtension_Status upb_Message_GetOrPromoteExtension(
       if (field_number == upb_WireReader_GetFieldNumber(tag)) {
         upb_StringView data;
         found_count++;
-        upb_EpsCopyInputStream_StartCapture(&stream, unknown_begin);
+        upb_EpsCopyCapture capture;
+        upb_EpsCopyCapture_Start(&capture, &stream, unknown_begin);
         ptr = _upb_WireReader_SkipValue(ptr, tag, depth_limit, &stream);
-        if (!ptr || !upb_EpsCopyInputStream_EndCapture(&stream, ptr, &data)) {
+        if (!ptr || !upb_EpsCopyCapture_End(&capture, &stream, ptr, &data)) {
           return kUpb_GetExtension_ParseError;
         }
         upb_UnknownToMessageRet parse_result =
@@ -170,9 +171,10 @@ upb_FindUnknownRet upb_Message_FindUnknown(const upb_Message* msg,
       if (field_number == upb_WireReader_GetFieldNumber(tag)) {
         upb_StringView data;
         ret.status = kUpb_FindUnknown_Ok;
-        upb_EpsCopyInputStream_StartCapture(&stream, unknown_begin);
+        upb_EpsCopyCapture capture;
+        upb_EpsCopyCapture_Start(&capture, &stream, unknown_begin);
         ptr = _upb_WireReader_SkipValue(ptr, tag, depth_limit, &stream);
-        if (!ptr || !upb_EpsCopyInputStream_EndCapture(&stream, ptr, &data)) {
+        if (!ptr || !upb_EpsCopyCapture_End(&capture, &stream, ptr, &data)) {
           return upb_FindUnknownRet_ParseError();
         }
         ret.ptr = data.data;

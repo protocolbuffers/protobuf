@@ -8,8 +8,8 @@
 #include <stdint.h>
 #include <string.h>
 
-#include "upb/message/array.h"
 #include "upb/message/message.h"
+#include "upb/mini_table/message.h"
 #include "upb/wire/decode.h"
 #include "upb/wire/decode_fast/cardinality.h"
 #include "upb/wire/decode_fast/combinations.h"
@@ -72,10 +72,11 @@ static const char* upb_DecodeFast_PackedFixed(upb_EpsCopyInputStream* st,
 
 UPB_FORCEINLINE
 void upb_DecodeFast_Fixed(upb_Decoder* d, const char** ptr, upb_Message* msg,
-                          intptr_t table, uint64_t* hasbits, uint64_t* data,
-                          upb_DecodeFastNext* ret, upb_DecodeFast_Type type,
+                          const upb_MiniTable* table, uint64_t* hasbits,
+                          uint64_t* data, upb_DecodeFastNext* ret,
+                          upb_DecodeFast_Type type,
                           upb_DecodeFast_Cardinality card,
-                          upb_DecodeFast_TagSize tagsize) {
+                          upb_DecodeFast_TagSize tagsize, uint64_t data2) {
   if (card == kUpb_DecodeFast_Packed) {
     upb_DecodeFast_PackedFixedContext ctx = {
         .d = d,
@@ -86,10 +87,10 @@ void upb_DecodeFast_Fixed(upb_Decoder* d, const char** ptr, upb_Message* msg,
         .ret = ret,
     };
     upb_DecodeFast_Packed(d, ptr, type, card, tagsize, data,
-                          &upb_DecodeFast_PackedFixed, ret, &ctx);
+                          &upb_DecodeFast_PackedFixed, ret, &ctx, data2);
   } else {
     upb_DecodeFast_Unpacked(d, ptr, msg, data, hasbits, ret, type, card,
-                            tagsize, &upb_DecodeFast_SingleFixed, NULL);
+                            tagsize, &upb_DecodeFast_SingleFixed, NULL, data2);
   }
 }
 
@@ -102,7 +103,7 @@ void upb_DecodeFast_Fixed(upb_Decoder* d, const char** ptr, upb_Message* msg,
     upb_DecodeFastNext next = kUpb_DecodeFastNext_Dispatch;              \
     upb_DecodeFast_Fixed(d, &ptr, msg, table, &hasbits, &data, &next,    \
                          kUpb_DecodeFast_##type, kUpb_DecodeFast_##card, \
-                         kUpb_DecodeFast_##tagbytes);                    \
+                         kUpb_DecodeFast_##tagbytes, data2);             \
     UPB_DECODEFAST_NEXTMAYBEPACKED(                                      \
         next, UPB_DECODEFAST_FUNCNAME(type, Repeated, tagbytes),         \
         UPB_DECODEFAST_FUNCNAME(type, Packed, tagbytes));                \

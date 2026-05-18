@@ -5203,6 +5203,31 @@ class DescriptorBuilder {
   // so that VisitDescriptors can be exhaustive.
   void ValidateNamingStyle(const Descriptor::ExtensionRange* ext_range,
                            const DescriptorProto::ExtensionRange& proto) {}
+
+  // When called, check the listed descriptor against protobuf limits, such as
+  // max number of fields per message, max number of fields in a oneof, or max
+  // number of values in an enum. This is a feature introduced in Edition 2026.
+  void ValidateProtoLimits(const Descriptor* message,
+                           const DescriptorProto& proto);
+  void ValidateProtoLimits(const OneofDescriptor* oneof,
+                           const OneofDescriptorProto& proto);
+  void ValidateProtoLimits(const EnumDescriptor* enum_descriptor,
+                           const EnumDescriptorProto& proto);
+
+  // Overloads with nothing to validate. These overload only exist
+  // so that VisitDescriptors can be exhaustive.
+  void ValidateProtoLimits(const FileDescriptor* file,
+                           const FileDescriptorProto& proto) {}
+  void ValidateProtoLimits(const FieldDescriptor* field,
+                           const FieldDescriptorProto& proto) {}
+  void ValidateProtoLimits(const EnumValueDescriptor* file,
+                           const EnumValueDescriptorProto& proto) {}
+  void ValidateProtoLimits(const ServiceDescriptor* file,
+                           const ServiceDescriptorProto& proto) {}
+  void ValidateProtoLimits(const MethodDescriptor* file,
+                           const MethodDescriptorProto& proto) {}
+  void ValidateProtoLimits(const Descriptor::ExtensionRange* ext_range,
+                           const DescriptorProto::ExtensionRange& proto) {}
 };
 
 const FileDescriptor* DescriptorPool::BuildFile(
@@ -6859,6 +6884,17 @@ FileDescriptor* DescriptorBuilder::BuildFileImpl(
         *result, proto, [&](const auto& descriptor, const auto& desc_proto) {
           if (IsStyleOrGreater(&descriptor, FeatureSet::STYLE2024)) {
             ValidateNamingStyle(&descriptor, desc_proto);
+          }
+        });
+  }
+
+  if (!had_errors_ && pool_->enforce_proto_limits_) {
+    internal::VisitDescriptors(
+        *result, proto, [&](const auto& descriptor, const auto& desc_proto) {
+          if (internal::InternalFeatureHelper::GetFeatures(descriptor)
+                  .enforce_proto_limits() !=
+              FeatureSet::ProtoLimitsFeature::LEGACY_NO_EXPLICIT_LIMITS) {
+            ValidateProtoLimits(&descriptor, desc_proto);
           }
         });
   }
@@ -9541,6 +9577,10 @@ constexpr absl::string_view kNamingStyleOptOutMessage =
     " (features.enforce_naming_style = STYLE_LEGACY can be used to opt out of "
     "this check)";
 
+constexpr absl::string_view kProtoLimitsOptOutMessage =
+    " (features.enforce_proto_limits = LEGACY_NO_EXPLICIT_LIMITS can be used "
+    "to opt out of this check)";
+
 }  // namespace
 
 constexpr absl::string_view kNamingStyleCollisionsOptOutMessage =
@@ -9663,6 +9703,65 @@ void DescriptorBuilder::ValidateNamingStyle(
       return absl::StrCat("Method name ", method->name(), " ", error,
                           kNamingStyleOptOutMessage);
     });
+  }
+}
+
+// -------------------------------------------------------------------
+
+void DescriptorBuilder::ValidateProtoLimits(const Descriptor* message,
+                                            const DescriptorProto& proto) {
+  // Validate the protobuf field limit per message.
+  // See go/protobuf-enforce-proto-limits
+  if (message->field_count() > internal::kLimit2026FieldsPerMessage) {
+    std::string error_msg =
+        absl::StrFormat("should not contain more than %d fields",
+                        internal::kLimit2026FieldsPerMessage);
+    AddError(message->name(), proto, DescriptorPool::ErrorCollector::NAME, [&] {
+      return absl::StrCat("Message name ", message->name(), " ", error_msg,
+                          kProtoLimitsOptOutMessage);
+    });
+  }
+  // Validate the protobuf oneof limit per message.
+  // See go/protobuf-enforce-proto-limits
+  if (message->real_oneof_decl_count() > internal::kLimit2026OneofsPerMessage) {
+    std::string error_msg =
+        absl::StrFormat("should not contain more than %d oneofs",
+                        internal::kLimit2026OneofsPerMessage);
+    AddError(message->name(), proto, DescriptorPool::ErrorCollector::NAME, [&] {
+      return absl::StrCat("Message name ", message->name(), " ", error_msg,
+                          kProtoLimitsOptOutMessage);
+    });
+  }
+}
+
+void DescriptorBuilder::ValidateProtoLimits(const OneofDescriptor* oneof,
+                                            const OneofDescriptorProto& proto) {
+  // Validate the protobuf field limit per oneof.
+  // See go/protobuf-enforce-proto-limits
+  if (oneof->field_count() > internal::kLimit2026FieldsPerOneof) {
+    std::string error_msg =
+        absl::StrFormat("should not contain more than %d fields",
+                        internal::kLimit2026FieldsPerOneof);
+    AddError(oneof->name(), proto, DescriptorPool::ErrorCollector::NAME, [&] {
+      return absl::StrCat("Oneof name ", oneof->name(), " ", error_msg,
+                          kProtoLimitsOptOutMessage);
+    });
+  }
+}
+
+void DescriptorBuilder::ValidateProtoLimits(
+    const EnumDescriptor* enum_descriptor, const EnumDescriptorProto& proto) {
+  std::string error_msg =
+      absl::StrFormat("should not contain more than %d values",
+                      internal::kLimit2026ValuesPerEnum);
+  // Validate the protobuf value limit per enum.
+  // See go/protobuf-enforce-proto-limits
+  if (enum_descriptor->value_count() > internal::kLimit2026ValuesPerEnum) {
+    AddError(enum_descriptor->name(), proto,
+             DescriptorPool::ErrorCollector::NAME, [&] {
+               return absl::StrCat("Enum name ", enum_descriptor->name(), " ",
+                                   error_msg, kProtoLimitsOptOutMessage);
+             });
   }
 }
 
@@ -10934,6 +11033,10 @@ bool IsLazilyInitializedFile(absl::string_view filename) {
   }
   if (filename == "third_party/protobuf/internal_options.proto" ||
       filename == "google/protobuf/internal_options.proto") {
+    return true;
+  }
+  if (filename == "third_party/protobuf/json_enumvalue_options.proto" ||
+      filename == "google/protobuf/json_enumvalue_options.proto") {
     return true;
   }
   return filename == "net/proto2/proto/descriptor.proto" ||

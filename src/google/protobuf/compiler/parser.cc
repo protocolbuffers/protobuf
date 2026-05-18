@@ -1491,25 +1491,46 @@ bool Parser::ParseUninterpretedBlock(std::string* value) {
   // Note that enclosing braces are not added to *value.
   // We do NOT use ConsumeEndOfStatement for this brace because it's delimiting
   // an expression, not a block of statements.
-  DO(Consume("{"));
-  int brace_depth = 1;
-  while (!AtEnd()) {
-    if (LookingAt("{")) {
-      brace_depth++;
-    } else if (LookingAt("}")) {
-      brace_depth--;
-      if (brace_depth == 0) {
-        input_->Next();
-        return true;
-      }
-    }
-    // TODO: Interpret line/column numbers to preserve formatting
-    if (!value->empty()) value->push_back(' ');
-    value->append(input_->current().text);
-    input_->Next();
+  if (!LookingAt("{")) {
+    RecordError("Expected \"{\".");
+    return false;
   }
-  RecordError("Unexpected end of stream while parsing aggregate value.");
-  return false;
+
+  int brace_depth = 1;
+  {
+    const bool old_report_whitespace = input_->report_whitespace();
+    const bool old_report_newlines = input_->report_newlines();
+    input_->set_report_whitespace(true);
+    input_->set_report_newlines(true);
+    const absl::Cleanup cleanup([&] {
+      input_->set_report_whitespace(old_report_whitespace);
+      input_->set_report_newlines(old_report_newlines);
+    });
+
+    input_->Next();  // Consume "{"
+
+    while (!AtEnd()) {
+      if (LookingAt("{")) {
+        brace_depth++;
+      } else if (LookingAt("}")) {
+        brace_depth--;
+        if (brace_depth == 0) {
+          break;
+        }
+      }
+
+      value->append(input_->current().text);
+      input_->Next();
+    }
+  }
+
+  if (brace_depth == 0) {
+    input_->Next();  // Consume "}"
+    return true;
+  } else {
+    RecordError("Unexpected end of stream while parsing aggregate value.");
+    return false;
+  }
 }
 
 // We don't interpret the option here. Instead we store it in an

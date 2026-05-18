@@ -5112,7 +5112,7 @@ static unsigned int jsondec_base64_tablelookup(const char ch) {
       -1,       -1,       -1,       -1};
 
   /* Sign-extend return value so high bit will be set on any unexpected char. */
-  return table[(unsigned)ch];
+  return table[(unsigned char)ch];
 }
 
 static char* jsondec_partialbase64(jsondec* d, const char* ptr, const char* end,
@@ -10660,9 +10660,8 @@ static const char* upb_MtDecoder_Parse(upb_MtDecoder* d, const char* ptr,
       }
       upb_MiniTableField* field = fields;
       if (*field_count == UINT16_MAX) {
-        upb_MdDecoder_ErrorJmp(&d->base,
-                               "Fields in message exceed the limit of %u",
-                               UINT16_MAX);
+        upb_MdDecoder_ErrorJmp(
+            &d->base, "Fields in message exceed the limit of %u", UINT16_MAX);
       }
       *field_count += 1;
       fields = (char*)fields + field_size;
@@ -11067,6 +11066,12 @@ static const char* upb_MtDecoder_DoBuildMiniTableExtension(
   if (!ret || count != 1) return NULL;
 
   upb_MiniTableField* f = &ext->UPB_PRIVATE(field);
+
+  if (upb_MiniTable_FindFieldByNumber(extendee, upb_MiniTableField_Number(f)) !=
+      NULL) {
+    upb_MdDecoder_ErrorJmp(&decoder->base,
+                           "Extension overlaps with a known field");
+  }
 
   f->UPB_PRIVATE(mode) |= kUpb_LabelFlags_IsExtension;
   f->UPB_PRIVATE(offset) = 0;
@@ -17368,7 +17373,8 @@ static const char* _upb_Decoder_DecodeUnknownField(
     upb_ErrorHandler_ThrowError(d->err, kUpb_DecodeStatus_Malformed);
   }
 
-  upb_EpsCopyInputStream_StartCapture(&d->input, start);
+  upb_EpsCopyCapture capture;
+  upb_EpsCopyCapture_Start(&capture, &d->input, start);
 
   if (wire_type == kUpb_WireType_Delimited) {
     upb_StringView sv;
@@ -17381,7 +17387,7 @@ static const char* _upb_Decoder_DecodeUnknownField(
   }
 
   upb_StringView sv;
-  upb_EpsCopyInputStream_EndCapture(&d->input, ptr, &sv);
+  upb_EpsCopyCapture_End(&capture, &d->input, ptr, &sv);
 
   if (!UPB_PRIVATE(_upb_Message_AddUnknown)(
           msg, sv.data, sv.size, &d->arena,
@@ -17469,13 +17475,13 @@ bool _upb_Decoder_TryDecodeMessageFast(upb_Decoder* d, const char** ptr,
     return false;
   }
 
-  intptr_t table = decode_totable(mt);
+  uint64_t data2 = upb_DecodeFastData2_PackMask(mt->UPB_PRIVATE(table_mask));
   const char* start =
       UPB_PRIVATE(upb_EpsCopyInputStream_GetInputPtr)(&d->input, *ptr);
   char* trace_next = _upb_Decoder_TraceNext(d);
 
   upb_FastDecoder_Return ret =
-      upb_DecodeFast_Dispatch(d, *ptr, msg, table, 0, 0);
+      upb_DecodeFast_Dispatch(d, *ptr, msg, mt, 0, 0, data2);
   *ptr = ret.ptr;
 
   if (d->message_is_done) {
@@ -17523,7 +17529,8 @@ static const char* _upb_Decoder_DecodeEmptyMessage(upb_Decoder* d,
   }
 
   const char* start = ptr;
-  upb_EpsCopyInputStream_StartCapture(&d->input, start);
+  upb_EpsCopyCapture capture;
+  upb_EpsCopyCapture_Start(&capture, &d->input, start);
   while (!upb_EpsCopyInputStream_IsDone(EPS(d), &ptr)) {
     uint32_t tag;
     ptr = upb_WireReader_ReadTag(ptr, &tag, EPS(d));
@@ -17534,7 +17541,7 @@ static const char* _upb_Decoder_DecodeEmptyMessage(upb_Decoder* d,
     ptr = _upb_WireReader_SkipValue(ptr, tag, d->depth, &d->input);
   }
   upb_StringView sv;
-  upb_EpsCopyInputStream_EndCapture(&d->input, ptr, &sv);
+  upb_EpsCopyCapture_End(&capture, &d->input, ptr, &sv);
 
   if (sv.size > 0) {
     if (!UPB_PRIVATE(_upb_Message_AddUnknown)(
@@ -18642,7 +18649,7 @@ static upb_EncodeStatus upb_Encoder_Encode(char* ptr,
     *buf = NULL;
     *size = 0;
   }
-  _upb_mapsorter_destroy(&encoder->sorter);
+  UPB_PRIVATE(_upb_encstate_destroy)(encoder);
   return encoder->status;
 }
 

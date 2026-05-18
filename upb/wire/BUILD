@@ -27,6 +27,7 @@ cc_library(
     features = UPB_DEFAULT_FEATURES,
     visibility = [
         "//upb:__pkg__",
+        "//upb/message:__subpackages__",
         "//upb/wire/decode_fast:__subpackages__",
     ],
     deps = [
@@ -206,7 +207,10 @@ cc_library(
     hdrs = ["internal/back_alloc.h"],
     copts = UPB_DEFAULT_COPTS,
     features = UPB_DEFAULT_FEATURES,
-    visibility = ["//upb:__pkg__"],
+    visibility = [
+        "//upb:__pkg__",
+        "//upb/message:__subpackages__",
+    ],
     deps = [
         "//upb/base",
         "//upb/base:internal",
@@ -300,7 +304,6 @@ cc_library(
     ],
     deps = [
         "//upb/base",
-        "//upb/mem",
         "//upb/port",
     ],
 )
@@ -315,7 +318,6 @@ cc_library(
     deps = [
         ":eps_copy_input_stream_internal",
         "//upb/base",
-        "//upb/mem",
         "//upb/port",
     ],
 )

@@ -986,7 +986,8 @@ static const char* _upb_Decoder_DecodeUnknownField(
     upb_ErrorHandler_ThrowError(d->err, kUpb_DecodeStatus_Malformed);
   }
 
-  upb_EpsCopyInputStream_StartCapture(&d->input, start);
+  upb_EpsCopyCapture capture;
+  upb_EpsCopyCapture_Start(&capture, &d->input, start);
 
   if (wire_type == kUpb_WireType_Delimited) {
     upb_StringView sv;
@@ -999,7 +1000,7 @@ static const char* _upb_Decoder_DecodeUnknownField(
   }
 
   upb_StringView sv;
-  upb_EpsCopyInputStream_EndCapture(&d->input, ptr, &sv);
+  upb_EpsCopyCapture_End(&capture, &d->input, ptr, &sv);
 
   if (!UPB_PRIVATE(_upb_Message_AddUnknown)(
           msg, sv.data, sv.size, &d->arena,
@@ -1087,13 +1088,13 @@ bool _upb_Decoder_TryDecodeMessageFast(upb_Decoder* d, const char** ptr,
     return false;
   }
 
-  intptr_t table = decode_totable(mt);
+  uint64_t data2 = upb_DecodeFastData2_PackMask(mt->UPB_PRIVATE(table_mask));
   const char* start =
       UPB_PRIVATE(upb_EpsCopyInputStream_GetInputPtr)(&d->input, *ptr);
   char* trace_next = _upb_Decoder_TraceNext(d);
 
   upb_FastDecoder_Return ret =
-      upb_DecodeFast_Dispatch(d, *ptr, msg, table, 0, 0);
+      upb_DecodeFast_Dispatch(d, *ptr, msg, mt, 0, 0, data2);
   *ptr = ret.ptr;
 
   if (d->message_is_done) {
@@ -1141,7 +1142,8 @@ static const char* _upb_Decoder_DecodeEmptyMessage(upb_Decoder* d,
   }
 
   const char* start = ptr;
-  upb_EpsCopyInputStream_StartCapture(&d->input, start);
+  upb_EpsCopyCapture capture;
+  upb_EpsCopyCapture_Start(&capture, &d->input, start);
   while (!upb_EpsCopyInputStream_IsDone(EPS(d), &ptr)) {
     uint32_t tag;
     ptr = upb_WireReader_ReadTag(ptr, &tag, EPS(d));
@@ -1152,7 +1154,7 @@ static const char* _upb_Decoder_DecodeEmptyMessage(upb_Decoder* d,
     ptr = _upb_WireReader_SkipValue(ptr, tag, d->depth, &d->input);
   }
   upb_StringView sv;
-  upb_EpsCopyInputStream_EndCapture(&d->input, ptr, &sv);
+  upb_EpsCopyCapture_End(&capture, &d->input, ptr, &sv);
 
   if (sv.size > 0) {
     if (!UPB_PRIVATE(_upb_Message_AddUnknown)(

@@ -372,13 +372,13 @@ proto_library(
     name = "json_enumvalue_options_proto",
     srcs = ["json_enumvalue_options.proto"],
     strip_import_prefix = "/src",
-    visibility = ["//visibility:private"],
+    visibility = ["//:__subpackages__"],
     deps = [":descriptor_proto"],
 )
 
 cc_proto_library(
     name = "json_enumvalue_options_cc_proto",
-    visibility = ["//visibility:private"],
+    visibility = ["//:__subpackages__"],
     deps = [":json_enumvalue_options_proto"],
 )
 
@@ -787,6 +787,7 @@ PROTOBUF_HEADERS = [
     "dynamic_message.h",
     "feature_resolver.h",
     "internal_feature_helper.h",
+    "json_enumvalue_options.pb.h",
     "field_access_listener.h",
     "generated_enum_reflection.h",
     "generated_message_bases.h",
@@ -824,6 +825,7 @@ cc_library(
         "generated_message_tctable_full.cc",
         "generated_message_tctable_gen.cc",
         "internal_feature_helper.cc",
+        "json_enumvalue_options.pb.cc",
         "map_field.cc",
         "message.cc",
         "reflection_mode.cc",
