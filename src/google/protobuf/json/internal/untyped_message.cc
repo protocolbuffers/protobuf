@@ -8,6 +8,7 @@
 #include "google/protobuf/json/internal/untyped_message.h"
 
 #include <algorithm>
+#include <cstddef>
 #include <cstdint>
 #include <memory>
 #include <string>
@@ -17,10 +18,14 @@
 #include <vector>
 
 #include "google/protobuf/type.pb.h"
+#include "absl/base/casts.h"
 #include "absl/container/flat_hash_map.h"
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
+#include "absl/memory/memory.h"
 #include "absl/status/status.h"
+#include "absl/status/status_macros.h"
+#include "absl/status/statusor.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_format.h"
 #include "absl/strings/string_view.h"
@@ -31,7 +36,6 @@
 #include "google/protobuf/util/type_resolver.h"
 #include "google/protobuf/wire_format_lite.h"
 #include "utf8_validity.h"
-#include "google/protobuf/stubs/status_macros.h"
 
 // Must be included last.
 #include "google/protobuf/port_def.inc"
