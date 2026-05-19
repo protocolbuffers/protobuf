@@ -1,5 +1,5 @@
 // Protocol Buffers - Google's data interchange format
-// Copyright 2008 Google Inc.  All rights reserved.
+// Copyright 2008 Google LLC.  All rights reserved.
 //
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file or at
@@ -1151,6 +1151,14 @@ bool IsMicroString(const FieldDescriptor* field, const Options& opts) {
   return opts.experimental_use_micro_string;
 }
 
+absl::optional<uint8_t> MicroStringSSOSize(const FieldDescriptor* field,
+                                           const Options& opts) {
+  if (!IsMicroString(field, opts)) return absl::nullopt;
+
+
+  return absl::nullopt;
+}
+
 bool IsArenaStringPtr(const FieldDescriptor* field, const Options& opts) {
   if (IsMicroString(field, opts)) return false;
   return field->cpp_string_type() == FieldDescriptor::CppStringType::kString ||
@@ -1856,6 +1864,8 @@ bool GetBootstrapBasename(const Options& options, absl::string_view basename,
            "third_party/protobuf/compiler/plugin"},
           {"third_party/protobuf/internal_options",
            "third_party/protobuf/internal_options_bootstrap"},
+          {"third_party/protobuf/json_enumvalue_options",
+           "third_party/protobuf/json_enumvalue_options"},
           {"net/proto2/compiler/proto/profile",
            "net/proto2/compiler/proto/profile_bootstrap"},
       };

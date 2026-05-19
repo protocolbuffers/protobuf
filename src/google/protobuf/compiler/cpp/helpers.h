@@ -378,6 +378,12 @@ inline bool IsString(const FieldDescriptor* field) {
 bool IsArenaStringPtr(const FieldDescriptor* field, const Options& opts);
 bool IsMicroString(const FieldDescriptor* field, const Options& opts);
 
+// If the field is MicroString and has a non-default SSO size, return it.
+// Otherwise, return nullopt.
+// The SSO size can come from pdproto profile, or from test overrides.
+absl::optional<uint8_t> MicroStringSSOSize(const FieldDescriptor* field,
+                                           const Options& opts);
+
 bool IsProfileDriven(const Options& options);
 
 // Returns true if `field` is unlikely to be present based on PDProto profile.
@@ -866,7 +872,18 @@ std::string WeakDescriptorDataSection(absl::string_view prefix,
 inline std::string WeakDefaultInstanceSection(const Descriptor* descriptor,
                                               int index_in_file_messages,
                                               const Options& options) {
-  return WeakDescriptorDataSection("def", descriptor, index_in_file_messages,
+#ifdef PROTOBUF_MESSAGE_GLOBALS
+  std::string prefix = !IsProfileDriven(options)               ? "def"
+                       : IsPresentMessage(descriptor, options) ? "gh"
+                                                               : "gl";
+#else
+  std::string prefix = "def";
+#endif
+  // TODO: b/474609573 - Remove WeakDescriptorDataSection() once
+  // PROTOBUF_MESSAGE_GLOBALS becomes the default. Note that section assignment
+  // is nuanced to maximize the spatial locality and to support weak descriptor
+  // GC. The status quo is vulnerable to suboptimal prefix.
+  return WeakDescriptorDataSection(prefix, descriptor, index_in_file_messages,
                                    options);
 }
 

@@ -4,8 +4,8 @@
 # Use of this source code is governed by a BSD-style
 # license that can be found in the LICENSE file or at
 # https://developers.google.com/open-source/licenses/bsd
-
 """Contains the Nextgen Pythonic Protobuf Text Format APIs."""
+
 from typing import AnyStr, Callable, Optional, Text, Type, Union
 
 from google.protobuf import text_format

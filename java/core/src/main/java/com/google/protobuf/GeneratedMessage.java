@@ -1084,19 +1084,10 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
       final FieldDescriptor descriptor = extension.getDescriptor();
       verifyExtensionContainingType(descriptor);
       final Object value = extensions.getField(descriptor);
-      T result = null;
       if (value == null) {
-        if (descriptor.isRepeated()) {
-          result = (T) ProtobufArrayList.emptyList();
-        } else if (descriptor.getJavaType() == FieldDescriptor.JavaType.MESSAGE) {
-          result = (T) extension.getMessageDefaultInstance();
-        } else {
-          result = (T) extension.fromReflectionType(descriptor.getDefaultValue());
-        }
-      } else {
-        result = (T) extension.fromReflectionType(value);
+        return extension.getDefaultValue();
       }
-      return result;
+      return (T) extension.fromReflectionType(value);
     }
 
     /** Get one element of a repeated extension. */
@@ -1176,24 +1167,27 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
       public void writeUntil(final int end, final CodedOutputStream output) throws IOException {
         while (next != null && next.getKey().getNumber() < end) {
           FieldDescriptor descriptor = next.getKey();
-          if (messageSetWireFormat
-              && descriptor.getLiteJavaType() == WireFormat.JavaType.MESSAGE
-              && !descriptor.isRepeated()) {
-            if (next instanceof InternalLazyField.LazyEntry<?>) {
-              output.writeRawMessageSetExtension(
-                  descriptor.getNumber(),
-                  ((InternalLazyField.LazyEntry<?>) next).getField().toByteString());
-            } else {
-              output.writeMessageSetExtension(descriptor.getNumber(), (Message) next.getValue());
-            }
+
+          boolean isSingularMessage =
+              descriptor.getLiteJavaType() == WireFormat.JavaType.MESSAGE
+                  && !descriptor.isRepeated();
+          boolean lazy = next instanceof InternalLazyField.LazyEntry<?>;
+
+          if (lazy && !isSingularMessage) {
+            throw new IllegalStateException("Lazy fields must be singular messages.");
+          }
+
+          if (messageSetWireFormat && lazy) {
+            output.writeRawMessageSetExtension(
+                descriptor.getNumber(),
+                ((InternalLazyField.LazyEntry<?>) next).getField().toByteString());
+          } else if (messageSetWireFormat && isSingularMessage) {
+            output.writeMessageSetExtension(descriptor.getNumber(), (Message) next.getValue());
+          } else if (lazy) {
+            output.writeBytes(
+                descriptor.getNumber(),
+                ((InternalLazyField.LazyEntry<?>) next).getField().toByteString());
           } else {
-            // TODO: Taken care of following code, it may cause
-            // problem when we use InternalLazyField for normal fields/extensions.
-            // Due to the optional field can be duplicated at the end of
-            // serialized bytes, which will make the serialized size change
-            // after lazy field parsed. So when we use InternalLazyField globally,
-            // we need to change the following write method to write cached
-            // bytes directly rather than write the parsed message.
             FieldSet.writeField(descriptor, next.getValue(), output);
           }
           if (iter.hasNext()) {
@@ -1471,21 +1465,15 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
     @Override
     public final <T> T getExtension(final ExtensionLite<? extends MessageT, T> extensionLite) {
       Extension<MessageT, T> extension = checkNotLite(extensionLite);
-
       verifyExtensionContainingType(extension);
-      FieldDescriptor descriptor = extension.getDescriptor();
-      final Object value = extensions == null ? null : extensions.getField(descriptor);
-      if (value == null) {
-        if (descriptor.isRepeated()) {
-          return (T) Collections.emptyList();
-        } else if (descriptor.getJavaType() == FieldDescriptor.JavaType.MESSAGE) {
-          return (T) extension.getMessageDefaultInstance();
-        } else {
-          return (T) extension.fromReflectionType(descriptor.getDefaultValue());
-        }
-      } else {
-        return (T) extension.fromReflectionType(value);
+      if (extensions == null) {
+        return extension.getDefaultValue();
       }
+      final Object value = extensions.getField(extension.getDescriptor());
+      if (value == null) {
+        return extension.getDefaultValue();
+      }
+      return (T) extension.fromReflectionType(value);
     }
 
     /** Get one element of a repeated extension. */
@@ -1797,7 +1785,7 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
 
     // TODO: Should be marked final in v5.x.x once GeneratedMessageV3 is removed.
     protected void mergeExtensionFields(final ExtendableMessage<?> other) {
-      if (other.extensions != null) {
+      if (other.extensions != null && !other.extensions.isEmpty()) {
         ensureExtensionsIsMutable();
         extensions.mergeFrom(other.extensions);
         onChanged();
@@ -2102,9 +2090,9 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
     @SuppressWarnings("unchecked")
     public T getDefaultValue() {
       if (isRepeated()) {
-        return (T) Collections.emptyList();
+        return (T) ProtobufArrayList.emptyList();
       }
-      if (getDescriptor().getJavaType() == FieldDescriptor.JavaType.MESSAGE) {
+      if (messageDefaultInstance != null) {
         return (T) messageDefaultInstance;
       }
       return (T) singularFromReflectionType(getDescriptor().getDefaultValue());

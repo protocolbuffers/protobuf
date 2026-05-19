@@ -15,6 +15,7 @@
 
 #include <cstddef>
 #include <cstdint>
+#include <cstdlib>
 
 #include <gmock/gmock.h>
 #include "absl/log/absl_check.h"
@@ -574,6 +575,201 @@ TEST_F(CommandLineInterfaceTest, GeneratorAndPlugin) {
   ExpectNoErrors();
   ExpectGenerated("test_generator", "", "foo.proto", "Foo");
   ExpectGenerated("test_plugin", "", "foo.proto", "Foo");
+}
+
+TEST_F(CommandLineInterfaceTest, PluginPrefixInvokesWrapper) {
+  CreateTempFile("foo.proto",
+                 "syntax = \"proto2\";\n"
+                 "message Foo {}\n");
+
+  std::string wrapper_path;
+#ifdef _WIN32
+  const std::string wrapper_name = "plugin_wrapper.bat";
+  CreateTempFile(wrapper_name,
+                 "@echo off\r\n"
+                 "echo wrapped > \"%~dp0wrapper_invoked.txt\"\r\n"
+                 "\"%~1\"\r\n"
+                 "exit /b %errorlevel%\r\n");
+  wrapper_path = absl::StrCat(temp_directory(), "/", wrapper_name);
+#else
+  const std::string wrapper_name = "plugin_wrapper.sh";
+  CreateTempFile(wrapper_name,
+                 "#!/bin/sh\n"
+                 "LOG_DIR=$(cd \"$(dirname \"$0\")\" && pwd)\n"
+                 "echo wrapped > \"${LOG_DIR}/wrapper_invoked.txt\"\n"
+                 "exec \"$@\"\n");
+  wrapper_path = absl::StrCat(temp_directory(), "/", wrapper_name);
+  ASSERT_EQ(0, chmod(wrapper_path.c_str(), 0777));
+#endif
+
+  Run(absl::StrCat("protocol_compiler --plug_prefix=", wrapper_path,
+                   " --plug_out=$tmpdir --proto_path=$tmpdir foo.proto"));
+
+  ExpectNoErrors();
+  ExpectGenerated("test_plugin", "", "foo.proto", "Foo");
+  ExpectFileContentContainsSubstring("wrapper_invoked.txt", "wrapped");
+}
+
+TEST_F(CommandLineInterfaceTest, PluginPrefixForwardsArguments) {
+  CreateTempFile("foo.proto",
+                 "syntax = \"proto2\";\n"
+                 "message Foo {}\n");
+
+  // Wrapper records the prefix-supplied args, then invokes the plugin
+  // (the final argv element appended by protoc).
+  std::string wrapper_path;
+#ifdef _WIN32
+  // Batch %1/%2/... tokenize on '=' (and ',' ';'), which would split
+  // "--bar=baz" into two parameters. Record the raw, un-split argument tail
+  // via %* instead, and take the last token (the plugin path appended by
+  // protoc) to invoke.
+  CreateTempFile("plugin_wrapper_args.bat",
+                 "@echo off\r\n"
+                 // %* is the raw, untokenized arg tail; %~dp0 is the script's
+                 // own dir, so the record lands where the test can read it.
+                 "echo %*>>\"%~dp0wrapper_argv.txt\"\r\n"
+                 // Start clean before recovering the plugin path.
+                 "set \"plugin=\"\r\n"
+                 // Loop leaves %%A holding the last token: the plugin path
+                 // protoc appended (positional %1/%2 are unreliable here).
+                 "for %%A in (%*) do set \"plugin=%%A\"\r\n"
+                 // Run the plugin
+                 "\"%plugin%\"\r\n"
+                 "exit /b %errorlevel%\r\n");
+  wrapper_path = absl::StrCat(temp_directory(), "/plugin_wrapper_args.bat");
+#else
+  CreateTempFile("plugin_wrapper_args.sh",
+                 "#!/bin/sh\n"
+                 // Record every argument (prefix tokens + appended plugin
+                 // path), one per line, where the test can read it.
+                 "for arg in \"$@\"; do\n"
+                 "  printf '%s\\n' \"$arg\" >> \"$tmpdir/wrapper_argv.txt\"\n"
+                 "done\n"
+                 // Drop the two prefix tokens; what remains is the plugin path.
+                 "shift 2\n"
+                 // Exec the plugin
+                 "exec \"$@\"\n");
+  wrapper_path = absl::StrCat(temp_directory(), "/plugin_wrapper_args.sh");
+  ASSERT_EQ(0, chmod(wrapper_path.c_str(), 0777));
+#endif
+
+  // Pass the prefix value as a single argv element so the embedded spaces
+  // form multiple tokens (Run() splits on whitespace; RunWithArgs does not).
+  RunWithArgs({
+      "protocol_compiler",
+      absl::StrCat("--plug_prefix=", wrapper_path, " --foo --bar=baz"),
+      "--plug_out=$tmpdir",
+      "--proto_path=$tmpdir",
+      "foo.proto",
+  });
+
+  ExpectNoErrors();
+  ExpectGenerated("test_plugin", "", "foo.proto", "Foo");
+  ExpectFileContentContainsSubstring("wrapper_argv.txt", "--foo");
+  ExpectFileContentContainsSubstring("wrapper_argv.txt", "--bar=baz");
+}
+
+TEST_F(CommandLineInterfaceTest, PluginPrefixFromSearchPath) {
+  CreateTempFile("foo.proto",
+                 "syntax = \"proto2\";\n"
+                 "message Foo {}\n");
+
+#ifdef _WIN32
+  const std::string wrapper_basename = "plugin_wrapper_searchpath.bat";
+  CreateTempFile(wrapper_basename,
+                 "@echo off\r\n"
+                 "echo wrapped > \"%~dp0wrapper_invoked.txt\"\r\n"
+                 "\"%~1\"\r\n"
+                 "exit /b %errorlevel%\r\n");
+  const char path_separator = ';';
+#else
+  const std::string wrapper_basename = "plugin_wrapper_searchpath.sh";
+  CreateTempFile(wrapper_basename,
+                 "#!/bin/sh\n"
+                 "echo wrapped > \"$tmpdir/wrapper_invoked.txt\"\n"
+                 "exec \"$@\"\n");
+  ASSERT_EQ(0,
+            chmod(absl::StrCat(temp_directory(), "/", wrapper_basename).c_str(),
+                  0777));
+  const char path_separator = ':';
+#endif
+
+  // Prepend the temp directory to PATH so the wrapper can be located by
+  // basename only (Subprocess uses execvp / SEARCH_PATH for the prefix).
+  const char* old_path_cstr = getenv("PATH");
+  const std::string old_path = old_path_cstr ? old_path_cstr : "";
+  const std::string new_path =
+      absl::StrCat(temp_directory(), std::string(1, path_separator), old_path);
+#ifdef _WIN32
+  _putenv_s("PATH", new_path.c_str());
+#else
+  setenv("PATH", new_path.c_str(), 1);
+#endif
+
+  Run(absl::StrCat("protocol_compiler --plug_prefix=", wrapper_basename,
+                   " --plug_out=$tmpdir --proto_path=$tmpdir foo.proto"));
+
+#ifdef _WIN32
+  _putenv_s("PATH", old_path.c_str());
+#else
+  setenv("PATH", old_path.c_str(), 1);
+#endif
+
+  ExpectNoErrors();
+  ExpectGenerated("test_plugin", "", "foo.proto", "Foo");
+  ExpectFileContentContainsSubstring("wrapper_invoked.txt", "wrapped");
+}
+
+TEST_F(CommandLineInterfaceTest, PluginPrefixRejectsEmptyValue) {
+  CreateTempFile("foo.proto",
+                 "syntax = \"proto2\";\n"
+                 "message Foo {}\n");
+
+  Run("protocol_compiler --plug_prefix= "
+      "--plug_out=$tmpdir --proto_path=$tmpdir foo.proto");
+
+  ExpectErrorSubstring("--plug_prefix");
+  ExpectErrorSubstring("non-empty value");
+}
+
+TEST_F(CommandLineInterfaceTest, PluginPrefixRejectsDuplicate) {
+  CreateTempFile("foo.proto",
+                 "syntax = \"proto2\";\n"
+                 "message Foo {}\n");
+
+  Run("protocol_compiler --plug_prefix=foo --plug_prefix=bar "
+      "--plug_out=$tmpdir --proto_path=$tmpdir foo.proto");
+
+  ExpectErrorSubstring("--plug_prefix");
+  ExpectErrorSubstring("only be passed once");
+}
+
+TEST_F(CommandLineInterfaceTest, PluginPrefixRejectsQuotes) {
+  CreateTempFile("foo.proto",
+                 "syntax = \"proto2\";\n"
+                 "message Foo {}\n");
+
+  RunWithArgs({
+      "protocol_compiler",
+      "--plug_prefix=\"my cmd\"",
+      "--plug_out=$tmpdir",
+      "--proto_path=$tmpdir",
+      "foo.proto",
+  });
+
+  ExpectErrorSubstring("--plug_prefix");
+  ExpectErrorSubstring("quotes are not supported");
+}
+
+TEST_F(CommandLineInterfaceTest, PluginPrefixMissingExecutable) {
+  CreateTempFile("foo.proto",
+                 "syntax = \"proto2\";\n"
+                 "message Foo {}\n");
+
+  Run("protocol_compiler --plug_prefix=/nonexistent/path/to/wrapper "
+      "--plug_out=$tmpdir --proto_path=$tmpdir foo.proto");
+
+  ExpectErrorSubstring("Plugin failed");
 }
 
 TEST_F(CommandLineInterfaceTest, GeneratorAndPlugin_DescriptorSetIn) {
@@ -1833,7 +2029,7 @@ TEST_F(CommandLineInterfaceTest, NamingStyleEnforced) {
 TEST_F(CommandLineInterfaceTest, NamingStyleStartsWithHasCollisionExists) {
   CreateTempFile("foo.proto",
                  R"schema(
-    edition = "UNSTABLE";
+    edition = "2026";
     message Foo {
       string has_bar = 1;
       string bar = 2;
@@ -1851,7 +2047,7 @@ TEST_F(CommandLineInterfaceTest, NamingStyleStartsWithHasCollisionExists) {
 TEST_F(CommandLineInterfaceTest, NamingStyleStartsWithHasNoCollision) {
   CreateTempFile("foo.proto",
                  R"schema(
-    edition = "UNSTABLE";
+    edition = "2026";
     message Foo {
       string has_bar = 1;
       string baz = 2;
@@ -1977,7 +2173,7 @@ TEST_F(CommandLineInterfaceTest, Plugin_VersionSkewFuture) {
 
   ExpectErrorSubstring(
       "foo.proto:2:5: Edition 99997_TEST_ONLY is later than the maximum "
-      "supported edition 2024");
+      "supported edition 2026");
 }
 
 TEST_F(CommandLineInterfaceTest, Plugin_VersionSkewPast) {
@@ -2318,7 +2514,7 @@ TEST_F(CommandLineInterfaceTest,
   ExpectErrorSubstring(
       absl::StrCat("Edition 99997_TEST_ONLY is later than the maximum "
                    "supported edition ",
-                   ProtocMaximumEdition()));
+                   MaximumKnownEdition()));
 }
 
 TEST_F(CommandLineInterfaceTest, UnstableEditionWithFlag) {
@@ -2373,6 +2569,7 @@ TEST_F(CommandLineInterfaceTest, EditionDefaults) {
         json_format: LEGACY_BEST_EFFORT
         enforce_naming_style: STYLE_LEGACY
         default_symbol_visibility: EXPORT_ALL
+        enforce_proto_limits: LEGACY_NO_EXPLICIT_LIMITS
       }
     }
     defaults {
@@ -2387,6 +2584,7 @@ TEST_F(CommandLineInterfaceTest, EditionDefaults) {
         json_format: ALLOW
         enforce_naming_style: STYLE_LEGACY
         default_symbol_visibility: EXPORT_ALL
+        enforce_proto_limits: LEGACY_NO_EXPLICIT_LIMITS
       }
     }
     defaults {
@@ -2402,6 +2600,7 @@ TEST_F(CommandLineInterfaceTest, EditionDefaults) {
       fixed_features {
         enforce_naming_style: STYLE_LEGACY
         default_symbol_visibility: EXPORT_ALL
+        enforce_proto_limits: LEGACY_NO_EXPLICIT_LIMITS
       }
     }
     defaults {
@@ -2416,7 +2615,9 @@ TEST_F(CommandLineInterfaceTest, EditionDefaults) {
         enforce_naming_style: STYLE2024
         default_symbol_visibility: EXPORT_TOP_LEVEL
       }
-      fixed_features {}
+      fixed_features {
+        enforce_proto_limits: LEGACY_NO_EXPLICIT_LIMITS
+      }
     }
     minimum_edition: EDITION_PROTO2
     maximum_edition: EDITION_2024
@@ -2433,67 +2634,86 @@ TEST_F(CommandLineInterfaceTest, EditionDefaultsWithMaximum) {
   ExpectNoErrors();
 
   FeatureSetDefaults defaults = ReadEditionDefaults("defaults");
-  EXPECT_THAT(defaults, PartiallyMatchesEditionDefaults(R"pb(
-                defaults {
-                  edition: EDITION_LEGACY
-                  overridable_features {}
-                  fixed_features {
-                    field_presence: EXPLICIT
-                    enum_type: CLOSED
-                    repeated_field_encoding: EXPANDED
-                    utf8_validation: NONE
-                    message_encoding: LENGTH_PREFIXED
-                    json_format: LEGACY_BEST_EFFORT
-                    enforce_naming_style: STYLE_LEGACY
-                    default_symbol_visibility: EXPORT_ALL
-                  }
-                }
-                defaults {
-                  edition: EDITION_PROTO3
-                  overridable_features {}
-                  fixed_features {
-                    field_presence: IMPLICIT
-                    enum_type: OPEN
-                    repeated_field_encoding: PACKED
-                    utf8_validation: VERIFY
-                    message_encoding: LENGTH_PREFIXED
-                    json_format: ALLOW
-                    enforce_naming_style: STYLE_LEGACY
-                    default_symbol_visibility: EXPORT_ALL
-                  }
-                }
-                defaults {
-                  edition: EDITION_2023
-                  overridable_features {
-                    field_presence: EXPLICIT
-                    enum_type: OPEN
-                    repeated_field_encoding: PACKED
-                    utf8_validation: VERIFY
-                    message_encoding: LENGTH_PREFIXED
-                    json_format: ALLOW
-                  }
-                  fixed_features {
-                    enforce_naming_style: STYLE_LEGACY
-                    default_symbol_visibility: EXPORT_ALL
-                  }
-                }
-                defaults {
-                  edition: EDITION_2024
-                  overridable_features {
-                    field_presence: EXPLICIT
-                    enum_type: OPEN
-                    repeated_field_encoding: PACKED
-                    utf8_validation: VERIFY
-                    message_encoding: LENGTH_PREFIXED
-                    json_format: ALLOW
-                    enforce_naming_style: STYLE2024
-                    default_symbol_visibility: EXPORT_TOP_LEVEL
-                  }
-                  fixed_features {}
-                }
-                minimum_edition: EDITION_PROTO2
-                maximum_edition: EDITION_99997_TEST_ONLY
-              )pb"));
+  EXPECT_THAT(
+      defaults, PartiallyMatchesEditionDefaults(R"pb(
+        defaults {
+          edition: EDITION_LEGACY
+          overridable_features {}
+          fixed_features {
+            field_presence: EXPLICIT
+            enum_type: CLOSED
+            repeated_field_encoding: EXPANDED
+            utf8_validation: NONE
+            message_encoding: LENGTH_PREFIXED
+            json_format: LEGACY_BEST_EFFORT
+            enforce_naming_style: STYLE_LEGACY
+            default_symbol_visibility: EXPORT_ALL
+            enforce_proto_limits: LEGACY_NO_EXPLICIT_LIMITS
+          }
+        }
+        defaults {
+          edition: EDITION_PROTO3
+          overridable_features {}
+          fixed_features {
+            field_presence: IMPLICIT
+            enum_type: OPEN
+            repeated_field_encoding: PACKED
+            utf8_validation: VERIFY
+            message_encoding: LENGTH_PREFIXED
+            json_format: ALLOW
+            enforce_naming_style: STYLE_LEGACY
+            default_symbol_visibility: EXPORT_ALL
+            enforce_proto_limits: LEGACY_NO_EXPLICIT_LIMITS
+          }
+        }
+        defaults {
+          edition: EDITION_2023
+          overridable_features {
+            field_presence: EXPLICIT
+            enum_type: OPEN
+            repeated_field_encoding: PACKED
+            utf8_validation: VERIFY
+            message_encoding: LENGTH_PREFIXED
+            json_format: ALLOW
+          }
+          fixed_features {
+            enforce_naming_style: STYLE_LEGACY
+            default_symbol_visibility: EXPORT_ALL
+            enforce_proto_limits: LEGACY_NO_EXPLICIT_LIMITS
+          }
+        }
+        defaults {
+          edition: EDITION_2024
+          overridable_features {
+            field_presence: EXPLICIT
+            enum_type: OPEN
+            repeated_field_encoding: PACKED
+            utf8_validation: VERIFY
+            message_encoding: LENGTH_PREFIXED
+            json_format: ALLOW
+            enforce_naming_style: STYLE2024
+            default_symbol_visibility: EXPORT_TOP_LEVEL
+          }
+          fixed_features { enforce_proto_limits: LEGACY_NO_EXPLICIT_LIMITS }
+        }
+        defaults {
+          edition: EDITION_2026
+          overridable_features {
+            field_presence: EXPLICIT
+            enum_type: OPEN
+            repeated_field_encoding: PACKED
+            utf8_validation: VERIFY
+            message_encoding: LENGTH_PREFIXED
+            json_format: ALLOW
+            enforce_naming_style: STYLE2026
+            default_symbol_visibility: EXPORT_TOP_LEVEL
+            enforce_proto_limits: PROTO_LIMITS2026
+          }
+          fixed_features {}
+        }
+        minimum_edition: EDITION_PROTO2
+        maximum_edition: EDITION_99997_TEST_ONLY
+      )pb"));
 }
 
 TEST_F(CommandLineInterfaceTest, EditionDefaultsWithUnstable) {
@@ -2532,67 +2752,86 @@ TEST_F(CommandLineInterfaceTest, EditionDefaultsWithMinimum) {
   ExpectNoErrors();
 
   FeatureSetDefaults defaults = ReadEditionDefaults("defaults");
-  EXPECT_THAT(defaults, PartiallyMatchesEditionDefaults(R"pb(
-                defaults {
-                  edition: EDITION_LEGACY
-                  overridable_features {}
-                  fixed_features {
-                    field_presence: EXPLICIT
-                    enum_type: CLOSED
-                    repeated_field_encoding: EXPANDED
-                    utf8_validation: NONE
-                    message_encoding: LENGTH_PREFIXED
-                    json_format: LEGACY_BEST_EFFORT
-                    enforce_naming_style: STYLE_LEGACY
-                    default_symbol_visibility: EXPORT_ALL
-                  }
-                }
-                defaults {
-                  edition: EDITION_PROTO3
-                  overridable_features {}
-                  fixed_features {
-                    field_presence: IMPLICIT
-                    enum_type: OPEN
-                    repeated_field_encoding: PACKED
-                    utf8_validation: VERIFY
-                    message_encoding: LENGTH_PREFIXED
-                    json_format: ALLOW
-                    enforce_naming_style: STYLE_LEGACY
-                    default_symbol_visibility: EXPORT_ALL
-                  }
-                }
-                defaults {
-                  edition: EDITION_2023
-                  overridable_features {
-                    field_presence: EXPLICIT
-                    enum_type: OPEN
-                    repeated_field_encoding: PACKED
-                    utf8_validation: VERIFY
-                    message_encoding: LENGTH_PREFIXED
-                    json_format: ALLOW
-                  }
-                  fixed_features {
-                    enforce_naming_style: STYLE_LEGACY
-                    default_symbol_visibility: EXPORT_ALL
-                  }
-                }
-                defaults {
-                  edition: EDITION_2024
-                  overridable_features {
-                    field_presence: EXPLICIT
-                    enum_type: OPEN
-                    repeated_field_encoding: PACKED
-                    utf8_validation: VERIFY
-                    message_encoding: LENGTH_PREFIXED
-                    json_format: ALLOW
-                    enforce_naming_style: STYLE2024
-                    default_symbol_visibility: EXPORT_TOP_LEVEL
-                  }
-                  fixed_features {}
-                }
-                minimum_edition: EDITION_99997_TEST_ONLY
-                maximum_edition: EDITION_99999_TEST_ONLY
-              )pb"));
+  EXPECT_THAT(
+      defaults, PartiallyMatchesEditionDefaults(R"pb(
+        defaults {
+          edition: EDITION_LEGACY
+          overridable_features {}
+          fixed_features {
+            field_presence: EXPLICIT
+            enum_type: CLOSED
+            repeated_field_encoding: EXPANDED
+            utf8_validation: NONE
+            message_encoding: LENGTH_PREFIXED
+            json_format: LEGACY_BEST_EFFORT
+            enforce_naming_style: STYLE_LEGACY
+            default_symbol_visibility: EXPORT_ALL
+            enforce_proto_limits: LEGACY_NO_EXPLICIT_LIMITS
+          }
+        }
+        defaults {
+          edition: EDITION_PROTO3
+          overridable_features {}
+          fixed_features {
+            field_presence: IMPLICIT
+            enum_type: OPEN
+            repeated_field_encoding: PACKED
+            utf8_validation: VERIFY
+            message_encoding: LENGTH_PREFIXED
+            json_format: ALLOW
+            enforce_naming_style: STYLE_LEGACY
+            default_symbol_visibility: EXPORT_ALL
+            enforce_proto_limits: LEGACY_NO_EXPLICIT_LIMITS
+          }
+        }
+        defaults {
+          edition: EDITION_2023
+          overridable_features {
+            field_presence: EXPLICIT
+            enum_type: OPEN
+            repeated_field_encoding: PACKED
+            utf8_validation: VERIFY
+            message_encoding: LENGTH_PREFIXED
+            json_format: ALLOW
+          }
+          fixed_features {
+            enforce_naming_style: STYLE_LEGACY
+            default_symbol_visibility: EXPORT_ALL
+            enforce_proto_limits: LEGACY_NO_EXPLICIT_LIMITS
+          }
+        }
+        defaults {
+          edition: EDITION_2024
+          overridable_features {
+            field_presence: EXPLICIT
+            enum_type: OPEN
+            repeated_field_encoding: PACKED
+            utf8_validation: VERIFY
+            message_encoding: LENGTH_PREFIXED
+            json_format: ALLOW
+            enforce_naming_style: STYLE2024
+            default_symbol_visibility: EXPORT_TOP_LEVEL
+          }
+          fixed_features { enforce_proto_limits: LEGACY_NO_EXPLICIT_LIMITS }
+        }
+        defaults {
+          edition: EDITION_2026
+          overridable_features {
+            field_presence: EXPLICIT
+            enum_type: OPEN
+            repeated_field_encoding: PACKED
+            utf8_validation: VERIFY
+            message_encoding: LENGTH_PREFIXED
+            json_format: ALLOW
+            enforce_naming_style: STYLE2026
+            default_symbol_visibility: EXPORT_TOP_LEVEL
+            enforce_proto_limits: PROTO_LIMITS2026
+          }
+          fixed_features {}
+        }
+        minimum_edition: EDITION_99997_TEST_ONLY
+        maximum_edition: EDITION_99999_TEST_ONLY
+      )pb"));
 }
 
 TEST_F(CommandLineInterfaceTest, EditionDefaultsWithExtension) {

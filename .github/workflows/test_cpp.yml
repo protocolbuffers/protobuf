@@ -44,6 +44,10 @@ jobs:
             cache_key: Bazel8
             image: "us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:8.0.1-d415763a389bb62a6f126b08c992e83f9f7dc1b4"
             targets: "//src/... //third_party/utf8_range/..."
+          - config: { name: "Bazel9", flags: "--cxxopt=-Wno-self-assign-overloaded" }
+            cache_key: Bazel9
+            image: "us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:9.0.0-7932bf8b25fb76a111e7257d151a6a58d5c3c671"
+            targets: "//src/... //third_party/utf8_range/..."
           - config: { name: "TCMalloc" }
             cache_key: TcMalloc
             image: "us-docker.pkg.dev/protobuf-build/containers/test/linux/tcmalloc:8.0.1-d415763a389bb62a6f126b08c992e83f9f7dc1b4"
@@ -506,7 +510,7 @@ jobs:
 
       - name: Setup MSVC
         if: ${{ runner.os == 'Windows' && (!matrix.continuous-only || inputs.continuous-run) }}
-        uses: ilammy/msvc-dev-cmd@cec98b9d092141f74527d0afa6feb2af698cfe89 # v1.12.1
+        uses: ilammy/msvc-dev-cmd@0b201ec74fa43914dc39ae48a89fd1d8cb592756  # v1.13.0
         with:
           arch: ${{ matrix.windows-arch || 'x64' }}
           vsversion: ${{ matrix.vsversion }}

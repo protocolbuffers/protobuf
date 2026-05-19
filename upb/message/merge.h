@@ -13,10 +13,9 @@
 extern "C" {
 #endif
 
-UPB_API bool upb_Message_MergeFrom(upb_Message* dst, const upb_Message* src,
-                                   const upb_MiniTable* mt,
-                                   const upb_ExtensionRegistry* extreg,
-                                   upb_Arena* arena);
+UPB_NODISCARD UPB_API bool upb_Message_MergeFrom(
+    upb_Message* dst, const upb_Message* src, const upb_MiniTable* mt,
+    const upb_ExtensionRegistry* extreg, upb_Arena* arena);
 
 #ifdef __cplusplus
 } /* extern "C" */

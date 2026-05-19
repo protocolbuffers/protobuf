@@ -372,13 +372,13 @@ proto_library(
     name = "json_enumvalue_options_proto",
     srcs = ["json_enumvalue_options.proto"],
     strip_import_prefix = "/src",
-    visibility = ["//visibility:private"],
+    visibility = ["//:__subpackages__"],
     deps = [":descriptor_proto"],
 )
 
 cc_proto_library(
     name = "json_enumvalue_options_cc_proto",
-    visibility = ["//visibility:private"],
+    visibility = ["//:__subpackages__"],
     deps = [":json_enumvalue_options_proto"],
 )
 
@@ -413,8 +413,10 @@ cc_library(
         ":os_macros",
         "@abseil-cpp//absl/base:config",
         "@abseil-cpp//absl/base:core_headers",
+        "@abseil-cpp//absl/base:dynamic_annotations",
         "@abseil-cpp//absl/base:prefetch",
         "@abseil-cpp//absl/log:absl_log",
+        "@abseil-cpp//absl/numeric:bits",
         "@abseil-cpp//absl/strings",
         "@abseil-cpp//absl/strings:str_format",
         "@abseil-cpp//absl/types:optional",
@@ -526,6 +528,7 @@ cc_library(
 
 cc_library(
     name = "arena_allocation_policy",
+    srcs = ["arena_allocation_policy.cc"],
     hdrs = ["arena_allocation_policy.h"],
     strip_include_prefix = "/src",
     visibility = [
@@ -784,6 +787,7 @@ PROTOBUF_HEADERS = [
     "dynamic_message.h",
     "feature_resolver.h",
     "internal_feature_helper.h",
+    "json_enumvalue_options.pb.h",
     "field_access_listener.h",
     "generated_enum_reflection.h",
     "generated_message_bases.h",
@@ -821,6 +825,7 @@ cc_library(
         "generated_message_tctable_full.cc",
         "generated_message_tctable_gen.cc",
         "internal_feature_helper.cc",
+        "json_enumvalue_options.pb.cc",
         "map_field.cc",
         "message.cc",
         "reflection_mode.cc",
@@ -2285,6 +2290,7 @@ cc_test(
         ":cc_test_protos",
         ":internal_visibility",
         ":lite_test_util",
+        ":micro_string",
         ":port",
         ":protobuf",
         ":protobuf_lite",
@@ -2728,6 +2734,17 @@ cc_test(
         ":cc_test_protos",
         ":protobuf",
         ":unredacted_debug_format_for_test",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "text_format_fix_test",
+    srcs = ["text_format_fix_test.cc"],
+    deps = [
+        ":protobuf",
+        "//src/google/protobuf/io",
         "@googletest//:gtest",
         "@googletest//:gtest_main",
     ],

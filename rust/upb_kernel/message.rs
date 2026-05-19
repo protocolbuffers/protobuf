@@ -392,6 +392,10 @@ where
         //~ of the failure, we should try to keep it instead.
         upb::wire::encode(self.get_ptr(Private)).map_err(|_| SerializeError)
     }
+
+    fn serialized_len(&self) -> usize {
+        upb::wire::byte_size(self.get_ptr(Private))
+    }
 }
 
 impl<T> TakeFrom for T

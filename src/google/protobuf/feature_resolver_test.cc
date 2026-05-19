@@ -2236,6 +2236,7 @@ TEST_F(FeatureResolverPoolTest, CompileDefaultsMinimumCovered) {
         json_format: LEGACY_BEST_EFFORT
         enforce_naming_style: STYLE_LEGACY
         default_symbol_visibility: EXPORT_ALL
+        enforce_proto_limits: LEGACY_NO_EXPLICIT_LIMITS
         [pb.test] { file_feature: VALUE1 }
       }
     }
@@ -2253,6 +2254,7 @@ TEST_F(FeatureResolverPoolTest, CompileDefaultsMinimumCovered) {
         json_format: ALLOW
         enforce_naming_style: STYLE_LEGACY
         default_symbol_visibility: EXPORT_ALL
+        enforce_proto_limits: LEGACY_NO_EXPLICIT_LIMITS
         [pb.test] { file_feature: VALUE1 }
       }
     }
@@ -2270,6 +2272,7 @@ TEST_F(FeatureResolverPoolTest, CompileDefaultsMinimumCovered) {
       fixed_features {
         enforce_naming_style: STYLE_LEGACY
         default_symbol_visibility: EXPORT_ALL
+        enforce_proto_limits: LEGACY_NO_EXPLICIT_LIMITS
         [pb.test] {}
       }
     }
@@ -2287,6 +2290,25 @@ TEST_F(FeatureResolverPoolTest, CompileDefaultsMinimumCovered) {
         [pb.test] { file_feature: VALUE2 }
       }
       fixed_features {
+        enforce_proto_limits: LEGACY_NO_EXPLICIT_LIMITS
+        [pb.test] {}
+      }
+    }
+    defaults {
+      edition: EDITION_2026
+      overridable_features {
+        field_presence: EXPLICIT
+        enum_type: OPEN
+        repeated_field_encoding: PACKED
+        utf8_validation: VERIFY
+        message_encoding: LENGTH_PREFIXED
+        json_format: ALLOW
+        enforce_naming_style: STYLE2026
+        default_symbol_visibility: EXPORT_TOP_LEVEL
+        enforce_proto_limits: PROTO_LIMITS2026
+        [pb.test] { file_feature: VALUE2 }
+      }
+      fixed_features {
         [pb.test] {}
       }
     }
@@ -2301,6 +2323,7 @@ TEST_F(FeatureResolverPoolTest, CompileDefaultsMinimumCovered) {
         json_format: ALLOW
         enforce_naming_style: STYLE2026
         default_symbol_visibility: EXPORT_TOP_LEVEL
+        enforce_proto_limits: PROTO_LIMITS2026
         [pb.test] { file_feature: VALUE3 }
       }
       fixed_features {

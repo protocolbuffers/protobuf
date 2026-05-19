@@ -10,8 +10,8 @@ load("//build_defs:cpp_opts.bzl", "COPTS")
 
 cc_binary(
     name = "protoc-gen-cpp",
-    srcs = ["main.cc"],
-    visibility = ["//:__pkg__"],
+    srcs = ["plugin_main.cc"],
+    visibility = ["//visibility:public"],
     deps = [
         ":cpp",
         "//src/google/protobuf/compiler:plugin",
@@ -124,6 +124,7 @@ cc_library(
         ":names",
         ":names_internal",
         "//src/google/protobuf",
+        "//src/google/protobuf:micro_string",
         "//src/google/protobuf:port",
         "//src/google/protobuf:protobuf_lite",
         "//src/google/protobuf/compiler:code_generator",
