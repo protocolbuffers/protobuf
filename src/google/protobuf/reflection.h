@@ -10,10 +10,14 @@
 #ifndef GOOGLE_PROTOBUF_REFLECTION_H__
 #define GOOGLE_PROTOBUF_REFLECTION_H__
 
+#include <cassert>
+#include <cstddef>
+#include <cstdint>
+#include <iterator>
 #include <memory>
+#include <string>
 #include <type_traits>
 
-#include "absl/base/attributes.h"
 #include "google/protobuf/generated_enum_util.h"
 #include "google/protobuf/descriptor.h"
 
@@ -60,6 +64,12 @@ class RepeatedFieldRef<
   }
   PROTOBUF_FUTURE_ADD_EARLY_NODISCARD T Get(int index) const {
     return accessor_->template Get<T>(data_, index);
+  }
+  // If the underlying field is stored contiguously (as a RepeatedField),
+  // returns a pointer to the first element. Otherwise returns nullptr.
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD const T* PROTOBUF_NULLABLE
+  raw_data() const {
+    return static_cast<const T*>(accessor_->GetRawPointer(data_));
   }
 
   typedef IteratorType iterator;
@@ -179,6 +189,12 @@ class RepeatedFieldRef<
   // Create a new message of the same type as the messages stored in this
   // repeated field. Caller takes ownership of the returned object.
   T* PROTOBUF_NONNULL NewMessage() const { return default_instance_->New(); }
+  // If the underlying field is stored contiguously (as a RepeatedField),
+  // returns a pointer to the first element. Otherwise returns nullptr.
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD const T* PROTOBUF_NULLABLE
+  raw_data() const {
+    return static_cast<const T*>(accessor_->GetRawPointer(data_));
+  }
 
   typedef IteratorType iterator;
   typedef IteratorType const_iterator;
@@ -318,6 +334,13 @@ class PROTOBUF_EXPORT RepeatedFieldAccessor {
       const Field* PROTOBUF_NONNULL data) const = 0;
   PROTOBUF_FUTURE_ADD_EARLY_NODISCARD virtual int Size(
       const Field* PROTOBUF_NONNULL data) const = 0;
+  // Returns a pointer to the contiguous storage of the repeated field,
+  // or nullptr if the field is not stored contiguously (e.g., in a
+  // RepeatedPtrField).
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD virtual const void* PROTOBUF_NULLABLE
+  GetRawPointer(const Field* PROTOBUF_NONNULL data) const {
+    return nullptr;
+  }
   // Depends on the underlying representation of the repeated field, this
   // method can return a pointer to the underlying object if such an object
   // exists, or fill the data into scratch_space and return scratch_space.
