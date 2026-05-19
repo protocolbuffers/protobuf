@@ -2089,4 +2089,38 @@ public class GeneratedMessageTest {
 
     System.clearProperty("com.google.protobuf.use_unsafe_pre22_gencode");
   }
+
+  @Test
+  public void testLazyExtensionEqualsAvoidsResolution() throws Exception {
+    ExtensionRegistryLite.LazyExtensionMode originalMode =
+        ExtensionRegistryLite.getLazyExtensionMode();
+    ExtensionRegistryLite.setLazyExtensionMode(
+        ExtensionRegistryLite.LazyExtensionMode.LAZY_VERIFY_ON_ACCESS);
+    try {
+      // Create bytes for TestAllExtensions with optionalLazyMessageExtension (field 27)
+      // set to invalid bytes (0xFF).
+      ByteArrayOutputStream baos = new ByteArrayOutputStream();
+      CodedOutputStream cos = CodedOutputStream.newInstance(baos);
+      cos.writeTag(27, WireFormat.WIRETYPE_LENGTH_DELIMITED);
+      cos.writeUInt32NoTag(1); // Length of NestedMessage
+      cos.writeRawByte((byte) 0xFF); // Invalid payload
+      cos.flush();
+      byte[] bytes = baos.toByteArray();
+
+      ExtensionRegistry registry = ExtensionRegistry.newInstance();
+      registry.add(UnittestProto.optionalLazyMessageExtension);
+
+      // Parsing should succeed because the extension is lazy and not eagerly parsed.
+      TestAllExtensions message = TestAllExtensions.parseFrom(bytes, registry);
+
+      // Comparing to default instance should return false and NOT throw an exception
+      // because it shouldn't need to resolve the lazy extension (since it's not present in
+      // default).
+      assertThat(message.equals(TestAllExtensions.getDefaultInstance())).isFalse();
+    } finally {
+      ExtensionRegistryLite.setLazyExtensionMode(originalMode);
+    }
+  }
 }
+
+

@@ -1033,6 +1033,10 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
       this.extensions = builder.buildExtensions();
     }
 
+    protected boolean extensionsEquals(ExtendableMessage<?> other) {
+      return this.extensions.equals(other.extensions);
+    }
+
     /**
      * Returns an iterator over the set extensions lazily wrapped in {@link FieldEntry} objects.
      * Order is unspecified.
