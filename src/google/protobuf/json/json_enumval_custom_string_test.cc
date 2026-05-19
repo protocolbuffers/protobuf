@@ -96,6 +96,39 @@ TEST(JsonEnumvalCustomStringTest, DoubleQuoteEnumSerialization) {
   EXPECT_EQ(msg2.armor(), Armor::ARMOR_PLATE);
 }
 
+// Coif is an empty custom string, let's make sure that works.
+TEST(JsonEnumvalCustomStringTest, CoifEmptySerialization) {
+  Knight msg;
+  msg.set_armor(Armor::ARMOR_COIF);
+  EXPECT_EQ(msg.armor(), Armor::ARMOR_COIF);
+  std::string json_res{};
+  absl::Status status = json::MessageToJsonString(msg, &json_res);
+  EXPECT_OK(status);
+  EXPECT_EQ(json_res, R"json({"armor":""})json");
+  // Roundtrip to make sure we can parse it back
+  Knight msg2;
+  absl::Status parse_status = json::JsonStringToMessage(json_res, &msg2);
+  EXPECT_OK(parse_status);
+  EXPECT_EQ(msg2.armor(), Armor::ARMOR_COIF);
+}
+
+// Ensure newlines and tabs are properly escaped.
+TEST(JsonEnumvalCustomStringTest, PauldronEscapingSerialization) {
+  Knight msg;
+  msg.set_armor(Armor::ARMOR_PAULDRON);
+  EXPECT_EQ(msg.armor(), Armor::ARMOR_PAULDRON);
+  std::string json_res{};
+  absl::Status status = json::MessageToJsonString(msg, &json_res);
+  EXPECT_OK(status);
+
+  EXPECT_EQ(json_res, R"json({"armor":"p\taul\ndron"})json");
+  // Roundtrip to make sure we can parse it back
+  Knight msg2;
+  absl::Status parse_status = json::JsonStringToMessage(json_res, &msg2);
+  EXPECT_OK(parse_status);
+  EXPECT_EQ(msg2.armor(), Armor::ARMOR_PAULDRON);
+}
+
 // Int overrides always win.
 TEST(JsonEnumvalCustomStringTest, GreatHelmIntOverride) {
   Knight msg;

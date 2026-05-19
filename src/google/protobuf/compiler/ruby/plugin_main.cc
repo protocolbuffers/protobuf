@@ -5,15 +5,10 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
-package com.google.protobuf;
+#include "google/protobuf/compiler/plugin.h"
+#include "google/protobuf/compiler/ruby/ruby_generator.h"
 
-@CheckReturnValue
-final class ExtensionSchemas {
-  private static final ExtensionSchema<?> LITE_SCHEMA = new ExtensionSchemaLite();
-
-  static ExtensionSchema<?> lite() {
-    return LITE_SCHEMA;
-  }
-
-  private ExtensionSchemas() {}
+int main(int argc, char* argv[]) {
+  google::protobuf::compiler::ruby::Generator generator;
+  return google::protobuf::compiler::PluginMain(argc, argv, &generator);
 }

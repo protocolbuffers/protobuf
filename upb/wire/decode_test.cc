@@ -435,6 +435,55 @@ TEST(DecodeTest, EmptyMiniTableDecodedAsUnknown) {
   EXPECT_FALSE(upb_Message_NextUnknown(msg, &data, &iter));
 }
 
+TEST(DecodeTest, MaxDepthPayloadParsesSuccessfully) {
+  upb::Arena mt_arena;
+  upb::Arena msg_arena;
+
+  // Construct recursive message to allow testing arbitrary depths.
+  auto [mt, field] =
+      test::MiniTable::MakeSingleFieldTable<test::field_types::Message>(
+          1, kUpb_DecodeFast_Scalar, mt_arena.ptr());
+  const upb_MiniTable* subs[1] = {mt};  // Submessage is of own type.
+  bool linked =
+      upb_MiniTable_Link(const_cast<upb_MiniTable*>(mt), subs, 1, nullptr, 0);
+  ASSERT_TRUE(linked);
+
+  // We'll set a small depth limit to make it easy to test.
+  const int kMaxDepth = 10;
+  int options = upb_Decode_LimitDepth(0, kMaxDepth);
+
+  auto make_payload = [](int depth) {
+    std::string payload;
+    for (int i = 0; i < depth; ++i) {
+      // field 1, delimited
+      payload += '\n';
+      // length (remaining payload)
+      // Each level adds 2 bytes (tag + length byte).
+      payload.push_back(static_cast<char>((depth - i - 1) * 2));
+    }
+    return payload;
+  };
+
+  // Test depth kMaxDepth - should succeed.
+  {
+    std::string payload = make_payload(kMaxDepth);
+    upb_Message* msg = upb_Message_New(mt, msg_arena.ptr());
+    upb_DecodeStatus result = upb_Decode(payload.data(), payload.size(), msg,
+                                         mt, nullptr, options, msg_arena.ptr());
+    EXPECT_EQ(result, kUpb_DecodeStatus_Ok) << upb_DecodeStatus_String(result);
+  }
+
+  // Test depth kMaxDepth + 1 - should fail.
+  {
+    std::string payload = make_payload(kMaxDepth + 1);
+    upb_Message* msg = upb_Message_New(mt, msg_arena.ptr());
+    upb_DecodeStatus result = upb_Decode(payload.data(), payload.size(), msg,
+                                         mt, nullptr, options, msg_arena.ptr());
+    EXPECT_EQ(result, kUpb_DecodeStatus_MaxDepthExceeded)
+        << upb_DecodeStatus_String(result);
+  }
+}
+
 }  // namespace
 
 }  // namespace test
