@@ -21,11 +21,11 @@
 #include "absl/strings/numbers.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
+#include "third_party/gloop/util/status/status_macros.h"
 #include "google/protobuf/dynamic_message.h"
 #include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/json/internal/descriptor_traits.h"
 #include "google/protobuf/json/internal/untyped_message.h"
-#include "google/protobuf/stubs/status_macros.h"
 
 // Must be included last.
 #include "google/protobuf/port_def.inc"
