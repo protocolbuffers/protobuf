@@ -83,4 +83,7 @@ enum NotAllowed {
   NULL = 74;
   VOID = 75;
   ITERABLE = 76;
+  OBJECT = 80;
+  MIXED = 81;
+  NEVER = 82;
 }

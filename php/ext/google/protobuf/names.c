@@ -64,7 +64,7 @@ const char* const kReservedNames[] = {
     "try",        "unset",      "use",        "var",          "while",
     "xor",        "yield",      "int",        "float",        "bool",
     "string",     "true",       "false",      "null",         "void",
-    "iterable",   NULL};
+    "iterable",   "mixed",      "never",       NULL};
 
 const char* const kPreviouslyUnreservedNames[] = {"readonly", NULL};
 

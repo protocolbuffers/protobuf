@@ -82,3 +82,6 @@ message false {}
 message null {}
 message void {}
 message iterable {}
+message object {}
+message mixed {}
+message never {}

@@ -82,3 +82,6 @@ enum false { ZERO74 = 0; }
 enum null { ZERO75 = 0; }
 enum void { ZERO76 = 0; }
 enum iterable { ZERO77 = 0; }
+enum object { ZERO81 = 0; }
+enum mixed { ZERO82 = 0; }
+enum never { ZERO83 = 0; }
