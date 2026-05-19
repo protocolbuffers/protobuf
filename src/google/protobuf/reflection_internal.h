@@ -96,6 +96,9 @@ class RepeatedFieldWrapper : public RandomAccessRepeatedFieldAccessor {
   void SwapElements(Field* data, int index1, int index2) const override {
     MutableRepeatedField(data)->SwapElements(index1, index2);
   }
+  const void* GetRawPointer(const Field* data) const override {
+    return GetRepeatedField(data)->data();
+  }
 
  protected:
   // Type synonyms that subclasses can use.

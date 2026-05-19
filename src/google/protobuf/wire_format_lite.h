@@ -51,6 +51,9 @@
 
 namespace google {
 namespace protobuf {
+template <typename T, typename Enable>
+class RepeatedFieldRef;
+
 namespace internal {
 
 // This class is for internal use by the protocol buffer library and by
@@ -391,6 +394,104 @@ class PROTOBUF_EXPORT WireFormatLite {
   static void WriteBoolArray(const bool* a, int n,
                              io::CodedOutputStream* output);
 
+  template <typename T, typename Enable>
+  static void WriteFloatArray(
+      const ::google::protobuf::RepeatedFieldRef<T, Enable>& value,
+      io::CodedOutputStream* output) {
+    if constexpr (std::is_same_v<typename std::decay<T>::type, float>) {
+      if (const float* ptr = value.raw_data()) {
+        WriteFloatArray(ptr, value.size(), output);
+        return;
+      }
+    }
+    for (auto x : value) {
+      WriteFloatNoTag(x, output);
+    }
+  }
+  template <typename T, typename Enable>
+  static void WriteDoubleArray(
+      const ::google::protobuf::RepeatedFieldRef<T, Enable>& value,
+      io::CodedOutputStream* output) {
+    if constexpr (std::is_same_v<typename std::decay<T>::type, double>) {
+      if (const double* ptr = value.raw_data()) {
+        WriteDoubleArray(ptr, value.size(), output);
+        return;
+      }
+    }
+    for (auto x : value) {
+      WriteDoubleNoTag(x, output);
+    }
+  }
+  template <typename T, typename Enable>
+  static void WriteFixed32Array(
+      const ::google::protobuf::RepeatedFieldRef<T, Enable>& value,
+      io::CodedOutputStream* output) {
+    if constexpr (std::is_same_v<typename std::decay<T>::type, uint32_t>) {
+      if (const uint32_t* ptr = value.raw_data()) {
+        WriteFixed32Array(ptr, value.size(), output);
+        return;
+      }
+    }
+    for (auto x : value) {
+      WriteFixed32NoTag(x, output);
+    }
+  }
+  template <typename T, typename Enable>
+  static void WriteFixed64Array(
+      const ::google::protobuf::RepeatedFieldRef<T, Enable>& value,
+      io::CodedOutputStream* output) {
+    if constexpr (std::is_same_v<typename std::decay<T>::type, uint64_t>) {
+      if (const uint64_t* ptr = value.raw_data()) {
+        WriteFixed64Array(ptr, value.size(), output);
+        return;
+      }
+    }
+    for (auto x : value) {
+      WriteFixed64NoTag(x, output);
+    }
+  }
+  template <typename T, typename Enable>
+  static void WriteSFixed32Array(
+      const ::google::protobuf::RepeatedFieldRef<T, Enable>& value,
+      io::CodedOutputStream* output) {
+    if constexpr (std::is_same_v<typename std::decay<T>::type, int32_t>) {
+      if (const int32_t* ptr = value.raw_data()) {
+        WriteSFixed32Array(ptr, value.size(), output);
+        return;
+      }
+    }
+    for (auto x : value) {
+      WriteSFixed32NoTag(x, output);
+    }
+  }
+  template <typename T, typename Enable>
+  static void WriteSFixed64Array(
+      const ::google::protobuf::RepeatedFieldRef<T, Enable>& value,
+      io::CodedOutputStream* output) {
+    if constexpr (std::is_same_v<typename std::decay<T>::type, int64_t>) {
+      if (const int64_t* ptr = value.raw_data()) {
+        WriteSFixed64Array(ptr, value.size(), output);
+        return;
+      }
+    }
+    for (auto x : value) {
+      WriteSFixed64NoTag(x, output);
+    }
+  }
+  template <typename T, typename Enable>
+  static void WriteBoolArray(const ::google::protobuf::RepeatedFieldRef<T, Enable>& value,
+                             io::CodedOutputStream* output) {
+    if constexpr (std::is_same_v<typename std::decay<T>::type, bool>) {
+      if (const bool* ptr = value.raw_data()) {
+        WriteBoolArray(ptr, value.size(), output);
+        return;
+      }
+    }
+    for (auto x : value) {
+      WriteBoolNoTag(x, output);
+    }
+  }
+
   // Write fields, including tags.
   static void WriteInt32(int field_number, int32_t value,
                          io::CodedOutputStream* output);
@@ -622,6 +723,70 @@ class PROTOBUF_EXPORT WireFormatLite {
       const RepeatedField<int64_t>& value);
   PROTOBUF_FUTURE_ADD_EARLY_NODISCARD static size_t EnumSize(
       const RepeatedField<int>& value);
+
+  template <typename T, typename Enable>
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD static size_t Int32Size(
+      const ::google::protobuf::RepeatedFieldRef<T, Enable>& value) {
+    size_t size = 0;
+    for (auto x : value) {
+      size += Int32Size(x);
+    }
+    return size;
+  }
+  template <typename T, typename Enable>
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD static size_t Int64Size(
+      const ::google::protobuf::RepeatedFieldRef<T, Enable>& value) {
+    size_t size = 0;
+    for (auto x : value) {
+      size += Int64Size(x);
+    }
+    return size;
+  }
+  template <typename T, typename Enable>
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD static size_t UInt32Size(
+      const ::google::protobuf::RepeatedFieldRef<T, Enable>& value) {
+    size_t size = 0;
+    for (auto x : value) {
+      size += UInt32Size(x);
+    }
+    return size;
+  }
+  template <typename T, typename Enable>
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD static size_t UInt64Size(
+      const ::google::protobuf::RepeatedFieldRef<T, Enable>& value) {
+    size_t size = 0;
+    for (auto x : value) {
+      size += UInt64Size(x);
+    }
+    return size;
+  }
+  template <typename T, typename Enable>
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD static size_t SInt32Size(
+      const ::google::protobuf::RepeatedFieldRef<T, Enable>& value) {
+    size_t size = 0;
+    for (auto x : value) {
+      size += SInt32Size(x);
+    }
+    return size;
+  }
+  template <typename T, typename Enable>
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD static size_t SInt64Size(
+      const ::google::protobuf::RepeatedFieldRef<T, Enable>& value) {
+    size_t size = 0;
+    for (auto x : value) {
+      size += SInt64Size(x);
+    }
+    return size;
+  }
+  template <typename T, typename Enable>
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD static size_t EnumSize(
+      const ::google::protobuf::RepeatedFieldRef<T, Enable>& value) {
+    size_t size = 0;
+    for (auto x : value) {
+      size += EnumSize(static_cast<int>(x));
+    }
+    return size;
+  }
 
   PROTOBUF_FUTURE_ADD_EARLY_NODISCARD static size_t Int32SizeWithPackedTagSize(
       const RepeatedField<int32_t>& value, size_t tag_size,
