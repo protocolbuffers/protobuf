@@ -88,7 +88,22 @@ UPB_INLINE uint16_t upb_DecodeFastData2_GetOriginalTag(uint64_t data2) {
 
 UPB_INLINE uint64_t upb_DecodeFastData2_PackOriginalTag(uint64_t data2,
                                                         uint16_t tag) {
-  return (data2 & 0xffffffffffff0000ULL) | tag;
+  return (data2 & 0xffffffffffff0000) | tag;
+}
+
+UPB_INLINE uint8_t upb_DecodeFastData2_GetWireType(uint64_t data2) {
+  return data2 & 0x07;
+}
+
+UPB_INLINE uint8_t upb_DecodeFastData2_GetTagLen(uint64_t data2) {
+  return (data2 >> 3) & 0x07;
+}
+
+UPB_INLINE uint64_t upb_DecodeFastData2_PackWireTypeAndTagLen(uint64_t data2,
+                                                              uint8_t wire_type,
+                                                              uint8_t tag_len) {
+  return (data2 & ~((uint64_t)0x3F)) | ((uint64_t)tag_len << 3) |
+         (wire_type & 0x07);
 }
 
 #include "upb/port/undef.inc"
