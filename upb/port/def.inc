@@ -276,6 +276,20 @@ Error, UINTPTR_MAX is undefined
 #define UPB_UNPREDICTABLE(x) (x)
 #endif
 
+// Macros for inlining a function from the caller instead of from the function
+// declaration.
+#if defined(__clang__) && defined(__cplusplus) && \
+    UPB_HAS_CPP_ATTRIBUTE(clang::always_inline)
+#define UPB_FORCEINLINE_CALL [[clang::always_inline]]
+#elif defined(__clang__) && !defined(__cplusplus) && \
+    UPB_HAS_C_ATTRIBUTE(nodiscard)
+#define UPB_FORCEINLINE_CALL [[clang::always_inline]]
+#elif defined(__cplusplus) && defined(_MSC_VER)
+#define UPB_FORCEINLINE_CALL [[msvc::forceinline_calls]]
+#else
+#define UPB_FORCEINLINE_CALL
+#endif
+
 // Macros for function attributes on compilers that support them.
 #if defined(__GNUC__) || defined(__clang__)
 #define UPB_FORCEINLINE __inline__ __attribute__((always_inline)) static
