@@ -25,6 +25,7 @@
 
 typedef struct upb_FastDecoder_Return {
   const char* ptr;
+  uint64_t pass_back;
 } upb_FastDecoder_Return;
 
 // The standard set of arguments passed to each parsing function.
@@ -65,6 +66,12 @@ _upb_FastDecoder_TagDispatch(struct upb_Decoder* d, const char* ptr,
 
 UPB_NOINLINE UPB_PRESERVE_NONE upb_FastDecoder_Return
     upb_DecodeFast_MessageIsDoneFallback(UPB_PARSE_PARAMS);
+
+UPB_PRESERVE_NONE upb_FastDecoder_Return
+    _upb_FastDecoder_FallbackToMiniTable(UPB_PARSE_PARAMS);
+
+UPB_PRESERVE_NONE upb_FastDecoder_Return
+    _upb_FastDecoder_FallbackToMiniTableWithField(UPB_PARSE_PARAMS);
 
 UPB_FORCEINLINE UPB_PRESERVE_NONE upb_FastDecoder_Return
 upb_DecodeFast_Dispatch(UPB_PARSE_PARAMS) {

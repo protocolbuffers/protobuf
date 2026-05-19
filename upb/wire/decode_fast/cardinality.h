@@ -80,6 +80,9 @@ typedef enum {
   // Tail call for decoding an unknown value; ptr points to the start of the
   // tag.
   kUpb_DecodeFastNext_DecodeUnknownValue = 12,
+
+  // Fallback to MiniTable with a specific field pointer passed back.
+  kUpb_DecodeFastNext_FallbackToMiniTableWithField = 13,
 } upb_DecodeFastNext;
 
 UPB_INLINE bool upb_DecodeFast_SetExit(upb_DecodeFastNext* next,
@@ -118,7 +121,11 @@ UPB_INLINE bool upb_DecodeFast_SetError(upb_Decoder* d,
     case kUpb_DecodeFastNext_Dispatch:                                         \
       UPB_MUSTTAIL return upb_DecodeFast_Dispatch(UPB_PARSE_ARGS);             \
     case kUpb_DecodeFastNext_FallbackToMiniTable:                              \
-      UPB_MUSTTAIL return _upb_FastDecoder_DecodeGeneric(UPB_PARSE_ARGS);      \
+      UPB_MUSTTAIL return _upb_FastDecoder_FallbackToMiniTable(                \
+          UPB_PARSE_ARGS);                                                     \
+    case kUpb_DecodeFastNext_FallbackToMiniTableWithField:                     \
+      UPB_MUSTTAIL return _upb_FastDecoder_FallbackToMiniTableWithField(       \
+          UPB_PARSE_ARGS);                                                     \
     case kUpb_DecodeFastNext_Error:                                            \
       UPB_ASSERT(d->err->code != kUpb_DecodeStatus_Ok);                        \
       return _upb_FastDecoder_ErrorJmp2(d);                                    \
@@ -421,6 +428,7 @@ bool upb_DecodeFast_Unpacked(upb_Decoder* d, const char** ptr, upb_Message* msg,
   }
 
   bool next_tag_matches;
+  bool next_repeated;
   do {
     if (!single(d, &p, arr.dst, type, ret, ctx)) {
       upb_DecodeFastField_SetArraySize(&arr, type);
@@ -430,8 +438,9 @@ bool upb_DecodeFast_Unpacked(upb_Decoder* d, const char** ptr, upb_Message* msg,
     _upb_Decoder_Trace(d, 'F');
     next_tag_matches =
         upb_DecodeFast_TryMatchTag(d, p, arr.expected_tag, ret, tagsize);
-  } while (upb_DecodeFast_NextRepeated(d, &p, ret, &arr, next_tag_matches, type,
-                                       tagsize));
+    next_repeated = upb_DecodeFast_NextRepeated(
+        d, &p, ret, &arr, next_tag_matches, type, tagsize);
+  } while (next_repeated);
 
   return true;
 }

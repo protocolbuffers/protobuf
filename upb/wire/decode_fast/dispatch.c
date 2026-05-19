@@ -25,12 +25,12 @@ upb_DecodeFast_MessageIsDoneFallback(UPB_PARSE_PARAMS) {
     case kUpb_IsDoneStatus_Done: {
       // We've reach end-of-message.  Sync hasbits and maybe check required
       // fields.
-      d->message_is_done = true;
       upb_DecodeFast_SetHasbits(msg, hasbits);
       return (upb_FastDecoder_Return){
           .ptr = UPB_UNLIKELY(table->UPB_PRIVATE(required_count))
                      ? _upb_Decoder_CheckRequired(d, ptr, msg, table)
-                     : ptr};
+                     : ptr,
+          .pass_back = upb_DecodeFast_PackPassBack(NULL, true)};
     }
     case kUpb_IsDoneStatus_NeedFallback:
       // We've reached end-of-buffer.  Refresh the buffer.
@@ -52,5 +52,5 @@ upb_DecodeFast_MessageIsDoneFallback(UPB_PARSE_PARAMS) {
 
 upb_FastDecoder_Return _upb_FastDecoder_ErrorJmp2(upb_Decoder* d) {
   UPB_LONGJMP(d->err->buf, 1);
-  return (upb_FastDecoder_Return){.ptr = NULL};
+  return (upb_FastDecoder_Return){.ptr = NULL, .pass_back = 0};
 }

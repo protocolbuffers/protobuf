@@ -104,13 +104,15 @@ UPB_PRESERVE_NONE upb_FastDecoder_Return _upb_FastDecoder_DecodeCheckMiniTable(
   UPB_ASSERT(ptr + upb_DecodeFastData2_GetTagLen(data2) == read);
 #endif
   uint32_t gap_lo, gap_hi;
+  const upb_MiniTableField* field = UPB_PRIVATE(_upb_MiniTable_FindFieldOrGap)(
+      table, field_num, &gap_lo, &gap_hi);
   upb_DecodeFastNext ret;
-  if (UPB_PRIVATE(_upb_MiniTable_FindUnknownGap)(table, field_num, &gap_lo,
-                                                 &gap_hi)) {
+  if (field) {
+    data = (uintptr_t)field;
+    ret = kUpb_DecodeFastNext_FallbackToMiniTableWithField;
+  } else {
     data = upb_DecodeFast_PackGaps(gap_lo, gap_hi);
     ret = kUpb_DecodeFastNext_DecodeUnknownValue;
-  } else {
-    ret = kUpb_DecodeFastNext_FallbackToMiniTable;
   }
   UPB_DECODEFAST_NEXT(ret);
 }
@@ -135,7 +137,8 @@ _upb_FastDecoder_DecodeCheckExtRegMiniTable(struct upb_Decoder* d,
     const upb_MiniTableExtension* ext =
         upb_ExtensionRegistry_Lookup(d->extreg, table, field_num);
     if (ext) {
-      ret = kUpb_DecodeFastNext_FallbackToMiniTable;
+      data = (uintptr_t)upb_MiniTableExtension_ToField(ext);
+      ret = kUpb_DecodeFastNext_FallbackToMiniTableWithField;
     }
   }
   UPB_DECODEFAST_NEXT(ret);

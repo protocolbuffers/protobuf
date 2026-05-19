@@ -284,15 +284,16 @@ const struct upb_MiniTableField* upb_MiniTable_FindFieldByNumber(
 // number matches a known field. Otherwise returns true and sets out_gap_lo
 // and out_gap_hi (exclusive/exclusive) to define the range of unknown
 // fields (out_gap_lo, out_gap_hi).
-UPB_FORCEINLINE bool UPB_PRIVATE(_upb_MiniTable_FindUnknownGap)(
-    const struct upb_MiniTable* m, uint32_t number, uint32_t* out_gap_lo,
-    uint32_t* out_gap_hi) {
+UPB_FORCEINLINE const struct upb_MiniTableField* UPB_PRIVATE(
+    _upb_MiniTable_FindFieldOrGap)(const struct upb_MiniTable* m,
+                                   uint32_t number, uint32_t* out_gap_lo,
+                                   uint32_t* out_gap_hi) {
   UPB_ASSERT(number != 0);
   UPB_ASSERT(number < ((uint32_t)1 << 29));
   const uint32_t i = number - 1;
   if (i < m->UPB_PRIVATE(dense_below)) {
     // Dense field; we know it's present.
-    return false;
+    return &m->UPB_ONLYBITS(fields)[i];
   }
 
   uint32_t hi = m->UPB_ONLYBITS(field_count);
@@ -300,14 +301,14 @@ UPB_FORCEINLINE bool UPB_PRIVATE(_upb_MiniTable_FindUnknownGap)(
   if (hi == lo) {
     *out_gap_lo = lo;
     *out_gap_hi = UINT32_MAX;
-    return true;
+    return NULL;
   }
 
   uint32_t max_field = m->UPB_ONLYBITS(fields)[hi - 1].UPB_ONLYBITS(number);
   if (number > max_field) {
     *out_gap_lo = max_field;
     *out_gap_hi = UINT32_MAX;
-    return true;
+    return NULL;
   }
 
   uint32_t search_len = hi - lo;
@@ -316,7 +317,7 @@ UPB_FORCEINLINE bool UPB_PRIVATE(_upb_MiniTable_FindUnknownGap)(
 
   uint32_t candidate_num = candidate->UPB_ONLYBITS(number);
   if (candidate_num == number) {
-    return false;
+    return candidate;
   }
 
   if (candidate_num < number) {
@@ -329,7 +330,19 @@ UPB_FORCEINLINE bool UPB_PRIVATE(_upb_MiniTable_FindUnknownGap)(
     *out_gap_lo = lo;
     *out_gap_hi = candidate_num;
   }
-  return true;
+  return NULL;
+}
+
+// Given a tag number, finds the known field tags bounding the gap of unknown
+// fields containing it. Returns false and does not set bounds if the tag
+// number matches a known field. Otherwise returns true and sets out_gap_lo
+// and out_gap_hi (exclusive/exclusive) to define the range of unknown
+// fields (out_gap_lo, out_gap_hi).
+UPB_FORCEINLINE bool UPB_PRIVATE(_upb_MiniTable_FindUnknownGap)(
+    const struct upb_MiniTable* m, uint32_t number, uint32_t* out_gap_lo,
+    uint32_t* out_gap_hi) {
+  return UPB_PRIVATE(_upb_MiniTable_FindFieldOrGap)(m, number, out_gap_lo,
+                                                    out_gap_hi) == NULL;
 }
 
 UPB_API_INLINE const struct upb_MiniTableField* upb_MiniTable_GetFieldByIndex(

@@ -13,6 +13,8 @@
 // Must be last.
 #include "upb/port/def.inc"
 
+struct upb_MiniTableField;
+
 // The layout of the data field of _upb_FastTable_Entry.field_data is as
 // follows:
 //
@@ -116,6 +118,23 @@ UPB_INLINE uint32_t upb_DecodeFast_GetGapLo(uint64_t data) {
 
 UPB_INLINE uint32_t upb_DecodeFast_GetGapHi(uint64_t data) {
   return data & 0xffffffff;
+}
+
+UPB_INLINE uint64_t upb_DecodeFast_PackPassBack(
+    const struct upb_MiniTableField* field, bool is_done) {
+  uintptr_t ptr = (uintptr_t)field;
+  UPB_ASSERT((ptr & 1) == 0);
+  return (uint64_t)(ptr | (is_done ? 1 : 0));
+}
+
+UPB_INLINE const struct upb_MiniTableField* upb_DecodeFast_GetPassBackField(
+    uint64_t pass_back) {
+  UPB_ASSERT((pass_back & 1) == 0);
+  return (const struct upb_MiniTableField*)pass_back;
+}
+
+UPB_INLINE bool upb_DecodeFast_GetPassBackIsDone(uint64_t pass_back) {
+  return (pass_back & 1) != 0;
 }
 
 #include "upb/port/undef.inc"
