@@ -93,7 +93,6 @@ cc_library(
         "//upb/mini_table:internal",
         "//upb/port",
         "//upb/wire:decoder",
-        "//upb/wire:eps_copy_input_stream",
         "//upb/wire:eps_copy_input_stream_internal",
     ],
 )

@@ -807,7 +807,7 @@ done:
   *buf_size = decoder->oneofs.buf_capacity_bytes;
   size_t mt_size = sizeof(upb_MiniTable);
 
-#if UPB_FASTTABLE
+#if defined(UPB_FASTTABLE) && UPB_FASTTABLE
   upb_DecodeFast_TableEntry fasttable[32];
   int fasttable_size = upb_DecodeFast_BuildTable(&decoder->table, fasttable);
   mt_size += fasttable_size * sizeof(fasttable[0]);
@@ -816,7 +816,7 @@ done:
   upb_MiniTable* ret = upb_Arena_Malloc(decoder->arena, mt_size);
   memcpy(ret, &decoder->table, sizeof(*ret));
 
-#if UPB_FASTTABLE
+#if defined(UPB_FASTTABLE) && UPB_FASTTABLE
   ret->UPB_PRIVATE(table_mask) = upb_DecodeFast_GetTableMask(fasttable_size);
   for (int i = 0; i < fasttable_size; i++) {
     ret->UPB_PRIVATE(fasttable)[i].field_data = fasttable[i].function_data;

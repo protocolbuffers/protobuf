@@ -84,7 +84,7 @@ MiniTable::MakeSingleFieldTable(int field_number, upb_FieldType type,
 
 bool MiniTable::HasFastTableEntry(const upb_MiniTable* mt,
                                   const upb_MiniTableField* field) {
-#if UPB_FASTTABLE
+#if defined(UPB_FASTTABLE) && UPB_FASTTABLE
   int n = (int8_t)mt->UPB_PRIVATE(table_mask) + 1;
   for (int i = 0; i < n; ++i) {
     const _upb_FastTable_Entry* entry = &mt->UPB_PRIVATE(fasttable)[i];
