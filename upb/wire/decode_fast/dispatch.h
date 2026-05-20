@@ -16,9 +16,9 @@
 #include "upb/message/message.h"
 #include "upb/mini_table/internal/message.h"
 #include "upb/mini_table/message.h"
-#include "upb/wire/decode.h"
-#include "upb/wire/eps_copy_input_stream.h"
+#include "upb/wire/decode_fast/data.h"
 #include "upb/wire/internal/decoder.h"
+#include "upb/wire/internal/eps_copy_input_stream.h"
 
 // Must be last.
 #include "upb/port/def.inc"
@@ -29,11 +29,12 @@ typedef struct upb_FastDecoder_Return {
 
 // The standard set of arguments passed to each parsing function.
 // Thanks to x86-64 calling conventions, these will stay in registers.
-#define UPB_PARSE_PARAMS                                             \
-  upb_Decoder *d, const char *ptr, upb_Message *msg, intptr_t table, \
-      uint64_t hasbits, uint64_t data
+#define UPB_PARSE_PARAMS                                           \
+  upb_Decoder *d, const char *ptr, upb_Message *msg,               \
+      const upb_MiniTable *table, uint64_t hasbits, uint64_t data, \
+      uint64_t data2
 
-#define UPB_PARSE_ARGS d, ptr, msg, table, hasbits, data
+#define UPB_PARSE_ARGS d, ptr, msg, table, hasbits, data, data2
 
 UPB_INLINE uint32_t _upb_FastDecoder_LoadTag(const char* ptr) {
   uint16_t tag;
@@ -41,31 +42,25 @@ UPB_INLINE uint32_t _upb_FastDecoder_LoadTag(const char* ptr) {
   return tag;
 }
 
-// We have to disable HWASAN for this function because we steal the high byte
-// of the `table` pointer for our own purposes (the table mask). This overwrites
-// the tag that HWASAN depends on for its own checks.
-__attribute__((no_sanitize("hwaddress"))) UPB_INLINE UPB_PRESERVE_NONE
-    upb_FastDecoder_Return
-    _upb_FastDecoder_TagDispatch(struct upb_Decoder* d, const char* ptr,
-                                 upb_Message* msg, intptr_t table,
-                                 uint64_t hasbits, uint64_t tag) {
-  const upb_MiniTable* table_p = decode_totablep(table);
-  uint8_t mask = table;
-  size_t ofs = tag & mask;
+UPB_INLINE UPB_PRESERVE_NONE upb_FastDecoder_Return
+_upb_FastDecoder_TagDispatch(struct upb_Decoder* d, const char* ptr,
+                             upb_Message* msg, const upb_MiniTable* table,
+                             uint64_t hasbits, uint64_t data, uint64_t data2) {
+  uint8_t mask = upb_DecodeFastData2_GetMask(data2);
+  size_t ofs = data2 & mask;
   UPB_ASSUME((ofs & 0xf8) == ofs);
 
-#ifdef __cplusplus
+#if UPB_FASTTABLE
+  const _upb_FastTable_Entry* ent = &table->UPB_PRIVATE(fasttable)[ofs >> 3];
+#else
   // Unreachable, since this header is only used from C, but when the header
   // module is compiled for C++ we need to avoid a compilation error.
   UPB_UNREACHABLE();
-  UPB_UNUSED(table_p);
   _upb_FastTable_Entry* ent = NULL;
-#else
-  const _upb_FastTable_Entry* ent = &table_p->UPB_PRIVATE(fasttable)[ofs >> 3];
 #endif
 
   UPB_MUSTTAIL return ent->field_parser(d, ptr, msg, table, hasbits,
-                                        ent->field_data ^ tag);
+                                        ent->field_data, data2);
 }
 
 UPB_NOINLINE UPB_PRESERVE_NONE upb_FastDecoder_Return
@@ -83,9 +78,11 @@ upb_DecodeFast_Dispatch(UPB_PARSE_PARAMS) {
   }
 
   // Read two bytes of tag data (for a one-byte tag, the high byte is junk).
-  data = _upb_FastDecoder_LoadTag(ptr);
+  uint16_t tag = _upb_FastDecoder_LoadTag(ptr);
+  data2 = upb_DecodeFastData2_PackOriginalTag(data2, tag);
   _upb_Decoder_Trace(d, 'D');
-  UPB_MUSTTAIL return _upb_FastDecoder_TagDispatch(UPB_PARSE_ARGS);
+  UPB_MUSTTAIL return _upb_FastDecoder_TagDispatch(d, ptr, msg, table, hasbits,
+                                                   data, data2);
 }
 
 UPB_FORCEINLINE

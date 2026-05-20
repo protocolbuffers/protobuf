@@ -70,24 +70,24 @@ bool upb_DecodeFast_SingleStringCopy(upb_Decoder* d, const char** ptr,
     upb_DecodeFast_Unpacked(d, &ptr, msg, &data, &hasbits, &next,           \
                             kUpb_DecodeFast_##type, kUpb_DecodeFast_##card, \
                             kUpb_DecodeFast_##tagsize,                      \
-                            &upb_DecodeFast_SingleStringCopy, NULL);        \
+                            &upb_DecodeFast_SingleStringCopy, NULL, data2); \
     UPB_DECODEFAST_NEXT(next);                                              \
   }
 
-#define F(type, card, tagsize)                                              \
-  F_COPY(type, card, tagsize)                                               \
-  upb_FastDecoder_Return UPB_PRESERVE_NONE UPB_DECODEFAST_FUNCNAME(         \
-      type, card, tagsize)(UPB_PARSE_PARAMS) {                              \
-    if (UPB_UNLIKELY((d->options & kUpb_DecodeOption_AliasString) == 0)) {  \
-      UPB_MUSTTAIL return UPB_DECODEFAST_FUNCNAME(                          \
-          type, card, tagsize##_Copy)(UPB_PARSE_ARGS);                      \
-    }                                                                       \
-    upb_DecodeFastNext next = kUpb_DecodeFastNext_Dispatch;                 \
-    upb_DecodeFast_Unpacked(d, &ptr, msg, &data, &hasbits, &next,           \
-                            kUpb_DecodeFast_##type, kUpb_DecodeFast_##card, \
-                            kUpb_DecodeFast_##tagsize,                      \
-                            &upb_DecodeFast_SingleStringAlias, NULL);       \
-    UPB_DECODEFAST_NEXT(next);                                              \
+#define F(type, card, tagsize)                                               \
+  F_COPY(type, card, tagsize)                                                \
+  upb_FastDecoder_Return UPB_PRESERVE_NONE UPB_DECODEFAST_FUNCNAME(          \
+      type, card, tagsize)(UPB_PARSE_PARAMS) {                               \
+    if (UPB_UNLIKELY((d->options & kUpb_DecodeOption_AliasString) == 0)) {   \
+      UPB_MUSTTAIL return UPB_DECODEFAST_FUNCNAME(                           \
+          type, card, tagsize##_Copy)(UPB_PARSE_ARGS);                       \
+    }                                                                        \
+    upb_DecodeFastNext next = kUpb_DecodeFastNext_Dispatch;                  \
+    upb_DecodeFast_Unpacked(d, &ptr, msg, &data, &hasbits, &next,            \
+                            kUpb_DecodeFast_##type, kUpb_DecodeFast_##card,  \
+                            kUpb_DecodeFast_##tagsize,                       \
+                            &upb_DecodeFast_SingleStringAlias, NULL, data2); \
+    UPB_DECODEFAST_NEXT(next);                                               \
   }
 
 UPB_DECODEFAST_CARDINALITIES(UPB_DECODEFAST_TAGSIZES, F, String)

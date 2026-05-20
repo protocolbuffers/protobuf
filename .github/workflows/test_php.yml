@@ -65,7 +65,7 @@ jobs:
         if: ${{ !matrix.continuous-only || inputs.continuous-run }}
         uses: protocolbuffers/protobuf-ci/bazel-docker@v5
         with:
-          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/php:8.0.1-${{ matrix.version }}-7d856878bb9d57cf17083cbf1078afe50f3013f3
+          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/php:9.0.0-${{ matrix.version }}-9fc33a0c378b5affd3c85d3f5ae4f330993048f7
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-cache: php_linux/${{ matrix.version }}
           bash: |
@@ -115,7 +115,7 @@ jobs:
         id: cross-compile
         uses: protocolbuffers/protobuf-ci/cross-compile-protoc@v5
         with:
-          image: us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:8.0.1-e78301df86b3e4c46ec9ac4d98be00e19305d8f3
+          image: us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:9.0.0-7932bf8b25fb76a111e7257d151a6a58d5c3c671
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           architecture: linux-i386
 
@@ -147,7 +147,7 @@ jobs:
         id: cross-compile
         uses: protocolbuffers/protobuf-ci/cross-compile-protoc@v5
         with:
-          image: us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:8.0.1-e78301df86b3e4c46ec9ac4d98be00e19305d8f3
+          image: us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:9.0.0-7932bf8b25fb76a111e7257d151a6a58d5c3c671
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           architecture: linux-aarch64
 
@@ -188,7 +188,7 @@ jobs:
 
       - name: Pin PHP version
         if: ${{ !matrix.continuous-only || inputs.continuous-run }}
-        uses: shivammathur/setup-php@bf6b4fbd49ca58e4608c9c89fba0b8d90bd2a39f # 2.35.5
+        uses: shivammathur/setup-php@44454db4f0199b8b9685a5d763dc37cbf79108e1  # 2.36.0
         with:
           php-version: ${{ matrix.version }}
 
@@ -204,7 +204,7 @@ jobs:
         uses: protocolbuffers/protobuf-ci/bash@v5
         with:
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
-          bazel-version: 8.0.1
+          bazel-version: 9.0.0
           # TODO this shouldn't be necessary, remove it
           bazel-flags: --xcode_version_config=//.github:host_xcodes_macos15
           command: |
@@ -220,6 +220,6 @@ jobs:
         uses: protocolbuffers/protobuf-ci/bazel@v5
         with:
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
-          version: 8.0.1 # Bazel version
+          version: 9.0.0 # Bazel version
           bazel-cache: php_macos15/${{ matrix.version }}
           bazel: test //php:conformance_test //php:conformance_test_c --action_env=PATH --test_env=PATH --xcode_version_config=//.github:host_xcodes_macos15

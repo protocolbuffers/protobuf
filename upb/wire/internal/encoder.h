@@ -51,10 +51,14 @@ UPB_INLINE char* UPB_PRIVATE(_upb_encstate_init)(upb_encstate* e, jmp_buf* err,
   return ptr;
 }
 
+UPB_INLINE void UPB_PRIVATE(_upb_encstate_destroy)(upb_encstate* e) {
+  _upb_mapsorter_destroy(&e->sorter);
+}
+
 // Internal version of upb_Encode that encodes a single field.
 //
 // The caller must clean up the `upb_encstate` by calling
-// `_upb_mapsorter_destroy(&e->sorter)` when done.
+// `_upb_encstate_destroy(e)` when done.
 upb_EncodeStatus UPB_PRIVATE(_upb_Encode_Field)(upb_encstate* e,
                                                 const upb_Message* msg,
                                                 const upb_MiniTableField* field,
@@ -64,7 +68,7 @@ upb_EncodeStatus UPB_PRIVATE(_upb_Encode_Field)(upb_encstate* e,
 // Internal version of upb_Encode that encodes a single extension.
 //
 // The caller must clean up the `upb_encstate` by calling
-// `_upb_mapsorter_destroy(&e->sorter)` when done.
+// `_upb_encstate_destroy(e)` when done.
 upb_EncodeStatus UPB_PRIVATE(_upb_Encode_Extension)(
     upb_encstate* e, const upb_MiniTableExtension* ext,
     upb_MessageValue ext_val, bool is_message_set, char** buf, size_t* size,

@@ -24,7 +24,8 @@ struct upb_FastDecoder_Return;
 
 typedef UPB_PRESERVE_NONE struct upb_FastDecoder_Return _upb_FieldParser(
     struct upb_Decoder* d, const char* ptr, struct upb_Message* msg,
-    intptr_t table, uint64_t hasbits, uint64_t data);
+    const struct upb_MiniTable* table, uint64_t hasbits, uint64_t data,
+    uint64_t data2);
 
 typedef struct {
   uint64_t field_data;
@@ -84,9 +85,9 @@ struct upb_MiniTable {
   const char* UPB_PRIVATE(full_name);
 #endif
 
-#if UPB_FASTTABLE || !defined(__cplusplus)
-  // Flexible array member is not supported in C++, but it is an extension in
-  // every compiler that supports UPB_FASTTABLE.
+#if UPB_FASTTABLE
+  // Flexible array member is not supported in C++ standard, but it is supported
+  // as an extension in all compilers we support.
   _upb_FastTable_Entry UPB_PRIVATE(fasttable)[];
 #endif
 };

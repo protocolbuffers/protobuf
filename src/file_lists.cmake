@@ -66,6 +66,7 @@ set(libprotobuf_srcs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/json/internal/writer.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/json/internal/zero_copy_buffered_stream.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/json/json.cc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/json_enumvalue_options.pb.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/map.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/map_field.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/message.cc
@@ -165,6 +166,7 @@ set(libprotobuf_hdrs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/json/internal/writer.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/json/internal/zero_copy_buffered_stream.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/json/json.h
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/json_enumvalue_options.pb.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/map.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/map_entry.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/map_field.h
@@ -1015,6 +1017,34 @@ set(descriptor_proto_files
   ${protobuf_SOURCE_DIR}/src/google/protobuf/descriptor_proto-descriptor-set.proto.bin
 )
 
+# @//src/google/protobuf:json_enumvalue_options_proto
+set(json_enumvalue_options_proto_proto_srcs
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/json_enumvalue_options.proto
+)
+
+# @//src/google/protobuf:json_enumvalue_options_proto
+set(json_enumvalue_options_proto_srcs
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/json_enumvalue_options.proto.pb.cc
+)
+
+# @//src/google/protobuf:json_enumvalue_options_proto
+set(json_enumvalue_options_proto_hdrs
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/json_enumvalue_options.proto.pb.h
+)
+
+# @//src/google/protobuf:json_enumvalue_options_proto
+set(json_enumvalue_options_proto_files
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/json_enumvalue_options_proto-descriptor-set.proto.bin
+)
+
+# @//src/google/protobuf:json_enumvalue_options_cc_proto
+set(json_enumvalue_options_cc_proto_files
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/_virtual_imports/json_enumvalue_options_proto/google/protobuf/json_enumvalue_options.pb.cc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/_virtual_imports/json_enumvalue_options_proto/google/protobuf/json_enumvalue_options.pb.h
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/libjson_enumvalue_options_proto.a
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/libjson_enumvalue_options_proto.so
+)
+
 # @//src/google/protobuf/compiler:plugin_proto
 set(plugin_proto_proto_srcs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/plugin.proto
@@ -1331,6 +1361,7 @@ set(protobuf_test_files
   ${protobuf_SOURCE_DIR}/src/google/protobuf/string_piece_field_support_unittest.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/string_view_test.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/symbol_checker_test.cc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/text_format_fix_test.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/text_format_unittest.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/unknown_field_set_unittest.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/unredacted_debug_format_for_test.cc

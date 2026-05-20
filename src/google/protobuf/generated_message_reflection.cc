@@ -53,6 +53,7 @@
 #include "google/protobuf/generated_message_util.h"
 #include "google/protobuf/has_bits.h"
 #include "google/protobuf/inlined_string_field.h"
+#include "google/protobuf/json_enumvalue_options.pb.h"
 #include "google/protobuf/map_field.h"
 #include "google/protobuf/message.h"
 #include "google/protobuf/message_lite.h"
@@ -3973,7 +3974,8 @@ void AssignDescriptorsImpl(const DescriptorTable* table, bool eager) {
   const FileDescriptor* file =
       DescriptorPool::internal_generated_pool()->FindFileByName(
           table->filename);
-  ABSL_CHECK(file != nullptr);
+  ABSL_CHECK(file != nullptr) << " Missing file descriptor for `"
+                              << table->filename << "` in the generated pool.";
 
   MessageFactory* factory = MessageFactory::generated_factory();
 
@@ -4031,6 +4033,12 @@ void AddDescriptorsImpl(const DescriptorTable* table) {
            &FeatureSet::default_instance(), pb::cpp.number(),
            FieldDescriptor::TYPE_MESSAGE, false, false,
            &pb::CppFeatures::default_instance(),
+           nullptr,
+           internal::LazyAnnotation::kUndefined),
+       internal::ExtensionSet::RegisterMessageExtension(
+           &EnumValueOptions::default_instance(), pb::enumvalue::json.number(),
+           FieldDescriptor::TYPE_MESSAGE, false, false,
+           &pb::enumvalue::JsonEnumValueOptions::default_instance(),
            nullptr,
            internal::LazyAnnotation::kUndefined),
        std::true_type{});
