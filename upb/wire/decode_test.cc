@@ -330,7 +330,7 @@ TEST(RepeatedFieldTest, RepeatedMessageFallback) {
 
   const upb_Array* arr = upb_Message_GetArray(msg, field);
   ASSERT_NE(arr, nullptr);
-  EXPECT_EQ(upb_Array_Size(arr), 2);
+  EXPECT_EQ(upb_Array_Size(arr), 2u);
 }
 
 TEST(RepeatedFieldTest, LongRepeatedField) {
