@@ -39,7 +39,7 @@ unsafe extern "C" {
     ) -> *mut i8;
 }
 
-fn extension_mini_descriptor(field_type: i32, field_num: u32, field_mod: u64) -> &'static str {
+fn extension_mini_descriptor(field_type: i32, field_num: u32, field_mod: u64) -> String {
     let mut buf = [0i8; 32];
     let mut enc = MtDataEncoder {
         end: unsafe { buf.as_mut_ptr().add(buf.len()) },
@@ -51,17 +51,18 @@ fn extension_mini_descriptor(field_type: i32, field_num: u32, field_mod: u64) ->
     assert!(end >= start);
     let len = unsafe { end.offset_from(start) as usize };
     let bytes = unsafe { std::slice::from_raw_parts(start.cast::<u8>(), len) };
-    let text = std::str::from_utf8(bytes).expect("mini descriptor should be valid utf8/base92");
-    Box::leak(text.to_owned().into_boxed_str())
+    std::str::from_utf8(bytes)
+        .expect("mini descriptor should be valid utf8/base92")
+        .to_owned()
 }
+
+static REP_STR_MINI_DESCRIPTOR: LazyLock<String> = LazyLock::new(|| {
+    extension_mini_descriptor(UPB_FIELDTYPE_STRING, REP_STR_EXT_NUMBER, UPB_FIELD_MOD_IS_REPEATED)
+});
 
 static REP_STR_MT: LazyLock<MiniTableExtensionInitPtr> = LazyLock::new(|| unsafe {
     MiniTableExtensionInitPtr(build_extension_mini_table(
-        extension_mini_descriptor(
-            UPB_FIELDTYPE_STRING,
-            REP_STR_EXT_NUMBER,
-            UPB_FIELD_MOD_IS_REPEATED,
-        ),
+        REP_STR_MINI_DESCRIPTOR.as_str(),
         <TestExtensions as AssociatedMiniTable>::mini_table(),
         ExtensionSub::None,
     ))
@@ -72,9 +73,13 @@ static REP_STR_EXT_ID: LazyLock<ExtensionId<TestExtensions, Repeated<ProtoString
         new_repeated_extension_id(Private, REP_STR_EXT_NUMBER, InnerExtensionId::new(&REP_STR_MT))
     });
 
+static SUBMSG_MINI_DESCRIPTOR: LazyLock<String> = LazyLock::new(|| {
+    extension_mini_descriptor(UPB_FIELDTYPE_MESSAGE, SUBMSG_EXT_NUMBER, UPB_FIELD_MOD_NONE)
+});
+
 static SUBMSG_MT: LazyLock<MiniTableExtensionInitPtr> = LazyLock::new(|| unsafe {
     MiniTableExtensionInitPtr(build_extension_mini_table(
-        extension_mini_descriptor(UPB_FIELDTYPE_MESSAGE, SUBMSG_EXT_NUMBER, UPB_FIELD_MOD_NONE),
+        SUBMSG_MINI_DESCRIPTOR.as_str(),
         <TestExtensions as AssociatedMiniTable>::mini_table(),
         ExtensionSub::Message(<SimpleSubmessage as AssociatedMiniTable>::mini_table()),
     ))
@@ -120,4 +125,3 @@ fn extension_get_mut_lifecycle_stress() {
         assert_that!((*SUBMSG_EXT_ID).get(msg.as_view()).i32_field(), eq(i));
     }
 }
-

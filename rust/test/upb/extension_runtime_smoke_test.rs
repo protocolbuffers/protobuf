@@ -36,7 +36,7 @@ unsafe extern "C" {
     ) -> *mut i8;
 }
 
-fn repeated_string_extension_mini_descriptor() -> &'static str {
+fn repeated_string_extension_mini_descriptor() -> String {
     let mut buf = [0i8; 32];
     let mut enc = MtDataEncoder {
         end: unsafe { buf.as_mut_ptr().add(buf.len()) },
@@ -55,13 +55,17 @@ fn repeated_string_extension_mini_descriptor() -> &'static str {
     assert!(end >= start);
     let len = unsafe { end.offset_from(start) as usize };
     let bytes = unsafe { std::slice::from_raw_parts(start.cast::<u8>(), len) };
-    let text = std::str::from_utf8(bytes).expect("mini descriptor should be valid utf8/base92");
-    Box::leak(text.to_owned().into_boxed_str())
+    std::str::from_utf8(bytes)
+        .expect("mini descriptor should be valid utf8/base92")
+        .to_owned()
 }
+
+static REP_STR_MINI_DESCRIPTOR: LazyLock<String> =
+    LazyLock::new(repeated_string_extension_mini_descriptor);
 
 static MT: LazyLock<MiniTableExtensionInitPtr> = LazyLock::new(|| unsafe {
     MiniTableExtensionInitPtr(build_extension_mini_table(
-        repeated_string_extension_mini_descriptor(),
+        REP_STR_MINI_DESCRIPTOR.as_str(),
         <TestExtensions as AssociatedMiniTable>::mini_table(),
         ExtensionSub::None,
     ))
