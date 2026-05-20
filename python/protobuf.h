@@ -8,6 +8,9 @@
 #ifndef PYUPB_PROTOBUF_H__
 #define PYUPB_PROTOBUF_H__
 
+// clang-format off
+#include "Python.h"
+// clang-format on
 #include <assert.h>
 #include <stdbool.h>
 
