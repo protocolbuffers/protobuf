@@ -276,6 +276,19 @@ Error, UINTPTR_MAX is undefined
 #define UPB_UNPREDICTABLE(x) (x)
 #endif
 
+// Macros for inlining a function from the caller instead of from the function
+// declaration. [[clang::always_inline]] is supported in clang from C++11 and
+// C23.
+#if UPB_HAS_CPP_ATTRIBUTE(clang::always_inline)
+#define UPB_FORCEINLINE_CALL [[clang::always_inline]]
+#elif !defined(__cplusplus)
+#define UPB_FORCEINLINE_CALL [[clang::always_inline]]
+#elif defined(__cplusplus) && defined(_MSC_VER)
+#define UPB_FORCEINLINE_CALL [[msvc::forceinline_calls]]
+#else
+#define UPB_FORCEINLINE_CALL
+#endif
+
 // Macros for function attributes on compilers that support them.
 #if defined(__GNUC__) || defined(__clang__)
 #define UPB_FORCEINLINE __inline__ __attribute__((always_inline)) static
@@ -766,16 +779,10 @@ Error, UINTPTR_MAX is undefined
 // Owner: runze@
 #define UPB_FUTURE_CONTAINER_EQ_RETURNS_NOTIMPLEMENTED 1
 
-// Make GetOptions() return immutable options.
-// Owner: runze@
-#define UPB_FUTURE_FREEZE_OPTIONS 1
-
 #else
 
 #define UPB_FUTURE_REMOVE_POP_CLAMP 0
 
 #define UPB_FUTURE_CONTAINER_EQ_RETURNS_NOTIMPLEMENTED 0
-
-#define UPB_FUTURE_FREEZE_OPTIONS 0
 
 #endif
