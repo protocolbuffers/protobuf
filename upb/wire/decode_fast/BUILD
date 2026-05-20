@@ -64,17 +64,18 @@ cc_library(
         "//third_party/utf8_range",
         "//upb/base",
         "//upb/base:internal",
-        "//upb/mem",
         "//upb/message",
         "//upb/message:internal",
         "//upb/message:types",
         "//upb/mini_table",
         "//upb/mini_table:internal",
         "//upb/port",
+        "//upb/wire",
         "//upb/wire:decoder",
         "//upb/wire:eps_copy_input_stream",
         "//upb/wire:eps_copy_input_stream_internal",
         "//upb/wire:reader",
+        "//upb/wire:reader_internal",
     ],
 )
 
@@ -92,7 +93,6 @@ cc_library(
         "//upb/mini_table:internal",
         "//upb/port",
         "//upb/wire:decoder",
-        "//upb/wire:eps_copy_input_stream",
         "//upb/wire:eps_copy_input_stream_internal",
     ],
 )

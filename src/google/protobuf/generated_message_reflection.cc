@@ -3984,7 +3984,8 @@ void AssignDescriptorsImpl(const DescriptorTable* table, bool eager) {
   const FileDescriptor* file =
       DescriptorPool::internal_generated_pool()->FindFileByName(
           table->filename);
-  ABSL_CHECK(file != nullptr);
+  ABSL_CHECK(file != nullptr) << " Missing file descriptor for `"
+                              << table->filename << "` in the generated pool.";
 
   MessageFactory* factory = MessageFactory::generated_factory();
 

@@ -2739,6 +2739,17 @@ cc_test(
     ],
 )
 
+cc_test(
+    name = "text_format_fix_test",
+    srcs = ["text_format_fix_test.cc"],
+    deps = [
+        ":protobuf",
+        "//src/google/protobuf/io",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
+    ],
+)
+
 ################################################################################
 # Helper targets for Kotlin tests
 ################################################################################

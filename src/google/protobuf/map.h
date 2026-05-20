@@ -252,7 +252,6 @@ class PROTOBUF_EXPORT UntypedMapBase {
   using size_type = size_t;
 
   // Possible types that a key/value can take.
-  // LINT.IfChange(map_ffi)
   enum class TypeKind : uint8_t {
     kBool,     // bool
     kU32,      // int32_t, uint32_t, enums
@@ -262,7 +261,6 @@ class PROTOBUF_EXPORT UntypedMapBase {
     kString,   // std::string
     kMessage,  // Derived from MessageLite
   };
-  // LINT.ThenChange(//depot/google3/third_party/protobuf/rust/cpp_kernel/map.rs:map_ffi)
 
   template <typename T>
   static constexpr TypeKind StaticTypeKind() {

@@ -11,10 +11,13 @@
 
 #include "upb/base/internal/endian.h"
 #include "upb/message/message.h"
+#include "upb/mini_table/enum.h"
+#include "upb/mini_table/field.h"
 #include "upb/mini_table/message.h"
 #include "upb/wire/decode.h"
 #include "upb/wire/decode_fast/cardinality.h"
 #include "upb/wire/decode_fast/combinations.h"
+#include "upb/wire/decode_fast/data.h"
 #include "upb/wire/decode_fast/dispatch.h"
 #include "upb/wire/decode_fast/field_parsers.h"
 #include "upb/wire/eps_copy_input_stream.h"
@@ -23,6 +26,22 @@
 
 // Must be last.
 #include "upb/port/def.inc"
+
+typedef struct {
+  const upb_MiniTableEnum* enum_table;
+  const upb_MiniTable* table;
+  upb_Message* msg;
+  uint64_t data;
+} upb_DecodeFast_ClosedEnumContext;
+
+static UPB_PRESERVE_MOST void _upb_FastDecoder_AddEnumValueToUnknown(
+    upb_Decoder* d, upb_Message* msg, uint64_t data, uint64_t val,
+    const upb_MiniTable* table) {
+  uint16_t field_index = upb_DecodeFastData_GetFieldIndex(data);
+  const upb_MiniTableField* field =
+      upb_MiniTable_GetFieldByIndex(table, field_index);
+  _upb_Decoder_AddEnumValueToUnknown(d, msg, field, val);
+}
 
 static bool upb_DecodeFast_SingleVarint(upb_Decoder* d, const char** ptr,
                                         void* dst, upb_DecodeFast_Type type,
@@ -68,6 +87,8 @@ typedef struct {
   uint64_t* data;
   uint64_t* hasbits;
   upb_DecodeFastNext* ret;
+  const upb_MiniTable* table;
+  const upb_MiniTableEnum* enum_table;
 } upb_DecodeFast_PackedVarintContext;
 
 UPB_FORCEINLINE
@@ -105,20 +126,137 @@ static const char* upb_DecodeFast_PackedVarint(upb_EpsCopyInputStream* st,
 
   UPB_ASSERT(arr.dst);
 
-  int read = 0;
-  while (!upb_DecodeFast_IsDone(c->decoder, &ptr)) {
-    UPB_ASSERT(read < count);
-    if (!upb_DecodeFast_SingleVarint(c->decoder, &ptr, arr.dst, c->type, c->ret,
-                                     NULL)) {
-      return NULL;
+  if (c->type == kUpb_DecodeFast_ClosedEnum) {
+    while (!upb_EpsCopyInputStream_IsDone(&c->decoder->input, &ptr)) {
+      uint64_t val;
+      ptr = upb_WireReader_ReadVarint(ptr, &val, &c->decoder->input);
+      if (UPB_UNLIKELY(!ptr)) {
+        UPB_DECODEFAST_ERROR(c->decoder, kUpb_DecodeStatus_Malformed, c->ret);
+        return NULL;
+      }
+      if (UPB_LIKELY(upb_MiniTableEnum_CheckValue(c->enum_table, val))) {
+        uint32_t val32 = val;
+        memcpy(arr.dst, &val32, 4);
+        arr.dst = UPB_PTR_AT(arr.dst, 4, char);
+      } else {
+        _upb_FastDecoder_AddEnumValueToUnknown(c->decoder, c->msg, *c->data,
+                                               val, c->table);
+      }
     }
-    arr.dst = UPB_PTR_AT(arr.dst, valbytes, char);
-    ++read;
+  } else {
+    int read = 0;
+    while (!upb_EpsCopyInputStream_IsDone(&c->decoder->input, &ptr)) {
+      UPB_ASSERT(read < count);
+      if (!upb_DecodeFast_SingleVarint(c->decoder, &ptr, arr.dst, c->type,
+                                       c->ret, NULL)) {
+        return NULL;
+      }
+      arr.dst = UPB_PTR_AT(arr.dst, valbytes, char);
+      ++read;
+    }
   }
 
   upb_DecodeFastField_SetArraySize(&arr, c->type);
 
   return ptr;
+}
+
+UPB_FORCEINLINE
+void upb_DecodeFast_ClosedEnum(upb_Decoder* d, const char** ptr,
+                               upb_Message* msg, const upb_MiniTable* table,
+                               uint64_t* hasbits, uint64_t* data,
+                               upb_DecodeFastNext* ret,
+                               upb_DecodeFast_Cardinality card,
+                               upb_DecodeFast_TagSize tagsize, uint64_t data2) {
+  uint16_t field_index = upb_DecodeFastData_GetFieldIndex(*data);
+  const upb_MiniTableField* field =
+      upb_MiniTable_GetFieldByIndex(table, field_index);
+  const upb_MiniTableEnum* enum_table = upb_MiniTable_GetSubEnumTable(field);
+
+  if (UPB_UNLIKELY(enum_table == NULL)) {
+    UPB_DECODEFAST_EXIT(kUpb_DecodeFastNext_FallbackToMiniTable, ret);
+    return;
+  }
+
+  const char* p = *ptr;
+  if (card == kUpb_DecodeFast_Packed) {
+    upb_DecodeFast_PackedVarintContext pack_ctx = {
+        .decoder = d,
+        .type = kUpb_DecodeFast_ClosedEnum,
+        .msg = msg,
+        .data = data,
+        .hasbits = hasbits,
+        .ret = ret,
+        .table = table,
+        .enum_table = enum_table,
+    };
+    upb_DecodeFast_Packed(d, ptr, kUpb_DecodeFast_ClosedEnum, card, tagsize,
+                          data, &upb_DecodeFast_PackedVarint, ret, &pack_ctx,
+                          data2);
+    return;
+  }
+
+  if (card == kUpb_DecodeFast_Repeated) {
+    upb_DecodeFastNext flipped = kUpb_DecodeFastNext_TailCallPacked;
+    if (!upb_DecodeFast_CheckTag(&p, kUpb_DecodeFast_ClosedEnum, card, tagsize,
+                                 data, data2, flipped, ret)) {
+      return;
+    }
+    upb_DecodeFastArray arr;
+    if (!upb_DecodeFast_GetArrayForAppend(d, *ptr, msg, *data, hasbits, &arr,
+                                          kUpb_DecodeFast_ClosedEnum, 1, ret)) {
+      return;
+    }
+    bool next_tag_matches;
+    do {
+      uint64_t val;
+      p = upb_WireReader_ReadVarint(p, &val, &d->input);
+      if (UPB_UNLIKELY(!p)) {
+        UPB_DECODEFAST_ERROR(d, kUpb_DecodeStatus_Malformed, ret);
+        return;
+      }
+      if (UPB_LIKELY(upb_MiniTableEnum_CheckValue(enum_table, val))) {
+        _upb_Decoder_Trace(d, 'F');
+        uint32_t val32 = val;
+        memcpy(arr.dst, &val32, 4);
+      } else {
+        _upb_FastDecoder_AddEnumValueToUnknown(d, msg, *data, val, table);
+        arr.dst = UPB_PTR_AT(arr.dst, -4, char);
+      }
+      next_tag_matches =
+          upb_DecodeFast_TryMatchTag(d, p, arr.expected_tag, ret, tagsize);
+    } while (upb_DecodeFast_NextRepeated(d, &p, ret, &arr, next_tag_matches,
+                                         kUpb_DecodeFast_ClosedEnum, tagsize));
+    upb_DecodeFastField_SetArraySize(&arr, kUpb_DecodeFast_ClosedEnum);
+    *ptr = p;
+  } else {
+    // Scalar or Oneof
+    if (UPB_UNLIKELY(!upb_DecodeFast_CheckTag(&p, kUpb_DecodeFast_ClosedEnum,
+                                              card, tagsize, data, data2, 0,
+                                              ret))) {
+      return;
+    }
+    uint64_t val;
+    p = upb_WireReader_ReadVarint(p, &val, &d->input);
+    if (UPB_UNLIKELY(!p)) {
+      UPB_DECODEFAST_ERROR(d, kUpb_DecodeStatus_Malformed, ret);
+      return;
+    }
+    if (UPB_LIKELY(upb_MiniTableEnum_CheckValue(enum_table, val))) {
+      void* dst;
+      if (upb_DecodeFast_GetScalarField(d, p, msg, *data, hasbits, ret, &dst,
+                                        card, kUpb_DecodeFast_ClosedEnum)) {
+        _upb_Decoder_Trace(d, 'F');
+        uint32_t val32 = val;
+        memcpy(dst, &val32, 4);
+      } else {
+        return;
+      }
+    } else {
+      _upb_FastDecoder_AddEnumValueToUnknown(d, msg, *data, val, table);
+    }
+    *ptr = p;
+  }
 }
 
 UPB_FORCEINLINE
@@ -128,8 +266,14 @@ void upb_DecodeFast_Varint(upb_Decoder* d, const char** ptr, upb_Message* msg,
                            upb_DecodeFast_Type type,
                            upb_DecodeFast_Cardinality card,
                            upb_DecodeFast_TagSize tagsize, uint64_t data2) {
+  if (type == kUpb_DecodeFast_ClosedEnum) {
+    upb_DecodeFast_ClosedEnum(d, ptr, msg, table, hasbits, data, ret, card,
+                              tagsize, data2);
+    return;
+  }
+
   if (card == kUpb_DecodeFast_Packed) {
-    upb_DecodeFast_PackedVarintContext ctx = {
+    upb_DecodeFast_PackedVarintContext pack_ctx = {
         .decoder = d,
         .type = type,
         .msg = msg,
@@ -138,7 +282,7 @@ void upb_DecodeFast_Varint(upb_Decoder* d, const char** ptr, upb_Message* msg,
         .ret = ret,
     };
     upb_DecodeFast_Packed(d, ptr, type, card, tagsize, data,
-                          &upb_DecodeFast_PackedVarint, ret, &ctx, data2);
+                          &upb_DecodeFast_PackedVarint, ret, &pack_ctx, data2);
   } else {
     upb_DecodeFast_Unpacked(d, ptr, msg, data, hasbits, ret, type, card,
                             tagsize, &upb_DecodeFast_SingleVarint, NULL, data2);
@@ -165,5 +309,6 @@ UPB_DECODEFAST_CARDINALITIES(UPB_DECODEFAST_TAGSIZES, F, Varint32)
 UPB_DECODEFAST_CARDINALITIES(UPB_DECODEFAST_TAGSIZES, F, Varint64)
 UPB_DECODEFAST_CARDINALITIES(UPB_DECODEFAST_TAGSIZES, F, ZigZag32)
 UPB_DECODEFAST_CARDINALITIES(UPB_DECODEFAST_TAGSIZES, F, ZigZag64)
+UPB_DECODEFAST_CARDINALITIES(UPB_DECODEFAST_TAGSIZES, F, ClosedEnum)
 
 #undef F
