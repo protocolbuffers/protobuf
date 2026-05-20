@@ -8,6 +8,9 @@
 #ifndef PYPB_MESSAGE_H__
 #define PYPB_MESSAGE_H__
 
+// clang-format off
+#include "Python.h"
+// clang-format on
 #include <stdbool.h>
 
 #include "python/protobuf.h"

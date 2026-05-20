@@ -89,13 +89,6 @@ enum {
 #define OP_FIXPCK_LG2(n) (n + 5) /* n in [2, 3] => op in [7, 8] */
 #define OP_VARPCK_LG2(n) (n + 9) /* n in [0, 2, 3] => op in [9, 11, 12] */
 
-typedef union {
-  bool bool_val;
-  uint32_t uint32_val;
-  uint64_t uint64_val;
-  uint32_t size;
-} wireval;
-
 static void _upb_Decoder_AssumeEpsHasErrorHandler(upb_Decoder* d) {
   UPB_ASSUME(upb_EpsCopyInputStream_HasErrorHandler(&d->input));
 }

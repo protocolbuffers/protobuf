@@ -59,62 +59,61 @@ _upb_FastDecoder_DecodeUnknownSlowPath(struct upb_Decoder* d, const char* ptr,
 UPB_FORCEINLINE bool _upb_FastDecoder_DoDecodeUnknown(
     struct upb_Decoder* d, const char** ptr, upb_Message* msg,
     const upb_MiniTable* table, uint64_t hasbits, uint16_t tag, uint64_t* data,
-    upb_DecodeFastNext* ret) {
-  const char* start = *ptr;
-
-  uint32_t tag_len;
-  // Important: if the branch is correctly predicted, the tag_len assignment is
-  // treated as constant and subsequent loads will not have a data dependency on
-  // the branch.
-  if (UPB_LIKELY((tag & 0x80) == 0)) {
-    tag_len = 1;
-    // Ensure the field number is not 0.
-    // Use bitwise op to only examine first byte minus additional tag data.
-    if (UPB_UNLIKELY((tag & 0xF8) == 0)) {
-      return UPB_DECODEFAST_ERROR(d, kUpb_DecodeStatus_Malformed, ret);
-    }
-  } else if ((tag & 0x8000) == 0) {
-    tag_len = 2;
-    if (UPB_UNLIKELY((tag & 0xFF80) == 0x80)) {
-      // Detect a 0-valued tag or a "2-byte" tag that is an overlong 1-byte tag.
-      // Fasttable isn't set up to deal with overlong varint tags (which will
-      // not match the canonical tag assigned to a slot) so fallback. (Fallback
-      // will also handle erroring on 0-valued fields.)
+    upb_DecodeFastNext* ret, uint32_t tag_len, uint32_t wire_type) {
+  const char* start = *ptr - tag_len;
+  if (tag_len == 0) {
+    // Important: if the branch is correctly predicted, the tag_len assignment
+    // is treated as constant and subsequent loads will not have a data
+    // dependency on the branch.
+    if (UPB_LIKELY((tag & 0x80) == 0)) {
+      tag_len = 1;
+      // Ensure the field number is not 0.
+      // Use bitwise op to only examine first byte minus additional tag data.
+      if (UPB_UNLIKELY((tag & 0xF8) == 0)) {
+        return UPB_DECODEFAST_ERROR(d, kUpb_DecodeStatus_Malformed, ret);
+      }
+    } else if ((tag & 0x8000) == 0) {
+      tag_len = 2;
+      if (UPB_UNLIKELY((tag & 0xFF80) == 0x80)) {
+        // Detect a 0-valued tag or a "2-byte" tag that is an overlong 1-byte
+        // tag. Fasttable isn't set up to deal with overlong varint tags (which
+        // will not match the canonical tag assigned to a slot) so fallback.
+        // (Fallback will also handle erroring on 0-valued fields.)
+        return UPB_DECODEFAST_EXIT(kUpb_DecodeFastNext_FallbackToMiniTable,
+                                   ret);
+      }
+    } else {
+      // Tag >=2048
       return UPB_DECODEFAST_EXIT(kUpb_DecodeFastNext_FallbackToMiniTable, ret);
     }
-  } else {
-    // Tag >=2048
-    return UPB_DECODEFAST_EXIT(kUpb_DecodeFastNext_FallbackToMiniTable, ret);
-  }
-
-  uint32_t wire_type = tag & 0x07;
-
-  // Assert that the field is either truly unknown or has a mismatched wire
-  // type.
+    wire_type = tag & 0x07;
+    // Assert that the field is either truly unknown or has a mismatched wire
+    // type.
 #ifndef NDEBUG
-  uint32_t field_num;
-  if ((tag & 0x80) == 0) {
-    field_num = (uint8_t)tag >> 3;
-  } else {
-    field_num = _upb_DecodeFast_Tag2FieldNumber(tag);
-  }
-  const upb_MiniTableField* field =
-      upb_MiniTable_FindFieldByNumber(table, field_num);
-  UPB_ASSERT(field == NULL ||
-             _upb_MiniTableField_GetWireType(field) != wire_type);
+    uint32_t field_num;
+    if ((tag & 0x80) == 0) {
+      field_num = (uint8_t)tag >> 3;
+    } else {
+      field_num = _upb_DecodeFast_Tag2FieldNumber(tag);
+    }
+    const upb_MiniTableField* field =
+        upb_MiniTable_FindFieldByNumber(table, field_num);
+    UPB_ASSERT(field == NULL ||
+               _upb_MiniTableField_GetWireType(field) != wire_type);
 #endif
+    if (UPB_UNLIKELY(wire_type == kUpb_WireType_EndGroup ||
+                     wire_type == kUpb_WireType_StartGroup)) {
+      // FastDecoder doesn't handle group fields, but it can be used to decode a
+      // message that is itself a group. When decoding a group, the end of the
+      // message is marked by an EndGroup tag. Since EndGroup tags are not in
+      // the MiniTable, they are routed to the unknown field handler. We must
+      // intercept them here to properly terminate the message.
+      return UPB_DECODEFAST_EXIT(kUpb_DecodeFastNext_FallbackToMiniTable, ret);
+    }
 
-  if (UPB_UNLIKELY(wire_type == kUpb_WireType_EndGroup ||
-                   wire_type == kUpb_WireType_StartGroup)) {
-    // FastDecoder doesn't handle group fields, but it can be used to decode a
-    // message that is itself a group. When decoding a group, the end of the
-    // message is marked by an EndGroup tag. Since EndGroup tags are not in
-    // the MiniTable, they are routed to the unknown field handler. We must
-    // intercept them here to properly terminate the message.
-    return UPB_DECODEFAST_EXIT(kUpb_DecodeFastNext_FallbackToMiniTable, ret);
+    *ptr += tag_len;
   }
 
-  *ptr += tag_len;
   upb_EpsCopyCapture capture;
   upb_EpsCopyCapture_Start(&capture, &d->input, start);
 
@@ -177,6 +176,19 @@ UPB_PRESERVE_NONE upb_FastDecoder_Return _upb_FastDecoder_DecodeUnknown(
   upb_DecodeFastNext next = kUpb_DecodeFastNext_Dispatch;
   uint16_t tag = upb_DecodeFastData2_GetOriginalTag(data2);
   _upb_FastDecoder_DoDecodeUnknown(d, &ptr, msg, table, hasbits, tag, &data,
-                                   &next);
+                                   &next, 0, 0);
+  UPB_DECODEFAST_NEXTMAYBECOPY(next);
+}
+
+UPB_PRESERVE_NONE upb_FastDecoder_Return _upb_FastDecoder_DecodeUnknownValue(
+    struct upb_Decoder* d, const char* ptr, upb_Message* msg,
+    const upb_MiniTable* table, uint64_t hasbits, uint64_t data,
+    uint64_t data2) {
+  upb_DecodeFastNext next = kUpb_DecodeFastNext_Dispatch;
+  uint32_t wire_type = upb_DecodeFastData2_GetWireType(data2);
+  uint32_t tag_len = upb_DecodeFastData2_GetTagLen(data2);
+  ptr += tag_len;
+  _upb_FastDecoder_DoDecodeUnknown(d, &ptr, msg, table, hasbits, 0, &data,
+                                   &next, tag_len, wire_type);
   UPB_DECODEFAST_NEXTMAYBECOPY(next);
 }
