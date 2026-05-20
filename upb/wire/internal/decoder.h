@@ -203,6 +203,14 @@ const char* _upb_Decoder_DecodeMessage(upb_Decoder* d, const char* ptr,
                                        upb_Message* msg,
                                        const upb_MiniTable* layout);
 
+#if UPB_FASTTABLE
+UPB_PRESERVE_NONE
+const char* _upb_Decoder_DecodeMessage_PreserveNone(upb_Decoder* d,
+                                                    const char* ptr,
+                                                    upb_Message* msg,
+                                                    const upb_MiniTable* mt);
+#endif
+
 UPB_INLINE bool _upb_Decoder_FieldRequiresUtf8Validation(
     const upb_Decoder* d, const upb_MiniTableField* field) {
   if (field->UPB_PRIVATE(descriptortype) == kUpb_FieldType_String) return true;

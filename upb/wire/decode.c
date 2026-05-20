@@ -1159,10 +1159,9 @@ static const char* _upb_Decoder_DecodeEmptyMessage(upb_Decoder* d,
   return ptr;
 }
 
-UPB_NOINLINE
-const char* _upb_Decoder_DecodeMessage(upb_Decoder* d, const char* ptr,
-                                       upb_Message* msg,
-                                       const upb_MiniTable* mt) {
+UPB_FORCEINLINE const char* _upb_Decoder_DecodeMessageImpl(
+    upb_Decoder* d, const char* ptr, upb_Message* msg,
+    const upb_MiniTable* mt) {
   UPB_ASSERT(mt);
   UPB_ASSERT(d->message_is_done == false);
 
@@ -1180,6 +1179,22 @@ const char* _upb_Decoder_DecodeMessage(upb_Decoder* d, const char* ptr,
   return UPB_UNLIKELY(mt && mt->UPB_PRIVATE(required_count))
              ? _upb_Decoder_CheckRequired(d, ptr, msg, mt)
              : ptr;
+}
+
+UPB_NOINLINE
+const char* _upb_Decoder_DecodeMessage(upb_Decoder* d, const char* ptr,
+                                       upb_Message* msg,
+                                       const upb_MiniTable* mt) {
+  return _upb_Decoder_DecodeMessageImpl(d, ptr, msg, mt);
+}
+
+UPB_PRESERVE_NONE
+const char* _upb_Decoder_DecodeMessage_PreserveNone(upb_Decoder* d,
+                                                    const char* ptr,
+                                                    upb_Message* msg,
+                                                    const upb_MiniTable* mt) {
+  // Force rebuild 2
+  return _upb_Decoder_DecodeMessageImpl(d, ptr, msg, mt);
 }
 
 static upb_DecodeStatus _upb_Decoder_DecodeTop(struct upb_Decoder* d,

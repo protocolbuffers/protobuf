@@ -42,6 +42,55 @@ static const char* upb_DecodeFast_MessageData(upb_EpsCopyInputStream* st,
   return ptr;
 }
 
+#if UPB_FASTTABLE
+UPB_FORCEINLINE
+bool upb_DecodeFast_Delimited_Message(upb_Decoder* d, const char** ptr,
+                                      upb_DecodeFast_MessageContext* c,
+                                      upb_DecodeFastNext* ret) {
+  const char* p = *ptr;
+  int size;
+
+  if (!upb_DecodeFast_DecodeSize(d, &p, &size, ret)) return false;
+
+  if ((ptrdiff_t)size <= d->input.limit_ptr - p) {
+    // Fast path: inlined upb_EpsCopyInputStream_TryParseDelimitedFast
+    const char* saved_limit_ptr = d->input.limit_ptr;
+    int saved_limit = d->input.limit;
+    d->input.limit_ptr = p + size;
+    d->input.limit = d->input.limit_ptr - d->input.end;
+
+    p = _upb_Decoder_DecodeMessage_PreserveNone(d, p, c->msg, c->table);
+
+    d->input.limit_ptr = saved_limit_ptr;
+    d->input.limit = saved_limit;
+  } else {
+    // Slow path: with Push/Pop limit
+    ptrdiff_t delta = upb_EpsCopyInputStream_PushLimit(&d->input, p, size);
+    if (UPB_UNLIKELY(delta < 0)) {
+      *ptr = NULL;
+      return UPB_DECODEFAST_ERROR(d, kUpb_DecodeStatus_Malformed, ret);
+    }
+
+    p = _upb_Decoder_DecodeMessage_PreserveNone(d, p, c->msg, c->table);
+
+    if (UPB_UNLIKELY(p == NULL)) goto fail;
+    upb_EpsCopyInputStream_PopLimit(&d->input, p, delta);
+  }
+
+  if (UPB_UNLIKELY(p == NULL)) goto fail;
+  if (UPB_UNLIKELY(d->end_group != DECODE_NOGROUP)) {
+    _upb_FastDecoder_ErrorJmp(d, kUpb_DecodeStatus_Malformed);
+  }
+  *ptr = p;
+  return true;
+
+fail:
+  UPB_ASSERT(*ret != kUpb_DecodeFastNext_FallbackToMiniTable);
+  *ptr = NULL;
+  return false;
+}
+#endif
+
 UPB_FORCEINLINE
 bool upb_DecodeFast_SingleMessage(upb_Decoder* d, const char** ptr, void* dst,
                                   upb_DecodeFast_Type type,
@@ -55,7 +104,11 @@ bool upb_DecodeFast_SingleMessage(upb_Decoder* d, const char** ptr, void* dst,
     c->msg = *submsg_dst;  // Reusing non-repeated message.
   }
 
-  return upb_DecodeFast_Delimited(d, ptr, &upb_DecodeFast_MessageData, next, c);
+#if UPB_FASTTABLE
+  return upb_DecodeFast_Delimited_Message(d, ptr, c, next);
+#else
+  UPB_UNREACHABLE();
+#endif
 }
 
 UPB_FORCEINLINE
