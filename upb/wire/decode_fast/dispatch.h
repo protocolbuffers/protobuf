@@ -50,13 +50,13 @@ _upb_FastDecoder_TagDispatch(struct upb_Decoder* d, const char* ptr,
   size_t ofs = data2 & mask;
   UPB_ASSUME((ofs & 0xf8) == ofs);
 
-#ifdef __cplusplus
+#if UPB_FASTTABLE
+  const _upb_FastTable_Entry* ent = &table->UPB_PRIVATE(fasttable)[ofs >> 3];
+#else
   // Unreachable, since this header is only used from C, but when the header
   // module is compiled for C++ we need to avoid a compilation error.
   UPB_UNREACHABLE();
   _upb_FastTable_Entry* ent = NULL;
-#else
-  const _upb_FastTable_Entry* ent = &table->UPB_PRIVATE(fasttable)[ofs >> 3];
 #endif
 
   UPB_MUSTTAIL return ent->field_parser(d, ptr, msg, table, hasbits,

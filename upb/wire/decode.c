@@ -1074,7 +1074,7 @@ bool _upb_Decoder_TryDecodeMessageFast(upb_Decoder* d, const char** ptr,
                                        const upb_MiniTable* mt,
                                        uint64_t last_field_index,
                                        uint64_t data) {
-#ifdef UPB_ENABLE_FASTTABLE
+#if UPB_FASTTABLE
   if (mt->UPB_PRIVATE(table_mask) == (unsigned char)-1 ||
       (d->options & kUpb_DecodeOption_DisableFastTable)) {
     // Fast table is unavailable or disabled.
