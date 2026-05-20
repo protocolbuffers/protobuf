@@ -724,6 +724,8 @@ class PROTOBUF_EXPORT Reflection final {
                bool value) const;
   void SetString(Message* message, const FieldDescriptor* field,
                  std::string value) const;
+  void SetStringView(Message* message, const FieldDescriptor* field,
+                     absl::string_view value) const;
   // Set a string field to a Cord value.  If the underlying field is
   // represented using a Cord already, this involves no copies  (just
   // reference counting).  Otherwise, a copy must be made.
@@ -857,6 +859,8 @@ class PROTOBUF_EXPORT Reflection final {
                        int index, bool value) const;
   void SetRepeatedString(Message* message, const FieldDescriptor* field,
                          int index, std::string value) const;
+  void SetRepeatedStringView(Message* message, const FieldDescriptor* field,
+                             int index, absl::string_view value) const;
   void SetRepeatedEnum(Message* message, const FieldDescriptor* field,
                        int index, const EnumValueDescriptor* value) const;
   // Set an enum field's value with an integer rather than EnumValueDescriptor.
@@ -893,6 +897,9 @@ class PROTOBUF_EXPORT Reflection final {
                bool value) const;
   void AddString(Message* message, const FieldDescriptor* field,
                  std::string value) const;
+  void AddStringView(Message* message, const FieldDescriptor* field,
+                     absl::string_view value) const;
+
   void AddEnum(Message* message, const FieldDescriptor* field,
                const EnumValueDescriptor* value) const;
 

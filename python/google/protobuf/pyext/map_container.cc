@@ -16,6 +16,7 @@
 #include <memory>
 #include <string>
 
+#include "absl/strings/string_view.h"
 #include "google/protobuf/map.h"
 #include "google/protobuf/map_field.h"
 #include "google/protobuf/message.h"
@@ -83,24 +84,6 @@ Message* MapContainer::GetMutableMessage() {
   return parent->message;
 }
 
-// Consumes a reference on the Python string object.
-static bool PyStringToSTL(PyObject* py_string, std::string* stl_string) {
-  char* value;
-  Py_ssize_t value_len;
-
-  if (!py_string) {
-    return false;
-  }
-  if (PyBytes_AsStringAndSize(py_string, &value, &value_len) < 0) {
-    Py_DECREF(py_string);
-    return false;
-  } else {
-    stl_string->assign(value, value_len);
-    Py_DECREF(py_string);
-    return true;
-  }
-}
-
 static bool PythonToMapKey(MapContainer* self, PyObject* obj, MapKey* key,
                            std::string* key_string) {
   const FieldDescriptor* field_descriptor =
@@ -132,10 +115,13 @@ static bool PythonToMapKey(MapContainer* self, PyObject* obj, MapKey* key,
       break;
     }
     case FieldDescriptor::CPPTYPE_STRING: {
-      if (!PyStringToSTL(CheckString(obj, field_descriptor), key_string)) {
+      if (!CheckString(obj, field_descriptor, [&](absl::string_view value) {
+            key_string->assign(value.data(), value.size());
+            key->SetStringValue(*key_string);
+            return true;
+          })) {
         return false;
       }
-      key->SetStringValue(*key_string);
       break;
     }
     default:
@@ -244,12 +230,10 @@ static bool PythonToMapValueRef(MapContainer* self, PyObject* obj,
       return true;
     }
     case FieldDescriptor::CPPTYPE_STRING: {
-      std::string str;
-      if (!PyStringToSTL(CheckString(obj, field_descriptor), &str)) {
-        return false;
-      }
-      value_ref->SetStringValue(str);
-      return true;
+      return CheckString(obj, field_descriptor, [&](absl::string_view value) {
+        value_ref->SetStringValue(value);
+        return true;
+      });
     }
     case FieldDescriptor::CPPTYPE_ENUM: {
       PROTOBUF_CHECK_GET_INT32(obj, value, false);
