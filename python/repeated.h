@@ -8,6 +8,9 @@
 #ifndef PYUPB_REPEATED_H__
 #define PYUPB_REPEATED_H__
 
+// clang-format off
+#include "Python.h"
+// chang-format on
 #include <stdbool.h>
 
 #include "python/protobuf.h"
