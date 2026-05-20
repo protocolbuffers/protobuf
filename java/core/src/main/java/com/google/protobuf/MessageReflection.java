@@ -215,6 +215,14 @@ class MessageReflection {
     public Object getField(Descriptors.FieldDescriptor field);
 
     /**
+     * Returns lazy field if supported, or the result (fully parsed) of {@link
+     * #getField(Descriptors.FieldDescriptor)} otherwise.
+     */
+    default Object getMaybeLazyField(Descriptors.FieldDescriptor field) {
+      return getField(field);
+    }
+
+    /**
      * Returns true if the given field is set. This is exactly equivalent to calling the generated
      * "has" accessor method corresponding to the field.
      *
@@ -887,6 +895,15 @@ class MessageReflection {
     }
 
     @Override
+    public Object getMaybeLazyField(Descriptors.FieldDescriptor field) {
+      Object value = extensions.getLazyField(field);
+      if (value == null) {
+        value = getField(field);
+      }
+      return value;
+    }
+
+    @Override
     public boolean hasField(Descriptors.FieldDescriptor field) {
       return extensions.hasField(field);
     }
@@ -1379,22 +1396,38 @@ class MessageReflection {
     }
   }
 
+  @SuppressWarnings("PatternMatchingInstanceof")
   private static void mergeMessageSetExtensionFromBytes(
       ByteString rawBytes,
       ExtensionRegistry.ExtensionInfo extension,
       ExtensionRegistryLite extensionRegistry,
       MergeTarget target)
       throws IOException {
-
     Descriptors.FieldDescriptor field = extension.descriptor;
-    boolean hasOriginalValue = target.hasField(field);
 
-    if (hasOriginalValue || ExtensionRegistryLite.isEagerlyParseMessageSets()) {
-      // If the field already exists, we just parse the field.
-      Object value =
+    if (ExtensionRegistryLite.isEagerlyParseMessageSets()) {
+      target.setField(
+          field,
           target.parseMessageFromBytes(
-              rawBytes, extensionRegistry, field, extension.defaultInstance);
-      target.setField(field, value);
+              rawBytes, extensionRegistry, field, extension.defaultInstance));
+      return;
+    }
+
+    if (target.hasField(field)) {
+      // If the field already exists, we use InternalLazyField to merge and only concat the raw
+      // bytes in the best scenario.
+      Object existingField = target.getMaybeLazyField(field);
+      if (existingField instanceof InternalLazyField) {
+        InternalLazyField lazyField =
+            new InternalLazyField(extension.defaultInstance, extensionRegistry, rawBytes);
+        target.setField(
+            field, InternalLazyField.mergeFrom((InternalLazyField) existingField, lazyField));
+      } else {
+        target.setField(
+            field,
+            target.parseMessageFromBytes(
+                rawBytes, extensionRegistry, field, extension.defaultInstance));
+      }
     } else {
       // Use InternalLazyField to load MessageSet lazily.
       InternalLazyField lazyField =
