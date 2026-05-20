@@ -31,7 +31,7 @@ const char* const kReservedNames[] = {
     "static",       "switch",     "throw",        "trait",      "try",
     "unset",        "use",        "var",          "while",      "xor",
     "yield",        "int",        "float",        "bool",       "string",
-    "true",         "false",      "null",         "void",       "iterable"
+    "true",         "false",      "null",         "void",       "iterable",
     "object",       "mixed",      "never"};
 const int kReservedNamesSize = 83;
 
