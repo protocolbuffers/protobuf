@@ -45,7 +45,11 @@ class MessageReflection {
           && field.isExtension()
           && field.getType() == Descriptors.FieldDescriptor.Type.MESSAGE
           && !field.isRepeated()) {
-        output.writeMessageSetExtension(field.getNumber(), (Message) value);
+        if (value instanceof InternalLazyField) {
+          output.writeBytes(field.getNumber(), ((InternalLazyField) value).toByteString());
+        } else {
+          output.writeMessageSetExtension(field.getNumber(), (Message) value);
+        }
       } else {
         FieldSet.writeField(field, value, output);
       }
@@ -576,7 +580,17 @@ class MessageReflection {
         throws IOException {
       if (!field.isRepeated()) {
         Message.Builder subBuilder;
+        boolean isLazyField = ExtensionRegistryLite.lazyExtensionEnabled() && field.isExtension();
         if (hasField(field)) {
+          if (builder instanceof GeneratedMessage.ExtendableBuilder) {
+            InternalLazyField lazyField =
+                ((GeneratedMessage.ExtendableBuilder<?, ?>) builder).getLazyField(field);
+            if (isLazyField && lazyField != null) {
+              Object unused =
+                  setField(field, InternalLazyField.mergeFrom(lazyField, input, extensionRegistry));
+              return;
+            }
+          }
           subBuilder = getFieldBuilder(field);
           if (subBuilder != null) {
             input.readMessage(subBuilder, extensionRegistry);
@@ -586,6 +600,13 @@ class MessageReflection {
             subBuilder.mergeFrom((Message) getField(field));
           }
         } else {
+          if (isLazyField) {
+            InternalLazyField lazyField =
+                new InternalLazyField(
+                    (MessageLite) defaultInstance, extensionRegistry, input.readBytes());
+            Object unused = setField(field, lazyField);
+            return;
+          }
           subBuilder = newMessageFieldInstance(field, defaultInstance);
         }
         input.readMessage(subBuilder, extensionRegistry);
