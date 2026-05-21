@@ -361,9 +361,6 @@ static upb_Array* _upb_Decoder_CreateArray(upb_Decoder* d,
   return ret;
 }
 
-#if UPB_FASTTABLE
-UPB_PRESERVE_NONE
-#endif
 static const char* _upb_Decoder_DecodeToArray(upb_Decoder* d, const char* ptr,
                                               upb_Message* msg,
                                               const upb_MiniTableField* field,
@@ -473,9 +470,6 @@ static upb_Map* _upb_Decoder_CreateMap(upb_Decoder* d,
   return ret;
 }
 
-#if UPB_FASTTABLE
-UPB_PRESERVE_NONE
-#endif
 static const char* _upb_Decoder_DecodeToMap(upb_Decoder* d, const char* ptr,
                                             upb_Message* msg,
                                             const upb_MiniTableField* field,
@@ -539,9 +533,6 @@ static const char* _upb_Decoder_DecodeToMap(upb_Decoder* d, const char* ptr,
   return ptr;
 }
 
-#if UPB_FASTTABLE
-UPB_PRESERVE_NONE
-#endif
 static const char* _upb_Decoder_DecodeToSubMessage(
     upb_Decoder* d, const char* ptr, upb_Message* msg,
     const upb_MiniTableField* field, wireval* val, int op) {
@@ -1153,10 +1144,11 @@ static const char* _upb_Decoder_DecodeEmptyMessage(upb_Decoder* d,
       d->end_group = tag >> 3;
       break;
     }
-    ptr = _upb_WireReader_SkipValue(ptr, tag, d->depth, &d->input);
+    [[clang::always_inline]] ptr =
+        _upb_WireReader_SkipValue(ptr, tag, d->depth, EPS(d));
   }
   upb_StringView sv;
-  upb_EpsCopyCapture_End(&capture, &d->input, ptr, &sv);
+  upb_EpsCopyCapture_End(&capture, EPS(d), ptr, &sv);
 
   if (sv.size > 0) {
     if (!UPB_PRIVATE(_upb_Message_AddUnknown)(
@@ -1168,20 +1160,6 @@ static const char* _upb_Decoder_DecodeEmptyMessage(upb_Decoder* d,
   return ptr;
 }
 
-// When fasttable is enabled, _upb_Decoder_DecodeMessage possibly calls a
-// preserve_none function, which forces a spill of all callee-save registers
-// registers to the stack in its prologue and restoration in its epilogue, due
-// to mismatched calling conventions - the fast decoder (preserve_none) calls
-// _upb_Decoder_DecodeMessage (normal) which calls the fast decoder
-// (preserve_none). Arm has a lot of callee-save registers in its normal calling
-// convention, including a bunch of simd&fp registers that our preserve_none
-// caller is probably not actually using. To avoid this cost, all functions in
-// the call stack (excluding force-inlined) between the fast decoder's decode
-// message function and a recursive call to the fast decoder should use the fast
-// decoder's calling convention.
-#if UPB_FASTTABLE
-UPB_PRESERVE_NONE
-#endif
 UPB_NOINLINE
 const char* _upb_Decoder_DecodeMessage(upb_Decoder* d, const char* ptr,
                                        upb_Message* msg,
