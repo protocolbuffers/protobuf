@@ -120,20 +120,14 @@ cc_library(
     ],
     deps = [
         "//upb/base",
-        "//upb/mem",
         "//upb/message",
         "//upb/message:internal",
         "//upb/mini_descriptor",
         "//upb/mini_table",
         "//upb/mini_table:internal",
         "//upb/wire",
-    ] + select({
-        ":fasttable_enabled_setting": [
-            "//upb/wire/decode_fast:field_parsers",
-        ],
-        "//conditions:default": [
-        ],
-    }),
+        "//upb/wire/decode_fast:field_parsers",
+    ],
 )
 
 # Common support code for C++ generated code.

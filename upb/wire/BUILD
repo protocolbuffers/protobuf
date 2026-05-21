@@ -95,31 +95,22 @@ cc_library(
     features = UPB_DEFAULT_FEATURES,
     visibility = ["//visibility:public"],
     deps = [
-        ":back_alloc",
         ":decoder",
         ":encoder",
         ":eps_copy_input_stream",
         ":reader",
-        ":writer",
-        "//third_party/utf8_range",
         "//upb/base",
         "//upb/base:internal",
         "//upb/hash",
         "//upb/mem",
-        "//upb/mem:internal",
         "//upb/message",
         "//upb/message:internal",
-        "//upb/message:iterator",
         "//upb/message:types",
         "//upb/mini_table",
         "//upb/mini_table:internal",
         "//upb/port",
-    ] + select({
-        "//upb:fasttable_enabled_setting": [
-            "//upb/wire/decode_fast:dispatch",
-        ],
-        "//conditions:default": [],
-    }),
+        "//upb/wire/decode_fast:dispatch",
+    ],
 )
 
 cc_test(

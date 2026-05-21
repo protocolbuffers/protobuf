@@ -36,24 +36,12 @@
 #include "upb/mini_table/internal/message.h"
 #include "upb/mini_table/internal/sub.h"
 #include "upb/mini_table/message.h"
+#include "upb/wire/decode_fast/dispatch.h"  // IWYU pragma: keep
 #include "upb/wire/eps_copy_input_stream.h"
 #include "upb/wire/internal/constants.h"
 #include "upb/wire/internal/decoder.h"
 #include "upb/wire/internal/encoder.h"
 #include "upb/wire/reader.h"
-
-// Our awkward dance for including fasttable only when it is enabled.
-#include "upb/port/def.inc"
-#if UPB_FASTTABLE
-#define UPB_INCLUDE_FAST_DECODE
-#endif
-#include "upb/port/undef.inc"
-
-#ifdef UPB_INCLUDE_FAST_DECODE
-#include "upb/wire/decode_fast/dispatch.h"
-#endif
-
-#undef UPB_INCLUDE_FAST_DECODE
 
 // Must be last.
 #include "upb/port/def.inc"

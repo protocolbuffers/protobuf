@@ -27,20 +27,15 @@ cc_library(
     deps = [
         ":internal",
         "//upb/base",
-        "//upb/base:internal",
         "//upb/mem",
         "//upb/message:types",
         "//upb/mini_table",
         "//upb/mini_table:internal",
         "//upb/port",
-    ] + select({
-        "//upb:fasttable_enabled_setting": [
-            "//upb/wire/decode_fast:field_parsers",
-            "//upb/wire/decode_fast:function_array",
-            "//upb/wire/decode_fast:select",
-        ],
-        "//conditions:default": [],
-    }),
+        "//upb/wire/decode_fast:field_parsers",
+        "//upb/wire/decode_fast:function_array",
+        "//upb/wire/decode_fast:select",
+    ],
 )
 
 cc_library(

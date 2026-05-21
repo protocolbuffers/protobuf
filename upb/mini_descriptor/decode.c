@@ -31,21 +31,8 @@
 #include "upb/mini_table/internal/sub.h"
 #include "upb/mini_table/message.h"
 #include "upb/mini_table/sub.h"
-
-// Our awkward dance for including fasttable only when it is enabled.
-#include "upb/port/def.inc"
-#if UPB_FASTTABLE
-#define UPB_INCLUDE_FAST_DECODE
-#endif
-#include "upb/port/undef.inc"
-
-#ifdef UPB_INCLUDE_FAST_DECODE
-#include "upb/wire/decode_fast/function_array.h"
-#include "upb/wire/decode_fast/select.h"
-#endif
-
-#undef UPB_INCLUDE_FAST_DECODE
-
+#include "upb/wire/decode_fast/function_array.h"  // IWYU pragma: keep
+#include "upb/wire/decode_fast/select.h"  // IWYU pragma: keep
 // Must be last.
 #include "upb/port/def.inc"
 
