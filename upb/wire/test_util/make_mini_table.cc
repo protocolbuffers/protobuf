@@ -80,7 +80,7 @@ MiniTable::MakeSingleFieldTable(int field_number, upb_FieldType type,
                                 upb_Arena* arena, bool extensible) {
   MtDataEncoder encoder;
   encoder.StartMessage(extensible ? kUpb_MessageModifier_IsExtendable : 0);
-  encoder.PutField(type, 1, FieldModifiers(fast_type, cardinality));
+  encoder.PutField(type, field_number, FieldModifiers(fast_type, cardinality));
   if (cardinality == kUpb_DecodeFast_Oneof) {
     encoder.StartOneof();
     encoder.PutOneofField(field_number);
