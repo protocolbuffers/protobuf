@@ -11,8 +11,8 @@ permissions: {}
 jobs:
   releases:
     strategy:
-      fail-fast: false
-      matrix:
+      fail-fast: true 
+      matrix: 
         branch: [25.x, 29.x, 33.x, 34.x]
     runs-on: ubuntu-latest
     permissions:
@@ -23,3 +23,7 @@ jobs:
     name: Run Tests on ${{ matrix.branch }}
     steps:
       - run: gh workflow run test_runner.yml --ref ${{ matrix.branch }}
+concurrency:
+  group: 1
+  queue: single
+  cancel-in-progress: true
