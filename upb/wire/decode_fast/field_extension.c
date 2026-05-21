@@ -33,12 +33,12 @@ UPB_FORCEINLINE void _upb_FastDecoder_PickHandlerForExtensionOrUnknown(
     return;
   }
 
-  // Assert that the field is either truly unknown or has a mismatched wire
-  // type.
+  // Assert that the field is either truly unknown, has a mismatched wire
+  // type, or is an overlong tag.
 #ifndef NDEBUG
   const upb_MiniTableField* field =
       upb_MiniTable_FindFieldByNumber(table, field_num);
-  UPB_ASSERT(field == NULL ||
+  UPB_ASSERT((tag & 0xFF80) == 0x80 || field == NULL ||
              _upb_MiniTableField_GetWireType(field) != (tag & 0x07));
 #endif
 
