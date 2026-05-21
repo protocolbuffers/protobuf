@@ -78,8 +78,10 @@ struct MapIterator {
   uint64_t version;
 };
 
+Message* MapContainer::GetMessageForReadOnly() { return parent->message; }
+
 Message* MapContainer::GetMutableMessage() {
-  cmessage::AssureWritable(parent);
+  if (cmessage::AssureWritable(parent) == -1) return nullptr;
   return parent->message;
 }
 
@@ -294,6 +296,7 @@ Py_ssize_t MapReflectionFriend::Length(PyObject* _self) {
 PyObject* Clear(PyObject* _self) {
   MapContainer* self = GetMap(_self);
   Message* message = self->GetMutableMessage();
+  if (message == nullptr) return nullptr;
   const Reflection* reflection = message->GetReflection();
 
   reflection->ClearField(message, self->parent_field_descriptor);
@@ -319,6 +322,7 @@ PyObject* MapReflectionFriend::MergeFrom(PyObject* _self, PyObject* arg) {
   }
   MapContainer* other_map = GetMap(arg);
   Message* message = self->GetMutableMessage();
+  if (message == nullptr) return nullptr;
   const Message* other_message = other_map->parent->message;
   const Reflection* reflection = message->GetReflection();
   const Reflection* other_reflection = other_message->GetReflection();
@@ -380,6 +384,7 @@ PyObject* MapReflectionFriend::ScalarMapGetItem(PyObject* _self,
   MapContainer* self = GetMap(_self);
 
   Message* message = self->GetMutableMessage();
+  if (message == nullptr) return nullptr;
   const Reflection* reflection = message->GetReflection();
   std::string map_key_string;
   MapKey map_key;
@@ -402,6 +407,7 @@ int MapReflectionFriend::ScalarMapSetItem(PyObject* _self, PyObject* key,
   MapContainer* self = GetMap(_self);
 
   Message* message = self->GetMutableMessage();
+  if (message == nullptr) return -1;
   const Reflection* reflection = message->GetReflection();
   std::string map_key_string;
   MapKey map_key;
@@ -505,7 +511,7 @@ PyObject* MapReflectionFriend::ScalarMapToStr(PyObject* _self) {
   ScopedPyObjectPtr value;
 
   MapContainer* self = GetMap(_self);
-  Message* message = self->GetMutableMessage();
+  Message* message = self->GetMessageForReadOnly();
   const Reflection* reflection = message->GetReflection();
   for (google::protobuf::MapIterator it =
            reflection->MapBegin(message, self->parent_field_descriptor);
@@ -625,6 +631,7 @@ int MapReflectionFriend::MessageMapSetItem(PyObject* _self, PyObject* key,
 
   MessageMapContainer* self = GetMessageMap(_self);
   Message* message = self->GetMutableMessage();
+  if (message == nullptr) return -1;
   const Reflection* reflection = message->GetReflection();
   std::string map_key_string;
   MapKey map_key;
@@ -666,6 +673,7 @@ PyObject* MapReflectionFriend::MessageMapGetItem(PyObject* _self,
   MessageMapContainer* self = GetMessageMap(_self);
 
   Message* message = self->GetMutableMessage();
+  if (message == nullptr) return nullptr;
   const Reflection* reflection = message->GetReflection();
   std::string map_key_string;
   MapKey map_key;
@@ -692,7 +700,7 @@ PyObject* MapReflectionFriend::MessageMapToStr(PyObject* _self) {
   ScopedPyObjectPtr value;
 
   MessageMapContainer* self = GetMessageMap(_self);
-  Message* message = self->GetMutableMessage();
+  Message* message = self->GetMessageForReadOnly();
   const Reflection* reflection = message->GetReflection();
   for (google::protobuf::MapIterator it =
            reflection->MapBegin(message, self->parent_field_descriptor);
@@ -818,7 +826,7 @@ PyObject* MapReflectionFriend::GetIterator(PyObject* _self) {
   iter->parent = self->parent;
 
   if (MapReflectionFriend::Length(_self) > 0) {
-    Message* message = self->GetMutableMessage();
+    Message* message = self->GetMessageForReadOnly();
     const Reflection* reflection = message->GetReflection();
 
     iter->iter.reset(new ::google::protobuf::MapIterator(
@@ -844,7 +852,7 @@ PyObject* MapReflectionFriend::IterNext(PyObject* _self) {
     return nullptr;
   }
 
-  Message* message = self->container->GetMutableMessage();
+  Message* message = self->container->GetMessageForReadOnly();
   const Reflection* reflection = message->GetReflection();
 
   if (*self->iter ==

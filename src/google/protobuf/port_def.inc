@@ -136,11 +136,17 @@
 // Owner: runze@
 #define PROTOBUF_FUTURE_CONTAINER_EQ_RETURNS_NOTIMPLEMENTED 1
 
+// Make GetOptions() return immutable options.
+// Owner: runze@
+#define PROTOBUF_FUTURE_FREEZE_OPTIONS 1
+
 #else
 
 #define PROTOBUF_FUTURE_ADD_NODISCARD
 
 #define PROTOBUF_FUTURE_CONTAINER_EQ_RETURNS_NOTIMPLEMENTED 0
+
+#define PROTOBUF_FUTURE_FREEZE_OPTIONS 0
 
 #endif
 

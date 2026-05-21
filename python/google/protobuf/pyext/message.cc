@@ -823,18 +823,18 @@ void FixupMessageAfterMerge(CMessage* self) {
     if (descriptor->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE &&
         !descriptor->is_repeated()) {
       CMessage* cmsg = reinterpret_cast<CMessage*>(value);
-      if (cmsg->read_only == false) {
+      if (cmsg->state != MESSAGE_DEFAULT_INSTANCE) {
         return;
       }
       Message* message = self->message;
       const Reflection* reflection = message->GetReflection();
       if (reflection->HasField(*message, descriptor)) {
-        // Message used to be read_only, but is no longer. Get the new pointer
-        // and record it.
+        // Message used to be a default instance, but is no longer. Get the new
+        // pointer and record it.
         Message* mutable_message = reflection->MutableMessage(
             message, descriptor, factory->message_factory);
         cmsg->message = mutable_message;
-        cmsg->read_only = false;
+        cmsg->state = MESSAGE_MUTABLE;
         FixupMessageAfterMerge(cmsg);
       }
     }
@@ -845,8 +845,12 @@ void FixupMessageAfterMerge(CMessage* self) {
 // Making a message writable
 
 int AssureWritable(CMessage* self) {
-  if (self == nullptr || !self->read_only) {
+  if (self == nullptr || self->state == MESSAGE_MUTABLE) {
     return 0;
+  }
+  if (self->state == MESSAGE_FROZEN) {
+    PyErr_SetString(PyExc_TypeError, "Message is immutable.");
+    return -1;
   }
 
   // Toplevel messages are always mutable.
@@ -872,7 +876,7 @@ int AssureWritable(CMessage* self) {
     return -1;
   }
   self->message = mutable_message;
-  self->read_only = false;
+  self->state = MESSAGE_MUTABLE;
 
   return 0;
 }
@@ -1280,7 +1284,7 @@ CMessage* NewEmptyMessage(CMessageClass* type) {
   self->message = nullptr;
   self->parent = nullptr;
   self->parent_field_descriptor = nullptr;
-  self->read_only = false;
+  self->state = MESSAGE_MUTABLE;
 
   // Construct the lazy unique pointers using placement new.
   new (&self->composite_fields) LazyUniquePtr<CMessage::CompositeFieldsMap>();
@@ -2319,18 +2323,25 @@ CMessage* InternalGetSubMessage(CMessage* self,
   Py_INCREF(self);
   cmsg->parent = self;
   cmsg->parent_field_descriptor = field_descriptor;
+  if (self->state == MESSAGE_FROZEN) {
+    cmsg->state = MESSAGE_FROZEN;
+    const Message& sub_message = reflection->GetMessage(
+        *self->message, field_descriptor, factory->message_factory);
+    cmsg->message = const_cast<Message*>(&sub_message);
+    return cmsg;
+  }
   if (reflection->HasField(*self->message, field_descriptor)) {
     // Force triggering MutableMessage to set the lazy message 'Dirty'
     if (MessageReflectionFriend::IsLazyField(reflection, *self->message,
                                              field_descriptor)) {
       Message* sub_message = reflection->MutableMessage(
           self->message, field_descriptor, factory->message_factory);
-      cmsg->read_only = false;
+      cmsg->state = MESSAGE_MUTABLE;
       cmsg->message = sub_message;
       return cmsg;
     }
   } else {
-    cmsg->read_only = true;
+    cmsg->state = MESSAGE_DEFAULT_INSTANCE;
   }
   const Message& sub_message = reflection->GetMessage(
       *self->message, field_descriptor, factory->message_factory);
@@ -2813,6 +2824,9 @@ CMessage* CMessage::BuildSubMessageFromPointer(
   Py_INCREF(this);
   cmsg->parent = this;
   cmsg->parent_field_descriptor = field_descriptor;
+  if (this->state == MESSAGE_FROZEN) {
+    cmsg->state = MESSAGE_FROZEN;
+  }
   cmessage::SetSubmessage(this, cmsg);
   return cmsg;
 }
@@ -2829,7 +2843,7 @@ CMessage* CMessage::MaybeReleaseSubMessage(Message* sub_message) {
   // The target message will now own its content.
   Py_CLEAR(released->parent);
   released->parent_field_descriptor = nullptr;
-  released->read_only = false;
+  released->state = MESSAGE_MUTABLE;
   // Delete it from the cache.
   sub_messages->Erase(sub_message);
   // child_submessages->Get returned a new reference.

@@ -45,6 +45,20 @@ struct CMessageClass;
 // ExtensionDicts and UnknownFields containers do NOT follow this rule. They
 // don't store any data, and always refer to their parent message.
 
+// Defines the mutability and allocation state of a CMessage.
+enum MessageMutabilityState {
+  // Backed by a fully allocated, mutable C++ Message object.
+  MESSAGE_MUTABLE = 0,
+
+  // Backed by a const default instance. Acts as a "stub".
+  // Will automatically transition to MESSAGE_MUTABLE upon first mutation.
+  MESSAGE_DEFAULT_INSTANCE = 1,
+
+  // Permanently read-only (e.g., Descriptor Options).
+  // Any attempt to mutate will raise a Python TypeError.
+  MESSAGE_FROZEN = 2,
+};
+
 struct ContainerBase {
   // clang-format off
   PyObject_HEAD
@@ -82,10 +96,8 @@ typedef struct CMessage : public ContainerBase {
   // - If this object has a parent message, the parent owns this pointer.
   Message* message;
 
-  // Indicates this submessage is pointing to a default instance of a message.
-  // Submessages are always first created as read only messages and are then
-  // made writable, at which point this field is set to false.
-  bool read_only;
+  // Indicates the mutability state of this CMessage wrapper.
+  MessageMutabilityState state;
 
   // A mapping indexed by field, containing weak references to contained objects
   // which need to implement the "Release" mechanism:

@@ -72,7 +72,7 @@ static PyObject* AddMethod(PyObject* self, PyObject* args, PyObject* kwargs) {
 // append()
 
 static PyObject* AddMessage(RepeatedCompositeContainer* self, PyObject* value) {
-  cmessage::AssureWritable(self->parent);
+  if (cmessage::AssureWritable(self->parent) == -1) return nullptr;
   PyObject* py_cmsg;
   Message* message = self->parent->message;
   const Reflection* reflection = message->GetReflection();
@@ -134,7 +134,7 @@ static PyObject* Insert(PyObject* pself, PyObject* args) {
 // extend()
 
 PyObject* Extend(RepeatedCompositeContainer* self, PyObject* value) {
-  cmessage::AssureWritable(self->parent);
+  if (cmessage::AssureWritable(self->parent) == -1) return nullptr;
   ScopedPyObjectPtr iter(PyObject_GetIter(value));
   if (iter == nullptr) {
     PyErr_SetString(PyExc_TypeError, "Value must be iterable");
@@ -187,8 +187,16 @@ static PyObject* GetItem(RepeatedCompositeContainer* self, Py_ssize_t index,
     return nullptr;
   }
   Message* message = self->parent->message;
-  Message* sub_message = message->GetReflection()->MutableRepeatedMessage(
-      message, self->parent_field_descriptor, index);
+  const Reflection* reflection = message->GetReflection();
+  Message* sub_message;
+  if (self->parent->state == python::MESSAGE_FROZEN) {
+    const Message& const_sub_message = reflection->GetRepeatedMessage(
+        *message, self->parent_field_descriptor, index);
+    sub_message = const_cast<Message*>(&const_sub_message);
+  } else {
+    sub_message = reflection->MutableRepeatedMessage(
+        message, self->parent_field_descriptor, index);
+  }
   return self->parent
       ->BuildSubMessageFromPointer(self->parent_field_descriptor, sub_message,
                                    self->child_message_class)
@@ -241,6 +249,11 @@ static PyObject* SubscriptMethod(PyObject* self, PyObject* slice) {
 
 int AssignSubscript(RepeatedCompositeContainer* self, PyObject* slice,
                     PyObject* value) {
+  if (self->parent->state == python::MESSAGE_FROZEN) {
+    PyErr_SetString(PyExc_TypeError, "Message is immutable.");
+    return -1;
+  }
+
   if (value != nullptr) {
     PyErr_SetString(PyExc_TypeError, "does not support assignment");
     return -1;
@@ -259,6 +272,12 @@ static int AssignSubscriptMethod(PyObject* self, PyObject* slice,
 static PyObject* Remove(PyObject* pself, PyObject* value) {
   RepeatedCompositeContainer* self =
       reinterpret_cast<RepeatedCompositeContainer*>(pself);
+
+  if (self->parent->state == python::MESSAGE_FROZEN) {
+    PyErr_SetString(PyExc_TypeError, "Message is immutable.");
+    return nullptr;
+  }
+
   Py_ssize_t len = Length(reinterpret_cast<PyObject*>(self));
 
   for (Py_ssize_t i = 0; i < len; i++) {
@@ -371,6 +390,11 @@ static PyObject* Sort(PyObject* pself, PyObject* args, PyObject* kwds) {
   RepeatedCompositeContainer* self =
       reinterpret_cast<RepeatedCompositeContainer*>(pself);
 
+  if (self->parent->state == python::MESSAGE_FROZEN) {
+    PyErr_SetString(PyExc_TypeError, "Message is immutable.");
+    return nullptr;
+  }
+
   // Support the old sort_function argument for backwards
   // compatibility.
   if (kwds != nullptr) {
@@ -411,6 +435,11 @@ static PyObject* Reverse(PyObject* pself) {
   RepeatedCompositeContainer* self =
       reinterpret_cast<RepeatedCompositeContainer*>(pself);
 
+  if (self->parent->state == python::MESSAGE_FROZEN) {
+    PyErr_SetString(PyExc_TypeError, "Message is immutable.");
+    return nullptr;
+  }
+
   if (ReversePythonMessages(self) < 0) {
     return nullptr;
   }
@@ -439,6 +468,11 @@ static PyObject* Item(PyObject* pself, Py_ssize_t index) {
 static PyObject* Pop(PyObject* pself, PyObject* args) {
   RepeatedCompositeContainer* self =
       reinterpret_cast<RepeatedCompositeContainer*>(pself);
+
+  if (self->parent->state == python::MESSAGE_FROZEN) {
+    PyErr_SetString(PyExc_TypeError, "Message is immutable.");
+    return nullptr;
+  }
 
   Py_ssize_t index = -1;
   if (!PyArg_ParseTuple(args, "|n", &index)) {

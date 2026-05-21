@@ -283,11 +283,11 @@ class DescriptorTest(unittest.TestCase):
   @unittest.skipIf(
       api_implementation.Type() == 'python', 'Not fixed yet in pure Python'
   )
-  @unittest.skipIf(api_implementation.Type() == 'cpp', 'Not fixed yet in C++')
   @unittest.skipIf(
       api_implementation.Type() == 'upb',
       'Needs to wait for a breaking change release in OSS'
   )
+  @unittest.skipIf(api_implementation.Type() == 'cpp', 'Not fixed yet in C++')
   def testModifyFrozenMessage(self):
     # At least upb raises TypeError Other 2 implementations will likely be 
     # fixed to be consistent with upb.

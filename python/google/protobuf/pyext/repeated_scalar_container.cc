@@ -34,7 +34,7 @@ namespace repeated_scalar_container {
 
 static int InternalAssignRepeatedField(RepeatedScalarContainer* self,
                                        PyObject* list) {
-  cmessage::AssureWritable(self->parent);
+  if (cmessage::AssureWritable(self->parent) == -1) return -1;
   Message* message = self->parent->message;
   message->GetReflection()->ClearField(message, self->parent_field_descriptor);
   for (Py_ssize_t i = 0; i < PyList_GET_SIZE(list); ++i) {
@@ -58,7 +58,7 @@ static int AssignItem(PyObject* pself, Py_ssize_t index, PyObject* arg) {
   RepeatedScalarContainer* self =
       reinterpret_cast<RepeatedScalarContainer*>(pself);
 
-  cmessage::AssureWritable(self->parent);
+  if (cmessage::AssureWritable(self->parent) == -1) return -1;
   Message* message = self->parent->message;
   const FieldDescriptor* field_descriptor = self->parent_field_descriptor;
 
@@ -304,7 +304,7 @@ static PyObject* Subscript(PyObject* pself, PyObject* slice) {
 }
 
 PyObject* Append(RepeatedScalarContainer* self, PyObject* item) {
-  cmessage::AssureWritable(self->parent);
+  if (cmessage::AssureWritable(self->parent) == -1) return nullptr;
   Message* message = self->parent->message;
   const FieldDescriptor* field_descriptor = self->parent_field_descriptor;
 
@@ -398,7 +398,7 @@ static int AssSubscript(PyObject* pself, PyObject* slice, PyObject* value) {
   Py_ssize_t slicelength;
   bool create_list = false;
 
-  cmessage::AssureWritable(self->parent);
+  if (cmessage::AssureWritable(self->parent) == -1) return -1;
   Message* message = self->parent->message;
   const FieldDescriptor* field_descriptor = self->parent_field_descriptor;
 
@@ -441,7 +441,7 @@ static int AssSubscript(PyObject* pself, PyObject* slice, PyObject* value) {
 }
 
 PyObject* Extend(RepeatedScalarContainer* self, PyObject* value) {
-  cmessage::AssureWritable(self->parent);
+  if (cmessage::AssureWritable(self->parent) == -1) return nullptr;
 
   ScopedPyObjectPtr iter(PyObject_GetIter(value));
   if (iter == nullptr) {
@@ -482,6 +482,14 @@ static PyObject* Insert(PyObject* pself, PyObject* args) {
 }
 
 static PyObject* Remove(PyObject* pself, PyObject* value) {
+  RepeatedScalarContainer* self =
+      reinterpret_cast<RepeatedScalarContainer*>(pself);
+
+  if (self->parent->state == python::MESSAGE_FROZEN) {
+    PyErr_SetString(PyExc_TypeError, "Message is immutable.");
+    return nullptr;
+  }
+
   Py_ssize_t match_index = -1;
   for (Py_ssize_t i = 0; i < Len(pself); ++i) {
     ScopedPyObjectPtr elem(Item(pself, i));
@@ -724,6 +732,14 @@ PyObject* Reduce(PyObject* unused_self, PyObject* unused_other) {
 }
 
 static PyObject* Sort(PyObject* pself, PyObject* args, PyObject* kwds) {
+  RepeatedScalarContainer* self =
+      reinterpret_cast<RepeatedScalarContainer*>(pself);
+
+  if (self->parent->state == python::MESSAGE_FROZEN) {
+    PyErr_SetString(PyExc_TypeError, "Message is immutable.");
+    return nullptr;
+  }
+
   // Support the old sort_function argument for backwards
   // compatibility.
   if (kwds != nullptr) {
@@ -764,6 +780,14 @@ static PyObject* Sort(PyObject* pself, PyObject* args, PyObject* kwds) {
 }
 
 static PyObject* Reverse(PyObject* pself) {
+  RepeatedScalarContainer* self =
+      reinterpret_cast<RepeatedScalarContainer*>(pself);
+
+  if (self->parent->state == python::MESSAGE_FROZEN) {
+    PyErr_SetString(PyExc_TypeError, "Message is immutable.");
+    return nullptr;
+  }
+
   ScopedPyObjectPtr full_slice(PySlice_New(nullptr, nullptr, nullptr));
   if (full_slice == nullptr) {
     return nullptr;
@@ -788,7 +812,7 @@ static PyObject* Clear(PyObject* pself) {
   RepeatedScalarContainer* self =
       reinterpret_cast<RepeatedScalarContainer*>(pself);
   CMessage* cmessage = self->parent;
-  cmessage::AssureWritable(cmessage);
+  if (cmessage::AssureWritable(cmessage) == -1) return nullptr;
   Message* message = cmessage->message;
   const FieldDescriptor* field_descriptor = self->parent_field_descriptor;
   message->GetReflection()->ClearField(message, field_descriptor);
@@ -796,6 +820,14 @@ static PyObject* Clear(PyObject* pself) {
 }
 
 static PyObject* Pop(PyObject* pself, PyObject* args) {
+  RepeatedScalarContainer* self =
+      reinterpret_cast<RepeatedScalarContainer*>(pself);
+
+  if (self->parent->state == python::MESSAGE_FROZEN) {
+    PyErr_SetString(PyExc_TypeError, "Message is immutable.");
+    return nullptr;
+  }
+
   Py_ssize_t index = -1;
   if (!PyArg_ParseTuple(args, "|n", &index)) {
     return nullptr;

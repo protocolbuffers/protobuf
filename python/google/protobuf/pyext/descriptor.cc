@@ -69,6 +69,9 @@ static PyObject* PyFrame_GetGlobals(PyFrameObject* frame) {
 }
 #endif
 
+// Must be included last.
+#include "google/protobuf/port_def.inc"
+
 namespace google {
 namespace protobuf {
 namespace python {
@@ -303,6 +306,10 @@ static PyObject* GetOrBuildMessageInDefaultPool(
       return nullptr;
     }
   }
+
+#if PROTOBUF_FUTURE_FREEZE_OPTIONS
+  cmsg->state = MESSAGE_FROZEN;
+#endif
 
   // Cache the result.
   {
@@ -2130,3 +2137,5 @@ bool InitDescriptor() {
 }  // namespace python
 }  // namespace protobuf
 }  // namespace google
+
+#include "google/protobuf/port_undef.inc"
