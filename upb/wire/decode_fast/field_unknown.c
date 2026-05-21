@@ -58,16 +58,69 @@ _upb_FastDecoder_DecodeUnknownSlowPath(struct upb_Decoder* d, const char* ptr,
   UPB_DECODEFAST_NEXT(next);
 }
 
+UPB_PRESERVE_NONE upb_FastDecoder_Return _upb_FastDecoder_DecodeUnknown(
+    struct upb_Decoder* d, const char* ptr, upb_Message* msg,
+    const upb_MiniTable* table, uint64_t hasbits, uint64_t data,
+    uint64_t data2) {
+  upb_DecodeFastNext next = kUpb_DecodeFastNext_Dispatch;
+  uint16_t tag = upb_DecodeFastData2_GetOriginalTag(data2);
+
+  if (UPB_UNLIKELY((tag & 0xFF80) == 0x80)) {
+    // An one byte tag encoded as two bytes may map to the wrong fasttable slot
+    // and lead to being assumed to be an unknown field, in a message where all
+    // fasttable-eligible fields are assigned slots. If we're passed such a tag,
+    // fall back to the minitable rather than adding it as unknown.
+    UPB_DECODEFAST_EXIT(kUpb_DecodeFastNext_FallbackToMiniTable, &next);
+  } else if (UPB_UNLIKELY((tag & 0x8080) == 0x8080)) {
+    // A one byte tag encoded as three may map to the wrong slot; a two byte tag
+    // encoded as three will go to the same slot, but could hit the tag mismatch
+    // path after dispatch.
+    next = kUpb_DecodeFastNext_DecodeLongTag;
+  } else {
+    uint32_t field_num;
+    uint32_t tag_len;
+    uint32_t wire_type = tag & 0x07;
+    if (UPB_UNLIKELY(
+            !_upb_DecodeFast_ParseTag(ptr, tag, &field_num, &tag_len))) {
+      UPB_DECODEFAST_ERROR(d, kUpb_DecodeStatus_Malformed, &next);
+    } else if (UPB_UNLIKELY((field_num) == 0)) {
+      UPB_DECODEFAST_ERROR(d, kUpb_DecodeStatus_Malformed, &next);
+    } else {
+#ifndef NDEBUG
+      const upb_MiniTableField* field =
+          upb_MiniTable_FindFieldByNumber(table, field_num);
+      UPB_ASSERT(field == NULL ||
+                 _upb_MiniTableField_GetWireType(field) != wire_type);
+#else
+      UPB_UNUSED(field_num);
+#endif
+      if (UPB_UNLIKELY(wire_type == kUpb_WireType_EndGroup ||
+                       wire_type == kUpb_WireType_StartGroup)) {
+        // FastDecoder doesn't handle group fields, but it can be used to decode
+        // a message that is itself a group. When decoding a group, the end of
+        // the message is marked by an EndGroup tag. Since EndGroup tags are not
+        // in the MiniTable, they are routed to the unknown field handler. We
+        // must intercept them here to properly terminate the message.
+        UPB_DECODEFAST_EXIT(kUpb_DecodeFastNext_FallbackToMiniTable, &next);
+      } else {
+        data = upb_DecodeFast_PackGaps(0, 0);
+        data2 = upb_DecodeFastData2_PackWireTypeAndTagLen(data2, wire_type,
+                                                          tag_len);
+        next = kUpb_DecodeFastNext_DecodeUnknownValue;
+      }
+    }
+  }
+  UPB_DECODEFAST_NEXTMAYBECOPY(next);
+}
+
 UPB_FORCEINLINE bool _upb_FastDecoder_DoDecodeUnknown(
     struct upb_Decoder* d, const char** ptr, upb_Message* msg,
     const upb_MiniTable* table, uint64_t hasbits, uint64_t* data,
-    upb_DecodeFastNext* ret, uint32_t tag_len, uint32_t wire_type) {
+    upb_DecodeFastNext* ret, uint32_t tag_len, uint32_t wire_type,
+    uint32_t gap_lo, uint32_t gap_hi) {
   const char* start = *ptr - tag_len;
   upb_EpsCopyCapture capture;
   upb_EpsCopyCapture_Start(&capture, &d->input, start);
-
-  uint32_t gap_lo = 0;
-  uint32_t gap_hi = 0;
 
   while (true) {
     switch (wire_type) {
@@ -174,60 +227,6 @@ UPB_FORCEINLINE bool _upb_FastDecoder_DoDecodeUnknown(
   return true;
 }
 
-UPB_PRESERVE_NONE upb_FastDecoder_Return _upb_FastDecoder_DecodeUnknown(
-    struct upb_Decoder* d, const char* ptr, upb_Message* msg,
-    const upb_MiniTable* table, uint64_t hasbits, uint64_t data,
-    uint64_t data2) {
-  upb_DecodeFastNext next = kUpb_DecodeFastNext_Dispatch;
-  uint16_t tag = upb_DecodeFastData2_GetOriginalTag(data2);
-
-  if (UPB_UNLIKELY((tag & 0xFF80) == 0x80)) {
-    // An one byte tag encoded as two bytes may map to the wrong fasttable slot
-    // and lead to being assumed to be an unknown field, in a message where all
-    // fasttable-eligible fields are assigned slots. If we're passed such a tag,
-    // fall back to the minitable rather than adding it as unknown.
-    UPB_DECODEFAST_EXIT(kUpb_DecodeFastNext_FallbackToMiniTable, &next);
-  } else if (UPB_UNLIKELY((tag & 0x8080) == 0x8080)) {
-    // A one byte tag encoded as three may map to the wrong slot; a two byte tag
-    // encoded as three will go to the same slot, but could hit the tag mismatch
-    // path after dispatch.
-    next = kUpb_DecodeFastNext_DecodeLongTag;
-  } else {
-    uint32_t field_num;
-    uint32_t tag_len;
-    uint32_t wire_type = tag & 0x07;
-    if (UPB_UNLIKELY(
-            !_upb_DecodeFast_ParseTag(ptr, tag, &field_num, &tag_len))) {
-      UPB_DECODEFAST_ERROR(d, kUpb_DecodeStatus_Malformed, &next);
-    } else if (UPB_UNLIKELY((field_num) == 0)) {
-      UPB_DECODEFAST_ERROR(d, kUpb_DecodeStatus_Malformed, &next);
-    } else {
-#ifndef NDEBUG
-      const upb_MiniTableField* field =
-          upb_MiniTable_FindFieldByNumber(table, field_num);
-      UPB_ASSERT(field == NULL ||
-                 _upb_MiniTableField_GetWireType(field) != wire_type);
-#else
-      UPB_UNUSED(field_num);
-#endif
-      if (UPB_UNLIKELY(wire_type == kUpb_WireType_EndGroup ||
-                       wire_type == kUpb_WireType_StartGroup)) {
-        // FastDecoder doesn't handle group fields, but it can be used to decode
-        // a message that is itself a group. When decoding a group, the end of
-        // the message is marked by an EndGroup tag. Since EndGroup tags are not
-        // in the MiniTable, they are routed to the unknown field handler. We
-        // must intercept them here to properly terminate the message.
-        UPB_DECODEFAST_EXIT(kUpb_DecodeFastNext_FallbackToMiniTable, &next);
-      } else {
-        ptr += tag_len;
-        _upb_FastDecoder_DoDecodeUnknown(d, &ptr, msg, table, hasbits, &data,
-                                         &next, tag_len, wire_type);
-      }
-    }
-  }
-  UPB_DECODEFAST_NEXTMAYBECOPY(next);
-}
-
 UPB_PRESERVE_NONE upb_FastDecoder_Return _upb_FastDecoder_DecodeUnknownValue(
     struct upb_Decoder* d, const char* ptr, upb_Message* msg,
     const upb_MiniTable* table, uint64_t hasbits, uint64_t data,
@@ -236,8 +235,10 @@ UPB_PRESERVE_NONE upb_FastDecoder_Return _upb_FastDecoder_DecodeUnknownValue(
   uint32_t wire_type = upb_DecodeFastData2_GetWireType(data2);
   uint32_t tag_len = upb_DecodeFastData2_GetTagLen(data2);
   UPB_ASSUME(tag_len > 0);
+  uint32_t gap_lo = upb_DecodeFast_GetGapLo(data);
+  uint32_t gap_hi = upb_DecodeFast_GetGapHi(data);
   ptr += tag_len;
   _upb_FastDecoder_DoDecodeUnknown(d, &ptr, msg, table, hasbits, &data, &next,
-                                   tag_len, wire_type);
+                                   tag_len, wire_type, gap_lo, gap_hi);
   UPB_DECODEFAST_NEXTMAYBECOPY(next);
 }

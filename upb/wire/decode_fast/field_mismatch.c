@@ -103,13 +103,14 @@ UPB_PRESERVE_NONE upb_FastDecoder_Return _upb_FastDecoder_DecodeCheckMiniTable(
   UPB_ASSERT(upb_WireReader_GetFieldNumber(check) == field_num);
   UPB_ASSERT(ptr + upb_DecodeFastData2_GetTagLen(data2) == read);
 #endif
-  const upb_MiniTableField* field =
-      upb_MiniTable_FindFieldByNumber(table, field_num);
+  uint32_t gap_lo, gap_hi;
   upb_DecodeFastNext ret;
-  if (field) {
-    ret = kUpb_DecodeFastNext_FallbackToMiniTable;
-  } else {
+  if (UPB_PRIVATE(_upb_MiniTable_FindUnknownGap)(table, field_num, &gap_lo,
+                                                 &gap_hi)) {
+    data = upb_DecodeFast_PackGaps(gap_lo, gap_hi);
     ret = kUpb_DecodeFastNext_DecodeUnknownValue;
+  } else {
+    ret = kUpb_DecodeFastNext_FallbackToMiniTable;
   }
   UPB_DECODEFAST_NEXT(ret);
 }
