@@ -24,6 +24,9 @@ bazel_dep(name = "rules_proto", version = "7.1.0")
 #endif // PROTO2_OPENSOURCE
 # protoc dependencies
 bazel_dep(name = "abseil-cpp", version = "20250512.1")
+git_override(module_name = "abseil-cpp",
+             remote = "https://github.com/abseil/abseil-cpp.git",
+             commit = "e7e7b016aa99e2ef1d5ccda438cd3c6153730d0d")
 bazel_dep(name = "rules_cc", version = "0.0.17")
 bazel_dep(name = "zlib", version = "1.3.1.bcr.5")
 #ifndef PROTO2_OPENSOURCE
