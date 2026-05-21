@@ -2585,7 +2585,7 @@ void TextFormat::Printer::PrintMessage(const Message& message,
   }
   const Reflection* reflection = message.GetReflection();
   std::vector<const FieldDescriptor*> fields;
-  if (descriptor->options().map_entry()) {
+  if (descriptor->options().map_entry() && descriptor->field_count() >= 2) {
     fields.push_back(descriptor->field(0));
     fields.push_back(descriptor->field(1));
   } else {
