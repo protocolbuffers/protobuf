@@ -27,8 +27,7 @@ jobs:
     strategy:
       fail-fast: false   # Don't cancel all jobs if one fails.
       matrix:
-        type: [ Pure, C++]
-        version: ["3.10", "3.11", "3.12", "3.13", "3.14"]
+        type: [ Pure, C++, aarch64 ]
         include:
           - type: Pure
             targets: //python/... //python:python_version_test
@@ -36,38 +35,84 @@ jobs:
           - type: C++
             targets: //python/... //python:python_version_test
             flags: --define=use_fast_cpp_protos=true
-            # Test using WORKSPACE with our oldest support Python version.
-          - version: "3.10"
-          - version: "3.11"
-            continuous-only: true
-          - version: "3.12"
-            continuous-only: true
-          - version: "3.13"
-            continuous-only: true
-          - version: "3.14"
-          - type: C++
-            version: aarch64
+          - type: aarch64
             targets: //python/... //python:aarch64_test
-            # TODO Enable this once conformance tests are fixed.
             flags: --define=use_fast_cpp_protos=true --test_tag_filters=-conformance
             image: us-docker.pkg.dev/protobuf-build/containers/test/linux/emulation:8.0.1-aarch64-168f9c9d015a0fa16611e1e9eede796fe9bfbb69
 
-    name: ${{ matrix.continuous-only && inputs.continuous-prefix || '' }} Linux ${{ matrix.type }} ${{ matrix.version }} ${{ matrix.nobzlmod && 'No Bzlmod' || '' }}
+    name: Linux ${{ matrix.type }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout pending changes
-        if: ${{ !matrix.continuous-only || inputs.continuous-run }}
         uses: protocolbuffers/protobuf-ci/checkout@v5
         with:
           ref: ${{ inputs.safe-checkout }}
-      - name: Run tests
-        if: ${{ !matrix.continuous-only || inputs.continuous-run }}
+
+      - name: Run Python 3.10
+        if: ${{ matrix.type != 'aarch64' }}
         uses: protocolbuffers/protobuf-ci/bazel-docker@v5
         with:
-          image: ${{ matrix.image || format('us-docker.pkg.dev/protobuf-build/containers/test/linux/python:9.0.0-{0}-7932bf8b25fb76a111e7257d151a6a58d5c3c671', matrix.version) }}
+          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/python:9.0.0-3.10-7932bf8b25fb76a111e7257d151a6a58d5c3c671
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
-          bazel-cache: python_linux/${{ matrix.type }}_${{ matrix.version }}
-          bazel: test ${{ matrix.targets }} ${{ matrix.flags }} ${{ matrix.nobzlmod && '--noenable_bzlmod' || '' }} --test_env=KOKORO_PYTHON_VERSION
+          bazel-cache: python_linux/${{ matrix.type }}_3.10
+          bash: >
+            bazel --batch test ${{ matrix.targets }} ${{ matrix.flags }} --test_env=KOKORO_PYTHON_VERSION $BAZEL_FLAGS;
+            bazel --batch clean --expunge --async;
+
+      - name: Run Python 3.11
+        if: ${{ matrix.type != 'aarch64' && inputs.continuous-prefix == '(Continuous)' }}
+        uses: protocolbuffers/protobuf-ci/bazel-docker@v5
+        with:
+          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/python:9.0.0-3.11-7932bf8b25fb76a111e7257d151a6a58d5c3c671
+          credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
+          bazel-cache: python_linux/${{ matrix.type }}_3.11
+          bash: >
+            bazel --batch test ${{ matrix.targets }} ${{ matrix.flags }} --test_env=KOKORO_PYTHON_VERSION $BAZEL_FLAGS;
+            bazel --batch clean --expunge --async;
+
+      - name: Run Python 3.12
+        if: ${{ matrix.type != 'aarch64' && inputs.continuous-prefix == '(Continuous)' }}
+        uses: protocolbuffers/protobuf-ci/bazel-docker@v5
+        with:
+          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/python:9.0.0-3.12-7932bf8b25fb76a111e7257d151a6a58d5c3c671
+          credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
+          bazel-cache: python_linux/${{ matrix.type }}_3.12
+          bash: >
+            bazel --batch test ${{ matrix.targets }} ${{ matrix.flags }} --test_env=KOKORO_PYTHON_VERSION $BAZEL_FLAGS;
+            bazel --batch clean --expunge --async;
+
+      - name: Run Python 3.13
+        if: ${{ matrix.type != 'aarch64' && inputs.continuous-prefix == '(Continuous)' }}
+        uses: protocolbuffers/protobuf-ci/bazel-docker@v5
+        with:
+          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/python:9.0.0-3.13-7932bf8b25fb76a111e7257d151a6a58d5c3c671
+          credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
+          bazel-cache: python_linux/${{ matrix.type }}_3.13
+          bash: >
+            bazel --batch test ${{ matrix.targets }} ${{ matrix.flags }} --test_env=KOKORO_PYTHON_VERSION $BAZEL_FLAGS;
+            bazel --batch clean --expunge --async;
+
+      - name: Run Python 3.14
+        if: ${{ matrix.type != 'aarch64' }}
+        uses: protocolbuffers/protobuf-ci/bazel-docker@v5
+        with:
+          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/python:9.0.0-3.14-7932bf8b25fb76a111e7257d151a6a58d5c3c671
+          credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
+          bazel-cache: python_linux/${{ matrix.type }}_3.14
+          bash: >
+            bazel --batch test ${{ matrix.targets }} ${{ matrix.flags }} --test_env=KOKORO_PYTHON_VERSION $BAZEL_FLAGS;
+            bazel --batch clean --expunge --async;
+
+      - name: Run aarch64
+        if: ${{ matrix.type == 'aarch64' }}
+        uses: protocolbuffers/protobuf-ci/bazel-docker@v5
+        with:
+          image: ${{ matrix.image }}
+          credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
+          bazel-cache: python_linux/${{ matrix.type }}_aarch64
+          bash: >
+            bazel --batch test ${{ matrix.targets }} ${{ matrix.flags }} --test_env=KOKORO_PYTHON_VERSION $BAZEL_FLAGS;
+            bazel --batch clean --expunge --async;
 
 
   macos:
@@ -75,19 +120,14 @@ jobs:
       fail-fast: false   # Don't cancel all jobs if one fails.
       matrix:
         type: [ Pure, C++]
-        version: [ "3.12", "3.13", "3.14" ]
         include:
           - type: Pure
             targets: //python/... //python:python_version_test
           - type: C++
             targets: //python/... //python:python_version_test
             flags: --define=use_fast_cpp_protos=true
-          - version: "3.13"
-            continuous-only: true
-          - version: "3.14"
-            continuous-only: true
 
-    name: MacOS ${{ matrix.type }} ${{ matrix.version }}
+    name: MacOS ${{ matrix.type }}
     runs-on: macos-14
     steps:
       - name: Checkout pending changes
@@ -95,30 +135,77 @@ jobs:
         with:
           ref: ${{ inputs.safe-checkout }}
 
-      - name: Pin Python version
+      # Python 3.12
+      - name: Pin Python 3.12
         uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405  # v6.2.0
         with:
-          python-version: ${{ matrix.version }}
+          python-version: "3.12"
           cache: pip
           cache-dependency-path: 'python/requirements.txt'
-
-      - name: Validate version
-        run: python3 --version | grep ${{ matrix.version }} || (echo "Invalid Python version - $(python3 --version)" && exit 1)
-
-      - name: Create and start virtual environment
-        run: |
-          python3 -m venv venv
-          source venv/bin/activate
-
-      - name: Run tests
+      - name: Validate version 3.12
+        run: python3 --version | grep 3.12 || (echo "Invalid Python version - $(python3 --version)" && exit 1)
+      - name: Run tests 3.12
         uses: protocolbuffers/protobuf-ci/bazel@v5
         env:
-          KOKORO_PYTHON_VERSION: ${{ matrix.version }}
+          KOKORO_PYTHON_VERSION: "3.12"
         with:
           version: 9.0.0 # Bazel version
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
-          bazel-cache: python_macos/${{ matrix.type }}_${{ matrix.version }}
-          bazel: >-
-            test ${{ matrix.targets }} ${{ matrix.flags }}
-            --test_env=KOKORO_PYTHON_VERSION=${{ matrix.version }}
-            --macos_minimum_os=12.0
+          bazel-cache: python_macos/${{ matrix.type }}_3.12
+          bash: >-
+            bazel --batch test ${{ matrix.targets }} ${{ matrix.flags }}
+            --test_env=KOKORO_PYTHON_VERSION=3.12
+            --macos_minimum_os=12.0 $BAZEL_FLAGS;
+            bazel --batch clean --expunge --async;
+
+      # Python 3.13
+      - name: Pin Python 3.13
+        if: ${{ inputs.continuous-prefix == '(Continuous)' }}
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405  # v6.2.0
+        with:
+          python-version: "3.13"
+          cache: pip
+          cache-dependency-path: 'python/requirements.txt'
+      - name: Validate version 3.13
+        if: ${{ inputs.continuous-prefix == '(Continuous)' }}
+        run: python3 --version | grep 3.13 || (echo "Invalid Python version - $(python3 --version)" && exit 1)
+      - name: Run tests 3.13
+        if: ${{ inputs.continuous-prefix == '(Continuous)' }}
+        uses: protocolbuffers/protobuf-ci/bazel@v5
+        env:
+          KOKORO_PYTHON_VERSION: "3.13"
+        with:
+          version: 9.0.0 # Bazel version
+          credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
+          bazel-cache: python_macos/${{ matrix.type }}_3.13
+          bash: >-
+            bazel --batch test ${{ matrix.targets }} ${{ matrix.flags }}
+            --test_env=KOKORO_PYTHON_VERSION=3.13
+            --macos_minimum_os=12.0 $BAZEL_FLAGS;
+            bazel --batch clean --expunge --async;
+
+      # Python 3.14
+      - name: Pin Python 3.14
+        if: ${{ inputs.continuous-prefix == '(Continuous)' }}
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405  # v6.2.0
+        with:
+          python-version: "3.14"
+          cache: pip
+          cache-dependency-path: 'python/requirements.txt'
+      - name: Validate version 3.14
+        if: ${{ inputs.continuous-prefix == '(Continuous)' }}
+        run: python3 --version | grep 3.14 || (echo "Invalid Python version - $(python3 --version)" && exit 1)
+      - name: Run tests 3.14
+        if: ${{ inputs.continuous-prefix == '(Continuous)' }}
+        uses: protocolbuffers/protobuf-ci/bazel@v5
+        env:
+          KOKORO_PYTHON_VERSION: "3.14"
+        with:
+          version: 9.0.0 # Bazel version
+          credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
+          bazel-cache: python_macos/${{ matrix.type }}_3.14
+          bash: >-
+            bazel --batch test ${{ matrix.targets }} ${{ matrix.flags }}
+            --test_env=KOKORO_PYTHON_VERSION=3.14
+            --macos_minimum_os=12.0 $BAZEL_FLAGS;
+            bazel --batch clean --expunge --async;
