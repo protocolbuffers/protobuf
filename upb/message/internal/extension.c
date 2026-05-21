@@ -37,8 +37,9 @@ const upb_Extension* UPB_PRIVATE(_upb_Message_Getext)(
   return NULL;
 }
 
-upb_Extension* UPB_PRIVATE(_upb_Message_GetOrCreateExtension)(
-    struct upb_Message* msg, const upb_MiniTableExtension* e, upb_Arena* a) {
+static upb_Extension* _upb_Message_GetOrCreateExtensionInternal(
+    struct upb_Message* msg, const upb_MiniTableExtension* e, upb_Arena* a,
+    bool non_canonical) {
   UPB_ASSERT(!upb_Message_IsFrozen(msg));
   upb_Extension* ext = (upb_Extension*)UPB_PRIVATE(_upb_Message_Getext)(msg, e);
   if (ext) return ext;
@@ -49,6 +50,18 @@ upb_Extension* UPB_PRIVATE(_upb_Message_GetOrCreateExtension)(
   if (!ext) return NULL;
   memset(ext, 0, sizeof(upb_Extension));
   ext->ext = e;
-  in->aux_data[in->size++] = upb_TaggedAuxPtr_MakeExtension(ext);
+  in->aux_data[in->size++] =
+      non_canonical ? upb_TaggedAuxPtr_MakeNonCanonicalExtension(ext)
+                    : upb_TaggedAuxPtr_MakeExtension(ext);
   return ext;
+}
+
+upb_Extension* UPB_PRIVATE(_upb_Message_GetOrCreateExtension)(
+    struct upb_Message* msg, const upb_MiniTableExtension* e, upb_Arena* a) {
+  return _upb_Message_GetOrCreateExtensionInternal(msg, e, a, false);
+}
+
+upb_Extension* UPB_PRIVATE(_upb_Message_CreateNonCanonicalExtension)(
+    struct upb_Message* msg, const upb_MiniTableExtension* e, upb_Arena* a) {
+  return _upb_Message_GetOrCreateExtensionInternal(msg, e, a, true);
 }

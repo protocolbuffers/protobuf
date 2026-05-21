@@ -23,6 +23,8 @@ struct upb_MiniTableExtension {
   struct upb_MiniTableField UPB_PRIVATE(field);
 
   union upb_MiniTableSub UPB_PRIVATE(sub);  // NULL unless submsg or proto2 enum
+  // A known extendee schema for a canonical extension. Otherwise, the
+  // `extendee` info should be ignored/NULL if not a canonical extension.
   const struct upb_MiniTable* UPB_PRIVATE(extendee);
 };
 
