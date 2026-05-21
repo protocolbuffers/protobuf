@@ -16919,7 +16919,7 @@ UPB_INLINE const char* upb_WireReader_SkipGroup(
   return UPB_PRIVATE(upb_EpsCopyInputStream_AssumeResult)(stream, ret);
 }
 
-UPB_INLINE const char* _upb_WireReader_SkipValue(
+UPB_FORCEINLINE const char* _upb_WireReader_SkipValueForceInline(
     const char* ptr, uint32_t tag, int depth_limit,
     upb_EpsCopyInputStream* stream) {
   switch (upb_WireReader_GetWireType(tag)) {
@@ -16949,6 +16949,12 @@ UPB_INLINE const char* _upb_WireReader_SkipValue(
       // Unknown wire type.
       return UPB_PRIVATE(upb_EpsCopyInputStream_ReturnError)(stream);
   }
+}
+
+UPB_INLINE const char* _upb_WireReader_SkipValue(
+    const char* ptr, uint32_t tag, int depth_limit,
+    upb_EpsCopyInputStream* stream) {
+  return _upb_WireReader_SkipValueForceInline(ptr, tag, depth_limit, stream);
 }
 
 // Skips data for a wire value of any type, returning a pointer past the end of
