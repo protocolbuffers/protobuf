@@ -18321,6 +18321,9 @@ const char* _upb_Decoder_CheckRequired(upb_Decoder* d, const char* ptr,
                                        const upb_Message* msg,
                                        const upb_MiniTable* m);
 
+#if UPB_FASTTABLE
+UPB_PRESERVE_NONE
+#endif
 const char* _upb_Decoder_DecodeMessage(upb_Decoder* d, const char* ptr,
                                        upb_Message* msg,
                                        const upb_MiniTable* layout);
