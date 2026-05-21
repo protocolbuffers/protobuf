@@ -1124,6 +1124,18 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
       extensions.makeImmutable();
     }
 
+    @Override
+    public void writeTo(CodedOutputStream output) throws IOException {
+      MessageReflection.writeMessageTo(
+          this, getAllFields(/* resolveLazyFields= */ false), output, false);
+    }
+
+    @Override
+    public int getSerializedSize() {
+      return MessageReflection.getSerializedSize(
+          this, getAllFields(/* resolveLazyFields= */ false));
+    }
+
     /**
      * Used by subclasses to serialize extensions. Extension ranges may be interleaved with field
      * numbers, but we must write them in canonical (sorted by field number) order.
@@ -1248,20 +1260,24 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
       return extensions.getAllFields();
     }
 
-    @Override
-    public Map<FieldDescriptor, Object> getAllFields() {
+    // Get all fields in the message, including extensions, with lazy fields resolved or not.
+    // Unresolved lazy fields are needed for message reflection to serialize to bytes without
+    // parsing the lazy bytes.
+    private Map<FieldDescriptor, Object> getAllFields(boolean resolveLazyFields) {
       final Map<FieldDescriptor, Object> result =
           super.getAllFieldsMutable(/* getBytesForString= */ false);
-      result.putAll(getExtensionFields());
+      result.putAll(extensions.getAllFields(resolveLazyFields));
       return Collections.unmodifiableMap(result);
     }
 
     @Override
+    public Map<FieldDescriptor, Object> getAllFields() {
+      return getAllFields(/* resolveLazyFields= */ true);
+    }
+
+    @Override
     public Map<FieldDescriptor, Object> getAllFieldsRaw() {
-      final Map<FieldDescriptor, Object> result =
-          super.getAllFieldsMutable(/* getBytesForString= */ false);
-      result.putAll(getExtensionFields());
-      return Collections.unmodifiableMap(result);
+      return getAllFields();
     }
 
     @Override
@@ -1438,6 +1454,10 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
                 + getDescriptorForType().getFullName()
                 + "\".");
       }
+    }
+
+    InternalLazyField getLazyField(final FieldDescriptor field) {
+      return extensions.getLazyField(field);
     }
 
     /** Check if a singular extension is present. */

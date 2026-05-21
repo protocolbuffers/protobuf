@@ -181,17 +181,21 @@ final class FieldSet<T extends FieldSet.FieldDescriptorLite<T>> {
     hasLazyField = false;
   }
 
-  /** Get a simple map containing all the fields. */
-  public Map<T, Object> getAllFields() {
+  Map<T, Object> getAllFields(boolean resolveLazyFields) {
     if (hasLazyField) {
       SmallSortedMap<T, Object> result =
-          cloneAllFieldsMap(fields, /* copyList= */ false, /* resolveLazyFields= */ true);
+          cloneAllFieldsMap(fields, /* copyList= */ false, resolveLazyFields);
       if (fields.isImmutable()) {
         result.makeImmutable();
       }
       return result;
     }
     return fields.isImmutable() ? fields : Collections.unmodifiableMap(fields);
+  }
+
+  /** Get a simple map containing all the fields, with lazy fields initialized. */
+  public Map<T, Object> getAllFields() {
+    return getAllFields(/* resolveLazyFields= */ true);
   }
 
   private static <T extends FieldDescriptorLite<T>> SmallSortedMap<T, Object> cloneAllFieldsMap(
@@ -659,6 +663,10 @@ final class FieldSet<T extends FieldSet.FieldDescriptorLite<T>> {
       final int number,
       final Object value)
       throws IOException {
+    if (value instanceof InternalLazyField) {
+      output.writeBytes(number, ((InternalLazyField) value).toByteString());
+      return;
+    }
     // Special case for groups, which need a start and end tag; other fields
     // can just use writeTag() and writeFieldNoTag().
     if (type == WireFormat.FieldType.GROUP) {
@@ -787,11 +795,7 @@ final class FieldSet<T extends FieldSet.FieldDescriptorLite<T>> {
         }
       }
     } else {
-      if (value instanceof InternalLazyField) {
-        writeElement(output, type, number, ((InternalLazyField) value).getValue());
-      } else {
-        writeElement(output, type, number, value);
-      }
+      writeElement(output, type, number, value);
     }
   }
 
