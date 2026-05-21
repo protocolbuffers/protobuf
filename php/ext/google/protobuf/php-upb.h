@@ -761,11 +761,17 @@ Error, UINTPTR_MAX is undefined
 // Owner: runze@
 #define UPB_FUTURE_CONTAINER_EQ_RETURNS_NOTIMPLEMENTED 1
 
+// Make GetOptions() return immutable options.
+// Owner: runze@
+#define UPB_FUTURE_FREEZE_OPTIONS 1
+
 #else
 
 #define UPB_FUTURE_REMOVE_POP_CLAMP 0
 
 #define UPB_FUTURE_CONTAINER_EQ_RETURNS_NOTIMPLEMENTED 0
+
+#define UPB_FUTURE_FREEZE_OPTIONS 0
 
 #endif
 
@@ -2480,9 +2486,9 @@ struct upb_MiniTable {
   const char* UPB_PRIVATE(full_name);
 #endif
 
-#if UPB_FASTTABLE || !defined(__cplusplus)
-  // Flexible array member is not supported in C++, but it is an extension in
-  // every compiler that supports UPB_FASTTABLE.
+#if UPB_FASTTABLE
+  // Flexible array member is not supported in C++ standard, but it is supported
+  // as an extension in all compilers we support.
   _upb_FastTable_Entry UPB_PRIVATE(fasttable)[];
 #endif
 };
@@ -17625,6 +17631,13 @@ const void* _upb_DefType_Unpack(upb_value v, upb_deftype_t type);
 
 // We want to copy the options verbatim into the destination options proto.
 // We use serialize+parse as our deep copy.
+#if UPB_FUTURE_FREEZE_OPTIONS
+#define _UPB_FREEZE_OPTIONS(target, options_type) \
+  upb_Message_Freeze((upb_Message*)target, UPB_DESC_MINITABLE(options_type))
+#else
+#define _UPB_FREEZE_OPTIONS(target, options_type)
+#endif
+
 #define UPB_DEF_SET_OPTIONS(target, desc_type, options_type, proto)        \
   if (google_protobuf_##desc_type##_has_options(proto)) {                           \
     size_t size;                                                           \
@@ -17635,6 +17648,7 @@ const void* _upb_DefType_Unpack(upb_value v, upb_deftype_t type);
         pb, size, _upb_DefPool_GeneratedExtensionRegistry(ctx->symtab), 0, \
         _upb_DefBuilder_Arena(ctx));                                       \
     if (!target) _upb_DefBuilder_OomErr(ctx);                              \
+    _UPB_FREEZE_OPTIONS(target, options_type);                             \
   } else {                                                                 \
     target = (const google_protobuf_##options_type*)kUpbDefOptDefault;              \
   }
@@ -18228,6 +18242,14 @@ upb_MethodDef* _upb_MethodDefs_New(
 // Must be last.
 
 #define DECODE_NOGROUP (uint32_t)-1
+#define kUpb_Decoder_EncodeVarint32MaxSize 5
+
+typedef union {
+  bool bool_val;
+  uint32_t uint32_val;
+  uint64_t uint64_val;
+  uint32_t size;
+} wireval;
 
 typedef struct upb_Decoder {
   upb_EpsCopyInputStream input;
@@ -18417,6 +18439,39 @@ UPB_INLINE bool _upb_Decoder_ReadString(upb_Decoder* d, const char** ptr,
   }
   *sv = tmp;
   return true;
+}
+
+UPB_INLINE char* upb_Decoder_EncodeVarint32(uint32_t val, char* ptr) {
+  do {
+    uint8_t byte = val & 0x7fU;
+    val >>= 7;
+    if (val) byte |= 0x80U;
+    *(ptr++) = byte;
+  } while (val);
+  return ptr;
+}
+
+UPB_FORCEINLINE
+void _upb_Decoder_AddEnumValueToUnknown(upb_Decoder* d, upb_Message* msg,
+                                        const upb_MiniTableField* field,
+                                        uint64_t val) {
+  // Unrecognized enum goes into unknown fields.
+  // For packed fields the tag could be arbitrarily far in the past,
+  // so we just re-encode the tag and value here.
+  const uint32_t tag =
+      ((uint32_t)field->UPB_PRIVATE(number) << 3) | kUpb_WireType_Varint;
+  upb_Message* unknown_msg =
+      field->UPB_PRIVATE(mode) & kUpb_LabelFlags_IsExtension ? d->original_msg
+                                                             : msg;
+  char buf[2 * kUpb_Decoder_EncodeVarint32MaxSize];
+  char* end = buf;
+  end = upb_Decoder_EncodeVarint32(tag, end);
+  end = upb_Decoder_EncodeVarint32(val, end);
+
+  if (!UPB_PRIVATE(_upb_Message_AddUnknown)(unknown_msg, buf, end - buf,
+                                            &d->arena, kUpb_AddUnknown_Copy)) {
+    upb_ErrorHandler_ThrowError(d->err, kUpb_DecodeStatus_OutOfMemory);
+  }
 }
 
 
@@ -18694,6 +18749,7 @@ UPB_PRIVATE(upb_WireWriter_VarintUnusedSizeFromLeadingZeros64)(uint64_t clz) {
 #undef UPB_FUTURE_BREAKING_CHANGES
 #undef UPB_FUTURE_REMOVE_POP_CLAMP
 #undef UPB_FUTURE_CONTAINER_EQ_RETURNS_NOTIMPLEMENTED
+#undef UPB_FUTURE_FREEZE_OPTIONS
 #undef UPB_HAS_ATTRIBUTE
 #undef UPB_HAS_CPP_ATTRIBUTE
 #undef UPB_HAS_BUILTIN

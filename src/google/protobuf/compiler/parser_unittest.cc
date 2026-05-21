@@ -423,6 +423,68 @@ TEST_F(ParseMessageTest, AggregateValueMultilineString) {
       )pb");
 }
 
+TEST_F(ParseMessageTest, AggregateValueWithInlineBlockComment) {
+  ExpectParsesTo(
+      "message TestMessage {\n"
+      "  option (foo) = { a: /* bla */ 1 };\n"
+      "}\n",
+      R"pb(
+        message_type {
+          name: "TestMessage"
+          options {
+            uninterpreted_option {
+              name { name_part: "foo" is_extension: true }
+              aggregate_value: " a:           1 "
+            }
+          }
+        }
+      )pb");
+}
+
+TEST_F(ParseMessageTest, AggregateValueWithSingleLineComment) {
+  ExpectParsesTo(
+      "message TestMessage {\n"
+      "  option (foo) = {\n"
+      "    // This is a comment\n"
+      "    a: 1\n"
+      "  };\n"
+      "}\n",
+      R"pb(
+        message_type {
+          name: "TestMessage"
+          options {
+            uninterpreted_option {
+              name { name_part: "foo" is_extension: true }
+              aggregate_value: "\n    \n    a: 1\n  "
+            }
+          }
+        }
+      )pb");
+}
+
+TEST_F(ParseMessageTest, AggregateValueWithMultilineBlockComment) {
+  ExpectParsesTo(
+      "message TestMessage {\n"
+      "  option (foo) = {\n"
+      "    /* line 1\n"
+      "       line 2\n"
+      "       line 3 */\n"
+      "    a: 1\n"
+      "  };\n"
+      "}\n",
+      R"pb(
+        message_type {
+          name: "TestMessage"
+          options {
+            uninterpreted_option {
+              name { name_part: "foo" is_extension: true }
+              aggregate_value: "\n    \n\n                \n    a: 1\n  "
+            }
+          }
+        }
+      )pb");
+}
+
 TEST_F(ParseMessageTest, SimpleFields) {
   ExpectParsesTo(
       "message TestMessage {\n"

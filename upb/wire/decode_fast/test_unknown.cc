@@ -86,7 +86,7 @@ TEST_P(UnknownFieldTest, UnknownFieldFastPath) {
   }
   EXPECT_EQ(captured_unknown, payload);
 
-#if !defined(NDEBUG) && defined(UPB_ENABLE_FASTTABLE)
+#if !defined(NDEBUG) && UPB_FASTTABLE
   // Because it was parsed on the fast path, we should not see fallback ('<' )
   // or mini table ('M') in the trace output for tags that fit in 1 or 2 bytes.
   if (unknown_field_num < 2048) {
