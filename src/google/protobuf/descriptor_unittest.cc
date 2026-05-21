@@ -120,13 +120,14 @@ namespace protobuf {
 namespace descriptor_unittest {
 
 std::string TextProtoTooManyFieldsPerMessageForEdition(
-    absl::string_view edition) {
+    absl::string_view edition, absl::string_view opt_out = "") {
   std::string text_proto_string = absl::Substitute(R"schema(
     edition = "$0";
     package limit1;
     message M {
+      $1
   )schema",
-                                                   edition);
+                                                   edition, opt_out);
 
   // Continuously append to the textproto string up to our proto limit.
   for (int i = 1; i <= (internal::kLimit2026FieldsPerMessage + 1); ++i) {
@@ -138,15 +139,17 @@ std::string TextProtoTooManyFieldsPerMessageForEdition(
   return text_proto_string;
 }
 
-std::string TextProtoTooManyValuesPerEnumForEdition(absl::string_view edition) {
+std::string TextProtoTooManyValuesPerEnumForEdition(
+    absl::string_view edition, absl::string_view opt_out = "") {
   std::string text_proto_string = absl::Substitute(R"schema(
     edition = "$0";
     package limit1;
     message M {
       enum E {
+        $1
         E_UNKNOWN = 0;
   )schema",
-                                                   edition);
+                                                   edition, opt_out);
   // Continuously append to the textproto string up to our proto limit.
   for (int i = 1; i <= (internal::kLimit2026ValuesPerEnum + 1); ++i) {
     absl::StrAppend(&text_proto_string,
@@ -162,14 +165,15 @@ std::string TextProtoTooManyValuesPerEnumForEdition(absl::string_view edition) {
 }
 
 std::string TextProtoTooManyFieldsPerOneofForEdition(
-    absl::string_view edition) {
+    absl::string_view edition, absl::string_view opt_out = "") {
   std::string text_proto_string = absl::Substitute(R"schema(
     edition = "$0";
     package limit1;
     message M {
       oneof O {
+        $1
   )schema",
-                                                   edition);
+                                                   edition, opt_out);
   // Continuously append to the textproto string up to our proto limit.
   for (int i = 1; i <= (internal::kLimit2026FieldsPerOneof + 1); ++i) {
     absl::StrAppend(&text_proto_string,
@@ -184,13 +188,14 @@ std::string TextProtoTooManyFieldsPerOneofForEdition(
 }
 
 std::string TextProtoTooManyOneofsPerMessageForEdition(
-    absl::string_view edition) {
+    absl::string_view edition, absl::string_view opt_out = "") {
   std::string text_proto_string = absl::Substitute(R"schema(
     edition = "$0";
     package limit1;
     message M {
+      $1
   )schema",
-                                                   edition);
+                                                   edition, opt_out);
   // Continuously append to the textproto string up to our proto limit.
   for (int i = 1; i <= (internal::kLimit2026OneofsPerMessage + 1); ++i) {
     absl::StrAppend(&text_proto_string, absl::StrFormat(R"schema(
@@ -11389,6 +11394,18 @@ TEST_F(FeaturesTest, ProtoLimits2026FieldsPerMessage) {
       "can be used to opt out of this check)");
 }
 
+TEST_F(FeaturesTest, ProtoLimits2026FieldsPerMessageOptOut) {
+  BuildDescriptorMessagesInTestPool();
+  pool_.EnforceProtoLimits(true);
+
+  std::string text_proto_string = TextProtoTooManyFieldsPerMessageForEdition(
+      "2026", /*opt_out=*/
+      "option features.enforce_proto_limits = LEGACY_NO_EXPLICIT_LIMITS;");
+
+  // With an explicit opt-out, we do not enforce proto limits.
+  ASSERT_THAT(ParseAndBuildFile("limit1.proto", text_proto_string), NotNull());
+}
+
 TEST_F(FeaturesTest, LegacyNoExplicitLimitsValuesPerEnum) {
   BuildDescriptorMessagesInTestPool();
   pool_.EnforceProtoLimits(true);
@@ -11412,6 +11429,17 @@ TEST_F(FeaturesTest, ProtoLimits2026ValuesPerEnum) {
       "Enum name E should not contain more than 1700 values "
       "(features.enforce_proto_limits = LEGACY_NO_EXPLICIT_LIMITS "
       "can be used to opt out of this check)");
+}
+
+TEST_F(FeaturesTest, ProtoLimits2026ValuesPerEnumOptOut) {
+  BuildDescriptorMessagesInTestPool();
+  pool_.EnforceProtoLimits(true);
+
+  std::string text_proto_string = TextProtoTooManyValuesPerEnumForEdition(
+      "2026", /*opt_out=*/
+      "option features.enforce_proto_limits = LEGACY_NO_EXPLICIT_LIMITS;");
+
+  ASSERT_THAT(ParseAndBuildFile("limit1.proto", text_proto_string), NotNull());
 }
 
 TEST_F(FeaturesTest, LegacyNoExplicitLimitsFieldsPerOneof) {
@@ -11439,6 +11467,17 @@ TEST_F(FeaturesTest, ProtoLimits2026FieldsPerOneof) {
       "can be used to opt out of this check)");
 }
 
+TEST_F(FeaturesTest, ProtoLimits2026FieldsPerOneofOptOut) {
+  BuildDescriptorMessagesInTestPool();
+  pool_.EnforceProtoLimits(true);
+
+  std::string text_proto_string = TextProtoTooManyFieldsPerOneofForEdition(
+      "2026", /*opt_out=*/
+      "option features.enforce_proto_limits = LEGACY_NO_EXPLICIT_LIMITS;");
+
+  ASSERT_THAT(ParseAndBuildFile("limit1.proto", text_proto_string), NotNull());
+}
+
 TEST_F(FeaturesTest, LegacyNoExplicitLimitsOneofsPerMessage) {
   BuildDescriptorMessagesInTestPool();
   pool_.EnforceProtoLimits(true);
@@ -11462,6 +11501,17 @@ TEST_F(FeaturesTest, ProtoLimits2026OneofsPerMessage) {
       "Message name M should not contain more than 1000 oneofs "
       "(features.enforce_proto_limits = LEGACY_NO_EXPLICIT_LIMITS "
       "can be used to opt out of this check)");
+}
+
+TEST_F(FeaturesTest, ProtoLimits2026OneofsPerMessageOptOut) {
+  BuildDescriptorMessagesInTestPool();
+  pool_.EnforceProtoLimits(true);
+
+  std::string text_proto_string = TextProtoTooManyOneofsPerMessageForEdition(
+      "2026", /*opt_out=*/
+      "option features.enforce_proto_limits = LEGACY_NO_EXPLICIT_LIMITS;");
+
+  ASSERT_THAT(ParseAndBuildFile("limit1.proto", text_proto_string), NotNull());
 }
 
 TEST_F(FeaturesTest, MapFieldFeaturesInheritedMessageEncoding) {

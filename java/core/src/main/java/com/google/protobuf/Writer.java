@@ -16,19 +16,6 @@ import java.util.Map;
 @CheckReturnValue
 @SuppressWarnings({"unchecked", "rawtypes"})
 interface Writer {
-
-  /** The order in which the fields are written by a {@link Writer}. */
-  enum FieldOrder {
-    /** Fields are written in ascending order by field number. */
-    ASCENDING,
-
-    /** Fields are written in descending order by field number. */
-    DESCENDING
-  }
-
-  /** Indicates the order in which the fields are written by this {@link Writer}. */
-  FieldOrder fieldOrder();
-
   /** Writes a field of type {@link FieldType#SFIXED32}. */
   void writeSFixed32(int fieldNumber, int value) throws IOException;
 

@@ -1495,7 +1495,6 @@ bool Parser::ParseUninterpretedBlock(std::string* value) {
     RecordError("Expected \"{\".");
     return false;
   }
-
   int brace_depth = 1;
   {
     const bool old_report_whitespace = input_->report_whitespace();
@@ -1519,7 +1518,26 @@ bool Parser::ParseUninterpretedBlock(std::string* value) {
         }
       }
 
-      value->append(input_->current().text);
+      const io::Tokenizer::Token& cur_token = input_->current();
+      const io::Tokenizer::Token& prev_token = input_->previous();
+      int prev_token_end_line = (prev_token.type == io::Tokenizer::TYPE_NEWLINE)
+                                    ? (prev_token.line + 1)
+                                    : prev_token.line;
+      // Pad with newlines and spaces to match the original formatting.
+      // Note that we cannot simply keep the full original text of options
+      // because it might be using comments. Proto supports // and /* */
+      // comments but textformat is using '#' for comments. So comments have to
+      // be either removed or rewritten. Here we replace them with whitespace
+      // and empty lines to keep the original line and column numbers.
+      if (cur_token.line > prev_token_end_line) {
+        value->append(cur_token.line - prev_token_end_line, '\n');
+        value->append(cur_token.column, ' ');
+      } else if (cur_token.line == prev_token_end_line &&
+                 cur_token.column > prev_token.end_column) {
+        value->append(cur_token.column - prev_token.end_column, ' ');
+      }
+
+      value->append(cur_token.text);
       input_->Next();
     }
   }
