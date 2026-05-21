@@ -1882,6 +1882,39 @@ class JsonFormatTest(JsonFormatBase):
         max_recursion_depth=5,
     )
 
+  def testAnyPackedRegularMessageRecursionDepthEnforcement(self):
+    """Test Any messages count packed regular messages in recursion depth."""
+    message = any_pb2.Any()
+
+    nested_any = {
+        '@type': 'type.googleapis.com/proto3.TestAny',
+        'value': {
+            '@type': 'type.googleapis.com/proto3.TestAny',
+            'value': {
+                '@type': 'type.googleapis.com/proto3.TestAny',
+                'value': {},
+            },
+        },
+    }
+
+    self.assertRaisesRegex(
+        json_format.ParseError,
+        'Message too deep. Max recursion depth is 5',
+        json_format.ParseDict,
+        nested_any,
+        message,
+        max_recursion_depth=5,
+    )
+
+    shallow_any = {
+        '@type': 'type.googleapis.com/proto3.TestAny',
+        'value': {
+            '@type': 'type.googleapis.com/proto3.TestAny',
+            'value': {},
+        },
+    }
+    json_format.ParseDict(shallow_any, message, max_recursion_depth=5)
+
   def testJsonNameConflictSerilize(self):
     message = more_messages_pb2.ConflictJsonName(value=2)
     self.assertEqual(
