@@ -106,6 +106,18 @@ UPB_INLINE uint64_t upb_DecodeFastData2_PackWireTypeAndTagLen(uint64_t data2,
          (wire_type & 0x07);
 }
 
+UPB_INLINE uint64_t upb_DecodeFast_PackGaps(uint32_t gap_lo, uint32_t gap_hi) {
+  return ((uint64_t)gap_lo << 32) | gap_hi;
+}
+
+UPB_INLINE uint32_t upb_DecodeFast_GetGapLo(uint64_t data) {
+  return data >> 32;
+}
+
+UPB_INLINE uint32_t upb_DecodeFast_GetGapHi(uint64_t data) {
+  return data & 0xffffffff;
+}
+
 #include "upb/port/undef.inc"
 
 #endif  // GOOGLE_UPB_UPB_WIRE_INTERNAL_DECODE_FAST_DATALAYOUT_H__

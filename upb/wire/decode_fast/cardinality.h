@@ -78,7 +78,7 @@ typedef enum {
   kUpb_DecodeFastNext_DecodeLongTag = 11,
 
   // Tail call for decoding an unknown value; ptr points to the start of the
-  // field after the tag.
+  // tag.
   kUpb_DecodeFastNext_DecodeUnknownValue = 12,
 } upb_DecodeFastNext;
 

@@ -712,11 +712,7 @@ namespace Google.Protobuf.Collections
             // 2. validate that size of csharp element T is matching the size of protobuf wire size
             //    NOTE: cannot use bool with this span because csharp marshal it as 4 bytes
             if (BitConverter.IsLittleEndian && (codec.FixedSize > 0 &&
-#if GOOGLE_PROTOBUF_SUPPORT_GENERIC_SIZEOF
             Marshal.SizeOf<T>()
-#else
-            Marshal.SizeOf(typeof(T))
-#endif
              == codec.FixedSize))
             {
                 handle = GCHandle.Alloc(array, GCHandleType.Pinned);

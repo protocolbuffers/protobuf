@@ -2778,6 +2778,30 @@ TEST_F(ParseErrorTest, ReservedNumberOutOfRange) {
       "1:11: Integer out of range.\n");
 }
 
+TEST_F(ParseErrorTest, ReservedMaxInt) {
+  ExpectHasErrors(
+      "message Foo {\n"
+      "  reserved 2147483647;\n"
+      "}\n",
+      "1:21: Field number out of bounds.\n");
+}
+
+TEST_F(ParseErrorTest, ReservedRangeMaxInt) {
+  ExpectHasErrors(
+      "message Foo {\n"
+      "  reserved 1 to 2147483647;\n"
+      "}\n",
+      "1:26: Field number out of bounds.\n");
+}
+
+TEST_F(ParseErrorTest, ReservedMaxIntOctal) {
+  ExpectHasErrors(
+      "message Foo {\n"
+      "  reserved 017777777777;\n"
+      "}\n",
+      "1:23: Field number out of bounds.\n");
+}
+
 // -------------------------------------------------------------------
 // Service errors
 

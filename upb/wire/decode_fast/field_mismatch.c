@@ -74,24 +74,16 @@ UPB_PRESERVE_NONE upb_FastDecoder_Return _upb_FastDecoder_DecodeLongTag(
     uint64_t data2) {
   upb_DecodeFastNext ret = kUpb_DecodeFastNext_FallbackToMiniTable;
   uint16_t tag = upb_DecodeFastData2_GetOriginalTag(data2);
-  uint32_t field_num = (tag & 0x7f00) >> 1 | (tag & 0x7f);
-  int count = 3;
-  field_num |= (uint32_t)(ptr[2] & 0x7f) << 14;
-  if ((ptr[2] & 0x80) != 0) {
-    count = 4;
-    field_num |= (uint32_t)(ptr[3] & 0x7f) << 21;
-    if ((ptr[3] & 0x80) != 0) {
-      count = 5;
-      field_num |= (uint32_t)(ptr[4] & 0x7f) << 28;
-      if (UPB_UNLIKELY((ptr[4] & 0x80) != 0 || (ptr[4] & 0xf0) != 0)) {
-        UPB_DECODEFAST_ERROR(d, kUpb_DecodeStatus_Malformed, &ret);
-        UPB_DECODEFAST_NEXT(ret);
-      }
-    }
+
+  uint32_t field_num, tag_len;
+  if (UPB_UNLIKELY(
+          !_upb_DecodeFast_ParseLongTag(ptr, tag, &field_num, &tag_len))) {
+    UPB_DECODEFAST_ERROR(d, kUpb_DecodeStatus_Malformed, &ret);
+    UPB_DECODEFAST_NEXT(ret);
   }
-  field_num >>= 3;
+
   data = field_num;
-  data2 = upb_DecodeFastData2_PackWireTypeAndTagLen(data2, tag & 0x7, count);
+  data2 = upb_DecodeFastData2_PackWireTypeAndTagLen(data2, tag & 0x7, tag_len);
   ret = UPB_PRIVATE(_upb_MiniTable_ExtModeBase)(table) ==
                 kUpb_ExtMode_NonExtendable
             ? kUpb_DecodeFastNext_CheckMiniTable
@@ -111,13 +103,14 @@ UPB_PRESERVE_NONE upb_FastDecoder_Return _upb_FastDecoder_DecodeCheckMiniTable(
   UPB_ASSERT(upb_WireReader_GetFieldNumber(check) == field_num);
   UPB_ASSERT(ptr + upb_DecodeFastData2_GetTagLen(data2) == read);
 #endif
-  const upb_MiniTableField* field =
-      upb_MiniTable_FindFieldByNumber(table, field_num);
+  uint32_t gap_lo, gap_hi;
   upb_DecodeFastNext ret;
-  if (field) {
-    ret = kUpb_DecodeFastNext_FallbackToMiniTable;
-  } else {
+  if (UPB_PRIVATE(_upb_MiniTable_FindUnknownGap)(table, field_num, &gap_lo,
+                                                 &gap_hi)) {
+    data = upb_DecodeFast_PackGaps(gap_lo, gap_hi);
     ret = kUpb_DecodeFastNext_DecodeUnknownValue;
+  } else {
+    ret = kUpb_DecodeFastNext_FallbackToMiniTable;
   }
   UPB_DECODEFAST_NEXT(ret);
 }

@@ -2531,7 +2531,7 @@ UPB_API_INLINE bool upb_MiniTable_IsMessageSet(const struct upb_MiniTable* m) {
 }
 
 UPB_FORCEINLINE
-const struct upb_MiniTableField* UPB_PRIVATE(upb_MiniTable_LowerBound)(
+const struct upb_MiniTableField* UPB_PRIVATE(upb_MiniTable_GenericLowerBound)(
     const struct upb_MiniTable* m, uint32_t lo, uint32_t search_len,
     uint32_t number) {
   const struct upb_MiniTableField* search_base = &m->UPB_ONLYBITS(fields)[lo];
@@ -2547,9 +2547,9 @@ const struct upb_MiniTableField* UPB_PRIVATE(upb_MiniTable_LowerBound)(
   return search_base;
 }
 
-// This implements the same algorithm as upb_MiniTable_LowerBound but contorts
-// itself to select specific arm instructions, which show significant effects on
-// little cores.
+// This implements the same algorithm as upb_MiniTable_GenericLowerBound but
+// contorts itself to select specific arm instructions, which show significant
+// effects on little cores.
 UPB_FORCEINLINE const struct upb_MiniTableField* UPB_PRIVATE(
     upb_MiniTable_ArmOptimizedLowerBound)(const struct upb_MiniTable* m,
                                           uint32_t lo, uint32_t search_len,
@@ -2634,6 +2634,24 @@ UPB_FORCEINLINE const struct upb_MiniTableField* UPB_PRIVATE(
   return (const struct upb_MiniTableField*)search_base;
 }
 
+UPB_FORCEINLINE const struct upb_MiniTableField* UPB_PRIVATE(
+    upb_MiniTable_LowerBound)(const struct upb_MiniTable* m, uint32_t lo,
+                              uint32_t search_len, uint32_t number) {
+#ifndef NDEBUG
+  const struct upb_MiniTableField* candidate = UPB_PRIVATE(
+      upb_MiniTable_ArmOptimizedLowerBound)(m, lo, search_len, number);
+  UPB_ASSERT(candidate == UPB_PRIVATE(upb_MiniTable_GenericLowerBound)(
+                              m, lo, search_len, number));
+  return candidate;
+#elif UPB_ARM64_ASM
+  return UPB_PRIVATE(upb_MiniTable_ArmOptimizedLowerBound)(m, lo, search_len,
+                                                           number);
+#else
+  return UPB_PRIVATE(upb_MiniTable_GenericLowerBound)(m, lo, search_len,
+                                                      number);
+#endif
+}
+
 UPB_API_INLINE
 const struct upb_MiniTableField* upb_MiniTable_FindFieldByNumber(
     const struct upb_MiniTable* m, uint32_t number) {
@@ -2656,20 +2674,63 @@ const struct upb_MiniTableField* upb_MiniTable_FindFieldByNumber(
   }
 
   // Slow case: binary search
-  const struct upb_MiniTableField* candidate;
-#ifndef NDEBUG
-  candidate = UPB_PRIVATE(upb_MiniTable_ArmOptimizedLowerBound)(
-      m, lo, search_len, number);
-  UPB_ASSERT(candidate ==
-             UPB_PRIVATE(upb_MiniTable_LowerBound)(m, lo, search_len, number));
-#elif UPB_ARM64_ASM
-  candidate = UPB_PRIVATE(upb_MiniTable_ArmOptimizedLowerBound)(
-      m, lo, search_len, number);
-#else
-  candidate = UPB_PRIVATE(upb_MiniTable_LowerBound)(m, lo, search_len, number);
-#endif
+  const struct upb_MiniTableField* candidate =
+      UPB_PRIVATE(upb_MiniTable_LowerBound)(m, lo, search_len, number);
 
   return candidate->UPB_ONLYBITS(number) == number ? candidate : NULL;
+}
+
+// Given a tag number, finds the known field tags bounding the gap of unknown
+// fields containing it. Returns false and does not set bounds if the tag
+// number matches a known field. Otherwise returns true and sets out_gap_lo
+// and out_gap_hi (exclusive/exclusive) to define the range of unknown
+// fields (out_gap_lo, out_gap_hi).
+UPB_FORCEINLINE bool UPB_PRIVATE(_upb_MiniTable_FindUnknownGap)(
+    const struct upb_MiniTable* m, uint32_t number, uint32_t* out_gap_lo,
+    uint32_t* out_gap_hi) {
+  UPB_ASSERT(number != 0);
+  UPB_ASSERT(number < ((uint32_t)1 << 29));
+  const uint32_t i = number - 1;
+  if (i < m->UPB_PRIVATE(dense_below)) {
+    // Dense field; we know it's present.
+    return false;
+  }
+
+  uint32_t hi = m->UPB_ONLYBITS(field_count);
+  uint32_t lo = m->UPB_PRIVATE(dense_below);
+  if (hi == lo) {
+    *out_gap_lo = lo;
+    *out_gap_hi = UINT32_MAX;
+    return true;
+  }
+
+  uint32_t max_field = m->UPB_ONLYBITS(fields)[hi - 1].UPB_ONLYBITS(number);
+  if (number > max_field) {
+    *out_gap_lo = max_field;
+    *out_gap_hi = UINT32_MAX;
+    return true;
+  }
+
+  uint32_t search_len = hi - lo;
+  const struct upb_MiniTableField* candidate =
+      UPB_PRIVATE(upb_MiniTable_LowerBound)(m, lo, search_len, number);
+
+  uint32_t candidate_num = candidate->UPB_ONLYBITS(number);
+  if (candidate_num == number) {
+    return false;
+  }
+
+  if (candidate_num < number) {
+    *out_gap_lo = candidate_num;
+    // Checking this next pointer is safe as we have already validated that the
+    // field we're searching for is not greater than or equal to the last field
+    *out_gap_hi = (candidate + 1)->UPB_ONLYBITS(number);
+  } else {
+    UPB_ASSERT(candidate == &m->UPB_ONLYBITS(fields)[lo]);
+    *out_gap_lo = lo;
+    *out_gap_hi = candidate_num;
+  }
+  return true;
 }
 
 UPB_API_INLINE const struct upb_MiniTableField* upb_MiniTable_GetFieldByIndex(
@@ -17111,7 +17172,7 @@ UPB_INLINE const char* upb_WireReader_SkipGroup(
   return UPB_PRIVATE(upb_EpsCopyInputStream_AssumeResult)(stream, ret);
 }
 
-UPB_INLINE const char* _upb_WireReader_SkipValue(
+UPB_FORCEINLINE const char* _upb_WireReader_SkipValueForceInline(
     const char* ptr, uint32_t tag, int depth_limit,
     upb_EpsCopyInputStream* stream) {
   switch (upb_WireReader_GetWireType(tag)) {
@@ -17141,6 +17202,12 @@ UPB_INLINE const char* _upb_WireReader_SkipValue(
       // Unknown wire type.
       return UPB_PRIVATE(upb_EpsCopyInputStream_ReturnError)(stream);
   }
+}
+
+UPB_INLINE const char* _upb_WireReader_SkipValue(
+    const char* ptr, uint32_t tag, int depth_limit,
+    upb_EpsCopyInputStream* stream) {
+  return _upb_WireReader_SkipValueForceInline(ptr, tag, depth_limit, stream);
 }
 
 // Skips data for a wire value of any type, returning a pointer past the end of
@@ -18403,6 +18470,9 @@ const char* _upb_Decoder_CheckRequired(upb_Decoder* d, const char* ptr,
                                        const upb_Message* msg,
                                        const upb_MiniTable* m);
 
+#if UPB_FASTTABLE
+UPB_PRESERVE_NONE
+#endif
 const char* _upb_Decoder_DecodeMessage(upb_Decoder* d, const char* ptr,
                                        upb_Message* msg,
                                        const upb_MiniTable* layout);
