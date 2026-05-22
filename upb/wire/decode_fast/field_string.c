@@ -32,16 +32,12 @@ bool upb_DecodeFast_SingleStringAlias(upb_Decoder* d, const char** ptr,
 
   if (!upb_DecodeFast_DecodeSize(d, ptr, &size, next)) return false;
 
-  const char* p = *ptr;
-  if (!upb_EpsCopyInputStream_ReadStringAlwaysAlias(&d->input, p, size, sv)) {
-    return UPB_DECODEFAST_EXIT(kUpb_DecodeFastNext_FallbackToMiniTable, next);
-  }
+  *ptr = upb_EpsCopyInputStream_ReadStringAlwaysAlias(EPS(d), *ptr, size, sv);
 
   if (validate_utf8 && !utf8_range_IsValid(sv->data, sv->size)) {
     return UPB_DECODEFAST_ERROR(d, kUpb_DecodeStatus_BadUtf8, next);
   }
 
-  *ptr = p + size;
   return true;
 }
 

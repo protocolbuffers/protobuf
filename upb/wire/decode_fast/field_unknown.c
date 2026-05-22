@@ -125,10 +125,7 @@ UPB_FORCEINLINE bool _upb_FastDecoder_DoDecodeUnknown(
   while (true) {
     switch (wire_type) {
       case kUpb_WireType_Varint:
-        *ptr = upb_WireReader_SkipVarint(*ptr, &d->input);
-        if (UPB_UNLIKELY(!*ptr)) {
-          return UPB_DECODEFAST_ERROR(d, kUpb_DecodeStatus_Malformed, ret);
-        }
+        *ptr = upb_WireReader_SkipVarint(*ptr, EPS(d));
         break;
       case kUpb_WireType_32Bit:
         UPB_PRIVATE(upb_EpsCopyInputStream_ConsumeBytes)(&d->input, 4);
@@ -140,9 +137,8 @@ UPB_FORCEINLINE bool _upb_FastDecoder_DoDecodeUnknown(
         break;
       case kUpb_WireType_Delimited: {
         int size;
-        const char* p = upb_WireReader_ReadSize(*ptr, &size, &d->input);
-        if (UPB_UNLIKELY(
-                !p || !upb_EpsCopyInputStream_CheckSize(&d->input, p, size))) {
+        const char* p = upb_WireReader_ReadSize(*ptr, &size, EPS(d));
+        if (UPB_UNLIKELY(!upb_EpsCopyInputStream_CheckSize(EPS(d), p, size))) {
           return UPB_DECODEFAST_ERROR(d, kUpb_DecodeStatus_Malformed, ret);
         }
         *ptr = p + size;
@@ -205,9 +201,7 @@ UPB_FORCEINLINE bool _upb_FastDecoder_DoDecodeUnknown(
   }
 
   upb_StringView sv;
-  if (UPB_UNLIKELY(!upb_EpsCopyCapture_End(&capture, &d->input, *ptr, &sv))) {
-    return UPB_DECODEFAST_ERROR(d, kUpb_DecodeStatus_Malformed, ret);
-  }
+  upb_EpsCopyCapture_End(&capture, EPS(d), *ptr, &sv);
 
   bool handled_fast =
       // Check AddUnknown mode is AliasAllowMerge.

@@ -34,7 +34,7 @@ upb_DecodeFast_MessageIsDoneFallback(UPB_PARSE_PARAMS) {
     }
     case kUpb_IsDoneStatus_NeedFallback:
       // We've reached end-of-buffer.  Refresh the buffer.
-      ptr = UPB_PRIVATE(upb_EpsCopyInputStream_IsDoneFallback)(&d->input, ptr,
+      ptr = UPB_PRIVATE(upb_EpsCopyInputStream_IsDoneFallback)(EPS(d), ptr,
                                                                overrun);
 
       // We successfully refreshed the buffer (otherwise the function above
