@@ -57,6 +57,7 @@
 #include "absl/strings/charset.h"
 #include "absl/strings/escaping.h"
 #include "absl/strings/match.h"
+#include "absl/strings/numbers.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_format.h"
 #include "absl/strings/str_join.h"
@@ -82,6 +83,7 @@
 #include "google/protobuf/io/strtod.h"
 #include "google/protobuf/io/tokenizer.h"
 #include "google/protobuf/io/zero_copy_stream_impl_lite.h"
+#include "google/protobuf/json_enumvalue_options.pb.h"
 #include "google/protobuf/message.h"
 #include "google/protobuf/message_lite.h"
 #include "google/protobuf/parse_context.h"
@@ -4930,6 +4932,9 @@ class DescriptorBuilder {
   void CheckEnumValueUniqueness(const EnumDescriptorProto& proto,
                                 const EnumDescriptor* result);
 
+  void CheckEnumCustomStringUniqueness(const EnumDescriptorProto& proto,
+                                       const EnumDescriptor* result);
+
   void LogUnusedDependency(const FileDescriptorProto& proto,
                            const FileDescriptor* result);
 
@@ -5202,6 +5207,31 @@ class DescriptorBuilder {
   // Nothing to validate for extension ranges. This overload only exists
   // so that VisitDescriptors can be exhaustive.
   void ValidateNamingStyle(const Descriptor::ExtensionRange* ext_range,
+                           const DescriptorProto::ExtensionRange& proto) {}
+
+  // When called, check the listed descriptor against protobuf limits, such as
+  // max number of fields per message, max number of fields in a oneof, or max
+  // number of values in an enum. This is a feature introduced in Edition 2026.
+  void ValidateProtoLimits(const Descriptor* message,
+                           const DescriptorProto& proto);
+  void ValidateProtoLimits(const OneofDescriptor* oneof,
+                           const OneofDescriptorProto& proto);
+  void ValidateProtoLimits(const EnumDescriptor* enum_descriptor,
+                           const EnumDescriptorProto& proto);
+
+  // Overloads with nothing to validate. These overload only exist
+  // so that VisitDescriptors can be exhaustive.
+  void ValidateProtoLimits(const FileDescriptor* file,
+                           const FileDescriptorProto& proto) {}
+  void ValidateProtoLimits(const FieldDescriptor* field,
+                           const FieldDescriptorProto& proto) {}
+  void ValidateProtoLimits(const EnumValueDescriptor* file,
+                           const EnumValueDescriptorProto& proto) {}
+  void ValidateProtoLimits(const ServiceDescriptor* file,
+                           const ServiceDescriptorProto& proto) {}
+  void ValidateProtoLimits(const MethodDescriptor* file,
+                           const MethodDescriptorProto& proto) {}
+  void ValidateProtoLimits(const Descriptor::ExtensionRange* ext_range,
                            const DescriptorProto::ExtensionRange& proto) {}
 };
 
@@ -6862,6 +6892,17 @@ FileDescriptor* DescriptorBuilder::BuildFileImpl(
           }
         });
   }
+
+  if (!had_errors_ && pool_->enforce_proto_limits_) {
+    internal::VisitDescriptors(
+        *result, proto, [&](const auto& descriptor, const auto& desc_proto) {
+          if (internal::InternalFeatureHelper::GetFeatures(descriptor)
+                  .enforce_proto_limits() !=
+              FeatureSet::ProtoLimitsFeature::LEGACY_NO_EXPLICIT_LIMITS) {
+            ValidateProtoLimits(&descriptor, desc_proto);
+          }
+        });
+  }
   if (!had_errors_ && pool_->enforce_symbol_visibility_) {
     SymbolChecker symbol_checker(result, proto);
     // Check Symbol Visibility and future co-location Rules.
@@ -7647,6 +7688,91 @@ void DescriptorBuilder::CheckEnumValueUniqueness(
   }
 }
 
+void DescriptorBuilder::CheckEnumCustomStringUniqueness(
+    const EnumDescriptorProto& proto, const EnumDescriptor* result) {
+  absl::flat_hash_map<absl::string_view, const EnumValueDescriptor*>
+      values_by_json_name;
+  absl::flat_hash_map<int, const EnumValueDescriptor*> first_value_by_number;
+
+  for (int i = 0; i < result->value_count(); ++i) {
+    const EnumValueDescriptor* value = result->value(i);
+
+    // If we allow aliases and custom json strings are used, we need to ensure
+    // that the custom json strings are the same for all aliases.
+    if (result->options().allow_alias()) {
+      auto insert_num_result =
+          first_value_by_number.try_emplace(value->number(), value);
+      if (!insert_num_result.second) {
+        const EnumValueDescriptor* primary = insert_num_result.first->second;
+
+        auto get_custom_string = [](const EnumValueDescriptor* ev)
+            -> absl::optional<absl::string_view> {
+          const auto& ext = ev->options().GetExtension(pb::enumvalue::json);
+          if (ext.has_string()) {
+            return ext.string();
+          }
+          return absl::nullopt;
+        };
+
+        auto primary_custom = get_custom_string(primary);
+        auto current_custom = get_custom_string(value);
+
+        if (primary_custom != current_custom) {
+          AddError(result->full_name(), proto.value(i),
+                   DescriptorPool::ErrorCollector::OPTION_VALUE,
+                   [&]() -> std::string {
+                     std::string primary_str =
+                         primary_custom.has_value()
+                             ? absl::StrCat("\"", *primary_custom, "\"")
+                             : "unset";
+                     std::string current_str =
+                         current_custom.has_value()
+                             ? absl::StrCat("\"", *current_custom, "\"")
+                             : "unset";
+                     return absl::StrFormat(
+                         "Alias values for number %d must have the same custom "
+                         "JSON string. "
+                         "\"%s\" has %s but primary alias \"%s\" has %s.",
+                         value->number(), value->name(), current_str,
+                         primary->name(), primary_str);
+                   });
+        }
+      }
+    }
+
+    // Custom json strings can't collide (sans aliases)
+    auto check_and_insert = [&](absl::string_view name, bool is_custom) {
+      auto insert_result = values_by_json_name.try_emplace(name, value);
+      if (!insert_result.second) {
+        const EnumValueDescriptor* conflict = insert_result.first->second;
+        if (conflict != value && conflict->number() != value->number()) {
+          std::string current_type = is_custom ? "Custom" : "Default";
+          std::string conflict_type =
+              (conflict->name() == name) ? "default" : "custom";
+          AddError(result->full_name(), proto.value(i),
+                   DescriptorPool::ErrorCollector::OPTION_VALUE, [&] {
+                     return absl::StrFormat(
+                         "%s JSON string \"%s\" conflicts with %s JSON string "
+                         "of \"%s\".",
+                         current_type, name, conflict_type, conflict->name());
+                   });
+        }
+      }
+    };
+
+    // Ensure that we bail if a custom json string collides with
+    // any default name.
+    check_and_insert(value->name(), false);
+
+    // Ensure that custom JSON strings cannot collide with themselves.
+    if (value->options().HasExtension(pb::enumvalue::json)) {
+      absl::string_view custom_string =
+          value->options().GetExtension(pb::enumvalue::json).string();
+      check_and_insert(custom_string, true);
+    }
+  }
+}
+
 void DescriptorBuilder::BuildEnum(const EnumDescriptorProto& proto,
                                   const Descriptor* parent,
                                   EnumDescriptor* result,
@@ -8131,7 +8257,9 @@ void DescriptorBuilder::CrossLinkField(FieldDescriptor* field,
     // if weak fields exist or not so that we don't need to force building
     // weak dependencies. However the name lookup rules for symbols are
     // somewhat complicated, so I defer it too another CL.
+    PROTOBUF_IGNORE_DEPRECATION_START
     bool is_weak = !pool_->enforce_weak_ && proto.options().weak();
+    PROTOBUF_IGNORE_DEPRECATION_STOP
     bool is_lazy = pool_->lazily_build_dependencies_ && !is_weak;
 
     Symbol type =
@@ -9021,6 +9149,7 @@ void DescriptorBuilder::ValidateFieldFeatures(
 void DescriptorBuilder::ValidateOptions(const EnumDescriptor* enm,
                                         const EnumDescriptorProto& proto) {
   CheckEnumValueUniqueness(proto, enm);
+  CheckEnumCustomStringUniqueness(proto, enm);
 
   if (!enm->is_closed() && enm->value_count() > 0 &&
       enm->value(0)->number() != 0) {
@@ -9076,6 +9205,33 @@ void DescriptorBuilder::ValidateOptions(const EnumValueDescriptor* enum_value,
             enum_value->options().feature_support(), enum_value->full_name());
     MaybeAddError(feature_support_result, enum_value->full_name(), proto,
                   DescriptorPool::ErrorCollector::OPTION_NAME);
+  }
+
+  if (enum_value->options().HasExtension(pb::enumvalue::json)) {
+    absl::string_view custom_string =
+        enum_value->options().GetExtension(pb::enumvalue::json).string();
+
+    if (absl::StrContains(custom_string, '\0')) {
+      AddError(enum_value->full_name(), proto,
+               DescriptorPool::ErrorCollector::OPTION_VALUE,
+               "Custom JSON strings cannot contain embedded null characters.");
+    }
+
+    // If the custom string is a number, it must match the enum value's number,
+    // otherwise, there would be an ambiguity -- we'll block the possibility.
+    int32_t parsed_val;
+    if (absl::SimpleAtoi(custom_string, &parsed_val)) {
+      if (parsed_val != enum_value->number()) {
+        AddError(enum_value->full_name(), proto,
+                 DescriptorPool::ErrorCollector::OPTION_VALUE, [&] {
+                   return absl::StrFormat(
+                       "Custom JSON string \"%s\" parses as integer %d, which "
+                       "does not match the "
+                       "enum value's number %d.",
+                       custom_string, parsed_val, enum_value->number());
+                 });
+      }
+    }
   }
 }
 
@@ -9541,6 +9697,10 @@ constexpr absl::string_view kNamingStyleOptOutMessage =
     " (features.enforce_naming_style = STYLE_LEGACY can be used to opt out of "
     "this check)";
 
+constexpr absl::string_view kProtoLimitsOptOutMessage =
+    " (features.enforce_proto_limits = LEGACY_NO_EXPLICIT_LIMITS can be used "
+    "to opt out of this check)";
+
 }  // namespace
 
 constexpr absl::string_view kNamingStyleCollisionsOptOutMessage =
@@ -9663,6 +9823,65 @@ void DescriptorBuilder::ValidateNamingStyle(
       return absl::StrCat("Method name ", method->name(), " ", error,
                           kNamingStyleOptOutMessage);
     });
+  }
+}
+
+// -------------------------------------------------------------------
+
+void DescriptorBuilder::ValidateProtoLimits(const Descriptor* message,
+                                            const DescriptorProto& proto) {
+  // Validate the protobuf field limit per message.
+  // See go/protobuf-enforce-proto-limits
+  if (message->field_count() > internal::kLimit2026FieldsPerMessage) {
+    std::string error_msg =
+        absl::StrFormat("should not contain more than %d fields",
+                        internal::kLimit2026FieldsPerMessage);
+    AddError(message->name(), proto, DescriptorPool::ErrorCollector::NAME, [&] {
+      return absl::StrCat("Message name ", message->name(), " ", error_msg,
+                          kProtoLimitsOptOutMessage);
+    });
+  }
+  // Validate the protobuf oneof limit per message.
+  // See go/protobuf-enforce-proto-limits
+  if (message->real_oneof_decl_count() > internal::kLimit2026OneofsPerMessage) {
+    std::string error_msg =
+        absl::StrFormat("should not contain more than %d oneofs",
+                        internal::kLimit2026OneofsPerMessage);
+    AddError(message->name(), proto, DescriptorPool::ErrorCollector::NAME, [&] {
+      return absl::StrCat("Message name ", message->name(), " ", error_msg,
+                          kProtoLimitsOptOutMessage);
+    });
+  }
+}
+
+void DescriptorBuilder::ValidateProtoLimits(const OneofDescriptor* oneof,
+                                            const OneofDescriptorProto& proto) {
+  // Validate the protobuf field limit per oneof.
+  // See go/protobuf-enforce-proto-limits
+  if (oneof->field_count() > internal::kLimit2026FieldsPerOneof) {
+    std::string error_msg =
+        absl::StrFormat("should not contain more than %d fields",
+                        internal::kLimit2026FieldsPerOneof);
+    AddError(oneof->name(), proto, DescriptorPool::ErrorCollector::NAME, [&] {
+      return absl::StrCat("Oneof name ", oneof->name(), " ", error_msg,
+                          kProtoLimitsOptOutMessage);
+    });
+  }
+}
+
+void DescriptorBuilder::ValidateProtoLimits(
+    const EnumDescriptor* enum_descriptor, const EnumDescriptorProto& proto) {
+  std::string error_msg =
+      absl::StrFormat("should not contain more than %d values",
+                      internal::kLimit2026ValuesPerEnum);
+  // Validate the protobuf value limit per enum.
+  // See go/protobuf-enforce-proto-limits
+  if (enum_descriptor->value_count() > internal::kLimit2026ValuesPerEnum) {
+    AddError(enum_descriptor->name(), proto,
+             DescriptorPool::ErrorCollector::NAME, [&] {
+               return absl::StrCat("Enum name ", enum_descriptor->name(), " ",
+                                   error_msg, kProtoLimitsOptOutMessage);
+             });
   }
 }
 
@@ -10876,7 +11095,10 @@ bool HasPreservingUnknownEnumSemantics(const FieldDescriptor* field) {
 
 HasbitMode GetFieldHasbitModeWithoutProfile(const FieldDescriptor* field) {
   // Do not generate hasbits for "real-oneof", weak, or extension fields.
-  if (field->real_containing_oneof() || field->options().weak() ||
+  PROTOBUF_IGNORE_DEPRECATION_START
+  const bool field_is_weak = field->options().weak();
+  PROTOBUF_IGNORE_DEPRECATION_STOP
+  if (field->real_containing_oneof() || field_is_weak ||
       field->is_extension()) {
     return HasbitMode::kNoHasbit;
   }
@@ -10934,6 +11156,10 @@ bool IsLazilyInitializedFile(absl::string_view filename) {
   }
   if (filename == "third_party/protobuf/internal_options.proto" ||
       filename == "google/protobuf/internal_options.proto") {
+    return true;
+  }
+  if (filename == "third_party/protobuf/json_enumvalue_options.proto" ||
+      filename == "google/protobuf/json_enumvalue_options.proto") {
     return true;
   }
   return filename == "net/proto2/proto/descriptor.proto" ||

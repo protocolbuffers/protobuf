@@ -65,7 +65,7 @@ TEST(EncodeTest, EncodeFieldSuccess) {
   upb_EncodeStatus status = UPB_PRIVATE(_upb_Encode_Field)(
       &e, (upb_Message*)msg, field, &buf, &size, e.options);
   EXPECT_EQ(status, kUpb_EncodeStatus_Ok);
-  EXPECT_GT(size, 0);
+  EXPECT_GT(size, 0u);
 
   // Verify that the encoded field can be decoded back to the original message
   // with the same value.
@@ -96,7 +96,7 @@ TEST(EncodeTest, EncodeFieldSuccessEmptyMessage) {
   upb_EncodeStatus status = UPB_PRIVATE(_upb_Encode_Field)(
       &e, (upb_Message*)msg, field, &buf, &size, e.options);
   EXPECT_EQ(status, kUpb_EncodeStatus_Ok);
-  EXPECT_EQ(size, 0);
+  EXPECT_EQ(size, 0u);
 
   _upb_mapsorter_destroy(&e.sorter);
   upb_Arena_Free(arena);
@@ -141,7 +141,7 @@ TEST(EncodeTest, EncodeExtensionSuccess) {
   upb_EncodeStatus status = UPB_PRIVATE(_upb_Encode_Extension)(
       &e, ext, ext_val, false, &buf, &size, e.options);
   EXPECT_EQ(status, kUpb_EncodeStatus_Ok);
-  EXPECT_GT(size, 0);
+  EXPECT_GT(size, 0u);
 
   // Verify that the encoded extension can be decoded back to the original
   // extension value.
@@ -177,7 +177,7 @@ TEST(EncodeTest, EncodeExtensionSuccessEmptyMessage) {
   upb_EncodeStatus status = UPB_PRIVATE(_upb_Encode_Extension)(
       &e, ext, ext_val, false, &buf, &size, e.options);
   EXPECT_EQ(status, kUpb_EncodeStatus_Ok);
-  EXPECT_GT(size, 0);
+  EXPECT_GT(size, 0u);
 
   _upb_mapsorter_destroy(&e.sorter);
   upb_Arena_Free(arena);

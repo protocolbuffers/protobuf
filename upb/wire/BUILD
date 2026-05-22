@@ -225,7 +225,10 @@ cc_library(
     hdrs = ["internal/reader.h"],
     copts = UPB_DEFAULT_COPTS,
     features = UPB_DEFAULT_FEATURES,
-    visibility = ["//upb:__pkg__"],
+    visibility = [
+        "//upb:__pkg__",
+        "//upb/wire/decode_fast:__pkg__",
+    ],
     deps = [
         ":eps_copy_input_stream",
         "//upb/port",
@@ -304,7 +307,6 @@ cc_library(
     ],
     deps = [
         "//upb/base",
-        "//upb/mem",
         "//upb/port",
     ],
 )
@@ -319,7 +321,6 @@ cc_library(
     deps = [
         ":eps_copy_input_stream_internal",
         "//upb/base",
-        "//upb/mem",
         "//upb/port",
     ],
 )

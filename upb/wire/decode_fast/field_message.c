@@ -30,9 +30,9 @@ typedef struct {
   upb_Message* msg;
 } upb_DecodeFast_MessageContext;
 
-static const char* upb_DecodeFast_MessageData(upb_EpsCopyInputStream* st,
-                                              const char* ptr, int size,
-                                              void* ctx) {
+UPB_FORCEINLINE
+const char* upb_DecodeFast_MessageData(upb_EpsCopyInputStream* st,
+                                       const char* ptr, int size, void* ctx) {
   upb_Decoder* d = (upb_Decoder*)st;
   upb_DecodeFast_MessageContext* c = ctx;
   ptr = _upb_Decoder_DecodeMessage((upb_Decoder*)st, ptr, c->msg, c->table);
@@ -82,7 +82,7 @@ void upb_DecodeFast_Message(upb_Decoder* d, const char** ptr, upb_Message* msg,
     return;
   }
 
-  if (--d->depth == 0) {
+  if (--d->depth < 0) {
     _upb_FastDecoder_ErrorJmp(d, kUpb_DecodeStatus_MaxDepthExceeded);
   }
 
