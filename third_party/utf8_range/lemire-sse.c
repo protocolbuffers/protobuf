@@ -172,24 +172,28 @@ checkUTF8Bytes(__m128i current_bytes, struct processed_utf_bytes *previous,
 
 /* Return 0 on success, -1 on error */
 int utf8_lemire(const unsigned char *src, int len) {
+  if (len < 0) return -1;
   size_t i = 0;
+  size_t src_len = (size_t)len;
   __m128i has_error = _mm_setzero_si128();
   struct processed_utf_bytes previous = {.rawbytes = _mm_setzero_si128(),
                                          .high_nibbles = _mm_setzero_si128(),
                                          .carried_continuations =
                                              _mm_setzero_si128()};
-  if (len >= 16) {
-    for (; i <= len - 16; i += 16) {
+  if (src_len >= 16) {
+    for (; i <= src_len - 16; i += 16) {
       __m128i current_bytes = _mm_loadu_si128((const __m128i *)(src + i));
       previous = checkUTF8Bytes(current_bytes, &previous, &has_error);
     }
   }
 
   // last part
-  if (i < len) {
+  if (i < src_len) {
     char buffer[16];
+    size_t remaining = src_len - i;
+    if (remaining > 16) remaining = 16;
     memset(buffer, 0, 16);
-    memcpy(buffer, src + i, len - i);
+    memcpy(buffer, src + i, remaining);
     __m128i current_bytes = _mm_loadu_si128((const __m128i *)(buffer));
     previous = checkUTF8Bytes(current_bytes, &previous, &has_error);
   } else {
