@@ -106,7 +106,7 @@ public abstract class AbstractProto2LiteSchemaTest extends AbstractSchemaTest<Pr
 
     // Merge serialized bytes into an empty message, then reserialize and merge it to a new
     // Proto2Message. Make sure the two messages equal.
-    byte[] roundtripBytes = ExperimentalSerializationUtil.toByteArray(empty);
+    byte[] roundtripBytes = empty.toByteArray();
     Proto2MessageLite roundtripMessage =
         ExperimentalSerializationUtil.fromByteArray(roundtripBytes, Proto2MessageLite.class);
     assertThat(roundtripMessage).isEqualTo(expectedMessage);
