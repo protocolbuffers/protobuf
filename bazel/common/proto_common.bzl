@@ -137,7 +137,8 @@ def _compile(
         resource_set = None,
         experimental_exec_group = None,
         experimental_progress_message = None,
-        experimental_output_files = "legacy"):
+        experimental_output_files = "legacy",
+        experimental_direct_sources_only = False):
     """Creates proto compile action for compiling *.proto files to language specific sources.
 
     Args:
@@ -166,6 +167,7 @@ def _compile(
         Don't use this parameter. It's only intended for the transition.
       experimental_output_files: (str) Overwrites output_files from the toolchain.
         Don't use this parameter. It's only intended for the transition.
+      experimental_direct_sources_only: (bool) Whether to include only direct sources in inputs.
     """
     if type(generated_files) != type([]):
         fail("generated_files is expected to be a list of Files")
@@ -219,14 +221,26 @@ def _compile(
         additional_args.use_param_file(param_file_arg = "@%s")
         additional_args.set_param_file_format("multiline")
 
-    declarations = getattr(proto_info, "transitive_extension_declarations", depset())
+    declarations = getattr(proto_info, "transitive_extension_declarations", None)
+    declaration_protos = getattr(proto_info, "transitive_extension_declaration_protos", None)
+
+    transitive_inputs = [additional_inputs]
+    if declarations:
+        transitive_inputs.append(declarations)
+    if declaration_protos:
+        transitive_inputs.append(declaration_protos)
+    if not experimental_direct_sources_only:
+        transitive_inputs.append(proto_info.transitive_sources)
 
     actions.run(
         mnemonic = proto_lang_toolchain_info.mnemonic,
         progress_message = experimental_progress_message if experimental_progress_message else proto_lang_toolchain_info.progress_message,
         executable = proto_lang_toolchain_info.proto_compiler,
         arguments = [args, additional_args] if additional_args else [args],
-        inputs = depset(transitive = [proto_info.transitive_sources, declarations, additional_inputs]),
+        inputs = depset(
+            direct = proto_info.direct_sources if experimental_direct_sources_only else [],
+            transitive = transitive_inputs,
+        ),
         outputs = generated_files,
         tools = tools,
         use_default_shell_env = True,
