@@ -175,33 +175,61 @@ upb_Message_DeleteUnknownStatus upb_Message_DeleteUnknown(upb_Message* msg,
                                                           upb_StringView* data,
                                                           uintptr_t* iter,
                                                           upb_Arena* arena) {
+  upb_MessageUnknown unknown;
+  unknown.type = kUpb_MessageUnknownType_Bytes;
+  unknown.value.bytes = *data;
+
+  upb_Message_DeleteUnknownStatus res =
+      upb_Message_DeleteUnknown2(msg, &unknown, iter, arena);
+  *data = unknown.value.bytes;
+  return res;
+}
+
+upb_Message_DeleteUnknownStatus upb_Message_DeleteUnknown2(
+    upb_Message* msg, upb_MessageUnknown* data, uintptr_t* iter,
+    upb_Arena* arena) {
   UPB_ASSERT(!upb_Message_IsFrozen(msg));
   UPB_ASSERT(*iter != kUpb_Message_UnknownBegin);
   upb_Message_Internal* in = UPB_PRIVATE(_upb_Message_GetInternal)(msg);
   UPB_ASSERT(in);
   UPB_ASSERT(*iter <= in->size);
   upb_TaggedAuxPtr unknown_ptr = in->aux_data[*iter - 1];
+
+  if (data->type == kUpb_MessageUnknownType_NonCanonicalExtension) {
+    UPB_ASSERT(upb_TaggedAuxPtr_IsNonCanonicalExtension(unknown_ptr));
+    // When the unknown is a non-canonical extension, we just remove it from the
+    // aux data array.
+    in->aux_data[*iter - 1] = upb_TaggedAuxPtr_Null();
+    return upb_Message_NextUnknown2(msg, data, iter)
+               ? kUpb_DeleteUnknown_IterUpdated
+               : kUpb_DeleteUnknown_DeletedLast;
+  }
+
   UPB_ASSERT(upb_TaggedAuxPtr_IsUnknown(unknown_ptr));
   upb_StringView* unknown = upb_TaggedAuxPtr_UnknownData(unknown_ptr);
-  if (unknown->data == data->data && unknown->size == data->size) {
+  UPB_ASSERT(data->type == kUpb_MessageUnknownType_Bytes);
+  upb_StringView* data_bytes = &data->value.bytes;
+  if (unknown->data == data_bytes->data && unknown->size == data_bytes->size) {
     // Remove whole field
     in->aux_data[*iter - 1] = upb_TaggedAuxPtr_Null();
-  } else if (unknown->data == data->data) {
+  } else if (unknown->data == data_bytes->data) {
     // Strip prefix
-    unknown->data += data->size;
-    unknown->size -= data->size;
-    *data = *unknown;
+    unknown->data += data_bytes->size;
+    unknown->size -= data_bytes->size;
+    *data_bytes = *unknown;
     return kUpb_DeleteUnknown_IterUpdated;
-  } else if (unknown->data + unknown->size == data->data + data->size) {
+  } else if (unknown->data + unknown->size ==
+             data_bytes->data + data_bytes->size) {
     // Truncate existing field
-    unknown->size -= data->size;
+    unknown->size -= data_bytes->size;
     if (!upb_TaggedAuxPtr_IsUnknownAliased(unknown_ptr)) {
       in->aux_data[*iter - 1] =
           upb_TaggedAuxPtr_MakeUnknownDataAliased(unknown);
     }
   } else {
-    UPB_ASSERT(unknown->data < data->data &&
-               unknown->data + unknown->size > data->data + data->size);
+    UPB_ASSERT(unknown->data < data_bytes->data &&
+               unknown->data + unknown->size >
+                   data_bytes->data + data_bytes->size);
     // Split in the middle
     upb_StringView* prefix = unknown;
     upb_StringView* suffix = upb_Arena_Malloc(arena, sizeof(upb_StringView));
@@ -222,11 +250,11 @@ upb_Message_DeleteUnknownStatus upb_Message_DeleteUnknown(upb_Message* msg,
       in->aux_data[*iter - 1] = upb_TaggedAuxPtr_MakeUnknownDataAliased(prefix);
     }
     in->size++;
-    suffix->data = data->data + data->size;
+    suffix->data = data_bytes->data + data_bytes->size;
     suffix->size = (prefix->data + prefix->size) - suffix->data;
-    prefix->size = data->data - prefix->data;
+    prefix->size = data_bytes->data - prefix->data;
   }
-  return upb_Message_NextUnknown(msg, data, iter)
+  return upb_Message_NextUnknown2(msg, data, iter)
              ? kUpb_DeleteUnknown_IterUpdated
              : kUpb_DeleteUnknown_DeletedLast;
 }
