@@ -137,7 +137,8 @@ def _compile(
         resource_set = None,
         experimental_exec_group = None,
         experimental_progress_message = None,
-        experimental_output_files = "legacy"):
+        experimental_output_files = "legacy",
+        experimental_direct_sources_only = False):
     """Creates proto compile action for compiling *.proto files to language specific sources.
 
     Args:
@@ -166,6 +167,7 @@ def _compile(
         Don't use this parameter. It's only intended for the transition.
       experimental_output_files: (str) Overwrites output_files from the toolchain.
         Don't use this parameter. It's only intended for the transition.
+      experimental_direct_sources_only: (bool) Whether to include only direct sources in inputs.
     """
     if type(generated_files) != type([]):
         fail("generated_files is expected to be a list of Files")
@@ -226,7 +228,10 @@ def _compile(
         progress_message = experimental_progress_message if experimental_progress_message else proto_lang_toolchain_info.progress_message,
         executable = proto_lang_toolchain_info.proto_compiler,
         arguments = [args, additional_args] if additional_args else [args],
-        inputs = depset(transitive = [proto_info.transitive_sources, declarations, additional_inputs]),
+        inputs = depset(
+            direct = proto_info.direct_sources if experimental_direct_sources_only else [],
+            transitive = [declarations, additional_inputs] + ([] if experimental_direct_sources_only else [proto_info.transitive_sources]),
+        ),
         outputs = generated_files,
         tools = tools,
         use_default_shell_env = True,

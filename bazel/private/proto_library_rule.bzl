@@ -173,9 +173,18 @@ def _write_descriptor_set(ctx, proto_info, deps, option_deps, exports, descripto
         return
 
     # Descriptor sets for transitive `deps` of `deps` and `option_deps`.
-    dependencies_descriptor_sets = depset(transitive = [dep.transitive_descriptor_sets for dep in deps + option_deps])
+    dependencies_descriptor_sets = depset(
+        transitive = [dep.transitive_descriptor_sets for dep in deps + option_deps] +
+                     [dep.transitive_option_descriptor_sets for dep in deps + option_deps],
+    )
 
     args = ctx.actions.args()
+
+    args.add_joined(
+        "--descriptor_set_in",
+        dependencies_descriptor_sets,
+        join_with = ctx.configuration.host_path_separator,
+    )
 
     if get_flag_value(ctx, "experimental_proto_descriptor_sets_include_source_info"):
         args.add("--include_source_info")
@@ -267,6 +276,7 @@ def _write_descriptor_set(ctx, proto_info, deps, option_deps, exports, descripto
         # TODO: Fix protoc to actually use the transitive descriptor sets.
         additional_inputs = dependencies_descriptor_sets,
         additional_args = args,
+        experimental_direct_sources_only = True,
     )
 
 _extra_doc = ""

@@ -103,6 +103,11 @@ def _create_proto_info(*, srcs, deps, descriptor_set, option_deps = [], proto_pa
         transitive = [dep.transitive_descriptor_sets for dep in deps],
     )
 
+    transitive_option_descriptor_sets = depset(
+        transitive = [dep.transitive_descriptor_sets for dep in option_deps] +
+                     [dep.transitive_option_descriptor_sets for dep in protoc_deps],
+    )
+
     if "_virtual_imports/" in proto_path:
         #TODO: remove bin_dir from proto_source_root (when users assuming it's there are migrated)
         proto_source_root = _empty_to_dot(_from_root(bin_dir, workspace_root, proto_path))
@@ -121,6 +126,7 @@ def _create_proto_info(*, srcs, deps, descriptor_set, option_deps = [], proto_pa
         transitive_sources = transitive_sources,
         direct_descriptor_set = descriptor_set,
         transitive_descriptor_sets = transitive_descriptor_sets,
+        transitive_option_descriptor_sets = transitive_option_descriptor_sets,
         proto_source_root = proto_source_root,
         transitive_proto_path = transitive_proto_path,
         check_deps_sources = check_deps_sources,
@@ -142,6 +148,8 @@ ProtoInfo, _ = provider(
             its `deps` `proto_library` rules, and this one's. Excludes `option_deps`. This is not
             the same as passing --include_imports to proto-compiler. Will be empty if no
             dependencies.""",
+        "transitive_option_descriptor_sets": """(depset[File]) A set of descriptor set files of all
+            `option_deps` rules in the transitive closure of this rule's `deps` and `option_deps`.""",
         "proto_source_root": """(str) The directory relative to which the `.proto` files defined in
             the `proto_library` are defined. For example, if this is `a/b` and the rule has the
             file `a/b/c/d.proto` as a source, that source file would be imported as
