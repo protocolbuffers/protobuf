@@ -119,6 +119,24 @@ class ProtoBuilderTest(unittest.TestCase):
     proto_field_numbers = set(proto_cls.DESCRIPTOR.fields_by_number)
     self.assertFalse(reserved_field_numbers.intersection(proto_field_numbers))
 
+  def testMakeSimpleProtoClassWithRepeatedNoneFirst(self):
+    """Test that we can create a proto class when repeated field list starts with None."""
+    fields = {
+        'my_repeated': [None, descriptor_pb2.FieldDescriptorProto.TYPE_INT64],
+    }
+    proto_cls = proto_builder.MakeSimpleProtoClass(
+        fields,
+        full_name=(
+            'net.proto2.python.public.proto_builder_test.RepeatedNoneFirstTest'
+        ),
+    )
+    proto = proto_cls()
+    proto.my_repeated.extend([111, 222])
+    self.assertMultiLineEqual(
+        'my_repeated: 111\nmy_repeated: 222\n',
+        text_format.MessageToString(proto),
+    )
+
 
 if __name__ == '__main__':
   unittest.main()
