@@ -592,7 +592,7 @@ upb_Arena* upb_Arena_Init(void* mem, size_t n, upb_alloc* alloc) {
 }
 
 static void _upb_Arena_DoFree(upb_ArenaInternal* ai) {
-  UPB_ASSERT(_upb_Arena_RefCountFromTagged(ai->parent_or_count) == 1);
+  UPB_ASSERT(_upb_Arena_RefCountFromTagged(ai->parent_or_count) == 0);
   while (ai != NULL) {
     UPB_PRIVATE(upb_Xsan_AccessReadWrite)(UPB_XSAN(ai));
     // Load first since arena itself is likely from one of its blocks. Relaxed
@@ -640,10 +640,17 @@ retry:
     poc = upb_Atomic_Load(&ai->parent_or_count, memory_order_acquire);
   }
 
-  // compare_exchange or fetch_sub are RMW operations, which are more
-  // expensive then direct loads.  As an optimization, we only do RMW ops
-  // when we need to update things for other threads to see.
+  // Use compare-exchange to atomically claim the arena for freeing when
+  // refcount is 1. Without this, a racing IncRefFor can increment the refcount
+  // between our load and DoFree, creating a dangling reference (UAF).
   if (poc == _upb_Arena_TaggedFromRefcount(1)) {
+    if (!upb_Atomic_CompareExchangeWeak(
+            &ai->parent_or_count, &poc, _upb_Arena_TaggedFromRefcount(0),
+            memory_order_acq_rel, memory_order_acquire)) {
+      // CAS failed: a concurrent IncRefFor or Fuse modified parent_or_count.
+      // Retry with the reloaded value.
+      goto retry;
+    }
 #ifdef UPB_TRACING_ENABLED
     upb_Arena_LogFree(a);
 #endif
@@ -923,17 +930,16 @@ bool upb_Arena_IncRefFor(const upb_Arena* a, const void* owner) {
 
 retry:
   r = _upb_Arena_FindRoot(r.root);
+  if (_upb_Arena_RefCountFromTagged(r.tagged_count) == 0) {
+    // Refcount is 0: a concurrent Free has claimed this arena for freeing.
+    // We must not increment a zero refcount.
+    return false;
+  }
   if (upb_Atomic_CompareExchangeWeak(
           &r.root->parent_or_count, &r.tagged_count,
           _upb_Arena_TaggedFromRefcount(
               _upb_Arena_RefCountFromTagged(r.tagged_count) + 1),
-          // Relaxed order is safe on success, incrementing the refcount
-          // need not perform any synchronization with the eventual free of the
-          // arena - that's provided by decrements.
-          memory_order_relaxed,
-          // Relaxed order is safe on failure as r.tagged_count is immediately
-          // overwritten by retrying the find root operation.
-          memory_order_relaxed)) {
+          memory_order_acquire, memory_order_acquire)) {
     // We incremented it successfully, so we are done.
     return true;
   }
