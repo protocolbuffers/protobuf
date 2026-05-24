@@ -33,6 +33,32 @@ public abstract class AbstractParser<MessageType extends MessageLite>
   }
 
   /**
+   * Wraps generic exceptions expected to be thrown during parsing (like IOException or
+   * UninitializedMessageException) into InvalidProtocolBufferException with the partial message
+   * attached, and re-throws the wrapped exception.
+   *
+   * <p>If the exception is not one of the expected exceptions, it is re-thrown as is.
+   *
+   * <p>This method always throws and never returns.
+   */
+  protected final void wrapAndThrowParseException(Exception e, MessageType partialMessage)
+      throws InvalidProtocolBufferException {
+    if (e instanceof InvalidProtocolBufferException ipbe) {
+      throw ipbe.setUnfinishedMessage(partialMessage);
+    }
+    if (e instanceof UninitializedMessageException ume) {
+      throw ume.asInvalidProtocolBufferException().setUnfinishedMessage(partialMessage);
+    }
+    if (e instanceof IOException ioe) {
+      throw new InvalidProtocolBufferException(ioe).setUnfinishedMessage(partialMessage);
+    }
+    if (e instanceof RuntimeException re) {
+      throw re;
+    }
+    throw new InvalidProtocolBufferException(e).setUnfinishedMessage(partialMessage);
+  }
+
+  /**
    * Helper method to check if message is initialized.
    *
    * @throws InvalidProtocolBufferException if it is not initialized.
