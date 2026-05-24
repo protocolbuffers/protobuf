@@ -186,6 +186,7 @@ cc_library(
     features = UPB_DEFAULT_FEATURES,
     visibility = ["//visibility:public"],
     deps = [
+        ":copy",
         ":internal",
         ":message",
         "//upb/base",
@@ -193,6 +194,7 @@ cc_library(
         "//upb/mini_table",
         "//upb/port",
         "//upb/wire",
+        "//upb/wire:encoder",
         "//upb/wire:eps_copy_input_stream",
         "//upb/wire:reader",
     ],
@@ -381,6 +383,7 @@ cc_test(
         "//upb/mini_descriptor",
         "//upb/mini_descriptor:internal",
         "//upb/mini_table",
+        "//upb/port",
         "//upb/test:test_messages_proto2_upb_proto",
         "//upb/test:test_messages_proto3_upb_proto",
         "//upb/test:test_proto_upb_minitable",
