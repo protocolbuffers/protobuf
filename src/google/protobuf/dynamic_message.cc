@@ -411,10 +411,35 @@ struct DynamicMessageFactory::TypeInfo {
     // Deleting globals means deleting class_data. Access class_data beforehand.
     delete class_data.reflection();
     auto* type = class_data.descriptor();
+    // Cache allocation_size before scribbling message_creator below.
+    auto alloc_size = class_data.message_creator.allocation_size();
+
+    // Scribble the ClassData function pointers. The scribble below covers
+    // offsets[] and has_bits_indices[], but GetClassData() returns a pointer
+    // into this TypeInfo's ClassData, and IsInitialized(), MergeFrom(),
+    // New(), and SerializeToString() call through these function pointers.
+    // Nulling them ensures an immediate crash instead of a call to a stale
+    // address. Must happen before SizedAlignedDelete, which frees globals
+    // (and class_data within it) in PROTOBUF_MESSAGE_GLOBALS builds.
+    {
+      auto* base = const_cast<internal::ClassData*>(class_data.base());
+      base->tc_table = nullptr;
+      base->is_initialized = nullptr;
+      base->merge_to_from = nullptr;
+      std::memset(&base->message_creator, 0xCD,
+                  sizeof(base->message_creator));
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+      base->destroy_message = nullptr;
+      base->clear = nullptr;
+      base->byte_size_long = nullptr;
+      base->serialize = nullptr;
+#endif
+    }
+
     internal::SizedAlignedDelete(
         const_cast<MessageGlobalsBase*>(
             MessageGlobalsBase::FromDefaultInstance(GetPrototype())),
-        MsgSizeToGlobalsSize(class_data.message_creator.allocation_size()),
+        MsgSizeToGlobalsSize(alloc_size),
         static_cast<std::align_val_t>(internal::kClassDataAlignment));
 
     // Scribble the payload to prevent unsanitized opt builds from silently
