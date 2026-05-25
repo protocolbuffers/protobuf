@@ -89,12 +89,6 @@ enum {
 #define OP_FIXPCK_LG2(n) (n + 5) /* n in [2, 3] => op in [7, 8] */
 #define OP_VARPCK_LG2(n) (n + 9) /* n in [0, 2, 3] => op in [9, 11, 12] */
 
-static void _upb_Decoder_AssumeEpsHasErrorHandler(upb_Decoder* d) {
-  UPB_ASSUME(upb_EpsCopyInputStream_HasErrorHandler(&d->input));
-}
-
-#define EPS(d) (_upb_Decoder_AssumeEpsHasErrorHandler(d), &(d)->input)
-
 static bool _upb_Decoder_Reserve(upb_Decoder* d, upb_Array* arr, size_t elem) {
   bool need_realloc =
       arr->UPB_PRIVATE(capacity) - arr->UPB_PRIVATE(size) < elem;

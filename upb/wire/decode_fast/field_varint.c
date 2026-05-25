@@ -52,10 +52,7 @@ static bool upb_DecodeFast_SingleVarint(upb_Decoder* d, const char** ptr,
   const char* p = *ptr;
   uint64_t val;
 
-  p = upb_WireReader_ReadVarint(p, &val, &d->input);
-  if (!p) {
-    return UPB_DECODEFAST_ERROR(d, kUpb_DecodeStatus_Malformed, next);
-  }
+  p = upb_WireReader_ReadVarint(p, &val, EPS(d));
 
   switch (type) {
     case kUpb_DecodeFast_Bool:

@@ -669,10 +669,10 @@ Error, UINTPTR_MAX is undefined
  * to prevent optimizers from removing the constructor. Our solution is to
  * create a dummy exported weak symbol that prevent this stripping.
  */
-#pragma section(".CRT$XCU", long, read)
+#pragma section(".CRT$XCT", read)
 #define UPB_CONSTRUCTOR(name, unique_name)                                   \
   static void __cdecl UPB_PRIVATE(name)(void);                               \
-  __declspec(allocate(".CRT$XCU"), selectany) void(                          \
+  __declspec(allocate(".CRT$XCT"), selectany) void(                          \
       __cdecl * UPB_PRIVATE(name##_))(void) = UPB_PRIVATE(name);             \
   __declspec(selectany, dllexport) void* UPB_PRIVATE(name##_force_linkage) = \
       &UPB_PRIVATE(name##_);                                                 \
@@ -4019,6 +4019,60 @@ UPB_API void upb_Message_SetNewMessageTraceHandler(
     void (*handler)(const upb_MiniTable*, const upb_Arena*));
 #endif  // UPB_TRACING_ENABLED
 
+// We want to avoid the PLT and register spills for the many tiny memsets used
+// to initialize messages; the dedicated memset instructions won't do that
+#ifdef __ARM_FEAT_MOPS
+#define UPB_ARM_MOPS __ARM_FEAT_MOPS
+#else
+#define UPB_ARM_MOPS 0
+#endif
+
+UPB_FORCEINLINE void _upb_Message_AlignedMemsetZero(void* dst, size_t size) {
+  UPB_ASSUME(size % kUpb_Message_Align == 0);
+  UPB_ASSUME(size != 0);
+  UPB_ASSUME((uintptr_t)dst % kUpb_Message_Align == 0);
+#if UPB_ARM64_ASM && !UPB_ARM_MOPS
+#if UPB_HAS_BUILTIN(__builtin_constant_p)
+  if (__builtin_constant_p(size)) {
+    // We assume the compiler will do something intelligent with a known-length
+    // memset.
+    memset(dst, 0, size);
+    return;
+  }
+#endif
+  char* ptr = (char*)dst;
+  char* end = ptr + size;
+  __asm__(
+      // Unconditionally zero the first 8 byte chunk; if the loop runs this is
+      // wasted work, but doing it unconditionally is cheaper than adding
+      // another branch.
+      "str xzr, [%x[ptr]]\n\t"
+
+      // If size == 8, skip the loop.
+      "cmp %x[count], #8\n\t"
+      "b.eq 2f\n\t"
+
+      // Loop for size >= 16.
+      // In each iteration, we zero 16 bytes from the ptr and 16 bytes from the
+      // end. These regions may overlap, which is OK; doing it this way lets us
+      // process two chunks per loop iteration.
+      "1:\n\t"
+      "stp xzr, xzr, [%x[ptr]], #16\n\t"    // Store then increment by 16
+      "stp xzr, xzr, [%x[end], #-16]!\n\t"  // Decrement by 16 then store
+      // End the loop when pointers cross or meet.
+      "cmp %x[ptr], %x[end]\n\t"
+      "b.lo 1b\n\t"
+      "2:\n\t"
+      : [ptr] "+&r"(ptr), [end] "+&r"(end), "=m"(*(char (*)[])dst)
+      : [count] "r"(size)
+      : "cc");
+  UPB_PRIVATE(upb_Xsan_MarkInitialized)(dst, size);
+#else
+  memset(dst, 0, size);
+#endif
+}
+#undef UPB_ARM_MOPS
+
 // Inline version upb_Message_New(), for internal use.
 UPB_NODISCARD UPB_INLINE struct upb_Message* _upb_Message_New(
     const upb_MiniTable* m, upb_Arena* a) {
@@ -4033,7 +4087,7 @@ UPB_NODISCARD UPB_INLINE struct upb_Message* _upb_Message_New(
   UPB_ASSUME(size % kUpb_Message_Align == 0);
   struct upb_Message* msg = (struct upb_Message*)upb_Arena_Malloc(a, size);
   if (UPB_UNLIKELY(!msg)) return NULL;
-  memset(msg, 0, size);
+  _upb_Message_AlignedMemsetZero(msg, size);
   return msg;
 }
 
@@ -16558,11 +16612,21 @@ UPB_INLINE bool upb_EpsCopyInputStream_HasErrorHandler(
   return e && e->err != NULL;
 }
 
+UPB_NORETURN UPB_NOINLINE void UPB_PRIVATE(
+    upb_EpsCopyInputStream_ThrowMalformed)(struct upb_EpsCopyInputStream* e);
+
 // Call this function to signal an error. If an error handler is set, it will be
 // called and the function will never return. Otherwise, returns NULL to
 // indicate an error.
-const char* UPB_PRIVATE(upb_EpsCopyInputStream_ReturnError)(
-    struct upb_EpsCopyInputStream* e);
+UPB_INLINE const char* UPB_PRIVATE(upb_EpsCopyInputStream_ReturnError)(
+    struct upb_EpsCopyInputStream* e) {
+  if (e->err) {
+    UPB_PRIVATE(upb_EpsCopyInputStream_ThrowMalformed)(e);
+  } else {
+    e->error = true;
+  }
+  return NULL;
+}
 
 UPB_INLINE const char* UPB_PRIVATE(upb_EpsCopyInputStream_AssumeResult)(
     struct upb_EpsCopyInputStream* e, const char* ptr) {
@@ -18339,6 +18403,12 @@ typedef struct upb_Decoder {
   char* trace_end;
 #endif
 } upb_Decoder;
+
+UPB_INLINE void _upb_Decoder_AssumeEpsHasErrorHandler(upb_Decoder* d) {
+  UPB_ASSUME(upb_EpsCopyInputStream_HasErrorHandler(&d->input));
+}
+
+#define EPS(d) (_upb_Decoder_AssumeEpsHasErrorHandler(d), &(d)->input)
 
 UPB_INLINE const char* upb_Decoder_Init(upb_Decoder* d, const char* buf,
                                         size_t size,

@@ -42,6 +42,7 @@
 #include "absl/types/span.h"
 #include "google/protobuf/arena.h"
 #include "google/protobuf/cpp_features.pb.h"
+#include "google/protobuf/cpp_file_options.pb.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/descriptor_lite.h"
@@ -4043,6 +4044,12 @@ void AddDescriptorsImpl(const DescriptorTable* table) {
            &FeatureSet::default_instance(), pb::cpp.number(),
            FieldDescriptor::TYPE_MESSAGE, false, false,
            &pb::CppFeatures::default_instance(),
+           nullptr,
+           internal::LazyAnnotation::kUndefined),
+       internal::ExtensionSet::RegisterMessageExtension(
+           &FileOptions::default_instance(), pb::file::cpp.number(),
+           FieldDescriptor::TYPE_MESSAGE, false, false,
+           &pb::file::CppFileOptions::default_instance(),
            nullptr,
            internal::LazyAnnotation::kUndefined),
        internal::ExtensionSet::RegisterMessageExtension(
