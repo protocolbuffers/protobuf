@@ -1508,6 +1508,13 @@ void CodeGeneratorRequest::MergeImpl(::google::protobuf::MessageLite& to_msg,
 void CodeGeneratorRequest::CopyFrom(const CodeGeneratorRequest& from) {
   // @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.compiler.CodeGeneratorRequest)
   if (&from == this) return;
+  if (GetArena() != nullptr) {
+    _impl_._has_bits_[0] &= ~0x00000008U;
+    _impl_.compiler_version_ = nullptr;
+    Clear();
+    MergeFrom(from);
+    return;
+  }
   Clear();
   MergeFrom(from);
 }
@@ -1802,6 +1809,13 @@ void CodeGeneratorResponse_File::MergeImpl(::google::protobuf::MessageLite& to_m
 void CodeGeneratorResponse_File::CopyFrom(const CodeGeneratorResponse_File& from) {
   // @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.compiler.CodeGeneratorResponse.File)
   if (&from == this) return;
+  if (GetArena() != nullptr) {
+    _impl_._has_bits_[0] &= ~0x00000008U;
+    _impl_.generated_code_info_ = nullptr;
+    Clear();
+    MergeFrom(from);
+    return;
+  }
   Clear();
   MergeFrom(from);
 }

@@ -8733,6 +8733,15 @@ void FileDescriptorProto::MergeImpl(::google::protobuf::MessageLite& to_msg,
 void FileDescriptorProto::CopyFrom(const FileDescriptorProto& from) {
   // @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.FileDescriptorProto)
   if (&from == this) return;
+  if (GetArena() != nullptr) {
+    _impl_._has_bits_[0] &= ~0x00000800U;
+    _impl_.options_ = nullptr;
+    _impl_._has_bits_[0] &= ~0x00001000U;
+    _impl_.source_code_info_ = nullptr;
+    Clear();
+    MergeFrom(from);
+    return;
+  }
   Clear();
   MergeFrom(from);
 }
@@ -9030,6 +9039,13 @@ void DescriptorProto_ExtensionRange::MergeImpl(::google::protobuf::MessageLite& 
 void DescriptorProto_ExtensionRange::CopyFrom(const DescriptorProto_ExtensionRange& from) {
   // @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.DescriptorProto.ExtensionRange)
   if (&from == this) return;
+  if (GetArena() != nullptr) {
+    _impl_._has_bits_[0] &= ~0x00000001U;
+    _impl_.options_ = nullptr;
+    Clear();
+    MergeFrom(from);
+    return;
+  }
   Clear();
   MergeFrom(from);
 }
@@ -9831,6 +9847,13 @@ void DescriptorProto::MergeImpl(::google::protobuf::MessageLite& to_msg,
 void DescriptorProto::CopyFrom(const DescriptorProto& from) {
   // @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.DescriptorProto)
   if (&from == this) return;
+  if (GetArena() != nullptr) {
+    _impl_._has_bits_[0] &= ~0x00000200U;
+    _impl_.options_ = nullptr;
+    Clear();
+    MergeFrom(from);
+    return;
+  }
   Clear();
   MergeFrom(from);
 }
@@ -10479,6 +10502,13 @@ void ExtensionRangeOptions::MergeImpl(::google::protobuf::MessageLite& to_msg,
 void ExtensionRangeOptions::CopyFrom(const ExtensionRangeOptions& from) {
   // @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.ExtensionRangeOptions)
   if (&from == this) return;
+  if (GetArena() != nullptr) {
+    _impl_._has_bits_[0] &= ~0x00000004U;
+    _impl_.features_ = nullptr;
+    Clear();
+    MergeFrom(from);
+    return;
+  }
   Clear();
   MergeFrom(from);
 }
@@ -10914,6 +10944,13 @@ void FieldDescriptorProto::MergeImpl(::google::protobuf::MessageLite& to_msg,
 void FieldDescriptorProto::CopyFrom(const FieldDescriptorProto& from) {
   // @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.FieldDescriptorProto)
   if (&from == this) return;
+  if (GetArena() != nullptr) {
+    _impl_._has_bits_[0] &= ~0x00000020U;
+    _impl_.options_ = nullptr;
+    Clear();
+    MergeFrom(from);
+    return;
+  }
   Clear();
   MergeFrom(from);
 }
@@ -11168,6 +11205,13 @@ void OneofDescriptorProto::MergeImpl(::google::protobuf::MessageLite& to_msg,
 void OneofDescriptorProto::CopyFrom(const OneofDescriptorProto& from) {
   // @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.OneofDescriptorProto)
   if (&from == this) return;
+  if (GetArena() != nullptr) {
+    _impl_._has_bits_[0] &= ~0x00000002U;
+    _impl_.options_ = nullptr;
+    Clear();
+    MergeFrom(from);
+    return;
+  }
   Clear();
   MergeFrom(from);
 }
@@ -11766,6 +11810,13 @@ void EnumDescriptorProto::MergeImpl(::google::protobuf::MessageLite& to_msg,
 void EnumDescriptorProto::CopyFrom(const EnumDescriptorProto& from) {
   // @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.EnumDescriptorProto)
   if (&from == this) return;
+  if (GetArena() != nullptr) {
+    _impl_._has_bits_[0] &= ~0x00000010U;
+    _impl_.options_ = nullptr;
+    Clear();
+    MergeFrom(from);
+    return;
+  }
   Clear();
   MergeFrom(from);
 }
@@ -12043,6 +12094,13 @@ void EnumValueDescriptorProto::MergeImpl(::google::protobuf::MessageLite& to_msg
 void EnumValueDescriptorProto::CopyFrom(const EnumValueDescriptorProto& from) {
   // @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.EnumValueDescriptorProto)
   if (&from == this) return;
+  if (GetArena() != nullptr) {
+    _impl_._has_bits_[0] &= ~0x00000002U;
+    _impl_.options_ = nullptr;
+    Clear();
+    MergeFrom(from);
+    return;
+  }
   Clear();
   MergeFrom(from);
 }
@@ -12332,6 +12390,13 @@ void ServiceDescriptorProto::MergeImpl(::google::protobuf::MessageLite& to_msg,
 void ServiceDescriptorProto::CopyFrom(const ServiceDescriptorProto& from) {
   // @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.ServiceDescriptorProto)
   if (&from == this) return;
+  if (GetArena() != nullptr) {
+    _impl_._has_bits_[0] &= ~0x00000004U;
+    _impl_.options_ = nullptr;
+    Clear();
+    MergeFrom(from);
+    return;
+  }
   Clear();
   MergeFrom(from);
 }
@@ -12656,6 +12721,13 @@ void MethodDescriptorProto::MergeImpl(::google::protobuf::MessageLite& to_msg,
 void MethodDescriptorProto::CopyFrom(const MethodDescriptorProto& from) {
   // @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.MethodDescriptorProto)
   if (&from == this) return;
+  if (GetArena() != nullptr) {
+    _impl_._has_bits_[0] &= ~0x00000008U;
+    _impl_.options_ = nullptr;
+    Clear();
+    MergeFrom(from);
+    return;
+  }
   Clear();
   MergeFrom(from);
 }
@@ -13276,6 +13348,13 @@ void FileOptions::MergeImpl(::google::protobuf::MessageLite& to_msg,
 void FileOptions::CopyFrom(const FileOptions& from) {
   // @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.FileOptions)
   if (&from == this) return;
+  if (GetArena() != nullptr) {
+    _impl_._has_bits_[0] &= ~0x00000400U;
+    _impl_.features_ = nullptr;
+    Clear();
+    MergeFrom(from);
+    return;
+  }
   Clear();
   MergeFrom(from);
 }
@@ -13644,6 +13723,13 @@ void MessageOptions::MergeImpl(::google::protobuf::MessageLite& to_msg,
 void MessageOptions::CopyFrom(const MessageOptions& from) {
   // @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.MessageOptions)
   if (&from == this) return;
+  if (GetArena() != nullptr) {
+    _impl_._has_bits_[0] &= ~0x00000001U;
+    _impl_.features_ = nullptr;
+    Clear();
+    MergeFrom(from);
+    return;
+  }
   Clear();
   MergeFrom(from);
 }
@@ -14687,6 +14773,15 @@ void FieldOptions::MergeImpl(::google::protobuf::MessageLite& to_msg,
 void FieldOptions::CopyFrom(const FieldOptions& from) {
   // @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.FieldOptions)
   if (&from == this) return;
+  if (GetArena() != nullptr) {
+    _impl_._has_bits_[0] &= ~0x00000004U;
+    _impl_.features_ = nullptr;
+    _impl_._has_bits_[0] &= ~0x00000008U;
+    _impl_.feature_support_ = nullptr;
+    Clear();
+    MergeFrom(from);
+    return;
+  }
   Clear();
   MergeFrom(from);
 }
@@ -14979,6 +15074,13 @@ void OneofOptions::MergeImpl(::google::protobuf::MessageLite& to_msg,
 void OneofOptions::CopyFrom(const OneofOptions& from) {
   // @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.OneofOptions)
   if (&from == this) return;
+  if (GetArena() != nullptr) {
+    _impl_._has_bits_[0] &= ~0x00000002U;
+    _impl_.features_ = nullptr;
+    Clear();
+    MergeFrom(from);
+    return;
+  }
   Clear();
   MergeFrom(from);
 }
@@ -15308,6 +15410,13 @@ void EnumOptions::MergeImpl(::google::protobuf::MessageLite& to_msg,
 void EnumOptions::CopyFrom(const EnumOptions& from) {
   // @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.EnumOptions)
   if (&from == this) return;
+  if (GetArena() != nullptr) {
+    _impl_._has_bits_[0] &= ~0x00000001U;
+    _impl_.features_ = nullptr;
+    Clear();
+    MergeFrom(from);
+    return;
+  }
   Clear();
   MergeFrom(from);
 }
@@ -15662,6 +15771,15 @@ void EnumValueOptions::MergeImpl(::google::protobuf::MessageLite& to_msg,
 void EnumValueOptions::CopyFrom(const EnumValueOptions& from) {
   // @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.EnumValueOptions)
   if (&from == this) return;
+  if (GetArena() != nullptr) {
+    _impl_._has_bits_[0] &= ~0x00000002U;
+    _impl_.features_ = nullptr;
+    _impl_._has_bits_[0] &= ~0x00000004U;
+    _impl_.feature_support_ = nullptr;
+    Clear();
+    MergeFrom(from);
+    return;
+  }
   Clear();
   MergeFrom(from);
 }
@@ -15970,6 +16088,13 @@ void ServiceOptions::MergeImpl(::google::protobuf::MessageLite& to_msg,
 void ServiceOptions::CopyFrom(const ServiceOptions& from) {
   // @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.ServiceOptions)
   if (&from == this) return;
+  if (GetArena() != nullptr) {
+    _impl_._has_bits_[0] &= ~0x00000002U;
+    _impl_.features_ = nullptr;
+    Clear();
+    MergeFrom(from);
+    return;
+  }
   Clear();
   MergeFrom(from);
 }
@@ -16303,6 +16428,13 @@ void MethodOptions::MergeImpl(::google::protobuf::MessageLite& to_msg,
 void MethodOptions::CopyFrom(const MethodOptions& from) {
   // @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.MethodOptions)
   if (&from == this) return;
+  if (GetArena() != nullptr) {
+    _impl_._has_bits_[0] &= ~0x00000002U;
+    _impl_.features_ = nullptr;
+    Clear();
+    MergeFrom(from);
+    return;
+  }
   Clear();
   MergeFrom(from);
 }
@@ -17667,6 +17799,15 @@ void FeatureSetDefaults_FeatureSetEditionDefault::MergeImpl(::google::protobuf::
 void FeatureSetDefaults_FeatureSetEditionDefault::CopyFrom(const FeatureSetDefaults_FeatureSetEditionDefault& from) {
   // @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.FeatureSetDefaults.FeatureSetEditionDefault)
   if (&from == this) return;
+  if (GetArena() != nullptr) {
+    _impl_._has_bits_[0] &= ~0x00000001U;
+    _impl_.overridable_features_ = nullptr;
+    _impl_._has_bits_[0] &= ~0x00000002U;
+    _impl_.fixed_features_ = nullptr;
+    Clear();
+    MergeFrom(from);
+    return;
+  }
   Clear();
   MergeFrom(from);
 }

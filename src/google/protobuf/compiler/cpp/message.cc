@@ -4430,9 +4430,22 @@ void MessageGenerator::GenerateCopyFrom(io::Printer* p) {
     // Message.
   }
 
+  // Collect singular, non-lazy, non-split message fields from optimized_order_.
+  // These are candidates for the arena CopyFrom optimization: instead of
+  // recursively clearing them (expensive), we null their pointers and let
+  // MergeFrom use CopyConstruct into fresh arena memory.
+  std::vector<const FieldDescriptor*> arena_nullable_msg_fields;
+  for (const auto* field : optimized_order_) {
+    if (field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE &&
+        !field->is_repeated() && !IsLazy(field, options_) &&
+        !ShouldSplit(field, options_) && HasHasbit(field, options_)) {
+      arena_nullable_msg_fields.push_back(field);
+    }
+  }
+
   // Generate the class-specific CopyFrom.
   p->Emit(
-      {{"clear",
+      {{"descendant_check",
         [&] {
           if (!options_.opensource_runtime &&
               HasMessageFieldOrExtension(descriptor_)) {
@@ -4441,10 +4454,6 @@ void MessageGenerator::GenerateCopyFrom(io::Printer* p) {
             // builds. It is also disabled if a message has neither message
             // fields nor extensions, as it's impossible to copy from its
             // descendant.
-            //
-            // Note that IsDescendant is implemented by reflection and not
-            // available for lite runtime. In that case, check if the size of
-            // the source has changed after Clear.
             if (HasDescriptorMethods(descriptor_->file(), options_)) {
               p->Emit(R"cc(
                 $DCHK$(!::_pbi::IsDescendant(*this, from))
@@ -4453,6 +4462,19 @@ void MessageGenerator::GenerateCopyFrom(io::Printer* p) {
                 $DCHK$(!::_pbi::IsDescendant(from, *this))
                     << "Target of CopyFrom cannot be a descendant of the "
                        "source.";
+              )cc");
+            }
+          }
+        }},
+       {"clear",
+        [&] {
+          if (!options_.opensource_runtime &&
+              HasMessageFieldOrExtension(descriptor_)) {
+            // Note that IsDescendant is implemented by reflection and not
+            // available for lite runtime. In that case, check if the size of
+            // the source has changed after Clear.
+            if (HasDescriptorMethods(descriptor_->file(), options_)) {
+              p->Emit(R"cc(
                 Clear();)cc");
             } else {
               p->Emit(R"cc(
@@ -4474,16 +4496,51 @@ void MessageGenerator::GenerateCopyFrom(io::Printer* p) {
               Clear();
             )cc");
           }
+        }},
+       {"arena_copy_from",
+        [&] {
+          if (arena_nullable_msg_fields.empty()) return;
+          // Arena fast path: instead of recursively clearing sub-messages
+          // (which requires touching all their memory), we clear just the
+          // has_bits for message fields and null their pointers. Clear()
+          // then skips those fields (since has_bits gate their clearing),
+          // and MergeFrom() uses CopyConstruct (single forward pass into
+          // fresh arena memory) instead of recursive MergeFrom.
+          // The old sub-messages are abandoned on the arena — standard
+          // arena GC pattern, reclaimed at arena destruction.
+          Formatter format(p);
+          format("if (GetArena() != nullptr) {\n");
+          format.Indent();
+          // Clear specific has_bits for message fields and null their
+          // pointers. Other fields retain their has_bits so Clear()
+          // handles them normally.
+          for (const auto* field : arena_nullable_msg_fields) {
+            auto v = HasBitVars(field);
+            format("$has_bits$[$1$] &= ~$2$;\n", v["has_array_index"],
+                   v["has_mask"]);
+            format("$1$ = nullptr;\n", FieldMemberName(field, /*split=*/false));
+          }
+          // Clear() now handles repeated fields, extensions, oneofs,
+          // strings, PODs, unknown fields normally — but skips the
+          // sub-message fields whose has_bits we cleared above.
+          format("Clear();\n");
+          format("MergeFrom(from);\n");
+          format("return;\n");
+          format.Outdent();
+          format("}\n");
         }}},
       R"cc(
         void $Msg$::CopyFrom(const $Msg$& from) {
           // @@protoc_insertion_point(class_specific_copy_from_start:$full_name$)
           if (&from == this) return;
+          $descendant_check$;
+          $arena_copy_from$;
           $clear$;
           MergeFrom(from);
         }
       )cc");
 }
+
 
 void MessageGenerator::GenerateVerify(io::Printer* p) {
 }
