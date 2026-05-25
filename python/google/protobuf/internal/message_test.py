@@ -1396,11 +1396,7 @@ class MessageTest(unittest.TestCase):
     self.assertEqual([1, 3], [n.bb for n in m.repeated_nested_message])
     self.assertEqual(3, m.repeated_nested_message.pop(-1).bb)
 
-  @unittest.skipIf(
-      api_implementation.Type() == 'upb',
-      "Currently broken in upb, will be fixed in the next breaking release"
-  )
-  def testRepeatedPopOutOfBounds(self, message_module):
+ def testRepeatedPopOutOfBounds(self, message_module):
     m = message_module.TestAllTypes()
     m.repeated_int32.extend(range(5))
     m.repeated_int32.pop()
