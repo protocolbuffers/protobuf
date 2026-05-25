@@ -2982,6 +2982,13 @@ class Proto3Test(unittest.TestCase):
     matching_dict = {2: 4, 3: 6, 4: 8}
     self.assertMapIterEquals(int32_map.items(), matching_dict)
 
+  def testMapClearUseAfterFree(self):
+    msg = map_unittest_pb2.TestMap()
+    msg.map_int32_foreign_message[1].c = 1
+    entry = msg.map_int32_foreign_message[1]
+    msg.map_int32_foreign_message.clear()
+    entry.c = 2
+
   def testMessageMapValidAfterFieldCleared(self):
     # Map needs to work even if field is cleared.
     # For the C++ implementation this tests the correctness of

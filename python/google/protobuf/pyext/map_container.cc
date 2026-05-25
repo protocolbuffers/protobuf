@@ -15,6 +15,7 @@
 #include <cstdint>
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "google/protobuf/map.h"
 #include "google/protobuf/map_field.h"
@@ -295,6 +296,30 @@ PyObject* Clear(PyObject* _self) {
   MapContainer* self = GetMap(_self);
   Message* message = self->GetMutableMessage();
   const Reflection* reflection = message->GetReflection();
+
+  if (self->parent_field_descriptor->message_type()->map_value()->cpp_type() ==
+      FieldDescriptor::CPPTYPE_MESSAGE) {
+    if (CMessage::SubMessagesMap* subs =
+            self->parent->child_submessages.TryGet();
+        subs) {
+      std::vector<ScopedPyObjectPtr> to_release;
+      subs->ForEach([&](const void* key, PyObject* value) {
+        CMessage* child = reinterpret_cast<CMessage*>(value);
+        if (child->parent_field_descriptor == self->parent_field_descriptor) {
+          Py_INCREF(value);
+          to_release.emplace_back(value);
+        }
+      });
+      for (const auto& child_ptr : to_release) {
+        CMessage* child = reinterpret_cast<CMessage*>(child_ptr.get());
+        Message* msg = child->message;
+        if (CMessage* released = self->parent->MaybeReleaseSubMessage(msg)) {
+          released->message = msg->New();
+          msg->GetReflection()->Swap(msg, released->message);
+        }
+      }
+    }
+  }
 
   reflection->ClearField(message, self->parent_field_descriptor);
 
