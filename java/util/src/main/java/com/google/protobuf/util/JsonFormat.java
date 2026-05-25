@@ -37,15 +37,18 @@ import com.google.protobuf.Int32Value;
 import com.google.protobuf.Int64Value;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.ListValue;
+import com.google.protobuf.ListValueOrBuilder;
 import com.google.protobuf.Message;
 import com.google.protobuf.MessageOrBuilder;
 import com.google.protobuf.NullValue;
 import com.google.protobuf.StringValue;
 import com.google.protobuf.Struct;
+import com.google.protobuf.StructOrBuilder;
 import com.google.protobuf.Timestamp;
 import com.google.protobuf.UInt32Value;
 import com.google.protobuf.UInt64Value;
 import com.google.protobuf.Value;
+import com.google.protobuf.ValueOrBuilder;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
@@ -69,6 +72,7 @@ import javax.annotation.Nullable;
  * Utility class to convert protobuf messages to/from the <a href=
  * 'https://protobuf.dev/programming-guides/json/'>ProtoJSON format.</a>
  */
+@SuppressWarnings("PatternMatchingInstanceof")
 public class JsonFormat {
   private static final Logger logger = Logger.getLogger(JsonFormat.class.getName());
 
@@ -1094,6 +1098,52 @@ public class JsonFormat {
 
     /** Prints google.protobuf.Struct */
     private void printStruct(MessageOrBuilder message) throws IOException {
+      if (message instanceof StructOrBuilder) {
+        printStructConcrete((StructOrBuilder) message);
+      } else {
+        printStructReflectively(message);
+      }
+    }
+
+    private void printStructConcrete(StructOrBuilder message) throws IOException {
+      generator.println("{");
+      generator.indent();
+      Map<String, Value> fields = message.getFieldsMap();
+      Collection<Map.Entry<String, Value>> entries = fields.entrySet();
+      if (sortingMapKeys && !fields.isEmpty()) {
+        TreeMap<String, Value> sortedMap =
+            new TreeMap<>(
+                new Comparator<String>() {
+                  @Override
+                  public int compare(String s1, String s2) {
+                    ByteString bs1 = ByteString.copyFromUtf8(s1);
+                    ByteString bs2 = ByteString.copyFromUtf8(s2);
+                    return ByteString.unsignedLexicographicalComparator().compare(bs1, bs2);
+                  }
+                });
+        sortedMap.putAll(fields);
+        entries = sortedMap.entrySet();
+      }
+      boolean printedElement = false;
+      for (Map.Entry<String, Value> entry : entries) {
+        if (printedElement) {
+          generator.println(",");
+        } else {
+          printedElement = true;
+        }
+        // Key fields are always double-quoted.
+        printStringEscapedAndQuoted(entry.getKey());
+        generator.print(":" + blankOrSpace);
+        printValueConcrete(entry.getValue());
+      }
+      if (printedElement) {
+        generator.println();
+      }
+      generator.outdent();
+      generator.print("}");
+    }
+
+    private void printStructReflectively(MessageOrBuilder message) throws IOException {
       Descriptor descriptor = message.getDescriptorForType();
       FieldDescriptor field = descriptor.findFieldByName("fields");
       if (field == null) {
@@ -1105,6 +1155,47 @@ public class JsonFormat {
 
     /** Prints google.protobuf.Value */
     private void printValue(MessageOrBuilder message) throws IOException {
+      if (message instanceof ValueOrBuilder) {
+        printValueConcrete((ValueOrBuilder) message);
+      } else {
+        printValueReflectively(message);
+      }
+    }
+
+    private void printValueConcrete(ValueOrBuilder message) throws IOException {
+      switch (message.getKindCase()) {
+        case NULL_VALUE:
+          generator.print("null");
+          break;
+        case NUMBER_VALUE:
+          Double doubleValue = message.getNumberValue();
+          if (doubleValue.isNaN() || doubleValue.isInfinite()) {
+            throw new IllegalArgumentException(
+                "google.protobuf.Value cannot encode double values for "
+                    + "infinity or nan, because they would be parsed as a string.");
+          }
+          generator.print(doubleValue.toString());
+          break;
+        case STRING_VALUE:
+          printStringEscapedAndQuoted(message.getStringValue());
+          break;
+        case BOOL_VALUE:
+          generator.print(message.getBoolValue() ? "true" : "false");
+          break;
+        case STRUCT_VALUE:
+          printStructConcrete(message.getStructValue());
+          break;
+        case LIST_VALUE:
+          printListValueConcrete(message.getListValue());
+          break;
+        case KIND_NOT_SET:
+          generator.print("null");
+          break;
+      }
+    }
+
+    /** Prints google.protobuf.Value using reflection (generally only needed for DynamicMessage) */
+    private void printValueReflectively(MessageOrBuilder message) throws IOException {
       // For a Value message, only the value of the field is formatted.
       Map<FieldDescriptor, Object> fields = message.getAllFields();
       if (fields.isEmpty()) {
@@ -1133,6 +1224,31 @@ public class JsonFormat {
 
     /** Prints google.protobuf.ListValue */
     private void printListValue(MessageOrBuilder message) throws IOException {
+      if (message instanceof ListValueOrBuilder) {
+        printListValueConcrete((ListValueOrBuilder) message);
+      } else {
+        printListValueReflectively(message);
+      }
+    }
+
+    private void printListValueConcrete(ListValueOrBuilder message) throws IOException {
+      generator.print("[");
+      boolean printedElement = false;
+      for (Value value : message.getValuesList()) {
+        if (printedElement) {
+          generator.print("," + blankOrSpace);
+        } else {
+          printedElement = true;
+        }
+        printValueConcrete(value);
+      }
+      generator.print("]");
+    }
+
+    /**
+     * Prints google.protobuf.ListValue using reflection (generally only needed for DynamicMessage)
+     */
+    private void printListValueReflectively(MessageOrBuilder message) throws IOException {
       Descriptor descriptor = message.getDescriptorForType();
       FieldDescriptor field = descriptor.findFieldByName("values");
       if (field == null) {
@@ -1802,6 +1918,28 @@ public class JsonFormat {
 
     private void mergeStruct(JsonElement json, Message.Builder builder)
         throws InvalidProtocolBufferException {
+      if (builder instanceof Struct.Builder) {
+        mergeStructConcrete(json, (Struct.Builder) builder);
+      } else {
+        mergeStructReflectively(json, builder);
+      }
+    }
+
+    private void mergeStructConcrete(JsonElement json, Struct.Builder builder)
+        throws InvalidProtocolBufferException {
+      if (!(json instanceof JsonObject)) {
+        throw new InvalidProtocolBufferException("Expect a map object but found: " + json);
+      }
+      JsonObject object = (JsonObject) json;
+      for (Map.Entry<String, JsonElement> entry : object.entrySet()) {
+        Value.Builder valueBuilder = Value.newBuilder();
+        mergeValueConcrete(entry.getValue(), valueBuilder);
+        builder.putFields(entry.getKey(), valueBuilder.build());
+      }
+    }
+
+    private void mergeStructReflectively(JsonElement json, Message.Builder builder)
+        throws InvalidProtocolBufferException {
       Descriptor descriptor = builder.getDescriptorForType();
       FieldDescriptor field = descriptor.findFieldByName("fields");
       if (field == null) {
@@ -1812,6 +1950,28 @@ public class JsonFormat {
 
     private void mergeListValue(JsonElement json, Message.Builder builder)
         throws InvalidProtocolBufferException {
+      if (builder instanceof ListValue.Builder) {
+        mergeListValueConcrete(json, (ListValue.Builder) builder);
+      } else {
+        mergeListValueReflectively(json, builder);
+      }
+    }
+
+    private void mergeListValueConcrete(JsonElement json, ListValue.Builder builder)
+        throws InvalidProtocolBufferException {
+      if (!(json instanceof JsonArray)) {
+        throw new InvalidProtocolBufferException("Expected an array but found: " + json);
+      }
+      JsonArray array = (JsonArray) json;
+      for (int i = 0; i < array.size(); ++i) {
+        Value.Builder valueBuilder = Value.newBuilder();
+        mergeValueConcrete(array.get(i), valueBuilder);
+        builder.addValues(valueBuilder.build());
+      }
+    }
+
+    private void mergeListValueReflectively(JsonElement json, Message.Builder builder)
+        throws InvalidProtocolBufferException {
       Descriptor descriptor = builder.getDescriptorForType();
       FieldDescriptor field = descriptor.findFieldByName("values");
       if (field == null) {
@@ -1821,6 +1981,41 @@ public class JsonFormat {
     }
 
     private void mergeValue(JsonElement json, Message.Builder builder)
+        throws InvalidProtocolBufferException {
+      if (builder instanceof Value.Builder) {
+        mergeValueConcrete(json, (Value.Builder) builder);
+      } else {
+        mergeValueReflectively(json, builder);
+      }
+    }
+
+    private void mergeValueConcrete(JsonElement json, Value.Builder builder)
+        throws InvalidProtocolBufferException {
+      if (json instanceof JsonPrimitive) {
+        JsonPrimitive primitive = (JsonPrimitive) json;
+        if (primitive.isBoolean()) {
+          builder.setBoolValue(primitive.getAsBoolean());
+        } else if (primitive.isNumber()) {
+          builder.setNumberValue(primitive.getAsDouble());
+        } else {
+          builder.setStringValue(primitive.getAsString());
+        }
+      } else if (json instanceof JsonObject) {
+        Struct.Builder structBuilder = Struct.newBuilder();
+        mergeStructConcrete(json, structBuilder);
+        builder.setStructValue(structBuilder);
+      } else if (json instanceof JsonArray) {
+        ListValue.Builder listBuilder = ListValue.newBuilder();
+        mergeListValueConcrete(json, listBuilder);
+        builder.setListValue(listBuilder);
+      } else if (json instanceof JsonNull) {
+        builder.setNullValue(NullValue.NULL_VALUE);
+      } else {
+        throw new IllegalStateException("Unexpected json data: " + json);
+      }
+    }
+
+    private void mergeValueReflectively(JsonElement json, Message.Builder builder)
         throws InvalidProtocolBufferException {
       Descriptor type = builder.getDescriptorForType();
       if (json instanceof JsonPrimitive) {
