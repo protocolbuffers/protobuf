@@ -15,6 +15,7 @@ serialization code in the whole library.
 
 __author__ = 'gps@google.com (Gregory P. Smith)'
 
+import array
 import collections
 import copy
 import math
@@ -906,6 +907,23 @@ class MessageTest(unittest.TestCase):
     self.assertIsInstance(m1.repeated_bytes[0], bytes)
     self.assertIsInstance(m1.optional_string, str)
     self.assertIsInstance(m1.repeated_string[0], str)
+
+  def testMergeFromStringUsingContiguousBuffer(self, message_module):
+    if api_implementation.Type() != 'upb':
+      self.skipTest('contiguous buffer parsing is upb-specific')
+
+    m2 = message_module.TestAllTypes()
+    m2.optional_string = 'scalar string'
+    serialized = m2.SerializeToString()
+
+    buffer = array.array('B', serialized)
+    m1 = message_module.TestAllTypes.FromString(buffer)
+    self.assertEqual(m1.optional_string, 'scalar string')
+
+    prefixed = bytearray(b'prefix') + serialized + bytearray(b'suffix')
+    sliced = memoryview(prefixed)[6 : 6 + len(serialized)]
+    m3 = message_module.TestAllTypes.FromString(sliced)
+    self.assertEqual(m3.optional_string, 'scalar string')
 
   def testMergeFromEmpty(self, message_module):
     m1 = message_module.TestAllTypes()

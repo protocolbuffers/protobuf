@@ -1409,17 +1409,29 @@ PyObject* PyUpb_Message_MergeFromString(PyObject* _self, PyObject* arg) {
   Py_ssize_t size;
   PyObject* bytes = NULL;
 
-  if (PyMemoryView_Check(arg)) {
-    bytes = PyBytes_FromObject(arg);
-    // Cannot fail when passed something of the correct type.
-    int err = PyBytes_AsStringAndSize(bytes, &buf, &size);
+  if (PyBytes_Check(arg)) {
+    // Cannot fail when passed a bytes object.
+    int err = PyBytes_AsStringAndSize(arg, &buf, &size);
     (void)err;
     assert(err >= 0);
   } else if (PyByteArray_Check(arg)) {
     buf = PyByteArray_AsString(arg);
     size = PyByteArray_Size(arg);
-  } else if (PyBytes_AsStringAndSize(arg, &buf, &size) < 0) {
-    return NULL;
+  } else {
+    PyObject* memoryview = NULL;
+    PyObject* view_arg = arg;
+    if (!PyMemoryView_Check(arg)) {
+      memoryview = PyMemoryView_FromObject(arg);
+      if (!memoryview) return NULL;
+      view_arg = memoryview;
+    }
+    bytes = PyBytes_FromObject(view_arg);
+    Py_XDECREF(memoryview);
+    if (!bytes) return NULL;
+    // Cannot fail when passed a bytes object.
+    int err = PyBytes_AsStringAndSize(bytes, &buf, &size);
+    (void)err;
+    assert(err >= 0);
   }
 
   const upb_MessageDef* msgdef = _PyUpb_Message_GetMsgdef(self);
