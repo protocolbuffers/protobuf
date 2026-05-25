@@ -428,4 +428,58 @@ const int kUnknownTypeId2 = 1550056;
   }
 }
 
+- (void)testParseMessageSetRecursionDepthCarriedFromParent {
+  // Each MSetMessage carries a single MSetMessageExtension1, whose
+  // `recursive` field is again a MSetMessage. Chaining N of these produces
+  // a MessageSet-of-MessageSet payload nested N levels deep. The parser
+  // for each MessageSet item allocates a fresh CodedInputStream, so depth
+  // tracking has to be inherited across those streams for the documented
+  // kDefaultRecursionLimit (100) to actually apply. A depth well past 100
+  // must be rejected with GPBCodedInputStreamErrorRecursionDepthExceeded
+  // rather than silently parsed.
+  const NSUInteger kDepth = 200;
+
+  MSetMessage* innermost = [MSetMessage message];
+  MSetMessageExtension1* innermostExt = [MSetMessageExtension1 message];
+  innermostExt.i = 1;
+#if defined(GPB_UNITTEST_USE_C_FUNCTION_FOR_EXTENSIONS)
+  [innermost setExtension:MSetMessageExtension1_extension_MessageSetExtension()
+                    value:innermostExt];
+#else
+  [innermost setExtension:[MSetMessageExtension1 messageSetExtension] value:innermostExt];
+#endif
+
+  MSetMessage* current = innermost;
+  for (NSUInteger i = 1; i < kDepth; ++i) {
+    MSetMessageExtension1* ext = [MSetMessageExtension1 message];
+    ext.recursive = current;
+    MSetMessage* parent = [MSetMessage message];
+#if defined(GPB_UNITTEST_USE_C_FUNCTION_FOR_EXTENSIONS)
+    [parent setExtension:MSetMessageExtension1_extension_MessageSetExtension() value:ext];
+#else
+    [parent setExtension:[MSetMessageExtension1 messageSetExtension] value:ext];
+#endif
+    current = parent;
+  }
+
+  NSData* data = [current data];
+  XCTAssertNotNil(data);
+
+  NSError* error = nil;
+#if defined(GPB_UNITTEST_USE_C_FUNCTION_FOR_EXTENSIONS)
+  MSetMessage* parsed =
+      [MSetMessage parseFromData:data
+               extensionRegistry:MSet_Objc_Protobuf_Tests_Mset_MSetUnittestMsetRoot_Registry()
+                           error:&error];
+#else
+  MSetMessage* parsed = [MSetMessage parseFromData:data
+                                 extensionRegistry:[MSetUnittestMsetRoot extensionRegistry]
+                                             error:&error];
+#endif
+  XCTAssertNil(parsed);
+  XCTAssertNotNil(error);
+  XCTAssertEqualObjects(error.domain, GPBCodedInputStreamErrorDomain);
+  XCTAssertEqual(error.code, GPBCodedInputStreamErrorRecursionDepthExceeded);
+}
+
 @end
