@@ -56,6 +56,11 @@ void LogIndexOutOfBounds(int index, int size) {
   }
   ABSL_UNREACHABLE();
 }
+
+[[noreturn]] void LogSelfMergeAndAbort() noexcept {
+  ABSL_LOG(FATAL) << "MergeFrom called with self-reference; "
+                     "merging a RepeatedField with itself is undefined behavior.";
+}
 }  // namespace internal
 
 template <>
