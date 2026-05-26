@@ -773,6 +773,33 @@ TEST(ArenaTest, FuzzFuseIncRefCountRace) {
   for (auto& t : threads) t.join();
 }
 
+TEST(ArenaTest, FuzzFreeIncRefRace) {
+  // Stress test targeting the Free vs IncRefFor race window.
+  // Without the CAS fix in upb_Arena_Free, a concurrent IncRefFor can
+  // increment the refcount between Free's load and DoFree, creating a
+  // dangling reference (use-after-free).
+  Environment env;
+
+  absl::Notification done;
+  std::vector<std::thread> threads;
+  for (int i = 0; i < 10; ++i) {
+    threads.emplace_back([&]() {
+      absl::BitGen gen;
+      while (!done.HasBeenNotified()) {
+        env.RandomNewFree(gen);
+      }
+    });
+  }
+
+  absl::BitGen gen;
+  auto end = absl::Now() + absl::Seconds(2);
+  while (absl::Now() < end) {
+    env.RandomIncRefCount(gen);
+  }
+  done.Notify();
+  for (auto& t : threads) t.join();
+}
+
 TEST(ArenaTest, IncRefCountShouldFailForInitialBlock) {
   char buf1[1024];
   upb_Arena* arena = upb_Arena_Init(buf1, 1024, &upb_alloc_global);
