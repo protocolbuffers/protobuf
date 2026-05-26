@@ -669,10 +669,10 @@ Error, UINTPTR_MAX is undefined
  * to prevent optimizers from removing the constructor. Our solution is to
  * create a dummy exported weak symbol that prevent this stripping.
  */
-#pragma section(".CRT$XCU", long, read)
+#pragma section(".CRT$XCT", read)
 #define UPB_CONSTRUCTOR(name, unique_name)                                   \
   static void __cdecl UPB_PRIVATE(name)(void);                               \
-  __declspec(allocate(".CRT$XCU"), selectany) void(                          \
+  __declspec(allocate(".CRT$XCT"), selectany) void(                          \
       __cdecl * UPB_PRIVATE(name##_))(void) = UPB_PRIVATE(name);             \
   __declspec(selectany, dllexport) void* UPB_PRIVATE(name##_force_linkage) = \
       &UPB_PRIVATE(name##_);                                                 \
@@ -761,11 +761,17 @@ Error, UINTPTR_MAX is undefined
 // Owner: runze@
 #define UPB_FUTURE_CONTAINER_EQ_RETURNS_NOTIMPLEMENTED 1
 
+// Make GetOptions() return immutable options.
+// Owner: runze@
+#define UPB_FUTURE_FREEZE_OPTIONS 1
+
 #else
 
 #define UPB_FUTURE_REMOVE_POP_CLAMP 0
 
 #define UPB_FUTURE_CONTAINER_EQ_RETURNS_NOTIMPLEMENTED 0
+
+#define UPB_FUTURE_FREEZE_OPTIONS 0
 
 #endif
 
@@ -2480,9 +2486,9 @@ struct upb_MiniTable {
   const char* UPB_PRIVATE(full_name);
 #endif
 
-#if UPB_FASTTABLE || !defined(__cplusplus)
-  // Flexible array member is not supported in C++, but it is an extension in
-  // every compiler that supports UPB_FASTTABLE.
+#if UPB_FASTTABLE
+  // Flexible array member is not supported in C++ standard, but it is supported
+  // as an extension in all compilers we support.
   _upb_FastTable_Entry UPB_PRIVATE(fasttable)[];
 #endif
 };
@@ -2525,7 +2531,7 @@ UPB_API_INLINE bool upb_MiniTable_IsMessageSet(const struct upb_MiniTable* m) {
 }
 
 UPB_FORCEINLINE
-const struct upb_MiniTableField* UPB_PRIVATE(upb_MiniTable_LowerBound)(
+const struct upb_MiniTableField* UPB_PRIVATE(upb_MiniTable_GenericLowerBound)(
     const struct upb_MiniTable* m, uint32_t lo, uint32_t search_len,
     uint32_t number) {
   const struct upb_MiniTableField* search_base = &m->UPB_ONLYBITS(fields)[lo];
@@ -2541,9 +2547,9 @@ const struct upb_MiniTableField* UPB_PRIVATE(upb_MiniTable_LowerBound)(
   return search_base;
 }
 
-// This implements the same algorithm as upb_MiniTable_LowerBound but contorts
-// itself to select specific arm instructions, which show significant effects on
-// little cores.
+// This implements the same algorithm as upb_MiniTable_GenericLowerBound but
+// contorts itself to select specific arm instructions, which show significant
+// effects on little cores.
 UPB_FORCEINLINE const struct upb_MiniTableField* UPB_PRIVATE(
     upb_MiniTable_ArmOptimizedLowerBound)(const struct upb_MiniTable* m,
                                           uint32_t lo, uint32_t search_len,
@@ -2628,6 +2634,24 @@ UPB_FORCEINLINE const struct upb_MiniTableField* UPB_PRIVATE(
   return (const struct upb_MiniTableField*)search_base;
 }
 
+UPB_FORCEINLINE const struct upb_MiniTableField* UPB_PRIVATE(
+    upb_MiniTable_LowerBound)(const struct upb_MiniTable* m, uint32_t lo,
+                              uint32_t search_len, uint32_t number) {
+#ifndef NDEBUG
+  const struct upb_MiniTableField* candidate = UPB_PRIVATE(
+      upb_MiniTable_ArmOptimizedLowerBound)(m, lo, search_len, number);
+  UPB_ASSERT(candidate == UPB_PRIVATE(upb_MiniTable_GenericLowerBound)(
+                              m, lo, search_len, number));
+  return candidate;
+#elif UPB_ARM64_ASM
+  return UPB_PRIVATE(upb_MiniTable_ArmOptimizedLowerBound)(m, lo, search_len,
+                                                           number);
+#else
+  return UPB_PRIVATE(upb_MiniTable_GenericLowerBound)(m, lo, search_len,
+                                                      number);
+#endif
+}
+
 UPB_API_INLINE
 const struct upb_MiniTableField* upb_MiniTable_FindFieldByNumber(
     const struct upb_MiniTable* m, uint32_t number) {
@@ -2650,20 +2674,63 @@ const struct upb_MiniTableField* upb_MiniTable_FindFieldByNumber(
   }
 
   // Slow case: binary search
-  const struct upb_MiniTableField* candidate;
-#ifndef NDEBUG
-  candidate = UPB_PRIVATE(upb_MiniTable_ArmOptimizedLowerBound)(
-      m, lo, search_len, number);
-  UPB_ASSERT(candidate ==
-             UPB_PRIVATE(upb_MiniTable_LowerBound)(m, lo, search_len, number));
-#elif UPB_ARM64_ASM
-  candidate = UPB_PRIVATE(upb_MiniTable_ArmOptimizedLowerBound)(
-      m, lo, search_len, number);
-#else
-  candidate = UPB_PRIVATE(upb_MiniTable_LowerBound)(m, lo, search_len, number);
-#endif
+  const struct upb_MiniTableField* candidate =
+      UPB_PRIVATE(upb_MiniTable_LowerBound)(m, lo, search_len, number);
 
   return candidate->UPB_ONLYBITS(number) == number ? candidate : NULL;
+}
+
+// Given a tag number, finds the known field tags bounding the gap of unknown
+// fields containing it. Returns false and does not set bounds if the tag
+// number matches a known field. Otherwise returns true and sets out_gap_lo
+// and out_gap_hi (exclusive/exclusive) to define the range of unknown
+// fields (out_gap_lo, out_gap_hi).
+UPB_FORCEINLINE bool UPB_PRIVATE(_upb_MiniTable_FindUnknownGap)(
+    const struct upb_MiniTable* m, uint32_t number, uint32_t* out_gap_lo,
+    uint32_t* out_gap_hi) {
+  UPB_ASSERT(number != 0);
+  UPB_ASSERT(number < ((uint32_t)1 << 29));
+  const uint32_t i = number - 1;
+  if (i < m->UPB_PRIVATE(dense_below)) {
+    // Dense field; we know it's present.
+    return false;
+  }
+
+  uint32_t hi = m->UPB_ONLYBITS(field_count);
+  uint32_t lo = m->UPB_PRIVATE(dense_below);
+  if (hi == lo) {
+    *out_gap_lo = lo;
+    *out_gap_hi = UINT32_MAX;
+    return true;
+  }
+
+  uint32_t max_field = m->UPB_ONLYBITS(fields)[hi - 1].UPB_ONLYBITS(number);
+  if (number > max_field) {
+    *out_gap_lo = max_field;
+    *out_gap_hi = UINT32_MAX;
+    return true;
+  }
+
+  uint32_t search_len = hi - lo;
+  const struct upb_MiniTableField* candidate =
+      UPB_PRIVATE(upb_MiniTable_LowerBound)(m, lo, search_len, number);
+
+  uint32_t candidate_num = candidate->UPB_ONLYBITS(number);
+  if (candidate_num == number) {
+    return false;
+  }
+
+  if (candidate_num < number) {
+    *out_gap_lo = candidate_num;
+    // Checking this next pointer is safe as we have already validated that the
+    // field we're searching for is not greater than or equal to the last field
+    *out_gap_hi = (candidate + 1)->UPB_ONLYBITS(number);
+  } else {
+    UPB_ASSERT(candidate == &m->UPB_ONLYBITS(fields)[lo]);
+    *out_gap_lo = lo;
+    *out_gap_hi = candidate_num;
+  }
+  return true;
 }
 
 UPB_API_INLINE const struct upb_MiniTableField* upb_MiniTable_GetFieldByIndex(
@@ -3952,6 +4019,60 @@ UPB_API void upb_Message_SetNewMessageTraceHandler(
     void (*handler)(const upb_MiniTable*, const upb_Arena*));
 #endif  // UPB_TRACING_ENABLED
 
+// We want to avoid the PLT and register spills for the many tiny memsets used
+// to initialize messages; the dedicated memset instructions won't do that
+#ifdef __ARM_FEAT_MOPS
+#define UPB_ARM_MOPS __ARM_FEAT_MOPS
+#else
+#define UPB_ARM_MOPS 0
+#endif
+
+UPB_FORCEINLINE void _upb_Message_AlignedMemsetZero(void* dst, size_t size) {
+  UPB_ASSUME(size % kUpb_Message_Align == 0);
+  UPB_ASSUME(size != 0);
+  UPB_ASSUME((uintptr_t)dst % kUpb_Message_Align == 0);
+#if UPB_ARM64_ASM && !UPB_ARM_MOPS
+#if UPB_HAS_BUILTIN(__builtin_constant_p)
+  if (__builtin_constant_p(size)) {
+    // We assume the compiler will do something intelligent with a known-length
+    // memset.
+    memset(dst, 0, size);
+    return;
+  }
+#endif
+  char* ptr = (char*)dst;
+  char* end = ptr + size;
+  __asm__(
+      // Unconditionally zero the first 8 byte chunk; if the loop runs this is
+      // wasted work, but doing it unconditionally is cheaper than adding
+      // another branch.
+      "str xzr, [%x[ptr]]\n\t"
+
+      // If size == 8, skip the loop.
+      "cmp %x[count], #8\n\t"
+      "b.eq 2f\n\t"
+
+      // Loop for size >= 16.
+      // In each iteration, we zero 16 bytes from the ptr and 16 bytes from the
+      // end. These regions may overlap, which is OK; doing it this way lets us
+      // process two chunks per loop iteration.
+      "1:\n\t"
+      "stp xzr, xzr, [%x[ptr]], #16\n\t"    // Store then increment by 16
+      "stp xzr, xzr, [%x[end], #-16]!\n\t"  // Decrement by 16 then store
+      // End the loop when pointers cross or meet.
+      "cmp %x[ptr], %x[end]\n\t"
+      "b.lo 1b\n\t"
+      "2:\n\t"
+      : [ptr] "+&r"(ptr), [end] "+&r"(end), "=m"(*(char (*)[])dst)
+      : [count] "r"(size)
+      : "cc");
+  UPB_PRIVATE(upb_Xsan_MarkInitialized)(dst, size);
+#else
+  memset(dst, 0, size);
+#endif
+}
+#undef UPB_ARM_MOPS
+
 // Inline version upb_Message_New(), for internal use.
 UPB_NODISCARD UPB_INLINE struct upb_Message* _upb_Message_New(
     const upb_MiniTable* m, upb_Arena* a) {
@@ -3966,7 +4087,7 @@ UPB_NODISCARD UPB_INLINE struct upb_Message* _upb_Message_New(
   UPB_ASSUME(size % kUpb_Message_Align == 0);
   struct upb_Message* msg = (struct upb_Message*)upb_Arena_Malloc(a, size);
   if (UPB_UNLIKELY(!msg)) return NULL;
-  memset(msg, 0, size);
+  _upb_Message_AlignedMemsetZero(msg, size);
   return msg;
 }
 
@@ -16238,11 +16359,21 @@ UPB_INLINE bool upb_EpsCopyInputStream_HasErrorHandler(
   return e && e->err != NULL;
 }
 
+UPB_NORETURN UPB_NOINLINE void UPB_PRIVATE(
+    upb_EpsCopyInputStream_ThrowMalformed)(struct upb_EpsCopyInputStream* e);
+
 // Call this function to signal an error. If an error handler is set, it will be
 // called and the function will never return. Otherwise, returns NULL to
 // indicate an error.
-const char* UPB_PRIVATE(upb_EpsCopyInputStream_ReturnError)(
-    struct upb_EpsCopyInputStream* e);
+UPB_INLINE const char* UPB_PRIVATE(upb_EpsCopyInputStream_ReturnError)(
+    struct upb_EpsCopyInputStream* e) {
+  if (e->err) {
+    UPB_PRIVATE(upb_EpsCopyInputStream_ThrowMalformed)(e);
+  } else {
+    e->error = true;
+  }
+  return NULL;
+}
 
 UPB_INLINE const char* UPB_PRIVATE(upb_EpsCopyInputStream_AssumeResult)(
     struct upb_EpsCopyInputStream* e, const char* ptr) {
@@ -16852,7 +16983,7 @@ UPB_INLINE const char* upb_WireReader_SkipGroup(
   return UPB_PRIVATE(upb_EpsCopyInputStream_AssumeResult)(stream, ret);
 }
 
-UPB_INLINE const char* _upb_WireReader_SkipValue(
+UPB_FORCEINLINE const char* _upb_WireReader_SkipValueForceInline(
     const char* ptr, uint32_t tag, int depth_limit,
     upb_EpsCopyInputStream* stream) {
   switch (upb_WireReader_GetWireType(tag)) {
@@ -16882,6 +17013,12 @@ UPB_INLINE const char* _upb_WireReader_SkipValue(
       // Unknown wire type.
       return UPB_PRIVATE(upb_EpsCopyInputStream_ReturnError)(stream);
   }
+}
+
+UPB_INLINE const char* _upb_WireReader_SkipValue(
+    const char* ptr, uint32_t tag, int depth_limit,
+    upb_EpsCopyInputStream* stream) {
+  return _upb_WireReader_SkipValueForceInline(ptr, tag, depth_limit, stream);
 }
 
 // Skips data for a wire value of any type, returning a pointer past the end of
@@ -17422,6 +17559,13 @@ const void* _upb_DefType_Unpack(upb_value v, upb_deftype_t type);
 
 // We want to copy the options verbatim into the destination options proto.
 // We use serialize+parse as our deep copy.
+#if UPB_FUTURE_FREEZE_OPTIONS
+#define _UPB_FREEZE_OPTIONS(target, options_type) \
+  upb_Message_Freeze((upb_Message*)target, UPB_DESC_MINITABLE(options_type))
+#else
+#define _UPB_FREEZE_OPTIONS(target, options_type)
+#endif
+
 #define UPB_DEF_SET_OPTIONS(target, desc_type, options_type, proto)        \
   if (google_protobuf_##desc_type##_has_options(proto)) {                           \
     size_t size;                                                           \
@@ -17432,6 +17576,7 @@ const void* _upb_DefType_Unpack(upb_value v, upb_deftype_t type);
         pb, size, _upb_DefPool_GeneratedExtensionRegistry(ctx->symtab), 0, \
         _upb_DefBuilder_Arena(ctx));                                       \
     if (!target) _upb_DefBuilder_OomErr(ctx);                              \
+    _UPB_FREEZE_OPTIONS(target, options_type);                             \
   } else {                                                                 \
     target = (const google_protobuf_##options_type*)kUpbDefOptDefault;              \
   }
@@ -18116,6 +18261,12 @@ typedef struct upb_Decoder {
 #endif
 } upb_Decoder;
 
+UPB_INLINE void _upb_Decoder_AssumeEpsHasErrorHandler(upb_Decoder* d) {
+  UPB_ASSUME(upb_EpsCopyInputStream_HasErrorHandler(&d->input));
+}
+
+#define EPS(d) (_upb_Decoder_AssumeEpsHasErrorHandler(d), &(d)->input)
+
 UPB_INLINE const char* upb_Decoder_Init(upb_Decoder* d, const char* buf,
                                         size_t size,
                                         const upb_ExtensionRegistry* extreg,
@@ -18246,6 +18397,9 @@ const char* _upb_Decoder_CheckRequired(upb_Decoder* d, const char* ptr,
                                        const upb_Message* msg,
                                        const upb_MiniTable* m);
 
+#if UPB_FASTTABLE
+UPB_PRESERVE_NONE
+#endif
 const char* _upb_Decoder_DecodeMessage(upb_Decoder* d, const char* ptr,
                                        upb_Message* msg,
                                        const upb_MiniTable* layout);
@@ -18592,6 +18746,7 @@ UPB_PRIVATE(upb_WireWriter_VarintUnusedSizeFromLeadingZeros64)(uint64_t clz) {
 #undef UPB_FUTURE_BREAKING_CHANGES
 #undef UPB_FUTURE_REMOVE_POP_CLAMP
 #undef UPB_FUTURE_CONTAINER_EQ_RETURNS_NOTIMPLEMENTED
+#undef UPB_FUTURE_FREEZE_OPTIONS
 #undef UPB_HAS_ATTRIBUTE
 #undef UPB_HAS_CPP_ATTRIBUTE
 #undef UPB_HAS_BUILTIN

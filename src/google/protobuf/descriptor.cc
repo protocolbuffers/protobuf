@@ -8257,7 +8257,9 @@ void DescriptorBuilder::CrossLinkField(FieldDescriptor* field,
     // if weak fields exist or not so that we don't need to force building
     // weak dependencies. However the name lookup rules for symbols are
     // somewhat complicated, so I defer it too another CL.
+    PROTOBUF_IGNORE_DEPRECATION_START
     bool is_weak = !pool_->enforce_weak_ && proto.options().weak();
+    PROTOBUF_IGNORE_DEPRECATION_STOP
     bool is_lazy = pool_->lazily_build_dependencies_ && !is_weak;
 
     Symbol type =
@@ -11093,7 +11095,10 @@ bool HasPreservingUnknownEnumSemantics(const FieldDescriptor* field) {
 
 HasbitMode GetFieldHasbitModeWithoutProfile(const FieldDescriptor* field) {
   // Do not generate hasbits for "real-oneof", weak, or extension fields.
-  if (field->real_containing_oneof() || field->options().weak() ||
+  PROTOBUF_IGNORE_DEPRECATION_START
+  const bool field_is_weak = field->options().weak();
+  PROTOBUF_IGNORE_DEPRECATION_STOP
+  if (field->real_containing_oneof() || field_is_weak ||
       field->is_extension()) {
     return HasbitMode::kNoHasbit;
   }
@@ -11155,6 +11160,10 @@ bool IsLazilyInitializedFile(absl::string_view filename) {
   }
   if (filename == "third_party/protobuf/json_enumvalue_options.proto" ||
       filename == "google/protobuf/json_enumvalue_options.proto") {
+    return true;
+  }
+  if (filename == "third_party/protobuf/cpp_file_options.proto" ||
+      filename == "google/protobuf/cpp_file_options.proto") {
     return true;
   }
   return filename == "net/proto2/proto/descriptor.proto" ||

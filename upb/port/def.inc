@@ -674,10 +674,10 @@ Error, UINTPTR_MAX is undefined
  * to prevent optimizers from removing the constructor. Our solution is to
  * create a dummy exported weak symbol that prevent this stripping.
  */
-#pragma section(".CRT$XCU", long, read)
+#pragma section(".CRT$XCT", read)
 #define UPB_CONSTRUCTOR(name, unique_name)                                   \
   static void __cdecl UPB_PRIVATE(name)(void);                               \
-  __declspec(allocate(".CRT$XCU"), selectany) void(                          \
+  __declspec(allocate(".CRT$XCT"), selectany) void(                          \
       __cdecl * UPB_PRIVATE(name##_))(void) = UPB_PRIVATE(name);             \
   __declspec(selectany, dllexport) void* UPB_PRIVATE(name##_force_linkage) = \
       &UPB_PRIVATE(name##_);                                                 \
@@ -766,10 +766,16 @@ Error, UINTPTR_MAX is undefined
 // Owner: runze@
 #define UPB_FUTURE_CONTAINER_EQ_RETURNS_NOTIMPLEMENTED 1
 
+// Make GetOptions() return immutable options.
+// Owner: runze@
+#define UPB_FUTURE_FREEZE_OPTIONS 1
+
 #else
 
 #define UPB_FUTURE_REMOVE_POP_CLAMP 0
 
 #define UPB_FUTURE_CONTAINER_EQ_RETURNS_NOTIMPLEMENTED 0
+
+#define UPB_FUTURE_FREEZE_OPTIONS 0
 
 #endif

@@ -670,10 +670,10 @@ Error, UINTPTR_MAX is undefined
  * to prevent optimizers from removing the constructor. Our solution is to
  * create a dummy exported weak symbol that prevent this stripping.
  */
-#pragma section(".CRT$XCU", long, read)
+#pragma section(".CRT$XCT", read)
 #define UPB_CONSTRUCTOR(name, unique_name)                                   \
   static void __cdecl UPB_PRIVATE(name)(void);                               \
-  __declspec(allocate(".CRT$XCU"), selectany) void(                          \
+  __declspec(allocate(".CRT$XCT"), selectany) void(                          \
       __cdecl * UPB_PRIVATE(name##_))(void) = UPB_PRIVATE(name);             \
   __declspec(selectany, dllexport) void* UPB_PRIVATE(name##_force_linkage) = \
       &UPB_PRIVATE(name##_);                                                 \
@@ -762,11 +762,17 @@ Error, UINTPTR_MAX is undefined
 // Owner: runze@
 #define UPB_FUTURE_CONTAINER_EQ_RETURNS_NOTIMPLEMENTED 1
 
+// Make GetOptions() return immutable options.
+// Owner: runze@
+#define UPB_FUTURE_FREEZE_OPTIONS 1
+
 #else
 
 #define UPB_FUTURE_REMOVE_POP_CLAMP 0
 
 #define UPB_FUTURE_CONTAINER_EQ_RETURNS_NOTIMPLEMENTED 0
+
+#define UPB_FUTURE_FREEZE_OPTIONS 0
 
 #endif
 
@@ -9988,8 +9994,15 @@ upb_MiniTable* _upb_MiniTable_Build(const char* data, size_t len,
 #include <string.h>
 
 
-#ifdef UPB_ENABLE_FASTTABLE
+// Our awkward dance for including fasttable only when it is enabled.
+#if UPB_FASTTABLE
+#define UPB_INCLUDE_FAST_DECODE
 #endif
+
+#ifdef UPB_INCLUDE_FAST_DECODE
+#endif
+
+#undef UPB_INCLUDE_FAST_DECODE
 
 // Must be last.
 
@@ -10014,7 +10027,7 @@ bool upb_MiniTable_SetSubMessage(upb_MiniTable* table,
             (field->UPB_PRIVATE(mode) & ~kUpb_FieldMode_Mask) |
             kUpb_FieldMode_Map;
 
-#ifdef UPB_ENABLE_FASTTABLE
+#if UPB_FASTTABLE
         // The fasttable decoder cannot decode maps. Unfortunately we do not
         // know until this moment that the field is a map, so we have to
         // overwrite the fasttable entry (if any) that we built for this field
@@ -16011,12 +16024,6 @@ enum {
 #define OP_FIXPCK_LG2(n) (n + 5) /* n in [2, 3] => op in [7, 8] */
 #define OP_VARPCK_LG2(n) (n + 9) /* n in [0, 2, 3] => op in [9, 11, 12] */
 
-static void _upb_Decoder_AssumeEpsHasErrorHandler(upb_Decoder* d) {
-  UPB_ASSUME(upb_EpsCopyInputStream_HasErrorHandler(&d->input));
-}
-
-#define EPS(d) (_upb_Decoder_AssumeEpsHasErrorHandler(d), &(d)->input)
-
 static bool _upb_Decoder_Reserve(upb_Decoder* d, upb_Array* arr, size_t elem) {
   bool need_realloc =
       arr->UPB_PRIVATE(capacity) - arr->UPB_PRIVATE(size) < elem;
@@ -16283,6 +16290,9 @@ static upb_Array* _upb_Decoder_CreateArray(upb_Decoder* d,
   return ret;
 }
 
+#if UPB_FASTTABLE
+UPB_PRESERVE_NONE
+#endif
 static const char* _upb_Decoder_DecodeToArray(upb_Decoder* d, const char* ptr,
                                               upb_Message* msg,
                                               const upb_MiniTableField* field,
@@ -16392,6 +16402,9 @@ static upb_Map* _upb_Decoder_CreateMap(upb_Decoder* d,
   return ret;
 }
 
+#if UPB_FASTTABLE
+UPB_PRESERVE_NONE
+#endif
 static const char* _upb_Decoder_DecodeToMap(upb_Decoder* d, const char* ptr,
                                             upb_Message* msg,
                                             const upb_MiniTableField* field,
@@ -16455,6 +16468,9 @@ static const char* _upb_Decoder_DecodeToMap(upb_Decoder* d, const char* ptr,
   return ptr;
 }
 
+#if UPB_FASTTABLE
+UPB_PRESERVE_NONE
+#endif
 static const char* _upb_Decoder_DecodeToSubMessage(
     upb_Decoder* d, const char* ptr, upb_Message* msg,
     const upb_MiniTableField* field, wireval* val, int op) {
@@ -16774,7 +16790,7 @@ static int _upb_Decoder_GetDelimitedOp(upb_Decoder* d, const upb_MiniTable* mt,
       [kRepeatedBase + kUpb_FieldType_Fixed32] = OP_FIXPCK_LG2(2),
       [kRepeatedBase + kUpb_FieldType_Bool] = OP_VARPCK_LG2(0),
       [kRepeatedBase + kUpb_FieldType_String] = kUpb_DecodeOp_String,
-      [kRepeatedBase + kUpb_FieldType_Group] = kUpb_DecodeOp_SubMessage,
+      [kRepeatedBase + kUpb_FieldType_Group] = kUpb_DecodeOp_UnknownField,
       [kRepeatedBase + kUpb_FieldType_Message] = kUpb_DecodeOp_SubMessage,
       [kRepeatedBase + kUpb_FieldType_Bytes] = kUpb_DecodeOp_Bytes,
       [kRepeatedBase + kUpb_FieldType_UInt32] = OP_VARPCK_LG2(2),
@@ -16996,7 +17012,7 @@ bool _upb_Decoder_TryDecodeMessageFast(upb_Decoder* d, const char** ptr,
                                        const upb_MiniTable* mt,
                                        uint64_t last_field_index,
                                        uint64_t data) {
-#ifdef UPB_ENABLE_FASTTABLE
+#if UPB_FASTTABLE
   if (mt->UPB_PRIVATE(table_mask) == (unsigned char)-1 ||
       (d->options & kUpb_DecodeOption_DisableFastTable)) {
     // Fast table is unavailable or disabled.
@@ -17066,10 +17082,10 @@ static const char* _upb_Decoder_DecodeEmptyMessage(upb_Decoder* d,
       d->end_group = tag >> 3;
       break;
     }
-    ptr = _upb_WireReader_SkipValue(ptr, tag, d->depth, &d->input);
+    ptr = _upb_WireReader_SkipValueForceInline(ptr, tag, d->depth, EPS(d));
   }
   upb_StringView sv;
-  upb_EpsCopyCapture_End(&capture, &d->input, ptr, &sv);
+  upb_EpsCopyCapture_End(&capture, EPS(d), ptr, &sv);
 
   if (sv.size > 0) {
     if (!UPB_PRIVATE(_upb_Message_AddUnknown)(
@@ -17081,6 +17097,20 @@ static const char* _upb_Decoder_DecodeEmptyMessage(upb_Decoder* d,
   return ptr;
 }
 
+// When fasttable is enabled, _upb_Decoder_DecodeMessage possibly calls a
+// preserve_none function, which forces a spill of all callee-save registers
+// registers to the stack in its prologue and restoration in its epilogue, due
+// to mismatched calling conventions - the fast decoder (preserve_none) calls
+// _upb_Decoder_DecodeMessage (normal) which calls the fast decoder
+// (preserve_none). Arm has a lot of callee-save registers in its normal calling
+// convention, including a bunch of simd&fp registers that our preserve_none
+// caller is probably not actually using. To avoid this cost, all functions in
+// the call stack (excluding force-inlined) between the fast decoder's decode
+// message function and a recursive call to the fast decoder should use the fast
+// decoder's calling convention.
+#if UPB_FASTTABLE
+UPB_PRESERVE_NONE
+#endif
 UPB_NOINLINE
 const char* _upb_Decoder_DecodeMessage(upb_Decoder* d, const char* ptr,
                                        upb_Message* msg,
@@ -18233,11 +18263,10 @@ upb_EncodeStatus UPB_PRIVATE(_upb_Encode_Extension)(
 
 // Must be last.
 
-const char* UPB_PRIVATE(upb_EpsCopyInputStream_ReturnError)(
-    upb_EpsCopyInputStream* e) {
+UPB_NORETURN UPB_NOINLINE void UPB_PRIVATE(
+    upb_EpsCopyInputStream_ThrowMalformed)(upb_EpsCopyInputStream* e) {
   e->error = true;
-  if (e->err) upb_ErrorHandler_ThrowError(e->err, kUpb_ErrorCode_Malformed);
-  return NULL;
+  upb_ErrorHandler_ThrowError(e->err, kUpb_ErrorCode_Malformed);
 }
 
 const char* UPB_PRIVATE(upb_EpsCopyInputStream_IsDoneFallback)(
@@ -18406,6 +18435,7 @@ const char* UPB_PRIVATE(_upb_WireReader_SkipGroup)(
 #undef UPB_FUTURE_BREAKING_CHANGES
 #undef UPB_FUTURE_REMOVE_POP_CLAMP
 #undef UPB_FUTURE_CONTAINER_EQ_RETURNS_NOTIMPLEMENTED
+#undef UPB_FUTURE_FREEZE_OPTIONS
 #undef UPB_HAS_ATTRIBUTE
 #undef UPB_HAS_CPP_ATTRIBUTE
 #undef UPB_HAS_BUILTIN

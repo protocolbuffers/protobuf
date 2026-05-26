@@ -293,7 +293,16 @@ struct ClosedEnum {
   }
 };
 
-// TODO: Group
+struct Group {
+  using Value = std::string;
+  static constexpr upb_FieldType kFieldType = kUpb_FieldType_Group;
+  static constexpr absl::string_view kName = "Group";
+  static constexpr upb_DecodeFast_Type kFastType = kUpb_DecodeFast_Message;
+
+  static wire_types::WireValue WireValue(std::string value) {
+    return wire_types::Delimited(value);
+  }
+};
 
 }  // namespace field_types
 

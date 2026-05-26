@@ -78,7 +78,7 @@ typedef enum {
   kUpb_DecodeFastNext_DecodeLongTag = 11,
 
   // Tail call for decoding an unknown value; ptr points to the start of the
-  // field after the tag.
+  // tag.
   kUpb_DecodeFastNext_DecodeUnknownValue = 12,
 } upb_DecodeFastNext;
 
@@ -470,12 +470,7 @@ bool upb_DecodeFast_Delimited(upb_Decoder* d, const char** ptr,
                                                    ctx)) {
     if (UPB_UNLIKELY(p == NULL)) goto fail;
   } else {
-    ptrdiff_t delta = upb_EpsCopyInputStream_PushLimit(&d->input, p, size);
-    if (UPB_UNLIKELY(delta < 0)) {
-      // Corrupt wire format: invalid limit.
-      *ptr = NULL;
-      return UPB_DECODEFAST_ERROR(d, kUpb_DecodeStatus_Malformed, ret);
-    }
+    ptrdiff_t delta = upb_EpsCopyInputStream_PushLimit(EPS(d), p, size);
     p = func(&d->input, p, size, ctx);
     if (UPB_UNLIKELY(p == NULL)) goto fail;
     upb_EpsCopyInputStream_PopLimit(&d->input, p, delta);

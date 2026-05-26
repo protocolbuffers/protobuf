@@ -174,9 +174,11 @@ public class JsonFormatTest {
   private String toJsonString(Message message) throws IOException {
     return JsonFormat.printer().print(message);
   }
+
   private String toCompactJsonString(Message message) throws IOException {
     return JsonFormat.printer().omittingInsignificantWhitespace().print(message);
   }
+
   private String toSortedJsonString(Message message) throws IOException {
     return JsonFormat.printer().sortingMapKeys().print(message);
   }
@@ -858,7 +860,7 @@ public class JsonFormatTest {
     // Repeated field elements cannot be null.
     try {
       builder = TestAllTypes.newBuilder();
-      mergeFromJson("{\n" + "  \"repeatedInt32\": [null, null],\n" + "}", builder);
+      mergeFromJson("{\"repeatedInt32\": [null, null]}", builder);
       assertWithMessage("expected exception").fail();
     } catch (InvalidProtocolBufferException e) {
       // Exception expected.
@@ -866,7 +868,7 @@ public class JsonFormatTest {
 
     try {
       builder = TestAllTypes.newBuilder();
-      mergeFromJson("{\n" + "  \"repeatedNestedMessage\": [null, null],\n" + "}", builder);
+      mergeFromJson("{\"repeatedNestedMessage\": [null, null]}", builder);
       assertWithMessage("expected exception").fail();
     } catch (InvalidProtocolBufferException e) {
       // Exception expected.
@@ -876,7 +878,7 @@ public class JsonFormatTest {
   @Test
   public void testNullInOneof() throws Exception {
     TestOneof.Builder builder = TestOneof.newBuilder();
-    mergeFromJson("{\n" + "  \"oneofNullValue\": null \n" + "}", builder);
+    mergeFromJson("{\"oneofNullValue\": null}", builder);
     TestOneof message = builder.build();
     assertThat(message.getOneofFieldCase()).isEqualTo(TestOneof.OneofFieldCase.ONEOF_NULL_VALUE);
     assertThat(message.getOneofNullValue()).isEqualTo(NullValue.NULL_VALUE);
@@ -922,12 +924,7 @@ public class JsonFormatTest {
     // Duplicated repeated fields.
     try {
       TestAllTypes.Builder builder = TestAllTypes.newBuilder();
-      mergeFromJson(
-          "{\n"
-              + "  \"repeatedInt32\": [1, 2],\n"
-              + "  \"repeated_int32\": [5, 6]\n"
-              + "}",
-          builder);
+      mergeFromJson("{\"repeatedInt32\": [1, 2], \"repeated_int32\": [5, 6] }", builder);
       assertWithMessage("expected exception").fail();
     } catch (InvalidProtocolBufferException e) {
       // Exception expected.
@@ -936,7 +933,7 @@ public class JsonFormatTest {
     // Duplicated oneof fields, same name.
     try {
       TestOneof.Builder builder = TestOneof.newBuilder();
-      mergeFromJson("{\n" + "  \"oneofInt32\": 1,\n" + "  \"oneof_int32\": 2\n" + "}", builder);
+      mergeFromJson("{\"oneofInt32\": 1, \"oneof_int32\": 2}", builder);
       assertWithMessage("expected exception").fail();
     } catch (InvalidProtocolBufferException e) {
       // Exception expected.
@@ -945,8 +942,7 @@ public class JsonFormatTest {
     // Duplicated oneof fields, different name.
     try {
       TestOneof.Builder builder = TestOneof.newBuilder();
-      mergeFromJson(
-          "{\n" + "  \"oneofInt32\": 1,\n" + "  \"oneofNullValue\": null\n" + "}", builder);
+      mergeFromJson("{\"oneofInt32\": 1, \"oneofNullValue\": null}", builder);
       assertWithMessage("expected exception").fail();
     } catch (InvalidProtocolBufferException e) {
       // Exception expected.
@@ -1129,8 +1125,7 @@ public class JsonFormatTest {
   @Test
   public void testMapEnumNullValueIsIgnored() throws Exception {
     TestMap.Builder builder = TestMap.newBuilder();
-    mergeFromJsonIgnoringUnknownFields(
-        "{\n" + "  \"int32ToEnumMap\": {\"1\": null}\n" + "}", builder);
+    mergeFromJsonIgnoringUnknownFields("{\"int32ToEnumMap\": {\"1\": null}}", builder);
     TestMap map = builder.build();
     assertThat(map.getInt32ToEnumMapMap()).isEmpty();
   }
@@ -1140,14 +1135,11 @@ public class JsonFormatTest {
   public void testArrayTypeMismatch() throws IOException {
     TestAllTypes.Builder builder = TestAllTypes.newBuilder();
     try {
-      mergeFromJson(
-          "{\n"
-              + "  \"repeated_int32\": 5\n"
-              + "}",
-          builder);
+      mergeFromJson("{\"repeated_int32\": 5}", builder);
       assertWithMessage("should have thrown exception for incorrect type").fail();
     } catch (InvalidProtocolBufferException expected) {
-      assertThat(expected).hasMessageThat()
+      assertThat(expected)
+          .hasMessageThat()
           .isEqualTo("Expected an array for repeated_int32 but found 5");
     }
   }
@@ -1400,8 +1392,9 @@ public class JsonFormatTest {
       toJsonString(message);
       assertWithMessage("Exception is expected.").fail();
     } catch (InvalidProtocolBufferException expected) {
-      assertThat(expected).hasMessageThat().isEqualTo(
-          "Cannot find type for url: type.googleapis.com/json_test.TestAllTypes");
+      assertThat(expected)
+          .hasMessageThat()
+          .isEqualTo("Cannot find type for url: type.googleapis.com/json_test.TestAllTypes");
     }
 
     JsonFormat.TypeRegistry registry =
@@ -1764,7 +1757,7 @@ public class JsonFormatTest {
   public void testParserMissingTypeUrl() throws Exception {
     try {
       Any.Builder builder = Any.newBuilder();
-      mergeFromJson("{\n" + "  \"optionalInt32\": 1234\n" + "}", builder);
+      mergeFromJson("{\"optionalInt32\": 1234}", builder);
       assertWithMessage("Exception is expected.").fail();
     } catch (IOException e) {
       // Expected.
@@ -1791,7 +1784,7 @@ public class JsonFormatTest {
   public void testParserRejectTrailingComma() throws Exception {
     try {
       TestAllTypes.Builder builder = TestAllTypes.newBuilder();
-      mergeFromJson("{\n" + "  \"optionalInt32\": 12345,\n" + "}", builder);
+      mergeFromJson("{\"optionalInt32\": 12345,}", builder);
       assertWithMessage("Exception is expected.").fail();
     } catch (IOException e) {
       // Expected.
@@ -1799,14 +1792,11 @@ public class JsonFormatTest {
 
     try {
       TestAllTypes.Builder builder = TestAllTypes.newBuilder();
-      mergeFromJson(
-         "{\n"
-         + "  \"repeatedInt32\": [12345,]\n"
-         + "}", builder);
+      mergeFromJson("{\"repeatedInt32\": [12345,]}", builder);
       assertWithMessage("IOException expected.").fail();
-     } catch (IOException e) {
-       // Expected.
-     }
+    } catch (IOException e) {
+      // Expected.
+    }
   }
 
   @Test
@@ -1830,7 +1820,7 @@ public class JsonFormatTest {
   public void testParserRejectInvalidEnumValue() throws Exception {
     try {
       TestAllTypes.Builder builder = TestAllTypes.newBuilder();
-      mergeFromJson("{\n" + "  \"optionalNestedEnum\": \"XXX\"\n" + "}", builder);
+      mergeFromJson("{\"optionalNestedEnum\": \"XXX\"}", builder);
       assertWithMessage("Exception is expected.").fail();
     } catch (InvalidProtocolBufferException e) {
       // Expected.
@@ -1887,7 +1877,7 @@ public class JsonFormatTest {
     TestMap.Builder builder = TestMap.newBuilder();
     JsonFormat.parser()
         .ignoringUnknownFields()
-        .merge("{\n" + "  \"int32ToEnumMap\": {1: XXX, 2: FOO}" + "}", builder);
+        .merge("{\"int32ToEnumMap\": {1: XXX, 2: FOO}}", builder);
 
     assertThat(builder.getInt32ToEnumMapMap()).containsEntry(2, NestedEnum.FOO);
     assertThat(builder.getInt32ToEnumMapMap()).hasSize(1);
@@ -1898,7 +1888,7 @@ public class JsonFormatTest {
     TestAllTypes.Builder builder = TestAllTypes.newBuilder();
     JsonFormat.parser()
         .ignoringUnknownFields()
-        .merge("{\n" + "  \"repeatedNestedEnum\": [XXX, FOO, BAR, BAZ]" + "}", builder);
+        .merge("{\"repeatedNestedEnum\": [XXX, FOO, BAR, BAZ]}", builder);
 
     assertThat(builder.getRepeatedNestedEnum(0)).isEqualTo(NestedEnum.FOO);
     assertThat(builder.getRepeatedNestedEnum(1)).isEqualTo(NestedEnum.BAR);
@@ -1909,7 +1899,7 @@ public class JsonFormatTest {
   @Test
   public void testParserIntegerEnumValue() throws Exception {
     TestAllTypes.Builder actualBuilder = TestAllTypes.newBuilder();
-    mergeFromJson("{\n" + "  \"optionalNestedEnum\": 2\n" + "}", actualBuilder);
+    mergeFromJson("{\"optionalNestedEnum\": 2}", actualBuilder);
 
     TestAllTypes expected = TestAllTypes.newBuilder().setOptionalNestedEnum(NestedEnum.BAZ).build();
     assertThat(actualBuilder.build()).isEqualTo(expected);
@@ -1933,6 +1923,30 @@ public class JsonFormatTest {
     TestAllTypes.Builder builder = TestAllTypes.newBuilder();
     JsonFormat.parser().merge(toJsonString(message), builder);
     assertThat(builder.getOptionalString()).isEqualTo(message.getOptionalString());
+
+    // Explicitly test individual HTML unsafe characters to kill any negation mutants
+    TestAllTypes message2 = TestAllTypes.newBuilder().setOptionalString("\n<>&='").build();
+    assertThat(toJsonString(message2))
+        .isEqualTo("{\n  \"optionalString\": \"\\n\\u003c\\u003e\\u0026\\u003d\\u0027\"\n}");
+
+    TestAllTypes.Builder builder2 = TestAllTypes.newBuilder();
+    JsonFormat.parser().merge(toJsonString(message2), builder2);
+    assertThat(builder2.getOptionalString()).isEqualTo(message2.getOptionalString());
+  }
+
+  @Test
+  public void testStringEscapingWithControlCharacters() throws Exception {
+    // Test that newlines, tabs, backslashes, and quotes are escaped properly
+    String complexString = "Line1\nLine2\tTabbed\\Escaped\"Quoted\"";
+    TestAllTypes message = TestAllTypes.newBuilder().setOptionalString(complexString).build();
+
+    String expectedJson =
+        "{\n  \"optionalString\": \"Line1\\nLine2\\tTabbed\\\\Escaped\\\"Quoted\\\"\"\n}";
+    assertThat(toJsonString(message)).isEqualTo(expectedJson);
+
+    TestAllTypes.Builder builder = TestAllTypes.newBuilder();
+    JsonFormat.parser().merge(toJsonString(message), builder);
+    assertThat(builder.getOptionalString()).isEqualTo(complexString);
   }
 
   @Test
@@ -2125,17 +2139,17 @@ public class JsonFormatTest {
   @Test
   public void testRecursionLimit() throws Exception {
     String input =
-      "{\n"
-          + "  \"nested\": {\n"
-          + "    \"nested\": {\n"
-          + "      \"nested\": {\n"
-          + "        \"nested\": {\n"
-          + "          \"value\": 1234\n"
-          + "        }\n"
-          + "      }\n"
-          + "    }\n"
-          + "  }\n"
-          + "}\n";
+        "{\n"
+            + "  \"nested\": {\n"
+            + "    \"nested\": {\n"
+            + "      \"nested\": {\n"
+            + "        \"nested\": {\n"
+            + "          \"value\": 1234\n"
+            + "        }\n"
+            + "      }\n"
+            + "    }\n"
+            + "  }\n"
+            + "}\n";
 
     JsonFormat.Parser parser = JsonFormat.parser();
     TestRecursive.Builder builder = TestRecursive.newBuilder();

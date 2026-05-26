@@ -42,6 +42,8 @@ google/protobuf/compiler/zip_writer.h
 google/protobuf/cpp_edition_defaults.h
 google/protobuf/cpp_features.pb.h
 google/protobuf/cpp_features.proto
+google/protobuf/cpp_file_options.pb.h
+google/protobuf/cpp_file_options.proto
 google/protobuf/descriptor.h
 google/protobuf/descriptor.pb.h
 google/protobuf/descriptor.proto

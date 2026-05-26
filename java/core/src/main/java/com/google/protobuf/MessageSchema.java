@@ -228,6 +228,12 @@ final class MessageSchema<T> implements Schema<T> {
       UnknownFieldSchema<?, ?> unknownFieldSchema,
       ExtensionSchema<?> extensionSchema,
       MapFieldSchema mapFieldSchema) {
+    if (UNSAFE == null) {
+      throw new RuntimeException(
+          "Lite gencode is primarily intended for Android use and uses sun.misc.Unsafe which is"
+              + " not available in the current environment. To run in this environment, you may"
+              + " need to switch to standard gencode.");
+    }
     if (messageInfo instanceof RawMessageInfo) {
       return newSchemaForRawMessageInfo(
           (RawMessageInfo) messageInfo,
@@ -248,7 +254,7 @@ final class MessageSchema<T> implements Schema<T> {
     }
   }
 
-  static <T> MessageSchema<T> newSchemaForRawMessageInfo(
+  private static <T> MessageSchema<T> newSchemaForRawMessageInfo(
       RawMessageInfo messageInfo,
       NewInstanceSchema newInstanceSchema,
       ListFieldSchema listFieldSchema,
@@ -623,7 +629,7 @@ final class MessageSchema<T> implements Schema<T> {
     }
   }
 
-  static <T> MessageSchema<T> newSchemaForMessageInfo(
+  private static <T> MessageSchema<T> newSchemaForMessageInfo(
       StructuralMessageInfo messageInfo,
       NewInstanceSchema newInstanceSchema,
       ListFieldSchema listFieldSchema,

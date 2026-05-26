@@ -42,6 +42,7 @@
 #include "absl/types/span.h"
 #include "google/protobuf/arena.h"
 #include "google/protobuf/cpp_features.pb.h"
+#include "google/protobuf/cpp_file_options.pb.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/descriptor_lite.h"
@@ -2516,9 +2517,11 @@ const Message* Reflection::GetDefaultMessageInstance(
   // instances to allow for this. But only do this for real fields.
   // This is an optimization to avoid going to GetPrototype() below, as that
   // requires a lock and a map lookup.
-  if (!field->is_extension() && !field->is_repeated() &&
-      !field->options().weak() && !IsLazyField(field) &&
-      !schema_.InRealOneof(field)) {
+  PROTOBUF_IGNORE_DEPRECATION_START
+  const bool field_is_weak = field->options().weak();
+  PROTOBUF_IGNORE_DEPRECATION_STOP
+  if (!field->is_extension() && !field->is_repeated() && !field_is_weak &&
+      !IsLazyField(field) && !schema_.InRealOneof(field)) {
     auto* res = DefaultRaw<const Message*>(field);
     ABSL_DCHECK_NE(res, nullptr);
     return res;
@@ -3227,7 +3230,9 @@ bool Reflection::IsFieldPresentGivenHasbits(const Message& message,
 
 bool Reflection::HasFieldWithHasbits(const Message& message,
                                      const FieldDescriptor* field) const {
+  PROTOBUF_IGNORE_DEPRECATION_START
   ABSL_DCHECK(!field->options().weak());
+  PROTOBUF_IGNORE_DEPRECATION_STOP
   ABSL_DCHECK(!field->is_extension());
   if (schema_.HasBitIndex(field) != static_cast<uint32_t>(kNoHasbit)) {
     return IsFieldPresentGivenHasbits(message, field, GetHasBits(message),
@@ -3260,7 +3265,9 @@ bool Reflection::HasFieldWithHasbits(const Message& message,
 
 void Reflection::SetHasBit(Message* message,
                            const FieldDescriptor* field) const {
+  PROTOBUF_IGNORE_DEPRECATION_START
   ABSL_DCHECK(!field->options().weak());
+  PROTOBUF_IGNORE_DEPRECATION_STOP
   const uint32_t index = schema_.HasBitIndex(field);
   if (index == static_cast<uint32_t>(kNoHasbit)) return;
   MutableHasBits(message)[index / 32] |=
@@ -3269,7 +3276,9 @@ void Reflection::SetHasBit(Message* message,
 
 void Reflection::ClearHasBit(Message* message,
                              const FieldDescriptor* field) const {
+  PROTOBUF_IGNORE_DEPRECATION_START
   ABSL_DCHECK(!field->options().weak());
+  PROTOBUF_IGNORE_DEPRECATION_STOP
   const uint32_t index = schema_.HasBitIndex(field);
   if (index == static_cast<uint32_t>(kNoHasbit)) return;
   MutableHasBits(message)[index / 32] &=
@@ -3278,7 +3287,9 @@ void Reflection::ClearHasBit(Message* message,
 
 void Reflection::NaiveSwapHasBit(Message* message1, Message* message2,
                                  const FieldDescriptor* field) const {
+  PROTOBUF_IGNORE_DEPRECATION_START
   ABSL_DCHECK(!field->options().weak());
+  PROTOBUF_IGNORE_DEPRECATION_STOP
   if (!schema_.HasHasbits() ||
       schema_.HasBitIndex(field) == static_cast<uint32_t>(kNoHasbit)) {
     return;
@@ -4005,6 +4016,7 @@ void MaybeInitializeLazyDescriptors(const DescriptorTable* table) {
 }
 
 void AddDescriptorsImpl(const DescriptorTable* table) {
+
   // Reflection refers to the default fields so make sure they are initialized.
   internal::InitProtobufDefaults();
   internal::InitializeFileDescriptorDefaultInstances();
@@ -4033,6 +4045,12 @@ void AddDescriptorsImpl(const DescriptorTable* table) {
            &FeatureSet::default_instance(), pb::cpp.number(),
            FieldDescriptor::TYPE_MESSAGE, false, false,
            &pb::CppFeatures::default_instance(),
+           nullptr,
+           internal::LazyAnnotation::kUndefined),
+       internal::ExtensionSet::RegisterMessageExtension(
+           &FileOptions::default_instance(), pb::file::cpp.number(),
+           FieldDescriptor::TYPE_MESSAGE, false, false,
+           &pb::file::CppFileOptions::default_instance(),
            nullptr,
            internal::LazyAnnotation::kUndefined),
        internal::ExtensionSet::RegisterMessageExtension(
