@@ -311,6 +311,9 @@ proto_library(
 cc_proto_library(
     name = "json_enumval_custom_string_cc_proto",
     testonly = True,
+    visibility = [
+        "//third_party/proto_converter/src:__pkg__",
+    ],
     deps = [":json_enumval_custom_string_proto"],
 )
 
