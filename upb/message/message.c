@@ -165,6 +165,7 @@ void _upb_Message_DiscardUnknown_shallow(upb_Message* msg) {
   uint32_t size = 0;
   for (uint32_t i = 0; i < in->size; i++) {
     upb_TaggedAuxPtr tagged_ptr = in->aux_data[i];
+    // Only keep semantically known fields (i.e., canonical extensions).
     if (upb_TaggedAuxPtr_IsSemanticallyKnown(tagged_ptr)) {
       in->aux_data[size++] = tagged_ptr;
     }
@@ -247,13 +248,10 @@ void upb_Message_Freeze(upb_Message* msg, const upb_MiniTable* m) {
   uint32_t size = in ? in->size : 0;
   for (size_t i = 0; i < size; i++) {
     upb_TaggedAuxPtr tagged_ptr = in->aux_data[i];
-    upb_TaggedAux aux;
-    upb_TaggedAuxType type = upb_TaggedAux_Get(tagged_ptr, &aux);
-    if (type != kUpb_TaggedAuxType_CanonicalExtension &&
-        type != kUpb_TaggedAuxType_NonCanonicalExtension) {
+    if (!upb_TaggedAuxPtr_IsExtension(tagged_ptr)) {
       continue;
     }
-    const upb_Extension* ext = aux.extension;
+    const upb_Extension* ext = upb_TaggedAuxPtr_Extension(tagged_ptr);
     const upb_MiniTableExtension* e = ext->ext;
     const upb_MiniTableField* f = &e->UPB_PRIVATE(field);
     const upb_MiniTable* m2 = upb_MiniTableExtension_GetSubMessage(e);

@@ -74,6 +74,7 @@ cc_library(
         "//third_party/cel/c/internal:__pkg__",
         "//third_party/upb/wasm_abi/upb:__pkg__",
         "//upb:__pkg__",
+        "//upb/wire:__pkg__",
         "//video/youtube/utils/elements/client/component_type:__pkg__",
         "//video/youtube/utils/elements/client/component_type/subscription_processors:__pkg__",
         "//video/youtube/utils/elements/data_layer:__pkg__",
@@ -200,6 +201,7 @@ cc_library(
     deps = [
         ":internal",
         ":message",
+        ":types",
         "//upb/base",
         "//upb/base:internal",
         "//upb/mem",
@@ -434,6 +436,7 @@ cc_test(
         ":copy",
         ":internal",
         ":message",
+        ":message_unknowns",
         "//src/google/protobuf",
         "//upb/base",
         "//upb/mem",
