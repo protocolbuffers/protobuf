@@ -245,12 +245,19 @@ upb_Message* _upb_Message_Copy(upb_Message* dst, const upb_Message* src,
 
   for (size_t i = 0; i < in->size; i++) {
     upb_TaggedAuxPtr tagged_ptr = in->aux_data[i];
-    if (upb_TaggedAuxPtr_IsExtension(tagged_ptr)) {
-      // Clone extension
-      const upb_Extension* msg_ext = upb_TaggedAuxPtr_Extension(tagged_ptr);
+    if (upb_TaggedAuxPtr_IsExtension(tagged_ptr) ||
+        upb_TaggedAuxPtr_IsNonCanonicalExtension(tagged_ptr)) {
+      // Clone a canonical or non-canonical extension
+      bool canonical = upb_TaggedAuxPtr_IsExtension(tagged_ptr);
+      const upb_Extension* msg_ext =
+          canonical ? upb_TaggedAuxPtr_Extension(tagged_ptr)
+                    : upb_TaggedAuxPtr_NonCanonicalExtension(tagged_ptr);
       const upb_MiniTableField* field = &msg_ext->ext->UPB_PRIVATE(field);
-      upb_Extension* dst_ext = UPB_PRIVATE(_upb_Message_GetOrCreateExtension)(
-          dst, msg_ext->ext, arena);
+      upb_Extension* dst_ext =
+          canonical ? UPB_PRIVATE(_upb_Message_GetOrCreateExtension)(
+                          dst, msg_ext->ext, arena)
+                    : UPB_PRIVATE(_upb_Message_CreateNonCanonicalExtension)(
+                          dst, msg_ext->ext, arena);
       if (!dst_ext) return NULL;
       if (upb_MiniTableField_IsScalar(field)) {
         if (!upb_Clone_ExtensionValue(msg_ext->ext, msg_ext, dst_ext, arena)) {
@@ -268,7 +275,7 @@ upb_Message* _upb_Message_Copy(upb_Message* dst, const upb_Message* src,
         dst_ext->data.array_val = cloned_array;
       }
     } else if (upb_TaggedAuxPtr_IsUnknown(tagged_ptr)) {
-      // Clone unknown
+      // Clone a raw unknown field
       upb_StringView* unknown = upb_TaggedAuxPtr_UnknownData(tagged_ptr);
       // Make a copy into destination arena.
       if (!UPB_PRIVATE(_upb_Message_AddUnknown)(
@@ -331,6 +338,15 @@ bool upb_Message_ShallowCopy(upb_Message* dst, const upb_Message* src,
         if (!dst_sv) return false;
         *dst_sv = aux.unknown_data;
         dst_in->aux_data[i] = upb_TaggedAuxPtr_MakeUnknownDataAliased(dst_sv);
+        break;
+      }
+      case kUpb_TaggedAuxType_NonCanonicalExtension: {
+        const upb_Extension* msg_ext = aux.extension;
+        upb_Extension* dst_ext = upb_Arena_Malloc(arena, sizeof(upb_Extension));
+        if (!dst_ext) return false;
+        *dst_ext = *msg_ext;
+        dst_in->aux_data[i] =
+            upb_TaggedAuxPtr_MakeNonCanonicalExtension(dst_ext);
         break;
       }
     }
