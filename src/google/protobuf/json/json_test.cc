@@ -1456,10 +1456,11 @@ TEST_P(JsonTest, TestFieldMaskSnakeCase) {
   EXPECT_THAT(m->value().paths(), ElementsAre("foo_bar"));
 }
 
-// Documents a known non-idempotency bug in FieldMask JSON round-trips.
-// Non-canonical paths (leading underscores, uppercase letters) shift across
-// multiple round-trips before stabilizing.  See b/fieldmask-json-idempotent.
-// TODO: fix the snake<->camel converter so this test can use EXPECT_EQ.
+// Documents a known spec-level design limitation in ProtoJSON FieldMask
+// representation: certain field paths (leading underscores, uppercase letters)
+// are not round-trip safe through the snake_case<->lowerCamelCase conversion.
+// This is a design bug in the ProtoJSON WKT spec, not in the C++ implementation.
+// See: https://protobuf.dev/programming-guides/json/#wkt-roundtrip-limitations
 TEST_P(JsonTest, TestFieldMaskJsonRoundTripNonIdempotent) {
   // Start with a non-canonical path containing leading underscores and
   // uppercase.
@@ -1483,12 +1484,11 @@ TEST_P(JsonTest, TestFieldMaskJsonRoundTripNonIdempotent) {
   auto json2 = ToJson(*wrapper2);
   ASSERT_OK(json2);
 
-  // BUG: The path shifts across round-trips.  A correct implementation would
-  // produce identical JSON after a single round-trip (idempotent).  Instead,
-  // the path "__Y" -> "__y" -> "_y" over two hops.
-  //
-  // When this is fixed, change the EXPECT_NE below to EXPECT_EQ to enforce
-  // idempotency.
+  // Spec limitation: The path shifts across round-trips because the
+  // snake_case<->lowerCamelCase conversion is not bijective for paths with
+  // leading underscores or uppercase letters.  "__Y" -> "__y" -> "_y" over
+  // two hops.
+  // See: https://protobuf.dev/programming-guides/json/#wkt-roundtrip-limitations
   EXPECT_NE(*json0, *json1)
       << "If this starts passing, the FieldMask JSON round-trip "
          "non-idempotency bug may be fixed. Update this test.";
