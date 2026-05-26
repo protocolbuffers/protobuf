@@ -1,0 +1,29 @@
+edition = "2023";
+
+package third_party.py.google.protobuf.util;
+
+import "third_party/golang/protobuf/v2/src/google/protobuf/go_features.proto";
+
+option features.(pb.go).api_level = API_OPAQUE;
+
+message BlazeDependencies {
+  string file = 1;
+  repeated string targets = 2;
+  repeated string rules = 6;
+  ExternalProto external = 4;
+  reserved 3, 5, 7;
+}
+
+message ExternalProto {
+  enum Reason {
+    REASON_UNSPECIFIED = 0;
+    THIRD_PARTY = 1;
+    GOOGLE = 2;
+    CUSTOM_LIST = 3;
+    TPC = 4;
+    INNERTUBE = 5;
+  }
+
+  Reason reason = 1;
+  string details = 2;
+}
