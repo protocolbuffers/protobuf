@@ -310,7 +310,7 @@ void SingularMessage::GenerateClearingCode(io::Printer* p) const {
   ABSL_CHECK(has_hasbit_);
   p->Emit(
       R"cc(
-        if ($field_$ != nullptr) $field_$->Clear();
+        if ($field_$ != nullptr) $field_$->$Submsg$::Clear();
       )cc");
 }
 
@@ -319,7 +319,7 @@ void SingularMessage::GenerateMessageClearingCode(io::Printer* p) const {
   p->Emit(
       R"cc(
         $DCHK$($field_$ != nullptr);
-        $field_$->Clear();
+        $field_$->$Submsg$::Clear();
       )cc");
 }
 
@@ -354,10 +354,10 @@ void SingularMessage::GenerateMergingCode(io::Printer* p) const {
     // TODO enforces this as undefined behavior in debug builds.
     p->Emit(R"cc(
       $DCHK$(from.$field_$ != nullptr);
-      if (_this->$field_$ == nullptr) {
+      if (ABSL_PREDICT_FALSE(_this->$field_$ == nullptr)) {
         _this->$field_$ = $superclass$::CopyConstruct(arena, *from.$field_$);
       } else {
-        _this->$field_$->MergeFrom(*from.$field_$);
+        _this->$field_$->$Submsg$::MergeFrom(*from.$field_$);
       }
     )cc");
   }
