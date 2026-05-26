@@ -1391,7 +1391,7 @@ public class JsonFormat {
           break;
 
         case STRING:
-          generator.print(gson.toJson(value));
+          printStringEscapedAndQuoted((String) value);
           break;
 
         case BYTES:
@@ -1425,6 +1425,43 @@ public class JsonFormat {
           print((Message) value);
           break;
       }
+    }
+
+    /**
+     * Prints a string value wrapped in double quotes, escaping any illegal or dangerous characters
+     * for JSON safety.
+     */
+    private void printStringEscapedAndQuoted(final CharSequence value) throws IOException {
+      // gson.toJson() is expensive: only use it if the string isn't entirely safe to print
+      // directly.
+      if (isJsonSafeString(value)) {
+        generator.print("\"");
+        generator.print(value);
+        generator.print("\"");
+      } else {
+        generator.print(gson.toJson(value.toString()));
+      }
+    }
+
+    private static boolean isJsonSafeString(CharSequence value) {
+      int len = value.length();
+      for (int i = 0; i < len; i++) {
+        char c = value.charAt(i);
+        // Bare characters, fully disallowed in JSON strings and which must be escaped.
+        if (c < 0x20 || c == '"' || c == '\\') {
+          return false;
+        }
+        // HTML-sensitive characters. These are allowed in JSON, but escaped to mitigate
+        // XSS risks when the JSON is rendered in HTML.
+        if (c == '<' || c == '>' || c == '&' || c == '=' || c == '\'') {
+          return false;
+        }
+        // Non-ASCII characters are mostly safe, but we'll leave that to gson to decide.
+        if (c >= 127) {
+          return false;
+        }
+      }
+      return true;
     }
   }
 
@@ -1996,8 +2033,7 @@ public class JsonFormat {
     // values never exceed ~350 characters, so 1000 is a generous upper bound.
     private static final int MAX_NUMERIC_STRING_LENGTH = 1000;
 
-    private static BigDecimal parseBigDecimal(String value)
-        throws InvalidProtocolBufferException {
+    private static BigDecimal parseBigDecimal(String value) throws InvalidProtocolBufferException {
       if (value.length() > MAX_NUMERIC_STRING_LENGTH) {
         throw new InvalidProtocolBufferException(
             "Numeric value is too long: " + value.length() + " characters");
