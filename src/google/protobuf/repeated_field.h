@@ -1228,8 +1228,7 @@ inline void RepeatedField<Element>::Clear() {
 
 template <typename Element>
 inline void RepeatedField<Element>::MergeFrom(const RepeatedField& other) {
-  if (&other == this) return;
-  ABSL_DCHECK_NE(&other, this);
+  ABSL_CHECK_NE(&other, this);
   const bool other_is_soo = other.is_soo();
   if (auto other_size = other.size()) {
     const int old_size = size();
