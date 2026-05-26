@@ -1989,7 +1989,10 @@ static PyObject* MergeFromString(CMessage* self, PyObject* arg) {
     return nullptr;
   }
 
-  if (AssureWritable(self) < 0) return nullptr;
+  if (AssureWritable(self) < 0) {
+    PyBuffer_Release(&data);
+    return nullptr;
+  }
 
   PyMessageFactory* factory = GetFactoryForMessage(self);
   int depth = allow_oversize_protos
@@ -1999,7 +2002,7 @@ static PyObject* MergeFromString(CMessage* self, PyObject* arg) {
   internal::ParseContext ctx(
       depth, false, &ptr,
       absl::string_view(static_cast<const char*>(data.buf), data.len));
-  PyBuffer_Release(&data);
+
   ctx.data().pool = factory->pool->pool;
   ctx.data().factory = factory->message_factory;
 
@@ -2018,6 +2021,7 @@ static PyObject* MergeFromString(CMessage* self, PyObject* arg) {
         DecodeError_class, "Error parsing message with type '%s'",
         std::string(self->GetMessageClass()->message_descriptor->full_name())
             .c_str());
+    PyBuffer_Release(&data);
     return nullptr;
   }
   if (ctx.BytesUntilLimit(ptr) < 0) {
@@ -2028,6 +2032,7 @@ static PyObject* MergeFromString(CMessage* self, PyObject* arg) {
         "with type '%s'",
         std::string(self->GetMessageClass()->message_descriptor->full_name())
             .c_str());
+    PyBuffer_Release(&data);
     return nullptr;
   }
 
@@ -2036,8 +2041,10 @@ static PyObject* MergeFromString(CMessage* self, PyObject* arg) {
   if (!ctx.EndedAtLimit()) {
     PyErr_Format(DecodeError_class,
                  "Unexpected end-group tag: Not all data was converted");
+    PyBuffer_Release(&data);
     return nullptr;
   }
+  PyBuffer_Release(&data);
   return PyLong_FromLong(data.len);
 }
 
