@@ -670,10 +670,10 @@ Error, UINTPTR_MAX is undefined
  * to prevent optimizers from removing the constructor. Our solution is to
  * create a dummy exported weak symbol that prevent this stripping.
  */
-#pragma section(".CRT$XCU", long, read)
+#pragma section(".CRT$XCT", read)
 #define UPB_CONSTRUCTOR(name, unique_name)                                   \
   static void __cdecl UPB_PRIVATE(name)(void);                               \
-  __declspec(allocate(".CRT$XCU"), selectany) void(                          \
+  __declspec(allocate(".CRT$XCT"), selectany) void(                          \
       __cdecl * UPB_PRIVATE(name##_))(void) = UPB_PRIVATE(name);             \
   __declspec(selectany, dllexport) void* UPB_PRIVATE(name##_force_linkage) = \
       &UPB_PRIVATE(name##_);                                                 \
@@ -16790,7 +16790,7 @@ static int _upb_Decoder_GetDelimitedOp(upb_Decoder* d, const upb_MiniTable* mt,
       [kRepeatedBase + kUpb_FieldType_Fixed32] = OP_FIXPCK_LG2(2),
       [kRepeatedBase + kUpb_FieldType_Bool] = OP_VARPCK_LG2(0),
       [kRepeatedBase + kUpb_FieldType_String] = kUpb_DecodeOp_String,
-      [kRepeatedBase + kUpb_FieldType_Group] = kUpb_DecodeOp_SubMessage,
+      [kRepeatedBase + kUpb_FieldType_Group] = kUpb_DecodeOp_UnknownField,
       [kRepeatedBase + kUpb_FieldType_Message] = kUpb_DecodeOp_SubMessage,
       [kRepeatedBase + kUpb_FieldType_Bytes] = kUpb_DecodeOp_Bytes,
       [kRepeatedBase + kUpb_FieldType_UInt32] = OP_VARPCK_LG2(2),
