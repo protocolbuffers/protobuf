@@ -2665,6 +2665,25 @@ TEST(MessageDifferencerTest, IgnoreField_Multiple) {
   }
 }
 
+TEST(MessageDifferencerTest, IgnoreAllFieldsSkipsUnknownComparison) {
+  proto2_unittest::TestField msg1;
+  proto2_unittest::TestField msg2;
+
+  // Add different unknown fields to each message.
+  msg1.mutable_unknown_fields()->AddVarint(999, 1);
+  msg2.mutable_unknown_fields()->AddVarint(999, 2);
+
+  // Ignore every known field.
+  const Descriptor* desc = msg1.GetDescriptor();
+  util::MessageDifferencer differencer;
+  for (int i = 0; i < desc->field_count(); ++i) {
+    differencer.IgnoreField(desc->field(i));
+  }
+
+  // With all fields ignored, unknown-field differences should be skipped.
+  EXPECT_TRUE(differencer.Compare(msg1, msg2));
+}
+
 TEST(MessageDifferencerTest, IgnoreField_NestedMessage) {
   proto2_unittest::TestDiffMessage msg1;
   proto2_unittest::TestDiffMessage msg2;
