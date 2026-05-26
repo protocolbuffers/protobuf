@@ -100,7 +100,7 @@ MiniTable::MakeSingleFieldTable(int field_number, upb_FieldType type,
     ABSL_CHECK(ok);
   }
 #if UPB_FASTTABLE
-  if (field_number < (1 << 11)) {
+  if (field_number < (1 << 11) && type != kUpb_FieldType_Group) {
     ABSL_CHECK_EQ(HasFastTableEntry(table, field),
                   UPB_DECODEFAST_ISENABLED(fast_type, cardinality,
                                            kUpb_DecodeFast_Tag1Byte))
