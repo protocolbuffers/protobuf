@@ -189,6 +189,10 @@ bool TimeUtil::FromString(absl::string_view value, Timestamp* timestamp) {
   if (!ParseTime(value, &seconds, &nanos)) {
     return false;
   }
+  // Validate before CreateNormalizedTimestamp, which has a DCHECK on range.
+  if (seconds < kTimestampMinSeconds || seconds > kTimestampMaxSeconds) {
+    return false;
+  }
   *timestamp = CreateNormalizedTimestamp(seconds, nanos);
   if (!IsTimestampValid(*timestamp)) {
     timestamp->Clear();
