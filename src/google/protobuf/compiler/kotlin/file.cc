@@ -44,6 +44,22 @@ FileGenerator::FileGenerator(const FileDescriptor* file, const Options& options)
   }
 }
 
+bool FileGenerator::Validate(std::string* error) {
+  // Check for a subset of characters which are definitely invalid to use
+  // as a Kotlin package to prevent any risk of code injection via the
+  // java_package option. Mirrors java::FileGenerator::Validate() in
+  // java/file.cc: a newline / semicolon / space in java_package breaks
+  // out of the emitted `package $package$;` line in Generate() and
+  // GenerateSiblings() below.
+  if (java_package_.find_first_of(";\r\n ") != std::string::npos) {
+    absl::StrAppend(error, file_->name(),
+                    ": java_package contains invalid characters (",
+                    java_package_, ")\n");
+    return false;
+  }
+  return true;
+}
+
 std::string FileGenerator::GetKotlinClassname() {
   return absl::StrCat(name_resolver_->GetFileImmutableClassName(file_), "Kt");
 }
