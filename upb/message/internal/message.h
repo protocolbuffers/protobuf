@@ -46,7 +46,8 @@ typedef struct upb_TaggedAuxPtr {
   // Two lowest bits form a tag:
   // 00 - non-aliased unknown data
   // 10 - aliased unknown data
-  // 01 - extension
+  // 01 - canonical extension
+  // 11 - unknown as a non-canonical extension
   //
   // The main semantic difference between aliased and non-aliased unknown data
   // is that non-aliased unknown data can be assumed to have the following
@@ -64,11 +65,19 @@ typedef struct upb_TaggedAuxPtr {
   // For aliased unknown data, this layout is _not_ guaranteed, since the
   // pointer to the StringView can be anywhere in the allocation, and the
   // StringView may point to non-data memory.
+  //
+  // For a non-canonical extension, its schema is known but not
+  // the one expected by the message, so it should be treated like an unknown
+  // field, but is stored as an extension for efficiency.
   uintptr_t ptr;
 } upb_TaggedAuxPtr;
 
 UPB_INLINE bool upb_TaggedAuxPtr_IsExtension(upb_TaggedAuxPtr ptr) {
-  return ptr.ptr & 1;
+  return (ptr.ptr & 3) == 1;
+}
+
+UPB_INLINE bool upb_TaggedAuxPtr_IsNonCanonicalExtension(upb_TaggedAuxPtr ptr) {
+  return (ptr.ptr & 3) == 3;
 }
 
 UPB_INLINE bool upb_TaggedAuxPtr_IsUnknown(upb_TaggedAuxPtr ptr) {
@@ -84,6 +93,12 @@ UPB_INLINE upb_Extension* upb_TaggedAuxPtr_Extension(upb_TaggedAuxPtr ptr) {
   return (upb_Extension*)(ptr.ptr & ~3ULL);
 }
 
+UPB_INLINE upb_Extension* upb_TaggedAuxPtr_NonCanonicalExtension(
+    upb_TaggedAuxPtr ptr) {
+  UPB_ASSERT(upb_TaggedAuxPtr_IsNonCanonicalExtension(ptr));
+  return (upb_Extension*)(ptr.ptr & ~3ULL);
+}
+
 UPB_INLINE upb_StringView* upb_TaggedAuxPtr_UnknownData(upb_TaggedAuxPtr ptr) {
   UPB_ASSERT(!upb_TaggedAuxPtr_IsExtension(ptr));
   return (upb_StringView*)(ptr.ptr & ~3ULL);
@@ -91,6 +106,7 @@ UPB_INLINE upb_StringView* upb_TaggedAuxPtr_UnknownData(upb_TaggedAuxPtr ptr) {
 
 typedef enum {
   kUpb_TaggedAuxType_Extension,
+  kUpb_TaggedAuxType_NonCanonicalExtension,
   kUpb_TaggedAuxType_Unknown,
   kUpb_TaggedAuxType_AliasedUnknown
 } upb_TaggedAuxType;
@@ -108,10 +124,13 @@ UPB_INLINE upb_TaggedAuxType upb_TaggedAux_Get(upb_TaggedAuxPtr ptr,
   } else if (upb_TaggedAuxPtr_IsUnknownAliased(ptr)) {
     data->unknown_data = *upb_TaggedAuxPtr_UnknownData(ptr);
     return kUpb_TaggedAuxType_AliasedUnknown;
-  } else {
-    UPB_ASSERT(upb_TaggedAuxPtr_IsUnknown(ptr));
+  } else if (upb_TaggedAuxPtr_IsUnknown(ptr)) {
     data->unknown_data = *upb_TaggedAuxPtr_UnknownData(ptr);
     return kUpb_TaggedAuxType_Unknown;
+  } else {
+    UPB_ASSERT(upb_TaggedAuxPtr_IsNonCanonicalExtension(ptr));
+    data->extension = upb_TaggedAuxPtr_NonCanonicalExtension(ptr);
+    return kUpb_TaggedAuxType_NonCanonicalExtension;
   }
 }
 
@@ -125,6 +144,13 @@ UPB_INLINE upb_TaggedAuxPtr
 upb_TaggedAuxPtr_MakeExtension(const upb_Extension* e) {
   upb_TaggedAuxPtr ptr;
   ptr.ptr = (uintptr_t)e | 1;
+  return ptr;
+}
+
+UPB_INLINE upb_TaggedAuxPtr
+upb_TaggedAuxPtr_MakeNonCanonicalExtension(const upb_Extension* e) {
+  upb_TaggedAuxPtr ptr;
+  ptr.ptr = (uintptr_t)e | 3;
   return ptr;
 }
 
@@ -234,7 +260,8 @@ UPB_NODISCARD UPB_INLINE struct upb_Message* _upb_Message_New(
   return msg;
 }
 
-// Discards the unknown fields for this message only.
+// Discards the unknown (including non-canonical extensions) for this message
+// only.
 void _upb_Message_DiscardUnknown_shallow(struct upb_Message* msg);
 
 UPB_NODISCARD UPB_NOINLINE bool UPB_PRIVATE(_upb_Message_AddUnknownSlowPath)(
@@ -340,12 +367,6 @@ UPB_INLINE bool upb_Message_NextUnknown(const struct upb_Message* msg,
   data->data = NULL;
   *iter = i;
   return false;
-}
-
-UPB_INLINE bool upb_Message_HasUnknown(const struct upb_Message* msg) {
-  upb_StringView data;
-  uintptr_t iter = kUpb_Message_UnknownBegin;
-  return upb_Message_NextUnknown(msg, &data, &iter);
 }
 
 UPB_INLINE bool upb_Message_NextExtension(const struct upb_Message* msg,

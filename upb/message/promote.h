@@ -62,11 +62,26 @@ typedef struct {
   uintptr_t iter;
 } upb_FindUnknownRet;
 
+// TODO: Migrate callers to use upb_Message_FindUnknown2.
+//
 // Finds first occurrence of unknown data by tag id in message.
 // A depth_limit of zero means to just use the upb default depth limit.
 upb_FindUnknownRet upb_Message_FindUnknown(const upb_Message* msg,
                                            uint32_t field_number,
                                            int depth_limit);
+
+typedef struct {
+  upb_FindUnknown_Status status;
+  upb_MessageUnknown unknown;
+  uintptr_t iter;
+} upb_FindUnknownRet2;
+
+// Finds first occurrence of unknown data (including non-canonical extensions)
+// by tag id in message. A depth_limit of zero means to just use the upb default
+// depth limit.
+upb_FindUnknownRet2 upb_Message_FindUnknown2(const upb_Message* msg,
+                                             uint32_t field_number,
+                                             int depth_limit);
 
 typedef enum {
   kUpb_UnknownToMessage_Ok,

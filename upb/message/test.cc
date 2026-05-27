@@ -34,6 +34,8 @@
 #include "upb/message/accessors.h"
 #include "upb/message/array.h"
 #include "upb/message/compare.h"
+#include "upb/message/internal/accessors.h"
+#include "upb/message/internal/message.h"
 #include "upb/message/map.h"
 #include "upb/message/message.h"
 #include "upb/message/test.upb.h"
@@ -876,6 +878,87 @@ TEST(MessageTest, Freeze) {
     ASSERT_TRUE(upb_Array_IsFrozen(arr));
     ASSERT_TRUE(upb_Map_IsFrozen(map));
     ASSERT_TRUE(upb_Message_IsFrozen(UPB_UPCAST(nest)));
+  }
+}
+
+TEST(MessageTest, FreezeNonCanonicalExtensions) {
+  upb::Arena arena;
+  upb_test_TestExtensions* msg = upb_test_TestExtensions_new(arena.ptr());
+
+  // Create sub-message
+  protobuf_test_messages_proto3_TestAllTypesProto3* ext_submsg =
+      protobuf_test_messages_proto3_TestAllTypesProto3_new(arena.ptr());
+  protobuf_test_messages_proto3_TestAllTypesProto3_set_optional_int32(
+      ext_submsg, 456);
+
+  // Attach as non-canonical extension
+  UPB_PRIVATE(_upb_Message_SetNonCanonicalExtension)(
+      UPB_UPCAST(msg), upb_test_optional_msg_ext_ext, &ext_submsg, arena.ptr());
+
+  EXPECT_FALSE(upb_Message_IsFrozen(UPB_UPCAST(msg)));
+  EXPECT_FALSE(upb_Message_IsFrozen(UPB_UPCAST(ext_submsg)));
+
+  // Freeze the parent message
+  upb_Message_Freeze(UPB_UPCAST(msg), &upb_0test__TestExtensions_msg_init);
+
+  EXPECT_TRUE(upb_Message_IsFrozen(UPB_UPCAST(msg)));
+  // The non-canonical extension sub-message must be recursively frozen too!
+  EXPECT_TRUE(upb_Message_IsFrozen(UPB_UPCAST(ext_submsg)));
+}
+
+TEST(MessageTest, DiscardUnknownsNonCanonicalExtensions) {
+  upb::Arena arena;
+  upb_test_TestExtensions* msg = upb_test_TestExtensions_new(arena.ptr());
+
+  // Create sub-message
+  protobuf_test_messages_proto3_TestAllTypesProto3* ext_submsg =
+      protobuf_test_messages_proto3_TestAllTypesProto3_new(arena.ptr());
+
+  // Attach as non-canonical extension
+  UPB_PRIVATE(_upb_Message_SetNonCanonicalExtension)(
+      UPB_UPCAST(msg), upb_test_optional_msg_ext_ext, &ext_submsg, arena.ptr());
+
+  // Add some standard raw unknown bytes
+  char raw_unknown[] = "\x08\x96\x01";  // tag 1 = 150
+  UPB_PRIVATE(_upb_Message_AddUnknown)(UPB_UPCAST(msg), raw_unknown,
+                                       sizeof(raw_unknown) - 1, arena.ptr(),
+                                       kUpb_AddUnknown_Copy);
+
+  // Verify both are present initially
+  {
+    upb_MessageUnknown data;
+    uintptr_t iter = kUpb_Message_UnknownBegin;
+    bool has_non_canonical = false;
+    bool has_bytes = false;
+    while (upb_Message_NextUnknown2(UPB_UPCAST(msg), &data, &iter)) {
+      if (data.type == kUpb_MessageUnknownType_NonCanonicalExtension) {
+        has_non_canonical = true;
+      } else if (data.type == kUpb_MessageUnknownType_Bytes) {
+        has_bytes = true;
+      }
+    }
+    EXPECT_TRUE(has_non_canonical);
+    EXPECT_TRUE(has_bytes);
+  }
+
+  // Discard unknown fields on the message
+  _upb_Message_DiscardUnknown_shallow(UPB_UPCAST(msg));
+
+  // Verify both non-canonical extension and raw unknown bytes are discarded!
+  {
+    upb_MessageUnknown data;
+    uintptr_t iter = kUpb_Message_UnknownBegin;
+    bool has_non_canonical = false;
+    bool has_bytes = false;
+    while (upb_Message_NextUnknown2(UPB_UPCAST(msg), &data, &iter)) {
+      if (data.type == kUpb_MessageUnknownType_NonCanonicalExtension) {
+        has_non_canonical = true;
+      } else if (data.type == kUpb_MessageUnknownType_Bytes) {
+        has_bytes = true;
+      }
+    }
+    EXPECT_FALSE(has_non_canonical);
+    EXPECT_FALSE(has_bytes);
   }
 }
 
