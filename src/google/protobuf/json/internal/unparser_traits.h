@@ -25,6 +25,7 @@
 #include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/json/internal/descriptor_traits.h"
 #include "google/protobuf/json/internal/untyped_message.h"
+#include "google/protobuf/map_field.h"
 #include "google/protobuf/stubs/status_macros.h"
 
 // Must be included last.
@@ -202,7 +203,73 @@ struct UnparseProto2Descriptor : Proto2Descriptor {
 
   static absl::StatusOr<const Msg*> GetMessage(Field f, const Msg& msg,
                                                size_t idx) {
+    // Make sure we don't use the wrong reflection API for maps.
+    // If the repeated field is not valid, we don't want to create it.
+    ABSL_DCHECK(
+        !IsMap(f) ||
+        msg.GetReflection()->GetMapData(msg, f)->IsRepeatedFieldValid());
     return &msg.GetReflection()->GetRepeatedMessage(msg, f, idx);
+  }
+
+  // MapKey
+  static absl::StatusOr<int64_t> GetInt64(Field, const MapKey& key) {
+    return key.GetInt64Value();
+  }
+  static absl::StatusOr<uint64_t> GetUInt64(Field, const MapKey& key) {
+    return key.GetUInt64Value();
+  }
+  static absl::StatusOr<int32_t> GetInt32(Field, const MapKey& key) {
+    return key.GetInt32Value();
+  }
+  static absl::StatusOr<uint32_t> GetUInt32(Field, const MapKey& key) {
+    return key.GetUInt32Value();
+  }
+  static absl::StatusOr<bool> GetBool(Field, const MapKey& key) {
+    return key.GetBoolValue();
+  }
+  static absl::StatusOr<absl::string_view> GetString(Field, std::string&,
+                                                     const MapKey& key) {
+    return key.GetStringValue();
+  }
+  static absl::StatusOr<int32_t> GetEnumValue(Field, const MapKey& key) {
+    ABSL_LOG(FATAL) << "Unsupported.";
+  }
+
+  // MapValueConstRef
+  static absl::StatusOr<int64_t> GetInt64(Field, const MapValueConstRef& ref) {
+    return ref.GetInt64Value();
+  }
+  static absl::StatusOr<uint64_t> GetUInt64(Field,
+                                            const MapValueConstRef& ref) {
+    return ref.GetUInt64Value();
+  }
+  static absl::StatusOr<int32_t> GetInt32(Field, const MapValueConstRef& ref) {
+    return ref.GetInt32Value();
+  }
+  static absl::StatusOr<uint32_t> GetUInt32(Field,
+                                            const MapValueConstRef& ref) {
+    return ref.GetUInt32Value();
+  }
+  static absl::StatusOr<bool> GetBool(Field, const MapValueConstRef& ref) {
+    return ref.GetBoolValue();
+  }
+  static absl::StatusOr<int> GetEnumValue(Field, const MapValueConstRef& ref) {
+    return ref.GetEnumValue();
+  }
+  static absl::StatusOr<absl::string_view> GetString(
+      Field, std::string&, const MapValueConstRef& ref) {
+    return ref.GetStringValue();
+  }
+  static absl::StatusOr<float> GetFloat(Field, const MapValueConstRef& ref) {
+    return ref.GetFloatValue();
+  }
+  static absl::StatusOr<double> GetDouble(Field, const MapValueConstRef& ref) {
+    return ref.GetDoubleValue();
+  }
+
+  static absl::StatusOr<const Msg*> GetMessage(Field,
+                                               const MapValueConstRef& ref) {
+    return &ref.GetMessageValue();
   }
 
   template <typename F>
@@ -217,6 +284,23 @@ struct UnparseProto2Descriptor : Proto2Descriptor {
     // a mutable reference to `body`.
     const Msg& ref = *unerased;
     return body(ref);
+  }
+
+  static bool HasValidMap(Field f, const Msg& msg) {
+    ABSL_DCHECK(IsMap(f));
+    return msg.GetReflection()->GetMapData(msg, f)->IsMapValid();
+  }
+
+  template <typename Func>
+  static absl::Status ForEachMapEntry(Field f, const Msg& msg, Func func) {
+    ABSL_DCHECK(HasValidMap(f, msg));
+    const auto& type = *f->message_type();
+    for (auto it = msg.GetReflection()->ConstMapBegin(&msg, f),
+              end = msg.GetReflection()->ConstMapEnd(&msg, f);
+         it != end; ++it) {
+      RETURN_IF_ERROR(func(it, type));
+    }
+    return absl::OkStatus();
   }
 };
 
@@ -530,6 +614,14 @@ struct UnparseProto3Type : Proto3Type {
     // a mutable reference to `body`.
     const Msg& ref = *unerased;
     return body(ref);
+  }
+
+  static bool HasValidMap(Field, const Msg&) { return false; }
+
+  template <typename Func>
+  static absl::Status ForEachMapEntry(Field f, const Msg& msg, Func func) {
+    ABSL_DCHECK(false);
+    return absl::InternalError("Unsupported.");
   }
 };
 }  // namespace json_internal

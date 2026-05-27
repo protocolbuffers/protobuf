@@ -48,6 +48,7 @@ cc_test(
         "//src/google/protobuf",
         "//src/google/protobuf:cc_test_protos",
         "//src/google/protobuf:port",
+        "//src/google/protobuf:test_textproto",
         "//src/google/protobuf/io",
         "//src/google/protobuf/io:test_zero_copy_stream",
         "//src/google/protobuf/stubs",
