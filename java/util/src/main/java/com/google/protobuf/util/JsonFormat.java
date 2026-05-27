@@ -757,6 +757,10 @@ public class JsonFormat {
     void outdent();
 
     void print(final CharSequence text) throws IOException;
+
+    void println() throws IOException;
+
+    void println(final CharSequence text) throws IOException;
   }
 
   /** Format the JSON without indentation */
@@ -779,6 +783,16 @@ public class JsonFormat {
     @Override
     public void print(final CharSequence text) throws IOException {
       output.append(text);
+    }
+
+    @Override
+    public void println() {
+      // Ignored: Compact mode has no newlines.
+    }
+
+    @Override
+    public void println(final CharSequence text) throws IOException {
+      output.append(text); // No whitespace in compact mode, just write the text.
     }
   }
 
@@ -815,28 +829,26 @@ public class JsonFormat {
     /** Print text to the output stream. */
     @Override
     public void print(final CharSequence text) throws IOException {
-      final int size = text.length();
-      int pos = 0;
-
-      for (int i = 0; i < size; i++) {
-        if (text.charAt(i) == '\n') {
-          write(text.subSequence(pos, i + 1));
-          pos = i + 1;
-          atStartOfLine = true;
-        }
-      }
-      write(text.subSequence(pos, size));
-    }
-
-    private void write(final CharSequence data) throws IOException {
-      if (data.length() == 0) {
+      if (text.length() == 0) {
         return;
       }
       if (atStartOfLine) {
         atStartOfLine = false;
         output.append(indent);
       }
-      output.append(data);
+      output.append(text);
+    }
+
+    @Override
+    public void println() throws IOException {
+      output.append('\n');
+      atStartOfLine = true;
+    }
+
+    @Override
+    public void println(final CharSequence text) throws IOException {
+      print(text);
+      println();
     }
   }
 
@@ -855,7 +867,6 @@ public class JsonFormat {
     // We use Gson to help handle string escapes.
     private final Gson gson;
     private final CharSequence blankOrSpace;
-    private final CharSequence blankOrNewLine;
 
     private static class GsonHolder {
       private static final Gson DEFAULT_GSON = new GsonBuilder().create();
@@ -887,11 +898,9 @@ public class JsonFormat {
       if (omittingInsignificantWhitespace) {
         this.generator = new CompactTextGenerator(jsonOutput);
         this.blankOrSpace = "";
-        this.blankOrNewLine = "";
       } else {
         this.generator = new PrettyTextGenerator(jsonOutput);
         this.blankOrSpace = " ";
-        this.blankOrNewLine = "\n";
       }
     }
 
@@ -1031,12 +1040,12 @@ public class JsonFormat {
       if (printer != null) {
         // If the type is one of the well-known types, we use a special
         // formatting.
-        generator.print("{" + blankOrNewLine);
+        generator.println("{");
         generator.indent();
-        generator.print("\"@type\":" + blankOrSpace + gson.toJson(typeUrl) + "," + blankOrNewLine);
+        generator.println("\"@type\":" + blankOrSpace + gson.toJson(typeUrl) + ",");
         generator.print("\"value\":" + blankOrSpace);
         printer.print(this, contentMessage);
-        generator.print(blankOrNewLine);
+        generator.println();
         generator.outdent();
         generator.print("}");
       } else {
@@ -1156,7 +1165,7 @@ public class JsonFormat {
 
     /** Prints a regular message with an optional type URL. */
     private void print(MessageOrBuilder message, @Nullable String typeUrl) throws IOException {
-      generator.print("{" + blankOrNewLine);
+      generator.println("{");
       generator.indent();
 
       boolean printedField = false;
@@ -1184,7 +1193,7 @@ public class JsonFormat {
       for (Map.Entry<FieldDescriptor, Object> field : fieldsToPrint.entrySet()) {
         if (printedField) {
           // Add line-endings for the previous field.
-          generator.print("," + blankOrNewLine);
+          generator.println(",");
         } else {
           printedField = true;
         }
@@ -1193,7 +1202,7 @@ public class JsonFormat {
 
       // Add line-endings for the last field.
       if (printedField) {
-        generator.print(blankOrNewLine);
+        generator.println();
       }
       generator.outdent();
       generator.print("}");
@@ -1238,7 +1247,7 @@ public class JsonFormat {
       if (keyField == null || valueField == null) {
         throw new InvalidProtocolBufferException("Invalid map field.");
       }
-      generator.print("{" + blankOrNewLine);
+      generator.println("{");
       generator.indent();
 
       @SuppressWarnings("unchecked") // Object guaranteed to be a List for a map field.
@@ -1271,7 +1280,7 @@ public class JsonFormat {
         Object entryKey = entry.getField(keyField);
         Object entryValue = entry.getField(valueField);
         if (printedElement) {
-          generator.print("," + blankOrNewLine);
+          generator.println(",");
         } else {
           printedElement = true;
         }
@@ -1281,7 +1290,7 @@ public class JsonFormat {
         printSingleFieldValue(valueField, entryValue);
       }
       if (printedElement) {
-        generator.print(blankOrNewLine);
+        generator.println();
       }
       generator.outdent();
       generator.print("}");
