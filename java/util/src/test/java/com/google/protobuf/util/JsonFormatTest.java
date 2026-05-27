@@ -1877,7 +1877,7 @@ public class JsonFormatTest {
     TestMap.Builder builder = TestMap.newBuilder();
     JsonFormat.parser()
         .ignoringUnknownFields()
-        .merge("{\"int32ToEnumMap\": {1: XXX, 2: FOO}}", builder);
+        .merge("{\"int32ToEnumMap\": {\"1\": \"XXX\", \"2\": \"FOO\"}}", builder);
 
     assertThat(builder.getInt32ToEnumMapMap()).containsEntry(2, NestedEnum.FOO);
     assertThat(builder.getInt32ToEnumMapMap()).hasSize(1);
@@ -1888,7 +1888,7 @@ public class JsonFormatTest {
     TestAllTypes.Builder builder = TestAllTypes.newBuilder();
     JsonFormat.parser()
         .ignoringUnknownFields()
-        .merge("{\"repeatedNestedEnum\": [XXX, FOO, BAR, BAZ]}", builder);
+        .merge("{\"repeatedNestedEnum\": [\"XXX\", \"FOO\", \"BAR\", \"BAZ\"]}", builder);
 
     assertThat(builder.getRepeatedNestedEnum(0)).isEqualTo(NestedEnum.FOO);
     assertThat(builder.getRepeatedNestedEnum(1)).isEqualTo(NestedEnum.BAR);
