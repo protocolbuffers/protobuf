@@ -15,6 +15,7 @@
 #include <utility>
 
 #include "absl/log/absl_check.h"
+#include "absl/strings/cord.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/arena.h"
 #include "google/protobuf/explicitly_constructed.h"
@@ -297,6 +298,7 @@ struct PROTOBUF_EXPORT ArenaStringPtr {
 
   void Set(absl::string_view value, Arena* arena);
   void Set(std::string&& value, Arena* arena);
+  void Set(const absl::Cord& value, Arena* arena);
   template <typename... OverloadDisambiguator>
   void Set(const std::string& value, Arena* arena);
   void Set(const char* s, Arena* arena);
@@ -462,6 +464,14 @@ inline void ArenaStringPtr::InitAllocated(std::string* str, Arena* arena) {
     arena->Own(str);
   } else {
     tagged_ptr_.SetAllocated(str);
+  }
+}
+
+inline void ArenaStringPtr::Set(const absl::Cord& value, Arena* arena) {
+  if (auto flat = value.TryFlat(); flat.has_value()) {
+    Set(*flat, arena);
+  } else {
+    absl::CopyCordToString(value, MutableNoCopy(arena));
   }
 }
 

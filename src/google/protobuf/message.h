@@ -166,6 +166,7 @@ struct RepeatedEntityDynamicFieldInfoBase;
 template <typename MessageT, typename FieldT>
 struct RepeatedPtrEntityDynamicFieldInfoBase;
 class LazyFieldForUnion;
+class ReflectionHelperMethodsFriend;
 
 namespace field_layout {
 enum TransformValidation : uint16_t;
@@ -1234,6 +1235,7 @@ class PROTOBUF_EXPORT Reflection final {
   friend struct internal::FuzzPeer;
   // Needed for implementing text format for map.
   friend class internal::MapFieldPrinterHelper;
+  friend class internal::ReflectionHelperMethodsFriend;
 
   Reflection(const Descriptor* descriptor,
              const internal::ReflectionSchema& schema,
@@ -1488,6 +1490,13 @@ class PROTOBUF_EXPORT Reflection final {
                                              const Reflection* reflection,
                                              const char* ptr,
                                              internal::ParseContext* ctx);
+
+  void SetStringView(Message* message, const FieldDescriptor* field,
+                     absl::string_view value) const;
+  void AddStringView(Message* message, const FieldDescriptor* field,
+                     absl::string_view value) const;
+  void SetRepeatedStringView(Message* message, const FieldDescriptor* field,
+                             int index, absl::string_view value) const;
 };
 
 extern template void Reflection::SwapFieldsImpl<true>(
