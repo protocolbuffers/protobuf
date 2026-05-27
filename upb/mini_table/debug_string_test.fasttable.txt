@@ -133,9 +133,9 @@ MiniTable#0 {
       .field_number = 6
     }
     FastTableEntry {
-      .field_data = 0000000000000000,
+      .field_data = 0018000002130038,
       .field_parser = [ptr]
-      .field_number = 0
+      .field_number = 7
     }
     FastTableEntry {
       .field_data = 001c000003000040,
@@ -153,7 +153,7 @@ MiniTable#0 {
       .field_number = 10
     }
     FastTableEntry {
-      .field_data = 00580000060a005a,
+      .field_data = 005800000614005a,
       .field_parser = [ptr]
       .field_number = 11
     }
@@ -238,7 +238,7 @@ MiniTable#3 {
       .field_number = 0
     }
     FastTableEntry {
-      .field_data = 001000000000000a,
+      .field_data = 001000000002000a,
       .field_parser = [ptr]
       .field_number = 1
     }
