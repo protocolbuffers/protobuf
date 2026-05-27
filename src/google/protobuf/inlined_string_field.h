@@ -14,6 +14,7 @@
 #include <utility>
 
 #include "absl/log/absl_check.h"
+#include "absl/strings/cord.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/arenastring.h"
 #include "google/protobuf/explicitly_constructed.h"
@@ -109,6 +110,8 @@ class PROTOBUF_EXPORT InlinedStringField {
 
   void Set(const char* str, size_t size, Arena* arena);
 
+  void Set(const absl::Cord& cord, Arena* arena);
+
   template <typename RefWrappedType>
   void Set(std::reference_wrapper<RefWrappedType> const_string_ref,
            Arena* arena);
@@ -120,6 +123,8 @@ class PROTOBUF_EXPORT InlinedStringField {
   void SetBytes(const char* str, Arena* arena);
 
   void SetBytes(const void* p, size_t size, Arena* arena);
+
+  void SetBytes(const absl::Cord& cord, Arena* arena);
 
   template <typename RefWrappedType>
   void SetBytes(std::reference_wrapper<RefWrappedType> const_string_ref,
@@ -344,6 +349,11 @@ inline void InlinedStringField::SetBytes(const char* str, Arena* arena) {
 inline void InlinedStringField::SetBytes(const void* p, size_t size,
                                          Arena* arena) {
   Set(static_cast<const char*>(p), size, arena);
+}
+
+inline void InlinedStringField::SetBytes(const absl::Cord& value,
+                                         Arena* arena) {
+  Set(value, arena);
 }
 
 template <typename RefWrappedType>

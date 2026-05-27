@@ -14,6 +14,7 @@
 
 #include "absl/base/config.h"
 #include "absl/log/absl_check.h"
+#include "absl/strings/cord.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/arena.h"
 
@@ -207,6 +208,14 @@ class PROTOBUF_EXPORT MicroString {
   }
   void Set(absl::string_view data, Arena* arena, size_t inline_capacity) {
     SetImpl(data, arena, inline_capacity);
+  }
+
+  void Set(const absl::Cord& value, Arena* arena) {
+    SetInChunks(value.size(), arena, [&value](auto append) {
+      for (absl::string_view chunk : value.Chunks()) {
+        append(chunk);
+      }
+    });
   }
 
   // Extra overloads to allow for other implicit conversions.

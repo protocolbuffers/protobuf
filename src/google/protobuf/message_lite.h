@@ -1527,6 +1527,17 @@ PROTOBUF_FUTURE_ADD_EARLY_NODISCARD bool MergeFromImpl(
   return input.template MergeInto<alias>(msg, tc_table, parse_flags);
 }
 
+template <typename T>
+void AssignString(std::string& str, T&& value) {
+  if constexpr (std::is_assignable_v<std::string, T&&>) {
+    str = std::forward<T>(value);
+  } else if constexpr (std::is_same_v<absl::Cord, std::decay_t<T>>) {
+    absl::CopyCordToString(value, &str);
+  } else {
+    str = std::string(std::forward<T>(value));
+  }
+}
+
 }  // namespace internal
 
 template <MessageLite::ParseFlags flags, typename T>

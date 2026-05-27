@@ -380,7 +380,12 @@ class PROTOBUF_EXPORT ExtensionSet {
     if constexpr (Extension::kUsesPointer<T>) {
       Extension& extension = FindOrCreate(arena, number, type, false, false,
                                           descriptor, CreateImpl<T>);
-      *extension.Mutable<T>() = std::forward<U>(value);
+      if constexpr (std::is_constructible_v<T, U&&> &&
+                    !std::is_convertible_v<U&&, T>) {
+        *extension.Mutable<T>() = static_cast<T>(std::forward<U>(value));
+      } else {
+        *extension.Mutable<T>() = std::forward<U>(value);
+      }
     } else {
       FindOrCreate(arena, number, type, false, false, descriptor, nullptr)
           .Mutable<T>() = std::forward<U>(value);
@@ -456,7 +461,13 @@ class PROTOBUF_EXPORT ExtensionSet {
   void SetRepeated(int number, int index, U&& value) {
     Extension* extension = FindOrNull(number);
     ABSL_CHECK(extension != nullptr) << "Index out-of-bounds (field is empty).";
-    (*extension->Mutable<RepFor<T>>())[index] = std::forward<U>(value);
+    if constexpr (std::is_constructible_v<T, U&&> &&
+                  !std::is_convertible_v<U&&, T>) {
+      (*extension->Mutable<RepFor<T>>())[index] =
+          static_cast<T>(std::forward<U>(value));
+    } else {
+      (*extension->Mutable<RepFor<T>>())[index] = std::forward<U>(value);
+    }
   }
 
   template <typename T>

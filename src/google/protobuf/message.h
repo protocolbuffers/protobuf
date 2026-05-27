@@ -722,8 +722,16 @@ class PROTOBUF_EXPORT Reflection final {
                  double value) const;
   void SetBool(Message* message, const FieldDescriptor* field,
                bool value) const;
+  // Overload set for SetString to use the most efficient implementation
+  // depending on what the user passed.
   void SetString(Message* message, const FieldDescriptor* field,
-                 std::string value) const;
+                 absl::string_view value) const;
+  // Using a template to reduce ranking for implicit conversions.
+  template <int&...>
+  void SetString(Message* message, const FieldDescriptor* field,
+                 std::string&& value) const {
+    SetStringImpl<std::string&&>(message, field, std::move(value));
+  }
   // Set a string field to a Cord value.  If the underlying field is
   // represented using a Cord already, this involves no copies  (just
   // reference counting).  Otherwise, a copy must be made.
@@ -856,7 +864,16 @@ class PROTOBUF_EXPORT Reflection final {
   void SetRepeatedBool(Message* message, const FieldDescriptor* field,
                        int index, bool value) const;
   void SetRepeatedString(Message* message, const FieldDescriptor* field,
-                         int index, std::string value) const;
+                         int index, absl::string_view value) const;
+  // Using a template to reduce ranking for implicit conversions.
+  template <int&...>
+  void SetRepeatedString(Message* message, const FieldDescriptor* field,
+                         int index, std::string&& value) const {
+    SetRepeatedStringImpl<std::string&&>(message, field, index,
+                                         std::move(value));
+  }
+  void SetRepeatedString(Message* message, const FieldDescriptor* field,
+                         int index, const absl::Cord& value) const;
   void SetRepeatedEnum(Message* message, const FieldDescriptor* field,
                        int index, const EnumValueDescriptor* value) const;
   // Set an enum field's value with an integer rather than EnumValueDescriptor.
@@ -892,7 +909,15 @@ class PROTOBUF_EXPORT Reflection final {
   void AddBool(Message* message, const FieldDescriptor* field,
                bool value) const;
   void AddString(Message* message, const FieldDescriptor* field,
-                 std::string value) const;
+                 absl::string_view value) const;
+  // Using a template to reduce ranking for implicit conversions.
+  template <int&...>
+  void AddString(Message* message, const FieldDescriptor* field,
+                 std::string&& value) const {
+    AddStringImpl<std::string&&>(message, field, std::move(value));
+  }
+  void AddString(Message* message, const FieldDescriptor* field,
+                 const absl::Cord& value) const;
   void AddEnum(Message* message, const FieldDescriptor* field,
                const EnumValueDescriptor* value) const;
 
@@ -1038,6 +1063,28 @@ class PROTOBUF_EXPORT Reflection final {
   // Message::New() is an easier way to accomplish this.
   [[nodiscard]] MessageFactory* GetMessageFactory() const;
 
+  // These overloads are not callable directly.
+  // They only exist for pattern matching in expressions like
+  //   `Func func = &Reflection::SetString;`
+  // using the old signature.
+  // We expect to remove them in the future, but for now we keep them to avoid
+  // breaking users.
+  template <int&..., typename R, typename = std::enable_if_t<std::is_void_v<R>>>
+  R SetString(Message* message, const FieldDescriptor* field,
+              std::string value) const {
+    SetString(message, field, std::move(value));
+  }
+  template <int&..., typename R, typename = std::enable_if_t<std::is_void_v<R>>>
+  R SetRepeatedString(Message* message, const FieldDescriptor* field, int index,
+                      std::string value) const {
+    SetRepeatedString(message, field, index, std::move(value));
+  }
+  template <int&..., typename R, typename = std::enable_if_t<std::is_void_v<R>>>
+  R AddString(Message* message, const FieldDescriptor* field,
+              std::string value) const {
+    AddString(message, field, std::move(value));
+  }
+
  private:
   enum class GetRepeatedFieldIntent {
     // The caller intents to return a reference/pointer to the raw repeated
@@ -1070,6 +1117,18 @@ class PROTOBUF_EXPORT Reflection final {
   RepeatedPtrField<T>* MutableRepeatedPtrFieldInternal(
       Message* message, const FieldDescriptor* field,
       GetRepeatedFieldIntent intent) const;
+
+  template <typename T>
+  void SetStringImpl(Message* message, const FieldDescriptor* field,
+                     T value) const;
+
+  template <typename T>
+  void SetRepeatedStringImpl(Message* message, const FieldDescriptor* field,
+                             int index, T value) const;
+
+  template <typename T>
+  void AddStringImpl(Message* message, const FieldDescriptor* field,
+                     T value) const;
 
   // REQUIRES: If the field is Cord, then `scratch != nullptr`.
   absl::string_view GetStringViewImpl(const Message& message,

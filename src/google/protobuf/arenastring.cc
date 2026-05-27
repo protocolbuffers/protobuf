@@ -166,6 +166,14 @@ void ArenaStringPtr::Set(std::string&& value, Arena* arena) {
   }
 }
 
+void ArenaStringPtr::Set(const absl::Cord& cord, Arena* arena) {
+  if (auto flat = cord.TryFlat()) {
+    Set(*flat, arena);
+  } else {
+    Set(std::string(cord), arena);
+  }
+}
+
 std::string* ArenaStringPtr::Mutable(Arena* arena) {
   ScopedCheckPtrInvariants check(&tagged_ptr_);
   if (tagged_ptr_.IsMutable()) {

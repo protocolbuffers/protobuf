@@ -15,6 +15,7 @@
 #include <utility>
 
 #include "absl/log/absl_check.h"
+#include "absl/strings/cord.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/arena.h"
 #include "google/protobuf/explicitly_constructed.h"
@@ -301,6 +302,7 @@ struct PROTOBUF_EXPORT ArenaStringPtr {
   void Set(const std::string& value, Arena* arena);
   void Set(const char* s, Arena* arena);
   void Set(const char* s, size_t n, Arena* arena);
+  void Set(const absl::Cord& value, Arena* arena);
 
   void SetBytes(absl::string_view value, Arena* arena);
   void SetBytes(std::string&& value, Arena* arena);
@@ -308,6 +310,7 @@ struct PROTOBUF_EXPORT ArenaStringPtr {
   void SetBytes(const std::string& value, Arena* arena);
   void SetBytes(const char* s, Arena* arena);
   void SetBytes(const void* p, size_t n, Arena* arena);
+  void SetBytes(const absl::Cord& value, Arena* arena);
 
   template <typename RefWrappedType>
   void Set(std::reference_wrapper<RefWrappedType> const_string_ref,
@@ -475,6 +478,10 @@ inline void ArenaStringPtr::Set(const char* s, size_t n, Arena* arena) {
 }
 
 inline void ArenaStringPtr::SetBytes(absl::string_view value, Arena* arena) {
+  Set(value, arena);
+}
+
+inline void ArenaStringPtr::SetBytes(const absl::Cord& value, Arena* arena) {
   Set(value, arena);
 }
 

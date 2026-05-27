@@ -2125,13 +2125,17 @@ absl::string_view Reflection::GetStringView(const Message& message,
 }
 
 
-void Reflection::SetString(Message* message, const FieldDescriptor* field,
-                           std::string value) const {
+template <typename T>
+void Reflection::SetStringImpl(Message* message, const FieldDescriptor* field,
+                               T value) const {
+  // To make sure we don't call this wrong.
+  static_assert(std::is_trivially_destructible_v<T>,
+                "Complex types should be passed by ref.");
   USAGE_MUTABLE_CHECK_ALL(SetString, SINGULAR, STRING);
   Arena* arena = message->GetArena();
   if (field->is_extension()) {
     return MutableExtensionSet(message)->Set<std::string>(
-        arena, field->number(), field->type(), std::move(value), field);
+        arena, field->number(), field->type(), std::forward<T>(value), field);
   } else {
     switch (field->cpp_string_type()) {
       case FieldDescriptor::CppStringType::kCord:
@@ -2141,15 +2145,17 @@ void Reflection::SetString(Message* message, const FieldDescriptor* field,
             *MutableField<absl::Cord*>(message, field) =
                 Arena::Create<absl::Cord>(arena);
           }
-          *(*MutableField<absl::Cord*>(message, field)) = value;
+          *(*MutableField<absl::Cord*>(message, field)) =
+              std::forward<T>(value);
           break;
         }
-        *MutableField<absl::Cord>(message, field) = value;
+        *MutableField<absl::Cord>(message, field) = std::forward<T>(value);
         break;
       case FieldDescriptor::CppStringType::kView:
       case FieldDescriptor::CppStringType::kString: {
         if (IsInlined(field)) {
-          MutableField<InlinedStringField>(message, field)->Set(value, arena);
+          MutableField<InlinedStringField>(message, field)
+              ->Set(std::forward<T>(value), arena);
           break;
         } else if (IsMicroString(field)) {
           if (schema_.InRealOneof(field) && !HasOneofField(*message, field)) {
@@ -2157,7 +2163,7 @@ void Reflection::SetString(Message* message, const FieldDescriptor* field,
             MutableField<MicroString>(message, field)->InitDefault();
           }
           MutableField<MicroString>(message, field)
-              ->Set(std::move(value), arena);
+              ->Set(std::forward<T>(value), arena);
           break;
         }
 
@@ -2170,7 +2176,7 @@ void Reflection::SetString(Message* message, const FieldDescriptor* field,
           MutableField<ArenaStringPtr>(message, field)->InitDefault();
         }
         MutableField<ArenaStringPtr>(message, field)
-            ->Set(std::move(value), arena);
+            ->Set(std::forward<T>(value), arena);
         break;
       }
     }
@@ -2178,51 +2184,16 @@ void Reflection::SetString(Message* message, const FieldDescriptor* field,
 }
 
 void Reflection::SetString(Message* message, const FieldDescriptor* field,
+                           absl::string_view value) const {
+  SetStringImpl(message, field, value);
+}
+
+template void Reflection::SetStringImpl(Message*, const FieldDescriptor*,
+                                        std::string&&) const;
+
+void Reflection::SetString(Message* message, const FieldDescriptor* field,
                            const absl::Cord& value) const {
-  USAGE_MUTABLE_CHECK_ALL(SetString, SINGULAR, STRING);
-  Arena* arena = message->GetArena();
-  if (field->is_extension()) {
-    return absl::CopyCordToString(
-        value, MutableExtensionSet(message)->MutableString(
-                   arena, field->number(), field->type(), field));
-  } else {
-    switch (field->cpp_string_type()) {
-      case FieldDescriptor::CppStringType::kCord:
-        if (schema_.InRealOneof(field)) {
-          if (!HasOneofField(*message, field)) {
-            ClearOneof(message, field->containing_oneof());
-            *MutableField<absl::Cord*>(message, field) =
-                Arena::Create<absl::Cord>(arena);
-          }
-          *(*MutableField<absl::Cord*>(message, field)) = value;
-        } else {
-          *MutableField<absl::Cord>(message, field) = value;
-        }
-        break;
-      case FieldDescriptor::CppStringType::kView:
-      case FieldDescriptor::CppStringType::kString: {
-        if (IsInlined(field)) {
-          auto* str = MutableField<InlinedStringField>(message, field);
-          str->Set(std::string(value), arena);
-        } else if (IsMicroString(field)) {
-          if (schema_.InRealOneof(field) && !HasOneofField(*message, field)) {
-            ClearOneof(message, field->containing_oneof());
-            MutableField<MicroString>(message, field)->InitDefault();
-          }
-          auto* str = MutableField<MicroString>(message, field);
-          str->Set(std::string(value), arena);
-        } else {
-          if (schema_.InRealOneof(field) && !HasOneofField(*message, field)) {
-            ClearOneof(message, field->containing_oneof());
-            MutableField<ArenaStringPtr>(message, field)->InitDefault();
-          }
-          auto* str = MutableField<ArenaStringPtr>(message, field);
-          str->Set(std::string(value), arena);
-        }
-        break;
-      }
-    }
-  }
+  SetStringImpl<const absl::Cord&>(message, field, value);
 }
 
 std::string Reflection::GetRepeatedString(const Message& message,
@@ -2296,50 +2267,84 @@ absl::string_view Reflection::GetRepeatedStringView(
 }
 
 
-void Reflection::SetRepeatedString(Message* message,
-                                   const FieldDescriptor* field, int index,
-                                   std::string value) const {
+template <typename T>
+void Reflection::SetRepeatedStringImpl(Message* message,
+                                       const FieldDescriptor* field, int index,
+                                       T value) const {
   USAGE_MUTABLE_CHECK_ALL(SetRepeatedString, REPEATED, STRING);
   if (field->is_extension()) {
     MutableExtensionSet(message)->SetRepeated<std::string>(
-        field->number(), index, std::move(value));
+        field->number(), index, std::forward<T>(value));
   } else {
     switch (field->cpp_string_type()) {
       case FieldDescriptor::CppStringType::kCord:
-        SetRepeatedField<absl::Cord>(message, field, index, absl::Cord(value));
+        (*MutableRaw<RepeatedField<absl::Cord>>(message, field))[index] =
+            std::forward<T>(value);
         break;
       case FieldDescriptor::CppStringType::kView:
-      case FieldDescriptor::CppStringType::kString:
-        MutableRepeatedField<std::string>(message, field, index)
-            ->assign(std::move(value));
+      case FieldDescriptor::CppStringType::kString: {
+        internal::AssignString(
+            *MutableRepeatedField<std::string>(message, field, index),
+            std::forward<T>(value));
         break;
+      }
     }
   }
 }
 
+void Reflection::SetRepeatedString(Message* message,
+                                   const FieldDescriptor* field, int index,
+                                   absl::string_view value) const {
+  SetRepeatedStringImpl<absl::string_view>(message, field, index, value);
+}
 
-void Reflection::AddString(Message* message, const FieldDescriptor* field,
-                           std::string value) const {
+template void Reflection::SetRepeatedStringImpl(Message*,
+                                                const FieldDescriptor*, int,
+                                                std::string&&) const;
+
+void Reflection::SetRepeatedString(Message* message,
+                                   const FieldDescriptor* field, int index,
+                                   const absl::Cord& value) const {
+  SetRepeatedStringImpl<const absl::Cord&>(message, field, index, value);
+}
+
+template <typename T>
+void Reflection::AddStringImpl(Message* message, const FieldDescriptor* field,
+                               T value) const {
   USAGE_MUTABLE_CHECK_ALL(AddString, REPEATED, STRING);
   if (field->is_extension()) {
-    MutableExtensionSet(message)->Add<std::string>(
-        message->GetArena(), field->number(),
-        field->requires_utf8_validation() ? FieldDescriptor::TYPE_STRING
-                                          : FieldDescriptor::TYPE_BYTES,
-        field) = std::move(value);
+    internal::AssignString(
+        MutableExtensionSet(message)->Add<std::string>(
+            message->GetArena(), field->number(),
+            field->requires_utf8_validation() ? FieldDescriptor::TYPE_STRING
+                                              : FieldDescriptor::TYPE_BYTES,
+            field),
+        std::forward<T>(value));
   } else {
     switch (field->cpp_string_type()) {
       case FieldDescriptor::CppStringType::kCord:
-        AddField<absl::Cord>(message, field, absl::Cord(value));
+        AddField<absl::Cord>(message, field,
+                             absl::Cord(std::forward<T>(value)));
         break;
       case FieldDescriptor::CppStringType::kView:
       case FieldDescriptor::CppStringType::kString:
-        AddField<std::string>(message, field)->assign(std::move(value));
+        internal::AssignString(*AddField<std::string>(message, field),
+                               std::forward<T>(value));
         break;
     }
   }
 }
 
+void Reflection::AddString(Message* message, const FieldDescriptor* field,
+                           absl::string_view value) const {
+  AddStringImpl<absl::string_view>(message, field, value);
+}
+template void Reflection::AddStringImpl(Message*, const FieldDescriptor*,
+                                        std::string&&) const;
+void Reflection::AddString(Message* message, const FieldDescriptor* field,
+                           const absl::Cord& value) const {
+  AddStringImpl<const absl::Cord&>(message, field, value);
+}
 
 // -------------------------------------------------------------------
 

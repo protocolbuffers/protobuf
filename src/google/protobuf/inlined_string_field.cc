@@ -115,6 +115,14 @@ void InlinedStringField::Set(std::string&& value, Arena* arena) {
   SetNoArena(std::move(value));
 }
 
+void InlinedStringField::Set(const absl::Cord& cord, Arena* arena) {
+  if (auto flat = cord.TryFlat()) {
+    Set(*flat, arena);
+  } else {
+    Set(std::string(cord), arena);
+  }
+}
+
 std::string* InlinedStringField::Release() {
   auto* released = new std::string(std::move(*get_mutable()));
   get_mutable()->clear();
