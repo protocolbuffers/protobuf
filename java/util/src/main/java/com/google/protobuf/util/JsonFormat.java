@@ -489,7 +489,8 @@ public class JsonFormat {
         TypeRegistry.getEmptyTypeRegistry(),
         ExtensionRegistry.getEmptyRegistry(),
         false,
-        Parser.DEFAULT_RECURSION_LIMIT);
+        Parser.DEFAULT_RECURSION_LIMIT,
+        true);
   }
 
   /** A Parser parses the ProtoJSON format into a protobuf message. */
@@ -499,6 +500,7 @@ public class JsonFormat {
     private final ExtensionRegistry extensionRegistry;
     private final boolean ignoringUnknownFields;
     private final int recursionLimit;
+    private final boolean legacyLenient;
 
     // The default parsing recursion limit is aligned with the proto binary parser.
     private static final int DEFAULT_RECURSION_LIMIT = 100;
@@ -508,12 +510,14 @@ public class JsonFormat {
         TypeRegistry oldRegistry,
         ExtensionRegistry extensionRegistry,
         boolean ignoreUnknownFields,
-        int recursionLimit) {
+        int recursionLimit,
+        boolean legacyLenient) {
       this.registry = registry;
       this.oldRegistry = oldRegistry;
       this.extensionRegistry = extensionRegistry;
       this.ignoringUnknownFields = ignoreUnknownFields;
       this.recursionLimit = recursionLimit;
+      this.legacyLenient = legacyLenient;
     }
 
     /**
@@ -532,7 +536,8 @@ public class JsonFormat {
           oldRegistry,
           extensionRegistry,
           ignoringUnknownFields,
-          recursionLimit);
+          recursionLimit,
+          legacyLenient);
     }
 
     /**
@@ -547,7 +552,12 @@ public class JsonFormat {
         throw new IllegalArgumentException("Only one registry is allowed.");
       }
       return new Parser(
-          registry, oldRegistry, extensionRegistry, ignoringUnknownFields, recursionLimit);
+          registry,
+          oldRegistry,
+          extensionRegistry,
+          ignoringUnknownFields,
+          recursionLimit,
+          legacyLenient);
     }
 
     /**
@@ -559,7 +569,12 @@ public class JsonFormat {
         throw new NullPointerException();
       }
       return new Parser(
-          registry, oldRegistry, extensionRegistry, ignoringUnknownFields, recursionLimit);
+          registry,
+          oldRegistry,
+          extensionRegistry,
+          ignoringUnknownFields,
+          recursionLimit,
+          legacyLenient);
     }
 
     /**
@@ -567,7 +582,8 @@ public class JsonFormat {
      * encountered. The new Parser clones all other configurations from this Parser.
      */
     public Parser ignoringUnknownFields() {
-      return new Parser(this.registry, oldRegistry, extensionRegistry, true, recursionLimit);
+      return new Parser(
+          this.registry, oldRegistry, extensionRegistry, true, recursionLimit, legacyLenient);
     }
 
     /**
@@ -580,7 +596,12 @@ public class JsonFormat {
       // TODO: Investigate the allocation overhead and optimize for
       // mobile.
       new ParserImpl(
-              registry, oldRegistry, extensionRegistry, ignoringUnknownFields, recursionLimit)
+              registry,
+              oldRegistry,
+              extensionRegistry,
+              ignoringUnknownFields,
+              recursionLimit,
+              legacyLenient)
           .merge(json, builder);
     }
 
@@ -595,14 +616,24 @@ public class JsonFormat {
       // TODO: Investigate the allocation overhead and optimize for
       // mobile.
       new ParserImpl(
-              registry, oldRegistry, extensionRegistry, ignoringUnknownFields, recursionLimit)
+              registry,
+              oldRegistry,
+              extensionRegistry,
+              ignoringUnknownFields,
+              recursionLimit,
+              legacyLenient)
           .merge(json, builder);
     }
 
     // For testing only.
     Parser usingRecursionLimit(int recursionLimit) {
       return new Parser(
-          registry, oldRegistry, extensionRegistry, ignoringUnknownFields, recursionLimit);
+          registry,
+          oldRegistry,
+          extensionRegistry,
+          ignoringUnknownFields,
+          recursionLimit,
+          legacyLenient);
     }
   }
 
@@ -1360,7 +1391,7 @@ public class JsonFormat {
           break;
 
         case STRING:
-          generator.print(gson.toJson(value));
+          printStringEscapedAndQuoted((String) value);
           break;
 
         case BYTES:
@@ -1395,6 +1426,43 @@ public class JsonFormat {
           break;
       }
     }
+
+    /**
+     * Prints a string value wrapped in double quotes, escaping any illegal or dangerous characters
+     * for JSON safety.
+     */
+    private void printStringEscapedAndQuoted(final CharSequence value) throws IOException {
+      // gson.toJson() is expensive: only use it if the string isn't entirely safe to print
+      // directly.
+      if (isJsonSafeString(value)) {
+        generator.print("\"");
+        generator.print(value);
+        generator.print("\"");
+      } else {
+        generator.print(gson.toJson(value.toString()));
+      }
+    }
+
+    private static boolean isJsonSafeString(CharSequence value) {
+      int len = value.length();
+      for (int i = 0; i < len; i++) {
+        char c = value.charAt(i);
+        // Bare characters, fully disallowed in JSON strings and which must be escaped.
+        if (c < 0x20 || c == '"' || c == '\\') {
+          return false;
+        }
+        // HTML-sensitive characters. These are allowed in JSON, but escaped to mitigate
+        // XSS risks when the JSON is rendered in HTML.
+        if (c == '<' || c == '>' || c == '&' || c == '=' || c == '\'') {
+          return false;
+        }
+        // Non-ASCII characters are mostly safe, but we'll leave that to gson to decide.
+        if (c >= 127) {
+          return false;
+        }
+      }
+      return true;
+    }
   }
 
   private static String getTypeName(String typeUrl) throws InvalidProtocolBufferException {
@@ -1411,6 +1479,7 @@ public class JsonFormat {
     private final ExtensionRegistry extensionRegistry;
     private final boolean ignoringUnknownFields;
     private final int recursionLimit;
+    private final boolean legacyLenient;
     private int currentDepth;
 
     ParserImpl(
@@ -1418,18 +1487,23 @@ public class JsonFormat {
         TypeRegistry oldRegistry,
         ExtensionRegistry extensionRegistry,
         boolean ignoreUnknownFields,
-        int recursionLimit) {
+        int recursionLimit,
+        boolean legacyLenient) {
       this.registry = registry;
       this.oldRegistry = oldRegistry;
       this.extensionRegistry = extensionRegistry;
       this.ignoringUnknownFields = ignoreUnknownFields;
       this.recursionLimit = recursionLimit;
+      this.legacyLenient = legacyLenient;
       this.currentDepth = 0;
     }
 
     void merge(Reader json, Message.Builder builder) throws IOException {
       try {
         JsonReader reader = new JsonReader(json);
+        if (!legacyLenient) {
+          throw new IllegalStateException("Unreachable: !legacyLenient should not be set.");
+        }
         reader.setLenient(false);
         merge(JsonParser.parseReader(reader), builder);
       } catch (JsonIOException e) {
@@ -1448,6 +1522,9 @@ public class JsonFormat {
     void merge(String json, Message.Builder builder) throws InvalidProtocolBufferException {
       try {
         JsonReader reader = new JsonReader(new StringReader(json));
+        if (!legacyLenient) {
+          throw new IllegalStateException("Strict parsing is not supported in open-source.");
+        }
         reader.setLenient(false);
         merge(JsonParser.parseReader(reader), builder);
       } catch (RuntimeException e) {
@@ -1956,8 +2033,7 @@ public class JsonFormat {
     // values never exceed ~350 characters, so 1000 is a generous upper bound.
     private static final int MAX_NUMERIC_STRING_LENGTH = 1000;
 
-    private static BigDecimal parseBigDecimal(String value)
-        throws InvalidProtocolBufferException {
+    private static BigDecimal parseBigDecimal(String value) throws InvalidProtocolBufferException {
       if (value.length() > MAX_NUMERIC_STRING_LENGTH) {
         throw new InvalidProtocolBufferException(
             "Numeric value is too long: " + value.length() + " characters");

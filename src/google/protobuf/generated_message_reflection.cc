@@ -4016,6 +4016,7 @@ void MaybeInitializeLazyDescriptors(const DescriptorTable* table) {
 }
 
 void AddDescriptorsImpl(const DescriptorTable* table) {
+
   // Reflection refers to the default fields so make sure they are initialized.
   internal::InitProtobufDefaults();
   internal::InitializeFileDescriptorDefaultInstances();
