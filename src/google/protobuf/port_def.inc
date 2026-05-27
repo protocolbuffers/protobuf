@@ -213,6 +213,17 @@
 #define PROTOBUF_NOINLINE __declspec(noinline)
 #endif
 
+#ifdef PROTOBUF_MALLOC
+#error PROTOBUF_MALLOC was previously defined
+#endif
+#if defined(__GNUC__)
+#define PROTOBUF_MALLOC __attribute__((malloc))
+#elif defined(_MSC_VER) && _MSC_VER >= 1400
+#define PROTOBUF_MALLOC __declspec(restrict)
+#else
+#define PROTOBUF_MALLOC
+#endif
+
 #ifdef PROTOBUF_MUSTTAIL
 #error PROTOBUF_MUSTTAIL was previously defined
 #endif
