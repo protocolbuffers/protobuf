@@ -7,13 +7,25 @@
 
 #include "upb/message/internal/compare_unknown.h"
 
+#include <setjmp.h>
 #include <stdint.h>
+#include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "upb/base/string_view.h"
 #include "upb/mem/alloc.h"
+#include "upb/mem/arena.h"
+#include "upb/message/internal/extension.h"
+#include "upb/message/internal/message.h"
 #include "upb/message/message.h"
+#include "upb/message/unknown_fields.h"
+#include "upb/mini_table/extension.h"
+#include "upb/mini_table/message.h"
+#include "upb/wire/encode.h"
 #include "upb/wire/eps_copy_input_stream.h"
+#include "upb/wire/internal/back_alloc.h"
+#include "upb/wire/internal/encoder.h"
 #include "upb/wire/reader.h"
 #include "upb/wire/types.h"
 
@@ -41,6 +53,7 @@ struct upb_UnknownFields {
 
 typedef struct {
   upb_EpsCopyInputStream stream;
+  upb_encstate encoder;  // For encoding non-canonical extensions.
   upb_Arena* arena;
   upb_UnknownField* tmp;
   size_t tmp_size;
@@ -249,11 +262,34 @@ static upb_UnknownFields* upb_UnknownFields_Build(upb_UnknownField_Context* ctx,
       .last_tag = 0,
   };
   uintptr_t iter = kUpb_Message_UnknownBegin;
-  upb_StringView view;
-  while (upb_Message_NextUnknown(msg, &view, &iter)) {
-    upb_EpsCopyInputStream_Init(&ctx->stream, &view.data, view.size);
-    upb_CombineUnknownFields(ctx, &builder, &view.data);
-    UPB_ASSERT(upb_EpsCopyInputStream_IsDone(&ctx->stream, &view.data) &&
+  upb_MessageUnknown data;
+  while (upb_Message_NextUnknown2(msg, &data, &iter)) {
+    const char* ptr;
+    size_t size;
+    if (data.type == kUpb_MessageUnknownType_StringView) {
+      upb_StringView view = data.value.bytes;
+      ptr = view.data;
+      size = view.size;
+    } else {
+      UPB_ASSERT(data.type == kUpb_MessageUnknownType_NonCanonicalExtension);
+      char* enc_buf = upb_BackAlloc_Init(&ctx->encoder.alloc, ctx->arena);
+      ctx->encoder.status = kUpb_EncodeStatus_Ok;
+      // Encode non-canonical extension to buffer.
+      const upb_Extension* ext = (const upb_Extension*)data.value.extension;
+      bool is_message_set = false;
+      const upb_MiniTable* extendee = upb_MiniTableExtension_Extendee(ext->ext);
+      if (extendee) {
+        is_message_set = upb_MiniTable_IsMessageSet(extendee);
+      }
+      UPB_PRIVATE(_upb_Encode_Extension)(&ctx->encoder, ext->ext, ext->data,
+                                         is_message_set, &enc_buf, &size,
+                                         /*options=*/0);
+      ptr = enc_buf;
+    }
+
+    upb_EpsCopyInputStream_Init(&ctx->stream, &ptr, size);
+    upb_CombineUnknownFields(ctx, &builder, &ptr);
+    UPB_ASSERT(upb_EpsCopyInputStream_IsDone(&ctx->stream, &ptr) &&
                !upb_EpsCopyInputStream_IsError(&ctx->stream));
   }
   upb_UnknownFields* fields = upb_UnknownFields_DoBuild(ctx, &builder);
@@ -321,10 +357,24 @@ static upb_UnknownCompareResult upb_UnknownField_Compare(
   if (UPB_SETJMP(ctx->err) == 0) {
     ret = upb_UnknownField_DoCompare(ctx, msg1, msg2);
   } else {
+    // If status is still Equal, the jump must have originated from the Encoder
+    // (which only updates ctx->encoder.status). We must map it to a context
+    // error.
+    if (ctx->status == kUpb_UnknownCompareResult_Equal) {
+      if (ctx->encoder.status == kUpb_EncodeStatus_OutOfMemory) {
+        ctx->status = kUpb_UnknownCompareResult_OutOfMemory;
+      } else if (ctx->encoder.status == kUpb_EncodeStatus_MaxDepthExceeded) {
+        ctx->status = kUpb_UnknownCompareResult_MaxDepthExceeded;
+      } else {
+        ctx->status = kUpb_UnknownCompareResult_OutOfMemory;
+      }
+      upb_BackAlloc_Abort(&ctx->encoder.alloc);
+    }
     ret = ctx->status;
     UPB_ASSERT(ret != kUpb_UnknownCompareResult_Equal);
   }
 
+  UPB_PRIVATE(_upb_encstate_destroy)(&ctx->encoder);
   upb_Arena_Free(ctx->arena);
   upb_gfree(ctx->tmp);
   return ret;
@@ -346,6 +396,7 @@ upb_UnknownCompareResult UPB_PRIVATE(_upb_Message_UnknownFieldsAreEqual)(
   };
 
   if (!ctx.arena) return kUpb_UnknownCompareResult_OutOfMemory;
+  UPB_PRIVATE(_upb_encstate_init)(&ctx.encoder, &ctx.err, ctx.arena);
 
   return upb_UnknownField_Compare(&ctx, msg1, msg2);
 }

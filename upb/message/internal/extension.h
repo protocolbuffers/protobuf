@@ -9,6 +9,7 @@
 #define UPB_MESSAGE_INTERNAL_EXTENSION_H_
 
 #include <stddef.h>
+#include <stdint.h>
 
 #include "upb/mem/arena.h"
 #include "upb/message/internal/array.h"
@@ -37,6 +38,12 @@ typedef struct {
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+UPB_NODISCARD upb_Extension* UPB_PRIVATE(
+    _upb_Message_GetOrCreateExtensionWithTag)(struct upb_Message* msg,
+                                              const upb_MiniTableExtension* ext,
+                                              upb_Arena* arena,
+                                              upb_TaggedAuxType tag);
 
 // Adds the given extension data to the given message.
 // |ext| is copied into the message instance.

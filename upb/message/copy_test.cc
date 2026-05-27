@@ -27,9 +27,12 @@
 #include "upb/base/upcast.h"
 #include "upb/mem/arena.h"
 #include "upb/message/accessors.h"
+#include "upb/message/internal/accessors.h"
+#include "upb/message/internal/extension.h"
 #include "upb/message/internal/message.h"
 #include "upb/message/map.h"
 #include "upb/message/message.h"
+#include "upb/message/unknown_fields.h"
 #include "upb/mini_table/field.h"
 #include "upb/mini_table/message.h"
 #include "upb/test/test.upb.h"
@@ -533,4 +536,53 @@ TEST(GeneratedCode, ShallowCloneMessage) {
   upb_Arena_Free(arena);
 }
 
+TEST(GeneratedCode, DeepCloneMessageNonCanonicalExtensions) {
+  upb_Arena* source_arena = upb_Arena_New();
+  upb_test_ModelWithExtensions* msg =
+      upb_test_ModelWithExtensions_new(source_arena);
+  upb_test_ModelExtension1* ext1 = upb_test_ModelExtension1_new(source_arena);
+  upb_test_ModelExtension1_set_str(ext1,
+                                   upb_StringView_FromString("LifecycleValue"));
+
+  // Attach as non-canonical extension
+  UPB_PRIVATE(_upb_Message_SetNonCanonicalExtension)(
+      UPB_UPCAST(msg), upb_test_ModelExtension1_model_ext_ext, &ext1,
+      source_arena);
+
+  // Deep clone msg to clone
+  upb_Arena* arena = upb_Arena_New();
+  upb_test_ModelWithExtensions* clone =
+      (upb_test_ModelWithExtensions*)upb_Message_DeepClone(
+          UPB_UPCAST(msg), &upb_0test__ModelWithExtensions_msg_init, arena);
+  ASSERT_NE(clone, nullptr);
+
+  // Mutate original
+  upb_test_ModelExtension1_set_str(ext1, upb_StringView_FromString("Mutated"));
+  upb_Arena_Free(source_arena);
+
+  // Check if clone has the non-canonical extension and it's unmodified
+  upb_MessageUnknown data;
+  uintptr_t iter = kUpb_Message_UnknownBegin;
+  bool has_non_canonical = false;
+  const upb_Extension* ext_found = nullptr;
+  while (upb_Message_NextUnknown2(UPB_UPCAST(clone), &data, &iter)) {
+    if (data.type == kUpb_MessageUnknownType_NonCanonicalExtension) {
+      has_non_canonical = true;
+      ext_found = (const upb_Extension*)data.value.extension;
+    }
+  }
+  EXPECT_TRUE(has_non_canonical);
+  ASSERT_NE(ext_found, nullptr);
+
+  const upb_test_ModelExtension1* cloned_ext =
+      (const upb_test_ModelExtension1*)ext_found->data.msg_val;
+  EXPECT_TRUE(
+      upb_StringView_IsEqual(upb_test_ModelExtension1_str(cloned_ext),
+                             upb_StringView_FromString("LifecycleValue")));
+
+  upb_Arena_Free(arena);
+}
+
 }  // namespace
+
+#include "upb/port/undef.inc"
