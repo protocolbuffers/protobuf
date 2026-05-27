@@ -2117,4 +2117,161 @@ class GeneratedClassTest extends TestBase
         // test forwardslash on new line
         $this->assertStringContainsString("* /\n", $docComment);
     }
+
+    /*
+    public function testIssetScopeValidationImplicitPresence()
+    {
+        $m = new TestMessage();
+
+        $this->assertFalse(isset($m->optional_int32));
+        // $this->assertFalse(property_exists($m, 'optional_int32'));
+
+        $m->setOptionalInt32(123);
+
+        // isset() still returns false after a setter.
+        $this->assertFalse(isset($m->optional_int32));
+
+        // External unset() does nothing.
+        unset($m->optional_int32);
+        $this->assertEquals(123, $m->getOptionalInt32());
+    }
+
+    public function testIssetScopeValidationExplicitPresence()
+    {
+        $m = new TestMessage();
+        $this->assertFalse(isset($m->true_optional_int32));
+        // $this->assertFalse(property_exists($m, 'true_optional_int32'));
+
+        $m->setTrueOptionalInt32(123);
+
+        // isset() still returns false after a setter.
+        $this->assertFalse(isset($m->true_optional_int32));
+
+        // The internal getter hasTrueOptionalInt32() works properly.
+        $this->assertTrue($m->hasTrueOptionalInt32());
+
+        // External unset() does nothing.
+        unset($m->true_optional_int32);
+        $this->assertTrue($m->hasTrueOptionalInt32());
+
+        // Internal clearTrueOptionalInt32() (which uses unset internally) works.
+        $m->clearTrueOptionalInt32();
+        $this->assertFalse($m->hasTrueOptionalInt32());
+    }
+    */
+
+    public function testIssetBehaviorsTable()
+    {
+        $fields = [
+            'optional_int32' => [
+                'setter' => 'setOptionalInt32',
+                'getter' => 'getOptionalInt32',
+            ],
+            'true_optional_int32' => [
+                'setter' => 'setTrueOptionalInt32',
+                'getter' => 'getTrueOptionalInt32',
+            ],
+        ];
+
+        $results = [];
+
+        foreach ($fields as $field => $methods) {
+            $m = new TestMessage();
+
+            // Before touching
+            $before_isset_thrown = 'No';
+            $before_isset = 'N/A';
+            try {
+                $before_isset = isset($m->$field) ? 'true' : 'false';
+            } catch (\Throwable $t) {
+                $before_isset_thrown = 'Throws: ' . get_class($t);
+            }
+
+            $before_prop_exists_thrown = 'No';
+            $before_prop_exists = 'N/A';
+            try {
+                $before_prop_exists = property_exists($m, $field) ? 'true' : 'false';
+            } catch (\Throwable $t) {
+                $before_prop_exists_thrown = 'Throws: ' . get_class($t);
+            }
+
+            // Assign
+            $setter = $methods['setter'];
+            $m->$setter(123);
+
+            // After assign
+            $after_isset_thrown = 'No';
+            $after_isset = 'N/A';
+            try {
+                $after_isset = isset($m->$field) ? 'true' : 'false';
+            } catch (\Throwable $t) {
+                $after_isset_thrown = 'Throws: ' . get_class($t);
+            }
+
+            $after_prop_exists_thrown = 'No';
+            $after_prop_exists = 'N/A';
+            try {
+                $after_prop_exists = property_exists($m, $field) ? 'true' : 'false';
+            } catch (\Throwable $t) {
+                $after_prop_exists_thrown = 'Throws: ' . get_class($t);
+            }
+
+            // Try to unset
+            $unset_thrown = 'No';
+            try {
+                unset($m->$field);
+            } catch (\Throwable $t) {
+                $unset_thrown = 'Throws: ' . get_class($t);
+            }
+
+            // Get value after unset
+            $getter = $methods['getter'];
+            $val_after_unset = 'N/A (Threw)';
+            if ($unset_thrown === 'No') {
+                try {
+                    $val_after_unset = var_export($m->$getter(), true);
+                } catch (\Throwable $t) {
+                    $val_after_unset = 'Getter Threw: ' . get_class($t);
+                }
+            }
+
+            $results[$field] = [
+                'before_isset' => $before_isset_thrown !== 'No' ? $before_isset_thrown : $before_isset,
+                'before_prop_exists' => $before_prop_exists_thrown !== 'No' ? $before_prop_exists_thrown : $before_prop_exists,
+                'after_isset' => $after_isset_thrown !== 'No' ? $after_isset_thrown : $after_isset,
+                'after_prop_exists' => $after_prop_exists_thrown !== 'No' ? $after_prop_exists_thrown : $after_prop_exists,
+                'unset_thrown' => $unset_thrown,
+                'val_after_unset' => $val_after_unset,
+            ];
+        }
+
+        // Print behavior table
+        $out = "\n";
+        $out .= "Behaviors Table:\n";
+        $out .= sprintf(
+            "| %-20s | %-15s | %-15s | %-15s | %-15s | %-25s | %-20s |\n",
+            "Field Type", "Before isset()", "Before prop_ex", "After isset()", "After prop_ex", "unset() Throws?", "val after unset"
+        );
+        $out .= sprintf(
+            "|-%'-20s-|-%'-15s-|-%'-15s-|-%'-15s-|-%'-15s-|-%'-25s-|-%'-20s-|\n",
+            "", "", "", "", "", "", ""
+        );
+        foreach ($results as $field => $r) {
+            $out .= sprintf(
+                "| %-20s | %-15s | %-15s | %-15s | %-15s | %-25s | %-20s |\n",
+                $field,
+                $r['before_isset'],
+                $r['before_prop_exists'],
+                $r['after_isset'],
+                $r['after_prop_exists'],
+                $r['unset_thrown'],
+                $r['val_after_unset']
+            );
+        }
+        $out .= "\n";
+
+        fwrite(STDERR, $out);
+
+        $this->fail("Always-fail at the end as requested.\n" . $out);
+    }
 }

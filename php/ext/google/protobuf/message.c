@@ -254,6 +254,11 @@ static int Message_has_property(zend_object* obj, zend_string* member,
 
   if (!f) return 0;
 
+  zend_class_entry *scope = zend_get_executed_scope();
+  if (!scope || !instanceof_function(scope, message_ce)) {
+    return 0;
+  }
+
   if (!upb_FieldDef_HasPresence(f)) {
     zend_throw_exception_ex(
         NULL, 0,
@@ -287,6 +292,11 @@ static void Message_unset_property(zend_object* obj, zend_string* member,
   const upb_FieldDef* f = get_field(intern, member);
 
   if (!f) return;
+
+  zend_class_entry *scope = zend_get_executed_scope();
+  if (!scope || !instanceof_function(scope, message_ce)) {
+    return;
+  }
 
   if (!upb_FieldDef_HasPresence(f)) {
     zend_throw_exception_ex(
