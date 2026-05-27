@@ -911,7 +911,7 @@ TEST_F(CommandLineInterfaceTest, MultipleInputs_UnusedImport_DescriptorSetIn) {
       "import_custom_extension_options.proto");
   */
 
-  ExpectNoErrors();
+  ExpectWarningSubstring("Generic services");
 }
 
 TEST_F(CommandLineInterfaceTest, MultipleInputsWithImport) {

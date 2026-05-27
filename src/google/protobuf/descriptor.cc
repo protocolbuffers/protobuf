@@ -8677,6 +8677,19 @@ void DescriptorBuilder::ValidateOptions(const FileDescriptor* file,
                                         const FileDescriptorProto& proto) {
   ValidateFileFeatures(file, proto);
 
+  if (file->options().cc_generic_services() ||
+      file->options().java_generic_services() ||
+      file->options().py_generic_services()) {
+    AddWarning(
+        "generic services", proto, DescriptorPool::ErrorCollector::OPTION_VALUE,
+        "Generic services (cc_generic_services, java_generic_services, and "
+        "py_generic_services) are deprecated in favor of using plugins that "
+        "generate code specific to your particular RPC system. Additional code "
+        "generator options may be required to enable generic services in 2027 "
+        "major release. Total removal of these options is planned for 2028 "
+        "major release.");
+  }
+
   // Lite files can only be imported by other Lite files.
   if (!IsLite(file)) {
     for (int i = 0; i < file->dependency_count(); i++) {
