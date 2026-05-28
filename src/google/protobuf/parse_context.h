@@ -1195,9 +1195,14 @@ template <typename T>
 #else   // __aarch64__
   auto ptr = reinterpret_cast<const uint8_t*>(p);
   uint32_t res = ptr[0];
-  if ((res & 0x80) == 0) {
+  if (ABSL_PREDICT_TRUE((res & 0x80) == 0)) {
     *out = res;
     return p + 1;
+  }
+  uint32_t second = ptr[1];
+  if (ABSL_PREDICT_TRUE((second & 0x80) == 0)) {
+    *out = (res & 0x7f) | (second << 7);
+    return p + 2;
   }
   return VarintParseSlow(p, res, out);
 #endif  // __aarch64__
