@@ -1477,6 +1477,8 @@ exports_files(
     [
         "test_messages_proto2.proto",
         "test_messages_proto3.proto",
+        "json_options.proto",
+        "json_enumvalue_options.proto",
     ],
     visibility = [
         "//:__pkg__",

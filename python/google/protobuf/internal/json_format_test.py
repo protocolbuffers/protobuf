@@ -14,6 +14,7 @@ import math
 import struct
 import unittest
 
+from absl.testing import parameterized
 from google.protobuf import descriptor_pool
 from google.protobuf import json_format
 from google.protobuf.internal import more_messages_pb2
@@ -29,11 +30,12 @@ from google.protobuf import wrappers_pb2
 from google.protobuf import any_test_pb2
 from google.protobuf import unittest_mset_pb2
 from google.protobuf import unittest_pb2
+from google.protobuf.json import json_enumval_custom_string_pb2
 from google.protobuf.util import json_format_pb2
 from google.protobuf.util import json_format_proto3_pb2
 
 
-class JsonFormatBase(unittest.TestCase):
+class JsonFormatBase(parameterized.TestCase):
 
   def FillAllFields(self, message):
     message.int32_value = 20
@@ -1925,6 +1927,60 @@ class JsonFormatTest(JsonFormatBase):
     text = ('{"a":' * num_recursions) + '""' + ('}' * num_recursions)
     with self.assertRaises(json_format.ParseError):
       json_format.Parse(text, json_format_proto3_pb2.TestMessage())
+
+  @parameterized.named_parameters(
+      (
+          'Default',
+          json_enumval_custom_string_pb2.Armor.ARMOR_GORGET,
+          'ARMOR_GORGET',
+      ),
+      (
+          'CustomString',
+          json_enumval_custom_string_pb2.Armor.ARMOR_GREAT_HELM,
+          'gr8 helm',
+      ),
+      (
+          'QuoteInMiddle',
+          json_enumval_custom_string_pb2.Armor.ARMOR_GAUNTLET,
+          'a"b',
+      ),
+      (
+          'DoubleQuote',
+          json_enumval_custom_string_pb2.Armor.ARMOR_PLATE,
+          '"plate"',
+      ),
+      ('EmptyString', json_enumval_custom_string_pb2.Armor.ARMOR_COIF, ''),
+      (
+          'Escaping',
+          json_enumval_custom_string_pb2.Armor.ARMOR_PAULDRON,
+          'p\taul\ndron',
+      ),
+  )
+  def testEnumValue(self, enum_value, expected_string):
+    msg = json_enumval_custom_string_pb2.Knight(armor=enum_value)
+    self.assertEqual(msg.armor, enum_value)
+
+    json_output = json_format.MessageToJson(msg)
+    self.assertEqual(
+        json.loads(json_output),
+        {'armor': expected_string},
+    )
+
+    # Roundtrip to make sure we can parse it back.
+    msg2 = json_enumval_custom_string_pb2.Knight()
+    json_format.Parse(json_output, msg2)
+    self.assertEqual(msg2.armor, enum_value)
+
+  def testEnumValueIntOverride(self):
+    msg = json_enumval_custom_string_pb2.Knight(
+        armor=json_enumval_custom_string_pb2.Armor.ARMOR_GREAT_HELM
+    )
+
+    # Int overrides always win.
+    self.assertEqual(
+        json.loads(json_format.MessageToJson(msg, use_integers_for_enums=True)),
+        {'armor': 1},
+    )
 
 
 if __name__ == '__main__':

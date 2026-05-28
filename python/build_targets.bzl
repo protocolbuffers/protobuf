@@ -75,6 +75,8 @@ def build_targets(name):
             "//:well_known_type_protos",
             "//src/google/protobuf:descriptor_proto_srcs",
             "//src/google/protobuf/compiler:plugin.proto",
+            "//src/google/protobuf:json_options.proto",
+            "//src/google/protobuf:json_enumvalue_options.proto",
         ],
         strip_prefix = "src",
     )
@@ -239,6 +241,7 @@ def build_targets(name):
             "//:test_proto_srcs",
             "//:test_proto_editions_srcs",
             "//src/google/protobuf/util:test_proto_srcs",
+            "//src/google/protobuf/json:json_enumval_custom_string_proto_srcs",
         ],
         strip_prefix = "src",
     )

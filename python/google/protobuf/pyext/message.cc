@@ -2669,6 +2669,20 @@ PyObject* GetFieldValue(CMessage* self,
     }
   }
 
+  const Descriptor* message_descriptor =
+      (reinterpret_cast<CMessageClass*>(Py_TYPE(self)))->message_descriptor;
+  // We might've run into a descriptor pool mismatch.
+  // In that case, we can update the field descriptor directly in the case
+  // of a direct match.
+  if (message_descriptor != self->message->GetDescriptor()) {
+    if (message_descriptor->full_name() ==
+        self->message->GetDescriptor()->full_name()) {
+      message_descriptor = self->message->GetDescriptor();
+      field_descriptor =
+          message_descriptor->FindFieldByName(field_descriptor->name());
+    }
+  }
+
   if (self->message->GetDescriptor() != field_descriptor->containing_type()) {
     PyErr_Format(PyExc_TypeError,
                  "descriptor to field '%s' doesn't apply to '%s' object",
