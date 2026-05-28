@@ -231,8 +231,7 @@ void SerialArena::Init(ArenaBlock* b, size_t offset) {
   head_.store(b, std::memory_order_relaxed);
   space_used_.store(0, std::memory_order_relaxed);
   space_allocated_.store(b->size, std::memory_order_relaxed);
-  cached_block_length_ = 0;
-  cached_blocks_ = nullptr;
+  std::fill(std::begin(cached_blocks_), std::end(cached_blocks_), nullptr);
   string_block_.store(nullptr, std::memory_order_relaxed);
   string_block_unused_.store(0, std::memory_order_relaxed);
 }

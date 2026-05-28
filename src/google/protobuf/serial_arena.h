@@ -95,7 +95,7 @@ class PROTOBUF_EXPORT SerialArena {
     // the pattern we are looking for.
     const size_t index = absl::bit_width(size - 1) - 4;
 
-    if (ABSL_PREDICT_FALSE(index >= cached_block_length_)) return nullptr;
+    if (ABSL_PREDICT_FALSE(index >= 32)) return nullptr;
     auto& cached_head = cached_blocks_[index];
     if (cached_head == nullptr) return nullptr;
 
@@ -163,30 +163,7 @@ class PROTOBUF_EXPORT SerialArena {
     // on the repeated field.
     const size_t index = absl::bit_width(size) - 5;
 
-    if (ABSL_PREDICT_FALSE(index >= cached_block_length_)) {
-      // We can't put this object on the freelist so make this object the
-      // freelist. It is guaranteed it is larger than the one we have, and
-      // large enough to hold another allocation of `size`.
-      CachedBlock** new_list = static_cast<CachedBlock**>(p);
-      size_t new_size = size / sizeof(CachedBlock*);
-
-      std::copy(cached_blocks_, cached_blocks_ + cached_block_length_,
-                new_list);
-
-      // We need to unpoison this memory before filling it in case it has been
-      // poisoned by another sanitizer client.
-      internal::UnpoisonMemoryRegion(
-          new_list + cached_block_length_,
-          (new_size - cached_block_length_) * sizeof(CachedBlock*));
-
-      std::fill(new_list + cached_block_length_, new_list + new_size, nullptr);
-
-      cached_blocks_ = new_list;
-      // Make the size fit in uint8_t. This is the power of two, so we don't
-      // need anything larger.
-      cached_block_length_ =
-          static_cast<uint8_t>(std::min(size_t{64}, new_size));
-
+    if (ABSL_PREDICT_FALSE(index >= 32)) {
       return;
     }
 
@@ -377,15 +354,6 @@ class PROTOBUF_EXPORT SerialArena {
   }
 
 
-  // Repeated*Field and Arena play together to reduce memory consumption by
-  // reusing blocks. Currently, natural growth of the repeated field types makes
-  // them allocate blocks of size `8 + 2^N, N>=3`.
-  // When the repeated field grows returns the previous block and we put it in
-  // this free list.
-  // `cached_blocks_[i]` points to the free list for blocks of size `8+2^(i+3)`.
-  // The array of freelists is grown when needed in `ReturnArrayMemory()`.
-  uint8_t cached_block_length_ = 0;
-
   // Current prefetch positions. Data from `ptr_` up to but not including
   // `prefetch_ptr_` is software prefetched.
   const char* prefetch_ptr_ = ArbitraryInternalPointerForInit();
@@ -402,7 +370,14 @@ class PROTOBUF_EXPORT SerialArena {
 
   std::atomic<size_t> space_allocated_{0};
 
-  CachedBlock** cached_blocks_ = nullptr;
+  // Repeated*Field and Arena play together to reduce memory consumption by
+  // reusing blocks. Currently, natural growth of the repeated field types makes
+  // them allocate blocks of size `8 + 2^N, N>=3`.
+  // When the repeated field grows returns the previous block and we put it in
+  // this free list.
+  // `cached_blocks_[i]` points to the free list for blocks of size `8+2^(i+3)`.
+  // We use a fixed inline array of size 32 to support all sizes up to 64GB.
+  CachedBlock* cached_blocks_[32] = {nullptr};
 
   // The active string block.
   std::atomic<StringBlock*> string_block_{nullptr};
