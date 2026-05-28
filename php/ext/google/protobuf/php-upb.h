@@ -2341,6 +2341,7 @@ upb_MiniTableField_Type(const upb_MiniTableField* f);
 
 #include <stddef.h>
 #include <stdint.h>
+#include <string.h>
 
 
 #ifndef UPB_MINI_TABLE_INTERNAL_SUB_H_
@@ -2503,6 +2504,34 @@ UPB_API_INLINE bool upb_MiniTable_IsMessageSet(const struct upb_MiniTable* m) {
          kUpb_ExtMode_IsMessageSet;
 }
 
+UPB_API_INLINE const struct upb_MiniTableField* upb_MiniTable_GetFieldByIndex(
+    const struct upb_MiniTable* m, uint32_t i) {
+  UPB_ASSERT(i < m->UPB_ONLYBITS(field_count));
+  return &m->UPB_ONLYBITS(fields)[i];
+}
+
+UPB_API_INLINE const struct upb_MiniTable* upb_MiniTable_GetSubMessageTable(
+    const struct upb_MiniTableField* f) {
+  UPB_ASSERT(upb_MiniTableField_CType(f) == kUpb_CType_Message);
+  upb_MiniTableSubInternal* sub =
+      UPB_PTR_AT(f, f->UPB_PRIVATE(submsg_ofs) * kUpb_SubmsgOffsetBytes,
+                 upb_MiniTableSubInternal);
+  return sub->UPB_PRIVATE(submsg);
+}
+
+UPB_API_INLINE const struct upb_MiniTable* upb_MiniTable_SubMessage(
+    const struct upb_MiniTableField* f) {
+  if (upb_MiniTableField_CType(f) != kUpb_CType_Message) {
+    return NULL;
+  }
+  return upb_MiniTable_GetSubMessageTable(f);
+}
+
+UPB_API_INLINE bool upb_MiniTable_FieldIsLinked(
+    const struct upb_MiniTableField* f) {
+  return upb_MiniTable_GetSubMessageTable(f) != NULL;
+}
+
 UPB_FORCEINLINE
 const struct upb_MiniTableField* UPB_PRIVATE(upb_MiniTable_GenericLowerBound)(
     const struct upb_MiniTable* m, uint32_t lo, uint32_t search_len,
@@ -2653,11 +2682,35 @@ const struct upb_MiniTableField* upb_MiniTable_FindFieldByNumber(
   return candidate->UPB_ONLYBITS(number) == number ? candidate : NULL;
 }
 
+UPB_FORCEINLINE bool UPB_PRIVATE(_upb_MiniTable_GapIfUnlinked)(
+    const struct upb_MiniTableField* field, uint32_t number,
+    uint32_t* out_gap_lo, uint32_t* out_gap_hi) {
+  UPB_STATIC_ASSERT(sizeof(upb_MiniTableSubInternal) == sizeof(void*),
+                    "SubInternal size must be pointer sized.");
+  if (field->UPB_PRIVATE(submsg_ofs) != kUpb_NoSub) {
+    upb_MiniTableSubInternal* sub = UPB_PTR_AT(
+        field, field->UPB_PRIVATE(submsg_ofs) * kUpb_SubmsgOffsetBytes,
+        upb_MiniTableSubInternal);
+    // Type punning via union is legal in C and we're just checking if it's NULL
+    // but it's UB in C++, and this header could be included in C++.
+    void* sub_ptr;
+    memcpy(&sub_ptr, sub, sizeof(void*));
+    if (sub_ptr == NULL) {
+      UPB_ASSERT(!upb_MiniTableField_IsClosedEnum(field));
+      *out_gap_lo = number - 1;
+      *out_gap_hi = number + 1;
+      return true;
+    }
+  }
+  return false;
+}
+
 // Given a tag number, finds the known field tags bounding the gap of unknown
-// fields containing it. Returns false and does not set bounds if the tag
-// number matches a known field. Otherwise returns true and sets out_gap_lo
-// and out_gap_hi (exclusive/exclusive) to define the range of unknown
-// fields (out_gap_lo, out_gap_hi).
+// fields containing it. Returns false and does not set bounds if the tag number
+// matches a known field and it is linked or primitive. Otherwise returns true
+// and sets out_gap_lo and out_gap_hi (exclusive/exclusive) to define the range
+// of unknown fields (out_gap_lo, out_gap_hi). Unlinked submessages are treated
+// as gaps.
 UPB_FORCEINLINE bool UPB_PRIVATE(_upb_MiniTable_FindUnknownGap)(
     const struct upb_MiniTable* m, uint32_t number, uint32_t* out_gap_lo,
     uint32_t* out_gap_hi) {
@@ -2666,7 +2719,8 @@ UPB_FORCEINLINE bool UPB_PRIVATE(_upb_MiniTable_FindUnknownGap)(
   const uint32_t i = number - 1;
   if (i < m->UPB_PRIVATE(dense_below)) {
     // Dense field; we know it's present.
-    return false;
+    return UPB_PRIVATE(_upb_MiniTable_GapIfUnlinked)(
+        &m->UPB_ONLYBITS(fields)[i], number, out_gap_lo, out_gap_hi);
   }
 
   uint32_t hi = m->UPB_ONLYBITS(field_count);
@@ -2690,7 +2744,8 @@ UPB_FORCEINLINE bool UPB_PRIVATE(_upb_MiniTable_FindUnknownGap)(
 
   uint32_t candidate_num = candidate->UPB_ONLYBITS(number);
   if (candidate_num == number) {
-    return false;
+    return UPB_PRIVATE(_upb_MiniTable_GapIfUnlinked)(candidate, number,
+                                                     out_gap_lo, out_gap_hi);
   }
 
   if (candidate_num < number) {
@@ -2704,34 +2759,6 @@ UPB_FORCEINLINE bool UPB_PRIVATE(_upb_MiniTable_FindUnknownGap)(
     *out_gap_hi = candidate_num;
   }
   return true;
-}
-
-UPB_API_INLINE const struct upb_MiniTableField* upb_MiniTable_GetFieldByIndex(
-    const struct upb_MiniTable* m, uint32_t i) {
-  UPB_ASSERT(i < m->UPB_ONLYBITS(field_count));
-  return &m->UPB_ONLYBITS(fields)[i];
-}
-
-UPB_API_INLINE const struct upb_MiniTable* upb_MiniTable_GetSubMessageTable(
-    const struct upb_MiniTableField* f) {
-  UPB_ASSERT(upb_MiniTableField_CType(f) == kUpb_CType_Message);
-  upb_MiniTableSubInternal* sub =
-      UPB_PTR_AT(f, f->UPB_PRIVATE(submsg_ofs) * kUpb_SubmsgOffsetBytes,
-                 upb_MiniTableSubInternal);
-  return sub->UPB_PRIVATE(submsg);
-}
-
-UPB_API_INLINE const struct upb_MiniTable* upb_MiniTable_SubMessage(
-    const struct upb_MiniTableField* f) {
-  if (upb_MiniTableField_CType(f) != kUpb_CType_Message) {
-    return NULL;
-  }
-  return upb_MiniTable_GetSubMessageTable(f);
-}
-
-UPB_API_INLINE bool upb_MiniTable_FieldIsLinked(
-    const struct upb_MiniTableField* f) {
-  return upb_MiniTable_GetSubMessageTable(f) != NULL;
 }
 
 UPB_API_INLINE const struct upb_MiniTable* upb_MiniTable_MapEntrySubMessage(
