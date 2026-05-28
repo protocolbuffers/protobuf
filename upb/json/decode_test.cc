@@ -7,30 +7,54 @@
 
 #include "upb/json/decode.h"
 
+#include <cstring>
 #include <string>
 #include <vector>
 
 #include "google/protobuf/struct.upb.h"
 #include <gtest/gtest.h>
+#include "google/protobuf/json/json_enumval_custom_string.upb.h"
+#include "google/protobuf/json/json_enumval_custom_string.upbdefs.h"
 #include "upb/base/status.hpp"
 #include "upb/base/upcast.h"
 #include "upb/json/test.upb.h"
 #include "upb/json/test.upbdefs.h"
 #include "upb/mem/arena.h"
 #include "upb/mem/arena.hpp"
+#include "upb/message/message.h"
+#include "upb/reflection/def.h"
 #include "upb/reflection/def.hpp"
 
-static upb_test_Box* JsonDecode(const char* json, upb_Arena* a) {
+static bool JsonDecodeGeneric(const char* json, upb_Message* msg,
+                              const upb_MessageDef* (*getmsgdef)(upb_DefPool*),
+                              upb_Arena* arena) {
   upb::Status status;
   upb::DefPool defpool;
-  upb::MessageDefPtr m(upb_test_Box_getmsgdef(defpool.ptr()));
-  EXPECT_TRUE(m.ptr() != nullptr);
+  const upb_MessageDef* m = getmsgdef(defpool.ptr());
+  EXPECT_TRUE(m != nullptr);
 
-  upb_test_Box* box = upb_test_Box_new(a);
   int options = 0;
-  bool ok = upb_JsonDecode(json, strlen(json), UPB_UPCAST(box), m.ptr(),
-                           defpool.ptr(), options, a, status.ptr());
-  return ok ? box : nullptr;
+  return upb_JsonDecode(json, strlen(json), msg, m, defpool.ptr(), options,
+                        arena, status.ptr());
+}
+
+static upb_test_Box* JsonDecode(const char* json, upb_Arena* a) {
+  upb_test_Box* box = upb_test_Box_new(a);
+  if (JsonDecodeGeneric(json, UPB_UPCAST(box), upb_test_Box_getmsgdef, a)) {
+    return box;
+  }
+  return nullptr;
+}
+
+static json_enumval_custom_string_Knight* JsonDecodeKnight(const char* json,
+                                                           upb_Arena* a) {
+  json_enumval_custom_string_Knight* knight =
+      json_enumval_custom_string_Knight_new(a);
+  if (JsonDecodeGeneric(json, UPB_UPCAST(knight),
+                        json_enumval_custom_string_Knight_getmsgdef, a)) {
+    return knight;
+  }
+  return nullptr;
 }
 
 struct FloatTest {
@@ -109,4 +133,68 @@ TEST(JsonTest, RejectsBase64WithHighBitBytes) {
   std::string json_string = R"({"data":"\u0080\u0080\u0080\u0080"})";
   upb_test_Box* box = JsonDecode(json_string.c_str(), a.ptr());
   EXPECT_EQ(box, nullptr);
+}
+
+TEST(JsonTest, DecodeCustomEnumName) {
+  upb::Arena a;
+
+  // ARMOR_GORGET has no custom name, should use default "ARMOR_GORGET"
+  {
+    std::string json = R"({"armor":"ARMOR_GORGET"})";
+    json_enumval_custom_string_Knight* knight =
+        JsonDecodeKnight(json.c_str(), a.ptr());
+    EXPECT_NE(knight, nullptr);
+    EXPECT_EQ(json_enumval_custom_string_ARMOR_GORGET,
+              json_enumval_custom_string_Knight_armor(knight));
+  }
+
+  // ARMOR_GREAT_HELM has custom name "gr8 helm"
+  {
+    std::string json = R"({"armor":"gr8 helm"})";
+    json_enumval_custom_string_Knight* knight =
+        JsonDecodeKnight(json.c_str(), a.ptr());
+    EXPECT_NE(knight, nullptr);
+    EXPECT_EQ(json_enumval_custom_string_ARMOR_GREAT_HELM,
+              json_enumval_custom_string_Knight_armor(knight));
+  }
+
+  // ARMOR_GAUNTLET has custom name "a\"b" (quote should be escaped)
+  {
+    std::string json = "{\"armor\":\"a\\\"b\"}";
+    json_enumval_custom_string_Knight* knight =
+        JsonDecodeKnight(json.c_str(), a.ptr());
+    EXPECT_NE(knight, nullptr);
+    EXPECT_EQ(json_enumval_custom_string_ARMOR_GAUNTLET,
+              json_enumval_custom_string_Knight_armor(knight));
+  }
+
+  // ARMOR_COIF has an empty custom name ("")
+  {
+    std::string json = R"({"armor":""})";
+    json_enumval_custom_string_Knight* knight =
+        JsonDecodeKnight(json.c_str(), a.ptr());
+    EXPECT_NE(knight, nullptr);
+    EXPECT_EQ(json_enumval_custom_string_ARMOR_COIF,
+              json_enumval_custom_string_Knight_armor(knight));
+  }
+
+  // ARMOR_PAULDRON has a tab and a newline
+  {
+    std::string json = R"({"armor":"p\taul\ndron"})";
+    json_enumval_custom_string_Knight* knight =
+        JsonDecodeKnight(json.c_str(), a.ptr());
+    EXPECT_NE(knight, nullptr);
+    EXPECT_EQ(json_enumval_custom_string_ARMOR_PAULDRON,
+              json_enumval_custom_string_Knight_armor(knight));
+  }
+
+  // Ints are always valid enumvals
+  {
+    std::string json = R"({"armor":1})";
+    json_enumval_custom_string_Knight* knight =
+        JsonDecodeKnight(json.c_str(), a.ptr());
+    EXPECT_NE(knight, nullptr);
+    EXPECT_EQ(json_enumval_custom_string_ARMOR_GREAT_HELM,
+              json_enumval_custom_string_Knight_armor(knight));
+  }
 }

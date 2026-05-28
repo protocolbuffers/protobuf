@@ -168,6 +168,7 @@ upb/hash/int_table.h
 upb/hash/str_table.h
 upb/json/decode.h
 upb/json/encode.h
+upb/json/enum.h
 upb/lex/atoi.h
 upb/lex/round_trip.h
 upb/lex/strtod.h

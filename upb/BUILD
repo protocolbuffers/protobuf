@@ -333,6 +333,7 @@ filegroup(
 
 filegroup(
     name = "test_protos",
+    testonly = 1,
     srcs = [
         "//src/google/protobuf:test_messages_proto2.proto",
         "//src/google/protobuf:test_messages_proto3.proto",

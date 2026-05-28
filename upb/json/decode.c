@@ -22,6 +22,7 @@
 #include "upb/base/descriptor_constants.h"
 #include "upb/base/status.h"
 #include "upb/base/string_view.h"
+#include "upb/json/enum.h"
 #include "upb/lex/atoi.h"
 #include "upb/lex/unicode.h"
 #include "upb/mem/arena.h"
@@ -823,6 +824,18 @@ static upb_JsonMessageValue jsondec_enum(jsondec* d, const upb_FieldDef* f) {
       const upb_EnumDef* e = upb_FieldDef_EnumSubDef(f);
       const upb_EnumValueDef* ev =
           upb_EnumDef_FindValueByNameWithSize(e, str.data, str.size);
+      if (!ev) {
+        int value_count = upb_EnumDef_ValueCount(e);
+        for (int i = 0; i < value_count; ++i) {
+          const upb_EnumValueDef* candidate = upb_EnumDef_Value(e, i);
+          upb_StringView custom_name = json_enum_name(candidate, d->symtab);
+          if (custom_name.size == str.size &&
+              memcmp(custom_name.data, str.data, str.size) == 0) {
+            ev = candidate;
+            break;
+          }
+        }
+      }
       upb_JsonMessageValue val = {.ignore = false};
       if (ev) {
         val.value.int32_val = upb_EnumValueDef_Number(ev);

@@ -12,29 +12,45 @@
 
 #include "google/protobuf/struct.upb.h"
 #include <gtest/gtest.h>
+#include "google/protobuf/json/json_enumval_custom_string.upb.h"
+#include "google/protobuf/json/json_enumval_custom_string.upbdefs.h"
 #include "upb/base/status.hpp"
 #include "upb/base/upcast.h"
 #include "upb/json/test.upb.h"
 #include "upb/json/test.upbdefs.h"
 #include "upb/mem/arena.h"
 #include "upb/mem/arena.hpp"
+#include "upb/message/message.h"
+#include "upb/reflection/def.h"
 #include "upb/reflection/def.hpp"
 
-static std::string JsonEncode(const upb_test_Box* msg, int options) {
+static std::string JsonEncodeGeneric(
+    const upb_Message* msg, const upb_MessageDef* (*getmsgdef)(upb_DefPool*),
+    int options) {
   upb::Arena a;
   upb::Status status;
   upb::DefPool defpool;
-  upb::MessageDefPtr m(upb_test_Box_getmsgdef(defpool.ptr()));
-  EXPECT_TRUE(m.ptr() != nullptr);
+  const upb_MessageDef* m = getmsgdef(defpool.ptr());
+  EXPECT_TRUE(m != nullptr);
 
-  size_t json_size = upb_JsonEncode(UPB_UPCAST(msg), m.ptr(), defpool.ptr(),
-                                    options, nullptr, 0, status.ptr());
+  size_t json_size =
+      upb_JsonEncode(msg, m, defpool.ptr(), options, nullptr, 0, status.ptr());
   char* json_buf = (char*)upb_Arena_Malloc(a.ptr(), json_size + 1);
 
-  size_t size = upb_JsonEncode(UPB_UPCAST(msg), m.ptr(), defpool.ptr(), options,
-                               json_buf, json_size + 1, status.ptr());
+  size_t size = upb_JsonEncode(msg, m, defpool.ptr(), options, json_buf,
+                               json_size + 1, status.ptr());
   EXPECT_EQ(size, json_size);
   return std::string(json_buf, json_size);
+}
+
+static std::string JsonEncode(const upb_test_Box* msg, int options) {
+  return JsonEncodeGeneric(UPB_UPCAST(msg), upb_test_Box_getmsgdef, options);
+}
+
+static std::string JsonEncodeKnight(
+    const json_enumval_custom_string_Knight* msg, int options) {
+  return JsonEncodeGeneric(
+      UPB_UPCAST(msg), json_enumval_custom_string_Knight_getmsgdef, options);
 }
 
 // Encode a single optional enum.
@@ -95,4 +111,41 @@ TEST(JsonTest, EncodeConflictJsonName) {
   upb_test_Box* new_box = upb_test_Box_new(a.ptr());
   upb_test_Box_set_new_value(new_box, 2);
   EXPECT_EQ(R"({"value":2})", JsonEncode(new_box, 0));
+}
+
+TEST(JsonTest, EncodeCustomEnumName) {
+  upb::Arena a;
+  json_enumval_custom_string_Knight* knight =
+      json_enumval_custom_string_Knight_new(a.ptr());
+
+  // ARMOR_GORGET has no custom name, should use default "ARMOR_GORGET"
+  json_enumval_custom_string_Knight_set_armor(
+      knight, json_enumval_custom_string_ARMOR_GORGET);
+  EXPECT_EQ(R"({"armor":"ARMOR_GORGET"})", JsonEncodeKnight(knight, 0));
+
+  // ARMOR_GREAT_HELM has custom name "gr8 helm"
+  json_enumval_custom_string_Knight_set_armor(
+      knight, json_enumval_custom_string_ARMOR_GREAT_HELM);
+  EXPECT_EQ(R"({"armor":"gr8 helm"})", JsonEncodeKnight(knight, 0));
+
+  // ARMOR_GAUNTLET has custom name "a\"b" (quote should be escaped)
+  json_enumval_custom_string_Knight_set_armor(
+      knight, json_enumval_custom_string_ARMOR_GAUNTLET);
+  EXPECT_EQ("{\"armor\":\"a\\\"b\"}", JsonEncodeKnight(knight, 0));
+
+  // ARMOR_COIF has an empty custom name ("")
+  json_enumval_custom_string_Knight_set_armor(
+      knight, json_enumval_custom_string_ARMOR_COIF);
+  EXPECT_EQ(R"({"armor":""})", JsonEncodeKnight(knight, 0));
+
+  // ARMOR_PAULDRON has a tab and a newline
+  json_enumval_custom_string_Knight_set_armor(
+      knight, json_enumval_custom_string_ARMOR_PAULDRON);
+  EXPECT_EQ(R"({"armor":"p\taul\ndron"})", JsonEncodeKnight(knight, 0));
+
+  // Int overrides always win.
+  json_enumval_custom_string_Knight_set_armor(
+      knight, json_enumval_custom_string_ARMOR_GREAT_HELM);
+  EXPECT_EQ(R"({"armor":1})",
+            JsonEncodeKnight(knight, upb_JsonEncode_FormatEnumsAsIntegers));
 }
