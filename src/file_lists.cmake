@@ -669,6 +669,7 @@ set(libupb_srcs
   ${protobuf_SOURCE_DIR}/upb/message/array.c
   ${protobuf_SOURCE_DIR}/upb/message/compare.c
   ${protobuf_SOURCE_DIR}/upb/message/compat.c
+  ${protobuf_SOURCE_DIR}/upb/message/convert.c
   ${protobuf_SOURCE_DIR}/upb/message/copy.c
   ${protobuf_SOURCE_DIR}/upb/message/internal/compare_unknown.c
   ${protobuf_SOURCE_DIR}/upb/message/internal/extension.c
@@ -751,6 +752,7 @@ set(libupb_hdrs
   ${protobuf_SOURCE_DIR}/upb/message/array.h
   ${protobuf_SOURCE_DIR}/upb/message/compare.h
   ${protobuf_SOURCE_DIR}/upb/message/compat.h
+  ${protobuf_SOURCE_DIR}/upb/message/convert.h
   ${protobuf_SOURCE_DIR}/upb/message/copy.h
   ${protobuf_SOURCE_DIR}/upb/message/internal/accessors.h
   ${protobuf_SOURCE_DIR}/upb/message/internal/array.h
@@ -1273,6 +1275,7 @@ set(upb_test_protos_files
   ${protobuf_SOURCE_DIR}/src/google/protobuf/type.proto
   ${protobuf_SOURCE_DIR}/src/google/protobuf/wrappers.proto
   ${protobuf_SOURCE_DIR}/upb/json/test.proto
+  ${protobuf_SOURCE_DIR}/upb/message/convert_test.proto
   ${protobuf_SOURCE_DIR}/upb/message/test.proto
   ${protobuf_SOURCE_DIR}/upb/message/utf8_test.proto
   ${protobuf_SOURCE_DIR}/upb/message/utf8_test_proto2.proto
@@ -1308,6 +1311,7 @@ set(upb_test_files
   ${protobuf_SOURCE_DIR}/upb/mem/arena_test.cc
   ${protobuf_SOURCE_DIR}/upb/message/accessors_test.cc
   ${protobuf_SOURCE_DIR}/upb/message/array_test.cc
+  ${protobuf_SOURCE_DIR}/upb/message/convert_test.cc
   ${protobuf_SOURCE_DIR}/upb/message/copy_test.cc
   ${protobuf_SOURCE_DIR}/upb/message/internal/compare_unknown_test.cc
   ${protobuf_SOURCE_DIR}/upb/message/map_test.cc
