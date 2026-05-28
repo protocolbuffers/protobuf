@@ -405,7 +405,11 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8)
   PROTOBUF_FUTURE_ADD_EARLY_NODISCARD void* PROTOBUF_NONNULL
   AllocateAligned(size_t size, size_t align = 8) {
     if (align <= internal::ArenaAlignDefault::align) {
+#if defined(_WIN32)
       return Allocate(internal::ArenaAlignDefault::Ceil(size));
+#else
+      return impl_.AllocateAligned(internal::ArenaAlignDefault::Ceil(size));
+#endif
     } else {
       // We are wasting space by over allocating align - 8 bytes. Compared
       // to a dedicated function that takes current alignment in consideration.
@@ -413,7 +417,11 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8)
       // requires a dedicated function in the outline arena allocation
       // functions. Possibly re-evaluate tradeoffs later.
       auto align_as = internal::ArenaAlignAs(align);
+#if defined(_WIN32)
       return align_as.Ceil(Allocate(align_as.Padded(size)));
+#else
+      return align_as.Ceil(impl_.AllocateAligned(align_as.Padded(size)));
+#endif
     }
   }
 
