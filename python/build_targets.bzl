@@ -108,6 +108,12 @@ def build_targets(name):
             "define": "allow_oversize_protos=true",
         },
     )
+    cc_library(
+        name = "breaking_changes",
+        hdrs = ["google/protobuf/breaking_changes.h"],
+        visibility = ["//python:__subpackages__"],
+    )
+
     cc_binary(
         name = "google/protobuf/pyext/_message.so",
         srcs = native.glob([
@@ -136,6 +142,7 @@ def build_targets(name):
         ],
         deps = [
             ":proto_api",
+            ":breaking_changes",
             "//src/google/protobuf",
             "//src/google/protobuf:port",
             "//src/google/protobuf:protobuf_lite",
@@ -536,6 +543,7 @@ def build_targets(name):
             ":python_src_files",
             "README.md",
             "google/__init__.py",
+            "google/protobuf/breaking_changes.h",
         ],
         strip_prefix = "",
         visibility = ["//python/dist:__pkg__"],
@@ -554,6 +562,7 @@ def build_targets(name):
             "MANIFEST.in",
             "README.md",
             "build_targets.bzl",
+            "google/protobuf/breaking_changes.h",
             "google/protobuf/proto_api.h",
             "google/protobuf/pyext/README",
             "google/protobuf/python_protobuf.h",

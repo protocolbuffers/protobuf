@@ -750,32 +750,5 @@ Error, UINTPTR_MAX is undefined
 #define UPB_WEAK_ALIAS(type, from, to) weak_alias_not_supported_on_this_platform
 #define UPB_STRONG_ALIAS(type, from, to) \
   strong_alias_not_supported_on_this_platform
-#endif
-
-// Future versions of upb will include breaking changes to some APIs.
-// This macro can be set to enable these API changes ahead of time, so that
-// user code can be updated before upgrading versions of protobuf.
-#ifdef UPB_FUTURE_BREAKING_CHANGES
-
-// Removes non-standard clamping behavior in RepeatedContainer.pop()
-// Owner: runze@
-#define UPB_FUTURE_REMOVE_POP_CLAMP 1
-
-// Fix PyProto C++ and upb implementations to return NotImplemented in
-// descriptor container equality checks for unrecognized types.
-// Owner: runze@
-#define UPB_FUTURE_CONTAINER_EQ_RETURNS_NOTIMPLEMENTED 1
-
-// Make GetOptions() return immutable options.
-// Owner: runze@
-#define UPB_FUTURE_FREEZE_OPTIONS 1
-
-#else
-
-#define UPB_FUTURE_REMOVE_POP_CLAMP 0
-
-#define UPB_FUTURE_CONTAINER_EQ_RETURNS_NOTIMPLEMENTED 0
-
-#define UPB_FUTURE_FREEZE_OPTIONS 0
 
 #endif

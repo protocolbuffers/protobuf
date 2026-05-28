@@ -7,6 +7,7 @@
 
 #include "python/descriptor.h"
 
+#include "google/protobuf/breaking_changes.h"
 #include "python/convert.h"
 #include "python/descriptor_containers.h"
 #include "python/descriptor_pool.h"
@@ -138,7 +139,7 @@ static PyObject* PyUpb_DescriptorBase_GetCached(PyObject** cached,
       upb_Message_ClearFieldByDef(opts2, field);
     }
 
-#if UPB_FUTURE_FREEZE_OPTIONS
+#if PROTOBUF_PY_FUTURE_FREEZE_OPTIONS
     upb_Message_Freeze(opts2, opts2_layout);
 #endif
     *cached = PyUpb_Message_Get(opts2, m, py_arena);
