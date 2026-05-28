@@ -187,7 +187,12 @@ class GPBJsonWire
                 }
                 $enum_value_desc = $enum_desc->getValueByNumber($value);
                 if (!is_null($enum_value_desc)) {
-                    $str_value = $enum_value_desc->getName();
+                    $klass = $enum_desc->getClass();
+                    if (method_exists($klass, 'jsonName')) {
+                        $str_value = $klass::jsonName($value);
+                    } else {
+                        $str_value = $enum_value_desc->getName();
+                    }
                     $output->writeRaw("\"", 1);
                     $output->writeRaw($str_value, strlen($str_value));
                     $output->writeRaw("\"", 1);

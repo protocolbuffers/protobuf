@@ -137,6 +137,59 @@ TEST_F(PhpGeneratorTest, ImportPublic) {
   ExpectNoErrors();
 }
 
+TEST_F(PhpGeneratorTest, CustomJsonName) {
+  std::string descriptor_package =
+      std::string(DescriptorProto::descriptor()->file()->package());
+  std::string import_path =
+#ifdef PROTO2_OPENSOURCE
+      "google/protobuf/descriptor.proto";
+#else
+      "google/protobuf/descriptor.proto";
+#endif
+
+  std::string options_proto =
+      "edition = \"2023\";\n"
+      "package pb.enumvalue;\n"
+      "import \"" +
+      import_path +
+      "\";\n"
+      "message JsonEnumValueOptions {\n"
+      "  string string = 1;\n"
+      "}\n"
+      "extend ." +
+      descriptor_package +
+      ".EnumValueOptions {\n"
+      "  JsonEnumValueOptions json = 998;\n"
+      "}\n";
+  CreateTempFile("options.proto", options_proto);
+
+  std::string foo_proto =
+      "edition = \"2023\";\n"
+      "import \"options.proto\";\n"
+      "enum MyEnum {\n"
+      "  MY_ENUM_UNSPECIFIED = 0;\n"
+      "  FOO = 1 [(pb.enumvalue.json).string = \"custom_foo\"];\n"
+      "  BAR = 2;\n"
+      "}\n";
+  CreateTempFile("foo.proto", foo_proto);
+
+  RunProtoc(
+      "protocol_compiler --proto_path=$tmpdir --php_out=$tmpdir foo.proto");
+
+  ExpectNoErrors();
+
+  ExpectFileContentContainsSubstring("MyEnum.php",
+                                     "private static $valueToJsonName");
+  ExpectFileContentContainsSubstring("MyEnum.php", "self::FOO => 'custom_foo'");
+  ExpectFileContentContainsSubstring("MyEnum.php",
+                                     "private static $jsonNameToValue");
+  ExpectFileContentContainsSubstring("MyEnum.php", "'custom_foo' => self::FOO");
+  ExpectFileContentContainsSubstring("MyEnum.php",
+                                     "public static function jsonName($value)");
+  ExpectFileContentContainsSubstring(
+      "MyEnum.php", "public static function valueForJson($name)");
+}
+
 }  // namespace
 }  // namespace php
 }  // namespace compiler

@@ -28,6 +28,7 @@
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/io/printer.h"
 #include "google/protobuf/io/zero_copy_stream.h"
+#include "google/protobuf/message.h"
 
 constexpr absl::string_view kDescriptorFile =
     "google/protobuf/descriptor.proto";
@@ -1344,6 +1345,77 @@ bool GenerateEnumFile(const FileDescriptor* file, const EnumDescriptor* en,
                   IntToString(value->number()));
   }
 
+  // Check if any enum value has the custom JSON name option.
+  bool has_custom_json_name = false;
+  for (int i = 0; i < en->value_count(); i++) {
+    const EnumValueDescriptor* value = en->value(i);
+    const EnumValueOptions& options = value->options();
+    const FieldDescriptor* extension_field =
+        options.GetDescriptor()->file()->pool()->FindExtensionByName(
+            "pb.enumvalue.json");
+    if (extension_field != nullptr &&
+        options.GetReflection()->HasField(options, extension_field)) {
+      has_custom_json_name = true;
+      break;
+    }
+  }
+
+  if (has_custom_json_name) {
+    printer.Print("\nprivate static $valueToJsonName = [\n");
+    Indent(&printer);
+    for (int i = 0; i < en->value_count(); i++) {
+      const EnumValueDescriptor* value = en->value(i);
+      const EnumValueOptions& options = value->options();
+      const FieldDescriptor* extension_field =
+          options.GetDescriptor()->file()->pool()->FindExtensionByName(
+              "pb.enumvalue.json");
+      if (extension_field != nullptr &&
+          options.GetReflection()->HasField(options, extension_field)) {
+        const Message& ext_msg =
+            options.GetReflection()->GetMessage(options, extension_field);
+        const FieldDescriptor* string_field =
+            ext_msg.GetDescriptor()->FindFieldByName("string");
+        if (string_field != nullptr) {
+          std::string custom_name =
+              ext_msg.GetReflection()->GetString(ext_msg, string_field);
+          printer.Print(
+              "self::^constant^ => '^json_name^',\n", "constant",
+              absl::StrCat(ConstantNamePrefix(value->name()), value->name()),
+              "json_name", custom_name);
+        }
+      }
+    }
+    Outdent(&printer);
+    printer.Print("];\n");
+
+    printer.Print("\nprivate static $jsonNameToValue = [\n");
+    Indent(&printer);
+    for (int i = 0; i < en->value_count(); i++) {
+      const EnumValueDescriptor* value = en->value(i);
+      const EnumValueOptions& options = value->options();
+      const FieldDescriptor* extension_field =
+          options.GetDescriptor()->file()->pool()->FindExtensionByName(
+              "pb.enumvalue.json");
+      if (extension_field != nullptr &&
+          options.GetReflection()->HasField(options, extension_field)) {
+        const Message& ext_msg =
+            options.GetReflection()->GetMessage(options, extension_field);
+        const FieldDescriptor* string_field =
+            ext_msg.GetDescriptor()->FindFieldByName("string");
+        if (string_field != nullptr) {
+          std::string custom_name =
+              ext_msg.GetReflection()->GetString(ext_msg, string_field);
+          printer.Print(
+              "'^json_name^' => self::^constant^,\n", "json_name", custom_name,
+              "constant",
+              absl::StrCat(ConstantNamePrefix(value->name()), value->name()));
+        }
+      }
+    }
+    Outdent(&printer);
+    printer.Print("];\n");
+  }
+
   printer.Print("\nprivate static $valueToName = [\n");
   Indent(&printer);
   for (int i = 0; i < en->value_count(); i++) {
@@ -1409,6 +1481,32 @@ bool GenerateEnumFile(const FileDescriptor* file, const EnumDescriptor* en,
       "return constant($const);\n");
   Outdent(&printer);
   printer.Print("}\n");
+
+  if (has_custom_json_name) {
+    printer.Print(
+        "\npublic static function jsonName($value)\n"
+        "{\n");
+    Indent(&printer);
+    printer.Print(
+        "if (isset(self::$valueToJsonName[$value])) {\n"
+        "    return self::$valueToJsonName[$value];\n"
+        "}\n"
+        "return self::name($value);\n");
+    Outdent(&printer);
+    printer.Print("}\n");
+
+    printer.Print(
+        "\npublic static function valueForJson($name)\n"
+        "{\n");
+    Indent(&printer);
+    printer.Print(
+        "if (isset(self::$jsonNameToValue[$name])) {\n"
+        "    return self::$jsonNameToValue[$name];\n"
+        "}\n"
+        "return self::value($name);\n");
+    Outdent(&printer);
+    printer.Print("}\n");
+  }
 
   Outdent(&printer);
   printer.Print("}\n\n");

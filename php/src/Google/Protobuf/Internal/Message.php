@@ -863,14 +863,27 @@ class Message
                 if (is_integer($value)) {
                     return $value;
                 }
-                $enum_value = $field->getEnumType()->getValueByName($value);
-                if (!is_null($enum_value)) {
-                    return $enum_value->getNumber();
-                } else if ($ignore_unknown) {
-                    return $this->defaultValue($field);
+                $enum_desc = $field->getEnumType();
+                $klass = $enum_desc->getClass();
+                if (method_exists($klass, 'valueForJson')) {
+                    try {
+                        return $klass::valueForJson($value);
+                    } catch (\UnexpectedValueException $e) {
+                        if ($ignore_unknown) {
+                            return $this->defaultValue($field);
+                        }
+                        throw new GPBDecodeException($e->getMessage());
+                    }
                 } else {
-                  throw new GPBDecodeException(
-                          "Enum field only accepts integer or enum value name");
+                    $enum_value = $enum_desc->getValueByName($value);
+                    if (!is_null($enum_value)) {
+                        return $enum_value->getNumber();
+                    } else if ($ignore_unknown) {
+                        return $this->defaultValue($field);
+                    } else {
+                        throw new GPBDecodeException(
+                            "Enum field only accepts integer or enum value name");
+                    }
                 }
             case GPBType::STRING:
                 if (is_null($value)) {
