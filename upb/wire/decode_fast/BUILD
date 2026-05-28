@@ -93,7 +93,6 @@ cc_library(
         "//upb/mini_table:internal",
         "//upb/port",
         "//upb/wire:decoder",
-        "//upb/wire:eps_copy_input_stream",
         "//upb/wire:eps_copy_input_stream_internal",
     ],
 )
@@ -207,6 +206,9 @@ cc_test(
         "//upb/base",
         "//upb/mem",
         "//upb/message",
+        "//upb/mini_descriptor",
+        "//upb/mini_descriptor:internal",
+        "//upb/mini_table",
         "//upb/port",
         "//upb/wire",
         "//upb/wire/test_util:field_types",

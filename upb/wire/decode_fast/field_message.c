@@ -10,7 +10,7 @@
 
 #include "upb/message/internal/message.h"
 #include "upb/message/message.h"
-#include "upb/mini_table/field.h"
+#include "upb/mini_table/internal/sub.h"
 #include "upb/mini_table/message.h"
 #include "upb/wire/decode.h"
 #include "upb/wire/decode_fast/cardinality.h"
@@ -30,9 +30,9 @@ typedef struct {
   upb_Message* msg;
 } upb_DecodeFast_MessageContext;
 
-static const char* upb_DecodeFast_MessageData(upb_EpsCopyInputStream* st,
-                                              const char* ptr, int size,
-                                              void* ctx) {
+UPB_FORCEINLINE
+const char* upb_DecodeFast_MessageData(upb_EpsCopyInputStream* st,
+                                       const char* ptr, int size, void* ctx) {
   upb_Decoder* d = (upb_Decoder*)st;
   upb_DecodeFast_MessageContext* c = ctx;
   ptr = _upb_Decoder_DecodeMessage((upb_Decoder*)st, ptr, c->msg, c->table);
@@ -65,14 +65,11 @@ void upb_DecodeFast_Message(upb_Decoder* d, const char** ptr, upb_Message* msg,
                             upb_DecodeFast_Type type,
                             upb_DecodeFast_Cardinality card,
                             upb_DecodeFast_TagSize tagsize, uint64_t data2) {
-  uint16_t submsg_idx = upb_DecodeFastData_GetFieldIndex(*data);
+  uint32_t submsg_ofs = upb_DecodeFastData_GetSubofs(*data) * 8;
 
-  // OPT: we could remove an indirection by precomputing the offset directly
-  // to the submessage table pointer, instead of doing an extra hop through the
-  // field.
-  const upb_MiniTableField* field =
-      upb_MiniTable_GetFieldByIndex(table, submsg_idx);
-  const upb_MiniTable* subtablep = upb_MiniTable_GetSubMessageTable(field);
+  const upb_MiniTableSubInternal* sub = UPB_PTR_AT(
+      table->UPB_ONLYBITS(fields), submsg_ofs, upb_MiniTableSubInternal);
+  const upb_MiniTable* subtablep = sub->UPB_PRIVATE(submsg);
 
   upb_DecodeFast_MessageContext ctx = {subtablep,
                                        card == kUpb_DecodeFast_Repeated};

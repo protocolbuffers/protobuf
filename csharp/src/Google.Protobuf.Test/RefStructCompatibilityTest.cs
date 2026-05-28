@@ -37,7 +37,7 @@ namespace Google.Protobuf
 
             var currentAssemblyDir = Path.GetDirectoryName(typeof(RefStructCompatibilityTest).GetTypeInfo().Assembly.Location);
             var testProtosProjectDir = Path.GetFullPath(Path.Combine(currentAssemblyDir, "..", "..", "..", "..", "Google.Protobuf.Test.TestProtos"));
-            var testProtosOutputDir = (currentAssemblyDir.Contains("bin/Debug/") || currentAssemblyDir.Contains("bin\\Debug\\")) ? "bin\\Debug\\net462" : "bin\\Release\\net462";
+            var testProtosOutputDir = (currentAssemblyDir.Contains("bin/Debug/") || currentAssemblyDir.Contains("bin\\Debug\\")) ? "bin\\Debug\\netstandard2.0" : "bin\\Release\\netstandard2.0";
 
             // If "ref struct" types are used in the generated code, compilation with an old compiler will fail with the following error:
             // "XYZ is obsolete: 'Types with embedded references are not supported in this version of your compiler.'"
@@ -47,7 +47,7 @@ namespace Google.Protobuf
             // We suppress CS1691, which flags a warning for the generated line of
             // #pragma warning disable 1591, 0612, 3021, 8981
             // because CS8981 is unknown to this version of the compiler.
-            var args = $"-langversion:3 -nologo -nowarn:1691 -target:library {compatibilityFlag} -reference:{testProtosOutputDir}\\Google.Protobuf.dll -out:{testProtosOutputDir}\\TestProtos.RefStructCompatibilityTest.OldCompiler.dll {sources}";
+            var args = $"-langversion:3 -nologo -nowarn:1691 -target:library {compatibilityFlag} -reference:netstandard.dll -reference:{testProtosOutputDir}\\Google.Protobuf.dll -out:{testProtosOutputDir}\\TestProtos.RefStructCompatibilityTest.OldCompiler.dll {sources}";
             RunOldCsharpCompilerAndCheckSuccess(args, testProtosProjectDir);
         }
 

@@ -69,62 +69,7 @@ final class ManifestSchemaFactory {
   }
 
   private static MessageInfoFactory getDefaultMessageInfoFactory() {
-    return new CompositeMessageInfoFactory(
-        GeneratedMessageInfoFactory.getInstance(), getDescriptorMessageInfoFactory());
-  }
-
-  private static class CompositeMessageInfoFactory implements MessageInfoFactory {
-    private MessageInfoFactory[] factories;
-
-    CompositeMessageInfoFactory(MessageInfoFactory... factories) {
-      this.factories = factories;
-    }
-
-    @Override
-    public boolean isSupported(Class<?> clazz) {
-      for (MessageInfoFactory factory : factories) {
-        if (factory.isSupported(clazz)) {
-          return true;
-        }
-      }
-      return false;
-    }
-
-    @Override
-    public MessageInfo messageInfoFor(Class<?> clazz) {
-      for (MessageInfoFactory factory : factories) {
-        if (factory.isSupported(clazz)) {
-          return factory.messageInfoFor(clazz);
-        }
-      }
-      throw new UnsupportedOperationException(
-          "No factory is available for message type: " + clazz.getName());
-    }
-  }
-
-  private static final MessageInfoFactory EMPTY_FACTORY =
-      new MessageInfoFactory() {
-        @Override
-        public boolean isSupported(Class<?> clazz) {
-          return false;
-        }
-
-        @Override
-        public MessageInfo messageInfoFor(Class<?> clazz) {
-          throw new IllegalStateException("This should never be called.");
-        }
-      };
-
-  private static MessageInfoFactory getDescriptorMessageInfoFactory() {
-    if (Android.assumeLiteRuntime) {
-      return EMPTY_FACTORY;
-    }
-    try {
-      Class<?> clazz = Class.forName("com.google.protobuf.DescriptorMessageInfoFactory");
-      return (MessageInfoFactory) clazz.getDeclaredMethod("getInstance").invoke(null);
-    } catch (Exception e) {
-      return EMPTY_FACTORY;
-    }
+    return GeneratedMessageInfoFactory.getInstance();
   }
 
   private static boolean useLiteRuntime(Class<?> messageType) {

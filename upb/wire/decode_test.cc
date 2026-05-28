@@ -471,6 +471,43 @@ TEST(DecodeTest, MaxDepthPayloadParsesSuccessfully) {
   }
 }
 
+TEST(DecodeTest, DecodeGroupFieldFromDelimitedWireFormatAsUnknown) {
+  upb::Arena mt_arena;
+  upb::Arena msg_arena;
+
+  // 1. Create Parent MiniTable containing a repeated Group field directly.
+  auto [parent_mt, parent_field] =
+      test::MiniTable::MakeSingleFieldTable<test::field_types::Group>(
+          5, kUpb_DecodeFast_Repeated, mt_arena.ptr());
+
+  // 2. Build length-delimited wire payload for Group field 5:
+  // Tag 5 Delimited = 42 (0x2a), length = 2, child field 1 = 123 ("\x08\x7b").
+  std::string payload("\x2a\x02\x08\x7b", 4);
+
+  // 3. Parse the payload into Parent Message.
+  upb_Message* parent_msg = upb_Message_New(parent_mt, msg_arena.ptr());
+  upb_DecodeStatus result =
+      upb_Decode(payload.data(), payload.size(), parent_msg, parent_mt, nullptr,
+                 0, msg_arena.ptr());
+
+  // 4. Verify parsing succeeded cleanly.
+  ASSERT_EQ(result, kUpb_DecodeStatus_Ok) << upb_DecodeStatus_String(result);
+
+  // 5. Verify repeated Group field 5 was NOT populated as a known field.
+  const upb_Array* arr = upb_Message_GetArray(parent_msg, parent_field);
+  EXPECT_EQ(arr, nullptr);
+
+  // 6. Verify the wire payload was instead preserved inside the Unknown field
+  // set.
+  EXPECT_TRUE(upb_Message_HasUnknown(parent_msg));
+
+  uintptr_t iter = kUpb_Message_UnknownBegin;
+  upb_StringView data;
+  ASSERT_TRUE(upb_Message_NextUnknown(parent_msg, &data, &iter));
+  EXPECT_EQ(absl::string_view(data.data, data.size), payload);
+  EXPECT_FALSE(upb_Message_NextUnknown(parent_msg, &data, &iter));
+}
+
 }  // namespace
 
 }  // namespace test

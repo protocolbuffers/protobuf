@@ -106,6 +106,8 @@ std::string Namespace(const Descriptor* d);
 std::string Namespace(const FieldDescriptor* d);
 std::string Namespace(const EnumDescriptor* d);
 PROTOC_EXPORT std::string Namespace(const FileDescriptor* d);
+PROTOC_EXPORT bool ValidateCcNamespace(const FileDescriptor* file,
+                                       std::string* error);
 PROTOC_EXPORT std::string Namespace(const Descriptor* d);
 PROTOC_EXPORT std::string Namespace(const FieldDescriptor* d);
 PROTOC_EXPORT std::string Namespace(const EnumDescriptor* d);
@@ -356,7 +358,9 @@ inline bool UseUnknownFieldSet(const FileDescriptor* file,
 }
 
 inline bool IsWeak(const FieldDescriptor* field, const Options& options) {
+  PROTOBUF_IGNORE_DEPRECATION_START
   if (field->options().weak()) {
+    PROTOBUF_IGNORE_DEPRECATION_STOP
     ABSL_CHECK(!options.opensource_runtime);
     return true;
   }

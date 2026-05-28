@@ -360,6 +360,29 @@ cc_proto_library(
 )
 
 proto_library(
+    name = "cpp_options_proto",
+    srcs = ["cpp_options.proto"],
+    strip_import_prefix = "/src",
+    visibility = ["//visibility:public"],
+    exports = [":cpp_file_options_proto"],
+    deps = ["//src/google/protobuf:cpp_file_options_proto"],
+)
+
+proto_library(
+    name = "cpp_file_options_proto",
+    srcs = ["cpp_file_options.proto"],
+    strip_import_prefix = "/src",
+    visibility = ["//:__subpackages__"],
+    deps = [":descriptor_proto"],
+)
+
+cc_proto_library(
+    name = "cpp_file_options_cc_proto",
+    visibility = ["//:__subpackages__"],
+    deps = [":cpp_file_options_proto"],
+)
+
+proto_library(
     name = "json_options_proto",
     srcs = ["json_options.proto"],
     strip_import_prefix = "/src",
@@ -780,6 +803,7 @@ cc_library(
 PROTOBUF_HEADERS = [
     "cpp_edition_defaults.h",
     "cpp_features.pb.h",
+    "cpp_file_options.pb.h",
     "descriptor.h",
     "descriptor.pb.h",
     "descriptor_database.h",
@@ -814,6 +838,7 @@ cc_library(
     srcs = [
         "any.cc",
         "cpp_features.pb.cc",
+        "cpp_file_options.pb.cc",
         "descriptor.cc",
         "descriptor.pb.cc",
         "descriptor_database.cc",
@@ -2075,6 +2100,7 @@ cc_test(
         ":test_util",
         ":unittest_import_option_cc_proto",
         ":unittest_proto3_cc_proto",
+        "//src/google/protobuf/compiler/cpp:cpp_file_options_test_cc_proto",
         "//src/google/protobuf/stubs",
         "//src/google/protobuf/testing",
         "//src/google/protobuf/testing:file",
