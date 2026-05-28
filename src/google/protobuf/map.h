@@ -27,6 +27,7 @@
 #include <string>
 #include <type_traits>
 #include <utility>
+#include <vector>
 
 #include "absl/base/attributes.h"
 #include "absl/base/optimization.h"
@@ -430,6 +431,17 @@ class PROTOBUF_EXPORT UntypedMapBase {
     map_index_t bucket;
   };
 
+  struct PoolMetadata {
+    NodeBase* next_free;
+    uintptr_t remaining;
+  };
+
+  PoolMetadata& GetPoolMetadata() {
+    ABSL_DCHECK_NE(table_, nullptr);
+    map_index_t total_slots = 2 * num_buckets_;
+    return *reinterpret_cast<PoolMetadata*>(table_ + total_slots - 2);
+  }
+
   void ClearTableImpl(Arena* arena, bool reset);
 
   // Returns whether we should insert after the head of the list. For
@@ -458,9 +470,28 @@ class PROTOBUF_EXPORT UntypedMapBase {
 
   NodeBase* AllocNode(Arena* arena, size_t node_size) {
     ABSL_DCHECK_EQ(arena, this->arena());
-    return static_cast<NodeBase*>(arena == nullptr
-                                      ? Allocate(node_size)
-                                      : arena->AllocateAligned(node_size));
+    if (arena == nullptr) {
+      return static_cast<NodeBase*>(Allocate(node_size));
+    }
+
+    if (ABSL_PREDICT_FALSE(num_buckets_ == kGlobalEmptyTableSize)) {
+      return static_cast<NodeBase*>(arena->AllocateAligned(node_size));
+    }
+
+    PoolMetadata& pool = GetPoolMetadata();
+    if (ABSL_PREDICT_FALSE(pool.remaining == 0)) {
+      constexpr size_t kBatchSize = 8;
+      char* batch =
+          static_cast<char*>(arena->AllocateAligned(kBatchSize * node_size));
+      pool.next_free = reinterpret_cast<NodeBase*>(batch);
+      pool.remaining = kBatchSize;
+    }
+
+    NodeBase* node = pool.next_free;
+    pool.next_free = reinterpret_cast<NodeBase*>(
+        reinterpret_cast<char*>(pool.next_free) + node_size);
+    --pool.remaining;
+    return node;
   }
 
   void DeallocNode(NodeBase* node) { DeallocNode(node, type_info_.node_size); }
@@ -473,7 +504,7 @@ class PROTOBUF_EXPORT UntypedMapBase {
   void DeleteTable(Arena* arena, NodeBase** table, map_index_t n) {
     ABSL_DCHECK_EQ(arena, this->arena());
     if (arena != nullptr) {
-      arena->ReturnArrayMemory(table, n * sizeof(NodeBase*));
+      arena->ReturnArrayMemory(table, 2 * n * sizeof(NodeBase*));
     } else {
       internal::SizedDelete(table, n * sizeof(NodeBase*));
     }
@@ -483,12 +514,22 @@ class PROTOBUF_EXPORT UntypedMapBase {
     ABSL_DCHECK_GE(n, kMinTableSize);
     ABSL_DCHECK_EQ(n & (n - 1), 0u);
     ABSL_DCHECK_EQ(arena, this->arena());
-    NodeBase** result =
-        arena == nullptr
-            ? static_cast<NodeBase**>(Allocate(n * sizeof(NodeBase*)))
-            : Arena::CreateArray<NodeBase*>(arena, n);
-    memset(result, 0, n * sizeof(result[0]));
-    return result;
+    if (arena == nullptr) {
+      NodeBase** result =
+          static_cast<NodeBase**>(Allocate(n * sizeof(NodeBase*)));
+      memset(result, 0, n * sizeof(result[0]));
+      return result;
+    } else {
+      map_index_t total_slots = 2 * n;
+      NodeBase** result = Arena::CreateArray<NodeBase*>(arena, total_slots);
+      memset(result, 0, n * sizeof(result[0]));
+
+      PoolMetadata& pool =
+          *reinterpret_cast<PoolMetadata*>(result + total_slots - 2);
+      pool.next_free = nullptr;
+      pool.remaining = 0;
+      return result;
+    }
   }
 
   void DeleteNode(NodeBase* node);
@@ -976,27 +1017,7 @@ class KeyMapBase : public UntypedMapBase {
     }
   }
 
-  // Interpret `head` as a linked list and insert all the nodes into `this`.
-  // REQUIRES: this->empty()
-  // REQUIRES: the input nodes have unique keys
-  PROTOBUF_NOINLINE void MergeIntoEmpty(Arena* arena, NodeBase* head,
-                                        size_t num_nodes) {
-    ABSL_DCHECK_EQ(size(), size_t{0});
-    ABSL_DCHECK_NE(num_nodes, size_t{0});
-    ABSL_DCHECK_EQ(arena, this->arena());
 
-    ResizeIfLoadIsOutOfRangeForMultiInsert(arena, num_nodes);
-    num_elements_ = num_nodes;
-    AssertLoadFactor();
-    Inserter inserter(this, table_, num_buckets_);
-    for (size_t i = 0; i < num_nodes; ++i) {
-      KeyNode* node = static_cast<KeyNode*>(head);
-      ABSL_DCHECK_NE(node, nullptr);
-      head = head->next;
-      absl::PrefetchToLocalCacheNta(head);
-      inserter.InsertUnique(node);
-    }
-  }
 
   // Resize to the given number of buckets.
   void Resize(Arena* arena, map_index_t new_num_buckets) {
@@ -1591,13 +1612,11 @@ class PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Map
     if (arena == other.arena()) {
       this->InternalSwap(&other);
     } else {
-      size_t other_size = other.size();
-      Node* other_copy = this->CloneFromOther(arena, other);
+      // Swapping maps with different arenas requires copying.
+      std::vector<value_type> temp_elements(other.begin(), other.end());
       other = *this;
       this->clear();
-      if (other_size != 0) {
-        this->MergeIntoEmpty(arena, other_copy, other_size);
-      }
+      this->insert(temp_elements.begin(), temp_elements.end());
     }
   }
 
@@ -1661,26 +1680,12 @@ class PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Map
     return node;
   }
 
-  // Copy all elements from `other`, using the arena from `this`.
-  // Return them as a linked list, using the `next` pointer in the node.
-  PROTOBUF_NOINLINE Node* CloneFromOther(Arena* arena, const Map& other) {
-    ABSL_DCHECK_EQ(arena, this->arena());
-
-    Node* head = nullptr;
-    for (const auto& [key, value] : other) {
-      Node* new_node = CreateNode(arena, key, value);
-      new_node->next = head;
-      head = new_node;
-    }
-    return head;
-  }
-
   void CopyFromImpl(Arena* arena, const Map& other) {
     if (other.empty()) return;
-    // We split the logic in two: first we clone the data which requires
-    // Key/Value types, then we insert them all which only requires Key.
-    // That way we reduce code duplication.
-    this->MergeIntoEmpty(arena, CloneFromOther(arena, other), other.size());
+    this->ResizeIfLoadIsOutOfRangeForMultiInsert(arena, other.size());
+    for (const auto& [key, value] : other) {
+      this->insert(value_type(key, value));
+    }
   }
 
   template <typename K, typename... Args>
