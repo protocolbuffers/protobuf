@@ -804,7 +804,12 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8)
 
   void* PROTOBUF_NONNULL AllocateAlignedForArray(size_t n, size_t align) {
     if (align <= internal::ArenaAlignDefault::align) {
+#if defined(_WIN32)
       return AllocateForArray(internal::ArenaAlignDefault::Ceil(n));
+#else
+      return impl_.AllocateAligned<internal::AllocationClient::kArray>(
+          internal::ArenaAlignDefault::Ceil(n));
+#endif
     } else {
       // We are wasting space by over allocating align - 8 bytes. Compared
       // to a dedicated function that takes current alignment in consideration.
@@ -812,7 +817,13 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8)
       // requires a dedicated function in the outline arena allocation
       // functions. Possibly re-evaluate tradeoffs later.
       auto align_as = internal::ArenaAlignAs(align);
+#if defined(_WIN32)
       return align_as.Ceil(AllocateForArray(align_as.Padded(n)));
+#else
+      return align_as.Ceil(
+          impl_.AllocateAligned<internal::AllocationClient::kArray>(
+              align_as.Padded(n)));
+#endif
     }
   }
 
