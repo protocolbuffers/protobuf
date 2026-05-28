@@ -327,7 +327,7 @@ class PROTOBUF_EXPORT LazyDescriptor {
   // Returns the current value of the descriptor, thread-safe. If SetLazy(...)
   // has been called, will do a one-time cross link of the type specified,
   // building the descriptor file that contains the type if necessary.
-  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD inline const Descriptor* Get(
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD const Descriptor* Get(
       const ServiceDescriptor* service) {
     Once(service);
     return descriptor_;
@@ -2407,7 +2407,7 @@ class PROTOBUF_EXPORT DescriptorPool {
   // programmatically by implementing an ErrorCollector.
   class PROTOBUF_EXPORT ErrorCollector {
    public:
-    inline ErrorCollector() {}
+    ErrorCollector() {}
 #ifndef SWIG
     ErrorCollector(const ErrorCollector&) = delete;
     ErrorCollector& operator=(const ErrorCollector&) = delete;
