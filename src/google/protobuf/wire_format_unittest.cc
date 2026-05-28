@@ -18,6 +18,7 @@
 #include "absl/base/casts.h"
 #include "absl/strings/cord.h"
 #include "absl/strings/string_view.h"
+#include "google/protobuf/dynamic_message.h"
 #include "google/protobuf/repeated_ptr_field.h"
 #include "google/protobuf/unittest.pb.h"
 #include "google/protobuf/unittest_import.pb.h"
