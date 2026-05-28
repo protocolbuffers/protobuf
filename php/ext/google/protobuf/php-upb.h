@@ -17762,12 +17762,8 @@ const void* _upb_DefType_Unpack(upb_value v, upb_deftype_t type);
 
 // We want to copy the options verbatim into the destination options proto.
 // We use serialize+parse as our deep copy.
-#if UPB_FUTURE_FREEZE_OPTIONS
 #define _UPB_FREEZE_OPTIONS(target, options_type) \
   upb_Message_Freeze((upb_Message*)target, UPB_DESC_MINITABLE(options_type))
-#else
-#define _UPB_FREEZE_OPTIONS(target, options_type)
-#endif
 
 #define UPB_DEF_SET_OPTIONS(target, desc_type, options_type, proto)        \
   if (google_protobuf_##desc_type##_has_options(proto)) {                           \
