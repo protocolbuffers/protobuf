@@ -281,3 +281,11 @@ message TestHasbits {
   bool b69 = 69;
   TestAllTypes child = 100;
 }
+
+message NestedMessageForFT {
+  optional string value = 1;
+}
+
+message ReproMessageForLazy {
+  optional NestedMessageForFT lazy_field = 1 [lazy = true];
+}

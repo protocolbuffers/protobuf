@@ -397,6 +397,49 @@ class FreeThreadingTest(unittest.TestCase):
     else:
       print('Skipping benchmark in non-benchmark mode.')
 
+  @unittest.skipIf(
+      api_implementation.Type() == 'upb',
+      'Upb has not been fixed to handle this case.',
+  )
+  def testConcurrentLazyUnpackAndRead(self):
+    # 1. Create a template proto containing a lazy sub-message
+    template = unittest_proto3_pb2.ReproMessageForLazy()
+    template.lazy_field.value = 'repro_value'
+    serialized_bytes = template.SerializeToString()
+
+    # 2. Helper to run concurrent read/write loops on shared unparsed instances
+    def RunRace():
+      # Parse a fresh unparsed message instance
+      shared_msg = unittest_proto3_pb2.ReproMessageForLazy.FromString(
+          serialized_bytes
+      )
+
+      barrier = threading.Barrier(2)
+
+      def ThreadWriter():
+        barrier.wait()
+        # Access the lazy field for the first time.
+        # This forces the C++ protobuf library to unpack the lazy field,
+        _ = shared_msg.lazy_field.value
+
+      def ThreadReader():
+        barrier.wait()
+        # Concurrently read field presence or format to string.
+        _ = shared_msg.HasField('lazy_field')
+        _ = str(shared_msg)
+
+      t1 = threading.Thread(target=ThreadWriter)
+      t2 = threading.Thread(target=ThreadReader)
+
+      t1.start()
+      t2.start()
+      t1.join()
+      t2.join()
+
+    # 3. Run in a loop to reliably trigger
+    for _ in range(500):
+      RunRace()
+
 
 if __name__ == '__main__':
   unittest.main()
