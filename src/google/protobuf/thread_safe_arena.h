@@ -174,7 +174,7 @@ class PROTOBUF_EXPORT ThreadSafeArena {
   // Delete or Destruct all objects owned by the arena.
   void CleanupList();
 
-  inline void CacheSerialArena(SerialArena* serial) {
+  void CacheSerialArena(SerialArena* serial) {
     thread_cache().last_serial_arena = serial;
     thread_cache().last_lifecycle_id_seen = tag_and_id_;
   }

@@ -331,7 +331,7 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
     }
   }
 
-  inline bool NeedsDestroy() const {
+  bool NeedsDestroy() const {
     // Either there is an allocated element in SSO buffer or there is an
     // allocated Rep.
     return tagged_rep_or_elem_ != nullptr;
@@ -432,7 +432,7 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
     MergeFromConcreteMessage(from, arena, Arena::CopyConstruct<T>);
   }
 
-  inline void InternalSwap(RepeatedPtrFieldBase* PROTOBUF_RESTRICT rhs) {
+  void InternalSwap(RepeatedPtrFieldBase* PROTOBUF_RESTRICT rhs) {
     ABSL_DCHECK(this != rhs);
 
     // Swap all fields except arena offset and arena pointer at once.
@@ -491,7 +491,7 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   void ReserveWithArena(Arena* arena, int capacity);
 
   template <typename TypeHandler>
-  static inline Value<TypeHandler>* copy(const Value<TypeHandler>* value) {
+  static Value<TypeHandler>* copy(const Value<TypeHandler>* value) {
     return cast<TypeHandler>(CloneSlow(nullptr, *value));
   }
 
@@ -684,7 +684,7 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
                                       Arena* other_arena);
 
   // Gets the Arena on which this RepeatedPtrField stores its elements.
-  inline Arena* GetArena() const {
+  Arena* GetArena() const {
     return ResolveArena<&RepeatedPtrFieldBase::resolver_>(this);
   }
 
@@ -766,16 +766,16 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   // Replaces current_size_ with new_size and returns the previous value of
   // current_size_. This function is intended to be the only place where
   // current_size_ is modified.
-  inline int ExchangeCurrentSize(int new_size) {
+  int ExchangeCurrentSize(int new_size) {
     return std::exchange(current_size_, new_size);
   }
-  inline bool SizeAtCapacity() const {
+  bool SizeAtCapacity() const {
     // Harden invariant size() <= allocated_size() <= Capacity().
     ABSL_DCHECK_LE(size(), allocated_size());
     ABSL_DCHECK_LE(allocated_size(), Capacity());
     return current_size_ == Capacity();
   }
-  inline bool AllocatedSizeAtCapacity() const {
+  bool AllocatedSizeAtCapacity() const {
     // Harden invariant size() <= allocated_size() <= Capacity().
     ABSL_DCHECK_LE(size(), allocated_size());
     ABSL_DCHECK_LE(allocated_size(), Capacity());
@@ -818,17 +818,17 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   }
 
   template <typename TypeHandler>
-  static inline Value<TypeHandler>* cast(void* element) {
+  static Value<TypeHandler>* cast(void* element) {
     return reinterpret_cast<Value<TypeHandler>*>(element);
   }
   template <typename TypeHandler>
-  static inline const Value<TypeHandler>* cast(const void* element) {
+  static const Value<TypeHandler>* cast(const void* element) {
     return reinterpret_cast<const Value<TypeHandler>*>(element);
   }
 
   // REQUIRES: arena == nullptr
   template <typename TypeHandler>
-  static inline void Delete(void* obj) {
+  static void Delete(void* obj) {
     TypeHandler::Delete(cast<TypeHandler>(obj));
   }
 
@@ -869,7 +869,7 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
 
   // Ensures that capacity is at least `n` elements.
   // Returns a pointer to the element directly beyond the last element.
-  inline void** InternalReserve(int n, Arena* arena) {
+  void** InternalReserve(int n, Arena* arena) {
     if (n <= Capacity()) {
       void** elements = using_sso() ? &tagged_rep_or_elem_ : rep()->elements;
       return elements + current_size_;
@@ -961,8 +961,7 @@ template <>
 struct FieldArenaRep<RepeatedPtrFieldBase> {
   using Type = RepeatedPtrFieldWithArenaBase;
 
-  static inline RepeatedPtrFieldBase* Get(
-      RepeatedPtrFieldWithArenaBase* arena_rep) {
+  static RepeatedPtrFieldBase* Get(RepeatedPtrFieldWithArenaBase* arena_rep) {
     return &arena_rep->field();
   }
 };
@@ -971,7 +970,7 @@ template <>
 struct FieldArenaRep<const RepeatedPtrFieldBase> {
   using Type = const RepeatedPtrFieldWithArenaBase;
 
-  static inline const RepeatedPtrFieldBase* Get(
+  static const RepeatedPtrFieldBase* Get(
       const RepeatedPtrFieldWithArenaBase* arena_rep) {
     return &arena_rep->field();
   }
@@ -1104,21 +1103,19 @@ class GenericTypeHandler {
     };
   }
 
-  static inline Arena* GetArena(Type* value) {
-    return Arena::InternalGetArena(value);
-  }
+  static Arena* GetArena(Type* value) { return Arena::InternalGetArena(value); }
 
-  static inline void Delete(Type* value) {
+  static void Delete(Type* value) {
     static_assert(std::is_base_of_v<MessageLite, Type>);
     // Using virtual destructor to reduce generated code size that would have
     // happened otherwise due to inlined `~Type()`.
     InternalOutOfLineDeleteMessageLite(value);
   }
-  static inline void Clear(Type* value) {
+  static void Clear(Type* value) {
     static_assert(std::is_base_of_v<MessageLite, Type>);
     value->Clear();
   }
-  static inline size_t SpaceUsedLong(const Type& value) {
+  static size_t SpaceUsedLong(const Type& value) {
     // NOTE: For `SpaceUsedLong()`, we do need `Message`, not `MessageLite`.
     static_assert(std::is_base_of_v<Message, Type>);
     return value.SpaceUsedLong();
@@ -1172,11 +1169,11 @@ class GenericTypeHandler<std::string> {
     return GetNewFunc();
   }
 
-  static inline Arena* GetArena(Type*) { return nullptr; }
+  static Arena* GetArena(Type*) { return nullptr; }
 
-  static inline void Delete(Type* value) { delete value; }
-  static inline void Clear(Type* value) { value->clear(); }
-  static inline void Merge(const Type& from, Type* to) { *to = from; }
+  static void Delete(Type* value) { delete value; }
+  static void Clear(Type* value) { value->clear(); }
+  static void Merge(const Type& from, Type* to) { *to = from; }
   static size_t SpaceUsedLong(const Type& value) {
     return sizeof(value) + StringSpaceUsedExcludingSelfLong(value);
   }
@@ -2088,7 +2085,7 @@ template <typename Element>
 struct FieldArenaRep<RepeatedPtrField<Element>> {
   using Type = RepeatedPtrFieldWithArena<Element>;
 
-  static inline RepeatedPtrField<Element>* Get(
+  static RepeatedPtrField<Element>* Get(
       RepeatedPtrFieldWithArena<Element>* arena_rep) {
     return &arena_rep->field();
   }
@@ -2098,7 +2095,7 @@ template <typename Element>
 struct FieldArenaRep<const RepeatedPtrField<Element>> {
   using Type = const RepeatedPtrFieldWithArena<Element>;
 
-  static inline const RepeatedPtrField<Element>* Get(
+  static const RepeatedPtrField<Element>* Get(
       const RepeatedPtrFieldWithArena<Element>* arena_rep) {
     return &arena_rep->field();
   }
