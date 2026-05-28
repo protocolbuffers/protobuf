@@ -164,6 +164,9 @@ void MessageGenerator::GenerateMembers(io::Printer* printer) const {
            }},
       },
       R"kt(
+    @kotlin.OptIn(
+        com.google.protobuf.kotlin.OnlyForUseByGeneratedProtoCode::class)
+    @com.google.protobuf.kotlin.ProtoHiddenFromObjC
     public object $name_kt$ {
       $body$;
     }
