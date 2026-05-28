@@ -575,7 +575,7 @@ static_assert(offsetof(TcParseTable<1>, fast_entries) ==
 template <typename T,
           PROTOBUF_CC const char* (*func)(T*, const char*, ParseContext*)>
 PROTOBUF_CC const char* StubParseImpl(PROTOBUF_TC_PARAM_DECL) {
-  return func(static_cast<T*>(msg), ptr, ctx);
+  return func(static_cast<T*>(ctx->message()), ptr, ctx);
 }
 
 template <typename T,

@@ -59,9 +59,9 @@ absl::optional<const char*> fallback_ptr_received;
 absl::optional<uint64_t> fallback_hasbits_received;
 absl::optional<uint64_t> fallback_tag_received;
 PROTOBUF_CC const char* FastParserGaveUp(
-    ::google::protobuf::MessageLite*, const char* ptr, ::google::protobuf::internal::ParseContext*,
+    const char* ptr, ::google::protobuf::internal::ParseContext* ctx,
     ::google::protobuf::internal::TcFieldData data,
-    const ::google::protobuf::internal::TcParseTableBase*, uint64_t hasbits) {
+    const ::google::protobuf::internal::TcParseTableBase* table, uint64_t hasbits) {
   fallback_ptr_received = ptr;
   fallback_hasbits_received = hasbits;
   fallback_tag_received = data.tag();
@@ -208,7 +208,8 @@ TEST(FastVarints, NameHere) {
         fallback_ptr_received = absl::nullopt;
         fallback_hasbits_received = absl::nullopt;
         fallback_tag_received = absl::nullopt;
-        end_ptr = fn(reinterpret_cast<MessageLite*>(fake_msg), ptr, &ctx,
+        ctx.set_message(reinterpret_cast<MessageLite*>(fake_msg));
+        end_ptr = fn(ptr, &ctx,
                      Xor2SerializedBytes(parse_table.fast_entries[0].bits, ptr),
                      &parse_table.header, /*hasbits=*/0);
         switch (size) {

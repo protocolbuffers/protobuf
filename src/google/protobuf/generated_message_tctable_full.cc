@@ -42,6 +42,7 @@
 
 // must be last
 #include "google/protobuf/port_def.inc"
+#define msg ctx->message()
 
 namespace google {
 namespace protobuf {
@@ -102,4 +103,5 @@ const char* TcParser::MessageSetWireFormatParseLoop(
 }  // namespace protobuf
 }  // namespace google
 
+#undef msg
 #include "google/protobuf/port_undef.inc"

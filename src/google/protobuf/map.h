@@ -458,9 +458,34 @@ class PROTOBUF_EXPORT UntypedMapBase {
 
   NodeBase* AllocNode(Arena* arena, size_t node_size) {
     ABSL_DCHECK_EQ(arena, this->arena());
-    return static_cast<NodeBase*>(arena == nullptr
-                                      ? Allocate(node_size)
-                                      : arena->AllocateAligned(node_size));
+    if (arena == nullptr) {
+      return static_cast<NodeBase*>(Allocate(node_size));
+    }
+
+    if (ABSL_PREDICT_FALSE(num_buckets_ == kGlobalEmptyTableSize)) {
+      return static_cast<NodeBase*>(arena->AllocateAligned(node_size));
+    }
+
+    map_index_t total_slots = 2 * num_buckets_;
+    NodeBase** pool_meta = table_ + total_slots - 2;
+    char* next_free_node = reinterpret_cast<char*>(pool_meta[0]);
+    uintptr_t remaining_nodes = reinterpret_cast<uintptr_t>(pool_meta[1]);
+
+    if (ABSL_PREDICT_FALSE(remaining_nodes == 0)) {
+      constexpr size_t kBatchSize = 8;
+      char* batch =
+          static_cast<char*>(arena->AllocateAligned(kBatchSize * node_size));
+      next_free_node = batch;
+      remaining_nodes = kBatchSize;
+    }
+
+    NodeBase* node = reinterpret_cast<NodeBase*>(next_free_node);
+    next_free_node += node_size;
+    --remaining_nodes;
+
+    pool_meta[0] = reinterpret_cast<NodeBase*>(next_free_node);
+    pool_meta[1] = reinterpret_cast<NodeBase*>(remaining_nodes);
+    return node;
   }
 
   void DeallocNode(NodeBase* node) { DeallocNode(node, type_info_.node_size); }
@@ -473,7 +498,7 @@ class PROTOBUF_EXPORT UntypedMapBase {
   void DeleteTable(Arena* arena, NodeBase** table, map_index_t n) {
     ABSL_DCHECK_EQ(arena, this->arena());
     if (arena != nullptr) {
-      arena->ReturnArrayMemory(table, n * sizeof(NodeBase*));
+      arena->ReturnArrayMemory(table, 2 * n * sizeof(NodeBase*));
     } else {
       internal::SizedDelete(table, n * sizeof(NodeBase*));
     }
@@ -483,12 +508,21 @@ class PROTOBUF_EXPORT UntypedMapBase {
     ABSL_DCHECK_GE(n, kMinTableSize);
     ABSL_DCHECK_EQ(n & (n - 1), 0u);
     ABSL_DCHECK_EQ(arena, this->arena());
-    NodeBase** result =
-        arena == nullptr
-            ? static_cast<NodeBase**>(Allocate(n * sizeof(NodeBase*)))
-            : Arena::CreateArray<NodeBase*>(arena, n);
-    memset(result, 0, n * sizeof(result[0]));
-    return result;
+    if (arena == nullptr) {
+      NodeBase** result =
+          static_cast<NodeBase**>(Allocate(n * sizeof(NodeBase*)));
+      memset(result, 0, n * sizeof(result[0]));
+      return result;
+    } else {
+      map_index_t total_slots = 2 * n;
+      NodeBase** result = Arena::CreateArray<NodeBase*>(arena, total_slots);
+      memset(result, 0, n * sizeof(result[0]));
+
+      NodeBase** pool_meta = result + total_slots - 2;
+      pool_meta[0] = nullptr;
+      pool_meta[1] = nullptr;
+      return result;
+    }
   }
 
   void DeleteNode(NodeBase* node);
@@ -1665,12 +1699,30 @@ class PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Map
   // Return them as a linked list, using the `next` pointer in the node.
   PROTOBUF_NOINLINE Node* CloneFromOther(Arena* arena, const Map& other) {
     ABSL_DCHECK_EQ(arena, this->arena());
-
     Node* head = nullptr;
-    for (const auto& [key, value] : other) {
-      Node* new_node = CreateNode(arena, key, value);
-      new_node->next = head;
-      head = new_node;
+    if (arena != nullptr && other.size() > 1) {
+      size_t batch_size = other.size();
+      char* batch =
+          static_cast<char*>(arena->AllocateAligned(batch_size * sizeof(Node)));
+      size_t idx = 0;
+      for (const auto& [key, value] : other) {
+        Node* node = reinterpret_cast<Node*>(batch + idx * sizeof(Node));
+        if (!internal::InitializeMapKey(const_cast<Key*>(&node->kv.first), key,
+                                        arena)) {
+          Arena::CreateInArenaStorage(const_cast<Key*>(&node->kv.first), arena,
+                                      key);
+        }
+        Arena::CreateInArenaStorage(&node->kv.second, arena, value);
+        node->next = head;
+        head = node;
+        ++idx;
+      }
+    } else {
+      for (const auto& [key, value] : other) {
+        Node* new_node = CreateNode(arena, key, value);
+        new_node->next = head;
+        head = new_node;
+      }
     }
     return head;
   }

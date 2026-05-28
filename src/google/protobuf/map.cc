@@ -43,12 +43,22 @@ void UntypedMapBase::UntypedMergeFrom(Arena* arena,
   // Do the merging in steps to avoid Key*Value number of instantiations and
   // reduce code duplication per instantation.
   NodeBase* nodes = nullptr;
-
-  // First, allocate all the nodes without types.
-  for (size_t i = 0; i < other.num_elements_; ++i) {
-    NodeBase* new_node = AllocNode(arena);
-    new_node->next = nodes;
-    nodes = new_node;
+  if (arena != nullptr && other.num_elements_ > 1) {
+    size_t batch_size = other.num_elements_;
+    char* batch = static_cast<char*>(
+        arena->AllocateAligned(batch_size * type_info_.node_size));
+    for (size_t i = 0; i < batch_size; ++i) {
+      NodeBase* new_node =
+          reinterpret_cast<NodeBase*>(batch + i * type_info_.node_size);
+      new_node->next = nodes;
+      nodes = new_node;
+    }
+  } else {
+    for (size_t i = 0; i < other.num_elements_; ++i) {
+      NodeBase* new_node = AllocNode(arena);
+      new_node->next = nodes;
+      nodes = new_node;
+    }
   }
 
   // Then, copy the values.

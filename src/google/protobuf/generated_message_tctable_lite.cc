@@ -307,10 +307,12 @@ bool TcParser::RepeatedFieldIsEmptySlow(const MessageLite* msg,
 //////////////////////////////////////////////////////////////////////////////
 
 PROTOBUF_NOINLINE const char* TcParser::ParseLoopPreserveNone(
-    MessageLite* msg, const char* ptr, ParseContext* ctx,
+    MessageLite* msg_ptr, const char* ptr, ParseContext* ctx,
     const TcParseTableBase* table) {
-  return ParseLoop(msg, ptr, ctx, table);
+  return ParseLoop(msg_ptr, ptr, ctx, table);
 }
+
+#define msg ctx->message()
 
 // On the fast path, a (matching) 1-byte tag already has the decoded value.
 static uint32_t FastDecodeTag(uint8_t coded_tag) { return coded_tag; }
@@ -1468,15 +1470,15 @@ const TcParser::UnknownFieldOps& TcParser::GetUnknownFieldOps(
   // Hiding the unknown fields vtable behind the fallback function avoids adding
   // more pointers in TcParseTableBase, and the extra runtime jumps are not
   // relevant because unknown fields are rare.
-  const char* ptr = table->fallback(nullptr, nullptr, nullptr, {}, nullptr, 0);
+  const char* ptr = table->fallback(nullptr, nullptr, {}, nullptr, 0);
   return *reinterpret_cast<const UnknownFieldOps*>(ptr);
 }
 
-PROTOBUF_NOINLINE void TcParser::AddUnknownEnum(MessageLite* msg,
+PROTOBUF_NOINLINE void TcParser::AddUnknownEnum(MessageLite* msg_ptr,
                                                 const TcParseTableBase* table,
                                                 uint32_t tag,
                                                 int32_t enum_value) {
-  GetUnknownFieldOps(table).write_varint(msg, tag >> 3, enum_value);
+  GetUnknownFieldOps(table).write_varint(msg_ptr, tag >> 3, enum_value);
 }
 
 template <typename TagType, uint16_t xform_val>
@@ -1756,17 +1758,17 @@ PROTOBUF_ALWAYS_INLINE bool IsValidUTF8(const MicroString& field) {
   return utf8_range::IsStructurallyValid(field.Get());
 }
 
-void EnsureArenaStringIsNotDefault(const MessageLite* msg,
+void EnsureArenaStringIsNotDefault(const MessageLite* msg_ptr,
                                    ArenaStringPtr* field) {
   // If we failed here we might have left the string in its IsDefault state, but
   // already set the has bit which breaks the message invariants. We must make
   // it consistent again. We do that by guaranteeing the string always exists.
   if (field->IsDefault()) {
-    field->Set("", msg->GetArena());
+    field->Set("", msg_ptr->GetArena());
   }
 }
 // The rest do nothing.
-[[maybe_unused]] void EnsureArenaStringIsNotDefault(const MessageLite* msg,
+[[maybe_unused]] void EnsureArenaStringIsNotDefault(const MessageLite* msg_ptr,
                                                     void*) {}
 
 }  // namespace
@@ -1961,38 +1963,38 @@ PROTOBUF_NOINLINE const char* TcParser::FastUcR2(PROTOBUF_TC_PARAM_DECL) {
 //////////////////////////////////////////////////////////////////////////////
 
 namespace {
-inline void SetHas(const FieldEntry& entry, MessageLite* msg) {
+inline void SetHas(const FieldEntry& entry, MessageLite* msg_ptr) {
   auto has_idx = static_cast<uint32_t>(entry.has_idx);
-  auto& hasblock = TcParser::RefAt<uint32_t>(msg, has_idx / 32 * 4);
+  auto& hasblock = TcParser::RefAt<uint32_t>(msg_ptr, has_idx / 32 * 4);
   hasblock |= uint32_t{1} << (has_idx % 32);
 }
 
-inline void SetHasForRepeated(const FieldEntry& entry, MessageLite* msg) {
+inline void SetHasForRepeated(const FieldEntry& entry, MessageLite* msg_ptr) {
   // Not all repeated fields are assigned a has bit.
   if (entry.has_idx == kNoHasbit) return;
-  SetHas(entry, msg);
+  SetHas(entry, msg_ptr);
 }
 }  // namespace
 
 void TcParser::InitOneof(const TcParseTableBase* table,
                          const ClassData* class_data,
                          const TcParseTableBase::FieldEntry& entry,
-                         MessageLite* msg) {
+                         MessageLite* msg_ptr) {
   uint16_t kind = entry.type_card & field_layout::kFkMask;
   uint16_t rep = entry.type_card & field_layout::kRepMask;
   if (kind == field_layout::kFkString) {
     switch (rep) {
       case field_layout::kRepAString: {
-        RefAt<ArenaStringPtr>(msg, entry.offset).InitDefault();
+        RefAt<ArenaStringPtr>(msg_ptr, entry.offset).InitDefault();
         break;
       }
       case field_layout::kRepMString: {
-        RefAt<MicroString>(msg, entry.offset).InitDefault();
+        RefAt<MicroString>(msg_ptr, entry.offset).InitDefault();
         break;
       }
       case field_layout::kRepCord: {
-        absl::Cord* field = Arena::Create<absl::Cord>(msg->GetArena());
-        RefAt<absl::Cord*>(msg, entry.offset) = field;
+        absl::Cord* field = Arena::Create<absl::Cord>(msg_ptr->GetArena());
+        RefAt<absl::Cord*>(msg_ptr, entry.offset) = field;
         break;
       }
       case field_layout::kRepSString:
@@ -2005,8 +2007,8 @@ void TcParser::InitOneof(const TcParseTableBase* table,
     switch (rep) {
       case field_layout::kRepMessage:
       case field_layout::kRepGroup: {
-        auto& field = RefAt<MessageLite*>(msg, entry.offset);
-        field = NewMessage(class_data, msg->GetArena());
+        auto& field = RefAt<MessageLite*>(msg_ptr, entry.offset);
+        field = NewMessage(class_data, msg_ptr->GetArena());
         break;
       }
       default:
@@ -2023,9 +2025,9 @@ void TcParser::ChangeOneof(const TcParseTableBase* table,
                            const ClassData* class_data,
                            const TcParseTableBase::FieldEntry& entry,
                            uint32_t field_num, ParseContext* ctx,
-                           MessageLite* msg) {
+                           MessageLite* msg_ptr) {
   // The _oneof_case_ value offset is stored in the has-bit index.
-  uint32_t* oneof_case = &TcParser::RefAt<uint32_t>(msg, entry.has_idx);
+  uint32_t* oneof_case = &TcParser::RefAt<uint32_t>(msg_ptr, entry.has_idx);
   uint32_t current_case = *oneof_case;
   *oneof_case = field_num;
 
@@ -2035,7 +2037,7 @@ void TcParser::ChangeOneof(const TcParseTableBase* table,
   if (current_case == 0) {
     // If the member is empty, we don't have anything to clear.
     // We must create a new member object.
-    InitOneof(table, class_data, entry, msg);
+    InitOneof(table, class_data, entry, msg_ptr);
     return;
   }
 
@@ -2046,19 +2048,19 @@ void TcParser::ChangeOneof(const TcParseTableBase* table,
   if (current_kind == field_layout::kFkString) {
     switch (current_rep) {
       case field_layout::kRepAString: {
-        auto& field = RefAt<ArenaStringPtr>(msg, current_entry->offset);
+        auto& field = RefAt<ArenaStringPtr>(msg_ptr, current_entry->offset);
         field.Destroy();
         break;
       }
       case field_layout::kRepMString: {
-        if (msg->GetArena() == nullptr) {
-          RefAt<MicroString>(msg, current_entry->offset).Destroy();
+        if (msg_ptr->GetArena() == nullptr) {
+          RefAt<MicroString>(msg_ptr, current_entry->offset).Destroy();
         }
         break;
       }
       case field_layout::kRepCord: {
-        if (msg->GetArena() == nullptr) {
-          delete RefAt<absl::Cord*>(msg, current_entry->offset);
+        if (msg_ptr->GetArena() == nullptr) {
+          delete RefAt<absl::Cord*>(msg_ptr, current_entry->offset);
         }
         break;
       }
@@ -2072,8 +2074,8 @@ void TcParser::ChangeOneof(const TcParseTableBase* table,
     switch (current_rep) {
       case field_layout::kRepMessage:
       case field_layout::kRepGroup: {
-        auto& field = RefAt<MessageLite*>(msg, current_entry->offset);
-        if (!msg->GetArena()) {
+        auto& field = RefAt<MessageLite*>(msg_ptr, current_entry->offset);
+        if (!msg_ptr->GetArena()) {
           delete field;
         }
         break;
@@ -2083,7 +2085,7 @@ void TcParser::ChangeOneof(const TcParseTableBase* table,
         return;
     }
   }
-  InitOneof(table, class_data, entry, msg);
+  InitOneof(table, class_data, entry, msg_ptr);
 }
 
 namespace {
@@ -2096,18 +2098,18 @@ uint32_t GetSizeofSplit(const TcParseTableBase* table) {
 }
 }  // namespace
 
-void* TcParser::MaybeGetSplitBase(MessageLite* msg, const bool is_split,
+void* TcParser::MaybeGetSplitBase(MessageLite* msg_ptr, const bool is_split,
                                   const TcParseTableBase* table) {
-  void* out = msg;
+  void* out = msg_ptr;
   if (is_split) {
     const uint32_t split_offset = GetSplitOffset(table);
     void* default_split =
         TcParser::RefAt<void*>(table->default_instance(), split_offset);
-    void*& split = TcParser::RefAt<void*>(msg, split_offset);
+    void*& split = TcParser::RefAt<void*>(msg_ptr, split_offset);
     if (split == default_split) {
       // Allocate split instance when needed.
       uint32_t size = GetSizeofSplit(table);
-      Arena* arena = msg->GetArena();
+      Arena* arena = msg_ptr->GetArena();
       split =
           (arena == nullptr) ? Allocate(size) : arena->AllocateAligned(size);
       memcpy(split, default_split, size);
@@ -2894,7 +2896,7 @@ static void SerializeMapKey(UntypedMapBase& map, NodeBase* node,
   }
 }
 
-void TcParser::WriteMapEntryAsUnknown(MessageLite* msg,
+void TcParser::WriteMapEntryAsUnknown(MessageLite* msg_ptr,
                                       const TcParseTableBase* table,
                                       UntypedMapBase& map, Arena* arena,
                                       uint32_t tag, NodeBase* node,
@@ -2910,7 +2912,8 @@ void TcParser::WriteMapEntryAsUnknown(MessageLite* msg,
     ABSL_DCHECK(map_info.value_is_validated_enum);
     WireFormatLite::WriteInt32(2, *map.GetValue<int32_t>(node), &coded_output);
   }
-  GetUnknownFieldOps(table).write_length_delimited(msg, tag >> 3, serialized);
+  GetUnknownFieldOps(table).write_length_delimited(msg_ptr, tag >> 3,
+                                                   serialized);
 
   if (arena == nullptr) {
     map.DeleteNode(node);
@@ -3101,12 +3104,12 @@ PROTOBUF_NOINLINE const char* TcParser::MpMap(PROTOBUF_TC_PARAM_DECL) {
         node,
         absl::Overload{
             [&](std::string* str) { Arena::CreateInArenaStorage(str, arena); },
-            [&](MessageLite* msg) {
+            [&](MessageLite* msg_ptr) {
 #ifndef PROTOBUF_MESSAGE_GLOBALS
-              aux[1].table_ptr()->class_data->PlacementNew(msg, arena);
+              aux[1].table_ptr()->class_data->PlacementNew(msg_ptr, arena);
 #else
               MessageGlobalsBase::GetClassData(aux[1].message_globals())
-                  ->PlacementNew(msg, arena);
+                  ->PlacementNew(msg_ptr, arena);
 #endif
             },
             // Already initialized above. Do nothing here.
@@ -3308,4 +3311,5 @@ const char* TcParser::DiscardEverythingFallback(PROTOBUF_TC_PARAM_DECL) {
 }  // namespace protobuf
 }  // namespace google
 
+#undef msg
 #include "google/protobuf/port_undef.inc"

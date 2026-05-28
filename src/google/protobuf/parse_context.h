@@ -740,6 +740,10 @@ class PROTOBUF_EXPORT ParseContext : public EpsCopyInputStream {
 
   PROTOBUF_FUTURE_ADD_EARLY_NODISCARD Data& data() { return data_; }
   PROTOBUF_FUTURE_ADD_EARLY_NODISCARD const Data& data() const { return data_; }
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD MessageLite* message() const {
+    return msg_;
+  }
+  void set_message(MessageLite* msg) { msg_ = msg; }
 
   PROTOBUF_FUTURE_ADD_EARLY_NODISCARD const char* ParseMessage(MessageLite* msg,
                                                                const char* ptr);
@@ -825,6 +829,7 @@ class PROTOBUF_EXPORT ParseContext : public EpsCopyInputStream {
   // is intentionally used to avoid decrementing INT_MIN, which is UB.
   int group_depth_ = std::numeric_limits<int16_t>::min();
   Data data_;
+  MessageLite* msg_ = nullptr;
 };
 
 // Sink types for AdvancePtrMaybeFlush.

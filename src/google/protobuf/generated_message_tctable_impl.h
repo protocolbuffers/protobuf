@@ -872,7 +872,7 @@ class PROTOBUF_EXPORT TcParser final {
       const google::protobuf::internal::TcParseTableBase* table, uint32_t field_number);
 
   friend class GeneratedTcTableLiteTest;
-  static void* MaybeGetSplitBase(MessageLite* msg, bool is_split,
+  static void* MaybeGetSplitBase(MessageLite* msg_ptr, bool is_split,
                                  const TcParseTableBase* table);
 
   // Test only access to verify that the right function is being called via
@@ -901,7 +901,7 @@ class PROTOBUF_EXPORT TcParser final {
   PROTOBUF_CC static const char* FastEndGroupImpl(PROTOBUF_TC_PARAM_DECL);
 
   static PROTOBUF_ALWAYS_INLINE void SyncHasbits(
-      MessageLite* msg, uint64_t hasbits, const TcParseTableBase* table) {
+      MessageLite* msg_ptr, uint64_t hasbits, const TcParseTableBase* table) {
     const uint32_t has_bits_offset = table->has_bits_offset;
     if constexpr (internal::PerformDebugChecks()) {
       // We always have some offset to write to.
@@ -918,7 +918,7 @@ class PROTOBUF_EXPORT TcParser final {
     }
     // Only the first 32 has-bits are updated. Nothing above those is stored,
     // but e.g. messages without has-bits update the upper bits.
-    RefAt<uint32_t>(msg, has_bits_offset) |= static_cast<uint32_t>(hasbits);
+    RefAt<uint32_t>(msg_ptr, has_bits_offset) |= static_cast<uint32_t>(hasbits);
   }
 
   PROTOBUF_CC static const char* TagDispatch(PROTOBUF_TC_PARAM_NO_DATA_DECL);
@@ -967,6 +967,7 @@ class PROTOBUF_EXPORT TcParser final {
       return reinterpret_cast<const char*>(&kOps);
     }
 
+    auto* msg = ctx->message();
     SyncHasbits(msg, hasbits, table);
     uint32_t tag = data.tag();
     if ((tag & 7) == WireFormatLite::WIRETYPE_END_GROUP || tag == 0) {
@@ -995,6 +996,7 @@ class PROTOBUF_EXPORT TcParser final {
   template <class MessageBaseT>
   PROTOBUF_CC static const char* MessageSetWireFormatParseLoopImpl(
       PROTOBUF_TC_PARAM_NO_DATA_DECL) {
+    auto* msg = ctx->message();
     return RefAt<ExtensionSet>(msg, table->extension_offset)
         .ParseMessageSet(
             ptr, static_cast<const MessageBaseT*>(table->default_instance()),
@@ -1056,10 +1058,11 @@ class PROTOBUF_EXPORT TcParser final {
       ParseContext* ctx, RepeatedPtrField<std::string>& field);
 
   PROTOBUF_NOINLINE
-  static void AddUnknownEnum(MessageLite* msg, const TcParseTableBase* table,
-                             uint32_t tag, int32_t enum_value);
+  static void AddUnknownEnum(MessageLite* msg_ptr,
+                             const TcParseTableBase* table, uint32_t tag,
+                             int32_t enum_value);
 
-  static void WriteMapEntryAsUnknown(MessageLite* msg,
+  static void WriteMapEntryAsUnknown(MessageLite* msg_ptr,
                                      const TcParseTableBase* table,
                                      UntypedMapBase& map, Arena* arena,
                                      uint32_t tag, NodeBase* node,
@@ -1083,12 +1086,12 @@ class PROTOBUF_EXPORT TcParser final {
   static void InitOneof(const TcParseTableBase* table,
                         const ClassData* class_data,
                         const TcParseTableBase::FieldEntry& entry,
-                        MessageLite* msg);
+                        MessageLite* msg_ptr);
   static void ChangeOneof(const TcParseTableBase* table,
                           const ClassData* class_data,
                           const TcParseTableBase::FieldEntry& entry,
                           uint32_t field_num, ParseContext* ctx,
-                          MessageLite* msg);
+                          MessageLite* msg_ptr);
 
   // UTF-8 validation:
   static void ReportFastUtf8Error(uint32_t decoded_tag,
@@ -1151,6 +1154,8 @@ class PROTOBUF_EXPORT TcParser final {
       PROTOBUF_TC_PARAM_DECL);
 };
 
+#define msg ctx->message()
+
 // Dispatch to the designated parse function
 PROTOBUF_ALWAYS_INLINE const char* TcParser::TagDispatch(
     PROTOBUF_TC_PARAM_NO_DATA_DECL) {
@@ -1185,8 +1190,11 @@ PROTOBUF_ALWAYS_INLINE const char* TcParser::ToParseLoop(
 }
 
 PROTOBUF_ALWAYS_INLINE const char* TcParser::ParseLoop(
-    MessageLite* msg, const char* ptr, ParseContext* ctx,
+    MessageLite* msg_ptr, const char* ptr, ParseContext* ctx,
     const TcParseTableBase* table) {
+  auto* parent_msg = ctx->message();
+  ctx->set_message(msg_ptr);
+
   // Note: TagDispatch uses a dispatch table at "&table->fast_entries".
   // For fast dispatch, we'd like to have a pointer to that, but if we use
   // that expression, there's no easy way to get back to "table", which we also
@@ -1202,16 +1210,18 @@ PROTOBUF_ALWAYS_INLINE const char* TcParser::ParseLoop(
     // TODO: remove this asm
     asm("" : "+r"(table));
 #endif
-    ptr = TagDispatch(msg, ptr, ctx, TcFieldData::DefaultInit(), table - 1, 0);
+    ptr = TagDispatch(ptr, ctx, TcFieldData::DefaultInit(), table - 1, 0);
     if (ptr == nullptr) break;
     if (ctx->LastTag() != 1) break;  // Ended on terminating tag
   }
   table -= 1;
+  ctx->set_message(parent_msg);
+
   if (ABSL_PREDICT_FALSE(table->has_post_loop_handler)) {
-    return table->post_loop_handler(msg, ptr, ctx);
+    return table->post_loop_handler(msg_ptr, ptr, ctx);
   }
   if (ABSL_PREDICT_FALSE(PerformDebugChecks() && ptr == nullptr)) {
-    CheckHasBitConsistency(msg, table);
+    CheckHasBitConsistency(msg_ptr, table);
   }
   return ptr;
 }
@@ -1224,6 +1234,7 @@ PROTOBUF_EXPORT std::string TypeCardToString(uint16_t type_card);
 }  // namespace protobuf
 }  // namespace google
 
+#undef msg
 #include "google/protobuf/port_undef.inc"
 
 #endif  // GOOGLE_PROTOBUF_GENERATED_MESSAGE_TCTABLE_IMPL_H__

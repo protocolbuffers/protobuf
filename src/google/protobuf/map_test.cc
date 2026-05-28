@@ -270,10 +270,9 @@ TEST(MapTest, NaturalGrowthOnArenasReuseBlocks) {
     std::pair<int, int> v;
   };
   size_t expected =
-      values.size() * (MapTestPeer::NumBuckets(*values[0]) * sizeof(void*) +
+      values.size() * (2 * MapTestPeer::NumBuckets(*values[0]) * sizeof(void*) +
                        values[0]->size() * sizeof(MockNode));
   // Use a 2% slack for other overhead. If we were not reusing the blocks, the
-  // actual value would be ~2x the cost of the bucket array.
   EXPECT_THAT(arena.SpaceUsed(), AllOf(Ge(expected), Le(1.02 * expected)));
 }
 

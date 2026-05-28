@@ -533,13 +533,12 @@
 // Note for x86_64: `data` must be the third or fourth argument for performance
 // reasons. In order to efficiently read the second byte of `data` we need it to
 // be passed in RDX or RCX.
-#define PROTOBUF_TC_PARAM_DECL                 \
-  ::google::protobuf::MessageLite *msg, const char *ptr, \
-      ::google::protobuf::internal::ParseContext *ctx,   \
-      ::google::protobuf::internal::TcFieldData data,    \
+#define PROTOBUF_TC_PARAM_DECL                            \
+  const char *ptr, ::google::protobuf::internal::ParseContext *ctx, \
+      ::google::protobuf::internal::TcFieldData data,               \
       const ::google::protobuf::internal::TcParseTableBase *table, uint64_t hasbits
 // PROTOBUF_TC_PARAM_PASS passes values to match PROTOBUF_TC_PARAM_DECL.
-#define PROTOBUF_TC_PARAM_PASS msg, ptr, ctx, data, table, hasbits
+#define PROTOBUF_TC_PARAM_PASS ptr, ctx, data, table, hasbits
 
 // PROTOBUF_TC_PARAM_NO_DATA_DECL and PROTOBUF_TC_PARAM_NO_DATA_PASS provide the
 // exact same ABI as above, except that they don't name or pass the `data`
@@ -547,12 +546,12 @@
 // use the `data` argument. By not passing `data` down the call stack, we free
 // up the register holding that value, which may matter in highly optimized
 // functions such as varint parsing.
-#define PROTOBUF_TC_PARAM_NO_DATA_DECL                                        \
-  ::google::protobuf::MessageLite *msg, const char *ptr,                                \
-      ::google::protobuf::internal::ParseContext *ctx, ::google::protobuf::internal::TcFieldData, \
+#define PROTOBUF_TC_PARAM_NO_DATA_DECL                    \
+  const char *ptr, ::google::protobuf::internal::ParseContext *ctx, \
+      ::google::protobuf::internal::TcFieldData,                    \
       const ::google::protobuf::internal::TcParseTableBase *table, uint64_t hasbits
 #define PROTOBUF_TC_PARAM_NO_DATA_PASS \
-  msg, ptr, ctx, ::google::protobuf::internal::TcFieldData::DefaultInit(), table, hasbits
+  ptr, ctx, ::google::protobuf::internal::TcFieldData::DefaultInit(), table, hasbits
 
 // For the toolchains that support it, evaluates to `true` if the input is
 // determined to be a compile time constant after optimizations have happened
