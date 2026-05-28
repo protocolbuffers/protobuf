@@ -22,6 +22,7 @@
     <file src="protoc/linux_x64/protoc" target="tools/linux_x64/protoc"/>
     <file src="protoc/linux_aarch64/protoc" target="tools/linux_aarch64/protoc"/>
     <file src="protoc/macosx_x64/protoc" target="tools/macosx_x64/protoc"/>
+    <file src="protoc/macosx_aarch64/protoc" target="tools/macosx_aarch64/protoc"/>
     <!--
       - Include the protos for the well-known types in a directory where protoc will
       - find them by default.
