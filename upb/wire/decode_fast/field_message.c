@@ -10,6 +10,7 @@
 
 #include "upb/message/internal/message.h"
 #include "upb/message/message.h"
+#include "upb/mini_table/field.h"
 #include "upb/mini_table/internal/sub.h"
 #include "upb/mini_table/message.h"
 #include "upb/wire/decode.h"
@@ -75,7 +76,19 @@ void upb_DecodeFast_Message(upb_Decoder* d, const char** ptr, upb_Message* msg,
                                        card == kUpb_DecodeFast_Repeated};
 
   if (subtablep == NULL) {
-    UPB_DECODEFAST_EXIT(kUpb_DecodeFastNext_FallbackToMiniTable, ret);
+    // Unlinked messages are treated as unknown fields. Go straight to unknown
+    // decoder.
+#ifndef NDEBUG
+    uint16_t case_offset = upb_DecodeFastData_GetCaseOffset(*data);
+    if (case_offset != 0) {
+      uint8_t field_number = upb_DecodeFastData_GetPresence(*data);
+      const upb_MiniTableField* field =
+          upb_MiniTable_FindFieldByNumber(table, field_number);
+      UPB_ASSERT(field);
+      _upb_Decoder_VerifyOneofUnlinked(table, field);
+    }
+#endif
+    UPB_DECODEFAST_EXIT(kUpb_DecodeFastNext_DecodeUnknown, ret);
     return;
   }
 
