@@ -1758,18 +1758,14 @@ template <typename Key, typename T>
 struct FieldArenaRep<Map<Key, T>> {
   using Type = MapWithArena<Key, T>;
 
-  static inline Map<Key, T>* Get(Type* arena_rep) {
-    return &arena_rep->field();
-  }
+  static Map<Key, T>* Get(Type* arena_rep) { return &arena_rep->field(); }
 };
 
 template <typename Key, typename T>
 struct FieldArenaRep<const Map<Key, T>> {
   using Type = const MapWithArena<Key, T>;
 
-  static inline const Map<Key, T>* Get(Type* arena_rep) {
-    return &arena_rep->field();
-  }
+  static const Map<Key, T>* Get(Type* arena_rep) { return &arena_rep->field(); }
 };
 
 template <typename... T>
