@@ -655,8 +655,8 @@ alias(
 ################################################################################
 
 alias(
-    name = "csharp_features_proto",
-    actual = "//csharp:csharp_features_proto",  # proto_library
+    name = "c_sharp_features_proto",
+    actual = "//csharp:c_sharp_features_proto",  # proto_library
     visibility = ["//visibility:public"],
 )
 
