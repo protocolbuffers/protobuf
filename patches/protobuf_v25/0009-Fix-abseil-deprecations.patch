@@ -1,0 +1,12 @@
+diff --git a/build_defs/cpp_opts.bzl b/build_defs/cpp_opts.bzl
+index 03106df..9f8bd4d 100644
+--- a/build_defs/cpp_opts.bzl
++++ b/build_defs/cpp_opts.bzl
+@@ -20,6 +20,7 @@ COPTS = select({
+         "-DHAVE_ZLIB",
+         "-Woverloaded-virtual",
+         "-Wno-sign-compare",
++        "-Wno-error=deprecated-declarations",
+         "-Wno-nonnull",
+         "-Werror",
+     ],
