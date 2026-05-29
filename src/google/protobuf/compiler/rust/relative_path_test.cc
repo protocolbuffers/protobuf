@@ -7,8 +7,8 @@
 
 #include "google/protobuf/compiler/rust/relative_path.h"
 
-#include <gmock/gmock.h>
 #include <gtest/gtest.h>
+#include "absl/strings/string_view.h"
 
 namespace google {
 namespace protobuf {
