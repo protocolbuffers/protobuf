@@ -462,7 +462,8 @@ struct DynamicMessageFactory::TypeInfo {
     internal::SizedDelete(
         const_cast<MessageGlobalsBase*>(
             MessageGlobalsBase::FromDefaultInstance(GetPrototype())),
-        MsgSizeToGlobalsSize(class_data.message_creator.allocation_size()));
+        MsgSizeToGlobalsSize(class_data.message_creator.allocation_size()),
+        internal::kMaxMessageAlignment);
 
     // Scribble the payload to prevent unsanitized opt builds from silently
     // allowing use-after-free bugs where the factory is destroyed but the
@@ -1043,7 +1044,8 @@ const Message* DynamicMessageFactory::GetPrototypeNoLock(
 
   // Allocate the message globals object that contains the default instance.
   uint32_t globals_size = MsgSizeToGlobalsSize(size);
-  void* globals_base = internal::Allocate(globals_size);
+  void* globals_base =
+      internal::AlignedAllocate(globals_size, internal::kMaxMessageAlignment);
   memset(globals_base, 0, globals_size);
   auto* msg_base = DynamicMessageGlobalsToDefaultInstance(globals_base);
 

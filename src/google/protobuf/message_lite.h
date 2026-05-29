@@ -134,9 +134,9 @@ class MessageCreator {
 
   void* AllocateMessage(Arena* arena) const {
     if (arena != nullptr) {
-      return arena->AllocateAligned(allocation_size_);
+      return arena->AllocateAligned(allocation_size_, alignment_);
     } else {
-      return Allocate(allocation_size_);
+      return internal::AlignedAllocate(allocation_size_, alignment_);
     }
   }
 

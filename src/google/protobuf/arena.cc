@@ -195,10 +195,11 @@ std::vector<void*> ChunkList::PeekForTesting() {
 // It is guaranteed that this is constructed in `b`. IOW, this is not the first
 // arena and `b` cannot be sentry.
 SerialArena::SerialArena(ArenaBlock* b, ThreadSafeArena& parent)
-    : prefetch_ptr_(
-          b->Pointer(kBlockHeaderSize + ThreadSafeArena::kSerialArenaSize)),
+    : prefetch_ptr_(ArenaAlignDefault::Ceil(
+          b->Pointer(kBlockHeaderSize + ThreadSafeArena::kSerialArenaSize))),
       head_{b},
-      ptr_{b->Pointer(kBlockHeaderSize + ThreadSafeArena::kSerialArenaSize)},
+      ptr_{ArenaAlignDefault::Ceil(
+          b->Pointer(kBlockHeaderSize + ThreadSafeArena::kSerialArenaSize))},
       limit_{b->Limit()},
       space_allocated_{b->size},
       parent_{parent} {
@@ -215,7 +216,7 @@ SerialArena::SerialArena(FirstSerialArena, ArenaBlock* b,
                          ThreadSafeArena& parent)
     : head_{b}, space_allocated_{b->size}, parent_{parent} {
   if (b->IsSentry()) return;
-  set_range(b->Pointer(kBlockHeaderSize), b->Limit());
+  set_range(ArenaAlignDefault::Ceil(b->Pointer(kBlockHeaderSize)), b->Limit());
 }
 
 std::vector<void*> SerialArena::PeekCleanupListForTesting() {
@@ -270,6 +271,15 @@ void* SerialArena::AllocateAlignedFallback(size_t n) {
 }
 
 PROTOBUF_NOINLINE
+void* SerialArena::AllocateAlignedFallback(size_t n, size_t align) {
+  AllocateNewBlock(n + align);
+  void* ret = nullptr;
+  bool res = MaybeAllocateAligned(n, align, &ret);
+  ABSL_DCHECK(res);
+  return ret;
+}
+
+PROTOBUF_NOINLINE
 void* SerialArena::AllocateFromStringBlockFallback() {
   ABSL_DCHECK_EQ(string_block_unused_.load(std::memory_order_relaxed), 0U);
   StringBlock* sb = string_block_.load(std::memory_order_relaxed);
@@ -319,12 +329,16 @@ void SerialArena::AllocateNewBlock(size_t n) {
   // the microbenchmark.
 
   auto mem = AllocateBlock(parent_.AllocPolicy(), old_head->size, n);
+
   AddSpaceAllocated(mem.n);
   ThreadSafeArenaStats::RecordAllocateStats(parent_.arena_stats_.MutableStats(),
                                             /*used=*/used,
                                             /*allocated=*/mem.n, wasted);
   auto* new_head = new (mem.p) ArenaBlock{old_head, mem.n};
-  set_range(new_head->Pointer(kBlockHeaderSize), new_head->Limit());
+  char* aligned_ptr =
+      ArenaAlignDefault::Ceil(new_head->Pointer(kBlockHeaderSize));
+
+  set_range(aligned_ptr, new_head->Limit());
   // Previous writes must take effect before writing new head.
   head_.store(new_head, std::memory_order_release);
 
@@ -918,6 +932,11 @@ PROTOBUF_NOINLINE void* ThreadSafeArena::AllocateAlignedFallback(size_t n) {
   return GetSerialArenaFallback(n)->AllocateAligned<alloc_client>(n);
 }
 
+PROTOBUF_NOINLINE void* ThreadSafeArena::AllocateAlignedFallback(size_t n,
+                                                                 size_t align) {
+  return GetSerialArenaFallback(n + align)->AllocateAlignedFallback(n, align);
+}
+
 template void*
 ThreadSafeArena::AllocateAlignedFallback<AllocationClient::kDefault>(size_t);
 template void*
@@ -981,11 +1000,20 @@ SerialArena* ThreadSafeArena::GetSerialArenaFallback(size_t n) {
 }  // namespace internal
 
 void* PROTOBUF_NONNULL Arena::Allocate(size_t n) {
-  return impl_.AllocateAligned(n);
+  return impl_.AllocateAligned(internal::ArenaAlignDefault::Ceil(n));
 }
 
 void* PROTOBUF_NONNULL Arena::AllocateForArray(size_t n) {
-  return impl_.AllocateAligned<internal::AllocationClient::kArray>(n);
+  return impl_.AllocateAligned<internal::AllocationClient::kArray>(
+      internal::ArenaAlignDefault::Ceil(n));
+}
+
+void* PROTOBUF_NONNULL Arena::AllocateAlignedFallback(size_t n, size_t align) {
+  void* ptr = nullptr;
+  if (impl_.MaybeAllocateAligned(n, align, &ptr)) {
+    return ptr;
+  }
+  return impl_.AllocateAlignedFallback(n, align);
 }
 
 void* PROTOBUF_NONNULL Arena::AllocateAlignedWithCleanup(

@@ -63,12 +63,13 @@ void MessageLite::DestroyInstance() {
 }
 
 void MessageLite::DeleteInstance() {
-  // Cache the size and pointer because we can't access them after the
-  // destruction.
+  // Cache the size, alignment and pointer because we can't access them after
+  // the destruction.
   const size_t size = GetClassData()->allocation_size();
+  const size_t align = GetClassData()->alignment();
   void* const ptr = this;
   DestroyInstance();
-  internal::SizedDelete(ptr, size);
+  internal::SizedDelete(ptr, size, align);
 }
 
 void MessageLite::CheckHasBitConsistency() const {

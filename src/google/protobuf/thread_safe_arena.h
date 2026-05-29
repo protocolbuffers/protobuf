@@ -99,6 +99,15 @@ class PROTOBUF_EXPORT ThreadSafeArena {
     return false;
   }
 
+  PROTOBUF_NDEBUG_INLINE bool MaybeAllocateAligned(size_t n, size_t align,
+                                                   void** out) {
+    SerialArena* arena = nullptr;
+    if (ABSL_PREDICT_TRUE(GetSerialArenaFast(&arena))) {
+      return arena->MaybeAllocateAligned(n, align, out);
+    }
+    return false;
+  }
+
   void* AllocateAlignedWithCleanup(size_t n, size_t align,
                                    void (*destructor)(void*));
 
@@ -110,6 +119,7 @@ class PROTOBUF_EXPORT ThreadSafeArena {
   std::vector<void*> PeekCleanupListForTesting();
 
  private:
+  friend class ::google::protobuf::Arena;
   friend class ArenaBenchmark;
   friend class TcParser;
   friend class SerialArena;
@@ -206,6 +216,7 @@ class PROTOBUF_EXPORT ThreadSafeArena {
 
   template <AllocationClient alloc_client = AllocationClient::kDefault>
   void* AllocateAlignedFallback(size_t n);
+  void* AllocateAlignedFallback(size_t n, size_t align);
 
   // Executes callback function over SerialArenaChunk. Passes const
   // SerialArenaChunk*.
@@ -278,14 +289,16 @@ class PROTOBUF_EXPORT ThreadSafeArena {
   // of 8 to protect the invariant that pos is always at a multiple of 8.
   static constexpr size_t kBlockHeaderSize = SerialArena::kBlockHeaderSize;
   static constexpr size_t kSerialArenaSize =
-      (sizeof(SerialArena) + 7) & static_cast<size_t>(-8);
+      ArenaAlignDefault::Ceil(sizeof(SerialArena));
   static constexpr size_t kAllocPolicySize =
       ArenaAlignDefault::Ceil(sizeof(AllocationPolicy));
   static constexpr size_t kMaxCleanupNodeSize = 16;
-  static_assert(kBlockHeaderSize % 8 == 0,
-                "kBlockHeaderSize must be a multiple of 8.");
-  static_assert(kSerialArenaSize % 8 == 0,
-                "kSerialArenaSize must be a multiple of 8.");
+  static_assert(
+      kBlockHeaderSize % ArenaAlignDefault::align == 0,
+      "kBlockHeaderSize must be a multiple of ArenaAlignDefault::align.");
+  static_assert(
+      kSerialArenaSize % ArenaAlignDefault::align == 0,
+      "kSerialArenaSize must be a multiple of ArenaAlignDefault::align.");
 };
 
 }  // namespace internal

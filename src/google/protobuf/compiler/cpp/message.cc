@@ -1681,7 +1681,7 @@ void MessageGenerator::GenerateImplDefinition(io::Printer* p) {
           // clang-format on
         }}},
       R"cc(
-        struct Impl_ {
+        struct alignas($pbi$::kMaxMessageAlignment) Impl_ {
           //~ TODO: check if/when there is a need for an
           //~ outline dtor.
           inline explicit constexpr Impl_($pbi$::InternalVisibility visibility,

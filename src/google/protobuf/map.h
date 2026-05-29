@@ -458,16 +458,17 @@ class PROTOBUF_EXPORT UntypedMapBase {
 
   NodeBase* AllocNode(Arena* arena, size_t node_size) {
     ABSL_DCHECK_EQ(arena, this->arena());
-    return static_cast<NodeBase*>(arena == nullptr
-                                      ? Allocate(node_size)
-                                      : arena->AllocateAligned(node_size));
+    return static_cast<NodeBase*>(
+        arena == nullptr
+            ? internal::AlignedAllocate(node_size, kMaxMessageAlignment)
+            : arena->AllocateAligned(node_size, kMaxMessageAlignment));
   }
 
   void DeallocNode(NodeBase* node) { DeallocNode(node, type_info_.node_size); }
 
   void DeallocNode(NodeBase* node, size_t node_size) {
     ABSL_DCHECK(arena() == nullptr);
-    internal::SizedDelete(node, node_size);
+    internal::SizedDelete(node, node_size, kMaxMessageAlignment);
   }
 
   void DeleteTable(Arena* arena, NodeBase** table, map_index_t n) {

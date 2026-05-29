@@ -402,18 +402,13 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8)
   }
 
   // Allocates memory with the specific size and alignment.
-  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD void* PROTOBUF_NONNULL
-  AllocateAligned(size_t size, size_t align = 8) {
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD PROTOBUF_ALWAYS_INLINE void*
+      PROTOBUF_NONNULL
+      AllocateAligned(size_t size, size_t align = 8) {
     if (align <= internal::ArenaAlignDefault::align) {
       return Allocate(internal::ArenaAlignDefault::Ceil(size));
     } else {
-      // We are wasting space by over allocating align - 8 bytes. Compared
-      // to a dedicated function that takes current alignment in consideration.
-      // Such a scheme would only waste (align - 8)/2 bytes on average, but
-      // requires a dedicated function in the outline arena allocation
-      // functions. Possibly re-evaluate tradeoffs later.
-      auto align_as = internal::ArenaAlignAs(align);
-      return align_as.Ceil(Allocate(align_as.Padded(size)));
+      return AllocateAlignedFallback(size, align);
     }
   }
 
@@ -818,6 +813,7 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8)
 
   void* PROTOBUF_NONNULL Allocate(size_t n);
   void* PROTOBUF_NONNULL AllocateForArray(size_t n);
+  void* PROTOBUF_NONNULL AllocateAlignedFallback(size_t n, size_t align);
   void* PROTOBUF_NONNULL AllocateAlignedWithCleanup(
       size_t n, size_t align,
       void (*PROTOBUF_NONNULL destructor)(void* PROTOBUF_NONNULL));
@@ -1138,7 +1134,7 @@ Arena::DefaultConstruct(Arena* PROTOBUF_NULLABLE arena) {
       using ArenaRepT = typename internal::FieldArenaRep<T>::Type;
       static_assert(is_destructor_skippable<ArenaRepT>::value);
 
-      void* mem = arena->AllocateAligned(sizeof(ArenaRepT));
+      void* mem = arena->AllocateAligned(sizeof(ArenaRepT), alignof(ArenaRepT));
       ArenaRepT* arena_rep = new (mem) ArenaRepT(arena);
       return internal::FieldArenaRep<T>::Get(arena_rep);
     } else {
@@ -1146,12 +1142,15 @@ Arena::DefaultConstruct(Arena* PROTOBUF_NULLABLE arena) {
       // Fields which use arena offsets don't have constructors that take an
       // arena pointer. Since the arena is nullptr, it is safe to default
       // construct the object.
-      return new (internal::Allocate(sizeof(T))) T();
+      return new (internal::AlignedAllocate(sizeof(T), alignof(T))) T();
     }
   } else {
     static_assert(is_destructor_skippable<T>::value);
-    void* mem = arena != nullptr ? arena->AllocateAligned(sizeof(T))
-                                 : internal::Allocate(sizeof(T));
+    void* mem = arena != nullptr
+                    ? arena->AllocateAligned(sizeof(T), alignof(T))
+                    : internal::AlignedAllocate(sizeof(T), alignof(T));
+    ABSL_DCHECK(mem != nullptr);
+    ABSL_DCHECK_EQ(reinterpret_cast<uintptr_t>(mem) % alignof(T), 0u);
     if constexpr (internal::HasDeprecatedArenaConstructor<T>()) {
       return new (mem) T(internal::InternalVisibility(), arena);
     } else {
@@ -1181,10 +1180,12 @@ PROTOBUF_NOINLINE void* PROTOBUF_NONNULL Arena::CopyConstruct(
   static_assert(is_destructor_skippable<T>::value, "");
   void* mem;
   if (arena != nullptr) {
-    mem = arena->AllocateAligned(sizeof(T));
+    mem = arena->AllocateAligned(sizeof(T), alignof(T));
   } else {
-    mem = internal::Allocate(sizeof(T));
+    mem = internal::AlignedAllocate(sizeof(T), alignof(T));
   }
+  ABSL_DCHECK(mem != nullptr);
+  ABSL_DCHECK_EQ(reinterpret_cast<uintptr_t>(mem) % alignof(T), 0u);
   return new (mem) T(arena, *typed_from);
 }
 

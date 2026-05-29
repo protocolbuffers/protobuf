@@ -213,6 +213,20 @@ class PROTOBUF_EXPORT SerialArena {
     return true;
   }
 
+  PROTOBUF_ALWAYS_INLINE
+  bool MaybeAllocateAligned(size_t n, size_t align, void** out) {
+    char* ret = ArenaAlignAs(align).Ceil(ptr());
+    if (ABSL_PREDICT_FALSE(limit_ - ret < static_cast<ptrdiff_t>(n))) {
+      return false;
+    }
+    internal::UnpoisonMemoryRegion(ret, n);
+    *out = ret;
+    char* next = ret + n;
+    set_ptr(next);
+    MaybePrefetchData(next);
+    return true;
+  }
+
   // If there is enough space in the current block, allocate space for one
   // std::string object and register for destruction. The object has not been
   // constructed and the memory returned is uninitialized.
@@ -358,6 +372,7 @@ class PROTOBUF_EXPORT SerialArena {
   }
 
   void* AllocateAlignedFallback(size_t n);
+  void* AllocateAlignedFallback(size_t n, size_t align);
   void* AllocateAlignedWithCleanupFallback(size_t n, size_t align,
                                            void (*destructor)(void*));
   void AddCleanupFallback(void* elem, void (*destructor)(void*));
@@ -372,7 +387,7 @@ class PROTOBUF_EXPORT SerialArena {
   // bytes.
   static char* ArbitraryInternalPointerForInit() {
     // Use rodata to detect potential bugs. No one should be writing here.
-    alignas(8) static constexpr char dummy{};
+    alignas(ArenaAlignDefault::align) static constexpr char dummy{};
     return const_cast<char*>(&dummy);
   }
 

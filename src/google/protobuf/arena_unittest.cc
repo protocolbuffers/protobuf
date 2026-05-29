@@ -82,7 +82,10 @@ namespace protobuf {
 namespace {
 
 // Align n to next multiple of 8
-constexpr uint64_t Align8(uint64_t n) { return (n + 7) & -8; }
+constexpr uint64_t Align8(uint64_t n) {
+  return (n + internal::ArenaAlignDefault::align - 1) &
+         -static_cast<int64_t>(internal::ArenaAlignDefault::align);
+}
 
 }  // namespace
 
@@ -464,7 +467,13 @@ TEST(ArenaTest, MoveCtorOnArena) {
   // The only extra allocation with moves is sizeof(NestedTestAllTypes).
   // Align up to 8 bytes to match default arena alignment, as sizeof(T) may not
   // be a multiple of 8 on 32-bit platforms.
-  EXPECT_EQ(usage_by_move, Align8(sizeof(NestedTestAllTypes)));
+  if constexpr (alignof(NestedTestAllTypes) > 8) {
+    EXPECT_GE(usage_by_move, Align8(sizeof(NestedTestAllTypes)));
+    EXPECT_LE(usage_by_move, Align8(sizeof(NestedTestAllTypes)) +
+                                 (alignof(NestedTestAllTypes) - 8));
+  } else {
+    EXPECT_EQ(usage_by_move, Align8(sizeof(NestedTestAllTypes)));
+  }
   EXPECT_LT(usage_by_move + Align8(sizeof(TestAllTypes)), usage_original);
 
   // Status after move is unspecified and must not be assumed. It's merely
@@ -1755,7 +1764,8 @@ void VerifyArenaOverhead(Arena& arena, size_t overhead) {
   uint64_t space_allocated = arena.SpaceAllocated();
 
   // Next allocation expects to fill up the block but no new block.
-  uint64_t next_size = space_allocated - overhead - kTinySize;
+  size_t tiny_allocated = internal::ArenaAlignDefault::Ceil(kTinySize);
+  uint64_t next_size = space_allocated - overhead - tiny_allocated;
   EXPECT_NE(Arena::CreateArray<char>(&arena, next_size), nullptr);
 
   EXPECT_EQ(space_allocated, arena.SpaceAllocated());

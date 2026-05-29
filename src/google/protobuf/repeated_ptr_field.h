@@ -1221,8 +1221,8 @@ class ABSL_ATTRIBUTE_WARN_UNUSED RepeatedPtrField final
             internal::is_supported_string_type<Element>,
             internal::is_supported_message_type<Element>>::value,
         "We only support string and Message types in RepeatedPtrField.");
-    static_assert(alignof(Element) <= internal::ArenaAlignDefault::align,
-                  "Overaligned types are not supported");
+    static_assert(alignof(Element) <= 64,
+                  "Overaligned types > 64 are not supported");
   }
 
   using CopyConstructReferenceType = typename internal::GenericTypeHandler<

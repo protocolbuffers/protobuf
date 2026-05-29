@@ -147,6 +147,43 @@ PROTOBUF_ALWAYS_INLINE PROTOBUF_MALLOC void* Allocate(size_t size) {
 #endif
 }
 
+#if __cpp_aligned_new && !defined(PROTO2_OPENSOURCE) && defined(__linux__) && \
+    !defined(__ANDROID__)
+#define PROTOBUF_USE_ALIGNED_NEW 1
+#else
+#define PROTOBUF_USE_ALIGNED_NEW 0
+#endif
+
+#ifdef __STDCPP_DEFAULT_NEW_ALIGNMENT__
+constexpr size_t kDefaultNewAlignment = __STDCPP_DEFAULT_NEW_ALIGNMENT__;
+#else
+constexpr size_t kDefaultNewAlignment = alignof(max_align_t);
+#endif
+
+PROTOBUF_ALWAYS_INLINE PROTOBUF_MALLOC void* AlignedAllocate(size_t size,
+                                                             size_t align) {
+#if PROTOBUF_USE_ALIGNED_NEW
+  if (align > 8) {
+#if ABSL_HAVE_BUILTIN(__builtin_operator_new)
+    return __builtin_operator_new(size, std::align_val_t(align));
+#else
+    return ::operator new(size, std::align_val_t(align));
+#endif
+  }
+#else
+#if __cpp_aligned_new
+  if (align > kDefaultNewAlignment) {
+#if ABSL_HAVE_BUILTIN(__builtin_operator_new)
+    return __builtin_operator_new(size, std::align_val_t(align));
+#else
+    return ::operator new(size, std::align_val_t(align));
+#endif
+  }
+#endif
+#endif
+  return Allocate(size);
+}
+
 // Allocates at least `size` bytes. This function follows the c++ language
 // proposal from D0901R10 (http://wg21.link/D0901R10) and will be implemented
 // in terms of the new operator new semantics when available. The allocated
@@ -169,6 +206,22 @@ inline void SizedDelete(void* p, size_t size) {
   (void)size;
   ::operator delete(p);
 #endif
+}
+inline void SizedDelete(void* p, size_t size, size_t alignment) {
+#if PROTOBUF_USE_ALIGNED_NEW
+  if (alignment > 8) {
+    ::operator delete(p, size, std::align_val_t(alignment));
+    return;
+  }
+#else
+#if __cpp_aligned_new
+  if (alignment > kDefaultNewAlignment) {
+    ::operator delete(p, size, std::align_val_t(alignment));
+    return;
+  }
+#endif
+#endif
+  SizedDelete(p, size);
 }
 inline void SizedArrayDelete(void* p, size_t size) {
 #if defined(__cpp_sized_deallocation)
@@ -269,7 +322,11 @@ enum { kCacheAlignment = alignof(max_align_t) };  // do the best we can
 #endif
 
 // The maximum byte alignment we support.
+#if PROTOBUF_USE_ALIGNED_NEW
+enum { kMaxMessageAlignment = 16 };
+#else
 enum { kMaxMessageAlignment = 8 };
+#endif
 
 inline constexpr bool EnableStableExperiments() {
 #if defined(PROTOBUF_ENABLE_STABLE_EXPERIMENTS)
