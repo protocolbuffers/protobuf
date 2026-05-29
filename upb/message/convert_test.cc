@@ -740,6 +740,41 @@ TEST(ConvertTest, ConvertExtensionToNonExtendable) {
   EXPECT_FALSE(upb_Message_NextUnknown(dst_msg, &data, &iter));
 }
 
+TEST(ConvertTest, ConvertExtensionToExtendableButUnknown) {
+  upb::Arena arena;
+  upb_test_convert_MessageWithExtension* msg =
+      upb_test_convert_MessageWithExtension_new(arena.ptr());
+
+  upb_MessageValue ext_val;
+  ext_val.int32_val = 123;
+  upb_Message_SetExtension(UPB_UPCAST(msg),
+                           upb_test_convert_ext_field_int32_ext, &ext_val,
+                           arena.ptr());
+
+  const upb_MiniTable* src_mt =
+      &upb__test__convert__MessageWithExtension_msg_init;
+  const upb_MiniTable* dst_mt =
+      &upb__test__convert__AnotherMessageWithExtension_msg_init;
+
+  const upb_Message* dst_msg = upb_Message_Convert(
+      UPB_UPCAST(msg), src_mt, dst_mt, nullptr, arena.ptr());
+  ASSERT_NE(dst_msg, nullptr);
+
+  // The destination message (AnotherMessageWithExtension) supports extensions,
+  // but since we did not provide an extension registry containing field 1000 to
+  // the conversion, the extension is treated as unknown/non-canonical in the
+  // destination schemas. Therefore, it should be encoded as an unknown field
+  // (field 1000 with value 123).
+  size_t iter = kUpb_Message_UnknownBegin;
+  upb_StringView data;
+  ASSERT_TRUE(upb_Message_NextUnknown(dst_msg, &data, &iter));
+  EXPECT_EQ(data.size, 3);
+  EXPECT_EQ((uint8_t)data.data[0], 0xC0);
+  EXPECT_EQ((uint8_t)data.data[1], 0x3E);
+  EXPECT_EQ((uint8_t)data.data[2], 0x7B);
+  EXPECT_FALSE(upb_Message_NextUnknown(dst_msg, &data, &iter));
+}
+
 TEST(ConvertTest, OneofDemotion) {
   upb::Arena arena;
   upb_test_convert_SrcWithOneof* msg =

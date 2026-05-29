@@ -338,6 +338,86 @@ TEST(ConvertFuzz, ConvertFuzzEncodeRegression) {
       16);
 }
 
+void ArbitraryMiniTableConvertFuzz(const upb::fuzz::MiniTableFuzzInput& input1,
+                                   const upb::fuzz::MiniTableFuzzInput& input2,
+                                   std::string proto_payload,
+                                   uint32_t decode_options,
+                                   uint32_t encode_options) {
+  upb_Arena* arena = upb_Arena_New();
+
+  upb_ExtensionRegistry* exts1;
+  const upb_MiniTable* mt1 = upb::fuzz::BuildMiniTable(input1, &exts1, arena);
+  if (!mt1) {
+    upb_Arena_Free(arena);
+    return;
+  }
+
+  upb_ExtensionRegistry* exts2;
+  const upb_MiniTable* mt2 = upb::fuzz::BuildMiniTable(input2, &exts2, arena);
+  if (!mt2) {
+    upb_Arena_Free(arena);
+    return;
+  }
+
+  decode_options = upb_Decode_LimitDepth(decode_options, 80);
+  encode_options = upb_Encode_LimitDepth(encode_options, 80);
+
+  // We don't want to skip unknown fields or check required fields, as these
+  // will cause the fuzz test to fail or exit early in ways that aren't
+  // interesting.
+  encode_options &=
+      ~(kUpb_EncodeOption_SkipUnknown | kUpb_EncodeOption_CheckRequired);
+
+  upb_Message* msg_src = upb_Message_New(mt1, arena);
+  upb_DecodeStatus status =
+      upb_Decode(proto_payload.data(), proto_payload.size(), msg_src, mt1,
+                 exts1, decode_options, arena);
+
+  if (status != kUpb_DecodeStatus_Ok) {
+    upb_Arena_Free(arena);
+    return;
+  }
+
+  // Path A: Direct conversion
+  const upb_Message* msg_dst =
+      upb_Message_Convert(msg_src, mt1, mt2, exts2, arena);
+  if (!msg_dst) {
+    upb_Arena_Free(arena);
+    return;
+  }
+
+  // Path B: Encoding-then-decoding path
+  size_t wire_size;
+  char* wire_bytes;
+  upb_EncodeStatus enc_status =
+      upb_Encode(msg_src, mt1, encode_options, arena, &wire_bytes, &wire_size);
+
+  if (enc_status != kUpb_EncodeStatus_Ok) {
+    upb_Arena_Free(arena);
+    return;
+  }
+
+  upb_Message* msg_dst_roundtrip = upb_Message_New(mt2, arena);
+  status = upb_Decode(wire_bytes, wire_size, msg_dst_roundtrip, mt2, exts2,
+                      decode_options, arena);
+
+  if (status != kUpb_DecodeStatus_Ok) {
+    upb_Arena_Free(arena);
+    return;
+  }
+
+  // Check that both paths produce equivalent messages
+  bool equal = upb_Message_IsEqual(msg_dst, msg_dst_roundtrip, mt2,
+                                   kUpb_CompareOption_IncludeUnknownFields);
+  if (!equal) {
+    abort();
+  }
+
+  upb_Arena_Free(arena);
+}
+
+FUZZ_TEST(ConvertFuzz, ArbitraryMiniTableConvertFuzz);
+
 }  // namespace
 
 }  // namespace upb
