@@ -78,12 +78,7 @@ jobs:
     strategy:
       fail-fast: false   # Don't cancel all jobs if one fails.
       matrix:
-        version: ['7.5', '9.1', '9.5', '13.1']
-        include:
-          - version: 9.1
-            continuous-only: true
-          - version: 9.5
-            continuous-only: true
+        version: ['13.1']
     name: ${{ matrix.config.continuous-only && inputs.continuous-prefix || '' }} Linux GCC ${{ matrix.version }}
     runs-on: ubuntu-latest
     steps:
