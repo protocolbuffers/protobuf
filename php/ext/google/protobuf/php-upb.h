@@ -6338,6 +6338,78 @@ struct upb_GeneratedRegistryRef {
 #include <stdint.h>
 
 
+#ifndef GOOGLE_UPB_UPB_BASE_ERROR_HANDLER_H__
+#define GOOGLE_UPB_UPB_BASE_ERROR_HANDLER_H__
+
+#include <setjmp.h>
+
+// Must be last.
+
+// upb_ErrorHandler is a standard longjmp()-based exception handler for UPB.
+// It is used for efficient error handling in cases where longjmp() is safe to
+// use, such as in highly performance-sensitive C parsing code.
+//
+// This structure contains both a jmp_buf and an error code; the error code is
+// stored in the structure prior to calling longjmp(). This is necessary because
+// per the C standard, it is not possible to store the result of setjmp(), so
+// the error code must be passed out-of-band.
+//
+// upb_ErrorHandler is generally not C++-compatible, because longjmp() does not
+// run C++ destructors.  So any library that supports upb_ErrorHandler should
+// also support a regular return-based error handling mechanism. (Note: we
+// could conceivably extend this to take a callback, which could either call
+// longjmp() or throw a C++ exception. But since C++ exceptions are forbidden
+// by the C++ style guide, there's not likely to be a demand for this.)
+//
+// To support both cases (longjmp() or return-based status) efficiently, code
+// can be written like this:
+//
+//   UPB_ATTR_CONST bool upb_Arena_HasErrHandler(const upb_Arena* a);
+//
+//   INLINE void* upb_Arena_Malloc(upb_Arena* a, size_t size) {
+//     if (UPB_UNLIKELY(a->end - a->ptr < size)) {
+//         void* ret = upb_Arena_MallocFallback(a, size);
+//         UPB_MAYBE_ASSUME(upb_Arena_HasErrHandler(a), ret != NULL);
+//         return ret;
+//     }
+//     void* ret = a->ptr;
+//     a->ptr += size;
+//     UPB_ASSUME(ret != NULL);
+//     return ret;
+//   }
+//
+// If the optimizer can prove that an error handler is present, it can assume
+// that upb_Arena_Malloc() will not return NULL.
+
+// We need to standardize on any error code that might be thrown by an error
+// handler.
+
+typedef enum {
+  kUpb_ErrorCode_Ok = 0,
+  kUpb_ErrorCode_OutOfMemory = 1,
+  kUpb_ErrorCode_Malformed = 2,
+  kUpb_ErrorCode_MaxDepthExceeded = 3,
+} upb_ErrorCode;
+
+typedef struct {
+  int code;
+  jmp_buf buf;
+} upb_ErrorHandler;
+
+UPB_INLINE void upb_ErrorHandler_Init(upb_ErrorHandler* e) {
+  e->code = kUpb_ErrorCode_Ok;
+}
+
+UPB_INLINE UPB_NORETURN void upb_ErrorHandler_ThrowError(upb_ErrorHandler* e,
+                                                         int code) {
+  UPB_ASSERT(code != kUpb_ErrorCode_Ok);
+  e->code = code;
+  UPB_LONGJMP(e->buf, 1);
+}
+
+
+#endif  // GOOGLE_UPB_UPB_BASE_ERROR_HANDLER_H__
+
 // Must be last.
 
 #ifdef __cplusplus
@@ -6402,16 +6474,19 @@ UPB_INLINE int upb_Decode_LimitDepth(uint32_t decode_options, uint32_t limit) {
 
 // LINT.IfChange
 typedef enum {
-  kUpb_DecodeStatus_Ok = 0,
-  kUpb_DecodeStatus_OutOfMemory = 1,  // Arena alloc failed
-  kUpb_DecodeStatus_Malformed = 2,    // Wire format was corrupt
-  kUpb_DecodeStatus_BadUtf8 = 3,      // String field had bad UTF-8
+  kUpb_DecodeStatus_Ok = kUpb_ErrorCode_Ok,
+  kUpb_DecodeStatus_OutOfMemory =
+      kUpb_ErrorCode_OutOfMemory,  // Arena alloc failed
+  kUpb_DecodeStatus_Malformed =
+      kUpb_ErrorCode_Malformed,  // Wire format was corrupt
   kUpb_DecodeStatus_MaxDepthExceeded =
-      4,  // Exceeded upb_DecodeOptions_MaxDepth
+      kUpb_ErrorCode_MaxDepthExceeded,  // Exceeded upb_DecodeOptions_MaxDepth
+
+  kUpb_DecodeStatus_BadUtf8 = 10,  // String field had bad UTF-8
 
   // kUpb_DecodeOption_CheckRequired failed (see above), but the parse otherwise
   // succeeded.
-  kUpb_DecodeStatus_MissingRequired = 5,
+  kUpb_DecodeStatus_MissingRequired = 11,
 } upb_DecodeStatus;
 // LINT.ThenChange(//depot/google3/third_party/upb/rust/sys/wire/wire.rs:decode_status)
 
@@ -6497,16 +6572,16 @@ enum {
 
 // LINT.IfChange
 typedef enum {
-  kUpb_EncodeStatus_Ok = 0,
-  kUpb_EncodeStatus_OutOfMemory = 1,  // Arena alloc failed
-  kUpb_EncodeStatus_MaxDepthExceeded = 2,
-
+  kUpb_EncodeStatus_Ok = kUpb_ErrorCode_Ok,
+  kUpb_EncodeStatus_OutOfMemory =
+      kUpb_ErrorCode_OutOfMemory,  // Arena alloc failed
   // One or more required fields are missing. Only returned if
   // kUpb_EncodeOption_CheckRequired is set.
-  kUpb_EncodeStatus_MissingRequired = 3,
+  kUpb_EncodeStatus_MaxDepthExceeded = kUpb_ErrorCode_MaxDepthExceeded,
 
+  kUpb_EncodeStatus_MissingRequired = 10,
   // The message is larger than protobuf's 2GB size limit.
-  kUpb_EncodeStatus_MaxSizeExceeded = 4,
+  kUpb_EncodeStatus_MaxSizeExceeded = 11,
 } upb_EncodeStatus;
 // LINT.ThenChange(//depot/google3/third_party/upb/rust/sys/wire/wire.rs:encode_status)
 
@@ -16454,77 +16529,6 @@ bool UPB_PRIVATE(_upb_Message_NextBaseField)(const upb_Message* msg,
 #include <stddef.h>
 #include <stdint.h>
 
-
-#ifndef GOOGLE_UPB_UPB_BASE_ERROR_HANDLER_H__
-#define GOOGLE_UPB_UPB_BASE_ERROR_HANDLER_H__
-
-#include <setjmp.h>
-
-// Must be last.
-
-// upb_ErrorHandler is a standard longjmp()-based exception handler for UPB.
-// It is used for efficient error handling in cases where longjmp() is safe to
-// use, such as in highly performance-sensitive C parsing code.
-//
-// This structure contains both a jmp_buf and an error code; the error code is
-// stored in the structure prior to calling longjmp(). This is necessary because
-// per the C standard, it is not possible to store the result of setjmp(), so
-// the error code must be passed out-of-band.
-//
-// upb_ErrorHandler is generally not C++-compatible, because longjmp() does not
-// run C++ destructors.  So any library that supports upb_ErrorHandler should
-// also support a regular return-based error handling mechanism. (Note: we
-// could conceivably extend this to take a callback, which could either call
-// longjmp() or throw a C++ exception. But since C++ exceptions are forbidden
-// by the C++ style guide, there's not likely to be a demand for this.)
-//
-// To support both cases (longjmp() or return-based status) efficiently, code
-// can be written like this:
-//
-//   UPB_ATTR_CONST bool upb_Arena_HasErrHandler(const upb_Arena* a);
-//
-//   INLINE void* upb_Arena_Malloc(upb_Arena* a, size_t size) {
-//     if (UPB_UNLIKELY(a->end - a->ptr < size)) {
-//         void* ret = upb_Arena_MallocFallback(a, size);
-//         UPB_MAYBE_ASSUME(upb_Arena_HasErrHandler(a), ret != NULL);
-//         return ret;
-//     }
-//     void* ret = a->ptr;
-//     a->ptr += size;
-//     UPB_ASSUME(ret != NULL);
-//     return ret;
-//   }
-//
-// If the optimizer can prove that an error handler is present, it can assume
-// that upb_Arena_Malloc() will not return NULL.
-
-// We need to standardize on any error code that might be thrown by an error
-// handler.
-
-typedef enum {
-  kUpb_ErrorCode_Ok = 0,
-  kUpb_ErrorCode_OutOfMemory = 1,
-  kUpb_ErrorCode_Malformed = 2,
-} upb_ErrorCode;
-
-typedef struct {
-  int code;
-  jmp_buf buf;
-} upb_ErrorHandler;
-
-UPB_INLINE void upb_ErrorHandler_Init(upb_ErrorHandler* e) {
-  e->code = kUpb_ErrorCode_Ok;
-}
-
-UPB_INLINE UPB_NORETURN void upb_ErrorHandler_ThrowError(upb_ErrorHandler* e,
-                                                         int code) {
-  UPB_ASSERT(code != kUpb_ErrorCode_Ok);
-  e->code = code;
-  UPB_LONGJMP(e->buf, 1);
-}
-
-
-#endif  // GOOGLE_UPB_UPB_BASE_ERROR_HANDLER_H__
 
 #ifndef UPB_WIRE_INTERNAL_EPS_COPY_INPUT_STREAM_H_
 #define UPB_WIRE_INTERNAL_EPS_COPY_INPUT_STREAM_H_
