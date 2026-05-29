@@ -10,6 +10,7 @@
 
 #include <vector>
 
+#include "google/protobuf/compiler/cpp/field_layout.h"
 #include "google/protobuf/compiler/cpp/options.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/io/printer.h"
@@ -25,7 +26,8 @@ std::vector<google::protobuf::io::Printer::Sub> MakeTrackerCalls(
 
 // Generates printer substitutions for field-specific tracker callbacks.
 std::vector<google::protobuf::io::Printer::Sub> MakeTrackerCalls(
-    const google::protobuf::FieldDescriptor* field, const Options& opts);
+    const google::protobuf::FieldDescriptor* field, const Options& opts,
+    const FieldLayout& field_layout);
 
 }  // namespace cpp
 }  // namespace compiler

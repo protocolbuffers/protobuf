@@ -41,7 +41,6 @@ struct FieldListenerOptions {
 // Generator options (see generator.cc for a description of each):
 struct Options {
   const AccessInfoMap* access_info_map = nullptr;
-  const SplitMap* split_map = nullptr;
   cpp::MessageSCCAnalyzer* scc_analyzer = nullptr;
   std::string dllexport_decl;
   std::string runtime_include_base;

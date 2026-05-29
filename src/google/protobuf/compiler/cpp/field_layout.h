@@ -4,6 +4,7 @@
 #include <cstddef>
 #include <vector>
 
+#include "google/protobuf/compiler/split_map.h"
 #include "absl/base/nullability.h"
 #include "absl/types/optional.h"
 #include "absl/types/span.h"
@@ -61,14 +62,24 @@ class FieldLayout {
   void PrintHasBitIndicesForSchema(io::Printer* absl_nonnull p,
                                    size_t& entries) const;
 
+  const SplitMap& split_map() const { return split_map_; }
+
+  bool HasSplitFields() const { return split_map_.HasSplitFields(); }
+
+  // Returns true if the given field is part of the split object.
+  bool IsSplit(const FieldDescriptor* absl_nonnull field) const;
+
  private:
   FieldLayout(std::vector<int> has_bit_indices, int max_has_bit_index,
-              std::vector<const FieldDescriptor* absl_nonnull> fields);
+              std::vector<const FieldDescriptor* absl_nonnull> fields,
+              SplitMap&& split_map);
 
   std::vector<int> has_bit_indices_;
   int max_has_bit_index_;
 
   std::vector<const FieldDescriptor* absl_nonnull> fields_;
+
+  SplitMap split_map_;
 };
 
 }  // namespace cpp

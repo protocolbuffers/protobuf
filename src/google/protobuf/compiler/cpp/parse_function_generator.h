@@ -12,6 +12,7 @@
 #include <string>
 #include <vector>
 
+#include "google/protobuf/compiler/split_map.h"
 #include "absl/container/flat_hash_map.h"
 #include "absl/functional/function_ref.h"
 #include "absl/strings/string_view.h"
@@ -50,23 +51,26 @@ class ParseFunctionGenerator {
   ParseFunctionGenerator(
       const Descriptor* descriptor, bool has_hasbits,
       GetHasBitIndex get_has_bit_index, const Options& options,
+      const SplitMap& split_map,
       const absl::flat_hash_map<absl::string_view, std::string>& vars,
       int index_in_file_messages);
 
   // Construct a ParseFunctionGenerator ignoring the effect of hasbits.
   ParseFunctionGenerator(
       const Descriptor* descriptor, const Options& options,
+      const SplitMap& split_map,
       const absl::flat_hash_map<absl::string_view, std::string>& vars,
       int index_in_file_messages)
       : ParseFunctionGenerator(
             descriptor, /*has_hasbits=*/false,
-            [](const FieldDescriptor*) { return absl::nullopt; }, options, vars,
-            index_in_file_messages) {}
+            [](const FieldDescriptor*) { return absl::nullopt; }, options,
+            split_map, vars, index_in_file_messages) {}
 
   static std::vector<internal::TailCallTableInfo::FieldOptions>
   BuildFieldOptions(const Descriptor* descriptor,
                     absl::Span<const FieldDescriptor* const> ordered_fields,
-                    GetHasBitIndex get_has_bit_index, const Options& options);
+                    GetHasBitIndex get_has_bit_index, const Options& options,
+                    const SplitMap& split_map);
 
   static internal::TailCallTableInfo BuildTcTableInfoFromDescriptor(
       const Descriptor* descriptor, const Options& options,
@@ -83,7 +87,8 @@ class ParseFunctionGenerator {
   void GenerateDataDefinitions(io::Printer* printer);
 
   // Emits the helper function definition to `printer`:
-  void GenerateParseTableHelperDefinition(io::Printer* printer);
+  void GenerateParseTableHelperDefinition(io::Printer* printer,
+                                          const SplitMap& split_map);
 
  private:
   friend class TailCallTableInfoTest;
@@ -92,8 +97,9 @@ class ParseFunctionGenerator {
 
   // Generates the tail-call table definition.
   void GenerateTailCallTable(io::Printer* printer);
-  void GenerateFastFieldEntries(io::Printer* printer);
-  void GenerateFieldEntries(io::Printer* p);
+  void GenerateFastFieldEntries(io::Printer* printer,
+                                const SplitMap& split_map);
+  void GenerateFieldEntries(io::Printer* p, const SplitMap& split_map);
   void GenerateFieldNames(Formatter& format);
 
   const Descriptor* descriptor_;

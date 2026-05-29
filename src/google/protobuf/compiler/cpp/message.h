@@ -86,6 +86,8 @@ class MessageGenerator {
 
   const Descriptor* descriptor() const { return descriptor_; }
 
+  const FieldLayout& field_layout() const { return field_layout_; }
+
  private:
   using GeneratorFunction = FieldGeneratorBase::GeneratorFunction;
   enum class InitType { kConstexpr, kArena, kArenaCopy };
