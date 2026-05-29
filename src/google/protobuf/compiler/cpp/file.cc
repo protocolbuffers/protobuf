@@ -33,6 +33,7 @@
 #include "google/protobuf/compiler/code_generator.h"
 #include "google/protobuf/compiler/cpp/enum.h"
 #include "google/protobuf/compiler/cpp/extension.h"
+#include "google/protobuf/compiler/cpp/field_layout.h"
 #include "google/protobuf/compiler/cpp/helpers.h"
 #include "google/protobuf/compiler/cpp/message.h"
 #include "google/protobuf/compiler/cpp/names.h"
@@ -1498,8 +1499,9 @@ void FileGenerator::GenerateForwardDeclarations(io::Printer* p) {
   }
   for (const auto& mg : message_generators_) {
     const Descriptor* d = mg->descriptor();
+    const FieldLayout& field_layout = mg->field_layout();
     if (d != nullptr && public_set.count(d->file()) == 0u &&
-        ShouldSplit(mg->descriptor(), options_))
+        field_layout.HasSplitFields())
       decls[Namespace(d)].AddSplit(d);
   }
 

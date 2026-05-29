@@ -17,6 +17,7 @@
 #include "absl/memory/memory.h"
 #include "absl/strings/str_cat.h"
 #include "google/protobuf/compiler/cpp/field.h"
+#include "google/protobuf/compiler/cpp/field_layout.h"
 #include "google/protobuf/compiler/cpp/helpers.h"
 #include "google/protobuf/compiler/cpp/options.h"
 #include "google/protobuf/descriptor.h"
@@ -71,8 +72,9 @@ std::vector<Sub> Vars(const FieldDescriptor* field, const Options& opts) {
 
 class SingularStringView : public FieldGeneratorBase {
  public:
-  SingularStringView(const FieldDescriptor* field, const Options& opts)
-      : FieldGeneratorBase(field, opts),
+  SingularStringView(const FieldDescriptor* field, const Options& opts,
+                     const FieldLayout& field_layout)
+      : FieldGeneratorBase(field, opts, field_layout),
         use_micro_string_(IsMicroString(field, opts)),
         opts_(&opts) {}
   ~SingularStringView() override = default;
@@ -542,8 +544,9 @@ void SingularStringView::GenerateAggregateInitializer(io::Printer* p) const {
 
 class RepeatedStringView : public FieldGeneratorBase {
  public:
-  RepeatedStringView(const FieldDescriptor* field, const Options& opts)
-      : FieldGeneratorBase(field, opts),
+  RepeatedStringView(const FieldDescriptor* field, const Options& opts,
+                     const FieldLayout& field_layout)
+      : FieldGeneratorBase(field, opts, field_layout),
         opts_(&opts),
         cpp_repeated_type_(CalculateFieldDescriptorRepeatedType(field)) {}
   ~RepeatedStringView() override = default;
@@ -844,13 +847,15 @@ void RepeatedStringView::GenerateSerializeWithCachedSizesToArray(
 }  // namespace
 
 std::unique_ptr<FieldGeneratorBase> MakeSingularStringViewGenerator(
-    const FieldDescriptor* desc, const Options& options) {
-  return absl::make_unique<SingularStringView>(desc, options);
+    const FieldDescriptor* desc, const Options& options,
+    const FieldLayout& field_layout) {
+  return absl::make_unique<SingularStringView>(desc, options, field_layout);
 }
 
 std::unique_ptr<FieldGeneratorBase> MakeRepeatedStringViewGenerator(
-    const FieldDescriptor* desc, const Options& options) {
-  return absl::make_unique<RepeatedStringView>(desc, options);
+    const FieldDescriptor* desc, const Options& options,
+    const FieldLayout& field_layout) {
+  return absl::make_unique<RepeatedStringView>(desc, options, field_layout);
 }
 
 }  // namespace cpp

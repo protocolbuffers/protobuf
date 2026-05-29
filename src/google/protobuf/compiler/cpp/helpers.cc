@@ -58,7 +58,6 @@
 #include "google/protobuf/io/printer.h"
 #include "google/protobuf/io/strtod.h"
 #include "google/protobuf/map.h"
-#include "google/protobuf/port.h"
 #include "google/protobuf/repeated_ptr_field.h"
 #include "google/protobuf/wire_format.h"
 #include "google/protobuf/wire_format_lite.h"
@@ -1222,8 +1221,6 @@ VerifySimpleType ShouldVerifySimple(const Descriptor* descriptor) {
   return VerifySimpleType::kCustom;
 }
 
-bool ShouldSplit(const Descriptor*, const Options&) { return false; }
-bool ShouldSplit(const FieldDescriptor*, const Options&) { return false; }
 
 bool ShouldForceAllocationOnConstruction(const Descriptor* desc,
                                          const Options& options) {

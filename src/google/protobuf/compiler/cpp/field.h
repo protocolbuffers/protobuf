@@ -13,7 +13,6 @@
 #define GOOGLE_PROTOBUF_COMPILER_CPP_FIELD_H__
 
 #include <cstddef>
-#include <cstdint>
 #include <memory>
 #include <string>
 #include <vector>
@@ -21,8 +20,8 @@
 #include "absl/container/flat_hash_map.h"
 #include "absl/log/absl_check.h"
 #include "absl/strings/string_view.h"
-#include "absl/types/optional.h"
 #include "absl/types/span.h"
+#include "google/protobuf/compiler/cpp/field_layout.h"
 #include "google/protobuf/compiler/cpp/helpers.h"
 #include "google/protobuf/compiler/cpp/options.h"
 #include "google/protobuf/cpp_features.pb.h"
@@ -51,7 +50,8 @@ class FieldGeneratorBase {
   // variable instead of calling GetArena()'
   enum class GeneratorFunction { kMergeFrom };
 
-  FieldGeneratorBase(const FieldDescriptor* field, const Options& options);
+  FieldGeneratorBase(const FieldDescriptor* field, const Options& options,
+                     const FieldLayout& field_layout);
 
   FieldGeneratorBase(const FieldGeneratorBase&) = delete;
   FieldGeneratorBase& operator=(const FieldGeneratorBase&) = delete;
@@ -195,6 +195,8 @@ class FieldGeneratorBase {
   }
 
  protected:
+  const FieldLayout& field_layout() const { return field_layout_; }
+
   const FieldDescriptor* field_;
   const Options& options_;
   absl::flat_hash_map<absl::string_view, std::string> variables_;
@@ -204,6 +206,8 @@ class FieldGeneratorBase {
   static io::Printer::Sub InternalMetadataOffsetSub(io::Printer* p);
 
  private:
+  const FieldLayout& field_layout_;
+
   bool should_split_ = false;
   bool is_trivial_ = false;
   bool has_trivial_value_ = false;
@@ -488,7 +492,7 @@ class FieldGenerator {
  private:
   friend class FieldGeneratorTable;
   FieldGenerator(const FieldDescriptor* field, const Options& options,
-                 absl::optional<uint32_t> hasbit_index);
+                 const FieldLayout& field_layout);
 
   std::unique_ptr<FieldGeneratorBase> impl_;
   std::vector<io::Printer::Sub> field_vars_;
@@ -505,7 +509,7 @@ class FieldGeneratorTable {
   FieldGeneratorTable(const FieldGeneratorTable&) = delete;
   FieldGeneratorTable& operator=(const FieldGeneratorTable&) = delete;
 
-  void Build(const Options& options, absl::Span<const int32_t> has_bit_indices);
+  void Build(const Options& options, const FieldLayout& field_layout);
 
   const FieldGenerator& get(const FieldDescriptor* field) const {
     ABSL_CHECK_EQ(field->containing_type(), descriptor_);
@@ -522,7 +526,8 @@ class FieldGeneratorTable {
 //
 // TODO: Make this function .cc-private.
 std::vector<io::Printer::Sub> FieldVars(const FieldDescriptor* field,
-                                        const Options& opts);
+                                        const Options& opts,
+                                        const FieldLayout& field_layout);
 }  // namespace cpp
 }  // namespace compiler
 }  // namespace protobuf

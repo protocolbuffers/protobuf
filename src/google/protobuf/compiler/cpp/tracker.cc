@@ -17,6 +17,7 @@
 #include "absl/strings/substitute.h"
 #include "absl/types/optional.h"
 #include "absl/types/span.h"
+#include "google/protobuf/compiler/cpp/field_layout.h"
 #include "google/protobuf/compiler/cpp/helpers.h"
 #include "google/protobuf/compiler/cpp/options.h"
 #include "google/protobuf/descriptor.h"
@@ -218,8 +219,9 @@ Getters RepeatedFieldGetters(const FieldDescriptor* field,
   return getters;
 }
 
-Getters StringFieldGetters(const FieldDescriptor* field, const Options& opts) {
-  std::string member = FieldMemberName(field, ShouldSplit(field, opts));
+Getters StringFieldGetters(const FieldDescriptor* field, const Options& opts,
+                           const FieldLayout& field_layout) {
+  std::string member = FieldMemberName(field, field_layout.IsSplit(field));
 
   Getters getters;
   if (IsArenaStringPtr(field, opts) && !field->default_value_string().empty()) {
@@ -235,10 +237,11 @@ Getters StringFieldGetters(const FieldDescriptor* field, const Options& opts) {
 }
 
 Getters StringOneofGetters(const FieldDescriptor* field,
-                           const OneofDescriptor* oneof, const Options& opts) {
+                           const OneofDescriptor* oneof, const Options& opts,
+                           const FieldLayout& field_layout) {
   ABSL_CHECK(oneof != nullptr);
 
-  std::string member = FieldMemberName(field, ShouldSplit(field, opts));
+  std::string member = FieldMemberName(field, field_layout.IsSplit(field));
 
   std::string field_ptr = member;
   if (IsArenaStringPtr(field, opts)) {
@@ -269,9 +272,9 @@ Getters StringOneofGetters(const FieldDescriptor* field,
   return getters;
 }
 
-Getters SingularFieldGetters(const FieldDescriptor* field,
-                             const Options& opts) {
-  std::string member = FieldMemberName(field, ShouldSplit(field, opts));
+Getters SingularFieldGetters(const FieldDescriptor* field, const Options& opts,
+                             const FieldLayout& field_layout) {
+  std::string member = FieldMemberName(field, field_layout.IsSplit(field));
 
   Getters getters;
   getters.base = absl::StrCat("&", member);
@@ -283,20 +286,21 @@ Getters SingularFieldGetters(const FieldDescriptor* field,
 }  // namespace
 
 std::vector<Sub> MakeTrackerCalls(const FieldDescriptor* field,
-                                  const Options& opts) {
+                                  const Options& opts,
+                                  const FieldLayout& field_layout) {
   Getters getters;
   if (field->is_repeated()) {
     getters = RepeatedFieldGetters(field, opts);
   } else if (field->cpp_type() == FieldDescriptor::CPPTYPE_STRING) {
     const auto* oneof = field->real_containing_oneof();
     if (oneof != nullptr) {
-      getters = StringOneofGetters(field, oneof, opts);
+      getters = StringOneofGetters(field, oneof, opts, field_layout);
     } else {
-      getters = StringFieldGetters(field, opts);
+      getters = StringFieldGetters(field, opts, field_layout);
     }
   } else if (field->cpp_type() != FieldDescriptor::CPPTYPE_MESSAGE ||
              IsExplicitLazy(field)) {
-    getters = SingularFieldGetters(field, opts);
+    getters = SingularFieldGetters(field, opts, field_layout);
   }
 
   auto index = field->index();

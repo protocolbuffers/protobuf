@@ -1,6 +1,5 @@
 #include "google/protobuf/compiler/cpp/field_chunk.h"
 
-#include <cstddef>
 #include <cstdint>
 #include <vector>
 
@@ -9,6 +8,7 @@
 #include "absl/log/absl_check.h"
 #include "absl/strings/string_view.h"
 #include "absl/types/span.h"
+#include "google/protobuf/compiler/cpp/field_layout.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/unittest.pb.h"
 
@@ -38,7 +38,8 @@ std::vector<const google::protobuf::FieldDescriptor*> CreateFieldArray(
 template <typename ProtoT, typename PredT>
 std::vector<FieldChunk> CreateAndCollectFields(
     absl::Span<const char*> field_names, PredT&& predicate) {
-  return CollectFields(CreateFieldArray<ProtoT>(field_names), {}, predicate);
+  return CollectFields(CreateFieldArray<ProtoT>(field_names), /*options=*/{},
+                       /*split_map=*/{}, predicate);
 }
 
 TEST(CollectFieldsTest, SingleChunk) {
@@ -70,10 +71,11 @@ TEST(CollectFieldsTest, RepeatedAndSingular) {
                                "optional_int64"};
 
   auto fields = CreateFieldArray<TestAllTypes>(field_names);
-  auto chunks = CollectFields(
-      fields, {}, [](const FieldDescriptor* lhs, const FieldDescriptor* rhs) {
-        return lhs->is_repeated() == rhs->is_repeated();
-      });
+  auto chunks =
+      CollectFields(fields, /*options=*/{}, /*split_map=*/{},
+                    [](const FieldDescriptor* lhs, const FieldDescriptor* rhs) {
+                      return lhs->is_repeated() == rhs->is_repeated();
+                    });
 
   ASSERT_EQ(chunks.size(), 2);
 
@@ -154,7 +156,8 @@ TEST(GenChunkMaskTest, ValidMaskFromFields) {
   ASSERT_EQ(fields[0]->index(), 0);
 
   const uint32_t kHasbitIdx = 3;
-  uint32_t mask = GenChunkMask(fields, {kHasbitIdx});
+  auto field_layout = FieldLayout::BuildForTesting(fields, {kHasbitIdx});
+  uint32_t mask = GenChunkMask(fields, field_layout);
   EXPECT_EQ(mask, 1 << kHasbitIdx);
 }
 
@@ -173,8 +176,10 @@ TEST(GenChunkMaskTest, ValidMaskFromChunks) {
 
   const uint32_t kHasbitIdxAt0 = 3;
   const uint32_t kHasbitIdxAt1 = 5;
-  std::vector<int> has_bit_indices = {kHasbitIdxAt0, kHasbitIdxAt1};
-  uint32_t mask = GenChunkMask(chunks.begin(), chunks.end(), has_bit_indices);
+  auto field_layout =
+      FieldLayout::BuildForTesting({chunks[0].fields[0], chunks[1].fields[0]},
+                                   {kHasbitIdxAt0, kHasbitIdxAt1});
+  uint32_t mask = GenChunkMask(chunks.begin(), chunks.end(), field_layout);
   EXPECT_EQ(mask, (1 << kHasbitIdxAt0) | (1 << kHasbitIdxAt1));
 }
 

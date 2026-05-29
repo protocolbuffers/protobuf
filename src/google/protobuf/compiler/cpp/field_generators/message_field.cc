@@ -19,7 +19,7 @@
 #include "absl/strings/string_view.h"
 #include "absl/strings/substitute.h"
 #include "google/protobuf/compiler/cpp/field.h"
-#include "google/protobuf/compiler/cpp/field_generators/generators.h"
+#include "google/protobuf/compiler/cpp/field_layout.h"
 #include "google/protobuf/compiler/cpp/helpers.h"
 #include "google/protobuf/compiler/cpp/options.h"
 #include "google/protobuf/descriptor.h"
@@ -39,8 +39,9 @@ using ::google::protobuf::io::AnnotationCollector;
 using Sub = ::google::protobuf::io::Printer::Sub;
 
 std::vector<Sub> Vars(const FieldDescriptor* field, const Options& opts,
-                      bool is_weak, bool use_base_class) {
-  bool split = ShouldSplit(field, opts);
+                      const FieldLayout& field_layout, bool is_weak,
+                      bool use_base_class) {
+  bool split = field_layout.IsSplit(field);
   bool is_foreign = IsCrossFileMessage(field);
   std::string field_name = FieldMemberName(field, split);
   std::string qualified_type = FieldMessageTypeName(field, opts);
@@ -81,8 +82,9 @@ std::vector<Sub> Vars(const FieldDescriptor* field, const Options& opts,
 
 class SingularMessage : public FieldGeneratorBase {
  public:
-  SingularMessage(const FieldDescriptor* field, const Options& opts)
-      : FieldGeneratorBase(field, opts),
+  SingularMessage(const FieldDescriptor* field, const Options& opts,
+                  const FieldLayout& field_layout)
+      : FieldGeneratorBase(field, opts, field_layout),
         opts_(&opts),
         has_required_(
             opts.scc_analyzer->HasRequiredFields(field->message_type())),
@@ -91,7 +93,7 @@ class SingularMessage : public FieldGeneratorBase {
   ~SingularMessage() override = default;
 
   std::vector<Sub> MakeVars() const override {
-    return Vars(field_, *opts_, is_weak(), is_weak());
+    return Vars(field_, *opts_, field_layout(), is_weak(), is_weak());
   }
 
   void GeneratePrivateMembers(io::Printer* p) const override {
@@ -459,8 +461,9 @@ void SingularMessage::GenerateAggregateInitializer(io::Printer* p) const {
 
 class OneofMessage : public SingularMessage {
  public:
-  OneofMessage(const FieldDescriptor* descriptor, const Options& options)
-      : SingularMessage(descriptor, options) {
+  OneofMessage(const FieldDescriptor* descriptor, const Options& options,
+               const FieldLayout& field_layout)
+      : SingularMessage(descriptor, options, field_layout) {
     auto* oneof = descriptor->containing_oneof();
     num_message_fields_in_oneof_ = 0;
     for (int i = 0; i < oneof->field_count(); ++i) {
@@ -495,7 +498,7 @@ class OneofMessage : public SingularMessage {
   }
 
   std::vector<Sub> MakeVars() const override {
-    return Vars(field_, *opts_, is_weak(), use_base_class());
+    return Vars(field_, *opts_, field_layout(), is_weak(), use_base_class());
   }
 
   void GenerateInlineAccessorDefinitions(io::Printer* p) const override;
@@ -709,8 +712,9 @@ bool OneofMessage::RequiresArena(GeneratorFunction func) const {
 
 class RepeatedMessage : public FieldGeneratorBase {
  public:
-  RepeatedMessage(const FieldDescriptor* field, const Options& opts)
-      : FieldGeneratorBase(field, opts),
+  RepeatedMessage(const FieldDescriptor* field, const Options& opts,
+                  const FieldLayout& field_layout)
+      : FieldGeneratorBase(field, opts, field_layout),
         opts_(&opts),
         has_required_(
             opts.scc_analyzer->HasRequiredFields(field->message_type())),
@@ -719,7 +723,7 @@ class RepeatedMessage : public FieldGeneratorBase {
   ~RepeatedMessage() override = default;
 
   std::vector<Sub> MakeVars() const override {
-    return Vars(field_, *opts_, is_weak(), is_weak());
+    return Vars(field_, *opts_, field_layout(), is_weak(), is_weak());
   }
 
   void GeneratePrivateMembers(io::Printer* p) const override;
@@ -1108,18 +1112,21 @@ bool RepeatedMessage::RequiresArena(GeneratorFunction func) const {
 }  // namespace
 
 std::unique_ptr<FieldGeneratorBase> MakeSinguarMessageGenerator(
-    const FieldDescriptor* desc, const Options& options) {
-  return absl::make_unique<SingularMessage>(desc, options);
+    const FieldDescriptor* desc, const Options& options,
+    const FieldLayout& field_layout) {
+  return absl::make_unique<SingularMessage>(desc, options, field_layout);
 }
 
 std::unique_ptr<FieldGeneratorBase> MakeRepeatedMessageGenerator(
-    const FieldDescriptor* desc, const Options& options) {
-  return absl::make_unique<RepeatedMessage>(desc, options);
+    const FieldDescriptor* desc, const Options& options,
+    const FieldLayout& field_layout) {
+  return absl::make_unique<RepeatedMessage>(desc, options, field_layout);
 }
 
 std::unique_ptr<FieldGeneratorBase> MakeOneofMessageGenerator(
-    const FieldDescriptor* desc, const Options& options) {
-  return absl::make_unique<OneofMessage>(desc, options);
+    const FieldDescriptor* desc, const Options& options,
+    const FieldLayout& field_layout) {
+  return absl::make_unique<OneofMessage>(desc, options, field_layout);
 }
 
 }  // namespace cpp

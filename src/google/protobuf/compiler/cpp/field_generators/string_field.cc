@@ -18,7 +18,7 @@
 #include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/compiler/cpp/field.h"
-#include "google/protobuf/compiler/cpp/field_generators/generators.h"
+#include "google/protobuf/compiler/cpp/field_layout.h"
 #include "google/protobuf/compiler/cpp/helpers.h"
 #include "google/protobuf/compiler/cpp/options.h"
 #include "google/protobuf/descriptor.h"
@@ -68,8 +68,9 @@ std::vector<Sub> Vars(const FieldDescriptor* field, const Options& opts) {
 
 class SingularString : public FieldGeneratorBase {
  public:
-  SingularString(const FieldDescriptor* field, const Options& opts)
-      : FieldGeneratorBase(field, opts), opts_(&opts) {}
+  SingularString(const FieldDescriptor* field, const Options& opts,
+                 const FieldLayout& field_layout)
+      : FieldGeneratorBase(field, opts, field_layout), opts_(&opts) {}
   ~SingularString() override = default;
 
   std::vector<Sub> MakeVars() const override { return Vars(field_, *opts_); }
@@ -651,8 +652,9 @@ void SingularString::GenerateAggregateInitializer(io::Printer* p) const {
 
 class RepeatedString : public FieldGeneratorBase {
  public:
-  RepeatedString(const FieldDescriptor* field, const Options& opts)
-      : FieldGeneratorBase(field, opts),
+  RepeatedString(const FieldDescriptor* field, const Options& opts,
+                 const FieldLayout& field_layout)
+      : FieldGeneratorBase(field, opts, field_layout),
         opts_(&opts),
         cpp_repeated_type_(CalculateFieldDescriptorRepeatedType(field)) {}
   ~RepeatedString() override = default;
@@ -977,13 +979,15 @@ void RepeatedString::GenerateSerializeWithCachedSizesToArray(
 }  // namespace
 
 std::unique_ptr<FieldGeneratorBase> MakeSinguarStringGenerator(
-    const FieldDescriptor* desc, const Options& options) {
-  return absl::make_unique<SingularString>(desc, options);
+    const FieldDescriptor* desc, const Options& options,
+    const FieldLayout& field_layout) {
+  return absl::make_unique<SingularString>(desc, options, field_layout);
 }
 
 std::unique_ptr<FieldGeneratorBase> MakeRepeatedStringGenerator(
-    const FieldDescriptor* desc, const Options& options) {
-  return absl::make_unique<RepeatedString>(desc, options);
+    const FieldDescriptor* desc, const Options& options,
+    const FieldLayout& field_layout) {
+  return absl::make_unique<RepeatedString>(desc, options, field_layout);
 }
 
 }  // namespace cpp

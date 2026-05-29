@@ -10,13 +10,13 @@
 #include "absl/algorithm/container.h"
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
+#include "absl/types/optional.h"
 #include "google/protobuf/compiler/cpp/helpers.h"
 #include "google/protobuf/compiler/cpp/options.h"
 #include "google/protobuf/compiler/cpp/parse_function_generator.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/generated_message_tctable_decl.h"
 #include "google/protobuf/generated_message_tctable_gen.h"
-#include "google/protobuf/port.h"
 
 namespace google {
 namespace protobuf {
@@ -67,8 +67,10 @@ bool FieldGroup::UpdatePreferredLocationAndInsertOtherFields(
 }
 
 MessageLayoutHelper::FieldVector MessageLayoutHelper::DoOptimizeLayout(
-    const FieldVector& fields, const Options& options) const {
-  auto field_alignment_groups = BuildFieldAlignmentGroups(fields, options);
+    const FieldVector& fields, const Options& options,
+    const SplitMap& split_map) const {
+  auto field_alignment_groups =
+      BuildFieldAlignmentGroups(fields, options, split_map);
   auto field_groups =
       MergeFieldAlignmentGroups(std::move(field_alignment_groups));
   auto ordered_fields =
@@ -83,9 +85,10 @@ constexpr size_t MessageLayoutHelper::FieldHotnessIndex(FieldHotness hotness) {
 }
 
 MessageLayoutHelper::FieldFamily MessageLayoutHelper::GetFieldFamily(
-    const FieldDescriptor* field, const Options& options) {
+    const FieldDescriptor* field, const Options& options,
+    const SplitMap& split_map) {
   if (field->is_repeated()) {
-    return ShouldSplit(field, options) ? OTHER : REPEATED;
+    return split_map.IsSplit(field) ? OTHER : REPEATED;
   } else if (field->cpp_type() == FieldDescriptor::CPPTYPE_STRING) {
     return STRING;
   } else if (field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
@@ -98,7 +101,8 @@ MessageLayoutHelper::FieldFamily MessageLayoutHelper::GetFieldFamily(
 }
 
 std::vector<internal::TailCallTableInfo::FastFieldInfo>
-MessageLayoutHelper::BuildFastParseTable(const Options& options) const {
+MessageLayoutHelper::BuildFastParseTable(const Options& options,
+                                         const SplitMap& split_map) const {
   FieldVector ordered_fields;
   for (const auto* field : GetOrderedFields(descriptor_)) {
     if (IsLayoutOptimized(field, options)) {
@@ -106,8 +110,9 @@ MessageLayoutHelper::BuildFastParseTable(const Options& options) const {
     }
   }
   auto field_options = ParseFunctionGenerator::BuildFieldOptions(
-      descriptor_, ordered_fields, options,
-      /*has_bit_indices=*/{});
+      descriptor_, ordered_fields,
+      /*get_has_bit_index=*/[](const auto*) { return absl::nullopt; }, options,
+      split_map);
   auto table_info = ParseFunctionGenerator::BuildTcTableInfoFromDescriptor(
       descriptor_, options, field_options);
   return table_info.fast_path_fields;
@@ -138,16 +143,17 @@ bool MessageLayoutHelper::ShouldPromoteToFastParse(
 }
 
 MessageLayoutHelper::FieldAlignmentGroups
-MessageLayoutHelper::BuildFieldAlignmentGroups(const FieldVector& fields,
-                                               const Options& options) const {
+MessageLayoutHelper::BuildFieldAlignmentGroups(
+    const FieldVector& fields, const Options& options,
+    const SplitMap& split_map) const {
   FieldAlignmentGroups field_alignment_groups;
-  const auto fast_path_fields = BuildFastParseTable(options);
+  const auto fast_path_fields = BuildFastParseTable(options, split_map);
 
   for (const auto* field : fields) {
-    FieldFamily f = GetFieldFamily(field, options);
+    FieldFamily f = GetFieldFamily(field, options, split_map);
 
     FieldHotness hotness;
-    if (ShouldSplit(field, options)) {
+    if (split_map.IsSplit(field)) {
       hotness = FieldHotness::kSplit;
     } else if (field->is_repeated()) {
       hotness = FieldHotness::kRepeated;

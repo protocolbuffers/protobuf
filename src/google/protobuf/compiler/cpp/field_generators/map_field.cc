@@ -5,23 +5,20 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
-#include <cstdint>
 #include <memory>
 #include <string>
 #include <vector>
 
-#include "absl/log/absl_check.h"
 #include "absl/strings/ascii.h"
 #include "absl/strings/str_cat.h"
-#include "absl/strings/str_format.h"
 #include "absl/strings/string_view.h"
 #include "absl/strings/substitute.h"
 #include "google/protobuf/compiler/cpp/field.h"
+#include "google/protobuf/compiler/cpp/field_layout.h"
 #include "google/protobuf/compiler/cpp/helpers.h"
 #include "google/protobuf/compiler/cpp/options.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/io/printer.h"
-#include "google/protobuf/port.h"
 
 // Must be included last.
 #include "google/protobuf/port_def.inc"
@@ -81,8 +78,9 @@ void EmitFuncs(const FieldDescriptor* field, io::Printer* p) {
 
 class Map : public FieldGeneratorBase {
  public:
-  Map(const FieldDescriptor* field, const Options& opts)
-      : FieldGeneratorBase(field, opts),
+  Map(const FieldDescriptor* field, const Options& opts,
+      const FieldLayout& field_layout)
+      : FieldGeneratorBase(field, opts, field_layout),
         key_(field->message_type()->map_key()),
         val_(field->message_type()->map_value()),
         opts_(&opts),
@@ -319,8 +317,9 @@ void Map::GenerateByteSize(io::Printer* p) const {
 }  // namespace
 
 std::unique_ptr<FieldGeneratorBase> MakeMapGenerator(
-    const FieldDescriptor* desc, const Options& options) {
-  return std::make_unique<Map>(desc, options);
+    const FieldDescriptor* desc, const Options& options,
+    const FieldLayout& field_layout) {
+  return std::make_unique<Map>(desc, options, field_layout);
 }
 
 }  // namespace cpp

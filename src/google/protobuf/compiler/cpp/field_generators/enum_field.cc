@@ -18,7 +18,7 @@
 #include "absl/memory/memory.h"
 #include "absl/strings/substitute.h"
 #include "google/protobuf/compiler/cpp/field.h"
-#include "google/protobuf/compiler/cpp/field_generators/generators.h"
+#include "google/protobuf/compiler/cpp/field_layout.h"
 #include "google/protobuf/compiler/cpp/helpers.h"
 #include "google/protobuf/compiler/cpp/options.h"
 #include "google/protobuf/descriptor.h"
@@ -36,9 +36,10 @@ namespace {
 using Semantic = ::google::protobuf::io::AnnotationCollector::Semantic;
 using Sub = ::google::protobuf::io::Printer::Sub;
 
-std::vector<Sub> Vars(const FieldDescriptor* field, const Options& opts) {
+std::vector<Sub> Vars(const FieldDescriptor* field, const Options& opts,
+                      const FieldLayout& field_layout) {
   const EnumValueDescriptor* default_value = field->default_value_enum();
-  bool split = ShouldSplit(field, opts);
+  bool split = field_layout.IsSplit(field);
   bool is_open = internal::cpp::HasPreservingUnknownEnumSemantics(field);
   auto enum_name = QualifiedClassName(field->enum_type(), opts);
   return {
@@ -60,11 +61,14 @@ std::vector<Sub> Vars(const FieldDescriptor* field, const Options& opts) {
 
 class SingularEnum : public FieldGeneratorBase {
  public:
-  SingularEnum(const FieldDescriptor* field, const Options& opts)
-      : FieldGeneratorBase(field, opts), opts_(&opts) {}
+  SingularEnum(const FieldDescriptor* field, const Options& opts,
+               const FieldLayout& field_layout)
+      : FieldGeneratorBase(field, opts, field_layout), opts_(&opts) {}
   ~SingularEnum() override = default;
 
-  std::vector<Sub> MakeVars() const override { return Vars(field_, *opts_); }
+  std::vector<Sub> MakeVars() const override {
+    return Vars(field_, *opts_, field_layout());
+  }
 
   void GeneratePrivateMembers(io::Printer* p) const override {
     p->Emit(R"cc(
@@ -216,8 +220,9 @@ void SingularEnum::GenerateInlineAccessorDefinitions(io::Printer* p) const {
 
 class RepeatedEnum : public FieldGeneratorBase {
  public:
-  RepeatedEnum(const FieldDescriptor* field, const Options& opts)
-      : FieldGeneratorBase(field, opts),
+  RepeatedEnum(const FieldDescriptor* field, const Options& opts,
+               const FieldLayout& field_layout)
+      : FieldGeneratorBase(field, opts, field_layout),
         opts_(&opts),
         has_cached_size_(field_->is_packed() &&
                          HasGeneratedMethods(field_->file(), opts) &&
@@ -225,7 +230,9 @@ class RepeatedEnum : public FieldGeneratorBase {
         cpp_repeated_type_(CalculateFieldDescriptorRepeatedType(field)) {}
   ~RepeatedEnum() override = default;
 
-  std::vector<Sub> MakeVars() const override { return Vars(field_, *opts_); }
+  std::vector<Sub> MakeVars() const override {
+    return Vars(field_, *opts_, field_layout());
+  }
 
   void GeneratePrivateMembers(io::Printer* p) const override {
     if (should_split()) {
@@ -595,13 +602,15 @@ void RepeatedEnum::GenerateByteSize(io::Printer* p) const {
 }  // namespace
 
 std::unique_ptr<FieldGeneratorBase> MakeSinguarEnumGenerator(
-    const FieldDescriptor* desc, const Options& options) {
-  return absl::make_unique<SingularEnum>(desc, options);
+    const FieldDescriptor* desc, const Options& options,
+    const FieldLayout& field_layout) {
+  return absl::make_unique<SingularEnum>(desc, options, field_layout);
 }
 
 std::unique_ptr<FieldGeneratorBase> MakeRepeatedEnumGenerator(
-    const FieldDescriptor* desc, const Options& options) {
-  return absl::make_unique<RepeatedEnum>(desc, options);
+    const FieldDescriptor* desc, const Options& options,
+    const FieldLayout& field_layout) {
+  return absl::make_unique<RepeatedEnum>(desc, options, field_layout);
 }
 
 }  // namespace cpp

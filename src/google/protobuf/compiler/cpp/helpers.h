@@ -12,7 +12,6 @@
 #ifndef GOOGLE_PROTOBUF_COMPILER_CPP_HELPERS_H__
 #define GOOGLE_PROTOBUF_COMPILER_CPP_HELPERS_H__
 
-#include <cstddef>
 #include <cstdint>
 #include <iterator>
 #include <string>
@@ -484,13 +483,6 @@ enum class VerifySimpleType {
 // Returns VerifySimpleType if messages can be verified by predefined methods.
 VerifySimpleType ShouldVerifySimple(const Descriptor* descriptor);
 
-
-// Is the given message being split (go/pdsplit)?
-PROTOC_EXPORT bool ShouldSplit(const Descriptor* desc, const Options& options);
-
-// Is the given field being split out?
-PROTOC_EXPORT bool ShouldSplit(const FieldDescriptor* field,
-                               const Options& options);
 
 // Should we generate code that force creating an allocation in the constructor
 // of the given message?
