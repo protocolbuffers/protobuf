@@ -12,7 +12,7 @@ endif()
 
 set(apple_support-version "2.3.0")
 set(rules_proto-version "7.1.0")
-set(abseil-cpp-version "20250512.1")
+set(abseil-cpp-version "20260107.1")
 set(rules_cc-version "0.0.17")
 set(zlib-version "1.3.1")
 set(bazel_features-version "1.33.0")
