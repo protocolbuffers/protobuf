@@ -490,8 +490,7 @@ static void upb_Message_ConvertInternal(upb_Converter* c, upb_Message* dst,
                                         int depth) {
   UPB_ASSERT(dst != NULL);
   if (--depth == 0) {
-    // TODO:b/494593478 - Add a new error code for max depth exceeded.
-    upb_ErrorHandler_ThrowError(&c->err, kUpb_ErrorCode_Malformed);
+    upb_ErrorHandler_ThrowError(&c->err, kUpb_ErrorCode_MaxDepthExceeded);
   }
 
   const upb_MiniTableField* dst_f = NULL;
