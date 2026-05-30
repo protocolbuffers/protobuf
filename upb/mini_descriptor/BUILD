@@ -80,6 +80,7 @@ cc_test(
         "//upb/message",
         "//upb/message:internal",
         "//upb/mini_table",
+        "//upb/mini_table:internal",
         "//upb/port",
         "//upb/wire",
         "@abseil-cpp//absl/container:flat_hash_set",
