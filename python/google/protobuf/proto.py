@@ -64,9 +64,10 @@ def serialize_length_prefixed(message: _MESSAGE, output: io.BytesIO) -> None:
     message: The protocol buffer message that should be serialized.
     output: BytesIO or custom buffered IO that data should be written to.
   """
-  size = message.ByteSize()
+  payload = serialize(message)
+  size = len(payload)
   encoder._VarintEncoder()(output.write, size)
-  out_size = output.write(serialize(message))
+  out_size = output.write(payload)
 
   if out_size != size:
     raise TypeError(

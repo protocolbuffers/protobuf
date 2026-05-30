@@ -98,7 +98,7 @@ UPB_PRESERVE_NONE upb_FastDecoder_Return _upb_FastDecoder_DecodeCheckMiniTable(
   uint32_t field_num = data;
 #ifndef NDEBUG
   uint32_t check;
-  const char* read = upb_WireReader_ReadTag(ptr, &check, &d->input);
+  const char* read = upb_WireReader_ReadTag(ptr, &check, EPS(d));
   UPB_PRIVATE(upb_EpsCopyInputStream_BoundsChecked)(&d->input);
   UPB_ASSERT(upb_WireReader_GetFieldNumber(check) == field_num);
   UPB_ASSERT(ptr + upb_DecodeFastData2_GetTagLen(data2) == read);
@@ -127,7 +127,7 @@ _upb_FastDecoder_DecodeCheckExtRegMiniTable(struct upb_Decoder* d,
 #ifndef NDEBUG
     UPB_PRIVATE(upb_EpsCopyInputStream_BoundsChecked)(&d->input);
     uint32_t check;
-    const char* read = upb_WireReader_ReadTag(ptr, &check, &d->input);
+    const char* read = upb_WireReader_ReadTag(ptr, &check, EPS(d));
 
     UPB_ASSERT(upb_WireReader_GetFieldNumber(check) == field_num);
     UPB_ASSERT(ptr + upb_DecodeFastData2_GetTagLen(data2) == read);

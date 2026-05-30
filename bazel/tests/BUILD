@@ -32,6 +32,16 @@ cc_proto_library_test_suite(name = "cc_proto_library_tests")
 
 proto_bzl_test_suite_tests(name = "proto_bzl_test_suite")
 
+bzl_library(
+    name = "proto_bzl_test_suite_bzl",
+    srcs = ["proto_bzl_test_suite.bzl"],
+    visibility = ["//visibility:private"],
+    deps = [
+        "@rules_testing//lib:analysis_test_bzl",
+        "@rules_testing//lib:util_bzl",
+    ],
+)
+
 proto_library(
     name = "empty_proto_library",
 )
