@@ -80,16 +80,16 @@ jobs:
           operations-per-run: 100
       - uses: actions/stale@997185467fa4f803885201cee163a9f38240193d  # v10.1.1
         with:
-          # Have any reply on a 'wait for user action' issue or PR to readd 'untriaged' label. This
-          # uses the same action as our actual stale issue management, but sets
+          # Have any reply on a 'wait for user action' issue or PR to read 'untriaged' label.
+          # This uses the same action as our actual stale issue management, but sets
           # days-before-stale to -1 to have it never automatically add the 'wait for user action'
           # label. Instead this run will just only view cases that have the label manually set as
-          # 'stale' for the purpose of a reply unstaling it by readding the 'untriaged' label.
+          # 'stale' for the purpose of a reply unstalling it by reading the 'untriaged' label.
           days-before-stale: -1
           days-before-close: -1
           stale-issue-label: 'wait for user action'
           stale-pr-label: 'wait for user action'
           labels-to-add-when-unstale: 'untriaged'
           operations-per-run: 20
-          exempt-pr-labels: 'safe for tests'
+          exempt-pr-labels: 'safe for tests,untriaged'
 
