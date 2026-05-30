@@ -940,6 +940,9 @@ void ExtensionSet::InternalExtensionMergeFrom(Arena* arena,
                                               int number,
                                               const Extension& other_extension,
                                               Arena* other_arena) {
+  if (other_extension.is_cleared) {
+    return;
+  }
   Extension* dst_extension;
   bool is_new = MaybeNewExtension(arena, number, other_extension.descriptor,
                                   &dst_extension);
@@ -1611,7 +1614,7 @@ void ExtensionSet::GrowCapacity(Arena* arena, size_t minimum_new_capacity) {
 
   auto new_flat_capacity = flat_capacity_;
   do {
-    new_flat_capacity = new_flat_capacity == 0 ? 1 : new_flat_capacity * 4;
+    new_flat_capacity = new_flat_capacity == 0 ? 1 : new_flat_capacity * 2;
   } while (new_flat_capacity < minimum_new_capacity);
 
   KeyValue* begin = flat_begin();
