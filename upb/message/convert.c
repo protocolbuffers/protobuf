@@ -465,19 +465,11 @@ static void upb_Message_ConvertExtensions(upb_Converter* c, upb_Message* dst,
         upb_Message_SetFieldOrExtension(dst, dst_f, dst_ext, &val, c->arena);
       }
     } else {
-      // Extension not found in the destination schema.
-      if (dst_mt->UPB_PRIVATE(ext) == kUpb_ExtMode_NonExtendable) {
-        // Destination message does not support extensions. Encode the extension
-        // as an unknown field in the destination message.
-        upb_Message_EncodeExtensionAsUnknown(&c->encoder, dst, dst_mt, ext, val,
-                                             depth, &c->err);
-      } else if (!upb_Message_SetExtension(dst, ext, &val, c->arena)) {
-        // Destination message supports extensions. Since this extension is not
-        // known in the destination schema, we simply carry over the source
-        // extension.
-        // TODO - b/510055656: to handle the non-canonical extension properly.
-        upb_ErrorHandler_ThrowError(&c->err, kUpb_ErrorCode_OutOfMemory);
-      }
+      // Since this extension is not known in the destination schema, encode it
+      // as an unknown field.
+      // TODO - b/510055656: to handle this as a non-canonical extension
+      upb_Message_EncodeExtensionAsUnknown(&c->encoder, dst, dst_mt, ext, val,
+                                           depth, &c->err);
     }
   }
 }
@@ -521,7 +513,15 @@ static void upb_Message_ConvertInternal(upb_Converter* c, upb_Message* dst,
       if (UPB_UNLIKELY(!_upb_MiniTableField_IsCompatible(src_next, dst_next))) {
         upb_ErrorHandler_ThrowError(&c->err, kUpb_ErrorCode_Malformed);
       }
-      upb_Message_ConvertField(c, dst, src, dst_next, src_next, extreg, depth);
+      if (upb_MiniTableField_IsInOneof(dst_next) &&
+          UPB_PRIVATE(_upb_Message_GetOneofCase)(dst, dst_next) != 0) {
+        // Since fields are processed in descending order, the first encountered
+        // oneof field is the one that wins. We ignore subsequent ones to match
+        // the encoding-then-decoding behavior.
+      } else {
+        upb_Message_ConvertField(c, dst, src, dst_next, src_next, extreg,
+                                 depth);
+      }
       dst_f--;
       src_f--;
     } else if (dst_nr > src_nr) {
@@ -599,23 +599,13 @@ const upb_Message* upb_Message_Convert(const upb_Message* src,
 
 #ifndef NDEBUG
   if (dst) {
-    char *wire_buf, *wire_buf2;
-    size_t wire_size, wire_size2;
+    char* wire_buf;
+    size_t wire_size;
     upb_Arena* tmp_arena = upb_Arena_New();
 
     // Compare the encoded/decoded round-trip of the original message to the
-    // encoded/decoded round-trip of the converted message.
-    //
-    // We cannot compare the messages directly using
-    // UPB_ASSERT(upb_Message_IsEqual(dst, decoded_msg, dst_mt, 0)), as we
-    // essentially handle the non-canonical extensions differently in the
-    // conversion. See b/510055656 for details.
-    // Instead, we compare the encoded/decoded round-trip of the original
-    // message to the encoded/decoded round-trip of the converted message.
-    // They should be identical, as the non-canonical extensions will be encoded
-    // as unknown fields.
-
-    // Round-trip 1: encode/decode original message `src`
+    // converted message.
+    // Encode/decode original message `src`
     upb_EncodeStatus encode_status =
         upb_Encode(src, src_mt, 0, tmp_arena, &wire_buf, &wire_size);
     UPB_ASSERT(encode_status == kUpb_EncodeStatus_Ok);
@@ -624,17 +614,8 @@ const upb_Message* upb_Message_Convert(const upb_Message* src,
         wire_buf, wire_size, decoded_msg, dst_mt, extreg, 0, tmp_arena);
     UPB_ASSERT(decode_status == kUpb_DecodeStatus_Ok);
 
-    // Round-trip 2: encode/decode converted message `dst`
-    upb_EncodeStatus encode_status2 =
-        upb_Encode(dst, dst_mt, 0, tmp_arena, &wire_buf2, &wire_size2);
-    UPB_ASSERT(encode_status2 == kUpb_EncodeStatus_Ok);
-    upb_Message* decoded_msg2 = upb_Message_New(dst_mt, tmp_arena);
-    upb_DecodeStatus decode_status2 = upb_Decode(
-        wire_buf2, wire_size2, decoded_msg2, dst_mt, extreg, 0, tmp_arena);
-    UPB_ASSERT(decode_status2 == kUpb_DecodeStatus_Ok);
-
-    // Compare both decoded messages.
-    UPB_ASSERT(upb_Message_IsEqual(decoded_msg, decoded_msg2, dst_mt, 0));
+    // Compare the decoded message to the converted message.
+    UPB_ASSERT(upb_Message_IsEqual(decoded_msg, dst, dst_mt, 0));
     upb_Arena_Free(tmp_arena);
   }
 #endif

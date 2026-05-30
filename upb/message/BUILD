@@ -221,7 +221,6 @@ cc_library(
         "//upb/mini_table",
         "//upb/mini_table:internal",
         "//upb/port",
-        "//upb/wire",
         "//upb/wire:back_alloc",
         "//upb/wire:decoder",
         "//upb/wire:encoder",
