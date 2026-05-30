@@ -82,7 +82,8 @@ UPB_NODISCARD UPB_INLINE struct upb_Array* UPB_PRIVATE(
   UPB_ASSERT(elem_size_lg2 <= 4);
   const size_t array_size =
       UPB_ALIGN_UP(sizeof(struct upb_Array), UPB_MALLOC_ALIGN);
-  const size_t bytes = array_size + (init_capacity << elem_size_lg2);
+  if (init_capacity > (SIZE_MAX - array_size) >> elem_size_lg2) return NULL;
+  const size_t bytes = array_size + ((size_t)init_capacity << elem_size_lg2);
   size_t span = UPB_PRIVATE(_upb_Arena_AllocSpan)(bytes);
   if (!allow_slow && UPB_PRIVATE(_upb_ArenaHas)(arena) < span) return NULL;
   struct upb_Array* array = (struct upb_Array*)upb_Arena_Malloc(arena, bytes);
