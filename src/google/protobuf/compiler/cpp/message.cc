@@ -193,8 +193,7 @@ void PrintPresenceCheck(const FieldDescriptor* field,
 }
 
 struct FieldOrderingByNumber {
-  inline bool operator()(const FieldDescriptor* a,
-                         const FieldDescriptor* b) const {
+  bool operator()(const FieldDescriptor* a, const FieldDescriptor* b) const {
     return a->number() < b->number();
   }
 };
