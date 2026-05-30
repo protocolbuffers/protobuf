@@ -65,6 +65,7 @@ enum {
 //     :  .  :  .  :  .  : 9|========|  .  :  .  :  .  : [3] FieldRep
 //     :     :     :11|=====|  :     :     :     :     : [2] TransformValidation
 //     :  .  :13|=====|  :  .  :  .  :  .  :  .  :  .  : [2] FormatDiscriminator
+//     |========|  :  .  :  .  :  .  :  .  :  .  :  .  : [3] SplitGroupIndex
 //     +-----------------------+-----------------------+
 //     |15        ..          8|7         ..          0|
 //     +-----------------------+-----------------------+
@@ -196,6 +197,22 @@ static_assert(kFmtShift + kFmtBits == 13, "number of bits changed");
 
 // This assertion should not change unless the storage width changes:
 static_assert(kFmtShift + kFmtBits <= 16, "too many bits");
+
+// Format discriminators (2 bits):
+enum SplitGroupOffset : uint16_t {
+  kSplitGroupIndexShift = kFmtShift + kFmtBits,
+  kSplitGroupIndexBits  = 3,
+  kSplitGroupIndexMask  =
+      ((1 << kSplitGroupIndexBits) - 1) << kSplitGroupIndexShift,
+};
+
+// Update this assertion (and comments above) when adding or removing bits:
+static_assert(kSplitGroupIndexShift + kSplitGroupIndexBits == 16,
+              "number of bits changed");
+
+// This assertion should not change unless the storage width changes:
+static_assert(kSplitGroupIndexShift + kSplitGroupIndexBits <= 16,
+              "too many bits");
 
 // Convenience aliases (16 bits, with format):
 enum FieldType : uint16_t {
@@ -873,7 +890,8 @@ class PROTOBUF_EXPORT TcParser final {
 
   friend class GeneratedTcTableLiteTest;
   static void* MaybeGetSplitBase(MessageLite* msg, bool is_split,
-                                 const TcParseTableBase* table);
+                                 const TcParseTableBase* table,
+                                 uint16_t type_card);
 
   // Test only access to verify that the right function is being called via
   // MiniParse.

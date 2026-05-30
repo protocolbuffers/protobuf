@@ -13,6 +13,7 @@
 
 #include <algorithm>
 #include <cstddef>
+#include <cstdint>
 #include <functional>
 #include <memory>
 #include <string>
@@ -33,6 +34,7 @@
 #include "google/protobuf/compiler/code_generator.h"
 #include "google/protobuf/compiler/cpp/enum.h"
 #include "google/protobuf/compiler/cpp/extension.h"
+#include "google/protobuf/compiler/cpp/field_layout.h"
 #include "google/protobuf/compiler/cpp/helpers.h"
 #include "google/protobuf/compiler/cpp/message.h"
 #include "google/protobuf/compiler/cpp/names.h"
@@ -1341,7 +1343,9 @@ class FileGenerator::ForwardDeclarations {
  public:
   void AddMessage(const Descriptor* d) { classes_.emplace(ClassName(d), d); }
   void AddEnum(const EnumDescriptor* d) { enums_.emplace(ClassName(d), d); }
-  void AddSplit(const Descriptor* d) { splits_.emplace(ClassName(d), d); }
+  void AddSplit(const Descriptor* d, uint32_t num_split_groups) {
+    splits_.emplace(ClassName(d), std::make_pair(d, num_split_groups));
+  }
 
   void Print(io::Printer* p, const Options& options) const {
     for (const auto& e : enums_) {
@@ -1381,16 +1385,19 @@ class FileGenerator::ForwardDeclarations {
     }
 
     for (const auto& s : splits_) {
-      const Descriptor* desc = s.second;
-      p->Emit(
-          {
-              {"default_type", SplitDefaultInstanceType(desc, options)},
-              {"default_name", SplitDefaultInstanceName(desc, options)},
-          },
-          R"cc(
-            struct $default_type$;
-            $dllexport_decl $extern const $default_type$ $default_name$;
-          )cc");
+      const Descriptor* desc = s.second.first;
+      uint32_t num_split_groups = s.second.second;
+      for (uint32_t i = 0; i < num_split_groups; ++i) {
+        p->Emit(
+            {
+                {"default_type", SplitDefaultInstanceType(desc, options, i)},
+                {"default_name", SplitDefaultInstanceName(desc, options, i)},
+            },
+            R"cc(
+              struct $default_type$;
+              $dllexport_decl $extern const $default_type$ $default_name$;
+            )cc");
+      }
     }
   }
 
@@ -1445,7 +1452,7 @@ class FileGenerator::ForwardDeclarations {
  private:
   absl::btree_map<std::string, const Descriptor*> classes_;
   absl::btree_map<std::string, const EnumDescriptor*> enums_;
-  absl::btree_map<std::string, const Descriptor*> splits_;
+  absl::btree_map<std::string, std::pair<const Descriptor*, uint32_t>> splits_;
 };
 
 static void PublicImportDFS(
@@ -1498,9 +1505,10 @@ void FileGenerator::GenerateForwardDeclarations(io::Printer* p) {
   }
   for (const auto& mg : message_generators_) {
     const Descriptor* d = mg->descriptor();
+    const FieldLayout& field_layout = mg->field_layout();
     if (d != nullptr && public_set.count(d->file()) == 0u &&
-        ShouldSplit(mg->descriptor(), options_))
-      decls[Namespace(d)].AddSplit(d);
+        field_layout.HasSplitFields())
+      decls[Namespace(d)].AddSplit(d, field_layout.NumSplitGroups());
   }
 
   NamespaceOpener ns(p);

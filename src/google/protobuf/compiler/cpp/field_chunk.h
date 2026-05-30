@@ -4,6 +4,7 @@
 #include <cstdint>
 #include <vector>
 
+#include "absl/types/optional.h"
 #include "absl/types/span.h"
 #include "google/protobuf/compiler/cpp/field_layout.h"
 #include "google/protobuf/compiler/cpp/helpers.h"
@@ -19,14 +20,15 @@ namespace compiler {
 namespace cpp {
 
 struct FieldChunk {
-  FieldChunk(bool has_hasbit, bool is_rarely_present, bool should_split)
+  FieldChunk(bool has_hasbit, bool is_rarely_present,
+             absl::optional<uint32_t> split_group_index)
       : has_hasbit(has_hasbit),
         is_rarely_present(is_rarely_present),
-        should_split(should_split) {}
+        split_group_index(split_group_index) {}
 
   bool has_hasbit;
   bool is_rarely_present;
-  bool should_split;
+  absl::optional<uint32_t> split_group_index;
 
   std::vector<const FieldDescriptor*> fields;
 };
@@ -45,13 +47,13 @@ PROTOC_EXPORT uint32_t GenChunkMask(ChunkIterator it, ChunkIterator end,
 template <typename Predicate>
 std::vector<FieldChunk> CollectFields(
     absl::Span<const FieldDescriptor* const> fields, const Options& options,
-    const Predicate& equivalent) {
+    const SplitMap& split_map, const Predicate& equivalent) {
   std::vector<FieldChunk> chunks;
   for (auto field : fields) {
     if (chunks.empty() || !equivalent(chunks.back().fields.back(), field)) {
       chunks.emplace_back(HasHasbit(field, options),
                           IsRarelyPresent(field, options),
-                          ShouldSplit(field, options));
+                          split_map.SplitGroup(field));
     }
     chunks.back().fields.push_back(field);
   }

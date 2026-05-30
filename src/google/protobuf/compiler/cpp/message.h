@@ -70,7 +70,8 @@ class MessageGenerator {
   void GenerateSourceInProto2Namespace(io::Printer* p);
 
 
-  void GenerateInitDefaultSplitInstance(io::Printer* p);
+  void GenerateInitDefaultSplitInstance(io::Printer* p,
+                                        uint32_t split_group_index);
 
   // Generate the constexpr constructor for constant initialization of the
   // default instance.
@@ -85,6 +86,8 @@ class MessageGenerator {
   size_t GenerateOffsets(io::Printer* p);
 
   const Descriptor* descriptor() const { return descriptor_; }
+
+  const FieldLayout& field_layout() const { return field_layout_; }
 
  private:
   using GeneratorFunction = FieldGeneratorBase::GeneratorFunction;

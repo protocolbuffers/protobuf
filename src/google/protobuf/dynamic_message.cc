@@ -1087,7 +1087,7 @@ const Message* DynamicMessageFactory::GetPrototypeNoLock(
       static_cast<int>(type_info->GetClassDataFull().allocation_size()),
       type_info->weak_field_map_offset,
       /*split_offset=*/-1,
-      /*sizeof_split=*/-1);
+      /*sizeof_splits=*/{});
 
   type_info->MutableClassDataFull().set_reflection(
       new Reflection(type_info->GetClassDataFull().descriptor(), schema,

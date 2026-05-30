@@ -2,11 +2,13 @@
 
 #include <algorithm>
 #include <cstddef>
+#include <cstdint>
 #include <memory>
 #include <string>
 #include <utility>
 #include <vector>
 
+#include "google/protobuf/compiler/split_map.h"
 #include "absl/algorithm/container.h"
 #include "absl/base/nullability.h"
 #include "absl/log/absl_check.h"
@@ -17,6 +19,7 @@
 #include "google/protobuf/compiler/cpp/options.h"
 #include "google/protobuf/compiler/cpp/padding_optimizer.h"
 #include "google/protobuf/descriptor.h"
+#include "google/protobuf/generated_message_reflection.h"
 #include "google/protobuf/has_bits.h"
 
 
@@ -43,6 +46,8 @@ FieldLayout FieldLayout::BuildOptimizedLayout(
   std::vector<int> has_bit_indices;
   int max_has_bit_index = 0;
 
+  SplitMap split_map;
+
   // Compute optimized field order to be used for layout and initialization
   // purposes.
   num_weak_fields =
@@ -50,15 +55,9 @@ FieldLayout FieldLayout::BuildOptimizedLayout(
   const size_t initial_size = optimized_order.size();
 
   auto message_layout_helper = CreateMessageLayoutHelper(descriptor, options);
-  optimized_order =
-      message_layout_helper->OptimizeLayout(optimized_order, options);
+  optimized_order = message_layout_helper->OptimizeLayout(optimized_order,
+                                                          options, split_map);
   ABSL_CHECK_EQ(initial_size, optimized_order.size());
-
-  // Verify that all split fields are placed at the end in the optimized order.
-  ABSL_CHECK(absl::c_is_partitioned(
-      optimized_order, [&options](const FieldDescriptor* absl_nonnull field) {
-        return !ShouldSplit(field, options);
-      }));
 
   // This message has hasbits iff one or more fields need one.
   for (const FieldDescriptor* field : optimized_order) {
@@ -73,7 +72,7 @@ FieldLayout FieldLayout::BuildOptimizedLayout(
   }
 
   return FieldLayout(std::move(has_bit_indices), max_has_bit_index,
-                     std::move(optimized_order));
+                     std::move(optimized_order), std::move(split_map));
 }
 
 FieldLayout FieldLayout::BuildForTesting(
@@ -83,7 +82,7 @@ FieldLayout FieldLayout::BuildForTesting(
   int max_has_bit_index =
       max_it != has_bit_indices.end() ? std::max(*max_it, 0) : 0;
   return FieldLayout(std::move(has_bit_indices), max_has_bit_index,
-                     std::move(fields));
+                     std::move(fields), /*split_map=*/{});
 }
 
 bool FieldLayout::HasHasbits() const { return !has_bit_indices_.empty(); }
@@ -131,12 +130,19 @@ void FieldLayout::PrintHasBitIndicesForSchema(io::Printer* absl_nonnull p,
   }
 }
 
+absl::optional<size_t> FieldLayout::SplitGroup(
+    const FieldDescriptor* absl_nonnull field) const {
+  return split_map_.SplitGroup(field);
+}
+
 FieldLayout::FieldLayout(
     std::vector<int> has_bit_indices, int max_has_bit_index,
-    std::vector<const FieldDescriptor* absl_nonnull> fields)
+    std::vector<const FieldDescriptor* absl_nonnull> fields,
+    SplitMap&& split_map)
     : has_bit_indices_(std::move(has_bit_indices)),
       max_has_bit_index_(max_has_bit_index),
-      fields_(std::move(fields)) {}
+      fields_(std::move(fields)),
+      split_map_(std::move(split_map)) {}
 
 }  // namespace cpp
 }  // namespace compiler

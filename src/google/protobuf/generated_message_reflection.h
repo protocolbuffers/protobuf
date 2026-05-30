@@ -19,10 +19,12 @@
 #include <cstddef>
 #include <cstdint>
 #include <string>
+#include <vector>
 
 #include "absl/base/call_once.h"
 #include "absl/base/optimization.h"
 #include "absl/log/absl_check.h"
+#include "absl/types/optional.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/generated_enum_reflection.h"
 #include "google/protobuf/has_bits.h"
@@ -65,6 +67,8 @@ inline constexpr uint32_t kInvalidFieldOffsetTag = 0x40000000u;
 
 // Mask used on offsets for split fields.
 inline constexpr uint32_t kSplitFieldOffsetMask = 0x80000000u;
+inline constexpr uint32_t kSplitGroupIndexMask = 0x70000000u;
+inline constexpr uint32_t kSplitGroupIndexShift = 28;
 inline constexpr uint32_t kLazyMask = 0x1u;
 inline constexpr uint32_t kInlinedMask = 0x1u;
 inline constexpr uint32_t kMicroStringMask = 0x2u;
@@ -129,7 +133,7 @@ class ReflectionSchema {
                    const uint32_t* has_bit_indices, int has_bits_offset,
                    int extensions_offset, int oneof_case_offset,
                    int object_size, int weak_field_map_offset, int split_offset,
-                   int sizeof_split);
+                   std::vector<uint32_t>&& sizeof_splits);
 
   // Helper function to transform migration schema into reflection schema.
   static ReflectionSchema MigrationToReflectionSchema(
@@ -224,22 +228,28 @@ class ReflectionSchema {
     return false;
   }
 
-  bool IsSplit() const { return split_offset_ != -1; }
+  bool HasSplitFields() const { return split_offset_ != -1; }
 
-  bool IsSplit(const FieldDescriptor* field) const {
-    return split_offset_ != -1 &&
-           (offsets_[field->index()] & kSplitFieldOffsetMask) != 0;
+  uint32_t NumSplitGroups() const { return sizeof_splits_.size(); }
+
+  absl::optional<uint32_t> SplitGroup(const FieldDescriptor* field) const {
+    uint32_t offset = offsets_[field->index()];
+    if (!HasSplitFields() || (offset & kSplitFieldOffsetMask) == 0) {
+      return absl::nullopt;
+    }
+    return (offset & kSplitGroupIndexMask) >> kSplitGroupIndexShift;
   }
 
   // Byte offset of _split_.
-  uint32_t SplitOffset() const {
-    ABSL_DCHECK(IsSplit());
-    return static_cast<uint32_t>(split_offset_);
+  uint32_t SplitOffset(uint32_t split_group_index) const {
+    ABSL_DCHECK(HasSplitFields());
+    return static_cast<uint32_t>(split_offset_) +
+           split_group_index * sizeof(void*);
   }
 
-  uint32_t SizeofSplit() const {
-    ABSL_DCHECK(IsSplit());
-    return static_cast<uint32_t>(sizeof_split_);
+  uint32_t SizeofSplit(size_t split_group_index) const {
+    ABSL_DCHECK(HasSplitFields());
+    return static_cast<uint32_t>(sizeof_splits_[split_group_index]);
   }
 
 
@@ -252,18 +262,22 @@ class ReflectionSchema {
   // "unused" or "lazy" or "inlined").
   template <typename Type>
   static uint32_t OffsetValue(uint32_t v, FieldDescriptor::Type type) {
+    if ((v & kSplitFieldOffsetMask) == 0) {
+      ABSL_DCHECK_EQ(v & kSplitGroupIndexMask, 0u);
+    }
     if constexpr (!std::is_void_v<Type>) {
       // If the type is passed, statically use the alignment for the mask.
       // Faster than checking `type`.
-      return v & ~kSplitFieldOffsetMask & ~(alignof(Type) - 1);
+      return v & ~kSplitFieldOffsetMask & ~kSplitGroupIndexMask &
+             ~(alignof(Type) - 1);
     }
     if (type == FieldDescriptor::TYPE_MESSAGE ||
         type == FieldDescriptor::TYPE_STRING ||
         type == FieldDescriptor::TYPE_BYTES) {
-      return v & ~kSplitFieldOffsetMask & ~kInlinedMask & ~kLazyMask &
-             ~kMicroStringMask;
+      return v & ~kSplitFieldOffsetMask & ~kSplitGroupIndexMask &
+             ~kInlinedMask & ~kLazyMask & ~kMicroStringMask;
     }
-    return v & (~kSplitFieldOffsetMask);
+    return v & ~kSplitFieldOffsetMask & ~kSplitGroupIndexMask;
   }
 
   static bool Inlined(uint32_t v, FieldDescriptor::Type type) {
@@ -292,7 +306,7 @@ class ReflectionSchema {
   int object_size_;
   int weak_field_map_offset_;
   int split_offset_;
-  int sizeof_split_;
+  std::vector<uint32_t> sizeof_splits_;
 };
 
 // This struct tries to reduce unnecessary padding.

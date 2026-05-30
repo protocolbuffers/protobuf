@@ -44,8 +44,9 @@ namespace cpp {
 using ::google::protobuf::internal::WireFormat;
 using Sub = ::google::protobuf::io::Printer::Sub;
 
-std::vector<Sub> FieldVars(const FieldDescriptor* field, const Options& opts) {
-  bool split = ShouldSplit(field, opts);
+std::vector<Sub> FieldVars(const FieldDescriptor* field, const Options& opts,
+                           const FieldLayout& field_layout) {
+  absl::optional<uint32_t> split_group_index = field_layout.SplitGroup(field);
   std::vector<Sub> vars = {
       // This will eventually be renamed to "field", once the existing "field"
       // variable is replaced with "field_" everywhere.
@@ -57,14 +58,17 @@ std::vector<Sub> FieldVars(const FieldDescriptor* field, const Options& opts) {
       {"number", field->number()},
       {"pkg.Msg.field", field->full_name()},
 
-      {"field_", FieldMemberName(field, split)},
+      {"field_", FieldMemberName(field, split_group_index)},
       {"DeclaredType", DeclaredTypeMethodName(field->type())},
       {"Oneof", field->real_containing_oneof() ? "Oneof" : ""},
       {"Utf8", IsStrictUtf8String(field, opts) ? "Utf8" : "Raw"},
       {"StrType", IsStrictUtf8String(field, opts) ? "String" : "Bytes"},
       {"kTagBytes", WireFormat::TagSize(field->number(), field->type())},
       Sub("PrepareSplitMessageForWrite",
-          split ? "PrepareSplitMessageForWrite();" : "")
+          split_group_index.has_value()
+              ? absl::StrCat("PrepareSplitMessage", *split_group_index,
+                             "ForWrite();")
+              : "")
           .WithSuffix(";"),
       Sub("DEPRECATED", DeprecatedAttribute(opts, field)).WithSuffix(" "),
 
@@ -111,10 +115,11 @@ std::vector<Sub> FieldVars(const FieldDescriptor* field, const Options& opts) {
 }
 
 FieldGeneratorBase::FieldGeneratorBase(const FieldDescriptor* field,
-                                       const Options& options)
-    : field_(field), options_(options) {
+                                       const Options& options,
+                                       const FieldLayout& field_layout)
+    : field_(field), options_(options), field_layout_(field_layout) {
   bool is_repeated_or_map = field->is_repeated();
-  should_split_ = ShouldSplit(field, options);
+  split_group_index_ = field_layout_.SplitGroup(field);
   is_oneof_ = field->real_containing_oneof() != nullptr;
   switch (field->cpp_type()) {
     case FieldDescriptor::CPPTYPE_ENUM:
@@ -166,7 +171,7 @@ void FieldGeneratorBase::GenerateMemberConstexprConstructor(
 void FieldGeneratorBase::GenerateMemberConstructor(io::Printer* p) const {
   ABSL_CHECK(!field_->is_extension());
   if (field_->is_repeated() || field_->is_map()) {
-    if (ShouldSplit(field_, options_)) {
+    if (field_layout_.SplitGroup(field_).has_value()) {
       ABSL_CHECK(!field_->is_map());
       p->Emit("$name$_{}");  // RawPtr<Repeated>
     } else {
@@ -203,9 +208,10 @@ void FieldGeneratorBase::GenerateOneofCopyConstruct(io::Printer* p) const {
 }
 
 void FieldGeneratorBase::GenerateAggregateInitializer(io::Printer* p) const {
-  if (ShouldSplit(field_, options_)) {
-    p->Emit(R"cc(
-      decltype(Impl_::Split::$name$_){arena},
+  absl::optional<uint32_t> split_group_index = field_layout_.SplitGroup(field_);
+  if (split_group_index.has_value()) {
+    p->Emit({{"i", *split_group_index}}, R"cc(
+      decltype(Impl_::Split$i$::$name$_){arena},
     )cc");
   } else {
     p->Emit(R"cc(
@@ -229,7 +235,7 @@ void FieldGeneratorBase::GenerateCopyAggregateInitializer(
 }
 
 void FieldGeneratorBase::GenerateCopyConstructorCode(io::Printer* p) const {
-  if (should_split()) {
+  if (split_group_index().has_value()) {
     // There is no copy constructor for the `Split` struct, so we need to copy
     // the value here.
     Formatter format(p, variables_);
@@ -256,68 +262,70 @@ Sub FieldGeneratorBase::InternalMetadataOffsetSub(io::Printer* p) {
 }
 
 namespace {
-std::unique_ptr<FieldGeneratorBase> MakeGenerator(const FieldDescriptor* field,
-                                                  const Options& options) {
+std::unique_ptr<FieldGeneratorBase> MakeGenerator(
+    const FieldDescriptor* field, const Options& options,
+    const FieldLayout& field_layout) {
 
   if (field->is_map()) {
     ABSL_CHECK(
         !(field->options().lazy() || field->options().unverified_lazy()));
-    return MakeMapGenerator(field, options);
+    return MakeMapGenerator(field, options, field_layout);
   }
   if (field->is_repeated()) {
     ABSL_CHECK(!field->options().unverified_lazy());
 
     switch (field->cpp_type()) {
       case FieldDescriptor::CPPTYPE_MESSAGE:
-        return MakeRepeatedMessageGenerator(field, options);
+        return MakeRepeatedMessageGenerator(field, options, field_layout);
       case FieldDescriptor::CPPTYPE_STRING: {
         if (field->cpp_string_type() == FieldDescriptor::CppStringType::kView) {
-          return MakeRepeatedStringViewGenerator(field, options);
+          return MakeRepeatedStringViewGenerator(field, options, field_layout);
         } else {
-          return MakeRepeatedStringGenerator(field, options);
+          return MakeRepeatedStringGenerator(field, options, field_layout);
         }
       }
       case FieldDescriptor::CPPTYPE_ENUM:
-        return MakeRepeatedEnumGenerator(field, options);
+        return MakeRepeatedEnumGenerator(field, options, field_layout);
       default:
-        return MakeRepeatedPrimitiveGenerator(field, options);
+        return MakeRepeatedPrimitiveGenerator(field, options, field_layout);
     }
   }
 
   if (field->real_containing_oneof() &&
       field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
-    return MakeOneofMessageGenerator(field, options);
+    return MakeOneofMessageGenerator(field, options, field_layout);
   }
 
   switch (field->cpp_type()) {
     case FieldDescriptor::CPPTYPE_MESSAGE:
-      return MakeSinguarMessageGenerator(field, options);
+      return MakeSinguarMessageGenerator(field, options, field_layout);
     case FieldDescriptor::CPPTYPE_ENUM:
-      return MakeSinguarEnumGenerator(field, options);
+      return MakeSinguarEnumGenerator(field, options, field_layout);
     case FieldDescriptor::CPPTYPE_STRING: {
       switch (field->cpp_string_type()) {
         case FieldDescriptor::CppStringType::kView:
-          return MakeSingularStringViewGenerator(field, options);
+          return MakeSingularStringViewGenerator(field, options, field_layout);
         case FieldDescriptor::CppStringType::kCord:
           if (field->type() == FieldDescriptor::TYPE_BYTES) {
             if (field->real_containing_oneof()) {
-              return MakeOneofCordGenerator(field, options);
+              return MakeOneofCordGenerator(field, options, field_layout);
             } else {
-              return MakeSingularCordGenerator(field, options);
+              return MakeSingularCordGenerator(field, options, field_layout);
             }
           }
           ABSL_FALLTHROUGH_INTENDED;
         default:
-          return MakeSinguarStringGenerator(field, options);
+          return MakeSinguarStringGenerator(field, options, field_layout);
       }
     }
     default:
-      return MakeSinguarPrimitiveGenerator(field, options);
+      return MakeSinguarPrimitiveGenerator(field, options, field_layout);
   }
 }
 
 void HasBitVars(const FieldDescriptor* field, const Options& opts,
-                absl::optional<uint32_t> idx, std::vector<Sub>& vars) {
+                const FieldLayout& field_layout, std::vector<Sub>& vars) {
+  const auto idx = field_layout.GetHasBitIndex(field);
   if (!idx.has_value()) {
     vars.emplace_back(Sub("set_hasbit", "").WithSuffix(";"));
     vars.emplace_back(Sub("clear_hasbit", "").WithSuffix(";"));
@@ -351,12 +359,12 @@ void HasBitVars(const FieldDescriptor* field, const Options& opts,
 
 FieldGenerator::FieldGenerator(const FieldDescriptor* field,
                                const Options& options,
-                               absl::optional<uint32_t> hasbit_index)
-    : impl_(MakeGenerator(field, options)),
-      field_vars_(FieldVars(field, options)),
-      tracker_vars_(MakeTrackerCalls(field, options)),
+                               const FieldLayout& field_layout)
+    : impl_(MakeGenerator(field, options, field_layout)),
+      field_vars_(FieldVars(field, options, field_layout)),
+      tracker_vars_(MakeTrackerCalls(field, options, field_layout)),
       per_generator_vars_(impl_->MakeVars()) {
-  HasBitVars(field, options, hasbit_index, field_vars_);
+  HasBitVars(field, options, field_layout, field_vars_);
 }
 
 void FieldGeneratorTable::Build(const Options& options,
@@ -364,8 +372,7 @@ void FieldGeneratorTable::Build(const Options& options,
   // Construct all the FieldGenerators.
   fields_.reserve(static_cast<size_t>(descriptor_->field_count()));
   for (const auto* field : internal::FieldRange(descriptor_)) {
-    fields_.push_back(
-        FieldGenerator(field, options, field_layout.GetHasBitIndex(field)));
+    fields_.push_back(FieldGenerator(field, options, field_layout));
   }
 }
 

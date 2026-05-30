@@ -9,6 +9,7 @@
 //  Based on original Protocol Buffers design by
 //  Sanjay Ghemawat, Jeff Dean, and others.
 
+#include <cstdint>
 #include <memory>
 #include <string>
 #include <vector>
@@ -18,8 +19,9 @@
 #include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
 #include "absl/strings/substitute.h"
+#include "absl/types/optional.h"
 #include "google/protobuf/compiler/cpp/field.h"
-#include "google/protobuf/compiler/cpp/field_generators/generators.h"
+#include "google/protobuf/compiler/cpp/field_layout.h"
 #include "google/protobuf/compiler/cpp/helpers.h"
 #include "google/protobuf/compiler/cpp/options.h"
 #include "google/protobuf/descriptor.h"
@@ -39,10 +41,11 @@ using ::google::protobuf::io::AnnotationCollector;
 using Sub = ::google::protobuf::io::Printer::Sub;
 
 std::vector<Sub> Vars(const FieldDescriptor* field, const Options& opts,
-                      bool is_weak, bool use_base_class) {
-  bool split = ShouldSplit(field, opts);
+                      const FieldLayout& field_layout, bool is_weak,
+                      bool use_base_class) {
+  absl::optional<uint32_t> split_group_index = field_layout.SplitGroup(field);
   bool is_foreign = IsCrossFileMessage(field);
-  std::string field_name = FieldMemberName(field, split);
+  std::string field_name = FieldMemberName(field, split_group_index);
   std::string qualified_type = FieldMessageTypeName(field, opts);
 
   std::string base = absl::StrCat(
@@ -81,8 +84,9 @@ std::vector<Sub> Vars(const FieldDescriptor* field, const Options& opts,
 
 class SingularMessage : public FieldGeneratorBase {
  public:
-  SingularMessage(const FieldDescriptor* field, const Options& opts)
-      : FieldGeneratorBase(field, opts),
+  SingularMessage(const FieldDescriptor* field, const Options& opts,
+                  const FieldLayout& field_layout)
+      : FieldGeneratorBase(field, opts, field_layout),
         opts_(&opts),
         has_required_(
             opts.scc_analyzer->HasRequiredFields(field->message_type())),
@@ -91,7 +95,7 @@ class SingularMessage : public FieldGeneratorBase {
   ~SingularMessage() override = default;
 
   std::vector<Sub> MakeVars() const override {
-    return Vars(field_, *opts_, is_weak(), is_weak());
+    return Vars(field_, *opts_, field_layout(), is_weak(), is_weak());
   }
 
   void GeneratePrivateMembers(io::Printer* p) const override {
@@ -326,7 +330,7 @@ void SingularMessage::GenerateMessageClearingCode(io::Printer* p) const {
 bool SingularMessage::RequiresArena(GeneratorFunction function) const {
   switch (function) {
     case GeneratorFunction::kMergeFrom:
-      return !should_split();
+      return !split_group_index().has_value();
   }
   return false;
 }
@@ -340,7 +344,7 @@ void SingularMessage::GenerateMergingCode(io::Printer* p) const {
           }
           _this->$field_$->CheckTypeAndMergeFrom(*from.$field_$);
         )cc");
-  } else if (should_split()) {
+  } else if (split_group_index().has_value()) {
     p->Emit(
         R"cc(
           _this->_internal_mutable_$name$()->$Submsg$::MergeFrom(
@@ -368,9 +372,9 @@ void SingularMessage::GenerateSwappingCode(io::Printer* p) const {
 }
 
 void SingularMessage::GenerateDestructorCode(io::Printer* p) const {
-  if (should_split()) {
-    p->Emit(R"cc(
-      delete $cached_split_ptr$->$name$_;
+  if (split_group_index().has_value()) {
+    p->Emit({{"i", *split_group_index()}}, R"cc(
+      delete cached_split_ptr$i$->$name$_;
     )cc");
   } else {
     p->Emit(R"cc(
@@ -446,9 +450,9 @@ void SingularMessage::GenerateCopyAggregateInitializer(io::Printer* p) const {
 }
 
 void SingularMessage::GenerateAggregateInitializer(io::Printer* p) const {
-  if (should_split()) {
-    p->Emit(R"cc(
-      decltype(Impl_::Split::$name$_){nullptr},
+  if (split_group_index().has_value()) {
+    p->Emit({{"i", *split_group_index()}}, R"cc(
+      decltype(Impl_::Split$i$::$name$_){nullptr},
     )cc");
   } else {
     p->Emit(R"cc(
@@ -459,8 +463,9 @@ void SingularMessage::GenerateAggregateInitializer(io::Printer* p) const {
 
 class OneofMessage : public SingularMessage {
  public:
-  OneofMessage(const FieldDescriptor* descriptor, const Options& options)
-      : SingularMessage(descriptor, options) {
+  OneofMessage(const FieldDescriptor* descriptor, const Options& options,
+               const FieldLayout& field_layout)
+      : SingularMessage(descriptor, options, field_layout) {
     auto* oneof = descriptor->containing_oneof();
     num_message_fields_in_oneof_ = 0;
     for (int i = 0; i < oneof->field_count(); ++i) {
@@ -495,7 +500,7 @@ class OneofMessage : public SingularMessage {
   }
 
   std::vector<Sub> MakeVars() const override {
-    return Vars(field_, *opts_, is_weak(), use_base_class());
+    return Vars(field_, *opts_, field_layout(), is_weak(), use_base_class());
   }
 
   void GenerateInlineAccessorDefinitions(io::Printer* p) const override;
@@ -709,8 +714,9 @@ bool OneofMessage::RequiresArena(GeneratorFunction func) const {
 
 class RepeatedMessage : public FieldGeneratorBase {
  public:
-  RepeatedMessage(const FieldDescriptor* field, const Options& opts)
-      : FieldGeneratorBase(field, opts),
+  RepeatedMessage(const FieldDescriptor* field, const Options& opts,
+                  const FieldLayout& field_layout)
+      : FieldGeneratorBase(field, opts, field_layout),
         opts_(&opts),
         has_required_(
             opts.scc_analyzer->HasRequiredFields(field->message_type())),
@@ -719,7 +725,7 @@ class RepeatedMessage : public FieldGeneratorBase {
   ~RepeatedMessage() override = default;
 
   std::vector<Sub> MakeVars() const override {
-    return Vars(field_, *opts_, is_weak(), is_weak());
+    return Vars(field_, *opts_, field_layout(), is_weak(), is_weak());
   }
 
   void GeneratePrivateMembers(io::Printer* p) const override;
@@ -744,7 +750,7 @@ class RepeatedMessage : public FieldGeneratorBase {
 };
 
 void RepeatedMessage::GeneratePrivateMembers(io::Printer* p) const {
-  if (should_split()) {
+  if (split_group_index().has_value()) {
     p->Emit(R"cc(
       $pbi$::RawPtr<$pb$::$Weak$RepeatedPtrField<$Submsg$>> $name$_;
     )cc");
@@ -903,7 +909,7 @@ void RepeatedMessage::GenerateInlineAccessorDefinitions(io::Printer* p) const {
       break;
   }
 
-  if (should_split()) {
+  if (split_group_index().has_value()) {
     p->Emit(R"cc(
       inline const $pb$::$Weak$RepeatedPtrField<$Submsg$>&
       $Msg$::_internal$_weak$_$name_internal$() const {
@@ -950,7 +956,7 @@ void RepeatedMessage::GenerateInlineAccessorDefinitions(io::Printer* p) const {
 }
 
 void RepeatedMessage::GenerateClearingCode(io::Printer* p) const {
-  if (should_split()) {
+  if (split_group_index().has_value()) {
     p->Emit("$field_$.ClearIfNotDefault();\n");
   } else {
     p->Emit("$field_$.Clear();\n");
@@ -967,7 +973,7 @@ void RepeatedMessage::GenerateMergingCode(io::Printer* p) const {
           from._internal$_weak$_$name$());
     )cc");
   };
-  if (!should_split()) {
+  if (!split_group_index().has_value()) {
     body();
   } else {
     p->Emit({{"body", body}}, R"cc(
@@ -979,7 +985,7 @@ void RepeatedMessage::GenerateMergingCode(io::Printer* p) const {
 }
 
 void RepeatedMessage::GenerateSwappingCode(io::Printer* p) const {
-  ABSL_CHECK(!should_split());
+  ABSL_CHECK(!split_group_index().has_value());
   p->Emit(R"cc(
     $field_$.InternalSwap(&other->$field_$);
   )cc");
@@ -988,7 +994,7 @@ void RepeatedMessage::GenerateSwappingCode(io::Printer* p) const {
 void RepeatedMessage::GenerateCopyConstructorCode(io::Printer* p) const {
   // TODO: For split repeated fields we might want to use type
   // erasure to reduce binary size costs.
-  if (should_split()) {
+  if (split_group_index().has_value()) {
     p->Emit(R"cc(
       if (!from._internal$_weak$_$name$().empty()) {
         _internal_mutable$_weak$_$name$()->InternalMergeFromWithArena(
@@ -1000,7 +1006,7 @@ void RepeatedMessage::GenerateCopyConstructorCode(io::Printer* p) const {
 }
 
 void RepeatedMessage::GenerateDestructorCode(io::Printer* p) const {
-  if (should_split()) {
+  if (split_group_index().has_value()) {
     p->Emit(R"cc(
       this_.$field_$.DeleteIfNotDefault();
     )cc");
@@ -1108,18 +1114,21 @@ bool RepeatedMessage::RequiresArena(GeneratorFunction func) const {
 }  // namespace
 
 std::unique_ptr<FieldGeneratorBase> MakeSinguarMessageGenerator(
-    const FieldDescriptor* desc, const Options& options) {
-  return absl::make_unique<SingularMessage>(desc, options);
+    const FieldDescriptor* desc, const Options& options,
+    const FieldLayout& field_layout) {
+  return absl::make_unique<SingularMessage>(desc, options, field_layout);
 }
 
 std::unique_ptr<FieldGeneratorBase> MakeRepeatedMessageGenerator(
-    const FieldDescriptor* desc, const Options& options) {
-  return absl::make_unique<RepeatedMessage>(desc, options);
+    const FieldDescriptor* desc, const Options& options,
+    const FieldLayout& field_layout) {
+  return absl::make_unique<RepeatedMessage>(desc, options, field_layout);
 }
 
 std::unique_ptr<FieldGeneratorBase> MakeOneofMessageGenerator(
-    const FieldDescriptor* desc, const Options& options) {
-  return absl::make_unique<OneofMessage>(desc, options);
+    const FieldDescriptor* desc, const Options& options,
+    const FieldLayout& field_layout) {
+  return absl::make_unique<OneofMessage>(desc, options, field_layout);
 }
 
 }  // namespace cpp

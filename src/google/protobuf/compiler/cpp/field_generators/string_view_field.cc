@@ -17,6 +17,7 @@
 #include "absl/memory/memory.h"
 #include "absl/strings/str_cat.h"
 #include "google/protobuf/compiler/cpp/field.h"
+#include "google/protobuf/compiler/cpp/field_layout.h"
 #include "google/protobuf/compiler/cpp/helpers.h"
 #include "google/protobuf/compiler/cpp/options.h"
 #include "google/protobuf/descriptor.h"
@@ -71,8 +72,9 @@ std::vector<Sub> Vars(const FieldDescriptor* field, const Options& opts) {
 
 class SingularStringView : public FieldGeneratorBase {
  public:
-  SingularStringView(const FieldDescriptor* field, const Options& opts)
-      : FieldGeneratorBase(field, opts),
+  SingularStringView(const FieldDescriptor* field, const Options& opts,
+                     const FieldLayout& field_layout)
+      : FieldGeneratorBase(field, opts, field_layout),
         use_micro_string_(IsMicroString(field, opts)),
         opts_(&opts) {}
   ~SingularStringView() override = default;
@@ -466,13 +468,13 @@ void SingularStringView::GenerateCopyConstructorCode(io::Printer* p) const {
 
 void SingularStringView::GenerateDestructorCode(io::Printer* p) const {
   if (is_inlined()) {
-    ABSL_DCHECK(!should_split());
+    ABSL_DCHECK(!split_group_index().has_value());
     return;
   }
 
-  if (should_split()) {
-    p->Emit(R"cc(
-      $cached_split_ptr$->$name$_.Destroy();
+  if (split_group_index().has_value()) {
+    p->Emit({{"i", *split_group_index()}}, R"cc(
+      cached_split_ptr$i$->$name$_.Destroy();
     )cc");
     return;
   }
@@ -524,10 +526,10 @@ void SingularStringView::GenerateConstexprAggregateInitializer(
 }
 
 void SingularStringView::GenerateAggregateInitializer(io::Printer* p) const {
-  if (should_split()) {
+  if (split_group_index().has_value()) {
     ABSL_CHECK(!is_inlined());
-    p->Emit(R"cc(
-      decltype(Impl_::Split::$name$_){},
+    p->Emit({{"i", *split_group_index()}}, R"cc(
+      decltype(Impl_::Split$i$::$name$_){},
     )cc");
   } else if (!is_inlined()) {
     p->Emit(R"cc(
@@ -542,8 +544,9 @@ void SingularStringView::GenerateAggregateInitializer(io::Printer* p) const {
 
 class RepeatedStringView : public FieldGeneratorBase {
  public:
-  RepeatedStringView(const FieldDescriptor* field, const Options& opts)
-      : FieldGeneratorBase(field, opts),
+  RepeatedStringView(const FieldDescriptor* field, const Options& opts,
+                     const FieldLayout& field_layout)
+      : FieldGeneratorBase(field, opts, field_layout),
         opts_(&opts),
         cpp_repeated_type_(CalculateFieldDescriptorRepeatedType(field)) {}
   ~RepeatedStringView() override = default;
@@ -551,7 +554,7 @@ class RepeatedStringView : public FieldGeneratorBase {
   std::vector<Sub> MakeVars() const override { return Vars(field_, *opts_); }
 
   void GeneratePrivateMembers(io::Printer* p) const override {
-    if (should_split()) {
+    if (split_group_index().has_value()) {
       p->Emit(R"cc(
         $pbi$::RawPtr<$pb$::RepeatedPtrField<::std::string>> $name$_;
       )cc");
@@ -563,7 +566,7 @@ class RepeatedStringView : public FieldGeneratorBase {
   }
 
   void GenerateClearingCode(io::Printer* p) const override {
-    if (should_split()) {
+    if (split_group_index().has_value()) {
       p->Emit("$field_$.ClearIfNotDefault();\n");
     } else {
       p->Emit("$field_$.Clear();\n");
@@ -588,7 +591,7 @@ class RepeatedStringView : public FieldGeneratorBase {
             from._internal_$name$());
       )cc");
     };
-    if (!should_split()) {
+    if (!split_group_index().has_value()) {
       body();
     } else {
       p->Emit({{"body", body}}, R"cc(
@@ -600,14 +603,14 @@ class RepeatedStringView : public FieldGeneratorBase {
   }
 
   void GenerateSwappingCode(io::Printer* p) const override {
-    ABSL_CHECK(!should_split());
+    ABSL_CHECK(!split_group_index().has_value());
     p->Emit(R"cc(
       $field_$.InternalSwap(&other->$field_$);
     )cc");
   }
 
   void GenerateDestructorCode(io::Printer* p) const override {
-    if (should_split()) {
+    if (split_group_index().has_value()) {
       p->Emit(R"cc(
         this_.$field_$.DeleteIfNotDefault();
       )cc");
@@ -615,7 +618,7 @@ class RepeatedStringView : public FieldGeneratorBase {
   }
 
   void GenerateCopyConstructorCode(io::Printer* p) const override {
-    if (should_split()) {
+    if (split_group_index().has_value()) {
       p->Emit(R"cc(
         if (!from._internal_$name$().empty()) {
           _internal_mutable_$name$()->InternalMergeFromWithArena(
@@ -789,7 +792,7 @@ void RepeatedStringView::GenerateInlineAccessorDefinitions(
       break;
   }
 
-  if (should_split()) {
+  if (split_group_index().has_value()) {
     p->Emit(R"cc(
       inline const $pb$::RepeatedPtrField<::std::string>&
       $Msg$::_internal_$name_internal$() const {
@@ -844,13 +847,15 @@ void RepeatedStringView::GenerateSerializeWithCachedSizesToArray(
 }  // namespace
 
 std::unique_ptr<FieldGeneratorBase> MakeSingularStringViewGenerator(
-    const FieldDescriptor* desc, const Options& options) {
-  return absl::make_unique<SingularStringView>(desc, options);
+    const FieldDescriptor* desc, const Options& options,
+    const FieldLayout& field_layout) {
+  return absl::make_unique<SingularStringView>(desc, options, field_layout);
 }
 
 std::unique_ptr<FieldGeneratorBase> MakeRepeatedStringViewGenerator(
-    const FieldDescriptor* desc, const Options& options) {
-  return absl::make_unique<RepeatedStringView>(desc, options);
+    const FieldDescriptor* desc, const Options& options,
+    const FieldLayout& field_layout) {
+  return absl::make_unique<RepeatedStringView>(desc, options, field_layout);
 }
 
 }  // namespace cpp

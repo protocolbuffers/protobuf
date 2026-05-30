@@ -1145,8 +1145,8 @@ class PROTOBUF_EXPORT Reflection final {
   internal::field_layout::TransformValidation GetLazyStyle(
       const FieldDescriptor* field) const;
 
-  bool IsSplit(const FieldDescriptor* field) const {
-    return schema_.IsSplit(field);
+  absl::optional<uint32_t> SplitGroup(const FieldDescriptor* field) const {
+    return schema_.SplitGroup(field);
   }
 
   // Walks the message tree from "root" and poisons (under ASAN) the memory to
@@ -1322,8 +1322,8 @@ class PROTOBUF_EXPORT Reflection final {
   const Type& GetRaw(const Message& message,
                      const FieldDescriptor* field) const;
 
-  void* MutableRawSplitImpl(Message* message,
-                            const FieldDescriptor* field) const;
+  void* MutableRawSplitImpl(Message* message, const FieldDescriptor* field,
+                            uint32_t split_group_index) const;
 
   template <typename Type>
   Type* MutableRaw(Message* message, const FieldDescriptor* field) const;
@@ -1392,13 +1392,17 @@ class PROTOBUF_EXPORT Reflection final {
   inline void NaiveSwapHasBit(Message* message1, Message* message2,
                               const FieldDescriptor* field) const;
 
-  // Returns the `_split_` pointer. Requires: IsSplit() == true.
-  inline const void* GetSplitField(const Message* message) const;
-  // Returns the address of the `_split_` pointer. Requires: IsSplit() == true.
-  inline void** MutableSplitField(Message* message) const;
+  // Returns the `_split_` pointer. Requires: HasSplitFields() == true.
+  inline const void* GetSplitField(const Message* message,
+                                   uint32_t split_group_index) const;
+  // Returns the address of the `_split_` pointer.
+  // Requires: HasSplitFields() == true.
+  inline void** MutableSplitField(Message* message,
+                                  uint32_t split_group_index) const;
 
   // Allocate the split instance if needed.
-  void PrepareSplitMessageForWrite(Message* message) const;
+  void PrepareSplitMessageForWrite(Message* message,
+                                   uint32_t split_group_index) const;
 
   // Shallow-swap fields listed in fields vector of two messages. It is the
   // caller's responsibility to make sure shallow swap is safe.
@@ -1716,15 +1720,19 @@ bool Reflection::HasOneofField(const Message& message,
           static_cast<uint32_t>(field->number()));
 }
 
-const void* Reflection::GetSplitField(const Message* message) const {
-  ABSL_DCHECK(schema_.IsSplit());
-  return *internal::GetConstPointerAtOffset<void*>(message,
-                                                   schema_.SplitOffset());
+const void* Reflection::GetSplitField(const Message* message,
+                                      uint32_t split_group_index) const {
+  ABSL_DCHECK(schema_.HasSplitFields());
+  return *internal::GetConstPointerAtOffset<void*>(
+      message, schema_.SplitOffset(split_group_index));
 }
 
-void** Reflection::MutableSplitField(Message* message) const {
-  ABSL_DCHECK(schema_.IsSplit());
-  return internal::GetPointerAtOffset<void*>(message, schema_.SplitOffset());
+void** Reflection::MutableSplitField(Message* message,
+                                     uint32_t split_group_index) const {
+  ABSL_DCHECK(schema_.HasSplitFields());
+  ABSL_DCHECK_LT(split_group_index, schema_.NumSplitGroups());
+  return internal::GetPointerAtOffset<void*>(
+      message, schema_.SplitOffset(split_group_index));
 }
 
 namespace internal {
@@ -1888,11 +1896,12 @@ const Type& Reflection::GetRaw(const Message& message,
 
   const uint32_t field_offset = schema_.GetFieldOffset<Type>(field);
 
-  if (ABSL_PREDICT_FALSE(schema_.IsSplit(field))) {
+  absl::optional<uint32_t> split_group_index = schema_.SplitGroup(field);
+  if (ABSL_PREDICT_FALSE(split_group_index.has_value())) {
     ABSL_DCHECK(!schema_.InRealOneof(field))
         << "Field = " << field->full_name();
 
-    const void* split = GetSplitField(&message);
+    const void* split = GetSplitField(&message, *split_group_index);
     if (internal::SplitFieldHasExtraIndirectionStatic<Type>(field)) {
       return **internal::GetConstPointerAtOffset<Type*>(split, field_offset);
     }
@@ -1923,8 +1932,10 @@ Type* Reflection::MutableRaw(Message* message,
                              const FieldDescriptor* field) const {
   VerifyFieldType<Type>(field);
 
-  if (ABSL_PREDICT_FALSE(schema_.IsSplit(field))) {
-    return reinterpret_cast<Type*>(MutableRawSplitImpl(message, field));
+  absl::optional<uint32_t> split_group_index = schema_.SplitGroup(field);
+  if (ABSL_PREDICT_FALSE(split_group_index.has_value())) {
+    return reinterpret_cast<Type*>(
+        MutableRawSplitImpl(message, field, *split_group_index));
   }
 
   const uint32_t field_offset = schema_.GetFieldOffset<Type>(field);

@@ -2091,13 +2091,15 @@ uint32_t GetSplitOffset(const TcParseTableBase* table) {
   return table->field_aux(kSplitOffsetAuxIdx)->offset;
 }
 
-uint32_t GetSizeofSplit(const TcParseTableBase* table) {
-  return table->field_aux(kSplitSizeAuxIdx)->offset;
+uint32_t GetSizeofSplit(const TcParseTableBase* table,
+                        uint32_t split_group_index) {
+  return table->field_aux(kSplitSizeAuxIdx + split_group_index)->offset;
 }
 }  // namespace
 
 void* TcParser::MaybeGetSplitBase(MessageLite* msg, const bool is_split,
-                                  const TcParseTableBase* table) {
+                                  const TcParseTableBase* table,
+                                  uint16_t type_card) {
   void* out = msg;
   if (is_split) {
     const uint32_t split_offset = GetSplitOffset(table);
@@ -2106,7 +2108,9 @@ void* TcParser::MaybeGetSplitBase(MessageLite* msg, const bool is_split,
     void*& split = TcParser::RefAt<void*>(msg, split_offset);
     if (split == default_split) {
       // Allocate split instance when needed.
-      uint32_t size = GetSizeofSplit(table);
+      uint32_t size = GetSizeofSplit(
+          table, (type_card & field_layout::kSplitGroupIndexMask) >>
+                     field_layout::kSplitGroupIndexShift);
       Arena* arena = msg->GetArena();
       split =
           (arena == nullptr) ? Allocate(size) : arena->AllocateAligned(size);
@@ -2147,7 +2151,7 @@ PROTOBUF_NOINLINE const char* TcParser::MpFixed(PROTOBUF_TC_PARAM_DECL) {
     ChangeOneof(table, /*class_data=*/nullptr, entry, data.tag() >> 3, ctx,
                 msg);
   }
-  void* const base = MaybeGetSplitBase(msg, is_split, table);
+  void* const base = MaybeGetSplitBase(msg, is_split, table, type_card);
   // Copy the value:
   if (rep == field_layout::kRep64Bits) {
     RefAt<uint64_t>(base, entry.offset) = UnalignedLoad<uint64_t>(ptr);
@@ -2173,8 +2177,8 @@ PROTOBUF_NOINLINE const char* TcParser::MpRepeatedFixed(
 
   SetHasForRepeated(entry, msg);
 
-  void* const base = MaybeGetSplitBase(msg, is_split, table);
   const uint16_t type_card = entry.type_card;
+  void* const base = MaybeGetSplitBase(msg, is_split, table, type_card);
   const uint16_t rep = type_card & field_layout::kRepMask;
   Arena* arena = msg->GetArena();
   if (rep == field_layout::kRep64Bits) {
@@ -2234,7 +2238,7 @@ PROTOBUF_NOINLINE const char* TcParser::MpPackedFixed(PROTOBUF_TC_PARAM_DECL) {
 
   SetHasForRepeated(entry, msg);
 
-  void* const base = MaybeGetSplitBase(msg, is_split, table);
+  void* const base = MaybeGetSplitBase(msg, is_split, table, type_card);
   int size = ReadSize(&ptr);
   uint16_t rep = type_card & field_layout::kRepMask;
   Arena* arena = msg->GetArena();
@@ -2307,7 +2311,7 @@ PROTOBUF_NOINLINE const char* TcParser::MpVarint(PROTOBUF_TC_PARAM_DECL) {
                 msg);
   }
 
-  void* const base = MaybeGetSplitBase(msg, is_split, table);
+  void* const base = MaybeGetSplitBase(msg, is_split, table, type_card);
   if (rep == field_layout::kRep64Bits) {
     RefAt<uint64_t>(base, entry.offset) = tmp;
   } else if (rep == field_layout::kRep32Bits) {
@@ -2333,7 +2337,7 @@ const char* TcParser::MpRepeatedVarintT(PROTOBUF_TC_PARAM_DECL) {
 
   const char* ptr2 = ptr;
   uint32_t next_tag;
-  void* const base = MaybeGetSplitBase(msg, is_split, table);
+  void* const base = MaybeGetSplitBase(msg, is_split, table, entry.type_card);
   auto& field = MaybeCreateRepeatedFieldRefAt<FieldType, is_split>(
       base, entry.offset, msg);
   Arena* arena = msg->GetArena();
@@ -2443,7 +2447,7 @@ const char* TcParser::MpPackedVarintT(PROTOBUF_TC_PARAM_DECL) {
   const bool is_zigzag = xform_val == field_layout::kTvZigZag;
   const bool is_validated_enum = xform_val & field_layout::kTvEnum;
 
-  void* const base = MaybeGetSplitBase(msg, is_split, table);
+  void* const base = MaybeGetSplitBase(msg, is_split, table, entry.type_card);
   auto* field = &MaybeCreateRepeatedFieldRefAt<FieldType, is_split>(
       base, entry.offset, msg);
   Arena* arena = msg->GetArena();
@@ -2582,7 +2586,7 @@ PROTOBUF_NOINLINE const char* TcParser::MpString(PROTOBUF_TC_PARAM_DECL) {
   }
 
   bool is_valid = false;
-  void* const base = MaybeGetSplitBase(msg, is_split, table);
+  void* const base = MaybeGetSplitBase(msg, is_split, table, type_card);
   switch (rep) {
     case field_layout::kRepAString: {
       auto& field = RefAt<ArenaStringPtr>(base, entry.offset);
@@ -2661,7 +2665,7 @@ PROTOBUF_NOINLINE const char* TcParser::MpRepeatedString(
 
   const uint16_t rep = type_card & field_layout::kRepMask;
   const uint16_t xform_val = type_card & field_layout::kTvMask;
-  void* const base = MaybeGetSplitBase(msg, is_split, table);
+  void* const base = MaybeGetSplitBase(msg, is_split, table, type_card);
   auto* arena = msg->GetArena();
   switch (rep) {
     case field_layout::kRepSString: {
@@ -2775,7 +2779,7 @@ PROTOBUF_NOINLINE const char* TcParser::MpMessage(PROTOBUF_TC_PARAM_DECL) {
 
   SyncHasbits(msg, hasbits, table);
 
-  void* const base = MaybeGetSplitBase(msg, is_split, table);
+  void* const base = MaybeGetSplitBase(msg, is_split, table, type_card);
   MessageLite*& field = RefAt<MessageLite*>(base, entry.offset);
   if (field == nullptr) {
     field = NewMessage(class_data, msg->GetArena());
@@ -2811,7 +2815,7 @@ const char* TcParser::MpRepeatedMessageOrGroup(PROTOBUF_TC_PARAM_DECL) {
     }
   }
 
-  void* const base = MaybeGetSplitBase(msg, is_split, table);
+  void* const base = MaybeGetSplitBase(msg, is_split, table, type_card);
   RepeatedPtrFieldBase& field =
       MaybeCreateRepeatedRefAt<RepeatedPtrFieldBase, is_split>(
           base, entry.offset, msg);
@@ -3054,7 +3058,7 @@ PROTOBUF_NOINLINE const char* TcParser::MpMap(PROTOBUF_TC_PARAM_DECL) {
   // Otherwise, it points into a MapField and we must synchronize with
   // reflection. It is done by calling the MutableMap() virtual function on the
   // field's base class.
-  void* const base = MaybeGetSplitBase(msg, is_split, table);
+  void* const base = MaybeGetSplitBase(msg, is_split, table, entry.type_card);
   UntypedMapBase& map =
       map_info.use_lite
           ? RefAt<UntypedMapBase>(base, entry.offset)
@@ -3287,6 +3291,9 @@ std::string TypeCardToString(uint16_t type_card) {
 
   if (type_card & fl::kSplitMask) {
     absl::StrAppend(&out, " | ::_fl::kSplitTrue");
+    absl::StrAppend(
+        &out,
+        absl::StrFormat(" | 0x%04x", type_card & fl::kSplitGroupIndexMask));
   }
 
 #undef PROTOBUF_INTERNAL_TYPE_CARD_CASE

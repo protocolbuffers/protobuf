@@ -9,9 +9,9 @@
 //  Based on original Protocol Buffers design by
 //  Sanjay Ghemawat, Jeff Dean, and others.
 
+#include <cstdint>
 #include <memory>
 #include <string>
-#include <tuple>
 
 #include "absl/container/flat_hash_map.h"
 #include "absl/log/absl_check.h"
@@ -20,8 +20,9 @@
 #include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
 #include "absl/strings/substitute.h"
+#include "absl/types/optional.h"
 #include "google/protobuf/compiler/cpp/field.h"
-#include "google/protobuf/compiler/cpp/field_generators/generators.h"
+#include "google/protobuf/compiler/cpp/field_layout.h"
 #include "google/protobuf/compiler/cpp/helpers.h"
 #include "google/protobuf/compiler/cpp/options.h"
 #include "google/protobuf/descriptor.h"
@@ -61,7 +62,8 @@ void SetCordVariables(
 
 class CordFieldGenerator : public FieldGeneratorBase {
  public:
-  CordFieldGenerator(const FieldDescriptor* descriptor, const Options& options);
+  CordFieldGenerator(const FieldDescriptor* descriptor, const Options& options,
+                     const FieldLayout& field_layout);
   ~CordFieldGenerator() override = default;
 
   void GeneratePrivateMembers(io::Printer* p) const override;
@@ -83,7 +85,11 @@ class CordFieldGenerator : public FieldGeneratorBase {
     if (field_->default_value_string().empty()) {
       p->Emit(R"cc($name$_ {})cc");
     } else {
-      p->Emit({{"Split", ShouldSplit(field_, options_) ? "Split::" : ""}},
+      absl::optional<uint32_t> split_group_index =
+          field_layout().SplitGroup(field_);
+      p->Emit({{"Split", split_group_index.has_value()
+                             ? absl::StrCat("Split", *split_group_index, "::")
+                             : ""}},
               R"cc(
                 $name$_ {
                   ::absl::strings_internal::MakeStringConstant(
@@ -119,7 +125,8 @@ class CordFieldGenerator : public FieldGeneratorBase {
 class CordOneofFieldGenerator : public CordFieldGenerator {
  public:
   CordOneofFieldGenerator(const FieldDescriptor* descriptor,
-                          const Options& options);
+                          const Options& options,
+                          const FieldLayout& field_layout);
   ~CordOneofFieldGenerator() override = default;
 
   void GeneratePrivateMembers(io::Printer* p) const override;
@@ -139,8 +146,9 @@ class CordOneofFieldGenerator : public CordFieldGenerator {
 
 
 CordFieldGenerator::CordFieldGenerator(const FieldDescriptor* descriptor,
-                                       const Options& options)
-    : FieldGeneratorBase(descriptor, options) {
+                                       const Options& options,
+                                       const FieldLayout& field_layout)
+    : FieldGeneratorBase(descriptor, options, field_layout) {
   SetCordVariables(descriptor, &variables_, options);
 }
 
@@ -299,8 +307,11 @@ void CordFieldGenerator::GenerateConstexprAggregateInitializer(
       /*decltype($field_$)*/ {},
     )cc");
   } else {
+    absl::optional<uint32_t> split_group_index = this->split_group_index();
     p->Emit(
-        {{"Split", should_split() ? "Split::" : ""}},
+        {{"Split", split_group_index.has_value()
+                       ? absl::StrCat("Split", *split_group_index, "::")
+                       : ""}},
         R"cc(
           /*decltype($field_$)*/ {::absl::strings_internal::MakeStringConstant(
               $classname$::Impl_::$Split$_default_$name$_func_{})},
@@ -309,9 +320,9 @@ void CordFieldGenerator::GenerateConstexprAggregateInitializer(
 }
 
 void CordFieldGenerator::GenerateAggregateInitializer(io::Printer* p) const {
-  if (should_split()) {
-    p->Emit(R"cc(
-      decltype(Impl_::Split::$name$_){},
+  if (split_group_index().has_value()) {
+    p->Emit({{"i", *split_group_index()}}, R"cc(
+      decltype(Impl_::Split$i$::$name$_){},
     )cc");
   } else {
     p->Emit(R"cc(
@@ -323,8 +334,9 @@ void CordFieldGenerator::GenerateAggregateInitializer(io::Printer* p) const {
 // ===================================================================
 
 CordOneofFieldGenerator::CordOneofFieldGenerator(
-    const FieldDescriptor* descriptor, const Options& options)
-    : CordFieldGenerator(descriptor, options) {}
+    const FieldDescriptor* descriptor, const Options& options,
+    const FieldLayout& field_layout)
+    : CordFieldGenerator(descriptor, options, field_layout) {}
 
 void CordOneofFieldGenerator::GeneratePrivateMembers(io::Printer* p) const {
   auto v = p->WithVars(variables_);
@@ -459,14 +471,17 @@ void CordOneofFieldGenerator::GenerateMergingCode(io::Printer* p) const {
 }  // namespace
 
 std::unique_ptr<FieldGeneratorBase> MakeSingularCordGenerator(
-    const FieldDescriptor* desc, const Options& options) {
-  return absl::make_unique<CordFieldGenerator>(desc, options);
+    const FieldDescriptor* desc, const Options& options,
+    const FieldLayout& field_layout) {
+  return absl::make_unique<CordFieldGenerator>(desc, options, field_layout);
 }
 
 
 std::unique_ptr<FieldGeneratorBase> MakeOneofCordGenerator(
-    const FieldDescriptor* desc, const Options& options) {
-  return absl::make_unique<CordOneofFieldGenerator>(desc, options);
+    const FieldDescriptor* desc, const Options& options,
+    const FieldLayout& field_layout) {
+  return absl::make_unique<CordOneofFieldGenerator>(desc, options,
+                                                    field_layout);
 }
 
 }  // namespace cpp
