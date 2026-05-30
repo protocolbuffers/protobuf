@@ -57,6 +57,7 @@
 #include "absl/strings/charset.h"
 #include "absl/strings/escaping.h"
 #include "absl/strings/match.h"
+#include "absl/strings/numbers.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_format.h"
 #include "absl/strings/str_join.h"
@@ -82,6 +83,7 @@
 #include "google/protobuf/io/strtod.h"
 #include "google/protobuf/io/tokenizer.h"
 #include "google/protobuf/io/zero_copy_stream_impl_lite.h"
+#include "google/protobuf/json_enumvalue_options.pb.h"
 #include "google/protobuf/message.h"
 #include "google/protobuf/message_lite.h"
 #include "google/protobuf/parse_context.h"
@@ -304,6 +306,11 @@ class FlatAllocation {
     Fold({Init<T>()...});
   }
 
+  absl::string_view buffer() const {
+    return absl::string_view(reinterpret_cast<const char*>(this),
+                             total_bytes());
+  }
+
   void Destroy() {
     Fold({Destroy<T>()...});
     internal::SizedDelete(this, total_bytes());
@@ -408,6 +415,8 @@ template <typename... T>
 class FlatAllocatorImpl {
  public:
   using Allocation = FlatAllocation<T...>;
+
+  absl::string_view buffer() const { return flat_alloc_->buffer(); }
 
   template <typename U>
   void PlanArray(int array_size) {
@@ -619,7 +628,8 @@ class FlatAllocatorImpl {
   void FinalizePlanning(Alloc& alloc) {
     ABSL_CHECK(!has_allocated());
 
-    pointers_ = alloc->CreateFlatAlloc(total_)->Pointers();
+    flat_alloc_ = alloc->CreateFlatAlloc(total_);
+    pointers_ = flat_alloc_->Pointers();
 
     ABSL_CHECK(has_allocated());
   }
@@ -657,6 +667,7 @@ class FlatAllocatorImpl {
     return true;
   }
 
+  const FlatAllocation<T...>* flat_alloc_;
   TypeMap<PointerT, T...> pointers_;
   TypeMap<IntT, T...> total_;
   TypeMap<IntT, T...> used_;
@@ -693,6 +704,8 @@ class Symbol {
     // Initialize with a sentinel to make sure `ptr_` is never null.
     ptr_ = &null_symbol;
   }
+
+  explicit Symbol(const internal::SymbolBase* ptr) : ptr_(ptr) {}
 
   // Every object we store derives from internal::SymbolBase, where we store the
   // symbol type enum.
@@ -1008,6 +1021,8 @@ class Symbol {
                         " and cannot be accessed outside its own file");
   }
 
+  const internal::SymbolBase* ptr() const { return ptr_; }
+
  private:
   const internal::SymbolBase* ptr_;
 };
@@ -1212,26 +1227,70 @@ struct ParentNameQueryBase {
     return query;
   }
 };
+
+// A 32-bit "offset" based pointer used for hash tables below.
+// The base pointer is the base of the FlatAllocation, which is the same for
+// the objects in a single FileDescriptorTables (except the ones allocated later
+// on demand, like unknown_enum_values_by_number_).
+// This halves the size of the tables in 64-bit builds.
+template <typename T>
+struct OffsetT {
+  OffsetT(T* ptr, absl::string_view flat_buffer) {
+    ptrdiff_t diff = reinterpret_cast<const char*>(ptr) -
+                     reinterpret_cast<const char*>(flat_buffer.data());
+    // Verify the pointer is actually in bounds of the buffer.
+    ABSL_DCHECK(static_cast<const void*>(ptr) >= flat_buffer.data() &&
+                static_cast<const void*>(ptr) <
+                    flat_buffer.data() + flat_buffer.size());
+    ABSL_DCHECK_GE(diff, 0);
+    ABSL_DCHECK_LE(diff, std::numeric_limits<uint32_t>::max());
+    value = static_cast<uint32_t>(diff);
+  }
+
+  T* Resolve(const void* base_ptr) const {
+    return const_cast<T*>(reinterpret_cast<const T*>(
+        reinterpret_cast<const char*>(base_ptr) + value));
+  }
+
+  uint32_t value;
+};
+
+template <typename T>
+const T& ResolveSymbol(const T& v, const void*) {
+  return v;
+}
+Symbol ResolveSymbol(OffsetT<const internal::SymbolBase> v,
+                     const void* base_ptr) {
+  return Symbol(v.Resolve(base_ptr));
+}
+
 struct ParentNameQuery : public ParentNameQueryBase {
   using SymbolT = Symbol;
 
   template <typename It>
-  static SymbolT IterToSymbol(It it) {
-    return *it;
+  static SymbolT IterToSymbol(It it, absl::string_view flat_buffer) {
+    return ResolveSymbol(*it, flat_buffer.data());
   }
 };
 struct ParentNameFieldQuery : public ParentNameQueryBase {
   using SymbolT = const FieldDescriptor*;
 
   template <typename It>
-  static SymbolT IterToSymbol(It it) {
-    SymbolT field = it->field_descriptor();
+  static SymbolT IterToSymbol(It it, absl::string_view flat_buffer) {
+    SymbolT field = ResolveSymbol(*it, flat_buffer.data()).field_descriptor();
     ABSL_ASSUME(field != nullptr);
     return field;
   }
 };
+
 struct SymbolByParentHash {
   using is_transparent = void;
+
+  const void* base_ptr;
+
+  size_t operator()(OffsetT<const internal::SymbolBase> v) const {
+    return (*this)(Symbol(v.Resolve(base_ptr)));
+  }
 
   template <typename T>
   size_t operator()(const T& s) const {
@@ -1241,8 +1300,11 @@ struct SymbolByParentHash {
 struct SymbolByParentEq {
   using is_transparent = void;
 
-  bool operator()(const Symbol& symbol,
+  const void* base_ptr;
+
+  bool operator()(OffsetT<const internal::SymbolBase> offset,
                   const ParentNameFieldQuery& query) const {
+    Symbol symbol = ResolveSymbol(offset, base_ptr);
     const FieldDescriptor* field = symbol.field_descriptor();
     return field != nullptr && !field->is_extension() &&
            field->containing_type() == query.query.first &&
@@ -1251,11 +1313,13 @@ struct SymbolByParentEq {
 
   template <typename T, typename U>
   bool operator()(const T& a, const U& b) const {
-    return a.parent_name_key() == b.parent_name_key();
+    return ResolveSymbol(a, base_ptr).parent_name_key() ==
+           ResolveSymbol(b, base_ptr).parent_name_key();
   }
 };
 using SymbolsByParentSet =
-    absl::flat_hash_set<Symbol, SymbolByParentHash, SymbolByParentEq>;
+    absl::flat_hash_set<OffsetT<const internal::SymbolBase>, SymbolByParentHash,
+                        SymbolByParentEq>;
 
 template <typename DescriptorT>
 struct DescriptorsByNameHash {
@@ -1305,7 +1369,8 @@ std::pair<const void*, int> ObjectToParentNumber(
     const EnumValueDescriptor* enum_value) {
   return {enum_value->type(), enum_value->number()};
 }
-std::pair<const void*, int> ObjectToParentNumber(ParentNumberQuery query) {
+std::pair<const void*, int> ObjectToParentNumber(ParentNumberQuery query,
+                                                 const void* = nullptr) {
   return query.query;
 }
 struct ParentNumberHash {
@@ -1324,11 +1389,47 @@ struct ParentNumberEq {
     return ObjectToParentNumber(a) == ObjectToParentNumber(b);
   }
 };
-using FieldsByNumberSet = absl::flat_hash_set<const FieldDescriptor*,
-                                              ParentNumberHash, ParentNumberEq>;
+
 using EnumValuesByNumberSet =
     absl::flat_hash_set<const EnumValueDescriptor*, ParentNumberHash,
                         ParentNumberEq>;
+
+template <typename T>
+std::pair<const void*, int> ObjectToParentNumber(OffsetT<T> offset,
+                                                 const void* base_ptr) {
+  return ObjectToParentNumber(offset.Resolve(base_ptr));
+}
+
+struct ParentNumberHashOffsetPtr {
+  using is_transparent = void;
+
+  const void* base_ptr;
+
+  template <typename T>
+  size_t operator()(const T& t) const {
+    return absl::HashOf(ObjectToParentNumber(t, base_ptr));
+  }
+};
+
+struct ParentNumberEqOffsetPtr {
+  using is_transparent = void;
+
+  const void* base_ptr;
+
+  template <typename T, typename U>
+  bool operator()(const T& a, const U& b) const {
+    return ObjectToParentNumber(a, base_ptr) ==
+           ObjectToParentNumber(b, base_ptr);
+  }
+};
+
+using EnumValuesByNumberSetOffsetPtr =
+    absl::flat_hash_set<OffsetT<const EnumValueDescriptor>,
+                        ParentNumberHashOffsetPtr, ParentNumberEqOffsetPtr>;
+
+using FieldsByNumberSet =
+    absl::flat_hash_set<OffsetT<const FieldDescriptor>,
+                        ParentNumberHashOffsetPtr, ParentNumberEqOffsetPtr>;
 
 // This is a map rather than a hash-map, since we use it to iterate
 // through all the extensions that extend a given Descriptor, and an
@@ -1531,6 +1632,20 @@ class FileDescriptorTables {
   // we are going to roll back to the last checkpoint.
   void FinalizeTables();
 
+  void SetFlatBuffer(absl::string_view flat_buffer) {
+    flat_buffer_ = flat_buffer;
+    // Set the pointer in the hash/eq functors.
+    symbols_by_parent_ =
+        SymbolsByParentSet(0, SymbolByParentHash{flat_buffer.data()},
+                           SymbolByParentEq{flat_buffer.data()});
+    fields_by_number_ =
+        FieldsByNumberSet(0, ParentNumberHashOffsetPtr{flat_buffer.data()},
+                          ParentNumberEqOffsetPtr{flat_buffer.data()});
+    enum_values_by_number_ = EnumValuesByNumberSetOffsetPtr(
+        0, ParentNumberHashOffsetPtr{flat_buffer.data()},
+        ParentNumberEqOffsetPtr{flat_buffer.data()});
+  }
+
  private:
   const void* FindParentForFieldsByMap(const FieldDescriptor* field) const;
   static void FieldsByLowercaseNamesLazyInitStatic(
@@ -1540,6 +1655,11 @@ class FileDescriptorTables {
       const FileDescriptorTables* tables);
   void FieldsByCamelcaseNamesLazyInitInternal() const;
 
+  Symbol Resolve(OffsetT<const internal::SymbolBase> v) const {
+    return Symbol(v.Resolve(flat_buffer_.data()));
+  }
+
+  absl::string_view flat_buffer_;
   SymbolsByParentSet symbols_by_parent_;
   mutable absl::once_flag fields_by_lowercase_name_once_;
   mutable absl::once_flag fields_by_camelcase_name_once_;
@@ -1549,7 +1669,7 @@ class FileDescriptorTables {
   mutable std::atomic<const FieldsByNameMap*> fields_by_lowercase_name_{};
   mutable std::atomic<const FieldsByNameMap*> fields_by_camelcase_name_{};
   FieldsByNumberSet fields_by_number_;  // Not including extensions.
-  EnumValuesByNumberSet enum_values_by_number_;
+  EnumValuesByNumberSetOffsetPtr enum_values_by_number_;
   mutable EnumValuesByNumberSet unknown_enum_values_by_number_
       ABSL_GUARDED_BY(unknown_enum_values_mu_);
 
@@ -1975,7 +2095,7 @@ inline auto FileDescriptorTables::FindNestedSymbol(
     const void* parent, absl::string_view name) const {
   auto it = symbols_by_parent_.find(K{{{parent, name}}});
   return it == symbols_by_parent_.end() ? typename K::SymbolT()
-                                        : K::IterToSymbol(it);
+                                        : K::IterToSymbol(it, flat_buffer_);
 }
 
 Symbol DescriptorPool::Tables::FindByNameHelper(const DescriptorPool* pool,
@@ -2035,7 +2155,8 @@ inline const FieldDescriptor* FileDescriptorTables::FindFieldByNumber(
   }
 
   auto it = fields_by_number_.find(ParentNumberQuery{{parent, number}});
-  return it == fields_by_number_.end() ? nullptr : *it;
+  return it == fields_by_number_.end() ? nullptr
+                                       : it->Resolve(flat_buffer_.data());
 }
 
 const void* FileDescriptorTables::FindParentForFieldsByMap(
@@ -2058,8 +2179,8 @@ void FileDescriptorTables::FieldsByLowercaseNamesLazyInitStatic(
 
 void FileDescriptorTables::FieldsByLowercaseNamesLazyInitInternal() const {
   auto* map = new FieldsByNameMap;
-  for (Symbol symbol : symbols_by_parent_) {
-    const FieldDescriptor* field = symbol.field_descriptor();
+  for (auto symbol : symbols_by_parent_) {
+    const FieldDescriptor* field = Resolve(symbol).field_descriptor();
     if (!field) continue;
     (*map)[{FindParentForFieldsByMap(field), field->lowercase_name()}] = field;
   }
@@ -2085,8 +2206,8 @@ void FileDescriptorTables::FieldsByCamelcaseNamesLazyInitStatic(
 
 void FileDescriptorTables::FieldsByCamelcaseNamesLazyInitInternal() const {
   auto* map = new FieldsByNameMap;
-  for (Symbol symbol : symbols_by_parent_) {
-    const FieldDescriptor* field = symbol.field_descriptor();
+  for (auto symbol : symbols_by_parent_) {
+    const FieldDescriptor* field = Resolve(symbol).field_descriptor();
     if (!field) continue;
     const void* parent = FindParentForFieldsByMap(field);
     // If we already have a field with this camelCase name, keep the field with
@@ -2121,7 +2242,8 @@ inline const EnumValueDescriptor* FileDescriptorTables::FindEnumValueByNumber(
   }
 
   auto it = enum_values_by_number_.find(ParentNumberQuery{{parent, number}});
-  return it == enum_values_by_number_.end() ? nullptr : *it;
+  return it == enum_values_by_number_.end() ? nullptr
+                                            : it->Resolve(flat_buffer_.data());
 }
 
 inline const EnumValueDescriptor*
@@ -2218,7 +2340,9 @@ bool FileDescriptorTables::AddAliasUnderParent(const void* parent,
                                                Symbol symbol) {
   ABSL_DCHECK_EQ(name, symbol.parent_name_key().second);
   ABSL_DCHECK_EQ(parent, symbol.parent_name_key().first);
-  return symbols_by_parent_.insert(symbol).second;
+  return symbols_by_parent_
+      .insert(OffsetT<const internal::SymbolBase>(symbol.ptr(), flat_buffer_))
+      .second;
 }
 
 bool DescriptorPool::Tables::AddFile(const FileDescriptor* file) {
@@ -2245,7 +2369,9 @@ bool FileDescriptorTables::AddFieldByNumber(FieldDescriptor* field) {
     return field->containing_type()->field(field->number() - 1) == field;
   }
 
-  return fields_by_number_.insert(field).second;
+  return fields_by_number_
+      .insert(OffsetT<const FieldDescriptor>(field, flat_buffer_))
+      .second;
 }
 
 bool FileDescriptorTables::AddEnumValueByNumber(EnumValueDescriptor* value) {
@@ -2255,7 +2381,9 @@ bool FileDescriptorTables::AddEnumValueByNumber(EnumValueDescriptor* value) {
       value->number() <=
           static_cast<int64_t>(base) + value->type()->sequential_value_limit_)
     return true;
-  return enum_values_by_number_.insert(value).second;
+  return enum_values_by_number_
+      .insert(OffsetT<const EnumValueDescriptor>(value, flat_buffer_))
+      .second;
 }
 
 bool DescriptorPool::Tables::AddExtension(const FieldDescriptor* field) {
@@ -4298,7 +4426,9 @@ FieldDescriptor::CppStringType FieldDescriptor::CalculateCppStringType() const {
     default:
       // If features haven't been resolved, this is a dynamic build not for C++
       // codegen.  Just use string type.
-      ABSL_DCHECK(!features().GetExtension(pb::cpp).has_string_type());
+      ABSL_DCHECK(!features().GetExtension(pb::cpp).has_string_type() ||
+                  features().GetExtension(pb::cpp).string_type() ==
+                      pb::CppFeatures::STRING_TYPE_UNKNOWN);
       return CppStringType::kString;
   }
 }
@@ -4802,6 +4932,9 @@ class DescriptorBuilder {
   void CheckEnumValueUniqueness(const EnumDescriptorProto& proto,
                                 const EnumDescriptor* result);
 
+  void CheckEnumCustomStringUniqueness(const EnumDescriptorProto& proto,
+                                       const EnumDescriptor* result);
+
   void LogUnusedDependency(const FileDescriptorProto& proto,
                            const FileDescriptor* result);
 
@@ -5074,6 +5207,31 @@ class DescriptorBuilder {
   // Nothing to validate for extension ranges. This overload only exists
   // so that VisitDescriptors can be exhaustive.
   void ValidateNamingStyle(const Descriptor::ExtensionRange* ext_range,
+                           const DescriptorProto::ExtensionRange& proto) {}
+
+  // When called, check the listed descriptor against protobuf limits, such as
+  // max number of fields per message, max number of fields in a oneof, or max
+  // number of values in an enum. This is a feature introduced in Edition 2026.
+  void ValidateProtoLimits(const Descriptor* message,
+                           const DescriptorProto& proto);
+  void ValidateProtoLimits(const OneofDescriptor* oneof,
+                           const OneofDescriptorProto& proto);
+  void ValidateProtoLimits(const EnumDescriptor* enum_descriptor,
+                           const EnumDescriptorProto& proto);
+
+  // Overloads with nothing to validate. These overload only exist
+  // so that VisitDescriptors can be exhaustive.
+  void ValidateProtoLimits(const FileDescriptor* file,
+                           const FileDescriptorProto& proto) {}
+  void ValidateProtoLimits(const FieldDescriptor* field,
+                           const FieldDescriptorProto& proto) {}
+  void ValidateProtoLimits(const EnumValueDescriptor* file,
+                           const EnumValueDescriptorProto& proto) {}
+  void ValidateProtoLimits(const ServiceDescriptor* file,
+                           const ServiceDescriptorProto& proto) {}
+  void ValidateProtoLimits(const MethodDescriptor* file,
+                           const MethodDescriptorProto& proto) {}
+  void ValidateProtoLimits(const Descriptor::ExtensionRange* ext_range,
                            const DescriptorProto::ExtensionRange& proto) {}
 };
 
@@ -6389,6 +6547,7 @@ FileDescriptor* DescriptorBuilder::BuildFileImpl(
   }
 
   file_tables_ = alloc.AllocateArray<FileDescriptorTables>(1);
+  file_tables_->SetFlatBuffer(alloc.buffer());
   file_->tables_ = file_tables_;
 
   if (!proto.has_name()) {
@@ -6730,6 +6889,17 @@ FileDescriptor* DescriptorBuilder::BuildFileImpl(
         *result, proto, [&](const auto& descriptor, const auto& desc_proto) {
           if (IsStyleOrGreater(&descriptor, FeatureSet::STYLE2024)) {
             ValidateNamingStyle(&descriptor, desc_proto);
+          }
+        });
+  }
+
+  if (!had_errors_ && pool_->enforce_proto_limits_) {
+    internal::VisitDescriptors(
+        *result, proto, [&](const auto& descriptor, const auto& desc_proto) {
+          if (internal::InternalFeatureHelper::GetFeatures(descriptor)
+                  .enforce_proto_limits() !=
+              FeatureSet::ProtoLimitsFeature::LEGACY_NO_EXPLICIT_LIMITS) {
+            ValidateProtoLimits(&descriptor, desc_proto);
           }
         });
   }
@@ -7518,6 +7688,91 @@ void DescriptorBuilder::CheckEnumValueUniqueness(
   }
 }
 
+void DescriptorBuilder::CheckEnumCustomStringUniqueness(
+    const EnumDescriptorProto& proto, const EnumDescriptor* result) {
+  absl::flat_hash_map<absl::string_view, const EnumValueDescriptor*>
+      values_by_json_name;
+  absl::flat_hash_map<int, const EnumValueDescriptor*> first_value_by_number;
+
+  for (int i = 0; i < result->value_count(); ++i) {
+    const EnumValueDescriptor* value = result->value(i);
+
+    // If we allow aliases and custom json strings are used, we need to ensure
+    // that the custom json strings are the same for all aliases.
+    if (result->options().allow_alias()) {
+      auto insert_num_result =
+          first_value_by_number.try_emplace(value->number(), value);
+      if (!insert_num_result.second) {
+        const EnumValueDescriptor* primary = insert_num_result.first->second;
+
+        auto get_custom_string = [](const EnumValueDescriptor* ev)
+            -> absl::optional<absl::string_view> {
+          const auto& ext = ev->options().GetExtension(pb::enumvalue::json);
+          if (ext.has_string()) {
+            return ext.string();
+          }
+          return absl::nullopt;
+        };
+
+        auto primary_custom = get_custom_string(primary);
+        auto current_custom = get_custom_string(value);
+
+        if (primary_custom != current_custom) {
+          AddError(result->full_name(), proto.value(i),
+                   DescriptorPool::ErrorCollector::OPTION_VALUE,
+                   [&]() -> std::string {
+                     std::string primary_str =
+                         primary_custom.has_value()
+                             ? absl::StrCat("\"", *primary_custom, "\"")
+                             : "unset";
+                     std::string current_str =
+                         current_custom.has_value()
+                             ? absl::StrCat("\"", *current_custom, "\"")
+                             : "unset";
+                     return absl::StrFormat(
+                         "Alias values for number %d must have the same custom "
+                         "JSON string. "
+                         "\"%s\" has %s but primary alias \"%s\" has %s.",
+                         value->number(), value->name(), current_str,
+                         primary->name(), primary_str);
+                   });
+        }
+      }
+    }
+
+    // Custom json strings can't collide (sans aliases)
+    auto check_and_insert = [&](absl::string_view name, bool is_custom) {
+      auto insert_result = values_by_json_name.try_emplace(name, value);
+      if (!insert_result.second) {
+        const EnumValueDescriptor* conflict = insert_result.first->second;
+        if (conflict != value && conflict->number() != value->number()) {
+          std::string current_type = is_custom ? "Custom" : "Default";
+          std::string conflict_type =
+              (conflict->name() == name) ? "default" : "custom";
+          AddError(result->full_name(), proto.value(i),
+                   DescriptorPool::ErrorCollector::OPTION_VALUE, [&] {
+                     return absl::StrFormat(
+                         "%s JSON string \"%s\" conflicts with %s JSON string "
+                         "of \"%s\".",
+                         current_type, name, conflict_type, conflict->name());
+                   });
+        }
+      }
+    };
+
+    // Ensure that we bail if a custom json string collides with
+    // any default name.
+    check_and_insert(value->name(), false);
+
+    // Ensure that custom JSON strings cannot collide with themselves.
+    if (value->options().HasExtension(pb::enumvalue::json)) {
+      absl::string_view custom_string =
+          value->options().GetExtension(pb::enumvalue::json).string();
+      check_and_insert(custom_string, true);
+    }
+  }
+}
+
 void DescriptorBuilder::BuildEnum(const EnumDescriptorProto& proto,
                                   const Descriptor* parent,
                                   EnumDescriptor* result,
@@ -8002,7 +8257,9 @@ void DescriptorBuilder::CrossLinkField(FieldDescriptor* field,
     // if weak fields exist or not so that we don't need to force building
     // weak dependencies. However the name lookup rules for symbols are
     // somewhat complicated, so I defer it too another CL.
+    PROTOBUF_IGNORE_DEPRECATION_START
     bool is_weak = !pool_->enforce_weak_ && proto.options().weak();
+    PROTOBUF_IGNORE_DEPRECATION_STOP
     bool is_lazy = pool_->lazily_build_dependencies_ && !is_weak;
 
     Symbol type =
@@ -8058,13 +8315,6 @@ void DescriptorBuilder::CrossLinkField(FieldDescriptor* field,
       }
     }
 
-    // Map entries must be in the same file, so we can populate it directly if
-    // the descriptor is already known. If it is not known, then it must not be
-    // a map entry.
-    if (auto* sub_message = type.descriptor()) {
-      field->is_map_ = sub_message->options().map_entry();
-    }
-
     if (!type.IsVisibleFrom(file_) && pool_->enforce_symbol_visibility_) {
       AddError(field->full_name(), proto, DescriptorPool::ErrorCollector::TYPE,
                [&] { return type.GetVisibilityError(file_); });
@@ -8097,6 +8347,12 @@ void DescriptorBuilder::CrossLinkField(FieldDescriptor* field,
                  });
         return;
       }
+
+      // Only TYPE_MESSAGE fields can be map fields. TYPE_GROUP fields
+      // referencing a map_entry message must not set is_map_.
+      field->is_map_ =
+          field->type_ == FieldDescriptor::TYPE_MESSAGE &&
+          field->type_descriptor_.message_type->options().map_entry();
 
       if (field->has_default_value()) {
         AddError(field->full_name(), proto,
@@ -8615,8 +8871,58 @@ void DescriptorBuilder::ValidateOptions(const FieldDescriptor* field,
              "a lite type, but the reverse is allowed.");
   }
 
+  // TYPE_GROUP fields must not reference map_entry messages. Only
+  // TYPE_MESSAGE fields are valid map fields.
+  if (field->type() == FieldDescriptor::TYPE_GROUP &&
+      field->message_type() != nullptr &&
+      field->message_type()->options().map_entry()) {
+    AddError(field->full_name(), proto, DescriptorPool::ErrorCollector::TYPE,
+             "Groups cannot be map entries. Use a regular message field with "
+             "map<KeyType, ValueType> syntax instead.");
+  }
+
   // Validate map types.
   if (field->is_map()) {
+    const Descriptor* message = field->message_type();
+    // We want to error if someone typed some MapEntry type instead of using
+    // map<>, but the information is lost at this point. Check for some
+    // properties that all map fields always have to catch this case.
+    if (!field->is_repeated() ||
+        message->name() !=
+            absl::StrCat(ToCamelCase(field->name(), false), "Entry") ||
+        field->containing_type() != message->containing_type()) {
+      AddError(
+          field->full_name(), proto, DescriptorPool::ErrorCollector::TYPE, [&] {
+            std::string error = absl::StrCat(
+                field->message_type()->full_name(),
+                " is a synthetic MapEntry message type, which is not "
+                "allowed to be used as a field type.");
+            const Descriptor* container =
+                field->message_type()->containing_type();
+            if (container != nullptr) {
+              // Since the input type is a synthetic message type,
+              // it is likely that the user had intended to refer to a
+              // different message type with the same name. Do a lookup
+              // in outer scopes to make a guess on user's intention if
+              // there is a message type found with the same name.
+              // LookupSymbol() is used rather than FindSymbol() since
+              // the initial scope for the lookup is known (i.e. 1 level
+              // up from the current one).
+              Symbol alter = LookupSymbol(
+                  field->message_type()->name(), container->full_name(),
+                  DescriptorPool::PLACEHOLDER_MESSAGE, LOOKUP_TYPES, false);
+              if (!alter.IsNull() &&
+                  alter.descriptor() != field->message_type()) {
+                // Use the fully qualified name of the alter message to
+                // make sure the suggestion is guaranteed to work.
+                absl::StrAppend(&error, " Maybe you meant \".",
+                                alter.full_name(), "\"?");
+              }
+            }
+            return error;
+          });
+    }
+
     if (!ValidateMapEntry(field, proto)) {
       AddError(field->full_name(), proto, DescriptorPool::ErrorCollector::TYPE,
                "map_entry should not be set explicitly. Use map<KeyType, "
@@ -8843,6 +9149,7 @@ void DescriptorBuilder::ValidateFieldFeatures(
 void DescriptorBuilder::ValidateOptions(const EnumDescriptor* enm,
                                         const EnumDescriptorProto& proto) {
   CheckEnumValueUniqueness(proto, enm);
+  CheckEnumCustomStringUniqueness(proto, enm);
 
   if (!enm->is_closed() && enm->value_count() > 0 &&
       enm->value(0)->number() != 0) {
@@ -8898,6 +9205,33 @@ void DescriptorBuilder::ValidateOptions(const EnumValueDescriptor* enum_value,
             enum_value->options().feature_support(), enum_value->full_name());
     MaybeAddError(feature_support_result, enum_value->full_name(), proto,
                   DescriptorPool::ErrorCollector::OPTION_NAME);
+  }
+
+  if (enum_value->options().HasExtension(pb::enumvalue::json)) {
+    absl::string_view custom_string =
+        enum_value->options().GetExtension(pb::enumvalue::json).string();
+
+    if (absl::StrContains(custom_string, '\0')) {
+      AddError(enum_value->full_name(), proto,
+               DescriptorPool::ErrorCollector::OPTION_VALUE,
+               "Custom JSON strings cannot contain embedded null characters.");
+    }
+
+    // If the custom string is a number, it must match the enum value's number,
+    // otherwise, there would be an ambiguity -- we'll block the possibility.
+    int32_t parsed_val;
+    if (absl::SimpleAtoi(custom_string, &parsed_val)) {
+      if (parsed_val != enum_value->number()) {
+        AddError(enum_value->full_name(), proto,
+                 DescriptorPool::ErrorCollector::OPTION_VALUE, [&] {
+                   return absl::StrFormat(
+                       "Custom JSON string \"%s\" parses as integer %d, which "
+                       "does not match the "
+                       "enum value's number %d.",
+                       custom_string, parsed_val, enum_value->number());
+                 });
+      }
+    }
   }
 }
 
@@ -9059,16 +9393,10 @@ bool DescriptorBuilder::ValidateMapEntry(const FieldDescriptor* field,
   if (  // Must not contain extensions, extension range or nested message or
         // enums
       message->extension_count() != 0 ||
-      field->label_ != FieldDescriptor::LABEL_REPEATED ||
       message->extension_range_count() != 0 ||
       message->nested_type_count() != 0 || message->enum_type_count() != 0 ||
       // Must contain exactly two fields
-      message->field_count() != 2 ||
-      // Field name and message name must match
-      message->name() !=
-          absl::StrCat(ToCamelCase(field->name(), false), "Entry") ||
-      // Entry message must be in the same containing type of the field.
-      field->containing_type() != message->containing_type()) {
+      message->field_count() != 2) {
     return false;
   }
 
@@ -9369,6 +9697,10 @@ constexpr absl::string_view kNamingStyleOptOutMessage =
     " (features.enforce_naming_style = STYLE_LEGACY can be used to opt out of "
     "this check)";
 
+constexpr absl::string_view kProtoLimitsOptOutMessage =
+    " (features.enforce_proto_limits = LEGACY_NO_EXPLICIT_LIMITS can be used "
+    "to opt out of this check)";
+
 }  // namespace
 
 constexpr absl::string_view kNamingStyleCollisionsOptOutMessage =
@@ -9491,6 +9823,65 @@ void DescriptorBuilder::ValidateNamingStyle(
       return absl::StrCat("Method name ", method->name(), " ", error,
                           kNamingStyleOptOutMessage);
     });
+  }
+}
+
+// -------------------------------------------------------------------
+
+void DescriptorBuilder::ValidateProtoLimits(const Descriptor* message,
+                                            const DescriptorProto& proto) {
+  // Validate the protobuf field limit per message.
+  // See go/protobuf-enforce-proto-limits
+  if (message->field_count() > internal::kLimit2026FieldsPerMessage) {
+    std::string error_msg =
+        absl::StrFormat("should not contain more than %d fields",
+                        internal::kLimit2026FieldsPerMessage);
+    AddError(message->name(), proto, DescriptorPool::ErrorCollector::NAME, [&] {
+      return absl::StrCat("Message name ", message->name(), " ", error_msg,
+                          kProtoLimitsOptOutMessage);
+    });
+  }
+  // Validate the protobuf oneof limit per message.
+  // See go/protobuf-enforce-proto-limits
+  if (message->real_oneof_decl_count() > internal::kLimit2026OneofsPerMessage) {
+    std::string error_msg =
+        absl::StrFormat("should not contain more than %d oneofs",
+                        internal::kLimit2026OneofsPerMessage);
+    AddError(message->name(), proto, DescriptorPool::ErrorCollector::NAME, [&] {
+      return absl::StrCat("Message name ", message->name(), " ", error_msg,
+                          kProtoLimitsOptOutMessage);
+    });
+  }
+}
+
+void DescriptorBuilder::ValidateProtoLimits(const OneofDescriptor* oneof,
+                                            const OneofDescriptorProto& proto) {
+  // Validate the protobuf field limit per oneof.
+  // See go/protobuf-enforce-proto-limits
+  if (oneof->field_count() > internal::kLimit2026FieldsPerOneof) {
+    std::string error_msg =
+        absl::StrFormat("should not contain more than %d fields",
+                        internal::kLimit2026FieldsPerOneof);
+    AddError(oneof->name(), proto, DescriptorPool::ErrorCollector::NAME, [&] {
+      return absl::StrCat("Oneof name ", oneof->name(), " ", error_msg,
+                          kProtoLimitsOptOutMessage);
+    });
+  }
+}
+
+void DescriptorBuilder::ValidateProtoLimits(
+    const EnumDescriptor* enum_descriptor, const EnumDescriptorProto& proto) {
+  std::string error_msg =
+      absl::StrFormat("should not contain more than %d values",
+                      internal::kLimit2026ValuesPerEnum);
+  // Validate the protobuf value limit per enum.
+  // See go/protobuf-enforce-proto-limits
+  if (enum_descriptor->value_count() > internal::kLimit2026ValuesPerEnum) {
+    AddError(enum_descriptor->name(), proto,
+             DescriptorPool::ErrorCollector::NAME, [&] {
+               return absl::StrCat("Enum name ", enum_descriptor->name(), " ",
+                                   error_msg, kProtoLimitsOptOutMessage);
+             });
   }
 }
 
@@ -10704,7 +11095,10 @@ bool HasPreservingUnknownEnumSemantics(const FieldDescriptor* field) {
 
 HasbitMode GetFieldHasbitModeWithoutProfile(const FieldDescriptor* field) {
   // Do not generate hasbits for "real-oneof", weak, or extension fields.
-  if (field->real_containing_oneof() || field->options().weak() ||
+  PROTOBUF_IGNORE_DEPRECATION_START
+  const bool field_is_weak = field->options().weak();
+  PROTOBUF_IGNORE_DEPRECATION_STOP
+  if (field->real_containing_oneof() || field_is_weak ||
       field->is_extension()) {
     return HasbitMode::kNoHasbit;
   }
@@ -10762,6 +11156,14 @@ bool IsLazilyInitializedFile(absl::string_view filename) {
   }
   if (filename == "third_party/protobuf/internal_options.proto" ||
       filename == "google/protobuf/internal_options.proto") {
+    return true;
+  }
+  if (filename == "third_party/protobuf/json_enumvalue_options.proto" ||
+      filename == "google/protobuf/json_enumvalue_options.proto") {
+    return true;
+  }
+  if (filename == "third_party/protobuf/cpp_file_options.proto" ||
+      filename == "google/protobuf/cpp_file_options.proto") {
     return true;
   }
   return filename == "net/proto2/proto/descriptor.proto" ||

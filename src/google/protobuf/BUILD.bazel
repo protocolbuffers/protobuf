@@ -360,6 +360,29 @@ cc_proto_library(
 )
 
 proto_library(
+    name = "cpp_options_proto",
+    srcs = ["cpp_options.proto"],
+    strip_import_prefix = "/src",
+    visibility = ["//visibility:public"],
+    exports = [":cpp_file_options_proto"],
+    deps = ["//src/google/protobuf:cpp_file_options_proto"],
+)
+
+proto_library(
+    name = "cpp_file_options_proto",
+    srcs = ["cpp_file_options.proto"],
+    strip_import_prefix = "/src",
+    visibility = ["//:__subpackages__"],
+    deps = [":descriptor_proto"],
+)
+
+cc_proto_library(
+    name = "cpp_file_options_cc_proto",
+    visibility = ["//:__subpackages__"],
+    deps = [":cpp_file_options_proto"],
+)
+
+proto_library(
     name = "json_options_proto",
     srcs = ["json_options.proto"],
     strip_import_prefix = "/src",
@@ -372,13 +395,13 @@ proto_library(
     name = "json_enumvalue_options_proto",
     srcs = ["json_enumvalue_options.proto"],
     strip_import_prefix = "/src",
-    visibility = ["//visibility:private"],
+    visibility = ["//:__subpackages__"],
     deps = [":descriptor_proto"],
 )
 
 cc_proto_library(
     name = "json_enumvalue_options_cc_proto",
-    visibility = ["//visibility:private"],
+    visibility = ["//:__subpackages__"],
     deps = [":json_enumvalue_options_proto"],
 )
 
@@ -413,8 +436,10 @@ cc_library(
         ":os_macros",
         "@abseil-cpp//absl/base:config",
         "@abseil-cpp//absl/base:core_headers",
+        "@abseil-cpp//absl/base:dynamic_annotations",
         "@abseil-cpp//absl/base:prefetch",
         "@abseil-cpp//absl/log:absl_log",
+        "@abseil-cpp//absl/numeric:bits",
         "@abseil-cpp//absl/strings",
         "@abseil-cpp//absl/strings:str_format",
         "@abseil-cpp//absl/types:optional",
@@ -526,6 +551,7 @@ cc_library(
 
 cc_library(
     name = "arena_allocation_policy",
+    srcs = ["arena_allocation_policy.cc"],
     hdrs = ["arena_allocation_policy.h"],
     strip_include_prefix = "/src",
     visibility = [
@@ -777,6 +803,7 @@ cc_library(
 PROTOBUF_HEADERS = [
     "cpp_edition_defaults.h",
     "cpp_features.pb.h",
+    "cpp_file_options.pb.h",
     "descriptor.h",
     "descriptor.pb.h",
     "descriptor_database.h",
@@ -784,6 +811,7 @@ PROTOBUF_HEADERS = [
     "dynamic_message.h",
     "feature_resolver.h",
     "internal_feature_helper.h",
+    "json_enumvalue_options.pb.h",
     "field_access_listener.h",
     "generated_enum_reflection.h",
     "generated_message_bases.h",
@@ -810,6 +838,7 @@ cc_library(
     srcs = [
         "any.cc",
         "cpp_features.pb.cc",
+        "cpp_file_options.pb.cc",
         "descriptor.cc",
         "descriptor.pb.cc",
         "descriptor_database.cc",
@@ -821,6 +850,7 @@ cc_library(
         "generated_message_tctable_full.cc",
         "generated_message_tctable_gen.cc",
         "internal_feature_helper.cc",
+        "json_enumvalue_options.pb.cc",
         "map_field.cc",
         "message.cc",
         "reflection_mode.cc",
@@ -1009,6 +1039,7 @@ cc_test(
         ":protobuf_lite",
         ":repeated_field_proxy",
         ":repeated_field_proxy_iterator",
+        ":repeated_field_proxy_traits",
         ":test_textproto",
         "//src/google/protobuf/test_protos:test_cc_protos",
         "@abseil-cpp//absl/algorithm:container",
@@ -1446,6 +1477,8 @@ exports_files(
     [
         "test_messages_proto2.proto",
         "test_messages_proto3.proto",
+        "json_options.proto",
+        "json_enumvalue_options.proto",
     ],
     visibility = [
         "//:__pkg__",
@@ -2069,6 +2102,7 @@ cc_test(
         ":test_util",
         ":unittest_import_option_cc_proto",
         ":unittest_proto3_cc_proto",
+        "//src/google/protobuf/compiler/cpp:cpp_file_options_test_cc_proto",
         "//src/google/protobuf/stubs",
         "//src/google/protobuf/testing",
         "//src/google/protobuf/testing:file",
@@ -2284,6 +2318,7 @@ cc_test(
         ":cc_test_protos",
         ":internal_visibility",
         ":lite_test_util",
+        ":micro_string",
         ":port",
         ":protobuf",
         ":protobuf_lite",
@@ -2727,6 +2762,17 @@ cc_test(
         ":cc_test_protos",
         ":protobuf",
         ":unredacted_debug_format_for_test",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "text_format_fix_test",
+    srcs = ["text_format_fix_test.cc"],
+    deps = [
+        ":protobuf",
+        "//src/google/protobuf/io",
         "@googletest//:gtest",
         "@googletest//:gtest_main",
     ],

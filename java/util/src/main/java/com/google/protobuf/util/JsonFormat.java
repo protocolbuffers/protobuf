@@ -55,7 +55,6 @@ import java.text.ParseException;
 import java.util.Base64;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -489,7 +488,8 @@ public class JsonFormat {
         TypeRegistry.getEmptyTypeRegistry(),
         ExtensionRegistry.getEmptyRegistry(),
         false,
-        Parser.DEFAULT_RECURSION_LIMIT);
+        Parser.DEFAULT_RECURSION_LIMIT,
+        true);
   }
 
   /** A Parser parses the ProtoJSON format into a protobuf message. */
@@ -499,6 +499,7 @@ public class JsonFormat {
     private final ExtensionRegistry extensionRegistry;
     private final boolean ignoringUnknownFields;
     private final int recursionLimit;
+    private final boolean legacyLenient;
 
     // The default parsing recursion limit is aligned with the proto binary parser.
     private static final int DEFAULT_RECURSION_LIMIT = 100;
@@ -508,12 +509,14 @@ public class JsonFormat {
         TypeRegistry oldRegistry,
         ExtensionRegistry extensionRegistry,
         boolean ignoreUnknownFields,
-        int recursionLimit) {
+        int recursionLimit,
+        boolean legacyLenient) {
       this.registry = registry;
       this.oldRegistry = oldRegistry;
       this.extensionRegistry = extensionRegistry;
       this.ignoringUnknownFields = ignoreUnknownFields;
       this.recursionLimit = recursionLimit;
+      this.legacyLenient = legacyLenient;
     }
 
     /**
@@ -532,7 +535,8 @@ public class JsonFormat {
           oldRegistry,
           extensionRegistry,
           ignoringUnknownFields,
-          recursionLimit);
+          recursionLimit,
+          legacyLenient);
     }
 
     /**
@@ -547,7 +551,12 @@ public class JsonFormat {
         throw new IllegalArgumentException("Only one registry is allowed.");
       }
       return new Parser(
-          registry, oldRegistry, extensionRegistry, ignoringUnknownFields, recursionLimit);
+          registry,
+          oldRegistry,
+          extensionRegistry,
+          ignoringUnknownFields,
+          recursionLimit,
+          legacyLenient);
     }
 
     /**
@@ -559,7 +568,12 @@ public class JsonFormat {
         throw new NullPointerException();
       }
       return new Parser(
-          registry, oldRegistry, extensionRegistry, ignoringUnknownFields, recursionLimit);
+          registry,
+          oldRegistry,
+          extensionRegistry,
+          ignoringUnknownFields,
+          recursionLimit,
+          legacyLenient);
     }
 
     /**
@@ -567,7 +581,8 @@ public class JsonFormat {
      * encountered. The new Parser clones all other configurations from this Parser.
      */
     public Parser ignoringUnknownFields() {
-      return new Parser(this.registry, oldRegistry, extensionRegistry, true, recursionLimit);
+      return new Parser(
+          this.registry, oldRegistry, extensionRegistry, true, recursionLimit, legacyLenient);
     }
 
     /**
@@ -580,7 +595,12 @@ public class JsonFormat {
       // TODO: Investigate the allocation overhead and optimize for
       // mobile.
       new ParserImpl(
-              registry, oldRegistry, extensionRegistry, ignoringUnknownFields, recursionLimit)
+              registry,
+              oldRegistry,
+              extensionRegistry,
+              ignoringUnknownFields,
+              recursionLimit,
+              legacyLenient)
           .merge(json, builder);
     }
 
@@ -595,14 +615,24 @@ public class JsonFormat {
       // TODO: Investigate the allocation overhead and optimize for
       // mobile.
       new ParserImpl(
-              registry, oldRegistry, extensionRegistry, ignoringUnknownFields, recursionLimit)
+              registry,
+              oldRegistry,
+              extensionRegistry,
+              ignoringUnknownFields,
+              recursionLimit,
+              legacyLenient)
           .merge(json, builder);
     }
 
     // For testing only.
     Parser usingRecursionLimit(int recursionLimit) {
       return new Parser(
-          registry, oldRegistry, extensionRegistry, ignoringUnknownFields, recursionLimit);
+          registry,
+          oldRegistry,
+          extensionRegistry,
+          ignoringUnknownFields,
+          recursionLimit,
+          legacyLenient);
     }
   }
 
@@ -726,6 +756,10 @@ public class JsonFormat {
     void outdent();
 
     void print(final CharSequence text) throws IOException;
+
+    void println() throws IOException;
+
+    void println(final CharSequence text) throws IOException;
   }
 
   /** Format the JSON without indentation */
@@ -748,6 +782,16 @@ public class JsonFormat {
     @Override
     public void print(final CharSequence text) throws IOException {
       output.append(text);
+    }
+
+    @Override
+    public void println() {
+      // Ignored: Compact mode has no newlines.
+    }
+
+    @Override
+    public void println(final CharSequence text) throws IOException {
+      output.append(text); // No whitespace in compact mode, just write the text.
     }
   }
 
@@ -784,28 +828,26 @@ public class JsonFormat {
     /** Print text to the output stream. */
     @Override
     public void print(final CharSequence text) throws IOException {
-      final int size = text.length();
-      int pos = 0;
-
-      for (int i = 0; i < size; i++) {
-        if (text.charAt(i) == '\n') {
-          write(text.subSequence(pos, i + 1));
-          pos = i + 1;
-          atStartOfLine = true;
-        }
-      }
-      write(text.subSequence(pos, size));
-    }
-
-    private void write(final CharSequence data) throws IOException {
-      if (data.length() == 0) {
+      if (text.length() == 0) {
         return;
       }
       if (atStartOfLine) {
         atStartOfLine = false;
         output.append(indent);
       }
-      output.append(data);
+      output.append(text);
+    }
+
+    @Override
+    public void println() throws IOException {
+      output.append('\n');
+      atStartOfLine = true;
+    }
+
+    @Override
+    public void println(final CharSequence text) throws IOException {
+      print(text);
+      println();
     }
   }
 
@@ -824,7 +866,6 @@ public class JsonFormat {
     // We use Gson to help handle string escapes.
     private final Gson gson;
     private final CharSequence blankOrSpace;
-    private final CharSequence blankOrNewLine;
 
     private static class GsonHolder {
       private static final Gson DEFAULT_GSON = new GsonBuilder().create();
@@ -856,11 +897,9 @@ public class JsonFormat {
       if (omittingInsignificantWhitespace) {
         this.generator = new CompactTextGenerator(jsonOutput);
         this.blankOrSpace = "";
-        this.blankOrNewLine = "";
       } else {
         this.generator = new PrettyTextGenerator(jsonOutput);
         this.blankOrSpace = " ";
-        this.blankOrNewLine = "\n";
       }
     }
 
@@ -1000,12 +1039,12 @@ public class JsonFormat {
       if (printer != null) {
         // If the type is one of the well-known types, we use a special
         // formatting.
-        generator.print("{" + blankOrNewLine);
+        generator.println("{");
         generator.indent();
-        generator.print("\"@type\":" + blankOrSpace + gson.toJson(typeUrl) + "," + blankOrNewLine);
+        generator.println("\"@type\":" + blankOrSpace + gson.toJson(typeUrl) + ",");
         generator.print("\"value\":" + blankOrSpace);
         printer.print(this, contentMessage);
-        generator.print(blankOrNewLine);
+        generator.println();
         generator.outdent();
         generator.print("}");
       } else {
@@ -1125,7 +1164,7 @@ public class JsonFormat {
 
     /** Prints a regular message with an optional type URL. */
     private void print(MessageOrBuilder message, @Nullable String typeUrl) throws IOException {
-      generator.print("{" + blankOrNewLine);
+      generator.println("{");
       generator.indent();
 
       boolean printedField = false;
@@ -1153,7 +1192,7 @@ public class JsonFormat {
       for (Map.Entry<FieldDescriptor, Object> field : fieldsToPrint.entrySet()) {
         if (printedField) {
           // Add line-endings for the previous field.
-          generator.print("," + blankOrNewLine);
+          generator.println(",");
         } else {
           printedField = true;
         }
@@ -1162,7 +1201,7 @@ public class JsonFormat {
 
       // Add line-endings for the last field.
       if (printedField) {
-        generator.print(blankOrNewLine);
+        generator.println();
       }
       generator.outdent();
       generator.print("}");
@@ -1207,25 +1246,13 @@ public class JsonFormat {
       if (keyField == null || valueField == null) {
         throw new InvalidProtocolBufferException("Invalid map field.");
       }
-      generator.print("{" + blankOrNewLine);
+      generator.println("{");
       generator.indent();
 
       @SuppressWarnings("unchecked") // Object guaranteed to be a List for a map field.
       Collection<Object> elements = (List<Object>) value;
       if (sortingMapKeys && !elements.isEmpty()) {
-        Comparator<Object> cmp = null;
-        if (keyField.getType() == FieldDescriptor.Type.STRING) {
-          cmp =
-              new Comparator<Object>() {
-                @Override
-                public int compare(final Object o1, final Object o2) {
-                  ByteString s1 = ByteString.copyFromUtf8((String) o1);
-                  ByteString s2 = ByteString.copyFromUtf8((String) o2);
-                  return ByteString.unsignedLexicographicalComparator().compare(s1, s2);
-                }
-              };
-        }
-        TreeMap<Object, Object> tm = new TreeMap<>(cmp);
+        TreeMap<Object, Object> tm = new TreeMap<>();
         for (Object element : elements) {
           Message entry = (Message) element;
           Object entryKey = entry.getField(keyField);
@@ -1240,7 +1267,7 @@ public class JsonFormat {
         Object entryKey = entry.getField(keyField);
         Object entryValue = entry.getField(valueField);
         if (printedElement) {
-          generator.print("," + blankOrNewLine);
+          generator.println(",");
         } else {
           printedElement = true;
         }
@@ -1250,7 +1277,7 @@ public class JsonFormat {
         printSingleFieldValue(valueField, entryValue);
       }
       if (printedElement) {
-        generator.print(blankOrNewLine);
+        generator.println();
       }
       generator.outdent();
       generator.print("}");
@@ -1360,7 +1387,7 @@ public class JsonFormat {
           break;
 
         case STRING:
-          generator.print(gson.toJson(value));
+          printStringEscapedAndQuoted((String) value);
           break;
 
         case BYTES:
@@ -1395,6 +1422,43 @@ public class JsonFormat {
           break;
       }
     }
+
+    /**
+     * Prints a string value wrapped in double quotes, escaping any illegal or dangerous characters
+     * for JSON safety.
+     */
+    private void printStringEscapedAndQuoted(final CharSequence value) throws IOException {
+      // gson.toJson() is expensive: only use it if the string isn't entirely safe to print
+      // directly.
+      if (isJsonSafeString(value)) {
+        generator.print("\"");
+        generator.print(value);
+        generator.print("\"");
+      } else {
+        generator.print(gson.toJson(value.toString()));
+      }
+    }
+
+    private static boolean isJsonSafeString(CharSequence value) {
+      int len = value.length();
+      for (int i = 0; i < len; i++) {
+        char c = value.charAt(i);
+        // Bare characters, fully disallowed in JSON strings and which must be escaped.
+        if (c < 0x20 || c == '"' || c == '\\') {
+          return false;
+        }
+        // HTML-sensitive characters. These are allowed in JSON, but escaped to mitigate
+        // XSS risks when the JSON is rendered in HTML.
+        if (c == '<' || c == '>' || c == '&' || c == '=' || c == '\'') {
+          return false;
+        }
+        // Non-ASCII characters are mostly safe, but we'll leave that to gson to decide.
+        if (c >= 127) {
+          return false;
+        }
+      }
+      return true;
+    }
   }
 
   private static String getTypeName(String typeUrl) throws InvalidProtocolBufferException {
@@ -1411,6 +1475,7 @@ public class JsonFormat {
     private final ExtensionRegistry extensionRegistry;
     private final boolean ignoringUnknownFields;
     private final int recursionLimit;
+    private final boolean legacyLenient;
     private int currentDepth;
 
     ParserImpl(
@@ -1418,18 +1483,23 @@ public class JsonFormat {
         TypeRegistry oldRegistry,
         ExtensionRegistry extensionRegistry,
         boolean ignoreUnknownFields,
-        int recursionLimit) {
+        int recursionLimit,
+        boolean legacyLenient) {
       this.registry = registry;
       this.oldRegistry = oldRegistry;
       this.extensionRegistry = extensionRegistry;
       this.ignoringUnknownFields = ignoreUnknownFields;
       this.recursionLimit = recursionLimit;
+      this.legacyLenient = legacyLenient;
       this.currentDepth = 0;
     }
 
     void merge(Reader json, Message.Builder builder) throws IOException {
       try {
         JsonReader reader = new JsonReader(json);
+        if (!legacyLenient) {
+          throw new IllegalStateException("Unreachable: !legacyLenient should not be set.");
+        }
         reader.setLenient(false);
         merge(JsonParser.parseReader(reader), builder);
       } catch (JsonIOException e) {
@@ -1448,6 +1518,9 @@ public class JsonFormat {
     void merge(String json, Message.Builder builder) throws InvalidProtocolBufferException {
       try {
         JsonReader reader = new JsonReader(new StringReader(json));
+        if (!legacyLenient) {
+          throw new IllegalStateException("Strict parsing is not supported in open-source.");
+        }
         reader.setLenient(false);
         merge(JsonParser.parseReader(reader), builder);
       } catch (RuntimeException e) {
@@ -1886,7 +1959,7 @@ public class JsonFormat {
       // "1.000" are treated as equal in JSON. For this reason we accept floating point values for
       // integer fields as well as long as it actually is an integer (i.e., round(value) == value).
       try {
-        BigDecimal value = new BigDecimal(json.getAsString());
+        BigDecimal value = parseBigDecimal(json.getAsString());
         return value.intValueExact();
       } catch (RuntimeException e) {
         InvalidProtocolBufferException ex =
@@ -1906,7 +1979,7 @@ public class JsonFormat {
       // "1.000" are treated as equal in JSON. For this reason we accept floating point values for
       // integer fields as well as long as it actually is an integer (i.e., round(value) == value).
       try {
-        BigDecimal value = new BigDecimal(json.getAsString());
+        BigDecimal value = parseBigDecimal(json.getAsString());
         return value.longValueExact();
       } catch (RuntimeException e) {
         InvalidProtocolBufferException ex =
@@ -1930,7 +2003,7 @@ public class JsonFormat {
       // "1.000" are treated as equal in JSON. For this reason we accept floating point values for
       // integer fields as well as long as it actually is an integer (i.e., round(value) == value).
       try {
-        BigDecimal value = new BigDecimal(json.getAsString());
+        BigDecimal value = parseBigDecimal(json.getAsString());
         if (value.signum() < 0 || value.compareTo(MAX_UINT32) > 0) {
           throw new InvalidProtocolBufferException("Out of range uint32 value: " + json);
         }
@@ -1950,9 +2023,23 @@ public class JsonFormat {
     private static final BigDecimal MAX_UINT64 =
         new BigDecimal(new BigInteger("FFFFFFFFFFFFFFFF", 16));
 
+    // Maximum length for numeric strings passed to BigDecimal constructor.
+    // BigDecimal(String) has O(N^2) time complexity for N-digit strings on JDK < 18,
+    // allowing a DoS with a single long numeric JSON value. Valid protobuf numeric
+    // values never exceed ~350 characters, so 1000 is a generous upper bound.
+    private static final int MAX_NUMERIC_STRING_LENGTH = 1000;
+
+    private static BigDecimal parseBigDecimal(String value) throws InvalidProtocolBufferException {
+      if (value.length() > MAX_NUMERIC_STRING_LENGTH) {
+        throw new InvalidProtocolBufferException(
+            "Numeric value is too long: " + value.length() + " characters");
+      }
+      return new BigDecimal(value);
+    }
+
     private long parseUint64(JsonElement json) throws InvalidProtocolBufferException {
       try {
-        BigDecimal value = new BigDecimal(json.getAsString());
+        BigDecimal value = parseBigDecimal(json.getAsString());
         if (value.signum() < 0 || value.compareTo(MAX_UINT64) > 0) {
           throw new InvalidProtocolBufferException("Out of range uint64 value: " + json);
         }
@@ -2030,7 +2117,7 @@ public class JsonFormat {
         // We don't use Double.parseDouble() here because that function simply
         // accepts all values. Here we parse the value into a BigDecimal and do
         // explicit range check on it.
-        BigDecimal value = new BigDecimal(json.getAsString());
+        BigDecimal value = parseBigDecimal(json.getAsString());
         if (value.compareTo(MAX_DOUBLE) > 0 || value.compareTo(MIN_DOUBLE) < 0) {
           throw new InvalidProtocolBufferException("Out of range double value: " + json);
         }
@@ -2085,6 +2172,7 @@ public class JsonFormat {
       return result;
     }
 
+    @SuppressWarnings("AvoidValueSetter")
     @Nullable
     private Object parseFieldValue(FieldDescriptor field, JsonElement json, Message.Builder builder)
         throws InvalidProtocolBufferException {

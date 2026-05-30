@@ -29,7 +29,7 @@ upb_Array_Set [upb_Array *, size_t, upb_MessageValue] void
 upb_Array_Size [const upb_Array *] size_t
 upb_Decode [const char *, size_t, upb_Message *, const upb_MiniTable *, const upb_ExtensionRegistry *, int, upb_Arena *] upb_DecodeStatus
 upb_DefPool_AddFile [upb_DefPool *, const int *, upb_Status *] const upb_FileDef *
-upb_DefPool_ExtensionRegistry [const upb_DefPool *] const int *
+upb_DefPool_ExtensionRegistry [const upb_DefPool *] const upb_ExtensionRegistry *
 upb_DefPool_FindEnumByName [const upb_DefPool *, const char *] const upb_EnumDef *
 upb_DefPool_FindExtensionByName [const upb_DefPool *, const char *] const upb_FieldDef *
 upb_DefPool_FindFileByName [const upb_DefPool *, const char *] const upb_FileDef *

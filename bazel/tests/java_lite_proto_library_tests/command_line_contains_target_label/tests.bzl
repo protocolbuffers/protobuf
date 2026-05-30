@@ -9,4 +9,6 @@ def _test_lite_command_line_contains_target_label(env, target):
         "java_lite_proto_library",
     ]).in_order()
 
-TESTS = [(_test_lite_command_line_contains_target_label, ":foo_proto")]
+TESTS = {
+    ":foo_proto": [_test_lite_command_line_contains_target_label],
+}

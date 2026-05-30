@@ -198,6 +198,63 @@ cc_library(
     ],
 )
 
+# Experimental API, subject to change.
+cc_library(
+    name = "convert",
+    srcs = [
+        "convert.c",
+    ],
+    hdrs = [
+        "convert.h",
+    ],
+    copts = UPB_DEFAULT_COPTS,
+    visibility = [
+        "//upb:__pkg__",
+        "//upb:friends",
+    ],
+    deps = [
+        ":compare",
+        ":internal",
+        ":message",
+        "//upb/base",
+        "//upb/mem",
+        "//upb/mini_table",
+        "//upb/mini_table:internal",
+        "//upb/port",
+        "//upb/wire",
+        "//upb/wire:back_alloc",
+        "//upb/wire:decoder",
+        "//upb/wire:encoder",
+        "//upb/wire:eps_copy_input_stream",
+    ],
+)
+
+cc_test(
+    name = "convert_test",
+    srcs = ["convert_test.cc"],
+    deps = [
+        ":convert",
+        ":convert_test_upb_minitable_proto",
+        ":convert_test_upb_proto",
+        ":internal",
+        ":message",
+        ":message_test_upb_minitable_proto",
+        ":message_test_upb_proto",
+        ":promote",
+        "//upb/base",
+        "//upb/mem",
+        "//upb/mini_table",
+        "//upb/port",
+        "//upb/test:test_messages_proto2_upb_proto",
+        "//upb/test:test_messages_proto3_upb_minitable",
+        "//upb/test:test_messages_proto3_upb_proto",
+        "//upb/test:test_upb_proto",
+        "//upb/wire",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
+    ],
+)
+
 cc_test(
     name = "merge_test",
     srcs = ["merge_test.cc"],
@@ -228,6 +285,8 @@ cc_library(
     visibility = ["//visibility:public"],
     deps = [
         ":message",
+        "//upb/mem",
+        "//upb/mini_table",
         "//upb/port",
     ],
 )
@@ -344,6 +403,7 @@ cc_test(
         "//upb/port",
         "//upb/test:test_messages_proto2_upb_minitable",
         "//upb/test:test_messages_proto2_upb_proto",
+        "//upb/test:test_proto_upb_minitable",
         "//upb/test:test_upb_proto",
         "//upb/wire",
         "@abseil-cpp//absl/container:flat_hash_set",
@@ -413,6 +473,7 @@ cc_test(
     features = UPB_DEFAULT_FEATURES,
     deps = [
         ":compare",
+        ":convert",
         ":internal",
         ":message",
         ":message_test_upb_minitable_proto",
@@ -514,7 +575,10 @@ filegroup(
         [
             "**/*test.cc",
         ],
-        exclude = ["promote_test.cc"],
+        exclude = [
+            "promote_test.cc",
+            "convert_fuzz_test.cc",
+        ],
     ),
     visibility = ["//upb:__pkg__"],
 )
@@ -527,4 +591,22 @@ filegroup(
         ],
     ),
     visibility = ["//upb:__pkg__"],
+)
+
+proto_library(
+    name = "convert_test_proto",
+    testonly = 1,
+    srcs = ["convert_test.proto"],
+)
+
+upb_minitable_proto_library(
+    name = "convert_test_upb_minitable_proto",
+    testonly = 1,
+    deps = [":convert_test_proto"],
+)
+
+upb_c_proto_library(
+    name = "convert_test_upb_proto",
+    testonly = 1,
+    deps = [":convert_test_proto"],
 )

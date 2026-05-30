@@ -42,6 +42,7 @@
 #include "absl/types/span.h"
 #include "google/protobuf/arena.h"
 #include "google/protobuf/cpp_features.pb.h"
+#include "google/protobuf/cpp_file_options.pb.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/descriptor_lite.h"
@@ -53,6 +54,7 @@
 #include "google/protobuf/generated_message_util.h"
 #include "google/protobuf/has_bits.h"
 #include "google/protobuf/inlined_string_field.h"
+#include "google/protobuf/json_enumvalue_options.pb.h"
 #include "google/protobuf/map_field.h"
 #include "google/protobuf/message.h"
 #include "google/protobuf/message_lite.h"
@@ -79,6 +81,7 @@ using google::protobuf::internal::InlinedStringField;
 using google::protobuf::internal::InternalMetadata;
 using google::protobuf::internal::kNoHasbit;
 using google::protobuf::internal::LazyField;
+using google::protobuf::internal::LazyFieldForUnion;
 using google::protobuf::internal::MapFieldBase;
 using google::protobuf::internal::MessageGlobalsBase;
 using google::protobuf::internal::MicroString;
@@ -2514,9 +2517,11 @@ const Message* Reflection::GetDefaultMessageInstance(
   // instances to allow for this. But only do this for real fields.
   // This is an optimization to avoid going to GetPrototype() below, as that
   // requires a lock and a map lookup.
-  if (!field->is_extension() && !field->is_repeated() &&
-      !field->options().weak() && !IsLazyField(field) &&
-      !schema_.InRealOneof(field)) {
+  PROTOBUF_IGNORE_DEPRECATION_START
+  const bool field_is_weak = field->options().weak();
+  PROTOBUF_IGNORE_DEPRECATION_STOP
+  if (!field->is_extension() && !field->is_repeated() && !field_is_weak &&
+      !IsLazyField(field) && !schema_.InRealOneof(field)) {
     auto* res = DefaultRaw<const Message*>(field);
     ABSL_DCHECK_NE(res, nullptr);
     return res;
@@ -3225,7 +3230,9 @@ bool Reflection::IsFieldPresentGivenHasbits(const Message& message,
 
 bool Reflection::HasFieldWithHasbits(const Message& message,
                                      const FieldDescriptor* field) const {
+  PROTOBUF_IGNORE_DEPRECATION_START
   ABSL_DCHECK(!field->options().weak());
+  PROTOBUF_IGNORE_DEPRECATION_STOP
   ABSL_DCHECK(!field->is_extension());
   if (schema_.HasBitIndex(field) != static_cast<uint32_t>(kNoHasbit)) {
     return IsFieldPresentGivenHasbits(message, field, GetHasBits(message),
@@ -3258,7 +3265,9 @@ bool Reflection::HasFieldWithHasbits(const Message& message,
 
 void Reflection::SetHasBit(Message* message,
                            const FieldDescriptor* field) const {
+  PROTOBUF_IGNORE_DEPRECATION_START
   ABSL_DCHECK(!field->options().weak());
+  PROTOBUF_IGNORE_DEPRECATION_STOP
   const uint32_t index = schema_.HasBitIndex(field);
   if (index == static_cast<uint32_t>(kNoHasbit)) return;
   MutableHasBits(message)[index / 32] |=
@@ -3267,7 +3276,9 @@ void Reflection::SetHasBit(Message* message,
 
 void Reflection::ClearHasBit(Message* message,
                              const FieldDescriptor* field) const {
+  PROTOBUF_IGNORE_DEPRECATION_START
   ABSL_DCHECK(!field->options().weak());
+  PROTOBUF_IGNORE_DEPRECATION_STOP
   const uint32_t index = schema_.HasBitIndex(field);
   if (index == static_cast<uint32_t>(kNoHasbit)) return;
   MutableHasBits(message)[index / 32] &=
@@ -3276,7 +3287,9 @@ void Reflection::ClearHasBit(Message* message,
 
 void Reflection::NaiveSwapHasBit(Message* message1, Message* message2,
                                  const FieldDescriptor* field) const {
+  PROTOBUF_IGNORE_DEPRECATION_START
   ABSL_DCHECK(!field->options().weak());
+  PROTOBUF_IGNORE_DEPRECATION_STOP
   if (!schema_.HasHasbits() ||
       schema_.HasBitIndex(field) == static_cast<uint32_t>(kNoHasbit)) {
     return;
@@ -3711,25 +3724,34 @@ void Reflection::PopulateTcParseFieldAux(
 const internal::TcParseTableBase* Reflection::CreateTcParseTable() const {
   using TcParseTableBase = internal::TcParseTableBase;
 
-  std::vector<internal::TailCallTableInfo::FieldOptions> fields;
+  using FieldOptions = internal::TailCallTableInfo::FieldOptions;
+  std::vector<FieldOptions> fields;
   fields.reserve(descriptor_->field_count());
   for (int i = 0; i < descriptor_->field_count(); ++i) {
     auto* field = descriptor_->field(i);
-    const bool is_inlined = IsInlined(field);
+    const auto str_options = [&]() -> FieldOptions::StrOptions {
+      if (field->cpp_type() == FieldDescriptor::CPPTYPE_STRING) {
+        if (IsInlined(field)) return FieldOptions::StringInlined{};
+        if (IsMicroString(field)) {
+          // We use the basic SSO capacity for reflection
+          // We could improve this later
+          return FieldOptions::MicroString{MicroString::kInlineCapacity};
+        }
+      }
+      return std::monostate{};
+    };
     fields.push_back({
         field,  //
         static_cast<int>(schema_.HasBitIndex(field)),
         1.f,  // All fields are assumed present.
         GetLazyStyle(field),
-        is_inlined,
         // Only LITE can be implicitly weak.
         /* is_implicitly_weak */ false,
         // We could change this to use direct table.
         // Might be easier to do when all messages support TDP.
         /* use_direct_tcparser_table */ false,
         schema_.IsSplit(field),
-        field->cpp_type() == FieldDescriptor::CPPTYPE_STRING &&
-            IsMicroString(field),
+        str_options(),
     });
   }
   std::sort(fields.begin(), fields.end(), [](const auto& a, const auto& b) {
@@ -3963,7 +3985,8 @@ void AssignDescriptorsImpl(const DescriptorTable* table, bool eager) {
   const FileDescriptor* file =
       DescriptorPool::internal_generated_pool()->FindFileByName(
           table->filename);
-  ABSL_CHECK(file != nullptr);
+  ABSL_CHECK(file != nullptr) << " Missing file descriptor for `"
+                              << table->filename << "` in the generated pool.";
 
   MessageFactory* factory = MessageFactory::generated_factory();
 
@@ -3993,6 +4016,7 @@ void MaybeInitializeLazyDescriptors(const DescriptorTable* table) {
 }
 
 void AddDescriptorsImpl(const DescriptorTable* table) {
+
   // Reflection refers to the default fields so make sure they are initialized.
   internal::InitProtobufDefaults();
   internal::InitializeFileDescriptorDefaultInstances();
@@ -4021,6 +4045,18 @@ void AddDescriptorsImpl(const DescriptorTable* table) {
            &FeatureSet::default_instance(), pb::cpp.number(),
            FieldDescriptor::TYPE_MESSAGE, false, false,
            &pb::CppFeatures::default_instance(),
+           nullptr,
+           internal::LazyAnnotation::kUndefined),
+       internal::ExtensionSet::RegisterMessageExtension(
+           &FileOptions::default_instance(), pb::file::cpp.number(),
+           FieldDescriptor::TYPE_MESSAGE, false, false,
+           &pb::file::CppFileOptions::default_instance(),
+           nullptr,
+           internal::LazyAnnotation::kUndefined),
+       internal::ExtensionSet::RegisterMessageExtension(
+           &EnumValueOptions::default_instance(), pb::enumvalue::json.number(),
+           FieldDescriptor::TYPE_MESSAGE, false, false,
+           &pb::enumvalue::JsonEnumValueOptions::default_instance(),
            nullptr,
            internal::LazyAnnotation::kUndefined),
        std::true_type{});

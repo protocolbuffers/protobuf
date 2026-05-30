@@ -9,6 +9,7 @@
 #define GOOGLE_UPB_UPB_WIRE_TEST_WIRE_TYPES_H__
 
 #include <cstdint>
+#include <limits>
 #include <string>
 
 #include <gtest/gtest.h>
@@ -22,16 +23,28 @@ namespace upb {
 namespace test {
 namespace field_types {
 
+// Note on kMin/kMax constants in the structs below:
+// These constants are used by the generic parameterized tests in decode_test.cc
+// to test decoding of two different non-zero valid values for each type.
+// Because the tests are generic, every type struct must define them.
+// - For numeric types, they are typically the actual limits (or arbitrary
+//   non-zero values for Float/Double).
+// - For ClosedEnum, they must be valid enum values (e.g., 1 and 2) to avoid
+//   triggering the unknown field path.
+// - For String/Bytes, they are just arbitrary non-empty strings.
+
 // This set of field types is similar to upb_FieldType, but it also includes
 // some extra distinctions like closed vs. open enum and validated vs.
 // unvalidated UTF-8.
 
 struct Fixed32 {
   using Value = uint32_t;
-  inline static constexpr upb_FieldType kFieldType = kUpb_FieldType_Fixed32;
-  inline static constexpr absl::string_view kName = "Fixed32";
-  inline static constexpr upb_DecodeFast_Type kFastType =
-      kUpb_DecodeFast_Fixed32;
+  static constexpr Value kZero = 0;
+  static constexpr Value kMin = std::numeric_limits<Value>::min();
+  static constexpr Value kMax = std::numeric_limits<Value>::max();
+  static constexpr upb_FieldType kFieldType = kUpb_FieldType_Fixed32;
+  static constexpr absl::string_view kName = "Fixed32";
+  static constexpr upb_DecodeFast_Type kFastType = kUpb_DecodeFast_Fixed32;
 
   template <class T>
   static wire_types::WireValue WireValue(T value) {
@@ -41,10 +54,12 @@ struct Fixed32 {
 
 struct Fixed64 {
   using Value = uint64_t;
-  inline static constexpr upb_FieldType kFieldType = kUpb_FieldType_Fixed64;
-  inline static constexpr absl::string_view kName = "Fixed64";
-  inline static constexpr upb_DecodeFast_Type kFastType =
-      kUpb_DecodeFast_Fixed64;
+  static constexpr Value kZero = 0;
+  static constexpr Value kMin = std::numeric_limits<Value>::min();
+  static constexpr Value kMax = std::numeric_limits<Value>::max();
+  static constexpr upb_FieldType kFieldType = kUpb_FieldType_Fixed64;
+  static constexpr absl::string_view kName = "Fixed64";
+  static constexpr upb_DecodeFast_Type kFastType = kUpb_DecodeFast_Fixed64;
 
   template <class T>
   static wire_types::WireValue WireValue(T value) {
@@ -54,10 +69,12 @@ struct Fixed64 {
 
 struct SFixed32 {
   using Value = int32_t;
-  inline static constexpr upb_FieldType kFieldType = kUpb_FieldType_SFixed32;
-  inline static constexpr absl::string_view kName = "SFixed32";
-  inline static constexpr upb_DecodeFast_Type kFastType =
-      kUpb_DecodeFast_Fixed32;
+  static constexpr Value kZero = 0;
+  static constexpr Value kMin = std::numeric_limits<Value>::min();
+  static constexpr Value kMax = std::numeric_limits<Value>::max();
+  static constexpr upb_FieldType kFieldType = kUpb_FieldType_SFixed32;
+  static constexpr absl::string_view kName = "SFixed32";
+  static constexpr upb_DecodeFast_Type kFastType = kUpb_DecodeFast_Fixed32;
 
   template <class T>
   static wire_types::WireValue WireValue(T value) {
@@ -67,10 +84,12 @@ struct SFixed32 {
 
 struct SFixed64 {
   using Value = int64_t;
-  inline static constexpr upb_FieldType kFieldType = kUpb_FieldType_SFixed64;
-  inline static constexpr absl::string_view kName = "SFixed64";
-  inline static constexpr upb_DecodeFast_Type kFastType =
-      kUpb_DecodeFast_Fixed64;
+  static constexpr Value kZero = 0;
+  static constexpr Value kMin = std::numeric_limits<Value>::min();
+  static constexpr Value kMax = std::numeric_limits<Value>::max();
+  static constexpr upb_FieldType kFieldType = kUpb_FieldType_SFixed64;
+  static constexpr absl::string_view kName = "SFixed64";
+  static constexpr upb_DecodeFast_Type kFastType = kUpb_DecodeFast_Fixed64;
 
   template <class T>
   static wire_types::WireValue WireValue(T value) {
@@ -80,10 +99,12 @@ struct SFixed64 {
 
 struct Float {
   using Value = float;
-  inline static constexpr upb_FieldType kFieldType = kUpb_FieldType_Float;
-  inline static constexpr absl::string_view kName = "Float";
-  inline static constexpr upb_DecodeFast_Type kFastType =
-      kUpb_DecodeFast_Fixed32;
+  static constexpr Value kZero = 0.0f;
+  static constexpr Value kMin = -1234.5f;
+  static constexpr Value kMax = 1234.5f;
+  static constexpr upb_FieldType kFieldType = kUpb_FieldType_Float;
+  static constexpr absl::string_view kName = "Float";
+  static constexpr upb_DecodeFast_Type kFastType = kUpb_DecodeFast_Fixed32;
 
   template <class T>
   static wire_types::WireValue WireValue(T value) {
@@ -94,10 +115,12 @@ struct Float {
 
 struct Double {
   using Value = double;
-  inline static constexpr upb_FieldType kFieldType = kUpb_FieldType_Double;
-  inline static constexpr absl::string_view kName = "Double";
-  inline static constexpr upb_DecodeFast_Type kFastType =
-      kUpb_DecodeFast_Fixed64;
+  static constexpr Value kZero = 0.0;
+  static constexpr Value kMin = -1234567.89;
+  static constexpr Value kMax = 1234567.89;
+  static constexpr upb_FieldType kFieldType = kUpb_FieldType_Double;
+  static constexpr absl::string_view kName = "Double";
+  static constexpr upb_DecodeFast_Type kFastType = kUpb_DecodeFast_Fixed64;
 
   template <class T>
   static wire_types::WireValue WireValue(T value) {
@@ -108,10 +131,12 @@ struct Double {
 
 struct Int32 {
   using Value = int32_t;
-  inline static constexpr upb_FieldType kFieldType = kUpb_FieldType_Int32;
-  inline static constexpr absl::string_view kName = "Int32";
-  inline static constexpr upb_DecodeFast_Type kFastType =
-      kUpb_DecodeFast_Varint32;
+  static constexpr Value kZero = 0;
+  static constexpr Value kMin = std::numeric_limits<Value>::min();
+  static constexpr Value kMax = std::numeric_limits<Value>::max();
+  static constexpr upb_FieldType kFieldType = kUpb_FieldType_Int32;
+  static constexpr absl::string_view kName = "Int32";
+  static constexpr upb_DecodeFast_Type kFastType = kUpb_DecodeFast_Varint32;
 
   template <class T>
   static wire_types::WireValue WireValue(T value) {
@@ -122,10 +147,12 @@ struct Int32 {
 
 struct Int64 {
   using Value = int64_t;
-  inline static constexpr upb_FieldType kFieldType = kUpb_FieldType_Int64;
-  inline static constexpr absl::string_view kName = "Int64";
-  inline static constexpr upb_DecodeFast_Type kFastType =
-      kUpb_DecodeFast_Varint64;
+  static constexpr Value kZero = 0;
+  static constexpr Value kMin = std::numeric_limits<Value>::min();
+  static constexpr Value kMax = std::numeric_limits<Value>::max();
+  static constexpr upb_FieldType kFieldType = kUpb_FieldType_Int64;
+  static constexpr absl::string_view kName = "Int64";
+  static constexpr upb_DecodeFast_Type kFastType = kUpb_DecodeFast_Varint64;
 
   template <class T>
   static wire_types::WireValue WireValue(T value) {
@@ -135,10 +162,12 @@ struct Int64 {
 
 struct UInt32 {
   using Value = uint32_t;
-  inline static constexpr upb_FieldType kFieldType = kUpb_FieldType_UInt32;
-  inline static constexpr absl::string_view kName = "UInt32";
-  inline static constexpr upb_DecodeFast_Type kFastType =
-      kUpb_DecodeFast_Varint32;
+  static constexpr Value kZero = 0;
+  static constexpr Value kMin = std::numeric_limits<Value>::min();
+  static constexpr Value kMax = std::numeric_limits<Value>::max();
+  static constexpr upb_FieldType kFieldType = kUpb_FieldType_UInt32;
+  static constexpr absl::string_view kName = "UInt32";
+  static constexpr upb_DecodeFast_Type kFastType = kUpb_DecodeFast_Varint32;
 
   template <class T>
   static wire_types::WireValue WireValue(T value) {
@@ -148,10 +177,12 @@ struct UInt32 {
 
 struct UInt64 {
   using Value = uint64_t;
-  inline static constexpr upb_FieldType kFieldType = kUpb_FieldType_UInt64;
-  inline static constexpr absl::string_view kName = "UInt64";
-  inline static constexpr upb_DecodeFast_Type kFastType =
-      kUpb_DecodeFast_Varint64;
+  static constexpr Value kZero = 0;
+  static constexpr Value kMin = std::numeric_limits<Value>::min();
+  static constexpr Value kMax = std::numeric_limits<Value>::max();
+  static constexpr upb_FieldType kFieldType = kUpb_FieldType_UInt64;
+  static constexpr absl::string_view kName = "UInt64";
+  static constexpr upb_DecodeFast_Type kFastType = kUpb_DecodeFast_Varint64;
 
   template <class T>
   static wire_types::WireValue WireValue(T value) {
@@ -161,10 +192,12 @@ struct UInt64 {
 
 struct SInt32 {
   using Value = int32_t;
-  inline static constexpr upb_FieldType kFieldType = kUpb_FieldType_SInt32;
-  inline static constexpr absl::string_view kName = "SInt32";
-  inline static constexpr upb_DecodeFast_Type kFastType =
-      kUpb_DecodeFast_ZigZag32;
+  static constexpr Value kZero = 0;
+  static constexpr Value kMin = std::numeric_limits<Value>::min();
+  static constexpr Value kMax = std::numeric_limits<Value>::max();
+  static constexpr upb_FieldType kFieldType = kUpb_FieldType_SInt32;
+  static constexpr absl::string_view kName = "SInt32";
+  static constexpr upb_DecodeFast_Type kFastType = kUpb_DecodeFast_ZigZag32;
 
   template <class T>
   static wire_types::WireValue WireValue(T value) {
@@ -176,10 +209,12 @@ struct SInt32 {
 
 struct SInt64 {
   using Value = int64_t;
-  inline static constexpr upb_FieldType kFieldType = kUpb_FieldType_SInt64;
-  inline static constexpr absl::string_view kName = "SInt64";
-  inline static constexpr upb_DecodeFast_Type kFastType =
-      kUpb_DecodeFast_ZigZag64;
+  static constexpr Value kZero = 0;
+  static constexpr Value kMin = std::numeric_limits<Value>::min();
+  static constexpr Value kMax = std::numeric_limits<Value>::max();
+  static constexpr upb_FieldType kFieldType = kUpb_FieldType_SInt64;
+  static constexpr absl::string_view kName = "SInt64";
+  static constexpr upb_DecodeFast_Type kFastType = kUpb_DecodeFast_ZigZag64;
 
   template <class T>
   static wire_types::WireValue WireValue(T value) {
@@ -191,9 +226,12 @@ struct SInt64 {
 
 struct Bool {
   using Value = bool;
-  inline static constexpr upb_FieldType kFieldType = kUpb_FieldType_Bool;
-  inline static constexpr absl::string_view kName = "Bool";
-  inline static constexpr upb_DecodeFast_Type kFastType = kUpb_DecodeFast_Bool;
+  static constexpr Value kZero = false;
+  static constexpr Value kMin = false;
+  static constexpr Value kMax = true;
+  static constexpr upb_FieldType kFieldType = kUpb_FieldType_Bool;
+  static constexpr absl::string_view kName = "Bool";
+  static constexpr upb_DecodeFast_Type kFastType = kUpb_DecodeFast_Bool;
 
   template <class T>
   static wire_types::WireValue WireValue(T value) {
@@ -203,10 +241,12 @@ struct Bool {
 
 struct String {
   using Value = std::string;
-  inline static constexpr upb_FieldType kFieldType = kUpb_FieldType_String;
-  inline static constexpr absl::string_view kName = "String";
-  inline static constexpr upb_DecodeFast_Type kFastType =
-      kUpb_DecodeFast_String;
+  static constexpr absl::string_view kZero = "";
+  static constexpr absl::string_view kMin = "a very minimum valued string!";
+  static constexpr absl::string_view kMax = "a very maximum valued string!";
+  static constexpr upb_FieldType kFieldType = kUpb_FieldType_String;
+  static constexpr absl::string_view kName = "String";
+  static constexpr upb_DecodeFast_Type kFastType = kUpb_DecodeFast_String;
 
   static wire_types::WireValue WireValue(std::string value) {
     return wire_types::Delimited(value);
@@ -215,16 +255,54 @@ struct String {
 
 struct Bytes {
   using Value = std::string;
-  inline static constexpr upb_FieldType kFieldType = kUpb_FieldType_Bytes;
-  inline static constexpr absl::string_view kName = "Bytes";
-  inline static constexpr upb_DecodeFast_Type kFastType = kUpb_DecodeFast_Bytes;
+  static constexpr absl::string_view kZero = "";
+  static constexpr absl::string_view kMin = "a very minimum valued bytes!";
+  static constexpr absl::string_view kMax = "a very maximum valued bytes!";
+  static constexpr upb_FieldType kFieldType = kUpb_FieldType_Bytes;
+  static constexpr absl::string_view kName = "Bytes";
+  static constexpr upb_DecodeFast_Type kFastType = kUpb_DecodeFast_Bytes;
 
   static wire_types::WireValue WireValue(std::string value) {
     return wire_types::Delimited(value);
   }
 };
 
-// TODO: Message, Group, ClosedEnum
+struct Message {
+  using Value = std::string;
+  static constexpr upb_FieldType kFieldType = kUpb_FieldType_Message;
+  static constexpr absl::string_view kName = "Message";
+  static constexpr upb_DecodeFast_Type kFastType = kUpb_DecodeFast_Message;
+
+  static wire_types::WireValue WireValue(std::string value) {
+    return wire_types::Delimited(value);
+  }
+};
+
+struct ClosedEnum {
+  using Value = int32_t;
+  static constexpr Value kZero = 0;
+  static constexpr Value kMin = 1;
+  static constexpr Value kMax = 2;
+  static constexpr upb_FieldType kFieldType = kUpb_FieldType_Enum;
+  static constexpr absl::string_view kName = "ClosedEnum";
+  static constexpr upb_DecodeFast_Type kFastType = kUpb_DecodeFast_ClosedEnum;
+
+  template <class T>
+  static wire_types::WireValue WireValue(T value) {
+    return wire_types::Varint(static_cast<int64_t>(static_cast<Value>(value)));
+  }
+};
+
+struct Group {
+  using Value = std::string;
+  static constexpr upb_FieldType kFieldType = kUpb_FieldType_Group;
+  static constexpr absl::string_view kName = "Group";
+  static constexpr upb_DecodeFast_Type kFastType = kUpb_DecodeFast_Message;
+
+  static wire_types::WireValue WireValue(std::string value) {
+    return wire_types::Delimited(value);
+  }
+};
 
 }  // namespace field_types
 
@@ -233,7 +311,8 @@ using PackableFieldTypes =
                    field_types::SFixed32, field_types::SFixed64,
                    field_types::Float, field_types::Double, field_types::Int32,
                    field_types::Int64, field_types::UInt32, field_types::UInt64,
-                   field_types::SInt32, field_types::SInt64, field_types::Bool>;
+                   field_types::SInt32, field_types::SInt64, field_types::Bool,
+                   field_types::ClosedEnum>;
 
 using FieldTypes =
     testing::Types<field_types::Fixed32, field_types::Fixed64,
@@ -241,7 +320,7 @@ using FieldTypes =
                    field_types::Float, field_types::Double, field_types::Int32,
                    field_types::Int64, field_types::UInt32, field_types::UInt64,
                    field_types::SInt32, field_types::SInt64, field_types::Bool,
-                   field_types::String>;
+                   field_types::String, field_types::ClosedEnum>;
 
 template <typename Func, typename... Ts>
 void ForEachTypeImpl(Func&& func, testing::Types<Ts...>) {

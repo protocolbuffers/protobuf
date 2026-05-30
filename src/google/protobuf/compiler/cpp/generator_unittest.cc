@@ -13,6 +13,7 @@
 #include <gtest/gtest.h>
 #include "google/protobuf/compiler/command_line_interface_tester.h"
 #include "google/protobuf/cpp_features.pb.h"
+#include "google/protobuf/cpp_file_options.pb.h"
 
 
 namespace google {
@@ -33,6 +34,9 @@ class CppGeneratorTest : public CommandLineInterfaceTester {
         google::protobuf::DescriptorProto::descriptor()->file()->DebugString());
     CreateTempFile("google/protobuf/cpp_features.proto",
                    pb::CppFeatures::descriptor()->file()->DebugString());
+    CreateTempFile(
+        "google/protobuf/cpp_file_options.proto",
+        pb::file::CppFileOptions::descriptor()->file()->DebugString());
   }
 };
 
@@ -147,6 +151,50 @@ TEST_F(CppGeneratorTest, LegacyClosedEnumImplicit) {
 
   ExpectErrorSubstring(
       "Field Foo.bar has a closed enum type with implicit presence.");
+}
+
+TEST_F(CppGeneratorTest, ValidRepeatedFieldLegacyClosedEnumImplicit) {
+  CreateTempFile("foo.proto", R"schema(
+    edition = "2023";
+    import "google/protobuf/cpp_features.proto";
+    option features.(pb.cpp).legacy_closed_enum = true;
+    option features.field_presence = IMPLICIT;
+
+    enum TestEnum {
+      TEST_ENUM_UNKNOWN = 0;
+    }
+    message Foo {
+      repeated TestEnum bar = 1;
+    }
+  )schema");
+
+  RunProtoc(
+      "protocol_compiler --proto_path=$tmpdir --cpp_out=$tmpdir foo.proto");
+
+  ExpectNoErrors();
+}
+
+TEST_F(CppGeneratorTest, ValidOneofFieldLegacyClosedEnumImplicit) {
+  CreateTempFile("foo.proto", R"schema(
+    edition = "2023";
+    import "google/protobuf/cpp_features.proto";
+    option features.(pb.cpp).legacy_closed_enum = true;
+    option features.field_presence = IMPLICIT;
+
+    enum TestEnum {
+      TEST_ENUM_UNKNOWN = 0;
+    }
+    message Foo {
+      oneof o {
+        TestEnum bar = 1;
+      }
+    }
+  )schema");
+
+  RunProtoc(
+      "protocol_compiler --proto_path=$tmpdir --cpp_out=$tmpdir foo.proto");
+
+  ExpectNoErrors();
 }
 
 TEST_F(CppGeneratorTest, AllowStringTypeForEdition2023) {
@@ -294,6 +342,22 @@ TEST_F(CppGeneratorTest, CtypeOnNonStringFieldTest) {
       "Field Foo.bar specifies string_type, but is not a string nor bytes "
       "field.");
 }
+
+TEST_F(CppGeneratorTest, InvalidFullyQualifiedNamespace) {
+  CreateTempFile("foo.proto",
+                 R"schema(
+    edition = "UNSTABLE";
+    import option "google/protobuf/cpp_file_options.proto";
+    option (pb.file.cpp).namespace = "::foo::test";
+    message Foo {
+      int32 bar = 1;
+    })schema");
+  RunProtoc(
+      "protocol_compiler --proto_path=$tmpdir --cpp_out=$tmpdir  "
+      "--experimental_editions foo.proto");
+  ExpectErrorSubstring("Namespace ::foo::test can not start with `::`.");
+}
+
 
 TEST_F(CppGeneratorTest, CtypeOnExtensionTest) {
   CreateTempFile("foo.proto",

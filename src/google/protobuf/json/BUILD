@@ -1,5 +1,8 @@
 load("@rules_cc//cc:cc_test.bzl", "cc_test")
 load("@rules_cc//cc:defs.bzl", "cc_library")
+load("@rules_python//python:proto.bzl", "py_proto_library")
+load("//bazel:cc_proto_library.bzl", "cc_proto_library")
+load("//bazel:proto_library.bzl", "proto_library")
 load("//build_defs:cpp_opts.bzl", "COPTS")
 
 package(
@@ -89,6 +92,7 @@ cc_library(
         "@abseil-cpp//absl/algorithm:container",
         "@abseil-cpp//absl/log:absl_check",
         "@abseil-cpp//absl/strings",
+        "@abseil-cpp//absl/strings:charset",
         "@abseil-cpp//absl/strings:str_format",
     ],
 )
@@ -213,6 +217,7 @@ cc_library(
         ":untyped_message",
         "//:type_cc_proto",
         "//src/google/protobuf",
+        "//src/google/protobuf:json_enumvalue_options_cc_proto",
         "//src/google/protobuf:port",
         "//src/google/protobuf/stubs",
         "@abseil-cpp//absl/algorithm:container",
@@ -293,5 +298,45 @@ cc_library(
         "@abseil-cpp//absl/strings",
         "@abseil-cpp//absl/strings:str_format",
         "@abseil-cpp//absl/types:optional",
+    ],
+)
+
+filegroup(
+    name = "json_enumval_custom_string_proto_srcs",
+    testonly = True,
+    srcs = ["json_enumval_custom_string.proto"],
+    visibility = ["//:__subpackages__"],
+)
+
+proto_library(
+    name = "json_enumval_custom_string_proto",
+    testonly = True,
+    srcs = ["json_enumval_custom_string.proto"],
+    strip_import_prefix = "/src",
+    deps = ["//src/google/protobuf:json_options_proto"],
+)
+
+cc_proto_library(
+    name = "json_enumval_custom_string_cc_proto",
+    testonly = True,
+    deps = [":json_enumval_custom_string_proto"],
+)
+
+py_proto_library(
+    name = "json_enumval_custom_string_py_proto",
+    testonly = True,
+    visibility = ["//third_party/py/google/protobuf/internal:__pkg__"],
+    deps = [":json_enumval_custom_string_proto"],
+)
+
+cc_test(
+    name = "json_enumval_custom_string_test",
+    srcs = ["json_enumval_custom_string_test.cc"],
+    deps = [
+        ":json",
+        ":json_enumval_custom_string_cc_proto",
+        "@abseil-cpp//absl/status",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
     ],
 )

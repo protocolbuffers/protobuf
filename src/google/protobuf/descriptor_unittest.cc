@@ -119,6 +119,99 @@ namespace protobuf {
 // Can't use an anonymous namespace here due to brokenness of Tru64 compiler.
 namespace descriptor_unittest {
 
+std::string TextProtoTooManyFieldsPerMessageForEdition(
+    absl::string_view edition, absl::string_view opt_out = "") {
+  std::string text_proto_string = absl::Substitute(R"schema(
+    edition = "$0";
+    package limit1;
+    message M {
+      $1
+  )schema",
+                                                   edition, opt_out);
+
+  // Continuously append to the textproto string up to our proto limit.
+  for (int i = 1; i <= (internal::kLimit2026FieldsPerMessage + 1); ++i) {
+    absl::StrAppend(&text_proto_string,
+                    absl::StrFormat("    int32 field_%d = %d;\n", i, i));
+  }
+  absl::StrAppend(&text_proto_string, "}");
+
+  return text_proto_string;
+}
+
+std::string TextProtoTooManyValuesPerEnumForEdition(
+    absl::string_view edition, absl::string_view opt_out = "") {
+  std::string text_proto_string = absl::Substitute(R"schema(
+    edition = "$0";
+    package limit1;
+    message M {
+      enum E {
+        $1
+        E_UNKNOWN = 0;
+  )schema",
+                                                   edition, opt_out);
+  // Continuously append to the textproto string up to our proto limit.
+  for (int i = 1; i <= (internal::kLimit2026ValuesPerEnum + 1); ++i) {
+    absl::StrAppend(&text_proto_string,
+                    absl::StrFormat("        NUMBER_%d = %d;", i, i));
+  }
+  absl::StrAppend(&text_proto_string, R"schema(
+      }
+      E enum_field = 1;
+    }
+  )schema");
+
+  return text_proto_string;
+}
+
+std::string TextProtoTooManyFieldsPerOneofForEdition(
+    absl::string_view edition, absl::string_view opt_out = "") {
+  std::string text_proto_string = absl::Substitute(R"schema(
+    edition = "$0";
+    package limit1;
+    message M {
+      oneof O {
+        $1
+  )schema",
+                                                   edition, opt_out);
+  // Continuously append to the textproto string up to our proto limit.
+  for (int i = 1; i <= (internal::kLimit2026FieldsPerOneof + 1); ++i) {
+    absl::StrAppend(&text_proto_string,
+                    absl::StrFormat("        int32 int_field_%d = %d;", i, i));
+  }
+  absl::StrAppend(&text_proto_string, R"schema(
+      }
+    }
+  )schema");
+
+  return text_proto_string;
+}
+
+std::string TextProtoTooManyOneofsPerMessageForEdition(
+    absl::string_view edition, absl::string_view opt_out = "") {
+  std::string text_proto_string = absl::Substitute(R"schema(
+    edition = "$0";
+    package limit1;
+    message M {
+      $1
+  )schema",
+                                                   edition, opt_out);
+  // Continuously append to the textproto string up to our proto limit.
+  for (int i = 1; i <= (internal::kLimit2026OneofsPerMessage + 1); ++i) {
+    absl::StrAppend(&text_proto_string, absl::StrFormat(R"schema(
+                      oneof O_%d {
+                        int32 int_field_%d = %d;
+                      }
+                    )schema",
+                                                        i, i, i));
+  }
+  absl::StrAppend(&text_proto_string, R"schema(
+    }
+  )schema");
+
+  return text_proto_string;
+}
+
 // Some helpers to make assembling descriptors faster.
 DescriptorProto* AddMessage(FileDescriptorProto* file,
                             const std::string& name) {
@@ -4780,7 +4873,7 @@ TEST(CustomOptions, AggregateOptions) {
             file_options.file().GetExtension(proto2_unittest::fileopt).s());
   EXPECT_EQ("EmbeddedMessageSetElement",
             file_options.mset()
-                .GetExtension(proto2_unittest::AggregateMessageSetElement ::
+                .GetExtension(proto2_unittest::AggregateMessageSetElement::
                                   message_set_extension)
                 .s());
 
@@ -7915,6 +8008,34 @@ TEST_F(ValidationErrorTest, MapEntryBase) {
   BuildFile(text_proto);
 }
 
+TEST_F(ValidationErrorTest, GroupFieldPointingToMapEntryIsNotMap) {
+  // TYPE_GROUP field referencing a map_entry message should produce a
+  // validation error. Groups cannot be map entries.
+  BuildFileWithErrors(
+      "name: 'group_map.proto' "
+      "message_type { "
+      "  name: 'Foo' "
+      "  field { "
+      "    name: 'foomapentry' number: 1 label: LABEL_REPEATED "
+      "    type: TYPE_GROUP type_name: 'FooMapEntry' "
+      "  } "
+      "  nested_type { "
+      "    name: 'FooMapEntry' "
+      "    options { map_entry: true } "
+      "    field { "
+      "      name: 'key' number: 1 type: TYPE_INT32 label: LABEL_OPTIONAL "
+      "    } "
+      "    field { "
+      "      name: 'value' number: 2 type: TYPE_INT32 label: LABEL_OPTIONAL "
+      "    } "
+      "  } "
+      "} ",
+
+      "group_map.proto: Foo.foomapentry: TYPE: Groups cannot be map entries. "
+      "Use a regular message field with map<KeyType, ValueType> syntax "
+      "instead.\n");
+}
+
 TEST_F(ValidationErrorTest, MapEntryExtensionRange) {
   FileDescriptorProto file_proto;
   FillValidMapEntry(&file_proto);
@@ -7948,6 +8069,263 @@ TEST_F(ValidationErrorTest, MapEntryNestedType) {
   BuildFileWithErrors(file_proto, kMapEntryErrorMessage);
 }
 
+// Test for the scenario:
+// package pkg;
+// message B {
+//   AEntry x = 1;
+//   map<int32, int32> a = 2; // Synthesizes B.AEntry
+// }
+// Expect: error on synthetic MapEntry, no suggestion
+TEST_F(ValidationErrorTest, MapEntrySyntheticTypeUsedAsField) {
+  BuildFileWithErrors(
+      "name: \"foo.proto\" "
+      "package: \"pkg\" "
+      "message_type {"
+      "  name: \"B\""
+      "  field { name: \"x\" number: 1 type: TYPE_MESSAGE type_name: "
+      "\"AEntry\" "
+      "          label: LABEL_OPTIONAL }"
+      "  field { name: \"a\" number: 2 type: TYPE_MESSAGE type_name: "
+      "\"AEntry\" "
+      "          label: LABEL_REPEATED }"
+      "  nested_type {"
+      "    name: \"AEntry\""
+      "    options { map_entry: true }"
+      "    field { name: \"key\" number: 1 type: TYPE_INT32 label: "
+      "LABEL_OPTIONAL }"
+      "    field { name: \"value\" number: 2 type: TYPE_INT32 label: "
+      "LABEL_OPTIONAL }"
+      "  }"
+      "}",
+      "foo.proto: pkg.B.x: TYPE: pkg.B.AEntry is a synthetic MapEntry message "
+      "type, which is not allowed to be used as a field type.\n");
+}
+
+// Test for the scenario:
+// package pkg;
+// message B {
+//   map<int32, int32> a = 1; // Synthesizes B.AEntry
+// }
+// message C {
+//   B.AEntry a = 1; // Field name matches AEntry, but scope is different.
+// }
+// Expect: error on synthetic MapEntry, no suggestion
+TEST_F(ValidationErrorTest, MapEntrySyntheticTypeCrossMessage) {
+  BuildFileWithErrors(
+      "name: \"foo.proto\" "
+      "package: \"pkg\" "
+      "message_type {"
+      "  name: \"B\""
+      "  field { name: \"a\" number: 1 type: TYPE_MESSAGE type_name: "
+      "\"AEntry\" "
+      "          label: LABEL_REPEATED }"
+      "  nested_type {"
+      "    name: \"AEntry\""
+      "    options { map_entry: true }"
+      "    field { name: \"key\" number: 1 type: TYPE_INT32 label: "
+      "LABEL_OPTIONAL }"
+      "    field { name: \"value\" number: 2 type: TYPE_INT32 label: "
+      "LABEL_OPTIONAL }"
+      "  }"
+      "}"
+      "message_type {"
+      "  name: \"C\""
+      "  field { name: \"a\" number: 1 type: TYPE_MESSAGE type_name: "
+      "\".pkg.B.AEntry\" label: LABEL_OPTIONAL }"
+      "}",
+      "foo.proto: pkg.C.a: TYPE: pkg.B.AEntry is a synthetic MapEntry "
+      "message type, which is not allowed to be used as a field type.\n");
+}
+
+// Test for the scenario:
+// package pkg;
+// message Container {
+//   map<uint32, AEntry> a = 1;
+// }
+// Expect: error on synthetic MapEntry, no suggestion
+TEST_F(ValidationErrorTest, MapEntrySyntheticType) {
+  BuildFileWithErrors(
+      "name: \"foo.proto\" "
+      "package: \"pkg\" "
+      "message_type {"
+      "  name: \"Container\""
+      "  field { name: \"a\" number: 1 type: TYPE_MESSAGE type_name: "
+      "\"AEntry\" "
+      "          label: LABEL_REPEATED }"
+      "  nested_type {"
+      "    name: \"AEntry\""
+      "    options { map_entry: true }"
+      "    field { name: \"key\" number: 1 type: TYPE_UINT32 label: "
+      "LABEL_OPTIONAL }"
+      "    field { name: \"value\" number: 2 type: TYPE_MESSAGE type_name: "
+      "\"AEntry\" label: LABEL_OPTIONAL }"
+      "  }"
+      "}",
+      "foo.proto: pkg.Container.AEntry.value: TYPE: "
+      "pkg.Container.AEntry is a synthetic MapEntry message type, which "
+      "is not allowed to be used as a field type.\n");
+}
+
+// Test for the scenario:
+// package pkg;
+// message B {
+//   map<int32, int32> a = 1; // Synthesizes B.AEntry
+//   message C {
+//     message D {
+//       AEntry x = 1;
+//     }
+//   }
+// }
+// Expect: error on synthetic MapEntry, no suggestion
+TEST_F(ValidationErrorTest, MapEntrySyntheticTypeInDeepScope) {
+  BuildFileWithErrors(
+      "name: \"foo.proto\" "
+      "package: \"pkg\" "
+      "message_type {"
+      "  name: \"B\""
+      "  field { name: \"a\" number: 1 type: TYPE_MESSAGE type_name: "
+      "\"AEntry\" "
+      "          label: LABEL_REPEATED }"
+      "  nested_type {"
+      "    name: \"AEntry\""
+      "    options { map_entry: true }"
+      "    field { name: \"key\" number: 1 type: TYPE_INT32 label: "
+      "LABEL_OPTIONAL }"
+      "    field { name: \"value\" number: 2 type: TYPE_INT32 label: "
+      "LABEL_OPTIONAL }"
+      "  }"
+      "  nested_type {"
+      "    name: \"C\""
+      "    nested_type {"
+      "      name: \"D\""
+      "      field { name: \"x\" number: 1 type: TYPE_MESSAGE type_name: "
+      "\"AEntry\" label: LABEL_OPTIONAL }"
+      "    }"
+      "  }"
+      "}",
+      "foo.proto: pkg.B.C.D.x: TYPE: pkg.B.AEntry is a synthetic MapEntry "
+      "message type, which is not allowed to be used as a field type.\n");
+}
+
+// Test for the scenario:
+// package pkg;
+// message AEntry {}
+// message B {
+//   map<int32, int32> a = 1; // Synthesizes B.AEntry
+//   message C {
+//     message D {
+//       AEntry x = 1;
+//     }
+//   }
+// }
+// Expect: error on synthetic MapEntry, has suggestion
+TEST_F(ValidationErrorTest, MapEntrySyntheticTypeInDeepScopeWithAlternative) {
+  BuildFileWithErrors(
+      "name: \"foo.proto\" "
+      "package: \"pkg\" "
+      "message_type {"
+      "  name: \"AEntry\""
+      "}"
+      "message_type {"
+      "  name: \"B\""
+      "  field { name: \"a\" number: 1 type: TYPE_MESSAGE type_name: "
+      "\"AEntry\" "
+      "          label: LABEL_REPEATED }"
+      "  nested_type {"
+      "    name: \"AEntry\""
+      "    options { map_entry: true }"
+      "    field { name: \"key\" number: 1 type: TYPE_INT32 label: "
+      "LABEL_OPTIONAL }"
+      "    field { name: \"value\" number: 2 type: TYPE_INT32 label: "
+      "LABEL_OPTIONAL }"
+      "  }"
+      "  nested_type {"
+      "    name: \"C\""
+      "    nested_type {"
+      "      name: \"D\""
+      "      field { name: \"x\" number: 1 type: TYPE_MESSAGE type_name: "
+      "\"AEntry\" label: LABEL_OPTIONAL }"
+      "    }"
+      "  }"
+      "}",
+      "foo.proto: pkg.B.C.D.x: TYPE: pkg.B.AEntry is a synthetic MapEntry "
+      "message type, which is not allowed to be used as a field type. Maybe "
+      "you meant \".pkg.AEntry\"?\n");
+}
+
+// Test for the scenario:
+// package pkg;
+// message AEntry {}
+// message Container {
+//   map<uint32, AEntry> a = 1;
+// }
+// Expect: error on synthetic MapEntry, has suggestion
+TEST_F(ValidationErrorTest, MapValueSyntheticNameCollision) {
+  BuildFileWithErrors(
+      "name: \"foo.proto\" "
+      "package: \"pkg\" "
+      "message_type {"
+      "  name: \"AEntry\""
+      "}"
+      "message_type {"
+      "  name: \"Container\""
+      "  field { name: \"a\" number: 1 type: TYPE_MESSAGE type_name: "
+      "\"AEntry\" "
+      "          label: LABEL_REPEATED }"
+      "  nested_type {"
+      "    name: \"AEntry\""
+      "    options { map_entry: true }"
+      "    field { name: \"key\" number: 1 type: TYPE_UINT32 label: "
+      "LABEL_OPTIONAL }"
+      "    field { name: \"value\" number: 2 type: TYPE_MESSAGE type_name: "
+      "\"AEntry\" label: LABEL_OPTIONAL }"
+      "  }"
+      "}",
+      "foo.proto: pkg.Container.AEntry.value: TYPE: "
+      "pkg.Container.AEntry is a synthetic MapEntry message type, which "
+      "is not allowed to be used as a field type. Maybe you meant "
+      "\".pkg.AEntry\"?\n");
+}
+
+// Test for the scenario where the alternative suggestion is an enum.
+// package pkg;
+// enum MyEntry { VALUE = 0; }
+// message Foo {
+//   map<int32, int32> my = 1; // Synthesizes Foo.MyEntry
+//   MyEntry bar = 2; // User wants to use pkg.MyEntry (enum) but resolves to
+//   Foo.MyEntry
+// }
+// Expect: error on synthetic MapEntry, suggesting the enum alternative.
+TEST_F(ValidationErrorTest, MapEntrySyntheticTypeAlternativeIsEnum) {
+  BuildFileWithErrors(
+      "name: \"foo.proto\" "
+      "package: \"pkg\" "
+      "enum_type {"
+      "  name: \"MyEntry\""
+      "  value { name: \"VALUE\" number: 0 }"
+      "}"
+      "message_type {"
+      "  name: \"Foo\""
+      "  field { name: \"my\" number: 1 type: TYPE_MESSAGE type_name: "
+      "\"MyEntry\" "
+      "          label: LABEL_REPEATED }"
+      "  field { name: \"bar\" number: 2 type: TYPE_MESSAGE type_name: "
+      "\"MyEntry\" "
+      "          label: LABEL_OPTIONAL }"
+      "  nested_type {"
+      "    name: \"MyEntry\""
+      "    options { map_entry: true }"
+      "    field { name: \"key\" number: 1 type: TYPE_INT32 label: "
+      "LABEL_OPTIONAL }"
+      "    field { name: \"value\" number: 2 type: TYPE_INT32 label: "
+      "LABEL_OPTIONAL }"
+      "  }"
+      "}",
+      "foo.proto: pkg.Foo.bar: TYPE: pkg.Foo.MyEntry is a synthetic MapEntry "
+      "message type, which is not allowed to be used as a field type. Maybe "
+      "you meant \".pkg.MyEntry\"?\n");
+}
+
 TEST_F(ValidationErrorTest, MapEntryEnumTypes) {
   FileDescriptorProto file_proto;
   FillValidMapEntry(&file_proto);
@@ -7974,6 +8352,17 @@ TEST_F(ValidationErrorTest, MapEntryExtraField) {
   BuildFileWithErrors(file_proto, kMapEntryErrorMessage);
 }
 
+// Test for the scenario:
+// message Foo {
+//   OtherMapEntry foo_map = 1; // name doesn't match expected FooMapEntry
+//   message OtherMapEntry {
+//     options { map_entry = true; }
+//     int32 key = 1;
+//     int32 value = 2;
+//   }
+// }
+// The test manually renames the synthesized message "FooMapEntry" to
+// "OtherMapEntry". Expect: error on synthetic MapEntry used as field type.
 TEST_F(ValidationErrorTest, MapEntryMessageName) {
   FileDescriptorProto file_proto;
   FillValidMapEntry(&file_proto);
@@ -7981,17 +8370,48 @@ TEST_F(ValidationErrorTest, MapEntryMessageName) {
       "OtherMapEntry");
   file_proto.mutable_message_type(0)->mutable_field(0)->set_type_name(
       "OtherMapEntry");
-  BuildFileWithErrors(file_proto, kMapEntryErrorMessage);
+  BuildFileWithErrors(
+      file_proto,
+      "foo.proto: Foo.foo_map: TYPE: Foo.OtherMapEntry is a synthetic "
+      "MapEntry message type, which is not allowed to be used as a field "
+      "type.\n");
 }
 
+// Test for the scenario:
+// message Foo {
+//   FooMapEntry foo_map = 1; // should be repeated
+//   message FooMapEntry {
+//     options { map_entry = true; }
+//     int32 key = 1;
+//     int32 value = 2;
+//   }
+// }
+// The test manually changes the field 'foo_map' to be optional (non-repeated).
+// Expect: error on synthetic MapEntry used as field type.
 TEST_F(ValidationErrorTest, MapEntryNoneRepeatedMapEntry) {
   FileDescriptorProto file_proto;
   FillValidMapEntry(&file_proto);
   file_proto.mutable_message_type(0)->mutable_field(0)->set_label(
       FieldDescriptorProto::LABEL_OPTIONAL);
-  BuildFileWithErrors(file_proto, kMapEntryErrorMessage);
+  BuildFileWithErrors(
+      file_proto,
+      "foo.proto: Foo.foo_map: TYPE: Foo.FooMapEntry is a synthetic "
+      "MapEntry message type, which is not allowed to be used as a field "
+      "type.\n");
 }
 
+// Test for the scenario:
+// message Foo {
+//   FooMapEntry foo_map = 1; // points to top-level message
+// }
+// message FooMapEntry {
+//   options { map_entry = true; }
+//   int32 key = 1;
+//   int32 value = 2;
+// }
+// The test manually moves the synthesized message "FooMapEntry" to the top
+// level.
+// Expect: error on synthetic MapEntry used as field type.
 TEST_F(ValidationErrorTest, MapEntryDifferentContainingType) {
   FileDescriptorProto file_proto;
   FillValidMapEntry(&file_proto);
@@ -7999,7 +8419,10 @@ TEST_F(ValidationErrorTest, MapEntryDifferentContainingType) {
   // the validation.
   file_proto.mutable_message_type()->AddAllocated(
       file_proto.mutable_message_type(0)->mutable_nested_type()->ReleaseLast());
-  BuildFileWithErrors(file_proto, kMapEntryErrorMessage);
+  BuildFileWithErrors(
+      file_proto,
+      "foo.proto: Foo.foo_map: TYPE: FooMapEntry is a synthetic MapEntry "
+      "message type, which is not allowed to be used as a field type.\n");
 }
 
 TEST_F(ValidationErrorTest, MapEntryKeyName) {
@@ -8105,16 +8528,18 @@ TEST_F(ValidationErrorTest, MapEntryKeyTypeEnum) {
   EnumValueDescriptorProto* enum_value_proto = enum_proto->add_value();
   enum_value_proto->set_name("BAR_VALUE0");
   enum_value_proto->set_number(0);
-  BuildFileWithErrors(file_proto,
-                      "foo.proto: Foo.foo_map: TYPE: Key in map fields cannot "
-                      "be enum types.\n");
+  BuildFileWithErrors(
+      file_proto,
+      "foo.proto: Foo.foo_map: TYPE: Key in map fields cannot be enum "
+      "types.\n");
   // Enum keys are not allowed in proto3 as well.
   // Get rid of extensions for proto3 to make it proto3 compatible.
   file_proto.mutable_message_type()->RemoveLast();
   file_proto.set_syntax("proto3");
-  BuildFileWithErrors(file_proto,
-                      "foo.proto: Foo.foo_map: TYPE: Key in map fields cannot "
-                      "be enum types.\n");
+  BuildFileWithErrors(
+      file_proto,
+      "foo.proto: Foo.foo_map: TYPE: Key in map fields cannot be enum "
+      "types.\n");
 }
 
 TEST_F(ValidationErrorTest, MapEntryKeyTypeMessage) {
@@ -8393,8 +8818,8 @@ TEST_F(ValidationErrorTest, MapEntryUsesNoneZeroEnumDefaultValue) {
       "    } "
       "  } "
       "}",
-      "foo.proto: Foo.foo_map: "
-      "TYPE: Enum value in map must define 0 as the first value.\n");
+      "foo.proto: Foo.foo_map: TYPE: Enum value in map must define 0 as the "
+      "first value.\n");
 }
 
 TEST_F(ValidationErrorTest, Proto3RequiredFields) {
@@ -9012,6 +9437,7 @@ TEST_F(FeaturesTest, Proto2Features) {
                 json_format: LEGACY_BEST_EFFORT
                 enforce_naming_style: STYLE_LEGACY
                 default_symbol_visibility: EXPORT_ALL
+                enforce_proto_limits: LEGACY_NO_EXPLICIT_LIMITS
                 [pb.cpp] {
                   legacy_closed_enum: true
                   string_type: STRING
@@ -9027,6 +9453,7 @@ TEST_F(FeaturesTest, Proto2Features) {
                 json_format: LEGACY_BEST_EFFORT
                 enforce_naming_style: STYLE_LEGACY
                 default_symbol_visibility: EXPORT_ALL
+                enforce_proto_limits: LEGACY_NO_EXPLICIT_LIMITS
                 [pb.cpp] {
                   legacy_closed_enum: true
                   string_type: STRING
@@ -9042,6 +9469,7 @@ TEST_F(FeaturesTest, Proto2Features) {
                 json_format: LEGACY_BEST_EFFORT
                 enforce_naming_style: STYLE_LEGACY
                 default_symbol_visibility: EXPORT_ALL
+                enforce_proto_limits: LEGACY_NO_EXPLICIT_LIMITS
                 [pb.cpp] {
                   legacy_closed_enum: true
                   string_type: STRING
@@ -9125,6 +9553,7 @@ TEST_F(FeaturesTest, Proto3Features) {
                 json_format: ALLOW
                 enforce_naming_style: STYLE_LEGACY
                 default_symbol_visibility: EXPORT_ALL
+                enforce_proto_limits: LEGACY_NO_EXPLICIT_LIMITS
                 [pb.cpp] {
                   legacy_closed_enum: false
                   string_type: STRING
@@ -9140,6 +9569,7 @@ TEST_F(FeaturesTest, Proto3Features) {
                 json_format: ALLOW
                 enforce_naming_style: STYLE_LEGACY
                 default_symbol_visibility: EXPORT_ALL
+                enforce_proto_limits: LEGACY_NO_EXPLICIT_LIMITS
                 [pb.cpp] {
                   legacy_closed_enum: false
                   string_type: STRING
@@ -9323,6 +9753,7 @@ TEST_F(FeaturesTest, Edition2023Defaults) {
                 json_format: ALLOW
                 enforce_naming_style: STYLE_LEGACY
                 default_symbol_visibility: EXPORT_ALL
+                enforce_proto_limits: LEGACY_NO_EXPLICIT_LIMITS
                 [pb.cpp] {
                   legacy_closed_enum: false
                   string_type: STRING
@@ -9390,6 +9821,37 @@ TEST_F(FeaturesTest, Edition2023InferredFeatures) {
       pb::CppFeatures::VIEW);
 }
 
+TEST_F(FeaturesTest, CppFeaturesUnknownStringType) {
+  // STRING_TYPE_UNKNOWN set explicitly at the file level propagates to the
+  // field, and the field's cpp_string_type() defaults to String.
+  FileDescriptorProto file_proto = ParseTextOrDie(R"pb(
+    name: "unknown_string_field_type.proto"
+    syntax: "editions"
+    edition: EDITION_2023
+    options {
+      features {
+        [pb.cpp] { string_type: STRING_TYPE_UNKNOWN }
+      }
+    }
+    message_type {
+      name: "UnknownStringFieldType"
+      field { name: "v" number: 1 label: LABEL_OPTIONAL type: TYPE_BYTES }
+    }
+  )pb");
+
+  google::protobuf::DescriptorPool pool;
+  const FileDescriptor* file = pool.BuildFile(file_proto);
+  ASSERT_NE(file, nullptr);
+
+  const Descriptor* message = file->message_type(0);
+  EXPECT_EQ(GetFeatures(message->field(0)).GetExtension(pb::cpp).string_type(),
+            pb::CppFeatures::STRING_TYPE_UNKNOWN);
+
+  EXPECT_EQ(message->field(0)->cpp_string_type(),
+            FieldDescriptor::CppStringType::kString);
+}
+
+
 TEST_F(FeaturesTest, Edition2024Defaults) {
   FileDescriptorProto file_proto = ParseTextOrDie(R"pb(
     name: "foo.proto"
@@ -9409,6 +9871,42 @@ TEST_F(FeaturesTest, Edition2024Defaults) {
                 json_format: ALLOW
                 enforce_naming_style: STYLE2024
                 default_symbol_visibility: EXPORT_TOP_LEVEL
+                enforce_proto_limits: LEGACY_NO_EXPLICIT_LIMITS
+                [pb.cpp] {
+                  legacy_closed_enum: false
+                  string_type: VIEW
+                  enum_name_uses_string_view: true
+                  repeated_type: LEGACY
+                }
+              )pb"));
+
+  // Since pb::test is registered in the pool, it should end up with defaults in
+  // our FeatureSet.
+  EXPECT_TRUE(GetFeatures(file).HasExtension(pb::test));
+  EXPECT_EQ(GetFeatures(file).GetExtension(pb::test).file_feature(),
+            pb::VALUE3);
+}
+
+TEST_F(FeaturesTest, Edition2026Defaults) {
+  FileDescriptorProto file_proto = ParseTextOrDie(R"pb(
+    name: "foo.proto"
+    syntax: "editions"
+    edition: EDITION_2026
+  )pb");
+
+  BuildDescriptorMessagesInTestPool();
+  const FileDescriptor* file = ABSL_DIE_IF_NULL(pool_.BuildFile(file_proto));
+  EXPECT_THAT(file->options(), EqualsProto(""));
+  EXPECT_THAT(GetCoreFeatures(file), EqualsProto(R"pb(
+                field_presence: EXPLICIT
+                enum_type: OPEN
+                repeated_field_encoding: PACKED
+                utf8_validation: VERIFY
+                message_encoding: LENGTH_PREFIXED
+                json_format: ALLOW
+                enforce_naming_style: STYLE2026
+                default_symbol_visibility: EXPORT_TOP_LEVEL
+                enforce_proto_limits: PROTO_LIMITS2026
                 [pb.cpp] {
                   legacy_closed_enum: false
                   string_type: VIEW
@@ -9445,6 +9943,7 @@ TEST_F(FeaturesBaseTest, DefaultEdition2023Defaults) {
                 json_format: ALLOW
                 enforce_naming_style: STYLE_LEGACY
                 default_symbol_visibility: EXPORT_ALL
+                enforce_proto_limits: LEGACY_NO_EXPLICIT_LIMITS
                 [pb.cpp] {
                   legacy_closed_enum: false
                   string_type: STRING
@@ -9476,6 +9975,7 @@ TEST_F(FeaturesTest, ClearsOptions) {
                 json_format: ALLOW
                 enforce_naming_style: STYLE_LEGACY
                 default_symbol_visibility: EXPORT_ALL
+                enforce_proto_limits: LEGACY_NO_EXPLICIT_LIMITS
                 [pb.cpp] {
                   legacy_closed_enum: false
                   string_type: STRING
@@ -9846,6 +10346,7 @@ TEST_F(FeaturesTest, NoOptions) {
                 json_format: ALLOW
                 enforce_naming_style: STYLE_LEGACY
                 default_symbol_visibility: EXPORT_ALL
+                enforce_proto_limits: LEGACY_NO_EXPLICIT_LIMITS
                 [pb.cpp] {
                   legacy_closed_enum: false
                   string_type: STRING
@@ -9882,6 +10383,7 @@ TEST_F(FeaturesTest, FileFeatures) {
                 json_format: ALLOW
                 enforce_naming_style: STYLE_LEGACY
                 default_symbol_visibility: EXPORT_ALL
+                enforce_proto_limits: LEGACY_NO_EXPLICIT_LIMITS
                 [pb.cpp] {
                   legacy_closed_enum: false
                   string_type: STRING
@@ -9966,6 +10468,7 @@ TEST_F(FeaturesTest, MessageFeaturesDefault) {
                 json_format: ALLOW
                 enforce_naming_style: STYLE_LEGACY
                 default_symbol_visibility: EXPORT_ALL
+                enforce_proto_limits: LEGACY_NO_EXPLICIT_LIMITS
                 [pb.cpp] {
                   legacy_closed_enum: false
                   string_type: STRING
@@ -10080,6 +10583,7 @@ TEST_F(FeaturesTest, FieldFeaturesDefault) {
                 json_format: ALLOW
                 enforce_naming_style: STYLE_LEGACY
                 default_symbol_visibility: EXPORT_ALL
+                enforce_proto_limits: LEGACY_NO_EXPLICIT_LIMITS
                 [pb.cpp] {
                   legacy_closed_enum: false
                   string_type: STRING
@@ -10489,7 +10993,7 @@ TEST_F(FeaturesTest, NoNamingStyleViolationsWithCollisionsInStyle2024) {
 
   // Check that naming collisions are allowed in STYLE2024.
   ASSERT_THAT(ParseAndBuildFile("naming.proto", R"schema(
-    edition = "UNSTABLE";
+    edition = "2026";
     option features.enforce_naming_style = STYLE2024;
     package naming;
     message Foo {
@@ -10506,7 +11010,7 @@ TEST_F(FeaturesTest, NoNamingStyleViolationsWithCollisionsInStyle2026) {
 
   // These are allowed because they don't collide with any existing field.
   ASSERT_THAT(ParseAndBuildFile("naming.proto", R"schema(
-    edition = "UNSTABLE";
+    edition = "2026";
     option features.enforce_naming_style = STYLE2026;
     package naming;
     message Foo {
@@ -10524,7 +11028,7 @@ TEST_F(FeaturesTest, NoNamingStyleViolationsWithCollisionsOneOfInStyle2026) {
 
   // This is allowed because the oneof doesn't collide with any existing field.
   ASSERT_THAT(ParseAndBuildFile("naming.proto", R"schema(
-    edition = "UNSTABLE";
+    edition = "2026";
     option features.enforce_naming_style = STYLE2026;
     package naming;
     message Foo {
@@ -10562,7 +11066,7 @@ TEST_P(CollisionNameTest, NamingStyleViolationsWithCollisionsInStyle2026) {
   pool_.EnforceNamingStyle(true);
   const CollisionNameParam& param = GetParam();
   std::string schema = absl::Substitute(R"schema(
-    edition = "UNSTABLE";
+    edition = "2026";
     message Foo {
       string $0 = 1;
       string test_field = 2;
@@ -10581,7 +11085,7 @@ TEST_P(CollisionNameTest, NamingStyleViolationsInvalidFieldNameInStyle2026) {
   BuildDescriptorMessagesInTestPool();
   pool_.EnforceNamingStyle(true);
   std::string schema = absl::StrCat(R"schema(
-    edition = "UNSTABLE";
+    edition = "2026";
     message Foo {
       string descriptor = 1;
     }
@@ -10597,7 +11101,7 @@ TEST_P(CollisionNameTest,
   BuildDescriptorMessagesInTestPool();
   pool_.EnforceNamingStyle(true);
   std::string schema = absl::StrCat(R"schema(
-    edition = "UNSTABLE";
+    edition = "2026";
     message Foo {
       oneof bar {
         string has_test_field = 1;
@@ -10617,7 +11121,7 @@ TEST_P(CollisionNameTest,
   BuildDescriptorMessagesInTestPool();
   pool_.EnforceNamingStyle(true);
   std::string schema = absl::StrCat(R"schema(
-    edition = "UNSTABLE";
+    edition = "2026";
     message Foo {
       oneof has_test_field {
         string test_field = 1;
@@ -10636,7 +11140,7 @@ TEST_P(CollisionNameTest,
   BuildDescriptorMessagesInTestPool();
   pool_.EnforceNamingStyle(true);
   std::string schema = absl::StrCat(R"schema(
-    edition = "UNSTABLE";
+    edition = "2026";
     message Foo {
       oneof test_field {
         string has_test_field = 1;
@@ -10653,7 +11157,7 @@ TEST_P(CollisionNameTest, NamingStyleViolationsInvalidOneOfNameInStyle2026) {
   BuildDescriptorMessagesInTestPool();
   pool_.EnforceNamingStyle(true);
   std::string schema = absl::StrCat(R"schema(
-    edition = "UNSTABLE";
+    edition = "2026";
     message Foo {
       oneof descriptor {
         string test_field = 1;
@@ -10865,6 +11369,151 @@ TEST_F(FeaturesTest, BadMethodName) {
       "Method name badMethodName should begin with a capital letter");
 }
 
+TEST_F(FeaturesTest, LegacyNoExplicitLimitsFieldsPerMessage) {
+  BuildDescriptorMessagesInTestPool();
+  pool_.EnforceProtoLimits(true);
+
+  std::string text_proto_string =
+      TextProtoTooManyFieldsPerMessageForEdition("2024");
+
+  // Edition 2024 and earlier protos are not subject to limit enforcement.
+  ASSERT_THAT(ParseAndBuildFile("limit1.proto", text_proto_string), NotNull());
+}
+
+TEST_F(FeaturesTest, ProtoLimits2026FieldsPerMessage) {
+  BuildDescriptorMessagesInTestPool();
+  pool_.EnforceProtoLimits(true);
+
+  std::string text_proto_string =
+      TextProtoTooManyFieldsPerMessageForEdition("2026");
+
+  ParseAndBuildFileWithErrorSubstr(
+      "limit1.proto", text_proto_string,
+      "Message name M should not contain more than 1500 fields "
+      "(features.enforce_proto_limits = LEGACY_NO_EXPLICIT_LIMITS "
+      "can be used to opt out of this check)");
+}
+
+TEST_F(FeaturesTest, ProtoLimits2026FieldsPerMessageOptOut) {
+  BuildDescriptorMessagesInTestPool();
+  pool_.EnforceProtoLimits(true);
+
+  std::string text_proto_string = TextProtoTooManyFieldsPerMessageForEdition(
+      "2026", /*opt_out=*/
+      "option features.enforce_proto_limits = LEGACY_NO_EXPLICIT_LIMITS;");
+
+  // With an explicit opt-out, we do not enforce proto limits.
+  ASSERT_THAT(ParseAndBuildFile("limit1.proto", text_proto_string), NotNull());
+}
+
+TEST_F(FeaturesTest, LegacyNoExplicitLimitsValuesPerEnum) {
+  BuildDescriptorMessagesInTestPool();
+  pool_.EnforceProtoLimits(true);
+
+  // Edition 2024 and earlier protos are not subject to limit enforcement.
+  std::string text_proto_string =
+      TextProtoTooManyValuesPerEnumForEdition("2024");
+
+  ASSERT_THAT(ParseAndBuildFile("limit1.proto", text_proto_string), NotNull());
+}
+
+TEST_F(FeaturesTest, ProtoLimits2026ValuesPerEnum) {
+  BuildDescriptorMessagesInTestPool();
+  pool_.EnforceProtoLimits(true);
+
+  std::string text_proto_string =
+      TextProtoTooManyValuesPerEnumForEdition("2026");
+
+  ParseAndBuildFileWithErrorSubstr(
+      "limit1.proto", text_proto_string,
+      "Enum name E should not contain more than 1700 values "
+      "(features.enforce_proto_limits = LEGACY_NO_EXPLICIT_LIMITS "
+      "can be used to opt out of this check)");
+}
+
+TEST_F(FeaturesTest, ProtoLimits2026ValuesPerEnumOptOut) {
+  BuildDescriptorMessagesInTestPool();
+  pool_.EnforceProtoLimits(true);
+
+  std::string text_proto_string = TextProtoTooManyValuesPerEnumForEdition(
+      "2026", /*opt_out=*/
+      "option features.enforce_proto_limits = LEGACY_NO_EXPLICIT_LIMITS;");
+
+  ASSERT_THAT(ParseAndBuildFile("limit1.proto", text_proto_string), NotNull());
+}
+
+TEST_F(FeaturesTest, LegacyNoExplicitLimitsFieldsPerOneof) {
+  BuildDescriptorMessagesInTestPool();
+  pool_.EnforceProtoLimits(true);
+
+  // Edition 2024 and earlier protos are not subject to limit enforcement.
+  std::string text_proto_string =
+      TextProtoTooManyFieldsPerOneofForEdition("2024");
+
+  ASSERT_THAT(ParseAndBuildFile("limit1.proto", text_proto_string), NotNull());
+}
+
+TEST_F(FeaturesTest, ProtoLimits2026FieldsPerOneof) {
+  BuildDescriptorMessagesInTestPool();
+  pool_.EnforceProtoLimits(true);
+
+  std::string text_proto_string =
+      TextProtoTooManyFieldsPerOneofForEdition("2026");
+
+  ParseAndBuildFileWithErrorSubstr(
+      "limit1.proto", text_proto_string,
+      "Oneof name O should not contain more than 1200 fields "
+      "(features.enforce_proto_limits = LEGACY_NO_EXPLICIT_LIMITS "
+      "can be used to opt out of this check)");
+}
+
+TEST_F(FeaturesTest, ProtoLimits2026FieldsPerOneofOptOut) {
+  BuildDescriptorMessagesInTestPool();
+  pool_.EnforceProtoLimits(true);
+
+  std::string text_proto_string = TextProtoTooManyFieldsPerOneofForEdition(
+      "2026", /*opt_out=*/
+      "option features.enforce_proto_limits = LEGACY_NO_EXPLICIT_LIMITS;");
+
+  ASSERT_THAT(ParseAndBuildFile("limit1.proto", text_proto_string), NotNull());
+}
+
+TEST_F(FeaturesTest, LegacyNoExplicitLimitsOneofsPerMessage) {
+  BuildDescriptorMessagesInTestPool();
+  pool_.EnforceProtoLimits(true);
+
+  // Edition 2024 and earlier protos are not subject to limit enforcement.
+  std::string text_proto_string =
+      TextProtoTooManyOneofsPerMessageForEdition("2024");
+
+  ASSERT_THAT(ParseAndBuildFile("limit1.proto", text_proto_string), NotNull());
+}
+
+TEST_F(FeaturesTest, ProtoLimits2026OneofsPerMessage) {
+  BuildDescriptorMessagesInTestPool();
+  pool_.EnforceProtoLimits(true);
+
+  std::string text_proto_string =
+      TextProtoTooManyOneofsPerMessageForEdition("2026");
+
+  ParseAndBuildFileWithErrorSubstr(
+      "limit1.proto", text_proto_string,
+      "Message name M should not contain more than 1000 oneofs "
+      "(features.enforce_proto_limits = LEGACY_NO_EXPLICIT_LIMITS "
+      "can be used to opt out of this check)");
+}
+
+TEST_F(FeaturesTest, ProtoLimits2026OneofsPerMessageOptOut) {
+  BuildDescriptorMessagesInTestPool();
+  pool_.EnforceProtoLimits(true);
+
+  std::string text_proto_string = TextProtoTooManyOneofsPerMessageForEdition(
+      "2026", /*opt_out=*/
+      "option features.enforce_proto_limits = LEGACY_NO_EXPLICIT_LIMITS;");
+
+  ASSERT_THAT(ParseAndBuildFile("limit1.proto", text_proto_string), NotNull());
+}
+
 TEST_F(FeaturesTest, MapFieldFeaturesInheritedMessageEncoding) {
   BuildDescriptorMessagesInTestPool();
   const FileDescriptor* file = ParseAndBuildFile("foo.proto", R"schema(
@@ -11006,6 +11655,7 @@ TEST_F(FeaturesTest, EnumFeaturesDefault) {
                 json_format: ALLOW
                 enforce_naming_style: STYLE_LEGACY
                 default_symbol_visibility: EXPORT_ALL
+                enforce_proto_limits: LEGACY_NO_EXPLICIT_LIMITS
                 [pb.cpp] {
                   legacy_closed_enum: false
                   string_type: STRING
@@ -11124,6 +11774,7 @@ TEST_F(FeaturesTest, EnumValueFeaturesDefault) {
                 json_format: ALLOW
                 enforce_naming_style: STYLE_LEGACY
                 default_symbol_visibility: EXPORT_ALL
+                enforce_proto_limits: LEGACY_NO_EXPLICIT_LIMITS
                 [pb.cpp] {
                   legacy_closed_enum: false
                   string_type: STRING
@@ -11226,6 +11877,7 @@ TEST_F(FeaturesTest, OneofFeaturesDefault) {
                 json_format: ALLOW
                 enforce_naming_style: STYLE_LEGACY
                 default_symbol_visibility: EXPORT_ALL
+                enforce_proto_limits: LEGACY_NO_EXPLICIT_LIMITS
                 [pb.cpp] {
                   legacy_closed_enum: false
                   string_type: STRING
@@ -11337,6 +11989,7 @@ TEST_F(FeaturesTest, ExtensionRangeFeaturesDefault) {
                 json_format: ALLOW
                 enforce_naming_style: STYLE_LEGACY
                 default_symbol_visibility: EXPORT_ALL
+                enforce_proto_limits: LEGACY_NO_EXPLICIT_LIMITS
                 [pb.cpp] {
                   legacy_closed_enum: false
                   string_type: STRING
@@ -11433,6 +12086,7 @@ TEST_F(FeaturesTest, ServiceFeaturesDefault) {
                 json_format: ALLOW
                 enforce_naming_style: STYLE_LEGACY
                 default_symbol_visibility: EXPORT_ALL
+                enforce_proto_limits: LEGACY_NO_EXPLICIT_LIMITS
                 [pb.cpp] {
                   legacy_closed_enum: false
                   string_type: STRING
@@ -11506,6 +12160,7 @@ TEST_F(FeaturesTest, MethodFeaturesDefault) {
                 json_format: ALLOW
                 enforce_naming_style: STYLE_LEGACY
                 default_symbol_visibility: EXPORT_ALL
+                enforce_proto_limits: LEGACY_NO_EXPLICIT_LIMITS
                 [pb.cpp] {
                   legacy_closed_enum: false
                   string_type: STRING
@@ -12716,6 +13371,7 @@ TEST_F(FeaturesTest, UninterpretedOptions) {
                 json_format: ALLOW
                 enforce_naming_style: STYLE_LEGACY
                 default_symbol_visibility: EXPORT_ALL
+                enforce_proto_limits: LEGACY_NO_EXPLICIT_LIMITS
                 [pb.cpp] {
                   legacy_closed_enum: false
                   string_type: STRING
@@ -13564,6 +14220,7 @@ TEST_F(DescriptorPoolFeaturesTest, OverrideDefaults) {
         json_format: ALLOW
         enforce_naming_style: STYLE_LEGACY
         default_symbol_visibility: EXPORT_ALL
+        enforce_proto_limits: LEGACY_NO_EXPLICIT_LIMITS
       }
     }
     minimum_edition: EDITION_PROTO2
@@ -13588,6 +14245,7 @@ TEST_F(DescriptorPoolFeaturesTest, OverrideDefaults) {
                 json_format: ALLOW
                 enforce_naming_style: STYLE_LEGACY
                 default_symbol_visibility: EXPORT_ALL
+                enforce_proto_limits: LEGACY_NO_EXPLICIT_LIMITS
               )pb"));
 }
 
@@ -13604,6 +14262,7 @@ TEST_F(DescriptorPoolFeaturesTest, OverrideFieldDefaults) {
         json_format: ALLOW
         enforce_naming_style: STYLE_LEGACY
         default_symbol_visibility: EXPORT_ALL
+        enforce_proto_limits: LEGACY_NO_EXPLICIT_LIMITS
       }
     }
     minimum_edition: EDITION_PROTO2
@@ -13633,6 +14292,7 @@ TEST_F(DescriptorPoolFeaturesTest, OverrideFieldDefaults) {
                 json_format: ALLOW
                 enforce_naming_style: STYLE_LEGACY
                 default_symbol_visibility: EXPORT_ALL
+                enforce_proto_limits: LEGACY_NO_EXPLICIT_LIMITS
               )pb"));
 }
 

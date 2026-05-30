@@ -4,7 +4,6 @@
 # Use of this source code is governed by a BSD-style
 # license that can be found in the LICENSE file or at
 # https://developers.google.com/open-source/licenses/bsd
-
 """Contains routines for printing protocol messages in JSON format.
 
 Simple usage example:
@@ -19,7 +18,6 @@ Simple usage example:
 
 __author__ = 'jieluo@google.com (Jie Luo)'
 
-
 import base64
 from collections import OrderedDict
 import json
@@ -28,10 +26,10 @@ from operator import methodcaller
 import re
 
 from google.protobuf import descriptor
+from google.protobuf import descriptor_pool
 from google.protobuf import message_factory
 from google.protobuf import symbol_database
 from google.protobuf.internal import type_checkers
-
 
 _INT_TYPES = frozenset([
     descriptor.FieldDescriptor.CPPTYPE_INT32,
@@ -109,9 +107,9 @@ def MessageToJson(
       default.
     ensure_ascii: If True, strings with non-ASCII characters are escaped. If
       False, Unicode strings are returned unchanged.
-    unquote_int64_if_possible: If True, unquote int64 fields for values that
-      are safe to emit as numbers (all values smaller than 2^53 and a sparse
-      set of values that are larger).
+    unquote_int64_if_possible: If True, unquote int64 fields for values that are
+      safe to emit as numbers (all values smaller than 2^53 and a sparse set of
+      values that are larger).
 
   Returns:
     A string containing the JSON formatted protocol buffer message.
@@ -151,9 +149,9 @@ def MessageToDict(
     use_integers_for_enums: If true, print integers instead of enum names.
     descriptor_pool: A Descriptor Pool for resolving types. If None use the
       default.
-    unquote_int64_if_possible: If True, unquote int64 fields for values that
-      are safe to emit as numbers (all values smaller than 2^53 and a sparse
-      set of values that are larger).
+    unquote_int64_if_possible: If True, unquote int64 fields for values that are
+      safe to emit as numbers (all values smaller than 2^53 and a sparse set of
+      values that are larger).
 
   Returns:
     A dict representation of the protocol buffer message.
@@ -291,6 +289,10 @@ class _Printer(object):
         return None
       enum_value = field.enum_type.values_by_number.get(value, None)
       if enum_value is not None:
+        pool = self.descriptor_pool or descriptor_pool.Default()
+        option = _GetJsonEnumValueOption(enum_value, pool)
+        if option is not None:
+          return option.string
         return enum_value.name
       else:
         if field.enum_type.is_closed:
@@ -750,9 +752,7 @@ class _Parser(object):
     elif full_name in _WKTJSONMETHODS:
       # For well-known types (including nested Any), use ConvertMessage
       # to ensure recursion depth is properly tracked
-      self.ConvertMessage(
-          value['value'], sub_message, '{0}.value'.format(path)
-      )
+      self.ConvertMessage(value['value'], sub_message, '{0}.value'.format(path))
     else:
       del value['@type']
       try:
@@ -775,9 +775,9 @@ class _Parser(object):
   def _ConvertValueMessage(self, value, message, path):
     """Convert a JSON representation into Value message."""
     if isinstance(value, dict):
-      self._ConvertStructMessage(value, message.struct_value, path)
+      self.ConvertMessage(value, message.struct_value, path)
     elif isinstance(value, _LIST_LIKE):
-      self._ConvertListOrTupleValueMessage(value, message.list_value, path)
+      self.ConvertMessage(value, message.list_value, path)
     elif value is None:
       message.null_value = 0
     elif isinstance(value, bool):
@@ -801,7 +801,7 @@ class _Parser(object):
       )
     message.ClearField('values')
     for index, item in enumerate(value):
-      self._ConvertValueMessage(
+      self.ConvertMessage(
           item, message.values.add(), '{0}[{1}]'.format(path, index)
       )
 
@@ -815,7 +815,7 @@ class _Parser(object):
     # there are no values.
     message.Clear()
     for key in value:
-      self._ConvertValueMessage(
+      self.ConvertMessage(
           value[key], message.fields[key], '{0}.{1}'.format(path, key)
       )
     return
@@ -907,6 +907,25 @@ class _Parser(object):
       if not self.ignore_unknown_fields:
         raise
 
+def _GetJsonEnumValueOption(ev, pool=None):
+  """Helper to get the JsonEnumValueOptions for an enum value.
+
+  Args:
+    ev: The EnumValueDescriptor.
+    pool: The descriptor pool to use. Defaults to descriptor_pool.Default().
+  Returns:
+    The JsonEnumValueOptions message if the extension is present,
+    otherwise None.
+  """
+  if pool is None:
+    pool = descriptor_pool.Default()
+  try:
+    extension_descriptor = pool.FindExtensionByName('pb.enumvalue.json')
+  except KeyError:
+    return None
+  if ev.GetOptions().HasExtension(extension_descriptor):
+    return ev.GetOptions().Extensions[extension_descriptor]
+  return None
 
 def _ConvertScalarFieldValue(value, field, path, require_str=False):
   """Convert a single scalar field value.
@@ -949,6 +968,14 @@ def _ConvertScalarFieldValue(value, field, path, require_str=False):
     elif field.cpp_type == descriptor.FieldDescriptor.CPPTYPE_ENUM:
       # Convert an enum value.
       enum_value = field.enum_type.values_by_name.get(value, None)
+      # First check to see if we have a custom enum string.
+      if enum_value is None:
+        for ev in field.enum_type.values:
+          option = _GetJsonEnumValueOption(ev)
+          if option is not None and option.string == value:
+            enum_value = ev
+            break
+      # If not, try parsing it as an integer.
       if enum_value is None:
         try:
           number = int(value)

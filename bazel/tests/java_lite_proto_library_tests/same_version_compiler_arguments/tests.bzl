@@ -18,4 +18,6 @@ def _test_same_version_compiler_arguments(env, target):
         "java/core/liblite_runtime_only.jar",
     ])
 
-TESTS = [(_test_same_version_compiler_arguments, ":baz_proto")]
+TESTS = {
+    ":baz_proto": [_test_same_version_compiler_arguments],
+}

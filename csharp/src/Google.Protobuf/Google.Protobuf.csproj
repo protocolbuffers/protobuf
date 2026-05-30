@@ -5,15 +5,15 @@
     <Description>C# runtime library for Protocol Buffers - Google's data interchange format.</Description>
     <Copyright>Copyright 2015, Google Inc.</Copyright>
     <AssemblyTitle>Google Protocol Buffers</AssemblyTitle>
-    <VersionPrefix>3.35.0</VersionPrefix>
+    <VersionPrefix>3.36.0</VersionPrefix>
     <LangVersion>10.0</LangVersion>
     <Authors>Google Inc.</Authors>
-    <TargetFrameworks>netstandard1.1;netstandard2.0;net45;net50</TargetFrameworks>
+    <TargetFrameworks>netstandard2.0;net8.0</TargetFrameworks>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <AssemblyOriginatorKeyFile>../../keys/Google.Protobuf.snk</AssemblyOriginatorKeyFile>
     <SignAssembly>true</SignAssembly>
     <PackageTags>Protocol;Buffers;Binary;Serialization;Format;Google;proto;proto3</PackageTags>
-    <PackageReleaseNotes>C# proto3 support</PackageReleaseNotes>
+    <PackageReleaseNotes>C# proto support</PackageReleaseNotes>
     <PackageProjectUrl>https://github.com/protocolbuffers/protobuf</PackageProjectUrl>
     <PackageLicenseExpression>BSD-3-Clause</PackageLicenseExpression>
     <RepositoryType>git</RepositoryType>
@@ -28,12 +28,9 @@
     <NoWarn>$(NoWarn);NETSDK1195;NETSDK1210</NoWarn>
   </PropertyGroup>
 
-  <PropertyGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' ">
-    <DefineConstants>$(DefineConstants);GOOGLE_PROTOBUF_SUPPORT_FAST_STRING;GOOGLE_PROTOBUF_SUPPORT_GENERIC_SIZEOF</DefineConstants>
-  </PropertyGroup>
 
-  <PropertyGroup Condition=" '$(TargetFramework)' == 'net50' ">
-    <DefineConstants>$(DefineConstants);GOOGLE_PROTOBUF_SUPPORT_FAST_STRING;GOOGLE_PROTOBUF_SUPPORT_GENERIC_SIZEOF;GOOGLE_PROTOBUF_SIMD</DefineConstants>
+  <PropertyGroup Condition=" '$(TargetFramework)' == 'net8.0' ">
+    <DefineConstants>$(DefineConstants);GOOGLE_PROTOBUF_SIMD</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>
@@ -42,14 +39,8 @@
     <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" PrivateAssets="All" Version="1.0.0"/>
   </ItemGroup>
 
-  <ItemGroup Condition=" '$(TargetFramework)' == 'net45' OR '$(TargetFramework)' == 'netstandard1.1' ">
-    <!-- TODO -->
-    <PackageReference Include="System.Memory" Version="4.5.3"/>
-  </ItemGroup>
-
   <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' ">
     <PackageReference Include="System.Memory" Version="4.5.3"/>
-    <!-- Needed for netcoreapp3.1 to work correctly. .NET is not able to load the assembly without this -->
     <PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="4.5.2"/>
   </ItemGroup>
 

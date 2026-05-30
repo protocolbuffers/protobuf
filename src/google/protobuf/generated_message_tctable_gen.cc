@@ -153,10 +153,10 @@ TailCallTableInfo::FastFieldInfo::Field MakeFastFieldEntry(
   (field->cpp_string_type() == FieldDescriptor::CppStringType::kCord      \
        ? PROTOBUF_PICK_REPEATABLE_FUNCTION(fn##c)                         \
    : field->cpp_string_type() == FieldDescriptor::CppStringType::kView && \
-           options.use_micro_string                                       \
+           options.is_micro_string()                                      \
        ? PROTOBUF_PICK_FUNCTION(fn##mS)                                   \
-   : options.is_string_inlined ? PROTOBUF_PICK_FUNCTION(fn##iS)           \
-                               : PROTOBUF_PICK_REPEATABLE_FUNCTION(fn))
+   : options.is_string_inlined() ? PROTOBUF_PICK_FUNCTION(fn##iS)         \
+                                 : PROTOBUF_PICK_REPEATABLE_FUNCTION(fn))
 
   const FieldDescriptor* field = entry.field;
   info.aux_idx = static_cast<uint8_t>(entry.aux_idx);
@@ -650,7 +650,7 @@ uint16_t MakeTypeCardForField(const FieldDescriptor* field, bool has_hasbit,
         } else {
           // Otherwise, non-repeated string fields use ArenaStringPtr.
           type_card |=
-              options.use_micro_string ? fl::kRepMString : fl::kRepAString;
+              options.is_micro_string() ? fl::kRepMString : fl::kRepAString;
         }
         break;
     }
@@ -665,7 +665,9 @@ uint16_t MakeTypeCardForField(const FieldDescriptor* field, bool has_hasbit,
 
 bool HasWeakFields(const Descriptor* descriptor) {
   for (int i = 0; i < descriptor->field_count(); i++) {
+    PROTOBUF_IGNORE_DEPRECATION_START
     if (descriptor->field(i)->options().weak()) {
+      PROTOBUF_IGNORE_DEPRECATION_STOP
       return true;
     }
   }
@@ -702,9 +704,11 @@ uint32_t FastParseTableSize(size_t num_fields,
 }
 
 bool IsFieldTypeEligibleForFastParsing(const FieldDescriptor* field) {
+  PROTOBUF_IGNORE_DEPRECATION_START
+  const bool field_is_weak = field->options().weak();
+  PROTOBUF_IGNORE_DEPRECATION_STOP
   // Map, oneof, weak, and split fields are not handled on the fast path.
-  if (field->is_map() || field->real_containing_oneof() ||
-      field->options().weak()) {
+  if (field->is_map() || field->real_containing_oneof() || field_is_weak) {
     return false;
   }
 
@@ -737,11 +741,14 @@ TailCallTableInfo::BuildFieldEntries(
     auto* field = options.field;
     // In the following code where we assign kSubTable to aux entries, only
     // the following typed fields are supported.
+    PROTOBUF_IGNORE_DEPRECATION_START
+    const bool field_is_weak = field->options().weak();
+    PROTOBUF_IGNORE_DEPRECATION_STOP
     return (field->type() == FieldDescriptor::TYPE_MESSAGE ||
             field->type() == FieldDescriptor::TYPE_GROUP) &&
-           !field->is_map() && !field->options().weak() &&
-           !HasLazyRep(field, options) && !options.is_implicitly_weak &&
-           options.use_direct_tcparser_table && is_non_cold(options);
+           !field->is_map() && !field_is_weak && !HasLazyRep(field, options) &&
+           !options.is_implicitly_weak && options.use_direct_tcparser_table &&
+           is_non_cold(options);
   };
   for (const FieldOptions& options : ordered_fields) {
     if (is_non_cold_subtable(options)) {
@@ -779,7 +786,9 @@ TailCallTableInfo::BuildFieldEntries(
             aux_entries.push_back({kEnumValidator, {map_value}});
           }
         }
+        PROTOBUF_IGNORE_DEPRECATION_START
       } else if (field->options().weak()) {
+        PROTOBUF_IGNORE_DEPRECATION_STOP
         // Disable the type card for this entry to force the fallback.
         entry.type_card = 0;
       } else if (HasLazyRep(field, options)) {
@@ -831,6 +840,9 @@ TailCallTableInfo::BuildFieldEntries(
         aux_entry.type = kEnumValidator;
         aux_entry.field = field;
       }
+    } else if (options.is_micro_string()) {
+      // We use the aux idx to pass the MicroString SSO size.
+      entry.aux_idx = options.micro_string_sso();
     }
   }
   ABSL_CHECK_EQ(subtable_aux_idx - subtable_aux_idx_begin,

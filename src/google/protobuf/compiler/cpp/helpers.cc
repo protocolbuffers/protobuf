@@ -1,5 +1,5 @@
 // Protocol Buffers - Google's data interchange format
-// Copyright 2008 Google Inc.  All rights reserved.
+// Copyright 2008 Google LLC.  All rights reserved.
 //
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file or at
@@ -18,6 +18,7 @@
 #include <memory>
 #include <queue>
 #include <string>
+#include <string_view>
 #include <type_traits>
 #include <utility>
 #include <vector>
@@ -48,6 +49,7 @@
 #include "google/protobuf/compiler/cpp/names.h"
 #include "google/protobuf/compiler/cpp/options.h"
 #include "google/protobuf/compiler/scc.h"
+#include "google/protobuf/cpp_file_options.pb.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/dynamic_message.h"
@@ -75,6 +77,7 @@ using ::google::protobuf::internal::cpp::HasbitMode;
 
 constexpr absl::string_view kAnyMessageName = "Any";
 constexpr absl::string_view kAnyProtoFile = "google/protobuf/any.proto";
+constexpr absl::string_view kFullyQualifiedPrefix = "::";
 
 const absl::flat_hash_set<absl::string_view>& FileScopeKnownNames() {
   static constexpr const char* kValue[] = {
@@ -548,25 +551,47 @@ std::string Namespace(absl::string_view package) {
   return absl::StrCat("::", absl::StrJoin(scope, "::"));
 }
 
-std::string Namespace(const FileDescriptor* d) { return Namespace(d, {}); }
-std::string Namespace(const FileDescriptor* d, const Options& options) {
+bool ValidateCcNamespace(const FileDescriptor* file, std::string* error) {
+  if (file->options().GetExtension(::pb::file::cpp).has_namespace_()) {
+    auto cc_namespace =
+        file->options().GetExtension(::pb::file::cpp).namespace_();
+    if (absl::StartsWith(cc_namespace, kFullyQualifiedPrefix)) {
+      *error =
+          absl::StrCat("Namespace ", cc_namespace, " can not start with `::`.");
+      return false;
+    }
+    std::vector<std::string> names =
+        absl::StrSplit(cc_namespace, "::", absl::SkipEmpty());
+    for (auto& name : names) {
+      bool is_valid_name = std::all_of(
+          name.begin(), name.end(),
+          [](unsigned char c) { return absl::ascii_isalnum(c) || c == '_'; });
+      if (!is_valid_name) {
+        *error = absl::StrCat("Namespace ", cc_namespace,
+                              " contains invalid characters.");
+        return false;
+      }
+    }
+  }
+  return true;
+}
+
+std::string Namespace(const FileDescriptor* d) {
+  if (d->options().GetExtension(::pb::file::cpp).has_namespace_()) {
+    auto cc_namespace = d->options().GetExtension(::pb::file::cpp).namespace_();
+    if (cc_namespace.empty()) {
+      return "";
+    }
+    return absl::StrCat("::", cc_namespace);
+  }
   return Namespace(d->package());
 }
 
-std::string Namespace(const Descriptor* d) { return Namespace(d, {}); }
-std::string Namespace(const Descriptor* d, const Options& options) {
-  return Namespace(d->file(), options);
-}
+std::string Namespace(const Descriptor* d) { return Namespace(d->file()); }
 
-std::string Namespace(const FieldDescriptor* d) { return Namespace(d, {}); }
-std::string Namespace(const FieldDescriptor* d, const Options& options) {
-  return Namespace(d->file(), options);
-}
+std::string Namespace(const FieldDescriptor* d) { return Namespace(d->file()); }
 
-std::string Namespace(const EnumDescriptor* d) { return Namespace(d, {}); }
-std::string Namespace(const EnumDescriptor* d, const Options& options) {
-  return Namespace(d->file(), options);
-}
+std::string Namespace(const EnumDescriptor* d) { return Namespace(d->file()); }
 
 std::string SplitDefaultInstanceType(const Descriptor* descriptor,
                                      const Options& /*options*/) {
@@ -1007,7 +1032,7 @@ std::string QualifiedFileLevelSymbol(const FileDescriptor* file,
   if (file->package().empty()) {
     return absl::StrCat("::", name);
   }
-  return absl::StrCat(Namespace(file, options), "::", name);
+  return absl::StrCat(Namespace(file), "::", name);
 }
 
 // Escape C++ trigraphs by escaping question marks to \?
@@ -1159,6 +1184,14 @@ bool IsMicroString(const FieldDescriptor* field, const Options& opts) {
 
 
   return opts.experimental_use_micro_string;
+}
+
+absl::optional<uint8_t> MicroStringSSOSize(const FieldDescriptor* field,
+                                           const Options& opts) {
+  if (!IsMicroString(field, opts)) return absl::nullopt;
+
+
+  return absl::nullopt;
 }
 
 bool IsArenaStringPtr(const FieldDescriptor* field, const Options& opts) {
@@ -1743,7 +1776,9 @@ MessageAnalysis MessageSCCAnalyzer::GetSCCAnalysis(const SCC* scc) {
       if (field->is_required()) {
         result.contains_required = true;
       }
+      PROTOBUF_IGNORE_DEPRECATION_START
       if (field->options().weak()) {
+        PROTOBUF_IGNORE_DEPRECATION_STOP
         result.contains_weak = true;
       }
       switch (field->type()) {
@@ -1860,10 +1895,14 @@ bool GetBootstrapBasename(const Options& options, absl::string_view basename,
            "third_party/protobuf/descriptor"},
           {"third_party/protobuf/cpp_features",
            "third_party/protobuf/cpp_features"},
+          {"third_party/protobuf/cpp_file_options",
+           "third_party/protobuf/cpp_file_options"},
           {"third_party/protobuf/compiler/plugin",
            "third_party/protobuf/compiler/plugin"},
           {"third_party/protobuf/internal_options",
            "third_party/protobuf/internal_options_bootstrap"},
+          {"third_party/protobuf/json_enumvalue_options",
+           "third_party/protobuf/json_enumvalue_options"},
           {"net/proto2/compiler/proto/profile",
            "net/proto2/compiler/proto/profile_bootstrap"},
       };
@@ -2115,8 +2154,7 @@ std::vector<io::Printer::Sub> AnnotatedAccessors(
 }
 
 bool IsFileDescriptorProto(const FileDescriptor* file, const Options& options) {
-  if (Namespace(file, options) !=
-      absl::StrCat("::", ProtobufNamespace(options))) {
+  if (Namespace(file) != absl::StrCat("::", ProtobufNamespace(options))) {
     return false;
   }
   for (int i = 0; i < file->message_type_count(); ++i) {

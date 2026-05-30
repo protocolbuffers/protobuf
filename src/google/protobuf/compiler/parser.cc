@@ -1491,25 +1491,64 @@ bool Parser::ParseUninterpretedBlock(std::string* value) {
   // Note that enclosing braces are not added to *value.
   // We do NOT use ConsumeEndOfStatement for this brace because it's delimiting
   // an expression, not a block of statements.
-  DO(Consume("{"));
-  int brace_depth = 1;
-  while (!AtEnd()) {
-    if (LookingAt("{")) {
-      brace_depth++;
-    } else if (LookingAt("}")) {
-      brace_depth--;
-      if (brace_depth == 0) {
-        input_->Next();
-        return true;
-      }
-    }
-    // TODO: Interpret line/column numbers to preserve formatting
-    if (!value->empty()) value->push_back(' ');
-    value->append(input_->current().text);
-    input_->Next();
+  if (!LookingAt("{")) {
+    RecordError("Expected \"{\".");
+    return false;
   }
-  RecordError("Unexpected end of stream while parsing aggregate value.");
-  return false;
+  int brace_depth = 1;
+  {
+    const bool old_report_whitespace = input_->report_whitespace();
+    const bool old_report_newlines = input_->report_newlines();
+    input_->set_report_whitespace(true);
+    input_->set_report_newlines(true);
+    const absl::Cleanup cleanup([&] {
+      input_->set_report_whitespace(old_report_whitespace);
+      input_->set_report_newlines(old_report_newlines);
+    });
+
+    input_->Next();  // Consume "{"
+
+    while (!AtEnd()) {
+      if (LookingAt("{")) {
+        brace_depth++;
+      } else if (LookingAt("}")) {
+        brace_depth--;
+        if (brace_depth == 0) {
+          break;
+        }
+      }
+
+      const io::Tokenizer::Token& cur_token = input_->current();
+      const io::Tokenizer::Token& prev_token = input_->previous();
+      int prev_token_end_line = (prev_token.type == io::Tokenizer::TYPE_NEWLINE)
+                                    ? (prev_token.line + 1)
+                                    : prev_token.line;
+      // Pad with newlines and spaces to match the original formatting.
+      // Note that we cannot simply keep the full original text of options
+      // because it might be using comments. Proto supports // and /* */
+      // comments but textformat is using '#' for comments. So comments have to
+      // be either removed or rewritten. Here we replace them with whitespace
+      // and empty lines to keep the original line and column numbers.
+      if (cur_token.line > prev_token_end_line) {
+        value->append(cur_token.line - prev_token_end_line, '\n');
+        value->append(cur_token.column, ' ');
+      } else if (cur_token.line == prev_token_end_line &&
+                 cur_token.column > prev_token.end_column) {
+        value->append(cur_token.column - prev_token.end_column, ' ');
+      }
+
+      value->append(cur_token.text);
+      input_->Next();
+    }
+  }
+
+  if (brace_depth == 0) {
+    input_->Next();  // Consume "}"
+    return true;
+  } else {
+    RecordError("Unexpected end of stream while parsing aggregate value.");
+    return false;
+  }
 }
 
 // We don't interpret the option here. Instead we store it in an
@@ -1893,6 +1932,10 @@ bool Parser::ParseReservedNumbers(DescriptorProto* message,
       start_token = input_->current();
       DO(ConsumeInteger(&start, (first ? "Expected field name or number range."
                                        : "Expected field number range.")));
+      if (start == std::numeric_limits<int>::max()) {
+        RecordError("Field number out of bounds.");
+        return false;
+      }
     }
 
     if (TryConsume("to")) {
@@ -1905,6 +1948,10 @@ bool Parser::ParseReservedNumbers(DescriptorProto* message,
         end = kMaxRangeSentinel - 1;
       } else {
         DO(ConsumeInteger(&end, "Expected integer."));
+        if (end == std::numeric_limits<int>::max()) {
+          RecordError("Field number out of bounds.");
+          return false;
+        }
       }
     } else {
       LocationRecorder end_location(

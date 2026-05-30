@@ -993,8 +993,8 @@ void GenerateMessageToPool(absl::string_view name_prefix,
 void GenerateAddFileToPool(const FileDescriptor* file, const Options& options,
                            io::Printer* printer) {
   printer->Print(
-      "public static $is_initialized = false;\n\n"
-      "public static function initOnce() {\n");
+      "public static bool $is_initialized = false;\n\n"
+      "public static function initOnce(): void {\n");
   Indent(printer);
 
   if (options.aggregate_metadata) {
@@ -1046,6 +1046,12 @@ void GenerateAddFileToPool(const FileDescriptor* file, const Options& options,
           break;
         }
       }
+
+      // Clear public_dependency and weak_dependency since they contain indices
+      // into the dependency array which we just modified above. PHP handles
+      // dependency loading through initOnce() calls instead.
+      file_proto->clear_public_dependency();
+      file_proto->clear_weak_dependency();
 
       // Filter out all extensions, since we do not support extension yet.
       file_proto->clear_extension();
@@ -1172,6 +1178,12 @@ void GenerateAddFilesToPool(const FileDescriptor* file, const Options& options,
           break;
         }
       }
+
+      // Clear public_dependency and weak_dependency since they contain indices
+      // into the dependency array which we just modified above. PHP handles
+      // dependency loading through initOnce() calls instead.
+      file_proto->clear_public_dependency();
+      file_proto->clear_weak_dependency();
 
       // Filter out all extensions, since we do not support extension yet.
       file_proto->clear_extension();
