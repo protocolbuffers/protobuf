@@ -417,6 +417,15 @@ Reflection::Reflection(const Descriptor* descriptor,
           (pool == nullptr) ? DescriptorPool::internal_generated_pool() : pool),
       schema_(schema) {
   last_non_weak_field_index_ = descriptor_->field_count() - 1;
+
+  for (int i = 0; i <= last_non_weak_field_index_; i++) {
+    const FieldDescriptor* field = descriptor_->field(i);
+    if (field->is_repeated() ||
+        field->cpp_type() == FieldDescriptor::CPPTYPE_STRING ||
+        field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
+      extra_memory_fields_.push_back(field);
+    }
+  }
 }
 
 Reflection::~Reflection() {
@@ -477,8 +486,7 @@ size_t Reflection::SpaceUsedLong(const Message& message) const {
   if (schema_.HasExtensionSet()) {
     total_size += GetExtensionSet(message).SpaceUsedExcludingSelfLong();
   }
-  for (int i = 0; i <= last_non_weak_field_index_; i++) {
-    const FieldDescriptor* field = descriptor_->field(i);
+  for (const FieldDescriptor* field : extra_memory_fields_) {
     if (field->is_repeated()) {
       switch (field->cpp_type()) {
 #define HANDLE_TYPE(UPPERCASE, LOWERCASE)                          \

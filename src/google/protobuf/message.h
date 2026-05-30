@@ -1169,6 +1169,7 @@ class PROTOBUF_EXPORT Reflection final {
   // are at the end of the containing message. If a message proto doesn't
   // contain weak fields, then this field equals descriptor_->field_count().
   int last_non_weak_field_index_;
+  std::vector<const FieldDescriptor*> extra_memory_fields_;
   // The table-driven parser table.
   // This table is generated on demand for Message types that did not override
   // _InternalParse. It uses the reflection information to do so.
