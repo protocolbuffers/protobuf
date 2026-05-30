@@ -24,10 +24,11 @@ namespace protobuf {
 
 template <typename ElementType>
 class RepeatedFieldProxy;
-template <typename ElementType>
-class RepeatedFieldOrProxy;
 
 namespace internal {
+
+template <typename ElementType>
+class RepeatedFieldOrProxy;
 
 template <typename ElementType, bool kOrProxy>
 class MutableRepeatedFieldProxyImpl;
@@ -660,8 +661,8 @@ class PROTOBUF_DECLSPEC_EMPTY_BASES RepeatedFieldProxy final
 
  private:
   friend RepeatedFieldProxy<const ElementType>;
-  friend RepeatedFieldOrProxy<ElementType>;
-  friend RepeatedFieldOrProxy<const ElementType>;
+  friend internal::RepeatedFieldOrProxy<ElementType>;
+  friend internal::RepeatedFieldOrProxy<const ElementType>;
   friend internal::RepeatedFieldProxyInternalPrivateAccessHelper<
       ElementType, /*kOrProxy=*/false>;
 };
@@ -695,7 +696,7 @@ class PROTOBUF_DECLSPEC_EMPTY_BASES RepeatedFieldProxy<const ElementType> final
 
  private:
   friend RepeatedFieldProxy<ElementType>;
-  friend RepeatedFieldOrProxy<const ElementType>;
+  friend internal::RepeatedFieldOrProxy<const ElementType>;
   friend internal::RepeatedFieldProxyInternalPrivateAccessHelper<
       const ElementType, /*kOrProxy=*/false>;
 };
@@ -754,8 +755,6 @@ class RepeatedFieldProxyInternalPrivateAccessHelper {
     return ToProxyType(proxy).Emplace(std::forward<Args>(args)...);
   }
 };
-
-}  // namespace internal
 
 // A mutable `RepeatedFieldOrProxy` for a repeated field of type `ElementType`
 // in a Protobuf message. Proxies alias the repeated field and provide an
@@ -951,6 +950,8 @@ static_assert(sizeof(RepeatedFieldOrProxy<const int>) ==
                   sizeof(RepeatedFieldProxy<const int>),
               "Const `RepeatedFieldOrProxy` is not the expected size");
 
+}  // namespace internal
+
 // Like C++20's std::erase_if, for RepeatedFieldProxy
 template <int&... DeductionBarrier, typename T, typename Pred>
 size_t erase_if(RepeatedFieldProxy<T> cont, Pred pred) {
@@ -970,7 +971,7 @@ size_t erase(RepeatedFieldProxy<T> cont, const U& value) {
 
 // Like C++20's std::erase_if, for RepeatedFieldOrProxy.
 template <int&... DeductionBarrier, typename T, typename Pred>
-size_t erase_if(RepeatedFieldOrProxy<T> cont, Pred pred) {
+size_t erase_if(internal::RepeatedFieldOrProxy<T> cont, Pred pred) {
   return google::protobuf::erase_if(
       internal::RepeatedFieldProxyInternalPrivateAccessHelper<
           T, /*kOrProxy=*/true>::field(cont),
@@ -979,7 +980,7 @@ size_t erase_if(RepeatedFieldOrProxy<T> cont, Pred pred) {
 
 // Like C++20's std::erase, for RepeatedFieldOrProxy.
 template <int&... DeductionBarrier, typename T, typename U>
-size_t erase(RepeatedFieldOrProxy<T> cont, const U& value) {
+size_t erase(internal::RepeatedFieldOrProxy<T> cont, const U& value) {
   return google::protobuf::erase(internal::RepeatedFieldProxyInternalPrivateAccessHelper<
                            T, /*kOrProxy=*/true>::field(cont),
                        value);
@@ -1009,23 +1010,23 @@ void c_stable_sort(RepeatedFieldProxy<T> cont) {
 
 // Like C++20's std::sort, for RepeatedFieldOrProxy.
 template <int&..., typename T, typename Compare>
-void c_sort(RepeatedFieldOrProxy<T> cont, Compare cmp) {
+void c_sort(internal::RepeatedFieldOrProxy<T> cont, Compare cmp) {
   google::protobuf::sort(cont.begin(), cont.end(), cmp);
 }
 // Like C++20's std::sort, for RepeatedFieldOrProxy, with default comparison.
 template <int&..., typename T>
-void c_sort(RepeatedFieldOrProxy<T> cont) {
+void c_sort(internal::RepeatedFieldOrProxy<T> cont) {
   google::protobuf::sort(cont.begin(), cont.end());
 }
 // Like C++20's std::stable_sort, for RepeatedFieldOrProxy.
 template <int&..., typename T, typename Compare>
-void c_stable_sort(RepeatedFieldOrProxy<T> cont, Compare cmp) {
+void c_stable_sort(internal::RepeatedFieldOrProxy<T> cont, Compare cmp) {
   google::protobuf::stable_sort(cont.begin(), cont.end(), cmp);
 }
 // Like C++20's std::stable_sort, for RepeatedFieldOrProxy, with default
 // comparison.
 template <int&..., typename T>
-void c_stable_sort(RepeatedFieldOrProxy<T> cont) {
+void c_stable_sort(internal::RepeatedFieldOrProxy<T> cont) {
   google::protobuf::stable_sort(cont.begin(), cont.end());
 }
 

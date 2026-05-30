@@ -469,7 +469,9 @@ Error, UINTPTR_MAX is undefined
 #define UPB_ARM64_BTI_DEFAULT 0
 #endif
 
-#if (defined(__x86_64__) || defined(__aarch64__)) && \
+/* aarch64 supports big and little endian modes; fasttable performs multibyte
+ * tag loads assumes the tag of a varint is in the low bits. */
+#if (defined(__x86_64__) || defined(__AARCH64EL__)) && \
     UPB_HAS_ATTRIBUTE(preserve_none) && UPB_HAS_ATTRIBUTE(musttail)
 #define UPB_FASTTABLE_SUPPORTED 1
 #else
@@ -481,7 +483,7 @@ Error, UINTPTR_MAX is undefined
  * for example for testing or benchmarking. */
 #if defined(UPB_ENABLE_FASTTABLE)
 #if !UPB_FASTTABLE_SUPPORTED
-#error fasttable is x86-64/ARM64 only and requires preserve_none and musttail.
+#error fasttable is x86-64/ARM64le only and requires preserve_none and musttail.
 #endif
 #define UPB_FASTTABLE 1
 /* Define UPB_TRY_ENABLE_FASTTABLE to use fasttable if possible.
@@ -672,10 +674,10 @@ Error, UINTPTR_MAX is undefined
  * to prevent optimizers from removing the constructor. Our solution is to
  * create a dummy exported weak symbol that prevent this stripping.
  */
-#pragma section(".CRT$XCU", long, read)
+#pragma section(".CRT$XCT", read)
 #define UPB_CONSTRUCTOR(name, unique_name)                                   \
   static void __cdecl UPB_PRIVATE(name)(void);                               \
-  __declspec(allocate(".CRT$XCU"), selectany) void(                          \
+  __declspec(allocate(".CRT$XCT"), selectany) void(                          \
       __cdecl * UPB_PRIVATE(name##_))(void) = UPB_PRIVATE(name);             \
   __declspec(selectany, dllexport) void* UPB_PRIVATE(name##_force_linkage) = \
       &UPB_PRIVATE(name##_);                                                 \
@@ -719,7 +721,7 @@ Error, UINTPTR_MAX is undefined
   __asm__(".private_extern _" #to);      \
   __asm__(".set _" #to ", _" #from);
 
-#elif defined(__ELF__)
+#elif defined(__ELF__) || defined(__wasm__)
 
 // On ELF, weak aliases work properly, so we can have all weak MiniTables point
 // to the same empty singleton MiniTable. This reduces code size if many
@@ -748,26 +750,5 @@ Error, UINTPTR_MAX is undefined
 #define UPB_WEAK_ALIAS(type, from, to) weak_alias_not_supported_on_this_platform
 #define UPB_STRONG_ALIAS(type, from, to) \
   strong_alias_not_supported_on_this_platform
-#endif
-
-// Future versions of upb will include breaking changes to some APIs.
-// This macro can be set to enable these API changes ahead of time, so that
-// user code can be updated before upgrading versions of protobuf.
-#ifdef UPB_FUTURE_BREAKING_CHANGES
-
-// Removes non-standard clamping behavior in RepeatedContainer.pop()
-// Owner: runze@
-#define UPB_FUTURE_REMOVE_POP_CLAMP 1
-
-// Fix PyProto C++ and upb implementations to return NotImplemented in
-// descriptor container equality checks for unrecognized types.
-// Owner: runze@
-#define UPB_FUTURE_CONTAINER_EQ_RETURNS_NOTIMPLEMENTED 1
-
-#else
-
-#define UPB_FUTURE_REMOVE_POP_CLAMP 0
-
-#define UPB_FUTURE_CONTAINER_EQ_RETURNS_NOTIMPLEMENTED 0
 
 #endif

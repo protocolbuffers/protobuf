@@ -103,8 +103,13 @@ static bool upb_DecodeFast_GetFieldType(const upb_MiniTable* m,
   //  - kUpb_FieldType_Enum -> kUpb_FieldType_Int32 if the enum is open.
   upb_FieldType type = field->UPB_PRIVATE(descriptortype);
 
-  if (type == kUpb_FieldType_Group || upb_MiniTableField_IsClosedEnum(field)) {
+  if (type == kUpb_FieldType_Group) {
     return false;  // Currently not supported.
+  }
+
+  if (upb_MiniTableField_IsClosedEnum(field)) {
+    *out_type = kUpb_DecodeFast_ClosedEnum;
+    return true;
   }
 
   static const int8_t types[] = {
@@ -169,15 +174,35 @@ static bool upb_DecodeFast_GetFunctionData(const upb_MiniTable* m,
       upb_MiniTableField_IsInOneof(field)
           ? UPB_PRIVATE(_upb_MiniTableField_OneofOffset)(field)
           : 0;
-  uint64_t field_index = upb_MiniTableField_IsSubMessage(field)
-                             ? field - m->UPB_PRIVATE(fields)
-                             : 0;
+  uint64_t subofs = 0;
+  if (upb_MiniTableField_IsSubMessage(field) ||
+      upb_MiniTableField_IsClosedEnum(field)) {
+    uint64_t idx = field - m->UPB_PRIVATE(fields);
+    // Here we rely on the fact that sizeof(upb_MiniTableField) is the same on
+    // both 32 and 64 bit; if it wasn't, we could generate a bad offset if we
+    // compiled on a 32 bit machine targetting a 64 bit one.
+    UPB_STATIC_ASSERT(sizeof(upb_MiniTableField) % kUpb_SubmsgOffsetBytes == 0,
+                      "upb_MiniTableField must be a multiple of the offset");
+    uint64_t ofs_4byte =
+        idx * (sizeof(upb_MiniTableField) / kUpb_SubmsgOffsetBytes) +
+        field->UPB_PRIVATE(submsg_ofs);
+    // Fasttable is only supported on 64-bit platforms where pointers and the
+    // submessage entries (upb_MiniTableSubInternal) are 8 bytes, requiring
+    // 8-byte alignment. Since the base fields array is aligned to pointer size
+    // (at least 8 bytes), and each submessage entry must be 8-byte aligned,
+    // the total byte offset (4 * ofs_4byte) from the start of the fields array
+    // to the submessage entry is guaranteed to be a multiple of 8.
+    // Consequently, ofs_4byte is guaranteed to be even, and thus this offset
+    // can be scaled by 8 when loading.
+    UPB_ASSERT(ofs_4byte % 2 == 0);
+    subofs = ofs_4byte / 2;
+  }
 
   uint64_t presence;
 
   return upb_DecodeFast_GetPresence(field, &presence) &&
-         upb_DecodeFast_MakeData(offset, case_offset, presence, field_index,
-                                 tag, out_data);
+         upb_DecodeFast_MakeData(offset, case_offset, presence, subofs, tag,
+                                 out_data);
 }
 
 static bool upb_DecodeFast_TryFillEntry(const upb_MiniTable* m,

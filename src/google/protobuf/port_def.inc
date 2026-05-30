@@ -132,15 +132,9 @@
 // Owner: ckennelly@, mkruskal@
 #define PROTOBUF_FUTURE_ADD_NODISCARD [[nodiscard]]
 
-// Fix PyProto C++ and upb implementations to return NotImplemented in descriptor container equality checks for unrecognized types.
-// Owner: runze@
-#define PROTOBUF_FUTURE_CONTAINER_EQ_RETURNS_NOTIMPLEMENTED 1
-
 #else
 
 #define PROTOBUF_FUTURE_ADD_NODISCARD
-
-#define PROTOBUF_FUTURE_CONTAINER_EQ_RETURNS_NOTIMPLEMENTED 0
 
 #endif
 
@@ -213,6 +207,17 @@
 #define PROTOBUF_NOINLINE __declspec(noinline)
 #endif
 
+#ifdef PROTOBUF_MALLOC
+#error PROTOBUF_MALLOC was previously defined
+#endif
+#if defined(__GNUC__)
+#define PROTOBUF_MALLOC __attribute__((malloc))
+#elif defined(_MSC_VER) && _MSC_VER >= 1400
+#define PROTOBUF_MALLOC __declspec(restrict)
+#else
+#define PROTOBUF_MALLOC
+#endif
+
 #ifdef PROTOBUF_MUSTTAIL
 #error PROTOBUF_MUSTTAIL was previously defined
 #endif
@@ -255,6 +260,11 @@
   _Pragma("GCC diagnostic push")          \
   _Pragma("GCC diagnostic ignored \"-Wdeprecated-declarations\"")
 #define PROTOBUF_IGNORE_DEPRECATION_STOP _Pragma("GCC diagnostic pop")
+#elif defined(_MSC_VER)
+#define PROTOBUF_IGNORE_DEPRECATION_START \
+  __pragma(warning(push))                 \
+  __pragma(warning(disable: 4996))
+#define PROTOBUF_IGNORE_DEPRECATION_STOP __pragma(warning(pop))
 #else
 #define PROTOBUF_IGNORE_DEPRECATION_START
 #define PROTOBUF_IGNORE_DEPRECATION_STOP
