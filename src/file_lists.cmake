@@ -661,7 +661,6 @@ set(libupb_srcs
   ${protobuf_SOURCE_DIR}/upb/json/encode.c
   ${protobuf_SOURCE_DIR}/upb/lex/atoi.c
   ${protobuf_SOURCE_DIR}/upb/lex/round_trip.c
-  ${protobuf_SOURCE_DIR}/upb/lex/strtod.c
   ${protobuf_SOURCE_DIR}/upb/lex/unicode.c
   ${protobuf_SOURCE_DIR}/upb/mem/alloc.c
   ${protobuf_SOURCE_DIR}/upb/mem/arena.c
@@ -742,7 +741,6 @@ set(libupb_hdrs
   ${protobuf_SOURCE_DIR}/upb/json/encode.h
   ${protobuf_SOURCE_DIR}/upb/lex/atoi.h
   ${protobuf_SOURCE_DIR}/upb/lex/round_trip.h
-  ${protobuf_SOURCE_DIR}/upb/lex/strtod.h
   ${protobuf_SOURCE_DIR}/upb/lex/unicode.h
   ${protobuf_SOURCE_DIR}/upb/mem/alloc.h
   ${protobuf_SOURCE_DIR}/upb/mem/arena.h
