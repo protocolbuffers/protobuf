@@ -111,6 +111,7 @@ UPB_NODISCARD UPB_INLINE struct upb_Array* UPB_PRIVATE(
   // Pool miss: perform contiguous single allocation for header + initial data.
   const size_t array_size =
       UPB_ALIGN_UP(sizeof(struct upb_Array), UPB_MALLOC_ALIGN);
+  if (init_capacity > (SIZE_MAX - array_size) >> elem_size_lg2) return NULL;
   const size_t bytes = array_size + elem_bytes;
   size_t span = UPB_PRIVATE(_upb_Arena_AllocSpan)(bytes);
   if (!allow_slow && UPB_PRIVATE(_upb_ArenaHas)(arena) < span) return NULL;
