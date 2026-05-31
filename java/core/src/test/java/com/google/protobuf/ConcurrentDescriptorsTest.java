@@ -7,6 +7,7 @@
 
 package com.google.protobuf;
 
+import protobuf_unittest.UnittestCycle;
 import proto2_unittest.UnittestProto;
 import proto2_unittest.UnittestProto.TestAllTypes;
 import java.util.ArrayList;
@@ -101,6 +102,65 @@ public final class ConcurrentDescriptorsTest {
     startSignal.countDown();
     doneSignal.await();
     System.out.println("Done with all threads...");
+    for (int i = 0; i < futures.size(); i++) {
+      try {
+        futures.get(i).get();
+      } catch (ExecutionException e) {
+        Assert.fail("Thread " + i + " failed with:" + e.getMessage());
+      }
+    }
+    executor.shutdown();
+  }
+
+  /**
+   * Tests parser initialization with circular message dependencies.
+   *
+   * <p>Verifies that lazy parser initialization (setting parser variables to null and initializing
+   * on first use) prevents deadlocks when messages have circular dependencies (e.g., Foo → Bar →
+   * Baz → Foo).
+   *
+   * <p>This test uses unittest_cycle.proto which defines messages with circular references. Before
+   * the fix, eager parser initialization could cause deadlocks during concurrent class loading.
+   */
+  @Test
+  public void testParserInitializationWithCircularDependencies() throws InterruptedException {
+    // Use fewer threads (10) since we're testing a specific deadlock scenario
+    // rather than stress-testing
+    int numThreads = 10;
+    ExecutorService executor = Executors.newFixedThreadPool(numThreads);
+    CountDownLatch startSignal = new CountDownLatch(1);
+    CountDownLatch doneSignal = new CountDownLatch(numThreads);
+    List<Future<?>> futures = new ArrayList<>(numThreads);
+
+    // Test concurrent access to parser() methods of circularly dependent messages
+    for (int i = 0; i < numThreads; i++) {
+      final int threadNum = i;
+      Future<?> future =
+          executor.submit(
+              new Worker(
+                  startSignal,
+                  doneSignal,
+                  () -> {
+                    // Access parsers in round-robin to maximize chance of catching deadlock
+                    switch (threadNum % 3) {
+                      case 0:
+                        Assert.assertNotNull(UnittestCycle.Foo.parser());
+                        break;
+                      case 1:
+                        Assert.assertNotNull(UnittestCycle.Bar.parser());
+                        break;
+                      case 2:
+                        Assert.assertNotNull(UnittestCycle.Baz.parser());
+                        break;
+                    }
+                  }));
+      futures.add(future);
+    }
+
+    startSignal.countDown();
+    doneSignal.await();
+    System.out.println("Done with all parser initialization threads...");
+
     for (int i = 0; i < futures.size(); i++) {
       try {
         futures.get(i).get();
