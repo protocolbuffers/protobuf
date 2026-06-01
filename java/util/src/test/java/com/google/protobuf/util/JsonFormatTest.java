@@ -69,6 +69,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
 @RunWith(JUnit4.class)
+@SuppressWarnings("AvoidValueSetter")
 public class JsonFormatTest {
 
   private static Locale originalLocale;
@@ -2291,8 +2292,8 @@ public class JsonFormatTest {
                 + "    \"foo\": 99,\n"
                 + "    \"xxx\": 123,\n"
                 + "    \"\u20ac\": 1,\n"
-                + "    \"\ufb00\": 2,\n"
-                + "    \"\ud834\udd20\": 3\n"
+                + "    \"\ud834\udd20\": 3,\n"
+                + "    \"\ufb00\": 2\n"
                 + "  }\n"
                 + "}");
 

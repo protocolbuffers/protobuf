@@ -1,5 +1,6 @@
 load("@rules_cc//cc:cc_test.bzl", "cc_test")
 load("@rules_cc//cc:defs.bzl", "cc_library")
+load("@rules_python//python:proto.bzl", "py_proto_library")
 load("//bazel:cc_proto_library.bzl", "cc_proto_library")
 load("//bazel:proto_library.bzl", "proto_library")
 load("//build_defs:cpp_opts.bzl", "COPTS")
@@ -300,6 +301,13 @@ cc_library(
     ],
 )
 
+filegroup(
+    name = "json_enumval_custom_string_proto_srcs",
+    testonly = True,
+    srcs = ["json_enumval_custom_string.proto"],
+    visibility = ["//:__subpackages__"],
+)
+
 proto_library(
     name = "json_enumval_custom_string_proto",
     testonly = True,
@@ -311,6 +319,13 @@ proto_library(
 cc_proto_library(
     name = "json_enumval_custom_string_cc_proto",
     testonly = True,
+    deps = [":json_enumval_custom_string_proto"],
+)
+
+py_proto_library(
+    name = "json_enumval_custom_string_py_proto",
+    testonly = True,
+    visibility = ["//third_party/py/google/protobuf/internal:__pkg__"],
     deps = [":json_enumval_custom_string_proto"],
 )
 

@@ -55,7 +55,6 @@ import java.text.ParseException;
 import java.util.Base64;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -1253,19 +1252,7 @@ public class JsonFormat {
       @SuppressWarnings("unchecked") // Object guaranteed to be a List for a map field.
       Collection<Object> elements = (List<Object>) value;
       if (sortingMapKeys && !elements.isEmpty()) {
-        Comparator<Object> cmp = null;
-        if (keyField.getType() == FieldDescriptor.Type.STRING) {
-          cmp =
-              new Comparator<Object>() {
-                @Override
-                public int compare(final Object o1, final Object o2) {
-                  ByteString s1 = ByteString.copyFromUtf8((String) o1);
-                  ByteString s2 = ByteString.copyFromUtf8((String) o2);
-                  return ByteString.unsignedLexicographicalComparator().compare(s1, s2);
-                }
-              };
-        }
-        TreeMap<Object, Object> tm = new TreeMap<>(cmp);
+        TreeMap<Object, Object> tm = new TreeMap<>();
         for (Object element : elements) {
           Message entry = (Message) element;
           Object entryKey = entry.getField(keyField);
@@ -2185,6 +2172,7 @@ public class JsonFormat {
       return result;
     }
 
+    @SuppressWarnings("AvoidValueSetter")
     @Nullable
     private Object parseFieldValue(FieldDescriptor field, JsonElement json, Message.Builder builder)
         throws InvalidProtocolBufferException {
