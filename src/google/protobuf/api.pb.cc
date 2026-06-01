@@ -905,11 +905,11 @@ PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const Api::ParseTableT_
         Api::InternalGenerateParseTable_(Api_class_data_.base());
 #endif  // !PROTOBUF_MESSAGE_GLOBALS
 PROTOBUF_NOINLINE void Api::Clear() {
-// @@protoc_insertion_point(message_clear_start:google.protobuf.Api)
+  // @@protoc_insertion_point(message_clear_start:google.protobuf.Api)
   ::google::protobuf::internal::TSanWrite(&_impl_);
   ::uint32_t cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
-  (void) cached_has_bits;
+  (void)cached_has_bits;
 
   cached_has_bits = _impl_._has_bits_[0];
   if (BatchCheckHasBit(cached_has_bits, 0x0000007fU)) {
@@ -1358,11 +1358,11 @@ PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const Method::ParseTableT_
         Method::InternalGenerateParseTable_(Method_class_data_.base());
 #endif  // !PROTOBUF_MESSAGE_GLOBALS
 PROTOBUF_NOINLINE void Method::Clear() {
-// @@protoc_insertion_point(message_clear_start:google.protobuf.Method)
+  // @@protoc_insertion_point(message_clear_start:google.protobuf.Method)
   ::google::protobuf::internal::TSanWrite(&_impl_);
   ::uint32_t cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
-  (void) cached_has_bits;
+  (void)cached_has_bits;
 
   cached_has_bits = _impl_._has_bits_[0];
   if (BatchCheckHasBit(cached_has_bits, 0x0000001fU)) {
@@ -1383,9 +1383,11 @@ PROTOBUF_NOINLINE void Method::Clear() {
     }
   }
   if (BatchCheckHasBit(cached_has_bits, 0x000000e0U)) {
-    ::memset(&_impl_.request_streaming_, 0, static_cast<::size_t>(
-        reinterpret_cast<char*>(&_impl_.syntax_) -
-        reinterpret_cast<char*>(&_impl_.request_streaming_)) + sizeof(_impl_.syntax_));
+    ::memset(
+        &_impl_.request_streaming_, 0,
+        static_cast<::size_t>(reinterpret_cast<char*>(&_impl_.syntax_) -
+                              reinterpret_cast<char*>(&_impl_.request_streaming_)) +
+            sizeof(_impl_.syntax_));
   }
   _impl_._has_bits_.Clear();
   _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
@@ -1769,11 +1771,11 @@ PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const Mixin::ParseTableT_
         Mixin::InternalGenerateParseTable_(Mixin_class_data_.base());
 #endif  // !PROTOBUF_MESSAGE_GLOBALS
 PROTOBUF_NOINLINE void Mixin::Clear() {
-// @@protoc_insertion_point(message_clear_start:google.protobuf.Mixin)
+  // @@protoc_insertion_point(message_clear_start:google.protobuf.Mixin)
   ::google::protobuf::internal::TSanWrite(&_impl_);
   ::uint32_t cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
-  (void) cached_has_bits;
+  (void)cached_has_bits;
 
   cached_has_bits = _impl_._has_bits_[0];
   if (BatchCheckHasBit(cached_has_bits, 0x00000003U)) {

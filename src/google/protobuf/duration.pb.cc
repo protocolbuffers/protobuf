@@ -314,17 +314,19 @@ PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const Duration::ParseTableT_
         Duration::InternalGenerateParseTable_(Duration_class_data_.base());
 #endif  // !PROTOBUF_MESSAGE_GLOBALS
 PROTOBUF_NOINLINE void Duration::Clear() {
-// @@protoc_insertion_point(message_clear_start:google.protobuf.Duration)
+  // @@protoc_insertion_point(message_clear_start:google.protobuf.Duration)
   ::google::protobuf::internal::TSanWrite(&_impl_);
   ::uint32_t cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
-  (void) cached_has_bits;
+  (void)cached_has_bits;
 
   cached_has_bits = _impl_._has_bits_[0];
   if (BatchCheckHasBit(cached_has_bits, 0x00000003U)) {
-    ::memset(&_impl_.seconds_, 0, static_cast<::size_t>(
-        reinterpret_cast<char*>(&_impl_.nanos_) -
-        reinterpret_cast<char*>(&_impl_.seconds_)) + sizeof(_impl_.nanos_));
+    ::memset(
+        &_impl_.seconds_, 0,
+        static_cast<::size_t>(reinterpret_cast<char*>(&_impl_.nanos_) -
+                              reinterpret_cast<char*>(&_impl_.seconds_)) +
+            sizeof(_impl_.nanos_));
   }
   _impl_._has_bits_.Clear();
   _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();

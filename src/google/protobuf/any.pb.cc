@@ -347,11 +347,11 @@ PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const Any::ParseTableT_
         Any::InternalGenerateParseTable_(Any_class_data_.base());
 #endif  // !PROTOBUF_MESSAGE_GLOBALS
 PROTOBUF_NOINLINE void Any::Clear() {
-// @@protoc_insertion_point(message_clear_start:google.protobuf.Any)
+  // @@protoc_insertion_point(message_clear_start:google.protobuf.Any)
   ::google::protobuf::internal::TSanWrite(&_impl_);
   ::uint32_t cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
-  (void) cached_has_bits;
+  (void)cached_has_bits;
 
   cached_has_bits = _impl_._has_bits_[0];
   if (BatchCheckHasBit(cached_has_bits, 0x00000003U)) {

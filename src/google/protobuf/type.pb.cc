@@ -1363,11 +1363,11 @@ PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const Type::ParseTableT_
         Type::InternalGenerateParseTable_(Type_class_data_.base());
 #endif  // !PROTOBUF_MESSAGE_GLOBALS
 PROTOBUF_NOINLINE void Type::Clear() {
-// @@protoc_insertion_point(message_clear_start:google.protobuf.Type)
+  // @@protoc_insertion_point(message_clear_start:google.protobuf.Type)
   ::google::protobuf::internal::TSanWrite(&_impl_);
   ::uint32_t cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
-  (void) cached_has_bits;
+  (void)cached_has_bits;
 
   cached_has_bits = _impl_._has_bits_[0];
   if (BatchCheckHasBit(cached_has_bits, 0x0000003fU)) {
@@ -1781,11 +1781,11 @@ PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const Field::ParseTableT_
         Field::InternalGenerateParseTable_(Field_class_data_.base());
 #endif  // !PROTOBUF_MESSAGE_GLOBALS
 PROTOBUF_NOINLINE void Field::Clear() {
-// @@protoc_insertion_point(message_clear_start:google.protobuf.Field)
+  // @@protoc_insertion_point(message_clear_start:google.protobuf.Field)
   ::google::protobuf::internal::TSanWrite(&_impl_);
   ::uint32_t cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
-  (void) cached_has_bits;
+  (void)cached_has_bits;
 
   cached_has_bits = _impl_._has_bits_[0];
   if (BatchCheckHasBit(cached_has_bits, 0x0000001fU)) {
@@ -1806,14 +1806,18 @@ PROTOBUF_NOINLINE void Field::Clear() {
     }
   }
   if (BatchCheckHasBit(cached_has_bits, 0x000000e0U)) {
-    ::memset(&_impl_.kind_, 0, static_cast<::size_t>(
-        reinterpret_cast<char*>(&_impl_.number_) -
-        reinterpret_cast<char*>(&_impl_.kind_)) + sizeof(_impl_.number_));
+    ::memset(
+        &_impl_.kind_, 0,
+        static_cast<::size_t>(reinterpret_cast<char*>(&_impl_.number_) -
+                              reinterpret_cast<char*>(&_impl_.kind_)) +
+            sizeof(_impl_.number_));
   }
   if (BatchCheckHasBit(cached_has_bits, 0x00000300U)) {
-    ::memset(&_impl_.oneof_index_, 0, static_cast<::size_t>(
-        reinterpret_cast<char*>(&_impl_.packed_) -
-        reinterpret_cast<char*>(&_impl_.oneof_index_)) + sizeof(_impl_.packed_));
+    ::memset(
+        &_impl_.oneof_index_, 0,
+        static_cast<::size_t>(reinterpret_cast<char*>(&_impl_.packed_) -
+                              reinterpret_cast<char*>(&_impl_.oneof_index_)) +
+            sizeof(_impl_.packed_));
   }
   _impl_._has_bits_.Clear();
   _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
@@ -2285,11 +2289,11 @@ PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const Enum::ParseTableT_
         Enum::InternalGenerateParseTable_(Enum_class_data_.base());
 #endif  // !PROTOBUF_MESSAGE_GLOBALS
 PROTOBUF_NOINLINE void Enum::Clear() {
-// @@protoc_insertion_point(message_clear_start:google.protobuf.Enum)
+  // @@protoc_insertion_point(message_clear_start:google.protobuf.Enum)
   ::google::protobuf::internal::TSanWrite(&_impl_);
   ::uint32_t cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
-  (void) cached_has_bits;
+  (void)cached_has_bits;
 
   cached_has_bits = _impl_._has_bits_[0];
   if (BatchCheckHasBit(cached_has_bits, 0x0000001fU)) {
@@ -2655,11 +2659,11 @@ PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const EnumValue::ParseTableT_
         EnumValue::InternalGenerateParseTable_(EnumValue_class_data_.base());
 #endif  // !PROTOBUF_MESSAGE_GLOBALS
 PROTOBUF_NOINLINE void EnumValue::Clear() {
-// @@protoc_insertion_point(message_clear_start:google.protobuf.EnumValue)
+  // @@protoc_insertion_point(message_clear_start:google.protobuf.EnumValue)
   ::google::protobuf::internal::TSanWrite(&_impl_);
   ::uint32_t cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
-  (void) cached_has_bits;
+  (void)cached_has_bits;
 
   cached_has_bits = _impl_._has_bits_[0];
   if (BatchCheckHasBit(cached_has_bits, 0x00000003U)) {
@@ -2935,11 +2939,11 @@ PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const Option::ParseTableT_
         Option::InternalGenerateParseTable_(Option_class_data_.base());
 #endif  // !PROTOBUF_MESSAGE_GLOBALS
 PROTOBUF_NOINLINE void Option::Clear() {
-// @@protoc_insertion_point(message_clear_start:google.protobuf.Option)
+  // @@protoc_insertion_point(message_clear_start:google.protobuf.Option)
   ::google::protobuf::internal::TSanWrite(&_impl_);
   ::uint32_t cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
-  (void) cached_has_bits;
+  (void)cached_has_bits;
 
   cached_has_bits = _impl_._has_bits_[0];
   if (BatchCheckHasBit(cached_has_bits, 0x00000003U)) {
