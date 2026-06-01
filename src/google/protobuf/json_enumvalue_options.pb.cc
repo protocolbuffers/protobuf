@@ -323,11 +323,11 @@ PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const JsonEnumValueOptions::ParseTableT_
         JsonEnumValueOptions::InternalGenerateParseTable_(JsonEnumValueOptions_class_data_.base());
 #endif  // !PROTOBUF_MESSAGE_GLOBALS
 PROTOBUF_NOINLINE void JsonEnumValueOptions::Clear() {
-// @@protoc_insertion_point(message_clear_start:pb.enumvalue.JsonEnumValueOptions)
+  // @@protoc_insertion_point(message_clear_start:pb.enumvalue.JsonEnumValueOptions)
   ::google::protobuf::internal::TSanWrite(&_impl_);
   ::uint32_t cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
-  (void) cached_has_bits;
+  (void)cached_has_bits;
 
   cached_has_bits = _impl_._has_bits_[0];
   if (CheckHasBit(cached_has_bits, 0x00000001U)) {

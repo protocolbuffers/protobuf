@@ -166,30 +166,18 @@ std::string GenerateConditionMaybeWithProbabilityForGroup(
       /*is_batch*/ true);
 }
 
-void PrintPresenceCheck(const FieldDescriptor* field,
-                        const FieldLayout& field_layout, io::Printer* p,
-                        int* cached_has_word_index, const Options& options) {
+void PrintPresenceCheckCondition(const FieldDescriptor* field,
+                                 const FieldLayout& field_layout,
+                                 io::Printer* p, const Options& options) {
   PROTOBUF_IGNORE_DEPRECATION_START
   if (!field->options().weak()) {
     PROTOBUF_IGNORE_DEPRECATION_STOP
     int has_bit_index = field_layout.GetHasBitIndex(field).value();
-    int has_word_index = field_layout.GetHasWordIndex(field).value();
-    if (*cached_has_word_index != has_word_index) {
-      *cached_has_word_index = has_word_index;
-      p->Emit({{"index", *cached_has_word_index}},
-              R"cc(
-                cached_has_bits = $has_bits$[$index$];
-              )cc");
-    }
     p->Emit({{"condition", GenerateConditionMaybeWithProbabilityForField(
                                has_bit_index, field, options)}},
-            R"cc(
-              if ($condition$) {
-            )cc");
+            R"cc($condition$)cc");
   } else {
-    p->Emit(R"cc(
-      if (has_$name$()) {
-    )cc");
+    p->Emit(R"cc(has_$name$())cc");
   }
 }
 
@@ -3408,29 +3396,10 @@ void MessageGenerator::GenerateSourceInProto2Namespace(io::Printer* p) {
 
 void MessageGenerator::GenerateClear(io::Printer* p) {
   if (HasSimpleBaseClass(descriptor_, options_)) return;
-  Formatter format(p);
 
   // The maximum number of bytes we will memset to zero without checking their
   // hasbit to see if a zero-init is necessary.
   const int kMaxUnconditionalPrimitiveBytesClear = 4;
-
-  format(
-      "PROTOBUF_NOINLINE void $Msg$::Clear() {\n"
-      "// @@protoc_insertion_point(message_clear_start:$full_name$)\n");
-  format.Indent();
-
-  format("$pbi$::TSanWrite(&_impl_);\n");
-
-  format(
-      // TODO: It would be better to avoid emitting this if it is not used,
-      // rather than emitting a workaround for the resulting warning.
-      "$uint32$ cached_has_bits = 0;\n"
-      "// Prevent compiler warnings about cached_has_bits being unused\n"
-      "(void) cached_has_bits;\n\n");
-
-  if (descriptor_->extension_range_count() > 0) {
-    format("$extensions$.Clear();\n");
-  }
 
   // Collect fields into chunks. Each chunk may have an if() condition that
   // checks all hasbits in the chunk and skips it if none are set.
@@ -3463,17 +3432,9 @@ void MessageGenerator::GenerateClear(io::Printer* p) {
   auto it = chunks.begin();
   auto end = chunks.end();
   int cached_has_word_index = -1;
-  while (it != end) {
-    auto next = FindNextUnequalChunk(it, end, MayGroupChunksForHaswordsCheck);
-    bool has_haswords_check = MaybeEmitHaswordsCheck(
-        it, next, options_, field_layout_, cached_has_word_index, "", p);
-    bool has_default_split_check = !it->fields.empty() && it->should_split;
-    if (has_default_split_check) {
-      // Some fields are cleared without checking has_bit. So we add the
-      // condition here to avoid writing to the default split instance.
-      format("if (!IsSplitMessageDefault()) {\n");
-      format.Indent();
-    }
+
+  const auto emit_fields_in_chunk = [&](decltype(it) next,
+                                        bool has_default_split_check) {
     while (it != next) {
       const std::vector<const FieldDescriptor*>& fields = it->fields;
       bool chunk_is_split = it->should_split;
@@ -3492,6 +3453,75 @@ void MessageGenerator::GenerateClear(io::Printer* p) {
           saw_non_zero_init = true;
         }
       }
+
+      const auto maybe_emit_update_cached_hasbits = [&](int has_word_index) {
+        if (cached_has_word_index != has_word_index) {
+          cached_has_word_index = has_word_index;
+          p->Emit({{"cached_has_word_index", cached_has_word_index}}, R"cc(
+            cached_has_bits = $has_bits$[$cached_has_word_index$];
+          )cc");
+        }
+      };
+
+      const auto print_clear_field_chunk = [&] {
+        if (memset_start) {
+          if (memset_start == memset_end) {
+            // For clarity, do not memset a single field.
+            field_generators_.get(memset_start).GenerateMessageClearingCode(p);
+          } else {
+            ABSL_CHECK_EQ(chunk_is_split, ShouldSplit(memset_start, options_));
+            ABSL_CHECK_EQ(chunk_is_split, ShouldSplit(memset_end, options_));
+            p->Emit(
+                {
+                    {"start", FieldMemberName(memset_start, chunk_is_split)},
+                    {"end", FieldMemberName(memset_end, chunk_is_split)},
+                },
+                R"cc(
+                  ::memset(
+                      &$start$, 0,
+                      static_cast<::size_t>(reinterpret_cast<char*>(&$end$) -
+                                            reinterpret_cast<char*>(&$start$)) +
+                          sizeof($end$));
+                )cc");
+          }
+        }
+
+        // Clear all non-zero-initializable fields in the chunk.
+        for (const auto& field : fields) {
+          if (CanClearByZeroing(field)) continue;
+          // It's faster to just overwrite primitive types, but we should only
+          // clear strings and messages if they were set.
+          //
+          // TODO:  Let the CppFieldGenerator decide this somehow.
+          const bool have_enclosing_if = ShouldGenerateEnclosingIf(*field);
+
+          auto print_clear_field = [&] {
+            field_generators_.get(field).GenerateMessageClearingCode(p);
+          };
+
+          if (have_enclosing_if) {
+            absl::optional<int> has_word_index =
+                field_layout_.GetHasWordIndex(field);
+            if (has_word_index.has_value()) {
+              maybe_emit_update_cached_hasbits(*has_word_index);
+            }
+
+            p->Emit({{"cond",
+                      [&] {
+                        PrintPresenceCheckCondition(field, field_layout_, p,
+                                                    options_);
+                      }},
+                     {"clear_field", print_clear_field}},
+                    R"cc(
+                      if ($cond$) {
+                        $clear_field$;
+                      }
+                    )cc");
+          } else {
+            print_clear_field();
+          }
+        }
+      };
 
       // Whether we wrap this chunk in:
       //   if (cached_has_bits & <chunk hasbits) { /* chunk. */ }
@@ -3517,68 +3547,49 @@ void MessageGenerator::GenerateClear(io::Printer* p) {
 
         const int has_word_index =
             field_layout_.GetHasWordIndex(fields.front()).value();
-        if (cached_has_word_index != has_word_index) {
-          cached_has_word_index = has_word_index;
-          format("cached_has_bits = $has_bits$[$1$];\n", cached_has_word_index);
-        }
+        maybe_emit_update_cached_hasbits(has_word_index);
 
-        format("if ($1$) {\n", GenerateConditionMaybeWithProbabilityForGroup(
-                                   chunk_mask, fields, options_));
-        format.Indent();
-      }
-
-      if (memset_start) {
-        if (memset_start == memset_end) {
-          // For clarity, do not memset a single field.
-          field_generators_.get(memset_start).GenerateMessageClearingCode(p);
-        } else {
-          ABSL_CHECK_EQ(chunk_is_split, ShouldSplit(memset_start, options_));
-          ABSL_CHECK_EQ(chunk_is_split, ShouldSplit(memset_end, options_));
-          format(
-              "::memset(&$1$, 0, static_cast<::size_t>(\n"
-              "    reinterpret_cast<char*>(&$2$) -\n"
-              "    reinterpret_cast<char*>(&$1$)) + sizeof($2$));\n",
-              FieldMemberName(memset_start, chunk_is_split),
-              FieldMemberName(memset_end, chunk_is_split));
-        }
-      }
-
-      // Clear all non-zero-initializable fields in the chunk.
-      for (const auto& field : fields) {
-        if (CanClearByZeroing(field)) continue;
-        // It's faster to just overwrite primitive types, but we should only
-        // clear strings and messages if they were set.
-        //
-        // TODO:  Let the CppFieldGenerator decide this somehow.
-        const bool have_enclosing_if = ShouldGenerateEnclosingIf(*field);
-
-        if (have_enclosing_if) {
-          PrintPresenceCheck(field, field_layout_, p, &cached_has_word_index,
-                             options_);
-          format.Indent();
-        }
-
-        field_generators_.get(field).GenerateMessageClearingCode(p);
-
-        if (have_enclosing_if) {
-          format.Outdent();
-          format("}\n");
-        }
-      }
-
-      if (check_has_byte) {
-        format.Outdent();
-        format("}\n");
+        const std::string cond = GenerateConditionMaybeWithProbabilityForGroup(
+            chunk_mask, fields, options_);
+        p->Emit(
+            {{"cond", cond}, {"clear_field_chunk", print_clear_field_chunk}},
+            R"cc(
+              if ($cond$) {
+                $clear_field_chunk$;
+              }
+            )cc");
+      } else {
+        print_clear_field_chunk();
       }
 
       // To next chunk.
       ++it;
     }
+  };
 
+  const auto emit_next_chunk = [&] {
+    ABSL_CHECK(it != end);
+    auto next = FindNextUnequalChunk(it, end, MayGroupChunksForHaswordsCheck);
+    bool has_haswords_check = MaybeEmitHaswordsCheck(
+        it, next, options_, field_layout_, cached_has_word_index, "", p);
+
+    bool has_default_split_check = !it->fields.empty() && it->should_split;
     if (has_default_split_check) {
-      format.Outdent();
-      format("}\n");
+      // Some fields are cleared without checking has_bit. So we add the
+      // condition here to avoid writing to the default split instance.
+      p->Emit({{"clear_fields_in_chunk",
+                [&] {
+                  emit_fields_in_chunk(next, /*has_default_split_check=*/true);
+                }}},
+              R"cc(
+                if (!IsSplitMessageDefault()) {
+                  $clear_fields_in_chunk$;
+                }
+              )cc");
+    } else {
+      emit_fields_in_chunk(next, /*has_default_split_check=*/false);
     }
+
     if (has_haswords_check) {
       p->Outdent();
       p->Emit(R"cc(
@@ -3588,27 +3599,65 @@ void MessageGenerator::GenerateClear(io::Printer* p) {
       // Reset here as it may have been updated in just closed if statement.
       cached_has_word_index = -1;
     }
-  }
-  // Step 4: Unions.
-  for (auto oneof : OneOfRange(descriptor_)) {
-    format("clear_$1$();\n", oneof->name());
-  }
+  };
 
-  if (num_weak_fields_) {
-    format("$weak_field_map$.ClearAll();\n");
-  }
+  p->Emit(
+      {
+          {"maybe_clear_extensions",
+           [&] {
+             if (descriptor_->extension_range_count() > 0) {
+               p->Emit(R"cc($extensions$.Clear();)cc");
+             }
+           }},
+          {"clear_fields",
+           [&] {
+             while (it != end) {
+               emit_next_chunk();
+             }
+           }},
+          {"clear_oneofs",
+           [&] {
+             for (auto oneof : OneOfRange(descriptor_)) {
+               p->Emit({{"name", oneof->name()}}, R"cc(
+                 clear_$name$();
+               )cc");
+             }
+           }},
+          {"maybe_clear_weak_fields",
+           [&] {
+             if (num_weak_fields_) {
+               p->Emit(R"cc(
+                 $weak_field_map$.ClearAll();
+               )cc");
+             }
+           }},
+          {"maybe_clear_hasbits",
+           [&] {
+             if (field_layout_.HasHasbits()) {
+               p->Emit(R"cc(
+                 $has_bits$.Clear();
+               )cc");
+             }
+           }},
+      },
+      R"cc(
+        PROTOBUF_NOINLINE void $Msg$::Clear() {
+          // @@protoc_insertion_point(message_clear_start:$full_name$)
+          $pbi$::TSanWrite(&_impl_);
+          //~ TODO: It would be better to avoid emitting this if it is not
+          //~ used, rather than emitting a workaround for the resulting warning.
+          $uint32$ cached_has_bits = 0;
+          // Prevent compiler warnings about cached_has_bits being unused
+          (void)cached_has_bits;
 
-  // We don't clear donated status.
-
-  if (field_layout_.HasHasbits()) {
-    // Step 5: Everything else.
-    format("$has_bits$.Clear();\n");
-  }
-
-  format("_internal_metadata_.Clear<$unknown_fields_type$>();\n");
-
-  format.Outdent();
-  format("}\n");
+          $maybe_clear_extensions$;
+          $clear_fields$;
+          $clear_oneofs$;
+          $maybe_clear_weak_fields$;
+          $maybe_clear_hasbits$;
+          _internal_metadata_.Clear<$unknown_fields_type$>();
+        }
+      )cc");
 }
 
 void MessageGenerator::GenerateOneofClear(io::Printer* p) {
