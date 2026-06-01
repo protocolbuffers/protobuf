@@ -76,7 +76,7 @@ def protobuf_deps():
             name = "abseil-cpp",
             repo = "https://github.com/abseil/abseil-cpp",
             commit = "255c84dadd029fd8ad25c5efb5933e47beaa00c7",  # Abseil LTS 20260107.1
-            integrity = "sha256-QxTip8usicrCWi8jIocPND2BV5dWzv9/QxgDwskJAZU=",
+            integrity = "sha256-6UVUm0VkjADLBxGft2l+E3Yto+C4zbJE2OZVC74eU80=",
         )
 
     if not native.existing_rule("zlib"):
