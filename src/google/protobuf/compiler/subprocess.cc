@@ -309,9 +309,10 @@ Subprocess::~Subprocess() {
 
 namespace {
 char* portable_strdup(const char* s) {
-  char* ns = (char*)malloc(strlen(s) + 1);
+  size_t len = strlen(s);
+  char* ns = (char*)malloc(len + 1);
   if (ns != nullptr) {
-    std::copy(s, s + strlen(s) + 1, ns);
+    std::copy(s, s + len + 1, ns);
   }
   return ns;
 }
