@@ -4,6 +4,7 @@ load("@rules_python//python:proto.bzl", "py_proto_library")
 load("//bazel:cc_proto_library.bzl", "cc_proto_library")
 load("//bazel:proto_library.bzl", "proto_library")
 load("//build_defs:cpp_opts.bzl", "COPTS")
+load("//tools/build_defs/js/jspb_proto_library:rules.bzl", "jspb_proto_library")
 
 package(
     default_visibility = [
@@ -326,6 +327,13 @@ py_proto_library(
     name = "json_enumval_custom_string_py_proto",
     testonly = True,
     visibility = ["//third_party/py/google/protobuf/internal:__pkg__"],
+    deps = [":json_enumval_custom_string_proto"],
+)
+
+jspb_proto_library(
+    name = "json_enumval_custom_string_jspb_proto",
+    testonly = True,
+    visibility = ["//javascript/apps/jspb:__subpackages__"],
     deps = [":json_enumval_custom_string_proto"],
 )
 
