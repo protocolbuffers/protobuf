@@ -917,8 +917,9 @@ def _GetJsonEnumValueOption(ev, pool=None):
     The JsonEnumValueOptions message if the extension is present,
     otherwise None.
   """
-  if pool is None:
-    pool = descriptor_pool.Default()
+  # Prefer the EnumValueDescriptor's pool, to prevent cross-pool descriptor
+  # mismatches.
+  pool = ev.type.file.pool or pool or descriptor_pool.Default()
   try:
     extension_descriptor = pool.FindExtensionByName('pb.enumvalue.json')
   except KeyError:
