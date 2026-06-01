@@ -311,7 +311,7 @@ namespace {
 char* portable_strdup(const char* s) {
   char* ns = (char*)malloc(strlen(s) + 1);
   if (ns != nullptr) {
-    strcpy(ns, s);
+    std::copy(s, s + strlen(s) + 1, ns);
   }
   return ns;
 }
