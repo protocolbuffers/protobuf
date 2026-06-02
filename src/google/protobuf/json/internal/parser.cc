@@ -1198,12 +1198,35 @@ absl::Status ParseStructValue(JsonLexer& lex, const Desc<Traits>& desc,
   // Structs are always cleared even if set to {}.
   Traits::RecordAsSeen(entry_field, msg);
 
-  // Parsing a map does the right thing: Struct has a single map<string,
-  // Value> field; keys are correctly parsed as strings, and the values
-  // recurse into ParseMessage, which will be routed into ParseValue. This
-  // results in some extra overhead, but performance is not what we're going
-  // for here.
-  return ParseMap<Traits>(lex, entry_field, msg);
+  if (lex.Peek(JsonLexer::kNull)) {
+    return lex.Expect("null");
+  }
+
+  absl::flat_hash_set<std::string> keys_seen;
+  return lex.VisitObject(
+      [&](LocationWith<MaybeOwnedString>& key) -> absl::Status {
+        lex.path().NextRepeated();
+        auto insert_result = keys_seen.emplace(key.value.AsView());
+        if (!insert_result.second) {
+          return key.loc.Invalid(absl::StrFormat(
+              "got unexpectedly-repeated repeated map key: '%s'",
+              key.value.AsView()));
+        }
+        return Traits::NewMsg(
+            entry_field, msg,
+            [&](const Desc<Traits>& entry_desc,
+                Msg<Traits>& entry) -> absl::Status {
+              auto key_field = Traits::MustHaveField(entry_desc, 1);
+              Traits::SetString(key_field, entry, key.value.AsView());
+
+              auto value_field = Traits::MustHaveField(entry_desc, 2);
+              return Traits::NewMsg(
+                  value_field, entry,
+                  [&](const Desc<Traits>& val_desc, Msg<Traits>& val_msg) {
+                    return ParseValue<Traits>(lex, val_desc, val_msg);
+                  });
+            });
+      });
 }
 
 template <typename Traits>
@@ -1215,9 +1238,19 @@ absl::Status ParseListValue(JsonLexer& lex, const Desc<Traits>& desc,
 
   // ListValues are always cleared even if set to [].
   Traits::RecordAsSeen(entry_field, msg);
-  // Parsing an array does the right thing: see the analogous comment in
-  // ParseStructValue.
-  return ParseArray<Traits>(lex, entry_field, msg);
+
+  if (lex.Peek(JsonLexer::kNull)) {
+    return lex.Expect("null");
+  }
+
+  return lex.VisitArray([&]() -> absl::Status {
+    lex.path().NextRepeated();
+    return Traits::NewMsg(
+        entry_field, msg,
+        [&](const Desc<Traits>& val_desc, Msg<Traits>& val_msg) {
+          return ParseValue<Traits>(lex, val_desc, val_msg);
+        });
+  });
 }
 
 template <typename Traits>
