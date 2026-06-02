@@ -509,7 +509,7 @@ absl::Status ParseSingular(JsonLexer& lex, Field<Traits> field,
     case FieldDescriptor::TYPE_BYTES: {
       auto x = ParseStrOrBytes<Traits>(lex, field);
       RETURN_IF_ERROR(x.status());
-      Traits::SetString(field, msg, *x);
+      RETURN_IF_ERROR(Traits::SetString(field, msg, *x));
       break;
     }
     case FieldDescriptor::TYPE_ENUM: {
@@ -570,7 +570,7 @@ absl::Status EmitNull(JsonLexer& lex, Field<Traits> field, Msg<Traits>& msg) {
       break;
     case FieldDescriptor::TYPE_STRING:
     case FieldDescriptor::TYPE_BYTES:
-      Traits::SetString(field, msg, "");
+      RETURN_IF_ERROR(Traits::SetString(field, msg, ""));
       break;
     case FieldDescriptor::TYPE_ENUM:
       Traits::SetEnum(field, msg, 0);
@@ -645,7 +645,8 @@ absl::Status ParseMapKey(const Desc<Traits>& type, Msg<Traits>& entry,
       break;
     }
     case FieldDescriptor::TYPE_STRING: {
-      Traits::SetString(key_field, entry, std::move(key.value.ToString()));
+      RETURN_IF_ERROR(
+          Traits::SetString(key_field, entry, std::move(key.value.ToString())));
       break;
     }
     default:
@@ -1029,7 +1030,7 @@ absl::Status ParseFieldMask(JsonLexer& lex, const Desc<Traits>& desc,
         return str->loc.Invalid("unexpected character in FieldMask");
       }
     }
-    Traits::SetString(paths_field, msg, snake_path);
+    RETURN_IF_ERROR(Traits::SetString(paths_field, msg, snake_path));
   }
 
   return absl::OkStatus();
@@ -1075,7 +1076,9 @@ absl::Status ParseAny(JsonLexer& lex, const Desc<Traits>& desc,
   }
 
   if (type_url.has_value()) {
-    Traits::SetString(Traits::MustHaveField(desc, 1), msg, type_url->AsView());
+    RETURN_IF_ERROR(
+        Traits::SetString(Traits::MustHaveField(desc, 1), msg,
+                          type_url->AsView()));
     return Traits::NewDynamic(
         Traits::MustHaveField(desc, 2), type_url->ToString(), msg,
         [&](const Desc<Traits>& desc, Msg<Traits>& msg) {
@@ -1142,7 +1145,8 @@ absl::Status ParseValue(JsonLexer& lex, const Desc<Traits>& desc,
 
       auto str = lex.ParseUtf8();
       RETURN_IF_ERROR(str.status());
-      Traits::SetString(field, msg, std::move(str->value.ToString()));
+      RETURN_IF_ERROR(
+          Traits::SetString(field, msg, std::move(str->value.ToString())));
       break;
     }
     case JsonLexer::kFalse:
