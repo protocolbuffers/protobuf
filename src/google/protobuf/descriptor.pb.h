@@ -1269,6 +1269,8 @@ using ::google::protobuf::internal::generated_enum::AbslUnparseFlag;
 
 class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED UninterpretedOption_NamePart final : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:google.protobuf.UninterpretedOption.NamePart) */ {
+  using Super_ = ::google::protobuf::Message;
+
  public:
   inline UninterpretedOption_NamePart() : UninterpretedOption_NamePart(nullptr) {}
   ~UninterpretedOption_NamePart() PROTOBUF_FINAL;
@@ -1343,11 +1345,11 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED UninterpretedOption
 
   [[nodiscard]] UninterpretedOption_NamePart* PROTOBUF_NONNULL
   New(::google::protobuf::Arena* PROTOBUF_NULLABLE arena = nullptr) const {
-    return ::google::protobuf::Message::DefaultConstruct<UninterpretedOption_NamePart>(arena);
+    return Super_::DefaultConstruct<UninterpretedOption_NamePart>(arena);
   }
-  using ::google::protobuf::Message::CopyFrom;
+  using Super_::CopyFrom;
   void CopyFrom(const UninterpretedOption_NamePart& from);
-  using ::google::protobuf::Message::MergeFrom;
+  using Super_::MergeFrom;
   void MergeFrom(const UninterpretedOption_NamePart& from) { UninterpretedOption_NamePart::MergeImpl(*this, from); }
 
   private:
@@ -1494,6 +1496,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED UninterpretedOption
 
 class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED SourceCodeInfo_Location final : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:google.protobuf.SourceCodeInfo.Location) */ {
+  using Super_ = ::google::protobuf::Message;
+
  public:
   inline SourceCodeInfo_Location() : SourceCodeInfo_Location(nullptr) {}
   ~SourceCodeInfo_Location() PROTOBUF_FINAL;
@@ -1568,11 +1572,11 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED SourceCodeInfo_Loca
 
   [[nodiscard]] SourceCodeInfo_Location* PROTOBUF_NONNULL
   New(::google::protobuf::Arena* PROTOBUF_NULLABLE arena = nullptr) const {
-    return ::google::protobuf::Message::DefaultConstruct<SourceCodeInfo_Location>(arena);
+    return Super_::DefaultConstruct<SourceCodeInfo_Location>(arena);
   }
-  using ::google::protobuf::Message::CopyFrom;
+  using Super_::CopyFrom;
   void CopyFrom(const SourceCodeInfo_Location& from);
-  using ::google::protobuf::Message::MergeFrom;
+  using Super_::MergeFrom;
   void MergeFrom(const SourceCodeInfo_Location& from) { SourceCodeInfo_Location::MergeImpl(*this, from); }
 
   private:
@@ -1791,6 +1795,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED SourceCodeInfo_Loca
 
 class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED GeneratedCodeInfo_Annotation final : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:google.protobuf.GeneratedCodeInfo.Annotation) */ {
+  using Super_ = ::google::protobuf::Message;
+
  public:
   inline GeneratedCodeInfo_Annotation() : GeneratedCodeInfo_Annotation(nullptr) {}
   ~GeneratedCodeInfo_Annotation() PROTOBUF_FINAL;
@@ -1865,11 +1871,11 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED GeneratedCodeInfo_A
 
   [[nodiscard]] GeneratedCodeInfo_Annotation* PROTOBUF_NONNULL
   New(::google::protobuf::Arena* PROTOBUF_NULLABLE arena = nullptr) const {
-    return ::google::protobuf::Message::DefaultConstruct<GeneratedCodeInfo_Annotation>(arena);
+    return Super_::DefaultConstruct<GeneratedCodeInfo_Annotation>(arena);
   }
-  using ::google::protobuf::Message::CopyFrom;
+  using Super_::CopyFrom;
   void CopyFrom(const GeneratedCodeInfo_Annotation& from);
-  using ::google::protobuf::Message::MergeFrom;
+  using Super_::MergeFrom;
   void MergeFrom(const GeneratedCodeInfo_Annotation& from) { GeneratedCodeInfo_Annotation::MergeImpl(*this, from); }
 
   private:
@@ -2080,6 +2086,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED GeneratedCodeInfo_A
 
 class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FieldOptions_FeatureSupport final : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:google.protobuf.FieldOptions.FeatureSupport) */ {
+  using Super_ = ::google::protobuf::Message;
+
  public:
   inline FieldOptions_FeatureSupport() : FieldOptions_FeatureSupport(nullptr) {}
   ~FieldOptions_FeatureSupport() PROTOBUF_FINAL;
@@ -2154,11 +2162,11 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FieldOptions_Featur
 
   [[nodiscard]] FieldOptions_FeatureSupport* PROTOBUF_NONNULL
   New(::google::protobuf::Arena* PROTOBUF_NULLABLE arena = nullptr) const {
-    return ::google::protobuf::Message::DefaultConstruct<FieldOptions_FeatureSupport>(arena);
+    return Super_::DefaultConstruct<FieldOptions_FeatureSupport>(arena);
   }
-  using ::google::protobuf::Message::CopyFrom;
+  using Super_::CopyFrom;
   void CopyFrom(const FieldOptions_FeatureSupport& from);
-  using ::google::protobuf::Message::MergeFrom;
+  using Super_::MergeFrom;
   void MergeFrom(const FieldOptions_FeatureSupport& from) { FieldOptions_FeatureSupport::MergeImpl(*this, from); }
 
   private:
@@ -2344,6 +2352,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FieldOptions_Featur
 
 class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FieldOptions_EditionDefault final : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:google.protobuf.FieldOptions.EditionDefault) */ {
+  using Super_ = ::google::protobuf::Message;
+
  public:
   inline FieldOptions_EditionDefault() : FieldOptions_EditionDefault(nullptr) {}
   ~FieldOptions_EditionDefault() PROTOBUF_FINAL;
@@ -2418,11 +2428,11 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FieldOptions_Editio
 
   [[nodiscard]] FieldOptions_EditionDefault* PROTOBUF_NONNULL
   New(::google::protobuf::Arena* PROTOBUF_NULLABLE arena = nullptr) const {
-    return ::google::protobuf::Message::DefaultConstruct<FieldOptions_EditionDefault>(arena);
+    return Super_::DefaultConstruct<FieldOptions_EditionDefault>(arena);
   }
-  using ::google::protobuf::Message::CopyFrom;
+  using Super_::CopyFrom;
   void CopyFrom(const FieldOptions_EditionDefault& from);
-  using ::google::protobuf::Message::MergeFrom;
+  using Super_::MergeFrom;
   void MergeFrom(const FieldOptions_EditionDefault& from) { FieldOptions_EditionDefault::MergeImpl(*this, from); }
 
   private:
@@ -2564,6 +2574,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FieldOptions_Editio
 
 class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FeatureSet_VisibilityFeature final : public ::google::protobuf::internal::ZeroFieldsBase
 /* @@protoc_insertion_point(class_definition:google.protobuf.FeatureSet.VisibilityFeature) */ {
+  using Super_ = ::google::protobuf::internal::ZeroFieldsBase;
+
  public:
   inline FeatureSet_VisibilityFeature() : FeatureSet_VisibilityFeature(nullptr) {}
 
@@ -2637,12 +2649,12 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FeatureSet_Visibili
 
   [[nodiscard]] FeatureSet_VisibilityFeature* PROTOBUF_NONNULL
   New(::google::protobuf::Arena* PROTOBUF_NULLABLE arena = nullptr) const {
-    return ::google::protobuf::internal::ZeroFieldsBase::DefaultConstruct<FeatureSet_VisibilityFeature>(arena);
+    return Super_::DefaultConstruct<FeatureSet_VisibilityFeature>(arena);
   }
-  using ::google::protobuf::internal::ZeroFieldsBase::CopyFrom;
-  inline void CopyFrom(const FeatureSet_VisibilityFeature& from) { ::google::protobuf::internal::ZeroFieldsBase::CopyImpl(*this, from); }
-  using ::google::protobuf::internal::ZeroFieldsBase::MergeFrom;
-  void MergeFrom(const FeatureSet_VisibilityFeature& from) { ::google::protobuf::internal::ZeroFieldsBase::MergeImpl(*this, from); }
+  using Super_::CopyFrom;
+  inline void CopyFrom(const FeatureSet_VisibilityFeature& from) { Super_::CopyImpl(*this, from); }
+  using Super_::MergeFrom;
+  void MergeFrom(const FeatureSet_VisibilityFeature& from) { Super_::MergeImpl(*this, from); }
 
   public:
   [[nodiscard]] bool IsInitialized() const {
@@ -2725,6 +2737,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FeatureSet_Visibili
 
 class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FeatureSet_ProtoLimitsFeature final : public ::google::protobuf::internal::ZeroFieldsBase
 /* @@protoc_insertion_point(class_definition:google.protobuf.FeatureSet.ProtoLimitsFeature) */ {
+  using Super_ = ::google::protobuf::internal::ZeroFieldsBase;
+
  public:
   inline FeatureSet_ProtoLimitsFeature() : FeatureSet_ProtoLimitsFeature(nullptr) {}
 
@@ -2798,12 +2812,12 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FeatureSet_ProtoLim
 
   [[nodiscard]] FeatureSet_ProtoLimitsFeature* PROTOBUF_NONNULL
   New(::google::protobuf::Arena* PROTOBUF_NULLABLE arena = nullptr) const {
-    return ::google::protobuf::internal::ZeroFieldsBase::DefaultConstruct<FeatureSet_ProtoLimitsFeature>(arena);
+    return Super_::DefaultConstruct<FeatureSet_ProtoLimitsFeature>(arena);
   }
-  using ::google::protobuf::internal::ZeroFieldsBase::CopyFrom;
-  inline void CopyFrom(const FeatureSet_ProtoLimitsFeature& from) { ::google::protobuf::internal::ZeroFieldsBase::CopyImpl(*this, from); }
-  using ::google::protobuf::internal::ZeroFieldsBase::MergeFrom;
-  void MergeFrom(const FeatureSet_ProtoLimitsFeature& from) { ::google::protobuf::internal::ZeroFieldsBase::MergeImpl(*this, from); }
+  using Super_::CopyFrom;
+  inline void CopyFrom(const FeatureSet_ProtoLimitsFeature& from) { Super_::CopyImpl(*this, from); }
+  using Super_::MergeFrom;
+  void MergeFrom(const FeatureSet_ProtoLimitsFeature& from) { Super_::MergeImpl(*this, from); }
 
   public:
   [[nodiscard]] bool IsInitialized() const {
@@ -2884,6 +2898,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FeatureSet_ProtoLim
 
 class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FeatureSet final : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:google.protobuf.FeatureSet) */ {
+  using Super_ = ::google::protobuf::Message;
+
  public:
   inline FeatureSet() : FeatureSet(nullptr) {}
   ~FeatureSet() PROTOBUF_FINAL;
@@ -2958,11 +2974,11 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FeatureSet final : 
 
   [[nodiscard]] FeatureSet* PROTOBUF_NONNULL
   New(::google::protobuf::Arena* PROTOBUF_NULLABLE arena = nullptr) const {
-    return ::google::protobuf::Message::DefaultConstruct<FeatureSet>(arena);
+    return Super_::DefaultConstruct<FeatureSet>(arena);
   }
-  using ::google::protobuf::Message::CopyFrom;
+  using Super_::CopyFrom;
   void CopyFrom(const FeatureSet& from);
-  using ::google::protobuf::Message::MergeFrom;
+  using Super_::MergeFrom;
   void MergeFrom(const FeatureSet& from) { FeatureSet::MergeImpl(*this, from); }
 
   private:
@@ -3537,6 +3553,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FeatureSet final : 
 
 class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED ExtensionRangeOptions_Declaration final : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:google.protobuf.ExtensionRangeOptions.Declaration) */ {
+  using Super_ = ::google::protobuf::Message;
+
  public:
   inline ExtensionRangeOptions_Declaration() : ExtensionRangeOptions_Declaration(nullptr) {}
   ~ExtensionRangeOptions_Declaration() PROTOBUF_FINAL;
@@ -3611,11 +3629,11 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED ExtensionRangeOptio
 
   [[nodiscard]] ExtensionRangeOptions_Declaration* PROTOBUF_NONNULL
   New(::google::protobuf::Arena* PROTOBUF_NULLABLE arena = nullptr) const {
-    return ::google::protobuf::Message::DefaultConstruct<ExtensionRangeOptions_Declaration>(arena);
+    return Super_::DefaultConstruct<ExtensionRangeOptions_Declaration>(arena);
   }
-  using ::google::protobuf::Message::CopyFrom;
+  using Super_::CopyFrom;
   void CopyFrom(const ExtensionRangeOptions_Declaration& from);
-  using ::google::protobuf::Message::MergeFrom;
+  using Super_::MergeFrom;
   void MergeFrom(const ExtensionRangeOptions_Declaration& from) { ExtensionRangeOptions_Declaration::MergeImpl(*this, from); }
 
   private:
@@ -3801,6 +3819,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED ExtensionRangeOptio
 
 class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED EnumDescriptorProto_EnumReservedRange final : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:google.protobuf.EnumDescriptorProto.EnumReservedRange) */ {
+  using Super_ = ::google::protobuf::Message;
+
  public:
   inline EnumDescriptorProto_EnumReservedRange() : EnumDescriptorProto_EnumReservedRange(nullptr) {}
   ~EnumDescriptorProto_EnumReservedRange() PROTOBUF_FINAL;
@@ -3875,11 +3895,11 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED EnumDescriptorProto
 
   [[nodiscard]] EnumDescriptorProto_EnumReservedRange* PROTOBUF_NONNULL
   New(::google::protobuf::Arena* PROTOBUF_NULLABLE arena = nullptr) const {
-    return ::google::protobuf::Message::DefaultConstruct<EnumDescriptorProto_EnumReservedRange>(arena);
+    return Super_::DefaultConstruct<EnumDescriptorProto_EnumReservedRange>(arena);
   }
-  using ::google::protobuf::Message::CopyFrom;
+  using Super_::CopyFrom;
   void CopyFrom(const EnumDescriptorProto_EnumReservedRange& from);
-  using ::google::protobuf::Message::MergeFrom;
+  using Super_::MergeFrom;
   void MergeFrom(const EnumDescriptorProto_EnumReservedRange& from) { EnumDescriptorProto_EnumReservedRange::MergeImpl(*this, from); }
 
   private:
@@ -4016,6 +4036,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED EnumDescriptorProto
 
 class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED DescriptorProto_ReservedRange final : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:google.protobuf.DescriptorProto.ReservedRange) */ {
+  using Super_ = ::google::protobuf::Message;
+
  public:
   inline DescriptorProto_ReservedRange() : DescriptorProto_ReservedRange(nullptr) {}
   ~DescriptorProto_ReservedRange() PROTOBUF_FINAL;
@@ -4090,11 +4112,11 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED DescriptorProto_Res
 
   [[nodiscard]] DescriptorProto_ReservedRange* PROTOBUF_NONNULL
   New(::google::protobuf::Arena* PROTOBUF_NULLABLE arena = nullptr) const {
-    return ::google::protobuf::Message::DefaultConstruct<DescriptorProto_ReservedRange>(arena);
+    return Super_::DefaultConstruct<DescriptorProto_ReservedRange>(arena);
   }
-  using ::google::protobuf::Message::CopyFrom;
+  using Super_::CopyFrom;
   void CopyFrom(const DescriptorProto_ReservedRange& from);
-  using ::google::protobuf::Message::MergeFrom;
+  using Super_::MergeFrom;
   void MergeFrom(const DescriptorProto_ReservedRange& from) { DescriptorProto_ReservedRange::MergeImpl(*this, from); }
 
   private:
@@ -4231,6 +4253,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED DescriptorProto_Res
 
 class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED UninterpretedOption final : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:google.protobuf.UninterpretedOption) */ {
+  using Super_ = ::google::protobuf::Message;
+
  public:
   inline UninterpretedOption() : UninterpretedOption(nullptr) {}
   ~UninterpretedOption() PROTOBUF_FINAL;
@@ -4305,11 +4329,11 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED UninterpretedOption
 
   [[nodiscard]] UninterpretedOption* PROTOBUF_NONNULL
   New(::google::protobuf::Arena* PROTOBUF_NULLABLE arena = nullptr) const {
-    return ::google::protobuf::Message::DefaultConstruct<UninterpretedOption>(arena);
+    return Super_::DefaultConstruct<UninterpretedOption>(arena);
   }
-  using ::google::protobuf::Message::CopyFrom;
+  using Super_::CopyFrom;
   void CopyFrom(const UninterpretedOption& from);
-  using ::google::protobuf::Message::MergeFrom;
+  using Super_::MergeFrom;
   void MergeFrom(const UninterpretedOption& from) { UninterpretedOption::MergeImpl(*this, from); }
 
   private:
@@ -4541,6 +4565,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED UninterpretedOption
 
 class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED SourceCodeInfo final : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:google.protobuf.SourceCodeInfo) */ {
+  using Super_ = ::google::protobuf::Message;
+
  public:
   inline SourceCodeInfo() : SourceCodeInfo(nullptr) {}
   ~SourceCodeInfo() PROTOBUF_FINAL;
@@ -4615,11 +4641,11 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED SourceCodeInfo fina
 
   [[nodiscard]] SourceCodeInfo* PROTOBUF_NONNULL
   New(::google::protobuf::Arena* PROTOBUF_NULLABLE arena = nullptr) const {
-    return ::google::protobuf::Message::DefaultConstruct<SourceCodeInfo>(arena);
+    return Super_::DefaultConstruct<SourceCodeInfo>(arena);
   }
-  using ::google::protobuf::Message::CopyFrom;
+  using Super_::CopyFrom;
   void CopyFrom(const SourceCodeInfo& from);
-  using ::google::protobuf::Message::MergeFrom;
+  using Super_::MergeFrom;
   void MergeFrom(const SourceCodeInfo& from) { SourceCodeInfo::MergeImpl(*this, from); }
 
   private:
@@ -4949,6 +4975,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED SourceCodeInfo fina
 
 class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED GeneratedCodeInfo final : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:google.protobuf.GeneratedCodeInfo) */ {
+  using Super_ = ::google::protobuf::Message;
+
  public:
   inline GeneratedCodeInfo() : GeneratedCodeInfo(nullptr) {}
   ~GeneratedCodeInfo() PROTOBUF_FINAL;
@@ -5023,11 +5051,11 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED GeneratedCodeInfo f
 
   [[nodiscard]] GeneratedCodeInfo* PROTOBUF_NONNULL
   New(::google::protobuf::Arena* PROTOBUF_NULLABLE arena = nullptr) const {
-    return ::google::protobuf::Message::DefaultConstruct<GeneratedCodeInfo>(arena);
+    return Super_::DefaultConstruct<GeneratedCodeInfo>(arena);
   }
-  using ::google::protobuf::Message::CopyFrom;
+  using Super_::CopyFrom;
   void CopyFrom(const GeneratedCodeInfo& from);
-  using ::google::protobuf::Message::MergeFrom;
+  using Super_::MergeFrom;
   void MergeFrom(const GeneratedCodeInfo& from) { GeneratedCodeInfo::MergeImpl(*this, from); }
 
   private:
@@ -5161,6 +5189,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED GeneratedCodeInfo f
 
 class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FeatureSetDefaults_FeatureSetEditionDefault final : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:google.protobuf.FeatureSetDefaults.FeatureSetEditionDefault) */ {
+  using Super_ = ::google::protobuf::Message;
+
  public:
   inline FeatureSetDefaults_FeatureSetEditionDefault() : FeatureSetDefaults_FeatureSetEditionDefault(nullptr) {}
   ~FeatureSetDefaults_FeatureSetEditionDefault() PROTOBUF_FINAL;
@@ -5235,11 +5265,11 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FeatureSetDefaults_
 
   [[nodiscard]] FeatureSetDefaults_FeatureSetEditionDefault* PROTOBUF_NONNULL
   New(::google::protobuf::Arena* PROTOBUF_NULLABLE arena = nullptr) const {
-    return ::google::protobuf::Message::DefaultConstruct<FeatureSetDefaults_FeatureSetEditionDefault>(arena);
+    return Super_::DefaultConstruct<FeatureSetDefaults_FeatureSetEditionDefault>(arena);
   }
-  using ::google::protobuf::Message::CopyFrom;
+  using Super_::CopyFrom;
   void CopyFrom(const FeatureSetDefaults_FeatureSetEditionDefault& from);
-  using ::google::protobuf::Message::MergeFrom;
+  using Super_::MergeFrom;
   void MergeFrom(const FeatureSetDefaults_FeatureSetEditionDefault& from) { FeatureSetDefaults_FeatureSetEditionDefault::MergeImpl(*this, from); }
 
   private:
@@ -5402,6 +5432,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FeatureSetDefaults_
 
 class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED ServiceOptions final : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:google.protobuf.ServiceOptions) */ {
+  using Super_ = ::google::protobuf::Message;
+
  public:
   inline ServiceOptions() : ServiceOptions(nullptr) {}
   ~ServiceOptions() PROTOBUF_FINAL;
@@ -5476,11 +5508,11 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED ServiceOptions fina
 
   [[nodiscard]] ServiceOptions* PROTOBUF_NONNULL
   New(::google::protobuf::Arena* PROTOBUF_NULLABLE arena = nullptr) const {
-    return ::google::protobuf::Message::DefaultConstruct<ServiceOptions>(arena);
+    return Super_::DefaultConstruct<ServiceOptions>(arena);
   }
-  using ::google::protobuf::Message::CopyFrom;
+  using Super_::CopyFrom;
   void CopyFrom(const ServiceOptions& from);
-  using ::google::protobuf::Message::MergeFrom;
+  using Super_::MergeFrom;
   void MergeFrom(const ServiceOptions& from) { ServiceOptions::MergeImpl(*this, from); }
 
   private:
@@ -5839,6 +5871,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED ServiceOptions fina
 
 class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED OneofOptions final : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:google.protobuf.OneofOptions) */ {
+  using Super_ = ::google::protobuf::Message;
+
  public:
   inline OneofOptions() : OneofOptions(nullptr) {}
   ~OneofOptions() PROTOBUF_FINAL;
@@ -5913,11 +5947,11 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED OneofOptions final 
 
   [[nodiscard]] OneofOptions* PROTOBUF_NONNULL
   New(::google::protobuf::Arena* PROTOBUF_NULLABLE arena = nullptr) const {
-    return ::google::protobuf::Message::DefaultConstruct<OneofOptions>(arena);
+    return Super_::DefaultConstruct<OneofOptions>(arena);
   }
-  using ::google::protobuf::Message::CopyFrom;
+  using Super_::CopyFrom;
   void CopyFrom(const OneofOptions& from);
-  using ::google::protobuf::Message::MergeFrom;
+  using Super_::MergeFrom;
   void MergeFrom(const OneofOptions& from) { OneofOptions::MergeImpl(*this, from); }
 
   private:
@@ -6263,6 +6297,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED OneofOptions final 
 
 class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED MethodOptions final : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:google.protobuf.MethodOptions) */ {
+  using Super_ = ::google::protobuf::Message;
+
  public:
   inline MethodOptions() : MethodOptions(nullptr) {}
   ~MethodOptions() PROTOBUF_FINAL;
@@ -6337,11 +6373,11 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED MethodOptions final
 
   [[nodiscard]] MethodOptions* PROTOBUF_NONNULL
   New(::google::protobuf::Arena* PROTOBUF_NULLABLE arena = nullptr) const {
-    return ::google::protobuf::Message::DefaultConstruct<MethodOptions>(arena);
+    return Super_::DefaultConstruct<MethodOptions>(arena);
   }
-  using ::google::protobuf::Message::CopyFrom;
+  using Super_::CopyFrom;
   void CopyFrom(const MethodOptions& from);
-  using ::google::protobuf::Message::MergeFrom;
+  using Super_::MergeFrom;
   void MergeFrom(const MethodOptions& from) { MethodOptions::MergeImpl(*this, from); }
 
   private:
@@ -6734,6 +6770,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED MethodOptions final
 
 class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED MessageOptions final : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:google.protobuf.MessageOptions) */ {
+  using Super_ = ::google::protobuf::Message;
+
  public:
   inline MessageOptions() : MessageOptions(nullptr) {}
   ~MessageOptions() PROTOBUF_FINAL;
@@ -6808,11 +6846,11 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED MessageOptions fina
 
   [[nodiscard]] MessageOptions* PROTOBUF_NONNULL
   New(::google::protobuf::Arena* PROTOBUF_NULLABLE arena = nullptr) const {
-    return ::google::protobuf::Message::DefaultConstruct<MessageOptions>(arena);
+    return Super_::DefaultConstruct<MessageOptions>(arena);
   }
-  using ::google::protobuf::Message::CopyFrom;
+  using Super_::CopyFrom;
   void CopyFrom(const MessageOptions& from);
-  using ::google::protobuf::Message::MergeFrom;
+  using Super_::MergeFrom;
   void MergeFrom(const MessageOptions& from) { MessageOptions::MergeImpl(*this, from); }
 
   private:
@@ -7223,6 +7261,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED MessageOptions fina
 
 class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FileOptions final : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:google.protobuf.FileOptions) */ {
+  using Super_ = ::google::protobuf::Message;
+
  public:
   inline FileOptions() : FileOptions(nullptr) {}
   ~FileOptions() PROTOBUF_FINAL;
@@ -7297,11 +7337,11 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FileOptions final :
 
   [[nodiscard]] FileOptions* PROTOBUF_NONNULL
   New(::google::protobuf::Arena* PROTOBUF_NULLABLE arena = nullptr) const {
-    return ::google::protobuf::Message::DefaultConstruct<FileOptions>(arena);
+    return Super_::DefaultConstruct<FileOptions>(arena);
   }
-  using ::google::protobuf::Message::CopyFrom;
+  using Super_::CopyFrom;
   void CopyFrom(const FileOptions& from);
-  using ::google::protobuf::Message::MergeFrom;
+  using Super_::MergeFrom;
   void MergeFrom(const FileOptions& from) { FileOptions::MergeImpl(*this, from); }
 
   private:
@@ -7965,6 +8005,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FileOptions final :
 
 class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FieldOptions final : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:google.protobuf.FieldOptions) */ {
+  using Super_ = ::google::protobuf::Message;
+
  public:
   inline FieldOptions() : FieldOptions(nullptr) {}
   ~FieldOptions() PROTOBUF_FINAL;
@@ -8039,11 +8081,11 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FieldOptions final 
 
   [[nodiscard]] FieldOptions* PROTOBUF_NONNULL
   New(::google::protobuf::Arena* PROTOBUF_NULLABLE arena = nullptr) const {
-    return ::google::protobuf::Message::DefaultConstruct<FieldOptions>(arena);
+    return Super_::DefaultConstruct<FieldOptions>(arena);
   }
-  using ::google::protobuf::Message::CopyFrom;
+  using Super_::CopyFrom;
   void CopyFrom(const FieldOptions& from);
-  using ::google::protobuf::Message::MergeFrom;
+  using Super_::MergeFrom;
   void MergeFrom(const FieldOptions& from) { FieldOptions::MergeImpl(*this, from); }
 
   private:
@@ -8660,6 +8702,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FieldOptions final 
 
 class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FeatureSetDefaults final : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:google.protobuf.FeatureSetDefaults) */ {
+  using Super_ = ::google::protobuf::Message;
+
  public:
   inline FeatureSetDefaults() : FeatureSetDefaults(nullptr) {}
   ~FeatureSetDefaults() PROTOBUF_FINAL;
@@ -8734,11 +8778,11 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FeatureSetDefaults 
 
   [[nodiscard]] FeatureSetDefaults* PROTOBUF_NONNULL
   New(::google::protobuf::Arena* PROTOBUF_NULLABLE arena = nullptr) const {
-    return ::google::protobuf::Message::DefaultConstruct<FeatureSetDefaults>(arena);
+    return Super_::DefaultConstruct<FeatureSetDefaults>(arena);
   }
-  using ::google::protobuf::Message::CopyFrom;
+  using Super_::CopyFrom;
   void CopyFrom(const FeatureSetDefaults& from);
-  using ::google::protobuf::Message::MergeFrom;
+  using Super_::MergeFrom;
   void MergeFrom(const FeatureSetDefaults& from) { FeatureSetDefaults::MergeImpl(*this, from); }
 
   private:
@@ -8903,6 +8947,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FeatureSetDefaults 
 
 class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED ExtensionRangeOptions final : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:google.protobuf.ExtensionRangeOptions) */ {
+  using Super_ = ::google::protobuf::Message;
+
  public:
   inline ExtensionRangeOptions() : ExtensionRangeOptions(nullptr) {}
   ~ExtensionRangeOptions() PROTOBUF_FINAL;
@@ -8977,11 +9023,11 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED ExtensionRangeOptio
 
   [[nodiscard]] ExtensionRangeOptions* PROTOBUF_NONNULL
   New(::google::protobuf::Arena* PROTOBUF_NULLABLE arena = nullptr) const {
-    return ::google::protobuf::Message::DefaultConstruct<ExtensionRangeOptions>(arena);
+    return Super_::DefaultConstruct<ExtensionRangeOptions>(arena);
   }
-  using ::google::protobuf::Message::CopyFrom;
+  using Super_::CopyFrom;
   void CopyFrom(const ExtensionRangeOptions& from);
-  using ::google::protobuf::Message::MergeFrom;
+  using Super_::MergeFrom;
   void MergeFrom(const ExtensionRangeOptions& from) { ExtensionRangeOptions::MergeImpl(*this, from); }
 
   private:
@@ -9383,6 +9429,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED ExtensionRangeOptio
 
 class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED EnumValueOptions final : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:google.protobuf.EnumValueOptions) */ {
+  using Super_ = ::google::protobuf::Message;
+
  public:
   inline EnumValueOptions() : EnumValueOptions(nullptr) {}
   ~EnumValueOptions() PROTOBUF_FINAL;
@@ -9457,11 +9505,11 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED EnumValueOptions fi
 
   [[nodiscard]] EnumValueOptions* PROTOBUF_NONNULL
   New(::google::protobuf::Arena* PROTOBUF_NULLABLE arena = nullptr) const {
-    return ::google::protobuf::Message::DefaultConstruct<EnumValueOptions>(arena);
+    return Super_::DefaultConstruct<EnumValueOptions>(arena);
   }
-  using ::google::protobuf::Message::CopyFrom;
+  using Super_::CopyFrom;
   void CopyFrom(const EnumValueOptions& from);
-  using ::google::protobuf::Message::MergeFrom;
+  using Super_::MergeFrom;
   void MergeFrom(const EnumValueOptions& from) { EnumValueOptions::MergeImpl(*this, from); }
 
   private:
@@ -9850,6 +9898,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED EnumValueOptions fi
 
 class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED EnumOptions final : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:google.protobuf.EnumOptions) */ {
+  using Super_ = ::google::protobuf::Message;
+
  public:
   inline EnumOptions() : EnumOptions(nullptr) {}
   ~EnumOptions() PROTOBUF_FINAL;
@@ -9924,11 +9974,11 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED EnumOptions final :
 
   [[nodiscard]] EnumOptions* PROTOBUF_NONNULL
   New(::google::protobuf::Arena* PROTOBUF_NULLABLE arena = nullptr) const {
-    return ::google::protobuf::Message::DefaultConstruct<EnumOptions>(arena);
+    return Super_::DefaultConstruct<EnumOptions>(arena);
   }
-  using ::google::protobuf::Message::CopyFrom;
+  using Super_::CopyFrom;
   void CopyFrom(const EnumOptions& from);
-  using ::google::protobuf::Message::MergeFrom;
+  using Super_::MergeFrom;
   void MergeFrom(const EnumOptions& from) { EnumOptions::MergeImpl(*this, from); }
 
   private:
@@ -10313,6 +10363,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED EnumOptions final :
 
 class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED OneofDescriptorProto final : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:google.protobuf.OneofDescriptorProto) */ {
+  using Super_ = ::google::protobuf::Message;
+
  public:
   inline OneofDescriptorProto() : OneofDescriptorProto(nullptr) {}
   ~OneofDescriptorProto() PROTOBUF_FINAL;
@@ -10387,11 +10439,11 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED OneofDescriptorProt
 
   [[nodiscard]] OneofDescriptorProto* PROTOBUF_NONNULL
   New(::google::protobuf::Arena* PROTOBUF_NULLABLE arena = nullptr) const {
-    return ::google::protobuf::Message::DefaultConstruct<OneofDescriptorProto>(arena);
+    return Super_::DefaultConstruct<OneofDescriptorProto>(arena);
   }
-  using ::google::protobuf::Message::CopyFrom;
+  using Super_::CopyFrom;
   void CopyFrom(const OneofDescriptorProto& from);
-  using ::google::protobuf::Message::MergeFrom;
+  using Super_::MergeFrom;
   void MergeFrom(const OneofDescriptorProto& from) { OneofDescriptorProto::MergeImpl(*this, from); }
 
   private:
@@ -10542,6 +10594,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED OneofDescriptorProt
 
 class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED MethodDescriptorProto final : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:google.protobuf.MethodDescriptorProto) */ {
+  using Super_ = ::google::protobuf::Message;
+
  public:
   inline MethodDescriptorProto() : MethodDescriptorProto(nullptr) {}
   ~MethodDescriptorProto() PROTOBUF_FINAL;
@@ -10616,11 +10670,11 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED MethodDescriptorPro
 
   [[nodiscard]] MethodDescriptorProto* PROTOBUF_NONNULL
   New(::google::protobuf::Arena* PROTOBUF_NULLABLE arena = nullptr) const {
-    return ::google::protobuf::Message::DefaultConstruct<MethodDescriptorProto>(arena);
+    return Super_::DefaultConstruct<MethodDescriptorProto>(arena);
   }
-  using ::google::protobuf::Message::CopyFrom;
+  using Super_::CopyFrom;
   void CopyFrom(const MethodDescriptorProto& from);
-  using ::google::protobuf::Message::MergeFrom;
+  using Super_::MergeFrom;
   void MergeFrom(const MethodDescriptorProto& from) { MethodDescriptorProto::MergeImpl(*this, from); }
 
   private:
@@ -10833,6 +10887,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED MethodDescriptorPro
 
 class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FieldDescriptorProto final : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:google.protobuf.FieldDescriptorProto) */ {
+  using Super_ = ::google::protobuf::Message;
+
  public:
   inline FieldDescriptorProto() : FieldDescriptorProto(nullptr) {}
   ~FieldDescriptorProto() PROTOBUF_FINAL;
@@ -10907,11 +10963,11 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FieldDescriptorProt
 
   [[nodiscard]] FieldDescriptorProto* PROTOBUF_NONNULL
   New(::google::protobuf::Arena* PROTOBUF_NULLABLE arena = nullptr) const {
-    return ::google::protobuf::Message::DefaultConstruct<FieldDescriptorProto>(arena);
+    return Super_::DefaultConstruct<FieldDescriptorProto>(arena);
   }
-  using ::google::protobuf::Message::CopyFrom;
+  using Super_::CopyFrom;
   void CopyFrom(const FieldDescriptorProto& from);
-  using ::google::protobuf::Message::MergeFrom;
+  using Super_::MergeFrom;
   void MergeFrom(const FieldDescriptorProto& from) { FieldDescriptorProto::MergeImpl(*this, from); }
 
   private:
@@ -11256,6 +11312,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FieldDescriptorProt
 
 class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED EnumValueDescriptorProto final : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:google.protobuf.EnumValueDescriptorProto) */ {
+  using Super_ = ::google::protobuf::Message;
+
  public:
   inline EnumValueDescriptorProto() : EnumValueDescriptorProto(nullptr) {}
   ~EnumValueDescriptorProto() PROTOBUF_FINAL;
@@ -11330,11 +11388,11 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED EnumValueDescriptor
 
   [[nodiscard]] EnumValueDescriptorProto* PROTOBUF_NONNULL
   New(::google::protobuf::Arena* PROTOBUF_NULLABLE arena = nullptr) const {
-    return ::google::protobuf::Message::DefaultConstruct<EnumValueDescriptorProto>(arena);
+    return Super_::DefaultConstruct<EnumValueDescriptorProto>(arena);
   }
-  using ::google::protobuf::Message::CopyFrom;
+  using Super_::CopyFrom;
   void CopyFrom(const EnumValueDescriptorProto& from);
-  using ::google::protobuf::Message::MergeFrom;
+  using Super_::MergeFrom;
   void MergeFrom(const EnumValueDescriptorProto& from) { EnumValueDescriptorProto::MergeImpl(*this, from); }
 
   private:
@@ -11498,6 +11556,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED EnumValueDescriptor
 
 class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED DescriptorProto_ExtensionRange final : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:google.protobuf.DescriptorProto.ExtensionRange) */ {
+  using Super_ = ::google::protobuf::Message;
+
  public:
   inline DescriptorProto_ExtensionRange() : DescriptorProto_ExtensionRange(nullptr) {}
   ~DescriptorProto_ExtensionRange() PROTOBUF_FINAL;
@@ -11572,11 +11632,11 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED DescriptorProto_Ext
 
   [[nodiscard]] DescriptorProto_ExtensionRange* PROTOBUF_NONNULL
   New(::google::protobuf::Arena* PROTOBUF_NULLABLE arena = nullptr) const {
-    return ::google::protobuf::Message::DefaultConstruct<DescriptorProto_ExtensionRange>(arena);
+    return Super_::DefaultConstruct<DescriptorProto_ExtensionRange>(arena);
   }
-  using ::google::protobuf::Message::CopyFrom;
+  using Super_::CopyFrom;
   void CopyFrom(const DescriptorProto_ExtensionRange& from);
-  using ::google::protobuf::Message::MergeFrom;
+  using Super_::MergeFrom;
   void MergeFrom(const DescriptorProto_ExtensionRange& from) { DescriptorProto_ExtensionRange::MergeImpl(*this, from); }
 
   private:
@@ -11735,6 +11795,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED DescriptorProto_Ext
 
 class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED ServiceDescriptorProto final : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:google.protobuf.ServiceDescriptorProto) */ {
+  using Super_ = ::google::protobuf::Message;
+
  public:
   inline ServiceDescriptorProto() : ServiceDescriptorProto(nullptr) {}
   ~ServiceDescriptorProto() PROTOBUF_FINAL;
@@ -11809,11 +11871,11 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED ServiceDescriptorPr
 
   [[nodiscard]] ServiceDescriptorProto* PROTOBUF_NONNULL
   New(::google::protobuf::Arena* PROTOBUF_NULLABLE arena = nullptr) const {
-    return ::google::protobuf::Message::DefaultConstruct<ServiceDescriptorProto>(arena);
+    return Super_::DefaultConstruct<ServiceDescriptorProto>(arena);
   }
-  using ::google::protobuf::Message::CopyFrom;
+  using Super_::CopyFrom;
   void CopyFrom(const ServiceDescriptorProto& from);
-  using ::google::protobuf::Message::MergeFrom;
+  using Super_::MergeFrom;
   void MergeFrom(const ServiceDescriptorProto& from) { ServiceDescriptorProto::MergeImpl(*this, from); }
 
   private:
@@ -11986,6 +12048,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED ServiceDescriptorPr
 
 class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED EnumDescriptorProto final : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:google.protobuf.EnumDescriptorProto) */ {
+  using Super_ = ::google::protobuf::Message;
+
  public:
   inline EnumDescriptorProto() : EnumDescriptorProto(nullptr) {}
   ~EnumDescriptorProto() PROTOBUF_FINAL;
@@ -12060,11 +12124,11 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED EnumDescriptorProto
 
   [[nodiscard]] EnumDescriptorProto* PROTOBUF_NONNULL
   New(::google::protobuf::Arena* PROTOBUF_NULLABLE arena = nullptr) const {
-    return ::google::protobuf::Message::DefaultConstruct<EnumDescriptorProto>(arena);
+    return Super_::DefaultConstruct<EnumDescriptorProto>(arena);
   }
-  using ::google::protobuf::Message::CopyFrom;
+  using Super_::CopyFrom;
   void CopyFrom(const EnumDescriptorProto& from);
-  using ::google::protobuf::Message::MergeFrom;
+  using Super_::MergeFrom;
   void MergeFrom(const EnumDescriptorProto& from) { EnumDescriptorProto::MergeImpl(*this, from); }
 
   private:
@@ -12301,6 +12365,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED EnumDescriptorProto
 
 class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED DescriptorProto final : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:google.protobuf.DescriptorProto) */ {
+  using Super_ = ::google::protobuf::Message;
+
  public:
   inline DescriptorProto() : DescriptorProto(nullptr) {}
   ~DescriptorProto() PROTOBUF_FINAL;
@@ -12375,11 +12441,11 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED DescriptorProto fin
 
   [[nodiscard]] DescriptorProto* PROTOBUF_NONNULL
   New(::google::protobuf::Arena* PROTOBUF_NULLABLE arena = nullptr) const {
-    return ::google::protobuf::Message::DefaultConstruct<DescriptorProto>(arena);
+    return Super_::DefaultConstruct<DescriptorProto>(arena);
   }
-  using ::google::protobuf::Message::CopyFrom;
+  using Super_::CopyFrom;
   void CopyFrom(const DescriptorProto& from);
-  using ::google::protobuf::Message::MergeFrom;
+  using Super_::MergeFrom;
   void MergeFrom(const DescriptorProto& from) { DescriptorProto::MergeImpl(*this, from); }
 
   private:
@@ -12727,6 +12793,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED DescriptorProto fin
 
 class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FileDescriptorProto final : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:google.protobuf.FileDescriptorProto) */ {
+  using Super_ = ::google::protobuf::Message;
+
  public:
   inline FileDescriptorProto() : FileDescriptorProto(nullptr) {}
   ~FileDescriptorProto() PROTOBUF_FINAL;
@@ -12801,11 +12869,11 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FileDescriptorProto
 
   [[nodiscard]] FileDescriptorProto* PROTOBUF_NONNULL
   New(::google::protobuf::Arena* PROTOBUF_NULLABLE arena = nullptr) const {
-    return ::google::protobuf::Message::DefaultConstruct<FileDescriptorProto>(arena);
+    return Super_::DefaultConstruct<FileDescriptorProto>(arena);
   }
-  using ::google::protobuf::Message::CopyFrom;
+  using Super_::CopyFrom;
   void CopyFrom(const FileDescriptorProto& from);
-  using ::google::protobuf::Message::MergeFrom;
+  using Super_::MergeFrom;
   void MergeFrom(const FileDescriptorProto& from) { FileDescriptorProto::MergeImpl(*this, from); }
 
   private:
@@ -13208,6 +13276,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FileDescriptorProto
 
 class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FileDescriptorSet final : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:google.protobuf.FileDescriptorSet) */ {
+  using Super_ = ::google::protobuf::Message;
+
  public:
   inline FileDescriptorSet() : FileDescriptorSet(nullptr) {}
   ~FileDescriptorSet() PROTOBUF_FINAL;
@@ -13282,11 +13352,11 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FileDescriptorSet f
 
   [[nodiscard]] FileDescriptorSet* PROTOBUF_NONNULL
   New(::google::protobuf::Arena* PROTOBUF_NULLABLE arena = nullptr) const {
-    return ::google::protobuf::Message::DefaultConstruct<FileDescriptorSet>(arena);
+    return Super_::DefaultConstruct<FileDescriptorSet>(arena);
   }
-  using ::google::protobuf::Message::CopyFrom;
+  using Super_::CopyFrom;
   void CopyFrom(const FileDescriptorSet& from);
-  using ::google::protobuf::Message::MergeFrom;
+  using Super_::MergeFrom;
   void MergeFrom(const FileDescriptorSet& from) { FileDescriptorSet::MergeImpl(*this, from); }
 
   private:
@@ -14354,7 +14424,7 @@ inline ::google::protobuf::FileOptions* PROTOBUF_NULLABLE FileDescriptorProto::u
 inline ::google::protobuf::FileOptions* PROTOBUF_NONNULL FileDescriptorProto::_internal_mutable_options() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   if (_impl_.options_ == nullptr) {
-    auto* p = ::google::protobuf::Message::DefaultConstruct<::google::protobuf::FileOptions>(GetArena());
+    auto* p = Super_::DefaultConstruct<::google::protobuf::FileOptions>(GetArena());
     _impl_.options_ = reinterpret_cast<::google::protobuf::FileOptions*>(p);
   }
   return _impl_.options_;
@@ -14452,7 +14522,7 @@ inline ::google::protobuf::SourceCodeInfo* PROTOBUF_NULLABLE FileDescriptorProto
 inline ::google::protobuf::SourceCodeInfo* PROTOBUF_NONNULL FileDescriptorProto::_internal_mutable_source_code_info() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   if (_impl_.source_code_info_ == nullptr) {
-    auto* p = ::google::protobuf::Message::DefaultConstruct<::google::protobuf::SourceCodeInfo>(GetArena());
+    auto* p = Super_::DefaultConstruct<::google::protobuf::SourceCodeInfo>(GetArena());
     _impl_.source_code_info_ = reinterpret_cast<::google::protobuf::SourceCodeInfo*>(p);
   }
   return _impl_.source_code_info_;
@@ -14709,7 +14779,7 @@ inline ::google::protobuf::ExtensionRangeOptions* PROTOBUF_NULLABLE DescriptorPr
 inline ::google::protobuf::ExtensionRangeOptions* PROTOBUF_NONNULL DescriptorProto_ExtensionRange::_internal_mutable_options() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   if (_impl_.options_ == nullptr) {
-    auto* p = ::google::protobuf::Message::DefaultConstruct<::google::protobuf::ExtensionRangeOptions>(GetArena());
+    auto* p = Super_::DefaultConstruct<::google::protobuf::ExtensionRangeOptions>(GetArena());
     _impl_.options_ = reinterpret_cast<::google::protobuf::ExtensionRangeOptions*>(p);
   }
   return _impl_.options_;
@@ -15269,7 +15339,7 @@ inline ::google::protobuf::MessageOptions* PROTOBUF_NULLABLE DescriptorProto::un
 inline ::google::protobuf::MessageOptions* PROTOBUF_NONNULL DescriptorProto::_internal_mutable_options() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   if (_impl_.options_ == nullptr) {
-    auto* p = ::google::protobuf::Message::DefaultConstruct<::google::protobuf::MessageOptions>(GetArena());
+    auto* p = Super_::DefaultConstruct<::google::protobuf::MessageOptions>(GetArena());
     _impl_.options_ = reinterpret_cast<::google::protobuf::MessageOptions*>(p);
   }
   return _impl_.options_;
@@ -15863,7 +15933,7 @@ inline ::google::protobuf::FeatureSet* PROTOBUF_NULLABLE ExtensionRangeOptions::
 inline ::google::protobuf::FeatureSet* PROTOBUF_NONNULL ExtensionRangeOptions::_internal_mutable_features() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   if (_impl_.features_ == nullptr) {
-    auto* p = ::google::protobuf::Message::DefaultConstruct<::google::protobuf::FeatureSet>(GetArena());
+    auto* p = Super_::DefaultConstruct<::google::protobuf::FeatureSet>(GetArena());
     _impl_.features_ = reinterpret_cast<::google::protobuf::FeatureSet*>(p);
   }
   return _impl_.features_;
@@ -16454,7 +16524,7 @@ inline ::google::protobuf::FieldOptions* PROTOBUF_NULLABLE FieldDescriptorProto:
 inline ::google::protobuf::FieldOptions* PROTOBUF_NONNULL FieldDescriptorProto::_internal_mutable_options() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   if (_impl_.options_ == nullptr) {
-    auto* p = ::google::protobuf::Message::DefaultConstruct<::google::protobuf::FieldOptions>(GetArena());
+    auto* p = Super_::DefaultConstruct<::google::protobuf::FieldOptions>(GetArena());
     _impl_.options_ = reinterpret_cast<::google::protobuf::FieldOptions*>(p);
   }
   return _impl_.options_;
@@ -16652,7 +16722,7 @@ inline ::google::protobuf::OneofOptions* PROTOBUF_NULLABLE OneofDescriptorProto:
 inline ::google::protobuf::OneofOptions* PROTOBUF_NONNULL OneofDescriptorProto::_internal_mutable_options() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   if (_impl_.options_ == nullptr) {
-    auto* p = ::google::protobuf::Message::DefaultConstruct<::google::protobuf::OneofOptions>(GetArena());
+    auto* p = Super_::DefaultConstruct<::google::protobuf::OneofOptions>(GetArena());
     _impl_.options_ = reinterpret_cast<::google::protobuf::OneofOptions*>(p);
   }
   return _impl_.options_;
@@ -16937,7 +17007,7 @@ inline ::google::protobuf::EnumOptions* PROTOBUF_NULLABLE EnumDescriptorProto::u
 inline ::google::protobuf::EnumOptions* PROTOBUF_NONNULL EnumDescriptorProto::_internal_mutable_options() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   if (_impl_.options_ == nullptr) {
-    auto* p = ::google::protobuf::Message::DefaultConstruct<::google::protobuf::EnumOptions>(GetArena());
+    auto* p = Super_::DefaultConstruct<::google::protobuf::EnumOptions>(GetArena());
     _impl_.options_ = reinterpret_cast<::google::protobuf::EnumOptions*>(p);
   }
   return _impl_.options_;
@@ -17293,7 +17363,7 @@ inline ::google::protobuf::EnumValueOptions* PROTOBUF_NULLABLE EnumValueDescript
 inline ::google::protobuf::EnumValueOptions* PROTOBUF_NONNULL EnumValueDescriptorProto::_internal_mutable_options() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   if (_impl_.options_ == nullptr) {
-    auto* p = ::google::protobuf::Message::DefaultConstruct<::google::protobuf::EnumValueOptions>(GetArena());
+    auto* p = Super_::DefaultConstruct<::google::protobuf::EnumValueOptions>(GetArena());
     _impl_.options_ = reinterpret_cast<::google::protobuf::EnumValueOptions*>(p);
   }
   return _impl_.options_;
@@ -17518,7 +17588,7 @@ inline ::google::protobuf::ServiceOptions* PROTOBUF_NULLABLE ServiceDescriptorPr
 inline ::google::protobuf::ServiceOptions* PROTOBUF_NONNULL ServiceDescriptorProto::_internal_mutable_options() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   if (_impl_.options_ == nullptr) {
-    auto* p = ::google::protobuf::Message::DefaultConstruct<::google::protobuf::ServiceOptions>(GetArena());
+    auto* p = Super_::DefaultConstruct<::google::protobuf::ServiceOptions>(GetArena());
     _impl_.options_ = reinterpret_cast<::google::protobuf::ServiceOptions*>(p);
   }
   return _impl_.options_;
@@ -17824,7 +17894,7 @@ inline ::google::protobuf::MethodOptions* PROTOBUF_NULLABLE MethodDescriptorProt
 inline ::google::protobuf::MethodOptions* PROTOBUF_NONNULL MethodDescriptorProto::_internal_mutable_options() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   if (_impl_.options_ == nullptr) {
-    auto* p = ::google::protobuf::Message::DefaultConstruct<::google::protobuf::MethodOptions>(GetArena());
+    auto* p = Super_::DefaultConstruct<::google::protobuf::MethodOptions>(GetArena());
     _impl_.options_ = reinterpret_cast<::google::protobuf::MethodOptions*>(p);
   }
   return _impl_.options_;
@@ -18917,7 +18987,7 @@ inline ::google::protobuf::FeatureSet* PROTOBUF_NULLABLE FileOptions::unsafe_are
 inline ::google::protobuf::FeatureSet* PROTOBUF_NONNULL FileOptions::_internal_mutable_features() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   if (_impl_.features_ == nullptr) {
-    auto* p = ::google::protobuf::Message::DefaultConstruct<::google::protobuf::FeatureSet>(GetArena());
+    auto* p = Super_::DefaultConstruct<::google::protobuf::FeatureSet>(GetArena());
     _impl_.features_ = reinterpret_cast<::google::protobuf::FeatureSet*>(p);
   }
   return _impl_.features_;
@@ -19214,7 +19284,7 @@ inline ::google::protobuf::FeatureSet* PROTOBUF_NULLABLE MessageOptions::unsafe_
 inline ::google::protobuf::FeatureSet* PROTOBUF_NONNULL MessageOptions::_internal_mutable_features() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   if (_impl_.features_ == nullptr) {
-    auto* p = ::google::protobuf::Message::DefaultConstruct<::google::protobuf::FeatureSet>(GetArena());
+    auto* p = Super_::DefaultConstruct<::google::protobuf::FeatureSet>(GetArena());
     _impl_.features_ = reinterpret_cast<::google::protobuf::FeatureSet*>(p);
   }
   return _impl_.features_;
@@ -20080,7 +20150,7 @@ inline ::google::protobuf::FeatureSet* PROTOBUF_NULLABLE FieldOptions::unsafe_ar
 inline ::google::protobuf::FeatureSet* PROTOBUF_NONNULL FieldOptions::_internal_mutable_features() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   if (_impl_.features_ == nullptr) {
-    auto* p = ::google::protobuf::Message::DefaultConstruct<::google::protobuf::FeatureSet>(GetArena());
+    auto* p = Super_::DefaultConstruct<::google::protobuf::FeatureSet>(GetArena());
     _impl_.features_ = reinterpret_cast<::google::protobuf::FeatureSet*>(p);
   }
   return _impl_.features_;
@@ -20178,7 +20248,7 @@ inline ::google::protobuf::FieldOptions_FeatureSupport* PROTOBUF_NULLABLE FieldO
 inline ::google::protobuf::FieldOptions_FeatureSupport* PROTOBUF_NONNULL FieldOptions::_internal_mutable_feature_support() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   if (_impl_.feature_support_ == nullptr) {
-    auto* p = ::google::protobuf::Message::DefaultConstruct<::google::protobuf::FieldOptions_FeatureSupport>(GetArena());
+    auto* p = Super_::DefaultConstruct<::google::protobuf::FieldOptions_FeatureSupport>(GetArena());
     _impl_.feature_support_ = reinterpret_cast<::google::protobuf::FieldOptions_FeatureSupport*>(p);
   }
   return _impl_.feature_support_;
@@ -20335,7 +20405,7 @@ inline ::google::protobuf::FeatureSet* PROTOBUF_NULLABLE OneofOptions::unsafe_ar
 inline ::google::protobuf::FeatureSet* PROTOBUF_NONNULL OneofOptions::_internal_mutable_features() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   if (_impl_.features_ == nullptr) {
-    auto* p = ::google::protobuf::Message::DefaultConstruct<::google::protobuf::FeatureSet>(GetArena());
+    auto* p = Super_::DefaultConstruct<::google::protobuf::FeatureSet>(GetArena());
     _impl_.features_ = reinterpret_cast<::google::protobuf::FeatureSet*>(p);
   }
   return _impl_.features_;
@@ -20576,7 +20646,7 @@ inline ::google::protobuf::FeatureSet* PROTOBUF_NULLABLE EnumOptions::unsafe_are
 inline ::google::protobuf::FeatureSet* PROTOBUF_NONNULL EnumOptions::_internal_mutable_features() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   if (_impl_.features_ == nullptr) {
-    auto* p = ::google::protobuf::Message::DefaultConstruct<::google::protobuf::FeatureSet>(GetArena());
+    auto* p = Super_::DefaultConstruct<::google::protobuf::FeatureSet>(GetArena());
     _impl_.features_ = reinterpret_cast<::google::protobuf::FeatureSet*>(p);
   }
   return _impl_.features_;
@@ -20761,7 +20831,7 @@ inline ::google::protobuf::FeatureSet* PROTOBUF_NULLABLE EnumValueOptions::unsaf
 inline ::google::protobuf::FeatureSet* PROTOBUF_NONNULL EnumValueOptions::_internal_mutable_features() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   if (_impl_.features_ == nullptr) {
-    auto* p = ::google::protobuf::Message::DefaultConstruct<::google::protobuf::FeatureSet>(GetArena());
+    auto* p = Super_::DefaultConstruct<::google::protobuf::FeatureSet>(GetArena());
     _impl_.features_ = reinterpret_cast<::google::protobuf::FeatureSet*>(p);
   }
   return _impl_.features_;
@@ -20887,7 +20957,7 @@ inline ::google::protobuf::FieldOptions_FeatureSupport* PROTOBUF_NULLABLE EnumVa
 inline ::google::protobuf::FieldOptions_FeatureSupport* PROTOBUF_NONNULL EnumValueOptions::_internal_mutable_feature_support() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   if (_impl_.feature_support_ == nullptr) {
-    auto* p = ::google::protobuf::Message::DefaultConstruct<::google::protobuf::FieldOptions_FeatureSupport>(GetArena());
+    auto* p = Super_::DefaultConstruct<::google::protobuf::FieldOptions_FeatureSupport>(GetArena());
     _impl_.feature_support_ = reinterpret_cast<::google::protobuf::FieldOptions_FeatureSupport*>(p);
   }
   return _impl_.feature_support_;
@@ -21044,7 +21114,7 @@ inline ::google::protobuf::FeatureSet* PROTOBUF_NULLABLE ServiceOptions::unsafe_
 inline ::google::protobuf::FeatureSet* PROTOBUF_NONNULL ServiceOptions::_internal_mutable_features() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   if (_impl_.features_ == nullptr) {
-    auto* p = ::google::protobuf::Message::DefaultConstruct<::google::protobuf::FeatureSet>(GetArena());
+    auto* p = Super_::DefaultConstruct<::google::protobuf::FeatureSet>(GetArena());
     _impl_.features_ = reinterpret_cast<::google::protobuf::FeatureSet*>(p);
   }
   return _impl_.features_;
@@ -21288,7 +21358,7 @@ inline ::google::protobuf::FeatureSet* PROTOBUF_NULLABLE MethodOptions::unsafe_a
 inline ::google::protobuf::FeatureSet* PROTOBUF_NONNULL MethodOptions::_internal_mutable_features() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   if (_impl_.features_ == nullptr) {
-    auto* p = ::google::protobuf::Message::DefaultConstruct<::google::protobuf::FeatureSet>(GetArena());
+    auto* p = Super_::DefaultConstruct<::google::protobuf::FeatureSet>(GetArena());
     _impl_.features_ = reinterpret_cast<::google::protobuf::FeatureSet*>(p);
   }
   return _impl_.features_;
@@ -22214,7 +22284,7 @@ inline ::google::protobuf::FeatureSet* PROTOBUF_NULLABLE FeatureSetDefaults_Feat
 inline ::google::protobuf::FeatureSet* PROTOBUF_NONNULL FeatureSetDefaults_FeatureSetEditionDefault::_internal_mutable_overridable_features() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   if (_impl_.overridable_features_ == nullptr) {
-    auto* p = ::google::protobuf::Message::DefaultConstruct<::google::protobuf::FeatureSet>(GetArena());
+    auto* p = Super_::DefaultConstruct<::google::protobuf::FeatureSet>(GetArena());
     _impl_.overridable_features_ = reinterpret_cast<::google::protobuf::FeatureSet*>(p);
   }
   return _impl_.overridable_features_;
@@ -22312,7 +22382,7 @@ inline ::google::protobuf::FeatureSet* PROTOBUF_NULLABLE FeatureSetDefaults_Feat
 inline ::google::protobuf::FeatureSet* PROTOBUF_NONNULL FeatureSetDefaults_FeatureSetEditionDefault::_internal_mutable_fixed_features() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   if (_impl_.fixed_features_ == nullptr) {
-    auto* p = ::google::protobuf::Message::DefaultConstruct<::google::protobuf::FeatureSet>(GetArena());
+    auto* p = Super_::DefaultConstruct<::google::protobuf::FeatureSet>(GetArena());
     _impl_.fixed_features_ = reinterpret_cast<::google::protobuf::FeatureSet*>(p);
   }
   return _impl_.fixed_features_;

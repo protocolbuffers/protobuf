@@ -173,6 +173,8 @@ using ::google::protobuf::internal::generated_enum::AbslUnparseFlag;
 
 class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CppFeatures final : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:pb.CppFeatures) */ {
+  using Super_ = ::google::protobuf::Message;
+
  public:
   inline CppFeatures() : CppFeatures(nullptr) {}
   ~CppFeatures() PROTOBUF_FINAL;
@@ -247,11 +249,11 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CppFeatures final :
 
   [[nodiscard]] CppFeatures* PROTOBUF_NONNULL
   New(::google::protobuf::Arena* PROTOBUF_NULLABLE arena = nullptr) const {
-    return ::google::protobuf::Message::DefaultConstruct<CppFeatures>(arena);
+    return Super_::DefaultConstruct<CppFeatures>(arena);
   }
-  using ::google::protobuf::Message::CopyFrom;
+  using Super_::CopyFrom;
   void CopyFrom(const CppFeatures& from);
-  using ::google::protobuf::Message::MergeFrom;
+  using Super_::MergeFrom;
   void MergeFrom(const CppFeatures& from) { CppFeatures::MergeImpl(*this, from); }
 
   private:

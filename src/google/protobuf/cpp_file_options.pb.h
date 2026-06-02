@@ -81,6 +81,8 @@ namespace file {
 
 class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CppFileOptions final : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:pb.file.CppFileOptions) */ {
+  using Super_ = ::google::protobuf::Message;
+
  public:
   inline CppFileOptions() : CppFileOptions(nullptr) {}
   ~CppFileOptions() PROTOBUF_FINAL;
@@ -155,11 +157,11 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CppFileOptions fina
 
   [[nodiscard]] CppFileOptions* PROTOBUF_NONNULL
   New(::google::protobuf::Arena* PROTOBUF_NULLABLE arena = nullptr) const {
-    return ::google::protobuf::Message::DefaultConstruct<CppFileOptions>(arena);
+    return Super_::DefaultConstruct<CppFileOptions>(arena);
   }
-  using ::google::protobuf::Message::CopyFrom;
+  using Super_::CopyFrom;
   void CopyFrom(const CppFileOptions& from);
-  using ::google::protobuf::Message::MergeFrom;
+  using Super_::MergeFrom;
   void MergeFrom(const CppFileOptions& from) { CppFileOptions::MergeImpl(*this, from); }
 
   private:

@@ -592,7 +592,6 @@ std::vector<Sub> ClassVars(const Descriptor* desc, Options opts) {
       // other files.
       {"classtype", QualifiedClassName(desc, opts)},
       {"full_name", desc->full_name()},
-      {"superclass", SuperClassName(desc, opts)},
       // TODO: Enable this everywhere.
       {"nodiscard", opts.opensource_runtime ? "[[nodiscard]]" : ""},
       {"unused",
@@ -1439,11 +1438,12 @@ void MessageGenerator::GenerateMapEntryClassDefinition(io::Printer* p) {
             : public $pbi$::MapEntry<$key_cpp$, $val_cpp$,
                                      $pbi$::WireFormatLite::$key_wire_type$,
                                      $pbi$::WireFormatLite::$val_wire_type$> {
-         public:
-          using SuperType =
+          using Super_ =
               $pbi$::MapEntry<$key_cpp$, $val_cpp$,
                               $pbi$::WireFormatLite::$key_wire_type$,
                               $pbi$::WireFormatLite::$val_wire_type$>;
+
+         public:
           $Msg$();
           template <typename = void>
           explicit constexpr $Msg$($pbi$::ConstantInitialized,
@@ -1772,7 +1772,22 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
 
   auto annotation = p->WithAnnotations({{"Msg", descriptor_}});
   p->Emit(
-      {{"decl_dtor",
+      {Sub{"superclass",
+           [&] {
+             if (!HasDescriptorMethods(descriptor_->file(), options_)) {
+               p->Emit(R"cc($pb$::MessageLite)cc");
+               return;
+             }
+             auto simple_base = SimpleBaseClass(descriptor_, options_);
+             if (simple_base.empty()) {
+               p->Emit(R"cc($pb$::Message)cc");
+             } else {
+               p->Emit({{"simple_base", simple_base}},
+                       R"cc($pbi$::$simple_base$)cc");
+             }
+           }}
+           .WithSuffix(""),
+       {"decl_dtor",
         [&] {
           if (HasSimpleBaseClass(descriptor_, options_)) return;
 
@@ -1871,9 +1886,9 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
               // instances when the source of the merge/copy is known
               // to be the same class as the destination.
               p->Emit(R"cc(
-                using $superclass$::CopyFrom;
+                using Super_::CopyFrom;
                 void CopyFrom(const $Msg$& from);
-                using $superclass$::MergeFrom;
+                using Super_::MergeFrom;
                 void MergeFrom(const $Msg$& from) { $Msg$::MergeImpl(*this, from); }
 
                 private:
@@ -1884,10 +1899,10 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
               )cc");
             } else {
               p->Emit(R"cc(
-                using $superclass$::CopyFrom;
-                inline void CopyFrom(const $Msg$& from) { $superclass$::CopyImpl(*this, from); }
-                using $superclass$::MergeFrom;
-                void MergeFrom(const $Msg$& from) { $superclass$::MergeImpl(*this, from); }
+                using Super_::CopyFrom;
+                inline void CopyFrom(const $Msg$& from) { Super_::CopyImpl(*this, from); }
+                using Super_::MergeFrom;
+                void MergeFrom(const $Msg$& from) { Super_::MergeImpl(*this, from); }
 
                 public:
               )cc");
@@ -2118,6 +2133,8 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
       R"cc(
         class $dllexport_decl $ $unused $$Msg$ final : public $superclass$
         /* @@protoc_insertion_point(class_definition:$full_name$) */ {
+          using Super_ = $superclass$;
+
          public:
           inline $Msg$() : $Msg$(nullptr) {}
           $decl_dtor$;
@@ -2193,7 +2210,7 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
 
           $nodiscard $$Msg$* $nonnull$
           New($pb$::Arena* $nullable$ arena = nullptr) const {
-            return $superclass$::DefaultConstruct<$Msg$>(arena);
+            return Super_::DefaultConstruct<$Msg$>(arena);
           }
           $generated_methods$;
           $internal_field_number$;
@@ -2335,12 +2352,12 @@ void MessageGenerator::GenerateClassMethods(io::Printer* p) {
              {"class_data", [&] { GenerateClassData(p); }}},
             R"cc(
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-              $Msg$::$Msg$() : SuperType($Msg$_get_class_data()) {}
+              $Msg$::$Msg$() : Super_($Msg$_get_class_data()) {}
               $Msg$::$Msg$($pb$::Arena* $nullable$ arena)
-                  : SuperType(arena, $Msg$_get_class_data()) {}
+                  : Super_(arena, $Msg$_get_class_data()) {}
 #else   // PROTOBUF_CUSTOM_VTABLE
-              $Msg$::$Msg$() : SuperType() {}
-              $Msg$::$Msg$($pb$::Arena* $nullable$ arena) : SuperType(arena) {}
+              $Msg$::$Msg$() : Super_() {}
+              $Msg$::$Msg$($pb$::Arena* $nullable$ arena) : Super_(arena) {}
 #endif  // PROTOBUF_CUSTOM_VTABLE
               $annotate_accessors$;
               $verify$;
@@ -2452,7 +2469,7 @@ void MessageGenerator::GenerateClassMethods(io::Printer* p) {
               // Same as the base class, but it avoids virtual dispatch.
               p->Emit(R"cc(
                 $pb$::Metadata $Msg$::GetMetadata() const {
-                  return $superclass$::GetMetadataImpl(GetClassData()->full());
+                  return Super_::GetMetadataImpl(GetClassData()->full());
                 }
               )cc");
             }},
@@ -2966,28 +2983,19 @@ void MessageGenerator::GenerateConstexprConstructor(io::Printer* p) {
   Formatter format(p);
 
   if (IsMapEntryMessage(descriptor_) || !HasImplData(descriptor_, options_)) {
-    p->Emit(
-        {{"base",
-          [&] {
-            if (IsMapEntryMessage(descriptor_)) {
-              p->Emit("$Msg$::MapEntry");
-            } else {
-              p->Emit("$superclass$");
-            }
-          }}},
-        R"cc(
-          //~ Templatize constexpr constructor as a workaround for a bug in
-          //~ gcc 12 (warning in gcc 13).
-          template <typename>
-          constexpr $Msg$::$Msg$(::_pbi::ConstantInitialized,
-                                 const ::_pbi::ClassData* $nonnull$ class_data)
-              : $base$(
+    p->Emit(R"cc(
+      //~ Templatize constexpr constructor as a workaround for a bug in
+      //~ gcc 12 (warning in gcc 13).
+      template <typename>
+      constexpr $Msg$::$Msg$(::_pbi::ConstantInitialized,
+                             const ::_pbi::ClassData* $nonnull$ class_data)
+          : Super_(
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-                    class_data
+                class_data
 #endif  // PROTOBUF_CUSTOM_VTABLE
-                ) {
-          }
-        )cc");
+            ) {
+      }
+    )cc");
     return;
   }
 
@@ -3010,7 +3018,7 @@ void MessageGenerator::GenerateConstexprConstructor(io::Printer* p) {
         template <typename>
         constexpr $Msg$::$Msg$(::_pbi::ConstantInitialized,
                                const ::_pbi::ClassData* $nonnull$ class_data)
-            : $superclass$(
+            : Super_(
 #if defined(PROTOBUF_CUSTOM_VTABLE)
                   class_data
 #endif  // PROTOBUF_CUSTOM_VTABLE
@@ -3097,9 +3105,9 @@ void MessageGenerator::GenerateCopyInitFields(io::Printer* p) const {
     p->Emit({{"has_msg", [&] { has_message(field); }},
              {"submsg", FieldMessageTypeName(field, options_)}},
             R"cc(
-              $field_$ = ($has_msg$) ? $superclass$::CopyConstruct(
-                                           arena, *from.$field_$)
-                                     : nullptr;
+              $field_$ = ($has_msg$)
+                             ? Super_::CopyConstruct(arena, *from.$field_$)
+                             : nullptr;
             )cc");
   };
 
@@ -3262,10 +3270,10 @@ void MessageGenerator::GenerateArenaEnabledCopyConstructor(io::Printer* p) {
                 //~ force alignment
                 const $Msg$& from)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-                : $superclass$(arena, $Msg$_get_class_data()) {
+                : Super_(arena, $Msg$_get_class_data()) {
 
 #else   // PROTOBUF_CUSTOM_VTABLE
-                : $superclass$(arena) {
+                : Super_(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
               $Msg$* const _this = this;
               (void)_this;
@@ -3284,7 +3292,6 @@ void MessageGenerator::GenerateArenaEnabledCopyConstructor(io::Printer* p) {
 void MessageGenerator::GenerateStructors(io::Printer* p) {
   p->Emit(
       {
-          {"superclass", SuperClassName(descriptor_, options_)},
           {"ctor_body",
            [&] {
              if (HasSimpleBaseClass(descriptor_, options_)) return;
@@ -3306,9 +3313,9 @@ void MessageGenerator::GenerateStructors(io::Printer* p) {
       R"cc(
         $Msg$::$Msg$($pb$::Arena* $nullable$ arena)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-            : $superclass$(arena, $Msg$_get_class_data()) {
+            : Super_(arena, $Msg$_get_class_data()) {
 #else   // PROTOBUF_CUSTOM_VTABLE
-            : $superclass$(arena) {
+            : Super_(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
           $ctor_body$;
           // @@protoc_insertion_point(arena_constructor:$full_name$)
@@ -3335,9 +3342,9 @@ void MessageGenerator::GenerateStructors(io::Printer* p) {
           //~ Force alignment
           $pb$::Arena* $nullable$ arena, const $Msg$& from)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-          : $superclass$(arena, $Msg$_get_class_data()),
+          : Super_(arena, $Msg$_get_class_data()),
 #else   // PROTOBUF_CUSTOM_VTABLE
-          : $superclass$(arena),
+          : Super_(arena),
 #endif  // PROTOBUF_CUSTOM_VTABLE
             _impl_(from._impl_) {
         _internal_metadata_.MergeFrom<$unknown_fields_type$>(
@@ -3909,14 +3916,13 @@ void MessageGenerator::GenerateInternalGenerateClassData(io::Printer* p) {
     if (HasGeneratedMethods(descriptor_->file(), options_) &&
         !IsMapEntryMessage(descriptor_)) {
       p->Emit(R"cc(
-        $superclass$::GetClearImpl<$Msg$>(), &$Msg$::ByteSizeLong,
+        Super_::GetClearImpl<$Msg$>(), &$Msg$::ByteSizeLong,
             &$Msg$::_InternalSerialize,
       )cc");
     } else {
       p->Emit(R"cc(
         static_cast<void ($pb$::MessageLite::*)()>(&$Msg$::ClearImpl),
-            $superclass$::ByteSizeLongImpl, $superclass$::_InternalSerializeImpl
-            ,
+            Super_::ByteSizeLongImpl, Super_::_InternalSerializeImpl,
       )cc");
     }
   };
@@ -3953,7 +3959,7 @@ void MessageGenerator::GenerateInternalGenerateClassData(io::Printer* p) {
 #endif
                     $is_initialized$,
                     &$Msg$::MergeImpl,
-                    $superclass$::GetNewImpl<$Msg$>(),
+                    Super_::GetNewImpl<$Msg$>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
                     &$Msg$::SharedDtor,
                     $custom_vtable_methods$,
@@ -3991,7 +3997,7 @@ void MessageGenerator::GenerateInternalGenerateClassData(io::Printer* p) {
 #endif
                     $is_initialized$,
                     &$Msg$::MergeImpl,
-                    $superclass$::GetNewImpl<$Msg$>(),
+                    Super_::GetNewImpl<$Msg$>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
                     &$Msg$::SharedDtor,
                     $custom_vtable_methods$,

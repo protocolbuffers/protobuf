@@ -81,6 +81,8 @@ namespace enumvalue {
 
 class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED JsonEnumValueOptions final : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:pb.enumvalue.JsonEnumValueOptions) */ {
+  using Super_ = ::google::protobuf::Message;
+
  public:
   inline JsonEnumValueOptions() : JsonEnumValueOptions(nullptr) {}
   ~JsonEnumValueOptions() PROTOBUF_FINAL;
@@ -155,11 +157,11 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED JsonEnumValueOption
 
   [[nodiscard]] JsonEnumValueOptions* PROTOBUF_NONNULL
   New(::google::protobuf::Arena* PROTOBUF_NULLABLE arena = nullptr) const {
-    return ::google::protobuf::Message::DefaultConstruct<JsonEnumValueOptions>(arena);
+    return Super_::DefaultConstruct<JsonEnumValueOptions>(arena);
   }
-  using ::google::protobuf::Message::CopyFrom;
+  using Super_::CopyFrom;
   void CopyFrom(const JsonEnumValueOptions& from);
-  using ::google::protobuf::Message::MergeFrom;
+  using Super_::MergeFrom;
   void MergeFrom(const JsonEnumValueOptions& from) { JsonEnumValueOptions::MergeImpl(*this, from); }
 
   private:

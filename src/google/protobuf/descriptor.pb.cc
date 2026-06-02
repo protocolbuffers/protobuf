@@ -167,7 +167,7 @@ inline constexpr UninterpretedOption_NamePart::Impl_::Impl_(
 template <typename>
 constexpr UninterpretedOption_NamePart::UninterpretedOption_NamePart(::_pbi::ConstantInitialized,
                        const ::_pbi::ClassData* PROTOBUF_NONNULL class_data)
-    : ::google::protobuf::Message(
+    : Super_(
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           class_data
 #endif  // PROTOBUF_CUSTOM_VTABLE
@@ -195,10 +195,10 @@ constexpr auto UninterpretedOption_NamePart::InternalGenerateClassData_(
 #endif
           UninterpretedOption_NamePart::IsInitializedImpl,
           &UninterpretedOption_NamePart::MergeImpl,
-          ::google::protobuf::Message::GetNewImpl<UninterpretedOption_NamePart>(),
+          Super_::GetNewImpl<UninterpretedOption_NamePart>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           &UninterpretedOption_NamePart::SharedDtor,
-          ::google::protobuf::Message::GetClearImpl<UninterpretedOption_NamePart>(), &UninterpretedOption_NamePart::ByteSizeLong,
+          Super_::GetClearImpl<UninterpretedOption_NamePart>(), &UninterpretedOption_NamePart::ByteSizeLong,
               &UninterpretedOption_NamePart::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
           PROTOBUF_FIELD_OFFSET(UninterpretedOption_NamePart, _impl_._cached_size_),
@@ -360,7 +360,7 @@ inline constexpr SourceCodeInfo_Location::Impl_::Impl_(
 template <typename>
 constexpr SourceCodeInfo_Location::SourceCodeInfo_Location(::_pbi::ConstantInitialized,
                        const ::_pbi::ClassData* PROTOBUF_NONNULL class_data)
-    : ::google::protobuf::Message(
+    : Super_(
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           class_data
 #endif  // PROTOBUF_CUSTOM_VTABLE
@@ -388,10 +388,10 @@ constexpr auto SourceCodeInfo_Location::InternalGenerateClassData_(
 #endif
           nullptr,  // IsInitialized
           &SourceCodeInfo_Location::MergeImpl,
-          ::google::protobuf::Message::GetNewImpl<SourceCodeInfo_Location>(),
+          Super_::GetNewImpl<SourceCodeInfo_Location>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           &SourceCodeInfo_Location::SharedDtor,
-          ::google::protobuf::Message::GetClearImpl<SourceCodeInfo_Location>(), &SourceCodeInfo_Location::ByteSizeLong,
+          Super_::GetClearImpl<SourceCodeInfo_Location>(), &SourceCodeInfo_Location::ByteSizeLong,
               &SourceCodeInfo_Location::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
           PROTOBUF_FIELD_OFFSET(SourceCodeInfo_Location, _impl_._cached_size_),
@@ -545,7 +545,7 @@ inline constexpr GeneratedCodeInfo_Annotation::Impl_::Impl_(
 template <typename>
 constexpr GeneratedCodeInfo_Annotation::GeneratedCodeInfo_Annotation(::_pbi::ConstantInitialized,
                        const ::_pbi::ClassData* PROTOBUF_NONNULL class_data)
-    : ::google::protobuf::Message(
+    : Super_(
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           class_data
 #endif  // PROTOBUF_CUSTOM_VTABLE
@@ -573,10 +573,10 @@ constexpr auto GeneratedCodeInfo_Annotation::InternalGenerateClassData_(
 #endif
           nullptr,  // IsInitialized
           &GeneratedCodeInfo_Annotation::MergeImpl,
-          ::google::protobuf::Message::GetNewImpl<GeneratedCodeInfo_Annotation>(),
+          Super_::GetNewImpl<GeneratedCodeInfo_Annotation>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           &GeneratedCodeInfo_Annotation::SharedDtor,
-          ::google::protobuf::Message::GetClearImpl<GeneratedCodeInfo_Annotation>(), &GeneratedCodeInfo_Annotation::ByteSizeLong,
+          Super_::GetClearImpl<GeneratedCodeInfo_Annotation>(), &GeneratedCodeInfo_Annotation::ByteSizeLong,
               &GeneratedCodeInfo_Annotation::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
           PROTOBUF_FIELD_OFFSET(GeneratedCodeInfo_Annotation, _impl_._cached_size_),
@@ -730,7 +730,7 @@ inline constexpr FieldOptions_FeatureSupport::Impl_::Impl_(
 template <typename>
 constexpr FieldOptions_FeatureSupport::FieldOptions_FeatureSupport(::_pbi::ConstantInitialized,
                        const ::_pbi::ClassData* PROTOBUF_NONNULL class_data)
-    : ::google::protobuf::Message(
+    : Super_(
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           class_data
 #endif  // PROTOBUF_CUSTOM_VTABLE
@@ -758,10 +758,10 @@ constexpr auto FieldOptions_FeatureSupport::InternalGenerateClassData_(
 #endif
           nullptr,  // IsInitialized
           &FieldOptions_FeatureSupport::MergeImpl,
-          ::google::protobuf::Message::GetNewImpl<FieldOptions_FeatureSupport>(),
+          Super_::GetNewImpl<FieldOptions_FeatureSupport>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           &FieldOptions_FeatureSupport::SharedDtor,
-          ::google::protobuf::Message::GetClearImpl<FieldOptions_FeatureSupport>(), &FieldOptions_FeatureSupport::ByteSizeLong,
+          Super_::GetClearImpl<FieldOptions_FeatureSupport>(), &FieldOptions_FeatureSupport::ByteSizeLong,
               &FieldOptions_FeatureSupport::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
           PROTOBUF_FIELD_OFFSET(FieldOptions_FeatureSupport, _impl_._cached_size_),
@@ -887,7 +887,7 @@ inline constexpr FieldOptions_EditionDefault::Impl_::Impl_(
 template <typename>
 constexpr FieldOptions_EditionDefault::FieldOptions_EditionDefault(::_pbi::ConstantInitialized,
                        const ::_pbi::ClassData* PROTOBUF_NONNULL class_data)
-    : ::google::protobuf::Message(
+    : Super_(
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           class_data
 #endif  // PROTOBUF_CUSTOM_VTABLE
@@ -915,10 +915,10 @@ constexpr auto FieldOptions_EditionDefault::InternalGenerateClassData_(
 #endif
           nullptr,  // IsInitialized
           &FieldOptions_EditionDefault::MergeImpl,
-          ::google::protobuf::Message::GetNewImpl<FieldOptions_EditionDefault>(),
+          Super_::GetNewImpl<FieldOptions_EditionDefault>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           &FieldOptions_EditionDefault::SharedDtor,
-          ::google::protobuf::Message::GetClearImpl<FieldOptions_EditionDefault>(), &FieldOptions_EditionDefault::ByteSizeLong,
+          Super_::GetClearImpl<FieldOptions_EditionDefault>(), &FieldOptions_EditionDefault::ByteSizeLong,
               &FieldOptions_EditionDefault::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
           PROTOBUF_FIELD_OFFSET(FieldOptions_EditionDefault, _impl_._cached_size_),
@@ -1018,7 +1018,7 @@ constexpr FeatureSet_VisibilityFeature::ParseTableT_ FeatureSet_VisibilityFeatur
 template <typename>
 constexpr FeatureSet_VisibilityFeature::FeatureSet_VisibilityFeature(::_pbi::ConstantInitialized,
                        const ::_pbi::ClassData* PROTOBUF_NONNULL class_data)
-    : ::google::protobuf::internal::ZeroFieldsBase(
+    : Super_(
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           class_data
 #endif  // PROTOBUF_CUSTOM_VTABLE
@@ -1045,10 +1045,10 @@ constexpr auto FeatureSet_VisibilityFeature::InternalGenerateClassData_(
 #endif
           nullptr,  // IsInitialized
           &FeatureSet_VisibilityFeature::MergeImpl,
-          ::google::protobuf::internal::ZeroFieldsBase::GetNewImpl<FeatureSet_VisibilityFeature>(),
+          Super_::GetNewImpl<FeatureSet_VisibilityFeature>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           &FeatureSet_VisibilityFeature::SharedDtor,
-          ::google::protobuf::internal::ZeroFieldsBase::GetClearImpl<FeatureSet_VisibilityFeature>(), &FeatureSet_VisibilityFeature::ByteSizeLong,
+          Super_::GetClearImpl<FeatureSet_VisibilityFeature>(), &FeatureSet_VisibilityFeature::ByteSizeLong,
               &FeatureSet_VisibilityFeature::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
           PROTOBUF_FIELD_OFFSET(FeatureSet_VisibilityFeature, _impl_._cached_size_),
@@ -1148,7 +1148,7 @@ constexpr FeatureSet_ProtoLimitsFeature::ParseTableT_ FeatureSet_ProtoLimitsFeat
 template <typename>
 constexpr FeatureSet_ProtoLimitsFeature::FeatureSet_ProtoLimitsFeature(::_pbi::ConstantInitialized,
                        const ::_pbi::ClassData* PROTOBUF_NONNULL class_data)
-    : ::google::protobuf::internal::ZeroFieldsBase(
+    : Super_(
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           class_data
 #endif  // PROTOBUF_CUSTOM_VTABLE
@@ -1175,10 +1175,10 @@ constexpr auto FeatureSet_ProtoLimitsFeature::InternalGenerateClassData_(
 #endif
           nullptr,  // IsInitialized
           &FeatureSet_ProtoLimitsFeature::MergeImpl,
-          ::google::protobuf::internal::ZeroFieldsBase::GetNewImpl<FeatureSet_ProtoLimitsFeature>(),
+          Super_::GetNewImpl<FeatureSet_ProtoLimitsFeature>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           &FeatureSet_ProtoLimitsFeature::SharedDtor,
-          ::google::protobuf::internal::ZeroFieldsBase::GetClearImpl<FeatureSet_ProtoLimitsFeature>(), &FeatureSet_ProtoLimitsFeature::ByteSizeLong,
+          Super_::GetClearImpl<FeatureSet_ProtoLimitsFeature>(), &FeatureSet_ProtoLimitsFeature::ByteSizeLong,
               &FeatureSet_ProtoLimitsFeature::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
           PROTOBUF_FIELD_OFFSET(FeatureSet_ProtoLimitsFeature, _impl_._cached_size_),
@@ -1366,7 +1366,7 @@ inline constexpr FeatureSet::Impl_::Impl_(
 template <typename>
 constexpr FeatureSet::FeatureSet(::_pbi::ConstantInitialized,
                        const ::_pbi::ClassData* PROTOBUF_NONNULL class_data)
-    : ::google::protobuf::Message(
+    : Super_(
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           class_data
 #endif  // PROTOBUF_CUSTOM_VTABLE
@@ -1394,10 +1394,10 @@ constexpr auto FeatureSet::InternalGenerateClassData_(
 #endif
           FeatureSet::IsInitializedImpl,
           &FeatureSet::MergeImpl,
-          ::google::protobuf::Message::GetNewImpl<FeatureSet>(),
+          Super_::GetNewImpl<FeatureSet>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           &FeatureSet::SharedDtor,
-          ::google::protobuf::Message::GetClearImpl<FeatureSet>(), &FeatureSet::ByteSizeLong,
+          Super_::GetClearImpl<FeatureSet>(), &FeatureSet::ByteSizeLong,
               &FeatureSet::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
           PROTOBUF_FIELD_OFFSET(FeatureSet, _impl_._cached_size_),
@@ -1547,7 +1547,7 @@ inline constexpr ExtensionRangeOptions_Declaration::Impl_::Impl_(
 template <typename>
 constexpr ExtensionRangeOptions_Declaration::ExtensionRangeOptions_Declaration(::_pbi::ConstantInitialized,
                        const ::_pbi::ClassData* PROTOBUF_NONNULL class_data)
-    : ::google::protobuf::Message(
+    : Super_(
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           class_data
 #endif  // PROTOBUF_CUSTOM_VTABLE
@@ -1575,10 +1575,10 @@ constexpr auto ExtensionRangeOptions_Declaration::InternalGenerateClassData_(
 #endif
           nullptr,  // IsInitialized
           &ExtensionRangeOptions_Declaration::MergeImpl,
-          ::google::protobuf::Message::GetNewImpl<ExtensionRangeOptions_Declaration>(),
+          Super_::GetNewImpl<ExtensionRangeOptions_Declaration>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           &ExtensionRangeOptions_Declaration::SharedDtor,
-          ::google::protobuf::Message::GetClearImpl<ExtensionRangeOptions_Declaration>(), &ExtensionRangeOptions_Declaration::ByteSizeLong,
+          Super_::GetClearImpl<ExtensionRangeOptions_Declaration>(), &ExtensionRangeOptions_Declaration::ByteSizeLong,
               &ExtensionRangeOptions_Declaration::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
           PROTOBUF_FIELD_OFFSET(ExtensionRangeOptions_Declaration, _impl_._cached_size_),
@@ -1700,7 +1700,7 @@ inline constexpr EnumDescriptorProto_EnumReservedRange::Impl_::Impl_(
 template <typename>
 constexpr EnumDescriptorProto_EnumReservedRange::EnumDescriptorProto_EnumReservedRange(::_pbi::ConstantInitialized,
                        const ::_pbi::ClassData* PROTOBUF_NONNULL class_data)
-    : ::google::protobuf::Message(
+    : Super_(
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           class_data
 #endif  // PROTOBUF_CUSTOM_VTABLE
@@ -1728,10 +1728,10 @@ constexpr auto EnumDescriptorProto_EnumReservedRange::InternalGenerateClassData_
 #endif
           nullptr,  // IsInitialized
           &EnumDescriptorProto_EnumReservedRange::MergeImpl,
-          ::google::protobuf::Message::GetNewImpl<EnumDescriptorProto_EnumReservedRange>(),
+          Super_::GetNewImpl<EnumDescriptorProto_EnumReservedRange>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           &EnumDescriptorProto_EnumReservedRange::SharedDtor,
-          ::google::protobuf::Message::GetClearImpl<EnumDescriptorProto_EnumReservedRange>(), &EnumDescriptorProto_EnumReservedRange::ByteSizeLong,
+          Super_::GetClearImpl<EnumDescriptorProto_EnumReservedRange>(), &EnumDescriptorProto_EnumReservedRange::ByteSizeLong,
               &EnumDescriptorProto_EnumReservedRange::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
           PROTOBUF_FIELD_OFFSET(EnumDescriptorProto_EnumReservedRange, _impl_._cached_size_),
@@ -1853,7 +1853,7 @@ inline constexpr DescriptorProto_ReservedRange::Impl_::Impl_(
 template <typename>
 constexpr DescriptorProto_ReservedRange::DescriptorProto_ReservedRange(::_pbi::ConstantInitialized,
                        const ::_pbi::ClassData* PROTOBUF_NONNULL class_data)
-    : ::google::protobuf::Message(
+    : Super_(
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           class_data
 #endif  // PROTOBUF_CUSTOM_VTABLE
@@ -1881,10 +1881,10 @@ constexpr auto DescriptorProto_ReservedRange::InternalGenerateClassData_(
 #endif
           nullptr,  // IsInitialized
           &DescriptorProto_ReservedRange::MergeImpl,
-          ::google::protobuf::Message::GetNewImpl<DescriptorProto_ReservedRange>(),
+          Super_::GetNewImpl<DescriptorProto_ReservedRange>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           &DescriptorProto_ReservedRange::SharedDtor,
-          ::google::protobuf::Message::GetClearImpl<DescriptorProto_ReservedRange>(), &DescriptorProto_ReservedRange::ByteSizeLong,
+          Super_::GetClearImpl<DescriptorProto_ReservedRange>(), &DescriptorProto_ReservedRange::ByteSizeLong,
               &DescriptorProto_ReservedRange::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
           PROTOBUF_FIELD_OFFSET(DescriptorProto_ReservedRange, _impl_._cached_size_),
@@ -2058,7 +2058,7 @@ inline constexpr UninterpretedOption::Impl_::Impl_(
 template <typename>
 constexpr UninterpretedOption::UninterpretedOption(::_pbi::ConstantInitialized,
                        const ::_pbi::ClassData* PROTOBUF_NONNULL class_data)
-    : ::google::protobuf::Message(
+    : Super_(
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           class_data
 #endif  // PROTOBUF_CUSTOM_VTABLE
@@ -2086,10 +2086,10 @@ constexpr auto UninterpretedOption::InternalGenerateClassData_(
 #endif
           UninterpretedOption::IsInitializedImpl,
           &UninterpretedOption::MergeImpl,
-          ::google::protobuf::Message::GetNewImpl<UninterpretedOption>(),
+          Super_::GetNewImpl<UninterpretedOption>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           &UninterpretedOption::SharedDtor,
-          ::google::protobuf::Message::GetClearImpl<UninterpretedOption>(), &UninterpretedOption::ByteSizeLong,
+          Super_::GetClearImpl<UninterpretedOption>(), &UninterpretedOption::ByteSizeLong,
               &UninterpretedOption::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
           PROTOBUF_FIELD_OFFSET(UninterpretedOption, _impl_._cached_size_),
@@ -2214,7 +2214,7 @@ inline constexpr SourceCodeInfo::Impl_::Impl_(
 template <typename>
 constexpr SourceCodeInfo::SourceCodeInfo(::_pbi::ConstantInitialized,
                        const ::_pbi::ClassData* PROTOBUF_NONNULL class_data)
-    : ::google::protobuf::Message(
+    : Super_(
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           class_data
 #endif  // PROTOBUF_CUSTOM_VTABLE
@@ -2242,10 +2242,10 @@ constexpr auto SourceCodeInfo::InternalGenerateClassData_(
 #endif
           SourceCodeInfo::IsInitializedImpl,
           &SourceCodeInfo::MergeImpl,
-          ::google::protobuf::Message::GetNewImpl<SourceCodeInfo>(),
+          Super_::GetNewImpl<SourceCodeInfo>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           &SourceCodeInfo::SharedDtor,
-          ::google::protobuf::Message::GetClearImpl<SourceCodeInfo>(), &SourceCodeInfo::ByteSizeLong,
+          Super_::GetClearImpl<SourceCodeInfo>(), &SourceCodeInfo::ByteSizeLong,
               &SourceCodeInfo::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
           PROTOBUF_FIELD_OFFSET(SourceCodeInfo, _impl_._cached_size_),
@@ -2370,7 +2370,7 @@ inline constexpr GeneratedCodeInfo::Impl_::Impl_(
 template <typename>
 constexpr GeneratedCodeInfo::GeneratedCodeInfo(::_pbi::ConstantInitialized,
                        const ::_pbi::ClassData* PROTOBUF_NONNULL class_data)
-    : ::google::protobuf::Message(
+    : Super_(
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           class_data
 #endif  // PROTOBUF_CUSTOM_VTABLE
@@ -2398,10 +2398,10 @@ constexpr auto GeneratedCodeInfo::InternalGenerateClassData_(
 #endif
           nullptr,  // IsInitialized
           &GeneratedCodeInfo::MergeImpl,
-          ::google::protobuf::Message::GetNewImpl<GeneratedCodeInfo>(),
+          Super_::GetNewImpl<GeneratedCodeInfo>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           &GeneratedCodeInfo::SharedDtor,
-          ::google::protobuf::Message::GetClearImpl<GeneratedCodeInfo>(), &GeneratedCodeInfo::ByteSizeLong,
+          Super_::GetClearImpl<GeneratedCodeInfo>(), &GeneratedCodeInfo::ByteSizeLong,
               &GeneratedCodeInfo::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
           PROTOBUF_FIELD_OFFSET(GeneratedCodeInfo, _impl_._cached_size_),
@@ -2543,7 +2543,7 @@ inline constexpr FeatureSetDefaults_FeatureSetEditionDefault::Impl_::Impl_(
 template <typename>
 constexpr FeatureSetDefaults_FeatureSetEditionDefault::FeatureSetDefaults_FeatureSetEditionDefault(::_pbi::ConstantInitialized,
                        const ::_pbi::ClassData* PROTOBUF_NONNULL class_data)
-    : ::google::protobuf::Message(
+    : Super_(
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           class_data
 #endif  // PROTOBUF_CUSTOM_VTABLE
@@ -2571,10 +2571,10 @@ constexpr auto FeatureSetDefaults_FeatureSetEditionDefault::InternalGenerateClas
 #endif
           FeatureSetDefaults_FeatureSetEditionDefault::IsInitializedImpl,
           &FeatureSetDefaults_FeatureSetEditionDefault::MergeImpl,
-          ::google::protobuf::Message::GetNewImpl<FeatureSetDefaults_FeatureSetEditionDefault>(),
+          Super_::GetNewImpl<FeatureSetDefaults_FeatureSetEditionDefault>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           &FeatureSetDefaults_FeatureSetEditionDefault::SharedDtor,
-          ::google::protobuf::Message::GetClearImpl<FeatureSetDefaults_FeatureSetEditionDefault>(), &FeatureSetDefaults_FeatureSetEditionDefault::ByteSizeLong,
+          Super_::GetClearImpl<FeatureSetDefaults_FeatureSetEditionDefault>(), &FeatureSetDefaults_FeatureSetEditionDefault::ByteSizeLong,
               &FeatureSetDefaults_FeatureSetEditionDefault::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
           PROTOBUF_FIELD_OFFSET(FeatureSetDefaults_FeatureSetEditionDefault, _impl_._cached_size_),
@@ -2723,7 +2723,7 @@ inline constexpr ServiceOptions::Impl_::Impl_(
 template <typename>
 constexpr ServiceOptions::ServiceOptions(::_pbi::ConstantInitialized,
                        const ::_pbi::ClassData* PROTOBUF_NONNULL class_data)
-    : ::google::protobuf::Message(
+    : Super_(
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           class_data
 #endif  // PROTOBUF_CUSTOM_VTABLE
@@ -2751,10 +2751,10 @@ constexpr auto ServiceOptions::InternalGenerateClassData_(
 #endif
           ServiceOptions::IsInitializedImpl,
           &ServiceOptions::MergeImpl,
-          ::google::protobuf::Message::GetNewImpl<ServiceOptions>(),
+          Super_::GetNewImpl<ServiceOptions>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           &ServiceOptions::SharedDtor,
-          ::google::protobuf::Message::GetClearImpl<ServiceOptions>(), &ServiceOptions::ByteSizeLong,
+          Super_::GetClearImpl<ServiceOptions>(), &ServiceOptions::ByteSizeLong,
               &ServiceOptions::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
           PROTOBUF_FIELD_OFFSET(ServiceOptions, _impl_._cached_size_),
@@ -2895,7 +2895,7 @@ inline constexpr OneofOptions::Impl_::Impl_(
 template <typename>
 constexpr OneofOptions::OneofOptions(::_pbi::ConstantInitialized,
                        const ::_pbi::ClassData* PROTOBUF_NONNULL class_data)
-    : ::google::protobuf::Message(
+    : Super_(
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           class_data
 #endif  // PROTOBUF_CUSTOM_VTABLE
@@ -2923,10 +2923,10 @@ constexpr auto OneofOptions::InternalGenerateClassData_(
 #endif
           OneofOptions::IsInitializedImpl,
           &OneofOptions::MergeImpl,
-          ::google::protobuf::Message::GetNewImpl<OneofOptions>(),
+          Super_::GetNewImpl<OneofOptions>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           &OneofOptions::SharedDtor,
-          ::google::protobuf::Message::GetClearImpl<OneofOptions>(), &OneofOptions::ByteSizeLong,
+          Super_::GetClearImpl<OneofOptions>(), &OneofOptions::ByteSizeLong,
               &OneofOptions::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
           PROTOBUF_FIELD_OFFSET(OneofOptions, _impl_._cached_size_),
@@ -3086,7 +3086,7 @@ inline constexpr MethodOptions::Impl_::Impl_(
 template <typename>
 constexpr MethodOptions::MethodOptions(::_pbi::ConstantInitialized,
                        const ::_pbi::ClassData* PROTOBUF_NONNULL class_data)
-    : ::google::protobuf::Message(
+    : Super_(
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           class_data
 #endif  // PROTOBUF_CUSTOM_VTABLE
@@ -3114,10 +3114,10 @@ constexpr auto MethodOptions::InternalGenerateClassData_(
 #endif
           MethodOptions::IsInitializedImpl,
           &MethodOptions::MergeImpl,
-          ::google::protobuf::Message::GetNewImpl<MethodOptions>(),
+          Super_::GetNewImpl<MethodOptions>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           &MethodOptions::SharedDtor,
-          ::google::protobuf::Message::GetClearImpl<MethodOptions>(), &MethodOptions::ByteSizeLong,
+          Super_::GetClearImpl<MethodOptions>(), &MethodOptions::ByteSizeLong,
               &MethodOptions::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
           PROTOBUF_FIELD_OFFSET(MethodOptions, _impl_._cached_size_),
@@ -3286,7 +3286,7 @@ inline constexpr MessageOptions::Impl_::Impl_(
 template <typename>
 constexpr MessageOptions::MessageOptions(::_pbi::ConstantInitialized,
                        const ::_pbi::ClassData* PROTOBUF_NONNULL class_data)
-    : ::google::protobuf::Message(
+    : Super_(
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           class_data
 #endif  // PROTOBUF_CUSTOM_VTABLE
@@ -3314,10 +3314,10 @@ constexpr auto MessageOptions::InternalGenerateClassData_(
 #endif
           MessageOptions::IsInitializedImpl,
           &MessageOptions::MergeImpl,
-          ::google::protobuf::Message::GetNewImpl<MessageOptions>(),
+          Super_::GetNewImpl<MessageOptions>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           &MessageOptions::SharedDtor,
-          ::google::protobuf::Message::GetClearImpl<MessageOptions>(), &MessageOptions::ByteSizeLong,
+          Super_::GetClearImpl<MessageOptions>(), &MessageOptions::ByteSizeLong,
               &MessageOptions::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
           PROTOBUF_FIELD_OFFSET(MessageOptions, _impl_._cached_size_),
@@ -3611,7 +3611,7 @@ inline constexpr FileOptions::Impl_::Impl_(
 template <typename>
 constexpr FileOptions::FileOptions(::_pbi::ConstantInitialized,
                        const ::_pbi::ClassData* PROTOBUF_NONNULL class_data)
-    : ::google::protobuf::Message(
+    : Super_(
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           class_data
 #endif  // PROTOBUF_CUSTOM_VTABLE
@@ -3639,10 +3639,10 @@ constexpr auto FileOptions::InternalGenerateClassData_(
 #endif
           FileOptions::IsInitializedImpl,
           &FileOptions::MergeImpl,
-          ::google::protobuf::Message::GetNewImpl<FileOptions>(),
+          Super_::GetNewImpl<FileOptions>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           &FileOptions::SharedDtor,
-          ::google::protobuf::Message::GetClearImpl<FileOptions>(), &FileOptions::ByteSizeLong,
+          Super_::GetClearImpl<FileOptions>(), &FileOptions::ByteSizeLong,
               &FileOptions::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
           PROTOBUF_FIELD_OFFSET(FileOptions, _impl_._cached_size_),
@@ -3877,7 +3877,7 @@ inline constexpr FieldOptions::Impl_::Impl_(
 template <typename>
 constexpr FieldOptions::FieldOptions(::_pbi::ConstantInitialized,
                        const ::_pbi::ClassData* PROTOBUF_NONNULL class_data)
-    : ::google::protobuf::Message(
+    : Super_(
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           class_data
 #endif  // PROTOBUF_CUSTOM_VTABLE
@@ -3905,10 +3905,10 @@ constexpr auto FieldOptions::InternalGenerateClassData_(
 #endif
           FieldOptions::IsInitializedImpl,
           &FieldOptions::MergeImpl,
-          ::google::protobuf::Message::GetNewImpl<FieldOptions>(),
+          Super_::GetNewImpl<FieldOptions>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           &FieldOptions::SharedDtor,
-          ::google::protobuf::Message::GetClearImpl<FieldOptions>(), &FieldOptions::ByteSizeLong,
+          Super_::GetClearImpl<FieldOptions>(), &FieldOptions::ByteSizeLong,
               &FieldOptions::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
           PROTOBUF_FIELD_OFFSET(FieldOptions, _impl_._cached_size_),
@@ -4045,7 +4045,7 @@ inline constexpr FeatureSetDefaults::Impl_::Impl_(
 template <typename>
 constexpr FeatureSetDefaults::FeatureSetDefaults(::_pbi::ConstantInitialized,
                        const ::_pbi::ClassData* PROTOBUF_NONNULL class_data)
-    : ::google::protobuf::Message(
+    : Super_(
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           class_data
 #endif  // PROTOBUF_CUSTOM_VTABLE
@@ -4073,10 +4073,10 @@ constexpr auto FeatureSetDefaults::InternalGenerateClassData_(
 #endif
           FeatureSetDefaults::IsInitializedImpl,
           &FeatureSetDefaults::MergeImpl,
-          ::google::protobuf::Message::GetNewImpl<FeatureSetDefaults>(),
+          Super_::GetNewImpl<FeatureSetDefaults>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           &FeatureSetDefaults::SharedDtor,
-          ::google::protobuf::Message::GetClearImpl<FeatureSetDefaults>(), &FeatureSetDefaults::ByteSizeLong,
+          Super_::GetClearImpl<FeatureSetDefaults>(), &FeatureSetDefaults::ByteSizeLong,
               &FeatureSetDefaults::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
           PROTOBUF_FIELD_OFFSET(FeatureSetDefaults, _impl_._cached_size_),
@@ -4242,7 +4242,7 @@ inline constexpr ExtensionRangeOptions::Impl_::Impl_(
 template <typename>
 constexpr ExtensionRangeOptions::ExtensionRangeOptions(::_pbi::ConstantInitialized,
                        const ::_pbi::ClassData* PROTOBUF_NONNULL class_data)
-    : ::google::protobuf::Message(
+    : Super_(
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           class_data
 #endif  // PROTOBUF_CUSTOM_VTABLE
@@ -4270,10 +4270,10 @@ constexpr auto ExtensionRangeOptions::InternalGenerateClassData_(
 #endif
           ExtensionRangeOptions::IsInitializedImpl,
           &ExtensionRangeOptions::MergeImpl,
-          ::google::protobuf::Message::GetNewImpl<ExtensionRangeOptions>(),
+          Super_::GetNewImpl<ExtensionRangeOptions>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           &ExtensionRangeOptions::SharedDtor,
-          ::google::protobuf::Message::GetClearImpl<ExtensionRangeOptions>(), &ExtensionRangeOptions::ByteSizeLong,
+          Super_::GetClearImpl<ExtensionRangeOptions>(), &ExtensionRangeOptions::ByteSizeLong,
               &ExtensionRangeOptions::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
           PROTOBUF_FIELD_OFFSET(ExtensionRangeOptions, _impl_._cached_size_),
@@ -4441,7 +4441,7 @@ inline constexpr EnumValueOptions::Impl_::Impl_(
 template <typename>
 constexpr EnumValueOptions::EnumValueOptions(::_pbi::ConstantInitialized,
                        const ::_pbi::ClassData* PROTOBUF_NONNULL class_data)
-    : ::google::protobuf::Message(
+    : Super_(
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           class_data
 #endif  // PROTOBUF_CUSTOM_VTABLE
@@ -4469,10 +4469,10 @@ constexpr auto EnumValueOptions::InternalGenerateClassData_(
 #endif
           EnumValueOptions::IsInitializedImpl,
           &EnumValueOptions::MergeImpl,
-          ::google::protobuf::Message::GetNewImpl<EnumValueOptions>(),
+          Super_::GetNewImpl<EnumValueOptions>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           &EnumValueOptions::SharedDtor,
-          ::google::protobuf::Message::GetClearImpl<EnumValueOptions>(), &EnumValueOptions::ByteSizeLong,
+          Super_::GetClearImpl<EnumValueOptions>(), &EnumValueOptions::ByteSizeLong,
               &EnumValueOptions::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
           PROTOBUF_FIELD_OFFSET(EnumValueOptions, _impl_._cached_size_),
@@ -4632,7 +4632,7 @@ inline constexpr EnumOptions::Impl_::Impl_(
 template <typename>
 constexpr EnumOptions::EnumOptions(::_pbi::ConstantInitialized,
                        const ::_pbi::ClassData* PROTOBUF_NONNULL class_data)
-    : ::google::protobuf::Message(
+    : Super_(
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           class_data
 #endif  // PROTOBUF_CUSTOM_VTABLE
@@ -4660,10 +4660,10 @@ constexpr auto EnumOptions::InternalGenerateClassData_(
 #endif
           EnumOptions::IsInitializedImpl,
           &EnumOptions::MergeImpl,
-          ::google::protobuf::Message::GetNewImpl<EnumOptions>(),
+          Super_::GetNewImpl<EnumOptions>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           &EnumOptions::SharedDtor,
-          ::google::protobuf::Message::GetClearImpl<EnumOptions>(), &EnumOptions::ByteSizeLong,
+          Super_::GetClearImpl<EnumOptions>(), &EnumOptions::ByteSizeLong,
               &EnumOptions::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
           PROTOBUF_FIELD_OFFSET(EnumOptions, _impl_._cached_size_),
@@ -4793,7 +4793,7 @@ inline constexpr OneofDescriptorProto::Impl_::Impl_(
 template <typename>
 constexpr OneofDescriptorProto::OneofDescriptorProto(::_pbi::ConstantInitialized,
                        const ::_pbi::ClassData* PROTOBUF_NONNULL class_data)
-    : ::google::protobuf::Message(
+    : Super_(
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           class_data
 #endif  // PROTOBUF_CUSTOM_VTABLE
@@ -4821,10 +4821,10 @@ constexpr auto OneofDescriptorProto::InternalGenerateClassData_(
 #endif
           OneofDescriptorProto::IsInitializedImpl,
           &OneofDescriptorProto::MergeImpl,
-          ::google::protobuf::Message::GetNewImpl<OneofDescriptorProto>(),
+          Super_::GetNewImpl<OneofDescriptorProto>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           &OneofDescriptorProto::SharedDtor,
-          ::google::protobuf::Message::GetClearImpl<OneofDescriptorProto>(), &OneofDescriptorProto::ByteSizeLong,
+          Super_::GetClearImpl<OneofDescriptorProto>(), &OneofDescriptorProto::ByteSizeLong,
               &OneofDescriptorProto::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
           PROTOBUF_FIELD_OFFSET(OneofDescriptorProto, _impl_._cached_size_),
@@ -4988,7 +4988,7 @@ inline constexpr MethodDescriptorProto::Impl_::Impl_(
 template <typename>
 constexpr MethodDescriptorProto::MethodDescriptorProto(::_pbi::ConstantInitialized,
                        const ::_pbi::ClassData* PROTOBUF_NONNULL class_data)
-    : ::google::protobuf::Message(
+    : Super_(
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           class_data
 #endif  // PROTOBUF_CUSTOM_VTABLE
@@ -5016,10 +5016,10 @@ constexpr auto MethodDescriptorProto::InternalGenerateClassData_(
 #endif
           MethodDescriptorProto::IsInitializedImpl,
           &MethodDescriptorProto::MergeImpl,
-          ::google::protobuf::Message::GetNewImpl<MethodDescriptorProto>(),
+          Super_::GetNewImpl<MethodDescriptorProto>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           &MethodDescriptorProto::SharedDtor,
-          ::google::protobuf::Message::GetClearImpl<MethodDescriptorProto>(), &MethodDescriptorProto::ByteSizeLong,
+          Super_::GetClearImpl<MethodDescriptorProto>(), &MethodDescriptorProto::ByteSizeLong,
               &MethodDescriptorProto::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
           PROTOBUF_FIELD_OFFSET(MethodDescriptorProto, _impl_._cached_size_),
@@ -5224,7 +5224,7 @@ inline constexpr FieldDescriptorProto::Impl_::Impl_(
 template <typename>
 constexpr FieldDescriptorProto::FieldDescriptorProto(::_pbi::ConstantInitialized,
                        const ::_pbi::ClassData* PROTOBUF_NONNULL class_data)
-    : ::google::protobuf::Message(
+    : Super_(
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           class_data
 #endif  // PROTOBUF_CUSTOM_VTABLE
@@ -5252,10 +5252,10 @@ constexpr auto FieldDescriptorProto::InternalGenerateClassData_(
 #endif
           FieldDescriptorProto::IsInitializedImpl,
           &FieldDescriptorProto::MergeImpl,
-          ::google::protobuf::Message::GetNewImpl<FieldDescriptorProto>(),
+          Super_::GetNewImpl<FieldDescriptorProto>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           &FieldDescriptorProto::SharedDtor,
-          ::google::protobuf::Message::GetClearImpl<FieldDescriptorProto>(), &FieldDescriptorProto::ByteSizeLong,
+          Super_::GetClearImpl<FieldDescriptorProto>(), &FieldDescriptorProto::ByteSizeLong,
               &FieldDescriptorProto::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
           PROTOBUF_FIELD_OFFSET(FieldDescriptorProto, _impl_._cached_size_),
@@ -5393,7 +5393,7 @@ inline constexpr EnumValueDescriptorProto::Impl_::Impl_(
 template <typename>
 constexpr EnumValueDescriptorProto::EnumValueDescriptorProto(::_pbi::ConstantInitialized,
                        const ::_pbi::ClassData* PROTOBUF_NONNULL class_data)
-    : ::google::protobuf::Message(
+    : Super_(
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           class_data
 #endif  // PROTOBUF_CUSTOM_VTABLE
@@ -5421,10 +5421,10 @@ constexpr auto EnumValueDescriptorProto::InternalGenerateClassData_(
 #endif
           EnumValueDescriptorProto::IsInitializedImpl,
           &EnumValueDescriptorProto::MergeImpl,
-          ::google::protobuf::Message::GetNewImpl<EnumValueDescriptorProto>(),
+          Super_::GetNewImpl<EnumValueDescriptorProto>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           &EnumValueDescriptorProto::SharedDtor,
-          ::google::protobuf::Message::GetClearImpl<EnumValueDescriptorProto>(), &EnumValueDescriptorProto::ByteSizeLong,
+          Super_::GetClearImpl<EnumValueDescriptorProto>(), &EnumValueDescriptorProto::ByteSizeLong,
               &EnumValueDescriptorProto::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
           PROTOBUF_FIELD_OFFSET(EnumValueDescriptorProto, _impl_._cached_size_),
@@ -5560,7 +5560,7 @@ inline constexpr DescriptorProto_ExtensionRange::Impl_::Impl_(
 template <typename>
 constexpr DescriptorProto_ExtensionRange::DescriptorProto_ExtensionRange(::_pbi::ConstantInitialized,
                        const ::_pbi::ClassData* PROTOBUF_NONNULL class_data)
-    : ::google::protobuf::Message(
+    : Super_(
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           class_data
 #endif  // PROTOBUF_CUSTOM_VTABLE
@@ -5588,10 +5588,10 @@ constexpr auto DescriptorProto_ExtensionRange::InternalGenerateClassData_(
 #endif
           DescriptorProto_ExtensionRange::IsInitializedImpl,
           &DescriptorProto_ExtensionRange::MergeImpl,
-          ::google::protobuf::Message::GetNewImpl<DescriptorProto_ExtensionRange>(),
+          Super_::GetNewImpl<DescriptorProto_ExtensionRange>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           &DescriptorProto_ExtensionRange::SharedDtor,
-          ::google::protobuf::Message::GetClearImpl<DescriptorProto_ExtensionRange>(), &DescriptorProto_ExtensionRange::ByteSizeLong,
+          Super_::GetClearImpl<DescriptorProto_ExtensionRange>(), &DescriptorProto_ExtensionRange::ByteSizeLong,
               &DescriptorProto_ExtensionRange::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
           PROTOBUF_FIELD_OFFSET(DescriptorProto_ExtensionRange, _impl_._cached_size_),
@@ -5738,7 +5738,7 @@ inline constexpr ServiceDescriptorProto::Impl_::Impl_(
 template <typename>
 constexpr ServiceDescriptorProto::ServiceDescriptorProto(::_pbi::ConstantInitialized,
                        const ::_pbi::ClassData* PROTOBUF_NONNULL class_data)
-    : ::google::protobuf::Message(
+    : Super_(
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           class_data
 #endif  // PROTOBUF_CUSTOM_VTABLE
@@ -5766,10 +5766,10 @@ constexpr auto ServiceDescriptorProto::InternalGenerateClassData_(
 #endif
           ServiceDescriptorProto::IsInitializedImpl,
           &ServiceDescriptorProto::MergeImpl,
-          ::google::protobuf::Message::GetNewImpl<ServiceDescriptorProto>(),
+          Super_::GetNewImpl<ServiceDescriptorProto>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           &ServiceDescriptorProto::SharedDtor,
-          ::google::protobuf::Message::GetClearImpl<ServiceDescriptorProto>(), &ServiceDescriptorProto::ByteSizeLong,
+          Super_::GetClearImpl<ServiceDescriptorProto>(), &ServiceDescriptorProto::ByteSizeLong,
               &ServiceDescriptorProto::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
           PROTOBUF_FIELD_OFFSET(ServiceDescriptorProto, _impl_._cached_size_),
@@ -5952,7 +5952,7 @@ inline constexpr EnumDescriptorProto::Impl_::Impl_(
 template <typename>
 constexpr EnumDescriptorProto::EnumDescriptorProto(::_pbi::ConstantInitialized,
                        const ::_pbi::ClassData* PROTOBUF_NONNULL class_data)
-    : ::google::protobuf::Message(
+    : Super_(
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           class_data
 #endif  // PROTOBUF_CUSTOM_VTABLE
@@ -5980,10 +5980,10 @@ constexpr auto EnumDescriptorProto::InternalGenerateClassData_(
 #endif
           EnumDescriptorProto::IsInitializedImpl,
           &EnumDescriptorProto::MergeImpl,
-          ::google::protobuf::Message::GetNewImpl<EnumDescriptorProto>(),
+          Super_::GetNewImpl<EnumDescriptorProto>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           &EnumDescriptorProto::SharedDtor,
-          ::google::protobuf::Message::GetClearImpl<EnumDescriptorProto>(), &EnumDescriptorProto::ByteSizeLong,
+          Super_::GetClearImpl<EnumDescriptorProto>(), &EnumDescriptorProto::ByteSizeLong,
               &EnumDescriptorProto::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
           PROTOBUF_FIELD_OFFSET(EnumDescriptorProto, _impl_._cached_size_),
@@ -6249,7 +6249,7 @@ inline constexpr DescriptorProto::Impl_::Impl_(
 template <typename>
 constexpr DescriptorProto::DescriptorProto(::_pbi::ConstantInitialized,
                        const ::_pbi::ClassData* PROTOBUF_NONNULL class_data)
-    : ::google::protobuf::Message(
+    : Super_(
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           class_data
 #endif  // PROTOBUF_CUSTOM_VTABLE
@@ -6277,10 +6277,10 @@ constexpr auto DescriptorProto::InternalGenerateClassData_(
 #endif
           DescriptorProto::IsInitializedImpl,
           &DescriptorProto::MergeImpl,
-          ::google::protobuf::Message::GetNewImpl<DescriptorProto>(),
+          Super_::GetNewImpl<DescriptorProto>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           &DescriptorProto::SharedDtor,
-          ::google::protobuf::Message::GetClearImpl<DescriptorProto>(), &DescriptorProto::ByteSizeLong,
+          Super_::GetClearImpl<DescriptorProto>(), &DescriptorProto::ByteSizeLong,
               &DescriptorProto::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
           PROTOBUF_FIELD_OFFSET(DescriptorProto, _impl_._cached_size_),
@@ -6558,7 +6558,7 @@ inline constexpr FileDescriptorProto::Impl_::Impl_(
 template <typename>
 constexpr FileDescriptorProto::FileDescriptorProto(::_pbi::ConstantInitialized,
                        const ::_pbi::ClassData* PROTOBUF_NONNULL class_data)
-    : ::google::protobuf::Message(
+    : Super_(
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           class_data
 #endif  // PROTOBUF_CUSTOM_VTABLE
@@ -6586,10 +6586,10 @@ constexpr auto FileDescriptorProto::InternalGenerateClassData_(
 #endif
           FileDescriptorProto::IsInitializedImpl,
           &FileDescriptorProto::MergeImpl,
-          ::google::protobuf::Message::GetNewImpl<FileDescriptorProto>(),
+          Super_::GetNewImpl<FileDescriptorProto>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           &FileDescriptorProto::SharedDtor,
-          ::google::protobuf::Message::GetClearImpl<FileDescriptorProto>(), &FileDescriptorProto::ByteSizeLong,
+          Super_::GetClearImpl<FileDescriptorProto>(), &FileDescriptorProto::ByteSizeLong,
               &FileDescriptorProto::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
           PROTOBUF_FIELD_OFFSET(FileDescriptorProto, _impl_._cached_size_),
@@ -6714,7 +6714,7 @@ inline constexpr FileDescriptorSet::Impl_::Impl_(
 template <typename>
 constexpr FileDescriptorSet::FileDescriptorSet(::_pbi::ConstantInitialized,
                        const ::_pbi::ClassData* PROTOBUF_NONNULL class_data)
-    : ::google::protobuf::Message(
+    : Super_(
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           class_data
 #endif  // PROTOBUF_CUSTOM_VTABLE
@@ -6742,10 +6742,10 @@ constexpr auto FileDescriptorSet::InternalGenerateClassData_(
 #endif
           FileDescriptorSet::IsInitializedImpl,
           &FileDescriptorSet::MergeImpl,
-          ::google::protobuf::Message::GetNewImpl<FileDescriptorSet>(),
+          Super_::GetNewImpl<FileDescriptorSet>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           &FileDescriptorSet::SharedDtor,
-          ::google::protobuf::Message::GetClearImpl<FileDescriptorSet>(), &FileDescriptorSet::ByteSizeLong,
+          Super_::GetClearImpl<FileDescriptorSet>(), &FileDescriptorSet::ByteSizeLong,
               &FileDescriptorSet::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
           PROTOBUF_FIELD_OFFSET(FileDescriptorSet, _impl_._cached_size_),
@@ -7878,9 +7878,9 @@ PROTOBUF_CONSTINIT const uint32_t SymbolVisibility_internal_data_[] = {
 
 FileDescriptorSet::FileDescriptorSet(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-    : ::google::protobuf::Message(arena, FileDescriptorSet_get_class_data()) {
+    : Super_(arena, FileDescriptorSet_get_class_data()) {
 #else   // PROTOBUF_CUSTOM_VTABLE
-    : ::google::protobuf::Message(arena) {
+    : Super_(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
   SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.FileDescriptorSet)
@@ -7904,10 +7904,10 @@ FileDescriptorSet::FileDescriptorSet(
     ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
     const FileDescriptorSet& from)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-    : ::google::protobuf::Message(arena, FileDescriptorSet_get_class_data()) {
+    : Super_(arena, FileDescriptorSet_get_class_data()) {
 
 #else   // PROTOBUF_CUSTOM_VTABLE
-    : ::google::protobuf::Message(arena) {
+    : Super_(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
   FileDescriptorSet* const _this = this;
   (void)_this;
@@ -8116,15 +8116,15 @@ void FileDescriptorSet::InternalSwap(FileDescriptorSet* PROTOBUF_RESTRICT PROTOB
 }
 
 ::google::protobuf::Metadata FileDescriptorSet::GetMetadata() const {
-  return ::google::protobuf::Message::GetMetadataImpl(GetClassData()->full());
+  return Super_::GetMetadataImpl(GetClassData()->full());
 }
 // ===================================================================
 
 FileDescriptorProto::FileDescriptorProto(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-    : ::google::protobuf::Message(arena, FileDescriptorProto_get_class_data()) {
+    : Super_(arena, FileDescriptorProto_get_class_data()) {
 #else   // PROTOBUF_CUSTOM_VTABLE
-    : ::google::protobuf::Message(arena) {
+    : Super_(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
   SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.FileDescriptorProto)
@@ -8198,10 +8198,10 @@ FileDescriptorProto::FileDescriptorProto(
     ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
     const FileDescriptorProto& from)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-    : ::google::protobuf::Message(arena, FileDescriptorProto_get_class_data()) {
+    : Super_(arena, FileDescriptorProto_get_class_data()) {
 
 #else   // PROTOBUF_CUSTOM_VTABLE
-    : ::google::protobuf::Message(arena) {
+    : Super_(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
   FileDescriptorProto* const _this = this;
   (void)_this;
@@ -8209,12 +8209,12 @@ FileDescriptorProto::FileDescriptorProto(
       from._internal_metadata_);
   new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
   ::uint32_t cached_has_bits = _impl_._has_bits_[0];
-  _impl_.options_ = (CheckHasBit(cached_has_bits, 0x00000800U)) ? ::google::protobuf::Message::CopyConstruct(
-                               arena, *from._impl_.options_)
-                         : nullptr;
-  _impl_.source_code_info_ = (CheckHasBit(cached_has_bits, 0x00001000U)) ? ::google::protobuf::Message::CopyConstruct(
-                               arena, *from._impl_.source_code_info_)
-                         : nullptr;
+  _impl_.options_ = (CheckHasBit(cached_has_bits, 0x00000800U))
+                 ? Super_::CopyConstruct(arena, *from._impl_.options_)
+                 : nullptr;
+  _impl_.source_code_info_ = (CheckHasBit(cached_has_bits, 0x00001000U))
+                 ? Super_::CopyConstruct(arena, *from._impl_.source_code_info_)
+                 : nullptr;
   _impl_.edition_ = from._impl_.edition_;
 
   // @@protoc_insertion_point(copy_constructor:google.protobuf.FileDescriptorProto)
@@ -8708,7 +8708,7 @@ void FileDescriptorProto::MergeImpl(::google::protobuf::MessageLite& to_msg,
     if (CheckHasBit(cached_has_bits, 0x00000800U)) {
       ABSL_DCHECK(from._impl_.options_ != nullptr);
       if (_this->_impl_.options_ == nullptr) {
-        _this->_impl_.options_ = ::google::protobuf::Message::CopyConstruct(arena, *from._impl_.options_);
+        _this->_impl_.options_ = Super_::CopyConstruct(arena, *from._impl_.options_);
       } else {
         _this->_impl_.options_->MergeFrom(*from._impl_.options_);
       }
@@ -8716,7 +8716,7 @@ void FileDescriptorProto::MergeImpl(::google::protobuf::MessageLite& to_msg,
     if (CheckHasBit(cached_has_bits, 0x00001000U)) {
       ABSL_DCHECK(from._impl_.source_code_info_ != nullptr);
       if (_this->_impl_.source_code_info_ == nullptr) {
-        _this->_impl_.source_code_info_ = ::google::protobuf::Message::CopyConstruct(arena, *from._impl_.source_code_info_);
+        _this->_impl_.source_code_info_ = Super_::CopyConstruct(arena, *from._impl_.source_code_info_);
       } else {
         _this->_impl_.source_code_info_->MergeFrom(*from._impl_.source_code_info_);
       }
@@ -8783,15 +8783,15 @@ void FileDescriptorProto::InternalSwap(FileDescriptorProto* PROTOBUF_RESTRICT PR
 }
 
 ::google::protobuf::Metadata FileDescriptorProto::GetMetadata() const {
-  return ::google::protobuf::Message::GetMetadataImpl(GetClassData()->full());
+  return Super_::GetMetadataImpl(GetClassData()->full());
 }
 // ===================================================================
 
 DescriptorProto_ExtensionRange::DescriptorProto_ExtensionRange(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-    : ::google::protobuf::Message(arena, DescriptorProto_ExtensionRange_get_class_data()) {
+    : Super_(arena, DescriptorProto_ExtensionRange_get_class_data()) {
 #else   // PROTOBUF_CUSTOM_VTABLE
-    : ::google::protobuf::Message(arena) {
+    : Super_(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
   SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.DescriptorProto.ExtensionRange)
@@ -8806,10 +8806,10 @@ DescriptorProto_ExtensionRange::DescriptorProto_ExtensionRange(
     ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
     const DescriptorProto_ExtensionRange& from)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-    : ::google::protobuf::Message(arena, DescriptorProto_ExtensionRange_get_class_data()) {
+    : Super_(arena, DescriptorProto_ExtensionRange_get_class_data()) {
 
 #else   // PROTOBUF_CUSTOM_VTABLE
-    : ::google::protobuf::Message(arena) {
+    : Super_(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
   DescriptorProto_ExtensionRange* const _this = this;
   (void)_this;
@@ -8817,9 +8817,9 @@ DescriptorProto_ExtensionRange::DescriptorProto_ExtensionRange(
       from._internal_metadata_);
   new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
   ::uint32_t cached_has_bits = _impl_._has_bits_[0];
-  _impl_.options_ = (CheckHasBit(cached_has_bits, 0x00000001U)) ? ::google::protobuf::Message::CopyConstruct(
-                               arena, *from._impl_.options_)
-                         : nullptr;
+  _impl_.options_ = (CheckHasBit(cached_has_bits, 0x00000001U))
+                 ? Super_::CopyConstruct(arena, *from._impl_.options_)
+                 : nullptr;
   ::memcpy(reinterpret_cast<char*>(&_impl_) +
                offsetof(Impl_, start_),
            reinterpret_cast<const char*>(&from._impl_) +
@@ -9012,7 +9012,7 @@ void DescriptorProto_ExtensionRange::MergeImpl(::google::protobuf::MessageLite& 
     if (CheckHasBit(cached_has_bits, 0x00000001U)) {
       ABSL_DCHECK(from._impl_.options_ != nullptr);
       if (_this->_impl_.options_ == nullptr) {
-        _this->_impl_.options_ = ::google::protobuf::Message::CopyConstruct(arena, *from._impl_.options_);
+        _this->_impl_.options_ = Super_::CopyConstruct(arena, *from._impl_.options_);
       } else {
         _this->_impl_.options_->MergeFrom(*from._impl_.options_);
       }
@@ -9058,15 +9058,15 @@ void DescriptorProto_ExtensionRange::InternalSwap(DescriptorProto_ExtensionRange
 }
 
 ::google::protobuf::Metadata DescriptorProto_ExtensionRange::GetMetadata() const {
-  return ::google::protobuf::Message::GetMetadataImpl(GetClassData()->full());
+  return Super_::GetMetadataImpl(GetClassData()->full());
 }
 // ===================================================================
 
 DescriptorProto_ReservedRange::DescriptorProto_ReservedRange(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-    : ::google::protobuf::Message(arena, DescriptorProto_ReservedRange_get_class_data()) {
+    : Super_(arena, DescriptorProto_ReservedRange_get_class_data()) {
 #else   // PROTOBUF_CUSTOM_VTABLE
-    : ::google::protobuf::Message(arena) {
+    : Super_(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
   SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.DescriptorProto.ReservedRange)
@@ -9074,9 +9074,9 @@ DescriptorProto_ReservedRange::DescriptorProto_ReservedRange(::google::protobuf:
 DescriptorProto_ReservedRange::DescriptorProto_ReservedRange(
     ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const DescriptorProto_ReservedRange& from)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-    : ::google::protobuf::Message(arena, DescriptorProto_ReservedRange_get_class_data()),
+    : Super_(arena, DescriptorProto_ReservedRange_get_class_data()),
 #else   // PROTOBUF_CUSTOM_VTABLE
-    : ::google::protobuf::Message(arena),
+    : Super_(arena),
 #endif  // PROTOBUF_CUSTOM_VTABLE
       _impl_(from._impl_) {
   _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
@@ -9276,15 +9276,15 @@ void DescriptorProto_ReservedRange::InternalSwap(DescriptorProto_ReservedRange* 
 }
 
 ::google::protobuf::Metadata DescriptorProto_ReservedRange::GetMetadata() const {
-  return ::google::protobuf::Message::GetMetadataImpl(GetClassData()->full());
+  return Super_::GetMetadataImpl(GetClassData()->full());
 }
 // ===================================================================
 
 DescriptorProto::DescriptorProto(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-    : ::google::protobuf::Message(arena, DescriptorProto_get_class_data()) {
+    : Super_(arena, DescriptorProto_get_class_data()) {
 #else   // PROTOBUF_CUSTOM_VTABLE
-    : ::google::protobuf::Message(arena) {
+    : Super_(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
   SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.DescriptorProto)
@@ -9356,10 +9356,10 @@ DescriptorProto::DescriptorProto(
     ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
     const DescriptorProto& from)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-    : ::google::protobuf::Message(arena, DescriptorProto_get_class_data()) {
+    : Super_(arena, DescriptorProto_get_class_data()) {
 
 #else   // PROTOBUF_CUSTOM_VTABLE
-    : ::google::protobuf::Message(arena) {
+    : Super_(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
   DescriptorProto* const _this = this;
   (void)_this;
@@ -9367,9 +9367,9 @@ DescriptorProto::DescriptorProto(
       from._internal_metadata_);
   new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
   ::uint32_t cached_has_bits = _impl_._has_bits_[0];
-  _impl_.options_ = (CheckHasBit(cached_has_bits, 0x00000200U)) ? ::google::protobuf::Message::CopyConstruct(
-                               arena, *from._impl_.options_)
-                         : nullptr;
+  _impl_.options_ = (CheckHasBit(cached_has_bits, 0x00000200U))
+                 ? Super_::CopyConstruct(arena, *from._impl_.options_)
+                 : nullptr;
   _impl_.visibility_ = from._impl_.visibility_;
 
   // @@protoc_insertion_point(copy_constructor:google.protobuf.DescriptorProto)
@@ -9818,7 +9818,7 @@ void DescriptorProto::MergeImpl(::google::protobuf::MessageLite& to_msg,
     if (CheckHasBit(cached_has_bits, 0x00000200U)) {
       ABSL_DCHECK(from._impl_.options_ != nullptr);
       if (_this->_impl_.options_ == nullptr) {
-        _this->_impl_.options_ = ::google::protobuf::Message::CopyConstruct(arena, *from._impl_.options_);
+        _this->_impl_.options_ = Super_::CopyConstruct(arena, *from._impl_.options_);
       } else {
         _this->_impl_.options_->MergeFrom(*from._impl_.options_);
       }
@@ -9884,15 +9884,15 @@ void DescriptorProto::InternalSwap(DescriptorProto* PROTOBUF_RESTRICT PROTOBUF_N
 }
 
 ::google::protobuf::Metadata DescriptorProto::GetMetadata() const {
-  return ::google::protobuf::Message::GetMetadataImpl(GetClassData()->full());
+  return Super_::GetMetadataImpl(GetClassData()->full());
 }
 // ===================================================================
 
 ExtensionRangeOptions_Declaration::ExtensionRangeOptions_Declaration(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-    : ::google::protobuf::Message(arena, ExtensionRangeOptions_Declaration_get_class_data()) {
+    : Super_(arena, ExtensionRangeOptions_Declaration_get_class_data()) {
 #else   // PROTOBUF_CUSTOM_VTABLE
-    : ::google::protobuf::Message(arena) {
+    : Super_(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
   SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.ExtensionRangeOptions.Declaration)
@@ -9909,10 +9909,10 @@ ExtensionRangeOptions_Declaration::ExtensionRangeOptions_Declaration(
     ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
     const ExtensionRangeOptions_Declaration& from)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-    : ::google::protobuf::Message(arena, ExtensionRangeOptions_Declaration_get_class_data()) {
+    : Super_(arena, ExtensionRangeOptions_Declaration_get_class_data()) {
 
 #else   // PROTOBUF_CUSTOM_VTABLE
-    : ::google::protobuf::Message(arena) {
+    : Super_(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
   ExtensionRangeOptions_Declaration* const _this = this;
   (void)_this;
@@ -10172,15 +10172,15 @@ void ExtensionRangeOptions_Declaration::InternalSwap(ExtensionRangeOptions_Decla
 }
 
 ::google::protobuf::Metadata ExtensionRangeOptions_Declaration::GetMetadata() const {
-  return ::google::protobuf::Message::GetMetadataImpl(GetClassData()->full());
+  return Super_::GetMetadataImpl(GetClassData()->full());
 }
 // ===================================================================
 
 ExtensionRangeOptions::ExtensionRangeOptions(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-    : ::google::protobuf::Message(arena, ExtensionRangeOptions_get_class_data()) {
+    : Super_(arena, ExtensionRangeOptions_get_class_data()) {
 #else   // PROTOBUF_CUSTOM_VTABLE
-    : ::google::protobuf::Message(arena) {
+    : Super_(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
   SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.ExtensionRangeOptions)
@@ -10211,10 +10211,10 @@ ExtensionRangeOptions::ExtensionRangeOptions(
     ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
     const ExtensionRangeOptions& from)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-    : ::google::protobuf::Message(arena, ExtensionRangeOptions_get_class_data()) {
+    : Super_(arena, ExtensionRangeOptions_get_class_data()) {
 
 #else   // PROTOBUF_CUSTOM_VTABLE
-    : ::google::protobuf::Message(arena) {
+    : Super_(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
   ExtensionRangeOptions* const _this = this;
   (void)_this;
@@ -10224,9 +10224,9 @@ ExtensionRangeOptions::ExtensionRangeOptions(
   _impl_._extensions_.MergeFrom(arena, this, from._impl_._extensions_,
                                 from.GetArena());
   ::uint32_t cached_has_bits = _impl_._has_bits_[0];
-  _impl_.features_ = (CheckHasBit(cached_has_bits, 0x00000004U)) ? ::google::protobuf::Message::CopyConstruct(
-                               arena, *from._impl_.features_)
-                         : nullptr;
+  _impl_.features_ = (CheckHasBit(cached_has_bits, 0x00000004U))
+                 ? Super_::CopyConstruct(arena, *from._impl_.features_)
+                 : nullptr;
   _impl_.verification_ = from._impl_.verification_;
 
   // @@protoc_insertion_point(copy_constructor:google.protobuf.ExtensionRangeOptions)
@@ -10466,7 +10466,7 @@ void ExtensionRangeOptions::MergeImpl(::google::protobuf::MessageLite& to_msg,
     if (CheckHasBit(cached_has_bits, 0x00000004U)) {
       ABSL_DCHECK(from._impl_.features_ != nullptr);
       if (_this->_impl_.features_ == nullptr) {
-        _this->_impl_.features_ = ::google::protobuf::Message::CopyConstruct(arena, *from._impl_.features_);
+        _this->_impl_.features_ = Super_::CopyConstruct(arena, *from._impl_.features_);
       } else {
         _this->_impl_.features_->MergeFrom(*from._impl_.features_);
       }
@@ -10520,15 +10520,15 @@ void ExtensionRangeOptions::InternalSwap(ExtensionRangeOptions* PROTOBUF_RESTRIC
 }
 
 ::google::protobuf::Metadata ExtensionRangeOptions::GetMetadata() const {
-  return ::google::protobuf::Message::GetMetadataImpl(GetClassData()->full());
+  return Super_::GetMetadataImpl(GetClassData()->full());
 }
 // ===================================================================
 
 FieldDescriptorProto::FieldDescriptorProto(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-    : ::google::protobuf::Message(arena, FieldDescriptorProto_get_class_data()) {
+    : Super_(arena, FieldDescriptorProto_get_class_data()) {
 #else   // PROTOBUF_CUSTOM_VTABLE
-    : ::google::protobuf::Message(arena) {
+    : Super_(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
   SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.FieldDescriptorProto)
@@ -10548,10 +10548,10 @@ FieldDescriptorProto::FieldDescriptorProto(
     ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
     const FieldDescriptorProto& from)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-    : ::google::protobuf::Message(arena, FieldDescriptorProto_get_class_data()) {
+    : Super_(arena, FieldDescriptorProto_get_class_data()) {
 
 #else   // PROTOBUF_CUSTOM_VTABLE
-    : ::google::protobuf::Message(arena) {
+    : Super_(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
   FieldDescriptorProto* const _this = this;
   (void)_this;
@@ -10559,9 +10559,9 @@ FieldDescriptorProto::FieldDescriptorProto(
       from._internal_metadata_);
   new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
   ::uint32_t cached_has_bits = _impl_._has_bits_[0];
-  _impl_.options_ = (CheckHasBit(cached_has_bits, 0x00000020U)) ? ::google::protobuf::Message::CopyConstruct(
-                               arena, *from._impl_.options_)
-                         : nullptr;
+  _impl_.options_ = (CheckHasBit(cached_has_bits, 0x00000020U))
+                 ? Super_::CopyConstruct(arena, *from._impl_.options_)
+                 : nullptr;
   ::memcpy(reinterpret_cast<char*>(&_impl_) +
                offsetof(Impl_, number_),
            reinterpret_cast<const char*>(&from._impl_) +
@@ -10891,7 +10891,7 @@ void FieldDescriptorProto::MergeImpl(::google::protobuf::MessageLite& to_msg,
     if (CheckHasBit(cached_has_bits, 0x00000020U)) {
       ABSL_DCHECK(from._impl_.options_ != nullptr);
       if (_this->_impl_.options_ == nullptr) {
-        _this->_impl_.options_ = ::google::protobuf::Message::CopyConstruct(arena, *from._impl_.options_);
+        _this->_impl_.options_ = Super_::CopyConstruct(arena, *from._impl_.options_);
       } else {
         _this->_impl_.options_->MergeFrom(*from._impl_.options_);
       }
@@ -10955,15 +10955,15 @@ void FieldDescriptorProto::InternalSwap(FieldDescriptorProto* PROTOBUF_RESTRICT 
 }
 
 ::google::protobuf::Metadata FieldDescriptorProto::GetMetadata() const {
-  return ::google::protobuf::Message::GetMetadataImpl(GetClassData()->full());
+  return Super_::GetMetadataImpl(GetClassData()->full());
 }
 // ===================================================================
 
 OneofDescriptorProto::OneofDescriptorProto(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-    : ::google::protobuf::Message(arena, OneofDescriptorProto_get_class_data()) {
+    : Super_(arena, OneofDescriptorProto_get_class_data()) {
 #else   // PROTOBUF_CUSTOM_VTABLE
-    : ::google::protobuf::Message(arena) {
+    : Super_(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
   SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.OneofDescriptorProto)
@@ -10979,10 +10979,10 @@ OneofDescriptorProto::OneofDescriptorProto(
     ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
     const OneofDescriptorProto& from)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-    : ::google::protobuf::Message(arena, OneofDescriptorProto_get_class_data()) {
+    : Super_(arena, OneofDescriptorProto_get_class_data()) {
 
 #else   // PROTOBUF_CUSTOM_VTABLE
-    : ::google::protobuf::Message(arena) {
+    : Super_(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
   OneofDescriptorProto* const _this = this;
   (void)_this;
@@ -10990,9 +10990,9 @@ OneofDescriptorProto::OneofDescriptorProto(
       from._internal_metadata_);
   new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
   ::uint32_t cached_has_bits = _impl_._has_bits_[0];
-  _impl_.options_ = (CheckHasBit(cached_has_bits, 0x00000002U)) ? ::google::protobuf::Message::CopyConstruct(
-                               arena, *from._impl_.options_)
-                         : nullptr;
+  _impl_.options_ = (CheckHasBit(cached_has_bits, 0x00000002U))
+                 ? Super_::CopyConstruct(arena, *from._impl_.options_)
+                 : nullptr;
 
   // @@protoc_insertion_point(copy_constructor:google.protobuf.OneofDescriptorProto)
 }
@@ -11162,7 +11162,7 @@ void OneofDescriptorProto::MergeImpl(::google::protobuf::MessageLite& to_msg,
     if (CheckHasBit(cached_has_bits, 0x00000002U)) {
       ABSL_DCHECK(from._impl_.options_ != nullptr);
       if (_this->_impl_.options_ == nullptr) {
-        _this->_impl_.options_ = ::google::protobuf::Message::CopyConstruct(arena, *from._impl_.options_);
+        _this->_impl_.options_ = Super_::CopyConstruct(arena, *from._impl_.options_);
       } else {
         _this->_impl_.options_->MergeFrom(*from._impl_.options_);
       }
@@ -11200,15 +11200,15 @@ void OneofDescriptorProto::InternalSwap(OneofDescriptorProto* PROTOBUF_RESTRICT 
 }
 
 ::google::protobuf::Metadata OneofDescriptorProto::GetMetadata() const {
-  return ::google::protobuf::Message::GetMetadataImpl(GetClassData()->full());
+  return Super_::GetMetadataImpl(GetClassData()->full());
 }
 // ===================================================================
 
 EnumDescriptorProto_EnumReservedRange::EnumDescriptorProto_EnumReservedRange(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-    : ::google::protobuf::Message(arena, EnumDescriptorProto_EnumReservedRange_get_class_data()) {
+    : Super_(arena, EnumDescriptorProto_EnumReservedRange_get_class_data()) {
 #else   // PROTOBUF_CUSTOM_VTABLE
-    : ::google::protobuf::Message(arena) {
+    : Super_(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
   SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.EnumDescriptorProto.EnumReservedRange)
@@ -11216,9 +11216,9 @@ EnumDescriptorProto_EnumReservedRange::EnumDescriptorProto_EnumReservedRange(::g
 EnumDescriptorProto_EnumReservedRange::EnumDescriptorProto_EnumReservedRange(
     ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const EnumDescriptorProto_EnumReservedRange& from)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-    : ::google::protobuf::Message(arena, EnumDescriptorProto_EnumReservedRange_get_class_data()),
+    : Super_(arena, EnumDescriptorProto_EnumReservedRange_get_class_data()),
 #else   // PROTOBUF_CUSTOM_VTABLE
-    : ::google::protobuf::Message(arena),
+    : Super_(arena),
 #endif  // PROTOBUF_CUSTOM_VTABLE
       _impl_(from._impl_) {
   _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
@@ -11418,15 +11418,15 @@ void EnumDescriptorProto_EnumReservedRange::InternalSwap(EnumDescriptorProto_Enu
 }
 
 ::google::protobuf::Metadata EnumDescriptorProto_EnumReservedRange::GetMetadata() const {
-  return ::google::protobuf::Message::GetMetadataImpl(GetClassData()->full());
+  return Super_::GetMetadataImpl(GetClassData()->full());
 }
 // ===================================================================
 
 EnumDescriptorProto::EnumDescriptorProto(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-    : ::google::protobuf::Message(arena, EnumDescriptorProto_get_class_data()) {
+    : Super_(arena, EnumDescriptorProto_get_class_data()) {
 #else   // PROTOBUF_CUSTOM_VTABLE
-    : ::google::protobuf::Message(arena) {
+    : Super_(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
   SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.EnumDescriptorProto)
@@ -11463,10 +11463,10 @@ EnumDescriptorProto::EnumDescriptorProto(
     ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
     const EnumDescriptorProto& from)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-    : ::google::protobuf::Message(arena, EnumDescriptorProto_get_class_data()) {
+    : Super_(arena, EnumDescriptorProto_get_class_data()) {
 
 #else   // PROTOBUF_CUSTOM_VTABLE
-    : ::google::protobuf::Message(arena) {
+    : Super_(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
   EnumDescriptorProto* const _this = this;
   (void)_this;
@@ -11474,9 +11474,9 @@ EnumDescriptorProto::EnumDescriptorProto(
       from._internal_metadata_);
   new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
   ::uint32_t cached_has_bits = _impl_._has_bits_[0];
-  _impl_.options_ = (CheckHasBit(cached_has_bits, 0x00000010U)) ? ::google::protobuf::Message::CopyConstruct(
-                               arena, *from._impl_.options_)
-                         : nullptr;
+  _impl_.options_ = (CheckHasBit(cached_has_bits, 0x00000010U))
+                 ? Super_::CopyConstruct(arena, *from._impl_.options_)
+                 : nullptr;
   _impl_.visibility_ = from._impl_.visibility_;
 
   // @@protoc_insertion_point(copy_constructor:google.protobuf.EnumDescriptorProto)
@@ -11759,7 +11759,7 @@ void EnumDescriptorProto::MergeImpl(::google::protobuf::MessageLite& to_msg,
     if (CheckHasBit(cached_has_bits, 0x00000010U)) {
       ABSL_DCHECK(from._impl_.options_ != nullptr);
       if (_this->_impl_.options_ == nullptr) {
-        _this->_impl_.options_ = ::google::protobuf::Message::CopyConstruct(arena, *from._impl_.options_);
+        _this->_impl_.options_ = Super_::CopyConstruct(arena, *from._impl_.options_);
       } else {
         _this->_impl_.options_->MergeFrom(*from._impl_.options_);
       }
@@ -11810,15 +11810,15 @@ void EnumDescriptorProto::InternalSwap(EnumDescriptorProto* PROTOBUF_RESTRICT PR
 }
 
 ::google::protobuf::Metadata EnumDescriptorProto::GetMetadata() const {
-  return ::google::protobuf::Message::GetMetadataImpl(GetClassData()->full());
+  return Super_::GetMetadataImpl(GetClassData()->full());
 }
 // ===================================================================
 
 EnumValueDescriptorProto::EnumValueDescriptorProto(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-    : ::google::protobuf::Message(arena, EnumValueDescriptorProto_get_class_data()) {
+    : Super_(arena, EnumValueDescriptorProto_get_class_data()) {
 #else   // PROTOBUF_CUSTOM_VTABLE
-    : ::google::protobuf::Message(arena) {
+    : Super_(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
   SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.EnumValueDescriptorProto)
@@ -11834,10 +11834,10 @@ EnumValueDescriptorProto::EnumValueDescriptorProto(
     ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
     const EnumValueDescriptorProto& from)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-    : ::google::protobuf::Message(arena, EnumValueDescriptorProto_get_class_data()) {
+    : Super_(arena, EnumValueDescriptorProto_get_class_data()) {
 
 #else   // PROTOBUF_CUSTOM_VTABLE
-    : ::google::protobuf::Message(arena) {
+    : Super_(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
   EnumValueDescriptorProto* const _this = this;
   (void)_this;
@@ -11845,9 +11845,9 @@ EnumValueDescriptorProto::EnumValueDescriptorProto(
       from._internal_metadata_);
   new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
   ::uint32_t cached_has_bits = _impl_._has_bits_[0];
-  _impl_.options_ = (CheckHasBit(cached_has_bits, 0x00000002U)) ? ::google::protobuf::Message::CopyConstruct(
-                               arena, *from._impl_.options_)
-                         : nullptr;
+  _impl_.options_ = (CheckHasBit(cached_has_bits, 0x00000002U))
+                 ? Super_::CopyConstruct(arena, *from._impl_.options_)
+                 : nullptr;
   _impl_.number_ = from._impl_.number_;
 
   // @@protoc_insertion_point(copy_constructor:google.protobuf.EnumValueDescriptorProto)
@@ -12036,7 +12036,7 @@ void EnumValueDescriptorProto::MergeImpl(::google::protobuf::MessageLite& to_msg
     if (CheckHasBit(cached_has_bits, 0x00000002U)) {
       ABSL_DCHECK(from._impl_.options_ != nullptr);
       if (_this->_impl_.options_ == nullptr) {
-        _this->_impl_.options_ = ::google::protobuf::Message::CopyConstruct(arena, *from._impl_.options_);
+        _this->_impl_.options_ = Super_::CopyConstruct(arena, *from._impl_.options_);
       } else {
         _this->_impl_.options_->MergeFrom(*from._impl_.options_);
       }
@@ -12082,15 +12082,15 @@ void EnumValueDescriptorProto::InternalSwap(EnumValueDescriptorProto* PROTOBUF_R
 }
 
 ::google::protobuf::Metadata EnumValueDescriptorProto::GetMetadata() const {
-  return ::google::protobuf::Message::GetMetadataImpl(GetClassData()->full());
+  return Super_::GetMetadataImpl(GetClassData()->full());
 }
 // ===================================================================
 
 ServiceDescriptorProto::ServiceDescriptorProto(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-    : ::google::protobuf::Message(arena, ServiceDescriptorProto_get_class_data()) {
+    : Super_(arena, ServiceDescriptorProto_get_class_data()) {
 #else   // PROTOBUF_CUSTOM_VTABLE
-    : ::google::protobuf::Message(arena) {
+    : Super_(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
   SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.ServiceDescriptorProto)
@@ -12113,10 +12113,10 @@ ServiceDescriptorProto::ServiceDescriptorProto(
     ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
     const ServiceDescriptorProto& from)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-    : ::google::protobuf::Message(arena, ServiceDescriptorProto_get_class_data()) {
+    : Super_(arena, ServiceDescriptorProto_get_class_data()) {
 
 #else   // PROTOBUF_CUSTOM_VTABLE
-    : ::google::protobuf::Message(arena) {
+    : Super_(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
   ServiceDescriptorProto* const _this = this;
   (void)_this;
@@ -12124,9 +12124,9 @@ ServiceDescriptorProto::ServiceDescriptorProto(
       from._internal_metadata_);
   new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
   ::uint32_t cached_has_bits = _impl_._has_bits_[0];
-  _impl_.options_ = (CheckHasBit(cached_has_bits, 0x00000004U)) ? ::google::protobuf::Message::CopyConstruct(
-                               arena, *from._impl_.options_)
-                         : nullptr;
+  _impl_.options_ = (CheckHasBit(cached_has_bits, 0x00000004U))
+                 ? Super_::CopyConstruct(arena, *from._impl_.options_)
+                 : nullptr;
 
   // @@protoc_insertion_point(copy_constructor:google.protobuf.ServiceDescriptorProto)
 }
@@ -12328,7 +12328,7 @@ void ServiceDescriptorProto::MergeImpl(::google::protobuf::MessageLite& to_msg,
     if (CheckHasBit(cached_has_bits, 0x00000004U)) {
       ABSL_DCHECK(from._impl_.options_ != nullptr);
       if (_this->_impl_.options_ == nullptr) {
-        _this->_impl_.options_ = ::google::protobuf::Message::CopyConstruct(arena, *from._impl_.options_);
+        _this->_impl_.options_ = Super_::CopyConstruct(arena, *from._impl_.options_);
       } else {
         _this->_impl_.options_->MergeFrom(*from._impl_.options_);
       }
@@ -12369,15 +12369,15 @@ void ServiceDescriptorProto::InternalSwap(ServiceDescriptorProto* PROTOBUF_RESTR
 }
 
 ::google::protobuf::Metadata ServiceDescriptorProto::GetMetadata() const {
-  return ::google::protobuf::Message::GetMetadataImpl(GetClassData()->full());
+  return Super_::GetMetadataImpl(GetClassData()->full());
 }
 // ===================================================================
 
 MethodDescriptorProto::MethodDescriptorProto(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-    : ::google::protobuf::Message(arena, MethodDescriptorProto_get_class_data()) {
+    : Super_(arena, MethodDescriptorProto_get_class_data()) {
 #else   // PROTOBUF_CUSTOM_VTABLE
-    : ::google::protobuf::Message(arena) {
+    : Super_(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
   SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.MethodDescriptorProto)
@@ -12395,10 +12395,10 @@ MethodDescriptorProto::MethodDescriptorProto(
     ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
     const MethodDescriptorProto& from)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-    : ::google::protobuf::Message(arena, MethodDescriptorProto_get_class_data()) {
+    : Super_(arena, MethodDescriptorProto_get_class_data()) {
 
 #else   // PROTOBUF_CUSTOM_VTABLE
-    : ::google::protobuf::Message(arena) {
+    : Super_(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
   MethodDescriptorProto* const _this = this;
   (void)_this;
@@ -12406,9 +12406,9 @@ MethodDescriptorProto::MethodDescriptorProto(
       from._internal_metadata_);
   new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
   ::uint32_t cached_has_bits = _impl_._has_bits_[0];
-  _impl_.options_ = (CheckHasBit(cached_has_bits, 0x00000008U)) ? ::google::protobuf::Message::CopyConstruct(
-                               arena, *from._impl_.options_)
-                         : nullptr;
+  _impl_.options_ = (CheckHasBit(cached_has_bits, 0x00000008U))
+                 ? Super_::CopyConstruct(arena, *from._impl_.options_)
+                 : nullptr;
   ::memcpy(reinterpret_cast<char*>(&_impl_) +
                offsetof(Impl_, client_streaming_),
            reinterpret_cast<const char*>(&from._impl_) +
@@ -12648,7 +12648,7 @@ void MethodDescriptorProto::MergeImpl(::google::protobuf::MessageLite& to_msg,
     if (CheckHasBit(cached_has_bits, 0x00000008U)) {
       ABSL_DCHECK(from._impl_.options_ != nullptr);
       if (_this->_impl_.options_ == nullptr) {
-        _this->_impl_.options_ = ::google::protobuf::Message::CopyConstruct(arena, *from._impl_.options_);
+        _this->_impl_.options_ = Super_::CopyConstruct(arena, *from._impl_.options_);
       } else {
         _this->_impl_.options_->MergeFrom(*from._impl_.options_);
       }
@@ -12699,15 +12699,15 @@ void MethodDescriptorProto::InternalSwap(MethodDescriptorProto* PROTOBUF_RESTRIC
 }
 
 ::google::protobuf::Metadata MethodDescriptorProto::GetMetadata() const {
-  return ::google::protobuf::Message::GetMetadataImpl(GetClassData()->full());
+  return Super_::GetMetadataImpl(GetClassData()->full());
 }
 // ===================================================================
 
 FileOptions::FileOptions(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-    : ::google::protobuf::Message(arena, FileOptions_get_class_data()) {
+    : Super_(arena, FileOptions_get_class_data()) {
 #else   // PROTOBUF_CUSTOM_VTABLE
-    : ::google::protobuf::Message(arena) {
+    : Super_(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
   SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.FileOptions)
@@ -12741,10 +12741,10 @@ FileOptions::FileOptions(
     ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
     const FileOptions& from)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-    : ::google::protobuf::Message(arena, FileOptions_get_class_data()) {
+    : Super_(arena, FileOptions_get_class_data()) {
 
 #else   // PROTOBUF_CUSTOM_VTABLE
-    : ::google::protobuf::Message(arena) {
+    : Super_(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
   FileOptions* const _this = this;
   (void)_this;
@@ -12754,9 +12754,9 @@ FileOptions::FileOptions(
   _impl_._extensions_.MergeFrom(arena, this, from._impl_._extensions_,
                                 from.GetArena());
   ::uint32_t cached_has_bits = _impl_._has_bits_[0];
-  _impl_.features_ = (CheckHasBit(cached_has_bits, 0x00000400U)) ? ::google::protobuf::Message::CopyConstruct(
-                               arena, *from._impl_.features_)
-                         : nullptr;
+  _impl_.features_ = (CheckHasBit(cached_has_bits, 0x00000400U))
+                 ? Super_::CopyConstruct(arena, *from._impl_.features_)
+                 : nullptr;
   ::memcpy(reinterpret_cast<char*>(&_impl_) +
                offsetof(Impl_, java_multiple_files_),
            reinterpret_cast<const char*>(&from._impl_) +
@@ -13242,7 +13242,7 @@ void FileOptions::MergeImpl(::google::protobuf::MessageLite& to_msg,
     if (CheckHasBit(cached_has_bits, 0x00000400U)) {
       ABSL_DCHECK(from._impl_.features_ != nullptr);
       if (_this->_impl_.features_ == nullptr) {
-        _this->_impl_.features_ = ::google::protobuf::Message::CopyConstruct(arena, *from._impl_.features_);
+        _this->_impl_.features_ = Super_::CopyConstruct(arena, *from._impl_.features_);
       } else {
         _this->_impl_.features_->MergeFrom(*from._impl_.features_);
       }
@@ -13338,15 +13338,15 @@ void FileOptions::InternalSwap(FileOptions* PROTOBUF_RESTRICT PROTOBUF_NONNULL o
 }
 
 ::google::protobuf::Metadata FileOptions::GetMetadata() const {
-  return ::google::protobuf::Message::GetMetadataImpl(GetClassData()->full());
+  return Super_::GetMetadataImpl(GetClassData()->full());
 }
 // ===================================================================
 
 MessageOptions::MessageOptions(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-    : ::google::protobuf::Message(arena, MessageOptions_get_class_data()) {
+    : Super_(arena, MessageOptions_get_class_data()) {
 #else   // PROTOBUF_CUSTOM_VTABLE
-    : ::google::protobuf::Message(arena) {
+    : Super_(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
   SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.MessageOptions)
@@ -13370,10 +13370,10 @@ MessageOptions::MessageOptions(
     ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
     const MessageOptions& from)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-    : ::google::protobuf::Message(arena, MessageOptions_get_class_data()) {
+    : Super_(arena, MessageOptions_get_class_data()) {
 
 #else   // PROTOBUF_CUSTOM_VTABLE
-    : ::google::protobuf::Message(arena) {
+    : Super_(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
   MessageOptions* const _this = this;
   (void)_this;
@@ -13383,9 +13383,9 @@ MessageOptions::MessageOptions(
   _impl_._extensions_.MergeFrom(arena, this, from._impl_._extensions_,
                                 from.GetArena());
   ::uint32_t cached_has_bits = _impl_._has_bits_[0];
-  _impl_.features_ = (CheckHasBit(cached_has_bits, 0x00000001U)) ? ::google::protobuf::Message::CopyConstruct(
-                               arena, *from._impl_.features_)
-                         : nullptr;
+  _impl_.features_ = (CheckHasBit(cached_has_bits, 0x00000001U))
+                 ? Super_::CopyConstruct(arena, *from._impl_.features_)
+                 : nullptr;
   ::memcpy(reinterpret_cast<char*>(&_impl_) +
                offsetof(Impl_, message_set_wire_format_),
            reinterpret_cast<const char*>(&from._impl_) +
@@ -13626,7 +13626,7 @@ void MessageOptions::MergeImpl(::google::protobuf::MessageLite& to_msg,
     if (CheckHasBit(cached_has_bits, 0x00000001U)) {
       ABSL_DCHECK(from._impl_.features_ != nullptr);
       if (_this->_impl_.features_ == nullptr) {
-        _this->_impl_.features_ = ::google::protobuf::Message::CopyConstruct(arena, *from._impl_.features_);
+        _this->_impl_.features_ = Super_::CopyConstruct(arena, *from._impl_.features_);
       } else {
         _this->_impl_.features_->MergeFrom(*from._impl_.features_);
       }
@@ -13696,15 +13696,15 @@ void MessageOptions::InternalSwap(MessageOptions* PROTOBUF_RESTRICT PROTOBUF_NON
 }
 
 ::google::protobuf::Metadata MessageOptions::GetMetadata() const {
-  return ::google::protobuf::Message::GetMetadataImpl(GetClassData()->full());
+  return Super_::GetMetadataImpl(GetClassData()->full());
 }
 // ===================================================================
 
 FieldOptions_EditionDefault::FieldOptions_EditionDefault(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-    : ::google::protobuf::Message(arena, FieldOptions_EditionDefault_get_class_data()) {
+    : Super_(arena, FieldOptions_EditionDefault_get_class_data()) {
 #else   // PROTOBUF_CUSTOM_VTABLE
-    : ::google::protobuf::Message(arena) {
+    : Super_(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
   SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.FieldOptions.EditionDefault)
@@ -13720,10 +13720,10 @@ FieldOptions_EditionDefault::FieldOptions_EditionDefault(
     ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
     const FieldOptions_EditionDefault& from)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-    : ::google::protobuf::Message(arena, FieldOptions_EditionDefault_get_class_data()) {
+    : Super_(arena, FieldOptions_EditionDefault_get_class_data()) {
 
 #else   // PROTOBUF_CUSTOM_VTABLE
-    : ::google::protobuf::Message(arena) {
+    : Super_(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
   FieldOptions_EditionDefault* const _this = this;
   (void)_this;
@@ -13918,15 +13918,15 @@ void FieldOptions_EditionDefault::InternalSwap(FieldOptions_EditionDefault* PROT
 }
 
 ::google::protobuf::Metadata FieldOptions_EditionDefault::GetMetadata() const {
-  return ::google::protobuf::Message::GetMetadataImpl(GetClassData()->full());
+  return Super_::GetMetadataImpl(GetClassData()->full());
 }
 // ===================================================================
 
 FieldOptions_FeatureSupport::FieldOptions_FeatureSupport(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-    : ::google::protobuf::Message(arena, FieldOptions_FeatureSupport_get_class_data()) {
+    : Super_(arena, FieldOptions_FeatureSupport_get_class_data()) {
 #else   // PROTOBUF_CUSTOM_VTABLE
-    : ::google::protobuf::Message(arena) {
+    : Super_(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
   SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.FieldOptions.FeatureSupport)
@@ -13943,10 +13943,10 @@ FieldOptions_FeatureSupport::FieldOptions_FeatureSupport(
     ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
     const FieldOptions_FeatureSupport& from)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-    : ::google::protobuf::Message(arena, FieldOptions_FeatureSupport_get_class_data()) {
+    : Super_(arena, FieldOptions_FeatureSupport_get_class_data()) {
 
 #else   // PROTOBUF_CUSTOM_VTABLE
-    : ::google::protobuf::Message(arena) {
+    : Super_(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
   FieldOptions_FeatureSupport* const _this = this;
   (void)_this;
@@ -14215,15 +14215,15 @@ void FieldOptions_FeatureSupport::InternalSwap(FieldOptions_FeatureSupport* PROT
 }
 
 ::google::protobuf::Metadata FieldOptions_FeatureSupport::GetMetadata() const {
-  return ::google::protobuf::Message::GetMetadataImpl(GetClassData()->full());
+  return Super_::GetMetadataImpl(GetClassData()->full());
 }
 // ===================================================================
 
 FieldOptions::FieldOptions(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-    : ::google::protobuf::Message(arena, FieldOptions_get_class_data()) {
+    : Super_(arena, FieldOptions_get_class_data()) {
 #else   // PROTOBUF_CUSTOM_VTABLE
-    : ::google::protobuf::Message(arena) {
+    : Super_(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
   SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.FieldOptions)
@@ -14261,10 +14261,10 @@ FieldOptions::FieldOptions(
     ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
     const FieldOptions& from)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-    : ::google::protobuf::Message(arena, FieldOptions_get_class_data()) {
+    : Super_(arena, FieldOptions_get_class_data()) {
 
 #else   // PROTOBUF_CUSTOM_VTABLE
-    : ::google::protobuf::Message(arena) {
+    : Super_(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
   FieldOptions* const _this = this;
   (void)_this;
@@ -14274,12 +14274,12 @@ FieldOptions::FieldOptions(
   _impl_._extensions_.MergeFrom(arena, this, from._impl_._extensions_,
                                 from.GetArena());
   ::uint32_t cached_has_bits = _impl_._has_bits_[0];
-  _impl_.features_ = (CheckHasBit(cached_has_bits, 0x00000004U)) ? ::google::protobuf::Message::CopyConstruct(
-                               arena, *from._impl_.features_)
-                         : nullptr;
-  _impl_.feature_support_ = (CheckHasBit(cached_has_bits, 0x00000008U)) ? ::google::protobuf::Message::CopyConstruct(
-                               arena, *from._impl_.feature_support_)
-                         : nullptr;
+  _impl_.features_ = (CheckHasBit(cached_has_bits, 0x00000004U))
+                 ? Super_::CopyConstruct(arena, *from._impl_.features_)
+                 : nullptr;
+  _impl_.feature_support_ = (CheckHasBit(cached_has_bits, 0x00000008U))
+                 ? Super_::CopyConstruct(arena, *from._impl_.feature_support_)
+                 : nullptr;
   ::memcpy(reinterpret_cast<char*>(&_impl_) +
                offsetof(Impl_, ctype_),
            reinterpret_cast<const char*>(&from._impl_) +
@@ -14655,7 +14655,7 @@ void FieldOptions::MergeImpl(::google::protobuf::MessageLite& to_msg,
     if (CheckHasBit(cached_has_bits, 0x00000004U)) {
       ABSL_DCHECK(from._impl_.features_ != nullptr);
       if (_this->_impl_.features_ == nullptr) {
-        _this->_impl_.features_ = ::google::protobuf::Message::CopyConstruct(arena, *from._impl_.features_);
+        _this->_impl_.features_ = Super_::CopyConstruct(arena, *from._impl_.features_);
       } else {
         _this->_impl_.features_->MergeFrom(*from._impl_.features_);
       }
@@ -14663,7 +14663,7 @@ void FieldOptions::MergeImpl(::google::protobuf::MessageLite& to_msg,
     if (CheckHasBit(cached_has_bits, 0x00000008U)) {
       ABSL_DCHECK(from._impl_.feature_support_ != nullptr);
       if (_this->_impl_.feature_support_ == nullptr) {
-        _this->_impl_.feature_support_ = ::google::protobuf::Message::CopyConstruct(arena, *from._impl_.feature_support_);
+        _this->_impl_.feature_support_ = Super_::CopyConstruct(arena, *from._impl_.feature_support_);
       } else {
         _this->_impl_.feature_support_->MergeFrom(*from._impl_.feature_support_);
       }
@@ -14747,15 +14747,15 @@ void FieldOptions::InternalSwap(FieldOptions* PROTOBUF_RESTRICT PROTOBUF_NONNULL
 }
 
 ::google::protobuf::Metadata FieldOptions::GetMetadata() const {
-  return ::google::protobuf::Message::GetMetadataImpl(GetClassData()->full());
+  return Super_::GetMetadataImpl(GetClassData()->full());
 }
 // ===================================================================
 
 OneofOptions::OneofOptions(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-    : ::google::protobuf::Message(arena, OneofOptions_get_class_data()) {
+    : Super_(arena, OneofOptions_get_class_data()) {
 #else   // PROTOBUF_CUSTOM_VTABLE
-    : ::google::protobuf::Message(arena) {
+    : Super_(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
   SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.OneofOptions)
@@ -14779,10 +14779,10 @@ OneofOptions::OneofOptions(
     ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
     const OneofOptions& from)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-    : ::google::protobuf::Message(arena, OneofOptions_get_class_data()) {
+    : Super_(arena, OneofOptions_get_class_data()) {
 
 #else   // PROTOBUF_CUSTOM_VTABLE
-    : ::google::protobuf::Message(arena) {
+    : Super_(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
   OneofOptions* const _this = this;
   (void)_this;
@@ -14792,9 +14792,9 @@ OneofOptions::OneofOptions(
   _impl_._extensions_.MergeFrom(arena, this, from._impl_._extensions_,
                                 from.GetArena());
   ::uint32_t cached_has_bits = _impl_._has_bits_[0];
-  _impl_.features_ = (CheckHasBit(cached_has_bits, 0x00000002U)) ? ::google::protobuf::Message::CopyConstruct(
-                               arena, *from._impl_.features_)
-                         : nullptr;
+  _impl_.features_ = (CheckHasBit(cached_has_bits, 0x00000002U))
+                 ? Super_::CopyConstruct(arena, *from._impl_.features_)
+                 : nullptr;
 
   // @@protoc_insertion_point(copy_constructor:google.protobuf.OneofOptions)
 }
@@ -14987,7 +14987,7 @@ void OneofOptions::MergeImpl(::google::protobuf::MessageLite& to_msg,
     if (CheckHasBit(cached_has_bits, 0x00000002U)) {
       ABSL_DCHECK(from._impl_.features_ != nullptr);
       if (_this->_impl_.features_ == nullptr) {
-        _this->_impl_.features_ = ::google::protobuf::Message::CopyConstruct(arena, *from._impl_.features_);
+        _this->_impl_.features_ = Super_::CopyConstruct(arena, *from._impl_.features_);
       } else {
         _this->_impl_.features_->MergeFrom(*from._impl_.features_);
       }
@@ -15032,15 +15032,15 @@ void OneofOptions::InternalSwap(OneofOptions* PROTOBUF_RESTRICT PROTOBUF_NONNULL
 }
 
 ::google::protobuf::Metadata OneofOptions::GetMetadata() const {
-  return ::google::protobuf::Message::GetMetadataImpl(GetClassData()->full());
+  return Super_::GetMetadataImpl(GetClassData()->full());
 }
 // ===================================================================
 
 EnumOptions::EnumOptions(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-    : ::google::protobuf::Message(arena, EnumOptions_get_class_data()) {
+    : Super_(arena, EnumOptions_get_class_data()) {
 #else   // PROTOBUF_CUSTOM_VTABLE
-    : ::google::protobuf::Message(arena) {
+    : Super_(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
   SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.EnumOptions)
@@ -15064,10 +15064,10 @@ EnumOptions::EnumOptions(
     ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
     const EnumOptions& from)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-    : ::google::protobuf::Message(arena, EnumOptions_get_class_data()) {
+    : Super_(arena, EnumOptions_get_class_data()) {
 
 #else   // PROTOBUF_CUSTOM_VTABLE
-    : ::google::protobuf::Message(arena) {
+    : Super_(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
   EnumOptions* const _this = this;
   (void)_this;
@@ -15077,9 +15077,9 @@ EnumOptions::EnumOptions(
   _impl_._extensions_.MergeFrom(arena, this, from._impl_._extensions_,
                                 from.GetArena());
   ::uint32_t cached_has_bits = _impl_._has_bits_[0];
-  _impl_.features_ = (CheckHasBit(cached_has_bits, 0x00000001U)) ? ::google::protobuf::Message::CopyConstruct(
-                               arena, *from._impl_.features_)
-                         : nullptr;
+  _impl_.features_ = (CheckHasBit(cached_has_bits, 0x00000001U))
+                 ? Super_::CopyConstruct(arena, *from._impl_.features_)
+                 : nullptr;
   ::memcpy(reinterpret_cast<char*>(&_impl_) +
                offsetof(Impl_, allow_alias_),
            reinterpret_cast<const char*>(&from._impl_) +
@@ -15304,7 +15304,7 @@ void EnumOptions::MergeImpl(::google::protobuf::MessageLite& to_msg,
     if (CheckHasBit(cached_has_bits, 0x00000001U)) {
       ABSL_DCHECK(from._impl_.features_ != nullptr);
       if (_this->_impl_.features_ == nullptr) {
-        _this->_impl_.features_ = ::google::protobuf::Message::CopyConstruct(arena, *from._impl_.features_);
+        _this->_impl_.features_ = Super_::CopyConstruct(arena, *from._impl_.features_);
       } else {
         _this->_impl_.features_->MergeFrom(*from._impl_.features_);
       }
@@ -15368,15 +15368,15 @@ void EnumOptions::InternalSwap(EnumOptions* PROTOBUF_RESTRICT PROTOBUF_NONNULL o
 }
 
 ::google::protobuf::Metadata EnumOptions::GetMetadata() const {
-  return ::google::protobuf::Message::GetMetadataImpl(GetClassData()->full());
+  return Super_::GetMetadataImpl(GetClassData()->full());
 }
 // ===================================================================
 
 EnumValueOptions::EnumValueOptions(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-    : ::google::protobuf::Message(arena, EnumValueOptions_get_class_data()) {
+    : Super_(arena, EnumValueOptions_get_class_data()) {
 #else   // PROTOBUF_CUSTOM_VTABLE
-    : ::google::protobuf::Message(arena) {
+    : Super_(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
   SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.EnumValueOptions)
@@ -15400,10 +15400,10 @@ EnumValueOptions::EnumValueOptions(
     ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
     const EnumValueOptions& from)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-    : ::google::protobuf::Message(arena, EnumValueOptions_get_class_data()) {
+    : Super_(arena, EnumValueOptions_get_class_data()) {
 
 #else   // PROTOBUF_CUSTOM_VTABLE
-    : ::google::protobuf::Message(arena) {
+    : Super_(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
   EnumValueOptions* const _this = this;
   (void)_this;
@@ -15413,12 +15413,12 @@ EnumValueOptions::EnumValueOptions(
   _impl_._extensions_.MergeFrom(arena, this, from._impl_._extensions_,
                                 from.GetArena());
   ::uint32_t cached_has_bits = _impl_._has_bits_[0];
-  _impl_.features_ = (CheckHasBit(cached_has_bits, 0x00000002U)) ? ::google::protobuf::Message::CopyConstruct(
-                               arena, *from._impl_.features_)
-                         : nullptr;
-  _impl_.feature_support_ = (CheckHasBit(cached_has_bits, 0x00000004U)) ? ::google::protobuf::Message::CopyConstruct(
-                               arena, *from._impl_.feature_support_)
-                         : nullptr;
+  _impl_.features_ = (CheckHasBit(cached_has_bits, 0x00000002U))
+                 ? Super_::CopyConstruct(arena, *from._impl_.features_)
+                 : nullptr;
+  _impl_.feature_support_ = (CheckHasBit(cached_has_bits, 0x00000004U))
+                 ? Super_::CopyConstruct(arena, *from._impl_.feature_support_)
+                 : nullptr;
   ::memcpy(reinterpret_cast<char*>(&_impl_) +
                offsetof(Impl_, deprecated_),
            reinterpret_cast<const char*>(&from._impl_) +
@@ -15660,7 +15660,7 @@ void EnumValueOptions::MergeImpl(::google::protobuf::MessageLite& to_msg,
     if (CheckHasBit(cached_has_bits, 0x00000002U)) {
       ABSL_DCHECK(from._impl_.features_ != nullptr);
       if (_this->_impl_.features_ == nullptr) {
-        _this->_impl_.features_ = ::google::protobuf::Message::CopyConstruct(arena, *from._impl_.features_);
+        _this->_impl_.features_ = Super_::CopyConstruct(arena, *from._impl_.features_);
       } else {
         _this->_impl_.features_->MergeFrom(*from._impl_.features_);
       }
@@ -15668,7 +15668,7 @@ void EnumValueOptions::MergeImpl(::google::protobuf::MessageLite& to_msg,
     if (CheckHasBit(cached_has_bits, 0x00000004U)) {
       ABSL_DCHECK(from._impl_.feature_support_ != nullptr);
       if (_this->_impl_.feature_support_ == nullptr) {
-        _this->_impl_.feature_support_ = ::google::protobuf::Message::CopyConstruct(arena, *from._impl_.feature_support_);
+        _this->_impl_.feature_support_ = Super_::CopyConstruct(arena, *from._impl_.feature_support_);
       } else {
         _this->_impl_.feature_support_->MergeFrom(*from._impl_.feature_support_);
       }
@@ -15724,15 +15724,15 @@ void EnumValueOptions::InternalSwap(EnumValueOptions* PROTOBUF_RESTRICT PROTOBUF
 }
 
 ::google::protobuf::Metadata EnumValueOptions::GetMetadata() const {
-  return ::google::protobuf::Message::GetMetadataImpl(GetClassData()->full());
+  return Super_::GetMetadataImpl(GetClassData()->full());
 }
 // ===================================================================
 
 ServiceOptions::ServiceOptions(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-    : ::google::protobuf::Message(arena, ServiceOptions_get_class_data()) {
+    : Super_(arena, ServiceOptions_get_class_data()) {
 #else   // PROTOBUF_CUSTOM_VTABLE
-    : ::google::protobuf::Message(arena) {
+    : Super_(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
   SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.ServiceOptions)
@@ -15756,10 +15756,10 @@ ServiceOptions::ServiceOptions(
     ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
     const ServiceOptions& from)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-    : ::google::protobuf::Message(arena, ServiceOptions_get_class_data()) {
+    : Super_(arena, ServiceOptions_get_class_data()) {
 
 #else   // PROTOBUF_CUSTOM_VTABLE
-    : ::google::protobuf::Message(arena) {
+    : Super_(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
   ServiceOptions* const _this = this;
   (void)_this;
@@ -15769,9 +15769,9 @@ ServiceOptions::ServiceOptions(
   _impl_._extensions_.MergeFrom(arena, this, from._impl_._extensions_,
                                 from.GetArena());
   ::uint32_t cached_has_bits = _impl_._has_bits_[0];
-  _impl_.features_ = (CheckHasBit(cached_has_bits, 0x00000002U)) ? ::google::protobuf::Message::CopyConstruct(
-                               arena, *from._impl_.features_)
-                         : nullptr;
+  _impl_.features_ = (CheckHasBit(cached_has_bits, 0x00000002U))
+                 ? Super_::CopyConstruct(arena, *from._impl_.features_)
+                 : nullptr;
   _impl_.deprecated_ = from._impl_.deprecated_;
 
   // @@protoc_insertion_point(copy_constructor:google.protobuf.ServiceOptions)
@@ -15979,7 +15979,7 @@ void ServiceOptions::MergeImpl(::google::protobuf::MessageLite& to_msg,
     if (CheckHasBit(cached_has_bits, 0x00000002U)) {
       ABSL_DCHECK(from._impl_.features_ != nullptr);
       if (_this->_impl_.features_ == nullptr) {
-        _this->_impl_.features_ = ::google::protobuf::Message::CopyConstruct(arena, *from._impl_.features_);
+        _this->_impl_.features_ = Super_::CopyConstruct(arena, *from._impl_.features_);
       } else {
         _this->_impl_.features_->MergeFrom(*from._impl_.features_);
       }
@@ -16032,15 +16032,15 @@ void ServiceOptions::InternalSwap(ServiceOptions* PROTOBUF_RESTRICT PROTOBUF_NON
 }
 
 ::google::protobuf::Metadata ServiceOptions::GetMetadata() const {
-  return ::google::protobuf::Message::GetMetadataImpl(GetClassData()->full());
+  return Super_::GetMetadataImpl(GetClassData()->full());
 }
 // ===================================================================
 
 MethodOptions::MethodOptions(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-    : ::google::protobuf::Message(arena, MethodOptions_get_class_data()) {
+    : Super_(arena, MethodOptions_get_class_data()) {
 #else   // PROTOBUF_CUSTOM_VTABLE
-    : ::google::protobuf::Message(arena) {
+    : Super_(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
   SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.MethodOptions)
@@ -16064,10 +16064,10 @@ MethodOptions::MethodOptions(
     ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
     const MethodOptions& from)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-    : ::google::protobuf::Message(arena, MethodOptions_get_class_data()) {
+    : Super_(arena, MethodOptions_get_class_data()) {
 
 #else   // PROTOBUF_CUSTOM_VTABLE
-    : ::google::protobuf::Message(arena) {
+    : Super_(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
   MethodOptions* const _this = this;
   (void)_this;
@@ -16077,9 +16077,9 @@ MethodOptions::MethodOptions(
   _impl_._extensions_.MergeFrom(arena, this, from._impl_._extensions_,
                                 from.GetArena());
   ::uint32_t cached_has_bits = _impl_._has_bits_[0];
-  _impl_.features_ = (CheckHasBit(cached_has_bits, 0x00000002U)) ? ::google::protobuf::Message::CopyConstruct(
-                               arena, *from._impl_.features_)
-                         : nullptr;
+  _impl_.features_ = (CheckHasBit(cached_has_bits, 0x00000002U))
+                 ? Super_::CopyConstruct(arena, *from._impl_.features_)
+                 : nullptr;
   ::memcpy(reinterpret_cast<char*>(&_impl_) +
                offsetof(Impl_, deprecated_),
            reinterpret_cast<const char*>(&from._impl_) +
@@ -16311,7 +16311,7 @@ void MethodOptions::MergeImpl(::google::protobuf::MessageLite& to_msg,
     if (CheckHasBit(cached_has_bits, 0x00000002U)) {
       ABSL_DCHECK(from._impl_.features_ != nullptr);
       if (_this->_impl_.features_ == nullptr) {
-        _this->_impl_.features_ = ::google::protobuf::Message::CopyConstruct(arena, *from._impl_.features_);
+        _this->_impl_.features_ = Super_::CopyConstruct(arena, *from._impl_.features_);
       } else {
         _this->_impl_.features_->MergeFrom(*from._impl_.features_);
       }
@@ -16367,15 +16367,15 @@ void MethodOptions::InternalSwap(MethodOptions* PROTOBUF_RESTRICT PROTOBUF_NONNU
 }
 
 ::google::protobuf::Metadata MethodOptions::GetMetadata() const {
-  return ::google::protobuf::Message::GetMetadataImpl(GetClassData()->full());
+  return Super_::GetMetadataImpl(GetClassData()->full());
 }
 // ===================================================================
 
 UninterpretedOption_NamePart::UninterpretedOption_NamePart(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-    : ::google::protobuf::Message(arena, UninterpretedOption_NamePart_get_class_data()) {
+    : Super_(arena, UninterpretedOption_NamePart_get_class_data()) {
 #else   // PROTOBUF_CUSTOM_VTABLE
-    : ::google::protobuf::Message(arena) {
+    : Super_(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
   SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.UninterpretedOption.NamePart)
@@ -16391,10 +16391,10 @@ UninterpretedOption_NamePart::UninterpretedOption_NamePart(
     ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
     const UninterpretedOption_NamePart& from)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-    : ::google::protobuf::Message(arena, UninterpretedOption_NamePart_get_class_data()) {
+    : Super_(arena, UninterpretedOption_NamePart_get_class_data()) {
 
 #else   // PROTOBUF_CUSTOM_VTABLE
-    : ::google::protobuf::Message(arena) {
+    : Super_(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
   UninterpretedOption_NamePart* const _this = this;
   (void)_this;
@@ -16593,15 +16593,15 @@ void UninterpretedOption_NamePart::InternalSwap(UninterpretedOption_NamePart* PR
 }
 
 ::google::protobuf::Metadata UninterpretedOption_NamePart::GetMetadata() const {
-  return ::google::protobuf::Message::GetMetadataImpl(GetClassData()->full());
+  return Super_::GetMetadataImpl(GetClassData()->full());
 }
 // ===================================================================
 
 UninterpretedOption::UninterpretedOption(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-    : ::google::protobuf::Message(arena, UninterpretedOption_get_class_data()) {
+    : Super_(arena, UninterpretedOption_get_class_data()) {
 #else   // PROTOBUF_CUSTOM_VTABLE
-    : ::google::protobuf::Message(arena) {
+    : Super_(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
   SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.UninterpretedOption)
@@ -16626,10 +16626,10 @@ UninterpretedOption::UninterpretedOption(
     ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
     const UninterpretedOption& from)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-    : ::google::protobuf::Message(arena, UninterpretedOption_get_class_data()) {
+    : Super_(arena, UninterpretedOption_get_class_data()) {
 
 #else   // PROTOBUF_CUSTOM_VTABLE
-    : ::google::protobuf::Message(arena) {
+    : Super_(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
   UninterpretedOption* const _this = this;
   (void)_this;
@@ -16955,15 +16955,15 @@ void UninterpretedOption::InternalSwap(UninterpretedOption* PROTOBUF_RESTRICT PR
 }
 
 ::google::protobuf::Metadata UninterpretedOption::GetMetadata() const {
-  return ::google::protobuf::Message::GetMetadataImpl(GetClassData()->full());
+  return Super_::GetMetadataImpl(GetClassData()->full());
 }
 // ===================================================================
 
 FeatureSet_VisibilityFeature::FeatureSet_VisibilityFeature(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-    : ::google::protobuf::internal::ZeroFieldsBase(arena, FeatureSet_VisibilityFeature_get_class_data()) {
+    : Super_(arena, FeatureSet_VisibilityFeature_get_class_data()) {
 #else   // PROTOBUF_CUSTOM_VTABLE
-    : ::google::protobuf::internal::ZeroFieldsBase(arena) {
+    : Super_(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
   // @@protoc_insertion_point(arena_constructor:google.protobuf.FeatureSet.VisibilityFeature)
 }
@@ -16971,10 +16971,10 @@ FeatureSet_VisibilityFeature::FeatureSet_VisibilityFeature(
     ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
     const FeatureSet_VisibilityFeature& from)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-    : ::google::protobuf::internal::ZeroFieldsBase(arena, FeatureSet_VisibilityFeature_get_class_data()) {
+    : Super_(arena, FeatureSet_VisibilityFeature_get_class_data()) {
 
 #else   // PROTOBUF_CUSTOM_VTABLE
-    : ::google::protobuf::internal::ZeroFieldsBase(arena) {
+    : Super_(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
   FeatureSet_VisibilityFeature* const _this = this;
   (void)_this;
@@ -17018,15 +17018,15 @@ PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const FeatureSet_VisibilityFeature::ParseTable
 
 
 ::google::protobuf::Metadata FeatureSet_VisibilityFeature::GetMetadata() const {
-  return ::google::protobuf::internal::ZeroFieldsBase::GetMetadataImpl(GetClassData()->full());
+  return Super_::GetMetadataImpl(GetClassData()->full());
 }
 // ===================================================================
 
 FeatureSet_ProtoLimitsFeature::FeatureSet_ProtoLimitsFeature(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-    : ::google::protobuf::internal::ZeroFieldsBase(arena, FeatureSet_ProtoLimitsFeature_get_class_data()) {
+    : Super_(arena, FeatureSet_ProtoLimitsFeature_get_class_data()) {
 #else   // PROTOBUF_CUSTOM_VTABLE
-    : ::google::protobuf::internal::ZeroFieldsBase(arena) {
+    : Super_(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
   // @@protoc_insertion_point(arena_constructor:google.protobuf.FeatureSet.ProtoLimitsFeature)
 }
@@ -17034,10 +17034,10 @@ FeatureSet_ProtoLimitsFeature::FeatureSet_ProtoLimitsFeature(
     ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
     const FeatureSet_ProtoLimitsFeature& from)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-    : ::google::protobuf::internal::ZeroFieldsBase(arena, FeatureSet_ProtoLimitsFeature_get_class_data()) {
+    : Super_(arena, FeatureSet_ProtoLimitsFeature_get_class_data()) {
 
 #else   // PROTOBUF_CUSTOM_VTABLE
-    : ::google::protobuf::internal::ZeroFieldsBase(arena) {
+    : Super_(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
   FeatureSet_ProtoLimitsFeature* const _this = this;
   (void)_this;
@@ -17081,15 +17081,15 @@ PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const FeatureSet_ProtoLimitsFeature::ParseTabl
 
 
 ::google::protobuf::Metadata FeatureSet_ProtoLimitsFeature::GetMetadata() const {
-  return ::google::protobuf::internal::ZeroFieldsBase::GetMetadataImpl(GetClassData()->full());
+  return Super_::GetMetadataImpl(GetClassData()->full());
 }
 // ===================================================================
 
 FeatureSet::FeatureSet(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-    : ::google::protobuf::Message(arena, FeatureSet_get_class_data()) {
+    : Super_(arena, FeatureSet_get_class_data()) {
 #else   // PROTOBUF_CUSTOM_VTABLE
-    : ::google::protobuf::Message(arena) {
+    : Super_(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
   SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.FeatureSet)
@@ -17106,10 +17106,10 @@ FeatureSet::FeatureSet(
     ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
     const FeatureSet& from)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-    : ::google::protobuf::Message(arena, FeatureSet_get_class_data()) {
+    : Super_(arena, FeatureSet_get_class_data()) {
 
 #else   // PROTOBUF_CUSTOM_VTABLE
-    : ::google::protobuf::Message(arena) {
+    : Super_(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
   FeatureSet* const _this = this;
   (void)_this;
@@ -17449,15 +17449,15 @@ void FeatureSet::InternalSwap(FeatureSet* PROTOBUF_RESTRICT PROTOBUF_NONNULL oth
 }
 
 ::google::protobuf::Metadata FeatureSet::GetMetadata() const {
-  return ::google::protobuf::Message::GetMetadataImpl(GetClassData()->full());
+  return Super_::GetMetadataImpl(GetClassData()->full());
 }
 // ===================================================================
 
 FeatureSetDefaults_FeatureSetEditionDefault::FeatureSetDefaults_FeatureSetEditionDefault(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-    : ::google::protobuf::Message(arena, FeatureSetDefaults_FeatureSetEditionDefault_get_class_data()) {
+    : Super_(arena, FeatureSetDefaults_FeatureSetEditionDefault_get_class_data()) {
 #else   // PROTOBUF_CUSTOM_VTABLE
-    : ::google::protobuf::Message(arena) {
+    : Super_(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
   SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.FeatureSetDefaults.FeatureSetEditionDefault)
@@ -17472,10 +17472,10 @@ FeatureSetDefaults_FeatureSetEditionDefault::FeatureSetDefaults_FeatureSetEditio
     ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
     const FeatureSetDefaults_FeatureSetEditionDefault& from)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-    : ::google::protobuf::Message(arena, FeatureSetDefaults_FeatureSetEditionDefault_get_class_data()) {
+    : Super_(arena, FeatureSetDefaults_FeatureSetEditionDefault_get_class_data()) {
 
 #else   // PROTOBUF_CUSTOM_VTABLE
-    : ::google::protobuf::Message(arena) {
+    : Super_(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
   FeatureSetDefaults_FeatureSetEditionDefault* const _this = this;
   (void)_this;
@@ -17483,12 +17483,12 @@ FeatureSetDefaults_FeatureSetEditionDefault::FeatureSetDefaults_FeatureSetEditio
       from._internal_metadata_);
   new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
   ::uint32_t cached_has_bits = _impl_._has_bits_[0];
-  _impl_.overridable_features_ = (CheckHasBit(cached_has_bits, 0x00000001U)) ? ::google::protobuf::Message::CopyConstruct(
-                               arena, *from._impl_.overridable_features_)
-                         : nullptr;
-  _impl_.fixed_features_ = (CheckHasBit(cached_has_bits, 0x00000002U)) ? ::google::protobuf::Message::CopyConstruct(
-                               arena, *from._impl_.fixed_features_)
-                         : nullptr;
+  _impl_.overridable_features_ = (CheckHasBit(cached_has_bits, 0x00000001U))
+                 ? Super_::CopyConstruct(arena, *from._impl_.overridable_features_)
+                 : nullptr;
+  _impl_.fixed_features_ = (CheckHasBit(cached_has_bits, 0x00000002U))
+                 ? Super_::CopyConstruct(arena, *from._impl_.fixed_features_)
+                 : nullptr;
   _impl_.edition_ = from._impl_.edition_;
 
   // @@protoc_insertion_point(copy_constructor:google.protobuf.FeatureSetDefaults.FeatureSetEditionDefault)
@@ -17676,7 +17676,7 @@ void FeatureSetDefaults_FeatureSetEditionDefault::MergeImpl(::google::protobuf::
     if (CheckHasBit(cached_has_bits, 0x00000001U)) {
       ABSL_DCHECK(from._impl_.overridable_features_ != nullptr);
       if (_this->_impl_.overridable_features_ == nullptr) {
-        _this->_impl_.overridable_features_ = ::google::protobuf::Message::CopyConstruct(arena, *from._impl_.overridable_features_);
+        _this->_impl_.overridable_features_ = Super_::CopyConstruct(arena, *from._impl_.overridable_features_);
       } else {
         _this->_impl_.overridable_features_->MergeFrom(*from._impl_.overridable_features_);
       }
@@ -17684,7 +17684,7 @@ void FeatureSetDefaults_FeatureSetEditionDefault::MergeImpl(::google::protobuf::
     if (CheckHasBit(cached_has_bits, 0x00000002U)) {
       ABSL_DCHECK(from._impl_.fixed_features_ != nullptr);
       if (_this->_impl_.fixed_features_ == nullptr) {
-        _this->_impl_.fixed_features_ = ::google::protobuf::Message::CopyConstruct(arena, *from._impl_.fixed_features_);
+        _this->_impl_.fixed_features_ = Super_::CopyConstruct(arena, *from._impl_.fixed_features_);
       } else {
         _this->_impl_.fixed_features_->MergeFrom(*from._impl_.fixed_features_);
       }
@@ -17730,15 +17730,15 @@ void FeatureSetDefaults_FeatureSetEditionDefault::InternalSwap(FeatureSetDefault
 }
 
 ::google::protobuf::Metadata FeatureSetDefaults_FeatureSetEditionDefault::GetMetadata() const {
-  return ::google::protobuf::Message::GetMetadataImpl(GetClassData()->full());
+  return Super_::GetMetadataImpl(GetClassData()->full());
 }
 // ===================================================================
 
 FeatureSetDefaults::FeatureSetDefaults(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-    : ::google::protobuf::Message(arena, FeatureSetDefaults_get_class_data()) {
+    : Super_(arena, FeatureSetDefaults_get_class_data()) {
 #else   // PROTOBUF_CUSTOM_VTABLE
-    : ::google::protobuf::Message(arena) {
+    : Super_(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
   SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.FeatureSetDefaults)
@@ -17760,10 +17760,10 @@ FeatureSetDefaults::FeatureSetDefaults(
     ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
     const FeatureSetDefaults& from)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-    : ::google::protobuf::Message(arena, FeatureSetDefaults_get_class_data()) {
+    : Super_(arena, FeatureSetDefaults_get_class_data()) {
 
 #else   // PROTOBUF_CUSTOM_VTABLE
-    : ::google::protobuf::Message(arena) {
+    : Super_(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
   FeatureSetDefaults* const _this = this;
   (void)_this;
@@ -18014,15 +18014,15 @@ void FeatureSetDefaults::InternalSwap(FeatureSetDefaults* PROTOBUF_RESTRICT PROT
 }
 
 ::google::protobuf::Metadata FeatureSetDefaults::GetMetadata() const {
-  return ::google::protobuf::Message::GetMetadataImpl(GetClassData()->full());
+  return Super_::GetMetadataImpl(GetClassData()->full());
 }
 // ===================================================================
 
 SourceCodeInfo_Location::SourceCodeInfo_Location(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-    : ::google::protobuf::Message(arena, SourceCodeInfo_Location_get_class_data()) {
+    : Super_(arena, SourceCodeInfo_Location_get_class_data()) {
 #else   // PROTOBUF_CUSTOM_VTABLE
-    : ::google::protobuf::Message(arena) {
+    : Super_(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
   SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.SourceCodeInfo.Location)
@@ -18060,10 +18060,10 @@ SourceCodeInfo_Location::SourceCodeInfo_Location(
     ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
     const SourceCodeInfo_Location& from)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-    : ::google::protobuf::Message(arena, SourceCodeInfo_Location_get_class_data()) {
+    : Super_(arena, SourceCodeInfo_Location_get_class_data()) {
 
 #else   // PROTOBUF_CUSTOM_VTABLE
-    : ::google::protobuf::Message(arena) {
+    : Super_(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
   SourceCodeInfo_Location* const _this = this;
   (void)_this;
@@ -18353,15 +18353,15 @@ void SourceCodeInfo_Location::InternalSwap(SourceCodeInfo_Location* PROTOBUF_RES
 }
 
 ::google::protobuf::Metadata SourceCodeInfo_Location::GetMetadata() const {
-  return ::google::protobuf::Message::GetMetadataImpl(GetClassData()->full());
+  return Super_::GetMetadataImpl(GetClassData()->full());
 }
 // ===================================================================
 
 SourceCodeInfo::SourceCodeInfo(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-    : ::google::protobuf::Message(arena, SourceCodeInfo_get_class_data()) {
+    : Super_(arena, SourceCodeInfo_get_class_data()) {
 #else   // PROTOBUF_CUSTOM_VTABLE
-    : ::google::protobuf::Message(arena) {
+    : Super_(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
   SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.SourceCodeInfo)
@@ -18385,10 +18385,10 @@ SourceCodeInfo::SourceCodeInfo(
     ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
     const SourceCodeInfo& from)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-    : ::google::protobuf::Message(arena, SourceCodeInfo_get_class_data()) {
+    : Super_(arena, SourceCodeInfo_get_class_data()) {
 
 #else   // PROTOBUF_CUSTOM_VTABLE
-    : ::google::protobuf::Message(arena) {
+    : Super_(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
   SourceCodeInfo* const _this = this;
   (void)_this;
@@ -18595,15 +18595,15 @@ void SourceCodeInfo::InternalSwap(SourceCodeInfo* PROTOBUF_RESTRICT PROTOBUF_NON
 }
 
 ::google::protobuf::Metadata SourceCodeInfo::GetMetadata() const {
-  return ::google::protobuf::Message::GetMetadataImpl(GetClassData()->full());
+  return Super_::GetMetadataImpl(GetClassData()->full());
 }
 // ===================================================================
 
 GeneratedCodeInfo_Annotation::GeneratedCodeInfo_Annotation(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-    : ::google::protobuf::Message(arena, GeneratedCodeInfo_Annotation_get_class_data()) {
+    : Super_(arena, GeneratedCodeInfo_Annotation_get_class_data()) {
 #else   // PROTOBUF_CUSTOM_VTABLE
-    : ::google::protobuf::Message(arena) {
+    : Super_(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
   SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.GeneratedCodeInfo.Annotation)
@@ -18626,10 +18626,10 @@ GeneratedCodeInfo_Annotation::GeneratedCodeInfo_Annotation(
     ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
     const GeneratedCodeInfo_Annotation& from)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-    : ::google::protobuf::Message(arena, GeneratedCodeInfo_Annotation_get_class_data()) {
+    : Super_(arena, GeneratedCodeInfo_Annotation_get_class_data()) {
 
 #else   // PROTOBUF_CUSTOM_VTABLE
-    : ::google::protobuf::Message(arena) {
+    : Super_(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
   GeneratedCodeInfo_Annotation* const _this = this;
   (void)_this;
@@ -18908,15 +18908,15 @@ void GeneratedCodeInfo_Annotation::InternalSwap(GeneratedCodeInfo_Annotation* PR
 }
 
 ::google::protobuf::Metadata GeneratedCodeInfo_Annotation::GetMetadata() const {
-  return ::google::protobuf::Message::GetMetadataImpl(GetClassData()->full());
+  return Super_::GetMetadataImpl(GetClassData()->full());
 }
 // ===================================================================
 
 GeneratedCodeInfo::GeneratedCodeInfo(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-    : ::google::protobuf::Message(arena, GeneratedCodeInfo_get_class_data()) {
+    : Super_(arena, GeneratedCodeInfo_get_class_data()) {
 #else   // PROTOBUF_CUSTOM_VTABLE
-    : ::google::protobuf::Message(arena) {
+    : Super_(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
   SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.GeneratedCodeInfo)
@@ -18938,10 +18938,10 @@ GeneratedCodeInfo::GeneratedCodeInfo(
     ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
     const GeneratedCodeInfo& from)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-    : ::google::protobuf::Message(arena, GeneratedCodeInfo_get_class_data()) {
+    : Super_(arena, GeneratedCodeInfo_get_class_data()) {
 
 #else   // PROTOBUF_CUSTOM_VTABLE
-    : ::google::protobuf::Message(arena) {
+    : Super_(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
   GeneratedCodeInfo* const _this = this;
   (void)_this;
@@ -19127,7 +19127,7 @@ void GeneratedCodeInfo::InternalSwap(GeneratedCodeInfo* PROTOBUF_RESTRICT PROTOB
 }
 
 ::google::protobuf::Metadata GeneratedCodeInfo::GetMetadata() const {
-  return ::google::protobuf::Message::GetMetadataImpl(GetClassData()->full());
+  return Super_::GetMetadataImpl(GetClassData()->full());
 }
 // @@protoc_insertion_point(namespace_scope)
 }  // namespace protobuf
