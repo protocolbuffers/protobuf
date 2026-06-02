@@ -37,15 +37,6 @@
 
 #define PROTOBUF_INTERNAL_EXPORT_google_2fprotobuf_2fwrappers_2eproto PROTOBUF_EXPORT
 
-namespace google {
-namespace protobuf {
-namespace internal {
-template <typename T>
-::absl::string_view GetAnyMessageName();
-}  // namespace internal
-}  // namespace protobuf
-}  // namespace google
-
 // Internal implementation detail -- do not use these members.
 struct PROTOBUF_EXPORT TableStruct_google_2fprotobuf_2fwrappers_2eproto {
   static const ::uint32_t offsets[];
@@ -261,8 +252,6 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED UInt64Value final :
   static void SharedDtor(MessageLite& self);
   void InternalSwap(UInt64Value* PROTOBUF_NONNULL other);
  private:
-  template <typename T>
-  friend ::absl::string_view(::google::protobuf::internal::GetAnyMessageName)();
   static ::absl::string_view FullMessageName() { return "google.protobuf.UInt64Value"; }
 
   explicit UInt64Value(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
@@ -464,8 +453,6 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED UInt32Value final :
   static void SharedDtor(MessageLite& self);
   void InternalSwap(UInt32Value* PROTOBUF_NONNULL other);
  private:
-  template <typename T>
-  friend ::absl::string_view(::google::protobuf::internal::GetAnyMessageName)();
   static ::absl::string_view FullMessageName() { return "google.protobuf.UInt32Value"; }
 
   explicit UInt32Value(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
@@ -667,8 +654,6 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED StringValue final :
   static void SharedDtor(MessageLite& self);
   void InternalSwap(StringValue* PROTOBUF_NONNULL other);
  private:
-  template <typename T>
-  friend ::absl::string_view(::google::protobuf::internal::GetAnyMessageName)();
   static ::absl::string_view FullMessageName() { return "google.protobuf.StringValue"; }
 
   explicit StringValue(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
@@ -875,8 +860,6 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Int64Value final : 
   static void SharedDtor(MessageLite& self);
   void InternalSwap(Int64Value* PROTOBUF_NONNULL other);
  private:
-  template <typename T>
-  friend ::absl::string_view(::google::protobuf::internal::GetAnyMessageName)();
   static ::absl::string_view FullMessageName() { return "google.protobuf.Int64Value"; }
 
   explicit Int64Value(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
@@ -1078,8 +1061,6 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Int32Value final : 
   static void SharedDtor(MessageLite& self);
   void InternalSwap(Int32Value* PROTOBUF_NONNULL other);
  private:
-  template <typename T>
-  friend ::absl::string_view(::google::protobuf::internal::GetAnyMessageName)();
   static ::absl::string_view FullMessageName() { return "google.protobuf.Int32Value"; }
 
   explicit Int32Value(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
@@ -1281,8 +1262,6 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FloatValue final : 
   static void SharedDtor(MessageLite& self);
   void InternalSwap(FloatValue* PROTOBUF_NONNULL other);
  private:
-  template <typename T>
-  friend ::absl::string_view(::google::protobuf::internal::GetAnyMessageName)();
   static ::absl::string_view FullMessageName() { return "google.protobuf.FloatValue"; }
 
   explicit FloatValue(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
@@ -1484,8 +1463,6 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED DoubleValue final :
   static void SharedDtor(MessageLite& self);
   void InternalSwap(DoubleValue* PROTOBUF_NONNULL other);
  private:
-  template <typename T>
-  friend ::absl::string_view(::google::protobuf::internal::GetAnyMessageName)();
   static ::absl::string_view FullMessageName() { return "google.protobuf.DoubleValue"; }
 
   explicit DoubleValue(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
@@ -1687,8 +1664,6 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED BytesValue final : 
   static void SharedDtor(MessageLite& self);
   void InternalSwap(BytesValue* PROTOBUF_NONNULL other);
  private:
-  template <typename T>
-  friend ::absl::string_view(::google::protobuf::internal::GetAnyMessageName)();
   static ::absl::string_view FullMessageName() { return "google.protobuf.BytesValue"; }
 
   explicit BytesValue(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
@@ -1895,8 +1870,6 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED BoolValue final : p
   static void SharedDtor(MessageLite& self);
   void InternalSwap(BoolValue* PROTOBUF_NONNULL other);
  private:
-  template <typename T>
-  friend ::absl::string_view(::google::protobuf::internal::GetAnyMessageName)();
   static ::absl::string_view FullMessageName() { return "google.protobuf.BoolValue"; }
 
   explicit BoolValue(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);

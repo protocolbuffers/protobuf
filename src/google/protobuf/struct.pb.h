@@ -42,15 +42,6 @@
 
 #define PROTOBUF_INTERNAL_EXPORT_google_2fprotobuf_2fstruct_2eproto PROTOBUF_EXPORT
 
-namespace google {
-namespace protobuf {
-namespace internal {
-template <typename T>
-::absl::string_view GetAnyMessageName();
-}  // namespace internal
-}  // namespace protobuf
-}  // namespace google
-
 // Internal implementation detail -- do not use these members.
 struct PROTOBUF_EXPORT TableStruct_google_2fprotobuf_2fstruct_2eproto {
   static const ::uint32_t offsets[];
@@ -272,8 +263,6 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED ListValue final : p
   static void SharedDtor(MessageLite& self);
   void InternalSwap(ListValue* PROTOBUF_NONNULL other);
  private:
-  template <typename T>
-  friend ::absl::string_view(::google::protobuf::internal::GetAnyMessageName)();
   static ::absl::string_view FullMessageName() { return "google.protobuf.ListValue"; }
 
   explicit ListValue(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
@@ -485,8 +474,6 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Struct final : publ
   static void SharedDtor(MessageLite& self);
   void InternalSwap(Struct* PROTOBUF_NONNULL other);
  private:
-  template <typename T>
-  friend ::absl::string_view(::google::protobuf::internal::GetAnyMessageName)();
   static ::absl::string_view FullMessageName() { return "google.protobuf.Struct"; }
 
   explicit Struct(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
@@ -752,8 +739,6 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Value final : publi
   static void SharedDtor(MessageLite& self);
   void InternalSwap(Value* PROTOBUF_NONNULL other);
  private:
-  template <typename T>
-  friend ::absl::string_view(::google::protobuf::internal::GetAnyMessageName)();
   static ::absl::string_view FullMessageName() { return "google.protobuf.Value"; }
 
   explicit Value(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
