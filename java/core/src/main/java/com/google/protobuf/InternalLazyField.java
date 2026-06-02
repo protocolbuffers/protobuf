@@ -19,6 +19,7 @@ import java.util.Map.Entry;
  * changed; 2) value and bytes cannot be null at the same time; 3) If corrupted is true, value must
  * be null.
  */
+@SuppressWarnings("PatternMatchingInstanceof")
 class InternalLazyField {
 
   // Each lazy field must have a default instance of the message type, which is used to parse the
@@ -296,6 +297,22 @@ class InternalLazyField {
   @Override
   public boolean equals(
           Object obj) {
+    if (obj == null) {
+      return false;
+    }
+    if (this == obj) {
+      return true;
+    }
+    if (obj instanceof InternalLazyField) {
+      InternalLazyField other = (InternalLazyField) obj;
+      if (this.bytes != null
+          && other.bytes != null
+          && this.extensionRegistry == other.extensionRegistry
+          && this.bytes.equals(other.bytes)) {
+        return true;
+      }
+      return this.getValue().equals(other.getValue());
+    }
     return getValue().equals(obj);
   }
 
@@ -335,7 +352,6 @@ class InternalLazyField {
     }
 
     @Override
-    @SuppressWarnings("PatternMatchingInstanceof")
     public Object setValue(Object value) {
       if (!(value instanceof MessageLite)) {
         throw new IllegalArgumentException("Lazy field only supports MessageLite values.");

@@ -1248,11 +1248,20 @@ public final class Descriptors {
           (proto.getFieldCount() > 0)
               ? new FieldDescriptor[proto.getFieldCount()]
               : EMPTY_FIELD_DESCRIPTORS;
+      boolean fieldsSorted = true;
       for (int i = 0; i < proto.getFieldCount(); i++) {
         fields[i] = new FieldDescriptor(proto.getField(i), file, this, i, false);
+        if (fieldsSorted && i > 0 && fields[i].getNumber() < fields[i - 1].getNumber()) {
+          fieldsSorted = false;
+        }
       }
-      this.fieldsSortedByNumber =
-          (proto.getFieldCount() > 0) ? fields.clone() : EMPTY_FIELD_DESCRIPTORS;
+
+      if (fieldsSorted) {
+        fieldsSortedByNumber = fields;
+      } else {
+        fieldsSortedByNumber = fields.clone();
+        Arrays.sort(fieldsSortedByNumber);
+      }
 
       extensions =
           (proto.getExtensionCount() > 0)
@@ -1344,7 +1353,6 @@ public final class Descriptors {
       for (final FieldDescriptor field : fields) {
         field.crossLink();
       }
-      Arrays.sort(fieldsSortedByNumber);
       validateNoDuplicateFieldNumbers();
 
       for (final FieldDescriptor extension : extensions) {

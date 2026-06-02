@@ -481,6 +481,7 @@ def build_targets(name):
             "//src/google/protobuf/io",
             "@abseil-cpp//absl/log:absl_check",
             "@abseil-cpp//absl/status",
+            "@abseil-cpp//absl/status:statusor",
             "@system_python//:python_headers",
         ],
     )

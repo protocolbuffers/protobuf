@@ -876,11 +876,11 @@ PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const Struct::ParseTableT_
         Struct::InternalGenerateParseTable_(Struct_class_data_.base());
 #endif  // !PROTOBUF_MESSAGE_GLOBALS
 PROTOBUF_NOINLINE void Struct::Clear() {
-// @@protoc_insertion_point(message_clear_start:google.protobuf.Struct)
+  // @@protoc_insertion_point(message_clear_start:google.protobuf.Struct)
   ::google::protobuf::internal::TSanWrite(&_impl_);
   ::uint32_t cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
-  (void) cached_has_bits;
+  (void)cached_has_bits;
 
   cached_has_bits = _impl_._has_bits_[0];
   if (CheckHasBit(cached_has_bits, 0x00000001U)) {
@@ -1198,11 +1198,11 @@ PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const Value::ParseTableT_
         Value::InternalGenerateParseTable_(Value_class_data_.base());
 #endif  // !PROTOBUF_MESSAGE_GLOBALS
 PROTOBUF_NOINLINE void Value::Clear() {
-// @@protoc_insertion_point(message_clear_start:google.protobuf.Value)
+  // @@protoc_insertion_point(message_clear_start:google.protobuf.Value)
   ::google::protobuf::internal::TSanWrite(&_impl_);
   ::uint32_t cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
-  (void) cached_has_bits;
+  (void)cached_has_bits;
 
   clear_kind();
   _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
@@ -1513,11 +1513,11 @@ PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const ListValue::ParseTableT_
         ListValue::InternalGenerateParseTable_(ListValue_class_data_.base());
 #endif  // !PROTOBUF_MESSAGE_GLOBALS
 PROTOBUF_NOINLINE void ListValue::Clear() {
-// @@protoc_insertion_point(message_clear_start:google.protobuf.ListValue)
+  // @@protoc_insertion_point(message_clear_start:google.protobuf.ListValue)
   ::google::protobuf::internal::TSanWrite(&_impl_);
   ::uint32_t cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
-  (void) cached_has_bits;
+  (void)cached_has_bits;
 
   cached_has_bits = _impl_._has_bits_[0];
   if (CheckHasBit(cached_has_bits, 0x00000001U)) {

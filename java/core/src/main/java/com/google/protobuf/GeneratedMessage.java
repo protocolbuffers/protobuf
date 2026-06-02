@@ -1034,6 +1034,14 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
     }
 
     /**
+     * Returns true if the extensions in this message are equal to the extensions in the other
+     * message. Does not consider any any other state of the messages.
+     */
+    protected boolean extensionsEquals(ExtendableMessage<?> other) {
+      return this.extensions.equals(other.extensions);
+    }
+
+    /**
      * Returns an iterator over the set extensions lazily wrapped in {@link FieldEntry} objects.
      * Order is unspecified.
      */

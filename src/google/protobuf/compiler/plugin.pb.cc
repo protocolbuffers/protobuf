@@ -990,20 +990,22 @@ PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const Version::ParseTableT_
         Version::InternalGenerateParseTable_(Version_class_data_.base());
 #endif  // !PROTOBUF_MESSAGE_GLOBALS
 PROTOBUF_NOINLINE void Version::Clear() {
-// @@protoc_insertion_point(message_clear_start:google.protobuf.compiler.Version)
+  // @@protoc_insertion_point(message_clear_start:google.protobuf.compiler.Version)
   ::google::protobuf::internal::TSanWrite(&_impl_);
   ::uint32_t cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
-  (void) cached_has_bits;
+  (void)cached_has_bits;
 
   cached_has_bits = _impl_._has_bits_[0];
   if (CheckHasBit(cached_has_bits, 0x00000001U)) {
     _impl_.suffix_.ClearNonDefaultToEmpty();
   }
   if (BatchCheckHasBit(cached_has_bits, 0x0000000eU)) {
-    ::memset(&_impl_.major_, 0, static_cast<::size_t>(
-        reinterpret_cast<char*>(&_impl_.patch_) -
-        reinterpret_cast<char*>(&_impl_.major_)) + sizeof(_impl_.patch_));
+    ::memset(
+        &_impl_.major_, 0,
+        static_cast<::size_t>(reinterpret_cast<char*>(&_impl_.patch_) -
+                              reinterpret_cast<char*>(&_impl_.major_)) +
+            sizeof(_impl_.patch_));
   }
   _impl_._has_bits_.Clear();
   _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
@@ -1301,11 +1303,11 @@ PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const CodeGeneratorRequest::ParseTableT_
         CodeGeneratorRequest::InternalGenerateParseTable_(CodeGeneratorRequest_class_data_.base());
 #endif  // !PROTOBUF_MESSAGE_GLOBALS
 PROTOBUF_NOINLINE void CodeGeneratorRequest::Clear() {
-// @@protoc_insertion_point(message_clear_start:google.protobuf.compiler.CodeGeneratorRequest)
+  // @@protoc_insertion_point(message_clear_start:google.protobuf.compiler.CodeGeneratorRequest)
   ::google::protobuf::internal::TSanWrite(&_impl_);
   ::uint32_t cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
-  (void) cached_has_bits;
+  (void)cached_has_bits;
 
   cached_has_bits = _impl_._has_bits_[0];
   if (BatchCheckHasBit(cached_has_bits, 0x0000001fU)) {
@@ -1640,11 +1642,11 @@ PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const CodeGeneratorResponse_File::ParseTableT_
         CodeGeneratorResponse_File::InternalGenerateParseTable_(CodeGeneratorResponse_File_class_data_.base());
 #endif  // !PROTOBUF_MESSAGE_GLOBALS
 PROTOBUF_NOINLINE void CodeGeneratorResponse_File::Clear() {
-// @@protoc_insertion_point(message_clear_start:google.protobuf.compiler.CodeGeneratorResponse.File)
+  // @@protoc_insertion_point(message_clear_start:google.protobuf.compiler.CodeGeneratorResponse.File)
   ::google::protobuf::internal::TSanWrite(&_impl_);
   ::uint32_t cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
-  (void) cached_has_bits;
+  (void)cached_has_bits;
 
   cached_has_bits = _impl_._has_bits_[0];
   if (BatchCheckHasBit(cached_has_bits, 0x0000000fU)) {
@@ -1932,11 +1934,11 @@ PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const CodeGeneratorResponse::ParseTableT_
         CodeGeneratorResponse::InternalGenerateParseTable_(CodeGeneratorResponse_class_data_.base());
 #endif  // !PROTOBUF_MESSAGE_GLOBALS
 PROTOBUF_NOINLINE void CodeGeneratorResponse::Clear() {
-// @@protoc_insertion_point(message_clear_start:google.protobuf.compiler.CodeGeneratorResponse)
+  // @@protoc_insertion_point(message_clear_start:google.protobuf.compiler.CodeGeneratorResponse)
   ::google::protobuf::internal::TSanWrite(&_impl_);
   ::uint32_t cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
-  (void) cached_has_bits;
+  (void)cached_has_bits;
 
   cached_has_bits = _impl_._has_bits_[0];
   if (BatchCheckHasBit(cached_has_bits, 0x00000003U)) {
@@ -1948,9 +1950,11 @@ PROTOBUF_NOINLINE void CodeGeneratorResponse::Clear() {
     }
   }
   if (BatchCheckHasBit(cached_has_bits, 0x0000001cU)) {
-    ::memset(&_impl_.supported_features_, 0, static_cast<::size_t>(
-        reinterpret_cast<char*>(&_impl_.maximum_edition_) -
-        reinterpret_cast<char*>(&_impl_.supported_features_)) + sizeof(_impl_.maximum_edition_));
+    ::memset(
+        &_impl_.supported_features_, 0,
+        static_cast<::size_t>(reinterpret_cast<char*>(&_impl_.maximum_edition_) -
+                              reinterpret_cast<char*>(&_impl_.supported_features_)) +
+            sizeof(_impl_.maximum_edition_));
   }
   _impl_._has_bits_.Clear();
   _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();

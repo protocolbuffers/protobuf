@@ -211,7 +211,7 @@ const char descriptor_table_protodef_google_2fprotobuf_2fcpp_5ffile_5foptions_2e
     "\022\007pb.file\032 google/protobuf/descriptor.pr"
     "oto\"%\n\016CppFileOptions\022\021\n\tnamespace\030\001 \001(\t"
     "X\001:K\n\003cpp\022\034.google.protobuf.FileOptions\030"
-    "\336\007 \001(\0132\027.pb.file.CppFileOptionsB\006\262\001\003\010\217Nb"
+    "\336\007 \001(\0132\027.pb.file.CppFileOptionsB\006\262\001\003\010\352\007b"
     "\010editionsp\351\007"
 };
 static const ::_pbi::DescriptorTable* PROTOBUF_NONNULL const
@@ -322,11 +322,11 @@ PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const CppFileOptions::ParseTableT_
         CppFileOptions::InternalGenerateParseTable_(CppFileOptions_class_data_.base());
 #endif  // !PROTOBUF_MESSAGE_GLOBALS
 PROTOBUF_NOINLINE void CppFileOptions::Clear() {
-// @@protoc_insertion_point(message_clear_start:pb.file.CppFileOptions)
+  // @@protoc_insertion_point(message_clear_start:pb.file.CppFileOptions)
   ::google::protobuf::internal::TSanWrite(&_impl_);
   ::uint32_t cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
-  (void) cached_has_bits;
+  (void)cached_has_bits;
 
   cached_has_bits = _impl_._has_bits_[0];
   if (CheckHasBit(cached_has_bits, 0x00000001U)) {
