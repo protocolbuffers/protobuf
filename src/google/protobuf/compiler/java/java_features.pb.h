@@ -40,15 +40,6 @@
 
 #define PROTOBUF_INTERNAL_EXPORT_google_2fprotobuf_2fcompiler_2fjava_2fjava_5ffeatures_2eproto PROTOC_EXPORT
 
-namespace google {
-namespace protobuf {
-namespace internal {
-template <typename T>
-::absl::string_view GetAnyMessageName();
-}  // namespace internal
-}  // namespace protobuf
-}  // namespace google
-
 // Internal implementation detail -- do not use these members.
 struct PROTOC_EXPORT TableStruct_google_2fprotobuf_2fcompiler_2fjava_2fjava_5ffeatures_2eproto {
   static const ::uint32_t offsets[];
@@ -269,8 +260,6 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED JavaFeatures_NestInFi
     return true;
   }
  private:
-  template <typename T>
-  friend ::absl::string_view(::google::protobuf::internal::GetAnyMessageName)();
   static ::absl::string_view FullMessageName() { return "pb.JavaFeatures.NestInFileClassFeature"; }
 
   explicit JavaFeatures_NestInFileClassFeature(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
@@ -465,8 +454,6 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED JavaFeatures final : 
   static void SharedDtor(MessageLite& self);
   void InternalSwap(JavaFeatures* PROTOBUF_NONNULL other);
  private:
-  template <typename T>
-  friend ::absl::string_view(::google::protobuf::internal::GetAnyMessageName)();
   static ::absl::string_view FullMessageName() { return "pb.JavaFeatures"; }
 
   explicit JavaFeatures(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);

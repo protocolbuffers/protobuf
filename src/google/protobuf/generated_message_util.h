@@ -425,6 +425,11 @@ struct PrivateAccess {
     return T::InternalGenerateParseTable_(class_data);
   }
 
+  template <typename T>
+  static constexpr decltype(auto) FullMessageName() {
+    return T::FullMessageName();
+  }
+
   static internal::ExtensionSet* GetExtensionSet(MessageLite* msg);
   static const internal::ExtensionSet* GetExtensionSet(const MessageLite* msg);
 
