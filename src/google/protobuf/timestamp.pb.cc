@@ -94,7 +94,7 @@ inline constexpr Timestamp::Impl_::Impl_(
 template <typename>
 constexpr Timestamp::Timestamp(::_pbi::ConstantInitialized,
                        const ::_pbi::ClassData* PROTOBUF_NONNULL class_data)
-    : ::google::protobuf::Message(
+    : Super_(
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           class_data
 #endif  // PROTOBUF_CUSTOM_VTABLE
@@ -122,10 +122,10 @@ constexpr auto Timestamp::InternalGenerateClassData_(
 #endif
           nullptr,  // IsInitialized
           &Timestamp::MergeImpl,
-          ::google::protobuf::Message::GetNewImpl<Timestamp>(),
+          Super_::GetNewImpl<Timestamp>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           &Timestamp::SharedDtor,
-          ::google::protobuf::Message::GetClearImpl<Timestamp>(), &Timestamp::ByteSizeLong,
+          Super_::GetClearImpl<Timestamp>(), &Timestamp::ByteSizeLong,
               &Timestamp::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
           PROTOBUF_FIELD_OFFSET(Timestamp, _impl_._cached_size_),
@@ -241,9 +241,9 @@ namespace protobuf {
 
 Timestamp::Timestamp(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-    : ::google::protobuf::Message(arena, Timestamp_get_class_data()) {
+    : Super_(arena, Timestamp_get_class_data()) {
 #else   // PROTOBUF_CUSTOM_VTABLE
-    : ::google::protobuf::Message(arena) {
+    : Super_(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
   SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.Timestamp)
@@ -251,9 +251,9 @@ Timestamp::Timestamp(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 Timestamp::Timestamp(
     ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const Timestamp& from)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-    : ::google::protobuf::Message(arena, Timestamp_get_class_data()),
+    : Super_(arena, Timestamp_get_class_data()),
 #else   // PROTOBUF_CUSTOM_VTABLE
-    : ::google::protobuf::Message(arena),
+    : Super_(arena),
 #endif  // PROTOBUF_CUSTOM_VTABLE
       _impl_(from._impl_) {
   _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
@@ -465,7 +465,7 @@ void Timestamp::InternalSwap(Timestamp* PROTOBUF_RESTRICT PROTOBUF_NONNULL other
 }
 
 ::google::protobuf::Metadata Timestamp::GetMetadata() const {
-  return ::google::protobuf::Message::GetMetadataImpl(GetClassData()->full());
+  return Super_::GetMetadataImpl(GetClassData()->full());
 }
 // @@protoc_insertion_point(namespace_scope)
 }  // namespace protobuf

@@ -76,6 +76,8 @@ namespace protobuf {
 
 class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Any final : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:google.protobuf.Any) */ {
+  using Super_ = ::google::protobuf::Message;
+
  public:
   inline Any() : Any(nullptr) {}
   ~Any() PROTOBUF_FINAL;
@@ -209,11 +211,11 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Any final : public 
 
   [[nodiscard]] Any* PROTOBUF_NONNULL
   New(::google::protobuf::Arena* PROTOBUF_NULLABLE arena = nullptr) const {
-    return ::google::protobuf::Message::DefaultConstruct<Any>(arena);
+    return Super_::DefaultConstruct<Any>(arena);
   }
-  using ::google::protobuf::Message::CopyFrom;
+  using Super_::CopyFrom;
   void CopyFrom(const Any& from);
-  using ::google::protobuf::Message::MergeFrom;
+  using Super_::MergeFrom;
   void MergeFrom(const Any& from) { Any::MergeImpl(*this, from); }
 
   private:

@@ -76,6 +76,8 @@ namespace protobuf {
 
 class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Duration final : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:google.protobuf.Duration) */ {
+  using Super_ = ::google::protobuf::Message;
+
  public:
   inline Duration() : Duration(nullptr) {}
   ~Duration() PROTOBUF_FINAL;
@@ -150,11 +152,11 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Duration final : pu
 
   [[nodiscard]] Duration* PROTOBUF_NONNULL
   New(::google::protobuf::Arena* PROTOBUF_NULLABLE arena = nullptr) const {
-    return ::google::protobuf::Message::DefaultConstruct<Duration>(arena);
+    return Super_::DefaultConstruct<Duration>(arena);
   }
-  using ::google::protobuf::Message::CopyFrom;
+  using Super_::CopyFrom;
   void CopyFrom(const Duration& from);
-  using ::google::protobuf::Message::MergeFrom;
+  using Super_::MergeFrom;
   void MergeFrom(const Duration& from) { Duration::MergeImpl(*this, from); }
 
   private:

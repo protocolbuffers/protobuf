@@ -76,6 +76,8 @@ namespace protobuf {
 
 class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED SourceContext final : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:google.protobuf.SourceContext) */ {
+  using Super_ = ::google::protobuf::Message;
+
  public:
   inline SourceContext() : SourceContext(nullptr) {}
   ~SourceContext() PROTOBUF_FINAL;
@@ -150,11 +152,11 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED SourceContext final
 
   [[nodiscard]] SourceContext* PROTOBUF_NONNULL
   New(::google::protobuf::Arena* PROTOBUF_NULLABLE arena = nullptr) const {
-    return ::google::protobuf::Message::DefaultConstruct<SourceContext>(arena);
+    return Super_::DefaultConstruct<SourceContext>(arena);
   }
-  using ::google::protobuf::Message::CopyFrom;
+  using Super_::CopyFrom;
   void CopyFrom(const SourceContext& from);
-  using ::google::protobuf::Message::MergeFrom;
+  using Super_::MergeFrom;
   void MergeFrom(const SourceContext& from) { SourceContext::MergeImpl(*this, from); }
 
   private:

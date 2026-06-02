@@ -94,6 +94,8 @@ namespace protobuf {
 
 class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Mixin final : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:google.protobuf.Mixin) */ {
+  using Super_ = ::google::protobuf::Message;
+
  public:
   inline Mixin() : Mixin(nullptr) {}
   ~Mixin() PROTOBUF_FINAL;
@@ -168,11 +170,11 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Mixin final : publi
 
   [[nodiscard]] Mixin* PROTOBUF_NONNULL
   New(::google::protobuf::Arena* PROTOBUF_NULLABLE arena = nullptr) const {
-    return ::google::protobuf::Message::DefaultConstruct<Mixin>(arena);
+    return Super_::DefaultConstruct<Mixin>(arena);
   }
-  using ::google::protobuf::Message::CopyFrom;
+  using Super_::CopyFrom;
   void CopyFrom(const Mixin& from);
-  using ::google::protobuf::Message::MergeFrom;
+  using Super_::MergeFrom;
   void MergeFrom(const Mixin& from) { Mixin::MergeImpl(*this, from); }
 
   private:
@@ -317,6 +319,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Mixin final : publi
 
 class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Method final : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:google.protobuf.Method) */ {
+  using Super_ = ::google::protobuf::Message;
+
  public:
   inline Method() : Method(nullptr) {}
   ~Method() PROTOBUF_FINAL;
@@ -391,11 +395,11 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Method final : publ
 
   [[nodiscard]] Method* PROTOBUF_NONNULL
   New(::google::protobuf::Arena* PROTOBUF_NULLABLE arena = nullptr) const {
-    return ::google::protobuf::Message::DefaultConstruct<Method>(arena);
+    return Super_::DefaultConstruct<Method>(arena);
   }
-  using ::google::protobuf::Message::CopyFrom;
+  using Super_::CopyFrom;
   void CopyFrom(const Method& from);
-  using ::google::protobuf::Message::MergeFrom;
+  using Super_::MergeFrom;
   void MergeFrom(const Method& from) { Method::MergeImpl(*this, from); }
 
   private:
@@ -632,6 +636,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Method final : publ
 
 class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Api final : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:google.protobuf.Api) */ {
+  using Super_ = ::google::protobuf::Message;
+
  public:
   inline Api() : Api(nullptr) {}
   ~Api() PROTOBUF_FINAL;
@@ -706,11 +712,11 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Api final : public 
 
   [[nodiscard]] Api* PROTOBUF_NONNULL
   New(::google::protobuf::Arena* PROTOBUF_NULLABLE arena = nullptr) const {
-    return ::google::protobuf::Message::DefaultConstruct<Api>(arena);
+    return Super_::DefaultConstruct<Api>(arena);
   }
-  using ::google::protobuf::Message::CopyFrom;
+  using Super_::CopyFrom;
   void CopyFrom(const Api& from);
-  using ::google::protobuf::Message::MergeFrom;
+  using Super_::MergeFrom;
   void MergeFrom(const Api& from) { Api::MergeImpl(*this, from); }
 
   private:
@@ -1273,7 +1279,7 @@ inline ::google::protobuf::SourceContext* PROTOBUF_NULLABLE Api::unsafe_arena_re
 inline ::google::protobuf::SourceContext* PROTOBUF_NONNULL Api::_internal_mutable_source_context() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   if (_impl_.source_context_ == nullptr) {
-    auto* p = ::google::protobuf::Message::DefaultConstruct<::google::protobuf::SourceContext>(GetArena());
+    auto* p = Super_::DefaultConstruct<::google::protobuf::SourceContext>(GetArena());
     _impl_.source_context_ = reinterpret_cast<::google::protobuf::SourceContext*>(p);
   }
   return _impl_.source_context_;

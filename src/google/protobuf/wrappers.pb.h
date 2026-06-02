@@ -140,6 +140,8 @@ namespace protobuf {
 
 class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED UInt64Value final : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:google.protobuf.UInt64Value) */ {
+  using Super_ = ::google::protobuf::Message;
+
  public:
   inline UInt64Value() : UInt64Value(nullptr) {}
   ~UInt64Value() PROTOBUF_FINAL;
@@ -214,11 +216,11 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED UInt64Value final :
 
   [[nodiscard]] UInt64Value* PROTOBUF_NONNULL
   New(::google::protobuf::Arena* PROTOBUF_NULLABLE arena = nullptr) const {
-    return ::google::protobuf::Message::DefaultConstruct<UInt64Value>(arena);
+    return Super_::DefaultConstruct<UInt64Value>(arena);
   }
-  using ::google::protobuf::Message::CopyFrom;
+  using Super_::CopyFrom;
   void CopyFrom(const UInt64Value& from);
-  using ::google::protobuf::Message::MergeFrom;
+  using Super_::MergeFrom;
   void MergeFrom(const UInt64Value& from) { UInt64Value::MergeImpl(*this, from); }
 
   private:
@@ -341,6 +343,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED UInt64Value final :
 
 class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED UInt32Value final : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:google.protobuf.UInt32Value) */ {
+  using Super_ = ::google::protobuf::Message;
+
  public:
   inline UInt32Value() : UInt32Value(nullptr) {}
   ~UInt32Value() PROTOBUF_FINAL;
@@ -415,11 +419,11 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED UInt32Value final :
 
   [[nodiscard]] UInt32Value* PROTOBUF_NONNULL
   New(::google::protobuf::Arena* PROTOBUF_NULLABLE arena = nullptr) const {
-    return ::google::protobuf::Message::DefaultConstruct<UInt32Value>(arena);
+    return Super_::DefaultConstruct<UInt32Value>(arena);
   }
-  using ::google::protobuf::Message::CopyFrom;
+  using Super_::CopyFrom;
   void CopyFrom(const UInt32Value& from);
-  using ::google::protobuf::Message::MergeFrom;
+  using Super_::MergeFrom;
   void MergeFrom(const UInt32Value& from) { UInt32Value::MergeImpl(*this, from); }
 
   private:
@@ -542,6 +546,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED UInt32Value final :
 
 class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED StringValue final : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:google.protobuf.StringValue) */ {
+  using Super_ = ::google::protobuf::Message;
+
  public:
   inline StringValue() : StringValue(nullptr) {}
   ~StringValue() PROTOBUF_FINAL;
@@ -616,11 +622,11 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED StringValue final :
 
   [[nodiscard]] StringValue* PROTOBUF_NONNULL
   New(::google::protobuf::Arena* PROTOBUF_NULLABLE arena = nullptr) const {
-    return ::google::protobuf::Message::DefaultConstruct<StringValue>(arena);
+    return Super_::DefaultConstruct<StringValue>(arena);
   }
-  using ::google::protobuf::Message::CopyFrom;
+  using Super_::CopyFrom;
   void CopyFrom(const StringValue& from);
-  using ::google::protobuf::Message::MergeFrom;
+  using Super_::MergeFrom;
   void MergeFrom(const StringValue& from) { StringValue::MergeImpl(*this, from); }
 
   private:
@@ -748,6 +754,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED StringValue final :
 
 class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Int64Value final : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:google.protobuf.Int64Value) */ {
+  using Super_ = ::google::protobuf::Message;
+
  public:
   inline Int64Value() : Int64Value(nullptr) {}
   ~Int64Value() PROTOBUF_FINAL;
@@ -822,11 +830,11 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Int64Value final : 
 
   [[nodiscard]] Int64Value* PROTOBUF_NONNULL
   New(::google::protobuf::Arena* PROTOBUF_NULLABLE arena = nullptr) const {
-    return ::google::protobuf::Message::DefaultConstruct<Int64Value>(arena);
+    return Super_::DefaultConstruct<Int64Value>(arena);
   }
-  using ::google::protobuf::Message::CopyFrom;
+  using Super_::CopyFrom;
   void CopyFrom(const Int64Value& from);
-  using ::google::protobuf::Message::MergeFrom;
+  using Super_::MergeFrom;
   void MergeFrom(const Int64Value& from) { Int64Value::MergeImpl(*this, from); }
 
   private:
@@ -949,6 +957,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Int64Value final : 
 
 class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Int32Value final : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:google.protobuf.Int32Value) */ {
+  using Super_ = ::google::protobuf::Message;
+
  public:
   inline Int32Value() : Int32Value(nullptr) {}
   ~Int32Value() PROTOBUF_FINAL;
@@ -1023,11 +1033,11 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Int32Value final : 
 
   [[nodiscard]] Int32Value* PROTOBUF_NONNULL
   New(::google::protobuf::Arena* PROTOBUF_NULLABLE arena = nullptr) const {
-    return ::google::protobuf::Message::DefaultConstruct<Int32Value>(arena);
+    return Super_::DefaultConstruct<Int32Value>(arena);
   }
-  using ::google::protobuf::Message::CopyFrom;
+  using Super_::CopyFrom;
   void CopyFrom(const Int32Value& from);
-  using ::google::protobuf::Message::MergeFrom;
+  using Super_::MergeFrom;
   void MergeFrom(const Int32Value& from) { Int32Value::MergeImpl(*this, from); }
 
   private:
@@ -1150,6 +1160,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Int32Value final : 
 
 class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FloatValue final : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:google.protobuf.FloatValue) */ {
+  using Super_ = ::google::protobuf::Message;
+
  public:
   inline FloatValue() : FloatValue(nullptr) {}
   ~FloatValue() PROTOBUF_FINAL;
@@ -1224,11 +1236,11 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FloatValue final : 
 
   [[nodiscard]] FloatValue* PROTOBUF_NONNULL
   New(::google::protobuf::Arena* PROTOBUF_NULLABLE arena = nullptr) const {
-    return ::google::protobuf::Message::DefaultConstruct<FloatValue>(arena);
+    return Super_::DefaultConstruct<FloatValue>(arena);
   }
-  using ::google::protobuf::Message::CopyFrom;
+  using Super_::CopyFrom;
   void CopyFrom(const FloatValue& from);
-  using ::google::protobuf::Message::MergeFrom;
+  using Super_::MergeFrom;
   void MergeFrom(const FloatValue& from) { FloatValue::MergeImpl(*this, from); }
 
   private:
@@ -1351,6 +1363,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FloatValue final : 
 
 class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED DoubleValue final : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:google.protobuf.DoubleValue) */ {
+  using Super_ = ::google::protobuf::Message;
+
  public:
   inline DoubleValue() : DoubleValue(nullptr) {}
   ~DoubleValue() PROTOBUF_FINAL;
@@ -1425,11 +1439,11 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED DoubleValue final :
 
   [[nodiscard]] DoubleValue* PROTOBUF_NONNULL
   New(::google::protobuf::Arena* PROTOBUF_NULLABLE arena = nullptr) const {
-    return ::google::protobuf::Message::DefaultConstruct<DoubleValue>(arena);
+    return Super_::DefaultConstruct<DoubleValue>(arena);
   }
-  using ::google::protobuf::Message::CopyFrom;
+  using Super_::CopyFrom;
   void CopyFrom(const DoubleValue& from);
-  using ::google::protobuf::Message::MergeFrom;
+  using Super_::MergeFrom;
   void MergeFrom(const DoubleValue& from) { DoubleValue::MergeImpl(*this, from); }
 
   private:
@@ -1552,6 +1566,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED DoubleValue final :
 
 class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED BytesValue final : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:google.protobuf.BytesValue) */ {
+  using Super_ = ::google::protobuf::Message;
+
  public:
   inline BytesValue() : BytesValue(nullptr) {}
   ~BytesValue() PROTOBUF_FINAL;
@@ -1626,11 +1642,11 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED BytesValue final : 
 
   [[nodiscard]] BytesValue* PROTOBUF_NONNULL
   New(::google::protobuf::Arena* PROTOBUF_NULLABLE arena = nullptr) const {
-    return ::google::protobuf::Message::DefaultConstruct<BytesValue>(arena);
+    return Super_::DefaultConstruct<BytesValue>(arena);
   }
-  using ::google::protobuf::Message::CopyFrom;
+  using Super_::CopyFrom;
   void CopyFrom(const BytesValue& from);
-  using ::google::protobuf::Message::MergeFrom;
+  using Super_::MergeFrom;
   void MergeFrom(const BytesValue& from) { BytesValue::MergeImpl(*this, from); }
 
   private:
@@ -1758,6 +1774,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED BytesValue final : 
 
 class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED BoolValue final : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:google.protobuf.BoolValue) */ {
+  using Super_ = ::google::protobuf::Message;
+
  public:
   inline BoolValue() : BoolValue(nullptr) {}
   ~BoolValue() PROTOBUF_FINAL;
@@ -1832,11 +1850,11 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED BoolValue final : p
 
   [[nodiscard]] BoolValue* PROTOBUF_NONNULL
   New(::google::protobuf::Arena* PROTOBUF_NULLABLE arena = nullptr) const {
-    return ::google::protobuf::Message::DefaultConstruct<BoolValue>(arena);
+    return Super_::DefaultConstruct<BoolValue>(arena);
   }
-  using ::google::protobuf::Message::CopyFrom;
+  using Super_::CopyFrom;
   void CopyFrom(const BoolValue& from);
-  using ::google::protobuf::Message::MergeFrom;
+  using Super_::MergeFrom;
   void MergeFrom(const BoolValue& from) { BoolValue::MergeImpl(*this, from); }
 
   private:

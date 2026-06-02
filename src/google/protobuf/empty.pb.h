@@ -77,6 +77,8 @@ namespace protobuf {
 
 class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Empty final : public ::google::protobuf::internal::ZeroFieldsBase
 /* @@protoc_insertion_point(class_definition:google.protobuf.Empty) */ {
+  using Super_ = ::google::protobuf::internal::ZeroFieldsBase;
+
  public:
   inline Empty() : Empty(nullptr) {}
 
@@ -150,12 +152,12 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Empty final : publi
 
   [[nodiscard]] Empty* PROTOBUF_NONNULL
   New(::google::protobuf::Arena* PROTOBUF_NULLABLE arena = nullptr) const {
-    return ::google::protobuf::internal::ZeroFieldsBase::DefaultConstruct<Empty>(arena);
+    return Super_::DefaultConstruct<Empty>(arena);
   }
-  using ::google::protobuf::internal::ZeroFieldsBase::CopyFrom;
-  inline void CopyFrom(const Empty& from) { ::google::protobuf::internal::ZeroFieldsBase::CopyImpl(*this, from); }
-  using ::google::protobuf::internal::ZeroFieldsBase::MergeFrom;
-  void MergeFrom(const Empty& from) { ::google::protobuf::internal::ZeroFieldsBase::MergeImpl(*this, from); }
+  using Super_::CopyFrom;
+  inline void CopyFrom(const Empty& from) { Super_::CopyImpl(*this, from); }
+  using Super_::MergeFrom;
+  void MergeFrom(const Empty& from) { Super_::MergeImpl(*this, from); }
 
   public:
   [[nodiscard]] bool IsInitialized() const {

@@ -76,6 +76,8 @@ namespace protobuf {
 
 class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FieldMask final : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:google.protobuf.FieldMask) */ {
+  using Super_ = ::google::protobuf::Message;
+
  public:
   inline FieldMask() : FieldMask(nullptr) {}
   ~FieldMask() PROTOBUF_FINAL;
@@ -150,11 +152,11 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FieldMask final : p
 
   [[nodiscard]] FieldMask* PROTOBUF_NONNULL
   New(::google::protobuf::Arena* PROTOBUF_NULLABLE arena = nullptr) const {
-    return ::google::protobuf::Message::DefaultConstruct<FieldMask>(arena);
+    return Super_::DefaultConstruct<FieldMask>(arena);
   }
-  using ::google::protobuf::Message::CopyFrom;
+  using Super_::CopyFrom;
   void CopyFrom(const FieldMask& from);
-  using ::google::protobuf::Message::MergeFrom;
+  using Super_::MergeFrom;
   void MergeFrom(const FieldMask& from) { FieldMask::MergeImpl(*this, from); }
 
   private:
