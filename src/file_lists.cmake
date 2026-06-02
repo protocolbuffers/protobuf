@@ -694,6 +694,7 @@ set(libupb_srcs
   ${protobuf_SOURCE_DIR}/upb/mini_table/generated_registry.c
   ${protobuf_SOURCE_DIR}/upb/mini_table/internal/message.c
   ${protobuf_SOURCE_DIR}/upb/mini_table/message.c
+  ${protobuf_SOURCE_DIR}/upb/port/port.c
   ${protobuf_SOURCE_DIR}/upb/reflection/def_pool.c
   ${protobuf_SOURCE_DIR}/upb/reflection/def_type.c
   ${protobuf_SOURCE_DIR}/upb/reflection/desc_state.c
