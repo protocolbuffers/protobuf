@@ -29,6 +29,7 @@
 #include "google/protobuf/compiler/split_map.h"
 #include "google/protobuf/compiler/profile_bootstrap.pb.h"
 #include "google/protobuf/descriptor.pb.h"
+#include "absl/container/flat_hash_map.h"
 #include "absl/log/absl_log.h"
 #include "absl/log/log.h"
 #include "absl/status/status.h"
@@ -49,6 +50,7 @@
 #include "third_party/gloop/util/status/status_macros.h"
 #include "google/protobuf/compiler/cpp/cpp_access_info_parse_helper.h"
 #include "google/protobuf/compiler/cpp/helpers.h"
+#include "google/protobuf/compiler/cpp/message.h"
 #include "google/protobuf/compiler/cpp/options.h"
 #include "google/protobuf/descriptor.h"
 #include "third_party/re2/re2.h"
@@ -116,12 +118,12 @@ class PDProtoAnalyzer {
     options_.scc_analyzer = scc_analyzer_.get();
   }
 
-  void SetFile(const FileDescriptor* file) {
-    if (current_file_ != file) {
-      split_map_ = cpp::CreateSplitMap(file, options_);
-      options_.split_map = &split_map_;
-      current_file_ = file;
-    }
+  void SetDescriptor(const Descriptor* descriptor) {
+    current_file_ = descriptor->file();
+
+    absl::flat_hash_map<absl::string_view, std::string> vars;
+    message_generator_ = std::make_unique<cpp::MessageGenerator>(
+        descriptor, /*ignored=*/vars, /*index_in_file_messages=*/0, options_);
   }
 
   bool HasProfile(const Descriptor* descriptor) const {
@@ -171,7 +173,7 @@ class PDProtoAnalyzer {
       return PDProtoOptimization::kLazy;
     }
 
-    if (cpp::ShouldSplit(field, options_)) {
+    if (message_generator_->field_layout().SplitGroup(field).has_value()) {
       return PDProtoOptimization::kSplit;
     }
 
@@ -213,6 +215,7 @@ class PDProtoAnalyzer {
   AccessInfoMap info_map_;
   SplitMap split_map_;
   std::unique_ptr<cpp::MessageSCCAnalyzer> scc_analyzer_;
+  std::unique_ptr<cpp::MessageGenerator> message_generator_;
   const FileDescriptor* current_file_ = nullptr;
 };
 
@@ -464,7 +467,7 @@ static absl::StatusOr<Stats> AnalyzeProfileProto(
 
       if (descriptor == nullptr) continue;
 
-      analyzer.SetFile(descriptor->file());
+      analyzer.SetDescriptor(descriptor);
       if (analyzer.HasProfile(descriptor)) {
         bool message_header = false;
         for (int i = 0; i < descriptor->field_count(); ++i) {

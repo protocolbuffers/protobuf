@@ -89,6 +89,17 @@ PROTOBUF_ALWAYS_INLINE void SetCachedHasBit(uint64_t& cached_hasbits,
   cached_hasbits |= uint64_t{1} << hasbit_idx;
 }
 
+uint32_t GetSplitOffset(const TcParseTableBase* table,
+                        uint32_t split_group_index) {
+  return table->field_aux(kSplitOffsetAuxIdx)->offset +
+         split_group_index * sizeof(void*);
+}
+
+uint32_t GetSizeofSplit(const TcParseTableBase* table,
+                        uint32_t split_group_index) {
+  return table->field_aux(kSplitSizeAuxIdx + split_group_index)->offset;
+}
+
 }  // namespace
 
 LazyEagerVerifyFnType TcParser::GetLazyEagerVerifyFn(
@@ -125,15 +136,19 @@ absl::Status TcParser::VerifyHasBitConsistency(const MessageLite* msg,
     const void* default_base = table->default_instance();
     const bool is_split = (entry.type_card & field_layout::kSplitMask) ==
                           field_layout::kSplitTrue;
+    absl::optional<uint32_t> split_group_index;
     if (is_split) {
-      const size_t offset = table->field_aux(kSplitOffsetAuxIdx)->offset;
+      split_group_index =
+          (entry.type_card & field_layout::kSplitGroupIndexMask) >>
+          field_layout::kSplitGroupIndexShift;
+      const size_t offset = GetSplitOffset(table, *split_group_index);
       base = TcParser::RefAt<const void*>(base, offset);
       default_base = TcParser::RefAt<const void*>(default_base, offset);
     }
 
     if (cardinality == fl::kFcRepeated) {
-      if (!has_bit &&
-          !RepeatedFieldIsEmptySlow(msg, table, entry, base, is_split)) {
+      if (!has_bit && !RepeatedFieldIsEmptySlow(msg, table, entry, base,
+                                                split_group_index)) {
         return make_error_status();
       }
       continue;
@@ -228,10 +243,10 @@ void TcParser::CheckHasBitConsistency(const MessageLite* msg,
   ABSL_CHECK_OK(VerifyHasBitConsistency(msg, table));
 }
 
-bool TcParser::RepeatedFieldIsEmptySlow(const MessageLite* msg,
-                                        const TcParseTableBase* table,
-                                        const FieldEntry& entry,
-                                        const void* base, bool is_split) {
+bool TcParser::RepeatedFieldIsEmptySlow(
+    const MessageLite* msg, const TcParseTableBase* table,
+    const FieldEntry& entry, const void* base,
+    absl::optional<uint32_t> split_group_index) {
   namespace fl = internal::field_layout;
 
   switch (entry.type_card & fl::kFkMask) {
@@ -242,20 +257,20 @@ bool TcParser::RepeatedFieldIsEmptySlow(const MessageLite* msg,
       switch (entry.type_card & fl::kRepMask) {
         case fl::kRep8Bits: {
           const auto& repeated_field =
-              GetRepeatedFieldAt<RepeatedField<uint8_t>>(base, entry.offset,
-                                                         msg, is_split);
+              GetRepeatedFieldAt<RepeatedField<uint8_t>>(
+                  base, entry.offset, msg, split_group_index.has_value());
           return repeated_field.empty();
         }
         case fl::kRep32Bits: {
           const auto& repeated_field =
-              GetRepeatedFieldAt<RepeatedField<uint32_t>>(base, entry.offset,
-                                                          msg, is_split);
+              GetRepeatedFieldAt<RepeatedField<uint32_t>>(
+                  base, entry.offset, msg, split_group_index.has_value());
           return repeated_field.empty();
         }
         case fl::kRep64Bits: {
           const auto& repeated_field =
-              GetRepeatedFieldAt<RepeatedField<uint64_t>>(base, entry.offset,
-                                                          msg, is_split);
+              GetRepeatedFieldAt<RepeatedField<uint64_t>>(
+                  base, entry.offset, msg, split_group_index.has_value());
           return repeated_field.empty();
         }
         default:
@@ -274,8 +289,8 @@ bool TcParser::RepeatedFieldIsEmptySlow(const MessageLite* msg,
         }
         case fl::kRepCord: {
           const auto& repeated_field =
-              GetRepeatedFieldAt<RepeatedField<absl::Cord>>(base, entry.offset,
-                                                            msg, is_split);
+              GetRepeatedFieldAt<RepeatedField<absl::Cord>>(
+                  base, entry.offset, msg, split_group_index.has_value());
           return repeated_field.empty();
         }
         default:
@@ -285,7 +300,7 @@ bool TcParser::RepeatedFieldIsEmptySlow(const MessageLite* msg,
     }
     case fl::kFkMessage: {
       const auto& repeated_field = GetRepeatedFieldAt<RepeatedPtrFieldBase>(
-          base, entry.offset, msg, is_split);
+          base, entry.offset, msg, split_group_index.has_value());
       return repeated_field.empty();
     }
     case fl::kFkMap: {
@@ -2086,27 +2101,21 @@ void TcParser::ChangeOneof(const TcParseTableBase* table,
   InitOneof(table, class_data, entry, msg);
 }
 
-namespace {
-uint32_t GetSplitOffset(const TcParseTableBase* table) {
-  return table->field_aux(kSplitOffsetAuxIdx)->offset;
-}
-
-uint32_t GetSizeofSplit(const TcParseTableBase* table) {
-  return table->field_aux(kSplitSizeAuxIdx)->offset;
-}
-}  // namespace
-
-void* TcParser::MaybeGetSplitBase(MessageLite* msg, const bool is_split,
-                                  const TcParseTableBase* table) {
+void* TcParser::MaybeGetSplitBase(MessageLite* msg, bool is_split,
+                                  const TcParseTableBase* table,
+                                  uint16_t type_card) {
   void* out = msg;
   if (is_split) {
-    const uint32_t split_offset = GetSplitOffset(table);
+    const uint32_t split_group_index =
+        (type_card & field_layout::kSplitGroupIndexMask) >>
+        field_layout::kSplitGroupIndexShift;
+    const uint32_t split_offset = GetSplitOffset(table, split_group_index);
     void* default_split =
         TcParser::RefAt<void*>(table->default_instance(), split_offset);
     void*& split = TcParser::RefAt<void*>(msg, split_offset);
     if (split == default_split) {
       // Allocate split instance when needed.
-      uint32_t size = GetSizeofSplit(table);
+      uint32_t size = GetSizeofSplit(table, split_group_index);
       Arena* arena = msg->GetArena();
       split =
           (arena == nullptr) ? Allocate(size) : arena->AllocateAligned(size);
@@ -2147,7 +2156,7 @@ PROTOBUF_NOINLINE const char* TcParser::MpFixed(PROTOBUF_TC_PARAM_DECL) {
     ChangeOneof(table, /*class_data=*/nullptr, entry, data.tag() >> 3, ctx,
                 msg);
   }
-  void* const base = MaybeGetSplitBase(msg, is_split, table);
+  void* const base = MaybeGetSplitBase(msg, is_split, table, type_card);
   // Copy the value:
   if (rep == field_layout::kRep64Bits) {
     RefAt<uint64_t>(base, entry.offset) = UnalignedLoad<uint64_t>(ptr);
@@ -2173,8 +2182,8 @@ PROTOBUF_NOINLINE const char* TcParser::MpRepeatedFixed(
 
   SetHasForRepeated(entry, msg);
 
-  void* const base = MaybeGetSplitBase(msg, is_split, table);
   const uint16_t type_card = entry.type_card;
+  void* const base = MaybeGetSplitBase(msg, is_split, table, type_card);
   const uint16_t rep = type_card & field_layout::kRepMask;
   Arena* arena = msg->GetArena();
   if (rep == field_layout::kRep64Bits) {
@@ -2234,7 +2243,7 @@ PROTOBUF_NOINLINE const char* TcParser::MpPackedFixed(PROTOBUF_TC_PARAM_DECL) {
 
   SetHasForRepeated(entry, msg);
 
-  void* const base = MaybeGetSplitBase(msg, is_split, table);
+  void* const base = MaybeGetSplitBase(msg, is_split, table, type_card);
   int size = ReadSize(&ptr);
   uint16_t rep = type_card & field_layout::kRepMask;
   Arena* arena = msg->GetArena();
@@ -2307,7 +2316,7 @@ PROTOBUF_NOINLINE const char* TcParser::MpVarint(PROTOBUF_TC_PARAM_DECL) {
                 msg);
   }
 
-  void* const base = MaybeGetSplitBase(msg, is_split, table);
+  void* const base = MaybeGetSplitBase(msg, is_split, table, type_card);
   if (rep == field_layout::kRep64Bits) {
     RefAt<uint64_t>(base, entry.offset) = tmp;
   } else if (rep == field_layout::kRep32Bits) {
@@ -2333,7 +2342,7 @@ const char* TcParser::MpRepeatedVarintT(PROTOBUF_TC_PARAM_DECL) {
 
   const char* ptr2 = ptr;
   uint32_t next_tag;
-  void* const base = MaybeGetSplitBase(msg, is_split, table);
+  void* const base = MaybeGetSplitBase(msg, is_split, table, entry.type_card);
   auto& field = MaybeCreateRepeatedFieldRefAt<FieldType, is_split>(
       base, entry.offset, msg);
   Arena* arena = msg->GetArena();
@@ -2443,7 +2452,7 @@ const char* TcParser::MpPackedVarintT(PROTOBUF_TC_PARAM_DECL) {
   const bool is_zigzag = xform_val == field_layout::kTvZigZag;
   const bool is_validated_enum = xform_val & field_layout::kTvEnum;
 
-  void* const base = MaybeGetSplitBase(msg, is_split, table);
+  void* const base = MaybeGetSplitBase(msg, is_split, table, entry.type_card);
   auto* field = &MaybeCreateRepeatedFieldRefAt<FieldType, is_split>(
       base, entry.offset, msg);
   Arena* arena = msg->GetArena();
@@ -2582,7 +2591,7 @@ PROTOBUF_NOINLINE const char* TcParser::MpString(PROTOBUF_TC_PARAM_DECL) {
   }
 
   bool is_valid = false;
-  void* const base = MaybeGetSplitBase(msg, is_split, table);
+  void* const base = MaybeGetSplitBase(msg, is_split, table, type_card);
   switch (rep) {
     case field_layout::kRepAString: {
       auto& field = RefAt<ArenaStringPtr>(base, entry.offset);
@@ -2661,7 +2670,7 @@ PROTOBUF_NOINLINE const char* TcParser::MpRepeatedString(
 
   const uint16_t rep = type_card & field_layout::kRepMask;
   const uint16_t xform_val = type_card & field_layout::kTvMask;
-  void* const base = MaybeGetSplitBase(msg, is_split, table);
+  void* const base = MaybeGetSplitBase(msg, is_split, table, type_card);
   auto* arena = msg->GetArena();
   switch (rep) {
     case field_layout::kRepSString: {
@@ -2775,7 +2784,7 @@ PROTOBUF_NOINLINE const char* TcParser::MpMessage(PROTOBUF_TC_PARAM_DECL) {
 
   SyncHasbits(msg, hasbits, table);
 
-  void* const base = MaybeGetSplitBase(msg, is_split, table);
+  void* const base = MaybeGetSplitBase(msg, is_split, table, type_card);
   MessageLite*& field = RefAt<MessageLite*>(base, entry.offset);
   if (field == nullptr) {
     field = NewMessage(class_data, msg->GetArena());
@@ -2811,7 +2820,7 @@ const char* TcParser::MpRepeatedMessageOrGroup(PROTOBUF_TC_PARAM_DECL) {
     }
   }
 
-  void* const base = MaybeGetSplitBase(msg, is_split, table);
+  void* const base = MaybeGetSplitBase(msg, is_split, table, type_card);
   RepeatedPtrFieldBase& field =
       MaybeCreateRepeatedRefAt<RepeatedPtrFieldBase, is_split>(
           base, entry.offset, msg);
@@ -3054,7 +3063,7 @@ PROTOBUF_NOINLINE const char* TcParser::MpMap(PROTOBUF_TC_PARAM_DECL) {
   // Otherwise, it points into a MapField and we must synchronize with
   // reflection. It is done by calling the MutableMap() virtual function on the
   // field's base class.
-  void* const base = MaybeGetSplitBase(msg, is_split, table);
+  void* const base = MaybeGetSplitBase(msg, is_split, table, entry.type_card);
   UntypedMapBase& map =
       map_info.use_lite
           ? RefAt<UntypedMapBase>(base, entry.offset)
@@ -3189,7 +3198,8 @@ std::string TypeCardToString(uint16_t type_card) {
 
   switch (type_card & fl::kFkMask) {
     case fl::kFkString: {
-      switch (type_card & ~fl::kFcMask & ~fl::kRepMask & ~fl::kSplitMask) {
+      switch (type_card & ~fl::kFcMask & ~fl::kRepMask & ~fl::kSplitMask &
+              ~fl::kSplitGroupIndexMask) {
         PROTOBUF_INTERNAL_TYPE_CARD_CASE(Bytes);
         PROTOBUF_INTERNAL_TYPE_CARD_CASE(Utf8String);
         default:
@@ -3246,7 +3256,8 @@ std::string TypeCardToString(uint16_t type_card) {
     case fl::kFkPackedVarint:
     case fl::kFkFixed:
     case fl::kFkPackedFixed: {
-      switch (type_card & ~fl::kFcMask & ~fl::kSplitMask) {
+      switch (type_card & ~fl::kFcMask & ~fl::kSplitMask &
+              ~fl::kSplitGroupIndexMask) {
         PROTOBUF_INTERNAL_TYPE_CARD_CASE(Bool);
         PROTOBUF_INTERNAL_TYPE_CARD_CASE(Fixed32);
         PROTOBUF_INTERNAL_TYPE_CARD_CASE(UInt32);
@@ -3287,6 +3298,9 @@ std::string TypeCardToString(uint16_t type_card) {
 
   if (type_card & fl::kSplitMask) {
     absl::StrAppend(&out, " | ::_fl::kSplitTrue");
+    absl::StrAppend(
+        &out,
+        absl::StrFormat(" | 0x%04x", type_card & fl::kSplitGroupIndexMask));
   }
 
 #undef PROTOBUF_INTERNAL_TYPE_CARD_CASE

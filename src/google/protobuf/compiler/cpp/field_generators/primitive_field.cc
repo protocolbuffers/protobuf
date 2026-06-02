@@ -11,7 +11,6 @@
 
 #include <cstddef>
 #include <memory>
-#include <string>
 #include <vector>
 
 #include "absl/log/absl_check.h"
@@ -20,7 +19,7 @@
 #include "absl/strings/string_view.h"
 #include "absl/types/optional.h"
 #include "google/protobuf/compiler/cpp/field.h"
-#include "google/protobuf/compiler/cpp/field_generators/generators.h"
+#include "google/protobuf/compiler/cpp/field_layout.h"
 #include "google/protobuf/compiler/cpp/helpers.h"
 #include "google/protobuf/compiler/cpp/options.h"
 #include "google/protobuf/descriptor.h"
@@ -81,22 +80,26 @@ absl::optional<size_t> FixedSize(FieldDescriptor::Type type) {
   return absl::nullopt;
 }
 
-std::vector<Sub> Vars(const FieldDescriptor* field, const Options& options) {
-  bool cold = ShouldSplit(field, options);
+std::vector<Sub> Vars(const FieldDescriptor* field, const Options& options,
+                      const FieldLayout& field_layout) {
   return {
       {"Type", PrimitiveTypeName(options, field->cpp_type())},
       {"kDefault", DefaultValue(options, field)},
-      {"_field_cached_byte_size_", MakeVarintCachedSizeFieldName(field, cold)},
+      {"_field_cached_byte_size_",
+       MakeVarintCachedSizeFieldName(field, field_layout.SplitGroup(field))},
   };
 }
 
 class SingularPrimitive final : public FieldGeneratorBase {
  public:
-  SingularPrimitive(const FieldDescriptor* field, const Options& opts)
-      : FieldGeneratorBase(field, opts), opts_(&opts) {}
+  SingularPrimitive(const FieldDescriptor* field, const Options& opts,
+                    const FieldLayout& field_layout)
+      : FieldGeneratorBase(field, opts, field_layout), opts_(&opts) {}
   ~SingularPrimitive() override = default;
 
-  std::vector<Sub> MakeVars() const override { return Vars(field_, *opts_); }
+  std::vector<Sub> MakeVars() const override {
+    return Vars(field_, *opts_, field_layout());
+  }
 
   void GeneratePrivateMembers(io::Printer* p) const override {
     p->Emit(R"cc(
@@ -282,16 +285,19 @@ void SingularPrimitive::GenerateByteSize(io::Printer* p) const {
 
 class RepeatedPrimitive final : public FieldGeneratorBase {
  public:
-  RepeatedPrimitive(const FieldDescriptor* field, const Options& opts)
-      : FieldGeneratorBase(field, opts),
+  RepeatedPrimitive(const FieldDescriptor* field, const Options& opts,
+                    const FieldLayout& field_layout)
+      : FieldGeneratorBase(field, opts, field_layout),
         opts_(&opts),
         cpp_repeated_type_(CalculateFieldDescriptorRepeatedType(field)) {}
   ~RepeatedPrimitive() override = default;
 
-  std::vector<Sub> MakeVars() const override { return Vars(field_, *opts_); }
+  std::vector<Sub> MakeVars() const override {
+    return Vars(field_, *opts_, field_layout());
+  }
 
   void GenerateClearingCode(io::Printer* p) const override {
-    if (should_split()) {
+    if (split_group_index().has_value()) {
       p->Emit("$field_$.ClearIfNotDefault();\n");
     } else {
       p->Emit("$field_$.Clear();\n");
@@ -306,7 +312,7 @@ class RepeatedPrimitive final : public FieldGeneratorBase {
         _this->_internal_mutable_$name$()->MergeFrom(from._internal_$name$());
       )cc");
     };
-    if (!should_split()) {
+    if (!split_group_index().has_value()) {
       body();
     } else {
       p->Emit({{"body", body}}, R"cc(
@@ -318,14 +324,14 @@ class RepeatedPrimitive final : public FieldGeneratorBase {
   }
 
   void GenerateSwappingCode(io::Printer* p) const override {
-    ABSL_CHECK(!should_split());
+    ABSL_CHECK(!split_group_index().has_value());
     p->Emit(R"cc(
       $field_$.InternalSwap(&other->$field_$);
     )cc");
   }
 
   void GenerateDestructorCode(io::Printer* p) const override {
-    if (should_split()) {
+    if (split_group_index().has_value()) {
       p->Emit(R"cc(
         this_.$field_$.DeleteIfNotDefault();
       )cc");
@@ -333,7 +339,7 @@ class RepeatedPrimitive final : public FieldGeneratorBase {
   }
 
   void GenerateCopyConstructorCode(io::Printer* p) const override {
-    if (should_split()) {
+    if (split_group_index().has_value()) {
       p->Emit(R"cc(
         if (!from._internal_$name$().empty()) {
           _internal_mutable_$name$()->MergeFrom(from._internal_$name$());
@@ -349,7 +355,7 @@ class RepeatedPrimitive final : public FieldGeneratorBase {
   }
 
   void GenerateAggregateInitializer(io::Printer* p) const override {
-    ABSL_CHECK(!should_split());
+    ABSL_CHECK(!split_group_index().has_value());
     p->Emit({InternalMetadataOffsetSub(p)},
             R"cc(
               decltype($field_$){$internal_metadata_offset$},
@@ -357,7 +363,7 @@ class RepeatedPrimitive final : public FieldGeneratorBase {
   }
 
   void GenerateCopyAggregateInitializer(io::Printer* p) const override {
-    ABSL_CHECK(!should_split());
+    ABSL_CHECK(!split_group_index().has_value());
     p->Emit(R"cc(
       decltype($field_$){from.$field_$},
     )cc");
@@ -401,7 +407,7 @@ class RepeatedPrimitive final : public FieldGeneratorBase {
     bool is_packed_varint =
         field_->is_packed() && !FixedSize(field_->type()).has_value();
     return is_packed_varint && HasGeneratedMethods(field_->file(), *opts_) &&
-           !should_split();
+           !split_group_index().has_value();
   }
 
   const Options* opts_;
@@ -409,7 +415,7 @@ class RepeatedPrimitive final : public FieldGeneratorBase {
 };
 
 void RepeatedPrimitive::GeneratePrivateMembers(io::Printer* p) const {
-  if (should_split()) {
+  if (split_group_index().has_value()) {
     p->Emit(R"cc(
       $pbi$::RawPtr<$pb$::RepeatedField<$Type$>> $name$_;
     )cc");
@@ -552,7 +558,7 @@ void RepeatedPrimitive::GenerateInlineAccessorDefinitions(
       break;
   }
 
-  if (should_split()) {
+  if (split_group_index().has_value()) {
     p->Emit(R"cc(
       inline const $pb$::RepeatedField<$Type$>&
       $Msg$::_internal_$name_internal$() const {
@@ -687,13 +693,15 @@ void RepeatedPrimitive::GenerateByteSize(io::Printer* p) const {
 }  // namespace
 
 std::unique_ptr<FieldGeneratorBase> MakeSinguarPrimitiveGenerator(
-    const FieldDescriptor* desc, const Options& options) {
-  return absl::make_unique<SingularPrimitive>(desc, options);
+    const FieldDescriptor* desc, const Options& options,
+    const FieldLayout& field_layout) {
+  return absl::make_unique<SingularPrimitive>(desc, options, field_layout);
 }
 
 std::unique_ptr<FieldGeneratorBase> MakeRepeatedPrimitiveGenerator(
-    const FieldDescriptor* desc, const Options& options) {
-  return absl::make_unique<RepeatedPrimitive>(desc, options);
+    const FieldDescriptor* desc, const Options& options,
+    const FieldLayout& field_layout) {
+  return absl::make_unique<RepeatedPrimitive>(desc, options, field_layout);
 }
 
 }  // namespace cpp

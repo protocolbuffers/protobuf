@@ -55,6 +55,7 @@ std::vector<const FieldDescriptor*> GetOrderedFields(
 ParseFunctionGenerator::ParseFunctionGenerator(
     const Descriptor* descriptor, bool has_hasbits,
     GetHasBitIndex get_has_bit_index, const Options& options,
+    const SplitMap& split_map,
     const absl::flat_hash_map<absl::string_view, std::string>& vars,
     int index_in_file_messages)
     : descriptor_(descriptor),
@@ -64,7 +65,7 @@ ParseFunctionGenerator::ParseFunctionGenerator(
       has_hasbits_(has_hasbits),
       index_in_file_messages_(index_in_file_messages) {
   auto fields = BuildFieldOptions(descriptor_, ordered_fields_,
-                                  get_has_bit_index, options_);
+                                  get_has_bit_index, options_, split_map);
   tc_table_info_ = std::make_unique<TailCallTableInfo>(
       BuildTcTableInfoFromDescriptor(descriptor_, options_, fields));
   SetCommonMessageDataVariables(descriptor_, &variables_);
@@ -75,7 +76,8 @@ std::vector<internal::TailCallTableInfo::FieldOptions>
 ParseFunctionGenerator::BuildFieldOptions(
     const Descriptor* descriptor,
     absl::Span<const FieldDescriptor* const> ordered_fields,
-    GetHasBitIndex get_has_bit_index, const Options& options) {
+    GetHasBitIndex get_has_bit_index, const Options& options,
+    const SplitMap& split_map) {
   using FieldOptions = TailCallTableInfo::FieldOptions;
   std::vector<FieldOptions> fields;
   fields.reserve(ordered_fields.size());
@@ -106,7 +108,7 @@ ParseFunctionGenerator::BuildFieldOptions(
         GetLazyStyle(field, options),
         IsImplicitWeakField(field, options),
         /* use_direct_tcparser_table */ true,
-        ShouldSplit(field, options),
+        split_map.SplitGroup(field),
         str_options(),
     });
   }
@@ -300,7 +302,7 @@ static std::string TcParseFunctionName(internal::TcParseFunction func) {
 }
 
 void ParseFunctionGenerator::GenerateParseTableHelperDefinition(
-    io::Printer* p) {
+    io::Printer* p, const SplitMap& split_map) {
   auto v = p->WithVars(variables_);
   // For simplicity and speed, the table is not covering all proto
   // configurations. This model uses a fallback to cover all situations that
@@ -412,16 +414,18 @@ void ParseFunctionGenerator::GenerateParseTableHelperDefinition(
   };
 
   auto GenerateAuxEntries = [&] {
+    uint32_t split_group_index = 0;
     for (const auto& aux_entry : tc_table_info_->aux_entries) {
       switch (aux_entry.type) {
         case TailCallTableInfo::kNothing:
           p->Emit("{},\n");
           break;
         case TailCallTableInfo::kSplitOffset:
-          p->Emit("{_fl::Offset{offsetof($Msg$, _impl_._split_)}},\n");
+          p->Emit("{_fl::Offset{offsetof($Msg$, _impl_._split_0_)}},\n");
           break;
         case TailCallTableInfo::kSplitSizeof:
-          p->Emit("{_fl::Offset{sizeof($Msg$::Impl_::Split)}},\n");
+          p->Emit({{"i", split_group_index++}},
+                  "{_fl::Offset{sizeof($Msg$::Impl_::Split$i$)}},\n");
           break;
         case TailCallTableInfo::kSubMessageGlobals:
           p->Emit({{"name", QualifiedMsgGlobalsInstanceName(
@@ -511,6 +515,8 @@ void ParseFunctionGenerator::GenerateParseTableHelperDefinition(
         }
       }
     }
+
+    ABSL_CHECK_EQ(split_group_index, split_map.NumSplitGroups());
   };
 
   p->Emit(
@@ -523,7 +529,7 @@ void ParseFunctionGenerator::GenerateParseTableHelperDefinition(
             ? "constexpr"
             : "PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1\nconst"},
        {"table_base", GenerateTableBase},
-       {"fast_entries", [&] { GenerateFastFieldEntries(p); }},
+       {"fast_entries", [&] { GenerateFastFieldEntries(p, split_map); }},
        {"field_lookup_table",
         [&] {
           for (SkipEntryBlock& entry_block : field_num_to_entry_table.blocks) {
@@ -561,7 +567,8 @@ void ParseFunctionGenerator::GenerateParseTableHelperDefinition(
 
           p->Emit(
               {
-                  {"field_entries", [&] { GenerateFieldEntries(p); }},
+                  {"field_entries",
+                   [&] { GenerateFieldEntries(p, split_map); }},
                   {"aux_entries",
                    [&] {
                      if (tc_table_info_->aux_entries.empty()) {
@@ -620,7 +627,8 @@ constexpr $Msg$::ParseTableT_ $Msg$::InternalGenerateParseTable_(const ::_pbi::C
   );
 }
 
-void ParseFunctionGenerator::GenerateFastFieldEntries(io::Printer* p) {
+void ParseFunctionGenerator::GenerateFastFieldEntries(
+    io::Printer* p, const SplitMap& split_map) {
   for (const auto& info : tc_table_info_->fast_path_fields) {
     if (auto* nonfield = info.AsNonField()) {
       // Fast slot that is not associated with a field. Eg end group tags.
@@ -636,7 +644,7 @@ void ParseFunctionGenerator::GenerateFastFieldEntries(io::Printer* p) {
         Formatter format(p, variables_);
         PrintFieldComment(format, as_field->field, options_);
       }
-      ABSL_CHECK(!ShouldSplit(as_field->field, options_));
+      ABSL_CHECK(!split_map.SplitGroup(as_field->field).has_value());
 
       std::string func_name = TcParseFunctionName(as_field->func);
       if (GetOptimizeFor(as_field->field->file(), options_) ==
@@ -652,12 +660,13 @@ void ParseFunctionGenerator::GenerateFastFieldEntries(io::Printer* p) {
                                        : "::uint64_t";
           func_name = absl::StrCat(
               "::_pbi::TcParser::SingularVarintNoZag1<", field_type,
-              ", offsetof(",                                      //
-              ClassName(as_field->field->containing_type()),      //
-              ", ",                                               //
-              FieldMemberName(as_field->field, /*split=*/false),  //
-              "), ",                                              //
-              as_field->hasbit_idx,                               //
+              ", offsetof(",                                  //
+              ClassName(as_field->field->containing_type()),  //
+              ", ",                                           //
+              FieldMemberName(as_field->field,
+                              /*split_group_index=*/absl::nullopt),  //
+              "), ",                                                 //
+              as_field->hasbit_idx,                                  //
               ">()");
         }
       }
@@ -668,7 +677,9 @@ void ParseFunctionGenerator::GenerateFastFieldEntries(io::Printer* p) {
               {"coded_tag", as_field->coded_tag},
               {"hasbit_idx", as_field->hasbit_idx},
               {"aux_idx", as_field->aux_idx},
-              {"field_name", FieldMemberName(as_field->field, /*split=*/false)},
+              {"field_name",
+               FieldMemberName(as_field->field,
+                               /*split_group_index=*/absl::nullopt)},
           },
           R"cc(
             {$target$,
@@ -684,7 +695,8 @@ void ParseFunctionGenerator::GenerateFastFieldEntries(io::Printer* p) {
   }
 }
 
-void ParseFunctionGenerator::GenerateFieldEntries(io::Printer* p) {
+void ParseFunctionGenerator::GenerateFieldEntries(io::Printer* p,
+                                                  const SplitMap& split_map) {
   for (const auto& entry : tc_table_info_->field_entries) {
     const FieldDescriptor* field = entry.field;
     // TODO: refactor this to use Emit.
@@ -692,21 +704,21 @@ void ParseFunctionGenerator::GenerateFieldEntries(io::Printer* p) {
     PrintFieldComment(format, field, options_);
 
     bool weak = IsWeak(field, options_);
-    bool split = ShouldSplit(field, options_);
+    absl::optional<uint32_t> split_group_index = split_map.SplitGroup(field);
     const OneofDescriptor* oneof = field->real_containing_oneof();
 
     auto v = p->WithVars(
         {{"field_name", FieldName(field)},
-         {"field_member_name", FieldMemberName(field, /*split=*/false)}});
+         {"field_member_name", FieldMemberName(field, split_group_index)}});
 
     p->Emit({{"offset",
               [&] {
                 if (weak) {
                   p->Emit("/* weak */ 0,");
-                } else if (split) {
-                  p->Emit(
-                      "PROTOBUF_FIELD_OFFSET($Msg$::Impl_::Split, "
-                      "$field_name$_),");
+                } else if (split_group_index.has_value()) {
+                  p->Emit({{"i", *split_group_index}},
+                          "PROTOBUF_FIELD_OFFSET($Msg$::Impl_::Split$i$, "
+                          "$field_name$_),");
                 } else {
                   p->Emit("PROTOBUF_FIELD_OFFSET($Msg$, $field_member_name$),");
                 }

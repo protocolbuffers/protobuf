@@ -12,7 +12,6 @@
 #ifndef GOOGLE_PROTOBUF_COMPILER_CPP_HELPERS_H__
 #define GOOGLE_PROTOBUF_COMPILER_CPP_HELPERS_H__
 
-#include <cstddef>
 #include <cstdint>
 #include <iterator>
 #include <string>
@@ -159,13 +158,17 @@ std::string QualifiedExtensionName(const FieldDescriptor* d,
                                    const Options& options);
 std::string QualifiedExtensionName(const FieldDescriptor* d);
 
+std::string SplitMemberName(uint32_t split_group_index);
+
 // Type name of default instance.
 std::string SplitDefaultInstanceType(const Descriptor* descriptor,
-                                     const Options& options);
+                                     const Options& options,
+                                     uint32_t split_group_index);
 
 // Non-qualified name of the default_instance of this message.
 std::string SplitDefaultInstanceName(const Descriptor* descriptor,
-                                     const Options& options);
+                                     const Options& options,
+                                     uint32_t split_group_index);
 
 // Type name of globals instance.
 std::string MsgGlobalsInstanceType(const Descriptor* descriptor,
@@ -182,7 +185,8 @@ std::string MsgGlobalsInstancePtr(const Descriptor* descriptor,
 
 // Fully qualified name of the default_instance of this message.
 std::string QualifiedSplitDefaultInstanceName(const Descriptor* descriptor,
-                                              const Options& options);
+                                              const Options& options,
+                                              uint32_t split_group_index);
 
 // Fully qualified name of the globals instance of this message.
 std::string QualifiedMsgGlobalsInstanceName(const Descriptor* descriptor,
@@ -231,7 +235,8 @@ std::string ResolveKeyword(absl::string_view name);
 PROTOC_EXPORT std::string FieldName(const FieldDescriptor* field);
 
 // Returns the (unqualified) private member name for this field in C++ code.
-std::string FieldMemberName(const FieldDescriptor* field, bool split);
+std::string FieldMemberName(const FieldDescriptor* field,
+                            absl::optional<uint32_t> split_group_index);
 
 // Returns an estimate of the compiler's alignment for the field.  This
 // can't guarantee to be correct because the generated code could be compiled on
@@ -481,13 +486,6 @@ enum class VerifySimpleType {
 VerifySimpleType ShouldVerifySimple(const Descriptor* descriptor);
 
 
-// Is the given message being split (go/pdsplit)?
-PROTOC_EXPORT bool ShouldSplit(const Descriptor* desc, const Options& options);
-
-// Is the given field being split out?
-PROTOC_EXPORT bool ShouldSplit(const FieldDescriptor* field,
-                               const Options& options);
-
 // Should we generate code that force creating an allocation in the constructor
 // of the given message?
 bool ShouldForceAllocationOnConstruction(const Descriptor* desc,
@@ -617,10 +615,14 @@ inline std::string MakeVarintCachedSizeName(const FieldDescriptor* field) {
 // MakeVarintCachedSizeFieldName, in case the field exists at some nested level
 // like:
 //   internal_container_._field_cached_byte_size_;
-inline std::string MakeVarintCachedSizeFieldName(const FieldDescriptor* field,
-                                                 bool split) {
-  return absl::StrCat("_impl_.", split ? "_split_->" : "", "_",
-                      FieldName(field), "_cached_byte_size_");
+inline std::string MakeVarintCachedSizeFieldName(
+    const FieldDescriptor* field, absl::optional<uint8_t> split_group_index) {
+  return absl::StrCat(
+      "_impl_.",
+      split_group_index.has_value()
+          ? absl::StrCat(SplitMemberName(*split_group_index), "->")
+          : "",
+      "_", FieldName(field), "_cached_byte_size_");
 }
 
 // Note: A lot of libraries detect Any protos based on Descriptor::full_name()

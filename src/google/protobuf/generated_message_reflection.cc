@@ -120,7 +120,7 @@ ReflectionSchema::ReflectionSchema(const Message* default_instance,
                                    int has_bits_offset, int extensions_offset,
                                    int oneof_case_offset, int object_size,
                                    int weak_field_map_offset, int split_offset,
-                                   int sizeof_split)
+                                   std::vector<uint32_t>&& sizeof_splits)
     : default_instance_(default_instance),
       offsets_(offsets),
       has_bit_indices_(has_bit_indices),
@@ -130,7 +130,7 @@ ReflectionSchema::ReflectionSchema(const Message* default_instance,
       object_size_(object_size),
       weak_field_map_offset_(weak_field_map_offset),
       split_offset_(split_offset),
-      sizeof_split_(sizeof_split) {}
+      sizeof_splits_(std::move(sizeof_splits)) {}
 
 ReflectionSchema ReflectionSchema::MigrationToReflectionSchema(
     const MessageGlobalsBase* const* message_globals, const uint32_t* offsets,
@@ -166,7 +166,22 @@ ReflectionSchema ReflectionSchema::MigrationToReflectionSchema(
   // Old result.inlined_string_donated_offset_
   ABSL_CHECK_EQ(next(), ~uint32_t{});
   result.split_offset_ = next();
-  result.sizeof_split_ = next();
+  if (result.split_offset_ != -1 &&
+      (result.split_offset_ & internal::kSplitV2OffsetMask) != 0) {
+    // Take the v2 bit off.
+    result.split_offset_ &= ~internal::kSplitV2OffsetMask;
+
+    uint32_t num_split_groups = next();
+    ABSL_CHECK_GE(num_split_groups, 1u);
+    ABSL_CHECK_LE(num_split_groups, 8u);
+    result.sizeof_splits_.reserve(num_split_groups);
+
+    for (uint32_t i = 0; i < num_split_groups; ++i) {
+      result.sizeof_splits_.push_back(offsets[index++]);
+    }
+  } else {
+    result.sizeof_splits_.push_back(next());
+  }
 
   result.has_bit_indices_ = next_pointer();
   // Old result.inlined_string_indices_
@@ -1397,13 +1412,15 @@ void Reflection::InternalSwap(Message* lhs, Message* rhs) const {
   for (int i = 0; i <= last_non_weak_field_index_; i++) {
     const FieldDescriptor* field = descriptor_->field(i);
     if (schema_.InRealOneof(field)) continue;
-    if (schema_.IsSplit(field)) {
+    if (schema_.SplitGroup(field).has_value()) {
       continue;
     }
     UnsafeShallowSwapField(lhs, rhs, field);
   }
-  if (schema_.IsSplit()) {
-    std::swap(*MutableSplitField(lhs), *MutableSplitField(rhs));
+  if (schema_.HasSplitFields()) {
+    for (uint32_t i = 0; i < schema_.NumSplitGroups(); ++i) {
+      std::swap(*MutableSplitField(lhs, i), *MutableSplitField(rhs, i));
+    }
   }
   const int oneof_decl_count = descriptor_->real_oneof_decl_count();
   for (int i = 0; i < oneof_decl_count; i++) {
@@ -3112,12 +3129,14 @@ const FieldDescriptor* Reflection::FindKnownExtensionByNumber(
 // These simple template accessors obtain pointers (or references) to
 // the given field.
 
-void Reflection::PrepareSplitMessageForWrite(Message* message) const {
+void Reflection::PrepareSplitMessageForWrite(Message* message,
+                                             uint32_t split_group_index) const {
   ABSL_DCHECK_NE(message, schema_.default_instance());
-  void** split = MutableSplitField(message);
-  const void* default_split = GetSplitField(schema_.default_instance());
+  void** split = MutableSplitField(message, split_group_index);
+  const void* default_split =
+      GetSplitField(schema_.default_instance(), split_group_index);
   if (*split == default_split) {
-    uint32_t size = schema_.SizeofSplit();
+    uint32_t size = schema_.SizeofSplit(split_group_index);
     Arena* arena = message->GetArena();
     *split = (arena == nullptr) ? internal::Allocate(size)
                                 : arena->AllocateAligned(size);
@@ -3144,12 +3163,13 @@ static Type* AllocIfDefault(const FieldDescriptor* field, Type*& ptr,
 }
 
 void* Reflection::MutableRawSplitImpl(Message* message,
-                                      const FieldDescriptor* field) const {
+                                      const FieldDescriptor* field,
+                                      uint32_t split_group_index) const {
   ABSL_DCHECK(!schema_.InRealOneof(field)) << "Field = " << field->full_name();
 
   const uint32_t field_offset = schema_.GetFieldOffset(field);
-  PrepareSplitMessageForWrite(message);
-  void** split = MutableSplitField(message);
+  PrepareSplitMessageForWrite(message, split_group_index);
+  void** split = MutableSplitField(message, split_group_index);
   if (internal::SplitFieldHasExtraIndirection(field)) {
     return AllocIfDefault(field,
                           *GetPointerAtOffset<void*>(*split, field_offset),
@@ -3738,10 +3758,12 @@ void Reflection::PopulateTcParseFieldAux(
         *field_aux++ = {};
         break;
       case internal::TailCallTableInfo::kSplitOffset:
-        field_aux++->offset = schema_.SplitOffset();
+        // Record only the offset of the first split group, since all other
+        // split groups immediately follow the first one.
+        field_aux++->offset = schema_.SplitOffset(/*split_group_index=*/0);
         break;
       case internal::TailCallTableInfo::kSplitSizeof:
-        field_aux++->offset = schema_.SizeofSplit();
+        field_aux++->offset = schema_.SizeofSplit(/*split_group_index=*/0);
         break;
       case internal::TailCallTableInfo::kSubTable:
       case internal::TailCallTableInfo::kSubMessageGlobalsWeak:
@@ -3810,7 +3832,7 @@ const internal::TcParseTableBase* Reflection::CreateTcParseTable() const {
         // We could change this to use direct table.
         // Might be easier to do when all messages support TDP.
         /* use_direct_tcparser_table */ false,
-        schema_.IsSplit(field),
+        schema_.SplitGroup(field),
         str_options(),
     });
   }

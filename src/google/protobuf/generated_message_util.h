@@ -68,6 +68,8 @@ namespace internal {
 
 class ExtensionSet;
 
+static constexpr uint32_t kSplitV2OffsetMask = 0x1;
+
 // This fastpath inlines a single branch instead of having to make the
 // InitProtobufDefaults function call.
 // It also generates less inlined code than a function-scope static initializer.

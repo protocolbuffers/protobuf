@@ -38,7 +38,8 @@ std::vector<const google::protobuf::FieldDescriptor*> CreateFieldArray(
 template <typename ProtoT, typename PredT>
 std::vector<FieldChunk> CreateAndCollectFields(
     absl::Span<const char*> field_names, PredT&& predicate) {
-  return CollectFields(CreateFieldArray<ProtoT>(field_names), {}, predicate);
+  return CollectFields(CreateFieldArray<ProtoT>(field_names), /*options=*/{},
+                       /*split_map=*/{}, predicate);
 }
 
 TEST(CollectFieldsTest, SingleChunk) {
@@ -70,10 +71,11 @@ TEST(CollectFieldsTest, RepeatedAndSingular) {
                                "optional_int64"};
 
   auto fields = CreateFieldArray<TestAllTypes>(field_names);
-  auto chunks = CollectFields(
-      fields, {}, [](const FieldDescriptor* lhs, const FieldDescriptor* rhs) {
-        return lhs->is_repeated() == rhs->is_repeated();
-      });
+  auto chunks =
+      CollectFields(fields, /*options=*/{}, /*split_map=*/{},
+                    [](const FieldDescriptor* lhs, const FieldDescriptor* rhs) {
+                      return lhs->is_repeated() == rhs->is_repeated();
+                    });
 
   ASSERT_EQ(chunks.size(), 2);
 

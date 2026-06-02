@@ -254,8 +254,9 @@ bool IsFieldEligibleForFastParsing(
     const TailCallTableInfo::MessageOptions& message_options) {
   const auto* field = entry.field;
   // Map, oneof, weak, and split fields are not handled on the fast path.
+  // TODO: Split fields should be eligible for fast parsing.
   if (!IsFieldTypeEligibleForFastParsing(field) || options.is_implicitly_weak ||
-      options.should_split) {
+      options.split_group_index.has_value()) {
     return false;
   }
 
@@ -656,8 +657,11 @@ uint16_t MakeTypeCardForField(const FieldDescriptor* field, bool has_hasbit,
     }
   }
 
-  if (options.should_split) {
+  if (options.split_group_index.has_value()) {
+    ABSL_CHECK_LE(*options.split_group_index,
+                  fl::kSplitGroupIndexMask >> fl::kSplitGroupIndexShift);
     type_card |= fl::kSplitTrue;
+    type_card |= (*options.split_group_index) << fl::kSplitGroupIndexShift;
   }
 
   return type_card;
@@ -897,15 +901,28 @@ TailCallTableInfo::TailCallTableInfo(
                                return lhs.field->number() < rhs.field->number();
                              }));
 
-  // If this message is split, store the split pointer offset in the second
-  // and third auxiliary entries, which are kSplitOffsetAuxIdx and
-  // kSplitSizeAuxIdx.
+  // If this message is split, store the first split pointer offset in the
+  // second auxiliary entry, and the size of each split group in following
+  // entries.
   if (std::any_of(ordered_fields.begin(), ordered_fields.end(),
-                  [](auto& f) { return f.should_split; })) {
+                  [](auto& f) { return f.split_group_index.has_value(); })) {
     static_assert(kSplitOffsetAuxIdx + 1 == kSplitSizeAuxIdx, "");
-    aux_entries.resize(kSplitSizeAuxIdx + 1);  // Allocate our 2 slots
+
+    uint32_t num_split_groups =
+        absl::c_max_element(ordered_fields,
+                            [](const auto& lhs, const auto& rhs) {
+                              return lhs.split_group_index <
+                                     rhs.split_group_index;
+                            })
+            ->split_group_index.value() +
+        1;
+
+    aux_entries.resize(kSplitSizeAuxIdx +
+                       num_split_groups);  // Allocate our 2 slots
     aux_entries[kSplitOffsetAuxIdx] = {kSplitOffset};
-    aux_entries[kSplitSizeAuxIdx] = {kSplitSizeof};
+    for (uint32_t i = 0; i < num_split_groups; ++i) {
+      aux_entries[kSplitSizeAuxIdx + i] = {kSplitSizeof};
+    }
   }
 
   field_entries = BuildFieldEntries(descriptor, message_options, ordered_fields,

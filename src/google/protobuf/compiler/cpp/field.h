@@ -52,7 +52,8 @@ class FieldGeneratorBase {
   // variable instead of calling GetArena()'
   enum class GeneratorFunction { kMergeFrom };
 
-  FieldGeneratorBase(const FieldDescriptor* field, const Options& options);
+  FieldGeneratorBase(const FieldDescriptor* field, const Options& options,
+                     const FieldLayout& field_layout);
 
   FieldGeneratorBase(const FieldGeneratorBase&) = delete;
   FieldGeneratorBase& operator=(const FieldGeneratorBase&) = delete;
@@ -60,7 +61,9 @@ class FieldGeneratorBase {
   virtual ~FieldGeneratorBase() = 0;
 
   // Returns true if this field should be placed in the cold 'Split' section.
-  bool should_split() const { return should_split_; }
+  absl::optional<uint32_t> split_group_index() const {
+    return split_group_index_;
+  }
 
   // Returns true if this field is trivial. (int, float, double, enum, bool)
   bool is_trivial() const { return is_trivial_; }
@@ -196,6 +199,8 @@ class FieldGeneratorBase {
   }
 
  protected:
+  const FieldLayout& field_layout() const { return field_layout_; }
+
   const FieldDescriptor* field_;
   const Options& options_;
   absl::flat_hash_map<absl::string_view, std::string> variables_;
@@ -205,7 +210,9 @@ class FieldGeneratorBase {
   static io::Printer::Sub InternalMetadataOffsetSub(io::Printer* p);
 
  private:
-  bool should_split_ = false;
+  const FieldLayout& field_layout_;
+
+  absl::optional<uint32_t> split_group_index_;
   bool is_trivial_ = false;
   bool has_trivial_value_ = false;
   bool has_trivial_zero_default_ = false;
@@ -254,7 +261,9 @@ class FieldGenerator {
   FieldGenerator& operator=(FieldGenerator&&) = default;
 
   // Properties: see FieldGeneratorBase for documentation
-  bool should_split() const { return impl_->should_split(); }
+  absl::optional<uint32_t> split_group_index() const {
+    return impl_->split_group_index();
+  }
   bool is_trivial() const { return impl_->is_trivial(); }
   // Returns true if the field has trivial copy construction.
   bool has_trivial_copy() const { return is_trivial(); }
@@ -489,7 +498,7 @@ class FieldGenerator {
  private:
   friend class FieldGeneratorTable;
   FieldGenerator(const FieldDescriptor* field, const Options& options,
-                 absl::optional<uint32_t> hasbit_index);
+                 const FieldLayout& field_layout);
 
   std::unique_ptr<FieldGeneratorBase> impl_;
   std::vector<io::Printer::Sub> field_vars_;
@@ -523,7 +532,8 @@ class FieldGeneratorTable {
 //
 // TODO: Make this function .cc-private.
 std::vector<io::Printer::Sub> FieldVars(const FieldDescriptor* field,
-                                        const Options& opts);
+                                        const Options& opts,
+                                        const FieldLayout& field_layout);
 }  // namespace cpp
 }  // namespace compiler
 }  // namespace protobuf

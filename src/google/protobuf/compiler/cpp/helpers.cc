@@ -58,7 +58,6 @@
 #include "google/protobuf/io/printer.h"
 #include "google/protobuf/io/strtod.h"
 #include "google/protobuf/map.h"
-#include "google/protobuf/port.h"
 #include "google/protobuf/repeated_ptr_field.h"
 #include "google/protobuf/wire_format.h"
 #include "google/protobuf/wire_format_lite.h"
@@ -286,8 +285,6 @@ absl::flat_hash_map<absl::string_view, std::string> MessageVars(
       {"oneof_case", absl::StrCat(prefix, "_oneof_case_")},
       {"tracker", "Impl_::_tracker_"},
       {"weak_field_map", absl::StrCat(prefix, "_weak_field_map_")},
-      {"split", absl::StrCat(prefix, "_split_")},
-      {"cached_split_ptr", "cached_split_ptr"},
   };
 }
 
@@ -593,15 +590,22 @@ std::string Namespace(const FieldDescriptor* d) { return Namespace(d->file()); }
 
 std::string Namespace(const EnumDescriptor* d) { return Namespace(d->file()); }
 
+std::string SplitMemberName(uint32_t split_group_index) {
+  return absl::StrCat("_impl_._split_", split_group_index, "_");
+}
+
 std::string SplitDefaultInstanceType(const Descriptor* descriptor,
-                                     const Options& /*options*/) {
-  return absl::StrCat(ClassName(descriptor), "__Impl_SplitDefaultTypeInternal");
+                                     const Options& /*options*/,
+                                     uint32_t split_group_index) {
+  return absl::StrCat(ClassName(descriptor), "__Impl_SplitDefaultTypeInternal",
+                      split_group_index);
 }
 
 std::string SplitDefaultInstanceName(const Descriptor* descriptor,
-                                     const Options& /*options*/) {
+                                     const Options& /*options*/,
+                                     uint32_t split_group_index) {
   return absl::StrCat(ClassName(descriptor, false),
-                      "_Impl_Split_default_instance_");
+                      "_Impl_Split_default_instance_", split_group_index, "_");
 }
 
 std::string MsgGlobalsInstanceType(const Descriptor* descriptor,
@@ -620,10 +624,12 @@ std::string MsgGlobalsInstancePtr(const Descriptor* descriptor,
 }
 
 std::string QualifiedSplitDefaultInstanceName(const Descriptor* descriptor,
-                                              const Options& options) {
-  return QualifiedFileLevelSymbol(descriptor->file(),
-                                  SplitDefaultInstanceName(descriptor, options),
-                                  options);
+                                              const Options& options,
+                                              uint32_t split_group_index) {
+  return QualifiedFileLevelSymbol(
+      descriptor->file(),
+      SplitDefaultInstanceName(descriptor, options, split_group_index),
+      options);
 }
 
 std::string QualifiedMsgGlobalsInstanceName(const Descriptor* descriptor,
@@ -671,14 +677,17 @@ std::string FieldName(const FieldDescriptor* field) {
                                     NameKind::kFunction);
 }
 
-std::string FieldMemberName(const FieldDescriptor* field, bool split) {
-  absl::string_view prefix = "_impl_.";
-  absl::string_view split_prefix = split ? "_split_->" : "";
+std::string FieldMemberName(const FieldDescriptor* field,
+                            absl::optional<uint32_t> split_group_index) {
+  std::string prefix =
+      split_group_index.has_value()
+          ? absl::StrCat(SplitMemberName(*split_group_index), "->")
+          : "_impl_.";
   if (field->real_containing_oneof() == nullptr) {
-    return absl::StrCat(prefix, split_prefix, FieldName(field), "_");
+    return absl::StrCat(prefix, FieldName(field), "_");
   }
   // Oneof fields are never split.
-  ABSL_CHECK(!split);
+  ABSL_CHECK(!split_group_index.has_value());
   return absl::StrCat(prefix, field->containing_oneof()->name(), "_.",
                       FieldName(field), "_");
 }
@@ -1209,8 +1218,6 @@ VerifySimpleType ShouldVerifySimple(const Descriptor* descriptor) {
   return VerifySimpleType::kCustom;
 }
 
-bool ShouldSplit(const Descriptor*, const Options&) { return false; }
-bool ShouldSplit(const FieldDescriptor*, const Options&) { return false; }
 
 bool ShouldForceAllocationOnConstruction(const Descriptor* desc,
                                          const Options& options) {

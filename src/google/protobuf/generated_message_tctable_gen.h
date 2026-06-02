@@ -63,7 +63,7 @@ struct PROTOBUF_EXPORT TailCallTableInfo {
     field_layout::TransformValidation lazy_opt;
     bool is_implicitly_weak;
     bool use_direct_tcparser_table;
-    bool should_split;
+    absl::optional<uint8_t> split_group_index;
 
     // Whether to use the InlinedStringField representation.
     struct StringInlined {};

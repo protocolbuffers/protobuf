@@ -9,6 +9,7 @@
 //  Based on original Protocol Buffers design by
 //  Sanjay Ghemawat, Jeff Dean, and others.
 
+#include <cstdint>
 #include <memory>
 #include <string>
 #include <vector>
@@ -17,8 +18,9 @@
 #include "absl/log/absl_log.h"
 #include "absl/memory/memory.h"
 #include "absl/strings/substitute.h"
+#include "absl/types/optional.h"
 #include "google/protobuf/compiler/cpp/field.h"
-#include "google/protobuf/compiler/cpp/field_generators/generators.h"
+#include "google/protobuf/compiler/cpp/field_layout.h"
 #include "google/protobuf/compiler/cpp/helpers.h"
 #include "google/protobuf/compiler/cpp/options.h"
 #include "google/protobuf/descriptor.h"
@@ -36,9 +38,10 @@ namespace {
 using Semantic = ::google::protobuf::io::AnnotationCollector::Semantic;
 using Sub = ::google::protobuf::io::Printer::Sub;
 
-std::vector<Sub> Vars(const FieldDescriptor* field, const Options& opts) {
+std::vector<Sub> Vars(const FieldDescriptor* field, const Options& opts,
+                      const FieldLayout& field_layout) {
   const EnumValueDescriptor* default_value = field->default_value_enum();
-  bool split = ShouldSplit(field, opts);
+  absl::optional<uint32_t> split_group_index = field_layout.SplitGroup(field);
   bool is_open = internal::cpp::HasPreservingUnknownEnumSemantics(field);
   auto enum_name = QualifiedClassName(field->enum_type(), opts);
   return {
@@ -54,17 +57,20 @@ std::vector<Sub> Vars(const FieldDescriptor* field, const Options& opts) {
           .WithSuffix(";"),
 
       {"cached_size_name", MakeVarintCachedSizeName(field)},
-      {"cached_size_", MakeVarintCachedSizeFieldName(field, split)},
+      {"cached_size_", MakeVarintCachedSizeFieldName(field, split_group_index)},
   };
 }
 
 class SingularEnum : public FieldGeneratorBase {
  public:
-  SingularEnum(const FieldDescriptor* field, const Options& opts)
-      : FieldGeneratorBase(field, opts), opts_(&opts) {}
+  SingularEnum(const FieldDescriptor* field, const Options& opts,
+               const FieldLayout& field_layout)
+      : FieldGeneratorBase(field, opts, field_layout), opts_(&opts) {}
   ~SingularEnum() override = default;
 
-  std::vector<Sub> MakeVars() const override { return Vars(field_, *opts_); }
+  std::vector<Sub> MakeVars() const override {
+    return Vars(field_, *opts_, field_layout());
+  }
 
   void GeneratePrivateMembers(io::Printer* p) const override {
     p->Emit(R"cc(
@@ -120,9 +126,9 @@ class SingularEnum : public FieldGeneratorBase {
   }
 
   void GenerateAggregateInitializer(io::Printer* p) const override {
-    if (should_split()) {
-      p->Emit(R"cc(
-        decltype(Impl_::Split::$name$_){$kDefault$},
+    if (split_group_index().has_value()) {
+      p->Emit({{"i", *split_group_index()}}, R"cc(
+        decltype(Impl_::Split$i$::$name$_){$kDefault$},
       )cc");
     } else {
       p->Emit(R"cc(
@@ -216,19 +222,22 @@ void SingularEnum::GenerateInlineAccessorDefinitions(io::Printer* p) const {
 
 class RepeatedEnum : public FieldGeneratorBase {
  public:
-  RepeatedEnum(const FieldDescriptor* field, const Options& opts)
-      : FieldGeneratorBase(field, opts),
+  RepeatedEnum(const FieldDescriptor* field, const Options& opts,
+               const FieldLayout& field_layout)
+      : FieldGeneratorBase(field, opts, field_layout),
         opts_(&opts),
         has_cached_size_(field_->is_packed() &&
                          HasGeneratedMethods(field_->file(), opts) &&
-                         !should_split()),
+                         !split_group_index().has_value()),
         cpp_repeated_type_(CalculateFieldDescriptorRepeatedType(field)) {}
   ~RepeatedEnum() override = default;
 
-  std::vector<Sub> MakeVars() const override { return Vars(field_, *opts_); }
+  std::vector<Sub> MakeVars() const override {
+    return Vars(field_, *opts_, field_layout());
+  }
 
   void GeneratePrivateMembers(io::Printer* p) const override {
-    if (should_split()) {
+    if (split_group_index().has_value()) {
       p->Emit(R"cc(
         $pbi$::RawPtr<$pb$::RepeatedField<int>> $name$_;
       )cc");
@@ -246,7 +255,7 @@ class RepeatedEnum : public FieldGeneratorBase {
   }
 
   void GenerateClearingCode(io::Printer* p) const override {
-    if (should_split()) {
+    if (split_group_index().has_value()) {
       p->Emit("$field_$.ClearIfNotDefault();\n");
     } else {
       p->Emit("$field_$.Clear();\n");
@@ -261,7 +270,7 @@ class RepeatedEnum : public FieldGeneratorBase {
         _this->_internal_mutable_$name$()->MergeFrom(from._internal_$name$());
       )cc");
     };
-    if (!should_split()) {
+    if (!split_group_index().has_value()) {
       body();
     } else {
       p->Emit({{"body", body}}, R"cc(
@@ -273,14 +282,14 @@ class RepeatedEnum : public FieldGeneratorBase {
   }
 
   void GenerateSwappingCode(io::Printer* p) const override {
-    ABSL_CHECK(!should_split());
+    ABSL_CHECK(!split_group_index().has_value());
     p->Emit(R"cc(
       $field_$.InternalSwap(&other->$field_$);
     )cc");
   }
 
   void GenerateDestructorCode(io::Printer* p) const override {
-    if (should_split()) {
+    if (split_group_index().has_value()) {
       p->Emit(R"cc(
         this_.$field_$.DeleteIfNotDefault();
       )cc");
@@ -334,7 +343,7 @@ class RepeatedEnum : public FieldGeneratorBase {
   }
 
   void GenerateCopyConstructorCode(io::Printer* p) const override {
-    if (should_split()) {
+    if (split_group_index().has_value()) {
       p->Emit(R"cc(
         if (!from._internal_$name$().empty()) {
           _internal_mutable_$name$()->MergeFrom(from._internal_$name$());
@@ -480,7 +489,7 @@ void RepeatedEnum::GenerateInlineAccessorDefinitions(io::Printer* p) const {
       break;
   }
 
-  if (should_split()) {
+  if (split_group_index().has_value()) {
     p->Emit(R"cc(
       inline const $pb$::RepeatedField<int>& $Msg$::_internal_$name_internal$()
           const {
@@ -595,13 +604,15 @@ void RepeatedEnum::GenerateByteSize(io::Printer* p) const {
 }  // namespace
 
 std::unique_ptr<FieldGeneratorBase> MakeSinguarEnumGenerator(
-    const FieldDescriptor* desc, const Options& options) {
-  return absl::make_unique<SingularEnum>(desc, options);
+    const FieldDescriptor* desc, const Options& options,
+    const FieldLayout& field_layout) {
+  return absl::make_unique<SingularEnum>(desc, options, field_layout);
 }
 
 std::unique_ptr<FieldGeneratorBase> MakeRepeatedEnumGenerator(
-    const FieldDescriptor* desc, const Options& options) {
-  return absl::make_unique<RepeatedEnum>(desc, options);
+    const FieldDescriptor* desc, const Options& options,
+    const FieldLayout& field_layout) {
+  return absl::make_unique<RepeatedEnum>(desc, options, field_layout);
 }
 
 }  // namespace cpp
