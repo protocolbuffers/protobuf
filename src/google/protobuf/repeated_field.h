@@ -1236,7 +1236,6 @@ inline void RepeatedField<Element>::MergeFrom(const RepeatedField& other) {
   if (ABSL_PREDICT_FALSE(&other == this)) {
     PROTOBUF_NO_MERGE internal::LogSelfMergeAndAbort();
   }
-  ABSL_DCHECK_NE(&other, this);
   const bool other_is_soo = other.is_soo();
   if (auto other_size = other.size()) {
     const int old_size = size();
