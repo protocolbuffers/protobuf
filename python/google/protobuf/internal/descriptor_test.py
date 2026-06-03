@@ -280,9 +280,12 @@ class DescriptorTest(unittest.TestCase):
         self.my_service.GetOptions(), descriptor_pb2.ServiceOptions()
     )
 
-  @unittest.skipIf(api_implementation.Type() == 'cpp', 'Not fixed yet in C++')
   @unittest.skipIf(
       api_implementation.Type() == 'upb',
+      'Needs to wait for a breaking change release in OSS'
+  )
+  @unittest.skipIf(
+      api_implementation.Type() == 'cpp',
       'Needs to wait for a breaking change release in OSS'
   )
   @unittest.skipIf(
@@ -290,8 +293,6 @@ class DescriptorTest(unittest.TestCase):
       'Needs to wait for a breaking change release in OSS'
   )
   def testModifyFrozenMessage(self):
-    # At least upb raises TypeError Other 2 implementations will likely be 
-    # fixed to be consistent with upb.
     immutability_error = TypeError
     message_options = self.my_message.GetOptions()
     other_options = descriptor_pb2.MessageOptions()
@@ -348,6 +349,23 @@ class DescriptorTest(unittest.TestCase):
       non_empty_repeated.clear()
     with self.assertRaises(immutability_error):
       non_empty_repeated.sort()
+    with self.assertRaises(immutability_error):
+      non_empty_repeated.remove(99)
+    with self.assertRaises(immutability_error):
+      non_empty_repeated.pop()
+    with self.assertRaises(immutability_error):
+      non_empty_repeated.reverse()
+
+    # Non-empty repeated composite field item access
+    complex_opt2 = unittest_custom_options_pb2.complex_opt2
+    non_empty_repeated_composite = complex_options_msg.Extensions[
+        complex_opt2
+    ].barney
+    self.assertEqual(len(non_empty_repeated_composite), 2)
+    first_barney = non_empty_repeated_composite[0]
+    self.assertEqual(first_barney.waldo, 101)
+    with self.assertRaises(immutability_error):
+      first_barney.waldo = 999
 
     # Extension dict mutation
     with self.assertRaises(immutability_error):

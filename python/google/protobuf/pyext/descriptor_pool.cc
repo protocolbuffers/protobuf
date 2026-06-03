@@ -591,7 +591,7 @@ static PyObject* SetFeatureSetDefaults(PyObject* pself, PyObject* pdefaults) {
   absl::Status status =
       const_cast<DescriptorPool*>(self->pool)
           ->SetFeatureSetDefaults(
-              *reinterpret_cast<FeatureSetDefaults*>(defaults->message));
+              *reinterpret_cast<const FeatureSetDefaults*>(defaults->message));
   if (!status.ok()) {
     PyErr_SetString(PyExc_ValueError, std::string(status.message()).c_str());
     return nullptr;

@@ -45,6 +45,23 @@ struct CMessageClass;
 // ExtensionDicts and UnknownFields containers do NOT follow this rule. They
 // don't store any data, and always refer to their parent message.
 
+// Defines the mutability and allocation state of a CMessage.
+// A default instance can be either mutable (MESSAGE_MUTABLE_DEFAULT) or frozen
+// (MESSAGE_FROZEN).
+enum MessageMutabilityState {
+  // Backed by a fully allocated, mutable C++ Message object.
+  MESSAGE_MUTABLE = 0,
+
+  // Backed by a const default instance that is mutable on write (not frozen).
+  // Acts as a "stub".
+  // Will automatically transition to MESSAGE_MUTABLE upon first mutation.
+  MESSAGE_MUTABLE_DEFAULT = 1,
+
+  // Permanently read-only (e.g., Descriptor Options).
+  // Any attempt to mutate will raise a Python TypeError.
+  MESSAGE_FROZEN = 2,
+};
+
 struct ContainerBase {
   // clang-format off
   PyObject_HEAD
@@ -80,12 +97,10 @@ typedef struct CMessage : public ContainerBase {
   // Pointer to the C++ Message object for this CMessage.
   // - If this object has no parent, we own this pointer.
   // - If this object has a parent message, the parent owns this pointer.
-  Message* message;
+  const Message* message;
 
-  // Indicates this submessage is pointing to a default instance of a message.
-  // Submessages are always first created as read only messages and are then
-  // made writable, at which point this field is set to false.
-  bool read_only;
+  // Indicates the mutability state of this CMessage wrapper.
+  MessageMutabilityState state;
 
   // A mapping indexed by field, containing weak references to contained objects
   // which need to implement the "Release" mechanism:
@@ -113,9 +128,9 @@ typedef struct CMessage : public ContainerBase {
   // For container containing messages, return a Python object for the given
   // pointer to a message.
   CMessage* BuildSubMessageFromPointer(const FieldDescriptor* field_descriptor,
-                                       Message* sub_message,
+                                       const Message* sub_message,
                                        CMessageClass* message_class);
-  CMessage* MaybeReleaseSubMessage(Message* sub_message);
+  CMessage* MaybeReleaseSubMessage(const Message* sub_message);
 } CMessage;
 
 // The (meta) type of all Messages classes.
@@ -175,6 +190,15 @@ void DeleteLastRepeatedWithSize(CMessage* self,
 // Corresponds to reflection api method RemoveLast.
 int DeleteRepeatedField(CMessage* self, const FieldDescriptor* field_descriptor,
                         PyObject* slice);
+
+// Check if a deletion operation on a repeated field is a no-op, valid or error.
+// Returns:
+//  1 if the deletion is a no-op (empty slice deletion).
+//  0 if the deletion is valid and requires mutating the container.
+// -1 if an error occurred.
+int CheckRepeatedFieldDeletion(CMessage* parent,
+                               const FieldDescriptor* field_descriptor,
+                               PyObject* slice);
 
 // Sets the specified scalar value to the message.
 int InternalSetScalar(CMessage* self, const FieldDescriptor* field_descriptor,
@@ -238,7 +262,7 @@ int SetFieldValue(CMessage* self, const FieldDescriptor* field_descriptor,
 
 PyObject* FindInitializationErrors(CMessage* self);
 
-int AssureWritable(CMessage* self);
+Message* AssureWritable(CMessage* self);
 
 // Returns the message factory for the given message.
 // This is equivalent to message.MESSAGE_FACTORY
