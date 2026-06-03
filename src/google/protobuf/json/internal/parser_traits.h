@@ -148,6 +148,7 @@ struct ParseProto2Descriptor : Proto2Descriptor {
   }
 
   static void SetDouble(Field f, Msg& msg, double x) {
+    RecordAsSeen(f, msg);
     if (f->is_repeated()) {
       msg.msg_->GetReflection()->AddDouble(msg.msg_, f, x);
     } else {
