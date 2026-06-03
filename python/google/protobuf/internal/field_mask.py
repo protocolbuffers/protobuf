@@ -201,6 +201,14 @@ class _FieldMaskTree(object):
     for path in field_mask.paths:
       self.AddPath(path)
 
+  # Maximum depth for FieldMask paths. FieldMask paths are flat strings on the
+  # wire (parsed at depth 1), so standard protobuf recursion limits don't apply.
+  # A malicious path like "a.a.a...a" with thousands of segments can build an
+  # arbitrarily deep tree, causing excessive memory/CPU usage or stack overflow
+  # when the tree is later traversed. This limit matches the standard protobuf
+  # recursion limit.
+  _MAX_DEPTH = 100
+
   def AddPath(self, path):
     """Adds a field path into the tree.
 
@@ -214,9 +222,18 @@ class _FieldMaskTree(object):
 
     Args:
       path: The field path to add.
+
+    Raises:
+      ValueError: If the path exceeds the maximum allowed depth.
     """
     node = self._root
-    for name in path.split('.'):
+    segments = path.split('.')
+    if len(segments) > self._MAX_DEPTH:
+      raise ValueError(
+          'FieldMask path exceeds maximum depth of {0}: got {1} segments'
+          .format(self._MAX_DEPTH, len(segments))
+      )
+    for name in segments:
       if name not in node:
         node[name] = {}
       elif not node[name]:
