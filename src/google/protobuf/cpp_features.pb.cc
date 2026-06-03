@@ -110,7 +110,7 @@ inline constexpr CppFeatures::Impl_::Impl_(
 template <typename>
 constexpr CppFeatures::CppFeatures(::_pbi::ConstantInitialized,
                        const ::_pbi::ClassData* PROTOBUF_NONNULL class_data)
-    : ::google::protobuf::Message(
+    : Super_(
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           class_data
 #endif  // PROTOBUF_CUSTOM_VTABLE
@@ -138,10 +138,10 @@ constexpr auto CppFeatures::InternalGenerateClassData_(
 #endif
           nullptr,  // IsInitialized
           &CppFeatures::MergeImpl,
-          ::google::protobuf::Message::GetNewImpl<CppFeatures>(),
+          Super_::GetNewImpl<CppFeatures>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           &CppFeatures::SharedDtor,
-          ::google::protobuf::Message::GetClearImpl<CppFeatures>(), &CppFeatures::ByteSizeLong,
+          Super_::GetClearImpl<CppFeatures>(), &CppFeatures::ByteSizeLong,
               &CppFeatures::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
           PROTOBUF_FIELD_OFFSET(CppFeatures, _impl_._cached_size_),
@@ -291,9 +291,9 @@ PROTOBUF_CONSTINIT const uint32_t CppFeatures_RepeatedType_internal_data_[] = {
 
 CppFeatures::CppFeatures(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-    : ::google::protobuf::Message(arena, CppFeatures_get_class_data()) {
+    : Super_(arena, CppFeatures_get_class_data()) {
 #else   // PROTOBUF_CUSTOM_VTABLE
-    : ::google::protobuf::Message(arena) {
+    : Super_(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
   SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:pb.CppFeatures)
@@ -301,9 +301,9 @@ CppFeatures::CppFeatures(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 CppFeatures::CppFeatures(
     ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const CppFeatures& from)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-    : ::google::protobuf::Message(arena, CppFeatures_get_class_data()),
+    : Super_(arena, CppFeatures_get_class_data()),
 #else   // PROTOBUF_CUSTOM_VTABLE
-    : ::google::protobuf::Message(arena),
+    : Super_(arena),
 #endif  // PROTOBUF_CUSTOM_VTABLE
       _impl_(from._impl_) {
   _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
@@ -524,7 +524,7 @@ void CppFeatures::InternalSwap(CppFeatures* PROTOBUF_RESTRICT PROTOBUF_NONNULL o
 }
 
 ::google::protobuf::Metadata CppFeatures::GetMetadata() const {
-  return ::google::protobuf::Message::GetMetadataImpl(GetClassData()->full());
+  return Super_::GetMetadataImpl(GetClassData()->full());
 }
 PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY2 ::_pbi::ExtensionIdentifier<

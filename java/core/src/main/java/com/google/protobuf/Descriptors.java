@@ -473,11 +473,18 @@ public final class Descriptors {
       if (strings.length == 1) {
         return strings[0].getBytes(StandardCharsets.ISO_8859_1);
       }
-      StringBuilder descriptorData = new StringBuilder();
+      int totalLength = 0;
       for (String part : strings) {
-        descriptorData.append(part);
+        totalLength += part.length();
       }
-      return descriptorData.toString().getBytes(StandardCharsets.ISO_8859_1);
+      final byte[] descriptorBytes = new byte[totalLength];
+      int offset = 0;
+      for (String part : strings) {
+        final byte[] partBytes = part.getBytes(StandardCharsets.ISO_8859_1);
+        System.arraycopy(partBytes, 0, descriptorBytes, offset, partBytes.length);
+        offset += partBytes.length;
+      }
+      return descriptorBytes;
     }
 
     private static FileDescriptor[] findDescriptors(

@@ -94,7 +94,7 @@ inline constexpr Duration::Impl_::Impl_(
 template <typename>
 constexpr Duration::Duration(::_pbi::ConstantInitialized,
                        const ::_pbi::ClassData* PROTOBUF_NONNULL class_data)
-    : ::google::protobuf::Message(
+    : Super_(
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           class_data
 #endif  // PROTOBUF_CUSTOM_VTABLE
@@ -122,10 +122,10 @@ constexpr auto Duration::InternalGenerateClassData_(
 #endif
           nullptr,  // IsInitialized
           &Duration::MergeImpl,
-          ::google::protobuf::Message::GetNewImpl<Duration>(),
+          Super_::GetNewImpl<Duration>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           &Duration::SharedDtor,
-          ::google::protobuf::Message::GetClearImpl<Duration>(), &Duration::ByteSizeLong,
+          Super_::GetClearImpl<Duration>(), &Duration::ByteSizeLong,
               &Duration::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
           PROTOBUF_FIELD_OFFSET(Duration, _impl_._cached_size_),
@@ -241,9 +241,9 @@ namespace protobuf {
 
 Duration::Duration(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-    : ::google::protobuf::Message(arena, Duration_get_class_data()) {
+    : Super_(arena, Duration_get_class_data()) {
 #else   // PROTOBUF_CUSTOM_VTABLE
-    : ::google::protobuf::Message(arena) {
+    : Super_(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
   SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.Duration)
@@ -251,9 +251,9 @@ Duration::Duration(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 Duration::Duration(
     ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const Duration& from)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-    : ::google::protobuf::Message(arena, Duration_get_class_data()),
+    : Super_(arena, Duration_get_class_data()),
 #else   // PROTOBUF_CUSTOM_VTABLE
-    : ::google::protobuf::Message(arena),
+    : Super_(arena),
 #endif  // PROTOBUF_CUSTOM_VTABLE
       _impl_(from._impl_) {
   _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
@@ -465,7 +465,7 @@ void Duration::InternalSwap(Duration* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) 
 }
 
 ::google::protobuf::Metadata Duration::GetMetadata() const {
-  return ::google::protobuf::Message::GetMetadataImpl(GetClassData()->full());
+  return Super_::GetMetadataImpl(GetClassData()->full());
 }
 // @@protoc_insertion_point(namespace_scope)
 }  // namespace protobuf
