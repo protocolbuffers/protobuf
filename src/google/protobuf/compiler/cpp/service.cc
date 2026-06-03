@@ -11,8 +11,6 @@
 
 #include "google/protobuf/compiler/cpp/service.h"
 
-#include <string>
-
 #include "absl/strings/str_cat.h"
 #include "google/protobuf/compiler/cpp/helpers.h"
 #include "google/protobuf/descriptor.h"
