@@ -398,9 +398,11 @@ absl::Status ParseSingular(JsonLexer& lex, Field<Traits> field,
   if (lex.Peek(JsonLexer::kNull)) {
     auto message_type = ClassifyMessage(Traits::FieldTypeName(field));
 
-    if (message_type == MessageType::kNull) {
+    if (message_type == MessageType::kNull &&
+        field_type == FieldDescriptor::TYPE_ENUM) {
       Traits::SetEnum(field, msg, 0);
-    } else if (message_type == MessageType::kValue) {
+    } else if (message_type == MessageType::kValue &&
+               field_type == FieldDescriptor::TYPE_MESSAGE) {
       return Traits::NewMsg(
           field, msg,
           [&](const Desc<Traits>& type, Msg<Traits>& msg) -> absl::Status {
@@ -1247,7 +1249,12 @@ absl::Status ParseField(JsonLexer& lex, const Desc<Traits>& desc,
   // (b/519557203).
   if (lex.Peek(JsonLexer::kNull)) {
     MessageType type = ClassifyMessage(Traits::FieldTypeName(*field));
-    if (type != MessageType::kValue && type != MessageType::kNull) {
+    auto ft = Traits::FieldType(*field);
+    bool is_wkt_null = type == MessageType::kNull &&
+                       ft == FieldDescriptor::TYPE_ENUM;
+    bool is_wkt_value = type == MessageType::kValue &&
+                        ft == FieldDescriptor::TYPE_MESSAGE;
+    if (!is_wkt_null && !is_wkt_value) {
       return lex.Expect("null");
     }
   }
