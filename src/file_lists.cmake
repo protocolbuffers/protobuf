@@ -395,6 +395,7 @@ set(libprotoc_srcs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/cpp/parse_function_generator.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/cpp/service.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/cpp/tracker.cc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/csharp/c_sharp_features.pb.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/csharp/csharp_doc_comment.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/csharp/csharp_enum.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/csharp/csharp_enum_field.cc
@@ -535,6 +536,7 @@ set(libprotoc_hdrs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/cpp/parse_function_generator.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/cpp/service.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/cpp/tracker.h
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/csharp/c_sharp_features.pb.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/csharp/csharp_doc_comment.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/csharp/csharp_enum.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/csharp/csharp_enum_field.h
