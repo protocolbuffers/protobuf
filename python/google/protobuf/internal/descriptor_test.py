@@ -280,12 +280,13 @@ class DescriptorTest(unittest.TestCase):
         self.my_service.GetOptions(), descriptor_pb2.ServiceOptions()
     )
 
-  @unittest.skipIf(
-      api_implementation.Type() == 'python', 'Not fixed yet in pure Python'
-  )
   @unittest.skipIf(api_implementation.Type() == 'cpp', 'Not fixed yet in C++')
   @unittest.skipIf(
       api_implementation.Type() == 'upb',
+      'Needs to wait for a breaking change release in OSS'
+  )
+  @unittest.skipIf(
+      api_implementation.Type() == 'python',
       'Needs to wait for a breaking change release in OSS'
   )
   def testModifyFrozenMessage(self):
@@ -351,8 +352,16 @@ class DescriptorTest(unittest.TestCase):
     # Extension dict mutation
     with self.assertRaises(immutability_error):
       message_options.Extensions[complex_opt1] = descriptor_pb2.MessageOptions()
+
+    message_opt1 = unittest_custom_options_pb2.message_opt1
+    with self.assertRaises(immutability_error):
+      message_options.Extensions[message_opt1] = -56
+
     with self.assertRaises(immutability_error):
       del message_options.Extensions[complex_opt1]
+
+    with self.assertRaises(immutability_error):
+      message_options.ClearExtension(complex_opt1)
 
     # Map field mutations
     map_field = stub_submsg.my_map
