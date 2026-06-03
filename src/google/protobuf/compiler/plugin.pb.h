@@ -45,6 +45,15 @@
 #undef minor
 #endif  // minor
 
+namespace google {
+namespace protobuf {
+namespace internal {
+template <typename T>
+::absl::string_view GetAnyMessageName();
+}  // namespace internal
+}  // namespace protobuf
+}  // namespace google
+
 // Internal implementation detail -- do not use these members.
 struct PROTOC_EXPORT TableStruct_google_2fprotobuf_2fcompiler_2fplugin_2eproto {
   static const ::uint32_t offsets[];
@@ -267,6 +276,8 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Version final : publi
   static void SharedDtor(MessageLite& self);
   void InternalSwap(Version* PROTOBUF_NONNULL other);
  private:
+  template <typename T>
+  friend ::absl::string_view(::google::protobuf::internal::GetAnyMessageName)();
   static ::absl::string_view FullMessageName() { return "google.protobuf.compiler.Version"; }
 
   explicit Version(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
@@ -513,6 +524,8 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CodeGeneratorResponse
   static void SharedDtor(MessageLite& self);
   void InternalSwap(CodeGeneratorResponse_File* PROTOBUF_NONNULL other);
  private:
+  template <typename T>
+  friend ::absl::string_view(::google::protobuf::internal::GetAnyMessageName)();
   static ::absl::string_view FullMessageName() { return "google.protobuf.compiler.CodeGeneratorResponse.File"; }
 
   explicit CodeGeneratorResponse_File(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
@@ -773,6 +786,8 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CodeGeneratorResponse
   static void SharedDtor(MessageLite& self);
   void InternalSwap(CodeGeneratorResponse* PROTOBUF_NONNULL other);
  private:
+  template <typename T>
+  friend ::absl::string_view(::google::protobuf::internal::GetAnyMessageName)();
   static ::absl::string_view FullMessageName() { return "google.protobuf.compiler.CodeGeneratorResponse"; }
 
   explicit CodeGeneratorResponse(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
@@ -1068,6 +1083,8 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CodeGeneratorRequest 
   static void SharedDtor(MessageLite& self);
   void InternalSwap(CodeGeneratorRequest* PROTOBUF_NONNULL other);
  private:
+  template <typename T>
+  friend ::absl::string_view(::google::protobuf::internal::GetAnyMessageName)();
   static ::absl::string_view FullMessageName() { return "google.protobuf.compiler.CodeGeneratorRequest"; }
 
   explicit CodeGeneratorRequest(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);

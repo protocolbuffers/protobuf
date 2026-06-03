@@ -235,6 +235,16 @@ void FileGenerator::GenerateSharedHeaderCode(io::Printer* p) {
           {"undefs", [&] { GenerateMacroUndefs(p); }},
           {"global_state_decls",
            [&] { GenerateGlobalStateFunctionDeclarations(p); }},
+          {"any_metadata",
+           [&] {
+             NamespaceOpener ns(ProtobufNamespace(options_), p);
+             p->Emit(R"cc(
+               namespace internal {
+               template <typename T>
+               ::absl::string_view GetAnyMessageName();
+               }  // namespace internal
+             )cc");
+           }},
           {"fwd_decls", [&] { GenerateForwardDeclarations(p); }},
           {"proto2_ns_enums",
            [&] { GenerateProto2NamespaceEnumSpecializations(p); }},
@@ -279,6 +289,8 @@ void FileGenerator::GenerateSharedHeaderCode(io::Printer* p) {
 
           #define $dllexport_macro$$ dllexport_decl$
           $undefs$
+
+          $any_metadata$;
 
           $global_state_decls$;
           $fwd_decls$

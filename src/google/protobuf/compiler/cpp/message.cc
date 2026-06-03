@@ -2215,7 +2215,15 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
           $generated_methods$;
           $internal_field_number$;
           $decl_non_simple_base$;
+          //~ Friend the template function GetAnyMessageName<T>() so that it can
+          //~ call this FullMessageName() method.
+          //~ NOTE: parentheses around the symbol GetAnyMessageName is required
+          //~       for compiler to resolve the symbol correctly and interpret
+          //~       it as a function (instead of trying to find the symbol under
+          //~       the absl::string_view namespace).
          private:
+          template <typename T>
+          friend ::absl::string_view($pbi$::GetAnyMessageName)();
           static ::absl::string_view FullMessageName() { return "$full_name$"; }
           $decl_annotate$;
 

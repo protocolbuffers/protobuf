@@ -39,6 +39,15 @@
 
 #define PROTOBUF_INTERNAL_EXPORT_google_2fprotobuf_2fdescriptor_2eproto PROTOBUF_EXPORT
 
+namespace google {
+namespace protobuf {
+namespace internal {
+template <typename T>
+::absl::string_view GetAnyMessageName();
+}  // namespace internal
+}  // namespace protobuf
+}  // namespace google
+
 // Internal implementation detail -- do not use these members.
 struct PROTOBUF_EXPORT TableStruct_google_2fprotobuf_2fdescriptor_2eproto {
   static const ::uint32_t offsets[];
@@ -1386,6 +1395,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED UninterpretedOption
   static void SharedDtor(MessageLite& self);
   void InternalSwap(UninterpretedOption_NamePart* PROTOBUF_NONNULL other);
  private:
+  template <typename T>
+  friend ::absl::string_view(::google::protobuf::internal::GetAnyMessageName)();
   static ::absl::string_view FullMessageName() { return "google.protobuf.UninterpretedOption.NamePart"; }
 
   explicit UninterpretedOption_NamePart(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
@@ -1606,6 +1617,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED SourceCodeInfo_Loca
   static void SharedDtor(MessageLite& self);
   void InternalSwap(SourceCodeInfo_Location* PROTOBUF_NONNULL other);
  private:
+  template <typename T>
+  friend ::absl::string_view(::google::protobuf::internal::GetAnyMessageName)();
   static ::absl::string_view FullMessageName() { return "google.protobuf.SourceCodeInfo.Location"; }
 
   explicit SourceCodeInfo_Location(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
@@ -1903,6 +1916,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED GeneratedCodeInfo_A
   static void SharedDtor(MessageLite& self);
   void InternalSwap(GeneratedCodeInfo_Annotation* PROTOBUF_NONNULL other);
  private:
+  template <typename T>
+  friend ::absl::string_view(::google::protobuf::internal::GetAnyMessageName)();
   static ::absl::string_view FullMessageName() { return "google.protobuf.GeneratedCodeInfo.Annotation"; }
 
   explicit GeneratedCodeInfo_Annotation(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
@@ -2192,6 +2207,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FieldOptions_Featur
   static void SharedDtor(MessageLite& self);
   void InternalSwap(FieldOptions_FeatureSupport* PROTOBUF_NONNULL other);
  private:
+  template <typename T>
+  friend ::absl::string_view(::google::protobuf::internal::GetAnyMessageName)();
   static ::absl::string_view FullMessageName() { return "google.protobuf.FieldOptions.FeatureSupport"; }
 
   explicit FieldOptions_FeatureSupport(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
@@ -2456,6 +2473,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FieldOptions_Editio
   static void SharedDtor(MessageLite& self);
   void InternalSwap(FieldOptions_EditionDefault* PROTOBUF_NONNULL other);
  private:
+  template <typename T>
+  friend ::absl::string_view(::google::protobuf::internal::GetAnyMessageName)();
   static ::absl::string_view FullMessageName() { return "google.protobuf.FieldOptions.EditionDefault"; }
 
   explicit FieldOptions_EditionDefault(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
@@ -2642,6 +2661,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FeatureSet_Visibili
     return true;
   }
  private:
+  template <typename T>
+  friend ::absl::string_view(::google::protobuf::internal::GetAnyMessageName)();
   static ::absl::string_view FullMessageName() { return "google.protobuf.FeatureSet.VisibilityFeature"; }
 
   explicit FeatureSet_VisibilityFeature(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
@@ -2803,6 +2824,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FeatureSet_ProtoLim
     return true;
   }
  private:
+  template <typename T>
+  friend ::absl::string_view(::google::protobuf::internal::GetAnyMessageName)();
   static ::absl::string_view FullMessageName() { return "google.protobuf.FeatureSet.ProtoLimitsFeature"; }
 
   explicit FeatureSet_ProtoLimitsFeature(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
@@ -3001,6 +3024,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FeatureSet final : 
   static void SharedDtor(MessageLite& self);
   void InternalSwap(FeatureSet* PROTOBUF_NONNULL other);
  private:
+  template <typename T>
+  friend ::absl::string_view(::google::protobuf::internal::GetAnyMessageName)();
   static ::absl::string_view FullMessageName() { return "google.protobuf.FeatureSet"; }
 
   explicit FeatureSet(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
@@ -3649,6 +3674,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED ExtensionRangeOptio
   static void SharedDtor(MessageLite& self);
   void InternalSwap(ExtensionRangeOptions_Declaration* PROTOBUF_NONNULL other);
  private:
+  template <typename T>
+  friend ::absl::string_view(::google::protobuf::internal::GetAnyMessageName)();
   static ::absl::string_view FullMessageName() { return "google.protobuf.ExtensionRangeOptions.Declaration"; }
 
   explicit ExtensionRangeOptions_Declaration(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
@@ -3913,6 +3940,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED EnumDescriptorProto
   static void SharedDtor(MessageLite& self);
   void InternalSwap(EnumDescriptorProto_EnumReservedRange* PROTOBUF_NONNULL other);
  private:
+  template <typename T>
+  friend ::absl::string_view(::google::protobuf::internal::GetAnyMessageName)();
   static ::absl::string_view FullMessageName() { return "google.protobuf.EnumDescriptorProto.EnumReservedRange"; }
 
   explicit EnumDescriptorProto_EnumReservedRange(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
@@ -4128,6 +4157,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED DescriptorProto_Res
   static void SharedDtor(MessageLite& self);
   void InternalSwap(DescriptorProto_ReservedRange* PROTOBUF_NONNULL other);
  private:
+  template <typename T>
+  friend ::absl::string_view(::google::protobuf::internal::GetAnyMessageName)();
   static ::absl::string_view FullMessageName() { return "google.protobuf.DescriptorProto.ReservedRange"; }
 
   explicit DescriptorProto_ReservedRange(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
@@ -4348,6 +4379,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED UninterpretedOption
   static void SharedDtor(MessageLite& self);
   void InternalSwap(UninterpretedOption* PROTOBUF_NONNULL other);
  private:
+  template <typename T>
+  friend ::absl::string_view(::google::protobuf::internal::GetAnyMessageName)();
   static ::absl::string_view FullMessageName() { return "google.protobuf.UninterpretedOption"; }
 
   explicit UninterpretedOption(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
@@ -4658,6 +4691,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED SourceCodeInfo fina
   static void SharedDtor(MessageLite& self);
   void InternalSwap(SourceCodeInfo* PROTOBUF_NONNULL other);
  private:
+  template <typename T>
+  friend ::absl::string_view(::google::protobuf::internal::GetAnyMessageName)();
   static ::absl::string_view FullMessageName() { return "google.protobuf.SourceCodeInfo"; }
 
   explicit SourceCodeInfo(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
@@ -5061,6 +5096,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED GeneratedCodeInfo f
   static void SharedDtor(MessageLite& self);
   void InternalSwap(GeneratedCodeInfo* PROTOBUF_NONNULL other);
  private:
+  template <typename T>
+  friend ::absl::string_view(::google::protobuf::internal::GetAnyMessageName)();
   static ::absl::string_view FullMessageName() { return "google.protobuf.GeneratedCodeInfo"; }
 
   explicit GeneratedCodeInfo(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
@@ -5278,6 +5315,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FeatureSetDefaults_
   static void SharedDtor(MessageLite& self);
   void InternalSwap(FeatureSetDefaults_FeatureSetEditionDefault* PROTOBUF_NONNULL other);
  private:
+  template <typename T>
+  friend ::absl::string_view(::google::protobuf::internal::GetAnyMessageName)();
   static ::absl::string_view FullMessageName() { return "google.protobuf.FeatureSetDefaults.FeatureSetEditionDefault"; }
 
   explicit FeatureSetDefaults_FeatureSetEditionDefault(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
@@ -5519,6 +5558,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED ServiceOptions fina
   static void SharedDtor(MessageLite& self);
   void InternalSwap(ServiceOptions* PROTOBUF_NONNULL other);
  private:
+  template <typename T>
+  friend ::absl::string_view(::google::protobuf::internal::GetAnyMessageName)();
   static ::absl::string_view FullMessageName() { return "google.protobuf.ServiceOptions"; }
 
   explicit ServiceOptions(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
@@ -5956,6 +5997,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED OneofOptions final 
   static void SharedDtor(MessageLite& self);
   void InternalSwap(OneofOptions* PROTOBUF_NONNULL other);
  private:
+  template <typename T>
+  friend ::absl::string_view(::google::protobuf::internal::GetAnyMessageName)();
   static ::absl::string_view FullMessageName() { return "google.protobuf.OneofOptions"; }
 
   explicit OneofOptions(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
@@ -6380,6 +6423,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED MethodOptions final
   static void SharedDtor(MessageLite& self);
   void InternalSwap(MethodOptions* PROTOBUF_NONNULL other);
  private:
+  template <typename T>
+  friend ::absl::string_view(::google::protobuf::internal::GetAnyMessageName)();
   static ::absl::string_view FullMessageName() { return "google.protobuf.MethodOptions"; }
 
   explicit MethodOptions(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
@@ -6851,6 +6896,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED MessageOptions fina
   static void SharedDtor(MessageLite& self);
   void InternalSwap(MessageOptions* PROTOBUF_NONNULL other);
  private:
+  template <typename T>
+  friend ::absl::string_view(::google::protobuf::internal::GetAnyMessageName)();
   static ::absl::string_view FullMessageName() { return "google.protobuf.MessageOptions"; }
 
   explicit MessageOptions(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
@@ -7340,6 +7387,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FileOptions final :
   static void SharedDtor(MessageLite& self);
   void InternalSwap(FileOptions* PROTOBUF_NONNULL other);
  private:
+  template <typename T>
+  friend ::absl::string_view(::google::protobuf::internal::GetAnyMessageName)();
   static ::absl::string_view FullMessageName() { return "google.protobuf.FileOptions"; }
 
   explicit FileOptions(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
@@ -8082,6 +8131,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FieldOptions final 
   static void SharedDtor(MessageLite& self);
   void InternalSwap(FieldOptions* PROTOBUF_NONNULL other);
  private:
+  template <typename T>
+  friend ::absl::string_view(::google::protobuf::internal::GetAnyMessageName)();
   static ::absl::string_view FullMessageName() { return "google.protobuf.FieldOptions"; }
 
   explicit FieldOptions(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
@@ -8777,6 +8828,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FeatureSetDefaults 
   static void SharedDtor(MessageLite& self);
   void InternalSwap(FeatureSetDefaults* PROTOBUF_NONNULL other);
  private:
+  template <typename T>
+  friend ::absl::string_view(::google::protobuf::internal::GetAnyMessageName)();
   static ::absl::string_view FullMessageName() { return "google.protobuf.FeatureSetDefaults"; }
 
   explicit FeatureSetDefaults(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
@@ -9020,6 +9073,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED ExtensionRangeOptio
   static void SharedDtor(MessageLite& self);
   void InternalSwap(ExtensionRangeOptions* PROTOBUF_NONNULL other);
  private:
+  template <typename T>
+  friend ::absl::string_view(::google::protobuf::internal::GetAnyMessageName)();
   static ::absl::string_view FullMessageName() { return "google.protobuf.ExtensionRangeOptions"; }
 
   explicit ExtensionRangeOptions(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
@@ -9500,6 +9555,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED EnumValueOptions fi
   static void SharedDtor(MessageLite& self);
   void InternalSwap(EnumValueOptions* PROTOBUF_NONNULL other);
  private:
+  template <typename T>
+  friend ::absl::string_view(::google::protobuf::internal::GetAnyMessageName)();
   static ::absl::string_view FullMessageName() { return "google.protobuf.EnumValueOptions"; }
 
   explicit EnumValueOptions(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
@@ -9967,6 +10024,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED EnumOptions final :
   static void SharedDtor(MessageLite& self);
   void InternalSwap(EnumOptions* PROTOBUF_NONNULL other);
  private:
+  template <typename T>
+  friend ::absl::string_view(::google::protobuf::internal::GetAnyMessageName)();
   static ::absl::string_view FullMessageName() { return "google.protobuf.EnumOptions"; }
 
   explicit EnumOptions(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
@@ -10430,6 +10489,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED OneofDescriptorProt
   static void SharedDtor(MessageLite& self);
   void InternalSwap(OneofDescriptorProto* PROTOBUF_NONNULL other);
  private:
+  template <typename T>
+  friend ::absl::string_view(::google::protobuf::internal::GetAnyMessageName)();
   static ::absl::string_view FullMessageName() { return "google.protobuf.OneofDescriptorProto"; }
 
   explicit OneofDescriptorProto(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
@@ -10659,6 +10720,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED MethodDescriptorPro
   static void SharedDtor(MessageLite& self);
   void InternalSwap(MethodDescriptorProto* PROTOBUF_NONNULL other);
  private:
+  template <typename T>
+  friend ::absl::string_view(::google::protobuf::internal::GetAnyMessageName)();
   static ::absl::string_view FullMessageName() { return "google.protobuf.MethodDescriptorProto"; }
 
   explicit MethodDescriptorProto(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
@@ -10950,6 +11013,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FieldDescriptorProt
   static void SharedDtor(MessageLite& self);
   void InternalSwap(FieldDescriptorProto* PROTOBUF_NONNULL other);
  private:
+  template <typename T>
+  friend ::absl::string_view(::google::protobuf::internal::GetAnyMessageName)();
   static ::absl::string_view FullMessageName() { return "google.protobuf.FieldDescriptorProto"; }
 
   explicit FieldDescriptorProto(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
@@ -11373,6 +11438,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED EnumValueDescriptor
   static void SharedDtor(MessageLite& self);
   void InternalSwap(EnumValueDescriptorProto* PROTOBUF_NONNULL other);
  private:
+  template <typename T>
+  friend ::absl::string_view(::google::protobuf::internal::GetAnyMessageName)();
   static ::absl::string_view FullMessageName() { return "google.protobuf.EnumValueDescriptorProto"; }
 
   explicit EnumValueDescriptorProto(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
@@ -11615,6 +11682,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED DescriptorProto_Ext
   static void SharedDtor(MessageLite& self);
   void InternalSwap(DescriptorProto_ExtensionRange* PROTOBUF_NONNULL other);
  private:
+  template <typename T>
+  friend ::absl::string_view(::google::protobuf::internal::GetAnyMessageName)();
   static ::absl::string_view FullMessageName() { return "google.protobuf.DescriptorProto.ExtensionRange"; }
 
   explicit DescriptorProto_ExtensionRange(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
@@ -11852,6 +11921,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED ServiceDescriptorPr
   static void SharedDtor(MessageLite& self);
   void InternalSwap(ServiceDescriptorProto* PROTOBUF_NONNULL other);
  private:
+  template <typename T>
+  friend ::absl::string_view(::google::protobuf::internal::GetAnyMessageName)();
   static ::absl::string_view FullMessageName() { return "google.protobuf.ServiceDescriptorProto"; }
 
   explicit ServiceDescriptorProto(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
@@ -12103,6 +12174,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED EnumDescriptorProto
   static void SharedDtor(MessageLite& self);
   void InternalSwap(EnumDescriptorProto* PROTOBUF_NONNULL other);
  private:
+  template <typename T>
+  friend ::absl::string_view(::google::protobuf::internal::GetAnyMessageName)();
   static ::absl::string_view FullMessageName() { return "google.protobuf.EnumDescriptorProto"; }
 
   explicit EnumDescriptorProto(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
@@ -12418,6 +12491,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED DescriptorProto fin
   static void SharedDtor(MessageLite& self);
   void InternalSwap(DescriptorProto* PROTOBUF_NONNULL other);
  private:
+  template <typename T>
+  friend ::absl::string_view(::google::protobuf::internal::GetAnyMessageName)();
   static ::absl::string_view FullMessageName() { return "google.protobuf.DescriptorProto"; }
 
   explicit DescriptorProto(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
@@ -12844,6 +12919,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FileDescriptorProto
   static void SharedDtor(MessageLite& self);
   void InternalSwap(FileDescriptorProto* PROTOBUF_NONNULL other);
  private:
+  template <typename T>
+  friend ::absl::string_view(::google::protobuf::internal::GetAnyMessageName)();
   static ::absl::string_view FullMessageName() { return "google.protobuf.FileDescriptorProto"; }
 
   explicit FileDescriptorProto(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
@@ -13325,6 +13402,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FileDescriptorSet f
   static void SharedDtor(MessageLite& self);
   void InternalSwap(FileDescriptorSet* PROTOBUF_NONNULL other);
  private:
+  template <typename T>
+  friend ::absl::string_view(::google::protobuf::internal::GetAnyMessageName)();
   static ::absl::string_view FullMessageName() { return "google.protobuf.FileDescriptorSet"; }
 
   explicit FileDescriptorSet(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
