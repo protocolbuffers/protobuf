@@ -54,7 +54,9 @@ using ::testing::ContainsRegex;
 using ::testing::ElementsAre;
 using ::testing::IsEmpty;
 using ::testing::Not;
+using ::testing::Pair;
 using ::testing::SizeIs;
+using ::testing::UnorderedElementsAre;
 
 // TODO: Use the gtest versions once that's available in OSS.
 MATCHER_P(IsOkAndHolds, inner,
