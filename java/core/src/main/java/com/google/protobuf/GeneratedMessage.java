@@ -211,6 +211,79 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
   }
 
   /**
+   * Returns an iterator over all set fields in this message.
+   *
+   * <p>This provides a lazy alternative to {@link #getAllFields()} which avoids allocating a map.
+   */
+  public Iterator<ExtendableMessage.FieldEntry> fieldsIterator() {
+    return new Iterator<ExtendableMessage.FieldEntry>() {
+      private final List<FieldDescriptor> fields = getDescriptorForType().getFields();
+      private int fieldIndex = 0;
+      private final Iterator<ExtendableMessage.FieldEntry> extensionsIter =
+          (GeneratedMessage.this instanceof ExtendableMessage)
+              ? ((ExtendableMessage<?>) GeneratedMessage.this).extensionsIterator()
+              : null;
+      private ExtendableMessage.FieldEntry nextEntry = null;
+      private boolean calculatedNext = false;
+
+      @Override
+      public boolean hasNext() {
+        if (!calculatedNext) {
+          calculateNext();
+        }
+        return nextEntry != null;
+      }
+
+      @Override
+      public ExtendableMessage.FieldEntry next() {
+        if (!hasNext()) {
+          throw new java.util.NoSuchElementException();
+        }
+        ExtendableMessage.FieldEntry result = nextEntry;
+        nextEntry = null;
+        calculatedNext = false;
+        return result;
+      }
+
+      private void calculateNext() {
+        calculatedNext = true;
+        nextEntry = null;
+
+        while (fieldIndex < fields.size()) {
+          FieldDescriptor field = fields.get(fieldIndex++);
+          Object value = getFieldValueIfSet(field);
+          if (value != null) {
+            nextEntry = new ExtendableMessage.FieldEntry(field, value);
+            return;
+          }
+        }
+
+        if (extensionsIter != null && extensionsIter.hasNext()) {
+          nextEntry = extensionsIter.next();
+        }
+      }
+
+      private Object getFieldValueIfSet(FieldDescriptor field) {
+        if (field.isRepeated()) {
+          if (getRepeatedFieldCount(field) > 0) {
+            return getField(field);
+          }
+        } else if (field.hasPresence()) {
+          if (hasField(field)) {
+            return getField(field);
+          }
+        } else {
+          Object value = getField(field);
+          if (!value.equals(field.getDefaultValue())) {
+            return value;
+          }
+        }
+        return null;
+      }
+    };
+  }
+
+  /**
    * Returns a collection of all the fields in this message which are set and their corresponding
    * values. A singular ("required" or "optional") field is set iff hasField() returns true for that
    * field. A "repeated" field is set iff getRepeatedFieldCount() is greater than zero. The values
