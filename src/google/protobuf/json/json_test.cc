@@ -29,6 +29,7 @@
 #include "google/protobuf/io/zero_copy_stream_impl_lite.h"
 #include "google/protobuf/util/json_format.pb.h"
 #include "google/protobuf/util/json_format_proto3.pb.h"
+#include "google/protobuf/test_textproto.h"
 #include "google/protobuf/unittest.pb.h"
 #include "google/protobuf/util/type_resolver.h"
 #include "google/protobuf/util/type_resolver_util.h"
@@ -1632,6 +1633,58 @@ TEST(JsonErrorTest, FieldNameAndSyntaxErrorInSeparateChunks) {
       s.message(),
       ContainsRegex("invalid *JSON *in *type.googleapis.com/proto3.TestMessage "
                     "*@ *bool_value"));
+}
+
+absl::StatusOr<google::protobuf::Struct> MessageToJsonAndBack(
+    const google::protobuf::Struct& msg) {
+  std::string str;
+  auto status = MessageToJsonString(msg, &str);
+  if (!status.ok()) return status;
+
+  google::protobuf::Struct out;
+  status = JsonStringToMessage(str, &out);
+  if (!status.ok()) return status;
+  return out;
+}
+
+TEST(JsonTest, MapsThroughCodegenWorksProperly) {
+  google::protobuf::Struct s;
+  auto& fields = *s.mutable_fields();
+
+  fields["first"].set_string_value("str1");
+
+  EXPECT_THAT(MessageToJsonAndBack(s), IsOkAndHolds(EqualsProto(R"pb(
+                fields {
+                  key: "first"
+                  value { string_value: "str1" }
+                }
+              )pb")));
+
+  fields["second"].set_string_value("str2");
+
+  EXPECT_THAT(MessageToJsonAndBack(s), IsOkAndHolds(EqualsProto(R"pb(
+                fields {
+                  key: "first"
+                  value { string_value: "str1" }
+                }
+                fields {
+                  key: "second"
+                  value { string_value: "str2" }
+                }
+              )pb")));
+
+  fields["first"].set_bool_value(true);
+
+  EXPECT_THAT(MessageToJsonAndBack(s), IsOkAndHolds(EqualsProto(R"pb(
+                fields {
+                  key: "first"
+                  value { bool_value: true }
+                }
+                fields {
+                  key: "second"
+                  value { string_value: "str2" }
+                }
+              )pb")));
 }
 
 }  // namespace
