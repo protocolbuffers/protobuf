@@ -1,6 +1,6 @@
-﻿#region Copyright notice and license
+#region Copyright notice and license
 // Protocol Buffers - Google's data interchange format
-// Copyright 2008 Google Inc.  All rights reserved.
+// Copyright 2008 Google LLC.  All rights reserved.
 //
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file or at
@@ -27,6 +27,11 @@ namespace Google.Protobuf.Reflection
         /// If the name is preferred in the .proto file.
         /// </summary>
         public bool PreferredAlias { get; set; }
+
+        /// <summary>
+        /// The custom JSON string for this enum value, if provided in the .proto file.
+        /// </summary>
+        public string JsonEnumValueName { get; set; }
 
         /// <summary>
         /// Constructs a new attribute instance for the given name.
