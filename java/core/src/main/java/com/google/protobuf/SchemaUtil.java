@@ -45,91 +45,91 @@ final class SchemaUtil {
     }
   }
 
-  public static void writeDouble(int fieldNumber, double value, Writer writer) throws IOException {
+  public static void writeDouble(int fieldNumber, double value, CodedOutputStreamWriter writer) throws IOException {
     if (Double.doubleToRawLongBits(value) != 0) {
       writer.writeDouble(fieldNumber, value);
     }
   }
 
-  public static void writeFloat(int fieldNumber, float value, Writer writer) throws IOException {
+  public static void writeFloat(int fieldNumber, float value, CodedOutputStreamWriter writer) throws IOException {
     if (Float.floatToRawIntBits(value) != 0) {
       writer.writeFloat(fieldNumber, value);
     }
   }
 
-  public static void writeInt64(int fieldNumber, long value, Writer writer) throws IOException {
+  public static void writeInt64(int fieldNumber, long value, CodedOutputStreamWriter writer) throws IOException {
     if (value != 0) {
       writer.writeInt64(fieldNumber, value);
     }
   }
 
-  public static void writeUInt64(int fieldNumber, long value, Writer writer) throws IOException {
+  public static void writeUInt64(int fieldNumber, long value, CodedOutputStreamWriter writer) throws IOException {
     if (value != 0) {
       writer.writeUInt64(fieldNumber, value);
     }
   }
 
-  public static void writeSInt64(int fieldNumber, long value, Writer writer) throws IOException {
+  public static void writeSInt64(int fieldNumber, long value, CodedOutputStreamWriter writer) throws IOException {
     if (value != 0) {
       writer.writeSInt64(fieldNumber, value);
     }
   }
 
-  public static void writeFixed64(int fieldNumber, long value, Writer writer) throws IOException {
+  public static void writeFixed64(int fieldNumber, long value, CodedOutputStreamWriter writer) throws IOException {
     if (value != 0) {
       writer.writeFixed64(fieldNumber, value);
     }
   }
 
-  public static void writeSFixed64(int fieldNumber, long value, Writer writer) throws IOException {
+  public static void writeSFixed64(int fieldNumber, long value, CodedOutputStreamWriter writer) throws IOException {
     if (value != 0) {
       writer.writeSFixed64(fieldNumber, value);
     }
   }
 
-  public static void writeInt32(int fieldNumber, int value, Writer writer) throws IOException {
+  public static void writeInt32(int fieldNumber, int value, CodedOutputStreamWriter writer) throws IOException {
     if (value != 0) {
       writer.writeInt32(fieldNumber, value);
     }
   }
 
-  public static void writeUInt32(int fieldNumber, int value, Writer writer) throws IOException {
+  public static void writeUInt32(int fieldNumber, int value, CodedOutputStreamWriter writer) throws IOException {
     if (value != 0) {
       writer.writeUInt32(fieldNumber, value);
     }
   }
 
-  public static void writeSInt32(int fieldNumber, int value, Writer writer) throws IOException {
+  public static void writeSInt32(int fieldNumber, int value, CodedOutputStreamWriter writer) throws IOException {
     if (value != 0) {
       writer.writeSInt32(fieldNumber, value);
     }
   }
 
-  public static void writeFixed32(int fieldNumber, int value, Writer writer) throws IOException {
+  public static void writeFixed32(int fieldNumber, int value, CodedOutputStreamWriter writer) throws IOException {
     if (value != 0) {
       writer.writeFixed32(fieldNumber, value);
     }
   }
 
-  public static void writeSFixed32(int fieldNumber, int value, Writer writer) throws IOException {
+  public static void writeSFixed32(int fieldNumber, int value, CodedOutputStreamWriter writer) throws IOException {
     if (value != 0) {
       writer.writeSFixed32(fieldNumber, value);
     }
   }
 
-  public static void writeEnum(int fieldNumber, int value, Writer writer) throws IOException {
+  public static void writeEnum(int fieldNumber, int value, CodedOutputStreamWriter writer) throws IOException {
     if (value != 0) {
       writer.writeEnum(fieldNumber, value);
     }
   }
 
-  public static void writeBool(int fieldNumber, boolean value, Writer writer) throws IOException {
+  public static void writeBool(int fieldNumber, boolean value, CodedOutputStreamWriter writer) throws IOException {
     if (value) {
       writer.writeBool(fieldNumber, true);
     }
   }
 
-  public static void writeString(int fieldNumber, Object value, Writer writer) throws IOException {
+  public static void writeString(int fieldNumber, Object value, CodedOutputStreamWriter writer) throws IOException {
     if (value instanceof String) {
       writeStringInternal(fieldNumber, (String) value, writer);
     } else {
@@ -137,139 +137,139 @@ final class SchemaUtil {
     }
   }
 
-  private static void writeStringInternal(int fieldNumber, String value, Writer writer)
+  private static void writeStringInternal(int fieldNumber, String value, CodedOutputStreamWriter writer)
       throws IOException {
     if (value != null && !value.isEmpty()) {
       writer.writeString(fieldNumber, value);
     }
   }
 
-  public static void writeBytes(int fieldNumber, ByteString value, Writer writer)
+  public static void writeBytes(int fieldNumber, ByteString value, CodedOutputStreamWriter writer)
       throws IOException {
     if (value != null && !value.isEmpty()) {
       writer.writeBytes(fieldNumber, value);
     }
   }
 
-  public static void writeMessage(int fieldNumber, Object value, Writer writer) throws IOException {
+  public static void writeMessage(int fieldNumber, Object value, CodedOutputStreamWriter writer) throws IOException {
     if (value != null) {
       writer.writeMessage(fieldNumber, value);
     }
   }
 
   public static void writeDoubleList(
-      int fieldNumber, List<Double> value, Writer writer, boolean packed) throws IOException {
+      int fieldNumber, List<Double> value, CodedOutputStreamWriter writer, boolean packed) throws IOException {
     if (value != null && !value.isEmpty()) {
       writer.writeDoubleList(fieldNumber, value, packed);
     }
   }
 
   public static void writeFloatList(
-      int fieldNumber, List<Float> value, Writer writer, boolean packed) throws IOException {
+      int fieldNumber, List<Float> value, CodedOutputStreamWriter writer, boolean packed) throws IOException {
     if (value != null && !value.isEmpty()) {
       writer.writeFloatList(fieldNumber, value, packed);
     }
   }
 
   public static void writeInt64List(
-      int fieldNumber, List<Long> value, Writer writer, boolean packed) throws IOException {
+      int fieldNumber, List<Long> value, CodedOutputStreamWriter writer, boolean packed) throws IOException {
     if (value != null && !value.isEmpty()) {
       writer.writeInt64List(fieldNumber, value, packed);
     }
   }
 
   public static void writeUInt64List(
-      int fieldNumber, List<Long> value, Writer writer, boolean packed) throws IOException {
+      int fieldNumber, List<Long> value, CodedOutputStreamWriter writer, boolean packed) throws IOException {
     if (value != null && !value.isEmpty()) {
       writer.writeUInt64List(fieldNumber, value, packed);
     }
   }
 
   public static void writeSInt64List(
-      int fieldNumber, List<Long> value, Writer writer, boolean packed) throws IOException {
+      int fieldNumber, List<Long> value, CodedOutputStreamWriter writer, boolean packed) throws IOException {
     if (value != null && !value.isEmpty()) {
       writer.writeSInt64List(fieldNumber, value, packed);
     }
   }
 
   public static void writeFixed64List(
-      int fieldNumber, List<Long> value, Writer writer, boolean packed) throws IOException {
+      int fieldNumber, List<Long> value, CodedOutputStreamWriter writer, boolean packed) throws IOException {
     if (value != null && !value.isEmpty()) {
       writer.writeFixed64List(fieldNumber, value, packed);
     }
   }
 
   public static void writeSFixed64List(
-      int fieldNumber, List<Long> value, Writer writer, boolean packed) throws IOException {
+      int fieldNumber, List<Long> value, CodedOutputStreamWriter writer, boolean packed) throws IOException {
     if (value != null && !value.isEmpty()) {
       writer.writeSFixed64List(fieldNumber, value, packed);
     }
   }
 
   public static void writeInt32List(
-      int fieldNumber, List<Integer> value, Writer writer, boolean packed) throws IOException {
+      int fieldNumber, List<Integer> value, CodedOutputStreamWriter writer, boolean packed) throws IOException {
     if (value != null && !value.isEmpty()) {
       writer.writeInt32List(fieldNumber, value, packed);
     }
   }
 
   public static void writeUInt32List(
-      int fieldNumber, List<Integer> value, Writer writer, boolean packed) throws IOException {
+      int fieldNumber, List<Integer> value, CodedOutputStreamWriter writer, boolean packed) throws IOException {
     if (value != null && !value.isEmpty()) {
       writer.writeUInt32List(fieldNumber, value, packed);
     }
   }
 
   public static void writeSInt32List(
-      int fieldNumber, List<Integer> value, Writer writer, boolean packed) throws IOException {
+      int fieldNumber, List<Integer> value, CodedOutputStreamWriter writer, boolean packed) throws IOException {
     if (value != null && !value.isEmpty()) {
       writer.writeSInt32List(fieldNumber, value, packed);
     }
   }
 
   public static void writeFixed32List(
-      int fieldNumber, List<Integer> value, Writer writer, boolean packed) throws IOException {
+      int fieldNumber, List<Integer> value, CodedOutputStreamWriter writer, boolean packed) throws IOException {
     if (value != null && !value.isEmpty()) {
       writer.writeFixed32List(fieldNumber, value, packed);
     }
   }
 
   public static void writeSFixed32List(
-      int fieldNumber, List<Integer> value, Writer writer, boolean packed) throws IOException {
+      int fieldNumber, List<Integer> value, CodedOutputStreamWriter writer, boolean packed) throws IOException {
     if (value != null && !value.isEmpty()) {
       writer.writeSFixed32List(fieldNumber, value, packed);
     }
   }
 
   public static void writeEnumList(
-      int fieldNumber, List<Integer> value, Writer writer, boolean packed) throws IOException {
+      int fieldNumber, List<Integer> value, CodedOutputStreamWriter writer, boolean packed) throws IOException {
     if (value != null && !value.isEmpty()) {
       writer.writeEnumList(fieldNumber, value, packed);
     }
   }
 
   public static void writeBoolList(
-      int fieldNumber, List<Boolean> value, Writer writer, boolean packed) throws IOException {
+      int fieldNumber, List<Boolean> value, CodedOutputStreamWriter writer, boolean packed) throws IOException {
     if (value != null && !value.isEmpty()) {
       writer.writeBoolList(fieldNumber, value, packed);
     }
   }
 
-  public static void writeStringList(int fieldNumber, List<String> value, Writer writer)
+  public static void writeStringList(int fieldNumber, List<String> value, CodedOutputStreamWriter writer)
       throws IOException {
     if (value != null && !value.isEmpty()) {
       writer.writeStringList(fieldNumber, value);
     }
   }
 
-  public static void writeBytesList(int fieldNumber, List<ByteString> value, Writer writer)
+  public static void writeBytesList(int fieldNumber, List<ByteString> value, CodedOutputStreamWriter writer)
       throws IOException {
     if (value != null && !value.isEmpty()) {
       writer.writeBytesList(fieldNumber, value);
     }
   }
 
-  public static void writeMessageList(int fieldNumber, List<?> value, Writer writer)
+  public static void writeMessageList(int fieldNumber, List<?> value, CodedOutputStreamWriter writer)
       throws IOException {
     if (value != null && !value.isEmpty()) {
       writer.writeMessageList(fieldNumber, value);
@@ -277,13 +277,13 @@ final class SchemaUtil {
   }
 
   public static void writeMessageList(
-      int fieldNumber, List<?> value, Writer writer, Schema<?> schema) throws IOException {
+      int fieldNumber, List<?> value, CodedOutputStreamWriter writer, Schema<?> schema) throws IOException {
     if (value != null && !value.isEmpty()) {
       writer.writeMessageList(fieldNumber, value, schema);
     }
   }
 
-  public static void writeLazyFieldList(int fieldNumber, List<?> value, Writer writer)
+  public static void writeLazyFieldList(int fieldNumber, List<?> value, CodedOutputStreamWriter writer)
       throws IOException {
     if (value != null && !value.isEmpty()) {
       for (Object item : value) {
@@ -292,14 +292,14 @@ final class SchemaUtil {
     }
   }
 
-  public static void writeGroupList(int fieldNumber, List<?> value, Writer writer)
+  public static void writeGroupList(int fieldNumber, List<?> value, CodedOutputStreamWriter writer)
       throws IOException {
     if (value != null && !value.isEmpty()) {
       writer.writeGroupList(fieldNumber, value);
     }
   }
 
-  public static void writeGroupList(int fieldNumber, List<?> value, Writer writer, Schema<?> schema)
+  public static void writeGroupList(int fieldNumber, List<?> value, CodedOutputStreamWriter writer, Schema<?> schema)
       throws IOException {
     if (value != null && !value.isEmpty()) {
       writer.writeGroupList(fieldNumber, value, schema);

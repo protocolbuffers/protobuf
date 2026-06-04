@@ -38,7 +38,7 @@ abstract class ExtensionSchema<T extends FieldSet.FieldDescriptorLite<T>> {
    */
   abstract <UT, UB> UB parseExtension(
       Object containerMessage,
-      Reader reader,
+      CodedInputStreamReader reader,
       Object extension,
       ExtensionRegistryLite extensionRegistry,
       FieldSet<T> extensions,
@@ -50,7 +50,7 @@ abstract class ExtensionSchema<T extends FieldSet.FieldDescriptorLite<T>> {
   abstract int extensionNumber(Map.Entry<?, ?> extension);
 
   /** Serializes one extension entry. */
-  abstract void serializeExtension(Writer writer, Map.Entry<?, ?> extension) throws IOException;
+  abstract void serializeExtension(CodedOutputStreamWriter writer, Map.Entry<?, ?> extension) throws IOException;
 
   /** Finds an extension by field number. */
   abstract Object findExtensionByNumber(
@@ -58,7 +58,7 @@ abstract class ExtensionSchema<T extends FieldSet.FieldDescriptorLite<T>> {
 
   /** Parses a length-prefixed MessageSet item from the reader. */
   abstract void parseLengthPrefixedMessageSetItem(
-      Reader reader,
+      CodedInputStreamReader reader,
       Object extension,
       ExtensionRegistryLite extensionRegistry,
       FieldSet<T> extensions)

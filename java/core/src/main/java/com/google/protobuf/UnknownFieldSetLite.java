@@ -148,7 +148,7 @@ public final class UnknownFieldSetLite {
   }
 
   /** Serializes the set and writes it to {@code writer} using {@code MessageSet} wire format. */
-  void writeAsMessageSetTo(Writer writer) throws IOException {
+  void writeAsMessageSetTo(CodedOutputStreamWriter writer) throws IOException {
     // Write fields in ascending order.
     for (int i = 0; i < count; i++) {
       int fieldNumber = WireFormat.getTagFieldNumber(tags[i]);
@@ -157,7 +157,7 @@ public final class UnknownFieldSetLite {
   }
 
   /** Serializes the set and writes it to {@code writer}. */
-  public void writeTo(Writer writer) throws IOException {
+  public void writeTo(CodedOutputStreamWriter writer) throws IOException {
     if (count == 0) {
       return;
     }
@@ -168,7 +168,7 @@ public final class UnknownFieldSetLite {
     }
   }
 
-  private static void writeField(int tag, Object object, Writer writer) throws IOException {
+  private static void writeField(int tag, Object object, CodedOutputStreamWriter writer) throws IOException {
     int fieldNumber = WireFormat.getTagFieldNumber(tag);
     switch (WireFormat.getTagWireType(tag)) {
       case WireFormat.WIRETYPE_VARINT:

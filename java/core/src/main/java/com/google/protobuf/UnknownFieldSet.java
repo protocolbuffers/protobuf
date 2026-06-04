@@ -209,7 +209,7 @@ public final class UnknownFieldSet implements MessageLite {
   }
 
   /** Serializes the set and writes it to {@code writer}. */
-  void writeTo(Writer writer) throws IOException {
+  void writeTo(CodedOutputStreamWriter writer) throws IOException {
     if (fields.isEmpty()) {
       // Avoid allocating an iterator.
       return;
@@ -221,7 +221,7 @@ public final class UnknownFieldSet implements MessageLite {
   }
 
   /** Serializes the set and writes it to {@code writer} using {@code MessageSet} wire format. */
-  void writeAsMessageSetTo(Writer writer) throws IOException {
+  void writeAsMessageSetTo(CodedOutputStreamWriter writer) throws IOException {
     if (fields.isEmpty()) {
       // Avoid allocating an iterator.
       return;
@@ -837,7 +837,7 @@ public final class UnknownFieldSet implements MessageLite {
     }
 
     /** Serializes the field, including field number, and writes it to {@code writer}. */
-    void writeTo(int fieldNumber, Writer writer) throws IOException {
+    void writeTo(int fieldNumber, CodedOutputStreamWriter writer) throws IOException {
       writer.writeInt64List(fieldNumber, varint, false);
       writer.writeFixed32List(fieldNumber, fixed32, false);
       writer.writeFixed64List(fieldNumber, fixed64, false);
@@ -856,7 +856,7 @@ public final class UnknownFieldSet implements MessageLite {
      * MessageSet} wire format.
      */
     @SuppressWarnings({"ForeachList", "ForeachListWithUserVar"}) // No iterator allocation.
-    private void writeAsMessageSetExtensionTo(int fieldNumber, Writer writer) throws IOException {
+    private void writeAsMessageSetExtensionTo(int fieldNumber, CodedOutputStreamWriter writer) throws IOException {
       // Write in ascending field order.
       for (int i = 0; i < lengthDelimited.size(); i++) {
         ByteString value = lengthDelimited.get(i);

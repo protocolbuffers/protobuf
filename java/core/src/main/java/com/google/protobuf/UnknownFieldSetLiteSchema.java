@@ -16,7 +16,7 @@ class UnknownFieldSetLiteSchema
   UnknownFieldSetLiteSchema() {}
 
   @Override
-  boolean shouldDiscardUnknownFields(Reader reader) {
+  boolean shouldDiscardUnknownFields(CodedInputStreamReader reader) {
     // We never drop unknown fields in lite.
     return false;
   }
@@ -90,12 +90,12 @@ class UnknownFieldSetLiteSchema
   }
 
   @Override
-  void writeTo(UnknownFieldSetLite fields, Writer writer) throws IOException {
+  void writeTo(UnknownFieldSetLite fields, CodedOutputStreamWriter writer) throws IOException {
     fields.writeTo(writer);
   }
 
   @Override
-  void writeAsMessageSetTo(UnknownFieldSetLite fields, Writer writer) throws IOException {
+  void writeAsMessageSetTo(UnknownFieldSetLite fields, CodedOutputStreamWriter writer) throws IOException {
     fields.writeAsMessageSetTo(writer);
   }
 

@@ -29,13 +29,13 @@ final class Protobuf {
     return INSTANCE;
   }
 
-  /** Writes the given message to the target {@link Writer}. */
-  <T> void writeTo(T message, Writer writer) throws IOException {
+  /** Writes the given message to the target {@link CodedOutputStreamWriter}. */
+  <T> void writeTo(T message, CodedOutputStreamWriter writer) throws IOException {
     schemaFor(message).writeTo(message, writer);
   }
 
-  /** Reads fields from the given {@link Reader} and merges them into the message. */
-  <T> void mergeFrom(T message, Reader reader, ExtensionRegistryLite extensionRegistry)
+  /** Reads fields from the given {@link CodedInputStreamReader} and merges them into the message. */
+  <T> void mergeFrom(T message, CodedInputStreamReader reader, ExtensionRegistryLite extensionRegistry)
       throws IOException {
     schemaFor(message).mergeFrom(message, reader, extensionRegistry);
   }

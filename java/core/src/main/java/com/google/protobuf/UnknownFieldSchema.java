@@ -19,7 +19,7 @@ abstract class UnknownFieldSchema<T, B> {
   private static volatile int recursionLimit = DEFAULT_RECURSION_LIMIT;
 
   /** Whether unknown fields should be dropped. */
-  abstract boolean shouldDiscardUnknownFields(Reader reader);
+  abstract boolean shouldDiscardUnknownFields(CodedInputStreamReader reader);
 
   /** Adds a varint value to the unknown fields. */
   abstract void addVarint(B fields, int number, long value);
@@ -61,7 +61,7 @@ abstract class UnknownFieldSchema<T, B> {
   abstract void makeImmutable(Object message);
 
   /** Merges one field into the unknown fields. */
-  final boolean mergeOneFieldFrom(B unknownFields, Reader reader, int currentDepth)
+  final boolean mergeOneFieldFrom(B unknownFields, CodedInputStreamReader reader, int currentDepth)
       throws IOException {
     int tag = reader.getTag();
     int fieldNumber = WireFormat.getTagFieldNumber(tag);
@@ -102,19 +102,19 @@ abstract class UnknownFieldSchema<T, B> {
     }
   }
 
-  private final void mergeFrom(B unknownFields, Reader reader, int currentDepth)
+  private final void mergeFrom(B unknownFields, CodedInputStreamReader reader, int currentDepth)
       throws IOException {
     while (true) {
-      if (reader.getFieldNumber() == Reader.READ_DONE
+      if (reader.getFieldNumber() == CodedInputStreamReader.READ_DONE
           || !mergeOneFieldFrom(unknownFields, reader, currentDepth)) {
         break;
       }
     }
   }
 
-  abstract void writeTo(T unknownFields, Writer writer) throws IOException;
+  abstract void writeTo(T unknownFields, CodedOutputStreamWriter writer) throws IOException;
 
-  abstract void writeAsMessageSetTo(T unknownFields, Writer writer) throws IOException;
+  abstract void writeAsMessageSetTo(T unknownFields, CodedOutputStreamWriter writer) throws IOException;
 
   /** Merges {@code source} into {@code destination} and returns the merged instance. */
   abstract T merge(T destination, T source);

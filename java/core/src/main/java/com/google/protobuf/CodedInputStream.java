@@ -50,7 +50,7 @@ public abstract class CodedInputStream {
   /** Visible for subclasses. See setSizeLimit() */
   int sizeLimit = DEFAULT_SIZE_LIMIT;
 
-  /** Used to adapt to the experimental {@link Reader} interface. */
+  /** Used to adapt to the experimental {@link CodedInputStreamReader} interface. */
   Object wrapper;
 
   /** Create a new CodedInputStream wrapping the given InputStream. */

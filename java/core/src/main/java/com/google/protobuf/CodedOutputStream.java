@@ -33,7 +33,7 @@ import java.util.Locale;
  */
 public abstract class CodedOutputStream extends ByteOutput {
 
-  /** Used to adapt to the experimental {@link Writer} interface. */
+  /** Used to adapt to the experimental {@link CodedOutputStreamWriter} interface. */
   Object wrapper;
 
   /**
