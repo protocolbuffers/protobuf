@@ -1732,8 +1732,26 @@ const char* ReadStringNoArena(const char* ptr, ParseContext* ctx, TcFieldData,
   return ctx->ReadString(ptr, size, field.MutableNoCopy(nullptr));
 }
 
+PROTOBUF_ALWAYS_INLINE bool IsValidUTF8Inline(const std::string& s) {
+  size_t len = s.size();
+  if (ABSL_PREDICT_TRUE(len == 0)) return true;
+  const char* data = s.data();
+  if (ABSL_PREDICT_TRUE(len <= 8)) {
+    uint64_t val;
+    // Safe to load 8 bytes because std::string SSO capacity is always >= 15.
+    memcpy(&val, data, sizeof(val));
+    static constexpr uint64_t kMasks[] = {
+        0x0000000000000000, 0x0000000000000080, 0x0000000000008080,
+        0x0000000000808080, 0x0000000080808080, 0x0000008080808080,
+        0x0000808080808080, 0x0080808080808080, 0x8080808080808080,
+    };
+    if (ABSL_PREDICT_TRUE((val & kMasks[len]) == 0)) return true;
+  }
+  return utf8_range::IsStructurallyValid(s);
+}
+
 PROTOBUF_ALWAYS_INLINE bool IsValidUTF8(ArenaStringPtr& field) {
-  return utf8_range::IsStructurallyValid(field.Get());
+  return IsValidUTF8Inline(field.Get());
 }
 
 
