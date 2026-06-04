@@ -37,7 +37,7 @@ def _java_proto_aspect_impl(target, ctx):
       runtime jars.
     """
     _proto_library = ctx.rule.attr
-    proto_toolchain_info = toolchains.find_toolchain(ctx, "proto_toolchain_for_java", _JAVA_PROTO_TOOLCHAIN)
+    proto_toolchain_info = toolchains.find_toolchain(ctx, "aspect_java_proto_toolchain", _JAVA_PROTO_TOOLCHAIN)
     source_jar = None
     if proto_common.experimental_should_generate_code(target[ProtoInfo], proto_toolchain_info, "java_proto_library", target.label):
         # Generate source jar using proto compiler.
@@ -74,9 +74,6 @@ java_proto_aspect = aspect(
     attrs = (
         toolchains.if_legacy_toolchain({
             "_aspect_java_proto_toolchain": attr.label(
-                default = configuration_field(fragment = "proto", name = "proto_toolchain_for_java"),
-            ),
-            "_proto_toolchain_for_java": attr.label(
                 default = "//bazel/flags/java:proto_toolchain_for_java",
             ),
         })
@@ -99,7 +96,7 @@ def _java_proto_library_rule_impl(ctx):
     Returns:
       ([JavaInfo, DefaultInfo, OutputGroupInfo])
     """
-    proto_toolchain = toolchains.find_toolchain(ctx, "proto_toolchain_for_java", _JAVA_PROTO_TOOLCHAIN)
+    proto_toolchain = toolchains.find_toolchain(ctx, "aspect_java_proto_toolchain", _JAVA_PROTO_TOOLCHAIN)
     for dep in ctx.attr.deps:
         proto_common.check_collocated(ctx.label, dep[ProtoInfo], proto_toolchain)
 
@@ -164,9 +161,6 @@ rules to generate Java code for.
         "licenses": attr.license() if hasattr(attr, "license") else attr.string_list(),
     } | toolchains.if_legacy_toolchain({
         "_aspect_java_proto_toolchain": attr.label(
-            default = configuration_field(fragment = "proto", name = "proto_toolchain_for_java"),
-        ),
-        "_proto_toolchain_for_java": attr.label(
             default = "//bazel/flags/java:proto_toolchain_for_java",
         ),
     }),  # buildifier: disable=attr-licenses (attribute called licenses)
