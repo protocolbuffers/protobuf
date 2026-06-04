@@ -100,6 +100,25 @@ void RepeatedPtrFieldBase::ReserveWithArena(Arena* arena, int capacity) {
   }
 }
 
+void RepeatedPtrFieldBase::MergeFromMove(RepeatedPtrFieldBase& from,
+                                         Arena* arena) {
+  ABSL_DCHECK_EQ(arena, GetArena());
+  ABSL_DCHECK_NE(&from, this);
+  if (from.empty()) return;
+
+  int new_size = internal::CheckedAdd(current_size_, from.current_size_);
+  void** dst = InternalReserve(new_size, arena);
+  const void* const* src = from.elements();
+
+  memcpy(dst, src, from.current_size_ * sizeof(void*));
+  from.CloseGap(0, from.current_size_);
+
+  ExchangeCurrentSize(new_size);
+  if (new_size > allocated_size()) {
+    rep()->allocated_size = new_size;
+  }
+}
+
 void RepeatedPtrFieldBase::DestroyProtos() {
   PROTOBUF_ALWAYS_INLINE_CALL Destroy<GenericTypeHandler<MessageLite>>();
 

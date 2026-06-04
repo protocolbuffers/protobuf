@@ -489,6 +489,7 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   void CloseGap(int start, int num);
 
   void ReserveWithArena(Arena* arena, int capacity);
+  void MergeFromMove(RepeatedPtrFieldBase& from, Arena* arena);
 
   template <typename TypeHandler>
   static inline Value<TypeHandler>* copy(const Value<TypeHandler>* value) {
@@ -1348,6 +1349,7 @@ class ABSL_ATTRIBUTE_WARN_UNUSED RepeatedPtrField final
   // Appends the elements from `other` after this instance.
   // The end result length will be `other.size() + this->size()`.
   void MergeFrom(const RepeatedPtrField& other);
+  void MergeFrom(RepeatedPtrField&& other);
 
   // Replaces the contents with a copy of the elements from `other`.
   ABSL_ATTRIBUTE_REINITIALIZES void CopyFrom(const RepeatedPtrField& other);
@@ -1547,6 +1549,8 @@ class ABSL_ATTRIBUTE_WARN_UNUSED RepeatedPtrField final
   // ensure that this arena is the same as the arena returned from `GetArena()`.
   void InternalMergeFromWithArena(internal::InternalVisibility, Arena* arena,
                                   const RepeatedPtrField& other);
+  void InternalMergeFromWithArena(internal::InternalVisibility, Arena* arena,
+                                  RepeatedPtrField&& other);
 
  private:
   using InternalArenaConstructable_ = void;
@@ -1935,10 +1939,32 @@ inline void RepeatedPtrField<Element>::MergeFrom(
 }
 
 template <typename Element>
+inline void RepeatedPtrField<Element>::MergeFrom(RepeatedPtrField&& other) {
+  if (other.empty()) return;
+  Arena* arena = GetArena();
+  if (arena == other.GetArena()) {
+    RepeatedPtrFieldBase::MergeFromMove(other, arena);
+  } else {
+    RepeatedPtrFieldBase::MergeFrom<Element>(other, arena);
+  }
+}
+
+template <typename Element>
 inline void RepeatedPtrField<Element>::InternalMergeFromWithArena(
     internal::InternalVisibility, Arena* arena, const RepeatedPtrField& other) {
   if (other.empty()) return;
   RepeatedPtrFieldBase::MergeFrom<Element>(other, arena);
+}
+
+template <typename Element>
+inline void RepeatedPtrField<Element>::InternalMergeFromWithArena(
+    internal::InternalVisibility, Arena* arena, RepeatedPtrField&& other) {
+  if (other.empty()) return;
+  if (arena == other.GetArena()) {
+    RepeatedPtrFieldBase::MergeFromMove(other, arena);
+  } else {
+    RepeatedPtrFieldBase::MergeFrom<Element>(other, arena);
+  }
 }
 
 template <typename Element>
