@@ -474,7 +474,7 @@ using ClassDataLite = ClassDataFull;
 struct PROTOBUF_EXPORT DescriptorMethods {
   absl::string_view (*get_type_name)(const ClassData* data);
   std::string (*initialization_error_string)(const MessageLite&);
-  const internal::TcParseTableBase* (*get_tc_table)(const MessageLite&);
+  const internal::TcParseTableBase* (*get_tc_table)(const ClassData*);
   size_t (*space_used_long)(const MessageLite&);
   std::string (*debug_string)(const MessageLite&);
   void (*verify_lazy_field_consistency)(const LazyField&);
@@ -1192,7 +1192,7 @@ class PROTOBUF_EXPORT MessageLite {
     auto* tc_table = data->tc_table;
     if (ABSL_PREDICT_FALSE(tc_table == nullptr)) {
       ABSL_DCHECK(!data->is_lite);
-      return data->full().descriptor_methods()->get_tc_table(*this);
+      return data->full().descriptor_methods()->get_tc_table(data);
     }
     return tc_table;
   }

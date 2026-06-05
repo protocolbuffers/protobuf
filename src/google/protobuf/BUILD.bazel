@@ -360,6 +360,29 @@ cc_proto_library(
 )
 
 proto_library(
+    name = "cpp_options_proto",
+    srcs = ["cpp_options.proto"],
+    strip_import_prefix = "/src",
+    visibility = ["//visibility:public"],
+    exports = [":cpp_file_options_proto"],
+    deps = ["//src/google/protobuf:cpp_file_options_proto"],
+)
+
+proto_library(
+    name = "cpp_file_options_proto",
+    srcs = ["cpp_file_options.proto"],
+    strip_import_prefix = "/src",
+    visibility = ["//:__subpackages__"],
+    deps = [":descriptor_proto"],
+)
+
+cc_proto_library(
+    name = "cpp_file_options_cc_proto",
+    visibility = ["//:__subpackages__"],
+    deps = [":cpp_file_options_proto"],
+)
+
+proto_library(
     name = "json_options_proto",
     srcs = ["json_options.proto"],
     strip_import_prefix = "/src",
@@ -780,6 +803,7 @@ cc_library(
 PROTOBUF_HEADERS = [
     "cpp_edition_defaults.h",
     "cpp_features.pb.h",
+    "cpp_file_options.pb.h",
     "descriptor.h",
     "descriptor.pb.h",
     "descriptor_database.h",
@@ -814,6 +838,7 @@ cc_library(
     srcs = [
         "any.cc",
         "cpp_features.pb.cc",
+        "cpp_file_options.pb.cc",
         "descriptor.cc",
         "descriptor.pb.cc",
         "descriptor_database.cc",
@@ -846,6 +871,7 @@ cc_library(
     deps = [
         ":internal_visibility",
         ":micro_string",
+        ":naming_style",
         ":port",
         ":protobuf_lite",
         ":repeated_field_proxy",
@@ -897,6 +923,31 @@ cc_library(
     visibility = ["//visibility:private"],
     deps = [
         "@abseil-cpp//absl/strings",
+    ],
+)
+
+cc_library(
+    name = "naming_style",
+    srcs = ["naming_style.cc"],
+    hdrs = ["naming_style.h"],
+    strip_include_prefix = "/src",
+    visibility = ["//visibility:private"],
+    deps = [
+        ":port",
+        "@abseil-cpp//absl/status",
+        "@abseil-cpp//absl/strings",
+        "@abseil-cpp//absl/strings:charset",
+    ],
+)
+
+cc_test(
+    name = "naming_style_test",
+    srcs = ["naming_style_test.cc"],
+    deps = [
+        ":naming_style",
+        "@abseil-cpp//absl/status:status_matchers",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
     ],
 )
 
@@ -1452,6 +1503,8 @@ exports_files(
     [
         "test_messages_proto2.proto",
         "test_messages_proto3.proto",
+        "json_options.proto",
+        "json_enumvalue_options.proto",
     ],
     visibility = [
         "//:__pkg__",
@@ -2075,6 +2128,7 @@ cc_test(
         ":test_util",
         ":unittest_import_option_cc_proto",
         ":unittest_proto3_cc_proto",
+        "//src/google/protobuf/compiler/cpp:cpp_file_options_test_cc_proto",
         "//src/google/protobuf/stubs",
         "//src/google/protobuf/testing",
         "//src/google/protobuf/testing:file",

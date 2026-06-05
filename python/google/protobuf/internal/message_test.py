@@ -907,6 +907,45 @@ class MessageTest(unittest.TestCase):
     self.assertIsInstance(m1.optional_string, str)
     self.assertIsInstance(m1.repeated_string[0], str)
 
+  @unittest.skipIf(
+      api_implementation.Type() == 'upb' or sys.version_info < (3, 12),
+      'upb only supports memoryview and 3.12+ needed for buffer protocol',
+  )
+  def testMergeFromStringUsingBufferProtocol(self, message_module):
+    # A class that implements the buffer protocol and mangles the data when the
+    # buffer is released.
+    class Buffer:
+      def __init__(self, data):
+        self._data = bytearray(data)
+
+      def __buffer__(self, flags):
+        return memoryview(self._data)
+
+      def __release_buffer__(self, buffer):
+        for i in range(len(self._data)):
+          self._data[i] = 0xAA
+
+    m2 = message_module.TestAllTypes()
+    m2.optional_string = 'scalar string'
+    m2.repeated_string.append('repeated string')
+    m2.optional_bytes = b'scalar bytes'
+    m2.repeated_bytes.append(b'repeated bytes')
+
+    serialized = m2.SerializeToString()
+    buffer = Buffer(serialized)
+    m1 = message_module.TestAllTypes.FromString(buffer)
+
+    self.assertEqual(m1.optional_bytes, b'scalar bytes')
+    self.assertEqual(m1.repeated_bytes, [b'repeated bytes'])
+    self.assertEqual(m1.optional_string, 'scalar string')
+    self.assertEqual(m1.repeated_string, ['repeated string'])
+    # Make sure that the memoryview was correctly converted to bytes, and
+    # that a sub-sliced memoryview is not being used.
+    self.assertIsInstance(m1.optional_bytes, bytes)
+    self.assertIsInstance(m1.repeated_bytes[0], bytes)
+    self.assertIsInstance(m1.optional_string, str)
+    self.assertIsInstance(m1.repeated_string[0], str)
+
   def testMergeFromEmpty(self, message_module):
     m1 = message_module.TestAllTypes()
     # Cpp extension will lazily create a sub message which is immutable.

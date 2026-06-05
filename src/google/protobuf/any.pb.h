@@ -37,15 +37,6 @@
 
 #define PROTOBUF_INTERNAL_EXPORT_google_2fprotobuf_2fany_2eproto PROTOBUF_EXPORT
 
-namespace google {
-namespace protobuf {
-namespace internal {
-template <typename T>
-::absl::string_view GetAnyMessageName();
-}  // namespace internal
-}  // namespace protobuf
-}  // namespace google
-
 // Internal implementation detail -- do not use these members.
 struct PROTOBUF_EXPORT TableStruct_google_2fprotobuf_2fany_2eproto {
   static const ::uint32_t offsets[];
@@ -76,6 +67,8 @@ namespace protobuf {
 
 class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Any final : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:google.protobuf.Any) */ {
+  using Super_ = ::google::protobuf::Message;
+
  public:
   inline Any() : Any(nullptr) {}
   ~Any() PROTOBUF_FINAL;
@@ -209,11 +202,11 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Any final : public 
 
   [[nodiscard]] Any* PROTOBUF_NONNULL
   New(::google::protobuf::Arena* PROTOBUF_NULLABLE arena = nullptr) const {
-    return ::google::protobuf::Message::DefaultConstruct<Any>(arena);
+    return Super_::DefaultConstruct<Any>(arena);
   }
-  using ::google::protobuf::Message::CopyFrom;
+  using Super_::CopyFrom;
   void CopyFrom(const Any& from);
-  using ::google::protobuf::Message::MergeFrom;
+  using Super_::MergeFrom;
   void MergeFrom(const Any& from) { Any::MergeImpl(*this, from); }
 
   private:
@@ -254,8 +247,6 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Any final : public 
   static void SharedDtor(MessageLite& self);
   void InternalSwap(Any* PROTOBUF_NONNULL other);
  private:
-  template <typename T>
-  friend ::absl::string_view(::google::protobuf::internal::GetAnyMessageName)();
   static ::absl::string_view FullMessageName() { return "google.protobuf.Any"; }
 
   explicit Any(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);

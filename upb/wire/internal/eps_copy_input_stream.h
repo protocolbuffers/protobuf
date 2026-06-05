@@ -94,11 +94,21 @@ UPB_INLINE bool upb_EpsCopyInputStream_HasErrorHandler(
   return e && e->err != NULL;
 }
 
+UPB_NORETURN UPB_NOINLINE void UPB_PRIVATE(
+    upb_EpsCopyInputStream_ThrowMalformed)(struct upb_EpsCopyInputStream* e);
+
 // Call this function to signal an error. If an error handler is set, it will be
 // called and the function will never return. Otherwise, returns NULL to
 // indicate an error.
-const char* UPB_PRIVATE(upb_EpsCopyInputStream_ReturnError)(
-    struct upb_EpsCopyInputStream* e);
+UPB_INLINE const char* UPB_PRIVATE(upb_EpsCopyInputStream_ReturnError)(
+    struct upb_EpsCopyInputStream* e) {
+  if (e->err) {
+    UPB_PRIVATE(upb_EpsCopyInputStream_ThrowMalformed)(e);
+  } else {
+    e->error = true;
+  }
+  return NULL;
+}
 
 UPB_INLINE const char* UPB_PRIVATE(upb_EpsCopyInputStream_AssumeResult)(
     struct upb_EpsCopyInputStream* e, const char* ptr) {
