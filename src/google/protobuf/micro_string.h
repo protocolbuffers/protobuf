@@ -14,6 +14,7 @@
 
 #include "absl/base/config.h"
 #include "absl/log/absl_check.h"
+#include "absl/strings/cord.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/arena.h"
 
@@ -204,6 +205,14 @@ class PROTOBUF_EXPORT MicroString {
   // Sets the payload to `data`. Always copies the data.
   void Set(absl::string_view data, Arena* arena) {
     SetMaybeConstant(*this, data, arena);
+  }
+
+  void Set(const absl::Cord& value, Arena* arena) {
+    SetInChunks(value.size(), arena, [&value](auto append) {
+      for (absl::string_view chunk : value.Chunks()) {
+        append(chunk);
+      }
+    });
   }
   void Set(absl::string_view data, Arena* arena, size_t inline_capacity) {
     SetImpl(data, arena, inline_capacity);
