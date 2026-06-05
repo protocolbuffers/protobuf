@@ -199,7 +199,11 @@ PROTOBUF_EXPORT std::string Utf8Format(
     const Message& message);  // text_format.cc
 namespace util {
 class MessageDifferencer;
-}
+}  // namespace util
+
+namespace json_internal {
+struct UnparseProto2Descriptor;
+}  // namespace json_internal
 
 
 namespace internal {
@@ -1161,6 +1165,7 @@ class PROTOBUF_EXPORT Reflection final {
   friend struct internal::MapDynamicFieldInfo;
   friend class internal::ReflectionVisit;
   friend internal::DescriptorMethodsFriend;
+  friend json_internal::UnparseProto2Descriptor;
   friend bool internal::IsDescendant(const Message& root,
                                      const Message& message);
   friend void internal::MaybePoisonAfterClear(Message* root);

@@ -114,6 +114,69 @@ Message* MaybeForceCopy(Arena* arena, Message* msg) {
 }  // anonymous namespace
 
 namespace internal {
+ReflectionSchema::ReflectionSchema(const Message* default_instance,
+                                   const uint32_t* offsets,
+                                   const uint32_t* has_bit_indices,
+                                   int has_bits_offset, int extensions_offset,
+                                   int oneof_case_offset, int object_size,
+                                   int weak_field_map_offset, int split_offset,
+                                   int sizeof_split)
+    : default_instance_(default_instance),
+      offsets_(offsets),
+      has_bit_indices_(has_bit_indices),
+      has_bits_offset_(has_bits_offset),
+      extensions_offset_(extensions_offset),
+      oneof_case_offset_(oneof_case_offset),
+      object_size_(object_size),
+      weak_field_map_offset_(weak_field_map_offset),
+      split_offset_(split_offset),
+      sizeof_split_(sizeof_split) {}
+
+ReflectionSchema ReflectionSchema::MigrationToReflectionSchema(
+    const MessageGlobalsBase* const* message_globals, const uint32_t* offsets,
+    MigrationSchema migration_schema) {
+  ReflectionSchema result;
+  result.default_instance_ =
+      MessageGlobalsBase::ToDefaultInstance<Message>(*message_globals);
+  int index = migration_schema.offsets_index;
+
+  // First values are offsets to the special fields, but they are optional.
+  // The first value is a bitmap marking which fields are present.
+  // The order of the fields must match MessageGenerator::GenerateOffsets
+  //
+  // To add new fields, we add them at the end and since they are optional the
+  // bootstrap files will automatically look as if those fields are not present.
+  const uint32_t bits = offsets[index++];
+
+  int bit = 0;
+  const auto next = [&] {
+    return (bits & (1 << bit++)) ? offsets[index++] : ~uint32_t{};
+  };
+  const auto next_pointer = [&]() -> const uint32_t* {
+    const uint32_t n = next();
+    if (n == ~uint32_t{}) {
+      return nullptr;
+    }
+    return offsets + migration_schema.offsets_index + n;
+  };
+  result.has_bits_offset_ = next();
+  result.extensions_offset_ = next();
+  result.oneof_case_offset_ = next();
+  result.weak_field_map_offset_ = next();
+  // Old result.inlined_string_donated_offset_
+  ABSL_CHECK_EQ(next(), ~uint32_t{});
+  result.split_offset_ = next();
+  result.sizeof_split_ = next();
+
+  result.has_bit_indices_ = next_pointer();
+  // Old result.inlined_string_indices_
+  ABSL_CHECK_EQ(next_pointer(), nullptr);
+
+  result.offsets_ = offsets + index;
+  result.object_size_ = migration_schema.object_size;
+
+  return result;
+}
 
 void InitializeFileDescriptorDefaultInstances() {
 #if !defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
@@ -1576,7 +1639,7 @@ void Reflection::ClearField(Message* message,
               if (field->has_default_value()) {
                 MutableRaw<MicroString>(message, field)
                     ->ClearToDefault(
-                        GetRaw<MicroString>(*schema_.default_instance_, field),
+                        GetRaw<MicroString>(*schema_.default_instance(), field),
                         message->GetArena());
               } else {
                 MutableRaw<MicroString>(message, field)->Clear();
@@ -1798,7 +1861,6 @@ inline int32_t Reflection::IsEmptyOrCollectSetFields(
   // seems more trouble than it is worth.
   const uint32_t* const has_bits =
       schema_.HasHasbits() ? GetHasBits(message) : nullptr;
-  const uint32_t* const has_bits_indices = schema_.has_bit_indices_;
   if constexpr (!kForIsEmpty) {
     output->reserve(descriptor.field_count());
   }
@@ -1829,19 +1891,17 @@ inline int32_t Reflection::IsEmptyOrCollectSetFields(
     ++i;
     const OneofDescriptor* containing_oneof = field.containing_oneof();
     if (schema_.InRealOneof(&field)) {
-      const uint32_t* const oneof_case_array =
-          GetConstPointerAtOffset<uint32_t>(&message,
-                                            schema_.oneof_case_offset_);
+      uint32_t oneof_case = GetConstRefAtOffset<uint32_t>(
+          message, schema_.GetOneofCaseOffset(containing_oneof));
       // Equivalent to: HasOneofField(message, field)
-      if (static_cast<int64_t>(oneof_case_array[containing_oneof->index()]) ==
-          field.number()) {
+      if (static_cast<int64_t>(oneof_case) == field.number()) {
         PROTO_REFLECTION_APPEND_OR_RETURN();
       }
-    } else if (has_bits &&
-               has_bits_indices[i] != static_cast<uint32_t>(kNoHasbit)) {
+    } else if (uint32_t hasbit_index =
+                   schema_.HasBitIndex(&field, /*field_index=*/i);
+               hasbit_index != static_cast<uint32_t>(kNoHasbit)) {
       // Equivalent to: HasFieldSingular(message, field)
-      if (IsFieldPresentGivenHasbits(message, &field, has_bits,
-                                     has_bits_indices[i])) {
+      if (IsFieldPresentGivenHasbits(message, &field, has_bits, hasbit_index)) {
         PROTO_REFLECTION_APPEND_OR_RETURN();
       }
     } else if (HasFieldWithHasbits(message, &field)) {
@@ -3053,9 +3113,9 @@ const FieldDescriptor* Reflection::FindKnownExtensionByNumber(
 // the given field.
 
 void Reflection::PrepareSplitMessageForWrite(Message* message) const {
-  ABSL_DCHECK_NE(message, schema_.default_instance_);
+  ABSL_DCHECK_NE(message, schema_.default_instance());
   void** split = MutableSplitField(message);
-  const void* default_split = GetSplitField(schema_.default_instance_);
+  const void* default_split = GetSplitField(schema_.default_instance());
   if (*split == default_split) {
     uint32_t size = schema_.SizeofSplit();
     Arena* arena = message->GetArena();
@@ -3654,7 +3714,7 @@ void Reflection::PopulateTcParseEntries(
     const OneofDescriptor* oneof = field->real_containing_oneof();
     entries->offset = schema_.GetFieldOffset(field);
     if (oneof != nullptr) {
-      entries->has_idx = schema_.oneof_case_offset_ + 4 * oneof->index();
+      entries->has_idx = schema_.GetOneofCaseOffset(oneof);
     } else if (schema_.HasHasbits()) {
       entries->has_idx =
           entry.hasbit_idx >= 0
@@ -3789,7 +3849,7 @@ const internal::TcParseTableBase* Reflection::CreateTcParseTable() const {
           schema_.HasHasbits()
               ? schema_.HasBitsOffset()
               // Just put something safe here. _cached_size_ is fine.
-              : schema_.default_instance_->GetClassData()->cached_size_offset),
+              : schema_.default_instance()->GetClassData()->cached_size_offset),
       schema_.HasExtensionSet()
           ? static_cast<uint16_t>(schema_.GetExtensionSetOffset())
           : uint16_t{0},
@@ -3801,7 +3861,7 @@ const internal::TcParseTableBase* Reflection::CreateTcParseTable() const {
       static_cast<uint16_t>(fields.size()),
       static_cast<uint16_t>(table_info.aux_entries.size()),
       aux_offset,
-      schema_.default_instance_->GetClassData(),
+      schema_.default_instance()->GetClassData(),
       nullptr,
       GetFastParseFunction(table_info.fallback_function)
 #ifdef PROTOBUF_PREFETCH_PARSE_TABLE
@@ -3839,57 +3899,6 @@ const internal::TcParseTableBase* Reflection::CreateTcParseTable() const {
   return res;
 }
 
-namespace {
-
-// Helper function to transform migration schema into reflection schema.
-ReflectionSchema MigrationToReflectionSchema(
-    const MessageGlobalsBase* const* message_globals, const uint32_t* offsets,
-    MigrationSchema migration_schema) {
-  ReflectionSchema result;
-  result.default_instance_ =
-      MessageGlobalsBase::ToDefaultInstance<Message>(*message_globals);
-  int index = migration_schema.offsets_index;
-
-  // First values are offsets to the special fields, but they are optional.
-  // The first value is a bitmap marking which fields are present.
-  // The order of the fields must match MessageGenerator::GenerateOffsets
-  //
-  // To add new fields, we add them at the end and since they are optional the
-  // bootstrap files will automatically look as if those fields are not present.
-  const uint32_t bits = offsets[index++];
-
-  int bit = 0;
-  const auto next = [&] {
-    return (bits & (1 << bit++)) ? offsets[index++] : ~uint32_t{};
-  };
-  const auto next_pointer = [&]() -> const uint32_t* {
-    const uint32_t n = next();
-    if (n == ~uint32_t{}) {
-      return nullptr;
-    }
-    return offsets + migration_schema.offsets_index + n;
-  };
-  result.has_bits_offset_ = next();
-  result.extensions_offset_ = next();
-  result.oneof_case_offset_ = next();
-  result.weak_field_map_offset_ = next();
-  // Old result.inlined_string_donated_offset_
-  ABSL_CHECK_EQ(next(), ~uint32_t{});
-  result.split_offset_ = next();
-  result.sizeof_split_ = next();
-
-  result.has_bit_indices_ = next_pointer();
-  // Old result.inlined_string_indices_
-  ABSL_CHECK_EQ(next_pointer(), nullptr);
-
-  result.offsets_ = offsets + index;
-  result.object_size_ = migration_schema.object_size;
-
-  return result;
-}
-
-}  // namespace
-
 class AssignDescriptorsHelper {
  public:
   AssignDescriptorsHelper(MessageFactory* factory,
@@ -3921,8 +3930,8 @@ class AssignDescriptorsHelper {
 
         class_data.set_reflection(OnShutdownDelete(new Reflection(
             descriptor,
-            MigrationToReflectionSchema(message_globals_data_, offsets_,
-                                        *schemas_),
+            ReflectionSchema::MigrationToReflectionSchema(message_globals_data_,
+                                                          offsets_, *schemas_),
             DescriptorPool::internal_generated_pool(), factory_)));
       }
     }

@@ -871,6 +871,7 @@ cc_library(
     deps = [
         ":internal_visibility",
         ":micro_string",
+        ":naming_style",
         ":port",
         ":protobuf_lite",
         ":repeated_field_proxy",
@@ -922,6 +923,31 @@ cc_library(
     visibility = ["//visibility:private"],
     deps = [
         "@abseil-cpp//absl/strings",
+    ],
+)
+
+cc_library(
+    name = "naming_style",
+    srcs = ["naming_style.cc"],
+    hdrs = ["naming_style.h"],
+    strip_include_prefix = "/src",
+    visibility = ["//visibility:private"],
+    deps = [
+        ":port",
+        "@abseil-cpp//absl/status",
+        "@abseil-cpp//absl/strings",
+        "@abseil-cpp//absl/strings:charset",
+    ],
+)
+
+cc_test(
+    name = "naming_style_test",
+    srcs = ["naming_style_test.cc"],
+    deps = [
+        ":naming_style",
+        "@abseil-cpp//absl/status:status_matchers",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
     ],
 )
 

@@ -206,7 +206,7 @@ int ass_subscript(ExtensionDict* self, PyObject* key, PyObject* value) {
                     "type");
     return -1;
   }
-  cmessage::AssureWritable(self->parent);
+  if (cmessage::AssureWritable(self->parent) == nullptr) return -1;
   if (cmessage::InternalSetScalar(self->parent, descriptor, value) < 0) {
     return -1;
   }

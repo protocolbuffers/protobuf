@@ -24,7 +24,7 @@ public final class CodedAdapterTest {
     Proto3Message expected = new Proto3MessageFactory(5, 10, 2, 2).newMessage();
     byte[] expectedBytes = expected.toByteArray();
 
-    // Deserialize with BinaryReader and verify that the message matches the original.
+    // Deserialize with CodedInputStreamReader and verify that the message matches the original.
     Proto3Message result = fromByteArray(expectedBytes, Proto3Message.class);
     assertThat(result).isEqualTo(expected);
 
@@ -41,7 +41,7 @@ public final class CodedAdapterTest {
     Proto2Message expected = new Proto2MessageFactory(5, 10, 2, 2).newMessage();
     byte[] expectedBytes = expected.toByteArray();
 
-    // Deserialize with BinaryReader and verify that the message matches the original.
+    // Deserialize with CodedInputStreamReader and verify that the message matches the original.
     Proto2Message result = fromByteArray(expectedBytes, Proto2Message.class);
     assertThat(result).isEqualTo(expected);
 

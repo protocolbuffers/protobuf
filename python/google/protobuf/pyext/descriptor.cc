@@ -26,6 +26,7 @@
 #include "google/protobuf/dynamic_message.h"
 #include "google/protobuf/internal_feature_helper.h"
 #include "google/protobuf/io/coded_stream.h"
+#include "google/protobuf/breaking_changes.h"
 #include "google/protobuf/pyext/descriptor_containers.h"
 #include "google/protobuf/pyext/descriptor_pool.h"
 #include "google/protobuf/pyext/free_threading_mutex.h"
@@ -68,6 +69,9 @@ static PyObject* PyFrame_GetGlobals(PyFrameObject* frame) {
   return frame->f_globals;
 }
 #endif
+
+// Must be included last.
+#include "google/protobuf/port_def.inc"
 
 namespace google {
 namespace protobuf {
@@ -292,17 +296,26 @@ static PyObject* GetOrBuildMessageInDefaultPool(
   }
   CMessage* cmsg = reinterpret_cast<CMessage*>(value.get());
 
+  Message* cmsg_message = cmessage::AssureWritable(cmsg);
+  if (cmsg_message == nullptr) {
+    return nullptr;
+  }
+
   const Reflection* reflection = message.GetReflection();
   const UnknownFieldSet& unknown_fields(reflection->GetUnknownFields(message));
   if (unknown_fields.empty()) {
-    cmsg->message->CopyFrom(message);
+    cmsg_message->CopyFrom(message);
   } else {
     // Reparse options string!  XXX call cmessage::MergeFromString
-    if (!Reparse(message_factory, message, cmsg->message)) {
+    if (!Reparse(message_factory, message, cmsg_message)) {
       PyErr_Format(PyExc_ValueError, "Error reparsing Options message");
       return nullptr;
     }
   }
+
+#if PROTOBUF_PY_FUTURE_FREEZE_OPTIONS
+  cmsg->state = MESSAGE_FROZEN;
+#endif
 
   // Cache the result.
   {
@@ -360,9 +373,12 @@ static PyObject* CopyToPythonProto(const DescriptorClass* descriptor,
                  std::string(self_descriptor->full_name()).c_str());
     return nullptr;
   }
-  cmessage::AssureWritable(message);
+  Message* mutable_message = cmessage::AssureWritable(message);
+  if (mutable_message == nullptr) {
+    return nullptr;
+  }
   DescriptorProtoClass* descriptor_message =
-      static_cast<DescriptorProtoClass*>(message->message);
+      static_cast<DescriptorProtoClass*>(mutable_message);
   descriptor->CopyTo(descriptor_message);
   // Custom options might in unknown extensions. Reparse
   // the descriptor_message. Can't skip reparse when options unknown
@@ -2130,3 +2146,5 @@ bool InitDescriptor() {
 }  // namespace python
 }  // namespace protobuf
 }  // namespace google
+
+#include "google/protobuf/port_undef.inc"

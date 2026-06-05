@@ -92,7 +92,7 @@ inline constexpr CppFileOptions::Impl_::Impl_(
 template <typename>
 constexpr CppFileOptions::CppFileOptions(::_pbi::ConstantInitialized,
                        const ::_pbi::ClassData* PROTOBUF_NONNULL class_data)
-    : ::google::protobuf::Message(
+    : Super_(
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           class_data
 #endif  // PROTOBUF_CUSTOM_VTABLE
@@ -120,10 +120,10 @@ constexpr auto CppFileOptions::InternalGenerateClassData_(
 #endif
           nullptr,  // IsInitialized
           &CppFileOptions::MergeImpl,
-          ::google::protobuf::Message::GetNewImpl<CppFileOptions>(),
+          Super_::GetNewImpl<CppFileOptions>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           &CppFileOptions::SharedDtor,
-          ::google::protobuf::Message::GetClearImpl<CppFileOptions>(), &CppFileOptions::ByteSizeLong,
+          Super_::GetClearImpl<CppFileOptions>(), &CppFileOptions::ByteSizeLong,
               &CppFileOptions::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
           PROTOBUF_FIELD_OFFSET(CppFileOptions, _impl_._cached_size_),
@@ -211,7 +211,7 @@ const char descriptor_table_protodef_google_2fprotobuf_2fcpp_5ffile_5foptions_2e
     "\022\007pb.file\032 google/protobuf/descriptor.pr"
     "oto\"%\n\016CppFileOptions\022\021\n\tnamespace\030\001 \001(\t"
     "X\001:K\n\003cpp\022\034.google.protobuf.FileOptions\030"
-    "\336\007 \001(\0132\027.pb.file.CppFileOptionsB\006\262\001\003\010\217Nb"
+    "\336\007 \001(\0132\027.pb.file.CppFileOptionsB\006\262\001\003\010\352\007b"
     "\010editionsp\351\007"
 };
 static const ::_pbi::DescriptorTable* PROTOBUF_NONNULL const
@@ -241,9 +241,9 @@ namespace file {
 
 CppFileOptions::CppFileOptions(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-    : ::google::protobuf::Message(arena, CppFileOptions_get_class_data()) {
+    : Super_(arena, CppFileOptions_get_class_data()) {
 #else   // PROTOBUF_CUSTOM_VTABLE
-    : ::google::protobuf::Message(arena) {
+    : Super_(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
   SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:pb.file.CppFileOptions)
@@ -259,10 +259,10 @@ CppFileOptions::CppFileOptions(
     ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
     const CppFileOptions& from)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-    : ::google::protobuf::Message(arena, CppFileOptions_get_class_data()) {
+    : Super_(arena, CppFileOptions_get_class_data()) {
 
 #else   // PROTOBUF_CUSTOM_VTABLE
-    : ::google::protobuf::Message(arena) {
+    : Super_(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
   CppFileOptions* const _this = this;
   (void)_this;
@@ -322,11 +322,11 @@ PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const CppFileOptions::ParseTableT_
         CppFileOptions::InternalGenerateParseTable_(CppFileOptions_class_data_.base());
 #endif  // !PROTOBUF_MESSAGE_GLOBALS
 PROTOBUF_NOINLINE void CppFileOptions::Clear() {
-// @@protoc_insertion_point(message_clear_start:pb.file.CppFileOptions)
+  // @@protoc_insertion_point(message_clear_start:pb.file.CppFileOptions)
   ::google::protobuf::internal::TSanWrite(&_impl_);
   ::uint32_t cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
-  (void) cached_has_bits;
+  (void)cached_has_bits;
 
   cached_has_bits = _impl_._has_bits_[0];
   if (CheckHasBit(cached_has_bits, 0x00000001U)) {
@@ -437,7 +437,7 @@ void CppFileOptions::InternalSwap(CppFileOptions* PROTOBUF_RESTRICT PROTOBUF_NON
 }
 
 ::google::protobuf::Metadata CppFileOptions::GetMetadata() const {
-  return ::google::protobuf::Message::GetMetadataImpl(GetClassData()->full());
+  return Super_::GetMetadataImpl(GetClassData()->full());
 }
 PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY2 ::_pbi::ExtensionIdentifier<

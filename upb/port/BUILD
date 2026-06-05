@@ -5,6 +5,7 @@
 # license that can be found in the LICENSE file or at
 # https://developers.google.com/open-source/licenses/bsd
 
+load("@rules_cc//cc:cc_test.bzl", "cc_test")
 load("@rules_cc//cc:defs.bzl", "cc_library")
 load("//upb/bazel:copts.bzl", "UPB_DEFAULT_COPTS", "UPB_DEFAULT_FEATURES")
 
@@ -12,6 +13,7 @@ package(default_applicable_licenses = ["//:license"])
 
 cc_library(
     name = "port",
+    srcs = ["port.c"],
     hdrs = [
         "atomic.h",
         "sanitizers.h",
@@ -42,6 +44,16 @@ filegroup(
         "undef.inc",
     ],
     visibility = ["//visibility:public"],
+)
+
+cc_test(
+    name = "port_test",
+    srcs = ["port_test.cc"],
+    deps = [
+        ":port",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
+    ],
 )
 
 filegroup(

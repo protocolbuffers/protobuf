@@ -86,6 +86,7 @@
 #include "google/protobuf/json_enumvalue_options.pb.h"
 #include "google/protobuf/message.h"
 #include "google/protobuf/message_lite.h"
+#include "google/protobuf/naming_style.h"
 #include "google/protobuf/parse_context.h"
 #include "google/protobuf/port.h"
 #include "google/protobuf/repeated_ptr_field.h"
@@ -9557,85 +9558,6 @@ void DescriptorBuilder::ValidateJSType(const FieldDescriptor* field,
 
 namespace {
 
-// Whether the name contains underscores that violate the naming style guide (
-// a leading or trailing underscore, or an underscore which is not followed by
-// a letter)
-bool ContainsBadUnderscores(absl::string_view name) {
-  if (name.empty()) {
-    return false;
-  }
-  if (name[0] == '_' || name[name.size() - 1] == '_') {
-    return true;
-  }
-  for (size_t i = 1; i < name.size(); ++i) {
-    if (name[i - 1] == '_' && !absl::ascii_isalpha(name[i])) {
-      return true;
-    }
-  }
-  return false;
-}
-
-bool IsValidTitleCaseName(absl::string_view name, std::string* error) {
-  ABSL_CHECK(!name.empty());
-  for (char c : name) {
-    if (!absl::ascii_isalnum(c)) {
-      *error = "should be TitleCase";
-      return false;
-    }
-  }
-  if (!absl::ascii_isupper(name[0])) {
-    *error = "should begin with a capital letter";
-    return false;
-  }
-  return true;
-}
-
-bool IsValidLowerSnakeCaseName(absl::string_view name, std::string* error) {
-  ABSL_CHECK(!name.empty());
-
-  constexpr absl::CharSet kLowerSnakeCaseChars =
-      absl::CharSet::Range('a', 'z') | absl::CharSet::Range('0', '9') |
-      absl::CharSet::Char('_') | absl::CharSet::Char('.');
-  for (char c : name) {
-    if (!kLowerSnakeCaseChars.contains(c)) {
-      *error = "should be lower_snake_case";
-      return false;
-    }
-  }
-  if (!absl::ascii_islower(name[0])) {
-    *error = "should begin with a lower case letter";
-    return false;
-  }
-  if (ContainsBadUnderscores(name)) {
-    *error = "contains style violating underscores";
-    return false;
-  }
-  return true;
-}
-
-bool IsValidUpperSnakeCaseName(absl::string_view name, std::string* error) {
-  ABSL_CHECK(!name.empty());
-
-  constexpr absl::CharSet kUpperSnakeCaseChars =
-      absl::CharSet::Range('A', 'Z') | absl::CharSet::Range('0', '9') |
-      absl::CharSet::Char('_');
-  for (char c : name) {
-    if (!kUpperSnakeCaseChars.contains(c)) {
-      *error = "should be UPPER_SNAKE_CASE";
-      return false;
-    }
-  }
-  if (!absl::ascii_isupper(name[0])) {
-    *error = "should begin with an upper case letter";
-    return false;
-  }
-  if (ContainsBadUnderscores(name)) {
-    *error = "contains style violating underscores";
-    return false;
-  }
-  return true;
-}
-
 template <typename DescriptorType>
 bool IsValidFieldNonCollisionName(const DescriptorType* descriptor,
                                   std::string* error) {
@@ -9714,10 +9636,11 @@ void DescriptorBuilder::ValidateNamingStyle(const FileDescriptor* file,
   if (file->package().empty()) {
     return;
   }
-  std::string error;
-  if (!IsValidLowerSnakeCaseName(file->package(), &error)) {
+  if (const absl::Status s =
+          internal::IsValidLowerSnakeCaseName(file->package());
+      !s.ok()) {
     AddError(file->name(), proto, DescriptorPool::ErrorCollector::NAME, [&] {
-      return absl::StrCat("Package name ", file->package(), " ", error,
+      return absl::StrCat("Package name ", file->package(), " ", s.message(),
                           kNamingStyleOptOutMessage);
     });
   }
@@ -9726,10 +9649,10 @@ void DescriptorBuilder::ValidateNamingStyle(const FileDescriptor* file,
 template <>
 void DescriptorBuilder::ValidateNamingStyle(const Descriptor* message,
                                             const DescriptorProto& proto) {
-  std::string error;
-  if (!IsValidTitleCaseName(message->name(), &error)) {
+  if (const absl::Status s = internal::IsValidTitleCaseName(message->name());
+      !s.ok()) {
     AddError(message->name(), proto, DescriptorPool::ErrorCollector::NAME, [&] {
-      return absl::StrCat("Message name ", message->name(), " ", error,
+      return absl::StrCat("Message name ", message->name(), " ", s.message(),
                           kNamingStyleOptOutMessage);
     });
   }
@@ -9738,14 +9661,15 @@ void DescriptorBuilder::ValidateNamingStyle(const Descriptor* message,
 template <>
 void DescriptorBuilder::ValidateNamingStyle(const OneofDescriptor* oneof,
                                             const OneofDescriptorProto& proto) {
-  std::string error;
-  if (!IsValidLowerSnakeCaseName(oneof->name(), &error)) {
+  if (const absl::Status s = internal::IsValidLowerSnakeCaseName(oneof->name());
+      !s.ok()) {
     AddError(oneof->name(), proto, DescriptorPool::ErrorCollector::NAME, [&] {
-      return absl::StrCat("Oneof name ", oneof->name(), " ", error,
+      return absl::StrCat("Oneof name ", oneof->name(), " ", s.message(),
                           kNamingStyleOptOutMessage);
     });
   }
   if (IsStyleOrGreater(oneof, FeatureSet::STYLE2026)) {
+    std::string error;
     if (!IsValidFieldNonCollisionName(oneof, &error)) {
       AddError(oneof->name(), proto, DescriptorPool::ErrorCollector::NAME, [&] {
         return absl::StrCat("Oneof name ", oneof->name(), " ", error,
@@ -9758,14 +9682,15 @@ void DescriptorBuilder::ValidateNamingStyle(const OneofDescriptor* oneof,
 template <>
 void DescriptorBuilder::ValidateNamingStyle(const FieldDescriptor* field,
                                             const FieldDescriptorProto& proto) {
-  std::string error;
-  if (!IsValidLowerSnakeCaseName(field->name(), &error)) {
+  if (const absl::Status s = internal::IsValidLowerSnakeCaseName(field->name());
+      !s.ok()) {
     AddError(field->name(), proto, DescriptorPool::ErrorCollector::NAME, [&] {
-      return absl::StrCat("Field name ", field->name(), " ", error,
+      return absl::StrCat("Field name ", field->name(), " ", s.message(),
                           kNamingStyleOptOutMessage);
     });
   }
   if (IsStyleOrGreater(field, FeatureSet::STYLE2026)) {
+    std::string error;
     if (!IsValidFieldNonCollisionName(field, &error)) {
       AddError(field->name(), proto, DescriptorPool::ErrorCollector::NAME, [&] {
         return absl::StrCat("Field name ", field->name(), " ", error,
@@ -9778,12 +9703,13 @@ void DescriptorBuilder::ValidateNamingStyle(const FieldDescriptor* field,
 template <>
 void DescriptorBuilder::ValidateNamingStyle(
     const EnumDescriptor* enum_descriptor, const EnumDescriptorProto& proto) {
-  std::string error;
-  if (!IsValidTitleCaseName(enum_descriptor->name(), &error)) {
+  if (const absl::Status s =
+          internal::IsValidTitleCaseName(enum_descriptor->name());
+      !s.ok()) {
     AddError(enum_descriptor->name(), proto,
              DescriptorPool::ErrorCollector::NAME, [&] {
                return absl::StrCat("Enum name ", enum_descriptor->name(), " ",
-                                   error, kNamingStyleOptOutMessage);
+                                   s.message(), kNamingStyleOptOutMessage);
              });
   }
 }
@@ -9792,12 +9718,13 @@ template <>
 void DescriptorBuilder::ValidateNamingStyle(
     const EnumValueDescriptor* enum_value,
     const EnumValueDescriptorProto& proto) {
-  std::string error;
-  if (!IsValidUpperSnakeCaseName(enum_value->name(), &error)) {
+  if (const absl::Status s =
+          internal::IsValidUpperSnakeCaseName(enum_value->name());
+      !s.ok()) {
     AddError(enum_value->name(), proto, DescriptorPool::ErrorCollector::NAME,
              [&] {
                return absl::StrCat("Enum value name ", enum_value->name(), " ",
-                                   error, kNamingStyleOptOutMessage);
+                                   s.message(), kNamingStyleOptOutMessage);
              });
   }
 }
@@ -9805,10 +9732,10 @@ void DescriptorBuilder::ValidateNamingStyle(
 template <>
 void DescriptorBuilder::ValidateNamingStyle(
     const ServiceDescriptor* service, const ServiceDescriptorProto& proto) {
-  std::string error;
-  if (!IsValidTitleCaseName(service->name(), &error)) {
+  if (const absl::Status s = internal::IsValidTitleCaseName(service->name());
+      !s.ok()) {
     AddError(service->name(), proto, DescriptorPool::ErrorCollector::NAME, [&] {
-      return absl::StrCat("Service name ", service->name(), " ", error,
+      return absl::StrCat("Service name ", service->name(), " ", s.message(),
                           kNamingStyleOptOutMessage);
     });
   }
@@ -9817,10 +9744,10 @@ void DescriptorBuilder::ValidateNamingStyle(
 template <>
 void DescriptorBuilder::ValidateNamingStyle(
     const MethodDescriptor* method, const MethodDescriptorProto& proto) {
-  std::string error;
-  if (!IsValidTitleCaseName(method->name(), &error)) {
+  if (const absl::Status s = internal::IsValidTitleCaseName(method->name());
+      !s.ok()) {
     AddError(method->name(), proto, DescriptorPool::ErrorCollector::NAME, [&] {
-      return absl::StrCat("Method name ", method->name(), " ", error,
+      return absl::StrCat("Method name ", method->name(), " ", s.message(),
                           kNamingStyleOptOutMessage);
     });
   }
