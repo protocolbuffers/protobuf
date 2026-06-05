@@ -96,7 +96,7 @@ def bench_assign_bytes_with_conversion(state: google_benchmark.State):
     state.pause_timing()
     msg.Clear()
     state.resume_timing()
-    msg.optional_bytes = arr.tobytes()
+    msg.optional_bytes = memoryview(arr)
 
 
 if __name__ == '__main__':

@@ -451,11 +451,11 @@ class ScalarMap(MutableMapping[_K, _V]):
     return self
 
   def __getitem__(self, key: _K) -> _V:
+    key = self._key_checker.CheckValue(key)
     try:
       return self._values[key]
     except KeyError:
       self._AssureWritable()
-      key = self._key_checker.CheckValue(key)
       val = self._value_checker.DefaultValue()
       self._values[key] = val
       return val
@@ -463,7 +463,7 @@ class ScalarMap(MutableMapping[_K, _V]):
   def __contains__(self, item: _K) -> bool:
     # We check the key's type to match the strong-typing flavor of the API.
     # Also this makes it easier to match the behavior of the C++ implementation.
-    self._key_checker.CheckValue(item)
+    item = self._key_checker.CheckValue(item)
     return item in self._values
 
   @overload
