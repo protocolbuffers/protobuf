@@ -576,7 +576,6 @@ bool PyUpb_Map_Init(PyObject* m) {
   state->map_iterator_type = PyUpb_AddClass(m, &PyUpb_MapIterator_Spec);
 
   Py_DECREF(base);
-  Py_DECREF(methods);
 
   return state->message_map_container_type &&
          state->scalar_map_container_type && state->map_iterator_type;
