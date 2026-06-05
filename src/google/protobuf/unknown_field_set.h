@@ -232,7 +232,7 @@ class PROTOBUF_EXPORT UnknownFieldSet {
       io::ZeroCopyInputStream* input);
   PROTOBUF_FUTURE_ADD_EARLY_NODISCARD bool ParseFromArray(const void* data,
                                                           int size);
-  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD inline bool ParseFromString(
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD bool ParseFromString(
       const absl::string_view data) {
     return ParseFromArray(data.data(), static_cast<int>(data.size()));
   }
