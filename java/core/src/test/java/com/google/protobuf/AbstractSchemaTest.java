@@ -43,7 +43,8 @@ public abstract class AbstractSchemaTest<T extends MessageLite> {
   @Test
   public void invalidUtf8StringParsing() throws IOException {
     for (ByteBuffer invalidUtf8Bytes : serializedBytesWithInvalidUtf8()) {
-      Reader reader = BinaryReader.newInstance(invalidUtf8Bytes, /* bufferIsImmutable= */ true);
+      Reader reader =
+          CodedInputStreamReader.forCodedInput(CodedInputStream.newInstance(invalidUtf8Bytes));
 
       T newMsg = schema.newInstance();
       try {
@@ -94,7 +95,8 @@ public abstract class AbstractSchemaTest<T extends MessageLite> {
       assertWithMessage(failureMessage).that(newMsg).isEqualTo(msg);
     }
     M newMsg = schema.newInstance();
-    Reader reader = BinaryReader.newInstance(ByteBuffer.wrap(serializedBytes), true);
+    Reader reader =
+        CodedInputStreamReader.forCodedInput(CodedInputStream.newInstance(serializedBytes));
     schema.mergeFrom(newMsg, reader, ExtensionRegistryLite.getEmptyRegistry());
     schema.makeImmutable(newMsg);
 
