@@ -79,7 +79,7 @@ public abstract class AbstractSchemaTest<T extends MessageLite> {
 
   protected static final <M extends MessageLite> void roundtrip(
       String failureMessage, M msg, Schema<M> schema) throws IOException {
-    byte[] serializedBytes = ExperimentalSerializationUtil.toByteArray(msg, schema);
+    byte[] serializedBytes = msg.toByteArray();
     assertWithMessage(failureMessage)
         .that(serializedBytes.length)
         .isEqualTo(msg.getSerializedSize());
