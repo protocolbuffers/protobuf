@@ -218,7 +218,8 @@ bool WireFormatLite::SkipField(io::CodedInputStream* input, uint32_t tag,
   }
 }
 
-bool WireFormatLite::SkipMessage(io::CodedInputStream* input) {
+__attribute__((annotate("smoothie_codesign"))) bool WireFormatLite::SkipMessage(
+    io::CodedInputStream* input) {
   while (true) {
     uint32_t tag = input->ReadTag();
     if (tag == 0) {
