@@ -98,7 +98,10 @@ class GetDeallocator {
     if (dealloc_) {
       dealloc_(mem.p, mem.n);
     } else {
-      internal::SizedDelete(mem.p, mem.n);
+      // We cannot use SizedDelete here because the block may have been
+      // allocated with a larger actual size by AllocateAtLeast, and sized
+      // deallocation requires the original requested size.
+      ::operator delete(mem.p);
     }
   }
 
@@ -776,8 +779,10 @@ SizedPtr ThreadSafeArena::Free() {
     }
 
     // Delete the chunk as we're done with it.
-    internal::SizedDelete(chunk,
-                          SerialArenaChunk::AllocSize(chunk->capacity()));
+    // We cannot use SizedDelete here because the chunk may have been allocated
+    // with a larger actual size by AllocateAtLeast, and sized deallocation
+    // requires the original requested size.
+    ::operator delete(chunk);
   });
 
   // The first block of the first arena is special and let the caller handle it.
