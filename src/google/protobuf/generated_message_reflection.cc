@@ -508,7 +508,11 @@ const UnknownFieldSet& Reflection::GetUnknownFields(
 UnknownFieldSet* Reflection::MutableUnknownFields(Message* message) const {
   STATIC_USAGE_CHECK_MESSAGE(MutableUnknownFields, message);
   return MutableInternalMetadata(message)
-      ->mutable_unknown_fields<UnknownFieldSet>();
+      ->mutable_unknown_fields<UnknownFieldSet>(
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+          message->GetArena()
+#endif
+      );
 }
 
 bool Reflection::IsLazyExtension(const Message& message,

@@ -33,11 +33,23 @@ class FieldWithArena : public ContainerDestructorSkippableBase<T> {
  public:
   using InternalArenaConstructable_ = void;
 
-  constexpr FieldWithArena() : field_() {}
+  constexpr FieldWithArena()
+      : field_()
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+        ,
+        arena_(nullptr)
+#endif
+  {
+  }
 
   template <typename... Args>
   explicit FieldWithArena(Arena* arena, Args&&... args)
-      : _internal_metadata_(arena) {
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+      : arena_(arena)
+#else
+      : _internal_metadata_(arena)
+#endif
+  {
     StaticallyVerifyLayout();
     // Construct `T` after setting `_internal_metadata_` so that `T` can safely
     // call ResolveArena().
@@ -58,7 +70,13 @@ class FieldWithArena : public ContainerDestructorSkippableBase<T> {
 
   // Returns the arena that the field is allocated on. This is cheaper than
   // calling `field().GetArena()`.
-  Arena* GetArena() const { return _internal_metadata_.arena(); }
+  Arena* GetArena() const {
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+    return arena_;
+#else
+    return _internal_metadata_.arena();
+#endif
+  }
 
  private:
   friend InternalMetadataOffset;
@@ -79,15 +97,24 @@ class FieldWithArena : public ContainerDestructorSkippableBase<T> {
     T field_;
   };
 
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+  Arena* arena_;
+#else
   // Note that the name of this field must be `_internal_metadata_`, as
   // `InternalMetadataOffset` expects a field with this name.
   const InternalMetadata _internal_metadata_;
+#endif
 };
 
 template <typename T>
 constexpr InternalMetadataOffset FieldWithArena<T>::BuildOffset() {
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+  return InternalMetadataOffset::BuildForFieldWithArena<
+      FieldWithArena, offsetof(FieldWithArena, arena_)>();
+#else
   return InternalMetadataOffset::Build<FieldWithArena,
                                        offsetof(FieldWithArena, field_)>();
+#endif
 }
 
 template <typename Element>

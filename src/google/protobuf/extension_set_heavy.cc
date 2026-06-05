@@ -337,6 +337,9 @@ bool ExtensionSet::MoveExtension(Arena* arena, int dst_number,
 
 const char* ExtensionSet::ParseField(uint64_t tag, const char* ptr,
                                      const Message* extendee,
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+                                     Arena* arena,
+#endif
                                      internal::InternalMetadata* metadata,
                                      internal::ParseContext* ctx) {
   int number = tag >> 3;
@@ -344,23 +347,41 @@ const char* ExtensionSet::ParseField(uint64_t tag, const char* ptr,
   ExtensionInfo extension;
   if (!FindExtension(tag & 7, number, extendee, ctx, &extension,
                      &was_packed_on_wire)) {
-    return UnknownFieldParse(
-        tag, metadata->mutable_unknown_fields<UnknownFieldSet>(), ptr, ctx);
+    return UnknownFieldParse(tag,
+                             metadata->mutable_unknown_fields<UnknownFieldSet>(
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+                                 arena
+#endif
+                                 ),
+                             ptr, ctx);
   }
   return ParseFieldWithExtensionInfo<UnknownFieldSet>(
-      number, was_packed_on_wire, extension, metadata, ptr, ctx);
+      number, was_packed_on_wire, extension,
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+      arena,
+#endif
+      metadata, ptr, ctx);
 }
 
 const char* ExtensionSet::ParseFieldMaybeLazily(
     uint64_t tag, const char* ptr, const Message* extendee,
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+    Arena* arena,
+#endif
     internal::InternalMetadata* metadata, internal::ParseContext* ctx) {
   return ParseField(tag, ptr, extendee, metadata, ctx);
 }
 
 const char* ExtensionSet::ParseMessageSetItem(
     const char* ptr, const Message* extendee,
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+    Arena* arena,
+#endif
     internal::InternalMetadata* metadata, internal::ParseContext* ctx) {
   return ParseMessageSetItemTmpl<Message, UnknownFieldSet>(ptr, extendee,
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+                                                           arena,
+#endif
                                                            metadata, ctx);
 }
 

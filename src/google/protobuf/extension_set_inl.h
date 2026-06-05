@@ -19,6 +19,9 @@
 #include "google/protobuf/wire_format_lite.h"
 #include "utf8_validity.h"
 
+// Must be included last.
+#include "google/protobuf/port_def.inc"
+
 namespace google {
 namespace protobuf {
 namespace internal {
@@ -26,8 +29,13 @@ namespace internal {
 template <typename T>
 const char* ExtensionSet::ParseFieldWithExtensionInfo(
     int number, bool was_packed_on_wire, const ExtensionInfo& info,
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+    Arena* arena,
+#endif
     InternalMetadata* metadata, const char* ptr, internal::ParseContext* ctx) {
+#if !defined(PROTOBUF_CUSTOM_VTABLE)
   Arena* const arena = metadata->arena();
+#endif
   if (was_packed_on_wire) {
     switch (info.type) {
 #define HANDLE_TYPE(UPPERCASE, CPP_CAMELCASE)                             \
@@ -55,7 +63,11 @@ const char* ExtensionSet::ParseFieldWithExtensionInfo(
         return internal::PackedEnumParserArg<T>(
             MutableRawRepeatedField(arena, number, info.type, info.is_packed,
                                     info.descriptor),
-            ptr, ctx, info.enum_validity_check, metadata, number);
+            ptr, ctx, info.enum_validity_check,
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+            arena,
+#endif
+            metadata, number);
       case WireFormatLite::TYPE_STRING:
       case WireFormatLite::TYPE_BYTES:
       case WireFormatLite::TYPE_GROUP:
@@ -131,7 +143,12 @@ const char* ExtensionSet::ParseFieldWithExtensionInfo(
         int value = tmp;
 
         if (!info.enum_validity_check.IsValid(value)) {
-          WriteVarint(number, value, metadata->mutable_unknown_fields<T>());
+          WriteVarint(number, value,
+                      metadata->mutable_unknown_fields<T>(
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+                          arena
+#endif
+                          ));
         } else if (info.is_repeated) {
           Add<int>(arena, number, WireFormatLite::TYPE_ENUM, info.is_packed,
                    value, info.descriptor);
@@ -192,13 +209,18 @@ const char* ExtensionSet::ParseFieldWithExtensionInfo(
 
 template <typename Msg, typename T>
 const char* ExtensionSet::ParseMessageSetItemTmpl(
-    const char* ptr, const Msg* extendee, internal::InternalMetadata* metadata,
-    internal::ParseContext* ctx) {
+    const char* ptr, const Msg* extendee,
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+    Arena* arena,
+#endif
+    internal::InternalMetadata* metadata, internal::ParseContext* ctx) {
   std::string payload;
   uint32_t type_id = 0;
   enum class State { kNoTag, kHasType, kHasPayload, kDone };
   State state = State::kNoTag;
+#if !defined(PROTOBUF_CUSTOM_VTABLE)
   Arena* const arena = metadata->arena();
+#endif
 
   while (!ctx->Done(&ptr)) {
     uint32_t tag = static_cast<uint8_t>(*ptr++);
@@ -218,7 +240,11 @@ const char* ExtensionSet::ParseMessageSetItemTmpl(
         if (!FindExtension(2, type_id, extendee, ctx, &extension,
                            &was_packed_on_wire)) {
           WriteLengthDelimited(type_id, payload,
-                               metadata->mutable_unknown_fields<T>());
+                               metadata->mutable_unknown_fields<T>(
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+                                   arena
+#endif
+                                   ));
         } else {
           MessageLite* value =
               extension.is_repeated
@@ -242,7 +268,11 @@ const char* ExtensionSet::ParseMessageSetItemTmpl(
     } else if (tag == WireFormatLite::kMessageSetMessageTag) {
       if (state == State::kHasType) {
         ptr = ParseFieldMaybeLazily(static_cast<uint64_t>(type_id) * 8 + 2, ptr,
-                                    extendee, metadata, ctx);
+                                    extendee,
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+                                    arena,
+#endif
+                                    metadata, ctx);
         GOOGLE_PROTOBUF_PARSER_ASSERT(ptr != nullptr);
         state = State::kDone;
       } else {
@@ -262,7 +292,11 @@ const char* ExtensionSet::ParseMessageSetItemTmpl(
         ctx->SetLastTag(tag);
         return ptr;
       }
-      ptr = ParseField(tag, ptr, extendee, metadata, ctx);
+      ptr = ParseField(tag, ptr, extendee,
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+                       arena,
+#endif
+                       metadata, ctx);
       GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
     }
   }
@@ -272,5 +306,7 @@ const char* ExtensionSet::ParseMessageSetItemTmpl(
 }  // namespace internal
 }  // namespace protobuf
 }  // namespace google
+
+#include "google/protobuf/port_undef.inc"
 
 #endif  // GOOGLE_PROTOBUF_EXTENSION_SET_INL_H__

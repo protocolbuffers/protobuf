@@ -56,7 +56,7 @@ MessageLite* MessageLite::CopyConstruct(Arena* arena, const MessageLite& from) {
 
 void MessageLite::DestroyInstance() {
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-  _class_data_->destroy_message(*this);
+  _internal_metadata_.class_data()->destroy_message(*this);
 #else   // PROTOBUF_CUSTOM_VTABLE
   this->~MessageLite();
 #endif  // PROTOBUF_CUSTOM_VTABLE
@@ -87,13 +87,19 @@ void MessageLite::CheckTypeAndMergeFrom(const MessageLite& other) {
 
 MessageLite* MessageLite::New(Arena* arena) const {
   auto* data = GetClassData();
+  const uint32_t allocation_size = data->allocation_size();
   void* mem = data->message_creator.AllocateMessage(arena);
   // The `instance->New()` expression requires using the actual instance
   // instead of the prototype for the inner function call.
   // Certain custom instances have special per-instance state that needs to be
   // copied.
-  return data->message_creator.PlacementNew(this, data->default_instance(), mem,
-                                            arena);
+  MessageLite* res = data->message_creator.PlacementNew(
+      this, data->default_instance(), mem, arena);
+  if (arena != nullptr) {
+    *reinterpret_cast<Arena**>(reinterpret_cast<char*>(mem) + allocation_size) =
+        arena;
+  }
+  return res;
 }
 
 bool MessageLite::IsInitialized() const {
@@ -737,18 +743,45 @@ namespace internal {
 // Non-inline variants of std::string specializations for
 // various InternalMetadata routines.
 template <>
-void InternalMetadata::DoClear<std::string>() {
-  mutable_unknown_fields<std::string>()->clear();
+void InternalMetadata::DoClear<std::string>(
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+    google::protobuf::Arena* arena
+#endif
+) {
+  mutable_unknown_fields<std::string>(
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+      arena
+#endif
+      )
+      ->clear();
 }
 
 template <>
-void InternalMetadata::DoMergeFrom<std::string>(const std::string& other) {
-  mutable_unknown_fields<std::string>()->append(other);
+void InternalMetadata::DoMergeFrom<std::string>(
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+    google::protobuf::Arena* arena,
+#endif
+    const std::string& other) {
+  mutable_unknown_fields<std::string>(
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+      arena
+#endif
+      )
+      ->append(other);
 }
 
 template <>
-void InternalMetadata::DoSwap<std::string>(std::string* other) {
-  mutable_unknown_fields<std::string>()->swap(*other);
+void InternalMetadata::DoSwap<std::string>(
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+    google::protobuf::Arena* arena,
+#endif
+    std::string* other) {
+  mutable_unknown_fields<std::string>(
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+      arena
+#endif
+      )
+      ->swap(*other);
 }
 
 }  // namespace internal

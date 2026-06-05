@@ -461,6 +461,9 @@ JavaFeatures_NestInFileClassFeature::JavaFeatures_NestInFileClassFeature(
   JavaFeatures_NestInFileClassFeature* const _this = this;
   (void)_this;
   _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+      arena,
+#endif
       from._internal_metadata_);
 
   // @@protoc_insertion_point(copy_constructor:pb.JavaFeatures.NestInFileClassFeature)
@@ -522,6 +525,9 @@ JavaFeatures::JavaFeatures(
 #endif  // PROTOBUF_CUSTOM_VTABLE
       _impl_(from._impl_) {
   _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+      arena,
+#endif
       from._internal_metadata_);
 }
 PROTOBUF_NDEBUG_INLINE JavaFeatures::Impl_::Impl_(
@@ -594,7 +600,11 @@ PROTOBUF_NOINLINE void JavaFeatures::Clear() {
             sizeof(_impl_.nest_in_file_class_));
   }
   _impl_._has_bits_.Clear();
-  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
+  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>(
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+      GetArena()
+#endif
+  );
 }
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
@@ -700,6 +710,9 @@ void JavaFeatures::MergeImpl(::google::protobuf::MessageLite& to_msg,
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     from.CheckHasBitConsistency();
   }
+  #if defined(PROTOBUF_CUSTOM_VTABLE)
+  ::google::protobuf::Arena* arena = _this->GetArena();
+  #endif
   // @@protoc_insertion_point(class_specific_merge_from_start:pb.JavaFeatures)
   ABSL_DCHECK_NE(&from, _this);
   ::uint32_t cached_has_bits = 0;
@@ -725,6 +738,9 @@ void JavaFeatures::MergeImpl(::google::protobuf::MessageLite& to_msg,
   }
   _this->_impl_._has_bits_[0] |= cached_has_bits;
   _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+      arena,
+#endif
       from._internal_metadata_);
 }
 

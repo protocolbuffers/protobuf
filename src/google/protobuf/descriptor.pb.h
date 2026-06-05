@@ -1300,7 +1300,11 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED UninterpretedOption
   }
   [[nodiscard]] inline ::google::protobuf::UnknownFieldSet* PROTOBUF_NONNULL
   mutable_unknown_fields() ABSL_ATTRIBUTE_LIFETIME_BOUND {
-    return _internal_metadata_.mutable_unknown_fields<::google::protobuf::UnknownFieldSet>();
+    return _internal_metadata_.mutable_unknown_fields<::google::protobuf::UnknownFieldSet>(
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+                    GetArena()
+#endif
+                );
   }
 
   [[nodiscard]] static const ::google::protobuf::Descriptor* PROTOBUF_NONNULL descriptor() {
@@ -1457,6 +1461,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED UninterpretedOption
 
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
+  friend class ::google::protobuf::internal::MessageWithArena<UninterpretedOption_NamePart>;
   friend ::google::protobuf::internal::PrivateAccess;
   template <typename T>
   friend class ::google::protobuf::Arena::InternalHelper;
@@ -1525,7 +1530,11 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED SourceCodeInfo_Loca
   }
   [[nodiscard]] inline ::google::protobuf::UnknownFieldSet* PROTOBUF_NONNULL
   mutable_unknown_fields() ABSL_ATTRIBUTE_LIFETIME_BOUND {
-    return _internal_metadata_.mutable_unknown_fields<::google::protobuf::UnknownFieldSet>();
+    return _internal_metadata_.mutable_unknown_fields<::google::protobuf::UnknownFieldSet>(
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+                    GetArena()
+#endif
+                );
   }
 
   [[nodiscard]] static const ::google::protobuf::Descriptor* PROTOBUF_NONNULL descriptor() {
@@ -1749,6 +1758,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED SourceCodeInfo_Loca
 
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
+  friend class ::google::protobuf::internal::MessageWithArena<SourceCodeInfo_Location>;
   friend ::google::protobuf::internal::PrivateAccess;
   template <typename T>
   friend class ::google::protobuf::Arena::InternalHelper;
@@ -1822,7 +1832,11 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED GeneratedCodeInfo_A
   }
   [[nodiscard]] inline ::google::protobuf::UnknownFieldSet* PROTOBUF_NONNULL
   mutable_unknown_fields() ABSL_ATTRIBUTE_LIFETIME_BOUND {
-    return _internal_metadata_.mutable_unknown_fields<::google::protobuf::UnknownFieldSet>();
+    return _internal_metadata_.mutable_unknown_fields<::google::protobuf::UnknownFieldSet>(
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+                    GetArena()
+#endif
+                );
   }
 
   [[nodiscard]] static const ::google::protobuf::Descriptor* PROTOBUF_NONNULL descriptor() {
@@ -2039,6 +2053,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED GeneratedCodeInfo_A
 
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
+  friend class ::google::protobuf::internal::MessageWithArena<GeneratedCodeInfo_Annotation>;
   friend ::google::protobuf::internal::PrivateAccess;
   template <typename T>
   friend class ::google::protobuf::Arena::InternalHelper;
@@ -2111,7 +2126,11 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FieldOptions_Featur
   }
   [[nodiscard]] inline ::google::protobuf::UnknownFieldSet* PROTOBUF_NONNULL
   mutable_unknown_fields() ABSL_ATTRIBUTE_LIFETIME_BOUND {
-    return _internal_metadata_.mutable_unknown_fields<::google::protobuf::UnknownFieldSet>();
+    return _internal_metadata_.mutable_unknown_fields<::google::protobuf::UnknownFieldSet>(
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+                    GetArena()
+#endif
+                );
   }
 
   [[nodiscard]] static const ::google::protobuf::Descriptor* PROTOBUF_NONNULL descriptor() {
@@ -2304,6 +2323,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FieldOptions_Featur
 
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
+  friend class ::google::protobuf::internal::MessageWithArena<FieldOptions_FeatureSupport>;
   friend ::google::protobuf::internal::PrivateAccess;
   template <typename T>
   friend class ::google::protobuf::Arena::InternalHelper;
@@ -2375,7 +2395,11 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FieldOptions_Editio
   }
   [[nodiscard]] inline ::google::protobuf::UnknownFieldSet* PROTOBUF_NONNULL
   mutable_unknown_fields() ABSL_ATTRIBUTE_LIFETIME_BOUND {
-    return _internal_metadata_.mutable_unknown_fields<::google::protobuf::UnknownFieldSet>();
+    return _internal_metadata_.mutable_unknown_fields<::google::protobuf::UnknownFieldSet>(
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+                    GetArena()
+#endif
+                );
   }
 
   [[nodiscard]] static const ::google::protobuf::Descriptor* PROTOBUF_NONNULL descriptor() {
@@ -2527,6 +2551,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FieldOptions_Editio
 
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
+  friend class ::google::protobuf::internal::MessageWithArena<FieldOptions_EditionDefault>;
   friend ::google::protobuf::internal::PrivateAccess;
   template <typename T>
   friend class ::google::protobuf::Arena::InternalHelper;
@@ -2594,7 +2619,11 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FeatureSet_Visibili
   }
   [[nodiscard]] inline ::google::protobuf::UnknownFieldSet* PROTOBUF_NONNULL
   mutable_unknown_fields() ABSL_ATTRIBUTE_LIFETIME_BOUND {
-    return _internal_metadata_.mutable_unknown_fields<::google::protobuf::UnknownFieldSet>();
+    return _internal_metadata_.mutable_unknown_fields<::google::protobuf::UnknownFieldSet>(
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+                    GetArena()
+#endif
+                );
   }
 
   [[nodiscard]] static const ::google::protobuf::Descriptor* PROTOBUF_NONNULL descriptor() {
@@ -2705,6 +2734,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FeatureSet_Visibili
 
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
+  friend class ::google::protobuf::internal::MessageWithArena<FeatureSet_VisibilityFeature>;
   friend ::google::protobuf::internal::PrivateAccess;
   template <typename T>
   friend class ::google::protobuf::Arena::InternalHelper;
@@ -2755,7 +2785,11 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FeatureSet_ProtoLim
   }
   [[nodiscard]] inline ::google::protobuf::UnknownFieldSet* PROTOBUF_NONNULL
   mutable_unknown_fields() ABSL_ATTRIBUTE_LIFETIME_BOUND {
-    return _internal_metadata_.mutable_unknown_fields<::google::protobuf::UnknownFieldSet>();
+    return _internal_metadata_.mutable_unknown_fields<::google::protobuf::UnknownFieldSet>(
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+                    GetArena()
+#endif
+                );
   }
 
   [[nodiscard]] static const ::google::protobuf::Descriptor* PROTOBUF_NONNULL descriptor() {
@@ -2864,6 +2898,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FeatureSet_ProtoLim
 
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
+  friend class ::google::protobuf::internal::MessageWithArena<FeatureSet_ProtoLimitsFeature>;
   friend ::google::protobuf::internal::PrivateAccess;
   template <typename T>
   friend class ::google::protobuf::Arena::InternalHelper;
@@ -2915,7 +2950,11 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FeatureSet final : 
   }
   [[nodiscard]] inline ::google::protobuf::UnknownFieldSet* PROTOBUF_NONNULL
   mutable_unknown_fields() ABSL_ATTRIBUTE_LIFETIME_BOUND {
-    return _internal_metadata_.mutable_unknown_fields<::google::protobuf::UnknownFieldSet>();
+    return _internal_metadata_.mutable_unknown_fields<::google::protobuf::UnknownFieldSet>(
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+                    GetArena()
+#endif
+                );
   }
 
   [[nodiscard]] static const ::google::protobuf::Descriptor* PROTOBUF_NONNULL descriptor() {
@@ -3492,6 +3531,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FeatureSet final : 
 
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
+  friend class ::google::protobuf::internal::MessageWithArena<FeatureSet>;
   friend ::google::protobuf::internal::PrivateAccess;
   template <typename T>
   friend class ::google::protobuf::Arena::InternalHelper;
@@ -3568,7 +3608,11 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED ExtensionRangeOptio
   }
   [[nodiscard]] inline ::google::protobuf::UnknownFieldSet* PROTOBUF_NONNULL
   mutable_unknown_fields() ABSL_ATTRIBUTE_LIFETIME_BOUND {
-    return _internal_metadata_.mutable_unknown_fields<::google::protobuf::UnknownFieldSet>();
+    return _internal_metadata_.mutable_unknown_fields<::google::protobuf::UnknownFieldSet>(
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+                    GetArena()
+#endif
+                );
   }
 
   [[nodiscard]] static const ::google::protobuf::Descriptor* PROTOBUF_NONNULL descriptor() {
@@ -3761,6 +3805,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED ExtensionRangeOptio
 
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
+  friend class ::google::protobuf::internal::MessageWithArena<ExtensionRangeOptions_Declaration>;
   friend ::google::protobuf::internal::PrivateAccess;
   template <typename T>
   friend class ::google::protobuf::Arena::InternalHelper;
@@ -3832,7 +3877,11 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED EnumDescriptorProto
   }
   [[nodiscard]] inline ::google::protobuf::UnknownFieldSet* PROTOBUF_NONNULL
   mutable_unknown_fields() ABSL_ATTRIBUTE_LIFETIME_BOUND {
-    return _internal_metadata_.mutable_unknown_fields<::google::protobuf::UnknownFieldSet>();
+    return _internal_metadata_.mutable_unknown_fields<::google::protobuf::UnknownFieldSet>(
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+                    GetArena()
+#endif
+                );
   }
 
   [[nodiscard]] static const ::google::protobuf::Descriptor* PROTOBUF_NONNULL descriptor() {
@@ -3979,6 +4028,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED EnumDescriptorProto
 
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
+  friend class ::google::protobuf::internal::MessageWithArena<EnumDescriptorProto_EnumReservedRange>;
   friend ::google::protobuf::internal::PrivateAccess;
   template <typename T>
   friend class ::google::protobuf::Arena::InternalHelper;
@@ -4047,7 +4097,11 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED DescriptorProto_Res
   }
   [[nodiscard]] inline ::google::protobuf::UnknownFieldSet* PROTOBUF_NONNULL
   mutable_unknown_fields() ABSL_ATTRIBUTE_LIFETIME_BOUND {
-    return _internal_metadata_.mutable_unknown_fields<::google::protobuf::UnknownFieldSet>();
+    return _internal_metadata_.mutable_unknown_fields<::google::protobuf::UnknownFieldSet>(
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+                    GetArena()
+#endif
+                );
   }
 
   [[nodiscard]] static const ::google::protobuf::Descriptor* PROTOBUF_NONNULL descriptor() {
@@ -4194,6 +4248,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED DescriptorProto_Res
 
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
+  friend class ::google::protobuf::internal::MessageWithArena<DescriptorProto_ReservedRange>;
   friend ::google::protobuf::internal::PrivateAccess;
   template <typename T>
   friend class ::google::protobuf::Arena::InternalHelper;
@@ -4262,7 +4317,11 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED UninterpretedOption
   }
   [[nodiscard]] inline ::google::protobuf::UnknownFieldSet* PROTOBUF_NONNULL
   mutable_unknown_fields() ABSL_ATTRIBUTE_LIFETIME_BOUND {
-    return _internal_metadata_.mutable_unknown_fields<::google::protobuf::UnknownFieldSet>();
+    return _internal_metadata_.mutable_unknown_fields<::google::protobuf::UnknownFieldSet>(
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+                    GetArena()
+#endif
+                );
   }
 
   [[nodiscard]] static const ::google::protobuf::Descriptor* PROTOBUF_NONNULL descriptor() {
@@ -4499,6 +4558,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED UninterpretedOption
 
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
+  friend class ::google::protobuf::internal::MessageWithArena<UninterpretedOption>;
   friend ::google::protobuf::internal::PrivateAccess;
   template <typename T>
   friend class ::google::protobuf::Arena::InternalHelper;
@@ -4572,7 +4632,11 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED SourceCodeInfo fina
   }
   [[nodiscard]] inline ::google::protobuf::UnknownFieldSet* PROTOBUF_NONNULL
   mutable_unknown_fields() ABSL_ATTRIBUTE_LIFETIME_BOUND {
-    return _internal_metadata_.mutable_unknown_fields<::google::protobuf::UnknownFieldSet>();
+    return _internal_metadata_.mutable_unknown_fields<::google::protobuf::UnknownFieldSet>(
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+                    GetArena()
+#endif
+                );
   }
 
   [[nodiscard]] static const ::google::protobuf::Descriptor* PROTOBUF_NONNULL descriptor() {
@@ -4912,6 +4976,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED SourceCodeInfo fina
 
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
+  friend class ::google::protobuf::internal::MessageWithArena<SourceCodeInfo>;
   friend ::google::protobuf::internal::PrivateAccess;
   template <typename T>
   friend class ::google::protobuf::Arena::InternalHelper;
@@ -4980,7 +5045,11 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED GeneratedCodeInfo f
   }
   [[nodiscard]] inline ::google::protobuf::UnknownFieldSet* PROTOBUF_NONNULL
   mutable_unknown_fields() ABSL_ATTRIBUTE_LIFETIME_BOUND {
-    return _internal_metadata_.mutable_unknown_fields<::google::protobuf::UnknownFieldSet>();
+    return _internal_metadata_.mutable_unknown_fields<::google::protobuf::UnknownFieldSet>(
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+                    GetArena()
+#endif
+                );
   }
 
   [[nodiscard]] static const ::google::protobuf::Descriptor* PROTOBUF_NONNULL descriptor() {
@@ -5125,6 +5194,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED GeneratedCodeInfo f
 
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
+  friend class ::google::protobuf::internal::MessageWithArena<GeneratedCodeInfo>;
   friend ::google::protobuf::internal::PrivateAccess;
   template <typename T>
   friend class ::google::protobuf::Arena::InternalHelper;
@@ -5192,7 +5262,11 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FeatureSetDefaults_
   }
   [[nodiscard]] inline ::google::protobuf::UnknownFieldSet* PROTOBUF_NONNULL
   mutable_unknown_fields() ABSL_ATTRIBUTE_LIFETIME_BOUND {
-    return _internal_metadata_.mutable_unknown_fields<::google::protobuf::UnknownFieldSet>();
+    return _internal_metadata_.mutable_unknown_fields<::google::protobuf::UnknownFieldSet>(
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+                    GetArena()
+#endif
+                );
   }
 
   [[nodiscard]] static const ::google::protobuf::Descriptor* PROTOBUF_NONNULL descriptor() {
@@ -5364,6 +5438,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FeatureSetDefaults_
 
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
+  friend class ::google::protobuf::internal::MessageWithArena<FeatureSetDefaults_FeatureSetEditionDefault>;
   friend ::google::protobuf::internal::PrivateAccess;
   template <typename T>
   friend class ::google::protobuf::Arena::InternalHelper;
@@ -5433,7 +5508,11 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED ServiceOptions fina
   }
   [[nodiscard]] inline ::google::protobuf::UnknownFieldSet* PROTOBUF_NONNULL
   mutable_unknown_fields() ABSL_ATTRIBUTE_LIFETIME_BOUND {
-    return _internal_metadata_.mutable_unknown_fields<::google::protobuf::UnknownFieldSet>();
+    return _internal_metadata_.mutable_unknown_fields<::google::protobuf::UnknownFieldSet>(
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+                    GetArena()
+#endif
+                );
   }
 
   [[nodiscard]] static const ::google::protobuf::Descriptor* PROTOBUF_NONNULL descriptor() {
@@ -5800,6 +5879,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED ServiceOptions fina
 
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
+  friend class ::google::protobuf::internal::MessageWithArena<ServiceOptions>;
   friend ::google::protobuf::internal::PrivateAccess;
   template <typename T>
   friend class ::google::protobuf::Arena::InternalHelper;
@@ -5870,7 +5950,11 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED OneofOptions final 
   }
   [[nodiscard]] inline ::google::protobuf::UnknownFieldSet* PROTOBUF_NONNULL
   mutable_unknown_fields() ABSL_ATTRIBUTE_LIFETIME_BOUND {
-    return _internal_metadata_.mutable_unknown_fields<::google::protobuf::UnknownFieldSet>();
+    return _internal_metadata_.mutable_unknown_fields<::google::protobuf::UnknownFieldSet>(
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+                    GetArena()
+#endif
+                );
   }
 
   [[nodiscard]] static const ::google::protobuf::Descriptor* PROTOBUF_NONNULL descriptor() {
@@ -6225,6 +6309,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED OneofOptions final 
 
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
+  friend class ::google::protobuf::internal::MessageWithArena<OneofOptions>;
   friend ::google::protobuf::internal::PrivateAccess;
   template <typename T>
   friend class ::google::protobuf::Arena::InternalHelper;
@@ -6294,7 +6379,11 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED MethodOptions final
   }
   [[nodiscard]] inline ::google::protobuf::UnknownFieldSet* PROTOBUF_NONNULL
   mutable_unknown_fields() ABSL_ATTRIBUTE_LIFETIME_BOUND {
-    return _internal_metadata_.mutable_unknown_fields<::google::protobuf::UnknownFieldSet>();
+    return _internal_metadata_.mutable_unknown_fields<::google::protobuf::UnknownFieldSet>(
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+                    GetArena()
+#endif
+                );
   }
 
   [[nodiscard]] static const ::google::protobuf::Descriptor* PROTOBUF_NONNULL descriptor() {
@@ -6694,6 +6783,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED MethodOptions final
 
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
+  friend class ::google::protobuf::internal::MessageWithArena<MethodOptions>;
   friend ::google::protobuf::internal::PrivateAccess;
   template <typename T>
   friend class ::google::protobuf::Arena::InternalHelper;
@@ -6765,7 +6855,11 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED MessageOptions fina
   }
   [[nodiscard]] inline ::google::protobuf::UnknownFieldSet* PROTOBUF_NONNULL
   mutable_unknown_fields() ABSL_ATTRIBUTE_LIFETIME_BOUND {
-    return _internal_metadata_.mutable_unknown_fields<::google::protobuf::UnknownFieldSet>();
+    return _internal_metadata_.mutable_unknown_fields<::google::protobuf::UnknownFieldSet>(
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+                    GetArena()
+#endif
+                );
   }
 
   [[nodiscard]] static const ::google::protobuf::Descriptor* PROTOBUF_NONNULL descriptor() {
@@ -7180,6 +7274,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED MessageOptions fina
 
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
+  friend class ::google::protobuf::internal::MessageWithArena<MessageOptions>;
   friend ::google::protobuf::internal::PrivateAccess;
   template <typename T>
   friend class ::google::protobuf::Arena::InternalHelper;
@@ -7254,7 +7349,11 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FileOptions final :
   }
   [[nodiscard]] inline ::google::protobuf::UnknownFieldSet* PROTOBUF_NONNULL
   mutable_unknown_fields() ABSL_ATTRIBUTE_LIFETIME_BOUND {
-    return _internal_metadata_.mutable_unknown_fields<::google::protobuf::UnknownFieldSet>();
+    return _internal_metadata_.mutable_unknown_fields<::google::protobuf::UnknownFieldSet>(
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+                    GetArena()
+#endif
+                );
   }
 
   [[nodiscard]] static const ::google::protobuf::Descriptor* PROTOBUF_NONNULL descriptor() {
@@ -7908,6 +8007,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FileOptions final :
 
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
+  friend class ::google::protobuf::internal::MessageWithArena<FileOptions>;
   friend ::google::protobuf::internal::PrivateAccess;
   template <typename T>
   friend class ::google::protobuf::Arena::InternalHelper;
@@ -7996,7 +8096,11 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FieldOptions final 
   }
   [[nodiscard]] inline ::google::protobuf::UnknownFieldSet* PROTOBUF_NONNULL
   mutable_unknown_fields() ABSL_ATTRIBUTE_LIFETIME_BOUND {
-    return _internal_metadata_.mutable_unknown_fields<::google::protobuf::UnknownFieldSet>();
+    return _internal_metadata_.mutable_unknown_fields<::google::protobuf::UnknownFieldSet>(
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+                    GetArena()
+#endif
+                );
   }
 
   [[nodiscard]] static const ::google::protobuf::Descriptor* PROTOBUF_NONNULL descriptor() {
@@ -8610,6 +8714,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FieldOptions final 
 
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
+  friend class ::google::protobuf::internal::MessageWithArena<FieldOptions>;
   friend ::google::protobuf::internal::PrivateAccess;
   template <typename T>
   friend class ::google::protobuf::Arena::InternalHelper;
@@ -8691,7 +8796,11 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FeatureSetDefaults 
   }
   [[nodiscard]] inline ::google::protobuf::UnknownFieldSet* PROTOBUF_NONNULL
   mutable_unknown_fields() ABSL_ATTRIBUTE_LIFETIME_BOUND {
-    return _internal_metadata_.mutable_unknown_fields<::google::protobuf::UnknownFieldSet>();
+    return _internal_metadata_.mutable_unknown_fields<::google::protobuf::UnknownFieldSet>(
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+                    GetArena()
+#endif
+                );
   }
 
   [[nodiscard]] static const ::google::protobuf::Descriptor* PROTOBUF_NONNULL descriptor() {
@@ -8865,6 +8974,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FeatureSetDefaults 
 
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
+  friend class ::google::protobuf::internal::MessageWithArena<FeatureSetDefaults>;
   friend ::google::protobuf::internal::PrivateAccess;
   template <typename T>
   friend class ::google::protobuf::Arena::InternalHelper;
@@ -8934,7 +9044,11 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED ExtensionRangeOptio
   }
   [[nodiscard]] inline ::google::protobuf::UnknownFieldSet* PROTOBUF_NONNULL
   mutable_unknown_fields() ABSL_ATTRIBUTE_LIFETIME_BOUND {
-    return _internal_metadata_.mutable_unknown_fields<::google::protobuf::UnknownFieldSet>();
+    return _internal_metadata_.mutable_unknown_fields<::google::protobuf::UnknownFieldSet>(
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+                    GetArena()
+#endif
+                );
   }
 
   [[nodiscard]] static const ::google::protobuf::Descriptor* PROTOBUF_NONNULL descriptor() {
@@ -9343,6 +9457,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED ExtensionRangeOptio
 
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
+  friend class ::google::protobuf::internal::MessageWithArena<ExtensionRangeOptions>;
   friend ::google::protobuf::internal::PrivateAccess;
   template <typename T>
   friend class ::google::protobuf::Arena::InternalHelper;
@@ -9414,7 +9529,11 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED EnumValueOptions fi
   }
   [[nodiscard]] inline ::google::protobuf::UnknownFieldSet* PROTOBUF_NONNULL
   mutable_unknown_fields() ABSL_ATTRIBUTE_LIFETIME_BOUND {
-    return _internal_metadata_.mutable_unknown_fields<::google::protobuf::UnknownFieldSet>();
+    return _internal_metadata_.mutable_unknown_fields<::google::protobuf::UnknownFieldSet>(
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+                    GetArena()
+#endif
+                );
   }
 
   [[nodiscard]] static const ::google::protobuf::Descriptor* PROTOBUF_NONNULL descriptor() {
@@ -9809,6 +9928,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED EnumValueOptions fi
 
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
+  friend class ::google::protobuf::internal::MessageWithArena<EnumValueOptions>;
   friend ::google::protobuf::internal::PrivateAccess;
   template <typename T>
   friend class ::google::protobuf::Arena::InternalHelper;
@@ -9881,7 +10001,11 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED EnumOptions final :
   }
   [[nodiscard]] inline ::google::protobuf::UnknownFieldSet* PROTOBUF_NONNULL
   mutable_unknown_fields() ABSL_ATTRIBUTE_LIFETIME_BOUND {
-    return _internal_metadata_.mutable_unknown_fields<::google::protobuf::UnknownFieldSet>();
+    return _internal_metadata_.mutable_unknown_fields<::google::protobuf::UnknownFieldSet>(
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+                    GetArena()
+#endif
+                );
   }
 
   [[nodiscard]] static const ::google::protobuf::Descriptor* PROTOBUF_NONNULL descriptor() {
@@ -10272,6 +10396,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED EnumOptions final :
 
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
+  friend class ::google::protobuf::internal::MessageWithArena<EnumOptions>;
   friend ::google::protobuf::internal::PrivateAccess;
   template <typename T>
   friend class ::google::protobuf::Arena::InternalHelper;
@@ -10344,7 +10469,11 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED OneofDescriptorProt
   }
   [[nodiscard]] inline ::google::protobuf::UnknownFieldSet* PROTOBUF_NONNULL
   mutable_unknown_fields() ABSL_ATTRIBUTE_LIFETIME_BOUND {
-    return _internal_metadata_.mutable_unknown_fields<::google::protobuf::UnknownFieldSet>();
+    return _internal_metadata_.mutable_unknown_fields<::google::protobuf::UnknownFieldSet>(
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+                    GetArena()
+#endif
+                );
   }
 
   [[nodiscard]] static const ::google::protobuf::Descriptor* PROTOBUF_NONNULL descriptor() {
@@ -10505,6 +10634,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED OneofDescriptorProt
 
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
+  friend class ::google::protobuf::internal::MessageWithArena<OneofDescriptorProto>;
   friend ::google::protobuf::internal::PrivateAccess;
   template <typename T>
   friend class ::google::protobuf::Arena::InternalHelper;
@@ -10573,7 +10703,11 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED MethodDescriptorPro
   }
   [[nodiscard]] inline ::google::protobuf::UnknownFieldSet* PROTOBUF_NONNULL
   mutable_unknown_fields() ABSL_ATTRIBUTE_LIFETIME_BOUND {
-    return _internal_metadata_.mutable_unknown_fields<::google::protobuf::UnknownFieldSet>();
+    return _internal_metadata_.mutable_unknown_fields<::google::protobuf::UnknownFieldSet>(
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+                    GetArena()
+#endif
+                );
   }
 
   [[nodiscard]] static const ::google::protobuf::Descriptor* PROTOBUF_NONNULL descriptor() {
@@ -10792,6 +10926,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED MethodDescriptorPro
 
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
+  friend class ::google::protobuf::internal::MessageWithArena<MethodDescriptorProto>;
   friend ::google::protobuf::internal::PrivateAccess;
   template <typename T>
   friend class ::google::protobuf::Arena::InternalHelper;
@@ -10864,7 +10999,11 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FieldDescriptorProt
   }
   [[nodiscard]] inline ::google::protobuf::UnknownFieldSet* PROTOBUF_NONNULL
   mutable_unknown_fields() ABSL_ATTRIBUTE_LIFETIME_BOUND {
-    return _internal_metadata_.mutable_unknown_fields<::google::protobuf::UnknownFieldSet>();
+    return _internal_metadata_.mutable_unknown_fields<::google::protobuf::UnknownFieldSet>(
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+                    GetArena()
+#endif
+                );
   }
 
   [[nodiscard]] static const ::google::protobuf::Descriptor* PROTOBUF_NONNULL descriptor() {
@@ -11210,6 +11349,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FieldDescriptorProt
 
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
+  friend class ::google::protobuf::internal::MessageWithArena<FieldDescriptorProto>;
   friend ::google::protobuf::internal::PrivateAccess;
   template <typename T>
   friend class ::google::protobuf::Arena::InternalHelper;
@@ -11287,7 +11427,11 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED EnumValueDescriptor
   }
   [[nodiscard]] inline ::google::protobuf::UnknownFieldSet* PROTOBUF_NONNULL
   mutable_unknown_fields() ABSL_ATTRIBUTE_LIFETIME_BOUND {
-    return _internal_metadata_.mutable_unknown_fields<::google::protobuf::UnknownFieldSet>();
+    return _internal_metadata_.mutable_unknown_fields<::google::protobuf::UnknownFieldSet>(
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+                    GetArena()
+#endif
+                );
   }
 
   [[nodiscard]] static const ::google::protobuf::Descriptor* PROTOBUF_NONNULL descriptor() {
@@ -11460,6 +11604,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED EnumValueDescriptor
 
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
+  friend class ::google::protobuf::internal::MessageWithArena<EnumValueDescriptorProto>;
   friend ::google::protobuf::internal::PrivateAccess;
   template <typename T>
   friend class ::google::protobuf::Arena::InternalHelper;
@@ -11529,7 +11674,11 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED DescriptorProto_Ext
   }
   [[nodiscard]] inline ::google::protobuf::UnknownFieldSet* PROTOBUF_NONNULL
   mutable_unknown_fields() ABSL_ATTRIBUTE_LIFETIME_BOUND {
-    return _internal_metadata_.mutable_unknown_fields<::google::protobuf::UnknownFieldSet>();
+    return _internal_metadata_.mutable_unknown_fields<::google::protobuf::UnknownFieldSet>(
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+                    GetArena()
+#endif
+                );
   }
 
   [[nodiscard]] static const ::google::protobuf::Descriptor* PROTOBUF_NONNULL descriptor() {
@@ -11697,6 +11846,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED DescriptorProto_Ext
 
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
+  friend class ::google::protobuf::internal::MessageWithArena<DescriptorProto_ExtensionRange>;
   friend ::google::protobuf::internal::PrivateAccess;
   template <typename T>
   friend class ::google::protobuf::Arena::InternalHelper;
@@ -11766,7 +11916,11 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED ServiceDescriptorPr
   }
   [[nodiscard]] inline ::google::protobuf::UnknownFieldSet* PROTOBUF_NONNULL
   mutable_unknown_fields() ABSL_ATTRIBUTE_LIFETIME_BOUND {
-    return _internal_metadata_.mutable_unknown_fields<::google::protobuf::UnknownFieldSet>();
+    return _internal_metadata_.mutable_unknown_fields<::google::protobuf::UnknownFieldSet>(
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+                    GetArena()
+#endif
+                );
   }
 
   [[nodiscard]] static const ::google::protobuf::Descriptor* PROTOBUF_NONNULL descriptor() {
@@ -11948,6 +12102,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED ServiceDescriptorPr
 
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
+  friend class ::google::protobuf::internal::MessageWithArena<ServiceDescriptorProto>;
   friend ::google::protobuf::internal::PrivateAccess;
   template <typename T>
   friend class ::google::protobuf::Arena::InternalHelper;
@@ -12017,7 +12172,11 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED EnumDescriptorProto
   }
   [[nodiscard]] inline ::google::protobuf::UnknownFieldSet* PROTOBUF_NONNULL
   mutable_unknown_fields() ABSL_ATTRIBUTE_LIFETIME_BOUND {
-    return _internal_metadata_.mutable_unknown_fields<::google::protobuf::UnknownFieldSet>();
+    return _internal_metadata_.mutable_unknown_fields<::google::protobuf::UnknownFieldSet>(
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+                    GetArena()
+#endif
+                );
   }
 
   [[nodiscard]] static const ::google::protobuf::Descriptor* PROTOBUF_NONNULL descriptor() {
@@ -12260,6 +12419,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED EnumDescriptorProto
 
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
+  friend class ::google::protobuf::internal::MessageWithArena<EnumDescriptorProto>;
   friend ::google::protobuf::internal::PrivateAccess;
   template <typename T>
   friend class ::google::protobuf::Arena::InternalHelper;
@@ -12332,7 +12492,11 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED DescriptorProto fin
   }
   [[nodiscard]] inline ::google::protobuf::UnknownFieldSet* PROTOBUF_NONNULL
   mutable_unknown_fields() ABSL_ATTRIBUTE_LIFETIME_BOUND {
-    return _internal_metadata_.mutable_unknown_fields<::google::protobuf::UnknownFieldSet>();
+    return _internal_metadata_.mutable_unknown_fields<::google::protobuf::UnknownFieldSet>(
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+                    GetArena()
+#endif
+                );
   }
 
   [[nodiscard]] static const ::google::protobuf::Descriptor* PROTOBUF_NONNULL descriptor() {
@@ -12681,6 +12845,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED DescriptorProto fin
 
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
+  friend class ::google::protobuf::internal::MessageWithArena<DescriptorProto>;
   friend ::google::protobuf::internal::PrivateAccess;
   template <typename T>
   friend class ::google::protobuf::Arena::InternalHelper;
@@ -12758,7 +12923,11 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FileDescriptorProto
   }
   [[nodiscard]] inline ::google::protobuf::UnknownFieldSet* PROTOBUF_NONNULL
   mutable_unknown_fields() ABSL_ATTRIBUTE_LIFETIME_BOUND {
-    return _internal_metadata_.mutable_unknown_fields<::google::protobuf::UnknownFieldSet>();
+    return _internal_metadata_.mutable_unknown_fields<::google::protobuf::UnknownFieldSet>(
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+                    GetArena()
+#endif
+                );
   }
 
   [[nodiscard]] static const ::google::protobuf::Descriptor* PROTOBUF_NONNULL descriptor() {
@@ -13159,6 +13328,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FileDescriptorProto
 
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
+  friend class ::google::protobuf::internal::MessageWithArena<FileDescriptorProto>;
   friend ::google::protobuf::internal::PrivateAccess;
   template <typename T>
   friend class ::google::protobuf::Arena::InternalHelper;
@@ -13239,7 +13409,11 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FileDescriptorSet f
   }
   [[nodiscard]] inline ::google::protobuf::UnknownFieldSet* PROTOBUF_NONNULL
   mutable_unknown_fields() ABSL_ATTRIBUTE_LIFETIME_BOUND {
-    return _internal_metadata_.mutable_unknown_fields<::google::protobuf::UnknownFieldSet>();
+    return _internal_metadata_.mutable_unknown_fields<::google::protobuf::UnknownFieldSet>(
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+                    GetArena()
+#endif
+                );
   }
 
   [[nodiscard]] static const ::google::protobuf::Descriptor* PROTOBUF_NONNULL descriptor() {
@@ -13578,6 +13752,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FileDescriptorSet f
 
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
+  friend class ::google::protobuf::internal::MessageWithArena<FileDescriptorSet>;
   friend ::google::protobuf::internal::PrivateAccess;
   template <typename T>
   friend class ::google::protobuf::Arena::InternalHelper;

@@ -30,8 +30,11 @@ namespace internal {
 // ZeroFieldsBase
 
 void ZeroFieldsBase::Clear(MessageLite& msg) {
-  static_cast<ZeroFieldsBase&>(msg)
-      ._internal_metadata_.Clear<UnknownFieldSet>();
+  static_cast<ZeroFieldsBase&>(msg)._internal_metadata_.Clear<UnknownFieldSet>(
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+      static_cast<ZeroFieldsBase&>(msg).GetArena()
+#endif
+  );
 }
 
 ZeroFieldsBase::~ZeroFieldsBase() {
@@ -66,19 +69,38 @@ void ZeroFieldsBase::MergeImpl(MessageLite& to_param,
   auto* to = static_cast<ZeroFieldsBase*>(&to_param);
   const auto* from = static_cast<const ZeroFieldsBase*>(&from_param);
   ABSL_DCHECK_NE(from, to);
-  to->_internal_metadata_.MergeFrom<UnknownFieldSet>(from->_internal_metadata_);
+  to->_internal_metadata_.MergeFrom<UnknownFieldSet>(
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+      from->GetArena(),
+#endif
+      from->_internal_metadata_);
 }
 
 void ZeroFieldsBase::CopyImpl(Message& to_param, const Message& from_param) {
   auto* to = static_cast<ZeroFieldsBase*>(&to_param);
   const auto* from = static_cast<const ZeroFieldsBase*>(&from_param);
   if (from == to) return;
-  to->_internal_metadata_.Clear<UnknownFieldSet>();
-  to->_internal_metadata_.MergeFrom<UnknownFieldSet>(from->_internal_metadata_);
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+  Arena* arena = from->GetArena();
+#endif
+  to->_internal_metadata_.Clear<UnknownFieldSet>(
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+      arena
+#endif
+  );
+  to->_internal_metadata_.MergeFrom<UnknownFieldSet>(
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+      arena,
+#endif
+      from->_internal_metadata_);
 }
 
 void ZeroFieldsBase::InternalSwap(ZeroFieldsBase* other) {
-  _internal_metadata_.Swap<UnknownFieldSet>(&other->_internal_metadata_);
+  _internal_metadata_.Swap<UnknownFieldSet>(
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+      other->GetArena(),
+#endif
+      &other->_internal_metadata_);
 }
 
 }  // namespace internal

@@ -321,8 +321,13 @@ absl::flat_hash_map<absl::string_view, std::string> UnknownFieldsVars(
       {"unknown_fields_type", unknown_fields_type},
       {"have_unknown_fields", "_internal_metadata_.have_unknown_fields()"},
       {"mutable_unknown_fields",
-       absl::Substitute("_internal_metadata_.mutable_unknown_fields<$0>()",
-                        unknown_fields_type)},
+       absl::Substitute(
+           R"cc(_internal_metadata_.mutable_unknown_fields<$0>(
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+                    GetArena()
+#endif
+                ))cc",
+           unknown_fields_type)},
   };
 }
 

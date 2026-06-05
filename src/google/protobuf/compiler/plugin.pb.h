@@ -186,7 +186,11 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Version final : publi
   }
   [[nodiscard]] inline ::google::protobuf::UnknownFieldSet* PROTOBUF_NONNULL
   mutable_unknown_fields() ABSL_ATTRIBUTE_LIFETIME_BOUND {
-    return _internal_metadata_.mutable_unknown_fields<::google::protobuf::UnknownFieldSet>();
+    return _internal_metadata_.mutable_unknown_fields<::google::protobuf::UnknownFieldSet>(
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+                    GetArena()
+#endif
+                );
   }
 
   [[nodiscard]] static const ::google::protobuf::Descriptor* PROTOBUF_NONNULL descriptor() {
@@ -362,6 +366,7 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Version final : publi
 
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
+  friend class ::google::protobuf::internal::MessageWithArena<Version>;
   friend ::google::protobuf::internal::PrivateAccess;
   template <typename T>
   friend class ::google::protobuf::Arena::InternalHelper;
@@ -432,7 +437,11 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CodeGeneratorResponse
   }
   [[nodiscard]] inline ::google::protobuf::UnknownFieldSet* PROTOBUF_NONNULL
   mutable_unknown_fields() ABSL_ATTRIBUTE_LIFETIME_BOUND {
-    return _internal_metadata_.mutable_unknown_fields<::google::protobuf::UnknownFieldSet>();
+    return _internal_metadata_.mutable_unknown_fields<::google::protobuf::UnknownFieldSet>(
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+                    GetArena()
+#endif
+                );
   }
 
   [[nodiscard]] static const ::google::protobuf::Descriptor* PROTOBUF_NONNULL descriptor() {
@@ -622,6 +631,7 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CodeGeneratorResponse
 
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
+  friend class ::google::protobuf::internal::MessageWithArena<CodeGeneratorResponse_File>;
   friend ::google::protobuf::internal::PrivateAccess;
   template <typename T>
   friend class ::google::protobuf::Arena::InternalHelper;
@@ -692,7 +702,11 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CodeGeneratorResponse
   }
   [[nodiscard]] inline ::google::protobuf::UnknownFieldSet* PROTOBUF_NONNULL
   mutable_unknown_fields() ABSL_ATTRIBUTE_LIFETIME_BOUND {
-    return _internal_metadata_.mutable_unknown_fields<::google::protobuf::UnknownFieldSet>();
+    return _internal_metadata_.mutable_unknown_fields<::google::protobuf::UnknownFieldSet>(
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+                    GetArena()
+#endif
+                );
   }
 
   [[nodiscard]] static const ::google::protobuf::Descriptor* PROTOBUF_NONNULL descriptor() {
@@ -911,6 +925,7 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CodeGeneratorResponse
 
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
+  friend class ::google::protobuf::internal::MessageWithArena<CodeGeneratorResponse>;
   friend ::google::protobuf::internal::PrivateAccess;
   template <typename T>
   friend class ::google::protobuf::Arena::InternalHelper;
@@ -982,7 +997,11 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CodeGeneratorRequest 
   }
   [[nodiscard]] inline ::google::protobuf::UnknownFieldSet* PROTOBUF_NONNULL
   mutable_unknown_fields() ABSL_ATTRIBUTE_LIFETIME_BOUND {
-    return _internal_metadata_.mutable_unknown_fields<::google::protobuf::UnknownFieldSet>();
+    return _internal_metadata_.mutable_unknown_fields<::google::protobuf::UnknownFieldSet>(
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+                    GetArena()
+#endif
+                );
   }
 
   [[nodiscard]] static const ::google::protobuf::Descriptor* PROTOBUF_NONNULL descriptor() {
@@ -1212,6 +1231,7 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CodeGeneratorRequest 
 
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
+  friend class ::google::protobuf::internal::MessageWithArena<CodeGeneratorRequest>;
   friend ::google::protobuf::internal::PrivateAccess;
   template <typename T>
   friend class ::google::protobuf::Arena::InternalHelper;

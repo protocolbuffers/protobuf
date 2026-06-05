@@ -161,7 +161,11 @@ PROTOBUF_ALWAYS_INLINE void RepeatedPtrFieldBase::MergeFromInternal(
   if (arena != nullptr) {
     MergeFromInternal<T>(from, arena, std::forward<CopyElementFn>(copy_fn),
                          [](Arena* arena, const T& src) -> T* {
-                           return Arena::Create<T>(arena, src);
+                           if constexpr (std::is_same_v<T, StringPieceField>) {
+                             return Arena::Create<T>(arena, src, arena);
+                           } else {
+                             return Arena::Create<T>(arena, src);
+                           }
                          });
   } else {
     MergeFromInternal<T>(

@@ -135,7 +135,7 @@ class MessageCreator {
 
   void* AllocateMessage(Arena* arena) const {
     if (arena != nullptr) {
-      return arena->AllocateAligned(allocation_size_);
+      return arena->AllocateAligned(allocation_size_ + sizeof(Arena*));
     } else {
       return Allocate(allocation_size_);
     }
@@ -433,9 +433,15 @@ struct PROTOBUF_EXPORT ClassData {
   PROTOBUF_ALWAYS_INLINE MessageLite* New(Arena* arena) const {
     // Allocate the memory first, to reduce the number of spills.
     // This way we only spill `this` and `arena`.
+    const uint32_t allocation_size = this->allocation_size();
     void* mem = message_creator.AllocateMessage(arena);
     const MessageLite* def = default_instance();
-    return message_creator.PlacementNew(def, def, mem, arena);
+    MessageLite* res = message_creator.PlacementNew(def, def, mem, arena);
+    if (arena != nullptr) {
+      *reinterpret_cast<Arena**>(reinterpret_cast<char*>(mem) +
+                                 allocation_size) = arena;
+    }
+    return res;
   }
 
   MessageLite* PlacementNew(void* mem, Arena* arena) const {
@@ -780,14 +786,27 @@ class PROTOBUF_EXPORT MessageLite {
   // internal memory). This method is used in proto's implementation for
   // swapping, moving and setting allocated, for deciding whether the ownership
   // of this message or its internal memory could be changed.
-  [[nodiscard]] Arena* GetArena() const { return _internal_metadata_.arena(); }
+  [[nodiscard]] Arena* GetArena() const {
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+    if (_internal_metadata_.on_arena()) {
+      uint32_t allocation_size =
+          _internal_metadata_.class_data()->allocation_size();
+      return *reinterpret_cast<Arena* const*>(
+          reinterpret_cast<const char*>(this) + allocation_size);
+    } else {
+      return nullptr;
+    }
+#else
+    return _internal_metadata_.arena();
+#endif
+  }
 
   // Clear all fields of the message and set them to their default values.
   // Clear() assumes that any memory allocated to hold parts of the message
   // will likely be needed again, so the memory used may not be freed.
   // To ensure that all memory used by a Message is freed, you must delete it.
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-  void Clear() { (this->*_class_data_->clear)(); }
+  void Clear() { (this->*_internal_metadata_.class_data()->clear)(); }
 #else
   virtual void Clear() = 0;
 #endif  // PROTOBUF_CUSTOM_VTABLE
@@ -1086,7 +1105,7 @@ class PROTOBUF_EXPORT MessageLite {
   // proto.
 #if defined(PROTOBUF_CUSTOM_VTABLE)
   PROTOBUF_FUTURE_ADD_EARLY_NODISCARD size_t ByteSizeLong() const {
-    return _class_data_->byte_size_long(*this);
+    return _internal_metadata_.class_data()->byte_size_long(*this);
   }
 #else
   PROTOBUF_FUTURE_ADD_EARLY_NODISCARD virtual size_t ByteSizeLong() const = 0;
@@ -1202,9 +1221,9 @@ class PROTOBUF_EXPORT MessageLite {
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
   explicit constexpr MessageLite(const internal::ClassData* data)
-      : _class_data_(data) {}
+      : _internal_metadata_(data) {}
   explicit MessageLite(Arena* arena, const internal::ClassData* data)
-      : _internal_metadata_(arena), _class_data_(data) {}
+      : _internal_metadata_(data, /*on_arena=*/arena != nullptr) {}
 #else   // PROTOBUF_CUSTOM_VTABLE
   constexpr MessageLite() {}
   explicit MessageLite(Arena* arena) : _internal_metadata_(arena) {}
@@ -1222,17 +1241,21 @@ class PROTOBUF_EXPORT MessageLite {
   // return a default table instead of a unique one.
 #if defined(PROTOBUF_CUSTOM_VTABLE)
   const internal::ClassData* GetClassData() const {
-    ::absl::PrefetchToLocalCache(_class_data_);
-    return _class_data_;
+    const internal::ClassData* class_data = _internal_metadata_.class_data();
+    ABSL_DCHECK_NE(class_data, nullptr);
+    ::absl::PrefetchToLocalCache(class_data);
+    return class_data;
   }
 #else   // PROTOBUF_CUSTOM_VTABLE
   virtual const internal::ClassData* GetClassData() const = 0;
 #endif  // PROTOBUF_CUSTOM_VTABLE
 
+#if defined(PROTOBUF_CUSTOM_VTABLE)
   // NOLINTNEXTLINE(google3-readability-class-member-naming)
   internal::InternalMetadata _internal_metadata_;
-#if defined(PROTOBUF_CUSTOM_VTABLE)
-  const internal::ClassData* _class_data_;
+#else
+  // NOLINTNEXTLINE(google3-readability-class-member-naming)
+  internal::InternalMetadata _internal_metadata_;
 #endif  // PROTOBUF_CUSTOM_VTABLE
 
   // Return the cached size object as described by
@@ -1301,7 +1324,7 @@ class PROTOBUF_EXPORT MessageLite {
 #if defined(PROTOBUF_CUSTOM_VTABLE)
   PROTOBUF_FUTURE_ADD_EARLY_NODISCARD uint8_t* _InternalSerialize(
       uint8_t* ptr, io::EpsCopyOutputStream* stream) const {
-    return _class_data_->serialize(*this, ptr, stream);
+    return _internal_metadata_.class_data()->serialize(*this, ptr, stream);
   }
 #else   // PROTOBUF_CUSTOM_VTABLE
   PROTOBUF_FUTURE_ADD_EARLY_NODISCARD virtual uint8_t* _InternalSerialize(
@@ -1623,8 +1646,14 @@ PROTOBUF_ALWAYS_INLINE MessageLite* MessageCreator::PlacementNew(
   // avoid the double-write. It's easier than trying to avoid the overlap.
   memcpy(dst, static_cast<const void*>(prototype_for_copy),
          sizeof(MessageLite));
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+  if (arena != nullptr) {
+    *reinterpret_cast<intptr_t*>(dst) |= 0x2;
+  }
+#else
   memcpy(dst + PROTOBUF_FIELD_OFFSET(MessageLite, _internal_metadata_), &arena,
          sizeof(arena));
+#endif
   return Launder(reinterpret_cast<MessageLite*>(mem));
 }
 

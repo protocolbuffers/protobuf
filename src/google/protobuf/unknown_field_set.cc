@@ -76,11 +76,6 @@ void UnknownFieldSet::MergeFromAndDestroy(UnknownFieldSet* other) {
   }
 }
 
-void UnknownFieldSet::MergeToInternalMetadata(
-    const UnknownFieldSet& other, internal::InternalMetadata* metadata) {
-  metadata->mutable_unknown_fields<UnknownFieldSet>()->MergeFrom(other);
-}
-
 size_t UnknownFieldSet::SpaceUsedExcludingSelfLong() const {
   auto& fields = this->fields();
   if (fields.empty()) return 0;
