@@ -1142,6 +1142,10 @@ inline bool WireFormatLite::ReadPackedFixedSizePrimitive(
     bytes_limit =
         (std::min)(bytes_limit, static_cast<int64_t>(input->BytesUntilLimit()));
   }
+  if (ABSL_PREDICT_FALSE(new_entries >
+                         std::numeric_limits<int>::max() - old_entries)) {
+    return false;
+  }
   if (bytes_limit >= new_bytes) {
     // Fast-path that pre-allocates *values to the final size.
 #if defined(ABSL_IS_LITTLE_ENDIAN)
