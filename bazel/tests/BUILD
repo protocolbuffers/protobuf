@@ -6,6 +6,7 @@ load(":bazel_proto_library_tests.bzl", "bazel_proto_library_test_suite")
 load(":cc_proto_library_tests.bzl", "cc_proto_library_test_suite")
 load(":cc_toolchain_tests.bzl", "cc_toolchain_test_suite")
 load(":java_proto_library_tests.bzl", "java_proto_library_test_suite")
+load(":protoc_authenticity_tests.bzl", "protoc_authenticity_test_suite")
 load(":proto_bzl_test_suite_tests.bzl", "proto_bzl_test_suite_tests")
 load(":proto_common_check_collocated_tests.bzl", "proto_common_check_collocated_test_suite")
 load(":proto_common_compile_tests.bzl", "proto_common_compile_test_suite")
@@ -29,6 +30,8 @@ cc_toolchain_test_suite(name = "cc_toolchain_test_suite")
 java_proto_library_test_suite(name = "java_proto_library_test_suite")
 
 cc_proto_library_test_suite(name = "cc_proto_library_tests")
+
+protoc_authenticity_test_suite(name = "protoc_authenticity_tests")
 
 proto_bzl_test_suite_tests(name = "proto_bzl_test_suite")
 
