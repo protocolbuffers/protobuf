@@ -420,6 +420,59 @@ using AllStringProxyTestParams =
 TYPED_TEST_SUITE(RepeatedStringFieldProxyTest, AllStringProxyTestParams,
                  RepeatedStringFieldProxyTestName);
 
+TYPED_TEST(RepeatedNumericFieldProxyTest, DefaultEmpty) {
+  using ConstProxyType =
+      decltype(this->MakeRepeatedFieldContainer().MakeConstProxy());
+
+  ConstProxyType proxy;
+  EXPECT_THAT(proxy, IsEmpty());
+}
+
+TYPED_TEST(RepeatedStringFieldProxyTest, DefaultEmpty) {
+  using ConstProxyType =
+      decltype(this->MakeRepeatedFieldContainer().MakeConstProxy());
+
+  ConstProxyType proxy;
+  EXPECT_THAT(proxy, IsEmpty());
+}
+
+TYPED_TEST(RepeatedFieldProxyTest, MessageDefaultEmpty) {
+  using ConstProxyType = decltype(this->template MakeRepeatedFieldContainer<
+                                          RepeatedFieldProxyTestSimpleMessage>()
+                                      .MakeConstProxy());
+
+  ConstProxyType proxy;
+  EXPECT_THAT(proxy, IsEmpty());
+}
+
+TYPED_TEST(RepeatedNumericFieldProxyTest, ReassignConstProxy) {
+  auto container = this->MakeRepeatedFieldContainer();
+  container->Add(1);
+
+  decltype(container.MakeConstProxy()) proxy;
+  proxy = container.MakeConstProxy();
+  EXPECT_THAT(proxy, ElementsAre(1));
+}
+
+TYPED_TEST(RepeatedStringFieldProxyTest, ReassignConstProxy) {
+  auto container = this->MakeRepeatedFieldContainer();
+  this->Add(container, "1");
+
+  decltype(container.MakeConstProxy()) proxy;
+  proxy = container.MakeConstProxy();
+  EXPECT_THAT(proxy, ElementsAre(StringEq("1")));
+}
+
+TYPED_TEST(RepeatedFieldProxyTest, ReassignConstMessageProxy) {
+  auto container = this->template MakeRepeatedFieldContainer<
+      RepeatedFieldProxyTestSimpleMessage>();
+  container->Add()->set_value(1);
+
+  decltype(container.MakeConstProxy()) proxy;
+  proxy = container.MakeConstProxy();
+  EXPECT_THAT(proxy, ElementsAre(EqualsProto(R"pb(value: 1)pb")));
+}
+
 TYPED_TEST(RepeatedNumericFieldProxyTest, RepeatedNumeric) {
   auto field = this->MakeRepeatedFieldContainer();
   auto proxy = field.MakeProxy();
