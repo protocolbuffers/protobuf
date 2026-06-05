@@ -1493,27 +1493,6 @@ class PROTOBUF_EXPORT Reflection final {
                                              const Reflection* reflection,
                                              const char* ptr,
                                              internal::ParseContext* ctx);
-  void SetStringView(Message* message, const FieldDescriptor* field,
-                     absl::string_view value) const;
-  void SetRepeatedStringView(Message* message, const FieldDescriptor* field,
-                             int index, absl::string_view value) const;
-  void AddStringView(Message* message, const FieldDescriptor* field,
-                     absl::string_view value) const;
-
-  // Supports const absl::Cord&, std::string&& and absl::string_view.
-  template <typename String>
-  void SetStringImpl(Message* message, const FieldDescriptor* field,
-                     String&& value) const;
-
-  // Supports const absl::Cord&, std::string&& and absl::string_view.
-  template <typename String>
-  void SetRepeatedStringImpl(Message* message, const FieldDescriptor* field,
-                             int index, String&& value) const;
-
-  // Supports const absl::Cord&, std::string&& and absl::string_view.
-  template <typename String>
-  void AddStringImpl(Message* message, const FieldDescriptor* field,
-                     String&& value) const;
 };
 
 extern template void Reflection::SwapFieldsImpl<true>(

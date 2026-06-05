@@ -14,7 +14,6 @@
 #include <utility>
 
 #include "absl/log/absl_check.h"
-#include "absl/strings/cord.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/arenastring.h"
 #include "google/protobuf/explicitly_constructed.h"
@@ -101,7 +100,6 @@ class PROTOBUF_EXPORT InlinedStringField {
 
   // Lvalue Set.
   void Set(absl::string_view value, Arena* arena);
-  void Set(const absl::Cord& value, Arena* arena);
 
   // Rvalue Set. If this field is donated, this method might undonate this
   // field.
@@ -319,14 +317,6 @@ PROTOBUF_NDEBUG_INLINE void InlinedStringField::InternalSwap(
 inline void InlinedStringField::Set(absl::string_view value, Arena* arena) {
   (void)arena;
   SetNoArena(value);
-}
-
-inline void InlinedStringField::Set(const absl::Cord& value, Arena* arena) {
-  if (auto flat = value.TryFlat(); flat.has_value()) {
-    Set(*flat, arena);
-  } else {
-    Set(std::string(value), arena);
-  }
 }
 
 inline void InlinedStringField::Set(const char* str, Arena* arena) {

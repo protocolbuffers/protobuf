@@ -646,7 +646,6 @@ cc_library(
         ":port",
         "@abseil-cpp//absl/base:config",
         "@abseil-cpp//absl/log:absl_check",
-        "@abseil-cpp//absl/strings:cord",
         "@abseil-cpp//absl/strings:string_view",
     ],
 )
