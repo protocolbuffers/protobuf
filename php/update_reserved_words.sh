@@ -43,13 +43,13 @@ format_columns() {
     shift 2
     local words=("$@")
     local num_words=${#words[@]}
-    
+
     # Default to original behavior of quoting the word.
     local item_fmt="${ITEM_FMT:-\"%s\"}"
     if [[ -z "$ITEM_FMT" ]]; then
         item_fmt="\"%s\""
     fi
-    
+
     local max_len=0
     for w in "${words[@]}"; do
         local s
@@ -57,7 +57,7 @@ format_columns() {
         if (( ${#s} > max_len )); then max_len=${#s}; fi
     done
     local col_width=$((max_len + 2))
-    
+
     local i=0
     while (( i < num_words )); do
         local line="$indent"
@@ -69,14 +69,14 @@ format_columns() {
             if (( i < num_words - 1 )); then
                 s+=","
             fi
-            
+
             if (( j < per_line - 1 && i < num_words - 1 )); then
                 printf -v padded "%-${col_width}s" "$s"
                 line+="$padded"
             else
                 line+="$s"
             fi
-            
+
             i=$i+1
             j=$j+1
         done
@@ -96,19 +96,19 @@ update_file() {
         echo "Skipping $path (not found)"
         return
     fi
-    
+
     # Extract indentation of the first line of content
     local indent=$(echo "$new_content" | head -n 1 | grep -o '^[[:space:]]*')
 
     local temp_file=$(mktemp)
-    
+
     # Use perl to replace the block, writing to a temporary file
     BEGIN_MARKER="$begin" END_MARKER="$end" NEW_CONTENT="$new_content" INDENT="$indent" \
     perl -0777 -pe 's{^[ \t]*\Q$ENV{BEGIN_MARKER}\E.*?^[ \t]*\Q$ENV{END_MARKER}\E}{$ENV{INDENT}$ENV{BEGIN_MARKER}\n$ENV{NEW_CONTENT}\n$ENV{INDENT}$ENV{END_MARKER}}sm' "$full_path" > "$temp_file"
-    
+
     # Move the temporary file to the original file's path
     mv "$temp_file" "$full_path"
-    
+
     echo "Updated $path"
 }
 
@@ -175,7 +175,9 @@ generate_proto_enums() {
     for w in "${RESERVED_WORDS[@]}"; do
         local name="$w"
         if [[ "$upper" == "true" ]]; then name=$(echo "$w" | tr '[:lower:]' '[:upper:]'); fi
-        echo "enum $name { ZERO$i = 0; }"
+        echo "enum $name {"
+        echo "  ZERO$i = 0;"
+        echo "}"
         i=$((i + 1))
     done
 }
