@@ -1140,7 +1140,7 @@ class PROTOBUF_EXPORT PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CodedOutputStream {
   // there are not enough bytes available, returns NULL.  The return pointer is
   // invalidated as soon as any other non-const method of CodedOutputStream
   // is called.
-  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD inline uint8_t*
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD uint8_t*
   GetDirectBufferForNBytesAndAdvance(int size) {
     return impl_.GetDirectBufferForNBytesAndAdvance(size, &cur_);
   }
