@@ -5,12 +5,13 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
+#include <gtest/gtest.h>
+
 #include <memory>
 
-#include "google/protobuf/descriptor.pb.h"
-#include <gtest/gtest.h>
 #include "google/protobuf/compiler/command_line_interface_tester.h"
 #include "google/protobuf/compiler/php/php_generator.h"
+#include "google/protobuf/descriptor.pb.h"
 
 namespace google {
 namespace protobuf {
@@ -103,6 +104,68 @@ TEST_F(PhpGeneratorTest, ClosedEnumError) {
       "protocol_compiler --proto_path=$tmpdir --php_out=$tmpdir foo.proto");
 
   ExpectErrorSubstring("Can't generate PHP code for closed enum Foo");
+}
+
+TEST_F(PhpGeneratorTest, InvalidPhpNamespaceError) {
+  CreateTempFile("foo.proto",
+                 R"schema(
+    syntax = "proto3";
+    option php_namespace = "Foo\\Bad-Name";
+    message Foo {
+      int32 bar = 1;
+    })schema");
+
+  RunProtoc(
+      "protocol_compiler --proto_path=$tmpdir --php_out=$tmpdir foo.proto");
+
+  ExpectErrorSubstring("Invalid php_namespace option");
+}
+
+TEST_F(PhpGeneratorTest, InvalidPhpMetadataNamespaceError) {
+  CreateTempFile("foo.proto",
+                 R"schema(
+    syntax = "proto3";
+    option php_metadata_namespace = "GPBMetadata/Foo";
+    message Foo {
+      int32 bar = 1;
+    })schema");
+
+  RunProtoc(
+      "protocol_compiler --proto_path=$tmpdir --php_out=$tmpdir foo.proto");
+
+  ExpectErrorSubstring("Invalid php_metadata_namespace option");
+}
+
+TEST_F(PhpGeneratorTest, PhpMetadataRootNamespaceAllowed) {
+  CreateTempFile("root_metadata.proto",
+                 R"schema(
+    syntax = "proto3";
+    option php_metadata_namespace = "\\";
+    message Foo {
+      int32 bar = 1;
+    })schema");
+
+  RunProtoc(
+      "protocol_compiler --proto_path=$tmpdir --php_out=$tmpdir "
+      "root_metadata.proto");
+
+  ExpectNoErrors();
+}
+
+TEST_F(PhpGeneratorTest, PhpNamespaceOptionsAllowed) {
+  CreateTempFile("foo.proto",
+                 R"schema(
+    syntax = "proto3";
+    option php_namespace = "Php\\Test";
+    option php_metadata_namespace = "Metadata\\Php\\Test";
+    message Foo {
+      int32 bar = 1;
+    })schema");
+
+  RunProtoc(
+      "protocol_compiler --proto_path=$tmpdir --php_out=$tmpdir foo.proto");
+
+  ExpectNoErrors();
 }
 
 TEST_F(PhpGeneratorTest, ImportPublic) {
