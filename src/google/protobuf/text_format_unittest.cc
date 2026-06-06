@@ -2666,7 +2666,7 @@ TEST_F(TextFormatParserTest, SetRecursionLimit) {
   ExpectMessage(input,
                 "Message is too deep, the parser exceeded the configured "
                 "recursion limit of 100.",
-                1, 908, &message, false);
+                1, 911, &message, false);
 
   parser_.SetRecursionLimit(101);
   ExpectSuccessAndTree(input, &message, nullptr);
@@ -2720,8 +2720,27 @@ TEST_F(TextFormatParserTest, SetRecursionLimitUnknownFieldMessage) {
   ExpectSuccessAndTree(input, &message, nullptr);
 }
 
+TEST_F(TextFormatParserTest, SetRecursionLimitAnyExpansion) {
+  const char* format = "[type.googleapis.com/google.protobuf.Any] { $0 }";
+  std::string input = "value: \"\"";
+  for (int i = 0; i < 100; ++i) input = absl::Substitute(format, input);
+
+  google::protobuf::Any message;
+  ExpectSuccessAndTree(input, &message, nullptr);
+
+  input = absl::Substitute(format, input);
+  parser_.SetRecursionLimit(100);
+  ExpectMessage(input,
+                "Message is too deep, the parser exceeded the configured "
+                "recursion limit of 100.",
+                1, 4445, &message, false);
+
+  parser_.SetRecursionLimit(101);
+  ExpectSuccessAndTree(input, &message, nullptr);
+}
+
 TEST_F(TextFormatParserTest, ParseAnyFieldWithAdditionalWhiteSpaces) {
-  Any any;
+  google::protobuf::Any any;
   std::string parse_string =
       "[type.googleapis.com/proto2_unittest.TestAllTypes] \t :  \t {\n"
       "  optional_int32: 321\n"

@@ -65,16 +65,16 @@ class Reflection;
 template <typename T>
 struct WeakRepeatedPtrField;
 
-template <typename ElementType>
-class RepeatedFieldProxy;
-
 namespace internal {
+
+template <typename ElementType, bool kOrProxy>
+class MutableRepeatedFieldProxyImpl;
 
 class MergePartialFromCodedStreamHelper;
 class SwapFieldHelper;
 class MapFieldBase;
 
-template <typename Element, typename Enable>
+template <typename Element>
 class RepeatedPtrIterator;
 template <typename Element>
 class RepeatedPtrOverPtrsIterator;
@@ -86,7 +86,7 @@ class AllocatedRepeatedPtrFieldBackInsertIterator;
 class RepeatedPtrFieldTest;
 
 template <typename Element>
-auto ConvertToPtrIterator(RepeatedPtrIterator<Element, void> it);
+auto ConvertToPtrIterator(RepeatedPtrIterator<Element> it);
 
 // Swaps two non-overlapping blocks of memory of size `N`
 template <size_t N>
@@ -123,7 +123,8 @@ PROTOBUF_EXPORT void LogIndexOutOfBounds(int index, int size);
 // instead of DFATAL.
 // TODO: Remove preserve_all and add no_return once experiment is
 // complete.
-PROTOBUF_PRESERVE_ALL PROTOBUF_EXPORT void LogIndexOutOfBoundsAndAbort(
+[[noreturn]] PROTOBUF_PRESERVE_ALL PROTOBUF_EXPORT void
+LogIndexOutOfBoundsAndAbort(
     int64_t index, int64_t size,
     BoundsCheckMessageType type = BoundsCheckMessageType::kIndex);
 PROTOBUF_EXPORT inline void RuntimeAssertInBounds(int index, int size) {
@@ -223,14 +224,22 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   }
 
   bool empty() const { return current_size_ == 0; }
-  int size() const { return current_size_; }
+  int size() const {
+    int res = current_size_;
+    PROTOBUF_ASSUME(res >= 0);
+    return res;
+  }
   // Returns the size of the buffer with pointers to elements.
   //
   // Note:
   //
   //   * prefer `SizeAtCapacity()` to `size() == Capacity()`;
   //   * prefer `AllocatedSizeAtCapacity()` to `allocated_size() == Capacity()`.
-  int Capacity() const { return using_sso() ? kSSOCapacity : rep()->capacity; }
+  int Capacity() const {
+    int res = using_sso() ? kSSOCapacity : rep()->capacity;
+    PROTOBUF_ASSUME(res >= 0);
+    return res;
+  }
 
   template <typename TypeHandler>
   const Value<TypeHandler>& at(int index) const {
@@ -248,7 +257,7 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
 
   template <typename TypeHandler>
   Value<TypeHandler>* Mutable(int index) {
-    RuntimeAssertInBounds(index, current_size_);
+    RuntimeAssertInBounds(index, size());
     return cast<TypeHandler>(element_at(index));
   }
 
@@ -339,7 +348,7 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   template <typename TypeHandler>
   PROTOBUF_FUTURE_ADD_NODISCARD const Value<TypeHandler>& Get(int index) const {
     if constexpr (GetBoundsCheckMode() == BoundsCheckMode::kReturnDefault) {
-      if (ABSL_PREDICT_FALSE(index < 0 || index >= current_size_)) {
+      if (ABSL_PREDICT_FALSE(index < 0 || index >= size())) {
         // `default_instance()` is not supported for MessageLite and Message.
         if constexpr (TypeHandler::has_default_instance()) {
           LogIndexOutOfBounds(index, current_size_);
@@ -349,7 +358,7 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
     }
     // We refactor this to a separate function instead of inlining it so we
     // can measure the performance impact more easily.
-    RuntimeAssertInBounds(index, current_size_);
+    RuntimeAssertInBounds(index, size());
     return *cast<TypeHandler>(element_at(index));
   }
 
@@ -517,8 +526,8 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   }
 
   void SwapElements(int index1, int index2) {
-    internal::RuntimeAssertInBounds(index1, current_size_);
-    internal::RuntimeAssertInBounds(index2, current_size_);
+    internal::RuntimeAssertInBounds(index1, size());
+    internal::RuntimeAssertInBounds(index2, size());
     using std::swap;  // enable ADL with fallback
     swap(element_at(index1), element_at(index2));
   }
@@ -624,7 +633,7 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   // arena.
   template <typename TypeHandler>
   Value<TypeHandler>* UnsafeArenaReleaseLast() {
-    internal::RuntimeAssertInBounds(0, current_size_);
+    internal::RuntimeAssertInBounds(0, size());
     ExchangeCurrentSize(current_size_ - 1);
     auto* result = cast<TypeHandler>(element_at(current_size_));
     if (using_sso()) {
@@ -1227,8 +1236,8 @@ class ABSL_ATTRIBUTE_WARN_UNUSED RepeatedPtrField final
   using const_reference = const Element&;
   using pointer = Element*;
   using const_pointer = const Element*;
-  using iterator = internal::RepeatedPtrIterator<Element, void>;
-  using const_iterator = internal::RepeatedPtrIterator<const Element, void>;
+  using iterator = internal::RepeatedPtrIterator<Element>;
+  using const_iterator = internal::RepeatedPtrIterator<const Element>;
   using reverse_iterator = std::reverse_iterator<iterator>;
   using const_reverse_iterator = std::reverse_iterator<const_iterator>;
   // Custom STL-like iterator that iterates over and returns the underlying
@@ -1570,8 +1579,8 @@ class ABSL_ATTRIBUTE_WARN_UNUSED RepeatedPtrField final
 
   friend class internal::TcParser;
 
-  template <typename ElementType>
-  friend class RepeatedFieldProxy;
+  template <typename ElementType, bool kOrProxy>
+  friend class internal::MutableRepeatedFieldProxyImpl;
 
   template <typename T>
   friend struct WeakRepeatedPtrField;
@@ -2150,7 +2159,7 @@ class RustRepeatedMessageHelper {
 //
 // This code based on net/proto/proto-array-internal.h by Jeffrey Yasskin
 // (jyasskin@google.com).
-template <typename Element, typename Enable = void>
+template <typename Element>
 class ABSL_ATTRIBUTE_VIEW RepeatedPtrIterator {
  public:
   using iterator = RepeatedPtrIterator<Element>;
@@ -2246,152 +2255,7 @@ class ABSL_ATTRIBUTE_VIEW RepeatedPtrIterator {
   }
 
  private:
-  template <typename OtherElement, typename>
-  friend class RepeatedPtrIterator;
-
-  template <typename E>
-  friend auto internal::ConvertToPtrIterator(RepeatedPtrIterator<E> it);
-
-  // The internal iterator.
-  void* const* it_;
-};
-
-template <typename Element>
-class ABSL_ATTRIBUTE_VIEW RepeatedPtrIterator<
-    Element, std::enable_if_t<std::is_same_v<std::remove_const_t<Element>,
-                                             absl::string_view>>> {
-  struct ArrowProxy {
-    absl::string_view view;
-    const absl::string_view* operator->() const { return &view; }
-  };
-
- public:
-  using iterator = RepeatedPtrIterator<Element>;
-  // This iterator satisfies all the requirements of random access iterators pre
-  // C++20 aside from the requirement that "If i and j are both dereferenceable,
-  // then i == j if and only if *i and *j are bound to the same object." from
-  // `LegacyForwardIterator`. This is not true because `operator*` returns a
-  // temporary.
-  using iterator_category = std::input_iterator_tag;
-  // This restriction was relaxed in C++20, allowing us to use
-  // `std::random_access_iterator_tag` for `iterator_concept`.
-  using iterator_concept = std::random_access_iterator_tag;
-  using value_type = absl::string_view;
-  using difference_type = std::ptrdiff_t;
-  using pointer = ArrowProxy;
-  using reference = absl::string_view;
-
-  RepeatedPtrIterator() : it_(nullptr) {}
-  explicit RepeatedPtrIterator(void* const* it) : it_(it) {}
-
-  // Allows "upcasting" from RepeatedPtrIterator<absl::string_view> to
-  // RepeatedPtrIterator<const absl::string_view>.
-  template <typename E = Element,
-            typename = std::enable_if_t<std::is_const_v<E>>>
-  // NOLINTNEXTLINE(google-explicit-constructor)
-  RepeatedPtrIterator(const RepeatedPtrIterator<std::remove_const_t<E>>& other)
-      : it_(other.it_) {}
-
-  // Enable explicit conversion from RepeatedPtrIterator<absl::string_view> to
-  // both RepeatedPtrIterator<std::string> and RepeatedPtrIterator<const
-  // std::string>.
-  explicit operator RepeatedPtrIterator<const std::string>() {
-    return RepeatedPtrIterator<const std::string>(it_);
-  }
-  template <typename E = Element,
-            typename = std::enable_if_t<!std::is_const_v<E>>>
-  explicit operator RepeatedPtrIterator<std::string>() {
-    return RepeatedPtrIterator<std::string>(it_);
-  }
-
-  explicit RepeatedPtrIterator(const RepeatedPtrIterator<std::string>& other)
-      : it_(other.it_) {}
-
-  template <typename E = Element,
-            typename = std::enable_if_t<std::is_const_v<E>>>
-  explicit RepeatedPtrIterator(
-      const RepeatedPtrIterator<const std::string>& other)
-      : it_(other.it_) {}
-
-  // dereferenceable
-  [[nodiscard]] reference operator*() const {
-    return *reinterpret_cast<std::string*>(*it_);
-  }
-  [[nodiscard]] ArrowProxy operator->() const {
-    return ArrowProxy{*reinterpret_cast<std::string*>(*it_)};
-  }
-
-  // Prefix increment.
-  iterator& operator++() {
-    ++it_;
-    return *this;
-  }
-  // Postfix increment.
-  iterator operator++(int) { return iterator(it_++); }
-  // Prefix decrement.
-  iterator& operator--() {
-    --it_;
-    return *this;
-  }
-  // Postfix decrement.
-  iterator operator--(int) { return iterator(it_--); }
-
-  // equality_comparable
-  friend bool operator==(const iterator& x, const iterator& y) {
-    return x.it_ == y.it_;
-  }
-  friend bool operator!=(const iterator& x, const iterator& y) {
-    return x.it_ != y.it_;
-  }
-
-  // less_than_comparable
-  friend bool operator<(const iterator& x, const iterator& y) {
-    return x.it_ < y.it_;
-  }
-  friend bool operator<=(const iterator& x, const iterator& y) {
-    return x.it_ <= y.it_;
-  }
-  friend bool operator>(const iterator& x, const iterator& y) {
-    return x.it_ > y.it_;
-  }
-  friend bool operator>=(const iterator& x, const iterator& y) {
-    return x.it_ >= y.it_;
-  }
-
-  // addable, subtractable
-  iterator& operator+=(difference_type d) {
-    it_ += d;
-    return *this;
-  }
-  friend iterator operator+(iterator it, const difference_type d) {
-    it += d;
-    return it;
-  }
-  friend iterator operator+(const difference_type d, iterator it) {
-    it += d;
-    return it;
-  }
-  iterator& operator-=(difference_type d) {
-    it_ -= d;
-    return *this;
-  }
-  friend iterator operator-(iterator it, difference_type d) {
-    it -= d;
-    return it;
-  }
-
-  // indexable
-  [[nodiscard]] reference operator[](difference_type d) const {
-    return *(*this + d);
-  }
-
-  // random access iterator
-  friend difference_type operator-(iterator it1, iterator it2) {
-    return it1.it_ - it2.it_;
-  }
-
- private:
-  template <typename OtherElement, typename>
+  template <typename OtherElement>
   friend class RepeatedPtrIterator;
 
   template <typename E>
@@ -2535,17 +2399,6 @@ class RepeatedPtrOverPtrsIterator {
 template <typename Element>
 inline auto ConvertToPtrIterator(RepeatedPtrIterator<Element> it) {
   return RepeatedPtrOverPtrsIterator<Element>(const_cast<void**>(it.it_));
-}
-
-template <>
-inline auto ConvertToPtrIterator(RepeatedPtrIterator<absl::string_view> it) {
-  return RepeatedPtrOverPtrsIterator<std::string>(const_cast<void**>(it.it_));
-}
-
-template <>
-inline auto ConvertToPtrIterator(
-    RepeatedPtrIterator<const absl::string_view> it) {
-  return RepeatedPtrOverPtrsIterator<const std::string>(it.it_);
 }
 
 }  // namespace internal

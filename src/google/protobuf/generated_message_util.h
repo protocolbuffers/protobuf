@@ -66,6 +66,8 @@ class CodedInputStream;
 namespace internal {
 
 
+class ExtensionSet;
+
 // This fastpath inlines a single branch instead of having to make the
 // InitProtobufDefaults function call.
 // It also generates less inlined code than a function-scope static initializer.
@@ -422,6 +424,17 @@ struct PrivateAccess {
       const ::google::protobuf::internal::ClassData* class_data) {
     return T::InternalGenerateParseTable_(class_data);
   }
+
+  template <typename T>
+  static constexpr decltype(auto) FullMessageName() {
+    return T::FullMessageName();
+  }
+
+  static internal::ExtensionSet* GetExtensionSet(MessageLite* msg);
+  static const internal::ExtensionSet* GetExtensionSet(const MessageLite* msg);
+
+  template <typename T>
+  using ImplTForTesting = typename T::Impl_;
 };
 
 }  // namespace internal

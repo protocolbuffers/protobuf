@@ -12,6 +12,7 @@
 #include <cstdint>
 #include <memory>
 #include <string>
+#include <variant>
 #include <vector>
 
 #include "absl/container/flat_hash_map.h"
@@ -20,6 +21,7 @@
 #include "absl/strings/match.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
+#include "absl/types/optional.h"
 #include "absl/types/span.h"
 #include "google/protobuf/compiler/cpp/helpers.h"
 #include "google/protobuf/compiler/cpp/options.h"
@@ -27,6 +29,7 @@
 #include "google/protobuf/generated_message_tctable_gen.h"
 #include "google/protobuf/generated_message_tctable_impl.h"
 #include "google/protobuf/has_bits.h"
+#include "google/protobuf/micro_string.h"
 
 namespace google {
 namespace protobuf {
@@ -50,18 +53,18 @@ std::vector<const FieldDescriptor*> GetOrderedFields(
 }
 
 ParseFunctionGenerator::ParseFunctionGenerator(
-    const Descriptor* descriptor, int max_has_bit_index,
-    absl::Span<const int> has_bit_indices, const Options& options,
+    const Descriptor* descriptor, bool has_hasbits,
+    GetHasBitIndex get_has_bit_index, const Options& options,
     const absl::flat_hash_map<absl::string_view, std::string>& vars,
     int index_in_file_messages)
     : descriptor_(descriptor),
       options_(options),
       variables_(vars),
       ordered_fields_(GetOrderedFields(descriptor_)),
-      num_hasbits_(max_has_bit_index),
+      has_hasbits_(has_hasbits),
       index_in_file_messages_(index_in_file_messages) {
-  auto fields = BuildFieldOptions(descriptor_, ordered_fields_, options_,
-                                  has_bit_indices);
+  auto fields = BuildFieldOptions(descriptor_, ordered_fields_,
+                                  get_has_bit_index, options_);
   tc_table_info_ = std::make_unique<TailCallTableInfo>(
       BuildTcTableInfoFromDescriptor(descriptor_, options_, fields));
   SetCommonMessageDataVariables(descriptor_, &variables_);
@@ -72,25 +75,39 @@ std::vector<internal::TailCallTableInfo::FieldOptions>
 ParseFunctionGenerator::BuildFieldOptions(
     const Descriptor* descriptor,
     absl::Span<const FieldDescriptor* const> ordered_fields,
-    const Options& options, absl::Span<const int> has_bit_indices) {
-  std::vector<TailCallTableInfo::FieldOptions> fields;
+    GetHasBitIndex get_has_bit_index, const Options& options) {
+  using FieldOptions = TailCallTableInfo::FieldOptions;
+  std::vector<FieldOptions> fields;
   fields.reserve(ordered_fields.size());
   for (size_t i = 0; i < ordered_fields.size(); ++i) {
-    auto* field = ordered_fields[i];
-    ABSL_CHECK_GE(field->index(), 0);
-    size_t index = static_cast<size_t>(field->index());
+    const auto* field = ordered_fields[i];
+
+    const absl::optional<int> hasbit_index = get_has_bit_index(field);
+
+    const auto str_options = [&]() -> FieldOptions::StrOptions {
+      if (field->cpp_type() == FieldDescriptor::CPPTYPE_STRING) {
+        if (IsStringInlined(field, options)) {
+          return FieldOptions::StringInlined{};
+        }
+        if (IsMicroString(field, options)) {
+          auto sso = MicroStringSSOSize(field, options);
+          return FieldOptions::MicroString{
+              sso.value_or(internal::MicroString::kInlineCapacity)};
+        }
+      }
+      return std::monostate{};
+    };
+
     fields.push_back({
         field,
-        index < has_bit_indices.size() ? has_bit_indices[index]
-                                       : internal::kNoHasbit,
+        hasbit_index.value_or(internal::kNoHasbit),
         GetPresenceProbability(field, options)
             .value_or(kUnknownPresenceProbability),
         GetLazyStyle(field, options),
-        IsStringInlined(field, options),
         IsImplicitWeakField(field, options),
         /* use_direct_tcparser_table */ true,
         ShouldSplit(field, options),
-        IsMicroString(field, options),
+        str_options(),
     });
   }
   return fields;
@@ -299,7 +316,7 @@ void ParseFunctionGenerator::GenerateParseTableHelperDefinition(
     p->Emit(
         {{"has_bits_offset",
           [&] {
-            if (num_hasbits_ > 0 || IsMapEntryMessage(descriptor_)) {
+            if (has_hasbits_ || IsMapEntryMessage(descriptor_)) {
               p->Emit("PROTOBUF_FIELD_OFFSET($Msg$, _impl_._has_bits_),\n");
             } else {
               // Just put something safe here. _cached_size_ is fine.
@@ -682,40 +699,39 @@ void ParseFunctionGenerator::GenerateFieldEntries(io::Printer* p) {
         {{"field_name", FieldName(field)},
          {"field_member_name", FieldMemberName(field, /*split=*/false)}});
 
-    p->Emit(
-        {{"offset",
-          [&] {
-            if (weak) {
-              p->Emit("/* weak */ 0,");
-            } else if (split) {
-              p->Emit(
-                  "PROTOBUF_FIELD_OFFSET($Msg$::Impl_::Split, "
-                  "$field_name$_),");
-            } else {
-              p->Emit("PROTOBUF_FIELD_OFFSET($Msg$, $field_member_name$),");
-            }
-          }},
-         {"has_idx",
-          [&] {
-            if (oneof) {
-              p->Emit(absl::StrCat("_Internal::kOneofCaseOffset + ",
-                                   4 * oneof->index(), ","));
-            } else {
-              std::string hb_content =
-                  entry.hasbit_idx >= 0
-                      ? absl::StrCat("_Internal::kHasBitsOffset + ",
-                                     entry.hasbit_idx, ",")
-                      : "-1,";
-              p->Emit(hb_content);
-            }
-          }},
-         {"aux_idx", entry.aux_idx},
-         {"type_card", internal::TypeCardToString(entry.type_card)}},
-        // Use `0|` prefix to eagerly convert the enums to int to avoid
-        // enum-enum operations. They are deprecated in C++20.
-        R"cc(
-          {$offset$, $has_idx$, $aux_idx$, (0 | $type_card$)},
-        )cc");
+    p->Emit({{"offset",
+              [&] {
+                if (weak) {
+                  p->Emit("/* weak */ 0,");
+                } else if (split) {
+                  p->Emit(
+                      "PROTOBUF_FIELD_OFFSET($Msg$::Impl_::Split, "
+                      "$field_name$_),");
+                } else {
+                  p->Emit("PROTOBUF_FIELD_OFFSET($Msg$, $field_member_name$),");
+                }
+              }},
+             {"has_idx",
+              [&] {
+                if (oneof) {
+                  p->Emit(absl::StrCat("_Internal::kOneofCaseOffset + ",
+                                       4 * oneof->index(), ","));
+                } else {
+                  std::string hb_content =
+                      entry.hasbit_idx >= 0
+                          ? absl::StrCat("_Internal::kHasBitsOffset + ",
+                                         entry.hasbit_idx, ",")
+                          : "-1,";
+                  p->Emit(hb_content);
+                }
+              }},
+             {"aux_idx", entry.aux_idx},
+             {"type_card", internal::TypeCardToString(entry.type_card)}},
+            // Use `0|` prefix to eagerly convert the enums to int to avoid
+            // enum-enum operations. They are deprecated in C++20.
+            R"cc(
+              {$offset$, $has_idx$, $aux_idx$, (0 | $type_card$)},
+            )cc");
   }
 }
 

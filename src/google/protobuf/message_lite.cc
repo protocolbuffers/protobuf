@@ -87,11 +87,13 @@ void MessageLite::CheckTypeAndMergeFrom(const MessageLite& other) {
 
 MessageLite* MessageLite::New(Arena* arena) const {
   auto* data = GetClassData();
+  void* mem = data->message_creator.AllocateMessage(arena);
   // The `instance->New()` expression requires using the actual instance
   // instead of the prototype for the inner function call.
   // Certain custom instances have special per-instance state that needs to be
   // copied.
-  return data->message_creator.New(this, data->default_instance(), arena);
+  return data->message_creator.PlacementNew(this, data->default_instance(), mem,
+                                            arena);
 }
 
 bool MessageLite::IsInitialized() const {
@@ -659,11 +661,17 @@ bool MessageLite::AppendPartialToString(absl::Cord* output) const {
   // For efficiency, we'd like to pass a size hint to CordOutputStream with
   // the exact total size expected.
   const size_t size = ByteSizeLong();
-  const size_t total_size = size + output->size();
   if (size > INT_MAX) {
     ABSL_LOG(ERROR) << "Exceeded maximum protobuf size of 2GB: " << size;
     return false;
   }
+  const size_t output_size = output->size();
+  if (output_size > SIZE_MAX - size) {
+    ABSL_LOG(ERROR) << "Exceeded maximum Cord size during append: "
+                    << output_size << " + " << size;
+    return false;
+  }
+  const size_t total_size = size + output_size;
 
 
   // Allocate a CordBuffer (which may utilize private capacity in 'output').

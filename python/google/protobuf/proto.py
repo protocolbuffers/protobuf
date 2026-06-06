@@ -4,7 +4,6 @@
 # Use of this source code is governed by a BSD-style
 # license that can be found in the LICENSE file or at
 # https://developers.google.com/open-source/licenses/bsd
-
 """Contains the Nextgen Pythonic protobuf APIs."""
 
 import io
@@ -22,8 +21,8 @@ def serialize(message: _MESSAGE, deterministic: bool = None) -> bytes:
 
   Args:
     message: The proto message to be serialized.
-    deterministic: If true, requests deterministic serialization
-        of the protobuf, with predictable ordering of map keys.
+    deterministic: If true, requests deterministic serialization of the
+      protobuf, with predictable ordering of map keys.
 
   Returns:
     A binary bytes representation of the message.
@@ -65,9 +64,10 @@ def serialize_length_prefixed(message: _MESSAGE, output: io.BytesIO) -> None:
     message: The protocol buffer message that should be serialized.
     output: BytesIO or custom buffered IO that data should be written to.
   """
-  size = message.ByteSize()
+  payload = serialize(message)
+  size = len(payload)
   encoder._VarintEncoder()(output.write, size)
-  out_size = output.write(serialize(message))
+  out_size = output.write(payload)
 
   if out_size != size:
     raise TypeError(

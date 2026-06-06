@@ -25,14 +25,16 @@ namespace Google.Protobuf.Reflection {
       byte[] descriptorData = global::System.Convert.FromBase64String(
           string.Concat(
             "CiZnb29nbGUvcHJvdG9idWYvY19zaGFycF9mZWF0dXJlcy5wcm90bxICcGIa",
-            "IGdvb2dsZS9wcm90b2J1Zi9kZXNjcmlwdG9yLnByb3RvIhAKDkNTaGFycEZl",
-            "YXR1cmVzOkAKBmNzaGFycBIbLmdvb2dsZS5wcm90b2J1Zi5GZWF0dXJlU2V0",
-            "GOwHIAEoCzISLnBiLkNTaGFycEZlYXR1cmVzQjlCGENTaGFycEZlYXR1cmVz",
-            "T3V0ZXJDbGFzc1ABqgIaR29vZ2xlLlByb3RvYnVmLlJlZmxlY3Rpb24="));
+            "IGdvb2dsZS9wcm90b2J1Zi9kZXNjcmlwdG9yLnByb3RvIlMKDkNTaGFycEZl",
+            "YXR1cmVzEkEKGG51bGxhYmxlX3JlZmVyZW5jZV90eXBlcxgBIAEoCEIfiAEB",
+            "mAEEmAEDmAEBogEKEgVmYWxzZRiEB7IBAwiPTjpACgZjc2hhcnASGy5nb29n",
+            "bGUucHJvdG9idWYuRmVhdHVyZVNldBjsByABKAsyEi5wYi5DU2hhcnBGZWF0",
+            "dXJlc0I5QhhDU2hhcnBGZWF0dXJlc091dGVyQ2xhc3NQAaoCGkdvb2dsZS5Q",
+            "cm90b2J1Zi5SZWZsZWN0aW9u"));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { global::Google.Protobuf.Reflection.DescriptorReflection.Descriptor, },
           new pbr::GeneratedClrTypeInfo(null, new pb::Extension[] { CSharpFeaturesExtensions.Csharp }, new pbr::GeneratedClrTypeInfo[] {
-            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.Reflection.CSharpFeatures), global::Google.Protobuf.Reflection.CSharpFeatures.Parser, null, null, null, null, null)
+            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.Reflection.CSharpFeatures), global::Google.Protobuf.Reflection.CSharpFeatures.Parser, new[]{ "NullableReferenceTypes" }, null, null, null, null)
           }));
     }
     #endregion
@@ -53,6 +55,7 @@ namespace Google.Protobuf.Reflection {
   {
     private static readonly pb::MessageParser<CSharpFeatures> _parser = new pb::MessageParser<CSharpFeatures>(() => new CSharpFeatures());
     private pb::UnknownFieldSet _unknownFields;
+    private int _hasBits0;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static pb::MessageParser<CSharpFeatures> Parser { get { return _parser; } }
@@ -80,6 +83,8 @@ namespace Google.Protobuf.Reflection {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public CSharpFeatures(CSharpFeatures other) : this() {
+      _hasBits0 = other._hasBits0;
+      nullableReferenceTypes_ = other.nullableReferenceTypes_;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
 
@@ -87,6 +92,38 @@ namespace Google.Protobuf.Reflection {
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public CSharpFeatures Clone() {
       return new CSharpFeatures(this);
+    }
+
+    /// <summary>Field number for the "nullable_reference_types" field.</summary>
+    public const int NullableReferenceTypesFieldNumber = 1;
+    private readonly static bool NullableReferenceTypesDefaultValue = false;
+
+    private bool nullableReferenceTypes_;
+    /// <summary>
+    /// Whether the generated files should have nullable reference type annotations.
+    /// When enabled, the generated C# code includes `#nullable enable annotations`
+    /// and annotates message-typed properties and certain parameters with `?`.
+    /// </summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public bool NullableReferenceTypes {
+      get { if ((_hasBits0 & 1) != 0) { return nullableReferenceTypes_; } else { return NullableReferenceTypesDefaultValue; } }
+      set {
+        _hasBits0 |= 1;
+        nullableReferenceTypes_ = value;
+      }
+    }
+    /// <summary>Gets whether the "nullable_reference_types" field is set</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public bool HasNullableReferenceTypes {
+      get { return (_hasBits0 & 1) != 0; }
+    }
+    /// <summary>Clears the value of the "nullable_reference_types" field</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void ClearNullableReferenceTypes() {
+      _hasBits0 &= ~1;
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -104,6 +141,7 @@ namespace Google.Protobuf.Reflection {
       if (ReferenceEquals(other, this)) {
         return true;
       }
+      if (NullableReferenceTypes != other.NullableReferenceTypes) return false;
       return Equals(_unknownFields, other._unknownFields);
     }
 
@@ -111,6 +149,7 @@ namespace Google.Protobuf.Reflection {
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public override int GetHashCode() {
       int hash = 1;
+      if (HasNullableReferenceTypes) hash ^= NullableReferenceTypes.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
       }
@@ -129,6 +168,10 @@ namespace Google.Protobuf.Reflection {
     #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       output.WriteRawMessage(this);
     #else
+      if (HasNullableReferenceTypes) {
+        output.WriteRawTag(8);
+        output.WriteBool(NullableReferenceTypes);
+      }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
@@ -139,6 +182,10 @@ namespace Google.Protobuf.Reflection {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      if (HasNullableReferenceTypes) {
+        output.WriteRawTag(8);
+        output.WriteBool(NullableReferenceTypes);
+      }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(ref output);
       }
@@ -149,6 +196,9 @@ namespace Google.Protobuf.Reflection {
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public int CalculateSize() {
       int size = 0;
+      if (HasNullableReferenceTypes) {
+        size += 1 + 1;
+      }
       if (_unknownFields != null) {
         size += _unknownFields.CalculateSize();
       }
@@ -160,6 +210,9 @@ namespace Google.Protobuf.Reflection {
     public void MergeFrom(CSharpFeatures other) {
       if (other == null) {
         return;
+      }
+      if (other.HasNullableReferenceTypes) {
+        NullableReferenceTypes = other.NullableReferenceTypes;
       }
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
     }
@@ -180,6 +233,10 @@ namespace Google.Protobuf.Reflection {
           default:
             _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
             break;
+          case 8: {
+            NullableReferenceTypes = input.ReadBool();
+            break;
+          }
         }
       }
     #endif
@@ -199,6 +256,10 @@ namespace Google.Protobuf.Reflection {
           default:
             _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
             break;
+          case 8: {
+            NullableReferenceTypes = input.ReadBool();
+            break;
+          }
         }
       }
     }

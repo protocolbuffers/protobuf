@@ -9,6 +9,11 @@ load("@rules_cc//cc:cc_test.bzl", "cc_test")
 load("@rules_python//python:defs.bzl", "py_binary")
 load("//bazel:cc_proto_library.bzl", "cc_proto_library")
 load("//bazel:proto_library.bzl", "proto_library")
+load(
+    "//upb/bazel:copts.bzl",
+    "UPB_DEFAULT_CPPOPTS",
+    "UPB_DEFAULT_FEATURES",
+)
 load("//upb/bazel:upb_minitable_proto_library.bzl", "upb_minitable_proto_library")
 load(
     "//upb/bazel:upb_proto_library.bzl",
@@ -29,6 +34,10 @@ licenses(["notice"])
 proto_library(
     name = "descriptor_proto",
     srcs = ["descriptor.proto"],
+    features = [
+        # Prevents linker stripping of submessages which breaks the benchmark
+        "-proto_one_output_per_message",
+    ],
 )
 
 upb_c_proto_library(
@@ -59,6 +68,10 @@ cc_proto_library(
 proto_library(
     name = "benchmark_descriptor_sv_proto",
     srcs = ["descriptor_sv.proto"],
+    features = [
+        # Prevents linker stripping of submessages which breaks the benchmark
+        "-proto_one_output_per_message",
+    ],
 )
 
 cc_proto_library(
@@ -70,6 +83,8 @@ cc_test(
     name = "benchmark",
     testonly = 1,
     srcs = ["benchmark.cc"],
+    copts = UPB_DEFAULT_CPPOPTS,
+    features = UPB_DEFAULT_FEATURES,
     deps = [
         ":ads_upb_proto_reflection",
         ":benchmark_descriptor_cc_proto",

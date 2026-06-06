@@ -10,13 +10,13 @@
 #include "absl/algorithm/container.h"
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
+#include "absl/types/optional.h"
 #include "google/protobuf/compiler/cpp/helpers.h"
 #include "google/protobuf/compiler/cpp/options.h"
 #include "google/protobuf/compiler/cpp/parse_function_generator.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/generated_message_tctable_decl.h"
 #include "google/protobuf/generated_message_tctable_gen.h"
-#include "google/protobuf/port.h"
 
 namespace google {
 namespace protobuf {
@@ -79,31 +79,7 @@ MessageLayoutHelper::FieldVector MessageLayoutHelper::DoOptimizeLayout(
 // This function determines the order of the field hotness groups in the
 // message. The higher the number, the closer to the top of the message.
 constexpr size_t MessageLayoutHelper::FieldHotnessIndex(FieldHotness hotness) {
-  if constexpr (internal::EnableExperimentalHintHasBitsForRepeatedFields()) {
-    // Swap kFastParse and kRepeated so fast-parse fields are assigned the
-    // lowest hasbit indices.
-    switch (hotness) {
-      case FieldHotness::kSplit:
-        return 0;
-      case FieldHotness::kCold:
-        return 1;
-      case FieldHotness::kWarm:
-        return 2;
-      case FieldHotness::kHot:
-        return 3;
-      case FieldHotness::kRepeated:
-        return 4;
-      case FieldHotness::kFastParse:
-        return 5;
-      case FieldHotness::kMaxHotness:
-        internal::Unreachable();
-    }
-
-    // Make the compiler happy.
-    return 0;
-  } else {
-    return static_cast<size_t>(hotness);
-  }
+  return static_cast<size_t>(hotness);
 }
 
 MessageLayoutHelper::FieldFamily MessageLayoutHelper::GetFieldFamily(
@@ -130,8 +106,8 @@ MessageLayoutHelper::BuildFastParseTable(const Options& options) const {
     }
   }
   auto field_options = ParseFunctionGenerator::BuildFieldOptions(
-      descriptor_, ordered_fields, options,
-      /*has_bit_indices=*/{});
+      descriptor_, ordered_fields,
+      /*get_has_bit_index=*/[](const auto*) { return absl::nullopt; }, options);
   auto table_info = ParseFunctionGenerator::BuildTcTableInfoFromDescriptor(
       descriptor_, options, field_options);
   return table_info.fast_path_fields;
@@ -158,11 +134,6 @@ bool MessageLayoutHelper::ShouldPromoteToFastParse(
         fast_path_fields) {
   // Only promote warm and hot fields to fast-parse.
   if (hotness < FieldHotness::kWarm) return false;
-  // If hasbits for repeated fields is disabled, don't promote repeated fields.
-  if (!internal::EnableExperimentalHintHasBitsForRepeatedFields() &&
-      field->is_repeated()) {
-    return false;
-  }
   return IsFastPathField(field, fast_path_fields);
 }
 

@@ -416,10 +416,17 @@ static void jsonenc_fieldpath(jsonenc* e, upb_StringView path) {
     char ch = *ptr;
 
     if (ch >= 'A' && ch <= 'Z') {
-      jsonenc_err(e, "Field mask element may not have upper-case letter.");
+      jsonenc_err(e,
+                  "Field mask path containing an uppercase letter cannot be "
+                  "successfully round tripped through JSON format. See "
+                  "https://github.com/protocolbuffers/protobuf/issues/25786");
     } else if (ch == '_') {
       if (ptr == end - 1 || *(ptr + 1) < 'a' || *(ptr + 1) > 'z') {
-        jsonenc_err(e, "Underscore must be followed by a lowercase letter.");
+        jsonenc_err(e,
+                    "Underscore in FieldMask path must be followed by a "
+                    "lowercase letter to successfully round trip through JSON "
+                    "format. See "
+                    "https://github.com/protocolbuffers/protobuf/issues/25786");
       }
       ch = *++ptr - 32;
     }

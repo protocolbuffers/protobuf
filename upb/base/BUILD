@@ -45,6 +45,16 @@ cc_library(
 )
 
 cc_test(
+    name = "log2_test",
+    srcs = ["internal/log2_test.cc"],
+    deps = [
+        ":internal",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_test(
     name = "string_view_test",
     srcs = ["string_view_test.cc"],
     deps = [

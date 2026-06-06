@@ -129,12 +129,12 @@ class SingularMessage : public FieldGeneratorBase {
   }
 
   void GenerateMemberCopyConstructor(io::Printer* p) const override {
-    p->Emit("$name$_{$superclass$::CopyConstruct(arena, *from.$name$_)}");
+    p->Emit("$name$_{Super_::CopyConstruct(arena, *from.$name$_)}");
   }
 
   void GenerateOneofCopyConstruct(io::Printer* p) const override {
     p->Emit(R"cc(
-      $field$ = $superclass$::CopyConstruct(arena, *from.$field$);
+      $field_$ = Super_::CopyConstruct(arena, *from.$field_$);
     )cc");
   }
 
@@ -260,7 +260,7 @@ void SingularMessage::GenerateInlineAccessorDefinitions(io::Printer* p) const {
       $TsanDetectConcurrentMutation$;
       $StrongRef$;
       if ($field_$ == nullptr) {
-        auto* p = $superclass$::DefaultConstruct<$Submsg$>(GetArena());
+        auto* p = Super_::DefaultConstruct<$Submsg$>(GetArena());
         $field_$ = reinterpret_cast<$MemberType$*>(p);
       }
       return $cast_field_$;
@@ -355,7 +355,7 @@ void SingularMessage::GenerateMergingCode(io::Printer* p) const {
     p->Emit(R"cc(
       $DCHK$(from.$field_$ != nullptr);
       if (_this->$field_$ == nullptr) {
-        _this->$field_$ = $superclass$::CopyConstruct(arena, *from.$field_$);
+        _this->$field_$ = Super_::CopyConstruct(arena, *from.$field_$);
       } else {
         _this->$field_$->MergeFrom(*from.$field_$);
       }
@@ -383,7 +383,7 @@ void SingularMessage::GenerateCopyConstructorCode(io::Printer* p) const {
   ABSL_CHECK(has_hasbit_);
   p->Emit(R"cc(
     if (CheckHasBit(from.$has_bits_array$, $has_mask$)) {
-      _this->$field_$ = $superclass$::CopyConstruct(arena, *from.$field_$);
+      _this->$field_$ = Super_::CopyConstruct(arena, *from.$field_$);
     }
   )cc");
 }
@@ -392,14 +392,14 @@ void SingularMessage::GenerateSerializeWithCachedSizesToArray(
     io::Printer* p) const {
   if (!is_group()) {
     p->Emit(R"cc(
-      target = $pbi$::WireFormatLite::InternalWrite$declared_type$(
+      target = $pbi$::WireFormatLite::InternalWrite$DeclaredType$(
           $number$, *this_.$field_$, this_.$field_$->GetCachedSize(), target,
           stream);
     )cc");
   } else {
     p->Emit(R"cc(
       target = stream->EnsureSpace(target);
-      target = $pbi$::WireFormatLite::InternalWrite$declared_type$(
+      target = $pbi$::WireFormatLite::InternalWrite$DeclaredType$(
           $number$, *this_.$field_$, target, stream);
     )cc");
   }
@@ -407,8 +407,8 @@ void SingularMessage::GenerateSerializeWithCachedSizesToArray(
 
 void SingularMessage::GenerateByteSize(io::Printer* p) const {
   p->Emit(R"cc(
-    total_size += $tag_size$ +
-                  $pbi$::WireFormatLite::$declared_type$Size(*this_.$field_$);
+    total_size += $kTagBytes$ +
+                  $pbi$::WireFormatLite::$DeclaredType$Size(*this_.$field_$);
   )cc");
 }
 
@@ -610,8 +610,7 @@ void OneofMessage::GenerateInlineAccessorDefinitions(io::Printer* p) const {
       if ($not_has_field$) {
         clear_$oneof_name$();
         set_has_$name_internal$();
-        $field_$ = $cast_to_field$(
-            $superclass$::DefaultConstruct<$Submsg$>(GetArena()));
+        $field_$ = $cast_to_field$(Super_::DefaultConstruct<$Submsg$>(GetArena()));
       }
       return $cast_field_$;
     }
@@ -669,7 +668,7 @@ void OneofMessage::GenerateCopyConstructorCode(io::Printer* p) const {
   ABSL_CHECK(!has_hasbit_);
   p->Emit(R"cc(
     if (from._internal_has_$name$()) {
-      _this->$field_$ = $superclass$::CopyConstruct(arena, *from.$field_$);
+      _this->$field_$ = Super_::CopyConstruct(arena, *from.$field_$);
     }
   )cc");
 }
@@ -692,7 +691,7 @@ void OneofMessage::GenerateMergingCode(io::Printer* p) const {
                 : "MergeFrom"}},
           R"cc(
             if (oneof_needs_init) {
-              _this->$field_$ = $superclass$::CopyConstruct(arena, *from.$field_$);
+              _this->$field_$ = Super_::CopyConstruct(arena, *from.$field_$);
             } else {
               _this->$field_$->$merge$(*from.$field_$);
             }
@@ -915,8 +914,9 @@ void RepeatedMessage::GenerateInlineAccessorDefinitions(io::Printer* p) const {
         $TsanDetectConcurrentRead$;
         $PrepareSplitMessageForWrite$;
         if ($field_$.IsDefault()) {
-          $field_$.Set($superclass$::DefaultConstruct<
-                       $pb$::$Weak$RepeatedPtrField<$Submsg$>>(GetArena()));
+          $field_$.Set(
+              Super_::DefaultConstruct<$pb$::$Weak$RepeatedPtrField<$Submsg$>>(
+                  GetArena()));
         }
         return $field_$.Get();
       }
@@ -1010,72 +1010,69 @@ void RepeatedMessage::GenerateDestructorCode(io::Printer* p) const {
 void RepeatedMessage::GenerateSerializeWithCachedSizesToArray(
     io::Printer* p) const {
   if (is_weak()) {
-    p->Emit({{"serialize_field",
-              [&] {
-                if (field_->type() == FieldDescriptor::TYPE_MESSAGE) {
-                  p->Emit(
-                      R"cc(
-                        target =
-                            $pbi$::WireFormatLite::InternalWrite$declared_type$(
-                                $number$, **it, (**it).GetCachedSize(), target,
-                                stream);
-                      )cc");
-                } else {
-                  p->Emit(
-                      R"cc(
-                        target = stream->EnsureSpace(target);
-                        target =
-                            $pbi$::WireFormatLite::InternalWrite$declared_type$(
-                                $number$, **it, target, stream);
-                      )cc");
-                }
-              }}},
-            R"cc(
-              for (auto it = this_.$field_$.pointer_begin(),
-                        end = this_.$field_$.pointer_end();
-                   it < end; ++it) {
-                $serialize_field$;
-              }
-            )cc");
+    p->Emit(
+        {{"serialize_field",
+          [&] {
+            if (field_->type() == FieldDescriptor::TYPE_MESSAGE) {
+              p->Emit(
+                  R"cc(
+                    target = $pbi$::WireFormatLite::InternalWrite$DeclaredType$(
+                        $number$, **it, (**it).GetCachedSize(), target, stream);
+                  )cc");
+            } else {
+              p->Emit(
+                  R"cc(
+                    target = stream->EnsureSpace(target);
+                    target = $pbi$::WireFormatLite::InternalWrite$DeclaredType$(
+                        $number$, **it, target, stream);
+                  )cc");
+            }
+          }}},
+        R"cc(
+          for (auto it = this_.$field_$.pointer_begin(),
+                    end = this_.$field_$.pointer_end();
+               it < end; ++it) {
+            $serialize_field$;
+          }
+        )cc");
   } else {
-    p->Emit({{"serialize_field",
-              [&] {
-                if (field_->type() == FieldDescriptor::TYPE_MESSAGE) {
-                  p->Emit(
-                      R"cc(
-                        const auto& repfield = this_._internal_$name$().Get(i);
-                        target =
-                            $pbi$::WireFormatLite::InternalWrite$declared_type$(
-                                $number$, repfield, repfield.GetCachedSize(),
-                                target, stream);
-                      )cc");
-                } else {
-                  p->Emit(
-                      R"cc(
-                        target = stream->EnsureSpace(target);
-                        target =
-                            $pbi$::WireFormatLite::InternalWrite$declared_type$(
-                                $number$, this_._internal_$name$().Get(i),
-                                target, stream);
-                      )cc");
-                }
-              }}},
-            R"cc(
-              for (unsigned i = 0, n = static_cast<unsigned>(
-                                       this_._internal_$name$_size());
-                   i < n; i++) {
-                $serialize_field$;
-              }
-            )cc");
+    p->Emit(
+        {{"serialize_field",
+          [&] {
+            if (field_->type() == FieldDescriptor::TYPE_MESSAGE) {
+              p->Emit(
+                  R"cc(
+                    const auto& repfield = this_._internal_$name$().Get(i);
+                    target = $pbi$::WireFormatLite::InternalWrite$DeclaredType$(
+                        $number$, repfield, repfield.GetCachedSize(), target,
+                        stream);
+                  )cc");
+            } else {
+              p->Emit(
+                  R"cc(
+                    target = stream->EnsureSpace(target);
+                    target = $pbi$::WireFormatLite::InternalWrite$DeclaredType$(
+                        $number$, this_._internal_$name$().Get(i), target,
+                        stream);
+                  )cc");
+            }
+          }}},
+        R"cc(
+          for (unsigned i = 0, n = static_cast<unsigned>(
+                                   this_._internal_$name$_size());
+               i < n; i++) {
+            $serialize_field$;
+          }
+        )cc");
   }
 }
 
 void RepeatedMessage::GenerateByteSize(io::Printer* p) const {
   p->Emit(
       R"cc(
-        total_size += $tag_size$UL * this_._internal_$name$_size();
+        total_size += $kTagBytes$UL * this_._internal_$name$_size();
         for (const auto& msg : this_._internal$_weak$_$name$()) {
-          total_size += $pbi$::WireFormatLite::$declared_type$Size(msg);
+          total_size += $pbi$::WireFormatLite::$DeclaredType$Size(msg);
         }
       )cc");
 }

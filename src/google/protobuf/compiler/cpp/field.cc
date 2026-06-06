@@ -25,6 +25,7 @@
 #include "absl/types/optional.h"
 #include "absl/types/span.h"
 #include "google/protobuf/compiler/cpp/field_generators/generators.h"
+#include "google/protobuf/compiler/cpp/field_layout.h"
 #include "google/protobuf/compiler/cpp/generator.h"
 #include "google/protobuf/compiler/cpp/helpers.h"
 #include "google/protobuf/compiler/cpp/options.h"
@@ -83,12 +84,8 @@ std::vector<Sub> FieldVars(const FieldDescriptor* field, const Options& opts) {
                     "::internal::TSanRead(&_impl_)")},
 
       // Old-style names.
-      {"field", FieldMemberName(field, split)},
-      {"declared_type", DeclaredTypeMethodName(field->type())},
       {"classname", ClassName(FieldScope(field), false)},
-      {"ns", Namespace(field, opts)},
-      {"tag_size", WireFormat::TagSize(field->number(), field->type())},
-      {"deprecated_attr", DeprecatedAttribute(opts, field)},
+      {"ns", Namespace(field)},
       Sub("WeakDescriptorSelfPin",
           UsingImplicitWeakDescriptor(field->file(), opts)
               ? absl::StrCat(
@@ -202,7 +199,7 @@ void FieldGeneratorBase::GenerateOneofCopyConstruct(io::Printer* p) const {
   ABSL_CHECK(!field_->is_extension()) << "Not supported";
   ABSL_CHECK(!field_->is_repeated()) << "Not supported";
   ABSL_CHECK(!field_->is_map()) << "Not supported";
-  p->Emit("$field$ = from.$field$;\n");
+  p->Emit("$field_$ = from.$field_$;\n");
 }
 
 void FieldGeneratorBase::GenerateAggregateInitializer(io::Printer* p) const {
@@ -212,7 +209,7 @@ void FieldGeneratorBase::GenerateAggregateInitializer(io::Printer* p) const {
     )cc");
   } else {
     p->Emit(R"cc(
-      decltype($field$){arena},
+      decltype($field_$){arena},
     )cc");
   }
 }
@@ -220,14 +217,14 @@ void FieldGeneratorBase::GenerateAggregateInitializer(io::Printer* p) const {
 void FieldGeneratorBase::GenerateConstexprAggregateInitializer(
     io::Printer* p) const {
   p->Emit(R"cc(
-    /*decltype($field$)*/ {},
+    /*decltype($field_$)*/ {},
   )cc");
 }
 
 void FieldGeneratorBase::GenerateCopyAggregateInitializer(
     io::Printer* p) const {
   p->Emit(R"cc(
-    decltype($field$){from.$field$},
+    decltype($field_$){from.$field_$},
   )cc");
 }
 
@@ -236,7 +233,7 @@ void FieldGeneratorBase::GenerateCopyConstructorCode(io::Printer* p) const {
     // There is no copy constructor for the `Split` struct, so we need to copy
     // the value here.
     Formatter format(p, variables_);
-    format("$field$ = from.$field$;\n");
+    format("$field_$ = from.$field_$;\n");
   }
 }
 
@@ -338,13 +335,9 @@ void HasBitVars(const FieldDescriptor* field, const Options& opts,
                                    : "_impl_._has_bits_";
 
   auto has_bits_array = absl::StrFormat("%s[%d]", has_bits, index);
-  auto for_repeated = field->is_repeated() ? "ForRepeated" : "";
-  auto has = absl::StrFormat("CheckHasBit%s(%s, %s)", for_repeated,
-                             has_bits_array, mask);
-  auto set = absl::StrFormat("SetHasBit%s(%s, %s);", for_repeated,
-                             has_bits_array, mask);
-  auto clr = absl::StrFormat("ClearHasBit%s(%s, %s);", for_repeated,
-                             has_bits_array, mask);
+  auto has = absl::StrFormat("CheckHasBit(%s, %s)", has_bits_array, mask);
+  auto set = absl::StrFormat("SetHasBit(%s, %s);", has_bits_array, mask);
+  auto clr = absl::StrFormat("ClearHasBit(%s, %s);", has_bits_array, mask);
 
   vars.emplace_back("has_bits_array", has_bits_array);
   vars.emplace_back("has_mask", mask);
@@ -367,17 +360,12 @@ FieldGenerator::FieldGenerator(const FieldDescriptor* field,
 }
 
 void FieldGeneratorTable::Build(const Options& options,
-                                absl::Span<const int32_t> has_bit_indices) {
+                                const FieldLayout& field_layout) {
   // Construct all the FieldGenerators.
   fields_.reserve(static_cast<size_t>(descriptor_->field_count()));
   for (const auto* field : internal::FieldRange(descriptor_)) {
-    size_t index = static_cast<size_t>(field->index());
-    absl::optional<uint32_t> has_bit_index;
-    if (!has_bit_indices.empty() && has_bit_indices[index] >= 0) {
-      has_bit_index = static_cast<uint32_t>(has_bit_indices[index]);
-    }
-
-    fields_.push_back(FieldGenerator(field, options, has_bit_index));
+    fields_.push_back(
+        FieldGenerator(field, options, field_layout.GetHasBitIndex(field)));
   }
 }
 

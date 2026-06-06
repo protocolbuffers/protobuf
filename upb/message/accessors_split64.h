@@ -8,7 +8,12 @@
 #ifndef UPB_MESSAGE_ACCESSORS_SPLIT64_H_
 #define UPB_MESSAGE_ACCESSORS_SPLIT64_H_
 
+#include <stdint.h>
+
+#include "upb/mem/arena.h"
 #include "upb/message/accessors.h"
+#include "upb/message/message.h"
+#include "upb/mini_table/field.h"
 
 // Must be last.
 #include "upb/port/def.inc"
@@ -31,10 +36,9 @@ UPB_API_INLINE uint32_t upb_Message_GetInt64Lo(const upb_Message* msg,
   return (uint32_t)upb_Message_GetInt64(msg, field, default_value);
 }
 
-UPB_API_INLINE bool upb_Message_SetInt64Split(upb_Message* msg,
-                                              const upb_MiniTableField* field,
-                                              uint32_t hi, uint32_t lo,
-                                              upb_Arena* arena) {
+UPB_NODISCARD UPB_API_INLINE bool upb_Message_SetInt64Split(
+    upb_Message* msg, const upb_MiniTableField* field, uint32_t hi, uint32_t lo,
+    upb_Arena* arena) {
   return upb_Message_SetInt64(msg, field, ((int64_t)hi << 32) | lo, arena);
 }
 
@@ -50,10 +54,9 @@ UPB_API_INLINE uint32_t upb_Message_GetUInt64Lo(const upb_Message* msg,
   return (uint32_t)upb_Message_GetUInt64(msg, field, default_value);
 }
 
-UPB_API_INLINE bool upb_Message_SetUInt64Split(upb_Message* msg,
-                                               const upb_MiniTableField* field,
-                                               uint32_t hi, uint32_t lo,
-                                               upb_Arena* arena) {
+UPB_NODISCARD UPB_API_INLINE bool upb_Message_SetUInt64Split(
+    upb_Message* msg, const upb_MiniTableField* field, uint32_t hi, uint32_t lo,
+    upb_Arena* arena) {
   return upb_Message_SetUInt64(msg, field, ((uint64_t)hi << 32) | lo, arena);
 }
 

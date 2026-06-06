@@ -22,8 +22,6 @@ import java.util.RandomAccess;
 @SuppressWarnings("rawtypes")
 final class SchemaUtil {
   private static final Class<?> GENERATED_MESSAGE_CLASS = getGeneratedMessageClass();
-  private static final UnknownFieldSchema<?, ?> UNKNOWN_FIELD_SET_FULL_SCHEMA =
-      getUnknownFieldSetSchema();
   private static final UnknownFieldSchema<?, ?> UNKNOWN_FIELD_SET_LITE_SCHEMA =
       new UnknownFieldSetLiteSchema();
 
@@ -800,24 +798,8 @@ final class SchemaUtil {
     return tableSpaceCost + 3 * tableTimeCost <= lookupSpaceCost + 3 * lookupTimeCost;
   }
 
-  public static UnknownFieldSchema<?, ?> unknownFieldSetFullSchema() {
-    return UNKNOWN_FIELD_SET_FULL_SCHEMA;
-  }
-
   public static UnknownFieldSchema<?, ?> unknownFieldSetLiteSchema() {
     return UNKNOWN_FIELD_SET_LITE_SCHEMA;
-  }
-
-  private static UnknownFieldSchema<?, ?> getUnknownFieldSetSchema() {
-    try {
-      Class<?> clz = getUnknownFieldSetSchemaClass();
-      if (clz == null) {
-        return null;
-      }
-      return (UnknownFieldSchema) clz.getConstructor().newInstance();
-    } catch (Throwable t) {
-      return null;
-    }
   }
 
   private static Class<?> getGeneratedMessageClass() {
@@ -828,17 +810,6 @@ final class SchemaUtil {
       // TODO decide if we're keeping support for Full in schema classes and handle
       // this better.
       return Class.forName("com.google.protobuf.GeneratedMessage");
-    } catch (Throwable e) {
-      return null;
-    }
-  }
-
-  private static Class<?> getUnknownFieldSetSchemaClass() {
-    if (Android.assumeLiteRuntime) {
-      return null;
-    }
-    try {
-      return Class.forName("com.google.protobuf.UnknownFieldSetSchema");
     } catch (Throwable e) {
       return null;
     }

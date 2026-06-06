@@ -21,9 +21,9 @@ use sys::mini_table::mini_table::RawMiniTable;
 pub enum EncodeStatus {
     Ok = 0,
     OutOfMemory = 1,
-    MaxDepthExceeded = 2,
-    MissingRequired = 3,
-    MaxSizeExceeded = 4,
+    MaxDepthExceeded = 3,
+    MissingRequired = 10,
+    MaxSizeExceeded = 11,
 }
 // LINT.ThenChange()
 
@@ -35,15 +35,16 @@ pub enum DecodeStatus {
     Ok = 0,
     OutOfMemory = 1,
     Malformed = 2,
-    BadUtf8 = 3,
-    MaxDepthExceeded = 4,
-    MissingRequired = 5,
+    MaxDepthExceeded = 3,
+    BadUtf8 = 10,
+    MissingRequired = 11,
 }
 // LINT.ThenChange()
 
 unsafe extern "C" {
     // SAFETY:
     // - `mini_table` is the one associated with `msg`
+    // - `msg` is legal to dereference and read from.
     // - `buf` and `buf_size` are legally writable.
     pub fn upb_Encode(
         msg: RawMessage,
@@ -56,6 +57,7 @@ unsafe extern "C" {
 
     // SAFETY:
     // - `mini_table` is the one associated with `msg`
+    // - `msg` is legal to dereference and read from.
     // - `buf` is legally readable for at least `buf_size` bytes.
     // - `extreg` is either null or points at a valid upb_ExtensionRegistry.
     pub fn upb_Decode(
@@ -67,6 +69,11 @@ unsafe extern "C" {
         options: i32,
         arena: RawArena,
     ) -> DecodeStatus;
+
+    // SAFETY:
+    // - `msg` is legal to dereference and read from.
+    // - `mini_table` is the one associated with `msg`.
+    pub fn upb_ByteSize(msg: RawMessage, mini_table: RawMiniTable) -> usize;
 }
 
 #[cfg(test)]
@@ -79,5 +86,6 @@ mod tests {
         use crate::assert_linked;
         assert_linked!(upb_Encode);
         assert_linked!(upb_Decode);
+        assert_linked!(upb_ByteSize);
     }
 }

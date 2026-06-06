@@ -68,11 +68,11 @@ class UnknownField;  // For the allowlist
 class UnknownFieldSet;
 class DynamicMessage;
 class Reflection;
-template <typename ElementType>
-class RepeatedFieldProxy;
 
 namespace internal {
 
+template <typename ElementType, bool kOrProxy>
+class MutableRepeatedFieldProxyImpl;
 class EpsCopyInputStream;
 class TcParser;
 class WireFormat;
@@ -191,7 +191,11 @@ class SooRep {
   Arena* arena() const {
     return ResolveTaggedArena<&SooRep::resolver_, kResolverTaggedBits>(this);
   }
-  int size() const { return size_; }
+  int size() const {
+    int res = size_;
+    PROTOBUF_ASSUME(res >= 0);
+    return res;
+  }
   void set_size(int size) {
     ABSL_DCHECK(!is_soo() || size <= kSooCapacityBytes);
     size_ = size;
@@ -249,6 +253,11 @@ class SooRep {
     std::true_type dummy_ = {};
   };
 };
+
+// Out-of-line abort for MergeFrom self-reference. Declared here (not in the
+// call site) so that the failure path does not pull ABSL_CHECK streaming
+// support into every inlined MergeFrom instantiation.
+[[noreturn]] PROTOBUF_EXPORT void LogSelfMergeAndAbort() noexcept;
 
 }  // namespace internal
 
@@ -523,7 +532,8 @@ class ABSL_ATTRIBUTE_WARN_UNUSED PROTOBUF_DECLSPEC_EMPTY_BASES
   friend class internal::TcParser;
   friend class internal::WireFormat;
 
-  friend class RepeatedFieldProxy<Element>;
+  template <typename ElementType, bool kOrProxy>
+  friend class internal::MutableRepeatedFieldProxyImpl;
 
   // For access to private arena constructor.
   friend class UnknownFieldSet;
@@ -559,7 +569,9 @@ class ABSL_ATTRIBUTE_WARN_UNUSED PROTOBUF_DECLSPEC_EMPTY_BASES
     soo_rep_.set_size(size);
   }
   int Capacity(bool is_soo) const {
-    return is_soo ? kSooCapacityElements : soo_rep_.capacity();
+    int res = is_soo ? kSooCapacityElements : soo_rep_.capacity();
+    PROTOBUF_ASSUME(res >= 0);
+    return res;
   }
 
   template <typename ArenaProvider>
@@ -1221,7 +1233,9 @@ inline void RepeatedField<Element>::Clear() {
 
 template <typename Element>
 inline void RepeatedField<Element>::MergeFrom(const RepeatedField& other) {
-  ABSL_DCHECK_NE(&other, this);
+  if (ABSL_PREDICT_FALSE(&other == this)) {
+    PROTOBUF_NO_MERGE internal::LogSelfMergeAndAbort();
+  }
   const bool other_is_soo = other.is_soo();
   if (auto other_size = other.size()) {
     const int old_size = size();
