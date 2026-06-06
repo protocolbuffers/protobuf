@@ -419,17 +419,14 @@
 #elif defined(__GNUC__) && !defined(__clang__)
 // GCC doesn't support constinit aggregate initialization of absl::Cord.
 #define PROTOBUF_CONSTINIT
-// libc++ std::string() performs a heap allocation even for empty strings and
-// is therefore not constinit-compatible. See https://github.com/protocolbuffers/protobuf/issues/22065
-#elif defined(__cpp_constinit) && !defined(_LIBCPP_VERSION)
+#elif defined(__cpp_constinit)
 #define PROTOBUF_CONSTINIT constinit
 #define PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
 // Some older Clang versions incorrectly raise an error about
 // constant-initializing weak default instance pointers. Versions 12.0 and
 // higher seem to work, except that XCode 12.5.1 shows the error even though it
 // uses Clang 12.0.5.
-#elif !defined(_LIBCPP_VERSION) && \
-    ABSL_HAVE_CPP_ATTRIBUTE(clang::require_constant_initialization) && \
+#elif ABSL_HAVE_CPP_ATTRIBUTE(clang::require_constant_initialization) && \
     ((defined(__APPLE__) && PROTOBUF_CLANG_MIN(13, 0)) ||                \
      (!defined(__APPLE__) && PROTOBUF_CLANG_MIN(12, 0)))
 #define PROTOBUF_CONSTINIT [[clang::require_constant_initialization]]
