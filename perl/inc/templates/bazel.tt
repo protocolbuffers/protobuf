@@ -1,0 +1,77 @@
+[% BLOCK bazel_c_bench %]
+cc_binary(
+    name = "[% bench.target_name %]",
+    srcs = ["[% bench.src %]"],
+    features = [
+        "-layering_check",
+        "-use_header_modules",
+    ],
+    copts = [
+        "-I.",
+        "-Iexternal/upb",
+        "-I[% bench.core_path %]",
+    ],
+    linkopts = [
+        [% FOREACH f IN bench.perl_linkopts %]"[% f %]",[% END %]
+    ],
+    deps = [":libprotobufperl", ":upb_perl_test_lib", "@google_benchmark//:benchmark"],
+    data = [":test_descriptor_bin"],
+)
+[% END %]
+
+[% BLOCK bazel_c_test %]
+[% IF is_google3 -%]
+[%- # Filter out default dependencies in Google3 to keep macro calls clean
+    extra_deps = [];
+    FOREACH d IN test.deps;
+        IF d != ":libprotobufperl" && d != ":upb_perl_test_lib" && d != "//third_party/pcre2:pcre2" && d != "//third_party/upb/upb/reflection";
+            extra_deps.push(d);
+        END;
+    END;
+-%]
+perl_proto_c_test(
+    name = "[% test.target_name %]",
+    srcs = [
+        [% FOREACH s IN test.srcs %]"[% s %]",[% END %]
+    ],
+[% IF extra_deps.size > 0 -%]
+    deps = [
+        [% FOREACH d IN extra_deps %]"[% d %]",[% END %]
+    ],
+[% END -%]
+)
+[% ELSE -%]
+cc_test(
+    name = "[% test.target_name %]",
+    srcs = [
+        [% FOREACH s IN test.srcs %]"[% s %]",[% END %]
+    ],
+    features = [
+        "-layering_check",
+        "-use_header_modules",
+    ],
+    copts = [
+        "-I.",
+        "-Iexternal/upb",
+        "[% test.ccflags %]",
+        "[% test.extra_ccflags %]",
+        "-I[% test.core_path %]",
+        [% FOREACH f IN test.perl_ccopts %]"[% f %]",[% END %]
+    ],
+    linkopts = [
+        "[% test.ldflags %]",
+        [% FOREACH f IN test.perl_linkopts %]"[% f %]",[% END %]
+    ],
+    deps = [
+        [% FOREACH d IN test.deps %]"[% d %]",[% END %]
+    ],
+    data = [":test_descriptor_bin"],
+)
+[% END -%]
+[% END %]
+
+[% BLOCK bazel_src_list %]
+[% FOREACH f IN files -%]
+    "[% f %]",
+[% END -%]
+[% END %]

@@ -1,0 +1,113 @@
+MODULE = Protobuf::Internal::Repeated  PACKAGE = Protobuf::Internal::Repeated
+
+SV*
+FETCH(self, index)
+    SV* self
+    int index
+    CODE:
+        RETVAL = PerlUpb_Repeated_GetItem(aTHX_ self, index);
+
+    OUTPUT:
+        RETVAL
+
+
+void
+STORE(self, index, value)
+    SV* self
+    int index
+    SV* value
+    CODE:
+        PerlUpb_Repeated_SetItem(aTHX_ self, index, value);
+
+I32
+FETCHSIZE(self)
+    SV* self
+    CODE:
+        RETVAL = (I32)PerlUpb_Repeated_Size(aTHX_ self);
+
+    OUTPUT:
+        RETVAL
+
+
+SV*
+_xs_get_item(self, index)
+    SV* self
+    int index
+    CODE:
+        RETVAL = PerlUpb_Repeated_GetItem(aTHX_ self, index);
+
+    OUTPUT:
+        RETVAL
+
+
+void
+_xs_set_item(self, index, value)
+    SV* self
+    int index
+    SV* value
+    CODE:
+        PerlUpb_Repeated_SetItem(aTHX_ self, index, value);
+
+void
+_xs_append(self, value)
+    SV* self
+    SV* value
+    CODE:
+        PerlUpb_Repeated_Append(aTHX_ self, value);
+
+void
+_xs_delete(self, index, count)
+    SV* self
+    int index
+    int count
+    CODE:
+        PerlUpb_Repeated_Delete(aTHX_ self, index, count);
+
+int
+_xs_size(self)
+    SV* self
+    CODE:
+        RETVAL = PerlUpb_Repeated_Size(aTHX_ self);
+
+    OUTPUT:
+        RETVAL
+
+
+void
+_xs_insert(self, index, value)
+    SV* self
+    int index
+    SV* value
+    CODE:
+        extern void PerlUpb_Repeated_Insert(pTHX_ SV* self, int index, SV* val_sv);
+        PerlUpb_Repeated_Insert(aTHX_ self, index, value);
+
+void
+_xs_resize(self, size)
+    SV* self
+    int size
+    CODE:
+        extern void PerlUpb_Repeated_Resize(pTHX_ SV* self, int size);
+        PerlUpb_Repeated_Resize(aTHX_ self, size);
+
+void
+_xs_clear(self)
+    SV* self
+    CODE:
+        PerlUpb_Repeated_Clear(aTHX_ self);
+
+bool
+_xs_audit_integrity(self)
+    SV* self
+    CODE:
+        RETVAL = PerlUpb_Repeated_AuditIntegrity(aTHX_ self);
+
+    OUTPUT:
+        RETVAL
+
+
+void
+DESTROY(self)
+    SV* self
+    CODE:
+        PerlUpb_Repeated_Free(aTHX_ self);

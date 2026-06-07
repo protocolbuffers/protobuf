@@ -1,0 +1,14 @@
+// LINT: LEGACY_NAMES
+syntax = "proto3";
+
+package Test.Hardening;
+
+message Simple {
+  string name = 1;
+}
+
+message Complex {
+  Simple simple = 1;
+  repeated Simple rep_simple = 2;
+  map<string, Simple> map_simple = 3;
+}

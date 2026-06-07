@@ -1,0 +1,83 @@
+syntax = "proto2";
+
+package protobuf_perl_test;
+
+import "google/protobuf/test_messages_proto2.proto";
+
+enum TestEnum {
+  TEST_ENUM_UNSPECIFIED = 0;
+  TEST_ENUM_FIRST = 1;
+  TEST_ENUM_SECOND = 2;
+}
+
+message NestedMessage {
+  optional string nested_string = 1;
+}
+
+message TestMessage {
+  optional int32 value = 1 [default = 123];
+  optional TestEnum enum_field = 2;
+  oneof test_oneof {
+    string oneof_string = 3;
+    int32 oneof_int32 = 4;
+    NestedMessage oneof_msg = 35;
+  }
+  optional NestedMessage nested_message = 5;
+  repeated int32 repeated_int = 6;
+  repeated string repeated_string = 7;
+  repeated TestEnum repeated_enum = 8;
+  repeated NestedMessage repeated_message = 9;
+
+  enum NestedEnum {
+    NESTED_ENUM_UNSPECIFIED = 0;
+    NESTED_ENUM_A = 1;
+  }
+  optional NestedEnum nested_enum_field = 10;
+
+  optional int64 test_int64 = 11;
+  optional uint32 test_uint32 = 12;
+  optional uint64 test_uint64 = 13;
+  optional float test_float = 14;
+  optional double test_double = 15;
+  optional bool test_bool = 16;
+  optional string test_string = 17;
+  optional bytes test_bytes = 18;
+
+  optional string name = 19;
+  optional bool optional_bool = 20;
+  optional float optional_float = 21;
+  optional double optional_double = 22;
+  optional uint32 optional_uint32 = 23;
+  optional int64 optional_int64 = 24;
+  optional uint64 optional_uint64 = 25;
+  optional bytes optional_bytes = 26;
+  optional TestEnum optional_enum = 27;
+
+  optional fixed32 optional_fixed32 = 28;
+  optional fixed64 optional_fixed64 = 29;
+  optional sfixed32 optional_sfixed32 = 30;
+  optional sfixed64 optional_sfixed64 = 31;
+  optional sint32 optional_sint32 = 32;
+  optional sint64 optional_sint64 = 33;
+
+  optional group OptionalGroup = 34 {
+    optional int32 group_int = 1;
+  }
+
+  extensions 100 to 199;
+
+  optional protobuf_test_messages.google.protobuf.TestAllTypesProto2 all_types = 1000;
+}
+
+message AnotherMessage {
+  optional string text = 1;
+}
+
+extend TestMessage {
+  optional string extension_string = 100;
+}
+
+service TestService {
+  // Test RPC method
+  rpc TestRpc(TestMessage) returns (AnotherMessage) {}
+}

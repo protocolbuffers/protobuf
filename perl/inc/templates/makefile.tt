@@ -1,0 +1,212 @@
+[% BLOCK all_common_lib_dep %]
+# Make sure the static lib is built before the default 'all' target
+all :: [% COMMON_LIB %]
+[% END %]
+
+[% BLOCK bazel_protoc_plugin %]
+BUILD.bazel: maint/gen_build_bazel.pl inc/templates/BUILD.bazel.tt inc/templates/bazel.tt
+	$(PERL) maint/gen_build_bazel.pl
+
+.PHONY: bazel_build_protoc_plugin
+bazel_build_protoc_plugin: BUILD.bazel
+	bazel --output_base=/usr/local/google/home/cjac/.gemini/tmp/protobuf/bazel_output_base build //perl:protoc-gen-perl-pb
+	@echo "Copying Bazel-built plugin to $(CURDIR)/protoc-gen-perl-pb"
+	@cp -f $(shell bazel --output_base=/usr/local/google/home/cjac/.gemini/tmp/protobuf/bazel_output_base info bazel-bin)/perl/protoc-gen-perl-pb $(CURDIR)/protoc-gen-perl-pb
+[% END %]
+
+[% BLOCK build_aggregator_targets %]
+[% IF c_test_targets.size > 0 %]
+build_c_tests: [% c_test_targets.join(" ") %]
+[% "
+" %]
+[% END %]
+[% IF c_bench_targets.size > 0 %]
+build_bench: [% c_bench_targets.join(" ") %]
+[% "
+" %]
+[% END %]
+[% END %]
+
+[% BLOCK c_benchmark_one_compile %]
+[% object %]: [% source %] t/c/upb-perl-test.h
+	$(MKPATH) $(@D)
+	$(CC) $(CCFLAGS) $(INC) -c [% source %] -o [% object %]
+[% END %]
+
+[% BLOCK c_benchmark_one_link %]
+[% target %]: [% object %] $(COMMON_LIB) t/c/upb-perl-test.o
+	$(CC) $(CCFLAGS) -o [% target %] [% object %] t/c/upb-perl-test.o -L$(CURDIR) -lprotobufperl [% embed_cflags %] [% embed_ldflags %] [% sanitizer_flags %]
+[% END %]
+
+[% BLOCK c_benchmark_rules %]
+# c benchmark rules
+[% FOREACH bench IN benchmarks %]
+[% PROCESS c_benchmark_one_compile source = bench.source object = bench.object %]
+[% PROCESS c_benchmark_one_link target = bench.target object = bench.object embed_cflags = embed_cflags embed_ldflags = embed_ldflags sanitizer_flags = sanitizer_flags %]
+[% END %]
+# end c benchmark rules
+[% END %]
+
+[% BLOCK common_lib_def %]
+COMMON_LIB = [% COMMON_LIB %]
+[% END %]
+
+[% BLOCK common_lib_link_rule %]
+# Rule to build the static library
+[% COMMON_LIB %]: [% COMMON_O_STRING %] [% IF is_linux %]libprotobufperl.map[% END %]
+	$(RM_F) [% COMMON_LIB %]
+	$(CC) -shared [% common_lib_link_flags %] -o [% COMMON_LIB %] [% COMMON_O_STRING %] $(LDFLAGS)
+[% END %]
+
+[% BLOCK common_obj_rule %]
+[% o %]: [% c %] [% deps %]
+	$(MKPATH) $(@D)
+	[% compiler %] $(CCFLAGS) $(DEFINE) $(INC) [% cflags %] [% base_flags %] -c [% c %] -o [% o %]
+[% END %]
+
+[% BLOCK c_test_one_compile %]
+[% o %]: [% s %][% space %][% deps %][% space %][% dev_deps %][% space %]t/c/upb-perl-test.h
+	$(MKPATH) $(@D)
+	[% compiler %] $(CCFLAGS) $(DEFINE) [% embed_cflags %] [% test_inc %] [% extra_ccflags %] -c [% s %] -o [% o %]
+[% END %]
+
+[% BLOCK c_test_one_link %]
+[% target %]: [% test_deps %]
+	[% link_line %]
+[% END %]
+
+[% BLOCK deps %]
+# Placeholder for deps, can be removed if not needed
+.PHONY: deps
+deps:
+	@echo "Deps target does nothing for now"
+[% END %]
+
+[% BLOCK devel_ppport_warning %]
+######################################################################
+# Devel::PPPort not found. It is recommended to install it to ensure #
+# maximum portability of this module.                                #
+# > cpan Devel::PPPort                                               #
+######################################################################
+[% END %]
+
+[% BLOCK my_test %]
+test :: all build_c_tests test_c t/data/test_descriptor.bin t/data/wkt_descriptor.bin t/data/compat_descriptor.bin t/data/types_descriptor.bin build_protoc_plugin
+	$(NOECHO) $(ECHO) "Running Perl tests"
+[% IF is_darwin %]
+	LD_LIBRARY_PATH="$(CURDIR):$$LD_LIBRARY_PATH" DYLD_LIBRARY_PATH="$(CURDIR):$$DYLD_LIBRARY_PATH" ASAN_OPTIONS=detect_leaks=0:abort_on_error=1 prove -b -It/lib -j[% jobs %] t/*.t t/integration/*.t
+[% ELSE %]
+	LD_LIBRARY_PATH="$(CURDIR):$$LD_LIBRARY_PATH" LD_PRELOAD=$$(find /usr/lib -name "libasan.so.8" | head -n 1) ASAN_OPTIONS=detect_leaks=0:abort_on_error=1 prove -b -It/lib -j[% jobs %] t/*.t t/integration/*.t
+[% END %]
+
+test_pureperl :: all t/data/test_descriptor.bin t/data/wkt_descriptor.bin t/data/compat_descriptor.bin t/data/types_descriptor.bin build_protoc_plugin
+	$(NOECHO) $(ECHO) "Running Perl tests in PurePerl mode"
+	PROTOBUF_NO_XS=1 prove -b -It/lib -j[% jobs %] t/*.t t/integration/*.t
+[% END %]
+
+[% BLOCK phony %]
+.PHONY: [% c_test_targets.join(" ") %] [% c_bench_targets.join(" ") %] test_c build_c_tests bench build_bench
+[% END %]
+
+[% BLOCK protoc_plugin_compile %]
+[% obj %]: [% src %]
+	$(CXX) $(CXXFLAGS) [% inc %] [% cflags %] -c [% src %] -o [% obj %]
+[% END %]
+
+[% BLOCK protoc_plugin_link %]
+[% exe %]: [% obj %] [% common_o %]
+	$(CXX) $(LDFLAGS) -o [% exe %] [% obj %] [% common_o %] -lstdc++ [% absl_libs %] [% sanitizer_flags %]
+
+.PHONY: build_protoc_plugin
+build_protoc_plugin: [% exe %]
+[% END %]
+
+[% BLOCK protoc_plugin %]
+PROTOC_PLUGIN_SRC = protoc/protoc-gen-perl-pb.cc
+PROTOC_PLUGIN_EXE = protoc/protoc-gen-perl-pb
+
+build_plugin: $(MYEXTLIB)
+	$(CXX) $(CCFLAGS) $(INC) -o $(PROTOC_PLUGIN_EXE) $(PROTOC_PLUGIN_SRC) $(LDFLAGS) -L. -lprotobufperl -lprotobuf -lupb
+
+.PHONY: build_plugin
+[% END %]
+
+[% BLOCK protoc_plugin_rules %]
+# Rule for protoc-gen-perl-pb executable
+PROTOC_PLUGIN_SRC = protoc/protoc-gen-perl-pb.c
+PROTOC_PLUGIN_OBJ = protoc/protoc-gen-perl-pb.o
+PROTOC_PLUGIN_EXE = bin/protoc-gen-perl-pb
+
+PROTOC_INC = -I. -I[% project_root %] -I[% upb_dir %] -I[% src_dir %] -I[% third_party_dir %]/utf8_range -I$(CURDIR)/blib/arch/auto/Protobuf/upb_proto_hdrs -I/usr/include -I/usr/local/include -I[% Config.archlibexp %]/CORE
+
+$(PROTOC_PLUGIN_OBJ): $(PROTOC_PLUGIN_SRC)
+	$(CXX) $(CXXFLAGS) $(PROTOC_INC) -c $(PROTOC_PLUGIN_SRC) -o $(PROTOC_PLUGIN_OBJ)
+
+$(PROTOC_PLUGIN_EXE): $(PROTOC_PLUGIN_OBJ) [% COMMON_LIB %]
+	$(CXX) $(LDFLAGS) -o $(PROTOC_PLUGIN_EXE) $(PROTOC_PLUGIN_OBJ) [% COMMON_O_STRING %] -Wl,-rpath,$(CURDIR) -L$(CURDIR) -lprotobufperl -lprotobuf [% sanitizer_flags %]
+
+.PHONY: build_protoc_plugin
+build_protoc_plugin: $(PROTOC_PLUGIN_EXE)
+[% END %]
+
+[% BLOCK run_targets %]
+[% IF c_test_targets.size > 0 %]
+test_c: build_c_tests $(COMMON_LIB) t/data/test_descriptor.bin t/data/wkt_descriptor.bin t/data/compat_descriptor.bin t/data/types_descriptor.bin
+[% FOREACH target IN c_test_targets.sort %]
+	@echo "Running test: [% target %]"
+	LD_LIBRARY_PATH="$(CURDIR):[% archlibexp %]:$$LD_LIBRARY_PATH" DYLD_LIBRARY_PATH="$(CURDIR):[% archlibexp %]:$$DYLD_LIBRARY_PATH" ASAN_OPTIONS=detect_leaks=0:abort_on_error=1:detect_odr_violation=0 [% target %]
+[% END %]
+[% END %]
+
+[% IF c_bench_targets.size > 0 %]
+bench: build_bench $(COMMON_LIB)
+[% FOREACH target IN c_bench_targets.sort %]
+	@echo "Running benchmark: [% target %]"
+	LD_LIBRARY_PATH="$(CURDIR):[% archlibexp %]:$$LD_LIBRARY_PATH" DYLD_LIBRARY_PATH="$(CURDIR):[% archlibexp %]:$$DYLD_LIBRARY_PATH" [% target %]
+[% END %]
+[% END %]
+[% END %]
+
+[% BLOCK test_descriptor_bin %]
+t/data/test_descriptor.bin: t/c/test.proto
+	@echo "Generating t/data/test_descriptor.bin from t/c/test.proto"
+	$(MKPATH) t/data
+	[% PROTOC %] --descriptor_set_out=t/data/test_descriptor.bin --include_imports --proto_path=t/c --proto_path=[% project_root %] t/c/test.proto
+
+t/data/compat_descriptor.bin: $(wildcard t/protos/*.proto)
+	@echo "Generating t/data/compat_descriptor.bin"
+	$(MKPATH) t/data
+	[% PROTOC %] --descriptor_set_out=t/data/compat_descriptor.bin --include_imports --proto_path=t/protos --proto_path=[% project_root %] t/protos/*.proto
+
+t/data/wkt_descriptor.bin:
+	@echo "Generating t/data/wkt_descriptor.bin"
+	$(MKPATH) t/data
+	[% PROTOC %] --descriptor_set_out=t/data/wkt_descriptor.bin --include_imports --proto_path=[% project_root %]/src \
+		google/protobuf/any.proto \
+		google/protobuf/duration.proto \
+		google/protobuf/timestamp.proto \
+		google/protobuf/field_mask.proto \
+		google/protobuf/struct.proto \
+		google/protobuf/wrappers.proto
+
+t/data/types_descriptor.bin: t/protos/types.proto
+	@echo "Generating t/data/types_descriptor.bin from t/protos/types.proto"
+	$(MKPATH) t/data
+	[% PROTOC %] --descriptor_set_out=t/data/types_descriptor.bin --include_imports --proto_path=t/protos --proto_path=[% project_root %] t/protos/types.proto
+[% END %]
+
+[% BLOCK tsan_test %]
+test_tsan :
+	make clean
+	USE_TSAN=1 perl Makefile.PL
+	USE_TSAN=1 make
+	USE_TSAN=1 make build_c_tests
+	$(NOECHO) $(ECHO) "Running ThreadSanitizer tests"
+	LD_LIBRARY_PATH="$(CURDIR):$$LD_LIBRARY_PATH" TSAN_OPTIONS="second_deadlock_stack=1" prove -b t/*.t t/integration/*.t
+[% END %]
+
+[% BLOCK upb_perl_test_o %]
+t/c/upb-perl-test.o: t/c/upb-perl-test.c t/c/upb-perl-test.h [% deps %]
+	$(MKPATH) t/c
+	$(CC) $(CCFLAGS) $(INC) -I. -c t/c/upb-perl-test.c -o t/c/upb-perl-test.o
+[% END %]

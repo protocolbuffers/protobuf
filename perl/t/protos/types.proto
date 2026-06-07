@@ -1,0 +1,69 @@
+// LINT: LEGACY_NAMES
+syntax = "proto2";
+
+package Protobuf;
+
+option optimize_for = SPEED;
+
+message Types {
+  message Message {
+    required string t_string = 1;
+  }
+  enum Enum {
+    value1 = 1;
+    value2 = 2;
+  }
+  optional double opt_double = 1;
+  optional float opt_float = 2;
+  optional int32 opt_int32 = 3;
+  optional int64 opt_int64 = 4;
+  optional uint32 opt_uint32 = 5;
+  optional uint64 opt_uint64 = 6;
+  optional sint32 opt_sint32 = 7;
+  optional sint64 opt_sint64 = 8;
+  optional fixed32 opt_fixed32 = 9;
+  optional fixed64 opt_fixed64 = 10;
+  optional sfixed32 opt_sfixed32 = 11;
+  optional sfixed64 opt_sfixed64 = 12;
+  optional bool opt_bool = 13;
+  optional string opt_string = 14;
+  optional bytes opt_bytes = 15;
+  optional Enum opt_enum = 16;
+  optional Message opt_message = 17;
+
+  optional double req_double = 18;
+  optional float req_float = 19;
+  optional int32 req_int32 = 20;
+  optional int64 req_int64 = 21;
+  optional uint32 req_uint32 = 22;
+  optional uint64 req_uint64 = 23;
+  optional sint32 req_sint32 = 24;
+  optional sint64 req_sint64 = 25;
+  optional fixed32 req_fixed32 = 26;
+  optional fixed64 req_fixed64 = 27;
+  optional sfixed32 req_sfixed32 = 28;
+  optional sfixed64 req_sfixed64 = 29;
+  optional bool req_bool = 30;
+  optional string req_string = 31;
+  optional bytes req_bytes = 32;
+  optional Enum req_enum = 33;
+  optional Message req_message = 34;
+
+  repeated double rep_double = 35;
+  repeated float rep_float = 36;
+  repeated int32 rep_int32 = 37;
+  repeated int64 rep_int64 = 38;
+  repeated uint32 rep_uint32 = 39;
+  repeated uint64 rep_uint64 = 40;
+  repeated sint32 rep_sint32 = 41;
+  repeated sint64 rep_sint64 = 42;
+  repeated fixed32 rep_fixed32 = 43;
+  repeated fixed64 rep_fixed64 = 44;
+  repeated sfixed32 rep_sfixed32 = 45;
+  repeated sfixed64 rep_sfixed64 = 46;
+  repeated bool rep_bool = 47;
+  repeated string rep_string = 48;
+  repeated bytes rep_bytes = 49;
+  repeated Enum rep_enum = 50;
+  repeated Message rep_message = 51;
+}

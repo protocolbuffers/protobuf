@@ -1,0 +1,229 @@
+MODULE = Protobuf::Arena  PACKAGE = Protobuf::Arena
+
+IV
+_xs_create_raw()
+    CODE:
+        RETVAL = PTR2IV(PerlUpb_Arena_CreateRaw(aTHX));
+
+    OUTPUT:
+        RETVAL
+
+
+SV*
+_xs_create_tmpfs_raw(path, size)
+    const char* path
+    size_t size
+    CODE:
+        RETVAL = PerlUpb_Arena_NewTmpfs(aTHX_ path, size);
+
+    OUTPUT:
+        RETVAL
+
+
+SV*
+_xs_attach_tmpfs_raw(path, size)
+    const char* path
+    size_t size
+    CODE:
+        RETVAL = PerlUpb_Arena_AttachTmpfs(aTHX_ path, size);
+
+    OUTPUT:
+        RETVAL
+
+
+void
+_xs_destroy_raw(ptr_iv)
+    IV ptr_iv
+    CODE:
+        PerlUpb_Arena_DestroyRaw(aTHX_ INT2PTR(void*, ptr_iv));
+
+void
+_xs_destroy(self)
+    SV* self
+    CODE:
+        PerlUpb_Arena_Destroy(aTHX_ self);
+
+IV
+_xs_detach(self)
+    SV* self
+    CODE:
+        RETVAL = PTR2IV(PerlUpb_Arena_Detach(aTHX_ self));
+    OUTPUT:
+        RETVAL
+
+SV*
+_xs_attach(class_name, ptr_iv)
+    const char* class_name
+    IV ptr_iv
+    CODE:
+        RETVAL = PerlUpb_Arena_Attach(aTHX_ INT2PTR(void*, ptr_iv));
+    OUTPUT:
+        RETVAL
+
+UV
+_xs_space_allocated(self)
+    SV* self
+    CODE:
+        RETVAL = (UV)PerlUpb_Arena_SpaceAllocated(aTHX_ self);
+
+    OUTPUT:
+        RETVAL
+
+
+UV
+_xs_space_reserved(self)
+    SV* self
+    CODE:
+        RETVAL = (UV)PerlUpb_Arena_SpaceReserved(aTHX_ self);
+
+    OUTPUT:
+        RETVAL
+
+
+SV*
+_xs_stats(self)
+    SV* self
+    PREINIT:
+        PerlUpb_ArenaStats stats;
+    CODE:
+        PerlUpb_Arena_GetStats(aTHX_ self, &stats);
+        HV* hv = newHV();
+        hv_store(hv, "allocated", 9, newSVuv(stats.allocated), 0);
+        hv_store(hv, "reserved", 8, newSVuv(stats.reserved), 0);
+        hv_store(hv, "blocks", 6, newSVuv(stats.blocks), 0);
+        RETVAL = newRV_noinc((SV*)hv);
+
+    OUTPUT:
+        RETVAL
+
+
+void
+_xs_test_canary_corruption(self)
+    SV* self
+    CODE:
+        upb_Arena* arena = PerlUpb_Arena_Get(aTHX_ self);
+        size_t size = 64;
+        char* p = upb_Arena_Malloc(arena, size);
+        // Corruption: Overwrite the end canary.
+        // The end canary starts exactly at p + size.
+        uint64_t* end_canary = (uint64_t*)(p + size);
+        end_canary[0] = 0xBAD0BAD0BAD0BAD0ULL;
+        // Note: Corruption is detected during free/realloc.
+
+void
+_xs_test_block_canary(self)
+    SV* self
+    CODE:
+        SV* rv = SvRV(self);
+        SV** svp = hv_fetch((HV*)rv, "_arena_ptr", 10, 0);
+        if (!svp || !SvIOK(*svp)) croak("Invalid arena object");
+        void* raw_ptr = INT2PTR(void*, SvIV(*svp));
+        PerlUpb_Arena_Custom* wrapper = (PerlUpb_Arena_Custom*)raw_ptr;
+        size_t size = 64;
+        void* p = wrapper->alloc->base.func(&wrapper->alloc->base, NULL, 0, size, NULL);
+        if (p) {
+            uint64_t* end_canary = (uint64_t*)((char*)p + size);
+            end_canary[0] = 0xBAD0BAD0BAD0BAD0ULL;
+            // Trigger check
+            wrapper->alloc->base.func(&wrapper->alloc->base, p, size, 0, NULL);
+        }
+
+void
+_xs_set_numa_node(self, node)
+    SV* self
+    int node
+    CODE:
+        if (!sv_derived_from(self, "Protobuf::Arena")) croak("Not a Protobuf::Arena");
+        SV* rv = SvRV(self);
+        if (SvTYPE(rv) != SVt_PVHV) croak("Arena must be a hash ref");
+        SV** svp = hv_fetch((HV*)rv, "_arena_ptr", 10, 0);
+        if (!svp || !SvIOK(*svp)) croak("Invalid arena object");
+        // Only managed arenas (PerlUpb_Arena) support NUMA node setting for now.
+        // Tmpfs arenas are mmapped on a file and policy is different.
+        SV** is_tmpfs = hv_fetch((HV*)rv, "_is_tmpfs", 9, 0);
+        if (is_tmpfs && SvTRUE(*is_tmpfs)) {
+             croak("set_numa_node not supported for tmpfs arenas");
+        }
+        PerlUpb_Arena* a = INT2PTR(PerlUpb_Arena*, SvIV(*svp));
+        a->stats_alloc.numa_node = node;
+
+void
+_xs_set_chaos_fail_probability(self, p)
+    SV* self
+    double p
+    CODE:
+        if (!sv_derived_from(self, "Protobuf::Arena")) croak("Not a Protobuf::Arena");
+        SV* rv = SvRV(self);
+        SV** svp = hv_fetch((HV*)rv, "_arena_ptr", 10, 0);
+        if (svp && SvIOK(*svp)) {
+            PerlUpb_Arena* a = INT2PTR(PerlUpb_Arena*, SvIV(*svp));
+            a->stats_alloc.fail_probability = p;
+        }
+
+void
+_xs_set_chaos_delay_probability(self, p)
+    SV* self
+    double p
+    CODE:
+        if (!sv_derived_from(self, "Protobuf::Arena")) croak("Not a Protobuf::Arena");
+        SV* rv = SvRV(self);
+        SV** svp = hv_fetch((HV*)rv, "_arena_ptr", 10, 0);
+        if (svp && SvIOK(*svp)) {
+            PerlUpb_Arena* a = INT2PTR(PerlUpb_Arena*, SvIV(*svp));
+            a->stats_alloc.delay_probability = p;
+        }
+
+bool
+_xs_is_tmpfs(self)
+    SV* self
+    CODE:
+        RETVAL = PerlUpb_Arena_IsTmpfs(aTHX_ self);
+
+    OUTPUT:
+        RETVAL
+
+
+SV*
+_xs_get_path(self)
+    SV* self
+    CODE:
+        const char* path = PerlUpb_Arena_GetPath(aTHX_ self);
+        RETVAL = path ? newSVpv(path, 0) : &PL_sv_undef;
+
+    OUTPUT:
+        RETVAL
+
+
+bool
+_xs_verify_selinux(self)
+    SV* self
+    CODE:
+        RETVAL = PerlUpb_Arena_VerifySELinux(aTHX_ self);
+
+    OUTPUT:
+        RETVAL
+
+
+size_t
+_xs_get_offset(self, ptr_iv)
+    SV* self
+    IV ptr_iv
+    CODE:
+        RETVAL = PerlUpb_Arena_GetOffset(aTHX_ self, INT2PTR(void*, ptr_iv));
+
+    OUTPUT:
+        RETVAL
+
+
+SV*
+_xs_attach_message(self, name, offset)
+    SV* self
+    const char* name
+    size_t offset
+    CODE:
+        RETVAL = PerlUpb_Arena_AttachMessage(aTHX_ self, name, offset);
+
+    OUTPUT:
+        RETVAL
+
+

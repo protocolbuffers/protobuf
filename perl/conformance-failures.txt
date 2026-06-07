@@ -1,0 +1,6 @@
+Required.Proto2.JsonInput.Int32FieldQuotedExponentialValue.JsonOutput
+Required.Proto2.JsonInput.Int32FieldQuotedExponentialValue.ProtobufOutput
+Required.Proto3.JsonInput.AnyWithNoType.JsonOutput
+Required.Proto3.JsonInput.AnyWithNoType.ProtobufOutput
+Required.Proto3.JsonInput.Int32FieldQuotedExponentialValue.JsonOutput
+Required.Proto3.JsonInput.Int32FieldQuotedExponentialValue.ProtobufOutput

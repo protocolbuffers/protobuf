@@ -1,0 +1,62 @@
+MODULE = Protobuf::Descriptor::Enum  PACKAGE = Protobuf::Descriptor::Enum
+
+const char*
+_xs_full_name(self)
+    SV* self
+    CODE:
+        XS_STR_ACCESSOR_BODY(upb_EnumDef, PerlUpb_EnumDef_GetEnum, upb_EnumDef_FullName)
+    OUTPUT:
+        RETVAL
+
+const char*
+_xs_name(self)
+    SV* self
+    CODE:
+        XS_STR_ACCESSOR_BODY(upb_EnumDef, PerlUpb_EnumDef_GetEnum, upb_EnumDef_Name)
+    OUTPUT:
+        RETVAL
+
+
+int
+_xs_value_count(self)
+    SV* self
+    CODE:
+        XS_INT_ACCESSOR_BODY(upb_EnumDef, PerlUpb_EnumDef_GetEnum, upb_EnumDef_ValueCount, 0)
+    OUTPUT:
+        RETVAL
+
+
+SV*
+_xs_value_name(self, index)
+    SV* self
+    int index
+    CODE:
+        const upb_EnumDef* e = PerlUpb_EnumDef_GetEnum(aTHX_ self);
+        if (e && index >= 0 && index < upb_EnumDef_ValueCount(e)) {
+            const upb_EnumValueDef* ev = upb_EnumDef_Value(e, index);
+            RETVAL = newSVpv(upb_EnumValueDef_Name(ev), 0);
+
+        } else {
+            RETVAL = &PL_sv_undef;
+
+        }
+    OUTPUT:
+        RETVAL
+
+
+SV*
+_xs_get_value(self, index)
+    SV* self
+    int index
+    CODE:
+        const upb_EnumDef* e = PerlUpb_EnumDef_GetEnum(aTHX_ self);
+        if (e && index >= 0 && index < upb_EnumDef_ValueCount(e)) {
+            const upb_EnumValueDef* ev = upb_EnumDef_Value(e, index);
+            RETVAL = PerlUpb_EnumValueDef_GetWrapper(aTHX_ ev);
+
+        } else {
+            RETVAL = &PL_sv_undef;
+
+        }
+    OUTPUT:
+        RETVAL

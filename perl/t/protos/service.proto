@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+package google.cloud.test.v1;
+
+message HelloRequest {
+  string name = 1;
+}
+
+message HelloResponse {
+  string message = 1;
+}
+
+service TestService {
+  // Sends a hello greeting.
+  rpc SayHello(HelloRequest) returns (HelloResponse);
+}

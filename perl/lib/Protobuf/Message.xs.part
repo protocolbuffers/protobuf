@@ -1,0 +1,526 @@
+MODULE = Protobuf::Message  PACKAGE = Protobuf::Message
+
+SV*
+_xs_new_from_def(mdef_sv, flags)
+    SV* mdef_sv
+    U16 flags
+    CODE:
+        const upb_MessageDef* mdef = PerlUpb_MessageDef_GetMessage(aTHX_ mdef_sv);
+        if (!mdef) {
+            croak("Invalid MessageDef provided to new()");
+        }
+        RETVAL = PerlUpb_Message_NewMessage(aTHX_ mdef_sv, flags);
+
+    OUTPUT:
+        RETVAL
+
+
+SV*
+_xs_new_from_def_in_arena(mdef_sv, arena_sv, flags)
+    SV* mdef_sv
+    SV* arena_sv
+    U16 flags
+    CODE:
+        const upb_MessageDef* mdef = PerlUpb_MessageDef_GetMessage(aTHX_ mdef_sv);
+        if (!mdef) croak("Invalid MessageDef provided");
+        upb_Arena* arena = PerlUpb_Arena_Get(aTHX_ arena_sv);
+        const upb_MiniTable* mt = upb_MessageDef_MiniTable(mdef);
+        upb_Message* msg = upb_Message_New(mt, arena);
+        if (!msg) croak("Failed to allocate upb_Message in provided arena");
+        RETVAL = PerlUpb_WrapMessage(aTHX_ msg, mdef, arena_sv, flags);
+
+    OUTPUT:
+        RETVAL
+
+
+void
+_xs_free(self)
+    SV* self
+    CODE:
+        PerlUpb_Message_Free(aTHX_ self);
+
+SV*
+_xs_get(self, field_name)
+    SV* self
+    const char* field_name
+    CODE:
+        const upb_MessageDef* mdef = PerlUpb_Message_GetDef(aTHX_ self);
+        GET_FIELD_DEF_OR_CROAK(mdef, field_name, fdef);
+        RETVAL = PerlUpb_Message_GetField(aTHX_ self, fdef);
+
+    OUTPUT:
+        RETVAL
+
+
+void
+_xs_set(self, field_name, value)
+    SV* self
+    const char* field_name
+    SV* value
+    CODE:
+        const upb_MessageDef* mdef = PerlUpb_Message_GetDef(aTHX_ self);
+        GET_FIELD_DEF_OR_CROAK(mdef, field_name, fdef);
+        PerlUpb_Message_SetField(aTHX_ self, fdef, value);
+
+bool
+_xs_has(self, field_name)
+    SV* self
+    const char* field_name
+    CODE:
+        const upb_MessageDef* mdef = PerlUpb_Message_GetDef(aTHX_ self);
+        GET_FIELD_DEF_OR_CROAK(mdef, field_name, fdef);
+        RETVAL = PerlUpb_Message_HasField(aTHX_ self, fdef);
+
+    OUTPUT:
+        RETVAL
+
+
+void
+_xs_clear(self, field_name)
+    SV* self
+    const char* field_name
+    CODE:
+        const upb_MessageDef* mdef = PerlUpb_Message_GetDef(aTHX_ self);
+        GET_FIELD_DEF_OR_CROAK(mdef, field_name, fdef);
+        PerlUpb_Message_ClearField(aTHX_ self, fdef);
+
+const char*
+_xs_which_oneof(self, oneof_name)
+    SV* self
+    const char* oneof_name
+    CODE:
+        const upb_MessageDef* mdef = PerlUpb_Message_GetDef(aTHX_ self);
+        const upb_OneofDef* odef = upb_MessageDef_FindOneofByName(mdef, oneof_name);
+        if (!odef) {
+            croak("Oneof '%s' not found in message '%s'", oneof_name, upb_MessageDef_FullName(mdef));
+        }
+        RETVAL = PerlUpb_Message_WhichOneof(aTHX_ self, odef);
+
+    OUTPUT:
+        RETVAL
+
+
+SV*
+_xs_get_by_fdef(self, fdef_sv)
+    SV* self
+    SV* fdef_sv
+    CODE:
+        const upb_FieldDef* fdef = PerlUpb_FieldDef_GetField(aTHX_ fdef_sv);
+        if (!fdef) croak("Invalid FieldDef provided to _xs_get_by_fdef");
+        RETVAL = PerlUpb_Message_GetField(aTHX_ self, fdef);
+
+    OUTPUT:
+        RETVAL
+
+
+void
+_xs_set_by_fdef(self, fdef_sv, value)
+    SV* self
+    SV* fdef_sv
+    SV* value
+    CODE:
+        const upb_FieldDef* fdef = PerlUpb_FieldDef_GetField(aTHX_ fdef_sv);
+        if (!fdef) croak("Invalid FieldDef provided to _xs_set_by_fdef");
+        PerlUpb_Message_SetField(aTHX_ self, fdef, value);
+
+bool
+_xs_has_by_fdef(self, fdef_sv)
+    SV* self
+    SV* fdef_sv
+    CODE:
+        const upb_FieldDef* fdef = PerlUpb_FieldDef_GetField(aTHX_ fdef_sv);
+        if (!fdef) croak("Invalid FieldDef provided to _xs_has_by_fdef");
+        RETVAL = PerlUpb_Message_HasField(aTHX_ self, fdef);
+
+    OUTPUT:
+        RETVAL
+
+
+void
+_xs_clear_by_fdef(self, fdef_sv)
+    SV* self
+    SV* fdef_sv
+    CODE:
+        const upb_FieldDef* fdef = PerlUpb_FieldDef_GetField(aTHX_ fdef_sv);
+        if (!fdef) croak("Invalid FieldDef provided to _xs_clear_by_fdef");
+        PerlUpb_Message_ClearField(aTHX_ self, fdef);
+
+SV*
+_xs_serialize(self)
+    SV* self
+    CODE:
+        RETVAL = PerlUpb_Message_Serialize(aTHX_ self);
+
+    OUTPUT:
+        RETVAL
+
+
+SV*
+_xs_to_perl(self)
+    SV* self
+    CODE:
+        RETVAL = PerlUpb_Message_ToPerl(aTHX_ self);
+
+    OUTPUT:
+        RETVAL
+
+
+SV*
+_xs_to_text(self)
+    SV* self
+    CODE:
+        RETVAL = PerlUpb_Message_ToText(aTHX_ self);
+
+    OUTPUT:
+        RETVAL
+
+
+SV*
+_xs_to_json(self)
+    SV* self
+    CODE:
+        RETVAL = PerlUpb_Message_ToJson(aTHX_ self);
+
+    OUTPUT:
+        RETVAL
+
+
+void
+_xs_json_to_handle(self, fh_sv)
+    SV* self
+    SV* fh_sv
+    CODE:
+        PerlUpb_Message_JsonToHandle(aTHX_ self, fh_sv);
+
+void
+_xs_to_handle(self, fh_sv, length_prefixed = false)
+    SV* self
+    SV* fh_sv
+    bool length_prefixed
+    CODE:
+        PerlUpb_Message_ToHandle(aTHX_ self, fh_sv, length_prefixed);
+
+SV*
+_xs_from_handle(class_name, fh_sv, length_prefixed = false)
+    SV* class_name
+    SV* fh_sv
+    bool length_prefixed
+    CODE:
+        // Use the descriptor() method on the class to get the mdef
+        dSP;
+        ENTER;
+        SAVETMPS;
+        PUSHMARK(SP);
+        XPUSHs(class_name);
+        PUTBACK;
+        int count = call_method("descriptor", G_SCALAR);
+        SPAGAIN;
+        if (count != 1) {
+            PUTBACK; FREETMPS; LEAVE;
+            croak("Failed to get descriptor for class %s", SvPV_nolen(class_name));
+        }
+        SV* descriptor_sv = POPs;
+        // Keep a copy because we're about to free temps
+        SV* mdef_sv = newSVsv(descriptor_sv);
+        PUTBACK;
+        FREETMPS;
+        LEAVE;
+        RETVAL = PerlUpb_Message_FromHandle(aTHX_ mdef_sv, fh_sv, length_prefixed);
+
+        SvREFCNT_dec(mdef_sv);
+    OUTPUT:
+        RETVAL
+
+
+SV*
+_xs_from_json(class_name, json_data, options_sv = &PL_sv_undef)
+    SV* class_name
+    SV* json_data
+    SV* options_sv
+    CODE:
+        // Use the descriptor() method on the class to get the mdef
+        dSP;
+        ENTER;
+        SAVETMPS;
+        PUSHMARK(SP);
+        XPUSHs(class_name);
+        PUTBACK;
+        int count = call_method("descriptor", G_SCALAR);
+        SPAGAIN;
+        if (count != 1) {
+            PUTBACK; FREETMPS; LEAVE;
+            croak("Failed to get descriptor for class %s", SvPV_nolen(class_name));
+        }
+        SV* descriptor_sv = POPs;
+        // Keep a copy because we're about to free temps
+        SV* mdef_sv = sv_2mortal(newSVsv(descriptor_sv));
+        PUTBACK;
+        
+        RETVAL = PerlUpb_Message_FromJson(aTHX_ mdef_sv, json_data, options_sv);
+
+        FREETMPS;
+        LEAVE;
+    OUTPUT:
+        RETVAL
+
+
+SV*
+_xs_unknown_fields(self)
+    SV* self
+    CODE:
+        RETVAL = PerlUpb_UnknownFieldSet_New(aTHX_ self);
+
+    OUTPUT:
+        RETVAL
+
+
+SV*
+_xs_parse(class_name, data, options_sv = &PL_sv_undef)
+    const char* class_name
+    SV* data
+    SV* options_sv
+    CODE:
+        uint16_t flags = 0;
+        if (SvROK(options_sv) && SvTYPE(SvRV(options_sv)) == SVt_PVHV) {
+            HV* options = (HV*)SvRV(options_sv);
+            SV** profile_svp = hv_fetch(options, "profile", 7, 0);
+            if (profile_svp && SvOK(*profile_svp)) {
+                const char* profile_str = SvPV_nolen(*profile_svp);
+                if (strEQ(profile_str, "write_heavy")) {
+                    flags = PERL_UPB_MG_PROFILE_WRITE_HEAVY;
+                } else if (strEQ(profile_str, "read_heavy")) {
+                    flags = PERL_UPB_MG_PROFILE_READ_HEAVY;
+                } else if (strEQ(profile_str, "zero_copy")) {
+                    flags = PERL_UPB_MG_PROFILE_ZERO_COPY;
+                }
+            }
+        }
+
+        // Use the descriptor() method on the class to get the mdef
+        dSP; ENTER; SAVETMPS;
+        PUSHMARK(SP);
+        XPUSHs(sv_2mortal(newSVpv(class_name, 0)));
+        PUTBACK;
+        int count = call_method("descriptor", G_SCALAR);
+        SPAGAIN;
+        if (count != 1) {
+            PUTBACK; FREETMPS; LEAVE;
+            croak("Failed to get descriptor for class %s", class_name);
+        }
+        SV* descriptor_sv = POPs;
+        const upb_MessageDef* mdef = PerlUpb_MessageDef_GetMessage(aTHX_ descriptor_sv);
+        PUTBACK; FREETMPS; LEAVE;
+
+        if (!mdef) {
+            croak("Could not find descriptor for message class %s", class_name);
+        }
+
+        STRLEN len;
+        const char* buf = SvPV(data, len);
+        
+        SV* arena_sv = PerlUpb_Arena_New(aTHX);
+        upb_Arena* arena = PerlUpb_Arena_Get(aTHX_ arena_sv);
+        
+        const upb_MiniTable* mt = upb_MessageDef_MiniTable(mdef);
+        upb_Message* msg = upb_Message_New(mt, arena);
+        
+        if (!msg) {
+            SvREFCNT_dec(arena_sv);
+            croak("Failed to allocate upb_Message");
+        }
+        
+        int decode_options = 0;
+        if (flags & PERL_UPB_MG_PROFILE_ZERO_COPY) {
+            decode_options |= kUpb_DecodeOption_AliasString;
+        }
+
+        upb_DecodeStatus status = upb_Decode(buf, len, msg, mt, NULL, decode_options, arena);
+        if (status != kUpb_DecodeStatus_Ok) {
+            SvREFCNT_dec(arena_sv);
+            PerlUpb_DecodeStatus_Die(aTHX_ status, "parse message");
+        }
+        
+        RETVAL = PerlUpb_WrapMessage(aTHX_ msg, mdef, arena_sv, flags);
+
+        // If zero-copy was used, we MUST keep the input data SV alive
+        if (flags & PERL_UPB_MG_PROFILE_ZERO_COPY) {
+            HV* hv = (HV*)SvRV(RETVAL);
+            hv_store(hv, "_input_data_sv", 11, newSVsv(data), 0);
+        }
+
+        SvREFCNT_dec(arena_sv);
+    OUTPUT:
+        RETVAL
+
+
+void
+_xs_parse_from(self, data)
+    SV* self
+    SV* data
+    CODE:
+        PerlUpb_Message_ParseFrom(aTHX_ self, data);
+
+void
+_xs_merge_from(self, other)
+    SV* self
+    SV* other
+    CODE:
+        PerlUpb_Message_MergeFrom(aTHX_ self, other);
+
+void
+_xs_copy_from(self, other)
+    SV* self
+    SV* other
+    CODE:
+        PerlUpb_Message_CopyFrom(aTHX_ self, other);
+
+SV*
+_xs_fields(self)
+    SV* self
+    CODE:
+        RETVAL = PerlUpb_Message_Fields(aTHX_ self);
+
+    OUTPUT:
+        RETVAL
+
+
+bool
+_xs_audit_integrity(self)
+    SV* self
+    CODE:
+        RETVAL = PerlUpb_Message_AuditIntegrity(aTHX_ self);
+
+    OUTPUT:
+        RETVAL
+
+
+bool
+_xs_validate(self)
+    SV* self
+    CODE:
+        // By default, generic validation just checks if it's a valid object.
+        // For generated classes, the ClassGenerator will provide 
+        // specialized AOT validators that bypass this generic path.
+        const upb_Message* msg = PerlUpb_Message_GetMsg(aTHX_ self);
+        RETVAL = (msg != NULL);
+
+    OUTPUT:
+        RETVAL
+
+
+SV*
+_xs_migrate_to_arena(self, arena_sv)
+    SV* self
+    SV* arena_sv
+    CODE:
+        const upb_Message* src_msg = PerlUpb_Message_GetMsg(aTHX_ self);
+        const upb_MessageDef* mdef = PerlUpb_Message_GetDef(aTHX_ self);
+        upb_Arena* arena = PerlUpb_Arena_Get(aTHX_ arena_sv);
+        const upb_MiniTable* mt = upb_MessageDef_MiniTable(mdef);
+        upb_Message* dst_msg = upb_Message_New(mt, arena);
+        /*
+        if (!upb_Message_DeepCopy(dst_msg, src_msg, mt, arena)) {
+            croak("Failed to migrate message to shared arena");
+        }
+        */
+        croak("Message migration requires upb_Message_DeepCopy (not available in current upb)");
+        RETVAL = PerlUpb_WrapMessage(aTHX_ dst_msg, mdef, arena_sv, 0);
+
+    OUTPUT:
+        RETVAL
+
+
+SV*
+_xs_coerce_to(self, target_class_name)
+    SV* self
+    const char* target_class_name
+    CODE:
+        const upb_Message* msg = PerlUpb_Message_GetMsg(aTHX_ self);
+        const upb_MessageDef* mdef = PerlUpb_Message_GetDef(aTHX_ self);
+        SV* arena_sv = PerlUpb_Message_GetArena(aTHX_ self);
+        // Identity check: target class must agree with current underlying descriptor
+        // (This is a shallow coercion, we just bless into a new class with the same memory)
+        RETVAL = PerlUpb_WrapMessage(aTHX_ (upb_Message*)msg, mdef, arena_sv, 0);
+
+        sv_bless(RETVAL, gv_stashpv(target_class_name, GV_ADD));
+
+    OUTPUT:
+        RETVAL
+
+
+SV*
+_xs_get_fingerprint(self)
+    SV* self
+    CODE:
+        RETVAL = PerlUpb_Message_GetFingerprint(aTHX_ self);
+    OUTPUT:
+        RETVAL
+
+
+void
+_xs_clear_memoization_cache(self)
+    SV* self
+    CODE:
+        HV* hv = (HV*)SvRV(self);
+        hv_delete(hv, "_cache", 6, G_DISCARD);
+
+SV*
+_xs_get_arena(self)
+    SV* self
+    CODE:
+        RETVAL = PerlUpb_Message_GetArena(aTHX_ self);
+        if (RETVAL) SvREFCNT_inc(RETVAL);
+        else RETVAL = &PL_sv_undef;
+    OUTPUT:
+        RETVAL
+
+SV*
+_xs_detach(self)
+    SV* self
+    CODE:
+    {
+        const upb_Message* msg = PerlUpb_Message_GetMsg(aTHX_ self);
+        const upb_MessageDef* mdef = PerlUpb_Message_GetDef(aTHX_ self);
+        if (!msg || !mdef) croak("Cannot detach invalid message");
+
+        HV* hv = (HV*)SvRV(self);
+        
+        // Remove from cache and clear magic to prevent double-free/interference
+        PerlUpb_ObjCache_Delete(aTHX_ msg);
+        MAGIC* mg = PerlUpb_GetMagic(aTHX_ self);
+        if (mg) mg->mg_ptr = NULL;
+        
+        // Return info needed to re-attach
+        HV* res = newHV();
+        hv_store(res, "upb_ptr", 7, newSViv(PTR2IV(msg)), 0);
+        hv_store(res, "mdef_ptr", 8, newSViv(PTR2IV(mdef)), 0);
+        RETVAL = newRV_noinc((SV*)res);
+    }
+    OUTPUT:
+        RETVAL
+
+SV*
+_xs_attach(class_name, info_rv, arena_sv)
+    const char* class_name
+    SV* info_rv
+    SV* arena_sv
+    CODE:
+    {
+        if (!SvROK(info_rv) || SvTYPE(SvRV(info_rv)) != SVt_PVHV)
+            croak("attach() info must be a hash ref");
+        HV* info = (HV*)SvRV(info_rv);
+        
+        SV** p_upb = hv_fetch(info, "upb_ptr", 7, 0);
+        SV** p_mdef = hv_fetch(info, "mdef_ptr", 8, 0);
+        if (!p_upb || !p_mdef) croak("Invalid attach() info");
+        
+        const upb_Message* msg = INT2PTR(const upb_Message*, SvIV(*p_upb));
+        const upb_MessageDef* mdef = INT2PTR(const upb_MessageDef*, SvIV(*p_mdef));
+        
+        RETVAL = PerlUpb_WrapMessage(aTHX_ msg, mdef, arena_sv, 0);
+    }
+    OUTPUT:
+        RETVAL
+
+
+

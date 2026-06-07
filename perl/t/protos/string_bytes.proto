@@ -1,0 +1,11 @@
+// LINT: LEGACY_NAMES
+syntax = "proto2";
+
+package String;
+
+option optimize_for = SPEED;
+
+message Bytes {
+  optional string v_string = 1;
+  optional bytes v_bytes = 2;
+}

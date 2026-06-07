@@ -1,0 +1,169 @@
+# C types to Perl types
+uint32_t                  T_UV
+uint64_t                  T_UV
+upb_DefPool *             T_PTR
+const void *              T_PTR
+const upb_MessageDef *    T_PTR
+const upb_FileDef *       T_PTR
+const upb_EnumDef *       T_PTR
+const upb_EnumValueDef *  T_PTR
+const upb_FieldDef *      T_PTR
+const upb_OneofDef *      T_PTR
+const upb_ServiceDef *    T_PTR
+const upb_MethodDef *     T_PTR
+upb_MessageDef *          T_PTROBJ
+
+TYPEMAP
+const upb_MessageDef *  T_UPB_MSGDEF
+upb_MessageDef *        T_UPB_MSGDEF
+const upb_FileDef *       T_UPB_FILEDEF
+upb_FileDef *           T_UPB_FILEDEF
+const upb_EnumDef *       T_UPB_ENUMDEF
+upb_EnumDef *           T_UPB_ENUMDEF
+const upb_EnumValueDef * T_UPB_ENUMVALDEF
+upb_EnumValueDef *      T_UPB_ENUMVALDEF
+const upb_FieldDef *      T_UPB_FIELDDEF
+upb_FieldDef *          T_UPB_FIELDDEF
+const upb_OneofDef *      T_UPB_ONEOFDEF
+upb_OneofDef *          T_UPB_ONEOFDEF
+const upb_ServiceDef *    T_UPB_SERVICEDEF
+upb_ServiceDef *        T_UPB_SERVICEDEF
+const upb_MethodDef *     T_UPB_METHODDEF
+upb_MethodDef *         T_UPB_METHODDEF
+upb_Arena *             T_PTROBJ_UPB_ARENA
+upb_Message *           T_UPB_MESSAGE
+upb_Array *             T_UPB_ARRAY
+upb_MutableArray *      T_UPB_MUTABLEARRAY
+INPUT
+T_PTROBJ_UPB_ARENA
+    if (sv_isobject($arg) && sv_derived_from($arg, "Protobuf::Arena")) {
+        $var = PerlUpb_Arena_Get(aTHX_ $arg);
+        if (!$var) {
+            croak("Invalid or uninitialized Protobuf::Arena object");
+        }
+    } else {
+        croak("Argument is not a Protobuf::Arena object");
+    }
+
+
+T_UPB_MSGDEF
+  if (!sv_isobject($arg) || !sv_derived_from($arg, "Protobuf::Descriptor::MessageDef")) {
+    croak("Argument '%s' is not a Protobuf::Descriptor::MessageDef", "$var");
+  }
+  SV *obj = SvRV($arg);
+  SV **svp = hv_fetchs((HV*)obj, "_upb_def", HEf_SVKEY);
+  if (!svp) croak("Could not find _upb_def attribute in $var");
+  if (!SvROK(*svp) || !sv_derived_from(*svp, "protobuf_upb_MessageDef")) croak("_upb_def attribute is not the correct type in $var");
+  $var = (const upb_MessageDef *) SvIV((SV*)SvRV(*svp));
+
+T_UPB_FILEDEF
+  if (!sv_isobject($arg) || !sv_derived_from($arg, "Protobuf::Descriptor::File")) {
+    croak("Argument '%s' is not a Protobuf::Descriptor::File", "$var");
+  }
+  SV *obj = SvRV($arg);
+  SV **svp = hv_fetchs((HV*)obj, "_upb_def", HEf_SVKEY);
+  if (!svp) croak("Could not find _upb_def attribute in $var");
+  if (!SvROK(*svp) || !sv_derived_from(*svp, "protobuf_upb_FileDef")) croak("_upb_def attribute is not the correct type in $var");
+  $var = (const upb_FileDef *) SvIV((SV*)SvRV(*svp));
+
+T_UPB_ENUMDEF
+  if (!sv_isobject($arg) || !sv_derived_from($arg, "Protobuf::Descriptor::Enum")) {
+    croak("Argument '%s' is not a Protobuf::Descriptor::Enum", "$var");
+  }
+  SV *obj = SvRV($arg);
+  SV **svp = hv_fetchs((HV*)obj, "_upb_def", HEf_SVKEY);
+  if (!svp) croak("Could not find _upb_def attribute in $var");
+  if (!SvROK(*svp) || !sv_derived_from(*svp, "protobuf_upb_EnumDef")) croak("_upb_def attribute is not the correct type in $var");
+  $var = (const upb_EnumDef *) SvIV((SV*)SvRV(*svp));
+
+T_UPB_ENUMVALDEF
+  if (!sv_isobject($arg) || !sv_derived_from($arg, "Protobuf::Descriptor::EnumValue")) {
+    croak("Argument '%s' is not a Protobuf::Descriptor::EnumValue", "$var");
+  }
+  SV *obj = SvRV($arg);
+  SV **svp = hv_fetchs((HV*)obj, "_upb_def", HEf_SVKEY);
+  if (!svp) croak("Could not find _upb_def attribute in $var");
+  if (!SvROK(*svp) || !sv_derived_from(*svp, "protobuf_upb_EnumValueDef")) croak("_upb_def attribute is not the correct type in $var");
+  $var = (const upb_EnumValueDef *) SvIV((SV*)SvRV(*svp));
+
+T_UPB_FIELDDEF
+  if (!sv_isobject($arg) || !sv_derived_from($arg, "Protobuf::Descriptor::Field")) {
+    croak("Argument '%s' is not a Protobuf::Descriptor::Field", "$var");
+  }
+  SV *obj = SvRV($arg);
+  SV **svp = hv_fetchs((HV*)obj, "_upb_def", HEf_SVKEY);
+  if (!svp) croak("Could not find _upb_def attribute in $var");
+  if (!SvROK(*svp) || !sv_derived_from(*svp, "protobuf_upb_FieldDef")) croak("_upb_def attribute is not the correct type in $var");
+  $var = (const upb_FieldDef *) SvIV((SV*)SvRV(*svp));
+
+T_UPB_ONEOFDEF
+  if (!sv_isobject($arg) || !sv_derived_from($arg, "Protobuf::Descriptor::Oneof")) {
+    croak("Argument '%s' is not a Protobuf::Descriptor::Oneof", "$var");
+  }
+  SV *obj = SvRV($arg);
+  SV **svp = hv_fetchs((HV*)obj, "_upb_def", HEf_SVKEY);
+  if (!svp) croak("Could not find _upb_def attribute in $var");
+  if (!SvROK(*svp) || !sv_derived_from(*svp, "protobuf_upb_OneofDef")) croak("_upb_def attribute is not the correct type in $var");
+  $var = (const upb_OneofDef *) SvIV((SV*)SvRV(*svp));
+
+T_UPB_SERVICEDEF
+  if (!sv_isobject($arg) || !sv_derived_from($arg, "Protobuf::Descriptor::Service")) {
+    croak("Argument '%s' is not a Protobuf::Descriptor::Service", "$var");
+  }
+  SV *obj = SvRV($arg);
+  SV **svp = hv_fetchs((HV*)obj, "_upb_def", HEf_SVKEY);
+  if (!svp) croak("Could not find _upb_def attribute in $var");
+  if (!SvROK(*svp) || !sv_derived_from(*svp, "protobuf_upb_ServiceDef")) croak("_upb_def attribute is not the correct type in $var");
+  $var = (const upb_ServiceDef *) SvIV((SV*)SvRV(*svp));
+
+T_UPB_METHODDEF
+  if (!sv_isobject($arg) || !sv_derived_from($arg, "Protobuf::Descriptor::Method")) {
+    croak("Argument '%s' is not a Protobuf::Descriptor::Method", "$var");
+  }
+  SV *obj = SvRV($arg);
+  SV **svp = hv_fetchs((HV*)obj, "_upb_def", HEf_SVKEY);
+  if (!svp) croak("Could not find _upb_def attribute in $var");
+  if (!SvROK(*svp) || !sv_derived_from(*svp, "protobuf_upb_MethodDef")) croak("_upb_def attribute is not the correct type in $var");
+  $var = (const upb_MethodDef *) SvIV((SV*)SvRV(*svp));
+
+INPUT
+T_UPB_MESSAGE
+  if (!sv_isobject($arg) || !sv_derived_from($arg, "Protobuf::Message")) {
+    croak("Argument '%s' is not a Protobuf::Message", "$var");
+  }
+  SV *obj = SvRV($arg);
+  SV **svp = hv_fetchs((HV*)obj, "_upb_message", HEf_SVKEY);
+  if (!svp) croak("Could not find _upb_message attribute in $var");
+  if (!SvROK(*svp) || !sv_derived_from(*svp, "protobuf_upb_Message")) croak("UPB Message pointer not the right type in $var");
+  $var = (upb_Message *) SvIV((SV*)SvRV(*svp));
+
+OUTPUT
+T_UPB_MESSAGE
+  SV *sv = newSV(0);
+  sv_setref_pv(sv, "protobuf_upb_Message", (void*)$var);
+  $arg = sv;
+
+INPUT
+T_UPB_ARRAY
+  if (!sv_isobject($arg) || !sv_derived_from($arg, "protobuf_upb_Array")) {
+    croak("Argument '%s' is not a protobuf_upb_Array", "$var");
+  }
+  $var = (upb_Array *) SvIV((SV*)SvRV($arg));
+
+T_UPB_MUTABLEARRAY
+  if (!sv_isobject($arg) || !sv_derived_from($arg, "protobuf_upb_MutableArray")) {
+    croak("Argument '%s' is not a protobuf_upb_MutableArray", "$var");
+  }
+  $var = (upb_MutableArray *) SvIV((SV*)SvRV($arg));
+
+OUTPUT
+T_UPB_ARRAY
+  SV *sv = newSV(0);
+  sv_setref_pv(sv, "protobuf_upb_Array", (void*)$var);
+  $arg = sv;
+
+T_UPB_MUTABLEARRAY
+  SV *sv = newSV(0);
+  sv_setref_pv(sv, "protobuf_upb_MutableArray", (void*)$var);
+  $arg = sv;
+

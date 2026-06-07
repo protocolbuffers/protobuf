@@ -1,0 +1,119 @@
+MODULE = Protobuf::DescriptorPool  PACKAGE = Protobuf::DescriptorPool
+
+IV
+_xs_create_raw()
+    CODE:
+        RETVAL = PTR2IV(PerlUpb_DescriptorPool_CreateRaw(aTHX));
+
+    OUTPUT:
+        RETVAL
+
+
+void
+_xs_destroy_raw(ptr_iv)
+    IV ptr_iv
+    CODE:
+        PerlUpb_DescriptorPool_DestroyRaw(aTHX_ INT2PTR(void*, ptr_iv));
+
+SV*
+_xs_generated_pool()
+    CODE:
+        RETVAL = PerlUpb_DescriptorPool_GeneratedPool(aTHX);
+
+    OUTPUT:
+        RETVAL
+
+
+SV*
+_xs_add_serialized_file(self, serialized)
+    SV* self
+    SV* serialized
+    CODE:
+        RETVAL = PerlUpb_DescriptorPool_AddSerializedFile(aTHX_ self, serialized);
+
+    OUTPUT:
+        RETVAL
+
+
+SV*
+_xs_add_serialized_file_descriptor_set(self, serialized)
+    SV* self
+    SV* serialized
+    CODE:
+        RETVAL = PerlUpb_DescriptorPool_AddSerializedFileDescriptorSet(aTHX_ self, serialized);
+
+    OUTPUT:
+        RETVAL
+
+
+SV*
+_xs_find_file_by_name(self, name)
+    SV* self
+    const char* name
+    CODE:
+        RETVAL = PerlUpb_DescriptorPool_FindFileByName(aTHX_ self, name);
+
+    OUTPUT:
+        RETVAL
+
+
+SV*
+_xs_find_message_by_name(self, name)
+    SV* self
+    const char* name
+    CODE:
+        RETVAL = PerlUpb_DescriptorPool_FindMessageByName(aTHX_ self, name);
+
+    OUTPUT:
+        RETVAL
+
+
+SV*
+_xs_find_enum_by_name(self, name)
+    SV* self
+    const char* name
+    CODE:
+        RETVAL = PerlUpb_DescriptorPool_FindEnumByName(aTHX_ self, name);
+
+    OUTPUT:
+        RETVAL
+
+
+SV*
+_xs_find_service_by_name(self, name)
+    SV* self
+    const char* name
+    CODE:
+        RETVAL = PerlUpb_DescriptorPool_FindServiceByName(aTHX_ self, name);
+
+    OUTPUT:
+        RETVAL
+
+
+SV*
+_xs_find_extension_by_name(self, name)
+    SV* self
+    const char* name
+    CODE:
+        RETVAL = PerlUpb_DescriptorPool_FindExtensionByName(aTHX_ self, name);
+
+    OUTPUT:
+        RETVAL
+
+
+void
+_xs_freeze(self)
+    SV* self
+    CODE:
+        PerlUpb_DescriptorPool_Freeze(aTHX_ self);
+
+bool
+_xs_is_frozen(self)
+    SV* self
+    CODE:
+        RETVAL = PerlUpb_DescriptorPool_IsFrozen(aTHX_ self);
+
+    OUTPUT:
+        RETVAL
+
+

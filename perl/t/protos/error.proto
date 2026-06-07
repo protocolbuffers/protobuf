@@ -1,0 +1,12 @@
+// LINT: LEGACY_NAMES
+syntax = "proto2";
+
+package protobuf_perl_error;
+
+option optimize_for = SPEED;
+
+message Error {
+  required int32 field1 = 1;
+  required string field2 = 2;
+  optional string field3 = 3;
+}

@@ -1,0 +1,7 @@
+TYPEMAP
+const char *    T_PV
+
+OUTPUT
+T_PV
+    sv_setpv(ST(0), $var);
+

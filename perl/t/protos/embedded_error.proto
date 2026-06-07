@@ -1,0 +1,26 @@
+// LINT: LEGACY_NAMES
+syntax = "proto2";
+
+package Apache2.Protobuf;
+
+option optimize_for = SPEED;
+
+message Error {
+  enum Severity {
+    DEBUG = 1;
+    INFO = 2;
+    WARN = 3;
+    ERROR = 4;
+    FATAL = 5;
+  }
+  message StackFrame {
+    required string file = 1;
+    required uint32 line = 2;
+  }
+  required uint32 datetime = 1;
+  required Severity severity = 2;
+  required string message = 3;
+  repeated StackFrame trace = 4;
+  optional string hostname = 5;
+  optional uint32 pid = 6;
+}

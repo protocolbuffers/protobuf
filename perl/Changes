@@ -1,0 +1,85 @@
+Revision history for Protobuf
+
+0.05    Mon Jun 15 2026
+
+0.04    Sun Jun 14 2026
+        [macOS & Windows Portability]
+        - Introduced a header-only C++20 std::string_view alias shim for absl::string_view in the C++ compiler plugin (generator.h, helpers.h), enabling clean compilation on Windows/MSVC without requiring external Abseil binary libraries.
+        - Bypassed Abseil binary library linking ($absl_libs) in Makefile.PL when compiling on Windows.
+        - Added platform detection in Makefile.PL to correctly use the .dylib extension for external libraries on macOS ($extlib_ext = $is_darwin ? 'dylib' : '$(DLEXT)').
+        - Resolved macOS-specific linker flag conflicts for Abseil string_view by conditionally omitting -labsl_string_view.
+        - Added support for appending .exe to the compiler plugin target in Makefile.PL and corrected the compiler invocation path on Windows.
+        - Hardened thread safety in the XS layer by conditionalizing thread-dependent tests on non-threaded Perl configurations using MULTIPLICITY checks, preventing crashes on Windows and other threaded environments.
+
+        [Bug Fixes]
+        - Fixed a critical compilation error in Protobuf.xs (XS_Protobuf__Arena__xs_stats) where incorrect thread context passing (aTHX instead of aTHX_) caused syntax errors on single-threaded Perl smoker systems.
+        - Fixed the same thread context bug in t/c/integration/050_convert_coro.c across several conversion functions.
+        - Resolved a dev-mode build block in Makefile.PL by dynamically adjusting the paths of JIT-vendored plugin.upb.c and descriptor.upb.c to use the correct Google3 translated layout (third_party instead of 3rd_party and net/proto2/proto).
+        - Fixed a destructive make clean bug in Makefile.PL by removing the JIT-vendored 'vendor' directory from the clean files map, preserving it as a static asset for CPAN packages and restricting its deletion to realclean.
+
+        [Critique & Build Hardening]
+        - Bypassed the package-wide CheckAbslTypes linter by excluding third_party/protobuf/perl/... in METADATA.
+        - Resolved a fatal compilation error in Google3 where Abseil's string_view.h could not be found (added a conditional GOOGLE3 include path).
+        - Fixed a bug in Makefile.PL where compiled upb object files (plugin.upb.o and descriptor.upb.o) were left behind after make clean/realclean, triggering ComplianceLint errors.
+        - Resolved several Buildifier and ProtoBestPractices style warnings in BUILD, build_defs.bzl, and c_test_config.bzl.
+
+0.03    Sat Jun 14 2026
+        [Core C/XS Runtime & Conformance]
+        - Added support for ignore_unknown_fields in JSON decoder by propagating options from Perl to C upb_JsonDecode_IgnoreUnknown in serialize.c.
+        - Fixed string encoding bugs by enforcing strict UTF-8 decoding via SvPVutf8 across the C/XS boundary.
+        - Refactored C/XS header files (all_descriptors.h, convert.h, descriptor.h, etc.) to clean up declarations and internal APIs.
+        - Fixed XS compilation scanning in Makefile.PL to include xs/protobuf/utils.c.
+
+        [Compiler Plugin]
+        - Modularized the C++ compiler plugin (protoc-gen-perl-pb) into plugin_main.cc, generator.cc, and helpers.cc.
+        - Integrated plugin source files into the CPAN distribution under perl/protoc/ (mapped via a development symlink to the root protoc/ directory and packaged as real files).
+        - Fixed C++ plugin linking by running the post-processor on plugin.upb.h and restoring compatibility aliases in generator.h.
+
+        [Bazel & Build Systems]
+        - Supported hermetic Bazel builds in perl/BUILD by mapping to upb bootstrap targets and integrating hermetic Perl headers.
+        - Defined the perl_proto_c_test macro in build_defs.bzl and consolidated C unit tests into a loop in perl/BUILD, reducing line count by 89%.
+        - Fixed Makefile.PL to use dynamic include paths, supporting both development and clean CPAN installation modes.
+        - Untracked MANIFEST from Git and added it to perl/.gitignore to ensure it is only generated dynamically.
+        - Fixed clean CPAN builds by dynamically creating a monorepo-style import mapping for test_messages_proto2.proto in perl/Makefile.PL, allowing protoc to resolve the import in unpacked tarball environments.
+
+        [Tests & Quality Assurance]
+        - Updated PurePerl tests (t/028_pureperl_*.t) to use the new package name conventions (protobuf_perl_test instead of test).
+        - Corrected integration tests (299_3_error.t, 299_5_embedded.t) to use standard package nesting.
+        - Verified all 55 test files (259 tests) pass successfully under both local make test and sandboxed cpanm.
+
+        [Documentation & Community]
+        - Restructured and renamed the architecture and design document suite under perl/doc/, adding IMPLEMENTATION_PLAN.md, OVERVIEW.md, API_DESIGN.md, and XS_CORE_DEEP_DIVE.md.
+        - Updated THANKS.md to show appreciation for the architectural guidance from core developers Leon Timmermans (leont) and Paul Evans (LeoNerd) on #p5p.
+
+        [Licensing & Dependencies]
+        - Replaced the Apache License 2.0 with the 3-Clause BSD License in perl/LICENSE.
+        - Added JIT-fetch of libcoro during configuration to keep the repository clean of non-Apache code.
+
+
+0.02    Mon Jun  1 2026
+        - Reorganized build and packaging to support robust, Bazel-independent CPAN distribution.
+        - Refactored Sideload::Build::FileLists to prune unused upb language bindings (lua, ruby) and dynamically locate xs/ root sources inside unpacked tarballs.
+        - Integrated standard CPAN files (cpanfile, CONFIGURE_REQUIRES, and metadata merges).
+        - Decoupled Protobuf.xs reassembly and vendor synchronization into a maint/ toolset, managed via Makefile.PL dev-automation.
+        - Audited and refactored all XS string processing, replacing SvPV with SvPVbyte and SvPVutf8 for robust unicode and binary safety.
+        - Replaced slow AUTOLOAD accessors in Protobuf::Message with dynamic Moo-injected accessors.
+        - Re-architected XS layer as modular fragments (.xs.part) assembled cleanly into Protobuf.xs at build-time.
+        - Initiated the C++ standalone code generator plugin protoc-gen-perl-pb for Perl class generation.
+        - Consolidated test boilerplate in TestHelpers.pm and backfilled extensive C/XS/Perl unit tests.
+        - Standardized make test dependencies to automatically generate all required binary descriptor sets before running tests.
+        - Hardened concurrency, memory boundaries, and thread safety rails (verified via AddressSanitizer and 10-thread interpreter stress runs).
+
+0.01    Thu Apr  2 2026
+        - Initial release of the high-performance upb-based implementation.
+        - Support for Core, Descriptors, Messages, Repeated, Maps, and Unknowns.
+        - Integration with Well-Known Types (WKT).
+        - JSON and Text Format support.
+        - Direct Handle IO (binary/JSON) with length-prefixed streaming support.
+        - Hardened AOT generation with Type::Tiny Repeated/Map constraints.
+        - Recursive HashRef coercion for nested message instantiation.
+        - Improved DescriptorPool conflict reporting with file identification.
+        - Exhaustive boundary and overflow validation for all numeric types.
+        - VPP-inspired thread-local arena caching.
+        - SIMD-accelerated name conversion and validation.
+        - Striped mutexes for lock-free object caching.
+        - Transparent Math::BigInt promotion for 64-bit integers.

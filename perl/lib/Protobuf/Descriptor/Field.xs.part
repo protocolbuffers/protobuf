@@ -1,0 +1,122 @@
+MODULE = Protobuf::Descriptor::Field  PACKAGE = Protobuf::Descriptor::Field
+
+const char*
+_xs_name(self)
+    SV* self
+    CODE:
+        XS_STR_ACCESSOR_BODY(upb_FieldDef, PerlUpb_FieldDef_GetField, upb_FieldDef_Name)
+    OUTPUT:
+        RETVAL
+
+const char*
+_xs_full_name(self)
+    SV* self
+    CODE:
+        XS_STR_ACCESSOR_BODY(upb_FieldDef, PerlUpb_FieldDef_GetField, upb_FieldDef_FullName)
+    OUTPUT:
+        RETVAL
+
+uint32_t
+_xs_number(self)
+    SV* self
+    CODE:
+        XS_INT_ACCESSOR_BODY(upb_FieldDef, PerlUpb_FieldDef_GetField, upb_FieldDef_Number, 0)
+    OUTPUT:
+        RETVAL
+
+int
+_xs_type(self)
+    SV* self
+    CODE:
+        XS_INT_ACCESSOR_BODY(upb_FieldDef, PerlUpb_FieldDef_GetField, upb_FieldDef_Type, 0)
+    OUTPUT:
+        RETVAL
+
+const char*
+_xs_type_name(self)
+    SV* self
+    CODE:
+        const upb_FieldDef* f = PerlUpb_FieldDef_GetField(aTHX_ self);
+        RETVAL = PerlUpb_FieldDef_TypeName(aTHX_ f);
+    OUTPUT:
+        RETVAL
+
+int
+_xs_label(self)
+    SV* self
+    CODE:
+        XS_INT_ACCESSOR_BODY(upb_FieldDef, PerlUpb_FieldDef_GetField, upb_FieldDef_Label, 0)
+    OUTPUT:
+        RETVAL
+
+const char*
+_xs_label_name(self)
+    SV* self
+    CODE:
+        const upb_FieldDef* f = PerlUpb_FieldDef_GetField(aTHX_ self);
+        RETVAL = PerlUpb_FieldDef_LabelName(aTHX_ f);
+    OUTPUT:
+        RETVAL
+
+bool
+_xs_is_repeated(self)
+    SV* self
+    CODE:
+        XS_BOOL_ACCESSOR_BODY(upb_FieldDef, PerlUpb_FieldDef_GetField, upb_FieldDef_IsRepeated)
+    OUTPUT:
+        RETVAL
+
+bool
+_xs_is_map(self)
+    SV* self
+    CODE:
+        XS_BOOL_ACCESSOR_BODY(upb_FieldDef, PerlUpb_FieldDef_GetField, upb_FieldDef_IsMap)
+    OUTPUT:
+        RETVAL
+
+bool
+_xs_is_required(self)
+    SV* self
+    CODE:
+        const upb_FieldDef* f = PerlUpb_FieldDef_GetField(aTHX_ self);
+        RETVAL = f ? upb_FieldDef_IsRequired(f) : false;
+    OUTPUT:
+        RETVAL
+
+bool
+_xs_is_extension(self)
+    SV* self
+    CODE:
+        const upb_FieldDef* f = PerlUpb_FieldDef_GetField(aTHX_ self);
+        RETVAL = f ? upb_FieldDef_IsExtension(f) : false;
+    OUTPUT:
+        RETVAL
+
+bool
+_xs_is_packed(self)
+    SV* self
+    CODE:
+        const upb_FieldDef* f = PerlUpb_FieldDef_GetField(aTHX_ self);
+        RETVAL = f ? upb_FieldDef_IsPacked(f) : false;
+    OUTPUT:
+        RETVAL
+
+SV*
+_xs_message_type(self)
+    SV* self
+    CODE:
+        const upb_FieldDef* f = PerlUpb_FieldDef_GetField(aTHX_ self);
+        const upb_MessageDef* m = f ? upb_FieldDef_MessageSubDef(f) : NULL;
+        RETVAL = m ? PerlUpb_MessageDef_GetWrapper(aTHX_ m) : &PL_sv_undef;
+    OUTPUT:
+        RETVAL
+
+SV*
+_xs_enum_type(self)
+    SV* self
+    CODE:
+        const upb_FieldDef* f = PerlUpb_FieldDef_GetField(aTHX_ self);
+        const upb_EnumDef* e = f ? upb_FieldDef_EnumSubDef(f) : NULL;
+        RETVAL = e ? PerlUpb_EnumDef_GetWrapper(aTHX_ e) : &PL_sv_undef;
+    OUTPUT:
+        RETVAL

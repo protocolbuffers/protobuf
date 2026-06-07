@@ -1,0 +1,60 @@
+MODULE = Protobuf::Descriptor::OneofDef  PACKAGE = Protobuf::Descriptor::OneofDef
+
+const char*
+_xs_full_name(self)
+    SV* self
+    CODE:
+        const upb_OneofDef* o = PerlUpb_OneofDef_GetOneof(aTHX_ self);
+        RETVAL = o ? upb_OneofDef_FullName(o) : NULL;
+
+    OUTPUT:
+        RETVAL
+
+const char*
+_xs_name(self)
+    SV* self
+    CODE:
+        const upb_OneofDef* o = PerlUpb_OneofDef_GetOneof(aTHX_ self);
+        RETVAL = o ? upb_OneofDef_Name(o) : NULL;
+
+    OUTPUT:
+        RETVAL
+
+
+int
+_xs_field_count(self)
+    SV* self
+    CODE:
+        const upb_OneofDef* o = PerlUpb_OneofDef_GetOneof(aTHX_ self);
+        RETVAL = o ? upb_OneofDef_FieldCount(o) : 0;
+
+    OUTPUT:
+        RETVAL
+
+
+SV*
+_xs_field(self, index)
+    SV* self
+    int index
+    CODE:
+        const upb_OneofDef* o = PerlUpb_OneofDef_GetOneof(aTHX_ self);
+        if (o && index >= 0 && index < upb_OneofDef_FieldCount(o)) {
+            RETVAL = PerlUpb_FieldDef_GetWrapper(aTHX_ upb_OneofDef_Field(o, index));
+
+        } else {
+            RETVAL = &PL_sv_undef;
+
+        }
+    OUTPUT:
+        RETVAL
+
+
+bool
+_xs_is_synthetic(self)
+    SV* self
+    CODE:
+        const upb_OneofDef* o = PerlUpb_OneofDef_GetOneof(aTHX_ self);
+        RETVAL = o ? upb_OneofDef_IsSynthetic(o) : false;
+
+    OUTPUT:
+        RETVAL

@@ -1,0 +1,10 @@
+#!/usr/bin/env perl
+use strict;
+use warnings;
+
+# Skeletal protoc plugin
+# In a real implementation, this would read CodeGeneratorRequest from STDIN
+# and write CodeGeneratorResponse to STDOUT.
+
+print "Skeletal Perl Protobuf Plugin\n";
+exit 0;

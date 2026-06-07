@@ -1,0 +1,183 @@
+MODULE = Protobuf::Internal  PACKAGE = Protobuf::Internal
+
+BOOT:
+    HV* stash = gv_stashpv("Protobuf::Internal", GV_ADD);
+    newCONSTSUB(stash, "PROFILE_BALANCED", newSViv(PERL_UPB_MG_PROFILE_BALANCED));
+    newCONSTSUB(stash, "PROFILE_WRITE_HEAVY", newSViv(PERL_UPB_MG_PROFILE_WRITE_HEAVY));
+    newCONSTSUB(stash, "PROFILE_READ_HEAVY", newSViv(PERL_UPB_MG_PROFILE_READ_HEAVY));
+    newCONSTSUB(stash, "PROFILE_ZERO_COPY", newSViv(PERL_UPB_MG_PROFILE_ZERO_COPY));
+
+void
+init_registry()
+    CODE:
+        PerlUpb_Registry_Init(aTHX);
+        PerlUpb_ObjCache_Init(aTHX);
+
+SV*
+get_cache_audit_log()
+    CODE:
+        RETVAL = PerlUpb_ObjCache_GetAuditLog(aTHX);
+
+    OUTPUT:
+        RETVAL
+
+
+void
+set_cache_capacity(capacity)
+    size_t capacity
+    CODE:
+        PerlUpb_ObjCache_SetCapacity(aTHX_ capacity);
+
+size_t
+get_cache_capacity()
+    CODE:
+        RETVAL = PerlUpb_ObjCache_GetCapacity(aTHX);
+
+    OUTPUT:
+        RETVAL
+
+
+void
+clear_cache()
+    CODE:
+        PerlUpb_ObjCache_Clear(aTHX);
+
+void
+delete_cache_entry(key_str)
+    const char* key_str
+    CODE:
+        PerlUpb_ObjCache_DeleteEntry(aTHX_ key_str, strlen(key_str));
+
+void
+delete_cache_ptr(ptr_str)
+    const char* ptr_str
+    PREINIT:
+        void* ptr;
+    CODE:
+        if (sscanf(ptr_str, "%p", &ptr) == 1) {
+            PerlUpb_ObjCache_Delete(aTHX_ ptr);
+        }
+
+SV*
+class_name_to_full_name(class_name)
+    const char* class_name
+    PREINIT:
+        char* full_name;
+    CODE:
+        full_name = PerlUpb_ClassNameToFullName(aTHX_ class_name);
+        RETVAL = newSVpv(full_name, 0);
+
+        safefree(full_name);
+    OUTPUT:
+        RETVAL
+
+
+SV*
+full_name_to_class_name(full_name_str)
+    const char* full_name_str
+    PREINIT:
+        char* class_name;
+    CODE:
+        class_name = PerlUpb_FullNameToClassName(aTHX_ full_name_str);
+        RETVAL = newSVpv(class_name, 0);
+
+        safefree(class_name);
+    OUTPUT:
+        RETVAL
+
+
+void
+set_chaos_enabled(enabled)
+    bool enabled
+    CODE:
+        PerlUpb_Registry_Get(aTHX)->chaos.enabled = enabled;
+
+void
+set_chaos_params(fail_prob, delay_prob, max_delay_ms, seed)
+    double fail_prob
+    double delay_prob
+    uint32_t max_delay_ms
+    unsigned int seed
+    CODE:
+        PerlUpb_Registry* reg = PerlUpb_Registry_Get(aTHX);
+        reg->chaos.fail_probability = fail_prob;
+        reg->chaos.delay_probability = delay_prob;
+        reg->chaos.max_delay_ms = max_delay_ms;
+        reg->chaos.seed = seed;
+
+uint64_t
+get_fingerprint(mdef_sv)
+    SV* mdef_sv
+    PREINIT:
+        const upb_MessageDef* m;
+    CODE:
+        m = PerlUpb_MessageDef_GetMessage(aTHX_ mdef_sv);
+        RETVAL = PerlUpb_MessageDef_GetFingerprint(aTHX_ m);
+
+    OUTPUT:
+        RETVAL
+
+
+void
+register_fingerprint(mdef_sv)
+    SV* mdef_sv
+    PREINIT:
+        const upb_MessageDef* m;
+    CODE:
+        m = PerlUpb_MessageDef_GetMessage(aTHX_ mdef_sv);
+        PerlUpb_MessageDef_RegisterFingerprint(aTHX_ m);
+
+SV*
+find_by_fingerprint(fingerprint)
+    uint64_t fingerprint
+    PREINIT:
+        const upb_MessageDef* m;
+    CODE:
+        m = PerlUpb_MessageDef_FindByFingerprint(aTHX_ fingerprint);
+        if (m) {
+            RETVAL = PerlUpb_MessageDef_GetWrapper(aTHX_ m);
+
+        } else {
+            RETVAL = &PL_sv_undef;
+
+        }
+    OUTPUT:
+        RETVAL
+
+
+UV
+get_cpu_features()
+    CODE:
+        RETVAL = (UV)PerlUpb_GetCpuFeatures();
+
+    OUTPUT:
+        RETVAL
+
+
+void
+verify_binary_diff(a_sv, b_sv, name)
+    SV* a_sv
+    SV* b_sv
+    const char* name
+    PREINIT:
+        STRLEN a_len, b_len;
+        const char *a, *b;
+    CODE:
+        a = SvPV(a_sv, a_len);
+        b = SvPV(b_sv, b_len);
+        PerlUpb_VerifyBinaryDiff(aTHX_ a, a_len, b, b_len, name);
+
+SV*
+get_contention_stats()
+    CODE:
+        RETVAL = PerlUpb_ObjCache_GetContentionStats(aTHX);
+
+    OUTPUT:
+        RETVAL
+
+
+void
+preallocate_arena()
+    CODE:
+        PerlUpb_Registry_PreallocateArena(aTHX);
+
