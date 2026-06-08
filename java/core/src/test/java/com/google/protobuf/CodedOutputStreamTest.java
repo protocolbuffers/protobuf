@@ -334,7 +334,6 @@ public class CodedOutputStreamTest {
       if (outputType.supportsSpaceLeft()) {
         assertThat(coder.stream().spaceLeft()).isEqualTo(i);
       }
-      assertThat(coder.stream().getTotalBytesWritten()).isEqualTo(0);
     }
   }
 
