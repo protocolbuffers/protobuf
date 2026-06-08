@@ -13,6 +13,7 @@ import static org.junit.Assert.assertThrows;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
 import com.google.protobuf.Any;
 import com.google.protobuf.BoolValue;
@@ -1948,6 +1949,38 @@ public class JsonFormatTest {
     TestAllTypes.Builder builder = TestAllTypes.newBuilder();
     JsonFormat.parser().merge(toJsonString(message), builder);
     assertThat(builder.getOptionalString()).isEqualTo(complexString);
+  }
+
+  @Test
+  public void testStringEscapingAgainstGsonParity_allLowChars() throws Exception {
+    StringBuilder sb = new StringBuilder();
+    for (int i = 0; i <= 256; i++) {
+      sb.append((char) i);
+    }
+    String allChars = sb.toString();
+    TestAllTypes message = TestAllTypes.newBuilder().setOptionalString(allChars).build();
+    String gsonEscaped = new Gson().toJson(allChars);
+
+    String expectedJson = "{\n  \"optionalString\": " + gsonEscaped + "\n}";
+    assertThat(toJsonString(message)).isEqualTo(expectedJson);
+
+    TestAllTypes.Builder builder = TestAllTypes.newBuilder();
+    JsonFormat.parser().merge(toJsonString(message), builder);
+    assertThat(builder.getOptionalString()).isEqualTo(allChars);
+  }
+
+  @Test
+  public void testStringEscapingAgainstGsonParity_danglingSurrogate() throws Exception {
+    String danglingSurrogate = "foo \uD800 bar";
+    TestAllTypes message = TestAllTypes.newBuilder().setOptionalString(danglingSurrogate).build();
+    String gsonEscaped = new Gson().toJson(danglingSurrogate);
+
+    String expectedJson = "{\n  \"optionalString\": " + gsonEscaped + "\n}";
+    assertThat(toJsonString(message)).isEqualTo(expectedJson);
+
+    TestAllTypes.Builder builder = TestAllTypes.newBuilder();
+    JsonFormat.parser().merge(toJsonString(message), builder);
+    assertThat(builder.getOptionalString()).isEqualTo(danglingSurrogate);
   }
 
   @Test

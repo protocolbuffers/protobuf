@@ -1423,41 +1423,78 @@ public class JsonFormat {
       }
     }
 
+    private static final String[] replacementChars;
+
+    static {
+      replacementChars = new String[128];
+      for (int i = 0; i <= 0x1f; i++) {
+        replacementChars[i] = String.format("\\u%04x", i);
+      }
+      replacementChars['"'] = "\\\"";
+      replacementChars['\\'] = "\\\\";
+      replacementChars['\t'] = "\\t";
+      replacementChars['\b'] = "\\b";
+      replacementChars['\n'] = "\\n";
+      replacementChars['\r'] = "\\r";
+      replacementChars['\f'] = "\\f";
+
+      // These characters are fully legal in JSON, but are escaped to prevent XSS risks. Notably
+      // this topic is not like 'html escaping' where these would be replaced with something like
+      // `&lt;`. The escaped or not ways of writing it are verbatim 2 exactly equivalent
+      // ways to represent the same exact value in JSON: consumers should never do any manual
+      // unescape to round trip the intended value. This replacement is only be semantically
+      // observable if someone tries to handle it raw textually and not as JSON.
+      for (int i : "<>&='".toCharArray()) {
+        replacementChars[i] = String.format("\\u%04x", i);
+      }
+    }
+
+    /**
+     * If a character needs to be escaped, returns the replacement string. Otherwise, returns null.
+     */
+    private static String getReplacementOrNull(char c) {
+      if (c < 128) {
+        return replacementChars[c];
+      }
+
+      // \u2028 and \u2029 are paragraph whitespace characters that had mismatch between the
+      // JSON spec and the browser JavaScript object literal spec. It is extremely unlikely
+      // this topic matters now, but for parity with GSON we escape them.
+      if (c == '\u2028') {
+        return "\\u2028";
+      }
+      if (c == '\u2029') {
+        return "\\u2029";
+      }
+
+      return null;
+    }
+
     /**
      * Prints a string value wrapped in double quotes, escaping any illegal or dangerous characters
      * for JSON safety.
      */
     private void printStringEscapedAndQuoted(final CharSequence value) throws IOException {
-      // gson.toJson() is expensive: only use it if the string isn't entirely safe to print
-      // directly.
-      if (isJsonSafeString(value)) {
-        generator.print("\"");
-        generator.print(value);
-        generator.print("\"");
-      } else {
-        generator.print(gson.toJson(value.toString()));
-      }
-    }
-
-    private static boolean isJsonSafeString(CharSequence value) {
+      generator.print("\"");
       int len = value.length();
+      int last = 0;
       for (int i = 0; i < len; i++) {
         char c = value.charAt(i);
-        // Bare characters, fully disallowed in JSON strings and which must be escaped.
-        if (c < 0x20 || c == '"' || c == '\\') {
-          return false;
+        String replacement = getReplacementOrNull(c);
+
+        // Keeps scanning to only call print() once on long runs that don't need escaping.
+        if (replacement == null) {
+          continue;
         }
-        // HTML-sensitive characters. These are allowed in JSON, but escaped to mitigate
-        // XSS risks when the JSON is rendered in HTML.
-        if (c == '<' || c == '>' || c == '&' || c == '=' || c == '\'') {
-          return false;
+        if (last < i) {
+          generator.print(value.subSequence(last, i));
         }
-        // Non-ASCII characters are mostly safe, but we'll leave that to gson to decide.
-        if (c >= 127) {
-          return false;
-        }
+        generator.print(replacement);
+        last = i + 1;
       }
-      return true;
+
+      generator.print(value.subSequence(last, len));
+      generator.print("\"");
     }
   }
 
