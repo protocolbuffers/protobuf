@@ -512,6 +512,14 @@ TEST(ConvertFuzz, ArbitraryMiniTableConvertFuzzRegression7) {
       3168645944);
 }
 
+TEST(ConvertFuzz, ArbitraryMiniTableConvertFuzzRegression8) {
+  ArbitraryMiniTableConvertFuzz(
+      upb::fuzz::MiniTableFuzzInput{
+          {"$$$FFFFFFFFFFFFFFFFF", "", ""}, {"&"}, "@C", {2147483642}},
+      upb::fuzz::MiniTableFuzzInput{{"", ""}, {}, "", {}}, "[\\\010\003", 10,
+      1153856912);
+}
+
 }  // namespace
 
 }  // namespace upb
