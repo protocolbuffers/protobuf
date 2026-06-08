@@ -8,16 +8,18 @@
 package com.google.protobuf;
 
 import java.io.IOException;
+import javax.annotation.Nullable;
 
 /**
- * Thrown when a protocol message being parsed is invalid in some way. For instance,
- * it contains a malformed varint or a negative byte length.
+ * Thrown when a protocol message being parsed is invalid in some way. For instance, it contains a
+ * malformed varint or a negative byte length.
  *
  * @author kenton@google.com Kenton Varda
  */
+@SuppressWarnings("nullness")
 public class InvalidProtocolBufferException extends IOException {
   private static final long serialVersionUID = -1616151763072450476L;
-  private MessageLite unfinishedMessage = null;
+  private @Nullable MessageLite unfinishedMessage_ = null;
   private boolean wasThrownFromInputStream;
 
   public InvalidProtocolBufferException(String description) {
@@ -47,16 +49,17 @@ public class InvalidProtocolBufferException extends IOException {
    * @return this
    */
   @CanIgnoreReturnValue
-  public InvalidProtocolBufferException setUnfinishedMessage(MessageLite unfinishedMessage) {
-    this.unfinishedMessage = unfinishedMessage;
+  public InvalidProtocolBufferException setUnfinishedMessage(
+      @Nullable MessageLite unfinishedMessage) {
+    this.unfinishedMessage_ = unfinishedMessage;
     return this;
   }
 
   /**
    * Returns the unfinished message attached to the exception, or null if no message is attached.
    */
-  public MessageLite getUnfinishedMessage() {
-    return unfinishedMessage;
+  public @Nullable MessageLite getUnfinishedMessage() {
+    return unfinishedMessage_;
   }
 
   /** Set by CodedInputStream */

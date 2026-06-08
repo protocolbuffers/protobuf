@@ -21,6 +21,7 @@ import java.util.List;
  *
  * @author kenton@google.com Kenton Varda
  */
+@SuppressWarnings("nullness")
 public class UninitializedMessageException extends RuntimeException {
   private static final long serialVersionUID = -7466929953374883507L;
 
@@ -28,15 +29,15 @@ public class UninitializedMessageException extends RuntimeException {
     super(
         "Message was missing required fields.  (Lite runtime could not "
             + "determine which fields were missing).");
-    missingFields = null;
+    missingFields_ = null;
   }
 
   public UninitializedMessageException(final List<String> missingFields) {
     super(buildDescription(missingFields));
-    this.missingFields = missingFields;
+    this.missingFields_ = missingFields;
   }
 
-  private final List<String> missingFields;
+  private final List<String> missingFields_;
 
   /**
    * Get a list of human-readable names of required fields missing from this message. Each name is a
@@ -44,7 +45,7 @@ public class UninitializedMessageException extends RuntimeException {
    * it lacks the ability to find missing fields.
    */
   public List<String> getMissingFields() {
-    return Collections.unmodifiableList(missingFields);
+    return Collections.unmodifiableList(missingFields_);
   }
 
   /**

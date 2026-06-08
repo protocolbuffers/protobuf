@@ -19,6 +19,7 @@ import java.nio.BufferOverflowException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.Locale;
+import javax.annotation.Nullable;
 
 /**
  * Encodes and writes protocol message fields.
@@ -31,10 +32,11 @@ import java.util.Locale;
  *
  * <p>This class is totally unsynchronized.
  */
+@SuppressWarnings("nullness")
 public abstract class CodedOutputStream extends ByteOutput {
 
   /** Used to adapt to the experimental {@link Writer} interface. */
-  Object wrapper;
+  @Nullable Object wrapper;
 
   /**
    * @deprecated Use {@link #computeFixed32SizeNoTag(int)} instead.
@@ -1779,7 +1781,7 @@ public abstract class CodedOutputStream extends ByteOutput {
     private final byte[] buffer;
     private final int limit;
     private int position;
-    private int totalBytesWritten;
+    private int totalBytesWritten_;
 
     /**
      * An {@link CodedOutputStream} that decorates an {@link OutputStream}. It performs internal
@@ -1813,7 +1815,7 @@ public abstract class CodedOutputStream extends ByteOutput {
 
     @Override
     public final int getTotalBytesWritten() {
-      return totalBytesWritten;
+      return totalBytesWritten_;
     }
 
     /**
@@ -1825,7 +1827,7 @@ public abstract class CodedOutputStream extends ByteOutput {
       buffer[position] = value;
       // Android optimisation: 1 fewer instruction codegen vs buffer[position++].
       this.position = position + 1;
-      totalBytesWritten++;
+      totalBytesWritten_++;
     }
 
     /**
@@ -1855,11 +1857,11 @@ public abstract class CodedOutputStream extends ByteOutput {
      */
     final void bufferUInt32NoTag(int value) {
       int position = this.position;
-      int totalBytesWritten = this.totalBytesWritten;
+      int totalBytesWritten = this.totalBytesWritten_;
       if ((value & ~0x7F) == 0) {
         buffer[position] = (byte) value;
         this.position = position + 1;
-        this.totalBytesWritten = totalBytesWritten + 1;
+        this.totalBytesWritten_ = totalBytesWritten + 1;
         return;
       }
       buffer[position] = (byte) (value | 0x80);
@@ -1867,7 +1869,7 @@ public abstract class CodedOutputStream extends ByteOutput {
       if ((value & ~0x7F) == 0) {
         buffer[position + 1] = (byte) value;
         this.position = position + 2;
-        this.totalBytesWritten = totalBytesWritten + 2;
+        this.totalBytesWritten_ = totalBytesWritten + 2;
         return;
       }
       buffer[position + 1] = (byte) (value | 0x80);
@@ -1875,7 +1877,7 @@ public abstract class CodedOutputStream extends ByteOutput {
       if ((value & ~0x7F) == 0) {
         buffer[position + 2] = (byte) value;
         this.position = position + 3;
-        this.totalBytesWritten = totalBytesWritten + 3;
+        this.totalBytesWritten_ = totalBytesWritten + 3;
         return;
       }
       buffer[position + 2] = (byte) (value | 0x80);
@@ -1883,13 +1885,13 @@ public abstract class CodedOutputStream extends ByteOutput {
       if ((value & ~0x7F) == 0) {
         buffer[position + 3] = (byte) value;
         this.position = position + 4;
-        this.totalBytesWritten = totalBytesWritten + 4;
+        this.totalBytesWritten_ = totalBytesWritten + 4;
         return;
       }
       buffer[position + 3] = (byte) (value | 0x80);
       buffer[position + 4] = (byte) (value >>> 7);
       this.position = position + 5;
-      this.totalBytesWritten = totalBytesWritten + 5;
+      this.totalBytesWritten_ = totalBytesWritten + 5;
       return;
     }
 
@@ -1899,11 +1901,11 @@ public abstract class CodedOutputStream extends ByteOutput {
      */
     final void bufferUInt64NoTag(long value) {
       int position = this.position;
-      int totalBytesWritten = this.totalBytesWritten;
+      int totalBytesWritten = this.totalBytesWritten_;
       if ((value & ~0x7FL) == 0) {
         buffer[position] = (byte) value;
         this.position = position + 1;
-        this.totalBytesWritten = totalBytesWritten + 1;
+        this.totalBytesWritten_ = totalBytesWritten + 1;
         return;
       }
       buffer[position] = (byte) ((int) value | 0x80);
@@ -1911,7 +1913,7 @@ public abstract class CodedOutputStream extends ByteOutput {
       if ((value & ~0x7FL) == 0) {
         buffer[position + 1] = (byte) value;
         this.position = position + 2;
-        this.totalBytesWritten = totalBytesWritten + 2;
+        this.totalBytesWritten_ = totalBytesWritten + 2;
         return;
       }
       buffer[position + 1] = (byte) ((int) value | 0x80);
@@ -1919,7 +1921,7 @@ public abstract class CodedOutputStream extends ByteOutput {
       if ((value & ~0x7FL) == 0) {
         buffer[position + 2] = (byte) value;
         this.position = position + 3;
-        this.totalBytesWritten = totalBytesWritten + 3;
+        this.totalBytesWritten_ = totalBytesWritten + 3;
         return;
       }
       buffer[position + 2] = (byte) ((int) value | 0x80);
@@ -1927,7 +1929,7 @@ public abstract class CodedOutputStream extends ByteOutput {
       if ((value & ~0x7FL) == 0) {
         buffer[position + 3] = (byte) value;
         this.position = position + 4;
-        this.totalBytesWritten = totalBytesWritten + 4;
+        this.totalBytesWritten_ = totalBytesWritten + 4;
         return;
       }
       buffer[position + 3] = (byte) ((int) value | 0x80);
@@ -1935,7 +1937,7 @@ public abstract class CodedOutputStream extends ByteOutput {
       if ((value & ~0x7FL) == 0) {
         buffer[position + 4] = (byte) value;
         this.position = position + 5;
-        this.totalBytesWritten = totalBytesWritten + 5;
+        this.totalBytesWritten_ = totalBytesWritten + 5;
         return;
       }
       buffer[position + 4] = (byte) ((int) value | 0x80);
@@ -1943,7 +1945,7 @@ public abstract class CodedOutputStream extends ByteOutput {
       if ((value & ~0x7FL) == 0) {
         buffer[position + 5] = (byte) value;
         this.position = position + 6;
-        this.totalBytesWritten = totalBytesWritten + 6;
+        this.totalBytesWritten_ = totalBytesWritten + 6;
         return;
       }
       buffer[position + 5] = (byte) ((int) value | 0x80);
@@ -1951,7 +1953,7 @@ public abstract class CodedOutputStream extends ByteOutput {
       if ((value & ~0x7FL) == 0) {
         buffer[position + 6] = (byte) value;
         this.position = position + 7;
-        this.totalBytesWritten = totalBytesWritten + 7;
+        this.totalBytesWritten_ = totalBytesWritten + 7;
         return;
       }
       buffer[position + 6] = (byte) ((int) value | 0x80);
@@ -1959,7 +1961,7 @@ public abstract class CodedOutputStream extends ByteOutput {
       if ((value & ~0x7FL) == 0) {
         buffer[position + 7] = (byte) value;
         this.position = position + 8;
-        this.totalBytesWritten = totalBytesWritten + 8;
+        this.totalBytesWritten_ = totalBytesWritten + 8;
         return;
       }
       buffer[position + 7] = (byte) ((int) value | 0x80);
@@ -1967,13 +1969,13 @@ public abstract class CodedOutputStream extends ByteOutput {
       if ((value & ~0x7FL) == 0) {
         buffer[position + 8] = (byte) value;
         this.position = position + 9;
-        this.totalBytesWritten = totalBytesWritten + 9;
+        this.totalBytesWritten_ = totalBytesWritten + 9;
         return;
       }
       buffer[position + 8] = (byte) ((int) value | 0x80);
       buffer[position + 9] = (byte) (value >>> 7);
       this.position = position + 10;
-      this.totalBytesWritten = totalBytesWritten + 10;
+      this.totalBytesWritten_ = totalBytesWritten + 10;
       return;
     }
 
@@ -1988,7 +1990,7 @@ public abstract class CodedOutputStream extends ByteOutput {
       buffer[position++] = (byte) (value >> 16);
       buffer[position++] = (byte) (value >> 24);
       this.position = position;
-      totalBytesWritten += FIXED32_SIZE;
+      totalBytesWritten_ += FIXED32_SIZE;
     }
 
     /**
@@ -2006,7 +2008,7 @@ public abstract class CodedOutputStream extends ByteOutput {
       buffer[position++] = (byte) (value >> 48);
       buffer[position++] = (byte) (value >> 56);
       this.position = position;
-      totalBytesWritten += FIXED64_SIZE;
+      totalBytesWritten_ += FIXED64_SIZE;
     }
 
     @Override
@@ -2231,7 +2233,7 @@ public abstract class CodedOutputStream extends ByteOutput {
           bufferUInt32NoTag(length);
           position = Utf8.encode(value, buffer, position, length);
         }
-        totalBytesWritten += length;
+        totalBytesWritten_ += length;
       } catch (ArrayIndexOutOfBoundsException e) {
         throw new OutOfSpaceException(e);
       }
@@ -2251,7 +2253,7 @@ public abstract class CodedOutputStream extends ByteOutput {
         // We have room in the current buffer.
         System.arraycopy(value, offset, buffer, position, length);
         position += length;
-        totalBytesWritten += length;
+        totalBytesWritten_ += length;
       } else {
         // Write extends past current buffer.  Fill the rest of this buffer and
         // flush.
@@ -2260,7 +2262,7 @@ public abstract class CodedOutputStream extends ByteOutput {
         offset += bytesWritten;
         length -= bytesWritten;
         position = limit;
-        totalBytesWritten += bytesWritten;
+        totalBytesWritten_ += bytesWritten;
         doFlush();
 
         // Now deal with the rest.
@@ -2274,7 +2276,7 @@ public abstract class CodedOutputStream extends ByteOutput {
           // Write is very big.  Let's do it all at once.
           out.write(value, offset, length);
         }
-        totalBytesWritten += length;
+        totalBytesWritten_ += length;
       }
     }
 
@@ -2290,7 +2292,7 @@ public abstract class CodedOutputStream extends ByteOutput {
         // We have room in the current buffer.
         value.get(buffer, position, length);
         position += length;
-        totalBytesWritten += length;
+        totalBytesWritten_ += length;
       } else {
         // Write extends past current buffer.  Fill the rest of this buffer and
         // flush.
@@ -2298,7 +2300,7 @@ public abstract class CodedOutputStream extends ByteOutput {
         value.get(buffer, position, bytesWritten);
         length -= bytesWritten;
         position = limit;
-        totalBytesWritten += bytesWritten;
+        totalBytesWritten_ += bytesWritten;
         doFlush();
 
         // Now deal with the rest.
@@ -2309,11 +2311,11 @@ public abstract class CodedOutputStream extends ByteOutput {
           value.get(buffer, 0, limit);
           out.write(buffer, 0, limit);
           length -= limit;
-          totalBytesWritten += limit;
+          totalBytesWritten_ += limit;
         }
         value.get(buffer, 0, length);
         position = length;
-        totalBytesWritten += length;
+        totalBytesWritten_ += length;
       }
     }
 

@@ -22,6 +22,7 @@ import java.util.Map;
 
 /** An adapter between the {@link Reader} interface and {@link CodedInputStream}. */
 @CheckReturnValue
+@SuppressWarnings("nullness")
 @ExperimentalApi
 final class CodedInputStreamReader implements Reader {
   private static final int FIXED32_MULTIPLE_MASK = FIXED32_SIZE - 1;
@@ -29,7 +30,7 @@ final class CodedInputStreamReader implements Reader {
   private static final int NEXT_TAG_UNSET = 0;
 
   private final CodedInputStream input;
-  private int tag;
+  private int tag_;
   private int endGroupTag;
   private int nextTag = NEXT_TAG_UNSET;
 
@@ -53,32 +54,32 @@ final class CodedInputStreamReader implements Reader {
   @Override
   public int getFieldNumber() throws IOException {
     if (nextTag != NEXT_TAG_UNSET) {
-      tag = nextTag;
+      tag_ = nextTag;
       nextTag = NEXT_TAG_UNSET;
     } else {
-      tag = input.readTag();
+      tag_ = input.readTag();
     }
-    if (tag == 0 || tag == endGroupTag) {
+    if (tag_ == 0 || tag_ == endGroupTag) {
       return Reader.READ_DONE;
     }
-    return WireFormat.getTagFieldNumber(tag);
+    return WireFormat.getTagFieldNumber(tag_);
   }
 
   @Override
   public int getTag() {
-    return tag;
+    return tag_;
   }
 
   @Override
   public boolean skipField() throws IOException {
-    if (input.isAtEnd() || tag == endGroupTag) {
+    if (input.isAtEnd() || tag_ == endGroupTag) {
       return false;
     }
-    return input.skipField(tag);
+    return input.skipField(tag_);
   }
 
   private void requireWireType(int requiredWireType) throws IOException {
-    if (WireFormat.getTagWireType(tag) != requiredWireType) {
+    if (WireFormat.getTagWireType(tag_) != requiredWireType) {
       throw InvalidProtocolBufferException.invalidWireType();
     }
   }
@@ -215,15 +216,15 @@ final class CodedInputStreamReader implements Reader {
   private <T> void mergeGroupFieldInternal(
       T target, Schema<T> schema, ExtensionRegistryLite extensionRegistry) throws IOException {
     int prevEndGroupTag = endGroupTag;
-    endGroupTag = WireFormat.makeTag(WireFormat.getTagFieldNumber(tag), WIRETYPE_END_GROUP);
+    endGroupTag = WireFormat.makeTag(WireFormat.getTagFieldNumber(tag_), WIRETYPE_END_GROUP);
 
     try {
       schema.mergeFrom(target, this, extensionRegistry);
-      if (tag != endGroupTag) {
+      if (tag_ != endGroupTag) {
         throw InvalidProtocolBufferException.parseFailure();
       }
     } finally {
-      // Restore the old end group tag.
+      // Restore the old end group tag_.
       endGroupTag = prevEndGroupTag;
     }
   }
@@ -282,7 +283,7 @@ final class CodedInputStreamReader implements Reader {
   public void readDoubleList(List<Double> target) throws IOException {
     if (target instanceof DoubleArrayList) {
       DoubleArrayList plist = (DoubleArrayList) target;
-      switch (WireFormat.getTagWireType(tag)) {
+      switch (WireFormat.getTagWireType(tag_)) {
         case WIRETYPE_LENGTH_DELIMITED:
           final int bytes = input.readUInt32();
           verifyPackedFixed64Length(bytes);
@@ -298,8 +299,8 @@ final class CodedInputStreamReader implements Reader {
               return;
             }
             int nextTag = input.readTag();
-            if (nextTag != tag) {
-              // We've reached the end of the repeated field. Save the next tag value.
+            if (nextTag != tag_) {
+              // We've reached the end of the repeated field. Save the next tag_ value.
               this.nextTag = nextTag;
               return;
             }
@@ -308,7 +309,7 @@ final class CodedInputStreamReader implements Reader {
           throw InvalidProtocolBufferException.invalidWireType();
       }
     } else {
-      switch (WireFormat.getTagWireType(tag)) {
+      switch (WireFormat.getTagWireType(tag_)) {
         case WIRETYPE_LENGTH_DELIMITED:
           final int bytes = input.readUInt32();
           verifyPackedFixed64Length(bytes);
@@ -324,8 +325,8 @@ final class CodedInputStreamReader implements Reader {
               return;
             }
             int nextTag = input.readTag();
-            if (nextTag != tag) {
-              // We've reached the end of the repeated field. Save the next tag value.
+            if (nextTag != tag_) {
+              // We've reached the end of the repeated field. Save the next tag_ value.
               this.nextTag = nextTag;
               return;
             }
@@ -340,7 +341,7 @@ final class CodedInputStreamReader implements Reader {
   public void readFloatList(List<Float> target) throws IOException {
     if (target instanceof FloatArrayList) {
       FloatArrayList plist = (FloatArrayList) target;
-      switch (WireFormat.getTagWireType(tag)) {
+      switch (WireFormat.getTagWireType(tag_)) {
         case WIRETYPE_LENGTH_DELIMITED:
           final int bytes = input.readUInt32();
           verifyPackedFixed32Length(bytes);
@@ -356,8 +357,8 @@ final class CodedInputStreamReader implements Reader {
               return;
             }
             int nextTag = input.readTag();
-            if (nextTag != tag) {
-              // We've reached the end of the repeated field. Save the next tag value.
+            if (nextTag != tag_) {
+              // We've reached the end of the repeated field. Save the next tag_ value.
               this.nextTag = nextTag;
               return;
             }
@@ -366,7 +367,7 @@ final class CodedInputStreamReader implements Reader {
           throw InvalidProtocolBufferException.invalidWireType();
       }
     } else {
-      switch (WireFormat.getTagWireType(tag)) {
+      switch (WireFormat.getTagWireType(tag_)) {
         case WIRETYPE_LENGTH_DELIMITED:
           final int bytes = input.readUInt32();
           verifyPackedFixed32Length(bytes);
@@ -382,8 +383,8 @@ final class CodedInputStreamReader implements Reader {
               return;
             }
             int nextTag = input.readTag();
-            if (nextTag != tag) {
-              // We've reached the end of the repeated field. Save the next tag value.
+            if (nextTag != tag_) {
+              // We've reached the end of the repeated field. Save the next tag_ value.
               this.nextTag = nextTag;
               return;
             }
@@ -398,7 +399,7 @@ final class CodedInputStreamReader implements Reader {
   public void readUInt64List(List<Long> target) throws IOException {
     if (target instanceof LongArrayList) {
       LongArrayList plist = (LongArrayList) target;
-      switch (WireFormat.getTagWireType(tag)) {
+      switch (WireFormat.getTagWireType(tag_)) {
         case WIRETYPE_LENGTH_DELIMITED:
           final int bytes = input.readUInt32();
           int endPos = input.getTotalBytesRead() + bytes;
@@ -414,8 +415,8 @@ final class CodedInputStreamReader implements Reader {
               return;
             }
             int nextTag = input.readTag();
-            if (nextTag != tag) {
-              // We've reached the end of the repeated field. Save the next tag value.
+            if (nextTag != tag_) {
+              // We've reached the end of the repeated field. Save the next tag_ value.
               this.nextTag = nextTag;
               return;
             }
@@ -424,7 +425,7 @@ final class CodedInputStreamReader implements Reader {
           throw InvalidProtocolBufferException.invalidWireType();
       }
     } else {
-      switch (WireFormat.getTagWireType(tag)) {
+      switch (WireFormat.getTagWireType(tag_)) {
         case WIRETYPE_LENGTH_DELIMITED:
           final int bytes = input.readUInt32();
           int endPos = input.getTotalBytesRead() + bytes;
@@ -440,8 +441,8 @@ final class CodedInputStreamReader implements Reader {
               return;
             }
             int nextTag = input.readTag();
-            if (nextTag != tag) {
-              // We've reached the end of the repeated field. Save the next tag value.
+            if (nextTag != tag_) {
+              // We've reached the end of the repeated field. Save the next tag_ value.
               this.nextTag = nextTag;
               return;
             }
@@ -456,7 +457,7 @@ final class CodedInputStreamReader implements Reader {
   public void readInt64List(List<Long> target) throws IOException {
     if (target instanceof LongArrayList) {
       LongArrayList plist = (LongArrayList) target;
-      switch (WireFormat.getTagWireType(tag)) {
+      switch (WireFormat.getTagWireType(tag_)) {
         case WIRETYPE_LENGTH_DELIMITED:
           final int bytes = input.readUInt32();
           int endPos = input.getTotalBytesRead() + bytes;
@@ -472,8 +473,8 @@ final class CodedInputStreamReader implements Reader {
               return;
             }
             int nextTag = input.readTag();
-            if (nextTag != tag) {
-              // We've reached the end of the repeated field. Save the next tag value.
+            if (nextTag != tag_) {
+              // We've reached the end of the repeated field. Save the next tag_ value.
               this.nextTag = nextTag;
               return;
             }
@@ -482,7 +483,7 @@ final class CodedInputStreamReader implements Reader {
           throw InvalidProtocolBufferException.invalidWireType();
       }
     } else {
-      switch (WireFormat.getTagWireType(tag)) {
+      switch (WireFormat.getTagWireType(tag_)) {
         case WIRETYPE_LENGTH_DELIMITED:
           final int bytes = input.readUInt32();
           int endPos = input.getTotalBytesRead() + bytes;
@@ -498,8 +499,8 @@ final class CodedInputStreamReader implements Reader {
               return;
             }
             int nextTag = input.readTag();
-            if (nextTag != tag) {
-              // We've reached the end of the repeated field. Save the next tag value.
+            if (nextTag != tag_) {
+              // We've reached the end of the repeated field. Save the next tag_ value.
               this.nextTag = nextTag;
               return;
             }
@@ -514,7 +515,7 @@ final class CodedInputStreamReader implements Reader {
   public void readInt32List(List<Integer> target) throws IOException {
     if (target instanceof IntArrayList) {
       IntArrayList plist = (IntArrayList) target;
-      switch (WireFormat.getTagWireType(tag)) {
+      switch (WireFormat.getTagWireType(tag_)) {
         case WIRETYPE_LENGTH_DELIMITED:
           final int bytes = input.readUInt32();
           int endPos = input.getTotalBytesRead() + bytes;
@@ -530,8 +531,8 @@ final class CodedInputStreamReader implements Reader {
               return;
             }
             int nextTag = input.readTag();
-            if (nextTag != tag) {
-              // We've reached the end of the repeated field. Save the next tag value.
+            if (nextTag != tag_) {
+              // We've reached the end of the repeated field. Save the next tag_ value.
               this.nextTag = nextTag;
               return;
             }
@@ -540,7 +541,7 @@ final class CodedInputStreamReader implements Reader {
           throw InvalidProtocolBufferException.invalidWireType();
       }
     } else {
-      switch (WireFormat.getTagWireType(tag)) {
+      switch (WireFormat.getTagWireType(tag_)) {
         case WIRETYPE_LENGTH_DELIMITED:
           final int bytes = input.readUInt32();
           int endPos = input.getTotalBytesRead() + bytes;
@@ -556,8 +557,8 @@ final class CodedInputStreamReader implements Reader {
               return;
             }
             int nextTag = input.readTag();
-            if (nextTag != tag) {
-              // We've reached the end of the repeated field. Save the next tag value.
+            if (nextTag != tag_) {
+              // We've reached the end of the repeated field. Save the next tag_ value.
               this.nextTag = nextTag;
               return;
             }
@@ -572,7 +573,7 @@ final class CodedInputStreamReader implements Reader {
   public void readFixed64List(List<Long> target) throws IOException {
     if (target instanceof LongArrayList) {
       LongArrayList plist = (LongArrayList) target;
-      switch (WireFormat.getTagWireType(tag)) {
+      switch (WireFormat.getTagWireType(tag_)) {
         case WIRETYPE_LENGTH_DELIMITED:
           final int bytes = input.readUInt32();
           verifyPackedFixed64Length(bytes);
@@ -588,8 +589,8 @@ final class CodedInputStreamReader implements Reader {
               return;
             }
             int nextTag = input.readTag();
-            if (nextTag != tag) {
-              // We've reached the end of the repeated field. Save the next tag value.
+            if (nextTag != tag_) {
+              // We've reached the end of the repeated field. Save the next tag_ value.
               this.nextTag = nextTag;
               return;
             }
@@ -598,7 +599,7 @@ final class CodedInputStreamReader implements Reader {
           throw InvalidProtocolBufferException.invalidWireType();
       }
     } else {
-      switch (WireFormat.getTagWireType(tag)) {
+      switch (WireFormat.getTagWireType(tag_)) {
         case WIRETYPE_LENGTH_DELIMITED:
           final int bytes = input.readUInt32();
           verifyPackedFixed64Length(bytes);
@@ -614,8 +615,8 @@ final class CodedInputStreamReader implements Reader {
               return;
             }
             int nextTag = input.readTag();
-            if (nextTag != tag) {
-              // We've reached the end of the repeated field. Save the next tag value.
+            if (nextTag != tag_) {
+              // We've reached the end of the repeated field. Save the next tag_ value.
               this.nextTag = nextTag;
               return;
             }
@@ -630,7 +631,7 @@ final class CodedInputStreamReader implements Reader {
   public void readFixed32List(List<Integer> target) throws IOException {
     if (target instanceof IntArrayList) {
       IntArrayList plist = (IntArrayList) target;
-      switch (WireFormat.getTagWireType(tag)) {
+      switch (WireFormat.getTagWireType(tag_)) {
         case WIRETYPE_LENGTH_DELIMITED:
           final int bytes = input.readUInt32();
           verifyPackedFixed32Length(bytes);
@@ -646,8 +647,8 @@ final class CodedInputStreamReader implements Reader {
               return;
             }
             int nextTag = input.readTag();
-            if (nextTag != tag) {
-              // We've reached the end of the repeated field. Save the next tag value.
+            if (nextTag != tag_) {
+              // We've reached the end of the repeated field. Save the next tag_ value.
               this.nextTag = nextTag;
               return;
             }
@@ -656,7 +657,7 @@ final class CodedInputStreamReader implements Reader {
           throw InvalidProtocolBufferException.invalidWireType();
       }
     } else {
-      switch (WireFormat.getTagWireType(tag)) {
+      switch (WireFormat.getTagWireType(tag_)) {
         case WIRETYPE_LENGTH_DELIMITED:
           final int bytes = input.readUInt32();
           verifyPackedFixed32Length(bytes);
@@ -672,8 +673,8 @@ final class CodedInputStreamReader implements Reader {
               return;
             }
             int nextTag = input.readTag();
-            if (nextTag != tag) {
-              // We've reached the end of the repeated field. Save the next tag value.
+            if (nextTag != tag_) {
+              // We've reached the end of the repeated field. Save the next tag_ value.
               this.nextTag = nextTag;
               return;
             }
@@ -688,7 +689,7 @@ final class CodedInputStreamReader implements Reader {
   public void readBoolList(List<Boolean> target) throws IOException {
     if (target instanceof BooleanArrayList) {
       BooleanArrayList plist = (BooleanArrayList) target;
-      switch (WireFormat.getTagWireType(tag)) {
+      switch (WireFormat.getTagWireType(tag_)) {
         case WIRETYPE_LENGTH_DELIMITED:
           final int bytes = input.readUInt32();
           int endPos = input.getTotalBytesRead() + bytes;
@@ -704,8 +705,8 @@ final class CodedInputStreamReader implements Reader {
               return;
             }
             int nextTag = input.readTag();
-            if (nextTag != tag) {
-              // We've reached the end of the repeated field. Save the next tag value.
+            if (nextTag != tag_) {
+              // We've reached the end of the repeated field. Save the next tag_ value.
               this.nextTag = nextTag;
               return;
             }
@@ -714,7 +715,7 @@ final class CodedInputStreamReader implements Reader {
           throw InvalidProtocolBufferException.invalidWireType();
       }
     } else {
-      switch (WireFormat.getTagWireType(tag)) {
+      switch (WireFormat.getTagWireType(tag_)) {
         case WIRETYPE_LENGTH_DELIMITED:
           final int bytes = input.readUInt32();
           int endPos = input.getTotalBytesRead() + bytes;
@@ -730,8 +731,8 @@ final class CodedInputStreamReader implements Reader {
               return;
             }
             int nextTag = input.readTag();
-            if (nextTag != tag) {
-              // We've reached the end of the repeated field. Save the next tag value.
+            if (nextTag != tag_) {
+              // We've reached the end of the repeated field. Save the next tag_ value.
               this.nextTag = nextTag;
               return;
             }
@@ -753,7 +754,7 @@ final class CodedInputStreamReader implements Reader {
   }
 
   public void readStringListInternal(List<String> target, boolean requireUtf8) throws IOException {
-    if (WireFormat.getTagWireType(tag) != WIRETYPE_LENGTH_DELIMITED) {
+    if (WireFormat.getTagWireType(tag_) != WIRETYPE_LENGTH_DELIMITED) {
       throw InvalidProtocolBufferException.invalidWireType();
     }
 
@@ -765,8 +766,8 @@ final class CodedInputStreamReader implements Reader {
           return;
         }
         int nextTag = input.readTag();
-        if (nextTag != tag) {
-          // We've reached the end of the repeated field. Save the next tag value.
+        if (nextTag != tag_) {
+          // We've reached the end of the repeated field. Save the next tag_ value.
           this.nextTag = nextTag;
           return;
         }
@@ -778,8 +779,8 @@ final class CodedInputStreamReader implements Reader {
           return;
         }
         int nextTag = input.readTag();
-        if (nextTag != tag) {
-          // We've reached the end of the repeated field. Save the next tag value.
+        if (nextTag != tag_) {
+          // We've reached the end of the repeated field. Save the next tag_ value.
           this.nextTag = nextTag;
           return;
         }
@@ -799,10 +800,10 @@ final class CodedInputStreamReader implements Reader {
   public <T> void readMessageList(
       List<T> target, Schema<T> schema, ExtensionRegistryLite extensionRegistry)
       throws IOException {
-    if (WireFormat.getTagWireType(tag) != WIRETYPE_LENGTH_DELIMITED) {
+    if (WireFormat.getTagWireType(tag_) != WIRETYPE_LENGTH_DELIMITED) {
       throw InvalidProtocolBufferException.invalidWireType();
     }
-    final int listTag = tag;
+    final int listTag = tag_;
     while (true) {
       target.add(readMessage(schema, extensionRegistry));
       if (input.isAtEnd() || nextTag != NEXT_TAG_UNSET) {
@@ -810,7 +811,7 @@ final class CodedInputStreamReader implements Reader {
       }
       int nextTag = input.readTag();
       if (nextTag != listTag) {
-        // We've reached the end of the repeated field. Save the next tag value.
+        // We've reached the end of the repeated field. Save the next tag_ value.
         this.nextTag = nextTag;
         return;
       }
@@ -831,10 +832,10 @@ final class CodedInputStreamReader implements Reader {
   public <T> void readGroupList(
       List<T> target, Schema<T> schema, ExtensionRegistryLite extensionRegistry)
       throws IOException {
-    if (WireFormat.getTagWireType(tag) != WIRETYPE_START_GROUP) {
+    if (WireFormat.getTagWireType(tag_) != WIRETYPE_START_GROUP) {
       throw InvalidProtocolBufferException.invalidWireType();
     }
-    final int listTag = tag;
+    final int listTag = tag_;
     while (true) {
       target.add(readGroup(schema, extensionRegistry));
       if (input.isAtEnd() || nextTag != NEXT_TAG_UNSET) {
@@ -842,7 +843,7 @@ final class CodedInputStreamReader implements Reader {
       }
       int nextTag = input.readTag();
       if (nextTag != listTag) {
-        // We've reached the end of the repeated field. Save the next tag value.
+        // We've reached the end of the repeated field. Save the next tag_ value.
         this.nextTag = nextTag;
         return;
       }
@@ -851,7 +852,7 @@ final class CodedInputStreamReader implements Reader {
 
   @Override
   public void readBytesList(List<ByteString> target) throws IOException {
-    if (WireFormat.getTagWireType(tag) != WIRETYPE_LENGTH_DELIMITED) {
+    if (WireFormat.getTagWireType(tag_) != WIRETYPE_LENGTH_DELIMITED) {
       throw InvalidProtocolBufferException.invalidWireType();
     }
 
@@ -861,8 +862,8 @@ final class CodedInputStreamReader implements Reader {
         return;
       }
       int nextTag = input.readTag();
-      if (nextTag != tag) {
-        // We've reached the end of the repeated field. Save the next tag value.
+      if (nextTag != tag_) {
+        // We've reached the end of the repeated field. Save the next tag_ value.
         this.nextTag = nextTag;
         return;
       }
@@ -873,7 +874,7 @@ final class CodedInputStreamReader implements Reader {
   public void readUInt32List(List<Integer> target) throws IOException {
     if (target instanceof IntArrayList) {
       IntArrayList plist = (IntArrayList) target;
-      switch (WireFormat.getTagWireType(tag)) {
+      switch (WireFormat.getTagWireType(tag_)) {
         case WIRETYPE_LENGTH_DELIMITED:
           final int bytes = input.readUInt32();
           int endPos = input.getTotalBytesRead() + bytes;
@@ -889,8 +890,8 @@ final class CodedInputStreamReader implements Reader {
               return;
             }
             int nextTag = input.readTag();
-            if (nextTag != tag) {
-              // We've reached the end of the repeated field. Save the next tag value.
+            if (nextTag != tag_) {
+              // We've reached the end of the repeated field. Save the next tag_ value.
               this.nextTag = nextTag;
               return;
             }
@@ -899,7 +900,7 @@ final class CodedInputStreamReader implements Reader {
           throw InvalidProtocolBufferException.invalidWireType();
       }
     } else {
-      switch (WireFormat.getTagWireType(tag)) {
+      switch (WireFormat.getTagWireType(tag_)) {
         case WIRETYPE_LENGTH_DELIMITED:
           final int bytes = input.readUInt32();
           int endPos = input.getTotalBytesRead() + bytes;
@@ -915,8 +916,8 @@ final class CodedInputStreamReader implements Reader {
               return;
             }
             int nextTag = input.readTag();
-            if (nextTag != tag) {
-              // We've reached the end of the repeated field. Save the next tag value.
+            if (nextTag != tag_) {
+              // We've reached the end of the repeated field. Save the next tag_ value.
               this.nextTag = nextTag;
               return;
             }
@@ -931,7 +932,7 @@ final class CodedInputStreamReader implements Reader {
   public void readEnumList(List<Integer> target) throws IOException {
     if (target instanceof IntArrayList) {
       IntArrayList plist = (IntArrayList) target;
-      switch (WireFormat.getTagWireType(tag)) {
+      switch (WireFormat.getTagWireType(tag_)) {
         case WIRETYPE_LENGTH_DELIMITED:
           final int bytes = input.readUInt32();
           int endPos = input.getTotalBytesRead() + bytes;
@@ -947,8 +948,8 @@ final class CodedInputStreamReader implements Reader {
               return;
             }
             int nextTag = input.readTag();
-            if (nextTag != tag) {
-              // We've reached the end of the repeated field. Save the next tag value.
+            if (nextTag != tag_) {
+              // We've reached the end of the repeated field. Save the next tag_ value.
               this.nextTag = nextTag;
               return;
             }
@@ -957,7 +958,7 @@ final class CodedInputStreamReader implements Reader {
           throw InvalidProtocolBufferException.invalidWireType();
       }
     } else {
-      switch (WireFormat.getTagWireType(tag)) {
+      switch (WireFormat.getTagWireType(tag_)) {
         case WIRETYPE_LENGTH_DELIMITED:
           final int bytes = input.readUInt32();
           int endPos = input.getTotalBytesRead() + bytes;
@@ -973,8 +974,8 @@ final class CodedInputStreamReader implements Reader {
               return;
             }
             int nextTag = input.readTag();
-            if (nextTag != tag) {
-              // We've reached the end of the repeated field. Save the next tag value.
+            if (nextTag != tag_) {
+              // We've reached the end of the repeated field. Save the next tag_ value.
               this.nextTag = nextTag;
               return;
             }
@@ -989,7 +990,7 @@ final class CodedInputStreamReader implements Reader {
   public void readSFixed32List(List<Integer> target) throws IOException {
     if (target instanceof IntArrayList) {
       IntArrayList plist = (IntArrayList) target;
-      switch (WireFormat.getTagWireType(tag)) {
+      switch (WireFormat.getTagWireType(tag_)) {
         case WIRETYPE_LENGTH_DELIMITED:
           final int bytes = input.readUInt32();
           verifyPackedFixed32Length(bytes);
@@ -1005,8 +1006,8 @@ final class CodedInputStreamReader implements Reader {
               return;
             }
             int nextTag = input.readTag();
-            if (nextTag != tag) {
-              // We've reached the end of the repeated field. Save the next tag value.
+            if (nextTag != tag_) {
+              // We've reached the end of the repeated field. Save the next tag_ value.
               this.nextTag = nextTag;
               return;
             }
@@ -1015,7 +1016,7 @@ final class CodedInputStreamReader implements Reader {
           throw InvalidProtocolBufferException.invalidWireType();
       }
     } else {
-      switch (WireFormat.getTagWireType(tag)) {
+      switch (WireFormat.getTagWireType(tag_)) {
         case WIRETYPE_LENGTH_DELIMITED:
           final int bytes = input.readUInt32();
           verifyPackedFixed32Length(bytes);
@@ -1031,8 +1032,8 @@ final class CodedInputStreamReader implements Reader {
               return;
             }
             int nextTag = input.readTag();
-            if (nextTag != tag) {
-              // We've reached the end of the repeated field. Save the next tag value.
+            if (nextTag != tag_) {
+              // We've reached the end of the repeated field. Save the next tag_ value.
               this.nextTag = nextTag;
               return;
             }
@@ -1047,7 +1048,7 @@ final class CodedInputStreamReader implements Reader {
   public void readSFixed64List(List<Long> target) throws IOException {
     if (target instanceof LongArrayList) {
       LongArrayList plist = (LongArrayList) target;
-      switch (WireFormat.getTagWireType(tag)) {
+      switch (WireFormat.getTagWireType(tag_)) {
         case WIRETYPE_LENGTH_DELIMITED:
           final int bytes = input.readUInt32();
           verifyPackedFixed64Length(bytes);
@@ -1063,8 +1064,8 @@ final class CodedInputStreamReader implements Reader {
               return;
             }
             int nextTag = input.readTag();
-            if (nextTag != tag) {
-              // We've reached the end of the repeated field. Save the next tag value.
+            if (nextTag != tag_) {
+              // We've reached the end of the repeated field. Save the next tag_ value.
               this.nextTag = nextTag;
               return;
             }
@@ -1073,7 +1074,7 @@ final class CodedInputStreamReader implements Reader {
           throw InvalidProtocolBufferException.invalidWireType();
       }
     } else {
-      switch (WireFormat.getTagWireType(tag)) {
+      switch (WireFormat.getTagWireType(tag_)) {
         case WIRETYPE_LENGTH_DELIMITED:
           final int bytes = input.readUInt32();
           verifyPackedFixed64Length(bytes);
@@ -1089,8 +1090,8 @@ final class CodedInputStreamReader implements Reader {
               return;
             }
             int nextTag = input.readTag();
-            if (nextTag != tag) {
-              // We've reached the end of the repeated field. Save the next tag value.
+            if (nextTag != tag_) {
+              // We've reached the end of the repeated field. Save the next tag_ value.
               this.nextTag = nextTag;
               return;
             }
@@ -1105,7 +1106,7 @@ final class CodedInputStreamReader implements Reader {
   public void readSInt32List(List<Integer> target) throws IOException {
     if (target instanceof IntArrayList) {
       IntArrayList plist = (IntArrayList) target;
-      switch (WireFormat.getTagWireType(tag)) {
+      switch (WireFormat.getTagWireType(tag_)) {
         case WIRETYPE_LENGTH_DELIMITED:
           final int bytes = input.readUInt32();
           int endPos = input.getTotalBytesRead() + bytes;
@@ -1121,8 +1122,8 @@ final class CodedInputStreamReader implements Reader {
               return;
             }
             int nextTag = input.readTag();
-            if (nextTag != tag) {
-              // We've reached the end of the repeated field. Save the next tag value.
+            if (nextTag != tag_) {
+              // We've reached the end of the repeated field. Save the next tag_ value.
               this.nextTag = nextTag;
               return;
             }
@@ -1131,7 +1132,7 @@ final class CodedInputStreamReader implements Reader {
           throw InvalidProtocolBufferException.invalidWireType();
       }
     } else {
-      switch (WireFormat.getTagWireType(tag)) {
+      switch (WireFormat.getTagWireType(tag_)) {
         case WIRETYPE_LENGTH_DELIMITED:
           final int bytes = input.readUInt32();
           int endPos = input.getTotalBytesRead() + bytes;
@@ -1147,8 +1148,8 @@ final class CodedInputStreamReader implements Reader {
               return;
             }
             int nextTag = input.readTag();
-            if (nextTag != tag) {
-              // We've reached the end of the repeated field. Save the next tag value.
+            if (nextTag != tag_) {
+              // We've reached the end of the repeated field. Save the next tag_ value.
               this.nextTag = nextTag;
               return;
             }
@@ -1163,7 +1164,7 @@ final class CodedInputStreamReader implements Reader {
   public void readSInt64List(List<Long> target) throws IOException {
     if (target instanceof LongArrayList) {
       LongArrayList plist = (LongArrayList) target;
-      switch (WireFormat.getTagWireType(tag)) {
+      switch (WireFormat.getTagWireType(tag_)) {
         case WIRETYPE_LENGTH_DELIMITED:
           final int bytes = input.readUInt32();
           int endPos = input.getTotalBytesRead() + bytes;
@@ -1179,8 +1180,8 @@ final class CodedInputStreamReader implements Reader {
               return;
             }
             int nextTag = input.readTag();
-            if (nextTag != tag) {
-              // We've reached the end of the repeated field. Save the next tag value.
+            if (nextTag != tag_) {
+              // We've reached the end of the repeated field. Save the next tag_ value.
               this.nextTag = nextTag;
               return;
             }
@@ -1189,7 +1190,7 @@ final class CodedInputStreamReader implements Reader {
           throw InvalidProtocolBufferException.invalidWireType();
       }
     } else {
-      switch (WireFormat.getTagWireType(tag)) {
+      switch (WireFormat.getTagWireType(tag_)) {
         case WIRETYPE_LENGTH_DELIMITED:
           final int bytes = input.readUInt32();
           int endPos = input.getTotalBytesRead() + bytes;
@@ -1205,8 +1206,8 @@ final class CodedInputStreamReader implements Reader {
               return;
             }
             int nextTag = input.readTag();
-            if (nextTag != tag) {
-              // We've reached the end of the repeated field. Save the next tag value.
+            if (nextTag != tag_) {
+              // We've reached the end of the repeated field. Save the next tag_ value.
               this.nextTag = nextTag;
               return;
             }

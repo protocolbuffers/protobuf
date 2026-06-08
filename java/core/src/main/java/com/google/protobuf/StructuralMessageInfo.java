@@ -12,19 +12,21 @@ import static com.google.protobuf.Internal.checkNotNull;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import javax.annotation.Nullable;
 
 /**
  * Information for the layout of a protobuf message class. This describes all of the fields
  * contained within a message.
  */
+@SuppressWarnings("nullness")
 @ExperimentalApi
 @CheckReturnValue
 final class StructuralMessageInfo implements MessageInfo {
-  private final ProtoSyntax syntax;
+  private final ProtoSyntax syntax_;
   private final boolean messageSetWireFormat;
-  private final int[] checkInitialized;
-  private final FieldInfo[] fields;
-  private final MessageLite defaultInstance;
+  private final int[] checkInitialized_;
+  private final FieldInfo[] fields_;
+  private final MessageLite defaultInstance_;
 
   /**
    * Constructor.
@@ -38,17 +40,17 @@ final class StructuralMessageInfo implements MessageInfo {
       int[] checkInitialized,
       FieldInfo[] fields,
       Object defaultInstance) {
-    this.syntax = syntax;
+    this.syntax_ = syntax;
     this.messageSetWireFormat = messageSetWireFormat;
-    this.checkInitialized = checkInitialized;
-    this.fields = fields;
-    this.defaultInstance = (MessageLite) checkNotNull(defaultInstance, "defaultInstance");
+    this.checkInitialized_ = checkInitialized;
+    this.fields_ = fields;
+    this.defaultInstance_ = (MessageLite) checkNotNull(defaultInstance, "defaultInstance");
   }
 
   /** Gets the syntax for the message (e.g. PROTO2, PROTO3). */
   @Override
   public ProtoSyntax getSyntax() {
-    return syntax;
+    return syntax_;
   }
 
   /** Indicates whether or not the message should be represented with message set wire format. */
@@ -59,7 +61,7 @@ final class StructuralMessageInfo implements MessageInfo {
 
   /** An array of field numbers that need to be checked for isInitialized(). */
   public int[] getCheckInitialized() {
-    return checkInitialized;
+    return checkInitialized_;
   }
 
   /**
@@ -67,12 +69,12 @@ final class StructuralMessageInfo implements MessageInfo {
    * field number.
    */
   public FieldInfo[] getFields() {
-    return fields;
+    return fields_;
   }
 
   @Override
   public MessageLite getDefaultInstance() {
-    return defaultInstance;
+    return defaultInstance_;
   }
 
   /** Helper method for creating a new builder for {@link MessageInfo}. */
@@ -88,11 +90,11 @@ final class StructuralMessageInfo implements MessageInfo {
   /** A builder of {@link MessageInfo} instances. */
   public static final class Builder {
     private final List<FieldInfo> fields;
-    private ProtoSyntax syntax;
+    private @Nullable ProtoSyntax syntax;
     private boolean wasBuilt;
     private boolean messageSetWireFormat;
     private int[] checkInitialized = null;
-    private Object defaultInstance;
+    private @Nullable Object defaultInstance;
 
     public Builder() {
       fields = new ArrayList<FieldInfo>();

@@ -13,6 +13,7 @@ import com.google.protobuf.GeneratedMessageLite.ExtensionDescriptor;
 import com.google.protobuf.Internal.ProtobufList;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import javax.annotation.Nullable;
 
 /**
  * Helper functions to decode protobuf wire format from a byte array.
@@ -23,6 +24,7 @@ import java.nio.charset.StandardCharsets;
  * crossing protobuf public API boundaries.
  */
 @CheckReturnValue
+@SuppressWarnings("nullness")
 final class ArrayDecoders {
   static final int DEFAULT_RECURSION_LIMIT = 100;
 
@@ -40,7 +42,7 @@ final class ArrayDecoders {
   static final class Registers {
     public int int1;
     public long long1;
-    public Object object1;
+    public @Nullable Object object1;
     public final ExtensionRegistryLite extensionRegistry;
     public int recursionDepth;
 

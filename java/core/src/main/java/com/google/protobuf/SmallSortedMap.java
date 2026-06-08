@@ -16,6 +16,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
+import javax.annotation.Nullable;
 
 /**
  * A custom map implementation from FieldDescriptor to Object optimized to minimize the number of
@@ -55,6 +56,7 @@ import java.util.TreeMap;
 // This class is final for all intents and purposes because the constructor is
 // private. However, the FieldDescriptor-specific logic is encapsulated in
 // a subclass to aid testability of the core logic.
+@SuppressWarnings("nullness")
 class SmallSortedMap<K extends FieldSet.FieldDescriptorLite<K>, V> extends AbstractMap<K, V> {
 
   static final int DEFAULT_FIELD_MAP_ARRAY_SIZE = 16;
@@ -98,19 +100,19 @@ class SmallSortedMap<K extends FieldSet.FieldDescriptorLite<K>, V> extends Abstr
   // Can't declare this as Entry[] because Entry is generic, so you get "generic array creation"
   // error. Instead, use an Object[], and cast to Entry on read.
   // null Object[] means 'empty'.
-  private Object[] entries;
+  private @Nullable Object[] entries;
   // Number of elements in entries that are valid, like ArrayList.size.
   private int entriesSize;
 
-  private Map<K, V> overflowEntries;
+  private Map<K, V> overflowEntries_;
   private boolean isImmutable;
   // The EntrySet is a stateless view of the Map. It's initialized the first
   // time it is requested and reused henceforth.
-  private volatile EntrySet lazyEntrySet;
+  private volatile @Nullable EntrySet lazyEntrySet;
   private Map<K, V> overflowEntriesDescending;
 
   private SmallSortedMap() {
-    this.overflowEntries = Collections.emptyMap();
+    this.overflowEntries_ = Collections.emptyMap();
     this.overflowEntriesDescending = Collections.emptyMap();
   }
 
@@ -121,10 +123,10 @@ class SmallSortedMap<K extends FieldSet.FieldDescriptorLite<K>, V> extends Abstr
       // because none of the array's accessors are exposed. The iterator() of
       // overflowEntries, on the other hand, is exposed so it must be made
       // unmodifiable.
-      overflowEntries =
-          overflowEntries.isEmpty()
+      overflowEntries_ =
+          overflowEntries_.isEmpty()
               ? Collections.<K, V>emptyMap()
-              : Collections.unmodifiableMap(overflowEntries);
+              : Collections.unmodifiableMap(overflowEntries_);
       overflowEntriesDescending =
           overflowEntriesDescending.isEmpty()
               ? Collections.<K, V>emptyMap()
@@ -163,19 +165,19 @@ class SmallSortedMap<K extends FieldSet.FieldDescriptorLite<K>, V> extends Abstr
    * @return There number of overflow entries.
    */
   public int getNumOverflowEntries() {
-    return overflowEntries.size();
+    return overflowEntries_.size();
   }
 
   /**
    * @return An iterable over the overflow entries.
    */
   public Iterable<Map.Entry<K, V>> getOverflowEntries() {
-    return overflowEntries.isEmpty() ? Collections.emptySet() : overflowEntries.entrySet();
+    return overflowEntries_.isEmpty() ? Collections.emptySet() : overflowEntries_.entrySet();
   }
 
   @Override
   public int size() {
-    return entriesSize + overflowEntries.size();
+    return entriesSize + overflowEntries_.size();
   }
 
   /**
@@ -187,7 +189,7 @@ class SmallSortedMap<K extends FieldSet.FieldDescriptorLite<K>, V> extends Abstr
   public boolean containsKey(Object o) {
     @SuppressWarnings("unchecked")
     final K key = (K) o;
-    return binarySearchInArray(key) >= 0 || overflowEntries.containsKey(key);
+    return binarySearchInArray(key) >= 0 || overflowEntries_.containsKey(key);
   }
 
   /**
@@ -205,7 +207,7 @@ class SmallSortedMap<K extends FieldSet.FieldDescriptorLite<K>, V> extends Abstr
       Entry e = (Entry) entries[index];
       return e.getValue();
     }
-    return overflowEntries.get(key);
+    return overflowEntries_.get(key);
   }
 
   @Override
@@ -247,8 +249,8 @@ class SmallSortedMap<K extends FieldSet.FieldDescriptorLite<K>, V> extends Abstr
       entries = null;
       entriesSize = 0;
     }
-    if (!overflowEntries.isEmpty()) {
-      overflowEntries.clear();
+    if (!overflowEntries_.isEmpty()) {
+      overflowEntries_.clear();
     }
   }
 
@@ -269,10 +271,10 @@ class SmallSortedMap<K extends FieldSet.FieldDescriptorLite<K>, V> extends Abstr
     }
     // overflowEntries might be Collections.unmodifiableMap(), so only
     // call remove() if it is non-empty.
-    if (overflowEntries.isEmpty()) {
+    if (overflowEntries_.isEmpty()) {
       return null;
     } else {
-      return overflowEntries.remove(key);
+      return overflowEntries_.remove(key);
     }
   }
 
@@ -284,7 +286,7 @@ class SmallSortedMap<K extends FieldSet.FieldDescriptorLite<K>, V> extends Abstr
     // shift items across
     System.arraycopy(entries, index + 1, entries, index, entriesSize - index - 1);
     entriesSize--;
-    if (!overflowEntries.isEmpty()) {
+    if (!overflowEntries_.isEmpty()) {
       // Shift the first entry in the overflow to be the last entry in the
       // array.
       final Iterator<Map.Entry<K, V>> iterator = getOverflowEntriesMutable().entrySet().iterator();
@@ -371,11 +373,11 @@ class SmallSortedMap<K extends FieldSet.FieldDescriptorLite<K>, V> extends Abstr
    */
   private SortedMap<K, V> getOverflowEntriesMutable() {
     checkMutable();
-    if (overflowEntries.isEmpty() && !(overflowEntries instanceof TreeMap)) {
-      overflowEntries = new TreeMap<K, V>();
-      overflowEntriesDescending = ((TreeMap<K, V>) overflowEntries).descendingMap();
+    if (overflowEntries_.isEmpty() && !(overflowEntries_ instanceof TreeMap)) {
+      overflowEntries_ = new TreeMap<K, V>();
+      overflowEntriesDescending = ((TreeMap<K, V>) overflowEntries_).descendingMap();
     }
-    return (SortedMap<K, V>) overflowEntries;
+    return (SortedMap<K, V>) overflowEntries_;
   }
 
   /**
@@ -536,12 +538,12 @@ class SmallSortedMap<K extends FieldSet.FieldDescriptorLite<K>, V> extends Abstr
 
     private int pos = -1;
     private boolean nextCalledBeforeRemove;
-    private Iterator<Map.Entry<K, V>> lazyOverflowIterator;
+    private @Nullable Iterator<Map.Entry<K, V>> lazyOverflowIterator;
 
     @Override
     public boolean hasNext() {
       return (pos + 1) < entriesSize
-          || (!overflowEntries.isEmpty() && getOverflowIterator().hasNext());
+          || (!overflowEntries_.isEmpty() && getOverflowIterator().hasNext());
     }
 
     @Override
@@ -579,7 +581,7 @@ class SmallSortedMap<K extends FieldSet.FieldDescriptorLite<K>, V> extends Abstr
      */
     private Iterator<Map.Entry<K, V>> getOverflowIterator() {
       if (lazyOverflowIterator == null) {
-        lazyOverflowIterator = overflowEntries.entrySet().iterator();
+        lazyOverflowIterator = overflowEntries_.entrySet().iterator();
       }
       return lazyOverflowIterator;
     }
@@ -592,7 +594,7 @@ class SmallSortedMap<K extends FieldSet.FieldDescriptorLite<K>, V> extends Abstr
   private class DescendingEntryIterator implements Iterator<Map.Entry<K, V>> {
 
     private int pos = entriesSize;
-    private Iterator<Map.Entry<K, V>> lazyOverflowIterator;
+    private @Nullable Iterator<Map.Entry<K, V>> lazyOverflowIterator;
 
     @Override
     public boolean hasNext() {
@@ -657,7 +659,7 @@ class SmallSortedMap<K extends FieldSet.FieldDescriptorLite<K>, V> extends Abstr
     }
 
     if (numArrayEntries != size) {
-      return overflowEntries.equals(other.overflowEntries);
+      return overflowEntries_.equals(other.overflowEntries_);
     }
 
     return true;
@@ -672,7 +674,7 @@ class SmallSortedMap<K extends FieldSet.FieldDescriptorLite<K>, V> extends Abstr
     }
     // Avoid the iterator allocation if possible.
     if (getNumOverflowEntries() > 0) {
-      h += overflowEntries.hashCode();
+      h += overflowEntries_.hashCode();
     }
     return h;
   }

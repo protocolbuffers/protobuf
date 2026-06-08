@@ -7,6 +7,7 @@
 
 package com.google.protobuf;
 
+import com.google.common.annotations.J2ktIncompatible;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -21,6 +22,7 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
+import javax.annotation.Nullable;
 
 /**
  * Class to represent {@code ByteStrings} formed by concatenation of other ByteStrings, without
@@ -42,6 +44,7 @@ import java.util.NoSuchElementException;
  *
  * @author carlanton@google.com (Carl Haverl)
  */
+@SuppressWarnings("nullness")
 final class RopeByteString extends ByteString {
 
   /**
@@ -111,7 +114,7 @@ final class RopeByteString extends ByteString {
   private final ByteString left;
   private final ByteString right;
   private final int leftLength;
-  private final int treeDepth;
+  private final int treeDepth_;
 
   /**
    * Create a new RopeByteString, which can be thought of as a new tree node, by recording
@@ -125,7 +128,7 @@ final class RopeByteString extends ByteString {
     this.right = right;
     leftLength = left.size();
     totalLength = leftLength + right.size();
-    treeDepth = Math.max(left.getTreeDepth(), right.getTreeDepth()) + 1;
+    treeDepth_ = Math.max(left.getTreeDepth(), right.getTreeDepth()) + 1;
   }
 
   /**
@@ -309,7 +312,7 @@ final class RopeByteString extends ByteString {
 
   @Override
   protected int getTreeDepth() {
-    return treeDepth;
+    return treeDepth_;
   }
 
   /**
@@ -321,7 +324,7 @@ final class RopeByteString extends ByteString {
    */
   @Override
   protected boolean isBalanced() {
-    return totalLength >= minLength(treeDepth);
+    return totalLength >= minLength(treeDepth_);
   }
 
   /**
@@ -788,10 +791,12 @@ final class RopeByteString extends ByteString {
 
   private static final long serialVersionUID = 1L;
 
+  @J2ktIncompatible
   Object writeReplace() {
     return ByteString.wrap(toByteArray());
   }
 
+  @J2ktIncompatible
   private void readObject(@SuppressWarnings("unused") ObjectInputStream in) throws IOException {
     throw new InvalidObjectException("RopeByteStream instances are not to be serialized directly");
   }
@@ -799,9 +804,9 @@ final class RopeByteString extends ByteString {
   /** This class is the {@link RopeByteString} equivalent for {@link ByteArrayInputStream}. */
   private class RopeInputStream extends InputStream {
     // Iterates through the pieces of the rope
-    private PieceIterator pieceIterator;
+    private @Nullable PieceIterator pieceIterator;
     // The current piece
-    private LeafByteString currentPiece;
+    private @Nullable LeafByteString currentPiece;
     // The size of the current piece
     private int currentPieceSize;
     // The index of the next byte to read in the current piece
@@ -911,7 +916,7 @@ final class RopeByteString extends ByteString {
     }
 
     @Override
-    public synchronized void reset() {
+    public void reset() {
       // Just reinitialize and skip the specified number of bytes.
       initialize();
       int unused = readSkipInternal(null, 0, mark);

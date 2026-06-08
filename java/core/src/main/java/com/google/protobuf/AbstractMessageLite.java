@@ -133,7 +133,9 @@ public abstract class AbstractMessageLite<
      * Retrieves the field number of the field which was set in this {@code oneof}, or {@code 0} if
      * none were.
      */
-    int getNumber();
+    default int getNumber() {
+      return 0;
+    }
   }
 
   /**
