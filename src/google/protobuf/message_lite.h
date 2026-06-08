@@ -345,8 +345,8 @@ struct ClassDataFull;
 struct PROTOBUF_EXPORT ClassData {
 #ifndef PROTOBUF_MESSAGE_GLOBALS
   const MessageLite* prototype;
-#endif  // PROTOBUF_MESSAGE_GLOBALS
   const internal::TcParseTableBase* tc_table;
+#endif  // PROTOBUF_MESSAGE_GLOBALS
   bool (*is_initialized)(const MessageLite&);
   void (*merge_to_from)(MessageLite& to, const MessageLite& from_msg);
   internal::MessageCreator message_creator;
@@ -378,8 +378,8 @@ struct PROTOBUF_EXPORT ClassData {
       :
 #ifndef PROTOBUF_MESSAGE_GLOBALS
         prototype(prototype),
-#endif  // PROTOBUF_MESSAGE_GLOBALS
         tc_table(tc_table),
+#endif  // PROTOBUF_MESSAGE_GLOBALS
         is_initialized(is_initialized),
         merge_to_from(merge_to_from),
         message_creator(message_creator),
@@ -405,8 +405,8 @@ struct PROTOBUF_EXPORT ClassData {
       :
 #ifndef PROTOBUF_MESSAGE_GLOBALS
         prototype(prototype),
-#endif  // PROTOBUF_MESSAGE_GLOBALS
         tc_table(tc_table),
+#endif  // PROTOBUF_MESSAGE_GLOBALS
         is_initialized(is_initialized),
         merge_to_from(merge_to_from),
         message_creator(message_creator),
@@ -421,6 +421,8 @@ struct PROTOBUF_EXPORT ClassData {
   }
 
   const ClassDataFull& full() const;
+
+  const TcParseTableBase* GetTcParseTable() const;
 
 #ifndef PROTOBUF_MESSAGE_GLOBALS
   const MessageLite* default_instance() const { return prototype; }
@@ -642,10 +644,17 @@ struct GeneratedMessageTraitsT {
 };
 #else
 struct MessageGlobalsBase {
-  template <size_t R>
+  template <size_t R, size_t KnownAlignment = 0>
   static constexpr size_t RoundUpTo(size_t n) {
     static_assert(absl::has_single_bit(R), "Must be power of two");
-    return (n + (R - 1)) & ~(R - 1);
+    if constexpr (KnownAlignment != 0) {
+      assert(n % KnownAlignment == 0);
+    }
+    if constexpr (KnownAlignment >= R) {
+      return n;
+    } else {
+      return (n + (R - 1)) & ~(R - 1);
+    }
   }
 
   static constexpr size_t OffsetToDefault() {
@@ -674,7 +683,10 @@ struct MessageGlobalsBase {
   static const TcParseTableBase* ToParseTableBase(const void* g) {
     const auto* globals = static_cast<const MessageGlobalsBase*>(g);
     ABSL_DCHECK_NE(globals, nullptr);
-    return globals->class_data.tc_table;
+    ABSL_DCHECK(!globals->class_data.is_dynamic);
+    return reinterpret_cast<const TcParseTableBase*>(
+        ToDefaultInstance<char>(g) +
+        RoundUpTo<8, alignof(void*)>(globals->class_data.allocation_size()));
   }
 
   // It also aliases to ClassDataLite.
@@ -697,7 +709,25 @@ inline const MessageLite* ClassData::default_instance() const {
   static_assert(PROTOBUF_FIELD_OFFSET(MessageGlobalsBase, class_data) == 0);
   return MessageGlobalsBase::ToDefaultInstance(this);
 }
+
 #endif  // PROTOBUF_MESSAGE_GLOBALS
+
+inline const TcParseTableBase* ClassData::GetTcParseTable() const {
+#ifdef PROTOBUF_MESSAGE_GLOBALS
+  if (ABSL_PREDICT_FALSE(is_dynamic)) {
+#else
+  if (ABSL_PREDICT_FALSE(tc_table == nullptr)) {
+#endif
+    ABSL_DCHECK(!is_lite);
+    return full().descriptor_methods()->get_tc_table(this);
+  }
+#ifdef PROTOBUF_MESSAGE_GLOBALS
+  return MessageGlobalsBase::ToParseTableBase(this);
+#else
+  return tc_table;
+#endif
+}
+
 }  // namespace internal
 
 // Interface to light weight protocol messages.
@@ -1167,13 +1197,7 @@ class PROTOBUF_EXPORT MessageLite {
   const internal::TcParseTableBase* GetTcParseTable() const {
     auto* data = GetClassData();
     ABSL_DCHECK(data != nullptr);
-
-    auto* tc_table = data->tc_table;
-    if (ABSL_PREDICT_FALSE(tc_table == nullptr)) {
-      ABSL_DCHECK(!data->is_lite);
-      return data->full().descriptor_methods()->get_tc_table(data);
-    }
-    return tc_table;
+    return data->GetTcParseTable();
   }
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
