@@ -89,12 +89,13 @@ public abstract class AbstractProto2LiteSchemaTest extends AbstractSchemaTest<Pr
     return messageFactory().newMessagesMissingRequiredFields();
   }
 
+  @SuppressWarnings("unchecked")
   @Test
   public void mapsShouldRoundtrip() throws IOException {
     roundtrip(
         "Proto2MessageLiteWithMaps",
         new Proto2MessageLiteFactory(2, 10, 2, 2).newMessageWithMaps(),
-        Protobuf.getInstance().schemaFor(Proto2MessageLiteWithMaps.class));
+        Protobuf.getInstance().schemaFor((Class) Proto2MessageLiteWithMaps.class));
   }
 
   @Test

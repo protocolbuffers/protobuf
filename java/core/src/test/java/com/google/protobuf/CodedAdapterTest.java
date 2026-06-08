@@ -53,7 +53,7 @@ public final class CodedAdapterTest {
     assertThat(actual).isEqualTo(expected);
   }
 
-  public static <T> byte[] toByteArray(T msg, int size) throws Exception {
+  public static <T extends GeneratedMessageLite<?, ?>> byte[] toByteArray(T msg, int size) throws Exception {
     Schema<T> schema = Protobuf.getInstance().schemaFor(msg);
     byte[] out = new byte[size];
     CodedOutputStreamWriter writer =
@@ -63,7 +63,7 @@ public final class CodedAdapterTest {
     return out;
   }
 
-  public static <T> T fromByteArray(byte[] data, Class<T> messageType) {
+  public static <T extends GeneratedMessageLite<?, ?>> T fromByteArray(byte[] data, Class<T> messageType) {
     Schema<T> schema = Protobuf.getInstance().schemaFor(messageType);
     try {
       T msg = schema.newInstance();
