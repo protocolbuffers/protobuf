@@ -10,13 +10,13 @@
 #include "absl/algorithm/container.h"
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
+#include "absl/types/optional.h"
 #include "google/protobuf/compiler/cpp/helpers.h"
 #include "google/protobuf/compiler/cpp/options.h"
 #include "google/protobuf/compiler/cpp/parse_function_generator.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/generated_message_tctable_decl.h"
 #include "google/protobuf/generated_message_tctable_gen.h"
-#include "google/protobuf/port.h"
 
 namespace google {
 namespace protobuf {
@@ -106,8 +106,8 @@ MessageLayoutHelper::BuildFastParseTable(const Options& options) const {
     }
   }
   auto field_options = ParseFunctionGenerator::BuildFieldOptions(
-      descriptor_, ordered_fields, options,
-      /*has_bit_indices=*/{});
+      descriptor_, ordered_fields,
+      /*get_has_bit_index=*/[](const auto*) { return absl::nullopt; }, options);
   auto table_info = ParseFunctionGenerator::BuildTcTableInfoFromDescriptor(
       descriptor_, options, field_options);
   return table_info.fast_path_fields;

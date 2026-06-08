@@ -2,6 +2,7 @@
 
 from collections.abc import Callable
 import functools
+import sys
 
 import google_benchmark
 import numpy as np
@@ -22,13 +23,57 @@ def benchmark(
   @google_benchmark.register
   @google_benchmark.option.unit(google_benchmark.kMillisecond)
   @google_benchmark.option.arg_names(['num_bytes'])
-  @google_benchmark.option.arg(100 * 1024 * 1024)
+  @google_benchmark.option.arg(1024 * 1024 * 100)
   @functools.wraps(func)
   def wrapper(state: google_benchmark.State) -> None:
     func(state)
     state.bytes_processed = state.iterations * state.range(0)
 
   return wrapper
+
+
+@benchmark
+def bench_extend_int32(state: google_benchmark.State):
+  arr = make_array(state.range(0)).view(dtype=np.int32)
+  msg = unittest_pb2.TestAllTypes()
+  while state:
+    state.pause_timing()
+    msg.Clear()
+    state.resume_timing()
+    msg.repeated_int32.extend(arr)
+
+
+@benchmark
+def bench_extend_int64(state: google_benchmark.State):
+  arr = make_array(state.range(0)).view(dtype=np.int64)
+  msg = unittest_pb2.TestAllTypes()
+  while state:
+    state.pause_timing()
+    msg.Clear()
+    state.resume_timing()
+    msg.repeated_int64.extend(arr)
+
+
+@benchmark
+def bench_extend_float(state: google_benchmark.State):
+  arr = make_array(state.range(0)).view(dtype=np.float32)
+  msg = unittest_pb2.TestAllTypes()
+  while state:
+    state.pause_timing()
+    msg.Clear()
+    state.resume_timing()
+    msg.repeated_float.extend(arr)
+
+
+@benchmark
+def bench_extend_double(state: google_benchmark.State):
+  arr = make_array(state.range(0)).view(dtype=np.float64)
+  msg = unittest_pb2.TestAllTypes()
+  while state:
+    state.pause_timing()
+    msg.Clear()
+    state.resume_timing()
+    msg.repeated_double.extend(arr)
 
 
 @benchmark
@@ -51,8 +96,12 @@ def bench_assign_bytes_with_conversion(state: google_benchmark.State):
     state.pause_timing()
     msg.Clear()
     state.resume_timing()
-    msg.optional_bytes = arr.tobytes()
+    msg.optional_bytes = memoryview(arr)
 
 
 if __name__ == '__main__':
-  google_benchmark.main()
+  if __name__ == '__main__':
+    if any(arg.startswith('--benchmark_filter') for arg in sys.argv):
+      google_benchmark.main()
+    else:
+      print('No benchmark filter specified. Skipping benchmarks.')

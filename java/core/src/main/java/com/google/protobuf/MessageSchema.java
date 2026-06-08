@@ -65,7 +65,7 @@ import java.util.Set;
 
 /** Schema used for standard messages. */
 @CheckReturnValue
-@SuppressWarnings({"unchecked", "rawtypes"})
+@SuppressWarnings({"unchecked", "rawtypes", "removal"})
 final class MessageSchema<T> implements Schema<T> {
   private static final int INTS_PER_FIELD = 3;
   private static final int OFFSET_BITS = 20;
@@ -2927,6 +2927,7 @@ final class MessageSchema<T> implements Schema<T> {
   }
 
   /** Decodes a map entry key or value. Stores result in registers.object1. */
+  @SuppressWarnings("unchecked")
   private int decodeMapEntryValue(
       byte[] data,
       int position,
@@ -2975,7 +2976,12 @@ final class MessageSchema<T> implements Schema<T> {
       case MESSAGE:
         position =
             decodeMessageField(
-                Protobuf.getInstance().schemaFor(messageType), data, position, limit, registers);
+                Protobuf.getInstance()
+                    .schemaFor((Class<? extends GeneratedMessageLite<?, ?>>) messageType),
+                data,
+                position,
+                limit,
+                registers);
         break;
       case SINT32:
         position = decodeVarint32(data, position, registers);
@@ -4081,7 +4087,7 @@ final class MessageSchema<T> implements Schema<T> {
     Schema schema = null;
     for (Object nested : map.values()) {
       if (schema == null) {
-        schema = Protobuf.getInstance().schemaFor(nested.getClass());
+        schema = Protobuf.getInstance().schemaFor(((GeneratedMessageLite<?, ?>) nested).getClass());
       }
       if (!schema.isInitialized(nested)) {
         return false;

@@ -82,3 +82,6 @@ message FALSE {}
 message NULL {}
 message VOID {}
 message ITERABLE {}
+message OBJECT {}
+message MIXED {}
+message NEVER {}

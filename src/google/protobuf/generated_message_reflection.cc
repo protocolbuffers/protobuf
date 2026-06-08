@@ -114,6 +114,69 @@ Message* MaybeForceCopy(Arena* arena, Message* msg) {
 }  // anonymous namespace
 
 namespace internal {
+ReflectionSchema::ReflectionSchema(const Message* default_instance,
+                                   const uint32_t* offsets,
+                                   const uint32_t* has_bit_indices,
+                                   int has_bits_offset, int extensions_offset,
+                                   int oneof_case_offset, int object_size,
+                                   int weak_field_map_offset, int split_offset,
+                                   int sizeof_split)
+    : default_instance_(default_instance),
+      offsets_(offsets),
+      has_bit_indices_(has_bit_indices),
+      has_bits_offset_(has_bits_offset),
+      extensions_offset_(extensions_offset),
+      oneof_case_offset_(oneof_case_offset),
+      object_size_(object_size),
+      weak_field_map_offset_(weak_field_map_offset),
+      split_offset_(split_offset),
+      sizeof_split_(sizeof_split) {}
+
+ReflectionSchema ReflectionSchema::MigrationToReflectionSchema(
+    const MessageGlobalsBase* const* message_globals, const uint32_t* offsets,
+    MigrationSchema migration_schema) {
+  ReflectionSchema result;
+  result.default_instance_ =
+      MessageGlobalsBase::ToDefaultInstance<Message>(*message_globals);
+  int index = migration_schema.offsets_index;
+
+  // First values are offsets to the special fields, but they are optional.
+  // The first value is a bitmap marking which fields are present.
+  // The order of the fields must match MessageGenerator::GenerateOffsets
+  //
+  // To add new fields, we add them at the end and since they are optional the
+  // bootstrap files will automatically look as if those fields are not present.
+  const uint32_t bits = offsets[index++];
+
+  int bit = 0;
+  const auto next = [&] {
+    return (bits & (1 << bit++)) ? offsets[index++] : ~uint32_t{};
+  };
+  const auto next_pointer = [&]() -> const uint32_t* {
+    const uint32_t n = next();
+    if (n == ~uint32_t{}) {
+      return nullptr;
+    }
+    return offsets + migration_schema.offsets_index + n;
+  };
+  result.has_bits_offset_ = next();
+  result.extensions_offset_ = next();
+  result.oneof_case_offset_ = next();
+  result.weak_field_map_offset_ = next();
+  // Old result.inlined_string_donated_offset_
+  ABSL_CHECK_EQ(next(), ~uint32_t{});
+  result.split_offset_ = next();
+  result.sizeof_split_ = next();
+
+  result.has_bit_indices_ = next_pointer();
+  // Old result.inlined_string_indices_
+  ABSL_CHECK_EQ(next_pointer(), nullptr);
+
+  result.offsets_ = offsets + index;
+  result.object_size_ = migration_schema.object_size;
+
+  return result;
+}
 
 void InitializeFileDescriptorDefaultInstances() {
 #if !defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
@@ -251,6 +314,16 @@ namespace {
 using internal::GetConstPointerAtOffset;
 using internal::GetConstRefAtOffset;
 using internal::GetPointerAtOffset;
+
+template <typename String>
+static void Assign(std::string& str, String&& value) {
+  using RawString = std::decay_t<String>;
+  if constexpr (std::is_same_v<RawString, absl::Cord>) {
+    absl::CopyCordToString(value, &str);
+  } else {
+    str.assign(std::forward<String>(value));
+  }
+}
 
 void ReportReflectionUsageError(const Descriptor* descriptor,
                                 const FieldDescriptor* field,
@@ -1576,7 +1649,7 @@ void Reflection::ClearField(Message* message,
               if (field->has_default_value()) {
                 MutableRaw<MicroString>(message, field)
                     ->ClearToDefault(
-                        GetRaw<MicroString>(*schema_.default_instance_, field),
+                        GetRaw<MicroString>(*schema_.default_instance(), field),
                         message->GetArena());
               } else {
                 MutableRaw<MicroString>(message, field)->Clear();
@@ -1798,7 +1871,6 @@ inline int32_t Reflection::IsEmptyOrCollectSetFields(
   // seems more trouble than it is worth.
   const uint32_t* const has_bits =
       schema_.HasHasbits() ? GetHasBits(message) : nullptr;
-  const uint32_t* const has_bits_indices = schema_.has_bit_indices_;
   if constexpr (!kForIsEmpty) {
     output->reserve(descriptor.field_count());
   }
@@ -1829,19 +1901,17 @@ inline int32_t Reflection::IsEmptyOrCollectSetFields(
     ++i;
     const OneofDescriptor* containing_oneof = field.containing_oneof();
     if (schema_.InRealOneof(&field)) {
-      const uint32_t* const oneof_case_array =
-          GetConstPointerAtOffset<uint32_t>(&message,
-                                            schema_.oneof_case_offset_);
+      uint32_t oneof_case = GetConstRefAtOffset<uint32_t>(
+          message, schema_.GetOneofCaseOffset(containing_oneof));
       // Equivalent to: HasOneofField(message, field)
-      if (static_cast<int64_t>(oneof_case_array[containing_oneof->index()]) ==
-          field.number()) {
+      if (static_cast<int64_t>(oneof_case) == field.number()) {
         PROTO_REFLECTION_APPEND_OR_RETURN();
       }
-    } else if (has_bits &&
-               has_bits_indices[i] != static_cast<uint32_t>(kNoHasbit)) {
+    } else if (uint32_t hasbit_index =
+                   schema_.HasBitIndex(&field, /*field_index=*/i);
+               hasbit_index != static_cast<uint32_t>(kNoHasbit)) {
       // Equivalent to: HasFieldSingular(message, field)
-      if (IsFieldPresentGivenHasbits(message, &field, has_bits,
-                                     has_bits_indices[i])) {
+      if (IsFieldPresentGivenHasbits(message, &field, has_bits, hasbit_index)) {
         PROTO_REFLECTION_APPEND_OR_RETURN();
       }
     } else if (HasFieldWithHasbits(message, &field)) {
@@ -2125,13 +2195,18 @@ absl::string_view Reflection::GetStringView(const Message& message,
 }
 
 
-void Reflection::SetString(Message* message, const FieldDescriptor* field,
-                           std::string value) const {
-  USAGE_MUTABLE_CHECK_ALL(SetString, SINGULAR, STRING);
+template <typename String>
+void Reflection::SetStringImpl(Message* message, const FieldDescriptor* field,
+                               String&& value) const {
   Arena* arena = message->GetArena();
   if (field->is_extension()) {
-    return MutableExtensionSet(message)->Set<std::string>(
-        arena, field->number(), field->type(), std::move(value), field);
+    Assign(*MutableExtensionSet(message)->MutableString(
+               arena, field->number(),
+               field->requires_utf8_validation() ? FieldDescriptor::TYPE_STRING
+                                                 : FieldDescriptor::TYPE_BYTES,
+               field),
+           std::forward<String>(value));
+    return;
   } else {
     switch (field->cpp_string_type()) {
       case FieldDescriptor::CppStringType::kCord:
@@ -2141,15 +2216,17 @@ void Reflection::SetString(Message* message, const FieldDescriptor* field,
             *MutableField<absl::Cord*>(message, field) =
                 Arena::Create<absl::Cord>(arena);
           }
-          *(*MutableField<absl::Cord*>(message, field)) = value;
+          **MutableField<absl::Cord*>(message, field) =
+              std::forward<String>(value);
           break;
         }
-        *MutableField<absl::Cord>(message, field) = value;
+        *MutableField<absl::Cord>(message, field) = std::forward<String>(value);
         break;
       case FieldDescriptor::CppStringType::kView:
       case FieldDescriptor::CppStringType::kString: {
         if (IsInlined(field)) {
-          MutableField<InlinedStringField>(message, field)->Set(value, arena);
+          MutableField<InlinedStringField>(message, field)
+              ->Set(std::forward<String>(value), arena);
           break;
         } else if (IsMicroString(field)) {
           if (schema_.InRealOneof(field) && !HasOneofField(*message, field)) {
@@ -2157,7 +2234,7 @@ void Reflection::SetString(Message* message, const FieldDescriptor* field,
             MutableField<MicroString>(message, field)->InitDefault();
           }
           MutableField<MicroString>(message, field)
-              ->Set(std::move(value), arena);
+              ->Set(std::forward<String>(value), arena);
           break;
         }
 
@@ -2170,7 +2247,7 @@ void Reflection::SetString(Message* message, const FieldDescriptor* field,
           MutableField<ArenaStringPtr>(message, field)->InitDefault();
         }
         MutableField<ArenaStringPtr>(message, field)
-            ->Set(std::move(value), arena);
+            ->Set(std::forward<String>(value), arena);
         break;
       }
     }
@@ -2178,51 +2255,21 @@ void Reflection::SetString(Message* message, const FieldDescriptor* field,
 }
 
 void Reflection::SetString(Message* message, const FieldDescriptor* field,
+                           std::string value) const {
+  USAGE_MUTABLE_CHECK_ALL(SetString, SINGULAR, STRING);
+  SetStringImpl(message, field, std::move(value));
+}
+
+void Reflection::SetStringView(Message* message, const FieldDescriptor* field,
+                               absl::string_view value) const {
+  USAGE_MUTABLE_CHECK_ALL(SetStringView, SINGULAR, STRING);
+  SetStringImpl(message, field, value);
+}
+
+void Reflection::SetString(Message* message, const FieldDescriptor* field,
                            const absl::Cord& value) const {
   USAGE_MUTABLE_CHECK_ALL(SetString, SINGULAR, STRING);
-  Arena* arena = message->GetArena();
-  if (field->is_extension()) {
-    return absl::CopyCordToString(
-        value, MutableExtensionSet(message)->MutableString(
-                   arena, field->number(), field->type(), field));
-  } else {
-    switch (field->cpp_string_type()) {
-      case FieldDescriptor::CppStringType::kCord:
-        if (schema_.InRealOneof(field)) {
-          if (!HasOneofField(*message, field)) {
-            ClearOneof(message, field->containing_oneof());
-            *MutableField<absl::Cord*>(message, field) =
-                Arena::Create<absl::Cord>(arena);
-          }
-          *(*MutableField<absl::Cord*>(message, field)) = value;
-        } else {
-          *MutableField<absl::Cord>(message, field) = value;
-        }
-        break;
-      case FieldDescriptor::CppStringType::kView:
-      case FieldDescriptor::CppStringType::kString: {
-        if (IsInlined(field)) {
-          auto* str = MutableField<InlinedStringField>(message, field);
-          str->Set(std::string(value), arena);
-        } else if (IsMicroString(field)) {
-          if (schema_.InRealOneof(field) && !HasOneofField(*message, field)) {
-            ClearOneof(message, field->containing_oneof());
-            MutableField<MicroString>(message, field)->InitDefault();
-          }
-          auto* str = MutableField<MicroString>(message, field);
-          str->Set(std::string(value), arena);
-        } else {
-          if (schema_.InRealOneof(field) && !HasOneofField(*message, field)) {
-            ClearOneof(message, field->containing_oneof());
-            MutableField<ArenaStringPtr>(message, field)->InitDefault();
-          }
-          auto* str = MutableField<ArenaStringPtr>(message, field);
-          str->Set(std::string(value), arena);
-        }
-        break;
-      }
-    }
-  }
+  SetStringImpl(message, field, value);
 }
 
 std::string Reflection::GetRepeatedString(const Message& message,
@@ -2296,48 +2343,80 @@ absl::string_view Reflection::GetRepeatedStringView(
 }
 
 
-void Reflection::SetRepeatedString(Message* message,
-                                   const FieldDescriptor* field, int index,
-                                   std::string value) const {
-  USAGE_MUTABLE_CHECK_ALL(SetRepeatedString, REPEATED, STRING);
+template <typename String>
+void Reflection::SetRepeatedStringImpl(Message* message,
+                                       const FieldDescriptor* field, int index,
+                                       String&& value) const {
   if (field->is_extension()) {
-    MutableExtensionSet(message)->SetRepeated<std::string>(
-        field->number(), index, std::move(value));
+    Assign(*MutableExtensionSet(message)->MutableRepeatedString(field->number(),
+                                                                index),
+           std::forward<String>(value));
   } else {
     switch (field->cpp_string_type()) {
       case FieldDescriptor::CppStringType::kCord:
-        SetRepeatedField<absl::Cord>(message, field, index, absl::Cord(value));
+        SetRepeatedField<absl::Cord>(message, field, index,
+                                     absl::Cord(std::forward<String>(value)));
         break;
       case FieldDescriptor::CppStringType::kView:
       case FieldDescriptor::CppStringType::kString:
-        MutableRepeatedField<std::string>(message, field, index)
-            ->assign(std::move(value));
+        Assign(*MutableRepeatedField<std::string>(message, field, index),
+               std::forward<String>(value));
         break;
     }
   }
 }
 
+void Reflection::SetRepeatedString(Message* message,
+                                   const FieldDescriptor* field, int index,
+                                   std::string value) const {
+  USAGE_MUTABLE_CHECK_ALL(SetRepeatedString, REPEATED, STRING);
+  SetRepeatedStringImpl(message, field, index, std::move(value));
+}
+
+void Reflection::SetRepeatedStringView(Message* message,
+                                       const FieldDescriptor* field, int index,
+                                       absl::string_view value) const {
+  USAGE_MUTABLE_CHECK_ALL(SetRepeatedStringView, REPEATED, STRING);
+  SetRepeatedStringImpl(message, field, index, value);
+}
+
+
+template <typename String>
+void Reflection::AddStringImpl(Message* message, const FieldDescriptor* field,
+                               String&& value) const {
+  Arena* arena = message->GetArena();
+  if (field->is_extension()) {
+    Assign(*MutableExtensionSet(message)->AddString(
+               arena, field->number(),
+               field->requires_utf8_validation() ? FieldDescriptor::TYPE_STRING
+                                                 : FieldDescriptor::TYPE_BYTES,
+               field),
+           std::forward<String>(value));
+  } else {
+    switch (field->cpp_string_type()) {
+      case FieldDescriptor::CppStringType::kCord:
+        AddField<absl::Cord>(message, field,
+                             absl::Cord(std::forward<String>(value)));
+        break;
+      case FieldDescriptor::CppStringType::kView:
+      case FieldDescriptor::CppStringType::kString:
+        Assign(*AddField<std::string>(message, field),
+               std::forward<String>(value));
+        break;
+    }
+  }
+}
 
 void Reflection::AddString(Message* message, const FieldDescriptor* field,
                            std::string value) const {
   USAGE_MUTABLE_CHECK_ALL(AddString, REPEATED, STRING);
-  if (field->is_extension()) {
-    MutableExtensionSet(message)->Add<std::string>(
-        message->GetArena(), field->number(),
-        field->requires_utf8_validation() ? FieldDescriptor::TYPE_STRING
-                                          : FieldDescriptor::TYPE_BYTES,
-        field) = std::move(value);
-  } else {
-    switch (field->cpp_string_type()) {
-      case FieldDescriptor::CppStringType::kCord:
-        AddField<absl::Cord>(message, field, absl::Cord(value));
-        break;
-      case FieldDescriptor::CppStringType::kView:
-      case FieldDescriptor::CppStringType::kString:
-        AddField<std::string>(message, field)->assign(std::move(value));
-        break;
-    }
-  }
+  AddStringImpl(message, field, std::move(value));
+}
+
+void Reflection::AddStringView(Message* message, const FieldDescriptor* field,
+                               absl::string_view value) const {
+  USAGE_MUTABLE_CHECK_ALL(AddStringView, REPEATED, STRING);
+  AddStringImpl(message, field, value);
 }
 
 
@@ -3053,9 +3132,9 @@ const FieldDescriptor* Reflection::FindKnownExtensionByNumber(
 // the given field.
 
 void Reflection::PrepareSplitMessageForWrite(Message* message) const {
-  ABSL_DCHECK_NE(message, schema_.default_instance_);
+  ABSL_DCHECK_NE(message, schema_.default_instance());
   void** split = MutableSplitField(message);
-  const void* default_split = GetSplitField(schema_.default_instance_);
+  const void* default_split = GetSplitField(schema_.default_instance());
   if (*split == default_split) {
     uint32_t size = schema_.SizeofSplit();
     Arena* arena = message->GetArena();
@@ -3654,7 +3733,7 @@ void Reflection::PopulateTcParseEntries(
     const OneofDescriptor* oneof = field->real_containing_oneof();
     entries->offset = schema_.GetFieldOffset(field);
     if (oneof != nullptr) {
-      entries->has_idx = schema_.oneof_case_offset_ + 4 * oneof->index();
+      entries->has_idx = schema_.GetOneofCaseOffset(oneof);
     } else if (schema_.HasHasbits()) {
       entries->has_idx =
           entry.hasbit_idx >= 0
@@ -3789,7 +3868,7 @@ const internal::TcParseTableBase* Reflection::CreateTcParseTable() const {
           schema_.HasHasbits()
               ? schema_.HasBitsOffset()
               // Just put something safe here. _cached_size_ is fine.
-              : schema_.default_instance_->GetClassData()->cached_size_offset),
+              : schema_.default_instance()->GetClassData()->cached_size_offset),
       schema_.HasExtensionSet()
           ? static_cast<uint16_t>(schema_.GetExtensionSetOffset())
           : uint16_t{0},
@@ -3801,7 +3880,7 @@ const internal::TcParseTableBase* Reflection::CreateTcParseTable() const {
       static_cast<uint16_t>(fields.size()),
       static_cast<uint16_t>(table_info.aux_entries.size()),
       aux_offset,
-      schema_.default_instance_->GetClassData(),
+      schema_.default_instance()->GetClassData(),
       nullptr,
       GetFastParseFunction(table_info.fallback_function)
 #ifdef PROTOBUF_PREFETCH_PARSE_TABLE
@@ -3839,57 +3918,6 @@ const internal::TcParseTableBase* Reflection::CreateTcParseTable() const {
   return res;
 }
 
-namespace {
-
-// Helper function to transform migration schema into reflection schema.
-ReflectionSchema MigrationToReflectionSchema(
-    const MessageGlobalsBase* const* message_globals, const uint32_t* offsets,
-    MigrationSchema migration_schema) {
-  ReflectionSchema result;
-  result.default_instance_ =
-      MessageGlobalsBase::ToDefaultInstance<Message>(*message_globals);
-  int index = migration_schema.offsets_index;
-
-  // First values are offsets to the special fields, but they are optional.
-  // The first value is a bitmap marking which fields are present.
-  // The order of the fields must match MessageGenerator::GenerateOffsets
-  //
-  // To add new fields, we add them at the end and since they are optional the
-  // bootstrap files will automatically look as if those fields are not present.
-  const uint32_t bits = offsets[index++];
-
-  int bit = 0;
-  const auto next = [&] {
-    return (bits & (1 << bit++)) ? offsets[index++] : ~uint32_t{};
-  };
-  const auto next_pointer = [&]() -> const uint32_t* {
-    const uint32_t n = next();
-    if (n == ~uint32_t{}) {
-      return nullptr;
-    }
-    return offsets + migration_schema.offsets_index + n;
-  };
-  result.has_bits_offset_ = next();
-  result.extensions_offset_ = next();
-  result.oneof_case_offset_ = next();
-  result.weak_field_map_offset_ = next();
-  // Old result.inlined_string_donated_offset_
-  ABSL_CHECK_EQ(next(), ~uint32_t{});
-  result.split_offset_ = next();
-  result.sizeof_split_ = next();
-
-  result.has_bit_indices_ = next_pointer();
-  // Old result.inlined_string_indices_
-  ABSL_CHECK_EQ(next_pointer(), nullptr);
-
-  result.offsets_ = offsets + index;
-  result.object_size_ = migration_schema.object_size;
-
-  return result;
-}
-
-}  // namespace
-
 class AssignDescriptorsHelper {
  public:
   AssignDescriptorsHelper(MessageFactory* factory,
@@ -3921,8 +3949,8 @@ class AssignDescriptorsHelper {
 
         class_data.set_reflection(OnShutdownDelete(new Reflection(
             descriptor,
-            MigrationToReflectionSchema(message_globals_data_, offsets_,
-                                        *schemas_),
+            ReflectionSchema::MigrationToReflectionSchema(message_globals_data_,
+                                                          offsets_, *schemas_),
             DescriptorPool::internal_generated_pool(), factory_)));
       }
     }
