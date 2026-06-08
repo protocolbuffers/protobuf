@@ -27,7 +27,7 @@ namespace Google.Protobuf.Reflection {
             "CiZnb29nbGUvcHJvdG9idWYvY19zaGFycF9mZWF0dXJlcy5wcm90bxICcGIa",
             "IGdvb2dsZS9wcm90b2J1Zi9kZXNjcmlwdG9yLnByb3RvIlMKDkNTaGFycEZl",
             "YXR1cmVzEkEKGG51bGxhYmxlX3JlZmVyZW5jZV90eXBlcxgBIAEoCEIfiAEB",
-            "mAEEmAEDmAEBogEKEgVmYWxzZRiEB7IBAwiPTjpACgZjc2hhcnASGy5nb29n",
+            "mAEEmAEDmAEBogEKEgVmYWxzZRiEB7IBAwjqBzpACgZjc2hhcnASGy5nb29n",
             "bGUucHJvdG9idWYuRmVhdHVyZVNldBjsByABKAsyEi5wYi5DU2hhcnBGZWF0",
             "dXJlc0I5QhhDU2hhcnBGZWF0dXJlc091dGVyQ2xhc3NQAaoCGkdvb2dsZS5Q",
             "cm90b2J1Zi5SZWZsZWN0aW9u"));

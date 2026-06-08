@@ -31,19 +31,19 @@ namespace Google.Protobuf.TestProtos {
             "c3NhZ2USRgoVcHJvdG8zX2ltcG9ydF9tZXNzYWdlGAEgASgLMicucHJvdG9i",
             "dWZfdW5pdHRlc3RfaW1wb3J0LkltcG9ydE1lc3NhZ2USQAoNb3RoZXJfbWVz",
             "c2FnZRgCIAEoCzIpLnByb3RvYnVmX2VkaXRpb25zdGVzdGluZy5PdGhlck5y",
-            "dE1lc3NhZ2USDAoEdGV4dBgDIAEoCRIPCgdpbnRlZ2VyGAQgASgPEgwKBGJs",
+            "dE1lc3NhZ2USDAoEdGV4dBgDIAEoCRIPCgdpbnRlZ2VyGAQgASgFEgwKBGJs",
             "b2IYBSABKAwSNQoKZW51bV9maWVsZBgGIAEoDjIhLnByb3RvYnVmX2VkaXRp",
             "b25zdGVzdGluZy5OcnRFbnVtGh0KDU5lc3RlZE1lc3NhZ2USDAoEdGV4dBgB",
             "IAEoCSIfCg9PdGhlck5ydE1lc3NhZ2USDAoEdGV4dBgBIAEoCSIiChRFeHRl",
             "bmRhYmxlTnJ0TWVzc2FnZSoKCICABBCAgICAAio1CgdOcnRFbnVtEhgKFE5S",
             "VF9FTlVNX1VOU1BFQ0lGSUVEEAASBwoDRk9PEAESBwoDQkFSEAI6QAoJaW50",
             "MzJfZXh0EisucHJvdG9idWZfdW5pdHRlc3RfcHJvdG8yLlRlc3RBbGxFeHRl",
-            "bnNpb25zGIetSyABKA86QQoKc3RyaW5nX2V4dBIrLnByb3RvYnVmX3VuaXR0",
+            "bnNpb25zGIetSyABKAU6QQoKc3RyaW5nX2V4dBIrLnByb3RvYnVmX3VuaXR0",
             "ZXN0X3Byb3RvMi5UZXN0QWxsRXh0ZW5zaW9ucxiIrUsgASgJOm8KC21lc3Nh",
             "Z2VfZXh0EisucHJvdG9idWZfdW5pdHRlc3RfcHJvdG8yLlRlc3RBbGxFeHRl",
             "bnNpb25zGImtSyABKAsyKy5wcm90b2J1Zl91bml0dGVzdF9wcm90bzIuVGVz",
             "dEFsbEV4dGVuc2lvbnNCJaoCGkdvb2dsZS5Qcm90b2J1Zi5UZXN0UHJvdG9z",
-            "kgMF4j4CCAFiCGVkaXRpb25zcI9Oei1jc2hhcnAvZ29vZ2xlL3Byb3RvYnVm",
+            "kgMF4j4CCAFiCGVkaXRpb25zcOoHei1jc2hhcnAvZ29vZ2xlL3Byb3RvYnVm",
             "L2Nfc2hhcnBfZmVhdHVyZXMucHJvdG8="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { global::Google.Protobuf.TestProtos.UnittestImportProto3Reflection.Descriptor, global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.Descriptor, },
@@ -59,7 +59,7 @@ namespace Google.Protobuf.TestProtos {
   /// <summary>Holder for extension identifiers generated from the top level of csharp/protos/nrt.proto</summary>
   public static partial class NrtExtensions {
     public static readonly pb::Extension<global::Google.Protobuf.TestProtos.Proto2.TestAllExtensions, int> Int32Ext =
-      new pb::Extension<global::Google.Protobuf.TestProtos.Proto2.TestAllExtensions, int>(1234567, pb::FieldCodec.ForSFixed32(9876541, 0));
+      new pb::Extension<global::Google.Protobuf.TestProtos.Proto2.TestAllExtensions, int>(1234567, pb::FieldCodec.ForInt32(9876536, 0));
     public static readonly pb::Extension<global::Google.Protobuf.TestProtos.Proto2.TestAllExtensions, string> StringExt =
       new pb::Extension<global::Google.Protobuf.TestProtos.Proto2.TestAllExtensions, string>(1234568, pb::FieldCodec.ForString(9876546, ""));
     public static readonly pb::Extension<global::Google.Protobuf.TestProtos.Proto2.TestAllExtensions, global::Google.Protobuf.TestProtos.Proto2.TestAllExtensions> MessageExt =
@@ -323,8 +323,8 @@ namespace Google.Protobuf.TestProtos {
         output.WriteString(Text);
       }
       if (HasInteger) {
-        output.WriteRawTag(37);
-        output.WriteSFixed32(Integer);
+        output.WriteRawTag(32);
+        output.WriteInt32(Integer);
       }
       if (HasBlob) {
         output.WriteRawTag(42);
@@ -357,8 +357,8 @@ namespace Google.Protobuf.TestProtos {
         output.WriteString(Text);
       }
       if (HasInteger) {
-        output.WriteRawTag(37);
-        output.WriteSFixed32(Integer);
+        output.WriteRawTag(32);
+        output.WriteInt32(Integer);
       }
       if (HasBlob) {
         output.WriteRawTag(42);
@@ -388,7 +388,7 @@ namespace Google.Protobuf.TestProtos {
         size += 1 + pb::CodedOutputStream.ComputeStringSize(Text);
       }
       if (HasInteger) {
-        size += 1 + 4;
+        size += 1 + pb::CodedOutputStream.ComputeInt32Size(Integer);
       }
       if (HasBlob) {
         size += 1 + pb::CodedOutputStream.ComputeBytesSize(Blob);
@@ -469,8 +469,8 @@ namespace Google.Protobuf.TestProtos {
             Text = input.ReadString();
             break;
           }
-          case 37: {
-            Integer = input.ReadSFixed32();
+          case 32: {
+            Integer = input.ReadInt32();
             break;
           }
           case 42: {
@@ -518,8 +518,8 @@ namespace Google.Protobuf.TestProtos {
             Text = input.ReadString();
             break;
           }
-          case 37: {
-            Integer = input.ReadSFixed32();
+          case 32: {
+            Integer = input.ReadInt32();
             break;
           }
           case 42: {
