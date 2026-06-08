@@ -22,6 +22,7 @@ import com.google.protobuf.BytesValue;
 import com.google.protobuf.Descriptors.Descriptor;
 import com.google.protobuf.Descriptors.FieldDescriptor;
 import com.google.protobuf.DoubleValue;
+import com.google.protobuf.DynamicMessage;
 import com.google.protobuf.ExtensionRegistry;
 import com.google.protobuf.FloatValue;
 import com.google.protobuf.Int32Value;
@@ -29,6 +30,7 @@ import com.google.protobuf.Int64Value;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.ListValue;
 import com.google.protobuf.Message;
+import com.google.protobuf.MessageOrBuilder;
 import com.google.protobuf.NullValue;
 import com.google.protobuf.StringValue;
 import com.google.protobuf.Struct;
@@ -173,7 +175,7 @@ public class JsonFormatTest {
     assertThat(parsedMessage.toString()).isEqualTo(message.toString());
   }
 
-  private String toJsonString(Message message) throws IOException {
+  private String toJsonString(MessageOrBuilder message) throws IOException {
     return JsonFormat.printer().print(message);
   }
 
@@ -1297,10 +1299,12 @@ public class JsonFormatTest {
   public void testStruct() throws Exception {
     // Build a struct with all possible values.
     TestStruct.Builder builder = TestStruct.newBuilder();
-    Struct.Builder structBuilder = builder.getStructValueBuilder();
-    structBuilder.putFields("null_value", Value.newBuilder().setNullValueValue(0).build());
-    structBuilder.putFields("number_value", Value.newBuilder().setNumberValue(1.25).build());
-    structBuilder.putFields("string_value", Value.newBuilder().setStringValue("hello").build());
+    Struct.Builder structBuilder =
+        builder
+            .getStructValueBuilder()
+            .putFields("null_value", Value.newBuilder().setNullValueValue(0).build())
+            .putFields("number_value", Value.newBuilder().setNumberValue(1.25).build())
+            .putFields("string_value", Value.newBuilder().setStringValue("hello").build());
     Struct.Builder subStructBuilder = Struct.newBuilder();
     subStructBuilder.putFields("number_value", Value.newBuilder().setNumberValue(1234).build());
     structBuilder.putFields(
@@ -1341,6 +1345,58 @@ public class JsonFormatTest {
     assertThat(toJsonString(message))
         .isEqualTo("{\n" + "  \"listValue\": [31831.125, null]\n" + "}");
     assertRoundTripEquals(message);
+  }
+
+  @Test
+  public void testDynamicMessageStruct() throws Exception {
+    // Build a struct with all possible values.
+    TestStruct.Builder builder = TestStruct.newBuilder();
+    Struct.Builder structBuilder =
+        builder
+            .getStructValueBuilder()
+            .putFields("null_value", Value.newBuilder().setNullValueValue(0).build())
+            .putFields("number_value", Value.newBuilder().setNumberValue(1.25).build())
+            .putFields("string_value", Value.newBuilder().setStringValue("hello").build());
+
+    Struct.Builder subStructBuilder =
+        Struct.newBuilder()
+            .putFields("number_value", Value.newBuilder().setNumberValue(1234).build());
+
+    structBuilder.putFields(
+        "struct_value", Value.newBuilder().setStructValue(subStructBuilder.build()).build());
+
+    ListValue.Builder listBuilder =
+        ListValue.newBuilder()
+            .addValues(Value.newBuilder().setNumberValue(1.125).build())
+            .addValues(Value.newBuilder().setNullValueValue(0).build());
+    structBuilder.putFields(
+        "list_value", Value.newBuilder().setListValue(listBuilder.build()).build());
+
+    TestStruct concreteMessage = builder.build();
+
+    // Convert it to DynamicMessage.
+    DynamicMessage dynamicMessage =
+        DynamicMessage.parseFrom(TestStruct.getDescriptor(), concreteMessage.toByteString());
+
+    // Print DynamicMessage and assert.
+    String expectedJson =
+        "{\n" //
+            + "  \"structValue\": {\n" //
+            + "    \"null_value\": null,\n" //
+            + "    \"number_value\": 1.25,\n" //
+            + "    \"string_value\": \"hello\",\n" //
+            + "    \"struct_value\": {\n" //
+            + "      \"number_value\": 1234.0\n" //
+            + "    },\n" //
+            + "    \"list_value\": [1.125, null]\n" //
+            + "  }\n" //
+            + "}";
+    assertThat(toJsonString(dynamicMessage)).isEqualTo(expectedJson);
+
+    // Parse back into DynamicMessage.Builder and assert.
+    DynamicMessage.Builder dynamicBuilder = DynamicMessage.newBuilder(TestStruct.getDescriptor());
+    JsonFormat.parser().merge(expectedJson, dynamicBuilder);
+    assertThat(dynamicBuilder.build()).isEqualTo(dynamicMessage);
   }
 
   @Test
@@ -2199,6 +2255,177 @@ public class JsonFormatTest {
     } catch (InvalidProtocolBufferException e) {
       assertThat(e).hasMessageThat().contains("recursion");
     }
+  }
+
+  @Test
+  public void testRecursionLimitConsistency() throws Exception {
+    // We will test various nesting depths and recursion limits.
+    // And verify that Struct (concrete) and DynamicMessage (reflective) behave identically.
+
+    for (int limit = 1; limit <= 5; limit++) {
+      for (int depth = 1; depth <= 6; depth++) {
+        String input = createNestedStructJson(depth);
+
+        // Test Concrete
+        boolean concreteFailed = false;
+        try {
+          JsonFormat.Parser parser = JsonFormat.parser().usingRecursionLimit(limit);
+          TestStruct.Builder builder = TestStruct.newBuilder();
+          parser.merge(input, builder);
+        } catch (InvalidProtocolBufferException e) {
+          if (e.getMessage().contains("recursion")) {
+            concreteFailed = true;
+          } else {
+            throw e; // unexpected error
+          }
+        }
+
+        // Test Reflective (using DynamicMessage)
+        boolean reflectiveFailed = false;
+        try {
+          JsonFormat.Parser parser = JsonFormat.parser().usingRecursionLimit(limit);
+          DynamicMessage.Builder builder = DynamicMessage.newBuilder(TestStruct.getDescriptor());
+          parser.merge(input, builder);
+        } catch (InvalidProtocolBufferException e) {
+          if (e.getMessage().contains("recursion")) {
+            reflectiveFailed = true;
+          } else {
+            throw e; // unexpected error
+          }
+        }
+
+        assertWithMessage(
+                "Consistency failed for limit="
+                    + limit
+                    + ", depth="
+                    + depth
+                    + ". Concrete failed: "
+                    + concreteFailed
+                    + ", Reflective failed: "
+                    + reflectiveFailed)
+            .that(concreteFailed)
+            .isEqualTo(reflectiveFailed);
+      }
+    }
+  }
+
+  private String createNestedStructJson(int depth) {
+    // depth 1: {"structValue": {"a": 1}}
+    // depth 2: {"structValue": {"a": {"b": 1}}}
+    // depth 3: {"structValue": {"a": {"b": {"c": 1}}}}
+    // ...
+    StringBuilder sb = new StringBuilder();
+    sb.append("{\n");
+    sb.append("  \"structValue\": {\n");
+    for (int i = 0; i < depth; i++) {
+      indent(sb, i + 2);
+      sb.append("\"").append((char) ('a' + i)).append("\": ");
+      if (i == depth - 1) {
+        sb.append("1\n");
+      } else {
+        sb.append("{\n");
+      }
+    }
+    for (int i = depth - 2; i >= 0; i--) {
+      indent(sb, i + 2);
+      sb.append("}\n");
+    }
+    sb.append("  }\n");
+    sb.append("}\n");
+    return sb.toString();
+  }
+
+  private void indent(StringBuilder sb, int level) {
+    for (int i = 0; i < level; i++) {
+      sb.append("  ");
+    }
+  }
+
+  @Test
+  public void testRecursionLimitStruct() throws Exception {
+    // Nesting depth 4. TestStruct -> Struct -> Value -> Struct -> Value -> Struct -> Value.
+    // If limit is 3, this should fail.
+    String input =
+        "{\n"
+            + "  \"structValue\": {\n"
+            + "    \"a\": {\n"
+            + "      \"b\": {\n"
+            + "        \"c\": 1\n"
+            + "      }\n"
+            + "    }\n"
+            + "  }\n"
+            + "}\n";
+
+    JsonFormat.Parser parser = JsonFormat.parser().usingRecursionLimit(3);
+    TestStruct.Builder builder = TestStruct.newBuilder();
+    try {
+      parser.merge(input, builder);
+      assertWithMessage("Exception is expected.").fail();
+    } catch (InvalidProtocolBufferException e) {
+      assertThat(e).hasMessageThat().contains("recursion");
+    }
+
+    // Limit 4 should pass.
+    parser = JsonFormat.parser().usingRecursionLimit(4);
+    builder = TestStruct.newBuilder();
+    parser.merge(input, builder);
+    assertThat(
+            builder
+                .getStructValue()
+                .getFieldsOrThrow("a")
+                .getStructValue()
+                .getFieldsOrThrow("b")
+                .getStructValue()
+                .getFieldsOrThrow("c")
+                .getNumberValue())
+        .isEqualTo(1.0);
+  }
+
+  @Test
+  public void testRecursionLimitListValue() throws Exception {
+    // Nesting depth 4. TestStruct -> ListValue -> Value -> ListValue -> Value -> ListValue ->
+    // Value.
+    // JSON: {"listValue": [[[1]]]}
+    // Depths:
+    // TestStruct: 0
+    // ListValue: 1
+    // Value 1 (contains ListValue): 2
+    // Value 2 (contains ListValue): 3
+    // Value 3 (primitive 1): 4 -> fails if limit 3, passes if limit 4.
+    String input =
+        "{\n"
+            + "  \"listValue\": [\n"
+            + "    [\n"
+            + "      [\n"
+            + "        1\n"
+            + "      ]\n"
+            + "    ]\n"
+            + "  ]\n"
+            + "}\n";
+
+    JsonFormat.Parser parser = JsonFormat.parser().usingRecursionLimit(3);
+    TestStruct.Builder builder = TestStruct.newBuilder();
+    try {
+      parser.merge(input, builder);
+      assertWithMessage("Exception is expected.").fail();
+    } catch (InvalidProtocolBufferException e) {
+      assertThat(e).hasMessageThat().contains("recursion");
+    }
+
+    // Limit 4 should pass.
+    parser = JsonFormat.parser().usingRecursionLimit(4);
+    builder = TestStruct.newBuilder();
+    parser.merge(input, builder);
+    assertThat(
+            builder
+                .getListValue()
+                .getValues(0)
+                .getListValue()
+                .getValues(0)
+                .getListValue()
+                .getValues(0)
+                .getNumberValue())
+        .isEqualTo(1.0);
   }
 
   @Test
