@@ -2515,6 +2515,21 @@ TEST(ArenaPtrTest, ClassIsABIEfficient) {
 }
 
 
+struct ReentrantDeleter {
+  Arena* arena;
+  ~ReentrantDeleter() { delete arena; }
+};
+
+// When running this test, use the following arguments: --config=asan
+TEST(ArenaTest, ReentrantCleanupDoesNotCrash) {
+  Arena* arena = new Arena();
+  // Create an object that will delete the arena during its destruction.
+  Arena::Create<ReentrantDeleter>(arena, arena);
+  // Allocate some memory to ensure chunks are created.
+  Arena::CreateArray<char>(arena, 1024);
+  delete arena;
+}
+
 }  // namespace protobuf
 }  // namespace google
 
