@@ -60,7 +60,7 @@ namespace protobuf {
 namespace internal {
 template <>
 inline ::absl::string_view GetFeatureSetDefaultsData<::pb::CSharpFeatures>() {
-  static constexpr char kDefaults[] = "CiEYhAciA+I+ACoXCAEQAhgCIAMoATACOAJAAUgB4j4CCAAKIRjnByID4j4AKhcIAhABGAEgAigBMAE4AkABSAHiPgIIAAohGOgHIg8IARABGAEgAigBMAHiPgAqCzgCQAFIAeI+AggACiEY6QciEwgBEAEYASACKAEwATgBQALiPgAqB0gB4j4CCAAKIRjqByIVCAEQARgBIAIoATABOANAAkgC4j4AKgXiPgIIAAohGI9OIhcIARABGAEgAigBMAE4A0ACSALiPgIIACoD4j4AIOYHKOoH";
+  static constexpr char kDefaults[] = "CiEYhAciA+I+ACoXCAEQAhgCIAMoATACOAJAAUgB4j4CCAAKIRjnByID4j4AKhcIAhABGAEgAigBMAE4AkABSAHiPgIIAAohGOgHIg8IARABGAEgAigBMAHiPgAqCzgCQAFIAeI+AggACiEY6QciEwgBEAEYASACKAEwATgBQALiPgAqB0gB4j4CCAAKIRjqByIXCAEQARgBIAIoATABOANAAkgC4j4CCAAqA+I+ACDmByjqBw==";
   return kDefaults;
 }
 }  // namespace internal

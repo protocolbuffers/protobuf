@@ -29,7 +29,7 @@ message CSharpFeatures {
     targets = TARGET_TYPE_MESSAGE,
     targets = TARGET_TYPE_FILE,
     feature_support = {
-      edition_introduced: EDITION_UNSTABLE,
+      edition_introduced: EDITION_2026,
     },
     edition_defaults = { edition: EDITION_LEGACY, value: "false" }
   ];

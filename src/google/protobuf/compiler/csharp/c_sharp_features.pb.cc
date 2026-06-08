@@ -204,7 +204,7 @@ const char descriptor_table_protodef_google_2fprotobuf_2fcompiler_2fcsharp_2fc_5
     "p_features.proto\022\002pb\032 google/protobuf/de"
     "scriptor.proto\"S\n\016CSharpFeatures\022A\n\030null"
     "able_reference_types\030\001 \001(\010B\037\210\001\001\230\001\004\230\001\003\230\001\001"
-    "\242\001\n\022\005false\030\204\007\262\001\003\010\217N:@\n\006csharp\022\033.google.p"
+    "\242\001\n\022\005false\030\204\007\262\001\003\010\352\007:@\n\006csharp\022\033.google.p"
     "rotobuf.FeatureSet\030\354\007 \001(\0132\022.pb.CSharpFea"
     "turesB9B\030CSharpFeaturesOuterClassP\001\252\002\032Go"
     "ogle.Protobuf.Reflection"
