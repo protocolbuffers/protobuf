@@ -65,7 +65,7 @@ import java.util.Set;
 
 /** Schema used for standard messages. */
 @CheckReturnValue
-@SuppressWarnings({"unchecked", "rawtypes"})
+@SuppressWarnings({"unchecked", "rawtypes", "removal"})
 final class MessageSchema<T> implements Schema<T> {
   private static final int INTS_PER_FIELD = 3;
   private static final int OFFSET_BITS = 20;

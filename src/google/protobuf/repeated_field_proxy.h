@@ -1,6 +1,7 @@
 #ifndef GOOGLE_PROTOBUF_REPEATED_FIELD_PROXY_H__
 #define GOOGLE_PROTOBUF_REPEATED_FIELD_PROXY_H__
 
+#include <algorithm>
 #include <cstddef>
 #include <iterator>
 #include <string>
@@ -10,6 +11,7 @@
 #include "absl/log/absl_check.h"
 #include "absl/strings/cord.h"
 #include "absl/strings/string_view.h"
+#include "google/protobuf/raw_ptr.h"
 #include "google/protobuf/repeated_field.h"
 #include "google/protobuf/repeated_field_proxy_iterator.h"
 #include "google/protobuf/repeated_field_proxy_traits.h"
@@ -588,6 +590,9 @@ class PROTOBUF_DECLSPEC_EMPTY_BASES ConstRepeatedFieldProxyImpl
   using Base::field;
 
  public:
+  ConstRepeatedFieldProxyImpl()
+      : Base(*internal::RawPtr<const typename Base::RepeatedFieldType>()) {}
+
   using typename Base::const_reference;
   using typename Base::size_type;
 
@@ -687,6 +692,11 @@ class PROTOBUF_DECLSPEC_EMPTY_BASES RepeatedFieldProxy<const ElementType> final
   using Base::Base;
 
  public:
+  RepeatedFieldProxy() = default;
+
+  RepeatedFieldProxy(const RepeatedFieldProxy& other) = default;
+  RepeatedFieldProxy& operator=(const RepeatedFieldProxy& other) = default;
+
   // Allow implicit conversion from a mutable RepeatedFieldProxy to a const
   // RepeatedFieldProxy.
   //
@@ -893,6 +903,11 @@ class RepeatedFieldOrProxy<const ElementType> final
   using Base::field;
 
  public:
+  RepeatedFieldOrProxy() = default;
+
+  RepeatedFieldOrProxy(const RepeatedFieldOrProxy& other) = default;
+  RepeatedFieldOrProxy& operator=(const RepeatedFieldOrProxy& other) = default;
+
   // Allow implicit conversion from a mutable RepeatedFieldOrProxy to a const
   // RepeatedFieldOrProxy.
   //

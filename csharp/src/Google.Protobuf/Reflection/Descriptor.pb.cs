@@ -399,7 +399,7 @@ namespace Google.Protobuf.Reflection {
     private static readonly pb::MessageParser<FileDescriptorSet> _parser = new pb::MessageParser<FileDescriptorSet>(() => new FileDescriptorSet());
     private pb::UnknownFieldSet _unknownFields;
     internal pb::ExtensionSet<FileDescriptorSet> _extensions;
-    private pb::ExtensionSet<FileDescriptorSet> _Extensions { get { return _extensions; } }
+    private pb::ExtensionSet<FileDescriptorSet>  _Extensions { get { return _extensions; } }
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static pb::MessageParser<FileDescriptorSet> Parser { get { return _parser; } }
@@ -2485,7 +2485,7 @@ namespace Google.Protobuf.Reflection {
     private static readonly pb::MessageParser<ExtensionRangeOptions> _parser = new pb::MessageParser<ExtensionRangeOptions>(() => new ExtensionRangeOptions());
     private pb::UnknownFieldSet _unknownFields;
     internal pb::ExtensionSet<ExtensionRangeOptions> _extensions;
-    private pb::ExtensionSet<ExtensionRangeOptions> _Extensions { get { return _extensions; } }
+    private pb::ExtensionSet<ExtensionRangeOptions>  _Extensions { get { return _extensions; } }
     private int _hasBits0;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
@@ -6211,7 +6211,7 @@ namespace Google.Protobuf.Reflection {
     private static readonly pb::MessageParser<FileOptions> _parser = new pb::MessageParser<FileOptions>(() => new FileOptions());
     private pb::UnknownFieldSet _unknownFields;
     internal pb::ExtensionSet<FileOptions> _extensions;
-    private pb::ExtensionSet<FileOptions> _Extensions { get { return _extensions; } }
+    private pb::ExtensionSet<FileOptions>  _Extensions { get { return _extensions; } }
     private int _hasBits0;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
@@ -7605,7 +7605,7 @@ namespace Google.Protobuf.Reflection {
     private static readonly pb::MessageParser<MessageOptions> _parser = new pb::MessageParser<MessageOptions>(() => new MessageOptions());
     private pb::UnknownFieldSet _unknownFields;
     internal pb::ExtensionSet<MessageOptions> _extensions;
-    private pb::ExtensionSet<MessageOptions> _Extensions { get { return _extensions; } }
+    private pb::ExtensionSet<MessageOptions>  _Extensions { get { return _extensions; } }
     private int _hasBits0;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
@@ -8223,7 +8223,7 @@ namespace Google.Protobuf.Reflection {
     private static readonly pb::MessageParser<FieldOptions> _parser = new pb::MessageParser<FieldOptions>(() => new FieldOptions());
     private pb::UnknownFieldSet _unknownFields;
     internal pb::ExtensionSet<FieldOptions> _extensions;
-    private pb::ExtensionSet<FieldOptions> _Extensions { get { return _extensions; } }
+    private pb::ExtensionSet<FieldOptions>  _Extensions { get { return _extensions; } }
     private int _hasBits0;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
@@ -9939,7 +9939,7 @@ namespace Google.Protobuf.Reflection {
     private static readonly pb::MessageParser<OneofOptions> _parser = new pb::MessageParser<OneofOptions>(() => new OneofOptions());
     private pb::UnknownFieldSet _unknownFields;
     internal pb::ExtensionSet<OneofOptions> _extensions;
-    private pb::ExtensionSet<OneofOptions> _Extensions { get { return _extensions; } }
+    private pb::ExtensionSet<OneofOptions>  _Extensions { get { return _extensions; } }
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static pb::MessageParser<OneofOptions> Parser { get { return _parser; } }
@@ -10226,7 +10226,7 @@ namespace Google.Protobuf.Reflection {
     private static readonly pb::MessageParser<EnumOptions> _parser = new pb::MessageParser<EnumOptions>(() => new EnumOptions());
     private pb::UnknownFieldSet _unknownFields;
     internal pb::ExtensionSet<EnumOptions> _extensions;
-    private pb::ExtensionSet<EnumOptions> _Extensions { get { return _extensions; } }
+    private pb::ExtensionSet<EnumOptions>  _Extensions { get { return _extensions; } }
     private int _hasBits0;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
@@ -10692,7 +10692,7 @@ namespace Google.Protobuf.Reflection {
     private static readonly pb::MessageParser<EnumValueOptions> _parser = new pb::MessageParser<EnumValueOptions>(() => new EnumValueOptions());
     private pb::UnknownFieldSet _unknownFields;
     internal pb::ExtensionSet<EnumValueOptions> _extensions;
-    private pb::ExtensionSet<EnumValueOptions> _Extensions { get { return _extensions; } }
+    private pb::ExtensionSet<EnumValueOptions>  _Extensions { get { return _extensions; } }
     private int _hasBits0;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
@@ -11145,7 +11145,7 @@ namespace Google.Protobuf.Reflection {
     private static readonly pb::MessageParser<ServiceOptions> _parser = new pb::MessageParser<ServiceOptions>(() => new ServiceOptions());
     private pb::UnknownFieldSet _unknownFields;
     internal pb::ExtensionSet<ServiceOptions> _extensions;
-    private pb::ExtensionSet<ServiceOptions> _Extensions { get { return _extensions; } }
+    private pb::ExtensionSet<ServiceOptions>  _Extensions { get { return _extensions; } }
     private int _hasBits0;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
@@ -11492,7 +11492,7 @@ namespace Google.Protobuf.Reflection {
     private static readonly pb::MessageParser<MethodOptions> _parser = new pb::MessageParser<MethodOptions>(() => new MethodOptions());
     private pb::UnknownFieldSet _unknownFields;
     internal pb::ExtensionSet<MethodOptions> _extensions;
-    private pb::ExtensionSet<MethodOptions> _Extensions { get { return _extensions; } }
+    private pb::ExtensionSet<MethodOptions>  _Extensions { get { return _extensions; } }
     private int _hasBits0;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
@@ -12715,7 +12715,7 @@ namespace Google.Protobuf.Reflection {
     private static readonly pb::MessageParser<FeatureSet> _parser = new pb::MessageParser<FeatureSet>(() => new FeatureSet());
     private pb::UnknownFieldSet _unknownFields;
     internal pb::ExtensionSet<FeatureSet> _extensions;
-    private pb::ExtensionSet<FeatureSet> _Extensions { get { return _extensions; } }
+    private pb::ExtensionSet<FeatureSet>  _Extensions { get { return _extensions; } }
     private int _hasBits0;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
@@ -14457,7 +14457,7 @@ namespace Google.Protobuf.Reflection {
     private static readonly pb::MessageParser<SourceCodeInfo> _parser = new pb::MessageParser<SourceCodeInfo>(() => new SourceCodeInfo());
     private pb::UnknownFieldSet _unknownFields;
     internal pb::ExtensionSet<SourceCodeInfo> _extensions;
-    private pb::ExtensionSet<SourceCodeInfo> _Extensions { get { return _extensions; } }
+    private pb::ExtensionSet<SourceCodeInfo>  _Extensions { get { return _extensions; } }
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static pb::MessageParser<SourceCodeInfo> Parser { get { return _parser; } }
