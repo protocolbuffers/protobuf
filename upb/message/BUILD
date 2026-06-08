@@ -8,6 +8,7 @@
 load("@bazel_skylib//rules:common_settings.bzl", "bool_flag")
 load("@rules_cc//cc:cc_test.bzl", "cc_test")
 load("@rules_cc//cc:defs.bzl", "cc_library")
+load("//bazel:cc_proto_library.bzl", "cc_proto_library")
 load("//bazel:proto_library.bzl", "proto_library")
 load("//upb/bazel:copts.bzl", "UPB_DEFAULT_COPTS", "UPB_DEFAULT_CPPOPTS", "UPB_DEFAULT_FEATURES")
 load(
@@ -233,6 +234,7 @@ cc_test(
     srcs = ["convert_test.cc"],
     deps = [
         ":convert",
+        ":convert_test_cc_proto",
         ":convert_test_upb_minitable_proto",
         ":convert_test_upb_proto",
         ":internal",
@@ -240,15 +242,18 @@ cc_test(
         ":message_test_upb_minitable_proto",
         ":message_test_upb_proto",
         ":promote",
+        "//:test_messages_proto3_cc_proto",
         "//upb/base",
         "//upb/mem",
         "//upb/mini_table",
         "//upb/port",
+        "//upb/test:parse_text_proto",
         "//upb/test:test_messages_proto2_upb_proto",
         "//upb/test:test_messages_proto3_upb_minitable",
         "//upb/test:test_messages_proto3_upb_proto",
         "//upb/test:test_upb_proto",
         "//upb/wire",
+        "@abseil-cpp//absl/strings:string_view",
         "@googletest//:gtest",
         "@googletest//:gtest_main",
     ],
@@ -596,6 +601,12 @@ proto_library(
     name = "convert_test_proto",
     testonly = 1,
     srcs = ["convert_test.proto"],
+)
+
+cc_proto_library(
+    name = "convert_test_cc_proto",
+    testonly = 1,
+    deps = [":convert_test_proto"],
 )
 
 upb_minitable_proto_library(

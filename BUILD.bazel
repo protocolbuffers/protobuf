@@ -737,6 +737,7 @@ cc_proto_library(
     visibility = [
         "//conformance:__pkg__",
         "//src:__subpackages__",
+        "//upb:__subpackages__",
     ],
     deps = ["//src/google/protobuf:test_messages_proto3_proto"],
 )

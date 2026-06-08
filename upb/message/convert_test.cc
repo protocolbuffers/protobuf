@@ -9,9 +9,12 @@
 
 #include <cstddef>
 #include <cstdint>
+#include <initializer_list>
 #include <string>
 
 #include <gtest/gtest.h>
+#include "absl/strings/string_view.h"
+#include "google/protobuf/test_messages_proto3.pb.h"
 #include "google/protobuf/test_messages_proto3.upb.h"
 #include "google/protobuf/test_messages_proto3.upb_minitable.h"
 #include "upb/base/descriptor_constants.h"
@@ -20,13 +23,16 @@
 #include "upb/mem/arena.hpp"
 #include "upb/message/accessors.h"
 #include "upb/message/array.h"
+#include "upb/message/convert_test.pb.h"
 #include "upb/message/convert_test.upb.h"
 #include "upb/message/convert_test.upb_minitable.h"
 #include "upb/message/internal/message.h"
 #include "upb/message/message.h"
 #include "upb/message/test.upb_minitable.h"
+#include "upb/mini_table/extension.h"
 #include "upb/mini_table/extension_registry.h"
 #include "upb/mini_table/message.h"
+#include "upb/test/parse_text_proto.h"
 #include "upb/wire/decode.h"
 
 // Must be last to ensure UPB_PRIVATE is defined.
@@ -35,14 +41,47 @@
 // We use the generated upb_MiniTables from test_messages_proto3.
 #define TEST_MT &protobuf_0test_0messages__proto3__TestAllTypesProto3_msg_init
 
+template <typename CppT, typename UpbT>
+UpbT* ParseUpbTextProto(
+    absl::string_view text_proto, const upb_MiniTable* mt,
+    std::initializer_list<const upb_MiniTableExtension*> exts,
+    upb::Arena* arena) {
+  CppT cpp_msg = upb_test::ParseTextProtoOrDie(text_proto);
+  std::string serialized = cpp_msg.SerializeAsString();
+  upb_ExtensionRegistry* extreg = nullptr;
+  if (exts.size() > 0) {
+    extreg = upb_ExtensionRegistry_New(arena->ptr());
+    for (const upb_MiniTableExtension* ext : exts) {
+      upb_ExtensionRegistry_Add(extreg, ext);
+    }
+  }
+  UpbT* upb_msg = (UpbT*)upb_Message_New(mt, arena->ptr());
+  upb_DecodeStatus status =
+      upb_Decode(serialized.data(), serialized.size(), UPB_UPCAST(upb_msg), mt,
+                 extreg, 0, arena->ptr());
+  EXPECT_EQ(status, kUpb_DecodeStatus_Ok);
+  return upb_msg;
+}
+
+upb_test_convert_MessageWithExtension* ParseMessageWithExtension(
+    absl::string_view text_proto,
+    std::initializer_list<const upb_MiniTableExtension*> exts,
+    upb::Arena* arena) {
+  return ParseUpbTextProto<upb::test::convert::MessageWithExtension,
+                           upb_test_convert_MessageWithExtension>(
+      text_proto, &upb__test__convert__MessageWithExtension_msg_init, exts,
+      arena);
+}
+
 TEST(ConvertTest, Identity) {
   upb::Arena arena;
   protobuf_test_messages_proto3_TestAllTypesProto3* msg =
-      protobuf_test_messages_proto3_TestAllTypesProto3_new(arena.ptr());
-
-  protobuf_test_messages_proto3_TestAllTypesProto3_set_optional_int32(msg, 123);
-  protobuf_test_messages_proto3_TestAllTypesProto3_set_optional_string(
-      msg, upb_StringView_FromString("hello"));
+      ParseUpbTextProto<protobuf_test_messages::proto3::TestAllTypesProto3,
+                        protobuf_test_messages_proto3_TestAllTypesProto3>(
+          R"pb(
+            optional_int32: 123 optional_string: "hello"
+          )pb",
+          TEST_MT, {}, &arena);
 
   const upb_MiniTable* mt = TEST_MT;
 
@@ -63,13 +102,16 @@ TEST(ConvertTest, Identity) {
 TEST(ConvertTest, AliasSubMessage) {
   upb::Arena arena;
   protobuf_test_messages_proto3_TestAllTypesProto3* msg =
-      protobuf_test_messages_proto3_TestAllTypesProto3_new(arena.ptr());
+      ParseUpbTextProto<protobuf_test_messages::proto3::TestAllTypesProto3,
+                        protobuf_test_messages_proto3_TestAllTypesProto3>(
+          R"pb(
+            optional_nested_message { a: 456 }
+          )pb",
+          TEST_MT, {}, &arena);
 
-  protobuf_test_messages_proto3_TestAllTypesProto3_NestedMessage* sub =
-      protobuf_test_messages_proto3_TestAllTypesProto3_mutable_optional_nested_message(
-          msg, arena.ptr());
-  protobuf_test_messages_proto3_TestAllTypesProto3_NestedMessage_set_a(sub,
-                                                                       456);
+  const protobuf_test_messages_proto3_TestAllTypesProto3_NestedMessage* sub =
+      protobuf_test_messages_proto3_TestAllTypesProto3_optional_nested_message(
+          msg);
 
   const upb_MiniTable* mt = TEST_MT;
 
@@ -134,8 +176,12 @@ TEST(ConvertTest, UnknownPromotion) {
 TEST(ConvertTest, Demotion) {
   upb::Arena arena;
   protobuf_test_messages_proto3_TestAllTypesProto3* msg =
-      protobuf_test_messages_proto3_TestAllTypesProto3_new(arena.ptr());
-  protobuf_test_messages_proto3_TestAllTypesProto3_set_optional_int32(msg, 999);
+      ParseUpbTextProto<protobuf_test_messages::proto3::TestAllTypesProto3,
+                        protobuf_test_messages_proto3_TestAllTypesProto3>(
+          R"pb(
+            optional_int32: 999
+          )pb",
+          TEST_MT, {}, &arena);
 
   // Convert to Empty message. Field 1 should become unknown.
   const upb_MiniTable* empty_mt = &upb_0test__EmptyMessage_msg_init;
@@ -158,10 +204,12 @@ TEST(ConvertTest, Demotion) {
 TEST(ConvertTest, DeepConvertMap) {
   upb::Arena arena;
   protobuf_test_messages_proto3_TestAllTypesProto3* msg =
-      protobuf_test_messages_proto3_TestAllTypesProto3_new(arena.ptr());
-
-  protobuf_test_messages_proto3_TestAllTypesProto3_map_int32_int32_set(
-      msg, 10, 20, arena.ptr());
+      ParseUpbTextProto<protobuf_test_messages::proto3::TestAllTypesProto3,
+                        protobuf_test_messages_proto3_TestAllTypesProto3>(
+          R"pb(
+            map_int32_int32 { key: 10 value: 20 }
+          )pb",
+          TEST_MT, {}, &arena);
 
   const upb_MiniTable* mt = TEST_MT;
 
@@ -182,13 +230,19 @@ TEST(ConvertTest, DeepConvertMap) {
 TEST(ConvertTest, DeepConvertMapMessage) {
   upb::Arena arena;
   upb_test_convert_MessageWithMapMessage* msg =
-      upb_test_convert_MessageWithMapMessage_new(arena.ptr());
+      ParseUpbTextProto<upb::test::convert::MessageWithMapMessage,
+                        upb_test_convert_MessageWithMapMessage>(
+          R"pb(
+            map_msg {
+              key: 10
+              value { f1: 123 }
+            }
+          )pb",
+          &upb__test__convert__MessageWithMapMessage_msg_init, {}, &arena);
 
-  upb_test_convert_MessageWithInt32* val =
-      upb_test_convert_MessageWithInt32_new(arena.ptr());
-  upb_test_convert_MessageWithInt32_set_f1(val, 123);
-
-  upb_test_convert_MessageWithMapMessage_map_msg_set(msg, 10, val, arena.ptr());
+  upb_test_convert_MessageWithInt32* val;
+  ASSERT_TRUE(
+      upb_test_convert_MessageWithMapMessage_map_msg_get(msg, 10, &val));
 
   const upb_MiniTable* src_mt =
       &upb__test__convert__MessageWithMapMessage_msg_init;
@@ -214,9 +268,12 @@ TEST(ConvertTest, DeepConvertMapMessage) {
 TEST(ConvertTest, DeepConvertScalarMap) {
   upb::Arena arena;
   upb_test_convert_MessageWithMapInt32Int32* msg =
-      upb_test_convert_MessageWithMapInt32Int32_new(arena.ptr());
-
-  upb_test_convert_MessageWithMapInt32Int32_m_set(msg, 123, 456, arena.ptr());
+      ParseUpbTextProto<upb::test::convert::MessageWithMapInt32Int32,
+                        upb_test_convert_MessageWithMapInt32Int32>(
+          R"pb(
+            m { key: 123 value: 456 }
+          )pb",
+          &upb__test__convert__MessageWithMapInt32Int32_msg_init, {}, &arena);
 
   const upb_MiniTable* src_mt =
       &upb__test__convert__MessageWithMapInt32Int32_msg_init;
@@ -238,23 +295,18 @@ TEST(ConvertTest, DeepConvertScalarMap) {
 
 TEST(ConvertTest, ExtensionArrayShallowConversion) {
   upb::Arena arena;
-  upb_test_convert_MessageWithExtension* msg =
-      upb_test_convert_MessageWithExtension_new(arena.ptr());
+  upb_test_convert_MessageWithExtension* msg = ParseMessageWithExtension(
+      R"pb(
+        [upb.test.convert.ext_field_repeated_msg] { f1: 456 }
+      )pb",
+      {upb_test_convert_ext_field_repeated_msg_ext}, &arena);
 
-  upb_test_convert_MessageWithInt32* val =
-      upb_test_convert_MessageWithInt32_new(arena.ptr());
-  upb_test_convert_MessageWithInt32_set_f1(val, 456);
-
-  upb_Array* ext_arr = upb_Array_New(arena.ptr(), kUpb_CType_Message);
-  upb_Array_Resize(ext_arr, 1, arena.ptr());
-  upb_MessageValue elem_val;
-  elem_val.msg_val = (const upb_Message*)val;
-  upb_Array_Set(ext_arr, 0, elem_val);
-  upb_MessageValue ext_val;
-  ext_val.array_val = ext_arr;
-  upb_Message_SetExtension(UPB_UPCAST(msg),
-                           upb_test_convert_ext_field_repeated_msg_ext,
-                           &ext_val, arena.ptr());
+  const upb_Array* ext_arr = upb_Message_GetExtensionArray(
+      UPB_UPCAST(msg), upb_test_convert_ext_field_repeated_msg_ext);
+  ASSERT_NE(ext_arr, nullptr);
+  const upb_test_convert_MessageWithInt32* val =
+      (const upb_test_convert_MessageWithInt32*)upb_Array_Get(ext_arr, 0)
+          .msg_val;
 
   const upb_MiniTable* src_mt =
       &upb__test__convert__MessageWithExtension_msg_init;
@@ -281,23 +333,18 @@ TEST(ConvertTest, ExtensionArrayShallowConversion) {
 
 TEST(ConvertTest, ExtensionArrayDeepConversion) {
   upb::Arena arena;
-  upb_test_convert_MessageWithExtension* msg =
-      upb_test_convert_MessageWithExtension_new(arena.ptr());
+  upb_test_convert_MessageWithExtension* msg = ParseMessageWithExtension(
+      R"pb(
+        [upb.test.convert.ext_field_repeated_msg] { f1: 789 }
+      )pb",
+      {upb_test_convert_ext_field_repeated_msg_ext}, &arena);
 
-  upb_test_convert_MessageWithInt32* val =
-      upb_test_convert_MessageWithInt32_new(arena.ptr());
-  upb_test_convert_MessageWithInt32_set_f1(val, 789);
-
-  upb_Array* ext_arr = upb_Array_New(arena.ptr(), kUpb_CType_Message);
-  upb_Array_Resize(ext_arr, 1, arena.ptr());
-  upb_MessageValue elem_val;
-  elem_val.msg_val = (const upb_Message*)val;
-  upb_Array_Set(ext_arr, 0, elem_val);
-  upb_MessageValue ext_val;
-  ext_val.array_val = ext_arr;
-  upb_Message_SetExtension(UPB_UPCAST(msg),
-                           upb_test_convert_ext_field_repeated_msg_ext,
-                           &ext_val, arena.ptr());
+  const upb_Array* ext_arr = upb_Message_GetExtensionArray(
+      UPB_UPCAST(msg), upb_test_convert_ext_field_repeated_msg_ext);
+  ASSERT_NE(ext_arr, nullptr);
+  const upb_test_convert_MessageWithInt32* val =
+      (const upb_test_convert_MessageWithInt32*)upb_Array_Get(ext_arr, 0)
+          .msg_val;
 
   const upb_MiniTable* src_mt =
       &upb__test__convert__MessageWithExtension_msg_init;
@@ -324,15 +371,11 @@ TEST(ConvertTest, ExtensionArrayDeepConversion) {
 
 TEST(ConvertTest, MismatchedExtensionFails) {
   upb::Arena arena;
-  upb_test_convert_MessageWithExtension* msg =
-      upb_test_convert_MessageWithExtension_new(arena.ptr());
-
-  // Set extension field 1000 to an int32
-  upb_MessageValue ext_val;
-  ext_val.int32_val = 12345;
-  upb_Message_SetExtension(UPB_UPCAST(msg),
-                           upb_test_convert_ext_field_int32_ext, &ext_val,
-                           arena.ptr());
+  upb_test_convert_MessageWithExtension* msg = ParseMessageWithExtension(
+      R"pb(
+        [upb.test.convert.ext_field_int32]: 12345
+      )pb",
+      {upb_test_convert_ext_field_int32_ext}, &arena);
 
   const upb_MiniTable* src_mt =
       &upb__test__convert__MessageWithExtension_msg_init;
@@ -351,9 +394,12 @@ TEST(ConvertTest, MismatchedExtensionFails) {
 TEST(ConvertTest, ConvertField_IncompatibleCType) {
   upb::Arena arena;
   upb_test_convert_MessageWithString* msg =
-      upb_test_convert_MessageWithString_new(arena.ptr());
-  upb_test_convert_MessageWithString_set_f1(msg,
-                                            upb_StringView_FromString("hello"));
+      ParseUpbTextProto<upb::test::convert::MessageWithString,
+                        upb_test_convert_MessageWithString>(
+          R"pb(
+            f1: "hello"
+          )pb",
+          &upb__test__convert__MessageWithString_msg_init, {}, &arena);
 
   const upb_MiniTable* src_mt = &upb__test__convert__MessageWithString_msg_init;
   const upb_MiniTable* dst_mt = &upb__test__convert__MessageWithInt32_msg_init;
@@ -366,10 +412,12 @@ TEST(ConvertTest, ConvertField_IncompatibleCType) {
 TEST(ConvertTest, ConvertField_ArrayIncompatibleCType) {
   upb::Arena arena;
   upb_test_convert_MessageWithRepeatedString* msg =
-      upb_test_convert_MessageWithRepeatedString_new(arena.ptr());
-  upb_StringView* arr =
-      upb_test_convert_MessageWithRepeatedString_resize_r(msg, 1, arena.ptr());
-  arr[0] = upb_StringView_FromString("hello");
+      ParseUpbTextProto<upb::test::convert::MessageWithRepeatedString,
+                        upb_test_convert_MessageWithRepeatedString>(
+          R"pb(
+            r: "hello"
+          )pb",
+          &upb__test__convert__MessageWithRepeatedString_msg_init, {}, &arena);
 
   const upb_MiniTable* src_mt =
       &upb__test__convert__MessageWithRepeatedString_msg_init;
@@ -384,8 +432,12 @@ TEST(ConvertTest, ConvertField_ArrayIncompatibleCType) {
 TEST(ConvertTest, ConvertField_TypeMismatch) {
   upb::Arena arena;
   upb_test_convert_MessageWithInt32* msg =
-      upb_test_convert_MessageWithInt32_new(arena.ptr());
-  upb_test_convert_MessageWithInt32_set_f1(msg, 12345);
+      ParseUpbTextProto<upb::test::convert::MessageWithInt32,
+                        upb_test_convert_MessageWithInt32>(
+          R"pb(
+            f1: 12345
+          )pb",
+          &upb__test__convert__MessageWithInt32_msg_init, {}, &arena);
 
   const upb_MiniTable* src_mt = &upb__test__convert__MessageWithInt32_msg_init;
   const upb_MiniTable* dst_mt = &upb__test__convert__MessageWithInt64_msg_init;
@@ -398,8 +450,12 @@ TEST(ConvertTest, ConvertField_TypeMismatch) {
 TEST(ConvertTest, ConvertField_ModeMismatch_ScalarToArray) {
   upb::Arena arena;
   upb_test_convert_MessageWithInt32* msg =
-      upb_test_convert_MessageWithInt32_new(arena.ptr());
-  upb_test_convert_MessageWithInt32_set_f1(msg, 12345);
+      ParseUpbTextProto<upb::test::convert::MessageWithInt32,
+                        upb_test_convert_MessageWithInt32>(
+          R"pb(
+            f1: 12345
+          )pb",
+          &upb__test__convert__MessageWithInt32_msg_init, {}, &arena);
 
   const upb_MiniTable* src_mt = &upb__test__convert__MessageWithInt32_msg_init;
   const upb_MiniTable* dst_mt =
@@ -413,8 +469,12 @@ TEST(ConvertTest, ConvertField_ModeMismatch_ScalarToArray) {
 TEST(ConvertTest, ConvertField_ModeMismatch_ArrayToScalar) {
   upb::Arena arena;
   upb_test_convert_MessageWithRepeatedInt32* msg =
-      upb_test_convert_MessageWithRepeatedInt32_new(arena.ptr());
-  upb_test_convert_MessageWithRepeatedInt32_add_r(msg, 12345, arena.ptr());
+      ParseUpbTextProto<upb::test::convert::MessageWithRepeatedInt32,
+                        upb_test_convert_MessageWithRepeatedInt32>(
+          R"pb(
+            r: 12345
+          )pb",
+          &upb__test__convert__MessageWithRepeatedInt32_msg_init, {}, &arena);
 
   const upb_MiniTable* src_mt =
       &upb__test__convert__MessageWithRepeatedInt32_msg_init;
@@ -428,8 +488,12 @@ TEST(ConvertTest, ConvertField_ModeMismatch_ArrayToScalar) {
 TEST(ConvertTest, ConvertField_ModeMismatch_ScalarToMap) {
   upb::Arena arena;
   upb_test_convert_MessageWithInt32* msg =
-      upb_test_convert_MessageWithInt32_new(arena.ptr());
-  upb_test_convert_MessageWithInt32_set_f1(msg, 12345);
+      ParseUpbTextProto<upb::test::convert::MessageWithInt32,
+                        upb_test_convert_MessageWithInt32>(
+          R"pb(
+            f1: 12345
+          )pb",
+          &upb__test__convert__MessageWithInt32_msg_init, {}, &arena);
 
   const upb_MiniTable* src_mt = &upb__test__convert__MessageWithInt32_msg_init;
   const upb_MiniTable* dst_mt =
@@ -443,8 +507,12 @@ TEST(ConvertTest, ConvertField_ModeMismatch_ScalarToMap) {
 TEST(ConvertTest, ConvertField_MapTypeMismatch) {
   upb::Arena arena;
   upb_test_convert_MessageWithMapInt32Int32* msg =
-      upb_test_convert_MessageWithMapInt32Int32_new(arena.ptr());
-  upb_test_convert_MessageWithMapInt32Int32_m_set(msg, 123, 456, arena.ptr());
+      ParseUpbTextProto<upb::test::convert::MessageWithMapInt32Int32,
+                        upb_test_convert_MessageWithMapInt32Int32>(
+          R"pb(
+            m { key: 123 value: 456 }
+          )pb",
+          &upb__test__convert__MessageWithMapInt32Int32_msg_init, {}, &arena);
 
   const upb_MiniTable* src_mt =
       &upb__test__convert__MessageWithMapInt32Int32_msg_init;
@@ -459,11 +527,15 @@ TEST(ConvertTest, ConvertField_MapTypeMismatch) {
 TEST(ConvertTest, ConvertField_SingularMessageDeep) {
   upb::Arena arena;
   upb_test_convert_MessageWithMsg* msg =
-      upb_test_convert_MessageWithMsg_new(arena.ptr());
-  upb_test_convert_MessageWithInt32* sub =
-      upb_test_convert_MessageWithInt32_new(arena.ptr());
-  upb_test_convert_MessageWithInt32_set_f1(sub, 123);
-  upb_test_convert_MessageWithMsg_set_msg(msg, sub);
+      ParseUpbTextProto<upb::test::convert::MessageWithMsg,
+                        upb_test_convert_MessageWithMsg>(
+          R"pb(
+            msg { f1: 123 }
+          )pb",
+          &upb__test__convert__MessageWithMsg_msg_init, {}, &arena);
+  const upb_test_convert_MessageWithInt32* sub =
+      upb_test_convert_MessageWithMsg_msg(msg);
+  ASSERT_NE(sub, nullptr);
 
   const upb_MiniTable* src_mt = &upb__test__convert__MessageWithMsg_msg_init;
   const upb_MiniTable* dst_mt =
@@ -488,14 +560,15 @@ TEST(ConvertTest, ConvertField_SingularMessageDeep) {
 TEST(ConvertTest, ConvertField_ArrayMessageShallow) {
   upb::Arena arena;
   upb_test_convert_MessageWithRepeatedMsg* msg =
-      upb_test_convert_MessageWithRepeatedMsg_new(arena.ptr());
-  upb_test_convert_MessageWithInt32* sub =
-      upb_test_convert_MessageWithInt32_new(arena.ptr());
-  upb_test_convert_MessageWithInt32_set_f1(sub, 123);
-
-  upb_test_convert_MessageWithInt32** arr =
-      upb_test_convert_MessageWithRepeatedMsg_resize_msgs(msg, 1, arena.ptr());
-  arr[0] = sub;
+      ParseUpbTextProto<upb::test::convert::MessageWithRepeatedMsg,
+                        upb_test_convert_MessageWithRepeatedMsg>(
+          R"pb(
+            msgs { f1: 123 }
+          )pb",
+          &upb__test__convert__MessageWithRepeatedMsg_msg_init, {}, &arena);
+  size_t src_size;
+  const upb_test_convert_MessageWithInt32* sub =
+      upb_test_convert_MessageWithRepeatedMsg_msgs(msg, &src_size)[0];
 
   const upb_MiniTable* mt =
       &upb__test__convert__MessageWithRepeatedMsg_msg_init;
@@ -520,14 +593,15 @@ TEST(ConvertTest, ConvertField_ArrayMessageShallow) {
 TEST(ConvertTest, ConvertField_ArrayMessageDeep) {
   upb::Arena arena;
   upb_test_convert_MessageWithRepeatedMsg* msg =
-      upb_test_convert_MessageWithRepeatedMsg_new(arena.ptr());
-  upb_test_convert_MessageWithInt32* sub =
-      upb_test_convert_MessageWithInt32_new(arena.ptr());
-  upb_test_convert_MessageWithInt32_set_f1(sub, 123);
-
-  upb_test_convert_MessageWithInt32** arr =
-      upb_test_convert_MessageWithRepeatedMsg_resize_msgs(msg, 1, arena.ptr());
-  arr[0] = sub;
+      ParseUpbTextProto<upb::test::convert::MessageWithRepeatedMsg,
+                        upb_test_convert_MessageWithRepeatedMsg>(
+          R"pb(
+            msgs { f1: 123 }
+          )pb",
+          &upb__test__convert__MessageWithRepeatedMsg_msg_init, {}, &arena);
+  size_t src_size;
+  const upb_test_convert_MessageWithInt32* sub =
+      upb_test_convert_MessageWithRepeatedMsg_msgs(msg, &src_size)[0];
 
   const upb_MiniTable* src_mt =
       &upb__test__convert__MessageWithRepeatedMsg_msg_init;
@@ -553,14 +627,11 @@ TEST(ConvertTest, ConvertField_ArrayMessageDeep) {
 
 TEST(ConvertTest, ConvertExtensions_ScalarMatch) {
   upb::Arena arena;
-  upb_test_convert_MessageWithExtension* msg =
-      upb_test_convert_MessageWithExtension_new(arena.ptr());
-
-  upb_MessageValue ext_val;
-  ext_val.int32_val = 123;
-  upb_Message_SetExtension(UPB_UPCAST(msg),
-                           upb_test_convert_ext_field_int32_ext, &ext_val,
-                           arena.ptr());
+  upb_test_convert_MessageWithExtension* msg = ParseMessageWithExtension(
+      R"pb(
+        [upb.test.convert.ext_field_int32]: 123
+      )pb",
+      {upb_test_convert_ext_field_int32_ext}, &arena);
 
   const upb_MiniTable* src_mt =
       &upb__test__convert__MessageWithExtension_msg_init;
@@ -578,17 +649,16 @@ TEST(ConvertTest, ConvertExtensions_ScalarMatch) {
 
 TEST(ConvertTest, ConvertExtensions_SingularMessageShallow) {
   upb::Arena arena;
-  upb_test_convert_MessageWithExtension* msg =
-      upb_test_convert_MessageWithExtension_new(arena.ptr());
-
-  upb_test_convert_MessageWithInt32* sub =
-      upb_test_convert_MessageWithInt32_new(arena.ptr());
-  upb_test_convert_MessageWithInt32_set_f1(sub, 123);
-
-  upb_MessageValue ext_val;
-  ext_val.msg_val = UPB_UPCAST(sub);
-  upb_Message_SetExtension(UPB_UPCAST(msg), upb_test_convert_ext_field_msg_ext,
-                           &ext_val, arena.ptr());
+  upb_test_convert_MessageWithExtension* msg = ParseMessageWithExtension(
+      R"pb(
+        [upb.test.convert.ext_field_msg] { f1: 123 }
+      )pb",
+      {upb_test_convert_ext_field_msg_ext}, &arena);
+  const upb_Message* sub_msg = upb_Message_GetExtensionMessage(
+      UPB_UPCAST(msg), upb_test_convert_ext_field_msg_ext, nullptr);
+  ASSERT_NE(sub_msg, nullptr);
+  const upb_test_convert_MessageWithInt32* sub =
+      (const upb_test_convert_MessageWithInt32*)sub_msg;
 
   const upb_MiniTable* src_mt =
       &upb__test__convert__MessageWithExtension_msg_init;
@@ -613,17 +683,16 @@ TEST(ConvertTest, ConvertExtensions_SingularMessageShallow) {
 
 TEST(ConvertTest, ConvertExtensions_SingularMessageDeep) {
   upb::Arena arena;
-  upb_test_convert_MessageWithExtension* msg =
-      upb_test_convert_MessageWithExtension_new(arena.ptr());
-
-  upb_test_convert_MessageWithInt32* sub =
-      upb_test_convert_MessageWithInt32_new(arena.ptr());
-  upb_test_convert_MessageWithInt32_set_f1(sub, 123);
-
-  upb_MessageValue ext_val;
-  ext_val.msg_val = UPB_UPCAST(sub);
-  upb_Message_SetExtension(UPB_UPCAST(msg), upb_test_convert_ext_field_msg_ext,
-                           &ext_val, arena.ptr());
+  upb_test_convert_MessageWithExtension* msg = ParseMessageWithExtension(
+      R"pb(
+        [upb.test.convert.ext_field_msg] { f1: 123 }
+      )pb",
+      {upb_test_convert_ext_field_msg_ext}, &arena);
+  const upb_Message* sub_msg = upb_Message_GetExtensionMessage(
+      UPB_UPCAST(msg), upb_test_convert_ext_field_msg_ext, nullptr);
+  ASSERT_NE(sub_msg, nullptr);
+  const upb_test_convert_MessageWithInt32* sub =
+      (const upb_test_convert_MessageWithInt32*)sub_msg;
 
   const upb_MiniTable* src_mt =
       &upb__test__convert__MessageWithExtension_msg_init;
@@ -647,14 +716,11 @@ TEST(ConvertTest, ConvertExtensions_SingularMessageDeep) {
 
 TEST(ConvertTest, ConvertExtensions_RemainsExtension) {
   upb::Arena arena;
-  upb_test_convert_MessageWithExtension* msg =
-      upb_test_convert_MessageWithExtension_new(arena.ptr());
-
-  upb_MessageValue ext_val;
-  ext_val.int32_val = 123;
-  upb_Message_SetExtension(UPB_UPCAST(msg),
-                           upb_test_convert_ext_field_int32_ext, &ext_val,
-                           arena.ptr());
+  upb_test_convert_MessageWithExtension* msg = ParseMessageWithExtension(
+      R"pb(
+        [upb.test.convert.ext_field_int32]: 123
+      )pb",
+      {upb_test_convert_ext_field_int32_ext}, &arena);
 
   const upb_MiniTable* mt = &upb__test__convert__MessageWithExtension_msg_init;
 
@@ -676,14 +742,11 @@ TEST(ConvertTest, ConvertExtensions_RemainsExtension) {
 
 TEST(ConvertTest, ConvertExtensions_LookupExtensionInRegistry) {
   upb::Arena arena;
-  upb_test_convert_MessageWithExtension* msg =
-      upb_test_convert_MessageWithExtension_new(arena.ptr());
-
-  upb_MessageValue ext_val;
-  ext_val.int32_val = 123;
-  upb_Message_SetExtension(UPB_UPCAST(msg),
-                           upb_test_convert_ext_field_int32_ext, &ext_val,
-                           arena.ptr());
+  upb_test_convert_MessageWithExtension* msg = ParseMessageWithExtension(
+      R"pb(
+        [upb.test.convert.ext_field_int32]: 123
+      )pb",
+      {upb_test_convert_ext_field_int32_ext}, &arena);
 
   const upb_MiniTable* src_mt =
       &upb__test__convert__MessageWithExtension_msg_init;
@@ -712,14 +775,11 @@ TEST(ConvertTest, ConvertExtensions_LookupExtensionInRegistry) {
 
 TEST(ConvertTest, ConvertExtensionToNonExtendable) {
   upb::Arena arena;
-  upb_test_convert_MessageWithExtension* msg =
-      upb_test_convert_MessageWithExtension_new(arena.ptr());
-
-  upb_MessageValue ext_val;
-  ext_val.int32_val = 123;
-  upb_Message_SetExtension(UPB_UPCAST(msg),
-                           upb_test_convert_ext_field_int32_ext, &ext_val,
-                           arena.ptr());
+  upb_test_convert_MessageWithExtension* msg = ParseMessageWithExtension(
+      R"pb(
+        [upb.test.convert.ext_field_int32]: 123
+      )pb",
+      {upb_test_convert_ext_field_int32_ext}, &arena);
 
   const upb_MiniTable* src_mt =
       &upb__test__convert__MessageWithExtension_msg_init;
@@ -742,14 +802,11 @@ TEST(ConvertTest, ConvertExtensionToNonExtendable) {
 
 TEST(ConvertTest, ConvertExtensionToExtendableButUnknown) {
   upb::Arena arena;
-  upb_test_convert_MessageWithExtension* msg =
-      upb_test_convert_MessageWithExtension_new(arena.ptr());
-
-  upb_MessageValue ext_val;
-  ext_val.int32_val = 123;
-  upb_Message_SetExtension(UPB_UPCAST(msg),
-                           upb_test_convert_ext_field_int32_ext, &ext_val,
-                           arena.ptr());
+  upb_test_convert_MessageWithExtension* msg = ParseMessageWithExtension(
+      R"pb(
+        [upb.test.convert.ext_field_int32]: 123
+      )pb",
+      {upb_test_convert_ext_field_int32_ext}, &arena);
 
   const upb_MiniTable* src_mt =
       &upb__test__convert__MessageWithExtension_msg_init;
@@ -822,15 +879,18 @@ TEST(ConvertTest, OneofDemotion) {
 
 TEST(ConvertTest, OpenToClosedEnum) {
   upb::Arena arena;
+  protobuf_test_messages_proto3_TestAllTypesProto3* msg =
+      ParseUpbTextProto<protobuf_test_messages::proto3::TestAllTypesProto3,
+                        protobuf_test_messages_proto3_TestAllTypesProto3>(
+          R"pb(
+            optional_nested_enum: BAR
+          )pb",
+          TEST_MT, {}, &arena);
+
   const upb_MiniTable* src_mt =
       &protobuf_0test_0messages__proto3__TestAllTypesProto3_msg_init;
   const upb_MiniTable* dst_mt = &upb__test__convert__Proto2EnumMessage_msg_init;
 
-  // Set a valid enum value that exists in range of the destination enum.
-  protobuf_test_messages_proto3_TestAllTypesProto3* msg =
-      protobuf_test_messages_proto3_TestAllTypesProto3_new(arena.ptr());
-  protobuf_test_messages_proto3_TestAllTypesProto3_set_optional_nested_enum(
-      msg, protobuf_test_messages_proto3_TestAllTypesProto3_BAR);
   const upb_Message* dst_msg = upb_Message_Convert(
       UPB_UPCAST(msg), src_mt, dst_mt, nullptr, arena.ptr());
   ASSERT_NE(dst_msg, nullptr);
@@ -842,15 +902,18 @@ TEST(ConvertTest, OpenToClosedEnum) {
 
 TEST(ConvertTest, OpenToClosedEnum_InvalidValueInClosedEnum) {
   upb::Arena arena;
+  protobuf_test_messages_proto3_TestAllTypesProto3* msg =
+      ParseUpbTextProto<protobuf_test_messages::proto3::TestAllTypesProto3,
+                        protobuf_test_messages_proto3_TestAllTypesProto3>(
+          R"pb(
+            optional_nested_enum: 12345
+          )pb",
+          TEST_MT, {}, &arena);
+
   const upb_MiniTable* src_mt =
       &protobuf_0test_0messages__proto3__TestAllTypesProto3_msg_init;
   const upb_MiniTable* dst_mt = &upb__test__convert__Proto2EnumMessage_msg_init;
 
-  // Set an invalid enum value for the destination enum.
-  protobuf_test_messages_proto3_TestAllTypesProto3* msg =
-      protobuf_test_messages_proto3_TestAllTypesProto3_new(arena.ptr());
-  protobuf_test_messages_proto3_TestAllTypesProto3_set_optional_nested_enum(
-      msg, 12345);  // Invalid value.
   const upb_Message* dst_msg = upb_Message_Convert(
       UPB_UPCAST(msg), src_mt, dst_mt, nullptr, arena.ptr());
   ASSERT_NE(dst_msg, nullptr);
@@ -879,14 +942,13 @@ TEST(ConvertTest, OpenToClosedEnum_InvalidValueInClosedEnum) {
 TEST(ConvertTest, OpenToClosedMapEnum) {
   upb::Arena arena;
   protobuf_test_messages_proto3_TestAllTypesProto3* msg =
-      protobuf_test_messages_proto3_TestAllTypesProto3_new(arena.ptr());
-
-  protobuf_test_messages_proto3_TestAllTypesProto3_map_string_nested_enum_set(
-      msg, upb_StringView_FromString("valid1"),
-      protobuf_test_messages_proto3_TestAllTypesProto3_BAR, arena.ptr());
-  protobuf_test_messages_proto3_TestAllTypesProto3_map_string_nested_enum_set(
-      msg, upb_StringView_FromString("valid2"),
-      protobuf_test_messages_proto3_TestAllTypesProto3_BAZ, arena.ptr());
+      ParseUpbTextProto<protobuf_test_messages::proto3::TestAllTypesProto3,
+                        protobuf_test_messages_proto3_TestAllTypesProto3>(
+          R"pb(
+            map_string_nested_enum { key: "valid1" value: BAR }
+            map_string_nested_enum { key: "valid2" value: BAZ }
+          )pb",
+          TEST_MT, {}, &arena);
 
   const upb_MiniTable* src_mt =
       &protobuf_0test_0messages__proto3__TestAllTypesProto3_msg_init;
@@ -912,14 +974,13 @@ TEST(ConvertTest, OpenToClosedMapEnum) {
 TEST(ConvertTest, OpenToClosedMapEnum_InvalidValueInClosedEnum) {
   upb::Arena arena;
   protobuf_test_messages_proto3_TestAllTypesProto3* msg =
-      protobuf_test_messages_proto3_TestAllTypesProto3_new(arena.ptr());
-
-  protobuf_test_messages_proto3_TestAllTypesProto3_map_string_nested_enum_set(
-      msg, upb_StringView_FromString("valid"),
-      protobuf_test_messages_proto3_TestAllTypesProto3_BAR, arena.ptr());
-  protobuf_test_messages_proto3_TestAllTypesProto3_map_string_nested_enum_set(
-      msg, upb_StringView_FromString("invalid"), 12345,
-      arena.ptr());  // Invalid value.
+      ParseUpbTextProto<protobuf_test_messages::proto3::TestAllTypesProto3,
+                        protobuf_test_messages_proto3_TestAllTypesProto3>(
+          R"pb(
+            map_string_nested_enum { key: "valid" value: BAR }
+            map_string_nested_enum { key: "invalid" value: 12345 }
+          )pb",
+          TEST_MT, {}, &arena);
 
   const upb_MiniTable* src_mt =
       &protobuf_0test_0messages__proto3__TestAllTypesProto3_msg_init;
@@ -968,11 +1029,12 @@ TEST(ConvertTest, OpenToClosedMapEnum_InvalidValueInClosedEnum) {
 TEST(ConvertTest, OpenToClosedRepeatedEnum) {
   upb::Arena arena;
   protobuf_test_messages_proto3_TestAllTypesProto3* msg =
-      protobuf_test_messages_proto3_TestAllTypesProto3_new(arena.ptr());
-  protobuf_test_messages_proto3_TestAllTypesProto3_add_repeated_nested_enum(
-      msg, protobuf_test_messages_proto3_TestAllTypesProto3_FOO, arena.ptr());
-  protobuf_test_messages_proto3_TestAllTypesProto3_add_repeated_nested_enum(
-      msg, protobuf_test_messages_proto3_TestAllTypesProto3_BAR, arena.ptr());
+      ParseUpbTextProto<protobuf_test_messages::proto3::TestAllTypesProto3,
+                        protobuf_test_messages_proto3_TestAllTypesProto3>(
+          R"pb(
+            repeated_nested_enum: FOO repeated_nested_enum: BAR
+          )pb",
+          TEST_MT, {}, &arena);
 
   const upb_MiniTable* src_mt =
       &protobuf_0test_0messages__proto3__TestAllTypesProto3_msg_init;
@@ -994,11 +1056,12 @@ TEST(ConvertTest, OpenToClosedRepeatedEnum) {
 TEST(ConvertTest, OpenToClosedRepeatedEnum_ContainsInvalidValue) {
   upb::Arena arena;
   protobuf_test_messages_proto3_TestAllTypesProto3* msg =
-      protobuf_test_messages_proto3_TestAllTypesProto3_new(arena.ptr());
-  protobuf_test_messages_proto3_TestAllTypesProto3_add_repeated_nested_enum(
-      msg, 12345, arena.ptr());  // Invalid value.
-  protobuf_test_messages_proto3_TestAllTypesProto3_add_repeated_nested_enum(
-      msg, protobuf_test_messages_proto3_TestAllTypesProto3_BAR, arena.ptr());
+      ParseUpbTextProto<protobuf_test_messages::proto3::TestAllTypesProto3,
+                        protobuf_test_messages_proto3_TestAllTypesProto3>(
+          R"pb(
+            repeated_nested_enum: 12345 repeated_nested_enum: BAR
+          )pb",
+          TEST_MT, {}, &arena);
 
   const upb_MiniTable* src_mt =
       &protobuf_0test_0messages__proto3__TestAllTypesProto3_msg_init;
@@ -1240,4 +1303,265 @@ TEST(ConvertTest, OneofPromotion) {
             upb_test_convert_SrcWithOneof_my_oneof_oneof_string);
   upb_StringView str = upb_test_convert_SrcWithOneof_oneof_string(dst);
   EXPECT_EQ(std::string("abc"), std::string(str.data, str.size));
+}
+
+TEST(ConvertTest, ConvertExtensions_LookupMessageExtensionInRegistry) {
+  upb::Arena arena;
+  upb_test_convert_MessageWithExtension* src_msg = ParseMessageWithExtension(
+      R"pb(
+        [upb.test.convert.ext_field_msg] { f1: 456 }
+      )pb",
+      {upb_test_convert_ext_field_msg_ext}, &arena);
+
+  const upb_MiniTable* mt1 = &upb__test__convert__MessageWithExtension_msg_init;
+  const upb_MiniTable* mt2 =
+      &upb__test__convert__AnotherMessageWithExtension_msg_init;
+
+  // Convert to mt2 without registry -> becomes unknown field.
+  const upb_Message* intermediate_msg =
+      upb_Message_Convert(UPB_UPCAST(src_msg), mt1, mt2, nullptr, arena.ptr());
+  ASSERT_NE(intermediate_msg, nullptr);
+
+  // Now convert back to mt1 with registry -> promoted back to extension.
+  upb_ExtensionRegistry* extreg = upb_ExtensionRegistry_New(arena.ptr());
+  upb_ExtensionRegistry_Add(extreg, upb_test_convert_ext_field_msg_ext);
+
+  const upb_Message* dst_msg =
+      upb_Message_Convert(intermediate_msg, mt2, mt1, extreg, arena.ptr());
+  ASSERT_NE(dst_msg, nullptr);
+
+  const upb_test_convert_MessageWithExtension* dst =
+      (const upb_test_convert_MessageWithExtension*)dst_msg;
+
+  EXPECT_TRUE(upb_Message_HasExtension(UPB_UPCAST(dst),
+                                       upb_test_convert_ext_field_msg_ext));
+  const upb_Message* out_sub = upb_Message_GetExtensionMessage(
+      UPB_UPCAST(dst), upb_test_convert_ext_field_msg_ext, nullptr);
+  ASSERT_NE(out_sub, nullptr);
+  EXPECT_EQ(456, upb_test_convert_MessageWithInt32_f1(
+                     (const upb_test_convert_MessageWithInt32*)out_sub));
+}
+
+TEST(ConvertTest, ConvertExtensions_LookupRepeatedMessageExtensionInRegistry) {
+  upb::Arena arena;
+  upb_test_convert_MessageWithExtension* src_msg = ParseMessageWithExtension(
+      R"pb(
+        [upb.test.convert.ext_field_repeated_msg] { f1: 789 }
+      )pb",
+      {upb_test_convert_ext_field_repeated_msg_ext}, &arena);
+
+  const upb_MiniTable* mt1 = &upb__test__convert__MessageWithExtension_msg_init;
+  const upb_MiniTable* mt2 =
+      &upb__test__convert__AnotherMessageWithExtension_msg_init;
+
+  // Convert to mt2 without registry -> becomes unknown field.
+  const upb_Message* intermediate_msg =
+      upb_Message_Convert(UPB_UPCAST(src_msg), mt1, mt2, nullptr, arena.ptr());
+  ASSERT_NE(intermediate_msg, nullptr);
+
+  // Now convert back to mt1 with registry -> promoted back to repeated
+  // extension.
+  upb_ExtensionRegistry* extreg = upb_ExtensionRegistry_New(arena.ptr());
+  upb_ExtensionRegistry_Add(extreg,
+                            upb_test_convert_ext_field_repeated_msg_ext);
+
+  const upb_Message* dst_msg =
+      upb_Message_Convert(intermediate_msg, mt2, mt1, extreg, arena.ptr());
+  ASSERT_NE(dst_msg, nullptr);
+
+  const upb_test_convert_MessageWithExtension* dst =
+      (const upb_test_convert_MessageWithExtension*)dst_msg;
+
+  const upb_Array* out_arr = upb_Message_GetExtensionArray(
+      UPB_UPCAST(dst), upb_test_convert_ext_field_repeated_msg_ext);
+  ASSERT_NE(out_arr, nullptr);
+  ASSERT_EQ(1, upb_Array_Size(out_arr));
+  const upb_Message* out_elem = upb_Array_Get(out_arr, 0).msg_val;
+  EXPECT_EQ(789, upb_test_convert_MessageWithInt32_f1(
+                     (const upb_test_convert_MessageWithInt32*)out_elem));
+}
+
+TEST(ConvertTest, ConvertExtensions_LookupEnumExtensionInRegistry) {
+  upb::Arena arena;
+  upb_test_convert_MessageWithExtension* src_msg = ParseMessageWithExtension(
+      R"pb(
+        [upb.test.convert.ext_enum]: BAR
+      )pb",
+      {upb_test_convert_ext_enum_ext}, &arena);
+
+  const upb_MiniTable* mt1 = &upb__test__convert__MessageWithExtension_msg_init;
+  const upb_MiniTable* mt2 =
+      &upb__test__convert__AnotherMessageWithExtension_msg_init;
+
+  // Convert to mt2 without registry -> becomes unknown field.
+  const upb_Message* intermediate_msg =
+      upb_Message_Convert(UPB_UPCAST(src_msg), mt1, mt2, nullptr, arena.ptr());
+  ASSERT_NE(intermediate_msg, nullptr);
+
+  // Convert back to mt1 with registry -> promoted back to enum extension.
+  upb_ExtensionRegistry* extreg = upb_ExtensionRegistry_New(arena.ptr());
+  upb_ExtensionRegistry_Add(extreg, upb_test_convert_ext_enum_ext);
+
+  const upb_Message* dst_msg =
+      upb_Message_Convert(intermediate_msg, mt2, mt1, extreg, arena.ptr());
+  ASSERT_NE(dst_msg, nullptr);
+
+  const upb_test_convert_MessageWithExtension* dst =
+      (const upb_test_convert_MessageWithExtension*)dst_msg;
+
+  EXPECT_TRUE(
+      upb_Message_HasExtension(UPB_UPCAST(dst), upb_test_convert_ext_enum_ext));
+  int32_t out_val = upb_Message_GetExtensionInt32(
+      UPB_UPCAST(dst), upb_test_convert_ext_enum_ext, 0);
+  EXPECT_EQ(upb_test_convert_Proto2EnumMessage_BAR, out_val);
+}
+
+TEST(ConvertTest, ConvertExtensions_LookupRepeatedEnumExtensionInRegistry) {
+  upb::Arena arena;
+  upb_test_convert_MessageWithExtension* src_msg = ParseMessageWithExtension(
+      R"pb(
+        [upb.test.convert.ext_repeated_enum]: FOO
+        [upb.test.convert.ext_repeated_enum]: BAZ
+      )pb",
+      {upb_test_convert_ext_repeated_enum_ext}, &arena);
+
+  const upb_MiniTable* mt1 = &upb__test__convert__MessageWithExtension_msg_init;
+  const upb_MiniTable* mt2 =
+      &upb__test__convert__AnotherMessageWithExtension_msg_init;
+
+  // Convert to mt2 without registry -> becomes unknown field.
+  const upb_Message* intermediate_msg =
+      upb_Message_Convert(UPB_UPCAST(src_msg), mt1, mt2, nullptr, arena.ptr());
+  ASSERT_NE(intermediate_msg, nullptr);
+
+  // Convert back to mt1 with registry -> promoted back to repeated enum
+  // extension.
+  upb_ExtensionRegistry* extreg = upb_ExtensionRegistry_New(arena.ptr());
+  upb_ExtensionRegistry_Add(extreg, upb_test_convert_ext_repeated_enum_ext);
+
+  const upb_Message* dst_msg =
+      upb_Message_Convert(intermediate_msg, mt2, mt1, extreg, arena.ptr());
+  ASSERT_NE(dst_msg, nullptr);
+
+  const upb_test_convert_MessageWithExtension* dst =
+      (const upb_test_convert_MessageWithExtension*)dst_msg;
+
+  const upb_Array* out_arr = upb_Message_GetExtensionArray(
+      UPB_UPCAST(dst), upb_test_convert_ext_repeated_enum_ext);
+  ASSERT_NE(out_arr, nullptr);
+  ASSERT_EQ(2, upb_Array_Size(out_arr));
+  EXPECT_EQ(upb_test_convert_Proto2EnumMessage_FOO,
+            upb_Array_Get(out_arr, 0).int32_val);
+  EXPECT_EQ(upb_test_convert_Proto2EnumMessage_BAZ,
+            upb_Array_Get(out_arr, 1).int32_val);
+}
+
+TEST(ConvertTest, ConvertExtensions_RegistryProvidedButUnneeded) {
+  upb::Arena arena;
+  upb_test_convert_MessageWithExtension* msg = ParseMessageWithExtension(
+      R"pb(
+        [upb.test.convert.ext_field_int32]: 12345
+      )pb",
+      {upb_test_convert_ext_field_int32_ext}, &arena);
+
+  const upb_MiniTable* src_mt =
+      &upb__test__convert__MessageWithExtension_msg_init;
+  const upb_MiniTable* dst_mt = &upb__test__convert__MessageWithKnown_msg_init;
+
+  // Provide an extension registry, even though dst_mt has field 1000 as a
+  // regular field.
+  upb_ExtensionRegistry* extreg = upb_ExtensionRegistry_New(arena.ptr());
+  upb_ExtensionRegistry_Add(extreg, upb_test_convert_ext_field_int32_ext);
+
+  const upb_Message* dst_msg =
+      upb_Message_Convert(UPB_UPCAST(msg), src_mt, dst_mt, extreg, arena.ptr());
+  ASSERT_NE(dst_msg, nullptr);
+
+  const upb_test_convert_MessageWithKnown* dst =
+      (const upb_test_convert_MessageWithKnown*)dst_msg;
+  EXPECT_TRUE(upb_test_convert_MessageWithKnown_has_known_field_int32(dst));
+  EXPECT_EQ(12345, upb_test_convert_MessageWithKnown_known_field_int32(dst));
+}
+
+TEST(ConvertTest, ConvertExtensions_RegistryMissingExtensionDemotesToUnknown) {
+  upb::Arena arena;
+  upb_test_convert_MessageWithExtension* msg = ParseMessageWithExtension(
+      R"pb(
+        [upb.test.convert.ext_field_int32]: 123
+      )pb",
+      {upb_test_convert_ext_field_int32_ext}, &arena);
+
+  const upb_MiniTable* src_mt =
+      &upb__test__convert__MessageWithExtension_msg_init;
+  const upb_MiniTable* dst_mt =
+      &upb__test__convert__AnotherMessageWithExtension_msg_init;
+
+  // Create an empty extension registry that does not contain field 1000.
+  upb_ExtensionRegistry* extreg = upb_ExtensionRegistry_New(arena.ptr());
+
+  const upb_Message* dst_msg =
+      upb_Message_Convert(UPB_UPCAST(msg), src_mt, dst_mt, extreg, arena.ptr());
+  ASSERT_NE(dst_msg, nullptr);
+
+  const upb_test_convert_AnotherMessageWithExtension* dst =
+      (const upb_test_convert_AnotherMessageWithExtension*)dst_msg;
+
+  // It should NOT have the extension set, because it wasn't in the registry.
+  EXPECT_FALSE(upb_Message_HasExtension(
+      UPB_UPCAST(dst), upb_test_convert_another_ext_field_int32_ext));
+
+  // Dst should have unknown field 1000 with value 123.
+  size_t iter = kUpb_Message_UnknownBegin;
+  upb_StringView data;
+  ASSERT_TRUE(upb_Message_NextUnknown(dst_msg, &data, &iter));
+  EXPECT_EQ(data.size, 3);
+  EXPECT_EQ((uint8_t)data.data[0], 0xC0);
+  EXPECT_EQ((uint8_t)data.data[1], 0x3E);
+  EXPECT_EQ((uint8_t)data.data[2], 0x7B);
+}
+
+TEST(ConvertTest, ConvertExtensions_LookupMultipleExtensionsInRegistry) {
+  upb::Arena arena;
+  upb_test_convert_MessageWithExtension* src_msg = ParseMessageWithExtension(
+      R"pb(
+        [upb.test.convert.ext_field_int32]: 123
+        [upb.test.convert.ext_field_msg] { f1: 456 }
+      )pb",
+      {upb_test_convert_ext_field_int32_ext,
+       upb_test_convert_ext_field_msg_ext},
+      &arena);
+
+  const upb_MiniTable* mt1 = &upb__test__convert__MessageWithExtension_msg_init;
+  const upb_MiniTable* mt2 =
+      &upb__test__convert__AnotherMessageWithExtension_msg_init;
+
+  // Convert to mt2 without registry -> 1000 and 1002 become unknown fields.
+  const upb_Message* intermediate_msg =
+      upb_Message_Convert(UPB_UPCAST(src_msg), mt1, mt2, nullptr, arena.ptr());
+  ASSERT_NE(intermediate_msg, nullptr);
+
+  // Convert back to mt1 with registry containing both extensions.
+  upb_ExtensionRegistry* extreg = upb_ExtensionRegistry_New(arena.ptr());
+  upb_ExtensionRegistry_Add(extreg, upb_test_convert_ext_field_int32_ext);
+  upb_ExtensionRegistry_Add(extreg, upb_test_convert_ext_field_msg_ext);
+
+  const upb_Message* dst_msg =
+      upb_Message_Convert(intermediate_msg, mt2, mt1, extreg, arena.ptr());
+  ASSERT_NE(dst_msg, nullptr);
+
+  const upb_test_convert_MessageWithExtension* dst =
+      (const upb_test_convert_MessageWithExtension*)dst_msg;
+
+  EXPECT_TRUE(upb_Message_HasExtension(UPB_UPCAST(dst),
+                                       upb_test_convert_ext_field_int32_ext));
+  EXPECT_EQ(123, upb_Message_GetExtensionInt32(
+                     UPB_UPCAST(dst), upb_test_convert_ext_field_int32_ext, 0));
+
+  EXPECT_TRUE(upb_Message_HasExtension(UPB_UPCAST(dst),
+                                       upb_test_convert_ext_field_msg_ext));
+  const upb_Message* out_sub = upb_Message_GetExtensionMessage(
+      UPB_UPCAST(dst), upb_test_convert_ext_field_msg_ext, nullptr);
+  ASSERT_NE(out_sub, nullptr);
+  EXPECT_EQ(456, upb_test_convert_MessageWithInt32_f1(
+                     (const upb_test_convert_MessageWithInt32*)out_sub));
 }

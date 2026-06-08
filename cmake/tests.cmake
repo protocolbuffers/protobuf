@@ -213,6 +213,20 @@ if (protobuf_BUILD_LIBUPB)
     endforeach()
   endforeach(proto_file)
 
+  foreach(proto_file ${upb_test_protos_files})
+    if (proto_file MATCHES "/src/google/protobuf/")
+      continue()
+    endif()
+    protobuf_generate(
+      PROTOS ${proto_file}
+      LANGUAGE cpp
+      OUT_VAR pb_generated_files
+      IMPORT_DIRS ${protobuf_SOURCE_DIR}/src
+      IMPORT_DIRS ${protobuf_SOURCE_DIR}
+    )
+    set(upb_test_proto_genfiles ${upb_test_proto_genfiles} ${pb_generated_files})
+  endforeach(proto_file)
+
   add_executable(upb-test
     ${upb_test_files}
     ${upb_test_proto_genfiles}
