@@ -562,7 +562,8 @@ public abstract class GeneratedMessageLite<
       return (BuilderType) this;
     }
 
-    private static <MessageType> void mergeFromInstance(MessageType dest, MessageType src) {
+    private static <MessageType extends GeneratedMessageLite<?, ?>> void mergeFromInstance(
+        MessageType dest, MessageType src) {
       Protobuf.getInstance().schemaFor(dest).mergeFrom(dest, src);
     }
 
