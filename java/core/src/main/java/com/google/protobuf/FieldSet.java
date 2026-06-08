@@ -27,6 +27,7 @@ import java.util.Map.Entry;
  *
  * @author kenton@google.com Kenton Varda
  */
+@SuppressWarnings("nullness")
 final class FieldSet<T extends FieldSet.FieldDescriptorLite<T>> {
   /**
    * Interface for a FieldDescriptor or lite extension descriptor. This prevents FieldSet from

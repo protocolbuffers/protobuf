@@ -7,6 +7,7 @@
 
 package com.google.protobuf;
 
+import com.google.common.annotations.J2ktIncompatible;
 import com.google.protobuf.AbstractMessageLite.Builder.LimitedInputStream;
 import com.google.protobuf.Internal.BooleanList;
 import com.google.protobuf.Internal.DoubleList;
@@ -27,6 +28,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import javax.annotation.Nullable;
 
 /**
  * Lite version of {@link GeneratedMessage}.
@@ -40,6 +42,7 @@ import java.util.concurrent.ConcurrentHashMap;
  *
  * @author kenton@google.com Kenton Varda
  */
+@SuppressWarnings("nullness")
 public abstract class GeneratedMessageLite<
         MessageType extends GeneratedMessageLite<MessageType, BuilderType>,
         BuilderType extends GeneratedMessageLite.Builder<MessageType, BuilderType>>
@@ -223,7 +226,7 @@ public abstract class GeneratedMessageLite<
           MessageType2 extends GeneratedMessageLite<MessageType2, BuilderType2>,
           BuilderType2 extends GeneratedMessageLite.Builder<MessageType2, BuilderType2>>
       BuilderType2 createBuilder(MessageType2 prototype) {
-    return ((BuilderType2) createBuilder()).mergeFrom(prototype);
+    return this.<MessageType2, BuilderType2>createBuilder().mergeFrom(prototype);
   }
 
   @Override
@@ -367,11 +370,7 @@ public abstract class GeneratedMessageLite<
     if (result == null) {
       // Foo.class does not initialize the class so we need to force the initialization in order to
       // get the default instance registered.
-      try {
-        Class.forName(clazz.getName(), true, clazz.getClassLoader());
-      } catch (ClassNotFoundException e) {
-        throw new IllegalStateException("Class initialization cannot fail.", e);
-      }
+      ClassInitialization.forceInit(clazz);
       result = (T) defaultInstanceMap.get(clazz);
     }
     if (result == null) {
@@ -957,33 +956,39 @@ public abstract class GeneratedMessageLite<
      * numbers, but we must write them in canonical (sorted by field number) order. ExtensionWriter
      * helps us write individual ranges of extensions at once.
      */
+    @SuppressWarnings("rawtypes")
     protected class ExtensionWriter {
       // Imagine how much simpler this code would be if Java iterators had
       // a way to get the next element without advancing the iterator.
 
-      private final Iterator<Map.Entry<ExtensionDescriptor, Object>> iter = extensions.iterator();
-      private Map.Entry<ExtensionDescriptor, Object> next;
+      private final Iterator iter = extensions.iterator();
+      private @Nullable Map.Entry next;
       private final boolean messageSetWireFormat;
 
       private ExtensionWriter(boolean messageSetWireFormat) {
         if (iter.hasNext()) {
-          next = iter.next();
+          next = (Map.Entry) iter.next();
         }
         this.messageSetWireFormat = messageSetWireFormat;
       }
 
+      @SuppressWarnings("unchecked")
       public void writeUntil(final int end, final CodedOutputStream output) throws IOException {
-        while (next != null && next.getKey().getNumber() < end) {
-          ExtensionDescriptor extension = next.getKey();
+        while (next != null) {
+          Map.Entry entry = next;
+          FieldSet.FieldDescriptorLite extension = (FieldSet.FieldDescriptorLite) entry.getKey();
+          if (extension.getNumber() >= end) {
+            break;
+          }
           if (messageSetWireFormat
               && extension.getLiteJavaType() == WireFormat.JavaType.MESSAGE
               && !extension.isRepeated()) {
-            output.writeMessageSetExtension(extension.getNumber(), (MessageLite) next.getValue());
+            output.writeMessageSetExtension(extension.getNumber(), (MessageLite) entry.getValue());
           } else {
-            FieldSet.writeField(extension, next.getValue(), output);
+            FieldSet.writeField(extension, entry.getValue(), output);
           }
           if (iter.hasNext()) {
-            next = iter.next();
+            next = (Map.Entry) iter.next();
           } else {
             next = null;
           }
@@ -1249,6 +1254,7 @@ public abstract class GeneratedMessageLite<
 
   /** Calls Class.getMethod and throws a RuntimeException if it fails. */
   @SuppressWarnings({"unchecked", "rawtypes"})
+  @J2ktIncompatible
   static Method getMethodOrDie(Class clazz, String name, Class... params) {
     try {
       return clazz.getMethod(name, params);
@@ -1260,6 +1266,7 @@ public abstract class GeneratedMessageLite<
   }
 
   /** Calls invoke and throws a RuntimeException if it fails. */
+  @J2ktIncompatible
   static Object invokeOrDie(Method method, Object object, Object... params) {
     try {
       return method.invoke(object, params);
@@ -1411,6 +1418,7 @@ public abstract class GeneratedMessageLite<
    * A serialized (serializable) form of the generated message. Stores the message as a class name
    * and a byte array.
    */
+  @J2ktIncompatible
   protected static final class SerializedForm implements Serializable {
 
     public static SerializedForm of(MessageLite message) {

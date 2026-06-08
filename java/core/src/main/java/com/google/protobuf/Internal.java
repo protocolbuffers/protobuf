@@ -9,7 +9,6 @@ package com.google.protobuf;
 
 import static java.nio.charset.StandardCharsets.ISO_8859_1;
 import static java.nio.charset.StandardCharsets.UTF_8;
-
 import java.lang.reflect.Method;
 import java.nio.Buffer;
 import java.nio.ByteBuffer;
@@ -30,6 +29,7 @@ import java.util.Set;
  *
  * @author kenton@google.com (Kenton Varda)
  */
+@SuppressWarnings("nullness")
 public final class Internal {
 
   private Internal() {}
@@ -190,7 +190,9 @@ public final class Internal {
    * order to better support reflection.
    */
   public interface EnumLite {
-    int getNumber();
+    default int getNumber() {
+      return 0;
+    }
   }
 
   /**
@@ -360,6 +362,7 @@ public final class Internal {
   }
 
   @SuppressWarnings("unchecked")
+  @com.google.common.annotations.J2ktIncompatible
   public static <T extends MessageLite> T getDefaultInstance(Class<T> clazz) {
     try {
       Method method = clazz.getMethod("getDefaultInstance");

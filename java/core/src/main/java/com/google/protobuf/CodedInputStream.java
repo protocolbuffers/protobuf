@@ -22,6 +22,7 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import javax.annotation.Nullable;
 
 /**
  * Reads and decodes protocol message fields.
@@ -34,6 +35,7 @@ import java.util.List;
  *
  * @author kenton@google.com Kenton Varda
  */
+@SuppressWarnings("nullness")
 public abstract class CodedInputStream {
   private static final int DEFAULT_BUFFER_SIZE = 4096;
   // Integer.MAX_VALUE == 0x7FFFFFF == INT_MAX from limits.h
@@ -51,7 +53,7 @@ public abstract class CodedInputStream {
   int sizeLimit = DEFAULT_SIZE_LIMIT;
 
   /** Used to adapt to the experimental {@link Reader} interface. */
-  Object wrapper;
+  @Nullable Object wrapper;
 
   /** Create a new CodedInputStream wrapping the given InputStream. */
   public static CodedInputStream newInstance(final InputStream input) {
@@ -826,7 +828,7 @@ public abstract class CodedInputStream {
 
     private int pos;
     private int startPos;
-    private int lastTag;
+    private int lastTag_;
     private boolean enableAliasing;
 
     /**
@@ -851,29 +853,29 @@ public abstract class CodedInputStream {
     @Override
     public int readTag() throws IOException {
       if (isAtEnd()) {
-        lastTag = 0;
+        lastTag_ = 0;
         return 0;
       }
 
-      lastTag = readRawVarint32Expected5BytesMax();
-      if (WireFormat.getTagFieldNumber(lastTag) == 0) {
+      lastTag_ = readRawVarint32Expected5BytesMax();
+      if (WireFormat.getTagFieldNumber(lastTag_) == 0) {
         // If we actually read zero (or any tag number corresponding to field
         // number zero), that's not a valid tag.
         throw InvalidProtocolBufferException.invalidTag();
       }
-      return lastTag;
+      return lastTag_;
     }
 
     @Override
     public void checkLastTagWas(final int value) throws InvalidProtocolBufferException {
-      if (lastTag != value) {
+      if (lastTag_ != value) {
         throw InvalidProtocolBufferException.invalidEndTag();
       }
     }
 
     @Override
     public int getLastTag() {
-      return lastTag;
+      return lastTag_;
     }
 
     @Override
@@ -1609,7 +1611,7 @@ public abstract class CodedInputStream {
 
     private int bufferSizeAfterLimit;
     private int pos;
-    private int lastTag;
+    private int lastTag_;
 
     /**
      * The total number of bytes read before the current buffer. The total bytes read up to the
@@ -1675,29 +1677,29 @@ public abstract class CodedInputStream {
     @Override
     public int readTag() throws IOException {
       if (isAtEnd()) {
-        lastTag = 0;
+        lastTag_ = 0;
         return 0;
       }
 
-      lastTag = readRawVarint32();
-      if (WireFormat.getTagFieldNumber(lastTag) == 0) {
+      lastTag_ = readRawVarint32();
+      if (WireFormat.getTagFieldNumber(lastTag_) == 0) {
         // If we actually read zero (or any tag number corresponding to field
         // number zero), that's not a valid tag.
         throw InvalidProtocolBufferException.invalidTag();
       }
-      return lastTag;
+      return lastTag_;
     }
 
     @Override
     public void checkLastTagWas(final int value) throws InvalidProtocolBufferException {
-      if (lastTag != value) {
+      if (lastTag_ != value) {
         throw InvalidProtocolBufferException.invalidEndTag();
       }
     }
 
     @Override
     public int getLastTag() {
-      return lastTag;
+      return lastTag_;
     }
 
     @Override
@@ -1783,7 +1785,7 @@ public abstract class CodedInputStream {
     /** Collects the bytes skipped and returns the data in a ByteBuffer. */
     private class SkippedDataSink implements RefillCallback {
       private int lastPos = pos;
-      private ByteArrayOutputStream byteArrayStream;
+      private @Nullable ByteArrayOutputStream byteArrayStream;
 
       @Override
       public void onRefill() {

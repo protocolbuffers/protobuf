@@ -188,7 +188,7 @@ abstract class AllocatedBuffer {
       final byte[] bytes, final int offset, final int length) {
     return new AllocatedBuffer() {
       // Relative to offset.
-      private int position;
+      private int position_;
 
       @Override
       public boolean hasNioBuffer() {
@@ -217,7 +217,7 @@ abstract class AllocatedBuffer {
 
       @Override
       public int position() {
-        return position;
+        return position_;
       }
 
       @Override
@@ -225,7 +225,7 @@ abstract class AllocatedBuffer {
         if (position < 0 || position > length) {
           throw new IllegalArgumentException("Invalid position: " + position);
         }
-        this.position = position;
+        this.position_ = position;
         return this;
       }
 
@@ -237,7 +237,7 @@ abstract class AllocatedBuffer {
 
       @Override
       public int remaining() {
-        return length - position;
+        return length - position_;
       }
     };
   }

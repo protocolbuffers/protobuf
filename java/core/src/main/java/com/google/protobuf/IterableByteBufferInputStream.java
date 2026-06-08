@@ -13,13 +13,15 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.util.Iterator;
+import javax.annotation.Nullable;
 
+@SuppressWarnings("nullness")
 final class IterableByteBufferInputStream extends InputStream {
   /** The {@link Iterator} with type {@link ByteBuffer} of {@code input} */
   private Iterator<ByteBuffer> iterator;
 
   /** The current ByteBuffer; */
-  private ByteBuffer currentByteBuffer;
+  private ByteBuffer currentByteBuffer = EMPTY_BYTE_BUFFER;
 
   /** The number of ByteBuffers in the input data. */
   private int dataSize;
@@ -41,7 +43,7 @@ final class IterableByteBufferInputStream extends InputStream {
    * If the current ByteBuffer is unsafe-direct based, currentArray is null; otherwise should be the
    * array inside ByteBuffer.
    */
-  private byte[] currentArray;
+  private @Nullable byte[] currentArray;
 
   /** Current ByteBuffer's array offset */
   private int currentArrayOffset;

@@ -12,6 +12,7 @@ import static com.google.protobuf.TextFormatEscaper.escapeBytes;
 import static java.lang.Integer.toHexString;
 import static java.lang.System.identityHashCode;
 
+import com.google.common.annotations.J2ktIncompatible;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -34,6 +35,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.NoSuchElementException;
+import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * Immutable sequence of bytes. Provides conversions to and from {@code byte[]}, {@link
@@ -53,6 +55,7 @@ import java.util.NoSuchElementException;
  * @author martinrb@google.com Martin Buchholz
  */
 @CheckReturnValue
+@SuppressWarnings("nullness")
 public abstract class ByteString implements Iterable<Byte>, Serializable {
   private static final long serialVersionUID = 1L;
 
@@ -1165,6 +1168,7 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
     // is still modifying the underlying byte array.
 
     private static final byte[] EMPTY_BYTE_ARRAY = new byte[0];
+    private final ReentrantLock lock = new ReentrantLock();
     // argument passed by user, indicating initial capacity.
     private final int initialCapacity;
     // ByteStrings to be concatenated to create the result
@@ -1191,30 +1195,40 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
     }
 
     @Override
-    public synchronized void write(int b) {
-      if (bufferPos == buffer.length) {
-        flushFullBuffer(1);
+    public void write(int b) {
+      lock.lock();
+      try {
+        if (bufferPos == buffer.length) {
+          flushFullBuffer(1);
+        }
+        buffer[bufferPos++] = (byte) b;
+      } finally {
+        lock.unlock();
       }
-      buffer[bufferPos++] = (byte) b;
     }
 
     @Override
-    public synchronized void write(byte[] b, int offset, int length) {
-      if (length <= buffer.length - bufferPos) {
-        // The bytes can fit into the current buffer.
-        System.arraycopy(b, offset, buffer, bufferPos, length);
-        bufferPos += length;
-      } else {
-        // Use up the current buffer
-        int copySize = buffer.length - bufferPos;
-        System.arraycopy(b, offset, buffer, bufferPos, copySize);
-        offset += copySize;
-        length -= copySize;
-        // Flush the buffer, and get a new buffer at least big enough to cover
-        // what we still need to output
-        flushFullBuffer(length);
-        System.arraycopy(b, offset, buffer, /* destPos= */ 0, length);
-        bufferPos = length;
+    public void write(byte[] b, int offset, int length) {
+      lock.lock();
+      try {
+        if (length <= buffer.length - bufferPos) {
+          // The bytes can fit into the current buffer.
+          System.arraycopy(b, offset, buffer, bufferPos, length);
+          bufferPos += length;
+        } else {
+          // Use up the current buffer
+          int copySize = buffer.length - bufferPos;
+          System.arraycopy(b, offset, buffer, bufferPos, copySize);
+          offset += copySize;
+          length -= copySize;
+          // Flush the buffer, and get a new buffer at least big enough to cover
+          // what we still need to output
+          flushFullBuffer(length);
+          System.arraycopy(b, offset, buffer, /* destPos= */ 0, length);
+          bufferPos = length;
+        }
+      } finally {
+        lock.unlock();
       }
     }
 
@@ -1226,9 +1240,14 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
      *
      * @return the current contents of this output stream, as a byte string.
      */
-    public synchronized ByteString toByteString() {
-      flushLastBuffer();
-      return ByteString.copyFrom(flushedBuffers);
+    public ByteString toByteString() {
+      lock.lock();
+      try {
+        flushLastBuffer();
+        return ByteString.copyFrom(flushedBuffers);
+      } finally {
+        lock.unlock();
+      }
     }
 
     /**
@@ -1242,12 +1261,15 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
       ByteString[] cachedFlushBuffers;
       byte[] cachedBuffer;
       int cachedBufferPos;
-      synchronized (this) {
+      lock.lock();
+      try {
         // Copy the information we need into local variables so as to hold
         // the lock for as short a time as possible.
         cachedFlushBuffers = flushedBuffers.toArray(new ByteString[0]);
         cachedBuffer = buffer;
         cachedBufferPos = bufferPos;
+      } finally {
+        lock.unlock();
       }
       for (ByteString byteString : cachedFlushBuffers) {
         byteString.writeTo(out);
@@ -1261,18 +1283,28 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
      *
      * @return the current size of the output stream
      */
-    public synchronized int size() {
-      return flushedBuffersTotalBytes + bufferPos;
+    public int size() {
+      lock.lock();
+      try {
+        return flushedBuffersTotalBytes + bufferPos;
+      } finally {
+        lock.unlock();
+      }
     }
 
     /**
      * Resets this stream, so that all currently accumulated output in the output stream is
      * discarded. The output stream can be used again, reusing the already allocated buffer space.
      */
-    public synchronized void reset() {
-      flushedBuffers.clear();
-      flushedBuffersTotalBytes = 0;
-      bufferPos = 0;
+    public void reset() {
+      lock.lock();
+      try {
+        flushedBuffers.clear();
+        flushedBuffersTotalBytes = 0;
+        bufferPos = 0;
+      } finally {
+        lock.unlock();
+      }
     }
 
     @Override
@@ -1855,10 +1887,12 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
 
     private static final long serialVersionUID = 1L;
 
+    @J2ktIncompatible
     Object writeReplace() {
       return ByteString.wrap(toByteArray());
     }
 
+    @J2ktIncompatible
     private void readObject(@SuppressWarnings("unused") ObjectInputStream in) throws IOException {
       throw new InvalidObjectException(
           "BoundedByteStream instances are not to be serialized directly");

@@ -17,6 +17,7 @@ package com.google.protobuf;
  *
  * @author kenton@google.com Kenton Varda
  */
+@SuppressWarnings("nullness")
 public final class WireFormat {
   // Do not allow instantiation.
   private WireFormat() {}
@@ -124,19 +125,19 @@ public final class WireFormat {
     SINT64(JavaType.LONG, WIRETYPE_VARINT);
 
     FieldType(final JavaType javaType, final int wireType) {
-      this.javaType = javaType;
-      this.wireType = wireType;
+      this.javaType_ = javaType;
+      this.wireType_ = wireType;
     }
 
-    private final JavaType javaType;
-    private final int wireType;
+    private final JavaType javaType_;
+    private final int wireType_;
 
     public JavaType getJavaType() {
-      return javaType;
+      return javaType_;
     }
 
     public int getWireType() {
-      return wireType;
+      return wireType_;
     }
 
     public boolean isPackable() {

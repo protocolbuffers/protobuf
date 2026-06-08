@@ -16,7 +16,7 @@ final class RawMessageInfo implements MessageInfo {
   private static final int IS_PROTO2_BIT = 0x1;
   private static final int IS_EDITION_BIT = 0x4;
 
-  private final MessageLite defaultInstance;
+  private final MessageLite defaultInstance_;
 
   /**
    * The compact format packs everything in a String object and a Object[] array. The String object
@@ -159,7 +159,7 @@ final class RawMessageInfo implements MessageInfo {
   private final int flags;
 
   RawMessageInfo(MessageLite defaultInstance, String info, Object[] objects) {
-    this.defaultInstance = defaultInstance;
+    this.defaultInstance_ = defaultInstance;
     this.info = info;
     this.objects = objects;
     int position = 0;
@@ -187,7 +187,7 @@ final class RawMessageInfo implements MessageInfo {
 
   @Override
   public MessageLite getDefaultInstance() {
-    return defaultInstance;
+    return defaultInstance_;
   }
 
   @Override

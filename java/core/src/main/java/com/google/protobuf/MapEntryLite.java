@@ -43,30 +43,30 @@ public class MapEntryLite<K, V> {
   private static final int VALUE_FIELD_NUMBER = 2;
 
   private final Metadata<K, V> metadata;
-  private final K key;
-  private final V value;
+  private final K key_;
+  private final V value_;
 
   /** Creates a default MapEntryLite message instance. */
   private MapEntryLite(
       WireFormat.FieldType keyType, K defaultKey, WireFormat.FieldType valueType, V defaultValue) {
     this.metadata = new Metadata<K, V>(keyType, defaultKey, valueType, defaultValue);
-    this.key = defaultKey;
-    this.value = defaultValue;
+    this.key_ = defaultKey;
+    this.value_ = defaultValue;
   }
 
   /** Creates a new MapEntryLite message. */
   private MapEntryLite(Metadata<K, V> metadata, K key, V value) {
     this.metadata = metadata;
-    this.key = key;
-    this.value = value;
+    this.key_ = key;
+    this.value_ = value;
   }
 
   public K getKey() {
-    return key;
+    return key_;
   }
 
   public V getValue() {
-    return value;
+    return value_;
   }
 
   /**
