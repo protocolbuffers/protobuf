@@ -100,6 +100,18 @@ class MessageReflectionFriend {
                              const MapKey& map_key) {
     return reflection->ContainsMapKey(message, field, map_key);
   }
+
+  static void SetString(absl::string_view value, Message* message,
+                        const FieldDescriptor* descriptor,
+                        const Reflection* reflection, bool append, int index) {
+    if (append) {
+      reflection->AddStringView(message, descriptor, value);
+    } else if (index < 0) {
+      reflection->SetStringView(message, descriptor, value);
+    } else {
+      reflection->SetRepeatedStringView(message, descriptor, index, value);
+    }
+  }
 };
 
 static PyObject* kDESCRIPTOR;
@@ -641,22 +653,16 @@ std::optional<absl::string_view> CheckString(
 }
 
 bool CheckAndSetString(PyObject* arg, Message* message,
-                       const FieldDescriptor* descriptor,
+                       const FieldDescriptor* field_descriptor,
                        const Reflection* reflection, bool append, int index) {
-  std::optional<absl::string_view> value = CheckString(arg, descriptor);
-  if (!value.has_value()) {
-    return false;
+  if (std::optional<absl::string_view> value =
+          CheckString(arg, field_descriptor);
+      value.has_value()) {
+    MessageReflectionFriend::SetString(*value, message, field_descriptor,
+                                       reflection, append, index);
+    return true;
   }
-  std::string value_string(*value);
-  if (append) {
-    reflection->AddString(message, descriptor, std::move(value_string));
-  } else if (index < 0) {
-    reflection->SetString(message, descriptor, std::move(value_string));
-  } else {
-    reflection->SetRepeatedString(message, descriptor, index,
-                                  std::move(value_string));
-  }
-  return true;
+  return false;
 }
 
 PyObject* ToStringObject(const FieldDescriptor* descriptor,
