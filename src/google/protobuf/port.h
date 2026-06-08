@@ -831,12 +831,20 @@ class alignas(8) GlobalEmptyStringConstexpr {
   // Nothing to init, or destroy.
   std::string* Init() const { return nullptr; }
 
-  // Disable the optimization for MSVC and Xtensa.
+  // Disable the optimization for MSVC, Xtensa, and libc++.
   // There are some builds where the default constructed string can't be used as
   // `constinit` even though the constructor is `constexpr` and can be used
-  // during constant evaluation.
-#if !defined(_MSC_VER) && !defined(__XTENSA__)
-  // Compilation fails on Xtensa: b/467129751
+  // during constant evaluation. The SFINAE check below verifies that
+  // `std::string()` is a core constant expression (which allows transient
+  // allocations matched by the destructor), but `constinit` additionally
+  // forbids any allocation that escapes the initializer — a stricter rule
+  // that we can't express in SFINAE. So we have to disable known-bad
+  // toolchains by hand.
+  //   - libc++: `std::string()` allocates via the allocator and the
+  //     allocation persists past the initializer, see
+  //     https://github.com/protocolbuffers/protobuf/issues/22065
+  //   - Xtensa: compilation fails, see b/467129751
+#if !defined(_MSC_VER) && !defined(__XTENSA__) && !defined(_LIBCPP_VERSION)
   template <typename T = std::string, bool = (T(), true)>
   static constexpr std::true_type HasConstexprDefaultConstructor(int) {
     return {};
