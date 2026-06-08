@@ -118,11 +118,22 @@ struct PROTOBUF_EXPORT TailCallTableInfo {
       uint16_t coded_tag;
       uint16_t nonfield_info;
     };
-    std::variant<Empty, Field, NonField> data;
+    struct MpField {
+      TcParseFunction func;
+      const FieldDescriptor* field;
+      uint32_t field_index;
+      uint16_t coded_tag;
+      uint8_t function_index;
+
+      // For internal caching.
+      float presence_probability;
+    };
+    std::variant<Empty, Field, NonField, MpField> data;
 
     bool is_empty() const { return std::holds_alternative<Empty>(data); }
     const Field* AsField() const { return std::get_if<Field>(&data); }
     const NonField* AsNonField() const { return std::get_if<NonField>(&data); }
+    const MpField* AsMpField() const { return std::get_if<MpField>(&data); }
   };
   std::vector<FastFieldInfo> fast_path_fields;
 

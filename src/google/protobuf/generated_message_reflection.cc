@@ -3673,7 +3673,8 @@ static internal::TailCallParseFunc GetFastParseFunction(
 
 void Reflection::PopulateTcParseFastEntries(
     const internal::TailCallTableInfo& table_info,
-    TcParseTableBase::FastFieldEntry* fast_entries) const {
+    TcParseTableBase* tc_table) const {
+  auto* fast_entries = tc_table->fast_entry(0);
   for (const auto& fast_field : table_info.fast_path_fields) {
     if (auto* nonfield = fast_field.AsNonField()) {
       // No field, but still a special entry.
@@ -3690,6 +3691,13 @@ void Reflection::PopulateTcParseFastEntries(
         // The offset is too large, so just ignore the fast field.
         *fast_entries++ = {internal::TcParser::MiniParse, {}};
       }
+    } else if (auto* as_mp_field = fast_field.AsMpField()) {
+      *fast_entries++ = {
+          GetFastParseFunction(as_mp_field->func),
+          {as_mp_field->coded_tag, as_mp_field->function_index,
+           static_cast<uint32_t>(tc_table->field_entries_offset +
+                                 sizeof(TcParseTableBase::FieldEntry) *
+                                     as_mp_field->field_index)}};
     } else {
       ABSL_DCHECK(fast_field.is_empty());
       // No fast entry here. Use mini parser.
@@ -3896,7 +3904,7 @@ const internal::TcParseTableBase* Reflection::CreateTcParseTable() const {
 #endif  // PROTOBUF_PREFETCH_PARSE_TABLE
 
   // Now copy the rest of the payloads
-  PopulateTcParseFastEntries(table_info, res->fast_entry(0));
+  PopulateTcParseFastEntries(table_info, res);
 
   PopulateTcParseLookupTable(table_info, res->field_lookup_begin());
 
