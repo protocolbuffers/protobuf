@@ -1,10 +1,12 @@
 #include <cstddef>
 #include <cstdint>
 #include <cstring>
+#include <memory>
 #include <vector>
 
 #include <gtest/gtest.h>
 #include "testing/fuzzing/fuzztest.h"
+#include "absl/log/absl_log.h"
 #include "upb/mem/arena.h"
 #include "upb/message/compare.h"
 #include "upb/message/convert.h"
@@ -92,13 +94,14 @@ const upb_MiniTable* SubsetMiniTable(const upb_MiniTable* src, uint64_t mask,
 void ConvertFuzz(const upb::fuzz::MiniTableFuzzInput& input, uint64_t mask1,
                  uint64_t mask2, std::string proto_payload,
                  uint32_t decode_options, uint32_t encode_options) {
-  upb_Arena* arena = upb_Arena_New();
+  std::unique_ptr<upb_Arena, decltype(&upb_Arena_Free)> upb_arena(
+      upb_Arena_New(), &upb_Arena_Free);
+  upb_Arena* arena = upb_arena.get();
 
   upb_ExtensionRegistry* exts;
   const upb_MiniTable* original_mt =
       upb::fuzz::BuildMiniTable(input, &exts, arena);
   if (!original_mt) {
-    upb_Arena_Free(arena);
     return;
   }
 
@@ -111,6 +114,7 @@ void ConvertFuzz(const upb::fuzz::MiniTableFuzzInput& input, uint64_t mask1,
   // We don't want to skip unknown fields or check required fields, as these
   // will cause the fuzz test to fail or exit early in ways that aren't
   // interesting.
+  decode_options &= ~kUpb_DecodeOption_CheckRequired;
   encode_options &=
       ~(kUpb_EncodeOption_SkipUnknown | kUpb_EncodeOption_CheckRequired);
 
@@ -120,7 +124,6 @@ void ConvertFuzz(const upb::fuzz::MiniTableFuzzInput& input, uint64_t mask1,
                  original_mt, exts, decode_options, arena);
 
   if (status != kUpb_DecodeStatus_Ok) {
-    upb_Arena_Free(arena);
     return;
   }
 
@@ -129,14 +132,12 @@ void ConvertFuzz(const upb::fuzz::MiniTableFuzzInput& input, uint64_t mask1,
                       src_mt, exts, decode_options, arena);
 
   if (status != kUpb_DecodeStatus_Ok) {
-    upb_Arena_Free(arena);
     return;
   }
 
   const upb_Message* msg_dst =
-      upb_Message_Convert(msg_src, src_mt, dst_mt, nullptr, arena);
+      upb_Message_Convert(msg_src, src_mt, dst_mt, exts, arena);
   if (!msg_dst) {
-    upb_Arena_Free(arena);
     return;
   }
 
@@ -146,7 +147,6 @@ void ConvertFuzz(const upb::fuzz::MiniTableFuzzInput& input, uint64_t mask1,
       upb_Encode(msg_dst, dst_mt, encode_options, arena, &bytes, &size);
 
   if (enc_status != kUpb_EncodeStatus_Ok) {
-    upb_Arena_Free(arena);
     return;
   }
 
@@ -155,17 +155,15 @@ void ConvertFuzz(const upb::fuzz::MiniTableFuzzInput& input, uint64_t mask1,
                       arena);
 
   if (status != kUpb_DecodeStatus_Ok) {
-    upb_Arena_Free(arena);
     return;
   }
 
   bool equal = upb_Message_IsEqual(msg_final, msg_orig, original_mt,
                                    kUpb_CompareOption_IncludeUnknownFields);
   if (!equal) {
-    abort();
+    ABSL_LOG(FATAL) << "The conversion produced a message that is not equal "
+                       "to the original message.";
   }
-
-  upb_Arena_Free(arena);
 }
 
 FUZZ_TEST(ConvertFuzz, ConvertFuzz);
@@ -327,6 +325,26 @@ TEST(ConvertFuzz, ConvertFuzzRegression6) {
       1611359599);
 }
 
+TEST(ConvertFuzz, ConvertFuzzRegression7) {
+  ConvertFuzz(
+      upb::fuzz::MiniTableFuzzInput{
+          {"$Rh&G"},
+          {"I", "",  "I", "",  "I", "",  "I", "", "",  "",
+           "",  "I", "",  "E", "",  "I", "I", "", "I", ""},
+          "#====6",
+          {2816219145}},
+      436008099437115707ULL, 13573652747906983007ULL,
+      std::string("\251\021\000\003\005X\315\002:\000\022\244\000\247("
+                  "\245\255PPPPPPPPS\340\340\340\340PPPPPPP\"PPPPPPPPPPPPPP\nPP"
+                  "PPPPPPPPPPPPPPPPPPPPPPP\310PPPPPPPPP\245\245PPPPPPPPPP{"
+                  "PPPPP\235PRvPPPPPPPPPPPPPPPPPPPPPPPP\nPPRR\000\000\000\000"
+                  "\000\000\000\000RRPPPTPPPPPPPPPPPPPPPPPPPPP\250PPPPPPPPPPPPP"
+                  "PPPPPPP\320PPPP\000TbPPPPPPH(\000\000PPPPP\221\023P>"
+                  "PPPUPPPPPPPPPPPPPPPPPPPPPpP\354\251;",
+                  252),
+      4098521408, 80);
+}
+
 TEST(ConvertFuzz, ConvertFuzzEncodeRegression) {
   ConvertFuzz(
       upb::fuzz::MiniTableFuzzInput{{"$$$$$$$$$$$$$$$$$$", "", "", "", "", ""},
@@ -336,6 +354,162 @@ TEST(ConvertFuzz, ConvertFuzzEncodeRegression) {
       555217012043469213, 13507447059222749214u,
       "pm\t\t\t\t\t\t\t\t\t\t\t\005o\t\t\t\t\t\trr\375\375\375r\251r", 32766,
       16);
+}
+
+void ArbitraryMiniTableConvertFuzz(const upb::fuzz::MiniTableFuzzInput& input1,
+                                   const upb::fuzz::MiniTableFuzzInput& input2,
+                                   std::string proto_payload,
+                                   uint32_t decode_options,
+                                   uint32_t encode_options) {
+  std::unique_ptr<upb_Arena, decltype(&upb_Arena_Free)> upb_arena(
+      upb_Arena_New(), &upb_Arena_Free);
+  upb_Arena* arena = upb_arena.get();
+
+  upb_ExtensionRegistry* exts1;
+  const upb_MiniTable* mt1 = upb::fuzz::BuildMiniTable(input1, &exts1, arena);
+  if (!mt1) {
+    return;
+  }
+
+  upb_ExtensionRegistry* exts2;
+  const upb_MiniTable* mt2 = upb::fuzz::BuildMiniTable(input2, &exts2, arena);
+  if (!mt2) {
+    return;
+  }
+
+  decode_options = upb_Decode_LimitDepth(decode_options, 80);
+  encode_options = upb_Encode_LimitDepth(encode_options, 80);
+
+  // We don't want to skip unknown fields or check required fields, as these
+  // will cause the fuzz test to fail or exit early in ways that aren't
+  // interesting.
+  encode_options &=
+      ~(kUpb_EncodeOption_SkipUnknown | kUpb_EncodeOption_CheckRequired);
+  decode_options &= ~kUpb_DecodeOption_CheckRequired;
+
+  upb_Message* msg_src = upb_Message_New(mt1, arena);
+  upb_DecodeStatus status =
+      upb_Decode(proto_payload.data(), proto_payload.size(), msg_src, mt1,
+                 exts1, decode_options, arena);
+
+  if (status != kUpb_DecodeStatus_Ok) {
+    return;
+  }
+
+  // Path A: Direct conversion
+  const upb_Message* msg_dst =
+      upb_Message_Convert(msg_src, mt1, mt2, exts2, arena);
+  if (!msg_dst) {
+    return;
+  }
+
+  // Path B: Encoding-then-decoding path
+  size_t wire_size;
+  char* wire_bytes;
+  upb_EncodeStatus enc_status =
+      upb_Encode(msg_src, mt1, encode_options, arena, &wire_bytes, &wire_size);
+
+  if (enc_status != kUpb_EncodeStatus_Ok) {
+    if (enc_status == kUpb_EncodeStatus_MaxDepthExceeded) {
+      return;
+    }
+    // Conversion succeeded, but encoding failed. This shouldn't happen.
+    ABSL_LOG(FATAL) << "Conversion succeeded, but encoding failed: "
+                    << enc_status;
+  }
+
+  upb_Message* msg_dst_roundtrip = upb_Message_New(mt2, arena);
+  status = upb_Decode(wire_bytes, wire_size, msg_dst_roundtrip, mt2, exts2,
+                      decode_options, arena);
+
+  if (status != kUpb_DecodeStatus_Ok) {
+    if (status == kUpb_DecodeStatus_MaxDepthExceeded) {
+      return;
+    }
+    // Conversion succeeded, but decoding failed. This shouldn't happen.
+    ABSL_LOG(FATAL) << "Conversion succeeded, but decoding failed: " << status;
+  }
+
+  // Check that both paths produce equivalent messages
+  bool equal = upb_Message_IsEqual(msg_dst, msg_dst_roundtrip, mt2,
+                                   kUpb_CompareOption_IncludeUnknownFields);
+  if (!equal) {
+    ABSL_LOG(FATAL) << "Direct conversion does not match the "
+                       "encoding-then-decoding roundtrip result.";
+  }
+}
+
+FUZZ_TEST(ConvertFuzz, ArbitraryMiniTableConvertFuzz);
+
+TEST(ConvertFuzz, ArbitraryMiniTableConvertFuzzRegression) {
+  ArbitraryMiniTableConvertFuzz(
+      upb::fuzz::MiniTableFuzzInput{
+          {"$$$$$)B&$$$$$$$$$$$$$$$$$$$$$"}, {"!!"}, "", {0}},
+      upb::fuzz::MiniTableFuzzInput{
+          {""},
+          {"", "", "", "\205"},
+          std::string("(\000%%", 4),
+          {583690751, 583690751, 583690751, 583690751, 583690751, 583690751,
+           583690751, 583690751, 583690751, 583690751, 583690751, 583690751,
+           583690751, 583690751, 583690751, 583690751, 583690751, 583690751}},
+      "M++8 0y((", 1075739120, 3567776688);
+}
+
+TEST(ConvertFuzz, ArbitraryMiniTableConvertFuzzRegression2) {
+  ArbitraryMiniTableConvertFuzz(
+      upb::fuzz::MiniTableFuzzInput{
+          {"$$$$$)@*$$$$$$$$$$$$$$$$$$$$$"}, {"!!"}, "", {0}},
+      upb::fuzz::MiniTableFuzzInput{
+          {""},
+          {"\205"},
+          std::string("(\000%%", 4),
+          {583690751, 583690751, 583690751, 583690751, 583690751, 583690751,
+           583690751, 583690751, 583690751, 583690751, 583690751, 583690751,
+           583690751, 583690751, 583690751, 583690751, 583690751, 583690751}},
+      "M++\246\2468 0q", 3620340527, 1624945934);
+}
+
+TEST(ConvertFuzz, ArbitraryMiniTableConvertFuzzRegression3) {
+  ArbitraryMiniTableConvertFuzz(
+      upb::fuzz::MiniTableFuzzInput{
+          {"$====$$$$$$$$$$$$$$$$$$$$$$$$$$$$"}, {}, "", {1, 0}},
+      upb::fuzz::MiniTableFuzzInput{{""}, {}, "", {2147483647, 2147483647}},
+      std::string("M++8J \321\010\220\000\000", 11), 1698778329, 268447861);
+}
+
+TEST(ConvertFuzz, ArbitraryMiniTableConvertFuzzRegression4) {
+  ArbitraryMiniTableConvertFuzz(
+      upb::fuzz::MiniTableFuzzInput{
+          {"$====$$$$$$$$$$$$$$$$$$$$$$$$$$$$"}, {}, "", {1, 0}},
+      upb::fuzz::MiniTableFuzzInput{{""}, {}, "", {2147483647, 2147483647}},
+      std::string("M++8J \020\020\010\222\000\000", 12), 3565880130, 915768989);
+}
+
+TEST(ConvertFuzz, ArbitraryMiniTableConvertFuzzRegression5) {
+  ArbitraryMiniTableConvertFuzz(
+      upb::fuzz::MiniTableFuzzInput{
+          {"$====$$$$$$$$$$$$$$$$$$$$$$$$$$$$"}, {""}, "", {0}},
+      upb::fuzz::MiniTableFuzzInput{
+          {""}, {"", "", ""}, "", {2147483647, 2147483647}},
+      std::string("M+\030\030\030\030\030\030\0008J \321\000", 14), 3565882178,
+      268447849);
+}
+
+TEST(ConvertFuzz, ArbitraryMiniTableConvertFuzzRegression6) {
+  ArbitraryMiniTableConvertFuzz(
+      upb::fuzz::MiniTableFuzzInput{{""}, {""}, "y", {}},
+      upb::fuzz::MiniTableFuzzInput{{"$****NNNN*"}, {""}, "\340", {}},
+      std::string("H\332\213\213\213\213\213\221\000", 9), 2051328899,
+      3168645944);
+}
+
+TEST(ConvertFuzz, ArbitraryMiniTableConvertFuzzRegression7) {
+  ArbitraryMiniTableConvertFuzz(
+      upb::fuzz::MiniTableFuzzInput{{"$****NNNN*"}, {""}, "\203", {}},
+      upb::fuzz::MiniTableFuzzInput{
+          {"$****NNNN*"}, {"/", ""}, "\377\377\377\377\377\377\377\037", {}},
+      std::string("H\332\260\213\213\213\213\213\221\000", 10), 3460373026,
+      3168645944);
 }
 
 }  // namespace
