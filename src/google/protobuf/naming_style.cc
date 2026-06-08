@@ -7,8 +7,7 @@
 
 #include "google/protobuf/naming_style.h"
 
-#include <cstdint>
-#include <string>
+#include <cstddef>
 
 #include "absl/status/status.h"
 #include "absl/strings/ascii.h"
