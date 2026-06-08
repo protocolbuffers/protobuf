@@ -509,6 +509,13 @@ TEST(TimeUtilTest, TimestampBounds) {
 #endif  // !NDEBUG
 #endif  // GTEST_HAS_DEATH_TEST
 
+TEST(TimeUtilTest, InvalidDurationDoesNotCrash) {
+  Duration d;
+  d.set_seconds(std::numeric_limits<int64_t>::min());
+  d.set_nanos(0);
+  EXPECT_EQ("-9223372036854775808s", TimeUtil::ToString(d));
+}
+
 }  // namespace
 }  // namespace util
 }  // namespace protobuf
