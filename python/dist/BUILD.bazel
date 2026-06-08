@@ -34,6 +34,8 @@ py_proto_library(
         "//:duration_proto",
         "//:empty_proto",
         "//:field_mask_proto",
+        "//:json_enumvalue_options_proto",
+        "//:json_options_proto",
         "//:source_context_proto",
         "//:struct_proto",
         "//:timestamp_proto",

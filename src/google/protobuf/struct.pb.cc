@@ -103,7 +103,7 @@ inline constexpr ListValue::Impl_::Impl_(
 template <typename>
 constexpr ListValue::ListValue(::_pbi::ConstantInitialized,
                        const ::_pbi::ClassData* PROTOBUF_NONNULL class_data)
-    : ::google::protobuf::Message(
+    : Super_(
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           class_data
 #endif  // PROTOBUF_CUSTOM_VTABLE
@@ -131,10 +131,10 @@ constexpr auto ListValue::InternalGenerateClassData_(
 #endif
           nullptr,  // IsInitialized
           &ListValue::MergeImpl,
-          ::google::protobuf::Message::GetNewImpl<ListValue>(),
+          Super_::GetNewImpl<ListValue>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           &ListValue::SharedDtor,
-          ::google::protobuf::Message::GetClearImpl<ListValue>(), &ListValue::ByteSizeLong,
+          Super_::GetClearImpl<ListValue>(), &ListValue::ByteSizeLong,
               &ListValue::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
           PROTOBUF_FIELD_OFFSET(ListValue, _impl_._cached_size_),
@@ -255,7 +255,7 @@ inline constexpr Struct::Impl_::Impl_(
 template <typename>
 constexpr Struct::Struct(::_pbi::ConstantInitialized,
                        const ::_pbi::ClassData* PROTOBUF_NONNULL class_data)
-    : ::google::protobuf::Message(
+    : Super_(
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           class_data
 #endif  // PROTOBUF_CUSTOM_VTABLE
@@ -283,10 +283,10 @@ constexpr auto Struct::InternalGenerateClassData_(
 #endif
           nullptr,  // IsInitialized
           &Struct::MergeImpl,
-          ::google::protobuf::Message::GetNewImpl<Struct>(),
+          Super_::GetNewImpl<Struct>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           &Struct::SharedDtor,
-          ::google::protobuf::Message::GetClearImpl<Struct>(), &Struct::ByteSizeLong,
+          Super_::GetClearImpl<Struct>(), &Struct::ByteSizeLong,
               &Struct::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
           PROTOBUF_FIELD_OFFSET(Struct, _impl_._cached_size_),
@@ -397,7 +397,7 @@ constexpr Struct_FieldsEntry_DoNotUse::ParseTableT_ Struct_FieldsEntry_DoNotUse:
 template <typename>
 constexpr Struct_FieldsEntry_DoNotUse::Struct_FieldsEntry_DoNotUse(::_pbi::ConstantInitialized,
                        const ::_pbi::ClassData* PROTOBUF_NONNULL class_data)
-    : Struct_FieldsEntry_DoNotUse::MapEntry(
+    : Super_(
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           class_data
 #endif  // PROTOBUF_CUSTOM_VTABLE
@@ -424,12 +424,11 @@ constexpr auto Struct_FieldsEntry_DoNotUse::InternalGenerateClassData_(
 #endif
           nullptr,  // IsInitialized
           &Struct_FieldsEntry_DoNotUse::MergeImpl,
-          ::google::protobuf::Message::GetNewImpl<Struct_FieldsEntry_DoNotUse>(),
+          Super_::GetNewImpl<Struct_FieldsEntry_DoNotUse>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           &Struct_FieldsEntry_DoNotUse::SharedDtor,
           static_cast<void (::google::protobuf::MessageLite::*)()>(&Struct_FieldsEntry_DoNotUse::ClearImpl),
-              ::google::protobuf::Message::ByteSizeLongImpl, ::google::protobuf::Message::_InternalSerializeImpl
-              ,
+              Super_::ByteSizeLongImpl, Super_::_InternalSerializeImpl,
 #endif  // PROTOBUF_CUSTOM_VTABLE
           PROTOBUF_FIELD_OFFSET(Struct_FieldsEntry_DoNotUse, _impl_._cached_size_),
           false,
@@ -559,7 +558,7 @@ inline constexpr Value::Impl_::Impl_(
 template <typename>
 constexpr Value::Value(::_pbi::ConstantInitialized,
                        const ::_pbi::ClassData* PROTOBUF_NONNULL class_data)
-    : ::google::protobuf::Message(
+    : Super_(
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           class_data
 #endif  // PROTOBUF_CUSTOM_VTABLE
@@ -587,10 +586,10 @@ constexpr auto Value::InternalGenerateClassData_(
 #endif
           nullptr,  // IsInitialized
           &Value::MergeImpl,
-          ::google::protobuf::Message::GetNewImpl<Value>(),
+          Super_::GetNewImpl<Value>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           &Value::SharedDtor,
-          ::google::protobuf::Message::GetClearImpl<Value>(), &Value::ByteSizeLong,
+          Super_::GetClearImpl<Value>(), &Value::ByteSizeLong,
               &Value::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
           PROTOBUF_FIELD_OFFSET(Value, _impl_._cached_size_),
@@ -747,12 +746,12 @@ PROTOBUF_CONSTINIT const uint32_t NullValue_internal_data_[] = {
 // ===================================================================
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-Struct_FieldsEntry_DoNotUse::Struct_FieldsEntry_DoNotUse() : SuperType(Struct_FieldsEntry_DoNotUse_get_class_data()) {}
+Struct_FieldsEntry_DoNotUse::Struct_FieldsEntry_DoNotUse() : Super_(Struct_FieldsEntry_DoNotUse_get_class_data()) {}
 Struct_FieldsEntry_DoNotUse::Struct_FieldsEntry_DoNotUse(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
-    : SuperType(arena, Struct_FieldsEntry_DoNotUse_get_class_data()) {}
+    : Super_(arena, Struct_FieldsEntry_DoNotUse_get_class_data()) {}
 #else   // PROTOBUF_CUSTOM_VTABLE
-Struct_FieldsEntry_DoNotUse::Struct_FieldsEntry_DoNotUse() : SuperType() {}
-Struct_FieldsEntry_DoNotUse::Struct_FieldsEntry_DoNotUse(::google::protobuf::Arena* PROTOBUF_NULLABLE arena) : SuperType(arena) {}
+Struct_FieldsEntry_DoNotUse::Struct_FieldsEntry_DoNotUse() : Super_() {}
+Struct_FieldsEntry_DoNotUse::Struct_FieldsEntry_DoNotUse(::google::protobuf::Arena* PROTOBUF_NULLABLE arena) : Super_(arena) {}
 #endif  // PROTOBUF_CUSTOM_VTABLE
 #ifndef PROTOBUF_MESSAGE_GLOBALS
 PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const
@@ -786,9 +785,9 @@ PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const Struct_FieldsEntry_DoNotUse::ParseTableT
 
 Struct::Struct(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-    : ::google::protobuf::Message(arena, Struct_get_class_data()) {
+    : Super_(arena, Struct_get_class_data()) {
 #else   // PROTOBUF_CUSTOM_VTABLE
-    : ::google::protobuf::Message(arena) {
+    : Super_(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
   SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.Struct)
@@ -810,10 +809,10 @@ Struct::Struct(
     ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
     const Struct& from)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-    : ::google::protobuf::Message(arena, Struct_get_class_data()) {
+    : Super_(arena, Struct_get_class_data()) {
 
 #else   // PROTOBUF_CUSTOM_VTABLE
-    : ::google::protobuf::Message(arena) {
+    : Super_(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
   Struct* const _this = this;
   (void)_this;
@@ -876,11 +875,11 @@ PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const Struct::ParseTableT_
         Struct::InternalGenerateParseTable_(Struct_class_data_.base());
 #endif  // !PROTOBUF_MESSAGE_GLOBALS
 PROTOBUF_NOINLINE void Struct::Clear() {
-// @@protoc_insertion_point(message_clear_start:google.protobuf.Struct)
+  // @@protoc_insertion_point(message_clear_start:google.protobuf.Struct)
   ::google::protobuf::internal::TSanWrite(&_impl_);
   ::uint32_t cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
-  (void) cached_has_bits;
+  (void)cached_has_bits;
 
   cached_has_bits = _impl_._has_bits_[0];
   if (CheckHasBit(cached_has_bits, 0x00000001U)) {
@@ -1016,7 +1015,7 @@ void Struct::InternalSwap(Struct* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
 }
 
 ::google::protobuf::Metadata Struct::GetMetadata() const {
-  return ::google::protobuf::Message::GetMetadataImpl(GetClassData()->full());
+  return Super_::GetMetadataImpl(GetClassData()->full());
 }
 // ===================================================================
 
@@ -1048,9 +1047,9 @@ void Value::set_allocated_list_value(::google::protobuf::ListValue* PROTOBUF_NUL
 }
 Value::Value(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-    : ::google::protobuf::Message(arena, Value_get_class_data()) {
+    : Super_(arena, Value_get_class_data()) {
 #else   // PROTOBUF_CUSTOM_VTABLE
-    : ::google::protobuf::Message(arena) {
+    : Super_(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
   SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.Value)
@@ -1066,10 +1065,10 @@ Value::Value(
     ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
     const Value& from)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-    : ::google::protobuf::Message(arena, Value_get_class_data()) {
+    : Super_(arena, Value_get_class_data()) {
 
 #else   // PROTOBUF_CUSTOM_VTABLE
-    : ::google::protobuf::Message(arena) {
+    : Super_(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
   Value* const _this = this;
   (void)_this;
@@ -1092,10 +1091,10 @@ Value::Value(
         _impl_.kind_.bool_value_ = from._impl_.kind_.bool_value_;
         break;
       case kStructValue:
-        _impl_.kind_.struct_value_ = ::google::protobuf::Message::CopyConstruct(arena, *from._impl_.kind_.struct_value_);
+        _impl_.kind_.struct_value_ = Super_::CopyConstruct(arena, *from._impl_.kind_.struct_value_);
         break;
       case kListValue:
-        _impl_.kind_.list_value_ = ::google::protobuf::Message::CopyConstruct(arena, *from._impl_.kind_.list_value_);
+        _impl_.kind_.list_value_ = Super_::CopyConstruct(arena, *from._impl_.kind_.list_value_);
         break;
   }
 
@@ -1198,11 +1197,11 @@ PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const Value::ParseTableT_
         Value::InternalGenerateParseTable_(Value_class_data_.base());
 #endif  // !PROTOBUF_MESSAGE_GLOBALS
 PROTOBUF_NOINLINE void Value::Clear() {
-// @@protoc_insertion_point(message_clear_start:google.protobuf.Value)
+  // @@protoc_insertion_point(message_clear_start:google.protobuf.Value)
   ::google::protobuf::internal::TSanWrite(&_impl_);
   ::uint32_t cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
-  (void) cached_has_bits;
+  (void)cached_has_bits;
 
   clear_kind();
   _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
@@ -1379,7 +1378,7 @@ void Value::MergeImpl(::google::protobuf::MessageLite& to_msg,
       }
       case kStructValue: {
         if (oneof_needs_init) {
-          _this->_impl_.kind_.struct_value_ = ::google::protobuf::Message::CopyConstruct(arena, *from._impl_.kind_.struct_value_);
+          _this->_impl_.kind_.struct_value_ = Super_::CopyConstruct(arena, *from._impl_.kind_.struct_value_);
         } else {
           _this->_impl_.kind_.struct_value_->MergeFrom(*from._impl_.kind_.struct_value_);
         }
@@ -1387,7 +1386,7 @@ void Value::MergeImpl(::google::protobuf::MessageLite& to_msg,
       }
       case kListValue: {
         if (oneof_needs_init) {
-          _this->_impl_.kind_.list_value_ = ::google::protobuf::Message::CopyConstruct(arena, *from._impl_.kind_.list_value_);
+          _this->_impl_.kind_.list_value_ = Super_::CopyConstruct(arena, *from._impl_.kind_.list_value_);
         } else {
           _this->_impl_.kind_.list_value_->MergeFrom(*from._impl_.kind_.list_value_);
         }
@@ -1417,15 +1416,15 @@ void Value::InternalSwap(Value* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
 }
 
 ::google::protobuf::Metadata Value::GetMetadata() const {
-  return ::google::protobuf::Message::GetMetadataImpl(GetClassData()->full());
+  return Super_::GetMetadataImpl(GetClassData()->full());
 }
 // ===================================================================
 
 ListValue::ListValue(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-    : ::google::protobuf::Message(arena, ListValue_get_class_data()) {
+    : Super_(arena, ListValue_get_class_data()) {
 #else   // PROTOBUF_CUSTOM_VTABLE
-    : ::google::protobuf::Message(arena) {
+    : Super_(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
   SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.ListValue)
@@ -1447,10 +1446,10 @@ ListValue::ListValue(
     ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
     const ListValue& from)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-    : ::google::protobuf::Message(arena, ListValue_get_class_data()) {
+    : Super_(arena, ListValue_get_class_data()) {
 
 #else   // PROTOBUF_CUSTOM_VTABLE
-    : ::google::protobuf::Message(arena) {
+    : Super_(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
   ListValue* const _this = this;
   (void)_this;
@@ -1513,11 +1512,11 @@ PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const ListValue::ParseTableT_
         ListValue::InternalGenerateParseTable_(ListValue_class_data_.base());
 #endif  // !PROTOBUF_MESSAGE_GLOBALS
 PROTOBUF_NOINLINE void ListValue::Clear() {
-// @@protoc_insertion_point(message_clear_start:google.protobuf.ListValue)
+  // @@protoc_insertion_point(message_clear_start:google.protobuf.ListValue)
   ::google::protobuf::internal::TSanWrite(&_impl_);
   ::uint32_t cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
-  (void) cached_has_bits;
+  (void)cached_has_bits;
 
   cached_has_bits = _impl_._has_bits_[0];
   if (CheckHasBit(cached_has_bits, 0x00000001U)) {
@@ -1636,7 +1635,7 @@ void ListValue::InternalSwap(ListValue* PROTOBUF_RESTRICT PROTOBUF_NONNULL other
 }
 
 ::google::protobuf::Metadata ListValue::GetMetadata() const {
-  return ::google::protobuf::Message::GetMetadataImpl(GetClassData()->full());
+  return Super_::GetMetadataImpl(GetClassData()->full());
 }
 // @@protoc_insertion_point(namespace_scope)
 }  // namespace protobuf

@@ -55,7 +55,7 @@ TEST(Cpp, Default) {
   upb_test_TestMessage* msg = upb_test_TestMessage_new(arena.ptr());
   size_t size = upb_JsonEncode(UPB_UPCAST(msg), md.ptr(), nullptr, 0, nullptr,
                                0, nullptr);
-  EXPECT_EQ(2, size);  // "{}"
+  EXPECT_EQ(2u, size);  // "{}"
 }
 
 TEST(Cpp, JsonNull) {
@@ -67,7 +67,7 @@ TEST(Cpp, JsonNull) {
   ASSERT_TRUE(str_f);
   EXPECT_EQ(5, i32_f.default_value().int32_val);
   EXPECT_EQ(0, strcmp(str_f.default_value().str_val.data, "abc"));
-  EXPECT_EQ(3, str_f.default_value().str_val.size);
+  EXPECT_EQ(3u, str_f.default_value().str_val.size);
 }
 
 TEST(Cpp, TimestampEncoder) {

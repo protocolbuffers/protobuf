@@ -499,6 +499,10 @@ public abstract class GeneratedMessageLite<
 
     /** All subclasses implement this. */
     public BuilderType mergeFrom(MessageType message) {
+      if (message != null && !getDefaultInstanceForType().getClass().isInstance(message)) {
+        throw new IllegalArgumentException(
+            "mergeFrom(MessageLite) can only merge messages of the same type.");
+      }
       if (getDefaultInstanceForType().equals(message)) {
         return (BuilderType) this;
       }

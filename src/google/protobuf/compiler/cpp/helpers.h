@@ -106,6 +106,8 @@ std::string Namespace(const Descriptor* d);
 std::string Namespace(const FieldDescriptor* d);
 std::string Namespace(const EnumDescriptor* d);
 PROTOC_EXPORT std::string Namespace(const FileDescriptor* d);
+PROTOC_EXPORT bool ValidateCcNamespace(const FileDescriptor* file,
+                                       std::string* error);
 PROTOC_EXPORT std::string Namespace(const Descriptor* d);
 PROTOC_EXPORT std::string Namespace(const FieldDescriptor* d);
 PROTOC_EXPORT std::string Namespace(const EnumDescriptor* d);
@@ -200,10 +202,6 @@ std::string DescriptorTableName(const FileDescriptor* file,
 // When declaring symbol externs from another file, this macro will supply the
 // dllexport needed for the target file, if any.
 std::string FileDllExport(const FileDescriptor* file, const Options& options);
-
-// Name of the base class: google::protobuf::Message or google::protobuf::MessageLite.
-std::string SuperClassName(const Descriptor* descriptor,
-                           const Options& options);
 
 // Add an underscore if necessary to prevent conflicting with known names and
 // keywords.
@@ -356,7 +354,9 @@ inline bool UseUnknownFieldSet(const FileDescriptor* file,
 }
 
 inline bool IsWeak(const FieldDescriptor* field, const Options& options) {
+  PROTOBUF_IGNORE_DEPRECATION_START
   if (field->options().weak()) {
+    PROTOBUF_IGNORE_DEPRECATION_STOP
     ABSL_CHECK(!options.opensource_runtime);
     return true;
   }

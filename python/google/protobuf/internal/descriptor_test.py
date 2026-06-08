@@ -280,12 +280,128 @@ class DescriptorTest(unittest.TestCase):
         self.my_service.GetOptions(), descriptor_pb2.ServiceOptions()
     )
 
+  @unittest.skipIf(
+      api_implementation.Type() == 'upb',
+      'Needs to wait for a breaking change release in OSS'
+  )
+  @unittest.skipIf(
+      api_implementation.Type() == 'cpp',
+      'Needs to wait for a breaking change release in OSS'
+  )
+  @unittest.skipIf(
+      api_implementation.Type() == 'python',
+      'Needs to wait for a breaking change release in OSS'
+  )
+  def testModifyFrozenMessage(self):
+    immutability_error = TypeError
+    message_options = self.my_message.GetOptions()
+    other_options = descriptor_pb2.MessageOptions()
+    other_options.deprecated = True
+
+    # Singular field mutation
+    with self.assertRaises(immutability_error):
+      message_options.deprecated = True
+
+    # Clear methods
+    with self.assertRaises(immutability_error):
+      message_options.Clear()
+    with self.assertRaises(immutability_error):
+      message_options.ClearField('deprecated')
+
+    # Merge/Copy
+    with self.assertRaises(immutability_error):
+      message_options.MergeFrom(other_options)
+    with self.assertRaises(immutability_error):
+      message_options.CopyFrom(other_options)
+
+    # Repeated field mutations
+    repeated_field = message_options.uninterpreted_option
+    with self.assertRaises(immutability_error):
+      repeated_field.add()
+    with self.assertRaises(immutability_error):
+      repeated_field.append(descriptor_pb2.UninterpretedOption())
+    with self.assertRaises(immutability_error):
+      repeated_field.extend([descriptor_pb2.UninterpretedOption()])
+    with self.assertRaises(immutability_error):
+      repeated_field.insert(0, descriptor_pb2.UninterpretedOption())
+    with self.assertRaises(immutability_error):
+      repeated_field.remove(descriptor_pb2.UninterpretedOption())
+    with self.assertRaises(immutability_error):
+      repeated_field.pop()
+    with self.assertRaises(immutability_error):
+      repeated_field.sort()
+    with self.assertRaises(immutability_error):
+      repeated_field.reverse()
+    with self.assertRaises(immutability_error):
+      del repeated_field[:]
+
+    # Unset submessage mutation
+    complex_opt1 = unittest_custom_options_pb2.complex_opt1
+    stub_submsg = unittest_pb2.TestAllTypes.DESCRIPTOR.GetOptions().Extensions[complex_opt1]
+    with self.assertRaises(immutability_error):
+      stub_submsg.foo = 5
+
+    # Non-empty repeated field mutation
+    complex_options_msg = unittest_custom_options_pb2.VariousComplexOptions.DESCRIPTOR.GetOptions()
+    non_empty_repeated = complex_options_msg.Extensions[complex_opt1].foo4
+    self.assertEqual(len(non_empty_repeated), 2)
+    with self.assertRaises(immutability_error):
+      non_empty_repeated.clear()
+    with self.assertRaises(immutability_error):
+      non_empty_repeated.sort()
+    with self.assertRaises(immutability_error):
+      non_empty_repeated.remove(99)
+    with self.assertRaises(immutability_error):
+      non_empty_repeated.pop()
+    with self.assertRaises(immutability_error):
+      non_empty_repeated.reverse()
+
+    # Non-empty repeated composite field item access
+    complex_opt2 = unittest_custom_options_pb2.complex_opt2
+    non_empty_repeated_composite = complex_options_msg.Extensions[
+        complex_opt2
+    ].barney
+    self.assertEqual(len(non_empty_repeated_composite), 2)
+    first_barney = non_empty_repeated_composite[0]
+    self.assertEqual(first_barney.waldo, 101)
+    with self.assertRaises(immutability_error):
+      first_barney.waldo = 999
+
+    # Extension dict mutation
+    with self.assertRaises(immutability_error):
+      message_options.Extensions[complex_opt1] = descriptor_pb2.MessageOptions()
+
+    message_opt1 = unittest_custom_options_pb2.message_opt1
+    with self.assertRaises(immutability_error):
+      message_options.Extensions[message_opt1] = -56
+
+    with self.assertRaises(immutability_error):
+      del message_options.Extensions[complex_opt1]
+
+    with self.assertRaises(immutability_error):
+      message_options.ClearExtension(complex_opt1)
+
+    # Map field mutations
+    map_field = stub_submsg.my_map
+    with self.assertRaises(immutability_error):
+      map_field['key'] = 123
+    with self.assertRaises(immutability_error):
+      del map_field['key']
+    with self.assertRaises(immutability_error):
+      map_field.setdefault('key', 123)
+    with self.assertRaises(immutability_error):
+      map_field.update({'key': 123})
+    with self.assertRaises(immutability_error):
+      map_field.MergeFrom(map_field)
+
   def testModifyOptions(self):
     # We unfortunately allow modification of options returned from GetOptions().
     # This is not intended, and has negative consequences:
     # - It makes the results of GetOptions() invalid if the options are
     #   modified.
     # - It has an efficiency cost from copying the options.
+    #
+    # This will be fixed in a breaking change release.
     message_options = self.my_message.GetOptions()
     message_options.deprecated = True
     self.assertTrue(

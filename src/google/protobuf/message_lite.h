@@ -29,6 +29,7 @@
 #include <cstring>
 #include <iosfwd>
 #include <memory>
+#include <new>
 #include <string>
 #include <type_traits>
 #include <utility>
@@ -221,22 +222,13 @@ class PROTOBUF_EXPORT CachedSize {
 #endif
 };
 
-struct ClassData;
-
-// Returns the ClassData for the given message.
-//
-// This function is used to get the ClassData for a message without having to
-// know the type of the message. This is useful for when the message is a
-// generated message.
-template <typename Type>
-const ClassData* GetClassData(const Type& msg);
+auto GetClassData(const MessageLite& msg);
 
 template <typename T>
 struct FallbackMessageTraits {
   static const void* default_instance() { return &T::default_instance(); }
   static constexpr const auto* class_data() {
-    // Force the abstract branch of `GetClassData()` to avoid endless recursion.
-    return GetClassData<MessageLite>(T::default_instance());
+    return GetClassData(T::default_instance());
   }
   // We can't make a constexpr pointer to the default, so use a function pointer
   // instead.
@@ -474,7 +466,7 @@ using ClassDataLite = ClassDataFull;
 struct PROTOBUF_EXPORT DescriptorMethods {
   absl::string_view (*get_type_name)(const ClassData* data);
   std::string (*initialization_error_string)(const MessageLite&);
-  const internal::TcParseTableBase* (*get_tc_table)(const MessageLite&);
+  const internal::TcParseTableBase* (*get_tc_table)(const ClassData*);
   size_t (*space_used_long)(const MessageLite&);
   std::string (*debug_string)(const MessageLite&);
   void (*verify_lazy_field_consistency)(const LazyField&);
@@ -1170,20 +1162,7 @@ class PROTOBUF_EXPORT MessageLite {
         CopyConstruct(arena, reinterpret_cast<const MessageLite&>(from)));
   }
 
-  // `CheckTypeAndMergeFrom()` and should be preferred by friended internal
-  // callers that have the right `ClassData` handy.
-  // REQUIRES: Both `this` and `other` are the exact same class as represented
-  // by `data`. If there is a mismatch, CHECK-fails in debug builds or causes UB
-  // in release builds (probably a crash).
-  PROTOBUF_ALWAYS_INLINE void MergeFromWithClassData(
-      const MessageLite& other, const internal::ClassData* data) {
-    ABSL_DCHECK(data != nullptr);
-    ABSL_DCHECK(GetClassData() == data && other.GetClassData() == data)
-        << "Invalid call to " << __func__ << ": this=" << GetTypeName()
-        << " other=" << other.GetTypeName()
-        << " data=" << data->default_instance()->GetTypeName();
-    data->merge_to_from(*this, other);
-  }
+
 
   const internal::TcParseTableBase* GetTcParseTable() const {
     auto* data = GetClassData();
@@ -1192,7 +1171,7 @@ class PROTOBUF_EXPORT MessageLite {
     auto* tc_table = data->tc_table;
     if (ABSL_PREDICT_FALSE(tc_table == nullptr)) {
       ABSL_DCHECK(!data->is_lite);
-      return data->full().descriptor_methods()->get_tc_table(*this);
+      return data->full().descriptor_methods()->get_tc_table(data);
     }
     return tc_table;
   }
@@ -1319,6 +1298,7 @@ class PROTOBUF_EXPORT MessageLite {
 #endif
 
  private:
+  friend class internal::MessageCreator;
   friend class FastReflectionMessageMutator;
   friend class AssignDescriptorsHelper;
   friend class FastReflectionStringSetter;
@@ -1341,17 +1321,12 @@ class PROTOBUF_EXPORT MessageLite {
   friend class internal::WeakFieldMap;
   friend class internal::WireFormatLite;
   friend class internal::RustMapHelper;
-  friend class internal::MessageCreator;
-  friend class internal::RepeatedPtrFieldBase;
-  template <typename Type>
-  friend class internal::GenericTypeHandler;
-  template <typename Type>
-  friend class Arena::InternalHelper;
-  template <typename Type>
-  friend struct FallbackMessageTraits;
+
 
   template <typename Type>
-  friend const internal::ClassData* internal::GetClassData(const Type& msg);
+  friend class Arena::InternalHelper;
+
+  friend auto internal::GetClassData(const MessageLite& msg);
   friend void internal::GenericSwap(MessageLite* lhs, MessageLite* rhs);
   friend void internal::GenericSwap(Message* lhs, Message* rhs);
 
@@ -1453,21 +1428,7 @@ class PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED TypeId {
 
 namespace internal {
 
-// The point of this function being a template is that for a concrete message
-// `Type`, the otherwise virtual `GetClassData()` call is resolved and inlined
-// at compile time (via `MessageTraits`).
-template <typename T>
-PROTOBUF_FUTURE_ADD_EARLY_NODISCARD PROTOBUF_NDEBUG_INLINE const ClassData*
-GetClassData(const T& msg) {
-  static_assert(std::is_base_of_v<MessageLite, T>);
-  if constexpr (std::is_same_v<T, MessageLite> || std::is_same_v<Message, T>) {
-    PROTOBUF_DEBUG_COUNTER("GetClassData.Virtual").Inc();
-    return msg.GetClassData();
-  } else {
-    PROTOBUF_DEBUG_COUNTER("GetClassData.Constexpr").Inc();
-    return MessageTraits<T>::class_data();
-  }
-}
+inline auto GetClassData(const MessageLite& msg) { return msg.GetClassData(); }
 
 template <bool alias>
 PROTOBUF_FUTURE_ADD_EARLY_NODISCARD bool MergeFromImpl(

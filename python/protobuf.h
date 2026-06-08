@@ -8,12 +8,18 @@
 #ifndef PYUPB_PROTOBUF_H__
 #define PYUPB_PROTOBUF_H__
 
+// clang-format off
+#include "Python.h"
+// clang-format on
 #include <assert.h>
 #include <stdbool.h>
+#include <stddef.h>
+#include <stdint.h>
 
 #include "python/descriptor.h"
 #include "python/python_api.h"
 #include "upb/hash/int_table.h"
+#include "upb/mem/arena.h"
 #include "upb/reflection/def.h"
 
 #define PYUPB_PROTOBUF_PUBLIC_PACKAGE "google.protobuf"
@@ -137,6 +143,12 @@ PyObject* PyUpb_WeakMap_Get(PyUpb_WeakMap* map, const void* key);
 // }
 //
 // Note that the callee does not own a ref on the returned `obj`.
+//
+// WARNING: The iterator will hold a lock on the weak map until the iteration
+// is complete. The caller must complete the iteration, otherwise the lock will
+// never be released. The only function that can be called on the weak map
+// during iteration is PyUpb_WeakMap_DeleteIter(), which will delete the
+// current item but not change the iterator.
 bool PyUpb_WeakMap_Next(PyUpb_WeakMap* map, const void** key, PyObject** obj,
                         intptr_t* iter);
 void PyUpb_WeakMap_DeleteIter(PyUpb_WeakMap* map, intptr_t* iter);

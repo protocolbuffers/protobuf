@@ -26,6 +26,10 @@ including:
 *   In order to achieve maximum performance and code size, we do NOT guarantee
     API/ABI stability for Java Lite.
 
+*   It relies on `sun.misc.Unsafe` for performance. Since `sun.misc.Unsafe` is
+    terminally deprecated on standard JVMs, the Lite runtime **cannot be used**
+    in any JVM environment where `sun.misc.Unsafe` is unavailable.
+
 If these trade-offs are not acceptable for your use-case, use the full Java
 runtime instead.
 

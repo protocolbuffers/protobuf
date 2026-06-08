@@ -838,9 +838,11 @@ void DynamicMessage::CrossLinkPrototypes() {
   // Cross-link default messages.
   for (int i = 0; i < descriptor->field_count(); i++) {
     const FieldDescriptor* field = descriptor->field(i);
+    PROTOBUF_IGNORE_DEPRECATION_START
+    const bool field_is_weak = field->options().weak();
+    PROTOBUF_IGNORE_DEPRECATION_STOP
     if (field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE &&
-        !field->options().weak() && !InRealOneof(field) &&
-        !field->is_repeated()) {
+        !field_is_weak && !InRealOneof(field) && !field->is_repeated()) {
       void* field_ptr = MutableRaw(i);
       // For fields with message types, we need to cross-link with the
       // prototype for the field's type.
@@ -989,6 +991,9 @@ const Message* DynamicMessageFactory::GetPrototypeNoLock(
     type_info->oneof_case_offset = size;
     size += real_oneof_count * sizeof(uint32_t);
     size = AlignOffset(size);
+  } else {
+    // No oneofs.
+    type_info->oneof_case_offset = -1;
   }
 
   // The ExtensionSet, if any.
@@ -1072,18 +1077,17 @@ const Message* DynamicMessageFactory::GetPrototypeNoLock(
   // of dynamic message to avoid dead lock.
   DynamicMessage* prototype = new (msg_base) DynamicMessage(type_info, false);
 
-  internal::ReflectionSchema schema = {
-      static_cast<const Message*>(type_info->GetPrototype()),
-      type_info->offsets.get(),
-      type_info->has_bits_indices.get(),
-      type_info->has_bits_offset,
-      type_info->extensions_offset,
+  internal::ReflectionSchema schema(
+      /*default_instance=*/static_cast<const Message*>(
+          type_info->GetPrototype()),
+      type_info->offsets.get(), type_info->has_bits_indices.get(),
+      type_info->has_bits_offset, type_info->extensions_offset,
       type_info->oneof_case_offset,
+      /*object_size=*/
       static_cast<int>(type_info->GetClassDataFull().allocation_size()),
       type_info->weak_field_map_offset,
-      -1,  // split_offset_
-      -1,  // sizeof_split_
-  };
+      /*split_offset=*/-1,
+      /*sizeof_split=*/-1);
 
   type_info->MutableClassDataFull().set_reflection(
       new Reflection(type_info->GetClassDataFull().descriptor(), schema,

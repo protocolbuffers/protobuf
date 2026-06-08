@@ -137,7 +137,7 @@ inline void SetAllocateAtLeastHook(AllocateAtLeastHookFn fn, void* context) {}
 
 // Allocates `size` bytes. This wrapper allows memory allocations to be
 // optimized by the compiler since `operator new` is considered observable.
-inline void* Allocate(size_t size) {
+PROTOBUF_ALWAYS_INLINE PROTOBUF_MALLOC void* Allocate(size_t size) {
 #if ABSL_HAVE_BUILTIN(__builtin_operator_new)
   // Allows the compiler to merge or optimize away the allocation even if it
   // would violate the observability guarantees of ::operator new.
