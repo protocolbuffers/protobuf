@@ -30,24 +30,24 @@ final class Protobuf {
   }
 
   /** Writes the given message to the target {@link Writer}. */
-  <T> void writeTo(T message, Writer writer) throws IOException {
+  <T extends GeneratedMessageLite<?, ?>> void writeTo(T message, Writer writer) throws IOException {
     schemaFor(message).writeTo(message, writer);
   }
 
   /** Reads fields from the given {@link Reader} and merges them into the message. */
-  <T> void mergeFrom(T message, Reader reader, ExtensionRegistryLite extensionRegistry)
-      throws IOException {
+  <T extends GeneratedMessageLite<?, ?>> void mergeFrom(
+      T message, Reader reader, ExtensionRegistryLite extensionRegistry) throws IOException {
     schemaFor(message).mergeFrom(message, reader, extensionRegistry);
   }
 
   /** Checks if all required fields are set. */
-  <T> boolean isInitialized(T message) {
+  <T extends GeneratedMessageLite<?, ?>> boolean isInitialized(T message) {
     return schemaFor(message).isInitialized(message);
   }
 
   /** Gets the schema for the given message type. */
   @SuppressWarnings("unchecked")
-  <T> Schema<T> schemaFor(Class<T> messageType) {
+  <T extends GeneratedMessageLite<?, ?>> Schema<T> schemaFor(Class<T> messageType) {
     Object schema = schemaCache.get(messageType);
     if (schema == null) {
       return registerSchema(messageType);
@@ -56,7 +56,7 @@ final class Protobuf {
   }
 
   @DoNotInline
-  private <T> Schema<T> registerSchema(Class<T> messageType) {
+  private <T extends GeneratedMessageLite<?, ?>> Schema<T> registerSchema(Class<T> messageType) {
     Schema<T> schema = schemaFactory.createSchema(messageType);
     checkNotNull(schema, "schema");
     @SuppressWarnings("unchecked")
@@ -70,7 +70,7 @@ final class Protobuf {
 
   /** Gets the schema for the given message. */
   @SuppressWarnings("unchecked")
-  <T> Schema<T> schemaFor(T message) {
+  <T extends GeneratedMessageLite<?, ?>> Schema<T> schemaFor(T message) {
     return schemaFor((Class<T>) message.getClass());
   }
 

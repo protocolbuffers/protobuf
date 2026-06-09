@@ -13,6 +13,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "upb/base/error_handler.h"
 #include "upb/mem/arena.h"
 #include "upb/message/message.h"
 #include "upb/mini_table/message.h"
@@ -43,16 +44,16 @@ enum {
 
 // LINT.IfChange
 typedef enum {
-  kUpb_EncodeStatus_Ok = 0,
-  kUpb_EncodeStatus_OutOfMemory = 1,  // Arena alloc failed
-  kUpb_EncodeStatus_MaxDepthExceeded = 2,
-
+  kUpb_EncodeStatus_Ok = kUpb_ErrorCode_Ok,
+  kUpb_EncodeStatus_OutOfMemory =
+      kUpb_ErrorCode_OutOfMemory,  // Arena alloc failed
   // One or more required fields are missing. Only returned if
   // kUpb_EncodeOption_CheckRequired is set.
-  kUpb_EncodeStatus_MissingRequired = 3,
+  kUpb_EncodeStatus_MaxDepthExceeded = kUpb_ErrorCode_MaxDepthExceeded,
 
+  kUpb_EncodeStatus_MissingRequired = 10,
   // The message is larger than protobuf's 2GB size limit.
-  kUpb_EncodeStatus_MaxSizeExceeded = 4,
+  kUpb_EncodeStatus_MaxSizeExceeded = 11,
 } upb_EncodeStatus;
 // LINT.ThenChange(//depot/google3/third_party/upb/rust/sys/wire/wire.rs:encode_status)
 

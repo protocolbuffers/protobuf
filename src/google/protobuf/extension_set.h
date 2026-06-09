@@ -37,7 +37,6 @@
 #include "absl/log/absl_check.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/generated_enum_util.h"
-#include "google/protobuf/generated_message_tctable_decl.h"
 #include "google/protobuf/internal_visibility.h"
 #include "google/protobuf/port.h"
 #include "google/protobuf/io/coded_stream.h"
@@ -186,18 +185,6 @@ struct ExtensionInfo {
     }
 
     const internal::TcParseTableBase* GetTcTable() const { return tc_table; }
-
-    const ClassData* GetClassData() const {
-#ifdef PROTOBUF_MESSAGE_GLOBALS
-      return internal::MessageGlobalsBase::GetClassData(globals);
-#else  // !PROTOBUF_MESSAGE_GLOBALS
-#ifdef PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
-      return tc_table->class_data;
-#else
-      return google::protobuf::internal::GetClassData(*prototype);
-#endif
-#endif  // !PROTOBUF_MESSAGE_GLOBALS
-    }
   };
 
   union {
@@ -488,7 +475,7 @@ class PROTOBUF_EXPORT ExtensionSet {
 #define desc const FieldDescriptor* descriptor  // avoid line wrapping
   std::string* AddString(Arena* arena, int number, FieldType type, desc);
   MessageLite* AddMessage(Arena* arena, int number, FieldType type,
-                          const ClassData* class_data, desc);
+                          const MessageLite& prototype, desc);
   MessageLite* AddMessage(Arena* arena, const FieldDescriptor* descriptor,
                           MessageFactory* factory);
   void AddAllocatedMessage(Arena* arena, const FieldDescriptor* descriptor,
@@ -1730,9 +1717,8 @@ class RepeatedMessageTypeTraits {
   }
   static inline MutableType Add(Arena* arena, int number, FieldType field_type,
                                 ExtensionSet* set) {
-    static const ClassData* class_data = MessageTraits<Type>::class_data();
-    return static_cast<Type*>(
-        set->AddMessage(arena, number, field_type, class_data, nullptr));
+    return static_cast<Type*>(set->AddMessage(
+        arena, number, field_type, Type::default_instance(), nullptr));
   }
   PROTOBUF_FUTURE_ADD_EARLY_NODISCARD static inline const RepeatedPtrField<
       Type>&

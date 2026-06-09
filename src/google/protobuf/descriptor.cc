@@ -57,6 +57,7 @@
 #include "absl/strings/charset.h"
 #include "absl/strings/escaping.h"
 #include "absl/strings/match.h"
+#include "absl/strings/numbers.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_format.h"
 #include "absl/strings/str_join.h"
@@ -82,8 +83,10 @@
 #include "google/protobuf/io/strtod.h"
 #include "google/protobuf/io/tokenizer.h"
 #include "google/protobuf/io/zero_copy_stream_impl_lite.h"
+#include "google/protobuf/json_enumvalue_options.pb.h"
 #include "google/protobuf/message.h"
 #include "google/protobuf/message_lite.h"
+#include "google/protobuf/naming_style.h"
 #include "google/protobuf/parse_context.h"
 #include "google/protobuf/port.h"
 #include "google/protobuf/repeated_ptr_field.h"
@@ -4930,6 +4933,9 @@ class DescriptorBuilder {
   void CheckEnumValueUniqueness(const EnumDescriptorProto& proto,
                                 const EnumDescriptor* result);
 
+  void CheckEnumCustomStringUniqueness(const EnumDescriptorProto& proto,
+                                       const EnumDescriptor* result);
+
   void LogUnusedDependency(const FileDescriptorProto& proto,
                            const FileDescriptor* result);
 
@@ -7683,6 +7689,91 @@ void DescriptorBuilder::CheckEnumValueUniqueness(
   }
 }
 
+void DescriptorBuilder::CheckEnumCustomStringUniqueness(
+    const EnumDescriptorProto& proto, const EnumDescriptor* result) {
+  absl::flat_hash_map<absl::string_view, const EnumValueDescriptor*>
+      values_by_json_name;
+  absl::flat_hash_map<int, const EnumValueDescriptor*> first_value_by_number;
+
+  for (int i = 0; i < result->value_count(); ++i) {
+    const EnumValueDescriptor* value = result->value(i);
+
+    // If we allow aliases and custom json strings are used, we need to ensure
+    // that the custom json strings are the same for all aliases.
+    if (result->options().allow_alias()) {
+      auto insert_num_result =
+          first_value_by_number.try_emplace(value->number(), value);
+      if (!insert_num_result.second) {
+        const EnumValueDescriptor* primary = insert_num_result.first->second;
+
+        auto get_custom_string = [](const EnumValueDescriptor* ev)
+            -> absl::optional<absl::string_view> {
+          const auto& ext = ev->options().GetExtension(pb::enumvalue::json);
+          if (ext.has_string()) {
+            return ext.string();
+          }
+          return absl::nullopt;
+        };
+
+        auto primary_custom = get_custom_string(primary);
+        auto current_custom = get_custom_string(value);
+
+        if (primary_custom != current_custom) {
+          AddError(result->full_name(), proto.value(i),
+                   DescriptorPool::ErrorCollector::OPTION_VALUE,
+                   [&]() -> std::string {
+                     std::string primary_str =
+                         primary_custom.has_value()
+                             ? absl::StrCat("\"", *primary_custom, "\"")
+                             : "unset";
+                     std::string current_str =
+                         current_custom.has_value()
+                             ? absl::StrCat("\"", *current_custom, "\"")
+                             : "unset";
+                     return absl::StrFormat(
+                         "Alias values for number %d must have the same custom "
+                         "JSON string. "
+                         "\"%s\" has %s but primary alias \"%s\" has %s.",
+                         value->number(), value->name(), current_str,
+                         primary->name(), primary_str);
+                   });
+        }
+      }
+    }
+
+    // Custom json strings can't collide (sans aliases)
+    auto check_and_insert = [&](absl::string_view name, bool is_custom) {
+      auto insert_result = values_by_json_name.try_emplace(name, value);
+      if (!insert_result.second) {
+        const EnumValueDescriptor* conflict = insert_result.first->second;
+        if (conflict != value && conflict->number() != value->number()) {
+          std::string current_type = is_custom ? "Custom" : "Default";
+          std::string conflict_type =
+              (conflict->name() == name) ? "default" : "custom";
+          AddError(result->full_name(), proto.value(i),
+                   DescriptorPool::ErrorCollector::OPTION_VALUE, [&] {
+                     return absl::StrFormat(
+                         "%s JSON string \"%s\" conflicts with %s JSON string "
+                         "of \"%s\".",
+                         current_type, name, conflict_type, conflict->name());
+                   });
+        }
+      }
+    };
+
+    // Ensure that we bail if a custom json string collides with
+    // any default name.
+    check_and_insert(value->name(), false);
+
+    // Ensure that custom JSON strings cannot collide with themselves.
+    if (value->options().HasExtension(pb::enumvalue::json)) {
+      absl::string_view custom_string =
+          value->options().GetExtension(pb::enumvalue::json).string();
+      check_and_insert(custom_string, true);
+    }
+  }
+}
+
 void DescriptorBuilder::BuildEnum(const EnumDescriptorProto& proto,
                                   const Descriptor* parent,
                                   EnumDescriptor* result,
@@ -8167,7 +8258,9 @@ void DescriptorBuilder::CrossLinkField(FieldDescriptor* field,
     // if weak fields exist or not so that we don't need to force building
     // weak dependencies. However the name lookup rules for symbols are
     // somewhat complicated, so I defer it too another CL.
+    PROTOBUF_IGNORE_DEPRECATION_START
     bool is_weak = !pool_->enforce_weak_ && proto.options().weak();
+    PROTOBUF_IGNORE_DEPRECATION_STOP
     bool is_lazy = pool_->lazily_build_dependencies_ && !is_weak;
 
     Symbol type =
@@ -9057,6 +9150,7 @@ void DescriptorBuilder::ValidateFieldFeatures(
 void DescriptorBuilder::ValidateOptions(const EnumDescriptor* enm,
                                         const EnumDescriptorProto& proto) {
   CheckEnumValueUniqueness(proto, enm);
+  CheckEnumCustomStringUniqueness(proto, enm);
 
   if (!enm->is_closed() && enm->value_count() > 0 &&
       enm->value(0)->number() != 0) {
@@ -9112,6 +9206,33 @@ void DescriptorBuilder::ValidateOptions(const EnumValueDescriptor* enum_value,
             enum_value->options().feature_support(), enum_value->full_name());
     MaybeAddError(feature_support_result, enum_value->full_name(), proto,
                   DescriptorPool::ErrorCollector::OPTION_NAME);
+  }
+
+  if (enum_value->options().HasExtension(pb::enumvalue::json)) {
+    absl::string_view custom_string =
+        enum_value->options().GetExtension(pb::enumvalue::json).string();
+
+    if (absl::StrContains(custom_string, '\0')) {
+      AddError(enum_value->full_name(), proto,
+               DescriptorPool::ErrorCollector::OPTION_VALUE,
+               "Custom JSON strings cannot contain embedded null characters.");
+    }
+
+    // If the custom string is a number, it must match the enum value's number,
+    // otherwise, there would be an ambiguity -- we'll block the possibility.
+    int32_t parsed_val;
+    if (absl::SimpleAtoi(custom_string, &parsed_val)) {
+      if (parsed_val != enum_value->number()) {
+        AddError(enum_value->full_name(), proto,
+                 DescriptorPool::ErrorCollector::OPTION_VALUE, [&] {
+                   return absl::StrFormat(
+                       "Custom JSON string \"%s\" parses as integer %d, which "
+                       "does not match the "
+                       "enum value's number %d.",
+                       custom_string, parsed_val, enum_value->number());
+                 });
+      }
+    }
   }
 }
 
@@ -9437,85 +9558,6 @@ void DescriptorBuilder::ValidateJSType(const FieldDescriptor* field,
 
 namespace {
 
-// Whether the name contains underscores that violate the naming style guide (
-// a leading or trailing underscore, or an underscore which is not followed by
-// a letter)
-bool ContainsBadUnderscores(absl::string_view name) {
-  if (name.empty()) {
-    return false;
-  }
-  if (name[0] == '_' || name[name.size() - 1] == '_') {
-    return true;
-  }
-  for (size_t i = 1; i < name.size(); ++i) {
-    if (name[i - 1] == '_' && !absl::ascii_isalpha(name[i])) {
-      return true;
-    }
-  }
-  return false;
-}
-
-bool IsValidTitleCaseName(absl::string_view name, std::string* error) {
-  ABSL_CHECK(!name.empty());
-  for (char c : name) {
-    if (!absl::ascii_isalnum(c)) {
-      *error = "should be TitleCase";
-      return false;
-    }
-  }
-  if (!absl::ascii_isupper(name[0])) {
-    *error = "should begin with a capital letter";
-    return false;
-  }
-  return true;
-}
-
-bool IsValidLowerSnakeCaseName(absl::string_view name, std::string* error) {
-  ABSL_CHECK(!name.empty());
-
-  constexpr absl::CharSet kLowerSnakeCaseChars =
-      absl::CharSet::Range('a', 'z') | absl::CharSet::Range('0', '9') |
-      absl::CharSet::Char('_') | absl::CharSet::Char('.');
-  for (char c : name) {
-    if (!kLowerSnakeCaseChars.contains(c)) {
-      *error = "should be lower_snake_case";
-      return false;
-    }
-  }
-  if (!absl::ascii_islower(name[0])) {
-    *error = "should begin with a lower case letter";
-    return false;
-  }
-  if (ContainsBadUnderscores(name)) {
-    *error = "contains style violating underscores";
-    return false;
-  }
-  return true;
-}
-
-bool IsValidUpperSnakeCaseName(absl::string_view name, std::string* error) {
-  ABSL_CHECK(!name.empty());
-
-  constexpr absl::CharSet kUpperSnakeCaseChars =
-      absl::CharSet::Range('A', 'Z') | absl::CharSet::Range('0', '9') |
-      absl::CharSet::Char('_');
-  for (char c : name) {
-    if (!kUpperSnakeCaseChars.contains(c)) {
-      *error = "should be UPPER_SNAKE_CASE";
-      return false;
-    }
-  }
-  if (!absl::ascii_isupper(name[0])) {
-    *error = "should begin with an upper case letter";
-    return false;
-  }
-  if (ContainsBadUnderscores(name)) {
-    *error = "contains style violating underscores";
-    return false;
-  }
-  return true;
-}
-
 template <typename DescriptorType>
 bool IsValidFieldNonCollisionName(const DescriptorType* descriptor,
                                   std::string* error) {
@@ -9594,10 +9636,11 @@ void DescriptorBuilder::ValidateNamingStyle(const FileDescriptor* file,
   if (file->package().empty()) {
     return;
   }
-  std::string error;
-  if (!IsValidLowerSnakeCaseName(file->package(), &error)) {
+  if (const absl::Status s =
+          internal::IsValidLowerSnakeCaseName(file->package());
+      !s.ok()) {
     AddError(file->name(), proto, DescriptorPool::ErrorCollector::NAME, [&] {
-      return absl::StrCat("Package name ", file->package(), " ", error,
+      return absl::StrCat("Package name ", file->package(), " ", s.message(),
                           kNamingStyleOptOutMessage);
     });
   }
@@ -9606,10 +9649,10 @@ void DescriptorBuilder::ValidateNamingStyle(const FileDescriptor* file,
 template <>
 void DescriptorBuilder::ValidateNamingStyle(const Descriptor* message,
                                             const DescriptorProto& proto) {
-  std::string error;
-  if (!IsValidTitleCaseName(message->name(), &error)) {
+  if (const absl::Status s = internal::IsValidTitleCaseName(message->name());
+      !s.ok()) {
     AddError(message->name(), proto, DescriptorPool::ErrorCollector::NAME, [&] {
-      return absl::StrCat("Message name ", message->name(), " ", error,
+      return absl::StrCat("Message name ", message->name(), " ", s.message(),
                           kNamingStyleOptOutMessage);
     });
   }
@@ -9618,14 +9661,15 @@ void DescriptorBuilder::ValidateNamingStyle(const Descriptor* message,
 template <>
 void DescriptorBuilder::ValidateNamingStyle(const OneofDescriptor* oneof,
                                             const OneofDescriptorProto& proto) {
-  std::string error;
-  if (!IsValidLowerSnakeCaseName(oneof->name(), &error)) {
+  if (const absl::Status s = internal::IsValidLowerSnakeCaseName(oneof->name());
+      !s.ok()) {
     AddError(oneof->name(), proto, DescriptorPool::ErrorCollector::NAME, [&] {
-      return absl::StrCat("Oneof name ", oneof->name(), " ", error,
+      return absl::StrCat("Oneof name ", oneof->name(), " ", s.message(),
                           kNamingStyleOptOutMessage);
     });
   }
   if (IsStyleOrGreater(oneof, FeatureSet::STYLE2026)) {
+    std::string error;
     if (!IsValidFieldNonCollisionName(oneof, &error)) {
       AddError(oneof->name(), proto, DescriptorPool::ErrorCollector::NAME, [&] {
         return absl::StrCat("Oneof name ", oneof->name(), " ", error,
@@ -9638,14 +9682,15 @@ void DescriptorBuilder::ValidateNamingStyle(const OneofDescriptor* oneof,
 template <>
 void DescriptorBuilder::ValidateNamingStyle(const FieldDescriptor* field,
                                             const FieldDescriptorProto& proto) {
-  std::string error;
-  if (!IsValidLowerSnakeCaseName(field->name(), &error)) {
+  if (const absl::Status s = internal::IsValidLowerSnakeCaseName(field->name());
+      !s.ok()) {
     AddError(field->name(), proto, DescriptorPool::ErrorCollector::NAME, [&] {
-      return absl::StrCat("Field name ", field->name(), " ", error,
+      return absl::StrCat("Field name ", field->name(), " ", s.message(),
                           kNamingStyleOptOutMessage);
     });
   }
   if (IsStyleOrGreater(field, FeatureSet::STYLE2026)) {
+    std::string error;
     if (!IsValidFieldNonCollisionName(field, &error)) {
       AddError(field->name(), proto, DescriptorPool::ErrorCollector::NAME, [&] {
         return absl::StrCat("Field name ", field->name(), " ", error,
@@ -9658,12 +9703,13 @@ void DescriptorBuilder::ValidateNamingStyle(const FieldDescriptor* field,
 template <>
 void DescriptorBuilder::ValidateNamingStyle(
     const EnumDescriptor* enum_descriptor, const EnumDescriptorProto& proto) {
-  std::string error;
-  if (!IsValidTitleCaseName(enum_descriptor->name(), &error)) {
+  if (const absl::Status s =
+          internal::IsValidTitleCaseName(enum_descriptor->name());
+      !s.ok()) {
     AddError(enum_descriptor->name(), proto,
              DescriptorPool::ErrorCollector::NAME, [&] {
                return absl::StrCat("Enum name ", enum_descriptor->name(), " ",
-                                   error, kNamingStyleOptOutMessage);
+                                   s.message(), kNamingStyleOptOutMessage);
              });
   }
 }
@@ -9672,12 +9718,13 @@ template <>
 void DescriptorBuilder::ValidateNamingStyle(
     const EnumValueDescriptor* enum_value,
     const EnumValueDescriptorProto& proto) {
-  std::string error;
-  if (!IsValidUpperSnakeCaseName(enum_value->name(), &error)) {
+  if (const absl::Status s =
+          internal::IsValidUpperSnakeCaseName(enum_value->name());
+      !s.ok()) {
     AddError(enum_value->name(), proto, DescriptorPool::ErrorCollector::NAME,
              [&] {
                return absl::StrCat("Enum value name ", enum_value->name(), " ",
-                                   error, kNamingStyleOptOutMessage);
+                                   s.message(), kNamingStyleOptOutMessage);
              });
   }
 }
@@ -9685,10 +9732,10 @@ void DescriptorBuilder::ValidateNamingStyle(
 template <>
 void DescriptorBuilder::ValidateNamingStyle(
     const ServiceDescriptor* service, const ServiceDescriptorProto& proto) {
-  std::string error;
-  if (!IsValidTitleCaseName(service->name(), &error)) {
+  if (const absl::Status s = internal::IsValidTitleCaseName(service->name());
+      !s.ok()) {
     AddError(service->name(), proto, DescriptorPool::ErrorCollector::NAME, [&] {
-      return absl::StrCat("Service name ", service->name(), " ", error,
+      return absl::StrCat("Service name ", service->name(), " ", s.message(),
                           kNamingStyleOptOutMessage);
     });
   }
@@ -9697,10 +9744,10 @@ void DescriptorBuilder::ValidateNamingStyle(
 template <>
 void DescriptorBuilder::ValidateNamingStyle(
     const MethodDescriptor* method, const MethodDescriptorProto& proto) {
-  std::string error;
-  if (!IsValidTitleCaseName(method->name(), &error)) {
+  if (const absl::Status s = internal::IsValidTitleCaseName(method->name());
+      !s.ok()) {
     AddError(method->name(), proto, DescriptorPool::ErrorCollector::NAME, [&] {
-      return absl::StrCat("Method name ", method->name(), " ", error,
+      return absl::StrCat("Method name ", method->name(), " ", s.message(),
                           kNamingStyleOptOutMessage);
     });
   }
@@ -10975,7 +11022,10 @@ bool HasPreservingUnknownEnumSemantics(const FieldDescriptor* field) {
 
 HasbitMode GetFieldHasbitModeWithoutProfile(const FieldDescriptor* field) {
   // Do not generate hasbits for "real-oneof", weak, or extension fields.
-  if (field->real_containing_oneof() || field->options().weak() ||
+  PROTOBUF_IGNORE_DEPRECATION_START
+  const bool field_is_weak = field->options().weak();
+  PROTOBUF_IGNORE_DEPRECATION_STOP
+  if (field->real_containing_oneof() || field_is_weak ||
       field->is_extension()) {
     return HasbitMode::kNoHasbit;
   }
@@ -11037,6 +11087,10 @@ bool IsLazilyInitializedFile(absl::string_view filename) {
   }
   if (filename == "third_party/protobuf/json_enumvalue_options.proto" ||
       filename == "google/protobuf/json_enumvalue_options.proto") {
+    return true;
+  }
+  if (filename == "third_party/protobuf/cpp_file_options.proto" ||
+      filename == "google/protobuf/cpp_file_options.proto") {
     return true;
   }
   return filename == "net/proto2/proto/descriptor.proto" ||

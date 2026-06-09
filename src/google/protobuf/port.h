@@ -137,7 +137,7 @@ inline void SetAllocateAtLeastHook(AllocateAtLeastHookFn fn, void* context) {}
 
 // Allocates `size` bytes. This wrapper allows memory allocations to be
 // optimized by the compiler since `operator new` is considered observable.
-inline void* Allocate(size_t size) {
+PROTOBUF_ALWAYS_INLINE PROTOBUF_MALLOC void* Allocate(size_t size) {
 #if ABSL_HAVE_BUILTIN(__builtin_operator_new)
   // Allows the compiler to merge or optimize away the allocation even if it
   // would violate the observability guarantees of ::operator new.
@@ -826,18 +826,36 @@ inline constexpr size_t kSafeStringSize = 50000000;
 
 // Take advantage of C++20 constexpr support in std::string.
 class alignas(8) GlobalEmptyStringConstexpr {
+  template <typename T>
+  struct NonConstexprAllocator {
+    using value_type = T;
+    using size_type = size_t;
+    using difference_type = ptrdiff_t;
+    T* allocate(size_t);
+    void deallocate(void*, size_t);
+  };
+
  public:
   const std::string& get() const { return value_; }
   // Nothing to init, or destroy.
   std::string* Init() const { return nullptr; }
 
-  // Disable the optimization for MSVC and Xtensa.
   // There are some builds where the default constructed string can't be used as
   // `constinit` even though the constructor is `constexpr` and can be used
   // during constant evaluation.
-#if !defined(_MSC_VER) && !defined(__XTENSA__)
+  // We probe them by trying to construct the string during constant evaluation
+  // with a non-constexpr allocator. If the default construction/destruction
+  // attempts to use the allocator it won't be able to and SFINAE will trigger.
+  // The standard only guarantees that std::string can be used during constant
+  // evaluation, not that a constant evaluated instance can leak into runtime.
+  // Memory allocated during constant evaluation can't be used for runtime
+  // objects.
+#if !defined(__XTENSA__)
+  // Disable the optimization for Xtensa.
   // Compilation fails on Xtensa: b/467129751
-  template <typename T = std::string, bool = (T(), true)>
+  template <
+      typename Alloc = NonConstexprAllocator<char>,
+      int = std::basic_string<char, std::char_traits<char>, Alloc>().size()>
   static constexpr std::true_type HasConstexprDefaultConstructor(int) {
     return {};
   }

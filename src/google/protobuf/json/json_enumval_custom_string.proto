@@ -12,11 +12,18 @@ package json_enumval_custom_string;
 import "google/protobuf/json_options.proto";
 
 enum Armor {
+  option allow_alias = true;
+
   ARMOR_UNKNOWN = 0;
   ARMOR_GREAT_HELM = 1 [(pb.enumvalue.json).string = "gr8 helm"];
   ARMOR_GORGET = 2;
   ARMOR_GAUNTLET = 3 [(pb.enumvalue.json).string = "a\"b"];
   ARMOR_PLATE = 4 [(pb.enumvalue.json).string = "\"plate\""];
+  ARMOR_COIF = 5 [(pb.enumvalue.json).string = ""];
+  ARMOR_PAULDRON = 6 [(pb.enumvalue.json).string = "p\taul\ndron"];
+  ARMOR_SABATON = 7 [(pb.enumvalue.json).string = "sabaton"];
+  ARMOR_SOLLERET = 7 [(pb.enumvalue.json).string = "sabaton"];
+  ARMOR_HACHI_MAI_DO = 8 [(pb.enumvalue.json).string = "8"];
 }
 
 message Knight {

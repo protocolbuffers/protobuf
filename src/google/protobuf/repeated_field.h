@@ -254,6 +254,11 @@ class SooRep {
   };
 };
 
+// Out-of-line abort for MergeFrom self-reference. Declared here (not in the
+// call site) so that the failure path does not pull ABSL_CHECK streaming
+// support into every inlined MergeFrom instantiation.
+[[noreturn]] PROTOBUF_EXPORT void LogSelfMergeAndAbort() noexcept;
+
 }  // namespace internal
 
 // RepeatedField is used to represent repeated fields of a primitive type (in
@@ -1228,7 +1233,9 @@ inline void RepeatedField<Element>::Clear() {
 
 template <typename Element>
 inline void RepeatedField<Element>::MergeFrom(const RepeatedField& other) {
-  ABSL_DCHECK_NE(&other, this);
+  if (ABSL_PREDICT_FALSE(&other == this)) {
+    PROTOBUF_NO_MERGE internal::LogSelfMergeAndAbort();
+  }
   const bool other_is_soo = other.is_soo();
   if (auto other_size = other.size()) {
     const int old_size = size();

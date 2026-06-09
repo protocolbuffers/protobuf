@@ -214,16 +214,9 @@ public final class UnknownFieldSet implements MessageLite {
       // Avoid allocating an iterator.
       return;
     }
-    if (writer.fieldOrder() == Writer.FieldOrder.DESCENDING) {
-      // Write fields in descending order.
-      for (Map.Entry<Integer, Field> entry : fields.descendingMap().entrySet()) {
-        entry.getValue().writeTo(entry.getKey(), writer);
-      }
-    } else {
-      // Write fields in ascending order.
-      for (Map.Entry<Integer, Field> entry : fields.entrySet()) {
-        entry.getValue().writeTo(entry.getKey(), writer);
-      }
+    // Write fields in ascending order.
+    for (Map.Entry<Integer, Field> entry : fields.entrySet()) {
+      entry.getValue().writeTo(entry.getKey(), writer);
     }
   }
 
@@ -233,16 +226,9 @@ public final class UnknownFieldSet implements MessageLite {
       // Avoid allocating an iterator.
       return;
     }
-    if (writer.fieldOrder() == Writer.FieldOrder.DESCENDING) {
-      // Write fields in descending order.
-      for (Map.Entry<Integer, Field> entry : fields.descendingMap().entrySet()) {
-        entry.getValue().writeAsMessageSetExtensionTo(entry.getKey(), writer);
-      }
-    } else {
-      // Write fields in ascending order.
-      for (Map.Entry<Integer, Field> entry : fields.entrySet()) {
-        entry.getValue().writeAsMessageSetExtensionTo(entry.getKey(), writer);
-      }
+    // Write fields in ascending order.
+    for (Map.Entry<Integer, Field> entry : fields.entrySet()) {
+      entry.getValue().writeAsMessageSetExtensionTo(entry.getKey(), writer);
     }
   }
 
@@ -857,18 +843,11 @@ public final class UnknownFieldSet implements MessageLite {
       writer.writeFixed64List(fieldNumber, fixed64, false);
       writer.writeBytesList(fieldNumber, lengthDelimited);
 
-      if (writer.fieldOrder() == Writer.FieldOrder.ASCENDING) {
-        for (int i = 0; i < group.size(); i++) {
-          writer.writeStartGroup(fieldNumber);
-          group.get(i).writeTo(writer);
-          writer.writeEndGroup(fieldNumber);
-        }
-      } else {
-        for (int i = group.size() - 1; i >= 0; i--) {
-          writer.writeEndGroup(fieldNumber);
-          group.get(i).writeTo(writer);
-          writer.writeStartGroup(fieldNumber);
-        }
+      // Write in ascending field order.
+      for (int i = 0; i < group.size(); i++) {
+        writer.writeStartGroup(fieldNumber);
+        group.get(i).writeTo(writer);
+        writer.writeEndGroup(fieldNumber);
       }
     }
 
@@ -878,18 +857,10 @@ public final class UnknownFieldSet implements MessageLite {
      */
     @SuppressWarnings({"ForeachList", "ForeachListWithUserVar"}) // No iterator allocation.
     private void writeAsMessageSetExtensionTo(int fieldNumber, Writer writer) throws IOException {
-      if (writer.fieldOrder() == Writer.FieldOrder.DESCENDING) {
-        // Write in descending field order.
-        for (int i = lengthDelimited.size() - 1; i >= 0; i--) {
-          ByteString value = lengthDelimited.get(i);
-          writer.writeMessageSetItem(fieldNumber, value);
-        }
-      } else {
-        // Write in ascending field order.
-        for (int i = 0; i < lengthDelimited.size(); i++) {
-          ByteString value = lengthDelimited.get(i);
-          writer.writeMessageSetItem(fieldNumber, value);
-        }
+      // Write in ascending field order.
+      for (int i = 0; i < lengthDelimited.size(); i++) {
+        ByteString value = lengthDelimited.get(i);
+        writer.writeMessageSetItem(fieldNumber, value);
       }
     }
 

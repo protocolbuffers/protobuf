@@ -106,7 +106,11 @@ TEST(GeneratedMessageTest, EmptyMessageWithExtensionsSize) {
 }
 
 struct MockLazy {
+#if defined(PROTOBUF_INTERNAL_LAZY_FIELD_REFACTOR)
+  void* ptr;
+#else
   void* ptr[2];
+#endif
 };
 
 TEST(GeneratedMessageTest, RecursiveMessageSize) {

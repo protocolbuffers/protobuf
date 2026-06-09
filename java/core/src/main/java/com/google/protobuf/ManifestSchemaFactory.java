@@ -14,7 +14,7 @@ import static com.google.protobuf.Internal.checkNotNull;
  */
 @CheckReturnValue
 @ExperimentalApi
-final class ManifestSchemaFactory implements SchemaFactory {
+final class ManifestSchemaFactory {
 
   private final MessageInfoFactory messageInfoFactory;
 
@@ -26,46 +26,37 @@ final class ManifestSchemaFactory implements SchemaFactory {
     this.messageInfoFactory = checkNotNull(messageInfoFactory, "messageInfoFactory");
   }
 
-  @Override
   public <T> Schema<T> createSchema(Class<T> messageType) {
     SchemaUtil.requireGeneratedMessage(messageType);
+
+    if (!useLiteRuntime(messageType)) {
+      throw new IllegalArgumentException(
+          "Full runtime messages are not supported by this schema factory: "
+              + messageType.getName());
+    }
 
     MessageInfo messageInfo = messageInfoFactory.messageInfoFor(messageType);
 
     // MessageSet has a special schema.
     if (messageInfo.isMessageSetWireFormat()) {
-      return useLiteRuntime(messageType)
-          ? MessageSetSchema.newSchema(
-              SchemaUtil.unknownFieldSetLiteSchema(),
-              ExtensionSchemas.lite(),
-              messageInfo.getDefaultInstance())
-          : MessageSetSchema.newSchema(
-              SchemaUtil.unknownFieldSetFullSchema(),
-              ExtensionSchemas.full(),
-              messageInfo.getDefaultInstance());
+      return MessageSetSchema.newSchema(
+          SchemaUtil.unknownFieldSetLiteSchema(),
+          ExtensionSchemas.lite(),
+          messageInfo.getDefaultInstance());
     }
 
     return newSchema(messageType, messageInfo);
   }
 
   private static <T> Schema<T> newSchema(Class<T> messageType, MessageInfo messageInfo) {
-    return useLiteRuntime(messageType)
-        ? MessageSchema.newSchema(
-            messageType,
-            messageInfo,
-            NewInstanceSchemas.lite(),
-            ListFieldSchemas.lite(),
-            SchemaUtil.unknownFieldSetLiteSchema(),
-            allowExtensions(messageInfo) ? ExtensionSchemas.lite() : null,
-            MapFieldSchemas.lite())
-        : MessageSchema.newSchema(
-            messageType,
-            messageInfo,
-            NewInstanceSchemas.full(),
-            ListFieldSchemas.full(),
-            SchemaUtil.unknownFieldSetFullSchema(),
-            allowExtensions(messageInfo) ? ExtensionSchemas.full() : null,
-            MapFieldSchemas.full());
+    return MessageSchema.newSchema(
+        messageType,
+        messageInfo,
+        NewInstanceSchemas.lite(),
+        ListFieldSchemas.lite(),
+        SchemaUtil.unknownFieldSetLiteSchema(),
+        allowExtensions(messageInfo) ? ExtensionSchemas.lite() : null,
+        MapFieldSchemas.lite());
   }
 
   private static boolean allowExtensions(MessageInfo messageInfo) {
@@ -78,62 +69,7 @@ final class ManifestSchemaFactory implements SchemaFactory {
   }
 
   private static MessageInfoFactory getDefaultMessageInfoFactory() {
-    return new CompositeMessageInfoFactory(
-        GeneratedMessageInfoFactory.getInstance(), getDescriptorMessageInfoFactory());
-  }
-
-  private static class CompositeMessageInfoFactory implements MessageInfoFactory {
-    private MessageInfoFactory[] factories;
-
-    CompositeMessageInfoFactory(MessageInfoFactory... factories) {
-      this.factories = factories;
-    }
-
-    @Override
-    public boolean isSupported(Class<?> clazz) {
-      for (MessageInfoFactory factory : factories) {
-        if (factory.isSupported(clazz)) {
-          return true;
-        }
-      }
-      return false;
-    }
-
-    @Override
-    public MessageInfo messageInfoFor(Class<?> clazz) {
-      for (MessageInfoFactory factory : factories) {
-        if (factory.isSupported(clazz)) {
-          return factory.messageInfoFor(clazz);
-        }
-      }
-      throw new UnsupportedOperationException(
-          "No factory is available for message type: " + clazz.getName());
-    }
-  }
-
-  private static final MessageInfoFactory EMPTY_FACTORY =
-      new MessageInfoFactory() {
-        @Override
-        public boolean isSupported(Class<?> clazz) {
-          return false;
-        }
-
-        @Override
-        public MessageInfo messageInfoFor(Class<?> clazz) {
-          throw new IllegalStateException("This should never be called.");
-        }
-      };
-
-  private static MessageInfoFactory getDescriptorMessageInfoFactory() {
-    if (Android.assumeLiteRuntime) {
-      return EMPTY_FACTORY;
-    }
-    try {
-      Class<?> clazz = Class.forName("com.google.protobuf.DescriptorMessageInfoFactory");
-      return (MessageInfoFactory) clazz.getDeclaredMethod("getInstance").invoke(null);
-    } catch (Exception e) {
-      return EMPTY_FACTORY;
-    }
+    return GeneratedMessageInfoFactory.getInstance();
   }
 
   private static boolean useLiteRuntime(Class<?> messageType) {

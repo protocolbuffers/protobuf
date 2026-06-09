@@ -5,11 +5,10 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
-package com.google.protobuf;
+#include "google/protobuf/compiler/csharp/csharp_generator.h"
+#include "google/protobuf/compiler/plugin.h"
 
-final class NewInstanceSchemaFull implements NewInstanceSchema {
-  @Override
-  public Object newInstance(Object defaultInstance) {
-    return ((Message) defaultInstance).toBuilder().buildPartial();
-  }
+int main(int argc, char* argv[]) {
+  google::protobuf::compiler::csharp::Generator generator;
+  return google::protobuf::compiler::PluginMain(argc, argv, &generator);
 }
