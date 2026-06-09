@@ -136,9 +136,9 @@ bool ParseTime(absl::string_view value, int64_t* seconds, int32_t* nanos) {
   if (!absl::ParseTime(absl::RFC3339_full, value, &result, nullptr)) {
     return false;
   }
-  timespec spec = absl::ToTimespec(result);
-  *seconds = spec.tv_sec;
-  *nanos = spec.tv_nsec;
+  *seconds = absl::ToUnixSeconds(result);
+  absl::Duration remainder = result - absl::FromUnixSeconds(*seconds);
+  *nanos = static_cast<int32_t>(absl::ToInt64Nanoseconds(remainder));
   return true;
 }
 
