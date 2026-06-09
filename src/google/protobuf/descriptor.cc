@@ -3742,7 +3742,7 @@ class SourceLocationCommentPrinter {
     }
   }
   void AddPostComment(std::string* output) {
-    if (have_source_loc_ && source_loc_.trailing_comments.size() > 0) {
+    if (have_source_loc_ && !source_loc_.trailing_comments.empty()) {
       absl::StrAppend(output, FormatComment(source_loc_.trailing_comments));
     }
   }
@@ -5118,16 +5118,16 @@ class DescriptorBuilder {
   friend class OptionInterpreter;
   friend class OptionInterpreter::AggregateOptionFinder;
 
-  static inline bool get_allow_unknown(const DescriptorPool* pool) {
+  static bool get_allow_unknown(const DescriptorPool* pool) {
     return pool->allow_unknown_;
   }
-  static inline bool get_enforce_weak(const DescriptorPool* pool) {
+  static bool get_enforce_weak(const DescriptorPool* pool) {
     return pool->enforce_weak_;
   }
-  static inline bool get_is_placeholder(const Descriptor* descriptor) {
+  static bool get_is_placeholder(const Descriptor* descriptor) {
     return descriptor != nullptr && descriptor->is_placeholder_;
   }
-  static inline void assert_mutex_held(const DescriptorPool* pool) {
+  static void assert_mutex_held(const DescriptorPool* pool) {
     if (pool->mutex_ != nullptr) {
       pool->mutex_->AssertHeld();
     }
