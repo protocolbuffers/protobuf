@@ -110,7 +110,11 @@ public abstract class CodedOutputStream extends ByteOutput {
       throw new IllegalArgumentException("ByteBuffer is read-only");
     }
     if (buffer.hasArray()) {
-      return new HeapNioEncoder(buffer);
+      return new ArrayEncoder(
+          buffer.array(),
+          buffer.arrayOffset() + buffer.position(),
+          buffer.remaining(),
+          new ByteBufferFlusher(buffer));
     } else if (buffer.isDirect()) {
       return new DirectNioEncoder(buffer);
     } else {
@@ -1026,14 +1030,33 @@ public abstract class CodedOutputStream extends ByteOutput {
 
   // =================================================================
 
+  private static final class ByteBufferFlusher {
+    private final ByteBuffer byteBuffer;
+    private final int initialPosition;
+
+    ByteBufferFlusher(ByteBuffer byteBuffer) {
+      this.byteBuffer = byteBuffer;
+      this.initialPosition = byteBuffer.position();
+    }
+
+    void flush(ArrayEncoder encoder) {
+      Java8Compatibility.position(byteBuffer, initialPosition + encoder.getTotalBytesWritten());
+    }
+  }
+
   /** A {@link CodedOutputStream} that writes directly to a byte array. */
-  private static class ArrayEncoder extends CodedOutputStream {
+  private static final class ArrayEncoder extends CodedOutputStream {
     private final byte[] buffer;
     private final int offset;
     private final int limit;
     private int position;
+    private final ByteBufferFlusher flusher;
 
     ArrayEncoder(byte[] buffer, int offset, int length) {
+      this(buffer, offset, length, null);
+    }
+
+    ArrayEncoder(byte[] buffer, int offset, int length, ByteBufferFlusher flusher) {
       if (buffer == null) {
         throw new NullPointerException("buffer");
       }
@@ -1050,6 +1073,7 @@ public abstract class CodedOutputStream extends ByteOutput {
       this.offset = offset;
       position = offset;
       limit = offset + length;
+      this.flusher = flusher;
     }
 
     @Override
@@ -1430,7 +1454,9 @@ public abstract class CodedOutputStream extends ByteOutput {
 
     @Override
     public void flush() {
-      // Do nothing.
+      if (flusher != null) {
+        flusher.flush(this);
+      }
     }
 
     @Override
@@ -1444,29 +1470,7 @@ public abstract class CodedOutputStream extends ByteOutput {
     }
   }
 
-  /**
-   * A {@link CodedOutputStream} that writes directly to a heap {@link ByteBuffer}. Writes are done
-   * directly to the underlying array. The buffer position is only updated after a flush.
-   */
-  private static final class HeapNioEncoder extends ArrayEncoder {
-    private final ByteBuffer byteBuffer;
-    private int initialPosition;
 
-    HeapNioEncoder(ByteBuffer byteBuffer) {
-      super(
-          byteBuffer.array(),
-          byteBuffer.arrayOffset() + byteBuffer.position(),
-          byteBuffer.remaining());
-      this.byteBuffer = byteBuffer;
-      this.initialPosition = byteBuffer.position();
-    }
-
-    @Override
-    public void flush() {
-      // Update the position on the buffer.
-      Java8Compatibility.position(byteBuffer, initialPosition + getTotalBytesWritten());
-    }
-  }
 
   /**
    * A {@link CodedOutputStream} that writes directly to a direct {@link ByteBuffer}, using only
