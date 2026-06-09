@@ -614,8 +614,7 @@ TEST(DynamicMessageTest, ParseFailureStateInconsistencyWithGeneratedMessage) {
   // Truncated wire bytes: field 1 (map_field), wire type 2 (length-delimited),
   // followed by a truncated varint length byte (0xf7 has MSB set, needs
   // continuation).
-  std::string malformed_input("
-÷", 2);
+  std::string malformed_input("\x0a\xf7", 2);
 
   // Parse into DynamicMessage.
   std::unique_ptr<Message> dyn(prototype->New());
