@@ -892,7 +892,13 @@ PyObject* PyUpb_Message_Get(upb_Message* u_msg, const upb_MessageDef* m,
   ret = &py_msg->ob_base;
   Py_DECREF(cls);
   Py_INCREF(arena);
-  PyUpb_ObjCache_Add(u_msg, ret);
+  if (!PyUpb_ObjCache_Add(u_msg, ret)) {
+    PyObject* cached = PyUpb_ObjCache_Get(u_msg);
+    if (cached) {
+      Py_DECREF(ret);
+      return cached;
+    }
+  }
   return ret;
 }
 

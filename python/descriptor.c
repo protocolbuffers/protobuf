@@ -60,7 +60,13 @@ static PyUpb_DescriptorBase* PyUpb_DescriptorBase_DoCreate(
   base->features = NULL;
   base->message_meta = NULL;
 
-  PyUpb_ObjCache_Add(def, &base->ob_base);
+  if (!PyUpb_ObjCache_Add(def, &base->ob_base)) {
+    PyObject* cached = PyUpb_ObjCache_Get(def);
+    if (cached) {
+      Py_DECREF(&base->ob_base);
+      return (PyUpb_DescriptorBase*)cached;
+    }
+  }
   return base;
 }
 
