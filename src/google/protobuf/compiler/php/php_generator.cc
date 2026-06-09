@@ -1482,7 +1482,7 @@ bool GenerateMessageFile(const FileDescriptor* file, const Descriptor* message,
   printer.Print("\n");
 
   GenerateMessageConstructorDocComment(&printer, message, options);
-  printer->Print("public function __construct($data = null)\n{\n");
+  printer.Print("public function __construct($data = null)\n{\n");
   Indent(&printer);
 
   std::string metadata_filename = GeneratedMetadataFileName(file, options);
