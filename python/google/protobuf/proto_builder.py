@@ -66,7 +66,7 @@ def MakeSimpleProtoClass(fields, full_name=None, pool=None):
 
   # Use a consistent file name that is unlikely to conflict with any imported
   # proto files.
-  fields_hash = hashlib.sha1()
+  fields_hash = hashlib.sha1(usedforsecurity=False)
   for f_name, f_type in field_items:
     fields_hash.update(f_name.encode('utf-8'))
     fields_hash.update(str(f_type).encode('utf-8'))
