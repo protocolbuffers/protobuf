@@ -12,6 +12,7 @@
 
 #include "absl/container/flat_hash_set.h"
 #include "absl/log/absl_log.h"
+#include "absl/strings/escaping.h"
 #include "absl/strings/str_cat.h"
 #include "google/protobuf/compiler/code_generator.h"
 #include "google/protobuf/compiler/csharp/csharp_doc_comment.h"
@@ -20,6 +21,7 @@
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/io/printer.h"
+#include "google/protobuf/json_enumvalue_options.pb.h"
 
 namespace google {
 namespace protobuf {
@@ -62,18 +64,23 @@ void EnumGenerator::Generate(io::Printer* printer) {
       absl::StrAppend(&name, "_");
     }
     int number = descriptor_->value(i)->number();
+
+    std::string attribute_args = absl::StrCat("\"", original_name, "\"");
     if (!used_number.insert(number).second) {
-      printer->Print(
-          "[pbr::OriginalName(\"$original_name$\", PreferredAlias = false)] "
-          "$name$ = $number$,\n",
-          "original_name", original_name, "name", name, "number",
-          absl::StrCat(number));
-    } else {
-      printer->Print(
-          "[pbr::OriginalName(\"$original_name$\")] $name$ = $number$,\n",
-          "original_name", original_name, "name", name, "number",
-          absl::StrCat(number));
+      absl::StrAppend(&attribute_args, ", PreferredAlias = false");
     }
+    if (descriptor_->value(i)->options().HasExtension(pb::enumvalue::json)) {
+      std::string custom_string(descriptor_->value(i)
+                                    ->options()
+                                    .GetExtension(pb::enumvalue::json)
+                                    .string());
+      absl::StrAppend(&attribute_args, ", JsonEnumValueName = \"",
+                      absl::CEscape(custom_string), "\"");
+    }
+
+    printer->Print("[pbr::OriginalName($args$)] $name$ = $number$,\n", "args",
+                   attribute_args, "name", name, "number",
+                   absl::StrCat(number));
   }
   printer->Outdent();
   printer->Print("}\n");

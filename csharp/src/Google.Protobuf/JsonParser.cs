@@ -1,6 +1,6 @@
 #region Copyright notice and license
 // Protocol Buffers - Google's data interchange format
-// Copyright 2015 Google Inc.  All rights reserved.
+// Copyright 2015 Google LLC.  All rights reserved.
 //
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file or at
@@ -11,10 +11,13 @@ using Google.Protobuf.Reflection;
 using Google.Protobuf.WellKnownTypes;
 using System;
 using System.Collections;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
 
@@ -761,6 +764,20 @@ namespace Google.Protobuf
             var enumValue = field.EnumType.FindValueByName(text);
             if (enumValue == null)
             {
+                var clrType = field.EnumType.ClrType;
+                if (clrType != null)
+                {
+                    var customNamedValue = CustomEnumNameHelper.GetValue(clrType, text);
+                    if (customNamedValue is not null)
+                    {
+                        value = (int) customNamedValue;
+                        return true;
+                    }
+                }
+            }
+
+            if (enumValue == null)
+            {
                 if (settings.IgnoreUnknownFields)
                 {
                     value = null;
@@ -1101,6 +1118,52 @@ namespace Google.Protobuf
                 new(RecursionLimit,
                     ProtoPreconditions.CheckNotNull(typeRegistry, nameof(typeRegistry)),
                     IgnoreUnknownFields);
+        }
+
+        // Effectively a cache of mapping from custom enum names values to the underlying CLR value.
+        // The need for this is unfortunate, as is its unbounded size, but realistically it shouldn't
+        // cause issues. It's only consulted when an enum value name cannot be parsed.
+        private static class CustomEnumNameHelper {
+        private static readonly ConcurrentDictionary<System.Type, Dictionary<string, object>>
+            dictionaries = new ConcurrentDictionary<System.Type, Dictionary<string, object>>();
+
+        [UnconditionalSuppressMessage(
+            "Trimming", "IL2072",
+            Justification =
+                "The field for the value must still be present. It will be returned by reflection, will be in this collection, and its name can be resolved.")]
+        [UnconditionalSuppressMessage(
+            "Trimming", "IL2067",
+            Justification =
+                "The field for the value must still be present. It will be returned by reflection, will be in this collection, and its name can be resolved.")]
+        internal static object GetValue(System.Type type, string name) {
+            // Warnings are suppressed on this method. However, this code has been tested in an AOT app
+            // and verified that it works. Issue
+            // https://github.com/protocolbuffers/protobuf/issues/14788 discusses changes to guarantee
+            // that enum fields are never trimmed.
+            Dictionary<string, object> nameMapping =
+                dictionaries.GetOrAdd(type, static t => GetNameMapping(t));
+
+            // If this returns false, value will be null, which is what we want.
+            nameMapping.TryGetValue(name, out object value);
+            return value;
+        }
+
+        private static Dictionary<string, object> GetNameMapping([
+            DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicFields |
+                                    DynamicallyAccessedMemberTypes.NonPublicFields)
+        ] System.Type enumType) {
+            var ret = new Dictionary<string, object>();
+            foreach (var field in enumType.GetTypeInfo().DeclaredFields.Where(f => f.IsStatic))
+            {
+                var attr = field.GetCustomAttribute<OriginalNameAttribute>();
+                if (attr?.JsonEnumValueName is not string customName)
+                {
+                    continue;
+                }
+                ret[customName] = field.GetValue(null);
+            }
+            return ret;
+        }
         }
     }
 }
