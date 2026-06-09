@@ -373,6 +373,10 @@ inline void AssignToString(std::string& dest, absl::string_view value,
                            BytesTag /*tag*/ = BytesTag{}) {
   dest.assign(value.data(), value.size());
 }
+inline void AssignToString(std::string& dest, const absl::Cord& value,
+                           BytesTag tag = BytesTag{}) {
+  absl::CopyCordToString(value, &dest);
+}
 
 // Adds `value`, optionally bounded by `size`, as the last element of `dest`.
 // This overload set is used to implement `add_xxx()` methods for repeated
