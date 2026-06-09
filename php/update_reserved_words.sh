@@ -114,7 +114,7 @@ update_file() {
 
 generate_names_cc() {
     local lines=()
-    lines+=("// @see php/update_reserved.sh - DO NOT MODIFY THIS LIST MANUALLY")
+    lines+=("// @see php/update_reserved_words.sh - DO NOT MODIFY THIS LIST MANUALLY")
     lines+=("const char* const kReservedNames[] = {")
     local col_lines=()
     while IFS= read -r line; do
@@ -128,7 +128,7 @@ generate_names_cc() {
 
 generate_names_c() {
     local lines=()
-    lines+=("// @see php/update_reserved.sh - DO NOT MODIFY THIS LIST MANUALLY")
+    lines+=("// @see php/update_reserved_words.sh - DO NOT MODIFY THIS LIST MANUALLY")
     lines+=("const char* const kReservedNames[] = {")
     local decorated=()
     for w in "${RESERVED_WORDS[@]}"; do
@@ -146,7 +146,7 @@ generate_names_c() {
 
 generate_php_generator_cc() {
     local lines=()
-    lines+=("// @see php/update_reserved.sh - DO NOT MODIFY THIS LIST MANUALLY")
+    lines+=("// @see php/update_reserved_words.sh - DO NOT MODIFY THIS LIST MANUALLY")
     lines+=("constexpr absl::string_view kValidConstantNames[] = {")
     local col_lines=()
     while IFS= read -r line; do
@@ -160,7 +160,7 @@ generate_php_generator_cc() {
 
 generate_proto_messages() {
     local upper=$1
-    echo "// @see php/update_reserved.sh - DO NOT MODIFY THIS LIST MANUALLY"
+    echo "// @see php/update_reserved_words.sh - DO NOT MODIFY THIS LIST MANUALLY"
     for w in "${RESERVED_WORDS[@]}"; do
         local name="$w"
         if [[ "$upper" == "true" ]]; then name=$(echo "$w" | tr '[:lower:]' '[:upper:]'); fi
@@ -170,7 +170,7 @@ generate_proto_messages() {
 
 generate_proto_enums() {
     local upper=$1
-    echo "// @see php/update_reserved.sh - DO NOT MODIFY THIS LIST MANUALLY"
+    echo "// @see php/update_reserved_words.sh - DO NOT MODIFY THIS LIST MANUALLY"
     local i=1
     for w in "${RESERVED_WORDS[@]}"; do
         local name="$w"
@@ -184,7 +184,7 @@ generate_proto_enums() {
 
 generate_proto_enum_values() {
     local upper=$1
-    echo "  // @see php/update_reserved.sh - DO NOT MODIFY THIS LIST MANUALLY"
+    echo "  // @see php/update_reserved_words.sh - DO NOT MODIFY THIS LIST MANUALLY"
     local i=0
     for w in "${RESERVED_WORDS[@]}"; do
         local name="$w"
@@ -195,7 +195,7 @@ generate_proto_enum_values() {
 }
 
 generate_test_cases() {
-    echo "        // @see php/update_reserved.sh - DO NOT MODIFY THIS LIST MANUALLY"
+    echo "        // @see php/update_reserved_words.sh - DO NOT MODIFY THIS LIST MANUALLY"
     # Lower messages
     for w in "${RESERVED_WORDS[@]}"; do
         echo "        \$m = new \\Lower\\PB$w();"
@@ -239,7 +239,7 @@ generate_test_cases() {
 }
 
 generate_gpbutil_reserved_words() {
-    echo "        // @see php/update_reserved.sh - DO NOT MODIFY THIS LIST MANUALLY"
+    echo "        // @see php/update_reserved_words.sh - DO NOT MODIFY THIS LIST MANUALLY"
     echo "        \$reserved_words = array("
     ITEM_FMT="\"%s\"=>0" format_columns 5 "            " "${RESERVED_WORDS[@]}"
     echo "        );"

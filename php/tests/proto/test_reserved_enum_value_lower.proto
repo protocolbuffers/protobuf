@@ -4,7 +4,7 @@ package lower_enum_value;
 
 enum NotAllowed {
   // BEGIN RESERVED NAMES
-  // @see php/update_reserved.sh - DO NOT MODIFY THIS LIST MANUALLY
+  // @see php/update_reserved_words.sh - DO NOT MODIFY THIS LIST MANUALLY
   abstract = 0;
   and = 1;
   array = 2;

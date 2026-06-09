@@ -3,7 +3,7 @@ syntax = "proto3";
 package lower;
 
 // BEGIN RESERVED NAMES
-// @see php/update_reserved.sh - DO NOT MODIFY THIS LIST MANUALLY
+// @see php/update_reserved_words.sh - DO NOT MODIFY THIS LIST MANUALLY
 message abstract {}
 message and {}
 message array {}

@@ -251,7 +251,7 @@ class GPBUtil
         }
 
         // BEGIN RESERVED WORDS
-        // @see php/update_reserved.sh - DO NOT MODIFY THIS LIST MANUALLY
+        // @see php/update_reserved_words.sh - DO NOT MODIFY THIS LIST MANUALLY
         $reserved_words = array(
             "abstract"=>0,     "and"=>0,          "array"=>0,        "as"=>0,           "bool"=>0,
             "break"=>0,        "callable"=>0,     "case"=>0,         "catch"=>0,        "class"=>0,

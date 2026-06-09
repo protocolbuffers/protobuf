@@ -48,7 +48,7 @@ static void stringsink_uninit(stringsink* sink) { free(sink->ptr); }
 /* def name -> classname ******************************************************/
 
 // BEGIN RESERVED NAMES
-// @see php/update_reserved.sh - DO NOT MODIFY THIS LIST MANUALLY
+// @see php/update_reserved_words.sh - DO NOT MODIFY THIS LIST MANUALLY
 const char* const kReservedNames[] = {
     "abstract",     "and",          "array",        "as",           "bool",
     "break",        "callable",     "case",         "catch",        "class",
