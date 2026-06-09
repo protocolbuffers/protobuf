@@ -43,7 +43,7 @@ constexpr absl::string_view kDescriptorPackageName =
 // need the PB prefix.
 // @TODO: allow ALL names for constants except for "class"
 // BEGIN VALID CONSTANT NAMES
-// @see php/update_reserved.sh - DO NOT MODIFY THIS LIST MANUALLY
+// @see php/update_reserved_words.sh - DO NOT MODIFY THIS LIST MANUALLY
 constexpr absl::string_view kValidConstantNames[] = {
     "bool",     "false",    "float",    "int",      "iterable", "mixed",
     "never",    "null",     "object",   "parent",   "readonly", "self",

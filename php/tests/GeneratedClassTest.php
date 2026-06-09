@@ -1052,7 +1052,7 @@ class GeneratedClassTest extends TestBase
         $m = new \Foo\PBARRAY();
 
         // BEGIN RESERVED NAMES
-        // @see php/update_reserved.sh - DO NOT MODIFY THIS LIST MANUALLY
+        // @see php/update_reserved_words.sh - DO NOT MODIFY THIS LIST MANUALLY
         $m = new \Lower\PBabstract();
         $m = new \Lower\PBand();
         $m = new \Lower\PBarray();

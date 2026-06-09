@@ -8,7 +8,7 @@ class UpdateReservedTest extends TestCase
     public function testBashScriptIdempotency()
     {
         $repo_root = dirname(dirname(__DIR__));
-        $script_path = $repo_root . '/php/update_reserved.sh';
+        $script_path = $repo_root . '/php/update_reserved_words.sh';
 
         $this->assertFileExists($script_path);
 
@@ -51,7 +51,7 @@ class UpdateReservedTest extends TestCase
             }
 
             $msg = "The following files were modified by the script (idempotency check failed). " .
-                   "Please run 'bash php/update_reserved.sh' to sync them: " .
+                   "Please run 'bash php/update_reserved_words.sh' to sync them: " .
                    implode(", ", $changed_files);
             $this->assertEmpty($changed_files, $msg);
         } finally {
