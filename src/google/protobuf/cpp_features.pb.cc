@@ -40,6 +40,7 @@ class CppFeatures::_Internal {
   using HasBits = decltype(::std::declval<CppFeatures>()._impl_._has_bits_);
   static constexpr ::int32_t kHasBitsOffset =
       8 * PROTOBUF_FIELD_OFFSET(CppFeatures, _impl_._has_bits_);
+
 };
 
 constexpr CppFeatures::ParseTableT_ CppFeatures::InternalGenerateParseTable_(const ::_pbi::ClassData* class_data) {
@@ -364,19 +365,18 @@ PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const CppFeatures::ParseTableT_
         CppFeatures::InternalGenerateParseTable_(CppFeatures_class_data_.base());
 #endif  // !PROTOBUF_MESSAGE_GLOBALS
 PROTOBUF_NOINLINE void CppFeatures::Clear() {
+  auto& this_ [[maybe_unused]] = *this;
   // @@protoc_insertion_point(message_clear_start:pb.CppFeatures)
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  ::uint32_t cached_has_bits = 0;
-  // Prevent compiler warnings about cached_has_bits being unused
-  (void)cached_has_bits;
+  ::uint32_t cached_has_bits [[maybe_unused]] = 0;
 
-  cached_has_bits = _impl_._has_bits_[0];
+  cached_has_bits = this_._impl_._has_bits_[0];
   if (BatchCheckHasBit(cached_has_bits, 0x0000000fU)) {
-    ::memset(
-        &_impl_.string_type_, 0,
-        static_cast<::size_t>(reinterpret_cast<char*>(&_impl_.repeated_type_) -
-                              reinterpret_cast<char*>(&_impl_.string_type_)) +
-            sizeof(_impl_.repeated_type_));
+    ::memset(&this_._impl_.string_type_, 0,
+             static_cast<::size_t>(
+                 reinterpret_cast<char*>(&this_._impl_.repeated_type_) -
+                 reinterpret_cast<char*>(&this_._impl_.string_type_)) +
+                 sizeof(_impl_.repeated_type_));
   }
   _impl_._has_bits_.Clear();
   _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
@@ -448,9 +448,7 @@ PROTOBUF_NOINLINE void CppFeatures::Clear() {
   // @@protoc_insertion_point(message_byte_size_start:pb.CppFeatures)
   ::size_t total_size = 0;
 
-  ::uint32_t cached_has_bits = 0;
-  // Prevent compiler warnings about cached_has_bits being unused
-  (void)cached_has_bits;
+  ::uint32_t cached_has_bits [[maybe_unused]] = 0;
 
   ::_pbi::Prefetch5LinesFrom7Lines(&this_);
   cached_has_bits = this_._impl_._has_bits_[0];

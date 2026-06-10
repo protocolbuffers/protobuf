@@ -138,6 +138,9 @@ class MessageGenerator {
   void GenerateIsInitialized(io::Printer* p);
   bool NeedsIsInitialized();
 
+  void EmitClearChunks(io::Printer* p, bool is_split);
+  void EmitByteSizeChunks(io::Printer* p, bool is_split);
+
   struct NewOpRequirements {
     // Some field is initialized to non-zero values. Eg string fields pointing
     // to default string.
