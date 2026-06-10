@@ -352,7 +352,7 @@ PHP_METHOD(RepeatedField, offsetSet) {
     return;
   }
 
-  if (index > size) {
+  if (index < 0 || index > size) {
     zend_error(E_USER_ERROR, "Element at index %ld doesn't exist.\n", index);
   } else if (index == size) {
     upb_Array_Append(intern->array, msgval, Arena_Get(&intern->arena));
