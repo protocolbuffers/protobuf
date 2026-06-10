@@ -10,10 +10,11 @@
 #ifndef GOOGLE_PROTOBUF_REFLECTION_H__
 #define GOOGLE_PROTOBUF_REFLECTION_H__
 
+#include <cstddef>
 #include <memory>
 #include <type_traits>
 
-#include "absl/base/attributes.h"
+#include "absl/types/span.h"
 #include "google/protobuf/generated_enum_util.h"
 #include "google/protobuf/descriptor.h"
 
@@ -29,6 +30,17 @@ namespace protobuf {
 namespace internal {
 template <typename T, typename Enable = void>
 struct RefTypeTraits;
+
+template <typename T, typename Container, typename = void>
+struct CanMakeConstSpan : std::false_type {};
+
+template <typename T, typename Container>
+struct CanMakeConstSpan<T, Container,
+                        std::void_t<decltype(absl::MakeConstSpan(
+                            std::declval<const Container&>()))>>
+    : std::is_convertible<decltype(absl::MakeConstSpan(
+                              std::declval<const Container&>())),
+                          absl::Span<const T>> {};
 }  // namespace internal
 
 class Message;
@@ -124,9 +136,15 @@ class MutableRepeatedFieldRef<
 
   template <typename Container>
   void MergeFrom(const Container& container) const {
-    typedef typename Container::const_iterator Iterator;
-    for (Iterator it = container.begin(); it != container.end(); ++it) {
-      Add(*it);
+    if constexpr (internal::CanMakeConstSpan<T, Container>::value) {
+      absl::Span<const T> span = absl::MakeConstSpan(container);
+      if (!span.empty()) {
+        accessor_->AddRange(data_, span.data(), sizeof(T), span.size());
+      }
+    } else {
+      for (const auto& value : container) {
+        Add(value);
+      }
     }
   }
   template <typename Container>
@@ -252,9 +270,15 @@ class MutableRepeatedFieldRef<
 
   template <typename Container>
   void MergeFrom(const Container& container) const {
-    typedef typename Container::const_iterator Iterator;
-    for (Iterator it = container.begin(); it != container.end(); ++it) {
-      Add(*it);
+    if constexpr (internal::CanMakeConstSpan<T, Container>::value) {
+      absl::Span<const T> span = absl::MakeConstSpan(container);
+      if (!span.empty()) {
+        accessor_->AddRange(data_, span.data(), sizeof(T), span.size());
+      }
+    } else {
+      for (const auto& value : container) {
+        Add(value);
+      }
     }
   }
   template <typename Container>
@@ -332,6 +356,9 @@ class PROTOBUF_EXPORT RepeatedFieldAccessor {
                    const Value* PROTOBUF_NONNULL value) const = 0;
   virtual void Add(Field* PROTOBUF_NONNULL data,
                    const Value* PROTOBUF_NONNULL value) const = 0;
+  virtual void AddRange(Field* PROTOBUF_NONNULL data,
+                        const Value* PROTOBUF_NONNULL values, int value_size,
+                        size_t size) const = 0;
   virtual void RemoveLast(Field* PROTOBUF_NONNULL data) const = 0;
   virtual void SwapElements(Field* PROTOBUF_NONNULL data, int index1,
                             int index2) const = 0;
