@@ -984,6 +984,12 @@ void* PROTOBUF_NONNULL Arena::Allocate(size_t n) {
   return impl_.AllocateAligned(n);
 }
 
+void* PROTOBUF_NONNULL Arena::AllocateForMessage(Arena* PROTOBUF_NULLABLE arena,
+                                                 size_t size) {
+  return arena != nullptr ? arena->AllocateAligned(size)
+                          : internal::Allocate(size);
+}
+
 void* PROTOBUF_NONNULL Arena::AllocateForArray(size_t n) {
   return impl_.AllocateAligned<internal::AllocationClient::kArray>(n);
 }
