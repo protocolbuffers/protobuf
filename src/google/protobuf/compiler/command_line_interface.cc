@@ -3076,6 +3076,16 @@ bool CommandLineInterface::GenerateCodeFromResponse(
       return false;
     }
 
+    // This is only reachable for generators that are statically linked into
+    // protoc. For subprocess plugins, their responses go through wire-format
+    // parsing which already rejects payloads > 2 GiB.
+    if (output_file.content().size() > INT_MAX) {
+      *error = absl::Substitute(
+          "$0: Generated file $1 is too large (exceeds 2 GiB limit).",
+          plugin_name, output_file.name());
+      return false;
+    }
+
     // Use CodedOutputStream for convenience; otherwise we'd need to provide
     // our own buffer-copying loop.
     io::CodedOutputStream writer(current_output.get());
