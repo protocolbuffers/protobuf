@@ -15,6 +15,9 @@ on:
         required: false
         description: "The SHA key for the commit we want to run over"
         type: string
+    secrets:
+      GAR_SERVICE_ACCOUNT:
+        required: true
   workflow_dispatch:
 
 permissions:

@@ -138,7 +138,8 @@ jobs:
       continuous-run: ${{ needs.set-vars.outputs.continuous-run }}
       safe-checkout: ${{ needs.set-vars.outputs.checkout-sha }}
       continuous-prefix: ${{ needs.set-vars.outputs.continuous-prefix }}
-    secrets: inherit
+    secrets:
+      GAR_SERVICE_ACCOUNT: ${{ secrets.GAR_SERVICE_ACCOUNT }}
 
   cpp:
     name: C++
@@ -148,7 +149,8 @@ jobs:
       continuous-run: ${{ needs.set-vars.outputs.continuous-run }}
       safe-checkout: ${{ needs.set-vars.outputs.checkout-sha }}
       continuous-prefix: ${{ needs.set-vars.outputs.continuous-prefix }}
-    secrets: inherit
+    secrets:
+      GAR_SERVICE_ACCOUNT: ${{ secrets.GAR_SERVICE_ACCOUNT }}
 
   java:
     name: Java
@@ -158,7 +160,8 @@ jobs:
       continuous-run: ${{ needs.set-vars.outputs.continuous-run }}
       safe-checkout: ${{ needs.set-vars.outputs.checkout-sha }}
       continuous-prefix: ${{ needs.set-vars.outputs.continuous-prefix }}
-    secrets: inherit
+    secrets:
+      GAR_SERVICE_ACCOUNT: ${{ secrets.GAR_SERVICE_ACCOUNT }}
 
   python:
     name: Python
@@ -168,7 +171,8 @@ jobs:
       continuous-run: ${{ needs.set-vars.outputs.continuous-run }}
       safe-checkout: ${{ needs.set-vars.outputs.checkout-sha }}
       continuous-prefix: ${{ needs.set-vars.outputs.continuous-prefix }}
-    secrets: inherit
+    secrets:
+      GAR_SERVICE_ACCOUNT: ${{ secrets.GAR_SERVICE_ACCOUNT }}
 
   ruby:
     name: Ruby
@@ -178,7 +182,8 @@ jobs:
       continuous-run: ${{ needs.set-vars.outputs.continuous-run }}
       safe-checkout: ${{ needs.set-vars.outputs.checkout-sha }}
       continuous-prefix: ${{ needs.set-vars.outputs.continuous-prefix }}
-    secrets: inherit
+    secrets:
+      GAR_SERVICE_ACCOUNT: ${{ secrets.GAR_SERVICE_ACCOUNT }}
 
   php:
     name: PHP
@@ -188,7 +193,8 @@ jobs:
       continuous-run: ${{ needs.set-vars.outputs.continuous-run }}
       safe-checkout: ${{ needs.set-vars.outputs.checkout-sha }}
       continuous-prefix: ${{ needs.set-vars.outputs.continuous-prefix }}
-    secrets: inherit
+    secrets:
+      GAR_SERVICE_ACCOUNT: ${{ secrets.GAR_SERVICE_ACCOUNT }}
 
   php-ext:
     name: PHP Extension
@@ -198,7 +204,8 @@ jobs:
       continuous-run: ${{ needs.set-vars.outputs.continuous-run }}
       safe-checkout: ${{ needs.set-vars.outputs.checkout-sha }}
       continuous-prefix: ${{ needs.set-vars.outputs.continuous-prefix }}
-    secrets: inherit
+    secrets:
+      GAR_SERVICE_ACCOUNT: ${{ secrets.GAR_SERVICE_ACCOUNT }}
 
   csharp:
     name: C#
@@ -206,7 +213,8 @@ jobs:
     uses: ./.github/workflows/test_csharp.yml
     with:
       safe-checkout: ${{ needs.set-vars.outputs.checkout-sha }}
-    secrets: inherit
+    secrets:
+      GAR_SERVICE_ACCOUNT: ${{ secrets.GAR_SERVICE_ACCOUNT }}
 
   objectivec:
     name: Objective-C
@@ -216,7 +224,8 @@ jobs:
       continuous-run: ${{ needs.set-vars.outputs.continuous-run }}
       safe-checkout: ${{ needs.set-vars.outputs.checkout-sha }}
       continuous-prefix: ${{ needs.set-vars.outputs.continuous-prefix }}
-    secrets: inherit
+    secrets:
+      GAR_SERVICE_ACCOUNT: ${{ secrets.GAR_SERVICE_ACCOUNT }}
 
   rust:
     name: Rust
@@ -224,7 +233,8 @@ jobs:
     uses: ./.github/workflows/test_rust.yml
     with:
       safe-checkout: ${{ needs.set-vars.outputs.checkout-sha }}
-    secrets: inherit
+    secrets:
+      GAR_SERVICE_ACCOUNT: ${{ secrets.GAR_SERVICE_ACCOUNT }}
 
   upb:
     name: μpb
@@ -234,7 +244,8 @@ jobs:
       continuous-run: ${{ needs.set-vars.outputs.continuous-run }}
       safe-checkout: ${{ needs.set-vars.outputs.checkout-sha }}
       continuous-prefix: ${{ needs.set-vars.outputs.continuous-prefix }}
-    secrets: inherit
+    secrets:
+      GAR_SERVICE_ACCOUNT: ${{ secrets.GAR_SERVICE_ACCOUNT }}
 
   hpb:
     name: hpb
@@ -242,7 +253,8 @@ jobs:
     uses: ./.github/workflows/test_hpb.yml
     with:
       safe-checkout: ${{ needs.set-vars.outputs.checkout-sha }}
-    secrets: inherit
+    secrets:
+      GAR_SERVICE_ACCOUNT: ${{ secrets.GAR_SERVICE_ACCOUNT }}
 
   staleness:
     name: Staleness
@@ -253,7 +265,8 @@ jobs:
     with:
       continuous-run: ${{ needs.set-vars.outputs.continuous-run }}
       safe-checkout: ${{ needs.set-vars.outputs.checkout-sha }}
-    secrets: inherit
+    secrets:
+      GAR_SERVICE_ACCOUNT: ${{ secrets.GAR_SERVICE_ACCOUNT }}
 
   # This test depends on all blocking tests and indicates whether they all suceeded.
   all-blocking-tests:

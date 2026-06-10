@@ -18,6 +18,9 @@ on:
         description: "The string continuous-only tests should be prefixed with when displaying test
           results."
         type: string
+    secrets:
+      GAR_SERVICE_ACCOUNT:
+        required: true
 
 
 permissions:
