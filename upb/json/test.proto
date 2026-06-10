@@ -10,6 +10,8 @@ syntax = "proto2";
 package upb_test;
 
 import "google/protobuf/struct.proto";
+import "google/protobuf/any.proto";
+import "google/protobuf/field_mask.proto";
 
 enum Tag {
   Z_NONE = 0;
@@ -29,4 +31,6 @@ message Box {
   optional int32 value = 9 [json_name = "old_value"];
   optional int32 new_value = 10 [json_name = "value"];
   optional bytes data = 11;
+  optional google.protobuf.Any any_val = 12;
+  optional google.protobuf.FieldMask mask_val = 13;
 }

@@ -1525,8 +1525,8 @@ namespace {
 typedef std::pair<int, const UnknownField*> IndexUnknownFieldPair;
 
 struct UnknownFieldOrdering {
-  inline bool operator()(const IndexUnknownFieldPair& a,
-                         const IndexUnknownFieldPair& b) const {
+  bool operator()(const IndexUnknownFieldPair& a,
+                  const IndexUnknownFieldPair& b) const {
     if (a.second->number() < b.second->number()) return true;
     if (a.second->number() > b.second->number()) return false;
     return a.second->type() < b.second->type();

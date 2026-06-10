@@ -25,6 +25,7 @@
 #include "absl/types/optional.h"
 #include "absl/types/span.h"
 #include "google/protobuf/compiler/cpp/field_generators/generators.h"
+#include "google/protobuf/compiler/cpp/field_layout.h"
 #include "google/protobuf/compiler/cpp/generator.h"
 #include "google/protobuf/compiler/cpp/helpers.h"
 #include "google/protobuf/compiler/cpp/options.h"
@@ -359,17 +360,12 @@ FieldGenerator::FieldGenerator(const FieldDescriptor* field,
 }
 
 void FieldGeneratorTable::Build(const Options& options,
-                                absl::Span<const int32_t> has_bit_indices) {
+                                const FieldLayout& field_layout) {
   // Construct all the FieldGenerators.
   fields_.reserve(static_cast<size_t>(descriptor_->field_count()));
   for (const auto* field : internal::FieldRange(descriptor_)) {
-    size_t index = static_cast<size_t>(field->index());
-    absl::optional<uint32_t> has_bit_index;
-    if (!has_bit_indices.empty() && has_bit_indices[index] >= 0) {
-      has_bit_index = static_cast<uint32_t>(has_bit_indices[index]);
-    }
-
-    fields_.push_back(FieldGenerator(field, options, has_bit_index));
+    fields_.push_back(
+        FieldGenerator(field, options, field_layout.GetHasBitIndex(field)));
   }
 }
 

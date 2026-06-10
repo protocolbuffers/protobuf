@@ -125,6 +125,10 @@ bool CppGenerator::GenerateImpl(const FileDescriptor* file,
     return false;
   }
 
+  if (!ValidateCcNamespace(file, error)) {
+    return false;
+  }
+
 
   FileGenerator file_generator(file, file_options);
 

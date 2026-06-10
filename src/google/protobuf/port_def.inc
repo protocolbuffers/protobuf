@@ -132,15 +132,9 @@
 // Owner: ckennelly@, mkruskal@
 #define PROTOBUF_FUTURE_ADD_NODISCARD [[nodiscard]]
 
-// Fix PyProto C++ and upb implementations to return NotImplemented in descriptor container equality checks for unrecognized types.
-// Owner: runze@
-#define PROTOBUF_FUTURE_CONTAINER_EQ_RETURNS_NOTIMPLEMENTED 1
-
 #else
 
 #define PROTOBUF_FUTURE_ADD_NODISCARD
-
-#define PROTOBUF_FUTURE_CONTAINER_EQ_RETURNS_NOTIMPLEMENTED 0
 
 #endif
 
@@ -211,6 +205,17 @@
 #elif defined(_MSC_VER)
 // Seems to have been around since at least Visual Studio 2005
 #define PROTOBUF_NOINLINE __declspec(noinline)
+#endif
+
+#ifdef PROTOBUF_MALLOC
+#error PROTOBUF_MALLOC was previously defined
+#endif
+#if defined(__GNUC__)
+#define PROTOBUF_MALLOC __attribute__((malloc))
+#elif defined(_MSC_VER) && _MSC_VER >= 1400
+#define PROTOBUF_MALLOC __declspec(restrict)
+#else
+#define PROTOBUF_MALLOC
 #endif
 
 #ifdef PROTOBUF_MUSTTAIL
@@ -363,7 +368,7 @@
 #ifdef PROTOBUF_RESTRICT
 #error PROTOBUF_RESTRICT was previously defined
 #endif
-#if defined(__clang__) || defined(__GNUC__)
+#if defined(__clang__) || defined(__GNUC__) || defined(_MSC_VER)
 #define PROTOBUF_RESTRICT __restrict
 #else
 #define PROTOBUF_RESTRICT

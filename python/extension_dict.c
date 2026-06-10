@@ -126,10 +126,14 @@ static int PyUpb_ExtensionDict_AssignSubscript(PyObject* _self, PyObject* key,
   PyUpb_ExtensionDict* self = (PyUpb_ExtensionDict*)_self;
   const upb_FieldDef* f = PyUpb_Message_GetExtensionDef(self->msg, key);
   if (!f) return -1;
+  if (PyUpb_Message_IsFrozen(self->msg)) {
+    PyErr_SetString(PyExc_TypeError, "Message is immutable.");
+    return -1;
+  }
   if (val) {
     return PyUpb_Message_SetFieldValue(self->msg, f, val, PyExc_TypeError);
   } else {
-    PyUpb_Message_DoClearField(self->msg, f);
+    if (!PyUpb_Message_DoClearField(self->msg, f)) return -1;
     return 0;
   }
 }

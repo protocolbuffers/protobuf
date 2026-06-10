@@ -12,6 +12,7 @@
 #include <utility>
 #include <vector>
 
+#include "google/protobuf/descriptor.pb.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_replace.h"
 #include "google/protobuf/compiler/code_generator.h"
@@ -329,6 +330,7 @@ bool Generator::Generate(const google::protobuf::FileDescriptor* file,
                          std::string* error) const {
   {
     bool strip_nonfunctional_codegen = false;
+    bool annotate_headers = false;
     Backend backend = Backend::UPB;
     std::vector<std::pair<std::string, std::string>> params;
     google::protobuf::compiler::ParseGeneratorParameter(parameter, &params);
@@ -338,14 +340,27 @@ bool Generator::Generate(const google::protobuf::FileDescriptor* file,
         strip_nonfunctional_codegen = true;
       } else if (pair.first == "backend" && pair.second == "cpp") {
         backend = Backend::CPP;
+      } else if (pair.first == "annotate_headers") {
+        annotate_headers = true;
       } else {
         *error = "Unknown parameter: " + pair.first;
         return false;
       }
     }
+
+    std::unique_ptr<GeneratedCodeInfo> annotations;
+    std::unique_ptr<io::AnnotationCollector> annotation_collector;
+    if (annotate_headers) {
+      annotations = std::make_unique<GeneratedCodeInfo>();
+      annotation_collector =
+          std::make_unique<io::AnnotationProtoCollector<GeneratedCodeInfo>>(
+              annotations.get());
+    }
+
     // Write model.hpb.h
     Options options = {.backend = backend,
-                       .strip_feature_includes = strip_nonfunctional_codegen};
+                       .strip_feature_includes = strip_nonfunctional_codegen,
+                       .annotation_collector = annotation_collector.get()};
     std::unique_ptr<google::protobuf::io::ZeroCopyOutputStream> header_output_stream(
         context->Open(CppHeaderFilename(file)));
     Context hdr_ctx(file, header_output_stream.get(), options);
@@ -356,6 +371,16 @@ bool Generator::Generate(const google::protobuf::FileDescriptor* file,
         context->Open(CppSourceFilename(file)));
     auto cc_ctx = Context(file, cc_output_stream.get(), options);
     WriteSource(file, cc_ctx);
+
+    if (annotate_headers) {
+      std::string meta_filename =
+          absl::StrCat(compiler::StripProto(file->name()), ".hpb.h.meta");
+      std::unique_ptr<google::protobuf::io::ZeroCopyOutputStream> meta_output_stream(
+          context->Open(meta_filename));
+      ABSL_CHECK(
+          annotations->SerializeToZeroCopyStream(meta_output_stream.get()));
+    }
+
     return true;
   }
 }

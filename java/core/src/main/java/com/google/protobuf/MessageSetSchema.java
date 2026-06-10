@@ -138,9 +138,14 @@ final class MessageSetSchema<T> implements Schema<T> {
           if (extension != null) {
             position =
                 ArrayDecoders.decodeMessageField(
-                    Protobuf.getInstance().schemaFor(
-                        extension.getMessageDefaultInstance().getClass()),
-                    data, position, limit, registers);
+                    Protobuf.getInstance()
+                        .schemaFor(
+                            ((GeneratedMessageLite<?, ?>) extension.getMessageDefaultInstance())
+                                .getClass()),
+                    data,
+                    position,
+                    limit,
+                    registers);
             extensions.setField(extension.descriptor, registers.object1);
           } else {
             position =
@@ -177,10 +182,16 @@ final class MessageSetSchema<T> implements Schema<T> {
             break;
           case WireFormat.MESSAGE_SET_MESSAGE:
             if (extension != null) {
-              position = ArrayDecoders.decodeMessageField(
-                  Protobuf.getInstance().schemaFor(
-                      extension.getMessageDefaultInstance().getClass()),
-                  data, position, limit, registers);
+              position =
+                  ArrayDecoders.decodeMessageField(
+                      Protobuf.getInstance()
+                          .schemaFor(
+                              ((GeneratedMessageLite<?, ?>) extension.getMessageDefaultInstance())
+                                  .getClass()),
+                      data,
+                      position,
+                      limit,
+                      registers);
               extensions.setField(extension.descriptor, registers.object1);
               continue;
             } else {

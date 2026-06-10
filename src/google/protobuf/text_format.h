@@ -166,6 +166,8 @@ class PROTOBUF_EXPORT TextFormat {
    public:
     virtual ~BaseTextGenerator();
 
+    virtual bool failed() const { return false; }
+
     virtual void Indent() {}
     virtual void Outdent() {}
     // Returns the current indentation size in characters.

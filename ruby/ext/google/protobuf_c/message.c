@@ -401,6 +401,9 @@ static VALUE Message_field_accessor(VALUE _self, const upb_FieldDef* f,
       if (upb_FieldDef_IsRepeated(f)) {
         // Map repeated fields to a new type with ints
         VALUE arr = rb_ary_new();
+        if (msgval.array_val == NULL) {
+          return arr;
+        }
         size_t i, n = upb_Array_Size(msgval.array_val);
         for (i = 0; i < n; i++) {
           upb_MessageValue elem = upb_Array_Get(msgval.array_val, i);

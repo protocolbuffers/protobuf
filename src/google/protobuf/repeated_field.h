@@ -104,9 +104,6 @@ constexpr int kRepeatedFieldUpperClampLimit =
 template <typename Element>
 class RepeatedIterator;
 
-// Sentinel base class.
-struct RepeatedFieldBase {};
-
 // Decays `Element` to a value type (excluding `absl::Cord` in release builds
 // to avoid a nontrivial copy). This is useful when forwarding element values
 // to user-provided callbacks, which prevents leaking a reference to the
@@ -119,38 +116,42 @@ using DecayedRepeatedFieldElement =
 
 // Align to 8 as sanitizers are picky on the alignment of containers to start at
 // 8 byte offsets even when compiling for 32 bit platforms.
-template <size_t kMinSize>
 class alignas(8) HeapRep {
  public:
-  explicit HeapRep(uint32_t capacity) : capacity_(capacity), unused_(0) {}
+  explicit HeapRep(uint32_t capacity) : capacity_(capacity) {}
   // Avoid 'implicitly deleted dtor' warnings on certain compilers.
   ~HeapRep() = delete;
 
   uint32_t capacity() const { return capacity_; }
 
-  const void* elements() const { return elements_; }
-  void* elements() { return elements_; }
+  template <typename Element>
+  const Element* elements() const {
+    const char* elements_ptr =
+        reinterpret_cast<const char*>(this) + SizeOf<Element>();
+    return reinterpret_cast<const Element*>(elements_ptr);
+  }
+  template <typename Element>
+  Element* elements() {
+    char* elements_ptr = reinterpret_cast<char*>(this) + SizeOf<Element>();
+    return reinterpret_cast<Element*>(elements_ptr);
+  }
 
   // Returns the size of the HeapRep in bytes. Do not use `sizeof(HeapRep)`,
-  // since that includes the dummy `elements_` member.
-  static constexpr size_t SizeOf() { return offsetof(HeapRep, elements_); }
-
- private:
-  union {
-    struct {
-      uint32_t capacity_;
-      [[maybe_unused]] const uint32_t unused_;
-    };
-
+  // since that does not account for the padding we insert after the data
+  // members.
+  template <typename Element>
+  static constexpr size_t SizeOf() {
     // We pad the header to be at least `sizeof(Element)` so that we have
     // power-of-two sized allocations, which enables Arena optimizations.
-    char padding_[kMinSize];
-  };
+    return std::max(sizeof(HeapRep), sizeof(Element));
+  }
 
-  // This is the start of the elements storage. We would use a flexible array
-  // member here, but that's not available in all compilers. We will not
-  // initialize this member, and `kHeapRepHeaderSize` ignores this field.
-  uint8_t elements_[1];
+ private:
+  uint32_t capacity_;
+  // Unused padding which is always present before the data. By having this
+  // field be explicitly initialized to 0, the compiler can sometimes merge
+  // writes to adjacent memory locations into a single vector store instruction.
+  [[maybe_unused]] const uint32_t unused_ = 0;
 };
 
 // We use small object optimization (SOO) to store elements inline when possible
@@ -180,7 +181,16 @@ constexpr int SooCapacityElements() {
   return std::min<int>(kSooCapacityBytes / sizeof(T), kSooSizeMask);
 }
 
-template <size_t kMinSize>
+// The in-memory layout of a repeated field. This has three states: empty, SOO,
+// and heap-allocated.
+//
+// In every state, the first 8 bytes hold the internal metadata offset and size.
+//
+// In the SOO state, the last 8 bytes hold the data (1 int64_t, 2 int32_t, 8
+// bools, etc.).
+//
+// In the heap-allocated state, the last 8 bytes hold a pointer to the
+// heap-allocated buffer of elements.
 class SooRep {
  public:
   constexpr SooRep() = default;
@@ -205,31 +215,33 @@ class SooRep {
     return heap_rep_->capacity();
   }
   // Initializes the SooRep in non-SOO mode with the given heap allocation.
-  void set_non_soo(HeapRep<kMinSize>* heap_rep) {
+  void set_non_soo(HeapRep* heap_rep) {
     resolver_.SetTag(kNotSooBit);
     heap_rep_ = heap_rep;
   }
 
-  HeapRep<kMinSize>* heap_rep() const {
+  HeapRep* heap_rep() const {
     ABSL_DCHECK(!is_soo());
     return heap_rep_;
   }
 
-  const void* elements(bool is_soo) const {
+  template <typename Element>
+  const Element* elements(bool is_soo) const {
     ABSL_DCHECK_EQ(is_soo, this->is_soo());
     if (is_soo) {
-      return soo_data_;
+      return reinterpret_cast<const Element*>(soo_data_);
     } else {
-      return heap_rep_->elements();
+      return heap_rep_->elements<Element>();
     }
   }
 
-  void* elements(bool is_soo) {
+  template <typename Element>
+  Element* elements(bool is_soo) {
     ABSL_DCHECK_EQ(is_soo, this->is_soo());
     if (is_soo) {
-      return soo_data_;
+      return reinterpret_cast<Element*>(soo_data_);
     } else {
-      return heap_rep_->elements();
+      return heap_rep_->elements<Element>();
     }
   }
 
@@ -245,7 +257,7 @@ class SooRep {
   uint32_t size_ = 0;
   union {
     char soo_data_[kSooCapacityBytes];
-    HeapRep<kMinSize>* heap_rep_;
+    HeapRep* heap_rep_;
 
     // NOTE: in some language versions, we can't have a constexpr constructor
     // if we don't initialize all fields, but we don't need to initialize this
@@ -253,6 +265,23 @@ class SooRep {
     std::true_type dummy_ = {};
   };
 };
+
+// The untyped common base class for `RepeatedField`.
+class RepeatedFieldBase {
+ protected:
+  constexpr RepeatedFieldBase() = default;
+  constexpr explicit RepeatedFieldBase(internal::InternalMetadataOffset offset)
+      : soo_rep_(
+            offset
+                .TranslateForMember<offsetof(RepeatedFieldBase, soo_rep_)>()) {}
+
+  SooRep soo_rep_;
+};
+
+// Out-of-line abort for MergeFrom self-reference. Declared here (not in the
+// call site) so that the failure path does not pull ABSL_CHECK streaming
+// support into every inlined MergeFrom instantiation.
+[[noreturn]] PROTOBUF_EXPORT void LogSelfMergeAndAbort() noexcept;
 
 }  // namespace internal
 
@@ -506,11 +535,6 @@ class ABSL_ATTRIBUTE_WARN_UNUSED PROTOBUF_DECLSPEC_EMPTY_BASES
 
  private:
   using InternalArenaConstructable_ = void;
-  // We use std::max in order to share template instantiations between
-  // different element types.
-  static constexpr size_t kMinHeapRepSize =
-      std::max<size_t>(sizeof(Element), 8);
-  using HeapRep = internal::HeapRep<kMinHeapRepSize>;
 
   template <typename T>
   friend class Arena::InternalHelper;
@@ -537,7 +561,8 @@ class ABSL_ATTRIBUTE_WARN_UNUSED PROTOBUF_DECLSPEC_EMPTY_BASES
       internal::SooCapacityElements<Element>();
 
   static constexpr int kInitialSize = 0;
-  static constexpr const size_t kHeapRepHeaderSize = HeapRep::SizeOf();
+  static constexpr const size_t kHeapRepHeaderSize =
+      internal::HeapRep::SizeOf<Element>();
 
   explicit constexpr RepeatedField(internal::InternalMetadataOffset offset);
   RepeatedField(internal::InternalMetadataOffset offset,
@@ -651,8 +676,7 @@ class ABSL_ATTRIBUTE_WARN_UNUSED PROTOBUF_DECLSPEC_EMPTY_BASES
   void AnnotateSize(int old_size, int new_size) const {
     if (old_size != new_size) {
       [[maybe_unused]] const bool is_soo = this->is_soo();
-      [[maybe_unused]] const Element* elem =
-          reinterpret_cast<const Element*>(soo_rep_.elements(is_soo));
+      [[maybe_unused]] const Element* elem = soo_rep_.elements<Element>(is_soo);
       ABSL_ANNOTATE_CONTIGUOUS_CONTAINER(elem, elem + Capacity(is_soo),
                                          elem + old_size, elem + new_size);
       if (new_size < old_size) {
@@ -684,22 +708,23 @@ class ABSL_ATTRIBUTE_WARN_UNUSED PROTOBUF_DECLSPEC_EMPTY_BASES
     return unsafe_elements(is_soo);
   }
   const Element* elements(bool is_soo) const {
-    return const_cast<RepeatedField*>(this)->elements(is_soo);
+    ABSL_DCHECK_GT(Capacity(is_soo), 0);
+    return unsafe_elements(is_soo);
   }
 
   // Returns a pointer to elements array if it exists; otherwise an invalid
   // pointer is returned. This only happens for empty repeated fields, where you
   // can't dereference this pointer anyway (it's empty).
   Element* unsafe_elements(bool is_soo) {
-    return reinterpret_cast<Element*>(soo_rep_.elements(is_soo));
+    return soo_rep_.elements<Element>(is_soo);
   }
   const Element* unsafe_elements(bool is_soo) const {
-    return const_cast<RepeatedField*>(this)->unsafe_elements(is_soo);
+    return soo_rep_.elements<Element>(is_soo);
   }
 
   // Returns a pointer to the HeapRep struct.
   // pre-condition: the HeapRep must have been allocated, ie !is_soo().
-  HeapRep* heap_rep() const {
+  internal::HeapRep* heap_rep() const {
     ABSL_DCHECK(!is_soo());
     return soo_rep_.heap_rep();
   }
@@ -727,18 +752,6 @@ class ABSL_ATTRIBUTE_WARN_UNUSED PROTOBUF_DECLSPEC_EMPTY_BASES
       }
     }
   }
-
-  // A note on the representation here (see also comment below for
-  // RepeatedPtrFieldBase's struct HeapRep):
-  //
-  // We maintain the same sizeof(RepeatedField) as before we added arena support
-  // so that we do not degrade performance by bloating memory usage. Directly
-  // adding an arena_ element to RepeatedField is quite costly. By using
-  // indirection in this way, we keep the same size when the RepeatedField is
-  // empty (common case), and add only an 8-byte header to the elements array
-  // when non-empty. We make sure to place the size fields directly in the
-  // RepeatedField class to avoid costly cache misses due to the indirection.
-  internal::SooRep<kMinHeapRepSize> soo_rep_;
 };
 
 namespace internal {
@@ -781,7 +794,13 @@ constexpr RepeatedField<Element>::RepeatedField() {
 template <typename Element>
 constexpr RepeatedField<Element>::RepeatedField(
     internal::InternalMetadataOffset offset)
-    : soo_rep_(offset.TranslateForMember<offsetof(RepeatedField, soo_rep_)>()) {
+    : RepeatedFieldBase(offset) {
+  static_assert(
+      sizeof(RepeatedField) == sizeof(RepeatedFieldBase),
+      "Since we are passing an `InternalMetadataOffset` for this "
+      "`RepeatedField` to the `RepeatedFieldBase` constructor, "
+      "`RepeatedFieldBase` must have the same start address as `this`. We can "
+      "validate this by checking that the two types have the same size.");
   StaticValidityCheck();
 #ifdef __cpp_lib_is_constant_evaluated
   if (!std::is_constant_evaluated()) {
@@ -1228,7 +1247,9 @@ inline void RepeatedField<Element>::Clear() {
 
 template <typename Element>
 inline void RepeatedField<Element>::MergeFrom(const RepeatedField& other) {
-  ABSL_DCHECK_NE(&other, this);
+  if (ABSL_PREDICT_FALSE(&other == this)) {
+    PROTOBUF_NO_MERGE internal::LogSelfMergeAndAbort();
+  }
   const bool other_is_soo = other.is_soo();
   if (auto other_size = other.size()) {
     const int old_size = size();
@@ -1528,7 +1549,7 @@ PROTOBUF_NOINLINE void RepeatedField<Element>::GrowNoAnnotate(
   ABSL_DCHECK_EQ(ResolveArena(arena_provider), GetSerialArena());
   const int old_capacity = Capacity(was_soo);
   ABSL_DCHECK_GT(new_size, old_capacity);
-  HeapRep* new_rep;
+  internal::HeapRep* new_rep;
 
   new_size = internal::CalculateReserveSize<Element, kHeapRepHeaderSize>(
       old_capacity, new_size);
@@ -1549,7 +1570,7 @@ PROTOBUF_NOINLINE void RepeatedField<Element>::GrowNoAnnotate(
         std::min((res.n - kHeapRepHeaderSize) / sizeof(Element),
                  static_cast<size_t>(std::numeric_limits<int>::max()));
     new_size = static_cast<int>(num_available);
-    new_rep = new (res.p) HeapRep(new_size);
+    new_rep = new (res.p) internal::HeapRep(new_size);
   } else {
     if constexpr (internal::ArenaAlignDefault::Ceil(sizeof(Element)) !=
                   sizeof(Element)) {
@@ -1558,11 +1579,11 @@ PROTOBUF_NOINLINE void RepeatedField<Element>::GrowNoAnnotate(
     }
     new_rep =
         new (arena->AllocateAligned<internal::AllocationClient::kArray>(bytes))
-            HeapRep(new_size);
+            internal::HeapRep(new_size);
   }
 
   if (old_size > 0) {
-    Element* pnew = static_cast<Element*>(new_rep->elements());
+    Element* pnew = new_rep->elements<Element>();
     Element* pold = elements(was_soo);
     if constexpr (std::is_trivially_copyable<Element>::value ||
                   absl::is_trivially_relocatable<Element>::value) {

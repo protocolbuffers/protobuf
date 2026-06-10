@@ -300,11 +300,15 @@ absl::Status UntypedMessage::Decode(io::CodedInputStream& stream,
         if (field->proto().kind() != Field::TYPE_GROUP) {
           return MakeFieldNotGroupError(field->proto().number());
         }
+        if (!stream.IncrementRecursionDepth()) {
+          return MakeTooDeepError();
+        }
         auto group_desc = field->MessageType();
         RETURN_IF_ERROR(group_desc.status());
 
         UntypedMessage group(*group_desc);
         RETURN_IF_ERROR(group.Decode(stream, field_number));
+        stream.DecrementRecursionDepth();
         RETURN_IF_ERROR(InsertField(*field, std::move(group)));
         break;
       }

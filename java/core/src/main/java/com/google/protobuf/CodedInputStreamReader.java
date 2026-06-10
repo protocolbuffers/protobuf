@@ -143,11 +143,13 @@ final class CodedInputStreamReader implements Reader {
     return input.readStringRequireUtf8();
   }
 
+  @SuppressWarnings("unchecked")
   @Override
   public <T> T readMessage(Class<T> clazz, ExtensionRegistryLite extensionRegistry)
       throws IOException {
     requireWireType(WIRETYPE_LENGTH_DELIMITED);
-    return readMessage(Protobuf.getInstance().schemaFor(clazz), extensionRegistry);
+    return readMessage(
+        (Schema<T>) Protobuf.getInstance().schemaFor((Class) clazz), extensionRegistry);
   }
 
   @SuppressWarnings("unchecked")
@@ -158,12 +160,14 @@ final class CodedInputStreamReader implements Reader {
     return readMessage(schema, extensionRegistry);
   }
 
+  @SuppressWarnings("unchecked")
   @Deprecated
   @Override
   public <T> T readGroup(Class<T> clazz, ExtensionRegistryLite extensionRegistry)
       throws IOException {
     requireWireType(WIRETYPE_START_GROUP);
-    return readGroup(Protobuf.getInstance().schemaFor(clazz), extensionRegistry);
+    return readGroup(
+        (Schema<T>) Protobuf.getInstance().schemaFor((Class) clazz), extensionRegistry);
   }
 
   @Deprecated
@@ -787,11 +791,12 @@ final class CodedInputStreamReader implements Reader {
     }
   }
 
+  @SuppressWarnings("unchecked")
   @Override
   public <T> void readMessageList(
       List<T> target, Class<T> targetType, ExtensionRegistryLite extensionRegistry)
       throws IOException {
-    final Schema<T> schema = Protobuf.getInstance().schemaFor(targetType);
+    final Schema<T> schema = (Schema<T>) Protobuf.getInstance().schemaFor((Class) targetType);
     readMessageList(target, schema, extensionRegistry);
   }
 
@@ -817,12 +822,13 @@ final class CodedInputStreamReader implements Reader {
     }
   }
 
+  @SuppressWarnings("unchecked")
   @Deprecated
   @Override
   public <T> void readGroupList(
       List<T> target, Class<T> targetType, ExtensionRegistryLite extensionRegistry)
       throws IOException {
-    final Schema<T> schema = Protobuf.getInstance().schemaFor(targetType);
+    final Schema<T> schema = (Schema<T>) Protobuf.getInstance().schemaFor((Class) targetType);
     readGroupList(target, schema, extensionRegistry);
   }
 

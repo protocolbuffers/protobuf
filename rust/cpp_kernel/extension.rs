@@ -8,7 +8,7 @@
 use super::*;
 use crate::__internal::entity_tag::*;
 use crate::__internal::runtime::_opaque_pointees::RawRepeatedFieldData;
-use crate::__internal::{EntityType, Enum, MatcherEq, Private, Singular};
+use crate::__internal::{EntityType, Enum, Private, Singular};
 use crate::extension::{ExtAccess, ExtClear, ExtGetMut, ExtHas};
 use crate::{ExtensionId, IntoMut, IntoView, MessageViewInterop, Proxied};
 

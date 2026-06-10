@@ -72,7 +72,7 @@ const upb_MiniTable google__protobuf__compiler__CodeGeneratorRequest_msg_init = 
     {0x0000000000000000, &_upb_FastDecoder_DecodeUnknown},
     {0x002000003f00000a, &upb_DecodeFast_Bytes_Repeated_Tag1Byte},
     {0x0010000000000012, &upb_DecodeFast_Bytes_Scalar_Tag1Byte},
-    {0x002800000102001a, &upb_DecodeFast_Message_Scalar_Tag1Byte},
+    {0x002800000108001a, &upb_DecodeFast_Message_Scalar_Tag1Byte},
     {0x0000000000000000, &_upb_FastDecoder_DecodeUnknown},
     {0x0000000000000000, &_upb_FastDecoder_DecodeUnknown},
     {0x0000000000000000, &_upb_FastDecoder_DecodeUnknown},
@@ -84,9 +84,9 @@ const upb_MiniTable google__protobuf__compiler__CodeGeneratorRequest_msg_init = 
     {0x0000000000000000, &_upb_FastDecoder_DecodeUnknown},
     {0x0000000000000000, &_upb_FastDecoder_DecodeUnknown},
     {0x0000000000000000, &_upb_FastDecoder_DecodeUnknown},
-    {0x003000003f03007a, &upb_DecodeFast_Message_Repeated_Tag1Byte},
+    {0x003000003f09007a, &upb_DecodeFast_Message_Repeated_Tag1Byte},
     {0x0000000000000000, &_upb_FastDecoder_DecodeUnknown},
-    {0x003800003f04018a, &upb_DecodeFast_Message_Repeated_Tag2Byte},
+    {0x003800003f0a018a, &upb_DecodeFast_Message_Repeated_Tag2Byte},
     {0x0000000000000000, &_upb_FastDecoder_DecodeUnknown},
     {0x0000000000000000, &_upb_FastDecoder_DecodeUnknown},
     {0x0000000000000000, &_upb_FastDecoder_DecodeUnknown},
@@ -142,7 +142,7 @@ const upb_MiniTable google__protobuf__compiler__CodeGeneratorResponse_msg_init =
     {0x0000000000000000, &_upb_FastDecoder_DecodeUnknown},
     {0x0000000000000000, &_upb_FastDecoder_DecodeUnknown},
     {0x0000000000000000, &_upb_FastDecoder_DecodeUnknown},
-    {0x003000003f04007a, &upb_DecodeFast_Message_Repeated_Tag1Byte},
+    {0x003000003f08007a, &upb_DecodeFast_Message_Repeated_Tag1Byte},
   })
 };
 
@@ -184,7 +184,7 @@ const upb_MiniTable google__protobuf__compiler__CodeGeneratorResponse__File_msg_
     {0x0000000000000000, &_upb_FastDecoder_DecodeUnknown},
     {0x0000000000000000, &_upb_FastDecoder_DecodeUnknown},
     {0x003000000200007a, &upb_DecodeFast_Bytes_Scalar_Tag1Byte},
-    {0x0040000003030182, &upb_DecodeFast_Message_Scalar_Tag2Byte},
+    {0x0040000003060182, &upb_DecodeFast_Message_Scalar_Tag2Byte},
     {0x0000000000000000, &_upb_FastDecoder_DecodeUnknown},
     {0x0000000000000000, &_upb_FastDecoder_DecodeUnknown},
     {0x0000000000000000, &_upb_FastDecoder_DecodeUnknown},

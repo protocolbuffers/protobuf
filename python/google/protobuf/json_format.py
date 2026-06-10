@@ -26,6 +26,7 @@ from operator import methodcaller
 import re
 
 from google.protobuf import descriptor
+from google.protobuf import descriptor_pool
 from google.protobuf import message_factory
 from google.protobuf import symbol_database
 from google.protobuf.internal import type_checkers
@@ -288,6 +289,9 @@ class _Printer(object):
         return None
       enum_value = field.enum_type.values_by_number.get(value, None)
       if enum_value is not None:
+        option = _GetJsonEnumValueOption(enum_value)
+        if option is not None:
+          return option.string
         return enum_value.name
       else:
         if field.enum_type.is_closed:
@@ -902,6 +906,25 @@ class _Parser(object):
       if not self.ignore_unknown_fields:
         raise
 
+def _GetJsonEnumValueOption(ev):
+  """Helper to get the JsonEnumValueOptions for an enum value.
+
+  Args:
+    ev: The EnumValueDescriptor.
+
+  Returns:
+    The JsonEnumValueOptions message if the extension is present,
+    otherwise None.
+  """
+  try:
+    extension_descriptor = descriptor_pool.Default().FindExtensionByName(
+        'pb.enumvalue.json'
+    )
+  except KeyError:
+    return None
+  if ev.GetOptions().HasExtension(extension_descriptor):
+    return ev.GetOptions().Extensions[extension_descriptor]
+  return None
 
 def _ConvertScalarFieldValue(value, field, path, require_str=False):
   """Convert a single scalar field value.
@@ -944,6 +967,14 @@ def _ConvertScalarFieldValue(value, field, path, require_str=False):
     elif field.cpp_type == descriptor.FieldDescriptor.CPPTYPE_ENUM:
       # Convert an enum value.
       enum_value = field.enum_type.values_by_name.get(value, None)
+      # First check to see if we have a custom enum string.
+      if enum_value is None:
+        for ev in field.enum_type.values:
+          option = _GetJsonEnumValueOption(ev)
+          if option is not None and option.string == value:
+            enum_value = ev
+            break
+      # If not, try parsing it as an integer.
       if enum_value is None:
         try:
           number = int(value)

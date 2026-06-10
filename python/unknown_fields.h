@@ -8,6 +8,9 @@
 #ifndef PYUPB_UNKNOWN_FIELDS_H__
 #define PYUPB_UNKNOWN_FIELDS_H__
 
+// clang-format off
+#include "Python.h"
+// clang-format on
 #include <stdbool.h>
 
 #include "python/python_api.h"
