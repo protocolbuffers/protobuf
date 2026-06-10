@@ -15,6 +15,7 @@ import warnings
 from google.protobuf import descriptor
 from google.protobuf import descriptor_pb2
 from google.protobuf import descriptor_pool
+from google.protobuf import message
 from google.protobuf import symbol_database
 from google.protobuf import text_format
 from google.protobuf.internal import api_implementation
@@ -293,7 +294,7 @@ class DescriptorTest(unittest.TestCase):
       'Needs to wait for a breaking change release in OSS'
   )
   def testModifyFrozenMessage(self):
-    immutability_error = TypeError
+    immutability_error = message.FrozenInstanceError
     message_options = self.my_message.GetOptions()
     other_options = descriptor_pb2.MessageOptions()
     other_options.deprecated = True

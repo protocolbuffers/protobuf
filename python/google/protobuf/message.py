@@ -32,6 +32,12 @@ class EncodeError(Error):
   pass
 
 
+class FrozenInstanceError(AttributeError):
+  """Exception raised when mutating a frozen message."""
+
+  pass
+
+
 class Message(object):
   """Abstract base class for protocol messages.
 

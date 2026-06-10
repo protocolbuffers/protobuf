@@ -536,6 +536,16 @@ bool PyUpb_IndexToRange(PyObject* index, Py_ssize_t size, Py_ssize_t* i,
   return true;
 }
 
+PyObject* PyUpb_SetFrozenErrorWithMsg(const char* msg) {
+  PyUpb_ModuleState* state = PyUpb_ModuleState_Get();
+  PyErr_SetString(state->frozen_instance_error_class, msg);
+  return NULL;
+}
+
+PyObject* PyUpb_SetFrozenError(void) {
+  return PyUpb_SetFrozenErrorWithMsg("Message is immutable.");
+}
+
 // -----------------------------------------------------------------------------
 // Module Entry Point
 // -----------------------------------------------------------------------------

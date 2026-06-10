@@ -39,6 +39,7 @@ _K = TypeVar('_K')
 _V = TypeVar('_V')
 
 from google.protobuf.descriptor import FieldDescriptor
+from google.protobuf import message
 
 
 class BaseContainer(Sequence[_T]):
@@ -89,7 +90,7 @@ class BaseContainer(Sequence[_T]):
 
   def _AssureWritable(self) -> 'BaseContainer[_T]':
     if self._frozen:
-      raise TypeError('Container is immutable')
+      raise message.FrozenInstanceError('Container is immutable')
     return self
 
   def sort(self, *args, **kwargs) -> None:
@@ -447,7 +448,7 @@ class ScalarMap(MutableMapping[_K, _V]):
 
   def _AssureWritable(self) -> 'ScalarMap[_K, _V]':
     if self._frozen:
-      raise TypeError('Map is frozen')
+      raise message.FrozenInstanceError('Map is immutable')
     return self
 
   def __getitem__(self, key: _K) -> _V:
@@ -579,7 +580,7 @@ class MessageMap(MutableMapping[_K, _V]):
 
   def _AssureWritable(self) -> 'MessageMap[_K, _V]':
     if self._frozen:
-      raise TypeError('Map is immutable')
+      raise message.FrozenInstanceError('Map is immutable')
     return self
 
   def __getitem__(self, key: _K) -> _V:

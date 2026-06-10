@@ -353,6 +353,14 @@ bool CheckFieldBelongsToMessage(const FieldDescriptor* field_descriptor,
 
 extern PyObject* PickleError_class;
 
+extern PyObject* FrozenInstanceError_class;
+// Sets a Python FrozenInstanceError with the given message and returns nullptr.
+PyObject* SetFrozenError(const char* msg);
+
+// Sets a Python FrozenInstanceError with the default error message for messages
+// type and returns nullptr.
+PyObject* SetMessageFrozenError();
+
 PyObject* PyMessage_New(const Descriptor* descriptor,
                         PyObject* py_message_factory);
 const Message* PyMessage_GetMessagePointer(PyObject* msg);
