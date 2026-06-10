@@ -33,6 +33,49 @@ static upb_test_Box* JsonDecode(const char* json, upb_Arena* a) {
   return ok ? box : nullptr;
 }
 
+struct DenyAlloc {
+  upb_alloc alloc;
+};
+
+static void* DenyAllocFunc(upb_alloc* alloc, void* ptr, size_t oldsize,
+                           size_t size, size_t* actual_size) {
+  (void)alloc;
+  (void)ptr;
+  (void)oldsize;
+  (void)size;
+  (void)actual_size;
+  return nullptr;
+}
+
+static bool JsonDecodeWithFixedArena(const std::string& json, size_t arena_size,
+                                     std::string* error) {
+  DenyAlloc deny = {{DenyAllocFunc}};
+  std::vector<char> arena_mem(arena_size);
+  upb_Arena* arena =
+      upb_Arena_Init(arena_mem.data(), arena_mem.size(), &deny.alloc);
+  EXPECT_NE(arena, nullptr);
+  if (!arena) return false;
+
+  upb::Status status;
+  upb::DefPool defpool;
+  upb::MessageDefPtr m(upb_test_Box_getmsgdef(defpool.ptr()));
+  EXPECT_TRUE(m.ptr() != nullptr);
+
+  upb::Arena msg_arena;
+  upb_test_Box* box = upb_test_Box_new(msg_arena.ptr());
+  EXPECT_NE(box, nullptr);
+  if (!box) {
+    upb_Arena_Free(arena);
+    return false;
+  }
+
+  bool ok = upb_JsonDecode(json.data(), json.size(), UPB_UPCAST(box), m.ptr(),
+                           defpool.ptr(), 0, arena, status.ptr());
+  if (error) *error = upb_Status_ErrorMessage(status.ptr());
+  upb_Arena_Free(arena);
+  return ok;
+}
+
 struct FloatTest {
   const std::string json;
   float f;
@@ -109,4 +152,26 @@ TEST(JsonTest, RejectsBase64WithHighBitBytes) {
   std::string json_string = R"({"data":"\u0080\u0080\u0080\u0080"})";
   upb_test_Box* box = JsonDecode(json_string.c_str(), a.ptr());
   EXPECT_EQ(box, nullptr);
+}
+
+TEST(JsonTest, FixedArenaOomFailsGracefullyForWellKnownTypes) {
+  const std::string long_path(4096, 'A');
+  const std::string long_string(4096, 'x');
+  const std::string many_nulls =
+      "null,null,null,null,null,null,null,null,null,null,null,null,null,null";
+  const std::vector<std::string> json_inputs = {
+      "{\"mask\":\"" + long_path + "\"}",
+      "{\"val\":[" + many_nulls + "]}",
+      "{\"val\":{\"a\":null,\"b\":null,\"c\":null,\"d\":null,\"e\":null,"
+      "\"f\":null,\"g\":null,\"h\":null}}",
+      "{\"any\":{\"value\":\"" + long_string +
+          "\",\"@type\":\"type.googleapis.com/google.protobuf.FieldMask\"}}",
+  };
+
+  for (const auto& json : json_inputs) {
+    SCOPED_TRACE(json);
+    std::string error;
+    EXPECT_FALSE(JsonDecodeWithFixedArena(json, 512, &error));
+    EXPECT_NE(error.find("Out of memory"), std::string::npos) << error;
+  }
 }
