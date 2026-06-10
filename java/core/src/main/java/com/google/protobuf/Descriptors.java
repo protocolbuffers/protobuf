@@ -975,6 +975,11 @@ public final class Descriptors {
       return fields[index];
     }
 
+    /** Get the message type's fields sorted by field number. */
+    FieldDescriptor[] getFieldsSortedByNumberArray() {
+      return fieldsSortedByNumber;
+    }
+
     /** Get a list of this message type's oneofs. */
     public List<OneofDescriptor> getOneofs() {
       return Collections.unmodifiableList(Arrays.asList(oneofs));

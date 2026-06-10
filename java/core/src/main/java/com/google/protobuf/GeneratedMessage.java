@@ -127,9 +127,10 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
    *
    * @param getBytesForString whether to generate ByteString for string fields
    */
-  private Map<FieldDescriptor, Object> getAllFieldsMutable(boolean getBytesForString) {
-    final TreeMap<FieldDescriptor, Object> result = new TreeMap<>();
+  private FieldDescriptorArrayMap<FieldDescriptor> getAllFieldsMutable(boolean getBytesForString) {
     final FieldAccessorTable fieldAccessorTable = internalGetFieldAccessorTable();
+    final FieldDescriptorArrayMap<FieldDescriptor> result =
+        new FieldDescriptorArrayMap<>(fieldAccessorTable.fields.length);
 
     final Descriptor descriptor = fieldAccessorTable.descriptor;
     final List<FieldDescriptor> fields = descriptor.getFields();
@@ -207,7 +208,10 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
 
   @Override
   public Map<FieldDescriptor, Object> getAllFields() {
-    return Collections.unmodifiableMap(getAllFieldsMutable(/* getBytesForString= */ false));
+    FieldDescriptorArrayMap<FieldDescriptor> result =
+        getAllFieldsMutable(/* getBytesForString= */ false);
+    result.makeImmutable();
+    return result;
   }
 
   /**
@@ -219,7 +223,10 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
    * fields in order by field number.
    */
   Map<FieldDescriptor, Object> getAllFieldsRaw() {
-    return Collections.unmodifiableMap(getAllFieldsMutable(/* getBytesForString= */ true));
+    FieldDescriptorArrayMap<FieldDescriptor> result =
+        getAllFieldsMutable(/* getBytesForString= */ true);
+    result.makeImmutable();
+    return result;
   }
 
   @Override
@@ -594,13 +601,16 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
 
     @Override
     public Map<FieldDescriptor, Object> getAllFields() {
-      return Collections.unmodifiableMap(getAllFieldsMutable());
+      FieldDescriptorArrayMap<FieldDescriptor> result = getAllFieldsMutable();
+      result.makeImmutable();
+      return result;
     }
 
     /** Internal helper which returns a mutable map. */
-    private Map<FieldDescriptor, Object> getAllFieldsMutable() {
-      final TreeMap<FieldDescriptor, Object> result = new TreeMap<>();
+    private FieldDescriptorArrayMap<FieldDescriptor> getAllFieldsMutable() {
       final FieldAccessorTable fieldAccessorTable = internalGetFieldAccessorTable();
+      final FieldDescriptorArrayMap<FieldDescriptor> result =
+          new FieldDescriptorArrayMap<>(fieldAccessorTable.fields.length);
       final Descriptor descriptor = fieldAccessorTable.descriptor;
       final List<FieldDescriptor> fields = descriptor.getFields();
 
@@ -1277,18 +1287,20 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
 
     @Override
     public Map<FieldDescriptor, Object> getAllFields() {
-      final Map<FieldDescriptor, Object> result =
+      final FieldDescriptorArrayMap<FieldDescriptor> result =
           super.getAllFieldsMutable(/* getBytesForString= */ false);
       result.putAll(getExtensionFields());
-      return Collections.unmodifiableMap(result);
+      result.makeImmutable();
+      return result;
     }
 
     @Override
     public Map<FieldDescriptor, Object> getAllFieldsRaw() {
-      final Map<FieldDescriptor, Object> result =
+      final FieldDescriptorArrayMap<FieldDescriptor> result =
           super.getAllFieldsMutable(/* getBytesForString= */ false);
       result.putAll(getExtensionFields());
-      return Collections.unmodifiableMap(result);
+      result.makeImmutable();
+      return result;
     }
 
     @Override
@@ -1637,11 +1649,12 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
 
     @Override
     public Map<FieldDescriptor, Object> getAllFields() {
-      final Map<FieldDescriptor, Object> result = super.getAllFieldsMutable();
+      final FieldDescriptorArrayMap<FieldDescriptor> result = super.getAllFieldsMutable();
       if (extensions != null) {
         result.putAll(extensions.getAllFields());
       }
-      return Collections.unmodifiableMap(result);
+      result.makeImmutable();
+      return result;
     }
 
     @Override
