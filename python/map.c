@@ -234,6 +234,7 @@ static int PyUpb_MapContainer_Contains(PyObject* _self, PyObject* key) {
 static PyObject* PyUpb_MapContainer_Clear(PyObject* _self, PyObject* key) {
   upb_Map* map = PyUpb_MapContainer_AssureWritable(_self);
   if (!map) return NULL;
+  // TODO: b/517235198 - Reify even for empty sequences.
   if (upb_Map_Size(map) > 0) {
     upb_Map_Clear(map);
   }
@@ -575,7 +576,6 @@ bool PyUpb_Map_Init(PyObject* m) {
   state->map_iterator_type = PyUpb_AddClass(m, &PyUpb_MapIterator_Spec);
 
   Py_DECREF(base);
-  Py_DECREF(methods);
 
   return state->message_map_container_type &&
          state->scalar_map_container_type && state->map_iterator_type;

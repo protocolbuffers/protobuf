@@ -356,21 +356,42 @@ Error, UINTPTR_MAX is undefined
 #endif
 
 #if defined(__GNUC__) || defined(__clang__)
-#define UPB_UNREACHABLE()    \
-  do {                       \
-    assert(0);               \
-    __builtin_unreachable(); \
+#define UPB_PRETTY_FUNCTION __PRETTY_FUNCTION__
+#else
+#define UPB_PRETTY_FUNCTION NULL
+#endif
+
+#ifdef __cplusplus
+    extern "C" {
+#endif
+  UPB_NORETURN void _upb_UnreachableFailure(const char* file, int line,
+                                            const char* function_name);
+#if !defined(NDEBUG)
+#define UPB_UNREACHABLE_FAILURE() \
+  _upb_UnreachableFailure(__FILE__, __LINE__, UPB_PRETTY_FUNCTION);
+#else
+#define UPB_UNREACHABLE_FAILURE()
+#endif
+#ifdef __cplusplus
+} /* extern "C" */
+#endif
+
+#if defined(__GNUC__) || defined(__clang__)
+#define UPB_UNREACHABLE()      \
+  do {                         \
+    UPB_UNREACHABLE_FAILURE(); \
+    __builtin_unreachable();   \
   } while (0)
 #elif defined(_MSC_VER)
-#define UPB_UNREACHABLE() \
-  do {                    \
-    assert(0);            \
-    __assume(0);          \
+#define UPB_UNREACHABLE()      \
+  do {                         \
+    UPB_UNREACHABLE_FAILURE(); \
+    __assume(0);               \
   } while (0)
 #else
-#define UPB_UNREACHABLE() \
-  do {                    \
-    assert(0);            \
+#define UPB_UNREACHABLE()      \
+  do {                         \
+    UPB_UNREACHABLE_FAILURE(); \
   } while (0)
 #endif
 
@@ -670,10 +691,10 @@ Error, UINTPTR_MAX is undefined
  * to prevent optimizers from removing the constructor. Our solution is to
  * create a dummy exported weak symbol that prevent this stripping.
  */
-#pragma section(".CRT$XCU", long, read)
+#pragma section(".CRT$XCT", read)
 #define UPB_CONSTRUCTOR(name, unique_name)                                   \
   static void __cdecl UPB_PRIVATE(name)(void);                               \
-  __declspec(allocate(".CRT$XCU"), selectany) void(                          \
+  __declspec(allocate(".CRT$XCT"), selectany) void(                          \
       __cdecl * UPB_PRIVATE(name##_))(void) = UPB_PRIVATE(name);             \
   __declspec(selectany, dllexport) void* UPB_PRIVATE(name##_force_linkage) = \
       &UPB_PRIVATE(name##_);                                                 \
@@ -717,7 +738,7 @@ Error, UINTPTR_MAX is undefined
   __asm__(".private_extern _" #to);      \
   __asm__(".set _" #to ", _" #from);
 
-#elif defined(__ELF__)
+#elif defined(__ELF__) || defined(__wasm__)
 
 // On ELF, weak aliases work properly, so we can have all weak MiniTables point
 // to the same empty singleton MiniTable. This reduces code size if many
@@ -746,33 +767,6 @@ Error, UINTPTR_MAX is undefined
 #define UPB_WEAK_ALIAS(type, from, to) weak_alias_not_supported_on_this_platform
 #define UPB_STRONG_ALIAS(type, from, to) \
   strong_alias_not_supported_on_this_platform
-#endif
-
-// Future versions of upb will include breaking changes to some APIs.
-// This macro can be set to enable these API changes ahead of time, so that
-// user code can be updated before upgrading versions of protobuf.
-#ifdef UPB_FUTURE_BREAKING_CHANGES
-
-// Removes non-standard clamping behavior in RepeatedContainer.pop()
-// Owner: runze@
-#define UPB_FUTURE_REMOVE_POP_CLAMP 1
-
-// Fix PyProto C++ and upb implementations to return NotImplemented in
-// descriptor container equality checks for unrecognized types.
-// Owner: runze@
-#define UPB_FUTURE_CONTAINER_EQ_RETURNS_NOTIMPLEMENTED 1
-
-// Make GetOptions() return immutable options.
-// Owner: runze@
-#define UPB_FUTURE_FREEZE_OPTIONS 1
-
-#else
-
-#define UPB_FUTURE_REMOVE_POP_CLAMP 0
-
-#define UPB_FUTURE_CONTAINER_EQ_RETURNS_NOTIMPLEMENTED 0
-
-#define UPB_FUTURE_FREEZE_OPTIONS 0
 
 #endif
 
@@ -809,7 +803,7 @@ const upb_MiniTable google__protobuf__FileDescriptorSet_msg_init = {
 #endif
   UPB_FASTTABLE_INIT({
     {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
-    {0x000800003f00000a, &upb_DecodeFast_Message_Repeated_Tag1Byte},
+    {0x000800003f02000a, &upb_DecodeFast_Message_Repeated_Tag1Byte},
   })
 };
 
@@ -855,17 +849,17 @@ const upb_MiniTable google__protobuf__FileDescriptorProto_msg_init = {
     {0x001000000000000a, &upb_DecodeFast_Bytes_Scalar_Tag1Byte},
     {0x0020000001000012, &upb_DecodeFast_Bytes_Scalar_Tag1Byte},
     {0x004000003f00001a, &upb_DecodeFast_Bytes_Repeated_Tag1Byte},
-    {0x004800003f030022, &upb_DecodeFast_Message_Repeated_Tag1Byte},
-    {0x005000003f04002a, &upb_DecodeFast_Message_Repeated_Tag1Byte},
-    {0x005800003f050032, &upb_DecodeFast_Message_Repeated_Tag1Byte},
-    {0x006000003f06003a, &upb_DecodeFast_Message_Repeated_Tag1Byte},
-    {0x0068000002070042, &upb_DecodeFast_Message_Scalar_Tag1Byte},
-    {0x007000000308004a, &upb_DecodeFast_Message_Scalar_Tag1Byte},
+    {0x004800003f150022, &upb_DecodeFast_Message_Repeated_Tag1Byte},
+    {0x005000003f16002a, &upb_DecodeFast_Message_Repeated_Tag1Byte},
+    {0x005800003f170032, &upb_DecodeFast_Message_Repeated_Tag1Byte},
+    {0x006000003f18003a, &upb_DecodeFast_Message_Repeated_Tag1Byte},
+    {0x0068000002190042, &upb_DecodeFast_Message_Scalar_Tag1Byte},
+    {0x00700000031a004a, &upb_DecodeFast_Message_Scalar_Tag1Byte},
     {0x007800003f000050, &upb_DecodeFast_Varint32_Repeated_Tag1Byte},
     {0x008000003f000058, &upb_DecodeFast_Varint32_Repeated_Tag1Byte},
     {0x0030000004000062, &upb_DecodeFast_Bytes_Scalar_Tag1Byte},
     {0x0000000000000000, &_upb_FastDecoder_DecodeUnknown},
-    {0x000c0000050c0070, &upb_DecodeFast_ClosedEnum_Scalar_Tag1Byte},
+    {0x000c0000051b0070, &upb_DecodeFast_ClosedEnum_Scalar_Tag1Byte},
     {0x008800003f00007a, &upb_DecodeFast_Bytes_Repeated_Tag1Byte},
   })
 };
@@ -909,16 +903,16 @@ const upb_MiniTable google__protobuf__DescriptorProto_msg_init = {
   UPB_FASTTABLE_INIT({
     {0x0000000000000000, &_upb_FastDecoder_DecodeUnknown},
     {0x001000000000000a, &upb_DecodeFast_Bytes_Scalar_Tag1Byte},
-    {0x002000003f010012, &upb_DecodeFast_Message_Repeated_Tag1Byte},
-    {0x002800003f02001a, &upb_DecodeFast_Message_Repeated_Tag1Byte},
-    {0x003000003f030022, &upb_DecodeFast_Message_Repeated_Tag1Byte},
-    {0x003800003f04002a, &upb_DecodeFast_Message_Repeated_Tag1Byte},
-    {0x004000003f050032, &upb_DecodeFast_Message_Repeated_Tag1Byte},
-    {0x004800000106003a, &upb_DecodeFast_Message_Scalar_Tag1Byte},
-    {0x005000003f070042, &upb_DecodeFast_Message_Repeated_Tag1Byte},
-    {0x005800003f08004a, &upb_DecodeFast_Message_Repeated_Tag1Byte},
+    {0x002000003f110012, &upb_DecodeFast_Message_Repeated_Tag1Byte},
+    {0x002800003f12001a, &upb_DecodeFast_Message_Repeated_Tag1Byte},
+    {0x003000003f130022, &upb_DecodeFast_Message_Repeated_Tag1Byte},
+    {0x003800003f14002a, &upb_DecodeFast_Message_Repeated_Tag1Byte},
+    {0x004000003f150032, &upb_DecodeFast_Message_Repeated_Tag1Byte},
+    {0x004800000116003a, &upb_DecodeFast_Message_Scalar_Tag1Byte},
+    {0x005000003f170042, &upb_DecodeFast_Message_Repeated_Tag1Byte},
+    {0x005800003f18004a, &upb_DecodeFast_Message_Repeated_Tag1Byte},
     {0x006000003f000052, &upb_DecodeFast_Bytes_Repeated_Tag1Byte},
-    {0x000c0000020a0058, &upb_DecodeFast_ClosedEnum_Scalar_Tag1Byte},
+    {0x000c000002190058, &upb_DecodeFast_ClosedEnum_Scalar_Tag1Byte},
     {0x0000000000000000, &_upb_FastDecoder_DecodeUnknown},
     {0x0000000000000000, &_upb_FastDecoder_DecodeUnknown},
     {0x0000000000000000, &_upb_FastDecoder_DecodeUnknown},
@@ -950,7 +944,7 @@ const upb_MiniTable google__protobuf__DescriptorProto__ExtensionRange_msg_init =
     {0x0000000000000000, &_upb_FastDecoder_DecodeUnknown},
     {0x000c000000000008, &upb_DecodeFast_Varint32_Scalar_Tag1Byte},
     {0x0010000001000010, &upb_DecodeFast_Varint32_Scalar_Tag1Byte},
-    {0x001800000202001a, &upb_DecodeFast_Message_Scalar_Tag1Byte},
+    {0x001800000205001a, &upb_DecodeFast_Message_Scalar_Tag1Byte},
   })
 };
 
@@ -1004,8 +998,8 @@ const upb_MiniTable google__protobuf__ExtensionRangeOptions_msg_init = {
   UPB_FASTTABLE_INIT({
     {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
     {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
-    {0x001000003f000012, &upb_DecodeFast_Message_Repeated_Tag1Byte},
-    {0x000c000000010018, &upb_DecodeFast_ClosedEnum_Scalar_Tag1Byte},
+    {0x001000003f060012, &upb_DecodeFast_Message_Repeated_Tag1Byte},
+    {0x000c000000070018, &upb_DecodeFast_ClosedEnum_Scalar_Tag1Byte},
     {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
     {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
     {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
@@ -1020,12 +1014,12 @@ const upb_MiniTable google__protobuf__ExtensionRangeOptions_msg_init = {
     {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
     {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
     {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
-    {0x0018000001020392, &upb_DecodeFast_Message_Scalar_Tag2Byte},
+    {0x0018000001080392, &upb_DecodeFast_Message_Scalar_Tag2Byte},
     {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
     {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
     {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
     {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
-    {0x002000003f033eba, &upb_DecodeFast_Message_Repeated_Tag2Byte},
+    {0x002000003f093eba, &upb_DecodeFast_Message_Repeated_Tag2Byte},
     {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
     {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
     {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
@@ -1102,11 +1096,11 @@ const upb_MiniTable google__protobuf__FieldDescriptorProto_msg_init = {
     {0x002000000000000a, &upb_DecodeFast_Bytes_Scalar_Tag1Byte},
     {0x0030000001000012, &upb_DecodeFast_Bytes_Scalar_Tag1Byte},
     {0x000c000002000018, &upb_DecodeFast_Varint32_Scalar_Tag1Byte},
-    {0x0010000003030020, &upb_DecodeFast_ClosedEnum_Scalar_Tag1Byte},
-    {0x0014000004040028, &upb_DecodeFast_ClosedEnum_Scalar_Tag1Byte},
+    {0x0010000003110020, &upb_DecodeFast_ClosedEnum_Scalar_Tag1Byte},
+    {0x0014000004120028, &upb_DecodeFast_ClosedEnum_Scalar_Tag1Byte},
     {0x0040000005000032, &upb_DecodeFast_Bytes_Scalar_Tag1Byte},
     {0x005000000600003a, &upb_DecodeFast_Bytes_Scalar_Tag1Byte},
-    {0x0070000007070042, &upb_DecodeFast_Message_Scalar_Tag1Byte},
+    {0x0070000007130042, &upb_DecodeFast_Message_Scalar_Tag1Byte},
     {0x0018000008000048, &upb_DecodeFast_Varint32_Scalar_Tag1Byte},
     {0x0060000009000052, &upb_DecodeFast_Bytes_Scalar_Tag1Byte},
     {0x0000000000000000, &_upb_FastDecoder_DecodeUnknown},
@@ -1155,7 +1149,7 @@ const upb_MiniTable google__protobuf__OneofDescriptorProto_msg_init = {
   UPB_FASTTABLE_INIT({
     {0x0000000000000000, &_upb_FastDecoder_DecodeUnknown},
     {0x001000000000000a, &upb_DecodeFast_Bytes_Scalar_Tag1Byte},
-    {0x0020000001010012, &upb_DecodeFast_Message_Scalar_Tag1Byte},
+    {0x0020000001030012, &upb_DecodeFast_Message_Scalar_Tag1Byte},
     {0x0000000000000000, &_upb_FastDecoder_DecodeUnknown},
   })
 };
@@ -1189,11 +1183,11 @@ const upb_MiniTable google__protobuf__EnumDescriptorProto_msg_init = {
   UPB_FASTTABLE_INIT({
     {0x0000000000000000, &_upb_FastDecoder_DecodeUnknown},
     {0x001000000000000a, &upb_DecodeFast_Bytes_Scalar_Tag1Byte},
-    {0x002000003f010012, &upb_DecodeFast_Message_Repeated_Tag1Byte},
-    {0x002800000102001a, &upb_DecodeFast_Message_Scalar_Tag1Byte},
-    {0x003000003f030022, &upb_DecodeFast_Message_Repeated_Tag1Byte},
+    {0x002000003f090012, &upb_DecodeFast_Message_Repeated_Tag1Byte},
+    {0x00280000010a001a, &upb_DecodeFast_Message_Scalar_Tag1Byte},
+    {0x003000003f0b0022, &upb_DecodeFast_Message_Repeated_Tag1Byte},
     {0x003800003f00002a, &upb_DecodeFast_Bytes_Repeated_Tag1Byte},
-    {0x000c000002050030, &upb_DecodeFast_ClosedEnum_Scalar_Tag1Byte},
+    {0x000c0000020c0030, &upb_DecodeFast_ClosedEnum_Scalar_Tag1Byte},
     {0x0000000000000000, &_upb_FastDecoder_DecodeUnknown},
   })
 };
@@ -1245,7 +1239,7 @@ const upb_MiniTable google__protobuf__EnumValueDescriptorProto_msg_init = {
     {0x0000000000000000, &_upb_FastDecoder_DecodeUnknown},
     {0x001000000000000a, &upb_DecodeFast_Bytes_Scalar_Tag1Byte},
     {0x000c000001000010, &upb_DecodeFast_Varint32_Scalar_Tag1Byte},
-    {0x002000000202001a, &upb_DecodeFast_Message_Scalar_Tag1Byte},
+    {0x002000000205001a, &upb_DecodeFast_Message_Scalar_Tag1Byte},
   })
 };
 
@@ -1273,8 +1267,8 @@ const upb_MiniTable google__protobuf__ServiceDescriptorProto_msg_init = {
   UPB_FASTTABLE_INIT({
     {0x0000000000000000, &_upb_FastDecoder_DecodeUnknown},
     {0x001000000000000a, &upb_DecodeFast_Bytes_Scalar_Tag1Byte},
-    {0x002000003f010012, &upb_DecodeFast_Message_Repeated_Tag1Byte},
-    {0x002800000102001a, &upb_DecodeFast_Message_Scalar_Tag1Byte},
+    {0x002000003f050012, &upb_DecodeFast_Message_Repeated_Tag1Byte},
+    {0x002800000106001a, &upb_DecodeFast_Message_Scalar_Tag1Byte},
   })
 };
 
@@ -1306,7 +1300,7 @@ const upb_MiniTable google__protobuf__MethodDescriptorProto_msg_init = {
     {0x001000000000000a, &upb_DecodeFast_Bytes_Scalar_Tag1Byte},
     {0x0020000001000012, &upb_DecodeFast_Bytes_Scalar_Tag1Byte},
     {0x003000000200001a, &upb_DecodeFast_Bytes_Scalar_Tag1Byte},
-    {0x0040000003030022, &upb_DecodeFast_Message_Scalar_Tag1Byte},
+    {0x0040000003090022, &upb_DecodeFast_Message_Scalar_Tag1Byte},
     {0x0009000004000028, &upb_DecodeFast_Bool_Scalar_Tag1Byte},
     {0x000a000005000030, &upb_DecodeFast_Bool_Scalar_Tag1Byte},
     {0x0000000000000000, &_upb_FastDecoder_DecodeUnknown},
@@ -1363,7 +1357,7 @@ const upb_MiniTable google__protobuf__FileOptions_msg_init = {
     {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
     {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
     {0x0028000001000042, &upb_DecodeFast_Bytes_Scalar_Tag1Byte},
-    {0x0014000002020048, &upb_DecodeFast_ClosedEnum_Scalar_Tag1Byte},
+    {0x0014000002200048, &upb_DecodeFast_ClosedEnum_Scalar_Tag1Byte},
     {0x000b000003000050, &upb_DecodeFast_Bool_Scalar_Tag1Byte},
     {0x003800000400005a, &upb_DecodeFast_Bytes_Scalar_Tag1Byte},
     {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
@@ -1427,7 +1421,7 @@ const upb_MiniTable google__protobuf__MessageOptions_msg_init = {
     {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
     {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
     {0x000d000004000058, &upb_DecodeFast_Bool_Scalar_Tag1Byte},
-    {0x0010000005050062, &upb_DecodeFast_Message_Scalar_Tag1Byte},
+    {0x00100000050b0062, &upb_DecodeFast_Message_Scalar_Tag1Byte},
     {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
     {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
     {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
@@ -1438,7 +1432,7 @@ const upb_MiniTable google__protobuf__MessageOptions_msg_init = {
     {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
     {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
     {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
-    {0x001800003f063eba, &upb_DecodeFast_Message_Repeated_Tag2Byte},
+    {0x001800003f0c3eba, &upb_DecodeFast_Message_Repeated_Tag2Byte},
     {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
     {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
     {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
@@ -1490,12 +1484,12 @@ const upb_MiniTable google__protobuf__FieldOptions_msg_init = {
 #endif
   UPB_FASTTABLE_INIT({
     {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
-    {0x0010000000000008, &upb_DecodeFast_ClosedEnum_Scalar_Tag1Byte},
+    {0x0010000000150008, &upb_DecodeFast_ClosedEnum_Scalar_Tag1Byte},
     {0x000a000001000010, &upb_DecodeFast_Bool_Scalar_Tag1Byte},
     {0x000b000002000018, &upb_DecodeFast_Bool_Scalar_Tag1Byte},
     {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
     {0x000c000003000028, &upb_DecodeFast_Bool_Scalar_Tag1Byte},
-    {0x0014000004040030, &upb_DecodeFast_ClosedEnum_Scalar_Tag1Byte},
+    {0x0014000004160030, &upb_DecodeFast_ClosedEnum_Scalar_Tag1Byte},
     {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
     {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
     {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
@@ -1506,13 +1500,13 @@ const upb_MiniTable google__protobuf__FieldOptions_msg_init = {
     {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
     {0x000e000006000078, &upb_DecodeFast_Bool_Scalar_Tag1Byte},
     {0x000f000007000180, &upb_DecodeFast_Bool_Scalar_Tag2Byte},
-    {0x0018000008080188, &upb_DecodeFast_ClosedEnum_Scalar_Tag2Byte},
+    {0x0018000008170188, &upb_DecodeFast_ClosedEnum_Scalar_Tag2Byte},
     {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
-    {0x002000003f090198, &upb_DecodeFast_ClosedEnum_Repeated_Tag2Byte},
-    {0x002800003f0a01a2, &upb_DecodeFast_Message_Repeated_Tag2Byte},
-    {0x00300000090b01aa, &upb_DecodeFast_Message_Scalar_Tag2Byte},
-    {0x003800000a0c01b2, &upb_DecodeFast_Message_Scalar_Tag2Byte},
-    {0x004000003f0d3eba, &upb_DecodeFast_Message_Repeated_Tag2Byte},
+    {0x002000003f180198, &upb_DecodeFast_ClosedEnum_Repeated_Tag2Byte},
+    {0x002800003f1901a2, &upb_DecodeFast_Message_Repeated_Tag2Byte},
+    {0x00300000091a01aa, &upb_DecodeFast_Message_Scalar_Tag2Byte},
+    {0x003800000a1b01b2, &upb_DecodeFast_Message_Scalar_Tag2Byte},
+    {0x004000003f1c3eba, &upb_DecodeFast_Message_Repeated_Tag2Byte},
     {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
     {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
     {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
@@ -1547,7 +1541,7 @@ const upb_MiniTable google__protobuf__FieldOptions__EditionDefault_msg_init = {
     {0x0000000000000000, &_upb_FastDecoder_DecodeUnknown},
     {0x0000000000000000, &_upb_FastDecoder_DecodeUnknown},
     {0x0010000000000012, &upb_DecodeFast_Bytes_Scalar_Tag1Byte},
-    {0x000c000001010018, &upb_DecodeFast_ClosedEnum_Scalar_Tag1Byte},
+    {0x000c000001030018, &upb_DecodeFast_ClosedEnum_Scalar_Tag1Byte},
   })
 };
 
@@ -1577,10 +1571,10 @@ const upb_MiniTable google__protobuf__FieldOptions__FeatureSupport_msg_init = {
 #endif
   UPB_FASTTABLE_INIT({
     {0x0000000000000000, &_upb_FastDecoder_DecodeUnknown},
-    {0x000c000000000008, &upb_DecodeFast_ClosedEnum_Scalar_Tag1Byte},
-    {0x0010000001010010, &upb_DecodeFast_ClosedEnum_Scalar_Tag1Byte},
+    {0x000c000000080008, &upb_DecodeFast_ClosedEnum_Scalar_Tag1Byte},
+    {0x0010000001090010, &upb_DecodeFast_ClosedEnum_Scalar_Tag1Byte},
     {0x001800000200001a, &upb_DecodeFast_Bytes_Scalar_Tag1Byte},
-    {0x0014000003030020, &upb_DecodeFast_ClosedEnum_Scalar_Tag1Byte},
+    {0x00140000030a0020, &upb_DecodeFast_ClosedEnum_Scalar_Tag1Byte},
     {0x002800000400002a, &upb_DecodeFast_Bytes_Scalar_Tag1Byte},
     {0x0000000000000000, &_upb_FastDecoder_DecodeUnknown},
     {0x0000000000000000, &_upb_FastDecoder_DecodeUnknown},
@@ -1609,7 +1603,7 @@ const upb_MiniTable google__protobuf__OneofOptions_msg_init = {
 #endif
   UPB_FASTTABLE_INIT({
     {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
-    {0x001000000000000a, &upb_DecodeFast_Message_Scalar_Tag1Byte},
+    {0x001000000003000a, &upb_DecodeFast_Message_Scalar_Tag1Byte},
     {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
     {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
     {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
@@ -1631,7 +1625,7 @@ const upb_MiniTable google__protobuf__OneofOptions_msg_init = {
     {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
     {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
     {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
-    {0x001800003f013eba, &upb_DecodeFast_Message_Repeated_Tag2Byte},
+    {0x001800003f043eba, &upb_DecodeFast_Message_Repeated_Tag2Byte},
     {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
     {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
     {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
@@ -1674,7 +1668,7 @@ const upb_MiniTable google__protobuf__EnumOptions_msg_init = {
     {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
     {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
     {0x000b000002000030, &upb_DecodeFast_Bool_Scalar_Tag1Byte},
-    {0x001000000303003a, &upb_DecodeFast_Message_Scalar_Tag1Byte},
+    {0x001000000308003a, &upb_DecodeFast_Message_Scalar_Tag1Byte},
     {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
     {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
     {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
@@ -1690,7 +1684,7 @@ const upb_MiniTable google__protobuf__EnumOptions_msg_init = {
     {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
     {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
     {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
-    {0x001800003f043eba, &upb_DecodeFast_Message_Repeated_Tag2Byte},
+    {0x001800003f093eba, &upb_DecodeFast_Message_Repeated_Tag2Byte},
     {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
     {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
     {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
@@ -1729,9 +1723,9 @@ const upb_MiniTable google__protobuf__EnumValueOptions_msg_init = {
   UPB_FASTTABLE_INIT({
     {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
     {0x0009000000000008, &upb_DecodeFast_Bool_Scalar_Tag1Byte},
-    {0x0010000001010012, &upb_DecodeFast_Message_Scalar_Tag1Byte},
+    {0x0010000001080012, &upb_DecodeFast_Message_Scalar_Tag1Byte},
     {0x000a000002000018, &upb_DecodeFast_Bool_Scalar_Tag1Byte},
-    {0x0018000003030022, &upb_DecodeFast_Message_Scalar_Tag1Byte},
+    {0x0018000003090022, &upb_DecodeFast_Message_Scalar_Tag1Byte},
     {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
     {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
     {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
@@ -1750,7 +1744,7 @@ const upb_MiniTable google__protobuf__EnumValueOptions_msg_init = {
     {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
     {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
     {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
-    {0x002000003f043eba, &upb_DecodeFast_Message_Repeated_Tag2Byte},
+    {0x002000003f0a3eba, &upb_DecodeFast_Message_Repeated_Tag2Byte},
     {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
     {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
     {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
@@ -1802,12 +1796,12 @@ const upb_MiniTable google__protobuf__ServiceOptions_msg_init = {
     {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
     {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
     {0x0009000000000288, &upb_DecodeFast_Bool_Scalar_Tag2Byte},
-    {0x0010000001010292, &upb_DecodeFast_Message_Scalar_Tag2Byte},
+    {0x0010000001050292, &upb_DecodeFast_Message_Scalar_Tag2Byte},
     {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
     {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
     {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
     {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
-    {0x001800003f023eba, &upb_DecodeFast_Message_Repeated_Tag2Byte},
+    {0x001800003f063eba, &upb_DecodeFast_Message_Repeated_Tag2Byte},
     {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
     {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
     {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
@@ -1861,12 +1855,12 @@ const upb_MiniTable google__protobuf__MethodOptions_msg_init = {
     {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
     {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
     {0x0009000000000288, &upb_DecodeFast_Bool_Scalar_Tag2Byte},
-    {0x000c000001010290, &upb_DecodeFast_ClosedEnum_Scalar_Tag2Byte},
-    {0x001000000202029a, &upb_DecodeFast_Message_Scalar_Tag2Byte},
+    {0x000c000001060290, &upb_DecodeFast_ClosedEnum_Scalar_Tag2Byte},
+    {0x001000000207029a, &upb_DecodeFast_Message_Scalar_Tag2Byte},
     {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
     {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
     {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
-    {0x001800003f033eba, &upb_DecodeFast_Message_Repeated_Tag2Byte},
+    {0x001800003f083eba, &upb_DecodeFast_Message_Repeated_Tag2Byte},
     {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
     {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
     {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
@@ -1905,7 +1899,7 @@ const upb_MiniTable google__protobuf__UninterpretedOption_msg_init = {
   UPB_FASTTABLE_INIT({
     {0x0000000000000000, &_upb_FastDecoder_DecodeUnknown},
     {0x0000000000000000, &_upb_FastDecoder_DecodeUnknown},
-    {0x004000003f000012, &upb_DecodeFast_Message_Repeated_Tag1Byte},
+    {0x004000003f0b0012, &upb_DecodeFast_Message_Repeated_Tag1Byte},
     {0x001000000000001a, &upb_DecodeFast_Bytes_Scalar_Tag1Byte},
     {0x0048000001000020, &upb_DecodeFast_Varint64_Scalar_Tag1Byte},
     {0x0050000002000028, &upb_DecodeFast_Varint64_Scalar_Tag1Byte},
@@ -1981,15 +1975,15 @@ const upb_MiniTable google__protobuf__FeatureSet_msg_init = {
 #endif
   UPB_FASTTABLE_INIT({
     {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
-    {0x000c000000000008, &upb_DecodeFast_ClosedEnum_Scalar_Tag1Byte},
-    {0x0010000001010010, &upb_DecodeFast_ClosedEnum_Scalar_Tag1Byte},
-    {0x0014000002020018, &upb_DecodeFast_ClosedEnum_Scalar_Tag1Byte},
-    {0x0018000003030020, &upb_DecodeFast_ClosedEnum_Scalar_Tag1Byte},
-    {0x001c000004040028, &upb_DecodeFast_ClosedEnum_Scalar_Tag1Byte},
-    {0x0020000005050030, &upb_DecodeFast_ClosedEnum_Scalar_Tag1Byte},
-    {0x0024000006060038, &upb_DecodeFast_ClosedEnum_Scalar_Tag1Byte},
-    {0x0028000007070040, &upb_DecodeFast_ClosedEnum_Scalar_Tag1Byte},
-    {0x002c000008080048, &upb_DecodeFast_ClosedEnum_Scalar_Tag1Byte},
+    {0x000c0000000e0008, &upb_DecodeFast_ClosedEnum_Scalar_Tag1Byte},
+    {0x00100000010f0010, &upb_DecodeFast_ClosedEnum_Scalar_Tag1Byte},
+    {0x0014000002100018, &upb_DecodeFast_ClosedEnum_Scalar_Tag1Byte},
+    {0x0018000003110020, &upb_DecodeFast_ClosedEnum_Scalar_Tag1Byte},
+    {0x001c000004120028, &upb_DecodeFast_ClosedEnum_Scalar_Tag1Byte},
+    {0x0020000005130030, &upb_DecodeFast_ClosedEnum_Scalar_Tag1Byte},
+    {0x0024000006140038, &upb_DecodeFast_ClosedEnum_Scalar_Tag1Byte},
+    {0x0028000007150040, &upb_DecodeFast_ClosedEnum_Scalar_Tag1Byte},
+    {0x002c000008160048, &upb_DecodeFast_ClosedEnum_Scalar_Tag1Byte},
     {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
     {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
     {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
@@ -2039,11 +2033,11 @@ const upb_MiniTable google__protobuf__FeatureSetDefaults_msg_init = {
 #endif
   UPB_FASTTABLE_INIT({
     {0x0000000000000000, &_upb_FastDecoder_DecodeUnknown},
-    {0x001800003f00000a, &upb_DecodeFast_Message_Repeated_Tag1Byte},
+    {0x001800003f05000a, &upb_DecodeFast_Message_Repeated_Tag1Byte},
     {0x0000000000000000, &_upb_FastDecoder_DecodeUnknown},
     {0x0000000000000000, &_upb_FastDecoder_DecodeUnknown},
-    {0x000c000000010020, &upb_DecodeFast_ClosedEnum_Scalar_Tag1Byte},
-    {0x0010000001020028, &upb_DecodeFast_ClosedEnum_Scalar_Tag1Byte},
+    {0x000c000000060020, &upb_DecodeFast_ClosedEnum_Scalar_Tag1Byte},
+    {0x0010000001070028, &upb_DecodeFast_ClosedEnum_Scalar_Tag1Byte},
     {0x0000000000000000, &_upb_FastDecoder_DecodeUnknown},
     {0x0000000000000000, &_upb_FastDecoder_DecodeUnknown},
   })
@@ -2075,9 +2069,9 @@ const upb_MiniTable google__protobuf__FeatureSetDefaults__FeatureSetEditionDefau
     {0x0000000000000000, &_upb_FastDecoder_DecodeUnknown},
     {0x0000000000000000, &_upb_FastDecoder_DecodeUnknown},
     {0x0000000000000000, &_upb_FastDecoder_DecodeUnknown},
-    {0x000c000000000018, &upb_DecodeFast_ClosedEnum_Scalar_Tag1Byte},
-    {0x0010000001010022, &upb_DecodeFast_Message_Scalar_Tag1Byte},
-    {0x001800000202002a, &upb_DecodeFast_Message_Scalar_Tag1Byte},
+    {0x000c000000050018, &upb_DecodeFast_ClosedEnum_Scalar_Tag1Byte},
+    {0x0010000001060022, &upb_DecodeFast_Message_Scalar_Tag1Byte},
+    {0x001800000207002a, &upb_DecodeFast_Message_Scalar_Tag1Byte},
     {0x0000000000000000, &_upb_FastDecoder_DecodeUnknown},
     {0x0000000000000000, &_upb_FastDecoder_DecodeUnknown},
   })
@@ -2103,7 +2097,7 @@ const upb_MiniTable google__protobuf__SourceCodeInfo_msg_init = {
 #endif
   UPB_FASTTABLE_INIT({
     {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
-    {0x000800003f00000a, &upb_DecodeFast_Message_Repeated_Tag1Byte},
+    {0x000800003f02000a, &upb_DecodeFast_Message_Repeated_Tag1Byte},
   })
 };
 
@@ -2157,7 +2151,7 @@ const upb_MiniTable google__protobuf__GeneratedCodeInfo_msg_init = {
 #endif
   UPB_FASTTABLE_INIT({
     {0x0000000000000000, &_upb_FastDecoder_DecodeUnknown},
-    {0x000800003f00000a, &upb_DecodeFast_Message_Repeated_Tag1Byte},
+    {0x000800003f02000a, &upb_DecodeFast_Message_Repeated_Tag1Byte},
   })
 };
 
@@ -2189,7 +2183,7 @@ const upb_MiniTable google__protobuf__GeneratedCodeInfo__Annotation_msg_init = {
     {0x0018000000000012, &upb_DecodeFast_Bytes_Scalar_Tag1Byte},
     {0x000c000001000018, &upb_DecodeFast_Varint32_Scalar_Tag1Byte},
     {0x0010000002000020, &upb_DecodeFast_Varint32_Scalar_Tag1Byte},
-    {0x0014000003040028, &upb_DecodeFast_ClosedEnum_Scalar_Tag1Byte},
+    {0x0014000003080028, &upb_DecodeFast_ClosedEnum_Scalar_Tag1Byte},
     {0x0000000000000000, &_upb_FastDecoder_DecodeUnknown},
     {0x0000000000000000, &_upb_FastDecoder_DecodeUnknown},
   })
@@ -4672,6 +4666,12 @@ UPB_NORETURN static void jsondec_err(jsondec* d, const char* msg) {
   UPB_LONGJMP(d->err, 1);
 }
 
+static void jsondec_checkoom(jsondec* d, bool ok) {
+  if (UPB_UNLIKELY(!ok)) {
+    jsondec_err(d, "Out of memory");
+  }
+}
+
 UPB_PRINTF(2, 3)
 UPB_NORETURN static void jsondec_errf(jsondec* d, const char* fmt, ...) {
   va_list argp;
@@ -5466,12 +5466,13 @@ static upb_MessageValue jsondec_bool(jsondec* d, const upb_FieldDef* f) {
 static void jsondec_array(jsondec* d, upb_Message* msg, const upb_FieldDef* f) {
   UPB_ASSERT(!upb_Message_IsFrozen(msg));
   upb_Array* arr = upb_Message_Mutable(msg, f, d->arena).array;
+  jsondec_checkoom(d, arr);
 
   jsondec_arrstart(d);
   while (jsondec_arrnext(d)) {
     upb_JsonMessageValue elem = jsondec_value(d, f);
     if (!elem.ignore) {
-      upb_Array_Append(arr, elem.value, d->arena);
+      jsondec_checkoom(d, upb_Array_Append(arr, elem.value, d->arena));
     }
   }
   jsondec_arrend(d);
@@ -5480,6 +5481,7 @@ static void jsondec_array(jsondec* d, upb_Message* msg, const upb_FieldDef* f) {
 static void jsondec_map(jsondec* d, upb_Message* msg, const upb_FieldDef* f) {
   UPB_ASSERT(!upb_Message_IsFrozen(msg));
   upb_Map* map = upb_Message_Mutable(msg, f, d->arena).map;
+  jsondec_checkoom(d, map);
   const upb_MessageDef* entry = upb_FieldDef_MessageSubDef(f);
   const upb_FieldDef* key_f = upb_MessageDef_FindFieldByNumber(entry, 1);
   const upb_FieldDef* val_f = upb_MessageDef_FindFieldByNumber(entry, 2);
@@ -5492,7 +5494,7 @@ static void jsondec_map(jsondec* d, upb_Message* msg, const upb_FieldDef* f) {
     jsondec_entrysep(d);
     val = jsondec_value(d, val_f);
     if (!val.ignore) {
-      upb_Map_Set(map, key.value, val.value, d->arena);
+      jsondec_checkoom(d, upb_Map_Set(map, key.value, val.value, d->arena));
     }
   }
   jsondec_objend(d);
@@ -5512,6 +5514,7 @@ static upb_MessageValue jsondec_msg(jsondec* d, const upb_FieldDef* f) {
   const upb_MessageDef* m = upb_FieldDef_MessageSubDef(f);
   const upb_MiniTable* layout = upb_MessageDef_MiniTable(m);
   upb_Message* msg = upb_Message_New(layout, d->arena);
+  jsondec_checkoom(d, msg);
   upb_MessageValue val;
 
   jsondec_tomsg(d, msg, m);
@@ -5573,6 +5576,7 @@ static void jsondec_field(jsondec* d, upb_Message* msg,
     jsondec_array(d, msg, f);
   } else if (upb_FieldDef_IsSubMessage(f)) {
     upb_Message* submsg = upb_Message_Mutable(msg, f, d->arena).msg;
+    jsondec_checkoom(d, submsg);
     const upb_MessageDef* subm = upb_FieldDef_MessageSubDef(f);
     jsondec_tomsg(d, submsg, subm);
   } else {
@@ -5792,13 +5796,15 @@ static void jsondec_listvalue(jsondec* d, upb_Message* msg,
   const upb_MessageDef* value_m = upb_FieldDef_MessageSubDef(values_f);
   const upb_MiniTable* value_layout = upb_MessageDef_MiniTable(value_m);
   upb_Array* values = upb_Message_Mutable(msg, values_f, d->arena).array;
+  jsondec_checkoom(d, values);
 
   jsondec_arrstart(d);
   while (jsondec_arrnext(d)) {
     upb_Message* value_msg = upb_Message_New(value_layout, d->arena);
+    jsondec_checkoom(d, value_msg);
     upb_MessageValue value;
     value.msg_val = value_msg;
-    upb_Array_Append(values, value, d->arena);
+    jsondec_checkoom(d, upb_Array_Append(values, value, d->arena));
     jsondec_wellknownvalue(d, value_msg, value_m);
   }
   jsondec_arrend(d);
@@ -5813,14 +5819,16 @@ static void jsondec_struct(jsondec* d, upb_Message* msg,
   const upb_MessageDef* value_m = upb_FieldDef_MessageSubDef(value_f);
   const upb_MiniTable* value_layout = upb_MessageDef_MiniTable(value_m);
   upb_Map* fields = upb_Message_Mutable(msg, fields_f, d->arena).map;
+  jsondec_checkoom(d, fields);
 
   jsondec_objstart(d);
   while (jsondec_objnext(d)) {
     upb_MessageValue key, value;
     upb_Message* value_msg = upb_Message_New(value_layout, d->arena);
+    jsondec_checkoom(d, value_msg);
     key.str_val = jsondec_string(d);
     value.msg_val = value_msg;
-    upb_Map_Set(fields, key, value, d->arena);
+    jsondec_checkoom(d, upb_Map_Set(fields, key, value, d->arena));
     jsondec_entrysep(d);
     jsondec_wellknownvalue(d, value_msg, value_m);
   }
@@ -5868,12 +5876,14 @@ static void jsondec_wellknownvalue(jsondec* d, upb_Message* msg,
       /* Struct struct_value = 5; */
       f = upb_MessageDef_FindFieldByNumber(m, 5);
       submsg = upb_Message_Mutable(msg, f, d->arena).msg;
+      jsondec_checkoom(d, submsg);
       jsondec_struct(d, submsg, upb_FieldDef_MessageSubDef(f));
       return;
     case JD_ARRAY:
       /* ListValue list_value = 6; */
       f = upb_MessageDef_FindFieldByNumber(m, 6);
       submsg = upb_Message_Mutable(msg, f, d->arena).msg;
+      jsondec_checkoom(d, submsg);
       jsondec_listvalue(d, submsg, upb_FieldDef_MessageSubDef(f));
       return;
     default:
@@ -5898,6 +5908,7 @@ static upb_StringView jsondec_mask(jsondec* d, const char* buf,
   }
 
   out = upb_Arena_Malloc(d->arena, ret.size);
+  jsondec_checkoom(d, out || ret.size == 0);
   ptr = buf;
   ret.data = out;
 
@@ -5922,6 +5933,7 @@ static void jsondec_fieldmask(jsondec* d, upb_Message* msg,
   /* repeated string paths = 1; */
   const upb_FieldDef* paths_f = upb_MessageDef_FindFieldByNumber(m, 1);
   upb_Array* arr = upb_Message_Mutable(msg, paths_f, d->arena).array;
+  jsondec_checkoom(d, arr);
   upb_StringView str = jsondec_string(d);
   const char* ptr = str.data;
   const char* end = ptr + str.size;
@@ -5936,7 +5948,7 @@ static void jsondec_fieldmask(jsondec* d, upb_Message* msg,
       val.str_val = jsondec_mask(d, ptr, end);
       ptr = end;
     }
-    upb_Array_Append(arr, val, d->arena);
+    jsondec_checkoom(d, upb_Array_Append(arr, val, d->arena));
   }
 }
 
@@ -6026,10 +6038,12 @@ static void jsondec_any(jsondec* d, upb_Message* msg, const upb_MessageDef* m) {
 
   const upb_MiniTable* any_layout = upb_MessageDef_MiniTable(any_m);
   any_msg = upb_Message_New(any_layout, d->arena);
+  jsondec_checkoom(d, any_msg);
 
   if (pre_type_data) {
     size_t len = pre_type_end - pre_type_data + 1;
     char* tmp = upb_Arena_Malloc(d->arena, len);
+    jsondec_checkoom(d, tmp);
     const char* saved_ptr = d->ptr;
     const char* saved_end = d->end;
     memcpy(tmp, pre_type_data, len - 1);
@@ -6053,8 +6067,9 @@ static void jsondec_any(jsondec* d, upb_Message* msg, const upb_MessageDef* m) {
   upb_EncodeStatus status =
       upb_Encode(any_msg, upb_MessageDef_MiniTable(any_m), 0, d->arena,
                  (char**)&encoded.str_val.data, &encoded.str_val.size);
-  // TODO: We should fail gracefully here on a bad return status.
-  UPB_ASSERT(status == kUpb_EncodeStatus_Ok);
+  if (status != kUpb_EncodeStatus_Ok) {
+    jsondec_errf(d, "Encode failed: %s", upb_EncodeStatus_String(status));
+  }
   upb_Message_SetFieldByDef(msg, value_f, encoded, d->arena);
 }
 
@@ -8381,6 +8396,10 @@ bool UPB_PRIVATE(_upb_Array_Realloc)(upb_Array* array, size_t min_capacity,
     }
   }
 
+  // If capacity doubling overflowed to SIZE_MAX, fail. No valid array can hold
+  // SIZE_MAX elements, and downstream size calculations would overflow.
+  if (new_capacity == SIZE_MAX) return false;
+
   size_t new_bytes = new_capacity;
   if (upb_ShlOverflow(&new_bytes, lg2)) {
     return false;
@@ -9328,7 +9347,7 @@ static void upb_UnknownFields_Merge(upb_UnknownField* arr, size_t start,
   if (ptr1 < end1) {
     memcpy(out, ptr1, (end1 - ptr1) * sizeof(*out));
   } else if (ptr2 < end2) {
-    memcpy(out, ptr1, (end2 - ptr2) * sizeof(*out));
+    memcpy(out, ptr2, (end2 - ptr2) * sizeof(*out));
   }
 }
 
@@ -11980,6 +11999,18 @@ const struct upb_MiniTable UPB_PRIVATE(_kUpb_MiniTable_StaticallyTreeShaken) = {
     .UPB_PRIVATE(table_mask) = -1,
     .UPB_PRIVATE(required_count) = 0,
 };
+
+#include <stdio.h>
+#include <stdlib.h>
+
+// Must be last.
+
+UPB_NORETURN void _upb_UnreachableFailure(const char* file, int line,
+                                          const char* function_name) {
+  fprintf(stderr, "%s:%d: Reached unreachable statement in function `%s`.\n",
+          file, line, function_name ? function_name : "(unknown)");
+  abort();
+}
 
 
 #include <assert.h>
@@ -17220,18 +17251,7 @@ void _upb_Decoder_CheckUnlinked(upb_Decoder* d, const upb_MiniTable* mt,
   if (field->UPB_PRIVATE(mode) & kUpb_LabelFlags_IsExtension) return;
   const upb_MiniTable* mt_sub = upb_MiniTable_GetSubMessageTable(field);
   if (mt_sub != NULL) return;  // Normal case, sub-message is linked.
-#ifndef NDEBUG
-  const upb_MiniTableField* oneof = upb_MiniTable_GetOneof(mt, field);
-  if (oneof) {
-    // All other members of the oneof must be message fields that are also
-    // unlinked.
-    do {
-      UPB_ASSERT(upb_MiniTableField_CType(oneof) == kUpb_CType_Message);
-      const upb_MiniTable* oneof_sub = upb_MiniTable_GetSubMessageTable(oneof);
-      UPB_ASSERT(!oneof_sub);
-    } while (upb_MiniTable_NextOneofField(mt, &oneof));
-  }
-#endif  // NDEBUG
+  _upb_Decoder_VerifyOneofUnlinked(mt, field);
   *op = kUpb_DecodeOp_UnknownField;
 }
 
@@ -17281,7 +17301,7 @@ static int _upb_Decoder_GetDelimitedOp(upb_Decoder* d, const upb_MiniTable* mt,
       [kRepeatedBase + kUpb_FieldType_Fixed32] = OP_FIXPCK_LG2(2),
       [kRepeatedBase + kUpb_FieldType_Bool] = OP_VARPCK_LG2(0),
       [kRepeatedBase + kUpb_FieldType_String] = kUpb_DecodeOp_String,
-      [kRepeatedBase + kUpb_FieldType_Group] = kUpb_DecodeOp_SubMessage,
+      [kRepeatedBase + kUpb_FieldType_Group] = kUpb_DecodeOp_UnknownField,
       [kRepeatedBase + kUpb_FieldType_Message] = kUpb_DecodeOp_SubMessage,
       [kRepeatedBase + kUpb_FieldType_Bytes] = kUpb_DecodeOp_Bytes,
       [kRepeatedBase + kUpb_FieldType_UInt32] = OP_VARPCK_LG2(2),
@@ -17564,19 +17584,22 @@ static const char* _upb_Decoder_DecodeEmptyMessage(upb_Decoder* d,
   }
 
   const char* start = ptr;
+  const char* capture_end = ptr;
   upb_EpsCopyCapture capture;
   upb_EpsCopyCapture_Start(&capture, &d->input, start);
   while (!upb_EpsCopyInputStream_IsDone(EPS(d), &ptr)) {
     uint32_t tag;
+    capture_end = ptr;
     ptr = upb_WireReader_ReadTag(ptr, &tag, EPS(d));
     if ((tag & 7) == kUpb_WireType_EndGroup) {
       d->end_group = tag >> 3;
       break;
     }
     ptr = _upb_WireReader_SkipValueForceInline(ptr, tag, d->depth, EPS(d));
+    capture_end = ptr;
   }
   upb_StringView sv;
-  upb_EpsCopyCapture_End(&capture, EPS(d), ptr, &sv);
+  upb_EpsCopyCapture_End(&capture, EPS(d), capture_end, &sv);
 
   if (sv.size > 0) {
     if (!UPB_PRIVATE(_upb_Message_AddUnknown)(
@@ -18890,6 +18913,8 @@ const char* UPB_PRIVATE(_upb_WireReader_SkipGroup)(
 #undef UPB_ASSUME
 #undef UPB_ASSERT
 #undef UPB_UNREACHABLE
+#undef UPB_UNREACHABLE_FAILURE
+#undef UPB_PRETTY_FUNCTION
 #undef UPB_DEFAULT_MAX_BLOCK_SIZE
 #undef UPB_SETJMP
 #undef UPB_LONGJMP
@@ -18923,10 +18948,6 @@ const char* UPB_PRIVATE(_upb_WireReader_SkipGroup)(
 #undef UPB_LINKARR_APPEND
 #undef UPB_LINKARR_START
 #undef UPB_LINKARR_STOP
-#undef UPB_FUTURE_BREAKING_CHANGES
-#undef UPB_FUTURE_REMOVE_POP_CLAMP
-#undef UPB_FUTURE_CONTAINER_EQ_RETURNS_NOTIMPLEMENTED
-#undef UPB_FUTURE_FREEZE_OPTIONS
 #undef UPB_HAS_ATTRIBUTE
 #undef UPB_HAS_CPP_ATTRIBUTE
 #undef UPB_HAS_BUILTIN

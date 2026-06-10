@@ -40,15 +40,6 @@
 
 #define PROTOBUF_INTERNAL_EXPORT_google_2fprotobuf_2ftype_2eproto PROTOBUF_EXPORT
 
-namespace google {
-namespace protobuf {
-namespace internal {
-template <typename T>
-::absl::string_view GetAnyMessageName();
-}  // namespace internal
-}  // namespace protobuf
-}  // namespace google
-
 // Internal implementation detail -- do not use these members.
 struct PROTOBUF_EXPORT TableStruct_google_2fprotobuf_2ftype_2eproto {
   static const ::uint32_t offsets[];
@@ -268,6 +259,8 @@ using ::google::protobuf::internal::generated_enum::AbslUnparseFlag;
 
 class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Option final : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:google.protobuf.Option) */ {
+  using Super_ = ::google::protobuf::Message;
+
  public:
   inline Option() : Option(nullptr) {}
   ~Option() PROTOBUF_FINAL;
@@ -342,11 +335,11 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Option final : publ
 
   [[nodiscard]] Option* PROTOBUF_NONNULL
   New(::google::protobuf::Arena* PROTOBUF_NULLABLE arena = nullptr) const {
-    return ::google::protobuf::Message::DefaultConstruct<Option>(arena);
+    return Super_::DefaultConstruct<Option>(arena);
   }
-  using ::google::protobuf::Message::CopyFrom;
+  using Super_::CopyFrom;
   void CopyFrom(const Option& from);
-  using ::google::protobuf::Message::MergeFrom;
+  using Super_::MergeFrom;
   void MergeFrom(const Option& from) { Option::MergeImpl(*this, from); }
 
   private:
@@ -387,8 +380,6 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Option final : publ
   static void SharedDtor(MessageLite& self);
   void InternalSwap(Option* PROTOBUF_NONNULL other);
  private:
-  template <typename T>
-  friend ::absl::string_view(::google::protobuf::internal::GetAnyMessageName)();
   static ::absl::string_view FullMessageName() { return "google.protobuf.Option"; }
 
   explicit Option(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
@@ -491,6 +482,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Option final : publ
 
 class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Field final : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:google.protobuf.Field) */ {
+  using Super_ = ::google::protobuf::Message;
+
  public:
   inline Field() : Field(nullptr) {}
   ~Field() PROTOBUF_FINAL;
@@ -565,11 +558,11 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Field final : publi
 
   [[nodiscard]] Field* PROTOBUF_NONNULL
   New(::google::protobuf::Arena* PROTOBUF_NULLABLE arena = nullptr) const {
-    return ::google::protobuf::Message::DefaultConstruct<Field>(arena);
+    return Super_::DefaultConstruct<Field>(arena);
   }
-  using ::google::protobuf::Message::CopyFrom;
+  using Super_::CopyFrom;
   void CopyFrom(const Field& from);
-  using ::google::protobuf::Message::MergeFrom;
+  using Super_::MergeFrom;
   void MergeFrom(const Field& from) { Field::MergeImpl(*this, from); }
 
   private:
@@ -610,8 +603,6 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Field final : publi
   static void SharedDtor(MessageLite& self);
   void InternalSwap(Field* PROTOBUF_NONNULL other);
  private:
-  template <typename T>
-  friend ::absl::string_view(::google::protobuf::internal::GetAnyMessageName)();
   static ::absl::string_view FullMessageName() { return "google.protobuf.Field"; }
 
   explicit Field(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
@@ -889,6 +880,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Field final : publi
 
 class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED EnumValue final : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:google.protobuf.EnumValue) */ {
+  using Super_ = ::google::protobuf::Message;
+
  public:
   inline EnumValue() : EnumValue(nullptr) {}
   ~EnumValue() PROTOBUF_FINAL;
@@ -963,11 +956,11 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED EnumValue final : p
 
   [[nodiscard]] EnumValue* PROTOBUF_NONNULL
   New(::google::protobuf::Arena* PROTOBUF_NULLABLE arena = nullptr) const {
-    return ::google::protobuf::Message::DefaultConstruct<EnumValue>(arena);
+    return Super_::DefaultConstruct<EnumValue>(arena);
   }
-  using ::google::protobuf::Message::CopyFrom;
+  using Super_::CopyFrom;
   void CopyFrom(const EnumValue& from);
-  using ::google::protobuf::Message::MergeFrom;
+  using Super_::MergeFrom;
   void MergeFrom(const EnumValue& from) { EnumValue::MergeImpl(*this, from); }
 
   private:
@@ -1008,8 +1001,6 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED EnumValue final : p
   static void SharedDtor(MessageLite& self);
   void InternalSwap(EnumValue* PROTOBUF_NONNULL other);
  private:
-  template <typename T>
-  friend ::absl::string_view(::google::protobuf::internal::GetAnyMessageName)();
   static ::absl::string_view FullMessageName() { return "google.protobuf.EnumValue"; }
 
   explicit EnumValue(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
@@ -1129,6 +1120,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED EnumValue final : p
 
 class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Type final : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:google.protobuf.Type) */ {
+  using Super_ = ::google::protobuf::Message;
+
  public:
   inline Type() : Type(nullptr) {}
   ~Type() PROTOBUF_FINAL;
@@ -1203,11 +1196,11 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Type final : public
 
   [[nodiscard]] Type* PROTOBUF_NONNULL
   New(::google::protobuf::Arena* PROTOBUF_NULLABLE arena = nullptr) const {
-    return ::google::protobuf::Message::DefaultConstruct<Type>(arena);
+    return Super_::DefaultConstruct<Type>(arena);
   }
-  using ::google::protobuf::Message::CopyFrom;
+  using Super_::CopyFrom;
   void CopyFrom(const Type& from);
-  using ::google::protobuf::Message::MergeFrom;
+  using Super_::MergeFrom;
   void MergeFrom(const Type& from) { Type::MergeImpl(*this, from); }
 
   private:
@@ -1248,8 +1241,6 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Type final : public
   static void SharedDtor(MessageLite& self);
   void InternalSwap(Type* PROTOBUF_NONNULL other);
  private:
-  template <typename T>
-  friend ::absl::string_view(::google::protobuf::internal::GetAnyMessageName)();
   static ::absl::string_view FullMessageName() { return "google.protobuf.Type"; }
 
   explicit Type(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
@@ -1453,6 +1444,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Type final : public
 
 class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Enum final : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:google.protobuf.Enum) */ {
+  using Super_ = ::google::protobuf::Message;
+
  public:
   inline Enum() : Enum(nullptr) {}
   ~Enum() PROTOBUF_FINAL;
@@ -1527,11 +1520,11 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Enum final : public
 
   [[nodiscard]] Enum* PROTOBUF_NONNULL
   New(::google::protobuf::Arena* PROTOBUF_NULLABLE arena = nullptr) const {
-    return ::google::protobuf::Message::DefaultConstruct<Enum>(arena);
+    return Super_::DefaultConstruct<Enum>(arena);
   }
-  using ::google::protobuf::Message::CopyFrom;
+  using Super_::CopyFrom;
   void CopyFrom(const Enum& from);
-  using ::google::protobuf::Message::MergeFrom;
+  using Super_::MergeFrom;
   void MergeFrom(const Enum& from) { Enum::MergeImpl(*this, from); }
 
   private:
@@ -1572,8 +1565,6 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Enum final : public
   static void SharedDtor(MessageLite& self);
   void InternalSwap(Enum* PROTOBUF_NONNULL other);
  private:
-  template <typename T>
-  friend ::absl::string_view(::google::protobuf::internal::GetAnyMessageName)();
   static ::absl::string_view FullMessageName() { return "google.protobuf.Enum"; }
 
   explicit Enum(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
@@ -2068,7 +2059,7 @@ inline ::google::protobuf::SourceContext* PROTOBUF_NULLABLE Type::unsafe_arena_r
 inline ::google::protobuf::SourceContext* PROTOBUF_NONNULL Type::_internal_mutable_source_context() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   if (_impl_.source_context_ == nullptr) {
-    auto* p = ::google::protobuf::Message::DefaultConstruct<::google::protobuf::SourceContext>(GetArena());
+    auto* p = Super_::DefaultConstruct<::google::protobuf::SourceContext>(GetArena());
     _impl_.source_context_ = reinterpret_cast<::google::protobuf::SourceContext*>(p);
   }
   return _impl_.source_context_;
@@ -2862,7 +2853,7 @@ inline ::google::protobuf::SourceContext* PROTOBUF_NULLABLE Enum::unsafe_arena_r
 inline ::google::protobuf::SourceContext* PROTOBUF_NONNULL Enum::_internal_mutable_source_context() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   if (_impl_.source_context_ == nullptr) {
-    auto* p = ::google::protobuf::Message::DefaultConstruct<::google::protobuf::SourceContext>(GetArena());
+    auto* p = Super_::DefaultConstruct<::google::protobuf::SourceContext>(GetArena());
     _impl_.source_context_ = reinterpret_cast<::google::protobuf::SourceContext*>(p);
   }
   return _impl_.source_context_;
@@ -3258,7 +3249,7 @@ inline ::google::protobuf::Any* PROTOBUF_NULLABLE Option::unsafe_arena_release_v
 inline ::google::protobuf::Any* PROTOBUF_NONNULL Option::_internal_mutable_value() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   if (_impl_.value_ == nullptr) {
-    auto* p = ::google::protobuf::Message::DefaultConstruct<::google::protobuf::Any>(GetArena());
+    auto* p = Super_::DefaultConstruct<::google::protobuf::Any>(GetArena());
     _impl_.value_ = reinterpret_cast<::google::protobuf::Any*>(p);
   }
   return _impl_.value_;

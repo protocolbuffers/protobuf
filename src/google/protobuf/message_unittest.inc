@@ -2213,6 +2213,9 @@ TEST(MESSAGE_TEST_NAME, AllSetMethodsOnRepeatedStringField) {
 
   msg.set_repeated_string(0, {'a', 'b', 'c'});
   EXPECT_EQ(msg.repeated_string(0), "abc");
+
+  msg.set_repeated_string(0, absl::Cord("cord"));
+  EXPECT_EQ(msg.repeated_string(0), "cord");
 }
 
 TEST(MESSAGE_TEST_NAME, AllAddMethodsOnRepeatedStringField) {
@@ -2243,6 +2246,10 @@ TEST(MESSAGE_TEST_NAME, AllAddMethodsOnRepeatedStringField) {
 
   msg.add_repeated_string({'a', 'b', 'c'});
   EXPECT_EQ(msg.repeated_string(0), "abc");
+  msg.clear_repeated_string();
+
+  msg.add_repeated_string(absl::Cord("cord"));
+  EXPECT_EQ(msg.repeated_string(0), "cord");
   msg.clear_repeated_string();
 }
 

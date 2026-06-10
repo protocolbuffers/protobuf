@@ -657,19 +657,6 @@ std::string FileDllExport(const FileDescriptor* file, const Options& options) {
   return UniqueName("PROTOBUF_INTERNAL_EXPORT", file, options);
 }
 
-std::string SuperClassName(const Descriptor* descriptor,
-                           const Options& options) {
-  if (!HasDescriptorMethods(descriptor->file(), options)) {
-    return absl::StrCat("::", ProtobufNamespace(options), "::MessageLite");
-  }
-  auto simple_base = SimpleBaseClass(descriptor, options);
-  if (simple_base.empty()) {
-    return absl::StrCat("::", ProtobufNamespace(options), "::Message");
-  }
-  return absl::StrCat("::", ProtobufNamespace(options),
-                      "::internal::", simple_base);
-}
-
 std::string FieldName(const FieldDescriptor* field) {
   if (field->containing_type() != nullptr &&
       field->containing_type()->options().no_standard_descriptor_accessor() &&

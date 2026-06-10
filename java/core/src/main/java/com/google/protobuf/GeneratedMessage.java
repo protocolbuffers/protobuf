@@ -961,6 +961,10 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
     /** Get the value of an extension. */
     <T> T getExtension(ExtensionLite<? extends MessageT, T> extension);
 
+    /** Get the value of a message-typed extension, or null if it is not set. */
+    <T extends MessageLite> T getMessageTypedExtensionOrNull(
+        ExtensionLite<? extends MessageT, T> extension);
+
     /** Overload to maintain ABI compatibility. See {@link #getExtension(ExtensionLite)}. */
     default <T> T getExtension(Extension<? extends MessageT, T> extension) {
       return getExtension((ExtensionLite<? extends MessageT, T>) extension);
@@ -1034,6 +1038,14 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
     }
 
     /**
+     * Returns true if the extensions in this message are equal to the extensions in the other
+     * message. Does not consider any any other state of the messages.
+     */
+    protected boolean extensionsEquals(ExtendableMessage<?> other) {
+      return this.extensions.equals(other.extensions);
+    }
+
+    /**
      * Returns an iterator over the set extensions lazily wrapped in {@link FieldEntry} objects.
      * Order is unspecified.
      */
@@ -1086,6 +1098,21 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
       final Object value = extensions.getField(descriptor);
       if (value == null) {
         return extension.getDefaultValue();
+      }
+      return (T) extension.fromReflectionType(value);
+    }
+
+    @Override
+    @SuppressWarnings("unchecked") // Safe as fromReflectionType will always match the type of T.
+    public final <T extends MessageLite> T getMessageTypedExtensionOrNull(
+        final ExtensionLite<? extends MessageT, T> extensionLite) {
+      Extension<MessageT, T> extension = checkNotLite(extensionLite);
+
+      final FieldDescriptor descriptor = extension.getDescriptor();
+      verifyExtensionContainingType(descriptor);
+      final Object value = extensions.getField(descriptor);
+      if (value == null) {
+        return null;
       }
       return (T) extension.fromReflectionType(value);
     }
@@ -1472,6 +1499,22 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
       final Object value = extensions.getField(extension.getDescriptor());
       if (value == null) {
         return extension.getDefaultValue();
+      }
+      return (T) extension.fromReflectionType(value);
+    }
+
+    @Override
+    @SuppressWarnings("unchecked") // Safe as fromReflectionType will always match the type of T.
+    public final <T extends MessageLite> T getMessageTypedExtensionOrNull(
+        final ExtensionLite<? extends MessageT, T> extensionLite) {
+      Extension<MessageT, T> extension = checkNotLite(extensionLite);
+      verifyExtensionContainingType(extension);
+      if (extensions == null) {
+        return null;
+      }
+      final Object value = extensions.getField(extension.getDescriptor());
+      if (value == null) {
+        return null;
       }
       return (T) extension.fromReflectionType(value);
     }

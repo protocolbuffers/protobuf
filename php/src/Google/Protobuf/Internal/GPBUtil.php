@@ -267,7 +267,7 @@ class GPBUtil
             "throw"=>0,"trait"=>0, "try"=>0,"unset"=>0, "use"=>0, "var"=>0,
             "while"=>0,"xor"=>0, "yield"=>0, "int"=>0, "float"=>0, "bool"=>0,
             "string"=>0,"true"=>0, "false"=>0, "null"=>0, "void"=>0,
-            "iterable"=>0
+            "iterable"=>0,"object"=>0,"mixed"=>0,"never"=>0
         );
 
         if (array_key_exists(strtolower($classname), $reserved_words)) {

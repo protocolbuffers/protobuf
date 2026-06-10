@@ -7,9 +7,12 @@
 
 #include "python/repeated.h"
 
+#include "google/protobuf/breaking_changes.h"
 #include "python/convert.h"
 #include "python/message.h"
 #include "python/protobuf.h"
+
+// Must be last.
 #include "upb/port/def.inc"
 
 static PyObject* PyUpb_RepeatedCompositeContainer_Append(PyObject* _self,
@@ -452,10 +455,10 @@ static PyObject* PyUpb_RepeatedContainer_Pop(PyObject* _self, PyObject* args) {
   if (!arr) return NULL;
   size_t size = upb_Array_Size(arr);
   if (index < 0) index += size;
-#if UPB_FUTURE_REMOVE_POP_CLAMP
+#if PROTOBUF_PY_FUTURE_REMOVE_POP_CLAMP
 #else
   if (index >= size) index = size - 1;
-#endif  // UPB_FUTURE_REMOVE_POP_CLAMP
+#endif  // PROTOBUF_PY_FUTURE_REMOVE_POP_CLAMP
   PyObject* ret = PyUpb_RepeatedContainer_Item(_self, index);
   if (!ret) return NULL;
   upb_Array_Delete(self->ptr.arr, index, 1);
@@ -528,6 +531,8 @@ static PyObject* PyUpb_RepeatedContainer_Sort(PyObject* pself, PyObject* args,
     PyErr_SetString(PyExc_TypeError, "Container is read-only");
     return NULL;
   }
+
+  // TODO:b/517235198 - Reify even for empty sequences.
   if (PyUpb_RepeatedContainer_Length(pself) == 0) Py_RETURN_NONE;
 
   upb_Array* arr = PyUpb_RepeatedContainer_AssureWritable(pself);
@@ -572,6 +577,7 @@ static PyObject* PyUpb_RepeatedContainer_Reverse(PyObject* _self) {
 
 static PyObject* PyUpb_RepeatedContainer_Clear(PyObject* _self) {
   Py_ssize_t size = PyUpb_RepeatedContainer_Length(_self);
+  // TODO: b/517235198 - Reify even for empty sequences.
   if (size == 0) Py_RETURN_NONE;
 
   PyUpb_RepeatedContainer* self = (PyUpb_RepeatedContainer*)_self;

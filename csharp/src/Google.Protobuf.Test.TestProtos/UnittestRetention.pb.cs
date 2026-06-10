@@ -448,7 +448,7 @@ namespace ProtobufUnittest {
     private static readonly pb::MessageParser<Extendee> _parser = new pb::MessageParser<Extendee>(() => new Extendee());
     private pb::UnknownFieldSet _unknownFields;
     private pb::ExtensionSet<Extendee> _extensions;
-    private pb::ExtensionSet<Extendee> _Extensions { get { return _extensions; } }
+    private pb::ExtensionSet<Extendee>  _Extensions { get { return _extensions; } }
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static pb::MessageParser<Extendee> Parser { get { return _parser; } }
@@ -654,7 +654,7 @@ namespace ProtobufUnittest {
     private static readonly pb::MessageParser<TopLevelMessage> _parser = new pb::MessageParser<TopLevelMessage>(() => new TopLevelMessage());
     private pb::UnknownFieldSet _unknownFields;
     private pb::ExtensionSet<TopLevelMessage> _extensions;
-    private pb::ExtensionSet<TopLevelMessage> _Extensions { get { return _extensions; } }
+    private pb::ExtensionSet<TopLevelMessage>  _Extensions { get { return _extensions; } }
     private int _hasBits0;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]

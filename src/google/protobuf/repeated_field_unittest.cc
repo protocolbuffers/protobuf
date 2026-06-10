@@ -551,6 +551,16 @@ TEST(RepeatedField, MergeFrom) {
   EXPECT_EQ(5, destination.Get(4));
 }
 
+TEST(RepeatedField, MergeFromSelfFailsWithATermination) {
+  // Self-merge is undefined behavior and is now a well-defined termination.
+  // Use a SOO-capacity field (2 elements for int32_t), the case that
+  // previously appended heap-pointer bytes in release builds.
+  RepeatedField<int32_t> field;
+  field.Add(1);
+  field.Add(2);
+  EXPECT_DEATH(field.MergeFrom(field), "self-reference");
+}
+
 
 TEST(RepeatedField, CopyFrom) {
   RepeatedField<int> source, destination;

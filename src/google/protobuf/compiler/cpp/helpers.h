@@ -203,10 +203,6 @@ std::string DescriptorTableName(const FileDescriptor* file,
 // dllexport needed for the target file, if any.
 std::string FileDllExport(const FileDescriptor* file, const Options& options);
 
-// Name of the base class: google::protobuf::Message or google::protobuf::MessageLite.
-std::string SuperClassName(const Descriptor* descriptor,
-                           const Options& options);
-
 // Add an underscore if necessary to prevent conflicting with known names and
 // keywords.
 // We use the context and the kind of entity to try to determine if mangling is

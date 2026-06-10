@@ -103,6 +103,7 @@ google/protobuf/message_lite.h
 google/protobuf/metadata.h
 google/protobuf/metadata_lite.h
 google/protobuf/micro_string.h
+google/protobuf/naming_style.h
 google/protobuf/os_macros_restore.inc
 google/protobuf/os_macros_undef.inc
 google/protobuf/parse_context.h
@@ -178,6 +179,7 @@ upb/message/accessors.h
 upb/message/array.h
 upb/message/compare.h
 upb/message/compat.h
+upb/message/convert.h
 upb/message/copy.h
 upb/message/map.h
 upb/message/map_gencode_util.h
