@@ -199,15 +199,18 @@ final class CodedInputStreamReader {
 
   private <T> void mergeGroupFieldInternal(
       T target, Schema<T> schema, ExtensionRegistryLite extensionRegistry) throws IOException {
+    input.checkRecursionLimit();
     int prevEndGroupTag = endGroupTag;
     endGroupTag = WireFormat.makeTag(WireFormat.getTagFieldNumber(tag), WIRETYPE_END_GROUP);
 
+    ++input.groupDepth;
     try {
       schema.mergeFrom(target, this, extensionRegistry);
       if (tag != endGroupTag) {
         throw InvalidProtocolBufferException.parseFailure();
       }
     } finally {
+      --input.groupDepth;
       // Restore the old end group tag.
       endGroupTag = prevEndGroupTag;
     }
