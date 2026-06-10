@@ -456,12 +456,7 @@ class PROTOBUF_EXPORT UntypedMapBase {
     return AllocNode(arena, type_info_.node_size);
   }
 
-  NodeBase* AllocNode(Arena* arena, size_t node_size) {
-    ABSL_DCHECK_EQ(arena, this->arena());
-    return static_cast<NodeBase*>(arena == nullptr
-                                      ? Allocate(node_size)
-                                      : arena->AllocateAligned(node_size));
-  }
+  NodeBase* AllocNode(Arena* arena, size_t node_size);
 
   void DeallocNode(NodeBase* node) { DeallocNode(node, type_info_.node_size); }
 
@@ -479,17 +474,7 @@ class PROTOBUF_EXPORT UntypedMapBase {
     }
   }
 
-  NodeBase** CreateEmptyTable(Arena* arena, map_index_t n) {
-    ABSL_DCHECK_GE(n, kMinTableSize);
-    ABSL_DCHECK_EQ(n & (n - 1), 0u);
-    ABSL_DCHECK_EQ(arena, this->arena());
-    NodeBase** result =
-        arena == nullptr
-            ? static_cast<NodeBase**>(Allocate(n * sizeof(NodeBase*)))
-            : Arena::CreateArray<NodeBase*>(arena, n);
-    memset(result, 0, n * sizeof(result[0]));
-    return result;
-  }
+  NodeBase** CreateEmptyTable(Arena* arena, map_index_t n);
 
   void DeleteNode(NodeBase* node);
   void DeleteList(NodeBase* list);
