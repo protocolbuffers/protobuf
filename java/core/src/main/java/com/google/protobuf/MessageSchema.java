@@ -2026,7 +2026,7 @@ final class MessageSchema<T> implements Schema<T> {
   // TODO: Consider serializing oneof fields last so that only one entry per
   // oneof is actually serialized. This would mean that we would violate the serialization order
   // contract. It should also be noted that Go currently does this.
-  public void writeTo(T message, Writer writer) throws IOException {
+  public void writeTo(T message, CodedOutputStreamWriter writer) throws IOException {
     Iterator<? extends Map.Entry<?, ?>> extensionIterator = null;
     Map.Entry nextExtension = null;
     if (hasExtensions) {
@@ -2428,8 +2428,8 @@ final class MessageSchema<T> implements Schema<T> {
     writeUnknownInMessageTo(unknownFieldSchema, message, writer);
   }
 
-  private <K, V> void writeMapHelper(Writer writer, int number, Object mapField, int pos)
-      throws IOException {
+  private <K, V> void writeMapHelper(
+      CodedOutputStreamWriter writer, int number, Object mapField, int pos) throws IOException {
     if (mapField != null) {
       writer.writeMap(
           number,
@@ -2439,12 +2439,14 @@ final class MessageSchema<T> implements Schema<T> {
   }
 
   private <UT, UB> void writeUnknownInMessageTo(
-      UnknownFieldSchema<UT, UB> schema, T message, Writer writer) throws IOException {
+      UnknownFieldSchema<UT, UB> schema, T message, CodedOutputStreamWriter writer)
+      throws IOException {
     schema.writeTo(schema.getFromMessage(message), writer);
   }
 
   @Override
-  public void mergeFrom(T message, Reader reader, ExtensionRegistryLite extensionRegistry)
+  public void mergeFrom(
+      T message, CodedInputStreamReader reader, ExtensionRegistryLite extensionRegistry)
       throws IOException {
     checkNotNull(extensionRegistry);
     checkMutable(message);
@@ -2459,7 +2461,7 @@ final class MessageSchema<T> implements Schema<T> {
       UnknownFieldSchema<UT, UB> unknownFieldSchema,
       ExtensionSchema<ET> extensionSchema,
       T message,
-      Reader reader,
+      CodedInputStreamReader reader,
       ExtensionRegistryLite extensionRegistry)
       throws IOException {
     UB unknownFields = null;
@@ -2469,7 +2471,7 @@ final class MessageSchema<T> implements Schema<T> {
         final int number = reader.getFieldNumber();
         final int pos = positionForFieldNumber(number);
         if (pos < 0) {
-          if (number == Reader.READ_DONE) {
+          if (number == CodedInputStreamReader.READ_DONE) {
             return;
           }
           // Check if it's an extension.
@@ -3897,7 +3899,7 @@ final class MessageSchema<T> implements Schema<T> {
       int pos,
       Object mapDefaultEntry,
       ExtensionRegistryLite extensionRegistry,
-      Reader reader)
+      CodedInputStreamReader reader)
       throws IOException {
     long offset = offset(typeAndOffsetAt(pos));
     Object mapField = UnsafeUtil.getObject(message, offset);
@@ -4096,7 +4098,8 @@ final class MessageSchema<T> implements Schema<T> {
     return true;
   }
 
-  private void writeString(int fieldNumber, Object value, Writer writer) throws IOException {
+  private void writeString(int fieldNumber, Object value, CodedOutputStreamWriter writer)
+      throws IOException {
     if (value instanceof String) {
       writer.writeString(fieldNumber, (String) value);
     } else {
@@ -4104,7 +4107,8 @@ final class MessageSchema<T> implements Schema<T> {
     }
   }
 
-  private void readString(Object message, int typeAndOffset, Reader reader) throws IOException {
+  private void readString(Object message, int typeAndOffset, CodedInputStreamReader reader)
+      throws IOException {
     if (isEnforceUtf8(typeAndOffset)) {
       // Enforce valid UTF-8 on the read.
       UnsafeUtil.putObject(message, offset(typeAndOffset), reader.readStringRequireUtf8());
@@ -4119,7 +4123,8 @@ final class MessageSchema<T> implements Schema<T> {
     }
   }
 
-  private void readStringList(Object message, int typeAndOffset, Reader reader) throws IOException {
+  private void readStringList(Object message, int typeAndOffset, CodedInputStreamReader reader)
+      throws IOException {
     if (isEnforceUtf8(typeAndOffset)) {
       reader.readStringListRequireUtf8(
           listFieldSchema.<String>mutableListAt(message, offset(typeAndOffset)));
@@ -4131,7 +4136,7 @@ final class MessageSchema<T> implements Schema<T> {
   private <E> void readMessageList(
       Object message,
       int typeAndOffset,
-      Reader reader,
+      CodedInputStreamReader reader,
       Schema<E> schema,
       ExtensionRegistryLite extensionRegistry)
       throws IOException {
@@ -4143,7 +4148,7 @@ final class MessageSchema<T> implements Schema<T> {
   private <E> void readGroupList(
       Object message,
       long offset,
-      Reader reader,
+      CodedInputStreamReader reader,
       Schema<E> schema,
       ExtensionRegistryLite extensionRegistry)
       throws IOException {

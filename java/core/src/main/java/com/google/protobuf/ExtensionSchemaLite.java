@@ -45,7 +45,7 @@ final class ExtensionSchemaLite extends ExtensionSchema<ExtensionDescriptor> {
   @Override
   <UT, UB> UB parseExtension(
       Object containerMessage,
-      Reader reader,
+      CodedInputStreamReader reader,
       Object extensionObject,
       ExtensionRegistryLite extensionRegistry,
       FieldSet<ExtensionDescriptor> extensions,
@@ -312,7 +312,8 @@ final class ExtensionSchemaLite extends ExtensionSchema<ExtensionDescriptor> {
   }
 
   @Override
-  void serializeExtension(Writer writer, Map.Entry<?, ?> extension) throws IOException {
+  void serializeExtension(CodedOutputStreamWriter writer, Map.Entry<?, ?> extension)
+      throws IOException {
     GeneratedMessageLite.ExtensionDescriptor descriptor =
         (GeneratedMessageLite.ExtensionDescriptor) extension.getKey();
     if (descriptor.isRepeated()) {
@@ -526,7 +527,7 @@ final class ExtensionSchemaLite extends ExtensionSchema<ExtensionDescriptor> {
 
   @Override
   void parseLengthPrefixedMessageSetItem(
-      Reader reader,
+      CodedInputStreamReader reader,
       Object extensionObject,
       ExtensionRegistryLite extensionRegistry,
       FieldSet<ExtensionDescriptor> extensions)
