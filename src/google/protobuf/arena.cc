@@ -399,21 +399,28 @@ size_t SerialArena::FreeStringBlocks(StringBlock* string_block,
 // where the size of "ids" and "arenas" is determined at runtime; hence the use
 // of Layout.
 struct SerialArenaChunkHeader {
-  constexpr SerialArenaChunkHeader(uint32_t capacity, uint32_t size)
-      : next_chunk(nullptr), capacity(capacity), size(size) {}
+  constexpr SerialArenaChunkHeader(uint32_t capacity, uint32_t size,
+                                   uint32_t allocated_size)
+      : next_chunk(nullptr),
+        capacity(capacity),
+        size(size),
+        allocated_size(allocated_size) {}
 
   ThreadSafeArena::SerialArenaChunk* next_chunk;
   uint32_t capacity;
   std::atomic<uint32_t> size;
+  uint32_t allocated_size;
 };
 
 class ThreadSafeArena::SerialArenaChunk {
  public:
-  SerialArenaChunk(uint32_t capacity, void* me, SerialArena* serial) {
+  SerialArenaChunk(uint32_t capacity, uint32_t allocated_size, void* me,
+                   SerialArena* serial) {
     // We use `layout`/`ids`/`arenas` local variables to avoid recomputing
     // offsets if we were to call id(i)/arena(i) repeatedly.
     const layout_type layout = Layout(capacity);
-    new (layout.Pointer<kHeader>(ptr())) SerialArenaChunkHeader{capacity, 1};
+    new (layout.Pointer<kHeader>(ptr()))
+        SerialArenaChunkHeader{capacity, 1, allocated_size};
 
     std::atomic<void*>* ids = layout.Pointer<kIds>(ptr());
     new (&ids[0]) std::atomic<void*>{me};
@@ -440,6 +447,9 @@ class ThreadSafeArena::SerialArenaChunk {
   // capacity
   uint32_t capacity() const { return header().capacity; }
   void set_capacity(uint32_t capacity) { header().capacity = capacity; }
+
+  // allocated_size
+  uint32_t allocated_size() const { return header().allocated_size; }
 
   // ids: returns up to size().
   absl::Span<const std::atomic<void*>> ids() const {
@@ -527,7 +537,7 @@ class ThreadSafeArena::SerialArenaChunk {
   layout_type Layout() const { return Layout(capacity()); }
 };
 
-constexpr SerialArenaChunkHeader kSentryArenaChunk = {0, 0};
+constexpr SerialArenaChunkHeader kSentryArenaChunk = {0, 0, 0};
 
 ThreadSafeArena::SerialArenaChunk* ThreadSafeArena::SentrySerialArenaChunk() {
   // const_cast is okay because the sentry chunk is never mutated. Also,
@@ -687,7 +697,8 @@ ThreadSafeArena::SerialArenaChunk* ThreadSafeArena::NewSerialArenaChunk(
   SizedPtr mem = AllocateAtLeast(next_bytes);
   next_capacity = static_cast<uint32_t>(mem.n - kHeaderSize) / kEntrySize;
   ABSL_DCHECK_LE(SerialArenaChunk::AllocSize(next_capacity), mem.n);
-  return new (mem.p) SerialArenaChunk{next_capacity, id, serial};
+  return new (mem.p)
+      SerialArenaChunk{next_capacity, static_cast<uint32_t>(mem.n), id, serial};
 }
 
 // Tries to reserve an entry by atomic fetch_add. If the head chunk is already
@@ -776,8 +787,7 @@ SizedPtr ThreadSafeArena::Free() {
     }
 
     // Delete the chunk as we're done with it.
-    internal::SizedDelete(chunk,
-                          SerialArenaChunk::AllocSize(chunk->capacity()));
+    internal::SizedDelete(chunk, chunk->allocated_size());
   });
 
   // The first block of the first arena is special and let the caller handle it.
