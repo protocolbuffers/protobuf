@@ -9,28 +9,28 @@ package com.google.protobuf;
 
 import java.util.AbstractMap;
 import java.util.AbstractSet;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Set;
-import java.util.SortedMap;
-import java.util.TreeMap;
 
 /**
- * A custom map implementation from FieldDescriptor to Object optimized to minimize the number of
- * memory allocations for instances with a small number of mappings. The implementation stores the
- * first {@code k} mappings in an array for a configurable value of {@code k}, allowing direct
- * access to the corresponding {@code Entry}s without the need to create an Iterator. The remaining
- * entries are stored in an overflow map. Iteration over the entries in the map should be done as
- * follows:
+ * A custom map implementation from {@link FieldSet.FieldDescriptorLite} to Object.
+ *
+ * <p>This implementation is heavily optimized for insertion and iteration when the map is built
+ * (via {@code put()}) with keys (FieldDescriptors) in ascending sorted order. When entries are
+ * added in increasing order of the FieldDescriptor, no sorting overhead is incurred. The entries
+ * are simply appended to a backing array, making memory allocation and insertion highly efficient.
+ *
+ * <p>Iteration over the entries is straightforward and avoids the creation of an {@code Iterator}
+ * object. It should be done as follows:
  *
  * <pre>{@code
- * for (int i = 0; i < fieldMap.getNumArrayEntries(); i++) {
+ * for (int i = 0; i < fieldMap.size(); i++) {
  *   process(fieldMap.getArrayEntryAt(i));
- * }
- * for (Map.Entry<K, V> entry : fieldMap.getOverflowEntries()) {
- *   process(entry);
  * }
  * }</pre>
  *
@@ -38,93 +38,75 @@ import java.util.TreeMap;
  * #entrySet()} adheres to the same contract but is less efficient as it necessarily involves
  * creating an object for iteration.
  *
- * <p>The tradeoff for this memory efficiency is that the worst case running time of the {@code
- * put()} operation is {@code O(k + lg n)}, which happens when entries are added in descending
- * order. {@code k} should be chosen such that it covers enough common cases without adversely
- * affecting larger maps. In practice, the worst case scenario does not happen for extensions
- * because extension fields are serialized and deserialized in order of ascending tag number, but
- * the worst case scenario can happen for DynamicMessages.
+ * <p>If entries are added out of order, the map defers sorting until necessary (e.g., when
+ * iterating, querying size, or retrieving elements). This lazily sorts and deduplicates the
+ * underlying array.
  *
- * <p>The running time for all other operations is similar to that of {@code TreeMap}.
- *
- * <p>Instances are not thread-safe until {@link #makeImmutable()} is called, after which any
- * modifying operation will result in an {@link UnsupportedOperationException}.
+ * <p>Modifying operations (such as {@code put()}, {@code remove()}, or {@code clear()}) are not
+ * thread-safe until {@link #makeImmutable()} is called, after which any modifying operation will
+ * result in an {@link UnsupportedOperationException}. However, instances are thread-safe for
+ * concurrent read-only operations (such as {@code get()} or {@code size()}) even before {@code
+ * makeImmutable()} is called, as long as no modifying operations are performed concurrently.
  *
  * @author darick@google.com Darick Tong
  */
-// This class is final for all intents and purposes because the constructor is
-// private. However, the FieldDescriptor-specific logic is encapsulated in
-// a subclass to aid testability of the core logic.
-class SmallSortedMap<K extends FieldSet.FieldDescriptorLite<K>, V> extends AbstractMap<K, V> {
+@SuppressWarnings("unchecked") // entries is known to contain Entry objects.)
+class SmallSortedMap<K extends FieldSet.FieldDescriptorLite<K>> extends AbstractMap<K, Object> {
 
   static final int DEFAULT_FIELD_MAP_ARRAY_SIZE = 16;
-
-  /**
-   * Creates a new instance for mapping FieldDescriptors to their values. The {@link
-   * #makeImmutable()} implementation will convert the List values of any repeated fields to
-   * unmodifiable lists.
-   */
-  static <FieldDescriptorT extends FieldSet.FieldDescriptorLite<FieldDescriptorT>>
-      SmallSortedMap<FieldDescriptorT, Object> newFieldMap() {
-    return new SmallSortedMap<FieldDescriptorT, Object>() {
-      @Override
-      public void makeImmutable() {
-        if (!isImmutable()) {
-          for (int i = 0; i < getNumArrayEntries(); i++) {
-            final Map.Entry<FieldDescriptorT, Object> entry = getArrayEntryAt(i);
-            if (entry.getKey().isRepeated()) {
-              final List<?> value = (List) entry.getValue();
-              entry.setValue(Collections.unmodifiableList(value));
-            }
-          }
-          for (Map.Entry<FieldDescriptorT, Object> entry : getOverflowEntries()) {
-            if (entry.getKey().isRepeated()) {
-              final List<?> value = (List) entry.getValue();
-              entry.setValue(Collections.unmodifiableList(value));
-            }
-          }
-        }
-        super.makeImmutable();
-      }
-    };
-  }
-
-  /** Creates a new instance for testing. */
-  static <K extends FieldSet.FieldDescriptorLite<K>, V> SmallSortedMap<K, V> newInstanceForTest() {
-    return new SmallSortedMap<>();
-  }
 
   // Only has Entry elements inside.
   // Can't declare this as Entry[] because Entry is generic, so you get "generic array creation"
   // error. Instead, use an Object[], and cast to Entry on read.
   // null Object[] means 'empty'.
+  // TODO: b/513203684 - Consider maintaining two arrays for keys and values.
   private Object[] entries;
-  // Number of elements in entries that are valid, like ArrayList.size.
-  private int entriesSize;
 
-  private Map<K, V> overflowEntries;
+  // Number of elements in entries that are valid, like ArrayList.size.
+  private int size;
+
+  // Whether {@link #makeImmutable()} has been called. If true, the map is immutable, and
+  // guaranteed to be sorted and deduplicated.
   private boolean isImmutable;
+
   // The EntrySet is a stateless view of the Map. It's initialized the first
   // time it is requested and reused henceforth.
   private volatile EntrySet lazyEntrySet;
 
-  private SmallSortedMap() {
-    this.overflowEntries = Collections.emptyMap();
+  private volatile int firstUnsortedIndex;
+
+  SmallSortedMap() {
+    isImmutable = false;
+    entries = null;
+    size = 0;
+    firstUnsortedIndex = -1;
   }
 
-  /** Make this map immutable from this point forward. */
+  SmallSortedMap(int initialCapacity) {
+    isImmutable = false;
+    entries = new Object[initialCapacity];
+    size = 0;
+    firstUnsortedIndex = -1;
+  }
+
+  /**
+   * Make this map immutable from this point forward. Immutable maps are guaranteed to be sorted and
+   * deduplicated.
+   */
   public void makeImmutable() {
-    if (!isImmutable) {
-      // Note: There's no need to wrap the entries in an unmodifiableList
-      // because none of the array's accessors are exposed. The iterator() of
-      // overflowEntries, on the other hand, is exposed so it must be made
-      // unmodifiable.
-      overflowEntries =
-          overflowEntries.isEmpty()
-              ? Collections.<K, V>emptyMap()
-              : Collections.unmodifiableMap(overflowEntries);
-      isImmutable = true;
+    if (isImmutable) {
+      return;
     }
+    ensureSortedAndDeduplicated();
+    if (entries != null) {
+      for (int i = 0; i < size; i++) {
+        Entry entry = (Entry) entries[i];
+        if (entry.getKey().isRepeated()) {
+          entry.setValue((Object) Collections.unmodifiableList((List<?>) entry.getValue()));
+        }
+      }
+    }
+    isImmutable = true;
   }
 
   /**
@@ -135,41 +117,26 @@ class SmallSortedMap<K extends FieldSet.FieldDescriptorLite<K>, V> extends Abstr
   }
 
   /**
-   * @return The number of entries in the entry array.
-   */
-  public int getNumArrayEntries() {
-    return entriesSize;
-  }
-
-  /**
    * @return The array entry at the given {@code index}.
    */
-  public Map.Entry<K, V> getArrayEntryAt(int index) {
-    if (index >= entriesSize) {
+  public Map.Entry<K, Object> getArrayEntryAt(int index) {
+    ensureSortedAndDeduplicated();
+    if (index >= size) {
       throw new ArrayIndexOutOfBoundsException(index);
     }
-    @SuppressWarnings("unchecked")
     Entry e = (Entry) entries[index];
     return e;
   }
 
-  /**
-   * @return There number of overflow entries.
-   */
-  public int getNumOverflowEntries() {
-    return overflowEntries.size();
-  }
-
-  /**
-   * @return An iterable over the overflow entries.
-   */
-  public Iterable<Map.Entry<K, V>> getOverflowEntries() {
-    return overflowEntries.isEmpty() ? Collections.emptySet() : overflowEntries.entrySet();
+  @Override
+  public int size() {
+    ensureSortedAndDeduplicated();
+    return size;
   }
 
   @Override
-  public int size() {
-    return entriesSize + overflowEntries.size();
+  public boolean isEmpty() {
+    return size == 0;
   }
 
   /**
@@ -179,9 +146,9 @@ class SmallSortedMap<K extends FieldSet.FieldDescriptorLite<K>, V> extends Abstr
    */
   @Override
   public boolean containsKey(Object o) {
-    @SuppressWarnings("unchecked")
     final K key = (K) o;
-    return binarySearchInArray(key) >= 0 || overflowEntries.containsKey(key);
+    ensureSortedAndDeduplicated();
+    return binarySearch(key) >= 0;
   }
 
   /**
@@ -190,59 +157,61 @@ class SmallSortedMap<K extends FieldSet.FieldDescriptorLite<K>, V> extends Abstr
    * <p>{@inheritDoc}
    */
   @Override
-  public V get(Object o) {
-    @SuppressWarnings("unchecked")
+  public Object get(Object o) {
     final K key = (K) o;
-    final int index = binarySearchInArray(key);
+    ensureSortedAndDeduplicated();
+    final int index = binarySearch(key);
     if (index >= 0) {
-      @SuppressWarnings("unchecked")
       Entry e = (Entry) entries[index];
       return e.getValue();
     }
-    return overflowEntries.get(key);
+    return null;
+  }
+
+  @Override
+  public void putAll(Map<? extends K, ?> map) {
+    checkMutable();
+    ensureCapacity(size + map.size());
+    for (Map.Entry<? extends K, ?> entry : map.entrySet()) {
+      put((K) entry.getKey(), (Object) entry.getValue());
+    }
   }
 
   @Override
   @CanIgnoreReturnValue
-  public V put(K key, V value) {
+  @SuppressWarnings("PreferPreconditions") // unsupported
+  public Object put(K key, Object value) {
     checkMutable();
-    final int index = binarySearchInArray(key);
-    if (index >= 0) {
-      // Replace existing array entry.
-      @SuppressWarnings("unchecked")
-      Entry e = (Entry) entries[index];
-      return e.setValue(value);
+    if (key == null) {
+      throw new NullPointerException("key cannot be null");
     }
-    ensureEntryArrayMutable();
-    final int insertionPoint = -(index + 1);
-    if (insertionPoint >= DEFAULT_FIELD_MAP_ARRAY_SIZE) {
-      // Put directly in overflow.
-      return getOverflowEntriesMutable().put(key, value);
+
+    if (size > 0) {
+      int comp = key.compareTo(((Entry) entries[size - 1]).getKey());
+      if (comp < 0) {
+        if (firstUnsortedIndex == -1) {
+          firstUnsortedIndex = size;
+        }
+      } else if (comp == 0) {
+        // Overwrite existing value.
+        ((Entry) entries[size - 1]).setValue(value);
+        // We could choose to return the previous value here, but we don't for consistency with
+        // the code below.
+        return null;
+      }
     }
-    // Insert new Entry in array.
-    if (entriesSize == DEFAULT_FIELD_MAP_ARRAY_SIZE) {
-      // Shift the last array entry into overflow.
-      @SuppressWarnings("unchecked")
-      final Entry lastEntryInArray = (Entry) entries[DEFAULT_FIELD_MAP_ARRAY_SIZE - 1];
-      entriesSize--;
-      getOverflowEntriesMutable().put(lastEntryInArray.getKey(), lastEntryInArray.getValue());
-    }
-    System.arraycopy(
-        entries, insertionPoint, entries, insertionPoint + 1, entries.length - insertionPoint - 1);
-    entries[insertionPoint] = new Entry(key, value);
-    entriesSize++;
-    return null;
+    ensureCapacity(size + 1);
+    entries[size++] = new Entry(key, value);
+    return null; // Note: doesn't return previous value to optimize for insertion speed
   }
 
   @Override
   public void clear() {
     checkMutable();
-    if (entriesSize != 0) {
+    if (size != 0) {
       entries = null;
-      entriesSize = 0;
-    }
-    if (!overflowEntries.isEmpty()) {
-      overflowEntries.clear();
+      size = 0;
+      firstUnsortedIndex = -1;
     }
   }
 
@@ -253,40 +222,86 @@ class SmallSortedMap<K extends FieldSet.FieldDescriptorLite<K>, V> extends Abstr
    */
   @Override
   @CanIgnoreReturnValue
-  public V remove(Object o) {
+  public Object remove(Object o) {
     checkMutable();
-    @SuppressWarnings("unchecked")
+    ensureSortedAndDeduplicated();
     final K key = (K) o;
-    final int index = binarySearchInArray(key);
-    if (index >= 0) {
-      return removeArrayEntryAt(index);
-    }
-    // overflowEntries might be Collections.unmodifiableMap(), so only
-    // call remove() if it is non-empty.
-    if (overflowEntries.isEmpty()) {
+    int index = binarySearch(key);
+    if (index < 0) {
       return null;
-    } else {
-      return overflowEntries.remove(key);
+    }
+    Object oldValue = ((Entry) entries[index]).getValue();
+    System.arraycopy(entries, index + 1, entries, index, size - index - 1);
+    // Clear out the unused entry at the end to allow garbage collection.
+    entries[--size] = null;
+    return oldValue;
+  }
+
+  private void ensureCapacity(int minCapacity) {
+    if (entries == null || entries.length == 0) {
+      entries = new Object[Math.max(DEFAULT_FIELD_MAP_ARRAY_SIZE, minCapacity)];
+      return;
+    }
+    if (minCapacity > entries.length) {
+      int newCapacity = Math.max(entries.length + (entries.length >> 1), minCapacity);
+      entries = Arrays.copyOf(entries, newCapacity);
     }
   }
 
-  @CanIgnoreReturnValue
-  private V removeArrayEntryAt(int index) {
-    checkMutable();
-    @SuppressWarnings("unchecked")
-    final V removed = ((Entry) entries[index]).getValue();
-    // shift items across
-    System.arraycopy(entries, index + 1, entries, index, entriesSize - index - 1);
-    entriesSize--;
-    if (!overflowEntries.isEmpty()) {
-      // Shift the first entry in the overflow to be the last entry in the
-      // array.
-      final Iterator<Map.Entry<K, V>> iterator = getOverflowEntriesMutable().entrySet().iterator();
-      entries[entriesSize] = new Entry(iterator.next());
-      entriesSize++;
-      iterator.remove();
+  /**
+   * Ensures that the entries in the map are sorted and deduplicated.
+   *
+   * <p>Immutable maps are guaranteed to be already sorted and deduplicated.
+   */
+  private void ensureSortedAndDeduplicated() {
+    if (isImmutable) {
+      return;
     }
-    return removed;
+    if (firstUnsortedIndex != -1) {
+      // Synchronize on the map to support concurrent read-only access. When multiple threads
+      // concurrently invoke read operations on a mutable map that has unsorted entries, they must
+      // safely coordinate the lazy sorting and deduplication without data corruption.
+      synchronized (this) {
+        if (firstUnsortedIndex == -1) {
+          return;
+        }
+        if (size <= 1) {
+          return;
+        }
+        for (int i = firstUnsortedIndex; i < size; i++) {
+          Entry entry = (Entry) entries[i];
+          K key = entry.getKey();
+          int j = i - 1;
+          while (j >= 0) {
+            Entry prevEntry = (Entry) entries[j];
+            if (prevEntry.getKey().compareTo(key) <= 0) {
+              break;
+            }
+            entries[j + 1] = entries[j];
+            j--;
+          }
+          entries[j + 1] = entry;
+        }
+
+        // Resolve duplicates in-place (stable, preserving last write)
+        int newSize = 0;
+        for (int i = 0; i < size; i++) {
+          Entry entry = (Entry) entries[i];
+          if (newSize > 0 && ((Entry) entries[newSize - 1]).getKey().equals(entry.getKey())) {
+            entries[newSize - 1] = entry;
+          } else {
+            entries[newSize] = entry;
+            newSize++;
+          }
+        }
+        if (newSize < this.size) {
+          this.size = newSize;
+          // Clear out the unused entries to allow garbage collection.
+          Arrays.fill(entries, newSize, entries.length, null);
+        }
+        this.firstUnsortedIndex = -1;
+      }
+    }
   }
 
   /**
@@ -294,36 +309,22 @@ class SmallSortedMap<K extends FieldSet.FieldDescriptorLite<K>, V> extends Abstr
    * @return The returned integer position follows the same semantics as the value returned by
    *     {@link java.util.Arrays#binarySearch()}.
    */
-  private int binarySearchInArray(K key) {
-    int left = 0;
-    int right = entriesSize - 1;
-
-    // Optimization: For the common case in which entries are added in
-    // ascending tag order, check the largest element in the array before
-    // doing a full binary search.
-    if (right >= 0) {
-      @SuppressWarnings("unchecked")
-      int cmp = key.compareTo(((Entry) entries[right]).getKey());
-      if (cmp > 0) {
-        return -(right + 2); // Insert point is after "right".
-      } else if (cmp == 0) {
-        return right;
-      }
-    }
-
-    while (left <= right) {
-      int mid = (left + right) / 2;
-      @SuppressWarnings("unchecked")
-      int cmp = key.compareTo(((Entry) entries[mid]).getKey());
+  private int binarySearch(K key) {
+    int low = 0;
+    int high = size - 1;
+    while (low <= high) {
+      int mid = (low + high) >>> 1;
+      K midKey = ((Entry) entries[mid]).getKey();
+      int cmp = midKey.compareTo(key);
       if (cmp < 0) {
-        right = mid - 1;
+        low = mid + 1;
       } else if (cmp > 0) {
-        left = mid + 1;
+        high = mid - 1;
       } else {
-        return mid;
+        return mid; // key found
       }
     }
-    return -(left + 1);
+    return -(low + 1); // key not found.
   }
 
   /**
@@ -334,13 +335,13 @@ class SmallSortedMap<K extends FieldSet.FieldDescriptorLite<K>, V> extends Abstr
    * <p>{@inheritDoc}
    */
   @Override
-  public Set<Map.Entry<K, V>> entrySet() {
+  public Set<Map.Entry<K, Object>> entrySet() {
+    ensureSortedAndDeduplicated();
     if (lazyEntrySet == null) {
       lazyEntrySet = new EntrySet();
     }
     return lazyEntrySet;
   }
-
 
   /**
    * @throws UnsupportedOperationException if {@link #makeImmutable()} has has been called.
@@ -352,41 +353,15 @@ class SmallSortedMap<K extends FieldSet.FieldDescriptorLite<K>, V> extends Abstr
   }
 
   /**
-   * @return a {@link SortedMap} to which overflow entries mappings can be added or removed.
-   * @throws UnsupportedOperationException if {@link #makeImmutable()} has been called.
-   */
-  private SortedMap<K, V> getOverflowEntriesMutable() {
-    checkMutable();
-    if (overflowEntries.isEmpty() && !(overflowEntries instanceof TreeMap)) {
-      overflowEntries = new TreeMap<K, V>();
-    }
-    return (SortedMap<K, V>) overflowEntries;
-  }
-
-  /**
-   * Lazily creates the entry array. Any code that adds to the array must first call this method.
-   */
-  private void ensureEntryArrayMutable() {
-    checkMutable();
-    if (entries == null) {
-      entries = new Object[DEFAULT_FIELD_MAP_ARRAY_SIZE];
-    }
-  }
-
-  /**
    * Entry implementation that implements Comparable in order to support binary search within the
    * entry array. Also checks mutability in {@link #setValue()}.
    */
-  private class Entry implements Map.Entry<K, V>, Comparable<Entry> {
+  private class Entry implements Map.Entry<K, Object>, Comparable<Entry> {
 
     private final K key;
-    private V value;
+    private Object value;
 
-    Entry(Map.Entry<K, V> copy) {
-      this(copy.getKey(), copy.getValue());
-    }
-
-    Entry(K key, V value) {
+    Entry(K key, Object value) {
       this.key = key;
       this.value = value;
     }
@@ -397,7 +372,7 @@ class SmallSortedMap<K extends FieldSet.FieldDescriptorLite<K>, V> extends Abstr
     }
 
     @Override
-    public V getValue() {
+    public Object getValue() {
       return value;
     }
 
@@ -408,9 +383,9 @@ class SmallSortedMap<K extends FieldSet.FieldDescriptorLite<K>, V> extends Abstr
 
     @Override
     @CanIgnoreReturnValue
-    public V setValue(V newValue) {
+    public Object setValue(Object newValue) {
       checkMutable();
-      final V oldValue = this.value;
+      final Object oldValue = this.value;
       this.value = newValue;
       return oldValue;
     }
@@ -447,10 +422,10 @@ class SmallSortedMap<K extends FieldSet.FieldDescriptorLite<K>, V> extends Abstr
   }
 
   /** Stateless view of the entries in the field map. */
-  private class EntrySet extends AbstractSet<Map.Entry<K, V>> {
+  private class EntrySet extends AbstractSet<Map.Entry<K, Object>> {
 
     @Override
-    public Iterator<Map.Entry<K, V>> iterator() {
+    public Iterator<Map.Entry<K, Object>> iterator() {
       return new EntryIterator();
     }
 
@@ -466,43 +441,10 @@ class SmallSortedMap<K extends FieldSet.FieldDescriptorLite<K>, V> extends Abstr
      */
     @Override
     public boolean contains(Object o) {
-      @SuppressWarnings("unchecked")
-      final Map.Entry<K, V> entry = (Map.Entry<K, V>) o;
-      final V existing = get(entry.getKey());
-      final V value = entry.getValue();
+      final Map.Entry<K, Object> entry = (Map.Entry<K, Object>) o;
+      final Object existing = get(entry.getKey());
+      final Object value = entry.getValue();
       return existing == value || (existing != null && existing.equals(value));
-    }
-
-    @Override
-    @CanIgnoreReturnValue
-    public boolean add(Map.Entry<K, V> entry) {
-      if (!contains(entry)) {
-        put(entry.getKey(), entry.getValue());
-        return true;
-      }
-      return false;
-    }
-
-    /**
-     * Throws a {@link ClassCastException} if o is not of the expected type.
-     *
-     * <p>{@inheritDoc}
-     */
-    @Override
-    @CanIgnoreReturnValue
-    public boolean remove(Object o) {
-      @SuppressWarnings("unchecked")
-      final Map.Entry<K, V> entry = (Map.Entry<K, V>) o;
-      if (contains(entry)) {
-        SmallSortedMap.this.remove(entry.getKey());
-        return true;
-      }
-      return false;
-    }
-
-    @Override
-    public void clear() {
-      SmallSortedMap.this.clear();
     }
   }
 
@@ -510,50 +452,22 @@ class SmallSortedMap<K extends FieldSet.FieldDescriptorLite<K>, V> extends Abstr
    * Iterator implementation that switches from the entry array to the overflow entries
    * appropriately.
    */
-  private class EntryIterator implements Iterator<Map.Entry<K, V>> {
+  private class EntryIterator implements Iterator<Map.Entry<K, Object>> {
 
     private int pos = -1;
-    private Iterator<Map.Entry<K, V>> lazyOverflowIterator;
 
     @Override
     public boolean hasNext() {
-      return (pos + 1) < entriesSize
-          || (!overflowEntries.isEmpty() && getOverflowIterator().hasNext());
+      return (pos + 1) < size;
     }
 
     @Override
-    public Map.Entry<K, V> next() {
-      // Always increment pos so that we know whether the last returned value
-      // was from the array or from overflow.
-      if (++pos < entriesSize) {
-        @SuppressWarnings("unchecked")
-        Entry e = (Entry) entries[pos];
-        return e;
+    @SuppressWarnings("unchecked") // entries is known to contain Entry objects.
+    public Map.Entry<K, Object> next() {
+      if (!hasNext()) {
+        throw new NoSuchElementException();
       }
-      return getOverflowIterator().next();
-    }
-
-    @Override
-    public void remove() {
-      checkMutable();
-
-      if (pos < entriesSize) {
-        removeArrayEntryAt(pos--);
-      } else {
-        getOverflowIterator().remove();
-      }
-    }
-
-    /**
-     * It is important to create the overflow iterator only after the array entries have been
-     * iterated over because the overflow entry set changes when the client calls remove() on the
-     * array entries, which invalidates any existing iterators.
-     */
-    private Iterator<Map.Entry<K, V>> getOverflowIterator() {
-      if (lazyOverflowIterator == null) {
-        lazyOverflowIterator = overflowEntries.entrySet().iterator();
-      }
-      return lazyOverflowIterator;
+      return (Entry) entries[++pos];
     }
   }
 
@@ -568,41 +482,28 @@ class SmallSortedMap<K extends FieldSet.FieldDescriptorLite<K>, V> extends Abstr
       return super.equals(o);
     }
 
-    SmallSortedMap<?, ?> other = (SmallSortedMap<?, ?>) o;
+    SmallSortedMap<?> other = (SmallSortedMap<?>) o;
     final int size = size();
     if (size != other.size()) {
       return false;
     }
 
-    // Best effort try to avoid allocating an entry set.
-    final int numArrayEntries = getNumArrayEntries();
-    if (numArrayEntries != other.getNumArrayEntries()) {
-      return entrySet().equals(other.entrySet());
-    }
-
-    for (int i = 0; i < numArrayEntries; i++) {
-      if (!getArrayEntryAt(i).equals(other.getArrayEntryAt(i))) {
+    final Object[] thisEntries = entries;
+    final Object[] otherEntries = other.entries;
+    for (int i = 0; i < size; i++) {
+      if (!thisEntries[i].equals(otherEntries[i])) {
         return false;
       }
     }
-
-    if (numArrayEntries != size) {
-      return overflowEntries.equals(other.overflowEntries);
-    }
-
     return true;
   }
 
   @Override
   public int hashCode() {
     int h = 0;
-    final int listSize = getNumArrayEntries();
+    final int listSize = size();
     for (int i = 0; i < listSize; i++) {
       h += entries[i].hashCode();
-    }
-    // Avoid the iterator allocation if possible.
-    if (getNumOverflowEntries() > 0) {
-      h += overflowEntries.hashCode();
     }
     return h;
   }
