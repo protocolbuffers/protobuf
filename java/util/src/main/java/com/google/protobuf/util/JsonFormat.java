@@ -2289,7 +2289,17 @@ public class JsonFormat {
         throw new InvalidProtocolBufferException(
             "Numeric value is too long: " + value.length() + " characters");
       }
-      return new BigDecimal(value);
+      BigDecimal result = new BigDecimal(value);
+      // Reject values whose unscaled representation would be excessively large.
+      // Scientific notation like "1e999" is only 5 characters but would produce a
+      // 999-digit BigInteger during compareTo/remainder/intValue operations.
+      // Valid protobuf numeric values (up to uint64 max = ~1.8e19) never need
+      // more than ~20 digits, so a limit of 100 is generous.
+      if (Math.abs(result.scale()) > 100 || result.precision() + Math.abs(result.scale()) > 100) {
+        throw new InvalidProtocolBufferException(
+            "Numeric value scale is too large: " + value);
+      }
+      return result;
     }
 
     private long parseUint64(JsonElement json) throws InvalidProtocolBufferException {
