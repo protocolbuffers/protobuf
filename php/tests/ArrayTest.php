@@ -509,6 +509,13 @@ class ArrayTest extends TestBase
         $this->assertSame(1, count($arr));
     }
 
+    public function testOffsetNegative()
+    {
+        $this->expectException(\Throwable::class);
+        $arr = new RepeatedField(GPBType::INT32);
+        $arr[-1] = 4;
+    }
+
     public function testInsertRemoval()
     {
         $arr = new RepeatedField(GPBType::INT32);
