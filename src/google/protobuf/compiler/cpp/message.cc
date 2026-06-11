@@ -1068,6 +1068,8 @@ void MessageGenerator::GenerateFieldAccessorDeclarations(io::Printer* p) {
             R"cc(
               void $clear_oneof_name$();
               $OneOfName$Case $oneof_name$_case() const;
+              template <typename Func>
+              auto visit_$oneof_name$(Func func) const;
             )cc");
   }
 }
@@ -2291,16 +2293,38 @@ void MessageGenerator::GenerateInlineMethods(io::Printer* p) {
   // Generate oneof_case() functions.
   for (auto oneof : OneOfRange(descriptor_)) {
     p->Emit(
-        {
-            Sub{"oneof_name", absl::StrCat(oneof->name(), "_case")}.AnnotatedAs(
-                oneof),
-            {"OneofName",
-             absl::StrCat(UnderscoresToCamelCase(oneof->name(), true), "Case")},
-            {"oneof_index", oneof->index()},
-        },
+        {Sub{"oneof_case_name", absl::StrCat(oneof->name(), "_case")}
+             .AnnotatedAs(oneof),
+         {"OneofName",
+          absl::StrCat(UnderscoresToCamelCase(oneof->name(), true), "Case")},
+         Sub{"oneof_name", oneof->name()}.AnnotatedAs(oneof),
+         {"oneof_index", oneof->index()},
+         {"ONEOF", absl::AsciiStrToUpper(oneof->name())},
+         {"visit_cases",
+          [&] {
+            for (auto field : internal::FieldRange(oneof)) {
+              p->Emit({{"Case", UnderscoresToCamelCase(field->name(), true)},
+                       {"case", FieldName(field)}},
+                      R"cc(
+                        case k$Case$:
+                          return func(::std::integral_constant<$OneofName$, k$Case$>{}, $case$());
+                      )cc");
+            }
+          }}},
         R"cc(
-          inline $Msg$::$OneofName$ $Msg$::$oneof_name$() const {
+          inline $Msg$::$OneofName$ $Msg$::$oneof_case_name$() const {
             return $Msg$::$OneofName$($oneof_case$[$oneof_index$]);
+          }
+
+          template <typename Func>
+          auto $Msg$::visit_$oneof_name$(Func func) const {
+            switch ($oneof_name$_case()) {
+              case $ONEOF$_NOT_SET:
+                return func(
+                    ::std::integral_constant<$OneofName$, $ONEOF$_NOT_SET>{},
+                    nullptr);
+                $visit_cases$;
+            }
           }
         )cc");
   }
