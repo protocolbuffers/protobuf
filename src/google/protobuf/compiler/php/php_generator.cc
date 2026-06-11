@@ -124,6 +124,76 @@ std::string ConstantNamePrefix(absl::string_view classname) {
   return "";
 }
 
+bool IsPhpIdentifierStart(char c) { return absl::ascii_isalpha(c) || c == '_'; }
+
+bool IsPhpIdentifierPart(char c) { return absl::ascii_isalnum(c) || c == '_'; }
+
+bool IsValidPhpNamespace(absl::string_view name, bool allow_root_namespace) {
+  if (name.empty()) {
+    return true;
+  }
+  if (allow_root_namespace && name == "\\") {
+    return true;
+  }
+
+  bool segment_start = true;
+  for (char c : name) {
+    if (c == '\\') {
+      if (segment_start) {
+        return false;
+      }
+      segment_start = true;
+      continue;
+    }
+    if (segment_start) {
+      if (!IsPhpIdentifierStart(c)) {
+        return false;
+      }
+      segment_start = false;
+      continue;
+    }
+    if (!IsPhpIdentifierPart(c)) {
+      return false;
+    }
+  }
+
+  return !segment_start;
+}
+
+bool ValidatePhpNamespaceOption(const FileDescriptor* file,
+                                absl::string_view option_name,
+                                absl::string_view option_value,
+                                bool allow_root_namespace, std::string* error) {
+  if (IsValidPhpNamespace(option_value, allow_root_namespace)) {
+    return true;
+  }
+
+  *error =
+      absl::StrCat("Invalid ", option_name, " option \"",
+                   absl::CEscape(option_value), "\" in file ", file->name(),
+                   ": expected PHP identifiers separated by "
+                   "backslashes.\n");
+  return false;
+}
+
+bool ValidatePhpOptions(const FileDescriptor* file, std::string* error) {
+  if (file->options().has_php_namespace() &&
+      !ValidatePhpNamespaceOption(file, "php_namespace",
+                                  file->options().php_namespace(), false,
+                                  error)) {
+    return false;
+  }
+
+  if (file->options().has_php_metadata_namespace() &&
+      !ValidatePhpNamespaceOption(file, "php_metadata_namespace",
+                                  file->options().php_metadata_namespace(),
+                                  true, error)) {
+    return false;
+  }
+
+  return true;
+}
+
 template <typename DescriptorType>
 std::string RootPhpNamespace(const DescriptorType* desc,
                              const Options& options) {
@@ -2210,6 +2280,9 @@ bool Generator::Generate(const FileDescriptor* file, const Options& options,
   if (options.is_descriptor && file->name() != kDescriptorFile) {
     *error =
         "Can only generate PHP code for google/protobuf/descriptor.proto.\n";
+    return false;
+  }
+  if (!ValidatePhpOptions(file, error)) {
     return false;
   }
 

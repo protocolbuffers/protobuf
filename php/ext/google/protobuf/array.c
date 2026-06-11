@@ -348,16 +348,19 @@ PHP_METHOD(RepeatedField, offsetSet) {
     return;
   }
 
+  if (index < 0 || (size_t)index > size) {
+    zend_error(E_USER_ERROR, "Element at index %ld doesn't exist.\n", index);
+    return;
+  }
+
   if (!Convert_PhpToUpb(val, &msgval, intern->type, arena)) {
     return;
   }
 
-  if (index > size) {
-    zend_error(E_USER_ERROR, "Element at index %ld doesn't exist.\n", index);
-  } else if (index == size) {
+  if ((size_t)index == size) {
     upb_Array_Append(intern->array, msgval, Arena_Get(&intern->arena));
   } else {
-    upb_Array_Set(intern->array, index, msgval);
+    upb_Array_Set(intern->array, (size_t)index, msgval);
   }
 }
 
