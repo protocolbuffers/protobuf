@@ -397,28 +397,19 @@ absl::Status ParseSingular(JsonLexer& lex, Field<Traits> field,
   auto field_type = Traits::FieldType(field);
   if (lex.Peek(JsonLexer::kNull)) {
     auto message_type = ClassifyMessage(Traits::FieldTypeName(field));
-    switch (field_type) {
-      case FieldDescriptor::TYPE_ENUM:
-        if (message_type == MessageType::kNull) {
-          Traits::SetEnum(field, msg, 0);
-        }
-        break;
-      case FieldDescriptor::TYPE_MESSAGE: {
-        if (message_type == MessageType::kValue) {
-          return Traits::NewMsg(
-              field, msg,
-              [&](const Desc<Traits>& type, Msg<Traits>& msg) -> absl::Status {
-                auto field = Traits::FieldByNumber(type, 1);
-                ABSL_DCHECK(field.has_value());
-                RETURN_IF_ERROR(lex.Expect("null"));
-                Traits::SetEnum(Traits::MustHaveField(type, 1), msg, 0);
-                return absl::OkStatus();
-              });
-        }
-        break;
-      }
-      default:
-        break;
+
+    if (message_type == MessageType::kNull) {
+      Traits::SetEnum(field, msg, 0);
+    } else if (message_type == MessageType::kValue) {
+      return Traits::NewMsg(
+          field, msg,
+          [&](const Desc<Traits>& type, Msg<Traits>& msg) -> absl::Status {
+            auto field = Traits::FieldByNumber(type, 1);
+            ABSL_DCHECK(field.has_value());
+            RETURN_IF_ERROR(lex.Expect("null"));
+            Traits::SetEnum(Traits::MustHaveField(type, 1), msg, 0);
+            return absl::OkStatus();
+          });
     }
     return lex.Expect("null");
   }
@@ -1195,9 +1186,6 @@ absl::Status ParseStructValue(JsonLexer& lex, const Desc<Traits>& desc,
   auto pop = lex.path().Push("<struct>", FieldDescriptor::TYPE_MESSAGE,
                              Traits::FieldTypeName(entry_field));
 
-  // Structs are always cleared even if set to {}.
-  Traits::RecordAsSeen(entry_field, msg);
-
   // Parsing a map does the right thing: Struct has a single map<string,
   // Value> field; keys are correctly parsed as strings, and the values
   // recurse into ParseMessage, which will be routed into ParseValue. This
@@ -1213,8 +1201,6 @@ absl::Status ParseListValue(JsonLexer& lex, const Desc<Traits>& desc,
   auto pop = lex.path().Push("<list>", FieldDescriptor::TYPE_MESSAGE,
                              Traits::FieldTypeName(entry_field));
 
-  // ListValues are always cleared even if set to [].
-  Traits::RecordAsSeen(entry_field, msg);
   // Parsing an array does the right thing: see the analogous comment in
   // ParseStructValue.
   return ParseArray<Traits>(lex, entry_field, msg);
@@ -1254,13 +1240,41 @@ absl::Status ParseField(JsonLexer& lex, const Desc<Traits>& desc,
   auto pop = lex.path().Push(name, Traits::FieldType(*field),
                              Traits::FieldTypeName(*field));
 
-  if (Traits::HasParsed(*field, msg,
-                        /*allow_repeated_non_oneof=*/
-                        lex.options().allow_legacy_nonconformant_behavior) &&
-      !lex.Peek(JsonLexer::kNull)) {
+  // Any `null` values eagerly no-op, except for exactly the special cases of
+  // google.protobuf.Value message and google.protobuf.NullValue enum.
+  // Note that spec behavior is that we should do duplicate key checking in the
+  // case of a null value, but this implementation currently does not
+  // (b/519557203).
+  if (lex.Peek(JsonLexer::kNull)) {
+    MessageType type = ClassifyMessage(Traits::FieldTypeName(*field));
+    if (type != MessageType::kValue && type != MessageType::kNull) {
+      return lex.Expect("null");
+    }
+  }
+
+  SeenState seen = Traits::RecordAsSeen(*field, msg);
+
+  // Legacy nonconformant behavior only enforces duplicate key checking for
+  // fields within the same oneof, otherwise enforce duplicate keys for all
+  // fields.
+  if (seen == SeenState::kOneofAlreadySeen ||
+      (seen == SeenState::kFieldAlreadySeen &&
+       !lex.options().allow_legacy_nonconformant_behavior)) {
     return lex.Invalid(absl::StrFormat(
         "'%s' has already been set (either directly or as part of a oneof)",
         name));
+  }
+
+  // Message and repeated fields are cleared on first sight (meaning, it will
+  // clear what was in the message before the parse began), but not cleared
+  // in the case of the second occurance of the same key in the same JSON
+  // payload (if duplicate keys are accepted, which they are in the current
+  // default legacy mode).
+  if (seen == SeenState::kFirstSeen &&
+      (Traits::IsRepeated(*field) ||
+       Traits::FieldType(*field) == FieldDescriptor::TYPE_MESSAGE ||
+       Traits::FieldType(*field) == FieldDescriptor::TYPE_GROUP)) {
+    Traits::ClearField(*field, msg);
   }
 
   if (Traits::IsMap(*field)) {
@@ -1350,6 +1364,15 @@ absl::Status ParseMessage(JsonLexer& lex, const Desc<Traits>& desc,
 absl::Status JsonStreamToMessage(io::ZeroCopyInputStream* input,
                                  Message* message,
                                  json_internal::ParseOptions options) {
+  // Pre-existing special case behavior: if a Struct, List, or Value WKT is
+  // provided, they do fully get cleared eagerly. All other types have some
+  // limited merge behavior instead.
+  MessageType type = ClassifyMessage(message->GetDescriptor()->full_name());
+  if (type == MessageType::kStruct || type == MessageType::kList ||
+      type == MessageType::kValue) {
+    message->Clear();
+  }
+
   MessagePath path(message->GetDescriptor()->full_name());
   JsonLexer lex(input, options, &path);
 

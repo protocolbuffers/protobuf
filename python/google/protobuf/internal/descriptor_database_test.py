@@ -96,6 +96,12 @@ class DescriptorDatabaseTest(unittest.TestCase):
         ),
     )
     self.assertEqual(
+        file_desc_proto,
+        db.FindFileContainingSymbol(
+            '.google.protobuf.python.internal.FACTORY_2_VALUE_0'
+        ),
+    )
+    self.assertEqual(
         file_desc_proto2, db.FindFileContainingSymbol('NO_PACKAGE_VALUE_0')
     )
     self.assertEqual(
@@ -149,11 +155,6 @@ class DescriptorDatabaseTest(unittest.TestCase):
 
     with self.assertRaisesRegex(KeyError, r'\'proto2_unittest\.NoneMessage\''):
       db.FindFileContainingSymbol('proto2_unittest.NoneMessage')
-
-    with self.assertRaises(KeyError):
-      db.FindFileContainingSymbol(
-          '.google.protobuf.python.internal.FACTORY_2_VALUE_0'
-      )
 
   def testConflictRegister(self):
     db = descriptor_database.DescriptorDatabase()

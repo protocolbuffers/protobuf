@@ -172,6 +172,10 @@ bool UPB_PRIVATE(_upb_Array_Realloc)(upb_Array* array, size_t min_capacity,
     }
   }
 
+  // If capacity doubling overflowed to SIZE_MAX, fail. No valid array can hold
+  // SIZE_MAX elements, and downstream size calculations would overflow.
+  if (new_capacity == SIZE_MAX) return false;
+
   size_t new_bytes = new_capacity;
   if (upb_ShlOverflow(&new_bytes, lg2)) {
     return false;

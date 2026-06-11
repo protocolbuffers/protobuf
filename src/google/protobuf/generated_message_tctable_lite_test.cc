@@ -375,7 +375,8 @@ TEST_F(FindFieldEntryTest, FieldNumberWorksForAllFields) {
       SCOPED_TRACE(desc.full_name());
       const auto* prototype =
           MessageFactory::generated_factory()->GetPrototype(&desc);
-      const auto* tc_table = internal::GetClassData(*prototype)->tc_table;
+      const auto* tc_table =
+          internal::GetClassData(*prototype)->GetTcParseTable();
 
       std::vector<int> sorted_field_numbers;
       for (auto* field : internal::FieldRange(&desc)) {

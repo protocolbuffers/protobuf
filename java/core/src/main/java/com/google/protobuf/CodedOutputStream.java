@@ -110,7 +110,11 @@ public abstract class CodedOutputStream extends ByteOutput {
       throw new IllegalArgumentException("ByteBuffer is read-only");
     }
     if (buffer.hasArray()) {
-      return new HeapNioEncoder(buffer);
+      return new ArrayEncoder(
+          buffer.array(),
+          buffer.arrayOffset() + buffer.position(),
+          buffer.remaining(),
+          new ByteBufferFlusher(buffer));
     } else if (buffer.isDirect()) {
       return new DirectNioEncoder(buffer);
     } else {
@@ -125,17 +129,17 @@ public abstract class CodedOutputStream extends ByteOutput {
    * {@code equals()} methods in protos) messages will always be serialized to the same bytes. This
    * implies:
    *
-   * <ul>
-   *   <li>repeated serialization of a message will return the same bytes
-   *   <li>different processes of the same binary (which may be executing on different machines)
-   *       will serialize equal messages to the same bytes.
-   * </ul>
+   * <h2>There is no canonical representation of Protobuf messages.</h2>
    *
-   * <p>Note the deterministic serialization is NOT canonical across languages; it is also unstable
-   * across different builds with schema changes due to unknown fields. Users who need canonical
-   * serialization, e.g. persistent storage in a canonical form, fingerprinting, etc, should define
-   * their own canonicalization specification and implement the serializer using reflection APIs
-   * rather than relying on this API.
+   * <p>The deterministic serialization is not stable between separate builds or between different
+   * languages.
+   *
+   * <p>Users who need canonical serialization, e.g. persistent storage in a canonical form,
+   * fingerprinting, etc, must define their own canonicalization specification and implement the
+   * serializer using reflection APIs rather than relying on this API.
+   *
+   * <p>See <a href="https://protobuf.dev/programming-guides/serialization-not-canonical/">Protobuf
+   * Serialization is not Canonical</a>.
    *
    * <p>Once set, the serializer will: (Note this is an implementation detail and may subject to
    * change in the future)
@@ -1026,14 +1030,33 @@ public abstract class CodedOutputStream extends ByteOutput {
 
   // =================================================================
 
+  private static final class ByteBufferFlusher {
+    private final ByteBuffer byteBuffer;
+    private final int initialPosition;
+
+    ByteBufferFlusher(ByteBuffer byteBuffer) {
+      this.byteBuffer = byteBuffer;
+      this.initialPosition = byteBuffer.position();
+    }
+
+    void flush(ArrayEncoder encoder) {
+      Java8Compatibility.position(byteBuffer, initialPosition + encoder.getTotalBytesWritten());
+    }
+  }
+
   /** A {@link CodedOutputStream} that writes directly to a byte array. */
-  private static class ArrayEncoder extends CodedOutputStream {
+  private static final class ArrayEncoder extends CodedOutputStream {
     private final byte[] buffer;
     private final int offset;
     private final int limit;
     private int position;
+    private final ByteBufferFlusher flusher;
 
     ArrayEncoder(byte[] buffer, int offset, int length) {
+      this(buffer, offset, length, null);
+    }
+
+    ArrayEncoder(byte[] buffer, int offset, int length, ByteBufferFlusher flusher) {
       if (buffer == null) {
         throw new NullPointerException("buffer");
       }
@@ -1050,6 +1073,7 @@ public abstract class CodedOutputStream extends ByteOutput {
       this.offset = offset;
       position = offset;
       limit = offset + length;
+      this.flusher = flusher;
     }
 
     @Override
@@ -1430,7 +1454,9 @@ public abstract class CodedOutputStream extends ByteOutput {
 
     @Override
     public void flush() {
-      // Do nothing.
+      if (flusher != null) {
+        flusher.flush(this);
+      }
     }
 
     @Override
@@ -1441,30 +1467,6 @@ public abstract class CodedOutputStream extends ByteOutput {
     @Override
     public final int getTotalBytesWritten() {
       return position - offset;
-    }
-  }
-
-  /**
-   * A {@link CodedOutputStream} that writes directly to a heap {@link ByteBuffer}. Writes are done
-   * directly to the underlying array. The buffer position is only updated after a flush.
-   */
-  private static final class HeapNioEncoder extends ArrayEncoder {
-    private final ByteBuffer byteBuffer;
-    private int initialPosition;
-
-    HeapNioEncoder(ByteBuffer byteBuffer) {
-      super(
-          byteBuffer.array(),
-          byteBuffer.arrayOffset() + byteBuffer.position(),
-          byteBuffer.remaining());
-      this.byteBuffer = byteBuffer;
-      this.initialPosition = byteBuffer.position();
-    }
-
-    @Override
-    public void flush() {
-      // Update the position on the buffer.
-      Java8Compatibility.position(byteBuffer, initialPosition + getTotalBytesWritten());
     }
   }
 

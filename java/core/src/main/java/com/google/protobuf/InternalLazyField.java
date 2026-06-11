@@ -133,12 +133,8 @@ class InternalLazyField {
    * @throws InvalidProtobufRuntimeException if either lazy field is corrupted and cannot be merged
    *     with a different extension registry.
    */
+  @SuppressWarnings("ReferenceEquality") // Compare singletons.
   static InternalLazyField mergeFrom(InternalLazyField self, InternalLazyField other) {
-    if (self.defaultInstance != other.defaultInstance) {
-      throw new IllegalArgumentException(
-          "LazyFields with different default instances cannot be merged.");
-    }
-
     // If either InternalLazyField is empty, return the other InternalLazyField.
     if (self.isEmpty()) {
       return other;
@@ -149,7 +145,10 @@ class InternalLazyField {
 
     // Fast path: concatenate the bytes if both LazyFields contain bytes and have the same extension
     // registry, even if one or both are corrupted.
-    if (self.hasBytes() && other.hasBytes() && self.extensionRegistry == other.extensionRegistry) {
+    if (self.hasBytes()
+        && other.hasBytes()
+        && self.extensionRegistry == other.extensionRegistry
+        && self.defaultInstance == other.defaultInstance) {
       return new InternalLazyField(
           self.defaultInstance, self.extensionRegistry, self.bytes.concat(other.bytes));
     }
@@ -281,7 +280,7 @@ class InternalLazyField {
         + computeSize(WireFormat.MESSAGE_SET_MESSAGE);
   }
 
-  void writeTo(Writer writer, int fieldNumber) throws IOException {
+  void writeTo(CodedOutputStreamWriter writer, int fieldNumber) throws IOException {
     if (bytes != null) {
       writer.writeBytes(fieldNumber, bytes);
     } else {

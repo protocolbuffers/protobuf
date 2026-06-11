@@ -106,7 +106,7 @@ inline constexpr Mixin::Impl_::Impl_(
 template <typename>
 constexpr Mixin::Mixin(::_pbi::ConstantInitialized,
                        const ::_pbi::ClassData* PROTOBUF_NONNULL class_data)
-    : ::google::protobuf::Message(
+    : Super_(
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           class_data
 #endif  // PROTOBUF_CUSTOM_VTABLE
@@ -134,10 +134,10 @@ constexpr auto Mixin::InternalGenerateClassData_(
 #endif
           nullptr,  // IsInitialized
           &Mixin::MergeImpl,
-          ::google::protobuf::Message::GetNewImpl<Mixin>(),
+          Super_::GetNewImpl<Mixin>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           &Mixin::SharedDtor,
-          ::google::protobuf::Message::GetClearImpl<Mixin>(), &Mixin::ByteSizeLong,
+          Super_::GetClearImpl<Mixin>(), &Mixin::ByteSizeLong,
               &Mixin::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
           PROTOBUF_FIELD_OFFSET(Mixin, _impl_._cached_size_),
@@ -319,7 +319,7 @@ inline constexpr Method::Impl_::Impl_(
 template <typename>
 constexpr Method::Method(::_pbi::ConstantInitialized,
                        const ::_pbi::ClassData* PROTOBUF_NONNULL class_data)
-    : ::google::protobuf::Message(
+    : Super_(
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           class_data
 #endif  // PROTOBUF_CUSTOM_VTABLE
@@ -347,10 +347,10 @@ constexpr auto Method::InternalGenerateClassData_(
 #endif
           nullptr,  // IsInitialized
           &Method::MergeImpl,
-          ::google::protobuf::Message::GetNewImpl<Method>(),
+          Super_::GetNewImpl<Method>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           &Method::SharedDtor,
-          ::google::protobuf::Message::GetClearImpl<Method>(), &Method::ByteSizeLong,
+          Super_::GetClearImpl<Method>(), &Method::ByteSizeLong,
               &Method::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
           PROTOBUF_FIELD_OFFSET(Method, _impl_._cached_size_),
@@ -552,7 +552,7 @@ inline constexpr Api::Impl_::Impl_(
 template <typename>
 constexpr Api::Api(::_pbi::ConstantInitialized,
                        const ::_pbi::ClassData* PROTOBUF_NONNULL class_data)
-    : ::google::protobuf::Message(
+    : Super_(
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           class_data
 #endif  // PROTOBUF_CUSTOM_VTABLE
@@ -580,10 +580,10 @@ constexpr auto Api::InternalGenerateClassData_(
 #endif
           nullptr,  // IsInitialized
           &Api::MergeImpl,
-          ::google::protobuf::Message::GetNewImpl<Api>(),
+          Super_::GetNewImpl<Api>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           &Api::SharedDtor,
-          ::google::protobuf::Message::GetClearImpl<Api>(), &Api::ByteSizeLong,
+          Super_::GetClearImpl<Api>(), &Api::ByteSizeLong,
               &Api::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
           PROTOBUF_FIELD_OFFSET(Api, _impl_._cached_size_),
@@ -770,9 +770,9 @@ void Api::clear_source_context() {
 }
 Api::Api(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-    : ::google::protobuf::Message(arena, Api_get_class_data()) {
+    : Super_(arena, Api_get_class_data()) {
 #else   // PROTOBUF_CUSTOM_VTABLE
-    : ::google::protobuf::Message(arena) {
+    : Super_(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
   SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.Api)
@@ -811,10 +811,10 @@ Api::Api(
     ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
     const Api& from)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-    : ::google::protobuf::Message(arena, Api_get_class_data()) {
+    : Super_(arena, Api_get_class_data()) {
 
 #else   // PROTOBUF_CUSTOM_VTABLE
-    : ::google::protobuf::Message(arena) {
+    : Super_(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
   Api* const _this = this;
   (void)_this;
@@ -822,9 +822,9 @@ Api::Api(
       from._internal_metadata_);
   new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
   ::uint32_t cached_has_bits = _impl_._has_bits_[0];
-  _impl_.source_context_ = (CheckHasBit(cached_has_bits, 0x00000040U)) ? ::google::protobuf::Message::CopyConstruct(
-                               arena, *from._impl_.source_context_)
-                         : nullptr;
+  _impl_.source_context_ = (CheckHasBit(cached_has_bits, 0x00000040U))
+                 ? Super_::CopyConstruct(arena, *from._impl_.source_context_)
+                 : nullptr;
   _impl_.syntax_ = from._impl_.syntax_;
 
   // @@protoc_insertion_point(copy_constructor:google.protobuf.Api)
@@ -1187,7 +1187,7 @@ void Api::MergeImpl(::google::protobuf::MessageLite& to_msg,
     if (CheckHasBit(cached_has_bits, 0x00000040U)) {
       ABSL_DCHECK(from._impl_.source_context_ != nullptr);
       if (_this->_impl_.source_context_ == nullptr) {
-        _this->_impl_.source_context_ = ::google::protobuf::Message::CopyConstruct(arena, *from._impl_.source_context_);
+        _this->_impl_.source_context_ = Super_::CopyConstruct(arena, *from._impl_.source_context_);
       } else {
         _this->_impl_.source_context_->MergeFrom(*from._impl_.source_context_);
       }
@@ -1232,7 +1232,7 @@ void Api::InternalSwap(Api* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
 }
 
 ::google::protobuf::Metadata Api::GetMetadata() const {
-  return ::google::protobuf::Message::GetMetadataImpl(GetClassData()->full());
+  return Super_::GetMetadataImpl(GetClassData()->full());
 }
 // ===================================================================
 
@@ -1243,9 +1243,9 @@ void Method::clear_options() {
 }
 Method::Method(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-    : ::google::protobuf::Message(arena, Method_get_class_data()) {
+    : Super_(arena, Method_get_class_data()) {
 #else   // PROTOBUF_CUSTOM_VTABLE
-    : ::google::protobuf::Message(arena) {
+    : Super_(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
   SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.Method)
@@ -1271,10 +1271,10 @@ Method::Method(
     ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
     const Method& from)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-    : ::google::protobuf::Message(arena, Method_get_class_data()) {
+    : Super_(arena, Method_get_class_data()) {
 
 #else   // PROTOBUF_CUSTOM_VTABLE
-    : ::google::protobuf::Message(arena) {
+    : Super_(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
   Method* const _this = this;
   (void)_this;
@@ -1681,15 +1681,15 @@ void Method::InternalSwap(Method* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
 }
 
 ::google::protobuf::Metadata Method::GetMetadata() const {
-  return ::google::protobuf::Message::GetMetadataImpl(GetClassData()->full());
+  return Super_::GetMetadataImpl(GetClassData()->full());
 }
 // ===================================================================
 
 Mixin::Mixin(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-    : ::google::protobuf::Message(arena, Mixin_get_class_data()) {
+    : Super_(arena, Mixin_get_class_data()) {
 #else   // PROTOBUF_CUSTOM_VTABLE
-    : ::google::protobuf::Message(arena) {
+    : Super_(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
   SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.Mixin)
@@ -1706,10 +1706,10 @@ Mixin::Mixin(
     ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
     const Mixin& from)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-    : ::google::protobuf::Message(arena, Mixin_get_class_data()) {
+    : Super_(arena, Mixin_get_class_data()) {
 
 #else   // PROTOBUF_CUSTOM_VTABLE
-    : ::google::protobuf::Message(arena) {
+    : Super_(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
   Mixin* const _this = this;
   (void)_this;
@@ -1931,7 +1931,7 @@ void Mixin::InternalSwap(Mixin* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
 }
 
 ::google::protobuf::Metadata Mixin::GetMetadata() const {
-  return ::google::protobuf::Message::GetMetadataImpl(GetClassData()->full());
+  return Super_::GetMetadataImpl(GetClassData()->full());
 }
 // @@protoc_insertion_point(namespace_scope)
 }  // namespace protobuf

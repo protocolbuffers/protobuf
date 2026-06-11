@@ -673,7 +673,7 @@ static void PyUpb_Message_SetField(PyUpb_Message* parent, const upb_FieldDef* f,
  */
 bool PyUpb_Message_AssureWritable(PyUpb_Message* self) {
   if (PyUpb_Message_IsFrozen((PyObject*)self)) {
-    PyErr_SetString(PyExc_TypeError, "Message is immutable.");
+    PyUpb_SetFrozenError();
     return false;
   }
 
@@ -2169,6 +2169,8 @@ bool PyUpb_InitMessage(PyObject* m) {
   state->encode_error_class = PyObject_GetAttrString(mod, "EncodeError");
   state->decode_error_class = PyObject_GetAttrString(mod, "DecodeError");
   state->message_class = PyObject_GetAttrString(mod, "Message");
+  state->frozen_instance_error_class =
+      PyObject_GetAttrString(mod, "FrozenInstanceError");
   Py_DECREF(mod);
 
   PyObject* enum_type_wrapper = PyImport_ImportModule(
@@ -2181,7 +2183,7 @@ bool PyUpb_InitMessage(PyObject* m) {
 
   if (!state->encode_error_class || !state->decode_error_class ||
       !state->message_class || !state->listfields_item_key ||
-      !state->enum_type_wrapper_class) {
+      !state->enum_type_wrapper_class || !state->frozen_instance_error_class) {
     return false;
   }
 

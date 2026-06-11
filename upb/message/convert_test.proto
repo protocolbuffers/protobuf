@@ -146,3 +146,8 @@ message MessageWithKnownEnum {
 message MessageWithMapAt1000 {
   map<int32, int32> m = 1000;
 }
+
+message SrcWithoutOneof {
+  optional int32 oneof_int32 = 1;
+  optional string oneof_string = 2;
+}

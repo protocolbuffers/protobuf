@@ -17,6 +17,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /** Utility class for working with unsafe operations. */
+@SuppressWarnings("removal")
 final class UnsafeUtil {
   private static final sun.misc.Unsafe UNSAFE = getUnsafe();
   private static final Class<?> MEMORY_CLASS = Android.getMemoryClass();

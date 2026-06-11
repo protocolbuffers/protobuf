@@ -452,13 +452,24 @@ public final class InternalLazyFieldTest {
   // Tests for mergeFrom(InternalLazyField self, InternalLazyField other)
 
   @Test
-  public void testMergeFromDifferentDefaultInstances() throws Exception {
+  public void testMergeFromDifferentDefaultInstances() {
     InternalLazyField lazyField1 =
         new InternalLazyField(
-            TestAllTypes.getDefaultInstance(), EXTENSION_REGISTRY, ByteString.EMPTY);
+            TestAllTypes.getDefaultInstance(),
+            EXTENSION_REGISTRY,
+            TestUtil.getAllSet().toByteString());
     InternalLazyField lazyField2 =
         new InternalLazyField(
-            TestAllExtensions.getDefaultInstance(), EXTENSION_REGISTRY, ByteString.EMPTY);
+            TestAllExtensions.getDefaultInstance(),
+            EXTENSION_REGISTRY,
+            TestAllExtensions.newBuilder()
+                .setExtension(UnittestProto.optionalInt32Extension, 1)
+                .setExtension(UnittestProto.optionalInt64Extension, 2L)
+                .build()
+                .toByteString());
+
+    MessageLite unused = lazyField1.getValue();
+    unused = lazyField2.getValue();
 
     Throwable exception =
         assertThrows(
@@ -466,7 +477,7 @@ public final class InternalLazyFieldTest {
             () -> InternalLazyField.mergeFrom(lazyField1, lazyField2));
     assertThat(exception)
         .hasMessageThat()
-        .contains("LazyFields with different default instances cannot be merged.");
+        .contains("mergeFrom(Message) can only merge messages of the same type");
   }
 
   @Test

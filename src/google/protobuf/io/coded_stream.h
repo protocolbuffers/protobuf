@@ -1298,12 +1298,15 @@ class PROTOBUF_EXPORT PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CodedOutputStream {
   //   * Different processes running the same binary (including on different
   //     machines) will serialize equal messages to the same bytes.
   //
-  // Note that this is *not* canonical across languages. It is also unstable
-  // across different builds with intervening message definition changes, due to
-  // unknown fields. Users who need canonical serialization (e.g. persistent
+  // There is no canonical representation of Protobuf messages: this
+  // representation is not consistent between languages, it may change when you
+  // rebuild your binary. Users who need canonical serialization
+  // (e.g. persistent
   // storage in a canonical form, fingerprinting) should define their own
   // canonicalization specification and implement the serializer using
   // reflection APIs rather than relying on this API.
+  //
+  // See https://protobuf.dev/programming-guides/serialization-not-canonical/
   void SetSerializationDeterministic(bool value) {
     impl_.SetSerializationDeterministic(value);
   }

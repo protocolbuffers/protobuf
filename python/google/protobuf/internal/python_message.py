@@ -254,6 +254,7 @@ def _AddSlots(message_descriptor, dictionary):
       '_listener_for_children',
       '__weakref__',
       '_oneofs',
+      '_frozen',
   ]
 
 
@@ -611,6 +612,7 @@ def _AddInitMethod(message_descriptor, cls):
     self._is_present_in_parent = False
     self._listener = message_listener_mod.NullMessageListener()
     self._listener_for_children = _Listener(self)
+    self._frozen = False
     for field_name, field_value in kwargs.items():
       field = _GetFieldByName(message_descriptor, field_name)
       if field is None:
@@ -763,6 +765,8 @@ def _AddPropertiesForRepeatedField(field, cls):
     if field_value is None:
       # Construct a new object to represent this field.
       field_value = field._default_constructor(self)
+      if self._frozen:
+        field_value._SetFrozen()
 
       # Atomically check if another thread has preempted us and, if not, swap
       # in the new object we just created.  If someone has preempted us, we
@@ -814,6 +818,7 @@ def _AddPropertiesForNonRepeatedScalarField(field, cls):
   getter.__doc__ = 'Getter for %s.' % proto_field_name
 
   def field_setter(self, new_value):
+    self._AssureWritable()
     # pylint: disable=protected-access
     # Testing the value for truthiness captures all of the implicit presence
     # defaults (0, 0.0, enum 0, and False), except for -0.0.
@@ -871,6 +876,8 @@ def _AddPropertiesForNonRepeatedCompositeField(field, cls):
     if field_value is None:
       # Construct a new object to represent this field.
       field_value = field._default_constructor(self)
+      if self._frozen:
+        field_value._SetFrozen()
 
       # Atomically check if another thread has preempted us and, if not, swap
       # in the new object we just created.  If someone has preempted us, we
@@ -887,6 +894,7 @@ def _AddPropertiesForNonRepeatedCompositeField(field, cls):
   # We define a setter just so we can throw an exception with a more
   # helpful error message.
   def setter(self, new_value):
+    self._AssureWritable()
     if field.message_type.full_name == 'google.protobuf.Timestamp':
       getter(self)
       self._fields[field].FromDatetime(new_value)
@@ -1013,6 +1021,7 @@ def _AddClearFieldMethod(message_descriptor, cls):
   """Helper for _AddMessageMethods()."""
 
   def ClearField(self, field_name):
+    self._AssureWritable()
     try:
       field = message_descriptor.fields_by_name[field_name]
     except KeyError:
@@ -1054,6 +1063,7 @@ def _AddClearExtensionMethod(cls):
   """Helper for _AddMessageMethods()."""
 
   def ClearExtension(self, field_descriptor):
+    self._AssureWritable()
     extension_dict._VerifyExtensionHandle(self, field_descriptor)
 
     # Similar to ClearField(), above.
@@ -1328,6 +1338,7 @@ def _AddMergeFromStringMethod(message_descriptor, cls):
   """Helper for _AddMessageMethods()."""
 
   def MergeFromString(self, serialized):
+    self._AssureWritable()
     serialized = memoryview(serialized)
     length = len(serialized)
     try:
@@ -1513,6 +1524,7 @@ def _AddMergeFromMethod(cls):
   CPPTYPE_MESSAGE = _FieldDescriptor.CPPTYPE_MESSAGE
 
   def MergeFrom(self, msg):
+    self._AssureWritable()
     if not isinstance(msg, cls):
       raise TypeError(
           'Parameter to MergeFrom() must be instance of same class: '
@@ -1576,12 +1588,26 @@ def _AddWhichOneofMethod(message_descriptor, cls):
 
 
 def _Clear(self):
+  self._AssureWritable()
   # Clear fields.
   self._fields = {}
   self._unknown_fields = ()
 
   self._oneofs = {}
   self._Modified()
+
+
+def _SetFrozen(self):
+  self._frozen = True
+  for value in self._fields.values():
+    if hasattr(value, '_SetFrozen'):
+      value._SetFrozen()
+
+
+def _AssureWritable(self):
+  if self._frozen:
+    raise message_mod.FrozenInstanceError('Message is immutable')
+  return self
 
 
 def _UnknownFields(self):
@@ -1593,6 +1619,7 @@ def _UnknownFields(self):
 
 
 def _DiscardUnknownFields(self):
+  self._AssureWritable()
   self._unknown_fields = []
   for field, value in self.ListFields():
     if field.cpp_type == _FieldDescriptor.CPPTYPE_MESSAGE:
@@ -1638,6 +1665,8 @@ def _AddMessageMethods(message_descriptor, cls):
   cls.Clear = _Clear
   cls.DiscardUnknownFields = _DiscardUnknownFields
   cls._SetListener = _SetListener
+  cls._SetFrozen = _SetFrozen
+  cls._AssureWritable = _AssureWritable
 
 
 def _AddPrivateHelperMethods(message_descriptor, cls):
