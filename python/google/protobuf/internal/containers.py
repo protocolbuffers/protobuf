@@ -479,8 +479,9 @@ class ScalarMap(MutableMapping[_K, _V]):
   # will make the default implementation (from our base class) always insert
   # the key.
   def get(self, key, default=None):
-    if key in self:
-      return self[key]
+    checked_key = self._key_checker.CheckValue(key)
+    if checked_key in self._values:
+      return self[checked_key]
     else:
       return default
 
@@ -493,7 +494,8 @@ class ScalarMap(MutableMapping[_K, _V]):
 
   def __delitem__(self, key: _K) -> None:
     self._AssureWritable()
-    del self._values[key]
+    checked_key = self._key_checker.CheckValue(key)
+    del self._values[checked_key]
     self._message_listener.Modified()
 
   def __len__(self) -> int:
@@ -507,10 +509,11 @@ class ScalarMap(MutableMapping[_K, _V]):
 
   def setdefault(self, key: _K, value: Optional[_V] = None) -> _V:
     self._AssureWritable()
+    checked_key = self._key_checker.CheckValue(key)
     if value == None:
       raise ValueError('The value for scalar map setdefault must be set.')
-    if key not in self._values:
-      self.__setitem__(key, value)
+    if checked_key not in self._values:
+      self.__setitem__(checked_key, value)
     return self[key]
 
   def MergeFrom(self, other: 'ScalarMap[_K, _V]') -> None:

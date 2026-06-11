@@ -129,17 +129,17 @@ public abstract class CodedOutputStream extends ByteOutput {
    * {@code equals()} methods in protos) messages will always be serialized to the same bytes. This
    * implies:
    *
-   * <ul>
-   *   <li>repeated serialization of a message will return the same bytes
-   *   <li>different processes of the same binary (which may be executing on different machines)
-   *       will serialize equal messages to the same bytes.
-   * </ul>
+   * <h2>There is no canonical representation of Protobuf messages.</h2>
    *
-   * <p>Note the deterministic serialization is NOT canonical across languages; it is also unstable
-   * across different builds with schema changes due to unknown fields. Users who need canonical
-   * serialization, e.g. persistent storage in a canonical form, fingerprinting, etc, should define
-   * their own canonicalization specification and implement the serializer using reflection APIs
-   * rather than relying on this API.
+   * <p>The deterministic serialization is not stable between separate builds or between different
+   * languages.
+   *
+   * <p>Users who need canonical serialization, e.g. persistent storage in a canonical form,
+   * fingerprinting, etc, must define their own canonicalization specification and implement the
+   * serializer using reflection APIs rather than relying on this API.
+   *
+   * <p>See <a href="https://protobuf.dev/programming-guides/serialization-not-canonical/">Protobuf
+   * Serialization is not Canonical</a>.
    *
    * <p>Once set, the serializer will: (Note this is an implementation detail and may subject to
    * change in the future)
@@ -1469,8 +1469,6 @@ public abstract class CodedOutputStream extends ByteOutput {
       return position - offset;
     }
   }
-
-
 
   /**
    * A {@link CodedOutputStream} that writes directly to a direct {@link ByteBuffer}, using only
