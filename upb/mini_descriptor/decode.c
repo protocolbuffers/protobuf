@@ -294,6 +294,10 @@ static void upb_MtDecoder_PushOneof(upb_MtDecoder* d,
   }
   item.field_index -= kOneofBase;
 
+  if (d->table.UPB_PRIVATE(field_count) + d->oneofs.size >= UINT16_MAX) {
+    upb_MdDecoder_ErrorJmp(&d->base, "Too many fields");
+  }
+
   d->rep_counts_offsets[kUpb_OneOf_CaseFieldRep]++;
   d->rep_counts_offsets[item.rep]++;
   d->oneofs.data[d->oneofs.size++] = item;
@@ -481,9 +485,10 @@ static const char* upb_MtDecoder_Parse(upb_MtDecoder* d, const char* ptr,
         return --ptr;
       }
       upb_MiniTableField* field = fields;
-      if (*field_count == UINT16_MAX) {
-        upb_MdDecoder_ErrorJmp(
-            &d->base, "Fields in message exceed the limit of %u", UINT16_MAX);
+      if (*field_count >= UINT16_MAX - kOneofBase) {
+        upb_MdDecoder_ErrorJmp(&d->base,
+                               "Fields in message exceed the limit of %u",
+                               UINT16_MAX - kOneofBase);
       }
       *field_count += 1;
       fields = (char*)fields + field_size;
@@ -643,6 +648,10 @@ static void upb_MtDecoder_AssignHasbits(upb_MtDecoder* d) {
     }
   }
 
+  if (last_hasbit > INT16_MAX) {
+    upb_MdDecoder_ErrorJmp(&d->base, "Too many hasbits");
+  }
+
   d->table.UPB_PRIVATE(size) =
       last_hasbit ? upb_MiniTable_DivideRoundUp(last_hasbit + 1, 8) : 0;
 }
@@ -668,6 +677,9 @@ static void upb_MtDecoder_AssignOffsets(upb_MtDecoder* d) {
   for (upb_OneOfLayoutItem* item = d->oneofs.data; item < oneof_end; item++) {
     upb_MiniTableField* f = &d->fields[item->field_index];
     uint16_t case_offset = upb_MtDecoder_Place(d, kUpb_OneOf_CaseFieldRep);
+    if (case_offset > INT16_MAX) {
+      upb_MdDecoder_ErrorJmp(&d->base, "Oneof case offset too large");
+    }
     uint16_t data_offset = upb_MtDecoder_Place(d, item->rep);
     while (true) {
       f->presence = ~case_offset;

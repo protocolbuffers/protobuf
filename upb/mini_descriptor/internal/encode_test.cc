@@ -200,6 +200,61 @@ TEST_P(MiniTableTest, SizeOverflow) {
   ASSERT_EQ(nullptr, table2) << status.error_message();
 }
 
+TEST_P(MiniTableTest, OneofCountOverflow) {
+  upb::Arena arena;
+  upb::MtDataEncoder e;
+  ASSERT_TRUE(e.StartMessage(0));
+  for (uint32_t i = 1; i <= 32768; i++) {
+    ASSERT_TRUE(e.PutField(kUpb_FieldType_Int32, i, 0));
+  }
+  for (uint32_t i = 1; i <= 32768; i++) {
+    ASSERT_TRUE(e.StartOneof());
+    ASSERT_TRUE(e.PutOneofField(i));
+  }
+  upb::Status status;
+  upb_MiniTable* table = _upb_MiniTable_Build(
+      e.data().data(), e.data().size(), GetParam(), arena.ptr(), status.ptr());
+  EXPECT_EQ(nullptr, table);
+  EXPECT_STREQ("Error building mini table: Too many fields",
+               status.error_message());
+}
+
+TEST_P(MiniTableTest, CaseOffsetOverflow) {
+  upb::Arena arena;
+  upb::MtDataEncoder e;
+  ASSERT_TRUE(e.StartMessage(0));
+  for (uint32_t i = 1; i <= 32768; i++) {
+    ASSERT_TRUE(e.PutField(kUpb_FieldType_Bool, i,
+                           kUpb_FieldModifier_IsProto3Singular));
+  }
+  uint32_t oneof_field_num = 32769;
+  ASSERT_TRUE(e.PutField(kUpb_FieldType_Int32, oneof_field_num, 0));
+  ASSERT_TRUE(e.StartOneof());
+  ASSERT_TRUE(e.PutOneofField(oneof_field_num));
+
+  upb::Status status;
+  upb_MiniTable* table = _upb_MiniTable_Build(
+      e.data().data(), e.data().size(), GetParam(), arena.ptr(), status.ptr());
+  EXPECT_EQ(nullptr, table);
+  EXPECT_STREQ("Error building mini table: Oneof case offset too large",
+               status.error_message());
+}
+
+TEST_P(MiniTableTest, HasbitOverflow) {
+  upb::Arena arena;
+  upb::MtDataEncoder e;
+  ASSERT_TRUE(e.StartMessage(0));
+  for (uint32_t i = 1; i <= 32768; i++) {
+    ASSERT_TRUE(e.PutField(kUpb_FieldType_Bool, i, 0));
+  }
+  upb::Status status;
+  upb_MiniTable* table = _upb_MiniTable_Build(
+      e.data().data(), e.data().size(), GetParam(), arena.ptr(), status.ptr());
+  EXPECT_EQ(nullptr, table);
+  EXPECT_STREQ("Error building mini table: Too many hasbits",
+               status.error_message());
+}
+
 INSTANTIATE_TEST_SUITE_P(Platforms, MiniTableTest,
                          testing::Values(kUpb_MiniTablePlatform_32Bit,
                                          kUpb_MiniTablePlatform_64Bit));
