@@ -23,6 +23,10 @@ cc_library(
     defines = select({
         "//upb:fasttable_enabled_setting": ["UPB_ENABLE_FASTTABLE"],
         "//conditions:default": [],
+    }) + select({
+        "//upb:android": [],
+        "@platforms//os:linux": [],
+        "//conditions:default": ["UPB_NO_LINKTIME_SORT"],
     }),
     features = UPB_DEFAULT_FEATURES,
     textual_hdrs = [

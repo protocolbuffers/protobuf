@@ -17,6 +17,7 @@ struct MiniTableOptions {
   bool bootstrap = false;
   bool one_output_per_message = false;
   bool strip_nonfunctional_codegen = false;
+  bool generate_registry_only = false;
 };
 
 void WriteMiniTableSource(const DefPoolPair& pools, upb::FileDefPtr file,
@@ -27,6 +28,8 @@ void WriteMiniTableMultipleSources(const DefPoolPair& pools,
                                    google::protobuf::compiler::GeneratorContext* context);
 void WriteMiniTableHeader(const DefPoolPair& pools, upb::FileDefPtr file,
                           const MiniTableOptions& options, Output& output);
+void WriteRegistrySource(const DefPoolPair& pools, upb::FileDefPtr file,
+                         const MiniTableOptions& options, Output& output);
 
 }  // namespace generator
 }  // namespace upb

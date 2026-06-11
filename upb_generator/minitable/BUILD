@@ -43,6 +43,7 @@ bootstrap_cc_library(
         "//upb/wire:reader",
         "//upb/wire/decode_fast:select",
         "//upb_generator/common:names",
+        "//util/hash:farmhash_fingerprint",
         "@abseil-cpp//absl/container:flat_hash_map",
         "@abseil-cpp//absl/container:flat_hash_set",
         "@abseil-cpp//absl/log:absl_check",
@@ -131,5 +132,8 @@ proto_lang_toolchain(
     plugin_format_flag = "--plugin=protoc-gen-upb_minitable=%s",
     progress_message = "Generating upb minitables",
     runtime = "//upb:generated_code_support",
-    visibility = ["//upb/bazel:__pkg__"],
+    visibility = [
+        "//upb/bazel:__pkg__",
+        "//video/youtube/utils/elements/data_layer/build_defs:__pkg__",
+    ],
 )

@@ -1,0 +1,9 @@
+syntax = "proto3";
+
+package upb.mini_table;
+
+import "upb/mini_table/minitable_registry_test1.proto";
+
+message TestMessage2 {
+  repeated TestMessage1 field1 = 1;
+}

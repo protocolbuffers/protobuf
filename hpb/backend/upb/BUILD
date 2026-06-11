@@ -72,7 +72,10 @@ cc_library(
     name = "extension",
     srcs = ["extension.cc"],
     hdrs = ["extension.h"],
-    visibility = ["//hpb:__subpackages__"],
+    visibility = [
+        "//hpb:__subpackages__",
+        "//video/youtube/utils/elements/data_layer:__pkg__",
+    ],
     deps = [
         ":interop",
         "//hpb:status",
