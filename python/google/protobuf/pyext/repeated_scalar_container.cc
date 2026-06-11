@@ -32,6 +32,10 @@ namespace python {
 
 namespace repeated_scalar_container {
 
+static PyObject* SetContainerFrozenError() {
+  return SetFrozenError("Container is immutable");
+}
+
 static int InternalAssignRepeatedField(RepeatedScalarContainer* self,
                                        PyObject* list) {
   Message* message = cmessage::AssureWritable(self->parent);
@@ -488,8 +492,7 @@ static PyObject* Remove(PyObject* pself, PyObject* value) {
   // Even if the value doesn't exist in the container, raise immutability error
   // prior to value error if applicable.
   if (self->parent->state == python::MESSAGE_FROZEN) {
-    PyErr_SetString(PyExc_TypeError, "Message is immutable.");
-    return nullptr;
+    return SetContainerFrozenError();
   }
 
   Py_ssize_t match_index = -1;
@@ -738,8 +741,7 @@ static PyObject* Sort(PyObject* pself, PyObject* args, PyObject* kwds) {
       reinterpret_cast<RepeatedScalarContainer*>(pself);
 
   if (self->parent->state == python::MESSAGE_FROZEN) {
-    PyErr_SetString(PyExc_TypeError, "Message is immutable.");
-    return nullptr;
+    return SetContainerFrozenError();
   }
 
   // Support the old sort_function argument for backwards
@@ -786,8 +788,7 @@ static PyObject* Reverse(PyObject* pself) {
       reinterpret_cast<RepeatedScalarContainer*>(pself);
 
   if (self->parent->state == python::MESSAGE_FROZEN) {
-    PyErr_SetString(PyExc_TypeError, "Message is immutable.");
-    return nullptr;
+    return SetContainerFrozenError();
   }
 
   // TODO: b/517235198 - Reify even for empty sequences.
@@ -839,8 +840,7 @@ static PyObject* Pop(PyObject* pself, PyObject* args) {
   // Even if the value doesn't exist in the container, raise immutability error
   // prior to value error.
   if (self->parent->state == python::MESSAGE_FROZEN) {
-    PyErr_SetString(PyExc_TypeError, "Message is immutable.");
-    return nullptr;
+    return SetContainerFrozenError();
   }
 
   Py_ssize_t index = -1;

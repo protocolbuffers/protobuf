@@ -4666,6 +4666,12 @@ UPB_NORETURN static void jsondec_err(jsondec* d, const char* msg) {
   UPB_LONGJMP(d->err, 1);
 }
 
+static void jsondec_checkoom(jsondec* d, bool ok) {
+  if (UPB_UNLIKELY(!ok)) {
+    jsondec_err(d, "Out of memory");
+  }
+}
+
 UPB_PRINTF(2, 3)
 UPB_NORETURN static void jsondec_errf(jsondec* d, const char* fmt, ...) {
   va_list argp;
@@ -5460,12 +5466,13 @@ static upb_MessageValue jsondec_bool(jsondec* d, const upb_FieldDef* f) {
 static void jsondec_array(jsondec* d, upb_Message* msg, const upb_FieldDef* f) {
   UPB_ASSERT(!upb_Message_IsFrozen(msg));
   upb_Array* arr = upb_Message_Mutable(msg, f, d->arena).array;
+  jsondec_checkoom(d, arr);
 
   jsondec_arrstart(d);
   while (jsondec_arrnext(d)) {
     upb_JsonMessageValue elem = jsondec_value(d, f);
     if (!elem.ignore) {
-      upb_Array_Append(arr, elem.value, d->arena);
+      jsondec_checkoom(d, upb_Array_Append(arr, elem.value, d->arena));
     }
   }
   jsondec_arrend(d);
@@ -5474,6 +5481,7 @@ static void jsondec_array(jsondec* d, upb_Message* msg, const upb_FieldDef* f) {
 static void jsondec_map(jsondec* d, upb_Message* msg, const upb_FieldDef* f) {
   UPB_ASSERT(!upb_Message_IsFrozen(msg));
   upb_Map* map = upb_Message_Mutable(msg, f, d->arena).map;
+  jsondec_checkoom(d, map);
   const upb_MessageDef* entry = upb_FieldDef_MessageSubDef(f);
   const upb_FieldDef* key_f = upb_MessageDef_FindFieldByNumber(entry, 1);
   const upb_FieldDef* val_f = upb_MessageDef_FindFieldByNumber(entry, 2);
@@ -5486,7 +5494,7 @@ static void jsondec_map(jsondec* d, upb_Message* msg, const upb_FieldDef* f) {
     jsondec_entrysep(d);
     val = jsondec_value(d, val_f);
     if (!val.ignore) {
-      upb_Map_Set(map, key.value, val.value, d->arena);
+      jsondec_checkoom(d, upb_Map_Set(map, key.value, val.value, d->arena));
     }
   }
   jsondec_objend(d);
@@ -5506,6 +5514,7 @@ static upb_MessageValue jsondec_msg(jsondec* d, const upb_FieldDef* f) {
   const upb_MessageDef* m = upb_FieldDef_MessageSubDef(f);
   const upb_MiniTable* layout = upb_MessageDef_MiniTable(m);
   upb_Message* msg = upb_Message_New(layout, d->arena);
+  jsondec_checkoom(d, msg);
   upb_MessageValue val;
 
   jsondec_tomsg(d, msg, m);
@@ -5567,6 +5576,7 @@ static void jsondec_field(jsondec* d, upb_Message* msg,
     jsondec_array(d, msg, f);
   } else if (upb_FieldDef_IsSubMessage(f)) {
     upb_Message* submsg = upb_Message_Mutable(msg, f, d->arena).msg;
+    jsondec_checkoom(d, submsg);
     const upb_MessageDef* subm = upb_FieldDef_MessageSubDef(f);
     jsondec_tomsg(d, submsg, subm);
   } else {
@@ -5786,13 +5796,15 @@ static void jsondec_listvalue(jsondec* d, upb_Message* msg,
   const upb_MessageDef* value_m = upb_FieldDef_MessageSubDef(values_f);
   const upb_MiniTable* value_layout = upb_MessageDef_MiniTable(value_m);
   upb_Array* values = upb_Message_Mutable(msg, values_f, d->arena).array;
+  jsondec_checkoom(d, values);
 
   jsondec_arrstart(d);
   while (jsondec_arrnext(d)) {
     upb_Message* value_msg = upb_Message_New(value_layout, d->arena);
+    jsondec_checkoom(d, value_msg);
     upb_MessageValue value;
     value.msg_val = value_msg;
-    upb_Array_Append(values, value, d->arena);
+    jsondec_checkoom(d, upb_Array_Append(values, value, d->arena));
     jsondec_wellknownvalue(d, value_msg, value_m);
   }
   jsondec_arrend(d);
@@ -5807,14 +5819,16 @@ static void jsondec_struct(jsondec* d, upb_Message* msg,
   const upb_MessageDef* value_m = upb_FieldDef_MessageSubDef(value_f);
   const upb_MiniTable* value_layout = upb_MessageDef_MiniTable(value_m);
   upb_Map* fields = upb_Message_Mutable(msg, fields_f, d->arena).map;
+  jsondec_checkoom(d, fields);
 
   jsondec_objstart(d);
   while (jsondec_objnext(d)) {
     upb_MessageValue key, value;
     upb_Message* value_msg = upb_Message_New(value_layout, d->arena);
+    jsondec_checkoom(d, value_msg);
     key.str_val = jsondec_string(d);
     value.msg_val = value_msg;
-    upb_Map_Set(fields, key, value, d->arena);
+    jsondec_checkoom(d, upb_Map_Set(fields, key, value, d->arena));
     jsondec_entrysep(d);
     jsondec_wellknownvalue(d, value_msg, value_m);
   }
@@ -5862,12 +5876,14 @@ static void jsondec_wellknownvalue(jsondec* d, upb_Message* msg,
       /* Struct struct_value = 5; */
       f = upb_MessageDef_FindFieldByNumber(m, 5);
       submsg = upb_Message_Mutable(msg, f, d->arena).msg;
+      jsondec_checkoom(d, submsg);
       jsondec_struct(d, submsg, upb_FieldDef_MessageSubDef(f));
       return;
     case JD_ARRAY:
       /* ListValue list_value = 6; */
       f = upb_MessageDef_FindFieldByNumber(m, 6);
       submsg = upb_Message_Mutable(msg, f, d->arena).msg;
+      jsondec_checkoom(d, submsg);
       jsondec_listvalue(d, submsg, upb_FieldDef_MessageSubDef(f));
       return;
     default:
@@ -5892,6 +5908,7 @@ static upb_StringView jsondec_mask(jsondec* d, const char* buf,
   }
 
   out = upb_Arena_Malloc(d->arena, ret.size);
+  jsondec_checkoom(d, out || ret.size == 0);
   ptr = buf;
   ret.data = out;
 
@@ -5916,6 +5933,7 @@ static void jsondec_fieldmask(jsondec* d, upb_Message* msg,
   /* repeated string paths = 1; */
   const upb_FieldDef* paths_f = upb_MessageDef_FindFieldByNumber(m, 1);
   upb_Array* arr = upb_Message_Mutable(msg, paths_f, d->arena).array;
+  jsondec_checkoom(d, arr);
   upb_StringView str = jsondec_string(d);
   const char* ptr = str.data;
   const char* end = ptr + str.size;
@@ -5930,7 +5948,7 @@ static void jsondec_fieldmask(jsondec* d, upb_Message* msg,
       val.str_val = jsondec_mask(d, ptr, end);
       ptr = end;
     }
-    upb_Array_Append(arr, val, d->arena);
+    jsondec_checkoom(d, upb_Array_Append(arr, val, d->arena));
   }
 }
 
@@ -6020,10 +6038,12 @@ static void jsondec_any(jsondec* d, upb_Message* msg, const upb_MessageDef* m) {
 
   const upb_MiniTable* any_layout = upb_MessageDef_MiniTable(any_m);
   any_msg = upb_Message_New(any_layout, d->arena);
+  jsondec_checkoom(d, any_msg);
 
   if (pre_type_data) {
     size_t len = pre_type_end - pre_type_data + 1;
     char* tmp = upb_Arena_Malloc(d->arena, len);
+    jsondec_checkoom(d, tmp);
     const char* saved_ptr = d->ptr;
     const char* saved_end = d->end;
     memcpy(tmp, pre_type_data, len - 1);
@@ -6047,8 +6067,9 @@ static void jsondec_any(jsondec* d, upb_Message* msg, const upb_MessageDef* m) {
   upb_EncodeStatus status =
       upb_Encode(any_msg, upb_MessageDef_MiniTable(any_m), 0, d->arena,
                  (char**)&encoded.str_val.data, &encoded.str_val.size);
-  // TODO: We should fail gracefully here on a bad return status.
-  UPB_ASSERT(status == kUpb_EncodeStatus_Ok);
+  if (status != kUpb_EncodeStatus_Ok) {
+    jsondec_errf(d, "Encode failed: %s", upb_EncodeStatus_String(status));
+  }
   upb_Message_SetFieldByDef(msg, value_f, encoded, d->arena);
 }
 
@@ -9326,7 +9347,7 @@ static void upb_UnknownFields_Merge(upb_UnknownField* arr, size_t start,
   if (ptr1 < end1) {
     memcpy(out, ptr1, (end1 - ptr1) * sizeof(*out));
   } else if (ptr2 < end2) {
-    memcpy(out, ptr1, (end2 - ptr2) * sizeof(*out));
+    memcpy(out, ptr2, (end2 - ptr2) * sizeof(*out));
   }
 }
 
@@ -14262,7 +14283,7 @@ const upb_FileDef* upb_FileDef_PublicDependency(const upb_FileDef* f, int i) {
 }
 
 const upb_FileDef* upb_FileDef_WeakDependency(const upb_FileDef* f, int i) {
-  UPB_ASSERT(0 <= i && i < f->public_dep_count);
+  UPB_ASSERT(0 <= i && i < f->weak_dep_count);
   return f->deps[f->weak_deps[i]];
 }
 
@@ -14507,7 +14528,7 @@ void _upb_FileDef_Create(upb_DefBuilder* ctx,
   file->public_deps = UPB_DEFBUILDER_ALLOCARRAY(ctx, int32_t, n);
   int32_t* mutable_public_deps = (int32_t*)file->public_deps;
   for (size_t i = 0; i < n; i++) {
-    if (public_deps[i] >= file->dep_count) {
+    if (public_deps[i] < 0 || public_deps[i] >= file->dep_count) {
       _upb_DefBuilder_Errf(ctx, "public_dep %d is out of range",
                            (int)public_deps[i]);
     }
@@ -14519,7 +14540,7 @@ void _upb_FileDef_Create(upb_DefBuilder* ctx,
   file->weak_deps = UPB_DEFBUILDER_ALLOCARRAY(ctx, const int32_t, n);
   int32_t* mutable_weak_deps = (int32_t*)file->weak_deps;
   for (size_t i = 0; i < n; i++) {
-    if (weak_deps[i] >= file->dep_count) {
+    if (weak_deps[i] < 0 || weak_deps[i] >= file->dep_count) {
       _upb_DefBuilder_Errf(ctx, "weak_dep %d is out of range",
                            (int)weak_deps[i]);
     }
@@ -17563,19 +17584,22 @@ static const char* _upb_Decoder_DecodeEmptyMessage(upb_Decoder* d,
   }
 
   const char* start = ptr;
+  const char* capture_end = ptr;
   upb_EpsCopyCapture capture;
   upb_EpsCopyCapture_Start(&capture, &d->input, start);
   while (!upb_EpsCopyInputStream_IsDone(EPS(d), &ptr)) {
     uint32_t tag;
+    capture_end = ptr;
     ptr = upb_WireReader_ReadTag(ptr, &tag, EPS(d));
     if ((tag & 7) == kUpb_WireType_EndGroup) {
       d->end_group = tag >> 3;
       break;
     }
     ptr = _upb_WireReader_SkipValueForceInline(ptr, tag, d->depth, EPS(d));
+    capture_end = ptr;
   }
   upb_StringView sv;
-  upb_EpsCopyCapture_End(&capture, EPS(d), ptr, &sv);
+  upb_EpsCopyCapture_End(&capture, EPS(d), capture_end, &sv);
 
   if (sv.size > 0) {
     if (!UPB_PRIVATE(_upb_Message_AddUnknown)(

@@ -1127,19 +1127,22 @@ static const char* _upb_Decoder_DecodeEmptyMessage(upb_Decoder* d,
   }
 
   const char* start = ptr;
+  const char* capture_end = ptr;
   upb_EpsCopyCapture capture;
   upb_EpsCopyCapture_Start(&capture, &d->input, start);
   while (!upb_EpsCopyInputStream_IsDone(EPS(d), &ptr)) {
     uint32_t tag;
+    capture_end = ptr;
     ptr = upb_WireReader_ReadTag(ptr, &tag, EPS(d));
     if ((tag & 7) == kUpb_WireType_EndGroup) {
       d->end_group = tag >> 3;
       break;
     }
     ptr = _upb_WireReader_SkipValueForceInline(ptr, tag, d->depth, EPS(d));
+    capture_end = ptr;
   }
   upb_StringView sv;
-  upb_EpsCopyCapture_End(&capture, EPS(d), ptr, &sv);
+  upb_EpsCopyCapture_End(&capture, EPS(d), capture_end, &sv);
 
   if (sv.size > 0) {
     if (!UPB_PRIVATE(_upb_Message_AddUnknown)(

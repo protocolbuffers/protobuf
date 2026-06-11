@@ -8,12 +8,14 @@
 #ifndef GOOGLE_PROTOBUF_REFLECTION_INTERNAL_H__
 #define GOOGLE_PROTOBUF_REFLECTION_INTERNAL_H__
 
+#include <cstddef>
 #include <cstdint>
 #include <string>
 
 #include "absl/log/absl_check.h"
 #include "absl/strings/cord.h"
 #include "google/protobuf/map_field.h"
+#include "google/protobuf/port.h"
 #include "google/protobuf/reflection.h"
 #include "google/protobuf/repeated_field.h"
 #include "google/protobuf/repeated_ptr_field.h"
@@ -150,6 +152,17 @@ class RepeatedPtrFieldWrapper : public RandomAccessRepeatedFieldAccessor {
     ConvertToT(value, allocated);
     MutableRepeatedField(data)->AddAllocated(allocated);
   }
+  void AddRange(Field* data, const Value* values, int value_size,
+                size_t size) const override {
+    auto* repeated = MutableRepeatedField(data);
+    int old_size = repeated->size();
+    repeated->Reserve(internal::CheckedAdd(old_size, size));
+    const char* ptr = reinterpret_cast<const char*>(values);
+    for (size_t i = 0; i < size; ++i) {
+      Add(data, ptr);
+      ptr += value_size;
+    }
+  }
   void RemoveLast(Field* data) const override {
     MutableRepeatedField(data)->RemoveLast();
   }
@@ -207,6 +220,12 @@ class RepeatedFieldPrimitiveAccessor final : public RepeatedFieldWrapper<T> {
     // for these accessors, here "other_mutator" must be "this".
     ABSL_CHECK(this == other_mutator);
     MutableRepeatedField(data)->Swap(MutableRepeatedField(other_data));
+  }
+
+  void AddRange(Field* data, const Value* values, int value_size,
+                size_t size) const override {
+    const T* ptr = reinterpret_cast<const T*>(values);
+    MutableRepeatedField(data)->Add(ptr, ptr + size);
   }
 
  protected:

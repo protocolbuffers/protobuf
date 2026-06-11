@@ -1606,7 +1606,7 @@ def _SetFrozen(self):
 
 def _AssureWritable(self):
   if self._frozen:
-    raise TypeError('Message is immutable')
+    raise message_mod.FrozenInstanceError('Message is immutable')
   return self
 
 

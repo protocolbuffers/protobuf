@@ -89,7 +89,6 @@ LITE_SRCS = [
     "src/main/java/com/google/protobuf/ProtobufArrayList.java",
     "src/main/java/com/google/protobuf/ProtocolStringList.java",
     "src/main/java/com/google/protobuf/RawMessageInfo.java",
-    "src/main/java/com/google/protobuf/Reader.java",
     "src/main/java/com/google/protobuf/RopeByteString.java",
     "src/main/java/com/google/protobuf/RuntimeVersion.java",
     "src/main/java/com/google/protobuf/Schema.java",
@@ -106,7 +105,6 @@ LITE_SRCS = [
     "src/main/java/com/google/protobuf/UnsafeUtil.java",
     "src/main/java/com/google/protobuf/Utf8.java",
     "src/main/java/com/google/protobuf/WireFormat.java",
-    "src/main/java/com/google/protobuf/Writer.java",
 ]
 
 FULL_SRCS = glob(

@@ -39,6 +39,7 @@ _K = TypeVar('_K')
 _V = TypeVar('_V')
 
 from google.protobuf.descriptor import FieldDescriptor
+from google.protobuf import message
 
 
 class BaseContainer(Sequence[_T]):
@@ -89,7 +90,7 @@ class BaseContainer(Sequence[_T]):
 
   def _AssureWritable(self) -> 'BaseContainer[_T]':
     if self._frozen:
-      raise TypeError('Container is immutable')
+      raise message.FrozenInstanceError('Container is immutable')
     return self
 
   def sort(self, *args, **kwargs) -> None:
@@ -447,7 +448,7 @@ class ScalarMap(MutableMapping[_K, _V]):
 
   def _AssureWritable(self) -> 'ScalarMap[_K, _V]':
     if self._frozen:
-      raise TypeError('Map is frozen')
+      raise message.FrozenInstanceError('Map is immutable')
     return self
 
   def __getitem__(self, key: _K) -> _V:
@@ -478,8 +479,9 @@ class ScalarMap(MutableMapping[_K, _V]):
   # will make the default implementation (from our base class) always insert
   # the key.
   def get(self, key, default=None):
-    if key in self:
-      return self[key]
+    checked_key = self._key_checker.CheckValue(key)
+    if checked_key in self._values:
+      return self[checked_key]
     else:
       return default
 
@@ -492,7 +494,8 @@ class ScalarMap(MutableMapping[_K, _V]):
 
   def __delitem__(self, key: _K) -> None:
     self._AssureWritable()
-    del self._values[key]
+    checked_key = self._key_checker.CheckValue(key)
+    del self._values[checked_key]
     self._message_listener.Modified()
 
   def __len__(self) -> int:
@@ -506,10 +509,11 @@ class ScalarMap(MutableMapping[_K, _V]):
 
   def setdefault(self, key: _K, value: Optional[_V] = None) -> _V:
     self._AssureWritable()
+    checked_key = self._key_checker.CheckValue(key)
     if value == None:
       raise ValueError('The value for scalar map setdefault must be set.')
-    if key not in self._values:
-      self.__setitem__(key, value)
+    if checked_key not in self._values:
+      self.__setitem__(checked_key, value)
     return self[key]
 
   def MergeFrom(self, other: 'ScalarMap[_K, _V]') -> None:
@@ -579,7 +583,7 @@ class MessageMap(MutableMapping[_K, _V]):
 
   def _AssureWritable(self) -> 'MessageMap[_K, _V]':
     if self._frozen:
-      raise TypeError('Map is immutable')
+      raise message.FrozenInstanceError('Map is immutable')
     return self
 
   def __getitem__(self, key: _K) -> _V:

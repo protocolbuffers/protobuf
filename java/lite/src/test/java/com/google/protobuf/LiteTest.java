@@ -2639,6 +2639,19 @@ public class LiteTest {
   }
 
   @Test
+  public void testParseFromInputStream_recursiveKnownGroups() throws Exception {
+    byte[] data100 = makeRecursiveGroup(100).toByteArray();
+    byte[] data101 = makeRecursiveGroup(101).toByteArray();
+
+    RecursiveGroup unused = RecursiveGroup.parseFrom(new ByteArrayInputStream(data100));
+    Throwable thrown =
+        assertThrows(
+            InvalidProtocolBufferException.class,
+            () -> RecursiveGroup.parseFrom(new ByteArrayInputStream(data101)));
+    assertThat(thrown).hasMessageThat().contains("Protocol message had too many levels of nesting");
+  }
+
+  @Test
   @SuppressWarnings("ProtoParseFromByteString")
   public void testMaliciousSGroupTagsWithMapField_fromByteArray() throws Exception {
     ByteString byteString = generateNestingGroups(102);

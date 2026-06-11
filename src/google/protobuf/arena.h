@@ -60,7 +60,7 @@ class MessageLite;
 template <typename Key, typename T>
 class Map;
 namespace internal {
-struct RepeatedFieldBase;
+class RepeatedFieldBase;
 class ExtensionSet;
 }  // namespace internal
 

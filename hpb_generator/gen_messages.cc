@@ -200,7 +200,7 @@ void WriteModelPublicDeclaration(
     const std::vector<const google::protobuf::FieldDescriptor*>& file_exts,
     const std::vector<const google::protobuf::EnumDescriptor*>& file_enums,
     Context& ctx) {
-  ctx.Emit({{"class_name", ClassName(descriptor)},
+  ctx.Emit({Sub("class_name", ClassName(descriptor)).AnnotatedAs(descriptor),
             {"qualified_class_name", QualifiedClassName(descriptor)}},
            R"cc(
              class $class_name$ final : private internal::$class_name$Access {
