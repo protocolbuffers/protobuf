@@ -432,6 +432,14 @@ class DescriptorTest(unittest.TestCase):
     self.assertNotIn('nonexistent_key', immutable_map)
     self.assertEqual(len(immutable_map), 2)
 
+    # Test lookups via bytes.
+    self.assertEqual(immutable_map[b'key'], 123)
+    self.assertEqual(immutable_map[b'other_key'], 456)
+    self.assertIn(b'key', immutable_map)
+    self.assertIn(b'other_key', immutable_map)
+    self.assertNotIn(b'nonexistent_key', immutable_map)
+    self.assertEqual(len(immutable_map), 2)
+
     # Test iteration.
     self.assertEqual(set(immutable_map.keys()), {'key', 'other_key'})
     self.assertEqual(set(immutable_map.values()), {123, 456})
