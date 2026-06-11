@@ -112,8 +112,7 @@ void SetPrimitiveVariables(
   (*variables)["tag_size"] = absl::StrCat(
       WireFormat::TagSize(descriptor->number(), GetType(descriptor)));
   if (IsReferenceType(GetJavaType(descriptor))) {
-    (*variables)["null_check"] =
-        "if (value == null) { throw new NullPointerException(); }";
+    (*variables)["null_check"] = "java.util.Objects.requireNonNull(value);";
   } else {
     (*variables)["null_check"] = "";
   }
