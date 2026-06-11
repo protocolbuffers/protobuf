@@ -240,7 +240,12 @@ class Message(object):
 
     Keyword Args:
       deterministic (bool): If true, requests deterministic serialization
-        of the protobuf, with predictable ordering of map keys.
+        of the protobuf. Note that there is no canonical representation of
+        protobuf messages: deterministic serialization only means 'consistent
+        for current build, but not stable between rebuilds, and may not match
+        decisions made by other languages'.
+        See
+        https://protobuf.dev/programming-guides/serialization-not-canonical/.
 
     Returns:
       A binary string representation of the message if all of the required
@@ -259,7 +264,11 @@ class Message(object):
 
     Keyword Args:
       deterministic (bool): If true, requests deterministic serialization
-        of the protobuf, with predictable ordering of map keys.
+        of the protobuf. Note that 'deterministic' serialization only means
+        'Consistent for current build, but still arbitary and not stable over
+        time'. There is no canonical representation of protobuf messages,
+        See
+        https://protobuf.dev/programming-guides/serialization-not-canonical/.
 
     Returns:
       bytes: A serialized representation of the partial message.
