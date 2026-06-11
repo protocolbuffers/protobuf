@@ -65,6 +65,16 @@ single_version_override(
     ],
 )
 
+# Workaround for broken asm headers in GHA container for 32-bit builds.
+# Force Abseil to use correct syscall number 192 for mmap2 on i386.
+single_version_override(
+    module_name = "abseil-cpp",
+    patch_strip = 1,
+    patches = [
+        "@com_google_protobuf//:patches/abseil/fix_i386_mmap2.patch",
+    ],
+)
+
 bazel_dep(name = "rules_shell", version = "0.6.1")
 bazel_dep(name = "platforms", version = "0.0.11")
 
