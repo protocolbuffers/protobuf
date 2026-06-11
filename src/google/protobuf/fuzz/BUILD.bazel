@@ -1,0 +1,18 @@
+# Protocol Buffers - Google's data interchange format
+# Copyright 2025 Google LLC.  All rights reserved.
+#
+# Use of this source code is governed by a BSD-style
+# license that can be found in the LICENSE file or at
+# https://developers.google.com/open-source/licenses/bsd
+
+load("@rules_fuzzing//fuzzing:cc_defs.bzl", "cc_fuzz_test")
+
+cc_fuzz_test(
+    name = "packed_field_overflow_fuzz_test",
+    srcs = ["packed_field_overflow_fuzz_test.cc"],
+    deps = [
+        "//:protobuf",
+        "@com_google_fuzztest//fuzztest",
+        "@com_google_fuzztest//fuzztest:fuzztest_gtest_main",
+    ],
+)
