@@ -1935,7 +1935,7 @@ public class JsonFormatTest {
     TestMap.Builder builder = TestMap.newBuilder();
     JsonFormat.parser()
         .ignoringUnknownFields()
-        .merge("{\"int32ToEnumMap\": {1: XXX, 2: FOO}}", builder);
+        .merge("{\"int32ToEnumMap\": {\"1\": \"XXX\", \"2\": \"FOO\"}}", builder);
 
     assertThat(builder.getInt32ToEnumMapMap()).containsEntry(2, NestedEnum.FOO);
     assertThat(builder.getInt32ToEnumMapMap()).hasSize(1);
@@ -1946,7 +1946,7 @@ public class JsonFormatTest {
     TestAllTypes.Builder builder = TestAllTypes.newBuilder();
     JsonFormat.parser()
         .ignoringUnknownFields()
-        .merge("{\"repeatedNestedEnum\": [XXX, FOO, BAR, BAZ]}", builder);
+        .merge("{\"repeatedNestedEnum\": [\"XXX\", \"FOO\", \"BAR\", \"BAZ\"]}", builder);
 
     assertThat(builder.getRepeatedNestedEnum(0)).isEqualTo(NestedEnum.FOO);
     assertThat(builder.getRepeatedNestedEnum(1)).isEqualTo(NestedEnum.BAR);
@@ -2581,5 +2581,153 @@ public class JsonFormatTest {
         TestAllTypes.newBuilder().setOptionalFloat(-0.0f).setOptionalDouble(-0.0).build();
     assertThat(JsonFormat.printer().print(message))
         .isEqualTo("{\n  \"optionalFloat\": -0.0,\n  \"optionalDouble\": -0.0\n}");
+  }
+
+  // Tests for Gson lenient parsing behavior. These document what the underlying Gson parser
+  // accepts beyond strict JSON when setLenient(false) is bypassed or not enforced.
+
+  @Test
+  public void testGsonLenientUnquotedStringKeys() throws Exception {
+    TestAllTypes.Builder builder = TestAllTypes.newBuilder();
+    mergeFromJson("{optionalString: \"hello\"}", builder);
+    assertThat(builder.getOptionalString()).isEqualTo("hello");
+  }
+
+  @Test
+  public void testGsonLenientUnquotedStringValues() throws Exception {
+    TestAllTypes.Builder builder = TestAllTypes.newBuilder();
+    mergeFromJson("{\"optionalString\": hello}", builder);
+    assertThat(builder.getOptionalString()).isEqualTo("hello");
+  }
+
+  @Test
+  public void testGsonLenientUnquotedKeyAndValue() throws Exception {
+    TestAllTypes.Builder builder = TestAllTypes.newBuilder();
+    mergeFromJson("{optionalString: hello}", builder);
+    assertThat(builder.getOptionalString()).isEqualTo("hello");
+  }
+
+  @Test
+  public void testGsonLenientUnquotedValueStripsWhitespace() throws Exception {
+    TestAllTypes.Builder builder = TestAllTypes.newBuilder();
+    mergeFromJson("{\"optionalString\":   hello   }", builder);
+    assertThat(builder.getOptionalString()).isEqualTo("hello");
+  }
+
+  @Test
+  public void testGsonLenientUnquotedKeyStripsWhitespace() throws Exception {
+    TestAllTypes.Builder builder = TestAllTypes.newBuilder();
+    mergeFromJson("{   optionalString   : \"hello\"}", builder);
+    assertThat(builder.getOptionalString()).isEqualTo("hello");
+  }
+
+  @Test
+  public void testGsonLenientUnquotedKeyWithWhitespaceInMiddleFails() throws Exception {
+    TestAllTypes.Builder builder = TestAllTypes.newBuilder();
+    try {
+      mergeFromJson("{optional String: \"hello\"}", builder);
+      assertWithMessage("Exception is expected.").fail();
+    } catch (InvalidProtocolBufferException e) {
+      // Expected: unquoted keys cannot contain whitespace in the middle.
+    }
+  }
+
+  @Test
+  public void testGsonLenientSingleQuotedKeys() throws Exception {
+    TestAllTypes.Builder builder = TestAllTypes.newBuilder();
+    mergeFromJson("{'optionalString': \"hello\"}", builder);
+    assertThat(builder.getOptionalString()).isEqualTo("hello");
+  }
+
+  @Test
+  public void testGsonLenientSingleQuotedValues() throws Exception {
+    TestAllTypes.Builder builder = TestAllTypes.newBuilder();
+    mergeFromJson("{\"optionalString\": 'hello'}", builder);
+    assertThat(builder.getOptionalString()).isEqualTo("hello");
+  }
+
+  @Test
+  public void testGsonLenientSingleQuotedKeyAndValue() throws Exception {
+    TestAllTypes.Builder builder = TestAllTypes.newBuilder();
+    mergeFromJson("{'optionalString': 'hello'}", builder);
+    assertThat(builder.getOptionalString()).isEqualTo("hello");
+  }
+
+  @Test
+  public void testGsonLenientLineComment() throws Exception {
+    TestAllTypes.Builder builder = TestAllTypes.newBuilder();
+    mergeFromJson(
+        "{\n"
+            + "  // this is a comment\n"
+            + "  \"optionalInt32\": 123\n"
+            + "}",
+        builder);
+    assertThat(builder.getOptionalInt32()).isEqualTo(123);
+  }
+
+  @Test
+  public void testGsonLenientBlockComment() throws Exception {
+    TestAllTypes.Builder builder = TestAllTypes.newBuilder();
+    mergeFromJson(
+        "{\n"
+            + "  /* this is a\n"
+            + "     block comment */\n"
+            + "  \"optionalInt32\": 123\n"
+            + "}",
+        builder);
+    assertThat(builder.getOptionalInt32()).isEqualTo(123);
+  }
+
+  @Test
+  public void testGsonLenientHashComment() throws Exception {
+    TestAllTypes.Builder builder = TestAllTypes.newBuilder();
+    mergeFromJson(
+        "{\n"
+            + "  # this is a hash comment\n"
+            + "  \"optionalInt32\": 123\n"
+            + "}",
+        builder);
+    assertThat(builder.getOptionalInt32()).isEqualTo(123);
+  }
+
+  @Test
+  public void testHtmlEscapeAllGsonCharacters() throws Exception {
+    // Gson HTML-escapes these characters by default: < > & = '
+    TestAllTypes message =
+        TestAllTypes.newBuilder().setOptionalString("<tag>&amp='value'</tag>").build();
+    String json = toJsonString(message);
+    assertThat(json).contains("\\u003c");  // <
+    assertThat(json).contains("\\u003e");  // >
+    assertThat(json).contains("\\u0026");  // &
+    assertThat(json).contains("\\u003d");  // =
+    assertThat(json).contains("\\u0027");  // '
+    assertThat(json).doesNotContain("<");
+    assertThat(json).doesNotContain(">");
+    assertThat(json).doesNotContain("&");
+    assertThat(json).doesNotContain("=");
+
+    TestAllTypes.Builder builder = TestAllTypes.newBuilder();
+    JsonFormat.parser().merge(json, builder);
+    assertThat(builder.getOptionalString()).isEqualTo("<tag>&amp='value'</tag>");
+  }
+
+  @Test
+  public void testGsonLenientMapWithUnquotedStringKeys() throws Exception {
+    TestMap.Builder builder = TestMap.newBuilder();
+    mergeFromJson("{\"stringToInt32Map\": {foo: 10, bar: 20, baz: 30}}", builder);
+    assertThat(builder.getStringToInt32MapMap()).containsEntry("foo", 10);
+    assertThat(builder.getStringToInt32MapMap()).containsEntry("bar", 20);
+    assertThat(builder.getStringToInt32MapMap()).containsEntry("baz", 30);
+    assertThat(builder.getStringToInt32MapMap()).hasSize(3);
+  }
+
+  @Test
+  public void testGsonLenientMapWithUnquotedNumericKeys() throws Exception {
+    TestMap.Builder builder = TestMap.newBuilder();
+    mergeFromJson("{\"int32ToStringMap\": {1: \"foo\", 2: \"bar\", 3: \"baz\"}}", builder);
+    assertThat(builder.getInt32ToStringMapMap()).containsEntry(1, "foo");
+    assertThat(builder.getInt32ToStringMapMap()).containsEntry(2, "bar");
+    assertThat(builder.getInt32ToStringMapMap()).containsEntry(3, "baz");
+    assertThat(builder.getInt32ToStringMapMap()).hasSize(3);
   }
 }
