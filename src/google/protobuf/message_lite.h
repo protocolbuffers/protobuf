@@ -230,6 +230,7 @@ struct FallbackMessageTraits {
   static constexpr const auto* class_data() {
     return GetClassData(T::default_instance());
   }
+  static const auto* tc_table() { return class_data()->GetTcParseTable(); }
   // We can't make a constexpr pointer to the default, so use a function pointer
   // instead.
   static constexpr auto StrongPointer() { return &T::default_instance; }
@@ -640,6 +641,7 @@ template <const auto* kDefault, const auto* kClassData>
 struct GeneratedMessageTraitsT {
   static constexpr const void* default_instance() { return kDefault; }
   static constexpr const auto* class_data() { return kClassData->base(); }
+  static constexpr const auto* tc_table() { return class_data()->tc_table; }
   static constexpr auto StrongPointer() { return default_instance(); }
 };
 #else
@@ -700,6 +702,9 @@ struct GeneratedMessageTraitsT {
   }
   static const auto* class_data() {
     return MessageGlobalsBase::GetClassData(kGlobals);
+  }
+  static const auto* tc_table() {
+    return MessageGlobalsBase::ToParseTableBase(kGlobals);
   }
   static constexpr const auto* globals() { return kGlobals; }
   static constexpr auto StrongPointer() { return kGlobals; }
