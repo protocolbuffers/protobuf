@@ -102,13 +102,15 @@ Duration CreateNormalizedDuration(int64_t seconds, int32_t nanos) {
 
 // Format nanoseconds with either 3, 6, or 9 digits depending on the required
 // precision to represent the exact value.
-std::string FormatNanos(int32_t nanos) {
-  if (nanos % kNanosPerMillisecond == 0) {
-    return absl::StrFormat("%03d", nanos / kNanosPerMillisecond);
-  } else if (nanos % kNanosPerMicrosecond == 0) {
-    return absl::StrFormat("%06d", nanos / kNanosPerMicrosecond);
+std::string FormatNanos(uint32_t nanos) {
+  const uint32_t kMillis = static_cast<uint32_t>(kNanosPerMillisecond);
+  const uint32_t kMicros = static_cast<uint32_t>(kNanosPerMicrosecond);
+  if (nanos % kMillis == 0) {
+    return absl::StrFormat("%03u", nanos / kMillis);
+  } else if (nanos % kMicros == 0) {
+    return absl::StrFormat("%06u", nanos / kMicros);
   } else {
-    return absl::StrFormat("%09d", nanos);
+    return absl::StrFormat("%09u", nanos);
   }
 }
 
@@ -125,7 +127,7 @@ std::string FormatTime(int64_t seconds, int32_t nanos) {
   // We format the nanoseconds part separately to meet the precision
   // requirement.
   if (nanos != 0) {
-    absl::StrAppend(&result, ".", FormatNanos(nanos));
+    absl::StrAppend(&result, ".", FormatNanos(static_cast<uint32_t>(nanos)));
   }
   absl::StrAppend(&result, "Z");
   return result;
@@ -203,17 +205,19 @@ Timestamp TimeUtil::GetCurrentTime() {
 Timestamp TimeUtil::GetEpoch() { return Timestamp(); }
 
 std::string TimeUtil::ToString(const Duration& duration) {
-  std::string result;
   int64_t seconds = duration.seconds();
   int32_t nanos = duration.nanos();
+  std::string result;
   if (seconds < 0 || nanos < 0) {
     result = "-";
-    seconds = -seconds;
-    nanos = -nanos;
   }
-  absl::StrAppend(&result, seconds);
-  if (nanos != 0) {
-    absl::StrAppend(&result, ".", FormatNanos(nanos));
+  uint64_t abs_seconds = (seconds < 0) ? 0 - static_cast<uint64_t>(seconds)
+                                       : static_cast<uint64_t>(seconds);
+  uint32_t abs_nanos = (nanos < 0) ? 0 - static_cast<uint32_t>(nanos)
+                                   : static_cast<uint32_t>(nanos);
+  absl::StrAppend(&result, abs_seconds);
+  if (abs_nanos != 0) {
+    absl::StrAppend(&result, ".", FormatNanos(abs_nanos));
   }
   absl::StrAppend(&result, "s");
   return result;
