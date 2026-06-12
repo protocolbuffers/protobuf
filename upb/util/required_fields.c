@@ -169,11 +169,25 @@ static void upb_FieldPathVector_Reserve(upb_FindContext* ctx,
                                         upb_FieldPathVector* vec,
                                         size_t elems) {
   if (vec->cap - vec->size < elems) {
-    const int oldsize = vec->cap * sizeof(*vec->path);
+    if (vec->cap > SIZE_MAX / sizeof(*vec->path)) {
+      UPB_LONGJMP(ctx->err, 1);
+    }
+    const size_t oldsize = vec->cap * sizeof(*vec->path);
     size_t need = vec->size + elems;
+    if (need < vec->size) {
+      UPB_LONGJMP(ctx->err, 1);
+    }
     vec->cap = UPB_MAX(4, vec->cap);
-    while (vec->cap < need) vec->cap *= 2;
-    const int newsize = vec->cap * sizeof(*vec->path);
+    while (vec->cap < need) {
+      if (vec->cap > SIZE_MAX / 2) {
+        UPB_LONGJMP(ctx->err, 1);
+      }
+      vec->cap *= 2;
+    }
+    if (vec->cap > SIZE_MAX / sizeof(*vec->path)) {
+      UPB_LONGJMP(ctx->err, 1);
+    }
+    const size_t newsize = vec->cap * sizeof(*vec->path);
     vec->path = upb_grealloc(vec->path, oldsize, newsize);
     if (!vec->path) {
       UPB_LONGJMP(ctx->err, 1);
