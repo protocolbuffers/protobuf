@@ -1241,3 +1241,311 @@ TEST(ConvertTest, OneofPromotion) {
   upb_StringView str = upb_test_convert_SrcWithOneof_oneof_string(dst);
   EXPECT_EQ(std::string("abc"), std::string(str.data, str.size));
 }
+
+TEST(ConvertTest, ConvertExtensions_LookupMessageExtensionInRegistry) {
+  upb::Arena arena;
+  upb_test_convert_MessageWithExtension* src_msg =
+      upb_test_convert_MessageWithExtension_new(arena.ptr());
+
+  upb_test_convert_MessageWithInt32* sub =
+      upb_test_convert_MessageWithInt32_new(arena.ptr());
+  upb_test_convert_MessageWithInt32_set_f1(sub, 456);
+
+  upb_MessageValue ext_val;
+  ext_val.msg_val = UPB_UPCAST(sub);
+  upb_Message_SetExtension(UPB_UPCAST(src_msg),
+                           upb_test_convert_ext_field_msg_ext, &ext_val,
+                           arena.ptr());
+
+  const upb_MiniTable* mt1 = &upb__test__convert__MessageWithExtension_msg_init;
+  const upb_MiniTable* mt2 =
+      &upb__test__convert__AnotherMessageWithExtension_msg_init;
+
+  // Convert to mt2 without registry -> becomes unknown field.
+  const upb_Message* intermediate_msg =
+      upb_Message_Convert(UPB_UPCAST(src_msg), mt1, mt2, nullptr, arena.ptr());
+  ASSERT_NE(intermediate_msg, nullptr);
+
+  // Now convert back to mt1 with registry -> promoted back to extension.
+  upb_ExtensionRegistry* extreg = upb_ExtensionRegistry_New(arena.ptr());
+  upb_ExtensionRegistry_Add(extreg, upb_test_convert_ext_field_msg_ext);
+
+  const upb_Message* dst_msg =
+      upb_Message_Convert(intermediate_msg, mt2, mt1, extreg, arena.ptr());
+  ASSERT_NE(dst_msg, nullptr);
+
+  const upb_test_convert_MessageWithExtension* dst =
+      (const upb_test_convert_MessageWithExtension*)dst_msg;
+
+  EXPECT_TRUE(upb_Message_HasExtension(UPB_UPCAST(dst),
+                                       upb_test_convert_ext_field_msg_ext));
+  const upb_Message* out_sub = upb_Message_GetExtensionMessage(
+      UPB_UPCAST(dst), upb_test_convert_ext_field_msg_ext, nullptr);
+  ASSERT_NE(out_sub, nullptr);
+  EXPECT_EQ(456, upb_test_convert_MessageWithInt32_f1(
+                     (const upb_test_convert_MessageWithInt32*)out_sub));
+}
+
+TEST(ConvertTest, ConvertExtensions_LookupRepeatedMessageExtensionInRegistry) {
+  upb::Arena arena;
+  upb_test_convert_MessageWithExtension* src_msg =
+      upb_test_convert_MessageWithExtension_new(arena.ptr());
+
+  upb_test_convert_MessageWithInt32* sub =
+      upb_test_convert_MessageWithInt32_new(arena.ptr());
+  upb_test_convert_MessageWithInt32_set_f1(sub, 789);
+
+  upb_Array* ext_arr = upb_Array_New(arena.ptr(), kUpb_CType_Message);
+  upb_MessageValue elem_val;
+  elem_val.msg_val = UPB_UPCAST(sub);
+  upb_Array_Append(ext_arr, elem_val, arena.ptr());
+
+  upb_MessageValue ext_val;
+  ext_val.array_val = ext_arr;
+  upb_Message_SetExtension(UPB_UPCAST(src_msg),
+                           upb_test_convert_ext_field_repeated_msg_ext,
+                           &ext_val, arena.ptr());
+
+  const upb_MiniTable* mt1 = &upb__test__convert__MessageWithExtension_msg_init;
+  const upb_MiniTable* mt2 =
+      &upb__test__convert__AnotherMessageWithExtension_msg_init;
+
+  // Convert to mt2 without registry -> becomes unknown field.
+  const upb_Message* intermediate_msg =
+      upb_Message_Convert(UPB_UPCAST(src_msg), mt1, mt2, nullptr, arena.ptr());
+  ASSERT_NE(intermediate_msg, nullptr);
+
+  // Now convert back to mt1 with registry -> promoted back to repeated
+  // extension.
+  upb_ExtensionRegistry* extreg = upb_ExtensionRegistry_New(arena.ptr());
+  upb_ExtensionRegistry_Add(extreg,
+                            upb_test_convert_ext_field_repeated_msg_ext);
+
+  const upb_Message* dst_msg =
+      upb_Message_Convert(intermediate_msg, mt2, mt1, extreg, arena.ptr());
+  ASSERT_NE(dst_msg, nullptr);
+
+  const upb_test_convert_MessageWithExtension* dst =
+      (const upb_test_convert_MessageWithExtension*)dst_msg;
+
+  const upb_Array* out_arr = upb_Message_GetExtensionArray(
+      UPB_UPCAST(dst), upb_test_convert_ext_field_repeated_msg_ext);
+  ASSERT_NE(out_arr, nullptr);
+  ASSERT_EQ(1, upb_Array_Size(out_arr));
+  const upb_Message* out_elem = upb_Array_Get(out_arr, 0).msg_val;
+  EXPECT_EQ(789, upb_test_convert_MessageWithInt32_f1(
+                     (const upb_test_convert_MessageWithInt32*)out_elem));
+}
+
+TEST(ConvertTest, ConvertExtensions_LookupEnumExtensionInRegistry) {
+  upb::Arena arena;
+  upb_test_convert_MessageWithExtension* src_msg =
+      upb_test_convert_MessageWithExtension_new(arena.ptr());
+
+  upb_MessageValue ext_val;
+  ext_val.int32_val = upb_test_convert_Proto2EnumMessage_BAR;
+  upb_Message_SetExtension(UPB_UPCAST(src_msg), upb_test_convert_ext_enum_ext,
+                           &ext_val, arena.ptr());
+
+  const upb_MiniTable* mt1 = &upb__test__convert__MessageWithExtension_msg_init;
+  const upb_MiniTable* mt2 =
+      &upb__test__convert__AnotherMessageWithExtension_msg_init;
+
+  // Convert to mt2 without registry -> becomes unknown field.
+  const upb_Message* intermediate_msg =
+      upb_Message_Convert(UPB_UPCAST(src_msg), mt1, mt2, nullptr, arena.ptr());
+  ASSERT_NE(intermediate_msg, nullptr);
+
+  // Convert back to mt1 with registry -> promoted back to enum extension.
+  upb_ExtensionRegistry* extreg = upb_ExtensionRegistry_New(arena.ptr());
+  upb_ExtensionRegistry_Add(extreg, upb_test_convert_ext_enum_ext);
+
+  const upb_Message* dst_msg =
+      upb_Message_Convert(intermediate_msg, mt2, mt1, extreg, arena.ptr());
+  ASSERT_NE(dst_msg, nullptr);
+
+  const upb_test_convert_MessageWithExtension* dst =
+      (const upb_test_convert_MessageWithExtension*)dst_msg;
+
+  EXPECT_TRUE(
+      upb_Message_HasExtension(UPB_UPCAST(dst), upb_test_convert_ext_enum_ext));
+  int32_t out_val = upb_Message_GetExtensionInt32(
+      UPB_UPCAST(dst), upb_test_convert_ext_enum_ext, 0);
+  EXPECT_EQ(upb_test_convert_Proto2EnumMessage_BAR, out_val);
+}
+
+TEST(ConvertTest, ConvertExtensions_LookupRepeatedEnumExtensionInRegistry) {
+  upb::Arena arena;
+  upb_test_convert_MessageWithExtension* src_msg =
+      upb_test_convert_MessageWithExtension_new(arena.ptr());
+
+  upb_Array* ext_arr = upb_Array_New(arena.ptr(), kUpb_CType_Enum);
+  upb_MessageValue elem_val;
+  elem_val.int32_val = upb_test_convert_Proto2EnumMessage_FOO;
+  upb_Array_Append(ext_arr, elem_val, arena.ptr());
+  elem_val.int32_val = upb_test_convert_Proto2EnumMessage_BAZ;
+  upb_Array_Append(ext_arr, elem_val, arena.ptr());
+
+  upb_MessageValue ext_val;
+  ext_val.array_val = ext_arr;
+  upb_Message_SetExtension(UPB_UPCAST(src_msg),
+                           upb_test_convert_ext_repeated_enum_ext, &ext_val,
+                           arena.ptr());
+
+  const upb_MiniTable* mt1 = &upb__test__convert__MessageWithExtension_msg_init;
+  const upb_MiniTable* mt2 =
+      &upb__test__convert__AnotherMessageWithExtension_msg_init;
+
+  // Convert to mt2 without registry -> becomes unknown field.
+  const upb_Message* intermediate_msg =
+      upb_Message_Convert(UPB_UPCAST(src_msg), mt1, mt2, nullptr, arena.ptr());
+  ASSERT_NE(intermediate_msg, nullptr);
+
+  // Convert back to mt1 with registry -> promoted back to repeated enum
+  // extension.
+  upb_ExtensionRegistry* extreg = upb_ExtensionRegistry_New(arena.ptr());
+  upb_ExtensionRegistry_Add(extreg, upb_test_convert_ext_repeated_enum_ext);
+
+  const upb_Message* dst_msg =
+      upb_Message_Convert(intermediate_msg, mt2, mt1, extreg, arena.ptr());
+  ASSERT_NE(dst_msg, nullptr);
+
+  const upb_test_convert_MessageWithExtension* dst =
+      (const upb_test_convert_MessageWithExtension*)dst_msg;
+
+  const upb_Array* out_arr = upb_Message_GetExtensionArray(
+      UPB_UPCAST(dst), upb_test_convert_ext_repeated_enum_ext);
+  ASSERT_NE(out_arr, nullptr);
+  ASSERT_EQ(2, upb_Array_Size(out_arr));
+  EXPECT_EQ(upb_test_convert_Proto2EnumMessage_FOO,
+            upb_Array_Get(out_arr, 0).int32_val);
+  EXPECT_EQ(upb_test_convert_Proto2EnumMessage_BAZ,
+            upb_Array_Get(out_arr, 1).int32_val);
+}
+
+TEST(ConvertTest, ConvertExtensions_RegistryProvidedButUnneeded) {
+  upb::Arena arena;
+  upb_test_convert_MessageWithExtension* msg =
+      upb_test_convert_MessageWithExtension_new(arena.ptr());
+
+  upb_MessageValue ext_val;
+  ext_val.int32_val = 12345;
+  upb_Message_SetExtension(UPB_UPCAST(msg),
+                           upb_test_convert_ext_field_int32_ext, &ext_val,
+                           arena.ptr());
+
+  const upb_MiniTable* src_mt =
+      &upb__test__convert__MessageWithExtension_msg_init;
+  const upb_MiniTable* dst_mt = &upb__test__convert__MessageWithKnown_msg_init;
+
+  // Provide an extension registry, even though dst_mt has field 1000 as a
+  // regular field.
+  upb_ExtensionRegistry* extreg = upb_ExtensionRegistry_New(arena.ptr());
+  upb_ExtensionRegistry_Add(extreg, upb_test_convert_ext_field_int32_ext);
+
+  const upb_Message* dst_msg =
+      upb_Message_Convert(UPB_UPCAST(msg), src_mt, dst_mt, extreg, arena.ptr());
+  ASSERT_NE(dst_msg, nullptr);
+
+  const upb_test_convert_MessageWithKnown* dst =
+      (const upb_test_convert_MessageWithKnown*)dst_msg;
+  EXPECT_TRUE(upb_test_convert_MessageWithKnown_has_known_field_int32(dst));
+  EXPECT_EQ(12345, upb_test_convert_MessageWithKnown_known_field_int32(dst));
+}
+
+TEST(ConvertTest, ConvertExtensions_RegistryMissingExtensionDemotesToUnknown) {
+  upb::Arena arena;
+  upb_test_convert_MessageWithExtension* msg =
+      upb_test_convert_MessageWithExtension_new(arena.ptr());
+
+  upb_MessageValue ext_val;
+  ext_val.int32_val = 123;
+  upb_Message_SetExtension(UPB_UPCAST(msg),
+                           upb_test_convert_ext_field_int32_ext, &ext_val,
+                           arena.ptr());
+
+  const upb_MiniTable* src_mt =
+      &upb__test__convert__MessageWithExtension_msg_init;
+  const upb_MiniTable* dst_mt =
+      &upb__test__convert__AnotherMessageWithExtension_msg_init;
+
+  // Create an empty extension registry that does not contain field 1000.
+  upb_ExtensionRegistry* extreg = upb_ExtensionRegistry_New(arena.ptr());
+
+  const upb_Message* dst_msg =
+      upb_Message_Convert(UPB_UPCAST(msg), src_mt, dst_mt, extreg, arena.ptr());
+  ASSERT_NE(dst_msg, nullptr);
+
+  const upb_test_convert_AnotherMessageWithExtension* dst =
+      (const upb_test_convert_AnotherMessageWithExtension*)dst_msg;
+
+  // It should NOT have the extension set, because it wasn't in the registry.
+  EXPECT_FALSE(upb_Message_HasExtension(
+      UPB_UPCAST(dst), upb_test_convert_another_ext_field_int32_ext));
+
+  // Dst should have unknown field 1000 with value 123.
+  size_t iter = kUpb_Message_UnknownBegin;
+  upb_StringView data;
+  ASSERT_TRUE(upb_Message_NextUnknown(dst_msg, &data, &iter));
+  EXPECT_EQ(data.size, 3);
+  EXPECT_EQ((uint8_t)data.data[0], 0xC0);
+  EXPECT_EQ((uint8_t)data.data[1], 0x3E);
+  EXPECT_EQ((uint8_t)data.data[2], 0x7B);
+}
+
+TEST(ConvertTest, ConvertExtensions_LookupMultipleExtensionsInRegistry) {
+  upb::Arena arena;
+  upb_test_convert_MessageWithExtension* src_msg =
+      upb_test_convert_MessageWithExtension_new(arena.ptr());
+
+  // Set ext 1000
+  upb_MessageValue ext_val1;
+  ext_val1.int32_val = 123;
+  upb_Message_SetExtension(UPB_UPCAST(src_msg),
+                           upb_test_convert_ext_field_int32_ext, &ext_val1,
+                           arena.ptr());
+
+  // Set ext 1002
+  upb_test_convert_MessageWithInt32* sub =
+      upb_test_convert_MessageWithInt32_new(arena.ptr());
+  upb_test_convert_MessageWithInt32_set_f1(sub, 456);
+  upb_MessageValue ext_val2;
+  ext_val2.msg_val = UPB_UPCAST(sub);
+  upb_Message_SetExtension(UPB_UPCAST(src_msg),
+                           upb_test_convert_ext_field_msg_ext, &ext_val2,
+                           arena.ptr());
+
+  const upb_MiniTable* mt1 = &upb__test__convert__MessageWithExtension_msg_init;
+  const upb_MiniTable* mt2 =
+      &upb__test__convert__AnotherMessageWithExtension_msg_init;
+
+  // Convert to mt2 without registry -> 1000 and 1002 become unknown fields.
+  const upb_Message* intermediate_msg =
+      upb_Message_Convert(UPB_UPCAST(src_msg), mt1, mt2, nullptr, arena.ptr());
+  ASSERT_NE(intermediate_msg, nullptr);
+
+  // Convert back to mt1 with registry containing both extensions.
+  upb_ExtensionRegistry* extreg = upb_ExtensionRegistry_New(arena.ptr());
+  upb_ExtensionRegistry_Add(extreg, upb_test_convert_ext_field_int32_ext);
+  upb_ExtensionRegistry_Add(extreg, upb_test_convert_ext_field_msg_ext);
+
+  const upb_Message* dst_msg =
+      upb_Message_Convert(intermediate_msg, mt2, mt1, extreg, arena.ptr());
+  ASSERT_NE(dst_msg, nullptr);
+
+  const upb_test_convert_MessageWithExtension* dst =
+      (const upb_test_convert_MessageWithExtension*)dst_msg;
+
+  EXPECT_TRUE(upb_Message_HasExtension(UPB_UPCAST(dst),
+                                       upb_test_convert_ext_field_int32_ext));
+  EXPECT_EQ(123, upb_Message_GetExtensionInt32(
+                     UPB_UPCAST(dst), upb_test_convert_ext_field_int32_ext, 0));
+
+  EXPECT_TRUE(upb_Message_HasExtension(UPB_UPCAST(dst),
+                                       upb_test_convert_ext_field_msg_ext));
+  const upb_Message* out_sub = upb_Message_GetExtensionMessage(
+      UPB_UPCAST(dst), upb_test_convert_ext_field_msg_ext, nullptr);
+  ASSERT_NE(out_sub, nullptr);
+  EXPECT_EQ(456, upb_test_convert_MessageWithInt32_f1(
+                     (const upb_test_convert_MessageWithInt32*)out_sub));
+}
