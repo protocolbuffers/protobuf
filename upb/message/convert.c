@@ -140,6 +140,7 @@ static void upb_Array_DeepConvert(
   for (size_t i = 0; i < size; ++i) {
     upb_MessageValue src_val = upb_Array_Get(src, i);
     if (upb_MiniTableField_IsClosedEnum(dst_f)) {
+      // 1. Closed enum in the destination message: validate and copy.
       const upb_MiniTableEnum* dst_e = upb_MiniTable_GetSubEnumTable(dst_f);
       if (upb_MiniTableEnum_CheckValue(dst_e, src_val.int32_val)) {
         upb_MessageValue dst_val;
@@ -149,7 +150,8 @@ static void upb_Array_DeepConvert(
                      dst_msg, dst_f, src_val.int32_val, c->arena)) {
         upb_ErrorHandler_ThrowError(&c->err, kUpb_ErrorCode_OutOfMemory);
       }
-    } else {
+    } else if (dst_sub_mt) {
+      // 2. Submessage case (allocate and recursively convert)
       const upb_Message* src_msg = src_val.msg_val;
       upb_Message* dst_sub = upb_Message_New(dst_sub_mt, c->arena);
       if (!dst_sub) {
@@ -160,6 +162,10 @@ static void upb_Array_DeepConvert(
       upb_MessageValue dst_val;
       dst_val.msg_val = dst_sub;
       upb_Array_Set(dst, dst_i++, dst_val);
+    } else {
+      // 3. Open enum / Primitive case
+      // Just copy the value directly! No allocation needed.
+      upb_Array_Set(dst, dst_i++, src_val);
     }
   }
   if (dst_i != size) {
@@ -179,7 +185,8 @@ static bool upb_Message_ConvertArrayField(upb_Converter* c, upb_Message* dst,
   const upb_MiniTable* dst_sub_mt = upb_MiniTable_SubMessage(dst_f);
   const upb_MiniTable* src_sub_mt = upb_MiniTable_SubMessage(src_f);
 
-  if (dst_sub_mt != src_sub_mt || upb_MiniTableField_IsClosedEnum(dst_f)) {
+  if (dst_sub_mt != src_sub_mt || upb_MiniTableField_IsClosedEnum(dst_f) ||
+      upb_MiniTableField_IsClosedEnum(src_f)) {
     upb_Array* dst_arr =
         upb_Array_New(c->arena, upb_MiniTableField_CType(dst_f));
     if (!dst_arr)
@@ -326,7 +333,11 @@ static void upb_Message_ConvertField(upb_Converter* c, upb_Message* dst,
         return;
       }
     }
-  } else if (upb_MiniTableField_IsClosedEnum(dst_f)) {
+  } else if (upb_MiniTableField_IsClosedEnum(dst_f) ||
+             (upb_MiniTableField_IsClosedEnum(src_f) &&
+              upb_MiniTableField_IsArray(
+                  src_f))) {  // Array of closed enums also always requires deep
+                              // copy
     if (upb_MiniTableField_IsArray(dst_f)) {
       if (upb_Message_ConvertArrayField(c, dst, src, dst_f, src_f, extreg,
                                         depth)) {
