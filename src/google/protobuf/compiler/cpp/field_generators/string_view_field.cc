@@ -510,7 +510,7 @@ void SingularStringView::GenerateConstexprAggregateInitializer(
       )cc");
     } else {
       p->Emit(R"cc(
-        /*decltype($field_$)*/ {$classname$::$default_variable_field$},
+        /*decltype($field_$)*/ {$Msg$::$default_variable_field$},
       )cc");
     }
   } else {
