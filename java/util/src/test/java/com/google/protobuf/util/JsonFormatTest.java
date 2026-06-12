@@ -38,6 +38,7 @@ import com.google.protobuf.UInt32Value;
 import com.google.protobuf.UInt64Value;
 import com.google.protobuf.Value;
 import com.google.protobuf.util.JsonFormat.TypeRegistry;
+import com.google.protobuf.util.proto.Armor;
 import com.google.protobuf.util.proto.JsonTestProto.TestAllTypes;
 import com.google.protobuf.util.proto.JsonTestProto.TestAllTypes.AliasedEnum;
 import com.google.protobuf.util.proto.JsonTestProto.TestAllTypes.NestedEnum;
@@ -54,6 +55,7 @@ import com.google.protobuf.util.proto.JsonTestProto.TestTimestamp;
 import com.google.protobuf.util.proto.JsonTestProto.TestWrappers;
 import com.google.protobuf.util.proto.JsonTestProto2;
 import com.google.protobuf.util.proto.JsonTestProto2.TestAllTypesProto2;
+import com.google.protobuf.util.proto.Knight;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -2581,5 +2583,135 @@ public class JsonFormatTest {
         TestAllTypes.newBuilder().setOptionalFloat(-0.0f).setOptionalDouble(-0.0).build();
     assertThat(JsonFormat.printer().print(message))
         .isEqualTo("{\n  \"optionalFloat\": -0.0,\n  \"optionalDouble\": -0.0\n}");
+  }
+
+  @Test
+  public void gorgetDefaultSerialization() throws Exception {
+    Knight msg = Knight.newBuilder().setArmor(Armor.ARMOR_GORGET).build();
+    assertThat(msg.getArmor()).isEqualTo(Armor.ARMOR_GORGET);
+
+    String jsonRes = JsonFormat.printer().omittingInsignificantWhitespace().print(msg);
+
+    assertThat(jsonRes).isEqualTo("{\"armor\":\"ARMOR_GORGET\"}");
+  }
+
+  @Test
+  public void greatHelmSerialization() throws Exception {
+    Knight msg = Knight.newBuilder().setArmor(Armor.ARMOR_GREAT_HELM).build();
+    assertThat(msg.getArmor()).isEqualTo(Armor.ARMOR_GREAT_HELM);
+
+    String jsonRes = JsonFormat.printer().omittingInsignificantWhitespace().print(msg);
+
+    assertThat(jsonRes).isEqualTo("{\"armor\":\"gr8 helm\"}");
+  }
+
+  @Test
+  public void gauntletSerialization() throws Exception {
+    Knight msg = Knight.newBuilder().setArmor(Armor.ARMOR_GAUNTLET).build();
+
+    assertThat(msg.getArmor()).isEqualTo(Armor.ARMOR_GAUNTLET);
+
+    String jsonRes = JsonFormat.printer().omittingInsignificantWhitespace().print(msg);
+
+    assertThat(jsonRes).isEqualTo("{\"armor\":\"a\\\"b\"}");
+
+    // let's make sure we can roundtrip
+    Knight.Builder builder = Knight.newBuilder();
+    JsonFormat.parser().merge(jsonRes, builder);
+    Knight msg2 = builder.build();
+
+    assertThat(msg2.getArmor()).isEqualTo(Armor.ARMOR_GAUNTLET);
+  }
+
+  @Test
+  public void doubleQuoteEnumSerialization() throws Exception {
+    Knight msg = Knight.newBuilder().setArmor(Armor.ARMOR_PLATE).build();
+
+    assertThat(msg.getArmor()).isEqualTo(Armor.ARMOR_PLATE);
+
+    String jsonRes = JsonFormat.printer().omittingInsignificantWhitespace().print(msg);
+
+    assertThat(jsonRes).isEqualTo("{\"armor\":\"\\\"plate\\\"\"}");
+
+    // let's make sure we can roundtrip
+    Knight.Builder builder = Knight.newBuilder();
+    JsonFormat.parser().merge(jsonRes, builder);
+    Knight msg2 = builder.build();
+
+    assertThat(msg2.getArmor()).isEqualTo(Armor.ARMOR_PLATE);
+  }
+
+  @Test
+  public void coifEmptySerialization() throws Exception {
+    Knight msg = Knight.newBuilder().setArmor(Armor.ARMOR_COIF).build();
+    assertThat(msg.getArmor()).isEqualTo(Armor.ARMOR_COIF);
+    String jsonRes = JsonFormat.printer().omittingInsignificantWhitespace().print(msg);
+    assertThat(jsonRes).isEqualTo("{\"armor\":\"\"}");
+    // let's make sure we can roundtrip
+    Knight.Builder builder = Knight.newBuilder();
+    JsonFormat.parser().merge(jsonRes, builder);
+    Knight msg2 = builder.build();
+    assertThat(msg2.getArmor()).isEqualTo(Armor.ARMOR_COIF);
+  }
+
+  @Test
+  public void pauldronEscapingSerialization() throws Exception {
+    Knight msg = Knight.newBuilder().setArmor(Armor.ARMOR_PAULDRON).build();
+    assertThat(msg.getArmor()).isEqualTo(Armor.ARMOR_PAULDRON);
+    String jsonRes = JsonFormat.printer().omittingInsignificantWhitespace().print(msg);
+    assertThat(jsonRes).isEqualTo("{\"armor\":\"p\\taul\\ndron\"}");
+    // let's make sure we can roundtrip
+    Knight.Builder builder = Knight.newBuilder();
+    JsonFormat.parser().merge(jsonRes, builder);
+    Knight msg2 = builder.build();
+    assertThat(msg2.getArmor()).isEqualTo(Armor.ARMOR_PAULDRON);
+  }
+
+  @Test
+  public void parseCustomStringTrue() throws Exception {
+    Knight.Builder builder = Knight.newBuilder();
+    JsonFormat.parser().merge("{\"armor\":\"true\"}", builder);
+    assertThat(builder.getArmor()).isEqualTo(Armor.ARMOR_SHIELD);
+  }
+
+  @Test
+  public void parseCustomStringTrueAsBooleanFails() throws Exception {
+    Knight.Builder builder = Knight.newBuilder();
+    assertThrows(
+        InvalidProtocolBufferException.class,
+        () -> JsonFormat.parser().merge("{\"armor\":true}", builder));
+  }
+
+  @Test
+  public void testParserRejectNonPrimitiveEnumEvenIfIgnoringUnknowns() throws Exception {
+    TestAllTypes.Builder builder = TestAllTypes.newBuilder();
+
+    // Invalid enum string is ignored when ignoringUnknownFields is enabled
+    JsonFormat.parser().ignoringUnknownFields().merge("{\"optionalNestedEnum\": \"XXX\"}", builder);
+
+    // Object or Array should fail even when ignoringUnknownFields is enabled
+    assertThrows(
+        InvalidProtocolBufferException.class,
+        () ->
+            JsonFormat.parser()
+                .ignoringUnknownFields()
+                .merge("{\"optionalNestedEnum\": {}}", builder));
+    assertThrows(
+        InvalidProtocolBufferException.class,
+        () ->
+            JsonFormat.parser()
+                .ignoringUnknownFields()
+                .merge("{\"optionalNestedEnum\": []}", builder));
+  }
+
+  @Test
+  public void greatHelmIntOverride() throws Exception {
+    Knight msg = Knight.newBuilder().setArmor(Armor.ARMOR_GREAT_HELM).build();
+
+    String jsonRes =
+        JsonFormat.printer().omittingInsignificantWhitespace().printingEnumsAsInts().print(msg);
+
+    // Integer overrides always win.
+    assertThat(jsonRes).isEqualTo("{\"armor\":1}");
   }
 }
