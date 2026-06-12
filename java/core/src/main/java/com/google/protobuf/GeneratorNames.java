@@ -271,6 +271,21 @@ public final class GeneratorNames {
     return getClassFullName(getClassNameWithoutPackage(service), service.getFile(), isOwnFile)
         + suffix;
   }
+  /**
+   * Returns the fully qualified Java bytecode class name for the given message descriptor.
+   *
+   * <p>Nested classes will use '$' as the separator, rather than '.'.
+   */
+  public static String getBytecodeClassName(FileDescriptorProtoOrBuilder file, String fullName) {
+    String packageName = file.getPackage();
+    String nameWithoutPackage = fullName;
+    if (!packageName.isEmpty() && fullName.startsWith(packageName + ".")) {
+      nameWithoutPackage = fullName.substring(packageName.length() + 1);
+    }
+    JavaFeatures javaFeatures = getResolvedMessageOrEnumFeatures(file, nameWithoutPackage);
+    boolean nestInFileClass = getNestInFileClass(file, javaFeatures);
+    return getClassFullName(nameWithoutPackage, file, !nestInFileClass);
+  }
 
   static String getQualifiedFromBytecodeClassName(String bytecodeClassName) {
     return bytecodeClassName.replace('$', '.');
@@ -303,17 +318,31 @@ public final class GeneratorNames {
     return getQualifiedFromBytecodeClassName(getBytecodeClassName(service));
   }
 
+  /**
+   * Returns the fully qualified Java class name for the given message descriptor.
+   *
+   * <p>Nested classes will use '.' as the separator, rather than '$'.
+   */
+  public static String getQualifiedClassName(FileDescriptorProtoOrBuilder file, String fullName) {
+    return getQualifiedFromBytecodeClassName(getBytecodeClassName(file, fullName));
+  }
+
   private static String getClassFullName(
       String nameWithoutPackage, FileDescriptor file, boolean isOwnFile) {
+    return getClassFullName(nameWithoutPackage, file.toProto(), isOwnFile);
+  }
+
+  private static String getClassFullName(
+      String nameWithoutPackage, FileDescriptorProtoOrBuilder file, boolean isOwnFile) {
     // Replicates the logic for ClassNameResolver::GetJavaClassFullName from immutable/names.cc
     StringBuilder result = new StringBuilder();
     if (isOwnFile) {
-      result.append(getFileJavaPackage(file.toProto()));
+      result.append(getFileJavaPackage(file));
       if (result.length() > 0) {
         result.append(".");
       }
     } else {
-      result.append(joinPackage(getFileJavaPackage(file.toProto()), getFileClassName(file)));
+      result.append(joinPackage(getFileJavaPackage(file), getFileClassName(file)));
       if (result.length() > 0) {
         result.append("$");
       }
@@ -322,10 +351,15 @@ public final class GeneratorNames {
     return result.toString();
   }
 
+  private static boolean getNestInFileClass(FileDescriptor file, JavaFeatures resolvedFeatures) {
+    return getNestInFileClass(file.toProto(), resolvedFeatures);
+  }
+
   /** Returns the nest_in_file_class behavior for a given set of features in a specific file. */
   // Switch expressions were released in Java 14, and we support Java 8.
   @SuppressWarnings("StatementSwitchToExpressionSwitch")
-  private static boolean getNestInFileClass(FileDescriptor file, JavaFeatures resolvedFeatures) {
+  private static boolean getNestInFileClass(
+      FileDescriptorProtoOrBuilder file, JavaFeatures resolvedFeatures) {
     switch (resolvedFeatures.getNestInFileClass()) {
       case YES:
         return true;
@@ -379,5 +413,115 @@ public final class GeneratorNames {
   /** Returns the name of the given service descriptor without the package name prefix. */
   static String getClassNameWithoutPackage(ServiceDescriptor service) {
     return stripPackageName(service.getFullName(), service.getFile());
+  }
+
+  /**
+   * Resolves Java features for a message or enum using unlinked descriptor protos.
+   *
+   * <p>This method replicates the standard Protobuf feature inheritance and resolution logic for
+   * the {@code pb.java} feature extension. For fully linked/resolved descriptors (like {@link
+   * Descriptors.Descriptor}), this resolution is handled automatically at descriptor build time,
+   * where the resolved features can be retrieved via {@code
+   * descriptor.getFeatures().getExtension(JavaFeaturesProto.java_)} (available within package
+   * {@code com.google.protobuf}).
+   *
+   * <p>This logic must stay in sync with:
+   *
+   * <ul>
+   *   <li>The C++ name resolver and compiler feature helper (e.g. {@code
+   *       GetResolvedSourceFeatureExtension} in {@code
+   *       google/protobuf/compiler/code_generator.h} and {@code NestedInFileClassImpl} in
+   *       {@code google/protobuf/compiler/java/names.cc}).
+   *   <li>The Java runtime descriptor feature resolution in {@link
+   *       Descriptors.GenericDescriptor#resolveFeatures}.
+   * </ul>
+   */
+  private static JavaFeatures getResolvedMessageOrEnumFeatures(
+      FileDescriptorProtoOrBuilder file, String nameWithoutPackage) {
+    JavaFeatures parentFeatures = getResolvedFileFeatures(JavaFeaturesProto.java_, file);
+    return resolveFeatures(file, nameWithoutPackage, parentFeatures);
+  }
+
+  /**
+   * Recursively resolves features along the nested message/enum path.
+   *
+   * <p>This method recursively traverses the nested proto path (split by dots), merging the options
+   * features of intermediate parent messages with the inherited {@code parentFeatures} as it
+   * descends to the target type.
+   */
+  private static JavaFeatures resolveFeatures(
+      Object container, String name, JavaFeatures parentFeatures) {
+    int dotIndex = name.indexOf('.');
+    String firstComponent = dotIndex == -1 ? name : name.substring(0, dotIndex);
+    String rest = dotIndex == -1 ? null : name.substring(dotIndex + 1);
+    DescriptorProto msg = findMessage(container, firstComponent);
+    if (msg != null) {
+      JavaFeatures resolved = mergeFeatures(msg.getOptions().getFeatures(), parentFeatures);
+      if (rest != null) {
+        return resolveFeatures(msg, rest, resolved);
+      }
+      return resolved;
+    }
+    EnumDescriptorProto enumProto = findEnum(container, firstComponent);
+    if (enumProto != null) {
+      return mergeFeatures(enumProto.getOptions().getFeatures(), parentFeatures);
+    }
+    return parentFeatures;
+  }
+
+  private static JavaFeatures mergeFeatures(
+      FeatureSet optionsFeatures, JavaFeatures parentFeatures) {
+    if (optionsFeatures.getUnknownFields().hasField(JavaFeaturesProto.java_.getNumber())) {
+      ExtensionRegistry registry = ExtensionRegistry.newInstance();
+      registry.add(JavaFeaturesProto.java_);
+      try {
+        optionsFeatures =
+            FeatureSet.newBuilder()
+                .mergeFrom(optionsFeatures.getUnknownFields().toByteString(), registry)
+                .build();
+      } catch (InvalidProtocolBufferException e) {
+        throw new IllegalArgumentException("Failed to parse features", e);
+      }
+    }
+    return parentFeatures.toBuilder()
+        .mergeFrom(optionsFeatures.getExtension(JavaFeaturesProto.java_))
+        .build();
+  }
+
+  @SuppressWarnings({"PatternMatchingInstanceof", "ReturnMissingNullable"})
+  private static DescriptorProto findMessage(Object container, String name) {
+    if (container instanceof FileDescriptorProtoOrBuilder) {
+      for (DescriptorProto msg : ((FileDescriptorProtoOrBuilder) container).getMessageTypeList()) {
+        if (msg.getName().equals(name)) {
+          return msg;
+        }
+      }
+    } else if (container instanceof DescriptorProto) {
+      for (DescriptorProto msg : ((DescriptorProto) container).getNestedTypeList()) {
+        if (msg.getName().equals(name)) {
+          return msg;
+        }
+      }
+    }
+    return null;
+  }
+
+  @SuppressWarnings({"PatternMatchingInstanceof", "ReturnMissingNullable"})
+  private static EnumDescriptorProto findEnum(Object container, String name) {
+    if (container instanceof FileDescriptorProtoOrBuilder) {
+      for (EnumDescriptorProto enumProto :
+          ((FileDescriptorProtoOrBuilder) container).getEnumTypeList()) {
+        if (enumProto.getName().equals(name)) {
+          return enumProto;
+        }
+      }
+    } else if (container instanceof DescriptorProto) {
+      for (EnumDescriptorProto enumProto : ((DescriptorProto) container).getEnumTypeList()) {
+        if (enumProto.getName().equals(name)) {
+          return enumProto;
+        }
+      }
+    }
+    return null;
   }
 }

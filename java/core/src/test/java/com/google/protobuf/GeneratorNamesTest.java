@@ -8,6 +8,7 @@ import com.google.protobuf.DescriptorProtos.Edition;
 import com.google.protobuf.DescriptorProtos.FeatureSet;
 import com.google.protobuf.DescriptorProtos.FileDescriptorProto;
 import com.google.protobuf.DescriptorProtos.FileOptions;
+import com.google.protobuf.DescriptorProtos.MessageOptions;
 import com.google.protobuf.Descriptors.Descriptor;
 import com.google.protobuf.Descriptors.EnumDescriptor;
 import com.google.protobuf.Descriptors.FileDescriptor;
@@ -273,6 +274,78 @@ public final class GeneratorNamesTest {
     file = FileDescriptorProto.parseFrom(file.toByteString(), ExtensionRegistry.getEmptyRegistry());
     assertThat(GeneratorNames.getResolvedFileFeatures(JavaFeaturesProto.java_, file).getLargeEnum())
         .isTrue();
+  }
+
+  @Test
+  public void testUnlinkedFeatureResolution_nestInFileClass() throws Exception {
+    FileDescriptorProto file =
+        FileDescriptorProto.newBuilder()
+            .setName("foo/bar.proto")
+            .setPackage("pkg")
+            .setEdition(Edition.EDITION_2024)
+            .setOptions(
+                FileOptions.newBuilder()
+                    .setJavaPackage("pkg")
+                    .setFeatures(
+                        FeatureSet.newBuilder()
+                            .setExtension(
+                                JavaFeaturesProto.java_,
+                                JavaFeatures.newBuilder()
+                                    .setNestInFileClass(
+                                        JavaFeatures.NestInFileClassFeature.NestInFileClass.YES)
+                                    .build())
+                            .build())
+                    .build())
+            .addMessageType(
+                DescriptorProto.newBuilder()
+                    .setName("TopLevelMessage")
+                    .setOptions(
+                        MessageOptions.newBuilder()
+                            .setFeatures(
+                                FeatureSet.newBuilder()
+                                    .setExtension(
+                                        JavaFeaturesProto.java_,
+                                        JavaFeatures.newBuilder()
+                                            .setNestInFileClass(
+                                                JavaFeatures.NestInFileClassFeature.NestInFileClass
+                                                    .NO)
+                                            .build())
+                                    .build())
+                            .build())
+                    .addNestedType(
+                        DescriptorProto.newBuilder().setName("NestedMessageInheritingNo").build())
+                    .addNestedType(
+                        DescriptorProto.newBuilder()
+                            .setName("NestedMessageOverridingToYes")
+                            .setOptions(
+                                MessageOptions.newBuilder()
+                                    .setFeatures(
+                                        FeatureSet.newBuilder()
+                                            .setExtension(
+                                                JavaFeaturesProto.java_,
+                                                JavaFeatures.newBuilder()
+                                                    .setNestInFileClass(
+                                                        JavaFeatures.NestInFileClassFeature
+                                                            .NestInFileClass.YES)
+                                                    .build())
+                                            .build())
+                                    .build())
+                            .build())
+                    .build())
+            .build();
+
+    assertThat(GeneratorNames.getBytecodeClassName(file, "pkg.TopLevelMessage"))
+        .isEqualTo("pkg.TopLevelMessage");
+
+    assertThat(
+            GeneratorNames.getBytecodeClassName(
+                file, "pkg.TopLevelMessage.NestedMessageInheritingNo"))
+        .isEqualTo("pkg.TopLevelMessage$NestedMessageInheritingNo");
+
+    assertThat(
+            GeneratorNames.getBytecodeClassName(
+                file, "pkg.TopLevelMessage.NestedMessageOverridingToYes"))
+        .isEqualTo("pkg.BarProto$TopLevelMessage$NestedMessageOverridingToYes");
   }
 
   // Helper classes to contain parameterized test data.
