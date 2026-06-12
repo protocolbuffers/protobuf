@@ -42,12 +42,15 @@ PROTOC_EXPORT uint32_t GenChunkMask(ChunkIterator it, ChunkIterator end,
 
 // Breaks down a single chunk of fields into a few chunks that share attributes
 // controlled by "equivalent" predicate. Returns an array of chunks.
-template <typename Predicate>
+// Filter is a ... pack to make it optional. Not really meant to support more
+// than one filter.
+template <typename Predicate, typename... Filter>
 std::vector<FieldChunk> CollectFields(
     absl::Span<const FieldDescriptor* const> fields, const Options& options,
-    const Predicate& equivalent) {
+    const Predicate& equivalent, const Filter&... filter) {
   std::vector<FieldChunk> chunks;
   for (auto field : fields) {
+    if (!(filter(field) && ...)) continue;
     if (chunks.empty() || !equivalent(chunks.back().fields.back(), field)) {
       chunks.emplace_back(HasHasbit(field, options),
                           IsRarelyPresent(field, options),

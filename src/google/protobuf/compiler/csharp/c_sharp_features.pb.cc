@@ -40,6 +40,7 @@ class CSharpFeatures::_Internal {
   using HasBits = decltype(::std::declval<CSharpFeatures>()._impl_._has_bits_);
   static constexpr ::int32_t kHasBitsOffset =
       8 * PROTOBUF_FIELD_OFFSET(CSharpFeatures, _impl_._has_bits_);
+
 };
 
 constexpr CSharpFeatures::ParseTableT_ CSharpFeatures::InternalGenerateParseTable_(const ::_pbi::ClassData* class_data) {
@@ -303,13 +304,12 @@ PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const CSharpFeatures::ParseTableT_
         CSharpFeatures::InternalGenerateParseTable_(CSharpFeatures_class_data_.base());
 #endif  // !PROTOBUF_MESSAGE_GLOBALS
 PROTOBUF_NOINLINE void CSharpFeatures::Clear() {
+  auto& this_ [[maybe_unused]] = *this;
   // @@protoc_insertion_point(message_clear_start:pb.CSharpFeatures)
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  ::uint32_t cached_has_bits = 0;
-  // Prevent compiler warnings about cached_has_bits being unused
-  (void)cached_has_bits;
+  ::uint32_t cached_has_bits [[maybe_unused]] = 0;
 
-  _impl_.nullable_reference_types_ = false;
+  this_._impl_.nullable_reference_types_ = false;
   _impl_._has_bits_.Clear();
   _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
 }
@@ -359,9 +359,7 @@ PROTOBUF_NOINLINE void CSharpFeatures::Clear() {
   // @@protoc_insertion_point(message_byte_size_start:pb.CSharpFeatures)
   ::size_t total_size = 0;
 
-  ::uint32_t cached_has_bits = 0;
-  // Prevent compiler warnings about cached_has_bits being unused
-  (void)cached_has_bits;
+  ::uint32_t cached_has_bits [[maybe_unused]] = 0;
 
   cached_has_bits = this_._impl_._has_bits_[0];
   total_size += static_cast<bool>(0x00000001U & cached_has_bits) * 2;

@@ -72,6 +72,12 @@ class SingularEnum : public FieldGeneratorBase {
     )cc");
   }
 
+  void GenerateMessageClearingCode(io::Printer* p) const override {
+    p->Emit(R"cc(
+      this_.$field_$ = $kDefault$;
+    )cc");
+  }
+
   void GenerateClearingCode(io::Printer* p) const override {
     p->Emit(R"cc(
       $field_$ = $kDefault$;
@@ -242,6 +248,14 @@ class RepeatedEnum : public FieldGeneratorBase {
       p->Emit(R"cc(
         $pbi$::CachedSize $cached_size_name$;
       )cc");
+    }
+  }
+
+  void GenerateMessageClearingCode(io::Printer* p) const override {
+    if (should_split()) {
+      p->Emit("this_.$field_$.ClearIfNotDefault();\n");
+    } else {
+      p->Emit("$field_$.Clear();\n");
     }
   }
 
