@@ -422,6 +422,78 @@ TEST(DecodeTest, EmptyMiniTableDecodedAsUnknown) {
   EXPECT_FALSE(upb_Message_NextUnknown(msg, &data, &iter));
 }
 
+TEST(DecodeTest, ConsecutiveUnknownFieldsWithoutAlias) {
+  char trace_buf[64];
+  Arena mt_arena;
+  Arena msg_arena;
+
+  auto [mt, field] = MiniTable::MakeSingleFieldTable<field_types::Int32>(
+      1, kUpb_DecodeFast_Scalar, mt_arena.ptr());
+  upb_Message* msg = upb_Message_New(mt, msg_arena.ptr());
+
+  // Field 2: tag 2, varint, value 2  -> \x10\x02
+  // Field 3: tag 3, varint, value 3  -> \x18\x03
+  std::string payload("\x10\x02\x18\x03", 4);
+
+  int options = kUpb_DecodeOption_DisableFastTable;
+  upb_DecodeStatus result = upb_DecodeWithTrace(
+      payload.data(), payload.size(), msg, mt, nullptr, options,
+      msg_arena.ptr(), trace_buf, sizeof(trace_buf));
+
+  ASSERT_EQ(result, kUpb_DecodeStatus_Ok) << upb_DecodeStatus_String(result);
+
+  EXPECT_TRUE(upb_Message_HasUnknown(msg));
+
+  uintptr_t iter = kUpb_Message_UnknownBegin;
+  upb_StringView data;
+
+  // We expect them to be merged.
+  ASSERT_TRUE(upb_Message_NextUnknown(msg, &data, &iter));
+  EXPECT_EQ(absl::string_view(data.data, data.size), payload);
+  EXPECT_FALSE(upb_Message_NextUnknown(msg, &data, &iter));
+
+#ifndef NDEBUG
+  // Without optimization, this would be "MM" because it decodes two fields.
+  // With optimization, it should be "M" because it decodes them in one go.
+  EXPECT_EQ(absl::string_view(trace_buf), "M");
+#endif
+}
+
+TEST(DecodeTest, ConsecutiveUnknownFieldsWithAlias) {
+  char trace_buf[64];
+  Arena mt_arena;
+  Arena msg_arena;
+
+  auto [mt, field] = MiniTable::MakeSingleFieldTable<field_types::Int32>(
+      1, kUpb_DecodeFast_Scalar, mt_arena.ptr());
+  upb_Message* msg = upb_Message_New(mt, msg_arena.ptr());
+
+  // Field 2: tag 2, varint, value 2  -> \x10\x02
+  // Field 3: tag 3, varint, value 3  -> \x18\x03
+  std::string payload("\x10\x02\x18\x03", 4);
+
+  int options =
+      kUpb_DecodeOption_DisableFastTable | kUpb_DecodeOption_AliasString;
+  upb_DecodeStatus result = upb_DecodeWithTrace(
+      payload.data(), payload.size(), msg, mt, nullptr, options,
+      msg_arena.ptr(), trace_buf, sizeof(trace_buf));
+
+  ASSERT_EQ(result, kUpb_DecodeStatus_Ok) << upb_DecodeStatus_String(result);
+
+  EXPECT_TRUE(upb_Message_HasUnknown(msg));
+
+  uintptr_t iter = kUpb_Message_UnknownBegin;
+  upb_StringView data;
+
+  ASSERT_TRUE(upb_Message_NextUnknown(msg, &data, &iter));
+  EXPECT_EQ(absl::string_view(data.data, data.size), payload);
+  EXPECT_FALSE(upb_Message_NextUnknown(msg, &data, &iter));
+
+#ifndef NDEBUG
+  EXPECT_EQ(absl::string_view(trace_buf), "M");
+#endif
+}
+
 TEST(DecodeTest, MaxDepthPayloadParsesSuccessfully) {
   upb::Arena mt_arena;
   upb::Arena msg_arena;
@@ -506,6 +578,43 @@ TEST(DecodeTest, DecodeGroupFieldFromDelimitedWireFormatAsUnknown) {
   ASSERT_TRUE(upb_Message_NextUnknown(parent_msg, &data, &iter));
   EXPECT_EQ(absl::string_view(data.data, data.size), payload);
   EXPECT_FALSE(upb_Message_NextUnknown(parent_msg, &data, &iter));
+}
+
+TEST(DecodeTest, ConsecutiveUnknownFieldsWithGroup) {
+  char trace_buf[64];
+  Arena mt_arena;
+  Arena msg_arena;
+
+  auto [mt, field] = MiniTable::MakeSingleFieldTable<field_types::Int32>(
+      1, kUpb_DecodeFast_Scalar, mt_arena.ptr());
+  upb_Message* msg = upb_Message_New(mt, msg_arena.ptr());
+
+  // Field 2: StartGroup -> \x13
+  //   Field 3: Varint, value 123 -> \x18\x7b
+  // Field 2: EndGroup -> \x14
+  // Field 4: Varint, value 456 -> \x20\xc8\x03
+  std::string payload("\x13\x18\x7b\x14\x20\xc8\x03", 7);
+
+  int options = kUpb_DecodeOption_DisableFastTable;
+  upb_DecodeStatus result = upb_DecodeWithTrace(
+      payload.data(), payload.size(), msg, mt, nullptr, options,
+      msg_arena.ptr(), trace_buf, sizeof(trace_buf));
+
+  ASSERT_EQ(result, kUpb_DecodeStatus_Ok) << upb_DecodeStatus_String(result);
+
+  EXPECT_TRUE(upb_Message_HasUnknown(msg));
+
+  uintptr_t iter = kUpb_Message_UnknownBegin;
+  upb_StringView data;
+
+  // We expect them to be merged.
+  ASSERT_TRUE(upb_Message_NextUnknown(msg, &data, &iter));
+  EXPECT_EQ(absl::string_view(data.data, data.size), payload);
+  EXPECT_FALSE(upb_Message_NextUnknown(msg, &data, &iter));
+
+#ifndef NDEBUG
+  EXPECT_EQ(absl::string_view(trace_buf), "M");
+#endif
 }
 
 }  // namespace

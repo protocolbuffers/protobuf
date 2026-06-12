@@ -99,6 +99,7 @@ cc_library(
         ":decoder",
         ":encoder",
         ":eps_copy_input_stream",
+        ":eps_copy_input_stream_internal",
         ":reader",
         ":writer",
         "//third_party/utf8_range",
