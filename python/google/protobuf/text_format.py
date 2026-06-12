@@ -37,13 +37,6 @@ import math
 import re
 import warnings
 
-from google.protobuf.internal import decoder
-from google.protobuf.internal import type_checkers
-from google.protobuf import descriptor
-
-from google.protobuf import text_encoding
-from google.protobuf import unknown_fields
-
 # pylint: disable=g-import-not-at-top
 __all__ = [
     'MessageToString',
