@@ -27,7 +27,7 @@ extern "C" {
 // LINT.IfChange(upb_Array)
 
 // Our internal representation for repeated fields.
-struct upb_Array {
+struct UPB_ALIGN_AS(UPB_MALLOC_ALIGN) upb_Array {
   // This is a tagged pointer. Bits #0 and #1 encode the elem size as follows:
   //   0 maps to elem size 1
   //   1 maps to elem size 4
@@ -37,8 +37,8 @@ struct upb_Array {
   // Bit #2 contains the frozen/immutable flag.
   uintptr_t UPB_ONLYBITS(data);
 
-  size_t UPB_ONLYBITS(size);     // The number of elements in the array.
-  size_t UPB_PRIVATE(capacity);  // Allocated storage. Measured in elements.
+  uint32_t UPB_ONLYBITS(size);     // The number of elements in the array.
+  uint32_t UPB_PRIVATE(capacity);  // Allocated storage. Measured in elements.
 };
 
 UPB_INLINE void UPB_PRIVATE(_upb_Array_ShallowFreeze)(struct upb_Array* arr) {
@@ -78,9 +78,17 @@ UPB_NODISCARD UPB_INLINE struct upb_Array* UPB_PRIVATE(
                                   int elem_size_lg2, bool allow_slow) {
   UPB_ASSERT(elem_size_lg2 != 1);
   UPB_ASSERT(elem_size_lg2 <= 4);
-  const size_t array_size =
-      UPB_ALIGN_UP(sizeof(struct upb_Array), UPB_MALLOC_ALIGN);
-  const size_t bytes = array_size + (init_capacity << elem_size_lg2);
+  if (init_capacity > UINT32_MAX) {
+    return NULL;
+  }
+  UPB_STATIC_ASSERT(alignof(struct upb_Array) >= 8,
+                    "Data must have three zero bits to store tag");
+  const size_t array_size = sizeof(struct upb_Array);
+  if (((SIZE_MAX - array_size) >> elem_size_lg2) < init_capacity) {
+    return NULL;
+  }
+  const size_t bytes =
+      UPB_ALIGN_MALLOC(array_size + (init_capacity << elem_size_lg2));
   size_t span = UPB_PRIVATE(_upb_Arena_AllocSpan)(bytes);
   if (!allow_slow && UPB_PRIVATE(_upb_ArenaHas)(arena) < span) return NULL;
   struct upb_Array* array = (struct upb_Array*)upb_Arena_Malloc(arena, bytes);
@@ -88,7 +96,7 @@ UPB_NODISCARD UPB_INLINE struct upb_Array* UPB_PRIVATE(
   UPB_PRIVATE(_upb_Array_SetTaggedPtr)
   (array, UPB_PTR_AT(array, array_size, void), (size_t)elem_size_lg2);
   array->UPB_ONLYBITS(size) = 0;
-  array->UPB_PRIVATE(capacity) = init_capacity;
+  array->UPB_PRIVATE(capacity) = (bytes - array_size) >> elem_size_lg2;
   return array;
 }
 
@@ -112,6 +120,9 @@ UPB_NODISCARD bool UPB_PRIVATE(_upb_Array_Realloc)(struct upb_Array* array,
 UPB_NODISCARD UPB_FORCEINLINE bool UPB_PRIVATE(_upb_Array_TryFastRealloc)(
     struct upb_Array* array, size_t capacity, int elem_size_lg2,
     upb_Arena* arena) {
+  if ((capacity > UINT32_MAX) || (SIZE_MAX >> elem_size_lg2 < capacity)) {
+    return false;
+  }
   size_t old_bytes = array->UPB_PRIVATE(capacity) << elem_size_lg2;
   size_t new_bytes = capacity << elem_size_lg2;
   UPB_ASSUME(new_bytes > old_bytes);
