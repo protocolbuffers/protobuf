@@ -731,10 +731,35 @@ PROTOBUF_ALWAYS_INLINE void TSanRead(const void*) {}
 PROTOBUF_ALWAYS_INLINE void TSanWrite(const void*) {}
 #endif
 
+// C++17 port of C++20 `requires` expressions.
+//
+// Example usage:
+//
+// if constexpr (Requires<T>([](auto&& x) -> decltype(x.foo()) {})) {
+//   // T has foo()
+//   return t.foo();
+// }
+template <typename... T, typename F>
+constexpr bool Requires(F f) {
+  return std::is_invocable_v<F, T...>;
+}
+
 // Like C++20's std::type_identity_t, usually used to alter type deduction in
 // templates.
 template <typename T>
 using type_identity_t = std::enable_if_t<true, T>;
+
+// Evaluates to `U`, but makes it type-dependent on `T`.
+// This allows "late binding" of known types to avoid circular dependencies.
+template <typename T, typename U>
+using dependent_type_t = std::conditional_t<true, U, T>;
+
+// Evaluates to the input value, but it makes it type-dependent on `T`.
+// This allows "late binding" of known types to avoid circular dependencies.
+template <typename T, typename U>
+U&& TypeDependent(U&& value) {
+  return std::forward<U>(value);
+}
 
 template <typename T>
 constexpr T* Launder(T* p) {
