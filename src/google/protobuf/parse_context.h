@@ -1835,16 +1835,23 @@ template <typename T, typename Validator>
 [[nodiscard]] const char* PackedEnumParserArg(void* object, const char* ptr,
                                               ParseContext* ctx,
                                               Validator validator,
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+                                              Arena* arena,
+#endif
                                               InternalMetadata* metadata,
                                               int field_num) {
-  return ctx->ReadPackedVarint(
-      ptr, [object, validator, metadata, field_num](int32_t val) {
-        if (validator.IsValid(val)) {
-          static_cast<RepeatedField<int>*>(object)->Add(val);
-        } else {
-          WriteVarint(field_num, val, metadata->mutable_unknown_fields<T>());
-        }
-      });
+  return ctx->ReadPackedVarint(ptr, [=](int32_t val) {
+    if (validator.IsValid(val)) {
+      static_cast<RepeatedField<int>*>(object)->Add(val);
+    } else {
+      WriteVarint(field_num, val,
+                  metadata->mutable_unknown_fields<T>(
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+                      arena
+#endif
+                      ));
+    }
+  });
 }
 
 [[nodiscard]] PROTOBUF_EXPORT const char* PackedBoolParser(void* object,

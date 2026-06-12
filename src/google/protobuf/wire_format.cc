@@ -644,7 +644,11 @@ struct WireFormat::MessageSetParser {
           if (field == nullptr || field->message_type() == nullptr) {
             WriteLengthDelimited(
                 type_id, payload,
-                metadata->mutable_unknown_fields<UnknownFieldSet>());
+                metadata->mutable_unknown_fields<UnknownFieldSet>(
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+                    msg->GetArena()
+#endif
+                        ));
           } else {
             Message* value =
                 field->is_repeated()

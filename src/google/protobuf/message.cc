@@ -136,7 +136,7 @@ PROTOBUF_CONSTINIT PROTOBUF_EXPORT const DescriptorMethods
         SpaceUsedLongImpl,
         DebugStringImpl,
         nullptr,
-};
+    };
 
 }  // namespace internal
 
@@ -733,13 +733,28 @@ const internal::RepeatedFieldAccessor* Reflection::RepeatedFieldAccessor(
 }
 
 namespace internal {
-template void InternalMetadata::DoClear<UnknownFieldSet>();
+template void InternalMetadata::DoClear<UnknownFieldSet>(
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+    Arena* arena
+#endif
+);
 template void InternalMetadata::DoMergeFrom<UnknownFieldSet>(
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+    Arena* arena,
+#endif
     const UnknownFieldSet& other);
-template void InternalMetadata::DoSwap<UnknownFieldSet>(UnknownFieldSet* other);
+template void InternalMetadata::DoSwap<UnknownFieldSet>(
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+    Arena* arena,
+#endif
+    UnknownFieldSet* other);
 template void InternalMetadata::DeleteOutOfLineHelper<UnknownFieldSet>();
 template UnknownFieldSet*
-InternalMetadata::mutable_unknown_fields_slow<UnknownFieldSet>();
+InternalMetadata::mutable_unknown_fields_slow<UnknownFieldSet>(
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+    Arena* arena
+#endif
+);
 }  // namespace internal
 
 

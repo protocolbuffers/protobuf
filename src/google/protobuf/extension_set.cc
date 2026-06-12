@@ -1129,6 +1129,9 @@ bool ExtensionSet::IsInitialized(Arena* arena,
 
 const char* ExtensionSet::ParseField(uint64_t tag, const char* ptr,
                                      const MessageLite* extendee,
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+                                     Arena* arena,
+#endif
                                      internal::InternalMetadata* metadata,
                                      internal::ParseContext* ctx) {
   GeneratedExtensionFinder finder(extendee);
@@ -1137,17 +1140,32 @@ const char* ExtensionSet::ParseField(uint64_t tag, const char* ptr,
   ExtensionInfo extension;
   if (!FindExtensionInfoFromFieldNumber(tag & 7, number, &finder, &extension,
                                         &was_packed_on_wire)) {
-    return UnknownFieldParse(
-        tag, metadata->mutable_unknown_fields<std::string>(), ptr, ctx);
+    return UnknownFieldParse(tag,
+                             metadata->mutable_unknown_fields<std::string>(
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+                                 arena
+#endif
+                                 ),
+                             ptr, ctx);
   }
-  return ParseFieldWithExtensionInfo<std::string>(
-      number, was_packed_on_wire, extension, metadata, ptr, ctx);
+  return ParseFieldWithExtensionInfo<std::string>(number, was_packed_on_wire,
+                                                  extension,
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+                                                  arena,
+#endif
+                                                  metadata, ptr, ctx);
 }
 
 const char* ExtensionSet::ParseMessageSetItem(
     const char* ptr, const MessageLite* extendee,
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+    Arena* arena,
+#endif
     internal::InternalMetadata* metadata, internal::ParseContext* ctx) {
   return ParseMessageSetItemTmpl<MessageLite, std::string>(ptr, extendee,
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+                                                           arena,
+#endif
                                                            metadata, ctx);
 }
 

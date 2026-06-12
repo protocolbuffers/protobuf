@@ -947,14 +947,22 @@ class PROTOBUF_EXPORT TcParser final {
   static void WriteVarintToUnknown(MessageLite* msg, int number, int value) {
     internal::WriteVarint(
         number, value,
-        msg->_internal_metadata_.mutable_unknown_fields<UnknownFieldsT>());
+        msg->_internal_metadata_.mutable_unknown_fields<UnknownFieldsT>(
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+            msg->GetArena()
+#endif  // PROTOBUF_CUSTOM_VTABLE
+                ));
   }
   template <typename UnknownFieldsT>
   static void WriteLengthDelimitedToUnknown(MessageLite* msg, int number,
                                             absl::string_view value) {
     internal::WriteLengthDelimited(
         number, value,
-        msg->_internal_metadata_.mutable_unknown_fields<UnknownFieldsT>());
+        msg->_internal_metadata_.mutable_unknown_fields<UnknownFieldsT>(
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+            msg->GetArena()
+#endif  // PROTOBUF_CUSTOM_VTABLE
+                ));
   }
 
   template <class MessageBaseT, class UnknownFieldsT>
@@ -974,6 +982,9 @@ class PROTOBUF_EXPORT TcParser final {
       return ptr;
     }
 
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+    Arena* arena = msg->GetArena();
+#endif
     if (table->extension_offset != 0) {
       // We don't need to check the extension ranges. If it is not an extension
       // it will be handled just like if it was an unknown extension: sent to
@@ -982,12 +993,19 @@ class PROTOBUF_EXPORT TcParser final {
           .ParseField(
               tag, ptr,
               static_cast<const MessageBaseT*>(table->default_instance()),
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+              arena,
+#endif  // PROTOBUF_CUSTOM_VTABLE
               &msg->_internal_metadata_, ctx);
     } else {
       // Otherwise, we directly put it on the unknown field set.
       return UnknownFieldParse(
           tag,
-          msg->_internal_metadata_.mutable_unknown_fields<UnknownFieldsT>(),
+          msg->_internal_metadata_.mutable_unknown_fields<UnknownFieldsT>(
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+              arena
+#endif  // PROTOBUF_CUSTOM_VTABLE
+              ),
           ptr, ctx);
     }
   }
@@ -998,6 +1016,9 @@ class PROTOBUF_EXPORT TcParser final {
     return RefAt<ExtensionSet>(msg, table->extension_offset)
         .ParseMessageSet(
             ptr, static_cast<const MessageBaseT*>(table->default_instance()),
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+            msg->GetArena(),
+#endif  // PROTOBUF_CUSTOM_VTABLE
             &msg->_internal_metadata_, ctx);
   }
 

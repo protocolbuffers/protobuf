@@ -2268,6 +2268,7 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
 
           friend class $pb$::MessageLite;
           friend class $pb$::Arena;
+          friend class $pbi$::MessageWithArena<$Msg$>;
           friend $pbi$::PrivateAccess;
           template <typename T>
           friend class $pb$::Arena::InternalHelper;
@@ -3270,6 +3271,9 @@ void MessageGenerator::GenerateArenaEnabledCopyConstructor(io::Printer* p) {
               $Msg$* const _this = this;
               (void)_this;
               _internal_metadata_.MergeFrom<$unknown_fields_type$>(
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+                  arena,
+#endif
                   from._internal_metadata_);
               $copy_construct_impl$;
               $copy_init_fields$;
@@ -3340,6 +3344,9 @@ void MessageGenerator::GenerateStructors(io::Printer* p) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
             _impl_(from._impl_) {
         _internal_metadata_.MergeFrom<$unknown_fields_type$>(
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+            arena,
+#endif
             from._internal_metadata_);
       }
     )cc");
@@ -3654,7 +3661,11 @@ void MessageGenerator::GenerateClear(io::Printer* p) {
           $clear_oneofs$;
           $maybe_clear_weak_fields$;
           $maybe_clear_hasbits$;
-          _internal_metadata_.Clear<$unknown_fields_type$>();
+          _internal_metadata_.Clear<$unknown_fields_type$>(
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+              GetArena()
+#endif
+          );
         }
       )cc");
 }
@@ -4267,6 +4278,12 @@ void MessageGenerator::GenerateClassSpecificMergeImpl(io::Printer* p) {
             p->Emit(R"cc(
               $pb$::Arena* arena = _this->GetArena();
             )cc");
+          } else {
+            p->Emit(R"cc(
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+              $pb$::Arena* arena = _this->GetArena();
+#endif
+            )cc");
           }
         }},
        {"maybe_prepare_split_message_for_write",
@@ -4419,6 +4436,9 @@ void MessageGenerator::GenerateClassSpecificMergeImpl(io::Printer* p) {
           $merge_weak_fields$;
           $merge_extensions$;
           _this->_internal_metadata_.MergeFrom<$unknown_fields_type$>(
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+              arena,
+#endif
               from._internal_metadata_);
         }
       )cc");

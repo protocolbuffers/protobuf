@@ -464,8 +464,9 @@ TEST(ArenaTest, MoveCtorOnArena) {
   // The only extra allocation with moves is sizeof(NestedTestAllTypes).
   // Align up to 8 bytes to match default arena alignment, as sizeof(T) may not
   // be a multiple of 8 on 32-bit platforms.
-  EXPECT_EQ(usage_by_move, Align8(sizeof(NestedTestAllTypes)));
-  EXPECT_LT(usage_by_move + Align8(sizeof(TestAllTypes)), usage_original);
+  EXPECT_EQ(usage_by_move, Align8(sizeof(NestedTestAllTypes) + sizeof(Arena*)));
+  EXPECT_LT(usage_by_move + Align8(sizeof(TestAllTypes) + sizeof(Arena*)),
+            usage_original);
 
   // Status after move is unspecified and must not be assumed. It's merely
   // checking current implementation specifics for protobuf internal.
@@ -517,7 +518,8 @@ TEST(ArenaTest, RepeatedPtrFieldMoveCtorOnArena) {
   // be a multiple of 8 on 32-bit platforms.
   EXPECT_EQ(usage_by_move,
             Align8(sizeof(internal::RepeatedPtrFieldWithArena<TestAllTypes>)));
-  EXPECT_LT(usage_by_move + Align8(sizeof(TestAllTypes)), usage_original);
+  EXPECT_LT(usage_by_move + Align8(sizeof(TestAllTypes) + sizeof(Arena*)),
+            usage_original);
 
   // Status after move is unspecified and must not be assumed. It's merely
   // checking current implementation specifics for protobuf internal.

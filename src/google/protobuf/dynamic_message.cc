@@ -328,10 +328,12 @@ class DynamicMessage final : public Message {
   DynamicMessage(const DynamicMessageFactory::TypeInfo* type_info,
                  Arena* arena);
 
-  void SharedCtor(bool lock_factory);
+  void SharedCtor(Arena* arena, bool lock_factory);
 
   // Needed to get the offset of the internal metadata member.
   friend class DynamicMessageFactory;
+
+  friend internal::InternalMetadataOffset;
 
   bool is_prototype() const;
 
@@ -360,6 +362,9 @@ class DynamicMessage final : public Message {
   void* MutableOneofCaseRaw(int i);
   void* MutableOneofFieldRaw(const FieldDescriptor* f);
 
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+  Arena* arena_;
+#endif
   const DynamicMessageFactory::TypeInfo* type_info_;
   internal::CachedSize cached_byte_size_;
 };
@@ -481,8 +486,11 @@ struct DynamicMessageFactory::TypeInfo {
 DynamicMessage::DynamicMessage(const DynamicMessageFactory::TypeInfo* type_info,
                                Arena* arena)
     : Message(arena, type_info->GetClassDataFull().base()),
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+      arena_(arena),
+#endif
       type_info_(type_info) {
-  SharedCtor(true);
+  SharedCtor(arena, true);
 }
 
 DynamicMessage::DynamicMessage(DynamicMessageFactory::TypeInfo* type_info,
@@ -497,7 +505,7 @@ DynamicMessage::DynamicMessage(DynamicMessageFactory::TypeInfo* type_info,
 #ifndef PROTOBUF_MESSAGE_GLOBALS
   type_info->MutableClassDataFull().prototype = this;
 #endif  // PROTOBUF_MESSAGE_GLOBALS
-  SharedCtor(lock_factory);
+  SharedCtor(/*arena=*/nullptr, lock_factory);
 }
 
 template <typename T>
@@ -538,7 +546,7 @@ inline void* DynamicMessage::MutableOneofFieldRaw(const FieldDescriptor* f) {
                     f->containing_oneof()->index()]);
 }
 
-void DynamicMessage::SharedCtor(bool lock_factory) {
+void DynamicMessage::SharedCtor(Arena* arena, bool lock_factory) {
   // We need to call constructors for various fields manually and set
   // default values where appropriate.  We use placement new to call
   // constructors.  If you haven't heard of placement new, I suggest Googling
@@ -549,7 +557,6 @@ void DynamicMessage::SharedCtor(bool lock_factory) {
   // constructor.)
 
   const Descriptor* descriptor = type_info_->GetClassDataFull().descriptor();
-  Arena* arena = GetArena();
   // Initialize oneof cases.
   int oneof_count = 0;
   for (int i = 0; i < descriptor->real_oneof_decl_count(); ++i) {
@@ -1036,6 +1043,10 @@ const Message* DynamicMessageFactory::GetPrototypeNoLock(
   }
 
   type_info->weak_field_map_offset = -1;
+
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+  size = AlignOffset(size);
+#endif
 
 #ifndef PROTOBUF_MESSAGE_GLOBALS
   type_info->MutableClassDataFull().message_creator =

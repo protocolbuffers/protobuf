@@ -268,6 +268,9 @@ JsonEnumValueOptions::JsonEnumValueOptions(
   JsonEnumValueOptions* const _this = this;
   (void)_this;
   _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+      arena,
+#endif
       from._internal_metadata_);
   new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
 
@@ -334,7 +337,11 @@ PROTOBUF_NOINLINE void JsonEnumValueOptions::Clear() {
     _impl_.string_.ClearNonDefaultToEmpty();
   }
   _impl_._has_bits_.Clear();
-  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
+  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>(
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+      GetArena()
+#endif
+  );
 }
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
@@ -406,6 +413,9 @@ void JsonEnumValueOptions::MergeImpl(::google::protobuf::MessageLite& to_msg,
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     from.CheckHasBitConsistency();
   }
+  #if defined(PROTOBUF_CUSTOM_VTABLE)
+  ::google::protobuf::Arena* arena = _this->GetArena();
+  #endif
   // @@protoc_insertion_point(class_specific_merge_from_start:pb.enumvalue.JsonEnumValueOptions)
   ABSL_DCHECK_NE(&from, _this);
   ::uint32_t cached_has_bits = 0;
@@ -417,6 +427,9 @@ void JsonEnumValueOptions::MergeImpl(::google::protobuf::MessageLite& to_msg,
   }
   _this->_impl_._has_bits_[0] |= cached_has_bits;
   _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+      arena,
+#endif
       from._internal_metadata_);
 }
 

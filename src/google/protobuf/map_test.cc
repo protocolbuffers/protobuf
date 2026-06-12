@@ -268,6 +268,7 @@ TEST(MapTest, NaturalGrowthOnArenasReuseBlocks) {
 
   struct MockNode : internal::NodeBase {
     std::pair<int, int> v;
+    Arena* arena;
   };
   size_t expected =
       values.size() * (MapTestPeer::NumBuckets(*values[0]) * sizeof(void*) +

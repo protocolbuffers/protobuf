@@ -458,9 +458,21 @@ class PROTOBUF_EXPORT UntypedMapBase {
 
   NodeBase* AllocNode(Arena* arena, size_t node_size) {
     ABSL_DCHECK_EQ(arena, this->arena());
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+    if (arena != nullptr) {
+      auto* node = static_cast<NodeBase*>(
+          arena->AllocateAligned(node_size + sizeof(Arena*)));
+      *reinterpret_cast<Arena**>(reinterpret_cast<char*>(node) + node_size) =
+          arena;
+      return node;
+    } else {
+      return static_cast<NodeBase*>(Allocate(node_size));
+    }
+#else
     return static_cast<NodeBase*>(arena == nullptr
                                       ? Allocate(node_size)
                                       : arena->AllocateAligned(node_size));
+#endif
   }
 
   void DeallocNode(NodeBase* node) { DeallocNode(node, type_info_.node_size); }

@@ -7912,6 +7912,9 @@ FileDescriptorSet::FileDescriptorSet(
   FileDescriptorSet* const _this = this;
   (void)_this;
   _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+      arena,
+#endif
       from._internal_metadata_);
   new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
   _impl_._extensions_.MergeFrom(arena, this, from._impl_._extensions_,
@@ -7986,7 +7989,11 @@ PROTOBUF_NOINLINE void FileDescriptorSet::Clear() {
     _impl_.file_.Clear();
   }
   _impl_._has_bits_.Clear();
-  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
+  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>(
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+      GetArena()
+#endif
+  );
 }
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
@@ -8085,6 +8092,9 @@ void FileDescriptorSet::MergeImpl(::google::protobuf::MessageLite& to_msg,
   _this->_impl_._extensions_.MergeFrom(arena, &default_instance(),
                                 from._impl_._extensions_, from.GetArena());
   _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+      arena,
+#endif
       from._internal_metadata_);
 }
 
@@ -8206,6 +8216,9 @@ FileDescriptorProto::FileDescriptorProto(
   FileDescriptorProto* const _this = this;
   (void)_this;
   _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+      arena,
+#endif
       from._internal_metadata_);
   new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
   ::uint32_t cached_has_bits = _impl_._has_bits_[0];
@@ -8375,7 +8388,11 @@ PROTOBUF_NOINLINE void FileDescriptorProto::Clear() {
   }
   _impl_.edition_ = 0;
   _impl_._has_bits_.Clear();
-  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
+  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>(
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+      GetArena()
+#endif
+  );
 }
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
@@ -8727,6 +8744,9 @@ void FileDescriptorProto::MergeImpl(::google::protobuf::MessageLite& to_msg,
   }
   _this->_impl_._has_bits_[0] |= cached_has_bits;
   _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+      arena,
+#endif
       from._internal_metadata_);
 }
 
@@ -8814,6 +8834,9 @@ DescriptorProto_ExtensionRange::DescriptorProto_ExtensionRange(
   DescriptorProto_ExtensionRange* const _this = this;
   (void)_this;
   _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+      arena,
+#endif
       from._internal_metadata_);
   new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
   ::uint32_t cached_has_bits = _impl_._has_bits_[0];
@@ -8905,7 +8928,11 @@ PROTOBUF_NOINLINE void DescriptorProto_ExtensionRange::Clear() {
             sizeof(_impl_.end_));
   }
   _impl_._has_bits_.Clear();
-  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
+  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>(
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+      GetArena()
+#endif
+  );
 }
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
@@ -9026,6 +9053,9 @@ void DescriptorProto_ExtensionRange::MergeImpl(::google::protobuf::MessageLite& 
   }
   _this->_impl_._has_bits_[0] |= cached_has_bits;
   _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+      arena,
+#endif
       from._internal_metadata_);
 }
 
@@ -9080,6 +9110,9 @@ DescriptorProto_ReservedRange::DescriptorProto_ReservedRange(
 #endif  // PROTOBUF_CUSTOM_VTABLE
       _impl_(from._impl_) {
   _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+      arena,
+#endif
       from._internal_metadata_);
 }
 PROTOBUF_NDEBUG_INLINE DescriptorProto_ReservedRange::Impl_::Impl_(
@@ -9152,7 +9185,11 @@ PROTOBUF_NOINLINE void DescriptorProto_ReservedRange::Clear() {
             sizeof(_impl_.end_));
   }
   _impl_._has_bits_.Clear();
-  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
+  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>(
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+      GetArena()
+#endif
+  );
 }
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
@@ -9236,6 +9273,9 @@ void DescriptorProto_ReservedRange::MergeImpl(::google::protobuf::MessageLite& t
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     from.CheckHasBitConsistency();
   }
+  #if defined(PROTOBUF_CUSTOM_VTABLE)
+  ::google::protobuf::Arena* arena = _this->GetArena();
+  #endif
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.DescriptorProto.ReservedRange)
   ABSL_DCHECK_NE(&from, _this);
   ::uint32_t cached_has_bits = 0;
@@ -9252,6 +9292,9 @@ void DescriptorProto_ReservedRange::MergeImpl(::google::protobuf::MessageLite& t
   }
   _this->_impl_._has_bits_[0] |= cached_has_bits;
   _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+      arena,
+#endif
       from._internal_metadata_);
 }
 
@@ -9364,6 +9407,9 @@ DescriptorProto::DescriptorProto(
   DescriptorProto* const _this = this;
   (void)_this;
   _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+      arena,
+#endif
       from._internal_metadata_);
   new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
   ::uint32_t cached_has_bits = _impl_._has_bits_[0];
@@ -9515,7 +9561,11 @@ PROTOBUF_NOINLINE void DescriptorProto::Clear() {
   }
   _impl_.visibility_ = 0;
   _impl_._has_bits_.Clear();
-  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
+  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>(
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+      GetArena()
+#endif
+  );
 }
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
@@ -9829,6 +9879,9 @@ void DescriptorProto::MergeImpl(::google::protobuf::MessageLite& to_msg,
   }
   _this->_impl_._has_bits_[0] |= cached_has_bits;
   _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+      arena,
+#endif
       from._internal_metadata_);
 }
 
@@ -9917,6 +9970,9 @@ ExtensionRangeOptions_Declaration::ExtensionRangeOptions_Declaration(
   ExtensionRangeOptions_Declaration* const _this = this;
   (void)_this;
   _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+      arena,
+#endif
       from._internal_metadata_);
   new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
   ::memcpy(reinterpret_cast<char*>(&_impl_) +
@@ -10010,7 +10066,11 @@ PROTOBUF_NOINLINE void ExtensionRangeOptions_Declaration::Clear() {
             sizeof(_impl_.repeated_));
   }
   _impl_._has_bits_.Clear();
-  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
+  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>(
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+      GetArena()
+#endif
+  );
 }
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
@@ -10119,6 +10179,9 @@ void ExtensionRangeOptions_Declaration::MergeImpl(::google::protobuf::MessageLit
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     from.CheckHasBitConsistency();
   }
+  #if defined(PROTOBUF_CUSTOM_VTABLE)
+  ::google::protobuf::Arena* arena = _this->GetArena();
+  #endif
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.ExtensionRangeOptions.Declaration)
   ABSL_DCHECK_NE(&from, _this);
   ::uint32_t cached_has_bits = 0;
@@ -10144,6 +10207,9 @@ void ExtensionRangeOptions_Declaration::MergeImpl(::google::protobuf::MessageLit
   }
   _this->_impl_._has_bits_[0] |= cached_has_bits;
   _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+      arena,
+#endif
       from._internal_metadata_);
 }
 
@@ -10219,6 +10285,9 @@ ExtensionRangeOptions::ExtensionRangeOptions(
   ExtensionRangeOptions* const _this = this;
   (void)_this;
   _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+      arena,
+#endif
       from._internal_metadata_);
   new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
   _impl_._extensions_.MergeFrom(arena, this, from._impl_._extensions_,
@@ -10316,7 +10385,11 @@ PROTOBUF_NOINLINE void ExtensionRangeOptions::Clear() {
     _impl_.verification_ = 1;
   }
   _impl_._has_bits_.Clear();
-  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
+  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>(
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+      GetArena()
+#endif
+  );
 }
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
@@ -10479,6 +10552,9 @@ void ExtensionRangeOptions::MergeImpl(::google::protobuf::MessageLite& to_msg,
   _this->_impl_._extensions_.MergeFrom(arena, &default_instance(),
                                 from._impl_._extensions_, from.GetArena());
   _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+      arena,
+#endif
       from._internal_metadata_);
 }
 
@@ -10556,6 +10632,9 @@ FieldDescriptorProto::FieldDescriptorProto(
   FieldDescriptorProto* const _this = this;
   (void)_this;
   _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+      arena,
+#endif
       from._internal_metadata_);
   new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
   ::uint32_t cached_has_bits = _impl_._has_bits_[0];
@@ -10680,7 +10759,11 @@ PROTOBUF_NOINLINE void FieldDescriptorProto::Clear() {
     _impl_.type_ = 1;
   }
   _impl_._has_bits_.Clear();
-  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
+  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>(
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+      GetArena()
+#endif
+  );
 }
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
@@ -10916,6 +10999,9 @@ void FieldDescriptorProto::MergeImpl(::google::protobuf::MessageLite& to_msg,
   }
   _this->_impl_._has_bits_[0] |= cached_has_bits;
   _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+      arena,
+#endif
       from._internal_metadata_);
 }
 
@@ -10987,6 +11073,9 @@ OneofDescriptorProto::OneofDescriptorProto(
   OneofDescriptorProto* const _this = this;
   (void)_this;
   _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+      arena,
+#endif
       from._internal_metadata_);
   new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
   ::uint32_t cached_has_bits = _impl_._has_bits_[0];
@@ -11065,7 +11154,11 @@ PROTOBUF_NOINLINE void OneofDescriptorProto::Clear() {
     }
   }
   _impl_._has_bits_.Clear();
-  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
+  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>(
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+      GetArena()
+#endif
+  );
 }
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
@@ -11170,6 +11263,9 @@ void OneofDescriptorProto::MergeImpl(::google::protobuf::MessageLite& to_msg,
   }
   _this->_impl_._has_bits_[0] |= cached_has_bits;
   _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+      arena,
+#endif
       from._internal_metadata_);
 }
 
@@ -11222,6 +11318,9 @@ EnumDescriptorProto_EnumReservedRange::EnumDescriptorProto_EnumReservedRange(
 #endif  // PROTOBUF_CUSTOM_VTABLE
       _impl_(from._impl_) {
   _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+      arena,
+#endif
       from._internal_metadata_);
 }
 PROTOBUF_NDEBUG_INLINE EnumDescriptorProto_EnumReservedRange::Impl_::Impl_(
@@ -11294,7 +11393,11 @@ PROTOBUF_NOINLINE void EnumDescriptorProto_EnumReservedRange::Clear() {
             sizeof(_impl_.end_));
   }
   _impl_._has_bits_.Clear();
-  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
+  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>(
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+      GetArena()
+#endif
+  );
 }
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
@@ -11378,6 +11481,9 @@ void EnumDescriptorProto_EnumReservedRange::MergeImpl(::google::protobuf::Messag
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     from.CheckHasBitConsistency();
   }
+  #if defined(PROTOBUF_CUSTOM_VTABLE)
+  ::google::protobuf::Arena* arena = _this->GetArena();
+  #endif
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.EnumDescriptorProto.EnumReservedRange)
   ABSL_DCHECK_NE(&from, _this);
   ::uint32_t cached_has_bits = 0;
@@ -11394,6 +11500,9 @@ void EnumDescriptorProto_EnumReservedRange::MergeImpl(::google::protobuf::Messag
   }
   _this->_impl_._has_bits_[0] |= cached_has_bits;
   _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+      arena,
+#endif
       from._internal_metadata_);
 }
 
@@ -11471,6 +11580,9 @@ EnumDescriptorProto::EnumDescriptorProto(
   EnumDescriptorProto* const _this = this;
   (void)_this;
   _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+      arena,
+#endif
       from._internal_metadata_);
   new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
   ::uint32_t cached_has_bits = _impl_._has_bits_[0];
@@ -11580,7 +11692,11 @@ PROTOBUF_NOINLINE void EnumDescriptorProto::Clear() {
   }
   _impl_.visibility_ = 0;
   _impl_._has_bits_.Clear();
-  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
+  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>(
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+      GetArena()
+#endif
+  );
 }
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
@@ -11770,6 +11886,9 @@ void EnumDescriptorProto::MergeImpl(::google::protobuf::MessageLite& to_msg,
   }
   _this->_impl_._has_bits_[0] |= cached_has_bits;
   _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+      arena,
+#endif
       from._internal_metadata_);
 }
 
@@ -11842,6 +11961,9 @@ EnumValueDescriptorProto::EnumValueDescriptorProto(
   EnumValueDescriptorProto* const _this = this;
   (void)_this;
   _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+      arena,
+#endif
       from._internal_metadata_);
   new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
   ::uint32_t cached_has_bits = _impl_._has_bits_[0];
@@ -11927,7 +12049,11 @@ PROTOBUF_NOINLINE void EnumValueDescriptorProto::Clear() {
   }
   _impl_.number_ = 0;
   _impl_._has_bits_.Clear();
-  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
+  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>(
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+      GetArena()
+#endif
+  );
 }
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
@@ -12047,6 +12173,9 @@ void EnumValueDescriptorProto::MergeImpl(::google::protobuf::MessageLite& to_msg
   }
   _this->_impl_._has_bits_[0] |= cached_has_bits;
   _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+      arena,
+#endif
       from._internal_metadata_);
 }
 
@@ -12121,6 +12250,9 @@ ServiceDescriptorProto::ServiceDescriptorProto(
   ServiceDescriptorProto* const _this = this;
   (void)_this;
   _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+      arena,
+#endif
       from._internal_metadata_);
   new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
   ::uint32_t cached_has_bits = _impl_._has_bits_[0];
@@ -12207,7 +12339,11 @@ PROTOBUF_NOINLINE void ServiceDescriptorProto::Clear() {
     }
   }
   _impl_._has_bits_.Clear();
-  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
+  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>(
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+      GetArena()
+#endif
+  );
 }
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
@@ -12336,6 +12472,9 @@ void ServiceDescriptorProto::MergeImpl(::google::protobuf::MessageLite& to_msg,
   }
   _this->_impl_._has_bits_[0] |= cached_has_bits;
   _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+      arena,
+#endif
       from._internal_metadata_);
 }
 
@@ -12403,6 +12542,9 @@ MethodDescriptorProto::MethodDescriptorProto(
   MethodDescriptorProto* const _this = this;
   (void)_this;
   _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+      arena,
+#endif
       from._internal_metadata_);
   new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
   ::uint32_t cached_has_bits = _impl_._has_bits_[0];
@@ -12508,7 +12650,11 @@ PROTOBUF_NOINLINE void MethodDescriptorProto::Clear() {
                             reinterpret_cast<char*>(&_impl_.client_streaming_)) +
           sizeof(_impl_.server_streaming_));
   _impl_._has_bits_.Clear();
-  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
+  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>(
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+      GetArena()
+#endif
+  );
 }
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
@@ -12662,6 +12808,9 @@ void MethodDescriptorProto::MergeImpl(::google::protobuf::MessageLite& to_msg,
   }
   _this->_impl_._has_bits_[0] |= cached_has_bits;
   _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+      arena,
+#endif
       from._internal_metadata_);
 }
 
@@ -12749,6 +12898,9 @@ FileOptions::FileOptions(
   FileOptions* const _this = this;
   (void)_this;
   _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+      arena,
+#endif
       from._internal_metadata_);
   new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
   _impl_._extensions_.MergeFrom(arena, this, from._impl_._extensions_,
@@ -12917,7 +13069,11 @@ PROTOBUF_NOINLINE void FileOptions::Clear() {
     }
   }
   _impl_._has_bits_.Clear();
-  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
+  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>(
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+      GetArena()
+#endif
+  );
 }
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
@@ -13286,6 +13442,9 @@ void FileOptions::MergeImpl(::google::protobuf::MessageLite& to_msg,
   _this->_impl_._extensions_.MergeFrom(arena, &default_instance(),
                                 from._impl_._extensions_, from.GetArena());
   _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+      arena,
+#endif
       from._internal_metadata_);
 }
 
@@ -13378,6 +13537,9 @@ MessageOptions::MessageOptions(
   MessageOptions* const _this = this;
   (void)_this;
   _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+      arena,
+#endif
       from._internal_metadata_);
   new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
   _impl_._extensions_.MergeFrom(arena, this, from._impl_._extensions_,
@@ -13481,7 +13643,11 @@ PROTOBUF_NOINLINE void MessageOptions::Clear() {
     }
   }
   _impl_._has_bits_.Clear();
-  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
+  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>(
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+      GetArena()
+#endif
+  );
 }
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
@@ -13656,6 +13822,9 @@ void MessageOptions::MergeImpl(::google::protobuf::MessageLite& to_msg,
   _this->_impl_._extensions_.MergeFrom(arena, &default_instance(),
                                 from._impl_._extensions_, from.GetArena());
   _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+      arena,
+#endif
       from._internal_metadata_);
 }
 
@@ -13728,6 +13897,9 @@ FieldOptions_EditionDefault::FieldOptions_EditionDefault(
   FieldOptions_EditionDefault* const _this = this;
   (void)_this;
   _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+      arena,
+#endif
       from._internal_metadata_);
   new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
   _impl_.edition_ = from._impl_.edition_;
@@ -13797,7 +13969,11 @@ PROTOBUF_NOINLINE void FieldOptions_EditionDefault::Clear() {
   }
   _impl_.edition_ = 0;
   _impl_._has_bits_.Clear();
-  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
+  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>(
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+      GetArena()
+#endif
+  );
 }
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
@@ -13880,6 +14056,9 @@ void FieldOptions_EditionDefault::MergeImpl(::google::protobuf::MessageLite& to_
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     from.CheckHasBitConsistency();
   }
+  #if defined(PROTOBUF_CUSTOM_VTABLE)
+  ::google::protobuf::Arena* arena = _this->GetArena();
+  #endif
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.FieldOptions.EditionDefault)
   ABSL_DCHECK_NE(&from, _this);
   ::uint32_t cached_has_bits = 0;
@@ -13896,6 +14075,9 @@ void FieldOptions_EditionDefault::MergeImpl(::google::protobuf::MessageLite& to_
   }
   _this->_impl_._has_bits_[0] |= cached_has_bits;
   _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+      arena,
+#endif
       from._internal_metadata_);
 }
 
@@ -13951,6 +14133,9 @@ FieldOptions_FeatureSupport::FieldOptions_FeatureSupport(
   FieldOptions_FeatureSupport* const _this = this;
   (void)_this;
   _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+      arena,
+#endif
       from._internal_metadata_);
   new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
   ::memcpy(reinterpret_cast<char*>(&_impl_) +
@@ -14044,7 +14229,11 @@ PROTOBUF_NOINLINE void FieldOptions_FeatureSupport::Clear() {
             sizeof(_impl_.edition_removed_));
   }
   _impl_._has_bits_.Clear();
-  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
+  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>(
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+      GetArena()
+#endif
+  );
 }
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
@@ -14162,6 +14351,9 @@ void FieldOptions_FeatureSupport::MergeImpl(::google::protobuf::MessageLite& to_
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     from.CheckHasBitConsistency();
   }
+  #if defined(PROTOBUF_CUSTOM_VTABLE)
+  ::google::protobuf::Arena* arena = _this->GetArena();
+  #endif
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.FieldOptions.FeatureSupport)
   ABSL_DCHECK_NE(&from, _this);
   ::uint32_t cached_has_bits = 0;
@@ -14187,6 +14379,9 @@ void FieldOptions_FeatureSupport::MergeImpl(::google::protobuf::MessageLite& to_
   }
   _this->_impl_._has_bits_[0] |= cached_has_bits;
   _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+      arena,
+#endif
       from._internal_metadata_);
 }
 
@@ -14269,6 +14464,9 @@ FieldOptions::FieldOptions(
   FieldOptions* const _this = this;
   (void)_this;
   _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+      arena,
+#endif
       from._internal_metadata_);
   new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
   _impl_._extensions_.MergeFrom(arena, this, from._impl_._extensions_,
@@ -14405,7 +14603,11 @@ PROTOBUF_NOINLINE void FieldOptions::Clear() {
     }
   }
   _impl_._has_bits_.Clear();
-  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
+  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>(
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+      GetArena()
+#endif
+  );
 }
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
@@ -14705,6 +14907,9 @@ void FieldOptions::MergeImpl(::google::protobuf::MessageLite& to_msg,
   _this->_impl_._extensions_.MergeFrom(arena, &default_instance(),
                                 from._impl_._extensions_, from.GetArena());
   _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+      arena,
+#endif
       from._internal_metadata_);
 }
 
@@ -14787,6 +14992,9 @@ OneofOptions::OneofOptions(
   OneofOptions* const _this = this;
   (void)_this;
   _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+      arena,
+#endif
       from._internal_metadata_);
   new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
   _impl_._extensions_.MergeFrom(arena, this, from._impl_._extensions_,
@@ -14873,7 +15081,11 @@ PROTOBUF_NOINLINE void OneofOptions::Clear() {
     }
   }
   _impl_._has_bits_.Clear();
-  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
+  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>(
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+      GetArena()
+#endif
+  );
 }
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
@@ -14997,6 +15209,9 @@ void OneofOptions::MergeImpl(::google::protobuf::MessageLite& to_msg,
   _this->_impl_._extensions_.MergeFrom(arena, &default_instance(),
                                 from._impl_._extensions_, from.GetArena());
   _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+      arena,
+#endif
       from._internal_metadata_);
 }
 
@@ -15072,6 +15287,9 @@ EnumOptions::EnumOptions(
   EnumOptions* const _this = this;
   (void)_this;
   _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+      arena,
+#endif
       from._internal_metadata_);
   new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
   _impl_._extensions_.MergeFrom(arena, this, from._impl_._extensions_,
@@ -15173,7 +15391,11 @@ PROTOBUF_NOINLINE void EnumOptions::Clear() {
     _impl_.uninterpreted_option_.Clear();
   }
   _impl_._has_bits_.Clear();
-  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
+  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>(
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+      GetArena()
+#endif
+  );
 }
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
@@ -15328,6 +15550,9 @@ void EnumOptions::MergeImpl(::google::protobuf::MessageLite& to_msg,
   _this->_impl_._extensions_.MergeFrom(arena, &default_instance(),
                                 from._impl_._extensions_, from.GetArena());
   _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+      arena,
+#endif
       from._internal_metadata_);
 }
 
@@ -15408,6 +15633,9 @@ EnumValueOptions::EnumValueOptions(
   EnumValueOptions* const _this = this;
   (void)_this;
   _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+      arena,
+#endif
       from._internal_metadata_);
   new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
   _impl_._extensions_.MergeFrom(arena, this, from._impl_._extensions_,
@@ -15519,7 +15747,11 @@ PROTOBUF_NOINLINE void EnumValueOptions::Clear() {
                             reinterpret_cast<char*>(&_impl_.deprecated_)) +
           sizeof(_impl_.debug_redact_));
   _impl_._has_bits_.Clear();
-  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
+  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>(
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+      GetArena()
+#endif
+  );
 }
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
@@ -15684,6 +15916,9 @@ void EnumValueOptions::MergeImpl(::google::protobuf::MessageLite& to_msg,
   _this->_impl_._extensions_.MergeFrom(arena, &default_instance(),
                                 from._impl_._extensions_, from.GetArena());
   _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+      arena,
+#endif
       from._internal_metadata_);
 }
 
@@ -15764,6 +15999,9 @@ ServiceOptions::ServiceOptions(
   ServiceOptions* const _this = this;
   (void)_this;
   _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+      arena,
+#endif
       from._internal_metadata_);
   new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
   _impl_._extensions_.MergeFrom(arena, this, from._impl_._extensions_,
@@ -15857,7 +16095,11 @@ PROTOBUF_NOINLINE void ServiceOptions::Clear() {
   }
   _impl_.deprecated_ = false;
   _impl_._has_bits_.Clear();
-  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
+  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>(
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+      GetArena()
+#endif
+  );
 }
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
@@ -15992,6 +16234,9 @@ void ServiceOptions::MergeImpl(::google::protobuf::MessageLite& to_msg,
   _this->_impl_._extensions_.MergeFrom(arena, &default_instance(),
                                 from._impl_._extensions_, from.GetArena());
   _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+      arena,
+#endif
       from._internal_metadata_);
 }
 
@@ -16072,6 +16317,9 @@ MethodOptions::MethodOptions(
   MethodOptions* const _this = this;
   (void)_this;
   _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+      arena,
+#endif
       from._internal_metadata_);
   new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
   _impl_._extensions_.MergeFrom(arena, this, from._impl_._extensions_,
@@ -16177,7 +16425,11 @@ PROTOBUF_NOINLINE void MethodOptions::Clear() {
             sizeof(_impl_.idempotency_level_));
   }
   _impl_._has_bits_.Clear();
-  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
+  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>(
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+      GetArena()
+#endif
+  );
 }
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
@@ -16327,6 +16579,9 @@ void MethodOptions::MergeImpl(::google::protobuf::MessageLite& to_msg,
   _this->_impl_._extensions_.MergeFrom(arena, &default_instance(),
                                 from._impl_._extensions_, from.GetArena());
   _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+      arena,
+#endif
       from._internal_metadata_);
 }
 
@@ -16399,6 +16654,9 @@ UninterpretedOption_NamePart::UninterpretedOption_NamePart(
   UninterpretedOption_NamePart* const _this = this;
   (void)_this;
   _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+      arena,
+#endif
       from._internal_metadata_);
   new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
   _impl_.is_extension_ = from._impl_.is_extension_;
@@ -16468,7 +16726,11 @@ PROTOBUF_NOINLINE void UninterpretedOption_NamePart::Clear() {
   }
   _impl_.is_extension_ = false;
   _impl_._has_bits_.Clear();
-  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
+  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>(
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+      GetArena()
+#endif
+  );
 }
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
@@ -16547,6 +16809,9 @@ void UninterpretedOption_NamePart::MergeImpl(::google::protobuf::MessageLite& to
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     from.CheckHasBitConsistency();
   }
+  #if defined(PROTOBUF_CUSTOM_VTABLE)
+  ::google::protobuf::Arena* arena = _this->GetArena();
+  #endif
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.UninterpretedOption.NamePart)
   ABSL_DCHECK_NE(&from, _this);
   ::uint32_t cached_has_bits = 0;
@@ -16563,6 +16828,9 @@ void UninterpretedOption_NamePart::MergeImpl(::google::protobuf::MessageLite& to
   }
   _this->_impl_._has_bits_[0] |= cached_has_bits;
   _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+      arena,
+#endif
       from._internal_metadata_);
 }
 
@@ -16634,6 +16902,9 @@ UninterpretedOption::UninterpretedOption(
   UninterpretedOption* const _this = this;
   (void)_this;
   _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+      arena,
+#endif
       from._internal_metadata_);
   new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
   ::memcpy(reinterpret_cast<char*>(&_impl_) +
@@ -16740,7 +17011,11 @@ PROTOBUF_NOINLINE void UninterpretedOption::Clear() {
             sizeof(_impl_.double_value_));
   }
   _impl_._has_bits_.Clear();
-  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
+  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>(
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+      GetArena()
+#endif
+  );
 }
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
@@ -16918,6 +17193,9 @@ void UninterpretedOption::MergeImpl(::google::protobuf::MessageLite& to_msg,
   }
   _this->_impl_._has_bits_[0] |= cached_has_bits;
   _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+      arena,
+#endif
       from._internal_metadata_);
 }
 
@@ -16979,6 +17257,9 @@ FeatureSet_VisibilityFeature::FeatureSet_VisibilityFeature(
   FeatureSet_VisibilityFeature* const _this = this;
   (void)_this;
   _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+      arena,
+#endif
       from._internal_metadata_);
 
   // @@protoc_insertion_point(copy_constructor:google.protobuf.FeatureSet.VisibilityFeature)
@@ -17042,6 +17323,9 @@ FeatureSet_ProtoLimitsFeature::FeatureSet_ProtoLimitsFeature(
   FeatureSet_ProtoLimitsFeature* const _this = this;
   (void)_this;
   _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+      arena,
+#endif
       from._internal_metadata_);
 
   // @@protoc_insertion_point(copy_constructor:google.protobuf.FeatureSet.ProtoLimitsFeature)
@@ -17114,6 +17398,9 @@ FeatureSet::FeatureSet(
   FeatureSet* const _this = this;
   (void)_this;
   _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+      arena,
+#endif
       from._internal_metadata_);
   new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
   _impl_._extensions_.MergeFrom(arena, this, from._impl_._extensions_,
@@ -17201,7 +17488,11 @@ PROTOBUF_NOINLINE void FeatureSet::Clear() {
   }
   _impl_.enforce_proto_limits_ = 0;
   _impl_._has_bits_.Clear();
-  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
+  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>(
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+      GetArena()
+#endif
+  );
 }
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
@@ -17415,6 +17706,9 @@ void FeatureSet::MergeImpl(::google::protobuf::MessageLite& to_msg,
   _this->_impl_._extensions_.MergeFrom(arena, &default_instance(),
                                 from._impl_._extensions_, from.GetArena());
   _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+      arena,
+#endif
       from._internal_metadata_);
 }
 
@@ -17480,6 +17774,9 @@ FeatureSetDefaults_FeatureSetEditionDefault::FeatureSetDefaults_FeatureSetEditio
   FeatureSetDefaults_FeatureSetEditionDefault* const _this = this;
   (void)_this;
   _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+      arena,
+#endif
       from._internal_metadata_);
   new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
   ::uint32_t cached_has_bits = _impl_._has_bits_[0];
@@ -17569,7 +17866,11 @@ PROTOBUF_NOINLINE void FeatureSetDefaults_FeatureSetEditionDefault::Clear() {
   }
   _impl_.edition_ = 0;
   _impl_._has_bits_.Clear();
-  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
+  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>(
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+      GetArena()
+#endif
+  );
 }
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
@@ -17695,6 +17996,9 @@ void FeatureSetDefaults_FeatureSetEditionDefault::MergeImpl(::google::protobuf::
   }
   _this->_impl_._has_bits_[0] |= cached_has_bits;
   _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+      arena,
+#endif
       from._internal_metadata_);
 }
 
@@ -17768,6 +18072,9 @@ FeatureSetDefaults::FeatureSetDefaults(
   FeatureSetDefaults* const _this = this;
   (void)_this;
   _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+      arena,
+#endif
       from._internal_metadata_);
   new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
   ::memcpy(reinterpret_cast<char*>(&_impl_) +
@@ -17857,7 +18164,11 @@ PROTOBUF_NOINLINE void FeatureSetDefaults::Clear() {
             sizeof(_impl_.maximum_edition_));
   }
   _impl_._has_bits_.Clear();
-  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
+  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>(
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+      GetArena()
+#endif
+  );
 }
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
@@ -17982,6 +18293,9 @@ void FeatureSetDefaults::MergeImpl(::google::protobuf::MessageLite& to_msg,
   }
   _this->_impl_._has_bits_[0] |= cached_has_bits;
   _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+      arena,
+#endif
       from._internal_metadata_);
 }
 
@@ -18068,6 +18382,9 @@ SourceCodeInfo_Location::SourceCodeInfo_Location(
   SourceCodeInfo_Location* const _this = this;
   (void)_this;
   _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+      arena,
+#endif
       from._internal_metadata_);
   new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
 
@@ -18165,7 +18482,11 @@ PROTOBUF_NOINLINE void SourceCodeInfo_Location::Clear() {
     }
   }
   _impl_._has_bits_.Clear();
-  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
+  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>(
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+      GetArena()
+#endif
+  );
 }
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
@@ -18328,6 +18649,9 @@ void SourceCodeInfo_Location::MergeImpl(::google::protobuf::MessageLite& to_msg,
   }
   _this->_impl_._has_bits_[0] |= cached_has_bits;
   _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+      arena,
+#endif
       from._internal_metadata_);
 }
 
@@ -18393,6 +18717,9 @@ SourceCodeInfo::SourceCodeInfo(
   SourceCodeInfo* const _this = this;
   (void)_this;
   _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+      arena,
+#endif
       from._internal_metadata_);
   new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
   _impl_._extensions_.MergeFrom(arena, this, from._impl_._extensions_,
@@ -18467,7 +18794,11 @@ PROTOBUF_NOINLINE void SourceCodeInfo::Clear() {
     _impl_.location_.Clear();
   }
   _impl_._has_bits_.Clear();
-  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
+  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>(
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+      GetArena()
+#endif
+  );
 }
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
@@ -18566,6 +18897,9 @@ void SourceCodeInfo::MergeImpl(::google::protobuf::MessageLite& to_msg,
   _this->_impl_._extensions_.MergeFrom(arena, &default_instance(),
                                 from._impl_._extensions_, from.GetArena());
   _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+      arena,
+#endif
       from._internal_metadata_);
 }
 
@@ -18634,6 +18968,9 @@ GeneratedCodeInfo_Annotation::GeneratedCodeInfo_Annotation(
   GeneratedCodeInfo_Annotation* const _this = this;
   (void)_this;
   _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+      arena,
+#endif
       from._internal_metadata_);
   new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
   ::memcpy(reinterpret_cast<char*>(&_impl_) +
@@ -18730,7 +19067,11 @@ PROTOBUF_NOINLINE void GeneratedCodeInfo_Annotation::Clear() {
             sizeof(_impl_.semantic_));
   }
   _impl_._has_bits_.Clear();
-  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
+  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>(
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+      GetArena()
+#endif
+  );
 }
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
@@ -18855,6 +19196,9 @@ void GeneratedCodeInfo_Annotation::MergeImpl(::google::protobuf::MessageLite& to
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     from.CheckHasBitConsistency();
   }
+  #if defined(PROTOBUF_CUSTOM_VTABLE)
+  ::google::protobuf::Arena* arena = _this->GetArena();
+  #endif
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.GeneratedCodeInfo.Annotation)
   ABSL_DCHECK_NE(&from, _this);
   ::uint32_t cached_has_bits = 0;
@@ -18880,6 +19224,9 @@ void GeneratedCodeInfo_Annotation::MergeImpl(::google::protobuf::MessageLite& to
   }
   _this->_impl_._has_bits_[0] |= cached_has_bits;
   _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+      arena,
+#endif
       from._internal_metadata_);
 }
 
@@ -18946,6 +19293,9 @@ GeneratedCodeInfo::GeneratedCodeInfo(
   GeneratedCodeInfo* const _this = this;
   (void)_this;
   _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+      arena,
+#endif
       from._internal_metadata_);
   new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
 
@@ -19015,7 +19365,11 @@ PROTOBUF_NOINLINE void GeneratedCodeInfo::Clear() {
     _impl_.annotation_.Clear();
   }
   _impl_._has_bits_.Clear();
-  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
+  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>(
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+      GetArena()
+#endif
+  );
 }
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
@@ -19108,6 +19462,9 @@ void GeneratedCodeInfo::MergeImpl(::google::protobuf::MessageLite& to_msg,
   }
   _this->_impl_._has_bits_[0] |= cached_has_bits;
   _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+      arena,
+#endif
       from._internal_metadata_);
 }
 

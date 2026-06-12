@@ -102,7 +102,7 @@ class GenericTypeHandler;  // defined in repeated_field.h
 //   }
 // };
 // ```
-template <typename T>
+template <typename T, typename = void>
 struct FieldArenaRep {
   // The type of the field when allocated on an arena. By default, this is just
   // `T`, but can be specialized to use a wrapper class that holds both the
@@ -116,6 +116,45 @@ struct FieldArenaRep {
     return arena_rep;
   }
 };
+
+template <typename U>
+struct MessageWithArena {
+  using InternalArenaConstructable_ = void;
+  using DestructorSkippable_ = void;
+
+  template <typename... Args>
+  explicit MessageWithArena(Arena* PROTOBUF_NONNULL arena, Args&&... args)
+      : arena(arena) {
+    new (&message) U(arena, std::forward<Args>(args)...);
+  }
+
+  ~MessageWithArena() = delete;
+
+  union {
+    U message;
+  };
+  Arena* PROTOBUF_NONNULL arena;
+};
+
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+template <typename T>
+struct FieldArenaRep<T, std::enable_if_t<std::is_base_of_v<MessageLite, T>>> {
+  static_assert(!std::is_same_v<T, MessageLite>);
+  static_assert(!std::is_same_v<T, Message>);
+
+  // The type of the field when allocated on an arena. By default, this is just
+  // `T`, but can be specialized to use a wrapper class that holds both the
+  // arena pointer and the field.
+  using Type = MessageWithArena<T>;
+
+  // Returns a pointer to the field from the arena representation. By default,
+  // this is just a no-op, but can be specialized to extract the field from the
+  // wrapper class.
+  static T* PROTOBUF_NONNULL Get(Type* PROTOBUF_NONNULL arena_rep) {
+    return &arena_rep->message;
+  }
+};
+#endif
 
 // Returns true if `T` uses arena offsets instead of holding a copy of the arena
 // pointer. This can be deduced if the field's arena representation is not the
@@ -622,8 +661,9 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8)
       // Fields which use arena offsets don't have constructors that take an
       // arena pointer. Since the arena is nullptr, it is safe to default
       // construct the object.
-      if constexpr (internal::FieldHasArenaOffset<T>() ||
-                    internal::HasDeprecatedArenaConstructor<T>()) {
+      if constexpr (!std::is_base_of_v<MessageLite, T> &&
+                    (internal::FieldHasArenaOffset<T>() ||
+                     internal::HasDeprecatedArenaConstructor<T>())) {
         return new T();
       } else {
         return new T(nullptr);
@@ -703,8 +743,9 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8)
     static_assert(is_arena_constructable<T>::value,
                   "Can only construct types that are ArenaConstructable");
     if (ABSL_PREDICT_FALSE(arena == nullptr)) {
-      if constexpr (internal::FieldHasArenaOffset<T>() ||
-                    internal::HasDeprecatedArenaConstructor<T>()) {
+      if constexpr (!std::is_base_of_v<MessageLite, T> &&
+                    (internal::FieldHasArenaOffset<T>() ||
+                     internal::HasDeprecatedArenaConstructor<T>())) {
         return new T(static_cast<Args&&>(args)...);
       } else {
         return new T(nullptr, static_cast<Args&&>(args)...);
@@ -1180,12 +1221,23 @@ PROTOBUF_NOINLINE void* PROTOBUF_NONNULL Arena::CopyConstruct(
   }
   static_assert(is_destructor_skippable<T>::value, "");
   void* mem;
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+  if (arena != nullptr) {
+    using ArenaRepT = typename internal::FieldArenaRep<T>::Type;
+    mem = arena->AllocateAligned(sizeof(ArenaRepT));
+    return new (mem) ArenaRepT(arena, *typed_from);
+  } else {
+    mem = internal::Allocate(sizeof(T));
+    return new (mem) T(/*arena=*/nullptr, *typed_from);
+  }
+#else
   if (arena != nullptr) {
     mem = arena->AllocateAligned(sizeof(T));
   } else {
     mem = internal::Allocate(sizeof(T));
   }
   return new (mem) T(arena, *typed_from);
+#endif
 }
 
 template <>

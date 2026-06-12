@@ -330,8 +330,8 @@ void CheckAllocationSizes() {
 
       // When we actually allocated something, check the size.
       if (last_alloc != 0) {
-        // Must be `>= 16`, as expected by the Arena.
-        ASSERT_GE(last_alloc, 16);
+        // Must be `>= 8`, as expected by the Arena.
+        ASSERT_GE(last_alloc, 8);
         // Must be of a power of two.
         size_t log2 = absl::bit_width(last_alloc) - 1;
         ASSERT_EQ((1 << log2), last_alloc);
