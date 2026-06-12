@@ -9,6 +9,7 @@
 
 #include <cstddef>
 #include <cstdint>
+#include <cstring>
 #include <string>
 
 #include <gtest/gtest.h>
@@ -1032,6 +1033,239 @@ TEST(ConvertTest, OpenToClosedRepeatedEnum_ContainsInvalidValue) {
           check_msg, &check_count);
   EXPECT_EQ(1, check_count);
   EXPECT_EQ(12345, check_values[0]);
+}
+
+TEST(ConvertTest, ClosedToOpenEnum) {
+  upb::Arena arena;
+  const upb_MiniTable* src_mt = &upb__test__convert__Proto2EnumMessage_msg_init;
+  const upb_MiniTable* dst_mt =
+      &protobuf_0test_0messages__proto3__TestAllTypesProto3_msg_init;
+
+  // 1. Test valid value.
+  {
+    upb_test_convert_Proto2EnumMessage* msg =
+        upb_test_convert_Proto2EnumMessage_new(arena.ptr());
+    upb_test_convert_Proto2EnumMessage_set_optional_nested_enum(
+        msg, upb_test_convert_Proto2EnumMessage_BAR);
+
+    const upb_Message* dst_msg = upb_Message_Convert(
+        UPB_UPCAST(msg), src_mt, dst_mt, nullptr, arena.ptr());
+    ASSERT_NE(dst_msg, nullptr);
+    const protobuf_test_messages_proto3_TestAllTypesProto3* dst =
+        (const protobuf_test_messages_proto3_TestAllTypesProto3*)dst_msg;
+    EXPECT_EQ(
+        protobuf_test_messages_proto3_TestAllTypesProto3_BAR,
+        protobuf_test_messages_proto3_TestAllTypesProto3_optional_nested_enum(
+            dst));
+  }
+
+  // 2. Test invalid value (should be promoted from unknown to known).
+  {
+    // We need to construct a wire format with the invalid value and decode it
+    // into Proto2EnumMessage so it goes to unknown fields.
+    // Field number for optional_nested_enum is 21.
+    // Tag: 21 << 3 | 0 (varint) = 168 (0xa8), varint: 0xa8 0x01
+    // Value: 12345 = 0x3039, varint: 0xb9 0x60
+    char buf[32];
+    char* ptr = buf;
+    *ptr++ = (char)0xa8;
+    *ptr++ = (char)0x01;
+    *ptr++ = (char)0xb9;
+    *ptr++ = (char)0x60;
+    size_t len = ptr - buf;
+
+    upb_test_convert_Proto2EnumMessage* msg =
+        upb_test_convert_Proto2EnumMessage_new(arena.ptr());
+    upb_DecodeStatus decode_status =
+        upb_Decode(buf, len, UPB_UPCAST(msg), src_mt, nullptr, 0, arena.ptr());
+    ASSERT_EQ(kUpb_DecodeStatus_Ok, decode_status);
+    ASSERT_FALSE(
+        upb_test_convert_Proto2EnumMessage_has_optional_nested_enum(msg));
+
+    const upb_Message* dst_msg = upb_Message_Convert(
+        UPB_UPCAST(msg), src_mt, dst_mt, nullptr, arena.ptr());
+    ASSERT_NE(dst_msg, nullptr);
+    const protobuf_test_messages_proto3_TestAllTypesProto3* dst =
+        (const protobuf_test_messages_proto3_TestAllTypesProto3*)dst_msg;
+    EXPECT_EQ(
+        12345,
+        protobuf_test_messages_proto3_TestAllTypesProto3_optional_nested_enum(
+            dst));
+  }
+}
+
+TEST(ConvertTest, ClosedToOpenMapEnum) {
+  upb::Arena arena;
+  const upb_MiniTable* src_mt = &upb__test__convert__Proto2EnumMessage_msg_init;
+  const upb_MiniTable* dst_mt =
+      &protobuf_0test_0messages__proto3__TestAllTypesProto3_msg_init;
+
+  // 1. Test valid values.
+  {
+    upb_test_convert_Proto2EnumMessage* msg =
+        upb_test_convert_Proto2EnumMessage_new(arena.ptr());
+    upb_test_convert_Proto2EnumMessage_map_string_nested_enum_set(
+        msg, upb_StringView_FromString("valid1"),
+        upb_test_convert_Proto2EnumMessage_BAR, arena.ptr());
+
+    const upb_Message* dst_msg = upb_Message_Convert(
+        UPB_UPCAST(msg), src_mt, dst_mt, nullptr, arena.ptr());
+    ASSERT_NE(dst_msg, nullptr);
+    const protobuf_test_messages_proto3_TestAllTypesProto3* dst =
+        (const protobuf_test_messages_proto3_TestAllTypesProto3*)dst_msg;
+
+    int val;
+    EXPECT_TRUE(
+        protobuf_test_messages_proto3_TestAllTypesProto3_map_string_nested_enum_get(
+            dst, upb_StringView_FromString("valid1"), &val));
+    EXPECT_EQ(protobuf_test_messages_proto3_TestAllTypesProto3_BAR, val);
+  }
+
+  // 2. Test invalid value (should be promoted from unknown map entry to known
+  // map entry).
+  {
+    // Construct a wire format for a map entry with an invalid enum value.
+    // map_string_nested_enum has field number 73.
+    // MapEntry wire format:
+    // Tag: 73 << 3 | 2 (length-delimited) = 586 (0x24a), varint: 0xca 0x04
+    // Length: 12
+    // MapEntry fields: key (1, string), value (2, enum)
+    // Key "invalid": Tag: 10 (1 << 3 | 2), Length: 7, Value: "invalid"
+    // Value 12345: Tag: 16 (2 << 3 | 0), Value: 12345 (varint: 0xb9 0x60)
+    char buf[64];
+    char* ptr = buf;
+    *ptr++ = (char)0xca;
+    *ptr++ = (char)0x04;
+    *ptr++ = 12;  // Length of MapEntry
+    *ptr++ = 0x0a;
+    *ptr++ = 7;
+    memcpy(ptr, "invalid", 7);
+    ptr += 7;
+    *ptr++ = 0x10;
+    *ptr++ = (char)0xb9;
+    *ptr++ = (char)0x60;
+    size_t len = ptr - buf;
+
+    upb_test_convert_Proto2EnumMessage* msg =
+        upb_test_convert_Proto2EnumMessage_new(arena.ptr());
+    upb_DecodeStatus decode_status =
+        upb_Decode(buf, len, UPB_UPCAST(msg), src_mt, nullptr, 0, arena.ptr());
+    ASSERT_EQ(kUpb_DecodeStatus_Ok, decode_status);
+
+    // Verify it is not in the known map
+    int val;
+    EXPECT_FALSE(upb_test_convert_Proto2EnumMessage_map_string_nested_enum_get(
+        msg, upb_StringView_FromString("invalid"), &val));
+
+    const upb_Message* dst_msg = upb_Message_Convert(
+        UPB_UPCAST(msg), src_mt, dst_mt, nullptr, arena.ptr());
+    ASSERT_NE(dst_msg, nullptr);
+    const protobuf_test_messages_proto3_TestAllTypesProto3* dst =
+        (const protobuf_test_messages_proto3_TestAllTypesProto3*)dst_msg;
+
+    EXPECT_TRUE(
+        protobuf_test_messages_proto3_TestAllTypesProto3_map_string_nested_enum_get(
+            dst, upb_StringView_FromString("invalid"), &val));
+    EXPECT_EQ(12345, val);
+  }
+}
+
+TEST(ConvertTest, ClosedToOpenRepeatedEnum) {
+  upb::Arena arena;
+  const upb_MiniTable* src_mt = &upb__test__convert__Proto2EnumMessage_msg_init;
+  const upb_MiniTable* dst_mt =
+      &protobuf_0test_0messages__proto3__TestAllTypesProto3_msg_init;
+
+  // 1. Test valid values.
+  {
+    upb_test_convert_Proto2EnumMessage* msg =
+        upb_test_convert_Proto2EnumMessage_new(arena.ptr());
+    upb_test_convert_Proto2EnumMessage_add_repeated_nested_enum(
+        msg, upb_test_convert_Proto2EnumMessage_BAR, arena.ptr());
+
+    const upb_Message* dst_msg = upb_Message_Convert(
+        UPB_UPCAST(msg), src_mt, dst_mt, nullptr, arena.ptr());
+    ASSERT_NE(dst_msg, nullptr);
+    const protobuf_test_messages_proto3_TestAllTypesProto3* dst =
+        (const protobuf_test_messages_proto3_TestAllTypesProto3*)dst_msg;
+
+    size_t count;
+    const int* values =
+        protobuf_test_messages_proto3_TestAllTypesProto3_repeated_nested_enum(
+            dst, &count);
+    ASSERT_EQ(1, count);
+    EXPECT_EQ(protobuf_test_messages_proto3_TestAllTypesProto3_BAR, values[0]);
+  }
+
+  // 2. Test invalid values (should be merged back in correct order, no
+  // mutation).
+  {
+    // Construct a wire format with: [valid (BAR), invalid (12345), valid (FOO)]
+    // repeated_nested_enum has field number 51.
+    // Tag: 51 << 3 | 0 (varint) = 408 (0x198), varint: 0x98 0x03
+    // BAR (1): Tag, Value 1
+    // 12345: Tag, Value 12345 (varint: 0xb9 0x60)
+    // FOO (0): Tag, Value 0
+    char buf[64];
+    char* ptr = buf;
+
+    // BAR
+    *ptr++ = (char)0x98;
+    *ptr++ = (char)0x03;
+    *ptr++ = 1;
+
+    // 12345
+    *ptr++ = (char)0x98;
+    *ptr++ = (char)0x03;
+    *ptr++ = (char)0xb9;
+    *ptr++ = (char)0x60;
+
+    // FOO
+    *ptr++ = (char)0x98;
+    *ptr++ = (char)0x03;
+    *ptr++ = 0;
+
+    size_t len = ptr - buf;
+
+    upb_test_convert_Proto2EnumMessage* msg =
+        upb_test_convert_Proto2EnumMessage_new(arena.ptr());
+    upb_DecodeStatus decode_status =
+        upb_Decode(buf, len, UPB_UPCAST(msg), src_mt, nullptr, 0, arena.ptr());
+    ASSERT_EQ(kUpb_DecodeStatus_Ok, decode_status);
+
+    // Verify source state: known has [BAR, FOO], unknown has [12345]
+    size_t count;
+    const int* values =
+        upb_test_convert_Proto2EnumMessage_repeated_nested_enum(msg, &count);
+    ASSERT_EQ(2, count);
+    EXPECT_EQ(upb_test_convert_Proto2EnumMessage_BAR, values[0]);
+    EXPECT_EQ(upb_test_convert_Proto2EnumMessage_FOO, values[1]);
+
+    // Convert to open destination.
+    const upb_Message* dst_msg = upb_Message_Convert(
+        UPB_UPCAST(msg), src_mt, dst_mt, nullptr, arena.ptr());
+    ASSERT_NE(dst_msg, nullptr);
+    const protobuf_test_messages_proto3_TestAllTypesProto3* dst =
+        (const protobuf_test_messages_proto3_TestAllTypesProto3*)dst_msg;
+
+    // Verify destination state: should have [BAR, 12345, FOO] in correct order!
+    const int* dst_values =
+        protobuf_test_messages_proto3_TestAllTypesProto3_repeated_nested_enum(
+            dst, &count);
+    ASSERT_EQ(3, count);
+    EXPECT_EQ(protobuf_test_messages_proto3_TestAllTypesProto3_BAR,
+              dst_values[0]);
+    EXPECT_EQ(protobuf_test_messages_proto3_TestAllTypesProto3_FOO,
+              dst_values[1]);
+    EXPECT_EQ(12345, dst_values[2]);
+
+    // CRITICAL: Verify source was NOT mutated!
+    const int* src_values_post =
+        upb_test_convert_Proto2EnumMessage_repeated_nested_enum(msg, &count);
+    ASSERT_EQ(2, count);
+    EXPECT_EQ(upb_test_convert_Proto2EnumMessage_BAR, src_values_post[0]);
+    EXPECT_EQ(upb_test_convert_Proto2EnumMessage_FOO, src_values_post[1]);
+  }
 }
 
 TEST(ConvertTest, OpenToClosedExtensionEnum) {
