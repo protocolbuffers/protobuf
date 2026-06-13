@@ -75,12 +75,12 @@ class Context final {
   const Options& options() { return options_; }
   io::Printer& printer() { return printer_; }
 
-  inline std::string GetLayoutIndex(const FieldDescriptor* field) {
+  std::string GetLayoutIndex(const FieldDescriptor* field) {
     return absl::StrCat(
         upb::generator::FindBaseFieldDef(pool_, field).layout_index());
   }
 
-  inline int GetLayoutSize(const Descriptor* descriptor) {
+  int GetLayoutSize(const Descriptor* descriptor) {
     return upb::generator::FindMessageDef(pool_, descriptor)
         .mini_table()
         ->UPB_PRIVATE(size);
@@ -92,7 +92,7 @@ class Context final {
   Context& operator=(Context&&) = delete;
 
  private:
-  inline void BuildDefPool(const FileDescriptor* file) {
+  void BuildDefPool(const FileDescriptor* file) {
     upb::generator::AddFile(file, &pool_);
   }
 
