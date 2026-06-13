@@ -1525,16 +1525,22 @@ const char* EpsCopyInputStream::ReadPackedFixed(const char* ptr, Arena* arena,
   int nbytes = BytesAvailable(ptr);
   while (size > nbytes) {
     int num = nbytes / sizeof(T);
-    int old_entries = out->size();
-    out->ReserveWithArena(arena, old_entries + num);
     int block_size = num * sizeof(T);
-    auto dst = out->AddNAlreadyReserved(num);
+    // Only reserve/write when there is at least one complete element in this
+    // buffer chunk.  When num==0 the AddNAlreadyReserved call would return a
+    // null pointer (uninitialized RepeatedField), making the memcpy UB even
+    // though block_size is 0 (C11 §7.1.4, __nonnull).
+    if (num > 0) {
+      int old_entries = out->size();
+      out->ReserveWithArena(arena, old_entries + num);
+      auto dst = out->AddNAlreadyReserved(num);
 #ifdef ABSL_IS_LITTLE_ENDIAN
-    std::memcpy(dst, ptr, block_size);
+      std::memcpy(dst, ptr, block_size);
 #else
-    for (int i = 0; i < num; i++)
-      dst[i] = UnalignedLoad<T>(ptr + i * sizeof(T));
+      for (int i = 0; i < num; i++)
+        dst[i] = UnalignedLoad<T>(ptr + i * sizeof(T));
 #endif
+    }
     size -= block_size;
     if (limit_ <= kSlopBytes) return nullptr;
     ptr = Next();
