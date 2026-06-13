@@ -166,7 +166,7 @@ class PROTOBUF_EXPORT WireFormatLite {
       FieldType type);
 
   // Given a FieldDescriptor::Type return its WireType
-  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD static inline WireFormatLite::WireType
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD static WireFormatLite::WireType
   WireTypeForFieldType(WireFormatLite::FieldType type) {
     return kWireTypeForFieldType[type];
   }
@@ -334,7 +334,7 @@ class PROTOBUF_EXPORT WireFormatLite {
       io::CodedInputStream* input, MessageType* value);
 
   template <typename MessageType>
-  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD static inline bool ReadMessageNoVirtual(
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD static bool ReadMessageNoVirtual(
       io::CodedInputStream* input, MessageType* value) {
     return ReadMessage(input, value);
   }
@@ -749,8 +749,7 @@ inline WireFormatLite::CppType WireFormatLite::FieldTypeToCppType(
   return kFieldTypeToCppTypeMap[type];
 }
 
-constexpr inline uint32_t WireFormatLite::MakeTag(int field_number,
-                                                  WireType type) {
+constexpr uint32_t WireFormatLite::MakeTag(int field_number, WireType type) {
   return GOOGLE_PROTOBUF_WIRE_FORMAT_MAKE_TAG(field_number, type);
 }
 
