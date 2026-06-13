@@ -1,0 +1,20 @@
+diff -urN a/absl/base/internal/direct_mmap.h b/absl/base/internal/direct_mmap.h
+--- a/absl/base/internal/direct_mmap.h	2026-06-11 03:21:29.149338853 +0000
++++ b/absl/base/internal/direct_mmap.h	2026-06-11 03:21:29.153101823 +0000
+@@ -100,10 +100,16 @@
+   return __mmap2(start, length, prot, flags, fd,
+                  static_cast<size_t>(offset / pagesize));
+ #else
++#ifdef __i386__
++  return reinterpret_cast<void*>(
++      syscall(192, start, length, prot, flags, fd,
++              static_cast<unsigned long>(offset / pagesize)));
++#else
+   return reinterpret_cast<void*>(
+       syscall(SYS_mmap2, start, length, prot, flags, fd,
+               static_cast<unsigned long>(offset / pagesize)));  // NOLINT
+ #endif
++#endif
+ #elif defined(__s390x__)
+   // On s390x, mmap() arguments are passed in memory.
+   unsigned long buf[6] = {reinterpret_cast<unsigned long>(start),  // NOLINT

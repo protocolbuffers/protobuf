@@ -72,10 +72,10 @@ index aec2544..210d942 100644
          strip_include_prefix = "/src",
 diff --git a/utf8_range.patch b/utf8_range.patch
 new file mode 100644
-index 0000000..d45bcb6
+index 0000000..a8e7b0d
 --- /dev/null
 +++ b/utf8_range.patch
-@@ -0,0 +1,14 @@
+@@ -0,0 +1,26 @@
 +diff --git a/BUILD.bazel b/BUILD.bazel
 +index aa98b84..5882efe 100644
 +--- a/BUILD.bazel
@@ -90,3 +90,15 @@ index 0000000..d45bcb6
 + package(
 +     default_visibility = ["//visibility:public"],
 + )
++diff --git a/utf8_validity.cc b/utf8_validity.cc
++index db81199..95e8450 100644
++--- a/utf8_validity.cc
+++++ b/utf8_validity.cc
++@@ -21,6 +21,7 @@
++ #include <cstdint>
++ 
++ #include "absl/strings/ascii.h"
+++#include <cstring>
++ #include "absl/strings/string_view.h"
++ 
++ #ifdef __SSE4_1__
