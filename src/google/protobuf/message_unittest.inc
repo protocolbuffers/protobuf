@@ -21,6 +21,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <limits>
+#include <memory>
 #include <string>
 #include <type_traits>
 
@@ -877,6 +878,48 @@ TEST(MESSAGE_TEST_NAME, DynamicCastMessage) {
                                  test_all_types_pointer_const_ref));
 }
 
+TEST(MESSAGE_TEST_NAME, DynamicCastMessageLiteSharedPtrs) {
+  auto test_all_types = std::make_shared<UNITTEST::TestAllTypes>();
+
+  std::shared_ptr<const MessageLite> test_all_types_const_shared_ptr =
+      test_all_types;
+  EXPECT_EQ(DynamicCastMessage<UNITTEST::TestAllTypes>(
+                test_all_types_const_shared_ptr),
+            test_all_types);
+  EXPECT_EQ(DynamicCastMessage<UNITTEST::TestRequired>(
+                test_all_types_const_shared_ptr),
+            nullptr);
+
+  std::shared_ptr<MessageLite> test_all_types_shared_ptr = test_all_types;
+  EXPECT_EQ(
+      DynamicCastMessage<UNITTEST::TestAllTypes>(test_all_types_shared_ptr),
+      test_all_types);
+  EXPECT_EQ(
+      DynamicCastMessage<UNITTEST::TestRequired>(test_all_types_shared_ptr),
+      nullptr);
+}
+
+TEST(MESSAGE_TEST_NAME, DynamicCastMessageSharedPtrs) {
+  auto test_all_types = std::make_shared<UNITTEST::TestAllTypes>();
+
+  std::shared_ptr<const Message> test_all_types_const_shared_ptr =
+      test_all_types;
+  EXPECT_EQ(DynamicCastMessage<UNITTEST::TestAllTypes>(
+                test_all_types_const_shared_ptr),
+            test_all_types);
+  EXPECT_EQ(DynamicCastMessage<UNITTEST::TestRequired>(
+                test_all_types_const_shared_ptr),
+            nullptr);
+
+  std::shared_ptr<Message> test_all_types_shared_ptr = test_all_types;
+  EXPECT_EQ(
+      DynamicCastMessage<UNITTEST::TestAllTypes>(test_all_types_shared_ptr),
+      test_all_types);
+  EXPECT_EQ(
+      DynamicCastMessage<UNITTEST::TestRequired>(test_all_types_shared_ptr),
+      nullptr);
+}
+
 TEST(MESSAGE_TEST_NAME, DynamicCastMessageInvalidReferenceType) {
   UNITTEST::TestAllTypes test_all_types;
   const MessageLite& test_all_types_pointer_const_ref = test_all_types;
@@ -917,6 +960,34 @@ TEST(MESSAGE_TEST_NAME, DownCastMessageValidType) {
                                  test_all_types_pointer_const_ref));
 }
 
+TEST(MESSAGE_TEST_NAME, DownCastMessageLiteSharedPtrs) {
+  auto test_all_types = std::make_shared<UNITTEST::TestAllTypes>();
+
+  std::shared_ptr<const MessageLite> test_all_types_const_shared_ptr =
+      test_all_types;
+  EXPECT_EQ(
+      DownCastMessage<UNITTEST::TestAllTypes>(test_all_types_const_shared_ptr),
+      test_all_types);
+
+  std::shared_ptr<MessageLite> test_all_types_shared_ptr = test_all_types;
+  EXPECT_EQ(DownCastMessage<UNITTEST::TestAllTypes>(test_all_types_shared_ptr),
+            test_all_types);
+}
+
+TEST(MESSAGE_TEST_NAME, DownCastMessageSharedPtrs) {
+  auto test_all_types = std::make_shared<UNITTEST::TestAllTypes>();
+
+  std::shared_ptr<const Message> test_all_types_const_shared_ptr =
+      test_all_types;
+  EXPECT_EQ(
+      DownCastMessage<UNITTEST::TestAllTypes>(test_all_types_const_shared_ptr),
+      test_all_types);
+
+  std::shared_ptr<Message> test_all_types_shared_ptr = test_all_types;
+  EXPECT_EQ(DownCastMessage<UNITTEST::TestAllTypes>(test_all_types_shared_ptr),
+            test_all_types);
+}
+
 TEST(MESSAGE_TEST_NAME, DownCastMessageInvalidPointerType) {
   UNITTEST::TestAllTypes test_all_types;
 
@@ -936,6 +1007,28 @@ TEST(MESSAGE_TEST_NAME, DownCastMessageInvalidReferenceType) {
   ASSERT_DEBUG_DEATH(
       (void)DownCastMessage<UNITTEST::TestRequired>(test_all_types_ref),
       absl::StrCat("Cannot downcast ", test_all_types.GetTypeName(), " to ",
+                   UNITTEST::TestRequired::default_instance().GetTypeName()));
+}
+
+TEST(MESSAGE_TEST_NAME, DownCastMessageLiteInvalidSharedPtrType) {
+  auto test_all_types = std::make_shared<UNITTEST::TestAllTypes>();
+
+  std::shared_ptr<MessageLite> test_all_types_shared_ptr = test_all_types;
+
+  ASSERT_DEBUG_DEATH(
+      (void)DownCastMessage<UNITTEST::TestRequired>(test_all_types_shared_ptr),
+      absl::StrCat("Cannot downcast ", test_all_types->GetTypeName(), " to ",
+                   UNITTEST::TestRequired::default_instance().GetTypeName()));
+}
+
+TEST(MESSAGE_TEST_NAME, DownCastMessageInvalidSharedPtrType) {
+  auto test_all_types = std::make_shared<UNITTEST::TestAllTypes>();
+
+  std::shared_ptr<Message> test_all_types_shared_ptr = test_all_types;
+
+  ASSERT_DEBUG_DEATH(
+      (void)DownCastMessage<UNITTEST::TestRequired>(test_all_types_shared_ptr),
+      absl::StrCat("Cannot downcast ", test_all_types->GetTypeName(), " to ",
                    UNITTEST::TestRequired::default_instance().GetTypeName()));
 }
 
