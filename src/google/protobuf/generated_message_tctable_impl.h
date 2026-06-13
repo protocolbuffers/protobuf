@@ -718,7 +718,7 @@ class PROTOBUF_EXPORT TcParser final {
   // causes ICEs of gcc 7.5.
   // https://github.com/protocolbuffers/protobuf/issues/13715
   template <typename T>
-  static inline T& RefAt(void* x, size_t offset) {
+  static T& RefAt(void* x, size_t offset) {
     T* target = reinterpret_cast<T*>(static_cast<char*>(x) + offset);
 #if !defined(NDEBUG) && !(defined(_MSC_VER) && defined(_M_IX86))
     // Check the alignment in debug mode, except in 32-bit msvc because it does
@@ -733,7 +733,7 @@ class PROTOBUF_EXPORT TcParser final {
   }
 
   template <typename T>
-  static inline const T& RefAt(const void* x, size_t offset) {
+  static const T& RefAt(const void* x, size_t offset) {
     const T* target =
         reinterpret_cast<const T*>(static_cast<const char*>(x) + offset);
 #if !defined(NDEBUG) && !(defined(_MSC_VER) && defined(_M_IX86))
@@ -763,31 +763,27 @@ class PROTOBUF_EXPORT TcParser final {
                                  RepeatedPtrFieldBase& field, Arena* arena);
 
   template <typename T>
-  static inline const T& GetFieldAtMaybeSplit(const void* x, size_t offset,
-                                              const MessageLite* msg,
-                                              bool is_split) {
+  static const T& GetFieldAtMaybeSplit(const void* x, size_t offset,
+                                       const MessageLite* msg, bool is_split) {
     if (ABSL_PREDICT_TRUE(!is_split)) return RefAt<const T>(x, offset);
     return *RefAt<const T*>(x, offset);
   }
 
   template <typename T>
-  static inline const T& GetRepeatedFieldAt(const void* x, size_t offset,
-                                            const MessageLite* msg,
-                                            bool is_split) {
+  static const T& GetRepeatedFieldAt(const void* x, size_t offset,
+                                     const MessageLite* msg, bool is_split) {
     return GetFieldAtMaybeSplit<T>(x, offset, msg, is_split);
   }
 
-  static inline const UntypedMapBase& GetMapFieldAt(const void* x,
-                                                    size_t offset,
-                                                    const MessageLite* msg) {
+  static const UntypedMapBase& GetMapFieldAt(const void* x, size_t offset,
+                                             const MessageLite* msg) {
     return GetFieldAtMaybeSplit<MapFieldBaseForParse>(x, offset, msg,
                                                       /*is_split=*/false)
         .GetMap();
   }
 
   template <typename T, bool is_split>
-  static inline T& MaybeCreateRepeatedRefAt(void* x, size_t offset,
-                                            MessageLite* msg) {
+  static T& MaybeCreateRepeatedRefAt(void* x, size_t offset, MessageLite* msg) {
     if (!is_split) return RefAt<T>(x, offset);
     void*& ptr = RefAt<void*>(x, offset);
     if (ptr == DefaultRawPtr()) {
@@ -797,20 +793,20 @@ class PROTOBUF_EXPORT TcParser final {
   }
 
   template <typename T, bool is_split>
-  static inline RepeatedField<T>& MaybeCreateRepeatedFieldRefAt(
-      void* x, size_t offset, MessageLite* msg) {
+  static RepeatedField<T>& MaybeCreateRepeatedFieldRefAt(void* x, size_t offset,
+                                                         MessageLite* msg) {
     return MaybeCreateRepeatedRefAt<RepeatedField<T>, is_split>(x, offset, msg);
   }
 
   template <typename T, bool is_split>
-  static inline RepeatedPtrField<T>& MaybeCreateRepeatedPtrFieldRefAt(
+  static RepeatedPtrField<T>& MaybeCreateRepeatedPtrFieldRefAt(
       void* x, size_t offset, MessageLite* msg) {
     return MaybeCreateRepeatedRefAt<RepeatedPtrField<T>, is_split>(x, offset,
                                                                    msg);
   }
 
   template <typename T>
-  static inline T ReadAt(const void* x, size_t offset) {
+  static T ReadAt(const void* x, size_t offset) {
     T out;
     memcpy(&out, static_cast<const char*>(x) + offset, sizeof(T));
     return out;
