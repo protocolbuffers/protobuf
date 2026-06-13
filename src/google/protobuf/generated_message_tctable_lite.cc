@@ -500,6 +500,25 @@ PROTOBUF_NOINLINE const char* TcParser::Error(PROTOBUF_TC_PARAM_NO_DATA_DECL) {
   return nullptr;
 }
 
+constexpr TailCallParseFunc TcParser::kMiniParseTable[] = {
+    &MpFallback,             // FieldKind::kFkNone
+    &MpVarint<false>,        // FieldKind::kFkVarint
+    &MpPackedVarint<false>,  // FieldKind::kFkPackedVarint
+    &MpFixed<false>,         // FieldKind::kFkFixed
+    &MpPackedFixed<false>,   // FieldKind::kFkPackedFixed
+    &MpString<false>,        // FieldKind::kFkString
+    &MpMessage<false>,       // FieldKind::kFkMessage
+    &MpMap<false>,           // FieldKind::kFkMap
+    &Error,                  // kSplitMask | FieldKind::kFkNone
+    &MpVarint<true>,         // kSplitMask | FieldKind::kFkVarint
+    &MpPackedVarint<true>,   // kSplitMask | FieldKind::kFkPackedVarint
+    &MpFixed<true>,          // kSplitMask | FieldKind::kFkFixed
+    &MpPackedFixed<true>,    // kSplitMask | FieldKind::kFkPackedFixed
+    &MpString<true>,         // kSplitMask | FieldKind::kFkString
+    &MpMessage<true>,        // kSplitMask | FieldKind::kFkMessage
+    &MpMap<true>,            // kSplitMask | FieldKind::kFkMap
+};
+
 template <bool export_called_function>
 PROTOBUF_ALWAYS_INLINE const char* TcParser::MiniParse(PROTOBUF_TC_PARAM_DECL) {
   TestMiniParseResult* test_out;
@@ -532,25 +551,6 @@ PROTOBUF_ALWAYS_INLINE const char* TcParser::MiniParse(PROTOBUF_TC_PARAM_DECL) {
   using field_layout::FieldKind;
   auto field_type =
       entry->type_card & (+field_layout::kSplitMask | FieldKind::kFkMask);
-
-  static constexpr TailCallParseFunc kMiniParseTable[] = {
-      &MpFallback,             // FieldKind::kFkNone
-      &MpVarint<false>,        // FieldKind::kFkVarint
-      &MpPackedVarint<false>,  // FieldKind::kFkPackedVarint
-      &MpFixed<false>,         // FieldKind::kFkFixed
-      &MpPackedFixed<false>,   // FieldKind::kFkPackedFixed
-      &MpString<false>,        // FieldKind::kFkString
-      &MpMessage<false>,       // FieldKind::kFkMessage
-      &MpMap<false>,           // FieldKind::kFkMap
-      &Error,                  // kSplitMask | FieldKind::kFkNone
-      &MpVarint<true>,         // kSplitMask | FieldKind::kFkVarint
-      &MpPackedVarint<true>,   // kSplitMask | FieldKind::kFkPackedVarint
-      &MpFixed<true>,          // kSplitMask | FieldKind::kFkFixed
-      &MpPackedFixed<true>,    // kSplitMask | FieldKind::kFkPackedFixed
-      &MpString<true>,         // kSplitMask | FieldKind::kFkString
-      &MpMessage<true>,        // kSplitMask | FieldKind::kFkMessage
-      &MpMap<true>,            // kSplitMask | FieldKind::kFkMap
-  };
   // Just to be sure we got the order right, above.
   static_assert(0 == FieldKind::kFkNone, "Invalid table order");
   static_assert(1 == FieldKind::kFkVarint, "Invalid table order");
@@ -3302,6 +3302,36 @@ const char* TcParser::DiscardEverythingFallback(PROTOBUF_TC_PARAM_DECL) {
     return ptr;
   }
   return UnknownFieldParse(tag, nullptr, ptr, ctx);
+}
+
+template <typename TagType>
+PROTOBUF_ALWAYS_INLINE const char* TcParser::FastMpImpl(
+    PROTOBUF_TC_PARAM_DECL) {
+  if (ABSL_PREDICT_FALSE(data.coded_tag<TagType>() != 0)) {
+    PROTOBUF_DEBUG_COUNTER("TcParser.FastMiniParse_Fail").Inc();
+    PROTOBUF_MUSTTAIL return MiniParse(PROTOBUF_TC_PARAM_NO_DATA_PASS);
+  }
+
+  const uint32_t tag = FastDecodeTag(UnalignedLoad<TagType>(ptr));
+  ptr += sizeof(TagType);
+
+  const size_t function_index = data.function_idx();
+  PROTOBUF_ASSUME(function_index < 16);
+  const auto func = kMiniParseTable[function_index];
+
+  data.data = uint64_t{data.entry_offset()} << 32 | tag;
+
+  PROTOBUF_MUSTTAIL return func(PROTOBUF_TC_PARAM_PASS);
+}
+
+const char* TcParser::FastMiniParse1(PROTOBUF_TC_PARAM_DECL) {
+  PROTOBUF_DEBUG_COUNTER("TcParser.FastMiniParse1").Inc();
+  PROTOBUF_MUSTTAIL return FastMpImpl<uint8_t>(PROTOBUF_TC_PARAM_PASS);
+}
+
+const char* TcParser::FastMiniParse2(PROTOBUF_TC_PARAM_DECL) {
+  PROTOBUF_DEBUG_COUNTER("TcParser.FastMiniParse2").Inc();
+  PROTOBUF_MUSTTAIL return FastMpImpl<uint16_t>(PROTOBUF_TC_PARAM_PASS);
 }
 
 }  // namespace internal

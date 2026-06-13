@@ -1195,9 +1195,8 @@ class PROTOBUF_EXPORT Reflection final {
   }
 
   const TcParseTableBase* CreateTcParseTable() const;
-  void PopulateTcParseFastEntries(
-      const internal::TailCallTableInfo& table_info,
-      TcParseTableBase::FastFieldEntry* fast_entries) const;
+  void PopulateTcParseFastEntries(const internal::TailCallTableInfo& table_info,
+                                  TcParseTableBase* tc_table) const;
   void PopulateTcParseEntries(internal::TailCallTableInfo& table_info,
                               TcParseTableBase::FieldEntry* entries) const;
   void PopulateTcParseFieldAux(const internal::TailCallTableInfo& table_info,

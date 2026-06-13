@@ -628,7 +628,24 @@ void ParseFunctionGenerator::GenerateFastFieldEntries(io::Printer* p) {
                {"coded_tag", nonfield->coded_tag},
                {"nonfield_info", nonfield->nonfield_info}},
               R"cc(
-                {$target$, {$coded_tag$, $nonfield_info$}},
+                {$target$, {$coded_tag$, ::uint16_t{$nonfield_info$}}},
+              )cc");
+    } else if (auto* mp_field = info.AsMpField()) {
+      {
+        // TODO: refactor this to use Emit.
+        Formatter format(p, variables_);
+        PrintFieldComment(format, mp_field->field, options_);
+      }
+      p->Emit({{"target", TcParseFunctionName(mp_field->func)},
+               {"coded_tag", mp_field->coded_tag},
+               {"function_index", mp_field->function_index},
+               {"index", mp_field->field_index}},
+              R"cc(
+                {$target$,
+                 {$coded_tag$, ::uint8_t{$function_index$},
+                  ::uint32_t{
+                      PROTOBUF_FIELD_OFFSET(ParseTableT_, field_entries) +
+                      sizeof($pbi$::TcParseTableBase::FieldEntry) * $index$}}},
               )cc");
     } else if (auto* as_field = info.AsField()) {
       {
