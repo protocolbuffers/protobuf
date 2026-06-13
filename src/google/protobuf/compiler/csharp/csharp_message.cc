@@ -8,18 +8,24 @@
 #include "google/protobuf/compiler/csharp/csharp_message.h"
 
 #include <algorithm>
+#include <cstdint>
+#include <memory>
 #include <string>
+#include <vector>
 
 #include "absl/container/flat_hash_map.h"
 #include "absl/log/absl_log.h"
 #include "absl/strings/str_cat.h"
+#include "absl/strings/string_view.h"
 #include "google/protobuf/compiler/csharp/csharp_doc_comment.h"
 #include "google/protobuf/compiler/csharp/csharp_enum.h"
 #include "google/protobuf/compiler/csharp/csharp_field_base.h"
 #include "google/protobuf/compiler/csharp/csharp_generator.h"
 #include "google/protobuf/compiler/csharp/csharp_helpers.h"
 #include "google/protobuf/compiler/csharp/csharp_options.h"
+#include "google/protobuf/compiler/csharp/csharp_source_generator_base.h"
 #include "google/protobuf/compiler/csharp/names.h"
+#include "google/protobuf/csharp/google/protobuf/c_sharp_features.pb.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/io/printer.h"
