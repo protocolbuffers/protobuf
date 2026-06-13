@@ -1,0 +1,7 @@
+syntax = "proto3";
+
+package upb.mini_table;
+
+message TestMessage3 {
+  int32 value = 1;
+}

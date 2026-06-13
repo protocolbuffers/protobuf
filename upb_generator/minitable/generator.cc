@@ -9,6 +9,7 @@
 
 #include <cstddef>
 #include <cstdint>
+#include <cstdio>
 #include <string>
 #include <utility>
 #include <vector>
@@ -33,6 +34,7 @@
 #include "upb_generator/file_layout.h"
 #include "upb_generator/minitable/names.h"
 #include "upb_generator/minitable/names_internal.h"
+#include "util/hash/farmhash_fingerprint.h"
 
 // Must be last.
 #include "upb/port/def.inc"
@@ -564,6 +566,44 @@ void WriteMiniTableMultipleSources(
         context->Open(MultipleSourceFilename(file, "extensions", &i)));
     ABSL_CHECK(stream->WriteCord(absl::Cord(output.output())));
   }
+}
+
+void WriteRegistrySource(const DefPoolPair& pools, upb::FileDefPtr file,
+                         const MiniTableOptions& options, Output& output) {
+  output(FileWarning(file.name()));
+  output(
+      "#include <stddef.h>\n"
+      "#include \"upb/mini_table/minitable_registry.h\"\n"
+      "\n"
+      "// Must be last.\n"
+      "#include \"upb/port/def.inc\"\n"
+      "\n");
+
+  std::vector<upb::MessageDefPtr> messages = SortedMessages(file);
+  std::vector<upb::EnumDefPtr> enums = SortedEnums(file, kClosedEnums);
+
+  for (auto message : messages) {
+    uint64_t hash =
+        farmhash::Fingerprint64(absl::string_view(message.full_name()));
+    std::string hash_str = absl::StrCat("h", absl::Hex(hash, absl::kZeroPad16));
+    output("extern const struct upb_MiniTable $0;\n", MessageVarName(message));
+    output("UPB_LINKARR_APPEND_MINITABLE($0)\n", hash_str);
+    output("const upb_MiniTableEntry $0_entry = {$1ULL, &$0};\n\n",
+           MessageVarName(message), hash);
+  }
+
+  for (const auto e : enums) {
+    uint64_t hash = farmhash::Fingerprint64(absl::string_view(e.full_name()));
+    std::string hash_str = absl::StrCat("h", absl::Hex(hash, absl::kZeroPad16));
+    output("extern const struct upb_MiniTableEnum $0;\n", EnumVarName(e));
+    output("UPB_LINKARR_APPEND_MINITABLE($0)\n", hash_str);
+    output(
+        "const upb_MiniTableEntry $0_entry = {$1ULL, (const struct "
+        "upb_MiniTable*)&$0};\n\n",
+        EnumVarName(e), hash);
+  }
+
+  output("#include \"upb/port/undef.inc\"\n");
 }
 
 }  // namespace generator

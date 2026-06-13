@@ -26,6 +26,11 @@ load(
 
 package(default_applicable_licenses = ["//:license"])
 
+exports_files(
+    ["upb_minitable_registry.lds"],
+    visibility = ["//visibility:public"],
+)
+
 cc_library(
     name = "mini_table",
     srcs = [
@@ -45,11 +50,44 @@ cc_library(
     ],
     copts = UPB_DEFAULT_COPTS,
     features = UPB_DEFAULT_FEATURES,
+    tags = [
+        "dummy_force_rebuild",
+    ],
     visibility = ["//visibility:public"],
     deps = [
         ":internal",
         "//upb/base",
         "//upb/hash",
+        "//upb/mem",
+        "//upb/port",
+    ],
+)
+
+cc_library(
+    name = "minitable_registry",
+    srcs = [
+        "minitable_registry.c",
+    ],
+    hdrs = [
+        "minitable_registry.h",
+    ],
+    additional_linker_inputs = [
+        ":upb_minitable_registry.lds",
+    ],
+    copts = UPB_DEFAULT_COPTS,
+    features = UPB_DEFAULT_FEATURES,
+    linkopts = [
+        "-Wl,-T,$(location :upb_minitable_registry.lds)",
+    ],
+    target_compatible_with = select({
+        "@platforms//os:linux": [],
+        "@platforms//os:android": [],
+        "//conditions:default": ["@platforms//:incompatible"],
+    }),
+    visibility = ["//visibility:public"],
+    deps = [
+        ":internal",
+        ":mini_table",
         "//upb/mem",
         "//upb/port",
     ],
@@ -173,6 +211,74 @@ proto_library(
 upb_minitable_proto_library(
     name = "generated_registry_empty_test_upb_minitable_proto",
     deps = [":generated_registry_empty_test_proto"],
+)
+
+proto_library(
+    name = "minitable_registry_test_proto",
+    srcs = ["minitable_registry_test.proto"],
+    features = ["upb_minitable_registry"],
+)
+
+upb_minitable_proto_library(
+    name = "minitable_registry_test_upb_minitable_proto",
+    deps = [":minitable_registry_test_proto"],
+)
+
+proto_library(
+    name = "minitable_registry_test1_proto",
+    srcs = ["minitable_registry_test1.proto"],
+    features = ["upb_minitable_registry"],
+)
+
+upb_minitable_proto_library(
+    name = "minitable_registry_test1_upb_minitable_proto",
+    deps = [":minitable_registry_test1_proto"],
+)
+
+proto_library(
+    name = "minitable_registry_test2_proto",
+    srcs = ["minitable_registry_test2.proto"],
+    features = ["upb_minitable_registry"],
+    deps = [":minitable_registry_test1_proto"],
+)
+
+upb_minitable_proto_library(
+    name = "minitable_registry_test2_upb_minitable_proto",
+    deps = [":minitable_registry_test2_proto"],
+)
+
+proto_library(
+    name = "minitable_registry_test3_proto",
+    srcs = ["minitable_registry_test3.proto"],
+    features = ["upb_minitable_registry"],
+)
+
+upb_minitable_proto_library(
+    name = "minitable_registry_test3_upb_minitable_proto",
+    deps = [":minitable_registry_test3_proto"],
+)
+
+cc_test(
+    name = "minitable_registry_test",
+    srcs = ["minitable_registry_test.cc"],
+    features = ["-reversed_init_array"],
+    linkstatic = 1,
+    target_compatible_with = select({
+        "@platforms//os:linux": [],
+        "@platforms//os:android": [],
+        "//conditions:default": ["@platforms//:incompatible"],
+    }),
+    deps = [
+        ":mini_table",
+        ":minitable_registry",
+        ":minitable_registry_test1_upb_minitable_proto",
+        ":minitable_registry_test2_upb_minitable_proto",
+        ":minitable_registry_test3_upb_minitable_proto",
+        "//util/hash:farmhash_fingerprint",
+        "@abseil-cpp//absl/strings",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
+    ],
 )
 
 proto_library(

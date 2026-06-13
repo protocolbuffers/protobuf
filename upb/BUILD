@@ -42,6 +42,12 @@ config_setting(
     visibility = UPB_CONFIG_VISIBILITY,
 )
 
+config_setting(
+    name = "android",
+    constraint_values = ["@platforms//os:android"],
+    visibility = UPB_CONFIG_VISIBILITY,
+)
+
 bool_flag(
     name = "fasttable_enabled",
     build_setting_default = False,

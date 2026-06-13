@@ -37,9 +37,21 @@ std::string SourceFilename(upb::FileDefPtr file) {
   return StripExtension(file.name()) + ".upb_minitable.c";
 }
 
+std::string RegistrySourceFilename(upb::FileDefPtr file) {
+  return StripExtension(file.name()) + ".upb_registry.c";
+}
+
 void GenerateFile(const DefPoolPair& pools, upb::FileDefPtr file,
                   const MiniTableOptions& options,
                   google::protobuf::compiler::GeneratorContext* context) {
+  if (options.generate_registry_only) {
+    Output c_output;
+    WriteRegistrySource(pools, file, options, c_output);
+    auto stream = absl::WrapUnique(context->Open(RegistrySourceFilename(file)));
+    ABSL_CHECK(stream->WriteCord(absl::Cord(c_output.output())));
+    return;
+  }
+
   Output h_output;
   WriteMiniTableHeader(pools, file, options, h_output);
   {
@@ -50,6 +62,7 @@ void GenerateFile(const DefPoolPair& pools, upb::FileDefPtr file,
 
   Output c_output;
   WriteMiniTableSource(pools, file, options, c_output);
+
   {
     auto stream = absl::WrapUnique(context->Open(SourceFilename(file)));
     ABSL_CHECK(stream->WriteCord(absl::Cord(c_output.output())));
@@ -69,6 +82,8 @@ bool ParseOptions(MiniTableOptions* options, absl::string_view parameter,
       options->strip_nonfunctional_codegen = true;
     } else if (pair.first == "one_output_per_message") {
       options->one_output_per_message = true;
+    } else if (pair.first == "generate_registry_only") {
+      options->generate_registry_only = true;
     } else {
       *error = absl::Substitute("Unknown parameter: $0", pair.first);
       return false;

@@ -670,6 +670,16 @@ Error, UINTPTR_MAX is undefined
 
 #endif
 
+#if defined(__ELF__) && !defined(UPB_NO_LINKTIME_SORT)
+#define UPB_LINKARR_SORTED 1
+#define UPB_LINKARR_APPEND_MINITABLE(hash)                     \
+  __attribute__((section("linkarr_upb_AllMiniTables_" #hash))) \
+  UPB_LINKARR_ATTR UPB_NO_SANITIZE_ADDRESS
+#else
+#define UPB_LINKARR_SORTED 0
+#define UPB_LINKARR_APPEND_MINITABLE(hash) UPB_LINKARR_APPEND(upb_AllMiniTables)
+#endif
+
 // Workaround for https://github.com/llvm/llvm-project/issues/167577 until it's
 // fixed.  Some function must exist for the constructor to work properly.
 // TODO Remove this or gate it on a future version of clang.
@@ -687,14 +697,14 @@ Error, UINTPTR_MAX is undefined
   __attribute__((weak, visibility("hidden"), constructor)) void UPB_PRIVATE( \
       name)(void)
 #elif defined(_MSC_VER)
-/*
- * See: https://stackoverflow.com/questions/1113409
- *
- * The /include pragma suggested in the link above doesn't work in our case
- * because it requires globally unique names. We need a different solution
- * to prevent optimizers from removing the constructor. Our solution is to
- * create a dummy exported weak symbol that prevent this stripping.
- */
+  /*
+   * See: https://stackoverflow.com/questions/1113409
+   *
+   * The /include pragma suggested in the link above doesn't work in our case
+   * because it requires globally unique names. We need a different solution
+   * to prevent optimizers from removing the constructor. Our solution is to
+   * create a dummy exported weak symbol that prevent this stripping.
+   */
 #pragma section(".CRT$XCT", read)
 #define UPB_CONSTRUCTOR(name, unique_name)                                   \
   static void __cdecl UPB_PRIVATE(name)(void);                               \
@@ -705,7 +715,7 @@ Error, UINTPTR_MAX is undefined
   static void __cdecl UPB_PRIVATE(name)(void)
 
 #else
-// No constructor support, nothing we can do except not break builds.
+  // No constructor support, nothing we can do except not break builds.
 #define UPB_CONSTRUCTOR(name, unique_name) static void UPB_PRIVATE(name)(void)
 #endif
 
@@ -744,9 +754,9 @@ Error, UINTPTR_MAX is undefined
 
 #elif defined(__ELF__) || defined(__wasm__)
 
-// On ELF, weak aliases work properly, so we can have all weak MiniTables point
-// to the same empty singleton MiniTable. This reduces code size if many
-// MiniTables are tree shaken.
+  // On ELF, weak aliases work properly, so we can have all weak MiniTables
+  // point to the same empty singleton MiniTable. This reduces code size if many
+  // MiniTables are tree shaken.
 #define UPB_WEAK_SINGLETON_PLACEHOLDER_MINITABLE()               \
   __attribute__((weak))                                          \
   const upb_MiniTable kUpb_WeakSingletonPlaceholderMiniTable = { \

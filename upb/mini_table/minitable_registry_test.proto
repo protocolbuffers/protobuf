@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+package upb.mini_table;
+
+message TestMessage1 {
+  string field1 = 1;
+  int32 field2 = 2;
+}
+
+message TestMessage2 {
+  repeated TestMessage1 field1 = 1;
+}
+message TestMessage3 {
+  int32 value = 1;
+}
+// touch 9
