@@ -525,28 +525,28 @@ class _Parser(object):
     Raises:
       ParseError: In case of convert problems.
     """
-    # Increment recursion depth at message entry. The max_recursion_depth limit
-    # is exclusive: a depth value equal to max_recursion_depth will trigger an
-    # error. For example, with max_recursion_depth=5, nesting up to depth 4 is
-    # allowed, but attempting depth 5 raises ParseError.
+    # Increment recursion depth at message entry. A depth greater than
+    # max_recursion_depth raises ParseError.
     self.recursion_depth += 1
-    if self.recursion_depth > self.max_recursion_depth:
-      raise ParseError(
-          'Message too deep. Max recursion depth is {0}'.format(
-              self.max_recursion_depth
-          )
-      )
-    message_descriptor = message.DESCRIPTOR
-    full_name = message_descriptor.full_name
-    if not path:
-      path = message_descriptor.name
-    if _IsWrapperMessage(message_descriptor):
-      self._ConvertWrapperMessage(value, message, path)
-    elif full_name in _WKTJSONMETHODS:
-      methodcaller(_WKTJSONMETHODS[full_name][1], value, message, path)(self)
-    else:
-      self._ConvertFieldValuePair(value, message, path)
-    self.recursion_depth -= 1
+    try:
+      if self.recursion_depth > self.max_recursion_depth:
+        raise ParseError(
+            'Message too deep. Max recursion depth is {0}'.format(
+                self.max_recursion_depth
+            )
+        )
+      message_descriptor = message.DESCRIPTOR
+      full_name = message_descriptor.full_name
+      if not path:
+        path = message_descriptor.name
+      if _IsWrapperMessage(message_descriptor):
+        self._ConvertWrapperMessage(value, message, path)
+      elif full_name in _WKTJSONMETHODS:
+        methodcaller(_WKTJSONMETHODS[full_name][1], value, message, path)(self)
+      else:
+        self._ConvertFieldValuePair(value, message, path)
+    finally:
+      self.recursion_depth -= 1
 
   def _ConvertFieldValuePair(self, js, message, path):
     """Convert field value pairs into regular message.
@@ -755,7 +755,7 @@ class _Parser(object):
     else:
       del value['@type']
       try:
-        self._ConvertFieldValuePair(value, sub_message, path)
+        self.ConvertMessage(value, sub_message, path)
       finally:
         value['@type'] = type_url
     # Sets Any message
