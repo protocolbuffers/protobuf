@@ -754,6 +754,9 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8)
   //  function.
   //  - It allows the optimizer to see the constructors called to
   //  further optimize the instantiation.
+  static void* PROTOBUF_NONNULL
+  AllocateForMessage(Arena* PROTOBUF_NULLABLE arena, size_t size);
+
   template <typename T>
   static void* PROTOBUF_NONNULL
   DefaultConstruct(Arena* PROTOBUF_NULLABLE arena);
@@ -1150,8 +1153,7 @@ Arena::DefaultConstruct(Arena* PROTOBUF_NULLABLE arena) {
     }
   } else {
     static_assert(is_destructor_skippable<T>::value);
-    void* mem = arena != nullptr ? arena->AllocateAligned(sizeof(T))
-                                 : internal::Allocate(sizeof(T));
+    void* mem = AllocateForMessage(arena, sizeof(T));
     if constexpr (internal::HasDeprecatedArenaConstructor<T>()) {
       return new (mem) T(internal::InternalVisibility(), arena);
     } else {
@@ -1179,12 +1181,7 @@ PROTOBUF_NOINLINE void* PROTOBUF_NONNULL Arena::CopyConstruct(
     internal::Prefetch<kPrefetchOpts, T, T>(typed_from);
   }
   static_assert(is_destructor_skippable<T>::value, "");
-  void* mem;
-  if (arena != nullptr) {
-    mem = arena->AllocateAligned(sizeof(T));
-  } else {
-    mem = internal::Allocate(sizeof(T));
-  }
+  void* mem = AllocateForMessage(arena, sizeof(T));
   return new (mem) T(arena, *typed_from);
 }
 
