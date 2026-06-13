@@ -1,6 +1,6 @@
 #region Copyright notice and license
 // Protocol Buffers - Google's data interchange format
-// Copyright 2015 Google Inc.  All rights reserved.
+// Copyright 2015 Google LLC.  All rights reserved.
 //
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file or at
@@ -913,11 +913,12 @@ namespace Google.Protobuf {
             .ToDictionary(
                 f => f.GetValue(null),
                 f =>
-                    f.GetCustomAttributes<OriginalNameAttribute>()
-                        .FirstOrDefault()
-                        // If the attribute hasn't been applied, fall back to the name of the field.
-                        ?.Name ??
-                    f.Name);
+                {
+                    // If the attribute hasn't been applied, fall back to the name of the field.
+                    // If a custom json name has been provided, prioritize that.
+                    var attr = f.GetCustomAttributes<OriginalNameAttribute>().FirstOrDefault();
+                    return attr?.JsonEnumValueName ?? attr?.Name ?? f.Name;
+                });
       }
     }
   }
