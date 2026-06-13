@@ -2,6 +2,8 @@ syntax = "proto3";
 
 package lower_enum;
 
+// BEGIN RESERVED NAMES
+// @see php/update_reserved_words.sh - DO NOT MODIFY THIS LIST MANUALLY
 enum abstract {
   ZERO1 = 0;
 }
@@ -14,240 +16,241 @@ enum array {
 enum as {
   ZERO4 = 0;
 }
-enum break {
+enum bool {
   ZERO5 = 0;
 }
-enum callable {
+enum break {
   ZERO6 = 0;
 }
-enum case {
+enum callable {
   ZERO7 = 0;
 }
-enum catch {
+enum case {
   ZERO8 = 0;
 }
-enum class {
+enum catch {
   ZERO9 = 0;
 }
-enum clone {
+enum class {
   ZERO10 = 0;
 }
-enum const {
+enum clone {
   ZERO11 = 0;
 }
-enum continue {
+enum const {
   ZERO12 = 0;
 }
-enum declare {
+enum continue {
   ZERO13 = 0;
 }
-enum default {
+enum declare {
   ZERO14 = 0;
 }
-enum die {
+enum default {
   ZERO15 = 0;
 }
-enum do {
+enum die {
   ZERO16 = 0;
 }
-enum echo {
+enum do {
   ZERO17 = 0;
 }
-enum else {
+enum echo {
   ZERO18 = 0;
 }
-enum elseif {
+enum else {
   ZERO19 = 0;
 }
-enum empty {
+enum elseif {
   ZERO20 = 0;
 }
-enum enddeclare {
+enum empty {
   ZERO21 = 0;
 }
-enum endfor {
+enum enddeclare {
   ZERO22 = 0;
 }
-enum endforeach {
+enum endfor {
   ZERO23 = 0;
 }
-enum endif {
+enum endforeach {
   ZERO24 = 0;
 }
-enum endswitch {
+enum endif {
   ZERO25 = 0;
 }
-enum endwhile {
+enum endswitch {
   ZERO26 = 0;
 }
-enum eval {
+enum endwhile {
   ZERO27 = 0;
 }
-enum exit {
+enum eval {
   ZERO28 = 0;
 }
-enum extends {
+enum exit {
   ZERO29 = 0;
 }
-enum final {
+enum extends {
   ZERO30 = 0;
 }
-enum finally {
+enum false {
   ZERO31 = 0;
 }
-enum fn {
+enum final {
   ZERO32 = 0;
 }
-enum for {
+enum finally {
   ZERO33 = 0;
 }
-enum foreach {
+enum float {
   ZERO34 = 0;
 }
-enum function {
+enum fn {
   ZERO35 = 0;
 }
-enum global {
+enum for {
   ZERO36 = 0;
 }
-enum goto {
+enum foreach {
   ZERO37 = 0;
 }
-enum if {
+enum function {
   ZERO38 = 0;
 }
-enum implements {
+enum global {
   ZERO39 = 0;
 }
-enum include {
+enum goto {
   ZERO40 = 0;
 }
-enum include_once {
+enum if {
   ZERO41 = 0;
 }
-enum instanceof {
+enum implements {
   ZERO42 = 0;
 }
-enum insteadof {
+enum include {
   ZERO43 = 0;
 }
-enum interface {
+enum include_once {
   ZERO44 = 0;
 }
-enum isset {
+enum instanceof {
   ZERO45 = 0;
 }
-enum list {
+enum insteadof {
   ZERO46 = 0;
 }
-enum match {
+enum int {
   ZERO47 = 0;
 }
-enum namespace {
+enum interface {
   ZERO48 = 0;
 }
-enum new {
+enum isset {
   ZERO49 = 0;
 }
-enum or {
+enum iterable {
   ZERO50 = 0;
 }
-enum parent {
-  ZERO78 = 0;
-}
-enum print {
+enum list {
   ZERO51 = 0;
 }
-enum private {
+enum match {
   ZERO52 = 0;
 }
-enum protected {
+enum mixed {
   ZERO53 = 0;
 }
-enum public {
+enum namespace {
   ZERO54 = 0;
 }
-enum readonly {
-  ZERO80 = 0;
-}
-enum require {
+enum never {
   ZERO55 = 0;
 }
-enum require_once {
+enum new {
   ZERO56 = 0;
 }
-enum return {
+enum null {
   ZERO57 = 0;
 }
-enum self {
-  ZERO79 = 0;
-}
-enum static {
+enum object {
   ZERO58 = 0;
 }
-enum switch {
+enum or {
   ZERO59 = 0;
 }
-enum throw {
+enum parent {
   ZERO60 = 0;
 }
-enum trait {
+enum print {
   ZERO61 = 0;
 }
-enum try {
+enum private {
   ZERO62 = 0;
 }
-enum unset {
+enum protected {
   ZERO63 = 0;
 }
-enum use {
+enum public {
   ZERO64 = 0;
 }
-enum var {
+enum readonly {
   ZERO65 = 0;
 }
-enum while {
+enum require {
   ZERO66 = 0;
 }
-enum xor {
+enum require_once {
   ZERO67 = 0;
 }
-enum yield {
+enum return {
   ZERO68 = 0;
 }
-enum int {
+enum self {
   ZERO69 = 0;
 }
-enum float {
+enum static {
   ZERO70 = 0;
 }
-enum bool {
+enum string {
   ZERO71 = 0;
 }
-enum string {
+enum switch {
   ZERO72 = 0;
 }
-enum true {
+enum throw {
   ZERO73 = 0;
 }
-enum false {
+enum trait {
   ZERO74 = 0;
 }
-enum null {
+enum true {
   ZERO75 = 0;
 }
-enum void {
+enum try {
   ZERO76 = 0;
 }
-enum iterable {
+enum unset {
   ZERO77 = 0;
 }
-enum object {
+enum use {
+  ZERO78 = 0;
+}
+enum var {
+  ZERO79 = 0;
+}
+enum void {
+  ZERO80 = 0;
+}
+enum while {
   ZERO81 = 0;
 }
-enum mixed {
+enum xor {
   ZERO82 = 0;
 }
-enum never {
+enum yield {
   ZERO83 = 0;
 }
+// END RESERVED NAMES
