@@ -290,6 +290,25 @@ void UntypedMapBase::InsertOrReplaceNodes(Arena* arena, NodeBase* list,
   });
 }
 
+NodeBase* UntypedMapBase::AllocNode(Arena* arena, size_t node_size) {
+  ABSL_DCHECK_EQ(arena, this->arena());
+  return static_cast<NodeBase*>(arena == nullptr
+                                    ? Allocate(node_size)
+                                    : arena->AllocateAligned(node_size));
+}
+
+NodeBase** UntypedMapBase::CreateEmptyTable(Arena* arena, map_index_t n) {
+  ABSL_DCHECK_GE(n, kMinTableSize);
+  ABSL_DCHECK_EQ(n & (n - 1), 0u);
+  ABSL_DCHECK_EQ(arena, this->arena());
+  NodeBase** result =
+      arena == nullptr
+          ? static_cast<NodeBase**>(Allocate(n * sizeof(NodeBase*)))
+          : Arena::CreateArray<NodeBase*>(arena, n);
+  memset(result, 0, n * sizeof(result[0]));
+  return result;
+}
+
 }  // namespace internal
 }  // namespace protobuf
 }  // namespace google
