@@ -1,5 +1,13 @@
 load("@build_bazel_apple_support//xcode:xcode_config.bzl", "xcode_config")
 load("@build_bazel_apple_support//xcode:xcode_version.bzl", "xcode_version")
+load("@rules_shell//shell:sh_test.bzl", "sh_test")
+
+sh_test(
+    name = "release_prep_test",
+    srcs = ["workflows/release_prep_test.sh"],
+    data = ["workflows/release_prep.sh"],
+    deps = ["@bazel_tools//tools/bash/runfiles"],
+)
 
 # This information is extracted from the MacOS runner specs located at:
 # https://github.com/actions/runner-images/blob/main/images/macos/macos-14-arm64-Readme.md
