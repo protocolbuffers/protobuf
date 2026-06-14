@@ -392,7 +392,13 @@ PyObject* PyUpb_MapContainer_GetOrCreateWrapper(upb_Map* map,
   ret->ptr.map = map;
   ret->version = 0;
   Py_INCREF(arena);
-  PyUpb_ObjCache_Add(map, &ret->ob_base);
+  if (!PyUpb_ObjCache_Add(map, &ret->ob_base)) {
+    PyObject* cached = PyUpb_ObjCache_Get(map);
+    if (cached) {
+      Py_DECREF(&ret->ob_base);
+      return cached;
+    }
+  }
   return &ret->ob_base;
 }
 

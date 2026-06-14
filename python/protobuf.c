@@ -180,14 +180,31 @@ uintptr_t PyUpb_WeakMap_GetKey(const void* key) {
   return n >> PyUpb_PtrShift;
 }
 
-void PyUpb_WeakMap_Add(PyUpb_WeakMap* map, const void* key, PyObject* py_obj) {
+bool PyUpb_WeakMap_Add(PyUpb_WeakMap* map, const void* key, PyObject* py_obj) {
 #ifdef Py_GIL_DISABLED
   PyUnstable_EnableTryIncRef(py_obj);
 #endif
   FreeThreadingLock(&map->mutex);
+  upb_value val;
+  if (upb_inttable_lookup(&map->table, PyUpb_WeakMap_GetKey(key), &val)) {
+    PyObject* ret = upb_value_getptr(val);
+#ifdef Py_GIL_DISABLED
+    if (PyUnstable_TryIncRef(ret)) {
+      Py_DECREF(ret);
+      FreeThreadingUnlock(&map->mutex);
+      return false;
+    }
+    // Object is deallocating, remove it from the map.
+    upb_inttable_remove(&map->table, PyUpb_WeakMap_GetKey(key), NULL);
+#else
+    FreeThreadingUnlock(&map->mutex);
+    return false;
+#endif
+  }
   upb_inttable_insert(&map->table, PyUpb_WeakMap_GetKey(key),
                       upb_value_ptr(py_obj), map->arena);
   FreeThreadingUnlock(&map->mutex);
+  return true;
 }
 
 void PyUpb_WeakMap_Delete(PyUpb_WeakMap* map, const void* key) {
@@ -286,17 +303,17 @@ static PyUpb_WeakMap* PyUpb_ObjCache_MaybeInstance(void) {
   return state->obj_cache;
 }
 
-void PyUpb_ObjCache_Add(const void* key, PyObject* py_obj) {
+bool PyUpb_ObjCache_Add(const void* key, PyObject* py_obj) {
   PyUpb_WeakMap* cache = PyUpb_ObjCache_MaybeInstance();
   if (!cache) {
-    return;
+    return false;
   }
-  PyUpb_WeakMap_Add(cache, key, py_obj);
+  return PyUpb_WeakMap_Add(cache, key, py_obj);
 }
 
-void PyUpb_KnownObjCache_Add(PyUpb_WeakMap* cache, const void* key,
+bool PyUpb_KnownObjCache_Add(PyUpb_WeakMap* cache, const void* key,
                              PyObject* py_obj) {
-  PyUpb_WeakMap_Add(cache, key, py_obj);
+  return PyUpb_WeakMap_Add(cache, key, py_obj);
 }
 
 void PyUpb_ObjCache_Delete(const void* key) {

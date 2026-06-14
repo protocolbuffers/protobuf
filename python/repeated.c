@@ -167,7 +167,13 @@ PyObject* PyUpb_RepeatedContainer_GetOrCreateWrapper(upb_Array* arr,
   repeated->ptr.arr = arr;
   ret = &repeated->ob_base;
   Py_INCREF(arena);
-  PyUpb_ObjCache_Add(arr, ret);
+  if (!PyUpb_ObjCache_Add(arr, ret)) {
+    PyObject* cached = PyUpb_ObjCache_Get(arr);
+    if (cached) {
+      Py_DECREF(ret);
+      return cached;
+    }
+  }
   return ret;
 }
 
