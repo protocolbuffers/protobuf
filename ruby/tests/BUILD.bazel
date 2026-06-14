@@ -241,6 +241,19 @@ rb_test(
     ],
 )
 
+rb_test(
+    name = "map_test",
+    srcs = ["map_test.rb"],
+    args = [
+        "-Iruby/lib:ruby",
+        "ruby/tests/map_test.rb",
+    ],
+    deps = [
+        "//ruby:protobuf",
+        "@protobuf_bundle",
+    ],
+)
+
 pkg_files(
     name = "dist_files",
     srcs = glob([
