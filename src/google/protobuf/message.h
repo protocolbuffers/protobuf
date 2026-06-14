@@ -98,6 +98,7 @@
 #include <optional>
 #include <string>
 #include <type_traits>
+#include <utility>
 #include <vector>
 
 #include "absl/base/attributes.h"
@@ -1658,6 +1659,49 @@ template <>
   ABSL_DCHECK_EQ(DynamicCastMessage<Message>(from), from)
       << "Cannot downcast " << from->GetTypeName() << " to Message";
   return static_cast<const Message*>(from);
+}
+
+// Specializations to handle smart pointers to `Message`. Without these,
+// `google::protobuf::DynamicCastMessage(std::shared_ptr<Message>)` is ambiguous
+// (`const MessageLite` vs `MessageLite`).
+
+template <typename T>
+PROTOBUF_FUTURE_ADD_EARLY_NODISCARD std::shared_ptr<T> DynamicCastMessage(
+    std::shared_ptr<Message> ptr) {
+  if (auto* res = DynamicCastMessage<T>(ptr.get())) {
+    // Use aliasing constructor to keep the same control block.
+    return std::shared_ptr<T>(std::move(ptr), res);
+  } else {
+    return nullptr;
+  }
+}
+
+template <typename T>
+PROTOBUF_FUTURE_ADD_EARLY_NODISCARD std::shared_ptr<const T> DynamicCastMessage(
+    std::shared_ptr<const Message> ptr) {
+  if (auto* res = DynamicCastMessage<T>(ptr.get())) {
+    // Use aliasing constructor to keep the same control block.
+    return std::shared_ptr<const T>(std::move(ptr), res);
+  } else {
+    return nullptr;
+  }
+}
+
+// Overloads for `std::shared_ptr` to substitute `std::dynamic_pointer_cast`
+template <typename T>
+PROTOBUF_FUTURE_ADD_EARLY_NODISCARD std::shared_ptr<T> DownCastMessage(
+    std::shared_ptr<Message> ptr) {
+  auto* res = DownCastMessage<T>(ptr.get());
+  // Use aliasing constructor to keep the same control block.
+  return std::shared_ptr<T>(std::move(ptr), res);
+}
+
+template <typename T>
+PROTOBUF_FUTURE_ADD_EARLY_NODISCARD std::shared_ptr<const T> DownCastMessage(
+    std::shared_ptr<const Message> ptr) {
+  auto* res = DynamicCastMessage<T>(ptr.get());
+  // Use aliasing constructor to keep the same control block.
+  return std::shared_ptr<const T>(std::move(ptr), res);
 }
 
 // =============================================================================
