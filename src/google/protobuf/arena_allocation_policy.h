@@ -84,7 +84,21 @@ class TaggedAllocationPolicyPtr {
     kUserOwnedInitialBlock = 1,
   };
 
-  static constexpr uintptr_t kTagsMask = 7;
+  // kTagsMask is the union of every flag bit packed into the low bits of the
+  // AllocationPolicy*. When adding a flag, give it its own bit in the enum
+  // above and OR that bit in here, e.g.:
+  //   enum : uintptr_t { kUserOwnedInitialBlock = 1, kNextFlag = 2 };
+  //   static constexpr uintptr_t kTagsMask = kUserOwnedInitialBlock | kNextFlag;
+  // The tagged pointer borrows these bits, so the mask must never reserve more
+  // bits than AllocationPolicy's own alignment guarantees to be zero. That
+  // alignment is 8 on LP64 but only 4 on 32-bit targets (two size_t + two
+  // function pointers), where the block holding the policy may itself be only
+  // 4-byte aligned if the allocator does not over-align. The static_assert
+  // enforces this, and therefore also caps the number of flags at
+  // log2(alignof(AllocationPolicy)): 2 on 32-bit, 3 on LP64.
+  static constexpr uintptr_t kTagsMask = kUserOwnedInitialBlock;
+  static_assert(alignof(AllocationPolicy) > kTagsMask,
+                "Not enough alignment bits to tag AllocationPolicy*");
   static constexpr uintptr_t kPtrMask = ~kTagsMask;
 
   template <uintptr_t kMask>
