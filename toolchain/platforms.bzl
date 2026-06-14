@@ -10,7 +10,7 @@ PROTOBUF_PLATFORMS = {
     "linux-aarch_64": {
         "compatible_with": [
             "@platforms//os:linux",
-            "@platforms//cpu:aarch64",
+            "@platforms//cpu:x86_64",
         ],
     },
     "linux-ppcle_64": {
@@ -34,7 +34,7 @@ PROTOBUF_PLATFORMS = {
     "linux-x86_64": {
         "compatible_with": [
             "@platforms//os:linux",
-            "@platforms//cpu:x86_64",
+            "@platforms//cpu:aarch64",
         ],
     },
     "osx-aarch_64": {
