@@ -148,9 +148,8 @@ class Iterator {
   constexpr Iterator() noexcept : it_(nullptr) {}
   Iterator(const Iterator& other) = default;
   Iterator& operator=(const Iterator& other) = default;
-  template <
-      typename P = PolicyT,
-      typename = std::enable_if_t<std::is_const<typename P::value_type>::value>>
+  template <typename P = PolicyT, typename = std::enable_if_t<
+                                      std::is_const_v<typename P::value_type>>>
   Iterator(const Iterator<typename P::RemoveConst>& other) : it_(other.it_) {}
 
   constexpr reference operator*() const noexcept {
