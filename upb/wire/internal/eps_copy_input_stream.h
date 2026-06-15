@@ -238,6 +238,8 @@ UPB_INLINE bool upb_EpsCopyCapture_End(struct upb_EpsCopyCapture* c,
                                        struct upb_EpsCopyInputStream* e,
                                        const char* ptr, upb_StringView* sv) {
   if (ptr - e->end > e->limit) {
+    sv->data = NULL;
+    sv->size = 0;
     return UPB_PRIVATE(upb_EpsCopyInputStream_ReturnError)(e);
   }
   const char* end = UPB_PRIVATE(upb_EpsCopyInputStream_GetInputPtr)(e, ptr);
