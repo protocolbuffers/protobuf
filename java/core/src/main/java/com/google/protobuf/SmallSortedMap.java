@@ -513,7 +513,6 @@ class SmallSortedMap<K extends FieldSet.FieldDescriptorLite<K>, V> extends Abstr
   private class EntryIterator implements Iterator<Map.Entry<K, V>> {
 
     private int pos = -1;
-    private boolean nextCalledBeforeRemove;
     private Iterator<Map.Entry<K, V>> lazyOverflowIterator;
 
     @Override
@@ -524,7 +523,6 @@ class SmallSortedMap<K extends FieldSet.FieldDescriptorLite<K>, V> extends Abstr
 
     @Override
     public Map.Entry<K, V> next() {
-      nextCalledBeforeRemove = true;
       // Always increment pos so that we know whether the last returned value
       // was from the array or from overflow.
       if (++pos < entriesSize) {
@@ -537,10 +535,6 @@ class SmallSortedMap<K extends FieldSet.FieldDescriptorLite<K>, V> extends Abstr
 
     @Override
     public void remove() {
-      if (!nextCalledBeforeRemove) {
-        throw new IllegalStateException("remove() was called before next()");
-      }
-      nextCalledBeforeRemove = false;
       checkMutable();
 
       if (pos < entriesSize) {
