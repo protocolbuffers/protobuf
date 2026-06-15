@@ -180,7 +180,8 @@ class CodedInputStream;      // coded_stream.h
 class CodedOutputStream;     // coded_stream.h
 }  // namespace io
 namespace python {
-class MapReflectionFriend;  // scalar_map_container.h
+class RepeatedScalarContainerFriend;  // repeated_scalar_container.cc
+class MapReflectionFriend;            // scalar_map_container.h
 class MessageReflectionFriend;
 }  // namespace python
 namespace expr {
@@ -1225,6 +1226,7 @@ class PROTOBUF_EXPORT Reflection final {
   friend class GeneratedMessageReflectionTestHelper;
   friend class python::MapReflectionFriend;
   friend class python::MessageReflectionFriend;
+  friend class python::RepeatedScalarContainerFriend;
   friend class util::MessageDifferencer;
 #define GOOGLE_PROTOBUF_HAS_CEL_MAP_REFLECTION_FRIEND
   friend class expr::CelMapReflectionFriend;
