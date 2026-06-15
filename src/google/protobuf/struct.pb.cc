@@ -218,7 +218,12 @@ constexpr Struct::ParseTableT_ Struct::InternalGenerateParseTable_(const ::_pbi:
       ::_pbi::TcParser::GetTable<::google::protobuf::Struct>(),  // to_prefetch
       #endif  // PROTOBUF_PREFETCH_PARSE_TABLE
     }, {{
-      {::_pbi::TcParser::MiniParse, {}},
+      // map<string, .google.protobuf.Value> fields = 1;
+      {::_pbi::TcParser::FastMiniParse1,
+       {10, ::uint8_t{7},
+        ::uint32_t{
+            PROTOBUF_FIELD_OFFSET(ParseTableT_, field_entries) +
+            sizeof(_pbi::TcParseTableBase::FieldEntry) * 0}}},
     }}, {{
       65535, 65535
     }}, {{
@@ -511,7 +516,12 @@ constexpr Value::ParseTableT_ Value::InternalGenerateParseTable_(const ::_pbi::C
       ::_pbi::TcParser::GetTable<::google::protobuf::Value>(),  // to_prefetch
       #endif  // PROTOBUF_PREFETCH_PARSE_TABLE
     }, {{
-      {::_pbi::TcParser::MiniParse, {}},
+      // bool bool_value = 4;
+      {::_pbi::TcParser::FastMiniParse1,
+       {32, ::uint8_t{1},
+        ::uint32_t{
+            PROTOBUF_FIELD_OFFSET(ParseTableT_, field_entries) +
+            sizeof(_pbi::TcParseTableBase::FieldEntry) * 3}}},
     }}, {{
       65535, 65535
     }}, {{
