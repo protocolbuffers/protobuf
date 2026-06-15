@@ -3537,6 +3537,8 @@ class OversizeProtosTest(unittest.TestCase):
     with self.assertRaises(message.DecodeError) as context:
       parsed_msg.ParseFromString(msg.SerializeToString())
     self.assertIn('Error parsing message', str(context.exception))
+    if api_implementation.Type() == 'python':
+      decoder.SetRecursionLimit(decoder.DEFAULT_RECURSION_LIMIT)
 
   def testRecisionMessageSet(self):
     msg = message_set_extensions_pb2.TestMessageSet()
