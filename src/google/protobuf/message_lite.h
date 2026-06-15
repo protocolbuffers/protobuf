@@ -1818,6 +1818,23 @@ PROTOBUF_FUTURE_ADD_EARLY_NODISCARD std::shared_ptr<const T> DynamicCastMessage(
   }
 }
 
+// Overloads for `std::shared_ptr` to substitute `down_pointer_cast`
+template <typename T>
+PROTOBUF_FUTURE_ADD_EARLY_NODISCARD std::shared_ptr<T> DownCastMessage(
+    std::shared_ptr<MessageLite> ptr) {
+  auto* res = DownCastMessage<T>(ptr.get());
+  // Use aliasing constructor to keep the same control block.
+  return std::shared_ptr<T>(std::move(ptr), res);
+}
+
+template <typename T>
+PROTOBUF_FUTURE_ADD_EARLY_NODISCARD std::shared_ptr<const T> DownCastMessage(
+    std::shared_ptr<const MessageLite> ptr) {
+  auto* res = DownCastMessage<T>(ptr.get());
+  // Use aliasing constructor to keep the same control block.
+  return std::shared_ptr<const T>(std::move(ptr), res);
+}
+
 }  // namespace protobuf
 }  // namespace google
 
