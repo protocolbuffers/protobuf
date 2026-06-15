@@ -513,9 +513,9 @@ class PROTOBUF_DECLSPEC_EMPTY_BASES MutableRepeatedFieldProxyImpl
     // Forward iterators in C++ are required to model `std::incrementable`,
     // which means they are suitable for multi-pass algorithms, and therefore
     // support `std::distance`.
-    if constexpr (std::is_base_of<std::forward_iterator_tag,
-                                  typename std::iterator_traits<
-                                      Iter>::iterator_category>::value) {
+    if constexpr (std::is_base_of_v<
+                      std::forward_iterator_tag,
+                      typename std::iterator_traits<Iter>::iterator_category>) {
       int distance = static_cast<int>(std::distance(begin, end));
       field().ReserveWithArena(arena(), distance);
     }
