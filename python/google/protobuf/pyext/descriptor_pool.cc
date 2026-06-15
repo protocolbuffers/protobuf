@@ -51,6 +51,13 @@ namespace python {
 static absl::flat_hash_map<const DescriptorPool*, PyDescriptorPool*>*
     descriptor_pool_map;
 
+struct SharedPoolContext {
+  std::shared_ptr<const google::protobuf::DescriptorPool> pool;
+  std::shared_ptr<const google::protobuf::DescriptorDatabase> database;
+};
+static absl::flat_hash_map<const google::protobuf::DescriptorPool*, SharedPoolContext>*
+    shared_pool_registry = nullptr;
+
 static FreeThreadingMutex descriptor_pool_map_mutex(absl::kConstInit);
 
 namespace cdescriptor_pool {
@@ -202,6 +209,9 @@ static void Dealloc(PyObject* pself) {
   {
     FreeThreadingLockGuard lock(descriptor_pool_map_mutex);
     descriptor_pool_map->erase(self->pool);
+    if (shared_pool_registry) {
+      shared_pool_registry->erase(self->pool);
+    }
   }
   Py_CLEAR(self->py_message_factory);
   for (auto it = self->descriptor_options->begin();
@@ -694,10 +704,13 @@ bool InitDescriptorPool() {
   // is used as underlay.
   descriptor_pool_map =
       new absl::flat_hash_map<const DescriptorPool*, PyDescriptorPool*>;
+  shared_pool_registry =
+      new absl::flat_hash_map<const google::protobuf::DescriptorPool*, SharedPoolContext>;
   python_generated_pool = cdescriptor_pool::PyDescriptorPool_NewWithUnderlay(
       DescriptorPool::generated_pool());
   if (python_generated_pool == nullptr) {
     delete descriptor_pool_map;
+    delete shared_pool_registry;
     return false;
   }
 
@@ -730,6 +743,9 @@ PyDescriptorPool* GetDescriptorPool_FromPool(const DescriptorPool* pool) {
   return it->second;
 }
 
+// TODO: It is only used by proto_api DescriptorPool_FromPool(
+// const google::protobuf::DescriptorPool* pool) which is deprecated. Remove this when
+// the deprecated API is removed
 PyObject* PyDescriptorPool_FromPool(const DescriptorPool* pool) {
   PyDescriptorPool* existing_pool = GetDescriptorPool_FromPool(pool);
   if (existing_pool != nullptr) {
@@ -745,24 +761,18 @@ PyObject* PyDescriptorPool_FromPool(const DescriptorPool* pool) {
   }
   cpool->pool = const_cast<DescriptorPool*>(pool);
   cpool->is_owned = false;
-  cpool->is_mutable = false;
-  cpool->underlay = nullptr;
-  {
-    FreeThreadingLockGuard lock(descriptor_pool_map_mutex);
-    if (!descriptor_pool_map->insert(std::make_pair(cpool->pool, cpool))
-             .second) {
-      // Should never happen -- We already checked the existence above.
-      PyErr_SetString(PyExc_ValueError, "DescriptorPool already registered");
-      return nullptr;
-    }
+  FreeThreadingLockGuard lock(descriptor_pool_map_mutex);
+  if (!descriptor_pool_map->insert(std::make_pair(cpool->pool, cpool)).second) {
+    Py_DECREF(cpool);
+    PyErr_SetString(PyExc_ValueError, "DescriptorPool already registered");
+    return nullptr;
   }
-
   return reinterpret_cast<PyObject*>(cpool);
 }
 
-PyObject* PyDescriptorPool_FromPool(
-    std::unique_ptr<const google::protobuf::DescriptorPool> pool,
-    std::unique_ptr<const google::protobuf::DescriptorDatabase> database) {
+PyObject* PyDescriptorPool_FromSharedPool(
+    std::shared_ptr<const google::protobuf::DescriptorPool> pool,
+    std::shared_ptr<const google::protobuf::DescriptorDatabase> database) {
   if (pool == nullptr) {
     PyErr_SetString(PyExc_ValueError, "DescriptorPool is null");
     return nullptr;
@@ -770,8 +780,8 @@ PyObject* PyDescriptorPool_FromPool(
   // There should not be any Python-side pool for this C++ object.
   PyDescriptorPool* existing_pool = GetDescriptorPool_FromPool(pool.get());
   if (existing_pool != nullptr) {
-    PyErr_SetString(PyExc_ValueError, "DescriptorPool already registered");
-    return nullptr;
+    Py_INCREF(existing_pool);
+    return reinterpret_cast<PyObject*>(existing_pool);
   } else {
     PyErr_Clear();
   }
@@ -780,22 +790,18 @@ PyObject* PyDescriptorPool_FromPool(
   if (cpool == nullptr) {
     return nullptr;
   }
-  cpool->pool = pool.release();
-  cpool->is_owned = true;
-  cpool->database = database.release();
-  cpool->is_mutable = false;
-  cpool->underlay = nullptr;
-
-  {
-    FreeThreadingLockGuard lock(descriptor_pool_map_mutex);
-    if (!descriptor_pool_map->insert(std::make_pair(cpool->pool, cpool))
-             .second) {
-      // Should never happen -- We already checked the existence above.
-      PyErr_SetString(PyExc_ValueError, "DescriptorPool already registered");
-      return nullptr;
-    }
+  cpool->pool = pool.get();
+  cpool->is_owned = false;
+  cpool->database = nullptr;
+  FreeThreadingLockGuard lock(descriptor_pool_map_mutex);
+  if (!descriptor_pool_map->insert(std::make_pair(cpool->pool, cpool)).second) {
+    Py_DECREF(cpool);
+    PyErr_SetString(PyExc_ValueError, "DescriptorPool already registered");
+    return nullptr;
   }
-
+  if (shared_pool_registry) {
+    shared_pool_registry->insert({cpool->pool, {pool, database}});
+  }
   return reinterpret_cast<PyObject*>(cpool);
 }
 

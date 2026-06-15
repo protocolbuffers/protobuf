@@ -7,6 +7,7 @@
 
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/descriptor.h"
+#include "google/protobuf/descriptor_database.h"
 #include "google/protobuf/dynamic_message.h"
 #include "google/protobuf/message.h"
 #include "google/protobuf/message_lite.h"
@@ -65,18 +66,14 @@ auto ReprDynamicMessage(int value) {
   const PyProto_API* api = GetProtoApi();
 
   // Create a descriptor pool which copies everything from the linked protos.
-  DescriptorPool pool(DescriptorPool::internal_generated_database());
-  // FileDescriptorProto file_descriptor;
-  // TestAllTypes::descriptor()->file()->CopyTo(&file_descriptor);
-  // if (!pool.BuildFile(file_descriptor)) {
-  //   throw std::runtime_error("Failed to build file descriptor");
-  // }
+  auto owned_pool = std::make_unique<DescriptorPool>(
+      DescriptorPool::internal_generated_database());
   const Descriptor* descriptor =
-      pool.FindMessageTypeByName("proto2_unittest.TestAllTypes");
+      owned_pool->FindMessageTypeByName("proto2_unittest.TestAllTypes");
   if (!descriptor) {
     throw std::runtime_error("Failed to find file descriptor");
   }
-  DynamicMessageFactory factory(&pool);
+  DynamicMessageFactory factory(owned_pool.get());
   const Message* prototype = factory.GetPrototype(descriptor);
   if (!prototype) {
     throw std::runtime_error("Failed to get prototype for descriptor");
@@ -104,8 +101,9 @@ auto ReprDynamicMessage(int value) {
   }
 
   // Create the Python DescriptorPool...
-  auto py_pool =
-      py::reinterpret_steal<py::object>(api->DescriptorPool_FromPool(&pool));
+  auto py_pool = py::reinterpret_steal<py::object>(api->DescriptorPool_FromPool(
+      std::move(owned_pool),
+      std::unique_ptr<const google::protobuf::DescriptorDatabase>()));
   if (!py_pool) {
     throw py::error_already_set();
   }
@@ -158,8 +156,9 @@ py::object CreateDynamicPoolMessage() {
 
   // Create a Python DescriptorPool from the C++ one.
   const PyProto_API* api = GetProtoApi();
-  auto py_pool = py::reinterpret_steal<py::object>(
-      api->DescriptorPool_FromPool(std::move(owned_pool), nullptr));
+  auto py_pool = py::reinterpret_steal<py::object>(api->DescriptorPool_FromPool(
+      std::move(owned_pool),
+      std::unique_ptr<const google::protobuf::DescriptorDatabase>()));
   if (!py_pool) {
     throw py::error_already_set();
   }
@@ -194,11 +193,118 @@ py::object CreateDynamicPoolMessage() {
   return py_msg;
 }
 
+py::object GetPoolFromMessage(py::handle py_msg) {
+  const PyProto_API* api = GetProtoApi();
+  auto msg_ptr = api->GetConstMessagePointer(py_msg.ptr());
+  if (!msg_ptr.ok()) {
+    if (PyErr_Occurred()) {
+      throw py::error_already_set();
+    }
+    throw std::runtime_error(std::string(msg_ptr.status().message()));
+  }
+  const Message& msg = msg_ptr->get();
+  const DescriptorPool* pool = msg.GetDescriptor()->file()->pool();
+  auto shared_pool =
+      std::shared_ptr<const DescriptorPool>(pool, [](const DescriptorPool*) {});
+  PyObject* py_pool = api->DescriptorPool_FromSharedPool(
+      shared_pool, std::shared_ptr<const google::protobuf::DescriptorDatabase>());
+  if (!py_pool) {
+    throw py::error_already_set();
+  }
+  return py::reinterpret_steal<py::object>(py_pool);
+}
+
+py::object GetCustomPoolWithDB() {
+  const PyProto_API* api = GetProtoApi();
+  // 1. Create Database
+  auto custom_db = std::make_shared<SimpleDescriptorDatabase>();
+
+  // File 1: Will be built in pool
+  FileDescriptorProto pool_file;
+  pool_file.set_name("custom_package/custom_message.proto");
+  pool_file.set_package("custom_package");
+  DescriptorProto* pool_msg = pool_file.add_message_type();
+  pool_msg->set_name("CustomMessage");
+  FieldDescriptorProto* pool_field = pool_msg->add_field();
+  pool_field->set_name("custom_field");
+  pool_field->set_number(1);
+  pool_field->set_label(FieldDescriptorProto::LABEL_OPTIONAL);
+  pool_field->set_type(FieldDescriptorProto::TYPE_INT32);
+  if (!custom_db->Add(pool_file)) {
+    throw std::runtime_error("Failed to add pool_file to database");
+  }
+
+  // File 2: Will NOT be built in pool (database only)
+  FileDescriptorProto db_file;
+  db_file.set_name("custom_package/db_message.proto");
+  db_file.set_package("custom_package");
+  DescriptorProto* db_msg = db_file.add_message_type();
+  db_msg->set_name("DatabaseMessage");
+  FieldDescriptorProto* db_field = db_msg->add_field();
+  db_field->set_name("db_field");
+  db_field->set_number(1);
+  db_field->set_label(FieldDescriptorProto::LABEL_OPTIONAL);
+  db_field->set_type(FieldDescriptorProto::TYPE_INT32);
+  if (!custom_db->Add(db_file)) {
+    throw std::runtime_error("Failed to add db_file to database");
+  }
+
+  // 2. Create Pool (linked to DB)
+  auto custom_pool = std::make_shared<DescriptorPool>(custom_db.get());
+
+  // 3. Build ONE file in the pool by looking it up
+  if (custom_pool->FindMessageTypeByName("custom_package.CustomMessage") ==
+      nullptr) {
+    throw std::runtime_error("Failed to build CustomMessage in pool");
+  }
+
+  // 4. Return PyObject
+  PyObject* py_pool =
+      api->DescriptorPool_FromSharedPool(custom_pool, custom_db);
+  if (!py_pool) {
+    throw py::error_already_set();
+  }
+  return py::reinterpret_steal<py::object>(py_pool);
+}
+
+py::object GetCustomPool() {
+  const PyProto_API* api = GetProtoApi();
+  // 1. Create Pool
+  auto custom_pool = std::make_shared<DescriptorPool>();
+
+  // File 1: Call c++ pool BuildFile()
+  FileDescriptorProto pool_file;
+  pool_file.set_name("custom_package/custom_message.proto");
+  pool_file.set_package("custom_package");
+  DescriptorProto* pool_msg = pool_file.add_message_type();
+  pool_msg->set_name("CustomMessage");
+  FieldDescriptorProto* pool_field = pool_msg->add_field();
+  pool_field->set_name("custom_field");
+  pool_field->set_number(1);
+  pool_field->set_label(FieldDescriptorProto::LABEL_OPTIONAL);
+  pool_field->set_type(FieldDescriptorProto::TYPE_INT32);
+
+  if (custom_pool->BuildFile(pool_file) == nullptr) {
+    throw std::runtime_error("Failed to build FileDescriptor in pool");
+  }
+
+  // 2. Return PyObject
+  PyObject* py_pool = api->DescriptorPool_FromSharedPool(
+      custom_pool, std::shared_ptr<const google::protobuf::DescriptorDatabase>());
+  if (!py_pool) {
+    throw py::error_already_set();
+  }
+  return py::reinterpret_steal<py::object>(py_pool);
+}
+
 PYBIND11_MODULE(proto_api_test_ext, m) {
   m.def("get_const_message", &GetConstMessage);
   m.def("set_message_field_with_mutator", &SetMessageFieldWithMutator);
   m.def("repr_dynamic_message", &ReprDynamicMessage);
   m.def("create_dynamic_pool_message", &CreateDynamicPoolMessage);
+  m.def("get_pool_from_message", &GetPoolFromMessage);
+  m.def("get_custom_pool", &GetCustomPool);
+  m.def("get_custom_pool_with_db", &GetCustomPoolWithDB);
 }
 
 }  // namespace python

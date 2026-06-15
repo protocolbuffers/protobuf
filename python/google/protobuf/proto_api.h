@@ -146,6 +146,10 @@ struct PyProto_API {
   // functions that process C++ descriptors or messages created from this pool
   // can work and return their Python counterparts.
   // On error, returns nullptr and sets a Python exception.
+  [[deprecated(
+      "Use DescriptorPool_FromSharedPool(std::shared_ptr<const "
+      "google::protobuf::DescriptorPool>, std::shared_ptr<const "
+      "google::protobuf::DescriptorDatabase>) instead.")]]
   virtual PyObject* DescriptorPool_FromPool(
       const google::protobuf::DescriptorPool* pool) const = 0;
 
@@ -155,9 +159,20 @@ struct PyProto_API {
   // DescriptorPool: use it when the C++ DescriptorPool was built with this
   // database.
   // On error, returns nullptr and sets a Python exception.
+  [[deprecated(
+      "Use DescriptorPool_FromSharedPool(std::shared_ptr<const "
+      "google::protobuf::DescriptorPool>, std::shared_ptr<const "
+      "google::protobuf::DescriptorDatabase>) instead.")]]
   virtual PyObject* DescriptorPool_FromPool(
       std::unique_ptr<const google::protobuf::DescriptorPool> pool,
       std::unique_ptr<const google::protobuf::DescriptorDatabase> database) const = 0;
+
+  // Returns a Python DescriptorPool that shares ownership of the given C++
+  // DescriptorPool.
+  // On error, returns nullptr and sets a Python exception.
+  virtual PyObject* DescriptorPool_FromSharedPool(
+      std::shared_ptr<const google::protobuf::DescriptorPool> pool,
+      std::shared_ptr<const google::protobuf::DescriptorDatabase> database) const = 0;
 
   // Returns the C++ descriptor pool wrapped by a Python object.
   // On error, returns nullptr and sets a Python exception.

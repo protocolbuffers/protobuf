@@ -122,16 +122,16 @@ PyDescriptorPool* GetDefaultDescriptorPool();
 // Returns a *borrowed* reference.
 PyDescriptorPool* GetDescriptorPool_FromPool(const DescriptorPool* pool);
 
-// Wraps a C++ descriptor pool in a Python object, creates it if necessary.
-// Returns a new reference.
+// TODO: It is only used by proto_api DescriptorPool_FromPool(
+// const google::protobuf::DescriptorPool* pool) which is deprecated. Remove this when
+// the deprecated API is removed
 PyObject* PyDescriptorPool_FromPool(const DescriptorPool* pool);
 
-// Takes ownership of a C++ DescriptorPool and returns a new Python
-// DescriptorPool that wraps it.
-// If set, the DescriptorDatabase is also managed by the returned object.
-PyObject* PyDescriptorPool_FromPool(
-    std::unique_ptr<const google::protobuf::DescriptorPool> pool,
-    std::unique_ptr<const google::protobuf::DescriptorDatabase> database);
+// Returns a new Python DescriptorPool that shares ownership of the given
+// C++ DescriptorPool.
+PyObject* PyDescriptorPool_FromSharedPool(
+    std::shared_ptr<const google::protobuf::DescriptorPool> pool,
+    std::shared_ptr<const google::protobuf::DescriptorDatabase> database);
 
 // Returns the C++ descriptor pool wrapped by a Python object.
 const DescriptorPool* PyDescriptorPool_AsPool(PyObject* pool);
