@@ -163,6 +163,18 @@ TEST_F(HpbMetadataTest, AnnotatesStringSemantics) {
                                   });
 }
 
+TEST_F(HpbMetadataTest, GeneratesMetadataPragma) {
+  FileDescriptorProto file;
+  GeneratedCodeInfo info;
+  std::string hpb_h;
+  atu::AddFile("test.proto", kSmallTestFile);
+  EXPECT_TRUE(CaptureMetadata("test.proto", file, hpb_h, info));
+
+  EXPECT_THAT(hpb_h, ::testing::HasSubstr("#ifdef KYTHE_IS_RUNNING"));
+  EXPECT_THAT(hpb_h, ::testing::HasSubstr(
+                         "#pragma kythe_metadata \"test.hpb.h.meta\""));
+}
+
 }  // namespace
 }  // namespace hpb
 }  // namespace compiler

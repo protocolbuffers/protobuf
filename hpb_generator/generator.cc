@@ -55,7 +55,8 @@ void WriteForwardDecls(const google::protobuf::FileDescriptor* file, Context& ct
   WriteTypedefForwardingHeader(file, this_file_messages, ctx);
 }
 
-void WriteHeader(const google::protobuf::FileDescriptor* file, Context& ctx) {
+void WriteHeader(const google::protobuf::FileDescriptor* file, Context& ctx,
+                 absl::string_view info_path) {
   if (ctx.options().backend == Backend::CPP) {
     EmitFileWarning(file, ctx);
 
@@ -79,6 +80,15 @@ void WriteHeader(const google::protobuf::FileDescriptor* file, Context& ctx) {
 
     ctx.Emit(
         "#include \"hpb/internal/os_macros_undef.inc\"\n");
+
+    if (!info_path.empty()) {
+      ctx.Emit({{"info_path", std::string(info_path)}},
+               R"cc(
+#ifdef KYTHE_IS_RUNNING
+#pragma kythe_metadata "$info_path$"
+#endif  // KYTHE_IS_RUNNING
+               )cc");
+    }
 
     const std::vector<const google::protobuf::Descriptor*> this_file_messages =
         SortedMessages(file);
@@ -170,6 +180,15 @@ void WriteHeader(const google::protobuf::FileDescriptor* file, Context& ctx) {
   ctx.Emit("#include \"upb/port/def.inc\"\n");
   ctx.Emit(
       "#include \"hpb/internal/os_macros_undef.inc\"\n");
+
+  if (!info_path.empty()) {
+    ctx.Emit({{"info_path", std::string(info_path)}},
+             R"cc(
+#ifdef KYTHE_IS_RUNNING
+#pragma kythe_metadata "$info_path$"
+#endif  // KYTHE_IS_RUNNING
+             )cc");
+  }
 
   const std::vector<const google::protobuf::Descriptor*> this_file_messages =
       SortedMessages(file);
@@ -357,6 +376,12 @@ bool Generator::Generate(const google::protobuf::FileDescriptor* file,
               annotations.get());
     }
 
+    std::string meta_filename = "";
+    if (annotate_headers) {
+      meta_filename =
+          absl::StrCat(compiler::StripProto(file->name()), ".hpb.h.meta");
+    }
+
     // Write model.hpb.h
     Options options = {.backend = backend,
                        .strip_feature_includes = strip_nonfunctional_codegen,
@@ -364,7 +389,7 @@ bool Generator::Generate(const google::protobuf::FileDescriptor* file,
     std::unique_ptr<google::protobuf::io::ZeroCopyOutputStream> header_output_stream(
         context->Open(CppHeaderFilename(file)));
     Context hdr_ctx(file, header_output_stream.get(), options);
-    WriteHeader(file, hdr_ctx);
+    WriteHeader(file, hdr_ctx, meta_filename);
 
     // Write model.hpb.cc
     std::unique_ptr<google::protobuf::io::ZeroCopyOutputStream> cc_output_stream(
