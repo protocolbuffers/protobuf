@@ -44,9 +44,8 @@ extern const double kUpb_NaN;
 
 typedef struct upb_TaggedAuxPtr {
   // Two lowest bits form a tag:
-  // 00 - non-aliased unknown data
-  // 10 - aliased unknown data
-  // 01 - extension
+  // 00 - unknown data (upb_StringView*)
+  // 11 - canonical ext (upb_Extension*)
   //
   // The main semantic difference between aliased and non-aliased unknown data
   // is that non-aliased unknown data can be assumed to have the following
@@ -71,22 +70,25 @@ UPB_INLINE bool upb_TaggedAuxPtr_IsExtension(upb_TaggedAuxPtr ptr) {
   return ptr.ptr & 1;
 }
 
+// Returns true for unknown data (including aliased).
 UPB_INLINE bool upb_TaggedAuxPtr_IsUnknown(upb_TaggedAuxPtr ptr) {
-  return (ptr.ptr != 0) && ((ptr.ptr & 1) == 0);
-}
-
-UPB_INLINE bool upb_TaggedAuxPtr_IsUnknownAliased(upb_TaggedAuxPtr ptr) {
-  return (ptr.ptr != 0) && ((ptr.ptr & 2) == 2);
-}
-
-UPB_INLINE upb_Extension* upb_TaggedAuxPtr_Extension(upb_TaggedAuxPtr ptr) {
-  UPB_ASSERT(upb_TaggedAuxPtr_IsExtension(ptr));
-  return (upb_Extension*)(ptr.ptr & ~3ULL);
+  return (ptr.ptr != 0) && ((ptr.ptr & 3) == 0);
 }
 
 UPB_INLINE upb_StringView* upb_TaggedAuxPtr_UnknownData(upb_TaggedAuxPtr ptr) {
   UPB_ASSERT(!upb_TaggedAuxPtr_IsExtension(ptr));
   return (upb_StringView*)(ptr.ptr & ~3ULL);
+}
+
+UPB_INLINE bool upb_TaggedAuxPtr_IsUnknownAliased(upb_TaggedAuxPtr ptr) {
+  if (!upb_TaggedAuxPtr_IsUnknown(ptr)) return false;
+  const upb_StringView* sv = upb_TaggedAuxPtr_UnknownData(ptr);
+  return sv->data != UPB_PTR_AT(sv, sizeof(upb_StringView), const char);
+}
+
+UPB_INLINE upb_Extension* upb_TaggedAuxPtr_Extension(upb_TaggedAuxPtr ptr) {
+  UPB_ASSERT(upb_TaggedAuxPtr_IsExtension(ptr));
+  return (upb_Extension*)(ptr.ptr & ~3ULL);
 }
 
 typedef enum {
@@ -124,7 +126,7 @@ UPB_INLINE upb_TaggedAuxPtr upb_TaggedAuxPtr_Null(void) {
 UPB_INLINE upb_TaggedAuxPtr
 upb_TaggedAuxPtr_MakeExtension(const upb_Extension* e) {
   upb_TaggedAuxPtr ptr;
-  ptr.ptr = (uintptr_t)e | 1;
+  ptr.ptr = (uintptr_t)e | 3;
   return ptr;
 }
 
@@ -143,7 +145,7 @@ upb_TaggedAuxPtr_MakeUnknownData(const upb_StringView* sv) {
 UPB_INLINE upb_TaggedAuxPtr
 upb_TaggedAuxPtr_MakeUnknownDataAliased(const upb_StringView* sv) {
   upb_TaggedAuxPtr ptr;
-  ptr.ptr = (uintptr_t)sv | 2;
+  ptr.ptr = (uintptr_t)sv;
   return ptr;
 }
 

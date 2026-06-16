@@ -30,6 +30,7 @@
 #include "upb/message/accessors.h"
 #include "upb/message/array.h"
 #include "upb/message/copy.h"
+#include "upb/message/internal/extension.h"
 #include "upb/message/internal/message.h"
 #include "upb/message/map.h"
 #include "upb/message/message.h"
@@ -503,6 +504,73 @@ TEST(GeneratedCode, PromoteUnknownToMapOld) {
   EXPECT_TRUE(upb_Map_Get(map, key, &value));
   EXPECT_EQ(0, strncmp(value.str_val.data, "value2", 5));
   upb_Arena_Free(arena);
+}
+
+TEST(GeneratedCode, TaggedAuxPtrLogic) {
+  // Construct pointers with 8-byte alignment
+  alignas(8) upb_Extension ext;
+  alignas(8) upb_StringView sv;
+
+  // 1. Make Extension
+  upb_TaggedAuxPtr ext_ptr = upb_TaggedAuxPtr_MakeExtension(&ext);
+  EXPECT_TRUE(upb_TaggedAuxPtr_IsExtension(ext_ptr));
+  EXPECT_FALSE(upb_TaggedAuxPtr_IsUnknown(ext_ptr));
+  EXPECT_EQ(upb_TaggedAuxPtr_Extension(ext_ptr), &ext);
+
+  // 2. Make Unknown
+  upb_TaggedAuxPtr unknown_ptr = upb_TaggedAuxPtr_MakeUnknownData(&sv);
+  EXPECT_FALSE(upb_TaggedAuxPtr_IsExtension(unknown_ptr));
+  EXPECT_TRUE(upb_TaggedAuxPtr_IsUnknown(unknown_ptr));
+  EXPECT_EQ(upb_TaggedAuxPtr_UnknownData(unknown_ptr), &sv);
+
+  // 3. Make Unknown (Aliased)
+  upb_TaggedAuxPtr aliased_ptr = upb_TaggedAuxPtr_MakeUnknownDataAliased(&sv);
+  EXPECT_FALSE(upb_TaggedAuxPtr_IsExtension(aliased_ptr));
+  EXPECT_TRUE(upb_TaggedAuxPtr_IsUnknown(aliased_ptr));
+  EXPECT_EQ(upb_TaggedAuxPtr_UnknownData(aliased_ptr), &sv);
+
+  // 4. Test exact tag matches (e.g. ensure 10, 01, and 11 match the new tag
+  // scheme)
+  upb_TaggedAuxPtr tag_01;
+  tag_01.ptr = ((uintptr_t)&sv) | 1;  // Tag 01
+  EXPECT_TRUE(upb_TaggedAuxPtr_IsExtension(tag_01));
+  EXPECT_FALSE(upb_TaggedAuxPtr_IsUnknown(tag_01));
+
+  upb_TaggedAuxPtr tag_10;
+  tag_10.ptr = ((uintptr_t)&sv) | 2;  // Tag 10
+  EXPECT_FALSE(upb_TaggedAuxPtr_IsExtension(tag_10));
+  EXPECT_FALSE(upb_TaggedAuxPtr_IsUnknown(tag_10));
+
+  upb_TaggedAuxPtr tag_11;
+  tag_11.ptr = ((uintptr_t)&sv) | 3;  // Tag 11
+  EXPECT_TRUE(upb_TaggedAuxPtr_IsExtension(tag_11));
+  EXPECT_FALSE(upb_TaggedAuxPtr_IsUnknown(tag_11));
+
+  // 5. Dynamic Aliasing Detection logic
+  const std::string text = "dynamic alias detection";
+
+  // Copied (non-aliased) layout buffer: StringView + data
+  // Using alignas(8) to ensure proper alignment of upb_StringView.
+  alignas(8) char buf[sizeof(upb_StringView) + 32];
+  upb_StringView* non_aliased_sv = reinterpret_cast<upb_StringView*>(buf);
+  non_aliased_sv->data = buf + sizeof(upb_StringView);
+  non_aliased_sv->size = text.size();
+  memcpy(const_cast<char*>(non_aliased_sv->data), text.data(), text.size());
+
+  upb_TaggedAuxPtr dynamic_non_aliased_ptr =
+      upb_TaggedAuxPtr_MakeUnknownData(non_aliased_sv);
+  EXPECT_TRUE(upb_TaggedAuxPtr_IsUnknown(dynamic_non_aliased_ptr));
+  EXPECT_FALSE(upb_TaggedAuxPtr_IsUnknownAliased(dynamic_non_aliased_ptr));
+
+  // Aliased layout: StringView with data elsewhere
+  upb_StringView aliased_sv;
+  aliased_sv.data = text.data();
+  aliased_sv.size = text.size();
+
+  upb_TaggedAuxPtr dynamic_aliased_ptr =
+      upb_TaggedAuxPtr_MakeUnknownDataAliased(&aliased_sv);
+  EXPECT_TRUE(upb_TaggedAuxPtr_IsUnknown(dynamic_aliased_ptr));
+  EXPECT_TRUE(upb_TaggedAuxPtr_IsUnknownAliased(dynamic_aliased_ptr));
 }
 
 }  // namespace
