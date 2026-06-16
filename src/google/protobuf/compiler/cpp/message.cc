@@ -1450,6 +1450,7 @@ void MessageGenerator::GenerateMapEntryClassDefinition(io::Printer* p) {
                                    const $pbi$::ClassData* $nonnull$
                                        class_data);
           explicit $Msg$($pb$::Arena* $nullable$ arena);
+          explicit $Msg$($pb$::internal::SerialArena* $nullable$ arena);
           static constexpr const void* $nonnull$ internal_message_globals() {
             return &$globals$;
           }
@@ -2136,7 +2137,7 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
           using Super_ = $superclass$;
 
          public:
-          inline $Msg$() : $Msg$(nullptr) {}
+          inline $Msg$() : $Msg$(static_cast<$pb$::Arena*>(nullptr)) {}
           $decl_dtor$;
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
@@ -2215,11 +2216,13 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
           $generated_methods$;
           $internal_field_number$;
           $decl_non_simple_base$;
+
          private:
           static ::absl::string_view FullMessageName() { return "$full_name$"; }
           $decl_annotate$;
 
           explicit $Msg$($pb$::Arena* $nullable$ arena);
+          explicit $Msg$($pb$::internal::SerialArena* $nullable$ arena);
           $Msg$($pb$::Arena* $nullable$ arena, const $Msg$& from);
           $Msg$(
               //~
@@ -2347,9 +2350,12 @@ void MessageGenerator::GenerateClassMethods(io::Printer* p) {
               $Msg$::$Msg$() : Super_($Msg$_get_class_data()) {}
               $Msg$::$Msg$($pb$::Arena* $nullable$ arena)
                   : Super_(arena, $Msg$_get_class_data()) {}
+              $Msg$::$Msg$($pb$::internal::SerialArena* $nullable$ arena)
+                  : Super_(arena, $Msg$_get_class_data()) {}
 #else   // PROTOBUF_CUSTOM_VTABLE
               $Msg$::$Msg$() : Super_() {}
               $Msg$::$Msg$($pb$::Arena* $nullable$ arena) : Super_(arena) {}
+              $Msg$::$Msg$($pb$::internal::SerialArena* $nullable$ arena) : Super_(arena) {}
 #endif  // PROTOBUF_CUSTOM_VTABLE
               $annotate_accessors$;
               $verify$;
@@ -3301,6 +3307,25 @@ void MessageGenerator::GenerateStructors(io::Printer* p) {
                  break;
              }
            }},
+          {"serial_ctor_body",
+           [&] {
+             if (HasSimpleBaseClass(descriptor_, options_)) return;
+             p->Emit(R"cc(SharedCtor(arena == nullptr
+                                         ? nullptr
+                                         : arena->GetOwningArena());)cc");
+             switch (NeedsArenaDestructor()) {
+               case ArenaDtorNeeds::kRequired: {
+                 p->Emit(R"cc(
+                   if (arena != nullptr) {
+                     arena->GetOwningArena()->OwnCustomDestructor(this, &$Msg$::ArenaDtor);
+                   }
+                 )cc");
+                 break;
+               }
+               case ArenaDtorNeeds::kNone:
+                 break;
+             }
+           }},
       },
       R"cc(
         $Msg$::$Msg$($pb$::Arena* $nullable$ arena)
@@ -3310,6 +3335,16 @@ void MessageGenerator::GenerateStructors(io::Printer* p) {
             : Super_(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
           $ctor_body$;
+          // @@protoc_insertion_point(arena_constructor:$full_name$)
+        }
+
+        $Msg$::$Msg$($pb$::internal::SerialArena* $nullable$ arena)
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+            : Super_(arena, $Msg$_get_class_data()) {
+#else   // PROTOBUF_CUSTOM_VTABLE
+            : Super_(arena) {
+#endif  // PROTOBUF_CUSTOM_VTABLE
+          $serial_ctor_body$;
           // @@protoc_insertion_point(arena_constructor:$full_name$)
         }
       )cc");
@@ -3384,6 +3419,7 @@ void MessageGenerator::GenerateSourceInProto2Namespace(io::Printer* p) {
       ShouldGenerateClass(descriptor_, options_)) {
     p->Emit(R"(
       template void* $nonnull$ Arena::DefaultConstruct<$classtype$>(Arena* $nullable$);
+      template void* $nonnull$ Arena::DefaultConstruct<$classtype$>(internal::SerialArena* $nullable$);
     )");
     if (!IsMapEntryMessage(descriptor_)) {
       p->Emit(R"(

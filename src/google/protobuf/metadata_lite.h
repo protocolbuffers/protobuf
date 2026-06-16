@@ -8,12 +8,14 @@
 #ifndef GOOGLE_PROTOBUF_METADATA_LITE_H__
 #define GOOGLE_PROTOBUF_METADATA_LITE_H__
 
+#include <iostream>
 #include <string>
 
 #include "absl/base/optimization.h"
 #include "absl/log/absl_check.h"
 #include "google/protobuf/arena.h"
 #include "google/protobuf/port.h"
+#include "google/protobuf/serial_arena.h"
 
 // Must be included last.
 #include "google/protobuf/port_def.inc"
@@ -45,7 +47,7 @@ namespace internal {
 class PROTOBUF_EXPORT InternalMetadata {
  public:
   constexpr InternalMetadata() : ptr_(0) {}
-  explicit InternalMetadata(Arena* arena) {
+  explicit InternalMetadata(SerialArena* arena) {
     ptr_ = reinterpret_cast<intptr_t>(arena);
   }
 
@@ -66,9 +68,19 @@ class PROTOBUF_EXPORT InternalMetadata {
 
   PROTOBUF_NDEBUG_INLINE Arena* arena() const {
     if (ABSL_PREDICT_FALSE(have_unknown_fields())) {
+      auto* serial = PtrValue<ContainerBase>()->arena;
+      return serial == nullptr ? nullptr : serial->GetOwningArena();
+    } else {
+      auto* serial = PtrValue<SerialArena>();
+      return serial == nullptr ? nullptr : serial->GetOwningArena();
+    }
+  }
+
+  PROTOBUF_NDEBUG_INLINE SerialArena* serial_arena() const {
+    if (ABSL_PREDICT_FALSE(have_unknown_fields())) {
       return PtrValue<ContainerBase>()->arena;
     } else {
-      return PtrValue<Arena>();
+      return PtrValue<SerialArena>();
     }
   }
 
@@ -146,7 +158,7 @@ class PROTOBUF_EXPORT InternalMetadata {
 
   template <typename U>
   U* PtrValue() const {
-    if constexpr (std::is_same_v<U, Arena>) {
+    if constexpr (std::is_same_v<U, SerialArena>) {
       // No mask to remove.
       ABSL_DCHECK_EQ(ptr_ & kPtrTagMask, 0);
       return reinterpret_cast<U*>(ptr_);
@@ -163,7 +175,7 @@ class PROTOBUF_EXPORT InternalMetadata {
 
   // If ptr_'s tag is kTagContainer, it points to an instance of this struct.
   struct ContainerBase {
-    Arena* arena;
+    SerialArena* arena;
   };
 
   template <typename T>
@@ -181,8 +193,10 @@ class PROTOBUF_EXPORT InternalMetadata {
 
   template <typename T>
   PROTOBUF_NOINLINE T* mutable_unknown_fields_slow() {
-    Arena* my_arena = arena();
-    Container<T>* container = Arena::Create<Container<T>>(my_arena);
+    SerialArena* my_arena = serial_arena();
+    Arena* owning_arena =
+        my_arena == nullptr ? nullptr : my_arena->GetOwningArena();
+    Container<T>* container = Arena::Create<Container<T>>(owning_arena);
     // Two-step assignment works around a bug in clang's static analyzer:
     // https://bugs.llvm.org/show_bug.cgi?id=34198.
     ptr_ = reinterpret_cast<intptr_t>(container);

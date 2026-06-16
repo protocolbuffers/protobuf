@@ -20,6 +20,7 @@
 #include "absl/log/absl_check.h"
 #include "absl/strings/string_view.h"
 #include "absl/synchronization/mutex.h"
+#include "google/protobuf/arena_cleanup.h"
 #include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/message_lite.h"
 #include "google/protobuf/parse_context.h"
@@ -281,6 +282,173 @@ const char* EpsCopyInputStream::ReadArenaString(const char* ptr,
   ptr = ReadString(ptr, size, str);
   GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
   return ptr;
+}
+
+void ArenaStringPtr::Set(absl::string_view value, SerialArena* arena) {
+  Set(value, arena == nullptr ? nullptr : arena->GetOwningArena());
+}
+
+void ArenaStringPtr::Set(std::string&& value, SerialArena* arena) {
+  ScopedCheckPtrInvariants check(&tagged_ptr_);
+  if (IsDefault()) {
+    NewString(arena, std::move(value));
+  } else if (IsFixedSizeArena()) {
+    std::string* current = tagged_ptr_.Get();
+    UnpoisonMemoryRegion(current, sizeof(*current));
+    auto* s = new (current) std::string(std::move(value));
+    arena->AddCleanup(s,
+                      &internal::cleanup::arena_destruct_object<std::string>);
+    tagged_ptr_.SetMutableArena(s);
+  } else {
+    *UnsafeMutablePointer() = std::move(value);
+  }
+}
+
+void ArenaStringPtr::Set(const char* s, SerialArena* arena) {
+  Set(absl::string_view(s), arena);
+}
+
+void ArenaStringPtr::Set(const char* s, size_t n, SerialArena* arena) {
+  Set(absl::string_view(s, n), arena);
+}
+
+template <>
+void ArenaStringPtr::Set(const std::string& value, SerialArena* arena) {
+  Set(absl::string_view(value), arena);
+}
+
+void ArenaStringPtr::SetBytes(absl::string_view value, SerialArena* arena) {
+  Set(value, arena);
+}
+
+void ArenaStringPtr::SetBytes(std::string&& value, SerialArena* arena) {
+  Set(std::move(value), arena);
+}
+
+template <>
+void ArenaStringPtr::SetBytes(const std::string& value, SerialArena* arena) {
+  Set(value, arena);
+}
+
+void ArenaStringPtr::SetBytes(const char* s, SerialArena* arena) {
+  Set(s, arena);
+}
+
+void ArenaStringPtr::SetBytes(const void* p, size_t n, SerialArena* arena) {
+  Set(absl::string_view(static_cast<const char*>(p), n), arena);
+}
+
+std::string* ArenaStringPtr::Mutable(SerialArena* arena) {
+  ScopedCheckPtrInvariants check(&tagged_ptr_);
+  if (tagged_ptr_.IsMutable()) {
+    return tagged_ptr_.Get();
+  } else {
+    return MutableSlow(arena == nullptr ? nullptr : arena->GetOwningArena());
+  }
+}
+
+std::string* ArenaStringPtr::Mutable(const LazyString& default_value,
+                                     SerialArena* arena) {
+  ScopedCheckPtrInvariants check(&tagged_ptr_);
+  if (tagged_ptr_.IsMutable()) {
+    return tagged_ptr_.Get();
+  } else {
+    return MutableSlow(arena == nullptr ? nullptr : arena->GetOwningArena(),
+                       default_value);
+  }
+}
+
+std::string* ArenaStringPtr::MutableNoCopy(SerialArena* arena) {
+  ScopedCheckPtrInvariants check(&tagged_ptr_);
+  if (tagged_ptr_.IsMutable()) {
+    return tagged_ptr_.Get();
+#ifndef PROTO2_OPENSOURCE
+  } else if (IsFixedSizeArena()) {
+    ABSL_DCHECK(arena != nullptr);
+    std::string* mutable_string = tagged_ptr_.Get();
+    UnpoisonMemoryRegion(mutable_string, sizeof(*mutable_string));
+    new (mutable_string) std::string();
+    arena->AddCleanup(mutable_string,
+                      &internal::cleanup::arena_destruct_object<std::string>);
+    tagged_ptr_.SetMutableArena(mutable_string);
+    return mutable_string;
+#endif
+  } else {
+    ABSL_DCHECK(IsDefault());
+    return NewString(arena);
+  }
+}
+
+void ArenaStringPtr::SetAllocated(std::string* value, SerialArena* arena) {
+  ScopedCheckPtrInvariants check(&tagged_ptr_);
+  Destroy();
+
+  if (value == nullptr) {
+    InitDefault();
+  } else {
+#ifndef NDEBUG
+    std::string* new_value = new std::string(std::move(*value));
+    delete value;
+    value = new_value;
+#endif  // !NDEBUG
+    if (arena == nullptr) {
+      tagged_ptr_.SetAllocated(value);
+    } else {
+      arena->AddCleanup(value,
+                        &internal::cleanup::arena_destruct_object<std::string>);
+      tagged_ptr_.SetMutableArena(value);
+    }
+  }
+}
+
+void ArenaStringPtr::ClearToDefault(const LazyString& default_value,
+                                    SerialArena* arena) {
+  ClearToDefault(default_value,
+                 arena == nullptr ? nullptr : arena->GetOwningArena());
+}
+
+std::string* ArenaStringPtr::NewString(SerialArena* arena,
+                                       std::string&& value) {
+  if (arena == nullptr) {
+    auto* s = new std::string(std::move(value));
+    return tagged_ptr_.SetAllocated(s);
+  } else {
+    auto* s =
+        Arena::Create<std::string>(arena->GetOwningArena(), std::move(value));
+    return tagged_ptr_.SetMutableArena(s);
+  }
+}
+
+std::string* ArenaStringPtr::NewString(SerialArena* arena,
+                                       const std::string& value) {
+  if (arena == nullptr) {
+    auto* s = new std::string(value);
+    return tagged_ptr_.SetAllocated(s);
+  } else {
+    auto* s = Arena::Create<std::string>(arena->GetOwningArena(), value);
+    return tagged_ptr_.SetMutableArena(s);
+  }
+}
+
+std::string* ArenaStringPtr::NewString(SerialArena* arena, const char* s,
+                                       size_t n) {
+  if (arena == nullptr) {
+    auto* str = new std::string(s, n);
+    return tagged_ptr_.SetAllocated(str);
+  } else {
+    auto* str = Arena::Create<std::string>(arena->GetOwningArena(), s, n);
+    return tagged_ptr_.SetMutableArena(str);
+  }
+}
+
+std::string* ArenaStringPtr::NewString(SerialArena* arena) {
+  if (arena == nullptr) {
+    auto* s = new std::string();
+    return tagged_ptr_.SetAllocated(s);
+  } else {
+    auto* s = Arena::Create<std::string>(arena->GetOwningArena());
+    return tagged_ptr_.SetMutableArena(s);
+  }
 }
 
 }  // namespace internal

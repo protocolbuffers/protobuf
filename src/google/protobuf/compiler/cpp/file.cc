@@ -1405,6 +1405,7 @@ class FileGenerator::ForwardDeclarations {
         // is a tradeoff.
         p->Emit(R"(
           extern template void* $nonnull$ Arena::DefaultConstruct<$class$>(Arena* $nullable$);
+          extern template void* $nonnull$ Arena::DefaultConstruct<$class$>(internal::SerialArena* $nullable$);
         )");
         if (!IsMapEntryMessage(c.second)) {
           p->Emit(R"(

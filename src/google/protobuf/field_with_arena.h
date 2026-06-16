@@ -37,6 +37,15 @@ class FieldWithArena : public ContainerDestructorSkippableBase<T> {
 
   template <typename... Args>
   explicit FieldWithArena(Arena* arena, Args&&... args)
+      : _internal_metadata_(GetSerialArena(arena)) {
+    StaticallyVerifyLayout();
+    // Construct `T` after setting `_internal_metadata_` so that `T` can safely
+    // call ResolveArena().
+    new (&field_) T(BuildOffset(), std::forward<Args>(args)...);
+  }
+
+  template <typename... Args>
+  explicit FieldWithArena(SerialArena* arena, Args&&... args)
       : _internal_metadata_(arena) {
     StaticallyVerifyLayout();
     // Construct `T` after setting `_internal_metadata_` so that `T` can safely

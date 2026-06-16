@@ -1158,8 +1158,16 @@ class PROTOBUF_EXPORT MessageLite {
     return internal::InternalVisibility{};
   }
 
+  internal::SerialArena* GetSerialArena() const;
+
   template <typename T>
   PROTOBUF_ALWAYS_INLINE static T* DefaultConstruct(Arena* arena) {
+    return static_cast<T*>(Arena::DefaultConstruct<T>(arena));
+  }
+
+  template <typename T>
+  PROTOBUF_ALWAYS_INLINE static T* DefaultConstruct(
+      internal::SerialArena* arena) {
     return static_cast<T*>(Arena::DefaultConstruct<T>(arena));
   }
 
@@ -1214,12 +1222,21 @@ class PROTOBUF_EXPORT MessageLite {
   explicit constexpr MessageLite(const internal::ClassData* data)
       : _class_data_(data) {}
   explicit MessageLite(Arena* arena, const internal::ClassData* data)
+      : _internal_metadata_(internal::GetSerialArena(arena)),
+        _class_data_(data) {}
+  explicit MessageLite(internal::SerialArena* arena,
+                       const internal::ClassData* data)
       : _internal_metadata_(arena), _class_data_(data) {}
 #else   // PROTOBUF_CUSTOM_VTABLE
   constexpr MessageLite() {}
-  explicit MessageLite(Arena* arena) : _internal_metadata_(arena) {}
+  explicit MessageLite(Arena* arena)
+      : _internal_metadata_(internal::GetSerialArena(arena)) {}
+  explicit MessageLite(internal::SerialArena* arena)
+      : _internal_metadata_(arena) {}
   explicit constexpr MessageLite(const internal::ClassData*) {}
   explicit MessageLite(Arena* arena, const internal::ClassData*)
+      : _internal_metadata_(internal::GetSerialArena(arena)) {}
+  explicit MessageLite(internal::SerialArena* arena, const internal::ClassData*)
       : _internal_metadata_(arena) {}
 #endif  // PROTOBUF_CUSTOM_VTABLE
 
@@ -1633,8 +1650,9 @@ PROTOBUF_ALWAYS_INLINE MessageLite* MessageCreator::PlacementNew(
   // avoid the double-write. It's easier than trying to avoid the overlap.
   memcpy(dst, static_cast<const void*>(prototype_for_copy),
          sizeof(MessageLite));
-  memcpy(dst + PROTOBUF_FIELD_OFFSET(MessageLite, _internal_metadata_), &arena,
-         sizeof(arena));
+  SerialArena* serial_arena = GetSerialArena(arena);
+  memcpy(dst + PROTOBUF_FIELD_OFFSET(MessageLite, _internal_metadata_),
+         &serial_arena, sizeof(serial_arena));
   return Launder(reinterpret_cast<MessageLite*>(mem));
 }
 

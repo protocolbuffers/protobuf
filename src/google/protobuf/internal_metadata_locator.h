@@ -3,6 +3,7 @@
 
 #include <cstddef>
 #include <cstdint>
+#include <iostream>
 #include <limits>
 #include <type_traits>
 
@@ -215,8 +216,8 @@ class TaggedInternalMetadataResolver {
   inline const InternalMetadata& FindInternalMetadata(
       const void* object) const {
     ABSL_DCHECK_NE(Offset(), 0);
-    return *reinterpret_cast<const InternalMetadata*>(
-        reinterpret_cast<const char*>(object) + Offset());
+    const void* target = reinterpret_cast<const char*>(object) + Offset();
+    return *reinterpret_cast<const InternalMetadata*>(target);
   }
 
   uint32_t offset_ = InternalMetadataOffset().Offset();

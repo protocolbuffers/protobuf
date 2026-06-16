@@ -303,7 +303,7 @@ void SingularStringView::GenerateInlineAccessorDefinitions(
           $TsanDetectConcurrentMutation$;
           $PrepareSplitMessageForWrite$;
           $update_hasbit$;
-          $field_$.Set(static_cast<Arg_&&>(arg), GetArena());
+          $field_$.Set(static_cast<Arg_&&>(arg), GetSerialArena());
           $annotate_set$;
           // @@protoc_insertion_point(field_set:$pkg.Msg.field$)
         }
@@ -315,7 +315,7 @@ void SingularStringView::GenerateInlineAccessorDefinitions(
         inline void $Msg$::_internal_set_$name_internal$(::absl::string_view value) {
           $TsanDetectConcurrentMutation$;
           $update_hasbit$;
-          $field_$.Set(value, GetArena());
+          $field_$.Set(value, GetSerialArena());
         }
       )cc");
 }
@@ -349,7 +349,7 @@ void SingularStringView::GenerateClearingCode(io::Printer* p) const {
 
   ABSL_DCHECK(!is_inlined());
   p->Emit(R"cc(
-    $field_$.ClearToDefault($lazy_var$, GetArena());
+    $field_$.ClearToDefault($lazy_var$, GetSerialArena());
   )cc");
 }
 
@@ -380,7 +380,7 @@ void SingularStringView::GenerateMessageClearingCode(io::Printer* p) const {
     // Clear to a non-empty default is more involved, as we try to use the
     // Arena if one is present and may need to reallocate the string.
     p->Emit(R"cc(
-      $field_$.ClearToDefault($lazy_var$, GetArena());
+      $field_$.ClearToDefault($lazy_var$, GetSerialArena());
     )cc");
     return;
   }
@@ -436,7 +436,7 @@ void SingularStringView::GenerateCopyConstructorCode(io::Printer* p) const {
     if (EmptyDefault()) {
       p->Emit(R"cc(
         if ($pbi$::DebugHardenForceCopyDefaultString()) {
-          $field_$.Set("", GetArena());
+          $field_$.Set("", GetSerialArena());
         }
       )cc");
     }
@@ -459,7 +459,7 @@ void SingularStringView::GenerateCopyConstructorCode(io::Printer* p) const {
         }}},
       R"cc(
         if ($hazzer$) {
-          _this->$field_$.Set(from._internal_$name$(), _this->GetArena());
+          _this->$field_$.Set(from._internal_$name$(), _this->GetSerialArena());
         }
       )cc");
 }

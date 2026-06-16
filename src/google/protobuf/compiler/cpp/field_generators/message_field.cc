@@ -260,7 +260,7 @@ void SingularMessage::GenerateInlineAccessorDefinitions(io::Printer* p) const {
       $TsanDetectConcurrentMutation$;
       $StrongRef$;
       if ($field_$ == nullptr) {
-        auto* p = Super_::DefaultConstruct<$Submsg$>(GetArena());
+        auto* p = Super_::DefaultConstruct<$Submsg$>(GetSerialArena());
         $field_$ = reinterpret_cast<$MemberType$*>(p);
       }
       return $cast_field_$;
@@ -610,7 +610,8 @@ void OneofMessage::GenerateInlineAccessorDefinitions(io::Printer* p) const {
       if ($not_has_field$) {
         clear_$oneof_name$();
         set_has_$name_internal$();
-        $field_$ = $cast_to_field$(Super_::DefaultConstruct<$Submsg$>(GetArena()));
+        $field_$ = $cast_to_field$(
+            Super_::DefaultConstruct<$Submsg$>(GetSerialArena()));
       }
       return $cast_field_$;
     }

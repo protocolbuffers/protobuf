@@ -625,7 +625,7 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8)
                     internal::HasDeprecatedArenaConstructor<T>()) {
         return new T();
       } else {
-        return new T(nullptr);
+        return new T(static_cast<Arena*>(nullptr));
       }
     }
 
@@ -706,7 +706,8 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8)
                     internal::HasDeprecatedArenaConstructor<T>()) {
         return new T(static_cast<Args&&>(args)...);
       } else {
-        return new T(nullptr, static_cast<Args&&>(args)...);
+        return new T(static_cast<Arena*>(nullptr),
+                     static_cast<Args&&>(args)...);
       }
     } else {
       return arena->DoCreateMessage<T>(static_cast<Args&&>(args)...);
@@ -756,6 +757,9 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8)
   template <typename T>
   static void* PROTOBUF_NONNULL
   DefaultConstruct(Arena* PROTOBUF_NULLABLE arena);
+  template <typename T>
+  static void* PROTOBUF_NONNULL
+  DefaultConstruct(internal::SerialArena* PROTOBUF_NULLABLE arena);
   template <typename T>
   static void* PROTOBUF_NONNULL CopyConstruct(
       Arena* PROTOBUF_NULLABLE arena, const void* PROTOBUF_NONNULL from);
@@ -1132,13 +1136,21 @@ class ABSL_MUST_USE_RESULT ABSL_ATTRIBUTE_TRIVIAL_ABI Arena::Ptr final
 template <typename T>
 PROTOBUF_NOINLINE void* PROTOBUF_NONNULL
 Arena::DefaultConstruct(Arena* PROTOBUF_NULLABLE arena) {
+  return DefaultConstruct<T>(internal::GetSerialArena(arena));
+}
+
+template <typename T>
+PROTOBUF_NOINLINE void* PROTOBUF_NONNULL
+Arena::DefaultConstruct(internal::SerialArena* PROTOBUF_NULLABLE serial_arena) {
+  Arena* arena =
+      serial_arena == nullptr ? nullptr : serial_arena->GetOwningArena();
   if constexpr (internal::FieldHasArenaOffset<T>()) {
-    if (arena != nullptr) {
+    if (serial_arena != nullptr) {
       using ArenaRepT = typename internal::FieldArenaRep<T>::Type;
       static_assert(is_destructor_skippable<ArenaRepT>::value);
 
-      void* mem = arena->AllocateAligned(sizeof(ArenaRepT));
-      ArenaRepT* arena_rep = new (mem) ArenaRepT(arena);
+      void* mem = serial_arena->AllocateAligned(sizeof(ArenaRepT));
+      ArenaRepT* arena_rep = new (mem) ArenaRepT(serial_arena);
       return internal::FieldArenaRep<T>::Get(arena_rep);
     } else {
       static_assert(is_destructor_skippable<T>::value);
@@ -1149,12 +1161,17 @@ Arena::DefaultConstruct(Arena* PROTOBUF_NULLABLE arena) {
     }
   } else {
     static_assert(is_destructor_skippable<T>::value);
-    void* mem = arena != nullptr ? arena->AllocateAligned(sizeof(T))
-                                 : internal::Allocate(sizeof(T));
+    void* mem = serial_arena != nullptr
+                    ? serial_arena->AllocateAligned(sizeof(T))
+                    : internal::Allocate(sizeof(T));
     if constexpr (internal::HasDeprecatedArenaConstructor<T>()) {
       return new (mem) T(internal::InternalVisibility(), arena);
     } else {
-      return new (mem) T(arena);
+      if constexpr (std::is_constructible_v<T, internal::SerialArena*>) {
+        return new (mem) T(serial_arena);
+      } else {
+        return new (mem) T(arena);
+      }
     }
   }
 }

@@ -789,6 +789,7 @@ PROTOBUF_ALWAYS_INLINE const char* TcParser::RepeatedParseMessageAuxImpl(
   const auto expected_tag = UnalignedLoad<TagType>(ptr);
   const auto aux = *table->field_aux(data.aux_idx());
   auto& field = RefAt<RepeatedPtrFieldBase>(msg, data.offset());
+
   ABSL_DCHECK_EQ(field.GetArena(), arena);
   // Captured structured bindings are a C++20 feature.
   auto [inner_table_alias, class_data] =

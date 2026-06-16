@@ -9,6 +9,7 @@
 #define GOOGLE_PROTOBUF_ARENASTRING_H__
 
 #include <algorithm>
+#include <cstddef>
 #include <cstdint>
 #include <string>
 #include <type_traits>
@@ -35,6 +36,7 @@ namespace internal {
 class EpsCopyInputStream;
 
 class SwapFieldHelper;
+class SerialArena;
 
 // Lazy string instance to support string fields with non-empty default.
 // These are initialized on the first call to .get().
@@ -318,12 +320,24 @@ struct PROTOBUF_EXPORT ArenaStringPtr {
     Set(const_string_ref.get(), arena);
   }
 
-  // Returns a mutable std::string reference.
-  // The version accepting a `LazyString` value is used in the generated code to
-  // initialize mutable copies for fields with a non-empty default where the
-  // default value is lazily initialized.
+  // SerialArena overloads:
+  void Set(absl::string_view value, SerialArena* arena);
+  void Set(std::string&& value, SerialArena* arena);
+  void Set(const char* s, SerialArena* arena);
+  void Set(const char* s, size_t n, SerialArena* arena);
+  template <typename... OverloadDisambiguator>
+  void Set(const std::string& value, SerialArena* arena);
+  void SetBytes(absl::string_view value, SerialArena* arena);
+  void SetBytes(std::string&& value, SerialArena* arena);
+  template <typename... OverloadDisambiguator>
+  void SetBytes(const std::string& value, SerialArena* arena);
+  void SetBytes(const char* s, SerialArena* arena);
+  void SetBytes(const void* p, size_t n, SerialArena* arena);
+
   std::string* Mutable(Arena* arena);
   std::string* Mutable(const LazyString& default_value, Arena* arena);
+  std::string* Mutable(SerialArena* arena);
+  std::string* Mutable(const LazyString& default_value, SerialArena* arena);
 
   // Gets a mutable pointer with unspecified contents.
   // This function is identical to Mutable(), except it is optimized for the
@@ -333,6 +347,7 @@ struct PROTOBUF_EXPORT ArenaStringPtr {
   // Likewise, if the current value is a fixed size arena string with contents,
   // it will be initialized into an empty mutable arena string.
   std::string* MutableNoCopy(Arena* arena);
+  std::string* MutableNoCopy(SerialArena* arena);
 
   // Basic accessors.
   PROTOBUF_NDEBUG_INLINE const std::string& Get() const {
@@ -357,6 +372,7 @@ struct PROTOBUF_EXPORT ArenaStringPtr {
   // std::string's destructor is registered with the arena. Used to implement
   // set_allocated_<field> in generated classes.
   void SetAllocated(std::string* value, Arena* arena);
+  void SetAllocated(std::string* value, SerialArena* arena);
 
   // Frees storage (if not on an arena).
   void Destroy();
@@ -369,12 +385,15 @@ struct PROTOBUF_EXPORT ArenaStringPtr {
 
   // Clears content, assuming that the current value is not the empty
   // string default.
+  // string default.
   void ClearNonDefaultToEmpty();
 
   // Clears content, but keeps allocated std::string if arena != nullptr, to
   // avoid the overhead of heap operations. After this returns, the content
   // (as seen by the user) will always be equal to |default_value|.
   void ClearToDefault(const LazyString& default_value, ::google::protobuf::Arena* arena);
+  void ClearToDefault(const LazyString& default_value,
+                      ::google::protobuf::internal::SerialArena* arena);
 
   // Swaps internal pointers. Arena-safety semantics: this is guarded by the
   // logic in Swap()/UnsafeArenaSwap() at the message level, so this method is
@@ -394,6 +413,55 @@ struct PROTOBUF_EXPORT ArenaStringPtr {
   // Returns true if this instances holds an immutable default value.
   inline bool IsDefault() const { return tagged_ptr_.IsDefault(); }
 
+  // nullptr_t overloads to resolve ambiguity:
+  inline void Set(absl::string_view value, std::nullptr_t) {
+    Set(value, static_cast<Arena*>(nullptr));
+  }
+  inline void Set(std::string&& value, std::nullptr_t) {
+    Set(std::move(value), static_cast<Arena*>(nullptr));
+  }
+  inline void Set(const char* s, std::nullptr_t) {
+    Set(s, static_cast<Arena*>(nullptr));
+  }
+  inline void Set(const char* s, size_t n, std::nullptr_t) {
+    Set(s, n, static_cast<Arena*>(nullptr));
+  }
+  template <typename... OverloadDisambiguator>
+  inline void Set(const std::string& value, std::nullptr_t) {
+    Set(value, static_cast<Arena*>(nullptr));
+  }
+  inline void SetBytes(absl::string_view value, std::nullptr_t) {
+    SetBytes(value, static_cast<Arena*>(nullptr));
+  }
+  inline void SetBytes(std::string&& value, std::nullptr_t) {
+    SetBytes(std::move(value), static_cast<Arena*>(nullptr));
+  }
+  template <typename... OverloadDisambiguator>
+  inline void SetBytes(const std::string& value, std::nullptr_t) {
+    SetBytes(value, static_cast<Arena*>(nullptr));
+  }
+  inline void SetBytes(const char* s, std::nullptr_t) {
+    SetBytes(s, static_cast<Arena*>(nullptr));
+  }
+  inline void SetBytes(const void* p, size_t n, std::nullptr_t) {
+    SetBytes(p, n, static_cast<Arena*>(nullptr));
+  }
+  inline std::string* Mutable(std::nullptr_t) {
+    return Mutable(static_cast<Arena*>(nullptr));
+  }
+  inline std::string* Mutable(const LazyString& default_value, std::nullptr_t) {
+    return Mutable(default_value, static_cast<Arena*>(nullptr));
+  }
+  inline std::string* MutableNoCopy(std::nullptr_t) {
+    return MutableNoCopy(static_cast<Arena*>(nullptr));
+  }
+  inline void SetAllocated(std::string* value, std::nullptr_t) {
+    SetAllocated(value, static_cast<Arena*>(nullptr));
+  }
+  inline void ClearToDefault(const LazyString& default_value, std::nullptr_t) {
+    ClearToDefault(default_value, static_cast<Arena*>(nullptr));
+  }
+
  private:
   template <typename... Args>
   inline std::string* NewString(Arena* arena, Args&&... args) {
@@ -405,6 +473,11 @@ struct PROTOBUF_EXPORT ArenaStringPtr {
       return tagged_ptr_.SetMutableArena(s);
     }
   }
+
+  std::string* NewString(SerialArena* arena, std::string&& value);
+  std::string* NewString(SerialArena* arena, const std::string& value);
+  std::string* NewString(SerialArena* arena, const char* s, size_t n);
+  std::string* NewString(SerialArena* arena);
 
   TaggedStringPtr tagged_ptr_;
 

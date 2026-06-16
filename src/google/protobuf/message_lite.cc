@@ -39,6 +39,7 @@
 #include "google/protobuf/metadata_lite.h"
 #include "google/protobuf/parse_context.h"
 #include "google/protobuf/port.h"
+#include "google/protobuf/serial_arena.h"
 
 
 // Must be included last.
@@ -815,6 +816,13 @@ void ShutdownProtobufLibrary() {
   }
 }
 
+
+internal::SerialArena* MessageLite::GetSerialArena() const {
+  internal::SerialArena* serial = _internal_metadata_.serial_arena();
+  if (serial == nullptr) return nullptr;
+  ABSL_DCHECK_EQ(internal::GetSerialArena(serial->GetOwningArena()), serial);
+  return serial;
+}
 
 }  // namespace protobuf
 }  // namespace google

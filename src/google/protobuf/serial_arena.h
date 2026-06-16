@@ -14,6 +14,7 @@
 #include <atomic>
 #include <cstddef>
 #include <cstdint>
+#include <iostream>
 #include <string>
 #include <vector>
 
@@ -32,6 +33,7 @@
 
 namespace google {
 namespace protobuf {
+class Arena;
 namespace internal {
 
 // Arena blocks are variable length malloc-ed objects.  The following structure
@@ -87,6 +89,10 @@ class PROTOBUF_EXPORT SerialArena {
     return space_allocated_.load(std::memory_order_relaxed);
   }
   uint64_t SpaceUsed() const;
+
+  Arena* GetOwningArena() const {
+    return reinterpret_cast<Arena*>(const_cast<ThreadSafeArena*>(&parent_));
+  }
 
   // See comments on `cached_blocks_` member for details.
   PROTOBUF_ALWAYS_INLINE void* TryAllocateFromCachedBlock(size_t size) {

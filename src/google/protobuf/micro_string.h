@@ -133,6 +133,7 @@ class PROTOBUF_EXPORT MicroString {
   constexpr MicroString() : rep_() {}
 
   explicit MicroString(Arena*) : MicroString() {}
+  explicit MicroString(internal::SerialArena*) : MicroString() {}
 
   MicroString(Arena* arena, const MicroString& other)
       : MicroString(FromOtherTag{}, other, arena) {}
@@ -206,6 +207,9 @@ class PROTOBUF_EXPORT MicroString {
   void Set(absl::string_view data, Arena* arena) {
     SetMaybeConstant(*this, data, arena);
   }
+  void Set(absl::string_view data, internal::SerialArena* arena) {
+    Set(data, arena == nullptr ? nullptr : arena->GetOwningArena());
+  }
 
   void Set(const absl::Cord& value, Arena* arena) {
     SetInChunks(value.size(), arena, [&value](auto append) {
@@ -214,8 +218,16 @@ class PROTOBUF_EXPORT MicroString {
       }
     });
   }
+  void Set(const absl::Cord& value, internal::SerialArena* arena) {
+    Set(value, arena == nullptr ? nullptr : arena->GetOwningArena());
+  }
   void Set(absl::string_view data, Arena* arena, size_t inline_capacity) {
     SetImpl(data, arena, inline_capacity);
+  }
+  void Set(absl::string_view data, internal::SerialArena* arena,
+           size_t inline_capacity) {
+    Set(data, arena == nullptr ? nullptr : arena->GetOwningArena(),
+        inline_capacity);
   }
 
   // Extra overloads to allow for other implicit conversions.
@@ -603,6 +615,8 @@ class MicroStringExtraImpl : private MicroString {
 #endif  // __cpp_lib_is_constant_evaluated
 
   explicit MicroStringExtraImpl(Arena*) : MicroStringExtraImpl() {}
+  explicit MicroStringExtraImpl(internal::SerialArena*)
+      : MicroStringExtraImpl() {}
 
   MicroStringExtraImpl(Arena* arena, const MicroStringExtraImpl& other)
       : MicroString(FromOtherTag{}, other, arena) {}
@@ -612,17 +626,34 @@ class MicroStringExtraImpl : private MicroString {
   void Set(const MicroStringExtraImpl& other, Arena* arena) {
     SetFromOtherImpl(*this, other, arena);
   }
+  void Set(const MicroStringExtraImpl& other, internal::SerialArena* arena) {
+    Set(other, arena == nullptr ? nullptr : arena->GetOwningArena());
+  }
   void Set(absl::string_view data, Arena* arena) {
     SetMaybeConstant(*this, data, arena);
+  }
+  void Set(absl::string_view data, internal::SerialArena* arena) {
+    Set(data, arena == nullptr ? nullptr : arena->GetOwningArena());
   }
   void Set(const std::string& data, Arena* arena) {
     Set(absl::string_view(data), arena);
   }
+  void Set(const std::string& data, internal::SerialArena* arena) {
+    Set(data, arena == nullptr ? nullptr : arena->GetOwningArena());
+  }
   void Set(const char* data, Arena* arena) {
     Set(absl::string_view(data), arena);
   }
+  void Set(const char* data, internal::SerialArena* arena) {
+    Set(data, arena == nullptr ? nullptr : arena->GetOwningArena());
+  }
   void Set(std::string&& str, Arena* arena) {
     MicroString::SetString(std::move(str), arena, kInlineCapacity);
+  }
+  void Set(std::string&& str, internal::SerialArena* arena) {
+    MicroString::SetString(std::move(str),
+                           arena == nullptr ? nullptr : arena->GetOwningArena(),
+                           kInlineCapacity);
   }
 
   void SetAlias(absl::string_view data, Arena* arena) {
