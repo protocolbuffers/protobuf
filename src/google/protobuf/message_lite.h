@@ -82,6 +82,16 @@ class MessageTableTester;
 }  // namespace cpp
 }  // namespace compiler
 
+// Type trait to check if a type T is a concrete proto message.
+template <typename T>
+struct is_concrete_proto_message
+    : std::integral_constant<bool, std::is_base_of_v<MessageLite, T> &&
+                                       !std::is_same_v<T, MessageLite> &&
+                                       !std::is_same_v<T, Message>> {};
+template <typename T>
+inline constexpr bool is_concrete_proto_message_v =
+    is_concrete_proto_message<T>::value;
+
 namespace internal {
 
 // TODO: Remove this once we have a better way to do this.
