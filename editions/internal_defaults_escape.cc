@@ -10,7 +10,6 @@
 #include <unistd.h>
 #endif
 
-#include "google/protobuf/descriptor.pb.h"
 #include "absl/flags/flag.h"
 #include "absl/flags/parse.h"
 #include "absl/log/absl_log.h"
@@ -40,24 +39,15 @@ ABSL_FLAG(
 
 int defaults_escape(const std::string& defaults_path,
                     const std::string& encoding, std::string& out_content) {
-  std::ifstream defaults_file(defaults_path);
+  std::ifstream defaults_file(defaults_path, std::ios::binary);
   if (!defaults_file.is_open()) {
     ABSL_LOG(ERROR) << "Could not open defaults file " << defaults_path;
     return 1;
   }
 
-  google::protobuf::FeatureSetDefaults defaults;
-  if (!defaults.ParseFromIstream(&defaults_file)) {
-    ABSL_LOG(ERROR) << "Unable to parse edition defaults " << defaults_path;
-    defaults_file.close();
-    return 1;
-  }
-
+  std::string content((std::istreambuf_iterator<char>(defaults_file)),
+                      std::istreambuf_iterator<char>());
   defaults_file.close();
-
-  std::string content = {};
-  // TODO: Remove this suppression.
-  (void)defaults.SerializeToString(&content);
   if (encoding == "base64") {
     content = absl::Base64Escape(content);
   } else if (encoding == "octal") {

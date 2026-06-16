@@ -127,7 +127,6 @@ cc_binary(
     srcs = ["internal_defaults_escape.cc"],
     malloc = "@bazel_tools//tools/cpp:malloc",
     deps = [
-        "//src/google/protobuf",
         "@abseil-cpp//absl/flags:flag",
         "@abseil-cpp//absl/flags:parse",
         "@abseil-cpp//absl/log:absl_log",
