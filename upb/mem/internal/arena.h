@@ -28,9 +28,11 @@
 #define UPB_ARENA_BASE_SIZE_HACK 9
 #endif
 
-#define UPB_ARENA_SIZE_HACK                                                   \
-  (sizeof(void*) * (UPB_ARENA_BASE_SIZE_HACK + (UPB_XSAN_STRUCT_SIZE * 2))) + \
-      (sizeof(uint32_t) * 2)
+#define UPB_ARENA_SIZE_HACK                                                \
+  UPB_ALIGN_UP((sizeof(void*) *                                            \
+                (UPB_ARENA_BASE_SIZE_HACK + (UPB_XSAN_STRUCT_SIZE * 2))) + \
+                   (sizeof(uint32_t) * 2),                                 \
+               8)
 
 // LINT.IfChange(upb_Arena)
 
