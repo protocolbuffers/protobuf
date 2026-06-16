@@ -3253,7 +3253,9 @@ bool CommandLineInterface::EncodeOrDecode(const DescriptorPool* pool) {
     }
   }
 
+  bool found_warning = false;
   if (!message->IsInitialized()) {
+    found_warning = true;
     std::cerr << "warning:  Input message is missing required fields:  "
               << message->InitializationErrorString() << std::endl;
   }
@@ -3274,7 +3276,9 @@ bool CommandLineInterface::EncodeOrDecode(const DescriptorPool* pool) {
     }
   }
 
-  return true;
+  // Treat warnings as fatal when --fatal_warnings is set, after the output has
+  // been written so the behavior matches the compile path.
+  return !(fatal_warnings_ && found_warning);
 }
 
 bool CommandLineInterface::WriteDescriptorSet(
