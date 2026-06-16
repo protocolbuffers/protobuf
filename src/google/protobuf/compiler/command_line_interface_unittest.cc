@@ -4636,13 +4636,50 @@ TEST_F(CommandLineInterfaceTest, GeneratorPluginNotFound) {
   // Error written to stdout by child process after exec() fails.
   ExpectErrorSubstring("no_such_file: program not found or is not executable");
 
+  // The plugin was registered with an explicit path (--plugin=name=path), so
+  // it is run by exact name and the PATH is never consulted. The suggestion
+  // must not point at the PATH, which would be misleading here.
+  ExpectErrorSubstring(
+      "Please specify a program using an absolute path or a path "
+      "relative to the current working directory");
+
+  // Error written by parent process when child fails.
+  ExpectErrorSubstring(
+      "--badplug_out: prefix-gen-badplug: Plugin failed with status code 1.");
+#endif
+}
+
+TEST_F(CommandLineInterfaceTest, GeneratorPluginNotFoundInPath) {
+  // Test the error when a plugin run via the PATH (SEARCH_PATH mode) isn't
+  // found. No --plugin is given, so protoc derives the plugin executable name
+  // from the output directive and looks for it on the PATH.
+
+  CreateTempFile("error.proto",
+                 "syntax = \"proto2\";\n"
+                 "message Foo {}\n");
+
+  Run("protocol_compiler --no_such_plugin_out=TestParameter:$tmpdir "
+      "--proto_path=$tmpdir error.proto");
+
+#ifdef _WIN32
+  ExpectErrorSubstring(
+      absl::StrCat("--no_such_plugin_out: prefix-gen-no_such_plugin: ",
+                   Subprocess::Win32ErrorMessage(ERROR_FILE_NOT_FOUND)));
+#else
+  // Error written to stdout by child process after exec() fails.
+  ExpectErrorSubstring(
+      "prefix-gen-no_such_plugin: program not found or is not executable");
+
+  // Here the plugin really is looked up on the PATH, so suggesting it is
+  // correct.
   ExpectErrorSubstring(
       "Please specify a program using absolute path or make sure "
       "the program is available in your PATH system variable");
 
   // Error written by parent process when child fails.
   ExpectErrorSubstring(
-      "--badplug_out: prefix-gen-badplug: Plugin failed with status code 1.");
+      "--no_such_plugin_out: prefix-gen-no_such_plugin: Plugin failed with "
+      "status code 1.");
 #endif
 }
 
