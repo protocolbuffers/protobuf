@@ -1,3 +1,4 @@
+load("@rules_go//proto:def.bzl", "go_proto_library")
 load("//bazel:proto_library.bzl", "proto_library")
 
 filegroup(
@@ -12,4 +13,18 @@ proto_library(
     strip_import_prefix = "/go",
     visibility = ["//:__subpackages__"],
     deps = ["//:descriptor_proto"],
+)
+
+go_proto_library(
+    name = "cpp_features_go_proto",
+    importpath = "github.com/protocolbuffers/protobuf/cpp_features_go_proto",
+    proto = "//:cpp_features_proto",
+    visibility = ["//visibility:public"],
+)
+
+go_proto_library(
+    name = "java_features_go_proto",
+    importpath = "github.com/protocolbuffers/protobuf/java_features_go_proto",
+    proto = "//java/core:java_features_proto",
+    visibility = ["//visibility:public"],
 )
