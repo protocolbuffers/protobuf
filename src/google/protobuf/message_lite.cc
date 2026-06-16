@@ -32,6 +32,7 @@
 #include "absl/types/span.h"
 #include "google/protobuf/arena.h"
 #include "google/protobuf/generated_message_tctable_impl.h"
+#include "google/protobuf/generated_message_util.h"
 #include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/io/zero_copy_stream.h"
 #include "google/protobuf/io/zero_copy_stream_impl.h"
@@ -756,6 +757,26 @@ void InternalMetadata::DoMergeFrom<std::string>(const std::string& other) {
 template <>
 void InternalMetadata::DoSwap<std::string>(std::string* other) {
   mutable_unknown_fields<std::string>()->swap(*other);
+}
+
+const UnknownFieldOps& ClassData::GetUnknownFieldOps() const {
+  if (is_lite) {
+    static constexpr UnknownFieldOps kLiteOps = {
+        [](MessageLite* msg, int number, int value) {
+          internal::WriteVarint(
+              number, value,
+              PrivateAccess::GetInternalMetadata(msg)
+                  .template mutable_unknown_fields<std::string>());
+        },
+        [](MessageLite* msg, int number, absl::string_view value) {
+          internal::WriteLengthDelimited(
+              number, value,
+              PrivateAccess::GetInternalMetadata(msg)
+                  .template mutable_unknown_fields<std::string>());
+        }};
+    return kLiteOps;
+  }
+  return full().descriptor_methods()->unknown_field_ops;
 }
 
 }  // namespace internal

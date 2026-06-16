@@ -126,6 +126,21 @@ std::string DebugStringImpl(const MessageLite& msg) {
   return DownCastMessage<Message>(msg).DebugString();
 }
 
+void WriteVarintToUnknownFieldSet(MessageLite* msg, int number, int value) {
+  internal::WriteVarint(
+      number, value,
+      internal::PrivateAccess::GetInternalMetadata(msg)
+          .template mutable_unknown_fields<UnknownFieldSet>());
+}
+
+void WriteLengthDelimitedToUnknownFieldSet(MessageLite* msg, int number,
+                                           absl::string_view value) {
+  internal::WriteLengthDelimited(
+      number, value,
+      internal::PrivateAccess::GetInternalMetadata(msg)
+          .template mutable_unknown_fields<UnknownFieldSet>());
+}
+
 }  // namespace
 
 PROTOBUF_CONSTINIT PROTOBUF_EXPORT const DescriptorMethods
@@ -136,7 +151,8 @@ PROTOBUF_CONSTINIT PROTOBUF_EXPORT const DescriptorMethods
         SpaceUsedLongImpl,
         DebugStringImpl,
         nullptr,
-};
+        {WriteVarintToUnknownFieldSet, WriteLengthDelimitedToUnknownFieldSet},
+    };
 
 }  // namespace internal
 

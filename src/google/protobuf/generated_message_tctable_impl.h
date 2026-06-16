@@ -418,9 +418,7 @@ class PROTOBUF_EXPORT TcParser final {
   //  - FastEndGX functions expect `data` with a non-field entry ABI.
   //  - MpXXX functions expect `data` with a mini table ABI.
   //  - The fallback functions (both GenericFallbackXXX and the codegen ones)
-  //    expect only the tag in `data`. In addition, if a null `ptr` is passed,
-  //    the function is used as a way to get a UnknownFieldOps vtable, returned
-  //    via the `const char*` return type. See `GetUnknownFieldOps()`
+  //    expect only the tag in `data`.
 
   PROTOBUF_CC static const char* GenericFallback(PROTOBUF_TC_PARAM_DECL);
   PROTOBUF_CC static const char* GenericFallbackLite(PROTOBUF_TC_PARAM_DECL);
@@ -954,39 +952,9 @@ class PROTOBUF_EXPORT TcParser final {
 
   class ScopedArenaSwap;
 
-  struct UnknownFieldOps {
-    void (*write_varint)(MessageLite* msg, int number, int value);
-    void (*write_length_delimited)(MessageLite* msg, int number,
-                                   absl::string_view value);
-  };
-
-  static const UnknownFieldOps& GetUnknownFieldOps(
-      const TcParseTableBase* table);
-
-  template <typename UnknownFieldsT>
-  static void WriteVarintToUnknown(MessageLite* msg, int number, int value) {
-    internal::WriteVarint(
-        number, value,
-        msg->_internal_metadata_.mutable_unknown_fields<UnknownFieldsT>());
-  }
-  template <typename UnknownFieldsT>
-  static void WriteLengthDelimitedToUnknown(MessageLite* msg, int number,
-                                            absl::string_view value) {
-    internal::WriteLengthDelimited(
-        number, value,
-        msg->_internal_metadata_.mutable_unknown_fields<UnknownFieldsT>());
-  }
 
   template <class MessageBaseT, class UnknownFieldsT>
   PROTOBUF_CC static const char* GenericFallbackImpl(PROTOBUF_TC_PARAM_DECL) {
-    if (ABSL_PREDICT_FALSE(ptr == nullptr)) {
-      // This is the ABI used by GetUnknownFieldOps(). Return the vtable.
-      static constexpr UnknownFieldOps kOps = {
-          WriteVarintToUnknown<UnknownFieldsT>,
-          WriteLengthDelimitedToUnknown<UnknownFieldsT>};
-      return reinterpret_cast<const char*>(&kOps);
-    }
-
     SyncHasbits(msg, hasbits, table);
     uint32_t tag = data.tag();
     if ((tag & 7) == WireFormatLite::WIRETYPE_END_GROUP || tag == 0) {

@@ -53,11 +53,6 @@ const char* TcParser::GenericFallback(PROTOBUF_TC_PARAM_DECL) {
 }
 
 const char* TcParser::ReflectionFallback(PROTOBUF_TC_PARAM_DECL) {
-  bool must_fallback_to_generic = (ptr == nullptr);
-  if (ABSL_PREDICT_FALSE(must_fallback_to_generic)) {
-    PROTOBUF_MUSTTAIL return GenericFallback(PROTOBUF_TC_PARAM_PASS);
-  }
-
   SyncHasbits(msg, hasbits, table);
   uint32_t tag = data.tag();
   if (tag == 0 || (tag & 7) == WireFormatLite::WIRETYPE_END_GROUP) {

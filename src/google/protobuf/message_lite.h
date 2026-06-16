@@ -84,6 +84,14 @@ class MessageTableTester;
 
 namespace internal {
 
+// Vtable structure for operations to write unknown fields to a message.
+// This decouples the parser from the message representation (Lite vs. Full).
+struct UnknownFieldOps {
+  void (*write_varint)(MessageLite* msg, int number, int value);
+  void (*write_length_delimited)(MessageLite* msg, int number,
+                                 absl::string_view value);
+};
+
 // TODO: Remove this once we have a better way to do this.
 PROTOBUF_EXPORT void GenericSwap(MessageLite* lhs, MessageLite* rhs);
 PROTOBUF_EXPORT void GenericSwap(Message* lhs, Message* rhs);
@@ -446,6 +454,8 @@ struct PROTOBUF_EXPORT ClassData {
   uint32_t allocation_size() const { return message_creator.allocation_size(); }
 
   uint8_t alignment() const { return message_creator.alignment(); }
+
+  const UnknownFieldOps& GetUnknownFieldOps() const;
 };
 
 #ifndef PROTOBUF_MESSAGE_GLOBALS
@@ -472,6 +482,7 @@ struct PROTOBUF_EXPORT DescriptorMethods {
   size_t (*space_used_long)(const MessageLite&);
   std::string (*debug_string)(const MessageLite&);
   void (*verify_lazy_field_consistency)(const LazyField&);
+  UnknownFieldOps unknown_field_ops;
 };
 
 // ClassData* can and should be placed on read-only section to maximize sharing.

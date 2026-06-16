@@ -419,6 +419,11 @@ struct PrivateAccess {
   }
 
   template <typename T>
+  static auto& GetInternalMetadata(T* msg) {
+    return msg->_internal_metadata_;
+  }
+
+  template <typename T>
   static void TrackerOnGetMetadata() {
     T::Impl_::TrackerOnGetMetadata();
   }
