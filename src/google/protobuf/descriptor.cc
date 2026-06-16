@@ -10175,18 +10175,38 @@ void DescriptorBuilder::OptionInterpreter::UpdateSourceCodeInfo(
   // We find locations that match keys in interpreted_paths_ and
   // 1) replace the path with the corresponding value in interpreted_paths_
   // 2) remove any subsequent sub-locations (sub-location is one whose path
-  //    has the parent path as a prefix)
+  //    has the parent path as a prefix), except for direct children (like
+  //    option name and value) which are mapped to the interpreted path.
   //
   // To avoid quadratic behavior of removing interior rows as we go,
   // we keep a copy. But we don't actually copy anything until we've
   // found the first match (so if the source code info has no locations
   // that need to be changed, there is zero copy overhead).
 
+  // The original repeated field of source code locations in the file.
   RepeatedPtrField<SourceCodeInfo_Location>* locs = info->mutable_location();
+
+  // The new repeated field of source code locations being built to replace
+  // locs.
   RepeatedPtrField<SourceCodeInfo_Location> new_locs;
+
+  // Indicates whether we have started copying locations to new_locs. To avoid
+  // unnecessary copying overhead when no locations need modification, copying
+  // remains false until the first matching uninterpreted option location is
+  // found.
   bool copying = false;
 
-  SourceCodePath pathv;
+  // The uninterpreted option path (e.g., [options, index]) currently being
+  // matched and replaced.
+  SourceCodePath match_src;
+
+  // The interpreted option path (e.g., [options, custom_option_tag]) that
+  // replaces match_src.
+  SourceCodePath match_dest;
+
+  // Indicates whether we are currently traversing child locations of an
+  // uninterpreted option that was matched in a previous iteration. When true,
+  // child sub-locations are inspected and either remapped or removed.
   bool matched = false;
 
   for (RepeatedPtrField<SourceCodeInfo_Location>::iterator loc = locs->begin();
@@ -10194,11 +10214,11 @@ void DescriptorBuilder::OptionInterpreter::UpdateSourceCodeInfo(
     if (matched) {
       // see if this location is in the range to remove
       bool loc_matches = true;
-      if (loc->path_size() < static_cast<int64_t>(pathv.size())) {
+      if (loc->path_size() < static_cast<int64_t>(match_src.size())) {
         loc_matches = false;
       } else {
-        for (size_t j = 0; j < pathv.size(); j++) {
-          if (loc->path(j) != pathv[j]) {
+        for (size_t j = 0; j < match_src.size(); j++) {
+          if (loc->path(j) != match_src[j]) {
             loc_matches = false;
             break;
           }
@@ -10206,19 +10226,29 @@ void DescriptorBuilder::OptionInterpreter::UpdateSourceCodeInfo(
       }
 
       if (loc_matches) {
+        if (loc->path_size() == static_cast<int64_t>(match_src.size() + 1)) {
+          int uninterpreted_field = loc->path(match_src.size());
+
+          SourceCodeInfo_Location* mapped_loc = new_locs.Add();
+          *mapped_loc = *loc;
+          mapped_loc->mutable_path()->Assign(match_dest.begin(),
+                                             match_dest.end());
+          mapped_loc->add_path(uninterpreted_field);
+
+          // TODO: b/168903973 - recursively process options with aggregate
+          // values and add locations. Example: [(my_opt) = {a: 1, b: 2}]
+          // Locations of `a` and `b` are not added yet.
+        }
         // don't copy this row since it is a sub-location that we're removing
+        // (or we already mapped it if it's a direct child)
         continue;
       }
 
       matched = false;
     }
 
-    pathv.clear();
-    for (int j = 0; j < loc->path_size(); j++) {
-      pathv.push_back(loc->path(j));
-    }
-
-    auto entry = interpreted_paths_.find(pathv);
+    SourceCodePath curr_path(loc->path().begin(), loc->path().end());
+    auto entry = interpreted_paths_.find(curr_path);
 
     if (entry == interpreted_paths_.end()) {
       // not a match
@@ -10229,26 +10259,22 @@ void DescriptorBuilder::OptionInterpreter::UpdateSourceCodeInfo(
     }
 
     matched = true;
+    match_src = std::move(curr_path);
+    match_dest = entry->second;
 
     if (!copying) {
       // initialize the copy we are building
       copying = true;
       new_locs.Reserve(locs->size());
-      for (RepeatedPtrField<SourceCodeInfo_Location>::iterator it =
-               locs->begin();
-           it != loc; it++) {
-        *new_locs.Add() = *it;
-      }
+      // Copy all the locations we've seen so far
+      new_locs.Add(locs->begin(), loc);
     }
 
     // add replacement and update its path
     SourceCodeInfo_Location* replacement = new_locs.Add();
     *replacement = *loc;
-    replacement->clear_path();
-    for (SourceCodePath::iterator rit = entry->second.begin();
-         rit != entry->second.end(); rit++) {
-      replacement->add_path(*rit);
-    }
+    replacement->mutable_path()->Assign(entry->second.begin(),
+                                        entry->second.end());
   }
 
   // if we made a changed copy, put it in place
