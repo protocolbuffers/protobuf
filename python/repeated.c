@@ -271,7 +271,7 @@ static bool PyUpb_IterInput(PyObject* value, const upb_FieldDef* field,
       Py_ssize_t count = view.len / view.itemsize;
       if (count == 0) {
         PyBuffer_Release(&view);
-        return true;
+        return bulk_cb(NULL, 0, 0, ctx);
       }
       if (view.format[0] != 'O') {
         if (upb_FieldDef_CType(field) == kUpb_CType_Enum) {

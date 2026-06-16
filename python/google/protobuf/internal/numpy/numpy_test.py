@@ -87,6 +87,12 @@ class NumpyIntProtoTest(unittest.TestCase):
     message.repeated_int64[:] = padded_array
     np.testing.assert_equal(padded_np_array, message.repeated_int64)
 
+  def testNumpyRepeatedFieldSliceTruncate(self):
+    message.repeated_int64[:] = np.arange(5, dtype=np.int64)
+    message.repeated_int64[2:] = np.array([], dtype=np.int64)
+    expected = np.arange(2, dtype=np.int64)
+    np.testing.assert_equal(expected, message.repeated_int64)
+
   def testNumpyRepeatedFieldSelfExtend(self):
     np_array = np.arange(5, dtype=np.int64)
     message.repeated_int64[:] = np_array
