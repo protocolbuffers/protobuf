@@ -37,6 +37,12 @@
 // Must be last.
 #include "upb/port/def.inc"
 
+enum {
+  kUpb_ConvertStatus_Ok = kUpb_ErrorCode_Ok,
+  // The source and destination MiniTables are not compatible for conversion.
+  kUpb_ConvertStatus_Incompatible = 10,
+};
+
 typedef struct {
   upb_Decoder decoder;
   upb_encstate encoder;
@@ -319,7 +325,7 @@ static void upb_Message_ConvertField(upb_Converter* c, upb_Message* dst,
     } else if (upb_MiniTableField_IsMap(dst_f)) {
       if (UPB_UNLIKELY(
               !_upb_MiniTableField_IsMapEntryCompatible(src_f, dst_f))) {
-        upb_ErrorHandler_ThrowError(&c->err, kUpb_ErrorCode_Malformed);
+        upb_ErrorHandler_ThrowError(&c->err, kUpb_ConvertStatus_Incompatible);
       }
       if (upb_Message_ConvertMapField(c, dst, src, dst_f, src_f, extreg,
                                       depth)) {
@@ -390,7 +396,7 @@ static void upb_Message_ConvertExtensions(upb_Converter* c, upb_Message* dst,
       if (UPB_UNLIKELY(
               !_upb_MiniTableField_IsExtensionCompatible(src_f, dst_f))) {
         // Return an error due to type mismatch.
-        upb_ErrorHandler_ThrowError(&c->err, kUpb_ErrorCode_Malformed);
+        upb_ErrorHandler_ThrowError(&c->err, kUpb_ConvertStatus_Incompatible);
       }
 
       if (upb_MiniTableField_CType(dst_f) == kUpb_CType_Message) {
@@ -485,6 +491,12 @@ static void upb_Message_ConvertInternal(upb_Converter* c, upb_Message* dst,
     upb_ErrorHandler_ThrowError(&c->err, kUpb_ErrorCode_MaxDepthExceeded);
   }
 
+  // Bails out if the source and destination are not both MessageSets.
+  if (upb_MiniTable_IsMessageSet(dst_mt) !=
+      upb_MiniTable_IsMessageSet(src_mt)) {
+    upb_ErrorHandler_ThrowError(&c->err, kUpb_ConvertStatus_Incompatible);
+  }
+
   const upb_MiniTableField* dst_f = NULL;
   const upb_MiniTableField* dst_first = NULL;
   const upb_MiniTableField* src_f = NULL;
@@ -511,7 +523,7 @@ static void upb_Message_ConvertInternal(upb_Converter* c, upb_Message* dst,
       const upb_MiniTableField* src_next = src_f - 1;
 
       if (UPB_UNLIKELY(!_upb_MiniTableField_IsCompatible(src_next, dst_next))) {
-        upb_ErrorHandler_ThrowError(&c->err, kUpb_ErrorCode_Malformed);
+        upb_ErrorHandler_ThrowError(&c->err, kUpb_ConvertStatus_Incompatible);
       }
       if (upb_MiniTableField_IsInOneof(dst_next) &&
           UPB_PRIVATE(_upb_Message_GetOneofCase)(dst, dst_next) != 0) {
