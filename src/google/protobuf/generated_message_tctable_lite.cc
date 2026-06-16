@@ -41,6 +41,7 @@
 #include "google/protobuf/repeated_field.h"
 #include "google/protobuf/repeated_ptr_field.h"
 #include "google/protobuf/serial_arena.h"
+#include "google/protobuf/unknown_field_set.h"
 #include "google/protobuf/varint_shuffle.h"
 #include "google/protobuf/wire_format_lite.h"
 #include "utf8_validity.h"
@@ -72,7 +73,7 @@ using FieldEntry = TcParseTableBase::FieldEntry;
 #endif
 
 const char* TcParser::GenericFallbackLite(PROTOBUF_TC_PARAM_DECL) {
-  PROTOBUF_MUSTTAIL return GenericFallbackImpl<MessageLite, std::string>(
+  PROTOBUF_MUSTTAIL return GenericFallbackImpl<MessageLite>(
       PROTOBUF_TC_PARAM_PASS);
 }
 
@@ -1473,22 +1474,59 @@ PROTOBUF_ALWAYS_INLINE const char* TcParser::RepeatedEnum(
   PROTOBUF_MUSTTAIL return ToTagDispatch(PROTOBUF_TC_PARAM_NO_DATA_PASS);
 }
 
-const TcParser::UnknownFieldOps& TcParser::GetUnknownFieldOps(
-    const TcParseTableBase* table) {
-  // Call the fallback function in a special mode to only act as a
-  // way to return the ops.
-  // Hiding the unknown fields vtable behind the fallback function avoids adding
-  // more pointers in TcParseTableBase, and the extra runtime jumps are not
-  // relevant because unknown fields are rare.
-  const char* ptr = table->fallback(nullptr, nullptr, nullptr, {}, nullptr, 0);
-  return *reinterpret_cast<const UnknownFieldOps*>(ptr);
+void TcParser::WriteVarintToUnknown(MessageLite* msg,
+                                    const ClassData* class_data, int number,
+                                    int value) {
+  if (class_data->is_lite) {
+    internal::WriteVarint(
+        number, value,
+        msg->_internal_metadata_.mutable_unknown_fields<std::string>());
+  } else {
+    internal::WriteVarint(
+        number, value,
+        msg->_internal_metadata_.mutable_unknown_fields<UnknownFieldSet>());
+  }
+}
+
+void TcParser::WriteLengthDelimitedToUnknown(MessageLite* msg,
+                                             const ClassData* class_data,
+                                             int number,
+                                             absl::string_view value) {
+  if (class_data->is_lite) {
+    internal::WriteLengthDelimited(
+        number, value,
+        msg->_internal_metadata_.mutable_unknown_fields<std::string>());
+  } else {
+    internal::WriteLengthDelimited(
+        number, value,
+        msg->_internal_metadata_.mutable_unknown_fields<UnknownFieldSet>());
+  }
+}
+
+const char* TcParser::MpUnknownFields(PROTOBUF_TC_PARAM_DECL) {
+  SyncHasbits(msg, hasbits, table);
+  uint32_t tag = data.tag();
+  if (ABSL_PREDICT_FALSE((tag & 7) == WireFormatLite::WIRETYPE_END_GROUP ||
+                         tag == 0)) {
+    ctx->SetLastTag(tag);
+    return ptr;
+  }
+  if (table->class_data->is_lite) {
+    return UnknownFieldParse(
+        tag, msg->_internal_metadata_.mutable_unknown_fields<std::string>(),
+        ptr, ctx);
+  } else {
+    return UnknownFieldParse(
+        tag, msg->_internal_metadata_.mutable_unknown_fields<UnknownFieldSet>(),
+        ptr, ctx);
+  }
 }
 
 PROTOBUF_NOINLINE void TcParser::AddUnknownEnum(MessageLite* msg,
                                                 const TcParseTableBase* table,
                                                 uint32_t tag,
                                                 int32_t enum_value) {
-  GetUnknownFieldOps(table).write_varint(msg, tag >> 3, enum_value);
+  WriteVarintToUnknown(msg, table->class_data, tag >> 3, enum_value);
 }
 
 template <typename TagType, uint16_t xform_val>
@@ -2922,7 +2960,7 @@ void TcParser::WriteMapEntryAsUnknown(MessageLite* msg,
     ABSL_DCHECK(map_info.value_is_validated_enum);
     WireFormatLite::WriteInt32(2, *map.GetValue<int32_t>(node), &coded_output);
   }
-  GetUnknownFieldOps(table).write_length_delimited(msg, tag >> 3, serialized);
+  WriteLengthDelimitedToUnknown(msg, table->class_data, tag >> 3, serialized);
 
   if (arena == nullptr) {
     map.DeleteNode(node);
