@@ -318,8 +318,8 @@ void SingularMessage::GenerateMessageClearingCode(io::Printer* p) const {
   ABSL_CHECK(has_hasbit_);
   p->Emit(
       R"cc(
-        $DCHK$($field_$ != nullptr);
-        $field_$->Clear();
+        $DCHK$(this_.$field_$ != nullptr);
+        this_.$field_$->Clear();
       )cc");
 }
 
@@ -725,6 +725,7 @@ class RepeatedMessage : public FieldGeneratorBase {
   void GenerateAccessorDeclarations(io::Printer* p) const override;
   void GenerateInlineAccessorDefinitions(io::Printer* p) const override;
   void GenerateClearingCode(io::Printer* p) const override;
+  void GenerateMessageClearingCode(io::Printer* p) const override;
   void GenerateMergingCode(io::Printer* p) const override;
   void GenerateSwappingCode(io::Printer* p) const override;
   void GenerateCopyConstructorCode(io::Printer* p) const override;
@@ -946,6 +947,14 @@ void RepeatedMessage::GenerateInlineAccessorDefinitions(io::Printer* p) const {
         return &_internal_mutable_weak_$name_internal$()->weak;
       }
     )cc");
+  }
+}
+
+void RepeatedMessage::GenerateMessageClearingCode(io::Printer* p) const {
+  if (should_split()) {
+    p->Emit("this_.$field_$.ClearIfNotDefault();\n");
+  } else {
+    p->Emit("$field_$.Clear();\n");
   }
 }
 

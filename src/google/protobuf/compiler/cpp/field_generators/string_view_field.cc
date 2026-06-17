@@ -380,14 +380,14 @@ void SingularStringView::GenerateMessageClearingCode(io::Printer* p) const {
     // Clear to a non-empty default is more involved, as we try to use the
     // Arena if one is present and may need to reallocate the string.
     p->Emit(R"cc(
-      $field_$.ClearToDefault($lazy_var$, GetArena());
+      this_.$field_$.ClearToDefault($lazy_var$, this_.GetArena());
     )cc");
     return;
   }
 
   if (use_micro_string()) {
     p->Emit(R"cc(
-      $field_$.Clear();
+      this_.$field_$.Clear();
     )cc");
     return;
   }
@@ -395,7 +395,7 @@ void SingularStringView::GenerateMessageClearingCode(io::Printer* p) const {
   p->Emit({{"Clear", HasHasbit(field_, options_) ? "ClearNonDefaultToEmpty"
                                                  : "ClearToEmpty"}},
           R"cc(
-            $field_$.$Clear$();
+            this_.$field_$.$Clear$();
           )cc");
 }
 
@@ -559,6 +559,14 @@ class RepeatedStringView : public FieldGeneratorBase {
       p->Emit(R"cc(
         $pb$::RepeatedPtrField<::std::string> $name$_;
       )cc");
+    }
+  }
+
+  void GenerateMessageClearingCode(io::Printer* p) const override {
+    if (should_split()) {
+      p->Emit("this_.$field_$.ClearIfNotDefault();\n");
+    } else {
+      p->Emit("$field_$.Clear();\n");
     }
   }
 
