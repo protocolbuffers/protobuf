@@ -811,7 +811,7 @@ PROTOBUF_NDEBUG_INLINE Struct::Impl_::Impl_(
           visibility, ::_pbi::InternalMetadataOffset::Build<
               ::google::protobuf::Struct,
               PROTOBUF_FIELD_OFFSET(::google::protobuf::Struct, _impl_.fields_)>()
-          , from.fields_
+          , arena, from.fields_
         }
      {}
 
@@ -1442,7 +1442,7 @@ PROTOBUF_NDEBUG_INLINE ListValue::Impl_::Impl_(
           visibility, ::_pbi::InternalMetadataOffset::Build<
               ::google::protobuf::ListValue,
               PROTOBUF_FIELD_OFFSET(::google::protobuf::ListValue, _impl_.values_)>()
-          , from.values_
+          , arena, from.values_
         }
      {}
 

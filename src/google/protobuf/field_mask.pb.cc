@@ -255,7 +255,7 @@ PROTOBUF_NDEBUG_INLINE FieldMask::Impl_::Impl_(
           visibility, ::_pbi::InternalMetadataOffset::Build<
               ::google::protobuf::FieldMask,
               PROTOBUF_FIELD_OFFSET(::google::protobuf::FieldMask, _impl_.paths_)>()
-          , from.paths_
+          , arena, from.paths_
         }
      {}
 

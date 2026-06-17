@@ -786,21 +786,21 @@ PROTOBUF_NDEBUG_INLINE Api::Impl_::Impl_(
           visibility, ::_pbi::InternalMetadataOffset::Build<
               ::google::protobuf::Api,
               PROTOBUF_FIELD_OFFSET(::google::protobuf::Api, _impl_.methods_)>()
-          , from.methods_
+          , arena, from.methods_
         }
         ,
         options_ {
           visibility, ::_pbi::InternalMetadataOffset::Build<
               ::google::protobuf::Api,
               PROTOBUF_FIELD_OFFSET(::google::protobuf::Api, _impl_.options_)>()
-          , from.options_
+          , arena, from.options_
         }
         ,
         mixins_ {
           visibility, ::_pbi::InternalMetadataOffset::Build<
               ::google::protobuf::Api,
               PROTOBUF_FIELD_OFFSET(::google::protobuf::Api, _impl_.mixins_)>()
-          , from.mixins_
+          , arena, from.mixins_
         }
         ,
         name_(arena, from.name_),
@@ -1256,7 +1256,7 @@ PROTOBUF_NDEBUG_INLINE Method::Impl_::Impl_(
           visibility, ::_pbi::InternalMetadataOffset::Build<
               ::google::protobuf::Method,
               PROTOBUF_FIELD_OFFSET(::google::protobuf::Method, _impl_.options_)>()
-          , from.options_
+          , arena, from.options_
         }
         ,
         name_(arena, from.name_),

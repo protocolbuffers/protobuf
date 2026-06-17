@@ -1247,21 +1247,21 @@ PROTOBUF_NDEBUG_INLINE Type::Impl_::Impl_(
           visibility, ::_pbi::InternalMetadataOffset::Build<
               ::google::protobuf::Type,
               PROTOBUF_FIELD_OFFSET(::google::protobuf::Type, _impl_.fields_)>()
-          , from.fields_
+          , arena, from.fields_
         }
         ,
         oneofs_ {
           visibility, ::_pbi::InternalMetadataOffset::Build<
               ::google::protobuf::Type,
               PROTOBUF_FIELD_OFFSET(::google::protobuf::Type, _impl_.oneofs_)>()
-          , from.oneofs_
+          , arena, from.oneofs_
         }
         ,
         options_ {
           visibility, ::_pbi::InternalMetadataOffset::Build<
               ::google::protobuf::Type,
               PROTOBUF_FIELD_OFFSET(::google::protobuf::Type, _impl_.options_)>()
-          , from.options_
+          , arena, from.options_
         }
         ,
         name_(arena, from.name_),
@@ -1679,7 +1679,7 @@ PROTOBUF_NDEBUG_INLINE Field::Impl_::Impl_(
           visibility, ::_pbi::InternalMetadataOffset::Build<
               ::google::protobuf::Field,
               PROTOBUF_FIELD_OFFSET(::google::protobuf::Field, _impl_.options_)>()
-          , from.options_
+          , arena, from.options_
         }
         ,
         name_(arena, from.name_),
@@ -2179,14 +2179,14 @@ PROTOBUF_NDEBUG_INLINE Enum::Impl_::Impl_(
           visibility, ::_pbi::InternalMetadataOffset::Build<
               ::google::protobuf::Enum,
               PROTOBUF_FIELD_OFFSET(::google::protobuf::Enum, _impl_.enumvalue_)>()
-          , from.enumvalue_
+          , arena, from.enumvalue_
         }
         ,
         options_ {
           visibility, ::_pbi::InternalMetadataOffset::Build<
               ::google::protobuf::Enum,
               PROTOBUF_FIELD_OFFSET(::google::protobuf::Enum, _impl_.options_)>()
-          , from.options_
+          , arena, from.options_
         }
         ,
         name_(arena, from.name_),
@@ -2571,7 +2571,7 @@ PROTOBUF_NDEBUG_INLINE EnumValue::Impl_::Impl_(
           visibility, ::_pbi::InternalMetadataOffset::Build<
               ::google::protobuf::EnumValue,
               PROTOBUF_FIELD_OFFSET(::google::protobuf::EnumValue, _impl_.options_)>()
-          , from.options_
+          , arena, from.options_
         }
         ,
         name_(arena, from.name_) {}
