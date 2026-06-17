@@ -21,6 +21,7 @@
 #include <gtest/gtest.h>
 #include "absl/status/status.h"
 #include "absl/status/statusor.h"
+#include "absl/strings/cord.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/descriptor_database.h"
@@ -1633,6 +1634,43 @@ TEST(JsonErrorTest, FieldNameAndSyntaxErrorInSeparateChunks) {
       s.message(),
       ContainsRegex("invalid *JSON *in *type.googleapis.com/proto3.TestMessage "
                     "*@ *bool_value"));
+}
+
+TEST_P(JsonTest, OversizedStringRejected) {
+#ifndef NDEBUG
+  GTEST_SKIP() << "Test is too slow in non-opt builds.";
+#else
+
+  if (sizeof(void*) < 8) {
+    GTEST_SKIP() << "Test requires 64-bit environment.";
+  }
+
+  absl::Cord chunk(std::string(1024 * 1024, 'a'));
+  absl::Cord cord;
+  cord.Append(R"({"stringValue": ")");
+  for (int i = 0; i < 2048; ++i) {
+    cord.Append(chunk);
+  }
+  cord.Append(R"("})");
+
+  io::CordInputStream input_stream(&cord);
+  TestMessage m;
+  absl::Status s;
+
+  if (GetParam() == Codec::kReflective) {
+    s = JsonStreamToMessage(&input_stream, &m, ParseOptions());
+  } else {
+    std::string result;
+    io::StringOutputStream out(&result);
+    s = JsonToBinaryStream(
+        resolver_.get(), absl::StrCat("type.googleapis.com/", m.GetTypeName()),
+        &input_stream, &out, ParseOptions());
+  }
+
+  EXPECT_THAT(s, StatusIs(absl::StatusCode::kInvalidArgument));
+  EXPECT_THAT(s.message(), ContainsRegex("string *value *too *large"));
+
+#endif  // NDEBUG
 }
 
 absl::StatusOr<google::protobuf::Struct> MessageToJsonAndBack(
