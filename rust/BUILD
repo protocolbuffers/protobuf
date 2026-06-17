@@ -170,6 +170,7 @@ rust_library(
         "cpp_kernel/string.rs",
     ],
     crate_root = "shared.rs",
+    link_deps = [":cpp_api"],
     proc_macro_deps = [
         "//rust/protobuf_macros",
         "@crate_index//:paste",
@@ -180,7 +181,6 @@ rust_library(
     ],
     visibility = [":protobuf_internal"],
     deps = [
-        ":cpp_api",
     ],
 )
 
