@@ -362,6 +362,9 @@ inline void AlignFail(std::integral_constant<size_t, 1>,
   PROTOBUF_TC_PARSE_FUNCTION_X(MessageSetWireFormatParseLoopLite) \
   PROTOBUF_TC_PARSE_FUNCTION_X(MessageSetWireFormatParseLoop)     \
   PROTOBUF_TC_PARSE_FUNCTION_X(ReflectionParseLoop)               \
+  /* These functions have the FastMp function ABI */              \
+  PROTOBUF_TC_PARSE_FUNCTION_X(FastMiniParse1)                    \
+  PROTOBUF_TC_PARSE_FUNCTION_X(FastMiniParse2)                    \
   /* These functions have the fallback ABI */                     \
   PROTOBUF_TC_PARSE_FUNCTION_X(GenericFallback)                   \
   PROTOBUF_TC_PARSE_FUNCTION_X(GenericFallbackLite)               \
@@ -833,6 +836,13 @@ class PROTOBUF_EXPORT TcParser final {
   PROTOBUF_NOINLINE PROTOBUF_CC static const char* FastEndG2(
       PROTOBUF_TC_PARAM_DECL);
 
+  // "Fast" mini parsing.
+  // We have one for 1 and 2 byte tags.
+  PROTOBUF_NOINLINE PROTOBUF_CC static const char* FastMiniParse1(
+      PROTOBUF_TC_PARAM_DECL);
+  PROTOBUF_NOINLINE PROTOBUF_CC static const char* FastMiniParse2(
+      PROTOBUF_TC_PARAM_DECL);
+
   // For `map` mini parsing generate a type card for the key/value.
   static constexpr MapAuxInfo GetMapAuxInfo(bool fail_on_utf8_failure,
                                             bool validated_enum_value,
@@ -856,13 +866,23 @@ class PROTOBUF_EXPORT TcParser final {
   static void CheckHasBitConsistency(const MessageLite* msg,
                                      const TcParseTableBase* table);
 
+  static constexpr uint16_t kMiniParseTableTypeCardMask =
+      +field_layout::kSplitMask | field_layout::kFkMask;
+
  private:
+  static const TailCallParseFunc kMiniParseTable[];
+  static const size_t kMiniParseTableSize;
+
   // Returns true if the repeated field is empty. This method is not
   // well-optimized, so it should only be called in debug builds.
   static bool RepeatedFieldIsEmptySlow(
       const MessageLite* msg, const TcParseTableBase* table,
       const TcParseTableBase::FieldEntry& entry, const void* base,
       bool is_split);
+
+  template <typename TagTaype>
+  PROTOBUF_ALWAYS_INLINE PROTOBUF_CC static const char* FastMpImpl(
+      PROTOBUF_TC_PARAM_DECL);
 
   // Optimized small tag varint parser for int32/int64
   template <typename FieldType>

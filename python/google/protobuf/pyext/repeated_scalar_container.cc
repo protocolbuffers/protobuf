@@ -11,16 +11,22 @@
 #include "google/protobuf/pyext/repeated_scalar_container.h"
 
 #include <algorithm>
+#include <cstddef>
 #include <cstdint>
-#include <memory>
+#include <limits>
+#include <optional>
 #include <string>
+#include <type_traits>
+#include <utility>
+#include <vector>
 
+#include "absl/strings/string_view.h"
+#include "absl/types/span.h"
 #include "google/protobuf/descriptor.h"
-#include "google/protobuf/dynamic_message.h"
 #include "google/protobuf/message.h"
-#include "google/protobuf/pyext/descriptor.h"
-#include "google/protobuf/pyext/descriptor_pool.h"
+#include "google/protobuf/reflection.h"
 #include "google/protobuf/pyext/message.h"
+#include "google/protobuf/pyext/safe_numerics.h"
 #include "google/protobuf/pyext/scoped_pyobject_ptr.h"
 
 #define PyString_AsString(ob) \
@@ -30,7 +36,275 @@ namespace google {
 namespace protobuf {
 namespace python {
 
+class RepeatedScalarContainerFriend {
+ public:
+  // Only `AddStringView` and `SetRepeatedStringView` are needed to be friends
+  // with `Reflection` but having the overloads here makes the code easier to
+  // call.
+  template <typename T>
+  static void MergeFrom(const Reflection* reflection, Message* message,
+                        const FieldDescriptor* field_descriptor,
+                        absl::Span<const T> other_values) {
+    MutableRepeatedFieldRef<T> mutable_ref =
+        reflection->GetMutableRepeatedFieldRef<T>(message, field_descriptor);
+    mutable_ref.MergeFrom(other_values);
+  }
+
+  static void MergeFrom(const Reflection* reflection, Message* message,
+                        const FieldDescriptor* field_descriptor,
+                        absl::Span<const uint8_t> other_values) {
+    MutableRepeatedFieldRef<bool> mutable_ref =
+        reflection->GetMutableRepeatedFieldRef<bool>(message, field_descriptor);
+    mutable_ref.MergeFrom(other_values);
+  }
+
+  static void MergeFrom(const Reflection* reflection, Message* message,
+                        const FieldDescriptor* field_descriptor,
+                        absl::Span<const absl::string_view> other_values) {
+    for (absl::string_view value : other_values) {
+      reflection->AddStringView(message, field_descriptor, value);
+    }
+  }
+
+  template <typename T>
+  static void Set(const Reflection* reflection, Message* message,
+                  const FieldDescriptor* field_descriptor, int index,
+                  const T& value) {
+    MutableRepeatedFieldRef<T> mutable_ref =
+        reflection->GetMutableRepeatedFieldRef<T>(message, field_descriptor);
+    mutable_ref.Set(index, value);
+  }
+
+  static void Set(const Reflection* reflection, Message* message,
+                  const FieldDescriptor* field_descriptor, int index,
+                  uint8_t value) {
+    MutableRepeatedFieldRef<bool> mutable_ref =
+        reflection->GetMutableRepeatedFieldRef<bool>(message, field_descriptor);
+    mutable_ref.Set(index, value != 0);
+  }
+
+  static void Set(const Reflection* reflection, Message* message,
+                  const FieldDescriptor* field_descriptor, int index,
+                  absl::string_view value) {
+    reflection->SetRepeatedStringView(message, field_descriptor, index, value);
+  }
+};
+
+namespace {
+
+template <typename Dest, typename Source>
+bool SafeCast(Source source, Dest* dest) {
+  if (!IsValidNumericCast<Dest>(source)) {
+    PyErr_SetString(PyExc_OverflowError, "Integer overflow");
+    return false;
+  }
+  *dest = static_cast<Dest>(source);
+  return true;
+}
+
+bool GetContiguous1DView(PyObject* value, Py_buffer* view) {
+  if (PyObject_GetBuffer(value, view, PyBUF_RECORDS_RO) != 0) {
+    PyErr_Clear();
+    return false;
+  }
+  if (view->format == nullptr) {
+    PyBuffer_Release(view);
+    return false;
+  }
+  if (((view->ndim == 1) &&
+       (view->strides == nullptr || view->itemsize == view->strides[0]))) {
+    return true;
+  }
+
+  PyBuffer_Release(view);
+  return false;
+}
+
+template <typename T, typename Func>
+bool CallWithSpanImpl(PyObject* value, const FieldDescriptor* field_descriptor,
+                      Func&& func) {
+  Py_buffer view;
+  if (GetContiguous1DView(value, &view)) {
+    const char fmt = view.format != nullptr ? view.format[0] : 0;
+    const size_t size = static_cast<size_t>(view.len / view.itemsize);
+    if (size > std::numeric_limits<int>::max()) {
+      PyBuffer_Release(&view);
+      PyErr_SetString(PyExc_ValueError, "Repeated field too large");
+      return false;
+    }
+    if (sizeof(T) == view.itemsize) {
+      bool valid_format;
+      if constexpr (std::is_same_v<T, uint8_t>) {
+        valid_format = (fmt == '?' || fmt == 'B');
+      } else if constexpr (std::is_integral_v<T>) {
+        if constexpr (std::is_unsigned_v<T>) {
+          valid_format = (fmt == 'I' || fmt == 'Q' || fmt == 'L');
+        } else {
+          valid_format = (fmt == 'i' || fmt == 'q' || fmt == 'l');
+        }
+      } else if constexpr (std::is_floating_point_v<T>) {
+        valid_format = (fmt == 'f' || fmt == 'd');
+      } else {
+        valid_format = false;
+      }
+      if (valid_format) {
+        bool ok = func(absl::MakeSpan(static_cast<const T*>(view.buf), size));
+        PyBuffer_Release(&view);
+        return ok;
+      }
+    }
+    PyBuffer_Release(&view);
+  }
+  std::vector<ScopedPyObjectPtr> keep_objects;
+  std::vector<T> values;
+  Py_ssize_t length = PyObject_LengthHint(value, 0);
+  if (length < 0) {
+    PyErr_Clear();
+    length = 0;
+  } else if (length > 0) {
+    values.reserve(static_cast<size_t>(length));
+    if constexpr (std::is_same_v<T, absl::string_view>) {
+      keep_objects.reserve(static_cast<size_t>(length));
+    }
+  }
+  ScopedPyObjectPtr iter(PyObject_GetIter(value));
+  if (iter == nullptr) {
+    PyErr_SetString(PyExc_TypeError, "Value must be iterable");
+    return false;
+  }
+  ScopedPyObjectPtr next;
+  while ((next.reset(PyIter_Next(iter.get()))) != nullptr) {
+    if (values.size() >= static_cast<size_t>(std::numeric_limits<int>::max())) {
+      PyErr_SetString(PyExc_ValueError, "Repeated field too large");
+      break;
+    }
+    PyObject* arg = next.get();
+    if constexpr (std::is_same_v<T, uint8_t>) {
+      bool bool_value;
+      if (!CheckAndGetBool(arg, &bool_value)) {
+        break;
+      }
+      values.push_back(bool_value);
+    } else if constexpr (std::is_same_v<T, float>) {
+      if (!CheckAndGetFloat(arg, &values.emplace_back())) {
+        values.pop_back();
+        break;
+      }
+    } else if constexpr (std::is_same_v<T, double>) {
+      if (!CheckAndGetDouble(arg, &values.emplace_back())) {
+        values.pop_back();
+        break;
+      }
+    } else if constexpr (std::is_integral_v<T>) {
+      if (!CheckAndGetInteger(arg, &values.emplace_back())) {
+        values.pop_back();
+        break;
+      }
+    } else if constexpr (std::is_same_v<T, absl::string_view>) {
+      std::optional<absl::string_view> string_value =
+          CheckString(arg, field_descriptor);
+      if (!string_value.has_value()) {
+        break;
+      }
+      keep_objects.emplace_back(next.release());
+      values.push_back(*string_value);
+    } else {
+      static_assert(sizeof(T) == -1,
+                    "Unsupported type (use absl::string_view for strings)");
+    }
+  }
+
+  PyObject* err_type = nullptr;
+  PyObject* err_value = nullptr;
+  PyObject* err_traceback = nullptr;
+  if (PyErr_Occurred()) {
+    PyErr_Fetch(&err_type, &err_value, &err_traceback);
+  }
+  bool result = func(
+      absl::MakeSpan(reinterpret_cast<const T*>(values.data()), values.size()));
+  if (err_type != nullptr) {
+    if (!result) {
+      // Ignore secondary error if the first one caused a non-zero result.
+      PyErr_Clear();
+    }
+    PyErr_Restore(err_type, err_value, err_traceback);
+    return false;
+  }
+  return result;
+}
+
+template <typename F>
+bool CallWithSpan(const FieldDescriptor* field_descriptor, PyObject* value,
+                  F&& op) {
+  switch (field_descriptor->cpp_type()) {
+    case FieldDescriptor::CPPTYPE_INT32:
+      return CallWithSpanImpl<int32_t>(value, field_descriptor,
+                                       std::forward<F>(op));
+    case FieldDescriptor::CPPTYPE_ENUM:
+      if (field_descriptor->legacy_enum_field_treated_as_closed()) {
+        return CallWithSpanImpl<int32_t>(
+            value, field_descriptor, [&](absl::Span<const int32_t> values) {
+              const EnumDescriptor* enum_descriptor =
+                  field_descriptor->enum_type();
+              size_t failed_index = 0;
+              for (int32_t val : values) {
+                if (enum_descriptor->FindValueByNumber(val) == nullptr) {
+                  break;
+                }
+                ++failed_index;
+              }
+              if (failed_index != values.size()) {
+                auto valid_values = values.subspan(0, failed_index);
+                bool result = std::forward<F>(op)(valid_values);
+                if (result) {
+                  PyErr_Format(
+                      PyExc_ValueError, "Unknown enum value: %d at index %d",
+                      values[failed_index], static_cast<int>(failed_index));
+                }
+                return false;
+              } else {
+                return std::forward<F>(op)(values);
+              }
+            });
+      }
+      return CallWithSpanImpl<int32_t>(value, field_descriptor,
+                                       std::forward<F>(op));
+    case FieldDescriptor::CPPTYPE_INT64:
+      return CallWithSpanImpl<int64_t>(value, field_descriptor,
+                                       std::forward<F>(op));
+    case FieldDescriptor::CPPTYPE_UINT32:
+      return CallWithSpanImpl<uint32_t>(value, field_descriptor,
+                                        std::forward<F>(op));
+    case FieldDescriptor::CPPTYPE_UINT64:
+      return CallWithSpanImpl<uint64_t>(value, field_descriptor,
+                                        std::forward<F>(op));
+    case FieldDescriptor::CPPTYPE_FLOAT:
+      return CallWithSpanImpl<float>(value, field_descriptor,
+                                     std::forward<F>(op));
+    case FieldDescriptor::CPPTYPE_DOUBLE:
+      return CallWithSpanImpl<double>(value, field_descriptor,
+                                      std::forward<F>(op));
+    case FieldDescriptor::CPPTYPE_BOOL:
+      return CallWithSpanImpl<uint8_t>(value, field_descriptor,
+                                       std::forward<F>(op));
+    case FieldDescriptor::CPPTYPE_STRING:
+      return CallWithSpanImpl<absl::string_view>(value, field_descriptor,
+                                                 std::forward<F>(op));
+    default:
+      PyErr_Format(PyExc_SystemError,
+                   "CallWithSpan on a field of unknown type %d",
+                   field_descriptor->cpp_type());
+      return false;
+  }
+}
+
+}  // namespace
+
 namespace repeated_scalar_container {
+
+static PyObject* SetContainerFrozenError() {
+  return SetFrozenError("Container is immutable");
+}
 
 static int InternalAssignRepeatedField(RepeatedScalarContainer* self,
                                        PyObject* list) {
@@ -54,7 +328,7 @@ static Py_ssize_t Len(PyObject* pself) {
                                              self->parent_field_descriptor);
 }
 
-static int AssignItem(PyObject* pself, Py_ssize_t index, PyObject* arg) {
+static int AssignItem(PyObject* pself, Py_ssize_t index_zd, PyObject* arg) {
   RepeatedScalarContainer* self =
       reinterpret_cast<RepeatedScalarContainer*>(pself);
 
@@ -64,14 +338,15 @@ static int AssignItem(PyObject* pself, Py_ssize_t index, PyObject* arg) {
 
   const Reflection* reflection = message->GetReflection();
   int field_size = reflection->FieldSize(*message, field_descriptor);
-  if (index < 0) {
-    index = field_size + index;
+  if (index_zd < 0) {
+    index_zd = field_size + index_zd;
   }
-  if (index < 0 || index >= field_size) {
-    PyErr_Format(PyExc_IndexError, "list assignment index (%d) out of range",
-                 static_cast<int>(index));
+  if (index_zd < 0 || index_zd >= field_size) {
+    PyErr_Format(PyExc_IndexError, "list assignment index (%zd) out of range",
+                 index_zd);
     return -1;
   }
+  int index = static_cast<int>(index_zd);
 
   if (arg == nullptr) {
     ScopedPyObjectPtr py_index(PyLong_FromLong(index));
@@ -252,6 +527,9 @@ static PyObject* Subscript(PyObject* pself, PyObject* slice) {
   bool return_list = false;
   if (PyLong_Check(slice)) {
     from = to = PyLong_AsLong(slice);
+    if (from == -1 && PyErr_Occurred()) {
+      return nullptr;
+    }
   } else if (PyIndex_Check(slice)) {
     from = to = PyNumber_AsSsize_t(slice, PyExc_ValueError);
     if (from == -1 && PyErr_Occurred()) {
@@ -390,7 +668,6 @@ static PyObject* AppendMethod(PyObject* self, PyObject* item) {
 static int AssSubscript(PyObject* pself, PyObject* slice, PyObject* value) {
   RepeatedScalarContainer* self =
       reinterpret_cast<RepeatedScalarContainer*>(pself);
-
   Py_ssize_t from;
   Py_ssize_t to;
   Py_ssize_t step;
@@ -408,6 +685,9 @@ static int AssSubscript(PyObject* pself, PyObject* slice, PyObject* value) {
 
   if (PyLong_Check(slice)) {
     from = to = PyLong_AsLong(slice);
+    if (from == -1 && PyErr_Occurred()) {
+      return -1;
+    }
   } else if (PySlice_Check(slice)) {
     const Reflection* reflection = message->GetReflection();
     length = reflection->FieldSize(*message, field_descriptor);
@@ -424,40 +704,105 @@ static int AssSubscript(PyObject* pself, PyObject* slice, PyObject* value) {
   if (!create_list) {
     return AssignItem(pself, from, value);
   }
+  const Reflection* reflection = message->GetReflection();
+  bool ok = CallWithSpan(field_descriptor, value, [&](auto values) {
+    int start_index;
+    int count;
+    int num_values;
+    int tail;
+    if (!SafeCast(from, &start_index) || !SafeCast(slicelength, &count) ||
+        !SafeCast(values.size(), &num_values) ||
+        !SafeCast(reflection->FieldSize(*message, field_descriptor) -
+                      (from + slicelength),
+                  &tail)) {
+      return false;
+    }
+    int old_size = reflection->FieldSize(*message, field_descriptor);
+    if (step == 1 && tail >= 0) {
+      if (start_index == 0 && count == old_size) {
+        reflection->ClearField(message, field_descriptor);
+        RepeatedScalarContainerFriend::MergeFrom(reflection, message,
+                                                 field_descriptor, values);
+      } else if (count == 0 && tail == 0) {
+        RepeatedScalarContainerFriend::MergeFrom(reflection, message,
+                                                 field_descriptor, values);
+      } else {
+        // This could be arena allocated strings, so swap the elements
+        // in place to avoid a full copy.
+        auto reverse_range = [&](int first, int last) {
+          int i = first;
+          int j = last - 1;
+          while (i < j) {
+            reflection->SwapElements(message, field_descriptor, i, j);
+            ++i;
+            --j;
+          }
+        };
 
-  ScopedPyObjectPtr full_slice(PySlice_New(nullptr, nullptr, nullptr));
-  if (full_slice == nullptr) {
-    return -1;
-  }
-  ScopedPyObjectPtr new_list(Subscript(pself, full_slice.get()));
-  if (new_list == nullptr) {
-    return -1;
-  }
-  if (PySequence_SetSlice(new_list.get(), from, to, value) < 0) {
-    return -1;
-  }
+        auto rotate_range = [&](int first, int middle, int last) {
+          reverse_range(first, middle);
+          reverse_range(middle, last);
+          reverse_range(first, last);
+        };
 
-  return InternalAssignRepeatedField(self, new_list.get());
+        // Move deleted elements to the end.
+        int b_start = start_index;
+        int c_start = b_start + count;
+        int c_end = old_size;
+        rotate_range(b_start, c_start, c_end);
+
+        for (Py_ssize_t i = 0; i < count; ++i) {
+          reflection->RemoveLast(message, field_descriptor);
+        }
+
+        RepeatedScalarContainerFriend::MergeFrom(reflection, message,
+                                                 field_descriptor, values);
+
+        int tail_start = b_start;
+        int tail_end;
+        int x_end;
+        if (!SafeCast(static_cast<int64_t>(tail_start) + tail, &tail_end) ||
+            !SafeCast(static_cast<int64_t>(tail_end) + num_values, &x_end)) {
+          return false;
+        }
+        rotate_range(tail_start, tail_end, x_end);
+      }
+    } else {
+      if (count != num_values) {
+        PyErr_SetString(PyExc_ValueError,
+                        "Cannot assign to sub slice of a different length");
+        return false;
+      }
+      for (int i = 0; i < count; ++i) {
+        int next_idx;
+        if (!SafeCast(start_index + static_cast<int64_t>(i) * step,
+                      &next_idx)) {
+          return false;
+        }
+        RepeatedScalarContainerFriend::Set(reflection, message,
+                                           field_descriptor, next_idx,
+                                           values[static_cast<size_t>(i)]);
+      }
+    }
+    return true;
+  });
+  return ok ? 0 : -1;
 }
 
 PyObject* Extend(RepeatedScalarContainer* self, PyObject* value) {
-  if (cmessage::AssureWritable(self->parent) == nullptr) return nullptr;
-
-  ScopedPyObjectPtr iter(PyObject_GetIter(value));
-  if (iter == nullptr) {
-    PyErr_SetString(PyExc_TypeError, "Value must be iterable");
-    return nullptr;
+  cmessage::AssureWritable(self->parent);
+  Message* message = cmessage::AssureWritable(self->parent);
+  if (message == nullptr) return nullptr;
+  const FieldDescriptor* field_descriptor = self->parent_field_descriptor;
+  const Reflection* reflection = message->GetReflection();
+  if (CallWithSpan(field_descriptor, value, [&](auto values) {
+        RepeatedScalarContainerFriend::MergeFrom(reflection, message,
+                                                 field_descriptor, values);
+        return true;
+      })) {
+    Py_RETURN_NONE;
   }
-  ScopedPyObjectPtr next;
-  while ((next.reset(PyIter_Next(iter.get()))) != nullptr) {
-    if (ScopedPyObjectPtr(Append(self, next.get())) == nullptr) {
-      return nullptr;
-    }
-  }
-  if (PyErr_Occurred()) {
-    return nullptr;
-  }
-  Py_RETURN_NONE;
+  return nullptr;
 }
 
 static PyObject* Insert(PyObject* pself, PyObject* args) {
@@ -466,7 +811,7 @@ static PyObject* Insert(PyObject* pself, PyObject* args) {
 
   Py_ssize_t index;
   PyObject* value;
-  if (!PyArg_ParseTuple(args, "lO", &index, &value)) {
+  if (!PyArg_ParseTuple(args, "nO", &index, &value)) {
     return nullptr;
   }
   ScopedPyObjectPtr full_slice(PySlice_New(nullptr, nullptr, nullptr));
@@ -488,12 +833,11 @@ static PyObject* Remove(PyObject* pself, PyObject* value) {
   // Even if the value doesn't exist in the container, raise immutability error
   // prior to value error if applicable.
   if (self->parent->state == python::MESSAGE_FROZEN) {
-    PyErr_SetString(PyExc_TypeError, "Message is immutable.");
-    return nullptr;
+    return SetContainerFrozenError();
   }
 
   Py_ssize_t match_index = -1;
-  for (Py_ssize_t i = 0; i < Len(pself); ++i) {
+  for (Py_ssize_t i = 0, len = Len(pself); i < len; ++i) {
     ScopedPyObjectPtr elem(Item(pself, i));
     if (PyObject_RichCompareBool(elem.get(), value, Py_EQ)) {
       match_index = i;
@@ -738,8 +1082,7 @@ static PyObject* Sort(PyObject* pself, PyObject* args, PyObject* kwds) {
       reinterpret_cast<RepeatedScalarContainer*>(pself);
 
   if (self->parent->state == python::MESSAGE_FROZEN) {
-    PyErr_SetString(PyExc_TypeError, "Message is immutable.");
-    return nullptr;
+    return SetContainerFrozenError();
   }
 
   // Support the old sort_function argument for backwards
@@ -786,8 +1129,7 @@ static PyObject* Reverse(PyObject* pself) {
       reinterpret_cast<RepeatedScalarContainer*>(pself);
 
   if (self->parent->state == python::MESSAGE_FROZEN) {
-    PyErr_SetString(PyExc_TypeError, "Message is immutable.");
-    return nullptr;
+    return SetContainerFrozenError();
   }
 
   // TODO: b/517235198 - Reify even for empty sequences.
@@ -839,8 +1181,7 @@ static PyObject* Pop(PyObject* pself, PyObject* args) {
   // Even if the value doesn't exist in the container, raise immutability error
   // prior to value error.
   if (self->parent->state == python::MESSAGE_FROZEN) {
-    PyErr_SetString(PyExc_TypeError, "Message is immutable.");
-    return nullptr;
+    return SetContainerFrozenError();
   }
 
   Py_ssize_t index = -1;
@@ -955,7 +1296,7 @@ PyTypeObject RepeatedScalarContainer_Type = {
 #if PY_VERSION_HEX >= 0x03080000
     0,  //  tp_vectorcall_offset
 #else
-    nullptr,             //  tp_print
+    nullptr,  //  tp_print
 #endif
     nullptr,                                //  tp_getattr
     nullptr,                                //  tp_setattr

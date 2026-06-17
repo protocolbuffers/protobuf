@@ -280,7 +280,7 @@ class InternalLazyField {
         + computeSize(WireFormat.MESSAGE_SET_MESSAGE);
   }
 
-  void writeTo(Writer writer, int fieldNumber) throws IOException {
+  void writeTo(CodedOutputStreamWriter writer, int fieldNumber) throws IOException {
     if (bytes != null) {
       writer.writeBytes(fieldNumber, bytes);
     } else {

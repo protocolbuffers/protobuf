@@ -127,7 +127,7 @@ static int PyUpb_ExtensionDict_AssignSubscript(PyObject* _self, PyObject* key,
   const upb_FieldDef* f = PyUpb_Message_GetExtensionDef(self->msg, key);
   if (!f) return -1;
   if (PyUpb_Message_IsFrozen(self->msg)) {
-    PyErr_SetString(PyExc_TypeError, "Message is immutable.");
+    PyUpb_SetFrozenError();
     return -1;
   }
   if (val) {

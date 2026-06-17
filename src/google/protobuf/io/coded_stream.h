@@ -935,7 +935,7 @@ class PROTOBUF_EXPORT PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED
 
   template <typename T>
   PROTOBUF_ALWAYS_INLINE static uint8_t* UnsafeVarint(T value, uint8_t* ptr) {
-    static_assert(std::is_unsigned<T>::value,
+    static_assert(std::is_unsigned_v<T>,
                   "Varint serialization must be unsigned");
     while (ABSL_PREDICT_FALSE(value >= 0x80)) {
       *ptr = static_cast<uint8_t>(value | 0x80);
@@ -1084,8 +1084,8 @@ class PROTOBUF_EXPORT PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CodedOutputStream {
   // Creates a CodedOutputStream that writes to the given `stream`, and does
   // an 'eager initialization' of the internal state if `eager_init` is true.
   // The provided stream must publicly derive from `ZeroCopyOutputStream`.
-  template <class Stream, class = typename std::enable_if<std::is_base_of<
-                              ZeroCopyOutputStream, Stream>::value>::type>
+  template <class Stream, class = std::enable_if_t<
+                              std::is_base_of_v<ZeroCopyOutputStream, Stream>>>
   CodedOutputStream(Stream* stream, bool eager_init);
   CodedOutputStream(const CodedOutputStream&) = delete;
   CodedOutputStream& operator=(const CodedOutputStream&) = delete;
@@ -1298,12 +1298,15 @@ class PROTOBUF_EXPORT PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CodedOutputStream {
   //   * Different processes running the same binary (including on different
   //     machines) will serialize equal messages to the same bytes.
   //
-  // Note that this is *not* canonical across languages. It is also unstable
-  // across different builds with intervening message definition changes, due to
-  // unknown fields. Users who need canonical serialization (e.g. persistent
+  // There is no canonical representation of Protobuf messages: this
+  // representation is not consistent between languages, it may change when you
+  // rebuild your binary. Users who need canonical serialization
+  // (e.g. persistent
   // storage in a canonical form, fingerprinting) should define their own
   // canonicalization specification and implement the serializer using
   // reflection APIs rather than relying on this API.
+  //
+  // See https://protobuf.dev/programming-guides/serialization-not-canonical/
   void SetSerializationDeterministic(bool value) {
     impl_.SetSerializationDeterministic(value);
   }

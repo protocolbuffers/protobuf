@@ -137,8 +137,7 @@ bool PyUpb_MapContainer_IsFrozen(PyUpb_MapContainer* self) {
 upb_Map* PyUpb_MapContainer_AssureWritable(PyObject* _self) {
   PyUpb_MapContainer* self = (PyUpb_MapContainer*)_self;
   if (PyUpb_MapContainer_IsFrozen(self)) {
-    PyErr_SetString(PyExc_TypeError, "Map is read-only");
-    return NULL;
+    return (upb_Map*)PyUpb_SetFrozenErrorWithMsg("Map is immutable");
   }
 
   self->version++;

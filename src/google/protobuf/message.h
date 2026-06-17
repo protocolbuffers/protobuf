@@ -98,6 +98,7 @@
 #include <optional>
 #include <string>
 #include <type_traits>
+#include <utility>
 #include <vector>
 
 #include "absl/base/attributes.h"
@@ -180,7 +181,8 @@ class CodedInputStream;      // coded_stream.h
 class CodedOutputStream;     // coded_stream.h
 }  // namespace io
 namespace python {
-class MapReflectionFriend;  // scalar_map_container.h
+class RepeatedScalarContainerFriend;  // repeated_scalar_container.cc
+class MapReflectionFriend;            // scalar_map_container.h
 class MessageReflectionFriend;
 }  // namespace python
 namespace expr {
@@ -1195,9 +1197,8 @@ class PROTOBUF_EXPORT Reflection final {
   }
 
   const TcParseTableBase* CreateTcParseTable() const;
-  void PopulateTcParseFastEntries(
-      const internal::TailCallTableInfo& table_info,
-      TcParseTableBase::FastFieldEntry* fast_entries) const;
+  void PopulateTcParseFastEntries(const internal::TailCallTableInfo& table_info,
+                                  TcParseTableBase* tc_table) const;
   void PopulateTcParseEntries(internal::TailCallTableInfo& table_info,
                               TcParseTableBase::FieldEntry* entries) const;
   void PopulateTcParseFieldAux(const internal::TailCallTableInfo& table_info,
@@ -1225,6 +1226,7 @@ class PROTOBUF_EXPORT Reflection final {
   friend class GeneratedMessageReflectionTestHelper;
   friend class python::MapReflectionFriend;
   friend class python::MessageReflectionFriend;
+  friend class python::RepeatedScalarContainerFriend;
   friend class util::MessageDifferencer;
 #define GOOGLE_PROTOBUF_HAS_CEL_MAP_REFLECTION_FRIEND
   friend class expr::CelMapReflectionFriend;
@@ -1658,6 +1660,49 @@ template <>
   ABSL_DCHECK_EQ(DynamicCastMessage<Message>(from), from)
       << "Cannot downcast " << from->GetTypeName() << " to Message";
   return static_cast<const Message*>(from);
+}
+
+// Specializations to handle smart pointers to `Message`. Without these,
+// `google::protobuf::DynamicCastMessage(std::shared_ptr<Message>)` is ambiguous
+// (`const MessageLite` vs `MessageLite`).
+
+template <typename T>
+PROTOBUF_FUTURE_ADD_EARLY_NODISCARD std::shared_ptr<T> DynamicCastMessage(
+    std::shared_ptr<Message> ptr) {
+  if (auto* res = DynamicCastMessage<T>(ptr.get())) {
+    // Use aliasing constructor to keep the same control block.
+    return std::shared_ptr<T>(std::move(ptr), res);
+  } else {
+    return nullptr;
+  }
+}
+
+template <typename T>
+PROTOBUF_FUTURE_ADD_EARLY_NODISCARD std::shared_ptr<const T> DynamicCastMessage(
+    std::shared_ptr<const Message> ptr) {
+  if (auto* res = DynamicCastMessage<T>(ptr.get())) {
+    // Use aliasing constructor to keep the same control block.
+    return std::shared_ptr<const T>(std::move(ptr), res);
+  } else {
+    return nullptr;
+  }
+}
+
+// Overloads for `std::shared_ptr` to substitute `down_pointer_cast`
+template <typename T>
+PROTOBUF_FUTURE_ADD_EARLY_NODISCARD std::shared_ptr<T> DownCastMessage(
+    std::shared_ptr<Message> ptr) {
+  auto* res = DownCastMessage<T>(ptr.get());
+  // Use aliasing constructor to keep the same control block.
+  return std::shared_ptr<T>(std::move(ptr), res);
+}
+
+template <typename T>
+PROTOBUF_FUTURE_ADD_EARLY_NODISCARD std::shared_ptr<const T> DownCastMessage(
+    std::shared_ptr<const Message> ptr) {
+  auto* res = DownCastMessage<T>(ptr.get());
+  // Use aliasing constructor to keep the same control block.
+  return std::shared_ptr<const T>(std::move(ptr), res);
 }
 
 // =============================================================================

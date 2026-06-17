@@ -368,21 +368,29 @@ PyObject* MapReflectionFriend::ScalarMapGetItem(PyObject* _self,
                                                 PyObject* key) {
   MapContainer* self = GetMap(_self);
 
-  Message* message = self->GetMutableMessage();
-  if (message == nullptr) return nullptr;
-  const Reflection* reflection = message->GetReflection();
   MapKey map_key;
-  MapValueRef value;
 
   if (!PythonToMapKey(self, key, &map_key)) {
     return nullptr;
   }
-
-  if (reflection->InsertOrLookupMapValue(message, self->parent_field_descriptor,
-                                         map_key, &value)) {
-    self->version++;
+  if (Message* message = self->GetMutableMessage(); message != nullptr) {
+    MapValueRef value;
+    const Reflection* reflection = message->GetReflection();
+    std::string map_key_string;
+    if (reflection->InsertOrLookupMapValue(
+            message, self->parent_field_descriptor, map_key, &value)) {
+      self->version++;
+    }
+    return MapValueRefToPython(self, value);
   }
-
+  PyErr_Clear();
+  const Message* message = self->GetReadOnlyMessage();
+  const Reflection* reflection = message->GetReflection();
+  MapValueConstRef value;
+  if (!reflection->LookupMapValue(*message, self->parent_field_descriptor,
+                                  map_key, &value)) {
+    return SetMessageFrozenError();
+  }
   return MapValueRefToPython(self, value);
 }
 

@@ -1938,8 +1938,8 @@ class EncodeDecodeTest extends TestBase
     {
         $m = new TestMessage();
         $json = $m->serializeToJsonString(
-            PrintOptions::EMIT_DEFAULTS | 
-            PrintOptions::PRESERVE_PROTO_FIELD_NAMES | 
+            PrintOptions::EMIT_DEFAULTS |
+            PrintOptions::PRESERVE_PROTO_FIELD_NAMES |
             PrintOptions::ALWAYS_PRINT_ENUMS_AS_INTS
         );
 
@@ -2064,5 +2064,76 @@ class EncodeDecodeTest extends TestBase
         } finally {
             setlocale(LC_NUMERIC, $originalLocale);
         }
+    }
+
+    public function testDecodeRecursionLimit()
+    {
+        // Build a message nested deeper than the default limit of 100.
+        $msg = $this->makeRecursiveMessage(150);
+        $payload = $msg->serializeToString(200);
+
+        // Decoding deeper than the default limit fails without an override
+        try {
+            (new TestMessage())->mergeFromString($payload);
+            $this->fail('Expected an exception for exceeding the recursion limit');
+        } catch (Exception $e) {
+        }
+
+        // Raising the limit lets the deep message parse all the way down.
+        $decoded = new TestMessage();
+        $decoded->mergeFromString($payload, 200);
+
+        $cur = $decoded;
+        for ($i = 0; $i < 150; $i++) {
+            $cur = $cur->getRecursive();
+            $this->assertNotNull($cur);
+        }
+        $this->assertSame(1, $cur->getOptionalInt32());
+    }
+
+    public function testEncodeRecursionLimit()
+    {
+        $msg = $this->makeRecursiveMessage(150);
+
+        // The C extension enforces a depth limit on encode and throws past it;
+        // the pure-PHP encoder has no such guard, so only assert on the C ext.
+        if (extension_loaded('protobuf')) {
+            try {
+                $msg->serializeToString();
+                $this->fail('Expected an exception for exceeding the recursion limit');
+            } catch (Exception $e) {
+                $this->assertStringContainsString('Max nesting exceeded', $e->getMessage());
+            }
+        }
+
+        // Raising the limit lets the deep message serialize.
+        $payload = $msg->serializeToString(200);
+        $this->assertNotEquals('', $payload);
+    }
+
+    public function testInvalidRecursionLimit()
+    {
+        if (!extension_loaded('protobuf')) {
+            $this->markTestSkipped(
+                'recursion_limit range validation is C-extension only');
+        }
+
+        $payload = $this->makeRecursiveMessage(2)->serializeToString();
+
+        $threwNegative = false;
+        try {
+            (new TestMessage())->mergeFromString($payload, -1);
+        } catch (Exception $e) {
+            $threwNegative = true;
+        }
+        $this->assertTrue($threwNegative, 'a negative recursion_limit must throw');
+
+        $threwTooLarge = false;
+        try {
+            $this->makeRecursiveMessage(2)->serializeToString(70000);
+        } catch (Exception $e) {
+            $threwTooLarge = true;
+        }
+        $this->assertTrue($threwTooLarge, 'recursion_limit > 65535 must throw');
     }
 }

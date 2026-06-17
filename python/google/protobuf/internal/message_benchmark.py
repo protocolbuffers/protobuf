@@ -44,6 +44,39 @@ def bench_extend_int32(state: google_benchmark.State):
 
 
 @benchmark
+def bench_assign_int32(state: google_benchmark.State):
+  arr = make_array(state.range(0)).view(dtype=np.int32)
+  msg = unittest_pb2.TestAllTypes()
+  while state:
+    msg.repeated_int32[:] = arr
+    state.pause_timing()
+    msg.Clear()
+    state.resume_timing()
+
+
+@benchmark
+def bench_assign_extend_int32(state: google_benchmark.State):
+  arr = make_array(state.range(0)).view(dtype=np.int32)
+  msg = unittest_pb2.TestAllTypes()
+  msg.repeated_int32[:] = arr
+  while state:
+    msg.repeated_int32[len(arr):] = arr
+    state.pause_timing()
+    msg.repeated_int32[:] = arr
+    state.resume_timing()
+
+
+@benchmark
+def bench_assign_slice_int32(state: google_benchmark.State):
+  arr = make_array(state.range(0)).view(dtype=np.int32)
+  half_arr = arr[: len(arr) // 2]
+  msg = unittest_pb2.TestAllTypes()
+  msg.repeated_int32.extend(arr)
+  while state:
+    msg.repeated_int32[::2] = half_arr
+
+
+@benchmark
 def bench_extend_int64(state: google_benchmark.State):
   arr = make_array(state.range(0)).view(dtype=np.int64)
   msg = unittest_pb2.TestAllTypes()

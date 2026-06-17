@@ -34,6 +34,7 @@ enum class Backend { UPB, CPP };
 struct Options {
   Backend backend = Backend::UPB;
   bool strip_feature_includes = false;
+  io::AnnotationCollector* annotation_collector = nullptr;
 };
 
 /**
@@ -52,7 +53,10 @@ class Context final {
  public:
   Context(const FileDescriptor* file, io::ZeroCopyOutputStream* stream,
           const Options& options)
-      : stream_(stream), printer_(stream_), options_(options) {
+      : stream_(stream),
+        printer_(stream_,
+                 io::Printer::Options('$', options.annotation_collector)),
+        options_(options) {
     BuildDefPool(file);
   }
 

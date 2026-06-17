@@ -15,6 +15,8 @@
 // Must be last.
 #include "upb/port/def.inc"
 
+#define PyUpb_SUPPORT_BUFFER_VIEW 0
+
 static PyObject* PyUpb_RepeatedCompositeContainer_Append(PyObject* _self,
                                                          PyObject* value);
 static PyObject* PyUpb_RepeatedScalarContainer_Append(PyObject* _self,
@@ -96,8 +98,7 @@ bool PyUpb_RepeatedContainer_IsFrozen(PyUpb_RepeatedContainer* self) {
 upb_Array* PyUpb_RepeatedContainer_AssureWritable(PyObject* _self) {
   PyUpb_RepeatedContainer* self = (PyUpb_RepeatedContainer*)_self;
   if (PyUpb_RepeatedContainer_IsFrozen(self)) {
-    PyErr_SetString(PyExc_TypeError, "Container is read-only");
-    return NULL;
+    return (upb_Array*)PyUpb_SetFrozenErrorWithMsg("Container is immutable");
   }
 
   upb_Array* arr = PyUpb_RepeatedContainer_GetIfReified(self);
@@ -163,6 +164,7 @@ PyObject* PyUpb_RepeatedContainer_GetOrCreateWrapper(upb_Array* arr,
     return NULL;
   }
   PyUpb_RepeatedContainer* repeated = (void*)PyType_GenericAlloc(cls, 0);
+  if (repeated == NULL) return NULL;
   repeated->arena = arena;
   repeated->field = (uintptr_t)PyUpb_FieldDescriptor_Get(f);
   repeated->ptr.arr = arr;
@@ -195,56 +197,259 @@ PyObject* PyUpb_RepeatedContainer_DeepCopy(PyObject* _self, PyObject* value) {
   return (PyObject*)clone;
 }
 
+#if PyUpb_SUPPORT_BUFFER_VIEW
+static bool IsContiguous1DAndMatchesFieldType(const Py_buffer* view,
+                                              const upb_FieldDef* field) {
+  const char* format = view->format;
+  if (format == NULL || view->ndim != 1 ||
+      (view->strides != NULL && view->itemsize != view->strides[0])) {
+    return false;
+  }
+
+  const char fmt = format[0];
+  // Always allow objects.
+  if (fmt == 'O') {
+    return true;
+  }
+
+  switch (upb_FieldDef_CType(field)) {
+    case kUpb_CType_Int32:
+    case kUpb_CType_Enum:
+      return view->itemsize == 4 && (fmt == 'i' || fmt == 'l');
+    case kUpb_CType_Int64:
+      return view->itemsize == 8 && (fmt == 'q' || fmt == 'l');
+    case kUpb_CType_UInt32:
+      return view->itemsize == 4 && (fmt == 'I');
+    case kUpb_CType_UInt64:
+      return view->itemsize == 8 && (fmt == 'Q');
+    case kUpb_CType_Float:
+      return view->itemsize == 4 && (fmt == 'f');
+    case kUpb_CType_Double:
+      return view->itemsize == 8 && (fmt == 'd');
+    case kUpb_CType_Bool:
+      return view->itemsize == 1 && (fmt == '?' || fmt == 'B');
+    default:
+      return false;
+  }
+}
+#endif
+
+// When `size_cb_accurate` is true, it is invoked exactly once with
+// the accurate size. Otherwise, it is invoked in a best-effort manner where the
+// size may be smaller/larger than the actual size of the input or not called at
+// all.
+typedef bool (*PyUpb_SizeCb)(Py_ssize_t size, void* ctx);
+
+// Callback invoked once per converted element during iteration.
+// Returns false to stop iteration (caller should set a Python error first).
+typedef bool (*PyUpb_ElemCb)(upb_MessageValue val, void* ctx);
+
+// Callback invoked once with a contiguous raw buffer of matching type.
+// `data` points to `count` elements each of size `itemsize`.
+// Returns false on error.
+typedef bool (*PyUpb_BulkCb)(const void* data, Py_ssize_t count,
+                             Py_ssize_t itemsize, void* ctx);
+
+// Iterates the elements of a Python iterable `value`, converting each to
+// upb_MessageValue via PyUpb_PyToUpb, and invoking `elem_cb` per element.
+//
+// When PyUpb_SUPPORT_BUFFER_VIEW is enabled and if `bulk_cb` is non-NULL and
+// `value` exposes a contiguous buffer whose element type matches `field`,
+// `bulk_cb` is called once with the raw data pointer. Otherwise size_cb is
+// called once with the number of elements in `value`, and then `elem_cb` is
+// called for each element.
+//
+// Returns whether a Python error occurred.
+static bool PyUpb_IterInput(PyObject* value, const upb_FieldDef* field,
+                            upb_Arena* arena, PyUpb_SizeCb size_cb,
+                            PyUpb_ElemCb elem_cb, PyUpb_BulkCb bulk_cb,
+                            void* ctx) {
+#if PyUpb_SUPPORT_BUFFER_VIEW
+  Py_buffer view;
+  if (PyObject_GetBuffer(value, &view, PyBUF_RECORDS_RO) == 0) {
+    if (IsContiguous1DAndMatchesFieldType(&view, field)) {
+      Py_ssize_t count = view.len / view.itemsize;
+      if (count == 0) {
+        PyBuffer_Release(&view);
+        return bulk_cb(NULL, 0, 0, ctx);
+      }
+      if (view.format[0] != 'O') {
+        if (upb_FieldDef_CType(field) == kUpb_CType_Enum) {
+          const upb_EnumDef* e = upb_FieldDef_EnumSubDef(field);
+          if (upb_EnumDef_IsClosed(e)) {
+            const int32_t* i32 = (const int32_t*)view.buf;
+            for (Py_ssize_t i = 0; i < count; i++) {
+              if (!upb_EnumDef_CheckNumber(e, i32[i])) {
+                PyErr_Format(PyExc_ValueError, "invalid enumerator %d",
+                             (int)i32[i]);
+                PyBuffer_Release(&view);
+                return false;
+              }
+            }
+          }
+        }
+        bool ok = bulk_cb(view.buf, count, view.itemsize, ctx);
+        PyBuffer_Release(&view);
+        return ok;
+      }
+      PyObject** objs = (PyObject**)view.buf;
+      if (!size_cb(count, ctx)) {
+        PyBuffer_Release(&view);
+        return false;
+      }
+      for (Py_ssize_t i = 0; i < count; i++) {
+        PyObject* item = objs[i] ? objs[i] : Py_None;
+        upb_MessageValue msgval;
+        if (!PyUpb_PyToUpb(item, field, &msgval, arena)) {
+          PyBuffer_Release(&view);
+          return false;
+        }
+        if (!elem_cb(msgval, ctx)) {
+          PyBuffer_Release(&view);
+          return false;
+        }
+      }
+      PyBuffer_Release(&view);
+      return true;
+    }
+    PyBuffer_Release(&view);
+  } else {
+    PyErr_Clear();
+  }
+#else
+  (void)bulk_cb;
+#endif
+  PyObject* iter = NULL;
+  PyObject* materialized = PySequence_Fast(value, "must assign iterable");
+  if (!materialized) goto done;
+  Py_ssize_t size = PyObject_Length(materialized);
+  if (!size_cb(size, ctx)) goto done;
+
+  iter = PyObject_GetIter(materialized);
+  if (!iter) goto done;
+
+  PyObject* item;
+  while ((item = PyIter_Next(iter)) != NULL) {
+    upb_MessageValue msgval;
+    bool ok = PyUpb_PyToUpb(item, field, &msgval, arena);
+    Py_DECREF(item);
+    if (!ok) {
+      goto done;
+    }
+    if (!elem_cb(msgval, ctx)) {
+      goto done;
+    }
+  }
+done:
+  Py_XDECREF(materialized);
+  Py_XDECREF(iter);
+  return !PyErr_Occurred();
+}
+
+typedef struct {
+  upb_Array* arr;
+  upb_Arena* arena;
+  Py_ssize_t size_hint;
+} PyUpb_ExtendCtx;
+
+static bool PyUpb_ExtendSizeCb(Py_ssize_t size, void* vctx) {
+  PyUpb_ExtendCtx* ctx = (PyUpb_ExtendCtx*)vctx;
+  ctx->size_hint = size;
+  size_t old_size = upb_Array_Size(ctx->arr);
+  if (size > 0 && ((size_t)size <= SIZE_MAX - old_size)) {
+    upb_Array_Reserve(ctx->arr, old_size + size, ctx->arena);
+  }
+  return true;
+}
+
+static bool PyUpb_ExtendElemCb(upb_MessageValue val, void* vctx) {
+  PyUpb_ExtendCtx* ctx = (PyUpb_ExtendCtx*)vctx;
+  return upb_Array_Append(ctx->arr, val, ctx->arena);
+}
+
+typedef enum {
+  kDisjoint,
+  kSubset,
+  kOverlap,
+} PyUpb_OverlapType;
+
+static PyUpb_OverlapType PyUpb_ArrayOverlaps(const upb_Array* arr,
+                                             const void* range_start,
+                                             size_t range_size,
+                                             size_t itemsize) {
+  const char* src_start = upb_Array_DataPtr(arr);
+  const char* src_end = src_start + upb_Array_Size(arr) * itemsize;
+  const char* dst_start = (const char*)range_start;
+  const char* dst_end = dst_start + range_size * itemsize;
+  if (src_end <= dst_start || src_start >= dst_end) {
+    return kDisjoint;
+  }
+  if (src_start >= dst_start && src_end <= dst_end) {
+    return kSubset;
+  }
+  return kOverlap;
+}
+
+static bool PyUpb_ExtendBulkCb(const void* data, Py_ssize_t count,
+                               Py_ssize_t itemsize, void* vctx) {
+  PyUpb_ExtendCtx* ctx = (PyUpb_ExtendCtx*)vctx;
+  size_t old_size = upb_Array_Size(ctx->arr);
+  char* dst;
+  switch (PyUpb_ArrayOverlaps(ctx->arr, data, count, itemsize)) {
+    case kDisjoint:
+      upb_Array_Resize(ctx->arr, old_size + count, ctx->arena);
+      dst = upb_Array_MutableDataPtr(ctx->arr);
+      break;
+    case kSubset: {
+      char* old_dst = upb_Array_MutableDataPtr(ctx->arr);
+      upb_Array_Resize(ctx->arr, old_size + count, ctx->arena);
+      dst = upb_Array_MutableDataPtr(ctx->arr);
+      if (old_dst != dst) {
+        data = dst + ((const char*)data - old_dst);
+      }
+    } break;
+    case kOverlap:
+      PyErr_SetString(PyExc_ValueError,
+                      "Extending with overlapping sequence not supported");
+      return false;
+  }
+  memcpy(dst + old_size * itemsize, data, count * itemsize);
+  return true;
+}
+
 PyObject* PyUpb_RepeatedContainer_Extend(PyObject* _self, PyObject* value) {
   PyUpb_RepeatedContainer* self = (PyUpb_RepeatedContainer*)_self;
+  const upb_FieldDef* f = PyUpb_RepeatedContainer_GetField(self);
   upb_Array* arr = PyUpb_RepeatedContainer_AssureWritable(_self);
   if (!arr) return NULL;
-  size_t start_size = upb_Array_Size(arr);
-  PyObject* it = PyObject_GetIter(value);
-  if (!it) {
-    PyErr_SetString(PyExc_TypeError, "Value must be iterable");
-    return NULL;
-  }
+  upb_Arena* arena = PyUpb_Arena_Get(self->arena);
 
-  const upb_FieldDef* f = PyUpb_RepeatedContainer_GetField(self);
-  bool submsg = upb_FieldDef_IsSubMessage(f);
-  PyObject* e;
-
-  if (submsg) {
-    while ((e = PyIter_Next(it))) {
-      PyObject* ret = PyUpb_RepeatedCompositeContainer_Append(_self, e);
-      Py_XDECREF(ret);
-      Py_DECREF(e);
-    }
-  } else {
-    upb_Arena* arena = PyUpb_Arena_Get(self->arena);
-    Py_ssize_t size = PyObject_Size(value);
-    if (size < 0) {
-      // Some iterables may not have len. Size() will return -1 and
-      // set an error in such cases.
-      PyErr_Clear();
-    } else {
-      upb_Array_Reserve(arr, start_size + size, arena);
-    }
-    while ((e = PyIter_Next(it))) {
-      upb_MessageValue msgval;
-      if (!PyUpb_PyToUpb(e, f, &msgval, arena)) {
-        assert(PyErr_Occurred());
-        Py_DECREF(e);
-        break;
+  if (upb_FieldDef_IsSubMessage(f)) {
+    // Composite fields: iterate and append via MergeFrom.
+    // Buffer views don't apply to sub-messages.
+    PyObject* iter = PyObject_GetIter(value);
+    if (!iter) return NULL;
+    PyObject* item;
+    while ((item = PyIter_Next(iter)) != NULL) {
+      PyObject* ret = PyUpb_RepeatedCompositeContainer_Append(_self, item);
+      Py_DECREF(item);
+      if (!ret) {
+        Py_DECREF(iter);
+        return NULL;
       }
-      upb_Array_Append(arr, msgval, arena);
-      Py_DECREF(e);
+      Py_DECREF(ret);
     }
+    Py_DECREF(iter);
+    if (PyErr_Occurred()) return NULL;
+    Py_RETURN_NONE;
   }
-
-  Py_DECREF(it);
-
-  if (PyErr_Occurred()) {
-    upb_Array_Resize(arr, start_size, NULL);
+  size_t old_size = upb_Array_Size(arr);
+  PyUpb_ExtendCtx ctx = {arr, arena};
+  if (!PyUpb_IterInput(value, f, arena, PyUpb_ExtendSizeCb, PyUpb_ExtendElemCb,
+                       PyUpb_ExtendBulkCb, &ctx)) {
+    upb_Array_Resize(arr, old_size, NULL);
     return NULL;
   }
-
   Py_RETURN_NONE;
 }
 
@@ -333,6 +538,164 @@ static PyObject* PyUpb_RepeatedContainer_Subscript(PyObject* _self,
   }
 }
 
+typedef struct {
+  upb_Array* arr;
+  upb_Arena* arena;
+  Py_ssize_t index;
+  Py_ssize_t step;
+  Py_ssize_t count;
+} PyUpb_SetSubscriptCtx;
+
+static bool PyUpb_SetSubscriptSizeCb(Py_ssize_t seq_size, void* vctx) {
+  PyUpb_SetSubscriptCtx* ctx = (PyUpb_SetSubscriptCtx*)vctx;
+  if (seq_size != ctx->count) {
+    if (ctx->step == 1) {
+      // We must shift the tail elements (either right or left).
+      size_t tail = upb_Array_Size(ctx->arr) - (ctx->index + ctx->count);
+      upb_Array_Resize(ctx->arr, ctx->index + seq_size + tail, ctx->arena);
+      upb_Array_Move(ctx->arr, ctx->index + seq_size, ctx->index + ctx->count,
+                     tail);
+      ctx->count = seq_size;
+    } else {
+      PyErr_Format(PyExc_ValueError,
+                   "attempt to assign sequence of  %zd to extended slice "
+                   "of size %zd",
+                   seq_size, ctx->count);
+      return false;
+    }
+  }
+  return true;
+}
+
+static bool PyUpb_SetSubscriptElemCb(upb_MessageValue val, void* vctx) {
+  PyUpb_SetSubscriptCtx* ctx = (PyUpb_SetSubscriptCtx*)vctx;
+  upb_Array_Set(ctx->arr, ctx->index, val);
+  ctx->index += ctx->step;
+  return true;
+}
+
+static void PyUpb_Reverse(char* start, char* end, size_t itemsize) {
+  char tmp[16];
+  assert(itemsize <= sizeof(tmp));
+  while (start < end) {
+    memcpy(tmp, start, itemsize);
+    memcpy(start, end, itemsize);
+    memcpy(end, tmp, itemsize);
+    start += itemsize;
+    end -= itemsize;
+  }
+}
+
+static void PyUpb_Rotate(char* first, char* middle, char* last,
+                         size_t itemsize) {
+  if (first == middle || middle == last) return;
+  PyUpb_Reverse(first, middle - itemsize, itemsize);
+  PyUpb_Reverse(middle, last - itemsize, itemsize);
+  PyUpb_Reverse(first, last - itemsize, itemsize);
+}
+
+static bool PyUpb_SetSubscriptBulkCb(const void* data, Py_ssize_t count,
+                                     Py_ssize_t itemsize, void* vctx) {
+  PyUpb_SetSubscriptCtx* ctx = (PyUpb_SetSubscriptCtx*)vctx;
+  PyUpb_OverlapType overlap =
+      PyUpb_ArrayOverlaps(ctx->arr, data, count, itemsize);
+
+  if (overlap == kOverlap) {
+    PyErr_SetString(PyExc_ValueError,
+                    "Assigning with overlapping sequence not supported");
+    return false;
+  }
+
+  size_t old_size = upb_Array_Size(ctx->arr);
+  size_t tail = old_size - (ctx->index + ctx->count);
+  char* dst = upb_Array_MutableDataPtr(ctx->arr);
+  char* target = dst + ctx->index * itemsize;
+
+  if (overlap == kDisjoint) {
+    if (count != ctx->count) {
+      if (ctx->step != 1) {
+        PyErr_Format(
+            PyExc_ValueError,
+            "attempt to assign sequence of %zd to extended slice of size %zd",
+            count, ctx->count);
+        return false;
+      }
+      upb_Array_Resize(ctx->arr, ctx->index + count + tail, ctx->arena);
+      dst = upb_Array_MutableDataPtr(ctx->arr);
+      upb_Array_Move(ctx->arr, ctx->index + count, ctx->index + ctx->count,
+                     tail);
+    }
+    if (ctx->step == 1) {
+      memcpy(dst + ctx->index * itemsize, data, count * itemsize);
+    } else {
+      const char* src = (const char*)data;
+      for (Py_ssize_t i = 0; i < count; i++) {
+        memcpy(dst + (ctx->index + i * ctx->step) * itemsize,
+               src + i * itemsize, itemsize);
+      }
+    }
+    return true;
+  }
+
+  if (count != ctx->count && ctx->step != 1) {
+    PyErr_Format(
+        PyExc_ValueError,
+        "attempt to assign sequence of %zd to extended slice of size %zd",
+        count, ctx->count);
+    return false;
+  }
+
+  // Fast paths for subset assignment when not growing the array
+  // (count <= ctx->count).
+  if (count <= ctx->count) {
+    if (data != target) {
+      memmove(target, data, count * itemsize);
+    }
+    if (count < ctx->count) {
+      upb_Array_Move(ctx->arr, ctx->index + count, ctx->index + ctx->count,
+                     tail);
+      upb_Array_Resize(ctx->arr, ctx->index + count + tail, ctx->arena);
+    }
+    return true;
+  }
+
+  // General case (growing subset assignment: append + rotate + memmove +
+  // truncate).
+
+  // Append to the end of the array.
+  char* old_dst = upb_Array_MutableDataPtr(ctx->arr);
+  upb_Array_Resize(ctx->arr, old_size + count, ctx->arena);
+  dst = upb_Array_MutableDataPtr(ctx->arr);
+  if (old_dst != dst) {
+    data = dst + ((const char*)data - old_dst);
+  }
+  memcpy(dst + old_size * itemsize, data, count * itemsize);
+
+  //
+  if (ctx->step == 1) {
+    char* first = dst + (ctx->index + ctx->count) * itemsize;
+    char* middle = dst + old_size * itemsize;
+    char* last = dst + (old_size + count) * itemsize;
+
+    PyUpb_Rotate(first, middle, last, itemsize);
+
+    if (ctx->count > 0) {
+      memmove(dst + ctx->index * itemsize,
+              dst + (ctx->index + ctx->count) * itemsize,
+              (count + tail) * itemsize);
+    }
+  } else {
+    const char* src = dst + old_size * itemsize;
+    for (Py_ssize_t i = 0; i < count; i++) {
+      memcpy(dst + (ctx->index + i * ctx->step) * itemsize, src + i * itemsize,
+             itemsize);
+    }
+  }
+
+  upb_Array_Resize(ctx->arr, ctx->index + count + tail, ctx->arena);
+  return true;
+}
+
 static int PyUpb_RepeatedContainer_SetSubscript(
     PyUpb_RepeatedContainer* self, upb_Array* arr, const upb_FieldDef* f,
     Py_ssize_t idx, Py_ssize_t count, Py_ssize_t step, PyObject* value) {
@@ -349,45 +712,21 @@ static int PyUpb_RepeatedContainer_SetSubscript(
     upb_Array_Set(arr, idx, msgval);
     return 0;
   }
-
-  // Set range.
-  PyObject* seq =
-      PySequence_Fast(value, "must assign iterable to extended slice");
-  PyObject* item = NULL;
-  int ret = -1;
-  if (!seq) goto err;
-  Py_ssize_t seq_size = PySequence_Size(seq);
-  if (seq_size != count) {
-    if (step == 1) {
-      // We must shift the tail elements (either right or left).
-      size_t tail = upb_Array_Size(arr) - (idx + count);
-      upb_Array_Resize(arr, idx + seq_size + tail, arena);
-      upb_Array_Move(arr, idx + seq_size, idx + count, tail);
-      count = seq_size;
-    } else {
-      PyErr_Format(PyExc_ValueError,
-                   "attempt to assign sequence of  %zd to extended slice "
-                   "of size %zd",
-                   seq_size, count);
-      goto err;
-    }
+  Py_ssize_t old_size = (Py_ssize_t)upb_Array_Size(arr);
+  Py_ssize_t tail = old_size - (idx + count);
+  if (step == 1 && count == 0 && tail == 0) {
+    PyObject* ret = PyUpb_RepeatedContainer_Extend((PyObject*)self, value);
+    if (!ret) return -1;
+    Py_DECREF(ret);
+    return 0;
   }
-  for (Py_ssize_t i = 0; i < count; i++, idx += step) {
-    upb_MessageValue msgval;
-    item = PySequence_GetItem(seq, i);
-    if (!item) goto err;
-    // XXX: if this fails we can leave the list partially mutated.
-    if (!PyUpb_PyToUpb(item, f, &msgval, arena)) goto err;
-    Py_DECREF(item);
-    item = NULL;
-    upb_Array_Set(arr, idx, msgval);
+  PyUpb_SetSubscriptCtx ctx = {arr, arena, idx, step, count};
+  if (!PyUpb_IterInput(value, f, arena, PyUpb_SetSubscriptSizeCb,
+                       PyUpb_SetSubscriptElemCb, PyUpb_SetSubscriptBulkCb,
+                       &ctx)) {
+    return -1;
   }
-  ret = 0;
-
-err:
-  Py_XDECREF(seq);
-  Py_XDECREF(item);
-  return ret;
+  return 0;
 }
 
 static int PyUpb_RepeatedContainer_DeleteSubscript(upb_Array* arr,
@@ -528,8 +867,7 @@ static PyObject* PyUpb_RepeatedContainer_Sort(PyObject* pself, PyObject* args,
   }
 
   if (PyUpb_RepeatedContainer_IsFrozen((PyUpb_RepeatedContainer*)pself)) {
-    PyErr_SetString(PyExc_TypeError, "Container is read-only");
-    return NULL;
+    return PyUpb_SetFrozenErrorWithMsg("Container is immutable");
   }
 
   // TODO:b/517235198 - Reify even for empty sequences.

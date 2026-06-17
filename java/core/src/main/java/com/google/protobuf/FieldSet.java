@@ -269,22 +269,6 @@ final class FieldSet<T extends FieldSet.FieldDescriptorLite<T>> {
     return fields.entrySet().iterator();
   }
 
-  /**
-   * Get an iterator over the fields in the map in descending (i.e. reverse) order. This iterator
-   * should not be leaked out of the protobuf library as it is not protected from mutation when
-   * fields is not immutable.
-   */
-  Iterator<Map.Entry<T, Object>> descendingIterator() {
-    // Avoid an allocation in the common case of empty FieldSet.
-    if (isEmpty()) {
-      return Collections.emptyIterator();
-    }
-    if (hasLazyField) {
-      return new LazyIterator<T>(fields.descendingEntrySet().iterator());
-    }
-    return fields.descendingEntrySet().iterator();
-  }
-
   /** Useful for implementing {@link Message#hasField(Descriptors.FieldDescriptor)}. */
   public boolean hasField(final T descriptor) {
     if (descriptor.isRepeated()) {

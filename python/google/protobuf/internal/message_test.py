@@ -15,6 +15,7 @@ serialization code in the whole library.
 
 __author__ = 'gps@google.com (Gregory P. Smith)'
 
+import array
 import collections
 import copy
 import math
@@ -456,6 +457,27 @@ class MessageTest(unittest.TestCase):
     self.assertEqual(2, len(msg.repeated_nested_message))
     self.assertEqual([1, 2], [m.bb for m in msg.repeated_nested_message])
 
+  def testExtendRepeatedCompositeField(self, message_module):
+    msg = message_module.TestAllTypes()
+    msg.repeated_nested_message.extend([
+        message_module.TestAllTypes.NestedMessage(bb=1),
+        message_module.TestAllTypes.NestedMessage(bb=2),
+    ])
+    self.assertEqual(2, len(msg.repeated_nested_message))
+    self.assertEqual([1, 2], [m.bb for m in msg.repeated_nested_message])
+
+    # Extend with an invalid item should raise TypeError.
+    with self.assertRaises(TypeError):
+      msg.repeated_nested_message.extend([
+          message_module.TestAllTypes.NestedMessage(bb=3),
+          1,
+          message_module.TestAllTypes.NestedMessage(bb=4),
+      ])
+    # Should not have added the invalid item or any subsequent items.
+    self.assertEqual(3, len(msg.repeated_nested_message))
+    with self.assertRaises(TypeError):
+      msg.repeated_nested_message[:] = []
+
   def testInsertRepeatedCompositeField(self, message_module):
     msg = message_module.TestAllTypes()
     msg.repeated_nested_message.insert(
@@ -505,6 +527,143 @@ class MessageTest(unittest.TestCase):
   def testAssignRepeatedField(self, message_module):
     msg = message_module.NestedTestAllTypes()
     msg.payload.repeated_int32[:] = [1, 2, 3, 4]
+    self.assertEqual(4, len(msg.payload.repeated_int32))
+    self.assertEqual([1, 2, 3, 4], msg.payload.repeated_int32)
+
+  def testRepeatedFieldSelfSliceAssignment(self, message_module):
+      msg = message_module.NestedTestAllTypes()
+      msg.payload.repeated_int32[:] = [1, 2, 3, 4]
+      msg.payload.repeated_int32[:] = msg.payload.repeated_int32
+      self.assertEqual([1, 2, 3, 4], msg.payload.repeated_int32)
+
+  def testRepeatedFieldSelfExtend(self, message_module):
+      msg = message_module.NestedTestAllTypes()
+      msg.payload.repeated_int32[:] = [1, 2, 3, 4]
+      msg.payload.repeated_int32.extend(msg.payload.repeated_int32)
+      self.assertEqual([1, 2, 3, 4] * 2, msg.payload.repeated_int32)
+
+  def testAssignOutOfRange(self, message_module):
+    msg = message_module.NestedTestAllTypes()
+    with self.assertRaises(ValueError):
+      msg.payload.repeated_int32.extend([1, 2, 3, 2**34])
+    if api_implementation.Type() == 'cpp':
+      self.assertEqual(msg.payload.repeated_int32, [1, 2, 3])
+    else:
+      self.assertEqual(msg.payload.repeated_int32, [])
+
+  def testAssignRepeatedFieldFromArray(self, message_module):
+    msg = message_module.NestedTestAllTypes()
+    msg.payload.repeated_int32[:] = array.array('i', [1, 2, 3, 4])
+    self.assertEqual(4, len(msg.payload.repeated_int32))
+    self.assertEqual([1, 2, 3, 4], msg.payload.repeated_int32)
+
+  def testAssignRepeatedFieldFromSlicedMemoryView(self, message_module):
+    msg = message_module.NestedTestAllTypes()
+    arr = array.array('i', [1, 1, 2, 2, 3, 3, 4, 4])
+    msg.payload.repeated_int32[:] = memoryview(arr)[::2]
+    self.assertEqual(4, len(msg.payload.repeated_int32))
+    self.assertEqual([1, 2, 3, 4], msg.payload.repeated_int32)
+
+  def testAssignRepeatedFieldAllRanges(self, message_module):
+    msg = message_module.NestedTestAllTypes()
+    arr = ['a', 'b', 'c', 'd']
+    msg.payload.repeated_string[:] = arr
+    self.assertEqual(arr, msg.payload.repeated_string)
+    msg.payload.repeated_string[1:3] = ['x', 'y']
+    arr[1:3] = ['x', 'y']
+    self.assertEqual(arr, msg.payload.repeated_string)
+    msg.payload.repeated_string[1:2] = ['z']
+    arr[1:2] = ['z']
+    self.assertEqual(arr, msg.payload.repeated_string)
+    msg.payload.repeated_string[:0] = ['q', 'r']
+    arr[:0] = ['q', 'r']
+    self.assertEqual(arr, msg.payload.repeated_string)
+    msg.payload.repeated_string[7:] = ['s']
+    arr[7:] = ['s']
+    self.assertEqual(arr, msg.payload.repeated_string)
+    msg.payload.repeated_string[1:5] = ['t']
+    arr[1:5] = ['t']
+    self.assertEqual(arr, msg.payload.repeated_string)
+    msg.payload.repeated_string[-1:] = ['u', 'v', 'w']
+    arr[-1:] = ['u', 'v', 'w']
+    self.assertEqual(arr, msg.payload.repeated_string)
+
+  def testAssignRepeatedStringSliceWithStep(self, message_module):
+    # Test valid extended slice assignments on repeated_string
+    msg = message_module.NestedTestAllTypes()
+    arr = ['a', 'b', 'c', 'd']
+    msg.payload.repeated_string[:] = arr
+    self.assertEqual(arr, msg.payload.repeated_string)
+
+    # Check that slice assignment with size mismatch raises ValueError
+    with self.assertRaises(ValueError):
+      msg.payload.repeated_string[::2] = ['1', '2', '3']
+    with self.assertRaises(ValueError):
+      msg.payload.repeated_string[::2] = '1'
+
+    # Check that assigning to a full slice from a single string works
+    msg.payload.repeated_string[:] = 'xyz'
+    self.assertEqual(['x', 'y', 'z'], msg.payload.repeated_string)
+
+    # Check that assigning non-scalar elements to repeated_string slice raises TypeError
+    with self.assertRaises(TypeError):
+      msg.payload.repeated_string[:] = [1, 2, 3]
+
+  @unittest.skipIf(
+      api_implementation.Type() == 'python', 'python has different behavior'
+  )
+  def testAssignRepeatedFieldSliceWithStep(self, message_module):
+    msg = message_module.NestedTestAllTypes()
+    arr = [1, 2, 3, 4]
+    msg.payload.repeated_int32[:] = arr
+    self.assertEqual(arr, msg.payload.repeated_int32)
+
+    # Check step
+    msg.payload.repeated_int32[::2] = [10, 20]
+    arr[::2] = [10, 20]
+    self.assertEqual(arr, msg.payload.repeated_int32)
+
+    # Check array assignment with step
+    msg.payload.repeated_int32[::2] = array.array('i', [100, 200])
+    arr[::2] = [100, 200]
+    self.assertEqual(arr, msg.payload.repeated_int32)
+
+    # Check size mismatch raises ValueError
+    with self.assertRaises(ValueError):
+      msg.payload.repeated_int32[::2] = [1, 2, 3]
+
+  def testAssignRepeatedFieldAllRangesArray(self, message_module):
+    msg = message_module.NestedTestAllTypes()
+    arr = [1, 2, 3, 4]
+    msg.payload.repeated_int32[:] = array.array('i', arr)
+    self.assertEqual(arr, msg.payload.repeated_int32)
+    msg.payload.repeated_int32[1:3] = array.array('i', [10, 20])
+    arr[1:3] = [10, 20]
+    self.assertEqual(arr, msg.payload.repeated_int32)
+    msg.payload.repeated_int32[1:2] = array.array('i', [100])
+    arr[1:2] = [100]
+    self.assertEqual(arr, msg.payload.repeated_int32)
+    msg.payload.repeated_int32[:0] = array.array('i', [200, 300])
+    arr[:0] = [200, 300]
+    self.assertEqual(arr, msg.payload.repeated_int32)
+    msg.payload.repeated_int32[7:] = array.array('i', [400])
+    arr[7:] = [400]
+    self.assertEqual(arr, msg.payload.repeated_int32)
+    msg.payload.repeated_int32[1:5] = array.array('i', [50])
+    arr[1:5] = [50]
+    self.assertEqual(arr, msg.payload.repeated_int32)
+    msg.payload.repeated_int32[-1:] = array.array('i', [600, 700, 800])
+    arr[-1:] = [600, 700, 800]
+    self.assertEqual(arr, msg.payload.repeated_int32)
+
+  def testAssignRepeatedFieldFromGenerator(self, message_module):
+    msg = message_module.NestedTestAllTypes()
+
+    def gen():
+      for i in range(1, 5):
+        yield i
+
+    msg.payload.repeated_int32[:] = gen()
     self.assertEqual(4, len(msg.payload.repeated_int32))
     self.assertEqual([1, 2, 3, 4], msg.payload.repeated_int32)
 
@@ -810,8 +969,7 @@ class MessageTest(unittest.TestCase):
       hash(m.repeated_nested_message)
 
   @unittest.skipIf(
-      api_implementation.Type() == 'upb',
-      'upb has different behavior'
+      api_implementation.Type() == 'upb', 'upb has different behavior'
   )
   def testRepeatedCompositeNotComparableWithList(self, message_module):
     msg = message_module.TestAllTypes()
@@ -826,8 +984,7 @@ class MessageTest(unittest.TestCase):
       ]
 
   @unittest.skipIf(
-      api_implementation.Type() != 'upb',
-      'upb has different behavior'
+      api_implementation.Type() != 'upb', 'upb has different behavior'
   )
   def testRepeatedCompositeComparableWithList(self, message_module):
     msg = message_module.TestAllTypes()
@@ -915,6 +1072,7 @@ class MessageTest(unittest.TestCase):
     # A class that implements the buffer protocol and mangles the data when the
     # buffer is released.
     class Buffer:
+
       def __init__(self, data):
         self._data = bytearray(data)
 
@@ -1659,8 +1817,9 @@ class MessageTest(unittest.TestCase):
 
     if api_implementation.Type() == 'upb':
       msg.optional_nested_enum = 'FOO'
-      self.assertEqual(msg.optional_nested_enum,
-                       message_module.TestAllTypes.FOO)
+      self.assertEqual(
+          msg.optional_nested_enum, message_module.TestAllTypes.FOO
+      )
 
       # Label which is not one of the values in the corresponding enum.
       with self.assertRaises(ValueError):
@@ -1888,6 +2047,10 @@ class Proto2Test(unittest.TestCase):
     m.repeated_nested_enum[0] = 2
     with self.assertRaises(ValueError):
       m.repeated_nested_enum[0] = 123456
+    with self.assertRaises(ValueError):
+      m.repeated_nested_enum.extend([123456])
+    with self.assertRaises(ValueError):
+      m.repeated_nested_enum[:] = [123456]
 
     # Unknown enum value can be parsed but is ignored.
     m2 = unittest_proto3_arena_pb2.TestAllTypes()
@@ -3388,6 +3551,8 @@ class OversizeProtosTest(unittest.TestCase):
     with self.assertRaises(message.DecodeError) as context:
       parsed_msg.ParseFromString(msg.SerializeToString())
     self.assertIn('Error parsing message', str(context.exception))
+    if api_implementation.Type() == 'python':
+      decoder.SetRecursionLimit(decoder.DEFAULT_RECURSION_LIMIT)
 
   def testRecisionMessageSet(self):
     msg = message_set_extensions_pb2.TestMessageSet()
