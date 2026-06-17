@@ -905,13 +905,12 @@ PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const Api::ParseTableT_
         Api::InternalGenerateParseTable_(Api_class_data_.base());
 #endif  // !PROTOBUF_MESSAGE_GLOBALS
 PROTOBUF_NOINLINE void Api::Clear() {
+  auto& this_ [[maybe_unused]] = *this;
   // @@protoc_insertion_point(message_clear_start:google.protobuf.Api)
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  ::uint32_t cached_has_bits = 0;
-  // Prevent compiler warnings about cached_has_bits being unused
-  (void)cached_has_bits;
+  ::uint32_t cached_has_bits [[maybe_unused]] = 0;
 
-  cached_has_bits = _impl_._has_bits_[0];
+  cached_has_bits = this_._impl_._has_bits_[0];
   if (BatchCheckHasBit(cached_has_bits, 0x0000007fU)) {
     if (CheckHasBit(cached_has_bits, 0x00000001U)) {
       _impl_.methods_.Clear();
@@ -923,20 +922,20 @@ PROTOBUF_NOINLINE void Api::Clear() {
       _impl_.mixins_.Clear();
     }
     if (CheckHasBit(cached_has_bits, 0x00000008U)) {
-      _impl_.name_.ClearNonDefaultToEmpty();
+      this_._impl_.name_.ClearNonDefaultToEmpty();
     }
     if (CheckHasBit(cached_has_bits, 0x00000010U)) {
-      _impl_.version_.ClearNonDefaultToEmpty();
+      this_._impl_.version_.ClearNonDefaultToEmpty();
     }
     if (CheckHasBit(cached_has_bits, 0x00000020U)) {
-      _impl_.edition_.ClearNonDefaultToEmpty();
+      this_._impl_.edition_.ClearNonDefaultToEmpty();
     }
     if (CheckHasBit(cached_has_bits, 0x00000040U)) {
-      ABSL_DCHECK(_impl_.source_context_ != nullptr);
-      _impl_.source_context_->Clear();
+      ABSL_DCHECK(this_._impl_.source_context_ != nullptr);
+      this_._impl_.source_context_->Clear();
     }
   }
-  _impl_.syntax_ = 0;
+  this_._impl_.syntax_ = 0;
   _impl_._has_bits_.Clear();
   _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
 }
@@ -1061,9 +1060,7 @@ PROTOBUF_NOINLINE void Api::Clear() {
   // @@protoc_insertion_point(message_byte_size_start:google.protobuf.Api)
   ::size_t total_size = 0;
 
-  ::uint32_t cached_has_bits = 0;
-  // Prevent compiler warnings about cached_has_bits being unused
-  (void)cached_has_bits;
+  ::uint32_t cached_has_bits [[maybe_unused]] = 0;
 
   ::_pbi::Prefetch5LinesFrom7Lines(&this_);
   cached_has_bits = this_._impl_._has_bits_[0];
@@ -1358,36 +1355,35 @@ PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const Method::ParseTableT_
         Method::InternalGenerateParseTable_(Method_class_data_.base());
 #endif  // !PROTOBUF_MESSAGE_GLOBALS
 PROTOBUF_NOINLINE void Method::Clear() {
+  auto& this_ [[maybe_unused]] = *this;
   // @@protoc_insertion_point(message_clear_start:google.protobuf.Method)
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  ::uint32_t cached_has_bits = 0;
-  // Prevent compiler warnings about cached_has_bits being unused
-  (void)cached_has_bits;
+  ::uint32_t cached_has_bits [[maybe_unused]] = 0;
 
-  cached_has_bits = _impl_._has_bits_[0];
+  cached_has_bits = this_._impl_._has_bits_[0];
   if (BatchCheckHasBit(cached_has_bits, 0x0000001fU)) {
     if (CheckHasBit(cached_has_bits, 0x00000001U)) {
       _impl_.options_.Clear();
     }
     if (CheckHasBit(cached_has_bits, 0x00000002U)) {
-      _impl_.name_.ClearNonDefaultToEmpty();
+      this_._impl_.name_.ClearNonDefaultToEmpty();
     }
     if (CheckHasBit(cached_has_bits, 0x00000004U)) {
-      _impl_.request_type_url_.ClearNonDefaultToEmpty();
+      this_._impl_.request_type_url_.ClearNonDefaultToEmpty();
     }
     if (CheckHasBit(cached_has_bits, 0x00000008U)) {
-      _impl_.response_type_url_.ClearNonDefaultToEmpty();
+      this_._impl_.response_type_url_.ClearNonDefaultToEmpty();
     }
     if (CheckHasBit(cached_has_bits, 0x00000010U)) {
-      _impl_.edition_.ClearNonDefaultToEmpty();
+      this_._impl_.edition_.ClearNonDefaultToEmpty();
     }
   }
   if (BatchCheckHasBit(cached_has_bits, 0x000000e0U)) {
-    ::memset(
-        &_impl_.request_streaming_, 0,
-        static_cast<::size_t>(reinterpret_cast<char*>(&_impl_.syntax_) -
-                              reinterpret_cast<char*>(&_impl_.request_streaming_)) +
-            sizeof(_impl_.syntax_));
+    ::memset(&this_._impl_.request_streaming_, 0,
+             static_cast<::size_t>(
+                 reinterpret_cast<char*>(&this_._impl_.syntax_) -
+                 reinterpret_cast<char*>(&this_._impl_.request_streaming_)) +
+                 sizeof(_impl_.syntax_));
   }
   _impl_._has_bits_.Clear();
   _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
@@ -1510,9 +1506,7 @@ PROTOBUF_NOINLINE void Method::Clear() {
   // @@protoc_insertion_point(message_byte_size_start:google.protobuf.Method)
   ::size_t total_size = 0;
 
-  ::uint32_t cached_has_bits = 0;
-  // Prevent compiler warnings about cached_has_bits being unused
-  (void)cached_has_bits;
+  ::uint32_t cached_has_bits [[maybe_unused]] = 0;
 
   ::_pbi::Prefetch5LinesFrom7Lines(&this_);
   cached_has_bits = this_._impl_._has_bits_[0];
@@ -1771,19 +1765,18 @@ PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const Mixin::ParseTableT_
         Mixin::InternalGenerateParseTable_(Mixin_class_data_.base());
 #endif  // !PROTOBUF_MESSAGE_GLOBALS
 PROTOBUF_NOINLINE void Mixin::Clear() {
+  auto& this_ [[maybe_unused]] = *this;
   // @@protoc_insertion_point(message_clear_start:google.protobuf.Mixin)
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  ::uint32_t cached_has_bits = 0;
-  // Prevent compiler warnings about cached_has_bits being unused
-  (void)cached_has_bits;
+  ::uint32_t cached_has_bits [[maybe_unused]] = 0;
 
-  cached_has_bits = _impl_._has_bits_[0];
+  cached_has_bits = this_._impl_._has_bits_[0];
   if (BatchCheckHasBit(cached_has_bits, 0x00000003U)) {
     if (CheckHasBit(cached_has_bits, 0x00000001U)) {
-      _impl_.name_.ClearNonDefaultToEmpty();
+      this_._impl_.name_.ClearNonDefaultToEmpty();
     }
     if (CheckHasBit(cached_has_bits, 0x00000002U)) {
-      _impl_.root_.ClearNonDefaultToEmpty();
+      this_._impl_.root_.ClearNonDefaultToEmpty();
     }
   }
   _impl_._has_bits_.Clear();
@@ -1848,9 +1841,7 @@ PROTOBUF_NOINLINE void Mixin::Clear() {
   // @@protoc_insertion_point(message_byte_size_start:google.protobuf.Mixin)
   ::size_t total_size = 0;
 
-  ::uint32_t cached_has_bits = 0;
-  // Prevent compiler warnings about cached_has_bits being unused
-  (void)cached_has_bits;
+  ::uint32_t cached_has_bits [[maybe_unused]] = 0;
 
   ::_pbi::Prefetch5LinesFrom7Lines(&this_);
   cached_has_bits = this_._impl_._has_bits_[0];
