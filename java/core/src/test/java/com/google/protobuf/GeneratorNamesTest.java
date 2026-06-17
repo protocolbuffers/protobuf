@@ -275,6 +275,7 @@ public final class GeneratorNamesTest {
         .isTrue();
   }
 
+
   // Helper classes to contain parameterized test data.
 
   private static String getShortFilename(FileDescriptor descriptor) {

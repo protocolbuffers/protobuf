@@ -305,15 +305,20 @@ public final class GeneratorNames {
 
   private static String getClassFullName(
       String nameWithoutPackage, FileDescriptor file, boolean isOwnFile) {
+    return getClassFullName(nameWithoutPackage, file.toProto(), isOwnFile);
+  }
+
+  static String getClassFullName(
+      String nameWithoutPackage, FileDescriptorProtoOrBuilder file, boolean isOwnFile) {
     // Replicates the logic for ClassNameResolver::GetJavaClassFullName from immutable/names.cc
     StringBuilder result = new StringBuilder();
     if (isOwnFile) {
-      result.append(getFileJavaPackage(file.toProto()));
+      result.append(getFileJavaPackage(file));
       if (result.length() > 0) {
         result.append(".");
       }
     } else {
-      result.append(joinPackage(getFileJavaPackage(file.toProto()), getFileClassName(file)));
+      result.append(joinPackage(getFileJavaPackage(file), getFileClassName(file)));
       if (result.length() > 0) {
         result.append("$");
       }
@@ -323,9 +328,14 @@ public final class GeneratorNames {
   }
 
   /** Returns the nest_in_file_class behavior for a given set of features in a specific file. */
+  private static boolean getNestInFileClass(FileDescriptor file, JavaFeatures resolvedFeatures) {
+    return getNestInFileClass(file.toProto(), resolvedFeatures);
+  }
+
   // Switch expressions were released in Java 14, and we support Java 8.
   @SuppressWarnings("StatementSwitchToExpressionSwitch")
-  private static boolean getNestInFileClass(FileDescriptor file, JavaFeatures resolvedFeatures) {
+  static boolean getNestInFileClass(
+      FileDescriptorProtoOrBuilder file, JavaFeatures resolvedFeatures) {
     switch (resolvedFeatures.getNestInFileClass()) {
       case YES:
         return true;
