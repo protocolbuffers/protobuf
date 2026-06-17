@@ -538,10 +538,6 @@ class GeneratedMessageFactory final : public MessageFactory {
                     const google::protobuf::internal::DescriptorTable* rhs) const {
       return lhs == rhs || (*this)(lhs->filename, rhs->filename);
     }
-    bool operator()(absl::string_view lhs,
-                    const google::protobuf::internal::DescriptorTable* rhs) const {
-      return (*this)(lhs, rhs->filename);
-    }
     bool operator()(const google::protobuf::internal::DescriptorTable* lhs,
                     absl::string_view rhs) const {
       return (*this)(lhs->filename, rhs);

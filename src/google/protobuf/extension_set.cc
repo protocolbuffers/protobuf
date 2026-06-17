@@ -75,9 +75,6 @@ struct ExtensionEq {
   bool operator()(const ExtensionInfo& lhs, const ExtensionInfoKey& rhs) const {
     return lhs.message == rhs.message && lhs.number == rhs.number;
   }
-  bool operator()(const ExtensionInfoKey& lhs, const ExtensionInfo& rhs) const {
-    return lhs.message == rhs.message && lhs.number == rhs.number;
-  }
 };
 
 struct ExtensionHasher {
