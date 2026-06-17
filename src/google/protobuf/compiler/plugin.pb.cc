@@ -1193,14 +1193,14 @@ PROTOBUF_NDEBUG_INLINE CodeGeneratorRequest::Impl_::Impl_(
           visibility, ::_pbi::InternalMetadataOffset::Build<
               ::google::protobuf::compiler::CodeGeneratorRequest,
               PROTOBUF_FIELD_OFFSET(::google::protobuf::compiler::CodeGeneratorRequest, _impl_.file_to_generate_)>()
-          , from.file_to_generate_
+          , arena, from.file_to_generate_
         }
         ,
         proto_file_ {
           visibility, ::_pbi::InternalMetadataOffset::Build<
               ::google::protobuf::compiler::CodeGeneratorRequest,
               PROTOBUF_FIELD_OFFSET(::google::protobuf::compiler::CodeGeneratorRequest, _impl_.proto_file_)>()
-          , from.proto_file_
+          , arena, from.proto_file_
         }
         ,
         parameter_(arena, from.parameter_),
@@ -1208,7 +1208,7 @@ PROTOBUF_NDEBUG_INLINE CodeGeneratorRequest::Impl_::Impl_(
           visibility, ::_pbi::InternalMetadataOffset::Build<
               ::google::protobuf::compiler::CodeGeneratorRequest,
               PROTOBUF_FIELD_OFFSET(::google::protobuf::compiler::CodeGeneratorRequest, _impl_.source_file_descriptors_)>()
-          , from.source_file_descriptors_
+          , arena, from.source_file_descriptors_
         }
      {}
 
@@ -1835,7 +1835,7 @@ PROTOBUF_NDEBUG_INLINE CodeGeneratorResponse::Impl_::Impl_(
           visibility, ::_pbi::InternalMetadataOffset::Build<
               ::google::protobuf::compiler::CodeGeneratorResponse,
               PROTOBUF_FIELD_OFFSET(::google::protobuf::compiler::CodeGeneratorResponse, _impl_.file_)>()
-          , from.file_
+          , arena, from.file_
         }
         ,
         error_(arena, from.error_) {}
