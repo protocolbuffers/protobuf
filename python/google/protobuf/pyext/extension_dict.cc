@@ -199,6 +199,8 @@ int ass_subscript(ExtensionDict* self, PyObject* key, PyObject* value) {
     return cmessage::ClearFieldByDescriptor(self->parent, descriptor);
   }
 
+  if (cmessage::AssureWritable(self->parent) == nullptr) return -1;
+
   if (descriptor->is_repeated() || descriptor->is_required() ||
       descriptor->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
     PyErr_SetString(PyExc_TypeError,
@@ -206,7 +208,6 @@ int ass_subscript(ExtensionDict* self, PyObject* key, PyObject* value) {
                     "type");
     return -1;
   }
-  cmessage::AssureWritable(self->parent);
   if (cmessage::InternalSetScalar(self->parent, descriptor, value) < 0) {
     return -1;
   }

@@ -203,10 +203,6 @@ std::string DescriptorTableName(const FileDescriptor* file,
 // dllexport needed for the target file, if any.
 std::string FileDllExport(const FileDescriptor* file, const Options& options);
 
-// Name of the base class: google::protobuf::Message or google::protobuf::MessageLite.
-std::string SuperClassName(const Descriptor* descriptor,
-                           const Options& options);
-
 // Add an underscore if necessary to prevent conflicting with known names and
 // keywords.
 // We use the context and the kind of entity to try to determine if mangling is
@@ -1027,8 +1023,7 @@ class PROTOC_EXPORT Formatter {
 
   // Convenience overloads to accept different types as arguments.
   static std::string ToString(absl::string_view s) { return std::string(s); }
-  template <typename I, typename = typename std::enable_if<
-                            std::is_integral<I>::value>::type>
+  template <typename I, typename = std::enable_if_t<std::is_integral_v<I>>>
   static std::string ToString(I x) {
     return absl::StrCat(x);
   }

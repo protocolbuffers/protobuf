@@ -85,7 +85,7 @@ PyObject* New(PyTypeObject* type, PyObject* args, PyObject* kwargs) {
   self->parent = nullptr;
 
   // Copy c_message's UnknownFieldSet.
-  Message* message = reinterpret_cast<CMessage*>(c_message)->message;
+  const Message* message = reinterpret_cast<CMessage*>(c_message)->message;
   const Reflection* reflection = message->GetReflection();
   self->fields = new google::protobuf::UnknownFieldSet;
   self->fields->MergeFrom(reflection->GetUnknownFields(*message));

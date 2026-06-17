@@ -38,15 +38,6 @@
 
 #define PROTOBUF_INTERNAL_EXPORT_google_2fprotobuf_2fjson_5fenumvalue_5foptions_2eproto PROTOBUF_EXPORT
 
-namespace google {
-namespace protobuf {
-namespace internal {
-template <typename T>
-::absl::string_view GetAnyMessageName();
-}  // namespace internal
-}  // namespace protobuf
-}  // namespace google
-
 // Internal implementation detail -- do not use these members.
 struct PROTOBUF_EXPORT TableStruct_google_2fprotobuf_2fjson_5fenumvalue_5foptions_2eproto {
   static const ::uint32_t offsets[];
@@ -81,6 +72,8 @@ namespace enumvalue {
 
 class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED JsonEnumValueOptions final : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:pb.enumvalue.JsonEnumValueOptions) */ {
+  using Super_ = ::google::protobuf::Message;
+
  public:
   inline JsonEnumValueOptions() : JsonEnumValueOptions(nullptr) {}
   ~JsonEnumValueOptions() PROTOBUF_FINAL;
@@ -155,11 +148,11 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED JsonEnumValueOption
 
   [[nodiscard]] JsonEnumValueOptions* PROTOBUF_NONNULL
   New(::google::protobuf::Arena* PROTOBUF_NULLABLE arena = nullptr) const {
-    return ::google::protobuf::Message::DefaultConstruct<JsonEnumValueOptions>(arena);
+    return Super_::DefaultConstruct<JsonEnumValueOptions>(arena);
   }
-  using ::google::protobuf::Message::CopyFrom;
+  using Super_::CopyFrom;
   void CopyFrom(const JsonEnumValueOptions& from);
-  using ::google::protobuf::Message::MergeFrom;
+  using Super_::MergeFrom;
   void MergeFrom(const JsonEnumValueOptions& from) { JsonEnumValueOptions::MergeImpl(*this, from); }
 
   private:
@@ -200,8 +193,6 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED JsonEnumValueOption
   static void SharedDtor(MessageLite& self);
   void InternalSwap(JsonEnumValueOptions* PROTOBUF_NONNULL other);
  private:
-  template <typename T>
-  friend ::absl::string_view(::google::protobuf::internal::GetAnyMessageName)();
   static ::absl::string_view FullMessageName() { return "pb.enumvalue.JsonEnumValueOptions"; }
 
   explicit JsonEnumValueOptions(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);

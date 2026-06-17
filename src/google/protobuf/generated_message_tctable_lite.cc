@@ -500,6 +500,30 @@ PROTOBUF_NOINLINE const char* TcParser::Error(PROTOBUF_TC_PARAM_NO_DATA_DECL) {
   return nullptr;
 }
 
+constexpr TailCallParseFunc TcParser::kMiniParseTable[] = {
+    &MpFallback,             // FieldKind::kFkNone
+    &MpVarint<false>,        // FieldKind::kFkVarint
+    &MpPackedVarint<false>,  // FieldKind::kFkPackedVarint
+    &MpFixed<false>,         // FieldKind::kFkFixed
+    &MpPackedFixed<false>,   // FieldKind::kFkPackedFixed
+    &MpString<false>,        // FieldKind::kFkString
+    &MpMessage<false>,       // FieldKind::kFkMessage
+    &MpMap<false>,           // FieldKind::kFkMap
+    &Error,                  // kSplitMask | FieldKind::kFkNone
+    &MpVarint<true>,         // kSplitMask | FieldKind::kFkVarint
+    &MpPackedVarint<true>,   // kSplitMask | FieldKind::kFkPackedVarint
+    &MpFixed<true>,          // kSplitMask | FieldKind::kFkFixed
+    &MpPackedFixed<true>,    // kSplitMask | FieldKind::kFkPackedFixed
+    &MpString<true>,         // kSplitMask | FieldKind::kFkString
+    &MpMessage<true>,        // kSplitMask | FieldKind::kFkMessage
+    &MpMap<true>,            // kSplitMask | FieldKind::kFkMap
+};
+
+// We have a constexpr variable for this to workaround issues with ASSUME and
+// function calls.
+constexpr size_t TcParser::kMiniParseTableSize =
+    std::size(TcParser::kMiniParseTable);
+
 template <bool export_called_function>
 PROTOBUF_ALWAYS_INLINE const char* TcParser::MiniParse(PROTOBUF_TC_PARAM_DECL) {
   TestMiniParseResult* test_out;
@@ -530,27 +554,14 @@ PROTOBUF_ALWAYS_INLINE const char* TcParser::MiniParse(PROTOBUF_TC_PARAM_DECL) {
   data.data = entry_offset << 32 | tag;
 
   using field_layout::FieldKind;
-  auto field_type =
-      entry->type_card & (+field_layout::kSplitMask | FieldKind::kFkMask);
 
-  static constexpr TailCallParseFunc kMiniParseTable[] = {
-      &MpFallback,             // FieldKind::kFkNone
-      &MpVarint<false>,        // FieldKind::kFkVarint
-      &MpPackedVarint<false>,  // FieldKind::kFkPackedVarint
-      &MpFixed<false>,         // FieldKind::kFkFixed
-      &MpPackedFixed<false>,   // FieldKind::kFkPackedFixed
-      &MpString<false>,        // FieldKind::kFkString
-      &MpMessage<false>,       // FieldKind::kFkMessage
-      &MpMap<false>,           // FieldKind::kFkMap
-      &Error,                  // kSplitMask | FieldKind::kFkNone
-      &MpVarint<true>,         // kSplitMask | FieldKind::kFkVarint
-      &MpPackedVarint<true>,   // kSplitMask | FieldKind::kFkPackedVarint
-      &MpFixed<true>,          // kSplitMask | FieldKind::kFkFixed
-      &MpPackedFixed<true>,    // kSplitMask | FieldKind::kFkPackedFixed
-      &MpString<true>,         // kSplitMask | FieldKind::kFkString
-      &MpMessage<true>,        // kSplitMask | FieldKind::kFkMessage
-      &MpMap<true>,            // kSplitMask | FieldKind::kFkMap
-  };
+  static_assert(
+      absl::has_single_bit(size_t{kMiniParseTableTypeCardMask} + 1) &&
+          kMiniParseTableTypeCardMask + 1 == kMiniParseTableSize,
+      "kMiniParseTableTypeCardMask must be of the form 2^n - 1, as it is used "
+      "to index the mini parse table");
+
+  auto field_type = entry->type_card & kMiniParseTableTypeCardMask;
   // Just to be sure we got the order right, above.
   static_assert(0 == FieldKind::kFkNone, "Invalid table order");
   static_assert(1 == FieldKind::kFkVarint, "Invalid table order");
@@ -578,6 +589,7 @@ PROTOBUF_ALWAYS_INLINE const char* TcParser::MiniParse(PROTOBUF_TC_PARAM_DECL) {
   static_assert(15 == (+field_layout::kSplitMask | FieldKind::kFkMap),
                 "Invalid table order");
 
+  ABSL_DCHECK_LT(field_type, kMiniParseTableSize);
   TailCallParseFunc parse_fn = kMiniParseTable[field_type];
   if (export_called_function) *test_out = {parse_fn, tag, entry};
 
@@ -628,8 +640,8 @@ PROTOBUF_ALWAYS_INLINE MessageLite* TcParser::NewMessage(
 
 MessageLite* TcParser::AddMessage(const ClassData* class_data,
                                   RepeatedPtrFieldBase& field, Arena* arena) {
-  return field.AddFromClassData<GenericTypeHandler<MessageLite>>(arena,
-                                                                 class_data);
+  return field.AddFromPrototype<GenericTypeHandler<MessageLite>>(
+      arena, class_data->default_instance());
 }
 
 template <bool kIsTable>
@@ -3302,6 +3314,36 @@ const char* TcParser::DiscardEverythingFallback(PROTOBUF_TC_PARAM_DECL) {
     return ptr;
   }
   return UnknownFieldParse(tag, nullptr, ptr, ctx);
+}
+
+template <typename TagType>
+PROTOBUF_ALWAYS_INLINE const char* TcParser::FastMpImpl(
+    PROTOBUF_TC_PARAM_DECL) {
+  if (ABSL_PREDICT_FALSE(data.coded_tag<TagType>() != 0)) {
+    PROTOBUF_DEBUG_COUNTER("TcParser.FastMiniParse_Fail").Inc();
+    PROTOBUF_MUSTTAIL return MiniParse(PROTOBUF_TC_PARAM_NO_DATA_PASS);
+  }
+
+  const uint32_t tag = FastDecodeTag(UnalignedLoad<TagType>(ptr));
+  ptr += sizeof(TagType);
+
+  const size_t function_index = data.function_idx();
+  PROTOBUF_ASSUME(function_index < kMiniParseTableSize);
+  const auto func = kMiniParseTable[function_index];
+
+  data.data = uint64_t{data.entry_offset()} << 32 | tag;
+
+  PROTOBUF_MUSTTAIL return func(PROTOBUF_TC_PARAM_PASS);
+}
+
+const char* TcParser::FastMiniParse1(PROTOBUF_TC_PARAM_DECL) {
+  PROTOBUF_DEBUG_COUNTER("TcParser.FastMiniParse1").Inc();
+  PROTOBUF_MUSTTAIL return FastMpImpl<uint8_t>(PROTOBUF_TC_PARAM_PASS);
+}
+
+const char* TcParser::FastMiniParse2(PROTOBUF_TC_PARAM_DECL) {
+  PROTOBUF_DEBUG_COUNTER("TcParser.FastMiniParse2").Inc();
+  PROTOBUF_MUSTTAIL return FastMpImpl<uint16_t>(PROTOBUF_TC_PARAM_PASS);
 }
 
 }  // namespace internal

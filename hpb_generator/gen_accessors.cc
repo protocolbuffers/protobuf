@@ -21,6 +21,7 @@
 #include "hpb_generator/keywords.h"
 #include "hpb_generator/names.h"
 #include "google/protobuf/descriptor.h"
+#include "google/protobuf/io/printer.h"
 #include "upb_generator/c/names.h"
 #include "upb_generator/minitable/names.h"
 
@@ -30,6 +31,7 @@ namespace hpb_generator {
 
 using NameToFieldDescriptorMap =
     absl::flat_hash_map<absl::string_view, const google::protobuf::FieldDescriptor*>;
+using Sub = ::google::protobuf::io::Printer::Sub;
 
 void WriteFieldAccessorHazzer(const google::protobuf::Descriptor* desc,
                               const google::protobuf::FieldDescriptor* field,
@@ -100,20 +102,31 @@ void WriteFieldAccessorsInHeader(const google::protobuf::Descriptor* desc, Conte
     } else {
       // non-repeated.
       if (field->cpp_type() == google::protobuf::FieldDescriptor::CPPTYPE_STRING) {
-        ctx.Emit({{"field_name", resolved_field_name}},
-                 R"cc(
-                   absl::string_view $field_name$() const;
-                   void set_$field_name$(absl::string_view value);
-                 )cc");
+        ctx.Emit(
+            {Sub("field_name", resolved_field_name)
+                 .AnnotatedAs({field, io::AnnotationCollector::kNone}),
+             Sub("set_field_name", absl::StrCat("set_", resolved_field_name))
+                 .AnnotatedAs({field, io::AnnotationCollector::kSet})},
+            R"cc(
+              absl::string_view $field_name$() const;
+              void $set_field_name$(absl::string_view value);
+            )cc");
       } else if (field->cpp_type() ==
                  google::protobuf::FieldDescriptor::CPPTYPE_MESSAGE) {
         ctx.Emit(
             {{"mut_ptr_type", MessagePtrConstType(field, /* const */ false)},
              {"const_ptr_type", MessagePtrConstType(field, /* const */ true)},
-             {"field_name", resolved_field_name}},
+             Sub("field_name", resolved_field_name)
+                 .AnnotatedAs({field, io::AnnotationCollector::kNone}),
+             Sub("mutable_field_name",
+                 absl::StrCat("mutable_", resolved_field_name))
+                 .AnnotatedAs({field, io::AnnotationCollector::kAlias}),
+             Sub("set_alias_field_name",
+                 absl::StrCat("set_alias_", resolved_field_name))
+                 .AnnotatedAs({field, io::AnnotationCollector::kSet})},
             R"cc(
               $const_ptr_type$ $field_name$() const;
-              $mut_ptr_type$ mutable_$field_name$();
+              $mut_ptr_type$ $mutable_field_name$();
               /**
                * Re-points submessage to the given target.
                *
@@ -121,22 +134,26 @@ void WriteFieldAccessorsInHeader(const google::protobuf::Descriptor* desc, Conte
                * - both messages must be in the same arena, or in two
                * fused arenas.
                */
-              void set_alias_$field_name$($mut_ptr_type$ target);
+              void $set_alias_field_name$($mut_ptr_type$ target);
             )cc");
       } else {
-        ctx.Emit({{"cpp_type", CppConstType(field)},
-                  {"field_name", resolved_field_name},
-                  {"upb_msg_name",
-                   upb::generator::CApiMessageType(desc->full_name())},
-                  {"upb_field_name", resolved_upbc_name}},
-                 R"cc(
-                   inline $cpp_type$ $field_name$() const {
-                     return $upb_msg_name$_$upb_field_name$(msg_);
-                   }
-                   inline void set_$field_name$($cpp_type$ value) {
-                     return $upb_msg_name$_set_$upb_field_name$(msg_, value);
-                   }
-                 )cc");
+        ctx.Emit(
+            {{"cpp_type", CppConstType(field)},
+             Sub("field_name", resolved_field_name)
+                 .AnnotatedAs({field, io::AnnotationCollector::kNone}),
+             Sub("set_field_name", absl::StrCat("set_", resolved_field_name))
+                 .AnnotatedAs({field, io::AnnotationCollector::kSet}),
+             {"upb_msg_name",
+              upb::generator::CApiMessageType(desc->full_name())},
+             {"upb_field_name", resolved_upbc_name}},
+            R"cc(
+              inline $cpp_type$ $field_name$() const {
+                return $upb_msg_name$_$upb_field_name$(msg_);
+              }
+              inline void $set_field_name$($cpp_type$ value) {
+                return $upb_msg_name$_set_$upb_field_name$(msg_, value);
+              }
+            )cc");
       }
     }
   }
@@ -151,11 +168,12 @@ void WriteFieldAccessorHazzer(const google::protobuf::Descriptor* desc,
   if (field->has_presence()) {
     // Has presence.
     ctx.Emit(
-        {{"field_name", resolved_field_name},
+        {Sub("has_field_name", absl::StrCat("has_", resolved_field_name))
+             .AnnotatedAs({field, io::AnnotationCollector::kNone}),
          {"upb_msg_name", upb::generator::CApiMessageType(desc->full_name())},
          {"upb_field_name", resolved_upbc_name}},
         R"cc(
-          inline bool has_$field_name$() const {
+          inline bool $has_field_name$() const {
             return $upb_msg_name$_has_$upb_field_name$(msg_);
           }
         )cc");
@@ -169,11 +187,12 @@ void WriteFieldAccessorClear(const google::protobuf::Descriptor* desc,
                              Context& ctx) {
   if (field->has_presence()) {
     ctx.Emit(
-        {{"field_name", resolved_field_name},
+        {Sub("clear_field_name", absl::StrCat("clear_", resolved_field_name))
+             .AnnotatedAs({field, io::AnnotationCollector::kNone}),
          {"upb_field_name", resolved_upbc_name},
          {"upb_msg_name", upb::generator::CApiMessageType(desc->full_name())}},
         R"cc(
-          void clear_$field_name$() {
+          void $clear_field_name$() {
             $upb_msg_name$_clear_$upb_field_name$(msg_);
           }
         )cc");
@@ -189,41 +208,58 @@ void WriteMapFieldAccessors(const google::protobuf::Descriptor* desc,
   const google::protobuf::FieldDescriptor* key = entry->FindFieldByNumber(1);
   const google::protobuf::FieldDescriptor* val = entry->FindFieldByNumber(2);
   ctx.Emit(
-      {{"field_name", resolved_field_name},
+      {Sub("field_name_size", absl::StrCat(resolved_field_name, "_size"))
+           .AnnotatedAs({field, io::AnnotationCollector::kNone}),
+       Sub("clear_field_name", absl::StrCat("clear_", resolved_field_name))
+           .AnnotatedAs({field, io::AnnotationCollector::kNone}),
+       Sub("delete_field_name", absl::StrCat("delete_", resolved_field_name))
+           .AnnotatedAs({field, io::AnnotationCollector::kNone}),
        {"upb_msg_name", upb::generator::CApiMessageType(desc->full_name())},
        {"const_key", CppConstType(key)},
        {"upb_field_name", resolved_upbc_name}},
       R"cc(
-        inline size_t $field_name$_size() const {
+        inline size_t $field_name_size$() const {
           return $upb_msg_name$_$upb_field_name$_size(msg_);
         }
-        inline void clear_$field_name$() {
+        inline void $clear_field_name$() {
           $upb_msg_name$_clear_$upb_field_name$(msg_);
         }
-        void delete_$field_name$($const_key$ key);
+        void $delete_field_name$($const_key$ key);
       )cc");
 
   if (val->cpp_type() == google::protobuf::FieldDescriptor::CPPTYPE_MESSAGE) {
-    ctx.Emit({{"field_name", resolved_field_name},
+    ctx.Emit({Sub("set_field_name", absl::StrCat("set_", resolved_field_name))
+                  .AnnotatedAs({field, io::AnnotationCollector::kSet}),
+              Sub("set_alias_field_name",
+                  absl::StrCat("set_alias_", resolved_field_name))
+                  .AnnotatedAs({field, io::AnnotationCollector::kSet}),
+              Sub("get_field_name", absl::StrCat("get_", resolved_field_name))
+                  .AnnotatedAs({field, io::AnnotationCollector::kNone}),
+              Sub("get_mutable_field_name",
+                  absl::StrCat("get_mutable_", resolved_field_name))
+                  .AnnotatedAs({field, io::AnnotationCollector::kAlias}),
               {"const_key", CppConstType(key)},
               {"const_val", CppConstType(val)},
               {"ConstPtr", MessagePtrConstType(val, true)},
               {"MutPtr", MessagePtrConstType(val, false)}},
              R"cc(
-               bool set_$field_name$($const_key$ key, $ConstPtr$ value);
-               bool set_$field_name$($const_key$ key, $MutPtr$ value);
-               bool set_alias_$field_name$($const_key$ key, $ConstPtr$ value);
-               bool set_alias_$field_name$($const_key$ key, $MutPtr$ value);
-               absl::StatusOr<$ConstPtr$> get_$field_name$($const_key$ key);
-               absl::StatusOr<$MutPtr$> get_mutable_$field_name$($const_key$ key);
+               bool $set_field_name$($const_key$ key, $ConstPtr$ value);
+               bool $set_field_name$($const_key$ key, $MutPtr$ value);
+               bool $set_alias_field_name$($const_key$ key, $ConstPtr$ value);
+               bool $set_alias_field_name$($const_key$ key, $MutPtr$ value);
+               absl::StatusOr<$ConstPtr$> $get_field_name$($const_key$ key);
+               absl::StatusOr<$MutPtr$> $get_mutable_field_name$($const_key$ key);
              )cc");
   } else {
-    ctx.Emit({{"field_name", resolved_field_name},
+    ctx.Emit({Sub("set_field_name", absl::StrCat("set_", resolved_field_name))
+                  .AnnotatedAs({field, io::AnnotationCollector::kSet}),
+              Sub("get_field_name", absl::StrCat("get_", resolved_field_name))
+                  .AnnotatedAs({field, io::AnnotationCollector::kNone}),
               {"const_key", CppConstType(key)},
               {"const_val", CppConstType(val)}},
              R"cc(
-               bool set_$field_name$($const_key$ key, $const_val$ value);
-               absl::StatusOr<$const_val$> get_$field_name$($const_key$ key);
+               bool $set_field_name$($const_key$ key, $const_val$ value);
+               absl::StatusOr<$const_val$> $get_field_name$($const_key$ key);
              )cc");
   }
 }

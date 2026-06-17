@@ -105,7 +105,7 @@ inline constexpr Any::Impl_::Impl_(
 template <typename>
 constexpr Any::Any(::_pbi::ConstantInitialized,
                        const ::_pbi::ClassData* PROTOBUF_NONNULL class_data)
-    : ::google::protobuf::Message(
+    : Super_(
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           class_data
 #endif  // PROTOBUF_CUSTOM_VTABLE
@@ -133,10 +133,10 @@ constexpr auto Any::InternalGenerateClassData_(
 #endif
           nullptr,  // IsInitialized
           &Any::MergeImpl,
-          ::google::protobuf::Message::GetNewImpl<Any>(),
+          Super_::GetNewImpl<Any>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           &Any::SharedDtor,
-          ::google::protobuf::Message::GetClearImpl<Any>(), &Any::ByteSizeLong,
+          Super_::GetClearImpl<Any>(), &Any::ByteSizeLong,
               &Any::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
           PROTOBUF_FIELD_OFFSET(Any, _impl_._cached_size_),
@@ -263,9 +263,9 @@ namespace protobuf {
 }
 Any::Any(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-    : ::google::protobuf::Message(arena, Any_get_class_data()) {
+    : Super_(arena, Any_get_class_data()) {
 #else   // PROTOBUF_CUSTOM_VTABLE
-    : ::google::protobuf::Message(arena) {
+    : Super_(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
   SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.Any)
@@ -282,10 +282,10 @@ Any::Any(
     ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
     const Any& from)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-    : ::google::protobuf::Message(arena, Any_get_class_data()) {
+    : Super_(arena, Any_get_class_data()) {
 
 #else   // PROTOBUF_CUSTOM_VTABLE
-    : ::google::protobuf::Message(arena) {
+    : Super_(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
   Any* const _this = this;
   (void)_this;
@@ -347,11 +347,11 @@ PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const Any::ParseTableT_
         Any::InternalGenerateParseTable_(Any_class_data_.base());
 #endif  // !PROTOBUF_MESSAGE_GLOBALS
 PROTOBUF_NOINLINE void Any::Clear() {
-// @@protoc_insertion_point(message_clear_start:google.protobuf.Any)
+  // @@protoc_insertion_point(message_clear_start:google.protobuf.Any)
   ::google::protobuf::internal::TSanWrite(&_impl_);
   ::uint32_t cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
-  (void) cached_has_bits;
+  (void)cached_has_bits;
 
   cached_has_bits = _impl_._has_bits_[0];
   if (BatchCheckHasBit(cached_has_bits, 0x00000003U)) {
@@ -505,7 +505,7 @@ void Any::InternalSwap(Any* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
 }
 
 ::google::protobuf::Metadata Any::GetMetadata() const {
-  return ::google::protobuf::Message::GetMetadataImpl(GetClassData()->full());
+  return Super_::GetMetadataImpl(GetClassData()->full());
 }
 // @@protoc_insertion_point(namespace_scope)
 }  // namespace protobuf

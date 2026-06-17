@@ -60,7 +60,7 @@ class MessageLite;
 template <typename Key, typename T>
 class Map;
 namespace internal {
-struct RepeatedFieldBase;
+class RepeatedFieldBase;
 class ExtensionSet;
 }  // namespace internal
 
@@ -427,9 +427,9 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8)
   PROTOBUF_FUTURE_ADD_EARLY_NODISCARD PROTOBUF_NDEBUG_INLINE static T*
       PROTOBUF_NONNULL
       CreateArray(Arena* PROTOBUF_NULLABLE arena, size_t num_elements) {
-    static_assert(std::is_trivially_default_constructible<T>::value,
+    static_assert(std::is_trivially_default_constructible_v<T>,
                   "CreateArray requires a trivially constructible type");
-    static_assert(std::is_trivially_destructible<T>::value,
+    static_assert(std::is_trivially_destructible_v<T>,
                   "CreateArray requires a trivially destructible type");
     ABSL_CHECK_LE(num_elements,
                   // Max rounded down to the 8 byte alignment.
@@ -478,8 +478,8 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8)
     // Collapsing all template instantiations to one for generic Message reduces
     // code size, using the virtual destructor instead.
     using TypeToUse =
-        std::conditional_t<std::is_convertible<T*, MessageLite*>::value,
-                           MessageLite, T>;
+        std::conditional_t<std::is_convertible_v<T*, MessageLite*>, MessageLite,
+                           T>;
     if (object != nullptr) {
       impl_.AddCleanup(static_cast<TypeToUse*>(object),
                        &internal::arena_delete_object<TypeToUse>);
@@ -514,8 +514,7 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8)
     // A SFINAE friendly trait that probes for `U` but always evalues to
     // `Arena*`.
     template <typename U>
-    using EnableIfArena =
-        typename std::enable_if<std::is_same<Arena*, U>::value, Arena*>::type;
+    using EnableIfArena = std::enable_if_t<std::is_same_v<Arena*, U>, Arena*>;
 
     // Use go/ranked-overloads for dispatching.
     struct Rank0 {};
@@ -688,7 +687,7 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8)
 
   template <typename T, typename... Args>
   static constexpr auto GetConstructType() {
-    return std::is_base_of<MessageLite, T>::value
+    return std::is_base_of_v<MessageLite, T>
                ? decltype(ProbeConstructType<T>(std::declval<Args>()...))::value
                : ConstructType::kUnknown;
   }
@@ -731,7 +730,7 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8)
     }
   }
 
-  template <typename T, bool trivial = std::is_trivially_destructible<T>::value>
+  template <typename T, bool trivial = std::is_trivially_destructible_v<T>>
   PROTOBUF_NDEBUG_INLINE void* PROTOBUF_NONNULL AllocateInternal() {
     if (trivial) {
       return AllocateAligned(sizeof(T), alignof(T));

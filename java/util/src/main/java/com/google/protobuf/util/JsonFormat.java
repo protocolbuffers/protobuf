@@ -37,15 +37,18 @@ import com.google.protobuf.Int32Value;
 import com.google.protobuf.Int64Value;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.ListValue;
+import com.google.protobuf.ListValueOrBuilder;
 import com.google.protobuf.Message;
 import com.google.protobuf.MessageOrBuilder;
 import com.google.protobuf.NullValue;
 import com.google.protobuf.StringValue;
 import com.google.protobuf.Struct;
+import com.google.protobuf.StructOrBuilder;
 import com.google.protobuf.Timestamp;
 import com.google.protobuf.UInt32Value;
 import com.google.protobuf.UInt64Value;
 import com.google.protobuf.Value;
+import com.google.protobuf.ValueOrBuilder;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
@@ -68,6 +71,7 @@ import javax.annotation.Nullable;
  * Utility class to convert protobuf messages to/from the <a href=
  * 'https://protobuf.dev/programming-guides/json/'>ProtoJSON format.</a>
  */
+@SuppressWarnings("PatternMatchingInstanceof")
 public class JsonFormat {
   private static final Logger logger = Logger.getLogger(JsonFormat.class.getName());
 
@@ -1093,6 +1097,47 @@ public class JsonFormat {
 
     /** Prints google.protobuf.Struct */
     private void printStruct(MessageOrBuilder message) throws IOException {
+      if (message instanceof StructOrBuilder) {
+        printStructConcrete((StructOrBuilder) message);
+      } else {
+        printStructReflectively(message);
+      }
+    }
+
+    /** Prints the `google.protobuf.Struct` using the concrete generated class. */
+    private void printStructConcrete(StructOrBuilder message) throws IOException {
+      generator.println("{");
+      generator.indent();
+      Map<String, Value> fields = message.getFieldsMap();
+      Set<Map.Entry<String, Value>> entries = fields.entrySet();
+      if (sortingMapKeys && !fields.isEmpty()) {
+        TreeMap<String, Value> sortedMap = new TreeMap<>();
+        sortedMap.putAll(fields);
+        entries = sortedMap.entrySet();
+      }
+      boolean printedElement = false;
+      for (Map.Entry<String, Value> entry : entries) {
+        if (printedElement) {
+          generator.println(",");
+        } else {
+          printedElement = true;
+        }
+        printStringEscapedAndQuoted(entry.getKey());
+        generator.print(":" + blankOrSpace);
+        printValueConcrete(entry.getValue());
+      }
+      if (printedElement) {
+        generator.println();
+      }
+      generator.outdent();
+      generator.print("}");
+    }
+
+    /**
+     * Prints the `google.protobuf.Struct` using reflection only. This should only be used for
+     * DynamicMessage usecases.
+     */
+    private void printStructReflectively(MessageOrBuilder message) throws IOException {
       Descriptor descriptor = message.getDescriptorForType();
       FieldDescriptor field = descriptor.findFieldByName("fields");
       if (field == null) {
@@ -1102,8 +1147,50 @@ public class JsonFormat {
       printMapFieldValue(field, message.getField(field));
     }
 
-    /** Prints google.protobuf.Value */
+    /** Prints `google.protobuf.Value`. */
     private void printValue(MessageOrBuilder message) throws IOException {
+      if (message instanceof ValueOrBuilder) {
+        printValueConcrete((ValueOrBuilder) message);
+      } else {
+        printValueReflectively(message);
+      }
+    }
+
+    /** Prints `google.protobuf.Value` using the concrete generated type. */
+    private void printValueConcrete(ValueOrBuilder message) throws IOException {
+      switch (message.getKindCase()) {
+        case NULL_VALUE:
+          generator.print("null");
+          break;
+        case NUMBER_VALUE:
+          Double doubleValue = message.getNumberValue();
+          if (doubleValue.isNaN() || doubleValue.isInfinite()) {
+            throw new IllegalArgumentException(
+                "google.protobuf.Value cannot encode double values for "
+                    + "infinity or nan, because they would be parsed as a string.");
+          }
+          generator.print(doubleValue.toString());
+          break;
+        case STRING_VALUE:
+          printStringEscapedAndQuoted(message.getStringValue());
+          break;
+        case BOOL_VALUE:
+          generator.print(message.getBoolValue() ? "true" : "false");
+          break;
+        case STRUCT_VALUE:
+          printStructConcrete(message.getStructValue());
+          break;
+        case LIST_VALUE:
+          printListValueConcrete(message.getListValue());
+          break;
+        case KIND_NOT_SET:
+          generator.print("null");
+          break;
+      }
+    }
+
+    /** Prints google.protobuf.Value using reflection (generally only needed for DynamicMessage) */
+    private void printValueReflectively(MessageOrBuilder message) throws IOException {
       // For a Value message, only the value of the field is formatted.
       Map<FieldDescriptor, Object> fields = message.getAllFields();
       if (fields.isEmpty()) {
@@ -1132,6 +1219,33 @@ public class JsonFormat {
 
     /** Prints google.protobuf.ListValue */
     private void printListValue(MessageOrBuilder message) throws IOException {
+      if (message instanceof ListValueOrBuilder) {
+        printListValueConcrete((ListValueOrBuilder) message);
+      } else {
+        printListValueReflectively(message);
+      }
+    }
+
+    /** Prints `google.protobuf.ListValue` using the concrete generated type. */
+    private void printListValueConcrete(ListValueOrBuilder message) throws IOException {
+      generator.print("[");
+      boolean printedElement = false;
+      for (Value value : message.getValuesList()) {
+        if (printedElement) {
+          generator.print("," + blankOrSpace);
+        } else {
+          printedElement = true;
+        }
+        printValueConcrete(value);
+      }
+      generator.print("]");
+    }
+
+    /**
+     * Prints `google.protobuf.ListValue` using reflection (generally only needed for
+     * DynamicMessage)
+     */
+    private void printListValueReflectively(MessageOrBuilder message) throws IOException {
       Descriptor descriptor = message.getDescriptorForType();
       FieldDescriptor field = descriptor.findFieldByName("values");
       if (field == null) {
@@ -1140,8 +1254,10 @@ public class JsonFormat {
       printRepeatedFieldValue(field, message.getField(field));
     }
 
-    // Whether a set option means the corresponding field should be printed even if it normally
-    // wouldn't be.
+    /**
+     * @return Whether a set option means the corresponding field should be printed even if it
+     *     normally wouldn't be.
+     */
     private boolean shouldSpeciallyPrint(FieldDescriptor field) {
       switch (shouldPrintDefaults) {
         case ONLY_IF_PRESENT:
@@ -1423,41 +1539,78 @@ public class JsonFormat {
       }
     }
 
+    private static final String[] replacementChars;
+
+    static {
+      replacementChars = new String[128];
+      for (int i = 0; i <= 0x1f; i++) {
+        replacementChars[i] = String.format("\\u%04x", i);
+      }
+      replacementChars['"'] = "\\\"";
+      replacementChars['\\'] = "\\\\";
+      replacementChars['\t'] = "\\t";
+      replacementChars['\b'] = "\\b";
+      replacementChars['\n'] = "\\n";
+      replacementChars['\r'] = "\\r";
+      replacementChars['\f'] = "\\f";
+
+      // These characters are fully legal in JSON, but are escaped to prevent XSS risks. Notably
+      // this topic is not like 'html escaping' where these would be replaced with something like
+      // `&lt;`. The escaped or not ways of writing it are verbatim 2 exactly equivalent
+      // ways to represent the same exact value in JSON: consumers should never do any manual
+      // unescape to round trip the intended value. This replacement is only be semantically
+      // observable if someone tries to handle it raw textually and not as JSON.
+      for (int i : "<>&='".toCharArray()) {
+        replacementChars[i] = String.format("\\u%04x", i);
+      }
+    }
+
+    /**
+     * If a character needs to be escaped, returns the replacement string. Otherwise, returns null.
+     */
+    private static String getReplacementOrNull(char c) {
+      if (c < 128) {
+        return replacementChars[c];
+      }
+
+      // \u2028 and \u2029 are paragraph whitespace characters that had mismatch between the
+      // JSON spec and the browser JavaScript object literal spec. It is extremely unlikely
+      // this topic matters now, but for parity with GSON we escape them.
+      if (c == '\u2028') {
+        return "\\u2028";
+      }
+      if (c == '\u2029') {
+        return "\\u2029";
+      }
+
+      return null;
+    }
+
     /**
      * Prints a string value wrapped in double quotes, escaping any illegal or dangerous characters
      * for JSON safety.
      */
     private void printStringEscapedAndQuoted(final CharSequence value) throws IOException {
-      // gson.toJson() is expensive: only use it if the string isn't entirely safe to print
-      // directly.
-      if (isJsonSafeString(value)) {
-        generator.print("\"");
-        generator.print(value);
-        generator.print("\"");
-      } else {
-        generator.print(gson.toJson(value.toString()));
-      }
-    }
-
-    private static boolean isJsonSafeString(CharSequence value) {
+      generator.print("\"");
       int len = value.length();
+      int last = 0;
       for (int i = 0; i < len; i++) {
         char c = value.charAt(i);
-        // Bare characters, fully disallowed in JSON strings and which must be escaped.
-        if (c < 0x20 || c == '"' || c == '\\') {
-          return false;
+        String replacement = getReplacementOrNull(c);
+
+        // Keeps scanning to only call print() once on long runs that don't need escaping.
+        if (replacement == null) {
+          continue;
         }
-        // HTML-sensitive characters. These are allowed in JSON, but escaped to mitigate
-        // XSS risks when the JSON is rendered in HTML.
-        if (c == '<' || c == '>' || c == '&' || c == '=' || c == '\'') {
-          return false;
+        if (last < i) {
+          generator.print(value.subSequence(last, i));
         }
-        // Non-ASCII characters are mostly safe, but we'll leave that to gson to decide.
-        if (c >= 127) {
-          return false;
-        }
+        generator.print(replacement);
+        last = i + 1;
       }
-      return true;
+
+      generator.print(value.subSequence(last, len));
+      generator.print("\"");
     }
   }
 
@@ -1789,6 +1942,37 @@ public class JsonFormat {
 
     private void mergeStruct(JsonElement json, Message.Builder builder)
         throws InvalidProtocolBufferException {
+      if (builder instanceof Struct.Builder) {
+        mergeStructConcrete(json, (Struct.Builder) builder);
+      } else {
+        mergeStructReflectively(json, builder);
+      }
+    }
+
+    /**
+     * Merges into a google.protobuf.Struct directly (used when going into a concrete gencode type).
+     */
+    private void mergeStructConcrete(JsonElement json, Struct.Builder builder)
+        throws InvalidProtocolBufferException {
+      if (!(json instanceof JsonObject)) {
+        throw new InvalidProtocolBufferException("Expect a map object but found: " + json);
+      }
+      JsonObject object = (JsonObject) json;
+      for (Map.Entry<String, JsonElement> entry : object.entrySet()) {
+        if (currentDepth >= recursionLimit) {
+          throw new InvalidProtocolBufferException("Hit recursion limit.");
+        }
+        ++currentDepth;
+        Value.Builder valueBuilder = Value.newBuilder();
+        mergeValueConcrete(entry.getValue(), valueBuilder);
+        --currentDepth;
+        builder.putFields(entry.getKey(), valueBuilder.build());
+      }
+    }
+
+    /** Merges into a google.protobuf.Struct reflectively (for DynamicMessage cases). */
+    private void mergeStructReflectively(JsonElement json, Message.Builder builder)
+        throws InvalidProtocolBufferException {
       Descriptor descriptor = builder.getDescriptorForType();
       FieldDescriptor field = descriptor.findFieldByName("fields");
       if (field == null) {
@@ -1799,6 +1983,38 @@ public class JsonFormat {
 
     private void mergeListValue(JsonElement json, Message.Builder builder)
         throws InvalidProtocolBufferException {
+      if (builder instanceof ListValue.Builder) {
+        mergeListValueConcrete(json, (ListValue.Builder) builder);
+      } else {
+        mergeListValueReflectively(json, builder);
+      }
+    }
+
+    /**
+     * Merges into a google.protobuf.ListValue directly (used when going into a concrete gencode
+     * type).
+     */
+    private void mergeListValueConcrete(JsonElement json, ListValue.Builder builder)
+        throws InvalidProtocolBufferException {
+      if (!(json instanceof JsonArray)) {
+        throw new InvalidProtocolBufferException("Expected an array but found: " + json);
+      }
+      JsonArray array = (JsonArray) json;
+      for (int i = 0; i < array.size(); ++i) {
+        if (currentDepth >= recursionLimit) {
+          throw new InvalidProtocolBufferException("Hit recursion limit.");
+        }
+        ++currentDepth;
+        Value.Builder valueBuilder = Value.newBuilder();
+        mergeValueConcrete(array.get(i), valueBuilder);
+        --currentDepth;
+        builder.addValues(valueBuilder.build());
+      }
+    }
+
+    /** Merges into a google.protobuf.ListValue reflectively (for DynamicMessage cases). */
+    private void mergeListValueReflectively(JsonElement json, Message.Builder builder)
+        throws InvalidProtocolBufferException {
       Descriptor descriptor = builder.getDescriptorForType();
       FieldDescriptor field = descriptor.findFieldByName("values");
       if (field == null) {
@@ -1808,6 +2024,45 @@ public class JsonFormat {
     }
 
     private void mergeValue(JsonElement json, Message.Builder builder)
+        throws InvalidProtocolBufferException {
+      if (builder instanceof Value.Builder) {
+        mergeValueConcrete(json, (Value.Builder) builder);
+      } else {
+        mergeValueReflectively(json, builder);
+      }
+    }
+
+    /**
+     * Merges into a google.protobuf.Value directly (used when going into a concrete gencode type).
+     */
+    private void mergeValueConcrete(JsonElement json, Value.Builder builder)
+        throws InvalidProtocolBufferException {
+      if (json instanceof JsonPrimitive) {
+        JsonPrimitive primitive = (JsonPrimitive) json;
+        if (primitive.isBoolean()) {
+          builder.setBoolValue(primitive.getAsBoolean());
+        } else if (primitive.isNumber()) {
+          builder.setNumberValue(primitive.getAsDouble());
+        } else {
+          builder.setStringValue(primitive.getAsString());
+        }
+      } else if (json instanceof JsonObject) {
+        Struct.Builder structBuilder = Struct.newBuilder();
+        mergeStructConcrete(json, structBuilder);
+        builder.setStructValue(structBuilder);
+      } else if (json instanceof JsonArray) {
+        ListValue.Builder listBuilder = ListValue.newBuilder();
+        mergeListValueConcrete(json, listBuilder);
+        builder.setListValue(listBuilder);
+      } else if (json instanceof JsonNull) {
+        builder.setNullValue(NullValue.NULL_VALUE);
+      } else {
+        throw new IllegalStateException("Unexpected json data: " + json);
+      }
+    }
+
+    /** Merges into a google.protobuf.Value reflectively (for DynamicMessage cases). */
+    private void mergeValueReflectively(JsonElement json, Message.Builder builder)
         throws InvalidProtocolBufferException {
       Descriptor type = builder.getDescriptorForType();
       if (json instanceof JsonPrimitive) {

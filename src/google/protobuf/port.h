@@ -33,6 +33,7 @@
 #include "absl/base/config.h"
 #include "absl/base/dynamic_annotations.h"
 #include "absl/numeric/bits.h"
+#include "absl/numeric/int128.h"
 #include "absl/strings/string_view.h"
 #include "absl/types/optional.h"
 
@@ -826,18 +827,54 @@ inline constexpr size_t kSafeStringSize = 50000000;
 
 // Take advantage of C++20 constexpr support in std::string.
 class alignas(8) GlobalEmptyStringConstexpr {
+  template <typename T>
+  struct NonConstexprAllocator {
+    using value_type = T;
+    using size_type = size_t;
+    using difference_type = ptrdiff_t;
+
+    constexpr NonConstexprAllocator() = default;
+
+    // Following the minimum requirements for an allocator:
+    // https://en.cppreference.com/cpp/named_req/Allocator
+    // Conversion constructor.
+    template <typename U>
+    constexpr NonConstexprAllocator(NonConstexprAllocator<U>) {}
+
+    friend constexpr bool operator==(NonConstexprAllocator,
+                                     NonConstexprAllocator) {
+      return true;
+    }
+    friend constexpr bool operator!=(NonConstexprAllocator,
+                                     NonConstexprAllocator) {
+      return false;
+    }
+
+    T* allocate(size_t);
+    void deallocate(void*, size_t);
+  };
+
  public:
   const std::string& get() const { return value_; }
   // Nothing to init, or destroy.
   std::string* Init() const { return nullptr; }
 
-  // Disable the optimization for MSVC and Xtensa.
   // There are some builds where the default constructed string can't be used as
   // `constinit` even though the constructor is `constexpr` and can be used
   // during constant evaluation.
-#if !defined(_MSC_VER) && !defined(__XTENSA__)
+  // We probe them by trying to construct the string during constant evaluation
+  // with a non-constexpr allocator. If the default construction/destruction
+  // attempts to use the allocator it won't be able to and SFINAE will trigger.
+  // The standard only guarantees that std::string can be used during constant
+  // evaluation, not that a constant evaluated instance can leak into runtime.
+  // Memory allocated during constant evaluation can't be used for runtime
+  // objects.
+#if !defined(__XTENSA__)
+  // Disable the optimization for Xtensa.
   // Compilation fails on Xtensa: b/467129751
-  template <typename T = std::string, bool = (T(), true)>
+  template <
+      typename Alloc = NonConstexprAllocator<char>,
+      int = std::basic_string<char, std::char_traits<char>, Alloc>().size()>
   static constexpr std::true_type HasConstexprDefaultConstructor(int) {
     return {};
   }
@@ -872,20 +909,41 @@ PROTOBUF_EXPORT extern GlobalEmptyString fixed_address_empty_string;
 PROTOBUF_EXPORT ABSL_ATTRIBUTE_NORETURN PROTOBUF_NOINLINE void
 HandleAddOverflow(int a, int b);
 
-inline int CheckedAdd(int a, int b) {
-  int sum;
 #if ABSL_HAVE_BUILTIN(__builtin_add_overflow)
+template <typename IntType1, typename IntType2>
+inline int CheckedAdd(IntType1 a, IntType2 b) {
+  int sum;
   bool overflow = __builtin_add_overflow(a, b, &sum);
-#else
-  int64_t sum64 = static_cast<int64_t>(a) + static_cast<int64_t>(b);
-  sum = static_cast<int>(sum64);
-  bool overflow = sum64 != sum;
-#endif
   if (ABSL_PREDICT_FALSE(overflow)) {
     HandleAddOverflow(a, b);
   }
   return sum;
 }
+#else
+inline int CheckedAdd(int a, int b) {
+  int sum;
+  int64_t sum64 = static_cast<int64_t>(a) + static_cast<int64_t>(b);
+  sum = static_cast<int>(sum64);
+  bool overflow = sum64 != sum;
+  if (ABSL_PREDICT_FALSE(overflow)) {
+    HandleAddOverflow(a, b);
+  }
+  return sum;
+}
+
+template <typename ScalarType1, typename ScalarType2>
+inline int CheckedAdd(ScalarType1 a, ScalarType2 b) {
+  static_assert(std::is_integral_v<ScalarType1>);
+  static_assert(std::is_integral_v<ScalarType2>);
+  absl::int128 sum128 = absl::int128(a) + absl::int128(b);
+  int sum = static_cast<int>(sum128);
+  bool overflow = sum128 != absl::int128(sum);
+  if (ABSL_PREDICT_FALSE(overflow)) {
+    HandleAddOverflow(a, b);
+  }
+  return sum;
+}
+#endif
 
 enum class BoundsCheckMode { kNoEnforcement, kReturnDefault, kAbort };
 

@@ -350,7 +350,8 @@ static upb_Array* _upb_Decoder_CreateArray(upb_Decoder* d,
                                            const upb_MiniTableField* field) {
   const upb_FieldType field_type = field->UPB_PRIVATE(descriptortype);
   const size_t lg2 = UPB_PRIVATE(_upb_FieldType_SizeLg2)(field_type);
-  upb_Array* ret = UPB_PRIVATE(_upb_Array_New)(&d->arena, 4, lg2);
+  upb_Array* ret = UPB_PRIVATE(_upb_Array_New)(
+      &d->arena, _UPB_ARRAY_DEFAULT_INITIAL_SIZE, lg2);
   if (!ret) upb_ErrorHandler_ThrowError(d->err, kUpb_DecodeStatus_OutOfMemory);
   return ret;
 }
@@ -1127,19 +1128,22 @@ static const char* _upb_Decoder_DecodeEmptyMessage(upb_Decoder* d,
   }
 
   const char* start = ptr;
+  const char* capture_end = ptr;
   upb_EpsCopyCapture capture;
   upb_EpsCopyCapture_Start(&capture, &d->input, start);
   while (!upb_EpsCopyInputStream_IsDone(EPS(d), &ptr)) {
     uint32_t tag;
+    capture_end = ptr;
     ptr = upb_WireReader_ReadTag(ptr, &tag, EPS(d));
     if ((tag & 7) == kUpb_WireType_EndGroup) {
       d->end_group = tag >> 3;
       break;
     }
     ptr = _upb_WireReader_SkipValueForceInline(ptr, tag, d->depth, EPS(d));
+    capture_end = ptr;
   }
   upb_StringView sv;
-  upb_EpsCopyCapture_End(&capture, EPS(d), ptr, &sv);
+  upb_EpsCopyCapture_End(&capture, EPS(d), capture_end, &sv);
 
   if (sv.size > 0) {
     if (!UPB_PRIVATE(_upb_Message_AddUnknown)(
