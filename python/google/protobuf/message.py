@@ -148,6 +148,20 @@ class Message(object):
     """
     raise NotImplementedError
 
+  def __or__(self, other):
+    """Returns a new message that is the result of merging this and other."""
+    if not isinstance(other, type(self)):
+      return NotImplemented
+    clone = type(self)()
+    clone.MergeFrom(self)
+    clone.MergeFrom(other)
+    return clone
+
+  def __ior__(self, other):
+    """Merges the contents of other into this message in-place."""
+    self.MergeFrom(other)
+    return self
+
   def CopyFrom(self, other_msg):
     """Copies the content of the specified message into the current message.
 

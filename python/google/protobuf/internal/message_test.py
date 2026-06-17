@@ -1031,6 +1031,34 @@ class MessageTest(unittest.TestCase):
     self.assertEqual(1, len(msg1.payload.repeated_nested_message))
     self.assertEqual(1, nested.bb)
 
+  def testOrOperator(self, message_module):
+    m1 = message_module.TestAllTypes()
+    m2 = message_module.TestAllTypes()
+    m1.optional_int32 = 1
+    m2.optional_int32 = 2
+    m2.optional_string = 'hello'
+
+    m3 = m1 | m2
+    self.assertEqual(m3.optional_int32, 2)
+    self.assertEqual(m3.optional_string, 'hello')
+    self.assertEqual(m1.optional_int32, 1)
+
+  def testIorOperator(self, message_module):
+    m1 = message_module.TestAllTypes()
+    m2 = message_module.TestAllTypes()
+    m1.optional_int32 = 1
+    m2.optional_int32 = 2
+    m2.optional_string = 'hello'
+
+    m1 |= m2
+    self.assertEqual(m1.optional_int32, 2)
+    self.assertEqual(m1.optional_string, 'hello')
+
+  def testOrOperatorBadType(self, message_module):
+    m1 = message_module.TestAllTypes()
+    with self.assertRaises(TypeError):
+      _ = m1 | 1
+
   def testMergeFromString(self, message_module):
     m1 = message_module.TestAllTypes()
     m2 = message_module.TestAllTypes()
