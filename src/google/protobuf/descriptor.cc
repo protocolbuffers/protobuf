@@ -2405,7 +2405,7 @@ const FeatureSet* DescriptorPool::Tables::InternFeatureSet(
   // little.
   auto& result = feature_set_cache_[features.SerializeAsString()];
   if (result == nullptr) {
-    result = absl::make_unique<FeatureSet>(std::move(features));
+    result = std::make_unique<FeatureSet>(std::move(features));
   }
   return result.get();
 }
@@ -5313,7 +5313,7 @@ absl::Status DescriptorPool::SetFeatureSetDefaults(FeatureSetDefaults spec) {
     prev_edition = edition_default.edition();
   }
   feature_set_defaults_spec_ =
-      absl::make_unique<FeatureSetDefaults>(std::move(spec));
+      std::make_unique<FeatureSetDefaults>(std::move(spec));
   return absl::OkStatus();
 }
 
@@ -6491,7 +6491,7 @@ const FileDescriptor* DescriptorBuilder::BuildFile(
   // Checkpoint the tables so that we can roll back if something goes wrong.
   tables_->AddCheckpoint();
 
-  auto alloc = absl::make_unique<internal::FlatAllocator>();
+  auto alloc = std::make_unique<internal::FlatAllocator>();
   PlanAllocationSize(proto, *alloc);
   alloc->FinalizePlanning(tables_);
   FileDescriptor* result = BuildFileImpl(proto, *alloc);

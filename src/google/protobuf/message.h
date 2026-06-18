@@ -693,7 +693,7 @@ class PROTOBUF_EXPORT Reflection final {
         return *flat;
       }
       if (!buffer_) {
-        buffer_ = absl::make_unique<std::string>();
+        buffer_ = std::make_unique<std::string>();
       }
       absl::CopyCordToString(cord, buffer_.get());
       return *buffer_;

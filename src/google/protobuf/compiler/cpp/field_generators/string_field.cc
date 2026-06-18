@@ -986,12 +986,12 @@ void RepeatedString::GenerateSerializeWithCachedSizesToArray(
 
 std::unique_ptr<FieldGeneratorBase> MakeSinguarStringGenerator(
     const FieldDescriptor* desc, const Options& options) {
-  return absl::make_unique<SingularString>(desc, options);
+  return std::make_unique<SingularString>(desc, options);
 }
 
 std::unique_ptr<FieldGeneratorBase> MakeRepeatedStringGenerator(
     const FieldDescriptor* desc, const Options& options) {
-  return absl::make_unique<RepeatedString>(desc, options);
+  return std::make_unique<RepeatedString>(desc, options);
 }
 
 }  // namespace cpp

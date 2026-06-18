@@ -610,12 +610,12 @@ void RepeatedEnum::GenerateByteSize(io::Printer* p) const {
 
 std::unique_ptr<FieldGeneratorBase> MakeSinguarEnumGenerator(
     const FieldDescriptor* desc, const Options& options) {
-  return absl::make_unique<SingularEnum>(desc, options);
+  return std::make_unique<SingularEnum>(desc, options);
 }
 
 std::unique_ptr<FieldGeneratorBase> MakeRepeatedEnumGenerator(
     const FieldDescriptor* desc, const Options& options) {
-  return absl::make_unique<RepeatedEnum>(desc, options);
+  return std::make_unique<RepeatedEnum>(desc, options);
 }
 
 }  // namespace cpp

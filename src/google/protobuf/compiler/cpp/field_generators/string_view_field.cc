@@ -853,12 +853,12 @@ void RepeatedStringView::GenerateSerializeWithCachedSizesToArray(
 
 std::unique_ptr<FieldGeneratorBase> MakeSingularStringViewGenerator(
     const FieldDescriptor* desc, const Options& options) {
-  return absl::make_unique<SingularStringView>(desc, options);
+  return std::make_unique<SingularStringView>(desc, options);
 }
 
 std::unique_ptr<FieldGeneratorBase> MakeRepeatedStringViewGenerator(
     const FieldDescriptor* desc, const Options& options) {
-  return absl::make_unique<RepeatedStringView>(desc, options);
+  return std::make_unique<RepeatedStringView>(desc, options);
 }
 
 }  // namespace cpp

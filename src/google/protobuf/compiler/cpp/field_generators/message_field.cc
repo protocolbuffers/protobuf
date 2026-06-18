@@ -1118,17 +1118,17 @@ bool RepeatedMessage::RequiresArena(GeneratorFunction func) const {
 
 std::unique_ptr<FieldGeneratorBase> MakeSinguarMessageGenerator(
     const FieldDescriptor* desc, const Options& options) {
-  return absl::make_unique<SingularMessage>(desc, options);
+  return std::make_unique<SingularMessage>(desc, options);
 }
 
 std::unique_ptr<FieldGeneratorBase> MakeRepeatedMessageGenerator(
     const FieldDescriptor* desc, const Options& options) {
-  return absl::make_unique<RepeatedMessage>(desc, options);
+  return std::make_unique<RepeatedMessage>(desc, options);
 }
 
 std::unique_ptr<FieldGeneratorBase> MakeOneofMessageGenerator(
     const FieldDescriptor* desc, const Options& options) {
-  return absl::make_unique<OneofMessage>(desc, options);
+  return std::make_unique<OneofMessage>(desc, options);
 }
 
 }  // namespace cpp

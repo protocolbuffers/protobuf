@@ -702,12 +702,12 @@ void RepeatedPrimitive::GenerateByteSize(io::Printer* p) const {
 
 std::unique_ptr<FieldGeneratorBase> MakeSinguarPrimitiveGenerator(
     const FieldDescriptor* desc, const Options& options) {
-  return absl::make_unique<SingularPrimitive>(desc, options);
+  return std::make_unique<SingularPrimitive>(desc, options);
 }
 
 std::unique_ptr<FieldGeneratorBase> MakeRepeatedPrimitiveGenerator(
     const FieldDescriptor* desc, const Options& options) {
-  return absl::make_unique<RepeatedPrimitive>(desc, options);
+  return std::make_unique<RepeatedPrimitive>(desc, options);
 }
 
 }  // namespace cpp
