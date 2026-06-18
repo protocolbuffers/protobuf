@@ -536,6 +536,34 @@ class MessageTest(unittest.TestCase):
       msg.payload.repeated_int32[:] = msg.payload.repeated_int32
       self.assertEqual([1, 2, 3, 4], msg.payload.repeated_int32)
 
+  def testRepeatedFieldDifferentTypeSliceAssignment(self, message_module):
+    msg1 = message_module.NestedTestAllTypes()
+    msg2 = message_module.NestedTestAllTypes()
+    # int64 -> int32
+    msg2.payload.repeated_int64[:] = [1, 2, 3, 4]
+    msg1.payload.repeated_int32[:] = msg2.payload.repeated_int64
+    self.assertEqual([1, 2, 3, 4], msg1.payload.repeated_int32)
+    # int32 -> int64
+    msg2.payload.repeated_int32[:] = [1, 2, 3, 4]
+    msg1.payload.repeated_int64[:] = msg2.payload.repeated_int32
+    self.assertEqual([1, 2, 3, 4], msg1.payload.repeated_int64)
+    # int64 overflow -> int32
+    msg2.payload.repeated_int64[:] = [1, 2, 3, 2**35]
+    with self.assertRaises((ValueError, OverflowError, TypeError)):
+      msg1.payload.repeated_int32[:] = msg2.payload.repeated_int64
+    # double -> float
+    msg2.payload.repeated_double[:] = [1.5, 2.5, 3.5]
+    msg1.payload.repeated_float[:] = msg2.payload.repeated_double
+    self.assertEqual([1.5, 2.5, 3.5], msg1.payload.repeated_float)
+    # float -> double
+    msg2.payload.repeated_float[:] = [1.5, 2.5, 3.5]
+    msg1.payload.repeated_double[:] = msg2.payload.repeated_float
+    self.assertEqual([1.5, 2.5, 3.5], msg1.payload.repeated_double)
+
+    msg2.payload.repeated_double[:] = [1.5, 2.5, 1e300]
+    msg1.payload.repeated_float[:] = msg2.payload.repeated_double
+    self.assertEqual([1.5, 2.5, float('inf')], msg1.payload.repeated_float)
+
   def testRepeatedFieldSelfExtend(self, message_module):
       msg = message_module.NestedTestAllTypes()
       msg.payload.repeated_int32[:] = [1, 2, 3, 4]
@@ -2108,7 +2136,8 @@ class Proto2Test(unittest.TestCase):
     test_util.SetAllFields(message)
     copy = unittest_pb2.TestAllTypes()
     copy.CopyFrom(message)
-    self.assertEqual(message, copy)
+    self.maxDiff = None
+    self.assertEqual(f'{message}', f'{copy}')
     message.repeated_nested_message.add().bb = 123
     self.assertNotEqual(message, copy)
 

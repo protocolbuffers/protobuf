@@ -21,6 +21,23 @@ static PyObject* PyUpb_RepeatedCompositeContainer_Append(PyObject* _self,
                                                          PyObject* value);
 static PyObject* PyUpb_RepeatedScalarContainer_Append(PyObject* _self,
                                                       PyObject* value);
+static Py_ssize_t GetDefaultDTypeSize(upb_CType cpp_type) {
+  switch (cpp_type) {
+    case kUpb_CType_Bool:
+      return 1;
+    case kUpb_CType_UInt32:
+    case kUpb_CType_Int32:
+    case kUpb_CType_Enum:
+    case kUpb_CType_Float:
+      return 4;
+    case kUpb_CType_Int64:
+    case kUpb_CType_UInt64:
+    case kUpb_CType_Double:
+      return 8;
+    default:
+      return 0;
+  }
+}
 
 // Wrapper for a repeated field.
 typedef struct {
@@ -250,6 +267,120 @@ typedef bool (*PyUpb_ElemCb)(upb_MessageValue val, void* ctx);
 typedef bool (*PyUpb_BulkCb)(const void* data, Py_ssize_t count,
                              Py_ssize_t itemsize, void* ctx);
 
+typedef enum {
+  kTryResult_Success,
+  kTryResult_Failure,
+  kTryResult_NotSupported,
+} TryResult;
+
+static TryResult PyUpb_IterInputTryRepeatedContainer(PyObject* value,
+                                                     const upb_FieldDef* field,
+                                                     upb_Arena* arena,
+                                                     PyUpb_BulkCb bulk_cb,
+                                                     void* ctx) {
+  // Detect if value is a repeated scalar container of the same field type.
+  PyUpb_ModuleState* state = PyUpb_ModuleState_MaybeGet();
+  if (state == NULL ||
+      Py_TYPE(value) != state->repeated_scalar_container_type) {
+    return kTryResult_NotSupported;
+  }
+  PyUpb_RepeatedContainer* other = (PyUpb_RepeatedContainer*)value;
+  const upb_FieldDef* other_f = PyUpb_RepeatedContainer_GetField(other);
+  if (upb_FieldDef_CType(other_f) != upb_FieldDef_CType(field)) {
+    return kTryResult_NotSupported;
+  }
+  Py_ssize_t itemsize = GetDefaultDTypeSize(upb_FieldDef_CType(field));
+  if (itemsize == 0) {
+    return kTryResult_NotSupported;
+  }
+  upb_Array* arr = PyUpb_RepeatedContainer_GetIfReified(other);
+  size_t count = arr ? upb_Array_Size(arr) : 0;
+  if (count == 0) {
+    return bulk_cb(NULL, 0, 0, ctx) ? kTryResult_Success : kTryResult_Failure;
+  }
+  const void* data = upb_Array_DataPtr(arr);
+  if (upb_FieldDef_CType(field) == kUpb_CType_Enum &&
+      upb_FieldDef_EnumSubDef(other_f) != upb_FieldDef_EnumSubDef(field)) {
+    const upb_EnumDef* e = upb_FieldDef_EnumSubDef(field);
+    if (upb_EnumDef_IsClosed(e)) {
+      const int32_t* i32 = (const int32_t*)data;
+      for (Py_ssize_t i = 0; i < (Py_ssize_t)count; i++) {
+        if (!upb_EnumDef_CheckNumber(e, i32[i])) {
+          PyErr_Format(PyExc_ValueError, "invalid enumerator %d", (int)i32[i]);
+          return kTryResult_Failure;
+        }
+      }
+    }
+  }
+  return bulk_cb(data, count, itemsize, ctx) ? kTryResult_Success
+                                             : kTryResult_Failure;
+}
+
+#if PyUpb_SUPPORT_BUFFER_VIEW
+static TryResult PyUpb_IterInputTryBufferView(PyObject* value,
+                                              const upb_FieldDef* field,
+                                              upb_Arena* arena,
+                                              PyUpb_SizeCb size_cb,
+                                              PyUpb_ElemCb elem_cb,
+                                              PyUpb_BulkCb bulk_cb, void* ctx) {
+  Py_buffer view;
+  if (PyObject_GetBuffer(value, &view, PyBUF_RECORDS_RO) != 0) {
+    PyErr_Clear();
+    return kTryResult_NotSupported;
+  }
+  if (!IsContiguous1DAndMatchesFieldType(&view, field)) {
+    PyBuffer_Release(&view);
+    return kTryResult_NotSupported;
+  }
+  Py_ssize_t count = view.len / view.itemsize;
+  if (count == 0) {
+    PyBuffer_Release(&view);
+    return bulk_cb(NULL, 0, 0, ctx) ? kTryResult_Success : kTryResult_Failure;
+  }
+  if (view.format[0] != 'O') {
+    if (upb_FieldDef_CType(field) == kUpb_CType_Enum) {
+      const upb_EnumDef* e = upb_FieldDef_EnumSubDef(field);
+      if (upb_EnumDef_IsClosed(e)) {
+        const int32_t* i32 = (const int32_t*)view.buf;
+        for (Py_ssize_t i = 0; i < count; i++) {
+          if (!upb_EnumDef_CheckNumber(e, i32[i])) {
+            PyErr_Format(PyExc_ValueError, "invalid enumerator %d",
+                         (int)i32[i]);
+            goto error;
+          }
+        }
+      }
+    }
+    if (bulk_cb(view.buf, count, view.itemsize, ctx)) {
+      goto done;
+    } else {
+      goto error;
+    }
+  }
+  PyObject** objs = (PyObject**)view.buf;
+  if (!size_cb(count, ctx)) {
+    goto error;
+  }
+  for (Py_ssize_t i = 0; i < count; i++) {
+    PyObject* item = objs[i] ? objs[i] : Py_None;
+    upb_MessageValue msgval;
+    if (!PyUpb_PyToUpb(item, field, &msgval, arena)) {
+      goto error;
+    }
+    if (!elem_cb(msgval, ctx)) {
+      goto error;
+    }
+  }
+
+done:
+  PyBuffer_Release(&view);
+  return kTryResult_Success;
+error:
+  PyBuffer_Release(&view);
+  return kTryResult_Failure;
+}
+#endif  // PyUpb_SUPPORT_BUFFER_VIEW
+
 // Iterates the elements of a Python iterable `value`, converting each to
 // upb_MessageValue via PyUpb_PyToUpb, and invoking `elem_cb` per element.
 //
@@ -264,60 +395,26 @@ static bool PyUpb_IterInput(PyObject* value, const upb_FieldDef* field,
                             upb_Arena* arena, PyUpb_SizeCb size_cb,
                             PyUpb_ElemCb elem_cb, PyUpb_BulkCb bulk_cb,
                             void* ctx) {
-#if PyUpb_SUPPORT_BUFFER_VIEW
-  Py_buffer view;
-  if (PyObject_GetBuffer(value, &view, PyBUF_RECORDS_RO) == 0) {
-    if (IsContiguous1DAndMatchesFieldType(&view, field)) {
-      Py_ssize_t count = view.len / view.itemsize;
-      if (count == 0) {
-        PyBuffer_Release(&view);
-        return bulk_cb(NULL, 0, 0, ctx);
-      }
-      if (view.format[0] != 'O') {
-        if (upb_FieldDef_CType(field) == kUpb_CType_Enum) {
-          const upb_EnumDef* e = upb_FieldDef_EnumSubDef(field);
-          if (upb_EnumDef_IsClosed(e)) {
-            const int32_t* i32 = (const int32_t*)view.buf;
-            for (Py_ssize_t i = 0; i < count; i++) {
-              if (!upb_EnumDef_CheckNumber(e, i32[i])) {
-                PyErr_Format(PyExc_ValueError, "invalid enumerator %d",
-                             (int)i32[i]);
-                PyBuffer_Release(&view);
-                return false;
-              }
-            }
-          }
-        }
-        bool ok = bulk_cb(view.buf, count, view.itemsize, ctx);
-        PyBuffer_Release(&view);
-        return ok;
-      }
-      PyObject** objs = (PyObject**)view.buf;
-      if (!size_cb(count, ctx)) {
-        PyBuffer_Release(&view);
-        return false;
-      }
-      for (Py_ssize_t i = 0; i < count; i++) {
-        PyObject* item = objs[i] ? objs[i] : Py_None;
-        upb_MessageValue msgval;
-        if (!PyUpb_PyToUpb(item, field, &msgval, arena)) {
-          PyBuffer_Release(&view);
-          return false;
-        }
-        if (!elem_cb(msgval, ctx)) {
-          PyBuffer_Release(&view);
-          return false;
-        }
-      }
-      PyBuffer_Release(&view);
+  switch (
+      PyUpb_IterInputTryRepeatedContainer(value, field, arena, bulk_cb, ctx)) {
+    case kTryResult_Success:
       return true;
-    }
-    PyBuffer_Release(&view);
-  } else {
-    PyErr_Clear();
+    case kTryResult_Failure:
+      return false;
+    case kTryResult_NotSupported:
+      break;
   }
-#else
-  (void)bulk_cb;
+
+#if PyUpb_SUPPORT_BUFFER_VIEW
+  switch (PyUpb_IterInputTryBufferView(value, field, arena, size_cb, elem_cb,
+                                       bulk_cb, ctx)) {
+    case kTryResult_Success:
+      return true;
+    case kTryResult_Failure:
+      return false;
+    case kTryResult_NotSupported:
+      break;
+  }
 #endif
   PyObject* iter = NULL;
   PyObject* materialized = PySequence_Fast(value, "must assign iterable");

@@ -156,7 +156,17 @@ class RepeatedPtrFieldWrapper : public RandomAccessRepeatedFieldAccessor {
                 size_t size) const override {
     auto* repeated = MutableRepeatedField(data);
     int old_size = repeated->size();
+    const char* values_char = reinterpret_cast<const char*>(values);
+    const char* repeated_data_char =
+        reinterpret_cast<const char*>(repeated->data());
+    // Check if Value* is in repeated.
     repeated->Reserve(internal::CheckedAdd(old_size, size));
+    if (values_char >= repeated_data_char &&
+        values_char < repeated_data_char + old_size * value_size) {
+      // So we need to update the values to the new position.
+      values_char = values_char - repeated_data_char +
+                    reinterpret_cast<const char*>(repeated->data());
+    }
     const char* ptr = reinterpret_cast<const char*>(values);
     for (size_t i = 0; i < size; ++i) {
       Add(data, ptr);

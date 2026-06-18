@@ -220,6 +220,32 @@ class NumpyIntProtoTest(unittest.TestCase):
     with self.assertRaises(TypeError):
       message.optional_int64 = np_22_float_array
 
+  def testRepeatedFieldSelfSliceAssignment(self):
+    msg = unittest_pb2.NestedTestAllTypes()
+    msg.payload.repeated_int32[:] = np.arange(4, dtype=np.int32)
+    msg.payload.repeated_int32[:] = np.asarray(msg.payload.repeated_int32)
+    self.assertEqual([0, 1, 2, 3], msg.payload.repeated_int32)
+
+  def testNumpyArrayIsMutableCopy(self):
+    msg = unittest_pb2.NestedTestAllTypes()
+    msg.payload.repeated_int32[:] = np.arange(4, dtype=np.int32)
+    arr = np.asarray(msg.payload.repeated_int32)
+    arr[0] = 100
+    self.assertEqual([0, 1, 2, 3], msg.payload.repeated_int32)
+    np.testing.assert_equal([100, 1, 2, 3], arr)
+
+  def testNumpyDifferentIntTypeSliceAssignment(self):
+    msg = unittest_pb2.NestedTestAllTypes()
+    # int64 -> int32
+    msg.payload.repeated_int32[:] = np.arange(4, dtype=np.int64)
+    self.assertEqual([0, 1, 2, 3], msg.payload.repeated_int32)
+    # int32 -> int64
+    msg.payload.repeated_int64[:] = np.arange(4, dtype=np.int32)
+    self.assertEqual([0, 1, 2, 3], msg.payload.repeated_int64)
+    # int64 overflow -> int32
+    with self.assertRaises((ValueError, OverflowError, TypeError)):
+      msg.payload.repeated_int32[:] = np.array([0, 1, 2, 2**35], dtype=np.int64)
+
 
 @testing_refleaks.TestCase
 class NumpyFloatProtoTest(unittest.TestCase):
@@ -273,6 +299,20 @@ class NumpyFloatProtoTest(unittest.TestCase):
       message.optional_float = np_11_object_array_float
     with self.assertRaises(TypeError):
       message.optional_float = np_22_object_array_float
+
+  def testNumpyDifferentFloatTypeSliceAssignment(self):
+    msg = unittest_pb2.NestedTestAllTypes()
+    # float64 -> float32
+    msg.payload.repeated_float[:] = np.array([1.5, 2.5, 3.5], dtype=np.float64)
+    self.assertEqual([1.5, 2.5, 3.5], msg.payload.repeated_float)
+    # float32 -> float64
+    msg.payload.repeated_double[:] = np.array([1.5, 2.5, 3.5], dtype=np.float32)
+    self.assertEqual([1.5, 2.5, 3.5], msg.payload.repeated_double)
+    # float64 overflow -> float32
+    msg.payload.repeated_float[:] = np.array(
+        [1.5, 2.5, 1e300], dtype=np.float64
+    )
+    self.assertEqual([1.5, 2.5, float('inf')], msg.payload.repeated_float)
 
 
 @testing_refleaks.TestCase

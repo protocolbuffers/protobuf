@@ -10,6 +10,7 @@
 //  Sanjay Ghemawat, Jeff Dean, and others.
 #include "google/protobuf/reflection_ops.h"
 
+#include <cstdint>
 #include <string>
 #include <utility>
 #include <vector>
@@ -17,12 +18,15 @@
 #include "absl/base/optimization.h"
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
+#include "absl/strings/cord.h"
 #include "absl/strings/str_cat.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/map_field.h"
 #include "google/protobuf/message_lite.h"
 #include "google/protobuf/port.h"
+#include "google/protobuf/repeated_field.h"
+#include "google/protobuf/string_piece_field_support.h"
 #include "google/protobuf/unknown_field_set.h"
 
 // Must be included last.
@@ -31,6 +35,43 @@
 namespace google {
 namespace protobuf {
 namespace internal {
+
+namespace {
+
+template <typename T>
+struct TypeTag {
+  using Type = T;
+};
+
+template <typename Func>
+bool CppTypeDispatch(FieldDescriptor::CppType cpp_type, Func&& func) {
+  switch (cpp_type) {
+    case FieldDescriptor::CPPTYPE_INT32:
+      return func(TypeTag<int32_t>{});
+    case FieldDescriptor::CPPTYPE_INT64:
+      return func(TypeTag<int64_t>{});
+    case FieldDescriptor::CPPTYPE_UINT32:
+      return func(TypeTag<uint32_t>{});
+    case FieldDescriptor::CPPTYPE_UINT64:
+      return func(TypeTag<uint64_t>{});
+    case FieldDescriptor::CPPTYPE_FLOAT:
+      return func(TypeTag<float>{});
+    case FieldDescriptor::CPPTYPE_DOUBLE:
+      return func(TypeTag<double>{});
+    case FieldDescriptor::CPPTYPE_BOOL:
+      return func(TypeTag<bool>{});
+    case FieldDescriptor::CPPTYPE_STRING:
+      return func(TypeTag<std::string>{});
+    case FieldDescriptor::CPPTYPE_ENUM:
+      return func(TypeTag<int>{});
+    case FieldDescriptor::CPPTYPE_MESSAGE:
+      return func(TypeTag<Message>{});
+    default:
+      return false;
+  }
+}
+
+}  // namespace
 
 static const Reflection* GetReflectionOrDie(const Message& m) {
   const Reflection* r = m.GetReflection();
@@ -84,38 +125,79 @@ void ReflectionOps::Merge(const Message& from, Message* to) {
         }
       }
       int count = from_reflection->FieldSize(from, field);
-      for (int j = 0; j < count; j++) {
-        switch (field->cpp_type()) {
-#define HANDLE_TYPE(CPPTYPE, METHOD)                                      \
-  case FieldDescriptor::CPPTYPE_##CPPTYPE:                                \
-    to_reflection->Add##METHOD(                                           \
-        to, field, from_reflection->GetRepeated##METHOD(from, field, j)); \
-    break;
-
-          HANDLE_TYPE(INT32, Int32);
-          HANDLE_TYPE(INT64, Int64);
-          HANDLE_TYPE(UINT32, UInt32);
-          HANDLE_TYPE(UINT64, UInt64);
-          HANDLE_TYPE(FLOAT, Float);
-          HANDLE_TYPE(DOUBLE, Double);
-          HANDLE_TYPE(BOOL, Bool);
-          HANDLE_TYPE(STRING, String);
-          HANDLE_TYPE(ENUM, Enum);
-#undef HANDLE_TYPE
-
-          case FieldDescriptor::CPPTYPE_MESSAGE:
-            const Message& from_child =
-                from_reflection->GetRepeatedMessage(from, field, j);
-            if (from_reflection == to_reflection) {
-              to_reflection
-                  ->AddMessage(to, field,
-                               from_child.GetReflection()->GetMessageFactory())
-                  ->MergeFrom(from_child);
-            } else {
-              to_reflection->AddMessage(to, field)->MergeFrom(from_child);
+      if (count > 0) {
+        auto merge_repeated = [&](auto tag) {
+          using T = typename decltype(tag)::Type;
+          if constexpr (std::is_same_v<T, Message>) {
+            for (int j = 0; j < count; j++) {
+              const Message& from_child =
+                  from_reflection->GetRepeatedMessage(from, field, j);
+              if (from_reflection == to_reflection) {
+                to_reflection
+                    ->AddMessage(
+                        to, field,
+                        from_child.GetReflection()->GetMessageFactory())
+                    ->MergeFrom(from_child);
+              } else {
+                to_reflection->AddMessage(to, field)->MergeFrom(from_child);
+              }
             }
-            break;
-        }
+          } else if constexpr (std::is_same_v<T, std::string>) {
+            if (field->is_extension()) {
+              for (int j = 0; j < count; j++) {
+                to_reflection->AddString(
+                    to, field,
+                    from_reflection->GetRepeatedString(from, field, j));
+              }
+            } else {
+              switch (field->cpp_string_type()) {
+                case FieldDescriptor::CppStringType::kStringPiece: {
+                  const auto& from_rf =
+                      from_reflection->GetRepeatedPtrFieldInternal<
+                          internal::StringPieceField>(
+                          from, field,
+                          Reflection::GetRepeatedFieldIntent::
+                              kHiddenOrInternal);
+                  auto& to_rf = *to_reflection->MutableRepeatedPtrFieldInternal<
+                      internal::StringPieceField>(
+                      to, field,
+                      Reflection::GetRepeatedFieldIntent::kHiddenOrInternal);
+                  to_rf.MergeFrom(from_rf);
+                } break;
+                case FieldDescriptor::CppStringType::kString:
+                case FieldDescriptor::CppStringType::kView:
+                  for (int j = 0; j < count; j++) {
+                    to_reflection->AddStringImpl(
+                        to, field,
+                        from_reflection->GetRepeatedString(from, field, j));
+                  }
+                  break;
+                case FieldDescriptor::CppStringType::kCord: {
+                  const auto& from_rf =
+                      from_reflection->GetRepeatedFieldInternal<absl::Cord>(
+                          from, field,
+                          Reflection::GetRepeatedFieldIntent::
+                              kHiddenOrInternal);
+                  auto& to_rf = *to_reflection->MutableRepeatedFieldInternal<
+                      absl::Cord>(
+                      to, field,
+                      Reflection::GetRepeatedFieldIntent::kHiddenOrInternal);
+                  to_rf.MergeFrom(from_rf);
+                } break;
+              }
+            }
+          } else {
+            const auto& from_rf = from_reflection->GetRepeatedFieldInternal<T>(
+                from, field,
+                Reflection::GetRepeatedFieldIntent::kHiddenOrInternal);
+            auto& to_rf = *to_reflection->MutableRepeatedFieldInternal<T>(
+                to, field,
+                Reflection::GetRepeatedFieldIntent::kHiddenOrInternal);
+            to_rf.MergeFrom(from_rf);
+          }
+          return true;
+        };
+        CppTypeDispatch(field->cpp_type(), merge_repeated);
       }
     } else {
       switch (field->cpp_type()) {
