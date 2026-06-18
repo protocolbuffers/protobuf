@@ -46,7 +46,7 @@ class MapFieldLite {
 
   constexpr MapFieldLite(InternalVisibility, InternalMetadataOffset offset)
       : map_(offset) {}
-  MapFieldLite(InternalVisibility, InternalMetadataOffset offset, Arena* arena,
+  MapFieldLite(InternalVisibility, InternalMetadataOffset offset,
                const MapFieldLite& from)
       : map_(offset) {
     MergeFrom(from);

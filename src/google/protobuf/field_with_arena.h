@@ -2,7 +2,6 @@
 #define GOOGLE_PROTOBUF_FIELD_WITH_ARENA_H__
 
 #include <cstddef>
-#include <type_traits>
 
 #include "absl/log/absl_check.h"
 #include "google/protobuf/arena.h"
@@ -16,18 +15,6 @@
 namespace google {
 namespace protobuf {
 namespace internal {
-
-// Checks whether `T` has a constructor that takes an internal metadata offset
-// and an arena pointer. Some constructors won't take the arena pointer if they
-// don't need it.
-//
-// We check for both `InternalVisibility` constructors and normal constructors,
-// as `std::is_constructible` can only see public constructors.
-template <typename T, typename... Args>
-inline constexpr bool kOffsetConstructorTakesArenaPointer =
-    std::is_constructible_v<T, InternalVisibility, InternalMetadataOffset,
-                            Arena*, Args...> ||
-    std::is_constructible_v<T, InternalMetadataOffset, Arena*, Args...>;
 
 // A container that holds a `T` and an arena pointer, where `T` has an
 // `InternalMetadataResolver` member. This is used for both directly
@@ -54,11 +41,7 @@ class FieldWithArena : public ContainerDestructorSkippableBase<T> {
     StaticallyVerifyLayout();
     // Construct `T` after setting `_internal_metadata_` so that `T` can safely
     // call ResolveArena().
-    if constexpr (kOffsetConstructorTakesArenaPointer<T, Args...>) {
-      new (&field_) T(BuildOffset(), arena, std::forward<Args>(args)...);
-    } else {
-      new (&field_) T(BuildOffset(), std::forward<Args>(args)...);
-    }
+    new (&field_) T(BuildOffset(), std::forward<Args>(args)...);
   }
 
   ~FieldWithArena() {

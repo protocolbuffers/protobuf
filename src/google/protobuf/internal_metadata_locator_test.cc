@@ -32,8 +32,7 @@ static constexpr size_t kTestOneRepeatedFieldInternalMetadataOffset =
 #endif
 
 struct FieldWithInternalMetadataOffset {
-  explicit FieldWithInternalMetadataOffset(InternalMetadataOffset offset,
-                                           Arena* arena)
+  explicit FieldWithInternalMetadataOffset(InternalMetadataOffset offset)
       : resolver(offset) {}
 
   int field = 0;
@@ -44,9 +43,8 @@ struct StructWithInternalMetadata {
   explicit StructWithInternalMetadata(Arena* arena)
       : _internal_metadata_(arena),
         field(InternalMetadataOffset::Build<
-                  StructWithInternalMetadata,
-                  PROTOBUF_FIELD_OFFSET(StructWithInternalMetadata, field)>(),
-              arena) {}
+              StructWithInternalMetadata,
+              PROTOBUF_FIELD_OFFSET(StructWithInternalMetadata, field)>()) {}
 
   Arena* GetArena() const {
     return ResolveArena<&FieldWithInternalMetadataOffset::resolver>(&field);

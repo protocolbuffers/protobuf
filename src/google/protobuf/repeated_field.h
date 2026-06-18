@@ -334,8 +334,7 @@ class ABSL_ATTRIBUTE_WARN_UNUSED PROTOBUF_DECLSPEC_EMPTY_BASES
 
   constexpr RepeatedField();
   RepeatedField(const RepeatedField& rhs)
-      : RepeatedField(internal::InternalMetadataOffset(), /*arena=*/nullptr,
-                      rhs) {}
+      : RepeatedField(internal::InternalMetadataOffset(), rhs) {}
 
   template <typename Iter,
             typename = typename std::enable_if<std::is_constructible<
@@ -347,16 +346,15 @@ class ABSL_ATTRIBUTE_WARN_UNUSED PROTOBUF_DECLSPEC_EMPTY_BASES
                           internal::InternalMetadataOffset offset)
       : RepeatedField(offset) {}
   RepeatedField(internal::InternalVisibility,
-                internal::InternalMetadataOffset offset, Arena* arena,
+                internal::InternalMetadataOffset offset,
                 const RepeatedField& rhs)
-      : RepeatedField(offset, arena, rhs) {}
+      : RepeatedField(offset, rhs) {}
 
   RepeatedField& operator=(const RepeatedField& other)
       ABSL_ATTRIBUTE_LIFETIME_BOUND;
 
   RepeatedField(RepeatedField&& rhs) noexcept
-      : RepeatedField(internal::InternalMetadataOffset(), /*arena=*/nullptr,
-                      std::move(rhs)) {}
+      : RepeatedField(internal::InternalMetadataOffset(), std::move(rhs)) {}
   RepeatedField& operator=(RepeatedField&& other) noexcept
       ABSL_ATTRIBUTE_LIFETIME_BOUND;
 
@@ -567,10 +565,9 @@ class ABSL_ATTRIBUTE_WARN_UNUSED PROTOBUF_DECLSPEC_EMPTY_BASES
       internal::HeapRep::SizeOf<Element>();
 
   explicit constexpr RepeatedField(internal::InternalMetadataOffset offset);
-  RepeatedField(internal::InternalMetadataOffset offset, Arena* arena,
+  RepeatedField(internal::InternalMetadataOffset offset,
                 const RepeatedField& rhs);
-  RepeatedField(internal::InternalMetadataOffset offset, Arena* arena,
-                RepeatedField&& rhs);
+  RepeatedField(internal::InternalMetadataOffset offset, RepeatedField&& rhs);
 
   template <typename Init>
   void ResizeImpl(int new_size, Init init);
@@ -814,16 +811,14 @@ constexpr RepeatedField<Element>::RepeatedField(
 
 template <typename Element>
 inline RepeatedField<Element>::RepeatedField(
-    internal::InternalMetadataOffset offset, Arena* arena,
-    const RepeatedField& rhs)
+    internal::InternalMetadataOffset offset, const RepeatedField& rhs)
     : RepeatedField(offset) {
   StaticValidityCheck();
-  ABSL_DCHECK_EQ(arena, GetArena());
   AnnotateSize(kSooCapacityElements, 0);
   if (auto size = rhs.size()) {
     bool is_soo = true;
     if (size > kSooCapacityElements) {
-      Grow(arena, is_soo, 0, size);
+      Grow(SelfArena{}, is_soo, 0, size);
       is_soo = false;
     }
     ExchangeCurrentSize(size);
@@ -871,9 +866,9 @@ inline RepeatedField<Element>& RepeatedField<Element>::operator=(
 
 template <typename Element>
 inline RepeatedField<Element>::RepeatedField(
-    internal::InternalMetadataOffset offset, Arena* arena, RepeatedField&& rhs)
+    internal::InternalMetadataOffset offset, RepeatedField&& rhs)
     : RepeatedField(offset) {
-  ABSL_DCHECK_EQ(arena, GetArena());
+  Arena* arena = GetArena();
   if (internal::CanMoveWithInternalSwap(arena, rhs.GetArena())) {
     InternalSwap(&rhs);
   } else {

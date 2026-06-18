@@ -7896,7 +7896,7 @@ PROTOBUF_NDEBUG_INLINE FileDescriptorSet::Impl_::Impl_(
           visibility, ::_pbi::InternalMetadataOffset::Build<
               ::google::protobuf::FileDescriptorSet,
               PROTOBUF_FIELD_OFFSET(::google::protobuf::FileDescriptorSet, _impl_.file_)>()
-          , arena, from.file_
+          , from.file_
         }
      {}
 
@@ -8135,56 +8135,56 @@ PROTOBUF_NDEBUG_INLINE FileDescriptorProto::Impl_::Impl_(
           visibility, ::_pbi::InternalMetadataOffset::Build<
               ::google::protobuf::FileDescriptorProto,
               PROTOBUF_FIELD_OFFSET(::google::protobuf::FileDescriptorProto, _impl_.dependency_)>()
-          , arena, from.dependency_
+          , from.dependency_
         }
         ,
         message_type_ {
           visibility, ::_pbi::InternalMetadataOffset::Build<
               ::google::protobuf::FileDescriptorProto,
               PROTOBUF_FIELD_OFFSET(::google::protobuf::FileDescriptorProto, _impl_.message_type_)>()
-          , arena, from.message_type_
+          , from.message_type_
         }
         ,
         enum_type_ {
           visibility, ::_pbi::InternalMetadataOffset::Build<
               ::google::protobuf::FileDescriptorProto,
               PROTOBUF_FIELD_OFFSET(::google::protobuf::FileDescriptorProto, _impl_.enum_type_)>()
-          , arena, from.enum_type_
+          , from.enum_type_
         }
         ,
         service_ {
           visibility, ::_pbi::InternalMetadataOffset::Build<
               ::google::protobuf::FileDescriptorProto,
               PROTOBUF_FIELD_OFFSET(::google::protobuf::FileDescriptorProto, _impl_.service_)>()
-          , arena, from.service_
+          , from.service_
         }
         ,
         extension_ {
           visibility, ::_pbi::InternalMetadataOffset::Build<
               ::google::protobuf::FileDescriptorProto,
               PROTOBUF_FIELD_OFFSET(::google::protobuf::FileDescriptorProto, _impl_.extension_)>()
-          , arena, from.extension_
+          , from.extension_
         }
         ,
         public_dependency_ {
           visibility, ::_pbi::InternalMetadataOffset::Build<
               ::google::protobuf::FileDescriptorProto,
               PROTOBUF_FIELD_OFFSET(::google::protobuf::FileDescriptorProto, _impl_.public_dependency_)>()
-          , arena, from.public_dependency_
+          , from.public_dependency_
         }
         ,
         weak_dependency_ {
           visibility, ::_pbi::InternalMetadataOffset::Build<
               ::google::protobuf::FileDescriptorProto,
               PROTOBUF_FIELD_OFFSET(::google::protobuf::FileDescriptorProto, _impl_.weak_dependency_)>()
-          , arena, from.weak_dependency_
+          , from.weak_dependency_
         }
         ,
         option_dependency_ {
           visibility, ::_pbi::InternalMetadataOffset::Build<
               ::google::protobuf::FileDescriptorProto,
               PROTOBUF_FIELD_OFFSET(::google::protobuf::FileDescriptorProto, _impl_.option_dependency_)>()
-          , arena, from.option_dependency_
+          , from.option_dependency_
         }
         ,
         name_(arena, from.name_),
@@ -9286,56 +9286,56 @@ PROTOBUF_NDEBUG_INLINE DescriptorProto::Impl_::Impl_(
           visibility, ::_pbi::InternalMetadataOffset::Build<
               ::google::protobuf::DescriptorProto,
               PROTOBUF_FIELD_OFFSET(::google::protobuf::DescriptorProto, _impl_.field_)>()
-          , arena, from.field_
+          , from.field_
         }
         ,
         nested_type_ {
           visibility, ::_pbi::InternalMetadataOffset::Build<
               ::google::protobuf::DescriptorProto,
               PROTOBUF_FIELD_OFFSET(::google::protobuf::DescriptorProto, _impl_.nested_type_)>()
-          , arena, from.nested_type_
+          , from.nested_type_
         }
         ,
         enum_type_ {
           visibility, ::_pbi::InternalMetadataOffset::Build<
               ::google::protobuf::DescriptorProto,
               PROTOBUF_FIELD_OFFSET(::google::protobuf::DescriptorProto, _impl_.enum_type_)>()
-          , arena, from.enum_type_
+          , from.enum_type_
         }
         ,
         extension_range_ {
           visibility, ::_pbi::InternalMetadataOffset::Build<
               ::google::protobuf::DescriptorProto,
               PROTOBUF_FIELD_OFFSET(::google::protobuf::DescriptorProto, _impl_.extension_range_)>()
-          , arena, from.extension_range_
+          , from.extension_range_
         }
         ,
         extension_ {
           visibility, ::_pbi::InternalMetadataOffset::Build<
               ::google::protobuf::DescriptorProto,
               PROTOBUF_FIELD_OFFSET(::google::protobuf::DescriptorProto, _impl_.extension_)>()
-          , arena, from.extension_
+          , from.extension_
         }
         ,
         oneof_decl_ {
           visibility, ::_pbi::InternalMetadataOffset::Build<
               ::google::protobuf::DescriptorProto,
               PROTOBUF_FIELD_OFFSET(::google::protobuf::DescriptorProto, _impl_.oneof_decl_)>()
-          , arena, from.oneof_decl_
+          , from.oneof_decl_
         }
         ,
         reserved_range_ {
           visibility, ::_pbi::InternalMetadataOffset::Build<
               ::google::protobuf::DescriptorProto,
               PROTOBUF_FIELD_OFFSET(::google::protobuf::DescriptorProto, _impl_.reserved_range_)>()
-          , arena, from.reserved_range_
+          , from.reserved_range_
         }
         ,
         reserved_name_ {
           visibility, ::_pbi::InternalMetadataOffset::Build<
               ::google::protobuf::DescriptorProto,
               PROTOBUF_FIELD_OFFSET(::google::protobuf::DescriptorProto, _impl_.reserved_name_)>()
-          , arena, from.reserved_name_
+          , from.reserved_name_
         }
         ,
         name_(arena, from.name_) {}
@@ -10178,14 +10178,14 @@ PROTOBUF_NDEBUG_INLINE ExtensionRangeOptions::Impl_::Impl_(
           visibility, ::_pbi::InternalMetadataOffset::Build<
               ::google::protobuf::ExtensionRangeOptions,
               PROTOBUF_FIELD_OFFSET(::google::protobuf::ExtensionRangeOptions, _impl_.declaration_)>()
-          , arena, from.declaration_
+          , from.declaration_
         }
         ,
         uninterpreted_option_ {
           visibility, ::_pbi::InternalMetadataOffset::Build<
               ::google::protobuf::ExtensionRangeOptions,
               PROTOBUF_FIELD_OFFSET(::google::protobuf::ExtensionRangeOptions, _impl_.uninterpreted_option_)>()
-          , arena, from.uninterpreted_option_
+          , from.uninterpreted_option_
         }
      {}
 
@@ -11410,21 +11410,21 @@ PROTOBUF_NDEBUG_INLINE EnumDescriptorProto::Impl_::Impl_(
           visibility, ::_pbi::InternalMetadataOffset::Build<
               ::google::protobuf::EnumDescriptorProto,
               PROTOBUF_FIELD_OFFSET(::google::protobuf::EnumDescriptorProto, _impl_.value_)>()
-          , arena, from.value_
+          , from.value_
         }
         ,
         reserved_range_ {
           visibility, ::_pbi::InternalMetadataOffset::Build<
               ::google::protobuf::EnumDescriptorProto,
               PROTOBUF_FIELD_OFFSET(::google::protobuf::EnumDescriptorProto, _impl_.reserved_range_)>()
-          , arena, from.reserved_range_
+          , from.reserved_range_
         }
         ,
         reserved_name_ {
           visibility, ::_pbi::InternalMetadataOffset::Build<
               ::google::protobuf::EnumDescriptorProto,
               PROTOBUF_FIELD_OFFSET(::google::protobuf::EnumDescriptorProto, _impl_.reserved_name_)>()
-          , arena, from.reserved_name_
+          , from.reserved_name_
         }
         ,
         name_(arena, from.name_) {}
@@ -12068,7 +12068,7 @@ PROTOBUF_NDEBUG_INLINE ServiceDescriptorProto::Impl_::Impl_(
           visibility, ::_pbi::InternalMetadataOffset::Build<
               ::google::protobuf::ServiceDescriptorProto,
               PROTOBUF_FIELD_OFFSET(::google::protobuf::ServiceDescriptorProto, _impl_.method_)>()
-          , arena, from.method_
+          , from.method_
         }
         ,
         name_(arena, from.name_) {}
@@ -12691,7 +12691,7 @@ PROTOBUF_NDEBUG_INLINE FileOptions::Impl_::Impl_(
           visibility, ::_pbi::InternalMetadataOffset::Build<
               ::google::protobuf::FileOptions,
               PROTOBUF_FIELD_OFFSET(::google::protobuf::FileOptions, _impl_.uninterpreted_option_)>()
-          , arena, from.uninterpreted_option_
+          , from.uninterpreted_option_
         }
      {}
 
@@ -13317,7 +13317,7 @@ PROTOBUF_NDEBUG_INLINE MessageOptions::Impl_::Impl_(
           visibility, ::_pbi::InternalMetadataOffset::Build<
               ::google::protobuf::MessageOptions,
               PROTOBUF_FIELD_OFFSET(::google::protobuf::MessageOptions, _impl_.uninterpreted_option_)>()
-          , arena, from.uninterpreted_option_
+          , from.uninterpreted_option_
         }
      {}
 
@@ -14185,21 +14185,21 @@ PROTOBUF_NDEBUG_INLINE FieldOptions::Impl_::Impl_(
           visibility, ::_pbi::InternalMetadataOffset::Build<
               ::google::protobuf::FieldOptions,
               PROTOBUF_FIELD_OFFSET(::google::protobuf::FieldOptions, _impl_.edition_defaults_)>()
-          , arena, from.edition_defaults_
+          , from.edition_defaults_
         }
         ,
         uninterpreted_option_ {
           visibility, ::_pbi::InternalMetadataOffset::Build<
               ::google::protobuf::FieldOptions,
               PROTOBUF_FIELD_OFFSET(::google::protobuf::FieldOptions, _impl_.uninterpreted_option_)>()
-          , arena, from.uninterpreted_option_
+          , from.uninterpreted_option_
         }
         ,
         targets_ {
           visibility, ::_pbi::InternalMetadataOffset::Build<
               ::google::protobuf::FieldOptions,
               PROTOBUF_FIELD_OFFSET(::google::protobuf::FieldOptions, _impl_.targets_)>()
-          , arena, from.targets_
+          , from.targets_
         }
      {}
 
@@ -14714,7 +14714,7 @@ PROTOBUF_NDEBUG_INLINE OneofOptions::Impl_::Impl_(
           visibility, ::_pbi::InternalMetadataOffset::Build<
               ::google::protobuf::OneofOptions,
               PROTOBUF_FIELD_OFFSET(::google::protobuf::OneofOptions, _impl_.uninterpreted_option_)>()
-          , arena, from.uninterpreted_option_
+          , from.uninterpreted_option_
         }
      {}
 
@@ -14996,7 +14996,7 @@ PROTOBUF_NDEBUG_INLINE EnumOptions::Impl_::Impl_(
           visibility, ::_pbi::InternalMetadataOffset::Build<
               ::google::protobuf::EnumOptions,
               PROTOBUF_FIELD_OFFSET(::google::protobuf::EnumOptions, _impl_.uninterpreted_option_)>()
-          , arena, from.uninterpreted_option_
+          , from.uninterpreted_option_
         }
      {}
 
@@ -15329,7 +15329,7 @@ PROTOBUF_NDEBUG_INLINE EnumValueOptions::Impl_::Impl_(
           visibility, ::_pbi::InternalMetadataOffset::Build<
               ::google::protobuf::EnumValueOptions,
               PROTOBUF_FIELD_OFFSET(::google::protobuf::EnumValueOptions, _impl_.uninterpreted_option_)>()
-          , arena, from.uninterpreted_option_
+          , from.uninterpreted_option_
         }
      {}
 
@@ -15682,7 +15682,7 @@ PROTOBUF_NDEBUG_INLINE ServiceOptions::Impl_::Impl_(
           visibility, ::_pbi::InternalMetadataOffset::Build<
               ::google::protobuf::ServiceOptions,
               PROTOBUF_FIELD_OFFSET(::google::protobuf::ServiceOptions, _impl_.uninterpreted_option_)>()
-          , arena, from.uninterpreted_option_
+          , from.uninterpreted_option_
         }
      {}
 
@@ -15987,7 +15987,7 @@ PROTOBUF_NDEBUG_INLINE MethodOptions::Impl_::Impl_(
           visibility, ::_pbi::InternalMetadataOffset::Build<
               ::google::protobuf::MethodOptions,
               PROTOBUF_FIELD_OFFSET(::google::protobuf::MethodOptions, _impl_.uninterpreted_option_)>()
-          , arena, from.uninterpreted_option_
+          , from.uninterpreted_option_
         }
      {}
 
@@ -16540,7 +16540,7 @@ PROTOBUF_NDEBUG_INLINE UninterpretedOption::Impl_::Impl_(
           visibility, ::_pbi::InternalMetadataOffset::Build<
               ::google::protobuf::UninterpretedOption,
               PROTOBUF_FIELD_OFFSET(::google::protobuf::UninterpretedOption, _impl_.name_)>()
-          , arena, from.name_
+          , from.name_
         }
         ,
         identifier_value_(arena, from.identifier_value_),
@@ -17668,7 +17668,7 @@ PROTOBUF_NDEBUG_INLINE FeatureSetDefaults::Impl_::Impl_(
           visibility, ::_pbi::InternalMetadataOffset::Build<
               ::google::protobuf::FeatureSetDefaults,
               PROTOBUF_FIELD_OFFSET(::google::protobuf::FeatureSetDefaults, _impl_.defaults_)>()
-          , arena, from.defaults_
+          , from.defaults_
         }
      {}
 
@@ -17949,21 +17949,21 @@ PROTOBUF_NDEBUG_INLINE SourceCodeInfo_Location::Impl_::Impl_(
           visibility, ::_pbi::InternalMetadataOffset::Build<
               ::google::protobuf::SourceCodeInfo_Location,
               PROTOBUF_FIELD_OFFSET(::google::protobuf::SourceCodeInfo_Location, _impl_.path_)>()
-          , arena, from.path_
+          , from.path_
         }
         ,
         span_ {
           visibility, ::_pbi::InternalMetadataOffset::Build<
               ::google::protobuf::SourceCodeInfo_Location,
               PROTOBUF_FIELD_OFFSET(::google::protobuf::SourceCodeInfo_Location, _impl_.span_)>()
-          , arena, from.span_
+          , from.span_
         }
         ,
         leading_detached_comments_ {
           visibility, ::_pbi::InternalMetadataOffset::Build<
               ::google::protobuf::SourceCodeInfo_Location,
               PROTOBUF_FIELD_OFFSET(::google::protobuf::SourceCodeInfo_Location, _impl_.leading_detached_comments_)>()
-          , arena, from.leading_detached_comments_
+          , from.leading_detached_comments_
         }
         ,
         leading_comments_(arena, from.leading_comments_),
@@ -18287,7 +18287,7 @@ PROTOBUF_NDEBUG_INLINE SourceCodeInfo::Impl_::Impl_(
           visibility, ::_pbi::InternalMetadataOffset::Build<
               ::google::protobuf::SourceCodeInfo,
               PROTOBUF_FIELD_OFFSET(::google::protobuf::SourceCodeInfo, _impl_.location_)>()
-          , arena, from.location_
+          , from.location_
         }
      {}
 
@@ -18524,7 +18524,7 @@ PROTOBUF_NDEBUG_INLINE GeneratedCodeInfo_Annotation::Impl_::Impl_(
           visibility, ::_pbi::InternalMetadataOffset::Build<
               ::google::protobuf::GeneratedCodeInfo_Annotation,
               PROTOBUF_FIELD_OFFSET(::google::protobuf::GeneratedCodeInfo_Annotation, _impl_.path_)>()
-          , arena, from.path_
+          , from.path_
         }
         ,
         source_file_(arena, from.source_file_) {}
@@ -18834,7 +18834,7 @@ PROTOBUF_NDEBUG_INLINE GeneratedCodeInfo::Impl_::Impl_(
           visibility, ::_pbi::InternalMetadataOffset::Build<
               ::google::protobuf::GeneratedCodeInfo,
               PROTOBUF_FIELD_OFFSET(::google::protobuf::GeneratedCodeInfo, _impl_.annotation_)>()
-          , arena, from.annotation_
+          , from.annotation_
         }
      {}
 
