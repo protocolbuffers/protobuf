@@ -112,8 +112,8 @@ VALUE Convert_CheckStringUtf8(VALUE str) {
     // not mean that it is *valid* UTF-8.  We have to check separately
     // whether it is valid.
     if (rb_enc_str_coderange(str) == ENC_CODERANGE_BROKEN) {
-      VALUE exc = rb_const_get_at(
-          rb_cEncoding, rb_intern("InvalidByteSequenceError"));
+      VALUE exc =
+          rb_const_get_at(rb_cEncoding, rb_intern("InvalidByteSequenceError"));
       rb_raise(exc, "String is invalid UTF-8");
     }
   } else {
@@ -226,8 +226,8 @@ upb_MessageValue Convert_RubyToUpb(VALUE value, const char* name,
       }
       break;
     default:
-      rb_raise(cTypeError,
-                "Convert_RubyToUpb(): Unexpected type %d", (int)type_info.type);
+      rb_raise(cTypeError, "Convert_RubyToUpb(): Unexpected type %d",
+               (int)type_info.type);
   }
 
   return ret;
