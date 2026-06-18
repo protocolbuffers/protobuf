@@ -937,31 +937,6 @@ inline void* RepeatedPtrFieldBase::AddInternal(
   return result;
 }
 
-// A container that holds a RepeatedPtrFieldBase and an arena pointer. This is
-// used when constructing `RepeatedPtrFieldBase`s on the arena, and in
-// `SwapFallback`.
-using RepeatedPtrFieldWithArenaBase = FieldWithArena<RepeatedPtrFieldBase>;
-
-template <>
-struct FieldArenaRep<RepeatedPtrFieldBase> {
-  using Type = RepeatedPtrFieldWithArenaBase;
-
-  static inline RepeatedPtrFieldBase* Get(
-      RepeatedPtrFieldWithArenaBase* arena_rep) {
-    return &arena_rep->field();
-  }
-};
-
-template <>
-struct FieldArenaRep<const RepeatedPtrFieldBase> {
-  using Type = const RepeatedPtrFieldWithArenaBase;
-
-  static inline const RepeatedPtrFieldBase* Get(
-      const RepeatedPtrFieldWithArenaBase* arena_rep) {
-    return &arena_rep->field();
-  }
-};
-
 template <typename TypeHandler>
 PROTOBUF_NOINLINE void RepeatedPtrFieldBase::SwapFallbackWithTemp(
     Arena* arena, RepeatedPtrFieldBase* other, Arena* other_arena,
@@ -994,7 +969,7 @@ PROTOBUF_NOINLINE void RepeatedPtrFieldBase::SwapFallback(
     // We can't call the destructor of the temp container since it allocates
     // memory from an arena, and the destructor of FieldWithArena expects to be
     // called only when arena is nullptr.
-    absl::NoDestructor<RepeatedPtrFieldWithArenaBase> temp_container(
+    absl::NoDestructor<FieldWithArena<RepeatedPtrFieldBase>> temp_container(
         other_arena);
     RepeatedPtrFieldBase& temp = temp_container->field();
     SwapFallbackWithTemp<TypeHandler>(arena, other, other_arena, temp);
@@ -2058,33 +2033,6 @@ inline int RepeatedPtrField<Element>::Capacity() const {
 // -------------------------------------------------------------------
 
 namespace internal {
-
-// A container that holds a RepeatedPtrField<Element> and an arena pointer. This
-// is used for both directly arena-allocated RepeatedPtrField's and split
-// RepeatedPtrField's. Both cases need to be able to allocate memory in case a
-// user calls mutating methods on the RepeatedPtrField pointer.
-template <typename Element>
-using RepeatedPtrFieldWithArena = FieldWithArena<RepeatedPtrField<Element>>;
-
-template <typename Element>
-struct FieldArenaRep<RepeatedPtrField<Element>> {
-  using Type = RepeatedPtrFieldWithArena<Element>;
-
-  static inline RepeatedPtrField<Element>* Get(
-      RepeatedPtrFieldWithArena<Element>* arena_rep) {
-    return &arena_rep->field();
-  }
-};
-
-template <typename Element>
-struct FieldArenaRep<const RepeatedPtrField<Element>> {
-  using Type = const RepeatedPtrFieldWithArena<Element>;
-
-  static inline const RepeatedPtrField<Element>* Get(
-      const RepeatedPtrFieldWithArena<Element>* arena_rep) {
-    return &arena_rep->field();
-  }
-};
 
 // This class gives the Rust implementation access to some protected methods on
 // RepeatedPtrFieldBase. These methods allow us to operate solely on the
