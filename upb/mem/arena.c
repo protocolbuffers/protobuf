@@ -254,7 +254,8 @@ void upb_Arena_LogFree(const upb_Arena* arena) {
 // If it has a parent, then acquire memory order is provided for both the root
 // and the refcount. Thread safe.
 static upb_ArenaRoot _upb_Arena_FindRoot(upb_ArenaInternal* ai) {
-  uintptr_t poc = upb_Atomic_Load(&ai->parent_or_count, memory_order_relaxed);
+  uintptr_t poc =
+      (uintptr_t)upb_Atomic_Load(&ai->parent_or_count, memory_order_relaxed);
   if (_upb_Arena_IsTaggedRefcount(poc)) {
     // Fast, relaxed path - arenas that have never been fused to a parent only
     // need relaxed memory order, since they're returning themselves and the
@@ -264,12 +265,13 @@ static upb_ArenaRoot _upb_Arena_FindRoot(upb_ArenaInternal* ai) {
   // Slow path needs acquire order; reloading is cheaper than a fence on ARM
   // (LDA vs DMB ISH). Even though this is a reread, we know it must be a tagged
   // pointer because if this Arena isn't a root, it can't ever become one.
-  poc = upb_Atomic_Load(&ai->parent_or_count, memory_order_acquire);
+  poc = (uintptr_t)upb_Atomic_Load(&ai->parent_or_count, memory_order_acquire);
   do {
     upb_ArenaInternal* next = _upb_Arena_PointerFromTagged(poc);
     UPB_PRIVATE(upb_Xsan_AccessReadOnly)(UPB_XSAN(next));
     UPB_ASSERT(ai != next);
-    poc = upb_Atomic_Load(&next->parent_or_count, memory_order_acquire);
+    poc = (uintptr_t)upb_Atomic_Load(&next->parent_or_count,
+                                     memory_order_acquire);
 
     if (_upb_Arena_IsTaggedPointer(poc)) {
       // To keep complexity down, we lazily collapse levels of the tree.  This
@@ -296,7 +298,7 @@ uintptr_t upb_Arena_SpaceAllocated(const upb_Arena* arena,
   // this one), we instead iterate forwards and backwards so that we only see
   // the results of completed fuses.
   uintptr_t previous_or_tail =
-      upb_Atomic_Load(&ai->previous_or_tail, memory_order_acquire);
+      (uintptr_t)upb_Atomic_Load(&ai->previous_or_tail, memory_order_acquire);
   while (_upb_Arena_IsTaggedPrevious(previous_or_tail)) {
     upb_ArenaInternal* previous =
         _upb_Arena_PreviousFromTagged(previous_or_tail);
@@ -306,11 +308,11 @@ uintptr_t upb_Arena_SpaceAllocated(const upb_Arena* arena,
     // this returns a void* and can't be used with += without an intermediate
     // conversion to an integer.
     // Relaxed is safe - no subsequent reads depend this one
-    uintptr_t allocated =
-        upb_Atomic_Load(&previous->space_allocated, memory_order_relaxed);
+    uintptr_t allocated = (uintptr_t)upb_Atomic_Load(&previous->space_allocated,
+                                                     memory_order_relaxed);
     memsize += allocated;
-    previous_or_tail =
-        upb_Atomic_Load(&previous->previous_or_tail, memory_order_acquire);
+    previous_or_tail = (uintptr_t)upb_Atomic_Load(&previous->previous_or_tail,
+                                                  memory_order_acquire);
     local_fused_count++;
   }
   while (ai != NULL) {
@@ -320,7 +322,7 @@ uintptr_t upb_Arena_SpaceAllocated(const upb_Arena* arena,
     // conversion to an integer.
     // Relaxed is safe - no subsequent reads depend this one
     uintptr_t allocated =
-        upb_Atomic_Load(&ai->space_allocated, memory_order_relaxed);
+        (uintptr_t)upb_Atomic_Load(&ai->space_allocated, memory_order_relaxed);
     memsize += allocated;
     ai = upb_Atomic_Load(&ai->next, memory_order_acquire);
     local_fused_count++;
@@ -345,12 +347,12 @@ bool upb_Arena_HasRefChain(const upb_Arena* from, const upb_Arena* to) {
 
   // 1. Traverse backward to the start of a consistent segment.
   uintptr_t previous_or_tail =
-      upb_Atomic_Load(&ai->previous_or_tail, memory_order_acquire);
+      (uintptr_t)upb_Atomic_Load(&ai->previous_or_tail, memory_order_acquire);
   while (_upb_Arena_IsTaggedPrevious(previous_or_tail)) {
     ai = _upb_Arena_PreviousFromTagged(previous_or_tail);
     UPB_PRIVATE(upb_Xsan_AccessReadOnly)(UPB_XSAN(ai));
     previous_or_tail =
-        upb_Atomic_Load(&ai->previous_or_tail, memory_order_acquire);
+        (uintptr_t)upb_Atomic_Load(&ai->previous_or_tail, memory_order_acquire);
   }
 
   // 2. Traverse forward through all arenas in the fuse group.
