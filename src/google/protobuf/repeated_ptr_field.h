@@ -331,6 +331,11 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
     }
   }
 
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+  // Specialized destructor routine for repeated message objects.
+  void DestroyMessageLites(const ClassData* class_data);
+#endif  // PROTOBUF_CUSTOM_VTABLE
+
   inline bool NeedsDestroy() const {
     // Either there is an allocated element in SSO buffer or there is an
     // allocated Rep.
@@ -1624,7 +1629,16 @@ RepeatedPtrField<Element>::~RepeatedPtrField() {
   StaticValidityCheck();
   if (!NeedsDestroy()) return;
   if constexpr (std::is_base_of_v<MessageLite, Element>) {
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+    if constexpr (std::is_same_v<Element, MessageLite> ||
+                  std::is_same_v<Element, Message>) {
+      DestroyProtos();
+    } else {
+      DestroyMessageLites(internal::MessageTraits<Element>::class_data());
+    }
+#else
     DestroyProtos();
+#endif
   } else {
     Destroy<TypeHandler>();
   }
