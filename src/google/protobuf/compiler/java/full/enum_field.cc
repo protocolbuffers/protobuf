@@ -62,8 +62,7 @@ void SetEnumVariables(
       static_cast<int32_t>(internal::WireFormat::MakeTag(descriptor)));
   (*variables)["tag_size"] = absl::StrCat(
       internal::WireFormat::TagSize(descriptor->number(), GetType(descriptor)));
-  (*variables)["null_check"] =
-      "if (value == null) { throw new NullPointerException(); }";
+  (*variables)["null_check"] = "java.util.Objects.requireNonNull(value);";
   // TODO: Add @deprecated javadoc when generating javadoc is supported
   // by the proto compiler
   (*variables)["deprecation"] =
