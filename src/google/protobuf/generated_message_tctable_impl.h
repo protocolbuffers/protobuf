@@ -385,7 +385,7 @@ class PROTOBUF_EXPORT TcParser final {
   }
 #else
   static const TcParseTableBase* GetTable() {
-    return MessageGlobalsBase::ToParseTableBase(MessageTraits<T>::globals());
+    return MessageTraits<T>::tc_table();
   }
 #endif
 
