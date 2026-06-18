@@ -91,12 +91,11 @@ void ImmutableMapFieldGenerator::SetMessageVariables(
       DefaultValue(key, true, name_resolver, context_->options());
   variables_["key_null_check"] =
       IsReferenceType(keyJavaType)
-          ? "if (key == null) { throw new NullPointerException(\"map key\"); }"
+          ? "java.util.Objects.requireNonNull(key, \"map key\");"
           : "";
   variables_["value_null_check"] =
       valueJavaType != JAVATYPE_ENUM && IsReferenceType(valueJavaType)
-          ? "if (value == null) { "
-            "throw new NullPointerException(\"map value\"); }"
+          ? "java.util.Objects.requireNonNull(value, \"map value\");"
           : "";
   if (valueJavaType == JAVATYPE_ENUM) {
     // We store enums as Integers internally.
@@ -835,9 +834,8 @@ void ImmutableMapFieldGenerator::GenerateMessageMapBuilderMembers(
       "$deprecation$public Builder ${$putAll$capitalized_name$$}$(\n"
       "    java.util.Map<$type_parameters$> values) {\n"
       "  for (java.util.Map.Entry<$type_parameters$> e : values.entrySet()) {\n"
-      "    if (e.getKey() == null || e.getValue() == null) {\n"
-      "      throw new NullPointerException();\n"
-      "    }\n"
+      "    java.util.Objects.requireNonNull(e.getKey());\n"
+      "    java.util.Objects.requireNonNull(e.getValue());\n"
       "  }\n"
       "  internalGetMutable$capitalized_name$().ensureBuilderMap()\n"
       "      .putAll(values);\n"

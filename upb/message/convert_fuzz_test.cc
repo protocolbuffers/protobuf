@@ -520,6 +520,43 @@ TEST(ConvertFuzz, ArbitraryMiniTableConvertFuzzRegression8) {
       1153856912);
 }
 
+TEST(ConvertFuzz, ArbitraryMiniTableConvertFuzzRegression_b522284547) {
+  ArbitraryMiniTableConvertFuzz(
+      upb::fuzz::MiniTableFuzzInput{
+          {"$gYYYxYYYY111111"}, {"\037"}, "#8#####", {1}},
+      upb::fuzz::MiniTableFuzzInput{{"&", "$a#&", ":"}, {}, "H", {4294967295}},
+      std::string("\r\000\000\000\302@\000", 7), 224686147, 909543686);
+}
+
+TEST(ConvertFuzz, ArbitraryMiniTableConvertFuzzRegression_b522283360) {
+  ArbitraryMiniTableConvertFuzz(
+      upb::fuzz::MiniTableFuzzInput{
+          {"$YYYYxYYYY111111"}, {}, "###d##h#", {1225118708}},
+      upb::fuzz::MiniTableFuzzInput{{"&", ""},
+                                    {"\210", "\210",
+                                     "\210", "\210",
+                                     "\210", "\210",
+                                     "\210", "\210",
+                                     "\210", "\210",
+                                     "\210", "\210",
+                                     "\210", "\210\005\005",
+                                     "\010", std::string("\210\001\000", 3),
+                                     "\210", "\210",
+                                     "\210", "\210",
+                                     "\210", "\210",
+                                     "\210", "\210",
+                                     "\210", "",
+                                     "",     "",
+                                     "\210", "",
+                                     "\210", "\210",
+                                     "\210", "\210",
+                                     "\210", "\210",
+                                     "\210", "\210",
+                                     "\210", "\210"},
+                                    "\235\274\235",
+                                    {3130066253, 3556537314, 4294967293}},
+      "\rM\035MMMB\377\301\037", 3129627418, 2812959198);
+}
 }  // namespace
 
 }  // namespace upb

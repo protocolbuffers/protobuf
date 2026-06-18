@@ -2432,9 +2432,9 @@ void MessageGenerator::GenerateClassMethods(io::Printer* p) {
               void $Msg$::PrepareSplitMessageForWrite() {
                 if (ABSL_PREDICT_TRUE(IsSplitMessageDefault())) {
                   ABSL_DCHECK_NE(this, &default_instance());
-                  void* chunk = $pbi$::CreateSplitMessageGeneric(
-                      GetArena(), &$split_default$, sizeof(Impl_::Split));
-                  $split$ = reinterpret_cast<Impl_::Split*>(chunk);
+                  $pbi$::CreateSplitMessageGeneric(
+                      GetArena(), reinterpret_cast<void**>(&$split$),
+                      sizeof(Impl_::Split));
                 }
               }
             )cc");
@@ -2830,32 +2830,26 @@ void MessageGenerator::GenerateInitDefaultSplitInstance(io::Printer* p) {
 
 void MessageGenerator::GenerateSharedDestructorCode(io::Printer* p) {
   if (HasSimpleBaseClass(descriptor_, options_)) return;
-  auto emit_field_dtors = [&](bool split_fields) {
-    // Write the destructors for each field except oneof members.
-    // optimized_order_ does not contain oneof fields.
-    for (const auto* field : field_layout_.optimized_order()) {
-      if (ShouldSplit(field, options_) != split_fields) continue;
-      field_generators_.get(field).GenerateDestructorCode(p);
-    }
-  };
   p->Emit(
       {
           {"has_bit_consistency",
            [&] { GenerateCheckHasBitConsistency(p, "this_."); }},
-          {"field_dtors", [&] { emit_field_dtors(/* split_fields= */ false); }},
+          {"field_dtors",
+           [&] {
+             // Write the destructors for each field except oneof members.
+             // optimized_order_ does not contain oneof fields.
+             for (const auto* field : field_layout_.optimized_order()) {
+               if (ShouldSplit(field, options_)) continue;
+               field_generators_.get(field).GenerateDestructorCode(p);
+             }
+           }},
           {"split_field_dtors",
            [&] {
              if (!ShouldSplit(descriptor_, options_)) return;
              p->Emit(
-                 {
-                     {"split_field_dtors_impl",
-                      [&] { emit_field_dtors(/* split_fields= */ true); }},
-                 },
                  R"cc(
                    if (ABSL_PREDICT_FALSE(!this_.IsSplitMessageDefault())) {
-                     auto* $cached_split_ptr$ = this_.$split$;
-                     $split_field_dtors_impl$;
-                     delete $cached_split_ptr$;
+                     _Internal::DestroySplit(this_);
                    }
                  )cc");
            }},
@@ -3041,26 +3035,22 @@ void MessageGenerator::GenerateCopyInitFields(io::Printer* p) const {
   auto end = optimized_order.end();
   const FieldDescriptor* first = nullptr;
 
-  auto emit_pending_copy_fields = [&](decltype(end) itend, bool split) {
+  auto emit_pending_copy_fields = [&](decltype(end) itend) {
     if (first != nullptr) {
       const FieldDescriptor* last = itend[-1];
       if (first != last) {
-        p->Emit({{"first", FieldName(first)},
-                 {"last", FieldName(last)},
-                 {"Impl", split ? "Impl_::Split" : "Impl_"},
-                 {"pdst", split ? "_impl_._split_" : "&_impl_"},
-                 {"psrc", split ? "from._impl_._split_" : "&from._impl_"}},
+        p->Emit({{"first", FieldName(first)}, {"last", FieldName(last)}},
                 R"cc(
-                  ::memcpy(reinterpret_cast<char*>($pdst$) +
-                               offsetof($Impl$, $first$_),
-                           reinterpret_cast<const char*>($psrc$) +
-                               offsetof($Impl$, $first$_),
-                           offsetof($Impl$, $last$_) -
-                               offsetof($Impl$, $first$_) +
-                               sizeof($Impl$::$last$_));
+                  ::memcpy(reinterpret_cast<char*>(&_impl_) +
+                               offsetof(Impl_, $first$_),
+                           reinterpret_cast<const char*>(&from._impl_) +
+                               offsetof(Impl_, $first$_),
+                           offsetof(Impl_, $last$_) -
+                               offsetof(Impl_, $first$_) +
+                               sizeof(Impl_::$last$_));
                 )cc");
       } else {
-        p->Emit({{"field_", FieldMemberName(first, split)}},
+        p->Emit({{"field_", FieldMemberName(first, false)}},
                 R"cc(
                   $field_$ = from.$field_$;
                 )cc");
@@ -3111,38 +3101,18 @@ void MessageGenerator::GenerateCopyInitFields(io::Printer* p) const {
 
       // Non trivial field values are copy constructed
       if (!gen.has_trivial_value() || gen.should_split()) {
-        emit_pending_copy_fields(it, false);
+        emit_pending_copy_fields(it);
         continue;
       }
 
       if (gen.is_message()) {
-        emit_pending_copy_fields(it, false);
+        emit_pending_copy_fields(it);
         emit_copy_message(field);
       } else if (first == nullptr) {
         first = field;
       }
     }
-    emit_pending_copy_fields(end, false);
-  };
-
-  auto generate_copy_split_fields = [&] {
-    for (auto it = begin; it != end; ++it) {
-      const auto& gen = field_generators_.get(*it);
-      auto v = p->WithVars(FieldVars(*it, options_));
-
-      if (!gen.should_split()) {
-        emit_pending_copy_fields(it, true);
-        continue;
-      }
-
-      if (gen.is_trivial()) {
-        if (first == nullptr) first = *it;
-      } else {
-        emit_pending_copy_fields(it, true);
-        gen.GenerateCopyConstructorCode(p);
-      }
-    }
-    emit_pending_copy_fields(end, true);
+    emit_pending_copy_fields(end);
   };
 
   auto generate_copy_oneof_fields = [&]() {
@@ -3192,13 +3162,11 @@ void MessageGenerator::GenerateCopyInitFields(io::Printer* p) const {
           )cc");
 
   if (ShouldSplit(descriptor_, options_)) {
-    p->Emit({{"copy_split_fields", generate_copy_split_fields}},
-            R"cc(
-              if (ABSL_PREDICT_FALSE(!from.IsSplitMessageDefault())) {
-                PrepareSplitMessageForWrite();
-                $copy_split_fields$;
-              }
-            )cc");
+    p->Emit(R"cc(
+      if (ABSL_PREDICT_FALSE(!from.IsSplitMessageDefault())) {
+        _Internal::MergeSplit(this, from);
+      }
+    )cc");
   }
 }
 
@@ -3393,9 +3361,7 @@ void MessageGenerator::GenerateSourceInProto2Namespace(io::Printer* p) {
   }
 }
 
-void MessageGenerator::GenerateClear(io::Printer* p) {
-  if (HasSimpleBaseClass(descriptor_, options_)) return;
-
+void MessageGenerator::EmitClearChunks(io::Printer* p, bool is_split) {
   // The maximum number of bytes we will memset to zero without checking their
   // hasbit to see if a zero-init is necessary.
   const int kMaxUnconditionalPrimitiveBytesClear = 4;
@@ -3421,23 +3387,24 @@ void MessageGenerator::GenerateClear(io::Printer* p) {
             field_layout_.GetHasByteIndex(a) ==
                 field_layout_.GetHasByteIndex(b) &&
             IsLikelyPresent(a, options_) == IsLikelyPresent(b, options_) &&
-            ShouldSplit(a, options_) == ShouldSplit(b, options_) &&
             (CanClearByZeroing(a) == CanClearByZeroing(b) ||
              (CanClearByZeroing(a) && (chunk_count == 1 || merge_zero_init)));
         if (!same) chunk_count = 0;
         return same;
-      });
+      },
+      [&](auto* f) { return ShouldSplit(f, options_) == is_split; });
 
   auto it = chunks.begin();
   auto end = chunks.end();
   int cached_has_word_index = -1;
 
-  const auto emit_fields_in_chunk = [&](decltype(it) next,
-                                        bool has_default_split_check) {
+  while (it != end) {
+    auto next = FindNextUnequalChunk(it, end, MayGroupChunksForHaswordsCheck);
+    bool has_haswords_check = MaybeEmitHaswordsCheck(
+        it, next, options_, field_layout_, cached_has_word_index, "this_.", p);
+
     while (it != next) {
       const std::vector<const FieldDescriptor*>& fields = it->fields;
-      bool chunk_is_split = it->should_split;
-      ABSL_CHECK_EQ(has_default_split_check, chunk_is_split);
 
       const FieldDescriptor* memset_start = nullptr;
       const FieldDescriptor* memset_end = nullptr;
@@ -3457,7 +3424,7 @@ void MessageGenerator::GenerateClear(io::Printer* p) {
         if (cached_has_word_index != has_word_index) {
           cached_has_word_index = has_word_index;
           p->Emit({{"cached_has_word_index", cached_has_word_index}}, R"cc(
-            cached_has_bits = $has_bits$[$cached_has_word_index$];
+            cached_has_bits = this_.$has_bits$[$cached_has_word_index$];
           )cc");
         }
       };
@@ -3468,19 +3435,17 @@ void MessageGenerator::GenerateClear(io::Printer* p) {
             // For clarity, do not memset a single field.
             field_generators_.get(memset_start).GenerateMessageClearingCode(p);
           } else {
-            ABSL_CHECK_EQ(chunk_is_split, ShouldSplit(memset_start, options_));
-            ABSL_CHECK_EQ(chunk_is_split, ShouldSplit(memset_end, options_));
             p->Emit(
                 {
-                    {"start", FieldMemberName(memset_start, chunk_is_split)},
-                    {"end", FieldMemberName(memset_end, chunk_is_split)},
+                    {"start", FieldMemberName(memset_start, is_split)},
+                    {"end", FieldMemberName(memset_end, is_split)},
                 },
                 R"cc(
-                  ::memset(
-                      &$start$, 0,
-                      static_cast<::size_t>(reinterpret_cast<char*>(&$end$) -
-                                            reinterpret_cast<char*>(&$start$)) +
-                          sizeof($end$));
+                  ::memset(&this_.$start$, 0,
+                           static_cast<::size_t>(
+                               reinterpret_cast<char*>(&this_.$end$) -
+                               reinterpret_cast<char*>(&this_.$start$)) +
+                               sizeof($end$));
                 )cc");
           }
         }
@@ -3564,30 +3529,6 @@ void MessageGenerator::GenerateClear(io::Printer* p) {
       // To next chunk.
       ++it;
     }
-  };
-
-  const auto emit_next_chunk = [&] {
-    ABSL_CHECK(it != end);
-    auto next = FindNextUnequalChunk(it, end, MayGroupChunksForHaswordsCheck);
-    bool has_haswords_check = MaybeEmitHaswordsCheck(
-        it, next, options_, field_layout_, cached_has_word_index, "", p);
-
-    bool has_default_split_check = !it->fields.empty() && it->should_split;
-    if (has_default_split_check) {
-      // Some fields are cleared without checking has_bit. So we add the
-      // condition here to avoid writing to the default split instance.
-      p->Emit({{"clear_fields_in_chunk",
-                [&] {
-                  emit_fields_in_chunk(next, /*has_default_split_check=*/true);
-                }}},
-              R"cc(
-                if (!IsSplitMessageDefault()) {
-                  $clear_fields_in_chunk$;
-                }
-              )cc");
-    } else {
-      emit_fields_in_chunk(next, /*has_default_split_check=*/false);
-    }
 
     if (has_haswords_check) {
       p->Outdent();
@@ -3599,6 +3540,10 @@ void MessageGenerator::GenerateClear(io::Printer* p) {
       cached_has_word_index = -1;
     }
   };
+}
+
+void MessageGenerator::GenerateClear(io::Printer* p) {
+  if (HasSimpleBaseClass(descriptor_, options_)) return;
 
   p->Emit(
       {
@@ -3610,8 +3555,13 @@ void MessageGenerator::GenerateClear(io::Printer* p) {
            }},
           {"clear_fields",
            [&] {
-             while (it != end) {
-               emit_next_chunk();
+             EmitClearChunks(p, /* is_split= */ false);
+             if (ShouldSplit(descriptor_, options_)) {
+               p->Emit(R"cc(
+                 if (ABSL_PREDICT_FALSE(!IsSplitMessageDefault())) {
+                   _Internal::ClearSplit(*this);
+                 }
+               )cc");
              }
            }},
           {"clear_oneofs",
@@ -3641,13 +3591,10 @@ void MessageGenerator::GenerateClear(io::Printer* p) {
       },
       R"cc(
         PROTOBUF_NOINLINE void $Msg$::Clear() {
+          auto& this_ [[maybe_unused]] = *this;
           // @@protoc_insertion_point(message_clear_start:$full_name$)
           $pbi$::TSanWrite(&_impl_);
-          //~ TODO: It would be better to avoid emitting this if it is not
-          //~ used, rather than emitting a workaround for the resulting warning.
-          $uint32$ cached_has_bits = 0;
-          // Prevent compiler warnings about cached_has_bits being unused
-          (void)cached_has_bits;
+          ::uint32_t cached_has_bits [[maybe_unused]] = 0;
 
           $maybe_clear_extensions$;
           $clear_fields$;
@@ -4131,21 +4078,28 @@ void MessageGenerator::GenerateClassData(io::Printer* p) {
   }
 }
 
-bool MessageGenerator::RequiresArena(GeneratorFunction function) const {
+bool MessageGenerator::RequiresArena(GeneratorFunction function,
+                                     bool is_split) const {
   for (const FieldDescriptor* field : internal::FieldRange(descriptor_)) {
-    if (field_generators_.get(field).RequiresArena(function)) {
+    auto& gen = field_generators_.get(field);
+    if (gen.should_split() == is_split && gen.RequiresArena(function)) {
       return true;
     }
   }
-  if (descriptor_->extension_range_count() > 0) {
+  if (!is_split && descriptor_->extension_range_count() > 0) {
     return true;
   }
   return false;
 }
 
-void MessageGenerator::GenerateClassSpecificMergeImpl(io::Printer* p) {
-  if (HasSimpleBaseClass(descriptor_, options_)) return;
-
+bool MessageGenerator::EmitMergeChunks(io::Printer* p, bool is_split) {
+  const auto prepare_split = [&] {
+    if (is_split) {
+      p->Emit(R"cc(
+        _this->PrepareSplitMessageForWrite();
+      )cc");
+    }
+  };
   // cached_has_word_index maintains that:
   //   cached_has_bits = from._has_bits_[cached_has_word_index]
   // for cached_has_word_index >= 0
@@ -4194,8 +4148,12 @@ void MessageGenerator::GenerateClassSpecificMergeImpl(io::Printer* p) {
         // Merge semantics without true field presence: primitive fields are
         // merged only if non-zero (numeric) or non-empty (string).
         MayEmitMutableIfNonDefaultCheck(
-            p, "from.", field, ShouldSplit(field, options_), options_,
-            /*emit_body=*/[&]() { generator.GenerateMergingCode(p); },
+            p, "from.", field, is_split, options_,
+            /*emit_body=*/
+            [&]() {
+              prepare_split();
+              generator.GenerateMergingCode(p);
+            },
             /*with_enclosing_braces_always=*/true);
         PROTOBUF_IGNORE_DEPRECATION_START
       } else if (field->options().weak() ||
@@ -4205,7 +4163,11 @@ void MessageGenerator::GenerateClassSpecificMergeImpl(io::Printer* p) {
         // Check hasbit, not using cached bits.
         auto v = p->WithVars(HasBitVars(field));
         p->Emit(
-            {{"merge_field", [&] { generator.GenerateMergingCode(p); }}},
+            {{"merge_field",
+              [&] {
+                prepare_split();
+                generator.GenerateMergingCode(p);
+              }}},
             R"cc(
               if (CheckHasBit(from.$has_bits$[$has_array_index$], $has_mask$)) {
                 $merge_field$;
@@ -4221,13 +4183,14 @@ void MessageGenerator::GenerateClassSpecificMergeImpl(io::Printer* p) {
                                has_bit_index, field, options_)},
              {"merge_field",
               [&] {
+                prepare_split();
                 if (GetFieldHasbitMode(field, options_) ==
                     HasbitMode::kHintHasbit) {
                   // Merge semantics without true field presence: primitive
                   // fields are merged only if non-zero (numeric) or
                   // non-empty (string).
                   MayEmitMutableIfNonDefaultCheck(
-                      p, "from.", field, ShouldSplit(field, options_), options_,
+                      p, "from.", field, is_split, options_,
                       /*emit_body=*/[&]() { generator.GenerateMergingCode(p); },
                       /*with_enclosing_braces_always=*/false);
                 } else {
@@ -4256,6 +4219,47 @@ void MessageGenerator::GenerateClassSpecificMergeImpl(io::Printer* p) {
     }
   };
 
+  std::vector<FieldChunk> chunks = CollectFields(
+      field_layout_.optimized_order(), options_,
+      [&](const FieldDescriptor* a, const FieldDescriptor* b) -> bool {
+        return field_layout_.GetHasByteIndex(a) ==
+                   field_layout_.GetHasByteIndex(b) &&
+               IsLikelyPresent(a, options_) == IsLikelyPresent(b, options_);
+      },
+      [&](const auto* f) { return ShouldSplit(f, options_) == is_split; });
+
+  auto it = chunks.begin();
+  auto end = chunks.end();
+  while (it != end) {
+    auto next = FindNextUnequalChunk(it, end, MayGroupChunksForHaswordsCheck);
+    bool has_haswords_check = MaybeEmitHaswordsCheck(
+        it, next, options_, field_layout_, cached_has_word_index, "from.", p);
+
+    while (it != next) {
+      emit_merge_chunk(it->fields);
+      ++it;
+    }
+
+    if (has_haswords_check) {
+      p->Outdent();
+      p->Emit(R"cc(
+        }
+      )cc");
+
+      // Reset here as it may have been updated in just closed if
+      // statement.
+      cached_has_word_index = -1;
+    }
+  }
+
+  return cached_has_word_index >= 0;
+}
+
+void MessageGenerator::GenerateClassSpecificMergeImpl(io::Printer* p) {
+  if (HasSimpleBaseClass(descriptor_, options_)) return;
+
+  bool cached_has_word_index_was_populated = false;
+
   // Generate the class-specific MergeFrom, which avoids the ABSL_CHECK and
   // cast.
   p->Emit(
@@ -4263,70 +4267,37 @@ void MessageGenerator::GenerateClassSpecificMergeImpl(io::Printer* p) {
         [&] { GenerateCheckHasBitConsistency(p, "from."); }},
        {"get_arena",
         [&] {
-          if (RequiresArena(GeneratorFunction::kMergeFrom)) {
+          if (RequiresArena(GeneratorFunction::kMergeFrom,
+                            /* is_split= */ false)) {
             p->Emit(R"cc(
               $pb$::Arena* arena = _this->GetArena();
             )cc");
           }
         }},
-       {"maybe_prepare_split_message_for_write",
-        [&] {
-          if (ShouldSplit(descriptor_, options_)) {
-            p->Emit(
-                R"cc(
-                  if (ABSL_PREDICT_FALSE(!from.IsSplitMessageDefault())) {
-                    _this->PrepareSplitMessageForWrite();
-                  }
-                )cc");
-          }
-        }},
        {"merge_fields",
         [&] {
-          std::vector<FieldChunk> chunks = CollectFields(
-              field_layout_.optimized_order(), options_,
-              [&](const FieldDescriptor* a, const FieldDescriptor* b) -> bool {
-                return field_layout_.GetHasByteIndex(a) ==
-                           field_layout_.GetHasByteIndex(b) &&
-                       IsLikelyPresent(a, options_) ==
-                           IsLikelyPresent(b, options_) &&
-                       ShouldSplit(a, options_) == ShouldSplit(b, options_);
-              });
-
-          auto it = chunks.begin();
-          auto end = chunks.end();
-          while (it != end) {
-            auto next =
-                FindNextUnequalChunk(it, end, MayGroupChunksForHaswordsCheck);
-            bool has_haswords_check =
-                MaybeEmitHaswordsCheck(it, next, options_, field_layout_,
-                                       cached_has_word_index, "from.", p);
-
-            while (it != next) {
-              emit_merge_chunk(it->fields);
-              ++it;
+          cached_has_word_index_was_populated =
+              EmitMergeChunks(p, /* is_split= */ false);
+        }},
+       {"merge_split",
+        [&] {
+          if (!ShouldSplit(descriptor_, options_)) return;
+          p->Emit(R"cc(
+            if (ABSL_PREDICT_FALSE(!from.IsSplitMessageDefault())) {
+              _Internal::MergeSplit(_this, from);
             }
-
-            if (has_haswords_check) {
-              p->Outdent();
-              p->Emit(R"cc(
-                }
-              )cc");
-
-              // Reset here as it may have been updated in just closed if
-              // statement.
-              cached_has_word_index = -1;
-            }
-          }
+          )cc");
         }},
        {"merge_hasbits",
         [&] {
-          if (field_layout_.HasBitsSize() == 1) {
+          if (field_layout_.HasBitsSize() == 1 &&
+              cached_has_word_index_was_populated) {
             // Optimization to avoid a load. Assuming that most messages have
             // fewer than 32 fields, this seems useful.
             p->Emit(R"cc(
               _this->$has_bits$[0] |= cached_has_bits;
             )cc");
-          } else if (field_layout_.HasBitsSize() > 1) {
+          } else if (field_layout_.HasBitsSize() >= 1) {
             p->Emit(R"cc(
               _this->$has_bits$.Or(from.$has_bits$);
             )cc");
@@ -4412,8 +4383,8 @@ void MessageGenerator::GenerateClassSpecificMergeImpl(io::Printer* p) {
           $uint32$ cached_has_bits = 0;
           (void)cached_has_bits;
 
-          $maybe_prepare_split_message_for_write$;
           $merge_fields$;
+          $merge_split$;
           $merge_hasbits$;
           $merge_oneof$;
           $merge_weak_fields$;
@@ -4699,6 +4670,12 @@ void MessageGenerator::GenerateSerializeWithCachedSizesBody(io::Printer* p) {
       if (field->real_containing_oneof()) {
         v_.push_back(field);
       } else {
+        if (ShouldSplit(field, options_)) {
+          OpenSplit();
+        } else {
+          CloseSplit();
+        }
+
         // TODO: Defer non-oneof fields similarly to oneof fields.
         if (HasHasbit(field, options_)) {
           // We speculatively load the entire _has_bits_[index] contents, even
@@ -4728,6 +4705,7 @@ void MessageGenerator::GenerateSerializeWithCachedSizesBody(io::Printer* p) {
     }
 
     void Flush() {
+      CloseSplit();
       if (!v_.empty()) {
         mg_->GenerateSerializeOneofFields(p_, v_);
         v_.clear();
@@ -4735,6 +4713,26 @@ void MessageGenerator::GenerateSerializeWithCachedSizesBody(io::Printer* p) {
     }
 
    private:
+    void OpenSplit() {
+      if (is_split_open_) return;
+      is_split_open_ = true;
+      p_->Emit(R"cc(
+        if (ABSL_PREDICT_FALSE(serialize_split_fields)) {
+      )cc");
+      p_->Indent();
+    }
+    void CloseSplit() {
+      if (!is_split_open_) return;
+      is_split_open_ = false;
+      p_->Outdent();
+      p_->Emit(R"cc(
+        }
+      )cc");
+      // The split block is conditional so we might or might not have changed
+      // the index. Just forget it.
+      cached_has_bit_index_ = -1;
+    }
+
     // If we have multiple fields in v_ then they all must be from the same
     // oneof.  Would adding field to v_ break that invariant?
     bool MustFlush(const FieldDescriptor* field) {
@@ -4744,6 +4742,7 @@ void MessageGenerator::GenerateSerializeWithCachedSizesBody(io::Printer* p) {
 
     MessageGenerator* mg_;
     io::Printer* p_;
+    bool is_split_open_ = false;
     const Options& options_;
     std::vector<const FieldDescriptor*> v_;
 
@@ -4834,6 +4833,14 @@ void MessageGenerator::GenerateSerializeWithCachedSizesBody(io::Printer* p) {
                    this_.$weak_field_map$);
              )cc");
            }},
+          {"serialize_split_var",
+           [&] {
+             if (!ShouldSplit(descriptor_, options_)) return;
+             p->Emit(R"cc(
+               //~
+               const bool serialize_split_fields = !this_.IsSplitMessageDefault();
+             )cc");
+           }},
           {"handle_lazy_fields",
            [&] {
              // Merge fields and extension ranges, sorted by field number.
@@ -4889,6 +4896,7 @@ void MessageGenerator::GenerateSerializeWithCachedSizesBody(io::Printer* p) {
         $handle_weak_fields$;
         $uint32$ cached_has_bits = 0;
         (void)cached_has_bits;
+        $serialize_split_var$;
 
         $handle_lazy_fields$;
         if (ABSL_PREDICT_FALSE(this_.$have_unknown_fields$)) {
@@ -5036,39 +5044,11 @@ static absl::optional<int> FixedSize(const FieldDescriptor* field) {
   }
 }
 
-void MessageGenerator::GenerateByteSize(io::Printer* p) {
-  if (HasSimpleBaseClass(descriptor_, options_)) return;
-
-  if (descriptor_->options().message_set_wire_format()) {
-    // Special-case MessageSet.
-    p->Emit(
-        R"cc(
-#if defined(PROTOBUF_CUSTOM_VTABLE)
-          ::size_t $Msg$::ByteSizeLong(const MessageLite& base) {
-            const $Msg$& this_ = static_cast<const $Msg$&>(base);
-#else   // PROTOBUF_CUSTOM_VTABLE
-          ::size_t $Msg$::ByteSizeLong() const {
-            const $Msg$& this_ = *this;
-#endif  // PROTOBUF_CUSTOM_VTABLE
-            $WeakDescriptorSelfPin$;
-            $annotate_bytesize$;
-            // @@protoc_insertion_point(message_set_byte_size_start:$full_name$)
-            ::size_t total_size = this_.$extensions$.MessageSetByteSize();
-            if (this_.$have_unknown_fields$) {
-              total_size += ::_pbi::ComputeUnknownMessageSetItemsSize(
-                  this_.$unknown_fields$);
-            }
-            this_.$cached_size$.Set(::_pbi::ToCachedSize(total_size));
-            return total_size;
-          }
-        )cc");
-    p->Emit("\n");
-    return;
-  }
-
+void MessageGenerator::EmitByteSizeChunks(io::Printer* p, bool is_split) {
   std::vector<const FieldDescriptor*> fixed;
   std::vector<const FieldDescriptor*> rest;
   for (auto* f : field_layout_.optimized_order()) {
+    if (ShouldSplit(f, options_) != is_split) continue;
     if (FixedSize(f).has_value()) {
       fixed.push_back(f);
     } else {
@@ -5095,8 +5075,7 @@ void MessageGenerator::GenerateByteSize(io::Printer* p) {
         return a->is_required() == b->is_required() &&
                field_layout_.GetHasByteIndex(a) ==
                    field_layout_.GetHasByteIndex(b) &&
-               IsLikelyPresent(a, options_) == IsLikelyPresent(b, options_) &&
-               ShouldSplit(a, options_) == ShouldSplit(b, options_);
+               IsLikelyPresent(a, options_) == IsLikelyPresent(b, options_);
       });
 
   // Interleave the fixed chunks in the right place to be able to reuse
@@ -5107,6 +5086,140 @@ void MessageGenerator::GenerateByteSize(io::Printer* p) {
              field_layout_.GetHasWordIndex(chunk.fields[0]);
     });
     chunks.insert(it, std::move(chunk));
+  }
+
+  auto it = chunks.begin();
+  auto end = chunks.end();
+  int cached_has_word_index = -1;
+  const auto update_cached_has_bits = [&](auto& fields) {
+    const int has_word_index =
+        field_layout_.GetHasWordIndex(fields.front()).value();
+    if (cached_has_word_index == has_word_index) return;
+
+    cached_has_word_index = has_word_index;
+    p->Emit({{"index", cached_has_word_index}},
+            R"cc(
+              cached_has_bits = this_.$has_bits$[$index$];
+            )cc");
+  };
+
+  while (it != end) {
+    auto next = FindNextUnequalChunk(it, end, MayGroupChunksForHaswordsCheck);
+    bool has_haswords_check = MaybeEmitHaswordsCheck(
+        it, next, options_, field_layout_, cached_has_word_index, "this_.", p);
+
+    while (it != next) {
+      const auto& fields = it->fields;
+
+      // If the chunk is a fixed size singular chunk, use a branchless
+      // approach for it.
+      if (absl::optional<int> fsize = FixedSize(fields[0])) {
+        update_cached_has_bits(fields);
+        uint32_t mask = GenChunkMask(fields, field_layout_);
+        p->Emit({{"mask", absl::StrFormat("0x%08xU", mask)},
+                 {"popcount", absl::has_single_bit(mask) ? "static_cast<bool>"
+                                                         : "::absl::popcount"},
+                 {"fsize", *fsize}},
+                R"cc(
+                  //~
+                  total_size += $popcount$($mask$ & cached_has_bits) * $fsize$;
+                )cc");
+        ++it;
+        continue;
+      }
+
+      const bool check_has_byte =
+          fields.size() > 1 &&
+          field_layout_.GetHasWordIndex(fields[0]).has_value() &&
+          !IsLikelyPresent(fields.back(), options_);
+      DebugAssertUniformLikelyPresence(fields, options_);
+      p->Emit({{"update_byte_size_for_chunk",
+                [&] {
+                  // Go back and emit checks for each of the fields we
+                  // processed.
+                  for (const auto* field : fields) {
+                    EmitUpdateByteSizeForField(field, p, cached_has_word_index);
+                  }
+                }},
+               {"may_update_cached_has_word_index",
+                [&] {
+                  if (!check_has_byte) return;
+                  update_cached_has_bits(fields);
+                }},
+               {"check_if_chunk_present",
+                [&] {
+                  if (!check_has_byte) {
+                    return;
+                  }
+
+                  // Emit an if() that will let us skip the whole chunk
+                  // if none are set.
+                  uint32_t chunk_mask = GenChunkMask(fields, field_layout_);
+
+                  // Check (up to) 8 has_bits at a time if we have more
+                  // than one field in this chunk.  Due to field layout
+                  // ordering, we may check _has_bits_[last_chunk * 8 /
+                  // 32] multiple times.
+                  ABSL_DCHECK_LE(2, popcnt(chunk_mask));
+                  ABSL_DCHECK_GE(8, popcnt(chunk_mask));
+
+                  p->Emit({{"condition",
+                            GenerateConditionMaybeWithProbabilityForGroup(
+                                chunk_mask, fields, options_)}},
+                          "if ($condition$)");
+                }}},
+              R"cc(
+                $may_update_cached_has_word_index$;
+                $check_if_chunk_present$ {
+                  //~ Force newline.
+                  $update_byte_size_for_chunk$;
+                }
+              )cc");
+
+      // To next chunk.
+      ++it;
+    }
+
+    if (has_haswords_check) {
+      p->Emit(R"cc(
+        }
+      )cc");
+
+      // Reset here as it may have been updated in just closed if
+      // statement.
+      cached_has_word_index = -1;
+    }
+  }
+}
+
+void MessageGenerator::GenerateByteSize(io::Printer* p) {
+  if (HasSimpleBaseClass(descriptor_, options_)) return;
+
+  if (descriptor_->options().message_set_wire_format()) {
+    // Special-case MessageSet.
+    p->Emit(
+        R"cc(
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+          ::size_t $Msg$::ByteSizeLong(const MessageLite& base) {
+            const $Msg$& this_ = static_cast<const $Msg$&>(base);
+#else   // PROTOBUF_CUSTOM_VTABLE
+          ::size_t $Msg$::ByteSizeLong() const {
+            const $Msg$& this_ = *this;
+#endif  // PROTOBUF_CUSTOM_VTABLE
+            $WeakDescriptorSelfPin$;
+            $annotate_bytesize$;
+            // @@protoc_insertion_point(message_set_byte_size_start:$full_name$)
+            ::size_t total_size = this_.$extensions$.MessageSetByteSize();
+            if (ABSL_PREDICT_FALSE(this_.$have_unknown_fields$)) {
+              total_size += ::_pbi::ComputeUnknownMessageSetItemsSize(
+                  this_.$unknown_fields$);
+            }
+            this_.$cached_size$.Set(::_pbi::ToCachedSize(total_size));
+            return total_size;
+          }
+        )cc");
+    p->Emit("\n");
+    return;
   }
 
   p->Emit(
@@ -5146,113 +5259,13 @@ void MessageGenerator::GenerateByteSize(io::Printer* p) {
         }},
        {"handle_fields",
         [&] {
-          auto it = chunks.begin();
-          auto end = chunks.end();
-          int cached_has_word_index = -1;
-          const auto update_cached_has_bits = [&](auto& fields) {
-            const int has_word_index =
-                field_layout_.GetHasWordIndex(fields.front()).value();
-            if (cached_has_word_index == has_word_index) return;
-
-            cached_has_word_index = has_word_index;
-            p->Emit({{"index", cached_has_word_index}},
-                    R"cc(
-                      cached_has_bits = this_.$has_bits$[$index$];
-                    )cc");
-          };
-
-          while (it != end) {
-            auto next =
-                FindNextUnequalChunk(it, end, MayGroupChunksForHaswordsCheck);
-            bool has_haswords_check =
-                MaybeEmitHaswordsCheck(it, next, options_, field_layout_,
-                                       cached_has_word_index, "this_.", p);
-
-            while (it != next) {
-              const auto& fields = it->fields;
-
-              // If the chunk is a fixed size singular chunk, use a branchless
-              // approach for it.
-              if (absl::optional<int> fsize = FixedSize(fields[0])) {
-                update_cached_has_bits(fields);
-                uint32_t mask = GenChunkMask(fields, field_layout_);
-                p->Emit({{"mask", absl::StrFormat("0x%08xU", mask)},
-                         {"popcount", absl::has_single_bit(mask)
-                                          ? "static_cast<bool>"
-                                          : "::absl::popcount"},
-                         {"fsize", *fsize}},
-                        R"cc(
-                          //~
-                          total_size += $popcount$($mask$ & cached_has_bits) * $fsize$;
-                        )cc");
-                ++it;
-                continue;
+          EmitByteSizeChunks(p, /* is_split= */ false);
+          if (ShouldSplit(descriptor_, options_)) {
+            p->Emit(R"cc(
+              if (ABSL_PREDICT_FALSE(!this_.IsSplitMessageDefault())) {
+                total_size += _Internal::ByteSizeSplit(this_);
               }
-
-              const bool check_has_byte =
-                  fields.size() > 1 &&
-                  field_layout_.GetHasWordIndex(fields[0]).has_value() &&
-                  !IsLikelyPresent(fields.back(), options_);
-              DebugAssertUniformLikelyPresence(fields, options_);
-              p->Emit({{"update_byte_size_for_chunk",
-                        [&] {
-                          // Go back and emit checks for each of the fields we
-                          // processed.
-                          for (const auto* field : fields) {
-                            EmitUpdateByteSizeForField(field, p,
-                                                       cached_has_word_index);
-                          }
-                        }},
-                       {"may_update_cached_has_word_index",
-                        [&] {
-                          if (!check_has_byte) return;
-                          update_cached_has_bits(fields);
-                        }},
-                       {"check_if_chunk_present",
-                        [&] {
-                          if (!check_has_byte) {
-                            return;
-                          }
-
-                          // Emit an if() that will let us skip the whole chunk
-                          // if none are set.
-                          uint32_t chunk_mask =
-                              GenChunkMask(fields, field_layout_);
-
-                          // Check (up to) 8 has_bits at a time if we have more
-                          // than one field in this chunk.  Due to field layout
-                          // ordering, we may check _has_bits_[last_chunk * 8 /
-                          // 32] multiple times.
-                          ABSL_DCHECK_LE(2, popcnt(chunk_mask));
-                          ABSL_DCHECK_GE(8, popcnt(chunk_mask));
-
-                          p->Emit(
-                              {{"condition",
-                                GenerateConditionMaybeWithProbabilityForGroup(
-                                    chunk_mask, fields, options_)}},
-                              "if ($condition$)");
-                        }}},
-                      R"cc(
-                        $may_update_cached_has_word_index$;
-                        $check_if_chunk_present$ {
-                          //~ Force newline.
-                          $update_byte_size_for_chunk$;
-                        }
-                      )cc");
-
-              // To next chunk.
-              ++it;
-            }
-
-            if (has_haswords_check) {
-              p->Emit(R"cc(
-                }
-              )cc");
-
-              // Reset here as it may have been updated in just closed if
-              // statement.
-              cached_has_word_index = -1;
-            }
+            )cc");
           }
         }},
        {"handle_oneof_fields",
@@ -5343,9 +5356,7 @@ void MessageGenerator::GenerateByteSize(io::Printer* p) {
           ::size_t total_size = 0;
           $handle_extension_set$;
 
-          $uint32$ cached_has_bits = 0;
-          // Prevent compiler warnings about cached_has_bits being unused
-          (void)cached_has_bits;
+          ::uint32_t cached_has_bits [[maybe_unused]] = 0;
 
           $prefetch$;
           $handle_fields$;
@@ -5561,6 +5572,57 @@ void MessageGenerator::GenerateSourceDefaultInstance(io::Printer* p) {
                     return $check_bit_mask$;
                   }
                 )cc");
+          }},
+         {"split",
+          [&] {
+            if (!ShouldSplit(descriptor_, options_)) return;
+
+            p->Emit(
+                {{"destroy_fields",
+                  [&] {
+                    for (const auto* field : field_layout_.optimized_order()) {
+                      if (!ShouldSplit(field, options_)) continue;
+                      field_generators_.get(field).GenerateDestructorCode(p);
+                    }
+                  }},
+                 {"get_arena_merge",
+                  [&] {
+                    if (RequiresArena(GeneratorFunction::kMergeFrom,
+                                      /* is_split= */ true)) {
+                      p->Emit(R"cc(
+                        $pb$::Arena* arena = _this->GetArena();
+                      )cc");
+                    }
+                  }},
+                 {"merge_fields",
+                  [&] { EmitMergeChunks(p, /* is_split= */ true); }},
+                 {"clear_fields",
+                  [&] { EmitClearChunks(p, /* is_split= */ true); }},
+                 {"byte_size_fields",
+                  [&] { EmitByteSizeChunks(p, /* is_split= */ true); }}},
+                R"cc(
+                  PROTOBUF_NOINLINE static void DestroySplit($Msg$& this_) {
+                    auto* const $cached_split_ptr$ = this_._impl_._split_;
+                    $destroy_fields$;
+                    delete $cached_split_ptr$;
+                  }
+                  PROTOBUF_NOINLINE static void MergeSplit($Msg$* _this, const $Msg$& from) {
+                    $get_arena_merge$;
+                    ::uint32_t cached_has_bits [[maybe_unused]] = 0;
+                    $merge_fields$;
+                  }
+                  PROTOBUF_NOINLINE static void ClearSplit($Msg$& this_) {
+                    ::uint32_t cached_has_bits [[maybe_unused]] = 0;
+                    $clear_fields$;
+                  }
+
+                  PROTOBUF_NOINLINE static ::size_t ByteSizeSplit(const $Msg$& this_) {
+                    ::size_t total_size = 0;
+                    ::uint32_t cached_has_bits [[maybe_unused]] = 0;
+                    $byte_size_fields$;
+                    return total_size;
+                  }
+                )cc");
           }}},
         R"cc(
           class $Msg$::_Internal {
@@ -5568,6 +5630,7 @@ void MessageGenerator::GenerateSourceDefaultInstance(io::Printer* p) {
             $has_bit$;
             $oneof$;
             $required$;
+            $split$;
           };
         )cc");
     p->Emit("\n");

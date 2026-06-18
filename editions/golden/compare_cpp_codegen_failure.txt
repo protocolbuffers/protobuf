@@ -26,7 +26,7 @@
      target =
          ::proto2::internal::WireFormatLite::WriteInt32ToArrayWithField<1>(
 @@ @@
-   (void)cached_has_bits;
+   ::uint32_t cached_has_bits [[maybe_unused]] = 0;
  
     {
 -    // optional int32 int32_field = 1;

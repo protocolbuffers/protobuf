@@ -452,8 +452,7 @@ class PROTOBUF_EXPORT Message : public MessageLite {
 
 namespace internal {
 // Creates and returns an allocation for a split message.
-void* CreateSplitMessageGeneric(Arena* arena, const void* default_split,
-                                size_t size);
+void CreateSplitMessageGeneric(Arena* arena, void** split, size_t size);
 
 // Forward-declare interfaces used to implement RepeatedFieldRef.
 // These are protobuf internals that users shouldn't care about.
@@ -694,7 +693,7 @@ class PROTOBUF_EXPORT Reflection final {
         return *flat;
       }
       if (!buffer_) {
-        buffer_ = absl::make_unique<std::string>();
+        buffer_ = std::make_unique<std::string>();
       }
       absl::CopyCordToString(cord, buffer_.get());
       return *buffer_;

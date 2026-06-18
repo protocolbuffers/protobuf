@@ -474,12 +474,12 @@ size_t Message::SpaceUsedLong() const {
 }
 
 namespace internal {
-void* CreateSplitMessageGeneric(Arena* arena, const void* default_split,
-                                size_t size) {
-  void* split =
+void CreateSplitMessageGeneric(Arena* arena, void** split, size_t size) {
+  void* new_split =
       (arena == nullptr) ? Allocate(size) : arena->AllocateAligned(size);
-  memcpy(split, default_split, size);
-  return split;
+  const void* default_split = *split;
+  *split = new_split;
+  memcpy(new_split, default_split, size);
 }
 }  // namespace internal
 

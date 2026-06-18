@@ -458,13 +458,13 @@ void CordOneofFieldGenerator::GenerateMergingCode(io::Printer* p) const {
 
 std::unique_ptr<FieldGeneratorBase> MakeSingularCordGenerator(
     const FieldDescriptor* desc, const Options& options) {
-  return absl::make_unique<CordFieldGenerator>(desc, options);
+  return std::make_unique<CordFieldGenerator>(desc, options);
 }
 
 
 std::unique_ptr<FieldGeneratorBase> MakeOneofCordGenerator(
     const FieldDescriptor* desc, const Options& options) {
-  return absl::make_unique<CordOneofFieldGenerator>(desc, options);
+  return std::make_unique<CordOneofFieldGenerator>(desc, options);
 }
 
 }  // namespace cpp

@@ -40,12 +40,15 @@ class HpbMetadataTest : public ::testing::Test {
   // code from the previously added file with name `filename`. Returns true on
   // success.
   bool CaptureMetadata(const std::string& filename, FileDescriptorProto& file,
-                       std::string& hpb_h, GeneratedCodeInfo& hpb_h_info) {
+                       std::string& hpb_h, GeneratedCodeInfo& hpb_h_info,
+                       absl::string_view extra_params = "") {
     CommandLineInterface cli;
     hpb_generator::Generator hpb_generator;
     cli.RegisterGenerator("--hpb_out", &hpb_generator, "");
-    std::string hpb_out =
-        absl::StrCat("--hpb_out=annotate_headers=true:", ::testing::TempDir());
+    std::string hpb_out = absl::StrCat(
+        "--hpb_out=annotate_headers=true",
+        extra_params.empty() ? "" : absl::StrCat(",", extra_params), ":",
+        ::testing::TempDir());
 
     const bool result = atu::RunProtoCompiler(filename, hpb_out, &cli, &file);
 
@@ -161,6 +164,30 @@ TEST_F(HpbMetadataTest, AnnotatesStringSemantics) {
                                       {"mutable_rsfield", Annotation::ALIAS},
                                       {"rsfield_size", Annotation::NONE},
                                   });
+}
+
+TEST_F(HpbMetadataTest, GeneratesMetadataPragma) {
+  FileDescriptorProto file;
+  GeneratedCodeInfo info;
+  std::string hpb_h;
+  atu::AddFile("test.proto", kSmallTestFile);
+  EXPECT_TRUE(CaptureMetadata("test.proto", file, hpb_h, info));
+
+  EXPECT_THAT(hpb_h, ::testing::HasSubstr("#ifdef KYTHE_IS_RUNNING"));
+  EXPECT_THAT(hpb_h, ::testing::HasSubstr(
+                         "#pragma kythe_metadata \"test.hpb.h.meta\""));
+}
+
+TEST_F(HpbMetadataTest, GeneratesMetadataPragmaWithCppBackend) {
+  FileDescriptorProto file;
+  GeneratedCodeInfo info;
+  std::string hpb_h;
+  atu::AddFile("test.proto", kSmallTestFile);
+  EXPECT_TRUE(CaptureMetadata("test.proto", file, hpb_h, info, "backend=cpp"));
+
+  EXPECT_THAT(hpb_h, ::testing::HasSubstr("#ifdef KYTHE_IS_RUNNING"));
+  EXPECT_THAT(hpb_h, ::testing::HasSubstr(
+                         "#pragma kythe_metadata \"test.hpb.h.meta\""));
 }
 
 }  // namespace

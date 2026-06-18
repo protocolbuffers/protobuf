@@ -7,15 +7,18 @@
 #include <type_traits>
 
 #include "absl/log/absl_check.h"
-#include "google/protobuf/arena.h"
-#include "google/protobuf/metadata_lite.h"
 
 // Must be included last.
 #include "google/protobuf/port_def.inc"
 
 namespace google {
 namespace protobuf {
+class MessageLite;
+class Arena;
+
 namespace internal {
+
+class InternalMetadata;
 
 // A wrapper around the offset to internal metadata from the address of another
 // field in the same class/struct. This is used to reduce the size of fields
@@ -91,6 +94,16 @@ class InternalMetadataOffset {
 
     return InternalMetadataOffset(
         static_cast<int32_t>(kInternalMetadataOffset - field_offset));
+  }
+
+  // Builds an `InternalMetadataOffset` from a dynamic offset.
+  // This is used in `Arena` to allocate offset-based objects on their own,
+  // pointing the offset into an `Arena*` in the arena block.
+  //
+  // This function is unsafe and does not do any check on the value.
+  static InternalMetadataOffset BuildFromDynamicForFieldInArena(
+      int32_t arena_offset) {
+    return InternalMetadataOffset(arena_offset);
   }
 
   // Translates an offset relative to some class `T` to an offset relative to
