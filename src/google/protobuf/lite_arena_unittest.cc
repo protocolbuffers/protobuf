@@ -5,8 +5,12 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
+#include <memory>
+#include <string>
+
 #include "absl/log/absl_check.h"
-#include "google/protobuf/arena_test_util.h"
+#include "absl/strings/string_view.h"
+#include "google/protobuf/arena.h"
 #include "google/protobuf/map_lite_unittest.pb.h"
 #include "google/protobuf/map_test_util.h"
 
