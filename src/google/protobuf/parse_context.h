@@ -1455,12 +1455,12 @@ inline const char* ParseContext::ReadSizeAndPushLimitAndDepthInlined(
   return ptr;
 }
 
-// Note that "length" is read outside of this function.
 template <typename Func>
 [[nodiscard]] PROTOBUF_ALWAYS_INLINE const char*
 ParseContext::ParseWithLengthInlined(const char* ptr, uint32_t length,
                                      const Func& func) {
   ABSL_DCHECK_NE(ptr, nullptr);
+  if (ABSL_PREDICT_FALSE(depth_ <= 0)) return nullptr;
   LimitToken old;
   old = PushLimit(ptr, length);
   --depth_;
