@@ -301,21 +301,21 @@ class ABSL_ATTRIBUTE_WARN_UNUSED PROTOBUF_DECLSPEC_EMPTY_BASES
   static_assert(
       alignof(Arena) >= alignof(Element),
       "We only support types that have an alignment smaller than Arena");
-  static_assert(!std::is_const<Element>::value,
+  static_assert(!std::is_const_v<Element>,
                 "We do not support const value types.");
-  static_assert(!std::is_volatile<Element>::value,
+  static_assert(!std::is_volatile_v<Element>,
                 "We do not support volatile value types.");
-  static_assert(!std::is_pointer<Element>::value,
+  static_assert(!std::is_pointer_v<Element>,
                 "We do not support pointer value types.");
-  static_assert(!std::is_reference<Element>::value,
+  static_assert(!std::is_reference_v<Element>,
                 "We do not support reference value types.");
   static constexpr PROTOBUF_ALWAYS_INLINE void StaticValidityCheck() {
     static_assert(
-        std::disjunction<internal::is_supported_integral_type<Element>,
-                         internal::is_supported_floating_point_type<Element>,
-                         std::is_same<absl::Cord, Element>,
-                         std::is_same<UnknownField, Element>,
-                         is_proto_enum<Element>>::value,
+        std::disjunction_v<internal::is_supported_integral_type<Element>,
+                           internal::is_supported_floating_point_type<Element>,
+                           std::is_same<absl::Cord, Element>,
+                           std::is_same<UnknownField, Element>,
+                           is_proto_enum<Element>>,
         "We only support non-string scalars in RepeatedField.");
   }
 
@@ -337,9 +337,8 @@ class ABSL_ATTRIBUTE_WARN_UNUSED PROTOBUF_DECLSPEC_EMPTY_BASES
       : RepeatedField(internal::InternalMetadataOffset(), /*arena=*/nullptr,
                       rhs) {}
 
-  template <typename Iter,
-            typename = typename std::enable_if<std::is_constructible<
-                Element, decltype(*std::declval<Iter>())>::value>::type>
+  template <typename Iter, typename = std::enable_if_t<std::is_constructible_v<
+                               Element, decltype(*std::declval<Iter>())>>>
   RepeatedField(Iter begin, Iter end);
 
   // Arena enabled constructors: for internal use only.
@@ -649,7 +648,7 @@ class ABSL_ATTRIBUTE_WARN_UNUSED PROTOBUF_DECLSPEC_EMPTY_BASES
   // This function does nothing if `Element` is trivial.
   static void Destroy([[maybe_unused]] const Element* begin,
                       [[maybe_unused]] const Element* end) {
-    if constexpr (!std::is_trivially_destructible<Element>::value) {
+    if constexpr (!std::is_trivially_destructible_v<Element>) {
       std::for_each(begin, end, [&](const Element& e) { e.~Element(); });
     }
   }
@@ -1168,9 +1167,9 @@ template <typename Element>
 template <typename ArenaProvider, typename Iter>
 inline void RepeatedField<Element>::AddWithArena(ArenaProvider arena_provider,
                                                  Iter begin, Iter end) {
-  if (std::is_base_of<
+  if (std::is_base_of_v<
           std::forward_iterator_tag,
-          typename std::iterator_traits<Iter>::iterator_category>::value) {
+          typename std::iterator_traits<Iter>::iterator_category>) {
     AddForwardIterator(arena_provider, begin, end);
   } else {
     AddInputIterator(arena_provider, begin, end);
@@ -1565,7 +1564,7 @@ PROTOBUF_NOINLINE void RepeatedField<Element>::GrowNoAnnotate(
   if (old_size > 0) {
     Element* pnew = new_rep->elements<Element>();
     Element* pold = elements(was_soo);
-    if constexpr (std::is_trivially_copyable<Element>::value ||
+    if constexpr (std::is_trivially_copyable_v<Element> ||
                   absl::is_trivially_relocatable<Element>::value) {
       memcpy(static_cast<void*>(pnew), pold, old_size * sizeof(Element));
     } else {
@@ -1633,8 +1632,7 @@ namespace internal {
 template <typename Element>
 class RepeatedIterator {
  private:
-  using traits =
-      std::iterator_traits<typename std::remove_const<Element>::type*>;
+  using traits = std::iterator_traits<std::remove_const_t<Element>*>;
 
  public:
   // Note: value_type is never cv-qualified.

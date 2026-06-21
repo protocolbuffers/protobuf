@@ -104,8 +104,8 @@ struct KeyForBaseImpl {
   using type = T;
 };
 template <typename T>
-struct KeyForBaseImpl<T, std::enable_if_t<std::is_integral<T>::value &&
-                                          std::is_signed<T>::value>> {
+struct KeyForBaseImpl<
+    T, std::enable_if_t<std::is_integral_v<T> && std::is_signed_v<T>>> {
   using type = std::make_unsigned_t<T>;
 };
 template <typename T>
@@ -116,8 +116,7 @@ using KeyForBase = typename KeyForBaseImpl<T>::type;
 // only accept `key_type`.
 template <typename key_type>
 struct TransparentSupport {
-  static_assert(std::is_scalar<key_type>::value,
-                "Should only be used for ints.");
+  static_assert(std::is_scalar_v<key_type>, "Should only be used for ints.");
 
   template <typename K>
   using key_arg = key_type;
@@ -135,13 +134,13 @@ template <>
 struct TransparentSupport<std::string> {
   template <typename T>
   static absl::string_view ImplicitConvert(T&& str) {
-    if constexpr (std::is_convertible<T, absl::string_view>::value) {
+    if constexpr (std::is_convertible_v<T, absl::string_view>) {
       absl::string_view res = str;
       return res;
-    } else if constexpr (std::is_convertible<T, const std::string&>::value) {
+    } else if constexpr (std::is_convertible_v<T, const std::string&>) {
       const std::string& ref = str;
       return ref;
-    } else if constexpr (std::is_convertible<T, const char*>::value) {
+    } else if constexpr (std::is_convertible_v<T, const char*>) {
       const char* ref = str;
       return ref;
     } else {
@@ -223,14 +222,13 @@ class UntypedMapIterator {
 };
 
 // These properties are depended upon by Rust FFI.
-static_assert(
-    std::is_trivially_default_constructible<UntypedMapIterator>::value,
-    "UntypedMapIterator must be trivially default-constructible.");
-static_assert(std::is_trivially_copyable<UntypedMapIterator>::value,
+static_assert(std::is_trivially_default_constructible_v<UntypedMapIterator>,
+              "UntypedMapIterator must be trivially default-constructible.");
+static_assert(std::is_trivially_copyable_v<UntypedMapIterator>,
               "UntypedMapIterator must be trivially copyable.");
-static_assert(std::is_trivially_destructible<UntypedMapIterator>::value,
+static_assert(std::is_trivially_destructible_v<UntypedMapIterator>,
               "UntypedMapIterator must be trivially destructible.");
-static_assert(std::is_standard_layout<UntypedMapIterator>::value,
+static_assert(std::is_standard_layout_v<UntypedMapIterator>,
               "UntypedMapIterator must be standard layout.");
 static_assert(offsetof(UntypedMapIterator, node_) == 0,
               "node_ must be the first field of UntypedMapIterator.");
@@ -723,8 +721,7 @@ inline map_index_t Hash(uint64_t k, void* salt) {
 
 template <typename Key>
 class KeyMapBase : public UntypedMapBase {
-  static_assert(!std::is_signed<Key>::value || !std::is_integral<Key>::value,
-                "");
+  static_assert(!std::is_signed_v<Key> || !std::is_integral_v<Key>, "");
 
   using TS = TransparentSupport<Key>;
 
@@ -1210,34 +1207,32 @@ class PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Map
     CopyFromImpl(arena, other);
   }
 
-  static_assert(!std::is_const<mapped_type>::value &&
-                    !std::is_const<key_type>::value,
+  static_assert(!std::is_const_v<mapped_type> && !std::is_const_v<key_type>,
                 "We do not support const types.");
-  static_assert(!std::is_volatile<mapped_type>::value &&
-                    !std::is_volatile<key_type>::value,
+  static_assert(!std::is_volatile_v<mapped_type> &&
+                    !std::is_volatile_v<key_type>,
                 "We do not support volatile types.");
-  static_assert(!std::is_pointer<mapped_type>::value &&
-                    !std::is_pointer<key_type>::value,
+  static_assert(!std::is_pointer_v<mapped_type> && !std::is_pointer_v<key_type>,
                 "We do not support pointer types.");
-  static_assert(!std::is_reference<mapped_type>::value &&
-                    !std::is_reference<key_type>::value,
+  static_assert(!std::is_reference_v<mapped_type> &&
+                    !std::is_reference_v<key_type>,
                 "We do not support reference types.");
   static constexpr PROTOBUF_ALWAYS_INLINE void StaticValidityCheck() {
     static_assert(alignof(internal::NodeBase) >= alignof(mapped_type),
                   "Alignment of mapped type is too high.");
     static_assert(
-        std::disjunction<internal::is_supported_integral_type<key_type>,
-                         internal::is_supported_string_type<key_type>,
-                         internal::is_internal_map_key_type<key_type>>::value,
+        std::disjunction_v<internal::is_supported_integral_type<key_type>,
+                           internal::is_supported_string_type<key_type>,
+                           internal::is_internal_map_key_type<key_type>>,
         "We only support integer, string, or designated internal key "
         "types.");
-    static_assert(std::disjunction<
-                      internal::is_supported_scalar_type<mapped_type>,
-                      is_proto_enum<mapped_type>,
-                      internal::is_supported_message_type<mapped_type>,
-                      internal::is_internal_map_value_type<mapped_type>>::value,
-                  "We only support scalar, Message, and designated internal "
-                  "mapped types.");
+    static_assert(
+        std::disjunction_v<internal::is_supported_scalar_type<mapped_type>,
+                           is_proto_enum<mapped_type>,
+                           internal::is_supported_message_type<mapped_type>,
+                           internal::is_internal_map_value_type<mapped_type>>,
+        "We only support scalar, Message, and designated internal "
+        "mapped types.");
     // The Rust implementation that wraps C++ protos relies on the ability to
     // create an UntypedMapBase and cast a pointer of it to google::protobuf::Map*.
     static_assert(
@@ -1260,19 +1255,16 @@ class PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Map
 
   template <typename P>
   struct SameAsElementReference
-      : std::is_same<typename std::remove_cv<
-                         typename std::remove_reference<reference>::type>::type,
-                     typename std::remove_cv<
-                         typename std::remove_reference<P>::type>::type> {};
+      : std::is_same<std::remove_cv_t<std::remove_reference_t<reference>>,
+                     std::remove_cv_t<std::remove_reference_t<P>>> {};
 
   template <class P>
   using RequiresInsertable =
-      typename std::enable_if<std::is_convertible<P, init_type>::value ||
-                                  SameAsElementReference<P>::value,
-                              int>::type;
+      std::enable_if_t<std::is_convertible_v<P, init_type> ||
+                           SameAsElementReference<P>::value,
+                       int>;
   template <class P>
-  using RequiresNotInit =
-      typename std::enable_if<!std::is_same<P, init_type>::value, int>::type;
+  using RequiresNotInit = std::enable_if_t<!std::is_same_v<P, init_type>, int>;
 
   template <typename LookupKey>
   using key_arg = typename TS::template key_arg<LookupKey>;
@@ -1503,8 +1495,8 @@ class PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Map
         // case 1.2: "default" constructed + copy/move assignment
         auto p = TryEmplaceInternal(std::forward<K>(k));
         if (p.second) {
-          if constexpr (std::is_same<void(typename std::decay<Args>::type...),
-                                     void(mapped_type)>::value) {
+          if constexpr (std::is_same_v<void(std::decay_t<Args>...),
+                                       void(mapped_type)>) {
             // Avoid the temporary when the input is the right type.
             p.first->second = (std::forward<Args>(args), ...);
           } else {
@@ -1535,7 +1527,7 @@ class PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Map
     // We try to construct `init_type` from `Args` with a fall back to
     // `value_type`. The latter is less desired as it unconditionally makes a
     // copy of `value_type::first`.
-    if constexpr (std::is_constructible<init_type, Args...>::value) {
+    if constexpr (std::is_constructible_v<init_type, Args...>) {
       return insert(init_type(std::forward<Args>(args)...));
     } else {
       return insert(value_type(std::forward<Args>(args)...));
@@ -1642,9 +1634,9 @@ class PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Map
   template <typename K, typename... Args>
   PROTOBUF_ALWAYS_INLINE Node* CreateNode(Arena* arena, K&& k, Args&&... args) {
     // If K is not key_type, make the conversion to key_type explicit.
-    using TypeToInit = typename std::conditional<
-        std::is_same<typename std::decay<K>::type, key_type>::value, K&&,
-        key_type>::type;
+    using TypeToInit =
+        std::conditional_t<std::is_same_v<std::decay_t<K>, key_type>, K&&,
+                           key_type>;
     ABSL_DCHECK_EQ(arena, this->arena());
     Node* node = static_cast<Node*>(this->AllocNode(arena, sizeof(Node)));
 
