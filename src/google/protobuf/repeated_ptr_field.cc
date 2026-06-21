@@ -27,6 +27,7 @@
 #include "google/protobuf/message_traits.h"
 #include "google/protobuf/port.h"
 #include "google/protobuf/repeated_field.h"
+#include "google/protobuf/type_id.h"
 
 // Must be included last.
 #include "google/protobuf/port_def.inc"
@@ -118,6 +119,13 @@ void RepeatedPtrFieldBase::DestroyMessageLites(const ClassData* class_data) {
       absl::PrefetchToLocalCacheNta(elems[i + 5]);
     }
     auto* ptr = cast<H>(elems[i]);
+
+    ABSL_DCHECK_EQ(GetClassData(*ptr), class_data)
+        << "Type mismatch in RepeatedPtrFieldBase::DestroyMessageLites: found "
+           "element of type "
+        << TypeId::Get(*ptr).name() << " at index " << i
+        << " in a repeated field of " << TypeIdFromClassData(class_data).name();
+
     destroy(*ptr);
     internal::SizedDelete(ptr, allocation_size);
   }
