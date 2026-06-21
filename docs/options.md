@@ -5,11 +5,13 @@ so that any developer who wishes to use multiple 3rd party projects, each with
 their own extensions, can be confident that there won't be collisions in
 extension numbers.
 
-If you need an extension number for your custom option (see [custom options](
-https://developers.google.com/protocol-buffers/docs/proto#customoptions)),
-please [send us a pull request](https://github.com/protocolbuffers/protobuf/pulls) to
-add an entry to this doc, or [create an issue](https://github.com/protocolbuffers/protobuf/issues)
-with info about your project (name and website) so we can add an entry for you.
+If you need an extension number for your custom option (see
+[custom options](https://developers.google.com/protocol-buffers/docs/proto#customoptions)),
+please
+[send us a pull request](https://github.com/protocolbuffers/protobuf/pulls) to
+add an entry to this doc, or
+[create an issue](https://github.com/protocolbuffers/protobuf/issues) with info
+about your project (name and website) so we can add an entry for you.
 
 ## Existing Registered Extensions
 
@@ -194,7 +196,7 @@ with info about your project (name and website) so we can add an entry for you.
     *   Website: https://github.com/MarquisIO/go-grpcmw
     *   Extensions: 1041
 
-1.  grpc-gateway protoc-gen-swagger
+1.  grpc-gateway protoc-gen-openapiv2
 
     *   Website: https://github.com/grpc-ecosystem/grpc-gateway
     *   Extensions: 1042
@@ -255,7 +257,7 @@ with info about your project (name and website) so we can add an entry for you.
     *   Website: https://github.com/bufbuild/protoc-gen-validate
     *   Extensions: 1071
 
-1.  Protokt
+1.  Protokt (pre 1.0.0)
 
     *   Website: https://github.com/open-toast/protokt
     *   Extensions: 1072
@@ -447,12 +449,127 @@ with info about your project (name and website) so we can add an entry for you.
     *   Website: http://buf.build/
     *   Extension: 1157-1166
 
-1.  Connect
+1.  Connect RPC
 
-    *   Website: http://connect.build/
+    *   Website: http://connectrpc.com/
     *   Extension: 1167-1176
 
 1.  protocel
 
     *   Website: https://github.com/Neakxs/protocel
     *   Extension: 1177-1178
+
+1.  Cybozu
+
+    *   Website: https://github.com/cybozu/protobuf
+    *   Extension: 1179
+
+1.  EngFlow
+
+    *   Website: https://github.com/EngFlow/engflowapis
+    *   Extensions: 1181
+
+1.  Proto-telemetry
+
+    *   Website: https://github.com/clly/proto-telemetry
+    *   Extensions: 1182
+
+1.  Digital Twins Definition Language (DTDL)
+
+    *   Website: https://github.com/Azure/opendigitaltwins-dtdl
+    *   Extensions: 1183
+
+1.  RabbitMQ
+
+    *   Website: https://github.com/guihouchang/protoc-gen-go-event
+    *   Extensions: 1184
+
+1.  Wire use_array
+
+    *   Website: https://square.github.io/wire/
+    *   Extensions: 1185
+
+1.  Protons
+
+    *   Website: https://github.com/ipfs/protons
+    *   Extensions: 1186
+
+1.  gRPC Federation
+
+    *   Website: https://github.com/mercari/grpc-federation
+    *   Extensions: 1187
+
+1.  protoc-gen-openapi
+
+    *   Website: https://github.com/solo-io/protoc-gen-openapi
+    *   Extensions: 1188-1189
+
+1.  Wire enumMode
+
+    *   Website: https://square.github.io/wire/
+    *   Extensions: 1190
+
+1.  Nebius AI
+
+    *   Website: https://nebius.ai
+    *   Extensions: 1191-1199
+
+1.  Buf
+
+    *   Website: http://buf.build/
+    *   Extension: 1200-1239
+
+1.  userver
+
+    *   Website: https://userver.tech/
+    *   Extensions: 1240-1249
+
+1.  protoc-gen-default / protoc-gen-env (confpb)
+
+    *   Website: https://github.com/MarnixBouhuis/confpb
+    *   Extensions: 1250-1251
+
+1.  JaiaBot
+
+    *   Website: https://github.com/jaiarobotics/jaiabot
+    *   Extensions: 1252
+
+1.  Protokt (1.0.0 and up)
+
+    *   Website: https://github.com/open-toast/protokt
+    *   Extensions: 1253-1263
+
+1.  aep.dev Extensions
+
+    *   Website: https://github.com/aep-dev
+    *   Extensions: 1264-1274
+
+1.  Thermo Fisher Scientific TEM Extensions
+
+    *   Website: https://www.thermofisher.com/
+    *   Extensions: 1275-1284
+
+1.  LiveKit
+
+    *   Website: https://livekit.io
+    *   Extensions: 1285-1294
+
+1.  grpc-gateway protoc-gen-openapiv3
+
+    *   Website: https://github.com/grpc-ecosystem/grpc-gateway
+    *   Extensions: 1295
+
+1.  Protosource
+
+    *   Website: https://github.com/funinthecloud/protosource
+    *   Extensions: 1296-1305
+
+1.  protosearch
+
+    *   Website: https://github.com/benwebber/protosearch
+    *   Extensions: 1306
+
+1.  proto2type
+
+    *   Website: https://github.com/protocgen/proto2type
+    *   Extensions: 1307
