@@ -757,6 +757,31 @@ class ABSL_ATTRIBUTE_WARN_UNUSED PROTOBUF_DECLSPEC_EMPTY_BASES
   }
 };
 
+namespace internal {
+
+template <typename Element>
+using RepeatedFieldWithArena = internal::FieldWithArena<RepeatedField<Element>>;
+
+template <typename Element>
+struct FieldArenaRep<RepeatedField<Element>> {
+  using Type = RepeatedFieldWithArena<Element>;
+
+  static RepeatedField<Element>* Get(Type* arena_rep) {
+    return &arena_rep->field();
+  }
+};
+
+template <typename Element>
+struct FieldArenaRep<const RepeatedField<Element>> {
+  using Type = const RepeatedFieldWithArena<Element>;
+
+  static const RepeatedField<Element>* Get(Type* arena_rep) {
+    return &arena_rep->field();
+  }
+};
+
+}  // namespace internal
+
 // implementation ====================================================
 
 template <typename Element>
@@ -1320,7 +1345,7 @@ void RepeatedField<Element>::Swap(RepeatedField* other) {
     // We can't call the destructor of the temp container since it allocates
     // memory from an arena, and the destructor of FieldWithArena expects to be
     // called only when arena is nullptr.
-    absl::NoDestructor<internal::FieldWithArena<RepeatedField<Element>>>
+    absl::NoDestructor<internal::RepeatedFieldWithArena<Element>>
         temp_container(other_arena);
     auto& temp = temp_container->field();
     SwapFallbackWithTemp(arena, *other, other_arena, temp);

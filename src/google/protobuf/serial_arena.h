@@ -24,7 +24,6 @@
 #include "absl/numeric/bits.h"
 #include "google/protobuf/arena_align.h"
 #include "google/protobuf/arena_cleanup.h"
-#include "google/protobuf/internal_metadata_locator.h"
 #include "google/protobuf/port.h"
 #include "google/protobuf/string_block.h"
 
@@ -33,7 +32,6 @@
 
 namespace google {
 namespace protobuf {
-class Arena;
 namespace internal {
 
 // Arena blocks are variable length malloc-ed objects.  The following structure
@@ -105,38 +103,6 @@ class PROTOBUF_EXPORT SerialArena {
     internal::UnpoisonMemoryRegion(ret, size);
     cached_head = cached_head->next;
     return ret;
-  }
-
-  struct AllocationAndOffset {
-    void* ptr;
-    InternalMetadataOffset arena_offset;
-  };
-
-  template <typename Delay = void>
-  AllocationAndOffset AllocateWithOffset(size_t n) {
-    // If we already have an arena pointer in this block, try to allocate the
-    // memory and reuse it.
-    ptrdiff_t arena_offset = reinterpret_cast<char*>(block_arena_ptr_) -
-                             reinterpret_cast<char*>(ptr());
-    if (block_arena_ptr_ != nullptr &&
-        arena_offset == static_cast<int32_t>(arena_offset)) {
-      void* ptr;
-      if (ABSL_PREDICT_TRUE(MaybeAllocateAligned(n, &ptr))) {
-        return {ptr, InternalMetadataOffset::BuildFromDynamicForFieldInArena(
-                         static_cast<int32_t>(arena_offset))};
-      }
-    }
-
-    // If we don't have one, or we can't allocate it, start over and make a new
-    // arena pointer.
-    constexpr size_t kArenaPtrCost = ArenaAlignDefault::Ceil(sizeof(Arena*));
-    void* ptr = AllocateAligned(n + kArenaPtrCost);
-    block_arena_ptr_ = static_cast<Arena**>(ptr);
-    ptr = reinterpret_cast<char*>(ptr) + kArenaPtrCost;
-    *block_arena_ptr_ = TypeDependent<Delay>(parent_)->parent();
-    arena_offset = -kArenaPtrCost;
-    return {ptr, InternalMetadataOffset::BuildFromDynamicForFieldInArena(
-                     static_cast<int32_t>(arena_offset))};
   }
 
   // In kArray mode we look through cached blocks.
@@ -441,10 +407,7 @@ class PROTOBUF_EXPORT SerialArena {
   // The active string block.
   std::atomic<StringBlock*> string_block_{nullptr};
 
-  Arena** block_arena_ptr_ = nullptr;
-
-  // Non-null, but we make it a pointer to keep the type standard layout.
-  ThreadSafeArena* parent_;
+  ThreadSafeArena& parent_;
   // The number of unused bytes in string_block_.
   // We allocate from `effective_size()` down to 0 inside `string_block_`.
   // `unused  == 0` means that `string_block_` is exhausted. (or null).

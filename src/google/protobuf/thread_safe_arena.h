@@ -69,10 +69,6 @@ class PROTOBUF_EXPORT ThreadSafeArena {
   uint64_t SpaceAllocated() const;
   uint64_t SpaceUsed() const;
 
-  auto AllocateWithOffset(size_t n) {
-    return GetSerialArena()->AllocateWithOffset(n);
-  }
-
   template <AllocationClient alloc_client = AllocationClient::kDefault>
   void* AllocateAligned(size_t n) {
     SerialArena* arena;
@@ -124,12 +120,6 @@ class PROTOBUF_EXPORT ThreadSafeArena {
   friend SerialArena* GetSerialArena(Arena*);
 
   class SerialArenaChunk;
-
-  Arena* parent() {
-    // The ThreadSafeArena object is the first and only member of Arena, so we
-    // can do this cast, but only because the objects are standard_layout.
-    return reinterpret_cast<Arena*>(this);
-  }
 
   // Returns a new SerialArenaChunk that has {id, serial} at slot 0. It may
   // grow based on "prev_num_slots".

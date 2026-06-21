@@ -736,18 +736,6 @@ PROTOBUF_ALWAYS_INLINE void TSanWrite(const void*) {}
 template <typename T>
 using type_identity_t = std::enable_if_t<true, T>;
 
-// Evaluates to `U`, but makes it type-dependent on `T`.
-// This allows "late binding" of known types to avoid circular dependencies.
-template <typename T, typename U>
-using dependent_type_t = std::conditional_t<true, U, T>;
-
-// Evaluates to the input value, but it makes it type-dependent on `T`.
-// This allows "late binding" of known types to avoid circular dependencies.
-template <typename T, typename U>
-U&& TypeDependent(U&& value) {
-  return std::forward<U>(value);
-}
-
 template <typename T>
 constexpr T* Launder(T* p) {
 #if defined(__cpp_lib_launder) && __cpp_lib_launder >= 201606L
