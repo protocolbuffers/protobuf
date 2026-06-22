@@ -26,6 +26,7 @@ cc_library(
 rust_test(
     name = "interop_test",
     srcs = ["main.rs"],
+    edition = "2021",
     deps = [
         ":interop_test_cpp_rust_proto",
         ":test_utils",

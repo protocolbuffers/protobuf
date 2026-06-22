@@ -23,5 +23,6 @@ rust_binary(
     name = "treeshaking_app",
     testonly = True,
     srcs = ["main.rs"],
+    edition = "2021",
     deps = [":treeshaking_rust_proto"],
 )

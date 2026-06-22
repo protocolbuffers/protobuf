@@ -12,6 +12,7 @@ rust_test(
     aliases = {
         "//rust:protobuf_cpp_export": "protobuf",
     },
+    edition = "2021",
     deps = [
         ":feature_verify_cpp_rust_proto",
         ":no_features_proto2_cpp_rust_proto",
@@ -27,6 +28,7 @@ rust_test(
     aliases = {
         "//rust:protobuf_upb_export": "protobuf",
     },
+    edition = "2021",
     deps = [
         ":feature_verify_upb_rust_proto",
         ":no_features_proto2_upb_rust_proto",

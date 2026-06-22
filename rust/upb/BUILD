@@ -20,6 +20,7 @@ rust_library(
         "text.rs",
         "wire.rs",
     ],
+    edition = "2021",
     proc_macro_deps = [
         "@crate_index//:paste",
     ],
@@ -36,6 +37,7 @@ rust_library(
 rust_test(
     name = "upb_rs_crate_test",
     crate = ":upb",
+    edition = "2021",
     rustc_flags = ["--cfg=bzl"],
     deps = [
         "@crate_index//:googletest",
