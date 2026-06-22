@@ -739,7 +739,10 @@ PHP_METHOD(Message, serializeToString) {
   upb_Arena* tmp_arena = upb_Arena_New();
   upb_EncodeStatus status =
       upb_Encode(intern->msg, l, options, tmp_arena, &data, &size);
-  if (!Message_checkEncodeStatus(status)) return;
+  if (!Message_checkEncodeStatus(status)) {
+    upb_Arena_Free(tmp_arena);
+    return;
+  }
 
   if (!data) {
     zend_throw_exception_ex(NULL, 0, "Error occurred during serialization");

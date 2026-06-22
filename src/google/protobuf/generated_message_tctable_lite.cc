@@ -91,15 +91,6 @@ PROTOBUF_ALWAYS_INLINE void SetCachedHasBit(uint64_t& cached_hasbits,
 
 }  // namespace
 
-LazyEagerVerifyFnType TcParser::GetLazyEagerVerifyFn(
-    const google::protobuf::internal::TcParseTableBase* table, uint32_t field_number) {
-  auto* entry = TcParser::FindFieldEntry(table, field_number);
-  if (ABSL_PREDICT_FALSE(entry == nullptr)) return nullptr;
-  if (ABSL_PREDICT_FALSE(entry->aux_idx == entry->kNoAuxIdx)) return nullptr;
-
-  const auto* aux = table->field_aux(entry);
-  return aux[1].verify_func;
-}
 
 absl::Status TcParser::VerifyHasBitConsistency(const MessageLite* msg,
                                                const TcParseTableBase* table) {

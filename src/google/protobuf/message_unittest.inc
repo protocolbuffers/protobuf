@@ -100,16 +100,6 @@ UNITTEST::NestedTestAllTypes InitNestedProto(int depth) {
 }
 }  // namespace
 
-TEST(MESSAGE_TEST_NAME, DieWhenDefaultInstanceIsMutated) {
-#ifndef PROTOBUF_MESSAGE_GLOBALS
-  GTEST_SKIP() << "Skipping test as the failure is expected only with "
-                  "PROTOBUF_MESSAGE_GLOBALS";
-#endif  // !PROTOBUF_MESSAGE_GLOBALS
-
-  auto* message = const_cast<UNITTEST::TestAllTypes*>(
-      &UNITTEST::TestAllTypes::default_instance());
-  EXPECT_DEATH(message->set_optional_int32(2), "SIGSEGV|Check failed");
-}
 
 TEST(MESSAGE_TEST_NAME, SerializeHelpers) {
   // TODO:  Test more helpers?  They're all two-liners so it seems

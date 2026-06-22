@@ -5714,6 +5714,42 @@ TEST_F(CommandLineInterfaceTest, VisibilityFeatureSetStrictBadNestedMessage) {
       "be `export` with STRICT default_symbol_visibility");
 }
 
+TEST_F(CommandLineInterfaceTest, JavaGenericServicesWarning) {
+  CreateTempFile("foo.proto",
+                 "syntax = \"proto2\";\n"
+                 "option java_generic_services = true;\n"
+                 "message Foo {}\n");
+
+  Run("protocol_compiler --test_out=$tmpdir "
+      "--proto_path=$tmpdir foo.proto");
+
+  ExpectWarningSubstring("Generic services");
+}
+
+TEST_F(CommandLineInterfaceTest, CppGenericServicesWarning) {
+  CreateTempFile("foo.proto",
+                 "syntax = \"proto2\";\n"
+                 "option cc_generic_services = true;\n"
+                 "message Foo {}\n");
+
+  Run("protocol_compiler --test_out=$tmpdir "
+      "--proto_path=$tmpdir foo.proto");
+
+  ExpectWarningSubstring("Generic services");
+}
+
+TEST_F(CommandLineInterfaceTest, PythonGenericServicesWarning) {
+  CreateTempFile("foo.proto",
+                 "syntax = \"proto2\";\n"
+                 "option py_generic_services = true;\n"
+                 "message Foo {}\n");
+
+  Run("protocol_compiler --test_out=$tmpdir "
+      "--proto_path=$tmpdir foo.proto");
+
+  ExpectWarningSubstring("Generic services");
+}
+
 // ===================================================================
 
 // Test for --encode and --decode.  Note that it would be easier to do this

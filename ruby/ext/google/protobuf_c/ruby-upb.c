@@ -2591,7 +2591,7 @@ static uint32_t upb_inthash(uintptr_t key) {
   UPB_STATIC_ASSERT(sizeof(uintptr_t) == 4 || sizeof(uintptr_t) == 8,
                     "Pointers don't fit");
   if (sizeof(uintptr_t) == 8) {
-    return (uint32_t)key ^ (uint32_t)(key >> 32);
+    return (uint32_t)key ^ (uint32_t)((uint64_t)key >> 32);
   } else {
     return (uint32_t)key;
   }
@@ -2612,7 +2612,7 @@ static bool init(upb_table* t, uint8_t size_lg2, upb_Arena* a) {
     return false;
   }
   t->count = 0;
-  uint32_t size = 1 << size_lg2;
+  uint32_t size = 1U << size_lg2;
   t->mask = size - 1;  // 0 mask if size_lg2 is 0
   if (upb_table_size(t) > (SIZE_MAX / sizeof(upb_tabent))) {
     return false;

@@ -240,6 +240,7 @@ struct FallbackMessageTraits {
   static constexpr const auto* class_data() {
     return GetClassData(T::default_instance());
   }
+  static const auto* tc_table() { return class_data()->GetTcParseTable(); }
   // We can't make a constexpr pointer to the default, so use a function pointer
   // instead.
   static constexpr auto StrongPointer() { return &T::default_instance; }
@@ -650,6 +651,7 @@ template <const auto* kDefault, const auto* kClassData>
 struct GeneratedMessageTraitsT {
   static constexpr const void* default_instance() { return kDefault; }
   static constexpr const auto* class_data() { return kClassData->base(); }
+  static constexpr const auto* tc_table() { return class_data()->tc_table; }
   static constexpr auto StrongPointer() { return default_instance(); }
 };
 #else
@@ -710,6 +712,9 @@ struct GeneratedMessageTraitsT {
   }
   static const auto* class_data() {
     return MessageGlobalsBase::GetClassData(kGlobals);
+  }
+  static const auto* tc_table() {
+    return MessageGlobalsBase::ToParseTableBase(kGlobals);
   }
   static constexpr const auto* globals() { return kGlobals; }
   static constexpr auto StrongPointer() { return kGlobals; }
@@ -797,7 +802,7 @@ class PROTOBUF_EXPORT MessageLite {
   // will likely be needed again, so the memory used may not be freed.
   // To ensure that all memory used by a Message is freed, you must delete it.
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-  void Clear() { (this->*_class_data_->clear)(); }
+  void Clear() { (this->*class_data()->clear)(); }
 #else
   virtual void Clear() = 0;
 #endif  // PROTOBUF_CUSTOM_VTABLE
@@ -840,6 +845,11 @@ class PROTOBUF_EXPORT MessageLite {
   // Methods for parsing in protocol buffer format.  Most of these are
   // just simple wrappers around MergeFromCodedStream().  Clear() will be
   // called before merging the input.
+  //
+  // If parsing fails (returns false), the message is left in an arbitrary
+  // but valid state. The guarantees are similar to those of a moved-from
+  // state: the message is safe to destroy or Clear(), but its contents are
+  // otherwise unspecified.
 
   // Fill the message with a protocol buffer parsed from the given input
   // stream. Returns false on a read error or if the input is in the wrong
@@ -1096,7 +1106,7 @@ class PROTOBUF_EXPORT MessageLite {
   // proto.
 #if defined(PROTOBUF_CUSTOM_VTABLE)
   PROTOBUF_FUTURE_ADD_EARLY_NODISCARD size_t ByteSizeLong() const {
-    return _class_data_->byte_size_long(*this);
+    return class_data()->byte_size_long(*this);
   }
 #else
   PROTOBUF_FUTURE_ADD_EARLY_NODISCARD virtual size_t ByteSizeLong() const = 0;
@@ -1231,9 +1241,10 @@ class PROTOBUF_EXPORT MessageLite {
   // This is a work in progress. There are still some types (eg MapEntry) that
   // return a default table instead of a unique one.
 #if defined(PROTOBUF_CUSTOM_VTABLE)
+  const internal::ClassData* class_data() const { return _class_data_; }
   const internal::ClassData* GetClassData() const {
     ::absl::PrefetchToLocalCache(_class_data_);
-    return _class_data_;
+    return class_data();
   }
 #else   // PROTOBUF_CUSTOM_VTABLE
   virtual const internal::ClassData* GetClassData() const = 0;
@@ -1311,7 +1322,7 @@ class PROTOBUF_EXPORT MessageLite {
 #if defined(PROTOBUF_CUSTOM_VTABLE)
   PROTOBUF_FUTURE_ADD_EARLY_NODISCARD uint8_t* _InternalSerialize(
       uint8_t* ptr, io::EpsCopyOutputStream* stream) const {
-    return _class_data_->serialize(*this, ptr, stream);
+    return class_data()->serialize(*this, ptr, stream);
   }
 #else   // PROTOBUF_CUSTOM_VTABLE
   PROTOBUF_FUTURE_ADD_EARLY_NODISCARD virtual uint8_t* _InternalSerialize(
@@ -1347,6 +1358,7 @@ class PROTOBUF_EXPORT MessageLite {
   template <typename T, size_t kFieldOffset>
   friend struct internal::InternalMetadataOffsetHelper;
   friend class internal::LazyField;
+  friend internal::RepeatedPtrFieldBase;
   friend class internal::SwapFieldHelper;
   friend class internal::TcParser;
   friend struct internal::PrivateAccess;
