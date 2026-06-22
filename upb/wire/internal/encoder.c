@@ -576,21 +576,23 @@ static char* encode_array(char* ptr, upb_encstate* e, const upb_Message* msg,
   return ptr;
 }
 
-static char* encode_mapentry(char* ptr, upb_encstate* e, uint32_t number,
-                             const upb_MiniTable* layout,
-                             const upb_MapEntry* ent) {
-  const upb_MiniTableField* key_field = upb_MiniTable_MapKey(layout);
-  const upb_MiniTableField* val_field = upb_MiniTable_MapValue(layout);
+UPB_FORCEINLINE
+char* encode_mapentry(char* ptr, upb_encstate* e, uint32_t number,
+                      const upb_MiniTableField* key_field,
+                      const upb_MiniTableField* val_field,
+                      const upb_MapEntry* ent) {
   size_t pre_len = upb_BackAlloc_Size(&e->alloc, ptr);
-  size_t size;
+  UPB_ASSUME(upb_MiniTableField_Number(val_field) == 2);
   ptr = encode_scalar(ptr, e, &ent->v, val_field);
+  UPB_ASSUME(upb_MiniTableField_Number(key_field) == 1);
   ptr = encode_scalar(ptr, e, &ent->k, key_field);
-  size = upb_BackAlloc_Size(&e->alloc, ptr) - pre_len;
+  size_t size = upb_BackAlloc_Size(&e->alloc, ptr) - pre_len;
   ptr = encode_length(ptr, e, size);
   ptr = encode_tag(ptr, e, number, kUpb_WireType_Delimited);
   return ptr;
 }
 
+UPB_NOINLINE
 static char* encode_map(char* ptr, upb_encstate* e, const upb_Message* msg,
                         const upb_MiniTableField* f) {
   const upb_Map* map = *UPB_PTR_AT(msg, f->UPB_PRIVATE(offset), const upb_Map*);
@@ -599,14 +601,18 @@ static char* encode_map(char* ptr, upb_encstate* e, const upb_Message* msg,
 
   if (!map || !upb_Map_Size(map)) return ptr;
 
+  uint32_t number = upb_MiniTableField_Number(f);
+  uint32_t key_size = map->key_size;
+  uint32_t val_size = map->val_size;
+  const upb_MiniTableField* key_field = upb_MiniTable_MapKey(layout);
+  const upb_MiniTableField* val_field = upb_MiniTable_MapValue(layout);
   if (e->options & kUpb_EncodeOption_Deterministic) {
     _upb_sortedmap sorted;
-    _upb_mapsorter_pushmap(
-        &e->sorter, layout->UPB_PRIVATE(fields)[0].UPB_PRIVATE(descriptortype),
-        map, &sorted);
+    _upb_mapsorter_pushmap(&e->sorter, key_field->UPB_PRIVATE(descriptortype),
+                           map, &sorted);
     upb_MapEntry ent;
     while (_upb_sortedmap_next(&e->sorter, map, &sorted, &ent)) {
-      ptr = encode_mapentry(ptr, e, upb_MiniTableField_Number(f), layout, &ent);
+      ptr = encode_mapentry(ptr, e, number, key_field, val_field, &ent);
     }
     _upb_mapsorter_popmap(&e->sorter, &sorted);
   } else {
@@ -616,20 +622,19 @@ static char* encode_map(char* ptr, upb_encstate* e, const upb_Message* msg,
       upb_StringView strkey;
       while (upb_strtable_next2(&map->t.strtable, &strkey, &val, &iter)) {
         upb_MapEntry ent;
-        _upb_map_fromkey(strkey, &ent.k, map->key_size);
-        _upb_map_fromvalue(val, &ent.v, map->val_size);
-        ptr =
-            encode_mapentry(ptr, e, upb_MiniTableField_Number(f), layout, &ent);
+        _upb_map_fromkey(strkey, &ent.k, UPB_MAPTYPE_STRING);
+        _upb_map_fromvalue(val, &ent.v, val_size);
+        ptr = encode_mapentry(ptr, e, number, key_field, val_field, &ent);
       }
     } else {
       intptr_t iter = UPB_INTTABLE_BEGIN;
       uintptr_t intkey = 0;
       while (upb_inttable_next(&map->t.inttable, &intkey, &val, &iter)) {
         upb_MapEntry ent;
-        memcpy(&ent.k, &intkey, map->key_size);
-        _upb_map_fromvalue(val, &ent.v, map->val_size);
-        ptr =
-            encode_mapentry(ptr, e, upb_MiniTableField_Number(f), layout, &ent);
+        UPB_ASSUME(key_size != UPB_MAPTYPE_STRING);
+        memcpy(&ent.k, &intkey, key_size);
+        _upb_map_fromvalue(val, &ent.v, val_size);
+        ptr = encode_mapentry(ptr, e, number, key_field, val_field, &ent);
       }
     }
   }
@@ -677,13 +682,13 @@ static bool encode_shouldencode(const upb_Message* msg,
 static char* encode_field(char* ptr, upb_encstate* e, const upb_Message* msg,
                           const upb_MiniTableField* field) {
   switch (UPB_PRIVATE(_upb_MiniTableField_Mode)(field)) {
+    case kUpb_FieldMode_Scalar:
+      return encode_scalar(
+          ptr, e, UPB_PTR_AT(msg, field->UPB_PRIVATE(offset), void), field);
     case kUpb_FieldMode_Array:
       return encode_array(ptr, e, msg, field);
     case kUpb_FieldMode_Map:
       return encode_map(ptr, e, msg, field);
-    case kUpb_FieldMode_Scalar:
-      return encode_scalar(
-          ptr, e, UPB_PTR_AT(msg, field->UPB_PRIVATE(offset), void), field);
     default:
       UPB_UNREACHABLE();
   }
