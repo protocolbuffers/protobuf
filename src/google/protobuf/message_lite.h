@@ -845,6 +845,11 @@ class PROTOBUF_EXPORT MessageLite {
   // Methods for parsing in protocol buffer format.  Most of these are
   // just simple wrappers around MergeFromCodedStream().  Clear() will be
   // called before merging the input.
+  //
+  // If parsing fails (returns false), the message is left in an arbitrary
+  // but valid state. The guarantees are similar to those of a moved-from
+  // state: the message is safe to destroy or Clear(), but its contents are
+  // otherwise unspecified.
 
   // Fill the message with a protocol buffer parsed from the given input
   // stream. Returns false on a read error or if the input is in the wrong
