@@ -1,4 +1,3 @@
-#include "google/protobuf/field_with_arena.h"
 
 #include <string>
 #include <utility>
