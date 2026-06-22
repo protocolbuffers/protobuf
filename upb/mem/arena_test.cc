@@ -1059,4 +1059,42 @@ TEST(ArenaTest, AllocationCountFailureInjection) {
   upb_AllocationCount_Reset();
 }
 
+TEST(ArenaTest, PoolMultiSizeReuse) {
+  upb_Arena* arena = upb_Arena_New();
+
+  const size_t kSizes[] = {32, 64, 256};
+  void* blocks[3][2];
+
+  // Prime the pool in the first cycle.
+  for (int s = 0; s < 3; ++s) {
+    blocks[s][0] = upb_Arena_AllocPool(arena, kSizes[s]);
+    blocks[s][1] = upb_Arena_AllocPool(arena, kSizes[s]);
+    ASSERT_NE(blocks[s][0], nullptr);
+    ASSERT_NE(blocks[s][1], nullptr);
+  }
+  for (int s = 0; s < 3; ++s) {
+    upb_Arena_FreePool(arena, blocks[s][0], kSizes[s]);
+    upb_Arena_FreePool(arena, blocks[s][1], kSizes[s]);
+  }
+
+  size_t space_initial = upb_Arena_SpaceAllocated(arena, nullptr);
+
+  // Subsequent cycles should reuse pooled blocks repeatedly without
+  // allocating additional memory from the arena.
+  for (int cycle = 0; cycle < 100; ++cycle) {
+    for (int s = 0; s < 3; ++s) {
+      blocks[s][0] = upb_Arena_AllocPool(arena, kSizes[s]);
+      blocks[s][1] = upb_Arena_AllocPool(arena, kSizes[s]);
+      ASSERT_NE(blocks[s][0], nullptr);
+      ASSERT_NE(blocks[s][1], nullptr);
+    }
+    for (int s = 0; s < 3; ++s) {
+      upb_Arena_FreePool(arena, blocks[s][0], kSizes[s]);
+      upb_Arena_FreePool(arena, blocks[s][1], kSizes[s]);
+    }
+    EXPECT_EQ(upb_Arena_SpaceAllocated(arena, nullptr), space_initial);
+  }
+
+  upb_Arena_Free(arena);
+}
 }  // namespace

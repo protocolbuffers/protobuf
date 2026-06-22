@@ -12,6 +12,7 @@
 #include <stdint.h>
 #include <string.h>
 
+#include "upb/base/internal/log2.h"
 #include "upb/mem/internal/alloc.h"
 #include "upb/port/sanitizers.h"
 
@@ -24,20 +25,32 @@
 // We need this because the decoder inlines a upb_Arena for performance but
 // the full struct is not visible outside of arena.c. Yes, I know, it's awful.
 #ifndef NDEBUG
-#define UPB_ARENA_BASE_SIZE_HACK 10
+#define UPB_ARENA_BASE_SIZE_HACK 11
 #else
-#define UPB_ARENA_BASE_SIZE_HACK 9
+#define UPB_ARENA_BASE_SIZE_HACK 10
 #endif
 
 #define UPB_ARENA_SIZE_HACK                                                   \
   (sizeof(void*) * (UPB_ARENA_BASE_SIZE_HACK + (UPB_XSAN_STRUCT_SIZE * 2))) + \
       (sizeof(uint32_t) * 2)
 
+typedef struct UPB_PRIVATE(_upb_ArenaFreeBlock) {
+  struct UPB_PRIVATE(_upb_ArenaFreeBlock) * UPB_PRIVATE(next);
+} UPB_PRIVATE(_upb_ArenaFreeBlock);
+
+typedef struct UPB_PRIVATE(_upb_ArenaPool) {
+  size_t UPB_PRIVATE(num_bins);
+  UPB_PRIVATE(_upb_ArenaFreeBlock) * UPB_PRIVATE(bins)[];
+} UPB_PRIVATE(_upb_ArenaPool);
+
+extern const UPB_PRIVATE(_upb_ArenaPool) UPB_PRIVATE(_upb_Arena_EmptyPool);
+
 // LINT.IfChange(upb_Arena)
 
 struct upb_Arena {
   char* UPB_ONLYBITS(ptr);
   const UPB_NODEREF char* UPB_ONLYBITS(end);
+  UPB_PRIVATE(_upb_ArenaPool) * UPB_ONLYBITS(pool);
   UPB_XSAN_MEMBER
 };
 
@@ -81,7 +94,7 @@ UPB_NODISCARD UPB_API_INLINE void* _upb_Arena_Malloc_Unchecked(
   size_t span = UPB_PRIVATE(_upb_Arena_AllocSpan)(size);
 
   if (UPB_UNLIKELY(UPB_PRIVATE(_upb_ArenaHas)(a) < span)) {
-    void* UPB_PRIVATE(_upb_Arena_SlowMalloc)(struct upb_Arena * a, size_t size);
+    void* UPB_PRIVATE(_upb_Arena_SlowMalloc)(struct upb_Arena * a, size_t span);
     return UPB_PRIVATE(_upb_Arena_SlowMalloc)(a, span);
   }
 
@@ -117,9 +130,11 @@ UPB_API_INLINE void upb_Arena_ShrinkLast(struct upb_Arena* a, void* ptr,
     // We can't reclaim any memory, but we need to verify that `ptr` really
     // does represent the most recent allocation.
 #ifndef NDEBUG
-    bool _upb_Arena_WasLastAllocFromPreviousBlock(struct upb_Arena * a,
-                                                  void* ptr, size_t oldsize);
-    UPB_ASSERT(_upb_Arena_WasLastAllocFromPreviousBlock(a, ptr, oldsize));
+    // We commented out this assertion because the pool allocator reuses retired
+    // blocks of different sizes, making it impossible to statically verify the
+    // last allocation of a retired block using only physical block sizes,
+    // without adding runtime overhead to track logical block usage.
+    // UPB_ASSERT(_upb_Arena_WasLastAllocFromPreviousBlock(a, ptr, oldsize));
 #endif
   }
 }
@@ -173,6 +188,103 @@ UPB_NODISCARD UPB_API_INLINE void* upb_Arena_Realloc(struct upb_Arena* a,
     return UPB_PRIVATE(upb_Xsan_NewUnpoisonedRegion)(UPB_XSAN(a), ret, size);
   }
   return ret;
+}
+
+// The minimum power-of-2 size class managed by the arena free pool.
+// A pooled block must be at least large enough to store an initial
+// _upb_ArenaPool struct with at least 1 bin (sizeof(size_t) + sizeof(void*)).
+#define _UPB_ARENA_MIN_POOL_BLOCK_SIZE (sizeof(void*) * 2)
+
+#define _UPB_ARENA_MIN_POOL_BIN_LG2 \
+  (_UPB_ARENA_MIN_POOL_BLOCK_SIZE == 16 ? (size_t)4 : (size_t)3)
+
+UPB_STATIC_ASSERT(_UPB_ARENA_MIN_POOL_BLOCK_SIZE >=
+                      UPB_SIZEOF_FLEX(UPB_PRIVATE(_upb_ArenaPool),
+                                      UPB_PRIVATE(bins), 1),
+                  "Minimum pool block size must be large enough to host an "
+                  "initial pool struct");
+
+UPB_STATIC_ASSERT(_UPB_ARENA_MIN_POOL_BLOCK_SIZE >=
+                      sizeof(UPB_PRIVATE(_upb_ArenaFreeBlock)),
+                  "Minimum pool block size must be large enough to host a "
+                  "free block struct");
+
+UPB_STATIC_ASSERT(((size_t)1 << _UPB_ARENA_MIN_POOL_BIN_LG2) ==
+                      _UPB_ARENA_MIN_POOL_BLOCK_SIZE,
+                  "_UPB_ARENA_MIN_POOL_BIN_LG2 must match "
+                  "_UPB_ARENA_MIN_POOL_BLOCK_SIZE");
+
+UPB_INLINE bool UPB_PRIVATE(_upb_Arena_IsValidPoolSize)(size_t size) {
+  return size != 0 &&
+         (size & ((size - 1) | (_UPB_ARENA_MIN_POOL_BLOCK_SIZE - 1))) == 0;
+}
+
+UPB_INLINE size_t UPB_PRIVATE(_upb_Arena_PoolCapacity)(size_t size) {
+  if (size < sizeof(UPB_PRIVATE(_upb_ArenaPool))) return 0;
+  return (size - offsetof(UPB_PRIVATE(_upb_ArenaPool), UPB_PRIVATE(bins)[0])) /
+         sizeof(void*);
+}
+
+// Note that values below the minimum poolable block size will underflow, so
+// only a single branch comparing to the current bin count is necessary to check
+// bounds.
+UPB_INLINE size_t UPB_PRIVATE(_upb_Arena_PoolBinIndex)(size_t pool_size) {
+  return (size_t)upb_Log2Ceiling(pool_size) - _UPB_ARENA_MIN_POOL_BIN_LG2;
+}
+
+void UPB_PRIVATE(_upb_Arena_GrowPool)(struct upb_Arena* a, void* ptr,
+                                      size_t size);
+
+UPB_NODISCARD UPB_API_INLINE void* upb_Arena_TryAllocPool(struct upb_Arena* a,
+                                                          size_t pool_size) {
+  UPB_ASSERT(a);
+  UPB_ASSERT(UPB_PRIVATE(_upb_Arena_IsValidPoolSize)(pool_size));
+
+  size_t bin = UPB_PRIVATE(_upb_Arena_PoolBinIndex)(pool_size);
+  UPB_PRIVATE(_upb_ArenaPool)* pool = a->UPB_ONLYBITS(pool);
+  if (UPB_LIKELY(bin < pool->UPB_PRIVATE(num_bins))) {
+    UPB_PRIVATE(_upb_ArenaFreeBlock)* block = pool->UPB_PRIVATE(bins)[bin];
+    if (UPB_LIKELY(block != NULL)) {
+      pool->UPB_PRIVATE(bins)[bin] = block->UPB_PRIVATE(next);
+      return UPB_PRIVATE(upb_Xsan_NewUnpoisonedRegion)(UPB_XSAN(a), block,
+                                                       pool_size);
+    }
+  }
+
+  return NULL;
+}
+
+UPB_NODISCARD UPB_API_INLINE void* upb_Arena_AllocPool(struct upb_Arena* a,
+                                                       size_t pool_size) {
+  if (!upb_AllocationCount_IncrementAndCheck()) {
+    return NULL;
+  }
+  void* ptr = upb_Arena_TryAllocPool(a, pool_size);
+  if (ptr) return ptr;
+  return _upb_Arena_Malloc_Unchecked(a, pool_size);
+}
+
+UPB_API_INLINE void upb_Arena_FreePool(struct upb_Arena* a, void* ptr,
+                                       size_t pool_size) {
+  UPB_ASSERT(a);
+  UPB_ASSERT(ptr);
+
+  size_t bin = UPB_PRIVATE(_upb_Arena_PoolBinIndex)(pool_size);
+  UPB_PRIVATE(_upb_ArenaPool)* pool = a->UPB_ONLYBITS(pool);
+
+  if (UPB_UNLIKELY(bin >= pool->UPB_PRIVATE(num_bins))) {
+    UPB_PRIVATE(_upb_Arena_GrowPool)(a, ptr, pool_size);
+    return;
+  }
+
+  UPB_ASSERT(UPB_PRIVATE(_upb_Arena_IsAligned)(ptr));
+  UPB_PRIVATE(upb_Xsan_PoisonRegion)(ptr, pool_size);
+  UPB_PRIVATE(_upb_ArenaFreeBlock)* block =
+      (UPB_PRIVATE(_upb_ArenaFreeBlock)*)UPB_PRIVATE(
+          upb_Xsan_NewUnpoisonedRegion)(
+          UPB_XSAN(a), ptr, sizeof(UPB_PRIVATE(_upb_ArenaFreeBlock)));
+  block->UPB_PRIVATE(next) = pool->UPB_PRIVATE(bins)[bin];
+  pool->UPB_PRIVATE(bins)[bin] = block;
 }
 
 // Returns the next block size to allocate for the arena based on exponential
