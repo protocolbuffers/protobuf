@@ -370,17 +370,17 @@ path containing a directed edge exists and the assertion fails.
 
 #### Traversing fusion group members
 
-To check all references originating from `from`'s fusion group, we must visit
-every arena fused with `from`. Because fusion operations can race with this
+To check all references originating from `to`'s fusion group, we must visit
+every arena fused with `to`. Because fusion operations can race with this
 check, we cannot rely on traversing from the fusion root, which might change.
 Instead, like `upb_Arena_SpaceAllocated`, the algorithm finds members of
-`from`'s fusion group by first traversing backwards from `from` using
+`to`'s fusion group by first traversing backwards from `to` using
 `previous_or_tail`, then iterates forwards.
 
 #### Traverse fusion group and DFS on references
 
 From the head of the list segment, we traverse forwards using `next` to visit
-all nodes in `from`'s fusion group. For each arena `X` in this group, we iterate
+all nodes in `to`'s fusion group. For each arena `X` in this group, we iterate
 through all of its outgoing references (the list of arenas `Y` such that
 `RefArena(X, Y)` was called). For each such reference `X -> Y`:
 
