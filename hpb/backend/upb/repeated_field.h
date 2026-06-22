@@ -8,6 +8,7 @@
 #ifndef GOOGLE_PROTOBUF_HPB_BACKEND_UPB_REPEATED_FIELD_H__
 #define GOOGLE_PROTOBUF_HPB_BACKEND_UPB_REPEATED_FIELD_H__
 
+#include "absl/log/absl_check.h"
 #include "hpb/backend/upb/interop.h"
 #include "hpb/backend/upb/repeated_field_iterator.h"
 #include "hpb/internal/template_help.h"
@@ -58,7 +59,7 @@ class RepeatedFieldProxyMutableBase : public RepeatedFieldProxyBase<T> {
   RepeatedFieldProxyMutableBase(upb_Array* arr, upb_Arena* arena)
       : RepeatedFieldProxyBase<T>(arr, arena) {}
 
-  void clear() { upb_Array_Resize(this->arr_, 0, this->arena_); }
+  void clear() { (void)upb_Array_Resize(this->arr_, 0, this->arena_); }
 };
 
 // RepeatedField proxy for repeated messages.
@@ -110,7 +111,10 @@ class RepeatedFieldProxy
     message_value.msg_val = upb_Message_DeepClone(
         PrivateAccess::GetInternalMsg(&t), hpb::interop::upb::GetMiniTable(&t),
         this->arena_);
-    upb_Array_Append(this->arr_, message_value, this->arena_);
+    bool ok = upb_Array_Append(this->arr_, message_value, this->arena_);
+    // TODO: Change to absl::ThrowStdBadAlloc once our min absl version is
+    // above 202603
+    ABSL_CHECK(ok);
   }
 
   // Mutable message add using move.
@@ -119,8 +123,11 @@ class RepeatedFieldProxy
   void push_back(T&& msg) {
     upb_MessageValue message_value;
     message_value.msg_val = PrivateAccess::GetInternalMsg(&msg);
-    upb_Arena_Fuse(interop::upb::GetArena(&msg), this->arena_);
-    upb_Array_Append(this->arr_, message_value, this->arena_);
+    (void)upb_Arena_Fuse(interop::upb::GetArena(&msg), this->arena_);
+    bool append_ok = upb_Array_Append(this->arr_, message_value, this->arena_);
+    // TODO: Change to absl::ThrowStdBadAlloc once our min absl version is
+    // above 202603
+    ABSL_CHECK(append_ok);
     T moved_msg = std::move(msg);
   }
 
@@ -179,7 +186,10 @@ class RepeatedFieldStringProxy
     assert(data);
     memcpy(data, t.data(), t.size());
     message_value.str_val = upb_StringView_FromDataAndSize(data, t.size());
-    upb_Array_Append(this->arr_, message_value, this->arena_);
+    bool ok = upb_Array_Append(this->arr_, message_value, this->arena_);
+    // TODO: Change to absl::ThrowStdBadAlloc once our min absl version is
+    // above 202603
+    ABSL_CHECK(ok);
   }
 
   iterator begin() const { return iterator({this->arr_, this->arena_, 0}); }
@@ -226,7 +236,10 @@ class RepeatedFieldScalarProxy
   void push_back(T t) {
     upb_MessageValue message_value;
     memcpy(&message_value, &t, sizeof(T));
-    upb_Array_Append(this->arr_, message_value, this->arena_);
+    bool ok = upb_Array_Append(this->arr_, message_value, this->arena_);
+    // TODO: Change to absl::ThrowStdBadAlloc once our min absl version is
+    // above 202603
+    ABSL_CHECK(ok);
   }
 
   iterator begin() const { return iterator({unsafe_array()}); }

@@ -147,7 +147,8 @@ TEST(EncodeTest, EncodeExtensionSuccess) {
   // extension value.
   upb_ExtensionRegistry* ext_reg = upb_ExtensionRegistry_New(arena);
   const upb_MiniTableExtension* ext_array[1] = {upb_wire_test_ext_i32_ext};
-  upb_ExtensionRegistry_AddArray(ext_reg, ext_array, 1);
+  EXPECT_EQ(upb_ExtensionRegistry_AddArray(ext_reg, ext_array, 1),
+            kUpb_ExtensionRegistryStatus_Ok);
 
   upb_wire_test_TestExtensions* decoded_msg =
       upb_wire_test_TestExtensions_parse_ex(buf, size, ext_reg, 0, arena);
