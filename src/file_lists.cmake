@@ -123,6 +123,7 @@ set(libprotobuf_hdrs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/cpp_file_options.pb.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/descriptor.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/descriptor.pb.h
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/descriptor_builder.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/descriptor_database.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/descriptor_legacy.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/descriptor_lite.h
