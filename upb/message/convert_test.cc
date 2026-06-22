@@ -248,7 +248,7 @@ TEST(ConvertTest, ExtensionArrayShallowConversion) {
   upb_test_convert_MessageWithInt32_set_f1(val, 456);
 
   upb_Array* ext_arr = upb_Array_New(arena.ptr(), kUpb_CType_Message);
-  upb_Array_Resize(ext_arr, 1, arena.ptr());
+  ASSERT_TRUE(upb_Array_Resize(ext_arr, 1, arena.ptr()));
   upb_MessageValue elem_val;
   elem_val.msg_val = (const upb_Message*)val;
   upb_Array_Set(ext_arr, 0, elem_val);
@@ -291,7 +291,7 @@ TEST(ConvertTest, ExtensionArrayDeepConversion) {
   upb_test_convert_MessageWithInt32_set_f1(val, 789);
 
   upb_Array* ext_arr = upb_Array_New(arena.ptr(), kUpb_CType_Message);
-  upb_Array_Resize(ext_arr, 1, arena.ptr());
+  ASSERT_TRUE(upb_Array_Resize(ext_arr, 1, arena.ptr()));
   upb_MessageValue elem_val;
   elem_val.msg_val = (const upb_Message*)val;
   upb_Array_Set(ext_arr, 0, elem_val);
@@ -693,8 +693,9 @@ TEST(ConvertTest, ConvertExtensions_LookupExtensionInRegistry) {
       &upb__test__convert__AnotherMessageWithExtension_msg_init;
 
   upb_ExtensionRegistry* extreg = upb_ExtensionRegistry_New(arena.ptr());
-  upb_ExtensionRegistry_Add(extreg,
-                            upb_test_convert_another_ext_field_int32_ext);
+  ASSERT_EQ(upb_ExtensionRegistry_Add(
+                extreg, upb_test_convert_another_ext_field_int32_ext),
+            kUpb_ExtensionRegistryStatus_Ok);
 
   const upb_Message* dst_msg = upb_Message_Convert(
       UPB_UPCAST(msg), src_mt, dst_mt, extreg, 0, 0, arena.ptr());
@@ -1420,9 +1421,9 @@ TEST(ConvertTest, OpenToClosedExtensionRepeatedEnum) {
   upb_Array* ext_arr = upb_Array_New(arena.ptr(), kUpb_CType_Enum);
   upb_MessageValue elem_val;
   elem_val.int32_val = upb_test_convert_Proto2EnumMessage_FOO;
-  upb_Array_Append(ext_arr, elem_val, arena.ptr());
+  ASSERT_TRUE(upb_Array_Append(ext_arr, elem_val, arena.ptr()));
   elem_val.int32_val = upb_test_convert_Proto2EnumMessage_BAR;
-  upb_Array_Append(ext_arr, elem_val, arena.ptr());
+  ASSERT_TRUE(upb_Array_Append(ext_arr, elem_val, arena.ptr()));
 
   upb_MessageValue ext_val;
   ext_val.array_val = ext_arr;
@@ -1457,9 +1458,9 @@ TEST(ConvertTest, OpenToClosedExtensionRepeatedEnum_InvalidValue) {
   upb_Array* ext_arr = upb_Array_New(arena.ptr(), kUpb_CType_Enum);
   upb_MessageValue elem_val;
   elem_val.int32_val = 12345;  // Invalid value.
-  upb_Array_Append(ext_arr, elem_val, arena.ptr());
+  ASSERT_TRUE(upb_Array_Append(ext_arr, elem_val, arena.ptr()));
   elem_val.int32_val = upb_test_convert_Proto2EnumMessage_BAR;
-  upb_Array_Append(ext_arr, elem_val, arena.ptr());
+  ASSERT_TRUE(upb_Array_Append(ext_arr, elem_val, arena.ptr()));
 
   upb_MessageValue ext_val;
   ext_val.array_val = ext_arr;
