@@ -888,9 +888,6 @@ class PROTOBUF_EXPORT TcParser final {
   template <typename FieldType>
   PROTOBUF_CC static const char* FastVarintS1(PROTOBUF_TC_PARAM_DECL);
 
-  static LazyEagerVerifyFnType GetLazyEagerVerifyFn(
-      const google::protobuf::internal::TcParseTableBase* table, uint32_t field_number);
-
   friend class GeneratedTcTableLiteTest;
   static void* MaybeGetSplitBase(MessageLite* msg, bool is_split,
                                  const TcParseTableBase* table);
