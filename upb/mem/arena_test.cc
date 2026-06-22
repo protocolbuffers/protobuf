@@ -1010,4 +1010,70 @@ TEST(ArenaDeathTest, ArenaRefFuseCycle) {
 
 #endif  // UPB_SUPPRESS_MISSING_ATOMICS
 
+TEST(ArenaTest, PoolAlloc) {
+  upb_Arena* arena = upb_Arena_New();
+
+  // 1. Test basic reuse
+  void* ptr1 = upb_Arena_AllocPool(arena, 32);
+  EXPECT_NE(ptr1, nullptr);
+
+  // Free it back to the pool
+  upb_Arena_FreePool(arena, ptr1, 32);
+
+  // Allocate again, it should return the SAME block
+  void* ptr2 = upb_Arena_AllocPool(arena, 32);
+  EXPECT_TRUE(UPB_PRIVATE(upb_Xsan_PtrEq)(ptr1, ptr2));
+
+  // 2. Test multiple size classes
+  void* ptr_small = upb_Arena_AllocPool(arena, 32);
+  void* ptr_large = upb_Arena_AllocPool(arena, 64);
+  EXPECT_NE(ptr_small, ptr_large);
+
+  upb_Arena_FreePool(arena, ptr_small, 32);
+  upb_Arena_FreePool(arena, ptr_large, 64);
+
+  // Allocate 64 first, should get ptr_large
+  void* ptr_large2 = upb_Arena_AllocPool(arena, 64);
+  EXPECT_TRUE(UPB_PRIVATE(upb_Xsan_PtrEq)(ptr_large2, ptr_large));
+
+  // Allocate 32, should get ptr_small
+  void* ptr_small2 = upb_Arena_AllocPool(arena, 32);
+  EXPECT_TRUE(UPB_PRIVATE(upb_Xsan_PtrEq)(ptr_small2, ptr_small));
+
+  // 3. Test stack behavior (LIFO)
+  void* a1 = upb_Arena_AllocPool(arena, 32);
+  void* a2 = upb_Arena_AllocPool(arena, 32);
+  EXPECT_NE(a1, a2);
+
+  upb_Arena_FreePool(arena, a1, 32);
+  upb_Arena_FreePool(arena, a2, 32);
+
+  // Since it's a stack, we should get a2 first, then a1
+  void* r1 = upb_Arena_AllocPool(arena, 32);
+  void* r2 = upb_Arena_AllocPool(arena, 32);
+  EXPECT_TRUE(UPB_PRIVATE(upb_Xsan_PtrEq)(r1, a2));
+  EXPECT_TRUE(UPB_PRIVATE(upb_Xsan_PtrEq)(r2, a1));
+
+  // 4. Test rounding up
+  void* b1 = upb_Arena_AllocPool(arena, 25);
+  upb_Arena_FreePool(arena, b1, 25);
+
+  void* b2 = upb_Arena_AllocPool(arena, 30);
+  EXPECT_TRUE(UPB_PRIVATE(upb_Xsan_PtrEq)(b1, b2));
+
+  upb_Arena_FreePool(arena, b2, 30);
+
+  // 5. Test that blocks smaller than UPB_ARENA_POOL_MIN_SIZE are not pooled
+  // 8 bytes is smaller than MIN_SIZE on both 32-bit (12) and 64-bit (24).
+  void* c1 = upb_Arena_AllocPool(arena, 8);
+  upb_Arena_FreePool(arena, c1, 8);  // Should be rejected and not pooled
+
+  void* c2 = upb_Arena_AllocPool(arena, 8);
+  EXPECT_FALSE(UPB_PRIVATE(upb_Xsan_PtrEq)(c1, c2));
+
+  upb_Arena_FreePool(arena, c2, 8);
+
+  upb_Arena_Free(arena);
+}
+
 }  // namespace

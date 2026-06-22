@@ -23,9 +23,9 @@
 // We need this because the decoder inlines a upb_Arena for performance but
 // the full struct is not visible outside of arena.c. Yes, I know, it's awful.
 #ifndef NDEBUG
-#define UPB_ARENA_BASE_SIZE_HACK 10
+#define UPB_ARENA_BASE_SIZE_HACK 11
 #else
-#define UPB_ARENA_BASE_SIZE_HACK 9
+#define UPB_ARENA_BASE_SIZE_HACK 10
 #endif
 
 #define UPB_ARENA_SIZE_HACK                                                   \

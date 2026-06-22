@@ -19,6 +19,7 @@
 #include <stdint.h>
 #include <string.h>
 
+#include "upb/base/internal/log2.h"
 #include "upb/mem/alloc.h"
 #include "upb/mem/internal/arena.h"
 #include "upb/port/atomic.h"
@@ -52,6 +53,12 @@ typedef struct upb_ArenaRef {
 #endif
 } upb_ArenaRef;
 
+typedef struct upb_ArenaFreeBlock {
+  struct upb_ArenaFreeBlock* next_same_size;
+  struct upb_ArenaFreeBlock* next_size_class;
+  size_t size;
+} upb_ArenaFreeBlock;
+
 typedef struct upb_ArenaInternal {
   // upb_alloc* together with a low bit which signals if there is an initial
   // block.
@@ -59,6 +66,9 @@ typedef struct upb_ArenaInternal {
 
   // Linked list of blocks to free/cleanup.
   upb_MemBlock* blocks;
+
+  // Pool of power-of-2 sized unused memory blocks.
+  upb_ArenaFreeBlock* freelists;
 
 #ifndef NDEBUG
   // Stack of pointers to other arenas that this arena owns.
@@ -532,6 +542,7 @@ static upb_Arena* _upb_Arena_InitSlow(upb_alloc* alloc, size_t first_size) {
                   _upb_Arena_TaggedFromTail(&a->body));
   upb_Atomic_Init(&a->body.space_allocated, 0);
   a->body.blocks = NULL;
+  a->body.freelists = NULL;
 #ifndef NDEBUG
   a->body.refs = NULL;
 #endif
@@ -575,6 +586,7 @@ upb_Arena* upb_Arena_Init(void* mem, size_t n, upb_alloc* alloc) {
                   _upb_Arena_TaggedFromTail(&a->body));
   upb_Atomic_Init(&a->body.space_allocated, 0);
   a->body.blocks = NULL;
+  a->body.freelists = NULL;
 #ifndef NDEBUG
   a->body.refs = NULL;
 #endif
@@ -1060,4 +1072,152 @@ void UPB_PRIVATE(_upb_Arena_FreeBlock)(upb_Arena* a, void* block) {
       UPB_PTR_AT(block, -(ptrdiff_t)kUpb_MemblockReserve, upb_MemBlock);
   upb_alloc* alloc = upb_Arena_GetUpbAlloc(a);
   upb_free_sized(alloc, b, b->size);
+}
+
+#define UPB_ARENA_POOL_MIN_SIZE sizeof(upb_ArenaFreeBlock)
+#define UPB_MAP_ENTRY_SIZE (8 + 2 * sizeof(void*))
+
+static size_t _upb_Arena_PoolBlockSize(size_t size) {
+  if (size == 0) return UPB_MAP_ENTRY_SIZE;
+
+  size_t ratio = (size + UPB_MAP_ENTRY_SIZE - 1) / UPB_MAP_ENTRY_SIZE;
+  size_t next_pow2 = upb_RoundUpToPowerOfTwo(ratio);
+  if (next_pow2 == SIZE_MAX) return SIZE_MAX;
+
+  if (next_pow2 > SIZE_MAX / UPB_MAP_ENTRY_SIZE) {
+    return SIZE_MAX;
+  }
+  return next_pow2 * UPB_MAP_ENTRY_SIZE;
+}
+
+void* upb_Arena_AllocPool(upb_Arena* a, size_t size) {
+  UPB_ASSERT(a);
+  UPB_ASSERT(size > 0);
+
+  size_t pool_size = _upb_Arena_PoolBlockSize(size);
+  if (pool_size == SIZE_MAX) return NULL;
+  UPB_ASSERT(pool_size >= UPB_ARENA_POOL_MIN_SIZE);
+  UPB_ASSERT(pool_size % UPB_MAP_ENTRY_SIZE == 0);
+  UPB_ASSERT(((pool_size / UPB_MAP_ENTRY_SIZE) &
+              ((pool_size / UPB_MAP_ENTRY_SIZE) - 1)) == 0);
+
+  upb_ArenaInternal* ai = upb_Arena_Internal(a);
+  UPB_PRIVATE(upb_Xsan_AccessReadWrite)(UPB_XSAN(ai));
+
+  upb_ArenaFreeBlock* prev = NULL;
+  upb_ArenaFreeBlock* curr = ai->freelists;
+
+  while (curr && curr->size < pool_size) {
+    UPB_ASSERT(curr->size >= UPB_ARENA_POOL_MIN_SIZE);
+    UPB_ASSERT(curr->size % UPB_MAP_ENTRY_SIZE == 0);
+    UPB_ASSERT(((curr->size / UPB_MAP_ENTRY_SIZE) &
+                ((curr->size / UPB_MAP_ENTRY_SIZE) - 1)) == 0);
+    UPB_ASSERT(UPB_PRIVATE(_upb_Arena_IsAligned)(curr));
+    if (prev) {
+      UPB_ASSERT(prev->size < curr->size);
+    }
+    prev = curr;
+    curr = curr->next_size_class;
+  }
+
+  if (curr && curr->size == pool_size) {
+    UPB_ASSERT(UPB_PRIVATE(_upb_Arena_IsAligned)(curr));
+    void* ret = curr;
+    upb_ArenaFreeBlock* next_same = curr->next_same_size;
+    if (next_same) {
+      UPB_ASSERT(next_same->size == pool_size);
+      UPB_ASSERT(UPB_PRIVATE(_upb_Arena_IsAligned)(next_same));
+      next_same->next_size_class = curr->next_size_class;
+      if (prev) {
+        prev->next_size_class = next_same;
+      } else {
+        ai->freelists = next_same;
+      }
+    } else {
+      if (prev) {
+        prev->next_size_class = curr->next_size_class;
+      } else {
+        ai->freelists = curr->next_size_class;
+      }
+    }
+    void* unpoisoned =
+        UPB_PRIVATE(upb_Xsan_NewUnpoisonedRegion)(UPB_XSAN(ai), ret, size);
+    UPB_ASSERT(UPB_PRIVATE(_upb_Arena_IsAligned)(unpoisoned));
+    return unpoisoned;
+  }
+
+  void* ret = upb_Arena_Malloc(a, pool_size);
+  if (!ret) return NULL;
+  UPB_ASSERT(UPB_PRIVATE(_upb_Arena_IsAligned)(ret));
+
+  size_t aligned_size = UPB_ALIGN_MALLOC(size);
+  if (aligned_size < pool_size) {
+    UPB_PRIVATE(upb_Xsan_PoisonRegion)((char*)ret + aligned_size,
+                                       pool_size - aligned_size);
+  }
+
+  return ret;
+}
+
+void upb_Arena_FreePool(upb_Arena* a, void* ptr, size_t size) {
+  UPB_ASSERT(a);
+  if (!ptr) return;
+  if (size < UPB_ARENA_POOL_MIN_SIZE) return;
+
+  size_t pool_size = _upb_Arena_PoolBlockSize(size);
+  if (pool_size == SIZE_MAX) return;
+  UPB_ASSERT(pool_size >= UPB_ARENA_POOL_MIN_SIZE);
+  UPB_ASSERT(pool_size % UPB_MAP_ENTRY_SIZE == 0);
+  UPB_ASSERT(((pool_size / UPB_MAP_ENTRY_SIZE) &
+              ((pool_size / UPB_MAP_ENTRY_SIZE) - 1)) == 0);
+
+  upb_ArenaInternal* ai = upb_Arena_Internal(a);
+  UPB_PRIVATE(upb_Xsan_AccessReadWrite)(UPB_XSAN(ai));
+
+  void* untagged_ptr = UPB_PRIVATE(upb_Xsan_UntagPointer)(ptr);
+  UPB_ASSERT(UPB_PRIVATE(_upb_Arena_IsAligned)(untagged_ptr));
+
+  size_t metadata_size = UPB_ALIGN_MALLOC(sizeof(upb_ArenaFreeBlock));
+  UPB_PRIVATE(_upb_Xsan_UnpoisonRegion)(untagged_ptr, metadata_size, 0);
+
+  if (pool_size > metadata_size) {
+    UPB_PRIVATE(upb_Xsan_PoisonRegion)((char*)untagged_ptr + metadata_size,
+                                       pool_size - metadata_size);
+  }
+
+  upb_ArenaFreeBlock* new_block = (upb_ArenaFreeBlock*)untagged_ptr;
+
+  upb_ArenaFreeBlock* prev = NULL;
+  upb_ArenaFreeBlock* curr = ai->freelists;
+
+  while (curr && curr->size < pool_size) {
+    UPB_ASSERT(curr->size >= UPB_ARENA_POOL_MIN_SIZE);
+    UPB_ASSERT(curr->size % UPB_MAP_ENTRY_SIZE == 0);
+    UPB_ASSERT(((curr->size / UPB_MAP_ENTRY_SIZE) &
+                ((curr->size / UPB_MAP_ENTRY_SIZE) - 1)) == 0);
+    UPB_ASSERT(UPB_PRIVATE(_upb_Arena_IsAligned)(curr));
+    if (prev) {
+      UPB_ASSERT(prev->size < curr->size);
+    }
+    prev = curr;
+    curr = curr->next_size_class;
+  }
+
+  if (curr && curr->size == pool_size) {
+    UPB_ASSERT(UPB_PRIVATE(_upb_Arena_IsAligned)(curr));
+    // Size class exists. Make new_block the new head, pushing curr onto its
+    // stack.
+    new_block->next_size_class = curr->next_size_class;
+    new_block->next_same_size = curr;
+  } else {
+    // Size class does not exist. Insert new_block as a new size class head.
+    new_block->next_size_class = curr;
+    new_block->next_same_size = NULL;
+  }
+  new_block->size = pool_size;
+  if (prev) {
+    prev->next_size_class = new_block;
+  } else {
+    ai->freelists = new_block;
+  }
 }

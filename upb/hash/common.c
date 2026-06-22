@@ -117,7 +117,7 @@ static bool init(upb_table* t, uint8_t size_lg2, upb_Arena* a) {
   }
   size_t bytes = upb_table_size(t) * sizeof(upb_tabent);
   if (bytes > 0) {
-    t->entries = upb_Arena_Malloc(a, bytes);
+    t->entries = upb_Arena_AllocPool(a, bytes);
     if (!t->entries) return false;
     memset(t->entries, 0, bytes);
   } else {
@@ -585,6 +585,10 @@ bool upb_strtable_resize(upb_strtable* t, size_t size_lg2, upb_Arena* a) {
     uint32_t hash = _upb_Hash_NoSeed(sv.data, sv.size);
     insert(&new_table.t, lookupkey, tabkey, val, hash, &strhash, &streql);
   }
+  if (t->t.entries) {
+    size_t old_bytes = upb_table_size(&t->t) * sizeof(upb_tabent);
+    upb_Arena_FreePool(a, t->t.entries, old_bytes);
+  }
   *t = new_table;
   return true;
 }
@@ -723,6 +727,10 @@ bool upb_exttable_resize(upb_exttable* t, size_t size_lg2, upb_Arena* a) {
     insert(&new_table.t, lookupkey, e->key, e->val, hash, &exthash, &exteql);
   }
 
+  if (t->t.entries) {
+    size_t old_bytes = upb_table_size(&t->t) * sizeof(upb_tabent);
+    upb_Arena_FreePool(a, t->t.entries, old_bytes);
+  }
   *t = new_table;
   return true;
 }
@@ -830,6 +838,10 @@ bool upb_inttable_insert(upb_inttable* t, uintptr_t key, upb_value val,
 
     UPB_ASSERT(t->t.count == new_table.count);
 
+    if (t->t.entries) {
+      size_t old_bytes = upb_table_size(&t->t) * sizeof(upb_tabent);
+      upb_Arena_FreePool(a, t->t.entries, old_bytes);
+    }
     t->t = new_table;
   }
   upb_key tabkey = {.num = key};

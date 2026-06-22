@@ -180,11 +180,29 @@ bool UPB_PRIVATE(_upb_Array_Realloc)(upb_Array* array, size_t min_capacity,
   if (upb_ShlOverflow(&new_bytes, lg2)) {
     return false;
   }
-  ptr = upb_Arena_Realloc(arena, ptr, old_bytes, new_bytes);
-  if (!ptr) return false;
+  if (ptr && upb_Arena_TryExtend(arena, ptr, old_bytes, new_bytes)) {
+    array->UPB_PRIVATE(capacity) = new_capacity;
+  } else {
+    const size_t map_entry_size = 8 + 2 * sizeof(void*);
+    size_t ratio = (new_bytes + map_entry_size - 1) / map_entry_size;
+    size_t next_pow2 = upb_RoundUpToPowerOfTwo(ratio);
+    size_t pool_bytes = next_pow2 * map_entry_size;
 
-  UPB_PRIVATE(_upb_Array_SetTaggedPtr)(array, ptr, lg2);
-  array->UPB_PRIVATE(capacity) = new_capacity;
+    void* new_ptr = upb_Arena_AllocPool(arena, pool_bytes);
+    if (!new_ptr) return false;
+
+    if (ptr && old_bytes > 0) {
+      memcpy(new_ptr, ptr, old_bytes);
+      const size_t array_size =
+          UPB_ALIGN_UP(sizeof(struct upb_Array), UPB_MALLOC_ALIGN);
+      if (ptr != UPB_PTR_AT(array, array_size, void)) {
+        upb_Arena_FreePool(arena, ptr, old_bytes);
+      }
+    }
+    ptr = new_ptr;
+    UPB_PRIVATE(_upb_Array_SetTaggedPtr)(array, ptr, lg2);
+    array->UPB_PRIVATE(capacity) = pool_bytes >> lg2;
+  }
   return true;
 }
 

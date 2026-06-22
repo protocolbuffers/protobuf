@@ -162,6 +162,14 @@ UPB_INLINE bool UPB_PRIVATE(upb_Xsan_PtrEq)(const void *a, const void *b) {
 #endif
 }
 
+UPB_INLINE void* UPB_PRIVATE(upb_Xsan_UntagPointer)(const void* ptr) {
+#if UPB_HWASAN
+  return __hwasan_tag_pointer(ptr, 0);
+#else
+  return (void*)ptr;
+#endif
+}
+
 // These annotations improve TSAN's ability to detect data races.  By
 // proactively accessing a non-atomic variable at the point where it is
 // "logically" accessed, we can trigger TSAN diagnostics that might have
