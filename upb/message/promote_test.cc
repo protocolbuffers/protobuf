@@ -139,6 +139,33 @@ TEST(GeneratedCode, PromoteFromMultiple) {
   upb_Arena_Free(arena);
 }
 
+TEST(GeneratedCode, PromoteIgnoresWrongWireType) {
+  upb_Arena* arena = upb_Arena_New();
+  std::string serialized;
+  uint32_t tag =
+      upb_MiniTableExtension_Number(upb_test_ModelExtension1_model_ext_ext)
+      << 3;
+  while (tag > 0x7f) {
+    serialized.push_back(static_cast<char>((tag & 0x7f) | 0x80));
+    tag >>= 7;
+  }
+  serialized.push_back(static_cast<char>(tag));
+  serialized.push_back(1);
+
+  upb_test_EmptyMessageWithExtensions* base_msg =
+      upb_test_EmptyMessageWithExtensions_parse(serialized.data(),
+                                                serialized.size(), arena);
+  ASSERT_NE(base_msg, nullptr);
+
+  upb_MessageValue value;
+  upb_GetExtension_Status status = upb_Message_GetOrPromoteExtension(
+      UPB_UPCAST(base_msg), upb_test_ModelExtension1_model_ext_ext, 0, arena,
+      &value);
+  EXPECT_EQ(kUpb_GetExtension_NotPresent, status);
+
+  upb_Arena_Free(arena);
+}
+
 TEST(GeneratedCode, Extensions) {
   upb_Arena* arena = upb_Arena_New();
   upb_test_ModelWithExtensions* msg = upb_test_ModelWithExtensions_new(arena);

@@ -93,7 +93,8 @@ upb_GetExtension_Status upb_Message_GetOrPromoteExtension(
       const char* unknown_begin = ptr;
       ptr = upb_WireReader_ReadTag(ptr, &tag, &stream);
       if (!ptr) return kUpb_GetExtension_ParseError;
-      if (field_number == upb_WireReader_GetFieldNumber(tag)) {
+      if (field_number == upb_WireReader_GetFieldNumber(tag) &&
+          upb_WireReader_GetWireType(tag) == kUpb_WireType_Delimited) {
         upb_StringView data;
         found_count++;
         upb_EpsCopyCapture capture;
