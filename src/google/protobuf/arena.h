@@ -60,7 +60,6 @@ class MessageLite;
 template <typename Key, typename T>
 class Map;
 namespace internal {
-class InternalMetadataOffset;
 class RepeatedFieldBase;
 class ExtensionSet;
 }  // namespace internal
@@ -83,6 +82,49 @@ SerialArena* PROTOBUF_NULLABLE GetSerialArena(Arena* PROTOBUF_NULLABLE);
 
 template <typename Type>
 class GenericTypeHandler;  // defined in repeated_field.h
+
+// This struct maps field types to the types that we will use to represent them
+// when allocated on an arena. This is necessary because fields no longer own an
+// arena pointer, but can be allocated directly on an arena. In this case, we
+// will use a wrapper class that holds both the arena pointer and the field, and
+// points the field to the arena pointer.
+//
+// Additionally, split pointer fields will use this representation when
+// allocated, regardless of whether they are on an arena or not.
+//
+// For example:
+// ```
+// template <>
+// struct FieldArenaRep<Message> {
+//   using Type = ArenaMessage;
+//   static Message* Get(ArenaMessage* arena_rep) {
+//     return &arena_rep->message();
+//   }
+// };
+// ```
+template <typename T>
+struct FieldArenaRep {
+  // The type of the field when allocated on an arena. By default, this is just
+  // `T`, but can be specialized to use a wrapper class that holds both the
+  // arena pointer and the field.
+  using Type = T;
+
+  // Returns a pointer to the field from the arena representation. By default,
+  // this is just a no-op, but can be specialized to extract the field from the
+  // wrapper class.
+  static T* PROTOBUF_NONNULL Get(Type* PROTOBUF_NONNULL arena_rep) {
+    return arena_rep;
+  }
+};
+
+// Returns true if `T` uses arena offsets instead of holding a copy of the arena
+// pointer. This can be deduced if the field's arena representation is not the
+// same as the field itself.
+template <typename T>
+constexpr bool FieldHasArenaOffset() {
+  using ArenaRepT = typename FieldArenaRep<T>::Type;
+  return !std::is_same_v<T, ArenaRepT>;
+}
 
 // TODO - Some types have a deprecated arena-enabled constructor,
 // as we plan to remove it in favor of using arena offsets, but for now Arena
@@ -248,11 +290,7 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8)
 
   // Default constructor with sensible default options, tuned for average
   // use-cases.
-  inline Arena() : impl_() {
-    // Necessary conditions for `ThreadSafeArena::parent()`.
-    static_assert(std::is_standard_layout_v<Arena>);
-    static_assert(PROTOBUF_FIELD_OFFSET(Arena, impl_) == 0);
-  }
+  inline Arena() : impl_() {}
 
   // Construct an arena with default options, except for the supplied
   // initial block. It is more efficient to use this constructor
@@ -378,9 +416,6 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8)
       return align_as.Ceil(Allocate(align_as.Padded(size)));
     }
   }
-
-  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD
-  internal::SerialArena::AllocationAndOffset AllocateWithOffset(size_t size);
 
   // Create an array of object type T on the arena *without* invoking the
   // constructor of T. If `arena` is null, then the return value should be freed
@@ -586,7 +621,7 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8)
       // Fields which use arena offsets don't have constructors that take an
       // arena pointer. Since the arena is nullptr, it is safe to default
       // construct the object.
-      if constexpr (kFieldHasArenaOffset<T> ||
+      if constexpr (internal::FieldHasArenaOffset<T>() ||
                     internal::HasDeprecatedArenaConstructor<T>()) {
         return new T();
       } else {
@@ -626,24 +661,6 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8)
 
  private:
   internal::ThreadSafeArena impl_;
-
-  // We can't use std::is_constructible because the constructor is private with
-  // friendship.
-  template <typename T, typename... Args>
-  static std::true_type IsConstructible(
-      decltype(new T(std::declval<Args>()...)));
-  template <typename T, typename... Args>
-  static std::false_type IsConstructible(...);
-  template <typename T, typename... Args>
-  static constexpr bool is_constructible_v =
-      decltype(IsConstructible<T, Args...>(nullptr))::value;
-
-  // Check is T can be constructed from an `InternalMetadataOffset`.
-  template <typename T>
-  static constexpr bool kFieldHasArenaOffset =
-      is_constructible_v<T, internal::InternalMetadataOffset> ||
-      is_constructible_v<T, internal::InternalVisibility,
-                         internal::InternalMetadataOffset>;
 
   enum class ConstructType { kUnknown, kDefault, kCopy, kMove };
   // Overload set to detect which kind of construction is going to happen for a
@@ -685,7 +702,7 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8)
     static_assert(is_arena_constructable<T>::value,
                   "Can only construct types that are ArenaConstructable");
     if (ABSL_PREDICT_FALSE(arena == nullptr)) {
-      if constexpr (kFieldHasArenaOffset<T> ||
+      if constexpr (internal::FieldHasArenaOffset<T>() ||
                     internal::HasDeprecatedArenaConstructor<T>()) {
         return new T(static_cast<Args&&>(args)...);
       } else {
@@ -745,29 +762,14 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8)
 
   template <typename T, typename... Args>
   PROTOBUF_NDEBUG_INLINE T* PROTOBUF_NONNULL DoCreateMessage(Args&&... args) {
-    if constexpr (kFieldHasArenaOffset<T>) {
-      auto mem =
-          AllocateWithOffset(internal::ArenaAlignDefault::Ceil(sizeof(T)));
-
-      T* value;
-      if constexpr (is_constructible_v<T, internal::InternalMetadataOffset,
-                                       Arena*, Args...>) {
-        value = new (mem.ptr)
-            T(mem.arena_offset, this, std::forward<Args>(args)...);
-      } else {
-        value = new (mem.ptr) T(mem.arena_offset, std::forward<Args>(args)...);
-      }
-      if constexpr (!is_destructor_skippable<T>::value) {
-        OwnCustomDestructor(value,
-                            &internal::cleanup::arena_destruct_object<T>);
-      }
-      return value;
-    } else {
-      auto* arena_repr = InternalHelper<T>::ConstructOnArena(
-          AllocateInternal<T, is_destructor_skippable<T>::value>(), *this,
-          std::forward<Args>(args)...);
-      return static_cast<T*>(arena_repr);
-    }
+    using ArenaRepT = typename internal::FieldArenaRep<T>::Type;
+    auto* arena_repr = InternalHelper<ArenaRepT>::ConstructOnArena(
+        AllocateInternal<ArenaRepT,
+                         is_destructor_skippable<ArenaRepT>::value>(),
+        *this, std::forward<Args>(args)...);
+    // Note that we can't static_cast arena_repr to T* here, since T might be a
+    // member of ArenaRepT.
+    return internal::FieldArenaRep<T>::Get(arena_repr);
   }
 
   // CreateInArenaStorage is used to implement map field. Without it,
@@ -1130,13 +1132,16 @@ class ABSL_MUST_USE_RESULT ABSL_ATTRIBUTE_TRIVIAL_ABI Arena::Ptr final
 template <typename T>
 PROTOBUF_NOINLINE void* PROTOBUF_NONNULL
 Arena::DefaultConstruct(Arena* PROTOBUF_NULLABLE arena) {
-  if constexpr (kFieldHasArenaOffset<T>) {
-    static_assert(is_destructor_skippable<T>::value);
+  if constexpr (internal::FieldHasArenaOffset<T>()) {
     if (arena != nullptr) {
-      auto mem = arena->AllocateWithOffset(
-          internal::ArenaAlignDefault::Ceil(sizeof(T)));
-      return new (mem.ptr) T(mem.arena_offset);
+      using ArenaRepT = typename internal::FieldArenaRep<T>::Type;
+      static_assert(is_destructor_skippable<ArenaRepT>::value);
+
+      void* mem = arena->AllocateAligned(sizeof(ArenaRepT));
+      ArenaRepT* arena_rep = new (mem) ArenaRepT(arena);
+      return internal::FieldArenaRep<T>::Get(arena_rep);
     } else {
+      static_assert(is_destructor_skippable<T>::value);
       // Fields which use arena offsets don't have constructors that take an
       // arena pointer. Since the arena is nullptr, it is safe to default
       // construct the object.

@@ -127,7 +127,7 @@ void ChunkList::AddFallback(
     void (*PROTOBUF_NONNULL destructor)(void* PROTOBUF_NONNULL),
     SerialArena& arena) {
   ABSL_DCHECK_EQ(next_, limit_);
-  SizedPtr mem = AllocateCleanupChunk(arena.parent_->AllocPolicy(),
+  SizedPtr mem = AllocateCleanupChunk(arena.parent_.AllocPolicy(),
                                       head_ == nullptr ? 0 : head_->size);
   arena.AddSpaceAllocated(mem.n);
   head_ = new (mem.p) Chunk{head_, mem.n};
@@ -140,7 +140,7 @@ void ChunkList::AddFallback(
 void ChunkList::Cleanup(const SerialArena& arena) {
   Chunk* c = head_;
   if (c == nullptr) return;
-  GetDeallocator deallocator(arena.parent_->AllocPolicy());
+  GetDeallocator deallocator(arena.parent_.AllocPolicy());
 
   // Iterate backwards in order to destroy in the right order.
   CleanupNode* it = next_ - 1;
@@ -201,19 +201,19 @@ SerialArena::SerialArena(ArenaBlock* b, ThreadSafeArena& parent)
       ptr_{b->Pointer(kBlockHeaderSize + ThreadSafeArena::kSerialArenaSize)},
       limit_{b->Limit()},
       space_allocated_{b->size},
-      parent_{&parent} {
+      parent_{parent} {
   ABSL_DCHECK(!b->IsSentry());
 }
 
 // It is guaranteed that this is the first SerialArena. Use sentry block.
 SerialArena::SerialArena(ThreadSafeArena& parent)
-    : head_{SentryArenaBlock()}, parent_{&parent} {}
+    : head_{SentryArenaBlock()}, parent_{parent} {}
 
 // It is guaranteed that this is the first SerialArena but `b` may be user
 // provided or newly allocated to store AllocationPolicy.
 SerialArena::SerialArena(FirstSerialArena, ArenaBlock* b,
                          ThreadSafeArena& parent)
-    : head_{b}, space_allocated_{b->size}, parent_{&parent} {
+    : head_{b}, space_allocated_{b->size}, parent_{parent} {
   if (b->IsSentry()) return;
   set_range(b->Pointer(kBlockHeaderSize), b->Limit());
 }
@@ -233,7 +233,6 @@ void SerialArena::Init(ArenaBlock* b, size_t offset) {
   space_allocated_.store(b->size, std::memory_order_relaxed);
   cached_block_length_ = 0;
   cached_blocks_ = nullptr;
-  block_arena_ptr_ = nullptr;
   string_block_.store(nullptr, std::memory_order_relaxed);
   string_block_unused_.store(0, std::memory_order_relaxed);
 }
@@ -319,12 +318,11 @@ void SerialArena::AllocateNewBlock(size_t n) {
   // but with a CPU regression. The regression might have been an artifact of
   // the microbenchmark.
 
-  auto mem = AllocateBlock(parent_->AllocPolicy(), old_head->size, n);
+  auto mem = AllocateBlock(parent_.AllocPolicy(), old_head->size, n);
   AddSpaceAllocated(mem.n);
-  ThreadSafeArenaStats::RecordAllocateStats(
-      parent_->arena_stats_.MutableStats(),
-      /*used=*/used,
-      /*allocated=*/mem.n, wasted);
+  ThreadSafeArenaStats::RecordAllocateStats(parent_.arena_stats_.MutableStats(),
+                                            /*used=*/used,
+                                            /*allocated=*/mem.n, wasted);
   auto* new_head = new (mem.p) ArenaBlock{old_head, mem.n};
   set_range(new_head->Pointer(kBlockHeaderSize), new_head->Limit());
   // Previous writes must take effect before writing new head.
@@ -984,11 +982,6 @@ SerialArena* ThreadSafeArena::GetSerialArenaFallback(size_t n) {
 
 void* PROTOBUF_NONNULL Arena::Allocate(size_t n) {
   return impl_.AllocateAligned(n);
-}
-
-internal::SerialArena::AllocationAndOffset Arena::AllocateWithOffset(
-    size_t size) {
-  return impl_.AllocateWithOffset(size);
 }
 
 void* PROTOBUF_NONNULL Arena::AllocateForArray(size_t n) {

@@ -495,10 +495,7 @@ TEST(ArenaTest, RepeatedFieldMoveCtorOnArena) {
 }
 
 TEST(ArenaTest, RepeatedPtrFieldMoveCtorOnArena) {
-  // Use a large initial block to make sure it is primed with an arena pointer.
-  ArenaOptions options;
-  options.start_block_size = options.max_block_size = 8192;
-  Arena arena(options);
+  Arena arena;
 
   ASSERT_EQ(arena.SpaceUsed(), 0);
 
@@ -518,7 +515,8 @@ TEST(ArenaTest, RepeatedPtrFieldMoveCtorOnArena) {
   // The only extra allocation with moves is sizeof(RepeatedPtrField).
   // Align up to 8 bytes to match default arena alignment, as sizeof(T) may not
   // be a multiple of 8 on 32-bit platforms.
-  EXPECT_EQ(usage_by_move, Align8(sizeof(RepeatedPtrField<TestAllTypes>)));
+  EXPECT_EQ(usage_by_move,
+            Align8(sizeof(internal::RepeatedPtrFieldWithArena<TestAllTypes>)));
   EXPECT_LT(usage_by_move + Align8(sizeof(TestAllTypes)), usage_original);
 
   // Status after move is unspecified and must not be assumed. It's merely

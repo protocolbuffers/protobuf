@@ -605,7 +605,6 @@ cc_library(
     hdrs = [
         "arena.h",
         "arenaz_sampler.h",
-        "internal_metadata_locator.h",
         "serial_arena.h",
         "thread_safe_arena.h",
     ],

@@ -254,9 +254,8 @@ class PROTOBUF_EXPORT UnknownFieldSet {
   PROTOBUF_FUTURE_ADD_EARLY_NODISCARD static const UnknownFieldSet&
   default_instance();
 
-  UnknownFieldSet(internal::InternalVisibility,
-                  internal::InternalMetadataOffset offset)
-      : UnknownFieldSet(offset) {}
+  UnknownFieldSet(internal::InternalVisibility, Arena* arena)
+      : UnknownFieldSet(arena) {}
 
  private:
   friend internal::WireFormat;
@@ -269,13 +268,12 @@ class PROTOBUF_EXPORT UnknownFieldSet {
   using DestructorSkippable_ = void;
 
   friend class google::protobuf::Arena;
-  explicit UnknownFieldSet(internal::InternalMetadataOffset offset)
-      : fields_(offset) {}
+  explicit UnknownFieldSet(Arena* arena) : fields_(arena) {}
 
   Arena* arena() { return fields_.GetArena(); }
 
-  const RepeatedField<UnknownField>& fields() const { return fields_; }
-  RepeatedField<UnknownField>& fields() { return fields_; }
+  const RepeatedField<UnknownField>& fields() const { return fields_.field(); }
+  RepeatedField<UnknownField>& fields() { return fields_.field(); }
 
   void ClearFallback();
   void SwapSlow(UnknownFieldSet* other);
@@ -301,7 +299,7 @@ class PROTOBUF_EXPORT UnknownFieldSet {
     return MergeFromCodedStream(&coded_stream);
   }
 
-  RepeatedField<UnknownField> fields_;
+  internal::RepeatedFieldWithArena<UnknownField> fields_;
 };
 
 namespace internal {
@@ -451,11 +449,8 @@ struct InternalMetadata::Container<UnknownFieldSet>
     : public InternalMetadata::ContainerBase {
   UnknownFieldSet unknown_fields;
 
-  explicit Container() = default;
-  explicit Container(internal::InternalMetadataOffset offset)
-      : unknown_fields(InternalVisibility{},
-                       offset.TranslateForMember<PROTOBUF_FIELD_OFFSET(
-                           Container, unknown_fields)>()) {}
+  explicit Container(Arena* input_arena)
+      : unknown_fields(InternalVisibility{}, input_arena) {}
 
   using InternalArenaConstructable_ = void;
   using DestructorSkippable_ = void;
