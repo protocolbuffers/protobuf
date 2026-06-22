@@ -122,7 +122,9 @@ class Message;
 class Reflection;
 
 // Defined in descriptor.cc
+namespace internal {
 class DescriptorBuilder;
+}
 class FileDescriptorTables;
 
 // Defined in unknown_field_set.h.
@@ -637,7 +639,7 @@ class PROTOBUF_EXPORT Descriptor : private internal::SymbolBase {
 
     friend class Descriptor;
     friend class DescriptorPool;
-    friend class DescriptorBuilder;
+    friend class internal::DescriptorBuilder;
     friend class SymbolChecker;
   };
 
@@ -844,7 +846,7 @@ class PROTOBUF_EXPORT Descriptor : private internal::SymbolBase {
 
   // Must be constructed using DescriptorPool.
   Descriptor();
-  friend class DescriptorBuilder;
+  friend class internal::DescriptorBuilder;
   friend class DescriptorPool;
   friend class EnumDescriptor;
   friend class FieldDescriptor;
@@ -1343,7 +1345,7 @@ class PROTOBUF_EXPORT FieldDescriptor : private internal::SymbolBase,
 
   // Must be constructed using DescriptorPool.
   FieldDescriptor();
-  friend class DescriptorBuilder;
+  friend class internal::DescriptorBuilder;
   friend class FileDescriptor;
   friend class Descriptor;
   friend class OneofDescriptor;
@@ -1450,7 +1452,7 @@ class PROTOBUF_EXPORT OneofDescriptor : private internal::SymbolBase {
 
   // Must be constructed using DescriptorPool.
   OneofDescriptor();
-  friend class DescriptorBuilder;
+  friend class internal::DescriptorBuilder;
   friend class Descriptor;
   friend class FieldDescriptor;
   friend class Reflection;
@@ -1671,7 +1673,7 @@ class PROTOBUF_EXPORT EnumDescriptor : private internal::SymbolBase {
 
   // Must be constructed using DescriptorPool.
   EnumDescriptor();
-  friend class DescriptorBuilder;
+  friend class internal::DescriptorBuilder;
   friend class Descriptor;
   friend class FieldDescriptor;
   friend class FileDescriptorTables;
@@ -1787,7 +1789,7 @@ class PROTOBUF_EXPORT EnumValueDescriptor : private internal::SymbolBaseN<0>,
 
   // Must be constructed using DescriptorPool.
   EnumValueDescriptor();
-  friend class DescriptorBuilder;
+  friend class internal::DescriptorBuilder;
   friend class EnumDescriptor;
   friend class DescriptorPool;
   friend class FileDescriptorTables;
@@ -1896,7 +1898,7 @@ class PROTOBUF_EXPORT ServiceDescriptor : private internal::SymbolBase {
 
   // Must be constructed using DescriptorPool.
   ServiceDescriptor();
-  friend class DescriptorBuilder;
+  friend class internal::DescriptorBuilder;
   friend class FileDescriptor;
   friend class MethodDescriptor;
 };
@@ -2006,7 +2008,7 @@ class PROTOBUF_EXPORT MethodDescriptor : private internal::SymbolBase {
 
   // Must be constructed using DescriptorPool.
   MethodDescriptor();
-  friend class DescriptorBuilder;
+  friend class internal::DescriptorBuilder;
   friend class ServiceDescriptor;
 };
 
@@ -2247,7 +2249,7 @@ class PROTOBUF_EXPORT FileDescriptor : private internal::SymbolBase {
   // descriptor.cc and update them to initialize the field.
 
   FileDescriptor();
-  friend class DescriptorBuilder;
+  friend class internal::DescriptorBuilder;
   friend class DescriptorPool;
   friend class Descriptor;
   friend class FieldDescriptor;
@@ -2683,7 +2685,7 @@ class PROTOBUF_EXPORT DescriptorPool {
   friend class ServiceDescriptor;
   friend class MethodDescriptor;
   friend class FileDescriptor;
-  friend class DescriptorBuilder;
+  friend class internal::DescriptorBuilder;
   friend class FileDescriptorTables;
   friend class google::protobuf::descriptor_unittest::DescriptorPoolMemoizationTest;
   friend class google::protobuf::descriptor_unittest::ValidationErrorTest;

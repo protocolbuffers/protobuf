@@ -808,6 +808,7 @@ PROTOBUF_HEADERS = [
     "cpp_file_options.pb.h",
     "descriptor.h",
     "descriptor.pb.h",
+    "descriptor_builder.h",
     "descriptor_database.h",
     "descriptor_visitor.h",
     "dynamic_message.h",

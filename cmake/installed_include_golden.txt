@@ -49,6 +49,7 @@ google/protobuf/descriptor.pb.h
 google/protobuf/descriptor.proto
 google/protobuf/descriptor.upb.h
 google/protobuf/descriptor.upb_minitable.h
+google/protobuf/descriptor_builder.h
 google/protobuf/descriptor_database.h
 google/protobuf/descriptor_legacy.h
 google/protobuf/descriptor_lite.h
