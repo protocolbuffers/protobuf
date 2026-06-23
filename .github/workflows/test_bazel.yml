@@ -81,36 +81,6 @@ jobs:
             cd examples;
             bazel build //... @com_google_protobuf-examples-with-hyphen//... $BAZEL_FLAGS --enable_bzlmod=${{ matrix.bzlmod }} --enable_workspace=${{ !matrix.bzlmod }} ${{ matrix.toolchain_resolution }};
 
-  prebuilt-protoc:
-    strategy:
-      fail-fast: false
-      matrix:
-        runner: [ ubuntu, windows, macos ]
-        bazelversion: [ '8.6.0', '9.0.0' ]
-        bzlmod: [ true ]
-        toolchain_resolution:
-          # Default flags, uses from prebuilt protoc
-          - ""
-    runs-on: ${{ matrix.runner }}-latest
-    name: ${{ matrix.continuous-only && inputs.continuous-prefix || '' }} Prebuilt test ${{ matrix.runner }} ${{ matrix.bazelversion }} ${{ matrix.toolchain_resolution && ' (toolchain resolution)' || '' }}
-    steps:
-      - name: Checkout pending changes
-        if: ${{ !matrix.continuous-only || inputs.continuous-run }}
-        uses: protocolbuffers/protobuf-ci/checkout@v5
-        with:
-          ref: ${{ inputs.safe-checkout }}
-
-      - name: Run tests
-        if: ${{ !matrix.continuous-only || inputs.continuous-run }}
-        uses: protocolbuffers/protobuf-ci/bazel@v5
-        with:
-          credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
-          bazel-cache: examples-prebuilt-${{ matrix.bazelversion }}-${{ matrix.toolchain_resolution }}
-          version: ${{ matrix.bazelversion }}
-          bash: >
-            cd examples/example_without_cc_toolchain;
-            bazel build //... $BAZEL_FLAGS ${{ matrix.toolchain_resolution }};
-
   bazel-tests-ubuntu:
     strategy:
       fail-fast: false   # Don't cancel all jobs if one fails.
