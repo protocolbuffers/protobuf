@@ -333,6 +333,44 @@ TEST(RepeatedFieldTest, RepeatedMessageFallback) {
   EXPECT_EQ(upb_Array_Size(arr), 2u);
 }
 
+TEST(RepeatedFieldTest, RepeatedMessageLongVarintSizeFastPath) {
+  char trace_buf[64];
+  Arena mt_arena;
+  Arena msg_arena;
+
+  auto [sub_mt, sub_field] =
+      test::MiniTable::MakeSingleFieldTable<test::field_types::Int32>(
+          1, kUpb_DecodeFast_Scalar, mt_arena.ptr());
+
+  auto [mt, field] =
+      test::MiniTable::MakeSingleFieldTable<test::field_types::Message>(
+          1, kUpb_DecodeFast_Repeated, mt_arena.ptr());
+
+  const upb_MiniTable* subs[1] = {sub_mt};
+  bool linked =
+      upb_MiniTable_Link(const_cast<upb_MiniTable*>(mt), subs, 1, nullptr, 0);
+  ASSERT_TRUE(linked);
+
+  upb_Message* msg = upb_Message_New(mt, msg_arena.ptr());
+
+  // Payload:
+  // Element 1: tag 1, len 2, int32 value 5
+  // Element 2: tag 1, len 2 (parsed as overlong 3-byte varint), int32 value 6
+  std::string payload("\x0a\x02\x08\x05\x0a\x82\x80\x00\x08\x06", 10);
+  upb_DecodeStatus result =
+      upb_DecodeWithTrace(payload.data(), payload.size(), msg, mt, nullptr, 0,
+                          msg_arena.ptr(), trace_buf, sizeof(trace_buf));
+
+  ASSERT_EQ(result, kUpb_DecodeStatus_Ok) << upb_DecodeStatus_String(result);
+#if !defined(NDEBUG)
+#if UPB_FASTTABLE
+  EXPECT_EQ(FilteredTrace(absl::string_view(trace_buf)), "DDFFDFF");
+#else
+  EXPECT_EQ(FilteredTrace(absl::string_view(trace_buf)), "MMMM");
+#endif
+#endif
+}
+
 TEST(RepeatedFieldTest, LongRepeatedField) {
   auto trace_buf = std::make_unique<std::array<char, 1024>>();
   using TypeParam = field_types::Fixed64;
