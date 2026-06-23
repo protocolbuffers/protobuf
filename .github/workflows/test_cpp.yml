@@ -37,7 +37,7 @@ jobs:
           - { name: No-RTTI, flags: --cxxopt=-fno-rtti, continuous-only: true }
         include:
           # Set defaults
-          - image: us-docker.pkg.dev/protobuf-build/containers/test/linux/sanitize:8.0.1-d415763a389bb62a6f126b08c992e83f9f7dc1b4
+          - image: us-docker.pkg.dev/protobuf-build/containers/test/linux/sanitize:8.0.1-a6ca8ba8e77d63471b4ad05f8643e1fc58b30e12
           - targets: //pkg/... //src/... //third_party/utf8_range/... //conformance:conformance_framework_tests
           # Override cases with custom images
           - config: { name: "Bazel8", flags: --cxxopt="-Wno-self-assign-overloaded" }
@@ -50,12 +50,12 @@ jobs:
             targets: "//src/... //third_party/utf8_range/..."
           - config: { name: "TCMalloc" }
             cache_key: TcMalloc
-            image: "us-docker.pkg.dev/protobuf-build/containers/test/linux/tcmalloc:8.0.1-d415763a389bb62a6f126b08c992e83f9f7dc1b4"
+            image: "us-docker.pkg.dev/protobuf-build/containers/test/linux/tcmalloc:8.0.1-a6ca8ba8e77d63471b4ad05f8643e1fc58b30e12"
             targets: "//src/... //third_party/utf8_range/..."
           - config: { name: "aarch64", flags: "--platforms=//build_defs:linux-aarch_64" }
             cache_key: aarch64-bazel8
             targets: "//src/... //src/google/protobuf/compiler:protoc_aarch64_test //third_party/utf8_range/..."
-            image: "us-docker.pkg.dev/protobuf-build/containers/test/linux/emulation:8.0.1-aarch64-168f9c9d015a0fa16611e1e9eede796fe9bfbb69"
+            image: "us-docker.pkg.dev/protobuf-build/containers/test/linux/emulation:8.0.1-aarch64-a6ca8ba8e77d63471b4ad05f8643e1fc58b30e12"
     name: ${{ matrix.config.continuous-only && inputs.continuous-prefix || '' }} Linux ${{ matrix.config.name }}
     runs-on: ${{ matrix.config.runner || 'ubuntu-latest' }}
     steps:
@@ -135,7 +135,7 @@ jobs:
         if: ${{ !matrix.continuous-only || inputs.continuous-run }}
         uses: protocolbuffers/protobuf-ci/docker@v5
         with:
-          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/emulation:8.0.1-${{ matrix.arch }}-168f9c9d015a0fa16611e1e9eede796fe9bfbb69
+          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/emulation:8.0.1-${{ matrix.arch }}-a6ca8ba8e77d63471b4ad05f8643e1fc58b30e12
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           entrypoint: bash
           command: >
