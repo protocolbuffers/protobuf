@@ -219,6 +219,7 @@ cc_library(
         "//upb/base",
         "//upb/mem",
         "//upb/mini_table",
+        "//upb/mini_table:compat",
         "//upb/mini_table:internal",
         "//upb/port",
         "//upb/wire:back_alloc",

@@ -207,8 +207,8 @@ TEST(ConvertTest, DeepConvertMapMessage) {
       dst, 10, &dst_val));
   EXPECT_EQ(123, upb_test_convert_MessageWithInt32Clone_f1(dst_val));
 
-  // It should be a deep copy, not the same pointer.
-  EXPECT_NE((const void*)dst_val, (const void*)val);
+  // Shallow copy expected since they are layout-equivalent.
+  EXPECT_EQ((const void*)dst_val, (const void*)val);
 }
 
 TEST(ConvertTest, DeepConvertScalarMap) {
