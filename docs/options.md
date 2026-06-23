@@ -573,3 +573,8 @@ about your project (name and website) so we can add an entry for you.
 
     *   Website: https://github.com/protocgen/proto2type
     *   Extensions: 1307
+
+1.  Motif
+
+    *   Website: https://motif.io
+    *   Extensions: 1308
