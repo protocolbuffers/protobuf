@@ -821,7 +821,10 @@ public abstract class CodedInputStream {
 
     private final boolean immutable;
 
-    /** The clamped reading pointer stop for the active buffer slice. */
+    /**
+     * The clamped reading limit, guaranteed to be <= {@code bufferLimit}. Reading stops when {@code
+     * pos} reaches this index. This is the clamped version of {@code currentLimit}.
+     */
     private int limit;
 
     private int pos;
@@ -830,12 +833,13 @@ public abstract class CodedInputStream {
     private boolean enableAliasing;
 
     /**
-     * The limit of the end of the current message relative to startPos. Note that this can exceed
-     * the physical buffer capacity (both under Integer.MAX_VALUE state and also in the case of a
-     * corrupted input containing a length that would go beyond bufferLimit).
+     * The unclamped absolute limit of the end of the current message (as an absolute index in the
+     * buffer). This can exceed the physical buffer capacity (e.g., when it is {@code
+     * Integer.MAX_VALUE} indicating no limit, or if the input is corrupt and specifies a length
+     * extending beyond {@code bufferLimit}).
      *
-     * <p>Note: when this value is modified, setCurrentLimit() must be used to ensure `limit` is
-     * updated accordingly.
+     * <p>Note: when this value is modified, {@code setCurrentLimit()} must be called to ensure
+     * {@code limit} is updated (clamped) accordingly.
      */
     private int currentLimit = Integer.MAX_VALUE;
 
@@ -1482,16 +1486,21 @@ public abstract class CodedInputStream {
       if (byteLimit < 0) {
         throw InvalidProtocolBufferException.negativeSize();
       }
-      byteLimit += getTotalBytesRead();
-      if (byteLimit < 0) {
-        // Check for for integer overflow in byteLimit
-        throw InvalidProtocolBufferException.sizeLimitExceeded();
+      int newLimit = pos + byteLimit;
+      if (newLimit < 0) {
+        // Absolute limit overflowed. Check if relative limit would have overflowed. This is
+        // slightly odd but done this way to maintain the semantics of the prior implementation.
+        if (byteLimit > Integer.MAX_VALUE - (pos - startPos)) {
+          throw InvalidProtocolBufferException.sizeLimitExceeded();
+        }
+        // It wouldn't have overflowed relatively, so clamp it to Integer.MAX_VALUE.
+        newLimit = Integer.MAX_VALUE;
       }
       final int oldLimit = currentLimit;
-      if (byteLimit > oldLimit) {
+      if (newLimit > oldLimit) {
         throw InvalidProtocolBufferException.truncatedMessage();
       }
-      setCurrentLimit(byteLimit);
+      setCurrentLimit(newLimit);
 
       return oldLimit;
     }
@@ -1503,15 +1512,13 @@ public abstract class CodedInputStream {
     private void setCurrentLimit(int newLimit) {
       currentLimit = newLimit;
 
-      // currentLimit is relative to startPos and without any cap. limit is the resolved absolute
+      // currentLimit is an absolute index and without any cap. limit is the resolved absolute
       // index within the buffer itself and is guaranteed always to be within the buffer range.
 
-      // Set limit = currentLimit + startPos if it is within the buffer range, otherwise clamp
-      // limit to bufferLimit. Ensure we also clamp in the case of integer overflow when calculating
-      // currentLimit + startPos, which is reachable both from malformed inputs and when
-      // currentLimit is Integer.MAX_VALUE (which indicates no limit).
-      if (currentLimit <= bufferLimit - startPos) {
-        limit = currentLimit + startPos;
+      // Set limit = currentLimit if it is within the buffer range, otherwise clamp limit to
+      // bufferLimit.
+      if (currentLimit <= bufferLimit) {
+        limit = currentLimit;
       } else {
         limit = bufferLimit;
       }
@@ -1528,7 +1535,7 @@ public abstract class CodedInputStream {
         return -1;
       }
 
-      return currentLimit - getTotalBytesRead();
+      return currentLimit - pos;
     }
 
     @Override

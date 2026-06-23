@@ -24,6 +24,8 @@
 extern "C" {
 #endif
 
+#define _UPB_ARRAY_DEFAULT_INITIAL_SIZE 4
+
 // LINT.IfChange(upb_Array)
 
 // Our internal representation for repeated fields.

@@ -23,7 +23,7 @@
 
 upb_Array* upb_Array_New(upb_Arena* a, upb_CType type) {
   const int lg2 = UPB_PRIVATE(_upb_CType_SizeLg2)(type);
-  return UPB_PRIVATE(_upb_Array_New)(a, 4, lg2);
+  return UPB_PRIVATE(_upb_Array_New)(a, _UPB_ARRAY_DEFAULT_INITIAL_SIZE, lg2);
 }
 
 upb_MessageValue upb_Array_Get(const upb_Array* arr, size_t i) {
@@ -171,6 +171,10 @@ bool UPB_PRIVATE(_upb_Array_Realloc)(upb_Array* array, size_t min_capacity,
       break;
     }
   }
+
+  // If capacity doubling overflowed to SIZE_MAX, fail. No valid array can hold
+  // SIZE_MAX elements, and downstream size calculations would overflow.
+  if (new_capacity == SIZE_MAX) return false;
 
   size_t new_bytes = new_capacity;
   if (upb_ShlOverflow(&new_bytes, lg2)) {

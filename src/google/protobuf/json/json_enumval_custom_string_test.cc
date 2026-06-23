@@ -49,6 +49,16 @@ TEST(JsonEnumvalCustomStringTest, GreatHelmSerialization) {
   EXPECT_EQ(json_res, R"json({"armor":"gr8 helm"})json");
 }
 
+// Test that we accept the raw enum name as input even when a custom JSON
+// enumval string option is set for Great Helm.
+TEST(JsonEnumvalCustomStringTest, GreatHelmRawNameAccepted) {
+  Knight msg;
+  absl::Status status = json::JsonStringToMessage(
+      R"json({"armor":"ARMOR_GREAT_HELM"})json", &msg);
+  EXPECT_OK(status);
+  EXPECT_EQ(msg.armor(), Armor::ARMOR_GREAT_HELM);
+}
+
 // The gauntlet has a double quote in the middle of its custom json enumval,
 // let's make sure special characters are escaped properly.
 TEST(JsonEnumvalCustomStringTest, GauntletSerialization) {
@@ -94,6 +104,122 @@ TEST(JsonEnumvalCustomStringTest, DoubleQuoteEnumSerialization) {
   absl::Status parse_status = json::JsonStringToMessage(json_res, &msg2);
   EXPECT_OK(parse_status);
   EXPECT_EQ(msg2.armor(), Armor::ARMOR_PLATE);
+}
+
+// Coif is an empty custom string, let's make sure that works.
+TEST(JsonEnumvalCustomStringTest, CoifEmptySerialization) {
+  Knight msg;
+  msg.set_armor(Armor::ARMOR_COIF);
+  EXPECT_EQ(msg.armor(), Armor::ARMOR_COIF);
+  std::string json_res{};
+  absl::Status status = json::MessageToJsonString(msg, &json_res);
+  EXPECT_OK(status);
+  EXPECT_EQ(json_res, R"json({"armor":""})json");
+  // Roundtrip to make sure we can parse it back
+  Knight msg2;
+  absl::Status parse_status = json::JsonStringToMessage(json_res, &msg2);
+  EXPECT_OK(parse_status);
+  EXPECT_EQ(msg2.armor(), Armor::ARMOR_COIF);
+}
+
+// Ensure newlines and tabs are properly escaped.
+TEST(JsonEnumvalCustomStringTest, PauldronEscapingSerialization) {
+  Knight msg;
+  msg.set_armor(Armor::ARMOR_PAULDRON);
+  EXPECT_EQ(msg.armor(), Armor::ARMOR_PAULDRON);
+  std::string json_res{};
+  absl::Status status = json::MessageToJsonString(msg, &json_res);
+  EXPECT_OK(status);
+
+  EXPECT_EQ(json_res, R"json({"armor":"p\taul\ndron"})json");
+  // Roundtrip to make sure we can parse it back
+  Knight msg2;
+  absl::Status parse_status = json::JsonStringToMessage(json_res, &msg2);
+  EXPECT_OK(parse_status);
+  EXPECT_EQ(msg2.armor(), Armor::ARMOR_PAULDRON);
+}
+
+// Test that aliased enum values both serialize to the correct custom string.
+TEST(JsonEnumvalCustomStringTest, AliasedSerialization) {
+  {
+    Knight msg;
+    msg.set_armor(Armor::ARMOR_SABATON);
+    EXPECT_EQ(msg.armor(), Armor::ARMOR_SABATON);
+
+    std::string json_res{};
+    absl::Status status = json::MessageToJsonString(msg, &json_res);
+    EXPECT_OK(status);
+    EXPECT_EQ(json_res, R"json({"armor":"sabaton"})json");
+
+    Knight msg2;
+    absl::Status parse_status = json::JsonStringToMessage(json_res, &msg2);
+    EXPECT_OK(parse_status);
+    EXPECT_EQ(msg2.armor(), Armor::ARMOR_SABATON);
+  }
+
+  {
+    Knight msg;
+    msg.set_armor(Armor::ARMOR_SOLLERET);
+    EXPECT_EQ(msg.armor(), Armor::ARMOR_SOLLERET);
+
+    std::string json_res{};
+    absl::Status status = json::MessageToJsonString(msg, &json_res);
+    EXPECT_OK(status);
+    EXPECT_EQ(json_res, R"json({"armor":"sabaton"})json");
+
+    Knight msg2;
+    absl::Status parse_status = json::JsonStringToMessage(json_res, &msg2);
+    EXPECT_OK(parse_status);
+    EXPECT_EQ(msg2.armor(), Armor::ARMOR_SOLLERET);
+  }
+}
+
+// Test that we accept the raw enum names as input even when a custom JSON
+// enumval string option is set for aliased values.
+TEST(JsonEnumvalCustomStringTest, AliasedRawNamesAccepted) {
+  {
+    Knight msg;
+    absl::Status status =
+        json::JsonStringToMessage(R"json({"armor":"ARMOR_SABATON"})json", &msg);
+    EXPECT_OK(status);
+    EXPECT_EQ(msg.armor(), Armor::ARMOR_SABATON);
+  }
+  {
+    Knight msg;
+    absl::Status status = json::JsonStringToMessage(
+        R"json({"armor":"ARMOR_SOLLERET"})json", &msg);
+    EXPECT_OK(status);
+    EXPECT_EQ(msg.armor(), Armor::ARMOR_SOLLERET);
+  }
+}
+
+// Test that custom enumval option string containing numeric digits (e.g., "8")
+// serializes properly and can be parsed back as a string, and is also parsed
+// correctly as an integer input.
+TEST(JsonEnumvalCustomStringTest, NumericStringCustomOption) {
+  {
+    Knight msg;
+    msg.set_armor(Armor::ARMOR_HACHI_MAI_DO);
+    EXPECT_EQ(msg.armor(), Armor::ARMOR_HACHI_MAI_DO);
+
+    std::string json_res{};
+    absl::Status status = json::MessageToJsonString(msg, &json_res);
+    EXPECT_OK(status);
+    EXPECT_EQ(json_res, R"json({"armor":"8"})json");
+
+    Knight msg2;
+    absl::Status parse_status = json::JsonStringToMessage(json_res, &msg2);
+    EXPECT_OK(parse_status);
+    EXPECT_EQ(msg2.armor(), Armor::ARMOR_HACHI_MAI_DO);
+  }
+  {
+    // Verify that the integer input 8 also parses successfully.
+    Knight msg;
+    absl::Status status =
+        json::JsonStringToMessage(R"json({"armor":8})json", &msg);
+    EXPECT_OK(status);
+    EXPECT_EQ(msg.armor(), Armor::ARMOR_HACHI_MAI_DO);
+  }
 }
 
 // Int overrides always win.

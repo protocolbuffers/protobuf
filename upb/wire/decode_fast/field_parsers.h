@@ -40,11 +40,6 @@ struct upb_FastDecoder_Return;
 
 UPB_DECODEFAST_FUNCTIONS(F);
 
-// This just uses the regular (non-fast) parser to parse a single field.
-UPB_PRESERVE_NONE
-struct upb_FastDecoder_Return _upb_FastDecoder_FallbackToMiniTable(
-    PARSE_PARAMS);
-
 UPB_PRESERVE_NONE
 struct upb_FastDecoder_Return _upb_FastDecoder_DecodeGeneric(PARSE_PARAMS);
 
@@ -54,6 +49,10 @@ struct upb_FastDecoder_Return _upb_FastDecoder_DecodeMismatchedSlot(
 
 UPB_PRESERVE_NONE
 struct upb_FastDecoder_Return _upb_FastDecoder_DecodeUnknown(PARSE_PARAMS);
+
+UPB_PRESERVE_NONE
+struct upb_FastDecoder_Return _upb_FastDecoder_DecodeUnknownValue(PARSE_PARAMS);
+
 UPB_PRESERVE_NONE
 struct upb_FastDecoder_Return _upb_FastDecoder_DecodeExtensionOrUnknown(
     PARSE_PARAMS);
@@ -65,6 +64,9 @@ struct upb_FastDecoder_Return _upb_FastDecoder_DecodeCheckMiniTable(
 UPB_PRESERVE_NONE
 struct upb_FastDecoder_Return _upb_FastDecoder_DecodeCheckExtRegMiniTable(
     PARSE_PARAMS);
+
+UPB_PRESERVE_NONE
+struct upb_FastDecoder_Return _upb_FastDecoder_DecodeLongTag(PARSE_PARAMS);
 
 #undef F
 #undef PARSE_PARAMS

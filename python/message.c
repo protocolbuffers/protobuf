@@ -228,7 +228,8 @@ static upb_Message* PyUpb_Message_GetMsg(PyUpb_Message* self) {
 }
 
 bool PyUpb_Message_TryCheck(PyObject* self) {
-  PyUpb_ModuleState* state = PyUpb_ModuleState_Get();
+  PyUpb_ModuleState* state = PyUpb_ModuleState_MaybeGet();
+  if (!state) return false;
   PyObject* type = (PyObject*)Py_TYPE(self);
   return Py_TYPE(type) == state->message_meta_type;
 }
@@ -373,7 +374,7 @@ err:
   return ret;
 }
 
-void PyUpb_Message_EnsureReified(PyUpb_Message* self);
+bool PyUpb_Message_AssureWritable(PyUpb_Message* self);
 
 static bool PyUpb_Message_InitMapAttribute(PyObject* _self, PyObject* name,
                                            const upb_FieldDef* f,
@@ -530,7 +531,7 @@ int PyUpb_Message_InitAttributes(PyObject* _self, PyObject* args,
   Py_ssize_t pos = 0;
   PyObject* name;
   PyObject* value;
-  PyUpb_Message_EnsureReified(self);
+  PyUpb_Message_AssureWritable(self);
   upb_Message* msg = PyUpb_Message_GetMsg(self);
   upb_Arena* arena = PyUpb_Arena_Get(self->arena);
 
@@ -576,6 +577,7 @@ static PyObject* PyUpb_Message_NewStub(PyObject* parent, const upb_FieldDef* f,
                                        PyObject* arena) {
   const upb_MessageDef* sub_m = upb_FieldDef_MessageSubDef(f);
   PyObject* cls = PyUpb_Descriptor_GetClass(sub_m);
+  if (!cls) return NULL;
 
   PyUpb_Message* msg = (void*)PyType_GenericAlloc((PyTypeObject*)cls, 0);
   msg->def = (uintptr_t)f | 1;
@@ -647,7 +649,7 @@ static void PyUpb_Message_SetField(PyUpb_Message* parent, const upb_FieldDef* f,
 }
 
 /*
- * PyUpb_Message_EnsureReified()
+ * PyUpb_Message_AssureWritable()
  *
  * This implements the "expando" behavior of Python protos:
  *   foo = FooProto()
@@ -659,13 +661,24 @@ static void PyUpb_Message_SetField(PyUpb_Message* parent, const upb_FieldDef* f,
  *   foo.bar.bar.bar.bar.bar.baz = 5
  *
  * This function should be called before performing any mutation of a protobuf
- * object.
+ * object. It will check if the message is frozen, and if not, it will
+ * reify the message (and any parent stubs) so that they have underlying
+ * upb_Message objects.
+ *
+ * Returns true if writable. If the message is frozen, it sets a Python
+ * TypeError and returns false. Note that we mandate that
  *
  * Post-condition:
- *   PyUpb_Message_IsStub(self) is false
+ *   If true is returned, PyUpb_Message_IsStub(self) is false
  */
-void PyUpb_Message_EnsureReified(PyUpb_Message* self) {
-  if (!PyUpb_Message_IsStub(self)) return;
+bool PyUpb_Message_AssureWritable(PyUpb_Message* self) {
+  if (PyUpb_Message_IsFrozen((PyObject*)self)) {
+    PyUpb_SetFrozenError();
+    return false;
+  }
+
+  if (!PyUpb_Message_IsStub(self)) return true;
+
   upb_Arena* arena = PyUpb_Arena_Get(self->arena);
 
   // This is a non-present message. We need to create a real upb_Message for
@@ -690,6 +703,7 @@ void PyUpb_Message_EnsureReified(PyUpb_Message* self) {
   // Releases ref previously owned by child->ptr.parent of our child.
   Py_DECREF(child);
   self->version++;
+  return true;
 }
 
 static void PyUpb_Message_SyncSubobjs(PyUpb_Message* self);
@@ -825,16 +839,19 @@ static PyObject* PyUpb_Message_RichCompare(PyObject* _self, PyObject* other,
 
 void PyUpb_Message_CacheDelete(PyObject* _self, const upb_FieldDef* f) {
   PyUpb_Message* self = (void*)_self;
-  PyUpb_WeakMap_Delete(self->unset_subobj_map, f);
+  if (self->unset_subobj_map && f) {
+    PyUpb_WeakMap_TryDelete(self->unset_subobj_map, f);
+  }
 }
 
-void PyUpb_Message_SetConcreteSubobj(PyObject* _self, const upb_FieldDef* f,
+bool PyUpb_Message_SetConcreteSubobj(PyObject* _self, const upb_FieldDef* f,
                                      upb_MessageValue subobj) {
   PyUpb_Message* self = (void*)_self;
-  PyUpb_Message_EnsureReified(self);
+  if (!PyUpb_Message_AssureWritable(self)) return false;
   PyUpb_Message_CacheDelete(_self, f);
   upb_Message_SetFieldByDef(self->ptr.msg, f, subobj,
                             PyUpb_Arena_Get(self->arena));
+  return true;
 }
 
 static void PyUpb_Message_Dealloc(PyObject* _self) {
@@ -862,6 +879,7 @@ PyObject* PyUpb_Message_Get(upb_Message* u_msg, const upb_MessageDef* m,
   if (ret) return ret;
 
   PyObject* cls = PyUpb_Descriptor_GetClass(m);
+  if (!cls) return NULL;
   // It is not safe to use PyObject_{,GC}_New() due to:
   //    https://bugs.python.org/issue35810
   PyUpb_Message* py_msg = (void*)PyType_GenericAlloc((PyTypeObject*)cls, 0);
@@ -883,21 +901,14 @@ PyObject* PyUpb_Message_Get(upb_Message* u_msg, const upb_MessageDef* m,
  * Non-present messages return "stub" objects that point to their parent, but
  * will materialize into real upb objects if they are mutated.
  *
- * Note: we do *not* create stubs for repeated/map fields unless the parent
- * is a stub:
- *
  *    msg = TestMessage()
  *    msg.submessage                # (A) Creates a stub
- *    msg.repeated_foo              # (B) Does *not* create a stub
+ *    msg.repeated_foo              # (B) Creates a stub
  *    msg.submessage.repeated_bar   # (C) Creates a stub
  *
  * In case (B) we have some freedom: we could either create a stub, or create
- * a reified object with underlying data.  It appears that either could work
- * equally well, with no observable change to users.  There isn't a clear
- * advantage to either choice.  We choose to follow the behavior of the
- * pre-existing C++ behavior for consistency, but if it becomes apparent that
- * there would be some benefit to reversing this decision, it should be totally
- * within the realm of possibility.
+ * a reified object with underlying data. We choose to create a stub in all
+ * cases to simplify the model.
  */
 PyObject* PyUpb_Message_GetStub(PyUpb_Message* self,
                                 const upb_FieldDef* field) {
@@ -916,23 +927,33 @@ PyObject* PyUpb_Message_GetStub(PyUpb_Message* self,
   } else {
     subobj = PyUpb_Message_NewStub(&self->ob_base, field, self->arena);
   }
+  if (!subobj) return NULL;
   PyUpb_WeakMap_Add(self->unset_subobj_map, field, subobj);
 
-  assert(!PyErr_Occurred());
   return subobj;
 }
 
 PyObject* PyUpb_Message_GetPresentWrapper(PyUpb_Message* self,
                                           const upb_FieldDef* field) {
   assert(!PyUpb_Message_IsStub(self));
-  upb_MutableMessageValue mutval =
-      upb_Message_Mutable(self->ptr.msg, field, PyUpb_Arena_Get(self->arena));
+  upb_MessageValue val;
+
+  if (PyUpb_Message_IsFrozen((PyObject*)self)) {
+    val = upb_Message_GetFieldByDef(self->ptr.msg, field);
+  } else {
+    upb_MutableMessageValue mutval =
+        upb_Message_Mutable(self->ptr.msg, field, PyUpb_Arena_Get(self->arena));
+    val.array_val = mutval.array;
+  }
+
   if (upb_FieldDef_IsMap(field)) {
-    return PyUpb_MapContainer_GetOrCreateWrapper(mutval.map, field,
+    assert(val.map_val);
+    return PyUpb_MapContainer_GetOrCreateWrapper((upb_Map*)val.map_val, field,
                                                  self->arena);
   } else {
-    return PyUpb_RepeatedContainer_GetOrCreateWrapper(mutval.array, field,
-                                                      self->arena);
+    assert(val.array_val);
+    return PyUpb_RepeatedContainer_GetOrCreateWrapper((upb_Array*)val.array_val,
+                                                      field, self->arena);
   }
 }
 
@@ -966,14 +987,22 @@ PyObject* PyUpb_Message_GetFieldValue(PyObject* _self,
   bool submsg = upb_FieldDef_IsSubMessage(field);
   bool seq = upb_FieldDef_IsRepeated(field);
 
-  if ((PyUpb_Message_IsStub(self) && (submsg || seq)) ||
-      (submsg && !seq && !upb_Message_HasFieldByDef(self->ptr.msg, field))) {
+  if (PyUpb_Message_IsStub(self) && (submsg || seq)) {
     return PyUpb_Message_GetStub(self, field);
-  } else if (seq) {
-    return PyUpb_Message_GetPresentWrapper(self, field);
-  } else {
-    return PyUpb_Message_GetScalarValue(self, field);
   }
+
+  if (seq) {
+    upb_MessageValue val = upb_Message_GetFieldByDef(self->ptr.msg, field);
+    bool is_unset = upb_FieldDef_IsMap(field) ? !val.map_val : !val.array_val;
+    if (is_unset) return PyUpb_Message_GetStub(self, field);
+    return PyUpb_Message_GetPresentWrapper(self, field);
+  }
+
+  if (submsg && !upb_Message_HasFieldByDef(self->ptr.msg, field)) {
+    return PyUpb_Message_GetStub(self, field);
+  }
+
+  return PyUpb_Message_GetScalarValue(self, field);
 }
 
 int PyUpb_Message_SetFieldValue(PyObject* _self, const upb_FieldDef* field,
@@ -989,7 +1018,7 @@ int PyUpb_Message_SetFieldValue(PyObject* _self, const upb_FieldDef* field,
     return -1;
   }
 
-  PyUpb_Message_EnsureReified(self);
+  if (!PyUpb_Message_AssureWritable(self)) return -1;
 
   if (upb_FieldDef_IsSubMessage(field)) {
     const upb_MessageDef* msgdef = upb_FieldDef_MessageSubDef(field);
@@ -1025,6 +1054,36 @@ int PyUpb_Message_SetFieldValue(PyObject* _self, const upb_FieldDef* field,
 int PyUpb_Message_GetVersion(PyObject* _self) {
   PyUpb_Message* self = (void*)_self;
   return self->version;
+}
+
+bool PyUpb_Message_IsFrozen(PyObject* _self) {
+  PyUpb_Message* self = (void*)_self;
+  while (PyUpb_Message_IsStub(self)) {
+    self = self->ptr.parent;
+  }
+  bool is_frozen = upb_Message_IsFrozen(self->ptr.msg);
+  // Invariant: Since we only store the parent *message* (and not any parent
+  // repeated field or map) in a stub's `ptr.parent`, we wouldn't correctly
+  // handle the case where a parent message is unfrozen but a containing
+  // repeated field or map is frozen. Therefore, we enforce the invariant that
+  // every unfrozen message must also have unfrozen repeated fields and maps.
+#ifndef NDEBUG
+  if (!is_frozen) {
+    const upb_MessageDef* msgdef = _PyUpb_Message_GetMsgdef(self);
+    int n = upb_MessageDef_FieldCount(msgdef);
+    for (int i = 0; i < n; i++) {
+      const upb_FieldDef* f = upb_MessageDef_Field(msgdef, i);
+      if (upb_FieldDef_IsMap(f)) {
+        upb_MessageValue val = upb_Message_GetFieldByDef(self->ptr.msg, f);
+        assert(!val.map_val || !upb_Map_IsFrozen(val.map_val));
+      } else if (upb_FieldDef_IsRepeated(f)) {
+        upb_MessageValue val = upb_Message_GetFieldByDef(self->ptr.msg, f);
+        assert(!val.array_val || !upb_Array_IsFrozen(val.array_val));
+      }
+    }
+  }
+#endif
+  return is_frozen;
 }
 
 /*
@@ -1295,11 +1354,13 @@ PyObject* PyUpb_Message_MergeFrom(PyObject* self, PyObject* arg) {
   if (!serialized) return NULL;
   PyObject* ret = PyUpb_Message_MergeFromString(self, serialized);
   Py_DECREF(serialized);
-  Py_XDECREF(ret);
+  if (!ret) return NULL;
+  Py_DECREF(ret);
   Py_RETURN_NONE;
 }
 
 static PyObject* PyUpb_Message_CopyFrom(PyObject* _self, PyObject* arg) {
+  PyUpb_Message* self = (void*)_self;
   if (_self->ob_type != arg->ob_type) {
     PyErr_Format(PyExc_TypeError,
                  "Parameter to CopyFrom() must be instance of same class: "
@@ -1310,9 +1371,8 @@ static PyObject* PyUpb_Message_CopyFrom(PyObject* _self, PyObject* arg) {
   if (_self == arg) {
     Py_RETURN_NONE;
   }
-  PyUpb_Message* self = (void*)_self;
   PyUpb_Message* other = (void*)arg;
-  PyUpb_Message_EnsureReified(self);
+  if (!PyUpb_Message_AssureWritable(self)) return NULL;
 
   const upb_Message* other_msg = PyUpb_Message_GetIfReified((PyObject*)other);
   if (other_msg) {
@@ -1331,7 +1391,7 @@ static PyObject* PyUpb_Message_CopyFrom(PyObject* _self, PyObject* arg) {
 
 static PyObject* PyUpb_Message_SetInParent(PyObject* _self, PyObject* arg) {
   PyUpb_Message* self = (void*)_self;
-  PyUpb_Message_EnsureReified(self);
+  if (!PyUpb_Message_AssureWritable(self)) return NULL;
   Py_RETURN_NONE;
 }
 
@@ -1344,6 +1404,7 @@ static PyObject* PyUpb_Message_UnknownFields(PyObject* _self, PyObject* arg) {
 
 PyObject* PyUpb_Message_MergeFromString(PyObject* _self, PyObject* arg) {
   PyUpb_Message* self = (void*)_self;
+  if (!PyUpb_Message_AssureWritable(self)) return NULL;
   char* buf;
   Py_ssize_t size;
   PyObject* bytes = NULL;
@@ -1361,7 +1422,6 @@ PyObject* PyUpb_Message_MergeFromString(PyObject* _self, PyObject* arg) {
     return NULL;
   }
 
-  PyUpb_Message_EnsureReified(self);
   const upb_MessageDef* msgdef = _PyUpb_Message_GetMsgdef(self);
   const upb_FileDef* file = upb_MessageDef_File(msgdef);
   const upb_ExtensionRegistry* extreg =
@@ -1404,7 +1464,7 @@ static PyObject* PyUpb_Message_ByteSize(PyObject* self, PyObject* args) {
 }
 
 static PyObject* PyUpb_Message_Clear(PyUpb_Message* self) {
-  PyUpb_Message_EnsureReified(self);
+  if (!PyUpb_Message_AssureWritable(self)) return NULL;
   const upb_MessageDef* msgdef = _PyUpb_Message_GetMsgdef(self);
   PyUpb_WeakMap* subobj_map = self->unset_subobj_map;
 
@@ -1436,56 +1496,61 @@ static PyObject* PyUpb_Message_Clear(PyUpb_Message* self) {
   Py_RETURN_NONE;
 }
 
-void PyUpb_Message_DoClearField(PyObject* _self, const upb_FieldDef* f) {
+bool PyUpb_Message_DoClearField(PyObject* _self, const upb_FieldDef* f) {
   PyUpb_Message* self = (void*)_self;
-  PyUpb_Message_EnsureReified((PyUpb_Message*)self);
+  if (!PyUpb_Message_AssureWritable((PyUpb_Message*)self)) return false;
 
   // We must ensure that any stub object is reified so its parent no longer
-  // points to us.
+  // points to us. Otherwise, if the user later mutates the stub, it will
+  // re-attach itself to the parent message, which we just cleared.
   PyObject* sub = self->unset_subobj_map
                       ? PyUpb_WeakMap_Get(self->unset_subobj_map, f)
                       : NULL;
-
+  // The goal is to ensure child is reified here, but that functionality is
+  // encapsulated in the AssureWritable() calls for now. Therefore assuring the
+  // child is writable is a side-effect we rely on here but could be reverted in
+  // the future if needed.
   if (upb_FieldDef_IsMap(f)) {
     // For maps we additionally have to invalidate any iterators.  So we need
     // to get an object even if it's reified.
     if (!sub) {
       sub = PyUpb_Message_GetFieldValue(_self, f);
     }
-    PyUpb_MapContainer_EnsureReified(sub);
+    PyUpb_MapContainer_AssureWritable(sub);
     PyUpb_MapContainer_Invalidate(sub);
   } else if (upb_FieldDef_IsRepeated(f)) {
     if (sub) {
-      PyUpb_RepeatedContainer_EnsureReified(sub);
+      PyUpb_RepeatedContainer_AssureWritable(sub);
     }
   } else if (upb_FieldDef_IsSubMessage(f)) {
     if (sub) {
-      PyUpb_Message_EnsureReified((PyUpb_Message*)sub);
+      PyUpb_Message_AssureWritable((PyUpb_Message*)sub);
     }
   }
 
   Py_XDECREF(sub);
   upb_Message_ClearFieldByDef(self->ptr.msg, f);
+  return true;
 }
 
 static PyObject* PyUpb_Message_ClearExtension(PyObject* _self, PyObject* arg) {
   PyUpb_Message* self = (void*)_self;
-  PyUpb_Message_EnsureReified(self);
+  if (!PyUpb_Message_AssureWritable(self)) return NULL;
   const upb_FieldDef* f = PyUpb_Message_GetExtensionDef(_self, arg);
   if (!f) return NULL;
-  PyUpb_Message_DoClearField(_self, f);
+  if (!PyUpb_Message_DoClearField(_self, f)) return NULL;
   Py_RETURN_NONE;
 }
 
 static PyObject* PyUpb_Message_ClearField(PyObject* _self, PyObject* arg) {
   PyUpb_Message* self = (void*)_self;
 
-  // We always need EnsureReified() here (even for an unset message) to
+  // We always need AssureWritable() here (even for an unset message) to
   // preserve behavior like:
   //   msg = FooMessage()
   //   msg.foo.Clear()
   //   assert msg.HasField("foo")
-  PyUpb_Message_EnsureReified(self);
+  if (!PyUpb_Message_AssureWritable(self)) return NULL;
 
   const upb_FieldDef* f;
   const upb_OneofDef* o;
@@ -1494,13 +1559,15 @@ static PyObject* PyUpb_Message_ClearField(PyObject* _self, PyObject* arg) {
   }
 
   if (o) f = upb_Message_WhichOneofByDef(self->ptr.msg, o);
-  if (f) PyUpb_Message_DoClearField(_self, f);
+  if (f) {
+    if (!PyUpb_Message_DoClearField(_self, f)) return NULL;
+  }
   Py_RETURN_NONE;
 }
 
 static PyObject* PyUpb_Message_DiscardUnknownFields(PyUpb_Message* self,
                                                     PyObject* arg) {
-  PyUpb_Message_EnsureReified(self);
+  if (!PyUpb_Message_AssureWritable(self)) return NULL;
   const upb_MessageDef* msgdef = _PyUpb_Message_GetMsgdef(self);
   const upb_DefPool* ext_pool = upb_FileDef_Pool(upb_MessageDef_File(msgdef));
   upb_Message_DiscardUnknown(self->ptr.msg, msgdef, ext_pool, 64);
@@ -2102,6 +2169,8 @@ bool PyUpb_InitMessage(PyObject* m) {
   state->encode_error_class = PyObject_GetAttrString(mod, "EncodeError");
   state->decode_error_class = PyObject_GetAttrString(mod, "DecodeError");
   state->message_class = PyObject_GetAttrString(mod, "Message");
+  state->frozen_instance_error_class =
+      PyObject_GetAttrString(mod, "FrozenInstanceError");
   Py_DECREF(mod);
 
   PyObject* enum_type_wrapper = PyImport_ImportModule(
@@ -2114,7 +2183,7 @@ bool PyUpb_InitMessage(PyObject* m) {
 
   if (!state->encode_error_class || !state->decode_error_class ||
       !state->message_class || !state->listfields_item_key ||
-      !state->enum_type_wrapper_class) {
+      !state->enum_type_wrapper_class || !state->frozen_instance_error_class) {
     return false;
   }
 

@@ -563,12 +563,12 @@ class TypeDefinedMapFieldBase : public MapFieldBase {
                                                 map_)>()) {}
 
   TypeDefinedMapFieldBase(const Message* prototype,
-                          InternalMetadataOffset offset,
+                          InternalMetadataOffset offset, Arena* arena,
                           const TypeDefinedMapFieldBase& from)
       : MapFieldBase(prototype),
         map_(offset
                  .TranslateForMember<offsetof(TypeDefinedMapFieldBase, map_)>(),
-             from.GetMap()) {}
+             arena, from.GetMap()) {}
 
  protected:
   ~TypeDefinedMapFieldBase() { map_.~Map(); }
@@ -622,12 +622,12 @@ class PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED MapField final
       : MapField(offset) {}
   constexpr MapField(InternalVisibility, InternalMetadataOffset offset)
       : MapField(offset) {}
-  MapField(InternalVisibility, InternalMetadataOffset offset,
+  MapField(InternalVisibility, InternalMetadataOffset offset, Arena* arena,
            const MapField& from)
       : TypeDefinedMapFieldBase<Key, T>(
             MessageGlobalsBase::ToDefaultInstance<Message>(
                 Derived::internal_message_globals()),
-            offset, from) {}
+            offset, arena, from) {}
 
  private:
   explicit constexpr MapField(InternalMetadataOffset offset)

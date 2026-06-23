@@ -17,15 +17,15 @@ import java.io.IOException;
 @ExperimentalApi
 @CheckReturnValue
 interface Schema<T> {
-  /** Writes the given message to the target {@link Writer}. */
-  void writeTo(T message, Writer writer) throws IOException;
+  /** Writes the given message to the target {@link CodedOutputStreamWriter}. */
+  void writeTo(T message, CodedOutputStreamWriter writer) throws IOException;
 
   /**
-   * Reads fields from the given {@link Reader} and merges them into the message. It doesn't make
-   * the message immutable after parsing is done. To make the message immutable, use {@link
-   * #makeImmutable}.
+   * Reads fields from the given {@link CodedInputStreamReader} and merges them into the message. It
+   * doesn't make the message immutable after parsing is done. To make the message immutable, use
+   * {@link #makeImmutable}.
    */
-  void mergeFrom(T message, Reader reader, ExtensionRegistryLite extensionRegistry)
+  void mergeFrom(T message, CodedInputStreamReader reader, ExtensionRegistryLite extensionRegistry)
       throws IOException;
 
   /**

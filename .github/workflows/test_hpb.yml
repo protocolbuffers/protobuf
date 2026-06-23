@@ -22,7 +22,7 @@ jobs:
 
         include:
           - targets: "//hpb/... //hpb_generator/..."
-          - image: "us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:8.0.1-e78301df86b3e4c46ec9ac4d98be00e19305d8f3"
+          - image: "us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:9.0.0-9dca0d9417f43f5f1e97e59969fb0f3e6ae3bd9c"
           - bazel_cmd: "test"
 
     name: Linux ${{ matrix.config.name }}

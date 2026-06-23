@@ -39,9 +39,9 @@ constexpr absl::string_view kDescriptorMetadataFile =
 constexpr absl::string_view kDescriptorPackageName =
     "Google\\Protobuf\\Internal";
 constexpr absl::string_view kValidConstantNames[] = {
-    "int",  "float", "bool",     "string", "true", "false",
-    "null", "void",  "iterable", "parent", "self", "readonly"};
-const int kValidConstantNamesSize = 12;
+    "int",      "float",  "bool", "string",   "true",   "false", "null", "void",
+    "iterable", "parent", "self", "readonly", "object", "mixed", "never"};
+const int kValidConstantNamesSize = 15;
 const int kFieldSetter = 1;
 const int kFieldGetter = 2;
 const int kFieldProperty = 3;

@@ -243,9 +243,7 @@ void ImmutableMessageFieldGenerator::GenerateBuilderMembers(
       printer,
       "$deprecation$public Builder ${$set$capitalized_name$$}$($type$ value)",
 
-      "if (value == null) {\n"
-      "  throw new NullPointerException();\n"
-      "}\n"
+      "java.util.Objects.requireNonNull(value);\n"
       "$name$_ = value;\n",
 
       "$name$Builder_.setMessage(value);\n",
@@ -553,9 +551,7 @@ void ImmutableMessageOneofFieldGenerator::GenerateBuilderMembers(
       printer,
       "$deprecation$public Builder ${$set$capitalized_name$$}$($type$ value)",
 
-      "if (value == null) {\n"
-      "  throw new NullPointerException();\n"
-      "}\n"
+      "java.util.Objects.requireNonNull(value);\n"
       "$oneof_name$_ = value;\n"
       "$on_changed$\n",
 
@@ -953,9 +949,7 @@ void RepeatedImmutableMessageFieldGenerator::GenerateBuilderMembers(
       printer,
       "$deprecation$public Builder ${$set$capitalized_name$$}$(\n"
       "    int index, $type$ value)",
-      "if (value == null) {\n"
-      "  throw new NullPointerException();\n"
-      "}\n"
+      "java.util.Objects.requireNonNull(value);\n"
       "ensure$capitalized_name$IsMutable();\n"
       "$name$_.set(index, value);\n"
       "$on_changed$\n",
@@ -983,9 +977,7 @@ void RepeatedImmutableMessageFieldGenerator::GenerateBuilderMembers(
       printer,
       "$deprecation$public Builder ${$add$capitalized_name$$}$($type$ value)",
 
-      "if (value == null) {\n"
-      "  throw new NullPointerException();\n"
-      "}\n"
+      "java.util.Objects.requireNonNull(value);\n"
       "ensure$capitalized_name$IsMutable();\n"
       "$name$_.add(value);\n"
 
@@ -1002,9 +994,7 @@ void RepeatedImmutableMessageFieldGenerator::GenerateBuilderMembers(
       "$deprecation$public Builder ${$add$capitalized_name$$}$(\n"
       "    int index, $type$ value)",
 
-      "if (value == null) {\n"
-      "  throw new NullPointerException();\n"
-      "}\n"
+      "java.util.Objects.requireNonNull(value);\n"
       "ensure$capitalized_name$IsMutable();\n"
       "$name$_.add(index, value);\n"
       "$on_changed$\n",

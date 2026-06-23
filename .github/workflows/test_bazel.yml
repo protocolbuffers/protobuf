@@ -14,8 +14,7 @@ on:
         type: string
       continuous-prefix:
         required: true
-        description: "The string continuous-only tests should be prefixed with when displaying test
-        results."
+        description: "The string continuous-only tests should be prefixed with when displaying test results."
         type: string
 
 permissions:
@@ -125,7 +124,7 @@ jobs:
       - name: Run tests
         uses: protocolbuffers/protobuf-ci/bazel-docker@v5
         with:
-          image: us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:9.0.0-7932bf8b25fb76a111e7257d151a6a58d5c3c671
+          image: us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:9.0.0-9dca0d9417f43f5f1e97e59969fb0f3e6ae3bd9c
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-cache: "bazel-tests"
           bazel: test //bazel/...

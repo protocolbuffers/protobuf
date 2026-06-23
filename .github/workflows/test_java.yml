@@ -30,27 +30,27 @@ jobs:
         include:
           - name: OpenJDK 8
             cache_key: '8'
-            image: us-docker.pkg.dev/protobuf-build/containers/test/linux/java:9.0.0-11-1c31a2985011c75c33dcdf646fc86898aac1ec5d
+            image: us-docker.pkg.dev/protobuf-build/containers/test/linux/java:9.0.0-11-a6ca8ba8e77d63471b4ad05f8643e1fc58b30e12
             # TODO: b/318555165 - enable the layering check. Currently it does
             # not work correctly with the toolchain in this Docker image.
             targets: //java/... //java/internal:java_version --features=-layering_check
             flags: --java_language_version=8
           - name: OpenJDK 11
             cache_key: '11'
-            image: us-docker.pkg.dev/protobuf-build/containers/test/linux/java:9.0.0-11-1c31a2985011c75c33dcdf646fc86898aac1ec5d
+            image: us-docker.pkg.dev/protobuf-build/containers/test/linux/java:9.0.0-11-a6ca8ba8e77d63471b4ad05f8643e1fc58b30e12
             targets: //java/... //java/internal:java_version //compatibility/...
             continuous-only: true
           - name: OpenJDK 17
             cache_key: '17'
-            image: us-docker.pkg.dev/protobuf-build/containers/test/linux/java:9.0.0-17-1c31a2985011c75c33dcdf646fc86898aac1ec5d
+            image: us-docker.pkg.dev/protobuf-build/containers/test/linux/java:9.0.0-17-a6ca8ba8e77d63471b4ad05f8643e1fc58b30e12
             targets: //java/... //java/internal:java_version //compatibility/...
           - name: OpenJDK 21 bazel 8
             cache_key: 'bazel8'
-            image: us-docker.pkg.dev/protobuf-build/containers/test/linux/java:8.6.0-21-856ad422dddd3b8fbd85e36129496b37bba174ef
+            image: us-docker.pkg.dev/protobuf-build/containers/test/linux/java:8.6.0-21-a6ca8ba8e77d63471b4ad05f8643e1fc58b30e12
             targets: //java/... //java/internal:java_version //compatibility/...
           - name: OpenJDK 21
             cache_key: '21'
-            image: us-docker.pkg.dev/protobuf-build/containers/test/linux/java:9.0.0-21-1c31a2985011c75c33dcdf646fc86898aac1ec5d
+            image: us-docker.pkg.dev/protobuf-build/containers/test/linux/java:9.0.0-21-a6ca8ba8e77d63471b4ad05f8643e1fc58b30e12
             targets: //java/... //java/internal:java_version //compatibility/...
           # TODO: b/395623141 - restore this test once runtime uses / emulates aarch64.
           # - name: aarch64
@@ -105,7 +105,7 @@ jobs:
     - name: Generate maven artifacts with bazel and install using maven
       uses: protocolbuffers/protobuf-ci/bazel-docker@v5
       with:
-        image: us-docker.pkg.dev/protobuf-build/containers/test/linux/java:9.0.0-11-1c31a2985011c75c33dcdf646fc86898aac1ec5d
+        image: us-docker.pkg.dev/protobuf-build/containers/test/linux/java:9.0.0-11-a6ca8ba8e77d63471b4ad05f8643e1fc58b30e12
         credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
         bazel-cache: java_linux/11
         bash: |

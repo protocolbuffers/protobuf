@@ -167,12 +167,30 @@ public class LiteTest {
 
   @Test
   public void testAddAll() {
-    try {
-      TestAllTypesLite.newBuilder().addAllRepeatedBytes(null);
-      assertWithMessage("expected exception").fail();
-    } catch (NullPointerException e) {
-      // expected.
-    }
+    TestAllTypesLite.Builder builder = TestAllTypesLite.newBuilder();
+    assertThrows(NullPointerException.class, () -> builder.addAllRepeatedBytes(null));
+  }
+
+  @Test
+  public void testSettersRejectNull() throws Exception {
+    TestAllTypesLite.Builder builder = TestAllTypesLite.newBuilder();
+    assertThrows(NullPointerException.class, () -> builder.setOptionalString(null));
+    assertThrows(
+        NullPointerException.class,
+        () -> builder.setOptionalNestedMessage((TestAllTypesLite.NestedMessage) null));
+    assertThrows(
+        NullPointerException.class,
+        () -> builder.setOptionalNestedMessage((TestAllTypesLite.NestedMessage.Builder) null));
+    assertThrows(NullPointerException.class, () -> builder.setOptionalNestedEnum(null));
+    assertThrows(NullPointerException.class, () -> builder.addRepeatedString(null));
+    assertThrows(NullPointerException.class, () -> builder.addRepeatedBytes(null));
+    assertThrows(
+        NullPointerException.class,
+        () -> builder.addRepeatedNestedMessage((TestAllTypesLite.NestedMessage) null));
+    assertThrows(
+        NullPointerException.class,
+        () -> builder.addRepeatedNestedMessage((TestAllTypesLite.NestedMessage.Builder) null));
+    assertThrows(NullPointerException.class, () -> builder.addRepeatedNestedEnum(null));
   }
 
   @Test
@@ -1371,12 +1389,8 @@ public class LiteTest {
   @Test
   @SuppressWarnings("ProtoNewBuilderMergeFrom")
   public void testBuilderMergeFromNull() throws Exception {
-    try {
-      TestAllTypesLite.newBuilder().mergeFrom((TestAllTypesLite) null);
-      assertWithMessage("expected exception").fail();
-    } catch (NullPointerException e) {
-      // Pass.
-    }
+    TestAllTypesLite.Builder builder = TestAllTypesLite.newBuilder();
+    assertThrows(NullPointerException.class, () -> builder.mergeFrom((TestAllTypesLite) null));
   }
 
   // Builder.mergeFrom() should keep existing extensions.
@@ -1746,11 +1760,11 @@ public class LiteTest {
   @Test
   public void testMergeFromStream_invalidBytes() throws Exception {
     TestAllTypesLite.Builder builder = TestAllTypesLite.newBuilder().setDefaultBool(true);
-    try {
-      builder.mergeFrom(CodedInputStream.newInstance("Invalid bytes".getBytes(StandardCharsets.UTF_8)));
-      assertWithMessage("expected exception").fail();
-    } catch (InvalidProtocolBufferException expected) {
-    }
+    assertThrows(
+        InvalidProtocolBufferException.class,
+        () ->
+            builder.mergeFrom(
+                CodedInputStream.newInstance("Invalid bytes".getBytes(StandardCharsets.UTF_8))));
   }
 
   @Test
@@ -2457,11 +2471,9 @@ public class LiteTest {
 
   @Test
   public void testParseFromByteBufferThrows() {
-    try {
-      TestAllTypesLite.parseFrom(ByteBuffer.wrap(new byte[] {0x5}));
-      assertWithMessage("expected exception").fail();
-    } catch (InvalidProtocolBufferException expected) {
-    }
+    assertThrows(
+        InvalidProtocolBufferException.class,
+        () -> TestAllTypesLite.parseFrom(ByteBuffer.wrap(new byte[] {0x5})));
 
     TestAllTypesLite message =
         TestAllTypesLite.newBuilder().setOptionalInt32(123).addRepeatedString("hello").build();
@@ -2639,6 +2651,19 @@ public class LiteTest {
   }
 
   @Test
+  public void testParseFromInputStream_recursiveKnownGroups() throws Exception {
+    byte[] data100 = makeRecursiveGroup(100).toByteArray();
+    byte[] data101 = makeRecursiveGroup(101).toByteArray();
+
+    RecursiveGroup unused = RecursiveGroup.parseFrom(new ByteArrayInputStream(data100));
+    Throwable thrown =
+        assertThrows(
+            InvalidProtocolBufferException.class,
+            () -> RecursiveGroup.parseFrom(new ByteArrayInputStream(data101)));
+    assertThat(thrown).hasMessageThat().contains("Protocol message had too many levels of nesting");
+  }
+
+  @Test
   @SuppressWarnings("ProtoParseFromByteString")
   public void testMaliciousSGroupTagsWithMapField_fromByteArray() throws Exception {
     ByteString byteString = generateNestingGroups(102);
@@ -2774,109 +2799,111 @@ public class LiteTest {
 
   @Test
   public void testAddAllIteratesOnce_throwsOnNull() {
-    TestAllTypesLite.Builder builder = TestAllTypesLite.newBuilder();
-    try {
-      builder.addAllRepeatedBool(new OneTimeIterableList<>(true, false, null));
-      assertWithMessage("expected exception").fail();
-    } catch (NullPointerException expected) {
+    {
+      TestAllTypesLite.Builder builder = TestAllTypesLite.newBuilder();
+      OneTimeIterableList<Boolean> values = new OneTimeIterableList<>(true, false, null);
+      NullPointerException expected =
+          assertThrows(NullPointerException.class, () -> builder.addAllRepeatedBool(values));
       assertThat(expected).hasMessageThat().isEqualTo("Element at index 2 is null.");
       assertThat(builder.getRepeatedBoolCount()).isEqualTo(0);
     }
 
-    try {
-      builder.addAllRepeatedBool(new OneTimeIterable<>(true, false, null));
-      assertWithMessage("expected exception").fail();
-    } catch (NullPointerException expected) {
+    {
+      TestAllTypesLite.Builder builder = TestAllTypesLite.newBuilder();
+      OneTimeIterable<Boolean> values = new OneTimeIterable<>(true, false, null);
+      NullPointerException expected =
+          assertThrows(NullPointerException.class, () -> builder.addAllRepeatedBool(values));
       assertThat(expected).hasMessageThat().isEqualTo("Element at index 2 is null.");
       assertThat(builder.getRepeatedBoolCount()).isEqualTo(0);
     }
 
-    try {
-      builder = TestAllTypesLite.newBuilder();
-      builder.addAllRepeatedBool(new OneTimeIterableList<>((Boolean) null));
-      assertWithMessage("expected exception").fail();
-    } catch (NullPointerException expected) {
+    {
+      TestAllTypesLite.Builder builder = TestAllTypesLite.newBuilder();
+      OneTimeIterableList<Boolean> values = new OneTimeIterableList<>((Boolean) null);
+      NullPointerException expected =
+          assertThrows(NullPointerException.class, () -> builder.addAllRepeatedBool(values));
       assertThat(expected).hasMessageThat().isEqualTo("Element at index 0 is null.");
       assertThat(builder.getRepeatedBoolCount()).isEqualTo(0);
     }
 
-    try {
-      builder = TestAllTypesLite.newBuilder();
-      builder.addAllRepeatedInt32(new OneTimeIterableList<>((Integer) null));
-      assertWithMessage("expected exception").fail();
-    } catch (NullPointerException expected) {
+    {
+      TestAllTypesLite.Builder builder = TestAllTypesLite.newBuilder();
+      OneTimeIterableList<Integer> values = new OneTimeIterableList<>((Integer) null);
+      NullPointerException expected =
+          assertThrows(NullPointerException.class, () -> builder.addAllRepeatedInt32(values));
       assertThat(expected).hasMessageThat().isEqualTo("Element at index 0 is null.");
       assertThat(builder.getRepeatedInt32Count()).isEqualTo(0);
     }
 
-    try {
-      builder = TestAllTypesLite.newBuilder();
-      builder.addAllRepeatedInt64(new OneTimeIterableList<>((Long) null));
-      assertWithMessage("expected exception").fail();
-    } catch (NullPointerException expected) {
+    {
+      TestAllTypesLite.Builder builder = TestAllTypesLite.newBuilder();
+      OneTimeIterableList<Long> values = new OneTimeIterableList<>((Long) null);
+      NullPointerException expected =
+          assertThrows(NullPointerException.class, () -> builder.addAllRepeatedInt64(values));
       assertThat(expected).hasMessageThat().isEqualTo("Element at index 0 is null.");
       assertThat(builder.getRepeatedInt64Count()).isEqualTo(0);
     }
 
-    try {
-      builder = TestAllTypesLite.newBuilder();
-      builder.addAllRepeatedFloat(new OneTimeIterableList<>((Float) null));
-      assertWithMessage("expected exception").fail();
-    } catch (NullPointerException expected) {
+    {
+      TestAllTypesLite.Builder builder = TestAllTypesLite.newBuilder();
+      OneTimeIterableList<Float> values = new OneTimeIterableList<>((Float) null);
+      NullPointerException expected =
+          assertThrows(NullPointerException.class, () -> builder.addAllRepeatedFloat(values));
       assertThat(expected).hasMessageThat().isEqualTo("Element at index 0 is null.");
       assertThat(builder.getRepeatedFloatCount()).isEqualTo(0);
     }
 
-    try {
-      builder = TestAllTypesLite.newBuilder();
-      builder.addAllRepeatedDouble(new OneTimeIterableList<>((Double) null));
-      assertWithMessage("expected exception").fail();
-    } catch (NullPointerException expected) {
+    {
+      TestAllTypesLite.Builder builder = TestAllTypesLite.newBuilder();
+      OneTimeIterableList<Double> values = new OneTimeIterableList<>((Double) null);
+      NullPointerException expected =
+          assertThrows(NullPointerException.class, () -> builder.addAllRepeatedDouble(values));
       assertThat(expected).hasMessageThat().isEqualTo("Element at index 0 is null.");
       assertThat(builder.getRepeatedDoubleCount()).isEqualTo(0);
     }
 
-    try {
-      builder = TestAllTypesLite.newBuilder();
-      builder.addAllRepeatedBytes(new OneTimeIterableList<>((ByteString) null));
-      assertWithMessage("expected exception").fail();
-    } catch (NullPointerException expected) {
+    {
+      TestAllTypesLite.Builder builder = TestAllTypesLite.newBuilder();
+      OneTimeIterableList<ByteString> values = new OneTimeIterableList<>((ByteString) null);
+      NullPointerException expected =
+          assertThrows(NullPointerException.class, () -> builder.addAllRepeatedBytes(values));
       assertThat(expected).hasMessageThat().isEqualTo("Element at index 0 is null.");
       assertThat(builder.getRepeatedBytesCount()).isEqualTo(0);
     }
 
-    try {
-      builder = TestAllTypesLite.newBuilder();
-      builder.addAllRepeatedString(new OneTimeIterableList<>("", "", null, ""));
-      assertWithMessage("expected exception").fail();
-    } catch (NullPointerException expected) {
+    {
+      TestAllTypesLite.Builder builder = TestAllTypesLite.newBuilder();
+      OneTimeIterableList<String> values = new OneTimeIterableList<>("", "", null, "");
+      NullPointerException expected =
+          assertThrows(NullPointerException.class, () -> builder.addAllRepeatedString(values));
       assertThat(expected).hasMessageThat().isEqualTo("Element at index 2 is null.");
       assertThat(builder.getRepeatedStringCount()).isEqualTo(0);
     }
 
-    try {
-      builder = TestAllTypesLite.newBuilder();
-      builder.addAllRepeatedString(new OneTimeIterable<>("", "", null, ""));
-      assertWithMessage("expected exception").fail();
-    } catch (NullPointerException expected) {
+    {
+      TestAllTypesLite.Builder builder = TestAllTypesLite.newBuilder();
+      OneTimeIterable<String> values = new OneTimeIterable<>("", "", null, "");
+      NullPointerException expected =
+          assertThrows(NullPointerException.class, () -> builder.addAllRepeatedString(values));
       assertThat(expected).hasMessageThat().isEqualTo("Element at index 2 is null.");
       assertThat(builder.getRepeatedStringCount()).isEqualTo(0);
     }
 
-    try {
-      builder = TestAllTypesLite.newBuilder();
-      builder.addAllRepeatedString(new OneTimeIterableList<>((String) null));
-      assertWithMessage("expected exception").fail();
-    } catch (NullPointerException expected) {
+    {
+      TestAllTypesLite.Builder builder = TestAllTypesLite.newBuilder();
+      OneTimeIterableList<String> values = new OneTimeIterableList<>((String) null);
+      NullPointerException expected =
+          assertThrows(NullPointerException.class, () -> builder.addAllRepeatedString(values));
       assertThat(expected).hasMessageThat().isEqualTo("Element at index 0 is null.");
       assertThat(builder.getRepeatedStringCount()).isEqualTo(0);
     }
 
-    try {
-      builder = TestAllTypesLite.newBuilder();
-      builder.addAllRepeatedNestedMessage(new OneTimeIterableList<>((NestedMessage) null));
-      assertWithMessage("expected exception").fail();
-    } catch (NullPointerException expected) {
+    {
+      TestAllTypesLite.Builder builder = TestAllTypesLite.newBuilder();
+      OneTimeIterableList<NestedMessage> values = new OneTimeIterableList<>((NestedMessage) null);
+      NullPointerException expected =
+          assertThrows(
+              NullPointerException.class, () -> builder.addAllRepeatedNestedMessage(values));
       assertThat(expected).hasMessageThat().isEqualTo("Element at index 0 is null.");
       assertThat(builder.getRepeatedNestedMessageCount()).isEqualTo(0);
     }
@@ -2939,11 +2966,8 @@ public class LiteTest {
 
   @Test
   public void testNullExtensionRegistry() throws Exception {
-    try {
-      TestAllTypesLite.parseFrom(TestUtilLite.getAllLiteSetBuilder().build().toByteArray(), null);
-      assertWithMessage("expected exception").fail();
-    } catch (NullPointerException expected) {
-    }
+    byte[] data = TestUtilLite.getAllLiteSetBuilder().build().toByteArray();
+    assertThrows(NullPointerException.class, () -> TestAllTypesLite.parseFrom(data, null));
   }
 
   @Test

@@ -71,15 +71,12 @@ void SetMessageVariables(
   (*variables)["key_wire_type"] = WireType(key);
   (*variables)["key_default_value"] =
       DefaultValue(key, true, name_resolver, context->options());
-  // We use `x.getClass()` as a null check because it generates less bytecode
-  // than an `if (x == null) { throw ... }` statement.
   (*variables)["key_null_check"] =
-      IsReferenceType(keyJavaType)
-          ? "java.lang.Class<?> keyClass = key.getClass();"
-          : "";
+      IsReferenceType(keyJavaType) ? "java.util.Objects.requireNonNull(key);"
+                                   : "";
   (*variables)["value_null_check"] =
       IsReferenceType(valueJavaType)
-          ? "java.lang.Class<?> valueClass = value.getClass();"
+          ? "java.util.Objects.requireNonNull(value);"
           : "";
 
   if (GetJavaType(value) == JAVATYPE_ENUM) {
