@@ -32,6 +32,7 @@ package_group(
 rust_library(
     name = "protobuf",
     srcs = ["protobuf.rs"],
+    edition = "2024",
     rustc_flags = select({
         ":use_upb_kernel": ["--cfg=upb_kernel"],
         "//conditions:default": ["--cfg=cpp_kernel"],
@@ -113,6 +114,7 @@ rust_library(
         "upb_kernel/string.rs",
     ],
     crate_root = "shared.rs",
+    edition = "2024",
     proc_macro_deps = [
         "//rust/protobuf_macros",
         "@crate_index//:paste",
@@ -131,7 +133,7 @@ rust_library(
 rust_test(
     name = "protobuf_upb_test",
     crate = ":protobuf_upb",
-    edition = "2021",
+    edition = "2024",
     rustc_flags = [
         "--cfg=upb_kernel",
         "--cfg=bzl",
@@ -147,6 +149,7 @@ rust_library(
     name = "protobuf_upb_export",
     testonly = True,
     srcs = ["protobuf.rs"],
+    edition = "2024",
     rustc_flags = ["--cfg=upb_kernel"],
     visibility = [":protobuf_internal"],
     deps = [":protobuf_upb"],
@@ -170,6 +173,7 @@ rust_library(
         "cpp_kernel/string.rs",
     ],
     crate_root = "shared.rs",
+    edition = "2024",
     proc_macro_deps = [
         "//rust/protobuf_macros",
         "@crate_index//:paste",
@@ -187,6 +191,7 @@ rust_library(
 rust_test(
     name = "protobuf_cpp_test",
     crate = ":protobuf_cpp",
+    edition = "2024",
     rustc_flags = [
         "--cfg=cpp_kernel",
         "--cfg=bzl",
@@ -202,6 +207,7 @@ rust_library(
     name = "protobuf_cpp_export",
     testonly = True,
     srcs = ["protobuf.rs"],
+    edition = "2024",
     rustc_flags = ["--cfg=cpp_kernel"],
     visibility = [":protobuf_internal"],
     deps = [":protobuf_cpp"],
@@ -245,6 +251,7 @@ cc_library(
 rust_library(
     name = "rust_alloc_for_cpp_api",
     srcs = ["cpp_kernel/rust_alloc_for_cpp_api.rs"],
+    edition = "2024",
     visibility = [
         "//rust:__subpackages__",
     ],
@@ -258,6 +265,7 @@ rust_library(
         ":use_upb_kernel": {"//rust:protobuf_gtest_matchers_upb": "protobuf_gtest_matchers_impl"},
         "//conditions:default": {"//rust:protobuf_gtest_matchers_cpp": "protobuf_gtest_matchers_impl"},
     }),
+    edition = "2024",
     visibility = ["//visibility:public"],
     deps = select({
         ":use_upb_kernel": [":protobuf_gtest_matchers_upb"],
@@ -272,6 +280,7 @@ rust_library(
     aliases = {
         "//rust:protobuf_cpp": "protobuf",
     },
+    edition = "2024",
     visibility = [":protobuf_internal"],
     deps = [
         ":protobuf_cpp",
@@ -286,6 +295,7 @@ rust_library(
     aliases = {
         "//rust:protobuf_upb": "protobuf",
     },
+    edition = "2024",
     visibility = [":protobuf_internal"],
     deps = [
         ":protobuf_upb",
@@ -335,7 +345,7 @@ config_setting(
     flag_values = {
         ":rust_proto_library_kernel": "upb",
     },
-    visibility = ["//:__subpackages__"],
+    visibility = ["//visibility:public"],
 )
 
 pkg_files(
