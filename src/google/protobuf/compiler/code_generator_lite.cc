@@ -60,7 +60,9 @@ bool IsKnownFeatureProto(absl::string_view filename) {
 
 namespace internal {
 
-bool is_oss_was_read = false;
+#include <atomic>
+
+std::atomic<bool> is_oss_was_read{false};
 
 bool is_oss = true;
 
