@@ -808,6 +808,7 @@ class PROTOBUF_EXPORT TextFormat {
     // format cannot preserve unknown fields.  Avoid using this option
     // if possible.
     void AllowUnknownField(bool allow) { allow_unknown_field_ = allow; }
+    void AllowMessageAsString(bool allow) { allow_message_as_string_ = allow; }
 
 
     void AllowFieldNumber(bool allow) { allow_field_number_ = allow; }
@@ -874,6 +875,7 @@ class PROTOBUF_EXPORT TextFormat {
     bool allow_partial_;
     bool allow_case_insensitive_field_;
     bool allow_unknown_field_;
+    bool allow_message_as_string_;
     bool allow_unknown_extension_;
     bool allow_unknown_enum_;
     bool allow_field_number_;

@@ -1426,6 +1426,17 @@ TEST_F(TextFormatTest, ParseUnknownWithTrailingComma) {
   EXPECT_TRUE(parser.ParseFromString("[foo.unknown_extension]: 1 ,", &proto_));
 }
 
+TEST_F(TextFormatTest, ParseMessageAsString) {
+  TextFormat::Parser parser;
+  parser.AllowMessageAsString(true);
+
+  // optional_string is a string field, but we pass a message so it becomes
+  // a textproto version of that message.
+  EXPECT_TRUE(parser.ParseFromString(
+      "optional_string {\n  bb: 1 \n  c: 2 \n d { \n e: 3 } \n}\n", &proto_));
+  EXPECT_EQ(proto_.optional_string(), "bb: 1 c: 2 d {e: 3 }");
+}
+
 TEST_F(TextFormatTest, ParseShortRepeatedEmpty) {
   std::string parse_string =
       "repeated_int32: []\n"

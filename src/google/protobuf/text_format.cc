@@ -376,10 +376,10 @@ class TextFormat::Parser::ParserImpl {
              const TextFormat::Finder* finder, ParseInfoTree* parse_info_tree,
              SingularOverwritePolicy singular_overwrite_policy,
              bool allow_case_insensitive_field, bool allow_unknown_field,
-             bool allow_unknown_extension, bool allow_unknown_enum,
-             bool allow_field_number, bool allow_relaxed_whitespace,
-             bool allow_partial, int recursion_limit,
-             UnsetFieldsMetadata* no_op_fields)
+             bool allow_message_as_string, bool allow_unknown_extension,
+             bool allow_unknown_enum, bool allow_field_number,
+             bool allow_relaxed_whitespace, bool allow_partial,
+             int recursion_limit, UnsetFieldsMetadata* no_op_fields)
       : error_collector_(error_collector),
         finder_(finder),
         parse_info_tree_(parse_info_tree),
@@ -389,6 +389,7 @@ class TextFormat::Parser::ParserImpl {
         singular_overwrite_policy_(singular_overwrite_policy),
         allow_case_insensitive_field_(allow_case_insensitive_field),
         allow_unknown_field_(allow_unknown_field),
+        allow_message_as_string_(allow_message_as_string),
         allow_unknown_extension_(allow_unknown_extension),
         allow_unknown_enum_(allow_unknown_enum),
         allow_field_number_(allow_field_number),
@@ -762,10 +763,10 @@ class TextFormat::Parser::ParserImpl {
       if (TryConsumeBeforeWhitespace(":")) {
         TryConsumeWhitespace();
         if (!LookingAt("{") && !LookingAt("<")) {
-          return skip_parsing(SkipFieldValue());
+          return skip_parsing(SkipFieldValue(nullptr));
         }
       }
-      return skip_parsing(SkipFieldMessage());
+      return skip_parsing(SkipFieldMessage(nullptr));
     }
 
     if (field->options().deprecated()) {
@@ -798,7 +799,10 @@ class TextFormat::Parser::ParserImpl {
     }
 
     // Perform special handling for embedded message types.
-    if (field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
+    if (field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE ||
+        (field->cpp_type() == FieldDescriptor::CPPTYPE_STRING &&
+         allow_message_as_string_ &&
+         (LookingAt("{") || LookingAt("<") || LookingAt(":")))) {
       // ':' is optional here.
       bool consumed_semicolon = TryConsumeBeforeWhitespace(":");
       if (consumed_semicolon) {
@@ -864,17 +868,25 @@ class TextFormat::Parser::ParserImpl {
   }
 
   // Skips the next field including the field's name and value.
-  bool SkipField() {
+  bool SkipField(std::string* value) {
     std::string field_name;
     if (LookingAt("[")) {
       // Extension name or type URL.
       std::string full_type_name, url_prefix;
       DO(ConsumeAnyTypeUrlOrFullTypeName(full_type_name, url_prefix));
       field_name = absl::StrCat(url_prefix, full_type_name);
+      if (value != nullptr) {
+        value->push_back('[');
+        value->append(field_name);
+        value->push_back(']');
+      }
     } else {
       DO(ConsumeIdentifierBeforeWhitespace(&field_name));
+      if (value != nullptr) {
+        value->append(field_name);
+      }
     }
-    TryConsumeWhitespace();
+    TryConsumeWhitespace(value);
 
     // Try to guess the type of this field.
     // If this field is not a message, there should be a ":" between the
@@ -883,18 +895,28 @@ class TextFormat::Parser::ParserImpl {
     // If there is no ":" or there is a "{" or "<" after ":", this field has
     // to be a message or the input is ill-formed.
     if (TryConsumeBeforeWhitespace(":")) {
-      TryConsumeWhitespace();
+      if (value != nullptr) {
+        value->push_back(':');
+      }
+      TryConsumeWhitespace(value);
       if (!LookingAt("{") && !LookingAt("<")) {
-        DO(SkipFieldValue());
+        DO(SkipFieldValue(value));
       } else {
-        DO(SkipFieldMessage());
+        DO(SkipFieldMessage(value));
       }
     } else {
-      DO(SkipFieldMessage());
+      DO(SkipFieldMessage(value));
+    }
+    if (value != nullptr) {
+      value->push_back(' ');
     }
     // For historical reasons, fields may optionally be separated by commas or
     // semicolons.
-    TryConsume(";") || TryConsume(",");
+    if (TryConsume(";") || TryConsume(",")) {
+      if (value != nullptr) {
+        value->append(tokenizer_.previous().text);
+      }
+    }
     return true;
   }
 
@@ -926,7 +948,7 @@ class TextFormat::Parser::ParserImpl {
 
   // Skips the whole body of a message including the beginning delimiter and
   // the ending delimiter.
-  bool SkipFieldMessage() {
+  bool SkipFieldMessage(std::string* value) {
     if (--recursion_limit_ < 0) {
       ReportError(
           absl::StrCat("Message is too deep, the parser exceeded the "
@@ -939,10 +961,41 @@ class TextFormat::Parser::ParserImpl {
 
     std::string delimiter;
     DO(ConsumeMessageDelimiter(&delimiter));
+    if (value != nullptr) {
+      value->append(tokenizer_.previous().text);
+    }
     while (!LookingAt(">") && !LookingAt("}")) {
-      DO(SkipField());
+      DO(SkipField(value));
     }
     DO(Consume(delimiter));
+    if (value != nullptr) {
+      value->append(tokenizer_.previous().text);
+    }
+
+    return true;
+  }
+  bool ConsumeFieldMessageAsString(std::string* value) {
+    if (--recursion_limit_ < 0) {
+      ReportError(
+          absl::StrCat("Message is too deep, the parser exceeded the "
+                       "configured recursion limit of ",
+                       initial_recursion_limit_, "."));
+      return false;
+    }
+
+    auto cleanup = absl::MakeCleanup([this] { ++recursion_limit_; });
+
+    std::string delimiter;
+    DO(ConsumeMessageDelimiter(&delimiter));
+    // Don't append first delimiter.
+    while (!LookingAt(">") && !LookingAt("}")) {
+      DO(SkipField(value));
+    }
+    DO(Consume(delimiter));
+    // Don't append last delimiter.
+    while (value->ends_with(" ")) {
+      value->pop_back();
+    }
 
     return true;
   }
@@ -1016,7 +1069,12 @@ class TextFormat::Parser::ParserImpl {
 
       case FieldDescriptor::CPPTYPE_STRING: {
         std::string value;
-        DO(ConsumeString(&value));
+        if (!LookingAtType(io::Tokenizer::TYPE_STRING) &&
+            allow_message_as_string_) {
+          DO(ConsumeFieldMessageAsString(&value));
+        } else {
+          DO(ConsumeString(&value));
+        }
         SET_FIELD(String, string, std::move(value));
         break;
       }
@@ -1097,7 +1155,7 @@ class TextFormat::Parser::ParserImpl {
     return true;
   }
 
-  bool SkipFieldValue() {
+  bool SkipFieldValue(std::string* value) {
     if (--recursion_limit_ < 0) {
       ReportError(
           absl::StrCat("Message is too deep, the parser exceeded the "
@@ -1111,22 +1169,36 @@ class TextFormat::Parser::ParserImpl {
     if (LookingAtType(io::Tokenizer::TYPE_STRING)) {
       while (LookingAtType(io::Tokenizer::TYPE_STRING)) {
         tokenizer_.Next();
+        if (value != nullptr) {
+          value->append(tokenizer_.previous().text);
+        }
       }
       return true;
     }
     if (TryConsume("[")) {
+      if (value != nullptr) {
+        value->push_back('[');
+      }
       if (!TryConsume("]")) {
         while (true) {
           if (!LookingAt("{") && !LookingAt("<")) {
-            DO(SkipFieldValue());
+            DO(SkipFieldValue(value));
           } else {
-            DO(SkipFieldMessage());
+            DO(SkipFieldMessage(value));
           }
           if (TryConsume("]")) {
+            if (value != nullptr) {
+              value->push_back(']');
+            }
             break;
           }
           DO(Consume(","));
+          if (value != nullptr) {
+            value->append(", ");
+          }
         }
+      } else if (value != nullptr) {
+        value->push_back(']');
       }
       return true;
     }
@@ -1152,6 +1224,9 @@ class TextFormat::Parser::ParserImpl {
     // As we can see, the field value consists of an optional '-' and one of
     // TYPE_INTEGER, TYPE_FLOAT and TYPE_IDENTIFIER.
     bool has_minus = TryConsume("-");
+    if (value != nullptr && has_minus) {
+      value->push_back('-');
+    }
     if (!LookingAtType(io::Tokenizer::TYPE_INTEGER) &&
         !LookingAtType(io::Tokenizer::TYPE_FLOAT) &&
         !LookingAtType(io::Tokenizer::TYPE_IDENTIFIER)) {
@@ -1176,6 +1251,9 @@ class TextFormat::Parser::ParserImpl {
       }
     }
     tokenizer_.Next();
+    if (value != nullptr) {
+      value->append(tokenizer_.previous().text);
+    }
     return true;
   }
 
@@ -1537,7 +1615,7 @@ class TextFormat::Parser::ParserImpl {
     return result;
   }
 
-  bool TryConsumeWhitespace() {
+  bool TryConsumeWhitespace(std::string* value = nullptr) {
     had_silent_marker_ = false;
     if (LookingAtType(io::Tokenizer::TYPE_WHITESPACE)) {
       if (tokenizer_.current().text ==
@@ -1545,6 +1623,9 @@ class TextFormat::Parser::ParserImpl {
         had_silent_marker_ = true;
       }
       tokenizer_.Next();
+      if (value != nullptr) {
+        value->append(tokenizer_.previous().text);
+      }
       return true;
     }
     return false;
@@ -1583,6 +1664,7 @@ class TextFormat::Parser::ParserImpl {
   SingularOverwritePolicy singular_overwrite_policy_;
   const bool allow_case_insensitive_field_;
   const bool allow_unknown_field_;
+  const bool allow_message_as_string_;
   const bool allow_unknown_extension_;
   const bool allow_unknown_enum_;
   const bool allow_field_number_;
@@ -1950,6 +2032,7 @@ TextFormat::Parser::Parser()
       allow_partial_(false),
       allow_case_insensitive_field_(false),
       allow_unknown_field_(false),
+      allow_message_as_string_(false),
       allow_unknown_extension_(false),
       allow_unknown_enum_(false),
       allow_field_number_(false),
@@ -1982,12 +2065,12 @@ bool TextFormat::Parser::Parse(io::ZeroCopyInputStream* input,
       allow_singular_overwrites_ ? ParserImpl::ALLOW_SINGULAR_OVERWRITES
                                  : ParserImpl::FORBID_SINGULAR_OVERWRITES;
 
-  ParserImpl parser(output->GetDescriptor(), input, error_collector_, finder_,
-                    parse_info_tree_, overwrites_policy,
-                    allow_case_insensitive_field_, allow_unknown_field_,
-                    allow_unknown_extension_, allow_unknown_enum_,
-                    allow_field_number_, allow_relaxed_whitespace_,
-                    allow_partial_, recursion_limit_, no_op_fields_);
+  ParserImpl parser(
+      output->GetDescriptor(), input, error_collector_, finder_,
+      parse_info_tree_, overwrites_policy, allow_case_insensitive_field_,
+      allow_unknown_field_, allow_message_as_string_, allow_unknown_extension_,
+      allow_unknown_enum_, allow_field_number_, allow_relaxed_whitespace_,
+      allow_partial_, recursion_limit_, no_op_fields_);
   return MergeUsingImpl(input, output, &parser);
 }
 
@@ -2010,9 +2093,10 @@ bool TextFormat::Parser::Merge(io::ZeroCopyInputStream* input,
   ParserImpl parser(output->GetDescriptor(), input, error_collector_, finder_,
                     parse_info_tree_, ParserImpl::ALLOW_SINGULAR_OVERWRITES,
                     allow_case_insensitive_field_, allow_unknown_field_,
-                    allow_unknown_extension_, allow_unknown_enum_,
-                    allow_field_number_, allow_relaxed_whitespace_,
-                    allow_partial_, recursion_limit_, no_op_fields_);
+                    allow_message_as_string_, allow_unknown_extension_,
+                    allow_unknown_enum_, allow_field_number_,
+                    allow_relaxed_whitespace_, allow_partial_, recursion_limit_,
+                    no_op_fields_);
   return MergeUsingImpl(input, output, &parser);
 }
 
@@ -2042,13 +2126,13 @@ bool TextFormat::Parser::ParseFieldValueFromString(absl::string_view input,
                                                    const FieldDescriptor* field,
                                                    Message* output) {
   io::ArrayInputStream input_stream(input.data(), input.size());
-  ParserImpl parser(output->GetDescriptor(), &input_stream, error_collector_,
-                    finder_, parse_info_tree_,
-                    ParserImpl::ALLOW_SINGULAR_OVERWRITES,
-                    allow_case_insensitive_field_, allow_unknown_field_,
-                    allow_unknown_extension_, allow_unknown_enum_,
-                    allow_field_number_, allow_relaxed_whitespace_,
-                    allow_partial_, recursion_limit_, no_op_fields_);
+  ParserImpl parser(
+      output->GetDescriptor(), &input_stream, error_collector_, finder_,
+      parse_info_tree_, ParserImpl::ALLOW_SINGULAR_OVERWRITES,
+      allow_case_insensitive_field_, allow_unknown_field_,
+      allow_message_as_string_, allow_unknown_extension_, allow_unknown_enum_,
+      allow_field_number_, allow_relaxed_whitespace_, allow_partial_,
+      recursion_limit_, no_op_fields_);
   return parser.ParseField(field, output);
 }
 
