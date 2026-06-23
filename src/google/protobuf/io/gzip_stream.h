@@ -59,7 +59,7 @@ class PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED PROTOBUF_EXPORT
 
   // Return last error message or NULL if no error.
   PROTOBUF_FUTURE_ADD_EARLY_NODISCARD const char* ZlibErrorMessage() const;
-  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD inline int ZlibErrorCode() const {
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD int ZlibErrorCode() const {
     return zerror_;
   }
 
@@ -130,7 +130,7 @@ class PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED PROTOBUF_EXPORT
 
   // Return last error message or NULL if no error.
   PROTOBUF_FUTURE_ADD_EARLY_NODISCARD const char* ZlibErrorMessage() const;
-  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD inline int ZlibErrorCode() const {
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD int ZlibErrorCode() const {
     return zerror_;
   }
 

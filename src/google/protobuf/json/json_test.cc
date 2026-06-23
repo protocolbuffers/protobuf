@@ -16,10 +16,12 @@
 #include "google/protobuf/struct.pb.h"
 #include "google/protobuf/timestamp.pb.h"
 #include "google/protobuf/wrappers.pb.h"
+#include "google/protobuf/descriptor.pb.h"
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 #include "absl/status/status.h"
 #include "absl/status/statusor.h"
+#include "absl/strings/cord.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/descriptor_database.h"
@@ -28,6 +30,7 @@
 #include "google/protobuf/io/zero_copy_stream_impl_lite.h"
 #include "google/protobuf/util/json_format.pb.h"
 #include "google/protobuf/util/json_format_proto3.pb.h"
+#include "google/protobuf/test_textproto.h"
 #include "google/protobuf/unittest.pb.h"
 #include "google/protobuf/util/type_resolver.h"
 #include "google/protobuf/util/type_resolver_util.h"
@@ -53,7 +56,9 @@ using ::testing::ContainsRegex;
 using ::testing::ElementsAre;
 using ::testing::IsEmpty;
 using ::testing::Not;
+using ::testing::Pair;
 using ::testing::SizeIs;
+using ::testing::UnorderedElementsAre;
 
 // TODO: Use the gtest versions once that's available in OSS.
 MATCHER_P(IsOkAndHolds, inner,
@@ -1553,6 +1558,52 @@ TEST_P(JsonTest, MalformedLengthDelimitedField) {
   ASSERT_THAT(s, StatusIs(absl::StatusCode::kInvalidArgument));
 }
 
+TEST_P(JsonTest, DeeplyNestedGroupsRejected) {
+  // Verify that deeply nested TYPE_GROUP fields are rejected with an error
+  // rather than causing unbounded stack recursion.
+  FileDescriptorProto file_proto;
+  file_proto.set_name("group_depth_test.proto");
+  file_proto.set_syntax("proto2");
+
+  auto* msg = file_proto.add_message_type();
+  msg->set_name("RecursiveGroup");
+
+  auto* nested = msg->add_nested_type();
+  nested->set_name("Nested");
+
+  auto* inner = nested->add_field();
+  inner->set_name("nested");
+  inner->set_number(1);
+  inner->set_type(FieldDescriptorProto::TYPE_GROUP);
+  inner->set_type_name("Nested");
+  inner->set_label(FieldDescriptorProto::LABEL_OPTIONAL);
+
+  auto* outer = msg->add_field();
+  outer->set_name("nested");
+  outer->set_number(1);
+  outer->set_type(FieldDescriptorProto::TYPE_GROUP);
+  outer->set_type_name("Nested");
+  outer->set_label(FieldDescriptorProto::LABEL_OPTIONAL);
+
+  DescriptorPool pool;
+  const FileDescriptor* fd = pool.BuildFile(file_proto);
+  ASSERT_NE(fd, nullptr);
+
+  std::unique_ptr<TypeResolver> resolver(
+      google::protobuf::util::NewTypeResolverForDescriptorPool("type.googleapis.com",
+                                                     &pool));
+
+  // 200 nested groups: 200x START_GROUP(field=1) + 200x END_GROUP(field=1)
+  // Field 1, wire type 3 = 0x0B; Field 1, wire type 4 = 0x0C
+  std::string payload(200, 0x0B);
+  payload.append(200, 0x0C);
+
+  std::string out;
+  absl::Status s = BinaryToJsonString(
+      resolver.get(), "type.googleapis.com/RecursiveGroup", payload, &out);
+  EXPECT_THAT(s, StatusIs(absl::StatusCode::kInvalidArgument));
+}
+
 // JSON values get special treatment when it comes to pre-existing values in
 // their repeated fields, when parsing through their dedicated syntax.
 TEST_P(JsonTest, ClearPreExistingRepeatedInJsonValues) {
@@ -1583,6 +1634,95 @@ TEST(JsonErrorTest, FieldNameAndSyntaxErrorInSeparateChunks) {
       s.message(),
       ContainsRegex("invalid *JSON *in *type.googleapis.com/proto3.TestMessage "
                     "*@ *bool_value"));
+}
+
+TEST_P(JsonTest, OversizedStringRejected) {
+#ifndef NDEBUG
+  GTEST_SKIP() << "Test is too slow in non-opt builds.";
+#else
+
+  if (sizeof(void*) < 8) {
+    GTEST_SKIP() << "Test requires 64-bit environment.";
+  }
+
+  absl::Cord chunk(std::string(1024 * 1024, 'a'));
+  absl::Cord cord;
+  cord.Append(R"({"stringValue": ")");
+  for (int i = 0; i < 2048; ++i) {
+    cord.Append(chunk);
+  }
+  cord.Append(R"("})");
+
+  io::CordInputStream input_stream(&cord);
+  TestMessage m;
+  absl::Status s;
+
+  if (GetParam() == Codec::kReflective) {
+    s = JsonStreamToMessage(&input_stream, &m, ParseOptions());
+  } else {
+    std::string result;
+    io::StringOutputStream out(&result);
+    s = JsonToBinaryStream(
+        resolver_.get(), absl::StrCat("type.googleapis.com/", m.GetTypeName()),
+        &input_stream, &out, ParseOptions());
+  }
+
+  EXPECT_THAT(s, StatusIs(absl::StatusCode::kInvalidArgument));
+  EXPECT_THAT(s.message(), ContainsRegex("string *value *too *large"));
+
+#endif  // NDEBUG
+}
+
+absl::StatusOr<google::protobuf::Struct> MessageToJsonAndBack(
+    const google::protobuf::Struct& msg) {
+  std::string str;
+  auto status = MessageToJsonString(msg, &str);
+  if (!status.ok()) return status;
+
+  google::protobuf::Struct out;
+  status = JsonStringToMessage(str, &out);
+  if (!status.ok()) return status;
+  return out;
+}
+
+TEST(JsonTest, MapsThroughCodegenWorksProperly) {
+  google::protobuf::Struct s;
+  auto& fields = *s.mutable_fields();
+
+  fields["first"].set_string_value("str1");
+
+  EXPECT_THAT(MessageToJsonAndBack(s), IsOkAndHolds(EqualsProto(R"pb(
+                fields {
+                  key: "first"
+                  value { string_value: "str1" }
+                }
+              )pb")));
+
+  fields["second"].set_string_value("str2");
+
+  EXPECT_THAT(MessageToJsonAndBack(s), IsOkAndHolds(EqualsProto(R"pb(
+                fields {
+                  key: "first"
+                  value { string_value: "str1" }
+                }
+                fields {
+                  key: "second"
+                  value { string_value: "str2" }
+                }
+              )pb")));
+
+  fields["first"].set_bool_value(true);
+
+  EXPECT_THAT(MessageToJsonAndBack(s), IsOkAndHolds(EqualsProto(R"pb(
+                fields {
+                  key: "first"
+                  value { bool_value: true }
+                }
+                fields {
+                  key: "second"
+                  value { string_value: "str2" }
+                }
+              )pb")));
 }
 
 }  // namespace

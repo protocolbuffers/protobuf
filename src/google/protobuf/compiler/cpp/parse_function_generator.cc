@@ -21,6 +21,7 @@
 #include "absl/strings/match.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
+#include "absl/types/optional.h"
 #include "absl/types/span.h"
 #include "google/protobuf/compiler/cpp/helpers.h"
 #include "google/protobuf/compiler/cpp/options.h"
@@ -52,18 +53,18 @@ std::vector<const FieldDescriptor*> GetOrderedFields(
 }
 
 ParseFunctionGenerator::ParseFunctionGenerator(
-    const Descriptor* descriptor, int max_has_bit_index,
-    absl::Span<const int> has_bit_indices, const Options& options,
+    const Descriptor* descriptor, bool has_hasbits,
+    GetHasBitIndex get_has_bit_index, const Options& options,
     const absl::flat_hash_map<absl::string_view, std::string>& vars,
     int index_in_file_messages)
     : descriptor_(descriptor),
       options_(options),
       variables_(vars),
       ordered_fields_(GetOrderedFields(descriptor_)),
-      num_hasbits_(max_has_bit_index),
+      has_hasbits_(has_hasbits),
       index_in_file_messages_(index_in_file_messages) {
-  auto fields = BuildFieldOptions(descriptor_, ordered_fields_, options_,
-                                  has_bit_indices);
+  auto fields = BuildFieldOptions(descriptor_, ordered_fields_,
+                                  get_has_bit_index, options_);
   tc_table_info_ = std::make_unique<TailCallTableInfo>(
       BuildTcTableInfoFromDescriptor(descriptor_, options_, fields));
   SetCommonMessageDataVariables(descriptor_, &variables_);
@@ -74,14 +75,14 @@ std::vector<internal::TailCallTableInfo::FieldOptions>
 ParseFunctionGenerator::BuildFieldOptions(
     const Descriptor* descriptor,
     absl::Span<const FieldDescriptor* const> ordered_fields,
-    const Options& options, absl::Span<const int> has_bit_indices) {
+    GetHasBitIndex get_has_bit_index, const Options& options) {
   using FieldOptions = TailCallTableInfo::FieldOptions;
   std::vector<FieldOptions> fields;
   fields.reserve(ordered_fields.size());
   for (size_t i = 0; i < ordered_fields.size(); ++i) {
-    auto* field = ordered_fields[i];
-    ABSL_CHECK_GE(field->index(), 0);
-    size_t index = static_cast<size_t>(field->index());
+    const auto* field = ordered_fields[i];
+
+    const absl::optional<int> hasbit_index = get_has_bit_index(field);
 
     const auto str_options = [&]() -> FieldOptions::StrOptions {
       if (field->cpp_type() == FieldDescriptor::CPPTYPE_STRING) {
@@ -99,8 +100,7 @@ ParseFunctionGenerator::BuildFieldOptions(
 
     fields.push_back({
         field,
-        index < has_bit_indices.size() ? has_bit_indices[index]
-                                       : internal::kNoHasbit,
+        hasbit_index.value_or(internal::kNoHasbit),
         GetPresenceProbability(field, options)
             .value_or(kUnknownPresenceProbability),
         GetLazyStyle(field, options),
@@ -316,7 +316,7 @@ void ParseFunctionGenerator::GenerateParseTableHelperDefinition(
     p->Emit(
         {{"has_bits_offset",
           [&] {
-            if (num_hasbits_ > 0 || IsMapEntryMessage(descriptor_)) {
+            if (has_hasbits_ || IsMapEntryMessage(descriptor_)) {
               p->Emit("PROTOBUF_FIELD_OFFSET($Msg$, _impl_._has_bits_),\n");
             } else {
               // Just put something safe here. _cached_size_ is fine.
@@ -628,7 +628,24 @@ void ParseFunctionGenerator::GenerateFastFieldEntries(io::Printer* p) {
                {"coded_tag", nonfield->coded_tag},
                {"nonfield_info", nonfield->nonfield_info}},
               R"cc(
-                {$target$, {$coded_tag$, $nonfield_info$}},
+                {$target$, {$coded_tag$, ::uint16_t{$nonfield_info$}}},
+              )cc");
+    } else if (auto* mp_field = info.AsMpField()) {
+      {
+        // TODO: refactor this to use Emit.
+        Formatter format(p, variables_);
+        PrintFieldComment(format, mp_field->field, options_);
+      }
+      p->Emit({{"target", TcParseFunctionName(mp_field->func)},
+               {"coded_tag", mp_field->coded_tag},
+               {"function_index", mp_field->function_index},
+               {"index", mp_field->field_index}},
+              R"cc(
+                {$target$,
+                 {$coded_tag$, ::uint8_t{$function_index$},
+                  ::uint32_t{
+                      PROTOBUF_FIELD_OFFSET(ParseTableT_, field_entries) +
+                      sizeof(_pbi::TcParseTableBase::FieldEntry) * $index$}}},
               )cc");
     } else if (auto* as_field = info.AsField()) {
       {

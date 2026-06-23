@@ -56,7 +56,7 @@ MessageLite* MessageLite::CopyConstruct(Arena* arena, const MessageLite& from) {
 
 void MessageLite::DestroyInstance() {
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-  _class_data_->destroy_message(*this);
+  class_data()->destroy_message(*this);
 #else   // PROTOBUF_CUSTOM_VTABLE
   this->~MessageLite();
 #endif  // PROTOBUF_CUSTOM_VTABLE
@@ -410,10 +410,12 @@ bool MessageLite::ParsePartialFromBoundedZeroCopyStream(
 }
 
 bool MessageLite::ParseFromString(absl::string_view data) {
+  if (ABSL_PREDICT_FALSE(data.size() > INT_MAX)) return false;
   return ParseFrom<kParse>(data);
 }
 
 bool MessageLite::ParsePartialFromString(absl::string_view data) {
+  if (ABSL_PREDICT_FALSE(data.size() > INT_MAX)) return false;
   return ParseFrom<kParsePartial>(data);
 }
 
@@ -426,6 +428,7 @@ bool MessageLite::ParsePartialFromArray(const void* data, int size) {
 }
 
 bool MessageLite::MergeFromString(absl::string_view data) {
+  if (ABSL_PREDICT_FALSE(data.size() > INT_MAX)) return false;
   return ParseFrom<kMerge>(data);
 }
 
@@ -453,18 +456,22 @@ struct SourceWrapper<absl::Cord> {
 }  // namespace internal
 
 bool MessageLite::MergeFromString(const absl::Cord& data) {
+  if (ABSL_PREDICT_FALSE(data.size() > INT_MAX)) return false;
   return ParseFrom<kMerge>(internal::SourceWrapper<absl::Cord>(&data));
 }
 
 bool MessageLite::MergePartialFromString(const absl::Cord& data) {
+  if (ABSL_PREDICT_FALSE(data.size() > INT_MAX)) return false;
   return ParseFrom<kMergePartial>(internal::SourceWrapper<absl::Cord>(&data));
 }
 
 bool MessageLite::ParseFromString(const absl::Cord& data) {
+  if (ABSL_PREDICT_FALSE(data.size() > INT_MAX)) return false;
   return ParseFrom<kParse>(internal::SourceWrapper<absl::Cord>(&data));
 }
 
 bool MessageLite::ParsePartialFromString(const absl::Cord& data) {
+  if (ABSL_PREDICT_FALSE(data.size() > INT_MAX)) return false;
   return ParseFrom<kParsePartial>(internal::SourceWrapper<absl::Cord>(&data));
 }
 

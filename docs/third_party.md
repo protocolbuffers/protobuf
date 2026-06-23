@@ -71,6 +71,7 @@ programming languages:
 *   Java/Android: https://github.com/square/wire
 *   Java: https://github.com/HebiRobotics/QuickBuffers/
 *   Java ME: http://swingme.sourceforge.net/encode.shtml
+*   Javascript: http://github.com/bufbuild/protobuf-es
 *   Javascript: http://github.com/sirikata/protojs
 *   Javascript: https://github.com/dcodeIO/ProtoBuf.js
 *   Javascript: https://github.com/seishun/node-protoc-plugin (Node.js port of
@@ -113,6 +114,7 @@ programming languages:
 *   Solidity: https://github.com/celer-network/pb3-gen-sol
 *   Swift: https://github.com/alexeyxo/protobuf-swift
 *   Swift: https://github.com/apple/swift-protobuf/
+*   Typescript: http://github.com/bufbuild/protobuf-es
 *   Typescript: https://github.com/improbable-eng/ts-protoc-gen
 *   Typescript: https://github.com/thesayyn/protoc-gen-ts
 *   Typescript: https://github.com/pbkit/pbkit
@@ -129,6 +131,8 @@ objects.
 
 *   https://github.com/grpc/grpc (C++, Node.js, Python, Ruby, Objective-C, PHP,
     C#, Google-official implementation)
+*   https://connectrpc.com (Go, Javascript, Typescript, Python, Dart, Swift,
+    Kotlin)
 *   https://zeroc.com/products/ice (Multiple languages)
 *   https://github.com/protobuf-net/protobuf-net (C#/.NET/WCF/VB)
 *   http://www.deltavsoft.com/doc/_external_serialization.html#Protobufs (C++)
@@ -207,6 +211,7 @@ Inactive:
 
 ## IDE
 
+*   [Buf for Visual Studio Code](https://marketplace.visualstudio.com/items?itemName=bufbuild.vscode-buf)
 *   [Visual Studio Code Support for Protocol Buffers](https://marketplace.visualstudio.com/items?itemName=zxh404.vscode-proto3)
 *   [Visual Studio Language Service support for Protocol Buffers](http://visualstudiogallery.msdn.microsoft.com/4bc0f38c-b058-4e05-ae38-155e053c19c5)
 *   [IntelliJ IDEA plugin](http://github.com/jvolkman/intellij-protobuf-editor)
@@ -226,6 +231,13 @@ Inactive:
 There are miscellaneous other things you may find useful as a Protocol Buffers
 developer.
 
+*   [Buf CLI](https://buf.build/docs/cli/)
+    *   [Code generation](https://buf.build/docs/generate/)
+    *   [Linting](https://buf.build/docs/lint/)
+    *   [Breaking change detection](https://buf.build/docs/breaking/)
+    *   [Formatting](https://buf.build/docs/format/)
+    *   [Calling gRPC APIs](https://buf.build/docs/curl/)
+    *   [Editor integration and LSP](https://buf.build/docs/cli/editors-lsp/)
 *   [Wireshark/Ethereal packet sniffer plugin](https://code.google.com/p/protobuf-wireshark/)
 *   [Alternate encodings (JSON, XML, HTML) for Java protobufs](https://code.google.com/p/protobuf-java-format/)
 *   [Another JSON encoder/decoder for Java](https://github.com/sijuv/protobuf-codec)

@@ -167,7 +167,7 @@ const char* ExtensionSet::ParseFieldWithExtensionInfo(
         MessageLite* value =
             info.is_repeated
                 ? AddMessage(arena, number, WireFormatLite::TYPE_GROUP,
-                             info.message_info.GetClassData(), info.descriptor)
+                             *info.message_info.GetPrototype(), info.descriptor)
                 : MutableMessage(arena, number, WireFormatLite::TYPE_GROUP,
                                  *info.message_info.GetPrototype(),
                                  info.descriptor);
@@ -179,7 +179,7 @@ const char* ExtensionSet::ParseFieldWithExtensionInfo(
         MessageLite* value =
             info.is_repeated
                 ? AddMessage(arena, number, WireFormatLite::TYPE_MESSAGE,
-                             info.message_info.GetClassData(), info.descriptor)
+                             *info.message_info.GetPrototype(), info.descriptor)
                 : MutableMessage(arena, number, WireFormatLite::TYPE_MESSAGE,
                                  *info.message_info.GetPrototype(),
                                  info.descriptor);
@@ -223,7 +223,7 @@ const char* ExtensionSet::ParseMessageSetItemTmpl(
           MessageLite* value =
               extension.is_repeated
                   ? AddMessage(arena, type_id, WireFormatLite::TYPE_MESSAGE,
-                               extension.message_info.GetClassData(),
+                               *extension.message_info.GetPrototype(),
                                extension.descriptor)
                   : MutableMessage(arena, type_id, WireFormatLite::TYPE_MESSAGE,
                                    *extension.message_info.GetPrototype(),

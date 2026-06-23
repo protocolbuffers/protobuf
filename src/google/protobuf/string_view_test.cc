@@ -37,18 +37,16 @@ TEST(StringViewFieldTest, SingularViewGetter) {
   EXPECT_TRUE(message.has_singular_string());
 
   auto singular_string = message.singular_string();
-  static_assert(
-      std::is_same<decltype(singular_string), absl::string_view>::value,
-      "unexpected type");
+  static_assert(std::is_same_v<decltype(singular_string), absl::string_view>,
+                "unexpected type");
   EXPECT_THAT(singular_string, StrEq("0123456789"));
 
   // singular_bytes
   EXPECT_TRUE(message.has_singular_bytes());
 
   auto singular_bytes = message.singular_bytes();
-  static_assert(
-      std::is_same<decltype(singular_bytes), absl::string_view>::value,
-      "unexpected type");
+  static_assert(std::is_same_v<decltype(singular_bytes), absl::string_view>,
+                "unexpected type");
   EXPECT_THAT(singular_bytes, StrEq("012345678901234567890123456789"));
 }
 
@@ -137,18 +135,16 @@ TEST(StringViewFieldTest, RepeatedViewGetter) {
   EXPECT_EQ(message.repeated_string_size(), 3);
 
   auto repeated_string_0 = message.repeated_string(0);
-  static_assert(
-      std::is_same<decltype(repeated_string_0), absl::string_view>::value,
-      "unexpected type");
+  static_assert(std::is_same_v<decltype(repeated_string_0), absl::string_view>,
+                "unexpected type");
   EXPECT_THAT(repeated_string_0, StrEq("foo"));
   EXPECT_THAT(message.repeated_string(), ElementsAre("foo", "bar", "baz"));
 
   EXPECT_EQ(message.repeated_bytes_size(), 5);
 
   auto repeated_bytes_2 = message.repeated_bytes(2);
-  static_assert(
-      std::is_same<decltype(repeated_bytes_2), absl::string_view>::value,
-      "unexpected type");
+  static_assert(std::is_same_v<decltype(repeated_bytes_2), absl::string_view>,
+                "unexpected type");
   EXPECT_THAT(repeated_bytes_2, StrEq("222"));
   EXPECT_THAT(message.repeated_bytes(),
               ElementsAre("000", "111", "222", "333", "444"));

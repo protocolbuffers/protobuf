@@ -103,6 +103,11 @@ struct PROTOBUF_EXPORT TailCallTableInfo {
   // Fields parsed by the table fast-path.
   struct FastFieldInfo {
     struct Empty {};
+    struct NonField {
+      TcParseFunction func;
+      uint16_t coded_tag;
+      uint16_t nonfield_info;
+    };
     struct Field {
       TcParseFunction func;
       const FieldDescriptor* field;
@@ -113,16 +118,51 @@ struct PROTOBUF_EXPORT TailCallTableInfo {
       // For internal caching.
       float presence_probability;
     };
-    struct NonField {
+    struct MpField {
       TcParseFunction func;
+      const FieldDescriptor* field;
+      uint32_t field_index;
       uint16_t coded_tag;
-      uint16_t nonfield_info;
+      uint8_t function_index;
+
+      // For internal caching.
+      float presence_probability;
     };
-    std::variant<Empty, Field, NonField> data;
+    // Ordered by priority.
+    std::variant<Empty, MpField, Field, NonField> data;
+
+    friend bool operator<(const FastFieldInfo& a, const FastFieldInfo& b) {
+      if (a.data.index() != b.data.index()) {
+        return a.data.index() < b.data.index();
+      }
+      if (auto* f = a.AsField()) {
+        return f->presence_probability < b.AsField()->presence_probability;
+      }
+      if (auto* f = a.AsMpField()) {
+        return f->presence_probability < b.AsMpField()->presence_probability;
+      }
+      return false;
+    }
+
+    template <typename T>
+    static constexpr size_t kIndex = decltype(data){T{}}.index();
+
+    bool IsBetterFast(double presence_probability) {
+      if (data.index() < kIndex<Field>) return true;
+      if (data.index() > kIndex<Field>) return false;
+      return presence_probability > AsField()->presence_probability;
+    }
+
+    bool IsBetterMpFast(double presence_probability) {
+      if (data.index() < kIndex<MpField>) return true;
+      if (data.index() > kIndex<MpField>) return false;
+      return presence_probability > AsMpField()->presence_probability;
+    }
 
     bool is_empty() const { return std::holds_alternative<Empty>(data); }
     const Field* AsField() const { return std::get_if<Field>(&data); }
     const NonField* AsNonField() const { return std::get_if<NonField>(&data); }
+    const MpField* AsMpField() const { return std::get_if<MpField>(&data); }
   };
   std::vector<FastFieldInfo> fast_path_fields;
 

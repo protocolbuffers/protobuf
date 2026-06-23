@@ -81,7 +81,7 @@ void InitializeMessageValue(void* raw_ptr,
 template <typename Key>
 bool Insert(internal::UntypedMapBase* m, Key key, FfiMapValue value) {
   internal::NodeBase* node = internal::RustMapHelper::AllocNode(m);
-  if constexpr (std::is_same<Key, PtrAndLen>::value) {
+  if constexpr (std::is_same_v<Key, PtrAndLen>) {
     key.PlacementNewString(node->GetVoidKey());
   } else {
     *static_cast<Key*>(node->GetVoidKey()) = key;
@@ -162,7 +162,7 @@ template <typename Key>
 void IterGet(const internal::UntypedMapIterator* iter, Key* key,
              FfiMapValue* value) {
   internal::NodeBase* node = iter->node_;
-  if constexpr (std::is_same<Key, PtrAndLen>::value) {
+  if constexpr (std::is_same_v<Key, PtrAndLen>) {
     const std::string* s = iter->m_->GetKey<std::string>(node);
     *key = PtrAndLen{s->data(), s->size()};
   } else {

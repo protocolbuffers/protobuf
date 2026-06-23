@@ -107,10 +107,10 @@ class ParserTest : public testing::Test {
   // Set up the parser to parse the given text.
   void SetupParser(absl::string_view text) {
     raw_input_ =
-        absl::make_unique<io::ArrayInputStream>(text.data(), text.size());
+        std::make_unique<io::ArrayInputStream>(text.data(), text.size());
     input_ =
-        absl::make_unique<io::Tokenizer>(raw_input_.get(), &error_collector_);
-    parser_ = absl::make_unique<Parser>();
+        std::make_unique<io::Tokenizer>(raw_input_.get(), &error_collector_);
+    parser_ = std::make_unique<Parser>();
     parser_->RecordErrorsTo(&error_collector_);
     parser_->SetRequireSyntaxIdentifier(require_syntax_identifier_);
   }

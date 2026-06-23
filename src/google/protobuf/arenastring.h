@@ -15,6 +15,7 @@
 #include <utility>
 
 #include "absl/log/absl_check.h"
+#include "absl/strings/cord.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/arena.h"
 #include "google/protobuf/explicitly_constructed.h"
@@ -297,6 +298,7 @@ struct PROTOBUF_EXPORT ArenaStringPtr {
 
   void Set(absl::string_view value, Arena* arena);
   void Set(std::string&& value, Arena* arena);
+  void Set(const absl::Cord& value, Arena* arena);
   template <typename... OverloadDisambiguator>
   void Set(const std::string& value, Arena* arena);
   void Set(const char* s, Arena* arena);
@@ -306,6 +308,7 @@ struct PROTOBUF_EXPORT ArenaStringPtr {
   void SetBytes(std::string&& value, Arena* arena);
   template <typename... OverloadDisambiguator>
   void SetBytes(const std::string& value, Arena* arena);
+  void SetBytes(const absl::Cord& value, Arena* arena);
   void SetBytes(const char* s, Arena* arena);
   void SetBytes(const void* p, size_t n, Arena* arena);
 
@@ -465,6 +468,14 @@ inline void ArenaStringPtr::InitAllocated(std::string* str, Arena* arena) {
   }
 }
 
+inline void ArenaStringPtr::Set(const absl::Cord& value, Arena* arena) {
+  if (auto flat = value.TryFlat(); flat.has_value()) {
+    Set(*flat, arena);
+  } else {
+    absl::CopyCordToString(value, MutableNoCopy(arena));
+  }
+}
+
 inline void ArenaStringPtr::Set(const char* s, Arena* arena) {
   ABSL_DCHECK(s != nullptr);
   Set(absl::string_view{s}, arena);
@@ -489,6 +500,10 @@ inline void ArenaStringPtr::SetBytes(const std::string& value, Arena* arena) {
 
 inline void ArenaStringPtr::SetBytes(std::string&& value, Arena* arena) {
   Set(std::move(value), arena);
+}
+
+inline void ArenaStringPtr::SetBytes(const absl::Cord& value, Arena* arena) {
+  Set(value, arena);
 }
 
 inline void ArenaStringPtr::SetBytes(const char* s, Arena* arena) {

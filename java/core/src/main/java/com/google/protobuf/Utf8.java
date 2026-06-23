@@ -55,15 +55,12 @@ final class Utf8 {
 
   private static Processor createProcessor() {
     if (Android.isOnAndroidDevice()) {
-      return new SafeProcessor();
+      return new MobileProcessor();
     }
-    if (UnsafeProcessorWithEncodedLength.isAvailable()) {
-      return new UnsafeProcessorWithEncodedLength();
+    if (ServerProcessorWithEncodedLength.isAvailable()) {
+      return new ServerProcessorWithEncodedLength();
     }
-    if (UnsafeProcessor.isAvailable()) {
-      return new UnsafeProcessor();
-    }
-    return new SafeProcessor();
+    return new ServerProcessor();
   }
 
   /**
@@ -548,8 +545,8 @@ final class Utf8 {
     }
   }
 
-  /** {@link Processor} implementation that does not use any {@code sun.misc.Unsafe} methods. */
-  static final class SafeProcessor extends Processor {
+  /** {@link Processor} optimized for mobile platforms. */
+  static final class MobileProcessor extends Processor {
     @Override
     String decodeUtf8(byte[] bytes, int index, int size) throws InvalidProtocolBufferException {
       // Bitwise OR combines the sign bits so any negative value fails the check.
@@ -752,13 +749,8 @@ final class Utf8 {
     }
   }
 
-  /** {@link Processor} that uses {@code sun.misc.Unsafe} where possible to improve performance. */
-  static class UnsafeProcessor extends Processor {
-    /** Indicates whether or not all required unsafe operations are supported on this platform. */
-    static boolean isAvailable() {
-      return true;
-    }
-
+  /** {@link Processor} optimized for server platforms. */
+  static class ServerProcessor extends Processor {
     @Override
     String decodeUtf8(byte[] bytes, int index, int size) throws InvalidProtocolBufferException {
       String s = new String(bytes, index, size, StandardCharsets.UTF_8);
@@ -802,10 +794,10 @@ final class Utf8 {
   }
 
   /**
-   * {@link Processor} that extends {@link UnsafeProcessor} and uses {@code
+   * {@link Processor} that extends {@link ServerProcessor} and uses {@code
    * java.lang.String#encodedLength(Charset)} on JDK versions that support it.
    */
-  static final class UnsafeProcessorWithEncodedLength extends UnsafeProcessor {
+  static final class ServerProcessorWithEncodedLength extends ServerProcessor {
 
     private static final Method encodedLengthMethod = createEncodedLengthMethod();
 
@@ -820,7 +812,7 @@ final class Utf8 {
     }
 
     static boolean isAvailable() {
-      return encodedLengthMethod != null && UnsafeProcessor.isAvailable();
+      return encodedLengthMethod != null;
     }
 
     @Override

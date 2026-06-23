@@ -45,15 +45,6 @@
 #undef minor
 #endif  // minor
 
-namespace google {
-namespace protobuf {
-namespace internal {
-template <typename T>
-::absl::string_view GetAnyMessageName();
-}  // namespace internal
-}  // namespace protobuf
-}  // namespace google
-
 // Internal implementation detail -- do not use these members.
 struct PROTOC_EXPORT TableStruct_google_2fprotobuf_2fcompiler_2fplugin_2eproto {
   static const ::uint32_t offsets[];
@@ -155,6 +146,8 @@ using ::google::protobuf::internal::generated_enum::AbslUnparseFlag;
 
 class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Version final : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:google.protobuf.compiler.Version) */ {
+  using Super_ = ::google::protobuf::Message;
+
  public:
   inline Version() : Version(nullptr) {}
   ~Version() PROTOBUF_FINAL;
@@ -229,11 +222,11 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Version final : publi
 
   [[nodiscard]] Version* PROTOBUF_NONNULL
   New(::google::protobuf::Arena* PROTOBUF_NULLABLE arena = nullptr) const {
-    return ::google::protobuf::Message::DefaultConstruct<Version>(arena);
+    return Super_::DefaultConstruct<Version>(arena);
   }
-  using ::google::protobuf::Message::CopyFrom;
+  using Super_::CopyFrom;
   void CopyFrom(const Version& from);
-  using ::google::protobuf::Message::MergeFrom;
+  using Super_::MergeFrom;
   void MergeFrom(const Version& from) { Version::MergeImpl(*this, from); }
 
   private:
@@ -274,8 +267,6 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Version final : publi
   static void SharedDtor(MessageLite& self);
   void InternalSwap(Version* PROTOBUF_NONNULL other);
  private:
-  template <typename T>
-  friend ::absl::string_view(::google::protobuf::internal::GetAnyMessageName)();
   static ::absl::string_view FullMessageName() { return "google.protobuf.compiler.Version"; }
 
   explicit Version(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
@@ -401,6 +392,8 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Version final : publi
 
 class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CodeGeneratorResponse_File final : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:google.protobuf.compiler.CodeGeneratorResponse.File) */ {
+  using Super_ = ::google::protobuf::Message;
+
  public:
   inline CodeGeneratorResponse_File() : CodeGeneratorResponse_File(nullptr) {}
   ~CodeGeneratorResponse_File() PROTOBUF_FINAL;
@@ -475,11 +468,11 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CodeGeneratorResponse
 
   [[nodiscard]] CodeGeneratorResponse_File* PROTOBUF_NONNULL
   New(::google::protobuf::Arena* PROTOBUF_NULLABLE arena = nullptr) const {
-    return ::google::protobuf::Message::DefaultConstruct<CodeGeneratorResponse_File>(arena);
+    return Super_::DefaultConstruct<CodeGeneratorResponse_File>(arena);
   }
-  using ::google::protobuf::Message::CopyFrom;
+  using Super_::CopyFrom;
   void CopyFrom(const CodeGeneratorResponse_File& from);
-  using ::google::protobuf::Message::MergeFrom;
+  using Super_::MergeFrom;
   void MergeFrom(const CodeGeneratorResponse_File& from) { CodeGeneratorResponse_File::MergeImpl(*this, from); }
 
   private:
@@ -520,8 +513,6 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CodeGeneratorResponse
   static void SharedDtor(MessageLite& self);
   void InternalSwap(CodeGeneratorResponse_File* PROTOBUF_NONNULL other);
  private:
-  template <typename T>
-  friend ::absl::string_view(::google::protobuf::internal::GetAnyMessageName)();
   static ::absl::string_view FullMessageName() { return "google.protobuf.compiler.CodeGeneratorResponse.File"; }
 
   explicit CodeGeneratorResponse_File(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
@@ -661,6 +652,8 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CodeGeneratorResponse
 
 class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CodeGeneratorResponse final : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:google.protobuf.compiler.CodeGeneratorResponse) */ {
+  using Super_ = ::google::protobuf::Message;
+
  public:
   inline CodeGeneratorResponse() : CodeGeneratorResponse(nullptr) {}
   ~CodeGeneratorResponse() PROTOBUF_FINAL;
@@ -735,11 +728,11 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CodeGeneratorResponse
 
   [[nodiscard]] CodeGeneratorResponse* PROTOBUF_NONNULL
   New(::google::protobuf::Arena* PROTOBUF_NULLABLE arena = nullptr) const {
-    return ::google::protobuf::Message::DefaultConstruct<CodeGeneratorResponse>(arena);
+    return Super_::DefaultConstruct<CodeGeneratorResponse>(arena);
   }
-  using ::google::protobuf::Message::CopyFrom;
+  using Super_::CopyFrom;
   void CopyFrom(const CodeGeneratorResponse& from);
-  using ::google::protobuf::Message::MergeFrom;
+  using Super_::MergeFrom;
   void MergeFrom(const CodeGeneratorResponse& from) { CodeGeneratorResponse::MergeImpl(*this, from); }
 
   private:
@@ -780,8 +773,6 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CodeGeneratorResponse
   static void SharedDtor(MessageLite& self);
   void InternalSwap(CodeGeneratorResponse* PROTOBUF_NONNULL other);
  private:
-  template <typename T>
-  friend ::absl::string_view(::google::protobuf::internal::GetAnyMessageName)();
   static ::absl::string_view FullMessageName() { return "google.protobuf.compiler.CodeGeneratorResponse"; }
 
   explicit CodeGeneratorResponse(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
@@ -951,6 +942,8 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CodeGeneratorResponse
 
 class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CodeGeneratorRequest final : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:google.protobuf.compiler.CodeGeneratorRequest) */ {
+  using Super_ = ::google::protobuf::Message;
+
  public:
   inline CodeGeneratorRequest() : CodeGeneratorRequest(nullptr) {}
   ~CodeGeneratorRequest() PROTOBUF_FINAL;
@@ -1025,11 +1018,11 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CodeGeneratorRequest 
 
   [[nodiscard]] CodeGeneratorRequest* PROTOBUF_NONNULL
   New(::google::protobuf::Arena* PROTOBUF_NULLABLE arena = nullptr) const {
-    return ::google::protobuf::Message::DefaultConstruct<CodeGeneratorRequest>(arena);
+    return Super_::DefaultConstruct<CodeGeneratorRequest>(arena);
   }
-  using ::google::protobuf::Message::CopyFrom;
+  using Super_::CopyFrom;
   void CopyFrom(const CodeGeneratorRequest& from);
-  using ::google::protobuf::Message::MergeFrom;
+  using Super_::MergeFrom;
   void MergeFrom(const CodeGeneratorRequest& from) { CodeGeneratorRequest::MergeImpl(*this, from); }
 
   private:
@@ -1075,8 +1068,6 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CodeGeneratorRequest 
   static void SharedDtor(MessageLite& self);
   void InternalSwap(CodeGeneratorRequest* PROTOBUF_NONNULL other);
  private:
-  template <typename T>
-  friend ::absl::string_view(::google::protobuf::internal::GetAnyMessageName)();
   static ::absl::string_view FullMessageName() { return "google.protobuf.compiler.CodeGeneratorRequest"; }
 
   explicit CodeGeneratorRequest(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
@@ -1726,7 +1717,7 @@ inline ::google::protobuf::compiler::Version* PROTOBUF_NULLABLE CodeGeneratorReq
 inline ::google::protobuf::compiler::Version* PROTOBUF_NONNULL CodeGeneratorRequest::_internal_mutable_compiler_version() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   if (_impl_.compiler_version_ == nullptr) {
-    auto* p = ::google::protobuf::Message::DefaultConstruct<::google::protobuf::compiler::Version>(GetArena());
+    auto* p = Super_::DefaultConstruct<::google::protobuf::compiler::Version>(GetArena());
     _impl_.compiler_version_ = reinterpret_cast<::google::protobuf::compiler::Version*>(p);
   }
   return _impl_.compiler_version_;
@@ -2027,7 +2018,7 @@ inline ::google::protobuf::GeneratedCodeInfo* PROTOBUF_NULLABLE CodeGeneratorRes
 inline ::google::protobuf::GeneratedCodeInfo* PROTOBUF_NONNULL CodeGeneratorResponse_File::_internal_mutable_generated_code_info() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   if (_impl_.generated_code_info_ == nullptr) {
-    auto* p = ::google::protobuf::Message::DefaultConstruct<::google::protobuf::GeneratedCodeInfo>(GetArena());
+    auto* p = Super_::DefaultConstruct<::google::protobuf::GeneratedCodeInfo>(GetArena());
     _impl_.generated_code_info_ = reinterpret_cast<::google::protobuf::GeneratedCodeInfo*>(p);
   }
   return _impl_.generated_code_info_;

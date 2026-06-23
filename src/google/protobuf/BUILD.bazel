@@ -440,6 +440,7 @@ cc_library(
         "@abseil-cpp//absl/base:prefetch",
         "@abseil-cpp//absl/log:absl_log",
         "@abseil-cpp//absl/numeric:bits",
+        "@abseil-cpp//absl/numeric:int128",
         "@abseil-cpp//absl/strings",
         "@abseil-cpp//absl/strings:str_format",
         "@abseil-cpp//absl/types:optional",
@@ -646,6 +647,7 @@ cc_library(
         ":port",
         "@abseil-cpp//absl/base:config",
         "@abseil-cpp//absl/log:absl_check",
+        "@abseil-cpp//absl/strings:cord",
         "@abseil-cpp//absl/strings:string_view",
     ],
 )
@@ -806,6 +808,7 @@ PROTOBUF_HEADERS = [
     "cpp_file_options.pb.h",
     "descriptor.h",
     "descriptor.pb.h",
+    "descriptor_builder.h",
     "descriptor_database.h",
     "descriptor_visitor.h",
     "dynamic_message.h",
@@ -828,6 +831,7 @@ PROTOBUF_HEADERS = [
     "reflection_visit_fields.h",
     "reflection_visit_field_info.h",
     "service.h",
+    "symbol.h",
     "text_format.h",
     "unknown_field_set.h",
     "wire_format.h",
@@ -856,6 +860,7 @@ cc_library(
         "reflection_mode.cc",
         "reflection_ops.cc",
         "service.cc",
+        "symbol.cc",
         "symbol_checker.cc",
         "text_format.cc",
         "unknown_field_set.cc",
@@ -871,6 +876,7 @@ cc_library(
     deps = [
         ":internal_visibility",
         ":micro_string",
+        ":naming_style",
         ":port",
         ":protobuf_lite",
         ":repeated_field_proxy",
@@ -922,6 +928,31 @@ cc_library(
     visibility = ["//visibility:private"],
     deps = [
         "@abseil-cpp//absl/strings",
+    ],
+)
+
+cc_library(
+    name = "naming_style",
+    srcs = ["naming_style.cc"],
+    hdrs = ["naming_style.h"],
+    strip_include_prefix = "/src",
+    visibility = ["//visibility:private"],
+    deps = [
+        ":port",
+        "@abseil-cpp//absl/status",
+        "@abseil-cpp//absl/strings",
+        "@abseil-cpp//absl/strings:charset",
+    ],
+)
+
+cc_test(
+    name = "naming_style_test",
+    srcs = ["naming_style_test.cc"],
+    deps = [
+        ":naming_style",
+        "@abseil-cpp//absl/status:status_matchers",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
     ],
 )
 
@@ -1477,6 +1508,8 @@ exports_files(
     [
         "test_messages_proto2.proto",
         "test_messages_proto3.proto",
+        "json_options.proto",
+        "json_enumvalue_options.proto",
     ],
     visibility = [
         "//:__pkg__",

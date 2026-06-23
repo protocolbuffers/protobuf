@@ -72,12 +72,6 @@ namespace internal {
 // defined in generated_message_reflection.cc
 void RegisterFileLevelMetadata(const DescriptorTable* descriptor_table);
 
-struct DescriptorMethodsFriend {
-  static const TcParseTableBase* GetTcParseTable(const MessageLite& msg) {
-    return DownCastMessage<Message>(msg).GetReflection()->GetTcParseTable();
-  }
-};
-
 namespace {
 
 Metadata GetMetadataImpl(const internal::ClassDataFull& data) {
@@ -106,9 +100,19 @@ std::string InitializationErrorStringImpl(const MessageLite& msg) {
   return DownCastMessage<Message>(msg).InitializationErrorString();
 }
 
+}  // namespace
+
+struct DescriptorMethodsFriend {
+  static const TcParseTableBase* GetTcParseTable(const ClassData* data) {
+    return GetMetadataImpl(data->full()).reflection->GetTcParseTable();
+  }
+};
+
+namespace {
+
 // Helper function to get TcParseTable - logic from Message::GetTcParseTableImpl
-const internal::TcParseTableBase* GetTcParseTableImpl(const MessageLite& msg) {
-  return DescriptorMethodsFriend::GetTcParseTable(msg);
+const internal::TcParseTableBase* GetTcParseTableImpl(const ClassData* data) {
+  return DescriptorMethodsFriend::GetTcParseTable(data);
 }
 
 // Helper function for SpaceUsedLong - logic from Message::SpaceUsedLongImpl
@@ -470,12 +474,12 @@ size_t Message::SpaceUsedLong() const {
 }
 
 namespace internal {
-void* CreateSplitMessageGeneric(Arena* arena, const void* default_split,
-                                size_t size) {
-  void* split =
+void CreateSplitMessageGeneric(Arena* arena, void** split, size_t size) {
+  void* new_split =
       (arena == nullptr) ? Allocate(size) : arena->AllocateAligned(size);
-  memcpy(split, default_split, size);
-  return split;
+  const void* default_split = *split;
+  *split = new_split;
+  memcpy(new_split, default_split, size);
 }
 }  // namespace internal
 
