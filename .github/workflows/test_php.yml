@@ -65,7 +65,7 @@ jobs:
         if: ${{ !matrix.continuous-only || inputs.continuous-run }}
         uses: protocolbuffers/protobuf-ci/bazel-docker@v5
         with:
-          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/php:9.0.0-${{ matrix.version }}-9fc33a0c378b5affd3c85d3f5ae4f330993048f7
+          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/php:9.0.0-${{ matrix.version }}-a6ca8ba8e77d63471b4ad05f8643e1fc58b30e12
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-cache: php_linux/${{ matrix.version }}
           bash: |
