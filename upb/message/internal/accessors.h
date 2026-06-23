@@ -143,6 +143,7 @@ UPB_INLINE bool UPB_PRIVATE(_upb_Message_IsInitializedShallow)(
   return (UPB_PRIVATE(_upb_MiniTable_RequiredMask)(m) & ~bits) == 0;
 }
 
+// LINT.IfChange(message_raw_fields)
 UPB_INLINE void* UPB_PRIVATE(_upb_Message_MutableDataPtr)(
     struct upb_Message* msg, const upb_MiniTableField* f) {
   return (char*)msg + f->UPB_ONLYBITS(offset);
@@ -181,6 +182,7 @@ UPB_INLINE_IF_NOT_GCC void UPB_PRIVATE(_upb_MiniTableField_DataCopy)(
   }
   UPB_UNREACHABLE();
 }
+// LINT.ThenChange(//depot/google3/third_party/upb/bits/golang/message.go:message_raw_fields)
 
 UPB_INLINE_IF_NOT_GCC bool UPB_PRIVATE(_upb_MiniTableField_DataEquals)(
     const upb_MiniTableField* f, const void* a, const void* b) {
@@ -325,6 +327,19 @@ UPB_API_INLINE bool upb_Message_SetExtension(struct upb_Message* msg,
   UPB_ASSERT(a);
   upb_Extension* ext =
       UPB_PRIVATE(_upb_Message_GetOrCreateExtension)(msg, e, a);
+  if (!ext) return false;
+  UPB_PRIVATE(_upb_MiniTableField_DataCopy)
+  (&e->UPB_PRIVATE(field), &ext->data, val);
+  return true;
+}
+
+UPB_API_INLINE bool UPB_PRIVATE(_upb_Message_SetNonCanonicalExtension)(
+    struct upb_Message* msg, const upb_MiniTableExtension* e, const void* val,
+    upb_Arena* a) {
+  UPB_ASSERT(!upb_Message_IsFrozen(msg));
+  UPB_ASSERT(a);
+  upb_Extension* ext =
+      UPB_PRIVATE(_upb_Message_CreateNonCanonicalExtension)(msg, e, a);
   if (!ext) return false;
   UPB_PRIVATE(_upb_MiniTableField_DataCopy)
   (&e->UPB_PRIVATE(field), &ext->data, val);
@@ -882,8 +897,9 @@ UPB_API_INLINE void upb_Message_ClearExtension(
   if (!in) return;
   for (size_t i = 0; i < in->size; i++) {
     upb_TaggedAuxPtr tagged_ptr = in->aux_data[i];
-    if (upb_TaggedAuxPtr_IsExtension(tagged_ptr)) {
-      const upb_Extension* ext = upb_TaggedAuxPtr_Extension(tagged_ptr);
+    if (upb_TaggedAuxPtr_IsCanonicalExtension(tagged_ptr)) {
+      const upb_Extension* ext =
+          upb_TaggedAuxPtr_CanonicalExtension(tagged_ptr);
       if (ext->ext == e) {
         in->aux_data[i] = upb_TaggedAuxPtr_Null();
         return;
