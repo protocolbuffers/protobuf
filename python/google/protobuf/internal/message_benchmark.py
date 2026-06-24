@@ -176,6 +176,35 @@ def bench_extend_int32(state: google_benchmark.State):
 
 
 @benchmark
+def bench_decode_from_bytes(state: google_benchmark.State):
+  arr = make_array(state.range(0))
+  msg = unittest_pb2.TestAllTypes()
+  msg.optional_bytes = memoryview(arr)
+  msg_bytes = msg.SerializeToString()
+  while state:
+    _ = unittest_pb2.TestAllTypes.FromString(msg_bytes)
+
+
+@benchmark
+def bench_decode_from_memoryview(state: google_benchmark.State):
+  arr = make_array(state.range(0))
+  msg = unittest_pb2.TestAllTypes()
+  msg.optional_bytes = memoryview(arr)
+  msg_bytes = memoryview(msg.SerializeToString())
+  while state:
+    _ = unittest_pb2.TestAllTypes.FromString(msg_bytes)
+
+
+@benchmark
+def bench_encode_into_bytes(state: google_benchmark.State):
+  arr = make_array(state.range(0))
+  msg = unittest_pb2.TestAllTypes()
+  msg.optional_bytes = memoryview(arr)
+  while state:
+    _ = msg.SerializeToString()
+
+
+@benchmark
 def bench_assign_int32(state: google_benchmark.State):
   arr = make_array(state.range(0)).view(dtype=np.int32)
   msg = unittest_pb2.TestAllTypes()
