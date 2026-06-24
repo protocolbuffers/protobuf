@@ -263,12 +263,6 @@ int AssignSubscript(RepeatedCompositeContainer* self, PyObject* slice,
     return -1;
   }
 
-  // TODO: b/517235198 - Reify even for empty sequences.
-  int status = cmessage::CheckRepeatedFieldDeletion(
-      self->parent, self->parent_field_descriptor, slice);
-  if (status < 0) return -1;
-  if (status > 0) return 0;
-
   if (cmessage::AssureWritable(self->parent) == nullptr) return -1;
 
   return cmessage::DeleteRepeatedField(self->parent,
@@ -361,13 +355,12 @@ static PyObject* ToStr(PyObject* pself) {
 // ---------------------------------------------------------------------
 // sort()
 
-static void ReorderAttached(RepeatedCompositeContainer* self,
+static bool ReorderAttached(RepeatedCompositeContainer* self,
                             PyObject* child_list) {
-  const Py_ssize_t length = Length(reinterpret_cast<PyObject*>(self));
-  if (length == 0) return;
-
   Message* message = cmessage::AssureWritable(self->parent);
-  if (message == nullptr) return;
+  if (message == nullptr) return false;
+  const Py_ssize_t length = Length(reinterpret_cast<PyObject*>(self));
+  if (length == 0) return true;
   const Reflection* reflection = message->GetReflection();
   const FieldDescriptor* descriptor = self->parent_field_descriptor;
 
@@ -379,10 +372,11 @@ static void ReorderAttached(RepeatedCompositeContainer* self,
     CMessage* child_cmsg =
         reinterpret_cast<CMessage*>(PyList_GET_ITEM(child_list, i));
     Message* child_message = cmessage::AssureWritable(child_cmsg);
-    if (child_message == nullptr) return;
+    if (child_message == nullptr) return false;
     reflection->UnsafeArenaAddAllocatedMessage(message, descriptor,
                                                child_message);
   }
+  return true;
 }
 
 // Returns 0 if successful; returns -1 and sets an exception if
@@ -398,7 +392,9 @@ static int SortPythonMessages(RepeatedCompositeContainer* self, PyObject* args,
   if (m == nullptr) return -1;
   if (ScopedPyObjectPtr(PyObject_Call(m.get(), args, kwds)) == nullptr)
     return -1;
-  ReorderAttached(self, child_list.get());
+  if (!ReorderAttached(self, child_list.get())) {
+    return -1;
+  }
   return 0;
 }
 
@@ -406,9 +402,6 @@ static PyObject* Sort(PyObject* pself, PyObject* args, PyObject* kwds) {
   RepeatedCompositeContainer* self =
       reinterpret_cast<RepeatedCompositeContainer*>(pself);
 
-  if (self->parent->state == python::MESSAGE_FROZEN) {
-    return SetContainerFrozenError();
-  }
 
   // Support the old sort_function argument for backwards
   // compatibility.
@@ -422,10 +415,6 @@ static PyObject* Sort(PyObject* pself, PyObject* args, PyObject* kwds) {
     }
   }
 
-  // TODO: b/517235198 - Reify even for empty sequences.
-  if (Length(pself) == 0) {
-    Py_RETURN_NONE;
-  }
 
   if (SortPythonMessages(self, args, kwds) < 0) {
     return nullptr;
@@ -447,7 +436,9 @@ static int ReversePythonMessages(RepeatedCompositeContainer* self) {
   if (ScopedPyObjectPtr(
           PyObject_CallMethod(child_list.get(), "reverse", nullptr)) == nullptr)
     return -1;
-  ReorderAttached(self, child_list.get());
+  if (!ReorderAttached(self, child_list.get())) {
+    return -1;
+  }
   return 0;
 }
 
@@ -455,14 +446,7 @@ static PyObject* Reverse(PyObject* pself) {
   RepeatedCompositeContainer* self =
       reinterpret_cast<RepeatedCompositeContainer*>(pself);
 
-  if (self->parent->state == python::MESSAGE_FROZEN) {
-    return SetContainerFrozenError();
-  }
 
-  // TODO: b/517235198 - Reify even for empty sequences.
-  if (Length(pself) == 0) {
-    Py_RETURN_NONE;
-  }
 
   if (ReversePythonMessages(self) < 0) {
     return nullptr;
@@ -474,10 +458,6 @@ static PyObject* Reverse(PyObject* pself) {
 static PyObject* Clear(PyObject* pself) {
   RepeatedCompositeContainer* self =
       reinterpret_cast<RepeatedCompositeContainer*>(pself);
-  // TODO: b/517235198 - Reify even for empty sequences.
-  if (Length(pself) == 0) {
-    Py_RETURN_NONE;
-  }
 
   CMessage* cmessage = self->parent;
   Message* message = cmessage::AssureWritable(cmessage);

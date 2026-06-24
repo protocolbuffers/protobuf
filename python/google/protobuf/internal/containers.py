@@ -101,10 +101,20 @@ class BaseContainer(Sequence[_T]):
     if 'sort_function' in kwargs:
       kwargs['cmp'] = kwargs.pop('sort_function')
     self._values.sort(*args, **kwargs)
+    if not self._message_listener.dirty:
+      self._message_listener.Modified()
 
   def reverse(self) -> None:
     self._AssureWritable()
     self._values.reverse()
+    if not self._message_listener.dirty:
+      self._message_listener.Modified()
+
+  def clear(self) -> None:
+    self._AssureWritable()
+    self._values.clear()
+    if not self._message_listener.dirty:
+      self._message_listener.Modified()
 
 
 # TODO: Remove this. BaseContainer does *not* conform to

@@ -1081,9 +1081,6 @@ static PyObject* Sort(PyObject* pself, PyObject* args, PyObject* kwds) {
   RepeatedScalarContainer* self =
       reinterpret_cast<RepeatedScalarContainer*>(pself);
 
-  if (self->parent->state == python::MESSAGE_FROZEN) {
-    return SetContainerFrozenError();
-  }
 
   // Support the old sort_function argument for backwards
   // compatibility.
@@ -1105,9 +1102,6 @@ static PyObject* Sort(PyObject* pself, PyObject* args, PyObject* kwds) {
   if (list == nullptr) {
     return nullptr;
   }
-  if (PyList_GET_SIZE(list.get()) == 0) {
-    Py_RETURN_NONE;
-  }
   ScopedPyObjectPtr m(PyObject_GetAttrString(list.get(), "sort"));
   if (m == nullptr) {
     return nullptr;
@@ -1128,14 +1122,7 @@ static PyObject* Reverse(PyObject* pself) {
   RepeatedScalarContainer* self =
       reinterpret_cast<RepeatedScalarContainer*>(pself);
 
-  if (self->parent->state == python::MESSAGE_FROZEN) {
-    return SetContainerFrozenError();
-  }
 
-  // TODO: b/517235198 - Reify even for empty sequences.
-  if (Len(pself) == 0) {
-    Py_RETURN_NONE;
-  }
 
   ScopedPyObjectPtr full_slice(PySlice_New(nullptr, nullptr, nullptr));
   if (full_slice == nullptr) {
@@ -1161,10 +1148,6 @@ static PyObject* Clear(PyObject* pself) {
   RepeatedScalarContainer* self =
       reinterpret_cast<RepeatedScalarContainer*>(pself);
 
-  // TODO: b/517235198 - Reify even for empty sequences.
-  if (Len(pself) == 0) {
-    Py_RETURN_NONE;
-  }
 
   CMessage* cmessage = self->parent;
   Message* message = cmessage::AssureWritable(cmessage);

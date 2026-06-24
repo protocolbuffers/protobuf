@@ -869,12 +869,7 @@ static PyObject* PyUpb_RepeatedContainer_Sort(PyObject* pself, PyObject* args,
     }
   }
 
-  if (PyUpb_RepeatedContainer_IsFrozen((PyUpb_RepeatedContainer*)pself)) {
-    return PyUpb_SetFrozenErrorWithMsg("Container is immutable");
-  }
 
-  // TODO:b/517235198 - Reify even for empty sequences.
-  if (PyUpb_RepeatedContainer_Length(pself) == 0) Py_RETURN_NONE;
 
   upb_Array* arr = PyUpb_RepeatedContainer_AssureWritable(pself);
   if (!arr) return NULL;
@@ -918,8 +913,6 @@ static PyObject* PyUpb_RepeatedContainer_Reverse(PyObject* _self) {
 
 static PyObject* PyUpb_RepeatedContainer_Clear(PyObject* _self) {
   Py_ssize_t size = PyUpb_RepeatedContainer_Length(_self);
-  // TODO: b/517235198 - Reify even for empty sequences.
-  if (size == 0) Py_RETURN_NONE;
 
   PyUpb_RepeatedContainer* self = (PyUpb_RepeatedContainer*)_self;
   upb_Array* arr = PyUpb_RepeatedContainer_AssureWritable(_self);

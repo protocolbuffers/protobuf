@@ -531,16 +531,16 @@ class MessageTest(unittest.TestCase):
     self.assertEqual([1, 2, 3, 4], msg.payload.repeated_int32)
 
   def testRepeatedFieldSelfSliceAssignment(self, message_module):
-      msg = message_module.NestedTestAllTypes()
-      msg.payload.repeated_int32[:] = [1, 2, 3, 4]
-      msg.payload.repeated_int32[:] = msg.payload.repeated_int32
-      self.assertEqual([1, 2, 3, 4], msg.payload.repeated_int32)
+    msg = message_module.NestedTestAllTypes()
+    msg.payload.repeated_int32[:] = [1, 2, 3, 4]
+    msg.payload.repeated_int32[:] = msg.payload.repeated_int32
+    self.assertEqual([1, 2, 3, 4], msg.payload.repeated_int32)
 
   def testRepeatedFieldSelfExtend(self, message_module):
-      msg = message_module.NestedTestAllTypes()
-      msg.payload.repeated_int32[:] = [1, 2, 3, 4]
-      msg.payload.repeated_int32.extend(msg.payload.repeated_int32)
-      self.assertEqual([1, 2, 3, 4] * 2, msg.payload.repeated_int32)
+    msg = message_module.NestedTestAllTypes()
+    msg.payload.repeated_int32[:] = [1, 2, 3, 4]
+    msg.payload.repeated_int32.extend(msg.payload.repeated_int32)
+    self.assertEqual([1, 2, 3, 4] * 2, msg.payload.repeated_int32)
 
   def testAssignOutOfRange(self, message_module):
     msg = message_module.NestedTestAllTypes()
@@ -781,13 +781,72 @@ class MessageTest(unittest.TestCase):
     )
 
   def testSortEmptyRepeated(self, message_module):
-    message = message_module.NestedTestAllTypes()
-    self.assertFalse(message.HasField('child'))
-    self.assertFalse(message.HasField('payload'))
-    message.child.repeated_child.sort()
-    message.payload.repeated_int32.sort()
-    self.assertFalse(message.HasField('child'))
-    self.assertFalse(message.HasField('payload'))
+    if api_implementation.Type() == 'python':
+      return
+    msg = message_module.NestedTestAllTypes()
+    self.assertFalse(msg.HasField('child'))
+    self.assertFalse(msg.HasField('payload'))
+    msg.child.repeated_child.sort()
+    msg.payload.repeated_int32.sort()
+    self.assertTrue(msg.HasField('child'))
+    self.assertTrue(msg.HasField('payload'))
+
+  def testReverseEmptyRepeated(self, message_module):
+    if api_implementation.Type() == 'python':
+      return
+    msg = message_module.NestedTestAllTypes()
+    self.assertFalse(msg.HasField('child'))
+    self.assertFalse(msg.HasField('payload'))
+    msg.child.repeated_child.reverse()
+    msg.payload.repeated_int32.reverse()
+    self.assertTrue(msg.HasField('child'))
+    self.assertTrue(msg.HasField('payload'))
+
+  def testClearEmptyRepeated(self, message_module):
+    if api_implementation.Type() == 'python':
+      return
+    msg = message_module.NestedTestAllTypes()
+    self.assertFalse(msg.HasField('child'))
+    self.assertFalse(msg.HasField('payload'))
+    msg.child.repeated_child.clear()
+    msg.payload.repeated_int32.clear()
+    self.assertTrue(msg.HasField('child'))
+    self.assertTrue(msg.HasField('payload'))
+
+  def testDelEmptyRepeated(self, message_module):
+    if api_implementation.Type() == 'python':
+      return
+    msg = message_module.NestedTestAllTypes()
+    self.assertFalse(msg.HasField('child'))
+    self.assertFalse(msg.HasField('payload'))
+    del msg.child.repeated_child[:]
+    del msg.payload.repeated_int32[:]
+    self.assertTrue(msg.HasField('child'))
+    self.assertTrue(msg.HasField('payload'))
+
+  def testImmutabilityCheckComesFirstEmptyRepeated(self, message_module):
+    if api_implementation.Type() == 'python':
+      return
+    msg = message_module.TestAllTypes()
+    options = msg.DESCRIPTOR.GetOptions()
+    self.assertEqual(0, len(options.uninterpreted_option))
+
+    with self.assertRaises(
+        (TypeError, AttributeError, message.FrozenInstanceError)
+    ):
+      options.uninterpreted_option.sort()
+    with self.assertRaises(
+        (TypeError, AttributeError, message.FrozenInstanceError)
+    ):
+      options.uninterpreted_option.reverse()
+    with self.assertRaises(
+        (TypeError, AttributeError, message.FrozenInstanceError)
+    ):
+      options.uninterpreted_option.clear()
+    with self.assertRaises(
+        (TypeError, AttributeError, message.FrozenInstanceError)
+    ):
+      del options.uninterpreted_option[:]
 
   def testSortingRepeatedScalarFieldsDefaultComparator(self, message_module):
     """Check some different types with the default comparator."""
