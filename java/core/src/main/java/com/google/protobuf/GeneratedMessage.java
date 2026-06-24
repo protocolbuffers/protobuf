@@ -1029,7 +1029,7 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
     private final FieldSet<FieldDescriptor> extensions;
 
     protected ExtendableMessage() {
-      this.extensions = FieldSet.newFieldSet();
+      this.extensions = FieldSet.emptySet();
     }
 
     protected ExtendableMessage(ExtendableBuilder<MessageT, ?> builder) {
