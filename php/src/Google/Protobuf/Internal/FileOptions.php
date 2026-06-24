@@ -285,7 +285,8 @@ class FileOptions extends \Google\Protobuf\Internal\Message
      *           See the documentation for the "Options" section above.
      * }
      */
-    public function __construct($data = NULL) {
+    public function __construct($data = null)
+    {
         \GPBMetadata\Google\Protobuf\Internal\Descriptor::initOnce();
         parent::__construct($data);
     }

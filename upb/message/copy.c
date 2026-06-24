@@ -245,9 +245,10 @@ upb_Message* _upb_Message_Copy(upb_Message* dst, const upb_Message* src,
 
   for (size_t i = 0; i < in->size; i++) {
     upb_TaggedAuxPtr tagged_ptr = in->aux_data[i];
-    if (upb_TaggedAuxPtr_IsExtension(tagged_ptr)) {
+    if (upb_TaggedAuxPtr_IsCanonicalExtension(tagged_ptr)) {
       // Clone extension
-      const upb_Extension* msg_ext = upb_TaggedAuxPtr_Extension(tagged_ptr);
+      const upb_Extension* msg_ext =
+          upb_TaggedAuxPtr_CanonicalExtension(tagged_ptr);
       const upb_MiniTableField* field = &msg_ext->ext->UPB_PRIVATE(field);
       upb_Extension* dst_ext = UPB_PRIVATE(_upb_Message_GetOrCreateExtension)(
           dst, msg_ext->ext, arena);
@@ -267,9 +268,9 @@ upb_Message* _upb_Message_Copy(upb_Message* dst, const upb_Message* src,
         }
         dst_ext->data.array_val = cloned_array;
       }
-    } else if (upb_TaggedAuxPtr_IsUnknown(tagged_ptr)) {
+    } else if (upb_TaggedAuxPtr_IsUnknownStringView(tagged_ptr)) {
       // Clone unknown
-      upb_StringView* unknown = upb_TaggedAuxPtr_UnknownData(tagged_ptr);
+      upb_StringView* unknown = upb_TaggedPtrAux_StringViewRepr(tagged_ptr);
       // Make a copy into destination arena.
       if (!UPB_PRIVATE(_upb_Message_AddUnknown)(
               dst, unknown->data, unknown->size, arena, kUpb_AddUnknown_Copy)) {
@@ -316,12 +317,12 @@ bool upb_Message_ShallowCopy(upb_Message* dst, const upb_Message* src,
   for (size_t i = 0; i < in->size; i++) {
     upb_TaggedAux aux;
     switch (upb_TaggedAux_Get(in->aux_data[i], &aux)) {
-      case kUpb_TaggedAuxType_Extension: {
+      case kUpb_TaggedAuxType_CanonicalExtension: {
         const upb_Extension* msg_ext = aux.extension;
         upb_Extension* dst_ext = upb_Arena_Malloc(arena, sizeof(upb_Extension));
         if (!dst_ext) return false;
         *dst_ext = *msg_ext;
-        dst_in->aux_data[i] = upb_TaggedAuxPtr_MakeExtension(dst_ext);
+        dst_in->aux_data[i] = upb_TaggedAuxPtr_MakeCanonicalExtension(dst_ext);
         break;
       }
       case kUpb_TaggedAuxType_Unknown:
@@ -329,8 +330,17 @@ bool upb_Message_ShallowCopy(upb_Message* dst, const upb_Message* src,
         upb_StringView* dst_sv =
             upb_Arena_Malloc(arena, sizeof(upb_StringView));
         if (!dst_sv) return false;
-        *dst_sv = aux.unknown_data;
+        *dst_sv = *aux.unknown_data;
         dst_in->aux_data[i] = upb_TaggedAuxPtr_MakeUnknownDataAliased(dst_sv);
+        break;
+      }
+      case kUpb_TaggedAuxType_NonCanonicalExtension: {
+        const upb_Extension* msg_ext = aux.extension;
+        upb_Extension* dst_ext = upb_Arena_Malloc(arena, sizeof(upb_Extension));
+        if (!dst_ext) return false;
+        *dst_ext = *msg_ext;
+        dst_in->aux_data[i] =
+            upb_TaggedAuxPtr_MakeNonCanonicalExtension(dst_ext);
         break;
       }
     }

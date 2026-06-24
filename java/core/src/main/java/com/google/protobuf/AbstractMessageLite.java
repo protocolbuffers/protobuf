@@ -316,6 +316,9 @@ public abstract class AbstractMessageLite<
         return false;
       }
       final int size = CodedInputStream.readRawVarint32(firstByte, input);
+      if (size < 0) {
+        throw InvalidProtocolBufferException.negativeSize();
+      }
       final InputStream limitedInput = new LimitedInputStream(input, size);
       mergeFrom(limitedInput, extensionRegistry);
       return true;

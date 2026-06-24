@@ -1402,26 +1402,60 @@ static PyObject* PyUpb_Message_UnknownFields(PyObject* _self, PyObject* arg) {
   return NULL;
 }
 
+static bool PyUpb_AsReadBuffer(PyObject* arg, const char** buf,
+                               Py_ssize_t* size) {
+#if PY_VERSION_HEX >= 0x030B0000
+  // PyObject_AsReadBuffer is deprecated and may be removed in later versions
+  // of Python.
+  Py_buffer buffer;
+  int err = PyObject_GetBuffer(arg, &buffer, PyBUF_SIMPLE);
+  if (err == 0) {
+    *buf = buffer.buf;
+    *size = buffer.len;
+    // Safe as `arg` is a memoryview and does not release the underlying buffer.
+    PyBuffer_Release(&buffer);
+  }
+#else
+  int err = PyObject_AsReadBuffer(arg, (const void**)buf, size);
+#endif
+  if (err != 0) {
+    PyErr_Clear();
+    return false;
+  }
+  return true;
+}
+
+static bool PyUpb_GetContiguousBuffer(PyObject* arg, const char** buf,
+                                      Py_ssize_t* size,
+                                      PyObject** mv_contiguous) {
+  if (PyMemoryView_Check(arg)) {
+    bool ok = PyUpb_AsReadBuffer(arg, buf, size);
+    if (!ok) {
+      // PyBUF_READ is defined as 0x100 but not available in limited API.
+      *mv_contiguous = PyMemoryView_GetContiguous(arg, 0x100, 'C');
+      if (!*mv_contiguous) return false;
+      ok = PyUpb_AsReadBuffer(*mv_contiguous, buf, size);
+    }
+    assert(ok);
+    return true;
+  }
+  if (PyByteArray_Check(arg)) {
+    *buf = PyByteArray_AsString(arg);
+    *size = PyByteArray_Size(arg);
+    return true;
+  }
+  return PyBytes_AsStringAndSize(arg, (char**)buf, size) >= 0;
+}
+
 PyObject* PyUpb_Message_MergeFromString(PyObject* _self, PyObject* arg) {
   PyUpb_Message* self = (void*)_self;
   if (!PyUpb_Message_AssureWritable(self)) return NULL;
-  char* buf;
+  const char* buf;
   Py_ssize_t size;
-  PyObject* bytes = NULL;
-
-  if (PyMemoryView_Check(arg)) {
-    bytes = PyBytes_FromObject(arg);
-    // Cannot fail when passed something of the correct type.
-    int err = PyBytes_AsStringAndSize(bytes, &buf, &size);
-    (void)err;
-    assert(err >= 0);
-  } else if (PyByteArray_Check(arg)) {
-    buf = PyByteArray_AsString(arg);
-    size = PyByteArray_Size(arg);
-  } else if (PyBytes_AsStringAndSize(arg, &buf, &size) < 0) {
+  PyObject* mv_contiguous = NULL;
+  if (!PyUpb_GetContiguousBuffer(arg, &buf, &size, &mv_contiguous)) {
     return NULL;
   }
-
   const upb_MessageDef* msgdef = _PyUpb_Message_GetMsgdef(self);
   const upb_FileDef* file = upb_MessageDef_File(msgdef);
   const upb_ExtensionRegistry* extreg =
@@ -1433,7 +1467,7 @@ PyObject* PyUpb_Message_MergeFromString(PyObject* _self, PyObject* arg) {
       upb_DecodeOptions_MaxDepth(state->allow_oversize_protos ? UINT16_MAX : 0);
   upb_DecodeStatus status =
       upb_Decode(buf, size, self->ptr.msg, layout, extreg, options, arena);
-  Py_XDECREF(bytes);
+  Py_XDECREF(mv_contiguous);
   if (status != kUpb_DecodeStatus_Ok) {
     PyErr_Format(
         state->decode_error_class, "Error parsing message with type '%s': %s",
