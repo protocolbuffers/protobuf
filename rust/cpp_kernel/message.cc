@@ -1,5 +1,6 @@
 #include "google/protobuf/message.h"
 
+#include <cstddef>
 #include <limits>
 
 #include "google/protobuf/message_lite.h"
@@ -16,25 +17,21 @@ void proto2_rust_Message_clear(google::protobuf::MessageLite* m) { m->Clear(); }
 
 bool proto2_rust_Message_parse(google::protobuf::MessageLite* m,
                                google::protobuf::rust::PtrAndLen input) {
-  if (input.len > std::numeric_limits<int>::max()) {
-    return false;
-  }
-  return m->ParseFromString(
-      absl::string_view(input.ptr, static_cast<int>(input.len)));
+  return m->ParseFromString(input.AsStringView());
 }
 
 bool proto2_rust_Message_parse_dont_enforce_required(
     google::protobuf::MessageLite* m, google::protobuf::rust::PtrAndLen input) {
-  if (input.len > std::numeric_limits<int>::max()) {
-    return false;
-  }
-  return m->ParsePartialFromString(
-      absl::string_view(input.ptr, static_cast<int>(input.len)));
+  return m->ParsePartialFromString(input.AsStringView());
 }
 
 bool proto2_rust_Message_serialize(const google::protobuf::MessageLite* m,
                                    google::protobuf::rust::SerializedData* output) {
   return google::protobuf::rust::SerializeMsg(m, output);
+}
+
+size_t proto2_rust_Message_serialized_len(const google::protobuf::MessageLite* m) {
+  return m->ByteSizeLong();
 }
 
 void proto2_rust_Message_copy_from(google::protobuf::MessageLite* dst,

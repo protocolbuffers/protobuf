@@ -72,7 +72,7 @@ constexpr Empty::ParseTableT_ Empty::InternalGenerateParseTable_(const ::_pbi::C
 template <typename>
 constexpr Empty::Empty(::_pbi::ConstantInitialized,
                        const ::_pbi::ClassData* PROTOBUF_NONNULL class_data)
-    : ::google::protobuf::internal::ZeroFieldsBase(
+    : Super_(
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           class_data
 #endif  // PROTOBUF_CUSTOM_VTABLE
@@ -99,10 +99,10 @@ constexpr auto Empty::InternalGenerateClassData_(
 #endif
           nullptr,  // IsInitialized
           &Empty::MergeImpl,
-          ::google::protobuf::internal::ZeroFieldsBase::GetNewImpl<Empty>(),
+          Super_::GetNewImpl<Empty>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           &Empty::SharedDtor,
-          ::google::protobuf::internal::ZeroFieldsBase::GetClearImpl<Empty>(), &Empty::ByteSizeLong,
+          Super_::GetClearImpl<Empty>(), &Empty::ByteSizeLong,
               &Empty::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
           PROTOBUF_FIELD_OFFSET(Empty, _impl_._cached_size_),
@@ -211,9 +211,9 @@ namespace protobuf {
 
 Empty::Empty(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-    : ::google::protobuf::internal::ZeroFieldsBase(arena, Empty_get_class_data()) {
+    : Super_(arena, Empty_get_class_data()) {
 #else   // PROTOBUF_CUSTOM_VTABLE
-    : ::google::protobuf::internal::ZeroFieldsBase(arena) {
+    : Super_(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
   // @@protoc_insertion_point(arena_constructor:google.protobuf.Empty)
 }
@@ -221,10 +221,10 @@ Empty::Empty(
     ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
     const Empty& from)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-    : ::google::protobuf::internal::ZeroFieldsBase(arena, Empty_get_class_data()) {
+    : Super_(arena, Empty_get_class_data()) {
 
 #else   // PROTOBUF_CUSTOM_VTABLE
-    : ::google::protobuf::internal::ZeroFieldsBase(arena) {
+    : Super_(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
   Empty* const _this = this;
   (void)_this;
@@ -268,7 +268,7 @@ PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const Empty::ParseTableT_
 
 
 ::google::protobuf::Metadata Empty::GetMetadata() const {
-  return ::google::protobuf::internal::ZeroFieldsBase::GetMetadataImpl(GetClassData()->full());
+  return Super_::GetMetadataImpl(GetClassData()->full());
 }
 // @@protoc_insertion_point(namespace_scope)
 }  // namespace protobuf

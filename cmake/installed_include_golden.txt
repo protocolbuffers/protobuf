@@ -42,11 +42,14 @@ google/protobuf/compiler/zip_writer.h
 google/protobuf/cpp_edition_defaults.h
 google/protobuf/cpp_features.pb.h
 google/protobuf/cpp_features.proto
+google/protobuf/cpp_file_options.pb.h
+google/protobuf/cpp_file_options.proto
 google/protobuf/descriptor.h
 google/protobuf/descriptor.pb.h
 google/protobuf/descriptor.proto
 google/protobuf/descriptor.upb.h
 google/protobuf/descriptor.upb_minitable.h
+google/protobuf/descriptor_builder.h
 google/protobuf/descriptor_database.h
 google/protobuf/descriptor_legacy.h
 google/protobuf/descriptor_lite.h
@@ -89,6 +92,8 @@ google/protobuf/io/zero_copy_stream_impl.h
 google/protobuf/io/zero_copy_stream_impl_lite.h
 google/protobuf/java_features.proto
 google/protobuf/json/json.h
+google/protobuf/json_enumvalue_options.pb.h
+google/protobuf/json_enumvalue_options.proto
 google/protobuf/map.h
 google/protobuf/map_entry.h
 google/protobuf/map_field.h
@@ -99,6 +104,7 @@ google/protobuf/message_lite.h
 google/protobuf/metadata.h
 google/protobuf/metadata_lite.h
 google/protobuf/micro_string.h
+google/protobuf/naming_style.h
 google/protobuf/os_macros_restore.inc
 google/protobuf/os_macros_undef.inc
 google/protobuf/parse_context.h
@@ -129,6 +135,7 @@ google/protobuf/stubs/common.h
 google/protobuf/stubs/platform_macros.h
 google/protobuf/stubs/port.h
 google/protobuf/stubs/status_macros.h
+google/protobuf/symbol.h
 google/protobuf/symbol_checker.h
 google/protobuf/text_format.h
 google/protobuf/thread_safe_arena.h
@@ -174,6 +181,7 @@ upb/message/accessors.h
 upb/message/array.h
 upb/message/compare.h
 upb/message/compat.h
+upb/message/convert.h
 upb/message/copy.h
 upb/message/map.h
 upb/message/map_gencode_util.h

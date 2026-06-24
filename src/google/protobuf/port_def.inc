@@ -139,7 +139,13 @@
 #endif
 
 #define PROTOBUF_FUTURE_ADD_EARLY_NODISCARD [[nodiscard]]
+#if !defined(__clang__) && defined(__GNUC__) && __GNUC__ < 13
+// GCC < 13 doesn't support mixing [[]] attributes with __attribute__, and this
+// is used with PROTOBUF_EXPORT for shared library visibility.
+#define PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED __attribute__((warn_unused))
+#else
 #define PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED ABSL_ATTRIBUTE_WARN_UNUSED
+#endif
 
 #ifdef PROTOBUF_ALWAYS_INLINE
 #error PROTOBUF_ALWAYS_INLINE was previously defined
@@ -201,6 +207,17 @@
 #define PROTOBUF_NOINLINE __declspec(noinline)
 #endif
 
+#ifdef PROTOBUF_MALLOC
+#error PROTOBUF_MALLOC was previously defined
+#endif
+#if defined(__GNUC__)
+#define PROTOBUF_MALLOC __attribute__((malloc))
+#elif defined(_MSC_VER) && _MSC_VER >= 1400
+#define PROTOBUF_MALLOC __declspec(restrict)
+#else
+#define PROTOBUF_MALLOC
+#endif
+
 #ifdef PROTOBUF_MUSTTAIL
 #error PROTOBUF_MUSTTAIL was previously defined
 #endif
@@ -243,6 +260,11 @@
   _Pragma("GCC diagnostic push")          \
   _Pragma("GCC diagnostic ignored \"-Wdeprecated-declarations\"")
 #define PROTOBUF_IGNORE_DEPRECATION_STOP _Pragma("GCC diagnostic pop")
+#elif defined(_MSC_VER)
+#define PROTOBUF_IGNORE_DEPRECATION_START \
+  __pragma(warning(push))                 \
+  __pragma(warning(disable: 4996))
+#define PROTOBUF_IGNORE_DEPRECATION_STOP __pragma(warning(pop))
 #else
 #define PROTOBUF_IGNORE_DEPRECATION_START
 #define PROTOBUF_IGNORE_DEPRECATION_STOP
@@ -346,7 +368,7 @@
 #ifdef PROTOBUF_RESTRICT
 #error PROTOBUF_RESTRICT was previously defined
 #endif
-#if defined(__clang__) || defined(__GNUC__)
+#if defined(__clang__) || defined(__GNUC__) || defined(_MSC_VER)
 #define PROTOBUF_RESTRICT __restrict
 #else
 #define PROTOBUF_RESTRICT
@@ -758,6 +780,24 @@ namespace internal {
 #else
 #define PROTOBUF_REFACTOR_INLINE()
 #endif
+
+// PROTOBUF_NULL_AFTER_MOVE tells clang-tidy that a user-defined
+// smart-pointer-like type makes guarantees on the state of a moved-from object,
+// leaving it in a null state, where it can be used as long as it is not
+// dereferenced. In other words, these are the same semantics that smart
+// pointers from the standard library provide.
+//
+// The clang-tidy check bugprone-use-after-move allows member functions of types
+// marked with this attribute to be called on objects that have been moved from;
+// without the attribute, this would result in a use-after-move warning.
+#ifdef PROTOBUF_NULL_AFTER_MOVE
+#error PROTOBUF_NULL_AFTER_MOVE was previously defined
+#endif  // PROTOBUF_NULL_AFTER_MOVE
+#if defined(ABSL_ATTRIBUTE_NULL_AFTER_MOVE)
+#define PROTOBUF_NULL_AFTER_MOVE ABSL_ATTRIBUTE_NULL_AFTER_MOVE
+#else
+#define PROTOBUF_NULL_AFTER_MOVE
+#endif  // defined(ABSL_ATTRIBUTE_NULL_AFTER_MOVE)
 
 #ifdef PROTOBUF_NONNULL
 #error PROTOBUF_NONNULL was previously defined

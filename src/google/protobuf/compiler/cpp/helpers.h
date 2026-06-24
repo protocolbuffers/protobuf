@@ -106,6 +106,8 @@ std::string Namespace(const Descriptor* d);
 std::string Namespace(const FieldDescriptor* d);
 std::string Namespace(const EnumDescriptor* d);
 PROTOC_EXPORT std::string Namespace(const FileDescriptor* d);
+PROTOC_EXPORT bool ValidateCcNamespace(const FileDescriptor* file,
+                                       std::string* error);
 PROTOC_EXPORT std::string Namespace(const Descriptor* d);
 PROTOC_EXPORT std::string Namespace(const FieldDescriptor* d);
 PROTOC_EXPORT std::string Namespace(const EnumDescriptor* d);
@@ -200,10 +202,6 @@ std::string DescriptorTableName(const FileDescriptor* file,
 // When declaring symbol externs from another file, this macro will supply the
 // dllexport needed for the target file, if any.
 std::string FileDllExport(const FileDescriptor* file, const Options& options);
-
-// Name of the base class: google::protobuf::Message or google::protobuf::MessageLite.
-std::string SuperClassName(const Descriptor* descriptor,
-                           const Options& options);
 
 // Add an underscore if necessary to prevent conflicting with known names and
 // keywords.
@@ -356,7 +354,9 @@ inline bool UseUnknownFieldSet(const FileDescriptor* file,
 }
 
 inline bool IsWeak(const FieldDescriptor* field, const Options& options) {
+  PROTOBUF_IGNORE_DEPRECATION_START
   if (field->options().weak()) {
+    PROTOBUF_IGNORE_DEPRECATION_STOP
     ABSL_CHECK(!options.opensource_runtime);
     return true;
   }
@@ -872,7 +872,18 @@ std::string WeakDescriptorDataSection(absl::string_view prefix,
 inline std::string WeakDefaultInstanceSection(const Descriptor* descriptor,
                                               int index_in_file_messages,
                                               const Options& options) {
-  return WeakDescriptorDataSection("def", descriptor, index_in_file_messages,
+#ifdef PROTOBUF_MESSAGE_GLOBALS
+  std::string prefix = !IsProfileDriven(options)               ? "def"
+                       : IsPresentMessage(descriptor, options) ? "gh"
+                                                               : "gl";
+#else
+  std::string prefix = "def";
+#endif
+  // TODO: b/474609573 - Remove WeakDescriptorDataSection() once
+  // PROTOBUF_MESSAGE_GLOBALS becomes the default. Note that section assignment
+  // is nuanced to maximize the spatial locality and to support weak descriptor
+  // GC. The status quo is vulnerable to suboptimal prefix.
+  return WeakDescriptorDataSection(prefix, descriptor, index_in_file_messages,
                                    options);
 }
 
@@ -1012,8 +1023,7 @@ class PROTOC_EXPORT Formatter {
 
   // Convenience overloads to accept different types as arguments.
   static std::string ToString(absl::string_view s) { return std::string(s); }
-  template <typename I, typename = typename std::enable_if<
-                            std::is_integral<I>::value>::type>
+  template <typename I, typename = std::enable_if_t<std::is_integral_v<I>>>
   static std::string ToString(I x) {
     return absl::StrCat(x);
   }

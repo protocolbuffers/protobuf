@@ -34,6 +34,7 @@
 #include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/message.h"
 #include "google/protobuf/message_lite.h"
+#include "google/protobuf/port.h"
 #include "google/protobuf/test_protos/repeated_ptr_field_test.pb.h"
 #include "google/protobuf/test_textproto.h"
 #include "google/protobuf/unittest.pb.h"
@@ -76,17 +77,16 @@ class RepeatedPtrFieldTest : public testing::Test {
 
 TEST(RepeatedPtrOverPtrsIteratorTest, Traits) {
   using It = RepeatedPtrField<std::string>::pointer_iterator;
-  static_assert(std::is_same<It::value_type, std::string*>::value, "");
-  static_assert(std::is_same<It::reference, std::string*&>::value, "");
-  static_assert(std::is_same<It::pointer, std::string**>::value, "");
-  static_assert(std::is_same<It::difference_type, std::ptrdiff_t>::value, "");
-  static_assert(std::is_same<It::iterator_category,
-                             std::random_access_iterator_tag>::value,
-                "");
+  static_assert(std::is_same_v<It::value_type, std::string*>, "");
+  static_assert(std::is_same_v<It::reference, std::string*&>, "");
+  static_assert(std::is_same_v<It::pointer, std::string**>, "");
+  static_assert(std::is_same_v<It::difference_type, std::ptrdiff_t>, "");
+  static_assert(
+      std::is_same_v<It::iterator_category, std::random_access_iterator_tag>,
+      "");
 #if PROTOBUF_CPLUSPLUS_MIN(202002L)
   static_assert(
-      std::is_same<It::iterator_concept, std::contiguous_iterator_tag>::value,
-      "");
+      std::is_same_v<It::iterator_concept, std::contiguous_iterator_tag>, "");
 #else
   static_assert(std::is_same<It::iterator_concept,
                              std::random_access_iterator_tag>::value,
@@ -110,19 +110,16 @@ TEST(RepeatedPtrOverPtrsIteratorTest, ToAddress) {
 
 TEST(ConstRepeatedPtrOverPtrsIterator, Traits) {
   using It = RepeatedPtrField<std::string>::const_pointer_iterator;
-  static_assert(std::is_same<It::value_type, const std::string*>::value, "");
-  static_assert(std::is_same<It::reference, const std::string* const&>::value,
-                "");
-  static_assert(std::is_same<It::pointer, const std::string* const*>::value,
-                "");
-  static_assert(std::is_same<It::difference_type, std::ptrdiff_t>::value, "");
-  static_assert(std::is_same<It::iterator_category,
-                             std::random_access_iterator_tag>::value,
-                "");
+  static_assert(std::is_same_v<It::value_type, const std::string*>, "");
+  static_assert(std::is_same_v<It::reference, const std::string* const&>, "");
+  static_assert(std::is_same_v<It::pointer, const std::string* const*>, "");
+  static_assert(std::is_same_v<It::difference_type, std::ptrdiff_t>, "");
+  static_assert(
+      std::is_same_v<It::iterator_category, std::random_access_iterator_tag>,
+      "");
 #if PROTOBUF_CPLUSPLUS_MIN(202002L)
   static_assert(
-      std::is_same<It::iterator_concept, std::contiguous_iterator_tag>::value,
-      "");
+      std::is_same_v<It::iterator_concept, std::contiguous_iterator_tag>, "");
 #else
   static_assert(std::is_same<It::iterator_concept,
                              std::random_access_iterator_tag>::value,
@@ -2028,5 +2025,14 @@ TEST_F(RepeatedPtrFieldInsertionIteratorsTest, MoveProtos) {
 }  // namespace internal
 }  // namespace protobuf
 }  // namespace google
+
+// Code thunks to be dumped by the debugger to inspect the generated assemtbly.
+static auto& CodegenRepeatedPtrFieldGet(
+    const google::protobuf::RepeatedPtrField<std::string>& a, int idx) {
+  return a[idx];
+}
+
+static int odr_use =
+    (google::protobuf::internal::StrongPointer(&CodegenRepeatedPtrFieldGet), 0);
 
 #include "google/protobuf/port_undef.inc"

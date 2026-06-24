@@ -60,12 +60,12 @@ TEST(EncodeTest, EncodeFieldSuccess) {
   // Encode field.
   const upb_MiniTable* mt = &upb_0wire_0test__TestInt32_msg_init;
   const upb_MiniTableField* field = upb_MiniTable_FindFieldByNumber(mt, 1);
-  char* buf;
+  char* buf = e.alloc.limit;
   size_t size;
   upb_EncodeStatus status = UPB_PRIVATE(_upb_Encode_Field)(
       &e, (upb_Message*)msg, field, &buf, &size, e.options);
   EXPECT_EQ(status, kUpb_EncodeStatus_Ok);
-  EXPECT_GT(size, 0);
+  EXPECT_GT(size, 0u);
 
   // Verify that the encoded field can be decoded back to the original message
   // with the same value.
@@ -91,12 +91,12 @@ TEST(EncodeTest, EncodeFieldSuccessEmptyMessage) {
   // Encode empty message field.
   const upb_MiniTable* mt = &upb_0wire_0test__TestInt32_msg_init;
   const upb_MiniTableField* field = upb_MiniTable_FindFieldByNumber(mt, 1);
-  char* buf;
+  char* buf = e.alloc.limit;
   size_t size;
   upb_EncodeStatus status = UPB_PRIVATE(_upb_Encode_Field)(
       &e, (upb_Message*)msg, field, &buf, &size, e.options);
   EXPECT_EQ(status, kUpb_EncodeStatus_Ok);
-  EXPECT_EQ(size, 0);
+  EXPECT_EQ(size, 0u);
 
   _upb_mapsorter_destroy(&e.sorter);
   upb_Arena_Free(arena);
@@ -115,7 +115,7 @@ TEST(EncodeTest, EncodeFieldMaxDepthExceeded) {
 
   const upb_MiniTable* mt = &upb_0wire_0test__TestRecursive_msg_init;
   const upb_MiniTableField* field = upb_MiniTable_FindFieldByNumber(mt, 1);
-  char* buf;
+  char* buf = e.alloc.limit;
   size_t size;
   e.options = upb_EncodeOptions_MaxDepth(1);
   DoEncodeFieldMaxDepthExceeded(err, e, (upb_Message*)msg, field, buf, size);
@@ -131,22 +131,22 @@ TEST(EncodeTest, EncodeExtensionSuccess) {
   jmp_buf err;
   UPB_PRIVATE(_upb_encstate_init)(&e, &err, arena);
 
-  const upb_MiniTableExtension* ext = &upb_wire_test_ext_i32_ext;
+  const upb_MiniTableExtension* ext = upb_wire_test_ext_i32_ext;
   upb_MessageValue ext_val;
   ext_val.int32_val = 42;
 
   // Encode extension.
-  char* buf;
+  char* buf = e.alloc.limit;
   size_t size;
   upb_EncodeStatus status = UPB_PRIVATE(_upb_Encode_Extension)(
       &e, ext, ext_val, false, &buf, &size, e.options);
   EXPECT_EQ(status, kUpb_EncodeStatus_Ok);
-  EXPECT_GT(size, 0);
+  EXPECT_GT(size, 0u);
 
   // Verify that the encoded extension can be decoded back to the original
   // extension value.
   upb_ExtensionRegistry* ext_reg = upb_ExtensionRegistry_New(arena);
-  const upb_MiniTableExtension* ext_array[1] = {&upb_wire_test_ext_i32_ext};
+  const upb_MiniTableExtension* ext_array[1] = {upb_wire_test_ext_i32_ext};
   upb_ExtensionRegistry_AddArray(ext_reg, ext_array, 1);
 
   upb_wire_test_TestExtensions* decoded_msg =
@@ -166,18 +166,18 @@ TEST(EncodeTest, EncodeExtensionSuccessEmptyMessage) {
   jmp_buf err;
   UPB_PRIVATE(_upb_encstate_init)(&e, &err, arena);
 
-  const upb_MiniTableExtension* ext = &upb_wire_test_ext_i32_ext;
+  const upb_MiniTableExtension* ext = upb_wire_test_ext_i32_ext;
   // Zero int32 won't be serialized.
   upb_MessageValue ext_val;
   ext_val.int32_val = 0;
 
   // Encode empty extension.
-  char* buf;
+  char* buf = e.alloc.limit;
   size_t size;
   upb_EncodeStatus status = UPB_PRIVATE(_upb_Encode_Extension)(
       &e, ext, ext_val, false, &buf, &size, e.options);
   EXPECT_EQ(status, kUpb_EncodeStatus_Ok);
-  EXPECT_GT(size, 0);
+  EXPECT_GT(size, 0u);
 
   _upb_mapsorter_destroy(&e.sorter);
   upb_Arena_Free(arena);
@@ -190,11 +190,11 @@ TEST(EncodeTest, EncodeExtensionMaxDepthExceeded) {
   jmp_buf err;
   UPB_PRIVATE(_upb_encstate_init)(&e, &err, arena);
 
-  const upb_MiniTableExtension* ext = &upb_wire_test_ext_recursive_ext;
+  const upb_MiniTableExtension* ext = upb_wire_test_ext_recursive_ext;
   upb_MessageValue ext_val;
   ext_val.msg_val = (upb_Message*)upb_wire_test_TestRecursive_new(arena);
 
-  char* buf;
+  char* buf = e.alloc.limit;
   size_t size;
   e.options = upb_EncodeOptions_MaxDepth(1);
   DoEncodeExtensionMaxDepthExceeded(err, e, ext, ext_val, buf, size);

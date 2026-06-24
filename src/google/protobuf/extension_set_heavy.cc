@@ -258,13 +258,18 @@ bool DescriptorPoolExtensionFinder::Find(int number, ExtensionInfo* output) {
     output->is_packed = extension->is_packed();
     output->descriptor = extension;
     if (extension->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
-      output->message_info.prototype =
+      const MessageLite* prototype =
           factory_->GetPrototype(extension->message_type());
-      output->message_info.tc_table =
-          output->message_info.prototype->GetTcParseTable();
-      ABSL_CHECK(output->message_info.prototype != nullptr)
+      ABSL_CHECK_NE(prototype, nullptr)
           << "Extension factory's GetPrototype() returned nullptr; extension: "
           << extension->full_name();
+#ifdef PROTOBUF_MESSAGE_GLOBALS
+      output->message_info.globals =
+          MessageGlobalsBase::FromDefaultInstance(prototype);
+#else
+      output->message_info.prototype = prototype;
+#endif  // PROTOBUF_MESSAGE_GLOBALS
+      output->message_info.tc_table = prototype->GetTcParseTable();
 
     } else if (extension->cpp_type() == FieldDescriptor::CPPTYPE_ENUM) {
       output->enum_validity_check.func = ValidateEnumUsingDescriptor;

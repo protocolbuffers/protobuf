@@ -327,7 +327,7 @@ namespace ProtobufTestMessages.EditionUnstable {
     private static readonly pb::MessageParser<TestAllTypesEditionUnstable> _parser = new pb::MessageParser<TestAllTypesEditionUnstable>(() => new TestAllTypesEditionUnstable());
     private pb::UnknownFieldSet _unknownFields;
     private pb::ExtensionSet<TestAllTypesEditionUnstable> _extensions;
-    private pb::ExtensionSet<TestAllTypesEditionUnstable> _Extensions { get { return _extensions; } }
+    private pb::ExtensionSet<TestAllTypesEditionUnstable>  _Extensions { get { return _extensions; } }
     private int _hasBits0;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]

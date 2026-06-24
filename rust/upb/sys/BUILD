@@ -34,6 +34,7 @@ rust_library(
         "wire/mod.rs",
         "wire/wire.rs",
     ],
+    edition = "2024",
     rustc_flags = ["--cfg=bzl"],
     visibility = ["//rust/upb:__subpackages__"],
     deps = [":upb_c_api"],
@@ -42,6 +43,7 @@ rust_library(
 rust_test(
     name = "sys_test",
     crate = ":sys",
+    edition = "2024",
     deps = [
         "@crate_index//:googletest",
     ],
@@ -58,6 +60,7 @@ cc_library(
         "//upb/mini_descriptor",
         "//upb/mini_table",
         "//upb/text:debug",
+        "//upb/wire:byte_size",
     ],
 )
 

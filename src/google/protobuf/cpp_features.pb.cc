@@ -110,7 +110,7 @@ inline constexpr CppFeatures::Impl_::Impl_(
 template <typename>
 constexpr CppFeatures::CppFeatures(::_pbi::ConstantInitialized,
                        const ::_pbi::ClassData* PROTOBUF_NONNULL class_data)
-    : ::google::protobuf::Message(
+    : Super_(
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           class_data
 #endif  // PROTOBUF_CUSTOM_VTABLE
@@ -138,10 +138,10 @@ constexpr auto CppFeatures::InternalGenerateClassData_(
 #endif
           nullptr,  // IsInitialized
           &CppFeatures::MergeImpl,
-          ::google::protobuf::Message::GetNewImpl<CppFeatures>(),
+          Super_::GetNewImpl<CppFeatures>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           &CppFeatures::SharedDtor,
-          ::google::protobuf::Message::GetClearImpl<CppFeatures>(), &CppFeatures::ByteSizeLong,
+          Super_::GetClearImpl<CppFeatures>(), &CppFeatures::ByteSizeLong,
               &CppFeatures::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
           PROTOBUF_FIELD_OFFSET(CppFeatures, _impl_._cached_size_),
@@ -291,9 +291,9 @@ PROTOBUF_CONSTINIT const uint32_t CppFeatures_RepeatedType_internal_data_[] = {
 
 CppFeatures::CppFeatures(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-    : ::google::protobuf::Message(arena, CppFeatures_get_class_data()) {
+    : Super_(arena, CppFeatures_get_class_data()) {
 #else   // PROTOBUF_CUSTOM_VTABLE
-    : ::google::protobuf::Message(arena) {
+    : Super_(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
   SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:pb.CppFeatures)
@@ -301,9 +301,9 @@ CppFeatures::CppFeatures(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 CppFeatures::CppFeatures(
     ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const CppFeatures& from)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-    : ::google::protobuf::Message(arena, CppFeatures_get_class_data()),
+    : Super_(arena, CppFeatures_get_class_data()),
 #else   // PROTOBUF_CUSTOM_VTABLE
-    : ::google::protobuf::Message(arena),
+    : Super_(arena),
 #endif  // PROTOBUF_CUSTOM_VTABLE
       _impl_(from._impl_) {
   _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
@@ -364,17 +364,18 @@ PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const CppFeatures::ParseTableT_
         CppFeatures::InternalGenerateParseTable_(CppFeatures_class_data_.base());
 #endif  // !PROTOBUF_MESSAGE_GLOBALS
 PROTOBUF_NOINLINE void CppFeatures::Clear() {
-// @@protoc_insertion_point(message_clear_start:pb.CppFeatures)
+  auto& this_ [[maybe_unused]] = *this;
+  // @@protoc_insertion_point(message_clear_start:pb.CppFeatures)
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  ::uint32_t cached_has_bits = 0;
-  // Prevent compiler warnings about cached_has_bits being unused
-  (void) cached_has_bits;
+  ::uint32_t cached_has_bits [[maybe_unused]] = 0;
 
-  cached_has_bits = _impl_._has_bits_[0];
+  cached_has_bits = this_._impl_._has_bits_[0];
   if (BatchCheckHasBit(cached_has_bits, 0x0000000fU)) {
-    ::memset(&_impl_.string_type_, 0, static_cast<::size_t>(
-        reinterpret_cast<char*>(&_impl_.repeated_type_) -
-        reinterpret_cast<char*>(&_impl_.string_type_)) + sizeof(_impl_.repeated_type_));
+    ::memset(&this_._impl_.string_type_, 0,
+             static_cast<::size_t>(
+                 reinterpret_cast<char*>(&this_._impl_.repeated_type_) -
+                 reinterpret_cast<char*>(&this_._impl_.string_type_)) +
+                 sizeof(_impl_.repeated_type_));
   }
   _impl_._has_bits_.Clear();
   _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
@@ -446,9 +447,7 @@ PROTOBUF_NOINLINE void CppFeatures::Clear() {
   // @@protoc_insertion_point(message_byte_size_start:pb.CppFeatures)
   ::size_t total_size = 0;
 
-  ::uint32_t cached_has_bits = 0;
-  // Prevent compiler warnings about cached_has_bits being unused
-  (void)cached_has_bits;
+  ::uint32_t cached_has_bits [[maybe_unused]] = 0;
 
   ::_pbi::Prefetch5LinesFrom7Lines(&this_);
   cached_has_bits = this_._impl_._has_bits_[0];
@@ -522,7 +521,7 @@ void CppFeatures::InternalSwap(CppFeatures* PROTOBUF_RESTRICT PROTOBUF_NONNULL o
 }
 
 ::google::protobuf::Metadata CppFeatures::GetMetadata() const {
-  return ::google::protobuf::Message::GetMetadataImpl(GetClassData()->full());
+  return Super_::GetMetadataImpl(GetClassData()->full());
 }
 PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY2 ::_pbi::ExtensionIdentifier<

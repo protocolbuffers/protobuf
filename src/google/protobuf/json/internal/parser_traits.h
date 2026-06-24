@@ -25,6 +25,7 @@
 #include "absl/status/status.h"
 #include "absl/strings/str_format.h"
 #include "absl/strings/string_view.h"
+#include "google/protobuf/descriptor.h"
 #include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/io/zero_copy_stream.h"
 #include "google/protobuf/io/zero_copy_stream_impl_lite.h"
@@ -38,6 +39,13 @@
 namespace google {
 namespace protobuf {
 namespace json_internal {
+
+enum class SeenState {
+  kFirstSeen,
+  kOneofAlreadySeen,
+  kFieldAlreadySeen,
+};
+
 using ::google::protobuf::internal::WireFormatLite;
 
 inline absl::Status CheckSupportedJsonStringSize(size_t size) {
@@ -75,35 +83,33 @@ struct ParseProto2Descriptor : Proto2Descriptor {
     absl::flat_hash_set<int> parsed_fields_;
   };
 
-  static bool HasParsed(Field f, const Msg& msg,
-                        bool allow_repeated_non_oneof) {
-    if (f->real_containing_oneof()) {
-      return msg.parsed_oneofs_indices_.contains(
-          f->real_containing_oneof()->index());
-    }
-    if (allow_repeated_non_oneof) {
-      return false;
-    }
-    return msg.parsed_fields_.contains(f->number());
-  }
-
   /// Functions for writing fields. ///
 
-  // Marks a field as having been "seen". This will clear the field if it is
-  // the first occurrence thereof.
-  //
-  // All setters call this function automatically, but it may also be called
-  // eagerly to clear a pre-existing value that might not be overwritten, such
-  // as when parsing a repeated field.
-  static void RecordAsSeen(Field f, Msg& msg) {
-    bool inserted = msg.parsed_fields_.insert(f->number()).second;
-    if (inserted) {
-      msg.msg_->GetReflection()->ClearField(msg.msg_, f);
+  // Marks a field as having been "seen". This will return a SeenState
+  // indicating whether it is first seen, duplicate field seen, or oneof
+  // conflict seen.
+  static SeenState RecordAsSeen(Field f, Msg& msg) {
+    if (f->real_containing_oneof() != nullptr) {
+      int oneof_index = f->real_containing_oneof()->index();
+      bool oneof_inserted =
+          msg.parsed_oneofs_indices_.insert(oneof_index).second;
+      if (!oneof_inserted) {
+        // Oneof takes precedent over Field in the case of "this is in a oneof
+        // and the field is set"
+        return SeenState::kOneofAlreadySeen;
+      }
     }
 
-    if (f->real_containing_oneof() != nullptr) {
-      msg.parsed_oneofs_indices_.insert(f->real_containing_oneof()->index());
+    bool field_inserted = msg.parsed_fields_.insert(f->number()).second;
+    if (!field_inserted) {
+      return SeenState::kFieldAlreadySeen;
     }
+
+    return SeenState::kFirstSeen;
+  }
+
+  static void ClearField(Field f, Msg& msg) {
+    msg.msg_->GetReflection()->ClearField(msg.msg_, f);
   }
 
   // Adds a new message and calls body on it.
@@ -111,8 +117,6 @@ struct ParseProto2Descriptor : Proto2Descriptor {
   // Body should have a signature `absl::Status(const Desc&, Msg&)`.
   template <typename F>
   static absl::Status NewMsg(Field f, Msg& msg, F body) {
-    RecordAsSeen(f, msg);
-
     Message* new_msg;
     if (f->is_repeated()) {
       new_msg = msg.msg_->GetReflection()->AddMessage(msg.msg_, f);
@@ -129,7 +133,6 @@ struct ParseProto2Descriptor : Proto2Descriptor {
   template <typename F>
   static absl::Status NewDynamic(Field f, const std::string& type_url, Msg& msg,
                                  F body) {
-    RecordAsSeen(f, msg);
     return WithDynamicType(
         *f->containing_type(), type_url, [&](const Desc& desc) -> absl::Status {
           DynamicMessageFactory factory;
@@ -149,7 +152,6 @@ struct ParseProto2Descriptor : Proto2Descriptor {
   }
 
   static void SetFloat(Field f, Msg& msg, float x) {
-    RecordAsSeen(f, msg);
     if (f->is_repeated()) {
       msg.msg_->GetReflection()->AddFloat(msg.msg_, f, x);
     } else {
@@ -166,7 +168,6 @@ struct ParseProto2Descriptor : Proto2Descriptor {
   }
 
   static void SetInt64(Field f, Msg& msg, int64_t x) {
-    RecordAsSeen(f, msg);
     if (f->is_repeated()) {
       msg.msg_->GetReflection()->AddInt64(msg.msg_, f, x);
     } else {
@@ -175,7 +176,6 @@ struct ParseProto2Descriptor : Proto2Descriptor {
   }
 
   static void SetUInt64(Field f, Msg& msg, uint64_t x) {
-    RecordAsSeen(f, msg);
     if (f->is_repeated()) {
       msg.msg_->GetReflection()->AddUInt64(msg.msg_, f, x);
     } else {
@@ -184,7 +184,6 @@ struct ParseProto2Descriptor : Proto2Descriptor {
   }
 
   static void SetInt32(Field f, Msg& msg, int32_t x) {
-    RecordAsSeen(f, msg);
     if (f->is_repeated()) {
       msg.msg_->GetReflection()->AddInt32(msg.msg_, f, x);
     } else {
@@ -193,7 +192,6 @@ struct ParseProto2Descriptor : Proto2Descriptor {
   }
 
   static void SetUInt32(Field f, Msg& msg, uint32_t x) {
-    RecordAsSeen(f, msg);
     if (f->is_repeated()) {
       msg.msg_->GetReflection()->AddUInt32(msg.msg_, f, x);
     } else {
@@ -202,7 +200,6 @@ struct ParseProto2Descriptor : Proto2Descriptor {
   }
 
   static void SetBool(Field f, Msg& msg, bool x) {
-    RecordAsSeen(f, msg);
     if (f->is_repeated()) {
       msg.msg_->GetReflection()->AddBool(msg.msg_, f, x);
     } else {
@@ -212,7 +209,6 @@ struct ParseProto2Descriptor : Proto2Descriptor {
 
   static absl::Status SetString(Field f, Msg& msg, absl::string_view x) {
     RETURN_IF_ERROR(CheckSupportedJsonStringSize(x.size()));
-    RecordAsSeen(f, msg);
     if (f->is_repeated()) {
       msg.msg_->GetReflection()->AddString(msg.msg_, f, std::string(x));
     } else {
@@ -222,7 +218,6 @@ struct ParseProto2Descriptor : Proto2Descriptor {
   }
 
   static void SetEnum(Field f, Msg& msg, int32_t x) {
-    RecordAsSeen(f, msg);
     if (f->is_repeated()) {
       msg.msg_->GetReflection()->AddEnumValue(msg.msg_, f, x);
     } else {
@@ -249,25 +244,29 @@ struct ParseProto3Type : Proto3Type {
     absl::flat_hash_set<int32_t> parsed_fields_;
   };
 
-  static bool HasParsed(Field f, const Msg& msg,
-                        bool allow_repeated_non_oneof) {
-    if (f->proto().oneof_index() != 0) {
-      return msg.parsed_oneofs_indices_.contains(f->proto().oneof_index());
-    }
-    if (allow_repeated_non_oneof) {
-      return false;
-    }
-    return msg.parsed_fields_.contains(f->proto().number());
-  }
-
   /// Functions for writing fields. ///
 
-  static void RecordAsSeen(Field f, Msg& msg) {
-    msg.parsed_fields_.insert(f->proto().number());
-    if (f->proto().oneof_index() != 0) {
-      msg.parsed_oneofs_indices_.insert(f->proto().oneof_index());
+  static SeenState RecordAsSeen(Field f, Msg& msg) {
+    int oneof_index = f->proto().oneof_index();
+    if (oneof_index != 0) {
+      bool oneof_inserted =
+          msg.parsed_oneofs_indices_.insert(oneof_index).second;
+      if (!oneof_inserted) {
+        // Oneof takes precedent over Field in the case of "this is in a oneof
+        // and the field is set"
+        return SeenState::kOneofAlreadySeen;
+      }
     }
+
+    bool field_inserted = msg.parsed_fields_.insert(f->proto().number()).second;
+    if (!field_inserted) {
+      return SeenState::kFieldAlreadySeen;
+    }
+
+    return SeenState::kFirstSeen;
   }
+
+  static void ClearField(Field f, Msg& msg) {}
 
   template <typename F>
   static absl::Status NewMsg(Field f, Msg& msg, F body) {
@@ -277,7 +276,6 @@ struct ParseProto3Type : Proto3Type {
   template <typename F>
   static absl::Status NewDynamic(Field f, const std::string& type_url, Msg& msg,
                                  F body) {
-    RecordAsSeen(f, msg);
     return WithDynamicType(
         f->parent(), type_url, [&](const Desc& desc) -> absl::Status {
           if (f->proto().kind() == google::protobuf::Field::TYPE_GROUP) {
@@ -303,14 +301,12 @@ struct ParseProto3Type : Proto3Type {
   }
 
   static void SetFloat(Field f, Msg& msg, float x) {
-    RecordAsSeen(f, msg);
     msg.stream_.WriteTag(f->proto().number() << 3 |
                          WireFormatLite::WIRETYPE_FIXED32);
     msg.stream_.WriteLittleEndian32(absl::bit_cast<uint32_t>(x));
   }
 
   static void SetDouble(Field f, Msg& msg, double x) {
-    RecordAsSeen(f, msg);
     msg.stream_.WriteTag(f->proto().number() << 3 |
                          WireFormatLite::WIRETYPE_FIXED64);
     msg.stream_.WriteLittleEndian64(absl::bit_cast<uint64_t>(x));
@@ -341,7 +337,6 @@ struct ParseProto3Type : Proto3Type {
   }
 
   static void SetBool(Field f, Msg& msg, bool x) {
-    RecordAsSeen(f, msg);
     msg.stream_.WriteTag(f->proto().number() << 3);
     char b = x ? 0x01 : 0x00;
     msg.stream_.WriteRaw(&b, 1);
@@ -349,7 +344,6 @@ struct ParseProto3Type : Proto3Type {
 
   static absl::Status SetString(Field f, Msg& msg, absl::string_view x) {
     RETURN_IF_ERROR(CheckSupportedJsonStringSize(x.size()));
-    RecordAsSeen(f, msg);
     msg.stream_.WriteTag(f->proto().number() << 3 |
                          WireFormatLite::WIRETYPE_LENGTH_DELIMITED);
     msg.stream_.WriteVarint64(static_cast<uint64_t>(x.size()));
@@ -358,7 +352,6 @@ struct ParseProto3Type : Proto3Type {
   }
 
   static void SetEnum(Field f, Msg& msg, int32_t x) {
-    RecordAsSeen(f, msg);
     msg.stream_.WriteTag(f->proto().number() << 3);
     // Sign extension is deliberate here.
     msg.stream_.WriteVarint32(x);
@@ -371,7 +364,6 @@ struct ParseProto3Type : Proto3Type {
   // four major integer types.
   template <typename Int, Kind varint, Kind fixed, Kind zigzag>
   static void SetInt(Field f, Msg& msg, Int x) {
-    RecordAsSeen(f, msg);
     switch (f->proto().kind()) {
       case zigzag:
         // Regardless of the integer type, ZigZag64 will do the right thing,

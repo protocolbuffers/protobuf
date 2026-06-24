@@ -37,15 +37,6 @@
 
 #define PROTOBUF_INTERNAL_EXPORT_google_2fprotobuf_2ffield_5fmask_2eproto PROTOBUF_EXPORT
 
-namespace google {
-namespace protobuf {
-namespace internal {
-template <typename T>
-::absl::string_view GetAnyMessageName();
-}  // namespace internal
-}  // namespace protobuf
-}  // namespace google
-
 // Internal implementation detail -- do not use these members.
 struct PROTOBUF_EXPORT TableStruct_google_2fprotobuf_2ffield_5fmask_2eproto {
   static const ::uint32_t offsets[];
@@ -76,6 +67,8 @@ namespace protobuf {
 
 class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FieldMask final : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:google.protobuf.FieldMask) */ {
+  using Super_ = ::google::protobuf::Message;
+
  public:
   inline FieldMask() : FieldMask(nullptr) {}
   ~FieldMask() PROTOBUF_FINAL;
@@ -150,11 +143,11 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FieldMask final : p
 
   [[nodiscard]] FieldMask* PROTOBUF_NONNULL
   New(::google::protobuf::Arena* PROTOBUF_NULLABLE arena = nullptr) const {
-    return ::google::protobuf::Message::DefaultConstruct<FieldMask>(arena);
+    return Super_::DefaultConstruct<FieldMask>(arena);
   }
-  using ::google::protobuf::Message::CopyFrom;
+  using Super_::CopyFrom;
   void CopyFrom(const FieldMask& from);
-  using ::google::protobuf::Message::MergeFrom;
+  using Super_::MergeFrom;
   void MergeFrom(const FieldMask& from) { FieldMask::MergeImpl(*this, from); }
 
   private:
@@ -195,8 +188,6 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FieldMask final : p
   static void SharedDtor(MessageLite& self);
   void InternalSwap(FieldMask* PROTOBUF_NONNULL other);
  private:
-  template <typename T>
-  friend ::absl::string_view(::google::protobuf::internal::GetAnyMessageName)();
   static ::absl::string_view FullMessageName() { return "google.protobuf.FieldMask"; }
 
   explicit FieldMask(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
@@ -225,8 +216,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FieldMask final : p
     kPathsFieldNumber = 1,
   };
   // repeated string paths = 1;
-  [[nodiscard]] int paths_size()
-      const;
+  [[nodiscard]] int paths_size() const;
   private:
   int _internal_paths_size() const;
 

@@ -39,15 +39,6 @@
 
 #define PROTOBUF_INTERNAL_EXPORT_google_2fprotobuf_2fcpp_5ffeatures_2eproto PROTOBUF_EXPORT
 
-namespace google {
-namespace protobuf {
-namespace internal {
-template <typename T>
-::absl::string_view GetAnyMessageName();
-}  // namespace internal
-}  // namespace protobuf
-}  // namespace google
-
 // Internal implementation detail -- do not use these members.
 struct PROTOBUF_EXPORT TableStruct_google_2fprotobuf_2fcpp_5ffeatures_2eproto {
   static const ::uint32_t offsets[];
@@ -80,7 +71,7 @@ internal::EnumTraitsT<::pb::CppFeatures_StringType_internal_data_>
 namespace internal {
 template <>
 inline ::absl::string_view GetFeatureSetDefaultsData<::pb::CppFeatures>() {
-  static constexpr char kDefaults[] = "CiUYhAciA8I+ACobCAEQAhgCIAMoATACOAJAAcI+CAgBEAMYACABCiUY5wciA8I+ACobCAIQARgBIAIoATABOAJAAcI+CAgAEAMYACABCiUY6AciEwgBEAEYASACKAEwAcI+BAgAEAMqCzgCQAHCPgQYACABCiUY6QciGQgBEAEYASACKAEwATgBQALCPgYIABABGAEqBcI+AiABCiUYj04iGwgBEAEYASACKAEwATgDQALCPggIABABGAEgASoDwj4AIOYHKOkH";
+  static constexpr char kDefaults[] = "CicYhAciA8I+ACodCAEQAhgCIAMoATACOAJAAUgBwj4ICAEQAxgAIAEKJxjnByIDwj4AKh0IAhABGAEgAigBMAE4AkABSAHCPggIABADGAAgAQonGOgHIhMIARABGAEgAigBMAHCPgQIABADKg04AkABSAHCPgQYACABCicY6QciGQgBEAEYASACKAEwATgBQALCPgYIABABGAEqB0gBwj4CIAEKJxjqByIbCAEQARgBIAIoATABOANAAkgCwj4GCAAQARgBKgXCPgIgAQonGI9OIh0IARABGAEgAigBMAE4A0ACSALCPggIABABGAEgASoDwj4AIOYHKOoH";
   return kDefaults;
 }
 }  // namespace internal
@@ -173,6 +164,8 @@ using ::google::protobuf::internal::generated_enum::AbslUnparseFlag;
 
 class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CppFeatures final : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:pb.CppFeatures) */ {
+  using Super_ = ::google::protobuf::Message;
+
  public:
   inline CppFeatures() : CppFeatures(nullptr) {}
   ~CppFeatures() PROTOBUF_FINAL;
@@ -247,11 +240,11 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CppFeatures final :
 
   [[nodiscard]] CppFeatures* PROTOBUF_NONNULL
   New(::google::protobuf::Arena* PROTOBUF_NULLABLE arena = nullptr) const {
-    return ::google::protobuf::Message::DefaultConstruct<CppFeatures>(arena);
+    return Super_::DefaultConstruct<CppFeatures>(arena);
   }
-  using ::google::protobuf::Message::CopyFrom;
+  using Super_::CopyFrom;
   void CopyFrom(const CppFeatures& from);
-  using ::google::protobuf::Message::MergeFrom;
+  using Super_::MergeFrom;
   void MergeFrom(const CppFeatures& from) { CppFeatures::MergeImpl(*this, from); }
 
   private:
@@ -292,8 +285,6 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CppFeatures final :
   static void SharedDtor(MessageLite& self);
   void InternalSwap(CppFeatures* PROTOBUF_NONNULL other);
  private:
-  template <typename T>
-  friend ::absl::string_view(::google::protobuf::internal::GetAnyMessageName)();
   static ::absl::string_view FullMessageName() { return "pb.CppFeatures"; }
 
   explicit CppFeatures(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
@@ -368,8 +359,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CppFeatures final :
     kRepeatedTypeFieldNumber = 4,
   };
   // optional .pb.CppFeatures.StringType string_type = 2 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {
-  [[nodiscard]] bool has_string_type()
-      const;
+  [[nodiscard]] bool has_string_type() const;
   void clear_string_type() ;
   [[nodiscard]] ::pb::CppFeatures_StringType string_type() const;
   void set_string_type(::pb::CppFeatures_StringType value);
@@ -380,8 +370,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CppFeatures final :
 
   public:
   // optional bool legacy_closed_enum = 1 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {
-  [[nodiscard]] bool has_legacy_closed_enum()
-      const;
+  [[nodiscard]] bool has_legacy_closed_enum() const;
   void clear_legacy_closed_enum() ;
   [[nodiscard]] bool legacy_closed_enum() const;
   void set_legacy_closed_enum(bool value);
@@ -392,8 +381,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CppFeatures final :
 
   public:
   // optional bool enum_name_uses_string_view = 3 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_ENUM, targets = TARGET_TYPE_FILE, edition_defaults = {
-  [[nodiscard]] bool has_enum_name_uses_string_view()
-      const;
+  [[nodiscard]] bool has_enum_name_uses_string_view() const;
   void clear_enum_name_uses_string_view() ;
   [[nodiscard]] bool enum_name_uses_string_view() const;
   void set_enum_name_uses_string_view(bool value);
@@ -404,8 +392,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CppFeatures final :
 
   public:
   // optional .pb.CppFeatures.RepeatedType repeated_type = 4 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {
-  [[nodiscard]] bool has_repeated_type()
-      const;
+  [[nodiscard]] bool has_repeated_type() const;
   void clear_repeated_type() ;
   [[nodiscard]] ::pb::CppFeatures_RepeatedType repeated_type() const;
   void set_repeated_type(::pb::CppFeatures_RepeatedType value);

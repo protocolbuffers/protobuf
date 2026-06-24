@@ -56,7 +56,7 @@ MessageLite* MessageLite::CopyConstruct(Arena* arena, const MessageLite& from) {
 
 void MessageLite::DestroyInstance() {
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-  _class_data_->destroy_message(*this);
+  class_data()->destroy_message(*this);
 #else   // PROTOBUF_CUSTOM_VTABLE
   this->~MessageLite();
 #endif  // PROTOBUF_CUSTOM_VTABLE
@@ -87,11 +87,13 @@ void MessageLite::CheckTypeAndMergeFrom(const MessageLite& other) {
 
 MessageLite* MessageLite::New(Arena* arena) const {
   auto* data = GetClassData();
+  void* mem = data->message_creator.AllocateMessage(arena);
   // The `instance->New()` expression requires using the actual instance
   // instead of the prototype for the inner function call.
   // Certain custom instances have special per-instance state that needs to be
   // copied.
-  return data->message_creator.New(this, data->default_instance(), arena);
+  return data->message_creator.PlacementNew(this, data->default_instance(), mem,
+                                            arena);
 }
 
 bool MessageLite::IsInitialized() const {
@@ -408,10 +410,12 @@ bool MessageLite::ParsePartialFromBoundedZeroCopyStream(
 }
 
 bool MessageLite::ParseFromString(absl::string_view data) {
+  if (ABSL_PREDICT_FALSE(data.size() > INT_MAX)) return false;
   return ParseFrom<kParse>(data);
 }
 
 bool MessageLite::ParsePartialFromString(absl::string_view data) {
+  if (ABSL_PREDICT_FALSE(data.size() > INT_MAX)) return false;
   return ParseFrom<kParsePartial>(data);
 }
 
@@ -424,6 +428,7 @@ bool MessageLite::ParsePartialFromArray(const void* data, int size) {
 }
 
 bool MessageLite::MergeFromString(absl::string_view data) {
+  if (ABSL_PREDICT_FALSE(data.size() > INT_MAX)) return false;
   return ParseFrom<kMerge>(data);
 }
 
@@ -451,18 +456,22 @@ struct SourceWrapper<absl::Cord> {
 }  // namespace internal
 
 bool MessageLite::MergeFromString(const absl::Cord& data) {
+  if (ABSL_PREDICT_FALSE(data.size() > INT_MAX)) return false;
   return ParseFrom<kMerge>(internal::SourceWrapper<absl::Cord>(&data));
 }
 
 bool MessageLite::MergePartialFromString(const absl::Cord& data) {
+  if (ABSL_PREDICT_FALSE(data.size() > INT_MAX)) return false;
   return ParseFrom<kMergePartial>(internal::SourceWrapper<absl::Cord>(&data));
 }
 
 bool MessageLite::ParseFromString(const absl::Cord& data) {
+  if (ABSL_PREDICT_FALSE(data.size() > INT_MAX)) return false;
   return ParseFrom<kParse>(internal::SourceWrapper<absl::Cord>(&data));
 }
 
 bool MessageLite::ParsePartialFromString(const absl::Cord& data) {
+  if (ABSL_PREDICT_FALSE(data.size() > INT_MAX)) return false;
   return ParseFrom<kParsePartial>(internal::SourceWrapper<absl::Cord>(&data));
 }
 
@@ -659,11 +668,17 @@ bool MessageLite::AppendPartialToString(absl::Cord* output) const {
   // For efficiency, we'd like to pass a size hint to CordOutputStream with
   // the exact total size expected.
   const size_t size = ByteSizeLong();
-  const size_t total_size = size + output->size();
   if (size > INT_MAX) {
     ABSL_LOG(ERROR) << "Exceeded maximum protobuf size of 2GB: " << size;
     return false;
   }
+  const size_t output_size = output->size();
+  if (output_size > SIZE_MAX - size) {
+    ABSL_LOG(ERROR) << "Exceeded maximum Cord size during append: "
+                    << output_size << " + " << size;
+    return false;
+  }
+  const size_t total_size = size + output_size;
 
 
   // Allocate a CordBuffer (which may utilize private capacity in 'output').

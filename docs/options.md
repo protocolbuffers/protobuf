@@ -563,3 +563,13 @@ about your project (name and website) so we can add an entry for you.
 
     *   Website: https://github.com/funinthecloud/protosource
     *   Extensions: 1296-1305
+
+1.  protosearch
+
+    *   Website: https://github.com/benwebber/protosearch
+    *   Extensions: 1306
+
+1.  proto2type
+
+    *   Website: https://github.com/protocgen/proto2type
+    *   Extensions: 1307

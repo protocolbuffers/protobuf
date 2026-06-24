@@ -812,20 +812,41 @@ public abstract class CodedInputStream {
   /** A {@link CodedInputStream} implementation that uses a backing array as the input. */
   private abstract static class ArrayDecoder extends CodedInputStream {
     private final byte[] buffer;
+
+    /**
+     * The limit of the buffer this decoder is permitted to read. Usually this is equal to
+     * buffer.length but can be smaller if we are asked to parse a slice of a larger array.
+     */
+    private final int bufferLimit;
+
     private final boolean immutable;
+
+    /**
+     * The clamped reading limit, guaranteed to be <= {@code bufferLimit}. Reading stops when {@code
+     * pos} reaches this index. This is the clamped version of {@code currentLimit}.
+     */
     private int limit;
-    private int bufferSizeAfterLimit;
+
     private int pos;
     private int startPos;
     private int lastTag;
     private boolean enableAliasing;
 
-    /** The absolute position of the end of the current message. */
+    /**
+     * The unclamped absolute limit of the end of the current message (as an absolute index in the
+     * buffer). This can exceed the physical buffer capacity (e.g., when it is {@code
+     * Integer.MAX_VALUE} indicating no limit, or if the input is corrupt and specifies a length
+     * extending beyond {@code bufferLimit}).
+     *
+     * <p>Note: when this value is modified, {@code setCurrentLimit()} must be called to ensure
+     * {@code limit} is updated (clamped) accordingly.
+     */
     private int currentLimit = Integer.MAX_VALUE;
 
     private ArrayDecoder(final byte[] buffer, final int offset, final int len, boolean immutable) {
       this.buffer = buffer;
-      limit = offset + len;
+      bufferLimit = offset + len;
+      limit = bufferLimit;
       pos = offset;
       startPos = pos;
       this.immutable = immutable;
@@ -1057,34 +1078,35 @@ public abstract class CodedInputStream {
     public void readMessage(
         final MessageLite.Builder builder, final ExtensionRegistryLite extensionRegistry)
         throws IOException {
-      final int length = readRawVarint32Expected5BytesMax();
-      checkRecursionLimit();
-      final int oldLimit = pushLimit(length);
-      ++messageDepth;
+      final int oldLimit = pushLimitBeforeMessage();
       builder.mergeFrom(this, extensionRegistry);
-      checkLastTagWas(0);
-      --messageDepth;
-      if (getBytesUntilLimit() != 0) {
-        throw InvalidProtocolBufferException.truncatedMessage();
-      }
-      popLimit(oldLimit);
+      popLimitAfterMessage(oldLimit);
     }
 
     @Override
     public <T extends MessageLite> T readMessage(
         final Parser<T> parser, final ExtensionRegistryLite extensionRegistry) throws IOException {
-      int length = readRawVarint32Expected5BytesMax();
+      final int oldLimit = pushLimitBeforeMessage();
+      T result = parser.parsePartialFrom(this, extensionRegistry);
+      popLimitAfterMessage(oldLimit);
+      return result;
+    }
+
+    private int pushLimitBeforeMessage() throws IOException {
+      final int length = readRawVarint32Expected5BytesMax();
       checkRecursionLimit();
       final int oldLimit = pushLimit(length);
       ++messageDepth;
-      T result = parser.parsePartialFrom(this, extensionRegistry);
+      return oldLimit;
+    }
+
+    private void popLimitAfterMessage(int oldLimit) throws IOException {
       checkLastTagWas(0);
       --messageDepth;
       if (getBytesUntilLimit() != 0) {
         throw InvalidProtocolBufferException.truncatedMessage();
       }
       popLimit(oldLimit);
-      return result;
     }
 
     private ByteString readBytesInternal(boolean requireUtf8) throws IOException {
@@ -1464,38 +1486,47 @@ public abstract class CodedInputStream {
       if (byteLimit < 0) {
         throw InvalidProtocolBufferException.negativeSize();
       }
-      byteLimit += getTotalBytesRead();
-      if (byteLimit < 0) {
-        // Check for for integer overflow in byteLimit
-        throw InvalidProtocolBufferException.sizeLimitExceeded();
+      int newLimit = pos + byteLimit;
+      if (newLimit < 0) {
+        // Absolute limit overflowed. Check if relative limit would have overflowed. This is
+        // slightly odd but done this way to maintain the semantics of the prior implementation.
+        if (byteLimit > Integer.MAX_VALUE - (pos - startPos)) {
+          throw InvalidProtocolBufferException.sizeLimitExceeded();
+        }
+        // It wouldn't have overflowed relatively, so clamp it to Integer.MAX_VALUE.
+        newLimit = Integer.MAX_VALUE;
       }
       final int oldLimit = currentLimit;
-      if (byteLimit > oldLimit) {
+      if (newLimit > oldLimit) {
         throw InvalidProtocolBufferException.truncatedMessage();
       }
-      currentLimit = byteLimit;
-
-      recomputeBufferSizeAfterLimit();
+      setCurrentLimit(newLimit);
 
       return oldLimit;
     }
 
-    private void recomputeBufferSizeAfterLimit() {
-      limit += bufferSizeAfterLimit;
-      final int bufferEnd = limit - startPos;
-      if (bufferEnd > currentLimit) {
-        // Limit is in current buffer.
-        bufferSizeAfterLimit = bufferEnd - currentLimit;
-        limit -= bufferSizeAfterLimit;
+    /**
+     * Sets the active message boundary ({@code currentLimit}) and clamps the reading limit ({@code
+     * limit}).
+     */
+    private void setCurrentLimit(int newLimit) {
+      currentLimit = newLimit;
+
+      // currentLimit is an absolute index and without any cap. limit is the resolved absolute
+      // index within the buffer itself and is guaranteed always to be within the buffer range.
+
+      // Set limit = currentLimit if it is within the buffer range, otherwise clamp limit to
+      // bufferLimit.
+      if (currentLimit <= bufferLimit) {
+        limit = currentLimit;
       } else {
-        bufferSizeAfterLimit = 0;
+        limit = bufferLimit;
       }
     }
 
     @Override
     public void popLimit(final int oldLimit) {
-      currentLimit = oldLimit;
-      recomputeBufferSizeAfterLimit();
+      setCurrentLimit(oldLimit);
     }
 
     @Override
@@ -1504,7 +1535,7 @@ public abstract class CodedInputStream {
         return -1;
       }
 
-      return currentLimit - getTotalBytesRead();
+      return currentLimit - pos;
     }
 
     @Override
@@ -1916,34 +1947,35 @@ public abstract class CodedInputStream {
     public void readMessage(
         final MessageLite.Builder builder, final ExtensionRegistryLite extensionRegistry)
         throws IOException {
-      final int length = readRawVarint32();
-      checkRecursionLimit();
-      final int oldLimit = pushLimit(length);
-      ++messageDepth;
+      final int oldLimit = pushLimitBeforeMessage();
       builder.mergeFrom(this, extensionRegistry);
-      checkLastTagWas(0);
-      --messageDepth;
-      if (getBytesUntilLimit() != 0) {
-        throw InvalidProtocolBufferException.truncatedMessage();
-      }
-      popLimit(oldLimit);
+      popLimitAfterMessage(oldLimit);
     }
 
     @Override
     public <T extends MessageLite> T readMessage(
         final Parser<T> parser, final ExtensionRegistryLite extensionRegistry) throws IOException {
-      int length = readRawVarint32();
+      final int oldLimit = pushLimitBeforeMessage();
+      T result = parser.parsePartialFrom(this, extensionRegistry);
+      popLimitAfterMessage(oldLimit);
+      return result;
+    }
+
+    private int pushLimitBeforeMessage() throws IOException {
+      final int length = readRawVarint32();
       checkRecursionLimit();
       final int oldLimit = pushLimit(length);
       ++messageDepth;
-      T result = parser.parsePartialFrom(this, extensionRegistry);
+      return oldLimit;
+    }
+
+    private void popLimitAfterMessage(int oldLimit) throws IOException {
       checkLastTagWas(0);
       --messageDepth;
       if (getBytesUntilLimit() != 0) {
         throw InvalidProtocolBufferException.truncatedMessage();
       }
       popLimit(oldLimit);
-      return result;
     }
 
     private ByteString readBytesInternal(boolean requireUtf8) throws IOException {
@@ -2259,16 +2291,15 @@ public abstract class CodedInputStream {
       if (byteLimit < 0) {
         throw InvalidProtocolBufferException.negativeSize();
       }
-      byteLimit += totalBytesRetired + pos;
-      if (byteLimit < 0) {
-        // Check for for integer overflow in byteLimit
+      int rawPos = totalBytesRetired + pos;
+      if (byteLimit > Integer.MAX_VALUE - rawPos) {
         throw InvalidProtocolBufferException.sizeLimitExceeded();
       }
-      final int oldLimit = currentLimit;
-      if (byteLimit > oldLimit) {
+      if (isBeyondLimit(rawPos, byteLimit, currentLimit)) {
         throw InvalidProtocolBufferException.truncatedMessage();
       }
-      currentLimit = byteLimit;
+      final int oldLimit = currentLimit;
+      currentLimit = rawPos + byteLimit;
 
       recomputeBufferSizeAfterLimit();
 
@@ -2356,12 +2387,13 @@ public abstract class CodedInputStream {
       // Check whether the size of total message needs to read is bigger than the size limit.
       // We shouldn't throw an exception here as isAtEnd() function needs to get this function's
       // return as the result.
-      if (n > sizeLimit - totalBytesRetired - pos) {
+      int rawPos = totalBytesRetired + pos;
+      if (isBeyondLimit(rawPos, n, sizeLimit)) {
         return false;
       }
 
       // Shouldn't throw the exception here either.
-      if (totalBytesRetired + pos + n > currentLimit) {
+      if (isBeyondLimit(rawPos, n, currentLimit)) {
         // Oops, we hit a limit.
         return false;
       }
@@ -2515,15 +2547,19 @@ public abstract class CodedInputStream {
       }
 
       // Integer-overflow-conscious check that the message size so far has not exceeded sizeLimit.
-      int currentMessageSize = totalBytesRetired + pos + size;
-      if (currentMessageSize - sizeLimit > 0) {
+      int rawPos = totalBytesRetired + pos;
+      if (isBeyondLimit(rawPos, size, sizeLimit)) {
         throw InvalidProtocolBufferException.sizeLimitExceeded();
       }
 
       // Verify that the message size so far has not exceeded currentLimit.
-      if (currentMessageSize > currentLimit) {
-        // Read to the end of the stream anyway.
-        skipRawBytes(currentLimit - totalBytesRetired - pos);
+      if (isBeyondLimit(rawPos, size, currentLimit)) {
+        // If we exceed currentLimit but not sizeLimit, we skip the remaining bytes to align the
+        // stream. This behavior was established in 2008 and may no longer be strictly necessary,
+        // but is maintained for consistency.
+        if (currentLimit >= rawPos) {
+          skipRawBytes(currentLimit - rawPos);
+        }
         throw InvalidProtocolBufferException.truncatedMessage();
       }
 
@@ -2658,10 +2694,18 @@ public abstract class CodedInputStream {
         throw InvalidProtocolBufferException.negativeSize();
       }
 
-      if (totalBytesRetired + pos + size > currentLimit) {
-        // Read to the end of the stream anyway.
-        skipRawBytes(currentLimit - totalBytesRetired - pos);
-        // Then fail.
+      int rawPos = totalBytesRetired + pos;
+      if (isBeyondLimit(rawPos, size, sizeLimit)) {
+        throw InvalidProtocolBufferException.sizeLimitExceeded();
+      }
+
+      if (isBeyondLimit(rawPos, size, currentLimit)) {
+        // If we exceed currentLimit but not sizeLimit, we skip the remaining bytes to align the
+        // stream. This behavior was established in 2008 and may no longer be strictly necessary,
+        // but is maintained for consistency.
+        if (currentLimit >= rawPos) {
+          skipRawBytes(currentLimit - rawPos);
+        }
         throw InvalidProtocolBufferException.truncatedMessage();
       }
 
@@ -2713,6 +2757,16 @@ public abstract class CodedInputStream {
 
         pos = size - tempPos;
       }
+    }
+
+    /**
+     * Helper to perform an integer-overflow-conscious check that {@code currentOffset + bytesToAdd}
+     * does not exceed {@code limit}.
+     *
+     * <p>Assumes that {@code currentOffset >= 0}, {@code bytesToAdd >= 0}, and {@code limit >= 0}.
+     */
+    private static boolean isBeyondLimit(int currentOffset, int bytesToAdd, int limit) {
+      return limit < currentOffset || bytesToAdd > limit - currentOffset;
     }
   }
 }

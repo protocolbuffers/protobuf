@@ -167,7 +167,10 @@ public class RubyRepeatedField extends RubyObject {
     if (beg < 0) {
       beg += this.storage.size();
     }
-    if (beg >= this.storage.size()) {
+    if (beg < 0) {
+      return context.runtime.getNil();
+    }
+    if (beg > this.storage.size()) {
       return context.runtime.getNil();
     }
     return this.storage.subseq(beg, len);

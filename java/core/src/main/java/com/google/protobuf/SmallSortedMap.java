@@ -55,7 +55,7 @@ import java.util.TreeMap;
 // This class is final for all intents and purposes because the constructor is
 // private. However, the FieldDescriptor-specific logic is encapsulated in
 // a subclass to aid testability of the core logic.
-class SmallSortedMap<K extends Comparable<K>, V> extends AbstractMap<K, V> {
+class SmallSortedMap<K extends FieldSet.FieldDescriptorLite<K>, V> extends AbstractMap<K, V> {
 
   static final int DEFAULT_FIELD_MAP_ARRAY_SIZE = 16;
 
@@ -90,7 +90,7 @@ class SmallSortedMap<K extends Comparable<K>, V> extends AbstractMap<K, V> {
   }
 
   /** Creates a new instance for testing. */
-  static <K extends Comparable<K>, V> SmallSortedMap<K, V> newInstanceForTest() {
+  static <K extends FieldSet.FieldDescriptorLite<K>, V> SmallSortedMap<K, V> newInstanceForTest() {
     return new SmallSortedMap<>();
   }
 
@@ -107,11 +107,9 @@ class SmallSortedMap<K extends Comparable<K>, V> extends AbstractMap<K, V> {
   // The EntrySet is a stateless view of the Map. It's initialized the first
   // time it is requested and reused henceforth.
   private volatile EntrySet lazyEntrySet;
-  private Map<K, V> overflowEntriesDescending;
 
   private SmallSortedMap() {
     this.overflowEntries = Collections.emptyMap();
-    this.overflowEntriesDescending = Collections.emptyMap();
   }
 
   /** Make this map immutable from this point forward. */
@@ -125,25 +123,27 @@ class SmallSortedMap<K extends Comparable<K>, V> extends AbstractMap<K, V> {
           overflowEntries.isEmpty()
               ? Collections.<K, V>emptyMap()
               : Collections.unmodifiableMap(overflowEntries);
-      overflowEntriesDescending =
-          overflowEntriesDescending.isEmpty()
-              ? Collections.<K, V>emptyMap()
-              : Collections.unmodifiableMap(overflowEntriesDescending);
       isImmutable = true;
     }
   }
 
-  /** @return Whether {@link #makeImmutable()} has been called. */
+  /**
+   * @return Whether {@link #makeImmutable()} has been called.
+   */
   public boolean isImmutable() {
     return isImmutable;
   }
 
-  /** @return The number of entries in the entry array. */
+  /**
+   * @return The number of entries in the entry array.
+   */
   public int getNumArrayEntries() {
     return entriesSize;
   }
 
-  /** @return The array entry at the given {@code index}. */
+  /**
+   * @return The array entry at the given {@code index}.
+   */
   public Map.Entry<K, V> getArrayEntryAt(int index) {
     if (index >= entriesSize) {
       throw new ArrayIndexOutOfBoundsException(index);
@@ -153,16 +153,18 @@ class SmallSortedMap<K extends Comparable<K>, V> extends AbstractMap<K, V> {
     return e;
   }
 
-  /** @return There number of overflow entries. */
+  /**
+   * @return There number of overflow entries.
+   */
   public int getNumOverflowEntries() {
     return overflowEntries.size();
   }
 
-  /** @return An iterable over the overflow entries. */
+  /**
+   * @return An iterable over the overflow entries.
+   */
   public Iterable<Map.Entry<K, V>> getOverflowEntries() {
-    return overflowEntries.isEmpty()
-        ? Collections.emptySet()
-        : overflowEntries.entrySet();
+    return overflowEntries.isEmpty() ? Collections.emptySet() : overflowEntries.entrySet();
   }
 
   @Override
@@ -339,16 +341,10 @@ class SmallSortedMap<K extends Comparable<K>, V> extends AbstractMap<K, V> {
     return lazyEntrySet;
   }
 
-  Set<Map.Entry<K, V>> descendingEntrySet() {
-    // Optimisation note: Many java.util.Map implementations would, here, cache the return value in
-    // a field, to avoid allocations for future calls to this method. But for us, descending
-    // iteration is rare, SmallSortedMaps are very common, and the entry set is only useful for
-    // iteration, which allocates anyway. The extra memory cost of the field (4-8 bytes) isn't worth
-    // it. See b/357002010.
-    return new DescendingEntrySet();
-  }
 
-  /** @throws UnsupportedOperationException if {@link #makeImmutable()} has has been called. */
+  /**
+   * @throws UnsupportedOperationException if {@link #makeImmutable()} has has been called.
+   */
   private void checkMutable() {
     if (isImmutable) {
       throw new UnsupportedOperationException();
@@ -363,7 +359,6 @@ class SmallSortedMap<K extends Comparable<K>, V> extends AbstractMap<K, V> {
     checkMutable();
     if (overflowEntries.isEmpty() && !(overflowEntries instanceof TreeMap)) {
       overflowEntries = new TreeMap<K, V>();
-      overflowEntriesDescending = ((TreeMap<K, V>) overflowEntries).descendingMap();
     }
     return (SortedMap<K, V>) overflowEntries;
   }
@@ -511,13 +506,6 @@ class SmallSortedMap<K extends Comparable<K>, V> extends AbstractMap<K, V> {
     }
   }
 
-  private class DescendingEntrySet extends EntrySet {
-    @Override
-    public Iterator<java.util.Map.Entry<K, V>> iterator() {
-      return new DescendingEntryIterator();
-    }
-  }
-
   /**
    * Iterator implementation that switches from the entry array to the overflow entries
    * appropriately.
@@ -525,7 +513,6 @@ class SmallSortedMap<K extends Comparable<K>, V> extends AbstractMap<K, V> {
   private class EntryIterator implements Iterator<Map.Entry<K, V>> {
 
     private int pos = -1;
-    private boolean nextCalledBeforeRemove;
     private Iterator<Map.Entry<K, V>> lazyOverflowIterator;
 
     @Override
@@ -536,7 +523,6 @@ class SmallSortedMap<K extends Comparable<K>, V> extends AbstractMap<K, V> {
 
     @Override
     public Map.Entry<K, V> next() {
-      nextCalledBeforeRemove = true;
       // Always increment pos so that we know whether the last returned value
       // was from the array or from overflow.
       if (++pos < entriesSize) {
@@ -549,10 +535,6 @@ class SmallSortedMap<K extends Comparable<K>, V> extends AbstractMap<K, V> {
 
     @Override
     public void remove() {
-      if (!nextCalledBeforeRemove) {
-        throw new IllegalStateException("remove() was called before next()");
-      }
-      nextCalledBeforeRemove = false;
       checkMutable();
 
       if (pos < entriesSize) {
@@ -570,48 +552,6 @@ class SmallSortedMap<K extends Comparable<K>, V> extends AbstractMap<K, V> {
     private Iterator<Map.Entry<K, V>> getOverflowIterator() {
       if (lazyOverflowIterator == null) {
         lazyOverflowIterator = overflowEntries.entrySet().iterator();
-      }
-      return lazyOverflowIterator;
-    }
-  }
-
-  /**
-   * Reverse Iterator implementation that switches from the entry array to the overflow entries
-   * appropriately.
-   */
-  private class DescendingEntryIterator implements Iterator<Map.Entry<K, V>> {
-
-    private int pos = entriesSize;
-    private Iterator<Map.Entry<K, V>> lazyOverflowIterator;
-
-    @Override
-    public boolean hasNext() {
-      return (pos > 0 && pos <= entriesSize) || getOverflowIterator().hasNext();
-    }
-
-    @Override
-    public Map.Entry<K, V> next() {
-      if (getOverflowIterator().hasNext()) {
-        return getOverflowIterator().next();
-      }
-      @SuppressWarnings("unchecked")
-      Entry e = (Entry) entries[--pos];
-      return e;
-    }
-
-    @Override
-    public void remove() {
-      throw new UnsupportedOperationException();
-    }
-
-    /**
-     * It is important to create the overflow iterator only after the array entries have been
-     * iterated over because the overflow entry set changes when the client calls remove() on the
-     * array entries, which invalidates any existing iterators.
-     */
-    private Iterator<Map.Entry<K, V>> getOverflowIterator() {
-      if (lazyOverflowIterator == null) {
-        lazyOverflowIterator = overflowEntriesDescending.entrySet().iterator();
       }
       return lazyOverflowIterator;
     }

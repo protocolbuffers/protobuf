@@ -57,8 +57,7 @@ void SetPrimitiveVariables(
       absl::StrCat(static_cast<int32_t>(WireFormat::MakeTag(descriptor)));
   (*variables)["tag_size"] = absl::StrCat(
       WireFormat::TagSize(descriptor->number(), GetType(descriptor)));
-  (*variables)["null_check"] =
-      "if (value == null) { throw new NullPointerException(); }";
+  (*variables)["null_check"] = "java.util.Objects.requireNonNull(value);";
   (*variables)["isStringEmpty"] =
       "com.google.protobuf.GeneratedMessage.isStringEmpty";
   (*variables)["writeString"] =

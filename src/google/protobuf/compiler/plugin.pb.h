@@ -45,15 +45,6 @@
 #undef minor
 #endif  // minor
 
-namespace google {
-namespace protobuf {
-namespace internal {
-template <typename T>
-::absl::string_view GetAnyMessageName();
-}  // namespace internal
-}  // namespace protobuf
-}  // namespace google
-
 // Internal implementation detail -- do not use these members.
 struct PROTOC_EXPORT TableStruct_google_2fprotobuf_2fcompiler_2fplugin_2eproto {
   static const ::uint32_t offsets[];
@@ -155,6 +146,8 @@ using ::google::protobuf::internal::generated_enum::AbslUnparseFlag;
 
 class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Version final : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:google.protobuf.compiler.Version) */ {
+  using Super_ = ::google::protobuf::Message;
+
  public:
   inline Version() : Version(nullptr) {}
   ~Version() PROTOBUF_FINAL;
@@ -229,11 +222,11 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Version final : publi
 
   [[nodiscard]] Version* PROTOBUF_NONNULL
   New(::google::protobuf::Arena* PROTOBUF_NULLABLE arena = nullptr) const {
-    return ::google::protobuf::Message::DefaultConstruct<Version>(arena);
+    return Super_::DefaultConstruct<Version>(arena);
   }
-  using ::google::protobuf::Message::CopyFrom;
+  using Super_::CopyFrom;
   void CopyFrom(const Version& from);
-  using ::google::protobuf::Message::MergeFrom;
+  using Super_::MergeFrom;
   void MergeFrom(const Version& from) { Version::MergeImpl(*this, from); }
 
   private:
@@ -274,8 +267,6 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Version final : publi
   static void SharedDtor(MessageLite& self);
   void InternalSwap(Version* PROTOBUF_NONNULL other);
  private:
-  template <typename T>
-  friend ::absl::string_view(::google::protobuf::internal::GetAnyMessageName)();
   static ::absl::string_view FullMessageName() { return "google.protobuf.compiler.Version"; }
 
   explicit Version(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
@@ -307,8 +298,7 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Version final : publi
     kPatchFieldNumber = 3,
   };
   // optional string suffix = 4;
-  [[nodiscard]] bool has_suffix()
-      const;
+  [[nodiscard]] bool has_suffix() const;
   void clear_suffix() ;
   [[nodiscard]] const ::std::string& suffix() const;
   template <typename Arg_ = const ::std::string&, typename... Args_>
@@ -324,8 +314,7 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Version final : publi
 
   public:
   // optional int32 major = 1;
-  [[nodiscard]] bool has_major()
-      const;
+  [[nodiscard]] bool has_major() const;
   void clear_major() ;
   [[nodiscard]] ::int32_t major() const;
   void set_major(::int32_t value);
@@ -336,8 +325,7 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Version final : publi
 
   public:
   // optional int32 minor = 2;
-  [[nodiscard]] bool has_minor()
-      const;
+  [[nodiscard]] bool has_minor() const;
   void clear_minor() ;
   [[nodiscard]] ::int32_t minor() const;
   void set_minor(::int32_t value);
@@ -348,8 +336,7 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Version final : publi
 
   public:
   // optional int32 patch = 3;
-  [[nodiscard]] bool has_patch()
-      const;
+  [[nodiscard]] bool has_patch() const;
   void clear_patch() ;
   [[nodiscard]] ::int32_t patch() const;
   void set_patch(::int32_t value);
@@ -405,6 +392,8 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Version final : publi
 
 class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CodeGeneratorResponse_File final : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:google.protobuf.compiler.CodeGeneratorResponse.File) */ {
+  using Super_ = ::google::protobuf::Message;
+
  public:
   inline CodeGeneratorResponse_File() : CodeGeneratorResponse_File(nullptr) {}
   ~CodeGeneratorResponse_File() PROTOBUF_FINAL;
@@ -479,11 +468,11 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CodeGeneratorResponse
 
   [[nodiscard]] CodeGeneratorResponse_File* PROTOBUF_NONNULL
   New(::google::protobuf::Arena* PROTOBUF_NULLABLE arena = nullptr) const {
-    return ::google::protobuf::Message::DefaultConstruct<CodeGeneratorResponse_File>(arena);
+    return Super_::DefaultConstruct<CodeGeneratorResponse_File>(arena);
   }
-  using ::google::protobuf::Message::CopyFrom;
+  using Super_::CopyFrom;
   void CopyFrom(const CodeGeneratorResponse_File& from);
-  using ::google::protobuf::Message::MergeFrom;
+  using Super_::MergeFrom;
   void MergeFrom(const CodeGeneratorResponse_File& from) { CodeGeneratorResponse_File::MergeImpl(*this, from); }
 
   private:
@@ -524,8 +513,6 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CodeGeneratorResponse
   static void SharedDtor(MessageLite& self);
   void InternalSwap(CodeGeneratorResponse_File* PROTOBUF_NONNULL other);
  private:
-  template <typename T>
-  friend ::absl::string_view(::google::protobuf::internal::GetAnyMessageName)();
   static ::absl::string_view FullMessageName() { return "google.protobuf.compiler.CodeGeneratorResponse.File"; }
 
   explicit CodeGeneratorResponse_File(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
@@ -557,8 +544,7 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CodeGeneratorResponse
     kGeneratedCodeInfoFieldNumber = 16,
   };
   // optional string name = 1;
-  [[nodiscard]] bool has_name()
-      const;
+  [[nodiscard]] bool has_name() const;
   void clear_name() ;
   [[nodiscard]] const ::std::string& name() const;
   template <typename Arg_ = const ::std::string&, typename... Args_>
@@ -574,8 +560,7 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CodeGeneratorResponse
 
   public:
   // optional string insertion_point = 2;
-  [[nodiscard]] bool has_insertion_point()
-      const;
+  [[nodiscard]] bool has_insertion_point() const;
   void clear_insertion_point() ;
   [[nodiscard]] const ::std::string& insertion_point() const;
   template <typename Arg_ = const ::std::string&, typename... Args_>
@@ -591,8 +576,7 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CodeGeneratorResponse
 
   public:
   // optional string content = 15;
-  [[nodiscard]] bool has_content()
-      const;
+  [[nodiscard]] bool has_content() const;
   void clear_content() ;
   [[nodiscard]] const ::std::string& content() const;
   template <typename Arg_ = const ::std::string&, typename... Args_>
@@ -608,8 +592,7 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CodeGeneratorResponse
 
   public:
   // optional .google.protobuf.GeneratedCodeInfo generated_code_info = 16;
-  [[nodiscard]] bool has_generated_code_info()
-      const;
+  [[nodiscard]] bool has_generated_code_info() const;
   void clear_generated_code_info() ;
   [[nodiscard]] const ::google::protobuf::GeneratedCodeInfo& generated_code_info() const;
   [[nodiscard]] ::google::protobuf::GeneratedCodeInfo* PROTOBUF_NULLABLE release_generated_code_info();
@@ -669,6 +652,8 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CodeGeneratorResponse
 
 class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CodeGeneratorResponse final : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:google.protobuf.compiler.CodeGeneratorResponse) */ {
+  using Super_ = ::google::protobuf::Message;
+
  public:
   inline CodeGeneratorResponse() : CodeGeneratorResponse(nullptr) {}
   ~CodeGeneratorResponse() PROTOBUF_FINAL;
@@ -743,11 +728,11 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CodeGeneratorResponse
 
   [[nodiscard]] CodeGeneratorResponse* PROTOBUF_NONNULL
   New(::google::protobuf::Arena* PROTOBUF_NULLABLE arena = nullptr) const {
-    return ::google::protobuf::Message::DefaultConstruct<CodeGeneratorResponse>(arena);
+    return Super_::DefaultConstruct<CodeGeneratorResponse>(arena);
   }
-  using ::google::protobuf::Message::CopyFrom;
+  using Super_::CopyFrom;
   void CopyFrom(const CodeGeneratorResponse& from);
-  using ::google::protobuf::Message::MergeFrom;
+  using Super_::MergeFrom;
   void MergeFrom(const CodeGeneratorResponse& from) { CodeGeneratorResponse::MergeImpl(*this, from); }
 
   private:
@@ -788,8 +773,6 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CodeGeneratorResponse
   static void SharedDtor(MessageLite& self);
   void InternalSwap(CodeGeneratorResponse* PROTOBUF_NONNULL other);
  private:
-  template <typename T>
-  friend ::absl::string_view(::google::protobuf::internal::GetAnyMessageName)();
   static ::absl::string_view FullMessageName() { return "google.protobuf.compiler.CodeGeneratorResponse"; }
 
   explicit CodeGeneratorResponse(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
@@ -844,8 +827,7 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CodeGeneratorResponse
     kMaximumEditionFieldNumber = 4,
   };
   // repeated .google.protobuf.compiler.CodeGeneratorResponse.File file = 15;
-  [[nodiscard]] int file_size()
-      const;
+  [[nodiscard]] int file_size() const;
   private:
   int _internal_file_size() const;
 
@@ -865,8 +847,7 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CodeGeneratorResponse
 
   public:
   // optional string error = 1;
-  [[nodiscard]] bool has_error()
-      const;
+  [[nodiscard]] bool has_error() const;
   void clear_error() ;
   [[nodiscard]] const ::std::string& error() const;
   template <typename Arg_ = const ::std::string&, typename... Args_>
@@ -882,8 +863,7 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CodeGeneratorResponse
 
   public:
   // optional uint64 supported_features = 2;
-  [[nodiscard]] bool has_supported_features()
-      const;
+  [[nodiscard]] bool has_supported_features() const;
   void clear_supported_features() ;
   [[nodiscard]] ::uint64_t supported_features() const;
   void set_supported_features(::uint64_t value);
@@ -894,8 +874,7 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CodeGeneratorResponse
 
   public:
   // optional int32 minimum_edition = 3;
-  [[nodiscard]] bool has_minimum_edition()
-      const;
+  [[nodiscard]] bool has_minimum_edition() const;
   void clear_minimum_edition() ;
   [[nodiscard]] ::int32_t minimum_edition() const;
   void set_minimum_edition(::int32_t value);
@@ -906,8 +885,7 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CodeGeneratorResponse
 
   public:
   // optional int32 maximum_edition = 4;
-  [[nodiscard]] bool has_maximum_edition()
-      const;
+  [[nodiscard]] bool has_maximum_edition() const;
   void clear_maximum_edition() ;
   [[nodiscard]] ::int32_t maximum_edition() const;
   void set_maximum_edition(::int32_t value);
@@ -964,6 +942,8 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CodeGeneratorResponse
 
 class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CodeGeneratorRequest final : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:google.protobuf.compiler.CodeGeneratorRequest) */ {
+  using Super_ = ::google::protobuf::Message;
+
  public:
   inline CodeGeneratorRequest() : CodeGeneratorRequest(nullptr) {}
   ~CodeGeneratorRequest() PROTOBUF_FINAL;
@@ -1038,11 +1018,11 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CodeGeneratorRequest 
 
   [[nodiscard]] CodeGeneratorRequest* PROTOBUF_NONNULL
   New(::google::protobuf::Arena* PROTOBUF_NULLABLE arena = nullptr) const {
-    return ::google::protobuf::Message::DefaultConstruct<CodeGeneratorRequest>(arena);
+    return Super_::DefaultConstruct<CodeGeneratorRequest>(arena);
   }
-  using ::google::protobuf::Message::CopyFrom;
+  using Super_::CopyFrom;
   void CopyFrom(const CodeGeneratorRequest& from);
-  using ::google::protobuf::Message::MergeFrom;
+  using Super_::MergeFrom;
   void MergeFrom(const CodeGeneratorRequest& from) { CodeGeneratorRequest::MergeImpl(*this, from); }
 
   private:
@@ -1088,8 +1068,6 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CodeGeneratorRequest 
   static void SharedDtor(MessageLite& self);
   void InternalSwap(CodeGeneratorRequest* PROTOBUF_NONNULL other);
  private:
-  template <typename T>
-  friend ::absl::string_view(::google::protobuf::internal::GetAnyMessageName)();
   static ::absl::string_view FullMessageName() { return "google.protobuf.compiler.CodeGeneratorRequest"; }
 
   explicit CodeGeneratorRequest(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
@@ -1122,8 +1100,7 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CodeGeneratorRequest 
     kSourceFileDescriptorsFieldNumber = 17,
   };
   // repeated string file_to_generate = 1;
-  [[nodiscard]] int file_to_generate_size()
-      const;
+  [[nodiscard]] int file_to_generate_size() const;
   private:
   int _internal_file_to_generate_size() const;
 
@@ -1149,8 +1126,7 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CodeGeneratorRequest 
 
   public:
   // repeated .google.protobuf.FileDescriptorProto proto_file = 15;
-  [[nodiscard]] int proto_file_size()
-      const;
+  [[nodiscard]] int proto_file_size() const;
   private:
   int _internal_proto_file_size() const;
 
@@ -1170,8 +1146,7 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CodeGeneratorRequest 
 
   public:
   // optional string parameter = 2;
-  [[nodiscard]] bool has_parameter()
-      const;
+  [[nodiscard]] bool has_parameter() const;
   void clear_parameter() ;
   [[nodiscard]] const ::std::string& parameter() const;
   template <typename Arg_ = const ::std::string&, typename... Args_>
@@ -1187,8 +1162,7 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CodeGeneratorRequest 
 
   public:
   // optional .google.protobuf.compiler.Version compiler_version = 3;
-  [[nodiscard]] bool has_compiler_version()
-      const;
+  [[nodiscard]] bool has_compiler_version() const;
   void clear_compiler_version() ;
   [[nodiscard]] const ::google::protobuf::compiler::Version& compiler_version() const;
   [[nodiscard]] ::google::protobuf::compiler::Version* PROTOBUF_NULLABLE release_compiler_version();
@@ -1203,8 +1177,7 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CodeGeneratorRequest 
 
   public:
   // repeated .google.protobuf.FileDescriptorProto source_file_descriptors = 17;
-  [[nodiscard]] int source_file_descriptors_size()
-      const;
+  [[nodiscard]] int source_file_descriptors_size() const;
   private:
   int _internal_source_file_descriptors_size() const;
 
@@ -1744,7 +1717,7 @@ inline ::google::protobuf::compiler::Version* PROTOBUF_NULLABLE CodeGeneratorReq
 inline ::google::protobuf::compiler::Version* PROTOBUF_NONNULL CodeGeneratorRequest::_internal_mutable_compiler_version() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   if (_impl_.compiler_version_ == nullptr) {
-    auto* p = ::google::protobuf::Message::DefaultConstruct<::google::protobuf::compiler::Version>(GetArena());
+    auto* p = Super_::DefaultConstruct<::google::protobuf::compiler::Version>(GetArena());
     _impl_.compiler_version_ = reinterpret_cast<::google::protobuf::compiler::Version*>(p);
   }
   return _impl_.compiler_version_;
@@ -2045,7 +2018,7 @@ inline ::google::protobuf::GeneratedCodeInfo* PROTOBUF_NULLABLE CodeGeneratorRes
 inline ::google::protobuf::GeneratedCodeInfo* PROTOBUF_NONNULL CodeGeneratorResponse_File::_internal_mutable_generated_code_info() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   if (_impl_.generated_code_info_ == nullptr) {
-    auto* p = ::google::protobuf::Message::DefaultConstruct<::google::protobuf::GeneratedCodeInfo>(GetArena());
+    auto* p = Super_::DefaultConstruct<::google::protobuf::GeneratedCodeInfo>(GetArena());
     _impl_.generated_code_info_ = reinterpret_cast<::google::protobuf::GeneratedCodeInfo*>(p);
   }
   return _impl_.generated_code_info_;

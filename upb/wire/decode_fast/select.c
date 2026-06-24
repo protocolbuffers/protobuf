@@ -103,8 +103,13 @@ static bool upb_DecodeFast_GetFieldType(const upb_MiniTable* m,
   //  - kUpb_FieldType_Enum -> kUpb_FieldType_Int32 if the enum is open.
   upb_FieldType type = field->UPB_PRIVATE(descriptortype);
 
-  if (type == kUpb_FieldType_Group || upb_MiniTableField_IsClosedEnum(field)) {
+  if (type == kUpb_FieldType_Group) {
     return false;  // Currently not supported.
+  }
+
+  if (upb_MiniTableField_IsClosedEnum(field)) {
+    *out_type = kUpb_DecodeFast_ClosedEnum;
+    return true;
   }
 
   static const int8_t types[] = {
@@ -169,24 +174,47 @@ static bool upb_DecodeFast_GetFunctionData(const upb_MiniTable* m,
       upb_MiniTableField_IsInOneof(field)
           ? UPB_PRIVATE(_upb_MiniTableField_OneofOffset)(field)
           : 0;
-  uint64_t field_index = upb_MiniTableField_IsSubMessage(field)
-                             ? field - m->UPB_PRIVATE(fields)
-                             : 0;
+  uint64_t subofs = 0;
+  if (upb_MiniTableField_IsSubMessage(field) ||
+      upb_MiniTableField_IsClosedEnum(field)) {
+    uint64_t idx = field - m->UPB_PRIVATE(fields);
+    // Here we rely on the fact that sizeof(upb_MiniTableField) is the same on
+    // both 32 and 64 bit; if it wasn't, we could generate a bad offset if we
+    // compiled on a 32 bit machine targetting a 64 bit one.
+    UPB_STATIC_ASSERT(sizeof(upb_MiniTableField) % kUpb_SubmsgOffsetBytes == 0,
+                      "upb_MiniTableField must be a multiple of the offset");
+    uint64_t ofs_4byte =
+        idx * (sizeof(upb_MiniTableField) / kUpb_SubmsgOffsetBytes) +
+        field->UPB_PRIVATE(submsg_ofs);
+    // Fasttable is only supported on 64-bit platforms where pointers and the
+    // submessage entries (upb_MiniTableSubInternal) are 8 bytes, requiring
+    // 8-byte alignment. Since the base fields array is aligned to pointer size
+    // (at least 8 bytes), and each submessage entry must be 8-byte aligned,
+    // the total byte offset (4 * ofs_4byte) from the start of the fields array
+    // to the submessage entry is guaranteed to be a multiple of 8.
+    // Consequently, ofs_4byte is guaranteed to be even, and thus this offset
+    // can be scaled by 8 when loading.
+    UPB_ASSERT(ofs_4byte % 2 == 0);
+    subofs = ofs_4byte / 2;
+  }
 
   uint64_t presence;
 
   return upb_DecodeFast_GetPresence(field, &presence) &&
-         upb_DecodeFast_MakeData(offset, case_offset, presence, field_index,
-                                 tag, out_data);
+         upb_DecodeFast_MakeData(offset, case_offset, presence, subofs, tag,
+                                 out_data);
 }
 
 static bool upb_DecodeFast_TryFillEntry(const upb_MiniTable* m,
                                         const upb_MiniTableField* field,
+                                        bool* out_supported_tag_size,
                                         upb_DecodeFast_TableEntry* entry) {
   UPB_ASSERT(!upb_MiniTableField_IsExtension(field));
   uint16_t tag;
   upb_DecodeFast_TagSize tag_size;
-  return upb_DecodeFast_GetEncodedTag(field, &tag, &tag_size) &&
+  *out_supported_tag_size =
+      upb_DecodeFast_GetEncodedTag(field, &tag, &tag_size);
+  return *out_supported_tag_size &&
          upb_DecodeFast_GetFunctionIndex(m, field, tag_size,
                                          &entry->function_idx) &&
          UPB_DECODEFAST_ISENABLED(
@@ -205,19 +233,65 @@ int upb_DecodeFast_BuildTable(const upb_MiniTable* m,
     table[i].function_data = 0;
   }
 
+  // Fasttable only handles fields with tag size of 1 or 2 bytes. If all known
+  // fields with such tag sizes have supported field types, we can short circuit
+  // slot misses to unknown field handling
+  bool all_supported_tag_size_fields_compatible_with_fast_decode = true;
+
+  // If, in addition, all handled fields are assigned unique slots, then we can
+  // short circuit slot collision to unknown field handling as well.
+  bool all_fields_assigned_unique_slots = true;
+
   int max = 0;
   for (size_t i = 0, n = upb_MiniTable_FieldCount(m); i < n; i++) {
     const upb_MiniTableField* field = upb_MiniTable_GetFieldByIndex(m, i);
+    bool supported_tag_size;
     upb_DecodeFast_TableEntry entry;
-    if (!upb_DecodeFast_TryFillEntry(m, field, &entry)) continue;
+    if (!upb_DecodeFast_TryFillEntry(m, field, &supported_tag_size, &entry)) {
+      if (supported_tag_size) {
+        // Check if this tag collides
+        all_supported_tag_size_fields_compatible_with_fast_decode = false;
+      }
+      continue;
+    }
     int slot = upb_DecodeFastData_GetTableSlot(entry.function_data);
     if (table[slot].function_idx == UINT32_MAX) {
       table[slot] = entry;
       max = UPB_MAX(max, slot);
+    } else {
+      all_fields_assigned_unique_slots = false;
     }
   }
 
-  return max == 0 ? 0 : upb_RoundUpToPowerOfTwo(max + 1);
+  int table_size = max == 0 ? 0 : upb_RoundUpToPowerOfTwo(max + 1);
+
+  // If the message is not extendable, we can swap the generic handler for a
+  // fast unknown field handler in remaining open slots.
+  // The fast unknown handler only covers 1/2 byte tags and falls back for >2
+  // bytes; thus, we do not need to check for total exhaustiveness in field
+  // coverage, only for 1/2 byte tags.
+  const bool non_extendable =
+      UPB_PRIVATE(_upb_MiniTable_ExtModeBase)(m) == kUpb_ExtMode_NonExtendable;
+  if (all_supported_tag_size_fields_compatible_with_fast_decode &&
+      (non_extendable ||
+       UPB_PRIVATE(_upb_MiniTable_ExtModeBase)(m) == kUpb_ExtMode_Extendable)) {
+    uint32_t fast_handler_idx = non_extendable
+                                    ? kUpb_DecodeFast_Unknown
+                                    : kUpb_DecodeFast_ExtensionOrUnknown;
+    for (int i = 0; i < table_size; i++) {
+      if (table[i].function_idx == UINT32_MAX) {
+        table[i].function_idx = fast_handler_idx;
+        table[i].function_data = 0;
+      }
+    }
+    // Also override generic fallback if all fields are assigned unique slots.
+    if (all_fields_assigned_unique_slots) {
+      ((upb_MiniTable*)m)->UPB_PRIVATE(ext) |=
+          kUpb_ExtMode_AllFastFieldsAssigned;
+    }
+  }
+
+  return table_size;
 }
 
 uint8_t upb_DecodeFast_GetTableMask(int table_size) {
@@ -237,6 +311,12 @@ const char* upb_DecodeFast_GetFunctionName(uint32_t function_idx) {
 #undef FUNCSTR
 
   if (function_idx == UINT32_MAX) return "_upb_FastDecoder_DecodeGeneric";
+  if (function_idx == kUpb_DecodeFast_Unknown) {
+    return "_upb_FastDecoder_DecodeUnknown";
+  }
+  if (function_idx == kUpb_DecodeFast_ExtensionOrUnknown) {
+    return "_upb_FastDecoder_DecodeExtensionOrUnknown";
+  }
   UPB_ASSERT(function_idx < UPB_ARRAY_SIZE(names));
   return names[function_idx];
 }

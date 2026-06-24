@@ -23,6 +23,7 @@
 #include "absl/strings/string_view.h"
 #include "absl/types/optional.h"
 #include "absl/types/span.h"
+#include "google/protobuf/compiler/cpp/field_layout.h"
 #include "google/protobuf/compiler/cpp/helpers.h"
 #include "google/protobuf/compiler/cpp/options.h"
 #include "google/protobuf/cpp_features.pb.h"
@@ -415,11 +416,11 @@ class FieldGenerator {
   // GeneratePrivateMembers().
   //
   // These go into the SharedCtor's aggregate initialization of the _impl_
-  // struct and must follow the syntax `decltype($field$){$default$}`.
+  // struct and must follow the syntax `decltype($field_$){$default$}`.
   // Does not include `:` or `,` separators. Default values should be specified
   // here when possible.
   //
-  // NOTE: We use `decltype($field$)` for both explicit construction and the
+  // NOTE: We use `decltype($field_$)` for both explicit construction and the
   // fact that it's self-documenting. Pre-C++17, copy elision isn't guaranteed
   // in aggregate initialization so a valid copy/move constructor must exist
   // (even though it's not used). Because of this, we need to comment out the
@@ -433,7 +434,7 @@ class FieldGenerator {
   // GeneratePrivateMembers().
   //
   // These go into the constexpr constructor's aggregate initialization of the
-  // _impl_ struct and must follow the syntax `/*decltype($field$)*/{}` (see
+  // _impl_ struct and must follow the syntax `/*decltype($field_$)*/{}` (see
   // above). Does not include `:` or `,` separators.
   void GenerateConstexprAggregateInitializer(io::Printer* p) const {
     auto vars = PushVarsForCall(p);
@@ -444,7 +445,7 @@ class FieldGenerator {
   // GeneratePrivateMembers().
   //
   // These go into the copy constructor's aggregate initialization of the _impl_
-  // struct and must follow the syntax `decltype($field$){from.$field$}` (see
+  // struct and must follow the syntax `decltype($field_$){from.$field_$}` (see
   // above). Does not include `:` or `,` separators.
   void GenerateCopyAggregateInitializer(io::Printer* p) const {
     auto vars = PushVarsForCall(p);
@@ -505,7 +506,7 @@ class FieldGeneratorTable {
   FieldGeneratorTable(const FieldGeneratorTable&) = delete;
   FieldGeneratorTable& operator=(const FieldGeneratorTable&) = delete;
 
-  void Build(const Options& options, absl::Span<const int32_t> has_bit_indices);
+  void Build(const Options& options, const FieldLayout& field_layout);
 
   const FieldGenerator& get(const FieldDescriptor* field) const {
     ABSL_CHECK_EQ(field->containing_type(), descriptor_);

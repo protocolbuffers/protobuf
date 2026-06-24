@@ -8,6 +8,9 @@
 #ifndef PYUPB_REPEATED_H__
 #define PYUPB_REPEATED_H__
 
+// clang-format off
+#include "Python.h"
+// chang-format on
 #include <stdbool.h>
 
 #include "python/protobuf.h"
@@ -34,8 +37,11 @@ upb_Array* PyUpb_RepeatedContainer_Reify(PyObject* self, upb_Array* arr,
                                          PyUpb_WeakMap* subobj_map,
                                          intptr_t iter);
 
-// Reifies this repeated object if it is not already reified.
-upb_Array* PyUpb_RepeatedContainer_EnsureReified(PyObject* self);
+// Reifies this repeated object if it is not already reified, and ensures it is
+// mutable. If the parent message (for stubs) or the repeated array itself (for
+// reified arrays) is frozen, this function will set a Python TypeError and
+// return NULL.
+upb_Array* PyUpb_RepeatedContainer_AssureWritable(PyObject* self);
 
 // Implements repeated_field.extend(iterable).  `_self` must be a repeated
 // field (either repeated composite or repeated scalar).
