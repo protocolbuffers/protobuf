@@ -19,6 +19,7 @@ from __future__ import print_function
 
 import os
 import re
+import runpy
 import sys
 import textwrap
 
@@ -152,7 +153,9 @@ def GetDict(obj):
 
 # We take the MODULE path as a command-line argument to ensure that we can find
 # it regardless of how exactly Bazel was invoked.
-exec(open(sys.argv[1]).read(), GetDict(ModuleFileFunctions(converter)))
+namespace = GetDict(ModuleFileFunctions(converter))
+namespace['__builtins__'] = {}
+runpy.run_path(sys.argv[1], init_globals=namespace)
 
 with open(sys.argv[2], "w") as f:
   f.write(converter.convert())
