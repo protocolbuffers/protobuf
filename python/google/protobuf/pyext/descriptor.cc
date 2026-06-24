@@ -644,7 +644,10 @@ static PyObject* GetExtensionRanges(PyBaseDescriptor* self, void* closure) {
     const Descriptor::ExtensionRange* range = descriptor->extension_range(i);
     PyObject* start = PyLong_FromLong(range->start_number());
     PyObject* end = PyLong_FromLong(range->end_number());
-    PyList_SetItem(range_list, i, PyTuple_Pack(2, start, end));
+    PyObject* tuple = PyTuple_Pack(2, start, end);
+    Py_DECREF(start);
+    Py_DECREF(end);
+    PyList_SetItem(range_list, i, tuple);
   }
 
   return range_list;
