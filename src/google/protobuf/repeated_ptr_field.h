@@ -331,6 +331,11 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
     }
   }
 
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+  // Specialized destructor routine for repeated message objects.
+  void DestroyMessageLites(const ClassData* class_data);
+#endif  // PROTOBUF_CUSTOM_VTABLE
+
   inline bool NeedsDestroy() const {
     // Either there is an allocated element in SSO buffer or there is an
     // allocated Rep.
@@ -1231,20 +1236,22 @@ class ABSL_ATTRIBUTE_WARN_UNUSED RepeatedPtrField final
       : RepeatedPtrField(offset) {}
   PROTOBUF_ALWAYS_INLINE RepeatedPtrField(
       internal::InternalVisibility, internal::InternalMetadataOffset offset,
-      const RepeatedPtrField& rhs)
-      : RepeatedPtrField(offset, rhs) {}
+      Arena* arena, const RepeatedPtrField& rhs)
+      : RepeatedPtrField(offset, arena, rhs) {}
 
   template <typename Iter, typename = std::enable_if_t<std::is_constructible_v<
                                Element, decltype(*std::declval<Iter>())>>>
   RepeatedPtrField(Iter begin, Iter end);
 
   PROTOBUF_ALWAYS_INLINE RepeatedPtrField(const RepeatedPtrField& rhs)
-      : RepeatedPtrField(internal::InternalMetadataOffset(), rhs) {}
+      : RepeatedPtrField(internal::InternalMetadataOffset(), /*arena=*/nullptr,
+                         rhs) {}
   RepeatedPtrField& operator=(const RepeatedPtrField& other)
       ABSL_ATTRIBUTE_LIFETIME_BOUND;
 
   PROTOBUF_ALWAYS_INLINE RepeatedPtrField(RepeatedPtrField&& rhs) noexcept
-      : RepeatedPtrField(internal::InternalMetadataOffset(), std::move(rhs)) {}
+      : RepeatedPtrField(internal::InternalMetadataOffset(), /*arena=*/nullptr,
+                         std::move(rhs)) {}
   RepeatedPtrField& operator=(RepeatedPtrField&& other) noexcept
       ABSL_ATTRIBUTE_LIFETIME_BOUND;
 
@@ -1569,9 +1576,9 @@ class ABSL_ATTRIBUTE_WARN_UNUSED RepeatedPtrField final
   using TypeHandler = internal::GenericTypeHandler<Element>;
 
   constexpr explicit RepeatedPtrField(internal::InternalMetadataOffset offset);
-  RepeatedPtrField(internal::InternalMetadataOffset offset,
+  RepeatedPtrField(internal::InternalMetadataOffset offset, Arena* arena,
                    const RepeatedPtrField& rhs);
-  RepeatedPtrField(internal::InternalMetadataOffset offset,
+  RepeatedPtrField(internal::InternalMetadataOffset offset, Arena* arena,
                    RepeatedPtrField&& rhs);
 
 
@@ -1625,10 +1632,13 @@ constexpr PROTOBUF_ALWAYS_INLINE RepeatedPtrField<Element>::RepeatedPtrField(
 
 template <typename Element>
 PROTOBUF_ALWAYS_INLINE RepeatedPtrField<Element>::RepeatedPtrField(
-    internal::InternalMetadataOffset offset, const RepeatedPtrField& rhs)
+    internal::InternalMetadataOffset offset, Arena* arena,
+    const RepeatedPtrField& rhs)
     : RepeatedPtrFieldBase(offset) {
   StaticValidityCheck();
-  MergeFrom(rhs);
+  ABSL_DCHECK_EQ(arena, GetArena());
+  if (rhs.empty()) return;
+  RepeatedPtrFieldBase::MergeFrom<Element>(rhs, arena);
 }
 
 template <typename Element>
@@ -1644,7 +1654,16 @@ RepeatedPtrField<Element>::~RepeatedPtrField() {
   StaticValidityCheck();
   if (!NeedsDestroy()) return;
   if constexpr (std::is_base_of_v<MessageLite, Element>) {
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+    if constexpr (std::is_same_v<Element, MessageLite> ||
+                  std::is_same_v<Element, Message>) {
+      DestroyProtos();
+    } else {
+      DestroyMessageLites(internal::MessageTraits<Element>::class_data());
+    }
+#else
     DestroyProtos();
+#endif
   } else {
     Destroy<TypeHandler>();
   }
@@ -1682,11 +1701,12 @@ inline RepeatedPtrField<Element>& RepeatedPtrField<Element>::operator=(
 
 template <typename Element>
 inline RepeatedPtrField<Element>::RepeatedPtrField(
-    internal::InternalMetadataOffset offset, RepeatedPtrField&& rhs)
+    internal::InternalMetadataOffset offset, Arena* arena,
+    RepeatedPtrField&& rhs)
     : RepeatedPtrFieldBase(offset) {
+  ABSL_DCHECK_EQ(arena, GetArena());
   // We don't just call Swap(&rhs) here because it would perform 3 copies if rhs
   // is on a different arena.
-  Arena* arena = GetArena();
   if (internal::CanMoveWithInternalSwap(arena, rhs.GetArena())) {
     InternalSwap(&rhs);
   } else {

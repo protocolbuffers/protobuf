@@ -21,13 +21,6 @@
 #include <stdint.h>
 #include <string.h>
 
-#if defined(__SSE4_1__)
-#include <emmintrin.h>
-#include <smmintrin.h>
-#elif defined(__ARM_NEON) && defined(__ARM_64BIT_STATE)
-#include <arm_neon.h>
-#endif
-
 #if defined(__GNUC__)
 #define FORCE_INLINE_ATTR __attribute__((always_inline)) inline
 #elif defined(_MSC_VER)
@@ -166,20 +159,6 @@ static inline int utf8_range_CodepointSkipBackwards(int32_t codepoint_word) {
  */
 static inline const char* utf8_range_SkipAscii(const char* data,
                                                const char* end) {
-#if defined(__SSE4_1__)
-  __m128i mask = _mm_set1_epi8((char)0x80);
-  while (16 <= end - data) {
-    __m128i v = _mm_loadu_si128((const __m128i*)data);
-    if (!_mm_testz_si128(v, mask)) break;
-    data += 16;
-  }
-#elif defined(__ARM_NEON) && defined(__ARM_64BIT_STATE)
-  while (16 <= end - data) {
-    uint8x16_t v = vld1q_u8((const uint8_t*)data);
-    if (vmaxvq_u8(v) >= 0x80) break;
-    data += 16;
-  }
-#endif
   while (8 <= end - data &&
          (utf8_range_UnalignedLoad64(data) & 0x8080808080808080) == 0) {
     data += 8;

@@ -41,7 +41,8 @@ class NamePart extends \Google\Protobuf\Internal\Message
      *     @type bool $is_extension
      * }
      */
-    public function __construct($data = NULL) {
+    public function __construct($data = null)
+    {
         \GPBMetadata\Google\Protobuf\Internal\Descriptor::initOnce();
         parent::__construct($data);
     }

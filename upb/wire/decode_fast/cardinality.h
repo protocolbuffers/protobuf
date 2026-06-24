@@ -436,6 +436,24 @@ bool upb_DecodeFast_Unpacked(upb_Decoder* d, const char** ptr, upb_Message* msg,
   return true;
 }
 
+// Decoding for varint sizes of len > 2.
+UPB_FORCEINLINE bool _upb_DecodeFast_DecodeSizeSlow(const char** pp,
+                                                    int* size) {
+  const char* ptr = *pp;
+  uint32_t val = (ptr[0] & 0x7f) | ((ptr[1] & 0x7f) << 7);
+  for (int i = 2; i < 5; i++) {
+    uint32_t byte = (uint8_t)ptr[i];
+    val |= (byte & 0x7f) << (i * 7);
+    if (!(byte & 0x80)) {
+      if (UPB_UNLIKELY(val > INT32_MAX)) return false;
+      *pp = ptr + i + 1;
+      *size = val;
+      return true;
+    }
+  }
+  return false;
+}
+
 UPB_FORCEINLINE
 bool upb_DecodeFast_DecodeSize(upb_Decoder* d, const char** pp, int* size,
                                upb_DecodeFastNext* next) {
@@ -450,11 +468,11 @@ bool upb_DecodeFast_DecodeSize(upb_Decoder* d, const char** pp, int* size,
     return true;
   }
 
-  // We don't know if this is valid wire format or not, we didn't look at
-  // enough bytes to know if the varint is encoded overlong or the value
-  // is too large for the current message.  So we let the MiniTable decoder
-  // handle it.
-  return UPB_DECODEFAST_EXIT(kUpb_DecodeFastNext_FallbackToMiniTable, next);
+  if (UPB_LIKELY(_upb_DecodeFast_DecodeSizeSlow(pp, size))) {
+    return true;
+  }
+
+  return UPB_DECODEFAST_ERROR(d, kUpb_DecodeStatus_Malformed, next);
 }
 
 UPB_FORCEINLINE

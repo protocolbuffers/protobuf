@@ -796,7 +796,10 @@ static PyObject* PyUpb_RepeatedContainer_Pop(PyObject* _self, PyObject* args) {
   if (index < 0) index += size;
 #if PROTOBUF_PY_FUTURE_REMOVE_POP_CLAMP
 #else
-  if (index >= size) index = size - 1;
+  if (index >= size) {
+    PyErr_WarnEx(PyExc_FutureWarning, "pop index out of range", 1);
+    index = size - 1;
+  }
 #endif  // PROTOBUF_PY_FUTURE_REMOVE_POP_CLAMP
   PyObject* ret = PyUpb_RepeatedContainer_Item(_self, index);
   if (!ret) return NULL;

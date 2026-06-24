@@ -1058,8 +1058,8 @@ static VALUE Message_decode_json(int argc, VALUE* argv, VALUE klass) {
   const upb_DefPool* pool = upb_FileDef_Pool(upb_MessageDef_File(msg->msgdef));
 
   int result = upb_JsonDecodeDetectingNonconformance(
-      RSTRING_PTR(data), RSTRING_LEN(data), (upb_Message*)msg->msg,
-      msg->msgdef, pool, options, Arena_get(msg->arena), &status);
+      RSTRING_PTR(data), RSTRING_LEN(data), (upb_Message*)msg->msg, msg->msgdef,
+      pool, options, Arena_get(msg->arena), &status);
 
   switch (result) {
     case kUpb_JsonDecodeResult_Ok:

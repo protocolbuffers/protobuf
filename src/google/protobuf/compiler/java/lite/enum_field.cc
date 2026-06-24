@@ -631,10 +631,9 @@ void RepeatedImmutableEnumFieldLiteGenerator::GenerateMembers(
                                context_->options(), /* builder */ false,
                                /* kdoc */ false, /* is_private */ true);
   printer->Print(variables_,
-                 "@java.lang.SuppressWarnings(\"ReturnValueIgnored\")\n"
                  "private void set$capitalized_name$(\n"
                  "    int index, $type$ value) {\n"
-                 "  value.getClass();  // minimal bytecode null check\n"
+                 "  java.util.Objects.requireNonNull(value);\n"
                  "  ensure$capitalized_name$IsMutable();\n"
                  "  $name$_.setInt(index, value.getNumber());\n"
                  "}\n");
@@ -642,9 +641,8 @@ void RepeatedImmutableEnumFieldLiteGenerator::GenerateMembers(
                                context_->options(), /* builder */ false,
                                /* kdoc */ false, /* is_private */ true);
   printer->Print(variables_,
-                 "@java.lang.SuppressWarnings(\"ReturnValueIgnored\")\n"
                  "private void add$capitalized_name$($type$ value) {\n"
-                 "  value.getClass();  // minimal bytecode null check\n"
+                 "  java.util.Objects.requireNonNull(value);\n"
                  "  ensure$capitalized_name$IsMutable();\n"
                  "  $name$_.addInt(value.getNumber());\n"
                  "}\n");
