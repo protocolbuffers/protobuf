@@ -40,15 +40,6 @@
 
 #define PROTOBUF_INTERNAL_EXPORT_google_2fprotobuf_2fcompiler_2fjava_2fjava_5ffeatures_2eproto PROTOC_EXPORT
 
-namespace google {
-namespace protobuf {
-namespace internal {
-template <typename T>
-::absl::string_view GetAnyMessageName();
-}  // namespace internal
-}  // namespace protobuf
-}  // namespace google
-
 // Internal implementation detail -- do not use these members.
 struct PROTOC_EXPORT TableStruct_google_2fprotobuf_2fcompiler_2fjava_2fjava_5ffeatures_2eproto {
   static const ::uint32_t offsets[];
@@ -182,6 +173,8 @@ using ::google::protobuf::internal::generated_enum::AbslUnparseFlag;
 
 class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED JavaFeatures_NestInFileClassFeature final : public ::google::protobuf::internal::ZeroFieldsBase
 /* @@protoc_insertion_point(class_definition:pb.JavaFeatures.NestInFileClassFeature) */ {
+  using Super_ = ::google::protobuf::internal::ZeroFieldsBase;
+
  public:
   inline JavaFeatures_NestInFileClassFeature() : JavaFeatures_NestInFileClassFeature(nullptr) {}
 
@@ -255,20 +248,18 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED JavaFeatures_NestInFi
 
   [[nodiscard]] JavaFeatures_NestInFileClassFeature* PROTOBUF_NONNULL
   New(::google::protobuf::Arena* PROTOBUF_NULLABLE arena = nullptr) const {
-    return ::google::protobuf::internal::ZeroFieldsBase::DefaultConstruct<JavaFeatures_NestInFileClassFeature>(arena);
+    return Super_::DefaultConstruct<JavaFeatures_NestInFileClassFeature>(arena);
   }
-  using ::google::protobuf::internal::ZeroFieldsBase::CopyFrom;
-  inline void CopyFrom(const JavaFeatures_NestInFileClassFeature& from) { ::google::protobuf::internal::ZeroFieldsBase::CopyImpl(*this, from); }
-  using ::google::protobuf::internal::ZeroFieldsBase::MergeFrom;
-  void MergeFrom(const JavaFeatures_NestInFileClassFeature& from) { ::google::protobuf::internal::ZeroFieldsBase::MergeImpl(*this, from); }
+  using Super_::CopyFrom;
+  inline void CopyFrom(const JavaFeatures_NestInFileClassFeature& from) { Super_::CopyImpl(*this, from); }
+  using Super_::MergeFrom;
+  void MergeFrom(const JavaFeatures_NestInFileClassFeature& from) { Super_::MergeImpl(*this, from); }
 
   public:
   [[nodiscard]] bool IsInitialized() const {
     return true;
   }
  private:
-  template <typename T>
-  friend ::absl::string_view(::google::protobuf::internal::GetAnyMessageName)();
   static ::absl::string_view FullMessageName() { return "pb.JavaFeatures.NestInFileClassFeature"; }
 
   explicit JavaFeatures_NestInFileClassFeature(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
@@ -342,6 +333,8 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED JavaFeatures_NestInFi
 
 class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED JavaFeatures final : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:pb.JavaFeatures) */ {
+  using Super_ = ::google::protobuf::Message;
+
  public:
   inline JavaFeatures() : JavaFeatures(nullptr) {}
   ~JavaFeatures() PROTOBUF_FINAL;
@@ -416,11 +409,11 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED JavaFeatures final : 
 
   [[nodiscard]] JavaFeatures* PROTOBUF_NONNULL
   New(::google::protobuf::Arena* PROTOBUF_NULLABLE arena = nullptr) const {
-    return ::google::protobuf::Message::DefaultConstruct<JavaFeatures>(arena);
+    return Super_::DefaultConstruct<JavaFeatures>(arena);
   }
-  using ::google::protobuf::Message::CopyFrom;
+  using Super_::CopyFrom;
   void CopyFrom(const JavaFeatures& from);
-  using ::google::protobuf::Message::MergeFrom;
+  using Super_::MergeFrom;
   void MergeFrom(const JavaFeatures& from) { JavaFeatures::MergeImpl(*this, from); }
 
   private:
@@ -461,8 +454,6 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED JavaFeatures final : 
   static void SharedDtor(MessageLite& self);
   void InternalSwap(JavaFeatures* PROTOBUF_NONNULL other);
  private:
-  template <typename T>
-  friend ::absl::string_view(::google::protobuf::internal::GetAnyMessageName)();
   static ::absl::string_view FullMessageName() { return "pb.JavaFeatures"; }
 
   explicit JavaFeatures(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);

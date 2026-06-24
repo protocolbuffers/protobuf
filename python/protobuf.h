@@ -13,10 +13,13 @@
 // clang-format on
 #include <assert.h>
 #include <stdbool.h>
+#include <stddef.h>
+#include <stdint.h>
 
 #include "python/descriptor.h"
 #include "python/python_api.h"
 #include "upb/hash/int_table.h"
+#include "upb/mem/arena.h"
 #include "upb/reflection/def.h"
 
 #define PYUPB_PROTOBUF_PUBLIC_PACKAGE "google.protobuf"
@@ -70,6 +73,7 @@ typedef struct {
   PyObject* encode_error_class;
   PyObject* enum_type_wrapper_class;
   PyObject* message_class;
+  PyObject* frozen_instance_error_class;
   PyTypeObject* cmessage_type;
   PyTypeObject* message_meta_type;
   PyObject* listfields_item_key;
@@ -140,6 +144,12 @@ PyObject* PyUpb_WeakMap_Get(PyUpb_WeakMap* map, const void* key);
 // }
 //
 // Note that the callee does not own a ref on the returned `obj`.
+//
+// WARNING: The iterator will hold a lock on the weak map until the iteration
+// is complete. The caller must complete the iteration, otherwise the lock will
+// never be released. The only function that can be called on the weak map
+// during iteration is PyUpb_WeakMap_DeleteIter(), which will delete the
+// current item but not change the iterator.
 bool PyUpb_WeakMap_Next(PyUpb_WeakMap* map, const void** key, PyObject** obj,
                         intptr_t* iter);
 void PyUpb_WeakMap_DeleteIter(PyUpb_WeakMap* map, intptr_t* iter);
@@ -217,4 +227,12 @@ const char* PyUpb_VerifyStrData(PyObject* obj);
 // or descriptor sequence of size 'size'.
 bool PyUpb_IndexToRange(PyObject* index, Py_ssize_t size, Py_ssize_t* i,
                         Py_ssize_t* count, Py_ssize_t* step);
+
+// Sets a Python FrozenInstanceError with the default error message
+// ("Message is immutable.") and returns NULL.
+PyObject* PyUpb_SetFrozenError(void);
+// Sets a Python FrozenInstanceError with the given custom message and returns
+// NULL.
+PyObject* PyUpb_SetFrozenErrorWithMsg(const char* msg);
+
 #endif  // PYUPB_PROTOBUF_H__

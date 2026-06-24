@@ -355,21 +355,42 @@ Error, UINTPTR_MAX is undefined
 #endif
 
 #if defined(__GNUC__) || defined(__clang__)
-#define UPB_UNREACHABLE()    \
-  do {                       \
-    assert(0);               \
-    __builtin_unreachable(); \
+#define UPB_PRETTY_FUNCTION __PRETTY_FUNCTION__
+#else
+#define UPB_PRETTY_FUNCTION NULL
+#endif
+
+#ifdef __cplusplus
+    extern "C" {
+#endif
+  UPB_NORETURN void _upb_UnreachableFailure(const char* file, int line,
+                                            const char* function_name);
+#if !defined(NDEBUG)
+#define UPB_UNREACHABLE_FAILURE() \
+  _upb_UnreachableFailure(__FILE__, __LINE__, UPB_PRETTY_FUNCTION);
+#else
+#define UPB_UNREACHABLE_FAILURE()
+#endif
+#ifdef __cplusplus
+} /* extern "C" */
+#endif
+
+#if defined(__GNUC__) || defined(__clang__)
+#define UPB_UNREACHABLE()      \
+  do {                         \
+    UPB_UNREACHABLE_FAILURE(); \
+    __builtin_unreachable();   \
   } while (0)
 #elif defined(_MSC_VER)
-#define UPB_UNREACHABLE() \
-  do {                    \
-    assert(0);            \
-    __assume(0);          \
+#define UPB_UNREACHABLE()      \
+  do {                         \
+    UPB_UNREACHABLE_FAILURE(); \
+    __assume(0);               \
   } while (0)
 #else
-#define UPB_UNREACHABLE() \
-  do {                    \
-    assert(0);            \
+#define UPB_UNREACHABLE()      \
+  do {                         \
+    UPB_UNREACHABLE_FAILURE(); \
   } while (0)
 #endif
 
@@ -669,10 +690,10 @@ Error, UINTPTR_MAX is undefined
  * to prevent optimizers from removing the constructor. Our solution is to
  * create a dummy exported weak symbol that prevent this stripping.
  */
-#pragma section(".CRT$XCU", long, read)
+#pragma section(".CRT$XCT", read)
 #define UPB_CONSTRUCTOR(name, unique_name)                                   \
   static void __cdecl UPB_PRIVATE(name)(void);                               \
-  __declspec(allocate(".CRT$XCU"), selectany) void(                          \
+  __declspec(allocate(".CRT$XCT"), selectany) void(                          \
       __cdecl * UPB_PRIVATE(name##_))(void) = UPB_PRIVATE(name);             \
   __declspec(selectany, dllexport) void* UPB_PRIVATE(name##_force_linkage) = \
       &UPB_PRIVATE(name##_);                                                 \
@@ -716,7 +737,7 @@ Error, UINTPTR_MAX is undefined
   __asm__(".private_extern _" #to);      \
   __asm__(".set _" #to ", _" #from);
 
-#elif defined(__ELF__)
+#elif defined(__ELF__) || defined(__wasm__)
 
 // On ELF, weak aliases work properly, so we can have all weak MiniTables point
 // to the same empty singleton MiniTable. This reduces code size if many
@@ -745,33 +766,6 @@ Error, UINTPTR_MAX is undefined
 #define UPB_WEAK_ALIAS(type, from, to) weak_alias_not_supported_on_this_platform
 #define UPB_STRONG_ALIAS(type, from, to) \
   strong_alias_not_supported_on_this_platform
-#endif
-
-// Future versions of upb will include breaking changes to some APIs.
-// This macro can be set to enable these API changes ahead of time, so that
-// user code can be updated before upgrading versions of protobuf.
-#ifdef UPB_FUTURE_BREAKING_CHANGES
-
-// Removes non-standard clamping behavior in RepeatedContainer.pop()
-// Owner: runze@
-#define UPB_FUTURE_REMOVE_POP_CLAMP 1
-
-// Fix PyProto C++ and upb implementations to return NotImplemented in
-// descriptor container equality checks for unrecognized types.
-// Owner: runze@
-#define UPB_FUTURE_CONTAINER_EQ_RETURNS_NOTIMPLEMENTED 1
-
-// Make GetOptions() return immutable options.
-// Owner: runze@
-#define UPB_FUTURE_FREEZE_OPTIONS 1
-
-#else
-
-#define UPB_FUTURE_REMOVE_POP_CLAMP 0
-
-#define UPB_FUTURE_CONTAINER_EQ_RETURNS_NOTIMPLEMENTED 0
-
-#define UPB_FUTURE_FREEZE_OPTIONS 0
 
 #endif
 
@@ -1689,6 +1683,8 @@ UPB_INLINE bool upb_FieldType_IsPackable(upb_FieldType field_type) {
 extern "C" {
 #endif
 
+#define _UPB_ARRAY_DEFAULT_INITIAL_SIZE 4
+
 // LINT.IfChange(upb_Array)
 
 // Our internal representation for repeated fields.
@@ -2368,6 +2364,7 @@ upb_MiniTableField_Type(const upb_MiniTableField* f);
 
 #include <stddef.h>
 #include <stdint.h>
+#include <string.h>
 
 
 #ifndef UPB_MINI_TABLE_INTERNAL_SUB_H_
@@ -2530,6 +2527,34 @@ UPB_API_INLINE bool upb_MiniTable_IsMessageSet(const struct upb_MiniTable* m) {
          kUpb_ExtMode_IsMessageSet;
 }
 
+UPB_API_INLINE const struct upb_MiniTableField* upb_MiniTable_GetFieldByIndex(
+    const struct upb_MiniTable* m, uint32_t i) {
+  UPB_ASSERT(i < m->UPB_ONLYBITS(field_count));
+  return &m->UPB_ONLYBITS(fields)[i];
+}
+
+UPB_API_INLINE const struct upb_MiniTable* upb_MiniTable_GetSubMessageTable(
+    const struct upb_MiniTableField* f) {
+  UPB_ASSERT(upb_MiniTableField_CType(f) == kUpb_CType_Message);
+  upb_MiniTableSubInternal* sub =
+      UPB_PTR_AT(f, f->UPB_PRIVATE(submsg_ofs) * kUpb_SubmsgOffsetBytes,
+                 upb_MiniTableSubInternal);
+  return sub->UPB_PRIVATE(submsg);
+}
+
+UPB_API_INLINE const struct upb_MiniTable* upb_MiniTable_SubMessage(
+    const struct upb_MiniTableField* f) {
+  if (upb_MiniTableField_CType(f) != kUpb_CType_Message) {
+    return NULL;
+  }
+  return upb_MiniTable_GetSubMessageTable(f);
+}
+
+UPB_API_INLINE bool upb_MiniTable_FieldIsLinked(
+    const struct upb_MiniTableField* f) {
+  return upb_MiniTable_GetSubMessageTable(f) != NULL;
+}
+
 UPB_FORCEINLINE
 const struct upb_MiniTableField* UPB_PRIVATE(upb_MiniTable_GenericLowerBound)(
     const struct upb_MiniTable* m, uint32_t lo, uint32_t search_len,
@@ -2680,11 +2705,35 @@ const struct upb_MiniTableField* upb_MiniTable_FindFieldByNumber(
   return candidate->UPB_ONLYBITS(number) == number ? candidate : NULL;
 }
 
+UPB_FORCEINLINE bool UPB_PRIVATE(_upb_MiniTable_GapIfUnlinked)(
+    const struct upb_MiniTableField* field, uint32_t number,
+    uint32_t* out_gap_lo, uint32_t* out_gap_hi) {
+  UPB_STATIC_ASSERT(sizeof(upb_MiniTableSubInternal) == sizeof(void*),
+                    "SubInternal size must be pointer sized.");
+  if (field->UPB_PRIVATE(submsg_ofs) != kUpb_NoSub) {
+    upb_MiniTableSubInternal* sub = UPB_PTR_AT(
+        field, field->UPB_PRIVATE(submsg_ofs) * kUpb_SubmsgOffsetBytes,
+        upb_MiniTableSubInternal);
+    // Type punning via union is legal in C and we're just checking if it's NULL
+    // but it's UB in C++, and this header could be included in C++.
+    void* sub_ptr;
+    memcpy(&sub_ptr, sub, sizeof(void*));
+    if (sub_ptr == NULL) {
+      UPB_ASSERT(!upb_MiniTableField_IsClosedEnum(field));
+      *out_gap_lo = number - 1;
+      *out_gap_hi = number + 1;
+      return true;
+    }
+  }
+  return false;
+}
+
 // Given a tag number, finds the known field tags bounding the gap of unknown
-// fields containing it. Returns false and does not set bounds if the tag
-// number matches a known field. Otherwise returns true and sets out_gap_lo
-// and out_gap_hi (exclusive/exclusive) to define the range of unknown
-// fields (out_gap_lo, out_gap_hi).
+// fields containing it. Returns false and does not set bounds if the tag number
+// matches a known field and it is linked or primitive. Otherwise returns true
+// and sets out_gap_lo and out_gap_hi (exclusive/exclusive) to define the range
+// of unknown fields (out_gap_lo, out_gap_hi). Unlinked submessages are treated
+// as gaps.
 UPB_FORCEINLINE bool UPB_PRIVATE(_upb_MiniTable_FindUnknownGap)(
     const struct upb_MiniTable* m, uint32_t number, uint32_t* out_gap_lo,
     uint32_t* out_gap_hi) {
@@ -2693,7 +2742,8 @@ UPB_FORCEINLINE bool UPB_PRIVATE(_upb_MiniTable_FindUnknownGap)(
   const uint32_t i = number - 1;
   if (i < m->UPB_PRIVATE(dense_below)) {
     // Dense field; we know it's present.
-    return false;
+    return UPB_PRIVATE(_upb_MiniTable_GapIfUnlinked)(
+        &m->UPB_ONLYBITS(fields)[i], number, out_gap_lo, out_gap_hi);
   }
 
   uint32_t hi = m->UPB_ONLYBITS(field_count);
@@ -2717,7 +2767,8 @@ UPB_FORCEINLINE bool UPB_PRIVATE(_upb_MiniTable_FindUnknownGap)(
 
   uint32_t candidate_num = candidate->UPB_ONLYBITS(number);
   if (candidate_num == number) {
-    return false;
+    return UPB_PRIVATE(_upb_MiniTable_GapIfUnlinked)(candidate, number,
+                                                     out_gap_lo, out_gap_hi);
   }
 
   if (candidate_num < number) {
@@ -2731,34 +2782,6 @@ UPB_FORCEINLINE bool UPB_PRIVATE(_upb_MiniTable_FindUnknownGap)(
     *out_gap_hi = candidate_num;
   }
   return true;
-}
-
-UPB_API_INLINE const struct upb_MiniTableField* upb_MiniTable_GetFieldByIndex(
-    const struct upb_MiniTable* m, uint32_t i) {
-  UPB_ASSERT(i < m->UPB_ONLYBITS(field_count));
-  return &m->UPB_ONLYBITS(fields)[i];
-}
-
-UPB_API_INLINE const struct upb_MiniTable* upb_MiniTable_GetSubMessageTable(
-    const struct upb_MiniTableField* f) {
-  UPB_ASSERT(upb_MiniTableField_CType(f) == kUpb_CType_Message);
-  upb_MiniTableSubInternal* sub =
-      UPB_PTR_AT(f, f->UPB_PRIVATE(submsg_ofs) * kUpb_SubmsgOffsetBytes,
-                 upb_MiniTableSubInternal);
-  return sub->UPB_PRIVATE(submsg);
-}
-
-UPB_API_INLINE const struct upb_MiniTable* upb_MiniTable_SubMessage(
-    const struct upb_MiniTableField* f) {
-  if (upb_MiniTableField_CType(f) != kUpb_CType_Message) {
-    return NULL;
-  }
-  return upb_MiniTable_GetSubMessageTable(f);
-}
-
-UPB_API_INLINE bool upb_MiniTable_FieldIsLinked(
-    const struct upb_MiniTableField* f) {
-  return upb_MiniTable_GetSubMessageTable(f) != NULL;
 }
 
 UPB_API_INLINE const struct upb_MiniTable* upb_MiniTable_MapEntrySubMessage(
@@ -3704,6 +3727,12 @@ struct upb_MiniTableExtension {
   struct upb_MiniTableField UPB_PRIVATE(field);
 
   union upb_MiniTableSub UPB_PRIVATE(sub);  // NULL unless submsg or proto2 enum
+
+  // A known extendee schema for a canonical extension. For a non-canonical
+  // extension, it's typically converted from a canonical extension via the
+  // upb_Message_Convert() API, but is not registered on the extension
+  // registry of the target message when it gets converted. In this case, the
+  // `extendee` info is present on the source message before conversion.
   const struct upb_MiniTable* UPB_PRIVATE(extendee);
 };
 
@@ -3846,6 +3875,14 @@ UPB_NODISCARD upb_Extension* UPB_PRIVATE(_upb_Message_GetOrCreateExtension)(
     struct upb_Message* msg, const upb_MiniTableExtension* ext,
     upb_Arena* arena);
 
+// Adds the given non-canonical extension data to the given message.
+// |ext| is copied into the message instance.
+// This logically replaces any previously-added extension with this number.
+UPB_NODISCARD upb_Extension* UPB_PRIVATE(
+    _upb_Message_CreateNonCanonicalExtension)(struct upb_Message* msg,
+                                              const upb_MiniTableExtension* ext,
+                                              upb_Arena* arena);
+
 // Returns an extension for a message with a given mini table,
 // or NULL if no extension exists with this mini table.
 const upb_Extension* UPB_PRIVATE(_upb_Message_Getext)(
@@ -3899,15 +3936,27 @@ extern const double kUpb_NaN;
 // Internal members of a upb_Message that track unknown fields and/or
 // extensions. We can change this without breaking binary compatibility.
 
+// LINT.IfChange(tagged_aux_type)
 typedef struct upb_TaggedAuxPtr {
-  // Two lowest bits form a tag:
-  // 00 - non-aliased unknown data
-  // 10 - aliased unknown data
-  // 01 - extension
+  // Three lowest bits form a tag:
+  // 000 - non-aliased unknown data (upb_StringView*)
+  // 100 - aliased unknown data (upb_StringView*)
+  // 001 - non-canonical extension (upb_Extension*)
+  // 011 - canonical extension (upb_Extension*)
   //
-  // The main semantic difference between aliased and non-aliased unknown data
-  // is that non-aliased unknown data can be assumed to have the following
-  // layout:
+  // Bit 0 (lowest bit): Represents the data format in memory (1 for parsed
+  //   form, 0 for serialized form).
+  // Bit 1 (middle bit): Represents whether the data is semantically known or
+  //   not (1 for known, 0 for unknown).
+  // Bit 2 (highest bit): Aliased/Non-aliased (1 for aliased, 0 for
+  //   non-aliased).
+  //
+  // Following this tag structure, we can later use tag `010` for lazy
+  // extensions.
+  //
+  // The main semantic difference between aliased and non-aliased
+  // unknown data is that non-aliased unknown data can be assumed to have the
+  // following layout:
   //
   //   [upb_StringView] [data]
   //
@@ -3921,55 +3970,75 @@ typedef struct upb_TaggedAuxPtr {
   // For aliased unknown data, this layout is _not_ guaranteed, since the
   // pointer to the StringView can be anywhere in the allocation, and the
   // StringView may point to non-data memory.
+  //
+  // For a non-canonical extension, its schema is known but not
+  // the one expected by the message, so it should be treated like an unknown
+  // field, but is stored as an extension to lazily defer serialization.
   uintptr_t ptr;
 } upb_TaggedAuxPtr;
 
-UPB_INLINE bool upb_TaggedAuxPtr_IsExtension(upb_TaggedAuxPtr ptr) {
-  return ptr.ptr & 1;
+// If this returns true, then the entry is semantically known (but may be in
+// either parsed or unparsed form).
+UPB_INLINE bool upb_TaggedAuxPtr_IsSemanticallyKnown(upb_TaggedAuxPtr ptr) {
+  return (ptr.ptr & 0x2) != 0;
 }
 
-UPB_INLINE bool upb_TaggedAuxPtr_IsUnknown(upb_TaggedAuxPtr ptr) {
-  return (ptr.ptr != 0) && ((ptr.ptr & 1) == 0);
+UPB_INLINE bool upb_TaggedAuxPtr_IsCanonicalExtension(upb_TaggedAuxPtr ptr) {
+  return (ptr.ptr & 3) == 3;
+}
+
+UPB_INLINE bool upb_TaggedAuxPtr_IsNonCanonicalExtension(upb_TaggedAuxPtr ptr) {
+  return (ptr.ptr & 3) == 1;
+}
+
+// Returns true if the entry is aliased/non-aliased unknown data.
+UPB_INLINE bool upb_TaggedAuxPtr_IsUnknownStringView(upb_TaggedAuxPtr ptr) {
+  return (ptr.ptr != 0) && ((ptr.ptr & 3) == 0);
 }
 
 UPB_INLINE bool upb_TaggedAuxPtr_IsUnknownAliased(upb_TaggedAuxPtr ptr) {
-  return (ptr.ptr != 0) && ((ptr.ptr & 2) == 2);
+  return (ptr.ptr != 0) && ((ptr.ptr & 5) == 4);
 }
 
-UPB_INLINE upb_Extension* upb_TaggedAuxPtr_Extension(upb_TaggedAuxPtr ptr) {
-  UPB_ASSERT(upb_TaggedAuxPtr_IsExtension(ptr));
-  return (upb_Extension*)(ptr.ptr & ~3ULL);
+UPB_INLINE upb_Extension* upb_TaggedAuxPtr_CanonicalExtension(
+    upb_TaggedAuxPtr ptr) {
+  UPB_ASSERT(upb_TaggedAuxPtr_IsCanonicalExtension(ptr));
+  return (upb_Extension*)(ptr.ptr & ~7ULL);
 }
 
-UPB_INLINE upb_StringView* upb_TaggedAuxPtr_UnknownData(upb_TaggedAuxPtr ptr) {
-  UPB_ASSERT(!upb_TaggedAuxPtr_IsExtension(ptr));
-  return (upb_StringView*)(ptr.ptr & ~3ULL);
+UPB_INLINE upb_Extension* upb_TaggedAuxPtr_NonCanonicalExtension(
+    upb_TaggedAuxPtr ptr) {
+  UPB_ASSERT(upb_TaggedAuxPtr_IsNonCanonicalExtension(ptr));
+  return (upb_Extension*)(ptr.ptr & ~7ULL);
 }
+
+// Returns a pointer to the aliased or unaliased unknown upb_StringView* data.
+UPB_INLINE upb_StringView* upb_TaggedPtrAux_StringViewRepr(
+    upb_TaggedAuxPtr ptr) {
+  UPB_ASSERT(upb_TaggedAuxPtr_IsUnknownStringView(ptr));
+  return (upb_StringView*)(ptr.ptr & ~7ULL);
+}
+
+// LINT.ThenChange(//depot/google3/third_party/upb/bits/golang/message.go:tagged_aux_type)
 
 typedef enum {
-  kUpb_TaggedAuxType_Extension,
-  kUpb_TaggedAuxType_Unknown,
-  kUpb_TaggedAuxType_AliasedUnknown
+  kUpb_TaggedAuxType_Unknown = 0,                // tag 000
+  kUpb_TaggedAuxType_NonCanonicalExtension = 1,  // tag 001
+  kUpb_TaggedAuxType_CanonicalExtension = 3,     // tag 011
+  kUpb_TaggedAuxType_AliasedUnknown = 4          // tag 100
 } upb_TaggedAuxType;
 
 typedef union {
   upb_Extension* extension;
-  upb_StringView unknown_data;
+  const upb_StringView* unknown_data;
 } upb_TaggedAux;
 
 UPB_INLINE upb_TaggedAuxType upb_TaggedAux_Get(upb_TaggedAuxPtr ptr,
                                                upb_TaggedAux* data) {
-  if (upb_TaggedAuxPtr_IsExtension(ptr)) {
-    data->extension = upb_TaggedAuxPtr_Extension(ptr);
-    return kUpb_TaggedAuxType_Extension;
-  } else if (upb_TaggedAuxPtr_IsUnknownAliased(ptr)) {
-    data->unknown_data = *upb_TaggedAuxPtr_UnknownData(ptr);
-    return kUpb_TaggedAuxType_AliasedUnknown;
-  } else {
-    UPB_ASSERT(upb_TaggedAuxPtr_IsUnknown(ptr));
-    data->unknown_data = *upb_TaggedAuxPtr_UnknownData(ptr);
-    return kUpb_TaggedAuxType_Unknown;
-  }
+  uintptr_t untagged = ptr.ptr & ~7ULL;
+  UPB_ASSERT((untagged & 7) == 0);
+  memcpy(data, &untagged, sizeof(*data));
+  return (upb_TaggedAuxType)(ptr.ptr & 7);
 }
 
 UPB_INLINE upb_TaggedAuxPtr upb_TaggedAuxPtr_Null(void) {
@@ -3979,7 +4048,16 @@ UPB_INLINE upb_TaggedAuxPtr upb_TaggedAuxPtr_Null(void) {
 }
 
 UPB_INLINE upb_TaggedAuxPtr
-upb_TaggedAuxPtr_MakeExtension(const upb_Extension* e) {
+upb_TaggedAuxPtr_MakeCanonicalExtension(const upb_Extension* e) {
+  UPB_ASSERT(((uintptr_t)e & 7) == 0);
+  upb_TaggedAuxPtr ptr;
+  ptr.ptr = (uintptr_t)e | 3;
+  return ptr;
+}
+
+UPB_INLINE upb_TaggedAuxPtr
+upb_TaggedAuxPtr_MakeNonCanonicalExtension(const upb_Extension* e) {
+  UPB_ASSERT(((uintptr_t)e & 7) == 0);
   upb_TaggedAuxPtr ptr;
   ptr.ptr = (uintptr_t)e | 1;
   return ptr;
@@ -3990,6 +4068,7 @@ upb_TaggedAuxPtr_MakeExtension(const upb_Extension* e) {
 // view.
 UPB_INLINE upb_TaggedAuxPtr
 upb_TaggedAuxPtr_MakeUnknownData(const upb_StringView* sv) {
+  UPB_ASSERT(((uintptr_t)sv & 7) == 0);
   upb_TaggedAuxPtr ptr;
   ptr.ptr = (uintptr_t)sv;
   return ptr;
@@ -3999,8 +4078,9 @@ upb_TaggedAuxPtr_MakeUnknownData(const upb_StringView* sv) {
 // the data it points to.
 UPB_INLINE upb_TaggedAuxPtr
 upb_TaggedAuxPtr_MakeUnknownDataAliased(const upb_StringView* sv) {
+  UPB_ASSERT(((uintptr_t)sv & 7) == 0);
   upb_TaggedAuxPtr ptr;
-  ptr.ptr = (uintptr_t)sv | 2;
+  ptr.ptr = (uintptr_t)sv | 4;
   return ptr;
 }
 
@@ -4122,8 +4202,8 @@ UPB_NODISCARD UPB_INLINE bool UPB_PRIVATE(
   upb_Message_Internal* in = UPB_PRIVATE(_upb_Message_GetInternal)(msg);
   if (in && in->size) {
     upb_TaggedAuxPtr ptr = in->aux_data[in->size - 1];
-    if (upb_TaggedAuxPtr_IsUnknown(ptr)) {
-      upb_StringView* existing = upb_TaggedAuxPtr_UnknownData(ptr);
+    if (upb_TaggedAuxPtr_IsUnknownStringView(ptr)) {
+      upb_StringView* existing = upb_TaggedPtrAux_StringViewRepr(ptr);
       // Fast path if the field we're adding is immediately after the last
       // added unknown field.
       //
@@ -4186,8 +4266,8 @@ UPB_INLINE bool upb_Message_NextUnknown(const struct upb_Message* msg,
   if (in) {
     while (i < in->size) {
       upb_TaggedAuxPtr tagged_ptr = in->aux_data[i++];
-      if (upb_TaggedAuxPtr_IsUnknown(tagged_ptr)) {
-        *data = *upb_TaggedAuxPtr_UnknownData(tagged_ptr);
+      if (upb_TaggedAuxPtr_IsUnknownStringView(tagged_ptr)) {
+        *data = *upb_TaggedPtrAux_StringViewRepr(tagged_ptr);
         *iter = i;
         return true;
       }
@@ -4214,8 +4294,9 @@ UPB_INLINE bool upb_Message_NextExtension(const struct upb_Message* msg,
   if (in) {
     while (i < in->size) {
       upb_TaggedAuxPtr tagged_ptr = in->aux_data[i++];
-      if (upb_TaggedAuxPtr_IsExtension(tagged_ptr)) {
-        const upb_Extension* ext = upb_TaggedAuxPtr_Extension(tagged_ptr);
+      if (upb_TaggedAuxPtr_IsCanonicalExtension(tagged_ptr)) {
+        const upb_Extension* ext =
+            upb_TaggedAuxPtr_CanonicalExtension(tagged_ptr);
 
         // Empty repeated fields or maps semantically don't exist.
         if (UPB_PRIVATE(_upb_Extension_IsEmpty)(ext)) continue;
@@ -4242,10 +4323,10 @@ UPB_INLINE bool UPB_PRIVATE(_upb_Message_NextExtensionReverse)(
   while (i < size) {
     upb_TaggedAuxPtr tagged_ptr = in->aux_data[size - 1 - i];
     i++;
-    if (!upb_TaggedAuxPtr_IsExtension(tagged_ptr)) {
+    if (!upb_TaggedAuxPtr_IsCanonicalExtension(tagged_ptr)) {
       continue;
     }
-    const upb_Extension* ext = upb_TaggedAuxPtr_Extension(tagged_ptr);
+    const upb_Extension* ext = upb_TaggedAuxPtr_CanonicalExtension(tagged_ptr);
 
     // Empty repeated fields or maps semantically don't exist.
     if (UPB_PRIVATE(_upb_Extension_IsEmpty)(ext)) continue;
@@ -4380,6 +4461,7 @@ UPB_INLINE bool UPB_PRIVATE(_upb_Message_IsInitializedShallow)(
   return (UPB_PRIVATE(_upb_MiniTable_RequiredMask)(m) & ~bits) == 0;
 }
 
+// LINT.IfChange(message_raw_fields)
 UPB_INLINE void* UPB_PRIVATE(_upb_Message_MutableDataPtr)(
     struct upb_Message* msg, const upb_MiniTableField* f) {
   return (char*)msg + f->UPB_ONLYBITS(offset);
@@ -4418,6 +4500,7 @@ UPB_INLINE_IF_NOT_GCC void UPB_PRIVATE(_upb_MiniTableField_DataCopy)(
   }
   UPB_UNREACHABLE();
 }
+// LINT.ThenChange(//depot/google3/third_party/upb/bits/golang/message.go:message_raw_fields)
 
 UPB_INLINE_IF_NOT_GCC bool UPB_PRIVATE(_upb_MiniTableField_DataEquals)(
     const upb_MiniTableField* f, const void* a, const void* b) {
@@ -4568,6 +4651,19 @@ UPB_API_INLINE bool upb_Message_SetExtension(struct upb_Message* msg,
   return true;
 }
 
+UPB_API_INLINE bool UPB_PRIVATE(_upb_Message_SetNonCanonicalExtension)(
+    struct upb_Message* msg, const upb_MiniTableExtension* e, const void* val,
+    upb_Arena* a) {
+  UPB_ASSERT(!upb_Message_IsFrozen(msg));
+  UPB_ASSERT(a);
+  upb_Extension* ext =
+      UPB_PRIVATE(_upb_Message_CreateNonCanonicalExtension)(msg, e, a);
+  if (!ext) return false;
+  UPB_PRIVATE(_upb_MiniTableField_DataCopy)
+  (&e->UPB_PRIVATE(field), &ext->data, val);
+  return true;
+}
+
 // Sets the value of the given field in the given msg. The return value is true
 // if the operation completed successfully, or false if memory allocation
 // failed.
@@ -4696,7 +4792,8 @@ UPB_NODISCARD UPB_API_INLINE upb_Array* upb_Message_GetOrCreateMutableArray(
   upb_Array* array = upb_Message_GetMutableArray(msg, f);
   if (!array) {
     array = UPB_PRIVATE(_upb_Array_New)(
-        arena, 4, UPB_PRIVATE(_upb_MiniTableField_ElemSizeLg2)(f));
+        arena, _UPB_ARRAY_DEFAULT_INITIAL_SIZE,
+        UPB_PRIVATE(_upb_MiniTableField_ElemSizeLg2)(f));
     // Check again due to: https://godbolt.org/z/7WfaoKG1r
     UPB_PRIVATE(_upb_MiniTableField_CheckIsArray)(f);
     upb_MessageValue val;
@@ -5118,8 +5215,9 @@ UPB_API_INLINE void upb_Message_ClearExtension(
   if (!in) return;
   for (size_t i = 0; i < in->size; i++) {
     upb_TaggedAuxPtr tagged_ptr = in->aux_data[i];
-    if (upb_TaggedAuxPtr_IsExtension(tagged_ptr)) {
-      const upb_Extension* ext = upb_TaggedAuxPtr_Extension(tagged_ptr);
+    if (upb_TaggedAuxPtr_IsCanonicalExtension(tagged_ptr)) {
+      const upb_Extension* ext =
+          upb_TaggedAuxPtr_CanonicalExtension(tagged_ptr);
       if (ext->ext == e) {
         in->aux_data[i] = upb_TaggedAuxPtr_Null();
         return;
@@ -6338,6 +6436,78 @@ struct upb_GeneratedRegistryRef {
 #include <stdint.h>
 
 
+#ifndef GOOGLE_UPB_UPB_BASE_ERROR_HANDLER_H__
+#define GOOGLE_UPB_UPB_BASE_ERROR_HANDLER_H__
+
+#include <setjmp.h>
+
+// Must be last.
+
+// upb_ErrorHandler is a standard longjmp()-based exception handler for UPB.
+// It is used for efficient error handling in cases where longjmp() is safe to
+// use, such as in highly performance-sensitive C parsing code.
+//
+// This structure contains both a jmp_buf and an error code; the error code is
+// stored in the structure prior to calling longjmp(). This is necessary because
+// per the C standard, it is not possible to store the result of setjmp(), so
+// the error code must be passed out-of-band.
+//
+// upb_ErrorHandler is generally not C++-compatible, because longjmp() does not
+// run C++ destructors.  So any library that supports upb_ErrorHandler should
+// also support a regular return-based error handling mechanism. (Note: we
+// could conceivably extend this to take a callback, which could either call
+// longjmp() or throw a C++ exception. But since C++ exceptions are forbidden
+// by the C++ style guide, there's not likely to be a demand for this.)
+//
+// To support both cases (longjmp() or return-based status) efficiently, code
+// can be written like this:
+//
+//   UPB_ATTR_CONST bool upb_Arena_HasErrHandler(const upb_Arena* a);
+//
+//   INLINE void* upb_Arena_Malloc(upb_Arena* a, size_t size) {
+//     if (UPB_UNLIKELY(a->end - a->ptr < size)) {
+//         void* ret = upb_Arena_MallocFallback(a, size);
+//         UPB_MAYBE_ASSUME(upb_Arena_HasErrHandler(a), ret != NULL);
+//         return ret;
+//     }
+//     void* ret = a->ptr;
+//     a->ptr += size;
+//     UPB_ASSUME(ret != NULL);
+//     return ret;
+//   }
+//
+// If the optimizer can prove that an error handler is present, it can assume
+// that upb_Arena_Malloc() will not return NULL.
+
+// We need to standardize on any error code that might be thrown by an error
+// handler.
+
+typedef enum {
+  kUpb_ErrorCode_Ok = 0,
+  kUpb_ErrorCode_OutOfMemory = 1,
+  kUpb_ErrorCode_Malformed = 2,
+  kUpb_ErrorCode_MaxDepthExceeded = 3,
+} upb_ErrorCode;
+
+typedef struct {
+  int code;
+  jmp_buf buf;
+} upb_ErrorHandler;
+
+UPB_INLINE void upb_ErrorHandler_Init(upb_ErrorHandler* e) {
+  e->code = kUpb_ErrorCode_Ok;
+}
+
+UPB_INLINE UPB_NORETURN void upb_ErrorHandler_ThrowError(upb_ErrorHandler* e,
+                                                         int code) {
+  UPB_ASSERT(code != kUpb_ErrorCode_Ok);
+  e->code = code;
+  UPB_LONGJMP(e->buf, 1);
+}
+
+
+#endif  // GOOGLE_UPB_UPB_BASE_ERROR_HANDLER_H__
+
 // Must be last.
 
 #ifdef __cplusplus
@@ -6402,16 +6572,19 @@ UPB_INLINE int upb_Decode_LimitDepth(uint32_t decode_options, uint32_t limit) {
 
 // LINT.IfChange
 typedef enum {
-  kUpb_DecodeStatus_Ok = 0,
-  kUpb_DecodeStatus_OutOfMemory = 1,  // Arena alloc failed
-  kUpb_DecodeStatus_Malformed = 2,    // Wire format was corrupt
-  kUpb_DecodeStatus_BadUtf8 = 3,      // String field had bad UTF-8
+  kUpb_DecodeStatus_Ok = kUpb_ErrorCode_Ok,
+  kUpb_DecodeStatus_OutOfMemory =
+      kUpb_ErrorCode_OutOfMemory,  // Arena alloc failed
+  kUpb_DecodeStatus_Malformed =
+      kUpb_ErrorCode_Malformed,  // Wire format was corrupt
   kUpb_DecodeStatus_MaxDepthExceeded =
-      4,  // Exceeded upb_DecodeOptions_MaxDepth
+      kUpb_ErrorCode_MaxDepthExceeded,  // Exceeded upb_DecodeOptions_MaxDepth
+
+  kUpb_DecodeStatus_BadUtf8 = 10,  // String field had bad UTF-8
 
   // kUpb_DecodeOption_CheckRequired failed (see above), but the parse otherwise
   // succeeded.
-  kUpb_DecodeStatus_MissingRequired = 5,
+  kUpb_DecodeStatus_MissingRequired = 11,
 } upb_DecodeStatus;
 // LINT.ThenChange(//depot/google3/third_party/upb/rust/sys/wire/wire.rs:decode_status)
 
@@ -6497,16 +6670,16 @@ enum {
 
 // LINT.IfChange
 typedef enum {
-  kUpb_EncodeStatus_Ok = 0,
-  kUpb_EncodeStatus_OutOfMemory = 1,  // Arena alloc failed
-  kUpb_EncodeStatus_MaxDepthExceeded = 2,
-
+  kUpb_EncodeStatus_Ok = kUpb_ErrorCode_Ok,
+  kUpb_EncodeStatus_OutOfMemory =
+      kUpb_ErrorCode_OutOfMemory,  // Arena alloc failed
   // One or more required fields are missing. Only returned if
   // kUpb_EncodeOption_CheckRequired is set.
-  kUpb_EncodeStatus_MissingRequired = 3,
+  kUpb_EncodeStatus_MaxDepthExceeded = kUpb_ErrorCode_MaxDepthExceeded,
 
+  kUpb_EncodeStatus_MissingRequired = 10,
   // The message is larger than protobuf's 2GB size limit.
-  kUpb_EncodeStatus_MaxSizeExceeded = 4,
+  kUpb_EncodeStatus_MaxSizeExceeded = 11,
 } upb_EncodeStatus;
 // LINT.ThenChange(//depot/google3/third_party/upb/rust/sys/wire/wire.rs:encode_status)
 
@@ -16455,77 +16628,6 @@ bool UPB_PRIVATE(_upb_Message_NextBaseField)(const upb_Message* msg,
 #include <stdint.h>
 
 
-#ifndef GOOGLE_UPB_UPB_BASE_ERROR_HANDLER_H__
-#define GOOGLE_UPB_UPB_BASE_ERROR_HANDLER_H__
-
-#include <setjmp.h>
-
-// Must be last.
-
-// upb_ErrorHandler is a standard longjmp()-based exception handler for UPB.
-// It is used for efficient error handling in cases where longjmp() is safe to
-// use, such as in highly performance-sensitive C parsing code.
-//
-// This structure contains both a jmp_buf and an error code; the error code is
-// stored in the structure prior to calling longjmp(). This is necessary because
-// per the C standard, it is not possible to store the result of setjmp(), so
-// the error code must be passed out-of-band.
-//
-// upb_ErrorHandler is generally not C++-compatible, because longjmp() does not
-// run C++ destructors.  So any library that supports upb_ErrorHandler should
-// also support a regular return-based error handling mechanism. (Note: we
-// could conceivably extend this to take a callback, which could either call
-// longjmp() or throw a C++ exception. But since C++ exceptions are forbidden
-// by the C++ style guide, there's not likely to be a demand for this.)
-//
-// To support both cases (longjmp() or return-based status) efficiently, code
-// can be written like this:
-//
-//   UPB_ATTR_CONST bool upb_Arena_HasErrHandler(const upb_Arena* a);
-//
-//   INLINE void* upb_Arena_Malloc(upb_Arena* a, size_t size) {
-//     if (UPB_UNLIKELY(a->end - a->ptr < size)) {
-//         void* ret = upb_Arena_MallocFallback(a, size);
-//         UPB_MAYBE_ASSUME(upb_Arena_HasErrHandler(a), ret != NULL);
-//         return ret;
-//     }
-//     void* ret = a->ptr;
-//     a->ptr += size;
-//     UPB_ASSUME(ret != NULL);
-//     return ret;
-//   }
-//
-// If the optimizer can prove that an error handler is present, it can assume
-// that upb_Arena_Malloc() will not return NULL.
-
-// We need to standardize on any error code that might be thrown by an error
-// handler.
-
-typedef enum {
-  kUpb_ErrorCode_Ok = 0,
-  kUpb_ErrorCode_OutOfMemory = 1,
-  kUpb_ErrorCode_Malformed = 2,
-} upb_ErrorCode;
-
-typedef struct {
-  int code;
-  jmp_buf buf;
-} upb_ErrorHandler;
-
-UPB_INLINE void upb_ErrorHandler_Init(upb_ErrorHandler* e) {
-  e->code = kUpb_ErrorCode_Ok;
-}
-
-UPB_INLINE UPB_NORETURN void upb_ErrorHandler_ThrowError(upb_ErrorHandler* e,
-                                                         int code) {
-  UPB_ASSERT(code != kUpb_ErrorCode_Ok);
-  e->code = code;
-  UPB_LONGJMP(e->buf, 1);
-}
-
-
-#endif  // GOOGLE_UPB_UPB_BASE_ERROR_HANDLER_H__
-
 #ifndef UPB_WIRE_INTERNAL_EPS_COPY_INPUT_STREAM_H_
 #define UPB_WIRE_INTERNAL_EPS_COPY_INPUT_STREAM_H_
 
@@ -17173,8 +17275,14 @@ UPB_FORCEINLINE const char* upb_WireReader_ReadVarint(
 // by calling upb_EpsCopyInputStream_IsDone().
 UPB_INLINE const char* upb_WireReader_SkipVarint(
     const char* ptr, upb_EpsCopyInputStream* stream) {
-  uint64_t val;
-  return upb_WireReader_ReadVarint(ptr, &val, stream);
+  UPB_PRIVATE(upb_EpsCopyInputStream_ConsumeBytes)(stream, 10);
+  const char* bound = ptr + 10;
+  do {
+    if ((*(ptr++) & 0x80) == 0) {
+      return ptr;
+    }
+  } while (ptr != bound);
+  return UPB_PRIVATE(upb_EpsCopyInputStream_ReturnError)(stream);
 }
 
 // Reads a varint indicating the size of a delimited field into `size`, or
@@ -17762,12 +17870,8 @@ const void* _upb_DefType_Unpack(upb_value v, upb_deftype_t type);
 
 // We want to copy the options verbatim into the destination options proto.
 // We use serialize+parse as our deep copy.
-#if UPB_FUTURE_FREEZE_OPTIONS
 #define _UPB_FREEZE_OPTIONS(target, options_type) \
   upb_Message_Freeze((upb_Message*)target, UPB_DESC_MINITABLE(options_type))
-#else
-#define _UPB_FREEZE_OPTIONS(target, options_type)
-#endif
 
 #define UPB_DEF_SET_OPTIONS(target, desc_type, options_type, proto)        \
   if (google_protobuf_##desc_type##_has_options(proto)) {                           \
@@ -18536,6 +18640,22 @@ bool _upb_Decoder_VerifyUtf8Inline(const char* ptr, int len) {
   return utf8_range_IsValid(ptr, len);
 }
 
+UPB_INLINE void _upb_Decoder_VerifyOneofUnlinked(
+    const upb_MiniTable* mt, const upb_MiniTableField* field) {
+#ifndef NDEBUG
+  const upb_MiniTableField* oneof = upb_MiniTable_GetOneof(mt, field);
+  if (oneof) {
+    // All other members of the oneof must be message fields that are also
+    // unlinked.
+    do {
+      UPB_ASSERT(upb_MiniTableField_CType(oneof) == kUpb_CType_Message);
+      const upb_MiniTable* oneof_sub = upb_MiniTable_GetSubMessageTable(oneof);
+      UPB_ASSERT(!oneof_sub);
+    } while (upb_MiniTable_NextOneofField(mt, &oneof));
+  }
+#endif  // NDEBUG
+}
+
 const char* _upb_Decoder_CheckRequired(upb_Decoder* d, const char* ptr,
                                        const upb_Message* msg,
                                        const upb_MiniTable* m);
@@ -18853,6 +18973,8 @@ UPB_PRIVATE(upb_WireWriter_VarintUnusedSizeFromLeadingZeros64)(uint64_t clz) {
 #undef UPB_ASSUME
 #undef UPB_ASSERT
 #undef UPB_UNREACHABLE
+#undef UPB_UNREACHABLE_FAILURE
+#undef UPB_PRETTY_FUNCTION
 #undef UPB_DEFAULT_MAX_BLOCK_SIZE
 #undef UPB_SETJMP
 #undef UPB_LONGJMP
@@ -18886,10 +19008,6 @@ UPB_PRIVATE(upb_WireWriter_VarintUnusedSizeFromLeadingZeros64)(uint64_t clz) {
 #undef UPB_LINKARR_APPEND
 #undef UPB_LINKARR_START
 #undef UPB_LINKARR_STOP
-#undef UPB_FUTURE_BREAKING_CHANGES
-#undef UPB_FUTURE_REMOVE_POP_CLAMP
-#undef UPB_FUTURE_CONTAINER_EQ_RETURNS_NOTIMPLEMENTED
-#undef UPB_FUTURE_FREEZE_OPTIONS
 #undef UPB_HAS_ATTRIBUTE
 #undef UPB_HAS_CPP_ATTRIBUTE
 #undef UPB_HAS_BUILTIN

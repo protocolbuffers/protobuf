@@ -333,6 +333,44 @@ TEST(RepeatedFieldTest, RepeatedMessageFallback) {
   EXPECT_EQ(upb_Array_Size(arr), 2u);
 }
 
+TEST(RepeatedFieldTest, RepeatedMessageLongVarintSizeFastPath) {
+  char trace_buf[64];
+  Arena mt_arena;
+  Arena msg_arena;
+
+  auto [sub_mt, sub_field] =
+      test::MiniTable::MakeSingleFieldTable<test::field_types::Int32>(
+          1, kUpb_DecodeFast_Scalar, mt_arena.ptr());
+
+  auto [mt, field] =
+      test::MiniTable::MakeSingleFieldTable<test::field_types::Message>(
+          1, kUpb_DecodeFast_Repeated, mt_arena.ptr());
+
+  const upb_MiniTable* subs[1] = {sub_mt};
+  bool linked =
+      upb_MiniTable_Link(const_cast<upb_MiniTable*>(mt), subs, 1, nullptr, 0);
+  ASSERT_TRUE(linked);
+
+  upb_Message* msg = upb_Message_New(mt, msg_arena.ptr());
+
+  // Payload:
+  // Element 1: tag 1, len 2, int32 value 5
+  // Element 2: tag 1, len 2 (parsed as overlong 3-byte varint), int32 value 6
+  std::string payload("\x0a\x02\x08\x05\x0a\x82\x80\x00\x08\x06", 10);
+  upb_DecodeStatus result =
+      upb_DecodeWithTrace(payload.data(), payload.size(), msg, mt, nullptr, 0,
+                          msg_arena.ptr(), trace_buf, sizeof(trace_buf));
+
+  ASSERT_EQ(result, kUpb_DecodeStatus_Ok) << upb_DecodeStatus_String(result);
+#if !defined(NDEBUG)
+#if UPB_FASTTABLE
+  EXPECT_EQ(FilteredTrace(absl::string_view(trace_buf)), "DDFFDFF");
+#else
+  EXPECT_EQ(FilteredTrace(absl::string_view(trace_buf)), "MMMM");
+#endif
+#endif
+}
+
 TEST(RepeatedFieldTest, LongRepeatedField) {
   auto trace_buf = std::make_unique<std::array<char, 1024>>();
   using TypeParam = field_types::Fixed64;
@@ -469,6 +507,43 @@ TEST(DecodeTest, MaxDepthPayloadParsesSuccessfully) {
     EXPECT_EQ(result, kUpb_DecodeStatus_MaxDepthExceeded)
         << upb_DecodeStatus_String(result);
   }
+}
+
+TEST(DecodeTest, DecodeGroupFieldFromDelimitedWireFormatAsUnknown) {
+  upb::Arena mt_arena;
+  upb::Arena msg_arena;
+
+  // 1. Create Parent MiniTable containing a repeated Group field directly.
+  auto [parent_mt, parent_field] =
+      test::MiniTable::MakeSingleFieldTable<test::field_types::Group>(
+          5, kUpb_DecodeFast_Repeated, mt_arena.ptr());
+
+  // 2. Build length-delimited wire payload for Group field 5:
+  // Tag 5 Delimited = 42 (0x2a), length = 2, child field 1 = 123 ("\x08\x7b").
+  std::string payload("\x2a\x02\x08\x7b", 4);
+
+  // 3. Parse the payload into Parent Message.
+  upb_Message* parent_msg = upb_Message_New(parent_mt, msg_arena.ptr());
+  upb_DecodeStatus result =
+      upb_Decode(payload.data(), payload.size(), parent_msg, parent_mt, nullptr,
+                 0, msg_arena.ptr());
+
+  // 4. Verify parsing succeeded cleanly.
+  ASSERT_EQ(result, kUpb_DecodeStatus_Ok) << upb_DecodeStatus_String(result);
+
+  // 5. Verify repeated Group field 5 was NOT populated as a known field.
+  const upb_Array* arr = upb_Message_GetArray(parent_msg, parent_field);
+  EXPECT_EQ(arr, nullptr);
+
+  // 6. Verify the wire payload was instead preserved inside the Unknown field
+  // set.
+  EXPECT_TRUE(upb_Message_HasUnknown(parent_msg));
+
+  uintptr_t iter = kUpb_Message_UnknownBegin;
+  upb_StringView data;
+  ASSERT_TRUE(upb_Message_NextUnknown(parent_msg, &data, &iter));
+  EXPECT_EQ(absl::string_view(data.data, data.size), payload);
+  EXPECT_FALSE(upb_Message_NextUnknown(parent_msg, &data, &iter));
 }
 
 }  // namespace

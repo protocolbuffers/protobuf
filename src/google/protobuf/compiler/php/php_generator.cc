@@ -39,9 +39,9 @@ constexpr absl::string_view kDescriptorMetadataFile =
 constexpr absl::string_view kDescriptorPackageName =
     "Google\\Protobuf\\Internal";
 constexpr absl::string_view kValidConstantNames[] = {
-    "int",  "float", "bool",     "string", "true", "false",
-    "null", "void",  "iterable", "parent", "self", "readonly"};
-const int kValidConstantNamesSize = 12;
+    "int",      "float",  "bool", "string",   "true",   "false", "null", "void",
+    "iterable", "parent", "self", "readonly", "object", "mixed", "never"};
+const int kValidConstantNamesSize = 15;
 const int kFieldSetter = 1;
 const int kFieldGetter = 2;
 const int kFieldProperty = 3;
@@ -890,7 +890,7 @@ void GenerateFieldAccessor(const FieldDescriptor* field, const Options& options,
         "public function set^camel_name^Unwrapped($var)\n"
         "{\n"
         "    $this->writeWrapperValue(\"^field_name^\", $var);\n"
-        "    return $this;"
+        "    return $this;\n"
         "}\n\n",
         "camel_name", UnderscoresToCamelCase(field->name(), true), "field_name",
         field->name());
@@ -1482,7 +1482,7 @@ bool GenerateMessageFile(const FileDescriptor* file, const Descriptor* message,
   printer.Print("\n");
 
   GenerateMessageConstructorDocComment(&printer, message, options);
-  printer.Print("public function __construct($data = NULL) {\n");
+  printer.Print("public function __construct($data = null)\n{\n");
   Indent(&printer);
 
   std::string metadata_filename = GeneratedMetadataFileName(file, options);

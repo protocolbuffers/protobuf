@@ -452,8 +452,8 @@ public class LazyFieldLite {
         + computeSize(WireFormat.MESSAGE_SET_MESSAGE);
   }
 
-  /** Writes this lazy field into a {@link Writer}. */
-  void writeTo(Writer writer, int fieldNumber) throws IOException {
+  /** Writes this lazy field into a {@link CodedOutputStreamWriter}. */
+  void writeTo(CodedOutputStreamWriter writer, int fieldNumber) throws IOException {
     if (memoizedBytes != null) {
       writer.writeBytes(fieldNumber, memoizedBytes);
     } else if (delayedBytes != null) {

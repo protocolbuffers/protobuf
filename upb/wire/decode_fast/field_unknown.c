@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 
+#include "upb/base/descriptor_constants.h"
 #include "upb/base/string_view.h"
 #include "upb/message/internal/message.h"
 #include "upb/message/message.h"
@@ -90,7 +91,9 @@ UPB_PRESERVE_NONE upb_FastDecoder_Return _upb_FastDecoder_DecodeUnknown(
       const upb_MiniTableField* field =
           upb_MiniTable_FindFieldByNumber(table, field_num);
       UPB_ASSERT(field == NULL ||
-                 _upb_MiniTableField_GetWireType(field) != wire_type);
+                 _upb_MiniTableField_GetWireType(field) != wire_type ||
+                 (upb_MiniTableField_CType(field) == kUpb_CType_Message &&
+                  upb_MiniTable_GetSubMessageTable(field) == NULL));
 #else
       UPB_UNUSED(field_num);
 #endif

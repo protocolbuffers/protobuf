@@ -337,5 +337,57 @@ TEST(ReflectionTest, FindEnumValueByName) {
       enum_value_def);
 }
 
+TEST(ReflectionTest, NegativePublicDependencyIndex) {
+  // Verify that a negative public_dependency index is rejected rather than
+  // causing an out-of-bounds read when the index is later used to access the
+  // deps array.
+  absl::Status status =
+      LoadDescriptorProto(
+          R"pb(
+            name: "test.proto"
+            public_dependency: -1
+          )pb")
+          .status();
+  EXPECT_FALSE(status.ok());
+  EXPECT_THAT(std::string(status.message()), HasSubstr("out of range"));
+}
+
+TEST(ReflectionTest, NegativeWeakDependencyIndex) {
+  absl::Status status =
+      LoadDescriptorProto(
+          R"pb(
+            name: "test.proto"
+            weak_dependency: -1
+          )pb")
+          .status();
+  EXPECT_FALSE(status.ok());
+  EXPECT_THAT(std::string(status.message()), HasSubstr("out of range"));
+}
+
+TEST(ReflectionTest, ZeroPublicDependencyIndexWithNoDeps) {
+  // Index 0 is out of range when there are no dependencies (dep_count=0).
+  absl::Status status =
+      LoadDescriptorProto(
+          R"pb(
+            name: "test.proto"
+            public_dependency: 0
+          )pb")
+          .status();
+  EXPECT_FALSE(status.ok());
+  EXPECT_THAT(std::string(status.message()), HasSubstr("out of range"));
+}
+
+TEST(ReflectionTest, ZeroWeakDependencyIndexWithNoDeps) {
+  absl::Status status =
+      LoadDescriptorProto(
+          R"pb(
+            name: "test.proto"
+            weak_dependency: 0
+          )pb")
+          .status();
+  EXPECT_FALSE(status.ok());
+  EXPECT_THAT(std::string(status.message()), HasSubstr("out of range"));
+}
+
 }  // namespace
 }  // namespace upb_test

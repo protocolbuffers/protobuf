@@ -39,6 +39,7 @@
 #include "absl/strings/string_view.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/port_def.inc"
+#include "google/protobuf/breaking_changes.h"
 #include "google/protobuf/pyext/descriptor.h"
 #include "google/protobuf/pyext/descriptor_pool.h"
 #include "google/protobuf/pyext/scoped_pyobject_ptr.h"
@@ -346,7 +347,7 @@ static CompareResult DescriptorSequence_Equal(PyContainer* self,
     return CompareResult::kEqual;
   }
 
-#if PROTOBUF_FUTURE_CONTAINER_EQ_RETURNS_NOTIMPLEMENTED
+#if PROTOBUF_PY_FUTURE_CONTAINER_EQ_RETURNS_NOTIMPLEMENTED
   // Any other object is not implemented.
   return CompareResult::kNotImplemented;
 #else
@@ -400,7 +401,7 @@ static CompareResult DescriptorMapping_Equal(PyContainer* self,
     return CompareResult::kEqual;
   }
 
-#if PROTOBUF_FUTURE_CONTAINER_EQ_RETURNS_NOTIMPLEMENTED
+#if PROTOBUF_PY_FUTURE_CONTAINER_EQ_RETURNS_NOTIMPLEMENTED
   // Any other object is not implemented.
   return CompareResult::kNotImplemented;
 #else
@@ -424,7 +425,7 @@ static PyObject* RichCompare(PyContainer* self, PyObject* other, int opid) {
   }
   switch (result) {
     case CompareResult::kNotImplemented:
-#if PROTOBUF_FUTURE_CONTAINER_EQ_RETURNS_NOTIMPLEMENTED
+#if PROTOBUF_PY_FUTURE_CONTAINER_EQ_RETURNS_NOTIMPLEMENTED
       Py_RETURN_NOTIMPLEMENTED;
 #else
       return nullptr;  // Unreachable when this breaking change is disabled.

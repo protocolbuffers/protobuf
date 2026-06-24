@@ -34,6 +34,7 @@
 #include "upb/message/accessors.h"
 #include "upb/message/array.h"
 #include "upb/message/compare.h"
+#include "upb/message/internal/accessors.h"
 #include "upb/message/map.h"
 #include "upb/message/message.h"
 #include "upb/message/test.upb.h"
@@ -876,6 +877,27 @@ TEST(MessageTest, Freeze) {
     ASSERT_TRUE(upb_Array_IsFrozen(arr));
     ASSERT_TRUE(upb_Map_IsFrozen(map));
     ASSERT_TRUE(upb_Message_IsFrozen(UPB_UPCAST(nest)));
+  }
+  {
+    upb_test_TestExtensions* ext_msg = upb_test_TestExtensions_new(arena.ptr());
+    upb_Message* msg = UPB_UPCAST(ext_msg);
+    protobuf_test_messages_proto3_TestAllTypesProto3* submsg =
+        protobuf_test_messages_proto3_TestAllTypesProto3_new(arena.ptr());
+    upb_Message* submsg_upcast = UPB_UPCAST(submsg);
+
+    ASSERT_FALSE(upb_Message_IsFrozen(msg));
+    ASSERT_FALSE(upb_Message_IsFrozen(submsg_upcast));
+
+    // Set a non-canonical extension containing a sub-message.
+    bool set_ext_ok = UPB_PRIVATE(_upb_Message_SetNonCanonicalExtension)(
+        msg, upb_test_optional_msg_ext_ext, &submsg, arena.ptr());
+    ASSERT_TRUE(set_ext_ok);
+
+    // Freezing the parent message should recursively freeze the non-canonical
+    // extension's sub-message.
+    upb_Message_Freeze(msg, &upb_0test__TestExtensions_msg_init);
+    ASSERT_TRUE(upb_Message_IsFrozen(msg));
+    ASSERT_TRUE(upb_Message_IsFrozen(submsg_upcast));
   }
 }
 

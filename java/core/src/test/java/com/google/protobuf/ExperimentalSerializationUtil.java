@@ -39,8 +39,8 @@ public class ExperimentalSerializationUtil {
   }
 
   /**
-   * Deserializes a message from the given byte array using {@link com.google.protobuf.BinaryReader}
-   * with an extension registry and a customized Schema.
+   * Deserializes a message from the given byte array
+   * with an extension registry.
    */
   public static <T extends MessageLite> T fromByteArray(
       byte[] data, Class<T> messageType, ExtensionRegistryLite extensionRegistry) {

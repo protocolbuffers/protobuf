@@ -11,6 +11,7 @@
 #include "upb/message/internal/message.h"
 #include "upb/message/message.h"
 #include "upb/mini_table/field.h"
+#include "upb/mini_table/internal/sub.h"
 #include "upb/mini_table/message.h"
 #include "upb/wire/decode.h"
 #include "upb/wire/decode_fast/cardinality.h"
@@ -65,20 +66,29 @@ void upb_DecodeFast_Message(upb_Decoder* d, const char** ptr, upb_Message* msg,
                             upb_DecodeFast_Type type,
                             upb_DecodeFast_Cardinality card,
                             upb_DecodeFast_TagSize tagsize, uint64_t data2) {
-  uint16_t submsg_idx = upb_DecodeFastData_GetFieldIndex(*data);
+  uint32_t submsg_ofs = upb_DecodeFastData_GetSubofs(*data) * 8;
 
-  // OPT: we could remove an indirection by precomputing the offset directly
-  // to the submessage table pointer, instead of doing an extra hop through the
-  // field.
-  const upb_MiniTableField* field =
-      upb_MiniTable_GetFieldByIndex(table, submsg_idx);
-  const upb_MiniTable* subtablep = upb_MiniTable_GetSubMessageTable(field);
+  const upb_MiniTableSubInternal* sub = UPB_PTR_AT(
+      table->UPB_ONLYBITS(fields), submsg_ofs, upb_MiniTableSubInternal);
+  const upb_MiniTable* subtablep = sub->UPB_PRIVATE(submsg);
 
   upb_DecodeFast_MessageContext ctx = {subtablep,
                                        card == kUpb_DecodeFast_Repeated};
 
   if (subtablep == NULL) {
-    UPB_DECODEFAST_EXIT(kUpb_DecodeFastNext_FallbackToMiniTable, ret);
+    // Unlinked messages are treated as unknown fields. Go straight to unknown
+    // decoder.
+#ifndef NDEBUG
+    uint16_t case_offset = upb_DecodeFastData_GetCaseOffset(*data);
+    if (case_offset != 0) {
+      uint8_t field_number = upb_DecodeFastData_GetPresence(*data);
+      const upb_MiniTableField* field =
+          upb_MiniTable_FindFieldByNumber(table, field_number);
+      UPB_ASSERT(field);
+      _upb_Decoder_VerifyOneofUnlinked(table, field);
+    }
+#endif
+    UPB_DECODEFAST_EXIT(kUpb_DecodeFastNext_DecodeUnknown, ret);
     return;
   }
 
