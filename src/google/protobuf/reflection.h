@@ -509,13 +509,32 @@ class RepeatedFieldRefIterator {
   RepeatedFieldRefIterator(const RepeatedFieldRefIterator& other)
       : data_(other.data_),
         accessor_(other.accessor_),
-        iterator_(accessor_->CopyIterator(data_, other.iterator_)) {}
+        iterator_(accessor_->CopyIterator(data_, other.iterator_)) {
+    if (other.scratch_space_) {
+      if constexpr (std::is_base_of<Message, T>::value) {
+        scratch_space_.reset(other.scratch_space_->New());
+      } else {
+        scratch_space_.reset(new AccessorValueType);
+      }
+    }
+  }
   RepeatedFieldRefIterator& operator=(const RepeatedFieldRefIterator& other) {
     if (this != &other) {
       accessor_->DeleteIterator(data_, iterator_);
       data_ = other.data_;
       accessor_ = other.accessor_;
       iterator_ = accessor_->CopyIterator(data_, other.iterator_);
+      if (other.scratch_space_) {
+        if (!scratch_space_) {
+          if constexpr (std::is_base_of<Message, T>::value) {
+            scratch_space_.reset(other.scratch_space_->New());
+          } else {
+            scratch_space_.reset(new AccessorValueType);
+          }
+        }
+      } else {
+        scratch_space_.reset();
+      }
     }
     return *this;
   }
