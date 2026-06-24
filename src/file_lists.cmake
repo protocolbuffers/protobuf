@@ -1308,6 +1308,7 @@ set(upb_test_protos_files
   ${protobuf_SOURCE_DIR}/upb/util/def_to_proto_wweak_import_test.proto
   ${protobuf_SOURCE_DIR}/upb/util/required_fields_editions_test.proto
   ${protobuf_SOURCE_DIR}/upb/util/required_fields_test.proto
+  ${protobuf_SOURCE_DIR}/upb/wire/decode_test.proto
   ${protobuf_SOURCE_DIR}/upb/wire/encode_test.proto
 )
 
