@@ -21,6 +21,7 @@
 #include "upb/message/internal/message.h"
 #include "upb/message/map.h"
 #include "upb/message/message.h"
+#include "upb/mini_table/compat.h"
 #include "upb/mini_table/enum.h"
 #include "upb/mini_table/extension.h"
 #include "upb/mini_table/extension_registry.h"
@@ -51,6 +52,42 @@ typedef struct {
   int decode_options;
   int encode_options;
 } upb_Converter;
+
+// Returns true if the two MiniTables are equal, i.e. the MiniTable pointers
+// are the same, or equal when they are both non-extendable and have no
+// submessages.
+//
+// This function is currently only used for map fields, as it's not a trivial
+// check but it's worth it to avoid the overhead of map deep copy.
+UPB_INLINE bool _upb_MiniTable_Matches(const upb_MiniTable* mt1,
+                                       const upb_MiniTable* mt2) {
+  if (mt1 == mt2) return true;
+  if (!mt1 || !mt2) return false;
+
+  bool mt1_non_ext = UPB_PRIVATE(_upb_MiniTable_ExtModeBase)(mt1) ==
+                     kUpb_ExtMode_NonExtendable;
+  bool mt2_non_ext = UPB_PRIVATE(_upb_MiniTable_ExtModeBase)(mt2) ==
+                     kUpb_ExtMode_NonExtendable;
+
+  if (mt1_non_ext && mt2_non_ext) {
+    if (upb_MiniTable_Equals(mt1, mt2) != kUpb_MiniTableEquals_Equal) {
+      return false;
+    }
+    // Verify it has no submessages of type CType_Message (leaf check).
+    //
+    // If we want to enable this for fields with submessages, we need to add a
+    // recursive check to make sure all submessages are non-extendable.
+    for (int i = 0; i < upb_MiniTable_FieldCount(mt1); i++) {
+      const upb_MiniTableField* f = upb_MiniTable_GetFieldByIndex(mt1, i);
+      if (upb_MiniTableField_CType(f) == kUpb_CType_Message ||
+          upb_MiniTableField_Type(f) == kUpb_FieldType_Group) {
+        return false;
+      }
+    }
+    return true;
+  }
+  return false;
+}
 
 // Minitable compatibility type check on the field, but not the
 // submessage. Note: this check always succeeds for enums, whether the
@@ -268,9 +305,32 @@ static bool upb_Message_ConvertMapField(upb_Converter* c, upb_Message* dst,
 
   const upb_MiniTable* dst_entry_mt = upb_MiniTable_MapEntrySubMessage(dst_f);
   const upb_MiniTable* src_entry_mt = upb_MiniTable_MapEntrySubMessage(src_f);
+  const upb_MiniTableField* dst_val_f = upb_MiniTable_MapValue(dst_entry_mt);
+  const upb_MiniTableField* src_val_f = upb_MiniTable_MapValue(src_entry_mt);
+  const upb_MiniTable* dst_val_mt = upb_MiniTable_SubMessage(dst_val_f);
+  const upb_MiniTable* src_val_mt = upb_MiniTable_SubMessage(src_val_f);
 
-  if (dst_entry_mt != src_entry_mt || upb_MiniTableField_IsClosedEnum(dst_f)) {
-    const upb_MiniTableField* dst_val_f = upb_MiniTable_MapValue(dst_entry_mt);
+  bool shallow = _upb_MiniTable_Matches(dst_val_mt, src_val_mt) &&
+                 !upb_MiniTableField_IsClosedEnum(dst_val_f);
+  // if (shallow && dst_val_mt != src_val_mt &&
+  //     upb_MiniTableField_CType(dst_val_f) == kUpb_CType_Message) {
+  //   // Also check if the source map has any unknown fields. If so, we cannot
+  //   do
+  //   // a shallow copy.
+  //   size_t sz = upb_Map_Size(src_map);
+  //   if (sz > 0) {
+  //     upb_MessageValue key, val;
+  //     size_t iter = kUpb_Map_Begin;
+  //     while (upb_Map_Next(src_map, &key, &val, &iter)) {
+  //       if (upb_Message_HasUnknown(val.msg_val)) {
+  //         shallow = false;
+  //         break;
+  //       }
+  //     }
+  //   }
+  // }
+
+  if (!shallow) {
     upb_Map* dst_map = upb_Map_New(
         c->arena, upb_MiniTableField_CType(upb_MiniTable_MapKey(dst_entry_mt)),
         upb_MiniTableField_CType(dst_val_f));
