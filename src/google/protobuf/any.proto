@@ -102,5 +102,5 @@ message Any {
   string type_url = 1;
 
   // Holds a Protobuf serialization of the type described by type_url.
-  bytes value = 2;
+  bytes value = 2 [ctype = CORD];
 }

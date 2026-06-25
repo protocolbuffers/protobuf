@@ -153,5 +153,5 @@ message StringValue {
 // has no plan to be removed.
 message BytesValue {
   // The bytes value.
-  bytes value = 1;
+  bytes value = 1 [ctype = CORD];
 }
