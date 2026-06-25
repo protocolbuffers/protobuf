@@ -60,7 +60,7 @@ static void ExpectContainsType(const FileDescriptorProto& proto,
 // implementations for each of the three classes we want to test.
 class DescriptorDatabaseTestCase {
  public:
-  virtual ~DescriptorDatabaseTestCase() {}
+  virtual ~DescriptorDatabaseTestCase() = default;
 
   virtual DescriptorDatabase* GetDatabase() = 0;
   virtual bool AddToDatabase(const FileDescriptorProto& file) = 0;
@@ -76,7 +76,7 @@ class SimpleDescriptorDatabaseTestCase : public DescriptorDatabaseTestCase {
     return new SimpleDescriptorDatabaseTestCase;
   }
 
-  ~SimpleDescriptorDatabaseTestCase() override {}
+  ~SimpleDescriptorDatabaseTestCase() override = default;
 
   DescriptorDatabase* GetDatabase() override { return &database_; }
   bool AddToDatabase(const FileDescriptorProto& file) override {
@@ -94,7 +94,7 @@ class EncodedDescriptorDatabaseTestCase : public DescriptorDatabaseTestCase {
     return new EncodedDescriptorDatabaseTestCase;
   }
 
-  ~EncodedDescriptorDatabaseTestCase() override {}
+  ~EncodedDescriptorDatabaseTestCase() override = default;
 
   DescriptorDatabase* GetDatabase() override { return &database_; }
   bool AddToDatabase(const FileDescriptorProto& file) override {
@@ -115,7 +115,7 @@ class DescriptorPoolDatabaseTestCase : public DescriptorDatabaseTestCase {
   }
 
   DescriptorPoolDatabaseTestCase() : database_(pool_) {}
-  ~DescriptorPoolDatabaseTestCase() override {}
+  ~DescriptorPoolDatabaseTestCase() override = default;
 
   DescriptorDatabase* GetDatabase() override { return &database_; }
   bool AddToDatabase(const FileDescriptorProto& file) override {
