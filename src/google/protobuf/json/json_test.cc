@@ -16,10 +16,12 @@
 #include "google/protobuf/struct.pb.h"
 #include "google/protobuf/timestamp.pb.h"
 #include "google/protobuf/wrappers.pb.h"
+#include "google/protobuf/descriptor.pb.h"
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 #include "absl/status/status.h"
 #include "absl/status/statusor.h"
+#include "absl/strings/cord.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/descriptor_database.h"
@@ -28,6 +30,7 @@
 #include "google/protobuf/io/zero_copy_stream_impl_lite.h"
 #include "google/protobuf/util/json_format.pb.h"
 #include "google/protobuf/util/json_format_proto3.pb.h"
+#include "google/protobuf/test_textproto.h"
 #include "google/protobuf/unittest.pb.h"
 #include "google/protobuf/util/type_resolver.h"
 #include "google/protobuf/util/type_resolver_util.h"
@@ -47,12 +50,15 @@ using ::proto3::TestEnumValue;
 using ::proto3::TestMap;
 using ::proto3::TestMessage;
 using ::proto3::TestOneof;
+using ::proto3::TestStringMapOverlay;
 using ::proto3::TestWrapper;
 using ::testing::ContainsRegex;
 using ::testing::ElementsAre;
 using ::testing::IsEmpty;
 using ::testing::Not;
+using ::testing::Pair;
 using ::testing::SizeIs;
+using ::testing::UnorderedElementsAre;
 
 // TODO: Use the gtest versions once that's available in OSS.
 MATCHER_P(IsOkAndHolds, inner,
@@ -643,6 +649,106 @@ TEST_P(JsonTest, ParseMap) {
   auto other = ToProto<TestMap>(*printed);
   ASSERT_OK(other);
   EXPECT_EQ(other->DebugString(), message.DebugString());
+}
+
+TEST_P(JsonTest, BinaryToJsonStreamMapEntryWithNoValue) {
+  TestStringMapOverlay emulated_message;
+  auto* entry = emulated_message.add_string_map();
+  entry->set_key("hello");
+
+  std::string proto_data_emulated = emulated_message.SerializeAsString();
+  io::ArrayInputStream in(proto_data_emulated.data(),
+                          proto_data_emulated.size());
+
+  std::string printed;
+  io::StringOutputStream out(&printed);
+
+  PrintOptions options = {};
+  auto status = BinaryToJsonStream(resolver_.get(),
+                                   "type.googleapis.com/proto3.TestStringMap",
+                                   &in, &out, options);
+  ASSERT_OK(status);
+
+  ASSERT_EQ(printed, R"({"stringMap":{"hello":""}})");
+}
+
+TEST_P(JsonTest, BinaryToJsonStreamMapEntryWithNoKey) {
+  TestStringMapOverlay emulated_message;
+  auto* entry = emulated_message.add_string_map();
+  entry->set_value("1234");
+
+  std::string proto_data_emulated = emulated_message.SerializeAsString();
+  io::ArrayInputStream in(proto_data_emulated.data(),
+                          proto_data_emulated.size());
+
+  std::string printed;
+  io::StringOutputStream out(&printed);
+
+  PrintOptions options = {};
+  auto status = BinaryToJsonStream(resolver_.get(),
+                                   "type.googleapis.com/proto3.TestStringMap",
+                                   &in, &out, options);
+  ASSERT_OK(status);
+
+  ASSERT_EQ(printed, R"({"stringMap":{"":"1234"}})");
+}
+
+TEST_P(JsonTest, BinaryToJsonStreamMapEntryWithNoKeyOrValue) {
+  TestStringMapOverlay emulated_message;
+  (void)emulated_message.add_string_map();
+
+  std::string proto_data_emulated = emulated_message.SerializeAsString();
+  io::ArrayInputStream in(proto_data_emulated.data(),
+                          proto_data_emulated.size());
+
+  std::string printed;
+  io::StringOutputStream out(&printed);
+
+  PrintOptions options = {};
+  auto status = BinaryToJsonStream(resolver_.get(),
+                                   "type.googleapis.com/proto3.TestStringMap",
+                                   &in, &out, options);
+  ASSERT_OK(status);
+
+  ASSERT_EQ(printed, R"({"stringMap":{"":""}})");
+}
+
+TEST_P(JsonTest, BinaryToJsonStreamDuplicateNonRepeatedField) {
+  // The wire tag for field 6 (float_value) is (6 << 3) | 5 = 0x35.
+  // We provide multiple values for the same non-repeated field.
+  std::string binary_data("\x35\x00\x00\x80\x3F\x35\x00\x00\x00\x40", 10);
+  io::ArrayInputStream in(binary_data.data(), binary_data.size());
+
+  std::string printed;
+  io::StringOutputStream out(&printed);
+
+  PrintOptions options = {};
+  options.always_print_fields_with_no_presence = true;
+  auto status = BinaryToJsonStream(resolver_.get(),
+                                   "type.googleapis.com/proto3.TestMessage",
+                                   &in, &out, options);
+  EXPECT_THAT(status, StatusIs(absl::StatusCode::kInvalidArgument));
+  EXPECT_THAT(status.message(),
+              ContainsRegex("repeated entries for singular field number 6"));
+}
+
+TEST_P(JsonTest, BinaryToJsonStreamAlwaysPrintPrimitivesNoValueOnWire) {
+  // Missing field should fall back to default value.
+  std::string binary_data = "";  // Empty message
+  io::ArrayInputStream in(binary_data.data(), binary_data.size());
+
+  std::string printed;
+  io::StringOutputStream out(&printed);
+
+  PrintOptions options;
+  options.always_print_fields_with_no_presence = true;
+  auto status = BinaryToJsonStream(resolver_.get(),
+                                   "type.googleapis.com/proto3.TestMessage",
+                                   &in, &out, options);
+  ASSERT_OK(status);
+
+  // Verify that floatValue is printed with default 0.
+  EXPECT_THAT(printed, ContainsRegex(R"("floatValue":0)"));
 }
 
 TEST_P(JsonTest, RepeatedMapKey) {
@@ -1355,6 +1461,50 @@ TEST_P(JsonTest, TestFieldMaskSnakeCase) {
   EXPECT_THAT(m->value().paths(), ElementsAre("foo_bar"));
 }
 
+// Documents a known spec-level design limitation in ProtoJSON FieldMask
+// representation: certain field paths (leading underscores, uppercase letters)
+// are not round-trip safe through the snake_case<->lowerCamelCase conversion.
+// This is a design bug in the ProtoJSON WKT spec, not in the C++
+// implementation. See:
+// https://protobuf.dev/programming-guides/json/#wkt-roundtrip-limitations
+TEST_P(JsonTest, TestFieldMaskJsonRoundTripNonIdempotent) {
+  // Start with a non-canonical path containing leading underscores and
+  // uppercase.
+  google::protobuf::FieldMask fm0;
+  fm0.add_paths("__Y");
+
+  // Round-trip through JSON once.
+  proto3::TestFieldMask wrapper0;
+  *wrapper0.mutable_value() = fm0;
+  auto json0 = ToJson(wrapper0);
+  ASSERT_OK(json0);
+
+  auto wrapper1 = ToProto<proto3::TestFieldMask>(*json0);
+  ASSERT_OK(wrapper1);
+  auto json1 = ToJson(*wrapper1);
+  ASSERT_OK(json1);
+
+  // Round-trip again.
+  auto wrapper2 = ToProto<proto3::TestFieldMask>(*json1);
+  ASSERT_OK(wrapper2);
+  auto json2 = ToJson(*wrapper2);
+  ASSERT_OK(json2);
+
+  // Spec limitation: The path shifts across round-trips because the
+  // snake_case<->lowerCamelCase conversion is not bijective for paths with
+  // leading underscores or uppercase letters.  "__Y" -> "__y" -> "_y" over
+  // two hops.
+  // See:
+  // https://protobuf.dev/programming-guides/json/#wkt-roundtrip-limitations
+  EXPECT_NE(*json0, *json1)
+      << "If this starts passing, the FieldMask JSON round-trip "
+         "non-idempotency bug may be fixed. Update this test.";
+
+  // The third round-trip does stabilize (fixed point after 2-3 hops).
+  EXPECT_EQ(*json1, *json2)
+      << "Expected JSON to stabilize after two round-trips";
+}
+
 TEST_P(JsonTest, TestLegalNullsInArray) {
   auto m = ToProto<proto3::TestNullValue>(R"json({
     "repeatedNullValue": [null]
@@ -1452,6 +1602,52 @@ TEST_P(JsonTest, MalformedLengthDelimitedField) {
   ASSERT_THAT(s, StatusIs(absl::StatusCode::kInvalidArgument));
 }
 
+TEST_P(JsonTest, DeeplyNestedGroupsRejected) {
+  // Verify that deeply nested TYPE_GROUP fields are rejected with an error
+  // rather than causing unbounded stack recursion.
+  FileDescriptorProto file_proto;
+  file_proto.set_name("group_depth_test.proto");
+  file_proto.set_syntax("proto2");
+
+  auto* msg = file_proto.add_message_type();
+  msg->set_name("RecursiveGroup");
+
+  auto* nested = msg->add_nested_type();
+  nested->set_name("Nested");
+
+  auto* inner = nested->add_field();
+  inner->set_name("nested");
+  inner->set_number(1);
+  inner->set_type(FieldDescriptorProto::TYPE_GROUP);
+  inner->set_type_name("Nested");
+  inner->set_label(FieldDescriptorProto::LABEL_OPTIONAL);
+
+  auto* outer = msg->add_field();
+  outer->set_name("nested");
+  outer->set_number(1);
+  outer->set_type(FieldDescriptorProto::TYPE_GROUP);
+  outer->set_type_name("Nested");
+  outer->set_label(FieldDescriptorProto::LABEL_OPTIONAL);
+
+  DescriptorPool pool;
+  const FileDescriptor* fd = pool.BuildFile(file_proto);
+  ASSERT_NE(fd, nullptr);
+
+  std::unique_ptr<TypeResolver> resolver(
+      google::protobuf::util::NewTypeResolverForDescriptorPool("type.googleapis.com",
+                                                     &pool));
+
+  // 200 nested groups: 200x START_GROUP(field=1) + 200x END_GROUP(field=1)
+  // Field 1, wire type 3 = 0x0B; Field 1, wire type 4 = 0x0C
+  std::string payload(200, 0x0B);
+  payload.append(200, 0x0C);
+
+  std::string out;
+  absl::Status s = BinaryToJsonString(
+      resolver.get(), "type.googleapis.com/RecursiveGroup", payload, &out);
+  EXPECT_THAT(s, StatusIs(absl::StatusCode::kInvalidArgument));
+}
+
 // JSON values get special treatment when it comes to pre-existing values in
 // their repeated fields, when parsing through their dedicated syntax.
 TEST_P(JsonTest, ClearPreExistingRepeatedInJsonValues) {
@@ -1482,6 +1678,95 @@ TEST(JsonErrorTest, FieldNameAndSyntaxErrorInSeparateChunks) {
       s.message(),
       ContainsRegex("invalid *JSON *in *type.googleapis.com/proto3.TestMessage "
                     "*@ *bool_value"));
+}
+
+TEST_P(JsonTest, OversizedStringRejected) {
+#ifndef NDEBUG
+  GTEST_SKIP() << "Test is too slow in non-opt builds.";
+#else
+
+  if (sizeof(void*) < 8) {
+    GTEST_SKIP() << "Test requires 64-bit environment.";
+  }
+
+  absl::Cord chunk(std::string(1024 * 1024, 'a'));
+  absl::Cord cord;
+  cord.Append(R"({"stringValue": ")");
+  for (int i = 0; i < 2048; ++i) {
+    cord.Append(chunk);
+  }
+  cord.Append(R"("})");
+
+  io::CordInputStream input_stream(&cord);
+  TestMessage m;
+  absl::Status s;
+
+  if (GetParam() == Codec::kReflective) {
+    s = JsonStreamToMessage(&input_stream, &m, ParseOptions());
+  } else {
+    std::string result;
+    io::StringOutputStream out(&result);
+    s = JsonToBinaryStream(
+        resolver_.get(), absl::StrCat("type.googleapis.com/", m.GetTypeName()),
+        &input_stream, &out, ParseOptions());
+  }
+
+  EXPECT_THAT(s, StatusIs(absl::StatusCode::kInvalidArgument));
+  EXPECT_THAT(s.message(), ContainsRegex("string *value *too *large"));
+
+#endif  // NDEBUG
+}
+
+absl::StatusOr<google::protobuf::Struct> MessageToJsonAndBack(
+    const google::protobuf::Struct& msg) {
+  std::string str;
+  auto status = MessageToJsonString(msg, &str);
+  if (!status.ok()) return status;
+
+  google::protobuf::Struct out;
+  status = JsonStringToMessage(str, &out);
+  if (!status.ok()) return status;
+  return out;
+}
+
+TEST(JsonTest, MapsThroughCodegenWorksProperly) {
+  google::protobuf::Struct s;
+  auto& fields = *s.mutable_fields();
+
+  fields["first"].set_string_value("str1");
+
+  EXPECT_THAT(MessageToJsonAndBack(s), IsOkAndHolds(EqualsProto(R"pb(
+                fields {
+                  key: "first"
+                  value { string_value: "str1" }
+                }
+              )pb")));
+
+  fields["second"].set_string_value("str2");
+
+  EXPECT_THAT(MessageToJsonAndBack(s), IsOkAndHolds(EqualsProto(R"pb(
+                fields {
+                  key: "first"
+                  value { string_value: "str1" }
+                }
+                fields {
+                  key: "second"
+                  value { string_value: "str2" }
+                }
+              )pb")));
+
+  fields["first"].set_bool_value(true);
+
+  EXPECT_THAT(MessageToJsonAndBack(s), IsOkAndHolds(EqualsProto(R"pb(
+                fields {
+                  key: "first"
+                  value { bool_value: true }
+                }
+                fields {
+                  key: "second"
+                  value { string_value: "str2" }
+                }
+              )pb")));
 }
 
 }  // namespace

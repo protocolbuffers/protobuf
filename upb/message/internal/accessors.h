@@ -143,6 +143,7 @@ UPB_INLINE bool UPB_PRIVATE(_upb_Message_IsInitializedShallow)(
   return (UPB_PRIVATE(_upb_MiniTable_RequiredMask)(m) & ~bits) == 0;
 }
 
+// LINT.IfChange(message_raw_fields)
 UPB_INLINE void* UPB_PRIVATE(_upb_Message_MutableDataPtr)(
     struct upb_Message* msg, const upb_MiniTableField* f) {
   return (char*)msg + f->UPB_ONLYBITS(offset);
@@ -181,6 +182,7 @@ UPB_INLINE_IF_NOT_GCC void UPB_PRIVATE(_upb_MiniTableField_DataCopy)(
   }
   UPB_UNREACHABLE();
 }
+// LINT.ThenChange(//depot/google3/third_party/upb/bits/golang/message.go:message_raw_fields)
 
 UPB_INLINE_IF_NOT_GCC bool UPB_PRIVATE(_upb_MiniTableField_DataEquals)(
     const upb_MiniTableField* f, const void* a, const void* b) {
@@ -331,6 +333,19 @@ UPB_API_INLINE bool upb_Message_SetExtension(struct upb_Message* msg,
   return true;
 }
 
+UPB_API_INLINE bool UPB_PRIVATE(_upb_Message_SetNonCanonicalExtension)(
+    struct upb_Message* msg, const upb_MiniTableExtension* e, const void* val,
+    upb_Arena* a) {
+  UPB_ASSERT(!upb_Message_IsFrozen(msg));
+  UPB_ASSERT(a);
+  upb_Extension* ext =
+      UPB_PRIVATE(_upb_Message_CreateNonCanonicalExtension)(msg, e, a);
+  if (!ext) return false;
+  UPB_PRIVATE(_upb_MiniTableField_DataCopy)
+  (&e->UPB_PRIVATE(field), &ext->data, val);
+  return true;
+}
+
 // Sets the value of the given field in the given msg. The return value is true
 // if the operation completed successfully, or false if memory allocation
 // failed.
@@ -452,14 +467,15 @@ UPB_API_INLINE struct upb_Message* upb_Message_GetMutableMessage(
   return (struct upb_Message*)upb_Message_GetMessage(msg, f);
 }
 
-UPB_API_INLINE upb_Array* upb_Message_GetOrCreateMutableArray(
+UPB_NODISCARD UPB_API_INLINE upb_Array* upb_Message_GetOrCreateMutableArray(
     struct upb_Message* msg, const upb_MiniTableField* f, upb_Arena* arena) {
   UPB_ASSERT(arena);
   UPB_PRIVATE(_upb_MiniTableField_CheckIsArray)(f);
   upb_Array* array = upb_Message_GetMutableArray(msg, f);
   if (!array) {
     array = UPB_PRIVATE(_upb_Array_New)(
-        arena, 4, UPB_PRIVATE(_upb_MiniTableField_ElemSizeLg2)(f));
+        arena, _UPB_ARRAY_DEFAULT_INITIAL_SIZE,
+        UPB_PRIVATE(_upb_MiniTableField_ElemSizeLg2)(f));
     // Check again due to: https://godbolt.org/z/7WfaoKG1r
     UPB_PRIVATE(_upb_MiniTableField_CheckIsArray)(f);
     upb_MessageValue val;
@@ -469,7 +485,7 @@ UPB_API_INLINE upb_Array* upb_Message_GetOrCreateMutableArray(
   return array;
 }
 
-UPB_INLINE struct upb_Map* _upb_Message_GetOrCreateMutableMap(
+UPB_NODISCARD UPB_INLINE struct upb_Map* _upb_Message_GetOrCreateMutableMap(
     struct upb_Message* msg, const upb_MiniTableField* field, size_t key_size,
     size_t val_size, upb_Arena* arena) {
   UPB_PRIVATE(_upb_MiniTableField_CheckIsMap)(field);
@@ -485,7 +501,7 @@ UPB_INLINE struct upb_Map* _upb_Message_GetOrCreateMutableMap(
   return map;
 }
 
-UPB_API_INLINE struct upb_Map* upb_Message_GetOrCreateMutableMap(
+UPB_NODISCARD UPB_API_INLINE struct upb_Map* upb_Message_GetOrCreateMutableMap(
     struct upb_Message* msg, const upb_MiniTable* map_entry_mini_table,
     const upb_MiniTableField* f, upb_Arena* arena) {
   UPB_ASSUME(upb_MiniTableField_CType(f) == kUpb_CType_Message);
@@ -499,8 +515,10 @@ UPB_API_INLINE struct upb_Map* upb_Message_GetOrCreateMutableMap(
       arena);
 }
 
-UPB_API_INLINE struct upb_Message* upb_Message_GetOrCreateMutableMessage(
-    struct upb_Message* msg, const upb_MiniTableField* f, upb_Arena* arena) {
+UPB_NODISCARD UPB_API_INLINE struct upb_Message*
+upb_Message_GetOrCreateMutableMessage(struct upb_Message* msg,
+                                      const upb_MiniTableField* f,
+                                      upb_Arena* arena) {
   UPB_ASSERT(arena);
   UPB_ASSUME(upb_MiniTableField_CType(f) == kUpb_CType_Message);
   UPB_ASSUME(!upb_MiniTableField_IsExtension(f));
@@ -613,6 +631,27 @@ UPB_API_INLINE void upb_Message_SetBaseFieldMessage(struct upb_Message* msg,
   upb_Message_SetBaseField(msg, f, &value);
 }
 
+UPB_API_INLINE void upb_Message_SetBaseFieldArray(struct upb_Message* msg,
+                                                  const upb_MiniTableField* f,
+                                                  upb_Array* arr,
+                                                  const upb_MiniTable* arr_mt) {
+  UPB_ASSERT(upb_MiniTableField_IsArray(f));
+  UPB_ASSERT(arr_mt == upb_MiniTable_SubMessage(f));
+  UPB_ASSUME(UPB_PRIVATE(_upb_MiniTableField_GetRep)(f) ==
+             kUpb_FieldRep_NativePointer);
+  upb_Message_SetBaseField(msg, f, &arr);
+}
+
+UPB_API_INLINE void upb_Message_SetBaseFieldMap(
+    struct upb_Message* msg, const upb_MiniTableField* f, struct upb_Map* map,
+    const upb_MiniTable* map_entry_mt) {
+  UPB_ASSERT(upb_MiniTableField_IsMap(f));
+  UPB_ASSERT(map_entry_mt == upb_MiniTable_MapEntrySubMessage(f));
+  UPB_ASSUME(UPB_PRIVATE(_upb_MiniTableField_GetRep)(f) ==
+             kUpb_FieldRep_NativePointer);
+  upb_Message_SetBaseField(msg, f, &map);
+}
+
 UPB_API_INLINE void upb_Message_SetBaseFieldString(struct upb_Message* msg,
                                                    const upb_MiniTableField* f,
                                                    upb_StringView value) {
@@ -654,7 +693,7 @@ UPB_API_INLINE void upb_Message_SetClosedEnum(struct upb_Message* msg,
 
 // Extension Setters ///////////////////////////////////////////////////////////
 
-UPB_API_INLINE bool upb_Message_SetExtensionMessage(
+UPB_NODISCARD UPB_API_INLINE bool upb_Message_SetExtensionMessage(
     struct upb_Message* msg, const upb_MiniTableExtension* e,
     struct upb_Message* value, upb_Arena* a) {
   UPB_ASSERT(value);
@@ -664,7 +703,7 @@ UPB_API_INLINE bool upb_Message_SetExtensionMessage(
   return upb_Message_SetExtension(msg, e, &value, a);
 }
 
-UPB_API_INLINE bool upb_Message_SetExtensionBool(
+UPB_NODISCARD UPB_API_INLINE bool upb_Message_SetExtensionBool(
     struct upb_Message* msg, const upb_MiniTableExtension* e, bool value,
     upb_Arena* a) {
   UPB_ASSUME(upb_MiniTableExtension_CType(e) == kUpb_CType_Bool);
@@ -673,7 +712,7 @@ UPB_API_INLINE bool upb_Message_SetExtensionBool(
   return upb_Message_SetExtension(msg, e, &value, a);
 }
 
-UPB_API_INLINE bool upb_Message_SetExtensionDouble(
+UPB_NODISCARD UPB_API_INLINE bool upb_Message_SetExtensionDouble(
     struct upb_Message* msg, const upb_MiniTableExtension* e, double value,
     upb_Arena* a) {
   UPB_ASSUME(upb_MiniTableExtension_CType(e) == kUpb_CType_Double);
@@ -682,7 +721,7 @@ UPB_API_INLINE bool upb_Message_SetExtensionDouble(
   return upb_Message_SetExtension(msg, e, &value, a);
 }
 
-UPB_API_INLINE bool upb_Message_SetExtensionFloat(
+UPB_NODISCARD UPB_API_INLINE bool upb_Message_SetExtensionFloat(
     struct upb_Message* msg, const upb_MiniTableExtension* e, float value,
     upb_Arena* a) {
   UPB_ASSUME(upb_MiniTableExtension_CType(e) == kUpb_CType_Float);
@@ -691,7 +730,7 @@ UPB_API_INLINE bool upb_Message_SetExtensionFloat(
   return upb_Message_SetExtension(msg, e, &value, a);
 }
 
-UPB_API_INLINE bool upb_Message_SetExtensionInt32(
+UPB_NODISCARD UPB_API_INLINE bool upb_Message_SetExtensionInt32(
     struct upb_Message* msg, const upb_MiniTableExtension* e, int32_t value,
     upb_Arena* a) {
   UPB_ASSUME(upb_MiniTableExtension_CType(e) == kUpb_CType_Int32 ||
@@ -701,7 +740,7 @@ UPB_API_INLINE bool upb_Message_SetExtensionInt32(
   return upb_Message_SetExtension(msg, e, &value, a);
 }
 
-UPB_API_INLINE bool upb_Message_SetExtensionInt64(
+UPB_NODISCARD UPB_API_INLINE bool upb_Message_SetExtensionInt64(
     struct upb_Message* msg, const upb_MiniTableExtension* e, int64_t value,
     upb_Arena* a) {
   UPB_ASSUME(upb_MiniTableExtension_CType(e) == kUpb_CType_Int64);
@@ -710,7 +749,7 @@ UPB_API_INLINE bool upb_Message_SetExtensionInt64(
   return upb_Message_SetExtension(msg, e, &value, a);
 }
 
-UPB_API_INLINE bool upb_Message_SetExtensionString(
+UPB_NODISCARD UPB_API_INLINE bool upb_Message_SetExtensionString(
     struct upb_Message* msg, const upb_MiniTableExtension* e,
     upb_StringView value, upb_Arena* a) {
   UPB_ASSUME(upb_MiniTableExtension_CType(e) == kUpb_CType_String ||
@@ -720,7 +759,7 @@ UPB_API_INLINE bool upb_Message_SetExtensionString(
   return upb_Message_SetExtension(msg, e, &value, a);
 }
 
-UPB_API_INLINE bool upb_Message_SetExtensionUInt32(
+UPB_NODISCARD UPB_API_INLINE bool upb_Message_SetExtensionUInt32(
     struct upb_Message* msg, const upb_MiniTableExtension* e, uint32_t value,
     upb_Arena* a) {
   UPB_ASSUME(upb_MiniTableExtension_CType(e) == kUpb_CType_UInt32);
@@ -729,7 +768,7 @@ UPB_API_INLINE bool upb_Message_SetExtensionUInt32(
   return upb_Message_SetExtension(msg, e, &value, a);
 }
 
-UPB_API_INLINE bool upb_Message_SetExtensionUInt64(
+UPB_NODISCARD UPB_API_INLINE bool upb_Message_SetExtensionUInt64(
     struct upb_Message* msg, const upb_MiniTableExtension* e, uint64_t value,
     upb_Arena* a) {
   UPB_ASSUME(upb_MiniTableExtension_CType(e) == kUpb_CType_UInt64);
@@ -740,45 +779,45 @@ UPB_API_INLINE bool upb_Message_SetExtensionUInt64(
 
 // Universal Setters ///////////////////////////////////////////////////////////
 
-UPB_API_INLINE bool upb_Message_SetBool(struct upb_Message* msg,
-                                        const upb_MiniTableField* f, bool value,
-                                        upb_Arena* a) {
+UPB_NODISCARD UPB_API_INLINE bool upb_Message_SetBool(
+    struct upb_Message* msg, const upb_MiniTableField* f, bool value,
+    upb_Arena* a) {
   return upb_MiniTableField_IsExtension(f)
              ? upb_Message_SetExtensionBool(
                    msg, (const upb_MiniTableExtension*)f, value, a)
              : (upb_Message_SetBaseFieldBool(msg, f, value), true);
 }
 
-UPB_API_INLINE bool upb_Message_SetDouble(struct upb_Message* msg,
-                                          const upb_MiniTableField* f,
-                                          double value, upb_Arena* a) {
+UPB_NODISCARD UPB_API_INLINE bool upb_Message_SetDouble(
+    struct upb_Message* msg, const upb_MiniTableField* f, double value,
+    upb_Arena* a) {
   return upb_MiniTableField_IsExtension(f)
              ? upb_Message_SetExtensionDouble(
                    msg, (const upb_MiniTableExtension*)f, value, a)
              : (upb_Message_SetBaseFieldDouble(msg, f, value), true);
 }
 
-UPB_API_INLINE bool upb_Message_SetFloat(struct upb_Message* msg,
-                                         const upb_MiniTableField* f,
-                                         float value, upb_Arena* a) {
+UPB_NODISCARD UPB_API_INLINE bool upb_Message_SetFloat(
+    struct upb_Message* msg, const upb_MiniTableField* f, float value,
+    upb_Arena* a) {
   return upb_MiniTableField_IsExtension(f)
              ? upb_Message_SetExtensionFloat(
                    msg, (const upb_MiniTableExtension*)f, value, a)
              : (upb_Message_SetBaseFieldFloat(msg, f, value), true);
 }
 
-UPB_API_INLINE bool upb_Message_SetInt32(struct upb_Message* msg,
-                                         const upb_MiniTableField* f,
-                                         int32_t value, upb_Arena* a) {
+UPB_NODISCARD UPB_API_INLINE bool upb_Message_SetInt32(
+    struct upb_Message* msg, const upb_MiniTableField* f, int32_t value,
+    upb_Arena* a) {
   return upb_MiniTableField_IsExtension(f)
              ? upb_Message_SetExtensionInt32(
                    msg, (const upb_MiniTableExtension*)f, value, a)
              : (upb_Message_SetBaseFieldInt32(msg, f, value), true);
 }
 
-UPB_API_INLINE bool upb_Message_SetInt64(struct upb_Message* msg,
-                                         const upb_MiniTableField* f,
-                                         int64_t value, upb_Arena* a) {
+UPB_NODISCARD UPB_API_INLINE bool upb_Message_SetInt64(
+    struct upb_Message* msg, const upb_MiniTableField* f, int64_t value,
+    upb_Arena* a) {
   return upb_MiniTableField_IsExtension(f)
              ? upb_Message_SetExtensionInt64(
                    msg, (const upb_MiniTableExtension*)f, value, a)
@@ -798,27 +837,27 @@ UPB_API_INLINE void upb_Message_SetMessage(struct upb_Message* msg,
 // copied, so it is the caller's responsibility to ensure that they remain valid
 // for the lifetime of `msg`. That might be done by copying them into the given
 // arena, or by fusing that arena with the arena the bytes live in, for example.
-UPB_API_INLINE bool upb_Message_SetString(struct upb_Message* msg,
-                                          const upb_MiniTableField* f,
-                                          upb_StringView value, upb_Arena* a) {
+UPB_NODISCARD UPB_API_INLINE bool upb_Message_SetString(
+    struct upb_Message* msg, const upb_MiniTableField* f, upb_StringView value,
+    upb_Arena* a) {
   return upb_MiniTableField_IsExtension(f)
              ? upb_Message_SetExtensionString(
                    msg, (const upb_MiniTableExtension*)f, value, a)
              : (upb_Message_SetBaseFieldString(msg, f, value), true);
 }
 
-UPB_API_INLINE bool upb_Message_SetUInt32(struct upb_Message* msg,
-                                          const upb_MiniTableField* f,
-                                          uint32_t value, upb_Arena* a) {
+UPB_NODISCARD UPB_API_INLINE bool upb_Message_SetUInt32(
+    struct upb_Message* msg, const upb_MiniTableField* f, uint32_t value,
+    upb_Arena* a) {
   return upb_MiniTableField_IsExtension(f)
              ? upb_Message_SetExtensionUInt32(
                    msg, (const upb_MiniTableExtension*)f, value, a)
              : (upb_Message_SetBaseFieldUInt32(msg, f, value), true);
 }
 
-UPB_API_INLINE bool upb_Message_SetUInt64(struct upb_Message* msg,
-                                          const upb_MiniTableField* f,
-                                          uint64_t value, upb_Arena* a) {
+UPB_NODISCARD UPB_API_INLINE bool upb_Message_SetUInt64(
+    struct upb_Message* msg, const upb_MiniTableField* f, uint64_t value,
+    upb_Arena* a) {
   return upb_MiniTableField_IsExtension(f)
              ? upb_Message_SetExtensionUInt64(
                    msg, (const upb_MiniTableExtension*)f, value, a)
@@ -858,8 +897,9 @@ UPB_API_INLINE void upb_Message_ClearExtension(
   if (!in) return;
   for (size_t i = 0; i < in->size; i++) {
     upb_TaggedAuxPtr tagged_ptr = in->aux_data[i];
-    if (upb_TaggedAuxPtr_IsExtension(tagged_ptr)) {
-      const upb_Extension* ext = upb_TaggedAuxPtr_Extension(tagged_ptr);
+    if (upb_TaggedAuxPtr_IsCanonicalExtension(tagged_ptr)) {
+      const upb_Extension* ext =
+          upb_TaggedAuxPtr_CanonicalExtension(tagged_ptr);
       if (ext->ext == e) {
         in->aux_data[i] = upb_TaggedAuxPtr_Null();
         return;
@@ -883,7 +923,7 @@ UPB_API_INLINE void upb_Message_ClearOneof(struct upb_Message* msg,
   upb_Message_ClearBaseField(msg, field);
 }
 
-UPB_API_INLINE void* upb_Message_ResizeArrayUninitialized(
+UPB_NODISCARD UPB_API_INLINE void* upb_Message_ResizeArrayUninitialized(
     struct upb_Message* msg, const upb_MiniTableField* f, size_t size,
     upb_Arena* arena) {
   UPB_PRIVATE(_upb_MiniTableField_CheckIsArray)(f);

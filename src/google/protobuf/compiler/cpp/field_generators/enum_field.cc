@@ -72,6 +72,12 @@ class SingularEnum : public FieldGeneratorBase {
     )cc");
   }
 
+  void GenerateMessageClearingCode(io::Printer* p) const override {
+    p->Emit(R"cc(
+      this_.$field_$ = $kDefault$;
+    )cc");
+  }
+
   void GenerateClearingCode(io::Printer* p) const override {
     p->Emit(R"cc(
       $field_$ = $kDefault$;
@@ -221,7 +227,8 @@ class RepeatedEnum : public FieldGeneratorBase {
         opts_(&opts),
         has_cached_size_(field_->is_packed() &&
                          HasGeneratedMethods(field_->file(), opts) &&
-                         !should_split()) {}
+                         !should_split()),
+        cpp_repeated_type_(CalculateFieldDescriptorRepeatedType(field)) {}
   ~RepeatedEnum() override = default;
 
   std::vector<Sub> MakeVars() const override { return Vars(field_, *opts_); }
@@ -241,6 +248,14 @@ class RepeatedEnum : public FieldGeneratorBase {
       p->Emit(R"cc(
         $pbi$::CachedSize $cached_size_name$;
       )cc");
+    }
+  }
+
+  void GenerateMessageClearingCode(io::Printer* p) const override {
+    if (should_split()) {
+      p->Emit("this_.$field_$.ClearIfNotDefault();\n");
+    } else {
+      p->Emit("$field_$.Clear();\n");
     }
   }
 
@@ -290,11 +305,6 @@ class RepeatedEnum : public FieldGeneratorBase {
     p->Emit(R"cc(
       /*decltype($field_$)*/ {},
     )cc");
-    if (has_cached_size_) {
-      p->Emit(R"cc(
-        /*decltype($cached_size_$)*/ {0},
-      )cc");
-    }
   }
 
   void GenerateAggregateInitializer(io::Printer* p) const override {
@@ -302,25 +312,12 @@ class RepeatedEnum : public FieldGeneratorBase {
             R"cc(
               decltype($field_$){$internal_metadata_offset$},
             )cc");
-    if (has_cached_size_) {
-      // std::atomic has no copy constructor, which prevents explicit aggregate
-      // initialization pre-C++17.
-      p->Emit(R"cc(
-        /*decltype($cached_size_$)*/ {0},
-      )cc");
-    }
   }
 
   void GenerateCopyAggregateInitializer(io::Printer* p) const override {
     p->Emit(R"cc(
       decltype($field_$){from._internal_$name$()},
     )cc");
-    if (has_cached_size_) {
-      // std::atomic has no copy constructor.
-      p->Emit(R"cc(
-        /*decltype($cached_size_$)*/ {0},
-      )cc");
-    }
   }
 
   void GenerateMemberConstexprConstructor(io::Printer* p) const override {
@@ -328,9 +325,6 @@ class RepeatedEnum : public FieldGeneratorBase {
             R"cc(
               $name$_ { visibility, $internal_metadata_offset$ }
             )cc");
-    if (has_cached_size_) {
-      p->Emit(",\n_$name$_cached_byte_size_{0}");
-    }
   }
 
   void GenerateMemberConstructor(io::Printer* p) const override {
@@ -338,21 +332,15 @@ class RepeatedEnum : public FieldGeneratorBase {
             R"cc(
               $name$_ { visibility, $internal_metadata_offset$ }
             )cc");
-    if (has_cached_size_) {
-      p->Emit(",\n_$name$_cached_byte_size_{0}");
-    }
   }
 
   void GenerateMemberCopyConstructor(io::Printer* p) const override {
     p->Emit({InternalMetadataOffsetSub(p)},
             R"cc(
               $name$_ {
-                visibility, $internal_metadata_offset$, from.$name$_
+                visibility, $internal_metadata_offset$, arena, from.$name$_
               }
             )cc");
-    if (has_cached_size_) {
-      p->Emit(",\n_$name$_cached_byte_size_{0}");
-    }
   }
 
   void GenerateOneofCopyConstruct(io::Printer* p) const override {
@@ -377,6 +365,7 @@ class RepeatedEnum : public FieldGeneratorBase {
  private:
   const Options* opts_;
   bool has_cached_size_;
+  FieldDescriptor::CppRepeatedType cpp_repeated_type_;
 };
 
 void RepeatedEnum::GenerateAccessorDeclarations(io::Printer* p) const {
@@ -387,13 +376,31 @@ void RepeatedEnum::GenerateAccessorDeclarations(io::Printer* p) const {
   auto vm =
       p->WithVars(AnnotatedAccessors(field_, {"mutable_"}, Semantic::kAlias));
 
-  p->Emit(R"cc(
+  auto decl_field_accessors = [&] {
+    switch (cpp_repeated_type_) {
+      case FieldDescriptor::CppRepeatedType::kRepeated:
+        p->Emit(R"cc(
+          [[nodiscard]] $DEPRECATED$ const $pb$::RepeatedField<int>& $name$()
+              const;
+          [[nodiscard]] $DEPRECATED$ $pb$::RepeatedField<int>* $nonnull$ $mutable_name$();
+        )cc");
+        break;
+      case FieldDescriptor::CppRepeatedType::kProxy:
+        p->Emit(R"cc(
+          [[nodiscard]] $DEPRECATED$ $pb$::RepeatedFieldProxy<const $Enum$>
+          $name$() const;
+          [[nodiscard]] $DEPRECATED$ $pb$::RepeatedFieldProxy<$Enum$> $mutable_name$();
+        )cc");
+        break;
+    }
+  };
+
+  p->Emit({{"decl_field_accessors", decl_field_accessors}}, R"cc(
     public:
     [[nodiscard]] $DEPRECATED$ $Enum$ $name$(int index) const;
     $DEPRECATED$ void $set_name$(int index, $Enum$ value);
     $DEPRECATED$ void $add_name$($Enum$ value);
-    [[nodiscard]] $DEPRECATED$ const $pb$::RepeatedField<int>& $name$() const;
-    [[nodiscard]] $DEPRECATED$ $pb$::RepeatedField<int>* $nonnull$ $mutable_name$();
+    $decl_field_accessors$;
 
     private:
     const $pb$::RepeatedField<int>& $_internal_name$() const;
@@ -437,26 +444,56 @@ void RepeatedEnum::GenerateInlineAccessorDefinitions(io::Printer* p) const {
       // @@protoc_insertion_point(field_add:$pkg.Msg.field$)
     }
   )cc");
-  p->Emit(R"cc(
-    inline const $pb$::RepeatedField<int>& $Msg$::$name$() const
-        ABSL_ATTRIBUTE_LIFETIME_BOUND {
-      $WeakDescriptorSelfPin$;
-      $annotate_list$;
-      // @@protoc_insertion_point(field_list:$pkg.Msg.field$)
-      return _internal_$name_internal$();
-    }
-  )cc");
-  p->Emit(R"cc(
-    inline $pb$::RepeatedField<int>* $nonnull$ $Msg$::mutable_$name$()
-        ABSL_ATTRIBUTE_LIFETIME_BOUND {
-      $WeakDescriptorSelfPin$;
-      $set_hasbit$;
-      $annotate_mutable_list$;
-      // @@protoc_insertion_point(field_mutable_list:$pkg.Msg.field$)
-      $TsanDetectConcurrentMutation$;
-      return _internal_mutable_$name_internal$();
-    }
-  )cc");
+  switch (cpp_repeated_type_) {
+    case FieldDescriptor::CppRepeatedType::kRepeated:
+      p->Emit(R"cc(
+        inline const $pb$::RepeatedField<int>& $Msg$::$name$() const
+            ABSL_ATTRIBUTE_LIFETIME_BOUND {
+          $WeakDescriptorSelfPin$;
+          $annotate_list$;
+          // @@protoc_insertion_point(field_list:$pkg.Msg.field$)
+          return _internal_$name_internal$();
+        }
+      )cc");
+      p->Emit(R"cc(
+        inline $pb$::RepeatedField<int>* $nonnull$ $Msg$::mutable_$name$()
+            ABSL_ATTRIBUTE_LIFETIME_BOUND {
+          $WeakDescriptorSelfPin$;
+          $set_hasbit$;
+          $annotate_mutable_list$;
+          // @@protoc_insertion_point(field_mutable_list:$pkg.Msg.field$)
+          $TsanDetectConcurrentMutation$;
+          return _internal_mutable_$name_internal$();
+        }
+      )cc");
+      break;
+    case FieldDescriptor::CppRepeatedType::kProxy:
+      p->Emit(R"cc(
+        inline $pb$::RepeatedFieldProxy<const $Enum$> $Msg$::$name$() const
+            ABSL_ATTRIBUTE_LIFETIME_BOUND {
+          $WeakDescriptorSelfPin$;
+          $annotate_list$;
+          // @@protoc_insertion_point(field_list:$pkg.Msg.field$)
+          return $pbi$::RepeatedFieldProxyInternalPrivateAccessHelper<
+              const $Enum$>::Construct(_internal_$name_internal$());
+        }
+      )cc");
+      p->Emit(R"cc(
+        inline $pb$::RepeatedFieldProxy<$Enum$> $Msg$::mutable_$name$()
+            ABSL_ATTRIBUTE_LIFETIME_BOUND {
+          $WeakDescriptorSelfPin$;
+          $set_hasbit$;
+          $annotate_mutable_list$;
+          // @@protoc_insertion_point(field_mutable_list:$pkg.Msg.field$)
+          $TsanDetectConcurrentMutation$;
+          return $pbi$::RepeatedFieldProxyInternalPrivateAccessHelper<
+              $Enum$>::Construct(*_internal_mutable_$name_internal$(),
+                                 GetArena());
+        }
+      )cc");
+      break;
+  }
+
   if (should_split()) {
     p->Emit(R"cc(
       inline const $pb$::RepeatedField<int>& $Msg$::_internal_$name_internal$()
@@ -573,12 +610,12 @@ void RepeatedEnum::GenerateByteSize(io::Printer* p) const {
 
 std::unique_ptr<FieldGeneratorBase> MakeSinguarEnumGenerator(
     const FieldDescriptor* desc, const Options& options) {
-  return absl::make_unique<SingularEnum>(desc, options);
+  return std::make_unique<SingularEnum>(desc, options);
 }
 
 std::unique_ptr<FieldGeneratorBase> MakeRepeatedEnumGenerator(
     const FieldDescriptor* desc, const Options& options) {
-  return absl::make_unique<RepeatedEnum>(desc, options);
+  return std::make_unique<RepeatedEnum>(desc, options);
 }
 
 }  // namespace cpp

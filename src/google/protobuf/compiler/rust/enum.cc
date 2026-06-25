@@ -25,6 +25,7 @@
 #include "google/protobuf/compiler/rust/context.h"
 #include "google/protobuf/compiler/rust/naming.h"
 #include "google/protobuf/descriptor.h"
+#include "google/protobuf/io/printer.h"
 #include "upb/reflection/def.hpp"
 
 namespace google {
@@ -33,14 +34,16 @@ namespace compiler {
 namespace rust {
 
 namespace {
+using Sub = ::google::protobuf::io::Printer::Sub;
+
 // Constructs input for `EnumValues` from an enum descriptor.
-std::vector<std::pair<absl::string_view, int32_t>> EnumValuesInput(
-    const EnumDescriptor& desc) {
-  std::vector<std::pair<absl::string_view, int32_t>> result;
+std::vector<EnumValueInput> EnumValuesInput(const EnumDescriptor& desc) {
+  std::vector<EnumValueInput> result;
   result.reserve(static_cast<size_t>(desc.value_count()));
 
   for (int i = 0; i < desc.value_count(); ++i) {
-    result.emplace_back(desc.value(i)->name(), desc.value(i)->number());
+    result.emplace_back(EnumValueInput{desc.value(i)->name(),
+                                       desc.value(i)->number(), desc.value(i)});
   }
 
   return result;
@@ -97,9 +100,8 @@ void MiniTable(Context& ctx, const EnumDescriptor& desc,
 
 }  // namespace
 
-std::vector<RustEnumValue> EnumValues(
-    absl::string_view enum_name,
-    absl::Span<const std::pair<absl::string_view, int32_t>> values) {
+std::vector<RustEnumValue> EnumValues(absl::string_view enum_name,
+                                      absl::Span<const EnumValueInput> values) {
   MultiCasePrefixStripper stripper(enum_name);
 
   absl::flat_hash_set<std::string> seen_by_name;
@@ -112,9 +114,9 @@ std::vector<RustEnumValue> EnumValues(
   seen_by_number.reserve(values.size());
 
   for (const auto& name_and_number : values) {
-    int32_t number = name_and_number.second;
+    int32_t number = name_and_number.number;
     std::string rust_value_name =
-        EnumValueRsName(stripper, name_and_number.first);
+        EnumValueRsName(stripper, name_and_number.name);
 
     if (seen_by_name.contains(rust_value_name)) {
       // Don't add an alias with the same normalized name.
@@ -124,11 +126,13 @@ std::vector<RustEnumValue> EnumValues(
     auto it_and_inserted = seen_by_number.try_emplace(number);
     if (it_and_inserted.second) {
       // This is the first value with this number; this name is canonical.
-      result.push_back(RustEnumValue{rust_value_name, number});
+      result.push_back(
+          RustEnumValue{rust_value_name, name_and_number.desc, number});
       it_and_inserted.first->second = &result.back();
     } else {
       // This number has been seen before; this name is an alias.
-      it_and_inserted.first->second->aliases.push_back(rust_value_name);
+      it_and_inserted.first->second->aliases.push_back(
+          {rust_value_name, name_and_number.desc});
     }
 
     seen_by_name.insert(std::move(rust_value_name));
@@ -147,17 +151,21 @@ void GenerateEnumDefinition(Context& ctx, const EnumDescriptor& desc,
   ctx.Emit(
       {
           {"name", name},
+          Sub("definition_name", name).AnnotatedAs(&desc),
           {"variants",
            [&] {
              for (const auto& value : values) {
                std::string number_str = absl::StrCat(value.number);
                // TODO: Replace with open enum variants when stable
-               ctx.Emit({{"variant_name", value.name}, {"number", number_str}},
-                        R"rs(
+               ctx.Emit(
+                   {Sub("variant_name", value.name).AnnotatedAs(value.desc),
+                    {"number", number_str}},
+                   R"rs(
                     pub const $variant_name$: $name$ = $name$($number$);
                     )rs");
-               for (const auto& alias : value.aliases) {
-                 ctx.Emit({{"alias_name", alias}, {"number", number_str}},
+               for (const auto& [alias, alias_desc] : value.aliases) {
+                 ctx.Emit({Sub("alias_name", alias).AnnotatedAs(alias_desc),
+                           {"number", number_str}},
                           R"rs(
                             pub const $alias_name$: $name$ = $name$($number$);
                             )rs");
@@ -228,7 +236,7 @@ void GenerateEnumDefinition(Context& ctx, const EnumDescriptor& desc,
       R"rs(
       #[repr(transparent)]
       #[derive(Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
-      pub struct $name$(i32);
+      pub struct $definition_name$(i32);
 
       #[allow(non_upper_case_globals)]
       impl $name$ {

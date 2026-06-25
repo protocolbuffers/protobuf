@@ -267,7 +267,7 @@ class GPBUtil
             "throw"=>0,"trait"=>0, "try"=>0,"unset"=>0, "use"=>0, "var"=>0,
             "while"=>0,"xor"=>0, "yield"=>0, "int"=>0, "float"=>0, "bool"=>0,
             "string"=>0,"true"=>0, "false"=>0, "null"=>0, "void"=>0,
-            "iterable"=>0
+            "iterable"=>0,"object"=>0,"mixed"=>0,"never"=>0
         );
 
         if (array_key_exists(strtolower($classname), $reserved_words)) {
@@ -583,6 +583,22 @@ class GPBUtil
             $fields = explode('.', $path);
             $converted_path = [];
             foreach ($fields as $field) {
+                if (preg_match('/[A-Z]/', $field)) {
+                    trigger_error(
+                        "Field mask element may not have upper-case letter. " .
+                        "This will fail in a future version of Protobuf.",
+                        E_USER_WARNING
+                    );
+                }
+                if (preg_match('/_([^a-z]|$)/', $field)) {
+                    trigger_error(
+                        "Underscore in FieldMask path must be followed by a " .
+                        "lowercase letter to successfully round trip through JSON format. " .
+                        "See https://github.com/protocolbuffers/protobuf/issues/25786. " .
+                        "This will fail in a future version of Protobuf.",
+                        E_USER_WARNING
+                    );
+                }
                 $segments = explode('_', $field);
                 $start = true;
                 $converted_segments = "";

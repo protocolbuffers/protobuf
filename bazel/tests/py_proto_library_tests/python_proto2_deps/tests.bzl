@@ -5,6 +5,6 @@ def _test_python_proto2_deps(env, target):
 
     env.expect.that_collection(runfiles_paths).contains("message.py")
 
-TESTS = [
-    (_test_python_proto2_deps, ":proto2_deps_bin"),
-]
+TESTS = {
+    ":proto2_deps_bin": [_test_python_proto2_deps],
+}

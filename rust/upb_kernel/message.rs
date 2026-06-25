@@ -236,42 +236,51 @@ pub unsafe trait UpbGetArena: SealedInternal {
     fn get_arena(&mut self, _private: Private) -> &Arena;
 }
 
-// The upb kernel doesn't support any owned message or message mut interop.
-impl<T: Message> OwnedMessageInterop for T {}
-impl<'a, T: MessageMut<'a>> MessageMutInterop<'a> for T {}
-
 pub trait KernelMessage:
-    AssociatedMiniTable + UpbGetArena + UpbGetMessagePtr + UpbGetMessagePtrMut
-{
-}
-impl<T: AssociatedMiniTable + UpbGetArena + UpbGetMessagePtr + UpbGetMessagePtrMut> KernelMessage
-    for T
+    AssociatedMiniTable + UpbGetArena + UpbGetMessagePtr + UpbGetMessagePtrMut + OwnedMessageInterop
 {
 }
 
-pub trait KernelMessageView: UpbGetMessagePtr {}
-impl<T: UpbGetMessagePtr> KernelMessageView for T {}
+impl<T> KernelMessage for T where
+    T: AssociatedMiniTable
+        + UpbGetArena
+        + UpbGetMessagePtr
+        + UpbGetMessagePtrMut
+        + OwnedMessageInterop
+{
+}
 
-pub trait KernelMessageMut: UpbGetMessagePtr + UpbGetMessagePtrMut {}
-impl<T: UpbGetMessagePtr + UpbGetMessagePtrMut> KernelMessageMut for T {}
+pub trait KernelMessageView<'msg>:
+    UpbGetMessagePtr + MessageViewInterop<'msg> + From<MessageViewInner<'msg, Self::KMessage>>
+{
+    type KMessage;
+}
 
-impl<'a, T> MessageViewInterop<'a> for T
+impl<'msg, T> KernelMessageView<'msg> for T
 where
-    Self: MessageView<'a> + From<MessageViewInner<'a, <Self as MessageView<'a>>::Message>>,
+    T: UpbGetMessagePtr + MessageViewInterop<'msg> + From<MessageViewInner<'msg, T::Msg>>,
 {
-    unsafe fn __unstable_wrap_raw_message(msg: &'a *const std::ffi::c_void) -> Self {
-        let raw = RawMessage::new(*msg as *mut _).unwrap();
-        let inner = unsafe { MessageViewInner::wrap_raw(raw) };
-        inner.into()
-    }
-    unsafe fn __unstable_wrap_raw_message_unchecked_lifetime(msg: *const std::ffi::c_void) -> Self {
-        let raw = RawMessage::new(msg as *mut _).unwrap();
-        let inner = unsafe { MessageViewInner::wrap_raw(raw) };
-        inner.into()
-    }
-    fn __unstable_as_raw_message(&self) -> *const std::ffi::c_void {
-        self.get_ptr(Private).raw().as_ptr() as *const _
-    }
+    type KMessage = T::Msg;
+}
+
+pub trait KernelMessageMut<'msg>:
+    UpbGetMessagePtr
+    + UpbGetMessagePtrMut
+    + UpbGetArena
+    + MessageMutInterop<'msg>
+    + From<MessageMutInner<'msg, Self::KMessage>>
+{
+    type KMessage;
+}
+impl<'msg, T> KernelMessageMut<'msg> for T
+where
+    T: UpbGetMessagePtr
+        + UpbGetMessagePtrMut
+        + UpbGetArena
+        + MessageMutInterop<'msg>
+        + From<MessageMutInner<'msg, <T as UpbGetMessagePtr>::Msg>>,
+{
+    type KMessage = <T as UpbGetMessagePtr>::Msg;
 }
 
 /// Message equality definition which may have both false-negatives and false-positives in the face
@@ -352,6 +361,7 @@ where
         upb::wire::decode_with_options(
             data,
             msg.get_ptr_mut(Private),
+            generated_extension_registry().as_ptr(),
             msg.get_arena(Private),
             decode_options,
         )
@@ -381,6 +391,10 @@ where
         //~ TODO: This discards the info we have about the reason
         //~ of the failure, we should try to keep it instead.
         upb::wire::encode(self.get_ptr(Private)).map_err(|_| SerializeError)
+    }
+
+    fn serialized_len(&self) -> usize {
+        upb::wire::byte_size(self.get_ptr(Private))
     }
 }
 
@@ -430,8 +444,7 @@ where
                 self.get_ptr(Private).raw(),
                 src.as_view().get_ptr(Private).raw(),
                 <Self::Proxied as AssociatedMiniTable>::mini_table(),
-                // Use a nullptr for the ExtensionRegistry.
-                std::ptr::null(),
+                generated_extension_registry().as_ptr(),
                 self.get_arena(Private).raw()
             ));
         }

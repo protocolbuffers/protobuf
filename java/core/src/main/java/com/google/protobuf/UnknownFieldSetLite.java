@@ -148,41 +148,28 @@ public final class UnknownFieldSetLite {
   }
 
   /** Serializes the set and writes it to {@code writer} using {@code MessageSet} wire format. */
-  void writeAsMessageSetTo(Writer writer) throws IOException {
-    if (writer.fieldOrder() == Writer.FieldOrder.DESCENDING) {
-      // Write fields in descending order.
-      for (int i = count - 1; i >= 0; i--) {
-        int fieldNumber = WireFormat.getTagFieldNumber(tags[i]);
-        writer.writeMessageSetItem(fieldNumber, objects[i]);
-      }
-    } else {
-      // Write fields in ascending order.
-      for (int i = 0; i < count; i++) {
-        int fieldNumber = WireFormat.getTagFieldNumber(tags[i]);
-        writer.writeMessageSetItem(fieldNumber, objects[i]);
-      }
+  void writeAsMessageSetTo(CodedOutputStreamWriter writer) throws IOException {
+    // Write fields in ascending order.
+    for (int i = 0; i < count; i++) {
+      int fieldNumber = WireFormat.getTagFieldNumber(tags[i]);
+      writer.writeMessageSetItem(fieldNumber, objects[i]);
     }
   }
 
   /** Serializes the set and writes it to {@code writer}. */
-  public void writeTo(Writer writer) throws IOException {
+  public void writeTo(CodedOutputStreamWriter writer) throws IOException {
     if (count == 0) {
       return;
     }
 
     // TODO: tags are not sorted, so there's no write order guarantees
-    if (writer.fieldOrder() == Writer.FieldOrder.ASCENDING) {
-      for (int i = 0; i < count; ++i) {
-        writeField(tags[i], objects[i], writer);
-      }
-    } else {
-      for (int i = count - 1; i >= 0; --i) {
-        writeField(tags[i], objects[i], writer);
-      }
+    for (int i = 0; i < count; ++i) {
+      writeField(tags[i], objects[i], writer);
     }
   }
 
-  private static void writeField(int tag, Object object, Writer writer) throws IOException {
+  private static void writeField(int tag, Object object, CodedOutputStreamWriter writer)
+      throws IOException {
     int fieldNumber = WireFormat.getTagFieldNumber(tag);
     switch (WireFormat.getTagWireType(tag)) {
       case WireFormat.WIRETYPE_VARINT:
@@ -198,15 +185,9 @@ public final class UnknownFieldSetLite {
         writer.writeBytes(fieldNumber, (ByteString) object);
         break;
       case WireFormat.WIRETYPE_START_GROUP:
-        if (writer.fieldOrder() == Writer.FieldOrder.ASCENDING) {
-          writer.writeStartGroup(fieldNumber);
-          ((UnknownFieldSetLite) object).writeTo(writer);
-          writer.writeEndGroup(fieldNumber);
-        } else {
-          writer.writeEndGroup(fieldNumber);
-          ((UnknownFieldSetLite) object).writeTo(writer);
-          writer.writeStartGroup(fieldNumber);
-        }
+        writer.writeStartGroup(fieldNumber);
+        ((UnknownFieldSetLite) object).writeTo(writer);
+        writer.writeEndGroup(fieldNumber);
         break;
       default:
         // TODO: Change writeTo to throw IOException?
@@ -421,8 +402,11 @@ public final class UnknownFieldSetLite {
         storeField(tag, input.readBytes());
         return true;
       case WireFormat.WIRETYPE_START_GROUP:
+        input.checkRecursionLimit();
+        input.groupDepth++;
         final UnknownFieldSetLite subFieldSet = new UnknownFieldSetLite();
         subFieldSet.mergeFrom(input);
+        input.groupDepth--;
         input.checkLastTagWas(WireFormat.makeTag(fieldNumber, WireFormat.WIRETYPE_END_GROUP));
         storeField(tag, subFieldSet);
         return true;

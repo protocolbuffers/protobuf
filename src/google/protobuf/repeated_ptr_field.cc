@@ -100,8 +100,43 @@ void RepeatedPtrFieldBase::ReserveWithArena(Arena* arena, int capacity) {
   }
 }
 
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+void RepeatedPtrFieldBase::DestroyMessageLites(const ClassData* class_data) {
+  ABSL_DCHECK(NeedsDestroy());
+  ABSL_DCHECK_EQ(GetArena(), nullptr);
+
+  using H = GenericTypeHandler<MessageLite>;
+  const int n = allocated_size();
+  ABSL_DCHECK_LE(n, Capacity());
+  void** elems = elements();
+  void (*destroy)(MessageLite&) = class_data->destroy_message;
+  const size_t allocation_size = class_data->allocation_size();
+  for (int i = 0; i < n; i++) {
+    if (i + 5 < n) {
+      absl::PrefetchToLocalCacheNta(elems[i + 5]);
+    }
+    auto* ptr = cast<H>(elems[i]);
+    destroy(*ptr);
+    internal::SizedDelete(ptr, allocation_size);
+  }
+  if (!using_sso()) {
+    internal::SizedDelete(rep(), Capacity() * sizeof(void*) + kRepHeaderSize);
+  }
+}
+#endif  // PROTOBUF_CUSTOM_VTABLE
+
 void RepeatedPtrFieldBase::DestroyProtos() {
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+  if (allocated_size() > 0) {
+    using H = GenericTypeHandler<MessageLite>;
+    const ClassData* class_data = cast<H>(elements()[0])->GetClassData();
+    PROTOBUF_ALWAYS_INLINE_CALL DestroyMessageLites(class_data);
+  } else if (!using_sso()) {
+    internal::SizedDelete(rep(), Capacity() * sizeof(void*) + kRepHeaderSize);
+  }
+#else
   PROTOBUF_ALWAYS_INLINE_CALL Destroy<GenericTypeHandler<MessageLite>>();
+#endif
 
   // TODO:  Eliminate this store when invoked from the destructor,
   // since it is dead.
@@ -186,10 +221,11 @@ int RepeatedPtrFieldBase::MergeIntoClearedMessages(
   auto dst = reinterpret_cast<MessageLite**>(elements() + current_size_);
   auto src = reinterpret_cast<MessageLite* const*>(from.elements());
   int count = std::min(ClearedCount(), from.current_size_);
-  const ClassData* class_data = GetClassData(*src[0]);
   for (int i = 0; i < count; ++i) {
     ABSL_DCHECK(src[i] != nullptr);
-    dst[i]->MergeFromWithClassData(*src[i], class_data);
+    ABSL_DCHECK(TypeId::Get(*src[i]) == TypeId::Get(*src[0]))
+        << src[i]->GetTypeName() << " vs " << src[0]->GetTypeName();
+    dst[i]->CheckTypeAndMergeFrom(*src[i]);
   }
   return count;
 }
@@ -199,7 +235,7 @@ void RepeatedPtrFieldBase::MergeFromConcreteMessage(
   Prefetch5LinesFrom1Line(&from);
   ABSL_DCHECK_EQ(arena, GetArena());
   ABSL_DCHECK_NE(&from, this);
-  int new_size = current_size_ + from.current_size_;
+  int new_size = internal::CheckedAdd(current_size_, from.current_size_);
   void** dst = InternalReserve(new_size, arena);
   const void* const* src = from.elements();
   auto end = src + from.current_size_;
@@ -230,18 +266,28 @@ template <>
 void RepeatedPtrFieldBase::MergeFrom<MessageLite>(
     const RepeatedPtrFieldBase& from, Arena* arena) {
   ABSL_DCHECK(from.current_size_ > 0);
-  const ClassData* class_data =
-      GetClassData(*reinterpret_cast<const MessageLite*>(from.element_at(0)));
-  MergeFromInternal<MessageLite>(
-      from, arena,
-      [class_data](Arena* arena, MessageLite* dst, const MessageLite& src) {
-        dst->MergeFromWithClassData(src, class_data);
-      },
-      [class_data](Arena* arena, const MessageLite& src) -> MessageLite* {
-        MessageLite* dst = class_data->New(arena);
-        dst->MergeFromWithClassData(src, class_data);
-        return dst;
-      });
+  int new_size = current_size_ + from.current_size_;
+  auto dst = reinterpret_cast<MessageLite**>(InternalReserve(new_size, arena));
+  auto src = reinterpret_cast<MessageLite const* const*>(from.elements());
+  auto end = src + from.current_size_;
+  const MessageLite* prototype = src[0];
+  ABSL_DCHECK(prototype != nullptr);
+  if (ABSL_PREDICT_FALSE(ClearedCount() > 0)) {
+    int recycled = MergeIntoClearedMessages(from);
+    dst += recycled;
+    src += recycled;
+  }
+  for (; src < end; ++src, ++dst) {
+    ABSL_DCHECK(*src != nullptr);
+    ABSL_DCHECK(TypeId::Get(**src) == TypeId::Get(*prototype))
+        << (**src).GetTypeName() << " vs " << prototype->GetTypeName();
+    *dst = prototype->New(arena);
+    (*dst)->CheckTypeAndMergeFrom(**src);
+  }
+  ExchangeCurrentSize(new_size);
+  if (new_size > allocated_size()) {
+    rep()->allocated_size = new_size;
+  }
 }
 
 }  // namespace internal

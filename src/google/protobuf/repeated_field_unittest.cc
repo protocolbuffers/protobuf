@@ -20,6 +20,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <functional>
+#include <iostream>
 #include <iterator>
 #include <limits>
 #include <list>
@@ -39,6 +40,7 @@
 #include "absl/strings/str_format.h"
 #include "absl/types/span.h"
 #include "google/protobuf/arena_test_util.h"
+#include "google/protobuf/internal_visibility.h"
 #include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/io/zero_copy_stream_impl_lite.h"
 #include "google/protobuf/parse_context.h"
@@ -61,6 +63,7 @@ using ::testing::AnyOf;
 using ::testing::ElementsAre;
 using ::testing::ElementsAreArray;
 using ::testing::Ge;
+using ::testing::HasSubstr;
 using ::testing::Le;
 using ::testing::Lt;
 
@@ -162,6 +165,48 @@ TEST(RepeatedField, Small) {
 }
 
 
+class RepeatedFieldIsFullTest : public testing::Test {
+ protected:
+  void SetUp() override {
+    if (sizeof(void*) == 4) {
+      GTEST_SKIP() << "Platform does not have enough memory for the test.";
+    }
+    if (internal::GetBoundsCheckMode() != internal::BoundsCheckMode::kAbort) {
+      GTEST_SKIP() << "Preemtive abort is not enabled.";
+    }
+  }
+
+  RepeatedField<bool> MakeFullField() {
+    // Using `bool` to make it easier on the system to allocate the memory.
+    RepeatedField<bool> field;
+    field.resize(std::numeric_limits<int>::max());
+    return field;
+  }
+};
+
+TEST_F(RepeatedFieldIsFullTest, AddAbortOnFull) {
+  EXPECT_DEATH(MakeFullField().Add(),
+               HasSubstr("Integer overflow in CheckedAdd: 2147483647 + 1"));
+}
+
+TEST_F(RepeatedFieldIsFullTest, AddValueAbortOnFull) {
+  EXPECT_DEATH(MakeFullField().Add(0),
+               HasSubstr("Integer overflow in CheckedAdd: 2147483647 + 1"));
+}
+
+TEST_F(RepeatedFieldIsFullTest, AddFwdIterAbortOnFull) {
+  int i = 2;
+  EXPECT_DEATH(MakeFullField().Add(&i, &i + 1),
+               HasSubstr("Integer overflow in CheckedAdd: 2147483647 + 1"));
+}
+
+TEST_F(RepeatedFieldIsFullTest, AddInputIterAbortOnFull) {
+  std::istringstream test_data("1 2 3 4 5");
+  EXPECT_DEATH(MakeFullField().Add(std::istream_iterator<int>(test_data),
+                                   std::istream_iterator<int>()),
+               HasSubstr("Integer overflow in CheckedAdd: 2147483647 + 1"));
+}
+
 // Test operations on a RepeatedField which is large enough to allocate a
 // separate array.
 TEST(RepeatedField, Large) {
@@ -180,22 +225,6 @@ TEST(RepeatedField, Large) {
 
   int expected_usage = 16 * sizeof(int);
   EXPECT_GE(field.SpaceUsedExcludingSelf(), expected_usage);
-}
-
-TEST(RepeatedField, AddRangeThatOverflowsFailsWithATermination) {
-  if (sizeof(void*) < 8) {
-    GTEST_SKIP() << "Disabled on 32-bit builds due to insufficient memory";
-  }
-  RepeatedField<bool> field;
-
-  std::vector<bool> input;
-  // Overflows into "negative" ints.
-  input.resize(size_t{std::numeric_limits<int32_t>::max()} + 1);
-  EXPECT_DEATH(field.Add(input.begin(), input.end()), "Input too large");
-
-  // Overflows the ints completely.
-  input.resize(size_t{std::numeric_limits<uint32_t>::max()} + 1);
-  EXPECT_DEATH(field.Add(input.begin(), input.end()), "Input too large");
 }
 
 template <typename Rep>
@@ -551,6 +580,16 @@ TEST(RepeatedField, MergeFrom) {
   EXPECT_EQ(5, destination.Get(4));
 }
 
+TEST(RepeatedField, MergeFromSelfFailsWithATermination) {
+  // Self-merge is undefined behavior and is now a well-defined termination.
+  // Use a SOO-capacity field (2 elements for int32_t), the case that
+  // previously appended heap-pointer bytes in release builds.
+  RepeatedField<int32_t> field;
+  field.Add(1);
+  field.Add(2);
+  EXPECT_DEATH(field.MergeFrom(field), "self-reference");
+}
+
 
 TEST(RepeatedField, CopyFrom) {
   RepeatedField<int> source, destination;
@@ -700,7 +739,7 @@ TEST(RepeatedField, AddRange7) {
   int ints[] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
   absl::Span<const int> span(ints);
   auto p = span.begin();
-  static_assert(std::is_convertible<decltype(p), const int*>::value, "");
+  static_assert(std::is_convertible_v<decltype(p), const int*>, "");
   RepeatedField<int> me;
   me.Add(span.begin(), span.end());
 
@@ -1336,6 +1375,28 @@ TEST(RepeatedFieldTest, SortCordTest) {
   }
 }
 
+TEST(RepeatdFieldTest, ContainerAnnotationsAreProperlyCleanedInArena) {
+#if !defined(ABSL_HAVE_ADDRESS_SANITIZER)
+  GTEST_SKIP() << "Asan is not on.";
+#endif
+  alignas(8) char block[128];
+  ArenaOptions options;
+  options.initial_block = block;
+  options.initial_block_size = sizeof(block);
+
+  Arena arena(options);
+  // Make a container and reserve memory
+  arena.Make<RepeatedField<bool>>()->Reserve(64);
+
+  // Accessing it should cause a problem.
+  EXPECT_TRUE(internal::IsMemoryPoisoned(block + 64));
+  // Now reset the arena and let's make sure the memory is accessible.
+  // If `allow_user_poisoning=0`, we need to reset the memory even though
+  // unpoisoning doesn't work.
+  arena.Reset();
+  EXPECT_FALSE(internal::IsMemoryPoisoned(block + 64));
+}
+
 #if defined(GTEST_HAS_DEATH_TEST) && (defined(ABSL_HAVE_ADDRESS_SANITIZER) || \
                                       defined(ABSL_HAVE_MEMORY_SANITIZER))
 
@@ -1547,6 +1608,24 @@ TEST(RepeatedField, CheckedGetOrAbortTest) {
   RepeatedField<int> field;
 
   // Empty container tests.
+  EXPECT_DEATH(internal::CheckedGetOrAbort(field, -1),
+               "Index \\(-1\\) out of bounds of container with size \\(0\\)");
+  EXPECT_DEATH(internal::CheckedGetOrAbort(field, field.size()),
+               "Index \\(0\\) out of bounds of container with size \\(0\\)");
+
+  // Non-empty container tests
+  field.Add(5);
+  field.Add(4);
+  EXPECT_DEATH(internal::CheckedGetOrAbort(field, 2),
+               "Index \\(2\\) out of bounds of container with size \\(2\\)");
+  EXPECT_DEATH(internal::CheckedGetOrAbort(field, -1),
+               "Index \\(-1\\) out of bounds of container with size \\(2\\)");
+}
+
+TEST(RepeatedField, CheckedMutableOrAbortTest) {
+  RepeatedField<int> field;
+
+  // Empty container tests.
   EXPECT_DEATH(internal::CheckedMutableOrAbort(&field, -1),
                "Index \\(-1\\) out of bounds of container with size \\(0\\)");
   EXPECT_DEATH(internal::CheckedMutableOrAbort(&field, field.size()),
@@ -1562,9 +1641,53 @@ TEST(RepeatedField, CheckedGetOrAbortTest) {
 }
 
 
+
+// TODO: Re-enable once parsing overflow is fixed.
+TEST(RepeatedFieldIsFullTest, DISABLED_MergeFrom) {
+  if (sizeof(void*) < 8) {
+    GTEST_SKIP() << "Not enough memory for the test.";
+  }
+
+  TestAllTypes msg;
+  msg.mutable_repeated_bool()->resize(std::numeric_limits<int>::max(), false);
+
+  TestAllTypes payload;
+  payload.add_repeated_bool(true);
+  std::string serialized = payload.SerializeAsString();
+
+  EXPECT_FALSE(msg.MergeFromString(serialized));
+  EXPECT_EQ(msg.repeated_bool_size(), std::numeric_limits<int>::max());
+}
+
+// TODO: Re-enable once parsing overflow is fixed.
+TEST(RepeatedFieldIsFullTest, DISABLED_MergeFromPacked) {
+  if (sizeof(void*) < 8) {
+    GTEST_SKIP() << "Not enough memory for the test.";
+  }
+
+  ::proto2_unittest::TestPackedTypes msg;
+  msg.mutable_packed_bool()->resize(std::numeric_limits<int>::max(), false);
+
+  ::proto2_unittest::TestPackedTypes payload;
+  payload.add_packed_bool(true);
+  std::string serialized = payload.SerializeAsString();
+
+  EXPECT_FALSE(msg.MergeFromString(serialized));
+  EXPECT_EQ(msg.packed_bool_size(), std::numeric_limits<int>::max());
+}
+
 }  // namespace
 
 }  // namespace protobuf
 }  // namespace google
+
+// Code thunks to be dumped by the debugger to inspect the generated assemtbly.
+static const int& CodegenRepeatedFieldGet(const google::protobuf::RepeatedField<int>& a,
+                                          int idx) {
+  return a[idx];
+}
+
+static int odr_use =
+    (google::protobuf::internal::StrongPointer(&CodegenRepeatedFieldGet), 0);
 
 #include "google/protobuf/port_undef.inc"

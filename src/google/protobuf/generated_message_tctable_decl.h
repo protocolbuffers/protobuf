@@ -13,7 +13,6 @@
 #define GOOGLE_PROTOBUF_GENERATED_MESSAGE_TCTABLE_DECL_H__
 
 #include <array>
-#include <atomic>
 #include <cstddef>
 #include <cstdint>
 #include <type_traits>
@@ -107,6 +106,29 @@ struct TcFieldData {
   //     +---------------+---------------+
 
   uint16_t decoded_tag() const { return static_cast<uint16_t>(data >> 16); }
+
+  // Constructor for FastMp parsers.
+  constexpr TcFieldData(uint16_t coded_tag, uint8_t function_index,
+                        uint32_t entry_offset)
+      : data(uint64_t{entry_offset} << 32 |    //
+             uint64_t{function_index} << 16 |  //
+             uint64_t{coded_tag}) {}
+
+  // Fields used in fast-mp parsers:
+  //
+  //     Bit:
+  //     +-----------+-------------------+
+  //     |63    ..     32|31     ..     0|
+  //     +---------------+---------------+
+  //     :   .   :   .   :   . 16|=======| [16] coded_tag()
+  //     :   .   :   .   : 24|===|   .   : [ 8] function_idx()
+  //     :   .   :   . 32|   |   :   .   : [ 8] (unused)
+  //     |===============|   .   :   .   : [32] entry_offset()
+  //     +-----------+-------------------+
+  //     |63    ..     32|31     ..     0|
+  //     +---------------+---------------+
+
+  uint8_t function_idx() const { return static_cast<uint8_t>(data >> 16); }
 
   // Fields used in mini table parsing:
   //
@@ -278,7 +300,7 @@ struct alignas(uint64_t) TcParseTableBase {
   uint32_t aux_offset;
 
   const ClassData* class_data;
-  using PostLoopHandler = const char* (*)(MessageLite * msg, const char* ptr,
+  using PostLoopHandler = const char* (*)(MessageLite* msg, const char* ptr,
                                           ParseContext* ctx);
   PostLoopHandler post_loop_handler;
 
@@ -433,6 +455,7 @@ struct alignas(uint64_t) TcParseTableBase {
     constexpr FieldAux() : message_globals_p(nullptr) {}
     constexpr FieldAux(FieldAuxEnumData, const uint32_t* enum_data)
         : enum_data(enum_data) {}
+    // NOLINTBEGIN(google-explicit-constructor)
     constexpr FieldAux(field_layout::Offset off) : offset(off.off) {}
     constexpr FieldAux(int32_t range_first, int32_t range_last)
         : enum_range{range_first, range_last} {}
@@ -442,6 +465,7 @@ struct alignas(uint64_t) TcParseTableBase {
     constexpr FieldAux(MapAuxInfo map_info) : map_info(map_info) {}
     constexpr FieldAux(LazyEagerVerifyFnType verify_func)
         : verify_func(verify_func) {}
+    // NOLINTEND(google-explicit-constructor)
     struct {
       int32_t first;  // the first label in the range (inclusive)
       int32_t last;   // the last label in the range (inclusize)
@@ -464,6 +488,13 @@ struct alignas(uint64_t) TcParseTableBase {
     }
     const MessageGlobalsBase* message_globals_weak() const {
       return *static_cast<const MessageGlobalsBase* const*>(message_globals_p);
+    }
+    const TcParseTableBase* table_ptr() const {
+#ifndef PROTOBUF_MESSAGE_GLOBALS
+      return table;
+#else
+      return MessageGlobalsBase::ToParseTableBase(message_globals_p);
+#endif
     }
   };
   const FieldAux* field_aux(uint32_t idx) const {

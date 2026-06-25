@@ -8,8 +8,8 @@
 #include <stdint.h>
 #include <string.h>
 
-#include "upb/message/array.h"
 #include "upb/message/message.h"
+#include "upb/mini_table/message.h"
 #include "upb/wire/decode.h"
 #include "upb/wire/decode_fast/cardinality.h"
 #include "upb/wire/decode_fast/combinations.h"
@@ -23,7 +23,8 @@
 
 static bool upb_DecodeFast_SingleFixed(upb_Decoder* d, const char** ptr,
                                        void* dst, upb_DecodeFast_Type type,
-                                       upb_DecodeFastNext* next) {
+                                       upb_DecodeFastNext* next, void* ctx) {
+  UPB_UNUSED(ctx);
   int valbytes = upb_DecodeFast_ValueBytes(type);
   memcpy(dst, *ptr, valbytes);
   *ptr += valbytes;
@@ -47,35 +48,35 @@ static const char* upb_DecodeFast_PackedFixed(upb_EpsCopyInputStream* st,
 
   int valbytes = upb_DecodeFast_ValueBytes(c->type);
 
-  if (size != 0) {
-    if (size % valbytes != 0) {
-      UPB_DECODEFAST_ERROR(c->d, kUpb_DecodeStatus_Malformed, c->ret);
-      return NULL;
-    }
+  if (size == 0) return ptr;  // 0-element packed fields are valid.
 
-    upb_DecodeFastArray arr;
-
-    if (!upb_DecodeFast_GetArrayForAppend(c->d, ptr, c->msg, *c->data,
-                                          c->hasbits, &arr, c->type,
-                                          size / valbytes, c->ret)) {
-      return NULL;
-    }
-
-    upb_DecodeFast_InlineMemcpy(arr.dst, ptr, size);
-    arr.dst = UPB_PTR_AT(arr.dst, size, char);
-    upb_DecodeFastField_SetArraySize(&arr, c->type);
+  if (size % valbytes != 0) {
+    UPB_DECODEFAST_ERROR(c->d, kUpb_DecodeStatus_Malformed, c->ret);
+    return NULL;
   }
 
-  _upb_Decoder_Trace(c->d, 'F');
+  upb_DecodeFastArray arr;
+
+  if (!upb_DecodeFast_GetArrayForAppend(c->d, ptr, c->msg, *c->data, c->hasbits,
+                                        &arr, c->type, size / valbytes,
+                                        c->ret)) {
+    return NULL;
+  }
+
+  upb_DecodeFast_InlineMemcpy(arr.dst, ptr, size);
+  arr.dst = UPB_PTR_AT(arr.dst, size, char);
+  upb_DecodeFastField_SetArraySize(&arr, c->type);
+
   return ptr + size;
 }
 
 UPB_FORCEINLINE
 void upb_DecodeFast_Fixed(upb_Decoder* d, const char** ptr, upb_Message* msg,
-                          intptr_t table, uint64_t* hasbits, uint64_t* data,
-                          upb_DecodeFastNext* ret, upb_DecodeFast_Type type,
+                          const upb_MiniTable* table, uint64_t* hasbits,
+                          uint64_t* data, upb_DecodeFastNext* ret,
+                          upb_DecodeFast_Type type,
                           upb_DecodeFast_Cardinality card,
-                          upb_DecodeFast_TagSize tagsize) {
+                          upb_DecodeFast_TagSize tagsize, uint64_t data2) {
   if (card == kUpb_DecodeFast_Packed) {
     upb_DecodeFast_PackedFixedContext ctx = {
         .d = d,
@@ -85,11 +86,11 @@ void upb_DecodeFast_Fixed(upb_Decoder* d, const char** ptr, upb_Message* msg,
         .hasbits = hasbits,
         .ret = ret,
     };
-    upb_DecodeFast_Delimited(d, ptr, type, card, tagsize, data,
-                             &upb_DecodeFast_PackedFixed, ret, &ctx);
+    upb_DecodeFast_Packed(d, ptr, type, card, tagsize, data,
+                          &upb_DecodeFast_PackedFixed, ret, &ctx, data2);
   } else {
     upb_DecodeFast_Unpacked(d, ptr, msg, data, hasbits, ret, type, card,
-                            tagsize, &upb_DecodeFast_SingleFixed);
+                            tagsize, &upb_DecodeFast_SingleFixed, NULL, data2);
   }
 }
 
@@ -97,12 +98,12 @@ void upb_DecodeFast_Fixed(upb_Decoder* d, const char** ptr, upb_Message* msg,
  * {s,o,r,p} x {f4,f8} x {1bt,2bt} */
 
 #define F(type, card, tagbytes)                                          \
-  UPB_NOINLINE UPB_PRESERVE_NONE const char* UPB_DECODEFAST_FUNCNAME(    \
-      type, card, tagbytes)(UPB_PARSE_PARAMS) {                          \
+  UPB_NOINLINE UPB_PRESERVE_NONE upb_FastDecoder_Return                  \
+  UPB_DECODEFAST_FUNCNAME(type, card, tagbytes)(UPB_PARSE_PARAMS) {      \
     upb_DecodeFastNext next = kUpb_DecodeFastNext_Dispatch;              \
     upb_DecodeFast_Fixed(d, &ptr, msg, table, &hasbits, &data, &next,    \
                          kUpb_DecodeFast_##type, kUpb_DecodeFast_##card, \
-                         kUpb_DecodeFast_##tagbytes);                    \
+                         kUpb_DecodeFast_##tagbytes, data2);             \
     UPB_DECODEFAST_NEXTMAYBEPACKED(                                      \
         next, UPB_DECODEFAST_FUNCNAME(type, Repeated, tagbytes),         \
         UPB_DECODEFAST_FUNCNAME(type, Packed, tagbytes));                \

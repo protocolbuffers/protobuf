@@ -11,6 +11,7 @@ import static com.google.protobuf.Internal.checkNotNull;
 
 import java.io.IOException;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 @ExperimentalApi
 @CheckReturnValue
@@ -20,7 +21,7 @@ final class Protobuf {
   private final ManifestSchemaFactory schemaFactory;
 
   // TODO: b/341207042 - Consider using ClassValue instead.
-  private final ConcurrentHashMap<Class<?>, Schema<?>> schemaCache =
+  private final ConcurrentMap<Class<?>, Schema<?>> schemaCache =
       new ConcurrentHashMap<Class<?>, Schema<?>>();
 
   /** Gets the singleton instance of the Protobuf runtime. */
@@ -28,25 +29,29 @@ final class Protobuf {
     return INSTANCE;
   }
 
-  /** Writes the given message to the target {@link Writer}. */
-  <T> void writeTo(T message, Writer writer) throws IOException {
+  /** Writes the given message to the target {@link CodedOutputStreamWriter}. */
+  <T extends GeneratedMessageLite<?, ?>> void writeTo(T message, CodedOutputStreamWriter writer)
+      throws IOException {
     schemaFor(message).writeTo(message, writer);
   }
 
-  /** Reads fields from the given {@link Reader} and merges them into the message. */
-  <T> void mergeFrom(T message, Reader reader, ExtensionRegistryLite extensionRegistry)
+  /**
+   * Reads fields from the given {@link CodedInputStreamReader} and merges them into the message.
+   */
+  <T extends GeneratedMessageLite<?, ?>> void mergeFrom(
+      T message, CodedInputStreamReader reader, ExtensionRegistryLite extensionRegistry)
       throws IOException {
     schemaFor(message).mergeFrom(message, reader, extensionRegistry);
   }
 
   /** Checks if all required fields are set. */
-  <T> boolean isInitialized(T message) {
+  <T extends GeneratedMessageLite<?, ?>> boolean isInitialized(T message) {
     return schemaFor(message).isInitialized(message);
   }
 
   /** Gets the schema for the given message type. */
   @SuppressWarnings("unchecked")
-  <T> Schema<T> schemaFor(Class<T> messageType) {
+  <T extends GeneratedMessageLite<?, ?>> Schema<T> schemaFor(Class<T> messageType) {
     Object schema = schemaCache.get(messageType);
     if (schema == null) {
       return registerSchema(messageType);
@@ -55,7 +60,7 @@ final class Protobuf {
   }
 
   @DoNotInline
-  private <T> Schema<T> registerSchema(Class<T> messageType) {
+  private <T extends GeneratedMessageLite<?, ?>> Schema<T> registerSchema(Class<T> messageType) {
     Schema<T> schema = schemaFactory.createSchema(messageType);
     checkNotNull(schema, "schema");
     @SuppressWarnings("unchecked")
@@ -69,7 +74,7 @@ final class Protobuf {
 
   /** Gets the schema for the given message. */
   @SuppressWarnings("unchecked")
-  <T> Schema<T> schemaFor(T message) {
+  <T extends GeneratedMessageLite<?, ?>> Schema<T> schemaFor(T message) {
     return schemaFor((Class<T>) message.getClass());
   }
 

@@ -387,13 +387,12 @@ MessageLite* DuplicateIfNonNullInternal(MessageLite* message) {
 }
 
 void GenericSwap(MessageLite* lhs, MessageLite* rhs) {
-  const ClassData* class_data = GetClassData(*lhs);
-  std::unique_ptr<MessageLite> tmp(class_data->New(nullptr));
-  tmp->MergeFromWithClassData(*lhs, class_data);
+  std::unique_ptr<MessageLite> tmp(lhs->New());
+  tmp->CheckTypeAndMergeFrom(*lhs);
   lhs->Clear();
-  lhs->MergeFromWithClassData(*rhs, class_data);
+  lhs->CheckTypeAndMergeFrom(*rhs);
   rhs->Clear();
-  rhs->MergeFromWithClassData(*tmp, class_data);
+  rhs->CheckTypeAndMergeFrom(*tmp);
 }
 
 // Returns a message owned by this Arena.  This may require Own()ing or
@@ -412,6 +411,19 @@ MessageLite* GetOwnedMessageInternal(Arena* message_arena,
     ret->CheckTypeAndMergeFrom(*submessage);
     return ret;
   }
+}
+
+internal::ExtensionSet* PrivateAccess::GetExtensionSet(MessageLite* msg) {
+  return const_cast<internal::ExtensionSet*>(
+      GetExtensionSet(static_cast<const MessageLite*>(msg)));
+}
+
+const internal::ExtensionSet* PrivateAccess::GetExtensionSet(
+    const MessageLite* msg) {
+  auto* tc_table = msg->GetTcParseTable();
+  if (tc_table->extension_offset == 0) return nullptr;
+  return reinterpret_cast<const internal::ExtensionSet*>(
+      reinterpret_cast<const char*>(msg) + tc_table->extension_offset);
 }
 
 }  // namespace internal

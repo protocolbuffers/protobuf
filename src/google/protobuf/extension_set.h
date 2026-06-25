@@ -37,7 +37,6 @@
 #include "absl/log/absl_check.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/generated_enum_util.h"
-#include "google/protobuf/generated_message_tctable_decl.h"
 #include "google/protobuf/internal_visibility.h"
 #include "google/protobuf/port.h"
 #include "google/protobuf/io/coded_stream.h"
@@ -69,6 +68,7 @@ class Reflection;       // message.h
 class UnknownFieldSet;  // unknown_field_set.h
 class FeatureSet;
 namespace internal {
+class LazyField;
 struct DescriptorTable;
 class FieldSkipper;     // wire_format_lite.h
 class ReflectionVisit;  // message_reflection_util.h
@@ -142,9 +142,7 @@ struct ExtensionInfo {
         is_utf8(false),
         is_lazy(islazy),
         enum_validity_check(),
-        lazy_eager_verify_func(verify_func)
-  {
-  }
+        lazy_eager_verify_func(verify_func) {}
 
   const MessageLite* message = nullptr;
   int number = 0;
@@ -168,19 +166,25 @@ struct ExtensionInfo {
   };
 
   struct MessageInfo {
+#ifdef PROTOBUF_MESSAGE_GLOBALS
+    const internal::MessageGlobalsBase* globals = nullptr;
+#else
     const MessageLite* prototype = nullptr;
-    // The TcParse table used for this object.
-    // Never null. (except in platforms that don't constant initialize default
-    // instances)
+#endif
+    // The TcParse table used for this object. Never null. (except in platforms
+    // that don't constant initialize default instances)
     const internal::TcParseTableBase* tc_table = nullptr;
 
-    const ClassData* GetClassData() const {
-#ifdef PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
-      return tc_table->class_data;
+    // Create from prototype
+    const MessageLite* GetPrototype() const {
+#ifdef PROTOBUF_MESSAGE_GLOBALS
+      return internal::MessageGlobalsBase::ToDefaultInstance(globals);
 #else
-      return google::protobuf::internal::GetClassData(*prototype);
+      return prototype;
 #endif
     }
+
+    const internal::TcParseTableBase* GetTcTable() const { return tc_table; }
   };
 
   union {
@@ -238,6 +242,12 @@ class PROTOBUF_EXPORT DescriptorPoolExtensionFinder {
   MessageFactory* factory_;
   const Descriptor* containing_type_;
 };
+
+// Turn on direct LazyField access.
+#if !defined( \
+    PROTOBUF_INTERNAL_DIRECT_LAZY_FIELD_IN_EXTENSION_SET_TEMPORARY_OPTOUT)
+#define PROTOBUF_INTERNAL_DIRECT_LAZY_FIELD_IN_EXTENSION_SET
+#endif
 
 // This is an internal helper class intended for use within the protocol buffer
 // library and generated classes.  Clients should not use it directly.  Instead,
@@ -468,7 +478,7 @@ class PROTOBUF_EXPORT ExtensionSet {
 #define desc const FieldDescriptor* descriptor  // avoid line wrapping
   std::string* AddString(Arena* arena, int number, FieldType type, desc);
   MessageLite* AddMessage(Arena* arena, int number, FieldType type,
-                          const ClassData* class_data, desc);
+                          const MessageLite& prototype, desc);
   MessageLite* AddMessage(Arena* arena, const FieldDescriptor* descriptor,
                           MessageFactory* factory);
   void AddAllocatedMessage(Arena* arena, const FieldDescriptor* descriptor,
@@ -691,67 +701,6 @@ class PROTOBUF_EXPORT ExtensionSet {
                                        int end_field_number, uint8_t* target,
                                        io::EpsCopyOutputStream* stream) const;
   // Interface of a lazily parsed singular message extension.
-  class PROTOBUF_EXPORT LazyMessageExtension {
-   public:
-    LazyMessageExtension() = default;
-    LazyMessageExtension(const LazyMessageExtension&) = delete;
-    LazyMessageExtension& operator=(const LazyMessageExtension&) = delete;
-    virtual ~LazyMessageExtension() = default;
-
-    virtual LazyMessageExtension* Clone(Arena* arena,
-                                        const LazyMessageExtension& other,
-                                        Arena* other_arena) const = 0;
-    virtual const MessageLite& GetMessage(const MessageLite& prototype,
-                                          Arena* arena) const = 0;
-    virtual const MessageLite& GetMessageIgnoreUnparsed(
-        const MessageLite& prototype, Arena* arena) const = 0;
-    virtual MessageLite* MutableMessage(const MessageLite& prototype,
-                                        Arena* arena) = 0;
-    virtual void SetAllocatedMessage(MessageLite* message, Arena* arena) = 0;
-    virtual void UnsafeArenaSetAllocatedMessage(MessageLite* message,
-                                                Arena* arena) = 0;
-    [[nodiscard]] virtual MessageLite* ReleaseMessage(
-        const MessageLite& prototype, Arena* arena) = 0;
-    virtual MessageLite* UnsafeArenaReleaseMessage(const MessageLite& prototype,
-                                                   Arena* arena) = 0;
-
-    virtual bool HasUnparsed() const = 0;
-    virtual bool IsInitialized(const MessageLite* prototype,
-                               Arena* arena) const = 0;
-    virtual bool IsEagerSerializeSafe(const MessageLite* prototype,
-                                      Arena* arena) const = 0;
-    virtual size_t ByteSizeLong() const = 0;
-    virtual size_t SpaceUsedLong() const = 0;
-
-    virtual std::variant<size_t, const MessageLite*> UnparsedSizeOrMessage()
-        const = 0;
-
-    virtual void MergeFrom(const MessageLite* prototype,
-                           const LazyMessageExtension& other, Arena* arena,
-                           Arena* other_arena) = 0;
-    virtual void MergeFromMessage(const MessageLite& msg, Arena* arena) = 0;
-    virtual void Clear() = 0;
-
-    virtual const char* _InternalParse(const MessageLite& prototype,
-                                       Arena* arena, const char* ptr,
-                                       ParseContext* ctx) = 0;
-    virtual uint8_t* WriteMessageToArray(
-        const MessageLite* prototype, int number, uint8_t* target,
-        io::EpsCopyOutputStream* stream) const = 0;
-
-    virtual LazyField* GetUnderlyingField() = 0;
-
-   private:
-    virtual void UnusedKeyMethod();  // Dummy key method to avoid weak vtable.
-  };
-  // Give access to function defined below to see LazyMessageExtension.
-  static LazyMessageExtension* MaybeCreateLazyExtensionImpl(Arena* arena);
-  static LazyMessageExtension* MaybeCreateLazyExtension(Arena* arena) {
-    auto* f = maybe_create_lazy_extension_.load(std::memory_order_relaxed);
-    return f != nullptr ? f(arena) : nullptr;
-  }
-  static std::atomic<LazyMessageExtension* (*)(Arena * arena)>
-      maybe_create_lazy_extension_;
 
   // We can't directly use std::atomic for Extension::cached_size because
   // Extension needs to be trivially copyable.
@@ -802,7 +751,6 @@ class PROTOBUF_EXPORT ExtensionSet {
     union Pointer {
       std::string* string_value;
       MessageLite* message_value;
-      LazyMessageExtension* lazymessage_value;
 
       RepeatedField<int32_t>* repeated_int32_t_value;
       RepeatedField<int64_t>* repeated_int64_t_value;
@@ -1093,6 +1041,9 @@ class PROTOBUF_EXPORT ExtensionSet {
   bool IsCompletelyEmpty() const {
     return flat_size_ == 0 && flat_capacity_ == 0;
   }
+
+  // Reduces the flat_capacity_ to the smallest power of 2 >= flat_size_.
+  void InternalReduceSmallCapacity(Arena* arena);
 
   // Implementation of MergeFrom into the empty ExtensionSet from a small
   // `other`.
@@ -1769,9 +1720,8 @@ class RepeatedMessageTypeTraits {
   }
   static inline MutableType Add(Arena* arena, int number, FieldType field_type,
                                 ExtensionSet* set) {
-    static const ClassData* class_data = MessageTraits<Type>::class_data();
-    return static_cast<Type*>(
-        set->AddMessage(arena, number, field_type, class_data, nullptr));
+    return static_cast<Type*>(set->AddMessage(
+        arena, number, field_type, Type::default_instance(), nullptr));
   }
   PROTOBUF_FUTURE_ADD_EARLY_NODISCARD static inline const RepeatedPtrField<
       Type>&

@@ -107,10 +107,10 @@ class ParserTest : public testing::Test {
   // Set up the parser to parse the given text.
   void SetupParser(absl::string_view text) {
     raw_input_ =
-        absl::make_unique<io::ArrayInputStream>(text.data(), text.size());
+        std::make_unique<io::ArrayInputStream>(text.data(), text.size());
     input_ =
-        absl::make_unique<io::Tokenizer>(raw_input_.get(), &error_collector_);
-    parser_ = absl::make_unique<Parser>();
+        std::make_unique<io::Tokenizer>(raw_input_.get(), &error_collector_);
+    parser_ = std::make_unique<Parser>();
     parser_->RecordErrorsTo(&error_collector_);
     parser_->SetRequireSyntaxIdentifier(require_syntax_identifier_);
   }
@@ -341,6 +341,148 @@ TEST_F(ParseMessageTest, ExplicitRequiredSyntaxIdentifier) {
       "  field { name:\"foo\" label:LABEL_REQUIRED type:TYPE_INT32 number:1 }"
       "}");
   EXPECT_EQ("proto2", parser_->GetSyntaxIdentifier());
+}
+
+TEST_F(ParseMessageTest, AggregateValueWithoutNormalization) {
+  ExpectParsesTo(
+      R"schema(message TestMessage {
+option (foo) = {   a:
+  100  };
+})schema",
+      R"pb(
+        message_type {
+          name: "TestMessage"
+          options {
+            uninterpreted_option {
+              name { name_part: "foo" is_extension: true }
+              aggregate_value: "   a:\n  100  "
+            }
+          }
+        }
+      )pb");
+}
+
+TEST_F(ParseMessageTest, AggregateValueComplex) {
+  ExpectParsesTo(
+      R"schema(message TestMessage {
+  option (foo) = {
+   outer: {
+      inner: 1
+    }
+  };
+})schema",
+      R"pb(
+        message_type {
+          name: "TestMessage"
+          options {
+            uninterpreted_option {
+              name { name_part: "foo" is_extension: true }
+              aggregate_value: "\n   outer: {\n      inner: 1\n    }\n  "
+            }
+          }
+        }
+      )pb");
+}
+
+TEST_F(ParseMessageTest, AggregateValueTrailingWhitespace) {
+  ExpectParsesTo(
+      "message TestMessage {\n"
+      "  option (foo) = { a: 1    \n"
+      "    b: 2   };\n"
+      "}\n",
+
+      R"pb(
+        message_type {
+          name: "TestMessage"
+          options {
+            uninterpreted_option {
+              name { name_part: "foo" is_extension: true }
+              aggregate_value: " a: 1    \n    b: 2   "
+            }
+          }
+        }
+      )pb");
+}
+
+TEST_F(ParseMessageTest, AggregateValueMultilineString) {
+  ExpectParsesTo(
+      "message TestMessage {\n"
+      "  option (foo) = { a: \"foo\"\n"
+      "                      \"bar\" };\n"
+      "}\n",
+      R"pb(
+        message_type {
+          name: "TestMessage"
+          options {
+            uninterpreted_option {
+              name { name_part: "foo" is_extension: true }
+              aggregate_value: " a: \"foo\"\n                      \"bar\" "
+            }
+          }
+        }
+      )pb");
+}
+
+TEST_F(ParseMessageTest, AggregateValueWithInlineBlockComment) {
+  ExpectParsesTo(
+      "message TestMessage {\n"
+      "  option (foo) = { a: /* bla */ 1 };\n"
+      "}\n",
+      R"pb(
+        message_type {
+          name: "TestMessage"
+          options {
+            uninterpreted_option {
+              name { name_part: "foo" is_extension: true }
+              aggregate_value: " a:           1 "
+            }
+          }
+        }
+      )pb");
+}
+
+TEST_F(ParseMessageTest, AggregateValueWithSingleLineComment) {
+  ExpectParsesTo(
+      "message TestMessage {\n"
+      "  option (foo) = {\n"
+      "    // This is a comment\n"
+      "    a: 1\n"
+      "  };\n"
+      "}\n",
+      R"pb(
+        message_type {
+          name: "TestMessage"
+          options {
+            uninterpreted_option {
+              name { name_part: "foo" is_extension: true }
+              aggregate_value: "\n    \n    a: 1\n  "
+            }
+          }
+        }
+      )pb");
+}
+
+TEST_F(ParseMessageTest, AggregateValueWithMultilineBlockComment) {
+  ExpectParsesTo(
+      "message TestMessage {\n"
+      "  option (foo) = {\n"
+      "    /* line 1\n"
+      "       line 2\n"
+      "       line 3 */\n"
+      "    a: 1\n"
+      "  };\n"
+      "}\n",
+      R"pb(
+        message_type {
+          name: "TestMessage"
+          options {
+            uninterpreted_option {
+              name { name_part: "foo" is_extension: true }
+              aggregate_value: "\n    \n\n                \n    a: 1\n  "
+            }
+          }
+        }
+      )pb");
 }
 
 TEST_F(ParseMessageTest, SimpleFields) {
@@ -2634,6 +2776,30 @@ TEST_F(ParseErrorTest, ReservedNumberOutOfRange) {
       "  reserved 2147483648;\n"
       "}\n",
       "1:11: Integer out of range.\n");
+}
+
+TEST_F(ParseErrorTest, ReservedMaxInt) {
+  ExpectHasErrors(
+      "message Foo {\n"
+      "  reserved 2147483647;\n"
+      "}\n",
+      "1:21: Field number out of bounds.\n");
+}
+
+TEST_F(ParseErrorTest, ReservedRangeMaxInt) {
+  ExpectHasErrors(
+      "message Foo {\n"
+      "  reserved 1 to 2147483647;\n"
+      "}\n",
+      "1:26: Field number out of bounds.\n");
+}
+
+TEST_F(ParseErrorTest, ReservedMaxIntOctal) {
+  ExpectHasErrors(
+      "message Foo {\n"
+      "  reserved 017777777777;\n"
+      "}\n",
+      "1:23: Field number out of bounds.\n");
 }
 
 // -------------------------------------------------------------------

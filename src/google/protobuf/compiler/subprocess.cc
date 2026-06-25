@@ -9,7 +9,11 @@
 
 #include "google/protobuf/compiler/subprocess.h"
 
+#include <cstdlib>
 #include <string>
+#include <vector>
+
+#include "absl/types/span.h"
 
 #ifndef _WIN32
 #include <errno.h>
@@ -55,7 +59,8 @@ Subprocess::~Subprocess() {
   }
 }
 
-void Subprocess::Start(const std::string& program, SearchMode search_mode) {
+void Subprocess::Start(const std::string& program, SearchMode search_mode,
+                       absl::Span<const std::string> args) {
   // Create the pipes.
   HANDLE stdin_pipe_read;
   HANDLE stdin_pipe_write;
@@ -100,8 +105,19 @@ void Subprocess::Start(const std::string& program, SearchMode search_mode) {
     ABSL_LOG(FATAL) << "utf8_to_wcs: " << Win32ErrorMessage(GetLastError());
   }
 
+  // Join program and args into a single command-line string, as CreateProcessW
+  // expects it. We do not perform any quoting — callers are responsible for any
+  // escaping their tokens require to round-trip through the child's parser.
+  std::vector<std::string> argv;
+  argv.reserve(args.size() + 1);
+  argv.push_back(program);
+  argv.insert(argv.end(), args.begin(), args.end());
+  std::string joined = absl::StrJoin(argv, " ");
+
   // Invoking cmd.exe allows for '.bat' files from the path as well as '.exe'.
-  std::string command_line = absl::StrCat("cmd.exe /c \"", program, "\"");
+  std::string command_line = search_mode == SEARCH_PATH
+                                 ? absl::StrCat("cmd.exe /c \"", joined, "\"")
+                                 : joined;
 
   // get wide string version of command line as the path may contain non-ascii characters
   std::wstring wcommand_line;
@@ -113,19 +129,22 @@ void Subprocess::Start(const std::string& program, SearchMode search_mode) {
   // parameter.
   wchar_t *wcommand_line_copy = _wcsdup(wcommand_line.c_str());
 
-  // Create the process.
+  // Create the process. With EXACT_NAME and no args we pass lpCommandLine=NULL
+  // so behavior is driven solely by lpApplicationName, matching the original
+  // `--plugin` semantics on Windows.
   PROCESS_INFORMATION process_info;
 
-  if (CreateProcessW(
-          (search_mode == SEARCH_PATH) ? nullptr : wprogram.c_str(),
-          (search_mode == SEARCH_PATH) ? wcommand_line_copy : nullptr,
-          nullptr,  // process security attributes
-          nullptr,  // thread security attributes
-          TRUE,     // inherit handles?
-          0,        // obscure creation flags
-          nullptr,  // environment (inherit from parent)
-          nullptr,  // current directory (inherit from parent)
-          &startup_info, &process_info)) {
+  if (CreateProcessW((search_mode == SEARCH_PATH) ? nullptr : wprogram.c_str(),
+                     (search_mode == SEARCH_PATH || !args.empty())
+                         ? wcommand_line_copy
+                         : nullptr,
+                     nullptr,  // process security attributes
+                     nullptr,  // thread security attributes
+                     TRUE,     // inherit handles?
+                     0,        // obscure creation flags
+                     nullptr,  // environment (inherit from parent)
+                     nullptr,  // current directory (inherit from parent)
+                     &startup_info, &process_info)) {
     child_handle_ = process_info.hProcess;
     CloseHandleOrDie(process_info.hThread);
     child_stdin_ = stdin_pipe_write;
@@ -301,7 +320,8 @@ void OpenPipe(int fd[2]) {
 }
 }  // namespace
 
-void Subprocess::Start(const std::string& program, SearchMode search_mode) {
+void Subprocess::Start(const std::string& program, SearchMode search_mode,
+                       absl::Span<const std::string> args) {
   // Note that we assume that there are no other threads, thus we don't have to
   // do crazy stuff like using socket pairs or avoiding libc locks.
 
@@ -312,9 +332,17 @@ void Subprocess::Start(const std::string& program, SearchMode search_mode) {
   OpenPipe(stdin_pipe);
   OpenPipe(stdout_pipe);
 
-  // Use std::string to manage the program name buffer safely.
-  std::string program_copy = program;
-  char* argv[2] = {program_copy.data(), nullptr};
+  std::vector<std::string> argv_storage;
+  argv_storage.reserve(args.size() + 1);
+  argv_storage.push_back(program);
+  argv_storage.insert(argv_storage.end(), args.begin(), args.end());
+
+  std::vector<char*> argv;
+  argv.reserve(argv_storage.size() + 1);
+  for (const auto& arg : argv_storage) {
+    argv.push_back(portable_strdup(arg.c_str()));
+  }
+  argv.push_back(nullptr);
 
   child_pid_ = fork();
   if (child_pid_ == -1) {
@@ -331,10 +359,10 @@ void Subprocess::Start(const std::string& program, SearchMode search_mode) {
 
     switch (search_mode) {
       case SEARCH_PATH:
-        execvp(argv[0], argv);
+        execvp(argv[0], argv.data());
         break;
       case EXACT_NAME:
-        execv(argv[0], argv);
+        execv(argv[0], argv.data());
         break;
     }
 
@@ -353,6 +381,10 @@ void Subprocess::Start(const std::string& program, SearchMode search_mode) {
     // that will also be flushed by the parent.
     _exit(1);
   } else {
+    for (char* arg : argv) {
+      free(arg);
+    }
+
     close(stdin_pipe[0]);
     close(stdout_pipe[1]);
 
