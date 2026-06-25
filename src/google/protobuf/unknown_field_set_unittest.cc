@@ -37,8 +37,12 @@ namespace google {
 namespace protobuf {
 namespace internal {
 struct UnknownFieldSetTestPeer {
-  static auto AddLengthDelimited(UnknownFieldSet& set, int number) {
-    return set.AddLengthDelimited(number);
+  static void AddLengthDelimitedMicro(UnknownFieldSet& set, int number,
+                                      absl::string_view value) {
+    Arena* arena = set.arena();
+    size_t inline_capacity = value.size();
+    set.AddLengthDelimited(number, arena, inline_capacity)
+        ->Set(value, arena, inline_capacity);
   }
 };
 }  // namespace internal
@@ -195,7 +199,8 @@ static void PopulateUFS(UnknownFieldSet& set) {
     node->AddLengthDelimited(2, long_str);
     node->AddLengthDelimited(2, std::string(long_str));
     node->AddLengthDelimited(2, absl::Cord(long_str));
-    *internal::UnknownFieldSetTestPeer::AddLengthDelimited(*node, 3) = long_str;
+    internal::UnknownFieldSetTestPeer::AddLengthDelimitedMicro(*node, 3,
+                                                               long_str);
     // Test some recursion too.
     node = node->AddGroup(4);
   }
@@ -632,16 +637,13 @@ TEST_F(UnknownFieldSetTest, SpaceUsed) {
   // Make sure an unknown field set has zero space used until a field is
   // actually added.
   const size_t base = empty_message.SpaceUsedLong();
-  std::string* str = nullptr;
+  size_t str_size = 0;
   UnknownFieldSet* group = nullptr;
   const auto total = [&] {
     size_t result = base;
     result += shadow_vector.SpaceUsedExcludingSelfLong();
     result += shadow_vector_group.SpaceUsedExcludingSelfLong();
-    if (str != nullptr) {
-      result += sizeof(std::string) +
-                internal::StringSpaceUsedExcludingSelfLong(*str);
-    }
+    result += str_size;
     if (group != nullptr) {
       result += sizeof(UnknownFieldSet);
     }
@@ -656,13 +658,19 @@ TEST_F(UnknownFieldSetTest, SpaceUsed) {
   shadow_vector.Add();
   EXPECT_EQ(total(), empty_message.SpaceUsedLong()) << "Var";
 
-  str =
-      internal::UnknownFieldSetTestPeer::AddLengthDelimited(*unknown_fields, 1);
+  constexpr absl::string_view kMicroStringInput = "12345678901234567890";
+  unknown_fields->AddLengthDelimited(1, kMicroStringInput);
+  if constexpr (kMicroStringInput.size() <=
+                internal::MicroString::kMaxInlineCapacity) {
+    // StringVariant + extra MicroString inline size.
+    str_size = sizeof(void*) * 2 + (kMicroStringInput.size() -
+                                    internal::MicroString::kInlineCapacity);
+  } else {
+    // StringVariant + out-of-line block.
+    str_size = sizeof(void*) * 2 + 24;
+  }
   shadow_vector.Add();
   EXPECT_EQ(total(), empty_message.SpaceUsedLong()) << "Str";
-
-  str->assign(sizeof(std::string) + 1, 'x');
-  EXPECT_EQ(total(), empty_message.SpaceUsedLong()) << "Str2";
 
   group = unknown_fields->AddGroup(1);
   shadow_vector.Add();
@@ -768,8 +776,8 @@ TEST_F(UnknownFieldSetTest, SerializeToString) {
   field_set.AddLengthDelimited(44, std::string("byv"));
   field_set.AddLengthDelimited(44,
                                absl::Cord("this came from cord and is long"));
-  *internal::UnknownFieldSetTestPeer::AddLengthDelimited(field_set, 44) =
-      "0123456789";
+  internal::UnknownFieldSetTestPeer::AddLengthDelimitedMicro(field_set, 44,
+                                                             "0123456789");
 
   field_set.AddFixed32(7, 7);
   field_set.AddFixed64(8, 8);

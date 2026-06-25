@@ -14,6 +14,7 @@
 #include <cstdint>
 #include <cstring>
 #include <string>
+#include <type_traits>
 #include <utility>
 
 #include "absl/log/absl_check.h"
@@ -78,9 +79,10 @@ size_t UnknownFieldSet::SpaceUsedExcludingSelfLong() const {
   for (const UnknownField& field : fields) {
     switch (field.type()) {
       case UnknownField::TYPE_LENGTH_DELIMITED:
-        total_size += sizeof(*field.data_.string_value) +
-                      internal::StringSpaceUsedExcludingSelfLong(
-                          *field.data_.string_value);
+        total_size +=
+            sizeof(*field.data_.string_value) +
+            field.data_.string_value->str.GuessExtraInlineCapacity() +
+            field.data_.string_value->str.SpaceUsedExcludingSelfLong();
         break;
       case UnknownField::TYPE_GROUP:
         total_size += field.data_.group->SpaceUsedLong();
@@ -105,20 +107,20 @@ int UnknownFieldSet::SpaceUsed() const {
 }
 
 void UnknownFieldSet::AddLengthDelimited(int number, const absl::Cord& value) {
-  absl::CopyCordToString(value, AddLengthDelimited(number));
+  // Not the most efficient, but this overload is not called much.
+  AddLengthDelimited(number, std::string(value));
 }
 
 template <int&...>
 void UnknownFieldSet::AddLengthDelimited(int number, std::string&& value) {
   auto& field = *fields().Add();
   field.number_ = number;
-  field.SetType(UnknownField::TYPE_LENGTH_DELIMITED);
-  field.data_.string_value =
-      Arena::Create<std::string>(arena(), std::move(value));
+  Arena* a = arena();
+  size_t inline_capacity = value.size();
+  field.InitAsString(a, inline_capacity)
+      ->Set(std::move(value), a, inline_capacity);
 }
 template void UnknownFieldSet::AddLengthDelimited(int, std::string&&);
-
-
 
 void UnknownFieldSet::AddField(const UnknownField& field) {
   fields().Add(field.DeepCopy(arena()));
@@ -216,10 +218,12 @@ bool UnknownFieldSet::SerializeToCord(absl::Cord* output) const {
 UnknownField UnknownField::DeepCopy(Arena* arena) const {
   UnknownField copy = *this;
   switch (type()) {
-    case UnknownField::TYPE_LENGTH_DELIMITED:
-      copy.data_.string_value =
-          Arena::Create<std::string>(arena, *data_.string_value);
+    case UnknownField::TYPE_LENGTH_DELIMITED: {
+      size_t inline_capacity = data_.string_value->str.Get().size();
+      copy.InitAsString(arena, inline_capacity)
+          ->Set(data_.string_value->str, arena, inline_capacity);
       break;
+    }
     case UnknownField::TYPE_GROUP: {
       UnknownFieldSet* group = Arena::Create<UnknownFieldSet>(arena);
       group->MergeFrom(*data_.group);
@@ -253,12 +257,11 @@ void UnknownFieldSet::Swap(UnknownFieldSet* x) {
 uint8_t* UnknownField::InternalSerializeLengthDelimitedNoTag(
     uint8_t* target, io::EpsCopyOutputStream* stream) const {
   ABSL_DCHECK_EQ(TYPE_LENGTH_DELIMITED, type());
-  const absl::string_view data = *data_.string_value;
+  const absl::string_view data = data_.string_value->str.Get();
   target = io::CodedOutputStream::WriteVarint32ToArray(data.size(), target);
   target = stream->WriteRaw(data.data(), data.size(), target);
   return target;
 }
-
 
 }  // namespace protobuf
 }  // namespace google

@@ -89,10 +89,12 @@ bool WireFormat::SkipField(io::CodedInputStream* input, uint32_t tag,
       if (unknown_fields == nullptr) {
         if (!input->Skip(length)) return false;
       } else {
-        if (!input->ReadString(unknown_fields->AddLengthDelimited(number),
-                               length)) {
+        // DO NOT SUBMIT: We should improve this?
+        std::string tmp;
+        if (!input->ReadString(&tmp, length)) {
           return false;
         }
+        unknown_fields->AddLengthDelimited(number, std::move(tmp));
       }
       return true;
     }
@@ -342,8 +344,11 @@ bool WireFormat::SkipMessageSetField(io::CodedInputStream* input,
                                      UnknownFieldSet* unknown_fields) {
   uint32_t length;
   if (!input->ReadVarint32(&length)) return false;
-  return input->ReadString(unknown_fields->AddLengthDelimited(field_number),
-                           length);
+  // DO NOT SUBMIT: Improve this?
+  std::string tmp;
+  if (!input->ReadString(&tmp, length)) return false;
+  unknown_fields->AddLengthDelimited(field_number, std::move(tmp));
+  return true;
 }
 
 bool WireFormat::ParseAndMergeMessageSetField(uint32_t field_number,

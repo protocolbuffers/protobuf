@@ -8,6 +8,7 @@
 #ifndef GOOGLE_PROTOBUF_MICRO_STRING_H__
 #define GOOGLE_PROTOBUF_MICRO_STRING_H__
 
+#include <algorithm>
 #include <cstddef>
 #include <cstdint>
 #include <type_traits>
@@ -122,11 +123,15 @@ class PROTOBUF_EXPORT MicroString {
     }
   };
 
+  static constexpr int kTagShift = 2;
+
  public:
   // We don't allow extra capacity in big-endian because it is harder to manage
   // the pointer to the MicroString "base".
   static constexpr bool kAllowExtraCapacity = IsLittleEndian();
   static constexpr size_t kInlineCapacity = sizeof(uintptr_t) - 1;
+  static constexpr size_t kMaxInlineCapacity =
+      kAllowExtraCapacity ? 255 >> kTagShift : kInlineCapacity;
   static constexpr size_t kMaxMicroRepCapacity = 256 - sizeof(MicroRep);
 
   // Empty string.
@@ -281,6 +286,16 @@ class PROTOBUF_EXPORT MicroString {
 
   size_t SpaceUsedExcludingSelfLong() const;
 
+  // If the object is in inline mode, it will use the size as a hint of the
+  // actual inline capacity.
+  // Othewise, it assumes minimum inline capacity.
+  // DO NOT SUBMIT: Add test.
+  size_t GuessExtraInlineCapacity() const {
+    return is_inline() ? std::max(inline_view().size(), kInlineCapacity) -
+                             kInlineCapacity
+                       : 0;
+  }
+
   absl::string_view Get() const {
     if (is_micro_rep()) {
       return micro_rep()->view();
@@ -321,8 +336,6 @@ class PROTOBUF_EXPORT MicroString {
                 "See comment in for_tag declaration above.");
 
   static constexpr uintptr_t kIsMicroRepTag = 0x2;
-  static constexpr int kTagShift = 2;
-  static constexpr size_t kMaxInlineCapacity = 255 >> kTagShift;
 
   static_assert((kIsLargeRepTag & kIsMicroRepTag) == 0,
                 "The tags are exclusive.");
@@ -583,7 +596,7 @@ class MicroStringExtraImpl : private MicroString {
   static constexpr size_t kInlineCapacity =
       RoundUp(RequestedSpace + /* inline_size */ 1) - /* inline_size */ 1;
 
-  static_assert(kInlineCapacity < MicroString::kMaxInlineCapacity,
+  static_assert(kInlineCapacity <= MicroString::kMaxInlineCapacity,
                 "Must fit with the tags.");
 
 #if defined(__cpp_lib_is_constant_evaluated)
