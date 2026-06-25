@@ -33,6 +33,7 @@
 #include <string>
 #include <type_traits>
 #include <utility>
+#include <variant>
 
 #include "absl/base/attributes.h"
 #include "absl/base/macros.h"
@@ -1650,6 +1651,19 @@ PROTOBUF_ALWAYS_INLINE MessageLite* MessageCreator::PlacementNew(
   return Launder(reinterpret_cast<MessageLite*>(mem));
 }
 
+// Returns either a string literal "Message" / "MessageLite", or a pointer to a
+// default message instance which we can call `GetTypeName()` on.
+template <typename T>
+auto GetTypeNameResolver() {
+  if constexpr (std::is_same_v<T, MessageLite>) {
+    return "MessageLite";
+  } else if constexpr (std::is_same_v<T, Message>) {
+    return "Message";
+  } else {
+    return &T::default_instance();
+  }
+}
+
 }  // namespace internal
 
 PROTOBUF_FUTURE_ADD_EARLY_NODISCARD
@@ -1676,15 +1690,22 @@ std::string Utf8Format(const MessageLite& message_lite);
 template <typename T>
 PROTOBUF_FUTURE_ADD_EARLY_NODISCARD const T* DynamicCastMessage(
     const MessageLite* from) {
-  static_assert(std::is_base_of<MessageLite, T>::value, "");
+  static_assert(std::is_base_of_v<MessageLite, T>, "");
 
-  // We might avoid the call to T::GetClassData() altogether if T were to
-  // expose the class data pointer.
-  if (from == nullptr || TypeId::Get<T>() != TypeId::Get(*from)) {
-    return nullptr;
+  if constexpr (std::is_same_v<T, MessageLite>) {
+    return from;
+  } else if constexpr (std::is_same_v<T, Message>) {
+    if (from == nullptr || internal::GetClassData(*from)->is_lite) {
+      return nullptr;
+    }
+    // We have to reinterpret_cast here in case `Message` is incomplete.
+    return reinterpret_cast<const Message*>(from);
+  } else {
+    if (from == nullptr || TypeId::Get<T>() != TypeId::Get(*from)) {
+      return nullptr;
+    }
+    return static_cast<const T*>(from);
   }
-
-  return static_cast<const T*>(from);
 }
 
 template <typename T>
@@ -1694,8 +1715,12 @@ PROTOBUF_FUTURE_ADD_EARLY_NODISCARD T* DynamicCastMessage(MessageLite* from) {
 }
 
 namespace internal {
-[[noreturn]] PROTOBUF_EXPORT void FailDynamicCast(const MessageLite& from,
-                                                  const MessageLite& to);
+// Takes either a `const char*` string literal as the `To` type name, or a
+// pointer to a message prototype that we can call `GetTypeName()` on. This is
+// done to minimize code bloat in the caller, since dynamic casts are inlined.
+[[noreturn]] PROTOBUF_EXPORT void FailDynamicCast(
+    const MessageLite& from,
+    std::variant<const char*, const MessageLite*> to_type_name);
 }  // namespace internal
 
 template <typename T>
@@ -1710,7 +1735,7 @@ PROTOBUF_FUTURE_ADD_EARLY_NODISCARD const T& DynamicCastMessage(
 #endif
     // Move the logging into an out-of-line function to reduce bloat in the
     // caller.
-    internal::FailDynamicCast(from, T::default_instance());
+    internal::FailDynamicCast(from, internal::GetTypeNameResolver<T>());
   }
   return *destination_message;
 }
@@ -1724,10 +1749,15 @@ PROTOBUF_FUTURE_ADD_EARLY_NODISCARD T& DynamicCastMessage(MessageLite& from) {
 template <typename T>
 PROTOBUF_FUTURE_ADD_EARLY_NODISCARD const T* DownCastMessage(
     const MessageLite* from) {
-  internal::StrongReferenceToType<T>();
-  ABSL_DCHECK(DynamicCastMessage<T>(from) == from)
-      << "Cannot downcast " << from->GetTypeName() << " to "
-      << T::default_instance().GetTypeName();
+  if constexpr (!std::is_same_v<T, MessageLite> &&
+                !std::is_same_v<T, Message>) {
+    internal::StrongReferenceToType<T>();
+  }
+  if constexpr (internal::PerformDebugChecks()) {
+    if (DynamicCastMessage<T>(from) != from) {
+      internal::FailDynamicCast(*from, internal::GetTypeNameResolver<T>());
+    }
+  }
   return static_cast<const T*>(from);
 }
 
@@ -1746,17 +1776,6 @@ PROTOBUF_FUTURE_ADD_EARLY_NODISCARD const T& DownCastMessage(
 template <typename T>
 PROTOBUF_FUTURE_ADD_EARLY_NODISCARD T& DownCastMessage(MessageLite& from) {
   return *DownCastMessage<T>(&from);
-}
-
-template <>
-PROTOBUF_FUTURE_ADD_EARLY_NODISCARD inline const MessageLite*
-DynamicCastMessage(const MessageLite* from) {
-  return from;
-}
-template <>
-PROTOBUF_FUTURE_ADD_EARLY_NODISCARD inline const MessageLite* DownCastMessage(
-    const MessageLite* from) {
-  return from;
 }
 
 // Deprecated names for the cast functions.
