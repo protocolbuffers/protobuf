@@ -213,7 +213,6 @@ upb/port/undef.inc
 upb/port/vsnprintf_compat.h
 upb/reflection/common.h
 upb/reflection/def.h
-upb/reflection/def.hpp
 upb/reflection/def_pool.h
 upb/reflection/def_type.h
 upb/reflection/descriptor_bootstrap.h
@@ -224,7 +223,6 @@ upb/reflection/extension_range.h
 upb/reflection/field_def.h
 upb/reflection/file_def.h
 upb/reflection/message.h
-upb/reflection/message.hpp
 upb/reflection/message_def.h
 upb/reflection/message_reserved_range.h
 upb/reflection/method_def.h

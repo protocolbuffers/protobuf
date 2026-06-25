@@ -40,7 +40,7 @@ cc_library(
         "//upb/base",
         "//upb/mem",
         "//upb/mini_table",
-        "//upb/reflection",
+        "//upb/reflection:reflection_cc",
         "@abseil-cpp//absl/container:flat_hash_set",
         "@abseil-cpp//absl/log:absl_check",
     ],
