@@ -245,13 +245,19 @@ upb_Message* _upb_Message_Copy(upb_Message* dst, const upb_Message* src,
 
   for (size_t i = 0; i < in->size; i++) {
     upb_TaggedAuxPtr tagged_ptr = in->aux_data[i];
-    if (upb_TaggedAuxPtr_IsCanonicalExtension(tagged_ptr)) {
-      // Clone extension
+    if (upb_TaggedAuxPtr_IsCanonicalExtension(tagged_ptr) ||
+        upb_TaggedAuxPtr_IsNonCanonicalExtension(tagged_ptr)) {
+      // Clone a canonical or non-canonical extension
+      bool canonical = upb_TaggedAuxPtr_IsCanonicalExtension(tagged_ptr);
       const upb_Extension* msg_ext =
-          upb_TaggedAuxPtr_CanonicalExtension(tagged_ptr);
+          canonical ? upb_TaggedAuxPtr_CanonicalExtension(tagged_ptr)
+                    : upb_TaggedAuxPtr_NonCanonicalExtension(tagged_ptr);
       const upb_MiniTableField* field = &msg_ext->ext->UPB_PRIVATE(field);
-      upb_Extension* dst_ext = UPB_PRIVATE(_upb_Message_GetOrCreateExtension)(
-          dst, msg_ext->ext, arena);
+      upb_Extension* dst_ext =
+          canonical ? UPB_PRIVATE(_upb_Message_GetOrCreateExtension)(
+                          dst, msg_ext->ext, arena)
+                    : UPB_PRIVATE(_upb_Message_CreateNonCanonicalExtension)(
+                          dst, msg_ext->ext, arena);
       if (!dst_ext) return NULL;
       if (upb_MiniTableField_IsScalar(field)) {
         if (!upb_Clone_ExtensionValue(msg_ext->ext, msg_ext, dst_ext, arena)) {
@@ -269,7 +275,7 @@ upb_Message* _upb_Message_Copy(upb_Message* dst, const upb_Message* src,
         dst_ext->data.array_val = cloned_array;
       }
     } else if (upb_TaggedAuxPtr_IsUnknownStringView(tagged_ptr)) {
-      // Clone unknown
+      // Clone a raw unknown field
       upb_StringView* unknown = upb_TaggedPtrAux_StringViewRepr(tagged_ptr);
       // Make a copy into destination arena.
       if (!UPB_PRIVATE(_upb_Message_AddUnknown)(

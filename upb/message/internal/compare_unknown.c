@@ -8,11 +8,18 @@
 #include "upb/message/internal/compare_unknown.h"
 
 #include <stdint.h>
+#include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "upb/base/string_view.h"
 #include "upb/mem/alloc.h"
+#include "upb/message/internal/extension.h"
+#include "upb/message/internal/message.h"
 #include "upb/message/message.h"
+#include "upb/mini_table/internal/message.h"
+#include "upb/mini_table/message.h"
+#include "upb/wire/encode.h"
 #include "upb/wire/eps_copy_input_stream.h"
 #include "upb/wire/reader.h"
 #include "upb/wire/types.h"
@@ -237,8 +244,6 @@ static upb_UnknownFields* upb_UnknownFields_BuildFromBuffer(
   return fields;
 }
 
-// Builds a upb_UnknownFields data structure from the unknown fields of a
-// upb_Message.
 static upb_UnknownFields* upb_UnknownFields_Build(upb_UnknownField_Context* ctx,
                                                   const upb_Message* msg) {
   upb_UnknownFields_Builder builder = {
@@ -249,12 +254,49 @@ static upb_UnknownFields* upb_UnknownFields_Build(upb_UnknownField_Context* ctx,
       .last_tag = 0,
   };
   uintptr_t iter = kUpb_Message_UnknownBegin;
-  upb_StringView view;
-  while (upb_Message_NextUnknown(msg, &view, &iter)) {
-    upb_EpsCopyInputStream_Init(&ctx->stream, &view.data, view.size);
-    upb_CombineUnknownFields(ctx, &builder, &view.data);
-    UPB_ASSERT(upb_EpsCopyInputStream_IsDone(&ctx->stream, &view.data) &&
-               !upb_EpsCopyInputStream_IsError(&ctx->stream));
+  upb_MessageUnknown data;
+  while (upb_Message_NextUnknown2(msg, &data, &iter)) {
+    if (data.type == kUpb_MessageUnknownType_Bytes) {
+      upb_StringView view = data.value.bytes;
+      upb_EpsCopyInputStream_Init(&ctx->stream, &view.data, view.size);
+      upb_CombineUnknownFields(ctx, &builder, &view.data);
+      UPB_ASSERT(upb_EpsCopyInputStream_IsDone(&ctx->stream, &view.data) &&
+                 !upb_EpsCopyInputStream_IsError(&ctx->stream));
+    } else if (data.type == kUpb_MessageUnknownType_NonCanonicalExtension) {
+      const upb_Extension* ext = (const upb_Extension*)data.value.extension;
+      // Create a dummy message with the same extension to encode.
+      upb_MiniTable dummy_mt;
+      memset(&dummy_mt, 0, sizeof(upb_MiniTable));
+      dummy_mt.UPB_PRIVATE(ext) = kUpb_ExtMode_Extendable;
+      dummy_mt.UPB_ONLYBITS(field_count) = 0;
+      dummy_mt.UPB_PRIVATE(size) = sizeof(upb_Message);
+
+      upb_Message* dummy_msg = _upb_Message_New(&dummy_mt, ctx->arena);
+      if (!dummy_msg) {
+        upb_UnknownFields_OutOfMemory(ctx);
+      }
+
+      upb_Extension* dummy_ext = UPB_PRIVATE(_upb_Message_GetOrCreateExtension)(
+          dummy_msg, ext->ext, ctx->arena);
+      if (!dummy_ext) {
+        upb_UnknownFields_OutOfMemory(ctx);
+      }
+      dummy_ext->data = ext->data;
+
+      char* enc_buf;
+      size_t enc_size;
+      upb_EncodeStatus enc_status =
+          upb_Encode(dummy_msg, &dummy_mt, 0, ctx->arena, &enc_buf, &enc_size);
+      if (enc_status != kUpb_EncodeStatus_Ok) {
+        upb_UnknownFields_OutOfMemory(ctx);
+      }
+
+      const char* ptr = enc_buf;
+      upb_EpsCopyInputStream_Init(&ctx->stream, &ptr, enc_size);
+      upb_CombineUnknownFields(ctx, &builder, &ptr);
+      UPB_ASSERT(upb_EpsCopyInputStream_IsDone(&ctx->stream, &ptr) &&
+                 !upb_EpsCopyInputStream_IsError(&ctx->stream));
+    }
   }
   upb_UnknownFields* fields = upb_UnknownFields_DoBuild(ctx, &builder);
   return fields;

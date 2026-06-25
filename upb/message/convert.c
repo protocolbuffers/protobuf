@@ -18,6 +18,7 @@
 #include "upb/message/array.h"
 #include "upb/message/compare.h"
 #include "upb/message/internal/accessors.h"
+#include "upb/message/internal/extension.h"
 #include "upb/message/internal/message.h"
 #include "upb/message/map.h"
 #include "upb/message/message.h"
@@ -103,24 +104,6 @@ static void upb_Message_EncodeFieldAsUnknown(
   char* buf = upb_BackAlloc_Init(&e->alloc, e->alloc.arena);
   UPB_PRIVATE(_upb_Encode_Field)(e, src, src_field, &buf, &size,
                                  encode_options);
-  if (size > 0) {
-    if (!UPB_PRIVATE(_upb_Message_AddUnknown)(dst, buf, size, e->alloc.arena,
-                                              kUpb_AddUnknown_Alias)) {
-      upb_ErrorHandler_ThrowError(err, kUpb_ErrorCode_OutOfMemory);
-    }
-  }
-}
-
-static void upb_Message_EncodeExtensionAsUnknown(
-    upb_encstate* e, upb_Message* dst, const upb_MiniTable* dst_mt,
-    const upb_MiniTableExtension* ext, upb_MessageValue val, int depth,
-    int options, upb_ErrorHandler* err) {
-  size_t size;
-  int encode_options = upb_Encode_LimitDepth(options, depth);
-  bool is_message_set = upb_MiniTable_IsMessageSet(dst_mt);
-  char* buf = upb_BackAlloc_Init(&e->alloc, e->alloc.arena);
-  UPB_PRIVATE(_upb_Encode_Extension)(e, ext, val, is_message_set, &buf, &size,
-                                     encode_options);
   if (size > 0) {
     if (!UPB_PRIVATE(_upb_Message_AddUnknown)(dst, buf, size, e->alloc.arena,
                                               kUpb_AddUnknown_Alias)) {
@@ -474,11 +457,12 @@ static void upb_Message_ConvertExtensions(upb_Converter* c, upb_Message* dst,
         upb_Message_SetFieldOrExtension(dst, dst_f, dst_ext, &val, c->arena);
       }
     } else {
-      // Since this extension is not known in the destination schema, encode it
-      // as an unknown field.
-      // TODO - b/510055656: to handle this as a non-canonical extension
-      upb_Message_EncodeExtensionAsUnknown(&c->encoder, dst, dst_mt, ext, val,
-                                           depth, c->encode_options, &c->err);
+      upb_Extension* msg_ext = UPB_PRIVATE(
+          _upb_Message_CreateNonCanonicalExtension)(dst, ext, c->arena);
+      if (!msg_ext) {
+        upb_ErrorHandler_ThrowError(&c->err, kUpb_ErrorCode_OutOfMemory);
+      }
+      msg_ext->data = val;
     }
   }
 }
@@ -555,20 +539,60 @@ static void upb_Message_ConvertInternal(upb_Converter* c, upb_Message* dst,
   }
 
   // Convert unknown fields.
-  upb_StringView data;
-  size_t iter = kUpb_Message_UnknownBegin;
-  while (upb_Message_NextUnknown(src, &data, &iter)) {
-    int decode_options = upb_Decode_LimitDepth(
-        c->decode_options | kUpb_DecodeOption_AliasString, depth);
+  upb_MessageUnknown unknown;
+  uintptr_t iter = kUpb_Message_UnknownBegin;
+  while (upb_Message_NextUnknown2(src, &unknown, &iter)) {
+    if (unknown.type == kUpb_MessageUnknownType_Bytes) {
+      int decode_options = upb_Decode_LimitDepth(
+          c->decode_options | kUpb_DecodeOption_AliasString, depth);
 
-    // Reuse d. Reset input stream.
-    const char* ptr = data.data;
-    upb_Decoder* d = &c->decoder;
-    upb_EpsCopyInputStream_InitWithErrorHandler(&d->input, &ptr, data.size,
-                                                d->err);
-    upb_Decoder_Reset(d, decode_options, dst);
-    _upb_Decoder_DecodeMessage(d, ptr, dst, dst_mt);
-    UPB_ASSERT(d->end_group == DECODE_NOGROUP);
+      // Reuse d. Reset input stream.
+      const char* ptr = unknown.value.bytes.data;
+      upb_Decoder* d = &c->decoder;
+      upb_EpsCopyInputStream_InitWithErrorHandler(
+          &d->input, &ptr, unknown.value.bytes.size, d->err);
+      upb_Decoder_Reset(d, decode_options, dst);
+      _upb_Decoder_DecodeMessage(d, ptr, dst, dst_mt);
+      UPB_ASSERT(d->end_group == DECODE_NOGROUP);
+    } else if (unknown.type == kUpb_MessageUnknownType_NonCanonicalExtension) {
+      const upb_Extension* ext = (const upb_Extension*)unknown.value.extension;
+      // Encode the non-canonical extension to wire format.
+      upb_MiniTable dummy_mt;
+      memset(&dummy_mt, 0, sizeof(upb_MiniTable));
+      dummy_mt.UPB_PRIVATE(ext) = kUpb_ExtMode_Extendable;
+      dummy_mt.UPB_ONLYBITS(field_count) = 0;
+      dummy_mt.UPB_PRIVATE(size) = sizeof(upb_Message);
+
+      upb_Message* dummy_msg = _upb_Message_New(&dummy_mt, c->arena);
+      if (!dummy_msg) {
+        upb_ErrorHandler_ThrowError(&c->err, kUpb_ErrorCode_OutOfMemory);
+      }
+      upb_Extension* dummy_ext = UPB_PRIVATE(_upb_Message_GetOrCreateExtension)(
+          dummy_msg, ext->ext, c->arena);
+      if (!dummy_ext) {
+        upb_ErrorHandler_ThrowError(&c->err, kUpb_ErrorCode_OutOfMemory);
+      }
+      dummy_ext->data = ext->data;
+
+      char* enc_buf;
+      size_t enc_size;
+      upb_EncodeStatus enc_status =
+          upb_Encode(dummy_msg, &dummy_mt, 0, c->arena, &enc_buf, &enc_size);
+      if (enc_status == kUpb_EncodeStatus_Ok) {
+        // Decode the encoded bytes directly into dst.
+        int decode_options = upb_Decode_LimitDepth(
+            c->decode_options | kUpb_DecodeOption_AliasString, depth);
+        const char* ptr = enc_buf;
+        upb_Decoder* d = &c->decoder;
+        upb_EpsCopyInputStream_InitWithErrorHandler(&d->input, &ptr, enc_size,
+                                                    d->err);
+        upb_Decoder_Reset(d, decode_options, dst);
+        _upb_Decoder_DecodeMessage(d, ptr, dst, dst_mt);
+        UPB_ASSERT(d->end_group == DECODE_NOGROUP);
+      } else {
+        upb_ErrorHandler_ThrowError(&c->err, kUpb_ErrorCode_OutOfMemory);
+      }
+    }
   }
 }
 
@@ -635,7 +659,6 @@ const upb_Message* upb_Message_Convert(const upb_Message* src,
                      decode_options, tmp_arena);
       if (decode_status != kUpb_DecodeStatus_MaxDepthExceeded) {
         UPB_ASSERT(decode_status == kUpb_DecodeStatus_Ok);
-        // Compare the decoded message to the converted message.
         UPB_ASSERT(upb_Message_IsEqual(decoded_msg, dst, dst_mt, 0));
       }
     }

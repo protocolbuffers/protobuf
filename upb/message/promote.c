@@ -16,7 +16,6 @@
 #include "upb/mem/arena.h"
 #include "upb/message/accessors.h"
 #include "upb/message/array.h"
-#include "upb/message/internal/array.h"
 #include "upb/message/internal/extension.h"
 #include "upb/message/internal/message.h"
 #include "upb/message/map.h"
@@ -25,6 +24,7 @@
 #include "upb/mini_table/field.h"
 #include "upb/mini_table/message.h"
 #include "upb/wire/decode.h"
+#include "upb/wire/encode.h"
 #include "upb/wire/eps_copy_input_stream.h"
 #include "upb/wire/reader.h"
 
@@ -83,42 +83,74 @@ upb_GetExtension_Status upb_Message_GetOrPromoteExtension(
   upb_Message* extension_msg = NULL;
   int depth_limit = 100;
   uintptr_t iter = kUpb_Message_UnknownBegin;
-  upb_StringView data;
-  while (upb_Message_NextUnknown(msg, &data, &iter)) {
-    const char* ptr = data.data;
-    upb_EpsCopyInputStream stream;
-    upb_EpsCopyInputStream_Init(&stream, &ptr, data.size);
-    while (!upb_EpsCopyInputStream_IsDone(&stream, &ptr)) {
-      uint32_t tag;
-      const char* unknown_begin = ptr;
-      ptr = upb_WireReader_ReadTag(ptr, &tag, &stream);
-      if (!ptr) return kUpb_GetExtension_ParseError;
-      if (field_number == upb_WireReader_GetFieldNumber(tag)) {
-        upb_StringView data;
+  upb_MessageUnknown data;
+  while (upb_Message_NextUnknown2(msg, &data, &iter)) {
+    if (data.type == kUpb_MessageUnknownType_NonCanonicalExtension) {
+      const upb_Extension* ext = (const upb_Extension*)data.value.extension;
+      if (upb_MiniTableExtension_Number(ext->ext) == field_number) {
+        // Encode and then decode to promote.
+        char* buf;
+        size_t size;
+        upb_EncodeStatus enc_status = upb_Encode(
+            ext->data.msg_val, upb_MiniTableExtension_GetSubMessage(ext->ext),
+            0, arena, &buf, &size);
+        if (enc_status != kUpb_EncodeStatus_Ok) {
+          return enc_status == kUpb_EncodeStatus_OutOfMemory
+                     ? kUpb_GetExtension_OutOfMemory
+                     : kUpb_GetExtension_ParseError;
+        }
         found_count++;
-        upb_EpsCopyCapture capture;
-        upb_EpsCopyCapture_Start(&capture, &stream, unknown_begin);
-        ptr = _upb_WireReader_SkipValue(ptr, tag, depth_limit, &stream);
-        if (!ptr || !upb_EpsCopyCapture_End(&capture, &stream, ptr, &data)) {
+        if (!extension_msg) {
+          extension_msg = _upb_Message_New(extension_table, arena);
+          if (!extension_msg) return kUpb_GetExtension_OutOfMemory;
+        }
+        upb_DecodeStatus status =
+            upb_Decode(buf, size, extension_msg, extension_table, NULL,
+                       decode_options, arena);
+        if (status == kUpb_DecodeStatus_OutOfMemory) {
+          return kUpb_GetExtension_OutOfMemory;
+        } else if (status != kUpb_DecodeStatus_Ok) {
           return kUpb_GetExtension_ParseError;
         }
-        upb_UnknownToMessageRet parse_result =
-            upb_MiniTable_ParseUnknownMessage(
-                data.data, data.size, extension_table,
-                /* base_message= */ extension_msg, decode_options, arena);
-        switch (parse_result.status) {
-          case kUpb_UnknownToMessage_OutOfMemory:
-            return kUpb_GetExtension_OutOfMemory;
-          case kUpb_UnknownToMessage_ParseError:
-            return kUpb_GetExtension_ParseError;
-          case kUpb_UnknownToMessage_NotFound:
-            return kUpb_GetExtension_NotPresent;
-          case kUpb_UnknownToMessage_Ok:
-            extension_msg = parse_result.message;
-        }
-      } else {
-        ptr = _upb_WireReader_SkipValue(ptr, tag, depth_limit, &stream);
+      }
+    } else {
+      UPB_ASSERT(data.type == kUpb_MessageUnknownType_Bytes);
+      upb_StringView unknown_bytes = data.value.bytes;
+      const char* ptr = unknown_bytes.data;
+      upb_EpsCopyInputStream stream;
+      upb_EpsCopyInputStream_Init(&stream, &ptr, unknown_bytes.size);
+      while (!upb_EpsCopyInputStream_IsDone(&stream, &ptr)) {
+        uint32_t tag;
+        const char* unknown_begin = ptr;
+        ptr = upb_WireReader_ReadTag(ptr, &tag, &stream);
         if (!ptr) return kUpb_GetExtension_ParseError;
+        if (field_number == upb_WireReader_GetFieldNumber(tag)) {
+          upb_StringView data;
+          found_count++;
+          upb_EpsCopyCapture capture;
+          upb_EpsCopyCapture_Start(&capture, &stream, unknown_begin);
+          ptr = _upb_WireReader_SkipValue(ptr, tag, depth_limit, &stream);
+          if (!ptr || !upb_EpsCopyCapture_End(&capture, &stream, ptr, &data)) {
+            return kUpb_GetExtension_ParseError;
+          }
+          upb_UnknownToMessageRet parse_result =
+              upb_MiniTable_ParseUnknownMessage(
+                  data.data, data.size, extension_table,
+                  /* base_message= */ extension_msg, decode_options, arena);
+          switch (parse_result.status) {
+            case kUpb_UnknownToMessage_OutOfMemory:
+              return kUpb_GetExtension_OutOfMemory;
+            case kUpb_UnknownToMessage_ParseError:
+              return kUpb_GetExtension_ParseError;
+            case kUpb_UnknownToMessage_NotFound:
+              return kUpb_GetExtension_NotPresent;
+            case kUpb_UnknownToMessage_Ok:
+              extension_msg = parse_result.message;
+          }
+        } else {
+          ptr = _upb_WireReader_SkipValue(ptr, tag, depth_limit, &stream);
+          if (!ptr) return kUpb_GetExtension_ParseError;
+        }
       }
     }
   }
@@ -134,10 +166,9 @@ upb_GetExtension_Status upb_Message_GetOrPromoteExtension(
   ext->data.msg_val = extension_msg;
 
   while (found_count > 0) {
-    upb_FindUnknownRet found = upb_Message_FindUnknown(msg, field_number, 0);
+    upb_FindUnknownRet2 found = upb_Message_FindUnknown2(msg, field_number, 0);
     UPB_ASSERT(found.status == kUpb_FindUnknown_Ok);
-    upb_StringView view = {.data = found.ptr, .size = found.len};
-    if (upb_Message_DeleteUnknown(msg, &view, &found.iter, arena) ==
+    if (upb_Message_DeleteUnknown2(msg, &found.unknown, &found.iter, arena) ==
         kUpb_DeleteUnknown_AllocFail) {
       return kUpb_GetExtension_OutOfMemory;
     }
@@ -147,48 +178,77 @@ upb_GetExtension_Status upb_Message_GetOrPromoteExtension(
   return kUpb_GetExtension_Ok;
 }
 
-static upb_FindUnknownRet upb_FindUnknownRet_ParseError(void) {
-  return (upb_FindUnknownRet){.status = kUpb_FindUnknown_ParseError};
-}
-
 upb_FindUnknownRet upb_Message_FindUnknown(const upb_Message* msg,
                                            uint32_t field_number,
                                            int depth_limit) {
-  depth_limit = depth_limit ? depth_limit : 100;
+  upb_FindUnknownRet2 ret2 =
+      upb_Message_FindUnknown2(msg, field_number, depth_limit);
+  if (ret2.status != kUpb_FindUnknown_Ok) {
+    return (upb_FindUnknownRet){.status = ret2.status};
+  }
+  UPB_ASSERT(ret2.unknown.type == kUpb_MessageUnknownType_Bytes);
   upb_FindUnknownRet ret;
+  ret.status = ret2.status;
+  ret.ptr = ret2.unknown.value.bytes.data;
+  ret.len = ret2.unknown.value.bytes.size;
+  ret.iter = ret2.iter;
+  return ret;
+}
+
+static upb_FindUnknownRet2 upb_FindUnknownRet2_ParseError(void) {
+  return (upb_FindUnknownRet2){.status = kUpb_FindUnknown_ParseError};
+}
+
+upb_FindUnknownRet2 upb_Message_FindUnknown2(const upb_Message* msg,
+                                             uint32_t field_number,
+                                             int depth_limit) {
+  depth_limit = depth_limit ? depth_limit : 100;
+  upb_FindUnknownRet2 ret;
   ret.iter = kUpb_Message_UnknownBegin;
-  upb_StringView data;
-  while (upb_Message_NextUnknown(msg, &data, &ret.iter)) {
+  upb_MessageUnknown data;
+  while (upb_Message_NextUnknown2(msg, &data, &ret.iter)) {
+    if (data.type == kUpb_MessageUnknownType_NonCanonicalExtension) {
+      const upb_Extension* ext = (const upb_Extension*)data.value.extension;
+      if (upb_MiniTableExtension_Number(ext->ext) == field_number) {
+        ret.status = kUpb_FindUnknown_Ok;
+        ret.unknown = data;
+        return ret;
+      }
+      continue;
+    }
+
+    UPB_ASSERT(data.type == kUpb_MessageUnknownType_Bytes);
+    upb_StringView bytes = data.value.bytes;
     upb_EpsCopyInputStream stream;
-    const char* ptr = data.data;
-    upb_EpsCopyInputStream_Init(&stream, &ptr, data.size);
+    const char* ptr = bytes.data;
+    upb_EpsCopyInputStream_Init(&stream, &ptr, bytes.size);
 
     while (!upb_EpsCopyInputStream_IsDone(&stream, &ptr)) {
       uint32_t tag;
       const char* unknown_begin = ptr;
       ptr = upb_WireReader_ReadTag(ptr, &tag, &stream);
-      if (!ptr) return upb_FindUnknownRet_ParseError();
+      if (!ptr) return upb_FindUnknownRet2_ParseError();
       if (field_number == upb_WireReader_GetFieldNumber(tag)) {
-        upb_StringView data;
+        upb_StringView cap_data;
         ret.status = kUpb_FindUnknown_Ok;
         upb_EpsCopyCapture capture;
         upb_EpsCopyCapture_Start(&capture, &stream, unknown_begin);
         ptr = _upb_WireReader_SkipValue(ptr, tag, depth_limit, &stream);
-        if (!ptr || !upb_EpsCopyCapture_End(&capture, &stream, ptr, &data)) {
-          return upb_FindUnknownRet_ParseError();
+        if (!ptr ||
+            !upb_EpsCopyCapture_End(&capture, &stream, ptr, &cap_data)) {
+          return upb_FindUnknownRet2_ParseError();
         }
-        ret.ptr = data.data;
-        ret.len = data.size;
+        ret.unknown.type = kUpb_MessageUnknownType_Bytes;
+        ret.unknown.value.bytes = cap_data;
         return ret;
       }
 
       ptr = _upb_WireReader_SkipValue(ptr, tag, depth_limit, &stream);
-      if (!ptr) return upb_FindUnknownRet_ParseError();
+      if (!ptr) return upb_FindUnknownRet2_ParseError();
     }
   }
   ret.status = kUpb_FindUnknown_NotPresent;
-  ret.ptr = NULL;
-  ret.len = 0;
+  memset(&ret.unknown, 0, sizeof(ret.unknown));
   ret.iter = kUpb_Message_UnknownBegin;
   return ret;
 }

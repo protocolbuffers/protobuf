@@ -729,15 +729,16 @@ TEST(ConvertTest, ConvertExtensionToNonExtendable) {
       UPB_UPCAST(msg), src_mt, dst_mt, nullptr, 0, 0, arena.ptr());
   ASSERT_NE(dst_msg, nullptr);
 
-  // Dst should have unknown field 1000 with value 123.
-  size_t iter = kUpb_Message_UnknownBegin;
-  upb_StringView data;
-  ASSERT_TRUE(upb_Message_NextUnknown(dst_msg, &data, &iter));
-  EXPECT_EQ(data.size, 3);
-  EXPECT_EQ((uint8_t)data.data[0], 0xC0);
-  EXPECT_EQ((uint8_t)data.data[1], 0x3E);
-  EXPECT_EQ((uint8_t)data.data[2], 0x7B);
-  EXPECT_FALSE(upb_Message_NextUnknown(dst_msg, &data, &iter));
+  // Dst should have a non-canonical extension of field 1000 with value 123.
+  uintptr_t iter = kUpb_Message_UnknownBegin;
+  upb_MessageUnknown unknown;
+  ASSERT_TRUE(upb_Message_NextUnknown2(dst_msg, &unknown, &iter));
+  EXPECT_EQ(unknown.type, kUpb_MessageUnknownType_NonCanonicalExtension);
+  const upb_Extension* ext_found =
+      static_cast<const upb_Extension*>(unknown.value.extension);
+  EXPECT_EQ(upb_MiniTableExtension_Number(ext_found->ext), 1000);
+  EXPECT_EQ(ext_found->data.int32_val, 123);
+  EXPECT_FALSE(upb_Message_NextUnknown2(dst_msg, &unknown, &iter));
 }
 
 TEST(ConvertTest, ConvertExtensionToExtendableButUnknown) {
@@ -763,16 +764,17 @@ TEST(ConvertTest, ConvertExtensionToExtendableButUnknown) {
   // The destination message (AnotherMessageWithExtension) supports extensions,
   // but since we did not provide an extension registry containing field 1000 to
   // the conversion, the extension is treated as unknown/non-canonical in the
-  // destination schemas. Therefore, it should be encoded as an unknown field
-  // (field 1000 with value 123).
-  size_t iter = kUpb_Message_UnknownBegin;
-  upb_StringView data;
-  ASSERT_TRUE(upb_Message_NextUnknown(dst_msg, &data, &iter));
-  EXPECT_EQ(data.size, 3);
-  EXPECT_EQ((uint8_t)data.data[0], 0xC0);
-  EXPECT_EQ((uint8_t)data.data[1], 0x3E);
-  EXPECT_EQ((uint8_t)data.data[2], 0x7B);
-  EXPECT_FALSE(upb_Message_NextUnknown(dst_msg, &data, &iter));
+  // destination schemas. Therefore, it should be handled/stored as a
+  // non-canonical extension.
+  uintptr_t iter2 = kUpb_Message_UnknownBegin;
+  upb_MessageUnknown unknown2;
+  ASSERT_TRUE(upb_Message_NextUnknown2(dst_msg, &unknown2, &iter2));
+  EXPECT_EQ(unknown2.type, kUpb_MessageUnknownType_NonCanonicalExtension);
+  const upb_Extension* ext_found2 =
+      static_cast<const upb_Extension*>(unknown2.value.extension);
+  EXPECT_EQ(upb_MiniTableExtension_Number(ext_found2->ext), 1000);
+  EXPECT_EQ(ext_found2->data.int32_val, 123);
+  EXPECT_FALSE(upb_Message_NextUnknown2(dst_msg, &unknown2, &iter2));
 }
 
 TEST(ConvertTest, OneofDemotion) {
