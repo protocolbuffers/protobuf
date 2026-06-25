@@ -214,6 +214,10 @@ static bool PyUpb_PyToUpbEnum(PyObject* obj, const upb_FieldDef* f,
 bool PyUpb_IsNumpyNdarray(PyObject* obj, const upb_FieldDef* f) {
   PyObject* type_name_obj =
       PyObject_GetAttrString((PyObject*)Py_TYPE(obj), "__name__");
+  if (!type_name_obj) {
+    PyErr_Clear();
+    return false;
+  }
   bool is_ndarray = false;
   if (!strcmp(PyUpb_GetStrData(type_name_obj), "ndarray")) {
     PyErr_Format(PyExc_TypeError,
@@ -228,6 +232,10 @@ bool PyUpb_IsNumpyNdarray(PyObject* obj, const upb_FieldDef* f) {
 bool PyUpb_IsNumpyBoolScalar(PyObject* obj) {
   PyObject* type_module_obj =
       PyObject_GetAttrString((PyObject*)Py_TYPE(obj), "__module__");
+  if (!type_module_obj) {
+    PyErr_Clear();
+    return false;
+  }
   bool is_numpy = !strcmp(PyUpb_GetStrData(type_module_obj), "numpy");
   Py_DECREF(type_module_obj);
   if (!is_numpy) {
@@ -236,6 +244,10 @@ bool PyUpb_IsNumpyBoolScalar(PyObject* obj) {
 
   PyObject* type_name_obj =
       PyObject_GetAttrString((PyObject*)Py_TYPE(obj), "__name__");
+  if (!type_name_obj) {
+    PyErr_Clear();
+    return false;
+  }
   bool is_bool = !strcmp(PyUpb_GetStrData(type_name_obj), "bool");
   Py_DECREF(type_name_obj);
   if (!is_bool) {
