@@ -1210,8 +1210,7 @@ message FeatureSet {
           edition_introduced: EDITION_2024,
         },
         edition_defaults = { edition: EDITION_LEGACY, value: "EXPORT_ALL" },
-        edition_defaults = { edition: EDITION_2024, value: "EXPORT_TOP_LEVEL" },
-        edition_defaults = { edition: EDITION_2026, value: "STRICT" }
+        edition_defaults = { edition: EDITION_2024, value: "EXPORT_TOP_LEVEL" }
       ];
 
   message ProtoLimitsFeature {
