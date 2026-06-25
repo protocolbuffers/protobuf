@@ -77,7 +77,7 @@ def _py_proto_aspect_impl(target, ctx):
             actions = ctx.actions,
             proto_info = proto_info,
             extension = "_pb2.py",
-            name_mapper = lambda name: name.replace("-", "_").replace(".", "/"),
+            name_mapper = proto_common.to_py_proto_name,
         )
 
         # Generate pyi files
@@ -85,7 +85,7 @@ def _py_proto_aspect_impl(target, ctx):
             actions = ctx.actions,
             proto_info = proto_info,
             extension = "_pb2.pyi",
-            name_mapper = lambda name: name.replace("-", "_").replace(".", "/"),
+            name_mapper = proto_common.to_py_proto_name,
         )
 
         # Handles multiple repository and virtual import cases

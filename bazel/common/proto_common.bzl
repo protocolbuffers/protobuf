@@ -337,6 +337,10 @@ def _toolchain_type(proto_lang_toolchain_info):
     else:
         return None
 
+def _to_py_proto_name(name):
+    """Normalizes a proto name to be Python-safe (replacing '-' with '_' and '.' with '/')."""
+    return name.replace("-", "_").replace(".", "/")
+
 proto_common = struct(
     compile = _compile,
     declare_generated_files = _declare_generated_files,
@@ -344,6 +348,7 @@ proto_common = struct(
     experimental_should_generate_code = _experimental_should_generate_code,
     experimental_filter_sources = _experimental_filter_sources,
     get_import_path = _get_import_path,
+    to_py_proto_name = _to_py_proto_name,
     ProtoLangToolchainInfo = ProtoLangToolchainInfo,
     INCOMPATIBLE_ENABLE_PROTO_TOOLCHAIN_RESOLUTION = toolchains.INCOMPATIBLE_ENABLE_PROTO_TOOLCHAIN_RESOLUTION,
     INCOMPATIBLE_PASS_TOOLCHAIN_TYPE = True,
