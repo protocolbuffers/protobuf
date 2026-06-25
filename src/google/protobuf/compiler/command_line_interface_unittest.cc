@@ -2706,7 +2706,7 @@ TEST_F(CommandLineInterfaceTest, EditionDefaultsWithMaximum) {
             message_encoding: LENGTH_PREFIXED
             json_format: ALLOW
             enforce_naming_style: STYLE2026
-            default_symbol_visibility: EXPORT_TOP_LEVEL
+            default_symbol_visibility: STRICT
             enforce_proto_limits: PROTO_LIMITS2026
           }
           fixed_features {}
@@ -2824,7 +2824,7 @@ TEST_F(CommandLineInterfaceTest, EditionDefaultsWithMinimum) {
             message_encoding: LENGTH_PREFIXED
             json_format: ALLOW
             enforce_naming_style: STYLE2026
-            default_symbol_visibility: EXPORT_TOP_LEVEL
+            default_symbol_visibility: STRICT
             enforce_proto_limits: PROTO_LIMITS2026
           }
           fixed_features {}
