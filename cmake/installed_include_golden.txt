@@ -172,7 +172,6 @@ upb/json/decode.h
 upb/json/encode.h
 upb/lex/atoi.h
 upb/lex/round_trip.h
-upb/lex/strtod.h
 upb/lex/unicode.h
 upb/mem/alloc.h
 upb/mem/arena.h
