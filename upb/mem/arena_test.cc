@@ -384,6 +384,16 @@ TEST(ArenaTest, FuseWithInitialBlock) {
   for (int i = 0; i < size; ++i) upb_Arena_Free(arenas[i]);
 }
 
+TEST(ArenaTest, FixedInitialBlockNoAlloc) {
+  char buf[1024];
+  upb_Arena* arena = upb_Arena_Init(buf, sizeof(buf), nullptr);
+
+  EXPECT_EQ(upb_Arena_Malloc(arena, 2048), nullptr);
+  EXPECT_EQ(upb_Arena_Malloc(arena, 1024), nullptr);
+
+  upb_Arena_Free(arena);
+}
+
 class Environment {
  public:
   void RandomNewFree(absl::BitGen& gen, size_t min_index = 0) {
