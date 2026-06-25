@@ -731,6 +731,63 @@ TEST(DecodeTest, MessageSetConsecutiveUnknowns) {
   }
 }
 
+std::string MakeRecursiveMessageSetPayload(int depth) {
+  if (depth == 0) {
+    return "";
+  }
+  std::string inner_mset = MakeRecursiveMessageSetPayload(depth - 1);
+
+  // RecursiveMessageSetItem payload: contains mset = inner_mset
+  std::string item_payload = ToBinaryPayload(
+      wire_types::WireMessage{{1, wire_types::Delimited(inner_mset)}});
+
+  // TestMessageSet payload: contains ext_recursive = item_payload
+  std::string mset_payload = ToBinaryPayload(
+      wire_types::WireMessage{{1, wire_types::Group({
+                                      {2, wire_types::Varint(2001)},
+                                      {3, wire_types::Delimited(item_payload)},
+                                  })}});
+
+  return mset_payload;
+}
+
+TEST(DecodeTest, MessageSetMaxDepthExceeded) {
+  upb::Arena mt_arena;
+  upb::Arena msg_arena;
+
+  const upb_MiniTable* mset_mt = &upb_0decode_0test__TestMessageSet_msg_init;
+  const upb_MiniTableExtension* ext = upb_decode_test_ext_recursive_ext;
+
+  upb_ExtensionRegistry* reg = upb_ExtensionRegistry_New(mt_arena.ptr());
+  ASSERT_TRUE(reg != nullptr);
+  EXPECT_EQ(upb_ExtensionRegistry_Add(reg, ext),
+            kUpb_ExtensionRegistryStatus_Ok);
+
+  const int kMaxDepth = 10;
+  int options = upb_Decode_LimitDepth(0, kMaxDepth);
+
+  // Test depth that should succeed (depth 3).
+  {
+    std::string payload = MakeRecursiveMessageSetPayload(3);
+    upb_Message* msg = upb_Message_New(mset_mt, msg_arena.ptr());
+    upb_DecodeStatus result =
+        upb_Decode(payload.data(), payload.size(), msg, mset_mt, reg, options,
+                   msg_arena.ptr());
+    EXPECT_EQ(result, kUpb_DecodeStatus_Ok) << upb_DecodeStatus_String(result);
+  }
+
+  // Test depth that should fail (depth 4).
+  {
+    std::string payload = MakeRecursiveMessageSetPayload(4);
+    upb_Message* msg = upb_Message_New(mset_mt, msg_arena.ptr());
+    upb_DecodeStatus result =
+        upb_Decode(payload.data(), payload.size(), msg, mset_mt, reg, options,
+                   msg_arena.ptr());
+    EXPECT_EQ(result, kUpb_DecodeStatus_MaxDepthExceeded)
+        << upb_DecodeStatus_String(result);
+  }
+}
+
 }  // namespace
 
 }  // namespace test

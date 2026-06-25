@@ -664,6 +664,9 @@ static void upb_Decoder_AddMessageSetItem(upb_Decoder* d, upb_Message* msg,
 static const char* upb_Decoder_DecodeMessageSetItem(
     upb_Decoder* d, const char* ptr, upb_Message* msg,
     const upb_MiniTable* layout) {
+  if (--d->depth < 0) {
+    upb_ErrorHandler_ThrowError(d->err, kUpb_DecodeStatus_MaxDepthExceeded);
+  }
   uint32_t type_id = 0;
   upb_StringView preserved = {NULL, 0};
   typedef enum {
@@ -676,6 +679,7 @@ static const char* upb_Decoder_DecodeMessageSetItem(
     ptr = upb_WireReader_ReadTag(ptr, &tag, EPS(d));
     switch (tag) {
       case kEndItemTag:
+        d->depth++;
         return ptr;
       case kTypeIdTag: {
         uint64_t tmp;

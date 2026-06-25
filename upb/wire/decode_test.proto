@@ -15,3 +15,11 @@ message SubMessage {
 extend TestMessageSet {
   optional SubMessage ext_message_set = 2000;
 }
+
+message RecursiveMessageSetItem {
+  optional TestMessageSet mset = 1;
+}
+
+extend TestMessageSet {
+  optional RecursiveMessageSetItem ext_recursive = 2001;
+}
