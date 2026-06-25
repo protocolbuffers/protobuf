@@ -108,7 +108,10 @@ done:
     PyObject* field = PyObject_CallFunction(
         s->unknown_field_type, "iiO", type_id, kUpb_WireType_Delimited, msg);
     if (!field) goto err;
-    PyList_Append(self->fields, field);
+    if (PyList_Append(self->fields, field) < 0) {
+      Py_DECREF(field);
+      goto err;
+    }
     Py_DECREF(field);
   }
   Py_XDECREF(msg);
@@ -137,7 +140,7 @@ static const char* PyUpb_UnknownFieldSet_BuildMessageSet(
   return ptr;
 
 err:
-  Py_DECREF(self->fields);
+  Py_CLEAR(self->fields);
   return NULL;
 }
 
@@ -220,14 +223,18 @@ static const char* PyUpb_UnknownFieldSet_Build(PyUpb_UnknownFieldSet* self,
     assert(data);
     PyObject* field = PyObject_CallFunction(s->unknown_field_type, "iiN",
                                             field_number, wire_type, data);
-    PyList_Append(self->fields, field);
+    if (!field) goto err;
+    if (PyList_Append(self->fields, field) < 0) {
+      Py_DECREF(field);
+      goto err;
+    }
     Py_DECREF(field);
   }
   if (upb_EpsCopyInputStream_IsError(stream)) goto err;
   return ptr;
 
 err:
-  Py_DECREF(self->fields);
+  Py_CLEAR(self->fields);
   return NULL;
 }
 

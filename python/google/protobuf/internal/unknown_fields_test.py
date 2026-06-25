@@ -12,6 +12,7 @@ __author__ = 'bohdank@google.com (Bohdan Koval)'
 
 import sys
 import unittest
+from unittest import mock
 
 from google.protobuf import descriptor
 from google.protobuf import text_format
@@ -343,6 +344,47 @@ class UnknownFieldsAccessorsTest(unittest.TestCase):
     message.ParseFromString(self.all_fields_data)
     self.assertEqual(len(unknown_fields.UnknownFieldSet(message)), 99)
     self.assertEqual(message.SerializeToString(), self.all_fields_data)
+
+  def testConstructorErrorPropagationBug13(self):
+    if api_implementation.Type() != 'upb':
+      self.skipTest('UPB specific error handling test')
+    ufs = unknown_fields.UnknownFieldSet(self.empty_message)
+    field_cls = type(ufs[0])
+
+    with mock.patch.object(
+        field_cls, '__new__', side_effect=RuntimeError('mocked constructor error')
+    ):
+      with self.assertRaisesRegex(RuntimeError, 'mocked constructor error'):
+        unknown_fields.UnknownFieldSet(self.empty_message)
+
+  def testErrorCleanupNoDoubleFreeBug12(self):
+    if api_implementation.Type() != 'upb':
+      self.skipTest('UPB specific error handling test')
+    ufs = unknown_fields.UnknownFieldSet(self.empty_message)
+    field_cls = type(ufs[0])
+
+    with mock.patch.object(
+        field_cls, '__new__', side_effect=RuntimeError('mocked constructor error')
+    ):
+      for _ in range(5):
+        with self.assertRaises(RuntimeError):
+          unknown_fields.UnknownFieldSet(self.empty_message)
+
+    raw = unittest_mset_pb2.RawMessageSet()
+    item = raw.item.add()
+    item.type_id = 98218603
+    message1 = message_set_extensions_pb2.TestMessageSetExtension1()
+    message1.i = 12345
+    item.message = message1.SerializeToString()
+    proto = message_set_extensions_pb2.TestMessageSet()
+    proto.MergeFromString(raw.SerializeToString())
+
+    with mock.patch.object(
+        field_cls, '__new__', side_effect=RuntimeError('mocked constructor error')
+    ):
+      for _ in range(5):
+        with self.assertRaises(RuntimeError):
+          unknown_fields.UnknownFieldSet(proto)
 
 
 @testing_refleaks.TestCase
