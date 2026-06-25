@@ -16684,7 +16684,7 @@ UPB_FORCEINLINE bool upb_EpsCopyInputStream_TryParseDelimitedFast(
   // Fast case: Sub-message is <128 bytes and fits in the current buffer.
   // This means we can preserve limit/limit_ptr verbatim.
   const char* saved_limit_ptr = e->limit_ptr;
-  int saved_limit = e->limit;
+  ptrdiff_t saved_limit = e->limit;
   e->limit_ptr = *ptr + size;
   e->limit = e->limit_ptr - e->end;
   UPB_ASSERT(e->limit_ptr == e->end + UPB_MIN(0, e->limit));
