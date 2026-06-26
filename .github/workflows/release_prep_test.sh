@@ -61,6 +61,11 @@ mkdir -p "$TEST_DIR/.mock_bin"
 ln -sf "$TAR" "$TEST_DIR/.mock_bin/tar"
 
 ##############################
+# Fixture: put jq (from Bazel toolchain) on the PATH
+##############################
+ln -sf "$JQ_BIN" "$TEST_DIR/.mock_bin/jq"
+
+##############################
 # Fixture: mock curl returning a GitHub Releases API response
 ##############################
 cat > "$TEST_DIR/.mock_bin/curl" <<'MOCK'

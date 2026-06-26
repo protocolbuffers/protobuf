@@ -6,6 +6,10 @@ sh_test(
     name = "release_prep_test",
     srcs = ["workflows/release_prep_test.sh"],
     data = ["workflows/release_prep.sh"],
+    env = {
+        "JQ_BIN": "$(JQ_BIN)",
+    },
+    toolchains = ["@jq_toolchains//:resolved_toolchain"],
     deps = ["@bazel_tools//tools/bash/runfiles"],
 )
 
