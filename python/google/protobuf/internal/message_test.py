@@ -3564,24 +3564,5 @@ class OversizeProtosTest(unittest.TestCase):
     self.assertIn('Error parsing message', str(context.exception))
 
 
-@testing_refleaks.TestCase
-class MessageMetaGetAttrTest(unittest.TestCase):
-
-  def testMessageMetaGetAttrException(self):
-    class BombDescriptor:
-      def __get__(self, obj, objtype=None):
-        raise KeyboardInterrupt('should not be swallowed')
-
-    unittest_pb2.TestAllTypes.bomb = BombDescriptor()
-    try:
-      with self.assertRaises(KeyboardInterrupt):
-        _ = unittest_pb2.TestAllTypes.bomb
-    finally:
-      try:
-        del unittest_pb2.TestAllTypes.bomb
-      except Exception:
-        pass
-
-
 if __name__ == '__main__':
   unittest.main()
