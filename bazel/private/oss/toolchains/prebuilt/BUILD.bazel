@@ -5,7 +5,7 @@ In particular, see comment below on the toolchain#toolchain attribute.
 """
 
 load("//toolchain:platforms.bzl", "PROTOBUF_PLATFORMS")
-load(":protoc_authenticity.bzl", "protoc_authenticity")
+load(":protoc_authenticity.bzl", "protoc_authenticity", "protoc_authenticity_is_windows")
 
 [
     toolchain(
@@ -22,6 +22,10 @@ load(":protoc_authenticity.bzl", "protoc_authenticity")
 ]
 
 # Support verification of user-registered toolchains
+protoc_authenticity_is_windows(
+    name = "is_windows",
+)
+
 protoc_authenticity(
     name = "authenticity_validation",
     fail_on_mismatch = select({
