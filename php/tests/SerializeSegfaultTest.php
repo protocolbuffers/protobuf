@@ -10,7 +10,7 @@ class SerializeSegfaultTest extends TestBase {
         $msg = new TestMessage(['optional_string' => "Hello, World!"]);
         if (extension_loaded('protobuf')) {
             $this->expectException(\Exception::class);
-            $this->expectExceptionMessage("Serialization of 'Google\Protobuf\Internal\Message' is not allowed");
+            $this->expectExceptionMessage("Native PHP serialization of 'Google\\Protobuf\\Internal\\Message' is not supported. Please use .serializeToString() instead.");
             serialize($msg);
         } else {
             $this->markTestSkipped('Native serialization is allowed in pure-PHP mode.');
