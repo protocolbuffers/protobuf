@@ -65,6 +65,7 @@ cc_library(
     deps = [
         ":names",
         "//src/google/protobuf",
+        "//src/google/protobuf:descriptor_visitor",
         "//src/google/protobuf:port",
         "//src/google/protobuf/compiler:code_generator",
         "//src/google/protobuf/compiler:retention",

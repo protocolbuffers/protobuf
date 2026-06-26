@@ -80,6 +80,8 @@ class PROTOC_EXPORT PyiGenerator : public google::protobuf::compiler::CodeGenera
   void PrintServices() const;
   std::string GetFieldType(
       const FieldDescriptor& field_des, const Descriptor& containing_des) const;
+  void CollectKeywordNames(const FileDescriptor& file) const;
+  std::string MessageIdentifier(const Descriptor& descriptor) const;
   template <typename DescriptorT>
   std::string ModuleLevelName(const DescriptorT& descriptor) const;
   std::string PublicPackage() const;
@@ -89,7 +91,7 @@ class PROTOC_EXPORT PyiGenerator : public google::protobuf::compiler::CodeGenera
   bool opensource_runtime_ = true;
 
   // Very coarse-grained lock to ensure that Generate() is reentrant.
-  // Guards file_, printer_, and import_map_.
+  // Guards the state used during Generate().
   mutable absl::Mutex mutex_;
   mutable const FileDescriptor* file_;  // Set in Generate().  Under mutex_.
   mutable io::Printer* printer_;        // Set in Generate().  Under mutex_.
@@ -97,6 +99,8 @@ class PROTOC_EXPORT PyiGenerator : public google::protobuf::compiler::CodeGenera
   // import_map will be a mapping from filename to module alias, e.g.
   // "google3/foo/bar.py" -> "_bar"
   mutable absl::flat_hash_map<std::string, std::string> import_map_;
+  mutable absl::flat_hash_map<const Descriptor*, std::string> message_names_;
+  mutable std::string type_check_only_name_;
 };
 
 }  // namespace python
