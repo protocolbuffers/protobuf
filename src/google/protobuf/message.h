@@ -1345,7 +1345,7 @@ class PROTOBUF_EXPORT Reflection final {
                         const OneofDescriptor* oneof_descriptor) const;
   inline uint32_t* MutableOneofCase(
       Message* message, const OneofDescriptor* oneof_descriptor) const;
-  inline bool HasExtensionSet(const Message& /* message */) const {
+  bool HasExtensionSet(const Message& /* message */) const {
     return schema_.HasExtensionSet();
   }
   const internal::ExtensionSet& GetExtensionSet(const Message& message) const;
@@ -1360,11 +1360,11 @@ class PROTOBUF_EXPORT Reflection final {
     return &message->_internal_metadata_;
   }
 
-  inline bool IsInlined(const FieldDescriptor* field) const {
+  bool IsInlined(const FieldDescriptor* field) const {
     return schema_.IsFieldInlined(field);
   }
 
-  inline bool IsMicroString(const FieldDescriptor* field) const {
+  bool IsMicroString(const FieldDescriptor* field) const {
     return schema_.IsFieldMicroString(field);
   }
 
@@ -1531,7 +1531,7 @@ extern template void Reflection::SwapFieldsImpl<false>(
 // around GetPrototype for details
 class PROTOBUF_EXPORT MessageFactory {
  public:
-  inline MessageFactory() = default;
+  MessageFactory() = default;
   MessageFactory(const MessageFactory&) = delete;
   MessageFactory& operator=(const MessageFactory&) = delete;
   virtual ~MessageFactory();
