@@ -33,8 +33,8 @@ struct upb_OneofDef {
   int field_count;
   bool synthetic;
   const upb_FieldDef** fields;
-  upb_strtable ntof;  // lookup a field by name
-  upb_inttable itof;  // lookup a field by number (index)
+  upb_strtable_ptr ntof;     // lookup a field by name
+  upb_inttable_32_ptr itof;  // lookup a field by number (index)
 };
 
 upb_OneofDef* _upb_OneofDef_At(const upb_OneofDef* o, int i) {
@@ -84,9 +84,9 @@ bool upb_OneofDef_IsSynthetic(const upb_OneofDef* o) { return o->synthetic; }
 const upb_FieldDef* upb_OneofDef_LookupNameWithSize(const upb_OneofDef* o,
                                                     const char* name,
                                                     size_t size) {
-  upb_value val;
-  return upb_strtable_lookup2(&o->ntof, name, size, &val)
-             ? upb_value_getptr(val)
+  const void* val;
+  return upb_strtable_ptr_lookup(&o->ntof, name, size, &val)
+             ? (const upb_FieldDef*)val
              : NULL;
 }
 
@@ -97,9 +97,10 @@ const upb_FieldDef* upb_OneofDef_LookupName(const upb_OneofDef* o,
 
 const upb_FieldDef* upb_OneofDef_LookupNumber(const upb_OneofDef* o,
                                               uint32_t num) {
-  upb_value val;
-  return upb_inttable_lookup(&o->itof, num, &val) ? upb_value_getptr(val)
-                                                  : NULL;
+  const void* val;
+  return upb_inttable_32_ptr_lookup(&o->itof, num, &val)
+             ? (const upb_FieldDef*)val
+             : NULL;
 }
 
 void _upb_OneofDef_Insert(upb_DefBuilder* ctx, upb_OneofDef* o,
@@ -109,26 +110,25 @@ void _upb_OneofDef_Insert(upb_DefBuilder* ctx, upb_OneofDef* o,
   if (_upb_FieldDef_IsProto3Optional(f)) o->synthetic = true;
 
   const int number = upb_FieldDef_Number(f);
-  const upb_value v = upb_value_constptr(f);
 
   // TODO: This lookup is unfortunate because we also perform it when
   // inserting into the message's table. Unfortunately that step occurs after
   // this one and moving things around could be tricky so let's leave it for
   // a future refactoring.
-  const bool number_exists = upb_inttable_lookup(&o->itof, number, NULL);
+  const bool number_exists = upb_inttable_32_ptr_lookup(&o->itof, number, NULL);
   if (UPB_UNLIKELY(number_exists)) {
     _upb_DefBuilder_Errf(ctx, "oneof fields have the same number (%d)", number);
   }
 
   // TODO: More redundant work happening here.
-  const bool name_exists = upb_strtable_lookup2(&o->ntof, name, size, NULL);
+  const bool name_exists = upb_strtable_ptr_lookup(&o->ntof, name, size, NULL);
   if (UPB_UNLIKELY(name_exists)) {
     _upb_DefBuilder_Errf(ctx, "oneof fields have the same name (%.*s)",
                          (int)size, name);
   }
 
-  const bool ok = upb_inttable_insert(&o->itof, number, v, ctx->arena) &&
-                  upb_strtable_insert(&o->ntof, name, size, v, ctx->arena);
+  const bool ok = upb_inttable_32_ptr_insert(&o->itof, number, f, ctx->arena) &&
+                  upb_strtable_ptr_insert(&o->ntof, name, size, f, ctx->arena);
   if (UPB_UNLIKELY(!ok)) {
     _upb_DefBuilder_OomErr(ctx);
   }
@@ -197,10 +197,10 @@ static void create_oneofdef(upb_DefBuilder* ctx, upb_MessageDef* m,
   bool ok = _upb_MessageDef_Insert(m, name.data, name.size, v, ctx->arena);
   if (!ok) _upb_DefBuilder_OomErr(ctx);
 
-  ok = upb_inttable_init(&o->itof, ctx->arena);
+  ok = upb_inttable_32_ptr_init(&o->itof, ctx->arena);
   if (!ok) _upb_DefBuilder_OomErr(ctx);
 
-  ok = upb_strtable_init(&o->ntof, 4, ctx->arena);
+  ok = upb_strtable_ptr_init(&o->ntof, 4, ctx->arena);
   if (!ok) _upb_DefBuilder_OomErr(ctx);
 }
 

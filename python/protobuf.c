@@ -148,7 +148,7 @@ PyObject* PyUpb_GetWktBases(PyUpb_ModuleState* state) {
 
 struct PyUpb_WeakMap {
   FreeThreadingMutex mutex;
-  upb_inttable table;
+  upb_inttable_ptr_ptr table;
   upb_Arena* arena;
 };
 
@@ -159,7 +159,7 @@ PyUpb_WeakMap* PyUpb_WeakMap_New(void) {
 #ifdef ENABLE_MUTEX
   pthread_mutex_init(&map->mutex.mutex, NULL);
 #endif
-  upb_inttable_init(&map->table, map->arena);
+  upb_inttable_ptr_ptr_init(&map->table, map->arena);
   return map;
 }
 
@@ -185,16 +185,16 @@ void PyUpb_WeakMap_Add(PyUpb_WeakMap* map, const void* key, PyObject* py_obj) {
   PyUnstable_EnableTryIncRef(py_obj);
 #endif
   FreeThreadingLock(&map->mutex);
-  upb_inttable_insert(&map->table, PyUpb_WeakMap_GetKey(key),
-                      upb_value_ptr(py_obj), map->arena);
+  upb_inttable_ptr_ptr_insert(
+      &map->table, (const void*)PyUpb_WeakMap_GetKey(key), py_obj, map->arena);
   FreeThreadingUnlock(&map->mutex);
 }
 
 void PyUpb_WeakMap_Delete(PyUpb_WeakMap* map, const void* key) {
   FreeThreadingLock(&map->mutex);
-  upb_value val;
-  bool removed =
-      upb_inttable_remove(&map->table, PyUpb_WeakMap_GetKey(key), &val);
+  const void* val;
+  bool removed = upb_inttable_ptr_ptr_remove(
+      &map->table, (const void*)PyUpb_WeakMap_GetKey(key), &val);
   (void)removed;
 #ifndef Py_GIL_DISABLED
   assert(removed);
@@ -204,22 +204,25 @@ void PyUpb_WeakMap_Delete(PyUpb_WeakMap* map, const void* key) {
 
 void PyUpb_WeakMap_TryDelete(PyUpb_WeakMap* map, const void* key) {
   FreeThreadingLock(&map->mutex);
-  upb_inttable_remove(&map->table, PyUpb_WeakMap_GetKey(key), NULL);
+  upb_inttable_ptr_ptr_remove(&map->table,
+                              (const void*)PyUpb_WeakMap_GetKey(key), NULL);
   FreeThreadingUnlock(&map->mutex);
 }
 
 PyObject* PyUpb_WeakMap_Get(PyUpb_WeakMap* map, const void* key) {
   FreeThreadingLock(&map->mutex);
-  upb_value val;
-  if (upb_inttable_lookup(&map->table, PyUpb_WeakMap_GetKey(key), &val)) {
-    PyObject* ret = upb_value_getptr(val);
+  const void* val;
+  if (upb_inttable_ptr_ptr_lookup(
+          &map->table, (const void*)PyUpb_WeakMap_GetKey(key), &val)) {
+    PyObject* ret = (PyObject*)val;
 #ifdef Py_GIL_DISABLED
     if (PyUnstable_TryIncRef(ret)) {
       FreeThreadingUnlock(&map->mutex);
       return ret;
     }
     // Object is deallocating, remove it from the map.
-    upb_inttable_remove(&map->table, PyUpb_WeakMap_GetKey(key), NULL);
+    upb_inttable_ptr_ptr_remove(&map->table,
+                                (const void*)PyUpb_WeakMap_GetKey(key), NULL);
     FreeThreadingUnlock(&map->mutex);
     return NULL;
 #else
@@ -237,22 +240,22 @@ bool PyUpb_WeakMap_Next(PyUpb_WeakMap* map, const void** key, PyObject** obj,
   if (*iter == PYUPB_WEAKMAP_BEGIN) {
     FreeThreadingLock(&map->mutex);
   }
-  uintptr_t u_key;
-  upb_value val;
-  while (upb_inttable_next(&map->table, &u_key, &val, iter)) {
-    PyObject* py_obj = upb_value_getptr(val);
+  const void* u_key;
+  const void* val;
+  while (upb_inttable_ptr_ptr_next(&map->table, &u_key, &val, iter)) {
+    PyObject* py_obj = (PyObject*)val;
 #ifdef Py_GIL_DISABLED
     if (PyUnstable_TryIncRef(py_obj)) {
       Py_DECREF(py_obj);
-      *key = (void*)(u_key << PyUpb_PtrShift);
+      *key = (void*)((uintptr_t)u_key << PyUpb_PtrShift);
       *obj = py_obj;
       return true;
     } else {
       // Object is dying, remove it from the table and continue.
-      upb_inttable_removeiter(&map->table, iter);
+      upb_inttable_ptr_ptr_removeiter(&map->table, iter);
     }
 #else
-    *key = (void*)(u_key << PyUpb_PtrShift);
+    *key = (void*)((uintptr_t)u_key << PyUpb_PtrShift);
     *obj = py_obj;
     return true;
 #endif
@@ -262,7 +265,7 @@ bool PyUpb_WeakMap_Next(PyUpb_WeakMap* map, const void** key, PyObject** obj,
 }
 
 void PyUpb_WeakMap_DeleteIter(PyUpb_WeakMap* map, intptr_t* iter) {
-  upb_inttable_removeiter(&map->table, iter);
+  upb_inttable_ptr_ptr_removeiter(&map->table, iter);
 }
 
 // -----------------------------------------------------------------------------

@@ -33,6 +33,15 @@ typedef enum {
 union upb_Map_Table {
   upb_strtable strtable;
   upb_inttable inttable;
+  upb_inttable_32_bool inttable_32_bool;
+  upb_inttable_64_bool inttable_64_bool;
+  upb_inttable_32_32 inttable_32_32;
+  upb_inttable_64_32 inttable_64_32;
+  upb_inttable_32_64 inttable_32_64;
+  upb_inttable_64_64 inttable_64_64;
+  upb_strtable_bool strtable_bool;
+  upb_strtable_32 strtable_32;
+  upb_strtable_64 strtable_64;
 };
 
 struct upb_Map {

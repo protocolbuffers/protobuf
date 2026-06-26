@@ -54,7 +54,7 @@ extern "C" {
 
 struct upb_DefBuilder {
   upb_DefPool* symtab;
-  upb_strtable feature_cache;          // Caches features by identity.
+  upb_strtable_ptr feature_cache;      // Caches features by identity.
   google_protobuf_FeatureSet* legacy_features;  // For computing legacy features.
   char* tmp_buf;                       // Temporary buffer in tmp_arena.
   size_t tmp_buf_size;                 // Size of temporary buffer.

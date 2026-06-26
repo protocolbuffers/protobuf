@@ -30,7 +30,7 @@
 // destination table is equal.
 static upb_MiniTableEquals_Status upb_deep_check(const upb_MiniTable* src,
                                                  const upb_MiniTable* dst,
-                                                 upb_inttable* table,
+                                                 upb_inttable_ptr_ptr* table,
                                                  upb_Arena** arena) {
   if (src->UPB_PRIVATE(field_count) != dst->UPB_PRIVATE(field_count))
     return kUpb_MiniTableEquals_NotEqual;
@@ -58,15 +58,13 @@ static upb_MiniTableEquals_Status upb_deep_check(const upb_MiniTable* src,
     if (upb_MiniTableField_CType(src_field) == kUpb_CType_Message) {
       if (!*arena) {
         *arena = upb_Arena_New();
-        if (!upb_inttable_init(table, *arena)) {
+        if (!upb_inttable_ptr_ptr_init(table, *arena)) {
           return kUpb_MiniTableEquals_OutOfMemory;
         }
       }
       if (!marked_src) {
         marked_src = true;
-        upb_value val;
-        val.val = (uint64_t)dst;
-        if (!upb_inttable_insert(table, (uintptr_t)src, val, *arena)) {
+        if (!upb_inttable_ptr_ptr_insert(table, src, dst, *arena)) {
           return kUpb_MiniTableEquals_OutOfMemory;
         }
       }
@@ -75,10 +73,10 @@ static upb_MiniTableEquals_Status upb_deep_check(const upb_MiniTable* src,
       const upb_MiniTable* sub_dst =
           upb_MiniTable_GetSubMessageTable(dst_field);
       if (sub_src != NULL) {
-        upb_value cmp;
-        if (upb_inttable_lookup(table, (uintptr_t)sub_src, &cmp)) {
+        const void* cmp;
+        if (upb_inttable_ptr_ptr_lookup(table, sub_src, &cmp)) {
           // We already compared this src before. Check if same dst.
-          if (cmp.val != (uint64_t)sub_dst) {
+          if (cmp != sub_dst) {
             return kUpb_MiniTableEquals_NotEqual;
           }
         } else {
@@ -105,7 +103,7 @@ upb_MiniTableEquals_Status upb_MiniTable_Equals(const upb_MiniTable* src,
   // Arena allocated on demand for hash table.
   upb_Arena* arena = NULL;
   // Table to keep track of visited mini tables to guard against cycles.
-  upb_inttable table;
+  upb_inttable_ptr_ptr table;
   upb_MiniTableEquals_Status status = upb_deep_check(src, dst, &table, &arena);
   if (arena) {
     upb_Arena_Free(arena);
