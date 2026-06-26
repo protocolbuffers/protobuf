@@ -140,6 +140,115 @@ auto ReprDynamicMessage(int value) {
   return result_string;
 }
 
+auto ReprDynamicMessageSharedPool(int value) {
+  const PyProto_API* api = GetProtoApi();
+
+  auto pool = std::make_shared<DescriptorPool>(
+      DescriptorPool::internal_generated_database());
+
+  // Create the Python DescriptorPool using shared_ptr...
+  auto py_pool = py::reinterpret_steal<py::object>(
+      api->DescriptorPool_FromSharedPool(pool, nullptr));
+  if (!py_pool) {
+    throw py::error_already_set();
+  }
+
+  std::string result_string;
+  {
+    DynamicMessageFactory factory(pool.get());
+    const Descriptor* descriptor =
+        pool->FindMessageTypeByName("proto2_unittest.TestAllTypes");
+    if (!descriptor) {
+      throw std::runtime_error("Failed to find file descriptor");
+    }
+    const Message* prototype = factory.GetPrototype(descriptor);
+    if (!prototype) {
+      throw std::runtime_error("Failed to get prototype for descriptor");
+    }
+    std::unique_ptr<Message> msg(prototype->New());
+    if (!msg) {
+      throw std::runtime_error("Failed to create message");
+    }
+    msg->GetReflection()->SetInt32(
+        msg.get(), descriptor->FindFieldByName("optional_int32"), value);
+
+    auto py_msg = py::reinterpret_steal<py::object>(
+        api->NewMessageOwnedExternally(msg.get(), nullptr));
+    if (!py_msg) {
+      throw py::error_already_set();
+    }
+    result_string = py::repr(py_msg);
+  }  // msg, py_msg, and factory are safely destroyed here before pool.
+
+  // Testing co-ownership: When C++ drops its handle, the
+  // pool stays alive because Python still owns it.
+  pool.reset();
+
+  // Omit manual gc.collect() here and return naturally.
+  //
+  // When PyMessageFactory creates dynamic message classes (e.g.
+  // CustomMessageClass), Python establishes two interlocking reference cycles
+  // on the CPython heap:
+  // (PyDescriptorPool <-> PyMessageFactory <-> CustomMessageClass).
+  //
+  // Even after local C++ stack objects (factory) exit
+  // scope above, these Python objects sit in an unreferenced cyclic island. If
+  // manual gc.collect() runs mid-flight, CPython runs gc_collect_main() to
+  // break cycles via tp_clear in non-deterministic heap order.
+  //
+  // Natural return allows Python to tear down wrappers cleanly
+  // during finalization.
+  return result_string;
+}
+
+auto ReprDynamicMessageSharedPoolAndDb(int value) {
+  const PyProto_API* api = GetProtoApi();
+
+  // Create custom DB and Pool held by shared_ptr
+  auto db = std::make_shared<SimpleDescriptorDatabase>();
+  FileDescriptorProto file_proto;
+  file_proto.set_name("custom_unittest.proto");
+  file_proto.set_package("custom_unittest");
+  DescriptorProto* msg_proto = file_proto.add_message_type();
+  msg_proto->set_name("CustomMessage");
+  FieldDescriptorProto* field_proto = msg_proto->add_field();
+  field_proto->set_name("val");
+  field_proto->set_number(1);
+  field_proto->set_type(FieldDescriptorProto::TYPE_INT32);
+  field_proto->set_label(FieldDescriptorProto::LABEL_OPTIONAL);
+  db->Add(file_proto);
+
+  auto pool = std::make_shared<DescriptorPool>(db.get());
+
+  auto py_pool = py::reinterpret_steal<py::object>(
+      api->DescriptorPool_FromSharedPool(pool, db));
+  if (!py_pool) {
+    throw py::error_already_set();
+  }
+
+  std::string result_string;
+  {
+    DynamicMessageFactory factory(pool.get());
+    const Descriptor* descriptor =
+        pool->FindMessageTypeByName("custom_unittest.CustomMessage");
+    const Message* prototype = factory.GetPrototype(descriptor);
+    std::unique_ptr<Message> msg(prototype->New());
+    msg->GetReflection()->SetInt32(msg.get(),
+                                   descriptor->FindFieldByName("val"), value);
+
+    auto py_msg = py::reinterpret_steal<py::object>(
+        api->NewMessageOwnedExternally(msg.get(), nullptr));
+    result_string = py::repr(py_msg);
+  }  // msg, py_msg, and factory are safely destroyed here before pool.
+
+  // Testing co-ownership: When C++ drops its handle, the
+  // pool stays alive because Python still owns it.
+  pool.reset();
+  db.reset();
+
+  return result_string;
+}
+
 py::object CreateDynamicPoolMessage() {
   FileDescriptorProto file_descriptor;
   file_descriptor.set_name("test_file");
@@ -198,6 +307,9 @@ PYBIND11_MODULE(proto_api_test_ext, m) {
   m.def("get_const_message", &GetConstMessage);
   m.def("set_message_field_with_mutator", &SetMessageFieldWithMutator);
   m.def("repr_dynamic_message", &ReprDynamicMessage);
+  m.def("repr_dynamic_message_shared_pool", &ReprDynamicMessageSharedPool);
+  m.def("repr_dynamic_message_shared_pool_and_db",
+        &ReprDynamicMessageSharedPoolAndDb);
   m.def("create_dynamic_pool_message", &CreateDynamicPoolMessage);
 }
 

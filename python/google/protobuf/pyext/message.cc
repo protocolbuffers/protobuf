@@ -2044,7 +2044,7 @@ static PyObject* MergeFromString(CMessage* self, PyObject* arg) {
       depth, false, &ptr,
       absl::string_view(static_cast<const char*>(data.buf), data.len));
 
-  ctx.data().pool = factory->pool->pool;
+  ctx.data().pool = factory->pool->pool->get();
   ctx.data().factory = factory->message_factory;
 
   ptr = message->_InternalParse(ptr, &ctx);
@@ -2159,7 +2159,8 @@ static PyObject* ListFields(CMessage* self) {
       // When using the default descriptor pool, avoid exposing extensions that
       // happened to be linked in from C++ but not imported via Python.  This is
       // for consistency with the pure Python implementation.
-      if (fields[i]->file()->pool() == GetDefaultDescriptorPool()->pool &&
+      if (fields[i]->file()->pool() ==
+              GetDefaultDescriptorPool()->pool->get() &&
           fields[i]->message_type() != nullptr &&
           message_factory::GetMessageClass(GetFactoryForMessage(self),
                                            fields[i]->message_type()) ==
