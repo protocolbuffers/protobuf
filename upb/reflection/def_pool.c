@@ -40,9 +40,9 @@
 
 struct upb_DefPool {
   upb_Arena* arena;
-  upb_strtable syms;   // full_name -> packed def ptr
-  upb_strtable files;  // file_name -> (upb_FileDef*)
-  upb_inttable exts;   // (upb_MiniTableExtension*) -> (upb_FieldDef*)
+  upb_strtable_ptr syms;      // full_name -> packed def ptr
+  upb_strtable_ptr files;     // file_name -> (upb_FileDef*)
+  upb_inttable_ptr_ptr exts;  // (upb_MiniTableExtension*) -> (upb_FieldDef*)
   upb_ExtensionRegistry* extreg;
   const upb_GeneratedRegistryRef* generated_extreg;
   const google_protobuf_FeatureSetDefaults* feature_set_defaults;
@@ -76,9 +76,9 @@ upb_DefPool* upb_DefPool_New(void) {
   s->scratch_data = upb_gmalloc(s->scratch_size);
   if (!s->scratch_data) goto err;
 
-  if (!upb_strtable_init(&s->syms, 32, s->arena)) goto err;
-  if (!upb_strtable_init(&s->files, 4, s->arena)) goto err;
-  if (!upb_inttable_init(&s->exts, s->arena)) goto err;
+  if (!upb_strtable_ptr_init(&s->syms, 32, s->arena)) goto err;
+  if (!upb_strtable_ptr_init(&s->files, 4, s->arena)) goto err;
+  if (!upb_inttable_ptr_ptr_init(&s->exts, s->arena)) goto err;
 
   s->extreg = upb_ExtensionRegistry_New(s->arena);
   if (!s->extreg) goto err;
@@ -104,7 +104,7 @@ err:
 }
 
 void upb_DefPool_DisableClosedEnumChecking(upb_DefPool* s) {
-  UPB_ASSERT(upb_strtable_count(&s->files) == 0);
+  UPB_ASSERT(upb_strtable_ptr_count(&s->files) == 0);
   s->disable_closed_enum_checking = true;
 }
 
@@ -113,7 +113,7 @@ bool upb_DefPool_ClosedEnumCheckingDisabled(const upb_DefPool* s) {
 }
 
 void upb_DefPool_DisableImplicitFieldPresence(upb_DefPool* s) {
-  UPB_ASSERT(upb_strtable_count(&s->files) == 0);
+  UPB_ASSERT(upb_strtable_ptr_count(&s->files) == 0);
   s->disable_implicit_field_presence = true;
 }
 
@@ -136,7 +136,7 @@ bool upb_DefPool_SetFeatureSetDefaults(upb_DefPool* s,
     upb_Status_SetErrorFormat(status, "Failed to parse defaults");
     return false;
   }
-  if (upb_strtable_count(&s->files) > 0) {
+  if (upb_strtable_ptr_count(&s->files) > 0) {
     upb_Status_SetErrorFormat(status,
                               "Feature set defaults can't be changed once the "
                               "pool has started building");
@@ -179,19 +179,19 @@ bool upb_DefPool_SetFeatureSetDefaults(upb_DefPool* s,
 
 bool _upb_DefPool_InsertExt(upb_DefPool* s, const upb_MiniTableExtension* ext,
                             const upb_FieldDef* f) {
-  return upb_inttable_insert(&s->exts, (uintptr_t)ext, upb_value_constptr(f),
-                             s->arena);
+  return upb_inttable_ptr_ptr_insert(&s->exts, ext, f, s->arena);
 }
 
 bool _upb_DefPool_InsertSym(upb_DefPool* s, upb_StringView sym, upb_value v,
                             upb_Status* status) {
   // TODO: table should support an operation "tryinsert" to avoid the double
   // lookup.
-  if (upb_strtable_lookup2(&s->syms, sym.data, sym.size, NULL)) {
+  if (upb_strtable_ptr_lookup(&s->syms, sym.data, sym.size, NULL)) {
     upb_Status_SetErrorFormat(status, "duplicate symbol '%s'", sym.data);
     return false;
   }
-  if (!upb_strtable_insert(&s->syms, sym.data, sym.size, v, s->arena)) {
+  if (!upb_strtable_ptr_insert(&s->syms, sym.data, sym.size,
+                               upb_value_getconstptr(v), s->arena)) {
     upb_Status_SetErrorMessage(status, "out of memory");
     return false;
   }
@@ -200,15 +200,22 @@ bool _upb_DefPool_InsertSym(upb_DefPool* s, upb_StringView sym, upb_value v,
 
 static const void* _upb_DefPool_Unpack(const upb_DefPool* s, const char* sym,
                                        size_t size, upb_deftype_t type) {
-  upb_value v;
-  return upb_strtable_lookup2(&s->syms, sym, size, &v)
-             ? _upb_DefType_Unpack(v, type)
-             : NULL;
+  const void* val;
+  if (upb_strtable_ptr_lookup(&s->syms, sym, size, &val)) {
+    upb_value v = upb_value_constptr(val);
+    return _upb_DefType_Unpack(v, type);
+  }
+  return NULL;
 }
 
 bool _upb_DefPool_LookupSym(const upb_DefPool* s, const char* sym, size_t size,
                             upb_value* v) {
-  return upb_strtable_lookup2(&s->syms, sym, size, v);
+  const void* val;
+  if (upb_strtable_ptr_lookup(&s->syms, sym, size, &val)) {
+    if (v) *v = upb_value_constptr(val);
+    return true;
+  }
+  return false;
 }
 
 upb_ExtensionRegistry* _upb_DefPool_ExtReg(const upb_DefPool* s) {
@@ -224,7 +231,7 @@ size_t* _upb_DefPool_ScratchSize(const upb_DefPool* s) {
 }
 
 void _upb_DefPool_SetPlatform(upb_DefPool* s, upb_MiniTablePlatform platform) {
-  assert(upb_strtable_count(&s->files) == 0);
+  assert(upb_strtable_ptr_count(&s->files) == 0);
   s->platform = platform;
 }
 
@@ -261,24 +268,26 @@ const upb_EnumValueDef* upb_DefPool_FindEnumValueByNameWithSize(
 
 const upb_FileDef* upb_DefPool_FindFileByName(const upb_DefPool* s,
                                               const char* name) {
-  upb_value v;
-  return upb_strtable_lookup(&s->files, name, &v) ? upb_value_getconstptr(v)
-                                                  : NULL;
+  const void* val;
+  return upb_strtable_ptr_lookup(&s->files, name, strlen(name), &val)
+             ? (const upb_FileDef*)val
+             : NULL;
 }
 
 const upb_FileDef* upb_DefPool_FindFileByNameWithSize(const upb_DefPool* s,
                                                       const char* name,
                                                       size_t len) {
-  upb_value v;
-  return upb_strtable_lookup2(&s->files, name, len, &v)
-             ? upb_value_getconstptr(v)
+  const void* val;
+  return upb_strtable_ptr_lookup(&s->files, name, len, &val)
+             ? (const upb_FileDef*)val
              : NULL;
 }
 
 const upb_FieldDef* upb_DefPool_FindExtensionByNameWithSize(
     const upb_DefPool* s, const char* name, size_t size) {
-  upb_value v;
-  if (!upb_strtable_lookup2(&s->syms, name, size, &v)) return NULL;
+  const void* val;
+  if (!upb_strtable_ptr_lookup(&s->syms, name, size, &val)) return NULL;
+  upb_value v = upb_value_constptr(val);
 
   switch (_upb_DefType_Type(v)) {
     case UPB_DEFTYPE_FIELD:
@@ -319,9 +328,10 @@ const upb_ServiceDef* upb_DefPool_FindServiceByNameWithSize(
 
 const upb_FileDef* upb_DefPool_FindFileContainingSymbol(const upb_DefPool* s,
                                                         const char* name) {
-  upb_value v;
+  const void* val_ptr;
   // TODO: non-extension fields and oneofs.
-  if (upb_strtable_lookup(&s->syms, name, &v)) {
+  if (upb_strtable_ptr_lookup(&s->syms, name, strlen(name), &val_ptr)) {
+    upb_value v = upb_value_constptr(val_ptr);
     switch (_upb_DefType_Type(v)) {
       case UPB_DEFTYPE_EXT: {
         const upb_FieldDef* f = _upb_DefType_Unpack(v, UPB_DEFTYPE_EXT);
@@ -369,9 +379,10 @@ const upb_FileDef* upb_DefPool_FindFileContainingSymbol(const upb_DefPool* s,
 static void remove_filedef(upb_DefPool* s, upb_FileDef* file) {
   intptr_t iter = UPB_INTTABLE_BEGIN;
   upb_StringView key;
-  upb_value val;
-  while (upb_strtable_next2(&s->syms, &key, &val, &iter)) {
+  const void* val_ptr;
+  while (upb_strtable_ptr_next2(&s->syms, &key, &val_ptr, &iter)) {
     const upb_FileDef* f;
+    upb_value val = upb_value_constptr(val_ptr);
     switch (_upb_DefType_Type(val)) {
       case UPB_DEFTYPE_EXT:
         f = upb_FieldDef_File(_upb_DefType_Unpack(val, UPB_DEFTYPE_EXT));
@@ -393,7 +404,7 @@ static void remove_filedef(upb_DefPool* s, upb_FileDef* file) {
         UPB_UNREACHABLE();
     }
 
-    if (f == file) upb_strtable_removeiter(&s->syms, &iter);
+    if (f == file) upb_strtable_ptr_removeiter(&s->syms, &iter);
   }
 }
 
@@ -408,15 +419,15 @@ static const upb_FileDef* upb_DefBuilder_AddFileToPool(
       builder->file = NULL;
     }
   } else if (!builder->arena || !builder->tmp_arena ||
-             !upb_strtable_init(&builder->feature_cache, 16,
-                                builder->tmp_arena) ||
+             !upb_strtable_ptr_init(&builder->feature_cache, 16,
+                                    builder->tmp_arena) ||
              !(builder->legacy_features =
                    google_protobuf_FeatureSet_new(builder->tmp_arena))) {
     _upb_DefBuilder_OomErr(builder);
   } else {
     _upb_FileDef_Create(builder, file_proto);
-    upb_strtable_insert(&s->files, name.data, name.size,
-                        upb_value_constptr(builder->file), builder->arena);
+    upb_strtable_ptr_insert(&s->files, name.data, name.size, builder->file,
+                            builder->arena);
     UPB_ASSERT(upb_Status_IsOk(status));
     upb_Arena_Fuse(s->arena, builder->arena);
   }
@@ -433,8 +444,7 @@ static const upb_FileDef* _upb_DefPool_AddFile(
 
   // Determine whether we already know about this file.
   {
-    upb_value v;
-    if (upb_strtable_lookup2(&s->files, name.data, name.size, &v)) {
+    if (upb_strtable_ptr_lookup(&s->files, name.data, name.size, NULL)) {
       upb_Status_SetErrorFormat(status,
                                 "duplicate file name " UPB_STRINGVIEW_FORMAT,
                                 UPB_STRINGVIEW_ARGS(name));
@@ -526,10 +536,10 @@ upb_Arena* _upb_DefPool_Arena(const upb_DefPool* s) { return s->arena; }
 
 const upb_FieldDef* upb_DefPool_FindExtensionByMiniTable(
     const upb_DefPool* s, const upb_MiniTableExtension* ext) {
-  upb_value v;
-  bool ok = upb_inttable_lookup(&s->exts, (uintptr_t)ext, &v);
+  const void* f;
+  bool ok = upb_inttable_ptr_ptr_lookup(&s->exts, ext, &f);
   UPB_ASSERT(ok);
-  return upb_value_getconstptr(v);
+  return (const upb_FieldDef*)f;
 }
 
 const upb_FieldDef* upb_DefPool_FindExtensionByNumber(const upb_DefPool* s,
@@ -551,20 +561,21 @@ const upb_FieldDef** upb_DefPool_GetAllExtensions(const upb_DefPool* s,
                                                   size_t* count) {
   size_t n = 0;
   intptr_t iter = UPB_INTTABLE_BEGIN;
-  uintptr_t key;
-  upb_value val;
+  const void* key;
+  const void* val;
   // This is O(all exts) instead of O(exts for m).  If we need this to be
   // efficient we may need to make extreg into a two-level table, or have a
   // second per-message index.
-  while (upb_inttable_next(&s->exts, &key, &val, &iter)) {
-    const upb_FieldDef* f = upb_value_getconstptr(val);
+  while (upb_inttable_ptr_ptr_next(&s->exts, &key, &val, &iter)) {
+    const upb_FieldDef* f = (const upb_FieldDef*)val;
     if (upb_FieldDef_ContainingType(f) == m) n++;
   }
-  const upb_FieldDef** exts = upb_gmalloc(n * sizeof(*exts));
+  const upb_FieldDef** exts =
+      (const upb_FieldDef**)upb_gmalloc(n * sizeof(*exts));
   iter = UPB_INTTABLE_BEGIN;
   size_t i = 0;
-  while (upb_inttable_next(&s->exts, &key, &val, &iter)) {
-    const upb_FieldDef* f = upb_value_getconstptr(val);
+  while (upb_inttable_ptr_ptr_next(&s->exts, &key, &val, &iter)) {
+    const upb_FieldDef* f = (const upb_FieldDef*)val;
     if (upb_FieldDef_ContainingType(f) == m) exts[i++] = f;
   }
   *count = n;

@@ -141,6 +141,264 @@ void upb_strtable_iter_setdone(upb_strtable_iter* i);
 bool upb_strtable_iter_isequal(const upb_strtable_iter* i1,
                                const upb_strtable_iter* i2);
 
+typedef struct {
+  upb_strtable t;
+} upb_strtable_bool;
+typedef struct {
+  upb_strtable t;
+} upb_strtable_32;
+typedef struct {
+  upb_strtable t;
+} upb_strtable_64;
+
+#define UPB_STRTABLE_DECLARE(postfix, val_type, to_val, from_val)              \
+  UPB_INLINE bool upb_strtable_##postfix##_init(                               \
+      upb_strtable_##postfix* t, size_t expected_size, upb_Arena* a) {         \
+    return upb_strtable_init(&t->t, expected_size, a);                         \
+  }                                                                            \
+  UPB_INLINE size_t upb_strtable_##postfix##_count(                            \
+      const upb_strtable_##postfix* t) {                                       \
+    return upb_strtable_count(&t->t);                                          \
+  }                                                                            \
+  UPB_INLINE bool upb_strtable_##postfix##_insert(                             \
+      upb_strtable_##postfix* t, const char* key, size_t len, val_type val,    \
+      upb_Arena* a) {                                                          \
+    return upb_strtable_insert(&t->t, key, len, to_val(val), a);               \
+  }                                                                            \
+  UPB_INLINE bool upb_strtable_##postfix##_lookup(                             \
+      const upb_strtable_##postfix* t, const char* key, size_t len,            \
+      val_type* v) {                                                           \
+    upb_value tabval;                                                          \
+    if (upb_strtable_lookup2(&t->t, key, len, &tabval)) {                      \
+      if (v) *v = from_val(tabval);                                            \
+      return true;                                                             \
+    }                                                                          \
+    return false;                                                              \
+  }                                                                            \
+  UPB_INLINE bool upb_strtable_##postfix##_remove(                             \
+      upb_strtable_##postfix* t, const char* key, size_t len, val_type* val) { \
+    upb_value tabval;                                                          \
+    if (upb_strtable_remove2(&t->t, key, len, &tabval)) {                      \
+      if (val) *val = from_val(tabval);                                        \
+      return true;                                                             \
+    }                                                                          \
+    return false;                                                              \
+  }                                                                            \
+  UPB_INLINE void upb_strtable_##postfix##_clear(upb_strtable_##postfix* t) {  \
+    upb_strtable_clear(&t->t);                                                 \
+  }                                                                            \
+  typedef struct {                                                             \
+    upb_strtable_iter iter;                                                    \
+  } upb_strtable_##postfix##_iter;                                             \
+  UPB_INLINE void upb_strtable_##postfix##_begin(                              \
+      upb_strtable_##postfix##_iter* i, const upb_strtable_##postfix* t) {     \
+    upb_strtable_begin(&i->iter, &t->t);                                       \
+  }                                                                            \
+  UPB_INLINE void upb_strtable_##postfix##_next(                               \
+      upb_strtable_##postfix##_iter* i) {                                      \
+    upb_strtable_next(&i->iter);                                               \
+  }                                                                            \
+  UPB_INLINE bool upb_strtable_##postfix##_done(                               \
+      const upb_strtable_##postfix##_iter* i) {                                \
+    return upb_strtable_done(&i->iter);                                        \
+  }                                                                            \
+  UPB_INLINE upb_StringView upb_strtable_##postfix##_iter_key(                 \
+      const upb_strtable_##postfix##_iter* i) {                                \
+    return upb_strtable_iter_key(&i->iter);                                    \
+  }                                                                            \
+  UPB_INLINE val_type upb_strtable_##postfix##_iter_value(                     \
+      const upb_strtable_##postfix##_iter* i) {                                \
+    return from_val(upb_strtable_iter_value(&i->iter));                        \
+  }                                                                            \
+  UPB_INLINE void upb_strtable_##postfix##_iter_setdone(                       \
+      upb_strtable_##postfix##_iter* i) {                                      \
+    upb_strtable_iter_setdone(&i->iter);                                       \
+  }                                                                            \
+  UPB_INLINE bool upb_strtable_##postfix##_iter_isequal(                       \
+      const upb_strtable_##postfix##_iter* i1,                                 \
+      const upb_strtable_##postfix##_iter* i2) {                               \
+    return upb_strtable_iter_isequal(&i1->iter, &i2->iter);                    \
+  }                                                                            \
+  UPB_INLINE bool upb_strtable_##postfix##_next2(                              \
+      const upb_strtable_##postfix* t, upb_StringView* key, val_type* val,     \
+      intptr_t* iter) {                                                        \
+    upb_value v;                                                               \
+    if (upb_strtable_next2(&t->t, key, &v, iter)) {                            \
+      if (val) *val = from_val(v);                                             \
+      return true;                                                             \
+    }                                                                          \
+    return false;                                                              \
+  }                                                                            \
+  UPB_INLINE void upb_strtable_##postfix##_removeiter(                         \
+      upb_strtable_##postfix* t, intptr_t* iter) {                             \
+    upb_strtable_removeiter(&t->t, iter);                                      \
+  }
+
+UPB_STRTABLE_DECLARE(bool, bool, upb_value_bool, upb_value_getbool)
+UPB_STRTABLE_DECLARE(32, uint32_t, upb_value_uint32, upb_value_getuint32)
+UPB_STRTABLE_DECLARE(64, uint64_t, upb_value_uint64, upb_value_getuint64)
+#if UINTPTR_MAX == 0xffffffff
+
+typedef upb_strtable_32 upb_strtable_ptr;
+typedef upb_strtable_32_iter upb_strtable_ptr_iter;
+
+UPB_INLINE bool upb_strtable_ptr_init(upb_strtable_ptr* t, size_t expected_size,
+                                      upb_Arena* a) {
+  return upb_strtable_32_init(t, expected_size, a);
+}
+UPB_INLINE size_t upb_strtable_ptr_count(const upb_strtable_ptr* t) {
+  return upb_strtable_32_count(t);
+}
+UPB_INLINE bool upb_strtable_ptr_insert(upb_strtable_ptr* t, const char* key,
+                                        size_t len, const void* val,
+                                        upb_Arena* a) {
+  return upb_strtable_32_insert(t, key, len, (uint32_t)(uintptr_t)val, a);
+}
+UPB_INLINE bool upb_strtable_ptr_lookup(const upb_strtable_ptr* t,
+                                        const char* key, size_t len,
+                                        const void** v) {
+  uint32_t val;
+  if (upb_strtable_32_lookup(t, key, len, &val)) {
+    if (v) *v = (const void*)(uintptr_t)val;
+    return true;
+  }
+  return false;
+}
+UPB_INLINE bool upb_strtable_ptr_remove(upb_strtable_ptr* t, const char* key,
+                                        size_t len, const void** val) {
+  uint32_t val_t;
+  if (upb_strtable_32_remove(t, key, len, &val_t)) {
+    if (val) *val = (const void*)(uintptr_t)val_t;
+    return true;
+  }
+  return false;
+}
+UPB_INLINE void upb_strtable_ptr_clear(upb_strtable_ptr* t) {
+  upb_strtable_32_clear(t);
+}
+UPB_INLINE void upb_strtable_ptr_begin(upb_strtable_ptr_iter* i,
+                                       const upb_strtable_ptr* t) {
+  upb_strtable_32_begin(i, t);
+}
+UPB_INLINE void upb_strtable_ptr_next(upb_strtable_ptr_iter* i) {
+  upb_strtable_32_next(i);
+}
+UPB_INLINE bool upb_strtable_ptr_done(const upb_strtable_ptr_iter* i) {
+  return upb_strtable_32_done(i);
+}
+UPB_INLINE upb_StringView
+upb_strtable_ptr_iter_key(const upb_strtable_ptr_iter* i) {
+  return upb_strtable_32_iter_key(i);
+}
+UPB_INLINE const void* upb_strtable_ptr_iter_value(
+    const upb_strtable_ptr_iter* i) {
+  return (const void*)(uintptr_t)upb_strtable_32_iter_value(i);
+}
+UPB_INLINE void upb_strtable_ptr_iter_setdone(upb_strtable_ptr_iter* i) {
+  upb_strtable_32_iter_setdone(i);
+}
+UPB_INLINE bool upb_strtable_ptr_iter_isequal(const upb_strtable_ptr_iter* i1,
+                                              const upb_strtable_ptr_iter* i2) {
+  return upb_strtable_32_iter_isequal(i1, i2);
+}
+UPB_INLINE bool upb_strtable_ptr_next2(const upb_strtable_ptr* t,
+                                       upb_StringView* key, const void** val,
+                                       intptr_t* iter) {
+  uint32_t val_t;
+  if (upb_strtable_32_next2(t, key, &val_t, iter)) {
+    if (val) *val = (const void*)(uintptr_t)val_t;
+    return true;
+  }
+  return false;
+}
+UPB_INLINE void upb_strtable_ptr_removeiter(upb_strtable_ptr* t,
+                                            intptr_t* iter) {
+  upb_strtable_32_removeiter(t, iter);
+}
+
+#else
+
+typedef upb_strtable_64 upb_strtable_ptr;
+typedef upb_strtable_64_iter upb_strtable_ptr_iter;
+
+UPB_INLINE bool upb_strtable_ptr_init(upb_strtable_ptr* t, size_t expected_size,
+                                      upb_Arena* a) {
+  return upb_strtable_64_init(t, expected_size, a);
+}
+UPB_INLINE size_t upb_strtable_ptr_count(const upb_strtable_ptr* t) {
+  return upb_strtable_64_count(t);
+}
+UPB_INLINE bool upb_strtable_ptr_insert(upb_strtable_ptr* t, const char* key,
+                                        size_t len, const void* val,
+                                        upb_Arena* a) {
+  return upb_strtable_64_insert(t, key, len, (uint64_t)(uintptr_t)val, a);
+}
+UPB_INLINE bool upb_strtable_ptr_lookup(const upb_strtable_ptr* t,
+                                        const char* key, size_t len,
+                                        const void** v) {
+  uint64_t val;
+  if (upb_strtable_64_lookup(t, key, len, &val)) {
+    if (v) *v = (const void*)(uintptr_t)val;
+    return true;
+  }
+  return false;
+}
+UPB_INLINE bool upb_strtable_ptr_remove(upb_strtable_ptr* t, const char* key,
+                                        size_t len, const void** val) {
+  uint64_t val_t;
+  if (upb_strtable_64_remove(t, key, len, &val_t)) {
+    if (val) *val = (const void*)(uintptr_t)val_t;
+    return true;
+  }
+  return false;
+}
+UPB_INLINE void upb_strtable_ptr_clear(upb_strtable_ptr* t) {
+  upb_strtable_64_clear(t);
+}
+UPB_INLINE void upb_strtable_ptr_begin(upb_strtable_ptr_iter* i,
+                                       const upb_strtable_ptr* t) {
+  upb_strtable_64_begin(i, t);
+}
+UPB_INLINE void upb_strtable_ptr_next(upb_strtable_ptr_iter* i) {
+  upb_strtable_64_next(i);
+}
+UPB_INLINE bool upb_strtable_ptr_done(const upb_strtable_ptr_iter* i) {
+  return upb_strtable_64_done(i);
+}
+UPB_INLINE upb_StringView
+upb_strtable_ptr_iter_key(const upb_strtable_ptr_iter* i) {
+  return upb_strtable_64_iter_key(i);
+}
+UPB_INLINE const void* upb_strtable_ptr_iter_value(
+    const upb_strtable_ptr_iter* i) {
+  return (const void*)(uintptr_t)upb_strtable_64_iter_value(i);
+}
+UPB_INLINE void upb_strtable_ptr_iter_setdone(upb_strtable_ptr_iter* i) {
+  upb_strtable_64_iter_setdone(i);
+}
+UPB_INLINE bool upb_strtable_ptr_iter_isequal(const upb_strtable_ptr_iter* i1,
+                                              const upb_strtable_ptr_iter* i2) {
+  return upb_strtable_64_iter_isequal(i1, i2);
+}
+UPB_INLINE bool upb_strtable_ptr_next2(const upb_strtable_ptr* t,
+                                       upb_StringView* key, const void** val,
+                                       intptr_t* iter) {
+  uint64_t val_t;
+  if (upb_strtable_64_next2(t, key, &val_t, iter)) {
+    if (val) *val = (const void*)(uintptr_t)val_t;
+    return true;
+  }
+  return false;
+}
+UPB_INLINE void upb_strtable_ptr_removeiter(upb_strtable_ptr* t,
+                                            intptr_t* iter) {
+  upb_strtable_64_removeiter(t, iter);
+}
+
+#endif
+
+#undef UPB_STRTABLE_DECLARE
+
 #ifdef __cplusplus
 } /* extern "C" */
 #endif

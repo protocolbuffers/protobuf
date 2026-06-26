@@ -41,8 +41,8 @@ struct upb_EnumDef {
   const upb_FileDef* file;
   const upb_MessageDef* containing_type;  // Could be merged with "file".
   const char* full_name;
-  upb_strtable ntoi;
-  upb_inttable iton;
+  upb_strtable_ptr ntoi;
+  upb_inttable_32_ptr iton;
   const upb_EnumValueDef* values;
   const upb_EnumReservedRange* res_ranges;
   const upb_StringView* res_names;
@@ -64,14 +64,13 @@ const upb_MiniTableEnum* _upb_EnumDef_MiniTable(const upb_EnumDef* e) {
 
 bool _upb_EnumDef_Insert(upb_EnumDef* e, upb_EnumValueDef* v, upb_Arena* a) {
   const char* name = upb_EnumValueDef_Name(v);
-  const upb_value val = upb_value_constptr(v);
-  bool ok = upb_strtable_insert(&e->ntoi, name, strlen(name), val, a);
+  bool ok = upb_strtable_ptr_insert(&e->ntoi, name, strlen(name), v, a);
   if (!ok) return false;
 
   // Multiple enumerators can have the same number, first one wins.
   const int number = upb_EnumValueDef_Number(v);
-  if (!upb_inttable_lookup(&e->iton, number, NULL)) {
-    return upb_inttable_insert(&e->iton, number, val, a);
+  if (!upb_inttable_32_ptr_lookup(&e->iton, number, NULL)) {
+    return upb_inttable_32_ptr_insert(&e->iton, number, v, a);
   }
   return true;
 }
@@ -137,17 +136,18 @@ const upb_EnumValueDef* upb_EnumDef_FindValueByName(const upb_EnumDef* e,
 
 const upb_EnumValueDef* upb_EnumDef_FindValueByNameWithSize(
     const upb_EnumDef* e, const char* name, size_t size) {
-  upb_value v;
-  return upb_strtable_lookup2(&e->ntoi, name, size, &v)
-             ? upb_value_getconstptr(v)
+  const void* v;
+  return upb_strtable_ptr_lookup(&e->ntoi, name, size, &v)
+             ? (const upb_EnumValueDef*)v
              : NULL;
 }
 
 const upb_EnumValueDef* upb_EnumDef_FindValueByNumber(const upb_EnumDef* e,
                                                       int32_t num) {
-  upb_value v;
-  return upb_inttable_lookup(&e->iton, num, &v) ? upb_value_getconstptr(v)
-                                                : NULL;
+  const void* v;
+  return upb_inttable_32_ptr_lookup(&e->iton, num, &v)
+             ? (const upb_EnumValueDef*)v
+             : NULL;
 }
 
 bool upb_EnumDef_CheckNumber(const upb_EnumDef* e, int32_t num) {
@@ -281,10 +281,10 @@ static void create_enumdef(upb_DefBuilder* ctx, const char* prefix,
                          upb_EnumDef_FullName(e));
   }
 
-  bool ok = upb_strtable_init(&e->ntoi, n_value, ctx->arena);
+  bool ok = upb_strtable_ptr_init(&e->ntoi, n_value, ctx->arena);
   if (!ok) _upb_DefBuilder_OomErr(ctx);
 
-  ok = upb_inttable_init(&e->iton, ctx->arena);
+  ok = upb_inttable_32_ptr_init(&e->iton, ctx->arena);
   if (!ok) _upb_DefBuilder_OomErr(ctx);
 
   e->value_count = n_value;

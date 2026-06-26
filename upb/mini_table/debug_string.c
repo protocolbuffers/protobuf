@@ -38,7 +38,7 @@ typedef struct {
   // This table maps from a pointer to a 64-bit integer. The lower 32 bits are
   // a unique ID for the object. The upper 32 bits are a flag that is 0x1
   // if the object has already been printed.
-  upb_inttable inttable;
+  upb_inttable_ptr_64 inttable;
 } upb_MiniTablePrinter;
 
 UPB_PRINTF(2, 3)
@@ -75,9 +75,8 @@ static size_t upb_MiniTablePrinter_NullTerminate(upb_MiniTablePrinter* p,
 static int upb_MiniTablePrinter_InsertNext(upb_MiniTablePrinter* p,
                                            const void* key, bool visited) {
   uint64_t id = p->count++;
-  upb_inttable_insert(&p->inttable, (intptr_t)key,
-                      upb_value_uint64(id | (visited ? 0x100000000 : 0)),
-                      p->arena);
+  upb_inttable_ptr_64_insert(&p->inttable, key,
+                             id | (visited ? 0x100000000 : 0), p->arena);
   return id;
 }
 
@@ -86,9 +85,9 @@ static int upb_MiniTablePrinter_InsertNext(upb_MiniTablePrinter* p,
 // that may or may not have been printed yet.
 static int upb_MiniTablePrinter_GetIdForRef(upb_MiniTablePrinter* p,
                                             const void* key) {
-  upb_value v;
-  if (upb_inttable_lookup(&p->inttable, (intptr_t)key, &v)) {
-    return (int)upb_value_getuint64(v);
+  uint64_t v;
+  if (upb_inttable_ptr_64_lookup(&p->inttable, key, &v)) {
+    return (int)v;
   }
   return upb_MiniTablePrinter_InsertNext(p, key, false);
 }
@@ -98,12 +97,10 @@ static int upb_MiniTablePrinter_GetIdForRef(upb_MiniTablePrinter* p,
 static int upb_MiniTablePrinter_GetIdForEmit(upb_MiniTablePrinter* p,
                                              const void* key) {
   UPB_ASSERT(key);
-  upb_value v;
-  if (upb_inttable_lookup(&p->inttable, (intptr_t)key, &v)) {
-    uint64_t val = upb_value_getuint64(v);
+  uint64_t val;
+  if (upb_inttable_ptr_64_lookup(&p->inttable, key, &val)) {
     if (val >> 32) return -1;
-    upb_inttable_replace(&p->inttable, (intptr_t)key,
-                         upb_value_int64(val | 0x100000000));
+    upb_inttable_ptr_64_replace(&p->inttable, key, val | 0x100000000);
     return (int)val;
   }
   return upb_MiniTablePrinter_InsertNext(p, key, true);
@@ -307,7 +304,7 @@ size_t upb_MiniTable_DebugString(const upb_MiniTable* mini_table, char* buf,
   upb_MiniTablePrinter p = {buf, buf, buf + size, 0, upb_Arena_New(), 0};
 
   if (!p.arena) return 0;
-  if (!upb_inttable_init(&p.inttable, p.arena)) return 0;
+  if (!upb_inttable_ptr_64_init(&p.inttable, p.arena)) return 0;
 
   upb_MiniTablePrinter_PrintMessage(&p, mini_table);
 

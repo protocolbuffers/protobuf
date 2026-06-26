@@ -375,9 +375,9 @@ bool _upb_DefBuilder_GetOrCreateFeatureSet(upb_DefBuilder* ctx,
                                            upb_StringView key,
                                            google_protobuf_FeatureSet** set) {
   upb_StringView k = _upb_DefBuilder_MakeKey(ctx, parent, key);
-  upb_value v;
-  if (upb_strtable_lookup2(&ctx->feature_cache, k.data, k.size, &v)) {
-    *set = upb_value_getptr(v);
+  const void* val_ptr;
+  if (upb_strtable_ptr_lookup(&ctx->feature_cache, k.data, k.size, &val_ptr)) {
+    *set = (google_protobuf_FeatureSet*)val_ptr;
     return false;
   }
 
@@ -385,9 +385,8 @@ bool _upb_DefBuilder_GetOrCreateFeatureSet(upb_DefBuilder* ctx,
       UPB_UPCAST(parent), UPB_DESC_MINITABLE(FeatureSet), ctx->arena);
   if (!*set) _upb_DefBuilder_OomErr(ctx);
 
-  v = upb_value_ptr(*set);
-  if (!upb_strtable_insert(&ctx->feature_cache, k.data, k.size, v,
-                           ctx->tmp_arena)) {
+  if (!upb_strtable_ptr_insert(&ctx->feature_cache, k.data, k.size, *set,
+                               ctx->tmp_arena)) {
     _upb_DefBuilder_OomErr(ctx);
   }
 

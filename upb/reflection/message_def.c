@@ -50,11 +50,11 @@ struct upb_MessageDef {
   const char* full_name;
 
   // Tables for looking up fields by number and name.
-  upb_inttable itof;
-  upb_strtable ntof;
+  upb_inttable_32_ptr itof;
+  upb_strtable_ptr ntof;
 
   // Looking up fields by json name.
-  upb_strtable jtof;
+  upb_strtable_ptr jtof;
 
   /* All nested defs.
    * MEM: We could save some space here by putting nested defs in a contiguous
@@ -172,50 +172,55 @@ const char* upb_MessageDef_Name(const upb_MessageDef* m) {
 
 const upb_FieldDef* upb_MessageDef_FindFieldByNumber(const upb_MessageDef* m,
                                                      uint32_t i) {
-  upb_value val;
-  return upb_inttable_lookup(&m->itof, i, &val) ? upb_value_getconstptr(val)
-                                                : NULL;
+  const void* val;
+  return upb_inttable_32_ptr_lookup(&m->itof, i, &val)
+             ? (const upb_FieldDef*)val
+             : NULL;
 }
 
 const upb_FieldDef* upb_MessageDef_FindFieldByNameWithSize(
     const upb_MessageDef* m, const char* name, size_t size) {
-  upb_value val;
+  const void* val;
 
-  if (!upb_strtable_lookup2(&m->ntof, name, size, &val)) {
+  if (!upb_strtable_ptr_lookup(&m->ntof, name, size, &val)) {
     return NULL;
   }
 
-  return _upb_DefType_Unpack(val, UPB_DEFTYPE_FIELD);
+  upb_value v = upb_value_constptr(val);
+  return _upb_DefType_Unpack(v, UPB_DEFTYPE_FIELD);
 }
 
 const upb_OneofDef* upb_MessageDef_FindOneofByNameWithSize(
     const upb_MessageDef* m, const char* name, size_t size) {
-  upb_value val;
+  const void* val;
 
-  if (!upb_strtable_lookup2(&m->ntof, name, size, &val)) {
+  if (!upb_strtable_ptr_lookup(&m->ntof, name, size, &val)) {
     return NULL;
   }
 
-  return _upb_DefType_Unpack(val, UPB_DEFTYPE_ONEOF);
+  upb_value v = upb_value_constptr(val);
+  return _upb_DefType_Unpack(v, UPB_DEFTYPE_ONEOF);
 }
 
 bool _upb_MessageDef_Insert(upb_MessageDef* m, const char* name, size_t len,
                             upb_value v, upb_Arena* a) {
-  return upb_strtable_insert(&m->ntof, name, len, v, a);
+  return upb_strtable_ptr_insert(&m->ntof, name, len, upb_value_getconstptr(v),
+                                 a);
 }
 
 bool upb_MessageDef_FindByNameWithSize(const upb_MessageDef* m,
                                        const char* name, size_t len,
                                        const upb_FieldDef** out_f,
                                        const upb_OneofDef** out_o) {
-  upb_value val;
+  const void* val;
 
-  if (!upb_strtable_lookup2(&m->ntof, name, len, &val)) {
+  if (!upb_strtable_ptr_lookup(&m->ntof, name, len, &val)) {
     return false;
   }
 
-  const upb_FieldDef* f = _upb_DefType_Unpack(val, UPB_DEFTYPE_FIELD);
-  const upb_OneofDef* o = _upb_DefType_Unpack(val, UPB_DEFTYPE_ONEOF);
+  upb_value v = upb_value_constptr(val);
+  const upb_FieldDef* f = _upb_DefType_Unpack(v, UPB_DEFTYPE_FIELD);
+  const upb_OneofDef* o = _upb_DefType_Unpack(v, UPB_DEFTYPE_ONEOF);
   if (out_f) *out_f = f;
   if (out_o) *out_o = o;
   return f || o; /* False if this was a JSON name. */
@@ -223,17 +228,18 @@ bool upb_MessageDef_FindByNameWithSize(const upb_MessageDef* m,
 
 const upb_FieldDef* upb_MessageDef_FindByJsonNameWithSize(
     const upb_MessageDef* m, const char* name, size_t size) {
-  upb_value val;
+  const void* val;
 
-  if (upb_strtable_lookup2(&m->jtof, name, size, &val)) {
-    return upb_value_getconstptr(val);
+  if (upb_strtable_ptr_lookup(&m->jtof, name, size, &val)) {
+    return (const upb_FieldDef*)val;
   }
 
-  if (!upb_strtable_lookup2(&m->ntof, name, size, &val)) {
+  if (!upb_strtable_ptr_lookup(&m->ntof, name, size, &val)) {
     return NULL;
   }
 
-  return _upb_DefType_Unpack(val, UPB_DEFTYPE_FIELD);
+  upb_value v = upb_value_constptr(val);
+  return _upb_DefType_Unpack(v, UPB_DEFTYPE_FIELD);
 }
 
 int upb_MessageDef_ExtensionRangeCount(const upb_MessageDef* m) {
@@ -406,10 +412,10 @@ void _upb_MessageDef_InsertField(upb_DefBuilder* ctx, upb_MessageDef* m,
   const char* shortname = upb_FieldDef_Name(f);
   const size_t shortnamelen = strlen(shortname);
 
-  upb_value v = upb_value_constptr(f);
+  const void* v_ptr = f;
 
-  upb_value existing_v;
-  if (upb_strtable_lookup(&m->ntof, shortname, &existing_v)) {
+  const void* existing_v;
+  if (upb_strtable_ptr_lookup(&m->ntof, shortname, shortnamelen, &existing_v)) {
     _upb_DefBuilder_Errf(ctx, "duplicate field name (%s)", shortname);
   }
 
@@ -424,28 +430,27 @@ void _upb_MessageDef_InsertField(upb_DefBuilder* ctx, upb_MessageDef* m,
   if (!skip_json_conflicts && strcmp(shortname, json_name) != 0 &&
       google_protobuf_FeatureSet_json_format(m->resolved_features) ==
           google_protobuf_FeatureSet_ALLOW &&
-      upb_strtable_lookup(&m->ntof, json_name, &v)) {
+      upb_strtable_ptr_lookup(&m->ntof, json_name, strlen(json_name), &v_ptr)) {
     _upb_DefBuilder_Errf(
         ctx, "duplicate json_name for (%s) with original field name (%s)",
         shortname, json_name);
   }
 
-  if (upb_strtable_lookup(&m->jtof, json_name, &v)) {
+  if (upb_strtable_ptr_lookup(&m->jtof, json_name, strlen(json_name), &v_ptr)) {
     if (!skip_json_conflicts) {
       _upb_DefBuilder_Errf(ctx, "duplicate json_name (%s)", json_name);
     }
   } else {
     const size_t json_size = strlen(json_name);
-    ok = upb_strtable_insert(&m->jtof, json_name, json_size,
-                             upb_value_constptr(f), ctx->arena);
+    ok = upb_strtable_ptr_insert(&m->jtof, json_name, json_size, f, ctx->arena);
     if (!ok) _upb_DefBuilder_OomErr(ctx);
   }
 
-  if (upb_inttable_lookup(&m->itof, field_number, NULL)) {
+  if (upb_inttable_32_ptr_lookup(&m->itof, field_number, NULL)) {
     _upb_DefBuilder_Errf(ctx, "duplicate field number (%u)", field_number);
   }
 
-  ok = upb_inttable_insert(&m->itof, field_number, v, ctx->arena);
+  ok = upb_inttable_32_ptr_insert(&m->itof, field_number, v_ptr, ctx->arena);
   if (!ok) _upb_DefBuilder_OomErr(ctx);
 }
 
@@ -707,13 +712,13 @@ static void create_msgdef(upb_DefBuilder* ctx, const char* prefix,
   res_ranges = google_protobuf_DescriptorProto_reserved_range(msg_proto, &n_res_range);
   res_names = google_protobuf_DescriptorProto_reserved_name(msg_proto, &n_res_name);
 
-  bool ok = upb_inttable_init(&m->itof, ctx->arena);
+  bool ok = upb_inttable_32_ptr_init(&m->itof, ctx->arena);
   if (!ok) _upb_DefBuilder_OomErr(ctx);
 
-  ok = upb_strtable_init(&m->ntof, n_oneof + n_field, ctx->arena);
+  ok = upb_strtable_ptr_init(&m->ntof, n_oneof + n_field, ctx->arena);
   if (!ok) _upb_DefBuilder_OomErr(ctx);
 
-  ok = upb_strtable_init(&m->jtof, n_field, ctx->arena);
+  ok = upb_strtable_ptr_init(&m->jtof, n_field, ctx->arena);
   if (!ok) _upb_DefBuilder_OomErr(ctx);
 
   m->oneof_count = n_oneof;

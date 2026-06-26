@@ -629,3 +629,52 @@ TEST(IntTableTest, RemoveIterHeadOfChainDemonstratesBug) {
   EXPECT_EQ(upb_inttable_count(&t), 1);
   EXPECT_TRUE(upb_inttable_lookup(&t, 9, &val));
 }
+
+TEST(TypeSafeTableTest, TestIntTable32Bool) {
+  upb::Arena arena;
+  upb_inttable_32_bool t;
+  upb_inttable_32_bool_init(&t, arena.ptr());
+  EXPECT_EQ(upb_inttable_32_bool_count(&t), 0);
+
+  bool ok = upb_inttable_32_bool_insert(&t, 42, true, arena.ptr());
+  EXPECT_TRUE(ok);
+  EXPECT_EQ(upb_inttable_32_bool_count(&t), 1);
+
+  bool v = false;
+  ok = upb_inttable_32_bool_lookup(&t, 42, &v);
+  EXPECT_TRUE(ok);
+  EXPECT_TRUE(v);
+
+  ok = upb_inttable_32_bool_replace(&t, 42, false);
+  EXPECT_TRUE(ok);
+  ok = upb_inttable_32_bool_lookup(&t, 42, &v);
+  EXPECT_TRUE(ok);
+  EXPECT_FALSE(v);
+
+  ok = upb_inttable_32_bool_remove(&t, 42, &v);
+  EXPECT_TRUE(ok);
+  EXPECT_FALSE(v);
+  EXPECT_EQ(upb_inttable_32_bool_count(&t), 0);
+}
+
+TEST(TypeSafeTableTest, TestStrTablePtr) {
+  upb::Arena arena;
+  upb_strtable_ptr t;
+  upb_strtable_ptr_init(&t, 0, arena.ptr());
+  EXPECT_EQ(upb_strtable_ptr_count(&t), 0);
+
+  int x = 123;
+  bool ok = upb_strtable_ptr_insert(&t, "hello", 5, &x, arena.ptr());
+  EXPECT_TRUE(ok);
+  EXPECT_EQ(upb_strtable_ptr_count(&t), 1);
+
+  const void* v = nullptr;
+  ok = upb_strtable_ptr_lookup(&t, "hello", 5, &v);
+  EXPECT_TRUE(ok);
+  EXPECT_EQ(v, &x);
+
+  ok = upb_strtable_ptr_remove(&t, "hello", 5, &v);
+  EXPECT_TRUE(ok);
+  EXPECT_EQ(v, &x);
+  EXPECT_EQ(upb_strtable_ptr_count(&t), 0);
+}
