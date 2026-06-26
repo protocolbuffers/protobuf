@@ -36,8 +36,23 @@ namespace google {
 namespace protobuf {
 namespace python {
 
+// Bool that can be used with std::vector without bit packing issues.
+enum class Bool : bool { kFalse = false, kTrue = true };
+
 class RepeatedScalarContainerFriend {
  public:
+  template <typename T>
+  static absl::Span<const T> GetRepeatedFieldSpan(
+      const Reflection* reflection, const Message* message,
+      const FieldDescriptor* field_descriptor) {
+    using TActual = std::conditional_t<std::is_same_v<T, Bool>, bool, T>;
+    const auto& field = reflection->GetRepeatedFieldInternal<TActual>(
+        *message, field_descriptor,
+        Reflection::GetRepeatedFieldIntent::kHiddenOrInternal);
+    return absl::MakeSpan(reinterpret_cast<const T*>(field.data()),
+                          static_cast<size_t>(field.size()));
+  }
+
   // Only `AddStringView` and `SetRepeatedStringView` are needed to be friends
   // with `Reflection` but having the overloads here makes the code easier to
   // call.
@@ -52,10 +67,13 @@ class RepeatedScalarContainerFriend {
 
   static void MergeFrom(const Reflection* reflection, Message* message,
                         const FieldDescriptor* field_descriptor,
-                        absl::Span<const uint8_t> other_values) {
+                        absl::Span<const Bool> other_values) {
     MutableRepeatedFieldRef<bool> mutable_ref =
         reflection->GetMutableRepeatedFieldRef<bool>(message, field_descriptor);
-    mutable_ref.MergeFrom(other_values);
+    absl::Span<const bool> other_values_as_bool(
+        reinterpret_cast<const bool*>(other_values.data()),
+        other_values.size());
+    mutable_ref.MergeFrom(other_values_as_bool);
   }
 
   static void MergeFrom(const Reflection* reflection, Message* message,
@@ -77,10 +95,10 @@ class RepeatedScalarContainerFriend {
 
   static void Set(const Reflection* reflection, Message* message,
                   const FieldDescriptor* field_descriptor, int index,
-                  uint8_t value) {
+                  const Bool& value) {
     MutableRepeatedFieldRef<bool> mutable_ref =
         reflection->GetMutableRepeatedFieldRef<bool>(message, field_descriptor);
-    mutable_ref.Set(index, value != 0);
+    mutable_ref.Set(index, static_cast<bool>(value));
   }
 
   static void Set(const Reflection* reflection, Message* message,
@@ -94,11 +112,31 @@ namespace {
 
 template <typename Dest, typename Source>
 bool SafeCast(Source source, Dest* dest) {
-  if (!IsValidNumericCast<Dest>(source)) {
-    PyErr_SetString(PyExc_OverflowError, "Integer overflow");
-    return false;
+  if constexpr (std::is_same_v<Dest, Bool>) {
+    *dest = Dest(source != 0);
+    return true;
+  } else if constexpr (std::is_same_v<Source, Bool>) {
+    *dest =
+        static_cast<bool>(source) ? static_cast<Dest>(1) : static_cast<Dest>(0);
+    return true;
+  } else if constexpr (!std::is_same_v<Dest, Source>) {
+    if (!IsValidNumericCast<Dest>(source)) {
+      PyErr_SetString(PyExc_OverflowError, "Integer overflow");
+      return false;
+    }
   }
   *dest = static_cast<Dest>(source);
+  return true;
+}
+
+bool SafeCast(float source, double* dest) {
+  *dest = static_cast<double>(source);
+  return true;
+}
+
+bool SafeCast(double source, float* dest) {
+  // We don't overflow check here as this matches the existing behavior.
+  *dest = static_cast<float>(source);
   return true;
 }
 
@@ -120,40 +158,199 @@ bool GetContiguous1DView(PyObject* value, Py_buffer* view) {
   return false;
 }
 
-template <typename T, typename Func>
-bool CallWithSpanImpl(PyObject* value, const FieldDescriptor* field_descriptor,
+template <typename ToT, typename FromT, typename Func>
+bool CallWithSpanType(absl::Span<const FromT> from_values, bool is_self_assign,
                       Func&& func) {
+  if constexpr (std::is_same_v<FromT, ToT>) {
+    if (is_self_assign) {
+      auto to_values = std::make_unique<ToT[]>(from_values.size());
+      std::copy(from_values.begin(), from_values.end(), to_values.get());
+      return func(absl::MakeConstSpan(to_values.get(), from_values.size()));
+    } else {
+      return func(from_values);
+    }
+  } else {
+    auto to_values = std::make_unique<ToT[]>(from_values.size());
+    ToT* to_values_ptr = to_values.get();
+    for (const FromT& from_value : from_values) {
+      ToT to_value;
+      if (!SafeCast(from_value, &to_value)) {
+        break;
+      }
+      *to_values_ptr++ = to_value;
+    }
+    size_t count = static_cast<size_t>(to_values_ptr - to_values.get());
+    bool ok = !PyErr_Occurred();
+    PyObject* err_type = nullptr;
+    PyObject* err_value = nullptr;
+    PyObject* err_traceback = nullptr;
+    if (PyErr_Occurred()) {
+      ok = false;
+      PyErr_Fetch(&err_type, &err_value, &err_traceback);
+    }
+    // Matches existing behavior where elements were appended lazily.
+    // We may remove later in a separate CL to match UPB amd Python behavior.
+    bool result = func(absl::MakeConstSpan(to_values.get(), count));
+    if (!ok) {
+      if (!result) {
+        PyErr_Clear();
+      }
+      PyErr_Restore(err_type, err_value, err_traceback);
+    }
+    return ok && result;
+  }
+}
+
+struct RaiiPyBuffer {
+  Py_buffer* view;
+  explicit RaiiPyBuffer(Py_buffer* view) : view(view) {}
+  ~RaiiPyBuffer() { PyBuffer_Release(view); }
+};
+
+template <typename T, typename Func>
+bool CallWithSpanImpl(const Message* message, PyObject* value,
+                      const FieldDescriptor* field_descriptor, Func&& func) {
+  if (Py_TYPE(value) == &RepeatedScalarContainer_Type) {
+    const auto* container =
+        reinterpret_cast<const RepeatedScalarContainer*>(value);
+    const auto* field = container->parent_field_descriptor;
+    const auto* value_message = container->parent->message;
+    const Reflection* reflection = value_message->GetReflection();
+    bool is_self_assign = field_descriptor == field && message == value_message;
+    if constexpr (std::is_integral_v<T>) {
+      switch (field->cpp_type()) {
+        case FieldDescriptor::CPPTYPE_INT32:
+          return CallWithSpanType<T, int32_t, Func>(
+              RepeatedScalarContainerFriend::GetRepeatedFieldSpan<int32_t>(
+                  reflection, value_message, field),
+              is_self_assign, std::forward<Func>(func));
+        case FieldDescriptor::CPPTYPE_INT64:
+          return CallWithSpanType<T, int64_t, Func>(
+              RepeatedScalarContainerFriend::GetRepeatedFieldSpan<int64_t>(
+                  reflection, value_message, field),
+              is_self_assign, std::forward<Func>(func));
+        case FieldDescriptor::CPPTYPE_UINT32:
+          return CallWithSpanType<T, uint32_t, Func>(
+              RepeatedScalarContainerFriend::GetRepeatedFieldSpan<uint32_t>(
+                  reflection, value_message, field),
+              is_self_assign, std::forward<Func>(func));
+        case FieldDescriptor::CPPTYPE_UINT64:
+          return CallWithSpanType<T, uint64_t, Func>(
+              RepeatedScalarContainerFriend::GetRepeatedFieldSpan<uint64_t>(
+                  reflection, value_message, field),
+              is_self_assign, std::forward<Func>(func));
+        case FieldDescriptor::CPPTYPE_BOOL:
+          return CallWithSpanType<T, Bool, Func>(
+              RepeatedScalarContainerFriend::GetRepeatedFieldSpan<Bool>(
+                  reflection, value_message, field),
+              is_self_assign, std::forward<Func>(func));
+        default:
+          break;
+      }
+    } else if constexpr (std::is_floating_point_v<T>) {
+      switch (field->cpp_type()) {
+        case FieldDescriptor::CPPTYPE_FLOAT:
+          return CallWithSpanType<T, float, Func>(
+              RepeatedScalarContainerFriend::GetRepeatedFieldSpan<float>(
+                  reflection, value_message, field),
+              is_self_assign, std::forward<Func>(func));
+        case FieldDescriptor::CPPTYPE_DOUBLE:
+          return CallWithSpanType<T, double, Func>(
+              RepeatedScalarContainerFriend::GetRepeatedFieldSpan<double>(
+                  reflection, value_message, field),
+              is_self_assign, std::forward<Func>(func));
+        default:
+          break;
+      }
+    }
+  }
   Py_buffer view;
   if (GetContiguous1DView(value, &view)) {
+    RaiiPyBuffer view_raii(&view);
     const char fmt = view.format != nullptr ? view.format[0] : 0;
     const size_t size = static_cast<size_t>(view.len / view.itemsize);
     if (size > std::numeric_limits<int>::max()) {
-      PyBuffer_Release(&view);
       PyErr_SetString(PyExc_ValueError, "Repeated field too large");
       return false;
     }
-    if (sizeof(T) == view.itemsize) {
-      bool valid_format;
-      if constexpr (std::is_same_v<T, uint8_t>) {
-        valid_format = (fmt == '?' || fmt == 'B');
-      } else if constexpr (std::is_integral_v<T>) {
-        if constexpr (std::is_unsigned_v<T>) {
-          valid_format = (fmt == 'I' || fmt == 'Q' || fmt == 'L');
-        } else {
-          valid_format = (fmt == 'i' || fmt == 'q' || fmt == 'l');
-        }
-      } else if constexpr (std::is_floating_point_v<T>) {
-        valid_format = (fmt == 'f' || fmt == 'd');
-      } else {
-        valid_format = false;
+    // Only support integral-integral and float-float conversions.
+    // The fall-back path below supports integral-float conversions.
+    // It is an error to cast from float to integral.
+    if constexpr (std::is_integral_v<T>) {
+      switch (view.itemsize) {
+        case 1:
+          if (fmt == '?') {
+            return CallWithSpanType<T>(
+                absl::MakeSpan(static_cast<const Bool*>(view.buf), size),
+                /*is_self_assign=*/false, std::forward<Func>(func));
+          }
+          if (fmt == 'B') {
+            return CallWithSpanType<T>(
+                absl::MakeSpan(static_cast<const uint8_t*>(view.buf), size),
+                /*is_self_assign=*/false, std::forward<Func>(func));
+          }
+          if (fmt == 'b') {
+            return CallWithSpanType<T>(
+                absl::MakeSpan(static_cast<const int8_t*>(view.buf), size),
+                /*is_self_assign=*/false, std::forward<Func>(func));
+          }
+          break;
+        case 2:
+          if (fmt == 'h') {
+            return CallWithSpanType<T>(
+                absl::MakeSpan(static_cast<const int16_t*>(view.buf), size),
+                /*is_self_assign=*/false, std::forward<Func>(func));
+          } else if (fmt == 'H') {
+            return CallWithSpanType<T>(
+                absl::MakeSpan(static_cast<const uint16_t*>(view.buf), size),
+                /*is_self_assign=*/false, std::forward<Func>(func));
+          }
+          break;
+        case 4:
+          if (fmt == 'i' || fmt == 'l') {
+            return CallWithSpanType<T>(
+                absl::MakeSpan(static_cast<const int32_t*>(view.buf), size),
+                /*is_self_assign=*/false, std::forward<Func>(func));
+          } else if (fmt == 'I' || fmt == 'L') {
+            return CallWithSpanType<T>(
+                absl::MakeSpan(static_cast<const uint32_t*>(view.buf), size),
+                /*is_self_assign=*/false, std::forward<Func>(func));
+          }
+          break;
+        case 8:
+          if (fmt == 'q' || fmt == 'l') {
+            return CallWithSpanType<T>(
+                absl::MakeSpan(static_cast<const int64_t*>(view.buf), size),
+                /*is_self_assign=*/false, std::forward<Func>(func));
+          } else if (fmt == 'Q' || fmt == 'L') {
+            return CallWithSpanType<T>(
+                absl::MakeSpan(static_cast<const uint64_t*>(view.buf), size),
+                /*is_self_assign=*/false, std::forward<Func>(func));
+          }
+          break;
+        default:
+          break;
       }
-      if (valid_format) {
-        bool ok = func(absl::MakeSpan(static_cast<const T*>(view.buf), size));
-        PyBuffer_Release(&view);
-        return ok;
+    } else if constexpr (std::is_floating_point_v<T>) {
+      switch (view.itemsize) {
+        case 4:
+          if (fmt == 'f') {
+            return CallWithSpanType<T>(
+                absl::MakeSpan(static_cast<const float*>(view.buf), size),
+                /*is_self_assign=*/false, std::forward<Func>(func));
+          }
+          break;
+        case 8:
+          if (fmt == 'd') {
+            return CallWithSpanType<T>(
+                absl::MakeSpan(static_cast<const double*>(view.buf), size),
+                /*is_self_assign=*/false, std::forward<Func>(func));
+          }
+          break;
+        default:
+          break;
       }
     }
-    PyBuffer_Release(&view);
   }
   std::vector<ScopedPyObjectPtr> keep_objects;
   std::vector<T> values;
@@ -179,12 +376,12 @@ bool CallWithSpanImpl(PyObject* value, const FieldDescriptor* field_descriptor,
       break;
     }
     PyObject* arg = next.get();
-    if constexpr (std::is_same_v<T, uint8_t>) {
+    if constexpr (std::is_same_v<T, Bool>) {
       bool bool_value;
       if (!CheckAndGetBool(arg, &bool_value)) {
         break;
       }
-      values.push_back(bool_value);
+      values.push_back(Bool(bool_value));
     } else if constexpr (std::is_same_v<T, float>) {
       if (!CheckAndGetFloat(arg, &values.emplace_back())) {
         values.pop_back();
@@ -234,16 +431,18 @@ bool CallWithSpanImpl(PyObject* value, const FieldDescriptor* field_descriptor,
 }
 
 template <typename F>
-bool CallWithSpan(const FieldDescriptor* field_descriptor, PyObject* value,
+bool CallWithSpan(const Message* message,
+                  const FieldDescriptor* field_descriptor, PyObject* value,
                   F&& op) {
   switch (field_descriptor->cpp_type()) {
     case FieldDescriptor::CPPTYPE_INT32:
-      return CallWithSpanImpl<int32_t>(value, field_descriptor,
+      return CallWithSpanImpl<int32_t>(message, value, field_descriptor,
                                        std::forward<F>(op));
     case FieldDescriptor::CPPTYPE_ENUM:
       if (field_descriptor->legacy_enum_field_treated_as_closed()) {
         return CallWithSpanImpl<int32_t>(
-            value, field_descriptor, [&](absl::Span<const int32_t> values) {
+            message, value, field_descriptor,
+            [&](absl::Span<const int32_t> values) {
               const EnumDescriptor* enum_descriptor =
                   field_descriptor->enum_type();
               size_t failed_index = 0;
@@ -267,29 +466,29 @@ bool CallWithSpan(const FieldDescriptor* field_descriptor, PyObject* value,
               }
             });
       }
-      return CallWithSpanImpl<int32_t>(value, field_descriptor,
+      return CallWithSpanImpl<int32_t>(message, value, field_descriptor,
                                        std::forward<F>(op));
     case FieldDescriptor::CPPTYPE_INT64:
-      return CallWithSpanImpl<int64_t>(value, field_descriptor,
+      return CallWithSpanImpl<int64_t>(message, value, field_descriptor,
                                        std::forward<F>(op));
     case FieldDescriptor::CPPTYPE_UINT32:
-      return CallWithSpanImpl<uint32_t>(value, field_descriptor,
+      return CallWithSpanImpl<uint32_t>(message, value, field_descriptor,
                                         std::forward<F>(op));
     case FieldDescriptor::CPPTYPE_UINT64:
-      return CallWithSpanImpl<uint64_t>(value, field_descriptor,
+      return CallWithSpanImpl<uint64_t>(message, value, field_descriptor,
                                         std::forward<F>(op));
     case FieldDescriptor::CPPTYPE_FLOAT:
-      return CallWithSpanImpl<float>(value, field_descriptor,
+      return CallWithSpanImpl<float>(message, value, field_descriptor,
                                      std::forward<F>(op));
     case FieldDescriptor::CPPTYPE_DOUBLE:
-      return CallWithSpanImpl<double>(value, field_descriptor,
+      return CallWithSpanImpl<double>(message, value, field_descriptor,
                                       std::forward<F>(op));
     case FieldDescriptor::CPPTYPE_BOOL:
-      return CallWithSpanImpl<uint8_t>(value, field_descriptor,
-                                       std::forward<F>(op));
+      return CallWithSpanImpl<Bool>(message, value, field_descriptor,
+                                    std::forward<F>(op));
     case FieldDescriptor::CPPTYPE_STRING:
-      return CallWithSpanImpl<absl::string_view>(value, field_descriptor,
-                                                 std::forward<F>(op));
+      return CallWithSpanImpl<absl::string_view>(
+          message, value, field_descriptor, std::forward<F>(op));
     default:
       PyErr_Format(PyExc_SystemError,
                    "CallWithSpan on a field of unknown type %d",
@@ -705,7 +904,8 @@ static int AssSubscript(PyObject* pself, PyObject* slice, PyObject* value) {
     return AssignItem(pself, from, value);
   }
   const Reflection* reflection = message->GetReflection();
-  bool ok = CallWithSpan(field_descriptor, value, [&](auto values) {
+
+  bool ok = CallWithSpan(message, field_descriptor, value, [&](auto values) {
     int start_index;
     int count;
     int num_values;
@@ -795,7 +995,7 @@ PyObject* Extend(RepeatedScalarContainer* self, PyObject* value) {
   if (message == nullptr) return nullptr;
   const FieldDescriptor* field_descriptor = self->parent_field_descriptor;
   const Reflection* reflection = message->GetReflection();
-  if (CallWithSpan(field_descriptor, value, [&](auto values) {
+  if (CallWithSpan(message, field_descriptor, value, [&](auto values) {
         RepeatedScalarContainerFriend::MergeFrom(reflection, message,
                                                  field_descriptor, values);
         return true;
