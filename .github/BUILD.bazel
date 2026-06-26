@@ -12,6 +12,10 @@ sh_test(
     env = {
         "JQ_BIN": "$(JQ_BIN)",
     },
+    target_compatible_with = select({
+        "@platforms//os:windows": ["@platforms//:incompatible"],
+        "//conditions:default": [],
+    }),
     toolchains = ["@jq_toolchains//:resolved_toolchain"],
     deps = ["@bazel_tools//tools/bash/runfiles"],
 )
