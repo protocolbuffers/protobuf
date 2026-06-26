@@ -5,7 +5,10 @@ load("@rules_shell//shell:sh_test.bzl", "sh_test")
 sh_test(
     name = "release_prep_test",
     srcs = ["workflows/release_prep_test.sh"],
-    data = ["workflows/release_prep.sh"],
+    data = [
+        "workflows/release_prep.sh",
+        "@jq_toolchains//:resolved_toolchain",
+    ],
     env = {
         "JQ_BIN": "$(JQ_BIN)",
     },
