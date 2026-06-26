@@ -376,6 +376,52 @@ TEST_F(CppGeneratorTest, CtypeOnExtensionTest) {
       "extensions");
 }
 
+TEST_F(CppGeneratorTest, DeprecatedNestedEnumValueImportIsNotSelfWarning) {
+  // The class-scoped alias for a deprecated nested enum value initializes
+  // itself from the deprecated enumerator, which would otherwise trigger
+  // -Wdeprecated-declarations in code the user does not control. The alias
+  // must be wrapped in the deprecation-suppression macros.
+  // Regression test for protocolbuffers/protobuf#18205.
+  CreateTempFile("foo.proto", R"schema(
+    syntax = "proto3";
+    message Result {
+      enum Status {
+        UNSET = 0;
+        OK = 1 [deprecated = true];
+        FAILED = 2;
+      }
+    })schema");
+
+  RunProtoc(
+      "protocol_compiler --proto_path=$tmpdir --cpp_out=$tmpdir foo.proto");
+
+  ExpectNoErrors();
+  ExpectFileContentContainsSubstring(
+      "foo.pb.h",
+      "PROTOBUF_IGNORE_DEPRECATION_START\n"
+      "  [[deprecated]] static constexpr Status OK = Result_Status_OK;\n"
+      "  PROTOBUF_IGNORE_DEPRECATION_STOP");
+}
+
+TEST_F(CppGeneratorTest, NonDeprecatedEnumValueImportHasNoSuppression) {
+  // Enums without deprecated values must not emit suppression macros.
+  CreateTempFile("foo.proto", R"schema(
+    syntax = "proto3";
+    message Result {
+      enum Status {
+        UNSET = 0;
+        OK = 1;
+      }
+    })schema");
+
+  RunProtoc(
+      "protocol_compiler --proto_path=$tmpdir --cpp_out=$tmpdir foo.proto");
+
+  ExpectNoErrors();
+  ExpectFileContentNotContainsSubstring("foo.pb.h",
+                                        "PROTOBUF_IGNORE_DEPRECATION_START");
+}
+
 
 }  // namespace
 }  // namespace cpp
