@@ -28,6 +28,7 @@ namespace protobuf {
 class Descriptor;
 class EnumDescriptor;
 class FieldDescriptor;
+class FileDescriptor;
 class MethodDescriptor;
 class ServiceDescriptor;
 
@@ -79,8 +80,12 @@ class PROTOC_EXPORT PyiGenerator : public google::protobuf::compiler::CodeGenera
   void PrintServices() const;
   std::string GetFieldType(
       const FieldDescriptor& field_des, const Descriptor& containing_des) const;
-  template <typename DescriptorT>
-  std::string ModuleLevelName(const DescriptorT& descriptor) const;
+  std::string MessageIdentifier(const Descriptor& descriptor) const;
+  std::string MessageName(const Descriptor& descriptor) const;
+  std::string ModuleLevelName(const Descriptor& descriptor) const;
+  std::string ModuleLevelName(const EnumDescriptor& descriptor) const;
+  std::string QualifyModuleName(std::string name,
+                                const FileDescriptor& file) const;
   std::string PublicPackage() const;
   std::string InternalPackage() const;
   std::string ExtraInitTypes(const Descriptor& msg_des) const;
