@@ -104,6 +104,12 @@ class SingularPrimitive final : public FieldGeneratorBase {
     )cc");
   }
 
+  void GenerateMessageClearingCode(io::Printer* p) const override {
+    p->Emit(R"cc(
+      this_.$field_$ = $kDefault$;
+    )cc");
+  }
+
   void GenerateClearingCode(io::Printer* p) const override {
     p->Emit(R"cc(
       $field_$ = $kDefault$;
@@ -290,6 +296,14 @@ class RepeatedPrimitive final : public FieldGeneratorBase {
 
   std::vector<Sub> MakeVars() const override { return Vars(field_, *opts_); }
 
+  void GenerateMessageClearingCode(io::Printer* p) const override {
+    if (should_split()) {
+      p->Emit("this_.$field_$.ClearIfNotDefault();\n");
+    } else {
+      p->Emit("$field_$.Clear();\n");
+    }
+  }
+
   void GenerateClearingCode(io::Printer* p) const override {
     if (should_split()) {
       p->Emit("$field_$.ClearIfNotDefault();\n");
@@ -381,7 +395,7 @@ class RepeatedPrimitive final : public FieldGeneratorBase {
     p->Emit({InternalMetadataOffsetSub(p)},
             R"cc(
               $name$_ {
-                visibility, $internal_metadata_offset$, from.$name$_
+                visibility, $internal_metadata_offset$, arena, from.$name$_
               }
             )cc");
   }
@@ -688,12 +702,12 @@ void RepeatedPrimitive::GenerateByteSize(io::Printer* p) const {
 
 std::unique_ptr<FieldGeneratorBase> MakeSinguarPrimitiveGenerator(
     const FieldDescriptor* desc, const Options& options) {
-  return absl::make_unique<SingularPrimitive>(desc, options);
+  return std::make_unique<SingularPrimitive>(desc, options);
 }
 
 std::unique_ptr<FieldGeneratorBase> MakeRepeatedPrimitiveGenerator(
     const FieldDescriptor* desc, const Options& options) {
-  return absl::make_unique<RepeatedPrimitive>(desc, options);
+  return std::make_unique<RepeatedPrimitive>(desc, options);
 }
 
 }  // namespace cpp

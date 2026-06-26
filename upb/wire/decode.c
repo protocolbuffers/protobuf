@@ -350,7 +350,8 @@ static upb_Array* _upb_Decoder_CreateArray(upb_Decoder* d,
                                            const upb_MiniTableField* field) {
   const upb_FieldType field_type = field->UPB_PRIVATE(descriptortype);
   const size_t lg2 = UPB_PRIVATE(_upb_FieldType_SizeLg2)(field_type);
-  upb_Array* ret = UPB_PRIVATE(_upb_Array_New)(&d->arena, 4, lg2);
+  upb_Array* ret = UPB_PRIVATE(_upb_Array_New)(
+      &d->arena, _UPB_ARRAY_DEFAULT_INITIAL_SIZE, lg2);
   if (!ret) upb_ErrorHandler_ThrowError(d->err, kUpb_DecodeStatus_OutOfMemory);
   return ret;
 }
@@ -964,9 +965,52 @@ const char* _upb_Decoder_DecodeKnownField(upb_Decoder* d, const char* ptr,
   }
 }
 
-static const char* _upb_Decoder_DecodeUnknownField(
-    upb_Decoder* d, const char* ptr, upb_Message* msg, uint32_t field_number,
-    uint32_t wire_type, wireval val, const char* start) {
+UPB_FORCEINLINE
+bool _upb_Decoder_CanSkipUnknownField(upb_Decoder* d, uint32_t next_field_num,
+                                      uint32_t next_wire_type,
+                                      const upb_MiniTable* mt, uint32_t* gap_lo,
+                                      uint32_t* gap_hi, bool is_extendable) {
+  if (next_wire_type == kUpb_WireType_EndGroup) {
+    return false;
+  }
+
+  if (UPB_UNLIKELY(upb_MiniTable_IsMessageSet(mt))) {
+    if (next_field_num == kUpb_MsgSet_Item) {
+      return false;
+    }
+  }
+
+  if (next_field_num <= *gap_lo || next_field_num >= *gap_hi) {
+    if (UPB_LIKELY(next_field_num == *gap_hi)) {
+      // Common case of fields in ascending order encountering a known
+      // field
+      return false;
+    }
+    if (UPB_UNLIKELY(next_field_num == 0)) {
+      upb_ErrorHandler_ThrowError(d->err, kUpb_DecodeStatus_Malformed);
+    }
+    if (next_field_num == *gap_lo) {
+      return false;
+    }
+    if (!UPB_PRIVATE(_upb_MiniTable_FindUnknownGap)(mt, next_field_num, gap_lo,
+                                                    gap_hi)) {
+      return false;
+    }
+  }
+
+  if (is_extendable) {
+    if (upb_ExtensionRegistry_Lookup(d->extreg, mt, next_field_num)) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+UPB_NOINLINE
+static const char* _upb_Decoder_DecodeUnknowns(
+    upb_Decoder* d, const char* ptr, upb_Message* msg, const upb_MiniTable* mt,
+    uint32_t field_number, uint32_t wire_type, wireval val, const char* start) {
   if (field_number == 0) {
     upb_ErrorHandler_ThrowError(d->err, kUpb_DecodeStatus_Malformed);
   }
@@ -974,23 +1018,63 @@ static const char* _upb_Decoder_DecodeUnknownField(
   upb_EpsCopyCapture capture;
   upb_EpsCopyCapture_Start(&capture, &d->input, start);
 
+  // We have already parsed the tag and "value" (or size) of the first unknown
+  // field. ptr is currently:
+  // - after value for Varint, 32Bit, 64Bit.
+  // - after size for Delimited.
+  // - after tag for StartGroup.
+
+  // We need to finish skipping the first field.
   if (wire_type == kUpb_WireType_Delimited) {
     upb_StringView sv;
     ptr = upb_EpsCopyInputStream_ReadStringEphemeral(&d->input, ptr, val.size,
                                                      &sv);
-    if (!ptr) upb_ErrorHandler_ThrowError(d->err, kUpb_DecodeStatus_Malformed);
   } else if (wire_type == kUpb_WireType_StartGroup) {
     ptr = UPB_PRIVATE(_upb_WireReader_SkipGroup)(ptr, field_number << 3,
                                                  d->depth, &d->input);
   }
 
+  // Fast check if next fields are also unknown, based on the gap between known
+  // fields our first unknown falls between.
+
+  uint32_t gap_lo = 0;
+  uint32_t gap_hi = 0;
+  bool has_gap = UPB_PRIVATE(_upb_MiniTable_FindUnknownGap)(mt, field_number,
+                                                            &gap_lo, &gap_hi);
+
+  if (has_gap) {
+    bool is_extendable =
+        (UPB_UNLIKELY(UPB_PRIVATE(_upb_MiniTable_IsExtendable)(mt)) ||
+         UPB_UNLIKELY(upb_MiniTable_IsMessageSet(mt))) &&
+        d->extreg;
+    while (!upb_EpsCopyInputStream_IsDone(EPS(d), &ptr)) {
+      const char* start_ptr = ptr;
+      uint32_t tag;
+      ptr = upb_WireReader_ReadTag(ptr, &tag, EPS(d));
+
+      uint32_t next_field_num = tag >> 3;
+      uint32_t next_wire_type = tag & 7;
+
+      if (_upb_Decoder_CanSkipUnknownField(d, next_field_num, next_wire_type,
+                                           mt, &gap_lo, &gap_hi,
+                                           is_extendable)) {
+        ptr = _upb_WireReader_SkipValueForceInline(ptr, tag, d->depth, EPS(d));
+      } else {
+        ptr = start_ptr;
+        break;
+      }
+    }
+  }
+
   upb_StringView sv;
   upb_EpsCopyCapture_End(&capture, &d->input, ptr, &sv);
 
-  if (!UPB_PRIVATE(_upb_Message_AddUnknown)(
-          msg, sv.data, sv.size, &d->arena,
-          _upb_Decoder_GetAddUnknownMode(d, sv.data))) {
-    upb_ErrorHandler_ThrowError(d->err, kUpb_DecodeStatus_OutOfMemory);
+  if (UPB_LIKELY(sv.size > 0)) {
+    if (!UPB_PRIVATE(_upb_Message_AddUnknown)(
+            msg, sv.data, sv.size, &d->arena,
+            _upb_Decoder_GetAddUnknownMode(d, sv.data))) {
+      upb_ErrorHandler_ThrowError(d->err, kUpb_DecodeStatus_OutOfMemory);
+    }
   }
 
   return ptr;
@@ -1024,8 +1108,8 @@ const char* _upb_Decoder_DecodeFieldData(
   } else {
     switch (op) {
       case kUpb_DecodeOp_UnknownField:
-        return _upb_Decoder_DecodeUnknownField(d, ptr, msg, field_number,
-                                               wire_type, val, start);
+        return _upb_Decoder_DecodeUnknowns(d, ptr, msg, mt, field_number,
+                                           wire_type, val, start);
       case kUpb_DecodeOp_MessageSetItem:
         return upb_Decoder_DecodeMessageSetItem(d, ptr, msg, mt);
       default:

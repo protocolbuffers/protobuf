@@ -907,7 +907,12 @@ using GlobalEmptyString = std::conditional_t<
 PROTOBUF_EXPORT extern GlobalEmptyString fixed_address_empty_string;
 
 PROTOBUF_EXPORT ABSL_ATTRIBUTE_NORETURN PROTOBUF_NOINLINE void
-HandleAddOverflow(int a, int b);
+HandleAddOverflow(absl::int128 a, absl::int128 b);
+
+template <typename T, typename U>
+ABSL_ATTRIBUTE_NORETURN PROTOBUF_NOINLINE void HandleAddOverflow(T a, U b) {
+  HandleAddOverflow(absl::int128(a), absl::int128(b));
+}
 
 #if ABSL_HAVE_BUILTIN(__builtin_add_overflow)
 template <typename IntType1, typename IntType2>

@@ -103,7 +103,8 @@ class Method extends \Google\Protobuf\Internal\Message
      *           Api. This is similar to Field and EnumValue.
      * }
      */
-    public function __construct($data = NULL) {
+    public function __construct($data = null)
+    {
         \GPBMetadata\Google\Protobuf\Api::initOnce();
         parent::__construct($data);
     }

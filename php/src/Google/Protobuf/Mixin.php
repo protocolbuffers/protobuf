@@ -104,7 +104,8 @@ class Mixin extends \Google\Protobuf\Internal\Message
      *           are rooted.
      * }
      */
-    public function __construct($data = NULL) {
+    public function __construct($data = null)
+    {
         \GPBMetadata\Google\Protobuf\Api::initOnce();
         parent::__construct($data);
     }

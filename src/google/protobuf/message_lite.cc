@@ -20,6 +20,7 @@
 #include <ostream>
 #include <string>
 #include <utility>
+#include <variant>
 
 #include "absl/base/optimization.h"
 #include "absl/log/absl_check.h"
@@ -56,7 +57,7 @@ MessageLite* MessageLite::CopyConstruct(Arena* arena, const MessageLite& from) {
 
 void MessageLite::DestroyInstance() {
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-  _class_data_->destroy_message(*this);
+  class_data()->destroy_message(*this);
 #else   // PROTOBUF_CUSTOM_VTABLE
   this->~MessageLite();
 #endif  // PROTOBUF_CUSTOM_VTABLE
@@ -208,15 +209,24 @@ void MessageLite::LogInitializationErrorMessage() const {
 
 namespace internal {
 
-void FailDynamicCast(const MessageLite& from, const MessageLite& to) {
-  const auto to_name = to.GetTypeName();
+void FailDynamicCast(
+    const MessageLite& from,
+    std::variant<const char*, const MessageLite*> to_type_name) {
+  absl::string_view to_type_name_str;
+  if (std::holds_alternative<const char*>(to_type_name)) {
+    to_type_name_str = std::get<const char*>(to_type_name);
+  } else {
+    to_type_name_str =
+        std::get<const MessageLite*>(to_type_name)->GetTypeName();
+  }
   if (internal::GetClassData(from)->is_dynamic) {
     ABSL_LOG(FATAL)
         << "Cannot downcast from a DynamicMessage to generated type "
-        << to_name;
+        << to_type_name_str;
   }
   const auto from_name = from.GetTypeName();
-  ABSL_LOG(FATAL) << "Cannot downcast " << from_name << " to " << to_name;
+  ABSL_LOG(FATAL) << "Cannot downcast " << from_name << " to "
+                  << to_type_name_str;
 }
 
 template <bool aliasing>

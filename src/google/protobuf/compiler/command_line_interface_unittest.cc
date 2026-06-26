@@ -2706,7 +2706,7 @@ TEST_F(CommandLineInterfaceTest, EditionDefaultsWithMaximum) {
             message_encoding: LENGTH_PREFIXED
             json_format: ALLOW
             enforce_naming_style: STYLE2026
-            default_symbol_visibility: EXPORT_TOP_LEVEL
+            default_symbol_visibility: STRICT
             enforce_proto_limits: PROTO_LIMITS2026
           }
           fixed_features {}
@@ -2824,7 +2824,7 @@ TEST_F(CommandLineInterfaceTest, EditionDefaultsWithMinimum) {
             message_encoding: LENGTH_PREFIXED
             json_format: ALLOW
             enforce_naming_style: STYLE2026
-            default_symbol_visibility: EXPORT_TOP_LEVEL
+            default_symbol_visibility: STRICT
             enforce_proto_limits: PROTO_LIMITS2026
           }
           fixed_features {}
@@ -5712,6 +5712,42 @@ TEST_F(CommandLineInterfaceTest, VisibilityFeatureSetStrictBadNestedMessage) {
   ExpectErrorSubstring(
       "vis.proto: \"naming.LocalOuter.Inner\" is a nested message and cannot "
       "be `export` with STRICT default_symbol_visibility");
+}
+
+TEST_F(CommandLineInterfaceTest, JavaGenericServicesWarning) {
+  CreateTempFile("foo.proto",
+                 "syntax = \"proto2\";\n"
+                 "option java_generic_services = true;\n"
+                 "message Foo {}\n");
+
+  Run("protocol_compiler --test_out=$tmpdir "
+      "--proto_path=$tmpdir foo.proto");
+
+  ExpectWarningSubstring("Generic services");
+}
+
+TEST_F(CommandLineInterfaceTest, CppGenericServicesWarning) {
+  CreateTempFile("foo.proto",
+                 "syntax = \"proto2\";\n"
+                 "option cc_generic_services = true;\n"
+                 "message Foo {}\n");
+
+  Run("protocol_compiler --test_out=$tmpdir "
+      "--proto_path=$tmpdir foo.proto");
+
+  ExpectWarningSubstring("Generic services");
+}
+
+TEST_F(CommandLineInterfaceTest, PythonGenericServicesWarning) {
+  CreateTempFile("foo.proto",
+                 "syntax = \"proto2\";\n"
+                 "option py_generic_services = true;\n"
+                 "message Foo {}\n");
+
+  Run("protocol_compiler --test_out=$tmpdir "
+      "--proto_path=$tmpdir foo.proto");
+
+  ExpectWarningSubstring("Generic services");
 }
 
 // ===================================================================

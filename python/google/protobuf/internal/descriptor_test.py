@@ -2044,5 +2044,13 @@ class FeatureInheritanceTest(unittest.TestCase):
     self.assertEqual(GetTestFeature(pool.method), 5)
 
 
+@testing_refleaks.TestCase
+class ExtensionRangesRefleakTest(unittest.TestCase):
+
+  def testExtensionRangesRefleak(self):
+    _ = unittest_pb2.TestAllExtensions.DESCRIPTOR.extension_ranges
+    _ = unittest_pb2.TestMultipleExtensionRanges.DESCRIPTOR.extension_ranges
+
+
 if __name__ == '__main__':
   unittest.main()

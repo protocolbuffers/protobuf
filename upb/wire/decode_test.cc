@@ -10,7 +10,6 @@
 #include <array>
 #include <cstdint>
 #include <cstring>
-#include <limits>
 #include <memory>
 #include <optional>
 #include <string>
@@ -28,10 +27,14 @@
 #include "upb/message/accessors.hpp"
 #include "upb/message/array.h"
 #include "upb/message/message.h"
+#include "upb/mini_descriptor/decode.h"
 #include "upb/mini_descriptor/link.h"
+#include "upb/mini_table/extension.h"
+#include "upb/mini_table/extension_registry.h"
 #include "upb/mini_table/field.h"
 #include "upb/mini_table/message.h"
 #include "upb/wire/decode_fast/combinations.h"
+#include "upb/wire/decode_test.upb_minitable.h"
 #include "upb/wire/test_util/field_types.h"
 #include "upb/wire/test_util/make_mini_table.h"
 #include "upb/wire/test_util/wire_message.h"
@@ -43,6 +46,25 @@ namespace upb {
 namespace test {
 
 namespace {
+
+std::vector<int> GetDecodeOptionsToTest() {
+#if UPB_FASTTABLE
+  return {0, kUpb_DecodeOption_DisableFastTable};
+#else
+  return {0};
+#endif
+}
+
+#ifndef NDEBUG
+std::string GetExpectedConsecutiveUnknownsTrace(int options) {
+#if UPB_FASTTABLE
+  if (!(options & kUpb_DecodeOption_DisableFastTable)) {
+    return "D";
+  }
+#endif
+  return "M";
+}
+#endif
 
 template <typename T>
 std::optional<T> GetOptionalField(upb_Message* msg,
@@ -333,6 +355,44 @@ TEST(RepeatedFieldTest, RepeatedMessageFallback) {
   EXPECT_EQ(upb_Array_Size(arr), 2u);
 }
 
+TEST(RepeatedFieldTest, RepeatedMessageLongVarintSizeFastPath) {
+  char trace_buf[64];
+  Arena mt_arena;
+  Arena msg_arena;
+
+  auto [sub_mt, sub_field] =
+      test::MiniTable::MakeSingleFieldTable<test::field_types::Int32>(
+          1, kUpb_DecodeFast_Scalar, mt_arena.ptr());
+
+  auto [mt, field] =
+      test::MiniTable::MakeSingleFieldTable<test::field_types::Message>(
+          1, kUpb_DecodeFast_Repeated, mt_arena.ptr());
+
+  const upb_MiniTable* subs[1] = {sub_mt};
+  bool linked =
+      upb_MiniTable_Link(const_cast<upb_MiniTable*>(mt), subs, 1, nullptr, 0);
+  ASSERT_TRUE(linked);
+
+  upb_Message* msg = upb_Message_New(mt, msg_arena.ptr());
+
+  // Payload:
+  // Element 1: tag 1, len 2, int32 value 5
+  // Element 2: tag 1, len 2 (parsed as overlong 3-byte varint), int32 value 6
+  std::string payload("\x0a\x02\x08\x05\x0a\x82\x80\x00\x08\x06", 10);
+  upb_DecodeStatus result =
+      upb_DecodeWithTrace(payload.data(), payload.size(), msg, mt, nullptr, 0,
+                          msg_arena.ptr(), trace_buf, sizeof(trace_buf));
+
+  ASSERT_EQ(result, kUpb_DecodeStatus_Ok) << upb_DecodeStatus_String(result);
+#if !defined(NDEBUG)
+#if UPB_FASTTABLE
+  EXPECT_EQ(FilteredTrace(absl::string_view(trace_buf)), "DDFFDFF");
+#else
+  EXPECT_EQ(FilteredTrace(absl::string_view(trace_buf)), "MMMM");
+#endif
+#endif
+}
+
 TEST(RepeatedFieldTest, LongRepeatedField) {
   auto trace_buf = std::make_unique<std::array<char, 1024>>();
   using TypeParam = field_types::Fixed64;
@@ -422,6 +482,86 @@ TEST(DecodeTest, EmptyMiniTableDecodedAsUnknown) {
   EXPECT_FALSE(upb_Message_NextUnknown(msg, &data, &iter));
 }
 
+TEST(DecodeTest, ConsecutiveUnknownFieldsWithoutAlias) {
+  char trace_buf[64];
+  Arena mt_arena;
+
+  auto [mt, field] = MiniTable::MakeSingleFieldTable<field_types::Int32>(
+      1, kUpb_DecodeFast_Scalar, mt_arena.ptr());
+
+  // Field 2: tag 2, varint, value 2  -> \x10\x02
+  // Field 3: tag 3, varint, value 3  -> \x18\x03
+  std::string payload("\x10\x02\x18\x03", 4);
+
+  for (int options : GetDecodeOptionsToTest()) {
+    Arena msg_arena;
+    upb_Message* msg = upb_Message_New(mt, msg_arena.ptr());
+    memset(trace_buf, 0, sizeof(trace_buf));
+
+    upb_DecodeStatus result = upb_DecodeWithTrace(
+        payload.data(), payload.size(), msg, mt, nullptr, options,
+        msg_arena.ptr(), trace_buf, sizeof(trace_buf));
+
+    ASSERT_EQ(result, kUpb_DecodeStatus_Ok) << upb_DecodeStatus_String(result);
+
+    EXPECT_TRUE(upb_Message_HasUnknown(msg));
+
+    uintptr_t iter = kUpb_Message_UnknownBegin;
+    upb_StringView data;
+
+    // We expect them to be merged.
+    ASSERT_TRUE(upb_Message_NextUnknown(msg, &data, &iter));
+    EXPECT_EQ(absl::string_view(data.data, data.size), payload);
+    EXPECT_FALSE(upb_Message_NextUnknown(msg, &data, &iter));
+
+#ifndef NDEBUG
+    // Assert that consecutive unknown fields optimization took effect, decoding
+    // both unknown fields in a single step (trace "M" instead of "MM").
+    EXPECT_EQ(absl::string_view(trace_buf),
+              GetExpectedConsecutiveUnknownsTrace(options));
+#endif
+  }
+}
+
+TEST(DecodeTest, ConsecutiveUnknownFieldsWithAlias) {
+  char trace_buf[64];
+  Arena mt_arena;
+
+  auto [mt, field] = MiniTable::MakeSingleFieldTable<field_types::Int32>(
+      1, kUpb_DecodeFast_Scalar, mt_arena.ptr());
+
+  // Field 2: tag 2, varint, value 2  -> \x10\x02
+  // Field 3: tag 3, varint, value 3  -> \x18\x03
+  std::string payload("\x10\x02\x18\x03", 4);
+
+  for (int extra_options : GetDecodeOptionsToTest()) {
+    Arena msg_arena;
+    upb_Message* msg = upb_Message_New(mt, msg_arena.ptr());
+    memset(trace_buf, 0, sizeof(trace_buf));
+
+    int options = extra_options | kUpb_DecodeOption_AliasString;
+    upb_DecodeStatus result = upb_DecodeWithTrace(
+        payload.data(), payload.size(), msg, mt, nullptr, options,
+        msg_arena.ptr(), trace_buf, sizeof(trace_buf));
+
+    ASSERT_EQ(result, kUpb_DecodeStatus_Ok) << upb_DecodeStatus_String(result);
+
+    EXPECT_TRUE(upb_Message_HasUnknown(msg));
+
+    uintptr_t iter = kUpb_Message_UnknownBegin;
+    upb_StringView data;
+
+    ASSERT_TRUE(upb_Message_NextUnknown(msg, &data, &iter));
+    EXPECT_EQ(absl::string_view(data.data, data.size), payload);
+    EXPECT_FALSE(upb_Message_NextUnknown(msg, &data, &iter));
+
+#ifndef NDEBUG
+    EXPECT_EQ(absl::string_view(trace_buf),
+              GetExpectedConsecutiveUnknownsTrace(options));
+#endif
+  }
+}
+
 TEST(DecodeTest, MaxDepthPayloadParsesSuccessfully) {
   upb::Arena mt_arena;
   upb::Arena msg_arena;
@@ -506,6 +646,89 @@ TEST(DecodeTest, DecodeGroupFieldFromDelimitedWireFormatAsUnknown) {
   ASSERT_TRUE(upb_Message_NextUnknown(parent_msg, &data, &iter));
   EXPECT_EQ(absl::string_view(data.data, data.size), payload);
   EXPECT_FALSE(upb_Message_NextUnknown(parent_msg, &data, &iter));
+}
+
+TEST(DecodeTest, ConsecutiveUnknownFieldsWithGroup) {
+  char trace_buf[64];
+  Arena mt_arena;
+
+  auto [mt, field] = MiniTable::MakeSingleFieldTable<field_types::Int32>(
+      1, kUpb_DecodeFast_Scalar, mt_arena.ptr());
+
+  // Field 2: StartGroup -> \x13
+  //   Field 3: Varint, value 123 -> \x18\x7b
+  // Field 2: EndGroup -> \x14
+  // Field 4: Varint, value 456 -> \x20\xc8\x03
+  std::string payload("\x13\x18\x7b\x14\x20\xc8\x03", 7);
+
+  for (int options : GetDecodeOptionsToTest()) {
+    Arena msg_arena;
+    upb_Message* msg = upb_Message_New(mt, msg_arena.ptr());
+    memset(trace_buf, 0, sizeof(trace_buf));
+
+    upb_DecodeStatus result = upb_DecodeWithTrace(
+        payload.data(), payload.size(), msg, mt, nullptr, options,
+        msg_arena.ptr(), trace_buf, sizeof(trace_buf));
+
+    ASSERT_EQ(result, kUpb_DecodeStatus_Ok) << upb_DecodeStatus_String(result);
+
+    EXPECT_TRUE(upb_Message_HasUnknown(msg));
+
+    uintptr_t iter = kUpb_Message_UnknownBegin;
+    upb_StringView data;
+
+    // We expect them to be merged.
+    ASSERT_TRUE(upb_Message_NextUnknown(msg, &data, &iter));
+    EXPECT_EQ(absl::string_view(data.data, data.size), payload);
+    EXPECT_FALSE(upb_Message_NextUnknown(msg, &data, &iter));
+
+#ifndef NDEBUG
+    const char* expected = "M";
+#if UPB_FASTTABLE
+    if (!(options & kUpb_DecodeOption_DisableFastTable)) {
+      expected = "D<M";
+    }
+#endif
+    EXPECT_EQ(absl::string_view(trace_buf), expected);
+#endif
+  }
+}
+
+TEST(DecodeTest, MessageSetConsecutiveUnknowns) {
+  Arena mt_arena;
+
+  const upb_MiniTable* mset_mt = &upb_0decode_0test__TestMessageSet_msg_init;
+  const upb_MiniTableExtension* ext = upb_decode_test_ext_message_set_ext;
+
+  upb_ExtensionRegistry* reg = upb_ExtensionRegistry_New(mt_arena.ptr());
+  ASSERT_TRUE(reg != nullptr);
+  EXPECT_EQ(upb_ExtensionRegistry_Add(reg, ext),
+            kUpb_ExtensionRegistryStatus_Ok);
+
+  // 5. Construct the payload.
+  // Field 10 (Varint, value 1) is unknown: \x50\x01
+  // Field 1 (StartGroup, representing the MessageSet Item)
+  //   Inside the group:
+  //   Field 2 (type_id = 2000): \x10\xd0\x0f
+  //   Field 3 (message: empty message, length 0): \x1a\x00
+  // Field 1 (EndGroup): \x0c
+  std::string payload("\x50\x01\x0b\x10\xd0\x0f\x1a\x00\x0c", 9);
+
+  for (int options : GetDecodeOptionsToTest()) {
+    Arena msg_arena;
+    upb_Message* msg = upb_Message_New(mset_mt, msg_arena.ptr());
+    ASSERT_TRUE(msg != nullptr);
+
+    // Parse the payload.
+    upb_DecodeStatus result =
+        upb_Decode(payload.data(), payload.size(), msg, mset_mt, reg, options,
+                   msg_arena.ptr());
+
+    ASSERT_EQ(result, kUpb_DecodeStatus_Ok) << upb_DecodeStatus_String(result);
+
+    // Check if the extension was successfully parsed.
+    EXPECT_TRUE(upb_Message_HasExtension(msg, ext));
+  }
 }
 
 }  // namespace

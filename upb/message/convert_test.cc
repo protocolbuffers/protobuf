@@ -47,7 +47,7 @@ TEST(ConvertTest, Identity) {
   const upb_MiniTable* mt = TEST_MT;
 
   const upb_Message* dst_msg =
-      upb_Message_Convert(UPB_UPCAST(msg), mt, mt, nullptr, arena.ptr());
+      upb_Message_Convert(UPB_UPCAST(msg), mt, mt, nullptr, 0, 0, arena.ptr());
   ASSERT_NE(dst_msg, nullptr);
   const protobuf_test_messages_proto3_TestAllTypesProto3* dst =
       (const protobuf_test_messages_proto3_TestAllTypesProto3*)dst_msg;
@@ -74,7 +74,7 @@ TEST(ConvertTest, AliasSubMessage) {
   const upb_MiniTable* mt = TEST_MT;
 
   const upb_Message* dst_msg =
-      upb_Message_Convert(UPB_UPCAST(msg), mt, mt, nullptr, arena.ptr());
+      upb_Message_Convert(UPB_UPCAST(msg), mt, mt, nullptr, 0, 0, arena.ptr());
   ASSERT_NE(dst_msg, nullptr);
   const protobuf_test_messages_proto3_TestAllTypesProto3* dst =
       (const protobuf_test_messages_proto3_TestAllTypesProto3*)dst_msg;
@@ -121,7 +121,7 @@ TEST(ConvertTest, UnknownPromotion) {
   const upb_MiniTable* mt = TEST_MT;
 
   const upb_Message* dst_msg =
-      upb_Message_Convert(msg_empty, empty_mt, mt, nullptr, arena.ptr());
+      upb_Message_Convert(msg_empty, empty_mt, mt, nullptr, 0, 0, arena.ptr());
   ASSERT_NE(dst_msg, nullptr);
   const protobuf_test_messages_proto3_TestAllTypesProto3* dst =
       (const protobuf_test_messages_proto3_TestAllTypesProto3*)dst_msg;
@@ -140,8 +140,8 @@ TEST(ConvertTest, Demotion) {
   // Convert to Empty message. Field 1 should become unknown.
   const upb_MiniTable* empty_mt = &upb_0test__EmptyMessage_msg_init;
 
-  const upb_Message* dst = upb_Message_Convert(UPB_UPCAST(msg), TEST_MT,
-                                               empty_mt, nullptr, arena.ptr());
+  const upb_Message* dst = upb_Message_Convert(
+      UPB_UPCAST(msg), TEST_MT, empty_mt, nullptr, 0, 0, arena.ptr());
   EXPECT_NE(dst, nullptr);
 
   // Dst should have unknown field 1 with value 999.
@@ -167,7 +167,7 @@ TEST(ConvertTest, DeepConvertMap) {
 
   // Self-conversion should work (shallow).
   const upb_Message* dst_msg =
-      upb_Message_Convert(UPB_UPCAST(msg), mt, mt, nullptr, arena.ptr());
+      upb_Message_Convert(UPB_UPCAST(msg), mt, mt, nullptr, 0, 0, arena.ptr());
   ASSERT_NE(dst_msg, nullptr);
   const protobuf_test_messages_proto3_TestAllTypesProto3* dst =
       (const protobuf_test_messages_proto3_TestAllTypesProto3*)dst_msg;
@@ -196,7 +196,7 @@ TEST(ConvertTest, DeepConvertMapMessage) {
       &upb__test__convert__MessageWithMapMessageClone_msg_init;
 
   const upb_Message* dst_msg = upb_Message_Convert(
-      UPB_UPCAST(msg), src_mt, dst_mt, nullptr, arena.ptr());
+      UPB_UPCAST(msg), src_mt, dst_mt, nullptr, 0, 0, arena.ptr());
   ASSERT_NE(dst_msg, nullptr);
 
   const upb_test_convert_MessageWithMapMessageClone* dst =
@@ -224,7 +224,7 @@ TEST(ConvertTest, DeepConvertScalarMap) {
       &upb__test__convert__MessageWithMapInt32Int32Clone_msg_init;
 
   const upb_Message* dst_msg = upb_Message_Convert(
-      UPB_UPCAST(msg), src_mt, dst_mt, nullptr, arena.ptr());
+      UPB_UPCAST(msg), src_mt, dst_mt, nullptr, 0, 0, arena.ptr());
   ASSERT_NE(dst_msg, nullptr);
 
   const upb_test_convert_MessageWithMapInt32Int32Clone* dst =
@@ -262,7 +262,7 @@ TEST(ConvertTest, ExtensionArrayShallowConversion) {
       &upb__test__convert__MessageWithKnownRepeatedMsg_msg_init;
 
   const upb_Message* dst_msg = upb_Message_Convert(
-      UPB_UPCAST(msg), src_mt, dst_mt, nullptr, arena.ptr());
+      UPB_UPCAST(msg), src_mt, dst_mt, nullptr, 0, 0, arena.ptr());
   ASSERT_NE(dst_msg, nullptr);
 
   const upb_test_convert_MessageWithKnownRepeatedMsg* dst =
@@ -305,7 +305,7 @@ TEST(ConvertTest, ExtensionArrayDeepConversion) {
       &upb__test__convert__MessageWithKnownRepeatedMsgClone_msg_init;
 
   const upb_Message* dst_msg = upb_Message_Convert(
-      UPB_UPCAST(msg), src_mt, dst_mt, nullptr, arena.ptr());
+      UPB_UPCAST(msg), src_mt, dst_mt, nullptr, 0, 0, arena.ptr());
   ASSERT_NE(dst_msg, nullptr);
 
   const upb_test_convert_MessageWithKnownRepeatedMsgClone* dst =
@@ -343,7 +343,7 @@ TEST(ConvertTest, MismatchedExtensionFails) {
   const upb_MiniTable* dst_mt =
       &upb__test__convert__MessageWithKnownInt64_msg_init;
 
-  ASSERT_EQ(upb_Message_Convert(UPB_UPCAST(msg), src_mt, dst_mt, nullptr,
+  ASSERT_EQ(upb_Message_Convert(UPB_UPCAST(msg), src_mt, dst_mt, nullptr, 0, 0,
                                 arena.ptr()),
             nullptr);
 }
@@ -358,7 +358,7 @@ TEST(ConvertTest, ConvertField_IncompatibleCType) {
   const upb_MiniTable* src_mt = &upb__test__convert__MessageWithString_msg_init;
   const upb_MiniTable* dst_mt = &upb__test__convert__MessageWithInt32_msg_init;
 
-  ASSERT_EQ(upb_Message_Convert(UPB_UPCAST(msg), src_mt, dst_mt, nullptr,
+  ASSERT_EQ(upb_Message_Convert(UPB_UPCAST(msg), src_mt, dst_mt, nullptr, 0, 0,
                                 arena.ptr()),
             nullptr);
 }
@@ -376,7 +376,7 @@ TEST(ConvertTest, ConvertField_ArrayIncompatibleCType) {
   const upb_MiniTable* dst_mt =
       &upb__test__convert__MessageWithRepeatedInt32_msg_init;
 
-  ASSERT_EQ(upb_Message_Convert(UPB_UPCAST(msg), src_mt, dst_mt, nullptr,
+  ASSERT_EQ(upb_Message_Convert(UPB_UPCAST(msg), src_mt, dst_mt, nullptr, 0, 0,
                                 arena.ptr()),
             nullptr);
 }
@@ -390,7 +390,7 @@ TEST(ConvertTest, ConvertField_TypeMismatch) {
   const upb_MiniTable* src_mt = &upb__test__convert__MessageWithInt32_msg_init;
   const upb_MiniTable* dst_mt = &upb__test__convert__MessageWithInt64_msg_init;
 
-  ASSERT_EQ(upb_Message_Convert(UPB_UPCAST(msg), src_mt, dst_mt, nullptr,
+  ASSERT_EQ(upb_Message_Convert(UPB_UPCAST(msg), src_mt, dst_mt, nullptr, 0, 0,
                                 arena.ptr()),
             nullptr);
 }
@@ -405,7 +405,7 @@ TEST(ConvertTest, ConvertField_ModeMismatch_ScalarToArray) {
   const upb_MiniTable* dst_mt =
       &upb__test__convert__MessageWithRepeatedInt32_msg_init;
 
-  ASSERT_EQ(upb_Message_Convert(UPB_UPCAST(msg), src_mt, dst_mt, nullptr,
+  ASSERT_EQ(upb_Message_Convert(UPB_UPCAST(msg), src_mt, dst_mt, nullptr, 0, 0,
                                 arena.ptr()),
             nullptr);
 }
@@ -420,7 +420,7 @@ TEST(ConvertTest, ConvertField_ModeMismatch_ArrayToScalar) {
       &upb__test__convert__MessageWithRepeatedInt32_msg_init;
   const upb_MiniTable* dst_mt = &upb__test__convert__MessageWithInt32_msg_init;
 
-  ASSERT_EQ(upb_Message_Convert(UPB_UPCAST(msg), src_mt, dst_mt, nullptr,
+  ASSERT_EQ(upb_Message_Convert(UPB_UPCAST(msg), src_mt, dst_mt, nullptr, 0, 0,
                                 arena.ptr()),
             nullptr);
 }
@@ -435,7 +435,7 @@ TEST(ConvertTest, ConvertField_ModeMismatch_ScalarToMap) {
   const upb_MiniTable* dst_mt =
       &upb__test__convert__MessageWithMapInt32Int32_msg_init;
 
-  ASSERT_EQ(upb_Message_Convert(UPB_UPCAST(msg), src_mt, dst_mt, nullptr,
+  ASSERT_EQ(upb_Message_Convert(UPB_UPCAST(msg), src_mt, dst_mt, nullptr, 0, 0,
                                 arena.ptr()),
             nullptr);
 }
@@ -451,7 +451,7 @@ TEST(ConvertTest, ConvertField_MapTypeMismatch) {
   const upb_MiniTable* dst_mt =
       &upb__test__convert__MessageWithMapInt32Int64_msg_init;
 
-  ASSERT_EQ(upb_Message_Convert(UPB_UPCAST(msg), src_mt, dst_mt, nullptr,
+  ASSERT_EQ(upb_Message_Convert(UPB_UPCAST(msg), src_mt, dst_mt, nullptr, 0, 0,
                                 arena.ptr()),
             nullptr);
 }
@@ -470,7 +470,7 @@ TEST(ConvertTest, ConvertField_SingularMessageDeep) {
       &upb__test__convert__MessageWithMsgClone_msg_init;
 
   const upb_Message* dst_msg = upb_Message_Convert(
-      UPB_UPCAST(msg), src_mt, dst_mt, nullptr, arena.ptr());
+      UPB_UPCAST(msg), src_mt, dst_mt, nullptr, 0, 0, arena.ptr());
   ASSERT_NE(dst_msg, nullptr);
 
   const upb_test_convert_MessageWithMsgClone* dst =
@@ -501,7 +501,7 @@ TEST(ConvertTest, ConvertField_ArrayMessageShallow) {
       &upb__test__convert__MessageWithRepeatedMsg_msg_init;
 
   const upb_Message* dst_msg =
-      upb_Message_Convert(UPB_UPCAST(msg), mt, mt, nullptr, arena.ptr());
+      upb_Message_Convert(UPB_UPCAST(msg), mt, mt, nullptr, 0, 0, arena.ptr());
   ASSERT_NE(dst_msg, nullptr);
 
   const upb_test_convert_MessageWithRepeatedMsg* dst =
@@ -535,7 +535,7 @@ TEST(ConvertTest, ConvertField_ArrayMessageDeep) {
       &upb__test__convert__MessageWithRepeatedMsgClone_msg_init;
 
   const upb_Message* dst_msg = upb_Message_Convert(
-      UPB_UPCAST(msg), src_mt, dst_mt, nullptr, arena.ptr());
+      UPB_UPCAST(msg), src_mt, dst_mt, nullptr, 0, 0, arena.ptr());
   ASSERT_NE(dst_msg, nullptr);
 
   const upb_test_convert_MessageWithRepeatedMsgClone* dst =
@@ -567,7 +567,7 @@ TEST(ConvertTest, ConvertExtensions_ScalarMatch) {
   const upb_MiniTable* dst_mt = &upb__test__convert__MessageWithKnown_msg_init;
 
   const upb_Message* dst_msg = upb_Message_Convert(
-      UPB_UPCAST(msg), src_mt, dst_mt, nullptr, arena.ptr());
+      UPB_UPCAST(msg), src_mt, dst_mt, nullptr, 0, 0, arena.ptr());
   ASSERT_NE(dst_msg, nullptr);
 
   const upb_test_convert_MessageWithKnown* dst =
@@ -596,7 +596,7 @@ TEST(ConvertTest, ConvertExtensions_SingularMessageShallow) {
       &upb__test__convert__MessageWithKnownMsg_msg_init;
 
   const upb_Message* dst_msg = upb_Message_Convert(
-      UPB_UPCAST(msg), src_mt, dst_mt, nullptr, arena.ptr());
+      UPB_UPCAST(msg), src_mt, dst_mt, nullptr, 0, 0, arena.ptr());
   ASSERT_NE(dst_msg, nullptr);
 
   const upb_test_convert_MessageWithKnownMsg* dst =
@@ -631,7 +631,7 @@ TEST(ConvertTest, ConvertExtensions_SingularMessageDeep) {
       &upb__test__convert__MessageWithKnownMsgClone_msg_init;
 
   const upb_Message* dst_msg = upb_Message_Convert(
-      UPB_UPCAST(msg), src_mt, dst_mt, nullptr, arena.ptr());
+      UPB_UPCAST(msg), src_mt, dst_mt, nullptr, 0, 0, arena.ptr());
   ASSERT_NE(dst_msg, nullptr);
 
   const upb_test_convert_MessageWithKnownMsgClone* dst =
@@ -659,7 +659,7 @@ TEST(ConvertTest, ConvertExtensions_RemainsExtension) {
   const upb_MiniTable* mt = &upb__test__convert__MessageWithExtension_msg_init;
 
   const upb_Message* dst_msg =
-      upb_Message_Convert(UPB_UPCAST(msg), mt, mt, nullptr, arena.ptr());
+      upb_Message_Convert(UPB_UPCAST(msg), mt, mt, nullptr, 0, 0, arena.ptr());
   ASSERT_NE(dst_msg, nullptr);
 
   const upb_test_convert_MessageWithExtension* dst =
@@ -694,8 +694,8 @@ TEST(ConvertTest, ConvertExtensions_LookupExtensionInRegistry) {
   upb_ExtensionRegistry_Add(extreg,
                             upb_test_convert_another_ext_field_int32_ext);
 
-  const upb_Message* dst_msg =
-      upb_Message_Convert(UPB_UPCAST(msg), src_mt, dst_mt, extreg, arena.ptr());
+  const upb_Message* dst_msg = upb_Message_Convert(
+      UPB_UPCAST(msg), src_mt, dst_mt, extreg, 0, 0, arena.ptr());
   ASSERT_NE(dst_msg, nullptr);
 
   const upb_test_convert_AnotherMessageWithExtension* dst =
@@ -726,7 +726,7 @@ TEST(ConvertTest, ConvertExtensionToNonExtendable) {
   const upb_MiniTable* dst_mt = &upb_0test__EmptyMessage_msg_init;
 
   const upb_Message* dst_msg = upb_Message_Convert(
-      UPB_UPCAST(msg), src_mt, dst_mt, nullptr, arena.ptr());
+      UPB_UPCAST(msg), src_mt, dst_mt, nullptr, 0, 0, arena.ptr());
   ASSERT_NE(dst_msg, nullptr);
 
   // Dst should have unknown field 1000 with value 123.
@@ -757,7 +757,7 @@ TEST(ConvertTest, ConvertExtensionToExtendableButUnknown) {
       &upb__test__convert__AnotherMessageWithExtension_msg_init;
 
   const upb_Message* dst_msg = upb_Message_Convert(
-      UPB_UPCAST(msg), src_mt, dst_mt, nullptr, arena.ptr());
+      UPB_UPCAST(msg), src_mt, dst_mt, nullptr, 0, 0, arena.ptr());
   ASSERT_NE(dst_msg, nullptr);
 
   // The destination message (AnotherMessageWithExtension) supports extensions,
@@ -789,8 +789,8 @@ TEST(ConvertTest, OneofDemotion) {
   const upb_MiniTable* empty_mt = &upb_0test__EmptyMessage_msg_init;
   const upb_MiniTable* src_mt = &upb__test__convert__SrcWithOneof_msg_init;
 
-  const upb_Message* dst = upb_Message_Convert(UPB_UPCAST(msg), src_mt,
-                                               empty_mt, nullptr, arena.ptr());
+  const upb_Message* dst = upb_Message_Convert(
+      UPB_UPCAST(msg), src_mt, empty_mt, nullptr, 0, 0, arena.ptr());
   EXPECT_NE(dst, nullptr);
 
   // Dst should have unknown field 2 with value "test".
@@ -810,7 +810,7 @@ TEST(ConvertTest, OneofDemotion) {
 
   // Now convert back and verify.
   const upb_Message* dst2_msg =
-      upb_Message_Convert(dst, empty_mt, src_mt, nullptr, arena.ptr());
+      upb_Message_Convert(dst, empty_mt, src_mt, nullptr, 0, 0, arena.ptr());
   EXPECT_NE(dst2_msg, nullptr);
   const upb_test_convert_SrcWithOneof* dst2 =
       (const upb_test_convert_SrcWithOneof*)dst2_msg;
@@ -832,7 +832,7 @@ TEST(ConvertTest, OpenToClosedEnum) {
   protobuf_test_messages_proto3_TestAllTypesProto3_set_optional_nested_enum(
       msg, protobuf_test_messages_proto3_TestAllTypesProto3_BAR);
   const upb_Message* dst_msg = upb_Message_Convert(
-      UPB_UPCAST(msg), src_mt, dst_mt, nullptr, arena.ptr());
+      UPB_UPCAST(msg), src_mt, dst_mt, nullptr, 0, 0, arena.ptr());
   ASSERT_NE(dst_msg, nullptr);
   const upb_test_convert_Proto2EnumMessage* dst =
       (const upb_test_convert_Proto2EnumMessage*)dst_msg;
@@ -852,7 +852,7 @@ TEST(ConvertTest, OpenToClosedEnum_InvalidValueInClosedEnum) {
   protobuf_test_messages_proto3_TestAllTypesProto3_set_optional_nested_enum(
       msg, 12345);  // Invalid value.
   const upb_Message* dst_msg = upb_Message_Convert(
-      UPB_UPCAST(msg), src_mt, dst_mt, nullptr, arena.ptr());
+      UPB_UPCAST(msg), src_mt, dst_mt, nullptr, 0, 0, arena.ptr());
   ASSERT_NE(dst_msg, nullptr);
 
   const upb_test_convert_Proto2EnumMessage* dst =
@@ -893,7 +893,7 @@ TEST(ConvertTest, OpenToClosedMapEnum) {
   const upb_MiniTable* dst_mt = &upb__test__convert__Proto2EnumMessage_msg_init;
 
   const upb_Message* dst_msg = upb_Message_Convert(
-      UPB_UPCAST(msg), src_mt, dst_mt, nullptr, arena.ptr());
+      UPB_UPCAST(msg), src_mt, dst_mt, nullptr, 0, 0, arena.ptr());
   ASSERT_NE(dst_msg, nullptr);
   const upb_test_convert_Proto2EnumMessage* dst =
       (const upb_test_convert_Proto2EnumMessage*)dst_msg;
@@ -926,7 +926,7 @@ TEST(ConvertTest, OpenToClosedMapEnum_InvalidValueInClosedEnum) {
   const upb_MiniTable* dst_mt = &upb__test__convert__Proto2EnumMessage_msg_init;
 
   const upb_Message* dst_msg = upb_Message_Convert(
-      UPB_UPCAST(msg), src_mt, dst_mt, nullptr, arena.ptr());
+      UPB_UPCAST(msg), src_mt, dst_mt, nullptr, 0, 0, arena.ptr());
   ASSERT_NE(dst_msg, nullptr);
 
   const upb_test_convert_Proto2EnumMessage* dst =
@@ -979,7 +979,7 @@ TEST(ConvertTest, OpenToClosedRepeatedEnum) {
   const upb_MiniTable* dst_mt = &upb__test__convert__Proto2EnumMessage_msg_init;
 
   const upb_Message* dst_msg = upb_Message_Convert(
-      UPB_UPCAST(msg), src_mt, dst_mt, nullptr, arena.ptr());
+      UPB_UPCAST(msg), src_mt, dst_mt, nullptr, 0, 0, arena.ptr());
   ASSERT_NE(dst_msg, nullptr);
   const upb_test_convert_Proto2EnumMessage* dst =
       (const upb_test_convert_Proto2EnumMessage*)dst_msg;
@@ -1005,7 +1005,7 @@ TEST(ConvertTest, OpenToClosedRepeatedEnum_ContainsInvalidValue) {
   const upb_MiniTable* dst_mt = &upb__test__convert__Proto2EnumMessage_msg_init;
 
   const upb_Message* dst_msg = upb_Message_Convert(
-      UPB_UPCAST(msg), src_mt, dst_mt, nullptr, arena.ptr());
+      UPB_UPCAST(msg), src_mt, dst_mt, nullptr, 0, 0, arena.ptr());
   ASSERT_NE(dst_msg, nullptr);
 
   const upb_test_convert_Proto2EnumMessage* dst =
@@ -1050,7 +1050,7 @@ TEST(ConvertTest, OpenToClosedExtensionEnum) {
       &upb__test__convert__MessageWithKnownEnum_msg_init;
 
   const upb_Message* dst_msg = upb_Message_Convert(
-      UPB_UPCAST(msg), src_mt, dst_mt, nullptr, arena.ptr());
+      UPB_UPCAST(msg), src_mt, dst_mt, nullptr, 0, 0, arena.ptr());
   ASSERT_NE(dst_msg, nullptr);
   const upb_test_convert_MessageWithKnownEnum* dst =
       (const upb_test_convert_MessageWithKnownEnum*)dst_msg;
@@ -1076,7 +1076,7 @@ TEST(ConvertTest, OpenToClosedExtensionEnum_InvalidValue) {
       &upb__test__convert__MessageWithKnownEnum_msg_init;
 
   const upb_Message* dst_msg = upb_Message_Convert(
-      UPB_UPCAST(msg), src_mt, dst_mt, nullptr, arena.ptr());
+      UPB_UPCAST(msg), src_mt, dst_mt, nullptr, 0, 0, arena.ptr());
   ASSERT_NE(dst_msg, nullptr);
 
   const upb_test_convert_MessageWithKnownEnum* dst =
@@ -1124,7 +1124,7 @@ TEST(ConvertTest, OpenToClosedExtensionRepeatedEnum) {
       &upb__test__convert__MessageWithKnownEnum_msg_init;
 
   const upb_Message* dst_msg = upb_Message_Convert(
-      UPB_UPCAST(msg), src_mt, dst_mt, nullptr, arena.ptr());
+      UPB_UPCAST(msg), src_mt, dst_mt, nullptr, 0, 0, arena.ptr());
   ASSERT_NE(dst_msg, nullptr);
   const upb_test_convert_MessageWithKnownEnum* dst =
       (const upb_test_convert_MessageWithKnownEnum*)dst_msg;
@@ -1161,7 +1161,7 @@ TEST(ConvertTest, OpenToClosedExtensionRepeatedEnum_InvalidValue) {
       &upb__test__convert__MessageWithKnownEnum_msg_init;
 
   const upb_Message* dst_msg = upb_Message_Convert(
-      UPB_UPCAST(msg), src_mt, dst_mt, nullptr, arena.ptr());
+      UPB_UPCAST(msg), src_mt, dst_mt, nullptr, 0, 0, arena.ptr());
   ASSERT_NE(dst_msg, nullptr);
 
   const upb_test_convert_MessageWithKnownEnum* dst =
@@ -1207,7 +1207,7 @@ TEST(ConvertTest, ExtensionToMapMismatch) {
 
   // Return NULL when the destination mini table has a map, which is not
   // compatible with the source extension.
-  ASSERT_EQ(upb_Message_Convert(UPB_UPCAST(msg), src_mt, dst_mt, nullptr,
+  ASSERT_EQ(upb_Message_Convert(UPB_UPCAST(msg), src_mt, dst_mt, nullptr, 0, 0,
                                 arena.ptr()),
             nullptr);
 }
@@ -1224,7 +1224,7 @@ TEST(ConvertTest, OneofPromotion) {
   const upb_MiniTable* dst_mt = &upb__test__convert__SrcWithOneof_msg_init;
 
   const upb_Message* dst_msg = upb_Message_Convert(
-      UPB_UPCAST(msg), src_mt, dst_mt, nullptr, arena.ptr());
+      UPB_UPCAST(msg), src_mt, dst_mt, nullptr, 0, 0, arena.ptr());
   ASSERT_NE(dst_msg, nullptr);
 
   // Since both fields in the source message are set (oneof_int32=123 and

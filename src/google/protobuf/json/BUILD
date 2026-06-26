@@ -59,6 +59,7 @@ cc_test(
         "@abseil-cpp//absl/status",
         "@abseil-cpp//absl/status:statusor",
         "@abseil-cpp//absl/strings",
+        "@abseil-cpp//absl/strings:cord",
         "@googletest//:gtest",
         "@googletest//:gtest_main",
     ],
@@ -336,7 +337,10 @@ cc_test(
     deps = [
         ":json",
         ":json_enumval_custom_string_cc_proto",
+        "//src/google/protobuf:arena",
+        "@abseil-cpp//absl/log:absl_check",
         "@abseil-cpp//absl/status",
+        "@abseil-cpp//absl/strings:string_view",
         "@googletest//:gtest",
         "@googletest//:gtest_main",
     ],

@@ -126,31 +126,6 @@ TailCallTableInfo ParseFunctionGenerator::BuildTcTableInfoFromDescriptor(
   return tc_table_info;
 }
 
-struct SkipEntry16 {
-  uint16_t skipmap;
-  uint16_t field_entry_offset;
-};
-struct SkipEntryBlock {
-  uint32_t first_fnum;
-  std::vector<SkipEntry16> entries;
-};
-struct NumToEntryTable {
-  uint32_t skipmap32;  // for fields #1 - #32
-  std::vector<SkipEntryBlock> blocks;
-  // Compute the number of uint16_t required to represent this table.
-  int size16() const {
-    int size = 2;  // for the termination field#
-    for (const auto& block : blocks) {
-      // 2 for the field#, 1 for a count of skip entries, 2 for each entry.
-      size += 3 + block.entries.size() * 2;
-    }
-    return size;
-  }
-};
-
-static NumToEntryTable MakeNumToEntryTable(
-    absl::Span<const FieldDescriptor* const> field_descriptors);
-
 static int FieldNameDataSize(absl::Span<const uint8_t> data) {
   // We add a +1 here to allow for a NUL termination character. It makes the
   // codegen nicer.
@@ -159,7 +134,6 @@ static int FieldNameDataSize(absl::Span<const uint8_t> data) {
 
 void ParseFunctionGenerator::GenerateAliasParseTableType(io::Printer* p) {
   auto v = p->WithVars(variables_);
-  auto field_num_to_entry_table = MakeNumToEntryTable(ordered_fields_);
   p->Emit(
       {
           {"table_size_log2", tc_table_info_->table_size_log2},
@@ -167,7 +141,7 @@ void ParseFunctionGenerator::GenerateAliasParseTableType(io::Printer* p) {
           {"num_field_aux", tc_table_info_->aux_entries.size()},
           {"name_table_size",
            FieldNameDataSize(tc_table_info_->field_name_data)},
-          {"field_lookup_size", field_num_to_entry_table.size16()},
+          {"field_lookup_size", tc_table_info_->num_to_entry_table.size16()},
       },
       R"cc(
         using ParseTableT_ =
@@ -211,8 +185,6 @@ void ParseFunctionGenerator::GenerateDataDecls(io::Printer* p) {
 
 void ParseFunctionGenerator::GenerateDataDefinitions(io::Printer* p) {
   auto v = p->WithVars(variables_);
-  NumToEntryTable field_num_to_entry_table =
-      MakeNumToEntryTable(ordered_fields_);
   p->Emit(
       R"cc(
 #ifndef PROTOBUF_MESSAGE_GLOBALS
@@ -222,69 +194,6 @@ void ParseFunctionGenerator::GenerateDataDefinitions(io::Printer* p) {
                 $Msg$::InternalGenerateParseTable_($Msg$_class_data_.base());
 #endif  // !PROTOBUF_MESSAGE_GLOBALS
       )cc");
-}
-
-static NumToEntryTable MakeNumToEntryTable(
-    absl::Span<const FieldDescriptor* const> field_descriptors) {
-  NumToEntryTable num_to_entry_table;
-  num_to_entry_table.skipmap32 = static_cast<uint32_t>(-1);
-
-  // skip_entry_block is the current block of SkipEntries that we're
-  // appending to.  cur_block_first_fnum is the number of the first
-  // field represented by the block.
-  uint16_t field_entry_index = 0;
-  uint16_t N = field_descriptors.size();
-  // First, handle field numbers 1-32, which affect only the initial
-  // skipmap32 and don't generate additional skip-entry blocks.
-  for (; field_entry_index != N; ++field_entry_index) {
-    auto* field_descriptor = field_descriptors[field_entry_index];
-    if (field_descriptor->number() > 32) break;
-    auto skipmap32_index = field_descriptor->number() - 1;
-    num_to_entry_table.skipmap32 -= 1 << skipmap32_index;
-  }
-  // If all the field numbers were less than or equal to 32, we will have
-  // no further entries to process, and we are already done.
-  if (field_entry_index == N) return num_to_entry_table;
-
-  SkipEntryBlock* block = nullptr;
-  bool start_new_block = true;
-  // To determine sparseness, track the field number corresponding to
-  // the start of the most recent skip entry.
-  uint32_t last_skip_entry_start = 0;
-  for (; field_entry_index != N; ++field_entry_index) {
-    auto* field_descriptor = field_descriptors[field_entry_index];
-    uint32_t fnum = static_cast<uint32_t>(field_descriptor->number());
-    ABSL_CHECK_GT(fnum, last_skip_entry_start);
-    if (start_new_block == false) {
-      // If the next field number is within 15 of the last_skip_entry_start, we
-      // continue writing just to that entry.  If it's between 16 and 31 more,
-      // then we just extend the current block by one. If it's greater than 31
-      // more, we have to add empty skip entries in order to continue using the
-      // existing block.  Obviously it's just 32 more, it doesn't make sense to
-      // start a whole new block, since new blocks mean having to write out
-      // their starting field number, which is 32 bits, as well as the size of
-      // the additional block, which is 16... while an empty SkipEntry16 only
-      // costs 32 bits.  So if it was 48 more, it's a slight space win; we save
-      // 16 bits, but probably at the cost of slower run time.  We're choosing
-      // 96 for now.
-      if (fnum - last_skip_entry_start > 96) start_new_block = true;
-    }
-    if (start_new_block) {
-      num_to_entry_table.blocks.push_back(SkipEntryBlock{fnum});
-      block = &num_to_entry_table.blocks.back();
-      start_new_block = false;
-    }
-
-    ABSL_DCHECK(block != nullptr);
-    auto skip_entry_num = (fnum - block->first_fnum) / 16;
-    auto skip_entry_index = (fnum - block->first_fnum) % 16;
-    while (skip_entry_num >= block->entries.size())
-      block->entries.push_back({0xFFFF, field_entry_index});
-    block->entries[skip_entry_num].skipmap -= 1 << (skip_entry_index);
-
-    last_skip_entry_start = fnum - skip_entry_index;
-  }
-  return num_to_entry_table;
 }
 
 static std::string TcParseFunctionName(internal::TcParseFunction func) {
@@ -309,8 +218,7 @@ void ParseFunctionGenerator::GenerateParseTableHelperDefinition(
   // maps, weak fields, lazy, more than 1 extension range. In the cases
   // the table is sufficient we can use a generic routine, that just handles
   // unknown fields and potentially an extension range.
-  NumToEntryTable field_num_to_entry_table =
-      MakeNumToEntryTable(ordered_fields_);
+  const auto& field_num_to_entry_table = tc_table_info_->num_to_entry_table;
 
   auto GenerateTableBase = [&] {
     p->Emit(
@@ -526,7 +434,7 @@ void ParseFunctionGenerator::GenerateParseTableHelperDefinition(
        {"fast_entries", [&] { GenerateFastFieldEntries(p); }},
        {"field_lookup_table",
         [&] {
-          for (SkipEntryBlock& entry_block : field_num_to_entry_table.blocks) {
+          for (const auto& entry_block : field_num_to_entry_table.blocks) {
             p->Emit(
                 {
                     {"lower", entry_block.first_fnum & 65535},
@@ -535,7 +443,7 @@ void ParseFunctionGenerator::GenerateParseTableHelperDefinition(
                 },
                 "$lower$, $upper$, $size$,\n");
 
-            for (SkipEntry16 se16 : entry_block.entries) {
+            for (const auto& se16 : entry_block.entries) {
               p->Emit({{"skipmap", se16.skipmap},
                        {"offset", se16.field_entry_offset}},
                       R"cc(
@@ -628,7 +536,24 @@ void ParseFunctionGenerator::GenerateFastFieldEntries(io::Printer* p) {
                {"coded_tag", nonfield->coded_tag},
                {"nonfield_info", nonfield->nonfield_info}},
               R"cc(
-                {$target$, {$coded_tag$, $nonfield_info$}},
+                {$target$, {$coded_tag$, ::uint16_t{$nonfield_info$}}},
+              )cc");
+    } else if (auto* mp_field = info.AsMpField()) {
+      {
+        // TODO: refactor this to use Emit.
+        Formatter format(p, variables_);
+        PrintFieldComment(format, mp_field->field, options_);
+      }
+      p->Emit({{"target", TcParseFunctionName(mp_field->func)},
+               {"coded_tag", mp_field->coded_tag},
+               {"function_index", mp_field->function_index},
+               {"index", mp_field->field_index}},
+              R"cc(
+                {$target$,
+                 {$coded_tag$, ::uint8_t{$function_index$},
+                  ::uint32_t{
+                      PROTOBUF_FIELD_OFFSET(ParseTableT_, field_entries) +
+                      sizeof(_pbi::TcParseTableBase::FieldEntry) * $index$}}},
               )cc");
     } else if (auto* as_field = info.AsField()) {
       {

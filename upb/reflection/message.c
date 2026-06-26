@@ -97,7 +97,9 @@ make:
   }
 
   val.array_val = ret.array;
-  upb_Message_SetFieldByDef(msg, f, val, a);
+  if (!upb_Message_SetFieldByDef(msg, f, val, a)) {
+    ret.array = NULL;
+  }
 
   return ret;
 }
@@ -177,8 +179,9 @@ bool upb_Message_Next(const upb_Message* msg, const upb_MessageDef* m,
 
     for (; (i - n) < in->size; i++) {
       upb_TaggedAuxPtr tagged_ptr = in->aux_data[i - n];
-      if (upb_TaggedAuxPtr_IsExtension(tagged_ptr)) {
-        const upb_Extension* ext = upb_TaggedAuxPtr_Extension(tagged_ptr);
+      if (upb_TaggedAuxPtr_IsCanonicalExtension(tagged_ptr)) {
+        const upb_Extension* ext =
+            upb_TaggedAuxPtr_CanonicalExtension(tagged_ptr);
         memcpy(out_val, &ext->data, sizeof(*out_val));
         *out_f = upb_DefPool_FindExtensionByMiniTable(ext_pool, ext->ext);
         *iter = i;

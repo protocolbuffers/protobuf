@@ -83,6 +83,7 @@ set(libprotobuf_srcs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/repeated_ptr_field.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/service.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/stubs/common.cc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/symbol.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/symbol_checker.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/text_format.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/unknown_field_set.cc
@@ -122,6 +123,7 @@ set(libprotobuf_hdrs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/cpp_file_options.pb.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/descriptor.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/descriptor.pb.h
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/descriptor_builder.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/descriptor_database.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/descriptor_legacy.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/descriptor_lite.h
@@ -208,6 +210,7 @@ set(libprotobuf_hdrs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/stubs/platform_macros.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/stubs/port.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/stubs/status_macros.h
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/symbol.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/symbol_checker.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/text_format.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/thread_safe_arena.h
@@ -667,7 +670,6 @@ set(libupb_srcs
   ${protobuf_SOURCE_DIR}/upb/json/encode.c
   ${protobuf_SOURCE_DIR}/upb/lex/atoi.c
   ${protobuf_SOURCE_DIR}/upb/lex/round_trip.c
-  ${protobuf_SOURCE_DIR}/upb/lex/strtod.c
   ${protobuf_SOURCE_DIR}/upb/lex/unicode.c
   ${protobuf_SOURCE_DIR}/upb/mem/alloc.c
   ${protobuf_SOURCE_DIR}/upb/mem/arena.c
@@ -749,7 +751,6 @@ set(libupb_hdrs
   ${protobuf_SOURCE_DIR}/upb/json/encode.h
   ${protobuf_SOURCE_DIR}/upb/lex/atoi.h
   ${protobuf_SOURCE_DIR}/upb/lex/round_trip.h
-  ${protobuf_SOURCE_DIR}/upb/lex/strtod.h
   ${protobuf_SOURCE_DIR}/upb/lex/unicode.h
   ${protobuf_SOURCE_DIR}/upb/mem/alloc.h
   ${protobuf_SOURCE_DIR}/upb/mem/arena.h
@@ -1305,6 +1306,7 @@ set(upb_test_protos_files
   ${protobuf_SOURCE_DIR}/upb/util/def_to_proto_wweak_import_test.proto
   ${protobuf_SOURCE_DIR}/upb/util/required_fields_editions_test.proto
   ${protobuf_SOURCE_DIR}/upb/util/required_fields_test.proto
+  ${protobuf_SOURCE_DIR}/upb/wire/decode_test.proto
   ${protobuf_SOURCE_DIR}/upb/wire/encode_test.proto
 )
 

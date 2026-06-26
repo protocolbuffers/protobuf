@@ -334,7 +334,8 @@ class ABSL_ATTRIBUTE_WARN_UNUSED PROTOBUF_DECLSPEC_EMPTY_BASES
 
   constexpr RepeatedField();
   RepeatedField(const RepeatedField& rhs)
-      : RepeatedField(internal::InternalMetadataOffset(), rhs) {}
+      : RepeatedField(internal::InternalMetadataOffset(), /*arena=*/nullptr,
+                      rhs) {}
 
   template <typename Iter,
             typename = typename std::enable_if<std::is_constructible<
@@ -346,15 +347,16 @@ class ABSL_ATTRIBUTE_WARN_UNUSED PROTOBUF_DECLSPEC_EMPTY_BASES
                           internal::InternalMetadataOffset offset)
       : RepeatedField(offset) {}
   RepeatedField(internal::InternalVisibility,
-                internal::InternalMetadataOffset offset,
+                internal::InternalMetadataOffset offset, Arena* arena,
                 const RepeatedField& rhs)
-      : RepeatedField(offset, rhs) {}
+      : RepeatedField(offset, arena, rhs) {}
 
   RepeatedField& operator=(const RepeatedField& other)
       ABSL_ATTRIBUTE_LIFETIME_BOUND;
 
   RepeatedField(RepeatedField&& rhs) noexcept
-      : RepeatedField(internal::InternalMetadataOffset(), std::move(rhs)) {}
+      : RepeatedField(internal::InternalMetadataOffset(), /*arena=*/nullptr,
+                      std::move(rhs)) {}
   RepeatedField& operator=(RepeatedField&& other) noexcept
       ABSL_ATTRIBUTE_LIFETIME_BOUND;
 
@@ -565,9 +567,10 @@ class ABSL_ATTRIBUTE_WARN_UNUSED PROTOBUF_DECLSPEC_EMPTY_BASES
       internal::HeapRep::SizeOf<Element>();
 
   explicit constexpr RepeatedField(internal::InternalMetadataOffset offset);
-  RepeatedField(internal::InternalMetadataOffset offset,
+  RepeatedField(internal::InternalMetadataOffset offset, Arena* arena,
                 const RepeatedField& rhs);
-  RepeatedField(internal::InternalMetadataOffset offset, RepeatedField&& rhs);
+  RepeatedField(internal::InternalMetadataOffset offset, Arena* arena,
+                RepeatedField&& rhs);
 
   template <typename Init>
   void ResizeImpl(int new_size, Init init);
@@ -811,14 +814,16 @@ constexpr RepeatedField<Element>::RepeatedField(
 
 template <typename Element>
 inline RepeatedField<Element>::RepeatedField(
-    internal::InternalMetadataOffset offset, const RepeatedField& rhs)
+    internal::InternalMetadataOffset offset, Arena* arena,
+    const RepeatedField& rhs)
     : RepeatedField(offset) {
   StaticValidityCheck();
+  ABSL_DCHECK_EQ(arena, GetArena());
   AnnotateSize(kSooCapacityElements, 0);
   if (auto size = rhs.size()) {
     bool is_soo = true;
     if (size > kSooCapacityElements) {
-      Grow(SelfArena{}, is_soo, 0, size);
+      Grow(arena, is_soo, 0, size);
       is_soo = false;
     }
     ExchangeCurrentSize(size);
@@ -866,9 +871,9 @@ inline RepeatedField<Element>& RepeatedField<Element>::operator=(
 
 template <typename Element>
 inline RepeatedField<Element>::RepeatedField(
-    internal::InternalMetadataOffset offset, RepeatedField&& rhs)
+    internal::InternalMetadataOffset offset, Arena* arena, RepeatedField&& rhs)
     : RepeatedField(offset) {
-  Arena* arena = GetArena();
+  ABSL_DCHECK_EQ(arena, GetArena());
   if (internal::CanMoveWithInternalSwap(arena, rhs.GetArena())) {
     InternalSwap(&rhs);
   } else {
@@ -1033,7 +1038,7 @@ inline void* RepeatedField<Element>::AddUninitializedWithArena(
   bool is_soo = this->is_soo();
   const int old_size = size();
   if (ABSL_PREDICT_FALSE(old_size == Capacity(is_soo))) {
-    Grow(arena_provider, is_soo, old_size, old_size + 1);
+    Grow(arena_provider, is_soo, old_size, internal::CheckedAdd(old_size, 1));
     is_soo = false;
   }
   return unsafe_elements(is_soo) + ExchangeCurrentSize(old_size + 1);
@@ -1062,7 +1067,7 @@ inline auto RepeatedField<Element>::AddWithArena(ArenaProvider arena_provider,
   int capacity = Capacity(is_soo);
   Element* elem = unsafe_elements(is_soo);
   if (ABSL_PREDICT_FALSE(old_size == capacity)) {
-    Grow(arena_provider, is_soo, old_size, old_size + 1);
+    Grow(arena_provider, is_soo, old_size, internal::CheckedAdd(old_size, 1));
     is_soo = false;
     capacity = Capacity(is_soo);
     elem = unsafe_elements(is_soo);
@@ -1120,10 +1125,8 @@ inline void RepeatedField<Element>::AddForwardIterator(
   ABSL_CHECK_LE(distance, static_cast<size_t>(std::numeric_limits<int>::max()))
       << "Input too large";
   // Check again for signed overflow.
-  const int delta = static_cast<int>(distance);
-  ABSL_CHECK_LE(old_size, std::numeric_limits<int>::max() - delta)
-      << "Input too large";
-  const int new_size = old_size + delta;
+  const int new_size =
+      internal::CheckedAdd(old_size, static_cast<int>(distance));
   if (ABSL_PREDICT_FALSE(new_size > capacity)) {
     Grow(arena_provider, is_soo, old_size, new_size);
     is_soo = false;
@@ -1161,7 +1164,8 @@ inline void RepeatedField<Element>::AddInputIterator(
   while (begin != end) {
     if (ABSL_PREDICT_FALSE(first == last)) {
       size = first - elem;
-      GrowNoAnnotate(arena_provider, is_soo, size, size + 1);
+      GrowNoAnnotate(arena_provider, is_soo, size,
+                     internal::CheckedAdd(size, 1));
       is_soo = false;
       elem = unsafe_elements(is_soo);
       capacity = Capacity(is_soo);

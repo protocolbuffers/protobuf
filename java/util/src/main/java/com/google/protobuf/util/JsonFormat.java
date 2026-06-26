@@ -761,6 +761,8 @@ public class JsonFormat {
 
     void print(final CharSequence text) throws IOException;
 
+    void printSubsequence(final CharSequence text, int start, int end) throws IOException;
+
     void println() throws IOException;
 
     void println(final CharSequence text) throws IOException;
@@ -786,6 +788,11 @@ public class JsonFormat {
     @Override
     public void print(final CharSequence text) throws IOException {
       output.append(text);
+    }
+
+    @Override
+    public void printSubsequence(final CharSequence text, int start, int end) throws IOException {
+      output.append(text, start, end);
     }
 
     @Override
@@ -840,6 +847,18 @@ public class JsonFormat {
         output.append(indent);
       }
       output.append(text);
+    }
+
+    @Override
+    public void printSubsequence(final CharSequence text, int start, int end) throws IOException {
+      if (start == end) {
+        return;
+      }
+      if (atStartOfLine) {
+        atStartOfLine = false;
+        output.append(indent);
+      }
+      output.append(text, start, end);
     }
 
     @Override
@@ -1603,13 +1622,13 @@ public class JsonFormat {
           continue;
         }
         if (last < i) {
-          generator.print(value.subSequence(last, i));
+          generator.printSubsequence(value, last, i);
         }
         generator.print(replacement);
         last = i + 1;
       }
 
-      generator.print(value.subSequence(last, len));
+      generator.printSubsequence(value, last, len);
       generator.print("\"");
     }
   }
@@ -2293,6 +2312,15 @@ public class JsonFormat {
     }
 
     private long parseUint64(JsonElement json) throws InvalidProtocolBufferException {
+      try {
+        return Long.parseUnsignedLong(json.getAsString());
+      } catch (RuntimeException e) {
+        // Fall through.
+      }
+
+      // JSON doesn't distinguish between integer values and floating point values so "1" and
+      // "1.000" are treated as equal in JSON. For this reason we accept floating point values for
+      // integer fields as well as long as it actually is an integer (i.e., round(value) == value).
       try {
         BigDecimal value = parseBigDecimal(json.getAsString());
         if (value.signum() < 0 || value.compareTo(MAX_UINT64) > 0) {

@@ -37,11 +37,19 @@
 // Must be last.
 #include "upb/port/def.inc"
 
+enum {
+  kUpb_ConvertStatus_Ok = kUpb_ErrorCode_Ok,
+  // The source and destination MiniTables are not compatible for conversion.
+  kUpb_ConvertStatus_Incompatible = 10,
+};
+
 typedef struct {
   upb_Decoder decoder;
   upb_encstate encoder;
   upb_Arena* arena;
   upb_ErrorHandler err;
+  int decode_options;
+  int encode_options;
 } upb_Converter;
 
 // Minitable compatibility type check on the field, but not the
@@ -88,9 +96,10 @@ static void upb_Message_SetFieldOrExtension(upb_Message* msg,
 
 static void upb_Message_EncodeFieldAsUnknown(
     upb_encstate* e, upb_Message* dst, const upb_Message* src,
-    const upb_MiniTableField* src_field, int depth, upb_ErrorHandler* err) {
+    const upb_MiniTableField* src_field, int depth, int options,
+    upb_ErrorHandler* err) {
   size_t size;
-  int encode_options = upb_Encode_LimitDepth(0, depth);
+  int encode_options = upb_Encode_LimitDepth(options, depth);
   char* buf = upb_BackAlloc_Init(&e->alloc, e->alloc.arena);
   UPB_PRIVATE(_upb_Encode_Field)(e, src, src_field, &buf, &size,
                                  encode_options);
@@ -105,9 +114,9 @@ static void upb_Message_EncodeFieldAsUnknown(
 static void upb_Message_EncodeExtensionAsUnknown(
     upb_encstate* e, upb_Message* dst, const upb_MiniTable* dst_mt,
     const upb_MiniTableExtension* ext, upb_MessageValue val, int depth,
-    upb_ErrorHandler* err) {
+    int options, upb_ErrorHandler* err) {
   size_t size;
-  int encode_options = upb_Encode_LimitDepth(0, depth);
+  int encode_options = upb_Encode_LimitDepth(options, depth);
   bool is_message_set = upb_MiniTable_IsMessageSet(dst_mt);
   char* buf = upb_BackAlloc_Init(&e->alloc, e->alloc.arena);
   UPB_PRIVATE(_upb_Encode_Extension)(e, ext, val, is_message_set, &buf, &size,
@@ -319,7 +328,7 @@ static void upb_Message_ConvertField(upb_Converter* c, upb_Message* dst,
     } else if (upb_MiniTableField_IsMap(dst_f)) {
       if (UPB_UNLIKELY(
               !_upb_MiniTableField_IsMapEntryCompatible(src_f, dst_f))) {
-        upb_ErrorHandler_ThrowError(&c->err, kUpb_ErrorCode_Malformed);
+        upb_ErrorHandler_ThrowError(&c->err, kUpb_ConvertStatus_Incompatible);
       }
       if (upb_Message_ConvertMapField(c, dst, src, dst_f, src_f, extreg,
                                       depth)) {
@@ -390,7 +399,7 @@ static void upb_Message_ConvertExtensions(upb_Converter* c, upb_Message* dst,
       if (UPB_UNLIKELY(
               !_upb_MiniTableField_IsExtensionCompatible(src_f, dst_f))) {
         // Return an error due to type mismatch.
-        upb_ErrorHandler_ThrowError(&c->err, kUpb_ErrorCode_Malformed);
+        upb_ErrorHandler_ThrowError(&c->err, kUpb_ConvertStatus_Incompatible);
       }
 
       if (upb_MiniTableField_CType(dst_f) == kUpb_CType_Message) {
@@ -469,7 +478,7 @@ static void upb_Message_ConvertExtensions(upb_Converter* c, upb_Message* dst,
       // as an unknown field.
       // TODO - b/510055656: to handle this as a non-canonical extension
       upb_Message_EncodeExtensionAsUnknown(&c->encoder, dst, dst_mt, ext, val,
-                                           depth, &c->err);
+                                           depth, c->encode_options, &c->err);
     }
   }
 }
@@ -483,6 +492,12 @@ static void upb_Message_ConvertInternal(upb_Converter* c, upb_Message* dst,
   UPB_ASSERT(dst != NULL);
   if (--depth == 0) {
     upb_ErrorHandler_ThrowError(&c->err, kUpb_ErrorCode_MaxDepthExceeded);
+  }
+
+  // Bails out if the source and destination are not both MessageSets.
+  if (upb_MiniTable_IsMessageSet(dst_mt) !=
+      upb_MiniTable_IsMessageSet(src_mt)) {
+    upb_ErrorHandler_ThrowError(&c->err, kUpb_ConvertStatus_Incompatible);
   }
 
   const upb_MiniTableField* dst_f = NULL;
@@ -511,7 +526,7 @@ static void upb_Message_ConvertInternal(upb_Converter* c, upb_Message* dst,
       const upb_MiniTableField* src_next = src_f - 1;
 
       if (UPB_UNLIKELY(!_upb_MiniTableField_IsCompatible(src_next, dst_next))) {
-        upb_ErrorHandler_ThrowError(&c->err, kUpb_ErrorCode_Malformed);
+        upb_ErrorHandler_ThrowError(&c->err, kUpb_ConvertStatus_Incompatible);
       }
       if (upb_MiniTableField_IsInOneof(dst_next) &&
           UPB_PRIVATE(_upb_Message_GetOneofCase)(dst, dst_next) != 0) {
@@ -529,7 +544,7 @@ static void upb_Message_ConvertInternal(upb_Converter* c, upb_Message* dst,
     } else {
       const upb_MiniTableField* src_next = src_f - 1;
       upb_Message_EncodeFieldAsUnknown(&c->encoder, dst, src, src_next, depth,
-                                       &c->err);
+                                       c->encode_options, &c->err);
       src_f--;
     }
   }
@@ -543,8 +558,8 @@ static void upb_Message_ConvertInternal(upb_Converter* c, upb_Message* dst,
   upb_StringView data;
   size_t iter = kUpb_Message_UnknownBegin;
   while (upb_Message_NextUnknown(src, &data, &iter)) {
-    int decode_options =
-        upb_Decode_LimitDepth(kUpb_DecodeOption_AliasString, depth);
+    int decode_options = upb_Decode_LimitDepth(
+        c->decode_options | kUpb_DecodeOption_AliasString, depth);
 
     // Reuse d. Reset input stream.
     const char* ptr = data.data;
@@ -573,6 +588,7 @@ const upb_Message* upb_Message_Convert(const upb_Message* src,
                                        const upb_MiniTable* src_mt,
                                        const upb_MiniTable* dst_mt,
                                        const upb_ExtensionRegistry* extreg,
+                                       int decode_options, int encode_options,
                                        upb_Arena* arena) {
   if (dst_mt == src_mt && extreg == NULL) return src;
 
@@ -581,12 +597,15 @@ const upb_Message* upb_Message_Convert(const upb_Message* src,
 
   upb_Converter c;
   upb_ErrorHandler_Init(&c.err);
+  c.decode_options = decode_options;
+  c.encode_options = encode_options;
 
   // Initialize the decoder.
   // Initialize decoder once, performing SwapIn.
   // We use a NULL buffer initially, effectively a dummy init to set up the
   // arena and error handler. Note: we pass &c.err.
-  upb_Decoder_Init(&c.decoder, NULL, 0, extreg, 0, arena, &c.err, NULL, 0);
+  upb_Decoder_Init(&c.decoder, NULL, 0, extreg, decode_options, arena, &c.err,
+                   NULL, 0);
 
   // Initialize the encoder.
   UPB_PRIVATE(_upb_encstate_init)(&c.encoder, &c.err.buf, &c.decoder.arena);
@@ -606,16 +625,20 @@ const upb_Message* upb_Message_Convert(const upb_Message* src,
     // Compare the encoded/decoded round-trip of the original message to the
     // converted message.
     // Encode/decode original message `src`
-    upb_EncodeStatus encode_status =
-        upb_Encode(src, src_mt, 0, tmp_arena, &wire_buf, &wire_size);
-    UPB_ASSERT(encode_status == kUpb_EncodeStatus_Ok);
-    upb_Message* decoded_msg = upb_Message_New(dst_mt, tmp_arena);
-    upb_DecodeStatus decode_status = upb_Decode(
-        wire_buf, wire_size, decoded_msg, dst_mt, extreg, 0, tmp_arena);
-    UPB_ASSERT(decode_status == kUpb_DecodeStatus_Ok);
-
-    // Compare the decoded message to the converted message.
-    UPB_ASSERT(upb_Message_IsEqual(decoded_msg, dst, dst_mt, 0));
+    upb_EncodeStatus encode_status = upb_Encode(
+        src, src_mt, encode_options, tmp_arena, &wire_buf, &wire_size);
+    if (encode_status != kUpb_EncodeStatus_MaxDepthExceeded) {
+      UPB_ASSERT(encode_status == kUpb_EncodeStatus_Ok);
+      upb_Message* decoded_msg = upb_Message_New(dst_mt, tmp_arena);
+      upb_DecodeStatus decode_status =
+          upb_Decode(wire_buf, wire_size, decoded_msg, dst_mt, extreg,
+                     decode_options, tmp_arena);
+      if (decode_status != kUpb_DecodeStatus_MaxDepthExceeded) {
+        UPB_ASSERT(decode_status == kUpb_DecodeStatus_Ok);
+        // Compare the decoded message to the converted message.
+        UPB_ASSERT(upb_Message_IsEqual(decoded_msg, dst, dst_mt, 0));
+      }
+    }
     upb_Arena_Free(tmp_arena);
   }
 #endif

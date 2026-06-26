@@ -84,7 +84,6 @@ std::vector<Sub> FieldVars(const FieldDescriptor* field, const Options& opts) {
                     "::internal::TSanRead(&_impl_)")},
 
       // Old-style names.
-      {"classname", ClassName(FieldScope(field), false)},
       {"ns", Namespace(field)},
       Sub("WeakDescriptorSelfPin",
           UsingImplicitWeakDescriptor(field->file(), opts)
@@ -187,7 +186,7 @@ void FieldGeneratorBase::GenerateMemberCopyConstructor(io::Printer* p) const {
     p->Emit({InternalMetadataOffsetSub(p)},
             R"cc(
               $name$_ {
-                visibility, $internal_metadata_offset$, from.$name$_
+                visibility, $internal_metadata_offset$, arena, from.$name$_
               }
             )cc");
   } else {
