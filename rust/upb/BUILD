@@ -40,7 +40,7 @@ rust_test(
     edition = "2024",
     rustc_flags = ["--cfg=bzl"],
     deps = [
-        "@crate_index//:googletest",
+        "@crate_dev_index//:googletest",
     ],
 )
 

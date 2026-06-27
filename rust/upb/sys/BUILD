@@ -45,7 +45,7 @@ rust_test(
     crate = ":sys",
     edition = "2024",
     deps = [
-        "@crate_index//:googletest",
+        "@crate_dev_index//:googletest",
     ],
 )
 
