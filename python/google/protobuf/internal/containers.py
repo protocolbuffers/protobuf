@@ -4,7 +4,6 @@
 # Use of this source code is governed by a BSD-style
 # license that can be found in the LICENSE file or at
 # https://developers.google.com/open-source/licenses/bsd
-
 """Contains container classes to represent different protocol buffer types.
 
 This file defines container classes which represent categories of protocol
@@ -35,28 +34,30 @@ from typing import (
     overload,
 )
 
-
 _T = TypeVar('_T')
 _K = TypeVar('_K')
 _V = TypeVar('_V')
 
 from google.protobuf.descriptor import FieldDescriptor
+from google.protobuf import message
+
 
 class BaseContainer(Sequence[_T]):
   """Base container class."""
 
   # Minimizes memory usage and disallows assignment to other attributes.
-  __slots__ = ['_message_listener', '_values']
+  __slots__ = ['_message_listener', '_values', '_frozen']
 
   def __init__(self, message_listener: Any) -> None:
-    """
-    Args:
-      message_listener: A MessageListener implementation.
-        The RepeatedScalarFieldContainer will call this object's
-        Modified() method when it is modified.
+    """Args:
+
+    message_listener: A MessageListener implementation.
+      The RepeatedScalarFieldContainer will call this object's
+      Modified() method when it is modified.
     """
     self._message_listener = message_listener
     self._values = []
+    self._frozen = False
 
   @overload
   def __getitem__(self, key: int) -> _T:
@@ -84,7 +85,16 @@ class BaseContainer(Sequence[_T]):
   def __repr__(self) -> str:
     return repr(self._values)
 
+  def _SetFrozen(self) -> None:
+    self._frozen = True
+
+  def _AssureWritable(self) -> 'BaseContainer[_T]':
+    if self._frozen:
+      raise message.FrozenInstanceError('Container is immutable')
+    return self
+
   def sort(self, *args, **kwargs) -> None:
+    self._AssureWritable()
     # Continue to support the old sort_function keyword argument.
     # This is expected to be a rare occurrence, so use LBYL to avoid
     # the overhead of actually catching KeyError.
@@ -93,6 +103,7 @@ class BaseContainer(Sequence[_T]):
     self._values.sort(*args, **kwargs)
 
   def reverse(self) -> None:
+    self._AssureWritable()
     self._values.reverse()
 
 
@@ -115,11 +126,11 @@ class RepeatedScalarFieldContainer(BaseContainer[_T], MutableSequence[_T]):
   ) -> None:
     """Args:
 
-      message_listener: A MessageListener implementation. The
-      RepeatedScalarFieldContainer will call this object's Modified() method
-      when it is modified.
-      type_checker: A type_checkers.ValueChecker instance to run on elements
-      inserted into this container.
+    message_listener: A MessageListener implementation. The
+    RepeatedScalarFieldContainer will call this object's Modified() method
+    when it is modified.
+    type_checker: A type_checkers.ValueChecker instance to run on elements
+    inserted into this container.
     """
     super().__init__(message_listener)
     self._type_checker = type_checker
@@ -127,18 +138,21 @@ class RepeatedScalarFieldContainer(BaseContainer[_T], MutableSequence[_T]):
 
   def append(self, value: _T) -> None:
     """Appends an item to the list. Similar to list.append()."""
+    self._AssureWritable()
     self._values.append(self._type_checker.CheckValue(value))
     if not self._message_listener.dirty:
       self._message_listener.Modified()
 
   def insert(self, key: int, value: _T) -> None:
     """Inserts the item at the specified position. Similar to list.insert()."""
+    self._AssureWritable()
     self._values.insert(key, self._type_checker.CheckValue(value))
     if not self._message_listener.dirty:
       self._message_listener.Modified()
 
   def extend(self, elem_seq: Iterable[_T]) -> None:
     """Extends by appending the given iterable. Similar to list.extend()."""
+    self._AssureWritable()
     elem_seq_iter = iter(elem_seq)
     new_values = [self._type_checker.CheckValue(elem) for elem in elem_seq_iter]
     if new_values:
@@ -150,18 +164,22 @@ class RepeatedScalarFieldContainer(BaseContainer[_T], MutableSequence[_T]):
       other: Union['RepeatedScalarFieldContainer[_T]', Iterable[_T]],
   ) -> None:
     """Appends the contents of another repeated field of the same type to this
+
     one. We do not check the types of the individual fields.
     """
+    self._AssureWritable()
     self._values.extend(other)
     self._message_listener.Modified()
 
   def remove(self, elem: _T):
     """Removes an item from the list. Similar to list.remove()."""
+    self._AssureWritable()
     self._values.remove(elem)
     self._message_listener.Modified()
 
   def pop(self, key: Optional[int] = -1) -> _T:
     """Removes and returns an item at a given index. Similar to list.pop()."""
+    self._AssureWritable()
     value = self._values[key]
     self.__delitem__(key)
     return value
@@ -176,6 +194,7 @@ class RepeatedScalarFieldContainer(BaseContainer[_T], MutableSequence[_T]):
 
   def __setitem__(self, key, value) -> None:
     """Sets the item on the specified position."""
+    self._AssureWritable()
     if isinstance(key, slice):
       if key.step is not None:
         raise ValueError('Extended slices not supported')
@@ -187,6 +206,7 @@ class RepeatedScalarFieldContainer(BaseContainer[_T], MutableSequence[_T]):
 
   def __delitem__(self, key: Union[int, slice]) -> None:
     """Deletes the item at the specified position."""
+    self._AssureWritable()
     del self._values[key]
     self._message_listener.Modified()
 
@@ -212,7 +232,8 @@ class RepeatedScalarFieldContainer(BaseContainer[_T], MutableSequence[_T]):
 
   def __reduce__(self, **kwargs) -> NoReturn:
     raise pickle.PickleError(
-        "Can't pickle repeated scalar fields, convert to list first")
+        "Can't pickle repeated scalar fields, convert to list first"
+    )
 
   def __array__(self, dtype=None, copy=None):
     import numpy as np
@@ -255,27 +276,34 @@ class RepeatedCompositeFieldContainer(BaseContainer[_T], MutableSequence[_T]):
   __slots__ = ['_message_descriptor']
 
   def __init__(self, message_listener: Any, message_descriptor: Any) -> None:
-    """
-    Note that we pass in a descriptor instead of the generated directly,
+    """Note that we pass in a descriptor instead of the generated directly,
+
     since at the time we construct a _RepeatedCompositeFieldContainer we
     haven't yet necessarily initialized the type that will be contained in the
     container.
 
     Args:
-      message_listener: A MessageListener implementation.
-        The RepeatedCompositeFieldContainer will call this object's
-        Modified() method when it is modified.
+      message_listener: A MessageListener implementation. The
+        RepeatedCompositeFieldContainer will call this object's Modified()
+        method when it is modified.
       message_descriptor: A Descriptor instance describing the protocol type
-        that should be present in this container.  We'll use the
-        _concrete_class field of this descriptor when the client calls add().
+        that should be present in this container.  We'll use the _concrete_class
+        field of this descriptor when the client calls add().
     """
     super().__init__(message_listener)
     self._message_descriptor = message_descriptor
 
+  def _SetFrozen(self) -> None:
+    super()._SetFrozen()
+    for val in self._values:
+      val._SetFrozen()
+
   def add(self, **kwargs: Any) -> _T:
-    """Adds a new element at the end of the list and returns it. Keyword
-    arguments may be used to initialize the element.
+    """Adds a new element at the end of the list and returns it.
+
+    Keyword arguments may be used to initialize the element.
     """
+    self._AssureWritable()
     new_element = self._message_descriptor._concrete_class(**kwargs)
     new_element._SetListener(self._message_listener)
     self._values.append(new_element)
@@ -285,6 +313,7 @@ class RepeatedCompositeFieldContainer(BaseContainer[_T], MutableSequence[_T]):
 
   def append(self, value: _T) -> None:
     """Appends one element by copying the message."""
+    self._AssureWritable()
     new_element = self._message_descriptor._concrete_class()
     new_element._SetListener(self._message_listener)
     new_element.CopyFrom(value)
@@ -294,6 +323,7 @@ class RepeatedCompositeFieldContainer(BaseContainer[_T], MutableSequence[_T]):
 
   def insert(self, key: int, value: _T) -> None:
     """Inserts the item at the specified position by copying."""
+    self._AssureWritable()
     new_element = self._message_descriptor._concrete_class()
     new_element._SetListener(self._message_listener)
     new_element.CopyFrom(value)
@@ -306,6 +336,7 @@ class RepeatedCompositeFieldContainer(BaseContainer[_T], MutableSequence[_T]):
 
     as this one, copying each individual message.
     """
+    self._AssureWritable()
     message_class = self._message_descriptor._concrete_class
     listener = self._message_listener
     values = self._values
@@ -321,17 +352,21 @@ class RepeatedCompositeFieldContainer(BaseContainer[_T], MutableSequence[_T]):
       other: Union['RepeatedCompositeFieldContainer[_T]', Iterable[_T]],
   ) -> None:
     """Appends the contents of another repeated field of the same type to this
+
     one, copying each individual message.
     """
+    self._AssureWritable()
     self.extend(other)
 
   def remove(self, elem: _T) -> None:
     """Removes an item from the list. Similar to list.remove()."""
+    self._AssureWritable()
     self._values.remove(elem)
     self._message_listener.Modified()
 
   def pop(self, key: Optional[int] = -1) -> _T:
     """Removes and returns an item at a given index. Similar to list.pop()."""
+    self._AssureWritable()
     value = self._values[key]
     self.__delitem__(key)
     return value
@@ -349,10 +384,12 @@ class RepeatedCompositeFieldContainer(BaseContainer[_T], MutableSequence[_T]):
     # structurally compatible with typing.MutableSequence. It is
     # otherwise unsupported and will always raise an error.
     raise TypeError(
-        f'{self.__class__.__name__} object does not support item assignment')
+        f'{self.__class__.__name__} object does not support item assignment'
+    )
 
   def __delitem__(self, key: Union[int, slice]) -> None:
     """Deletes the item at the specified position."""
+    self._AssureWritable()
     del self._values[key]
     self._message_listener.Modified()
 
@@ -361,8 +398,10 @@ class RepeatedCompositeFieldContainer(BaseContainer[_T], MutableSequence[_T]):
     if self is other:
       return True
     if not isinstance(other, self.__class__):
-      raise TypeError('Can only compare repeated composite fields against '
-                      'other repeated composite fields.')
+      raise TypeError(
+          'Can only compare repeated composite fields against '
+          'other repeated composite fields.'
+      )
     return self._values == other._values
 
 
@@ -370,8 +409,14 @@ class ScalarMap(MutableMapping[_K, _V]):
   """Simple, type-checked, dict-like container for holding repeated scalars."""
 
   # Disallows assignment to other attributes.
-  __slots__ = ['_key_checker', '_value_checker', '_values', '_message_listener',
-               '_entry_descriptor']
+  __slots__ = [
+      '_key_checker',
+      '_value_checker',
+      '_values',
+      '_message_listener',
+      '_entry_descriptor',
+      '_frozen',
+  ]
 
   def __init__(
       self,
@@ -380,28 +425,38 @@ class ScalarMap(MutableMapping[_K, _V]):
       value_checker: Any,
       entry_descriptor: Any,
   ) -> None:
-    """
-    Args:
-      message_listener: A MessageListener implementation.
-        The ScalarMap will call this object's Modified() method when it
-        is modified.
-      key_checker: A type_checkers.ValueChecker instance to run on keys
-        inserted into this container.
-      value_checker: A type_checkers.ValueChecker instance to run on values
-        inserted into this container.
-      entry_descriptor: The MessageDescriptor of a map entry: key and value.
+    """Args:
+
+    message_listener: A MessageListener implementation.
+      The ScalarMap will call this object's Modified() method when it
+      is modified.
+    key_checker: A type_checkers.ValueChecker instance to run on keys
+      inserted into this container.
+    value_checker: A type_checkers.ValueChecker instance to run on values
+      inserted into this container.
+    entry_descriptor: The MessageDescriptor of a map entry: key and value.
     """
     self._message_listener = message_listener
     self._key_checker = key_checker
     self._value_checker = value_checker
     self._entry_descriptor = entry_descriptor
     self._values = {}
+    self._frozen = False
+
+  def _SetFrozen(self) -> None:
+    self._frozen = True
+
+  def _AssureWritable(self) -> 'ScalarMap[_K, _V]':
+    if self._frozen:
+      raise message.FrozenInstanceError('Map is immutable')
+    return self
 
   def __getitem__(self, key: _K) -> _V:
+    key = self._key_checker.CheckValue(key)
     try:
       return self._values[key]
     except KeyError:
-      key = self._key_checker.CheckValue(key)
+      self._AssureWritable()
       val = self._value_checker.DefaultValue()
       self._values[key] = val
       return val
@@ -409,7 +464,7 @@ class ScalarMap(MutableMapping[_K, _V]):
   def __contains__(self, item: _K) -> bool:
     # We check the key's type to match the strong-typing flavor of the API.
     # Also this makes it easier to match the behavior of the C++ implementation.
-    self._key_checker.CheckValue(item)
+    item = self._key_checker.CheckValue(item)
     return item in self._values
 
   @overload
@@ -424,19 +479,23 @@ class ScalarMap(MutableMapping[_K, _V]):
   # will make the default implementation (from our base class) always insert
   # the key.
   def get(self, key, default=None):
-    if key in self:
-      return self[key]
+    checked_key = self._key_checker.CheckValue(key)
+    if checked_key in self._values:
+      return self[checked_key]
     else:
       return default
 
   def __setitem__(self, key: _K, value: _V) -> _T:
+    self._AssureWritable()
     checked_key = self._key_checker.CheckValue(key)
     checked_value = self._value_checker.CheckValue(value)
     self._values[checked_key] = checked_value
     self._message_listener.Modified()
 
   def __delitem__(self, key: _K) -> None:
-    del self._values[key]
+    self._AssureWritable()
+    checked_key = self._key_checker.CheckValue(key)
+    del self._values[checked_key]
     self._message_listener.Modified()
 
   def __len__(self) -> int:
@@ -449,13 +508,16 @@ class ScalarMap(MutableMapping[_K, _V]):
     return repr(self._values)
 
   def setdefault(self, key: _K, value: Optional[_V] = None) -> _V:
+    self._AssureWritable()
+    checked_key = self._key_checker.CheckValue(key)
     if value == None:
       raise ValueError('The value for scalar map setdefault must be set.')
-    if key not in self._values:
-      self.__setitem__(key, value)
+    if checked_key not in self._values:
+      self.__setitem__(checked_key, value)
     return self[key]
 
   def MergeFrom(self, other: 'ScalarMap[_K, _V]') -> None:
+    self._AssureWritable()
     self._values.update(other._values)
     self._message_listener.Modified()
 
@@ -468,6 +530,7 @@ class ScalarMap(MutableMapping[_K, _V]):
 
   # This is defined in the abstract base, but we can do it much more cheaply.
   def clear(self) -> None:
+    self._AssureWritable()
     self._values.clear()
     self._message_listener.Modified()
 
@@ -479,8 +542,14 @@ class MessageMap(MutableMapping[_K, _V]):
   """Simple, type-checked, dict-like container for with submessage values."""
 
   # Disallows assignment to other attributes.
-  __slots__ = ['_key_checker', '_values', '_message_listener',
-               '_message_descriptor', '_entry_descriptor']
+  __slots__ = [
+      '_key_checker',
+      '_values',
+      '_message_listener',
+      '_message_descriptor',
+      '_entry_descriptor',
+      '_frozen',
+  ]
 
   def __init__(
       self,
@@ -489,28 +558,40 @@ class MessageMap(MutableMapping[_K, _V]):
       key_checker: Any,
       entry_descriptor: Any,
   ) -> None:
-    """
-    Args:
-      message_listener: A MessageListener implementation.
-        The ScalarMap will call this object's Modified() method when it
-        is modified.
-      key_checker: A type_checkers.ValueChecker instance to run on keys
-        inserted into this container.
-      value_checker: A type_checkers.ValueChecker instance to run on values
-        inserted into this container.
-      entry_descriptor: The MessageDescriptor of a map entry: key and value.
+    """Args:
+
+    message_listener: A MessageListener implementation.
+      The ScalarMap will call this object's Modified() method when it
+      is modified.
+    key_checker: A type_checkers.ValueChecker instance to run on keys
+      inserted into this container.
+    value_checker: A type_checkers.ValueChecker instance to run on values
+      inserted into this container.
+    entry_descriptor: The MessageDescriptor of a map entry: key and value.
     """
     self._message_listener = message_listener
     self._message_descriptor = message_descriptor
     self._key_checker = key_checker
     self._entry_descriptor = entry_descriptor
     self._values = {}
+    self._frozen = False
+
+  def _SetFrozen(self) -> None:
+    self._frozen = True
+    for val in self._values.values():
+      val._SetFrozen()
+
+  def _AssureWritable(self) -> 'MessageMap[_K, _V]':
+    if self._frozen:
+      raise message.FrozenInstanceError('Map is immutable')
+    return self
 
   def __getitem__(self, key: _K) -> _V:
     key = self._key_checker.CheckValue(key)
     try:
       return self._values[key]
     except KeyError:
+      self._AssureWritable()
       new_element = self._message_descriptor._concrete_class()
       new_element._SetListener(self._message_listener)
       self._values[key] = new_element
@@ -553,9 +634,11 @@ class MessageMap(MutableMapping[_K, _V]):
     return item in self._values
 
   def __setitem__(self, key: _K, value: _V) -> NoReturn:
+    self._AssureWritable()
     raise ValueError('May not set values directly, call my_map[key].foo = 5')
 
   def __delitem__(self, key: _K) -> None:
+    self._AssureWritable()
     key = self._key_checker.CheckValue(key)
     del self._values[key]
     self._message_listener.Modified()
@@ -570,12 +653,14 @@ class MessageMap(MutableMapping[_K, _V]):
     return repr(self._values)
 
   def setdefault(self, key: _K, value: Optional[_V] = None) -> _V:
+    self._AssureWritable()
     raise NotImplementedError(
         'Set message map value directly is not supported, call'
         ' my_map[key].foo = 5'
     )
 
   def MergeFrom(self, other: 'MessageMap[_K, _V]') -> None:
+    self._AssureWritable()
     # pylint: disable=protected-access
     for key in other._values:
       # According to documentation: "When parsing from the wire or when merging,
@@ -595,6 +680,7 @@ class MessageMap(MutableMapping[_K, _V]):
 
   # This is defined in the abstract base, but we can do it much more cheaply.
   def clear(self) -> None:
+    self._AssureWritable()
     self._values.clear()
     self._message_listener.Modified()
 
@@ -622,9 +708,11 @@ class _UnknownField:
     if self is other:
       return True
     # pylint: disable=protected-access
-    return (self._field_number == other._field_number and
-            self._wire_type == other._wire_type and
-            self._data == other._data)
+    return (
+        self._field_number == other._field_number
+        and self._wire_type == other._wire_type
+        and self._data == other._data
+    )
 
 
 class UnknownFieldRef:  # pylint: disable=missing-class-docstring
@@ -635,11 +723,13 @@ class UnknownFieldRef:  # pylint: disable=missing-class-docstring
 
   def _check_valid(self):
     if not self._parent:
-      raise ValueError('UnknownField does not exist. '
-                       'The parent message might be cleared.')
+      raise ValueError(
+          'UnknownField does not exist. The parent message might be cleared.'
+      )
     if self._index >= len(self._parent):
-      raise ValueError('UnknownField does not exist. '
-                       'The parent message might be cleared.')
+      raise ValueError(
+          'UnknownField does not exist. The parent message might be cleared.'
+      )
 
   @property
   def field_number(self):
@@ -671,8 +761,9 @@ class UnknownFieldSet:
 
   def __getitem__(self, index):
     if self._values is None:
-      raise ValueError('UnknownFields does not exist. '
-                       'The parent message might be cleared.')
+      raise ValueError(
+          'UnknownFields does not exist. The parent message might be cleared.'
+      )
     size = len(self._values)
     if index < 0:
       index += size
@@ -686,8 +777,9 @@ class UnknownFieldSet:
 
   def __len__(self):
     if self._values is None:
-      raise ValueError('UnknownFields does not exist. '
-                       'The parent message might be cleared.')
+      raise ValueError(
+          'UnknownFields does not exist. The parent message might be cleared.'
+      )
     return len(self._values)
 
   def _add(self, field_number, wire_type, data):

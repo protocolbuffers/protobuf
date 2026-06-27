@@ -14,6 +14,9 @@ jobs:
       fail-fast: true 
       matrix: 
         branch: [25.x, 29.x, 33.x, 34.x]
+      fail-fast: false
+      matrix:
+        branch: [25.x, 29.x, 33.x, 34.x, 35.x]
     runs-on: ubuntu-latest
     permissions:
       actions: write

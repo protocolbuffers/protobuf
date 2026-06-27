@@ -11,15 +11,16 @@
 #ifndef GOOGLE_PROTOBUF_PYTHON_CPP_MESSAGE_H__
 #define GOOGLE_PROTOBUF_PYTHON_CPP_MESSAGE_H__
 
+#include <atomic>
 #define PY_SSIZE_T_CLEAN
 #include <Python.h>
 
 #include <cstdint>
-#include <memory>
-#include <string>
-#include <unordered_map>
+#include <optional>
 
 #include "absl/strings/string_view.h"
+#include "google/protobuf/pyext/lazy_unique_ptr.h"
+#include "google/protobuf/pyext/weak_value_map.h"
 
 namespace google {
 namespace protobuf {
@@ -46,6 +47,23 @@ struct CMessageClass;
 //
 // ExtensionDicts and UnknownFields containers do NOT follow this rule. They
 // don't store any data, and always refer to their parent message.
+
+// Defines the mutability and allocation state of a CMessage.
+// A default instance can be either mutable (MESSAGE_MUTABLE_DEFAULT) or frozen
+// (MESSAGE_FROZEN).
+enum MessageMutabilityState {
+  // Backed by a fully allocated, mutable C++ Message object.
+  MESSAGE_MUTABLE = 0,
+
+  // Backed by a const default instance that is mutable on write (not frozen).
+  // Acts as a "stub".
+  // Will automatically transition to MESSAGE_MUTABLE upon first mutation.
+  MESSAGE_MUTABLE_DEFAULT = 1,
+
+  // Permanently read-only (e.g., Descriptor Options).
+  // Any attempt to mutate will raise a Python TypeError.
+  MESSAGE_FROZEN = 2,
+};
 
 struct ContainerBase {
   // clang-format off
@@ -82,26 +100,25 @@ typedef struct CMessage : public ContainerBase {
   // Pointer to the C++ Message object for this CMessage.
   // - If this object has no parent, we own this pointer.
   // - If this object has a parent message, the parent owns this pointer.
-  Message* message;
+  const Message* message;
 
-  // Indicates this submessage is pointing to a default instance of a message.
-  // Submessages are always first created as read only messages and are then
-  // made writable, at which point this field is set to false.
-  bool read_only;
+  // Indicates the mutability state of this CMessage wrapper.
+  MessageMutabilityState state;
 
   // A mapping indexed by field, containing weak references to contained objects
   // which need to implement the "Release" mechanism:
   // direct submessages, RepeatedCompositeContainer, RepeatedScalarContainer
   // and MapContainer.
-  typedef std::unordered_map<const FieldDescriptor*, ContainerBase*>
-      CompositeFieldsMap;
-  CompositeFieldsMap* composite_fields;
+  //   Maps: const FieldDescriptor* -> ContainerBase*
+  typedef PyWeakValueMap CompositeFieldsMap;
+  LazyUniquePtr<CompositeFieldsMap> composite_fields;
 
   // A mapping containing weak references to indirect child messages, accessed
   // through containers: repeated messages, and values of message maps.
   // This avoid the creation of similar maps in each of those containers.
-  typedef std::unordered_map<const Message*, CMessage*> SubMessagesMap;
-  SubMessagesMap* child_submessages;
+  //   Maps: const Message* -> CMessage*
+  typedef PyWeakValueMap SubMessagesMap;
+  LazyUniquePtr<SubMessagesMap> child_submessages;
 
   // Implements the "weakref" protocol for this object.
   PyObject* weakreflist;
@@ -114,9 +131,9 @@ typedef struct CMessage : public ContainerBase {
   // For container containing messages, return a Python object for the given
   // pointer to a message.
   CMessage* BuildSubMessageFromPointer(const FieldDescriptor* field_descriptor,
-                                       Message* sub_message,
+                                       const Message* sub_message,
                                        CMessageClass* message_class);
-  CMessage* MaybeReleaseSubMessage(Message* sub_message);
+  CMessage* MaybeReleaseSubMessage(const Message* sub_message);
 } CMessage;
 
 // The (meta) type of all Messages classes.
@@ -177,6 +194,15 @@ void DeleteLastRepeatedWithSize(CMessage* self,
 int DeleteRepeatedField(CMessage* self, const FieldDescriptor* field_descriptor,
                         PyObject* slice);
 
+// Check if a deletion operation on a repeated field is a no-op, valid or error.
+// Returns:
+//  1 if the deletion is a no-op (empty slice deletion).
+//  0 if the deletion is valid and requires mutating the container.
+// -1 if an error occurred.
+int CheckRepeatedFieldDeletion(CMessage* parent,
+                               const FieldDescriptor* field_descriptor,
+                               PyObject* slice);
+
 // Sets the specified scalar value to the message.
 int InternalSetScalar(CMessage* self, const FieldDescriptor* field_descriptor,
                       PyObject* value);
@@ -195,7 +221,7 @@ PyObject* InternalGetScalar(const Message* message,
 bool SetCompositeField(CMessage* self, const FieldDescriptor* field,
                        ContainerBase* value);
 
-bool SetSubmessage(CMessage* self, CMessage* submessage);
+bool SetSubmessage(CMessage* self, CMessage*& submessage);
 
 // Clears the message, removing all contained data. Extension dictionary and
 // submessages are released first if there are remaining external references.
@@ -239,7 +265,7 @@ int SetFieldValue(CMessage* self, const FieldDescriptor* field_descriptor,
 
 PyObject* FindInitializationErrors(CMessage* self);
 
-int AssureWritable(CMessage* self);
+Message* AssureWritable(CMessage* self);
 
 // Returns the message factory for the given message.
 // This is equivalent to message.MESSAGE_FACTORY
@@ -309,7 +335,11 @@ bool CheckAndGetInteger(PyObject* arg, T* value);
 bool CheckAndGetDouble(PyObject* arg, double* value);
 bool CheckAndGetFloat(PyObject* arg, float* value);
 bool CheckAndGetBool(PyObject* arg, bool* value);
-PyObject* CheckString(PyObject* arg, const FieldDescriptor* descriptor);
+
+// Validates arg for a string or bytes field, and returns the string view if
+// valid. Returns std::nullopt and sets a Python exception on failure.
+std::optional<absl::string_view> CheckString(PyObject* arg,
+                                             const FieldDescriptor* descriptor);
 bool CheckAndSetString(PyObject* arg, Message* message,
                        const FieldDescriptor* descriptor,
                        const Reflection* reflection, bool append, int index);
@@ -322,6 +352,14 @@ bool CheckFieldBelongsToMessage(const FieldDescriptor* field_descriptor,
                                 const Message* message);
 
 extern PyObject* PickleError_class;
+
+extern PyObject* FrozenInstanceError_class;
+// Sets a Python FrozenInstanceError with the given message and returns nullptr.
+PyObject* SetFrozenError(const char* msg);
+
+// Sets a Python FrozenInstanceError with the default error message for messages
+// type and returns nullptr.
+PyObject* SetMessageFrozenError();
 
 PyObject* PyMessage_New(const Descriptor* descriptor,
                         PyObject* py_message_factory);

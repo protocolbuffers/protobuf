@@ -24,14 +24,14 @@ jobs:
 
         include:
           - targets: "//rust/... //src/google/protobuf/compiler/rust/..."
-          - image: "us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:8.0.1-e78301df86b3e4c46ec9ac4d98be00e19305d8f3"
+          - image: "us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:9.0.0-9dca0d9417f43f5f1e97e59969fb0f3e6ae3bd9c"
           - bazel_cmd: "test"
 
           # Override cases with custom images
           - config: { name: Cargo }
             # We need Rust 1.90 so that we can use the new workspace publishing
             # feature.
-            image: "us-docker.pkg.dev/protobuf-build/containers/release/linux/rust:8.0.1-1.90.0-e1c2fe666ffa9b941b126541a26340d0ea787cea"
+            image: "us-docker.pkg.dev/protobuf-build/containers/release/linux/rust:9.0.0-1.90.0-98863a45066747115144a8a8fb4818189d1e0761"
             bazel_cmd: "run"
             targets: "//rust/release_crates:cargo_test"
 
@@ -73,4 +73,4 @@ jobs:
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel: run //rust/release_crates:cargo_test
           bazel-cache: windows-cargo
-          version: 8.0.1
+          version: 9.0.0

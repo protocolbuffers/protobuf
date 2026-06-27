@@ -24,22 +24,25 @@ if(CMAKE_BUILD_TYPE STREQUAL Debug)
   # attach debug postfix only in debug mode
   set(protobuf_LIBRARY_POSTFIX ${protobuf_DEBUG_POSTFIX})
 endif()
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/cmake/protobuf.pc.cmake
-               ${CMAKE_CURRENT_BINARY_DIR}/protobuf.pc @ONLY)
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/cmake/protobuf-lite.pc.cmake
-               ${CMAKE_CURRENT_BINARY_DIR}/protobuf-lite.pc @ONLY)
-if (protobuf_BUILD_LIBUPB)
+if (TARGET libprotobuf)
+  configure_file(${CMAKE_CURRENT_SOURCE_DIR}/cmake/protobuf.pc.cmake
+                ${CMAKE_CURRENT_BINARY_DIR}/protobuf.pc @ONLY)
+endif ()
+if (TARGET libprotobuf-lite)
+  configure_file(${CMAKE_CURRENT_SOURCE_DIR}/cmake/protobuf-lite.pc.cmake
+                ${CMAKE_CURRENT_BINARY_DIR}/protobuf-lite.pc @ONLY)
+endif ()
+if (TARGET libupb)
   configure_file(${CMAKE_CURRENT_SOURCE_DIR}/cmake/upb.pc.cmake
                 ${CMAKE_CURRENT_BINARY_DIR}/upb.pc @ONLY)
 endif ()
 
-set(_protobuf_libraries libprotobuf-lite libprotobuf)
-if (protobuf_BUILD_LIBPROTOC)
-    list(APPEND _protobuf_libraries libprotoc)
-endif (protobuf_BUILD_LIBPROTOC)
-if (protobuf_BUILD_LIBUPB)
-  list(APPEND _protobuf_libraries libupb)
-endif ()
+set(_protobuf_libraries)
+foreach (_library libprotobuf-lite libprotobuf libprotoc libupb)
+  if (TARGET ${_library})
+    list(APPEND _protobuf_libraries ${_library})
+  endif()
+endforeach()
 
 foreach(_library ${_protobuf_libraries})
   if (UNIX AND NOT APPLE)
@@ -77,10 +80,17 @@ if (protobuf_BUILD_PROTOC_BINARIES)
         PROPERTY INSTALL_RPATH "@loader_path/../lib")
     endif ()
   endforeach ()
-endif (protobuf_BUILD_PROTOC_BINARIES)
+endif ()
 
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/protobuf.pc ${CMAKE_CURRENT_BINARY_DIR}/protobuf-lite.pc DESTINATION "${CMAKE_INSTALL_LIBDIR}/pkgconfig")
-if (protobuf_BUILD_LIBUPB)
+if (TARGET libprotobuf-lite)
+  install(FILES ${CMAKE_CURRENT_BINARY_DIR}/protobuf-lite.pc
+    DESTINATION "${CMAKE_INSTALL_LIBDIR}/pkgconfig")
+endif ()
+if (TARGET libprotobuf)
+  install(FILES ${CMAKE_CURRENT_BINARY_DIR}/protobuf.pc
+    DESTINATION "${CMAKE_INSTALL_LIBDIR}/pkgconfig")
+endif ()
+if (TARGET libupb)
   install(FILES ${CMAKE_CURRENT_BINARY_DIR}/upb.pc DESTINATION "${CMAKE_INSTALL_LIBDIR}/pkgconfig")
 endif ()
 
@@ -89,9 +99,12 @@ set(protobuf_HEADERS
   ${libprotobuf_hdrs}
   ${libprotoc_public_hdrs}
   ${wkt_protos_files}
+  ${cpp_file_options_proto_proto_srcs}
+  ${json_enumvalue_options_proto_proto_srcs}
   ${cpp_features_proto_proto_srcs}
   ${descriptor_proto_proto_srcs}
   ${plugin_proto_proto_srcs}
+  ${c_sharp_features_proto_proto_srcs}
   ${java_features_proto_proto_srcs}
   ${go_features_proto_proto_srcs}
 )
@@ -109,6 +122,7 @@ endif ()
 set(protobuf_STRIP_PREFIXES
   "/src"
   "/java/core/src/main/resources"
+  "/csharp"
   "/go"
   "/"
 )

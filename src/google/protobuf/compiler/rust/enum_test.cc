@@ -1,6 +1,7 @@
 #include "google/protobuf/compiler/rust/enum.h"
 
 #include <cstdint>
+#include <utility>
 
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
@@ -37,11 +38,14 @@ TEST(EnumTest, EnumValues) {
   EXPECT_THAT(EnumValues("Enum", {{"ENUM_ENUM_UNKNOWN", 1}, {"ENUM_ENUM", 2}}),
               ElementsAre(EnumValue("EnumUnknown", 1), EnumValue("Enum", 2)));
   EXPECT_THAT(EnumValues("Enum", {{"ENUM_VAL", 1}, {"ENUM_ALIAS", 1}}),
-              ElementsAre(EnumValue("Val", 1, ElementsAre("Alias"))));
+              ElementsAre(EnumValue(
+                  "Val", 1, ElementsAre(std::make_pair("Alias", nullptr)))));
   EXPECT_THAT(
       EnumValues("Enum",
                  {{"ENUM_VAL", 1}, {"ENUM_ALIAS", 1}, {"ENUM_ALIAS2", 1}}),
-      ElementsAre(EnumValue("Val", 1, ElementsAre("Alias", "Alias2"))));
+      ElementsAre(EnumValue("Val", 1,
+                            ElementsAre(std::make_pair("Alias", nullptr),
+                                        std::make_pair("Alias2", nullptr)))));
   EXPECT_THAT(EnumValues("Enum", {{"ENUM_ENUM", 1}, {"ENUM", 1}}),
               ElementsAre(EnumValue("Enum", 1, IsEmpty())));
 }

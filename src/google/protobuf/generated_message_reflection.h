@@ -53,6 +53,7 @@ namespace google {
 namespace protobuf {
 namespace internal {
 class DefaultEmptyOneof;
+struct MessageGlobalsBase;
 // Defined in other files.
 class ExtensionSet;  // extension_set.h
 class WeakFieldMap;  // weak_field_map.h
@@ -67,6 +68,17 @@ inline constexpr uint32_t kSplitFieldOffsetMask = 0x80000000u;
 inline constexpr uint32_t kLazyMask = 0x1u;
 inline constexpr uint32_t kInlinedMask = 0x1u;
 inline constexpr uint32_t kMicroStringMask = 0x2u;
+
+// Structs that the code generator emits directly to describe a message.
+// These should never used directly except to build a ReflectionSchema
+// object.
+//
+// EXPERIMENTAL: these are changing rapidly, and may completely disappear
+// or merge with ReflectionSchema.
+struct MigrationSchema {
+  int32_t offsets_index;
+  int object_size;
+};
 
 // This struct describes the internal layout of the message, hence this is
 // used to act on the message reflectively.
@@ -111,8 +123,21 @@ inline constexpr uint32_t kMicroStringMask = 0x2u;
 //   weak_field_map_offset: If the message proto has weak fields, this is the
 //                  offset of _weak_field_map_ in the generated proto. Otherwise
 //                  -1.
-struct ReflectionSchema {
+class ReflectionSchema {
  public:
+  ReflectionSchema(const Message* default_instance, const uint32_t* offsets,
+                   const uint32_t* has_bit_indices, int has_bits_offset,
+                   int extensions_offset, int oneof_case_offset,
+                   int object_size, int weak_field_map_offset, int split_offset,
+                   int sizeof_split);
+
+  // Helper function to transform migration schema into reflection schema.
+  static ReflectionSchema MigrationToReflectionSchema(
+      const MessageGlobalsBase* const* message_globals, const uint32_t* offsets,
+      MigrationSchema migration_schema);
+
+  const Message* default_instance() const { return default_instance_; }
+
   // Size of a google::protobuf::Message object of this type.
   uint32_t GetObjectSize() const { return static_cast<uint32_t>(object_size_); }
 
@@ -148,11 +173,18 @@ struct ReflectionSchema {
   bool HasHasbits() const { return has_bits_offset_ != -1; }
 
   // Bit index within the bit array of hasbits.  Bit order is low-to-high.
-  uint32_t HasBitIndex(const FieldDescriptor* field) const {
+  // `field_index` must be equal to field->index().
+  uint32_t HasBitIndex(const FieldDescriptor* field, int field_index) const {
+    ABSL_DCHECK_EQ(field->index(), field_index);
     ABSL_DCHECK(!field->is_extension());
     if (has_bits_offset_ == -1) return static_cast<uint32_t>(kNoHasbit);
     ABSL_DCHECK(HasHasbits());
-    return has_bit_indices_[field->index()];
+    return has_bit_indices_[field_index];
+  }
+
+  // Bit index within the bit array of hasbits.  Bit order is low-to-high.
+  uint32_t HasBitIndex(const FieldDescriptor* field) const {
+    return HasBitIndex(field, field->index());
   }
 
   // Byte offset of the hasbits array.
@@ -213,22 +245,8 @@ struct ReflectionSchema {
 
   bool HasWeakFields() const { return weak_field_map_offset_ > 0; }
 
-  // These members are intended to be private, but we cannot actually make them
-  // private because this prevents us from using aggregate initialization of
-  // them, ie.
-  //
-  //   ReflectionSchema schema = {a, b, c, d, e, ...};
-  // private:
-  const Message* default_instance_;
-  const uint32_t* offsets_;
-  const uint32_t* has_bit_indices_;
-  int has_bits_offset_;
-  int extensions_offset_;
-  int oneof_case_offset_;
-  int object_size_;
-  int weak_field_map_offset_;
-  int split_offset_;
-  int sizeof_split_;
+ private:
+  ReflectionSchema() = default;
 
   // We tag offset values to provide additional data about fields (such as
   // "unused" or "lazy" or "inlined").
@@ -264,17 +282,17 @@ struct ReflectionSchema {
         << type;
     return (v & kMicroStringMask) != 0u;
   }
-};
 
-// Structs that the code generator emits directly to describe a message.
-// These should never used directly except to build a ReflectionSchema
-// object.
-//
-// EXPERIMENTAL: these are changing rapidly, and may completely disappear
-// or merge with ReflectionSchema.
-struct MigrationSchema {
-  int32_t offsets_index;
-  int object_size;
+  const Message* default_instance_;
+  const uint32_t* offsets_;
+  const uint32_t* has_bit_indices_;
+  int has_bits_offset_;
+  int extensions_offset_;
+  int oneof_case_offset_;
+  int object_size_;
+  int weak_field_map_offset_;
+  int split_offset_;
+  int sizeof_split_;
 };
 
 // This struct tries to reduce unnecessary padding.
@@ -291,7 +309,7 @@ struct PROTOBUF_EXPORT DescriptorTable {
   int num_deps;
   int num_messages;
   const MigrationSchema* schemas;
-  const Message* const* default_instances;
+  const MessageGlobalsBase* const* message_globals;
   const uint32_t* offsets;
   // update the following descriptor arrays.
   const EnumDescriptor** file_level_enum_descriptors;

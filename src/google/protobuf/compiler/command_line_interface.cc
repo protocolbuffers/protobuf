@@ -300,10 +300,12 @@ void AddDefaultProtoPaths(
 
 std::string PluginName(absl::string_view plugin_prefix,
                        absl::string_view directive) {
-  // Assuming the directive starts with "--" and ends with "_out" or "_opt",
-  // strip the "--" and "_out/_opt" and add the plugin prefix.
+  // Assuming the directive starts with "--" and ends with one of "_out",
+  // "_opt", or "_prefix", strip the "--" and the trailing "_..." segment and
+  // add the plugin prefix.
+  size_t suffix_start = directive.find_last_of('_');
   return absl::StrCat(plugin_prefix, "gen-",
-                      directive.substr(2, directive.size() - 6));
+                      directive.substr(2, suffix_start - 2));
 }
 
 bool GetBootstrapParam(const std::string& parameter) {
@@ -462,11 +464,11 @@ class CommandLineInterface::GeneratorContextImpl : public GeneratorContext {
 
   // Write all files in the directory to disk at the given output location,
   // which must end in a '/'.
-  bool WriteAllToDisk(const std::string& prefix);
+  bool WriteAllToDisk(const std::string& prefix, bool allow_escape = false);
 
   // Write the contents of this directory to a ZIP-format archive with the
   // given name.
-  bool WriteAllToZip(const std::string& filename);
+  bool WriteAllToZip(const std::string& filename, bool allow_escape = false);
 
   // Add a boilerplate META-INF/MANIFEST.MF file as required by the Java JAR
   // format, unless one has already been written.
@@ -562,7 +564,7 @@ CommandLineInterface::GeneratorContextImpl::GeneratorContextImpl(
     : parsed_files_(parsed_files), had_error_(false) {}
 
 bool CommandLineInterface::GeneratorContextImpl::WriteAllToDisk(
-    const std::string& prefix) {
+    const std::string& prefix, bool allow_escape) {
   if (had_error_) {
     return false;
   }
@@ -575,6 +577,15 @@ bool CommandLineInterface::GeneratorContextImpl::WriteAllToDisk(
     const std::string& relative_filename = pair.first;
     const char* data = pair.second.data();
     int size = pair.second.size();
+
+    if (!allow_escape && absl::StrContains(relative_filename, "..")) {
+      std::cerr << "Output file names must never have a relative path."
+                << " (" << relative_filename << "). "
+                << "Use --unsafe_allow_out_dir_escape to disable this error if "
+                   "intentional."
+                << std::endl;
+      return false;
+    }
 
     if (!TryCreateParentDirectory(prefix, relative_filename)) {
       return false;
@@ -636,7 +647,7 @@ bool CommandLineInterface::GeneratorContextImpl::WriteAllToDisk(
 }
 
 bool CommandLineInterface::GeneratorContextImpl::WriteAllToZip(
-    const std::string& filename) {
+    const std::string& filename, bool allow_escape) {
   if (had_error_) {
     return false;
   }
@@ -659,6 +670,13 @@ bool CommandLineInterface::GeneratorContextImpl::WriteAllToZip(
   ZipWriter zip_writer(&stream);
 
   for (const auto& pair : files_) {
+    if (!allow_escape && absl::StrContains(pair.first, "..")) {
+      std::cerr << "WARNING: Output file names must never have a relative "
+                << "path. (" << pair.first << "). "
+                << "This will become an error in a future breaking change "
+                << "release of Protobuf. Use --unsafe_allow_out_dir_escape "
+                << "to suppress this warning if intentional." << std::endl;
+    }
     zip_writer.Write(pair.first, pair.second);
   }
 
@@ -1367,6 +1385,7 @@ int CommandLineInterface::Run(int argc, const char* const argv[]) {
   descriptor_pool->EnforceWeakDependencies(true);
   descriptor_pool->EnforceSymbolVisibility(true);
   descriptor_pool->EnforceNamingStyle(true);
+  descriptor_pool->EnforceProtoLimits(true);
   descriptor_pool->EnforceFeatureSupportValidation(true);
 
   if (!SetupFeatureResolution(*descriptor_pool)) {
@@ -1392,6 +1411,20 @@ int CommandLineInterface::Run(int argc, const char* const argv[]) {
     if (!ValidateOptionImports(*file, *descriptor_pool,
                                error_collector.get())) {
       validation_error = true;
+    }
+
+    if (file->options().cc_generic_services() ||
+        file->options().java_generic_services() ||
+        file->options().py_generic_services()) {
+      error_collector->RecordWarning(
+          file->name(), "options", nullptr,
+          DescriptorPool::ErrorCollector::OPTION_VALUE,
+          "Generic services (cc_generic_services, java_generic_services, and "
+          "py_generic_services) are deprecated in favor of using plugins that "
+          "generate code specific to your particular RPC system. Additional "
+          "code generator options may be required to enable generic services "
+          "and total removal of these options is planned in future breaking "
+          "releases.");
     }
 
     google::protobuf::internal::VisitDescriptors(
@@ -1481,7 +1514,7 @@ int CommandLineInterface::Run(int argc, const char* const argv[]) {
     const std::string& location = pair.first;
     GeneratorContextImpl* directory = pair.second.get();
     if (absl::EndsWith(location, "/")) {
-      if (!directory->WriteAllToDisk(location)) {
+      if (!directory->WriteAllToDisk(location, unsafe_allow_out_dir_escape_)) {
         return 1;
       }
     } else {
@@ -1489,7 +1522,7 @@ int CommandLineInterface::Run(int argc, const char* const argv[]) {
         directory->AddJarManifest();
       }
 
-      if (!directory->WriteAllToZip(location)) {
+      if (!directory->WriteAllToZip(location, unsafe_allow_out_dir_escape_)) {
         return 1;
       }
     }
@@ -2154,7 +2187,8 @@ bool CommandLineInterface::ParseArgument(const char* arg, std::string* name,
       *name == "--experimental_editions" ||
       *name == "--print_free_field_numbers" ||
       *name == "--experimental_allow_proto3_optional" ||
-      *name == "--deterministic_output" || *name == "--fatal_warnings") {
+      *name == "--deterministic_output" ||
+      *name == "--unsafe_allow_out_dir_escape" || *name == "--fatal_warnings") {
     // HACK:  These are the only flags that don't take a value.
     //   They probably should not be hard-coded like this but for now it's
     //   not worth doing better.
@@ -2390,6 +2424,8 @@ CommandLineInterface::InterpretArgument(const std::string& name,
 
   } else if (name == "--disallow_services") {
     disallow_services_ = true;
+  } else if (name == "--unsafe_allow_out_dir_escape") {
+    unsafe_allow_out_dir_escape_ = true;
   } else if (name == "--experimental_allow_proto3_optional") {
     // Flag is no longer observed, but we allow it for backward compat.
   } else if (name == "--encode" || name == "--decode" ||
@@ -2566,6 +2602,28 @@ CommandLineInterface::InterpretArgument(const std::string& name,
           parameters->append(",");
         }
         parameters->append(value);
+      } else if (absl::StartsWith(name, "--") &&
+                 absl::EndsWith(name, "_prefix")) {
+        std::string plugin_name = PluginName(plugin_prefix_, name);
+        if (plugin_command_prefixes_.find(plugin_name) !=
+            plugin_command_prefixes_.end()) {
+          std::cerr << name << " may only be passed once." << std::endl;
+          return PARSE_ARGUMENT_FAIL;
+        }
+        if (value.find_first_of("\"'") != std::string::npos) {
+          std::cerr << name
+                    << ": quotes are not supported in the value. Use a "
+                       "wrapper script for more complex invocations."
+                    << std::endl;
+          return PARSE_ARGUMENT_FAIL;
+        }
+        std::vector<std::string> tokens = absl::StrSplit(
+            value, absl::ByAnyChar(" \t"), absl::SkipWhitespace());
+        if (tokens.empty()) {
+          std::cerr << name << " requires a non-empty value." << std::endl;
+          return PARSE_ARGUMENT_FAIL;
+        }
+        plugin_command_prefixes_[plugin_name] = std::move(tokens);
       } else {
         std::cerr << "Unknown flag: " << name << std::endl;
         return PARSE_ARGUMENT_FAIL;
@@ -2627,6 +2685,9 @@ Parse PROTO_FILES and generate output based on the options given:
                               deterministically ordered. Note that this order
                               is not canonical, and changes across builds or
                               releases of protoc.
+  --unsafe_allow_out_dir_escape
+                              Allow output files to use ".." to escape the
+                              output directory. Use with caution.
   --decode=MESSAGE_TYPE       Read a binary message of the given type from
                               standard input and write it in text format
                               to standard output.  The message type must
@@ -2694,7 +2755,15 @@ Parse PROTO_FILES and generate output based on the options given:
                               Additionally, EXECUTABLE may be of the form
                               NAME=PATH, in which case the given plugin name
                               is mapped to the given executable even if
-                              the executable's own name differs.)";
+                              the executable's own name differs.
+  --<lang>_prefix=COMMAND     Runs the plugin used by --<lang>_out via
+                              COMMAND. protoc executes "COMMAND <plugin>"
+                              instead of invoking the plugin binary directly.
+                              COMMAND's first token is resolved via the
+                              search path (PATH). The value is split into
+                              argv tokens on whitespace; quotes are not
+                              supported. Use a wrapper script for more
+                              complex invocations.)";
   }
 
   for (const auto& kv : generators_by_flag_name_) {
@@ -3021,6 +3090,16 @@ bool CommandLineInterface::GenerateCodeFromResponse(
       return false;
     }
 
+    // This is only reachable for generators that are statically linked into
+    // protoc. For subprocess plugins, their responses go through wire-format
+    // parsing which already rejects payloads > 2 GiB.
+    if (output_file.content().size() > INT_MAX) {
+      *error = absl::Substitute(
+          "$0: Generated file $1 is too large (exceeds 2 GiB limit).",
+          plugin_name, output_file.name());
+      return false;
+    }
+
     // Use CodedOutputStream for convenience; otherwise we'd need to provide
     // our own buffer-copying loop.
     io::CodedOutputStream writer(current_output.get());
@@ -3050,10 +3129,24 @@ bool CommandLineInterface::GeneratePluginOutput(
   // Invoke the plugin.
   Subprocess subprocess;
 
-  if (plugins_.count(plugin_name) > 0) {
-    subprocess.Start(plugins_[plugin_name], Subprocess::EXACT_NAME);
+  const auto plugin_it = plugins_.find(plugin_name);
+  const bool has_registered_path = plugin_it != plugins_.end();
+  const std::string executable =
+      has_registered_path ? plugin_it->second : plugin_name;
+
+  const auto prefix_it = plugin_command_prefixes_.find(plugin_name);
+  if (prefix_it == plugin_command_prefixes_.end()) {
+    subprocess.Start(executable, has_registered_path ? Subprocess::EXACT_NAME
+                                                     : Subprocess::SEARCH_PATH);
   } else {
-    subprocess.Start(plugin_name, Subprocess::SEARCH_PATH);
+    // When a prefix is provided, we always execute the prefix first and pass
+    // the plugin executable as an argument. If a custom path was registered, we
+    // pass that path so the prefix does not need to search for the binary.
+    const std::vector<std::string>& prefix_tokens = prefix_it->second;
+    std::vector<std::string> args(prefix_tokens.begin() + 1,
+                                  prefix_tokens.end());
+    args.push_back(executable);
+    subprocess.Start(prefix_tokens.front(), Subprocess::SEARCH_PATH, args);
   }
 
   std::string communicate_error;

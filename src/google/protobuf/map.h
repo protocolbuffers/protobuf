@@ -69,9 +69,6 @@ struct PtrAndLen;
 }  // namespace rust
 
 namespace internal {
-namespace v2 {
-class TableDrivenMessage;
-}  // namespace v2
 
 template <typename Key, typename T>
 class MapFieldLite;
@@ -255,7 +252,6 @@ class PROTOBUF_EXPORT UntypedMapBase {
   using size_type = size_t;
 
   // Possible types that a key/value can take.
-  // LINT.IfChange(map_ffi)
   enum class TypeKind : uint8_t {
     kBool,     // bool
     kU32,      // int32_t, uint32_t, enums
@@ -265,7 +261,6 @@ class PROTOBUF_EXPORT UntypedMapBase {
     kString,   // std::string
     kMessage,  // Derived from MessageLite
   };
-  // LINT.ThenChange(//depot/google3/third_party/protobuf/rust/cpp.rs:map_ffi)
 
   template <typename T>
   static constexpr TypeKind StaticTypeKind() {
@@ -622,7 +617,7 @@ inline void UntypedMapIterator::PlusPlus() {
 class MapFieldBaseForParse {
  public:
   const UntypedMapBase& GetMap() const {
-    const void* p = prototype_or_payload_.load(std::memory_order_acquire);
+    const void* p = globals_or_payload_.load(std::memory_order_acquire);
     // If this instance has a payload, then it might need sync'n.
     if (ABSL_PREDICT_FALSE(IsPayload(p))) {
       sync_map_with_repeated.load(std::memory_order_relaxed)(*this, false);
@@ -631,7 +626,7 @@ class MapFieldBaseForParse {
   }
 
   UntypedMapBase* MutableMap() {
-    const void* p = prototype_or_payload_.load(std::memory_order_acquire);
+    const void* p = globals_or_payload_.load(std::memory_order_acquire);
     // If this instance has a payload, then it might need sync'n.
     if (ABSL_PREDICT_FALSE(IsPayload(p))) {
       sync_map_with_repeated.load(std::memory_order_relaxed)(*this, true);
@@ -658,13 +653,16 @@ class MapFieldBaseForParse {
   using SyncFunc = void (*)(const MapFieldBaseForParse&, bool is_mutable);
   static std::atomic<SyncFunc> sync_map_with_repeated;
 
-  // The prototype is a `Message`, but due to restrictions on constexpr in the
-  // codegen we are receiving it as `void` during constant evaluation.
-  explicit constexpr MapFieldBaseForParse(const void* prototype_as_void)
-      : prototype_or_payload_(prototype_as_void) {}
+  // The globals is a `*GlobalsTypeInternal`, but due to restrictions on
+  // constexpr in the codegen we are receiving it as `void` during constant
+  // evaluation.
+  explicit constexpr MapFieldBaseForParse(const void* globals_as_void)
+      : globals_or_payload_(globals_as_void) {}
 
+  // Convert "prototype" to "globals" for consistency.
   explicit MapFieldBaseForParse(const Message* prototype)
-      : prototype_or_payload_(prototype) {}
+      : globals_or_payload_(
+            MessageGlobalsBase::FromDefaultInstance(prototype)) {}
 
   ~MapFieldBaseForParse() = default;
 
@@ -674,7 +672,7 @@ class MapFieldBaseForParse {
     return reinterpret_cast<uintptr_t>(p) & kHasPayloadBit;
   }
 
-  mutable std::atomic<const void*> prototype_or_payload_;
+  mutable std::atomic<const void*> globals_or_payload_;
 };
 
 // The value might be of different signedness, so use memcpy to extract it.
@@ -701,11 +699,14 @@ inline map_index_t Hash(absl::string_view k, void* salt) {
   return absl::HashOf(k, salt);
 }
 inline map_index_t Hash(uint64_t k, void* salt) {
-  if constexpr (!HasCrc32()) return absl::HashOf(k, salt);
-  uintptr_t salt_int = reinterpret_cast<uintptr_t>(salt);
-  // Note: Crc32(salt_int, k) causes the random iteration order test to fail so
-  // we also rotate.
-  return Crc32(salt_int, absl::rotr(k, salt_int & 0x3f));
+  if constexpr (!HasCrc32()) {
+    return absl::HashOf(k, salt);
+  } else {
+    uintptr_t salt_int = reinterpret_cast<uintptr_t>(salt);
+    // Note: Crc32(salt_int, k) causes the random iteration order test to fail
+    // so we also rotate.
+    return Crc32(salt_int, absl::rotr(k, salt_int & 0x3f));
+  }
 }
 
 // KeyMapBase is a chaining hash map.
@@ -1155,13 +1156,14 @@ class PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Map
   using hasher = absl::Hash<typename TS::ViewType>;
 
   constexpr Map() : Map(internal::InternalMetadataOffset()) {}
-  Map(const Map& other) : Map(internal::InternalMetadataOffset(), other) {}
+  Map(const Map& other)
+      : Map(internal::InternalMetadataOffset(), /*arena=*/nullptr, other) {}
 
   Map(internal::InternalVisibility, internal::InternalMetadataOffset offset)
       : Map(offset) {}
   Map(internal::InternalVisibility, internal::InternalMetadataOffset offset,
-      const Map& other)
-      : Map(offset, other) {}
+      Arena* arena, const Map& other)
+      : Map(offset, arena, other) {}
 
   Map(Map&& other) noexcept : Map(internal::InternalMetadataOffset()) {
     if (other.arena() != nullptr) {
@@ -1202,9 +1204,10 @@ class PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Map
     StaticValidityCheck();
   }
 
-  Map(internal::InternalMetadataOffset offset, const Map& other) : Map(offset) {
+  Map(internal::InternalMetadataOffset offset, Arena* arena, const Map& other)
+      : Map(offset) {
     StaticValidityCheck();
-    CopyFromImpl(arena(), other);
+    CopyFromImpl(arena, other);
   }
 
   static_assert(!std::is_const<mapped_type>::value &&

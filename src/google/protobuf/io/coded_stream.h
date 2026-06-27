@@ -854,28 +854,6 @@ class PROTOBUF_EXPORT PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED
   PROTOBUF_FUTURE_ADD_EARLY_NODISCARD int64_t ByteCount(uint8_t* ptr) const;
 
 
-#ifdef PROTOBUF_INTERNAL_V2_EXPERIMENT
-  template <typename ValT, typename CallbackT>
-  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD uint8_t* WriteNumericArray(
-      uint8_t* ptr, uint32_t count, CallbackT&& callback) {
-    static_assert(sizeof(ValT) > 1, "Use WriteRaw");
-    static_assert(sizeof(ValT) < kSlopBytes, "");
-
-    int64_t size = count * sizeof(ValT);
-    while (size > 0) {
-      ptr = EnsureSpace(ptr);
-      int64_t chunk_size = std::min<int64_t>(GetSize(ptr), size);
-      int64_t round_down_size = (chunk_size / sizeof(ValT)) * sizeof(ValT);
-      ABSL_DCHECK_GT(round_down_size, 0u);
-
-      callback(ptr, round_down_size);
-
-      size -= round_down_size;
-      ptr += round_down_size;
-    }
-    return ptr;
-  }
-#endif  // PROTOBUF_INTERNAL_V2_EXPERIMENT
 
  private:
   uint8_t* end_;
@@ -957,7 +935,7 @@ class PROTOBUF_EXPORT PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED
 
   template <typename T>
   PROTOBUF_ALWAYS_INLINE static uint8_t* UnsafeVarint(T value, uint8_t* ptr) {
-    static_assert(std::is_unsigned<T>::value,
+    static_assert(std::is_unsigned_v<T>,
                   "Varint serialization must be unsigned");
     while (ABSL_PREDICT_FALSE(value >= 0x80)) {
       *ptr = static_cast<uint8_t>(value | 0x80);
@@ -1106,8 +1084,8 @@ class PROTOBUF_EXPORT PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CodedOutputStream {
   // Creates a CodedOutputStream that writes to the given `stream`, and does
   // an 'eager initialization' of the internal state if `eager_init` is true.
   // The provided stream must publicly derive from `ZeroCopyOutputStream`.
-  template <class Stream, class = typename std::enable_if<std::is_base_of<
-                              ZeroCopyOutputStream, Stream>::value>::type>
+  template <class Stream, class = std::enable_if_t<
+                              std::is_base_of_v<ZeroCopyOutputStream, Stream>>>
   CodedOutputStream(Stream* stream, bool eager_init);
   CodedOutputStream(const CodedOutputStream&) = delete;
   CodedOutputStream& operator=(const CodedOutputStream&) = delete;
@@ -1162,7 +1140,7 @@ class PROTOBUF_EXPORT PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CodedOutputStream {
   // there are not enough bytes available, returns NULL.  The return pointer is
   // invalidated as soon as any other non-const method of CodedOutputStream
   // is called.
-  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD inline uint8_t*
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD uint8_t*
   GetDirectBufferForNBytesAndAdvance(int size) {
     return impl_.GetDirectBufferForNBytesAndAdvance(size, &cur_);
   }
@@ -1320,12 +1298,15 @@ class PROTOBUF_EXPORT PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CodedOutputStream {
   //   * Different processes running the same binary (including on different
   //     machines) will serialize equal messages to the same bytes.
   //
-  // Note that this is *not* canonical across languages. It is also unstable
-  // across different builds with intervening message definition changes, due to
-  // unknown fields. Users who need canonical serialization (e.g. persistent
+  // There is no canonical representation of Protobuf messages: this
+  // representation is not consistent between languages, it may change when you
+  // rebuild your binary. Users who need canonical serialization
+  // (e.g. persistent
   // storage in a canonical form, fingerprinting) should define their own
   // canonicalization specification and implement the serializer using
   // reflection APIs rather than relying on this API.
+  //
+  // See https://protobuf.dev/programming-guides/serialization-not-canonical/
   void SetSerializationDeterministic(bool value) {
     impl_.SetSerializationDeterministic(value);
   }

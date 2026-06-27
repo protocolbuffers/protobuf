@@ -8,16 +8,15 @@
 #include "google/protobuf/compiler/csharp/csharp_message.h"
 
 #include <algorithm>
-#include <sstream>
 #include <string>
 
 #include "absl/container/flat_hash_map.h"
 #include "absl/log/absl_log.h"
 #include "absl/strings/str_cat.h"
-#include "google/protobuf/compiler/code_generator.h"
 #include "google/protobuf/compiler/csharp/csharp_doc_comment.h"
 #include "google/protobuf/compiler/csharp/csharp_enum.h"
 #include "google/protobuf/compiler/csharp/csharp_field_base.h"
+#include "google/protobuf/compiler/csharp/csharp_generator.h"
 #include "google/protobuf/compiler/csharp/csharp_helpers.h"
 #include "google/protobuf/compiler/csharp/csharp_options.h"
 #include "google/protobuf/compiler/csharp/names.h"
@@ -57,11 +56,12 @@ MessageGenerator::MessageGenerator(const Descriptor* descriptor,
     const FieldDescriptor* field = descriptor_->field(i);
     if (RequiresPresenceBit(field)) {
       presence_bit_count++;
-      if (has_bit_field_count_ == 0 || (presence_bit_count % 32) == 0) {
-        has_bit_field_count_++;
-      }
     }
   }
+  has_bit_field_count_ = (presence_bit_count + 31) / 32;
+  nrt_enabled_ = Generator::GetResolvedSourceFeatures(*descriptor->file())
+                     .GetExtension(pb::csharp)
+                     .nullable_reference_types();
 }
 
 MessageGenerator::~MessageGenerator() = default;
@@ -95,6 +95,7 @@ void MessageGenerator::Generate(io::Printer* printer) {
   absl::flat_hash_map<absl::string_view, std::string> vars;
   vars["class_name"] = class_name();
   vars["access_level"] = class_access_level();
+  vars["nrt_annotation"] = nrt_enabled_ ? "?" : "";
 
   WriteMessageDocComment(printer, options(), descriptor_);
   AddDeprecatedFlag(printer);
@@ -122,23 +123,26 @@ void MessageGenerator::Generate(io::Printer* printer) {
       "private static readonly pb::MessageParser<$class_name$> _parser = new "
       "pb::MessageParser<$class_name$>(() => new $class_name$());\n");
 
-  printer->Print("private pb::UnknownFieldSet _unknownFields;\n");
+  printer->Print(
+      vars, "private pb::UnknownFieldSet$nrt_annotation$ _unknownFields;\n");
 
   if (has_extension_ranges_) {
     if (IsDescriptorProto(descriptor_->file())) {
       printer->Print(vars,
                      // CustomOptions compatibility
-                     "internal pb::ExtensionSet<$class_name$> _extensions;\n");
+                     "internal pb::ExtensionSet<$class_name$>$nrt_annotation$ "
+                     "_extensions;\n");
     } else {
       printer->Print(vars,
-                     "private pb::ExtensionSet<$class_name$> _extensions;\n");
+                     "private pb::ExtensionSet<$class_name$>$nrt_annotation$ "
+                     "_extensions;\n");
     }
 
     // a read-only property for fast
     // retrieval of the set in IsInitialized
     printer->Print(vars,
-                   "private pb::ExtensionSet<$class_name$> _Extensions { get { "
-                   "return _extensions; } }\n");
+                   "private pb::ExtensionSet<$class_name$>$nrt_annotation$ "
+                   " _Extensions { get { return _extensions; } }\n");
   }
 
   for (int i = 0; i < has_bit_field_count_; i++) {
@@ -258,7 +262,7 @@ void MessageGenerator::Generate(io::Printer* printer) {
         "TValue> extension) {\n"
         "  return pb::ExtensionSet.Get(ref _extensions, extension);\n"
         "}\n"
-        "public pbc::RepeatedField<TValue> "
+        "public pbc::RepeatedField<TValue>$nrt_annotation$ "
         "GetExtension<TValue>(pb::RepeatedExtension<$class_name$, TValue> "
         "extension) {\n"
         "  return pb::ExtensionSet.Get(ref _extensions, extension);\n"
@@ -419,16 +423,17 @@ void MessageGenerator::GenerateFreezingCode(io::Printer* printer) {}
 void MessageGenerator::GenerateFrameworkMethods(io::Printer* printer) {
   absl::flat_hash_map<absl::string_view, std::string> vars;
   vars["class_name"] = class_name();
+  vars["nrt_annotation"] = nrt_enabled_ ? "?" : "";
 
   // Equality
   WriteGeneratedCodeAttributes(printer);
   printer->Print(vars,
-                 "public override bool Equals(object other) {\n"
+                 "public override bool Equals(object$nrt_annotation$ other) {\n"
                  "  return Equals(other as $class_name$);\n"
                  "}\n\n");
   WriteGeneratedCodeAttributes(printer);
   printer->Print(vars,
-                 "public bool Equals($class_name$ other) {\n"
+                 "public bool Equals($class_name$$nrt_annotation$ other) {\n"
                  "  if (ReferenceEquals(other, null)) {\n"
                  "    return false;\n"
                  "  }\n"

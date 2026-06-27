@@ -7,6 +7,7 @@
 
 #include "python/descriptor.h"
 
+#include "google/protobuf/breaking_changes.h"
 #include "python/convert.h"
 #include "python/descriptor_containers.h"
 #include "python/descriptor_pool.h"
@@ -15,6 +16,9 @@
 #include "upb/base/upcast.h"
 #include "upb/reflection/def.h"
 #include "upb/util/def_to_proto.h"
+
+// Must be last.
+#include "upb/port/def.inc"
 
 // -----------------------------------------------------------------------------
 // DescriptorBase
@@ -77,7 +81,10 @@ static PyObject* PyUpb_DescriptorBase_Get(PyUpb_DescriptorType type,
 
 static PyUpb_DescriptorBase* PyUpb_DescriptorBase_Check(
     PyObject* obj, PyUpb_DescriptorType type) {
-  PyUpb_ModuleState* state = PyUpb_ModuleState_Get();
+  PyUpb_ModuleState* state = PyUpb_ModuleState_MaybeGet();
+  if (!state) {
+    return (PyUpb_DescriptorBase*)obj;
+  }
   PyTypeObject* type_obj = state->descriptor_types[type];
   if (!PyObject_TypeCheck(obj, type_obj)) {
     PyErr_Format(PyExc_TypeError, "Expected object of type %S, but got %R",
@@ -132,6 +139,9 @@ static PyObject* PyUpb_DescriptorBase_GetCached(PyObject** cached,
       upb_Message_ClearFieldByDef(opts2, field);
     }
 
+#if PROTOBUF_PY_FUTURE_FREEZE_OPTIONS
+    upb_Message_Freeze(opts2, opts2_layout);
+#endif
     *cached = PyUpb_Message_Get(opts2, m, py_arena);
     Py_DECREF(py_arena);
   }
@@ -255,6 +265,12 @@ PyObject* PyUpb_Descriptor_GetClass(const upb_MessageDef* m) {
   PyObject* ret = PyUpb_ObjCache_Get(upb_MessageDef_MiniTable(m));
   if (ret) return ret;
 
+  PyUpb_ModuleState* state = PyUpb_ModuleState_MaybeGet();
+  if (!state) {
+    PyErr_SetString(PyExc_RuntimeError, "Interpreter is finalizing");
+    return NULL;
+  }
+
   // On demand create the clss if not exist. However, if users repeatedly
   // create and destroy a class, it could trigger a loop. This is not an
   // issue now, but if we see CPU waste for repeatedly create and destroy
@@ -339,7 +355,10 @@ static PyObject* PyUpb_Descriptor_GetExtensionRanges(PyObject* _self,
         upb_MessageDef_ExtensionRange(self->def, i);
     PyObject* start = PyLong_FromLong(upb_ExtensionRange_Start(range));
     PyObject* end = PyLong_FromLong(upb_ExtensionRange_End(range));
-    PyList_SetItem(range_list, i, PyTuple_Pack(2, start, end));
+    PyObject* tuple = PyTuple_Pack(2, start, end);
+    Py_DECREF(start);
+    Py_DECREF(end);
+    PyList_SetItem(range_list, i, tuple);
   }
 
   return range_list;
@@ -1909,3 +1928,5 @@ bool PyUpb_InitDescriptor(PyObject* m) {
          PyUpb_SetIntAttr(fd, "CPPTYPE_BYTES", CPPTYPE_STRING) &&
          PyUpb_SetIntAttr(fd, "CPPTYPE_MESSAGE", CPPTYPE_MESSAGE);
 }
+
+#include "upb/port/undef.inc"

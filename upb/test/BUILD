@@ -11,6 +11,7 @@ load("//bazel:proto_library.bzl", "proto_library")
 load(
     "//upb/bazel:copts.bzl",
     "UPB_DEFAULT_CPPOPTS",
+    "UPB_DEFAULT_FEATURES",
 )
 load(
     "//upb/bazel:upb_minitable_proto_library.bzl",
@@ -212,6 +213,7 @@ cc_test(
     name = "proto3_test",
     srcs = ["proto3_test.cc"],
     copts = UPB_DEFAULT_CPPOPTS,
+    features = UPB_DEFAULT_FEATURES,
     deps = [
         ":proto3_test_upb_proto",
         ":proto3_test_upb_proto_reflection",
@@ -225,6 +227,7 @@ cc_test(
     name = "editions_test",
     srcs = ["editions_test.cc"],
     copts = UPB_DEFAULT_CPPOPTS,
+    features = UPB_DEFAULT_FEATURES,
     deps = [
         ":custom_options_upb_c_proto",
         ":editions_test_upb_c_proto",
@@ -245,6 +248,7 @@ cc_test(
     name = "length_prefixed_test",
     srcs = ["length_prefixed_test.cc"],
     copts = UPB_DEFAULT_CPPOPTS,
+    features = UPB_DEFAULT_FEATURES,
     deps = [
         ":test_messages_proto2_upb_minitable",
         ":test_messages_proto2_upb_proto",
@@ -264,6 +268,7 @@ cc_test(
     name = "test_cpp",
     srcs = ["test_cpp.cc"],
     copts = UPB_DEFAULT_CPPOPTS,
+    features = UPB_DEFAULT_FEATURES,
     deps = [
         ":test_cpp_upb_proto",
         ":test_cpp_upb_proto_reflection",
@@ -287,6 +292,7 @@ cc_test(
         ":empty_upb_proto_reflection",
         ":test_messages_proto2_upb_proto",
         ":test_messages_proto3_upb_proto",
+        ":test_proto_upb_minitable",
         ":test_upb_proto",
         "//upb/base",
         "//upb/mem",

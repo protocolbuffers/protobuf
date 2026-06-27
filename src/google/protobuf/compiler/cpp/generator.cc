@@ -125,6 +125,10 @@ bool CppGenerator::GenerateImpl(const FileDescriptor* file,
     return false;
   }
 
+  if (!ValidateCcNamespace(file, error)) {
+    return false;
+  }
+
 
   FileGenerator file_generator(file, file_options);
 
@@ -259,9 +263,10 @@ absl::Status CppGenerator::ValidateFeatures(const FileDescriptor* file) const {
     const FeatureSet& resolved_features = GetResolvedSourceFeatures(field);
     const pb::CppFeatures& unresolved_features =
         GetUnresolvedSourceFeatures(field, pb::cpp);
+
     if (field.enum_type() != nullptr &&
         resolved_features.GetExtension(::pb::cpp).legacy_closed_enum() &&
-        resolved_features.field_presence() == FeatureSet::IMPLICIT) {
+        !field.has_presence() && !field.is_repeated()) {
       status = absl::FailedPreconditionError(
           absl::StrCat("Field ", field.full_name(),
                        " has a closed enum type with implicit presence."));

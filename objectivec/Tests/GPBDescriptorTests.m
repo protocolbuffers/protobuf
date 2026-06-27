@@ -357,7 +357,7 @@
   XCTAssertNotNil(descriptor);
   XCTAssertEqual(descriptor.containingMessageClass, msgClass);  // ptr equality
   XCTAssertFalse(descriptor.isPackable);
-  XCTAssertEqual(descriptor.defaultValue, @1);
+  XCTAssertEqualObjects(descriptor.defaultValue, @1);
   XCTAssertEqualObjects(descriptor.enumDescriptor.name, @"TestAllTypes_NestedEnum");
 
 #if defined(GPB_UNITTEST_USE_C_FUNCTION_FOR_EXTENSIONS)
@@ -368,7 +368,7 @@
   XCTAssertNotNil(descriptor);
   XCTAssertEqual(descriptor.containingMessageClass, msgClass);  // ptr equality
   XCTAssertFalse(descriptor.isPackable);
-  XCTAssertEqual(descriptor.defaultValue, @2);
+  XCTAssertEqualObjects(descriptor.defaultValue, @2);
   XCTAssertEqualObjects(descriptor.enumDescriptor.name, @"TestAllTypes_NestedEnum");
 
   // Message

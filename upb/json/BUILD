@@ -3,7 +3,7 @@
 load("@rules_cc//cc:cc_test.bzl", "cc_test")
 load("@rules_cc//cc:defs.bzl", "cc_library")
 load("//bazel:proto_library.bzl", "proto_library")
-load("//upb/bazel:copts.bzl", "UPB_DEFAULT_COPTS")
+load("//upb/bazel:copts.bzl", "UPB_DEFAULT_COPTS", "UPB_DEFAULT_FEATURES")
 load(
     "//upb/bazel:upb_proto_library.bzl",
     "upb_c_proto_library",
@@ -23,6 +23,7 @@ cc_library(
         "encode.h",
     ],
     copts = UPB_DEFAULT_COPTS,
+    features = UPB_DEFAULT_FEATURES,
     visibility = ["//visibility:public"],
     deps = [
         "//upb/base",
@@ -43,6 +44,8 @@ cc_test(
         ":json",
         ":test_upb_proto",
         ":test_upb_proto_reflection",
+        "//:any_upb_proto",
+        "//:field_mask_upb_proto",
         "//:struct_upb_proto",
         "//upb/base",
         "//upb/mem",
@@ -59,6 +62,8 @@ cc_test(
         ":json",
         ":test_upb_proto",
         ":test_upb_proto_reflection",
+        "//:any_upb_proto",
+        "//:field_mask_upb_proto",
         "//:struct_upb_proto",
         "//upb/base",
         "//upb/mem",
@@ -72,7 +77,11 @@ proto_library(
     name = "test_proto",
     testonly = 1,
     srcs = ["test.proto"],
-    deps = ["//:struct_proto"],
+    deps = [
+        "//:any_proto",
+        "//:field_mask_proto",
+        "//:struct_proto",
+    ],
 )
 
 upb_c_proto_library(

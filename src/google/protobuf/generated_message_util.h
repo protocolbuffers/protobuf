@@ -66,6 +66,8 @@ class CodedInputStream;
 namespace internal {
 
 
+class ExtensionSet;
+
 // This fastpath inlines a single branch instead of having to make the
 // InitProtobufDefaults function call.
 // It also generates less inlined code than a function-scope static initializer.
@@ -329,7 +331,7 @@ class MapSorterPtr {
 };
 
 struct WeakDescriptorDefaultTail {
-  const Message** target;
+  const MessageGlobalsBase** target;
   size_t size;
 };
 
@@ -370,6 +372,10 @@ inline void AssignToString(std::string& dest, const void* value,
 inline void AssignToString(std::string& dest, absl::string_view value,
                            BytesTag /*tag*/ = BytesTag{}) {
   dest.assign(value.data(), value.size());
+}
+inline void AssignToString(std::string& dest, const absl::Cord& value,
+                           BytesTag tag = BytesTag{}) {
+  absl::CopyCordToString(value, &dest);
 }
 
 // Adds `value`, optionally bounded by `size`, as the last element of `dest`.
@@ -416,6 +422,23 @@ struct PrivateAccess {
   static void TrackerOnGetMetadata() {
     T::Impl_::TrackerOnGetMetadata();
   }
+
+  template <typename T>
+  static constexpr auto GenerateParseTable(
+      const ::google::protobuf::internal::ClassData* class_data) {
+    return T::InternalGenerateParseTable_(class_data);
+  }
+
+  template <typename T>
+  static constexpr decltype(auto) FullMessageName() {
+    return T::FullMessageName();
+  }
+
+  static internal::ExtensionSet* GetExtensionSet(MessageLite* msg);
+  static const internal::ExtensionSet* GetExtensionSet(const MessageLite* msg);
+
+  template <typename T>
+  using ImplTForTesting = typename T::Impl_;
 };
 
 }  // namespace internal

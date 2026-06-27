@@ -4,6 +4,7 @@ load(
     "//upb/bazel:copts.bzl",
     "UPB_DEFAULT_COPTS",
     "UPB_DEFAULT_CPPOPTS",
+    "UPB_DEFAULT_FEATURES",
 )
 
 package(default_applicable_licenses = ["//:license"])
@@ -21,6 +22,7 @@ cc_library(
         "link.h",
     ],
     copts = UPB_DEFAULT_COPTS,
+    features = UPB_DEFAULT_FEATURES,
     visibility = ["//visibility:public"],
     deps = [
         ":internal",
@@ -33,6 +35,7 @@ cc_library(
         "//upb/port",
     ] + select({
         "//upb:fasttable_enabled_setting": [
+            "//upb/wire/decode_fast:field_parsers",
             "//upb/wire/decode_fast:function_array",
             "//upb/wire/decode_fast:select",
         ],
@@ -55,6 +58,7 @@ cc_library(
         "internal/wire_constants.h",
     ],
     copts = UPB_DEFAULT_COPTS,
+    features = UPB_DEFAULT_FEATURES,
     visibility = ["//visibility:public"],
     deps = [
         "//upb/base",
@@ -67,17 +71,16 @@ cc_test(
     name = "encode_test",
     srcs = ["internal/encode_test.cc"],
     copts = UPB_DEFAULT_CPPOPTS,
+    features = UPB_DEFAULT_FEATURES,
     deps = [
         ":internal",
         ":mini_descriptor",
         "//src/google/protobuf",
         "//upb/base",
         "//upb/mem",
-        "//upb/message",
-        "//upb/message:internal",
         "//upb/mini_table",
+        "//upb/mini_table:internal",
         "//upb/port",
-        "//upb/wire",
         "@abseil-cpp//absl/container:flat_hash_set",
         "@googletest//:gtest",
         "@googletest//:gtest_main",

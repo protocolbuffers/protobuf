@@ -33,6 +33,7 @@
 #include "absl/strings/cord.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/arena.h"
+#include "google/protobuf/compiler/cpp/cpp_file_options_test.pb.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/map_test_util.h"
 #include "google/protobuf/map_unittest.pb.h"
@@ -1468,6 +1469,15 @@ TEST(GeneratedMessageReflectionTest, UsageErrors) {
       "  Actual type  : proto2_unittest.ForeignMessage\n"
       "  Field        : proto2_unittest.TestAllTypes.optional_int32\n"
       "  Problem      : Message is not the right object for reflection");
+  std::vector<const FieldDescriptor*>* fields = nullptr;
+  EXPECT_DEBUG_DEATH(
+      (void)reflection->ListFields(foreign, fields),
+      "Protocol Buffer reflection usage error:\n"
+      "  Method       : google::protobuf::Reflection::ListFields\n"
+      "  Expected type: proto2_unittest.TestAllTypes\n"
+      "  Actual type  : proto2_unittest.ForeignMessage\n"
+      "  Field        : n/a\n"
+      "  Problem      : Message is not the right object for reflection");
 #endif
   EXPECT_DEATH(
       (void)reflection->GetInt32(
@@ -2009,6 +2019,28 @@ TEST(GeneratedMessageReflection, ImportOption) {
   EXPECT_EQ(
       3, field_descriptor->options().GetExtension(proto2_unittest::field_opt1));
 
+  // Options not linked in should be in unknown fields.
+  EXPECT_EQ(1, file_descriptor->options().unknown_fields().field_count());
+  EXPECT_EQ(7736975,
+            file_descriptor->options().unknown_fields().field(0).number());
+  EXPECT_EQ(1, file_descriptor->options().unknown_fields().field(0).varint());
+  EXPECT_EQ(1, message_descriptor->options().unknown_fields().field_count());
+  EXPECT_EQ(7739037,
+            message_descriptor->options().unknown_fields().field(0).number());
+  EXPECT_EQ(2,
+            message_descriptor->options().unknown_fields().field(0).varint());
+
+  EXPECT_EQ(1, field_descriptor->options().unknown_fields().field_count());
+  EXPECT_EQ(7740937,
+            field_descriptor->options().unknown_fields().field(0).number());
+  EXPECT_EQ(3, field_descriptor->options().unknown_fields().field(0).fixed64());
+}
+
+TEST(CppNamespaceOption, NewNamespaceSymbolSameProtoName) {
+  cpp::file::NewMessage new_message;
+
+  EXPECT_EQ(new_message.GetDescriptor()->file()->package(),
+            "cpp.file.options.test");
 }
 
 }  // namespace

@@ -12,6 +12,7 @@
 #ifndef GOOGLE_PROTOBUF_DESCRIPTOR_LITE_H__
 #define GOOGLE_PROTOBUF_DESCRIPTOR_LITE_H__
 
+#include <cstdint>
 
 namespace google {
 namespace protobuf {
@@ -89,6 +90,15 @@ class FieldDescriptorLite {
     kView = 1,
     kCord = 2,
     kString = 3,
+  };
+#endif
+
+  // Identifies which repeated field API to use for a C++ repeated field. This
+  // corresponds to pb.CppFeatures.RepeatedType. 0 is reserved for errors.
+#ifndef SWIG
+  enum class CppRepeatedType : uint8_t {
+    kRepeated = 1,
+    kProxy = 2,
   };
 #endif
 };

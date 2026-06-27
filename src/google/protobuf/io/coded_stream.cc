@@ -237,13 +237,18 @@ bool CodedInputStream::GetDirectBufferPointer(const void** data, int* size) {
 }
 
 bool CodedInputStream::ReadRaw(void* buffer, int size) {
+  if (size < 0) return false;
+  if (size == 0) return true;
+
   int current_buffer_size;
   while ((current_buffer_size = BufferSize()) < size) {
-    // Reading past end of buffer.  Copy what we have, then refresh.
-    memcpy(buffer, buffer_, current_buffer_size);
-    buffer = reinterpret_cast<uint8_t*>(buffer) + current_buffer_size;
-    size -= current_buffer_size;
-    Advance(current_buffer_size);
+    if (current_buffer_size > 0) {
+      // Reading past end of buffer.  Copy what we have, then refresh.
+      memcpy(buffer, buffer_, current_buffer_size);
+      buffer = reinterpret_cast<uint8_t*>(buffer) + current_buffer_size;
+      size -= current_buffer_size;
+      Advance(current_buffer_size);
+    }
     if (!Refresh()) return false;
   }
 
@@ -729,7 +734,10 @@ bool CodedInputStream::Refresh() {
 // CodedOutputStream =================================================
 
 void EpsCopyOutputStream::EnableAliasing(bool enabled) {
-  aliasing_enabled_ = enabled && stream_->AllowsAliasing();
+  // stream_ is nullptr when using the array-only constructor; aliasing is
+  // not applicable in that mode, so treat it as a no-op.
+  aliasing_enabled_ =
+      enabled && stream_ != nullptr && stream_->AllowsAliasing();
 }
 
 int64_t EpsCopyOutputStream::ByteCount(uint8_t* ptr) const {

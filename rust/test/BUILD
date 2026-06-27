@@ -128,6 +128,43 @@ rust_upb_proto_library(
 )
 
 proto_library(
+    name = "extensions_proto",
+    testonly = True,
+    srcs = ["extensions.proto"],
+)
+
+rust_cc_proto_library(
+    name = "extensions_cpp_rust_proto",
+    testonly = True,
+    deps = [":extensions_proto"],
+)
+
+rust_upb_proto_library(
+    name = "extensions_upb_rust_proto",
+    testonly = True,
+    deps = [":extensions_proto"],
+)
+
+proto_library(
+    name = "extensions_separate_file_proto",
+    testonly = True,
+    srcs = ["extensions_separate_file.proto"],
+    deps = [":extensions_proto"],
+)
+
+rust_cc_proto_library(
+    name = "extensions_separate_file_cpp_rust_proto",
+    testonly = True,
+    deps = [":extensions_separate_file_proto"],
+)
+
+rust_upb_proto_library(
+    name = "extensions_separate_file_upb_rust_proto",
+    testonly = True,
+    deps = [":extensions_separate_file_proto"],
+)
+
+proto_library(
     name = "import_public_grandparent_proto",
     testonly = True,
     srcs = [":import_public_grandparent.proto"],
@@ -494,6 +531,7 @@ rust_library(
     name = "same_name_direct_deps_rust_consumer",
     testonly = True,
     srcs = ["same_name_direct_deps_consumer.rs"],
+    edition = "2024",
     deps = [":same_name_direct_deps_rust_proto"],
 )
 
@@ -517,6 +555,7 @@ rust_library(
     name = "same_name_exported_deps_rust_consumer",
     testonly = True,
     srcs = ["same_name_exported_deps_consumer.rs"],
+    edition = "2024",
     deps = [":same_name_exported_deps_rust_proto"],
 )
 
@@ -540,6 +579,7 @@ rust_library(
     name = "same_name_double_alias_exported_deps_rust_consumer",
     testonly = True,
     srcs = ["same_name_double_alias_exported_deps_consumer.rs"],
+    edition = "2024",
     deps = [":same_name_double_alias_exported_deps_rust_proto"],
 )
 

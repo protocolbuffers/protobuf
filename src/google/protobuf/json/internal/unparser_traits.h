@@ -15,18 +15,19 @@
 #include <vector>
 
 #include "google/protobuf/type.pb.h"
-#include "absl/container/flat_hash_map.h"
+#include "absl/log/absl_check.h"
+#include "absl/log/absl_log.h"
 #include "absl/status/status.h"
 #include "absl/status/statusor.h"
 #include "absl/strings/escaping.h"
 #include "absl/strings/numbers.h"
 #include "absl/strings/str_cat.h"
-#include "absl/strings/str_format.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/dynamic_message.h"
 #include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/json/internal/descriptor_traits.h"
 #include "google/protobuf/json/internal/untyped_message.h"
+#include "google/protobuf/map_field.h"
 #include "google/protobuf/stubs/status_macros.h"
 
 // Must be included last.
@@ -204,7 +205,73 @@ struct UnparseProto2Descriptor : Proto2Descriptor {
 
   static absl::StatusOr<const Msg*> GetMessage(Field f, const Msg& msg,
                                                size_t idx) {
+    // Make sure we don't use the wrong reflection API for maps.
+    // If the repeated field is not valid, we don't want to create it.
+    ABSL_DCHECK(
+        !IsMap(f) ||
+        msg.GetReflection()->GetMapData(msg, f)->IsRepeatedFieldValid());
     return &msg.GetReflection()->GetRepeatedMessage(msg, f, idx);
+  }
+
+  // MapKey
+  static absl::StatusOr<int64_t> GetInt64(Field, const MapKey& key) {
+    return key.GetInt64Value();
+  }
+  static absl::StatusOr<uint64_t> GetUInt64(Field, const MapKey& key) {
+    return key.GetUInt64Value();
+  }
+  static absl::StatusOr<int32_t> GetInt32(Field, const MapKey& key) {
+    return key.GetInt32Value();
+  }
+  static absl::StatusOr<uint32_t> GetUInt32(Field, const MapKey& key) {
+    return key.GetUInt32Value();
+  }
+  static absl::StatusOr<bool> GetBool(Field, const MapKey& key) {
+    return key.GetBoolValue();
+  }
+  static absl::StatusOr<absl::string_view> GetString(Field, std::string&,
+                                                     const MapKey& key) {
+    return key.GetStringValue();
+  }
+  static absl::StatusOr<int32_t> GetEnumValue(Field, const MapKey& key) {
+    ABSL_LOG(FATAL) << "Unsupported.";
+  }
+
+  // MapValueConstRef
+  static absl::StatusOr<int64_t> GetInt64(Field, const MapValueConstRef& ref) {
+    return ref.GetInt64Value();
+  }
+  static absl::StatusOr<uint64_t> GetUInt64(Field,
+                                            const MapValueConstRef& ref) {
+    return ref.GetUInt64Value();
+  }
+  static absl::StatusOr<int32_t> GetInt32(Field, const MapValueConstRef& ref) {
+    return ref.GetInt32Value();
+  }
+  static absl::StatusOr<uint32_t> GetUInt32(Field,
+                                            const MapValueConstRef& ref) {
+    return ref.GetUInt32Value();
+  }
+  static absl::StatusOr<bool> GetBool(Field, const MapValueConstRef& ref) {
+    return ref.GetBoolValue();
+  }
+  static absl::StatusOr<int> GetEnumValue(Field, const MapValueConstRef& ref) {
+    return ref.GetEnumValue();
+  }
+  static absl::StatusOr<absl::string_view> GetString(
+      Field, std::string&, const MapValueConstRef& ref) {
+    return ref.GetStringValue();
+  }
+  static absl::StatusOr<float> GetFloat(Field, const MapValueConstRef& ref) {
+    return ref.GetFloatValue();
+  }
+  static absl::StatusOr<double> GetDouble(Field, const MapValueConstRef& ref) {
+    return ref.GetDoubleValue();
+  }
+
+  static absl::StatusOr<const Msg*> GetMessage(Field,
+                                               const MapValueConstRef& ref) {
+    return &ref.GetMessageValue();
   }
 
   template <typename F>
@@ -219,6 +286,23 @@ struct UnparseProto2Descriptor : Proto2Descriptor {
     // a mutable reference to `body`.
     const Msg& ref = *unerased;
     return body(ref);
+  }
+
+  static bool MapFieldUseMapReflection(Field f, const Msg& msg) {
+    ABSL_DCHECK(IsMap(f));
+    return !msg.GetReflection()->GetMapData(msg, f)->IsRepeatedFieldValid();
+  }
+
+  template <typename Func>
+  static absl::Status ForEachMapEntry(Field f, const Msg& msg, Func func) {
+    ABSL_DCHECK(MapFieldUseMapReflection(f, msg));
+    const auto& type = *f->message_type();
+    for (auto it = msg.GetReflection()->ConstMapBegin(&msg, f),
+              end = msg.GetReflection()->ConstMapEnd(&msg, f);
+         it != end; ++it) {
+      RETURN_IF_ERROR(func(it, type));
+    }
+    return absl::OkStatus();
   }
 };
 
@@ -341,54 +425,182 @@ struct UnparseProto3Type : Proto3Type {
     return absl::InternalError("message fields cannot have defaults");
   }
 
-  static absl::StatusOr<float> GetFloat(Field f, const Msg& msg,
-                                        size_t idx = 0) {
+  static absl::StatusOr<float> GetFloat(Field f, const Msg& msg) {
+    auto span = msg.Get<float>(f->proto().number());
+    if (span.empty()) {
+      return GetFloat(f);
+    }
+    if (span.size() > 1) {
+      return absl::InternalError(absl::StrCat(
+          "Attempted to read a non-repeated field with multiple values: ",
+          f->parent().proto().name()));
+    }
+    return span[0];
+  }
+
+  static absl::StatusOr<float> GetFloat(Field f, const Msg& msg, size_t idx) {
     return msg.Get<float>(f->proto().number())[idx];
   }
 
-  static absl::StatusOr<double> GetDouble(Field f, const Msg& msg,
-                                          size_t idx = 0) {
+  static absl::StatusOr<double> GetDouble(Field f, const Msg& msg) {
+    auto span = msg.Get<double>(f->proto().number());
+    if (span.empty()) {
+      return GetDouble(f);
+    }
+    if (span.size() > 1) {
+      return absl::InternalError(absl::StrCat(
+          "Attempted to read a non-repeated field with multiple values: ",
+          f->parent().proto().name()));
+    }
+    return span[0];
+  }
+
+  static absl::StatusOr<double> GetDouble(Field f, const Msg& msg, size_t idx) {
     return msg.Get<double>(f->proto().number())[idx];
   }
 
-  static absl::StatusOr<int32_t> GetInt32(Field f, const Msg& msg,
-                                          size_t idx = 0) {
+  static absl::StatusOr<int32_t> GetInt32(Field f, const Msg& msg) {
+    auto span = msg.Get<int32_t>(f->proto().number());
+    if (span.empty()) {
+      return GetInt32(f);
+    }
+    if (span.size() > 1) {
+      return absl::InternalError(absl::StrCat(
+          "Attempted to read a non-repeated field with multiple values: ",
+          f->parent().proto().name()));
+    }
+    return span[0];
+  }
+
+  static absl::StatusOr<int32_t> GetInt32(Field f, const Msg& msg, size_t idx) {
     return msg.Get<int32_t>(f->proto().number())[idx];
   }
 
+  static absl::StatusOr<uint32_t> GetUInt32(Field f, const Msg& msg) {
+    auto span = msg.Get<uint32_t>(f->proto().number());
+    if (span.empty()) {
+      return GetUInt32(f);
+    }
+    if (span.size() > 1) {
+      return absl::InternalError(absl::StrCat(
+          "Attempted to read a non-repeated field with multiple values: ",
+          f->parent().proto().name()));
+    }
+    return span[0];
+  }
+
   static absl::StatusOr<uint32_t> GetUInt32(Field f, const Msg& msg,
-                                            size_t idx = 0) {
+                                            size_t idx) {
     return msg.Get<uint32_t>(f->proto().number())[idx];
   }
 
-  static absl::StatusOr<int64_t> GetInt64(Field f, const Msg& msg,
-                                          size_t idx = 0) {
+  static absl::StatusOr<int64_t> GetInt64(Field f, const Msg& msg) {
+    auto span = msg.Get<int64_t>(f->proto().number());
+    if (span.empty()) {
+      return GetInt64(f);
+    }
+    if (span.size() > 1) {
+      return absl::InternalError(absl::StrCat(
+          "Attempted to read a non-repeated field with multiple values: ",
+          f->parent().proto().name()));
+    }
+    return span[0];
+  }
+
+  static absl::StatusOr<int64_t> GetInt64(Field f, const Msg& msg, size_t idx) {
     return msg.Get<int64_t>(f->proto().number())[idx];
   }
 
+  static absl::StatusOr<uint64_t> GetUInt64(Field f, const Msg& msg) {
+    auto span = msg.Get<uint64_t>(f->proto().number());
+    if (span.empty()) {
+      return GetUInt64(f);
+    }
+    if (span.size() > 1) {
+      return absl::InternalError(absl::StrCat(
+          "Attempted to read a non-repeated field with multiple values: ",
+          f->parent().proto().name()));
+    }
+    return span[0];
+  }
+
   static absl::StatusOr<uint64_t> GetUInt64(Field f, const Msg& msg,
-                                            size_t idx = 0) {
+                                            size_t idx) {
     return msg.Get<uint64_t>(f->proto().number())[idx];
   }
 
-  static absl::StatusOr<bool> GetBool(Field f, const Msg& msg, size_t idx = 0) {
+  static absl::StatusOr<bool> GetBool(Field f, const Msg& msg) {
+    auto span = msg.Get<Msg::Bool>(f->proto().number());
+    if (span.empty()) {
+      return GetBool(f);
+    }
+    if (span.size() > 1) {
+      return absl::InternalError(absl::StrCat(
+          "Attempted to read a non-repeated field with multiple values: ",
+          f->parent().proto().name()));
+    }
+    return span[0] == Msg::kTrue;
+  }
+
+  static absl::StatusOr<bool> GetBool(Field f, const Msg& msg, size_t idx) {
     return msg.Get<Msg::Bool>(f->proto().number())[idx] == Msg::kTrue;
   }
 
+  static absl::StatusOr<int32_t> GetEnumValue(Field f, const Msg& msg) {
+    auto span = msg.Get<int32_t>(f->proto().number());
+    if (span.empty()) {
+      return GetEnumValue(f);
+    }
+    if (span.size() > 1) {
+      return absl::InternalError(absl::StrCat(
+          "Attempted to read a non-repeated field with multiple values: ",
+          f->parent().proto().name()));
+    }
+    return span[0];
+  }
+
   static absl::StatusOr<int32_t> GetEnumValue(Field f, const Msg& msg,
-                                              size_t idx = 0) {
+                                              size_t idx) {
     return msg.Get<int32_t>(f->proto().number())[idx];
   }
 
   static absl::StatusOr<absl::string_view> GetString(Field f,
                                                      std::string& scratch,
+                                                     const Msg& msg) {
+    auto span = msg.Get<std::string>(f->proto().number());
+    if (span.empty()) {
+      return GetString(f, scratch);
+    }
+    if (span.size() > 1) {
+      return absl::InternalError(absl::StrCat(
+          "Attempted to read a non-repeated field with multiple values: ",
+          f->parent().proto().name()));
+    }
+    return span[0];
+  }
+
+  static absl::StatusOr<absl::string_view> GetString(Field f,
+                                                     std::string& scratch,
                                                      const Msg& msg,
-                                                     size_t idx = 0) {
+                                                     size_t idx) {
     return msg.Get<std::string>(f->proto().number())[idx];
   }
 
+  static absl::StatusOr<const Msg*> GetMessage(Field f, const Msg& msg) {
+    auto span = msg.Get<Msg>(f->proto().number());
+    if (span.empty()) {
+      return GetMessage(f);
+    }
+    if (span.size() > 1) {
+      return absl::InternalError(absl::StrCat(
+          "Attempted to read a non-repeated field with multiple values: ",
+          f->parent().proto().name()));
+    }
+    return &span[0];
+  }
+
   static absl::StatusOr<const Msg*> GetMessage(Field f, const Msg& msg,
-                                               size_t idx = 0) {
+                                               size_t idx) {
     return &msg.Get<Msg>(f->proto().number())[idx];
   }
 
@@ -404,6 +616,14 @@ struct UnparseProto3Type : Proto3Type {
     // a mutable reference to `body`.
     const Msg& ref = *unerased;
     return body(ref);
+  }
+
+  static bool MapFieldUseMapReflection(Field, const Msg&) { return false; }
+
+  template <typename Func>
+  static absl::Status ForEachMapEntry(Field f, const Msg& msg, Func func) {
+    ABSL_DCHECK(false);
+    return absl::InternalError("Unsupported.");
   }
 };
 }  // namespace json_internal

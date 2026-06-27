@@ -393,6 +393,11 @@ class PROTOC_EXPORT CommandLineInterface {
 
   // See AllowPlugins().  If this is empty, plugins aren't allowed.
   std::string plugin_prefix_;
+  // Optional per-plugin prefix command used to invoke a plugin. Populated from
+  // --<lang>_prefix. The key is the resolved plugin name (e.g.
+  // "protoc-gen-foo"), the value is the prefix command split into argv tokens.
+  absl::flat_hash_map<std::string, std::vector<std::string>>
+      plugin_command_prefixes_;
 
   // Maps specific plugin names to files.  When executing a plugin, this map
   // is searched first to find the plugin executable.  If not found here, the
@@ -500,6 +505,9 @@ class PROTOC_EXPORT CommandLineInterface {
 
   // When using --encode, this will be passed to SetSerializationDeterministic.
   bool deterministic_output_ = false;
+  // Whether to allow files to be written to a path that is outside of the
+  // output directory.
+  bool unsafe_allow_out_dir_escape_ = false;
 
   bool opensource_runtime_ = google::protobuf::internal::IsOss();
 

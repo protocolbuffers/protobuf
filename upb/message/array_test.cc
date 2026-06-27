@@ -7,9 +7,24 @@
 
 #include "upb/message/array.h"
 
+#include <cstdint>
+
 #include <gtest/gtest.h>
+#include "upb/base/descriptor_constants.h"
 #include "upb/base/status.hpp"
 #include "upb/mem/arena.hpp"
+
+TEST(ArrayTest, ResizeSizeMaxReturnsFalse) {
+  upb::Arena arena;
+  upb_Array* array = upb_Array_New(arena.ptr(), kUpb_CType_Bool);
+  EXPECT_TRUE(array);
+  // Resize to SIZE_MAX triggers capacity doubling overflow in
+  // _upb_Array_Realloc. The guard rejects SIZE_MAX capacity.
+  EXPECT_FALSE(upb_Array_Resize(array, SIZE_MAX, arena.ptr()));
+  // Array should still be usable after rejected resize.
+  EXPECT_TRUE(upb_Array_Resize(array, 4, arena.ptr()));
+  EXPECT_EQ(upb_Array_Size(array), 4);
+}
 
 TEST(ArrayTest, Resize) {
   upb::Arena arena;
@@ -22,22 +37,81 @@ TEST(ArrayTest, Resize) {
     upb_MessageValue mv;
     mv.int32_val = 3 * i;
 
-    upb_Array_Append(array, mv, arena.ptr());
+    ASSERT_TRUE(upb_Array_Append(array, mv, arena.ptr()));
     EXPECT_EQ(upb_Array_Size(array), i + 1);
     EXPECT_EQ(upb_Array_Get(array, i).int32_val, 3 * i);
   }
 
-  upb_Array_Resize(array, 12, arena.ptr());
+  ASSERT_TRUE(upb_Array_Resize(array, 12, arena.ptr()));
   EXPECT_EQ(upb_Array_Get(array, 10).int32_val, 0);
   EXPECT_EQ(upb_Array_Get(array, 11).int32_val, 0);
 
-  upb_Array_Resize(array, 4, arena.ptr());
+  ASSERT_TRUE(upb_Array_Resize(array, 4, arena.ptr()));
   EXPECT_EQ(upb_Array_Size(array), 4);
 
-  upb_Array_Resize(array, 6, arena.ptr());
+  ASSERT_TRUE(upb_Array_Resize(array, 6, arena.ptr()));
   EXPECT_EQ(upb_Array_Size(array), 6);
 
   EXPECT_EQ(upb_Array_Get(array, 3).int32_val, 9);
   EXPECT_EQ(upb_Array_Get(array, 4).int32_val, 0);
   EXPECT_EQ(upb_Array_Get(array, 5).int32_val, 0);
+}
+
+TEST(ArrayTest, Copy) {
+  upb::Arena arena;
+  upb_Array* src = upb_Array_New(arena.ptr(), kUpb_CType_Int32);
+  for (int i = 0; i < 5; i++) {
+    upb_MessageValue mv;
+    mv.int32_val = i;
+    EXPECT_TRUE(upb_Array_Append(src, mv, arena.ptr()));
+  }
+
+  upb_Array* dst = upb_Array_New(arena.ptr(), kUpb_CType_Int32);
+  EXPECT_TRUE(upb_Array_Copy(dst, src, arena.ptr()));
+  EXPECT_EQ(upb_Array_Size(dst), 5);
+  for (int i = 0; i < 5; i++) {
+    EXPECT_EQ(upb_Array_Get(dst, i).int32_val, i);
+  }
+
+  // Copy empty array
+  upb_Array* empty_src = upb_Array_New(arena.ptr(), kUpb_CType_Int32);
+  EXPECT_TRUE(upb_Array_Copy(dst, empty_src, arena.ptr()));
+  EXPECT_EQ(upb_Array_Size(dst), 0);
+}
+
+TEST(ArrayTest, AppendAll) {
+  upb::Arena arena;
+  upb_Array* dst = upb_Array_New(arena.ptr(), kUpb_CType_Int32);
+  for (int i = 0; i < 3; i++) {
+    upb_MessageValue mv;
+    mv.int32_val = i;
+    ASSERT_TRUE(upb_Array_Append(dst, mv, arena.ptr()));
+  }
+
+  upb_Array* src = upb_Array_New(arena.ptr(), kUpb_CType_Int32);
+  for (int i = 0; i < 3; i++) {
+    upb_MessageValue mv;
+    mv.int32_val = i + 10;
+    ASSERT_TRUE(upb_Array_Append(src, mv, arena.ptr()));
+  }
+
+  EXPECT_TRUE(upb_Array_AppendAll(dst, src, arena.ptr()));
+  EXPECT_EQ(upb_Array_Size(dst), 6);
+  EXPECT_EQ(upb_Array_Get(dst, 0).int32_val, 0);
+  EXPECT_EQ(upb_Array_Get(dst, 1).int32_val, 1);
+  EXPECT_EQ(upb_Array_Get(dst, 2).int32_val, 2);
+  EXPECT_EQ(upb_Array_Get(dst, 3).int32_val, 10);
+  EXPECT_EQ(upb_Array_Get(dst, 4).int32_val, 11);
+  EXPECT_EQ(upb_Array_Get(dst, 5).int32_val, 12);
+
+  // Append empty array
+  upb_Array* empty_src = upb_Array_New(arena.ptr(), kUpb_CType_Int32);
+  EXPECT_TRUE(upb_Array_AppendAll(dst, empty_src, arena.ptr()));
+  EXPECT_EQ(upb_Array_Size(dst), 6);
+
+  // Append to empty array
+  upb_Array* empty_dst = upb_Array_New(arena.ptr(), kUpb_CType_Int32);
+  EXPECT_TRUE(upb_Array_AppendAll(empty_dst, src, arena.ptr()));
+  EXPECT_EQ(upb_Array_Size(empty_dst), 3);
+  EXPECT_EQ(upb_Array_Get(empty_dst, 0).int32_val, 10);
 }

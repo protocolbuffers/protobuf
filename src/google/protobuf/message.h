@@ -98,6 +98,7 @@
 #include <optional>
 #include <string>
 #include <type_traits>
+#include <utility>
 #include <vector>
 
 #include "absl/base/attributes.h"
@@ -165,14 +166,11 @@ template <typename MessageT, typename FieldT>
 struct RepeatedEntityDynamicFieldInfoBase;
 template <typename MessageT, typename FieldT>
 struct RepeatedPtrEntityDynamicFieldInfoBase;
+class LazyFieldForUnion;
 
 namespace field_layout {
 enum TransformValidation : uint16_t;
 }  // namespace field_layout
-
-namespace v2 {
-class V2TableGenTester;
-}  // namespace v2
 }  // namespace internal
 class UnknownFieldSet;  // unknown_field_set.h
 namespace io {
@@ -183,7 +181,8 @@ class CodedInputStream;      // coded_stream.h
 class CodedOutputStream;     // coded_stream.h
 }  // namespace io
 namespace python {
-class MapReflectionFriend;  // scalar_map_container.h
+class RepeatedScalarContainerFriend;  // repeated_scalar_container.cc
+class MapReflectionFriend;            // scalar_map_container.h
 class MessageReflectionFriend;
 }  // namespace python
 namespace expr {
@@ -202,7 +201,11 @@ PROTOBUF_EXPORT std::string Utf8Format(
     const Message& message);  // text_format.cc
 namespace util {
 class MessageDifferencer;
-}
+}  // namespace util
+
+namespace json_internal {
+struct UnparseProto2Descriptor;
+}  // namespace json_internal
 
 
 namespace internal {
@@ -437,7 +440,6 @@ class PROTOBUF_EXPORT Message : public MessageLite {
   size_t MaybeComputeUnknownFieldsSize(
       size_t total_size, const internal::CachedSize* cached_size) const;
 
-
   // Reflection based version for reflection based types.
   static void MergeImpl(MessageLite& to, const MessageLite& from);
   void ClearImpl();
@@ -450,9 +452,7 @@ class PROTOBUF_EXPORT Message : public MessageLite {
 
 namespace internal {
 // Creates and returns an allocation for a split message.
-void* CreateSplitMessageGeneric(Arena* arena, const void* default_split,
-                                size_t size, const void* message,
-                                const void* default_message);
+void CreateSplitMessageGeneric(Arena* arena, void** split, size_t size);
 
 // Forward-declare interfaces used to implement RepeatedFieldRef.
 // These are protobuf internals that users shouldn't care about.
@@ -693,7 +693,7 @@ class PROTOBUF_EXPORT Reflection final {
         return *flat;
       }
       if (!buffer_) {
-        buffer_ = absl::make_unique<std::string>();
+        buffer_ = std::make_unique<std::string>();
       }
       absl::CopyCordToString(cord, buffer_.get());
       return *buffer_;
@@ -981,7 +981,8 @@ class PROTOBUF_EXPORT Reflection final {
   [[nodiscard]] [[deprecated(
       "Please use GetRepeatedFieldRef() instead")]] const RepeatedField<T>&
   GetRepeatedField(const Message& msg, const FieldDescriptor* d) const {
-    return GetRepeatedFieldInternal<T>(msg, d);
+    return GetRepeatedFieldInternal<T>(msg, d,
+                                       GetRepeatedFieldIntent::kExposeDirectly);
   }
 
   // DEPRECATED. Please use GetMutableRepeatedFieldRef().
@@ -991,7 +992,8 @@ class PROTOBUF_EXPORT Reflection final {
   [[deprecated(
       "Please use GetMutableRepeatedFieldRef() instead")]] RepeatedField<T>*
   MutableRepeatedField(Message* msg, const FieldDescriptor* d) const {
-    return MutableRepeatedFieldInternal<T>(msg, d);
+    return MutableRepeatedFieldInternal<T>(
+        msg, d, GetRepeatedFieldIntent::kExposeDirectly);
   }
 
   // DEPRECATED. Please use GetRepeatedFieldRef().
@@ -1002,7 +1004,8 @@ class PROTOBUF_EXPORT Reflection final {
   [[nodiscard]] [[deprecated(
       "Please use GetRepeatedFieldRef() instead")]] const RepeatedPtrField<T>&
   GetRepeatedPtrField(const Message& msg, const FieldDescriptor* d) const {
-    return GetRepeatedPtrFieldInternal<T>(msg, d);
+    return GetRepeatedPtrFieldInternal<T>(
+        msg, d, GetRepeatedFieldIntent::kExposeDirectly);
   }
 
   // DEPRECATED. Please use GetMutableRepeatedFieldRef().
@@ -1013,7 +1016,8 @@ class PROTOBUF_EXPORT Reflection final {
   [[deprecated(
       "Please use GetMutableRepeatedFieldRef() instead")]] RepeatedPtrField<T>*
   MutableRepeatedPtrField(Message* msg, const FieldDescriptor* d) const {
-    return MutableRepeatedPtrFieldInternal<T>(msg, d);
+    return MutableRepeatedPtrFieldInternal<T>(
+        msg, d, GetRepeatedFieldIntent::kExposeDirectly);
   }
 
   // Extensions ----------------------------------------------------------------
@@ -1040,6 +1044,16 @@ class PROTOBUF_EXPORT Reflection final {
   [[nodiscard]] MessageFactory* GetMessageFactory() const;
 
  private:
+  enum class GetRepeatedFieldIntent {
+    // The caller intents to return a reference/pointer to the raw repeated
+    // field directly to application code.
+    kExposeDirectly,
+    // The caller will either wrap the raw repeated field in a proxy before
+    // returning it to application code, or will not return it to application
+    // code.
+    kHiddenOrInternal,
+  };
+
   const internal::ReflectionSchema& Schema() const { return schema_; }
 
   bool IsRepeatedOrMapFieldEmpty(const Message& message,
@@ -1047,16 +1061,20 @@ class PROTOBUF_EXPORT Reflection final {
 
   template <typename T>
   const RepeatedField<T>& GetRepeatedFieldInternal(
-      const Message& message, const FieldDescriptor* field) const;
+      const Message& message, const FieldDescriptor* field,
+      GetRepeatedFieldIntent intent) const;
   template <typename T>
   RepeatedField<T>* MutableRepeatedFieldInternal(
-      Message* message, const FieldDescriptor* field) const;
+      Message* message, const FieldDescriptor* field,
+      GetRepeatedFieldIntent intent) const;
   template <typename T>
   const RepeatedPtrField<T>& GetRepeatedPtrFieldInternal(
-      const Message& message, const FieldDescriptor* field) const;
+      const Message& message, const FieldDescriptor* field,
+      GetRepeatedFieldIntent intent) const;
   template <typename T>
   RepeatedPtrField<T>* MutableRepeatedPtrFieldInternal(
-      Message* message, const FieldDescriptor* field) const;
+      Message* message, const FieldDescriptor* field,
+      GetRepeatedFieldIntent intent) const;
 
   // REQUIRES: If the field is Cord, then `scratch != nullptr`.
   absl::string_view GetStringViewImpl(const Message& message,
@@ -1074,12 +1092,14 @@ class PROTOBUF_EXPORT Reflection final {
   // We use 2 routine rather than 4 (const vs mutable) x (scalar vs pointer).
   void* MutableRawRepeatedField(Message* message, const FieldDescriptor* field,
                                 FieldDescriptor::CppType cpptype, int ctype,
-                                const Descriptor* desc) const;
+                                const Descriptor* desc,
+                                GetRepeatedFieldIntent intent) const;
 
   const void* GetRawRepeatedField(const Message& message,
                                   const FieldDescriptor* field,
                                   FieldDescriptor::CppType cpptype, int ctype,
-                                  const Descriptor* desc) const;
+                                  const Descriptor* desc,
+                                  GetRepeatedFieldIntent intent) const;
 
   // The following methods are used to implement (Mutable)RepeatedFieldRef.
   // A Ref object will store a raw pointer to the repeated field data (obtained
@@ -1146,6 +1166,7 @@ class PROTOBUF_EXPORT Reflection final {
   friend struct internal::MapDynamicFieldInfo;
   friend class internal::ReflectionVisit;
   friend internal::DescriptorMethodsFriend;
+  friend json_internal::UnparseProto2Descriptor;
   friend bool internal::IsDescendant(const Message& root,
                                      const Message& message);
   friend void internal::MaybePoisonAfterClear(Message* root);
@@ -1175,9 +1196,8 @@ class PROTOBUF_EXPORT Reflection final {
   }
 
   const TcParseTableBase* CreateTcParseTable() const;
-  void PopulateTcParseFastEntries(
-      const internal::TailCallTableInfo& table_info,
-      TcParseTableBase::FastFieldEntry* fast_entries) const;
+  void PopulateTcParseFastEntries(const internal::TailCallTableInfo& table_info,
+                                  TcParseTableBase* tc_table) const;
   void PopulateTcParseEntries(internal::TailCallTableInfo& table_info,
                               TcParseTableBase::FieldEntry* entries) const;
   void PopulateTcParseFieldAux(const internal::TailCallTableInfo& table_info,
@@ -1205,6 +1225,7 @@ class PROTOBUF_EXPORT Reflection final {
   friend class GeneratedMessageReflectionTestHelper;
   friend class python::MapReflectionFriend;
   friend class python::MessageReflectionFriend;
+  friend class python::RepeatedScalarContainerFriend;
   friend class util::MessageDifferencer;
 #define GOOGLE_PROTOBUF_HAS_CEL_MAP_REFLECTION_FRIEND
   friend class expr::CelMapReflectionFriend;
@@ -1229,13 +1250,13 @@ class PROTOBUF_EXPORT Reflection final {
   // FieldOptions::* which are defined in descriptor.pb.h.  Including that
   // file here is not possible because it would cause a circular include cycle.
   const void* GetRawRepeatedString(const Message& message,
-                                   const FieldDescriptor* field,
-                                   bool is_string) const;
+                                   const FieldDescriptor* field, bool is_string,
+                                   GetRepeatedFieldIntent intent) const;
   void* MutableRawRepeatedString(Message* message, const FieldDescriptor* field,
-                                 bool is_string) const;
+                                 bool is_string,
+                                 GetRepeatedFieldIntent intent) const;
 
   friend class MapReflectionTester;
-  friend class internal::v2::V2TableGenTester;
 
   // Returns true if key is in map. Returns false if key is not in map field.
   bool ContainsMapKey(const Message& message, const FieldDescriptor* field,
@@ -1368,18 +1389,6 @@ class PROTOBUF_EXPORT Reflection final {
                            const FieldDescriptor* field) const;
   void SetHasBit(Message* message, const FieldDescriptor* field) const;
   void ClearHasBit(Message* message, const FieldDescriptor* field) const;
-  // Simple wrapper around SetHasBit that is used for repeated fields.
-  // Note: in some places this is called in an if (field->is_extension()) {},
-  // which is not a no-op. However, with the experiment disabled, this method
-  // will be empty, and the compiler should be able to omit the unnecessary
-  // call to is_extension().
-  // TODO: Remove this method once measurement is complete.
-  PROTOBUF_ALWAYS_INLINE void SetHasBitForRepeated(
-      Message* message, const FieldDescriptor* field) const {
-    if constexpr (internal::EnableExperimentalHintHasBitsForRepeatedFields()) {
-      SetHasBit(message, field);
-    }
-  }
   // Naively swaps the hasbit without checking for field existence.
   // For explicit presence fields, the hasbit is swapped normally.
   // For implicit presence fields, the hasbit is swapped without checking for
@@ -1485,6 +1494,27 @@ class PROTOBUF_EXPORT Reflection final {
                                              const Reflection* reflection,
                                              const char* ptr,
                                              internal::ParseContext* ctx);
+  void SetStringView(Message* message, const FieldDescriptor* field,
+                     absl::string_view value) const;
+  void SetRepeatedStringView(Message* message, const FieldDescriptor* field,
+                             int index, absl::string_view value) const;
+  void AddStringView(Message* message, const FieldDescriptor* field,
+                     absl::string_view value) const;
+
+  // Supports const absl::Cord&, std::string&& and absl::string_view.
+  template <typename String>
+  void SetStringImpl(Message* message, const FieldDescriptor* field,
+                     String&& value) const;
+
+  // Supports const absl::Cord&, std::string&& and absl::string_view.
+  template <typename String>
+  void SetRepeatedStringImpl(Message* message, const FieldDescriptor* field,
+                             int index, String&& value) const;
+
+  // Supports const absl::Cord&, std::string&& and absl::string_view.
+  template <typename String>
+  void AddStringImpl(Message* message, const FieldDescriptor* field,
+                     String&& value) const;
 };
 
 extern template void Reflection::SwapFieldsImpl<true>(
@@ -1567,16 +1597,18 @@ class PROTOBUF_EXPORT MessageFactory {
   static const Message* TryGetGeneratedPrototype(const Descriptor* type);
 };
 
-#define DECLARE_GET_REPEATED_FIELD(TYPE)                           \
-  template <>                                                      \
-  PROTOBUF_EXPORT const RepeatedField<TYPE>&                       \
-  Reflection::GetRepeatedFieldInternal<TYPE>(                      \
-      const Message& message, const FieldDescriptor* field) const; \
-                                                                   \
-  template <>                                                      \
-  PROTOBUF_EXPORT RepeatedField<TYPE>*                             \
-  Reflection::MutableRepeatedFieldInternal<TYPE>(                  \
-      Message * message, const FieldDescriptor* field) const;
+#define DECLARE_GET_REPEATED_FIELD(TYPE)                    \
+  template <>                                               \
+  PROTOBUF_EXPORT const RepeatedField<TYPE>&                \
+  Reflection::GetRepeatedFieldInternal<TYPE>(               \
+      const Message& message, const FieldDescriptor* field, \
+      GetRepeatedFieldIntent intent) const;                 \
+                                                            \
+  template <>                                               \
+  PROTOBUF_EXPORT RepeatedField<TYPE>*                      \
+  Reflection::MutableRepeatedFieldInternal<TYPE>(           \
+      Message * message, const FieldDescriptor* field,      \
+      GetRepeatedFieldIntent intent) const;
 
 DECLARE_GET_REPEATED_FIELD(int32_t)
 DECLARE_GET_REPEATED_FIELD(int64_t)
@@ -1613,20 +1645,47 @@ void LinkMessageReflection() {
   internal::StrongReferenceToType<T>();
 }
 
-// Specializations to handle cast to `Message`. We can check the `is_lite` bit
-// in the class data.
-template <>
-[[nodiscard]] inline const Message* DynamicCastMessage(
-    const MessageLite* from) {
-  return from == nullptr || internal::GetClassData(*from)->is_lite
-             ? nullptr
-             : static_cast<const Message*>(from);
+// Specializations to handle smart pointers to `Message`. Without these,
+// `google::protobuf::DynamicCastMessage(std::shared_ptr<Message>)` is ambiguous
+// (`const MessageLite` vs `MessageLite`).
+
+template <typename T>
+PROTOBUF_FUTURE_ADD_EARLY_NODISCARD std::shared_ptr<T> DynamicCastMessage(
+    std::shared_ptr<Message> ptr) {
+  if (auto* res = DynamicCastMessage<T>(ptr.get())) {
+    // Use aliasing constructor to keep the same control block.
+    return std::shared_ptr<T>(std::move(ptr), res);
+  } else {
+    return nullptr;
+  }
 }
-template <>
-[[nodiscard]] inline const Message* DownCastMessage(const MessageLite* from) {
-  ABSL_DCHECK_EQ(DynamicCastMessage<Message>(from), from)
-      << "Cannot downcast " << from->GetTypeName() << " to Message";
-  return static_cast<const Message*>(from);
+
+template <typename T>
+PROTOBUF_FUTURE_ADD_EARLY_NODISCARD std::shared_ptr<const T> DynamicCastMessage(
+    std::shared_ptr<const Message> ptr) {
+  if (auto* res = DynamicCastMessage<T>(ptr.get())) {
+    // Use aliasing constructor to keep the same control block.
+    return std::shared_ptr<const T>(std::move(ptr), res);
+  } else {
+    return nullptr;
+  }
+}
+
+// Overloads for `std::shared_ptr` to substitute `down_pointer_cast`
+template <typename T>
+PROTOBUF_FUTURE_ADD_EARLY_NODISCARD std::shared_ptr<T> DownCastMessage(
+    std::shared_ptr<Message> ptr) {
+  auto* res = DownCastMessage<T>(ptr.get());
+  // Use aliasing constructor to keep the same control block.
+  return std::shared_ptr<T>(std::move(ptr), res);
+}
+
+template <typename T>
+PROTOBUF_FUTURE_ADD_EARLY_NODISCARD std::shared_ptr<const T> DownCastMessage(
+    std::shared_ptr<const Message> ptr) {
+  auto* res = DownCastMessage<T>(ptr.get());
+  // Use aliasing constructor to keep the same control block.
+  return std::shared_ptr<const T>(std::move(ptr), res);
 }
 
 // =============================================================================
@@ -1639,20 +1698,22 @@ template <>
 template <>
 inline const RepeatedPtrField<std::string>&
 Reflection::GetRepeatedPtrFieldInternal<std::string>(
-    const Message& message, const FieldDescriptor* field) const {
+    const Message& message, const FieldDescriptor* field,
+    GetRepeatedFieldIntent intent) const {
   return *static_cast<const RepeatedPtrField<std::string>*>(
-      GetRawRepeatedString(message, field, true));
+      GetRawRepeatedString(message, field, true, intent));
 }
 
 template <>
 inline RepeatedPtrField<std::string>*
 Reflection::MutableRepeatedPtrFieldInternal<std::string>(
-    Message* message, const FieldDescriptor* field) const {
+    Message* message, const FieldDescriptor* field,
+    GetRepeatedFieldIntent intent) const {
   if (!field->is_extension()) {
-    SetHasBitForRepeated(message, field);
+    SetHasBit(message, field);
   }
   return static_cast<RepeatedPtrField<std::string>*>(
-      MutableRawRepeatedString(message, field, true));
+      MutableRawRepeatedString(message, field, true, intent));
 }
 
 
@@ -1660,38 +1721,42 @@ Reflection::MutableRepeatedPtrFieldInternal<std::string>(
 
 template <>
 inline const RepeatedPtrField<Message>& Reflection::GetRepeatedPtrFieldInternal(
-    const Message& message, const FieldDescriptor* field) const {
+    const Message& message, const FieldDescriptor* field,
+    GetRepeatedFieldIntent intent) const {
   return *static_cast<const RepeatedPtrField<Message>*>(GetRawRepeatedField(
-      message, field, FieldDescriptor::CPPTYPE_MESSAGE, -1, nullptr));
+      message, field, FieldDescriptor::CPPTYPE_MESSAGE, -1, nullptr, intent));
 }
 
 template <>
 inline RepeatedPtrField<Message>* Reflection::MutableRepeatedPtrFieldInternal(
-    Message* message, const FieldDescriptor* field) const {
+    Message* message, const FieldDescriptor* field,
+    GetRepeatedFieldIntent intent) const {
   if (!field->is_extension()) {
-    SetHasBitForRepeated(message, field);
+    SetHasBit(message, field);
   }
   return static_cast<RepeatedPtrField<Message>*>(MutableRawRepeatedField(
-      message, field, FieldDescriptor::CPPTYPE_MESSAGE, -1, nullptr));
+      message, field, FieldDescriptor::CPPTYPE_MESSAGE, -1, nullptr, intent));
 }
 
 template <typename PB>
 inline const RepeatedPtrField<PB>& Reflection::GetRepeatedPtrFieldInternal(
-    const Message& message, const FieldDescriptor* field) const {
+    const Message& message, const FieldDescriptor* field,
+    GetRepeatedFieldIntent intent) const {
   return *static_cast<const RepeatedPtrField<PB>*>(
       GetRawRepeatedField(message, field, FieldDescriptor::CPPTYPE_MESSAGE, -1,
-                          PB::default_instance().GetDescriptor()));
+                          PB::default_instance().GetDescriptor(), intent));
 }
 
 template <typename PB>
 inline RepeatedPtrField<PB>* Reflection::MutableRepeatedPtrFieldInternal(
-    Message* message, const FieldDescriptor* field) const {
+    Message* message, const FieldDescriptor* field,
+    GetRepeatedFieldIntent intent) const {
   if (!field->is_extension()) {
-    SetHasBitForRepeated(message, field);
+    SetHasBit(message, field);
   }
-  return static_cast<RepeatedPtrField<PB>*>(
-      MutableRawRepeatedField(message, field, FieldDescriptor::CPPTYPE_MESSAGE,
-                              -1, PB::default_instance().GetDescriptor()));
+  return static_cast<RepeatedPtrField<PB>*>(MutableRawRepeatedField(
+      message, field, FieldDescriptor::CPPTYPE_MESSAGE, -1,
+      PB::default_instance().GetDescriptor(), intent));
 }
 
 template <typename Type>
@@ -1771,6 +1836,7 @@ GetCppType() {
     if (std::is_same_v<T, double>) return FieldDescriptor::CPPTYPE_DOUBLE;
     if (std::is_same_v<T, bool>) return FieldDescriptor::CPPTYPE_BOOL;
 
+    using CV = std::remove_cv_t<T>;
     using PCV = std::remove_cv_t<std::remove_pointer_t<T>>;
 
     // strings
@@ -1784,7 +1850,8 @@ GetCppType() {
     // messages
     if (std::is_same_v<PCV, Message> ||      //
         std::is_same_v<PCV, MessageLite> ||  //
-        std::is_same_v<PCV, internal::LazyField>) {
+        std::is_same_v<CV, internal::LazyField> ||
+        std::is_same_v<CV, internal::LazyFieldForUnion>) {
       return FieldDescriptor::CPPTYPE_MESSAGE;
     }
   }
@@ -1832,9 +1899,10 @@ void Reflection::VerifyFieldType(const FieldDescriptor* field) const {
     // Check subfield types for message.
     if constexpr (internal::GetCppType<T>() ==
                   FieldDescriptor::CPPTYPE_MESSAGE) {
-      // Singular/oneof messages are by pointer, except non-oneof Lazy.
-      if (!field->is_repeated() &&
-          (!IsLazyField(field) || field->real_containing_oneof() != nullptr)) {
+      // Singular/oneof messages are by pointer, except Lazy.
+      // Lazy uses LazyField by-value for normal fields and LazyFieldForUnion
+      // by-value for oneof fields.
+      if (!field->is_repeated() && !IsLazyField(field)) {
         ABSL_DCHECK(std::is_pointer_v<T>) << error();
       }
     }
@@ -1899,7 +1967,7 @@ MutableRepeatedFieldRef<T> Reflection::GetMutableRepeatedFieldRef(
     Message* message, const FieldDescriptor* field) const {
   ABSL_DCHECK_EQ(message->GetReflection(), this);
   if (!field->is_extension()) {
-    SetHasBitForRepeated(message, field);
+    SetHasBit(message, field);
   }
   return MutableRepeatedFieldRef<T>(message, field);
 }

@@ -61,17 +61,29 @@ struct PROTOBUF_EXPORT TailCallTableInfo {
     float presence_probability;
     // kTvEager, kTvLazy, or 0
     field_layout::TransformValidation lazy_opt;
-    // Whether to use the InlinedStringField representation.
-    // This choice comes from the profile data.
-    // Incompatible with `use_micro_string`.
-    bool is_string_inlined;
     bool is_implicitly_weak;
     bool use_direct_tcparser_table;
     bool should_split;
+
+    // Whether to use the InlinedStringField representation.
+    struct StringInlined {};
     // Whether to use the MicroString representation.
-    // This choice comes from the temporary opt-in data.
-    // Incompatible with `is_string_inlined`.
-    bool use_micro_string;
+    struct MicroString {
+      uint8_t sso_size;
+    };
+
+    bool is_string_inlined() const {
+      return std::holds_alternative<StringInlined>(str_options);
+    }
+    bool is_micro_string() const {
+      return std::holds_alternative<MicroString>(str_options);
+    }
+    uint8_t micro_string_sso() const {
+      return std::get<MicroString>(str_options).sso_size;
+    }
+
+    using StrOptions = std::variant<std::monostate, StringInlined, MicroString>;
+    StrOptions str_options;
   };
 
   struct FieldEntryInfo;
@@ -91,6 +103,11 @@ struct PROTOBUF_EXPORT TailCallTableInfo {
   // Fields parsed by the table fast-path.
   struct FastFieldInfo {
     struct Empty {};
+    struct NonField {
+      TcParseFunction func;
+      uint16_t coded_tag;
+      uint16_t nonfield_info;
+    };
     struct Field {
       TcParseFunction func;
       const FieldDescriptor* field;
@@ -101,16 +118,51 @@ struct PROTOBUF_EXPORT TailCallTableInfo {
       // For internal caching.
       float presence_probability;
     };
-    struct NonField {
+    struct MpField {
       TcParseFunction func;
+      const FieldDescriptor* field;
+      uint32_t field_index;
       uint16_t coded_tag;
-      uint16_t nonfield_info;
+      uint8_t function_index;
+
+      // For internal caching.
+      float presence_probability;
     };
-    std::variant<Empty, Field, NonField> data;
+    // Ordered by priority.
+    std::variant<Empty, MpField, Field, NonField> data;
+
+    friend bool operator<(const FastFieldInfo& a, const FastFieldInfo& b) {
+      if (a.data.index() != b.data.index()) {
+        return a.data.index() < b.data.index();
+      }
+      if (auto* f = a.AsField()) {
+        return f->presence_probability < b.AsField()->presence_probability;
+      }
+      if (auto* f = a.AsMpField()) {
+        return f->presence_probability < b.AsMpField()->presence_probability;
+      }
+      return false;
+    }
+
+    template <typename T>
+    static constexpr size_t kIndex = decltype(data){T{}}.index();
+
+    bool IsBetterFast(double presence_probability) {
+      if (data.index() < kIndex<Field>) return true;
+      if (data.index() > kIndex<Field>) return false;
+      return presence_probability > AsField()->presence_probability;
+    }
+
+    bool IsBetterMpFast(double presence_probability) {
+      if (data.index() < kIndex<MpField>) return true;
+      if (data.index() > kIndex<MpField>) return false;
+      return presence_probability > AsMpField()->presence_probability;
+    }
 
     bool is_empty() const { return std::holds_alternative<Empty>(data); }
     const Field* AsField() const { return std::get_if<Field>(&data); }
     const NonField* AsNonField() const { return std::get_if<NonField>(&data); }
+    const MpField* AsMpField() const { return std::get_if<MpField>(&data); }
   };
   std::vector<FastFieldInfo> fast_path_fields;
 
@@ -130,9 +182,9 @@ struct PROTOBUF_EXPORT TailCallTableInfo {
     kNothing = 0,
     kSplitOffset,
     kSplitSizeof,
-    kSubMessage,
+    kSubMessageGlobals,
     kSubTable,
-    kSubMessageWeak,
+    kSubMessageGlobalsWeak,
     kMessageVerifyFunc,
     kSelfVerifyFunc,
     kEnumRange,

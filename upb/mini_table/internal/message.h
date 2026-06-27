@@ -10,6 +10,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <string.h>
 
 #include "upb/base/descriptor_constants.h"
 #include "upb/mini_table/internal/field.h"
@@ -20,16 +21,23 @@
 
 struct upb_Decoder;
 struct upb_Message;
+struct upb_FastDecoder_Return;
 
-typedef UPB_PRESERVE_NONE const char* _upb_FieldParser(
+typedef UPB_PRESERVE_NONE struct upb_FastDecoder_Return _upb_FieldParser(
     struct upb_Decoder* d, const char* ptr, struct upb_Message* msg,
-    intptr_t table, uint64_t hasbits, uint64_t data);
+    const struct upb_MiniTable* table, uint64_t hasbits, uint64_t data,
+    uint64_t data2);
 
 typedef struct {
   uint64_t field_data;
   _upb_FieldParser* field_parser;
 } _upb_FastTable_Entry;
 
+// Ext Mode consists of 4 bits:
+// * Extensibility
+// * MessageSet
+// * Map
+// * FastTable field coverage
 typedef enum {
   kUpb_ExtMode_NonExtendable = 0,  // Non-extendable message.
   kUpb_ExtMode_Extendable = 1,     // Normal extendable message.
@@ -40,7 +48,16 @@ typedef enum {
   // During table building we steal a bit to indicate that the message is a map
   // entry.  *Only* used during table building!
   kUpb_ExtMode_IsMapEntry = 4,
+
+  // Indicates that all eligible fields (with 1- or 2-byte) tags were
+  // successfully assigned to the fasttable.
+  kUpb_ExtMode_AllFastFieldsAssigned = 8,
 } upb_ExtMode;
+
+// Check ExtMode base message info, excluding fasttable state info.
+UPB_FORCEINLINE uint8_t UPB_PRIVATE(_upb_ExtMode_Base)(uint8_t ext_mode) {
+  return ext_mode & 7;
+}
 
 enum {
   kUpb_Message_Align = 8,
@@ -69,9 +86,9 @@ struct upb_MiniTable {
   const char* UPB_PRIVATE(full_name);
 #endif
 
-#if UPB_FASTTABLE || !defined(__cplusplus)
-  // Flexible array member is not supported in C++, but it is an extension in
-  // every compiler that supports UPB_FASTTABLE.
+#if UPB_FASTTABLE
+  // Flexible array member is not supported in C++ standard, but it is supported
+  // as an extension in all compilers we support.
   _upb_FastTable_Entry UPB_PRIVATE(fasttable)[];
 #endif
 };
@@ -103,52 +120,19 @@ UPB_API_INLINE int upb_MiniTable_FieldCount(const struct upb_MiniTable* m) {
   return m->UPB_ONLYBITS(field_count);
 }
 
-UPB_API_INLINE bool upb_MiniTable_IsMessageSet(const struct upb_MiniTable* m) {
-  return m->UPB_PRIVATE(ext) == kUpb_ExtMode_IsMessageSet;
+UPB_FORCEINLINE uint8_t
+UPB_PRIVATE(_upb_MiniTable_ExtModeBase)(const struct upb_MiniTable* m) {
+  return UPB_PRIVATE(_upb_ExtMode_Base)(m->UPB_PRIVATE(ext));
 }
 
-UPB_API_INLINE
-const struct upb_MiniTableField* upb_MiniTable_FindFieldByNumber(
-    const struct upb_MiniTable* m, uint32_t number) {
-  const size_t i = ((size_t)number) - 1;  // 0 wraps to SIZE_MAX
+UPB_FORCEINLINE bool UPB_PRIVATE(_upb_MiniTable_IsExtendable)(
+    const struct upb_MiniTable* m) {
+  return UPB_PRIVATE(_upb_MiniTable_ExtModeBase)(m) == kUpb_ExtMode_Extendable;
+}
 
-  // Ideal case: index into dense fields
-  if (i < m->UPB_PRIVATE(dense_below)) {
-    UPB_ASSERT(m->UPB_ONLYBITS(fields)[i].UPB_ONLYBITS(number) == number);
-    return &m->UPB_ONLYBITS(fields)[i];
-  }
-
-  // Early exit if the field number is out of range.
-  int32_t hi = m->UPB_ONLYBITS(field_count) - 1;
-  if (hi < 0 || number > m->UPB_ONLYBITS(fields)[hi].UPB_ONLYBITS(number)) {
-    return NULL;
-  }
-
-  // Slow case: binary search
-  uint32_t lo = m->UPB_PRIVATE(dense_below);
-  const struct upb_MiniTableField* base = m->UPB_ONLYBITS(fields);
-  while (hi >= (int32_t)lo) {
-    uint32_t mid = (hi + lo) / 2;
-    uint32_t num = base[mid].UPB_ONLYBITS(number);
-    // These comparison operations allow, on ARM machines, to fuse all these
-    // branches into one comparison followed by two CSELs to set the lo/hi
-    // values, followed by a BNE to continue or terminate the loop. Since binary
-    // search branches are generally unpredictable (50/50 in each direction),
-    // this is a good deal. We use signed for the high, as this decrement may
-    // underflow if mid is 0.
-    int32_t hi_mid = mid - 1;
-    uint32_t lo_mid = mid + 1;
-    if (num == number) {
-      return &base[mid];
-    }
-    if (UPB_UNPREDICTABLE(num < number)) {
-      lo = lo_mid;
-    } else {
-      hi = hi_mid;
-    }
-  }
-
-  return NULL;
+UPB_API_INLINE bool upb_MiniTable_IsMessageSet(const struct upb_MiniTable* m) {
+  return UPB_PRIVATE(_upb_MiniTable_ExtModeBase)(m) ==
+         kUpb_ExtMode_IsMessageSet;
 }
 
 UPB_API_INLINE const struct upb_MiniTableField* upb_MiniTable_GetFieldByIndex(
@@ -177,6 +161,235 @@ UPB_API_INLINE const struct upb_MiniTable* upb_MiniTable_SubMessage(
 UPB_API_INLINE bool upb_MiniTable_FieldIsLinked(
     const struct upb_MiniTableField* f) {
   return upb_MiniTable_GetSubMessageTable(f) != NULL;
+}
+
+UPB_FORCEINLINE
+const struct upb_MiniTableField* UPB_PRIVATE(upb_MiniTable_GenericLowerBound)(
+    const struct upb_MiniTable* m, uint32_t lo, uint32_t search_len,
+    uint32_t number) {
+  const struct upb_MiniTableField* search_base = &m->UPB_ONLYBITS(fields)[lo];
+  while (search_len > 1) {
+    size_t mid_offset = search_len >> 1;
+    if (UPB_UNPREDICTABLE(search_base[mid_offset].UPB_ONLYBITS(number) <=
+                          number)) {
+      search_base = &search_base[mid_offset];
+    }
+    search_len -= mid_offset;
+  }
+
+  return search_base;
+}
+
+// This implements the same algorithm as upb_MiniTable_GenericLowerBound but
+// contorts itself to select specific arm instructions, which show significant
+// effects on little cores.
+UPB_FORCEINLINE const struct upb_MiniTableField* UPB_PRIVATE(
+    upb_MiniTable_ArmOptimizedLowerBound)(const struct upb_MiniTable* m,
+                                          uint32_t lo, uint32_t search_len,
+                                          uint32_t number) {
+  const uint32_t* search_base =
+      &m->UPB_ONLYBITS(fields)[lo].UPB_ONLYBITS(number);
+  UPB_STATIC_ASSERT(sizeof(struct upb_MiniTableField) == sizeof(uint32_t) * 3,
+                    "Need to update multiplication");
+  // Address generation units can't multiply by 12, but they can by 4. So we
+  // split it into multiplying by 3 (add and shift) and multiplying by 4 (shift)
+  // This code is carefully tuned to produce an optimal assembly sequence on
+  // arm64, which takes advantage of dual issue on in-order CPUs to maximize
+  // what little instruction level parallelism they have.
+  /*
+  and     w9, w1, #0xfffffffe
+  add     w9, w9, w1, lsr #1
+  ldr     w10, [x0, w9, uxtw #2]
+  sub     w1, w1, w1, lsr #1
+  add     x9, x0, w9, uxtw #2
+  cmp     w10, w2
+  csel    x0, x0, x9, hi
+  cmp     w1, #1
+  b.hi    .LBB3_1
+   */
+  // Doing this requires inhibiting the natural instincts of the compiler to
+  // eliminate duplicate work, so we introduce an optimization barrier with
+  // asm blocks to defeat common subexpression elimination.
+  UPB_STATIC_ASSERT(
+      offsetof(struct upb_MiniTableField, UPB_ONLYBITS(number)) == 0,
+      "Tag number must be first element of minitable field struct");
+  while (search_len > 1) {
+#if UPB_ARM64_ASM
+#define UPB_OPT_LAUNDER(val) __asm__("" : "+r"(val))
+#define UPB_OPT_LAUNDER2(val1, val2) __asm__("" : "+r"(val1), "+r"(val2))
+#else
+#define UPB_OPT_LAUNDER(val)
+#define UPB_OPT_LAUNDER2(val1, val2)
+#endif
+    // (search_len & ~1) is exactly (half_len * 2). Adding half_len yields
+    // (half_len * 3).
+    //
+    // and mid_offset_words, search_len, #0xfffffffe
+    uint32_t mid_offset_words = search_len & 0xfffffffe;
+
+    // add mid_offset_words, mid_offset_words, search_len, lsr #1
+    mid_offset_words = mid_offset_words + (search_len >> 1);
+
+    UPB_OPT_LAUNDER(search_len);
+    UPB_OPT_LAUNDER(mid_offset_words);
+
+    // Arm processors, even little cores, have Address Generation Units capable
+    // of performing these extensions, so we achieve more instruction level
+    // parallelism by doing this shift by 2 redundantly with the mid pointer
+    // calculation below.
+    //
+    // ldr mid_num, [search_base, mid_offset_words, uxtw #2]
+    uint32_t mid_num = search_base[mid_offset_words];
+
+    // Shrink the search window by half
+    // sub search_len, search_len, search_len, lsr #1
+    search_len = search_len - (search_len >> 1);
+    UPB_OPT_LAUNDER(search_len);
+    UPB_OPT_LAUNDER(mid_offset_words);
+
+    // Calculate the mid pointer for the next iteration
+    // add mid_ptr, search_base, mid_offset_words, uxtw #2
+    const uint32_t* mid_ptr = search_base + mid_offset_words;
+
+    // Forbids LLVM's CSE pass from attempting to merge mid_ptr and mid_num's
+    // math. It sees that it can do a select before adding, rather than after;
+    // but if it orders it that way it creates a longer dependency chain. We
+    // need both as input/output to the same asm block to force them to be
+    // present in different registers at the same time; two separate LAUNDER
+    // usages could get reordered.
+    UPB_OPT_LAUNDER2(mid_ptr, mid_num);
+
+    // cmp + csel
+    search_base = UPB_UNPREDICTABLE(mid_num <= number) ? mid_ptr : search_base;
+  }
+#undef UPB_OPT_LAUNDER
+#undef UPB_OPT_LAUNDER2
+  return (const struct upb_MiniTableField*)search_base;
+}
+
+UPB_FORCEINLINE const struct upb_MiniTableField* UPB_PRIVATE(
+    upb_MiniTable_LowerBound)(const struct upb_MiniTable* m, uint32_t lo,
+                              uint32_t search_len, uint32_t number) {
+#ifndef NDEBUG
+  const struct upb_MiniTableField* candidate = UPB_PRIVATE(
+      upb_MiniTable_ArmOptimizedLowerBound)(m, lo, search_len, number);
+  UPB_ASSERT(candidate == UPB_PRIVATE(upb_MiniTable_GenericLowerBound)(
+                              m, lo, search_len, number));
+  return candidate;
+#elif UPB_ARM64_ASM
+  return UPB_PRIVATE(upb_MiniTable_ArmOptimizedLowerBound)(m, lo, search_len,
+                                                           number);
+#else
+  return UPB_PRIVATE(upb_MiniTable_GenericLowerBound)(m, lo, search_len,
+                                                      number);
+#endif
+}
+
+UPB_API_INLINE
+const struct upb_MiniTableField* upb_MiniTable_FindFieldByNumber(
+    const struct upb_MiniTable* m, uint32_t number) {
+  const uint32_t i = number - 1;  // 0 wraps to UINT32_MAX
+
+  // Ideal case: index into dense fields
+  if (i < m->UPB_PRIVATE(dense_below)) {
+    UPB_ASSERT(m->UPB_ONLYBITS(fields)[i].UPB_ONLYBITS(number) == number);
+    return &m->UPB_ONLYBITS(fields)[i];
+  }
+
+  // Early exit if the field number is out of range.
+  uint32_t hi = m->UPB_ONLYBITS(field_count);
+  uint32_t lo = m->UPB_PRIVATE(dense_below);
+  UPB_ASSERT(hi >= lo);
+  uint32_t search_len = hi - lo;
+  if (search_len == 0 ||
+      number > m->UPB_ONLYBITS(fields)[hi - 1].UPB_ONLYBITS(number)) {
+    return NULL;
+  }
+
+  // Slow case: binary search
+  const struct upb_MiniTableField* candidate =
+      UPB_PRIVATE(upb_MiniTable_LowerBound)(m, lo, search_len, number);
+
+  return candidate->UPB_ONLYBITS(number) == number ? candidate : NULL;
+}
+
+UPB_FORCEINLINE bool UPB_PRIVATE(_upb_MiniTable_GapIfUnlinked)(
+    const struct upb_MiniTableField* field, uint32_t number,
+    uint32_t* out_gap_lo, uint32_t* out_gap_hi) {
+  UPB_STATIC_ASSERT(sizeof(upb_MiniTableSubInternal) == sizeof(void*),
+                    "SubInternal size must be pointer sized.");
+  if (field->UPB_PRIVATE(submsg_ofs) != kUpb_NoSub) {
+    upb_MiniTableSubInternal* sub = UPB_PTR_AT(
+        field, field->UPB_PRIVATE(submsg_ofs) * kUpb_SubmsgOffsetBytes,
+        upb_MiniTableSubInternal);
+    // Type punning via union is legal in C and we're just checking if it's NULL
+    // but it's UB in C++, and this header could be included in C++.
+    void* sub_ptr;
+    memcpy(&sub_ptr, sub, sizeof(void*));
+    if (sub_ptr == NULL) {
+      UPB_ASSERT(!upb_MiniTableField_IsClosedEnum(field));
+      *out_gap_lo = number - 1;
+      *out_gap_hi = number + 1;
+      return true;
+    }
+  }
+  return false;
+}
+
+// Given a tag number, finds the known field tags bounding the gap of unknown
+// fields containing it. Returns false and does not set bounds if the tag number
+// matches a known field and it is linked or primitive. Otherwise returns true
+// and sets out_gap_lo and out_gap_hi (exclusive/exclusive) to define the range
+// of unknown fields (out_gap_lo, out_gap_hi). Unlinked submessages are treated
+// as gaps.
+UPB_FORCEINLINE bool UPB_PRIVATE(_upb_MiniTable_FindUnknownGap)(
+    const struct upb_MiniTable* m, uint32_t number, uint32_t* out_gap_lo,
+    uint32_t* out_gap_hi) {
+  UPB_ASSERT(number != 0);
+  UPB_ASSERT(number < ((uint32_t)1 << 29));
+  const uint32_t i = number - 1;
+  if (i < m->UPB_PRIVATE(dense_below)) {
+    // Dense field; we know it's present.
+    return UPB_PRIVATE(_upb_MiniTable_GapIfUnlinked)(
+        &m->UPB_ONLYBITS(fields)[i], number, out_gap_lo, out_gap_hi);
+  }
+
+  uint32_t hi = m->UPB_ONLYBITS(field_count);
+  uint32_t lo = m->UPB_PRIVATE(dense_below);
+  if (hi == lo) {
+    *out_gap_lo = lo;
+    *out_gap_hi = UINT32_MAX;
+    return true;
+  }
+
+  uint32_t max_field = m->UPB_ONLYBITS(fields)[hi - 1].UPB_ONLYBITS(number);
+  if (number > max_field) {
+    *out_gap_lo = max_field;
+    *out_gap_hi = UINT32_MAX;
+    return true;
+  }
+
+  uint32_t search_len = hi - lo;
+  const struct upb_MiniTableField* candidate =
+      UPB_PRIVATE(upb_MiniTable_LowerBound)(m, lo, search_len, number);
+
+  uint32_t candidate_num = candidate->UPB_ONLYBITS(number);
+  if (candidate_num == number) {
+    return UPB_PRIVATE(_upb_MiniTable_GapIfUnlinked)(candidate, number,
+                                                     out_gap_lo, out_gap_hi);
+  }
+
+  if (candidate_num < number) {
+    *out_gap_lo = candidate_num;
+    // Checking this next pointer is safe as we have already validated that the
+    // field we're searching for is not greater than or equal to the last field
+    *out_gap_hi = (candidate + 1)->UPB_ONLYBITS(number);
+  } else {
+    UPB_ASSERT(candidate == &m->UPB_ONLYBITS(fields)[lo]);
+    *out_gap_lo = lo;
+    *out_gap_hi = candidate_num;
+  }
+  return true;
 }
 
 UPB_API_INLINE const struct upb_MiniTable* upb_MiniTable_MapEntrySubMessage(

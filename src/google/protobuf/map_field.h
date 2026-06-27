@@ -307,8 +307,8 @@ inline const Message& GetMapEntryValuePrototype(const Message& default_entry) {
 // reflection implementation only. Users should never use this directly.
 class PROTOBUF_EXPORT MapFieldBase : public MapFieldBaseForParse {
  public:
-  explicit constexpr MapFieldBase(const void* prototype_as_void)
-      : MapFieldBaseForParse(prototype_as_void) {}
+  explicit constexpr MapFieldBase(const void* globals_as_void)
+      : MapFieldBaseForParse(globals_as_void) {}
   explicit MapFieldBase(const Message* prototype)
       : MapFieldBaseForParse(prototype) {}
   MapFieldBase(const MapFieldBase&) = delete;
@@ -466,7 +466,7 @@ class PROTOBUF_EXPORT MapFieldBase : public MapFieldBaseForParse {
 
   // Returns the reflection payload. Returns null if it does not exist yet.
   ReflectionPayload* maybe_payload() const {
-    auto p = prototype_or_payload_.load(std::memory_order_acquire);
+    auto p = globals_or_payload_.load(std::memory_order_acquire);
     return IsPayload(p) ? ToPayload(p) : nullptr;
   }
   // Returns the reflection payload, and constructs one if does not exist yet.
@@ -563,12 +563,12 @@ class TypeDefinedMapFieldBase : public MapFieldBase {
                                                 map_)>()) {}
 
   TypeDefinedMapFieldBase(const Message* prototype,
-                          InternalMetadataOffset offset,
+                          InternalMetadataOffset offset, Arena* arena,
                           const TypeDefinedMapFieldBase& from)
       : MapFieldBase(prototype),
         map_(offset
                  .TranslateForMember<offsetof(TypeDefinedMapFieldBase, map_)>(),
-             from.GetMap()) {}
+             arena, from.GetMap()) {}
 
  protected:
   ~TypeDefinedMapFieldBase() { map_.~Map(); }
@@ -622,15 +622,16 @@ class PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED MapField final
       : MapField(offset) {}
   constexpr MapField(InternalVisibility, InternalMetadataOffset offset)
       : MapField(offset) {}
-  MapField(InternalVisibility, InternalMetadataOffset offset,
+  MapField(InternalVisibility, InternalMetadataOffset offset, Arena* arena,
            const MapField& from)
       : TypeDefinedMapFieldBase<Key, T>(
-            static_cast<const Message*>(Derived::internal_default_instance()),
-            offset, from) {}
+            MessageGlobalsBase::ToDefaultInstance<Message>(
+                Derived::internal_message_globals()),
+            offset, arena, from) {}
 
  private:
   explicit constexpr MapField(InternalMetadataOffset offset)
-      : MapField::TypeDefinedMapFieldBase(Derived::internal_default_instance(),
+      : MapField::TypeDefinedMapFieldBase(Derived::internal_message_globals(),
                                           offset) {}
 
   typedef void InternalArenaConstructable_;

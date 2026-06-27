@@ -54,7 +54,7 @@ PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT const EmptyCord empty_cord_;
 
 // We add a single dummy entry to guarantee the section is never empty.
 struct DummyWeakDefault {
-  const Message* m;
+  const MessageGlobalsBase* m;
   WeakDescriptorDefaultTail tail;
 };
 DummyWeakDefault dummy_weak_default __attribute__((section("pb_defaults"))) = {
@@ -80,7 +80,8 @@ static void InitWeakDefaults() {
   while (start != end) {
     auto* tail = reinterpret_cast<const WeakDescriptorDefaultTail*>(end) - 1;
     end -= tail->size;
-    const Message* instance = reinterpret_cast<const Message*>(end);
+    const MessageGlobalsBase* instance =
+        reinterpret_cast<const MessageGlobalsBase*>(end);
     *tail->target = instance;
   }
 }
@@ -386,13 +387,12 @@ MessageLite* DuplicateIfNonNullInternal(MessageLite* message) {
 }
 
 void GenericSwap(MessageLite* lhs, MessageLite* rhs) {
-  const ClassData* class_data = GetClassData(*lhs);
-  std::unique_ptr<MessageLite> tmp(class_data->New(nullptr));
-  tmp->MergeFromWithClassData(*lhs, class_data);
+  std::unique_ptr<MessageLite> tmp(lhs->New());
+  tmp->CheckTypeAndMergeFrom(*lhs);
   lhs->Clear();
-  lhs->MergeFromWithClassData(*rhs, class_data);
+  lhs->CheckTypeAndMergeFrom(*rhs);
   rhs->Clear();
-  rhs->MergeFromWithClassData(*tmp, class_data);
+  rhs->CheckTypeAndMergeFrom(*tmp);
 }
 
 // Returns a message owned by this Arena.  This may require Own()ing or
@@ -411,6 +411,19 @@ MessageLite* GetOwnedMessageInternal(Arena* message_arena,
     ret->CheckTypeAndMergeFrom(*submessage);
     return ret;
   }
+}
+
+internal::ExtensionSet* PrivateAccess::GetExtensionSet(MessageLite* msg) {
+  return const_cast<internal::ExtensionSet*>(
+      GetExtensionSet(static_cast<const MessageLite*>(msg)));
+}
+
+const internal::ExtensionSet* PrivateAccess::GetExtensionSet(
+    const MessageLite* msg) {
+  auto* tc_table = msg->GetTcParseTable();
+  if (tc_table->extension_offset == 0) return nullptr;
+  return reinterpret_cast<const internal::ExtensionSet*>(
+      reinterpret_cast<const char*>(msg) + tc_table->extension_offset);
 }
 
 }  // namespace internal

@@ -9,12 +9,14 @@ load(
     "rust_cc_proto_library",
 )
 
+package(default_applicable_licenses = ["//:license"])
+
 cc_library(
     name = "test_utils",
     srcs = ["test_utils.cc"],
     deps = [
         ":interop_test_cc_proto",
-        "//rust/cpp_kernel:cpp_api",
+        "//rust:cpp_api",
         "//src/google/protobuf",
         "@abseil-cpp//absl/log:absl_check",
         "@abseil-cpp//absl/strings",
@@ -24,6 +26,7 @@ cc_library(
 rust_test(
     name = "interop_test",
     srcs = ["main.rs"],
+    edition = "2024",
     deps = [
         ":interop_test_cpp_rust_proto",
         ":test_utils",

@@ -73,7 +73,7 @@ void WriteEnum(JsonWriter& writer, Field<Traits> field, int32_t value,
   if (!writer.options().always_print_enums_as_ints) {
     auto name = Traits::EnumNameByNumber(field, value);
     if (name.ok()) {
-      writer.Write("\"", *name, "\"");
+      writer.Write(MakeQuoted(*name));
       return;
     }
   }
@@ -86,7 +86,7 @@ void WriteEnum(JsonWriter& writer, Field<Traits> field, int32_t value,
 }
 
 // Returns true if x round-trips through being cast to a double, i.e., if
-// x is represenable exactly as a double. This is a slightly weaker condition
+// x is representable exactly as a double. This is a slightly weaker condition
 // than x < 2^52.
 template <typename Int>
 bool RoundTripsThroughDouble(Int x) {
@@ -275,8 +275,8 @@ absl::Status WriteRepeated(JsonWriter& writer, const Msg<Traits>& msg,
   return absl::OkStatus();
 }
 
-template <typename Traits>
-absl::Status WriteMapKey(JsonWriter& writer, const Msg<Traits>& entry,
+template <typename Traits, typename Entry>
+absl::Status WriteMapKey(JsonWriter& writer, const Entry& entry,
                          Field<Traits> field) {
   switch (Traits::FieldType(field)) {
     case FieldDescriptor::TYPE_SFIXED64:
@@ -351,34 +351,68 @@ absl::StatusOr<bool> IsEmptyValue(const Msg<Traits>& msg, Field<Traits> field) {
 }
 
 template <typename Traits>
+absl::StatusOr<bool> IsEmptyValue(const MapValueConstRef& value,
+                                  Field<Traits> field) {
+  if (ClassifyMessage(Traits::FieldTypeName(field)) != MessageType::kValue) {
+    return false;
+  }
+  const auto& inner = value.GetMessageValue();
+  return IsEmpty<Traits>(inner, *field->message_type());
+}
+
+template <typename Traits>
 absl::Status WriteMap(JsonWriter& writer, const Msg<Traits>& msg,
                       Field<Traits> field) {
   writer.Write("{");
   writer.Push();
 
-  size_t count = Traits::GetSize(field, msg);
   bool first = true;
-  for (size_t i = 0; i < count; ++i) {
-    absl::StatusOr<const Msg<Traits>*> entry =
-        Traits::GetMessage(field, msg, i);
-    RETURN_IF_ERROR(entry.status());
-    const Desc<Traits>& type = Traits::GetDesc(**entry);
 
-    auto is_empty = IsEmptyValue<Traits>(**entry, Traits::ValueField(type));
-    RETURN_IF_ERROR(is_empty.status());
-    if (*is_empty) {
-      // Empty google.protobuf.Values are silently discarded.
-      continue;
+  if (Traits::MapFieldUseMapReflection(field, msg)) {
+    RETURN_IF_ERROR(Traits::ForEachMapEntry(
+        field, msg, [&](auto it, const auto& type) -> absl::Status {
+          auto is_empty =
+              IsEmptyValue<Traits>(it.GetValueRef(), Traits::ValueField(type));
+          RETURN_IF_ERROR(is_empty.status());
+          if (*is_empty) {
+            // Empty google.protobuf.Values are silently discarded.
+            return absl::OkStatus();
+          }
+
+          writer.WriteComma(first);
+          writer.NewLine();
+          RETURN_IF_ERROR(
+              WriteMapKey<Traits>(writer, it.GetKey(), Traits::KeyField(type)));
+          writer.Write(":");
+          writer.Whitespace(" ");
+          RETURN_IF_ERROR(WriteSingular<Traits>(
+              writer, Traits::ValueField(type), it.GetValueRef()));
+          return absl::OkStatus();
+        }));
+  } else {
+    const size_t count = Traits::GetSize(field, msg);
+    for (size_t i = 0; i < count; ++i) {
+      absl::StatusOr<const Msg<Traits>*> entry =
+          Traits::GetMessage(field, msg, i);
+      RETURN_IF_ERROR(entry.status());
+      const Desc<Traits>& type = Traits::GetDesc(**entry);
+
+      auto is_empty = IsEmptyValue<Traits>(**entry, Traits::ValueField(type));
+      RETURN_IF_ERROR(is_empty.status());
+      if (*is_empty) {
+        // Empty google.protobuf.Values are silently discarded.
+        continue;
+      }
+
+      writer.WriteComma(first);
+      writer.NewLine();
+      RETURN_IF_ERROR(
+          WriteMapKey<Traits>(writer, **entry, Traits::KeyField(type)));
+      writer.Write(":");
+      writer.Whitespace(" ");
+      RETURN_IF_ERROR(
+          WriteSingular<Traits>(writer, Traits::ValueField(type), **entry));
     }
-
-    writer.WriteComma(first);
-    writer.NewLine();
-    RETURN_IF_ERROR(
-        WriteMapKey<Traits>(writer, **entry, Traits::KeyField(type)));
-    writer.Write(":");
-    writer.Whitespace(" ");
-    RETURN_IF_ERROR(
-        WriteSingular<Traits>(writer, Traits::ValueField(type), **entry));
   }
 
   writer.Pop();

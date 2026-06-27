@@ -110,7 +110,8 @@ class Any extends \Google\Protobuf\Internal\AnyBase
      *           Holds a Protobuf serialization of the type described by type_url.
      * }
      */
-    public function __construct($data = NULL) {
+    public function __construct($data = null)
+    {
         \GPBMetadata\Google\Protobuf\Any::initOnce();
         parent::__construct($data);
     }

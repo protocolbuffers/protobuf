@@ -36,7 +36,8 @@ class FloatValue extends \Google\Protobuf\Internal\Message
      *           The float value.
      * }
      */
-    public function __construct($data = NULL) {
+    public function __construct($data = null)
+    {
         \GPBMetadata\Google\Protobuf\Wrappers::initOnce();
         parent::__construct($data);
     }

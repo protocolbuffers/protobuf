@@ -39,13 +39,13 @@
 #endif
 #include "google/protobuf/stubs/callback.h"
 #include "google/protobuf/stubs/common.h"
-#include "google/protobuf/compiler/cpp/helpers.h"
 #include "google/protobuf/descriptor.pb.h"
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 #include "absl/base/casts.h"
 #include "absl/strings/substitute.h"
 #include "google/protobuf/arena.h"
+#include "google/protobuf/compiler/cpp/helpers.h"
 #include "google/protobuf/compiler/cpp/test_bad_identifiers_editions.pb.h"
 #include "google/protobuf/compiler/cpp/test_bad_identifiers_proto2.pb.h"
 #include "google/protobuf/compiler/importer.h"
@@ -876,9 +876,11 @@ TEST(GENERATED_MESSAGE_TEST_NAME, TestSpaceUsed) {
   message1->mutable_optional_nested_message();
   ASSERT_EQ(sizeof(UNITTEST::TestAllTypes::NestedMessage),
             message1->optional_nested_message().SpaceUsedLong());
-  EXPECT_EQ(previous_size +
-            sizeof(UNITTEST::TestAllTypes::NestedMessage),
-            message1->SpaceUsedLong());
+  if constexpr (internal::ForceEagerlyVerifiedLazyInProtoc()) {
+  } else {
+    EXPECT_EQ(previous_size + sizeof(UNITTEST::TestAllTypes::NestedMessage),
+              message1->SpaceUsedLong());
+  }
 }
 
 TEST(GENERATED_MESSAGE_TEST_NAME, TestOneofSpaceUsed) {
@@ -1309,13 +1311,15 @@ TEST_F(GENERATED_SERVICE_TEST_NAME, CallMethodTypeFailure) {
   EXPECT_DEBUG_DEATH(
       mock_service_.CallMethod(foo_, &mock_controller_, &foo_request_,
                                &bar_response_, done_.get()),
-      "DynamicCastMessage");
+      "Cannot downcast proto2_unittest.*.BarResponse to "
+      "proto2_unittest.*.FooResponse");
 
   mock_service_.Reset();
   EXPECT_DEBUG_DEATH(
       mock_service_.CallMethod(foo_, &mock_controller_, &bar_request_,
                                &foo_response_, done_.get()),
-      "DynamicCastMessage");
+      "Cannot downcast proto2_unittest.*.BarRequest to "
+      "proto2_unittest.*.FooRequest");
 #endif  // GTEST_HAS_DEATH_TEST
 }
 

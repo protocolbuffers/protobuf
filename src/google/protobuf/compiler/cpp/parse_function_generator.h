@@ -13,7 +13,9 @@
 #include <vector>
 
 #include "absl/container/flat_hash_map.h"
+#include "absl/functional/function_ref.h"
 #include "absl/strings/string_view.h"
+#include "absl/types/optional.h"
 #include "absl/types/span.h"
 #include "google/protobuf/compiler/cpp/helpers.h"
 #include "google/protobuf/compiler/cpp/options.h"
@@ -38,28 +40,50 @@ class ParseFunctionGenerator {
   // is present. Assign a 50% probability to avoid pessimizing it.
   static constexpr float kUnknownPresenceProbability = 0.5f;
 
+  // We can't directly depend on FieldLayout because the layout optimizers
+  // construct "virtual" fast parse tables using this class. Instead, we allow
+  // callers to provide a function that returns the hasbit index for a given
+  // field.
+  using GetHasBitIndex = absl::FunctionRef<absl::optional<int>(
+      const FieldDescriptor* field) const>;
+
   ParseFunctionGenerator(
-      const Descriptor* descriptor, int max_has_bit_index,
-      absl::Span<const int> has_bit_indices, const Options& options,
+      const Descriptor* descriptor, bool has_hasbits,
+      GetHasBitIndex get_has_bit_index, const Options& options,
       const absl::flat_hash_map<absl::string_view, std::string>& vars,
       int index_in_file_messages);
+
+  // Construct a ParseFunctionGenerator ignoring the effect of hasbits.
+  ParseFunctionGenerator(
+      const Descriptor* descriptor, const Options& options,
+      const absl::flat_hash_map<absl::string_view, std::string>& vars,
+      int index_in_file_messages)
+      : ParseFunctionGenerator(
+            descriptor, /*has_hasbits=*/false,
+            [](const FieldDescriptor*) { return absl::nullopt; }, options, vars,
+            index_in_file_messages) {}
 
   static std::vector<internal::TailCallTableInfo::FieldOptions>
   BuildFieldOptions(const Descriptor* descriptor,
                     absl::Span<const FieldDescriptor* const> ordered_fields,
-                    const Options& options,
-                    absl::Span<const int> has_bit_indices);
+                    GetHasBitIndex get_has_bit_index, const Options& options);
 
   static internal::TailCallTableInfo BuildTcTableInfoFromDescriptor(
       const Descriptor* descriptor, const Options& options,
       absl::Span<const internal::TailCallTableInfo::FieldOptions>
           field_options);
 
+  // Emit alias parse table type.
+  void GenerateAliasParseTableType(io::Printer* printer);
+
   // Emits class-level data member declarations to `printer`:
   void GenerateDataDecls(io::Printer* printer);
 
   // Emits out-of-class data member definitions to `printer`:
   void GenerateDataDefinitions(io::Printer* printer);
+
+  // Emits the helper function definition to `printer`:
+  void GenerateParseTableHelperDefinition(io::Printer* printer);
 
  private:
   friend class TailCallTableInfoTest;
@@ -77,7 +101,7 @@ class ParseFunctionGenerator {
   absl::flat_hash_map<absl::string_view, std::string> variables_;
   std::unique_ptr<internal::TailCallTableInfo> tc_table_info_;
   const std::vector<const FieldDescriptor*> ordered_fields_;
-  int num_hasbits_;
+  bool has_hasbits_;
   int index_in_file_messages_;
 };
 

@@ -167,9 +167,10 @@ const char* ExtensionSet::ParseFieldWithExtensionInfo(
         MessageLite* value =
             info.is_repeated
                 ? AddMessage(arena, number, WireFormatLite::TYPE_GROUP,
-                             info.message_info.GetClassData(), info.descriptor)
+                             *info.message_info.GetPrototype(), info.descriptor)
                 : MutableMessage(arena, number, WireFormatLite::TYPE_GROUP,
-                                 *info.message_info.prototype, info.descriptor);
+                                 *info.message_info.GetPrototype(),
+                                 info.descriptor);
         uint32_t tag = (number << 3) + WireFormatLite::WIRETYPE_START_GROUP;
         return ctx->ParseGroup(value, ptr, tag);
       }
@@ -178,9 +179,10 @@ const char* ExtensionSet::ParseFieldWithExtensionInfo(
         MessageLite* value =
             info.is_repeated
                 ? AddMessage(arena, number, WireFormatLite::TYPE_MESSAGE,
-                             info.message_info.GetClassData(), info.descriptor)
+                             *info.message_info.GetPrototype(), info.descriptor)
                 : MutableMessage(arena, number, WireFormatLite::TYPE_MESSAGE,
-                                 *info.message_info.prototype, info.descriptor);
+                                 *info.message_info.GetPrototype(),
+                                 info.descriptor);
         return ctx->ParseMessage(value, ptr);
       }
     }
@@ -221,10 +223,10 @@ const char* ExtensionSet::ParseMessageSetItemTmpl(
           MessageLite* value =
               extension.is_repeated
                   ? AddMessage(arena, type_id, WireFormatLite::TYPE_MESSAGE,
-                               extension.message_info.GetClassData(),
+                               *extension.message_info.GetPrototype(),
                                extension.descriptor)
                   : MutableMessage(arena, type_id, WireFormatLite::TYPE_MESSAGE,
-                                   *extension.message_info.prototype,
+                                   *extension.message_info.GetPrototype(),
                                    extension.descriptor);
 
           const char* p;

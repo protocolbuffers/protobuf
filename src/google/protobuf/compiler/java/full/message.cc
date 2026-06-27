@@ -1080,9 +1080,7 @@ void ImmutableMessageGenerator::GenerateEqualsAndHashCode(
       "if (!getUnknownFields().equals(other.getUnknownFields())) return "
       "false;\n");
   if (descriptor_->extension_range_count() > 0) {
-    printer->Print(
-        "if (!getExtensionFields().equals(other.getExtensionFields()))\n"
-        "  return false;\n");
+    printer->Print("if (!extensionsEquals(other)) return false;\n");
   }
   printer->Print("return true;\n");
   printer->Outdent();
@@ -1190,15 +1188,17 @@ void ImmutableMessageGenerator::GenerateParser(io::Printer* printer) {
       "    Builder builder = newBuilder();\n"
       "    try {\n"
       "      builder.mergeFrom(input, extensionRegistry);\n"
-      "    } catch (com.google.protobuf.InvalidProtocolBufferException e) {\n"
-      "      throw e.setUnfinishedMessage(builder.buildPartial());\n"
-      "    } catch (com.google.protobuf.UninitializedMessageException e) {\n"
-      "      throw "
-      "e.asInvalidProtocolBufferException().setUnfinishedMessage(builder."
-      "buildPartial());\n"
-      "    } catch (java.io.IOException e) {\n"
-      "      throw new com.google.protobuf.InvalidProtocolBufferException(e)\n"
-      "          .setUnfinishedMessage(builder.buildPartial());\n"
+      // clang-format off
+    "    } catch (com.google.protobuf.InvalidProtocolBufferException e) {\n"
+    "      throw e.setUnfinishedMessage(builder.buildPartial());\n"
+    "    } catch (com.google.protobuf.UninitializedMessageException e) {\n"
+    "      throw "
+    "e.asInvalidProtocolBufferException().setUnfinishedMessage(builder."
+    "buildPartial());\n"
+    "    } catch (java.io.IOException e) {\n"
+    "      throw new com.google.protobuf.InvalidProtocolBufferException(e)\n"
+    "          .setUnfinishedMessage(builder.buildPartial());\n"
+      // clang-format on
       "    }\n"
       "    return builder.buildPartial();\n"
       "  }\n"

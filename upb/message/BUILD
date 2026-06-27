@@ -9,7 +9,7 @@ load("@bazel_skylib//rules:common_settings.bzl", "bool_flag")
 load("@rules_cc//cc:cc_test.bzl", "cc_test")
 load("@rules_cc//cc:defs.bzl", "cc_library")
 load("//bazel:proto_library.bzl", "proto_library")
-load("//upb/bazel:copts.bzl", "UPB_DEFAULT_COPTS", "UPB_DEFAULT_CPPOPTS")
+load("//upb/bazel:copts.bzl", "UPB_DEFAULT_COPTS", "UPB_DEFAULT_CPPOPTS", "UPB_DEFAULT_FEATURES")
 load(
     "//upb/bazel:upb_minitable_proto_library.bzl",
     "upb_minitable_proto_library",
@@ -42,6 +42,7 @@ cc_library(
         "value.h",
     ],
     copts = UPB_DEFAULT_COPTS,
+    features = UPB_DEFAULT_FEATURES,
     visibility = ["//visibility:public"],
     deps = [
         ":internal",
@@ -62,6 +63,7 @@ cc_library(
         "accessors.hpp",
     ],
     copts = UPB_DEFAULT_CPPOPTS,
+    features = UPB_DEFAULT_FEATURES,
     visibility = ["//upb:__subpackages__"],
     deps = [
         ":message",
@@ -86,6 +88,7 @@ cc_library(
         "internal/message.h",
     ],
     copts = UPB_DEFAULT_COPTS,
+    features = UPB_DEFAULT_FEATURES,
     visibility = ["//visibility:public"],
     deps = [
         ":types",
@@ -108,6 +111,7 @@ cc_library(
         "internal/iterator.h",
     ],
     copts = UPB_DEFAULT_COPTS,
+    features = UPB_DEFAULT_FEATURES,
     visibility = ["//visibility:public"],
     deps = [
         ":internal",
@@ -128,6 +132,7 @@ cc_library(
         "internal/compare_unknown.h",
     ],
     copts = UPB_DEFAULT_COPTS,
+    features = UPB_DEFAULT_FEATURES,
     visibility = ["//visibility:public"],
     deps = [
         ":internal",
@@ -154,6 +159,7 @@ cc_library(
         "merge.h",
     ],
     copts = UPB_DEFAULT_COPTS,
+    features = UPB_DEFAULT_FEATURES,
     visibility = ["//visibility:public"],
     deps = [
         ":internal",
@@ -177,6 +183,7 @@ cc_library(
         "promote.h",
     ],
     copts = UPB_DEFAULT_COPTS,
+    features = UPB_DEFAULT_FEATURES,
     visibility = ["//visibility:public"],
     deps = [
         ":internal",
@@ -188,6 +195,62 @@ cc_library(
         "//upb/wire",
         "//upb/wire:eps_copy_input_stream",
         "//upb/wire:reader",
+    ],
+)
+
+# Experimental API, subject to change.
+cc_library(
+    name = "convert",
+    srcs = [
+        "convert.c",
+    ],
+    hdrs = [
+        "convert.h",
+    ],
+    copts = UPB_DEFAULT_COPTS,
+    visibility = [
+        "//upb:__pkg__",
+        "//upb:friends",
+    ],
+    deps = [
+        ":compare",
+        ":internal",
+        ":message",
+        "//upb/base",
+        "//upb/mem",
+        "//upb/mini_table",
+        "//upb/mini_table:internal",
+        "//upb/port",
+        "//upb/wire:back_alloc",
+        "//upb/wire:decoder",
+        "//upb/wire:encoder",
+        "//upb/wire:eps_copy_input_stream",
+    ],
+)
+
+cc_test(
+    name = "convert_test",
+    srcs = ["convert_test.cc"],
+    deps = [
+        ":convert",
+        ":convert_test_upb_minitable_proto",
+        ":convert_test_upb_proto",
+        ":internal",
+        ":message",
+        ":message_test_upb_minitable_proto",
+        ":message_test_upb_proto",
+        ":promote",
+        "//upb/base",
+        "//upb/mem",
+        "//upb/mini_table",
+        "//upb/port",
+        "//upb/test:test_messages_proto2_upb_proto",
+        "//upb/test:test_messages_proto3_upb_minitable",
+        "//upb/test:test_messages_proto3_upb_proto",
+        "//upb/test:test_upb_proto",
+        "//upb/wire",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
     ],
 )
 
@@ -217,9 +280,12 @@ cc_library(
         "accessors_split64.h",
     ],
     copts = UPB_DEFAULT_COPTS,
+    features = UPB_DEFAULT_FEATURES,
     visibility = ["//visibility:public"],
     deps = [
         ":message",
+        "//upb/mem",
+        "//upb/mini_table",
         "//upb/port",
     ],
 )
@@ -231,6 +297,7 @@ cc_library(
         "internal/types.h",
     ],
     copts = UPB_DEFAULT_COPTS,
+    features = UPB_DEFAULT_FEATURES,
     visibility = ["//visibility:public"],
     deps = [
         "//upb/base",
@@ -249,6 +316,7 @@ proto_library(
 upb_minitable_proto_library(
     name = "message_test_upb_minitable_proto",
     testonly = 1,
+    visibility = ["//upb:__subpackages__"],
     deps = [":message_test_proto"],
 )
 
@@ -334,6 +402,7 @@ cc_test(
         "//upb/port",
         "//upb/test:test_messages_proto2_upb_minitable",
         "//upb/test:test_messages_proto2_upb_proto",
+        "//upb/test:test_proto_upb_minitable",
         "//upb/test:test_upb_proto",
         "//upb/wire",
         "@abseil-cpp//absl/container:flat_hash_set",
@@ -400,8 +469,10 @@ cc_test(
         ":fuzz_dump_minitable_enabled": ["-DUPB_FUZZ_DUMP_MINITABLE"],
         "//conditions:default": [],
     }),
+    features = UPB_DEFAULT_FEATURES,
     deps = [
         ":compare",
+        ":convert",
         ":internal",
         ":message",
         ":message_test_upb_minitable_proto",
@@ -503,7 +574,10 @@ filegroup(
         [
             "**/*test.cc",
         ],
-        exclude = ["promote_test.cc"],
+        exclude = [
+            "promote_test.cc",
+            "convert_fuzz_test.cc",
+        ],
     ),
     visibility = ["//upb:__pkg__"],
 )
@@ -516,4 +590,22 @@ filegroup(
         ],
     ),
     visibility = ["//upb:__pkg__"],
+)
+
+proto_library(
+    name = "convert_test_proto",
+    testonly = 1,
+    srcs = ["convert_test.proto"],
+)
+
+upb_minitable_proto_library(
+    name = "convert_test_upb_minitable_proto",
+    testonly = 1,
+    deps = [":convert_test_proto"],
+)
+
+upb_c_proto_library(
+    name = "convert_test_upb_proto",
+    testonly = 1,
+    deps = [":convert_test_proto"],
 )

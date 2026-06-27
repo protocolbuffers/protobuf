@@ -570,7 +570,6 @@ namespace Google.Protobuf
                 throw InvalidProtocolBufferException.NegativeSize();
             }
 
-#if GOOGLE_PROTOBUF_SUPPORT_FAST_STRING
             if (length <= state.bufferSize - state.bufferPos)
             {
                 // Fast path: all bytes to decode appear in the same span.
@@ -595,7 +594,6 @@ namespace Google.Protobuf
                 state.bufferPos += length;
                 return value;
             }
-#endif
 
             return ReadStringSlow(ref buffer, ref state, length);
         }
@@ -607,7 +605,6 @@ namespace Google.Protobuf
         {
             ValidateCurrentLimit(ref buffer, ref state, length);
 
-#if GOOGLE_PROTOBUF_SUPPORT_FAST_STRING
             if (IsDataAvailable(ref state, length))
             {
                 // Read string data into a temporary buffer, either stackalloc'ed or from ArrayPool
@@ -649,7 +646,6 @@ namespace Google.Protobuf
                     }
                 }
             }
-#endif
 
             // Slow path: Build a byte array first then copy it.
             // This will be called when reading from a Stream because we don't know the length of the stream,
