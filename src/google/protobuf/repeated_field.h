@@ -1257,10 +1257,10 @@ inline void RepeatedField<Element>::MergeFrom(const RepeatedField& other) {
   const bool other_is_soo = other.is_soo();
   if (auto other_size = other.size()) {
     const int old_size = size();
-    Reserve(old_size + other_size);
+    const int new_size = internal::CheckedAdd(old_size, other_size);
+    Reserve(new_size);
     const bool is_soo = this->is_soo();
-    Element* dst =
-        elements(is_soo) + ExchangeCurrentSize(old_size + other_size);
+    Element* dst = elements(is_soo) + ExchangeCurrentSize(new_size);
     UninitializedCopyN(other.elements(other_is_soo), other_size, dst);
   }
 }
