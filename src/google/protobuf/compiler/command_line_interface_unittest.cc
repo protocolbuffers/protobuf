@@ -5985,6 +5985,17 @@ TEST_P(EncodeDecodeTest, Partial) {
   ExpectWarning("warning:  Input message is missing required fields:  a, b, c");
 }
 
+TEST_P(EncodeDecodeTest, PartialWithFatalWarnings) {
+  RedirectStdinFromText("");
+  // With --fatal_warnings, the missing-required-fields warning must make protoc
+  // exit non-zero, while still emitting the warning and the output.
+  EXPECT_FALSE(
+      Run("google/protobuf/unittest.proto"
+          " --encode=proto2_unittest.TestRequired --fatal_warnings"));
+  ExpectStdoutMatchesText("");
+  ExpectWarning("warning:  Input message is missing required fields:  a, b, c");
+}
+
 TEST_P(EncodeDecodeTest, DecodeRaw) {
   proto2_unittest::TestAllTypes message;
   message.set_optional_int32(123);
