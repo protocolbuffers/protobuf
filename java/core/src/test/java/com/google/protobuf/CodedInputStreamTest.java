@@ -1238,6 +1238,129 @@ public class CodedInputStreamTest {
   }
 
   @Test
+  public void testRefillBufferSizeLimitExceptionClassification() throws Exception {
+    // Verify that refillBuffer throws sizeLimitExceeded (not truncatedMessage) when the size
+    // limit is exceeded. Uses the refill path by choosing a buffer size smaller than the data.
+    byte[] data = new byte[256];
+    for (int bufferSize = 8; bufferSize <= 32; bufferSize++) {
+      CodedInputStream input =
+          CodedInputStream.newInstance(new ByteArrayInputStream(data), bufferSize);
+      input.setSizeLimit(50);
+
+      // Read up to the limit -- this should succeed.
+      input.readRawBytes(48);
+
+      // Next read crosses sizeLimit and triggers refillBuffer. Must throw sizeLimitExceeded.
+      try {
+        input.readRawBytes(16);
+        assertWithMessage("Should have thrown an exception!").fail();
+      } catch (InvalidProtocolBufferException expected) {
+        checkSizeLimitExceeded(expected);
+      }
+    }
+  }
+
+  @Test
+  public void testRefillBufferSizeLimitAfterLargeConsumption() throws Exception {
+    // After consuming a large amount of data, lowering sizeLimit below the already-consumed
+    // position must still throw sizeLimitExceeded (not truncatedMessage) on the next read.
+    // This exercises the overflow-conscious check in refillBuffer.
+    InputStream largeInput =
+        new InputStream() {
+          private long remaining = 5L * Integer.MAX_VALUE;
+
+          @Override
+          public int read() {
+            if (remaining <= 0) return -1;
+            remaining--;
+            return 0;
+          }
+
+          @Override
+          public int read(byte[] b, int off, int len) {
+            if (remaining <= 0) return -1;
+            if (len <= 0) return 0;
+            int toRead = (int) Math.min(len, remaining);
+            Arrays.fill(b, off, off + toRead, (byte) 0);
+            remaining -= toRead;
+            return toRead;
+          }
+
+          @Override
+          public long skip(long n) {
+            long toSkip = Math.min(n, remaining);
+            remaining -= toSkip;
+            return toSkip;
+          }
+
+          @Override
+          public int available() {
+            return remaining > Integer.MAX_VALUE ? Integer.MAX_VALUE : (int) remaining;
+          }
+        };
+
+    CodedInputStream stream = CodedInputStream.newInstance(largeInput);
+    stream.setSizeLimit(Integer.MAX_VALUE);
+
+    // Consume a large amount, approaching Integer.MAX_VALUE.
+    stream.skipRawBytes(Integer.MAX_VALUE - 1024);
+
+    // Lower the size limit below what was already consumed.
+    stream.setSizeLimit(100);
+
+    // Any further read must throw sizeLimitExceeded.
+    try {
+      stream.readRawByte();
+      assertWithMessage("Should have thrown an exception!").fail();
+    } catch (InvalidProtocolBufferException expected) {
+      checkSizeLimitExceeded(expected);
+    }
+  }
+
+  @Test
+  public void testTryRefillBufferNonNegativeReadLength() throws Exception {
+    // Verify that tryRefillBuffer never passes a negative length to InputStream.read().
+    // Uses a custom InputStream that throws on negative len.
+    final byte[] backing = new byte[256];
+    InputStream guardedInput =
+        new InputStream() {
+          private int position = 0;
+
+          @Override
+          public int read() {
+            return position < backing.length ? backing[position++] & 0xff : -1;
+          }
+
+          @Override
+          public int read(byte[] b, int off, int len) {
+            if (len < 0) {
+              throw new IllegalArgumentException("Negative read length: " + len);
+            }
+            if (position >= backing.length) return -1;
+            int toRead = Math.min(len, backing.length - position);
+            System.arraycopy(backing, position, b, off, toRead);
+            position += toRead;
+            return toRead;
+          }
+        };
+
+    CodedInputStream input = CodedInputStream.newInstance(guardedInput, 16);
+    input.setSizeLimit(50);
+
+    // Read data until we exhaust the sizeLimit. The internal refill path should
+    // never produce a negative read length even when totalBytesRetired + bufferSize
+    // approaches or exceeds sizeLimit.
+    try {
+      for (int i = 0; i < 256; i++) {
+        input.readRawByte();
+      }
+      assertWithMessage("Should have thrown an exception!").fail();
+    } catch (InvalidProtocolBufferException expected) {
+      checkSizeLimitExceeded(expected);
+    }
+  }
+
+  @Test
   public void testIsAtEnd() throws Exception {
     CodedInputStream input =
         CodedInputStream.newInstance(
