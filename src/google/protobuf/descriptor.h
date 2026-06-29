@@ -32,8 +32,11 @@
 #define GOOGLE_PROTOBUF_DESCRIPTOR_H__
 
 #include <atomic>
+#include <cstddef>
 #include <cstdint>
+#include <cstring>
 #include <iterator>
+#include <limits>
 #include <memory>
 #include <string>
 #include <type_traits>
@@ -49,6 +52,7 @@
 #include "absl/functional/function_ref.h"
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
+#include "absl/log/log.h"
 #include "absl/strings/str_format.h"
 #include "absl/strings/string_view.h"
 #include "absl/synchronization/mutex.h"
@@ -157,6 +161,10 @@ class DescriptorTest;
 class FeaturesTest;
 class ValidationErrorTest;
 }  // namespace descriptor_unittest
+
+namespace json_internal {
+struct Proto2Descriptor;
+}  // namespace json_internal
 
 // Defined in printer.h
 namespace io {
@@ -2693,6 +2701,7 @@ class PROTOBUF_EXPORT DescriptorPool {
   friend class TextFormat;
   friend Reflection;
   friend class ::google::protobuf::compiler::java::MemoizeProjection;
+  friend struct ::google::protobuf::json_internal::Proto2Descriptor;
 
   struct MemoBase {
     virtual ~MemoBase() = default;

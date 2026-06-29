@@ -902,6 +902,7 @@ cc_library(
         "@abseil-cpp//absl/functional:function_ref",
         "@abseil-cpp//absl/functional:overload",
         "@abseil-cpp//absl/hash",
+        "@abseil-cpp//absl/log",
         "@abseil-cpp//absl/log:absl_check",
         "@abseil-cpp//absl/log:absl_log",
         "@abseil-cpp//absl/memory",

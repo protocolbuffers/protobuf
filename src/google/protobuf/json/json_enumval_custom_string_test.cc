@@ -96,6 +96,20 @@ TEST(JsonEnumvalCustomStringTest, CaseInsensitiveGauntletParsing) {
   EXPECT_EQ(msg2.armor(), Armor::ARMOR_GAUNTLET);
 }
 
+// Test that regular case-insensitive payloads can still be parsed.
+TEST(JsonEnumvalCustomStringTest, CaseInsensitiveGauntletRawNameParsing) {
+  std::string json_res = "{\"armor\":\"armor_GAUNtlet\"}";
+  json::ParseOptions parse_options;
+  parse_options.case_insensitive_enum_parsing = true;
+
+  Knight msg2;
+  absl::Status parse_status =
+      json::JsonStringToMessage(json_res, &msg2, parse_options);
+
+  EXPECT_OK(parse_status);
+  EXPECT_EQ(msg2.armor(), Armor::ARMOR_GAUNTLET);
+}
+
 // Test quotes surrounding the custom json enumval.
 TEST(JsonEnumvalCustomStringTest, DoubleQuoteEnumSerialization) {
   Knight msg;
