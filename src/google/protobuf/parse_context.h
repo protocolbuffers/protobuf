@@ -670,7 +670,7 @@ class PROTOBUF_EXPORT EpsCopyInputStream {
 
 using LazyEagerVerifyFnType = const char* (*)(const char* ptr,
                                               ParseContext* ctx);
-using LazyEagerVerifyFnRef = std::remove_pointer<LazyEagerVerifyFnType>::type&;
+using LazyEagerVerifyFnRef = std::remove_pointer_t<LazyEagerVerifyFnType>&;
 
 // ParseContext holds all data that is global to the entire parse. Most
 // importantly it contains the input stream, but also recursion depth and also
