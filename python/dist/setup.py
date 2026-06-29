@@ -86,6 +86,7 @@ setup(
             include_dirs=[current_dir, os.path.join(current_dir, 'utf8_range')],
             language='c',
             extra_link_args=extra_link_args,
+            extra_compile_args=["-fvisibility=hidden"],
         )
     ],
     python_requires='>=3.10',
