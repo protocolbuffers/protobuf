@@ -708,6 +708,7 @@ cc_library(
         "inlined_string_field.cc",
         "map.cc",
         "message_lite.cc",
+        "offset_ptr.cc",
         "parse_context.cc",
         "raw_ptr.cc",
         "repeated_field.cc",
@@ -741,6 +742,7 @@ cc_library(
         "map_type_handler.h",
         "message_lite.h",
         "metadata_lite.h",
+        "offset_ptr.h",
         "parse_context.h",
         "raw_ptr.h",
         "repeated_field.h",
@@ -961,6 +963,17 @@ cc_test(
     deps = [
         ":naming_style",
         "@abseil-cpp//absl/status:status_matchers",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "offset_ptr_test",
+    srcs = ["offset_ptr_test.cc"],
+    deps = [
+        ":cc_test_protos",
+        ":protobuf_lite",
         "@googletest//:gtest",
         "@googletest//:gtest_main",
     ],
