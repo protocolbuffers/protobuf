@@ -2586,6 +2586,9 @@ void TextFormat::Printer::PrintMessage(const Message& message,
   const Reflection* reflection = message.GetReflection();
   std::vector<const FieldDescriptor*> fields;
   if (descriptor->options().map_entry()) {
+    ABSL_CHECK(descriptor->field_count() == 2)
+        << "map_entry message " << descriptor->full_name()
+        << " has " << descriptor->field_count() << " fields, expected 2";
     fields.push_back(descriptor->field(0));
     fields.push_back(descriptor->field(1));
   } else {

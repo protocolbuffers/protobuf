@@ -7084,6 +7084,15 @@ void internal::DescriptorBuilder::CrossLinkMessage(
     }
   }
 
+  // Validate map_entry messages have exactly 2 fields (key and value).
+  // This check runs unconditionally, not only when a parent field references
+  // the message, to prevent construction of invalid map_entry descriptors
+  // that cause null dereferences in TextFormat::PrintMessage.
+  if (message->options().map_entry() && message->field_count() != 2) {
+    AddError(message->full_name(), proto, DescriptorPool::ErrorCollector::NAME,
+             "Messages with map_entry set must have exactly 2 fields.");
+  }
+
   for (int i = 0; i < message->field_count(); i++) {
     const FieldDescriptor* field = message->field(i);
     if (field->proto3_optional_) {
