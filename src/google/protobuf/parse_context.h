@@ -173,11 +173,7 @@ class PROTOBUF_EXPORT EpsCopyInputStream {
     // This add is safe due to the invariant above, because
     // ptr - buffer_end_ <= kSlopBytes.
     limit += static_cast<int>(ptr - buffer_end_);
-    if (ABSL_PREDICT_TRUE(limit <= 0)) {
-      limit_end_ = buffer_end_ + limit;
-    } else {
-      limit_end_ = buffer_end_;
-    }
+    limit_end_ = buffer_end_ + (std::min)(0, limit);
     auto old_limit = limit_;
     limit_ = limit;
     return LimitToken(old_limit - limit);
@@ -186,16 +182,11 @@ class PROTOBUF_EXPORT EpsCopyInputStream {
   [[nodiscard]] bool PopLimit(LimitToken delta) {
     // We must update the limit first before the early return. Otherwise, we can
     // end up with an invalid limit and it can lead to integer overflows.
-    int old_limit = limit_ + std::move(delta).token();
-    limit_ = old_limit;
+    limit_ = limit_ + std::move(delta).token();
     if (ABSL_PREDICT_FALSE(!EndedAtLimit())) return false;
     // TODO We could remove this line and hoist the code to
     // DoneFallback. Study the perf/bin-size effects.
-    if (ABSL_PREDICT_TRUE(old_limit <= 0)) {
-      limit_end_ = buffer_end_ + old_limit;
-    } else {
-      limit_end_ = buffer_end_;
-    }
+    limit_end_ = buffer_end_ + (std::min)(0, limit_);
     return true;
   }
 
