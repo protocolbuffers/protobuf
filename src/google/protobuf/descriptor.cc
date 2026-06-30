@@ -4237,7 +4237,6 @@ void MethodDescriptor::GetLocationPath(std::vector<int>* output) const {
 // ===================================================================
 
 
-
 const FileDescriptor* DescriptorPool::BuildFile(
     const FileDescriptorProto& proto) {
   return BuildFileCollectingErrors(proto, nullptr);
@@ -9110,11 +9109,18 @@ bool internal::DescriptorBuilder::OptionInterpreter::InterpretSingleOption(
     return false;  // ExamineIfOptionIsSet() already added the error.
   }
 
+  // record the element path of the interpreted option
+  if (field->is_repeated()) {
+    int index = repeated_option_counts_[dest_path]++;
+    dest_path.push_back(index);
+  }
+
   // First set the value on the UnknownFieldSet corresponding to the
   // innermost message.
   std::unique_ptr<UnknownFieldSet> unknown_fields =
       std::make_unique<UnknownFieldSet>();
-  if (!SetOptionValue(field, unknown_fields.get(), options)) {
+  if (!SetOptionValue(field, unknown_fields.get(), options, src_path,
+                      dest_path)) {
     return false;  // SetOptionValue() already added the error.
   }
 
@@ -9155,11 +9161,6 @@ bool internal::DescriptorBuilder::OptionInterpreter::InterpretSingleOption(
   options->GetReflection()->MutableUnknownFields(options)->MergeFrom(
       *unknown_fields);
 
-  // record the element path of the interpreted option
-  if (field->is_repeated()) {
-    int index = repeated_option_counts_[dest_path]++;
-    dest_path.push_back(index);
-  }
   interpreted_paths_[src_path] = dest_path;
 
   return true;
@@ -9170,6 +9171,15 @@ void internal::DescriptorBuilder::OptionInterpreter::UpdateSourceCodeInfo(
   if (interpreted_paths_.empty()) {
     // nothing to do!
     return;
+  }
+
+  // Group all aggregate field locations by their uninterpreted option path
+  // prefix to enable O(1) lookup when mapping aggregate sub-field locations.
+  absl::flat_hash_map<SourceCodePath,
+                      std::vector<const AggregateFieldLocation*>>
+      agg_loc_map;
+  for (const AggregateFieldLocation& afl : aggregate_field_locations_) {
+    agg_loc_map[afl.uninterpreted_path].push_back(&afl);
   }
 
   // We find locations that match keys in interpreted_paths_ and
@@ -9235,9 +9245,27 @@ void internal::DescriptorBuilder::OptionInterpreter::UpdateSourceCodeInfo(
                                              match_dest.end());
           mapped_loc->add_path(uninterpreted_field);
 
-          // TODO: b/168903973 - recursively process options with aggregate
-          // values and add locations. Example: [(my_opt) = {a: 1, b: 2}]
-          // Locations of `a` and `b` are not added yet.
+          if (uninterpreted_field ==
+              UninterpretedOption::kAggregateValueFieldNumber) {
+            SourceCodePath agg_path(loc->path().begin(), loc->path().end());
+
+            auto it = agg_loc_map.find(agg_path);
+            if (it != agg_loc_map.end()) {
+              for (const AggregateFieldLocation* afl : it->second) {
+                SourceCodeInfo_Location* name_loc = new_locs.Add();
+                name_loc->mutable_path()->Assign(afl->field_dest_path.begin(),
+                                                 afl->field_dest_path.end());
+                name_loc->add_path(UninterpretedOption::kNameFieldNumber);
+                SetSpan(name_loc, *loc, afl->name_range);
+
+                SourceCodeInfo_Location* val_loc = new_locs.Add();
+                val_loc->mutable_path()->Assign(afl->field_dest_path.begin(),
+                                                afl->field_dest_path.end());
+                val_loc->add_path(afl->value_marker);
+                SetSpan(val_loc, *loc, afl->val_range);
+              }
+            }
+          }
         }
         // don't copy this row since it is a sub-location that we're removing
         // (or we already mapped it if it's a direct child)
@@ -9381,7 +9409,8 @@ std::string ValueMustBeInt(absl::string_view type_name,
 
 bool internal::DescriptorBuilder::OptionInterpreter::SetOptionValue(
     const FieldDescriptor* option_field, UnknownFieldSet* unknown_fields,
-    Message* options) {
+    Message* options, const SourceCodePath& src_path,
+    const SourceCodePath& dest_path) {
   // We switch on the CppType to validate.
   switch (option_field->cpp_type()) {
     case FieldDescriptor::CPPTYPE_INT32:
@@ -9613,7 +9642,8 @@ bool internal::DescriptorBuilder::OptionInterpreter::SetOptionValue(
                                          uninterpreted_option_->string_value());
       break;
     case FieldDescriptor::CPPTYPE_MESSAGE:
-      if (!SetAggregateOption(option_field, unknown_fields, options)) {
+      if (!SetAggregateOption(option_field, unknown_fields, options, src_path,
+                              dest_path)) {
         return false;
       }
   }
@@ -9694,7 +9724,8 @@ class AggregateErrorCollector : public io::ErrorCollector {
 // message, and serialize the resulting message to produce the value.
 bool internal::DescriptorBuilder::OptionInterpreter::SetAggregateOption(
     const FieldDescriptor* option_field, UnknownFieldSet* unknown_fields,
-    Message* options) {
+    Message* options, const SourceCodePath& src_path,
+    const SourceCodePath& dest_path) {
   if (!uninterpreted_option_->has_aggregate_value()) {
     return AddValueError([&] {
       return absl::StrCat("Option \"", option_field->full_name(),
@@ -9718,6 +9749,8 @@ bool internal::DescriptorBuilder::OptionInterpreter::SetAggregateOption(
   TextFormat::Parser parser;
   parser.RecordErrorsTo(&collector);
   parser.SetFinder(&finder);
+  TextFormat::ParseInfoTree info_tree;
+  parser.WriteLocationsTo(&info_tree);
   if (!parser.ParseFromString(uninterpreted_option_->aggregate_value(),
                               dynamic.get())) {
     if (get_allow_unknown(builder_->pool_)) {
@@ -9733,6 +9766,14 @@ bool internal::DescriptorBuilder::OptionInterpreter::SetAggregateOption(
       return false;
     }
   } else {
+    SourceCodePath mutable_src_path = src_path;
+    mutable_src_path.push_back(UninterpretedOption::kAggregateValueFieldNumber);
+    SourceCodePath mutable_dest_path = dest_path;
+    mutable_dest_path.push_back(
+        UninterpretedOption::kAggregateValueFieldNumber);
+    CollectAggregateFieldLocations(*dynamic, info_tree, mutable_src_path,
+                                   mutable_dest_path);
+
     std::string serial;
     ABSL_CHECK(dynamic->SerializeToString(&serial));  // Never fails
     if (option_field->type() == FieldDescriptor::TYPE_MESSAGE) {
@@ -9745,6 +9786,138 @@ bool internal::DescriptorBuilder::OptionInterpreter::SetAggregateOption(
     }
     return true;
   }
+}
+
+void DescriptorBuilder::OptionInterpreter::CollectAggregateFieldLocations(
+    const Message& message, const TextFormat::ParseInfoTree& tree,
+    const SourceCodePath& uninterpreted_path, SourceCodePath& dest_path) {
+  const Reflection* reflection = message.GetReflection();
+  std::vector<const FieldDescriptor*> fields;
+  reflection->ListFields(message, &fields);
+
+  for (const FieldDescriptor* field : fields) {
+    auto record_field_location = [&](const TextFormat::FieldLocation& loc,
+                                     size_t v_idx, int curr_idx) {
+      int val_marker_idx = field->is_repeated() ? curr_idx : -1;
+      dest_path.push_back(field->number());
+      if (field->is_repeated()) {
+        dest_path.push_back(curr_idx);
+      }
+
+      AggregateFieldLocation afl;
+      afl.uninterpreted_path = uninterpreted_path;
+      afl.field_dest_path = dest_path;
+      afl.value_marker = GetValueMarker(field, message, val_marker_idx);
+      afl.name_range = loc.name;
+      afl.val_range = loc.values[v_idx];
+      aggregate_field_locations_.push_back(std::move(afl));
+
+      if (field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
+        const Message& sub_message =
+            field->is_repeated()
+                ? reflection->GetRepeatedMessage(message, field, curr_idx)
+                : reflection->GetMessage(message, field);
+        const TextFormat::ParseInfoTree* sub_tree =
+            tree.GetTreeForNested(field, val_marker_idx);
+        if (sub_tree != nullptr) {
+          dest_path.push_back(UninterpretedOption::kAggregateValueFieldNumber);
+          CollectAggregateFieldLocations(sub_message, *sub_tree,
+                                         uninterpreted_path, dest_path);
+          dest_path.pop_back();
+        }
+      }
+
+      if (field->is_repeated()) {
+        dest_path.pop_back();
+      }
+      dest_path.pop_back();
+    };
+
+    if (field->is_repeated()) {
+      int curr_idx = 0;
+      // Text format allows two different syntaxes for repeated fields so
+      // we need to handle potential cases like this:
+      //
+      // a: [1, 2]
+      // a: 3
+      //
+      // Here the outer loop for field_occurrence will run for each occureence
+      // of `a`. While the inner loop will run for each value in the repeated
+      // field.
+      for (size_t field_occurrence = 0;; ++field_occurrence) {
+        absl::StatusOr<TextFormat::FieldLocation> location =
+            tree.GetFieldLocation(field, field_occurrence);
+        if (!location.ok()) break;
+        for (size_t v_idx = 0; v_idx < location->values.size(); ++v_idx) {
+          record_field_location(*location, v_idx, curr_idx);
+          ++curr_idx;
+        }
+      }
+    } else {
+      absl::StatusOr<TextFormat::FieldLocation> location =
+          tree.GetFieldLocation(field);
+      if (location.ok() && !location->values.empty()) {
+        record_field_location(*location, 0, -1);
+      } else {
+        ABSL_LOG(WARNING) << "No location in textformat found for field: "
+                          << field->name();
+      }
+    }
+  }
+}
+
+int DescriptorBuilder::OptionInterpreter::GetValueMarker(
+    const FieldDescriptor* field, const Message& message, int index) {
+  const Reflection* reflection = message.GetReflection();
+  switch (field->cpp_type()) {
+    case FieldDescriptor::CPPTYPE_INT32: {
+      int32_t val = field->is_repeated()
+                        ? reflection->GetRepeatedInt32(message, field, index)
+                        : reflection->GetInt32(message, field);
+      return val >= 0 ? UninterpretedOption::kPositiveIntValueFieldNumber
+                      : UninterpretedOption::kNegativeIntValueFieldNumber;
+    }
+    case FieldDescriptor::CPPTYPE_INT64: {
+      int64_t val = field->is_repeated()
+                        ? reflection->GetRepeatedInt64(message, field, index)
+                        : reflection->GetInt64(message, field);
+      return val >= 0 ? UninterpretedOption::kPositiveIntValueFieldNumber
+                      : UninterpretedOption::kNegativeIntValueFieldNumber;
+    }
+    case FieldDescriptor::CPPTYPE_UINT32:
+    case FieldDescriptor::CPPTYPE_UINT64:
+      return UninterpretedOption::kPositiveIntValueFieldNumber;
+    case FieldDescriptor::CPPTYPE_BOOL:
+    case FieldDescriptor::CPPTYPE_ENUM:
+      return UninterpretedOption::kIdentifierValueFieldNumber;
+    case FieldDescriptor::CPPTYPE_FLOAT:
+    case FieldDescriptor::CPPTYPE_DOUBLE:
+      return UninterpretedOption::kDoubleValueFieldNumber;
+    case FieldDescriptor::CPPTYPE_STRING:
+      return UninterpretedOption::kStringValueFieldNumber;
+    case FieldDescriptor::CPPTYPE_MESSAGE:
+      return UninterpretedOption::kAggregateValueFieldNumber;
+    default:
+      return 0;
+  }
+}
+
+void DescriptorBuilder::OptionInterpreter::SetSpan(
+    SourceCodeInfo_Location* loc, const SourceCodeInfo_Location& base_loc,
+    const TextFormat::ParseLocationRange& range) {
+  int base_line = base_loc.span(0);
+  int base_col = base_loc.span(1);
+  int start_line = base_line + range.start.line;
+  int start_col = (range.start.line == 0) ? (base_col + 1 + range.start.column)
+                                          : range.start.column;
+  int end_line = base_line + range.end.line;
+  int end_col = (range.end.line == 0) ? (base_col + 1 + range.end.column)
+                                      : range.end.column;
+
+  loc->add_span(start_line);
+  loc->add_span(start_col);
+  loc->add_span(end_line);
+  loc->add_span(end_col);
 }
 
 void internal::DescriptorBuilder::OptionInterpreter::SetInt32(
