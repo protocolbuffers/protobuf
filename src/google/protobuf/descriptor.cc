@@ -181,14 +181,6 @@ bool IsLegacyJsonFieldConflictEnabled(const OptionsT& options) {
   PROTOBUF_IGNORE_DEPRECATION_STOP
 }
 
-// Backport of fold expressions for the comma operator to C++11.
-// Usage:  Fold({expr...});
-// Guaranteed to evaluate left-to-right
-struct ExpressionEater {
-  template <typename T>
-  ExpressionEater(T&&) {}  // NOLINT
-};
-void Fold(std::initializer_list<ExpressionEater>) {}
 
 template <int R>
 constexpr size_t RoundUpTo(size_t n) {
@@ -310,9 +302,9 @@ class FlatAllocation {
 
   explicit FlatAllocation(const TypeMap<IntT, T...>& ends) : ends_(ends) {
     // The arrays start just after FlatAllocation, so adjust the ends.
-    Fold({(ends_.template Get<T>() +=
-           RoundUpTo<kMaxAlign>(sizeof(FlatAllocation)))...});
-    Fold({Init<T>()...});
+    ((ends_.template Get<T>() += RoundUpTo<kMaxAlign>(sizeof(FlatAllocation))),
+     ...);
+    (Init<T>(), ...);
   }
 
   absl::string_view buffer() const {
@@ -321,7 +313,7 @@ class FlatAllocation {
   }
 
   void Destroy() {
-    Fold({Destroy<T>()...});
+    (Destroy<T>(), ...);
     internal::SizedDelete(this, total_bytes());
   }
 
@@ -331,7 +323,7 @@ class FlatAllocation {
   // Gets a tuple of the head pointers for the arrays
   TypeMap<PointerT, T...> Pointers() const {
     TypeMap<PointerT, T...> out;
-    Fold({(out.template Get<T>() = Begin<T>())...});
+    ((out.template Get<T>() = Begin<T>()), ...);
     return out;
   }
 
@@ -412,8 +404,7 @@ template <typename... T>
 TypeMap<IntT, T...> CalculateEnds(const TypeMap<IntT, T...>& sizes) {
   int total = 0;
   TypeMap<IntT, T...> out;
-  Fold({(out.template Get<T>() = total +=
-         sizeof(T) * sizes.template Get<T>())...});
+  ((out.template Get<T>() = total += sizeof(T) * sizes.template Get<T>()), ...);
   return out;
 }
 
@@ -521,7 +512,7 @@ class FlatAllocatorImpl {
   const std::string* AllocateStrings(In&&... in) {
     std::string* strings = AllocateArray<std::string>(sizeof...(in));
     std::string* res = strings;
-    Fold({(*strings++ = std::string(std::forward<In>(in)))...});
+    ((*strings++ = std::string(std::forward<In>(in))), ...);
     return res;
   }
 
@@ -646,7 +637,7 @@ class FlatAllocatorImpl {
   void ExpectConsumed() const {
     // We verify that we consumed all the memory requested if there was no
     // error in processing.
-    Fold({ExpectConsumed<T>()...});
+    (ExpectConsumed<T>(), ...);
   }
 
  private:
