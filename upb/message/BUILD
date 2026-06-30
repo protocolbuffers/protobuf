@@ -360,9 +360,11 @@ cc_test(
     name = "array_test",
     srcs = ["array_test.cc"],
     deps = [
+        ":internal",
         ":message",
         "//upb/base",
         "//upb/mem",
+        "//upb/port",
         "@googletest//:gtest",
         "@googletest//:gtest_main",
     ],
