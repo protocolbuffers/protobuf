@@ -39,15 +39,15 @@ TEST(GeneratedCode, MergeMessageScalarAndString) {
       find_proto2_field(kFieldOptionalInt32);
   const upb_MiniTableField* optional_string_field =
       find_proto2_field(kFieldOptionalString);
-  upb_Message_SetInt32(UPB_UPCAST(msg), optional_int32_field, kTestInt32,
-                       nullptr);
+  ASSERT_TRUE(upb_Message_SetInt32(UPB_UPCAST(msg), optional_int32_field,
+                                   kTestInt32, nullptr));
   char* string_in_arena =
       (char*)upb_Arena_Malloc(source_arena, sizeof(kTestStr1));
   memcpy(string_in_arena, kTestStr1, sizeof(kTestStr1));
-  upb_Message_SetString(
+  ASSERT_TRUE(upb_Message_SetString(
       UPB_UPCAST(msg), optional_string_field,
       upb_StringView_FromDataAndSize(string_in_arena, sizeof(kTestStr1) - 1),
-      source_arena);
+      source_arena));
   upb_Arena* arena = upb_Arena_New();
   protobuf_test_messages_proto2_TestAllTypesProto2* clone =
       protobuf_test_messages_proto2_TestAllTypesProto2_new(arena);

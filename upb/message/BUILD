@@ -492,6 +492,7 @@ cc_test(
         "//upb/text:debug",
         "//upb/wire",
         "//upb/wire:eps_copy_input_stream",
+        "//upb/wire:eps_copy_input_stream_internal",
         "//upb/wire:reader",
         "//upb/wire:writer",
         "@abseil-cpp//absl/cleanup",
