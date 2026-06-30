@@ -7,12 +7,27 @@
 
 #include "upb/message/array.h"
 
+#include <cstddef>
 #include <cstdint>
 
 #include <gtest/gtest.h>
 #include "upb/base/descriptor_constants.h"
 #include "upb/base/status.hpp"
 #include "upb/mem/arena.hpp"
+#include "upb/message/internal/array.h"
+
+// Must be last.
+#include "upb/port/def.inc"
+
+TEST(ArrayTest, NewOverflowCapacityReturnsNull) {
+  upb::Arena arena;
+  // A capacity near SIZE_MAX should trigger the overflow guard in
+  // _upb_Array_NewMaybeAllowSlow and return NULL instead of wrapping around
+  // to a small allocation.
+  upb_Array* array =
+      UPB_PRIVATE(_upb_Array_New)(arena.ptr(), SIZE_MAX / 2, 3);
+  EXPECT_EQ(array, nullptr);
+}
 
 TEST(ArrayTest, ResizeSizeMaxReturnsFalse) {
   upb::Arena arena;

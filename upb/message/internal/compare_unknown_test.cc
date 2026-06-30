@@ -11,6 +11,7 @@
 
 #include <initializer_list>
 #include <string>
+#include <vector>
 
 #include <gtest/gtest.h>
 #include "google/protobuf/test_messages_proto2.upb.h"
@@ -116,6 +117,45 @@ TEST(CompareTest, LongVarint) {
             CompareUnknownWithMaxDepth({{2, Varint(456)}, {1, Varint(123)}},
                                        {{1, Varint(123)}, {2, Varint(456)}}, 64,
                                        5, 10));
+}
+
+TEST(CompareTest, ManyFieldsSortReallocation) {
+  // Test with many out-of-order unknown fields to exercise the sort buffer
+  // reallocation path in upb_UnknownFields_Sort. The sort buffer starts at
+  // size 0 and grows via doubling (0 -> 8 -> 16 -> 32), so 20 reverse-ordered
+  // fields force multiple reallocations.
+  const int kNumFields = 20;
+  WireMessage forward_fields;
+  WireMessage reverse_fields;
+  for (int i = 1; i <= kNumFields; i++) {
+    forward_fields.push_back(
+        {static_cast<uint32_t>(i), Varint(static_cast<uint64_t>(i) * 100)});
+  }
+  for (int i = kNumFields; i >= 1; i--) {
+    reverse_fields.push_back(
+        {static_cast<uint32_t>(i), Varint(static_cast<uint64_t>(i) * 100)});
+  }
+  // Reverse vs forward order should be equal after sorting.
+  EXPECT_EQ(kUpb_UnknownCompareResult_Equal,
+            CompareUnknown(reverse_fields, forward_fields));
+  // Both reversed should be equal.
+  EXPECT_EQ(kUpb_UnknownCompareResult_Equal,
+            CompareUnknown(reverse_fields, reverse_fields));
+}
+
+TEST(CompareTest, ManyFieldsNotEqual) {
+  // Verify that a single differing value among many sorted fields is detected.
+  const int kNumFields = 20;
+  WireMessage fields1;
+  WireMessage fields2;
+  for (int i = kNumFields; i >= 1; i--) {
+    fields1.push_back(
+        {static_cast<uint32_t>(i), Varint(static_cast<uint64_t>(i) * 100)});
+    uint64_t val = (i == 10) ? 999 : static_cast<uint64_t>(i) * 100;
+    fields2.push_back({static_cast<uint32_t>(i), Varint(val)});
+  }
+  EXPECT_EQ(kUpb_UnknownCompareResult_NotEqual,
+            CompareUnknown(fields1, fields2));
 }
 
 TEST(CompareTest, MaxDepth) {
