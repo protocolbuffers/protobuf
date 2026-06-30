@@ -87,6 +87,7 @@ set(libprotobuf_srcs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/symbol_checker.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/text_format.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/unknown_field_set.cc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/unknown_field_set_lite.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/util/delimited_message_util.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/util/field_comparator.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/util/field_mask_util.cc
@@ -257,6 +258,7 @@ set(libprotobuf_lite_srcs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/repeated_field.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/repeated_ptr_field.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/stubs/common.cc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/unknown_field_set_lite.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/wire_format_lite.cc
 )
 
@@ -313,6 +315,7 @@ set(libprotobuf_lite_hdrs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/stubs/port.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/stubs/status_macros.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/thread_safe_arena.h
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/unknown_field_set.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/varint_shuffle.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/wire_format_lite.h
 )

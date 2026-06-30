@@ -57,7 +57,7 @@ constexpr Duration::ParseTableT_ Duration::InternalGenerateParseTable_(const ::_
       offsetof(ParseTableT_, field_names),  // no aux_entries
       class_data,
       nullptr,  // post_loop_handler
-      ::_pbi::TcParser::GenericFallback,  // fallback
+      ::_pbi::TcParser::MpUnknownFields,  // fallback
       #ifdef PROTOBUF_PREFETCH_PARSE_TABLE
       ::_pbi::TcParser::GetTable<::google::protobuf::Duration>(),  // to_prefetch
       #endif  // PROTOBUF_PREFETCH_PARSE_TABLE
