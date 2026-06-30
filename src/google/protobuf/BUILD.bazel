@@ -712,6 +712,7 @@ cc_library(
         "raw_ptr.cc",
         "repeated_field.cc",
         "repeated_ptr_field.cc",
+        "unknown_field_set_lite.cc",
         "wire_format_lite.cc",
     ],
     # TODO Fix ODR violations across BUILD.bazel files.
@@ -747,6 +748,7 @@ cc_library(
         "runtime_version.h",
         "serial_arena.h",
         "thread_safe_arena.h",
+        "unknown_field_set.h",
         "wire_format_lite.h",
     ],
     copts = COPTS + select({
