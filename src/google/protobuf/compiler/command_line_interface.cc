@@ -130,6 +130,36 @@ constexpr absl::string_view kDefaultDirectDependenciesViolationMsg =
 constexpr absl::string_view kDefaultOptionDependenciesViolationMsg =
     "File is option imported but not declared in --option_dependencies: %s";
 
+std::string EscapeMakefileDependency(absl::string_view filename) {
+  std::string result;
+  result.reserve(filename.size());
+  for (char c : filename) {
+    switch (c) {
+      case '\n':
+        result.append("\\n");
+        break;
+      case '\r':
+        result.append("\\r");
+        break;
+      case '$':
+        result.append("$$");
+        break;
+      case ' ':
+      case '\t':
+      case '#':
+      case ':':
+      case '\\':
+        result.push_back('\\');
+        result.push_back(c);
+        break;
+      default:
+        result.push_back(c);
+        break;
+    }
+  }
+  return result;
+}
+
 // Returns true if the text begins with a Windows-style absolute path, starting
 // with a drive letter.  Example:  "C:\foo".
 static bool StartsWithWindowsAbsolutePath(absl::string_view text) {
@@ -2978,7 +3008,7 @@ bool CommandLineInterface::GenerateDependencyManifestFile(
     io::Printer printer(&out, '$');
 
     for (size_t i = 0; i < output_filenames.size(); ++i) {
-      printer.Print(output_filenames[i]);
+      printer.PrintRaw(EscapeMakefileDependency(output_filenames[i]));
       if (i == output_filenames.size() - 1) {
         printer.Print(":");
       } else {
@@ -2992,7 +3022,8 @@ bool CommandLineInterface::GenerateDependencyManifestFile(
       std::string disk_file;
       if (source_tree &&
           source_tree->VirtualFileToDiskFile(virtual_file, &disk_file)) {
-        printer.Print(" $disk_file$", "disk_file", disk_file);
+        printer.Print(" ");
+        printer.PrintRaw(EscapeMakefileDependency(disk_file));
         if (i < file_set.file_size() - 1) printer.Print("\\\n");
       } else {
         std::cerr << "Unable to identify path for file " << virtual_file
