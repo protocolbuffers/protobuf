@@ -158,7 +158,7 @@ static void upb_Array_DeepConvert(
                      dst_msg, dst_f, src_val.int32_val, c->arena)) {
         upb_ErrorHandler_ThrowError(&c->err, kUpb_ErrorCode_OutOfMemory);
       }
-    } else {
+    } else if (dst_sub_mt) {
       const upb_Message* src_msg = src_val.msg_val;
       upb_Message* dst_sub = upb_Message_New(dst_sub_mt, c->arena);
       if (!dst_sub) {
@@ -169,6 +169,9 @@ static void upb_Array_DeepConvert(
       upb_MessageValue dst_val;
       dst_val.msg_val = dst_sub;
       upb_Array_Set(dst, dst_i++, dst_val);
+    } else {
+      // Open enum or primitive case.
+      upb_Array_Set(dst, dst_i++, src_val);
     }
   }
   if (dst_i != size) {
@@ -188,7 +191,8 @@ static bool upb_Message_ConvertArrayField(upb_Converter* c, upb_Message* dst,
   const upb_MiniTable* dst_sub_mt = upb_MiniTable_SubMessage(dst_f);
   const upb_MiniTable* src_sub_mt = upb_MiniTable_SubMessage(src_f);
 
-  if (dst_sub_mt != src_sub_mt || upb_MiniTableField_IsClosedEnum(dst_f)) {
+  if (dst_sub_mt != src_sub_mt || upb_MiniTableField_IsClosedEnum(dst_f) ||
+      upb_MiniTableField_IsClosedEnum(src_f)) {
     upb_Array* dst_arr =
         upb_Array_New(c->arena, upb_MiniTableField_CType(dst_f));
     if (!dst_arr)
@@ -198,6 +202,7 @@ static bool upb_Message_ConvertArrayField(upb_Converter* c, upb_Message* dst,
     upb_Message_SetBaseField(dst, dst_f, &dst_arr);
     return true;
   }
+  // Fall through to a shallow copy.
   return false;
 }
 
@@ -269,7 +274,7 @@ static bool upb_Message_ConvertMapField(upb_Converter* c, upb_Message* dst,
   const upb_MiniTable* dst_entry_mt = upb_MiniTable_MapEntrySubMessage(dst_f);
   const upb_MiniTable* src_entry_mt = upb_MiniTable_MapEntrySubMessage(src_f);
 
-  if (dst_entry_mt != src_entry_mt || upb_MiniTableField_IsClosedEnum(dst_f)) {
+  if (dst_entry_mt != src_entry_mt) {
     const upb_MiniTableField* dst_val_f = upb_MiniTable_MapValue(dst_entry_mt);
     upb_Map* dst_map = upb_Map_New(
         c->arena, upb_MiniTableField_CType(upb_MiniTable_MapKey(dst_entry_mt)),
@@ -283,6 +288,27 @@ static bool upb_Message_ConvertMapField(upb_Converter* c, upb_Message* dst,
     return true;
   }
   return false;
+}
+
+UPB_INLINE bool upb_Converter_NeedsClosedEnumDeepConvert(
+    const upb_MiniTableField* dst_f, const upb_MiniTableField* src_f) {
+  // Determines if an enum conversion requires deep conversion based on the
+  // following combinations of closed/open src_f and dst_f:
+  // 1. Open -> Open: Shallow copy. Never needs deep conversion (behaves like
+  // primitives).
+  // 2. Open -> Closed: Always needs deep conversion to validate values and
+  //    move invalid values to unknowns.
+  // 3. Closed -> Open: Needs deep conversion/copy for arrays to avoid mutating
+  // the source array when unknowns are decoded into the open destination.
+  // 4. Closed -> Closed: Only needs deep conversion if the target and source
+  //    schemas differ. If the schemas match, we can safely shallow copy.
+  if (upb_MiniTableField_IsClosedEnum(dst_f)) {
+    return !upb_MiniTableField_IsClosedEnum(src_f) ||
+           upb_MiniTable_GetSubEnumTable(dst_f) !=
+               upb_MiniTable_GetSubEnumTable(src_f);
+  }
+  return upb_MiniTableField_IsClosedEnum(src_f) &&
+         upb_MiniTableField_IsArray(src_f);
 }
 
 static void upb_Message_ConvertField(upb_Converter* c, upb_Message* dst,
@@ -335,7 +361,7 @@ static void upb_Message_ConvertField(upb_Converter* c, upb_Message* dst,
         return;
       }
     }
-  } else if (upb_MiniTableField_IsClosedEnum(dst_f)) {
+  } else if (upb_Converter_NeedsClosedEnumDeepConvert(dst_f, src_f)) {
     if (upb_MiniTableField_IsArray(dst_f)) {
       if (upb_Message_ConvertArrayField(c, dst, src, dst_f, src_f, extreg,
                                         depth)) {

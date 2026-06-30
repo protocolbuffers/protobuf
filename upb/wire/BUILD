@@ -325,6 +325,7 @@ cc_library(
     hdrs = ["internal/eps_copy_input_stream.h"],
     visibility = [
         "//upb:__pkg__",
+        "//upb/message:__subpackages__",
         "//upb/wire/decode_fast:__subpackages__",
     ],
     deps = [

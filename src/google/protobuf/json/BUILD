@@ -223,6 +223,7 @@ cc_library(
         "//src/google/protobuf:port",
         "//src/google/protobuf/stubs",
         "@abseil-cpp//absl/algorithm:container",
+        "@abseil-cpp//absl/container:flat_hash_map",
         "@abseil-cpp//absl/log:absl_log",
         "@abseil-cpp//absl/status",
         "@abseil-cpp//absl/status:statusor",

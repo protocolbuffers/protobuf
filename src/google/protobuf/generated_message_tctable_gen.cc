@@ -868,7 +868,10 @@ TailCallTableInfo::TailCallTableInfo(
       // Reflection and weak messages have the reflection fallback
       : !message_options.uses_codegen || HasWeakFields(descriptor)
           ? TcParseFunction::kReflectionFallback
-      // Codegen messages have lite and non-lite version
+      // Messages without extensions fallback directly to MpUnknownFields
+      : descriptor->extension_range_count() == 0
+          ? TcParseFunction::kMpUnknownFields
+      // Codegen messages with extensions have lite and non-lite version
       : message_options.is_lite ? TcParseFunction::kGenericFallbackLite
                                 : TcParseFunction::kGenericFallback;
 
