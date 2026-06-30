@@ -1540,6 +1540,14 @@ void MessageGenerator::GenerateImplDefinition(io::Printer* p) {
             }
           }
         }},
+       {"secondary_field_members",
+        [&] {
+          for (auto field : field_layout_.optimized_order()) {
+            if (!ShouldSplit(field, options_)) {
+              field_generators_.get(field).GenerateSecondaryPrivateMembers(p);
+            }
+          }
+        }},
        {"decl_split",
         [&] {
           if (!ShouldSplit(descriptor_, options_)) return;
@@ -1652,6 +1660,7 @@ void MessageGenerator::GenerateImplDefinition(io::Printer* p) {
           $cached_size_if_no_hasbits$;
           $oneof_case$;
           $weak_field_map$;
+          $secondary_field_members$;
           //~ For detecting when concurrent accessor calls cause races.
           PROTOBUF_TSAN_DECLARE_MEMBER
         };
