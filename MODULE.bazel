@@ -75,7 +75,6 @@ ruby.toolchain(
     version = "system",
 )
 use_repo(ruby, "ruby")
-
 ruby.bundle_fetch(
     name = "protobuf_bundle",
     gem_checksums = {
@@ -356,3 +355,8 @@ use_repo(
     "nuget_python_x86-64_3.10.0",
     "python-3.10.0",
 )
+
+bazel_dep(name = "jq.bzl", version = "0.6.1", dev_dependency = True)
+
+jq = use_extension("@jq.bzl//jq:extensions.bzl", "toolchains", dev_dependency = True)
+use_repo(jq, "jq_toolchains")
