@@ -18,6 +18,7 @@
 // the generated code can be more appropriate for the implementation in use
 // and can avoid unnecessary layers of indirection.
 //
+#include <functional>
 //
 // When you use the protocol compiler to compile a service definition, it
 // generates two classes:  An abstract interface for the service (with
@@ -41,7 +42,7 @@
 //     void Foo(google::protobuf::RpcController* controller,
 //              const MyRequest* request,
 //              MyResponse* response,
-//              Closure* done) {
+//              std::function<void()> done) {
 //       // ... read request and fill in response ...
 //       done->Run();
 //     }
@@ -60,7 +61,7 @@
 //
 //   // ... fill in request ...
 //
-//   stub.Foo(&controller, request, &response, NewCallback(HandleResponse));
+//   stub.Foo(&controller, request, &response, HandleResponse);
 //
 // On Thread-Safety:
 //
@@ -152,7 +153,7 @@ class PROTOBUF_EXPORT Service {
   //   possibly to get more information about the error.
   virtual void CallMethod(const MethodDescriptor* method,
                           RpcController* controller, const Message* request,
-                          Message* response, Closure* done) = 0;
+                          Message* response, std::function<void()> done) = 0;
 
   // CallMethod() requires that the request and response passed in are of a
   // particular subclass of Message.  GetRequestPrototype() and
@@ -235,7 +236,7 @@ class PROTOBUF_EXPORT RpcController {
   // will be called immediately.
   //
   // NotifyOnCancel() must be called no more than once per request.
-  virtual void NotifyOnCancel(Closure* callback) = 0;
+  virtual void NotifyOnCancel(std::function<void()> callback) = 0;
 };
 
 // Abstract interface for an RPC channel.  An RpcChannel represents a
@@ -260,8 +261,11 @@ class PROTOBUF_EXPORT RpcChannel {
   // method->input_type() and method->output_type().
   virtual void CallMethod(const MethodDescriptor* method,
                           RpcController* controller, const Message* request,
-                          Message* response, Closure* done) = 0;
+                          Message* response, std::function<void()> done) = 0;
 };
+
+// A helper function for converting between Closure* and std::function<void()>.
+Closure* PROTOBUF_EXPORT ToClosure(std::function<void()> f);
 
 }  // namespace protobuf
 }  // namespace google

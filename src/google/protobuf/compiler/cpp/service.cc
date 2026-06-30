@@ -55,7 +55,7 @@ void ServiceGenerator::GenerateDeclarations(io::Printer* printer) {
               $pb$::RpcController* $nullable$ controller,
               const $pb$::Message* $nonnull$ request,
               $pb$::Message* $nonnull$ response,
-              ::google::protobuf::Closure* $nullable$ done) override;
+              ::std::function<void()> $nullable$ done) override;
 
           const $pb$::Message& GetRequestPrototype(
               const $pb$::MethodDescriptor* $nonnull$ method) const override;
@@ -109,6 +109,11 @@ void ServiceGenerator::GenerateMethodSignatures(VirtualOrNot virtual_or_not,
                                 const $input$* $nonnull$ request,
                                 $output$* $nonnull$ response,
                                 ::google::protobuf::Closure* $nullable$ done)$ override$;
+                                
+          $virtual $void $name$($pb$::RpcController* $nullable$ controller,
+                                const $input$* $nonnull$ request,
+                                $output$* $nonnull$ response,
+                                ::std::function<void()> $nullable$ done)$ override$;
         )");
   }
 }
@@ -179,6 +184,13 @@ void ServiceGenerator::GenerateNotImplementedMethods(io::Printer* printer) {
             controller->SetFailed("Method $name$() not implemented.");
             done->Run();
           }
+
+          void $classname$::$name$($pb$::RpcController* $nullable$ controller,
+                                   const $input$* $nonnull$ request,
+                                   $output$* $nonnull$ response,
+                                   ::std::function<void()> $nullable$ done) {
+            $name$(controller, request, response, $pb$::ToClosure(::std::move(done)));
+          }
         )cc");
   }
 }
@@ -190,11 +202,12 @@ void ServiceGenerator::GenerateCallMethod(io::Printer* printer) {
           {"cases", [&] { GenerateCallMethodCases(printer); }},
       },
       R"cc(
-        void $classname$::CallMethod(
-            const $pb$::MethodDescriptor* $nonnull$ method,
-            $pb$::RpcController* $nullable$ controller,
-            const $pb$::Message* $nonnull$ request,
-            $pb$::Message* $nonnull$ response, ::google::protobuf::Closure* $nullable$ done) {
+        void $classname$::CallMethod(const $pb$::MethodDescriptor* $nonnull$
+                                         method,
+                                     $pb$::RpcController* $nullable$ controller,
+                                     const $pb$::Message* $nonnull$ request,
+                                     $pb$::Message* $nonnull$ response,
+                                     ::std::function<void()> $nullable$ done) {
           ABSL_DCHECK_EQ(method->service(), $file_level_service_descriptors$[$index$]);
           switch (method->index()) {
             $cases$;
@@ -284,6 +297,15 @@ void ServiceGenerator::GenerateStubMethods(io::Printer* printer) {
               $pb$::RpcController* $nullable$ controller,
               const $input$* $nonnull$ request, $output$* $nonnull$ response,
               ::google::protobuf::Closure* $nullable$ done) {
+            $name$(controller, request, response, [done] {
+              if (done) done->Run();
+            });
+          }
+
+          void $classname$_Stub::$name$(
+              $pb$::RpcController* $nullable$ controller,
+              const $input$* $nonnull$ request, $output$* $nonnull$ response,
+              ::std::function<void()> $nullable$ done) {
             channel_->CallMethod(descriptor()->method($index$), controller,
                                  request, response, done);
           }

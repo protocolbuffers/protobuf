@@ -1125,7 +1125,8 @@ class GENERATED_SERVICE_TEST_NAME : public testing::Test {
     // implements TestService ----------------------------------------
 
     void Foo(RpcController* controller, const UNITTEST::FooRequest* request,
-             UNITTEST::FooResponse* response, Closure* done) override {
+             UNITTEST::FooResponse* response,
+             std::function<void()> done) override {
       ASSERT_FALSE(called_);
       called_ = true;
       method_ = "Foo";
@@ -1136,7 +1137,8 @@ class GENERATED_SERVICE_TEST_NAME : public testing::Test {
     }
 
     void Bar(RpcController* controller, const UNITTEST::BarRequest* request,
-             UNITTEST::BarResponse* response, Closure* done) override {
+             UNITTEST::BarResponse* response,
+             std::function<void()> done) override {
       ASSERT_FALSE(called_);
       called_ = true;
       method_ = "Bar";
@@ -1153,7 +1155,7 @@ class GENERATED_SERVICE_TEST_NAME : public testing::Test {
     RpcController* controller_;
     const Message* request_;
     Message* response_;
-    Closure* done_;
+    std::function<void()> done_;
   };
 
   class MockRpcChannel : public RpcChannel {
@@ -1177,7 +1179,7 @@ class GENERATED_SERVICE_TEST_NAME : public testing::Test {
 
     void CallMethod(const MethodDescriptor* method, RpcController* controller,
                     const Message* request, Message* response,
-                    Closure* done) override {
+                    std::function<void()> done) override {
       ASSERT_FALSE(called_);
       called_ = true;
       method_ = method;
@@ -1194,7 +1196,7 @@ class GENERATED_SERVICE_TEST_NAME : public testing::Test {
     RpcController* controller_;
     const Message* request_;
     Message* response_;
-    Closure* done_;
+    std::function<void()> done_;
     bool* destroyed_;
   };
 
@@ -1221,17 +1223,17 @@ class GENERATED_SERVICE_TEST_NAME : public testing::Test {
       ADD_FAILURE() << "IsCanceled() not expected during this test.";
       return false;
     }
-    void NotifyOnCancel(Closure* callback) override {
+    void NotifyOnCancel(std::function<void()> callback) override {
       ADD_FAILURE() << "NotifyOnCancel() not expected during this test.";
     }
   };
 
   GENERATED_SERVICE_TEST_NAME()
-    : descriptor_(UNITTEST::TestService::descriptor()),
-      foo_(descriptor_->FindMethodByName("Foo")),
-      bar_(descriptor_->FindMethodByName("Bar")),
-      stub_(&mock_channel_),
-      done_(::google::protobuf::NewPermanentCallback(&DoNothing)) {}
+      : descriptor_(UNITTEST::TestService::descriptor()),
+        foo_(descriptor_->FindMethodByName("Foo")),
+        bar_(descriptor_->FindMethodByName("Bar")),
+        stub_(&mock_channel_),
+        done_(&DoNothing) {}
 
   void SetUp() override {
     ASSERT_TRUE(foo_ != nullptr);
@@ -1253,7 +1255,7 @@ class GENERATED_SERVICE_TEST_NAME : public testing::Test {
   UNITTEST::FooResponse foo_response_;
   UNITTEST::BarRequest bar_request_;
   UNITTEST::BarResponse bar_response_;
-  std::unique_ptr<Closure> done_;
+  std::function<void()> done_;
 };
 
 TEST_F(GENERATED_SERVICE_TEST_NAME, GetDescriptor) {
@@ -1284,21 +1286,20 @@ TEST_F(GENERATED_SERVICE_TEST_NAME, CallMethod) {
   // Test that CallMethod() works.
 
   // Call Foo() via CallMethod().
-  mock_service_.CallMethod(foo_, &mock_controller_,
-                           &foo_request_, &foo_response_, done_.get());
+  mock_service_.CallMethod(foo_, &mock_controller_, &foo_request_,
+                           &foo_response_, done_);
 
   ASSERT_TRUE(mock_service_.called_);
 
   EXPECT_EQ("Foo"            , mock_service_.method_    );
   EXPECT_EQ(&mock_controller_, mock_service_.controller_);
   EXPECT_EQ(&foo_request_    , mock_service_.request_   );
-  EXPECT_EQ(&foo_response_   , mock_service_.response_  );
-  EXPECT_EQ(done_.get()      , mock_service_.done_      );
+  EXPECT_EQ(&foo_response_, mock_service_.response_);
 
   // Try again, but call Bar() instead.
   mock_service_.Reset();
-  mock_service_.CallMethod(bar_, &mock_controller_,
-                           &bar_request_, &bar_response_, done_.get());
+  mock_service_.CallMethod(bar_, &mock_controller_, &bar_request_,
+                           &bar_response_, done_);
 
   ASSERT_TRUE(mock_service_.called_);
   EXPECT_EQ("Bar", mock_service_.method_);
@@ -1310,14 +1311,14 @@ TEST_F(GENERATED_SERVICE_TEST_NAME, CallMethodTypeFailure) {
 #if GTEST_HAS_DEATH_TEST  // death tests do not work on Windows yet
   EXPECT_DEBUG_DEATH(
       mock_service_.CallMethod(foo_, &mock_controller_, &foo_request_,
-                               &bar_response_, done_.get()),
+                               &bar_response_, done_),
       "Cannot downcast proto2_unittest.*.BarResponse to "
       "proto2_unittest.*.FooResponse");
 
   mock_service_.Reset();
   EXPECT_DEBUG_DEATH(
       mock_service_.CallMethod(foo_, &mock_controller_, &bar_request_,
-                               &foo_response_, done_.get()),
+                               &foo_response_, done_),
       "Cannot downcast proto2_unittest.*.BarRequest to "
       "proto2_unittest.*.FooRequest");
 #endif  // GTEST_HAS_DEATH_TEST
@@ -1341,19 +1342,18 @@ TEST_F(GENERATED_SERVICE_TEST_NAME, Stub) {
   // Test that the stub class works.
 
   // Call Foo() via the stub.
-  stub_.Foo(&mock_controller_, &foo_request_, &foo_response_, done_.get());
+  stub_.Foo(&mock_controller_, &foo_request_, &foo_response_, done_);
 
   ASSERT_TRUE(mock_channel_.called_);
 
   EXPECT_EQ(foo_             , mock_channel_.method_    );
   EXPECT_EQ(&mock_controller_, mock_channel_.controller_);
   EXPECT_EQ(&foo_request_    , mock_channel_.request_   );
-  EXPECT_EQ(&foo_response_   , mock_channel_.response_  );
-  EXPECT_EQ(done_.get()      , mock_channel_.done_      );
+  EXPECT_EQ(&foo_response_, mock_channel_.response_);
 
   // Call Bar() via the stub.
   mock_channel_.Reset();
-  stub_.Bar(&mock_controller_, &bar_request_, &bar_response_, done_.get());
+  stub_.Bar(&mock_controller_, &bar_request_, &bar_response_, done_);
 
   ASSERT_TRUE(mock_channel_.called_);
   EXPECT_EQ(bar_, mock_channel_.method_);
@@ -1388,8 +1388,7 @@ TEST_F(GENERATED_SERVICE_TEST_NAME, NotImplemented) {
   ExpectUnimplementedController controller;
 
   // Call Foo.
-  unimplemented_service.Foo(&controller, &foo_request_, &foo_response_,
-                            done_.get());
+  unimplemented_service.Foo(&controller, &foo_request_, &foo_response_, done_);
 
   EXPECT_TRUE(controller.called_);
 }
