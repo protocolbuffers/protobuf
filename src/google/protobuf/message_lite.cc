@@ -37,9 +37,11 @@
 #include "google/protobuf/io/zero_copy_stream.h"
 #include "google/protobuf/io/zero_copy_stream_impl.h"
 #include "google/protobuf/io/zero_copy_stream_impl_lite.h"
+#include "google/protobuf/message_traits.h"
 #include "google/protobuf/metadata_lite.h"
 #include "google/protobuf/parse_context.h"
 #include "google/protobuf/port.h"
+#include "google/protobuf/type_id.h"
 #include "google/protobuf/unknown_field_set.h"
 
 
@@ -110,16 +112,6 @@ const char* MessageLite::_InternalParse(const char* ptr,
 
 absl::string_view MessageLite::GetTypeName() const {
   return TypeId::Get(*this).name();
-}
-
-absl::string_view TypeId::name() const {
-  if (!data_->is_lite) {
-    // For !LITE messages, we use the descriptor method function.
-    return data_->full().descriptor_methods()->get_type_name(data_);
-  }
-
-  // For LITE messages, the type name is accessed via ClassDataLite.
-  return static_cast<const internal::ClassDataLite*>(data_)->type_name();
 }
 
 std::string MessageLite::InitializationErrorString() const {
