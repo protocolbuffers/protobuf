@@ -804,24 +804,7 @@ class TextFormat::Parser::ParserImpl {
       if (consumed_semicolon) {
         TryConsumeWhitespace();
       }
-      PROTOBUF_IGNORE_DEPRECATION_START
-      const bool field_is_weak = field->options().weak();
-      PROTOBUF_IGNORE_DEPRECATION_STOP
-      if (consumed_semicolon && field_is_weak &&
-          LookingAtType(io::Tokenizer::TYPE_STRING)) {
-        // we are getting a bytes string for a weak field.
-        int v_start_line = tokenizer_.current().line;
-        int v_start_column = tokenizer_.current().column;
-        std::string tmp;
-        DO(ConsumeString(&tmp));
-        MessageFactory* factory =
-            finder_ ? finder_->FindExtensionFactory(field) : nullptr;
-        // TODO: Remove this suppression.
-        (void)reflection->MutableMessage(message, field, factory)
-            ->ParseFromString(tmp);
-        record_value_location(v_start_line, v_start_column);
-        return skip_parsing(true);
-      }
+
     } else {
       // ':' is required here.
       DO(ConsumeBeforeWhitespace(":"));

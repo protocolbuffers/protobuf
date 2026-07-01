@@ -616,7 +616,6 @@ void ParseFunctionGenerator::GenerateFieldEntries(io::Printer* p) {
     Formatter format(p, variables_);
     PrintFieldComment(format, field, options_);
 
-    bool weak = IsWeak(field, options_);
     bool split = ShouldSplit(field, options_);
     const OneofDescriptor* oneof = field->real_containing_oneof();
 
@@ -626,9 +625,7 @@ void ParseFunctionGenerator::GenerateFieldEntries(io::Printer* p) {
 
     p->Emit({{"offset",
               [&] {
-                if (weak) {
-                  p->Emit("/* weak */ 0,");
-                } else if (split) {
+                if (split) {
                   p->Emit(
                       "PROTOBUF_FIELD_OFFSET($Msg$::Impl_::Split, "
                       "$field_name$_),");

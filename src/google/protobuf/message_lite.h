@@ -217,7 +217,7 @@ class RepeatedPtrFieldBase;
 class TcParser;
 struct TcParseTableBase;
 class WireFormatLite;
-class WeakFieldMap;
+
 class RustMapHelper;
 
 // We compute sizes as size_t but cache them as int.  This function converts a
@@ -985,7 +985,7 @@ class PROTOBUF_EXPORT MessageLite {
   friend struct internal::PrivateAccess;
   friend struct internal::TcParseTableBase;
   friend class internal::UntypedMapBase;
-  friend class internal::WeakFieldMap;
+
   friend class internal::WireFormatLite;
   friend class internal::RustMapHelper;
 

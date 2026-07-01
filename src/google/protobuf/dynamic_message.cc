@@ -356,7 +356,7 @@ class DynamicMessage final : public Message {
   template <typename T = void>
   const T& GetRaw(int i) const;
   void* MutableExtensionsRaw();
-  void* MutableWeakFieldMapRaw();
+
   void* MutableOneofCaseRaw(int i);
   void* MutableOneofFieldRaw(const FieldDescriptor* f);
 
@@ -400,7 +400,6 @@ struct DynamicMessageFactory::TypeInfo {
   //   important (the prototype must be deleted *before* the offsets).
   std::unique_ptr<uint32_t[]> offsets;
   std::unique_ptr<uint32_t[]> has_bits_indices;
-  int weak_field_map_offset;  // The offset for the weak_field_map;
 
 #ifndef PROTOBUF_MESSAGE_GLOBALS
   internal::ClassDataFull class_data = {
@@ -525,9 +524,7 @@ inline const T& DynamicMessage::GetRaw(int i) const {
 inline void* DynamicMessage::MutableExtensionsRaw() {
   return OffsetToPointer(type_info_->extensions_offset);
 }
-inline void* DynamicMessage::MutableWeakFieldMapRaw() {
-  return OffsetToPointer(type_info_->weak_field_map_offset);
-}
+
 inline void* DynamicMessage::MutableOneofCaseRaw(int i) {
   return OffsetToPointer(type_info_->oneof_case_offset + sizeof(uint32_t) * i);
 }
@@ -565,6 +562,7 @@ void DynamicMessage::SharedCtor(bool lock_factory) {
     if (InRealOneof(field)) {
       continue;
     }
+
     switch (field->cpp_type()) {
 #define HANDLE_TYPE(CPPTYPE, TYPE)                                         \
   case FieldDescriptor::CPPTYPE_##CPPTYPE:                                 \
@@ -711,6 +709,7 @@ DynamicMessage::~DynamicMessage() {
   // be touched.
   for (int i = 0; i < descriptor->field_count(); i++) {
     const FieldDescriptor* field = descriptor->field(i);
+
     if (InRealOneof(field)) {
       void* field_ptr = MutableOneofCaseRaw(field->containing_oneof()->index());
       if (*(reinterpret_cast<const int32_t*>(field_ptr)) == field->number()) {
@@ -838,11 +837,8 @@ void DynamicMessage::CrossLinkPrototypes() {
   // Cross-link default messages.
   for (int i = 0; i < descriptor->field_count(); i++) {
     const FieldDescriptor* field = descriptor->field(i);
-    PROTOBUF_IGNORE_DEPRECATION_START
-    const bool field_is_weak = field->options().weak();
-    PROTOBUF_IGNORE_DEPRECATION_STOP
     if (field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE &&
-        !field_is_weak && !InRealOneof(field) && !field->is_repeated()) {
+        !InRealOneof(field) && !field->is_repeated()) {
       void* field_ptr = MutableRaw(i);
       // For fields with message types, we need to cross-link with the
       // prototype for the field's type.
@@ -1035,8 +1031,6 @@ const Message* DynamicMessageFactory::GetPrototypeNoLock(
     size += kMaxOneofUnionSize;
   }
 
-  type_info->weak_field_map_offset = -1;
-
 #ifndef PROTOBUF_MESSAGE_GLOBALS
   type_info->MutableClassDataFull().message_creator =
       internal::MessageCreator(DynamicMessage::NewImpl, size, kSafeAlignment);
@@ -1085,7 +1079,6 @@ const Message* DynamicMessageFactory::GetPrototypeNoLock(
       type_info->oneof_case_offset,
       /*object_size=*/
       static_cast<int>(type_info->GetClassDataFull().allocation_size()),
-      type_info->weak_field_map_offset,
       /*split_offset=*/-1,
       /*sizeof_split=*/-1);
 
