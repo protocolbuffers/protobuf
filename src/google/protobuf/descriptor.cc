@@ -181,14 +181,6 @@ bool IsLegacyJsonFieldConflictEnabled(const OptionsT& options) {
   PROTOBUF_IGNORE_DEPRECATION_STOP
 }
 
-// Backport of fold expressions for the comma operator to C++11.
-// Usage:  Fold({expr...});
-// Guaranteed to evaluate left-to-right
-struct ExpressionEater {
-  template <typename T>
-  ExpressionEater(T&&) {}  // NOLINT
-};
-void Fold(std::initializer_list<ExpressionEater>) {}
 
 template <int R>
 constexpr size_t RoundUpTo(size_t n) {
@@ -310,9 +302,9 @@ class FlatAllocation {
 
   explicit FlatAllocation(const TypeMap<IntT, T...>& ends) : ends_(ends) {
     // The arrays start just after FlatAllocation, so adjust the ends.
-    Fold({(ends_.template Get<T>() +=
-           RoundUpTo<kMaxAlign>(sizeof(FlatAllocation)))...});
-    Fold({Init<T>()...});
+    ((ends_.template Get<T>() += RoundUpTo<kMaxAlign>(sizeof(FlatAllocation))),
+     ...);
+    (Init<T>(), ...);
   }
 
   absl::string_view buffer() const {
@@ -321,7 +313,7 @@ class FlatAllocation {
   }
 
   void Destroy() {
-    Fold({Destroy<T>()...});
+    (Destroy<T>(), ...);
     internal::SizedDelete(this, total_bytes());
   }
 
@@ -331,7 +323,7 @@ class FlatAllocation {
   // Gets a tuple of the head pointers for the arrays
   TypeMap<PointerT, T...> Pointers() const {
     TypeMap<PointerT, T...> out;
-    Fold({(out.template Get<T>() = Begin<T>())...});
+    ((out.template Get<T>() = Begin<T>()), ...);
     return out;
   }
 
@@ -412,8 +404,7 @@ template <typename... T>
 TypeMap<IntT, T...> CalculateEnds(const TypeMap<IntT, T...>& sizes) {
   int total = 0;
   TypeMap<IntT, T...> out;
-  Fold({(out.template Get<T>() = total +=
-         sizeof(T) * sizes.template Get<T>())...});
+  ((out.template Get<T>() = total += sizeof(T) * sizes.template Get<T>()), ...);
   return out;
 }
 
@@ -521,7 +512,7 @@ class FlatAllocatorImpl {
   const std::string* AllocateStrings(In&&... in) {
     std::string* strings = AllocateArray<std::string>(sizeof...(in));
     std::string* res = strings;
-    Fold({(*strings++ = std::string(std::forward<In>(in)))...});
+    ((*strings++ = std::string(std::forward<In>(in))), ...);
     return res;
   }
 
@@ -646,7 +637,7 @@ class FlatAllocatorImpl {
   void ExpectConsumed() const {
     // We verify that we consumed all the memory requested if there was no
     // error in processing.
-    Fold({ExpectConsumed<T>()...});
+    (ExpectConsumed<T>(), ...);
   }
 
  private:
@@ -687,6 +678,41 @@ static auto DisableTracking() {
   internal::cpp::IsTrackingEnabledVar() = false;
   return absl::MakeCleanup(
       [=] { internal::cpp::IsTrackingEnabledVar() = old_value; });
+}
+
+Descriptor::WellKnownType FindWellKnownType(absl::string_view name) {
+  // Must match the order of Descriptor::WellKnownType enum in descriptor.h
+  // starting from WELLKNOWNTYPE_DOUBLEVALUE.
+  static constexpr absl::string_view kWellKnownTypes[] = {
+      "DoubleValue",  // WELLKNOWNTYPE_DOUBLEVALUE
+      "FloatValue",   // WELLKNOWNTYPE_FLOATVALUE
+      "Int64Value",   // WELLKNOWNTYPE_INT64VALUE
+      "UInt64Value",  // WELLKNOWNTYPE_UINT64VALUE
+      "Int32Value",   // WELLKNOWNTYPE_INT32VALUE
+      "UInt32Value",  // WELLKNOWNTYPE_UINT32VALUE
+      "StringValue",  // WELLKNOWNTYPE_STRINGVALUE
+      "BytesValue",   // WELLKNOWNTYPE_BYTESVALUE
+      "BoolValue",    // WELLKNOWNTYPE_BOOLVALUE
+      "Any",          // WELLKNOWNTYPE_ANY
+      "FieldMask",    // WELLKNOWNTYPE_FIELDMASK
+      "Duration",     // WELLKNOWNTYPE_DURATION
+      "Timestamp",    // WELLKNOWNTYPE_TIMESTAMP
+      "Value",        // WELLKNOWNTYPE_VALUE
+      "ListValue",    // WELLKNOWNTYPE_LISTVALUE
+      "Struct",       // WELLKNOWNTYPE_STRUCT
+  };
+  static_assert(std::size(kWellKnownTypes) == Descriptor::WELLKNOWNTYPE_STRUCT,
+                "kWellKnownTypes size must match WellKnownType enum");
+
+  if (!absl::ConsumePrefix(&name, "google.protobuf.")) {
+    return Descriptor::WELLKNOWNTYPE_UNSPECIFIED;
+  }
+  for (size_t i = 0; i < std::size(kWellKnownTypes); ++i) {
+    if (kWellKnownTypes[i] == name) {
+      return static_cast<Descriptor::WellKnownType>(i + 1);
+    }
+  }
+  return Descriptor::WELLKNOWNTYPE_UNSPECIFIED;
 }
 
 }  // namespace
@@ -1515,12 +1541,6 @@ class DescriptorPool::Tables {
   // set of extensions numbers from fallback_database_.
   absl::flat_hash_set<const Descriptor*> extensions_loaded_from_db_;
 
-  // Maps type name to Descriptor::WellKnownType.  This is logically global
-  // and const, but we make it a member here to simplify its construction and
-  // destruction.  This only has 20-ish entries and is one per DescriptorPool,
-  // so the overhead is small.
-  absl::flat_hash_map<std::string, Descriptor::WellKnownType> well_known_types_;
-
   // -----------------------------------------------------------------
   // Finding items.
 
@@ -1631,26 +1651,7 @@ class DescriptorPool::Tables {
   std::vector<std::pair<const Descriptor*, int>> extensions_after_checkpoint_;
 };
 
-DescriptorPool::Tables::Tables() {
-  well_known_types_.insert({
-      {"google.protobuf.DoubleValue", Descriptor::WELLKNOWNTYPE_DOUBLEVALUE},
-      {"google.protobuf.FloatValue", Descriptor::WELLKNOWNTYPE_FLOATVALUE},
-      {"google.protobuf.Int64Value", Descriptor::WELLKNOWNTYPE_INT64VALUE},
-      {"google.protobuf.UInt64Value", Descriptor::WELLKNOWNTYPE_UINT64VALUE},
-      {"google.protobuf.Int32Value", Descriptor::WELLKNOWNTYPE_INT32VALUE},
-      {"google.protobuf.UInt32Value", Descriptor::WELLKNOWNTYPE_UINT32VALUE},
-      {"google.protobuf.StringValue", Descriptor::WELLKNOWNTYPE_STRINGVALUE},
-      {"google.protobuf.BytesValue", Descriptor::WELLKNOWNTYPE_BYTESVALUE},
-      {"google.protobuf.BoolValue", Descriptor::WELLKNOWNTYPE_BOOLVALUE},
-      {"google.protobuf.Any", Descriptor::WELLKNOWNTYPE_ANY},
-      {"google.protobuf.FieldMask", Descriptor::WELLKNOWNTYPE_FIELDMASK},
-      {"google.protobuf.Duration", Descriptor::WELLKNOWNTYPE_DURATION},
-      {"google.protobuf.Timestamp", Descriptor::WELLKNOWNTYPE_TIMESTAMP},
-      {"google.protobuf.Value", Descriptor::WELLKNOWNTYPE_VALUE},
-      {"google.protobuf.ListValue", Descriptor::WELLKNOWNTYPE_LISTVALUE},
-      {"google.protobuf.Struct", Descriptor::WELLKNOWNTYPE_STRUCT},
-  });
-}
+DescriptorPool::Tables::Tables() {}
 
 DescriptorPool::Tables::~Tables() { ABSL_DCHECK(checkpoints_.empty()); }
 
@@ -5974,10 +5975,7 @@ void internal::DescriptorBuilder::BuildMessage(const DescriptorProto& proto,
   result->options_ = nullptr;  // Set to default_instance later if necessary.
   result->visibility_ = static_cast<uint8_t>(proto.visibility());
 
-  auto it = pool_->tables_->well_known_types_.find(result->full_name());
-  if (it != pool_->tables_->well_known_types_.end()) {
-    result->well_known_type_ = it->second;
-  }
+  result->well_known_type_ = FindWellKnownType(result->full_name());
 
   // Calculate the continuous sequence of fields.
   // These can be fast-path'd during lookup and don't need to be added to the

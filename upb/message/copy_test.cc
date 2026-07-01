@@ -66,15 +66,15 @@ TEST(GeneratedCode, DeepCloneMessageScalarAndString) {
       find_proto2_field(kFieldOptionalInt32);
   const upb_MiniTableField* optional_string_field =
       find_proto2_field(kFieldOptionalString);
-  upb_Message_SetInt32(UPB_UPCAST(msg), optional_int32_field, kTestInt32,
-                       nullptr);
+  ASSERT_TRUE(upb_Message_SetInt32(UPB_UPCAST(msg), optional_int32_field,
+                                   kTestInt32, nullptr));
   char* string_in_arena =
       (char*)upb_Arena_Malloc(source_arena, sizeof(kTestStr1));
   memcpy(string_in_arena, kTestStr1, sizeof(kTestStr1));
-  upb_Message_SetString(
+  ASSERT_TRUE(upb_Message_SetString(
       UPB_UPCAST(msg), optional_string_field,
       upb_StringView_FromDataAndSize(string_in_arena, sizeof(kTestStr1) - 1),
-      source_arena);
+      source_arena));
   upb_Arena* arena = upb_Arena_New();
   protobuf_test_messages_proto2_TestAllTypesProto2* clone =
       (protobuf_test_messages_proto2_TestAllTypesProto2*)upb_Message_DeepClone(
@@ -361,8 +361,8 @@ TEST(GeneratedCode, DeepCloneMessageWithUnknowns) {
   ASSERT_EQ(status, kUpb_EncodeStatus_Ok);
   std::string unknown_data(data, len);
   // Add unknown data.
-  UPB_PRIVATE(_upb_Message_AddUnknown)
-  (UPB_UPCAST(msg), data, len, source_arena, kUpb_AddUnknown_Copy);
+  ASSERT_TRUE(UPB_PRIVATE(_upb_Message_AddUnknown)(
+      UPB_UPCAST(msg), data, len, source_arena, kUpb_AddUnknown_Copy));
   // Create clone.
   upb_Arena* clone_arena = upb_Arena_New();
   protobuf_test_messages_proto2_TestAllTypesProto2* clone =
@@ -467,9 +467,9 @@ TEST(GeneratedCode, ShallowCopyIncludesUnknowns) {
   // Add some unknown data.
   std::string_view unknown_data1 =
       "\x08\x01";  // Field 1, wire type 0 (varint), value 1
-  UPB_PRIVATE(_upb_Message_AddUnknown)(UPB_UPCAST(msg), unknown_data1.data(),
-                                       unknown_data1.size(), source_arena,
-                                       kUpb_AddUnknown_Copy);
+  ASSERT_TRUE(UPB_PRIVATE(_upb_Message_AddUnknown)(
+      UPB_UPCAST(msg), unknown_data1.data(), unknown_data1.size(), source_arena,
+      kUpb_AddUnknown_Copy));
   std::vector<std::string_view> only_unknown_data1 = {unknown_data1};
 
   upb_Arena* arena = upb_Arena_New();
@@ -501,9 +501,9 @@ TEST(GeneratedCode, ShallowCopyIncludesUnknowns) {
   // Add MORE unknown data to dst.
   std::string_view unknown_data2 =
       "\x10\x02";  // Field 2, wire type 0 (varint), value 2
-  UPB_PRIVATE(_upb_Message_AddUnknown)(UPB_UPCAST(dst), unknown_data2.data(),
-                                       unknown_data2.size(), arena,
-                                       kUpb_AddUnknown_Copy);
+  ASSERT_TRUE(UPB_PRIVATE(_upb_Message_AddUnknown)(
+      UPB_UPCAST(dst), unknown_data2.data(), unknown_data2.size(), arena,
+      kUpb_AddUnknown_Copy));
 
   // Verify src still only has the first unknown data.
   EXPECT_EQ(GetUnknownFields(UPB_UPCAST(msg)), only_unknown_data1);

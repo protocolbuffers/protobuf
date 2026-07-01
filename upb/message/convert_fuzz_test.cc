@@ -357,6 +357,18 @@ TEST(ConvertFuzz, ConvertFuzzRegression8) {
       3342580205, 67649);
 }
 
+TEST(ConvertFuzz, ConvertFuzzRegression_ConvertClosedEnumWithUnknown) {
+  std::vector<std::string> enum_mds = {
+      "!!\003\003\003\003\003\003\003\003@\000\000\000\000ooo\000\0006\001"};
+  for (int i = 0; i < 1870; ++i) {
+    enum_mds.push_back("/");
+  }
+  ConvertFuzz(upb::fuzz::MiniTableFuzzInput{{"$$H_B4"}, enum_mds, "", {0}},
+              8159560341278556898ULL, 12315457061443390189ULL,
+              std::string("\022\nCd_\213\356\000\001\020\234\013", 12),
+              3740129997ULL, 2289667495ULL);
+}
+
 TEST(ConvertFuzz, ConvertFuzzEncodeRegression) {
   ConvertFuzz(
       upb::fuzz::MiniTableFuzzInput{{"$$$$$$$$$$$$$$$$$$", "", "", "", "", ""},
@@ -542,7 +554,6 @@ TEST(ConvertFuzz, ArbitraryMiniTableConvertFuzzRegression9) {
                   16),
       4058141318, 2394867369);
 }
-
 TEST(ConvertFuzz, ArbitraryMiniTableConvertFuzzRegression_b522284547) {
   ArbitraryMiniTableConvertFuzz(
       upb::fuzz::MiniTableFuzzInput{

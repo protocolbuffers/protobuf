@@ -198,7 +198,7 @@ struct ArenaInitialized {
 
 template <typename To, typename From>
 void AssertDownCast(From* from) {
-  static_assert(std::is_base_of<From, To>::value, "illegal DownCast");
+  static_assert(std::is_base_of_v<From, To>, "illegal DownCast");
 
   // Check that this function is not used to downcast message types.
   // For those we should use {Down,Dynamic}CastTo{Message,Generated}.
@@ -735,6 +735,13 @@ PROTOBUF_ALWAYS_INLINE void TSanWrite(const void*) {}
 // templates.
 template <typename T>
 using type_identity_t = std::enable_if_t<true, T>;
+
+// Evaluates to the input value, but it makes it type-dependent on `T`.
+// This allows "late binding" of known types to avoid circular dependencies.
+template <typename T, typename U>
+U&& TypeDependent(U&& value) {
+  return std::forward<U>(value);
+}
 
 template <typename T>
 constexpr T* Launder(T* p) {

@@ -10,6 +10,7 @@ google/protobuf/arena_cleanup.h
 google/protobuf/arenastring.h
 google/protobuf/arenaz_sampler.h
 google/protobuf/c_sharp_features.proto
+google/protobuf/class_data.h
 google/protobuf/compiler/code_generator.h
 google/protobuf/compiler/code_generator_lite.h
 google/protobuf/compiler/command_line_interface.h
@@ -101,6 +102,7 @@ google/protobuf/map_field_lite.h
 google/protobuf/map_type_handler.h
 google/protobuf/message.h
 google/protobuf/message_lite.h
+google/protobuf/message_traits.h
 google/protobuf/metadata.h
 google/protobuf/metadata_lite.h
 google/protobuf/micro_string.h
@@ -143,6 +145,7 @@ google/protobuf/timestamp.pb.h
 google/protobuf/timestamp.proto
 google/protobuf/type.pb.h
 google/protobuf/type.proto
+google/protobuf/type_id.h
 google/protobuf/unknown_field_set.h
 google/protobuf/util/delimited_message_util.h
 google/protobuf/util/field_comparator.h
