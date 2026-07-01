@@ -37,6 +37,7 @@ typedef struct {
     PyObject* parent;  // stub: owning pointer to parent message.
     upb_Array* arr;    // reified: the data for this array.
   } ptr;
+  int version;
 } PyUpb_RepeatedContainer;
 
 static bool PyUpb_RepeatedContainer_IsStub(PyUpb_RepeatedContainer* self) {
@@ -101,10 +102,25 @@ upb_Array* PyUpb_RepeatedContainer_AssureWritable(PyObject* _self) {
     return (upb_Array*)PyUpb_SetFrozenErrorWithMsg("Container is immutable");
   }
 
+  self->version++;
   upb_Array* arr = PyUpb_RepeatedContainer_GetIfReified(self);
   if (arr) return arr;  // Already writable.
 
   return PyUpb_RepeatedContainer_Reify((PyObject*)self, NULL, NULL, 0);
+}
+
+void PyUpb_RepeatedContainer_Invalidate(PyObject* obj) {
+  PyUpb_RepeatedContainer* self = (PyUpb_RepeatedContainer*)obj;
+  self->version++;
+}
+
+static bool PyUpb_RepeatedContainer_AssureVersionUnchanged(
+    PyUpb_RepeatedContainer* self, int version, const char* op) {
+  if (self->version != version) {
+    PyErr_Format(PyExc_RuntimeError, "Repeated field modified during %s", op);
+    return false;
+  }
+  return true;
 }
 
 static void PyUpb_RepeatedContainer_Dealloc(PyObject* _self) {
@@ -147,6 +163,7 @@ PyObject* PyUpb_RepeatedContainer_NewStub(PyObject* parent,
   repeated->arena = arena;
   repeated->field = (uintptr_t)PyUpb_FieldDescriptor_Get(f) | 1;
   repeated->ptr.parent = parent;
+  repeated->version = 0;
   Py_INCREF(arena);
   Py_INCREF(parent);
   return &repeated->ob_base;
@@ -168,6 +185,7 @@ PyObject* PyUpb_RepeatedContainer_GetOrCreateWrapper(upb_Array* arr,
   repeated->arena = arena;
   repeated->field = (uintptr_t)PyUpb_FieldDescriptor_Get(f);
   repeated->ptr.arr = arr;
+  repeated->version = 0;
   ret = &repeated->ob_base;
   Py_INCREF(arena);
   PyUpb_ObjCache_Add(arr, ret);
@@ -187,6 +205,7 @@ PyObject* PyUpb_RepeatedContainer_DeepCopy(PyObject* _self, PyObject* value) {
   clone->field = (uintptr_t)PyUpb_FieldDescriptor_Get(f);
   clone->ptr.arr =
       upb_Array_New(PyUpb_Arena_Get(clone->arena), upb_FieldDef_CType(f));
+  clone->version = 0;
   PyUpb_ObjCache_Add(clone->ptr.arr, (PyObject*)clone);
   PyObject* result = PyUpb_RepeatedContainer_MergeFrom((PyObject*)clone, _self);
   if (!result) {
@@ -350,10 +369,16 @@ typedef struct {
   upb_Array* arr;
   upb_Arena* arena;
   Py_ssize_t size_hint;
+  PyUpb_RepeatedContainer* self;
+  int version;
 } PyUpb_ExtendCtx;
 
 static bool PyUpb_ExtendSizeCb(Py_ssize_t size, void* vctx) {
   PyUpb_ExtendCtx* ctx = (PyUpb_ExtendCtx*)vctx;
+  if (!PyUpb_RepeatedContainer_AssureVersionUnchanged(ctx->self, ctx->version,
+                                                      "extend")) {
+    return false;
+  }
   ctx->size_hint = size;
   size_t old_size = upb_Array_Size(ctx->arr);
   if (size > 0 && ((size_t)size <= SIZE_MAX - old_size)) {
@@ -364,6 +389,10 @@ static bool PyUpb_ExtendSizeCb(Py_ssize_t size, void* vctx) {
 
 static bool PyUpb_ExtendElemCb(upb_MessageValue val, void* vctx) {
   PyUpb_ExtendCtx* ctx = (PyUpb_ExtendCtx*)vctx;
+  if (!PyUpb_RepeatedContainer_AssureVersionUnchanged(ctx->self, ctx->version,
+                                                      "extend")) {
+    return false;
+  }
   return upb_Array_Append(ctx->arr, val, ctx->arena);
 }
 
@@ -393,6 +422,10 @@ static PyUpb_OverlapType PyUpb_ArrayOverlaps(const upb_Array* arr,
 static bool PyUpb_ExtendBulkCb(const void* data, Py_ssize_t count,
                                Py_ssize_t itemsize, void* vctx) {
   PyUpb_ExtendCtx* ctx = (PyUpb_ExtendCtx*)vctx;
+  if (!PyUpb_RepeatedContainer_AssureVersionUnchanged(ctx->self, ctx->version,
+                                                      "extend")) {
+    return false;
+  }
   size_t old_size = upb_Array_Size(ctx->arr);
   char* dst;
   switch (PyUpb_ArrayOverlaps(ctx->arr, data, count, itemsize)) {
@@ -423,6 +456,7 @@ PyObject* PyUpb_RepeatedContainer_Extend(PyObject* _self, PyObject* value) {
   upb_Array* arr = PyUpb_RepeatedContainer_AssureWritable(_self);
   if (!arr) return NULL;
   upb_Arena* arena = PyUpb_Arena_Get(self->arena);
+  int version = self->version;
 
   if (upb_FieldDef_IsSubMessage(f)) {
     // Composite fields: iterate and append via MergeFrom.
@@ -431,6 +465,12 @@ PyObject* PyUpb_RepeatedContainer_Extend(PyObject* _self, PyObject* value) {
     if (!iter) return NULL;
     PyObject* item;
     while ((item = PyIter_Next(iter)) != NULL) {
+      if (!PyUpb_RepeatedContainer_AssureVersionUnchanged(self, version,
+                                                          "extend")) {
+        Py_DECREF(item);
+        Py_DECREF(iter);
+        return NULL;
+      }
       PyObject* ret = PyUpb_RepeatedCompositeContainer_Append(_self, item);
       Py_DECREF(item);
       if (!ret) {
@@ -438,16 +478,23 @@ PyObject* PyUpb_RepeatedContainer_Extend(PyObject* _self, PyObject* value) {
         return NULL;
       }
       Py_DECREF(ret);
+      version = self->version;
     }
     Py_DECREF(iter);
     if (PyErr_Occurred()) return NULL;
+    if (!PyUpb_RepeatedContainer_AssureVersionUnchanged(self, version,
+                                                        "extend")) {
+      return NULL;
+    }
     Py_RETURN_NONE;
   }
   size_t old_size = upb_Array_Size(arr);
-  PyUpb_ExtendCtx ctx = {arr, arena};
+  PyUpb_ExtendCtx ctx = {arr, arena, 0, self, self->version};
   if (!PyUpb_IterInput(value, f, arena, PyUpb_ExtendSizeCb, PyUpb_ExtendElemCb,
                        PyUpb_ExtendBulkCb, &ctx)) {
-    upb_Array_Resize(arr, old_size, NULL);
+    if (self->version == ctx.version) {
+      upb_Array_Resize(arr, old_size, NULL);
+    }
     return NULL;
   }
   Py_RETURN_NONE;
@@ -544,10 +591,16 @@ typedef struct {
   Py_ssize_t index;
   Py_ssize_t step;
   Py_ssize_t count;
+  PyUpb_RepeatedContainer* self;
+  int version;
 } PyUpb_SetSubscriptCtx;
 
 static bool PyUpb_SetSubscriptSizeCb(Py_ssize_t seq_size, void* vctx) {
   PyUpb_SetSubscriptCtx* ctx = (PyUpb_SetSubscriptCtx*)vctx;
+  if (!PyUpb_RepeatedContainer_AssureVersionUnchanged(ctx->self, ctx->version,
+                                                      "assignment")) {
+    return false;
+  }
   if (seq_size != ctx->count) {
     if (ctx->step == 1) {
       // We must shift the tail elements (either right or left).
@@ -569,6 +622,10 @@ static bool PyUpb_SetSubscriptSizeCb(Py_ssize_t seq_size, void* vctx) {
 
 static bool PyUpb_SetSubscriptElemCb(upb_MessageValue val, void* vctx) {
   PyUpb_SetSubscriptCtx* ctx = (PyUpb_SetSubscriptCtx*)vctx;
+  if (!PyUpb_RepeatedContainer_AssureVersionUnchanged(ctx->self, ctx->version,
+                                                      "assignment")) {
+    return false;
+  }
   upb_Array_Set(ctx->arr, ctx->index, val);
   ctx->index += ctx->step;
   return true;
@@ -597,6 +654,10 @@ static void PyUpb_Rotate(char* first, char* middle, char* last,
 static bool PyUpb_SetSubscriptBulkCb(const void* data, Py_ssize_t count,
                                      Py_ssize_t itemsize, void* vctx) {
   PyUpb_SetSubscriptCtx* ctx = (PyUpb_SetSubscriptCtx*)vctx;
+  if (!PyUpb_RepeatedContainer_AssureVersionUnchanged(ctx->self, ctx->version,
+                                                      "assignment")) {
+    return false;
+  }
   PyUpb_OverlapType overlap =
       PyUpb_ArrayOverlaps(ctx->arr, data, count, itemsize);
 
@@ -704,11 +765,16 @@ static int PyUpb_RepeatedContainer_SetSubscript(
     PyErr_SetString(PyExc_TypeError, "does not support assignment");
     return -1;
   }
+  int version = self->version;
 
   if (step == 0) {
     // Set single value.
     upb_MessageValue msgval;
     if (!PyUpb_PyToUpb(value, f, &msgval, arena)) return -1;
+    if (!PyUpb_RepeatedContainer_AssureVersionUnchanged(self, version,
+                                                        "assignment")) {
+      return -1;
+    }
     upb_Array_Set(arr, idx, msgval);
     return 0;
   }
@@ -720,7 +786,7 @@ static int PyUpb_RepeatedContainer_SetSubscript(
     Py_DECREF(ret);
     return 0;
   }
-  PyUpb_SetSubscriptCtx ctx = {arr, arena, idx, step, count};
+  PyUpb_SetSubscriptCtx ctx = {arr, arena, idx, step, count, self, version};
   if (!PyUpb_IterInput(value, f, arena, PyUpb_SetSubscriptSizeCb,
                        PyUpb_SetSubscriptElemCb, PyUpb_SetSubscriptBulkCb,
                        &ctx)) {
@@ -792,6 +858,7 @@ static PyObject* PyUpb_RepeatedContainer_Pop(PyObject* _self, PyObject* args) {
   if (!PyArg_ParseTuple(args, "|n", &index)) return NULL;
   upb_Array* arr = PyUpb_RepeatedContainer_AssureWritable(_self);
   if (!arr) return NULL;
+  int version = self->version;
   size_t size = upb_Array_Size(arr);
   if (index < 0) index += size;
 #if PROTOBUF_PY_FUTURE_REMOVE_POP_CLAMP
@@ -803,6 +870,10 @@ static PyObject* PyUpb_RepeatedContainer_Pop(PyObject* _self, PyObject* args) {
 #endif  // PROTOBUF_PY_FUTURE_REMOVE_POP_CLAMP
   PyObject* ret = PyUpb_RepeatedContainer_Item(_self, index);
   if (!ret) return NULL;
+  if (!PyUpb_RepeatedContainer_AssureVersionUnchanged(self, version, "pop")) {
+    Py_DECREF(ret);
+    return NULL;
+  }
   upb_Array_Delete(self->ptr.arr, index, 1);
   return ret;
 }
@@ -811,6 +882,8 @@ static PyObject* PyUpb_RepeatedContainer_Remove(PyObject* _self,
                                                 PyObject* value) {
   upb_Array* arr = PyUpb_RepeatedContainer_AssureWritable(_self);
   if (!arr) return NULL;
+  PyUpb_RepeatedContainer* self = (PyUpb_RepeatedContainer*)_self;
+  int version = self->version;
   Py_ssize_t match_index = -1;
   Py_ssize_t n = PyUpb_RepeatedContainer_Length(_self);
   for (Py_ssize_t i = 0; i < n; ++i) {
@@ -822,6 +895,14 @@ static PyObject* PyUpb_RepeatedContainer_Remove(PyObject* _self,
       match_index = i;
       break;
     }
+    if (!PyUpb_RepeatedContainer_AssureVersionUnchanged(self, version,
+                                                        "remove")) {
+      return NULL;
+    }
+  }
+  if (!PyUpb_RepeatedContainer_AssureVersionUnchanged(self, version,
+                                                      "remove")) {
+    return NULL;
   }
   if (match_index == -1) {
     PyErr_SetString(PyExc_ValueError, "remove(x): x not in container");
@@ -838,6 +919,7 @@ static bool PyUpb_RepeatedContainer_Assign(PyObject* _self, PyObject* list) {
   PyUpb_RepeatedContainer* self = (PyUpb_RepeatedContainer*)_self;
   const upb_FieldDef* f = PyUpb_RepeatedContainer_GetField(self);
   upb_Array* arr = PyUpb_RepeatedContainer_AssureWritable(_self);
+  int version = self->version;
   Py_ssize_t size = PyList_Size(list);
   bool submsg = upb_FieldDef_IsSubMessage(f);
   upb_Arena* arena = PyUpb_Arena_Get(self->arena);
@@ -849,6 +931,10 @@ static bool PyUpb_RepeatedContainer_Assign(PyObject* _self, PyObject* list) {
       assert(msgval.msg_val);
     } else {
       if (!PyUpb_PyToUpb(obj, f, &msgval, arena)) return false;
+      if (!PyUpb_RepeatedContainer_AssureVersionUnchanged(self, version,
+                                                          "sort")) {
+        return false;
+      }
     }
     upb_Array_Set(arr, i, msgval);
   }
@@ -878,6 +964,8 @@ static PyObject* PyUpb_RepeatedContainer_Sort(PyObject* pself, PyObject* args,
 
   upb_Array* arr = PyUpb_RepeatedContainer_AssureWritable(pself);
   if (!arr) return NULL;
+  PyUpb_RepeatedContainer* self = (PyUpb_RepeatedContainer*)pself;
+  int version = self->version;
 
   PyObject* ret = NULL;
   PyObject* full_slice = NULL;
@@ -888,10 +976,12 @@ static PyObject* PyUpb_RepeatedContainer_Sort(PyObject* pself, PyObject* args,
   if ((full_slice = PySlice_New(NULL, NULL, NULL)) &&
       (list = PyUpb_RepeatedContainer_Subscript(pself, full_slice)) &&
       (m = PyObject_GetAttrString(list, "sort")) &&
-      (res = PyObject_Call(m, args, kwds)) &&
-      PyUpb_RepeatedContainer_Assign(pself, list)) {
-    Py_INCREF(Py_None);
-    ret = Py_None;
+      (res = PyObject_Call(m, args, kwds))) {
+    if (PyUpb_RepeatedContainer_AssureVersionUnchanged(self, version, "sort") &&
+        PyUpb_RepeatedContainer_Assign(pself, list)) {
+      Py_INCREF(Py_None);
+      ret = Py_None;
+    }
   }
 
   Py_XDECREF(full_slice);
@@ -954,11 +1044,19 @@ static PyObject* PyUpb_RepeatedCompositeContainer_AppendNew(PyObject* _self) {
 PyObject* PyUpb_RepeatedCompositeContainer_Add(PyObject* _self, PyObject* args,
                                                PyObject* kwargs) {
   PyUpb_RepeatedContainer* self = (PyUpb_RepeatedContainer*)_self;
+  int version = self->version;
   PyObject* py_msg = PyUpb_RepeatedCompositeContainer_AppendNew(_self);
   if (!py_msg) return NULL;
   if (PyUpb_Message_InitAttributes(py_msg, args, kwargs) < 0) {
     Py_DECREF(py_msg);
-    upb_Array_Delete(self->ptr.arr, upb_Array_Size(self->ptr.arr) - 1, 1);
+    if (self->version == version + 1 && upb_Array_Size(self->ptr.arr) > 0) {
+      upb_Array_Delete(self->ptr.arr, upb_Array_Size(self->ptr.arr) - 1, 1);
+    }
+    return NULL;
+  }
+  if (!PyUpb_RepeatedContainer_AssureVersionUnchanged(self, version + 1,
+                                                      "add")) {
+    Py_DECREF(py_msg);
     return NULL;
   }
   return py_msg;
@@ -967,14 +1065,24 @@ PyObject* PyUpb_RepeatedCompositeContainer_Add(PyObject* _self, PyObject* args,
 static PyObject* PyUpb_RepeatedCompositeContainer_Append(PyObject* _self,
                                                          PyObject* value) {
   if (!PyUpb_Message_Verify(value)) return NULL;
+  PyUpb_RepeatedContainer* self = (PyUpb_RepeatedContainer*)_self;
+  int version = self->version;
   PyObject* py_msg = PyUpb_RepeatedCompositeContainer_AppendNew(_self);
   if (!py_msg) return NULL;
   PyObject* none = PyUpb_Message_MergeFrom(py_msg, value);
   if (!none) {
     Py_DECREF(py_msg);
+    if (self->version == version + 1 && upb_Array_Size(self->ptr.arr) > 0) {
+      upb_Array_Delete(self->ptr.arr, upb_Array_Size(self->ptr.arr) - 1, 1);
+    }
     return NULL;
   }
   Py_DECREF(none);
+  if (!PyUpb_RepeatedContainer_AssureVersionUnchanged(self, version + 1,
+                                                      "append")) {
+    Py_DECREF(py_msg);
+    return NULL;
+  }
   return py_msg;
 }
 
@@ -986,6 +1094,7 @@ static PyObject* PyUpb_RepeatedContainer_Insert(PyObject* _self,
   if (!PyArg_ParseTuple(args, "nO", &index, &value)) return NULL;
   upb_Array* arr = PyUpb_RepeatedContainer_AssureWritable(_self);
   if (!arr) return NULL;
+  int version = self->version;
 
   // Normalize index.
   Py_ssize_t size = upb_Array_Size(arr);
@@ -1009,6 +1118,11 @@ static PyObject* PyUpb_RepeatedContainer_Insert(PyObject* _self,
     msgval.msg_val = msg;
   } else {
     if (!PyUpb_PyToUpb(value, f, &msgval, arena)) return NULL;
+  }
+
+  if (!PyUpb_RepeatedContainer_AssureVersionUnchanged(self, version,
+                                                      "insert")) {
+    return NULL;
   }
 
   upb_Array_Insert(arr, index, 1, arena);
@@ -1073,10 +1187,15 @@ static PyObject* PyUpb_RepeatedScalarContainer_Append(PyObject* _self,
   PyUpb_RepeatedContainer* self = (PyUpb_RepeatedContainer*)_self;
   upb_Array* arr = PyUpb_RepeatedContainer_AssureWritable(_self);
   if (!arr) return NULL;
+  int version = self->version;
   upb_Arena* arena = PyUpb_Arena_Get(self->arena);
   const upb_FieldDef* f = PyUpb_RepeatedContainer_GetField(self);
   upb_MessageValue msgval;
   if (!PyUpb_PyToUpb(value, f, &msgval, arena)) {
+    return NULL;
+  }
+  if (!PyUpb_RepeatedContainer_AssureVersionUnchanged(self, version,
+                                                      "append")) {
     return NULL;
   }
   upb_Array_Append(arr, msgval, arena);
@@ -1089,6 +1208,7 @@ static int PyUpb_RepeatedScalarContainer_AssignItem(PyObject* _self,
   PyUpb_RepeatedContainer* self = (PyUpb_RepeatedContainer*)_self;
   upb_Array* arr = PyUpb_RepeatedContainer_AssureWritable(_self);
   if (!arr) return -1;
+  int version = self->version;
   Py_ssize_t size = upb_Array_Size(arr);
   if (index < 0 || index >= size) {
     PyErr_Format(PyExc_IndexError, "list index (%zd) out of range", index);
@@ -1098,6 +1218,10 @@ static int PyUpb_RepeatedScalarContainer_AssignItem(PyObject* _self,
   upb_MessageValue msgval;
   upb_Arena* arena = PyUpb_Arena_Get(self->arena);
   if (!PyUpb_PyToUpb(item, f, &msgval, arena)) {
+    return -1;
+  }
+  if (!PyUpb_RepeatedContainer_AssureVersionUnchanged(self, version,
+                                                      "assignment")) {
     return -1;
   }
   upb_Array_Set(self->ptr.arr, index, msgval);

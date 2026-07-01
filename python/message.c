@@ -1553,9 +1553,13 @@ bool PyUpb_Message_DoClearField(PyObject* _self, const upb_FieldDef* f) {
     PyUpb_MapContainer_AssureWritable(sub);
     PyUpb_MapContainer_Invalidate(sub);
   } else if (upb_FieldDef_IsRepeated(f)) {
-    if (sub) {
-      PyUpb_RepeatedContainer_AssureWritable(sub);
+    // Need to invalidate repeated containers as we do for maps above as
+    // reentrancy is possible on repeated containers as well.
+    if (!sub) {
+      sub = PyUpb_Message_GetFieldValue(_self, f);
     }
+    PyUpb_RepeatedContainer_AssureWritable(sub);
+    PyUpb_RepeatedContainer_Invalidate(sub);
   } else if (upb_FieldDef_IsSubMessage(f)) {
     if (sub) {
       PyUpb_Message_AssureWritable((PyUpb_Message*)sub);

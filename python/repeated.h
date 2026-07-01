@@ -43,6 +43,9 @@ upb_Array* PyUpb_RepeatedContainer_Reify(PyObject* self, upb_Array* arr,
 // return NULL.
 upb_Array* PyUpb_RepeatedContainer_AssureWritable(PyObject* self);
 
+// Invalidates any existing iterators or cached operations for `obj`.
+void PyUpb_RepeatedContainer_Invalidate(PyObject* obj);
+
 // Implements repeated_field.extend(iterable).  `_self` must be a repeated
 // field (either repeated composite or repeated scalar).
 PyObject* PyUpb_RepeatedContainer_Extend(PyObject* _self, PyObject* value);
