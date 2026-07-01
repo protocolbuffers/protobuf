@@ -22,7 +22,10 @@ namespace protobuf {
 void UnknownField::Delete() {
   switch (type()) {
     case UnknownField::TYPE_LENGTH_DELIMITED:
-      delete data_.string_value;
+      data_.string_value->str.Destroy();
+      // We don't know the actual capacity because we don't store it to save
+      // space.
+      ::operator delete(data_.string_value);
       break;
     case UnknownField::TYPE_GROUP:
       delete data_.group;
@@ -65,12 +68,33 @@ void UnknownFieldSet::AddFixed64(int number, uint64_t value) {
   field.data_.fixed64 = value;
 }
 
-std::string* UnknownFieldSet::AddLengthDelimited(int number) {
+internal::MicroString* UnknownField::InitAsString(Arena* arena,
+                                                  size_t& inline_capacity) {
+  static_assert(std::is_trivially_destructible_v<StringVariant>,
+                "we manage the lifetime here.");
+  SetType(UnknownField::TYPE_LENGTH_DELIMITED);
+  if (inline_capacity > internal::MicroString::kMaxInlineCapacity) {
+    // If the desired capacity is larger than the maximum, just allocate the
+    // minimum. The caller will not be able to use the inline space anyway.
+    inline_capacity = internal::MicroString::kInlineCapacity;
+  } else if (inline_capacity < internal::MicroString::kInlineCapacity) {
+    // And make sure we are not below the minimum.
+    inline_capacity = internal::MicroString::kInlineCapacity;
+  }
+  size_t bytes = sizeof(StringVariant) + inline_capacity -
+                 internal::MicroString::kInlineCapacity;
+  void* ptr = arena ? arena->AllocateAligned(bytes) : ::operator new(bytes);
+  auto* res = ::new (ptr) StringVariant();
+  data_.string_value = res;
+  res->arena = arena;
+  return &res->str;
+}
+
+internal::MicroString* UnknownFieldSet::AddLengthDelimited(
+    int number, Arena* arena, size_t& inline_capacity) {
   auto& field = *fields().Add();
   field.number_ = number;
-  field.SetType(UnknownField::TYPE_LENGTH_DELIMITED);
-  field.data_.string_value = Arena::Create<std::string>(arena());
-  return field.data_.string_value;
+  return field.InitAsString(arena, inline_capacity);
 }
 
 UnknownFieldSet* UnknownFieldSet::AddGroup(int number) {
@@ -96,10 +120,12 @@ class UnknownFieldParserHelper {
   }
   const char* ParseLengthDelimited(uint32_t num, const char* ptr,
                                    ParseContext* ctx) {
-    std::string* s = unknown_->AddLengthDelimited(num);
     int size = ReadSize(&ptr);
-    GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
-    return ctx->ReadString(ptr, size, s);
+    if (!ptr) return nullptr;
+    Arena* arena = unknown_->arena();
+    size_t inline_capacity = size;
+    auto* s = unknown_->AddLengthDelimited(num, arena, inline_capacity);
+    return ctx->ReadMicroStringWithSize(ptr, size, *s, inline_capacity, arena);
   }
   const char* ParseGroup(uint32_t num, const char* ptr, ParseContext* ctx) {
     return ctx->ParseGroupInlined(ptr, num * 8 + 3, [&](const char* ptr) {

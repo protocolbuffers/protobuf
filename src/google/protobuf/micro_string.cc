@@ -236,7 +236,7 @@ void MicroString::SetImpl(absl::string_view data, Arena* arena,
   // If we fit in the inline space, use it.
   if (data.size() <= inline_capacity) {
     set_inline_size(data.size());
-    PROTOBUF_DEBUG_COUNTER("MicroString_Set.Inline").IncBucket(data.size());
+    PROTOBUF_DEBUG_COUNTER("MicroString_Set.Inline").IncLog(data.size());
     if (!data.empty()) {
       memmove(inline_head(), data.data(), data.size());
     }

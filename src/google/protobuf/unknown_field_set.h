@@ -32,6 +32,7 @@
 #include "google/protobuf/io/zero_copy_stream_impl_lite.h"
 #include "google/protobuf/message_lite.h"
 #include "google/protobuf/metadata_lite.h"
+#include "google/protobuf/micro_string.h"
 #include "google/protobuf/parse_context.h"
 #include "google/protobuf/port.h"
 #include "google/protobuf/repeated_field.h"
@@ -114,13 +115,20 @@ class PROTOBUF_EXPORT UnknownField {
   // UnknownField is being created.
   inline void SetType(Type type);
 
+  struct StringVariant {
+    Arena* arena;
+    internal::MicroString str;
+  };
+
+  internal::MicroString* InitAsString(Arena* arena, size_t& inline_capacity);
+
   uint32_t number_;
   uint32_t type_;
   union {
     uint64_t varint;
     uint32_t fixed32;
     uint64_t fixed64;
-    std::string* string_value;
+    StringVariant* string_value;
     UnknownFieldSet* group;
   } data_;
 };
@@ -256,7 +264,8 @@ class PROTOBUF_EXPORT UnknownFieldSet {
   friend internal::UnknownFieldParserHelper;
   friend internal::UnknownFieldSetTestPeer;
 
-  std::string* AddLengthDelimited(int number);
+  internal::MicroString* AddLengthDelimited(int number, Arena* arena,
+                                            size_t& inline_capacity);
 
   using InternalArenaConstructable_ = void;
   using DestructorSkippable_ = void;
@@ -353,7 +362,10 @@ inline UnknownField* UnknownFieldSet::mutable_field(int index) {
 
 inline void UnknownFieldSet::AddLengthDelimited(int number,
                                                 const absl::string_view value) {
-  AddLengthDelimited(number)->assign(value.data(), value.size());
+  Arena* a = arena();
+  size_t inline_capacity = value.size();
+  AddLengthDelimited(number, a, inline_capacity)
+      ->Set(value, a, inline_capacity);
 }
 
 inline int UnknownField::number() const { return static_cast<int>(number_); }
@@ -375,7 +387,7 @@ inline uint64_t UnknownField::fixed64() const {
 }
 inline absl::string_view UnknownField::length_delimited() const {
   assert(type() == TYPE_LENGTH_DELIMITED);
-  return *data_.string_value;
+  return data_.string_value->str.Get();
 }
 inline const UnknownFieldSet& UnknownField::group() const {
   assert(type() == TYPE_GROUP);
@@ -396,16 +408,16 @@ inline void UnknownField::set_fixed64(uint64_t value) {
 }
 inline void UnknownField::set_length_delimited(const absl::string_view value) {
   assert(type() == TYPE_LENGTH_DELIMITED);
-  data_.string_value->assign(value.data(), value.size());
+  data_.string_value->str.Set(value, data_.string_value->arena);
 }
 template <int&...>
 inline void UnknownField::set_length_delimited(std::string&& value) {
   assert(type() == TYPE_LENGTH_DELIMITED);
-  *data_.string_value = std::move(value);
+  data_.string_value->str.Set(std::move(value), data_.string_value->arena);
 }
 inline void UnknownField::set_length_delimited(const absl::Cord& value) {
   assert(type() == TYPE_LENGTH_DELIMITED);
-  absl::CopyCordToString(value, data_.string_value);
+  data_.string_value->str.Set(value, data_.string_value->arena);
 }
 inline UnknownFieldSet* UnknownField::mutable_group() {
   assert(type() == TYPE_GROUP);
@@ -419,7 +431,7 @@ bool UnknownFieldSet::MergeFromMessage(const MessageType& message) {
 
 inline size_t UnknownField::GetLengthDelimitedSize() const {
   ABSL_DCHECK_EQ(TYPE_LENGTH_DELIMITED, type());
-  return data_.string_value->size();
+  return length_delimited().size();
 }
 
 inline void UnknownField::SetType(Type type) { type_ = type; }
