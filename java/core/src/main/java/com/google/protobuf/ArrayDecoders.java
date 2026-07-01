@@ -172,6 +172,8 @@ final class ArrayDecoders {
     final int length = registers.int1;
     if (length < 0) {
       throw InvalidProtocolBufferException.negativeSize();
+    } else if (length > data.length - position) {
+      throw InvalidProtocolBufferException.truncatedMessage();
     } else if (length == 0) {
       registers.object1 = "";
       return position;
@@ -188,6 +190,8 @@ final class ArrayDecoders {
     final int length = registers.int1;
     if (length < 0) {
       throw InvalidProtocolBufferException.negativeSize();
+    } else if (length > data.length - position) {
+      throw InvalidProtocolBufferException.truncatedMessage();
     } else if (length == 0) {
       registers.object1 = "";
       return position;
@@ -660,6 +664,8 @@ final class ArrayDecoders {
     final int length = registers.int1;
     if (length < 0) {
       throw InvalidProtocolBufferException.negativeSize();
+    } else if (length > data.length - position) {
+      throw InvalidProtocolBufferException.truncatedMessage();
     } else if (length == 0) {
       output.add("");
     } else {
@@ -676,6 +682,8 @@ final class ArrayDecoders {
       final int nextLength = registers.int1;
       if (nextLength < 0) {
         throw InvalidProtocolBufferException.negativeSize();
+      } else if (nextLength > data.length - position) {
+        throw InvalidProtocolBufferException.truncatedMessage();
       } else if (nextLength == 0) {
         output.add("");
       } else {
@@ -699,6 +707,8 @@ final class ArrayDecoders {
     final int length = registers.int1;
     if (length < 0) {
       throw InvalidProtocolBufferException.negativeSize();
+    } else if (length > data.length - position) {
+      throw InvalidProtocolBufferException.truncatedMessage();
     } else if (length == 0) {
       output.add("");
     } else {
@@ -718,6 +728,8 @@ final class ArrayDecoders {
       final int nextLength = registers.int1;
       if (nextLength < 0) {
         throw InvalidProtocolBufferException.negativeSize();
+      } else if (nextLength > data.length - position) {
+        throw InvalidProtocolBufferException.truncatedMessage();
       } else if (nextLength == 0) {
         output.add("");
       } else {

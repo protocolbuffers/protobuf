@@ -47,6 +47,52 @@ public class ArrayDecodersTest {
   }
 
   @Test
+  public void testException_decodeString_truncated() {
+    byte[] data = packedSizeBytesNoTag(Integer.MAX_VALUE);
+    assertThrows(
+        InvalidProtocolBufferException.class,
+        () -> ArrayDecoders.decodeString(data, 0, registers));
+  }
+
+  @Test
+  public void testException_decodeStringRequireUtf8_truncated() {
+    byte[] data = packedSizeBytesNoTag(Integer.MAX_VALUE);
+    assertThrows(
+        InvalidProtocolBufferException.class,
+        () -> ArrayDecoders.decodeStringRequireUtf8(data, 0, registers));
+  }
+
+  @Test
+  public void testException_decodeStringList_truncated() {
+    byte[] data = packedSizeBytesNoTag(Integer.MAX_VALUE);
+    assertThrows(
+        InvalidProtocolBufferException.class,
+        () ->
+            ArrayDecoders.decodeStringList(
+                TAG,
+                data,
+                0,
+                data.length,
+                new ProtobufArrayList<Object>(),
+                registers));
+  }
+
+  @Test
+  public void testException_decodeStringListRequireUtf8_truncated() {
+    byte[] data = packedSizeBytesNoTag(Integer.MAX_VALUE);
+    assertThrows(
+        InvalidProtocolBufferException.class,
+        () ->
+            ArrayDecoders.decodeStringListRequireUtf8(
+                TAG,
+                data,
+                0,
+                data.length,
+                new ProtobufArrayList<Object>(),
+                registers));
+  }
+
+  @Test
   public void testException_decodeBytes() {
     assertThrows(
         InvalidProtocolBufferException.class,
