@@ -243,7 +243,9 @@ class RepeatedEnum : public FieldGeneratorBase {
         $pb$::RepeatedField<int> $name$_;
       )cc");
     }
+  }
 
+  void GenerateSecondaryPrivateMembers(io::Printer* p) const override {
     if (has_cached_size_) {
       p->Emit(R"cc(
         $pbi$::CachedSize $cached_size_name$;

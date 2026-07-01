@@ -405,6 +405,7 @@ class RepeatedPrimitive final : public FieldGeneratorBase {
   }
 
   void GeneratePrivateMembers(io::Printer* p) const override;
+  void GenerateSecondaryPrivateMembers(io::Printer* p) const override;
   void GenerateAccessorDeclarations(io::Printer* p) const override;
   void GenerateInlineAccessorDefinitions(io::Printer* p) const override;
   void GenerateSerializeWithCachedSizesToArray(io::Printer* p) const override;
@@ -432,7 +433,9 @@ void RepeatedPrimitive::GeneratePrivateMembers(io::Printer* p) const {
       $pb$::RepeatedField<$Type$> $name$_;
     )cc");
   }
+}
 
+void RepeatedPrimitive::GenerateSecondaryPrivateMembers(io::Printer* p) const {
   if (HasCachedSize()) {
     p->Emit({{"_cached_size_", MakeVarintCachedSizeName(field_)}},
             R"cc(
