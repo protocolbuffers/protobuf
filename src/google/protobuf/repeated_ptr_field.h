@@ -263,6 +263,10 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
 
   template <typename TypeHandler>
   Value<TypeHandler>* Add(Arena* arena) {
+    if (ClearedCount() > 0) {
+      return cast<TypeHandler>(
+          element_at(ExchangeCurrentSize(current_size_ + 1)));
+    }
     return cast<TypeHandler>(AddInternal(arena, TypeHandler::GetNewFunc()));
   }
 
@@ -374,10 +378,13 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   template <typename TypeHandler>
   PROTOBUF_ALWAYS_INLINE Value<TypeHandler>* AddFromPrototype(
       Arena* arena, const Value<TypeHandler>* prototype) {
+    if (ClearedCount() > 0) {
+      return cast<TypeHandler>(
+          element_at(ExchangeCurrentSize(current_size_ + 1)));
+    }
     using H = CommonHandler<TypeHandler>;
-    Value<TypeHandler>* result = cast<TypeHandler>(
+    return cast<TypeHandler>(
         AddInternal(arena, H::GetNewFromPrototypeFunc(prototype)));
-    return result;
   }
 
   // As above, but returns a callable that caches useful information that can be
@@ -388,6 +395,10 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
     using H = CommonHandler<TypeHandler>;
     auto func = H::GetNewFromPrototypeFunc(prototype);
     return [this, func](Arena* arena) {
+      if (ClearedCount() > 0) {
+        return cast<TypeHandler>(
+            element_at(ExchangeCurrentSize(current_size_ + 1)));
+      }
       return cast<TypeHandler>(AddInternal(arena, func));
     };
   }
@@ -678,6 +689,25 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
     return ResolveArena<&RepeatedPtrFieldBase::resolver_>(this);
   }
 
+  // Replaces current_size_ with new_size and returns the previous value of
+  // current_size_. This function is intended to be the only place where
+  // current_size_ is modified.
+  inline int ExchangeCurrentSize(int new_size) {
+    return std::exchange(current_size_, new_size);
+  }
+
+  void* const* elements() const {
+    return using_sso() ? &tagged_rep_or_elem_ : +rep()->elements;
+  }
+  void** elements() {
+    return using_sso() ? &tagged_rep_or_elem_ : +rep()->elements;
+  }
+
+  int allocated_size() const {
+    return using_sso() ? (tagged_rep_or_elem_ != nullptr ? 1 : 0)
+                       : rep()->allocated_size;
+  }
+
  private:
   // Tests that need to access private methods.
   friend class RepeatedPtrFieldTest;
@@ -753,12 +783,6 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
 
   static constexpr size_t kRepHeaderSize = offsetof(Rep, elements);
 
-  // Replaces current_size_ with new_size and returns the previous value of
-  // current_size_. This function is intended to be the only place where
-  // current_size_ is modified.
-  inline int ExchangeCurrentSize(int new_size) {
-    return std::exchange(current_size_, new_size);
-  }
   inline bool SizeAtCapacity() const {
     // Harden invariant size() <= allocated_size() <= Capacity().
     ABSL_DCHECK_LE(size(), allocated_size());
@@ -772,13 +796,6 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
     return allocated_size() == Capacity();
   }
 
-  void* const* elements() const {
-    return using_sso() ? &tagged_rep_or_elem_ : +rep()->elements;
-  }
-  void** elements() {
-    return using_sso() ? &tagged_rep_or_elem_ : +rep()->elements;
-  }
-
   void*& element_at(int index) {
     if (using_sso()) {
       ABSL_DCHECK_EQ(index, 0);
@@ -790,10 +807,6 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
     return const_cast<RepeatedPtrFieldBase*>(this)->element_at(index);
   }
 
-  int allocated_size() const {
-    return using_sso() ? (tagged_rep_or_elem_ != nullptr ? 1 : 0)
-                       : rep()->allocated_size;
-  }
   Rep* rep() {
     ABSL_DCHECK(!using_sso());
     return reinterpret_cast<Rep*>(
@@ -1550,6 +1563,8 @@ class ABSL_ATTRIBUTE_WARN_UNUSED RepeatedPtrField final
 
   friend class Arena;
 
+  bool MergeFromFastPath(const RepeatedPtrField& other);
+
   friend class internal::FieldWithArena<RepeatedPtrField<Element>>;
 
   friend class DynamicMessage;
@@ -1838,7 +1853,13 @@ PROTOBUF_NDEBUG_INLINE void RepeatedPtrField<Element>::AddWithArena(
 
 template <typename Element>
 inline void RepeatedPtrField<Element>::RemoveLast() {
-  RepeatedPtrFieldBase::RemoveLast<TypeHandler>();
+  if constexpr (std::is_base_of_v<MessageLite, Element>) {
+    internal::RuntimeAssertInBoundsGE(size(), 1);
+    ExchangeCurrentSize(size() - 1);
+    reinterpret_cast<Element**>(elements())[size()]->Clear();
+  } else {
+    RepeatedPtrFieldBase::RemoveLast<TypeHandler>();
+  }
 }
 
 template <typename Element>
@@ -1920,13 +1941,30 @@ inline void RepeatedPtrField<Element>::UnsafeArenaExtractSubrange(
 
 template <typename Element>
 inline void RepeatedPtrField<Element>::Clear() {
-  RepeatedPtrFieldBase::Clear<TypeHandler>();
+  if constexpr (std::is_base_of_v<MessageLite, Element> &&
+                !std::is_same_v<Element, MessageLite> &&
+                !std::is_same_v<Element, Message>) {
+    const int n = size();
+    if (n > 0) {
+      Element** elems = reinterpret_cast<Element**>(elements());
+      for (int i = 0; i < n; ++i) {
+        if (i + 2 < n) {
+          absl::PrefetchToLocalCache(elems[i + 2]);
+        }
+        elems[i]->Clear();
+      }
+      ExchangeCurrentSize(0);
+    }
+  } else {
+    RepeatedPtrFieldBase::Clear<TypeHandler>();
+  }
 }
 
 template <typename Element>
 inline void RepeatedPtrField<Element>::MergeFrom(
     const RepeatedPtrField& other) {
   if (other.empty()) return;
+  if (MergeFromFastPath(other)) return;
   RepeatedPtrFieldBase::MergeFrom<Element>(other, GetArena());
 }
 
@@ -1934,7 +1972,34 @@ template <typename Element>
 inline void RepeatedPtrField<Element>::InternalMergeFromWithArena(
     internal::InternalVisibility, Arena* arena, const RepeatedPtrField& other) {
   if (other.empty()) return;
+  if (MergeFromFastPath(other)) return;
   RepeatedPtrFieldBase::MergeFrom<Element>(other, arena);
+}
+
+template <typename Element>
+inline bool RepeatedPtrField<Element>::MergeFromFastPath(
+    const RepeatedPtrField& other) {
+  if constexpr (std::is_base_of_v<MessageLite, Element> &&
+                !std::is_same_v<Element, MessageLite> &&
+                !std::is_same_v<Element, Message>) {
+    int n = other.size();
+    int current = size();
+    if (current + n <= allocated_size()) {
+      Element** dst = reinterpret_cast<Element**>(elements());
+      const Element* const* src =
+          reinterpret_cast<const Element* const*>(other.elements());
+      for (int i = 0; i < n; ++i) {
+        if (i + 2 < n) {
+          absl::PrefetchToLocalCache(dst[current + i + 2]);
+          absl::PrefetchToLocalCache(src[i + 2]);
+        }
+        dst[current + i]->MergeFrom(*src[i]);
+      }
+      ExchangeCurrentSize(current + n);
+      return true;
+    }
+  }
+  return false;
 }
 
 template <typename Element>
