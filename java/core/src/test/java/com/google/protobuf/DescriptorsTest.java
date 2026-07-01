@@ -1353,9 +1353,10 @@ public class DescriptorsTest {
 
     @Test
     public void testExtensionRenamesKeywords() {
-      assertThat(NonNestedExtension.if_).isInstanceOf(GeneratedMessage.GeneratedExtension.class);
-      assertThat(NestedExtension.MyNestedExtension.default_)
-          .isInstanceOf(GeneratedMessage.GeneratedExtension.class);
+      GeneratedMessage.GeneratedExtension<NonNestedExtension.MessageToBeExtended, String> unused =
+          NonNestedExtension.if_;
+      GeneratedMessage.GeneratedExtension<NonNestedExtension.MessageToBeExtended, Integer> unused2 =
+          NestedExtension.MyNestedExtension.default_;
 
       NonNestedExtension.MessageToBeExtended msg =
           NonNestedExtension.MessageToBeExtended.newBuilder()

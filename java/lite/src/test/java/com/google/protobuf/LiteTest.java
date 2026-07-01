@@ -2911,10 +2911,10 @@ public class LiteTest {
 
   @Test
   public void testExtensionRenamesKeywords() {
-    assertThat(NonNestedExtensionLite.package_)
-        .isInstanceOf(GeneratedMessageLite.GeneratedExtension.class);
-    assertThat(NestedExtensionLite.MyNestedExtensionLite.private_)
-        .isInstanceOf(GeneratedMessageLite.GeneratedExtension.class);
+    GeneratedMessageLite.GeneratedExtension<NonNestedExtensionLite.MessageLiteToBeExtended, Boolean>
+        unused = NonNestedExtensionLite.package_;
+    GeneratedMessageLite.GeneratedExtension<NonNestedExtensionLite.MessageLiteToBeExtended, Double>
+        unused2 = NestedExtensionLite.MyNestedExtensionLite.private_;
 
     NonNestedExtensionLite.MessageLiteToBeExtended msg =
         NonNestedExtensionLite.MessageLiteToBeExtended.newBuilder()

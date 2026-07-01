@@ -702,8 +702,7 @@ public class GeneratedMessageTest {
 
   @Test
   public void testEnumInterface() throws Exception {
-    assertThat(TestAllTypes.getDefaultInstance().getDefaultNestedEnum())
-        .isInstanceOf(ProtocolMessageEnum.class);
+    TestAllTypes.NestedEnum unused = TestAllTypes.getDefaultInstance().getDefaultNestedEnum();
   }
 
   @Test
