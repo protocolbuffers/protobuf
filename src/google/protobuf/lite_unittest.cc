@@ -1478,6 +1478,75 @@ TEST(LiteTest, FileWithOnlyAnEnumGeneratesProperValidationHooks) {
   EXPECT_FALSE(internal::ValidateEnum(6, data));
 }
 
+
+// Test that malformed packed fixed-width fields (where the declared payload
+// length is not a multiple of sizeof(T)) are rejected gracefully rather than
+// triggering undefined behavior (null-dst memcpy). This is a regression test
+// for a bug where ReadPackedFixed<T> would call AddNAlreadyReserved(0) on an
+// uninitialized RepeatedField, get a null pointer, and pass it to memcpy.
+TEST(LiteTest, TruncatedPackedFixedFieldParsing) {
+  // Construct a serialized TestPackedTypesLite where the packed_float field
+  // (field 100) has a declared length of 1 byte, which is less than
+  // sizeof(float)=4.  This triggers the ReadPackedFixed<float> path with
+  // size=1, which previously caused a null-dst memcpy UB.
+  //
+  // Wire format:
+  //   tag for field 100, wire type 2 (length-delimited): 0xA2 0x06
+  //   length varint: 0x01
+  //   payload: 0x00 (1 byte, less than sizeof(float))
+  const std::string malformed_packed_float =
+      std::string("\xA2\x06\x01\x00", 4);
+  proto2_unittest::TestPackedTypesLite m;
+  EXPECT_FALSE(m.ParseFromString(malformed_packed_float));
+  // The message should remain clear after a failed parse.
+  EXPECT_EQ(m.packed_float_size(), 0);
+
+  // Same test for packed_double (field 101, sizeof(double)=8) with 1-byte
+  // payload.
+  //   tag for field 101, wire type 2: 0xAA 0x06
+  //   length varint: 0x01
+  //   payload: 0x00
+  const std::string malformed_packed_double =
+      std::string("\xAA\x06\x01\x00", 4);
+  m.Clear();
+  EXPECT_FALSE(m.ParseFromString(malformed_packed_double));
+  EXPECT_EQ(m.packed_double_size(), 0);
+
+  // Same test for packed_fixed32 (field 96, sizeof(uint32_t)=4) with 1-byte
+  // payload.
+  //   tag for field 96, wire type 2: 0x82 0x06
+  //   length varint: 0x01
+  //   payload: 0x00
+  const std::string malformed_packed_fixed32 =
+      std::string("\x82\x06\x01\x00", 4);
+  m.Clear();
+  EXPECT_FALSE(m.ParseFromString(malformed_packed_fixed32));
+  EXPECT_EQ(m.packed_fixed32_size(), 0);
+
+  // Same test for packed_fixed64 (field 97, sizeof(uint64_t)=8) with 1-byte
+  // payload.
+  //   tag for field 97, wire type 2: 0x8A 0x06
+  //   length varint: 0x01
+  //   payload: 0x00
+  const std::string malformed_packed_fixed64 =
+      std::string("\x8A\x06\x01\x00", 4);
+  m.Clear();
+  EXPECT_FALSE(m.ParseFromString(malformed_packed_fixed64));
+  EXPECT_EQ(m.packed_fixed64_size(), 0);
+
+  // Verify that well-formed packed data still parses correctly.
+  // packed_float (field 100) with exactly one float (4 bytes).
+  //   tag: 0xA2 0x06
+  //   length: 0x04
+  //   payload: 4 bytes representing 0.0f
+  const std::string valid_packed_float =
+      std::string("\xA2\x06\x04\x00\x00\x00\x00", 7);
+  m.Clear();
+  EXPECT_TRUE(m.ParseFromString(valid_packed_float));
+  EXPECT_EQ(m.packed_float_size(), 1);
+  EXPECT_FLOAT_EQ(m.packed_float(0), 0.0f);
+}
+
 }  // namespace
 }  // namespace protobuf
 }  // namespace google
