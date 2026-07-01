@@ -7,6 +7,12 @@
 
 #include "python/repeated.h"
 
+#include <assert.h>
+#include <stdbool.h>
+#include <stddef.h>
+#include <stdint.h>
+#include <string.h>
+
 #include "google/protobuf/breaking_changes.h"
 #include "python/convert.h"
 #include "python/message.h"
@@ -16,6 +22,324 @@
 #include "upb/port/def.inc"
 
 #define PyUpb_SUPPORT_BUFFER_VIEW 0
+
+typedef enum {
+  kPyUpb_TryResult_Success,
+  kPyUpb_TryResult_Failure,
+  kPyUpb_TryResult_NotSupported,
+} PyUpb_TryResult;
+
+#define SOURCE_KINDS(M)         \
+  M(Bool, bool, UNSIGNED)       \
+  M(Int8, int8_t, SIGNED)       \
+  M(UInt8, uint8_t, UNSIGNED)   \
+  M(Int16, int16_t, SIGNED)     \
+  M(UInt16, uint16_t, UNSIGNED) \
+  M(Int32, int32_t, SIGNED)     \
+  M(UInt32, uint32_t, UNSIGNED) \
+  M(Int64, int64_t, SIGNED)     \
+  M(UInt64, uint64_t, UNSIGNED)
+
+#define K(Name, Type, Signed) kPyUpb_SourceKind_##Name,
+typedef enum {
+  kPyUpb_SourceKind_None = 0,
+  kPyUpb_SourceKind_Float,
+  kPyUpb_SourceKind_Double,
+  SOURCE_KINDS(K)
+} PyUpb_SourceKind;
+#undef K
+
+// 2. Add limits (MIN/MAX) to the target types
+#define TARGET_KINDS(M, Source, SourceT, SourceSign)                           \
+  M(Source, SourceT, SourceSign, Int32, int32_t, SIGNED, INT32_MIN, INT32_MAX) \
+  M(Source, SourceT, SourceSign, UInt32, uint32_t, UNSIGNED, 0, UINT32_MAX)    \
+  M(Source, SourceT, SourceSign, Int64, int64_t, SIGNED, INT64_MIN, INT64_MAX) \
+  M(Source, SourceT, SourceSign, UInt64, uint64_t, UNSIGNED, 0, UINT64_MAX)
+
+#define K(Source, SourceT, SourceSign, Target, TargetT, TargetSign, Min, Max) \
+  kPyUpb_TargetKind_##Target,
+typedef enum {
+  kPyUpb_TargetKind_None = 0,
+  kPyUpb_TargetKind_Float,
+  kPyUpb_TargetKind_Double,
+  kPyUpb_TargetKind_Bool,
+  TARGET_KINDS(K, X, X, X)
+} PyUpb_TargetKind;
+#undef K
+
+#define K(Source, SourceT, SourceSign, Target, TargetT, TargetSign, Min, Max) \
+  sizeof(TargetT),
+
+static const size_t kPyUpb_TargetSize[] = {
+    0,               // kPyUpb_TargetKind_None
+    sizeof(float),   // kPyUpb_TargetKind_Float
+    sizeof(double),  // kPyUpb_TargetKind_Double
+    sizeof(bool),    // kPyUpb_TargetKind_Bool
+    TARGET_KINDS(K, X, X, X)};
+
+#undef K
+
+// --- Range Check Helpers ---
+// Uses token pasting (SourceSign_TargetSign) to select safe casting bounds.
+// We cast to intmax_t/uintmax_t to safely bridge widths before comparing.
+
+// Source is SIGNED, Target is SIGNED
+#define IN_RANGE_SIGNED_SIGNED(val, min, max) \
+  ((intmax_t)(val) >= (intmax_t)(min) && (intmax_t)(val) <= (intmax_t)(max))
+
+// Source is SIGNED, Target is UNSIGNED
+#define IN_RANGE_SIGNED_UNSIGNED(val, min, max) \
+  ((val) >= 0 && (uintmax_t)(val) <= (uintmax_t)(max))
+
+// Source is UNSIGNED, Target is SIGNED
+#define IN_RANGE_UNSIGNED_SIGNED(val, min, max) \
+  ((uintmax_t)(val) <= (uintmax_t)(max))
+
+// Source is UNSIGNED, Target is UNSIGNED
+#define IN_RANGE_UNSIGNED_UNSIGNED(val, min, max) \
+  ((uintmax_t)(val) <= (uintmax_t)(max))
+
+// Dispatcher macro
+#define IN_RANGE(val, SourceSign, TargetSign, min, max) \
+  IN_RANGE_##SourceSign##_##TargetSign(val, min, max)
+// ---------------------------
+
+// 3. Updated action macro with range check
+#define TARGET_CASE(Source, SourceT, SourceSign, Target, TargetT, TargetSign, \
+                    Min, Max)                                                 \
+  case kPyUpb_TargetKind_##Target: {                                          \
+    TargetT* t = (TargetT*)target;                                            \
+    for (size_t i = 0; i < count; ++i) {                                      \
+      if (!IN_RANGE(s[i], SourceSign, TargetSign, Min, Max)) {                \
+        return kPyUpb_TryResult_Failure;                                      \
+      }                                                                       \
+      t[i] = (TargetT)s[i];                                                   \
+    }                                                                         \
+    return kPyUpb_TryResult_Success;                                          \
+  }
+
+#define SOURCES_CASE(Source, SourceT, SourceSign)              \
+  case kPyUpb_SourceKind_##Source: {                           \
+    const SourceT* s = (const SourceT*)source;                 \
+    switch (target_kind) {                                     \
+      case kPyUpb_TargetKind_Bool: {                           \
+        bool* t = (bool*)target;                               \
+        for (size_t i = 0; i < count; ++i) {                   \
+          t[i] = s[i] != (SourceT)0;                           \
+        }                                                      \
+        return kPyUpb_TryResult_Success;                       \
+      }                                                        \
+        TARGET_KINDS(TARGET_CASE, Source, SourceT, SourceSign) \
+      default:                                                 \
+        return kPyUpb_TryResult_NotSupported;                  \
+    }                                                          \
+  } break;
+
+static PyUpb_TryResult PyUpb_IntegralCast(PyUpb_TargetKind target_kind,
+                                          void* target,  //
+                                          PyUpb_SourceKind source_kind,
+                                          const void* source, size_t count) {
+  switch (source_kind) {
+    SOURCE_KINDS(SOURCES_CASE)
+    default:
+      return kPyUpb_TryResult_NotSupported;
+  }
+}
+
+static void PyUpb_FloatCast(PyUpb_TargetKind target_kind, void* target,  //
+                            PyUpb_SourceKind source_kind, const void* source,
+                            size_t count) {
+  if (target_kind == kPyUpb_TargetKind_Float) {
+    assert(source_kind == kPyUpb_SourceKind_Double);
+    for (size_t i = 0; i < count; ++i) {
+      ((float*)target)[i] = ((double*)source)[i];
+    }
+  } else {
+    assert(source_kind == kPyUpb_SourceKind_Float);
+    for (size_t i = 0; i < count; ++i) {
+      ((double*)target)[i] = ((float*)source)[i];
+    }
+  }
+}
+
+#undef IN_RANGE_SIGNED_SIGNED
+#undef IN_RANGE_SIGNED_UNSIGNED
+#undef IN_RANGE_UNSIGNED_SIGNED
+#undef IN_RANGE_UNSIGNED_UNSIGNED
+#undef IN_RANGE
+#undef TARGET_CASE
+#undef TARGET_KINDS
+#undef SOURCES_CASE
+#undef SOURCE_KINDS
+
+static PyUpb_SourceKind PyUpb_SourceKindFromCType(upb_CType ctype) {
+  switch (ctype) {
+    case kUpb_CType_Bool:
+      return kPyUpb_SourceKind_Bool;
+    case kUpb_CType_Enum:
+    case kUpb_CType_Int32:
+      return kPyUpb_SourceKind_Int32;
+    case kUpb_CType_UInt32:
+      return kPyUpb_SourceKind_UInt32;
+    case kUpb_CType_Int64:
+      return kPyUpb_SourceKind_Int64;
+    case kUpb_CType_UInt64:
+      return kPyUpb_SourceKind_UInt64;
+    case kUpb_CType_Float:
+      return kPyUpb_SourceKind_Float;
+    case kUpb_CType_Double:
+      return kPyUpb_SourceKind_Double;
+    default:
+      return kPyUpb_SourceKind_None;
+  }
+}
+
+static PyUpb_TargetKind PyUpb_TargetKindFromCType(upb_CType ctype) {
+  switch (ctype) {
+    case kUpb_CType_Bool:
+      return kPyUpb_TargetKind_Bool;
+    case kUpb_CType_Enum:
+    case kUpb_CType_Int32:
+      return kPyUpb_TargetKind_Int32;
+    case kUpb_CType_UInt32:
+      return kPyUpb_TargetKind_UInt32;
+    case kUpb_CType_Int64:
+      return kPyUpb_TargetKind_Int64;
+    case kUpb_CType_UInt64:
+      return kPyUpb_TargetKind_UInt64;
+    case kUpb_CType_Float:
+      return kPyUpb_TargetKind_Float;
+    case kUpb_CType_Double:
+      return kPyUpb_TargetKind_Double;
+    default:
+      return kPyUpb_TargetKind_None;
+  }
+}
+
+#if PyUpb_SUPPORT_BUFFER_VIEW
+
+static PyUpb_SourceKind PyUpb_SourceKindFromFormat(int itemsize,
+                                                   const char format) {
+  switch (itemsize) {
+    case 1:
+      switch (format) {
+        case '?':
+          return kPyUpb_SourceKind_Bool;
+        case '\0':
+        case 'B':
+          return kPyUpb_SourceKind_UInt8;
+        case 'b':
+          return kPyUpb_SourceKind_Int8;
+        default:
+          return kPyUpb_SourceKind_None;
+      }
+    case 2:
+      switch (format) {
+        case 'H':
+          return kPyUpb_SourceKind_UInt16;
+        case 'h':
+          return kPyUpb_SourceKind_Int16;
+        default:
+          return kPyUpb_SourceKind_None;
+      }
+    case 4:
+      switch (format) {
+        case 'I':
+          return kPyUpb_SourceKind_UInt32;
+        case 'l':
+        case 'i':
+          return kPyUpb_SourceKind_Int32;
+        case 'f':
+          return kPyUpb_SourceKind_Float;
+        default:
+          return kPyUpb_SourceKind_None;
+      }
+    case 8:
+      switch (format) {
+        case 'Q':
+          return kPyUpb_SourceKind_UInt64;
+        case 'l':
+        case 'q':
+          return kPyUpb_SourceKind_Int64;
+        case 'd':
+          return kPyUpb_SourceKind_Double;
+        default:
+          return kPyUpb_SourceKind_None;
+      }
+    default:
+      return kPyUpb_SourceKind_None;
+  }
+}
+
+#endif  // PyUpb_SUPPORT_BUFFER_VIEW
+
+static bool PyUpb_ValidateClosedEnum(const upb_FieldDef* field,
+                                     const void* data, Py_ssize_t count) {
+  if (upb_FieldDef_CType(field) != kUpb_CType_Enum) return true;
+  const upb_EnumDef* e = upb_FieldDef_EnumSubDef(field);
+  if (!upb_EnumDef_IsClosed(e)) return true;
+  const int32_t* i32 = (const int32_t*)data;
+  for (Py_ssize_t i = 0; i < count; i++) {
+    if (!upb_EnumDef_CheckNumber(e, i32[i])) {
+      PyErr_Format(PyExc_ValueError, "invalid enumerator %d", (int)i32[i]);
+      return false;
+    }
+  }
+  return true;
+}
+
+static PyUpb_TryResult PyUpb_TryCast(const upb_FieldDef* field,
+                                     PyUpb_SourceKind src_kind,
+                                     const void** buffer, size_t count,
+                                     void** temp_buffer) {
+  upb_CType ctype = upb_FieldDef_CType(field);
+  const PyUpb_TargetKind tgt_kind = PyUpb_TargetKindFromCType(ctype);
+  if (tgt_kind == kPyUpb_TargetKind_None ||
+      src_kind == kPyUpb_SourceKind_None) {
+    return kPyUpb_TryResult_NotSupported;
+  }
+  bool src_is_float = src_kind == kPyUpb_SourceKind_Float ||
+                      src_kind == kPyUpb_SourceKind_Double;
+  bool dst_is_float = tgt_kind == kPyUpb_TargetKind_Float ||
+                      tgt_kind == kPyUpb_TargetKind_Double;
+  if (src_is_float != dst_is_float) {
+    return kPyUpb_TryResult_NotSupported;
+  }
+  if (PyUpb_SourceKindFromCType(ctype) != src_kind) {
+    *temp_buffer = PyMem_Malloc(count * kPyUpb_TargetSize[tgt_kind]);
+    if (!*temp_buffer) {
+      PyErr_NoMemory();
+      return kPyUpb_TryResult_Failure;
+    }
+    if (!src_is_float) {
+      switch (PyUpb_IntegralCast(tgt_kind, *temp_buffer, src_kind, *buffer,
+                                 count)) {
+        case kPyUpb_TryResult_Success:
+          break;
+        case kPyUpb_TryResult_Failure:
+          PyMem_Free(*temp_buffer);
+          *temp_buffer = NULL;
+          PyErr_SetString(PyExc_OverflowError, "Integer value out of range");
+          return kPyUpb_TryResult_Failure;
+        case kPyUpb_TryResult_NotSupported:
+          PyMem_Free(*temp_buffer);
+          *temp_buffer = NULL;
+          return kPyUpb_TryResult_NotSupported;
+      }
+    } else {
+      PyUpb_FloatCast(tgt_kind, *temp_buffer, src_kind, *buffer, count);
+    }
+    *buffer = *temp_buffer;
+  }
+  if (!PyUpb_ValidateClosedEnum(field, *buffer, count)) {
+    if (*temp_buffer) {
+      PyMem_Free(*temp_buffer);
+      *temp_buffer = NULL;
+    }
+    return kPyUpb_TryResult_Failure;
+  }
+  return kPyUpb_TryResult_Success;
+}
 
 static PyObject* PyUpb_RepeatedCompositeContainer_Append(PyObject* _self,
                                                          PyObject* value);
@@ -198,39 +522,9 @@ PyObject* PyUpb_RepeatedContainer_DeepCopy(PyObject* _self, PyObject* value) {
 }
 
 #if PyUpb_SUPPORT_BUFFER_VIEW
-static bool IsContiguous1DAndMatchesFieldType(const Py_buffer* view,
-                                              const upb_FieldDef* field) {
-  const char* format = view->format;
-  if (format == NULL || view->ndim != 1 ||
-      (view->strides != NULL && view->itemsize != view->strides[0])) {
-    return false;
-  }
-
-  const char fmt = format[0];
-  // Always allow objects.
-  if (fmt == 'O') {
-    return true;
-  }
-
-  switch (upb_FieldDef_CType(field)) {
-    case kUpb_CType_Int32:
-    case kUpb_CType_Enum:
-      return view->itemsize == 4 && (fmt == 'i' || fmt == 'l');
-    case kUpb_CType_Int64:
-      return view->itemsize == 8 && (fmt == 'q' || fmt == 'l');
-    case kUpb_CType_UInt32:
-      return view->itemsize == 4 && (fmt == 'I');
-    case kUpb_CType_UInt64:
-      return view->itemsize == 8 && (fmt == 'Q');
-    case kUpb_CType_Float:
-      return view->itemsize == 4 && (fmt == 'f');
-    case kUpb_CType_Double:
-      return view->itemsize == 8 && (fmt == 'd');
-    case kUpb_CType_Bool:
-      return view->itemsize == 1 && (fmt == '?' || fmt == 'B');
-    default:
-      return false;
-  }
+static bool IsContiguous1D(const Py_buffer* view) {
+  return view->ndim == 1 &&
+         (view->strides == NULL || view->itemsize == view->strides[0]);
 }
 #endif
 
@@ -250,6 +544,124 @@ typedef bool (*PyUpb_ElemCb)(upb_MessageValue val, void* ctx);
 typedef bool (*PyUpb_BulkCb)(const void* data, Py_ssize_t count,
                              Py_ssize_t itemsize, void* ctx);
 
+static PyUpb_TryResult PyUpb_IterInputTryRepeatedContainer(
+    PyObject* value, const upb_FieldDef* field, upb_Arena* arena,
+    PyUpb_BulkCb bulk_cb, void* ctx) {
+  // Detect if value is a repeated scalar container of a compatible field type.
+  PyUpb_ModuleState* state = PyUpb_ModuleState_MaybeGet();
+  if (state == NULL ||
+      Py_TYPE(value) != state->repeated_scalar_container_type) {
+    return kPyUpb_TryResult_NotSupported;
+  }
+  PyUpb_RepeatedContainer* src = (PyUpb_RepeatedContainer*)value;
+  const upb_FieldDef* src_f = PyUpb_RepeatedContainer_GetField(src);
+  const upb_CType src_type = upb_FieldDef_CType(src_f);
+  const PyUpb_SourceKind src_kind = PyUpb_SourceKindFromCType(src_type);
+
+  upb_Array* src_arr = PyUpb_RepeatedContainer_GetIfReified(src);
+  size_t count = src_arr ? upb_Array_Size(src_arr) : 0;
+  if (count == 0) {
+    return bulk_cb(NULL, 0, 0, ctx) ? kPyUpb_TryResult_Success
+                                    : kPyUpb_TryResult_Failure;
+  }
+  const void* src_data = upb_Array_DataPtr(src_arr);
+  void* cast_data = NULL;
+  PyUpb_TryResult res =
+      PyUpb_TryCast(field, src_kind, &src_data, count, &cast_data);
+  if (res != kPyUpb_TryResult_Success) {
+    return res;
+  }
+
+  const PyUpb_TargetKind tgt_kind =
+      PyUpb_TargetKindFromCType(upb_FieldDef_CType(field));
+  bool ok = bulk_cb(src_data, count, kPyUpb_TargetSize[tgt_kind], ctx);
+
+  if (cast_data != NULL) {
+    PyMem_Free(cast_data);
+  }
+
+  return ok ? kPyUpb_TryResult_Success : kPyUpb_TryResult_Failure;
+}
+
+#if PyUpb_SUPPORT_BUFFER_VIEW
+static PyUpb_TryResult PyUpb_IterInputTryBufferView(
+    PyObject* value, const upb_FieldDef* field, upb_Arena* arena,
+    PyUpb_SizeCb size_cb, PyUpb_ElemCb elem_cb, PyUpb_BulkCb bulk_cb,
+    void* ctx) {
+  Py_buffer view;
+  if (PyObject_GetBuffer(value, &view, PyBUF_RECORDS_RO) != 0) {
+    PyErr_Clear();
+    return kPyUpb_TryResult_NotSupported;
+  }
+  if (!IsContiguous1D(&view)) {
+    PyBuffer_Release(&view);
+    return kPyUpb_TryResult_NotSupported;
+  }
+  const void* src_buf = view.buf;
+  void* temp_buf = NULL;
+  const char format = view.format == NULL ? 'B' : view.format[0];
+  Py_ssize_t count = view.len / view.itemsize;
+  if (count == 0) {
+    PyBuffer_Release(&view);
+    return bulk_cb(NULL, 0, 0, ctx) ? kPyUpb_TryResult_Success
+                                    : kPyUpb_TryResult_Failure;
+  }
+  if (format == 'O') {
+    PyObject** objs = (PyObject**)src_buf;
+    if (!size_cb(count, ctx)) {
+      goto error;
+    }
+    for (Py_ssize_t i = 0; i < count; i++) {
+      PyObject* item = objs[i] ? objs[i] : Py_None;
+      upb_MessageValue msgval;
+      if (!PyUpb_PyToUpb(item, field, &msgval, arena)) {
+        goto error;
+      }
+      if (!elem_cb(msgval, ctx)) {
+        goto error;
+      }
+    }
+    goto done;
+  }
+  const PyUpb_SourceKind src_kind =
+      PyUpb_SourceKindFromFormat(view.itemsize, format);
+  switch (PyUpb_TryCast(field, src_kind, &src_buf, count, &temp_buf)) {
+    case kPyUpb_TryResult_Success:
+      break;
+    case kPyUpb_TryResult_Failure:
+      goto error;
+    case kPyUpb_TryResult_NotSupported:
+      goto not_supported;
+  }
+  const PyUpb_TargetKind tgt_kind =
+      PyUpb_TargetKindFromCType(upb_FieldDef_CType(field));
+  if (bulk_cb(src_buf, count, kPyUpb_TargetSize[tgt_kind], ctx)) {
+    goto done;
+  } else {
+    goto error;
+  }
+
+done:
+  if (temp_buf) {
+    PyMem_Free(temp_buf);
+  }
+  PyBuffer_Release(&view);
+  return kPyUpb_TryResult_Success;
+error:
+  if (temp_buf) {
+    PyMem_Free(temp_buf);
+  }
+  PyBuffer_Release(&view);
+  return kPyUpb_TryResult_Failure;
+not_supported:
+  if (temp_buf) {
+    PyMem_Free(temp_buf);
+  }
+  PyBuffer_Release(&view);
+  return kPyUpb_TryResult_NotSupported;
+}
+#endif  // PyUpb_SUPPORT_BUFFER_VIEW
+
 // Iterates the elements of a Python iterable `value`, converting each to
 // upb_MessageValue via PyUpb_PyToUpb, and invoking `elem_cb` per element.
 //
@@ -264,60 +676,26 @@ static bool PyUpb_IterInput(PyObject* value, const upb_FieldDef* field,
                             upb_Arena* arena, PyUpb_SizeCb size_cb,
                             PyUpb_ElemCb elem_cb, PyUpb_BulkCb bulk_cb,
                             void* ctx) {
-#if PyUpb_SUPPORT_BUFFER_VIEW
-  Py_buffer view;
-  if (PyObject_GetBuffer(value, &view, PyBUF_RECORDS_RO) == 0) {
-    if (IsContiguous1DAndMatchesFieldType(&view, field)) {
-      Py_ssize_t count = view.len / view.itemsize;
-      if (count == 0) {
-        PyBuffer_Release(&view);
-        return bulk_cb(NULL, 0, 0, ctx);
-      }
-      if (view.format[0] != 'O') {
-        if (upb_FieldDef_CType(field) == kUpb_CType_Enum) {
-          const upb_EnumDef* e = upb_FieldDef_EnumSubDef(field);
-          if (upb_EnumDef_IsClosed(e)) {
-            const int32_t* i32 = (const int32_t*)view.buf;
-            for (Py_ssize_t i = 0; i < count; i++) {
-              if (!upb_EnumDef_CheckNumber(e, i32[i])) {
-                PyErr_Format(PyExc_ValueError, "invalid enumerator %d",
-                             (int)i32[i]);
-                PyBuffer_Release(&view);
-                return false;
-              }
-            }
-          }
-        }
-        bool ok = bulk_cb(view.buf, count, view.itemsize, ctx);
-        PyBuffer_Release(&view);
-        return ok;
-      }
-      PyObject** objs = (PyObject**)view.buf;
-      if (!size_cb(count, ctx)) {
-        PyBuffer_Release(&view);
-        return false;
-      }
-      for (Py_ssize_t i = 0; i < count; i++) {
-        PyObject* item = objs[i] ? objs[i] : Py_None;
-        upb_MessageValue msgval;
-        if (!PyUpb_PyToUpb(item, field, &msgval, arena)) {
-          PyBuffer_Release(&view);
-          return false;
-        }
-        if (!elem_cb(msgval, ctx)) {
-          PyBuffer_Release(&view);
-          return false;
-        }
-      }
-      PyBuffer_Release(&view);
+  switch (
+      PyUpb_IterInputTryRepeatedContainer(value, field, arena, bulk_cb, ctx)) {
+    case kPyUpb_TryResult_Success:
       return true;
-    }
-    PyBuffer_Release(&view);
-  } else {
-    PyErr_Clear();
+    case kPyUpb_TryResult_Failure:
+      return false;
+    case kPyUpb_TryResult_NotSupported:
+      break;
   }
-#else
-  (void)bulk_cb;
+
+#if PyUpb_SUPPORT_BUFFER_VIEW
+  switch (PyUpb_IterInputTryBufferView(value, field, arena, size_cb, elem_cb,
+                                       bulk_cb, ctx)) {
+    case kPyUpb_TryResult_Success:
+      return true;
+    case kPyUpb_TryResult_Failure:
+      return false;
+    case kPyUpb_TryResult_NotSupported:
+      break;
+  }
 #endif
   PyObject* iter = NULL;
   PyObject* materialized = PySequence_Fast(value, "must assign iterable");
