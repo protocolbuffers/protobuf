@@ -50,7 +50,7 @@ cc_binary(
         "//src/google/protobuf/io:printer",
         "//upb/mem",
         "//upb/port",
-        "//upb/reflection",
+        "//upb/reflection:reflection_cc",
         "//upb/util:def_to_proto",
         "//upb_generator:common",
         "//upb_generator:file_layout",
