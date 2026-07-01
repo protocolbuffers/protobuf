@@ -5004,6 +5004,8 @@ static size_t jsondec_unicode(jsondec* d, char* out) {
 static void jsondec_resize(jsondec* d, char** buf, char** end, char** buf_end) {
   size_t oldsize = *buf_end - *buf;
   size_t len = *end - *buf;
+
+  jsondec_checkoom(d, oldsize <= SIZE_MAX / 2);
   size_t size = UPB_MAX(8, 2 * oldsize);
 
   *buf = upb_Arena_Realloc(d->arena, *buf, len, size);
