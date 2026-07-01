@@ -13,11 +13,13 @@
 
 #include <cstddef>
 #include <cstdint>
+#include <cstring>
 #include <string>
 
 #include "absl/base/casts.h"
 #include "absl/strings/cord.h"
 #include "absl/strings/string_view.h"
+#include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/repeated_ptr_field.h"
 #include "google/protobuf/unittest.pb.h"
 #include "google/protobuf/unittest_import.pb.h"
@@ -218,6 +220,92 @@ TEST(WireFormatTest, CppTypeForWorksForAllSupportedTypes) {
             WFL::CPPTYPE_MESSAGE);
 }
 
+TEST(WireFormatLiteTest, ReadPackedFixed32) {
+  uint8_t buffer[64];
+  uint8_t* ptr = buffer;
+  *ptr++ = 12;  // varint: 3 * sizeof(uint32_t)
+  ptr = WireFormatLite::WriteFixed32NoTagToArray(1, ptr);
+  ptr = WireFormatLite::WriteFixed32NoTagToArray(2, ptr);
+  ptr = WireFormatLite::WriteFixed32NoTagToArray(3, ptr);
+
+  io::CodedInputStream input(buffer, static_cast<int>(ptr - buffer));
+  RepeatedField<uint32_t> result;
+  EXPECT_TRUE(
+      (WireFormatLite::ReadPackedPrimitive<uint32_t,
+                                           WireFormatLite::TYPE_FIXED32>(
+          &input, &result)));
+  ASSERT_EQ(result.size(), 3);
+  EXPECT_EQ(result.Get(0), 1u);
+  EXPECT_EQ(result.Get(1), 2u);
+  EXPECT_EQ(result.Get(2), 3u);
+}
+
+TEST(WireFormatLiteTest, ReadPackedFixed64) {
+  uint8_t buffer[64];
+  uint8_t* ptr = buffer;
+  *ptr++ = 16;  // varint: 2 * sizeof(uint64_t)
+  ptr = WireFormatLite::WriteFixed64NoTagToArray(100, ptr);
+  ptr = WireFormatLite::WriteFixed64NoTagToArray(200, ptr);
+
+  io::CodedInputStream input(buffer, static_cast<int>(ptr - buffer));
+  RepeatedField<uint64_t> result;
+  EXPECT_TRUE(
+      (WireFormatLite::ReadPackedPrimitive<uint64_t,
+                                           WireFormatLite::TYPE_FIXED64>(
+          &input, &result)));
+  ASSERT_EQ(result.size(), 2);
+  EXPECT_EQ(result.Get(0), 100u);
+  EXPECT_EQ(result.Get(1), 200u);
+}
+
+TEST(WireFormatLiteTest, ReadPackedFixed32RejectsUnalignedLength) {
+  uint8_t buffer[6];
+  buffer[0] = 5;  // not a multiple of sizeof(uint32_t)
+  std::memset(buffer + 1, 0, 5);
+
+  io::CodedInputStream input(buffer, sizeof(buffer));
+  RepeatedField<uint32_t> result;
+  EXPECT_FALSE(
+      (WireFormatLite::ReadPackedPrimitive<uint32_t,
+                                           WireFormatLite::TYPE_FIXED32>(
+          &input, &result)));
+}
+
+TEST(WireFormatLiteTest, ReadPackedFixed32Accumulates) {
+  uint8_t buf1[64];
+  uint8_t* p1 = buf1;
+  *p1++ = 8;  // 2 fixed32s
+  p1 = WireFormatLite::WriteFixed32NoTagToArray(10, p1);
+  p1 = WireFormatLite::WriteFixed32NoTagToArray(20, p1);
+
+  uint8_t buf2[64];
+  uint8_t* p2 = buf2;
+  *p2++ = 12;  // 3 fixed32s
+  p2 = WireFormatLite::WriteFixed32NoTagToArray(30, p2);
+  p2 = WireFormatLite::WriteFixed32NoTagToArray(40, p2);
+  p2 = WireFormatLite::WriteFixed32NoTagToArray(50, p2);
+
+  RepeatedField<uint32_t> result;
+
+  io::CodedInputStream input1(buf1, static_cast<int>(p1 - buf1));
+  EXPECT_TRUE(
+      (WireFormatLite::ReadPackedPrimitive<uint32_t,
+                                           WireFormatLite::TYPE_FIXED32>(
+          &input1, &result)));
+
+  io::CodedInputStream input2(buf2, static_cast<int>(p2 - buf2));
+  EXPECT_TRUE(
+      (WireFormatLite::ReadPackedPrimitive<uint32_t,
+                                           WireFormatLite::TYPE_FIXED32>(
+          &input2, &result)));
+
+  ASSERT_EQ(result.size(), 5);
+  EXPECT_EQ(result.Get(0), 10u);
+  EXPECT_EQ(result.Get(1), 20u);
+  EXPECT_EQ(result.Get(2), 30u);
+  EXPECT_EQ(result.Get(3), 40u);
+  EXPECT_EQ(result.Get(4), 50u);
+}
 
 }  // namespace
 }  // namespace internal
