@@ -811,8 +811,6 @@ const char* const FieldDescriptor::kLabelToName[MAX_LABEL + 1] = {
     "repeated",  // LABEL_REPEATED
 };
 
-static const char* const kNonLinkedWeakMessageReplacementName = "google.protobuf.Empty";
-
 #if !defined(_MSC_VER) || (_MSC_VER >= 1900 && _MSC_VER < 1912)
 const int FieldDescriptor::kMaxNumber;
 const int FieldDescriptor::kFirstReservedNumber;
@@ -5039,6 +5037,7 @@ void internal::DescriptorBuilder::AllocateOptions(
   auto options = AllocateOptionsImpl<DescriptorT>(
       descriptor->full_name(), descriptor->full_name(), proto, options_path,
       option_name, alloc);
+
   descriptor->options_ = options;
   descriptor->proto_features_ = &FeatureSet::default_instance();
   descriptor->merged_features_ = &FeatureSet::default_instance();
@@ -5925,7 +5924,6 @@ FileDescriptor* internal::DescriptorBuilder::BuildFileImpl(
       DetectMapConflicts(result->message_type(i), proto.message_type(i));
     }
   }
-
 
   // Again, see comments at InternalSetLazilyBuildDependencies about error
   // checking. Also, don't log unused dependencies if there were previous
@@ -7320,10 +7318,7 @@ void internal::DescriptorBuilder::CrossLinkField(
     // if weak fields exist or not so that we don't need to force building
     // weak dependencies. However the name lookup rules for symbols are
     // somewhat complicated, so I defer it too another CL.
-    PROTOBUF_IGNORE_DEPRECATION_START
-    bool is_weak = !pool_->enforce_weak_ && proto.options().weak();
-    PROTOBUF_IGNORE_DEPRECATION_STOP
-    bool is_lazy = pool_->lazily_build_dependencies_ && !is_weak;
+    bool is_lazy = pool_->lazily_build_dependencies_;
 
     Symbol type =
         LookupSymbol(proto.type_name(), field->full_name(),
@@ -7364,11 +7359,6 @@ void internal::DescriptorBuilder::CrossLinkField(
         }
         return;
       } else {
-        // If the type is a weak type, we change the type to a google.protobuf.Empty
-        // field.
-        if (is_weak) {
-          type = FindSymbol(kNonLinkedWeakMessageReplacementName);
-        }
         if (type.IsNull()) {
           AddNotDefinedError(field->full_name(), proto,
                              DescriptorPool::ErrorCollector::TYPE,
@@ -10111,11 +10101,7 @@ bool HasPreservingUnknownEnumSemantics(const FieldDescriptor* field) {
 
 HasbitMode GetFieldHasbitModeWithoutProfile(const FieldDescriptor* field) {
   // Do not generate hasbits for "real-oneof", weak, or extension fields.
-  PROTOBUF_IGNORE_DEPRECATION_START
-  const bool field_is_weak = field->options().weak();
-  PROTOBUF_IGNORE_DEPRECATION_STOP
-  if (field->real_containing_oneof() || field_is_weak ||
-      field->is_extension()) {
+  if (field->real_containing_oneof() || field->is_extension()) {
     return HasbitMode::kNoHasbit;
   }
 

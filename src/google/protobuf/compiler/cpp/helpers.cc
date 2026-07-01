@@ -1682,20 +1682,6 @@ std::vector<const Descriptor*> TopologicalSortMessagesInFile(
   return sorted_messages;
 }
 
-bool HasWeakFields(const Descriptor* descriptor, const Options& options) {
-  for (int i = 0; i < descriptor->field_count(); i++) {
-    if (IsWeak(descriptor->field(i), options)) return true;
-  }
-  return false;
-}
-
-bool HasWeakFields(const FileDescriptor* file, const Options& options) {
-  for (int i = 0; i < file->message_type_count(); ++i) {
-    if (HasWeakFields(file->message_type(i), options)) return true;
-  }
-  return false;
-}
-
 bool UsingImplicitWeakDescriptor(const FileDescriptor* file,
                                  const Options& options) {
   return HasDescriptorMethods(file, options) &&
@@ -1763,11 +1749,7 @@ MessageAnalysis MessageSCCAnalyzer::GetSCCAnalysis(const SCC* scc) {
       if (field->is_required()) {
         result.contains_required = true;
       }
-      PROTOBUF_IGNORE_DEPRECATION_START
-      if (field->options().weak()) {
-        PROTOBUF_IGNORE_DEPRECATION_STOP
-        result.contains_weak = true;
-      }
+
       switch (field->type()) {
         case FieldDescriptor::TYPE_STRING:
         case FieldDescriptor::TYPE_BYTES: {
@@ -1788,6 +1770,7 @@ MessageAnalysis MessageSCCAnalyzer::GetSCCAnalysis(const SCC* scc) {
               result.contains_required |= analysis.contains_required;
             }
             result.contains_weak |= analysis.contains_weak;
+
           } else {
             // This field points back into the same SCC hence the messages
             // in the SCC are recursive. Note if SCC contains more than two
@@ -1838,24 +1821,16 @@ void ListAllFields(const FileDescriptor* d,
 }
 
 bool IsLayoutOptimized(const FieldDescriptor* field, const Options& options) {
-  return field->real_containing_oneof() == nullptr && !IsWeak(field, options);
+  return field->real_containing_oneof() == nullptr;
 }
 
-int CollectFieldsExcludingWeakAndOneof(
-    const Descriptor* d, const Options& options,
-    std::vector<const FieldDescriptor*>& fields) {
-  int num_weak_fields = 0;
+void CollectFieldsExcludingOneof(const Descriptor* d, const Options& options,
+                                 std::vector<const FieldDescriptor*>& fields) {
   for (auto field : internal::FieldRange(d)) {
-    if (IsWeak(field, options)) {
-      ++num_weak_fields;
-    }
-
     if (IsLayoutOptimized(field, options)) {
       fields.push_back(field);
     }
   }
-
-  return num_weak_fields;
 }
 
 void ListAllTypesForServices(const FileDescriptor* fd,

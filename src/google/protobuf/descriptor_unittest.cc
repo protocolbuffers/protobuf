@@ -3816,6 +3816,7 @@ INSTANTIATE_TEST_SUITE_P(
             /*is_extension=*/true}));
 
 
+
 // ===================================================================
 enum DescriptorPoolMode { NO_DATABASE, FALLBACK_DATABASE };
 
@@ -6702,6 +6703,7 @@ TEST_F(ImportOptionValidationErrorTest,
       "edition 2024.\n");
 }
 
+TEST_F(ValidationErrorTest, InvalidWeakField) {
 
 TEST_F(ValidationErrorTest, SearchMostLocalFirst) {
   // The following should produce an error that Bar.Baz is resolved but

@@ -353,16 +353,6 @@ inline bool UseUnknownFieldSet(const FileDescriptor* file,
   return GetOptimizeFor(file, options) != FileOptions::LITE_RUNTIME;
 }
 
-inline bool IsWeak(const FieldDescriptor* field, const Options& options) {
-  PROTOBUF_IGNORE_DEPRECATION_START
-  if (field->options().weak()) {
-    PROTOBUF_IGNORE_DEPRECATION_STOP
-    ABSL_CHECK(!options.opensource_runtime);
-    return true;
-  }
-  return false;
-}
-
 inline bool IsCord(const FieldDescriptor* field) {
   return field->cpp_type() == FieldDescriptor::CPPTYPE_STRING &&
          field->cpp_string_type() == FieldDescriptor::CppStringType::kCord;
@@ -695,9 +685,6 @@ inline std::vector<const Descriptor*> FlattenMessagesInFile(
 std::vector<const Descriptor*> TopologicalSortMessagesInFile(
     const FileDescriptor* file, MessageSCCAnalyzer& scc_analyzer);
 
-bool HasWeakFields(const Descriptor* desc, const Options& options);
-bool HasWeakFields(const FileDescriptor* file, const Options& options);
-
 // Returns true if the "required" restriction check should be ignored for the
 // given field.
 inline static bool ShouldIgnoreRequiredFieldCheck(const FieldDescriptor* field,
@@ -728,10 +715,12 @@ class PROTOC_EXPORT MessageSCCAnalyzer {
     MessageAnalysis result = GetSCCAnalysis(GetSCC(descriptor));
     return result.contains_required || result.contains_extension;
   }
+
   bool HasWeakField(const Descriptor* descriptor) {
     MessageAnalysis result = GetSCCAnalysis(GetSCC(descriptor));
     return result.contains_weak;
   }
+
   const SCC* GetSCC(const Descriptor* descriptor) {
     return analyzer_.GetSCC(descriptor);
   }
@@ -762,13 +751,11 @@ void ListAllFields(const FileDescriptor* d,
 // optimizer.
 bool IsLayoutOptimized(const FieldDescriptor* field, const Options& options);
 
-// Collects all fields from the given descriptor, excluding weak fields and
-// fields in oneofs.
+// Collects all fields from the given descriptor, excluding fields in oneofs.
 //
 // Returns the number of weak fields.
-int CollectFieldsExcludingWeakAndOneof(
-    const Descriptor* d, const Options& options,
-    std::vector<const FieldDescriptor*>& fields);
+void CollectFieldsExcludingOneof(const Descriptor* d, const Options& options,
+                                 std::vector<const FieldDescriptor*>& fields);
 
 template <bool do_nested_types, class T>
 void ForEachField(const Descriptor* d, T&& func) {

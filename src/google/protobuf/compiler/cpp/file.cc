@@ -580,7 +580,7 @@ void FileGenerator::GetCrossFileReferencesForField(const FieldDescriptor* field,
     return;
   }
 
-  if (IsImplicitWeakField(field, options_) || IsWeak(field, options_)) {
+  if (IsImplicitWeakField(field, options_)) {
     refs->weak_default_instances.insert(msg);
   }
 }
@@ -1521,10 +1521,7 @@ void FileGenerator::GenerateLibraryIncludes(io::Printer* p) {
   if (UsingImplicitWeakFields(file_, options_)) {
     IncludeFile("third_party/protobuf/implicit_weak_message.h", p);
   }
-  if (HasWeakFields(file_, options_)) {
-    ABSL_CHECK(!options_.opensource_runtime);
-    IncludeFile("third_party/protobuf/weak_field_map.h", p);
-  }
+
   if (HasLazyFields(file_, options_)) {
     ABSL_CHECK(!options_.opensource_runtime);
     IncludeFile("third_party/protobuf/lazy_field.h", p);
