@@ -15,7 +15,6 @@
 
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
-#include "absl/memory/memory.h"
 #include "absl/strings/substitute.h"
 #include "google/protobuf/compiler/cpp/field.h"
 #include "google/protobuf/compiler/cpp/field_generators/generators.h"
