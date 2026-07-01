@@ -50,6 +50,8 @@ enum Edition {
   // was first introduced.  This is effectively an "infinite past".
   EDITION_LEGACY = 900;
 
+  // LINT.IfChange(edition_names)
+
   // Legacy syntax "editions".  These pre-date editions, but behave much like
   // distinct editions.  These can't be used to specify the edition of proto
   // files, but feature definitions must supply proto2/proto3 defaults for
@@ -66,6 +68,8 @@ enum Edition {
 
   // A placeholder edition for developing and testing unscheduled features.
   EDITION_UNSTABLE = 9999;
+
+  // LINT.ThenChange(//depot/google3/third_party/upb/upb/reflection/file_def.c:edition_names)
 
   // Placeholder editions for testing feature resolution.  These should not be
   // used or relied on outside of tests.

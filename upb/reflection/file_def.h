@@ -24,6 +24,8 @@ UPB_API const char* upb_FileDef_EditionName(int edition);
 
 const upb_FileDef* upb_FileDef_Dependency(const upb_FileDef* f, int i);
 int upb_FileDef_DependencyCount(const upb_FileDef* f);
+const char* upb_FileDef_OptionDependency(const upb_FileDef* f, int i);
+int upb_FileDef_OptionDependencyCount(const upb_FileDef* f);
 bool upb_FileDef_HasOptions(const upb_FileDef* f);
 UPB_API const char* upb_FileDef_Name(const upb_FileDef* f);
 const google_protobuf_FileOptions* upb_FileDef_Options(const upb_FileDef* f);

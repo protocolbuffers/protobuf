@@ -38,6 +38,7 @@ struct upb_FileDef {
   const upb_FileDef** deps;
   const int32_t* public_deps;
   const int32_t* weak_deps;
+  const char** option_deps;
   const upb_MessageDef* top_lvl_msgs;
   const upb_EnumDef* top_lvl_enums;
   const upb_FieldDef* top_lvl_exts;
@@ -48,6 +49,7 @@ struct upb_FileDef {
   int dep_count;
   int public_dep_count;
   int weak_dep_count;
+  int option_dep_count;
   int top_lvl_msg_count;
   int top_lvl_enum_count;
   int top_lvl_ext_count;
@@ -56,7 +58,7 @@ struct upb_FileDef {
 };
 
 UPB_API const char* upb_FileDef_EditionName(int edition) {
-  // TODO Synchronize this with descriptor.proto better.
+  // LINT.IfChange(edition_names)
   switch (edition) {
     case google_protobuf_EDITION_PROTO2:
       return "PROTO2";
@@ -64,9 +66,16 @@ UPB_API const char* upb_FileDef_EditionName(int edition) {
       return "PROTO3";
     case google_protobuf_EDITION_2023:
       return "2023";
+    case google_protobuf_EDITION_2024:
+      return "2024";
+    case google_protobuf_EDITION_2026:
+      return "2026";
+    case google_protobuf_EDITION_UNSTABLE:
+      return "UNSTABLE";
     default:
       return "UNKNOWN";
   }
+  // LINT.ThenChange(//depot/https://github.com/protocolbuffers/protobuf/blob/main/src/google/protobuf/descriptor.proto:edition_names)
 }
 
 const google_protobuf_FileOptions* upb_FileDef_Options(const upb_FileDef* f) {
@@ -144,6 +153,15 @@ const upb_FileDef* upb_FileDef_PublicDependency(const upb_FileDef* f, int i) {
 const upb_FileDef* upb_FileDef_WeakDependency(const upb_FileDef* f, int i) {
   UPB_ASSERT(0 <= i && i < f->weak_dep_count);
   return f->deps[f->weak_deps[i]];
+}
+
+const char* upb_FileDef_OptionDependency(const upb_FileDef* f, int i) {
+  UPB_ASSERT(0 <= i && i < f->option_dep_count);
+  return f->option_deps[i];
+}
+
+int upb_FileDef_OptionDependencyCount(const upb_FileDef* f) {
+  return f->option_dep_count;
 }
 
 const upb_MessageDef* upb_FileDef_TopLevelMessage(const upb_FileDef* f, int i) {
@@ -404,6 +422,13 @@ void _upb_FileDef_Create(upb_DefBuilder* ctx,
                            (int)weak_deps[i]);
     }
     mutable_weak_deps[i] = weak_deps[i];
+  }
+
+  strs = google_protobuf_FileDescriptorProto_option_dependency(file_proto, &n);
+  file->option_dep_count = n;
+  file->option_deps = UPB_DEFBUILDER_ALLOCARRAY(ctx, const char*, n);
+  for (size_t i = 0; i < n; i++) {
+    file->option_deps[i] = _strviewdup(ctx, strs[i]);
   }
 
   // Create enums.
