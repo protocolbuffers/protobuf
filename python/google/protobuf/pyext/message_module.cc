@@ -57,8 +57,7 @@ class ProtoAPIDescriptorDatabase : public google::protobuf::DescriptorDatabase {
         PyObject_CallMethod(pool_, "FindFileByName", "O", pyfile_name);
     Py_DECREF(pyfile_name);
     if (pyfile == nullptr) {
-      PyErr_Format(PyExc_TypeError, "Default python pool fail to find %s",
-                   filename.data());
+      PyErr_Clear();
       return false;
     }
 
