@@ -1660,7 +1660,7 @@ TEST(RepeatedFieldIsFullTest, DISABLED_MergeFrom) {
 }
 
 // TODO: Re-enable once parsing overflow is fixed.
-TEST(RepeatedFieldIsFullTest, DISABLED_MergeFromPacked) {
+TEST(RepeatedFieldIsFullTest, MergeFromPacked) {
   if (sizeof(void*) < 8) {
     GTEST_SKIP() << "Not enough memory for the test.";
   }
