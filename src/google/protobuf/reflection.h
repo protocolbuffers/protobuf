@@ -507,13 +507,24 @@ class RepeatedFieldRefIterator {
   RepeatedFieldRefIterator(const RepeatedFieldRefIterator& other)
       : data_(other.data_),
         accessor_(other.accessor_),
-        iterator_(accessor_->CopyIterator(data_, other.iterator_)) {}
+        iterator_(accessor_->CopyIterator(data_, other.iterator_)) {
+    if (other.scratch_space_) {
+      scratch_space_.reset(CloneScratchSpace(other.scratch_space_.get()));
+    }
+  }
   RepeatedFieldRefIterator& operator=(const RepeatedFieldRefIterator& other) {
     if (this != &other) {
       accessor_->DeleteIterator(data_, iterator_);
       data_ = other.data_;
       accessor_ = other.accessor_;
       iterator_ = accessor_->CopyIterator(data_, other.iterator_);
+      if (other.scratch_space_) {
+        if (!scratch_space_) {
+          scratch_space_.reset(CloneScratchSpace(other.scratch_space_.get()));
+        }
+      } else {
+        scratch_space_.reset();
+      }
     }
     return *this;
   }
@@ -523,6 +534,21 @@ class RepeatedFieldRefIterator {
   const RepeatedFieldAccessor* PROTOBUF_NONNULL accessor_;
   void* PROTOBUF_NULLABLE iterator_;
   std::unique_ptr<AccessorValueType> scratch_space_;
+
+ private:
+  template <typename U = T>
+  typename std::enable_if<std::is_base_of<Message, U>::value,
+                          AccessorValueType*>::type
+  CloneScratchSpace(AccessorValueType* PROTOBUF_NULLABLE scratch_space) const {
+    return scratch_space ? scratch_space->New() : nullptr;
+  }
+
+  template <typename U = T>
+  typename std::enable_if<!std::is_base_of<Message, U>::value,
+                          AccessorValueType*>::type
+  CloneScratchSpace(AccessorValueType* PROTOBUF_NULLABLE scratch_space) const {
+    return scratch_space ? new AccessorValueType : nullptr;
+  }
 };
 
 // TypeTraits that maps the type parameter T of RepeatedFieldRef or

@@ -685,3 +685,51 @@ TEST(REFLECTION_TEST, RepeatedFieldRefDynamicMessage) {
 }  // namespace
 }  // namespace protobuf
 }  // namespace google
+
+TEST(REFLECTION_TEST, RepeatedFieldRefIteratorCopyRegression_b_527119097) {
+  UNITTEST::TestAllTypes message;
+  message.add_repeated_cord("hello");
+  message.add_repeated_cord("world");
+
+  const google::protobuf::Reflection* reflection = message.GetReflection();
+  const google::protobuf::FieldDescriptor* field = message.GetDescriptor()->FindFieldByName("repeated_cord");
+  ASSERT_TRUE(field != nullptr);
+
+  google::protobuf::RepeatedFieldRef<std::string> ref = reflection->GetRepeatedFieldRef<std::string>(message, field);
+  
+  std::vector<std::string> v;
+  for (const auto& s : ref) {
+    v.push_back(s);
+  }
+
+  ASSERT_EQ(v.size(), 2);
+  EXPECT_EQ(v[0], "hello");
+  EXPECT_EQ(v[1], "world");
+}
+
+
+TEST(REFLECTION_TEST, RepeatedFieldRefIteratorExplicitCopy_b_527119097) {
+  UNITTEST::TestAllTypes message;
+  message.add_repeated_cord("hello");
+  message.add_repeated_cord("world");
+
+  const google::protobuf::Reflection* reflection = message.GetReflection();
+  const google::protobuf::FieldDescriptor* field = message.GetDescriptor()->FindFieldByName("repeated_cord");
+  ASSERT_TRUE(field != nullptr);
+
+  google::protobuf::RepeatedFieldRef<std::string> ref = reflection->GetRepeatedFieldRef<std::string>(message, field);
+  
+  auto it = ref.begin();
+  // Test copy constructor
+  auto it2 = it;
+  // Test copy assignment
+  auto it3 = ref.end();
+  it3 = it;
+
+  EXPECT_EQ(*it, "hello");
+  EXPECT_EQ(*it2, "hello");
+  EXPECT_EQ(*it3, "hello");
+
+  ++it2;
+  EXPECT_EQ(*it2, "world");
+}
