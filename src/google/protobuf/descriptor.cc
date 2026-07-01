@@ -401,10 +401,14 @@ class FlatAllocation {
 };
 
 template <typename... T>
-TypeMap<IntT, T...> CalculateEnds(const TypeMap<IntT, T...>& sizes) {
-  int total = 0;
+absl::optional<TypeMap<IntT, T...>> CalculateEnds(
+    const TypeMap<IntT, T...>& sizes) {
+  int64_t total = 0;
   TypeMap<IntT, T...> out;
-  ((out.template Get<T>() = total += sizeof(T) * sizes.template Get<T>()), ...);
+  ((out.template Get<T>() = total +=
+    static_cast<int64_t>(sizeof(T)) * sizes.template Get<T>()),
+   ...);
+  if (total > std::numeric_limits<int>::max()) return absl::nullopt;
   return out;
 }
 
@@ -422,17 +426,30 @@ class FlatAllocatorImpl {
   void PlanArray(int array_size) {
     // We can't call PlanArray after FinalizePlanning has been called.
     ABSL_CHECK(!has_allocated());
+    ABSL_DCHECK_GE(array_size, 0);
     if (std::is_trivially_destructible<U>::value) {
       // Trivial types are aligned to 8 bytes.
       static_assert(alignof(U) <= 8, "");
-      total_.template Get<char>() += RoundUpTo<8>(array_size * sizeof(U));
+      int64_t bytes =
+          RoundUpTo<8>(static_cast<int64_t>(array_size) * sizeof(U));
+      int& total_char = total_.template Get<char>();
+      int64_t sum = static_cast<int64_t>(total_char) + bytes;
+      if (sum > std::numeric_limits<int>::max()) {
+        overflow_ = true;
+      }
+      total_char = static_cast<int>(sum);
     } else {
       // Since we can't use `if constexpr`, just make the expression compile
       // when this path is not taken.
       using TypeToUse =
           typename std::conditional<std::is_trivially_destructible<U>::value,
                                     char, U>::type;
-      total_.template Get<TypeToUse>() += array_size;
+      int& total_type = total_.template Get<TypeToUse>();
+      int64_t sum = static_cast<int64_t>(total_type) + array_size;
+      if (sum > std::numeric_limits<int>::max()) {
+        overflow_ = true;
+      }
+      total_type = static_cast<int>(sum);
     }
   }
 
@@ -625,13 +642,18 @@ class FlatAllocatorImpl {
   }
 
   template <typename Alloc>
-  void FinalizePlanning(Alloc& alloc) {
+  [[nodiscard]] bool FinalizePlanning(Alloc& alloc) {
     ABSL_CHECK(!has_allocated());
+    if (overflow_) return false;
 
     flat_alloc_ = alloc->CreateFlatAlloc(total_);
+    if (flat_alloc_ == nullptr) {
+      return false;
+    }
     pointers_ = flat_alloc_->Pointers();
 
     ABSL_CHECK(has_allocated());
+    return true;
   }
 
   void ExpectConsumed() const {
@@ -671,6 +693,7 @@ class FlatAllocatorImpl {
   TypeMap<PointerT, T...> pointers_;
   TypeMap<IntT, T...> total_;
   TypeMap<IntT, T...> used_;
+  bool overflow_ = false;
 };
 
 static auto DisableTracking() {
@@ -1922,7 +1945,7 @@ FileDescriptorTables::FindEnumValueByNumberCreatingIfUnknown(
     {
       // Must lock the pool because we will do allocations in the shared arena.
       absl::MutexLockMaybe l2(pool->mutex_);
-      alloc.FinalizePlanning(tables);
+      ABSL_CHECK(alloc.FinalizePlanning(tables));
     }
     EnumValueDescriptor* result = alloc.AllocateArray<EnumValueDescriptor>(1);
     result->all_names_ = alloc.AllocateStrings(
@@ -2062,14 +2085,23 @@ template <typename... T>
 internal::FlatAllocator::Allocation* DescriptorPool::Tables::CreateFlatAlloc(
     const TypeMap<IntT, T...>& sizes) {
   auto ends = CalculateEnds(sizes);
+  if (!ends.has_value()) {
+    return nullptr;
+  }
+
   using FlatAlloc = internal::FlatAllocator::Allocation;
 
-  int last_end = ends.template Get<
+  int last_end = ends->template Get<
       typename std::tuple_element<sizeof...(T) - 1, std::tuple<T...>>::type>();
-  size_t total_size =
-      last_end + RoundUpTo<FlatAlloc::kMaxAlign>(sizeof(FlatAlloc));
+  int64_t total_size = static_cast<int64_t>(last_end) +
+                       RoundUpTo<FlatAlloc::kMaxAlign>(sizeof(FlatAlloc));
+
+  if (total_size > std::numeric_limits<int>::max()) {
+    return nullptr;
+  }
+
   char* data = static_cast<char*>(internal::Allocate(total_size));
-  auto* res = ::new (data) FlatAlloc(ends);
+  auto* res = ::new (data) FlatAlloc(*ends);
   flat_allocs_.emplace_back(res);
 
   return res;
@@ -4710,7 +4742,7 @@ Symbol DescriptorPool::NewPlaceholderWithMutexHeld(
       alloc.PlanArray<Descriptor::ExtensionRange>(1);
     }
   }
-  alloc.FinalizePlanning(tables_);
+  ABSL_CHECK(alloc.FinalizePlanning(tables_));
 
   const std::string::size_type dotpos = placeholder_full_name.find_last_of('.');
   if (dotpos != std::string::npos) {
@@ -4806,7 +4838,7 @@ FileDescriptor* DescriptorPool::NewPlaceholderFile(
   internal::FlatAllocator alloc;
   alloc.PlanArray<FileDescriptor>(1);
   alloc.PlanArray<std::string>(1);
-  alloc.FinalizePlanning(tables_);
+  ABSL_CHECK(alloc.FinalizePlanning(tables_));
 
   return NewPlaceholderFileWithMutexHeld(name, alloc);
 }
@@ -5490,11 +5522,16 @@ const FileDescriptor* internal::DescriptorBuilder::BuildFile(
 
   auto alloc = std::make_unique<internal::FlatAllocator>();
   PlanAllocationSize(proto, *alloc);
-  alloc->FinalizePlanning(tables_);
-  FileDescriptor* result = BuildFileImpl(proto, *alloc);
+  FileDescriptor* result = nullptr;
+  if (!alloc->FinalizePlanning(tables_)) {
+    AddError(proto.name(), proto, DescriptorPool::ErrorCollector::OTHER,
+             "The file is too large.");
+  } else {
+    result = BuildFileImpl(proto, *alloc);
+  }
 
-  file_tables_->FinalizeTables();
   if (result) {
+    file_tables_->FinalizeTables();
     tables_->ClearLastCheckpoint();
     result->finished_building_ = true;
     alloc->ExpectConsumed();
@@ -5646,7 +5683,7 @@ FileDescriptor* internal::DescriptorBuilder::BuildFileImpl(
           internal::FlatAllocator lazy_dep_alloc;
           lazy_dep_alloc.PlanArray<FileDescriptor>(1);
           lazy_dep_alloc.PlanArray<std::string>(1);
-          lazy_dep_alloc.FinalizePlanning(tables_);
+          ABSL_CHECK(lazy_dep_alloc.FinalizePlanning(tables_));
           dependency =
               pool_->NewPlaceholderFileWithMutexHeld(name, lazy_dep_alloc);
           if (is_option_dep) {
