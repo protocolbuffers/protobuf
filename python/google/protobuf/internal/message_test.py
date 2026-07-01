@@ -1037,6 +1037,69 @@ class MessageTest(unittest.TestCase):
     with self.assertRaises(TypeError):
       hash(m.repeated_nested_message)
 
+  @unittest.skipUnless(
+      api_implementation.Type() == 'upb',
+      'Only upb guards reentrancy with version counter',
+  )
+  def testRepeatedFieldModificationDuringOperation(self, message_module):
+    m = message_module.TestAllTypes()
+    m.repeated_int32.extend([1, 2, 3])
+
+    class MutatingIndex(object):
+
+      def __init__(self, val):
+        self._val = val
+
+      def __index__(self):
+        m.repeated_int32.clear()
+        return self._val
+
+    with self.assertRaises(RuntimeError):
+      m.repeated_int32.insert(1, MutatingIndex(4))
+
+    m.repeated_int32.extend([1, 2, 3])
+
+    class MutatingIterable(object):
+
+      def __iter__(self):
+        m.repeated_int32.clear()
+        return iter([4, 5])
+
+    with self.assertRaises(RuntimeError):
+      m.repeated_int32[0:2] = MutatingIterable()
+
+    m.repeated_int32.extend([1, 2, 3])
+
+    with self.assertRaises(RuntimeError):
+      m.repeated_int32.extend(MutatingIterable())
+
+    m.repeated_int32.extend([1, 2, 3])
+
+    with self.assertRaises(RuntimeError):
+      m.repeated_int32.append(MutatingIndex(4))
+
+    m.repeated_int32.extend([1, 2, 3])
+
+    class MutatingEq(object):
+
+      def __eq__(self, other):
+        m.repeated_int32.clear()
+        return True
+
+    with self.assertRaises(RuntimeError):
+      m.repeated_int32.remove(MutatingEq())
+
+    m.repeated_int32.extend([3, 1, 2])
+
+    class MutatingCmp(object):
+
+      def __lt__(self, other):
+        m.repeated_int32.clear()
+        return True
+
+    with self.assertRaises(RuntimeError):
+      m.repeated_int32.sort(key=lambda x: MutatingCmp())
+
   @unittest.skipIf(
       api_implementation.Type() == 'upb', 'upb has different behavior'
   )
