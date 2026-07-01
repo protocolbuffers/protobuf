@@ -1005,43 +1005,79 @@ using SymbolsByParentSet =
     absl::flat_hash_set<OffsetT<const internal::SymbolBase>, SymbolByParentHash,
                         SymbolByParentEq>;
 
-template <typename DescriptorT>
-struct DescriptorsByNameHash {
+template <typename Projection>
+struct ProjectedHash {
   using is_transparent = void;
 
-  size_t operator()(absl::string_view name) const { return absl::HashOf(name); }
-
-  size_t operator()(const DescriptorT* file) const {
-    return absl::HashOf(file->name());
+  template <typename T>
+  size_t operator()(const T& value) const {
+    return absl::HashOf(Projection{}(value));
   }
 };
 
-template <typename DescriptorT>
-struct DescriptorsByNameEq {
+template <typename Projection>
+struct ProjectedEq {
   using is_transparent = void;
 
-  bool operator()(absl::string_view lhs, absl::string_view rhs) const {
-    return lhs == rhs;
+  template <typename T, typename U>
+  bool operator()(const T& lhs, const U& rhs) const {
+    return Projection{}(lhs) == Projection{}(rhs);
   }
-  bool operator()(absl::string_view lhs, const DescriptorT* rhs) const {
-    return lhs == rhs->name();
+};
+
+template <typename T, typename Projection>
+using ProjectedSet =
+    absl::flat_hash_set<T, ProjectedHash<Projection>, ProjectedEq<Projection>>;
+
+template <typename DescriptorT>
+struct DescriptorNameProjection {
+  absl::string_view operator()(const DescriptorT* descriptor) const {
+    return descriptor->name();
   }
-  bool operator()(const DescriptorT* lhs, absl::string_view rhs) const {
-    return lhs->name() == rhs;
-  }
-  bool operator()(const DescriptorT* lhs, const DescriptorT* rhs) const {
-    return lhs == rhs || lhs->name() == rhs->name();
-  }
+  absl::string_view operator()(absl::string_view name) const { return name; }
 };
 
 template <typename DescriptorT>
 using DescriptorsByNameSet =
-    absl::flat_hash_set<const DescriptorT*, DescriptorsByNameHash<DescriptorT>,
-                        DescriptorsByNameEq<DescriptorT>>;
+    ProjectedSet<const DescriptorT*, DescriptorNameProjection<DescriptorT>>;
 
-using FieldsByNameMap =
-    absl::flat_hash_map<std::pair<const void*, absl::string_view>,
-                        const FieldDescriptor*>;
+static const void* GetFieldParent(const FieldDescriptor* field) {
+  if (field->is_extension()) {
+    if (field->extension_scope() == nullptr) {
+      return field->file();
+    } else {
+      return field->extension_scope();
+    }
+  } else {
+    return field->containing_type();
+  }
+}
+
+struct LowercaseNameProjection {
+  std::pair<const void*, absl::string_view> operator()(
+      const FieldDescriptor* field) const {
+    return {GetFieldParent(field), field->lowercase_name()};
+  }
+  auto operator()(std::pair<const void*, absl::string_view> query) const {
+    return query;
+  }
+};
+
+using FieldsByLowercaseNameSet =
+    ProjectedSet<const FieldDescriptor*, LowercaseNameProjection>;
+
+struct CamelcaseNameProjection {
+  std::pair<const void*, absl::string_view> operator()(
+      const FieldDescriptor* field) const {
+    return {GetFieldParent(field), field->camelcase_name()};
+  }
+  auto operator()(std::pair<const void*, absl::string_view> query) const {
+    return query;
+  }
+};
+
+using FieldsByCamelcaseNameSet =
+    ProjectedSet<const FieldDescriptor*, CamelcaseNameProjection>;
 
 struct ParentNumberQuery {
   std::pair<const void*, int> query;
@@ -1326,7 +1362,6 @@ class FileDescriptorTables {
   }
 
  private:
-  const void* FindParentForFieldsByMap(const FieldDescriptor* field) const;
   static void FieldsByLowercaseNamesLazyInitStatic(
       const FileDescriptorTables* tables);
   void FieldsByLowercaseNamesLazyInitInternal() const;
@@ -1345,8 +1380,10 @@ class FileDescriptorTables {
   // Make these fields atomic to avoid race conditions with
   // GetEstimatedOwnedMemoryBytesSize. Once the pointer is set the map won't
   // change anymore.
-  mutable std::atomic<const FieldsByNameMap*> fields_by_lowercase_name_{};
-  mutable std::atomic<const FieldsByNameMap*> fields_by_camelcase_name_{};
+  mutable std::atomic<const FieldsByLowercaseNameSet*>
+      fields_by_lowercase_name_{};
+  mutable std::atomic<const FieldsByCamelcaseNameSet*>
+      fields_by_camelcase_name_{};
   FieldsByNumberSet fields_by_number_;  // Not including extensions.
   EnumValuesByNumberSetOffsetPtr enum_values_by_number_;
   mutable EnumValuesByNumberSet unknown_enum_values_by_number_
@@ -1813,32 +1850,26 @@ inline const FieldDescriptor* FileDescriptorTables::FindFieldByNumber(
                                        : it->Resolve(flat_buffer_.data());
 }
 
-const void* FileDescriptorTables::FindParentForFieldsByMap(
-    const FieldDescriptor* field) const {
-  if (field->is_extension()) {
-    if (field->extension_scope() == nullptr) {
-      return field->file();
-    } else {
-      return field->extension_scope();
-    }
-  } else {
-    return field->containing_type();
-  }
-}
-
 void FileDescriptorTables::FieldsByLowercaseNamesLazyInitStatic(
     const FileDescriptorTables* tables) {
   tables->FieldsByLowercaseNamesLazyInitInternal();
 }
 
 void FileDescriptorTables::FieldsByLowercaseNamesLazyInitInternal() const {
-  auto* map = new FieldsByNameMap;
+  auto* set = new FieldsByLowercaseNameSet;
   for (auto symbol : symbols_by_parent_) {
     const FieldDescriptor* field = Resolve(symbol).field_descriptor();
     if (!field) continue;
-    (*map)[{FindParentForFieldsByMap(field), field->lowercase_name()}] = field;
+    auto [it, inserted] = set->insert(field);
+    if (!inserted) {
+      // If we already have a field with this lowercase name, keep the last one.
+      // Since conflicts are rare, we resolve this inline by erasing and
+      // inserting.
+      set->erase(it);
+      set->insert(field);
+    }
   }
-  fields_by_lowercase_name_.store(map, std::memory_order_release);
+  fields_by_lowercase_name_.store(set, std::memory_order_release);
 }
 
 inline const FieldDescriptor* FileDescriptorTables::FindFieldByLowercaseName(
@@ -1848,9 +1879,10 @@ inline const FieldDescriptor* FileDescriptorTables::FindFieldByLowercaseName(
                   this);
   const auto* fields =
       fields_by_lowercase_name_.load(std::memory_order_acquire);
-  auto it = fields->find({parent, lowercase_name});
+  auto it = fields->find(
+      std::pair<const void*, absl::string_view>(parent, lowercase_name));
   if (it == fields->end()) return nullptr;
-  return it->second;
+  return *it;
 }
 
 void FileDescriptorTables::FieldsByCamelcaseNamesLazyInitStatic(
@@ -1859,19 +1891,20 @@ void FileDescriptorTables::FieldsByCamelcaseNamesLazyInitStatic(
 }
 
 void FileDescriptorTables::FieldsByCamelcaseNamesLazyInitInternal() const {
-  auto* map = new FieldsByNameMap;
+  auto* set = new FieldsByCamelcaseNameSet;
   for (auto symbol : symbols_by_parent_) {
     const FieldDescriptor* field = Resolve(symbol).field_descriptor();
     if (!field) continue;
-    const void* parent = FindParentForFieldsByMap(field);
-    // If we already have a field with this camelCase name, keep the field with
-    // the smallest field number. This way we get a deterministic mapping.
-    const FieldDescriptor*& found = (*map)[{parent, field->camelcase_name()}];
-    if (found == nullptr || found->number() > field->number()) {
-      found = field;
+    auto [it, inserted] = set->insert(field);
+    if (!inserted && (*it)->number() > field->number()) {
+      // If we already have a field with this camelCase name, keep the field
+      // with the smallest field number. This way we get a deterministic
+      // mapping.
+      set->erase(it);
+      set->insert(field);
     }
   }
-  fields_by_camelcase_name_.store(map, std::memory_order_release);
+  fields_by_camelcase_name_.store(set, std::memory_order_release);
 }
 
 inline const FieldDescriptor* FileDescriptorTables::FindFieldByCamelcaseName(
@@ -1880,9 +1913,10 @@ inline const FieldDescriptor* FileDescriptorTables::FindFieldByCamelcaseName(
                   FileDescriptorTables::FieldsByCamelcaseNamesLazyInitStatic,
                   this);
   auto* fields = fields_by_camelcase_name_.load(std::memory_order_acquire);
-  auto it = fields->find({parent, camelcase_name});
+  auto it = fields->find(
+      std::pair<const void*, absl::string_view>(parent, camelcase_name));
   if (it == fields->end()) return nullptr;
-  return it->second;
+  return *it;
 }
 
 inline const EnumValueDescriptor* FileDescriptorTables::FindEnumValueByNumber(
