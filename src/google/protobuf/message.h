@@ -422,6 +422,13 @@ class PROTOBUF_EXPORT Message : public MessageLite {
 #if !defined(PROTOBUF_CUSTOM_VTABLE)
   constexpr Message() {}
 #endif  // PROTOBUF_CUSTOM_VTABLE
+
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+  // Explicitly define the destructor as protected so it can't be called
+  // directly.
+  ~Message() = default;
+#endif  // PROTOBUF_CUSTOM_VTABLE
+
   using MessageLite::MessageLite;
 
   // Get a struct containing the metadata for the Message, which is used in turn
