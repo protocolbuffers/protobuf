@@ -5,6 +5,8 @@ package(
     default_applicable_licenses = ["//:license"],
 )
 
+vardef("GO", "false")
+
 exports_files(
     glob(["*.proto"]),
     visibility = [
