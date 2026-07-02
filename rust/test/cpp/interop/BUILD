@@ -31,7 +31,7 @@ rust_test(
         ":interop_test_cpp_rust_proto",
         ":test_utils",
         "//rust:protobuf_cpp",
-        "@crate_index//:googletest",
+        "@crate_dev_index//:googletest",
     ],
 )
 

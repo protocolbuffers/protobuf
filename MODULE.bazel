@@ -196,10 +196,6 @@ rust.toolchain(
 
 crate = use_extension("@rules_rust//crate_universe:extension.bzl", "crate")
 crate.spec(
-    package = "googletest",
-    version = ">0.0.0",
-)
-crate.spec(
     package = "linkme",
     version = "0.3.35",
 )
@@ -214,9 +210,27 @@ crate.spec(
 crate.spec(
     package = "syn",
     version = ">=2",
+    features = ["full"],
 )
-crate.from_specs()
+
+# Since rules_rust 0.71.1, crate_universe requires a lockfile when used from downstream projects:
+# - to create from scratch: touch rust/Cargo.lock && bazel mod deps --lockfile_mode=off --repo_env=REPIN=1
+# - to update: bazel mod deps --lockfile_mode=update --repo_env=REPIN=1
+crate.from_specs(
+    cargo_lockfile = "//rust:Cargo.lock",
+    lockfile = "//rust:cargo-bazel-lock.json",
+)
 use_repo(crate, crate_index = "crates")
+
+# Conversely, crate_universe's lockfile requirement doesn't apply to local extensions.
+crate_dev = use_extension("@rules_rust//crate_universe:extensions.bzl", "crate", dev_dependency = True)
+crate_dev.spec(
+    package = "googletest",
+    repositories = ["crates_dev"],
+    version = ">0.0.0",
+)
+crate_dev.from_specs(name = "crates_dev")
+use_repo(crate_dev, crate_dev_index = "crates_dev")
 
 # Keep this list minimal; these dependencies will be part of the common `maven` install and could affect end-user projects.
 PROTOBUF_MAVEN_ARTIFACTS = [
