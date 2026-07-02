@@ -1219,6 +1219,16 @@ PROTOBUF_ALWAYS_INLINE const char* TcParser::RepeatedVarint(
   } while (ctx->DataAvailable(ptr2) &&
            UnalignedLoad<TagType>(ptr2) == expected_tag);
   int added = 0;
+  // Defend against signed-int overflow of the reserve size: `field.size()`
+  // accumulates across chunks/merges and can approach INT_MAX, so
+  // `field.size() + len` may overflow to a negative value, which makes
+  // Reserve a no-op and AddNAlreadyReserved write out of bounds. The packed
+  // path guards this (see PackedVarint's int64 clamp); the expanded path did
+  // not. A repeated field cannot hold more than INT_MAX elements, so treat
+  // the overflow as malformed input.
+  if (ABSL_PREDICT_FALSE(len > std::numeric_limits<int>::max() - field.size())) {
+    PROTOBUF_MUSTTAIL return Error(PROTOBUF_TC_PARAM_NO_DATA_PASS);
+  }
   field.Reserve(field.size() + len);
   // Allows us to skip SOO checks.
   FieldType* x = field.AddNAlreadyReserved(len);
