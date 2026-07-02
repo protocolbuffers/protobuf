@@ -396,7 +396,9 @@ class PROTOBUF_EXPORT MessageLite {
  public:
   MessageLite(const MessageLite&) = delete;
   MessageLite& operator=(const MessageLite&) = delete;
-  PROTOBUF_VIRTUAL ~MessageLite() = default;
+#if !defined(PROTOBUF_CUSTOM_VTABLE)
+  virtual ~MessageLite() = default;
+#endif  // !PROTOBUF_CUSTOM_VTABLE
 
   // Basic Operations ------------------------------------------------
 
@@ -784,6 +786,10 @@ class PROTOBUF_EXPORT MessageLite {
       const char* ptr, internal::ParseContext* ctx);
 
  protected:
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+  ~MessageLite() = default;
+#endif
+
   // Message implementations require access to internally visible API.
   static constexpr internal::InternalVisibility internal_visibility() {
     return internal::InternalVisibility{};
