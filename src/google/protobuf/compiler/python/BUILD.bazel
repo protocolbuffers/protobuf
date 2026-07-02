@@ -88,6 +88,18 @@ cc_test(
     ],
 )
 
+cc_test(
+    name = "pyi_generator_unittest",
+    srcs = ["pyi_generator_unittest.cc"],
+    copts = COPTS,
+    deps = [
+        ":python",
+        "//src/google/protobuf/compiler:command_line_interface_tester",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
+    ],
+)
+
 ################################################################################
 # Distribution packaging
 ################################################################################

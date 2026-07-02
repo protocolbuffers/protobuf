@@ -34,18 +34,136 @@ namespace protobuf {
 namespace compiler {
 namespace python {
 
+namespace {
+
+using IdentifierSet = absl::flat_hash_set<std::string>;
+
+void ReserveIdentifier(absl::string_view identifier,
+                       IdentifierSet* identifiers) {
+  if (!IsPythonKeyword(identifier)) {
+    identifiers->insert(std::string(identifier));
+  }
+}
+
+void ReserveEnumBindings(const EnumDescriptor& enum_descriptor,
+                         IdentifierSet* identifiers) {
+  ReserveIdentifier(enum_descriptor.name(), identifiers);
+  for (int i = 0; i < enum_descriptor.value_count(); ++i) {
+    ReserveIdentifier(enum_descriptor.value(i)->name(), identifiers);
+  }
+}
+
+template <typename DescriptorT>
+void ReserveExtensionBindings(const DescriptorT& descriptor,
+                              IdentifierSet* identifiers) {
+  for (int i = 0; i < descriptor.extension_count(); ++i) {
+    ReserveIdentifier(descriptor.extension(i)->name(), identifiers);
+  }
+}
+
+void ReserveMessageBindings(const Descriptor& descriptor,
+                            IdentifierSet* identifiers,
+                            std::vector<const Descriptor*>* keyword_messages) {
+  if (IsPythonKeyword(descriptor.name())) {
+    keyword_messages->push_back(&descriptor);
+  } else {
+    identifiers->insert(std::string(descriptor.name()));
+  }
+  for (int i = 0; i < descriptor.field_count(); ++i) {
+    ReserveIdentifier(descriptor.field(i)->name(), identifiers);
+  }
+  for (int i = 0; i < descriptor.enum_type_count(); ++i) {
+    ReserveEnumBindings(*descriptor.enum_type(i), identifiers);
+  }
+  ReserveExtensionBindings(descriptor, identifiers);
+  for (int i = 0; i < descriptor.nested_type_count(); ++i) {
+    ReserveMessageBindings(*descriptor.nested_type(i), identifiers,
+                           keyword_messages);
+  }
+}
+
+std::string MessageIndexPath(const Descriptor& descriptor) {
+  if (descriptor.containing_type() == nullptr) {
+    return absl::StrCat(descriptor.index());
+  }
+  return absl::StrCat(MessageIndexPath(*descriptor.containing_type()), "_",
+                      descriptor.index());
+}
+
+}  // namespace
+
 PyiGenerator::PyiGenerator() : file_(nullptr) {}
 
 PyiGenerator::~PyiGenerator() = default;
 
-template <typename DescriptorT>
-std::string PyiGenerator::ModuleLevelName(const DescriptorT& descriptor) const {
-  std::string name = NamePrefixedWithNestedTypes(descriptor, ".");
-  if (descriptor.file() != file_) {
+void PyiGenerator::PrepareMessageIdentifiers(const FileDescriptor& file) const {
+  IdentifierSet identifiers;
+  std::vector<const Descriptor*> keyword_messages;
+  for (int i = 0; i < file.message_type_count(); ++i) {
+    ReserveMessageBindings(*file.message_type(i), &identifiers,
+                           &keyword_messages);
+  }
+  for (int i = 0; i < file.enum_type_count(); ++i) {
+    ReserveEnumBindings(*file.enum_type(i), &identifiers);
+  }
+  ReserveExtensionBindings(file, &identifiers);
+  for (int i = 0; i < file.service_count(); ++i) {
+    ReserveIdentifier(file.service(i)->name(), &identifiers);
+    ReserveIdentifier(absl::StrCat(file.service(i)->name(), "_Stub"),
+                      &identifiers);
+  }
+  for (int i = 0; i < file.public_dependency_count(); ++i) {
+    const FileDescriptor& dependency = *file.public_dependency(i);
+    for (int j = 0; j < dependency.message_type_count(); ++j) {
+      ReserveIdentifier(dependency.message_type(j)->name(), &identifiers);
+    }
+    for (int j = 0; j < dependency.enum_type_count(); ++j) {
+      ReserveEnumBindings(*dependency.enum_type(j), &identifiers);
+    }
+    ReserveExtensionBindings(dependency, &identifiers);
+  }
+
+  for (const Descriptor* descriptor : keyword_messages) {
+    // The runtime exposes keyword-named messages only through dynamic lookup.
+    // A stub still needs a legal identity for precise field types, but it must
+    // not advertise a public alias that Python source cannot spell.
+    std::string identifier =
+        absl::StrCat("_pb_message_", MessageIndexPath(*descriptor));
+    while (!identifiers.insert(identifier).second) {
+      identifier.append("_");
+    }
+    message_identifiers_.emplace(descriptor, std::move(identifier));
+  }
+}
+
+std::string PyiGenerator::MessageIdentifier(
+    const Descriptor& descriptor) const {
+  if (!IsPythonKeyword(descriptor.name())) {
+    return std::string(descriptor.name());
+  }
+  auto identifier = message_identifiers_.find(&descriptor);
+  if (identifier == message_identifiers_.end()) {
+    PrepareMessageIdentifiers(*descriptor.file());
+    identifier = message_identifiers_.find(&descriptor);
+  }
+  return identifier->second;
+}
+
+std::string PyiGenerator::MessageName(const Descriptor& descriptor) const {
+  std::string name = MessageIdentifier(descriptor);
+  if (descriptor.containing_type() != nullptr) {
+    name = absl::StrCat(MessageName(*descriptor.containing_type()), ".", name);
+  }
+  return name;
+}
+
+std::string PyiGenerator::QualifyModuleName(std::string name,
+                                            const FileDescriptor& file) const {
+  if (&file != file_) {
     std::string module_alias;
-    const absl::string_view filename = descriptor.file()->name();
+    const absl::string_view filename = file.name();
     if (import_map_.find(filename) == import_map_.end()) {
-      std::string module_name = ModuleName(descriptor.file()->name());
+      std::string module_name = ModuleName(file.name());
       std::vector<absl::string_view> tokens = absl::StrSplit(module_name, '.');
       module_alias = absl::StrCat("_", tokens.back());
     } else {
@@ -54,6 +172,19 @@ std::string PyiGenerator::ModuleLevelName(const DescriptorT& descriptor) const {
     name = absl::StrCat(module_alias, ".", name);
   }
   return name;
+}
+
+std::string PyiGenerator::ModuleLevelName(const Descriptor& descriptor) const {
+  return QualifyModuleName(MessageName(descriptor), *descriptor.file());
+}
+
+std::string PyiGenerator::ModuleLevelName(
+    const EnumDescriptor& descriptor) const {
+  std::string name(descriptor.name());
+  if (descriptor.containing_type() != nullptr) {
+    name = absl::StrCat(MessageName(*descriptor.containing_type()), ".", name);
+  }
+  return QualifyModuleName(std::move(name), *descriptor.file());
 }
 
 std::string PyiGenerator::PublicPackage() const { return "google.protobuf"; }
@@ -299,6 +430,11 @@ void PyiGenerator::PrintImports() const {
     std::string module_name = StrippedModuleName(public_dep->name());
     // Top level messages in public imports
     for (int i = 0; i < public_dep->message_type_count(); ++i) {
+      if (IsPythonKeyword(public_dep->message_type(i)->name())) {
+        // There is no legal public Python name for this runtime re-export.
+        // References use the defining module's private stub identity instead.
+        continue;
+      }
       printer_->Print(
           "from $module$ import $message_class$ as $message_class$\n", "module",
           module_name, "message_class", public_dep->message_type(i)->name());
@@ -403,7 +539,7 @@ std::string PyiGenerator::GetFieldType(
       // with the module name for disambiguation.
       std::string name = ModuleLevelName(*field_des.message_type());
       if ((containing_des.containing_type() != nullptr &&
-           name == containing_des.name())) {
+           name == MessageIdentifier(containing_des))) {
         std::string module = ModuleName(field_des.file()->name());
         name = absl::StrCat(module, ".", name);
       }
@@ -430,7 +566,7 @@ void PyiGenerator::PrintMessage(const Descriptor& message_descriptor,
   if (!is_nested) {
     printer_->Print("\n");
   }
-  const absl::string_view class_name = message_descriptor.name();
+  const std::string class_name = MessageIdentifier(message_descriptor);
   std::string extra_base;
   // A well-known type needs to inherit from its corresponding base class in
   // net/proto2/python/internal/well_known_types.
@@ -533,11 +669,17 @@ void PyiGenerator::PrintMessage(const Descriptor& message_descriptor,
   }
   printer_->Print(self_arg_name);
   bool has_python_keywords = false;
+  bool is_first_field = true;
   for (int i = 0; i < message_descriptor.field_count(); ++i) {
     const FieldDescriptor* field_des = message_descriptor.field(i);
     if (IsPythonKeyword(field_des->name())) {
       has_python_keywords = true;
       continue;
+    }
+    // Message constructors accept field values only as keyword arguments.
+    if (is_first_field) {
+      printer_->Print(", *");
+      is_first_field = false;
     }
     std::string field_name = std::string(field_des->name());
     printer_->Print(", $field_name$: ", "field_name", field_name);
@@ -608,6 +750,7 @@ bool PyiGenerator::Generate(const FileDescriptor* file,
                             std::string* error) const {
   absl::MutexLock lock(&mutex_);
   import_map_.clear();
+  message_identifiers_.clear();
   // Calculate file name.
   file_ = file;
   // In google3, devtools/python/bazel/pytype/pytype_impl.bzl uses --pyi_out to
