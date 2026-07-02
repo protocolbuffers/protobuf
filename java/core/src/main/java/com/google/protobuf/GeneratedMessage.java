@@ -3465,8 +3465,7 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
     }
     Arrays.sort(keys);
     for (int key : keys) {
-      out.writeMessage(
-          fieldNumber, defaultEntry.newBuilderForType().setKey(key).setValue(m.get(key)).build());
+      serializeMapFieldEntryTo(out, defaultEntry, fieldNumber, key, m.get(key));
     }
   }
 
@@ -3489,8 +3488,7 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
     }
     Arrays.sort(keys);
     for (long key : keys) {
-      out.writeMessage(
-          fieldNumber, defaultEntry.newBuilderForType().setKey(key).setValue(m.get(key)).build());
+      serializeMapFieldEntryTo(out, defaultEntry, fieldNumber, key, m.get(key));
     }
   }
 
@@ -3512,8 +3510,7 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
     keys = m.keySet().toArray(keys);
     Arrays.sort(keys);
     for (String key : keys) {
-      out.writeMessage(
-          fieldNumber, defaultEntry.newBuilderForType().setKey(key).setValue(m.get(key)).build());
+      serializeMapFieldEntryTo(out, defaultEntry, fieldNumber, key, m.get(key));
     }
   }
 
@@ -3540,8 +3537,7 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
       boolean key)
       throws IOException {
     if (m.containsKey(key)) {
-      out.writeMessage(
-          fieldNumber, defaultEntry.newBuilderForType().setKey(key).setValue(m.get(key)).build());
+      serializeMapFieldEntryTo(out, defaultEntry, fieldNumber, key, m.get(key));
     }
   }
 
@@ -3550,13 +3546,16 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
       CodedOutputStream out, Map<K, V> m, MapEntry<K, V> defaultEntry, int fieldNumber)
       throws IOException {
     for (Map.Entry<K, V> entry : m.entrySet()) {
-      out.writeMessage(
-          fieldNumber,
-          defaultEntry
-              .newBuilderForType()
-              .setKey(entry.getKey())
-              .setValue(entry.getValue())
-              .buildPartial());
+      serializeMapFieldEntryTo(out, defaultEntry, fieldNumber, entry.getKey(), entry.getValue());
     }
+  }
+
+  private static <K, V> void serializeMapFieldEntryTo(
+      CodedOutputStream out, MapEntry<K, V> defaultEntry, int fieldNumber, K key, V value)
+      throws IOException {
+    out.writeTag(fieldNumber, WireFormat.WIRETYPE_LENGTH_DELIMITED);
+    out.writeUInt32NoTag(
+        MapEntryLite.computeSerializedSize(defaultEntry.getMetadata(), key, value));
+    MapEntryLite.writeTo(out, defaultEntry.getMetadata(), key, value);
   }
 }
