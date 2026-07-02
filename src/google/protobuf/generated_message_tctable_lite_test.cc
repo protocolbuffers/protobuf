@@ -991,7 +991,24 @@ TEST(GeneratedMessageTctableLiteTest,
   EXPECT_LE(proto.vals().Capacity(), 2048);
 }
 
+TEST(GeneratedMessageTctableLiteTest, PackedFixed32LargeSize) {
+  uint8_t serialize_buffer[64];
+  uint8_t* serialize_ptr = serialize_buffer;
+  serialize_ptr = WireFormatLite::WriteTagToArray(
+      96, WireFormatLite::WIRETYPE_LENGTH_DELIMITED, serialize_ptr);
+  uint32_t claimed_length =
+      (static_cast<uint32_t>(std::numeric_limits<int32_t>::max()) / 4) * 4;
+  serialize_ptr =
+      WireFormatLite::WriteUInt32NoTagToArray(claimed_length, serialize_ptr);
 
+  absl::string_view serialized{
+      reinterpret_cast<char*>(&serialize_buffer[0]),
+      static_cast<size_t>(serialize_ptr - serialize_buffer)};
+
+  proto2_unittest::TestPackedTypes proto;
+  proto.add_packed_fixed32(42);
+  EXPECT_FALSE(proto.MergeFromString(serialized));
+}
 
 }  // namespace internal
 }  // namespace protobuf
