@@ -375,6 +375,12 @@ static void jsonenc_any(jsonenc* e, const upb_Message* msg,
   const upb_FieldDef* value_f = upb_MessageDef_FindFieldByNumber(m, 2);
   upb_StringView type_url = upb_Message_GetFieldByDef(msg, type_url_f).str_val;
   upb_StringView value = upb_Message_GetFieldByDef(msg, value_f).str_val;
+
+  if (type_url.size == 0 && value.size == 0) {
+    jsonenc_putstr(e, "{}");
+    return;
+  }
+
   const upb_MessageDef* any_m = jsonenc_getanymsg(e, type_url);
   const upb_MiniTable* any_layout = upb_MessageDef_MiniTable(any_m);
   upb_Arena* arena = jsonenc_arena(e);
