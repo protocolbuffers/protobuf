@@ -7897,6 +7897,14 @@ void internal::DescriptorBuilder::ValidateOptions(
     }
   }
 
+  // Only message type fields may be weak.
+  if (field->options().weak()) {
+    if (field->type() != FieldDescriptor::TYPE_MESSAGE) {
+      AddError(field->full_name(), proto, DescriptorPool::ErrorCollector::TYPE,
+               "[weak = true] can only be specified for submessage fields.");
+    }
+  }
+
   // Only repeated primitive fields may be packed.
   if (field->options().packed() && !field->is_packable()) {
     AddError(
