@@ -394,6 +394,43 @@ TEST(GeneratedCode, PromoteUnknownMessageOld) {
   upb_Arena_Free(arena);
 }
 
+// A message-typed field carried as an unknown field with a non-delimited wire
+// type must be rejected during promotion. Otherwise its varint value is treated
+// as a message length and handed to upb_Decode, reading past the captured field.
+TEST(GeneratedCode, PromoteUnknownMessageWrongWireType) {
+  upb_Arena* arena = upb_Arena_New();
+  upb::MtDataEncoder e;
+  e.StartMessage(0);
+  e.PutField(kUpb_FieldType_Message, 5, 0);
+  upb_Status status;
+  upb_Status_Clear(&status);
+  upb_MiniTable* mini_table =
+      upb_MiniTable_Build(e.data().data(), e.data().size(), arena, &status);
+  ASSERT_EQ(status.ok, true);
+
+  // Field 5 as a varint (wire type 0) holding ~4 GiB. The wire type does not
+  // match the message field, so it lands in the unknown fields.
+  const char unknown[] = {static_cast<char>((5 << 3) | 0),
+                          '\xff', '\xff', '\xff', '\xff', '\x0f'};
+  upb_Message* msg = _upb_Message_New(mini_table, arena);
+  upb_DecodeStatus decode_status =
+      upb_Decode(unknown, sizeof(unknown), msg, mini_table, nullptr, 0, arena);
+  ASSERT_EQ(decode_status, kUpb_DecodeStatus_Ok);
+  ASSERT_EQ(upb_Message_FindUnknown(msg, 5, 0).status, kUpb_FindUnknown_Ok);
+
+  upb_MiniTable_SetSubMessage(
+      mini_table,
+      (upb_MiniTableField*)upb_MiniTable_GetFieldByIndex(mini_table, 0),
+      &upb_0test__ModelWithExtensions_msg_init);
+  upb_UnknownToMessageRet promote_result =
+      upb_MiniTable_PromoteUnknownToMessage(
+          msg, mini_table, upb_MiniTable_GetFieldByIndex(mini_table, 0),
+          &upb_0test__ModelWithExtensions_msg_init,
+          upb_DecodeOptions_MaxDepth(0), arena);
+  EXPECT_EQ(promote_result.status, kUpb_UnknownToMessage_ParseError);
+  upb_Arena_Free(arena);
+}
+
 TEST(GeneratedCode, PromoteUnknownRepeatedMessageOld) {
   upb_Arena* arena = upb_Arena_New();
   upb_test_ModelWithSubMessages* input_msg =
