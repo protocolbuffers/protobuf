@@ -22,7 +22,11 @@ debug_enabled = ENV["PROTOBUF_CONFIG"] == "dbg"
 
 additional_c_flags = debug_enabled ? "-O0 -fno-omit-frame-pointer -fvisibility=default -g" : "-O3 -DNDEBUG -fvisibility=hidden"
 
-if RUBY_PLATFORM =~ /darwin/ || RUBY_PLATFORM =~ /linux/ || RUBY_PLATFORM =~ /freebsd/
+if RUBY_PLATFORM =~ /mswin/
+  # cl.exe does not understand GCC-style flags. -std:c11 is required for
+  # _Generic, which the upb MSVC atomics fall back on.
+  $CFLAGS += debug_enabled ? " -std:c11 -Od" : " -std:c11 -DNDEBUG"
+elsif RUBY_PLATFORM =~ /darwin/ || RUBY_PLATFORM =~ /linux/ || RUBY_PLATFORM =~ /freebsd/
   $CFLAGS += " -std=gnu99 -Wall -Wsign-compare -Wno-declaration-after-statement #{additional_c_flags}"
 else
   $CFLAGS += " -std=gnu99 #{additional_c_flags}"
