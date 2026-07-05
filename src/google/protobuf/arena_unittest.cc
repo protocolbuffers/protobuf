@@ -1470,6 +1470,9 @@ TEST(ArenaTest, SwapRepeatedFieldWithNoArenaOnLeftHandSide) {
 }
 
 TEST(ArenaTest, ExtensionsOnArena) {
+  static_assert(Arena::is_destructor_skippable<
+                    proto2_unittest::TestHugeFieldNumbers>::value,
+                "TestHugeFieldNumbers is NOT skippable!");
   Arena arena;
   // Ensure no leaks.
   TestAllExtensions* message_ext = Arena::Create<TestAllExtensions>(&arena);
