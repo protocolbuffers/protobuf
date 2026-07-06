@@ -690,6 +690,11 @@ def internal_py_proto_library(
         if not _to_label(default_runtime) in labels:
             py_libs = py_libs + [default_runtime]
 
+    if "deprecation" not in kargs:
+        kargs["deprecation"] = (
+            "internal_py_proto_library is deprecated and will be removed in 2027 Q1. Migrate to py_proto_library from @protobuf//bazel/py_proto_library.bzl."
+        )
+
     py_library(
         name = name,
         testonly = testonly,
