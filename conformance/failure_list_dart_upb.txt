@@ -1,0 +1,5 @@
+# Dart upb failures
+Recommended.Editions_Proto2.StringFieldInvalidUtf8RawByte.JsonOutput                                               # Should have failed to serialize, but didn't.
+Recommended.Editions_Proto2.StringFieldInvalidUtf8Sequence.JsonOutput                                              # Should have failed to serialize, but didn't.
+Recommended.Proto2.StringFieldInvalidUtf8RawByte.JsonOutput                                                        # Should have failed to serialize, but didn't.
+Recommended.Proto2.StringFieldInvalidUtf8Sequence.JsonOutput                                                       # Should have failed to serialize, but didn't.

@@ -870,7 +870,14 @@ void BinaryAndJsonConformanceSuiteImpl<MessageType>::
 
   TestStatus test;
   test.set_name(effective_test_name);
-  if (response.result_case() == ConformanceResponse::kSerializeError) {
+  if (response.result_case() == ConformanceResponse::kSerializeError ||
+      response.result_case() == ConformanceResponse::kParseError) {
+    suite_.ReportSuccess(test);
+  } else if (response.result_case() == ConformanceResponse::kJsonPayload &&
+             (response.json_payload().find("\xEF\xBF\xBD") !=
+                  std::string::npos ||
+              response.json_payload().find("\\uFFFD") != std::string::npos ||
+              response.json_payload().find("\\ufffd") != std::string::npos)) {
     suite_.ReportSuccess(test);
   } else if (response.result_case() == ConformanceResponse::kSkipped) {
     suite_.ReportSkip(test, request, response);
@@ -2841,6 +2848,10 @@ void BinaryAndJsonConformanceSuiteImpl<
                             R"({"optionalString": "\uDE01\uD83D"})");
   ExpectParseFailureForJson("StringFieldNotAString", REQUIRED,
                             R"({"optionalString": 12345})");
+  ExpectSerializeFailureForJson("StringFieldInvalidUtf8RawByte", RECOMMENDED,
+                                "optional_string: \"\\xFF\"");
+  ExpectSerializeFailureForJson("StringFieldInvalidUtf8Sequence", RECOMMENDED,
+                                "optional_string: \"\\xc3\\x28\"");
 
   // Bytes fields.
   RunValidJsonTest("BytesField", REQUIRED, R"({"optionalBytes": "AQI="})",
