@@ -85,3 +85,9 @@ message CppFeatures {
     edition_defaults = { edition: EDITION_LEGACY, value: "LEGACY" }
   ];
 }
+
+
+// Dummy message to trigger inclusion presubmit checks.
+message DummyPresubmitMessageOnly {
+  int32 dummy_field_to_trigger_presubmits = 1;
+}
