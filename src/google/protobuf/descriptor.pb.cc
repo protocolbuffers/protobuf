@@ -288,7 +288,7 @@ constexpr SourceCodeInfo_Location::ParseTableT_ SourceCodeInfo_Location::Interna
       ::_pbi::TcParser::GetTable<::google::protobuf::SourceCodeInfo_Location>(),  // to_prefetch
       #endif  // PROTOBUF_PREFETCH_PARSE_TABLE
     }, {{
-      {::_pbi::TcParser::MiniParse, {}},
+      {::_pbi::TcParser::FastUnknown, {0, ::uint16_t{0}}},
       // repeated int32 path = 1 [packed = true];
       {::_pbi::TcParser::FastV32P1,
        {10, 0, 0,
@@ -305,12 +305,12 @@ constexpr SourceCodeInfo_Location::ParseTableT_ SourceCodeInfo_Location::Interna
       {::_pbi::TcParser::FastBS1,
        {34, 4, 0,
         PROTOBUF_FIELD_OFFSET(SourceCodeInfo_Location, _impl_.trailing_comments_)}},
-      {::_pbi::TcParser::MiniParse, {}},
+      {::_pbi::TcParser::FastUnknown, {0, ::uint16_t{0}}},
       // repeated string leading_detached_comments = 6;
       {::_pbi::TcParser::FastBR1,
        {50, 2, 0,
         PROTOBUF_FIELD_OFFSET(SourceCodeInfo_Location, _impl_.leading_detached_comments_)}},
-      {::_pbi::TcParser::MiniParse, {}},
+      {::_pbi::TcParser::FastUnknown, {0, ::uint16_t{0}}},
     }}, {{
       65535, 65535
     }}, {{
@@ -481,7 +481,7 @@ constexpr GeneratedCodeInfo_Annotation::ParseTableT_ GeneratedCodeInfo_Annotatio
       ::_pbi::TcParser::GetTable<::google::protobuf::GeneratedCodeInfo_Annotation>(),  // to_prefetch
       #endif  // PROTOBUF_PREFETCH_PARSE_TABLE
     }, {{
-      {::_pbi::TcParser::MiniParse, {}},
+      {::_pbi::TcParser::FastUnknown, {0, ::uint16_t{0}}},
       // repeated int32 path = 1 [packed = true];
       {::_pbi::TcParser::FastV32P1,
        {10, 0, 0,
@@ -502,8 +502,8 @@ constexpr GeneratedCodeInfo_Annotation::ParseTableT_ GeneratedCodeInfo_Annotatio
       {::_pbi::TcParser::FastEr0S1,
        {40, 4, 2,
         PROTOBUF_FIELD_OFFSET(GeneratedCodeInfo_Annotation, _impl_.semantic_)}},
-      {::_pbi::TcParser::MiniParse, {}},
-      {::_pbi::TcParser::MiniParse, {}},
+      {::_pbi::TcParser::FastUnknown, {0, ::uint16_t{0}}},
+      {::_pbi::TcParser::FastUnknown, {0, ::uint16_t{0}}},
     }}, {{
       65535, 65535
     }}, {{
@@ -666,7 +666,7 @@ constexpr FieldOptions_FeatureSupport::ParseTableT_ FieldOptions_FeatureSupport:
       ::_pbi::TcParser::GetTable<::google::protobuf::FieldOptions_FeatureSupport>(),  // to_prefetch
       #endif  // PROTOBUF_PREFETCH_PARSE_TABLE
     }, {{
-      {::_pbi::TcParser::MiniParse, {}},
+      {::_pbi::TcParser::FastUnknown, {0, ::uint16_t{0}}},
       // optional .google.protobuf.Edition edition_introduced = 1;
       {::_pbi::TcParser::FastEvS1,
        {8, 2, 0,
@@ -687,8 +687,8 @@ constexpr FieldOptions_FeatureSupport::ParseTableT_ FieldOptions_FeatureSupport:
       {::_pbi::TcParser::FastBS1,
        {42, 1, 0,
         PROTOBUF_FIELD_OFFSET(FieldOptions_FeatureSupport, _impl_.removal_error_)}},
-      {::_pbi::TcParser::MiniParse, {}},
-      {::_pbi::TcParser::MiniParse, {}},
+      {::_pbi::TcParser::FastUnknown, {0, ::uint16_t{0}}},
+      {::_pbi::TcParser::FastUnknown, {0, ::uint16_t{0}}},
     }}, {{
       65535, 65535
     }}, {{
@@ -1006,7 +1006,7 @@ constexpr FeatureSet_VisibilityFeature::ParseTableT_ FeatureSet_VisibilityFeatur
       ::_pbi::TcParser::GetTable<::google::protobuf::FeatureSet_VisibilityFeature>(),  // to_prefetch
       #endif  // PROTOBUF_PREFETCH_PARSE_TABLE
     }, {{
-      {::_pbi::TcParser::MiniParse, {}},
+      {::_pbi::TcParser::FastUnknown, {0, ::uint16_t{0}}},
     }}, {{
       65535, 65535
     }}, // no field_entries, or aux_entries
@@ -1136,7 +1136,7 @@ constexpr FeatureSet_ProtoLimitsFeature::ParseTableT_ FeatureSet_ProtoLimitsFeat
       ::_pbi::TcParser::GetTable<::google::protobuf::FeatureSet_ProtoLimitsFeature>(),  // to_prefetch
       #endif  // PROTOBUF_PREFETCH_PARSE_TABLE
     }, {{
-      {::_pbi::TcParser::MiniParse, {}},
+      {::_pbi::TcParser::FastUnknown, {0, ::uint16_t{0}}},
     }}, {{
       65535, 65535
     }}, // no field_entries, or aux_entries
@@ -1268,7 +1268,7 @@ constexpr FeatureSet::ParseTableT_ FeatureSet::InternalGenerateParseTable_(const
       ::_pbi::TcParser::GetTable<::google::protobuf::FeatureSet>(),  // to_prefetch
       #endif  // PROTOBUF_PREFETCH_PARSE_TABLE
     }, {{
-      {::_pbi::TcParser::MiniParse, {}},
+      {::_pbi::TcParser::FastUnknown, {0, ::uint16_t{0}}},
       // optional .google.protobuf.FeatureSet.FieldPresence field_presence = 1 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {
       {::_pbi::TcParser::FastEr0S1,
        {8, 0, 3,
@@ -1305,12 +1305,12 @@ constexpr FeatureSet::ParseTableT_ FeatureSet::InternalGenerateParseTable_(const
       {::_pbi::TcParser::FastEr0S1,
        {72, 8, 2,
         PROTOBUF_FIELD_OFFSET(FeatureSet, _impl_.enforce_proto_limits_)}},
-      {::_pbi::TcParser::MiniParse, {}},
-      {::_pbi::TcParser::MiniParse, {}},
-      {::_pbi::TcParser::MiniParse, {}},
-      {::_pbi::TcParser::MiniParse, {}},
-      {::_pbi::TcParser::MiniParse, {}},
-      {::_pbi::TcParser::MiniParse, {}},
+      {::_pbi::TcParser::FastUnknown, {0, ::uint16_t{0}}},
+      {::_pbi::TcParser::FastUnknown, {0, ::uint16_t{0}}},
+      {::_pbi::TcParser::FastUnknown, {0, ::uint16_t{0}}},
+      {::_pbi::TcParser::FastUnknown, {0, ::uint16_t{0}}},
+      {::_pbi::TcParser::FastUnknown, {0, ::uint16_t{0}}},
+      {::_pbi::TcParser::FastUnknown, {0, ::uint16_t{0}}},
     }}, {{
       65535, 65535
     }}, {{
@@ -1487,7 +1487,7 @@ constexpr ExtensionRangeOptions_Declaration::ParseTableT_ ExtensionRangeOptions_
       ::_pbi::TcParser::GetTable<::google::protobuf::ExtensionRangeOptions_Declaration>(),  // to_prefetch
       #endif  // PROTOBUF_PREFETCH_PARSE_TABLE
     }, {{
-      {::_pbi::TcParser::MiniParse, {}},
+      {::_pbi::TcParser::FastUnknown, {0, ::uint16_t{0}}},
       // optional int32 number = 1;
       {::_pbi::TcParser::SingularVarintNoZag1<::uint32_t, offsetof(ExtensionRangeOptions_Declaration, _impl_.number_), 2>(),
        {8, 2, 0,
@@ -1500,7 +1500,7 @@ constexpr ExtensionRangeOptions_Declaration::ParseTableT_ ExtensionRangeOptions_
       {::_pbi::TcParser::FastBS1,
        {26, 1, 0,
         PROTOBUF_FIELD_OFFSET(ExtensionRangeOptions_Declaration, _impl_.type_)}},
-      {::_pbi::TcParser::MiniParse, {}},
+      {::_pbi::TcParser::FastUnknown, {0, ::uint16_t{0}}},
       // optional bool reserved = 5;
       {::_pbi::TcParser::SingularVarintNoZag1<bool, offsetof(ExtensionRangeOptions_Declaration, _impl_.reserved_), 3>(),
        {40, 3, 0,
@@ -1509,7 +1509,7 @@ constexpr ExtensionRangeOptions_Declaration::ParseTableT_ ExtensionRangeOptions_
       {::_pbi::TcParser::SingularVarintNoZag1<bool, offsetof(ExtensionRangeOptions_Declaration, _impl_.repeated_), 4>(),
        {48, 4, 0,
         PROTOBUF_FIELD_OFFSET(ExtensionRangeOptions_Declaration, _impl_.repeated_)}},
-      {::_pbi::TcParser::MiniParse, {}},
+      {::_pbi::TcParser::FastUnknown, {0, ::uint16_t{0}}},
     }}, {{
       65535, 65535
     }}, {{
@@ -1978,7 +1978,7 @@ constexpr UninterpretedOption::ParseTableT_ UninterpretedOption::InternalGenerat
       {::_pbi::TcParser::FastBS1,
        {66, 3, 0,
         PROTOBUF_FIELD_OFFSET(UninterpretedOption, _impl_.aggregate_value_)}},
-      {::_pbi::TcParser::MiniParse, {}},
+      {::_pbi::TcParser::FastUnknown, {0, ::uint16_t{0}}},
       // repeated .google.protobuf.UninterpretedOption.NamePart name = 2;
       {::_pbi::TcParser::FastMtR1,
        {18, 0, 0,
@@ -2499,7 +2499,7 @@ constexpr FeatureSetDefaults_FeatureSetEditionDefault::ParseTableT_ FeatureSetDe
       {::_pbi::TcParser::FastMtS1,
        {42, 1, 1,
         PROTOBUF_FIELD_OFFSET(FeatureSetDefaults_FeatureSetEditionDefault, _impl_.fixed_features_)}},
-      {::_pbi::TcParser::MiniParse, {}},
+      {::_pbi::TcParser::FastUnknown, {0, ::uint16_t{0}}},
       // optional .google.protobuf.Edition edition = 3;
       {::_pbi::TcParser::FastEvS1,
        {24, 2, 2,
@@ -2664,7 +2664,7 @@ constexpr ServiceOptions::ParseTableT_ ServiceOptions::InternalGenerateParseTabl
       ::_pbi::TcParser::GetTable<::google::protobuf::ServiceOptions>(),  // to_prefetch
       #endif  // PROTOBUF_PREFETCH_PARSE_TABLE
     }, {{
-      {::_pbi::TcParser::MiniParse, {}},
+      {::_pbi::TcParser::FastUnknown, {0, ::uint16_t{0}}},
       // optional bool deprecated = 33 [default = false];
       {::_pbi::TcParser::FastV8S2,
        {648, 2, 0,
@@ -2844,12 +2844,12 @@ constexpr OneofOptions::ParseTableT_ OneofOptions::InternalGenerateParseTable_(c
       ::_pbi::TcParser::GetTable<::google::protobuf::OneofOptions>(),  // to_prefetch
       #endif  // PROTOBUF_PREFETCH_PARSE_TABLE
     }, {{
-      {::_pbi::TcParser::MiniParse, {}},
+      {::_pbi::TcParser::FastUnknown, {0, ::uint16_t{0}}},
       // optional .google.protobuf.FeatureSet features = 1;
       {::_pbi::TcParser::FastMtS1,
        {10, 1, 0,
         PROTOBUF_FIELD_OFFSET(OneofOptions, _impl_.features_)}},
-      {::_pbi::TcParser::MiniParse, {}},
+      {::_pbi::TcParser::FastUnknown, {0, ::uint16_t{0}}},
       // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
       {::_pbi::TcParser::FastMtR2,
        {16058, 0, 1,
@@ -3016,7 +3016,7 @@ constexpr MethodOptions::ParseTableT_ MethodOptions::InternalGenerateParseTable_
       ::_pbi::TcParser::GetTable<::google::protobuf::MethodOptions>(),  // to_prefetch
       #endif  // PROTOBUF_PREFETCH_PARSE_TABLE
     }, {{
-      {::_pbi::TcParser::MiniParse, {}},
+      {::_pbi::TcParser::FastUnknown, {0, ::uint16_t{0}}},
       // optional bool deprecated = 33 [default = false];
       {::_pbi::TcParser::FastV8S2,
        {648, 2, 0,
@@ -3029,9 +3029,9 @@ constexpr MethodOptions::ParseTableT_ MethodOptions::InternalGenerateParseTable_
       {::_pbi::TcParser::FastMtS2,
        {666, 1, 0,
         PROTOBUF_FIELD_OFFSET(MethodOptions, _impl_.features_)}},
-      {::_pbi::TcParser::MiniParse, {}},
-      {::_pbi::TcParser::MiniParse, {}},
-      {::_pbi::TcParser::MiniParse, {}},
+      {::_pbi::TcParser::FastUnknown, {0, ::uint16_t{0}}},
+      {::_pbi::TcParser::FastUnknown, {0, ::uint16_t{0}}},
+      {::_pbi::TcParser::FastUnknown, {0, ::uint16_t{0}}},
       // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
       {::_pbi::TcParser::FastMtR2,
        {16058, 0, 1,
@@ -3207,7 +3207,7 @@ constexpr MessageOptions::ParseTableT_ MessageOptions::InternalGenerateParseTabl
       ::_pbi::TcParser::GetTable<::google::protobuf::MessageOptions>(),  // to_prefetch
       #endif  // PROTOBUF_PREFETCH_PARSE_TABLE
     }, {{
-      {::_pbi::TcParser::MiniParse, {}},
+      {::_pbi::TcParser::FastUnknown, {0, ::uint16_t{0}}},
       // optional bool message_set_wire_format = 1 [default = false];
       {::_pbi::TcParser::SingularVarintNoZag1<bool, offsetof(MessageOptions, _impl_.message_set_wire_format_), 1>(),
        {8, 1, 0,
@@ -3224,8 +3224,8 @@ constexpr MessageOptions::ParseTableT_ MessageOptions::InternalGenerateParseTabl
       {::_pbi::TcParser::FastMtS1,
        {98, 0, 0,
         PROTOBUF_FIELD_OFFSET(MessageOptions, _impl_.features_)}},
-      {::_pbi::TcParser::MiniParse, {}},
-      {::_pbi::TcParser::MiniParse, {}},
+      {::_pbi::TcParser::FastUnknown, {0, ::uint16_t{0}}},
+      {::_pbi::TcParser::FastUnknown, {0, ::uint16_t{0}}},
       // optional bool map_entry = 7;
       {::_pbi::TcParser::SingularVarintNoZag1<bool, offsetof(MessageOptions, _impl_.map_entry_), 4>(),
        {56, 4, 0,
@@ -3407,17 +3407,17 @@ constexpr FileOptions::ParseTableT_ FileOptions::InternalGenerateParseTable_(con
       ::_pbi::TcParser::GetTable<::google::protobuf::FileOptions>(),  // to_prefetch
       #endif  // PROTOBUF_PREFETCH_PARSE_TABLE
     }, {{
-      {::_pbi::TcParser::MiniParse, {}},
+      {::_pbi::TcParser::FastUnknown, {0, ::uint16_t{0}}},
       // optional string java_package = 1;
       {::_pbi::TcParser::FastBS1,
        {10, 0, 0,
         PROTOBUF_FIELD_OFFSET(FileOptions, _impl_.java_package_)}},
-      {::_pbi::TcParser::MiniParse, {}},
-      {::_pbi::TcParser::MiniParse, {}},
-      {::_pbi::TcParser::MiniParse, {}},
-      {::_pbi::TcParser::MiniParse, {}},
-      {::_pbi::TcParser::MiniParse, {}},
-      {::_pbi::TcParser::MiniParse, {}},
+      {::_pbi::TcParser::FastUnknown, {0, ::uint16_t{0}}},
+      {::_pbi::TcParser::FastUnknown, {0, ::uint16_t{0}}},
+      {::_pbi::TcParser::FastUnknown, {0, ::uint16_t{0}}},
+      {::_pbi::TcParser::FastUnknown, {0, ::uint16_t{0}}},
+      {::_pbi::TcParser::FastUnknown, {0, ::uint16_t{0}}},
+      {::_pbi::TcParser::FastUnknown, {0, ::uint16_t{0}}},
       // optional string java_outer_classname = 8;
       {::_pbi::TcParser::FastBS1,
        {66, 1, 0,
@@ -3434,10 +3434,10 @@ constexpr FileOptions::ParseTableT_ FileOptions::InternalGenerateParseTable_(con
       {::_pbi::TcParser::FastBS1,
        {90, 2, 0,
         PROTOBUF_FIELD_OFFSET(FileOptions, _impl_.go_package_)}},
-      {::_pbi::TcParser::MiniParse, {}},
-      {::_pbi::TcParser::MiniParse, {}},
-      {::_pbi::TcParser::MiniParse, {}},
-      {::_pbi::TcParser::MiniParse, {}},
+      {::_pbi::TcParser::FastUnknown, {0, ::uint16_t{0}}},
+      {::_pbi::TcParser::FastUnknown, {0, ::uint16_t{0}}},
+      {::_pbi::TcParser::FastUnknown, {0, ::uint16_t{0}}},
+      {::_pbi::TcParser::FastUnknown, {0, ::uint16_t{0}}},
       // optional bool cc_generic_services = 16 [default = false];
       {::_pbi::TcParser::FastV8S2,
        {384, 12, 0,
@@ -3450,7 +3450,7 @@ constexpr FileOptions::ParseTableT_ FileOptions::InternalGenerateParseTable_(con
       {::_pbi::TcParser::FastV8S2,
        {400, 14, 0,
         PROTOBUF_FIELD_OFFSET(FileOptions, _impl_.py_generic_services_)}},
-      {::_pbi::TcParser::MiniParse, {}},
+      {::_pbi::TcParser::FastUnknown, {0, ::uint16_t{0}}},
       // optional bool java_generate_equals_and_hash = 20 [deprecated = true];
       {::_pbi::TcParser::FastV8S2,
        {416, 15, 0,
@@ -3459,7 +3459,7 @@ constexpr FileOptions::ParseTableT_ FileOptions::InternalGenerateParseTable_(con
       {::_pbi::TcParser::FastBS2,
        {682, 4, 0,
         PROTOBUF_FIELD_OFFSET(FileOptions, _impl_.csharp_namespace_)}},
-      {::_pbi::TcParser::MiniParse, {}},
+      {::_pbi::TcParser::FastUnknown, {0, ::uint16_t{0}}},
       // optional bool deprecated = 23 [default = false];
       {::_pbi::TcParser::FastV8S2,
        {440, 16, 0,
@@ -3472,7 +3472,7 @@ constexpr FileOptions::ParseTableT_ FileOptions::InternalGenerateParseTable_(con
       {::_pbi::TcParser::FastBS2,
        {714, 7, 0,
         PROTOBUF_FIELD_OFFSET(FileOptions, _impl_.php_namespace_)}},
-      {::_pbi::TcParser::MiniParse, {}},
+      {::_pbi::TcParser::FastUnknown, {0, ::uint16_t{0}}},
       // optional bool java_string_check_utf8 = 27 [default = false];
       {::_pbi::TcParser::FastV8S2,
        {472, 17, 0,
@@ -3485,7 +3485,7 @@ constexpr FileOptions::ParseTableT_ FileOptions::InternalGenerateParseTable_(con
       {::_pbi::TcParser::FastBS2,
        {746, 9, 0,
         PROTOBUF_FIELD_OFFSET(FileOptions, _impl_.ruby_package_)}},
-      {::_pbi::TcParser::MiniParse, {}},
+      {::_pbi::TcParser::FastUnknown, {0, ::uint16_t{0}}},
       // optional bool cc_enable_arenas = 31 [default = true, feature_support = {
       {::_pbi::TcParser::FastV8S2,
        {504, 19, 0,
@@ -3764,16 +3764,16 @@ constexpr FieldOptions::ParseTableT_ FieldOptions::InternalGenerateParseTable_(c
       {::_pbi::TcParser::FastMtR2,
        {16058, 1, 3,
         PROTOBUF_FIELD_OFFSET(FieldOptions, _impl_.uninterpreted_option_)}},
-      {::_pbi::TcParser::MiniParse, {}},
-      {::_pbi::TcParser::MiniParse, {}},
+      {::_pbi::TcParser::FastUnknown, {0, ::uint16_t{0}}},
+      {::_pbi::TcParser::FastUnknown, {0, ::uint16_t{0}}},
       // optional bool weak = 10 [default = false, deprecated = true];
       {::_pbi::TcParser::SingularVarintNoZag1<bool, offsetof(FieldOptions, _impl_.weak_), 8>(),
        {80, 8, 0,
         PROTOBUF_FIELD_OFFSET(FieldOptions, _impl_.weak_)}},
-      {::_pbi::TcParser::MiniParse, {}},
-      {::_pbi::TcParser::MiniParse, {}},
-      {::_pbi::TcParser::MiniParse, {}},
-      {::_pbi::TcParser::MiniParse, {}},
+      {::_pbi::TcParser::FastUnknown, {0, ::uint16_t{0}}},
+      {::_pbi::TcParser::FastUnknown, {0, ::uint16_t{0}}},
+      {::_pbi::TcParser::FastUnknown, {0, ::uint16_t{0}}},
+      {::_pbi::TcParser::FastUnknown, {0, ::uint16_t{0}}},
       // optional bool unverified_lazy = 15 [default = false];
       {::_pbi::TcParser::SingularVarintNoZag1<bool, offsetof(FieldOptions, _impl_.unverified_lazy_), 10>(),
        {120, 10, 0,
@@ -4166,8 +4166,8 @@ constexpr ExtensionRangeOptions::ParseTableT_ ExtensionRangeOptions::InternalGen
       ::_pbi::TcParser::GetTable<::google::protobuf::ExtensionRangeOptions>(),  // to_prefetch
       #endif  // PROTOBUF_PREFETCH_PARSE_TABLE
     }, {{
-      {::_pbi::TcParser::MiniParse, {}},
-      {::_pbi::TcParser::MiniParse, {}},
+      {::_pbi::TcParser::FastUnknown, {0, ::uint16_t{0}}},
+      {::_pbi::TcParser::FastUnknown, {0, ::uint16_t{0}}},
       // repeated .google.protobuf.ExtensionRangeOptions.Declaration declaration = 2 [retention = RETENTION_SOURCE];
       {::_pbi::TcParser::FastMtR1,
        {18, 0, 0,
@@ -4176,9 +4176,9 @@ constexpr ExtensionRangeOptions::ParseTableT_ ExtensionRangeOptions::InternalGen
       {::_pbi::TcParser::FastEr0S1,
        {24, 3, 1,
         PROTOBUF_FIELD_OFFSET(ExtensionRangeOptions, _impl_.verification_)}},
-      {::_pbi::TcParser::MiniParse, {}},
-      {::_pbi::TcParser::MiniParse, {}},
-      {::_pbi::TcParser::MiniParse, {}},
+      {::_pbi::TcParser::FastUnknown, {0, ::uint16_t{0}}},
+      {::_pbi::TcParser::FastUnknown, {0, ::uint16_t{0}}},
+      {::_pbi::TcParser::FastUnknown, {0, ::uint16_t{0}}},
       // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
       {::_pbi::TcParser::FastMtR2,
        {16058, 1, 2,
@@ -4363,7 +4363,7 @@ constexpr EnumValueOptions::ParseTableT_ EnumValueOptions::InternalGenerateParse
       ::_pbi::TcParser::GetTable<::google::protobuf::EnumValueOptions>(),  // to_prefetch
       #endif  // PROTOBUF_PREFETCH_PARSE_TABLE
     }, {{
-      {::_pbi::TcParser::MiniParse, {}},
+      {::_pbi::TcParser::FastUnknown, {0, ::uint16_t{0}}},
       // optional bool deprecated = 1 [default = false];
       {::_pbi::TcParser::SingularVarintNoZag1<bool, offsetof(EnumValueOptions, _impl_.deprecated_), 3>(),
        {8, 3, 0,
@@ -4380,8 +4380,8 @@ constexpr EnumValueOptions::ParseTableT_ EnumValueOptions::InternalGenerateParse
       {::_pbi::TcParser::FastMtS1,
        {34, 2, 1,
         PROTOBUF_FIELD_OFFSET(EnumValueOptions, _impl_.feature_support_)}},
-      {::_pbi::TcParser::MiniParse, {}},
-      {::_pbi::TcParser::MiniParse, {}},
+      {::_pbi::TcParser::FastUnknown, {0, ::uint16_t{0}}},
+      {::_pbi::TcParser::FastUnknown, {0, ::uint16_t{0}}},
       // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
       {::_pbi::TcParser::FastMtR2,
        {16058, 0, 2,
@@ -4562,8 +4562,8 @@ constexpr EnumOptions::ParseTableT_ EnumOptions::InternalGenerateParseTable_(con
       ::_pbi::TcParser::GetTable<::google::protobuf::EnumOptions>(),  // to_prefetch
       #endif  // PROTOBUF_PREFETCH_PARSE_TABLE
     }, {{
-      {::_pbi::TcParser::MiniParse, {}},
-      {::_pbi::TcParser::MiniParse, {}},
+      {::_pbi::TcParser::FastUnknown, {0, ::uint16_t{0}}},
+      {::_pbi::TcParser::FastUnknown, {0, ::uint16_t{0}}},
       // optional bool allow_alias = 2;
       {::_pbi::TcParser::SingularVarintNoZag1<bool, offsetof(EnumOptions, _impl_.allow_alias_), 1>(),
        {16, 1, 0,
@@ -4572,8 +4572,8 @@ constexpr EnumOptions::ParseTableT_ EnumOptions::InternalGenerateParseTable_(con
       {::_pbi::TcParser::SingularVarintNoZag1<bool, offsetof(EnumOptions, _impl_.deprecated_), 2>(),
        {24, 2, 0,
         PROTOBUF_FIELD_OFFSET(EnumOptions, _impl_.deprecated_)}},
-      {::_pbi::TcParser::MiniParse, {}},
-      {::_pbi::TcParser::MiniParse, {}},
+      {::_pbi::TcParser::FastUnknown, {0, ::uint16_t{0}}},
+      {::_pbi::TcParser::FastUnknown, {0, ::uint16_t{0}}},
       // optional bool deprecated_legacy_json_field_conflicts = 6 [deprecated = true];
       {::_pbi::TcParser::SingularVarintNoZag1<bool, offsetof(EnumOptions, _impl_.deprecated_legacy_json_field_conflicts_), 3>(),
        {48, 3, 0,
@@ -4914,7 +4914,7 @@ constexpr MethodDescriptorProto::ParseTableT_ MethodDescriptorProto::InternalGen
       ::_pbi::TcParser::GetTable<::google::protobuf::MethodDescriptorProto>(),  // to_prefetch
       #endif  // PROTOBUF_PREFETCH_PARSE_TABLE
     }, {{
-      {::_pbi::TcParser::MiniParse, {}},
+      {::_pbi::TcParser::FastUnknown, {0, ::uint16_t{0}}},
       // optional string name = 1;
       {::_pbi::TcParser::FastBS1,
        {10, 0, 0,
@@ -4939,7 +4939,7 @@ constexpr MethodDescriptorProto::ParseTableT_ MethodDescriptorProto::InternalGen
       {::_pbi::TcParser::SingularVarintNoZag1<bool, offsetof(MethodDescriptorProto, _impl_.server_streaming_), 5>(),
        {48, 5, 0,
         PROTOBUF_FIELD_OFFSET(MethodDescriptorProto, _impl_.server_streaming_)}},
-      {::_pbi::TcParser::MiniParse, {}},
+      {::_pbi::TcParser::FastUnknown, {0, ::uint16_t{0}}},
     }}, {{
       65535, 65535
     }}, {{
@@ -5109,7 +5109,7 @@ constexpr FieldDescriptorProto::ParseTableT_ FieldDescriptorProto::InternalGener
       ::_pbi::TcParser::GetTable<::google::protobuf::FieldDescriptorProto>(),  // to_prefetch
       #endif  // PROTOBUF_PREFETCH_PARSE_TABLE
     }, {{
-      {::_pbi::TcParser::MiniParse, {}},
+      {::_pbi::TcParser::FastUnknown, {0, ::uint16_t{0}}},
       // optional string name = 1;
       {::_pbi::TcParser::FastBS1,
        {10, 0, 0,
@@ -5150,11 +5150,11 @@ constexpr FieldDescriptorProto::ParseTableT_ FieldDescriptorProto::InternalGener
       {::_pbi::TcParser::FastBS1,
        {82, 4, 0,
         PROTOBUF_FIELD_OFFSET(FieldDescriptorProto, _impl_.json_name_)}},
-      {::_pbi::TcParser::MiniParse, {}},
-      {::_pbi::TcParser::MiniParse, {}},
-      {::_pbi::TcParser::MiniParse, {}},
-      {::_pbi::TcParser::MiniParse, {}},
-      {::_pbi::TcParser::MiniParse, {}},
+      {::_pbi::TcParser::FastUnknown, {0, ::uint16_t{0}}},
+      {::_pbi::TcParser::FastUnknown, {0, ::uint16_t{0}}},
+      {::_pbi::TcParser::FastUnknown, {0, ::uint16_t{0}}},
+      {::_pbi::TcParser::FastUnknown, {0, ::uint16_t{0}}},
+      {::_pbi::TcParser::FastUnknown, {0, ::uint16_t{0}}},
     }}, {{
       65535, 65535
     }}, {{
@@ -5345,7 +5345,7 @@ constexpr EnumValueDescriptorProto::ParseTableT_ EnumValueDescriptorProto::Inter
       ::_pbi::TcParser::GetTable<::google::protobuf::EnumValueDescriptorProto>(),  // to_prefetch
       #endif  // PROTOBUF_PREFETCH_PARSE_TABLE
     }, {{
-      {::_pbi::TcParser::MiniParse, {}},
+      {::_pbi::TcParser::FastUnknown, {0, ::uint16_t{0}}},
       // optional string name = 1;
       {::_pbi::TcParser::FastBS1,
        {10, 0, 0,
@@ -5514,7 +5514,7 @@ constexpr DescriptorProto_ExtensionRange::ParseTableT_ DescriptorProto_Extension
       ::_pbi::TcParser::GetTable<::google::protobuf::DescriptorProto_ExtensionRange>(),  // to_prefetch
       #endif  // PROTOBUF_PREFETCH_PARSE_TABLE
     }, {{
-      {::_pbi::TcParser::MiniParse, {}},
+      {::_pbi::TcParser::FastUnknown, {0, ::uint16_t{0}}},
       // optional int32 start = 1;
       {::_pbi::TcParser::SingularVarintNoZag1<::uint32_t, offsetof(DescriptorProto_ExtensionRange, _impl_.start_), 1>(),
        {8, 1, 0,
@@ -5681,7 +5681,7 @@ constexpr ServiceDescriptorProto::ParseTableT_ ServiceDescriptorProto::InternalG
       ::_pbi::TcParser::GetTable<::google::protobuf::ServiceDescriptorProto>(),  // to_prefetch
       #endif  // PROTOBUF_PREFETCH_PARSE_TABLE
     }, {{
-      {::_pbi::TcParser::MiniParse, {}},
+      {::_pbi::TcParser::FastUnknown, {0, ::uint16_t{0}}},
       // optional string name = 1;
       {::_pbi::TcParser::FastBS1,
        {10, 1, 0,
@@ -5859,7 +5859,7 @@ constexpr EnumDescriptorProto::ParseTableT_ EnumDescriptorProto::InternalGenerat
       ::_pbi::TcParser::GetTable<::google::protobuf::EnumDescriptorProto>(),  // to_prefetch
       #endif  // PROTOBUF_PREFETCH_PARSE_TABLE
     }, {{
-      {::_pbi::TcParser::MiniParse, {}},
+      {::_pbi::TcParser::FastUnknown, {0, ::uint16_t{0}}},
       // optional string name = 1;
       {::_pbi::TcParser::FastBS1,
        {10, 3, 0,
@@ -5884,7 +5884,7 @@ constexpr EnumDescriptorProto::ParseTableT_ EnumDescriptorProto::InternalGenerat
       {::_pbi::TcParser::FastEr0S1,
        {48, 5, 2,
         PROTOBUF_FIELD_OFFSET(EnumDescriptorProto, _impl_.visibility_)}},
-      {::_pbi::TcParser::MiniParse, {}},
+      {::_pbi::TcParser::FastUnknown, {0, ::uint16_t{0}}},
     }}, {{
       65535, 65535
     }}, {{
@@ -6073,7 +6073,7 @@ constexpr DescriptorProto::ParseTableT_ DescriptorProto::InternalGenerateParseTa
       ::_pbi::TcParser::GetTable<::google::protobuf::DescriptorProto>(),  // to_prefetch
       #endif  // PROTOBUF_PREFETCH_PARSE_TABLE
     }, {{
-      {::_pbi::TcParser::MiniParse, {}},
+      {::_pbi::TcParser::FastUnknown, {0, ::uint16_t{0}}},
       // optional string name = 1;
       {::_pbi::TcParser::FastBS1,
        {10, 8, 0,
@@ -6118,10 +6118,10 @@ constexpr DescriptorProto::ParseTableT_ DescriptorProto::InternalGenerateParseTa
       {::_pbi::TcParser::FastEr0S1,
        {88, 10, 2,
         PROTOBUF_FIELD_OFFSET(DescriptorProto, _impl_.visibility_)}},
-      {::_pbi::TcParser::MiniParse, {}},
-      {::_pbi::TcParser::MiniParse, {}},
-      {::_pbi::TcParser::MiniParse, {}},
-      {::_pbi::TcParser::MiniParse, {}},
+      {::_pbi::TcParser::FastUnknown, {0, ::uint16_t{0}}},
+      {::_pbi::TcParser::FastUnknown, {0, ::uint16_t{0}}},
+      {::_pbi::TcParser::FastUnknown, {0, ::uint16_t{0}}},
+      {::_pbi::TcParser::FastUnknown, {0, ::uint16_t{0}}},
     }}, {{
       65535, 65535
     }}, {{
@@ -6370,7 +6370,7 @@ constexpr FileDescriptorProto::ParseTableT_ FileDescriptorProto::InternalGenerat
       ::_pbi::TcParser::GetTable<::google::protobuf::FileDescriptorProto>(),  // to_prefetch
       #endif  // PROTOBUF_PREFETCH_PARSE_TABLE
     }, {{
-      {::_pbi::TcParser::MiniParse, {}},
+      {::_pbi::TcParser::FastUnknown, {0, ::uint16_t{0}}},
       // optional string name = 1;
       {::_pbi::TcParser::FastBS1,
        {10, 8, 0,
@@ -6419,7 +6419,7 @@ constexpr FileDescriptorProto::ParseTableT_ FileDescriptorProto::InternalGenerat
       {::_pbi::TcParser::FastBS1,
        {98, 10, 0,
         PROTOBUF_FIELD_OFFSET(FileDescriptorProto, _impl_.syntax_)}},
-      {::_pbi::TcParser::MiniParse, {}},
+      {::_pbi::TcParser::FastUnknown, {0, ::uint16_t{0}}},
       // optional .google.protobuf.Edition edition = 14;
       {::_pbi::TcParser::FastEvS1,
        {112, 13, 6,

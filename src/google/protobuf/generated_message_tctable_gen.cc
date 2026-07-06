@@ -966,6 +966,37 @@ TailCallTableInfo::TailCallTableInfo(
     important_fields |= important_fields >> num_fast_fields;
   }
 
+  uint32_t occupied_slots = 0;
+  for (const auto& field : ordered_fields) {
+    uint32_t fast_idx;
+    if (field.field->number() < 1 << 11) {
+      const uint32_t tag = GetRecodedTagForFastParsing(field.field);
+      fast_idx = TcParseTableBase::TagToIdx(tag, num_fast_fields);
+    } else {
+      uint32_t fnum = field.field->number();
+      fast_idx = (16 + (fnum & 15)) & (num_fast_fields - 1);
+    }
+    occupied_slots |= uint32_t{1} << fast_idx;
+  }
+  if (end_group_tag.has_value()) {
+    uint32_t fast_idx;
+    if ((*end_group_tag >> 14) == 0) {
+      const uint32_t tag =
+          TcParseTableBase::RecodeTagForFastParsing(*end_group_tag);
+      fast_idx = TcParseTableBase::TagToIdx(tag, num_fast_fields);
+    } else {
+      uint32_t fnum = *end_group_tag >> 3;
+      fast_idx = (16 + (fnum & 15)) & (num_fast_fields - 1);
+    }
+    occupied_slots |= uint32_t{1} << fast_idx;
+  }
+  for (size_t s = 0; s < num_fast_fields; ++s) {
+    if (fast_fields[s].is_empty() && ((occupied_slots >> s) & 1) == 0) {
+      fast_fields[s].data = TailCallTableInfo::FastFieldInfo::NonField{
+          TcParseFunction::kFastUnknown, 0, 0};
+    }
+  }
+
   fast_path_fields.assign(fast_fields, fast_fields + num_fast_fields);
   table_size_log2 = absl::bit_width(num_fast_fields) - 1;
 

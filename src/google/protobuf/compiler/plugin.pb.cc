@@ -405,7 +405,7 @@ constexpr CodeGeneratorResponse::ParseTableT_ CodeGeneratorResponse::InternalGen
       ::_pbi::TcParser::GetTable<::google::protobuf::compiler::CodeGeneratorResponse>(),  // to_prefetch
       #endif  // PROTOBUF_PREFETCH_PARSE_TABLE
     }, {{
-      {::_pbi::TcParser::MiniParse, {}},
+      {::_pbi::TcParser::FastUnknown, {0, ::uint16_t{0}}},
       // optional string error = 1;
       {::_pbi::TcParser::FastBS1,
        {10, 1, 0,
@@ -422,8 +422,8 @@ constexpr CodeGeneratorResponse::ParseTableT_ CodeGeneratorResponse::InternalGen
       {::_pbi::TcParser::SingularVarintNoZag1<::uint32_t, offsetof(CodeGeneratorResponse, _impl_.maximum_edition_), 4>(),
        {32, 4, 0,
         PROTOBUF_FIELD_OFFSET(CodeGeneratorResponse, _impl_.maximum_edition_)}},
-      {::_pbi::TcParser::MiniParse, {}},
-      {::_pbi::TcParser::MiniParse, {}},
+      {::_pbi::TcParser::FastUnknown, {0, ::uint16_t{0}}},
+      {::_pbi::TcParser::FastUnknown, {0, ::uint16_t{0}}},
       // repeated .google.protobuf.compiler.CodeGeneratorResponse.File file = 15;
       {::_pbi::TcParser::FastMtR1,
        {122, 0, 0,
@@ -588,7 +588,7 @@ constexpr CodeGeneratorRequest::ParseTableT_ CodeGeneratorRequest::InternalGener
       ::_pbi::TcParser::GetTable<::google::protobuf::compiler::CodeGeneratorRequest>(),  // to_prefetch
       #endif  // PROTOBUF_PREFETCH_PARSE_TABLE
     }, {{
-      {::_pbi::TcParser::MiniParse, {}},
+      {::_pbi::TcParser::FastUnknown, {0, ::uint16_t{0}}},
       // repeated string file_to_generate = 1;
       {::_pbi::TcParser::FastBR1,
        {10, 0, 0,
@@ -601,9 +601,9 @@ constexpr CodeGeneratorRequest::ParseTableT_ CodeGeneratorRequest::InternalGener
       {::_pbi::TcParser::FastMtS1,
        {26, 3, 0,
         PROTOBUF_FIELD_OFFSET(CodeGeneratorRequest, _impl_.compiler_version_)}},
-      {::_pbi::TcParser::MiniParse, {}},
-      {::_pbi::TcParser::MiniParse, {}},
-      {::_pbi::TcParser::MiniParse, {}},
+      {::_pbi::TcParser::FastUnknown, {0, ::uint16_t{0}}},
+      {::_pbi::TcParser::FastUnknown, {0, ::uint16_t{0}}},
+      {::_pbi::TcParser::FastUnknown, {0, ::uint16_t{0}}},
       // repeated .google.protobuf.FileDescriptorProto proto_file = 15;
       {::_pbi::TcParser::FastMtR1,
        {122, 1, 1,

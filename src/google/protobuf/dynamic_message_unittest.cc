@@ -272,6 +272,92 @@ TEST(DynamicMessageTest, IncompatibleFastFieldsAreRejected) {
   EXPECT_EQ(serialized, msg->SerializeAsString());
 }
 
+TEST(DynamicMessageTest, EmptyFastSlotsUseFastUnknown) {
+  DescriptorPool pool;
+  DynamicMessageFactory factory(&pool);
+  FileDescriptorProto file_proto;
+  file_proto.set_name("test_unknown.proto");
+  file_proto.set_edition(Edition::EDITION_2024);
+
+  // Message with only fields 2 and 4.
+  auto* desc_proto = file_proto.add_message_type();
+  desc_proto->set_name("TestUnknownMessage");
+  auto add_field = [](DescriptorProto* proto, absl::string_view name,
+                      int number, auto type) {
+    auto* field = proto->add_field();
+    field->set_name(name);
+    field->set_number(number);
+    field->set_type(type);
+    return field;
+  };
+  add_field(desc_proto, "field_2", 2, FieldDescriptorProto::TYPE_INT64);
+  add_field(desc_proto, "field_4", 4, FieldDescriptorProto::TYPE_INT64);
+
+  // Full message with fields 1, 2, 3, 4, 5.
+  auto* full_proto = file_proto.add_message_type();
+  full_proto->set_name("TestFullMessage");
+  add_field(full_proto, "field_1", 1, FieldDescriptorProto::TYPE_INT64);
+  add_field(full_proto, "field_2", 2, FieldDescriptorProto::TYPE_INT64);
+  add_field(full_proto, "field_3", 3, FieldDescriptorProto::TYPE_INT64);
+  add_field(full_proto, "field_4", 4, FieldDescriptorProto::TYPE_INT64);
+  add_field(full_proto, "field_5", 5, FieldDescriptorProto::TYPE_INT64);
+
+  auto* file = pool.BuildFile(file_proto);
+  ASSERT_NE(file, nullptr);
+  auto* desc = file->message_type(0);
+  auto* full_desc = file->message_type(1);
+  auto* prototype = factory.GetPrototype(desc);
+  auto* full_prototype = factory.GetPrototype(full_desc);
+
+  struct Robber : MessageLite {
+    using MessageLite::GetTcParseTable;
+  };
+  const auto* table = (prototype->*&Robber::GetTcParseTable)();
+
+  // For 2 fields (2 and 4), fast table size is 4 (fast_idx_mask is (4-1)*8 =
+  // 24).
+  ASSERT_EQ(table->fast_idx_mask, 24);
+
+  // Field 4 -> slot 0. Field 2 -> slot 2.
+  // Slots 1 and 3 are empty and no valid field hashes to them.
+  EXPECT_EQ(table->fast_entry(1)->target(),
+            static_cast<internal::TailCallParseFunc>(
+                &internal::TcParser::FastUnknown));
+  EXPECT_EQ(table->fast_entry(3)->target(),
+            static_cast<internal::TailCallParseFunc>(
+                &internal::TcParser::FastUnknown));
+
+  std::unique_ptr<Message> full_msg(full_prototype->New());
+  auto* full_ref = full_msg->GetReflection();
+  full_ref->SetInt64(full_msg.get(), full_desc->FindFieldByName("field_1"),
+                     100);
+  full_ref->SetInt64(full_msg.get(), full_desc->FindFieldByName("field_2"),
+                     200);
+  full_ref->SetInt64(full_msg.get(), full_desc->FindFieldByName("field_3"),
+                     300);
+  full_ref->SetInt64(full_msg.get(), full_desc->FindFieldByName("field_4"),
+                     400);
+  full_ref->SetInt64(full_msg.get(), full_desc->FindFieldByName("field_5"),
+                     500);
+
+  std::string input = full_msg->SerializeAsString();
+  std::unique_ptr<Message> msg(prototype->New());
+  ASSERT_TRUE(msg->ParseFromString(input));
+
+  auto* ref = msg->GetReflection();
+  EXPECT_EQ(ref->GetInt64(*msg, desc->FindFieldByName("field_2")), 200);
+  EXPECT_EQ(ref->GetInt64(*msg, desc->FindFieldByName("field_4")), 400);
+
+  const auto& unknown_fields = ref->GetUnknownFields(*msg);
+  ASSERT_EQ(unknown_fields.field_count(), 3);
+  EXPECT_EQ(unknown_fields.field(0).number(), 1);
+  EXPECT_EQ(unknown_fields.field(0).varint(), 100);
+  EXPECT_EQ(unknown_fields.field(1).number(), 3);
+  EXPECT_EQ(unknown_fields.field(1).varint(), 300);
+  EXPECT_EQ(unknown_fields.field(2).number(), 5);
+  EXPECT_EQ(unknown_fields.field(2).varint(), 500);
+}
+
 class DynamicMessageTest
     : public ::testing::TestWithParam<std::tuple<bool, bool>> {
  protected:

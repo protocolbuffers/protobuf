@@ -3375,6 +3375,17 @@ const char* TcParser::FastMiniParse2(PROTOBUF_TC_PARAM_DECL) {
   PROTOBUF_MUSTTAIL return FastMpImpl<uint16_t>(PROTOBUF_TC_PARAM_PASS);
 }
 
+const char* TcParser::FastUnknown(PROTOBUF_TC_PARAM_DECL) {
+  PROTOBUF_DEBUG_COUNTER("TcParser.FastUnknown").Inc();
+  uint32_t tag;
+  ptr = ReadTagInlined(ptr, &tag);
+  if (ABSL_PREDICT_FALSE(ptr == nullptr)) {
+    PROTOBUF_MUSTTAIL return Error(PROTOBUF_TC_PARAM_NO_DATA_PASS);
+  }
+  data.data = tag;
+  PROTOBUF_MUSTTAIL return table->fallback(PROTOBUF_TC_PARAM_PASS);
+}
+
 }  // namespace internal
 }  // namespace protobuf
 }  // namespace google

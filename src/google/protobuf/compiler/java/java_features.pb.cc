@@ -61,7 +61,7 @@ constexpr JavaFeatures_NestInFileClassFeature::ParseTableT_ JavaFeatures_NestInF
       ::_pbi::TcParser::GetTable<::pb::JavaFeatures_NestInFileClassFeature>(),  // to_prefetch
       #endif  // PROTOBUF_PREFETCH_PARSE_TABLE
     }, {{
-      {::_pbi::TcParser::MiniParse, {}},
+      {::_pbi::TcParser::FastUnknown, {0, ::uint16_t{0}}},
     }}, {{
       65535, 65535
     }}, // no field_entries, or aux_entries
@@ -187,7 +187,7 @@ constexpr JavaFeatures::ParseTableT_ JavaFeatures::InternalGenerateParseTable_(c
       ::_pbi::TcParser::GetTable<::pb::JavaFeatures>(),  // to_prefetch
       #endif  // PROTOBUF_PREFETCH_PARSE_TABLE
     }, {{
-      {::_pbi::TcParser::MiniParse, {}},
+      {::_pbi::TcParser::FastUnknown, {0, ::uint16_t{0}}},
       // optional bool legacy_closed_enum = 1 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {
       {::_pbi::TcParser::SingularVarintNoZag1<bool, offsetof(JavaFeatures, _impl_.legacy_closed_enum_), 1>(),
        {8, 1, 0,
@@ -208,8 +208,8 @@ constexpr JavaFeatures::ParseTableT_ JavaFeatures::InternalGenerateParseTable_(c
       {::_pbi::TcParser::FastEr0S1,
        {40, 4, 3,
         PROTOBUF_FIELD_OFFSET(JavaFeatures, _impl_.nest_in_file_class_)}},
-      {::_pbi::TcParser::MiniParse, {}},
-      {::_pbi::TcParser::MiniParse, {}},
+      {::_pbi::TcParser::FastUnknown, {0, ::uint16_t{0}}},
+      {::_pbi::TcParser::FastUnknown, {0, ::uint16_t{0}}},
     }}, {{
       65535, 65535
     }}, {{

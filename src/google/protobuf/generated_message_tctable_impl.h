@@ -365,6 +365,7 @@ inline void AlignFail(std::integral_constant<size_t, 1>,
   /* These functions have the FastMp function ABI */              \
   PROTOBUF_TC_PARSE_FUNCTION_X(FastMiniParse1)                    \
   PROTOBUF_TC_PARSE_FUNCTION_X(FastMiniParse2)                    \
+  PROTOBUF_TC_PARSE_FUNCTION_X(FastUnknown)                       \
   /* These functions have the fallback ABI */                     \
   PROTOBUF_TC_PARSE_FUNCTION_X(GenericFallback)                   \
   PROTOBUF_TC_PARSE_FUNCTION_X(GenericFallbackLite)               \
@@ -844,6 +845,8 @@ class PROTOBUF_EXPORT TcParser final {
   PROTOBUF_NOINLINE PROTOBUF_CC static const char* FastMiniParse1(
       PROTOBUF_TC_PARAM_DECL);
   PROTOBUF_NOINLINE PROTOBUF_CC static const char* FastMiniParse2(
+      PROTOBUF_TC_PARAM_DECL);
+  PROTOBUF_NOINLINE PROTOBUF_CC static const char* FastUnknown(
       PROTOBUF_TC_PARAM_DECL);
 
   // For `map` mini parsing generate a type card for the key/value.
