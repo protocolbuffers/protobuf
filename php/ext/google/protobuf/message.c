@@ -1395,6 +1395,11 @@ PHP_METHOD(google_protobuf_Timestamp, toDateTime) {
   upb_MessageValue seconds = Message_getval(intern, "seconds");
   upb_MessageValue nanos = Message_getval(intern, "nanos");
 
+  if (nanos.int32_val < 0 || nanos.int32_val >= 1000000000) {
+    zend_error(E_ERROR, "Invalid nanos value in Timestamp.");
+    return;
+  }
+
   // Get formatted time string.
   char formatted_time[32];
   snprintf(formatted_time, sizeof(formatted_time), "%" PRId64 ".%06" PRId32,
@@ -1406,6 +1411,7 @@ PHP_METHOD(google_protobuf_Timestamp, toDateTime) {
   zval format_string;
   zval formatted_time_php;
 
+  ZVAL_UNDEF(&datetime);
   ZVAL_STRING(&function_name, "date_create_from_format");
   ZVAL_STRING(&format_string, "U.u");
   ZVAL_STRING(&formatted_time_php, formatted_time);
@@ -1415,15 +1421,21 @@ PHP_METHOD(google_protobuf_Timestamp, toDateTime) {
       formatted_time_php,
   };
 
-  if (call_user_function(EG(function_table), NULL, &function_name, &datetime, 2,
-                         params) == FAILURE) {
-    zend_error(E_ERROR, "Cannot create DateTime.");
-    return;
-  }
+  bool success = call_user_function(EG(function_table), NULL, &function_name,
+                                    &datetime, 2, params) != FAILURE;
 
   zval_dtor(&function_name);
   zval_dtor(&format_string);
   zval_dtor(&formatted_time_php);
+
+  // call_user_function returning success only indicates that the function
+  // was successfully invoked. date_create_from_format returns false (rather
+  // than throwing an exception) on parse failure which will result in
+  // `datetime`Z_TYPE(datetime) being a boolean instead of an object.
+  if (!success || Z_TYPE(datetime) != IS_OBJECT) {
+    zend_error(E_ERROR, "Cannot create DateTime.");
+    return;
+  }
 
   ZVAL_OBJ(return_value, Z_OBJ(datetime));
 }

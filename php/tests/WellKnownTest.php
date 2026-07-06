@@ -356,6 +356,16 @@ class WellKnownTest extends TestBase {
         $this->assertSame($from->format('u'), $to->format('u'));
     }
 
+    public function testTimestampNegativeNanos()
+    {
+        $this->expectException(\Throwable::class);
+
+        $timestamp = new Timestamp();
+        $timestamp->setSeconds(1000);
+        $timestamp->setNanos(-1000000);
+        $timestamp->toDateTime();
+    }
+
     public function testType()
     {
         $m = new Type();
