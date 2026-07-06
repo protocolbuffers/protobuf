@@ -110,3 +110,9 @@ message GoFeatures {
     }
   ];
 }
+
+
+// Dummy message to trigger inclusion presubmit checks.
+message DummyPresubmitMessageOnly {
+  int32 dummy_field_to_trigger_presubmits = 1;
+}
