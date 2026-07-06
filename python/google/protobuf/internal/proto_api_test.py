@@ -1,8 +1,17 @@
 """Exercises proto_api.h. Most of the code is in proto_api_test.cc."""
 
+import os
+import subprocess
+import sys
+
 from google.protobuf.internal import proto_api_test_ext
 from google3.testing.pybase import unittest
 from google.protobuf import unittest_pb2
+
+# Check if we should trigger the death test before running tests.
+if os.environ.get('DEATH_TEST_TRIGGER_CRASH') == '1':
+  proto_api_test_ext.trigger_descriptor_pool_destruction_crash()
+  sys.exit(1)
 
 
 class ProtoApiTest(unittest.TestCase):
@@ -36,6 +45,24 @@ class ProtoApiTest(unittest.TestCase):
     result = proto_api_test_ext.create_dynamic_pool_message()
     self.assertEqual(result.DESCRIPTOR.full_name, 'test_package.MyMessage')
     self.assertEqual(result.my_field, 42)
+
+  def test_descriptor_pool_destruction_crash(self):
+
+    # Re-run death test with DEATH_TEST_TRIGGER_CRASH=1 in env.
+    env = dict(os.environ)
+    env['DEATH_TEST_TRIGGER_CRASH'] = '1'
+
+    cmd = [sys.argv[0]]
+    process = subprocess.Popen(
+        cmd, env=env, stdout=subprocess.PIPE, stderr=subprocess.PIPE
+    )
+    _, stderr = process.communicate()
+
+    self.assertNotEqual(process.returncode, 0)
+    self.assertIn(
+        b'DescriptorPool destroyed while Python still holds a reference',
+        stderr,
+    )
 
 
 if __name__ == '__main__':

@@ -128,6 +128,7 @@ class Reflection;
 // Defined in descriptor.cc
 namespace internal {
 class DescriptorBuilder;
+struct DescriptorPoolPythonRefCountHelper;
 }
 class FileDescriptorTables;
 
@@ -2872,6 +2873,25 @@ class PROTOBUF_EXPORT DescriptorPool {
   bool ResolvesFeaturesForImpl(int extension_number) const;
 
   const FeatureSetDefaults& GetFeatureSetDefaults() const;
+
+#ifndef SWIG
+  // Tracks the number of legacy, non-owning Python wrapper objects (created via
+  // the deprecated raw-pointer DescriptorPool::FromPool API) that reference
+  // this C++ pool. Unlike shared/unique ownership APIs which manage lifetime
+  // via std::shared_ptr, these legacy wrappers hold a raw pointer with a custom
+  // deleter that decrements this count. If this pool is destroyed while this
+  // count is > 0, those Python wrappers will be left with dangling pointers,
+  // in which case ~DescriptorPool() aborts (FATAL) if this count is non-zero.
+  mutable std::atomic<size_t> python_ref_count_{0};
+  void IncrementPythonRefCount() const {
+    python_ref_count_.fetch_add(1, std::memory_order_relaxed);
+  }
+  void DecrementPythonRefCount() const {
+    python_ref_count_.fetch_sub(1, std::memory_order_relaxed);
+  }
+
+  friend internal::DescriptorPoolPythonRefCountHelper;
+#endif
 };
 
 

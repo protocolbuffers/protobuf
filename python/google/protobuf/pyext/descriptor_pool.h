@@ -135,6 +135,22 @@ const DescriptorPool* PyDescriptorPool_AsPool(PyObject* pool);
 bool InitDescriptorPool();
 
 }  // namespace python
+
+namespace internal {
+struct DescriptorPoolPythonRefCountHelper {
+  static void Increment(const DescriptorPool* pool) {
+    if (pool != nullptr) {
+      pool->IncrementPythonRefCount();
+    }
+  }
+  static void Decrement(const DescriptorPool* pool) {
+    if (pool != nullptr) {
+      pool->DecrementPythonRefCount();
+    }
+  }
+};
+}  // namespace internal
+
 }  // namespace protobuf
 }  // namespace google
 

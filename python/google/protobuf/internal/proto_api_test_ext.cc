@@ -105,27 +105,29 @@ auto ReprDynamicMessage(int value) {
   }
 
   // Create the Python DescriptorPool...
-  auto py_pool =
-      py::reinterpret_steal<py::object>(api->DescriptorPool_FromPool(&pool));
-  if (!py_pool) {
-    throw py::error_already_set();
-  }
-
-  // ... And now the API Can use it to create the messages.
   std::string result_string;
   {
-    auto py_msg =
-        py::reinterpret_steal<py::object>(api->NewMessage(descriptor, nullptr));
-    if (!py_msg) {
+    auto py_pool =
+        py::reinterpret_steal<py::object>(api->DescriptorPool_FromPool(&pool));
+    if (!py_pool) {
       throw py::error_already_set();
     }
 
-    py_msg = py::reinterpret_steal<py::object>(
-        api->NewMessageOwnedExternally(msg.get(), nullptr));
-    if (!py_msg) {
-      throw py::error_already_set();
+    // ... And now the API Can use it to create the messages.
+    {
+      auto py_msg = py::reinterpret_steal<py::object>(
+          api->NewMessage(descriptor, nullptr));
+      if (!py_msg) {
+        throw py::error_already_set();
+      }
+
+      py_msg = py::reinterpret_steal<py::object>(
+          api->NewMessageOwnedExternally(msg.get(), nullptr));
+      if (!py_msg) {
+        throw py::error_already_set();
+      }
+      result_string = py::repr(py_msg);
     }
-    result_string = py::repr(py_msg);
   }
 
   // The code above is dangerous! It relies on the C++ DescriptorPool being
@@ -304,6 +306,18 @@ py::object CreateDynamicPoolMessage() {
   return py_msg;
 }
 
+void TriggerDescriptorPoolDestructionCrash() {
+  const PyProto_API* api = GetProtoApi();
+  DescriptorPool pool;
+  PyObject* py_pool = api->DescriptorPool_FromPool(&pool);
+  if (!py_pool) {
+    throw py::error_already_set();
+  }
+  // Leak py_pool to keep the wrapper alive.
+  // When this function exits, `pool` is destroyed, but `py_pool` wrapper
+  // still exists, triggering FATAL in ~DescriptorPool.
+}
+
 PYBIND11_MODULE(proto_api_test_ext, m) {
   m.def("get_const_message", &GetConstMessage);
   m.def("set_message_field_with_mutator", &SetMessageFieldWithMutator);
@@ -312,6 +326,8 @@ PYBIND11_MODULE(proto_api_test_ext, m) {
   m.def("repr_dynamic_message_shared_pool_and_db",
         &ReprDynamicMessageSharedPoolAndDb);
   m.def("create_dynamic_pool_message", &CreateDynamicPoolMessage);
+  m.def("trigger_descriptor_pool_destruction_crash",
+        &TriggerDescriptorPoolDestructionCrash);
 }
 
 }  // namespace python

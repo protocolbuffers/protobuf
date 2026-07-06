@@ -53,7 +53,7 @@ static absl::flat_hash_map<const DescriptorPool*, PyDescriptorPool*>*
 
 static FreeThreadingMutex descriptor_pool_map_mutex(absl::kConstInit);
 
-// Create a shared_ptr to the pool, with a custom deleter that does nothing.
+// Create a shared_ptr to the pool and increment the Python reference count.
 //
 // This shared pointer does not truly share ownership with the raw pointer:
 // when it's deallocated it will NOT delete the actual pool because of the empty
@@ -62,8 +62,11 @@ static FreeThreadingMutex descriptor_pool_map_mutex(absl::kConstInit);
 // fit the PyDescriptorPool structure without behavior changes.
 static std::shared_ptr<const DescriptorPool> UnsafeSharedPointerFromRaw(
     const DescriptorPool* ptr) {
-  return std::shared_ptr<const DescriptorPool>(ptr,
-                                               [](const DescriptorPool*) {});
+  internal::DescriptorPoolPythonRefCountHelper::Increment(ptr);
+  return std::shared_ptr<const DescriptorPool>(
+      ptr, [](const DescriptorPool* p) {
+        internal::DescriptorPoolPythonRefCountHelper::Decrement(p);
+      });
 }
 
 namespace cdescriptor_pool {
