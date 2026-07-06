@@ -27,6 +27,7 @@
 #include "upb/message/map.h"
 #include "upb/message/message.h"
 #include "upb/test/test.upb.h"
+#include "upb/test/test.upb_minitable.h"
 #include "upb/wire/decode.h"
 #include "upb/wire/encode.h"
 
@@ -915,7 +916,7 @@ TEST(GeneratedCode, Maps) {
   key.str_val = test_str_view;
   val.str_val = test_str_view2;
 
-  upb_Map_Set(sb, key, val, arena.ptr());
+  ASSERT_TRUE(upb_Map_Set(sb, key, val, arena.ptr()));
 }
 
 TEST(GeneratedCode, MapWithRequiredFields) {
@@ -932,7 +933,7 @@ TEST(GeneratedCode, MapWithRequiredFields) {
   val.msg_val =
       (const upb_Message*)upb_test_ModelWithRequiredFields_new(arena.ptr());
 
-  upb_Map_Set(im_required, key, val, arena.ptr());
+  ASSERT_TRUE(upb_Map_Set(im_required, key, val, arena.ptr()));
 
   // Serializing fails if we are checking required fields, but succeeds if we
   // don't.
@@ -979,6 +980,41 @@ TEST(GeneratedCode, ReservedNames) {
       upb_StringView_IsEqual(val, upb_test_TestReserved_serialize_ex_(msg)));
 
   upb_Arena_Free(arena);
+}
+
+TEST(GeneratedCode, OneofMessageSwitch) {
+  upb::Arena arena;
+  upb_test_OneofWithMessages* msg = upb_test_OneofWithMessages_new(arena.ptr());
+
+  // Set msg1
+  upb_test_MessageName* msg1 =
+      upb_test_OneofWithMessages_mutable_msg1(msg, arena.ptr());
+  upb_test_MessageName_set_field1(msg1, 10);
+
+  // Now parse a buffer that sets msg2.
+  upb_test_OneofWithMessages* msg_to_serialize =
+      upb_test_OneofWithMessages_new(arena.ptr());
+  upb_test_MessageName* msg2_val =
+      upb_test_OneofWithMessages_mutable_msg2(msg_to_serialize, arena.ptr());
+  upb_test_MessageName_set_field2(msg2_val, 20);
+
+  size_t size;
+  char* serialized = upb_test_OneofWithMessages_serialize(msg_to_serialize,
+                                                          arena.ptr(), &size);
+
+  // Parse into the first msg.
+  // Use a mini table to ensure we can use fasttable if enabled.
+  upb_DecodeStatus status = upb_Decode(serialized, size, (upb_Message*)msg,
+                                       &upb_0test__OneofWithMessages_msg_init,
+                                       nullptr, 0, arena.ptr());
+  ASSERT_EQ(status, kUpb_DecodeStatus_Ok);
+
+  // Now msg should have msg2 set, and msg1 should NOT be merged.
+  EXPECT_EQ(upb_test_OneofWithMessages_oneof_field_case(msg),
+            upb_test_OneofWithMessages_oneof_field_msg2);
+  const upb_test_MessageName* msg2_res = upb_test_OneofWithMessages_msg2(msg);
+  EXPECT_EQ(upb_test_MessageName_field2(msg2_res), 20);
+  EXPECT_EQ(upb_test_MessageName_field1(msg2_res), 0);
 }
 
 TEST(GeneratedCode, MutablePrefix) {

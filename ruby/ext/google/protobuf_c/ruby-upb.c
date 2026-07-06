@@ -356,21 +356,42 @@ Error, UINTPTR_MAX is undefined
 #endif
 
 #if defined(__GNUC__) || defined(__clang__)
-#define UPB_UNREACHABLE()    \
-  do {                       \
-    assert(0);               \
-    __builtin_unreachable(); \
+#define UPB_PRETTY_FUNCTION __PRETTY_FUNCTION__
+#else
+#define UPB_PRETTY_FUNCTION NULL
+#endif
+
+#ifdef __cplusplus
+    extern "C" {
+#endif
+  UPB_NORETURN void _upb_UnreachableFailure(const char* file, int line,
+                                            const char* function_name);
+#if !defined(NDEBUG)
+#define UPB_UNREACHABLE_FAILURE() \
+  _upb_UnreachableFailure(__FILE__, __LINE__, UPB_PRETTY_FUNCTION);
+#else
+#define UPB_UNREACHABLE_FAILURE()
+#endif
+#ifdef __cplusplus
+} /* extern "C" */
+#endif
+
+#if defined(__GNUC__) || defined(__clang__)
+#define UPB_UNREACHABLE()      \
+  do {                         \
+    UPB_UNREACHABLE_FAILURE(); \
+    __builtin_unreachable();   \
   } while (0)
 #elif defined(_MSC_VER)
-#define UPB_UNREACHABLE() \
-  do {                    \
-    assert(0);            \
-    __assume(0);          \
+#define UPB_UNREACHABLE()      \
+  do {                         \
+    UPB_UNREACHABLE_FAILURE(); \
+    __assume(0);               \
   } while (0)
 #else
-#define UPB_UNREACHABLE() \
-  do {                    \
-    assert(0);            \
+#define UPB_UNREACHABLE()      \
+  do {                         \
+    UPB_UNREACHABLE_FAILURE(); \
   } while (0)
 #endif
 
@@ -465,7 +486,9 @@ Error, UINTPTR_MAX is undefined
 #define UPB_ARM64_BTI_DEFAULT 0
 #endif
 
-#if (defined(__x86_64__) || defined(__aarch64__)) && \
+/* aarch64 supports big and little endian modes; fasttable performs multibyte
+ * tag loads assumes the tag of a varint is in the low bits. */
+#if (defined(__x86_64__) || defined(__AARCH64EL__)) && \
     UPB_HAS_ATTRIBUTE(preserve_none) && UPB_HAS_ATTRIBUTE(musttail)
 #define UPB_FASTTABLE_SUPPORTED 1
 #else
@@ -477,7 +500,7 @@ Error, UINTPTR_MAX is undefined
  * for example for testing or benchmarking. */
 #if defined(UPB_ENABLE_FASTTABLE)
 #if !UPB_FASTTABLE_SUPPORTED
-#error fasttable is x86-64/ARM64 only and requires preserve_none and musttail.
+#error fasttable is x86-64/ARM64le only and requires preserve_none and musttail.
 #endif
 #define UPB_FASTTABLE 1
 /* Define UPB_TRY_ENABLE_FASTTABLE to use fasttable if possible.
@@ -562,7 +585,15 @@ Error, UINTPTR_MAX is undefined
 //     }
 //   }
 
+#if defined(__GNUC__) && !defined(__clang__)
+// GCC can't handle mismatched retain attributes in the same section:
+//   https://github.com/protocolbuffers/protobuf/issues/26385
+// To work around this, we retain all linker array elements, even though this
+// effectively disables tree-shaking of unused extensions when using GCC.
+#define UPB_LINKARR_ATTR UPB_RETAIN
+#else
 #define UPB_LINKARR_ATTR
+#endif
 
 #define UPB_LINKARR_SENTINEL UPB_RETAIN __attribute__((weak, used))
 
@@ -660,10 +691,10 @@ Error, UINTPTR_MAX is undefined
  * to prevent optimizers from removing the constructor. Our solution is to
  * create a dummy exported weak symbol that prevent this stripping.
  */
-#pragma section(".CRT$XCU", long, read)
+#pragma section(".CRT$XCT", read)
 #define UPB_CONSTRUCTOR(name, unique_name)                                   \
   static void __cdecl UPB_PRIVATE(name)(void);                               \
-  __declspec(allocate(".CRT$XCU"), selectany) void(                          \
+  __declspec(allocate(".CRT$XCT"), selectany) void(                          \
       __cdecl * UPB_PRIVATE(name##_))(void) = UPB_PRIVATE(name);             \
   __declspec(selectany, dllexport) void* UPB_PRIVATE(name##_force_linkage) = \
       &UPB_PRIVATE(name##_);                                                 \
@@ -707,7 +738,7 @@ Error, UINTPTR_MAX is undefined
   __asm__(".private_extern _" #to);      \
   __asm__(".set _" #to ", _" #from);
 
-#elif defined(__ELF__)
+#elif defined(__ELF__) || defined(__wasm__)
 
 // On ELF, weak aliases work properly, so we can have all weak MiniTables point
 // to the same empty singleton MiniTable. This reduces code size if many
@@ -736,20 +767,6 @@ Error, UINTPTR_MAX is undefined
 #define UPB_WEAK_ALIAS(type, from, to) weak_alias_not_supported_on_this_platform
 #define UPB_STRONG_ALIAS(type, from, to) \
   strong_alias_not_supported_on_this_platform
-#endif
-
-// Future versions of upb will include breaking changes to some APIs.
-// This macro can be set to enable these API changes ahead of time, so that
-// user code can be updated before upgrading versions of protobuf.
-#ifdef UPB_FUTURE_BREAKING_CHANGES
-
-// Removes non-standard clamping behavior in RepeatedContainer.pop()
-// Owner: runze@
-#define UPB_FUTURE_REMOVE_POP_CLAMP 1
-
-#else
-
-#define UPB_FUTURE_REMOVE_POP_CLAMP 0
 
 #endif
 
@@ -785,8 +802,8 @@ const upb_MiniTable google__protobuf__FileDescriptorSet_msg_init = {
   "google.protobuf.FileDescriptorSet",
 #endif
   UPB_FASTTABLE_INIT({
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x000800003f00000a, &upb_DecodeFast_Message_Repeated_Tag1Byte},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
+    {0x000800003f02000a, &upb_DecodeFast_Message_Repeated_Tag1Byte},
   })
 };
 
@@ -828,21 +845,21 @@ const upb_MiniTable google__protobuf__FileDescriptorProto_msg_init = {
   "google.protobuf.FileDescriptorProto",
 #endif
   UPB_FASTTABLE_INIT({
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeUnknown},
     {0x001000000000000a, &upb_DecodeFast_Bytes_Scalar_Tag1Byte},
     {0x0020000001000012, &upb_DecodeFast_Bytes_Scalar_Tag1Byte},
     {0x004000003f00001a, &upb_DecodeFast_Bytes_Repeated_Tag1Byte},
-    {0x004800003f030022, &upb_DecodeFast_Message_Repeated_Tag1Byte},
-    {0x005000003f04002a, &upb_DecodeFast_Message_Repeated_Tag1Byte},
-    {0x005800003f050032, &upb_DecodeFast_Message_Repeated_Tag1Byte},
-    {0x006000003f06003a, &upb_DecodeFast_Message_Repeated_Tag1Byte},
-    {0x0068000002070042, &upb_DecodeFast_Message_Scalar_Tag1Byte},
-    {0x007000000308004a, &upb_DecodeFast_Message_Scalar_Tag1Byte},
+    {0x004800003f150022, &upb_DecodeFast_Message_Repeated_Tag1Byte},
+    {0x005000003f16002a, &upb_DecodeFast_Message_Repeated_Tag1Byte},
+    {0x005800003f170032, &upb_DecodeFast_Message_Repeated_Tag1Byte},
+    {0x006000003f18003a, &upb_DecodeFast_Message_Repeated_Tag1Byte},
+    {0x0068000002190042, &upb_DecodeFast_Message_Scalar_Tag1Byte},
+    {0x00700000031a004a, &upb_DecodeFast_Message_Scalar_Tag1Byte},
     {0x007800003f000050, &upb_DecodeFast_Varint32_Repeated_Tag1Byte},
     {0x008000003f000058, &upb_DecodeFast_Varint32_Repeated_Tag1Byte},
     {0x0030000004000062, &upb_DecodeFast_Bytes_Scalar_Tag1Byte},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeUnknown},
+    {0x000c0000051b0070, &upb_DecodeFast_ClosedEnum_Scalar_Tag1Byte},
     {0x008800003f00007a, &upb_DecodeFast_Bytes_Repeated_Tag1Byte},
   })
 };
@@ -884,22 +901,22 @@ const upb_MiniTable google__protobuf__DescriptorProto_msg_init = {
   "google.protobuf.DescriptorProto",
 #endif
   UPB_FASTTABLE_INIT({
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeUnknown},
     {0x001000000000000a, &upb_DecodeFast_Bytes_Scalar_Tag1Byte},
-    {0x002000003f010012, &upb_DecodeFast_Message_Repeated_Tag1Byte},
-    {0x002800003f02001a, &upb_DecodeFast_Message_Repeated_Tag1Byte},
-    {0x003000003f030022, &upb_DecodeFast_Message_Repeated_Tag1Byte},
-    {0x003800003f04002a, &upb_DecodeFast_Message_Repeated_Tag1Byte},
-    {0x004000003f050032, &upb_DecodeFast_Message_Repeated_Tag1Byte},
-    {0x004800000106003a, &upb_DecodeFast_Message_Scalar_Tag1Byte},
-    {0x005000003f070042, &upb_DecodeFast_Message_Repeated_Tag1Byte},
-    {0x005800003f08004a, &upb_DecodeFast_Message_Repeated_Tag1Byte},
+    {0x002000003f110012, &upb_DecodeFast_Message_Repeated_Tag1Byte},
+    {0x002800003f12001a, &upb_DecodeFast_Message_Repeated_Tag1Byte},
+    {0x003000003f130022, &upb_DecodeFast_Message_Repeated_Tag1Byte},
+    {0x003800003f14002a, &upb_DecodeFast_Message_Repeated_Tag1Byte},
+    {0x004000003f150032, &upb_DecodeFast_Message_Repeated_Tag1Byte},
+    {0x004800000116003a, &upb_DecodeFast_Message_Scalar_Tag1Byte},
+    {0x005000003f170042, &upb_DecodeFast_Message_Repeated_Tag1Byte},
+    {0x005800003f18004a, &upb_DecodeFast_Message_Repeated_Tag1Byte},
     {0x006000003f000052, &upb_DecodeFast_Bytes_Repeated_Tag1Byte},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
+    {0x000c000002190058, &upb_DecodeFast_ClosedEnum_Scalar_Tag1Byte},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeUnknown},
   })
 };
 
@@ -924,10 +941,10 @@ const upb_MiniTable google__protobuf__DescriptorProto__ExtensionRange_msg_init =
   "google.protobuf.DescriptorProto.ExtensionRange",
 #endif
   UPB_FASTTABLE_INIT({
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeUnknown},
     {0x000c000000000008, &upb_DecodeFast_Varint32_Scalar_Tag1Byte},
     {0x0010000001000010, &upb_DecodeFast_Varint32_Scalar_Tag1Byte},
-    {0x001800000202001a, &upb_DecodeFast_Message_Scalar_Tag1Byte},
+    {0x001800000205001a, &upb_DecodeFast_Message_Scalar_Tag1Byte},
   })
 };
 
@@ -947,10 +964,10 @@ const upb_MiniTable google__protobuf__DescriptorProto__ReservedRange_msg_init = 
   "google.protobuf.DescriptorProto.ReservedRange",
 #endif
   UPB_FASTTABLE_INIT({
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeUnknown},
     {0x000c000000000008, &upb_DecodeFast_Varint32_Scalar_Tag1Byte},
     {0x0010000001000010, &upb_DecodeFast_Varint32_Scalar_Tag1Byte},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeUnknown},
   })
 };
 
@@ -979,38 +996,38 @@ const upb_MiniTable google__protobuf__ExtensionRangeOptions_msg_init = {
   "google.protobuf.ExtensionRangeOptions",
 #endif
   UPB_FASTTABLE_INIT({
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x001000003f000012, &upb_DecodeFast_Message_Repeated_Tag1Byte},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0018000001020392, &upb_DecodeFast_Message_Scalar_Tag2Byte},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x002000003f033eba, &upb_DecodeFast_Message_Repeated_Tag2Byte},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
+    {0x001000003f060012, &upb_DecodeFast_Message_Repeated_Tag1Byte},
+    {0x000c000000070018, &upb_DecodeFast_ClosedEnum_Scalar_Tag1Byte},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
+    {0x0018000001080392, &upb_DecodeFast_Message_Scalar_Tag2Byte},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
+    {0x002000003f093eba, &upb_DecodeFast_Message_Repeated_Tag2Byte},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
   })
 };
 
@@ -1033,14 +1050,14 @@ const upb_MiniTable google__protobuf__ExtensionRangeOptions__Declaration_msg_ini
   "google.protobuf.ExtensionRangeOptions.Declaration",
 #endif
   UPB_FASTTABLE_INIT({
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeUnknown},
     {0x000c000000000008, &upb_DecodeFast_Varint32_Scalar_Tag1Byte},
     {0x0010000001000012, &upb_DecodeFast_Bytes_Scalar_Tag1Byte},
     {0x002000000200001a, &upb_DecodeFast_Bytes_Scalar_Tag1Byte},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeUnknown},
     {0x0009000003000028, &upb_DecodeFast_Bool_Scalar_Tag1Byte},
     {0x000a000004000030, &upb_DecodeFast_Bool_Scalar_Tag1Byte},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeUnknown},
   })
 };
 
@@ -1075,38 +1092,38 @@ const upb_MiniTable google__protobuf__FieldDescriptorProto_msg_init = {
   "google.protobuf.FieldDescriptorProto",
 #endif
   UPB_FASTTABLE_INIT({
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeUnknown},
     {0x002000000000000a, &upb_DecodeFast_Bytes_Scalar_Tag1Byte},
     {0x0030000001000012, &upb_DecodeFast_Bytes_Scalar_Tag1Byte},
     {0x000c000002000018, &upb_DecodeFast_Varint32_Scalar_Tag1Byte},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
+    {0x0010000003110020, &upb_DecodeFast_ClosedEnum_Scalar_Tag1Byte},
+    {0x0014000004120028, &upb_DecodeFast_ClosedEnum_Scalar_Tag1Byte},
     {0x0040000005000032, &upb_DecodeFast_Bytes_Scalar_Tag1Byte},
     {0x005000000600003a, &upb_DecodeFast_Bytes_Scalar_Tag1Byte},
-    {0x0070000007070042, &upb_DecodeFast_Message_Scalar_Tag1Byte},
+    {0x0070000007130042, &upb_DecodeFast_Message_Scalar_Tag1Byte},
     {0x0018000008000048, &upb_DecodeFast_Varint32_Scalar_Tag1Byte},
     {0x0060000009000052, &upb_DecodeFast_Bytes_Scalar_Tag1Byte},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeUnknown},
     {0x000a00000a000188, &upb_DecodeFast_Bool_Scalar_Tag2Byte},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeUnknown},
   })
 };
 
@@ -1130,10 +1147,10 @@ const upb_MiniTable google__protobuf__OneofDescriptorProto_msg_init = {
   "google.protobuf.OneofDescriptorProto",
 #endif
   UPB_FASTTABLE_INIT({
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeUnknown},
     {0x001000000000000a, &upb_DecodeFast_Bytes_Scalar_Tag1Byte},
-    {0x0020000001010012, &upb_DecodeFast_Message_Scalar_Tag1Byte},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
+    {0x0020000001030012, &upb_DecodeFast_Message_Scalar_Tag1Byte},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeUnknown},
   })
 };
 
@@ -1164,14 +1181,14 @@ const upb_MiniTable google__protobuf__EnumDescriptorProto_msg_init = {
   "google.protobuf.EnumDescriptorProto",
 #endif
   UPB_FASTTABLE_INIT({
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeUnknown},
     {0x001000000000000a, &upb_DecodeFast_Bytes_Scalar_Tag1Byte},
-    {0x002000003f010012, &upb_DecodeFast_Message_Repeated_Tag1Byte},
-    {0x002800000102001a, &upb_DecodeFast_Message_Scalar_Tag1Byte},
-    {0x003000003f030022, &upb_DecodeFast_Message_Repeated_Tag1Byte},
+    {0x002000003f090012, &upb_DecodeFast_Message_Repeated_Tag1Byte},
+    {0x00280000010a001a, &upb_DecodeFast_Message_Scalar_Tag1Byte},
+    {0x003000003f0b0022, &upb_DecodeFast_Message_Repeated_Tag1Byte},
     {0x003800003f00002a, &upb_DecodeFast_Bytes_Repeated_Tag1Byte},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
+    {0x000c0000020c0030, &upb_DecodeFast_ClosedEnum_Scalar_Tag1Byte},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeUnknown},
   })
 };
 
@@ -1191,10 +1208,10 @@ const upb_MiniTable google__protobuf__EnumDescriptorProto__EnumReservedRange_msg
   "google.protobuf.EnumDescriptorProto.EnumReservedRange",
 #endif
   UPB_FASTTABLE_INIT({
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeUnknown},
     {0x000c000000000008, &upb_DecodeFast_Varint32_Scalar_Tag1Byte},
     {0x0010000001000010, &upb_DecodeFast_Varint32_Scalar_Tag1Byte},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeUnknown},
   })
 };
 
@@ -1219,10 +1236,10 @@ const upb_MiniTable google__protobuf__EnumValueDescriptorProto_msg_init = {
   "google.protobuf.EnumValueDescriptorProto",
 #endif
   UPB_FASTTABLE_INIT({
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeUnknown},
     {0x001000000000000a, &upb_DecodeFast_Bytes_Scalar_Tag1Byte},
     {0x000c000001000010, &upb_DecodeFast_Varint32_Scalar_Tag1Byte},
-    {0x002000000202001a, &upb_DecodeFast_Message_Scalar_Tag1Byte},
+    {0x002000000205001a, &upb_DecodeFast_Message_Scalar_Tag1Byte},
   })
 };
 
@@ -1248,10 +1265,10 @@ const upb_MiniTable google__protobuf__ServiceDescriptorProto_msg_init = {
   "google.protobuf.ServiceDescriptorProto",
 #endif
   UPB_FASTTABLE_INIT({
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeUnknown},
     {0x001000000000000a, &upb_DecodeFast_Bytes_Scalar_Tag1Byte},
-    {0x002000003f010012, &upb_DecodeFast_Message_Repeated_Tag1Byte},
-    {0x002800000102001a, &upb_DecodeFast_Message_Scalar_Tag1Byte},
+    {0x002000003f050012, &upb_DecodeFast_Message_Repeated_Tag1Byte},
+    {0x002800000106001a, &upb_DecodeFast_Message_Scalar_Tag1Byte},
   })
 };
 
@@ -1279,14 +1296,14 @@ const upb_MiniTable google__protobuf__MethodDescriptorProto_msg_init = {
   "google.protobuf.MethodDescriptorProto",
 #endif
   UPB_FASTTABLE_INIT({
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeUnknown},
     {0x001000000000000a, &upb_DecodeFast_Bytes_Scalar_Tag1Byte},
     {0x0020000001000012, &upb_DecodeFast_Bytes_Scalar_Tag1Byte},
     {0x003000000200001a, &upb_DecodeFast_Bytes_Scalar_Tag1Byte},
-    {0x0040000003030022, &upb_DecodeFast_Message_Scalar_Tag1Byte},
+    {0x0040000003090022, &upb_DecodeFast_Message_Scalar_Tag1Byte},
     {0x0009000004000028, &upb_DecodeFast_Bool_Scalar_Tag1Byte},
     {0x000a000005000030, &upb_DecodeFast_Bool_Scalar_Tag1Byte},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeUnknown},
   })
 };
 
@@ -1331,37 +1348,37 @@ const upb_MiniTable google__protobuf__FileOptions_msg_init = {
   "google.protobuf.FileOptions",
 #endif
   UPB_FASTTABLE_INIT({
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
     {0x001800000000000a, &upb_DecodeFast_Bytes_Scalar_Tag1Byte},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
     {0x0028000001000042, &upb_DecodeFast_Bytes_Scalar_Tag1Byte},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
+    {0x0014000002200048, &upb_DecodeFast_ClosedEnum_Scalar_Tag1Byte},
     {0x000b000003000050, &upb_DecodeFast_Bool_Scalar_Tag1Byte},
     {0x003800000400005a, &upb_DecodeFast_Bytes_Scalar_Tag1Byte},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
     {0x000c000005000180, &upb_DecodeFast_Bool_Scalar_Tag2Byte},
     {0x000d000006000188, &upb_DecodeFast_Bool_Scalar_Tag2Byte},
     {0x000e000007000190, &upb_DecodeFast_Bool_Scalar_Tag2Byte},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
     {0x000f0000080001a0, &upb_DecodeFast_Bool_Scalar_Tag2Byte},
     {0x005800000d0002aa, &upb_DecodeFast_Bytes_Scalar_Tag2Byte},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
     {0x00100000090001b8, &upb_DecodeFast_Bool_Scalar_Tag2Byte},
     {0x007800000f0002c2, &upb_DecodeFast_Bytes_Scalar_Tag2Byte},
     {0x00880000100002ca, &upb_DecodeFast_Bytes_Scalar_Tag2Byte},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
     {0x001100000a0001d8, &upb_DecodeFast_Bool_Scalar_Tag2Byte},
     {0x00980000110002e2, &upb_DecodeFast_Bytes_Scalar_Tag2Byte},
     {0x00a80000120002ea, &upb_DecodeFast_Bytes_Scalar_Tag2Byte},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
     {0x001200000b0001f8, &upb_DecodeFast_Bool_Scalar_Tag2Byte},
   })
 };
@@ -1392,38 +1409,38 @@ const upb_MiniTable google__protobuf__MessageOptions_msg_init = {
   "google.protobuf.MessageOptions",
 #endif
   UPB_FASTTABLE_INIT({
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
     {0x0009000000000008, &upb_DecodeFast_Bool_Scalar_Tag1Byte},
     {0x000a000001000010, &upb_DecodeFast_Bool_Scalar_Tag1Byte},
     {0x000b000002000018, &upb_DecodeFast_Bool_Scalar_Tag1Byte},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
     {0x000c000003000038, &upb_DecodeFast_Bool_Scalar_Tag1Byte},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
     {0x000d000004000058, &upb_DecodeFast_Bool_Scalar_Tag1Byte},
-    {0x0010000005050062, &upb_DecodeFast_Message_Scalar_Tag1Byte},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x001800003f063eba, &upb_DecodeFast_Message_Repeated_Tag2Byte},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
+    {0x00100000050b0062, &upb_DecodeFast_Message_Scalar_Tag1Byte},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
+    {0x001800003f0c3eba, &upb_DecodeFast_Message_Repeated_Tag2Byte},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
   })
 };
 
@@ -1466,38 +1483,38 @@ const upb_MiniTable google__protobuf__FieldOptions_msg_init = {
   "google.protobuf.FieldOptions",
 #endif
   UPB_FASTTABLE_INIT({
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
+    {0x0010000000150008, &upb_DecodeFast_ClosedEnum_Scalar_Tag1Byte},
     {0x000a000001000010, &upb_DecodeFast_Bool_Scalar_Tag1Byte},
     {0x000b000002000018, &upb_DecodeFast_Bool_Scalar_Tag1Byte},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
     {0x000c000003000028, &upb_DecodeFast_Bool_Scalar_Tag1Byte},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
+    {0x0014000004160030, &upb_DecodeFast_ClosedEnum_Scalar_Tag1Byte},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
     {0x000d000005000050, &upb_DecodeFast_Bool_Scalar_Tag1Byte},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
     {0x000e000006000078, &upb_DecodeFast_Bool_Scalar_Tag1Byte},
     {0x000f000007000180, &upb_DecodeFast_Bool_Scalar_Tag2Byte},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x002800003f0a01a2, &upb_DecodeFast_Message_Repeated_Tag2Byte},
-    {0x00300000090b01aa, &upb_DecodeFast_Message_Scalar_Tag2Byte},
-    {0x003800000a0c01b2, &upb_DecodeFast_Message_Scalar_Tag2Byte},
-    {0x004000003f0d3eba, &upb_DecodeFast_Message_Repeated_Tag2Byte},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
+    {0x0018000008170188, &upb_DecodeFast_ClosedEnum_Scalar_Tag2Byte},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
+    {0x002000003f180198, &upb_DecodeFast_ClosedEnum_Repeated_Tag2Byte},
+    {0x002800003f1901a2, &upb_DecodeFast_Message_Repeated_Tag2Byte},
+    {0x00300000091a01aa, &upb_DecodeFast_Message_Scalar_Tag2Byte},
+    {0x003800000a1b01b2, &upb_DecodeFast_Message_Scalar_Tag2Byte},
+    {0x004000003f1c3eba, &upb_DecodeFast_Message_Repeated_Tag2Byte},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
   })
 };
 
@@ -1521,10 +1538,10 @@ const upb_MiniTable google__protobuf__FieldOptions__EditionDefault_msg_init = {
   "google.protobuf.FieldOptions.EditionDefault",
 #endif
   UPB_FASTTABLE_INIT({
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeUnknown},
     {0x0010000000000012, &upb_DecodeFast_Bytes_Scalar_Tag1Byte},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
+    {0x000c000001030018, &upb_DecodeFast_ClosedEnum_Scalar_Tag1Byte},
   })
 };
 
@@ -1553,14 +1570,14 @@ const upb_MiniTable google__protobuf__FieldOptions__FeatureSupport_msg_init = {
   "google.protobuf.FieldOptions.FeatureSupport",
 #endif
   UPB_FASTTABLE_INIT({
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeUnknown},
+    {0x000c000000080008, &upb_DecodeFast_ClosedEnum_Scalar_Tag1Byte},
+    {0x0010000001090010, &upb_DecodeFast_ClosedEnum_Scalar_Tag1Byte},
     {0x001800000200001a, &upb_DecodeFast_Bytes_Scalar_Tag1Byte},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
+    {0x00140000030a0020, &upb_DecodeFast_ClosedEnum_Scalar_Tag1Byte},
     {0x002800000400002a, &upb_DecodeFast_Bytes_Scalar_Tag1Byte},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeUnknown},
   })
 };
 
@@ -1585,38 +1602,38 @@ const upb_MiniTable google__protobuf__OneofOptions_msg_init = {
   "google.protobuf.OneofOptions",
 #endif
   UPB_FASTTABLE_INIT({
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x001000000000000a, &upb_DecodeFast_Message_Scalar_Tag1Byte},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x001800003f013eba, &upb_DecodeFast_Message_Repeated_Tag2Byte},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
+    {0x001000000003000a, &upb_DecodeFast_Message_Scalar_Tag1Byte},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
+    {0x001800003f043eba, &upb_DecodeFast_Message_Repeated_Tag2Byte},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
   })
 };
 
@@ -1644,38 +1661,38 @@ const upb_MiniTable google__protobuf__EnumOptions_msg_init = {
   "google.protobuf.EnumOptions",
 #endif
   UPB_FASTTABLE_INIT({
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
     {0x0009000000000010, &upb_DecodeFast_Bool_Scalar_Tag1Byte},
     {0x000a000001000018, &upb_DecodeFast_Bool_Scalar_Tag1Byte},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
     {0x000b000002000030, &upb_DecodeFast_Bool_Scalar_Tag1Byte},
-    {0x001000000303003a, &upb_DecodeFast_Message_Scalar_Tag1Byte},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x001800003f043eba, &upb_DecodeFast_Message_Repeated_Tag2Byte},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
+    {0x001000000308003a, &upb_DecodeFast_Message_Scalar_Tag1Byte},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
+    {0x001800003f093eba, &upb_DecodeFast_Message_Repeated_Tag2Byte},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
   })
 };
 
@@ -1704,38 +1721,38 @@ const upb_MiniTable google__protobuf__EnumValueOptions_msg_init = {
   "google.protobuf.EnumValueOptions",
 #endif
   UPB_FASTTABLE_INIT({
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
     {0x0009000000000008, &upb_DecodeFast_Bool_Scalar_Tag1Byte},
-    {0x0010000001010012, &upb_DecodeFast_Message_Scalar_Tag1Byte},
+    {0x0010000001080012, &upb_DecodeFast_Message_Scalar_Tag1Byte},
     {0x000a000002000018, &upb_DecodeFast_Bool_Scalar_Tag1Byte},
-    {0x0018000003030022, &upb_DecodeFast_Message_Scalar_Tag1Byte},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x002000003f043eba, &upb_DecodeFast_Message_Repeated_Tag2Byte},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
+    {0x0018000003090022, &upb_DecodeFast_Message_Scalar_Tag1Byte},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
+    {0x002000003f0a3eba, &upb_DecodeFast_Message_Repeated_Tag2Byte},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
   })
 };
 
@@ -1761,38 +1778,38 @@ const upb_MiniTable google__protobuf__ServiceOptions_msg_init = {
   "google.protobuf.ServiceOptions",
 #endif
   UPB_FASTTABLE_INIT({
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
     {0x0009000000000288, &upb_DecodeFast_Bool_Scalar_Tag2Byte},
-    {0x0010000001010292, &upb_DecodeFast_Message_Scalar_Tag2Byte},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x001800003f023eba, &upb_DecodeFast_Message_Repeated_Tag2Byte},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
+    {0x0010000001050292, &upb_DecodeFast_Message_Scalar_Tag2Byte},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
+    {0x001800003f063eba, &upb_DecodeFast_Message_Repeated_Tag2Byte},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
   })
 };
 
@@ -1820,38 +1837,38 @@ const upb_MiniTable google__protobuf__MethodOptions_msg_init = {
   "google.protobuf.MethodOptions",
 #endif
   UPB_FASTTABLE_INIT({
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
     {0x0009000000000288, &upb_DecodeFast_Bool_Scalar_Tag2Byte},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x001000000202029a, &upb_DecodeFast_Message_Scalar_Tag2Byte},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x001800003f033eba, &upb_DecodeFast_Message_Repeated_Tag2Byte},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
+    {0x000c000001060290, &upb_DecodeFast_ClosedEnum_Scalar_Tag2Byte},
+    {0x001000000207029a, &upb_DecodeFast_Message_Scalar_Tag2Byte},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
+    {0x001800003f083eba, &upb_DecodeFast_Message_Repeated_Tag2Byte},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
   })
 };
 
@@ -1880,22 +1897,22 @@ const upb_MiniTable google__protobuf__UninterpretedOption_msg_init = {
   "google.protobuf.UninterpretedOption",
 #endif
   UPB_FASTTABLE_INIT({
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x004000003f000012, &upb_DecodeFast_Message_Repeated_Tag1Byte},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeUnknown},
+    {0x004000003f0b0012, &upb_DecodeFast_Message_Repeated_Tag1Byte},
     {0x001000000000001a, &upb_DecodeFast_Bytes_Scalar_Tag1Byte},
     {0x0048000001000020, &upb_DecodeFast_Varint64_Scalar_Tag1Byte},
     {0x0050000002000028, &upb_DecodeFast_Varint64_Scalar_Tag1Byte},
     {0x0058000003000031, &upb_DecodeFast_Fixed64_Scalar_Tag1Byte},
     {0x002000000400003a, &upb_DecodeFast_Bytes_Scalar_Tag1Byte},
     {0x0030000005000042, &upb_DecodeFast_Bytes_Scalar_Tag1Byte},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeUnknown},
   })
 };
 
@@ -1915,27 +1932,28 @@ const upb_MiniTable google__protobuf__UninterpretedOption__NamePart_msg_init = {
   "google.protobuf.UninterpretedOption.NamePart",
 #endif
   UPB_FASTTABLE_INIT({
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeUnknown},
     {0x001000000000000a, &upb_DecodeFast_Bytes_Scalar_Tag1Byte},
     {0x0009000001000010, &upb_DecodeFast_Bool_Scalar_Tag1Byte},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeUnknown},
   })
 };
 
 typedef struct {
-  upb_MiniTableField fields[8];
-  upb_MiniTableSubInternal subs[8];
+  upb_MiniTableField fields[9];
+  upb_MiniTableSubInternal subs[9];
 } google__protobuf__FeatureSet_msg_init_Fields;
 
 static const google__protobuf__FeatureSet_msg_init_Fields google_protobuf_FeatureSet__fields = {{
-  {1, 12, 64, 24, 14, (int)kUpb_FieldMode_Scalar | ((int)kUpb_FieldRep_4Byte << kUpb_FieldRep_Shift)},
-  {2, 16, 65, UPB_SIZE(22, 23), 14, (int)kUpb_FieldMode_Scalar | ((int)kUpb_FieldRep_4Byte << kUpb_FieldRep_Shift)},
-  {3, 20, 66, UPB_SIZE(20, 22), 14, (int)kUpb_FieldMode_Scalar | ((int)kUpb_FieldRep_4Byte << kUpb_FieldRep_Shift)},
-  {4, 24, 67, UPB_SIZE(18, 21), 14, (int)kUpb_FieldMode_Scalar | ((int)kUpb_FieldRep_4Byte << kUpb_FieldRep_Shift)},
-  {5, 28, 68, UPB_SIZE(16, 20), 14, (int)kUpb_FieldMode_Scalar | ((int)kUpb_FieldRep_4Byte << kUpb_FieldRep_Shift)},
-  {6, 32, 69, UPB_SIZE(14, 19), 14, (int)kUpb_FieldMode_Scalar | ((int)kUpb_FieldRep_4Byte << kUpb_FieldRep_Shift)},
-  {7, 36, 70, UPB_SIZE(12, 18), 14, (int)kUpb_FieldMode_Scalar | ((int)kUpb_FieldRep_4Byte << kUpb_FieldRep_Shift)},
-  {8, 40, 71, UPB_SIZE(10, 17), 14, (int)kUpb_FieldMode_Scalar | ((int)kUpb_FieldRep_4Byte << kUpb_FieldRep_Shift)},
+  {1, 12, 64, UPB_SIZE(27, 28), 14, (int)kUpb_FieldMode_Scalar | ((int)kUpb_FieldRep_4Byte << kUpb_FieldRep_Shift)},
+  {2, 16, 65, UPB_SIZE(25, 27), 14, (int)kUpb_FieldMode_Scalar | ((int)kUpb_FieldRep_4Byte << kUpb_FieldRep_Shift)},
+  {3, 20, 66, UPB_SIZE(23, 26), 14, (int)kUpb_FieldMode_Scalar | ((int)kUpb_FieldRep_4Byte << kUpb_FieldRep_Shift)},
+  {4, 24, 67, UPB_SIZE(21, 25), 14, (int)kUpb_FieldMode_Scalar | ((int)kUpb_FieldRep_4Byte << kUpb_FieldRep_Shift)},
+  {5, 28, 68, UPB_SIZE(19, 24), 14, (int)kUpb_FieldMode_Scalar | ((int)kUpb_FieldRep_4Byte << kUpb_FieldRep_Shift)},
+  {6, 32, 69, UPB_SIZE(17, 23), 14, (int)kUpb_FieldMode_Scalar | ((int)kUpb_FieldRep_4Byte << kUpb_FieldRep_Shift)},
+  {7, 36, 70, UPB_SIZE(15, 22), 14, (int)kUpb_FieldMode_Scalar | ((int)kUpb_FieldRep_4Byte << kUpb_FieldRep_Shift)},
+  {8, 40, 71, UPB_SIZE(13, 21), 14, (int)kUpb_FieldMode_Scalar | ((int)kUpb_FieldRep_4Byte << kUpb_FieldRep_Shift)},
+  {9, 44, 72, UPB_SIZE(11, 20), 14, (int)kUpb_FieldMode_Scalar | ((int)kUpb_FieldRep_4Byte << kUpb_FieldRep_Shift)},
  },
   {
   {.UPB_PRIVATE(subenum) = &google__protobuf__FeatureSet__FieldPresence_enum_init},
@@ -1946,14 +1964,33 @@ static const google__protobuf__FeatureSet_msg_init_Fields google_protobuf_Featur
   {.UPB_PRIVATE(subenum) = &google__protobuf__FeatureSet__JsonFormat_enum_init},
   {.UPB_PRIVATE(subenum) = &google__protobuf__FeatureSet__EnforceNamingStyle_enum_init},
   {.UPB_PRIVATE(subenum) = &google__protobuf__FeatureSet__VisibilityFeature__DefaultSymbolVisibility_enum_init},
+  {.UPB_PRIVATE(subenum) = &google__protobuf__FeatureSet__ProtoLimitsFeature__EnforceProtoLimits_enum_init},
 }};
 
 const upb_MiniTable google__protobuf__FeatureSet_msg_init = {
   &google_protobuf_FeatureSet__fields.fields[0],
-  48, 8, kUpb_ExtMode_Extendable, 8, UPB_FASTTABLE_MASK(255), 0,
+  48, 9, kUpb_ExtMode_Extendable, 9, UPB_FASTTABLE_MASK(120), 0,
 #ifdef UPB_TRACING_ENABLED
   "google.protobuf.FeatureSet",
 #endif
+  UPB_FASTTABLE_INIT({
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
+    {0x000c0000000e0008, &upb_DecodeFast_ClosedEnum_Scalar_Tag1Byte},
+    {0x00100000010f0010, &upb_DecodeFast_ClosedEnum_Scalar_Tag1Byte},
+    {0x0014000002100018, &upb_DecodeFast_ClosedEnum_Scalar_Tag1Byte},
+    {0x0018000003110020, &upb_DecodeFast_ClosedEnum_Scalar_Tag1Byte},
+    {0x001c000004120028, &upb_DecodeFast_ClosedEnum_Scalar_Tag1Byte},
+    {0x0020000005130030, &upb_DecodeFast_ClosedEnum_Scalar_Tag1Byte},
+    {0x0024000006140038, &upb_DecodeFast_ClosedEnum_Scalar_Tag1Byte},
+    {0x0028000007150040, &upb_DecodeFast_ClosedEnum_Scalar_Tag1Byte},
+    {0x002c000008160048, &upb_DecodeFast_ClosedEnum_Scalar_Tag1Byte},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
+  })
 };
 
 const upb_MiniTable google__protobuf__FeatureSet__VisibilityFeature_msg_init = {
@@ -1961,6 +1998,14 @@ const upb_MiniTable google__protobuf__FeatureSet__VisibilityFeature_msg_init = {
   8, 0, kUpb_ExtMode_NonExtendable, 0, UPB_FASTTABLE_MASK(255), 0,
 #ifdef UPB_TRACING_ENABLED
   "google.protobuf.FeatureSet.VisibilityFeature",
+#endif
+};
+
+const upb_MiniTable google__protobuf__FeatureSet__ProtoLimitsFeature_msg_init = {
+  NULL,
+  8, 0, kUpb_ExtMode_NonExtendable, 0, UPB_FASTTABLE_MASK(255), 0,
+#ifdef UPB_TRACING_ENABLED
+  "google.protobuf.FeatureSet.ProtoLimitsFeature",
 #endif
 };
 
@@ -1982,13 +2027,19 @@ static const google__protobuf__FeatureSetDefaults_msg_init_Fields google_protobu
 
 const upb_MiniTable google__protobuf__FeatureSetDefaults_msg_init = {
   &google_protobuf_FeatureSetDefaults__fields.fields[0],
-  UPB_SIZE(24, 32), 3, kUpb_ExtMode_NonExtendable, 1, UPB_FASTTABLE_MASK(8), 0,
+  UPB_SIZE(24, 32), 3, kUpb_ExtMode_NonExtendable, 1, UPB_FASTTABLE_MASK(56), 0,
 #ifdef UPB_TRACING_ENABLED
   "google.protobuf.FeatureSetDefaults",
 #endif
   UPB_FASTTABLE_INIT({
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x001800003f00000a, &upb_DecodeFast_Message_Repeated_Tag1Byte},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeUnknown},
+    {0x001800003f05000a, &upb_DecodeFast_Message_Repeated_Tag1Byte},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeUnknown},
+    {0x000c000000060020, &upb_DecodeFast_ClosedEnum_Scalar_Tag1Byte},
+    {0x0010000001070028, &upb_DecodeFast_ClosedEnum_Scalar_Tag1Byte},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeUnknown},
   })
 };
 
@@ -2015,14 +2066,14 @@ const upb_MiniTable google__protobuf__FeatureSetDefaults__FeatureSetEditionDefau
   "google.protobuf.FeatureSetDefaults.FeatureSetEditionDefault",
 #endif
   UPB_FASTTABLE_INIT({
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0010000001010022, &upb_DecodeFast_Message_Scalar_Tag1Byte},
-    {0x001800000202002a, &upb_DecodeFast_Message_Scalar_Tag1Byte},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeUnknown},
+    {0x000c000000050018, &upb_DecodeFast_ClosedEnum_Scalar_Tag1Byte},
+    {0x0010000001060022, &upb_DecodeFast_Message_Scalar_Tag1Byte},
+    {0x001800000207002a, &upb_DecodeFast_Message_Scalar_Tag1Byte},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeUnknown},
   })
 };
 
@@ -2045,8 +2096,8 @@ const upb_MiniTable google__protobuf__SourceCodeInfo_msg_init = {
   "google.protobuf.SourceCodeInfo",
 #endif
   UPB_FASTTABLE_INIT({
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x000800003f00000a, &upb_DecodeFast_Message_Repeated_Tag1Byte},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeExtensionOrUnknown},
+    {0x000800003f02000a, &upb_DecodeFast_Message_Repeated_Tag1Byte},
   })
 };
 
@@ -2069,14 +2120,14 @@ const upb_MiniTable google__protobuf__SourceCodeInfo__Location_msg_init = {
   "google.protobuf.SourceCodeInfo.Location",
 #endif
   UPB_FASTTABLE_INIT({
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeUnknown},
     {0x003000003f00000a, &upb_DecodeFast_Varint32_Packed_Tag1Byte},
     {0x003800003f000012, &upb_DecodeFast_Varint32_Packed_Tag1Byte},
     {0x001000000000001a, &upb_DecodeFast_Bytes_Scalar_Tag1Byte},
     {0x0020000001000022, &upb_DecodeFast_Bytes_Scalar_Tag1Byte},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeUnknown},
     {0x004000003f000032, &upb_DecodeFast_Bytes_Repeated_Tag1Byte},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeUnknown},
   })
 };
 
@@ -2099,8 +2150,8 @@ const upb_MiniTable google__protobuf__GeneratedCodeInfo_msg_init = {
   "google.protobuf.GeneratedCodeInfo",
 #endif
   UPB_FASTTABLE_INIT({
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x000800003f00000a, &upb_DecodeFast_Message_Repeated_Tag1Byte},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeUnknown},
+    {0x000800003f02000a, &upb_DecodeFast_Message_Repeated_Tag1Byte},
   })
 };
 
@@ -2127,14 +2178,14 @@ const upb_MiniTable google__protobuf__GeneratedCodeInfo__Annotation_msg_init = {
   "google.protobuf.GeneratedCodeInfo.Annotation",
 #endif
   UPB_FASTTABLE_INIT({
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeUnknown},
     {0x002800003f00000a, &upb_DecodeFast_Varint32_Packed_Tag1Byte},
     {0x0018000000000012, &upb_DecodeFast_Bytes_Scalar_Tag1Byte},
     {0x000c000001000018, &upb_DecodeFast_Varint32_Scalar_Tag1Byte},
     {0x0010000002000020, &upb_DecodeFast_Varint32_Scalar_Tag1Byte},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
+    {0x0014000003080028, &upb_DecodeFast_ClosedEnum_Scalar_Tag1Byte},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeUnknown},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeUnknown},
   })
 };
 
@@ -2204,6 +2255,15 @@ const upb_MiniTableEnum google__protobuf__FeatureSet__JsonFormat_enum_init = {
 };
 
 const upb_MiniTableEnum google__protobuf__FeatureSet__MessageEncoding_enum_init = {
+    64,
+    0,
+    {
+        0x7,
+        0x0,
+    },
+};
+
+const upb_MiniTableEnum google__protobuf__FeatureSet__ProtoLimitsFeature__EnforceProtoLimits_enum_init = {
     64,
     0,
     {
@@ -2329,7 +2389,7 @@ const upb_MiniTableEnum google__protobuf__SymbolVisibility_enum_init = {
     },
 };
 
-static const upb_MiniTable *messages_layout[34] = {
+static const upb_MiniTable *messages_layout[35] = {
   &google__protobuf__FileDescriptorSet_msg_init,
   &google__protobuf__FileDescriptorProto_msg_init,
   &google__protobuf__DescriptorProto_msg_init,
@@ -2358,6 +2418,7 @@ static const upb_MiniTable *messages_layout[34] = {
   &google__protobuf__UninterpretedOption__NamePart_msg_init,
   &google__protobuf__FeatureSet_msg_init,
   &google__protobuf__FeatureSet__VisibilityFeature_msg_init,
+  &google__protobuf__FeatureSet__ProtoLimitsFeature_msg_init,
   &google__protobuf__FeatureSetDefaults_msg_init,
   &google__protobuf__FeatureSetDefaults__FeatureSetEditionDefault_msg_init,
   &google__protobuf__SourceCodeInfo_msg_init,
@@ -2366,7 +2427,7 @@ static const upb_MiniTable *messages_layout[34] = {
   &google__protobuf__GeneratedCodeInfo__Annotation_msg_init,
 };
 
-static const upb_MiniTableEnum *enums_layout[20] = {
+static const upb_MiniTableEnum *enums_layout[21] = {
   &google__protobuf__Edition_enum_init,
   &google__protobuf__ExtensionRangeOptions__VerificationState_enum_init,
   &google__protobuf__FeatureSet__EnforceNamingStyle_enum_init,
@@ -2374,6 +2435,7 @@ static const upb_MiniTableEnum *enums_layout[20] = {
   &google__protobuf__FeatureSet__FieldPresence_enum_init,
   &google__protobuf__FeatureSet__JsonFormat_enum_init,
   &google__protobuf__FeatureSet__MessageEncoding_enum_init,
+  &google__protobuf__FeatureSet__ProtoLimitsFeature__EnforceProtoLimits_enum_init,
   &google__protobuf__FeatureSet__RepeatedFieldEncoding_enum_init,
   &google__protobuf__FeatureSet__Utf8Validation_enum_init,
   &google__protobuf__FeatureSet__VisibilityFeature__DefaultSymbolVisibility_enum_init,
@@ -2393,8 +2455,8 @@ const upb_MiniTableFile google_protobuf_descriptor_proto_upb_file_layout = {
   messages_layout,
   enums_layout,
   NULL,
-  34,
-  20,
+  35,
+  21,
   0,
 };
 
@@ -2466,17 +2528,6 @@ void upb_Status_VAppendErrorFormat(upb_Status* status, const char* fmt,
 
 // Must be last.
 
-#define UPB_MAXARRSIZE 16  // 2**16 = 64k.
-
-// From Chromium.
-#define ARRAY_SIZE(x) \
-  ((sizeof(x) / sizeof(0 [x])) / ((size_t)(!(sizeof(x) % sizeof(0 [x])))))
-
-/* The minimum utilization of the array part of a mixed hash/array table.  This
- * is a speed/memory-usage tradeoff (though it's not straightforward because of
- * cache effects).  The lower this is, the more memory we'll use. */
-static const double MIN_DENSITY = 0.1;
-
 #if defined(__has_builtin)
 #if __has_builtin(__builtin_popcount)
 #define UPB_FAST_POPCOUNT32(i) __builtin_popcount(i)
@@ -2505,16 +2556,6 @@ UPB_INLINE int _upb_popcnt32(uint32_t i) {
 
 UPB_INLINE uint8_t _upb_log2_table_size(upb_table* t) {
   return _upb_popcnt32(t->mask);
-}
-
-static bool is_pow2(uint64_t v) { return v == 0 || (v & (v - 1)) == 0; }
-
-static int log2ceil(uint64_t v) {
-  int ret = 0;
-  bool pow2 = is_pow2(v);
-  while (v >>= 1) ret++;
-  ret = pow2 ? ret : ret + 1;  // Ceiling.
-  return UPB_MIN(UPB_MAXARRSIZE, ret);
 }
 
 /* A type to represent the lookup key of either a strtable, inttable or
@@ -2550,7 +2591,7 @@ static uint32_t upb_inthash(uintptr_t key) {
   UPB_STATIC_ASSERT(sizeof(uintptr_t) == 4 || sizeof(uintptr_t) == 8,
                     "Pointers don't fit");
   if (sizeof(uintptr_t) == 8) {
-    return (uint32_t)key ^ (uint32_t)(key >> 32);
+    return (uint32_t)key ^ (uint32_t)((uint64_t)key >> 32);
   } else {
     return (uint32_t)key;
   }
@@ -2571,7 +2612,7 @@ static bool init(upb_table* t, uint8_t size_lg2, upb_Arena* a) {
     return false;
   }
   t->count = 0;
-  uint32_t size = 1 << size_lg2;
+  uint32_t size = 1U << size_lg2;
   t->mask = size - 1;  // 0 mask if size_lg2 is 0
   if (upb_table_size(t) > (SIZE_MAX / sizeof(upb_tabent))) {
     return false;
@@ -2751,6 +2792,74 @@ static size_t next(const upb_table* t, size_t i) {
 }
 
 static size_t begin(const upb_table* t) { return next(t, -1); }
+
+UPB_FORCEINLINE
+bool _upb_tablenext(const upb_table* t, upb_tabent** ent, intptr_t* iter) {
+  size_t tab_idx = next(t, *iter);
+  if (tab_idx < upb_table_size(t)) {
+    *ent = &t->entries[tab_idx];
+    *iter = tab_idx;
+    return true;
+  }
+  return false;
+}
+
+UPB_FORCEINLINE
+bool _upb_table_done(const upb_table* t, intptr_t iter) {
+  if (iter == INTPTR_MAX - 1 || (size_t)iter >= upb_table_size(t)) {
+    return true;
+  }
+  return upb_tabent_isempty(&t->entries[iter]);
+}
+
+static void removeiter(upb_table* t, intptr_t* iter) {
+  intptr_t i = *iter;
+  upb_tabent* ent = &t->entries[i];
+  upb_tabent* prev = NULL;
+
+  // Linear search, not great.
+  upb_tabent* end = &t->entries[upb_table_size(t)];
+  for (upb_tabent* e = t->entries; e != end; e++) {
+    if (!upb_tabent_isempty(e) && upb_tabent_hasnext(e) &&
+        upb_tabent_next(e) == ent) {
+      prev = e;
+      break;
+    }
+  }
+
+  if (prev) {
+    if (upb_tabent_hasnext(ent)) {
+      upb_tabent_setnext(prev, upb_tabent_next(ent));
+    } else {
+      upb_tabent_clearnext(prev);
+    }
+  } else {
+    // ent is the head of the chain, so we need to move its next element into
+    // its slot if there is one.
+    if (upb_tabent_hasnext(ent)) {
+      upb_tabent* move = upb_tabent_next(ent);
+      ent->key = move->key;
+      ent->val = move->val;
+      if (upb_tabent_hasnext(move)) {
+        upb_tabent_setnext(ent, upb_tabent_next(move));
+      } else {
+        upb_tabent_clearnext(ent);
+      }
+
+      // If we moved an element from a higher index to a lower index, then we've
+      // moved an element we haven't visited yet into the slot of the one that
+      // was just removed; decrement iter so that the iterator visits it.
+      if (move > ent) {
+        *iter = i - 1;
+      }
+
+      ent = move;
+    }
+  }
+
+  t->count--;
+  upb_tabent_clear(ent);
+}
 
 /* upb_strtable ***************************************************************/
 
@@ -3027,8 +3136,7 @@ void upb_strtable_next(upb_strtable_iter* i) {
 
 bool upb_strtable_done(const upb_strtable_iter* i) {
   if (!i->t) return true;
-  return i->index >= upb_table_size(&i->t->t) ||
-         upb_tabent_isempty(str_tabent(i));
+  return _upb_table_done(&i->t->t, i->index);
 }
 
 upb_StringView upb_strtable_iter_key(const upb_strtable_iter* i) {
@@ -3054,43 +3162,17 @@ bool upb_strtable_iter_isequal(const upb_strtable_iter* i1,
 
 bool upb_strtable_next2(const upb_strtable* t, upb_StringView* key,
                         upb_value* val, intptr_t* iter) {
-  size_t tab_idx = next(&t->t, *iter);
-  if (tab_idx < upb_table_size(&t->t)) {
-    upb_tabent* ent = &t->t.entries[tab_idx];
+  upb_tabent* ent;
+  if (_upb_tablenext(&t->t, &ent, iter)) {
     *key = upb_key_strview(ent->key);
     *val = ent->val;
-    *iter = tab_idx;
     return true;
   }
-
   return false;
 }
 
 void upb_strtable_removeiter(upb_strtable* t, intptr_t* iter) {
-  intptr_t i = *iter;
-  upb_tabent* ent = &t->t.entries[i];
-  upb_tabent* prev = NULL;
-
-  // Linear search, not great.
-  upb_tabent* end = &t->t.entries[upb_table_size(&t->t)];
-  for (upb_tabent* e = t->t.entries; e != end; e++) {
-    if (!upb_tabent_isempty(e) && upb_tabent_hasnext(e) &&
-        upb_tabent_next(e) == ent) {
-      prev = e;
-      break;
-    }
-  }
-
-  if (prev) {
-    if (upb_tabent_hasnext(ent)) {
-      upb_tabent_setnext(prev, upb_tabent_next(ent));
-    } else {
-      upb_tabent_clearnext(prev);
-    }
-  }
-
-  t->t.count--;
-  upb_tabent_clear(ent);
+  removeiter(&t->t, iter);
 }
 
 void upb_strtable_setentryvalue(upb_strtable* t, intptr_t iter, upb_value v) {
@@ -3187,19 +3269,9 @@ const uint32_t* upb_exttable_remove(upb_exttable* t, const void* k,
   return NULL;
 }
 
+size_t upb_exttable_size(const upb_exttable* t) { return t->t.count; }
+
 /* upb_inttable ***************************************************************/
-
-/* For inttables we use a hybrid structure where small keys are kept in an
- * array and large keys are put in the hash table. */
-
-// The sentinel value used in the dense array part. Note that callers must
-// ensure that inttable is never used with a value of this sentinel type
-// (pointers and u32 values will never be; i32 needs to be handled carefully
-// to avoid sign-extending into this value).
-static const upb_value kInttableSentinel = {.val = UINT64_MAX};
-static uint32_t presence_mask_arr_size(uint32_t array_size) {
-  return (array_size + 7) / 8;  // sizeof(uint8_t) is always 1.
-}
 
 static uint32_t inthash(upb_key key, upb_value val) {
   UPB_UNUSED(val);
@@ -3211,35 +3283,7 @@ static bool inteql(upb_key k1, upb_value v1, lookupkey_t k2) {
   return k1.num == k2.num;
 }
 
-static upb_value* mutable_array(upb_inttable* t) {
-  return (upb_value*)t->array;
-}
-
-static const upb_value* inttable_array_get(const upb_inttable* t,
-                                           uintptr_t key) {
-  UPB_ASSERT(key < t->array_size);
-  const upb_value* val = &t->array[key];
-  return upb_inttable_arrhas(t, key) ? val : NULL;
-}
-
-static upb_value* inttable_val(upb_inttable* t, uintptr_t key) {
-  if (key < t->array_size) {
-    return (upb_value*)inttable_array_get(t, key);
-  } else {
-    upb_tabent* e =
-        findentry_mutable(&t->t, intkey(key), upb_inthash(key), &inteql);
-    return e ? &e->val : NULL;
-  }
-}
-
-static const upb_value* inttable_val_const(const upb_inttable* t,
-                                           uintptr_t key) {
-  return inttable_val((upb_inttable*)t, key);
-}
-
-size_t upb_inttable_count(const upb_inttable* t) {
-  return t->t.count + t->array_count;
-}
+size_t upb_inttable_count(const upb_inttable* t) { return t->t.count; }
 
 static void check(upb_inttable* t) {
   UPB_UNUSED(t);
@@ -3259,293 +3303,99 @@ static void check(upb_inttable* t) {
 #endif
 }
 
-bool upb_inttable_sizedinit(upb_inttable* t, uint32_t asize, int hsize_lg2,
-                            upb_Arena* a) {
+static bool upb_inttable_sizedinit(upb_inttable* t, int hsize_lg2,
+                                   upb_Arena* a) {
   if (!init(&t->t, hsize_lg2, a)) return false;
-  /* Always make the array part at least 1 long, so that we know key 0
-   * won't be in the hash part, which simplifies things. */
-  t->array_size = UPB_MAX(1, asize);
-  t->array_count = 0;
-#if UINT32_MAX >= SIZE_MAX
-  if (UPB_UNLIKELY(SIZE_MAX / sizeof(upb_value) < t->array_size)) {
-    return false;
-  }
-#endif
-
-  // Allocate the array part and the presence mask array in one allocation.
-  size_t array_bytes = t->array_size * sizeof(upb_value);
-  uint32_t presence_bytes = presence_mask_arr_size(t->array_size);
-  uintptr_t total_bytes = array_bytes + presence_bytes;
-  if (UPB_UNLIKELY(total_bytes > SIZE_MAX)) {
-    return false;
-  }
-  void* alloc = upb_Arena_Malloc(a, total_bytes);
-  if (!alloc) {
-    return false;
-  }
-  t->array = alloc;
-  memset(mutable_array(t), 0xff, array_bytes);
-  t->presence_mask = (uint8_t*)alloc + array_bytes;
-  memset((uint8_t*)t->presence_mask, 0, presence_bytes);
-
   check(t);
   return true;
 }
 
 bool upb_inttable_init(upb_inttable* t, upb_Arena* a) {
-  // The init size of the table part to match that of strtable.
-  return upb_inttable_sizedinit(t, 0, 3, a);
+  return upb_inttable_sizedinit(t, 3, a);
 }
 
 bool upb_inttable_insert(upb_inttable* t, uintptr_t key, upb_value val,
                          upb_Arena* a) {
-  if (key < t->array_size) {
-    UPB_ASSERT(!upb_inttable_arrhas(t, key));
-    t->array_count++;
-    mutable_array(t)[key] = val;
-    ((uint8_t*)t->presence_mask)[key / 8] |= (1 << (key % 8));
-  } else {
-    if (isfull(&t->t)) {
-      /* Need to resize the hash part, but we re-use the array part. */
-      size_t i;
-      upb_table new_table;
+  if (isfull(&t->t)) {
+    upb_table new_table;
 
-      if (!init(&new_table, _upb_log2_table_size(&t->t) + 1, a)) {
-        return false;
-      }
-
-      for (i = begin(&t->t); i < upb_table_size(&t->t); i = next(&t->t, i)) {
-        const upb_tabent* e = &t->t.entries[i];
-        insert(&new_table, intkey(e->key.num), e->key, e->val,
-               inthash(e->key, e->val), &inthash, &inteql);
-      }
-
-      UPB_ASSERT(t->t.count == new_table.count);
-
-      t->t = new_table;
+    if (!init(&new_table, _upb_log2_table_size(&t->t) + 1, a)) {
+      return false;
     }
-    upb_key tabkey = {.num = key};
-    insert(&t->t, intkey(key), tabkey, val, upb_inthash(key), &inthash,
-           &inteql);
+
+    for (size_t i = begin(&t->t); i < upb_table_size(&t->t);
+         i = next(&t->t, i)) {
+      const upb_tabent* e = &t->t.entries[i];
+      insert(&new_table, intkey(e->key.num), e->key, e->val,
+             inthash(e->key, e->val), &inthash, &inteql);
+    }
+
+    UPB_ASSERT(t->t.count == new_table.count);
+
+    t->t = new_table;
   }
+  upb_key tabkey = {.num = key};
+  insert(&t->t, intkey(key), tabkey, val, upb_inthash(key), &inthash, &inteql);
   check(t);
   return true;
 }
 
 bool upb_inttable_lookup(const upb_inttable* t, uintptr_t key, upb_value* v) {
-  const upb_value* table_v = inttable_val_const(t, key);
-  if (!table_v) return false;
-  if (v) *v = *table_v;
-  return true;
+  return lookup(&t->t, intkey(key), v, upb_inthash(key), &inteql);
 }
 
 bool upb_inttable_replace(upb_inttable* t, uintptr_t key, upb_value val) {
-  upb_value* table_v = inttable_val(t, key);
-  if (!table_v) return false;
-  *table_v = val;
+  upb_tabent* e =
+      findentry_mutable(&t->t, intkey(key), upb_inthash(key), &inteql);
+  if (!e) return false;
+  e->val = val;
   return true;
 }
 
 bool upb_inttable_remove(upb_inttable* t, uintptr_t key, upb_value* val) {
-  bool success;
-  if (key < t->array_size) {
-    if (upb_inttable_arrhas(t, key)) {
-      t->array_count--;
-      if (val) {
-        *val = t->array[key];
-      }
-      mutable_array(t)[key] = kInttableSentinel;
-      ((uint8_t*)t->presence_mask)[key / 8] &= ~(1 << (key % 8));
-      success = true;
-    } else {
-      success = false;
-    }
-  } else {
-    success = rm(&t->t, intkey(key), val, upb_inthash(key), &inteql);
-  }
+  bool success = rm(&t->t, intkey(key), val, upb_inthash(key), &inteql);
   check(t);
   return success;
 }
 
-bool upb_inttable_compact(upb_inttable* t, upb_Arena* a) {
-  /* A power-of-two histogram of the table keys. */
-  uint32_t counts[UPB_MAXARRSIZE + 1] = {0};
-
-  /* The max key in each bucket. */
-  uintptr_t max[UPB_MAXARRSIZE + 1] = {0};
-
-  {
-    intptr_t iter = UPB_INTTABLE_BEGIN;
-    uintptr_t key;
-    upb_value val;
-    while (upb_inttable_next(t, &key, &val, &iter)) {
-      int bucket = log2ceil(key);
-      max[bucket] = UPB_MAX(max[bucket], key);
-      counts[bucket]++;
-    }
-  }
-
-  /* Find the largest power of two that satisfies the MIN_DENSITY
-   * definition (while actually having some keys). */
-  uint32_t arr_count = upb_inttable_count(t);
-
-  // Scan all buckets except capped bucket
-  int size_lg2 = ARRAY_SIZE(counts) - 1;
-  for (; size_lg2 > 0; size_lg2--) {
-    if (counts[size_lg2] == 0) {
-      /* We can halve again without losing any entries. */
-      continue;
-    } else if (arr_count >= (1 << size_lg2) * MIN_DENSITY) {
-      break;
-    }
-
-    arr_count -= counts[size_lg2];
-  }
-
-  UPB_ASSERT(arr_count <= upb_inttable_count(t));
-
-  upb_inttable new_t;
-  {
-    /* Insert all elements into new, perfectly-sized table. */
-    uintptr_t arr_size = max[size_lg2] + 1; /* +1 so arr[max] will fit. */
-    uint32_t hash_count = upb_inttable_count(t) - arr_count;
-    size_t hash_size = hash_count ? _upb_entries_needed_for(hash_count) : 0;
-    int hashsize_lg2 = log2ceil(hash_size);
-
-    if (!upb_inttable_sizedinit(&new_t, arr_size, hashsize_lg2, a)) {
-      return false;
-    }
-
-    {
-      intptr_t iter = UPB_INTTABLE_BEGIN;
-      uintptr_t key;
-      upb_value val;
-      while (upb_inttable_next(t, &key, &val, &iter)) {
-        upb_inttable_insert(&new_t, key, val, a);
-      }
-    }
-
-    UPB_ASSERT(new_t.array_size == arr_size);
-  }
-  *t = new_t;
-  return true;
-}
-
 void upb_inttable_clear(upb_inttable* t) {
-  // Clear the array part.
-  size_t array_bytes = t->array_size * sizeof(upb_value);
-  t->array_count = 0;
-  // Clear the array by setting all bits to 1, as UINT64_MAX is the sentinel
-  // value for an empty array.
-  memset(mutable_array(t), 0xff, array_bytes);
-  // Clear the presence mask array.
-  memset((uint8_t*)t->presence_mask, 0, presence_mask_arr_size(t->array_size));
-  // Clear the table part.
   size_t bytes = upb_table_size(&t->t) * sizeof(upb_tabent);
   t->t.count = 0;
   memset((char*)t->t.entries, 0, bytes);
 }
 
-// Iteration.
-
 bool upb_inttable_next(const upb_inttable* t, uintptr_t* key, upb_value* val,
                        intptr_t* iter) {
-  intptr_t i = *iter;
-  if ((size_t)(i + 1) <= t->array_size) {
-    while ((size_t)++i < t->array_size) {
-      const upb_value* ent = inttable_array_get(t, i);
-      if (ent) {
-        *key = i;
-        *val = *ent;
-        *iter = i;
-        return true;
-      }
-    }
-    i--;  // Back up to exactly one position before the start of the table.
-  }
-
-  size_t tab_idx = next(&t->t, i - t->array_size);
-  if (tab_idx < upb_table_size(&t->t)) {
-    upb_tabent* ent = &t->t.entries[tab_idx];
+  upb_tabent* ent;
+  if (_upb_tablenext(&t->t, &ent, iter)) {
     *key = ent->key.num;
     *val = ent->val;
-    *iter = tab_idx + t->array_size;
     return true;
-  } else {
-    // We should set the iterator any way. When we are done, the iterator value
-    // is invalidated. `upb_inttable_done` will check on the iterator value to
-    // determine if the iteration is done.
-    *iter = INTPTR_MAX - 1;  // To disambiguate from UPB_INTTABLE_BEGIN, to
-                             // match the behavior of `upb_strtable_iter`.
-    return false;
   }
+  *iter = INTPTR_MAX - 1;
+  return false;
 }
 
 void upb_inttable_removeiter(upb_inttable* t, intptr_t* iter) {
-  intptr_t i = *iter;
-  if ((size_t)i < t->array_size) {
-    t->array_count--;
-    mutable_array(t)[i].val = -1;
-  } else {
-    upb_tabent* ent = &t->t.entries[i - t->array_size];
-    upb_tabent* prev = NULL;
-
-    // Linear search, not great.
-    upb_tabent* end = &t->t.entries[upb_table_size(&t->t)];
-    for (upb_tabent* e = t->t.entries; e != end; e++) {
-      if (!upb_tabent_isempty(e) && upb_tabent_hasnext(e) &&
-          upb_tabent_next(e) == ent) {
-        prev = e;
-        break;
-      }
-    }
-
-    if (prev) {
-      if (upb_tabent_hasnext(ent)) {
-        upb_tabent_setnext(prev, upb_tabent_next(ent));
-      } else {
-        upb_tabent_clearnext(prev);
-      }
-    }
-
-    t->t.count--;
-    upb_tabent_clear(ent);
-  }
+  removeiter(&t->t, iter);
 }
 
 void upb_inttable_setentryvalue(upb_inttable* t, intptr_t iter, upb_value v) {
-  if ((size_t)iter < t->array_size) {
-    mutable_array(t)[iter] = v;
-  } else {
-    upb_tabent* ent = &t->t.entries[iter - t->array_size];
-    ent->val = v;
-  }
+  t->t.entries[iter].val = v;
 }
 
 bool upb_inttable_done(const upb_inttable* t, intptr_t iter) {
-  if ((uintptr_t)iter >= t->array_size + upb_table_size(&t->t)) {
-    return true;
-  } else if ((size_t)iter < t->array_size) {
-    return !upb_inttable_arrhas(t, iter);
-  } else {
-    return upb_tabent_isempty(&t->t.entries[iter - t->array_size]);
-  }
+  return _upb_table_done(&t->t, iter);
 }
 
 uintptr_t upb_inttable_iter_key(const upb_inttable* t, intptr_t iter) {
   UPB_ASSERT(!upb_inttable_done(t, iter));
-  return (size_t)iter < t->array_size
-             ? iter
-             : t->t.entries[iter - t->array_size].key.num;
+  return t->t.entries[iter].key.num;
 }
 
 upb_value upb_inttable_iter_value(const upb_inttable* t, intptr_t iter) {
   UPB_ASSERT(!upb_inttable_done(t, iter));
-  if ((size_t)iter < t->array_size) {
-    return t->array[iter];
-  } else {
-    return t->t.entries[iter - t->array_size].val;
-  }
+  return t->t.entries[iter].val;
 }
 
 
@@ -3620,6 +3470,12 @@ static void jsondec_seterrmsg(jsondec* d, const char* msg) {
 UPB_NORETURN static void jsondec_err(jsondec* d, const char* msg) {
   jsondec_seterrmsg(d, msg);
   UPB_LONGJMP(d->err, 1);
+}
+
+static void jsondec_checkoom(jsondec* d, bool ok) {
+  if (UPB_UNLIKELY(!ok)) {
+    jsondec_err(d, "Out of memory");
+  }
 }
 
 UPB_PRINTF(2, 3)
@@ -3953,10 +3809,12 @@ static size_t jsondec_unicode(jsondec* d, char* out) {
 static void jsondec_resize(jsondec* d, char** buf, char** end, char** buf_end) {
   size_t oldsize = *buf_end - *buf;
   size_t len = *end - *buf;
+
+  jsondec_checkoom(d, oldsize <= SIZE_MAX / 2);
   size_t size = UPB_MAX(8, 2 * oldsize);
 
   *buf = upb_Arena_Realloc(d->arena, *buf, len, size);
-  if (!*buf) jsondec_err(d, "Out of memory");
+  jsondec_checkoom(d, *buf);
 
   *end = *buf + len;
   *buf_end = *buf + size;
@@ -4094,7 +3952,7 @@ static unsigned int jsondec_base64_tablelookup(const char ch) {
       -1,       -1,       -1,       -1};
 
   /* Sign-extend return value so high bit will be set on any unexpected char. */
-  return table[(unsigned)ch];
+  return table[(unsigned char)ch];
 }
 
 static char* jsondec_partialbase64(jsondec* d, const char* ptr, const char* end,
@@ -4416,12 +4274,13 @@ static upb_MessageValue jsondec_bool(jsondec* d, const upb_FieldDef* f) {
 static void jsondec_array(jsondec* d, upb_Message* msg, const upb_FieldDef* f) {
   UPB_ASSERT(!upb_Message_IsFrozen(msg));
   upb_Array* arr = upb_Message_Mutable(msg, f, d->arena).array;
+  jsondec_checkoom(d, arr);
 
   jsondec_arrstart(d);
   while (jsondec_arrnext(d)) {
     upb_JsonMessageValue elem = jsondec_value(d, f);
     if (!elem.ignore) {
-      upb_Array_Append(arr, elem.value, d->arena);
+      jsondec_checkoom(d, upb_Array_Append(arr, elem.value, d->arena));
     }
   }
   jsondec_arrend(d);
@@ -4430,6 +4289,7 @@ static void jsondec_array(jsondec* d, upb_Message* msg, const upb_FieldDef* f) {
 static void jsondec_map(jsondec* d, upb_Message* msg, const upb_FieldDef* f) {
   UPB_ASSERT(!upb_Message_IsFrozen(msg));
   upb_Map* map = upb_Message_Mutable(msg, f, d->arena).map;
+  jsondec_checkoom(d, map);
   const upb_MessageDef* entry = upb_FieldDef_MessageSubDef(f);
   const upb_FieldDef* key_f = upb_MessageDef_FindFieldByNumber(entry, 1);
   const upb_FieldDef* val_f = upb_MessageDef_FindFieldByNumber(entry, 2);
@@ -4442,7 +4302,7 @@ static void jsondec_map(jsondec* d, upb_Message* msg, const upb_FieldDef* f) {
     jsondec_entrysep(d);
     val = jsondec_value(d, val_f);
     if (!val.ignore) {
-      upb_Map_Set(map, key.value, val.value, d->arena);
+      jsondec_checkoom(d, upb_Map_Set(map, key.value, val.value, d->arena));
     }
   }
   jsondec_objend(d);
@@ -4462,6 +4322,7 @@ static upb_MessageValue jsondec_msg(jsondec* d, const upb_FieldDef* f) {
   const upb_MessageDef* m = upb_FieldDef_MessageSubDef(f);
   const upb_MiniTable* layout = upb_MessageDef_MiniTable(m);
   upb_Message* msg = upb_Message_New(layout, d->arena);
+  jsondec_checkoom(d, msg);
   upb_MessageValue val;
 
   jsondec_tomsg(d, msg, m);
@@ -4523,12 +4384,14 @@ static void jsondec_field(jsondec* d, upb_Message* msg,
     jsondec_array(d, msg, f);
   } else if (upb_FieldDef_IsSubMessage(f)) {
     upb_Message* submsg = upb_Message_Mutable(msg, f, d->arena).msg;
+    jsondec_checkoom(d, submsg);
     const upb_MessageDef* subm = upb_FieldDef_MessageSubDef(f);
     jsondec_tomsg(d, submsg, subm);
   } else {
     upb_JsonMessageValue val = jsondec_value(d, f);
     if (!val.ignore) {
-      upb_Message_SetFieldByDef(msg, f, val.value, d->arena);
+      jsondec_checkoom(d,
+                       upb_Message_SetFieldByDef(msg, f, val.value, d->arena));
     }
   }
 
@@ -4692,10 +4555,12 @@ static void jsondec_timestamp(jsondec* d, upb_Message* msg,
     jsondec_err(d, "Timestamp out of range");
   }
 
-  upb_Message_SetFieldByDef(msg, upb_MessageDef_FindFieldByNumber(m, 1),
-                            seconds, d->arena);
-  upb_Message_SetFieldByDef(msg, upb_MessageDef_FindFieldByNumber(m, 2), nanos,
-                            d->arena);
+  jsondec_checkoom(
+      d, upb_Message_SetFieldByDef(msg, upb_MessageDef_FindFieldByNumber(m, 1),
+                                   seconds, d->arena));
+  jsondec_checkoom(
+      d, upb_Message_SetFieldByDef(msg, upb_MessageDef_FindFieldByNumber(m, 2),
+                                   nanos, d->arena));
   return;
 
 malformed:
@@ -4729,10 +4594,12 @@ static void jsondec_duration(jsondec* d, upb_Message* msg,
     nanos.int32_val = -nanos.int32_val;
   }
 
-  upb_Message_SetFieldByDef(msg, upb_MessageDef_FindFieldByNumber(m, 1),
-                            seconds, d->arena);
-  upb_Message_SetFieldByDef(msg, upb_MessageDef_FindFieldByNumber(m, 2), nanos,
-                            d->arena);
+  jsondec_checkoom(
+      d, upb_Message_SetFieldByDef(msg, upb_MessageDef_FindFieldByNumber(m, 1),
+                                   seconds, d->arena));
+  jsondec_checkoom(
+      d, upb_Message_SetFieldByDef(msg, upb_MessageDef_FindFieldByNumber(m, 2),
+                                   nanos, d->arena));
 }
 
 static void jsondec_listvalue(jsondec* d, upb_Message* msg,
@@ -4742,13 +4609,15 @@ static void jsondec_listvalue(jsondec* d, upb_Message* msg,
   const upb_MessageDef* value_m = upb_FieldDef_MessageSubDef(values_f);
   const upb_MiniTable* value_layout = upb_MessageDef_MiniTable(value_m);
   upb_Array* values = upb_Message_Mutable(msg, values_f, d->arena).array;
+  jsondec_checkoom(d, values);
 
   jsondec_arrstart(d);
   while (jsondec_arrnext(d)) {
     upb_Message* value_msg = upb_Message_New(value_layout, d->arena);
+    jsondec_checkoom(d, value_msg);
     upb_MessageValue value;
     value.msg_val = value_msg;
-    upb_Array_Append(values, value, d->arena);
+    jsondec_checkoom(d, upb_Array_Append(values, value, d->arena));
     jsondec_wellknownvalue(d, value_msg, value_m);
   }
   jsondec_arrend(d);
@@ -4763,14 +4632,16 @@ static void jsondec_struct(jsondec* d, upb_Message* msg,
   const upb_MessageDef* value_m = upb_FieldDef_MessageSubDef(value_f);
   const upb_MiniTable* value_layout = upb_MessageDef_MiniTable(value_m);
   upb_Map* fields = upb_Message_Mutable(msg, fields_f, d->arena).map;
+  jsondec_checkoom(d, fields);
 
   jsondec_objstart(d);
   while (jsondec_objnext(d)) {
     upb_MessageValue key, value;
     upb_Message* value_msg = upb_Message_New(value_layout, d->arena);
+    jsondec_checkoom(d, value_msg);
     key.str_val = jsondec_string(d);
     value.msg_val = value_msg;
-    upb_Map_Set(fields, key, value, d->arena);
+    jsondec_checkoom(d, upb_Map_Set(fields, key, value, d->arena));
     jsondec_entrysep(d);
     jsondec_wellknownvalue(d, value_msg, value_m);
   }
@@ -4818,19 +4689,21 @@ static void jsondec_wellknownvalue(jsondec* d, upb_Message* msg,
       /* Struct struct_value = 5; */
       f = upb_MessageDef_FindFieldByNumber(m, 5);
       submsg = upb_Message_Mutable(msg, f, d->arena).msg;
+      jsondec_checkoom(d, submsg);
       jsondec_struct(d, submsg, upb_FieldDef_MessageSubDef(f));
       return;
     case JD_ARRAY:
       /* ListValue list_value = 6; */
       f = upb_MessageDef_FindFieldByNumber(m, 6);
       submsg = upb_Message_Mutable(msg, f, d->arena).msg;
+      jsondec_checkoom(d, submsg);
       jsondec_listvalue(d, submsg, upb_FieldDef_MessageSubDef(f));
       return;
     default:
       UPB_UNREACHABLE();
   }
 
-  upb_Message_SetFieldByDef(msg, f, val, d->arena);
+  jsondec_checkoom(d, upb_Message_SetFieldByDef(msg, f, val, d->arena));
 }
 
 static upb_StringView jsondec_mask(jsondec* d, const char* buf,
@@ -4848,6 +4721,7 @@ static upb_StringView jsondec_mask(jsondec* d, const char* buf,
   }
 
   out = upb_Arena_Malloc(d->arena, ret.size);
+  jsondec_checkoom(d, out || ret.size == 0);
   ptr = buf;
   ret.data = out;
 
@@ -4872,6 +4746,7 @@ static void jsondec_fieldmask(jsondec* d, upb_Message* msg,
   /* repeated string paths = 1; */
   const upb_FieldDef* paths_f = upb_MessageDef_FindFieldByNumber(m, 1);
   upb_Array* arr = upb_Message_Mutable(msg, paths_f, d->arena).array;
+  jsondec_checkoom(d, arr);
   upb_StringView str = jsondec_string(d);
   const char* ptr = str.data;
   const char* end = ptr + str.size;
@@ -4886,7 +4761,7 @@ static void jsondec_fieldmask(jsondec* d, upb_Message* msg,
       val.str_val = jsondec_mask(d, ptr, end);
       ptr = end;
     }
-    upb_Array_Append(arr, val, d->arena);
+    jsondec_checkoom(d, upb_Array_Append(arr, val, d->arena));
   }
 }
 
@@ -4920,7 +4795,8 @@ static const upb_MessageDef* jsondec_typeurl(jsondec* d, upb_Message* msg,
   upb_MessageValue val;
 
   val.str_val = type_url;
-  upb_Message_SetFieldByDef(msg, type_url_f, val, d->arena);
+  jsondec_checkoom(d,
+                   upb_Message_SetFieldByDef(msg, type_url_f, val, d->arena));
 
   /* Find message name after the last '/' */
   while (ptr > type_url.data && *--ptr != '/') {
@@ -4976,10 +4852,12 @@ static void jsondec_any(jsondec* d, upb_Message* msg, const upb_MessageDef* m) {
 
   const upb_MiniTable* any_layout = upb_MessageDef_MiniTable(any_m);
   any_msg = upb_Message_New(any_layout, d->arena);
+  jsondec_checkoom(d, any_msg);
 
   if (pre_type_data) {
     size_t len = pre_type_end - pre_type_data + 1;
     char* tmp = upb_Arena_Malloc(d->arena, len);
+    jsondec_checkoom(d, tmp);
     const char* saved_ptr = d->ptr;
     const char* saved_end = d->end;
     memcpy(tmp, pre_type_data, len - 1);
@@ -5003,9 +4881,11 @@ static void jsondec_any(jsondec* d, upb_Message* msg, const upb_MessageDef* m) {
   upb_EncodeStatus status =
       upb_Encode(any_msg, upb_MessageDef_MiniTable(any_m), 0, d->arena,
                  (char**)&encoded.str_val.data, &encoded.str_val.size);
-  // TODO: We should fail gracefully here on a bad return status.
-  UPB_ASSERT(status == kUpb_EncodeStatus_Ok);
-  upb_Message_SetFieldByDef(msg, value_f, encoded, d->arena);
+  if (status != kUpb_EncodeStatus_Ok) {
+    jsondec_errf(d, "Encode failed: %s", upb_EncodeStatus_String(status));
+  }
+  jsondec_checkoom(d,
+                   upb_Message_SetFieldByDef(msg, value_f, encoded, d->arena));
 }
 
 static void jsondec_wrapper(jsondec* d, upb_Message* msg,
@@ -5014,7 +4894,8 @@ static void jsondec_wrapper(jsondec* d, upb_Message* msg,
   const upb_FieldDef* value_f = upb_MessageDef_FindFieldByNumber(m, 1);
   upb_JsonMessageValue val = jsondec_value(d, value_f);
   UPB_ASSUME(val.ignore == false);  // Wrapper cannot be an enum.
-  upb_Message_SetFieldByDef(msg, value_f, val.value, d->arena);
+  jsondec_checkoom(
+      d, upb_Message_SetFieldByDef(msg, value_f, val.value, d->arena));
 }
 
 static void jsondec_wellknown(jsondec* d, upb_Message* msg,
@@ -5508,10 +5389,17 @@ static void jsonenc_fieldpath(jsonenc* e, upb_StringView path) {
     char ch = *ptr;
 
     if (ch >= 'A' && ch <= 'Z') {
-      jsonenc_err(e, "Field mask element may not have upper-case letter.");
+      jsonenc_err(e,
+                  "Field mask path containing an uppercase letter cannot be "
+                  "successfully round tripped through JSON format. See "
+                  "https://github.com/protocolbuffers/protobuf/issues/25786");
     } else if (ch == '_') {
       if (ptr == end - 1 || *(ptr + 1) < 'a' || *(ptr + 1) > 'z') {
-        jsonenc_err(e, "Underscore must be followed by a lowercase letter.");
+        jsonenc_err(e,
+                    "Underscore in FieldMask path must be followed by a "
+                    "lowercase letter to successfully round trip through JSON "
+                    "format. See "
+                    "https://github.com/protocolbuffers/protobuf/issues/25786");
       }
       ch = *++ptr - 32;
     }
@@ -5965,84 +5853,6 @@ void _upb_EncodeRoundTripFloat(float val, char* buf, size_t size) {
 }
 
 
-#include <stdlib.h>
-#include <string.h>
-
-// Must be last.
-
-// Determine the locale-specific radix character by calling sprintf() to print
-// the number 1.5, then stripping off the digits.  As far as I can tell, this
-// is the only portable, thread-safe way to get the C library to divulge the
-// locale's radix character.  No, localeconv() is NOT thread-safe.
-
-static int GetLocaleRadix(char *data, size_t capacity) {
-  char temp[16];
-  const int size = snprintf(temp, sizeof(temp), "%.1f", 1.5);
-  UPB_ASSERT(temp[0] == '1');
-  UPB_ASSERT(temp[size - 1] == '5');
-  if (size < capacity) {
-    return 0;
-  }
-  temp[size - 1] = '\0';
-  strncpy(data, temp + 1, size);
-  return size - 2;
-}
-
-// Populates a string identical to *input except that the character pointed to
-// by pos (which should be '.') is replaced with the locale-specific radix.
-
-static void LocalizeRadix(const char *input, const char *pos, char *output,
-                          int output_size) {
-  const int len1 = pos - input;
-
-  char radix[8];
-  const int len2 = GetLocaleRadix(radix, sizeof(radix));
-
-  const int n = output_size - len1 - len2 - 1;
-  if (n < 0) {
-    return;
-  }
-
-  memcpy(output, input, len1);
-  memcpy(output + len1, radix, len2);
-  strncpy(output + len1 + len2, input + len1 + 1, n);
-  output[output_size - 1] = '\0';
-}
-
-double _upb_NoLocaleStrtod(const char *str, char **endptr) {
-  // We cannot simply set the locale to "C" temporarily with setlocale()
-  // as this is not thread-safe.  Instead, we try to parse in the current
-  // locale first.  If parsing stops at a '.' character, then this is a
-  // pretty good hint that we're actually in some other locale in which
-  // '.' is not the radix character.
-
-  char *temp_endptr;
-  double result = strtod(str, &temp_endptr);
-  if (endptr != NULL) *endptr = temp_endptr;
-  if (*temp_endptr != '.') return result;
-
-  // Parsing halted on a '.'.  Perhaps we're in a different locale?  Let's
-  // try to replace the '.' with a locale-specific radix character and
-  // try again.
-
-  char localized[80];
-  LocalizeRadix(str, temp_endptr, localized, sizeof localized);
-  char *localized_endptr;
-  result = strtod(localized, &localized_endptr);
-  if ((localized_endptr - &localized[0]) > (temp_endptr - str)) {
-    // This attempt got further, so replacing the decimal must have helped.
-    // Update endptr to point at the right location.
-    if (endptr != NULL) {
-      // size_diff is non-zero if the localized radix has multiple bytes.
-      int size_diff = strlen(localized) - strlen(str);
-      *endptr = (char *)str + (localized_endptr - &localized[0] - size_diff);
-    }
-  }
-
-  return result;
-}
-
-
 // Must be last.
 
 int upb_Unicode_ToUTF8(uint32_t cp, char* out) {
@@ -6101,6 +5911,7 @@ upb_alloc upb_alloc_global = {&upb_global_allocfunc};
 
 #include <stddef.h>
 #include <stdint.h>
+#include <string.h>
 
 
 // Must be last.
@@ -6208,6 +6019,9 @@ typedef struct {
 
 static const size_t kUpb_MemblockReserve =
     UPB_ALIGN_MALLOC(sizeof(upb_MemBlock));
+
+static const size_t kUpb_ArenaStateReserve =
+    UPB_ALIGN_MALLOC(sizeof(upb_ArenaState));
 
 static const size_t kUpb_ArenaRefReserve =
     UPB_ALIGN_MALLOC(sizeof(upb_ArenaRef));
@@ -6448,22 +6262,31 @@ bool upb_Arena_HasRefChain(const upb_Arena* from, const upb_Arena* to) {
 
 #endif
 
-static upb_MemBlock* _upb_Arena_AllocBlockInternal(upb_alloc* alloc,
-                                                   size_t size) {
-  UPB_ASSERT(size >= kUpb_MemblockReserve);
-  upb_SizedPtr alloc_result = upb_SizeReturningMalloc(alloc, size);
+static void* _upb_Arena_AllocBlockInternal(upb_alloc* alloc, size_t* size) {
+  size_t sz = *size + kUpb_MemblockReserve;
+  upb_SizedPtr alloc_result = upb_SizeReturningMalloc(alloc, sz);
   if (!alloc_result.p) return NULL;
   upb_MemBlock* block = alloc_result.p;
   block->size = alloc_result.n;
-  return block;
+  *size = alloc_result.n - kUpb_MemblockReserve;
+  return UPB_PTR_AT(block, kUpb_MemblockReserve, void);
 }
 
-static upb_MemBlock* _upb_Arena_AllocBlock(upb_Arena* a, size_t size) {
+void* UPB_PRIVATE(_upb_Arena_AllocBlock)(upb_Arena* a, size_t* size) {
   upb_ArenaInternal* ai = upb_Arena_Internal(a);
-  return _upb_Arena_AllocBlockInternal(_upb_ArenaInternal_BlockAlloc(ai), size);
+#if UPB_HWASAN
+  *size = UPB_ALIGN_UP(*size, UPB_MALLOC_ALIGN);
+#endif
+  void* ret =
+      _upb_Arena_AllocBlockInternal(_upb_ArenaInternal_BlockAlloc(ai), size);
+#if UPB_HWASAN
+  if (ret) *size = UPB_ALIGN_DOWN(*size, UPB_MALLOC_ALIGN);
+#endif
+  return ret;
 }
 
-static void _upb_Arena_AddBlock(upb_Arena* a, upb_MemBlock* block) {
+void UPB_PRIVATE(_upb_Arena_AddBlock)(upb_Arena* a, void* block) {
+  upb_MemBlock* b = (upb_MemBlock*)((char*)block - kUpb_MemblockReserve);
   upb_ArenaInternal* ai = upb_Arena_Internal(a);
 
   // Atomic add not required here, as threads won't race allocating blocks, plus
@@ -6472,122 +6295,127 @@ static void _upb_Arena_AddBlock(upb_Arena* a, upb_MemBlock* block) {
   // size allocated.
   uintptr_t old_space_allocated =
       upb_Atomic_Load(&ai->space_allocated, memory_order_relaxed);
-  upb_Atomic_Store(&ai->space_allocated, old_space_allocated + block->size,
+  upb_Atomic_Store(&ai->space_allocated, old_space_allocated + b->size,
                    memory_order_relaxed);
 
-  block->next = ai->blocks;
-  ai->blocks = block;
+  b->next = ai->blocks;
+  ai->blocks = b;
 }
 
-static void _upb_Arena_UseBlockInternal(upb_Arena* a, upb_MemBlock* block,
-                                        size_t offset) {
-  size_t block_size = block->size;
-  char* start = UPB_PTR_AT(block, kUpb_MemblockReserve + offset, char);
-  a->UPB_PRIVATE(ptr) = start;
-  a->UPB_PRIVATE(end) = UPB_PTR_AT(block, block_size, char);
-  UPB_PRIVATE(upb_Xsan_PoisonRegion)(start, a->UPB_PRIVATE(end) - start);
-  UPB_PRIVATE(upb_Xsan_Init)(UPB_XSAN(a));
-  UPB_ASSERT(UPB_PRIVATE(_upb_ArenaHas)(a) >=
-             block_size - kUpb_MemblockReserve - offset);
+void UPB_PRIVATE(_upb_Arena_UseBlock)(upb_Arena* a, void* ptr, size_t size) {
+  UPB_ASSERT(UPB_ALIGN_DOWN((uintptr_t)ptr, UPB_MALLOC_ALIGN) ==
+             (uintptr_t)ptr);
+#if UPB_HWASAN
+  size = UPB_ALIGN_DOWN(size, UPB_MALLOC_ALIGN);
+#endif
+  if (size <= UPB_PRIVATE(_upb_ArenaHas)(a)) return;
+  a->UPB_ONLYBITS(ptr) = ptr;
+  a->UPB_ONLYBITS(end) = UPB_PTR_AT(ptr, size, char);
+  UPB_PRIVATE(upb_Xsan_PoisonRegion)(ptr, size);
 }
 
-static void _upb_Arena_UseBlock(upb_Arena* a, upb_MemBlock* block) {
-  _upb_Arena_UseBlockInternal(a, block, 0);
-}
-
-static bool _upb_Arena_WouldReduceFreeSpace(upb_Arena* a, size_t size,
+static bool _upb_Arena_WouldReduceFreeSpace(upb_Arena* a, size_t span,
                                             size_t block_size) {
   upb_ArenaInternal* ai = upb_Arena_Internal(a);
   size_t current_free =
       ai->blocks ? a->UPB_PRIVATE(end) - a->UPB_PRIVATE(ptr) : 0;
-  size_t future_free = block_size - kUpb_MemblockReserve - size;
+  size_t future_free = block_size - span;
   return current_free >= future_free;
 }
 
-// Fulfills the allocation request by allocating a new block. Returns NULL on
-// allocation failure.
-void* UPB_PRIVATE(_upb_Arena_SlowMalloc)(upb_Arena* a, size_t size) {
+size_t UPB_PRIVATE(_upb_Arena_NextBlockSize)(upb_Arena* a, size_t span,
+                                             bool* one_off) {
   upb_ArenaInternal* ai = upb_Arena_Internal(a);
-  if (!ai->block_alloc) return NULL;
+  bool is_one_off = false;
 
-  // Whether to satisfy the allocation from a one-off block which is right-sized
-  // for the current allocation. We do this if we suspect that the current
-  // allocation is an outlier that does not represent the typical size of
-  // allocations from this arena, or if we would reduce free space by
-  // using exponential growth.
-  bool one_off = false;
-
-  // Relaxed order is safe here as we don't need any ordering with the setter.
   size_t max_block_size =
       upb_Atomic_Load(&g_max_block_size, memory_order_relaxed);
   size_t block_size = UPB_MIN(ai->last_block_size * 2, max_block_size);
 
-  if (size + kUpb_MemblockReserve > block_size) {
-    // A regular doubling would not yield a large enough block. Does size_hint
-    // indicate that we have consistently needed large blocks?
+  if (span > block_size) {
     block_size = UPB_MIN(ai->size_hint * 2, max_block_size);
-    if (size + kUpb_MemblockReserve > block_size) {
-      // Even size_hint is not large enough, we will have to do a one-off.
-      one_off = true;
+    if (span > block_size) {
+      is_one_off = true;
     }
   }
 
-  // If switching to a block of this size would *reduce* available free space,
-  // we might as well make a one-off block instead.
-  one_off = one_off || _upb_Arena_WouldReduceFreeSpace(a, size, block_size);
+  is_one_off =
+      is_one_off || _upb_Arena_WouldReduceFreeSpace(a, span, block_size);
 
-  if (one_off) {
-    // Note: this may exceed the max block size, but that's okay.
-    block_size = size + kUpb_MemblockReserve;
+  if (is_one_off) {
+    block_size = span;
   }
 
-  upb_MemBlock* block = _upb_Arena_AllocBlock(a, block_size);
-  if (!block) return NULL;
+  if (one_off) *one_off = is_one_off;
+  return block_size;
+}
 
-  _upb_Arena_AddBlock(a, block);
+void UPB_PRIVATE(_upb_Arena_UpdateGrowthState)(upb_Arena* a, size_t span,
+                                               size_t block_size,
+                                               bool one_off) {
+  upb_ArenaInternal* ai = upb_Arena_Internal(a);
+  size_t max_block_size =
+      upb_Atomic_Load(&g_max_block_size, memory_order_relaxed);
+  if (one_off) {
+    ai->size_hint = UPB_MIN(ai->size_hint + (span >> 1), max_block_size >> 1);
+  } else {
+    ai->last_block_size = UPB_MIN(block_size, UINT32_MAX);
+    ai->size_hint = ai->last_block_size;
+  }
+}
+
+// Fulfills the allocation request by allocating a new block. Returns NULL on
+// allocation failure.
+void* UPB_PRIVATE(_upb_Arena_SlowMalloc)(upb_Arena* a, size_t span) {
+  upb_ArenaInternal* ai = upb_Arena_Internal(a);
+  if (!_upb_ArenaInternal_BlockAlloc(ai)) return NULL;
+
+  bool one_off = false;
+  size_t block_size = UPB_PRIVATE(_upb_Arena_NextBlockSize)(a, span, &one_off);
+
+  void* block = UPB_PRIVATE(_upb_Arena_AllocBlock)(a, &block_size);
+  if (!block) return NULL;
+  UPB_PRIVATE(_upb_Arena_AddBlock)(a, block);
+  size_t size = span - UPB_PRIVATE(kUpb_Asan_GuardSize);
 
   // Recheck size, in case the allocator gave us a much larger block than we
   // requested and we want to make it the new allocating region.
-  if (UPB_UNLIKELY(one_off) &&
-      _upb_Arena_WouldReduceFreeSpace(a, size, block->size)) {
-    // Increase size_hint, so that a series of one-off allocations will
-    // eventually convince us to switch to exponential growth at the larger
-    // size.
-    ai->size_hint = UPB_MIN(ai->size_hint + (size >> 1), max_block_size >> 1);
-    char* allocated = UPB_PTR_AT(block, kUpb_MemblockReserve, char);
-    char* poison_start = allocated + size - UPB_PRIVATE(kUpb_Asan_GuardSize);
-    UPB_PRIVATE(upb_Xsan_PoisonRegion)(
-        poison_start, UPB_PTR_AT(block, block->size, char) - poison_start);
-    return allocated;
+  if (one_off && !_upb_Arena_WouldReduceFreeSpace(a, span, block_size)) {
+    one_off = false;
+  }
+
+  UPB_PRIVATE(_upb_Arena_UpdateGrowthState)(a, span, block_size, one_off);
+
+  if (one_off) {
+    UPB_PRIVATE(upb_Xsan_PoisonRegion)(UPB_PTR_AT(block, size, void),
+                                       block_size - size);
+    return block;
   } else {
-    ai->last_block_size = UPB_MIN(block->size, UINT32_MAX);
-    ai->size_hint = ai->last_block_size;
-    _upb_Arena_UseBlock(a, block);
-    UPB_ASSERT(UPB_PRIVATE(_upb_ArenaHas)(a) >= size);
-    return upb_Arena_Malloc(a, size - UPB_PRIVATE(kUpb_Asan_GuardSize));
+    UPB_PRIVATE(_upb_Arena_UseBlock)(a, block, block_size);
+    UPB_ASSERT(UPB_PRIVATE(_upb_ArenaHas)(a) >= span);
+    return upb_Arena_Malloc(a, size);
   }
 }
 
 static upb_Arena* _upb_Arena_InitSlow(upb_alloc* alloc, size_t first_size) {
-  const size_t first_block_overhead =
-      UPB_ALIGN_MALLOC(kUpb_MemblockReserve + sizeof(upb_ArenaState));
-  upb_ArenaState* a;
-
   if (!alloc) return NULL;
 
   // We need to malloc the initial block.
-  size_t block_size =
-      first_block_overhead + UPB_MAX(256, UPB_ALIGN_MALLOC(first_size) +
-                                              UPB_PRIVATE(kUpb_Asan_GuardSize));
-  upb_MemBlock* block = _upb_Arena_AllocBlockInternal(alloc, block_size);
+  size_t block_size = kUpb_ArenaStateReserve +
+                      UPB_MAX(256, UPB_ALIGN_MALLOC(first_size) +
+                                       UPB_PRIVATE(kUpb_Asan_GuardSize));
+  void* block = _upb_Arena_AllocBlockInternal(alloc, &block_size);
   if (!block) return NULL;
 
   // Initialize the arena state in the first block. We "borrow" the memory from
   // the block, because we can't yet call upb_Arena_Malloc.
-  a = UPB_PTR_AT(block, kUpb_MemblockReserve, upb_ArenaState);
+  upb_ArenaState* a = block;
   a->body.block_alloc = _upb_Arena_MakeBlockAlloc(alloc, 0);
-  a->body.last_block_size = UPB_MIN(block->size, UINT32_MAX);
-  a->body.size_hint = UPB_MIN(block->size, UINT32_MAX);
+  a->body.last_block_size = UPB_MIN(block_size, UINT32_MAX);
+  a->body.size_hint = UPB_MIN(block_size, UINT32_MAX);
+  a->head.UPB_ONLYBITS(ptr) = NULL;
+  a->head.UPB_ONLYBITS(end) = NULL;
+
   upb_Atomic_Init(&a->body.parent_or_count, _upb_Arena_TaggedFromRefcount(1));
   upb_Atomic_Init(&a->body.next, NULL);
   upb_Atomic_Init(&a->body.previous_or_tail,
@@ -6600,9 +6428,11 @@ static upb_Arena* _upb_Arena_InitSlow(upb_alloc* alloc, size_t first_size) {
   a->body.upb_alloc_cleanup = NULL;
   UPB_PRIVATE(upb_Xsan_Init)(UPB_XSAN(&a->body));
 
-  _upb_Arena_AddBlock(&a->head, block);
-  _upb_Arena_UseBlockInternal(&a->head, block,
-                              UPB_ALIGN_MALLOC(sizeof(upb_ArenaState)));
+  UPB_PRIVATE(_upb_Arena_AddBlock)(&a->head, block);
+
+  block = UPB_PTR_AT(block, kUpb_ArenaStateReserve, void);
+  block_size -= kUpb_ArenaStateReserve;
+  UPB_PRIVATE(_upb_Arena_UseBlock)(&a->head, block, block_size);
 
   return &a->head;
 }
@@ -6667,7 +6497,7 @@ static void _upb_Arena_DoFree(upb_ArenaInternal* ai) {
     }
     upb_alloc* block_alloc = _upb_ArenaInternal_BlockAlloc(ai);
     upb_MemBlock* block = ai->blocks;
-    upb_AllocCleanupFunc* alloc_cleanup = *ai->upb_alloc_cleanup;
+    upb_AllocCleanupFunc* alloc_cleanup = ai->upb_alloc_cleanup;
     while (block != NULL) {
       // Load first since we are deleting block.
       upb_MemBlock* next_block = block->next;
@@ -7083,7 +6913,8 @@ void UPB_PRIVATE(_upb_Arena_SwapOut)(upb_Arena* des, const upb_Arena* src) {
   UPB_PRIVATE(_upb_Arena_SwapIn)(des, src);
 }
 
-bool _upb_Arena_WasLastAlloc(struct upb_Arena* a, void* ptr, size_t oldsize) {
+bool _upb_Arena_WasLastAllocFromPreviousBlock(struct upb_Arena* a, void* ptr,
+                                              size_t oldsize) {
   upb_ArenaInternal* ai = upb_Arena_Internal(a);
   upb_MemBlock* block = ai->blocks;
   // Skip any arena refs.
@@ -7092,9 +6923,33 @@ bool _upb_Arena_WasLastAlloc(struct upb_Arena* a, void* ptr, size_t oldsize) {
   }
   if (block == NULL) return false;
   char* start = UPB_PTR_AT(block, kUpb_MemblockReserve, char);
+
+  // We don't actually track the final pointer value, so we can only check that
+  // the span is within the previous block.
   return UPB_PRIVATE(upb_Xsan_PtrEq)(ptr, start) &&
          UPB_PRIVATE(_upb_Arena_AllocSpan)(oldsize) ==
              block->size - kUpb_MemblockReserve;
+}
+
+void* UPB_PRIVATE(_upb_Arena_Steal)(struct upb_Arena* a, size_t* size) {
+  UPB_PRIVATE(upb_Xsan_AccessReadWrite)(UPB_XSAN(a));
+  size_t have = UPB_PRIVATE(_upb_ArenaHas)(a);
+  if (have < *size) return NULL;
+
+  *size = have;
+  void* ptr = a->UPB_ONLYBITS(ptr);
+  a->UPB_ONLYBITS(ptr) += have;
+
+  return UPB_PRIVATE(upb_Xsan_NewUnpoisonedRegion)(UPB_XSAN(a), ptr, have);
+}
+
+// Frees a block previously allocated with _upb_Arena_AllocBlock.
+void UPB_PRIVATE(_upb_Arena_FreeBlock)(upb_Arena* a, void* block) {
+  UPB_PRIVATE(upb_Xsan_AccessReadWrite)(UPB_XSAN(a));
+  upb_MemBlock* b =
+      UPB_PTR_AT(block, -(ptrdiff_t)kUpb_MemblockReserve, upb_MemBlock);
+  upb_alloc* alloc = upb_Arena_GetUpbAlloc(a);
+  upb_free_sized(alloc, b, b->size);
 }
 
 
@@ -7130,7 +6985,7 @@ bool upb_Message_SetMapEntry(upb_Map* map, const upb_MiniTableField* f,
 
 upb_Array* upb_Array_New(upb_Arena* a, upb_CType type) {
   const int lg2 = UPB_PRIVATE(_upb_CType_SizeLg2)(type);
-  return UPB_PRIVATE(_upb_Array_New)(a, 4, lg2);
+  return UPB_PRIVATE(_upb_Array_New)(a, _UPB_ARRAY_DEFAULT_INITIAL_SIZE, lg2);
 }
 
 upb_MessageValue upb_Array_Get(const upb_Array* arr, size_t i) {
@@ -7278,6 +7133,10 @@ bool UPB_PRIVATE(_upb_Array_Realloc)(upb_Array* array, size_t min_capacity,
       break;
     }
   }
+
+  // If capacity doubling overflowed to SIZE_MAX, fail. No valid array can hold
+  // SIZE_MAX elements, and downstream size calculations would overflow.
+  if (new_capacity == SIZE_MAX) return false;
 
   size_t new_bytes = new_capacity;
   if (upb_ShlOverflow(&new_bytes, lg2)) {
@@ -7612,14 +7471,7 @@ static bool _upb_mapsorter_resize(_upb_mapsorter* s, _upb_sortedmap* sorted,
 
 bool _upb_mapsorter_pushmap(_upb_mapsorter* s, upb_FieldType key_type,
                             const upb_Map* map, _upb_sortedmap* sorted) {
-  int map_size;
-  if (map->UPB_PRIVATE(is_strtable)) {
-    map_size = _upb_Map_Size(map);
-  } else {
-    // For inttable, only sort the table entries, since the array part is
-    // already in a sorted order.
-    map_size = map->t.inttable.t.count;
-  }
+  int map_size = _upb_Map_Size(map);
 
   if (!_upb_mapsorter_resize(s, sorted, map_size)) return false;
 
@@ -7631,8 +7483,6 @@ bool _upb_mapsorter_pushmap(_upb_mapsorter* s, upb_FieldType key_type,
     src = map->t.strtable.t.entries;
     end = src + upb_table_size(&map->t.strtable.t);
   } else {
-    // For inttable, only sort the table entries, since the array part is
-    // already in a sorted order.
     src = map->t.inttable.t.entries;
     end = src + upb_table_size(&map->t.inttable.t);
   }
@@ -7664,7 +7514,7 @@ bool _upb_mapsorter_pushexts(_upb_mapsorter* s, const upb_Message_Internal* in,
                              _upb_sortedmap* sorted) {
   size_t count = 0;
   for (size_t i = 0; i < in->size; i++) {
-    count += upb_TaggedAuxPtr_IsExtension(in->aux_data[i]);
+    count += upb_TaggedAuxPtr_IsCanonicalExtension(in->aux_data[i]);
   }
   if (!_upb_mapsorter_resize(s, sorted, count)) return false;
   if (count == 0) return true;
@@ -7672,8 +7522,8 @@ bool _upb_mapsorter_pushexts(_upb_mapsorter* s, const upb_Message_Internal* in,
       (const upb_Extension**)&s->entries[sorted->start];
   for (size_t i = 0; i < in->size; i++) {
     upb_TaggedAuxPtr tagged_ptr = in->aux_data[i];
-    if (upb_TaggedAuxPtr_IsExtension(tagged_ptr)) {
-      *entry++ = upb_TaggedAuxPtr_Extension(tagged_ptr);
+    if (upb_TaggedAuxPtr_IsCanonicalExtension(tagged_ptr)) {
+      *entry++ = upb_TaggedAuxPtr_CanonicalExtension(tagged_ptr);
     }
   }
   qsort(&s->entries[sorted->start], count, sizeof(*s->entries),
@@ -7699,14 +7549,15 @@ UPB_NOINLINE bool UPB_PRIVATE(_upb_Message_AddUnknownSlowPath)(upb_Message* msg,
                                                                size_t len,
                                                                upb_Arena* arena,
                                                                bool alias) {
+  UPB_ASSERT(!upb_Message_IsFrozen(msg));
   {
     upb_Message_Internal* in = UPB_PRIVATE(_upb_Message_GetInternal)(msg);
     // Alias fast path was already checked in the inline function that calls
     // this one
     if (!alias && in && in->size) {
       upb_TaggedAuxPtr ptr = in->aux_data[in->size - 1];
-      if (upb_TaggedAuxPtr_IsUnknown(ptr)) {
-        upb_StringView* existing = upb_TaggedAuxPtr_UnknownData(ptr);
+      if (upb_TaggedAuxPtr_IsUnknownStringView(ptr)) {
+        upb_StringView* existing = upb_TaggedPtrAux_StringViewRepr(ptr);
         if (!upb_TaggedAuxPtr_IsUnknownAliased(ptr)) {
           // If part of the existing field was deleted at the beginning, we can
           // reconstruct it by comparing the address of the end with the address
@@ -7773,8 +7624,8 @@ bool UPB_PRIVATE(_upb_Message_AddUnknownV)(struct upb_Message* msg,
     upb_Message_Internal* in = UPB_PRIVATE(_upb_Message_GetInternal)(msg);
     if (in && in->size) {
       upb_TaggedAuxPtr ptr = in->aux_data[in->size - 1];
-      if (upb_TaggedAuxPtr_IsUnknown(ptr)) {
-        upb_StringView* existing = upb_TaggedAuxPtr_UnknownData(ptr);
+      if (upb_TaggedAuxPtr_IsUnknownStringView(ptr)) {
+        upb_StringView* existing = upb_TaggedPtrAux_StringViewRepr(ptr);
         if (!upb_TaggedAuxPtr_IsUnknownAliased(ptr)) {
           size_t prev_alloc_size =
               (existing->data + existing->size) - (char*)existing;
@@ -7823,7 +7674,7 @@ void _upb_Message_DiscardUnknown_shallow(upb_Message* msg) {
   uint32_t size = 0;
   for (uint32_t i = 0; i < in->size; i++) {
     upb_TaggedAuxPtr tagged_ptr = in->aux_data[i];
-    if (upb_TaggedAuxPtr_IsExtension(tagged_ptr)) {
+    if (upb_TaggedAuxPtr_IsSemanticallyKnown(tagged_ptr)) {
       in->aux_data[size++] = tagged_ptr;
     }
   }
@@ -7834,60 +7685,20 @@ upb_Message_DeleteUnknownStatus upb_Message_DeleteUnknown(upb_Message* msg,
                                                           upb_StringView* data,
                                                           uintptr_t* iter,
                                                           upb_Arena* arena) {
-  UPB_ASSERT(!upb_Message_IsFrozen(msg));
-  UPB_ASSERT(*iter != kUpb_Message_UnknownBegin);
-  upb_Message_Internal* in = UPB_PRIVATE(_upb_Message_GetInternal)(msg);
-  UPB_ASSERT(in);
-  UPB_ASSERT(*iter <= in->size);
-  upb_TaggedAuxPtr unknown_ptr = in->aux_data[*iter - 1];
-  UPB_ASSERT(upb_TaggedAuxPtr_IsUnknown(unknown_ptr));
-  upb_StringView* unknown = upb_TaggedAuxPtr_UnknownData(unknown_ptr);
-  if (unknown->data == data->data && unknown->size == data->size) {
-    // Remove whole field
-    in->aux_data[*iter - 1] = upb_TaggedAuxPtr_Null();
-  } else if (unknown->data == data->data) {
-    // Strip prefix
-    unknown->data += data->size;
-    unknown->size -= data->size;
-    *data = *unknown;
-    return kUpb_DeleteUnknown_IterUpdated;
-  } else if (unknown->data + unknown->size == data->data + data->size) {
-    // Truncate existing field
-    unknown->size -= data->size;
-    if (!upb_TaggedAuxPtr_IsUnknownAliased(unknown_ptr)) {
-      in->aux_data[*iter - 1] =
-          upb_TaggedAuxPtr_MakeUnknownDataAliased(unknown);
-    }
-  } else {
-    UPB_ASSERT(unknown->data < data->data &&
-               unknown->data + unknown->size > data->data + data->size);
-    // Split in the middle
-    upb_StringView* prefix = unknown;
-    upb_StringView* suffix = upb_Arena_Malloc(arena, sizeof(upb_StringView));
-    if (!suffix) {
-      return kUpb_DeleteUnknown_AllocFail;
-    }
-    if (!UPB_PRIVATE(_upb_Message_ReserveSlot)(msg, arena)) {
-      return kUpb_DeleteUnknown_AllocFail;
-    }
-    in = UPB_PRIVATE(_upb_Message_GetInternal)(msg);
-    if (*iter != in->size) {
-      // Shift later entries down so that unknown field ordering is preserved
-      memmove(&in->aux_data[*iter + 1], &in->aux_data[*iter],
-              sizeof(upb_TaggedAuxPtr) * (in->size - *iter));
-    }
-    in->aux_data[*iter] = upb_TaggedAuxPtr_MakeUnknownDataAliased(suffix);
-    if (!upb_TaggedAuxPtr_IsUnknownAliased(unknown_ptr)) {
-      in->aux_data[*iter - 1] = upb_TaggedAuxPtr_MakeUnknownDataAliased(prefix);
-    }
-    in->size++;
-    suffix->data = data->data + data->size;
-    suffix->size = (prefix->data + prefix->size) - suffix->data;
-    prefix->size = data->data - prefix->data;
+  upb_MessageUnknown unknown;
+  unknown.type = kUpb_MessageUnknownType_StringView;
+  unknown.value.bytes = *data;
+
+  upb_Message_DeleteUnknownStatus res =
+      upb_Message_DeleteUnknown2(msg, &unknown, iter, arena);
+  UPB_ASSERT(unknown.type == kUpb_MessageUnknownType_StringView);
+  if (res == kUpb_DeleteUnknown_IterUpdated ||
+      res == kUpb_DeleteUnknown_DeletedLast) {
+    // the unknown data remains the same on the result of
+    // kUpb_DeleteUnknown_AllocFail.
+    *data = unknown.value.bytes;
   }
-  return upb_Message_NextUnknown(msg, data, iter)
-             ? kUpb_DeleteUnknown_IterUpdated
-             : kUpb_DeleteUnknown_DeletedLast;
+  return res;
 }
 
 size_t upb_Message_ExtensionCount(const upb_Message* msg) {
@@ -7945,10 +7756,13 @@ void upb_Message_Freeze(upb_Message* msg, const upb_MiniTable* m) {
   uint32_t size = in ? in->size : 0;
   for (size_t i = 0; i < size; i++) {
     upb_TaggedAuxPtr tagged_ptr = in->aux_data[i];
-    if (!upb_TaggedAuxPtr_IsExtension(tagged_ptr)) {
+    upb_TaggedAux aux;
+    upb_TaggedAuxType type = upb_TaggedAux_Get(tagged_ptr, &aux);
+    if (type != kUpb_TaggedAuxType_CanonicalExtension &&
+        type != kUpb_TaggedAuxType_NonCanonicalExtension) {
       continue;
     }
-    const upb_Extension* ext = upb_TaggedAuxPtr_Extension(tagged_ptr);
+    const upb_Extension* ext = aux.extension;
     const upb_MiniTableExtension* e = ext->ext;
     const upb_MiniTableField* f = &e->UPB_PRIVATE(field);
     const upb_MiniTable* m2 = upb_MiniTableExtension_GetSubMessage(e);
@@ -7973,6 +7787,88 @@ void upb_Message_Freeze(upb_Message* msg, const upb_MiniTable* m) {
         break;
     }
   }
+}
+
+
+#include <stddef.h>
+#include <stdint.h>
+#include <string.h>
+
+
+// Must be last.
+
+upb_Message_DeleteUnknownStatus upb_Message_DeleteUnknown2(
+    struct upb_Message* msg, struct upb_MessageUnknown* data, uintptr_t* iter,
+    struct upb_Arena* arena) {
+  UPB_ASSERT(!upb_Message_IsFrozen(msg));
+  UPB_ASSERT(*iter != kUpb_Message_UnknownBegin);
+  upb_Message_Internal* in = UPB_PRIVATE(_upb_Message_GetInternal)(msg);
+  UPB_ASSERT(in);
+  UPB_ASSERT(*iter <= in->size);
+  upb_TaggedAuxPtr unknown_ptr = in->aux_data[*iter - 1];
+
+  if (data->type == kUpb_MessageUnknownType_NonCanonicalExtension) {
+    UPB_ASSERT(upb_TaggedAuxPtr_IsNonCanonicalExtension(unknown_ptr));
+    // When the unknown is a non-canonical extension, we just remove it from the
+    // aux data array.
+    in->aux_data[*iter - 1] = upb_TaggedAuxPtr_Null();
+    return upb_Message_NextUnknown2(msg, data, iter)
+               ? kUpb_DeleteUnknown_IterUpdated
+               : kUpb_DeleteUnknown_DeletedLast;
+  }
+
+  UPB_ASSERT(upb_TaggedAuxPtr_IsUnknownStringView(unknown_ptr));
+  upb_StringView* unknown = upb_TaggedPtrAux_StringViewRepr(unknown_ptr);
+  UPB_ASSERT(data->type == kUpb_MessageUnknownType_StringView);
+  upb_StringView* data_bytes = &data->value.bytes;
+  if (unknown->data == data_bytes->data && unknown->size == data_bytes->size) {
+    // Remove whole field
+    in->aux_data[*iter - 1] = upb_TaggedAuxPtr_Null();
+  } else if (unknown->data == data_bytes->data) {
+    // Strip prefix
+    unknown->data += data_bytes->size;
+    unknown->size -= data_bytes->size;
+    *data_bytes = *unknown;
+    return kUpb_DeleteUnknown_IterUpdated;
+  } else if (unknown->data + unknown->size ==
+             data_bytes->data + data_bytes->size) {
+    // Truncate existing field
+    unknown->size -= data_bytes->size;
+    if (!upb_TaggedAuxPtr_IsUnknownAliased(unknown_ptr)) {
+      in->aux_data[*iter - 1] =
+          upb_TaggedAuxPtr_MakeUnknownDataAliased(unknown);
+    }
+  } else {
+    UPB_ASSERT(unknown->data < data_bytes->data &&
+               unknown->data + unknown->size >
+                   data_bytes->data + data_bytes->size);
+    // Split in the middle
+    upb_StringView* prefix = unknown;
+    upb_StringView* suffix = upb_Arena_Malloc(arena, sizeof(upb_StringView));
+    if (!suffix) {
+      return kUpb_DeleteUnknown_AllocFail;
+    }
+    if (!UPB_PRIVATE(_upb_Message_ReserveSlot)(msg, arena)) {
+      return kUpb_DeleteUnknown_AllocFail;
+    }
+    in = UPB_PRIVATE(_upb_Message_GetInternal)(msg);
+    if (*iter != in->size) {
+      // Shift later entries down so that unknown field ordering is preserved
+      memmove(&in->aux_data[*iter + 1], &in->aux_data[*iter],
+              sizeof(upb_TaggedAuxPtr) * (in->size - *iter));
+    }
+    in->aux_data[*iter] = upb_TaggedAuxPtr_MakeUnknownDataAliased(suffix);
+    if (!upb_TaggedAuxPtr_IsUnknownAliased(unknown_ptr)) {
+      in->aux_data[*iter - 1] = upb_TaggedAuxPtr_MakeUnknownDataAliased(prefix);
+    }
+    in->size++;
+    suffix->data = data_bytes->data + data_bytes->size;
+    suffix->size = (prefix->data + prefix->size) - suffix->data;
+    prefix->size = data_bytes->data - prefix->data;
+  }
+  return upb_Message_NextUnknown2(msg, data, iter)
+             ? kUpb_DeleteUnknown_IterUpdated
+             : kUpb_DeleteUnknown_DeletedLast;
 }
 
 
@@ -8234,7 +8130,7 @@ static void upb_UnknownFields_Merge(upb_UnknownField* arr, size_t start,
   if (ptr1 < end1) {
     memcpy(out, ptr1, (end1 - ptr1) * sizeof(*out));
   } else if (ptr2 < end2) {
-    memcpy(out, ptr1, (end2 - ptr2) * sizeof(*out));
+    memcpy(out, ptr2, (end2 - ptr2) * sizeof(*out));
   }
 }
 
@@ -8702,9 +8598,10 @@ upb_Message* _upb_Message_Copy(upb_Message* dst, const upb_Message* src,
 
   for (size_t i = 0; i < in->size; i++) {
     upb_TaggedAuxPtr tagged_ptr = in->aux_data[i];
-    if (upb_TaggedAuxPtr_IsExtension(tagged_ptr)) {
+    if (upb_TaggedAuxPtr_IsCanonicalExtension(tagged_ptr)) {
       // Clone extension
-      const upb_Extension* msg_ext = upb_TaggedAuxPtr_Extension(tagged_ptr);
+      const upb_Extension* msg_ext =
+          upb_TaggedAuxPtr_CanonicalExtension(tagged_ptr);
       const upb_MiniTableField* field = &msg_ext->ext->UPB_PRIVATE(field);
       upb_Extension* dst_ext = UPB_PRIVATE(_upb_Message_GetOrCreateExtension)(
           dst, msg_ext->ext, arena);
@@ -8724,9 +8621,9 @@ upb_Message* _upb_Message_Copy(upb_Message* dst, const upb_Message* src,
         }
         dst_ext->data.array_val = cloned_array;
       }
-    } else if (upb_TaggedAuxPtr_IsUnknown(tagged_ptr)) {
+    } else if (upb_TaggedAuxPtr_IsUnknownStringView(tagged_ptr)) {
       // Clone unknown
-      upb_StringView* unknown = upb_TaggedAuxPtr_UnknownData(tagged_ptr);
+      upb_StringView* unknown = upb_TaggedPtrAux_StringViewRepr(tagged_ptr);
       // Make a copy into destination arena.
       if (!UPB_PRIVATE(_upb_Message_AddUnknown)(
               dst, unknown->data, unknown->size, arena, kUpb_AddUnknown_Copy)) {
@@ -8773,12 +8670,12 @@ bool upb_Message_ShallowCopy(upb_Message* dst, const upb_Message* src,
   for (size_t i = 0; i < in->size; i++) {
     upb_TaggedAux aux;
     switch (upb_TaggedAux_Get(in->aux_data[i], &aux)) {
-      case kUpb_TaggedAuxType_Extension: {
+      case kUpb_TaggedAuxType_CanonicalExtension: {
         const upb_Extension* msg_ext = aux.extension;
         upb_Extension* dst_ext = upb_Arena_Malloc(arena, sizeof(upb_Extension));
         if (!dst_ext) return false;
         *dst_ext = *msg_ext;
-        dst_in->aux_data[i] = upb_TaggedAuxPtr_MakeExtension(dst_ext);
+        dst_in->aux_data[i] = upb_TaggedAuxPtr_MakeCanonicalExtension(dst_ext);
         break;
       }
       case kUpb_TaggedAuxType_Unknown:
@@ -8786,8 +8683,17 @@ bool upb_Message_ShallowCopy(upb_Message* dst, const upb_Message* src,
         upb_StringView* dst_sv =
             upb_Arena_Malloc(arena, sizeof(upb_StringView));
         if (!dst_sv) return false;
-        *dst_sv = aux.unknown_data;
+        *dst_sv = *aux.unknown_data;
         dst_in->aux_data[i] = upb_TaggedAuxPtr_MakeUnknownDataAliased(dst_sv);
+        break;
+      }
+      case kUpb_TaggedAuxType_NonCanonicalExtension: {
+        const upb_Extension* msg_ext = aux.extension;
+        upb_Extension* dst_ext = upb_Arena_Malloc(arena, sizeof(upb_Extension));
+        if (!dst_ext) return false;
+        *dst_ext = *msg_ext;
+        dst_in->aux_data[i] =
+            upb_TaggedAuxPtr_MakeNonCanonicalExtension(dst_ext);
         break;
       }
     }
@@ -8851,8 +8757,9 @@ const upb_Extension* UPB_PRIVATE(_upb_Message_Getext)(
 
   for (size_t i = 0; i < in->size; i++) {
     upb_TaggedAuxPtr tagged_ptr = in->aux_data[i];
-    if (upb_TaggedAuxPtr_IsExtension(tagged_ptr)) {
-      const upb_Extension* ext = upb_TaggedAuxPtr_Extension(tagged_ptr);
+    if (upb_TaggedAuxPtr_IsCanonicalExtension(tagged_ptr)) {
+      const upb_Extension* ext =
+          upb_TaggedAuxPtr_CanonicalExtension(tagged_ptr);
       if (ext->ext == e) {
         return ext;
       }
@@ -8862,8 +8769,9 @@ const upb_Extension* UPB_PRIVATE(_upb_Message_Getext)(
   return NULL;
 }
 
-upb_Extension* UPB_PRIVATE(_upb_Message_GetOrCreateExtension)(
-    struct upb_Message* msg, const upb_MiniTableExtension* e, upb_Arena* a) {
+UPB_INLINE upb_Extension* _upb_Message_GetOrCreateExtensionInternal(
+    struct upb_Message* msg, const upb_MiniTableExtension* e, upb_Arena* a,
+    bool canonical) {
   UPB_ASSERT(!upb_Message_IsFrozen(msg));
   upb_Extension* ext = (upb_Extension*)UPB_PRIVATE(_upb_Message_Getext)(msg, e);
   if (ext) return ext;
@@ -8874,8 +8782,22 @@ upb_Extension* UPB_PRIVATE(_upb_Message_GetOrCreateExtension)(
   if (!ext) return NULL;
   memset(ext, 0, sizeof(upb_Extension));
   ext->ext = e;
-  in->aux_data[in->size++] = upb_TaggedAuxPtr_MakeExtension(ext);
+  in->aux_data[in->size++] =
+      canonical ? upb_TaggedAuxPtr_MakeCanonicalExtension(ext)
+                : upb_TaggedAuxPtr_MakeNonCanonicalExtension(ext);
   return ext;
+}
+
+upb_Extension* UPB_PRIVATE(_upb_Message_GetOrCreateExtension)(
+    struct upb_Message* msg, const upb_MiniTableExtension* e, upb_Arena* a) {
+  return _upb_Message_GetOrCreateExtensionInternal(msg, e, a,
+                                                   /*canonical=*/true);
+}
+
+upb_Extension* UPB_PRIVATE(_upb_Message_CreateNonCanonicalExtension)(
+    struct upb_Message* msg, const upb_MiniTableExtension* e, upb_Arena* a) {
+  return _upb_Message_GetOrCreateExtensionInternal(msg, e, a,
+                                                   /*canonical=*/false);
 }
 
 
@@ -9597,6 +9519,10 @@ static const char* upb_MtDecoder_Parse(upb_MtDecoder* d, const char* ptr,
         return --ptr;
       }
       upb_MiniTableField* field = fields;
+      if (*field_count == UINT16_MAX) {
+        upb_MdDecoder_ErrorJmp(
+            &d->base, "Fields in message exceed the limit of %u", UINT16_MAX);
+      }
       *field_count += 1;
       fields = (char*)fields + field_size;
       uint32_t number = ++last_field_number;
@@ -10000,6 +9926,18 @@ static const char* upb_MtDecoder_DoBuildMiniTableExtension(
   if (!ret || count != 1) return NULL;
 
   upb_MiniTableField* f = &ext->UPB_PRIVATE(field);
+  uint32_t fieldnum = upb_MiniTableField_Number(f);
+
+  const uint32_t kMaxFieldNumber = (1 << 29) - 1;
+  if (fieldnum == 0 ||
+      (fieldnum > kMaxFieldNumber && !upb_MiniTable_IsMessageSet(extendee))) {
+    upb_MdDecoder_ErrorJmp(&decoder->base, "Invalid extension field number");
+  }
+
+  if (upb_MiniTable_FindFieldByNumber(extendee, fieldnum) != NULL) {
+    upb_MdDecoder_ErrorJmp(&decoder->base,
+                           "Extension overlaps with a known field");
+  }
 
   f->UPB_PRIVATE(mode) |= kUpb_LabelFlags_IsExtension;
   f->UPB_PRIVATE(offset) = 0;
@@ -10084,8 +10022,15 @@ upb_MiniTable* _upb_MiniTable_Build(const char* data, size_t len,
 #include <string.h>
 
 
-#ifdef UPB_ENABLE_FASTTABLE
+// Our awkward dance for including fasttable only when it is enabled.
+#if UPB_FASTTABLE
+#define UPB_INCLUDE_FAST_DECODE
 #endif
+
+#ifdef UPB_INCLUDE_FAST_DECODE
+#endif
+
+#undef UPB_INCLUDE_FAST_DECODE
 
 // Must be last.
 
@@ -10110,7 +10055,7 @@ bool upb_MiniTable_SetSubMessage(upb_MiniTable* table,
             (field->UPB_PRIVATE(mode) & ~kUpb_FieldMode_Mask) |
             kUpb_FieldMode_Map;
 
-#ifdef UPB_ENABLE_FASTTABLE
+#if UPB_FASTTABLE
         // The fasttable decoder cannot decode maps. Unfortunately we do not
         // know until this moment that the field is a map, so we have to
         // overwrite the fasttable entry (if any) that we built for this field
@@ -10597,12 +10542,6 @@ UPB_API upb_ExtensionRegistryStatus upb_ExtensionRegistry_Add(
   uint32_t fieldnum = upb_MiniTableExtension_Number(e);
   const upb_MiniTable* extendee = upb_MiniTableExtension_Extendee(e);
 
-  const uint32_t kMaxFieldNumber = (1 << 29) - 1;
-  if (fieldnum == 0 ||
-      (fieldnum > kMaxFieldNumber && !upb_MiniTable_IsMessageSet(extendee))) {
-    return kUpb_ExtensionRegistryStatus_InvalidExtension;
-  }
-
   if (upb_exttable_lookup(&r->exts, extendee, fieldnum) != NULL) {
     return kUpb_ExtensionRegistryStatus_DuplicateEntry;
   }
@@ -10641,6 +10580,10 @@ const upb_MiniTableExtension* upb_ExtensionRegistry_Lookup(
   return (const upb_MiniTableExtension*)v;
 }
 
+size_t upb_ExtensionRegistry_Size(const upb_ExtensionRegistry* r) {
+  return upb_exttable_size(&r->exts);
+}
+
 
 #include <stddef.h>
 #include <stdint.h>
@@ -10670,18 +10613,17 @@ static bool _upb_GeneratedRegistry_AddAllLinkedExtensions(
   const UPB_PRIVATE(upb_GeneratedExtensionListEntry)* entry =
       UPB_PRIVATE(upb_generated_extension_list);
   while (entry != NULL) {
-    const char* current = (const char*)entry->start;
-    const char* end = (const char*)entry->stop;
-    while ((size_t)(end - current) >= sizeof(upb_MiniTableExtension)) {
-      const upb_MiniTableExtension* ext =
-          (const upb_MiniTableExtension*)current;
+    const upb_MiniTableExtension** current = entry->start;
+    for (current = entry->start; current != entry->stop; ++current) {
+      const upb_MiniTableExtension* ext = *current;
       // Sentinels and padding introduced by the linker can result in zeroed
       // entries, so simply skip them.
-      if (upb_MiniTableExtension_Number(ext) == 0) {
+      if (*current == NULL) {
         // MSVC introduces padding that might not be sized exactly the same as
-        // upb_MiniTableExtension, so we can't iterate by sizeof.  This is a
-        // valid thing for any linker to do, so it's safer to just always do it.
-        current += UPB_ALIGN_OF(upb_MiniTableExtension);
+        // the linker array element, but it should be properly aligned, so just
+        // skipping empty elements should be safe.  (If the size and align of
+        // the array elements was different, we'd have to do something more
+        // complicated).
         continue;
       }
 
@@ -10689,7 +10631,6 @@ static bool _upb_GeneratedRegistry_AddAllLinkedExtensions(
           kUpb_ExtensionRegistryStatus_Ok) {
         return false;
       }
-      current += sizeof(upb_MiniTableExtension);
     }
     entry = entry->next;
   }
@@ -10865,6 +10806,18 @@ const struct upb_MiniTable UPB_PRIVATE(_kUpb_MiniTable_StaticallyTreeShaken) = {
     .UPB_PRIVATE(table_mask) = -1,
     .UPB_PRIVATE(required_count) = 0,
 };
+
+#include <stdio.h>
+#include <stdlib.h>
+
+// Must be last.
+
+UPB_NORETURN void _upb_UnreachableFailure(const char* file, int line,
+                                          const char* function_name) {
+  fprintf(stderr, "%s:%d: Reached unreachable statement in function `%s`.\n",
+          file, line, function_name ? function_name : "(unknown)");
+  abort();
+}
 
 
 #include <assert.h>
@@ -11253,10 +11206,13 @@ static const upb_FileDef* upb_DefBuilder_AddFileToPool(
     _upb_DefBuilder_OomErr(builder);
   } else {
     _upb_FileDef_Create(builder, file_proto);
-    upb_strtable_insert(&s->files, name.data, name.size,
-                        upb_value_constptr(builder->file), builder->arena);
+    bool ok =
+        upb_strtable_insert(&s->files, name.data, name.size,
+                            upb_value_constptr(builder->file), builder->arena);
+    UPB_ASSERT(ok);
     UPB_ASSERT(upb_Status_IsOk(status));
-    upb_Arena_Fuse(s->arena, builder->arena);
+    ok = upb_Arena_Fuse(s->arena, builder->arena);
+    UPB_ASSERT(ok);
   }
 
   if (builder->arena) upb_Arena_Free(builder->arena);
@@ -11740,9 +11696,6 @@ static void create_enumdef(upb_DefBuilder* ctx, const char* prefix,
   e->res_names = _upb_EnumReservedNames_New(ctx, n_res_name, res_names);
 
   e->visibility = google_protobuf_EnumDescriptorProto_visibility(enum_proto);
-
-  if (!upb_inttable_compact(&e->iton, ctx->arena)) _upb_DefBuilder_OomErr(ctx);
-
   if (upb_EnumDef_IsClosed(e)) {
     if (ctx->layout) {
       e->layout = upb_MiniTableFile_Enum(ctx->layout, ctx->enum_count++);
@@ -13140,7 +13093,7 @@ const upb_FileDef* upb_FileDef_PublicDependency(const upb_FileDef* f, int i) {
 }
 
 const upb_FileDef* upb_FileDef_WeakDependency(const upb_FileDef* f, int i) {
-  UPB_ASSERT(0 <= i && i < f->public_dep_count);
+  UPB_ASSERT(0 <= i && i < f->weak_dep_count);
   return f->deps[f->weak_deps[i]];
 }
 
@@ -13385,7 +13338,7 @@ void _upb_FileDef_Create(upb_DefBuilder* ctx,
   file->public_deps = UPB_DEFBUILDER_ALLOCARRAY(ctx, int32_t, n);
   int32_t* mutable_public_deps = (int32_t*)file->public_deps;
   for (size_t i = 0; i < n; i++) {
-    if (public_deps[i] >= file->dep_count) {
+    if (public_deps[i] < 0 || public_deps[i] >= file->dep_count) {
       _upb_DefBuilder_Errf(ctx, "public_dep %d is out of range",
                            (int)public_deps[i]);
     }
@@ -13397,7 +13350,7 @@ void _upb_FileDef_Create(upb_DefBuilder* ctx,
   file->weak_deps = UPB_DEFBUILDER_ALLOCARRAY(ctx, const int32_t, n);
   int32_t* mutable_weak_deps = (int32_t*)file->weak_deps;
   for (size_t i = 0; i < n; i++) {
-    if (weak_deps[i] >= file->dep_count) {
+    if (weak_deps[i] < 0 || weak_deps[i] >= file->dep_count) {
       _upb_DefBuilder_Errf(ctx, "weak_dep %d is out of range",
                            (int)weak_deps[i]);
     }
@@ -13967,7 +13920,9 @@ make:
   }
 
   val.array_val = ret.array;
-  upb_Message_SetFieldByDef(msg, f, val, a);
+  if (!upb_Message_SetFieldByDef(msg, f, val, a)) {
+    ret.array = NULL;
+  }
 
   return ret;
 }
@@ -14047,8 +14002,9 @@ bool upb_Message_Next(const upb_Message* msg, const upb_MessageDef* m,
 
     for (; (i - n) < in->size; i++) {
       upb_TaggedAuxPtr tagged_ptr = in->aux_data[i - n];
-      if (upb_TaggedAuxPtr_IsExtension(tagged_ptr)) {
-        const upb_Extension* ext = upb_TaggedAuxPtr_Extension(tagged_ptr);
+      if (upb_TaggedAuxPtr_IsCanonicalExtension(tagged_ptr)) {
+        const upb_Extension* ext =
+            upb_TaggedAuxPtr_CanonicalExtension(tagged_ptr);
         memcpy(out_val, &ext->data, sizeof(*out_val));
         *out_f = upb_DefPool_FindExtensionByMiniTable(ext_pool, ext->ext);
         *iter = i;
@@ -14829,7 +14785,6 @@ static void create_msgdef(upb_DefBuilder* ctx, const char* prefix,
   m->real_oneof_count = m->oneof_count - synthetic_count;
 
   assign_msg_wellknowntype(m);
-  if (!upb_inttable_compact(&m->itof, ctx->arena)) _upb_DefBuilder_OomErr(ctx);
 
   const google_protobuf_EnumDescriptorProto* const* enums =
       google_protobuf_DescriptorProto_enum_type(msg_proto, &n_enum);
@@ -16107,19 +16062,6 @@ enum {
 #define OP_FIXPCK_LG2(n) (n + 5) /* n in [2, 3] => op in [7, 8] */
 #define OP_VARPCK_LG2(n) (n + 9) /* n in [0, 2, 3] => op in [9, 11, 12] */
 
-typedef union {
-  bool bool_val;
-  uint32_t uint32_val;
-  uint64_t uint64_val;
-  uint32_t size;
-} wireval;
-
-static void _upb_Decoder_AssumeEpsHasErrorHandler(upb_Decoder* d) {
-  UPB_ASSUME(upb_EpsCopyInputStream_HasErrorHandler(&d->input));
-}
-
-#define EPS(d) (_upb_Decoder_AssumeEpsHasErrorHandler(d), &(d)->input)
-
 static bool _upb_Decoder_Reserve(upb_Decoder* d, upb_Array* arr, size_t elem) {
   bool need_realloc =
       arr->UPB_PRIVATE(capacity) - arr->UPB_PRIVATE(size) < elem;
@@ -16144,6 +16086,20 @@ const char* upb_Decoder_DecodeSize(upb_Decoder* d, const char* ptr,
   ptr = upb_WireReader_ReadSize(ptr, &sz, EPS(d));
   *size = sz;
   return ptr;
+}
+
+UPB_FORCEINLINE upb_AddUnknownMode
+_upb_Decoder_GetAddUnknownMode(upb_Decoder* d, const char* data) {
+  if (d->options & kUpb_DecodeOption_AliasString) {
+    if (data != d->input.buffer_start) {
+      // If the data is not from the beginning of the input buffer, then we can
+      // safely attempt to coalesce this region with the previous one.
+      return kUpb_AddUnknown_AliasAllowMerge;
+    } else {
+      return kUpb_AddUnknown_Alias;
+    }
+  }
+  return kUpb_AddUnknown_Copy;
 }
 
 static void _upb_Decoder_MungeInt32(wireval* val) {
@@ -16257,40 +16213,6 @@ const char* _upb_Decoder_DecodeKnownGroup(upb_Decoder* d, const char* ptr,
                                   field->UPB_PRIVATE(number));
 }
 
-#define kUpb_Decoder_EncodeVarint32MaxSize 5
-static char* upb_Decoder_EncodeVarint32(uint32_t val, char* ptr) {
-  do {
-    uint8_t byte = val & 0x7fU;
-    val >>= 7;
-    if (val) byte |= 0x80U;
-    *(ptr++) = byte;
-  } while (val);
-  return ptr;
-}
-
-UPB_FORCEINLINE
-void _upb_Decoder_AddEnumValueToUnknown(upb_Decoder* d, upb_Message* msg,
-                                        const upb_MiniTableField* field,
-                                        wireval* val) {
-  // Unrecognized enum goes into unknown fields.
-  // For packed fields the tag could be arbitrarily far in the past,
-  // so we just re-encode the tag and value here.
-  const uint32_t tag =
-      ((uint32_t)field->UPB_PRIVATE(number) << 3) | kUpb_WireType_Varint;
-  upb_Message* unknown_msg =
-      field->UPB_PRIVATE(mode) & kUpb_LabelFlags_IsExtension ? d->original_msg
-                                                             : msg;
-  char buf[2 * kUpb_Decoder_EncodeVarint32MaxSize];
-  char* end = buf;
-  end = upb_Decoder_EncodeVarint32(tag, end);
-  end = upb_Decoder_EncodeVarint32(val->uint64_val, end);
-
-  if (!UPB_PRIVATE(_upb_Message_AddUnknown)(unknown_msg, buf, end - buf,
-                                            &d->arena, kUpb_AddUnknown_Copy)) {
-    upb_ErrorHandler_ThrowError(d->err, kUpb_DecodeStatus_OutOfMemory);
-  }
-}
-
 UPB_FORCEINLINE
 const char* _upb_Decoder_DecodeFixedPacked(upb_Decoder* d, const char* ptr,
                                            upb_Array* arr, wireval* val,
@@ -16374,9 +16296,17 @@ static const char* _upb_Decoder_DecodeEnumPacked(
     wireval elem;
     ptr = upb_WireReader_ReadVarint(ptr, &elem.uint64_val, EPS(d));
     if (!upb_MiniTableEnum_CheckValue(e, elem.uint64_val)) {
-      _upb_Decoder_AddEnumValueToUnknown(d, msg, field, &elem);
+      upb_Message* unknown_msg =
+          field->UPB_PRIVATE(mode) & kUpb_LabelFlags_IsExtension
+              ? d->original_msg
+              : msg;
+      if (!_upb_Encoder_AddEnumValueToUnknown(unknown_msg, field,
+                                              elem.uint64_val, &d->arena)) {
+        upb_ErrorHandler_ThrowError(d->err, kUpb_DecodeStatus_OutOfMemory);
+      }
       continue;
     }
+    _upb_Decoder_MungeInt32(&elem);
     if (_upb_Decoder_Reserve(d, arr, 1)) {
       out = UPB_PTR_AT(upb_Array_MutableDataPtr(arr),
                        arr->UPB_PRIVATE(size) * 4, void);
@@ -16393,11 +16323,15 @@ static upb_Array* _upb_Decoder_CreateArray(upb_Decoder* d,
                                            const upb_MiniTableField* field) {
   const upb_FieldType field_type = field->UPB_PRIVATE(descriptortype);
   const size_t lg2 = UPB_PRIVATE(_upb_FieldType_SizeLg2)(field_type);
-  upb_Array* ret = UPB_PRIVATE(_upb_Array_New)(&d->arena, 4, lg2);
+  upb_Array* ret = UPB_PRIVATE(_upb_Array_New)(
+      &d->arena, _UPB_ARRAY_DEFAULT_INITIAL_SIZE, lg2);
   if (!ret) upb_ErrorHandler_ThrowError(d->err, kUpb_DecodeStatus_OutOfMemory);
   return ret;
 }
 
+#if UPB_FASTTABLE
+UPB_PRESERVE_NONE
+#endif
 static const char* _upb_Decoder_DecodeToArray(upb_Decoder* d, const char* ptr,
                                               upb_Message* msg,
                                               const upb_MiniTableField* field,
@@ -16507,32 +16441,9 @@ static upb_Map* _upb_Decoder_CreateMap(upb_Decoder* d,
   return ret;
 }
 
-UPB_NOINLINE static void _upb_Decoder_AddMapEntryUnknown(
-    upb_Decoder* d, upb_Message* msg, const upb_MiniTableField* field,
-    upb_Message* ent_msg, const upb_MiniTable* entry) {
-  char* buf;
-  size_t size;
-  upb_EncodeStatus status =
-      upb_Encode(ent_msg, entry, 0, &d->arena, &buf, &size);
-  if (status != kUpb_EncodeStatus_Ok) {
-    upb_ErrorHandler_ThrowError(d->err, kUpb_DecodeStatus_OutOfMemory);
-  }
-  char delim_buf[2 * kUpb_Decoder_EncodeVarint32MaxSize];
-  char* delim_end = delim_buf;
-  uint32_t tag =
-      ((uint32_t)field->UPB_PRIVATE(number) << 3) | kUpb_WireType_Delimited;
-  delim_end = upb_Decoder_EncodeVarint32(tag, delim_end);
-  delim_end = upb_Decoder_EncodeVarint32(size, delim_end);
-  upb_StringView unknown[] = {
-      {delim_buf, delim_end - delim_buf},
-      {buf, size},
-  };
-
-  if (!UPB_PRIVATE(_upb_Message_AddUnknownV)(msg, &d->arena, unknown, 2)) {
-    upb_ErrorHandler_ThrowError(d->err, kUpb_DecodeStatus_OutOfMemory);
-  }
-}
-
+#if UPB_FASTTABLE
+UPB_PRESERVE_NONE
+#endif
 static const char* _upb_Decoder_DecodeToMap(upb_Decoder* d, const char* ptr,
                                             upb_Message* msg,
                                             const upb_MiniTableField* field,
@@ -16583,7 +16494,10 @@ static const char* _upb_Decoder_DecodeToMap(upb_Decoder* d, const char* ptr,
   }
 
   if (upb_Message_HasUnknown(&ent.message)) {
-    _upb_Decoder_AddMapEntryUnknown(d, msg, field, &ent.message, entry);
+    if (!_upb_Encoder_AddMapEntryUnknown(msg, field, &ent.message, entry,
+                                         &d->arena)) {
+      upb_ErrorHandler_ThrowError(d->err, kUpb_DecodeStatus_OutOfMemory);
+    }
   } else {
     if (_upb_Map_Insert(map, &ent.k, map->key_size, &ent.v, map->val_size,
                         &d->arena) == kUpb_MapInsertStatus_OutOfMemory) {
@@ -16593,6 +16507,9 @@ static const char* _upb_Decoder_DecodeToMap(upb_Decoder* d, const char* ptr,
   return ptr;
 }
 
+#if UPB_FASTTABLE
+UPB_PRESERVE_NONE
+#endif
 static const char* _upb_Decoder_DecodeToSubMessage(
     upb_Decoder* d, const char* ptr, upb_Message* msg,
     const upb_MiniTableField* field, wireval* val, int op) {
@@ -16683,16 +16600,16 @@ static void upb_Decoder_AddUnknownMessageSetItem(upb_Decoder* d,
                                                  uint32_t type_id,
                                                  const char* message_data,
                                                  uint32_t message_size) {
-  char buf[6 * kUpb_Decoder_EncodeVarint32MaxSize];
+  char buf[6 * kUpb_Encoder_EncodeVarint32MaxSize];
   char* ptr = buf;
-  ptr = upb_Decoder_EncodeVarint32(kStartItemTag, ptr);
-  ptr = upb_Decoder_EncodeVarint32(kTypeIdTag, ptr);
-  ptr = upb_Decoder_EncodeVarint32(type_id, ptr);
-  ptr = upb_Decoder_EncodeVarint32(kMessageTag, ptr);
-  ptr = upb_Decoder_EncodeVarint32(message_size, ptr);
+  ptr = upb_Encoder_EncodeVarint32(kStartItemTag, ptr);
+  ptr = upb_Encoder_EncodeVarint32(kTypeIdTag, ptr);
+  ptr = upb_Encoder_EncodeVarint32(type_id, ptr);
+  ptr = upb_Encoder_EncodeVarint32(kMessageTag, ptr);
+  ptr = upb_Encoder_EncodeVarint32(message_size, ptr);
   char* split = ptr;
 
-  ptr = upb_Decoder_EncodeVarint32(kEndItemTag, ptr);
+  ptr = upb_Encoder_EncodeVarint32(kEndItemTag, ptr);
   char* end = ptr;
   upb_StringView unknown[] = {
       {buf, split - buf},
@@ -16808,9 +16725,10 @@ static const upb_MiniTableField* _upb_Decoder_FindField(upb_Decoder* d,
       upb_MiniTable_FindFieldByNumber(t, field_number);
   if (field) return field;
 
-  if (d->extreg && t->UPB_PRIVATE(ext)) {
-    return _upb_Decoder_FindExtensionField(d, t, field_number,
-                                           t->UPB_PRIVATE(ext), wire_type);
+  if (d->extreg && UPB_PRIVATE(_upb_MiniTable_ExtModeBase)(t)) {
+    return _upb_Decoder_FindExtensionField(
+        d, t, field_number, UPB_PRIVATE(_upb_MiniTable_ExtModeBase)(t),
+        wire_type);
   }
 
   return &upb_Decoder_FieldNotFoundField;  // Unknown field.
@@ -16850,18 +16768,7 @@ void _upb_Decoder_CheckUnlinked(upb_Decoder* d, const upb_MiniTable* mt,
   if (field->UPB_PRIVATE(mode) & kUpb_LabelFlags_IsExtension) return;
   const upb_MiniTable* mt_sub = upb_MiniTable_GetSubMessageTable(field);
   if (mt_sub != NULL) return;  // Normal case, sub-message is linked.
-#ifndef NDEBUG
-  const upb_MiniTableField* oneof = upb_MiniTable_GetOneof(mt, field);
-  if (oneof) {
-    // All other members of the oneof must be message fields that are also
-    // unlinked.
-    do {
-      UPB_ASSERT(upb_MiniTableField_CType(oneof) == kUpb_CType_Message);
-      const upb_MiniTable* oneof_sub = upb_MiniTable_GetSubMessageTable(oneof);
-      UPB_ASSERT(!oneof_sub);
-    } while (upb_MiniTable_NextOneofField(mt, &oneof));
-  }
-#endif  // NDEBUG
+  _upb_Decoder_VerifyOneofUnlinked(mt, field);
   *op = kUpb_DecodeOp_UnknownField;
 }
 
@@ -16911,7 +16818,7 @@ static int _upb_Decoder_GetDelimitedOp(upb_Decoder* d, const upb_MiniTable* mt,
       [kRepeatedBase + kUpb_FieldType_Fixed32] = OP_FIXPCK_LG2(2),
       [kRepeatedBase + kUpb_FieldType_Bool] = OP_VARPCK_LG2(0),
       [kRepeatedBase + kUpb_FieldType_String] = kUpb_DecodeOp_String,
-      [kRepeatedBase + kUpb_FieldType_Group] = kUpb_DecodeOp_SubMessage,
+      [kRepeatedBase + kUpb_FieldType_Group] = kUpb_DecodeOp_UnknownField,
       [kRepeatedBase + kUpb_FieldType_Message] = kUpb_DecodeOp_SubMessage,
       [kRepeatedBase + kUpb_FieldType_Bytes] = kUpb_DecodeOp_Bytes,
       [kRepeatedBase + kUpb_FieldType_UInt32] = OP_VARPCK_LG2(2),
@@ -17031,42 +16938,116 @@ const char* _upb_Decoder_DecodeKnownField(upb_Decoder* d, const char* ptr,
   }
 }
 
-static const char* _upb_Decoder_DecodeUnknownField(
-    upb_Decoder* d, const char* ptr, upb_Message* msg, uint32_t field_number,
-    uint32_t wire_type, wireval val, const char* start) {
+UPB_FORCEINLINE
+bool _upb_Decoder_CanSkipUnknownField(upb_Decoder* d, uint32_t next_field_num,
+                                      uint32_t next_wire_type,
+                                      const upb_MiniTable* mt, uint32_t* gap_lo,
+                                      uint32_t* gap_hi, bool is_extendable) {
+  if (next_wire_type == kUpb_WireType_EndGroup) {
+    return false;
+  }
+
+  if (UPB_UNLIKELY(upb_MiniTable_IsMessageSet(mt))) {
+    if (next_field_num == kUpb_MsgSet_Item) {
+      return false;
+    }
+  }
+
+  if (next_field_num <= *gap_lo || next_field_num >= *gap_hi) {
+    if (UPB_LIKELY(next_field_num == *gap_hi)) {
+      // Common case of fields in ascending order encountering a known
+      // field
+      return false;
+    }
+    if (UPB_UNLIKELY(next_field_num == 0)) {
+      upb_ErrorHandler_ThrowError(d->err, kUpb_DecodeStatus_Malformed);
+    }
+    if (next_field_num == *gap_lo) {
+      return false;
+    }
+    if (!UPB_PRIVATE(_upb_MiniTable_FindUnknownGap)(mt, next_field_num, gap_lo,
+                                                    gap_hi)) {
+      return false;
+    }
+  }
+
+  if (is_extendable) {
+    if (upb_ExtensionRegistry_Lookup(d->extreg, mt, next_field_num)) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+UPB_NOINLINE
+static const char* _upb_Decoder_DecodeUnknowns(
+    upb_Decoder* d, const char* ptr, upb_Message* msg, const upb_MiniTable* mt,
+    uint32_t field_number, uint32_t wire_type, wireval val, const char* start) {
   if (field_number == 0) {
     upb_ErrorHandler_ThrowError(d->err, kUpb_DecodeStatus_Malformed);
   }
 
-  upb_EpsCopyInputStream_StartCapture(&d->input, start);
+  upb_EpsCopyCapture capture;
+  upb_EpsCopyCapture_Start(&capture, &d->input, start);
 
+  // We have already parsed the tag and "value" (or size) of the first unknown
+  // field. ptr is currently:
+  // - after value for Varint, 32Bit, 64Bit.
+  // - after size for Delimited.
+  // - after tag for StartGroup.
+
+  // We need to finish skipping the first field.
   if (wire_type == kUpb_WireType_Delimited) {
     upb_StringView sv;
     ptr = upb_EpsCopyInputStream_ReadStringEphemeral(&d->input, ptr, val.size,
                                                      &sv);
-    if (!ptr) upb_ErrorHandler_ThrowError(d->err, kUpb_DecodeStatus_Malformed);
   } else if (wire_type == kUpb_WireType_StartGroup) {
     ptr = UPB_PRIVATE(_upb_WireReader_SkipGroup)(ptr, field_number << 3,
                                                  d->depth, &d->input);
   }
 
-  upb_StringView sv;
-  upb_EpsCopyInputStream_EndCapture(&d->input, ptr, &sv);
+  // Fast check if next fields are also unknown, based on the gap between known
+  // fields our first unknown falls between.
 
-  upb_AddUnknownMode mode = kUpb_AddUnknown_Copy;
-  if (d->options & kUpb_DecodeOption_AliasString) {
-    if (sv.data != d->input.buffer_start) {
-      // If the data is not from the beginning of the input buffer, then we can
-      // safely attempt to coalesce this region with the previous one.
-      mode = kUpb_AddUnknown_AliasAllowMerge;
-    } else {
-      mode = kUpb_AddUnknown_Alias;
+  uint32_t gap_lo = 0;
+  uint32_t gap_hi = 0;
+  bool has_gap = UPB_PRIVATE(_upb_MiniTable_FindUnknownGap)(mt, field_number,
+                                                            &gap_lo, &gap_hi);
+
+  if (has_gap) {
+    bool is_extendable =
+        (UPB_UNLIKELY(UPB_PRIVATE(_upb_MiniTable_IsExtendable)(mt)) ||
+         UPB_UNLIKELY(upb_MiniTable_IsMessageSet(mt))) &&
+        d->extreg;
+    while (!upb_EpsCopyInputStream_IsDone(EPS(d), &ptr)) {
+      const char* start_ptr = ptr;
+      uint32_t tag;
+      ptr = upb_WireReader_ReadTag(ptr, &tag, EPS(d));
+
+      uint32_t next_field_num = tag >> 3;
+      uint32_t next_wire_type = tag & 7;
+
+      if (_upb_Decoder_CanSkipUnknownField(d, next_field_num, next_wire_type,
+                                           mt, &gap_lo, &gap_hi,
+                                           is_extendable)) {
+        ptr = _upb_WireReader_SkipValueForceInline(ptr, tag, d->depth, EPS(d));
+      } else {
+        ptr = start_ptr;
+        break;
+      }
     }
   }
 
-  if (!UPB_PRIVATE(_upb_Message_AddUnknown)(msg, sv.data, sv.size, &d->arena,
-                                            mode)) {
-    upb_ErrorHandler_ThrowError(d->err, kUpb_DecodeStatus_OutOfMemory);
+  upb_StringView sv;
+  upb_EpsCopyCapture_End(&capture, &d->input, ptr, &sv);
+
+  if (UPB_LIKELY(sv.size > 0)) {
+    if (!UPB_PRIVATE(_upb_Message_AddUnknown)(
+            msg, sv.data, sv.size, &d->arena,
+            _upb_Decoder_GetAddUnknownMode(d, sv.data))) {
+      upb_ErrorHandler_ThrowError(d->err, kUpb_DecodeStatus_OutOfMemory);
+    }
   }
 
   return ptr;
@@ -17100,8 +17081,8 @@ const char* _upb_Decoder_DecodeFieldData(
   } else {
     switch (op) {
       case kUpb_DecodeOp_UnknownField:
-        return _upb_Decoder_DecodeUnknownField(d, ptr, msg, field_number,
-                                               wire_type, val, start);
+        return _upb_Decoder_DecodeUnknowns(d, ptr, msg, mt, field_number,
+                                           wire_type, val, start);
       case kUpb_DecodeOp_MessageSetItem:
         return upb_Decoder_DecodeMessageSetItem(d, ptr, msg, mt);
       default:
@@ -17142,19 +17123,21 @@ bool _upb_Decoder_TryDecodeMessageFast(upb_Decoder* d, const char** ptr,
                                        const upb_MiniTable* mt,
                                        uint64_t last_field_index,
                                        uint64_t data) {
-#ifdef UPB_ENABLE_FASTTABLE
+#if UPB_FASTTABLE
   if (mt->UPB_PRIVATE(table_mask) == (unsigned char)-1 ||
       (d->options & kUpb_DecodeOption_DisableFastTable)) {
     // Fast table is unavailable or disabled.
     return false;
   }
 
-  intptr_t table = decode_totable(mt);
+  uint64_t data2 = upb_DecodeFastData2_PackMask(mt->UPB_PRIVATE(table_mask));
   const char* start =
       UPB_PRIVATE(upb_EpsCopyInputStream_GetInputPtr)(&d->input, *ptr);
   char* trace_next = _upb_Decoder_TraceNext(d);
 
-  *ptr = upb_DecodeFast_Dispatch(d, *ptr, msg, table, 0, 0);
+  upb_FastDecoder_Return ret =
+      upb_DecodeFast_Dispatch(d, *ptr, msg, mt, 0, 0, data2);
+  *ptr = ret.ptr;
 
   if (d->message_is_done) {
     // The entire message was successfully parsed fast.
@@ -17193,11 +17176,67 @@ const char* _upb_Decoder_DecodeField(upb_Decoder* d, const char* ptr,
 }
 
 UPB_NOINLINE
+static const char* _upb_Decoder_DecodeEmptyMessage(upb_Decoder* d,
+                                                   const char* ptr,
+                                                   upb_Message* msg) {
+  if (upb_EpsCopyInputStream_IsDone(EPS(d), &ptr)) {
+    return ptr;
+  }
+
+  const char* start = ptr;
+  const char* capture_end = ptr;
+  upb_EpsCopyCapture capture;
+  upb_EpsCopyCapture_Start(&capture, &d->input, start);
+  while (!upb_EpsCopyInputStream_IsDone(EPS(d), &ptr)) {
+    uint32_t tag;
+    capture_end = ptr;
+    ptr = upb_WireReader_ReadTag(ptr, &tag, EPS(d));
+    if ((tag & 7) == kUpb_WireType_EndGroup) {
+      d->end_group = tag >> 3;
+      break;
+    }
+    ptr = _upb_WireReader_SkipValueForceInline(ptr, tag, d->depth, EPS(d));
+    capture_end = ptr;
+  }
+  upb_StringView sv;
+  upb_EpsCopyCapture_End(&capture, EPS(d), capture_end, &sv);
+
+  if (sv.size > 0) {
+    if (!UPB_PRIVATE(_upb_Message_AddUnknown)(
+            msg, sv.data, sv.size, &d->arena,
+            _upb_Decoder_GetAddUnknownMode(d, sv.data))) {
+      upb_ErrorHandler_ThrowError(d->err, kUpb_DecodeStatus_OutOfMemory);
+    }
+  }
+  return ptr;
+}
+
+// When fasttable is enabled, _upb_Decoder_DecodeMessage possibly calls a
+// preserve_none function, which forces a spill of all callee-save registers
+// registers to the stack in its prologue and restoration in its epilogue, due
+// to mismatched calling conventions - the fast decoder (preserve_none) calls
+// _upb_Decoder_DecodeMessage (normal) which calls the fast decoder
+// (preserve_none). Arm has a lot of callee-save registers in its normal calling
+// convention, including a bunch of simd&fp registers that our preserve_none
+// caller is probably not actually using. To avoid this cost, all functions in
+// the call stack (excluding force-inlined) between the fast decoder's decode
+// message function and a recursive call to the fast decoder should use the fast
+// decoder's calling convention.
+#if UPB_FASTTABLE
+UPB_PRESERVE_NONE
+#endif
+UPB_NOINLINE
 const char* _upb_Decoder_DecodeMessage(upb_Decoder* d, const char* ptr,
                                        upb_Message* msg,
                                        const upb_MiniTable* mt) {
   UPB_ASSERT(mt);
   UPB_ASSERT(d->message_is_done == false);
+
+  if (UPB_UNLIKELY(upb_MiniTable_FieldCount(mt) == 0 &&
+                   UPB_PRIVATE(_upb_MiniTable_ExtModeBase)(mt) ==
+                       kUpb_ExtMode_NonExtendable)) {
+    return _upb_Decoder_DecodeEmptyMessage(d, ptr, msg);
+  }
 
   do {
     ptr = _upb_Decoder_DecodeField(d, ptr, msg, mt, 0, 0);
@@ -17331,7 +17370,6 @@ const char* upb_DecodeStatus_String(upb_DecodeStatus status) {
 // We encode backwards, to avoid pre-computing lengths (one-pass encode).
 
 
-#include <setjmp.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdlib.h>
@@ -17339,6 +17377,186 @@ const char* upb_DecodeStatus_String(upb_DecodeStatus status) {
 
 
 // Must be last.
+
+upb_EncodeStatus upb_Encode(const upb_Message* msg, const upb_MiniTable* l,
+                            int options, upb_Arena* arena, char** buf,
+                            size_t* size) {
+  return _upb_Encode(msg, l, options, arena, buf, size, false);
+}
+
+upb_EncodeStatus upb_EncodeLengthPrefixed(const upb_Message* msg,
+                                          const upb_MiniTable* l, int options,
+                                          upb_Arena* arena, char** buf,
+                                          size_t* size) {
+  return _upb_Encode(msg, l, options, arena, buf, size, true);
+}
+
+const char* upb_EncodeStatus_String(upb_EncodeStatus status) {
+  switch (status) {
+    case kUpb_EncodeStatus_Ok:
+      return "Ok";
+    case kUpb_EncodeStatus_MissingRequired:
+      return "Missing required field";
+    case kUpb_EncodeStatus_MaxDepthExceeded:
+      return "Max depth exceeded";
+    case kUpb_EncodeStatus_OutOfMemory:
+      return "Arena alloc failed";
+    default:
+      return "Unknown encode status";
+  }
+}
+
+
+#include <stddef.h>
+#include <stdint.h>
+#include <string.h>
+
+
+// Must be last.
+
+char upb_BackAlloc_sentinel;
+
+static size_t upb_BackAlloc_CalcBlockSize(upb_BackAlloc* a, size_t required,
+                                          bool* one_off) {
+#if UPB_HWASAN
+  required = UPB_ALIGN_UP(required, UPB_MALLOC_ALIGN);
+#endif
+  size_t organic_block_size =
+      UPB_PRIVATE(_upb_Arena_NextBlockSize)(a->arena, required, one_off);
+
+  // We want to offer amortized linear time, which means we must grow block
+  // sizes exponentially. However, merely allocating a power of 2 is
+  // pathological for allocators that use a header with mmap for large
+  // contiguous allocations. Instead, we want to allocate based on a power of
+  // 2, but request slightly less to leave room for backing allocator
+  // metadata. If we had universal size feedback this would not be necessary.
+  size_t scaled_block_size = upb_RoundUpToPowerOfTwo(required);
+
+  // Estimated value such that 128 bytes of possible overhead is not
+  // significant. 128 bytes should be enough for whatever metadata is needed.
+  if (scaled_block_size >= 4096 * 4) {
+    scaled_block_size = upb_RoundUpToPowerOfTwo(required + 128) - 128;
+  }
+
+  // Scaled block size calculations could overflow, but that's OK as it's
+  // unsigned and won't be used if it's less than the organic block size
+  if (scaled_block_size > organic_block_size) {
+    return UPB_PRIVATE(_upb_Arena_NextBlockSize)(a->arena, scaled_block_size,
+                                                 one_off);
+  }
+
+  return organic_block_size;
+}
+
+static char* upb_BackAlloc_Realloc(upb_BackAlloc* a, char* ptr, size_t n) {
+  size_t copy = a->limit - ptr;
+  if (SIZE_MAX - copy < n) {
+    return NULL;
+  }
+
+  bool one_off = false;
+  size_t required_block_size = copy + n;
+  size_t size = upb_BackAlloc_CalcBlockSize(a, required_block_size, &one_off);
+
+  char* block = UPB_PRIVATE(_upb_Arena_AllocBlock)(a->arena, &size);
+
+  if (!block) {
+    return NULL;
+  }
+
+  UPB_PRIVATE(_upb_Arena_UpdateGrowthState)(a->arena, required_block_size, size,
+                                            one_off);
+
+  char* dst = block + size - copy;
+  memcpy(dst, ptr, copy);
+
+  if (a->limit != a->buf) {
+    // Dispose of the old block.
+    if (a->standalone) {
+      // Note: while it would technically be possible to give this block to the
+      // arena to use for allocations, this could lead to a lot of garbage
+      // blocks that never get used.
+      UPB_PRIVATE(_upb_Arena_FreeBlock)(a->arena, a->buf);
+    } else {
+      UPB_PRIVATE(_upb_Arena_UseBlock)(a->arena, a->buf, a->limit - a->buf);
+    }
+  }
+
+  a->buf = block;
+  a->limit = block + size;
+  a->standalone = true;
+  return dst - n;
+}
+
+char* upb_BackAlloc_Grow(upb_BackAlloc* a, char* ptr, size_t n) {
+  if (a->limit == a->buf) {
+    // First allocation: try to steal a block.
+    size_t size = n;
+    char* block = UPB_PRIVATE(_upb_Arena_Steal)(a->arena, &size);
+    if (block) {
+      UPB_ASSERT(size >= n);
+      UPB_ASSERT(a->standalone == false);
+      a->buf = block;
+      a->limit = block + size;
+      return a->limit - n;
+    }
+  }
+
+  return upb_BackAlloc_Realloc(a, ptr, n);
+}
+
+
+
+
+// Must be last.
+
+UPB_NOINLINE
+const char* _upb_Decoder_CheckRequired(upb_Decoder* d, const char* ptr,
+                                       const upb_Message* msg,
+                                       const upb_MiniTable* m) {
+  UPB_ASSERT(m->UPB_PRIVATE(required_count));
+  if (UPB_UNLIKELY(d->options & kUpb_DecodeOption_CheckRequired)) {
+    d->missing_required =
+        d->missing_required ||
+        !UPB_PRIVATE(_upb_Message_IsInitializedShallow)(msg, m);
+  }
+  return ptr;
+}
+
+// We encode backwards, to avoid pre-computing lengths (one-pass encode).
+
+
+#include <setjmp.h>
+#include <stddef.h>
+#include <stdint.h>
+#include <string.h>
+
+
+// Must be last.
+
+UPB_NOINLINE bool _upb_Encoder_AddMapEntryUnknown(
+    upb_Message* msg, const upb_MiniTableField* field, upb_Message* ent_msg,
+    const upb_MiniTable* entry, upb_Arena* arena) {
+  char* buf;
+  size_t size;
+  upb_EncodeStatus status =
+      _upb_Encode(ent_msg, entry, 0, arena, &buf, &size, false);
+  if (status != kUpb_EncodeStatus_Ok) {
+    return false;
+  }
+  char delim_buf[2 * kUpb_Encoder_EncodeVarint32MaxSize];
+  char* delim_end = delim_buf;
+  uint32_t tag =
+      ((uint32_t)field->UPB_PRIVATE(number) << 3) | kUpb_WireType_Delimited;
+  delim_end = upb_Encoder_EncodeVarint32(tag, delim_end);
+  delim_end = upb_Encoder_EncodeVarint32(size, delim_end);
+  upb_StringView unknown[] = {
+      {delim_buf, delim_end - delim_buf},
+      {buf, size},
+  };
+
+  return UPB_PRIVATE(_upb_Message_AddUnknownV)(msg, arena, unknown, 2);
+}
 
 static uint32_t encode_zz32(int32_t n) {
   return ((uint32_t)n << 1) ^ (n >> 31);
@@ -17353,44 +17571,23 @@ UPB_NORETURN static void encode_err(upb_encstate* e, upb_EncodeStatus s) {
   UPB_LONGJMP(*e->err, 1);
 }
 
-// Subtraction is used for bounds checks, and the C standard says that pointer
-// subtraction is UB if the pointers aren't part of the same array or one past
-// the end, so we must avoid NULL - NULL. C++ defines it though.
-static char initial_buf_sentinel;
-
 UPB_NOINLINE static char* encode_growbuffer(char* ptr, upb_encstate* e,
                                             size_t bytes) {
-  size_t old_size = e->limit - e->buf;
-  size_t needed_size = bytes + (e->limit - ptr);
-  if (needed_size < bytes) encode_err(e, kUpb_EncodeStatus_OutOfMemory);
-  size_t new_size = upb_RoundUpToPowerOfTwo(UPB_MAX(128, needed_size));
-  if (new_size == old_size) encode_err(e, kUpb_EncodeStatus_OutOfMemory);
-  void* old_buf = e->buf == &initial_buf_sentinel ? NULL : (void*)e->buf;
-  char* new_buf = upb_Arena_Realloc(e->arena, old_buf, old_size, new_size);
-
-  if (!new_buf) encode_err(e, kUpb_EncodeStatus_OutOfMemory);
-
-  // We want previous data at the end, realloc() put it at the beginning.
-  // TODO: This is somewhat inefficient since we are copying twice.
-  // Maybe create a realloc() that copies to the end of the new buffer?
-  if (old_size > 0) {
-    memmove(new_buf + new_size - old_size, new_buf, old_size);
+  ptr = upb_BackAlloc_Grow(&e->alloc, ptr, bytes);
+  if (ptr == NULL) {
+    encode_err(e, kUpb_EncodeStatus_OutOfMemory);
   }
-
-  e->buf = new_buf;
-  e->limit = new_buf + new_size;
-  return new_buf + new_size - needed_size;
+  return ptr;
 }
 
-/* Call to ensure that at least `bytes` bytes are available for writing at
- * ptr. */
+// Call to ensure that at least `bytes` bytes are available for writing at
+// ptr.
 UPB_FORCEINLINE
 char* encode_reserve(char* ptr, upb_encstate* e, size_t bytes) {
-  if ((size_t)(ptr - e->buf) < bytes) {
-    return encode_growbuffer(ptr, e, bytes);
+  if (upb_BackAlloc_HasBytes(&e->alloc, ptr, bytes)) {
+    return ptr - bytes;
   }
-
-  return ptr - bytes;
+  return encode_growbuffer(ptr, e, bytes);
 }
 
 static char* encode_bytes_unchecked(char* ptr, upb_encstate* e,
@@ -17562,7 +17759,7 @@ char* encode_varint_unchecked(char* ptr, upb_encstate* e, uint64_t val) {
 }
 UPB_FORCEINLINE
 char* encode_varint(char* ptr, upb_encstate* e, uint64_t val) {
-  if (val < 128 && ptr != e->buf) {
+  if (val < 128 && upb_BackAlloc_HasBytes(&e->alloc, ptr, 1)) {
     --ptr;
     *ptr = val;
     return ptr;
@@ -17581,7 +17778,7 @@ char* encode_longlength(char* ptr, upb_encstate* e, uint64_t val) {
 
 UPB_FORCEINLINE
 char* encode_length(char* ptr, upb_encstate* e, uint64_t val) {
-  if (val < 128 && ptr != e->buf) {
+  if (val < 128 && upb_BackAlloc_HasBytes(&e->alloc, ptr, 1)) {
     --ptr;
     *ptr = val;
     return ptr;
@@ -17657,9 +17854,6 @@ static char* encode_fixedarray(char* ptr, upb_encstate* e, const upb_Array* arr,
     return encode_bytes(ptr, e, data, bytes);
   }
 }
-
-static char* encode_message(char* ptr, upb_encstate* e, const upb_Message* msg,
-                            const upb_MiniTable* m, size_t* size);
 
 static char* encode_scalar(char* ptr, upb_encstate* e, const void* field_mem,
                            const upb_MiniTableField* f) {
@@ -17753,7 +17947,7 @@ static char* encode_array(char* ptr, upb_encstate* e, const upb_Message* msg,
                           const upb_MiniTableField* f) {
   const upb_Array* arr = *UPB_PTR_AT(msg, f->UPB_PRIVATE(offset), upb_Array*);
   bool packed = upb_MiniTableField_IsPacked(f);
-  size_t pre_len = e->limit - ptr;
+  size_t pre_len = upb_BackAlloc_Size(&e->alloc, ptr);
 
   if (arr == NULL || upb_Array_Size(arr) == 0) {
     return ptr;
@@ -17864,7 +18058,7 @@ static char* encode_array(char* ptr, upb_encstate* e, const upb_Message* msg,
 #undef VARINT_CASE
 
   if (packed) {
-    ptr = encode_length(ptr, e, e->limit - ptr - pre_len);
+    ptr = encode_length(ptr, e, upb_BackAlloc_Size(&e->alloc, ptr) - pre_len);
     ptr = encode_tag(ptr, e, upb_MiniTableField_Number(f),
                      kUpb_WireType_Delimited);
   }
@@ -17876,11 +18070,11 @@ static char* encode_mapentry(char* ptr, upb_encstate* e, uint32_t number,
                              const upb_MapEntry* ent) {
   const upb_MiniTableField* key_field = upb_MiniTable_MapKey(layout);
   const upb_MiniTableField* val_field = upb_MiniTable_MapValue(layout);
-  size_t pre_len = e->limit - ptr;
+  size_t pre_len = upb_BackAlloc_Size(&e->alloc, ptr);
   size_t size;
   ptr = encode_scalar(ptr, e, &ent->v, val_field);
   ptr = encode_scalar(ptr, e, &ent->k, key_field);
-  size = (e->limit - ptr) - pre_len;
+  size = upb_BackAlloc_Size(&e->alloc, ptr) - pre_len;
   ptr = encode_length(ptr, e, size);
   ptr = encode_tag(ptr, e, number, kUpb_WireType_Delimited);
   return ptr;
@@ -17895,20 +18089,6 @@ static char* encode_map(char* ptr, upb_encstate* e, const upb_Message* msg,
   if (!map || !upb_Map_Size(map)) return ptr;
 
   if (e->options & kUpb_EncodeOption_Deterministic) {
-    if (!map->UPB_PRIVATE(is_strtable)) {
-      // For inttable, first encode the array part, then sort the table entries.
-      intptr_t iter = UPB_INTTABLE_BEGIN;
-      while ((size_t)++iter < map->t.inttable.array_size) {
-        upb_value value = map->t.inttable.array[iter];
-        if (upb_inttable_arrhas(&map->t.inttable, iter)) {
-          upb_MapEntry ent;
-          memcpy(&ent.k, &iter, sizeof(iter));
-          _upb_map_fromvalue(value, &ent.v, map->val_size);
-          ptr = encode_mapentry(ptr, e, upb_MiniTableField_Number(f), layout,
-                                &ent);
-        }
-      }
-    }
     _upb_sortedmap sorted;
     _upb_mapsorter_pushmap(
         &e->sorter, layout->UPB_PRIVATE(fields)[0].UPB_PRIVATE(descriptortype),
@@ -18027,7 +18207,8 @@ static char* encode_ext(char* ptr, upb_encstate* e,
 
 static char* encode_exts(char* ptr, upb_encstate* e, const upb_MiniTable* m,
                          const upb_Message* msg) {
-  if (m->UPB_PRIVATE(ext) == kUpb_ExtMode_NonExtendable) return ptr;
+  if (UPB_PRIVATE(_upb_MiniTable_ExtModeBase)(m) == kUpb_ExtMode_NonExtendable)
+    return ptr;
 
   upb_Message_Internal* in = UPB_PRIVATE(_upb_Message_GetInternal)(msg);
   if (!in) return ptr;
@@ -18052,7 +18233,8 @@ static char* encode_exts(char* ptr, upb_encstate* e, const upb_MiniTable* m,
     const upb_Extension* ext;
     while (_upb_sortedmap_nextext(&e->sorter, &sorted, &ext)) {
       ptr = encode_ext(ptr, e, ext->ext, ext->data,
-                       m->UPB_PRIVATE(ext) == kUpb_ExtMode_IsMessageSet);
+                       UPB_PRIVATE(_upb_MiniTable_ExtModeBase)(m) ==
+                           kUpb_ExtMode_IsMessageSet);
     }
     _upb_mapsorter_popmap(&e->sorter, &sorted);
   } else {
@@ -18065,9 +18247,9 @@ static char* encode_exts(char* ptr, upb_encstate* e, const upb_MiniTable* m,
   return ptr;
 }
 
-static char* encode_message(char* ptr, upb_encstate* e, const upb_Message* msg,
-                            const upb_MiniTable* m, size_t* size) {
-  size_t pre_len = e->limit - ptr;
+char* encode_message(char* ptr, upb_encstate* e, const upb_Message* msg,
+                     const upb_MiniTable* m, size_t* size) {
+  size_t pre_len = upb_BackAlloc_Size(&e->alloc, ptr);
 
   if (e->options & kUpb_EncodeOption_CheckRequired) {
     if (m->UPB_PRIVATE(required_count)) {
@@ -18111,7 +18293,7 @@ static char* encode_message(char* ptr, upb_encstate* e, const upb_Message* msg,
     }
   }
 
-  *size = (e->limit - ptr) - pre_len;
+  *size = upb_BackAlloc_Size(&e->alloc, ptr) - pre_len;
   return ptr;
 }
 
@@ -18131,57 +18313,32 @@ static upb_EncodeStatus upb_Encoder_Encode(char* ptr,
     if (prepend_len) {
       ptr = encode_length(ptr, encoder, encoded_msg_size);
     }
-    *size = encoder->limit - ptr;
-    if (*size == 0) {
-      static char ch;
-      *buf = &ch;
-    } else {
-      UPB_ASSERT(ptr);
-      *buf = ptr;
-    }
+    *size = upb_BackAlloc_Finish(&encoder->alloc, ptr);
+    *buf = ptr;
   } else {
     UPB_ASSERT(encoder->status != kUpb_EncodeStatus_Ok);
+    upb_BackAlloc_Abort(&encoder->alloc);
     *buf = NULL;
     *size = 0;
   }
-
-  _upb_mapsorter_destroy(&encoder->sorter);
+  UPB_PRIVATE(_upb_encstate_destroy)(encoder);
   return encoder->status;
 }
 
-static uint16_t upb_EncodeOptions_GetMaxDepth(uint32_t options) {
-  return options >> 16;
-}
-
-uint16_t upb_EncodeOptions_GetEffectiveMaxDepth(uint32_t options) {
-  uint16_t max_depth = upb_EncodeOptions_GetMaxDepth(options);
-  return max_depth ? max_depth : kUpb_WireFormat_DefaultDepthLimit;
-}
-
-static upb_EncodeStatus _upb_Encode(const upb_Message* msg,
-                                    const upb_MiniTable* l, int options,
-                                    upb_Arena* arena, char** buf, size_t* size,
-                                    bool prepend_len) {
+upb_EncodeStatus _upb_Encode(const upb_Message* msg, const upb_MiniTable* l,
+                             int options, upb_Arena* arena, char** buf,
+                             size_t* size, bool prepend_len) {
   upb_encstate e;
   jmp_buf err;
 
   e.status = kUpb_EncodeStatus_Ok;
   e.err = &err;
-  e.arena = arena;
-  e.buf = &initial_buf_sentinel;
-  e.limit = &initial_buf_sentinel;
+  char* ptr = upb_BackAlloc_Init(&e.alloc, arena);
   e.depth = upb_EncodeOptions_GetEffectiveMaxDepth(options);
   e.options = options;
   _upb_mapsorter_init(&e.sorter);
 
-  return upb_Encoder_Encode(&initial_buf_sentinel, &e, msg, l, buf, size,
-                            prepend_len);
-}
-
-upb_EncodeStatus upb_Encode(const upb_Message* msg, const upb_MiniTable* l,
-                            int options, upb_Arena* arena, char** buf,
-                            size_t* size) {
-  return _upb_Encode(msg, l, options, arena, buf, size, false);
+  return upb_Encoder_Encode(ptr, &e, msg, l, buf, size, prepend_len);
 }
 
 upb_EncodeStatus UPB_PRIVATE(_upb_Encode_Field)(upb_encstate* e,
@@ -18189,23 +18346,14 @@ upb_EncodeStatus UPB_PRIVATE(_upb_Encode_Field)(upb_encstate* e,
                                                 const upb_MiniTableField* field,
                                                 char** buf, size_t* size,
                                                 int options) {
-  e->buf = &initial_buf_sentinel;
-  e->limit = &initial_buf_sentinel;
   e->options = options;
   e->depth = upb_EncodeOptions_GetEffectiveMaxDepth(options);
-
-  char* ptr = &initial_buf_sentinel;
+  char* ptr = *buf;
   if (encode_shouldencode(msg, field)) {
     ptr = encode_field(ptr, e, msg, field);
   }
-  *size = e->limit - ptr;
-  if (*size == 0) {
-    static char ch;
-    *buf = &ch;
-  } else {
-    UPB_ASSERT(ptr);
-    *buf = ptr;
-  }
+  *size = upb_BackAlloc_Finish(&e->alloc, ptr);
+  *buf = ptr;
   return e->status;
 }
 
@@ -18213,61 +18361,13 @@ upb_EncodeStatus UPB_PRIVATE(_upb_Encode_Extension)(
     upb_encstate* e, const upb_MiniTableExtension* ext,
     upb_MessageValue ext_val, bool is_message_set, char** buf, size_t* size,
     int options) {
-  e->buf = &initial_buf_sentinel;
-  e->limit = &initial_buf_sentinel;
   e->options = options;
   e->depth = upb_EncodeOptions_GetEffectiveMaxDepth(options);
-
-  char* ptr = &initial_buf_sentinel;
+  char* ptr = *buf;
   ptr = encode_ext(ptr, e, ext, ext_val, is_message_set);
-  *size = e->limit - ptr;
-  if (*size == 0) {
-    static char ch;
-    *buf = &ch;
-  } else {
-    UPB_ASSERT(ptr);
-    *buf = ptr;
-  }
+  *size = upb_BackAlloc_Finish(&e->alloc, ptr);
+  *buf = ptr;
   return e->status;
-}
-
-upb_EncodeStatus upb_EncodeLengthPrefixed(const upb_Message* msg,
-                                          const upb_MiniTable* l, int options,
-                                          upb_Arena* arena, char** buf,
-                                          size_t* size) {
-  return _upb_Encode(msg, l, options, arena, buf, size, true);
-}
-
-const char* upb_EncodeStatus_String(upb_EncodeStatus status) {
-  switch (status) {
-    case kUpb_EncodeStatus_Ok:
-      return "Ok";
-    case kUpb_EncodeStatus_MissingRequired:
-      return "Missing required field";
-    case kUpb_EncodeStatus_MaxDepthExceeded:
-      return "Max depth exceeded";
-    case kUpb_EncodeStatus_OutOfMemory:
-      return "Arena alloc failed";
-    default:
-      return "Unknown encode status";
-  }
-}
-
-
-
-// Must be last.
-
-UPB_NOINLINE
-const char* _upb_Decoder_CheckRequired(upb_Decoder* d, const char* ptr,
-                                       const upb_Message* msg,
-                                       const upb_MiniTable* m) {
-  UPB_ASSERT(m->UPB_PRIVATE(required_count));
-  if (UPB_UNLIKELY(d->options & kUpb_DecodeOption_CheckRequired)) {
-    d->missing_required =
-        d->missing_required ||
-        !UPB_PRIVATE(_upb_Message_IsInitializedShallow)(msg, m);
-  }
-  return ptr;
 }
 
 
@@ -18277,11 +18377,10 @@ const char* _upb_Decoder_CheckRequired(upb_Decoder* d, const char* ptr,
 
 // Must be last.
 
-const char* UPB_PRIVATE(upb_EpsCopyInputStream_ReturnError)(
-    upb_EpsCopyInputStream* e) {
+UPB_NORETURN UPB_NOINLINE void UPB_PRIVATE(
+    upb_EpsCopyInputStream_ThrowMalformed)(upb_EpsCopyInputStream* e) {
   e->error = true;
-  if (e->err) upb_ErrorHandler_ThrowError(e->err, kUpb_ErrorCode_Malformed);
-  return NULL;
+  upb_ErrorHandler_ThrowError(e->err, kUpb_ErrorCode_Malformed);
 }
 
 const char* UPB_PRIVATE(upb_EpsCopyInputStream_IsDoneFallback)(
@@ -18414,6 +18513,8 @@ const char* UPB_PRIVATE(_upb_WireReader_SkipGroup)(
 #undef UPB_ASSUME
 #undef UPB_ASSERT
 #undef UPB_UNREACHABLE
+#undef UPB_UNREACHABLE_FAILURE
+#undef UPB_PRETTY_FUNCTION
 #undef UPB_DEFAULT_MAX_BLOCK_SIZE
 #undef UPB_SETJMP
 #undef UPB_LONGJMP
@@ -18447,8 +18548,6 @@ const char* UPB_PRIVATE(_upb_WireReader_SkipGroup)(
 #undef UPB_LINKARR_APPEND
 #undef UPB_LINKARR_START
 #undef UPB_LINKARR_STOP
-#undef UPB_FUTURE_BREAKING_CHANGES
-#undef UPB_FUTURE_REMOVE_POP_CLAMP
 #undef UPB_HAS_ATTRIBUTE
 #undef UPB_HAS_CPP_ATTRIBUTE
 #undef UPB_HAS_BUILTIN

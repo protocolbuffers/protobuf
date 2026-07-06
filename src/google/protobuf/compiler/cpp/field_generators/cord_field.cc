@@ -87,7 +87,7 @@ class CordFieldGenerator : public FieldGeneratorBase {
               R"cc(
                 $name$_ {
                   ::absl::strings_internal::MakeStringConstant(
-                      $classname$::Impl_::$Split$_default_$name$_func_{})
+                      $Msg$::Impl_::$Split$_default_$name$_func_{})
                 }
               )cc");
     }
@@ -170,9 +170,9 @@ void CordFieldGenerator::GenerateAccessorDeclarations(io::Printer* p) const {
       p->WithVars(AnnotatedAccessors(field_, {"mutable_"}, Semantic::kAlias));
 
   p->Emit(R"cc(
-    [[nodiscard]] $deprecated_attr$const ::absl::Cord& $name$() const;
-    $deprecated_attr$void $set_name$(const ::absl::Cord& value);
-    $deprecated_attr$void $set_name$(::absl::string_view value);
+    [[nodiscard]] $DEPRECATED$ const ::absl::Cord& $name$() const;
+    $DEPRECATED$void $set_name$(const ::absl::Cord& value);
+    $DEPRECATED$void $set_name$(::absl::string_view value);
 
     private:
     const ::absl::Cord& $_internal_name$() const;
@@ -187,12 +187,12 @@ void CordFieldGenerator::GenerateInlineAccessorDefinitions(
     io::Printer* p) const {
   auto v = p->WithVars(variables_);
   p->Emit(R"cc(
-    inline const ::absl::Cord& $classname$::_internal_$name_internal$() const {
+    inline const ::absl::Cord& $Msg$::_internal_$name_internal$() const {
       return $field_$;
     }
   )cc");
   p->Emit(R"cc(
-    inline const ::absl::Cord& $classname$::$name$() const
+    inline const ::absl::Cord& $Msg$::$name$() const
         ABSL_ATTRIBUTE_LIFETIME_BOUND {
       $WeakDescriptorSelfPin$;
       $annotate_get$;
@@ -201,14 +201,14 @@ void CordFieldGenerator::GenerateInlineAccessorDefinitions(
     }
   )cc");
   p->Emit(R"cc(
-    inline void $classname$::_internal_set_$name_internal$(
+    inline void $Msg$::_internal_set_$name_internal$(
         const ::absl::Cord& value) {
       $set_hasbit$;
       $field_$ = value;
     }
   )cc");
   p->Emit(R"cc(
-    inline void $classname$::set_$name$(const ::absl::Cord& value) {
+    inline void $Msg$::set_$name$(const ::absl::Cord& value) {
       $WeakDescriptorSelfPin$;
       $PrepareSplitMessageForWrite$;
       _internal_set_$name_internal$(value);
@@ -217,7 +217,7 @@ void CordFieldGenerator::GenerateInlineAccessorDefinitions(
     }
   )cc");
   p->Emit(R"cc(
-    inline void $classname$::set_$name$(::absl::string_view value) {
+    inline void $Msg$::set_$name$(::absl::string_view value) {
       $WeakDescriptorSelfPin$;
       $PrepareSplitMessageForWrite$;
       $set_hasbit$;
@@ -227,8 +227,7 @@ void CordFieldGenerator::GenerateInlineAccessorDefinitions(
     }
   )cc");
   p->Emit(R"cc(
-    inline ::absl::Cord* $nonnull$
-    $classname$::_internal_mutable_$name_internal$() {
+    inline ::absl::Cord* $nonnull$ $Msg$::_internal_mutable_$name_internal$() {
       $set_hasbit$;
       return &$field_$;
     }
@@ -287,8 +286,8 @@ void CordFieldGenerator::GenerateSerializeWithCachedSizesToArray(
 void CordFieldGenerator::GenerateByteSize(io::Printer* p) const {
   auto v = p->WithVars(variables_);
   p->Emit(R"cc(
-    total_size += $tag_size$ + $pbi$::WireFormatLite::$DeclaredType$Size(
-                                   this_._internal_$name$());
+    total_size += $kTagBytes$ + $pbi$::WireFormatLite::$DeclaredType$Size(
+                                    this_._internal_$name$());
   )cc");
 }
 
@@ -303,7 +302,7 @@ void CordFieldGenerator::GenerateConstexprAggregateInitializer(
         {{"Split", should_split() ? "Split::" : ""}},
         R"cc(
           /*decltype($field_$)*/ {::absl::strings_internal::MakeStringConstant(
-              $classname$::Impl_::$Split$_default_$name$_func_{})},
+              $Msg$::Impl_::$Split$_default_$name$_func_{})},
         )cc");
   }
 }
@@ -351,7 +350,7 @@ void CordOneofFieldGenerator::GenerateInlineAccessorDefinitions(
     io::Printer* p) const {
   auto v = p->WithVars(variables_);
   p->Emit(R"cc(
-    inline const ::absl::Cord& $classname$::_internal_$name_internal$() const {
+    inline const ::absl::Cord& $Msg$::_internal_$name_internal$() const {
       if ($has_field$) {
         return *$field_$;
       }
@@ -359,7 +358,7 @@ void CordOneofFieldGenerator::GenerateInlineAccessorDefinitions(
     }
   )cc");
   p->Emit(R"cc(
-    inline const ::absl::Cord& $classname$::$name$() const
+    inline const ::absl::Cord& $Msg$::$name$() const
         ABSL_ATTRIBUTE_LIFETIME_BOUND {
       $WeakDescriptorSelfPin$;
       $annotate_get$;
@@ -368,7 +367,7 @@ void CordOneofFieldGenerator::GenerateInlineAccessorDefinitions(
     }
   )cc");
   p->Emit(R"cc(
-    inline void $classname$::set_$name$(const ::absl::Cord& value) {
+    inline void $Msg$::set_$name$(const ::absl::Cord& value) {
       $WeakDescriptorSelfPin$;
       if ($not_has_field$) {
         clear_$oneof_name$();
@@ -381,7 +380,7 @@ void CordOneofFieldGenerator::GenerateInlineAccessorDefinitions(
     }
   )cc");
   p->Emit(R"cc(
-    inline void $classname$::set_$name$(::absl::string_view value) {
+    inline void $Msg$::set_$name$(::absl::string_view value) {
       $WeakDescriptorSelfPin$;
       if ($not_has_field$) {
         clear_$oneof_name$();
@@ -394,8 +393,7 @@ void CordOneofFieldGenerator::GenerateInlineAccessorDefinitions(
     }
   )cc");
   p->Emit(R"cc(
-    inline ::absl::Cord* $nonnull$
-    $classname$::_internal_mutable_$name_internal$() {
+    inline ::absl::Cord* $nonnull$ $Msg$::_internal_mutable_$name_internal$() {
       if ($not_has_field$) {
         clear_$oneof_name$();
         set_has_$name_internal$();
@@ -412,7 +410,7 @@ void CordOneofFieldGenerator::GenerateNonInlineAccessorDefinitions(
   if (!field_->default_value_string().empty()) {
     p->Emit(R"cc(
       PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT const ::absl::Cord
-          $classname$::$default_variable_field$(
+          $Msg$::$default_variable_field$(
               ::absl::strings_internal::MakeStringConstant(
                   _default_$name$_func_{}));
     )cc");
@@ -460,13 +458,13 @@ void CordOneofFieldGenerator::GenerateMergingCode(io::Printer* p) const {
 
 std::unique_ptr<FieldGeneratorBase> MakeSingularCordGenerator(
     const FieldDescriptor* desc, const Options& options) {
-  return absl::make_unique<CordFieldGenerator>(desc, options);
+  return std::make_unique<CordFieldGenerator>(desc, options);
 }
 
 
 std::unique_ptr<FieldGeneratorBase> MakeOneofCordGenerator(
     const FieldDescriptor* desc, const Options& options) {
-  return absl::make_unique<CordOneofFieldGenerator>(desc, options);
+  return std::make_unique<CordOneofFieldGenerator>(desc, options);
 }
 
 }  // namespace cpp

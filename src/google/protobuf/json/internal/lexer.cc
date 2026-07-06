@@ -13,6 +13,7 @@
 #include <cmath>
 #include <cstddef>
 #include <cstdint>
+#include <limits>
 #include <string>
 #include <utility>
 
@@ -393,7 +394,27 @@ absl::StatusOr<LocationWith<MaybeOwnedString>> JsonLexer::ParseUtf8() {
   if (!is_single_quote) {
     while (true) {
       RETURN_IF_ERROR(stream_.BufferAtLeastOne());
-      uint8_t c = static_cast<uint8_t>(stream_.PeekChar());
+      absl::string_view unread = stream_.Unread();
+
+      // Fast scan the available unread chars looking for the closing quote,
+      // or if there are any escapes.
+      size_t i = 0;
+      for (; i < unread.size(); ++i) {
+        uint8_t c = static_cast<uint8_t>(unread[i]);
+        if (c < 0x20 || c == '\\' || c == '"') {
+          break;
+        }
+      }
+
+      if (i > 0) {
+        RETURN_IF_ERROR(Advance(i));
+      }
+
+      if (i == unread.size()) {
+        continue;
+      }
+
+      uint8_t c = static_cast<uint8_t>(unread[i]);
       // Bail out to the slow path on control characters and escape characters
       // without advancing the cursor.
       if (c < 0x20 || c == '\\') {
@@ -403,10 +424,14 @@ absl::StatusOr<LocationWith<MaybeOwnedString>> JsonLexer::ParseUtf8() {
       if (c == '"') {
         // NOTE: the 1 below clips off the " from the end of the string.
         MaybeOwnedString result = mark.value.UpToUnread(1);
-        if (utf8_range::IsStructurallyValid(result)) {
-          return LocationWith<MaybeOwnedString>{std::move(result), loc};
+        if (result.AsView().size() >
+            static_cast<size_t>(std::numeric_limits<int>::max())) {
+          return Invalid("string value too large (2GB max)");
         }
-        return Invalid("Invalid UTF-8 string");
+        if (!utf8_range::IsStructurallyValid(result)) {
+          return Invalid("Invalid UTF-8 string");
+        }
+        return LocationWith<MaybeOwnedString>{std::move(result), loc};
       }
     }
   }
@@ -442,6 +467,10 @@ absl::StatusOr<LocationWith<MaybeOwnedString>> JsonLexer::ParseUtf8Slow(
       case '\'': {
         if (c != (is_single_quote ? '\'' : '"')) {
           goto normal_character;
+        }
+        if (on_heap.size() >
+            static_cast<size_t>(std::numeric_limits<int>::max())) {
+          return Invalid("string value too large (2GB max)");
         }
         MaybeOwnedString result = MaybeOwnedString{std::move(on_heap)};
         if (utf8_range::IsStructurallyValid(result)) {

@@ -9,9 +9,8 @@
 
 import unittest
 
-
-from google.protobuf.internal import more_messages_pb2
 from google.protobuf import descriptor_pool
+from google.protobuf.internal import more_messages_pb2
 
 
 class KeywordsConflictTest(unittest.TestCase):

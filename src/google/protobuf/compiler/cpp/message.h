@@ -20,12 +20,11 @@
 
 #include "absl/container/flat_hash_map.h"
 #include "absl/strings/string_view.h"
-#include "absl/types/span.h"
 #include "google/protobuf/compiler/cpp/enum.h"
 #include "google/protobuf/compiler/cpp/extension.h"
 #include "google/protobuf/compiler/cpp/field.h"
+#include "google/protobuf/compiler/cpp/field_layout.h"
 #include "google/protobuf/compiler/cpp/helpers.h"
-#include "google/protobuf/compiler/cpp/message_layout_helper.h"
 #include "google/protobuf/compiler/cpp/options.h"
 #include "google/protobuf/compiler/cpp/parse_function_generator.h"
 #include "google/protobuf/descriptor.h"
@@ -139,6 +138,11 @@ class MessageGenerator {
   void GenerateIsInitialized(io::Printer* p);
   bool NeedsIsInitialized();
 
+  void EmitClearChunks(io::Printer* p, bool is_split);
+  void EmitByteSizeChunks(io::Printer* p, bool is_split);
+  // Returns true if `cached_has_bits` was populated.
+  bool EmitMergeChunks(io::Printer* p, bool is_split);
+
   struct NewOpRequirements {
     // Some field is initialized to non-zero values. Eg string fields pointing
     // to default string.
@@ -177,7 +181,7 @@ class MessageGenerator {
 
   // Returns true if any of the fields needs an `arena` variable containing
   // the current message's arena, reducing `GetArena()` call churn.
-  bool RequiresArena(GeneratorFunction function) const;
+  bool RequiresArena(GeneratorFunction function, bool is_split) const;
 
   // Returns true if all fields are trivially copayble, and has no non-field
   // state (eg extensions).
@@ -197,12 +201,8 @@ class MessageGenerator {
 
   bool ShouldGenerateEnclosingIf(const FieldDescriptor& field) const;
 
-  size_t HasBitsSize() const;
   absl::flat_hash_map<absl::string_view, std::string> HasBitVars(
       const FieldDescriptor* field) const;
-  int HasBitIndex(const FieldDescriptor* field) const;
-  int HasByteIndex(const FieldDescriptor* field) const;
-  int HasWordIndex(const FieldDescriptor* field) const;
   std::vector<uint32_t> RequiredFieldsBitMask() const;
 
   // Helper functions to reduce nesting levels of deep Emit calls.
@@ -224,21 +224,14 @@ class MessageGenerator {
   int index_in_file_messages_;
   Options options_;
   FieldGeneratorTable field_generators_;
-  // optimized_order_ is the order we layout the message's fields in the
-  // class. This is reused to initialize the fields in-order for cache
-  // efficiency.
-  //
-  // optimized_order_ excludes oneof fields and weak fields.
-  std::vector<const FieldDescriptor*> optimized_order_;
-  std::vector<int> has_bit_indices_;
-  int max_has_bit_index_ = 0;
 
   std::vector<const EnumGenerator*> enum_generators_;
   std::vector<const ExtensionGenerator*> extension_generators_;
   int num_required_fields_ = 0;
   int num_weak_fields_ = 0;
 
-  std::unique_ptr<MessageLayoutHelper> message_layout_helper_;
+  FieldLayout field_layout_;
+
   std::unique_ptr<ParseFunctionGenerator> parse_function_generator_;
 
   absl::flat_hash_map<absl::string_view, std::string> variables_;

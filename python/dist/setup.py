@@ -12,7 +12,7 @@ import glob
 import os
 import sys
 
-from setuptools import setup, Extension, find_namespace_packages
+from setuptools import Extension, find_namespace_packages, setup
 
 
 def GetVersion():
@@ -28,14 +28,17 @@ def GetVersion():
   with open(os.path.join('google', 'protobuf', '__init__.py')) as version_file:
     file_globals = {}
     exec(version_file.read(), file_globals)  # pylint:disable=exec-used
-    return file_globals["__version__"]
+    return file_globals['__version__']
 
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
 extra_link_args = []
+extra_compile_args = []
 
 if sys.platform.startswith('win'):
   extra_link_args = ['-static']
+else:
+  extra_compile_args = ['-fvisibility=hidden']
 
 # If at some point the fasttable decoder is ready for prime time, we could
 # enable it here. But even then we'll need to disable it on platforms where
@@ -86,6 +89,7 @@ setup(
             include_dirs=[current_dir, os.path.join(current_dir, 'utf8_range')],
             language='c',
             extra_link_args=extra_link_args,
+            extra_compile_args=extra_compile_args,
         )
     ],
     python_requires='>=3.10',

@@ -142,7 +142,41 @@ final class FieldSet<T extends FieldSet.FieldDescriptorLite<T>> {
     }
 
     FieldSet<?> other = (FieldSet<?>) o;
-    return fields.equals(other.fields);
+    return equals(this.fields, other.fields);
+  }
+
+  private static boolean equals(SmallSortedMap<?, ?> m1, SmallSortedMap<?, ?> m2) {
+    if (m1.size() != m2.size()) {
+      return false;
+    }
+    if (!m1.keySet().equals(m2.keySet())) {
+      return false;
+    }
+    for (Map.Entry<?, ?> entry : m1.entrySet()) {
+      Object key = entry.getKey();
+      Object v1 = entry.getValue();
+      Object v2 = m2.get(key);
+      if (!equalsValues(v1, v2)) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  private static boolean equalsValues(Object v1, Object v2) {
+    if (v1 == v2) {
+      return true;
+    }
+    if (v1 == null || v2 == null) {
+      return false;
+    }
+    if (v1 instanceof InternalLazyField) {
+      return v1.equals(v2);
+    }
+    if (v2 instanceof InternalLazyField) {
+      return v2.equals(v1);
+    }
+    return v1.equals(v2);
   }
 
   @Override
@@ -233,22 +267,6 @@ final class FieldSet<T extends FieldSet.FieldDescriptorLite<T>> {
       return new LazyIterator<T>(fields.entrySet().iterator());
     }
     return fields.entrySet().iterator();
-  }
-
-  /**
-   * Get an iterator over the fields in the map in descending (i.e. reverse) order. This iterator
-   * should not be leaked out of the protobuf library as it is not protected from mutation when
-   * fields is not immutable.
-   */
-  Iterator<Map.Entry<T, Object>> descendingIterator() {
-    // Avoid an allocation in the common case of empty FieldSet.
-    if (isEmpty()) {
-      return Collections.emptyIterator();
-    }
-    if (hasLazyField) {
-      return new LazyIterator<T>(fields.descendingEntrySet().iterator());
-    }
-    return fields.descendingEntrySet().iterator();
   }
 
   /** Useful for implementing {@link Message#hasField(Descriptors.FieldDescriptor)}. */

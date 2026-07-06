@@ -142,7 +142,7 @@ const upb_FileDef* upb_FileDef_PublicDependency(const upb_FileDef* f, int i) {
 }
 
 const upb_FileDef* upb_FileDef_WeakDependency(const upb_FileDef* f, int i) {
-  UPB_ASSERT(0 <= i && i < f->public_dep_count);
+  UPB_ASSERT(0 <= i && i < f->weak_dep_count);
   return f->deps[f->weak_deps[i]];
 }
 
@@ -387,7 +387,7 @@ void _upb_FileDef_Create(upb_DefBuilder* ctx,
   file->public_deps = UPB_DEFBUILDER_ALLOCARRAY(ctx, int32_t, n);
   int32_t* mutable_public_deps = (int32_t*)file->public_deps;
   for (size_t i = 0; i < n; i++) {
-    if (public_deps[i] >= file->dep_count) {
+    if (public_deps[i] < 0 || public_deps[i] >= file->dep_count) {
       _upb_DefBuilder_Errf(ctx, "public_dep %d is out of range",
                            (int)public_deps[i]);
     }
@@ -399,7 +399,7 @@ void _upb_FileDef_Create(upb_DefBuilder* ctx,
   file->weak_deps = UPB_DEFBUILDER_ALLOCARRAY(ctx, const int32_t, n);
   int32_t* mutable_weak_deps = (int32_t*)file->weak_deps;
   for (size_t i = 0; i < n; i++) {
-    if (weak_deps[i] >= file->dep_count) {
+    if (weak_deps[i] < 0 || weak_deps[i] >= file->dep_count) {
       _upb_DefBuilder_Errf(ctx, "weak_dep %d is out of range",
                            (int)weak_deps[i]);
     }

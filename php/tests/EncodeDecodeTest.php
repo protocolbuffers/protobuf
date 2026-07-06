@@ -1394,6 +1394,58 @@ class EncodeDecodeTest extends TestBase
         $this->assertSame("\"foo.barBaz,qux\"", $m->serializeToJsonString());
     }
 
+    public function testEncodeFieldMaskWithInvalidPath()
+    {
+        $m = new FieldMask();
+        $m->setPaths(["foo.bar__baz"]);
+
+        // On upb this case raises an exception, on pure PHP we currently only
+        // trigger a warning and don't throw an exception.
+        if (extension_loaded('protobuf')) {
+            $this->expectException(Exception::class);
+            $m->serializeToJsonString();
+        } else {
+            $triggered = false;
+            set_error_handler(function($errno, $errstr) use (&$triggered) {
+                $triggered = true;
+                $this->assertStringContainsString("Underscore in FieldMask path must be followed by a lowercase letter", $errstr);
+                return true;
+            }, E_USER_WARNING);
+
+            $result = $m->serializeToJsonString();
+            restore_error_handler();
+
+            $this->assertTrue($triggered, "Warning was not triggered");
+            $this->assertSame("\"foo.barBaz\"", $result);
+        }
+    }
+
+    public function testEncodeFieldMaskWithUppercasePath()
+    {
+        $m = new FieldMask();
+        $m->setPaths(["foo.BarBaz"]);
+
+        // On upb this case raises an exception, on pure PHP we currently only
+        // trigger a warning and don't throw an exception.
+        if (extension_loaded('protobuf')) {
+            $this->expectException(Exception::class);
+            $m->serializeToJsonString();
+        } else {
+            $triggered = false;
+            set_error_handler(function($errno, $errstr) use (&$triggered) {
+                $triggered = true;
+                $this->assertStringContainsString("Field mask element may not have upper-case letter", $errstr);
+                return true;
+            }, E_USER_WARNING);
+
+            $result = $m->serializeToJsonString();
+            restore_error_handler();
+
+            $this->assertTrue($triggered, "Warning was not triggered");
+            $this->assertSame("\"foo.BarBaz\"", $result);
+        }
+    }
+
     public function testDecodeEmptyFieldMask()
     {
         $m = new FieldMask();
@@ -1886,8 +1938,8 @@ class EncodeDecodeTest extends TestBase
     {
         $m = new TestMessage();
         $json = $m->serializeToJsonString(
-            PrintOptions::EMIT_DEFAULTS | 
-            PrintOptions::PRESERVE_PROTO_FIELD_NAMES | 
+            PrintOptions::EMIT_DEFAULTS |
+            PrintOptions::PRESERVE_PROTO_FIELD_NAMES |
             PrintOptions::ALWAYS_PRINT_ENUMS_AS_INTS
         );
 
@@ -1985,5 +2037,103 @@ class EncodeDecodeTest extends TestBase
         // With EMIT_DEFAULTS
         $json4 = $s->serializeToJsonString(PrintOptions::EMIT_DEFAULTS);
         $this->assertSame("{}", $json4);
+    }
+
+    public function testJsonEncodeFloatLocaleIndependent()
+    {
+        $originalLocale = setlocale(LC_NUMERIC, 0);
+        $localeSet = setlocale(LC_NUMERIC, 'de_DE.UTF-8', 'de_DE', 'cs_CZ.UTF-8', 'cs_CZ', 'fr_FR.UTF-8', 'fr_FR');
+        if ($localeSet === false) {
+            $this->markTestSkipped('No locale with comma decimal separator available');
+        }
+
+        try {
+            $m = new FloatValue();
+            $m->setValue(3.14159);
+            $json = $m->serializeToJsonString();
+            $this->assertStringNotContainsString(',', $json);
+            $this->assertStringContainsString('.', $json);
+            $this->assertNotNull(json_decode($json));
+
+            $m2 = new DoubleValue();
+            $m2->setValue(3.141592653589793);
+            $json2 = $m2->serializeToJsonString();
+            $this->assertStringNotContainsString(',', $json2);
+            $this->assertStringContainsString('.', $json2);
+            $this->assertNotNull(json_decode($json2));
+        } finally {
+            setlocale(LC_NUMERIC, $originalLocale);
+        }
+    }
+
+    public function testDecodeRecursionLimit()
+    {
+        // Build a message nested deeper than the default limit of 100.
+        $msg = $this->makeRecursiveMessage(150);
+        $payload = $msg->serializeToString(200);
+
+        // Decoding deeper than the default limit fails without an override
+        try {
+            (new TestMessage())->mergeFromString($payload);
+            $this->fail('Expected an exception for exceeding the recursion limit');
+        } catch (Exception $e) {
+        }
+
+        // Raising the limit lets the deep message parse all the way down.
+        $decoded = new TestMessage();
+        $decoded->mergeFromString($payload, 200);
+
+        $cur = $decoded;
+        for ($i = 0; $i < 150; $i++) {
+            $cur = $cur->getRecursive();
+            $this->assertNotNull($cur);
+        }
+        $this->assertSame(1, $cur->getOptionalInt32());
+    }
+
+    public function testEncodeRecursionLimit()
+    {
+        $msg = $this->makeRecursiveMessage(150);
+
+        // The C extension enforces a depth limit on encode and throws past it;
+        // the pure-PHP encoder has no such guard, so only assert on the C ext.
+        if (extension_loaded('protobuf')) {
+            try {
+                $msg->serializeToString();
+                $this->fail('Expected an exception for exceeding the recursion limit');
+            } catch (Exception $e) {
+                $this->assertStringContainsString('Max nesting exceeded', $e->getMessage());
+            }
+        }
+
+        // Raising the limit lets the deep message serialize.
+        $payload = $msg->serializeToString(200);
+        $this->assertNotEquals('', $payload);
+    }
+
+    public function testInvalidRecursionLimit()
+    {
+        if (!extension_loaded('protobuf')) {
+            $this->markTestSkipped(
+                'recursion_limit range validation is C-extension only');
+        }
+
+        $payload = $this->makeRecursiveMessage(2)->serializeToString();
+
+        $threwNegative = false;
+        try {
+            (new TestMessage())->mergeFromString($payload, -1);
+        } catch (Exception $e) {
+            $threwNegative = true;
+        }
+        $this->assertTrue($threwNegative, 'a negative recursion_limit must throw');
+
+        $threwTooLarge = false;
+        try {
+            $this->makeRecursiveMessage(2)->serializeToString(70000);
+        } catch (Exception $e) {
+            $threwTooLarge = true;
+        }
+        $this->assertTrue($threwTooLarge, 'recursion_limit > 65535 must throw');
     }
 }

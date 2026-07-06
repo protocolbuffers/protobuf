@@ -783,6 +783,10 @@ module CommonTests
     assert_equal [:A, :C], m.repeated_enum
     assert_equal [1, 3], m.repeated_enum_const
     assert_equal [proto_module::TestEnum::A, proto_module::TestEnum::C], m.repeated_enum_const
+
+    m = proto_module::Enumer.new
+    assert_equal [], m.repeated_enum_const
+    assert_equal [], proto_module::Enumer.decode("".b).repeated_enum_const
   end
 
   def test_enum_getter_oneof

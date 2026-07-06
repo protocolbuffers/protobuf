@@ -34,6 +34,10 @@ licenses(["notice"])
 proto_library(
     name = "descriptor_proto",
     srcs = ["descriptor.proto"],
+    features = [
+        # Prevents linker stripping of submessages which breaks the benchmark
+        "-proto_one_output_per_message",
+    ],
 )
 
 upb_c_proto_library(
@@ -64,6 +68,10 @@ cc_proto_library(
 proto_library(
     name = "benchmark_descriptor_sv_proto",
     srcs = ["descriptor_sv.proto"],
+    features = [
+        # Prevents linker stripping of submessages which breaks the benchmark
+        "-proto_one_output_per_message",
+    ],
 )
 
 cc_proto_library(
@@ -85,16 +93,19 @@ cc_test(
         ":benchmark_descriptor_upb_proto",
         ":benchmark_descriptor_upb_proto_reflection",
         "//src/google/protobuf",
+        "//src/google/protobuf:arena",
         "//src/google/protobuf/json",
         "//upb/base",
         "//upb/json",
         "//upb/mem",
         "//upb/message",
+        "//upb/mini_table",
         "//upb/reflection",
         "//upb/reflection:internal",
         "//upb/wire",
         "@abseil-cpp//absl/container:flat_hash_set",
         "@abseil-cpp//absl/log:absl_check",
+        "@abseil-cpp//absl/strings",
         "@google_benchmark//:benchmark_main",
         "@googletest//:gtest",
         "@googletest//:gtest_main",

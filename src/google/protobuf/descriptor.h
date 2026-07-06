@@ -32,8 +32,11 @@
 #define GOOGLE_PROTOBUF_DESCRIPTOR_H__
 
 #include <atomic>
+#include <cstddef>
 #include <cstdint>
+#include <cstring>
 #include <iterator>
+#include <limits>
 #include <memory>
 #include <string>
 #include <type_traits>
@@ -49,6 +52,7 @@
 #include "absl/functional/function_ref.h"
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
+#include "absl/log/log.h"
 #include "absl/strings/str_format.h"
 #include "absl/strings/string_view.h"
 #include "absl/synchronization/mutex.h"
@@ -70,6 +74,7 @@
 
 namespace google {
 namespace protobuf {
+
 // Defined in this file.
 class Descriptor;
 class FieldDescriptor;
@@ -121,9 +126,10 @@ class Message;
 class Reflection;
 
 // Defined in descriptor.cc
+namespace internal {
 class DescriptorBuilder;
+}
 class FileDescriptorTables;
-class Symbol;
 
 // Defined in unknown_field_set.h.
 class UnknownField;
@@ -156,6 +162,10 @@ class FeaturesTest;
 class ValidationErrorTest;
 }  // namespace descriptor_unittest
 
+namespace json_internal {
+struct Proto2Descriptor;
+}  // namespace json_internal
+
 // Defined in printer.h
 namespace io {
 class Printer;
@@ -163,6 +173,17 @@ class Printer;
 
 namespace internal {
 class InternalFeatureHelper;
+class Symbol;
+}  // namespace internal
+
+namespace internal {
+// Edition 2026 introduces default limits for proto files as the descriptor gets
+// built from protoc. To opt out of these limits for edition 2026, you may use
+// features.enforce_proto_limits = LEGACY_NO_EXPLICIT_LIMITS.
+inline constexpr int kLimit2026FieldsPerMessage = 1500;
+inline constexpr int kLimit2026OneofsPerMessage = 1000;
+inline constexpr int kLimit2026FieldsPerOneof = 1200;
+inline constexpr int kLimit2026ValuesPerEnum = 1700;
 }  // namespace internal
 
 // NB, all indices are zero-based.
@@ -332,7 +353,7 @@ class PROTOBUF_EXPORT LazyDescriptor {
 
 class PROTOBUF_EXPORT SymbolBase {
  private:
-  friend class google::protobuf::Symbol;
+  friend class Symbol;
   uint8_t symbol_type_;
 };
 
@@ -626,7 +647,7 @@ class PROTOBUF_EXPORT Descriptor : private internal::SymbolBase {
 
     friend class Descriptor;
     friend class DescriptorPool;
-    friend class DescriptorBuilder;
+    friend class internal::DescriptorBuilder;
     friend class SymbolChecker;
   };
 
@@ -743,7 +764,7 @@ class PROTOBUF_EXPORT Descriptor : private internal::SymbolBase {
   PROTOBUF_FUTURE_ADD_EARLY_NODISCARD const FieldDescriptor* map_value() const;
 
  private:
-  friend class Symbol;
+  friend class internal::Symbol;
   typedef MessageOptions OptionsType;
 
   // Allows tests to test CopyTo(proto, true).
@@ -833,7 +854,7 @@ class PROTOBUF_EXPORT Descriptor : private internal::SymbolBase {
 
   // Must be constructed using DescriptorPool.
   Descriptor();
-  friend class DescriptorBuilder;
+  friend class internal::DescriptorBuilder;
   friend class DescriptorPool;
   friend class EnumDescriptor;
   friend class FieldDescriptor;
@@ -1187,7 +1208,7 @@ class PROTOBUF_EXPORT FieldDescriptor : private internal::SymbolBase,
       SourceLocation* out_location) const;
 
  private:
-  friend class Symbol;
+  friend class internal::Symbol;
   typedef FieldOptions OptionsType;
 
   // For access to CalculateCppRepeatedType.
@@ -1332,7 +1353,7 @@ class PROTOBUF_EXPORT FieldDescriptor : private internal::SymbolBase,
 
   // Must be constructed using DescriptorPool.
   FieldDescriptor();
-  friend class DescriptorBuilder;
+  friend class internal::DescriptorBuilder;
   friend class FileDescriptor;
   friend class Descriptor;
   friend class OneofDescriptor;
@@ -1397,7 +1418,7 @@ class PROTOBUF_EXPORT OneofDescriptor : private internal::SymbolBase {
       SourceLocation* out_location) const;
 
  private:
-  friend class Symbol;
+  friend class internal::Symbol;
   typedef OneofOptions OptionsType;
 
   // Allows access to GetLocationPath for annotations.
@@ -1439,7 +1460,7 @@ class PROTOBUF_EXPORT OneofDescriptor : private internal::SymbolBase {
 
   // Must be constructed using DescriptorPool.
   OneofDescriptor();
-  friend class DescriptorBuilder;
+  friend class internal::DescriptorBuilder;
   friend class Descriptor;
   friend class FieldDescriptor;
   friend class Reflection;
@@ -1581,7 +1602,7 @@ class PROTOBUF_EXPORT EnumDescriptor : private internal::SymbolBase {
       SourceLocation* out_location) const;
 
  private:
-  friend class Symbol;
+  friend class internal::Symbol;
   friend bool internal::IsEnumFullySequential(const EnumDescriptor* enum_desc);
   friend class SymbolChecker;
   typedef EnumOptions OptionsType;
@@ -1660,7 +1681,7 @@ class PROTOBUF_EXPORT EnumDescriptor : private internal::SymbolBase {
 
   // Must be constructed using DescriptorPool.
   EnumDescriptor();
-  friend class DescriptorBuilder;
+  friend class internal::DescriptorBuilder;
   friend class Descriptor;
   friend class FieldDescriptor;
   friend class FileDescriptorTables;
@@ -1737,7 +1758,7 @@ class PROTOBUF_EXPORT EnumValueDescriptor : private internal::SymbolBaseN<0>,
       SourceLocation* out_location) const;
 
  private:
-  friend class Symbol;
+  friend class internal::Symbol;
   typedef EnumValueOptions OptionsType;
 
   // Allows access to GetLocationPath for annotations.
@@ -1776,7 +1797,7 @@ class PROTOBUF_EXPORT EnumValueDescriptor : private internal::SymbolBaseN<0>,
 
   // Must be constructed using DescriptorPool.
   EnumValueDescriptor();
-  friend class DescriptorBuilder;
+  friend class internal::DescriptorBuilder;
   friend class EnumDescriptor;
   friend class DescriptorPool;
   friend class FileDescriptorTables;
@@ -1848,7 +1869,7 @@ class PROTOBUF_EXPORT ServiceDescriptor : private internal::SymbolBase {
       SourceLocation* out_location) const;
 
  private:
-  friend class Symbol;
+  friend class internal::Symbol;
   typedef ServiceOptions OptionsType;
 
   // Allows access to GetLocationPath for annotations.
@@ -1885,7 +1906,7 @@ class PROTOBUF_EXPORT ServiceDescriptor : private internal::SymbolBase {
 
   // Must be constructed using DescriptorPool.
   ServiceDescriptor();
-  friend class DescriptorBuilder;
+  friend class internal::DescriptorBuilder;
   friend class FileDescriptor;
   friend class MethodDescriptor;
 };
@@ -1958,7 +1979,7 @@ class PROTOBUF_EXPORT MethodDescriptor : private internal::SymbolBase {
       SourceLocation* out_location) const;
 
  private:
-  friend class Symbol;
+  friend class internal::Symbol;
   typedef MethodOptions OptionsType;
 
   // Allows access to GetLocationPath for annotations.
@@ -1995,7 +2016,7 @@ class PROTOBUF_EXPORT MethodDescriptor : private internal::SymbolBase {
 
   // Must be constructed using DescriptorPool.
   MethodDescriptor();
-  friend class DescriptorBuilder;
+  friend class internal::DescriptorBuilder;
   friend class ServiceDescriptor;
 };
 
@@ -2170,7 +2191,7 @@ class PROTOBUF_EXPORT FileDescriptor : private internal::SymbolBase {
       const std::vector<int>& path, SourceLocation* out_location) const;
 
  private:
-  friend class Symbol;
+  friend class internal::Symbol;
   friend class SymbolChecker;
   friend class FileDescriptorLegacy;
   typedef FileOptions OptionsType;
@@ -2236,7 +2257,7 @@ class PROTOBUF_EXPORT FileDescriptor : private internal::SymbolBase {
   // descriptor.cc and update them to initialize the field.
 
   FileDescriptor();
-  friend class DescriptorBuilder;
+  friend class internal::DescriptorBuilder;
   friend class DescriptorPool;
   friend class Descriptor;
   friend class FieldDescriptor;
@@ -2498,6 +2519,18 @@ class PROTOBUF_EXPORT DescriptorPool {
   // of this enforcement.
   void EnforceNamingStyle(bool enforce) { enforce_naming_style_ = enforce; }
 
+  // Enforce protobuf limits at the descriptor level. Pre Edition 2026, there
+  // is no limit enforcement in the protobuf compiler when parsing proto files.
+  // As a result, it is possible to write a protobuf file that compiles in
+  // protoc, and code generation works as intended, but the code generation
+  // output is uncompilable because it runs into language-specific or
+  // compiler-specific limits.
+  //
+  // Starting in Edition 2026, certain limits will start to be enforced. The
+  // goal of this enforcement is to help ensure that any file that is accepted
+  // by the protobuf compiler will be compilable on standard tool chains.
+  void EnforceProtoLimits(bool enforce) { enforce_proto_limits_ = enforce; }
+
   // Enforce validation of feature support.
   //
   // This is used to guard feature support validation for the lifetimes of
@@ -2660,7 +2693,7 @@ class PROTOBUF_EXPORT DescriptorPool {
   friend class ServiceDescriptor;
   friend class MethodDescriptor;
   friend class FileDescriptor;
-  friend class DescriptorBuilder;
+  friend class internal::DescriptorBuilder;
   friend class FileDescriptorTables;
   friend class google::protobuf::descriptor_unittest::DescriptorPoolMemoizationTest;
   friend class google::protobuf::descriptor_unittest::ValidationErrorTest;
@@ -2668,6 +2701,7 @@ class PROTOBUF_EXPORT DescriptorPool {
   friend class TextFormat;
   friend Reflection;
   friend class ::google::protobuf::compiler::java::MemoizeProjection;
+  friend struct ::google::protobuf::json_internal::Proto2Descriptor;
 
   struct MemoBase {
     virtual ~MemoBase() = default;
@@ -2693,11 +2727,17 @@ class PROTOBUF_EXPORT DescriptorPool {
   static const auto& MemoizeProjection(const Desc* descriptor, Func func) {
     using ResultT = std::decay_t<decltype(func(descriptor))>;
     auto* pool = GetPool(descriptor);
-    static_assert(std::is_empty_v<Func> ||
-                  std::is_function_v<std::remove_pointer_t<Func>>);
-    // This static bool is unique per-Func, so its address can be used as a key.
-    static bool type_key;
-    auto key = std::pair<const void*, const void*>(descriptor, &type_key);
+    const void* secondary_key;
+    if constexpr (std::is_function_v<std::remove_pointer_t<Func>>) {
+      secondary_key = reinterpret_cast<const void*>(func);
+    } else if constexpr (std::is_empty_v<Func>) {
+      static bool type_key;
+      secondary_key = &type_key;
+    } else {
+      static_assert(sizeof(Func) == 0,
+                    "Func must be an empty functor or a function pointer.");
+    }
+    auto key = std::pair<const void*, const void*>(descriptor, secondary_key);
     {
       absl::ReaderMutexLock lock(&pool->field_memo_table_mutex_);
       auto it = pool->field_memo_table_->find(key);
@@ -2754,8 +2794,8 @@ class PROTOBUF_EXPORT DescriptorPool {
   // symbol is defined if necessary. Will create a placeholder if the type
   // doesn't exist in the fallback database, or the file doesn't build
   // successfully.
-  Symbol CrossLinkOnDemandHelper(absl::string_view name,
-                                 bool expecting_enum) const;
+  internal::Symbol CrossLinkOnDemandHelper(absl::string_view name,
+                                           bool expecting_enum) const;
 
   // Create a placeholder FileDescriptor of the specified name
   FileDescriptor* NewPlaceholderFile(absl::string_view name) const;
@@ -2768,10 +2808,10 @@ class PROTOBUF_EXPORT DescriptorPool {
     PLACEHOLDER_EXTENDABLE_MESSAGE
   };
   // Create a placeholder Descriptor of the specified name
-  Symbol NewPlaceholder(absl::string_view name,
-                        PlaceholderType placeholder_type) const;
-  Symbol NewPlaceholderWithMutexHeld(absl::string_view name,
-                                     PlaceholderType placeholder_type) const;
+  internal::Symbol NewPlaceholder(absl::string_view name,
+                                  PlaceholderType placeholder_type) const;
+  internal::Symbol NewPlaceholderWithMutexHeld(
+      absl::string_view name, PlaceholderType placeholder_type) const;
 
 #ifndef SWIG
   mutable absl::Mutex field_memo_table_mutex_;
@@ -2811,6 +2851,7 @@ class PROTOBUF_EXPORT DescriptorPool {
   bool disallow_enforce_utf8_;
   bool deprecated_legacy_json_field_conflicts_;
   bool enforce_naming_style_;
+  bool enforce_proto_limits_ = false;
   bool enforce_feature_support_validation_ = false;
   bool enforce_symbol_visibility_ = false;
   mutable bool build_started_ = false;

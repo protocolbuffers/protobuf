@@ -53,6 +53,19 @@ static absl::flat_hash_map<const DescriptorPool*, PyDescriptorPool*>*
 
 static FreeThreadingMutex descriptor_pool_map_mutex(absl::kConstInit);
 
+// Create a shared_ptr to the pool, with a custom deleter that does nothing.
+//
+// This shared pointer does not truly share ownership with the raw pointer:
+// when it's deallocated it will NOT delete the actual pool because of the empty
+// deleter. Furthermore, we cannot guarantee that the underlying raw pointer
+// will outlive surviving copies of this shared_ptr. We only do this to strictly
+// fit the PyDescriptorPool structure without behavior changes.
+static std::shared_ptr<const DescriptorPool> UnsafeSharedPointerFromRaw(
+    const DescriptorPool* ptr) {
+  return std::shared_ptr<const DescriptorPool>(ptr,
+                                               [](const DescriptorPool*) {});
+}
+
 namespace cdescriptor_pool {
 
 // Collects errors that occur during proto file building to allow them to be
@@ -98,13 +111,14 @@ static PyDescriptorPool* _CreateDescriptorPool() {
 
   cpool->error_collector = nullptr;
   cpool->underlay = nullptr;
-  cpool->database = nullptr;
-  cpool->is_owned = false;
   cpool->is_mutable = false;
+  cpool->pool = nullptr;
+  cpool->database = nullptr;
 
   cpool->descriptor_options = new absl::flat_hash_map<const void*, PyObject*>();
   cpool->descriptor_features =
       new absl::flat_hash_map<const void*, PyObject*>();
+  cpool->cache_mutex = new FreeThreadingMutex();
 
   cpool->py_message_factory = message_factory::NewMessageFactory(
       &PyMessageFactory_Type, cpool);
@@ -129,14 +143,14 @@ static PyDescriptorPool* PyDescriptorPool_NewWithUnderlay(
   if (cpool == nullptr) {
     return nullptr;
   }
-  cpool->pool = new DescriptorPool(underlay);
-  cpool->is_owned = true;
+  cpool->pool =
+      new std::shared_ptr<const DescriptorPool>(new DescriptorPool(underlay));
   cpool->is_mutable = true;
   cpool->underlay = underlay;
 
   {
     FreeThreadingLockGuard lock(descriptor_pool_map_mutex);
-    if (!descriptor_pool_map->insert(std::make_pair(cpool->pool, cpool))
+    if (!descriptor_pool_map->insert(std::make_pair(cpool->pool->get(), cpool))
              .second) {
       // Should never happen -- would indicate an internal error / bug.
       PyErr_SetString(PyExc_ValueError, "DescriptorPool already registered");
@@ -153,22 +167,22 @@ static PyDescriptorPool* PyDescriptorPool_NewWithDatabase(
   if (cpool == nullptr) {
     return nullptr;
   }
-  DescriptorPool* pool;
+  std::shared_ptr<DescriptorPool> pool_sp;
   if (database != nullptr) {
     cpool->error_collector = new BuildFileErrorCollector();
-    pool = new DescriptorPool(database, cpool->error_collector);
+    pool_sp =
+        std::make_shared<DescriptorPool>(database, cpool->error_collector);
     cpool->is_mutable = false;
-    cpool->database = database;
+    cpool->database = new std::shared_ptr<const DescriptorDatabase>(database);
   } else {
-    pool = new DescriptorPool();
+    pool_sp = std::make_shared<DescriptorPool>();
     cpool->is_mutable = true;
   }
-  cpool->pool = pool;
-  cpool->is_owned = true;
+  cpool->pool = new std::shared_ptr<const DescriptorPool>(pool_sp);
 
   {
     FreeThreadingLockGuard lock(descriptor_pool_map_mutex);
-    if (!descriptor_pool_map->insert(std::make_pair(cpool->pool, cpool))
+    if (!descriptor_pool_map->insert(std::make_pair(cpool->pool->get(), cpool))
              .second) {
       // Should never happen -- would indicate an internal error / bug.
       PyErr_SetString(PyExc_ValueError, "DescriptorPool already registered");
@@ -200,7 +214,7 @@ static void Dealloc(PyObject* pself) {
   PyDescriptorPool* self = reinterpret_cast<PyDescriptorPool*>(pself);
   {
     FreeThreadingLockGuard lock(descriptor_pool_map_mutex);
-    descriptor_pool_map->erase(self->pool);
+    descriptor_pool_map->erase(self->pool->get());
   }
   Py_CLEAR(self->py_message_factory);
   for (auto it = self->descriptor_options->begin();
@@ -213,9 +227,12 @@ static void Dealloc(PyObject* pself) {
     Py_DECREF(it->second);
   }
   delete self->descriptor_features;
-  delete self->database;
-  if (self->is_owned) {
+  delete self->cache_mutex;
+  if (self->pool != nullptr) {
     delete self->pool;
+  }
+  if (self->database != nullptr) {
+    delete self->database;
   }
   delete self->error_collector;
   PyObject_GC_UnTrack(pself);
@@ -256,8 +273,9 @@ static PyObject* FindMessageByName(PyObject* self, PyObject* arg) {
   }
 
   const Descriptor* message_descriptor =
-      reinterpret_cast<PyDescriptorPool*>(self)->pool->FindMessageTypeByName(
-          absl::string_view(name, name_size));
+      reinterpret_cast<PyDescriptorPool*>(self)
+          ->pool->get()
+          ->FindMessageTypeByName(absl::string_view(name, name_size));
 
   if (message_descriptor == nullptr) {
     return SetErrorFromCollector(
@@ -281,7 +299,7 @@ static PyObject* FindFileByName(PyObject* self, PyObject* arg) {
 
   PyDescriptorPool* py_pool = reinterpret_cast<PyDescriptorPool*>(self);
   const FileDescriptor* file_descriptor =
-      py_pool->pool->FindFileByName(absl::string_view(name, name_size));
+      py_pool->pool->get()->FindFileByName(absl::string_view(name, name_size));
 
   if (file_descriptor == nullptr) {
     return SetErrorFromCollector(py_pool->error_collector, arg, "file");
@@ -297,7 +315,7 @@ PyObject* FindFieldByName(PyDescriptorPool* self, PyObject* arg) {
   }
 
   const FieldDescriptor* field_descriptor =
-      self->pool->FindFieldByName(absl::string_view(name, name_size));
+      self->pool->get()->FindFieldByName(absl::string_view(name, name_size));
   if (field_descriptor == nullptr) {
     return SetErrorFromCollector(self->error_collector, arg, "field");
   }
@@ -318,7 +336,8 @@ PyObject* FindExtensionByName(PyDescriptorPool* self, PyObject* arg) {
   }
 
   const FieldDescriptor* field_descriptor =
-      self->pool->FindExtensionByName(absl::string_view(name, name_size));
+      self->pool->get()->FindExtensionByName(
+          absl::string_view(name, name_size));
   if (field_descriptor == nullptr) {
     return SetErrorFromCollector(self->error_collector, arg, "extension field");
   }
@@ -339,7 +358,7 @@ PyObject* FindEnumTypeByName(PyDescriptorPool* self, PyObject* arg) {
   }
 
   const EnumDescriptor* enum_descriptor =
-      self->pool->FindEnumTypeByName(absl::string_view(name, name_size));
+      self->pool->get()->FindEnumTypeByName(absl::string_view(name, name_size));
   if (enum_descriptor == nullptr) {
     return SetErrorFromCollector(self->error_collector, arg, "enum");
   }
@@ -360,7 +379,7 @@ PyObject* FindOneofByName(PyDescriptorPool* self, PyObject* arg) {
   }
 
   const OneofDescriptor* oneof_descriptor =
-      self->pool->FindOneofByName(absl::string_view(name, name_size));
+      self->pool->get()->FindOneofByName(absl::string_view(name, name_size));
   if (oneof_descriptor == nullptr) {
     return SetErrorFromCollector(self->error_collector, arg, "oneof");
   }
@@ -381,7 +400,7 @@ static PyObject* FindServiceByName(PyObject* self, PyObject* arg) {
   }
 
   const ServiceDescriptor* service_descriptor =
-      reinterpret_cast<PyDescriptorPool*>(self)->pool->FindServiceByName(
+      reinterpret_cast<PyDescriptorPool*>(self)->pool->get()->FindServiceByName(
           absl::string_view(name, name_size));
   if (service_descriptor == nullptr) {
     return SetErrorFromCollector(
@@ -401,7 +420,7 @@ static PyObject* FindMethodByName(PyObject* self, PyObject* arg) {
   }
 
   const MethodDescriptor* method_descriptor =
-      reinterpret_cast<PyDescriptorPool*>(self)->pool->FindMethodByName(
+      reinterpret_cast<PyDescriptorPool*>(self)->pool->get()->FindMethodByName(
           absl::string_view(name, name_size));
   if (method_descriptor == nullptr) {
     return SetErrorFromCollector(
@@ -421,8 +440,9 @@ static PyObject* FindFileContainingSymbol(PyObject* self, PyObject* arg) {
   }
 
   const FileDescriptor* file_descriptor =
-      reinterpret_cast<PyDescriptorPool*>(self)->pool->FindFileContainingSymbol(
-          absl::string_view(name, name_size));
+      reinterpret_cast<PyDescriptorPool*>(self)
+          ->pool->get()
+          ->FindFileContainingSymbol(absl::string_view(name, name_size));
   if (file_descriptor == nullptr) {
     return SetErrorFromCollector(
         reinterpret_cast<PyDescriptorPool*>(self)->error_collector, arg,
@@ -446,8 +466,9 @@ static PyObject* FindExtensionByNumber(PyObject* self, PyObject* args) {
   }
 
   const FieldDescriptor* extension_descriptor =
-      reinterpret_cast<PyDescriptorPool*>(self)->pool->FindExtensionByNumber(
-          descriptor, number);
+      reinterpret_cast<PyDescriptorPool*>(self)
+          ->pool->get()
+          ->FindExtensionByNumber(descriptor, number);
   if (extension_descriptor == nullptr) {
     BuildFileErrorCollector* error_collector =
         reinterpret_cast<BuildFileErrorCollector*>(
@@ -473,7 +494,7 @@ static PyObject* FindAllExtensions(PyObject* self, PyObject* arg) {
   }
 
   std::vector<const FieldDescriptor*> extensions;
-  reinterpret_cast<PyDescriptorPool*>(self)->pool->FindAllExtensions(
+  reinterpret_cast<PyDescriptorPool*>(self)->pool->get()->FindAllExtensions(
       descriptor, &extensions);
 
   ScopedPyObjectPtr result(PyList_New(extensions.size()));
@@ -535,7 +556,7 @@ static PyObject* AddSerializedFile(PyObject* pself, PyObject* serialized_pb) {
   BuildFileErrorCollector error_collector;
   const FileDescriptor* descriptor =
       // Pool is mutable, we can remove the "const".
-      const_cast<DescriptorPool*>(self->pool)
+      const_cast<DescriptorPool*>(self->pool->get())
           ->BuildFileCollectingErrors(file_proto, &error_collector);
   if (descriptor == nullptr) {
     PyErr_Format(PyExc_TypeError,
@@ -587,9 +608,9 @@ static PyObject* SetFeatureSetDefaults(PyObject* pself, PyObject* pdefaults) {
   }
 
   absl::Status status =
-      const_cast<DescriptorPool*>(self->pool)
+      const_cast<DescriptorPool*>(self->pool->get())
           ->SetFeatureSetDefaults(
-              *reinterpret_cast<FeatureSetDefaults*>(defaults->message));
+              *reinterpret_cast<const FeatureSetDefaults*>(defaults->message));
   if (!status.ok()) {
     PyErr_SetString(PyExc_ValueError, std::string(status.message()).c_str());
     return nullptr;
@@ -715,7 +736,7 @@ PyDescriptorPool* GetDefaultDescriptorPool() {
 
 PyDescriptorPool* GetDescriptorPool_FromPool(const DescriptorPool* pool) {
   // Fast path for standard descriptors.
-  if (pool == python_generated_pool->pool ||
+  if (pool == python_generated_pool->pool->get() ||
       pool == DescriptorPool::generated_pool()) {
     return python_generated_pool;
   }
@@ -741,15 +762,52 @@ PyObject* PyDescriptorPool_FromPool(const DescriptorPool* pool) {
   if (cpool == nullptr) {
     return nullptr;
   }
-  cpool->pool = const_cast<DescriptorPool*>(pool);
-  cpool->is_owned = false;
+  cpool->pool = new std::shared_ptr<const DescriptorPool>(
+      UnsafeSharedPointerFromRaw(pool));
   cpool->is_mutable = false;
   cpool->underlay = nullptr;
   {
     FreeThreadingLockGuard lock(descriptor_pool_map_mutex);
-    if (!descriptor_pool_map->insert(std::make_pair(cpool->pool, cpool))
+    if (!descriptor_pool_map->insert(std::make_pair(cpool->pool->get(), cpool))
              .second) {
       // Should never happen -- We already checked the existence above.
+      PyErr_SetString(PyExc_ValueError, "DescriptorPool already registered");
+      return nullptr;
+    }
+  }
+
+  return reinterpret_cast<PyObject*>(cpool);
+}
+
+PyObject* PyDescriptorPool_FromSharedPool(
+    std::shared_ptr<const DescriptorPool> pool,
+    std::shared_ptr<const DescriptorDatabase> database) {
+  if (pool == nullptr) {
+    PyErr_SetString(PyExc_ValueError, "DescriptorPool is null");
+    return nullptr;
+  }
+  PyDescriptorPool* existing_pool = GetDescriptorPool_FromPool(pool.get());
+  if (existing_pool != nullptr) {
+    Py_INCREF(existing_pool);
+    return reinterpret_cast<PyObject*>(existing_pool);
+  } else {
+    PyErr_Clear();
+  }
+
+  PyDescriptorPool* cpool = cdescriptor_pool::_CreateDescriptorPool();
+  if (cpool == nullptr) {
+    return nullptr;
+  }
+  cpool->pool = new std::shared_ptr<const DescriptorPool>(pool);
+  if (database != nullptr) {
+    cpool->database = new std::shared_ptr<const DescriptorDatabase>(database);
+  }
+  cpool->is_mutable = false;
+  cpool->underlay = nullptr;
+  {
+    FreeThreadingLockGuard lock(descriptor_pool_map_mutex);
+    if (!descriptor_pool_map->insert(std::make_pair(cpool->pool->get(), cpool))
+             .second) {
       PyErr_SetString(PyExc_ValueError, "DescriptorPool already registered");
       return nullptr;
     }
@@ -778,15 +836,17 @@ PyObject* PyDescriptorPool_FromPool(
   if (cpool == nullptr) {
     return nullptr;
   }
-  cpool->pool = pool.release();
-  cpool->is_owned = true;
-  cpool->database = database.release();
+  cpool->pool = new std::shared_ptr<const DescriptorPool>(std::move(pool));
+  if (database != nullptr) {
+    cpool->database =
+        new std::shared_ptr<const DescriptorDatabase>(std::move(database));
+  }
   cpool->is_mutable = false;
   cpool->underlay = nullptr;
 
   {
     FreeThreadingLockGuard lock(descriptor_pool_map_mutex);
-    if (!descriptor_pool_map->insert(std::make_pair(cpool->pool, cpool))
+    if (!descriptor_pool_map->insert(std::make_pair(cpool->pool->get(), cpool))
              .second) {
       // Should never happen -- We already checked the existence above.
       PyErr_SetString(PyExc_ValueError, "DescriptorPool already registered");
@@ -803,7 +863,7 @@ const DescriptorPool* PyDescriptorPool_AsPool(PyObject* pool) {
     return nullptr;
   }
   PyDescriptorPool* cpool = reinterpret_cast<PyDescriptorPool*>(pool);
-  return cpool->pool;
+  return cpool->pool != nullptr ? cpool->pool->get() : nullptr;
 }
 
 }  // namespace python

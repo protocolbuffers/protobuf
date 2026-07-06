@@ -482,6 +482,35 @@ alias(
     visibility = ["//visibility:public"],
 )
 
+alias(
+    name = "cpp_file_options_proto",
+    actual = "//src/google/protobuf:cpp_file_options_proto",
+    visibility = ["//visibility:public"],
+)
+
+alias(
+    name = "cpp_file_options_cc_proto",
+    actual = "//src/google/protobuf:cpp_file_options_cc_proto",
+    visibility = ["//visibility:public"],
+)
+
+alias(
+    name = "json_options_proto",
+    actual = "//src/google/protobuf:json_options_proto",
+    visibility = ["//visibility:public"],
+)
+
+alias(
+    name = "json_enumvalue_options_proto",
+    actual = "//src/google/protobuf:json_enumvalue_options_proto",
+    visibility = ["//visibility:public"],
+)
+
+alias(
+    name = "json_enumvalue_options_cc_proto",
+    actual = "//src/google/protobuf:json_enumvalue_options_cc_proto",
+    visibility = ["//visibility:public"],
+)
 ################################################################################
 # Java support
 ################################################################################
@@ -626,8 +655,8 @@ alias(
 ################################################################################
 
 alias(
-    name = "csharp_features_proto",
-    actual = "//csharp:csharp_features_proto",  # proto_library
+    name = "c_sharp_features_proto",
+    actual = "//csharp:c_sharp_features_proto",  # proto_library
     visibility = ["//visibility:public"],
 )
 

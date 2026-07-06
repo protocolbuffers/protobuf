@@ -117,7 +117,7 @@ module Google
           raise NotImplementedError
         end
 
-        if array.null? or index_of_first < 0 or index_of_first >= count
+        if array.null? or index_of_first < 0 or index_of_first > count
           nil
         else
           if index_of_first + length > count

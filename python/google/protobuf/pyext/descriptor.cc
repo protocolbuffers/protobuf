@@ -26,8 +26,10 @@
 #include "google/protobuf/dynamic_message.h"
 #include "google/protobuf/internal_feature_helper.h"
 #include "google/protobuf/io/coded_stream.h"
+#include "google/protobuf/breaking_changes.h"
 #include "google/protobuf/pyext/descriptor_containers.h"
 #include "google/protobuf/pyext/descriptor_pool.h"
+#include "google/protobuf/pyext/free_threading_mutex.h"
 #include "google/protobuf/pyext/message.h"
 #include "google/protobuf/pyext/message_factory.h"
 #include "google/protobuf/pyext/scoped_pyobject_ptr.h"
@@ -67,6 +69,9 @@ static PyObject* PyFrame_GetGlobals(PyFrameObject* frame) {
   return frame->f_globals;
 }
 #endif
+
+// Must be included last.
+#include "google/protobuf/port_def.inc"
 
 namespace google {
 namespace protobuf {
@@ -226,7 +231,7 @@ bool Reparse(PyMessageFactory* message_factory, const Message& from,
   (void)from.SerializeToString(&serialized);
   io::CodedInputStream input(
       reinterpret_cast<const uint8_t*>(serialized.c_str()), serialized.size());
-  input.SetExtensionRegistry(message_factory->pool->pool,
+  input.SetExtensionRegistry(message_factory->pool->pool->get(),
                              message_factory->message_factory);
   bool success = to->ParseFromCodedStream(&input);
   if (!success) {
@@ -243,13 +248,16 @@ bool Reparse(PyMessageFactory* message_factory, const Message& from,
 //
 // Always returns a new reference.
 static PyObject* GetOrBuildMessageInDefaultPool(
-    absl::flat_hash_map<const void*, PyObject*>& cache, const void* key,
-    const Message& message) {
+    absl::flat_hash_map<const void*, PyObject*>& cache,
+    FreeThreadingMutex* cache_mutex, const void* key, const Message& message) {
   // First search in the cache.
-  if (cache.find(key) != cache.end()) {
-    PyObject* value = cache[key];
-    Py_INCREF(value);
-    return value;
+  {
+    FreeThreadingLockGuard lock(*cache_mutex);
+    if (cache.find(key) != cache.end()) {
+      PyObject* value = cache[key];
+      Py_INCREF(value);
+      return value;
+    }
   }
 
   // Similar to the C++ implementation, we return a message object from the
@@ -288,21 +296,38 @@ static PyObject* GetOrBuildMessageInDefaultPool(
   }
   CMessage* cmsg = reinterpret_cast<CMessage*>(value.get());
 
+  Message* cmsg_message = cmessage::AssureWritable(cmsg);
+  if (cmsg_message == nullptr) {
+    return nullptr;
+  }
+
   const Reflection* reflection = message.GetReflection();
   const UnknownFieldSet& unknown_fields(reflection->GetUnknownFields(message));
   if (unknown_fields.empty()) {
-    cmsg->message->CopyFrom(message);
+    cmsg_message->CopyFrom(message);
   } else {
     // Reparse options string!  XXX call cmessage::MergeFromString
-    if (!Reparse(message_factory, message, cmsg->message)) {
+    if (!Reparse(message_factory, message, cmsg_message)) {
       PyErr_Format(PyExc_ValueError, "Error reparsing Options message");
       return nullptr;
     }
   }
 
+#if PROTOBUF_PY_FUTURE_FREEZE_OPTIONS
+  cmsg->state = MESSAGE_FROZEN;
+#endif
+
   // Cache the result.
-  Py_INCREF(value.get());
-  cache[key] = value.get();
+  {
+    FreeThreadingLockGuard lock(*cache_mutex);
+    if (cache.find(key) != cache.end()) {
+      PyObject* existing_value = cache[key];
+      Py_INCREF(existing_value);
+      return existing_value;
+    }
+    Py_INCREF(value.get());
+    cache[key] = value.get();
+  }
 
   return value.release();
 }
@@ -313,7 +338,8 @@ static PyObject* GetOrBuildOptions(const DescriptorClass* descriptor) {
   PyDescriptorPool* caching_pool =
       GetDescriptorPool_FromPool(GetFileDescriptor(descriptor)->pool());
   return GetOrBuildMessageInDefaultPool(*caching_pool->descriptor_options,
-                                        descriptor, descriptor->options());
+                                        caching_pool->cache_mutex, descriptor,
+                                        descriptor->options());
 }
 
 template <class DescriptorClass>
@@ -328,7 +354,8 @@ static PyObject* GetFeaturesImpl(const DescriptorClass* descriptor) {
   PyDescriptorPool* caching_pool =
       GetDescriptorPool_FromPool(GetFileDescriptor(descriptor)->pool());
   return GetOrBuildMessageInDefaultPool(*caching_pool->descriptor_features,
-                                        descriptor, features);
+                                        caching_pool->cache_mutex, descriptor,
+                                        features);
 }
 
 // Copy the C++ descriptor to a Python message.
@@ -346,9 +373,12 @@ static PyObject* CopyToPythonProto(const DescriptorClass* descriptor,
                  std::string(self_descriptor->full_name()).c_str());
     return nullptr;
   }
-  cmessage::AssureWritable(message);
+  Message* mutable_message = cmessage::AssureWritable(message);
+  if (mutable_message == nullptr) {
+    return nullptr;
+  }
   DescriptorProtoClass* descriptor_message =
-      static_cast<DescriptorProtoClass*>(message->message);
+      static_cast<DescriptorProtoClass*>(mutable_message);
   descriptor->CopyTo(descriptor_message);
   // Custom options might in unknown extensions. Reparse
   // the descriptor_message. Can't skip reparse when options unknown
@@ -614,7 +644,10 @@ static PyObject* GetExtensionRanges(PyBaseDescriptor* self, void* closure) {
     const Descriptor::ExtensionRange* range = descriptor->extension_range(i);
     PyObject* start = PyLong_FromLong(range->start_number());
     PyObject* end = PyLong_FromLong(range->end_number());
-    PyList_SetItem(range_list, i, PyTuple_Pack(2, start, end));
+    PyObject* tuple = PyTuple_Pack(2, start, end);
+    Py_DECREF(start);
+    Py_DECREF(end);
+    PyList_SetItem(range_list, i, tuple);
   }
 
   return range_list;
@@ -2116,3 +2149,5 @@ bool InitDescriptor() {
 }  // namespace python
 }  // namespace protobuf
 }  // namespace google
+
+#include "google/protobuf/port_undef.inc"

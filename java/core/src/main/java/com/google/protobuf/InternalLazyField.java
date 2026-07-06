@@ -19,6 +19,7 @@ import java.util.Map.Entry;
  * changed; 2) value and bytes cannot be null at the same time; 3) If corrupted is true, value must
  * be null.
  */
+@SuppressWarnings("PatternMatchingInstanceof")
 class InternalLazyField {
 
   // Each lazy field must have a default instance of the message type, which is used to parse the
@@ -88,17 +89,16 @@ class InternalLazyField {
   static InternalLazyField mergeFrom(
       InternalLazyField lazyField, CodedInputStream input, ExtensionRegistryLite extensionRegistry)
       throws IOException {
-    ByteString inputBytes = input.readBytes();
     if (lazyField.isEmpty()) {
-      return new InternalLazyField(lazyField.defaultInstance, extensionRegistry, inputBytes);
-    }
-
-    if (inputBytes.isEmpty()) {
-      return lazyField;
+      return new InternalLazyField(lazyField.defaultInstance, extensionRegistry, input.readBytes());
     }
 
     if (lazyField.hasBytes()) {
       if (lazyField.extensionRegistry == extensionRegistry) {
+        ByteString inputBytes = input.readBytes();
+        if (inputBytes.isEmpty()) {
+          return lazyField;
+        }
         return new InternalLazyField(
             lazyField.defaultInstance, extensionRegistry, lazyField.bytes.concat(inputBytes));
       }
@@ -114,8 +114,17 @@ class InternalLazyField {
       }
     }
 
-    // TODO: b/473034710 - Consider avoiding the copy as it's parsing into a message.
-    return mergeValueFromBytes(lazyField, inputBytes, extensionRegistry);
+    try {
+      MessageLite.Builder builder = lazyField.value.toBuilder();
+      input.readMessage(builder, extensionRegistry);
+      return new InternalLazyField(builder.build());
+    } catch (InvalidProtocolBufferException e) {
+      // If the input bytes is corrupted, we should concat bytes. However, we should only do so if
+      // the extension registries are the same AND self.bytes is present. This should have been
+      // handled in the mergeFrom function, so we just throw an exception here.
+      throw new InvalidProtobufRuntimeException(
+          "Cannot merge lazy field from invalid bytes with a different extension registry.", e);
+    }
   }
 
   /**
@@ -124,12 +133,8 @@ class InternalLazyField {
    * @throws InvalidProtobufRuntimeException if either lazy field is corrupted and cannot be merged
    *     with a different extension registry.
    */
+  @SuppressWarnings("ReferenceEquality") // Compare singletons.
   static InternalLazyField mergeFrom(InternalLazyField self, InternalLazyField other) {
-    if (self.defaultInstance != other.defaultInstance) {
-      throw new IllegalArgumentException(
-          "LazyFields with different default instances cannot be merged.");
-    }
-
     // If either InternalLazyField is empty, return the other InternalLazyField.
     if (self.isEmpty()) {
       return other;
@@ -140,7 +145,10 @@ class InternalLazyField {
 
     // Fast path: concatenate the bytes if both LazyFields contain bytes and have the same extension
     // registry, even if one or both are corrupted.
-    if (self.hasBytes() && other.hasBytes() && self.extensionRegistry == other.extensionRegistry) {
+    if (self.hasBytes()
+        && other.hasBytes()
+        && self.extensionRegistry == other.extensionRegistry
+        && self.defaultInstance == other.defaultInstance) {
       return new InternalLazyField(
           self.defaultInstance, self.extensionRegistry, self.bytes.concat(other.bytes));
     }
@@ -165,19 +173,9 @@ class InternalLazyField {
     }
 
     // Since other.value is null, other.bytes must be non-null.
-    return mergeValueFromBytes(self, other.bytes, other.extensionRegistry);
-  }
-
-  /**
-   * Merges the InternalLazyField from the given ByteString with the given extension registry.
-   *
-   * <p>It can throw a runtime exception if it cannot parse the bytes.
-   */
-  private static InternalLazyField mergeValueFromBytes(
-      InternalLazyField self, ByteString inputBytes, ExtensionRegistryLite extensionRegistry) {
     try {
       return new InternalLazyField(
-          self.value.toBuilder().mergeFrom(inputBytes, extensionRegistry).build());
+          self.value.toBuilder().mergeFrom(other.bytes, other.extensionRegistry).build());
     } catch (InvalidProtocolBufferException e) {
       // If the input bytes is corrupted, we should cancat bytes. However, we should only do so if
       // the extension registries are the same AND self.bytes is present. This should have been
@@ -199,7 +197,7 @@ class InternalLazyField {
   /**
    * Guarantees that `this.value` is non-null or throws.
    *
-   * @throws {InvalidProtocolBufferException} If `bytes` cannot be parsed.
+   * @throws InvalidProtocolBufferException If `bytes` cannot be parsed.
    */
   private void ensureInitialized() throws InvalidProtocolBufferException {
     if (value != null) {
@@ -211,8 +209,15 @@ class InternalLazyField {
         throw new InvalidProtocolBufferException("Repeat access to corrupted lazy field");
       }
       try {
-        // `Bytes` is guaranteed to be non-null since `value` was null.
-        value = defaultInstance.getParserForType().parseFrom(bytes, extensionRegistry);
+        // `bytes` is guaranteed to be non-null since `value` was null.
+        // When lazyExtensionEnabled() returns true, it means all extensions including MessageSet's
+        // will be fully parsed. When it returns false, it basically implies this is a message set
+        // extension, and we should fall back to the old behavior of silently returning the default
+        // instance on corrupted extensions i.e. full parse.
+        value =
+            ExtensionRegistryLite.lazyExtensionEnabled()
+                ? defaultInstance.getParserForType().parsePartialFrom(bytes, extensionRegistry)
+                : defaultInstance.getParserForType().parseFrom(bytes, extensionRegistry);
       } catch (InvalidProtocolBufferException e) {
         corrupted = true;
         throw e;
@@ -275,7 +280,7 @@ class InternalLazyField {
         + computeSize(WireFormat.MESSAGE_SET_MESSAGE);
   }
 
-  void writeTo(Writer writer, int fieldNumber) throws IOException {
+  void writeTo(CodedOutputStreamWriter writer, int fieldNumber) throws IOException {
     if (bytes != null) {
       writer.writeBytes(fieldNumber, bytes);
     } else {
@@ -291,6 +296,22 @@ class InternalLazyField {
   @Override
   public boolean equals(
           Object obj) {
+    if (obj == null) {
+      return false;
+    }
+    if (this == obj) {
+      return true;
+    }
+    if (obj instanceof InternalLazyField) {
+      InternalLazyField other = (InternalLazyField) obj;
+      if (this.bytes != null
+          && other.bytes != null
+          && this.extensionRegistry == other.extensionRegistry
+          && this.bytes.equals(other.bytes)) {
+        return true;
+      }
+      return this.getValue().equals(other.getValue());
+    }
     return getValue().equals(obj);
   }
 
@@ -330,7 +351,6 @@ class InternalLazyField {
     }
 
     @Override
-    @SuppressWarnings("PatternMatchingInstanceof")
     public Object setValue(Object value) {
       if (!(value instanceof MessageLite)) {
         throw new IllegalArgumentException("Lazy field only supports MessageLite values.");

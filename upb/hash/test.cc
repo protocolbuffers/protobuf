@@ -59,13 +59,14 @@ TEST(Table, StringTable) {
   /* Initialize structures. */
   upb::Arena arena;
   upb_strtable t;
-  upb_strtable_init(&t, keys.size(), arena.ptr());
+  EXPECT_TRUE(upb_strtable_init(&t, keys.size(), arena.ptr()));
   std::map<std::string, int32_t> m;
   std::set<std::string> all;
   for (const auto& key : keys) {
     all.insert(key);
     upb_value val = {uint64_t(key[0])};
-    upb_strtable_insert(&t, key.data(), key.size(), val, arena.ptr());
+    EXPECT_TRUE(
+        upb_strtable_insert(&t, key.data(), key.size(), val, arena.ptr()));
     m[key] = key[0];
   }
 
@@ -128,7 +129,7 @@ TEST_P(IntTableTest, TestIntTable) {
   /* Initialize structures. */
   upb::Arena arena;
   upb_inttable t;
-  upb_inttable_init(&t, arena.ptr());
+  EXPECT_TRUE(upb_inttable_init(&t, arena.ptr()));
   uint32_t largest_key = 0;
   std::map<uint32_t, uint32_t> m;
   absl::flat_hash_map<uint32_t, uint32_t> hm;
@@ -171,22 +172,6 @@ TEST_P(IntTableTest, TestIntTable) {
   EXPECT_EQ(count, keys_.size());
   EXPECT_EQ(count, upb_inttable_count(&t));
 
-  // Compact and test correctness again.
-  upb_inttable_compact(&t, arena.ptr());
-  count = 0;
-  for (uint32_t i = 0; i <= largest_key; i++) {
-    upb_value val;
-    bool ok = upb_inttable_lookup(&t, i, &val);
-    if (ok) { /* Assume map implementation is correct. */
-      EXPECT_EQ(val.val, i * 3);
-      EXPECT_EQ(m[i], i * 3);
-      EXPECT_EQ(hm[i], i * 3);
-      count++;
-    }
-  }
-  EXPECT_EQ(count, keys_.size());
-  EXPECT_EQ(count, upb_inttable_count(&t));
-
   for (const auto& key : keys_) {
     upb_value val;
     bool ok = upb_inttable_remove(&t, key, &val);
@@ -209,10 +194,10 @@ TEST(TableTest, ExtTable) {
   const upb_MiniTable* mt2 = &upb_0test__TestMessageSet_msg_init;
 
   const upb_MiniTableExtension* ext1_10 =
-      &upb_test_TestExtensions_optional_int32_ext_ext;
-  const upb_MiniTableExtension* ext1_20 = &upb_test_optional_msg_ext_ext;
+      upb_test_TestExtensions_optional_int32_ext_ext;
+  const upb_MiniTableExtension* ext1_20 = upb_test_optional_msg_ext_ext;
   const upb_MiniTableExtension* ext2_10 =
-      &upb_test_MessageSetMember_message_set_extension_ext;
+      upb_test_MessageSetMember_message_set_extension_ext;
 
   ASSERT_TRUE(upb_exttable_insert(&table, mt1, (const uint32_t*)ext1_10, a));
   ASSERT_TRUE(upb_exttable_insert(&table, mt1, (const uint32_t*)ext1_20, a));
@@ -248,7 +233,7 @@ TEST(TableTest, ExtTable) {
 TEST(IntTableTest, EmptyTable) {
   upb::Arena arena;
   upb_inttable t;
-  upb_inttable_init(&t, arena.ptr());
+  EXPECT_TRUE(upb_inttable_init(&t, arena.ptr()));
 
   intptr_t iter = UPB_INTTABLE_BEGIN;
   uintptr_t key;
@@ -257,7 +242,7 @@ TEST(IntTableTest, EmptyTable) {
   EXPECT_TRUE(upb_inttable_done(&t, iter));
 
   // Insert a value.
-  upb_inttable_insert(&t, 0, upb_value_bool(true), arena.ptr());
+  EXPECT_TRUE(upb_inttable_insert(&t, 0, upb_value_bool(true), arena.ptr()));
   iter = UPB_INTTABLE_BEGIN;
   EXPECT_TRUE(upb_inttable_next(&t, &key, &val, &iter));
   EXPECT_FALSE(upb_inttable_done(&t, iter));
@@ -272,10 +257,10 @@ TEST(IntTableTest, EmptyTable) {
 TEST(IntTableTest, Iteration) {
   upb::Arena arena;
   upb_inttable t;
-  upb_inttable_init(&t, arena.ptr());
-  upb_inttable_insert(&t, 0, upb_value_bool(true), arena.ptr());
-  upb_inttable_insert(&t, 2, upb_value_bool(true), arena.ptr());
-  upb_inttable_insert(&t, 4, upb_value_bool(true), arena.ptr());
+  EXPECT_TRUE(upb_inttable_init(&t, arena.ptr()));
+  EXPECT_TRUE(upb_inttable_insert(&t, 0, upb_value_bool(true), arena.ptr()));
+  EXPECT_TRUE(upb_inttable_insert(&t, 2, upb_value_bool(true), arena.ptr()));
+  EXPECT_TRUE(upb_inttable_insert(&t, 4, upb_value_bool(true), arena.ptr()));
 
   intptr_t iter = UPB_INTTABLE_BEGIN;
   uintptr_t key;
@@ -319,11 +304,11 @@ TEST(IntTableTest, Iteration) {
 TEST(IntTableTest, IterationWithNonZeroStart) {
   upb::Arena arena;
   upb_inttable t;
-  upb_inttable_init(&t, arena.ptr());
+  EXPECT_TRUE(upb_inttable_init(&t, arena.ptr()));
   upb_value val_for_key_2 = {uint64_t("value_for_key_2")};
   upb_value val_for_key_4 = {uint64_t("value_for_key_4")};
-  upb_inttable_insert(&t, 2, val_for_key_2, arena.ptr());
-  upb_inttable_insert(&t, 4, val_for_key_4, arena.ptr());
+  EXPECT_TRUE(upb_inttable_insert(&t, 2, val_for_key_2, arena.ptr()));
+  EXPECT_TRUE(upb_inttable_insert(&t, 4, val_for_key_4, arena.ptr()));
 
   intptr_t iter = UPB_INTTABLE_BEGIN;
   uintptr_t key;
@@ -354,8 +339,8 @@ TEST(IntTableTest, IterationWithNonZeroStart) {
 TEST(IntTableTest, IterationWithArrayOnly) {
   upb::Arena arena;
   upb_inttable t;
-  upb_inttable_init(&t, arena.ptr());
-  upb_inttable_insert(&t, 0, upb_value_bool(true), arena.ptr());
+  EXPECT_TRUE(upb_inttable_init(&t, arena.ptr()));
+  EXPECT_TRUE(upb_inttable_insert(&t, 0, upb_value_bool(true), arena.ptr()));
 
   intptr_t iter = UPB_INTTABLE_BEGIN;
   uintptr_t key;
@@ -378,9 +363,11 @@ TEST(IntTableTest, IterationWithArrayOnly) {
 TEST(IntTableTest, BoolKeys) {
   upb::Arena arena;
   upb_inttable t;
-  upb_inttable_init(&t, arena.ptr());
-  upb_inttable_insert(&t, false, upb_value_bool(true), arena.ptr());
-  upb_inttable_insert(&t, true, upb_value_bool(false), arena.ptr());
+  EXPECT_TRUE(upb_inttable_init(&t, arena.ptr()));
+  EXPECT_TRUE(
+      upb_inttable_insert(&t, false, upb_value_bool(true), arena.ptr()));
+  EXPECT_TRUE(
+      upb_inttable_insert(&t, true, upb_value_bool(false), arena.ptr()));
 
   intptr_t iter = UPB_INTTABLE_BEGIN;
   uintptr_t key;
@@ -414,9 +401,9 @@ TEST(IntTableTest, BoolKeys) {
 TEST(IntTableTest, EnumValues) {
   upb::Arena arena;
   upb_inttable t;
-  upb_inttable_init(&t, arena.ptr());
-  upb_inttable_insert(&t, 0, upb_value_int32(0), arena.ptr());
-  upb_inttable_insert(&t, -1, upb_value_int32(-1), arena.ptr());
+  EXPECT_TRUE(upb_inttable_init(&t, arena.ptr()));
+  EXPECT_TRUE(upb_inttable_insert(&t, 0, upb_value_int32(0), arena.ptr()));
+  EXPECT_TRUE(upb_inttable_insert(&t, -1, upb_value_int32(-1), arena.ptr()));
 
   intptr_t iter = UPB_INTTABLE_BEGIN;
   uintptr_t key;
@@ -454,20 +441,15 @@ INSTANTIATE_TEST_SUITE_P(IntTableParams, IntTableTest,
 TEST(Table, MaxValue) {
   upb::Arena arena;
   upb_inttable t;
-  upb_inttable_init(&t, arena.ptr());
+  EXPECT_TRUE(upb_inttable_init(&t, arena.ptr()));
   uint64_t uint64_max = (uint64_t)-1;
-  upb_inttable_insert(&t, 0, upb_value_uint64(uint64_max), arena.ptr());
-  upb_inttable_insert(&t, 1, upb_value_uint64(uint64_max), arena.ptr());
-  upb_inttable_insert(&t, 2, upb_value_uint64(uint64_max), arena.ptr());
+  EXPECT_TRUE(
+      upb_inttable_insert(&t, 0, upb_value_uint64(uint64_max), arena.ptr()));
+  EXPECT_TRUE(
+      upb_inttable_insert(&t, 1, upb_value_uint64(uint64_max), arena.ptr()));
+  EXPECT_TRUE(
+      upb_inttable_insert(&t, 2, upb_value_uint64(uint64_max), arena.ptr()));
   upb_value val;
-  EXPECT_TRUE(upb_inttable_lookup(&t, 0, &val));
-  EXPECT_EQ(val.val, uint64_max);
-  EXPECT_TRUE(upb_inttable_lookup(&t, 1, &val));
-  EXPECT_EQ(val.val, uint64_max);
-  EXPECT_TRUE(upb_inttable_lookup(&t, 2, &val));
-  EXPECT_EQ(val.val, uint64_max);
-
-  upb_inttable_compact(&t, arena.ptr());
   EXPECT_TRUE(upb_inttable_lookup(&t, 0, &val));
   EXPECT_EQ(val.val, uint64_max);
   EXPECT_TRUE(upb_inttable_lookup(&t, 1, &val));
@@ -486,18 +468,13 @@ TEST(Table, MaxValue) {
 TEST(Table, MaxValueWithLargeArray) {
   upb::Arena arena;
   upb_inttable t;
-  upb_inttable_init(&t, arena.ptr());
+  EXPECT_TRUE(upb_inttable_init(&t, arena.ptr()));
   uint64_t uint64_max = (uint64_t)-1;
   for (int i = 1; i < 121; i++) {
-    upb_inttable_insert(&t, i, upb_value_uint64(uint64_max), arena.ptr());
+    EXPECT_TRUE(
+        upb_inttable_insert(&t, i, upb_value_uint64(uint64_max), arena.ptr()));
   }
   upb_value val;
-  for (int i = 1; i < 121; i++) {
-    EXPECT_TRUE(upb_inttable_lookup(&t, i, &val));
-    EXPECT_EQ(val.val, uint64_max);
-  }
-
-  upb_inttable_compact(&t, arena.ptr());
   for (int i = 1; i < 121; i++) {
     EXPECT_TRUE(upb_inttable_lookup(&t, i, &val));
     EXPECT_EQ(val.val, uint64_max);
@@ -511,14 +488,80 @@ TEST(Table, MaxValueWithLargeArray) {
   }
 }
 
-TEST(IntTableTest, Delete) {
+TEST(IntTableTest, RemoveIter) {
   upb::Arena arena;
   upb_inttable t;
   upb_inttable_init(&t, arena.ptr());
   upb_inttable_insert(&t, 0, upb_value_bool(true), arena.ptr());
   upb_inttable_insert(&t, 2, upb_value_bool(true), arena.ptr());
   upb_inttable_insert(&t, 4, upb_value_bool(true), arena.ptr());
-  upb_inttable_compact(&t, arena.ptr());
+
+  intptr_t iter = UPB_INTTABLE_BEGIN;
+  uintptr_t key;
+  upb_value val;
+
+  EXPECT_TRUE(upb_inttable_next(&t, &key, &val, &iter));
+  bool saw_0 = false;
+  bool saw_2 = false;
+  bool saw_4 = false;
+  do {
+    switch (key) {
+      case 0:
+        EXPECT_EQ(upb_inttable_iter_key(&t, iter), 0);
+        upb_inttable_removeiter(&t, &iter);
+        EXPECT_FALSE(saw_0);
+        saw_0 = true;
+        break;
+      case 2:
+        EXPECT_EQ(upb_inttable_iter_key(&t, iter), 2);
+        EXPECT_FALSE(saw_2);
+        saw_2 = true;
+        break;
+      case 4:
+        EXPECT_EQ(upb_inttable_iter_key(&t, iter), 4);
+        upb_inttable_removeiter(&t, &iter);
+        EXPECT_FALSE(saw_4);
+        saw_4 = true;
+        break;
+      default:
+        FAIL() << "Unexpected key: " << key;
+    }
+  } while (upb_inttable_next(&t, &key, &val, &iter));
+
+  EXPECT_TRUE(saw_0);
+  EXPECT_TRUE(saw_2);
+  EXPECT_TRUE(saw_4);
+  EXPECT_FALSE(upb_inttable_lookup(&t, 0, &val));
+  EXPECT_TRUE(upb_inttable_lookup(&t, 2, &val));
+  EXPECT_FALSE(upb_inttable_lookup(&t, 4, &val));
+}
+
+TEST(IntTableTest, RemoveIterAll) {
+  upb::Arena arena;
+  upb_inttable t;
+  EXPECT_TRUE(upb_inttable_init(&t, arena.ptr()));
+  EXPECT_TRUE(upb_inttable_insert(&t, 0, upb_value_bool(true), arena.ptr()));
+  EXPECT_TRUE(upb_inttable_insert(&t, 2, upb_value_bool(true), arena.ptr()));
+  EXPECT_TRUE(upb_inttable_insert(&t, 4, upb_value_bool(true), arena.ptr()));
+
+  intptr_t iter = UPB_INTTABLE_BEGIN;
+  uintptr_t key;
+  upb_value val;
+
+  while (upb_inttable_next(&t, &key, &val, &iter)) {
+    upb_inttable_removeiter(&t, &iter);
+  }
+
+  EXPECT_EQ(upb_inttable_count(&t), 0);
+}
+
+TEST(IntTableTest, Delete) {
+  upb::Arena arena;
+  upb_inttable t;
+  EXPECT_TRUE(upb_inttable_init(&t, arena.ptr()));
+  EXPECT_TRUE(upb_inttable_insert(&t, 0, upb_value_bool(true), arena.ptr()));
+  EXPECT_TRUE(upb_inttable_insert(&t, 2, upb_value_bool(true), arena.ptr()));
+  EXPECT_TRUE(upb_inttable_insert(&t, 4, upb_value_bool(true), arena.ptr()));
   upb_inttable_remove(&t, 0, nullptr);
   upb_inttable_remove(&t, 2, nullptr);
   upb_inttable_remove(&t, 4, nullptr);
@@ -537,6 +580,59 @@ TEST(Table, Init) {
      * work for all expected sizes. */
     upb::Arena arena;
     upb_strtable t;
-    upb_strtable_init(&t, i, arena.ptr());
+    EXPECT_TRUE(upb_strtable_init(&t, i, arena.ptr()));
   }
+}
+
+TEST(IntTableTest, RemoveIterHeadOfChain) {
+  upb::Arena arena;
+  upb_inttable t;
+  EXPECT_TRUE(upb_inttable_init(&t, arena.ptr()));
+
+  // Insert two keys that collide on the initial table size of 8 (mask 7).
+  // This will form a chain where 0 is at the head and 8 is its next element.
+  EXPECT_TRUE(upb_inttable_insert(&t, 0, upb_value_bool(true), arena.ptr()));
+  EXPECT_TRUE(upb_inttable_insert(&t, 8, upb_value_bool(true), arena.ptr()));
+
+  intptr_t iter = UPB_INTTABLE_BEGIN;
+  uintptr_t key;
+  upb_value val;
+
+  // Iterate through the table. When we encounter 0, remove it via removeiter.
+  while (upb_inttable_next(&t, &key, &val, &iter)) {
+    if (key == 0) {
+      upb_inttable_removeiter(&t, &iter);
+    }
+  }
+
+  // The remaining element 8 should still be in the table and reachable.
+  EXPECT_EQ(upb_inttable_count(&t), 1);
+  EXPECT_TRUE(upb_inttable_lookup(&t, 8, &val));
+}
+
+TEST(IntTableTest, RemoveIterHeadOfChainDemonstratesBug) {
+  upb::Arena arena;
+  upb_inttable t;
+  EXPECT_TRUE(upb_inttable_init(&t, arena.ptr()));
+
+  // Insert two keys that collide on the initial table size of 8 (mask 7).
+  // Keys 1 and 9 are used so that they fall into the hash part of the table,
+  // forming a chain where 1 is at the head and 9 is its next element.
+  EXPECT_TRUE(upb_inttable_insert(&t, 1, upb_value_bool(true), arena.ptr()));
+  EXPECT_TRUE(upb_inttable_insert(&t, 9, upb_value_bool(true), arena.ptr()));
+
+  intptr_t iter = UPB_INTTABLE_BEGIN;
+  uintptr_t key;
+  upb_value val;
+
+  // Iterate through the table. When we encounter 1, remove it via removeiter.
+  while (upb_inttable_next(&t, &key, &val, &iter)) {
+    if (key == 1) {
+      upb_inttable_removeiter(&t, &iter);
+    }
+  }
+
+  // The remaining element 9 should still be in the table and reachable.
+  EXPECT_EQ(upb_inttable_count(&t), 1);
+  EXPECT_TRUE(upb_inttable_lookup(&t, 9, &val));
 }

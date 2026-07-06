@@ -105,7 +105,7 @@ bool Builder::LinkExtension(upb_MiniTableExtension* ext) {
   }
   if (upb_MiniTableField_IsClosedEnum(field)) {
     auto et = NextEnumTable();
-    if (!et) field->UPB_PRIVATE(descriptortype) = kUpb_FieldType_Int32;
+    if (!et) return false;
     ext->UPB_PRIVATE(sub) = upb_MiniTableSub_FromEnum(et);
   }
   return true;
@@ -130,11 +130,16 @@ void Builder::BuildExtensions(upb_ExtensionRegistry** exts) {
                                         status.ptr());
       if (!ptr) break;
       if (!LinkExtension(ext)) continue;
+      if (upb_MiniTable_FindFieldByNumber(
+              extendee, upb_MiniTableExtension_Number(ext)) != nullptr) {
+        continue;
+      }
       if (upb_ExtensionRegistry_Lookup(*exts, ext->UPB_PRIVATE(extendee),
                                        upb_MiniTableExtension_Number(ext)))
         continue;
-      upb_ExtensionRegistry_AddArray(
+      auto status = upb_ExtensionRegistry_AddArray(
           *exts, const_cast<const upb_MiniTableExtension**>(&ext), 1);
+      UPB_ASSERT(status == kUpb_ExtensionRegistryStatus_Ok);
     }
   }
 }
@@ -156,10 +161,7 @@ bool Builder::LinkMessages() {
         if (et) {
           if (!upb_MiniTable_SetSubEnum(table, field, et)) return false;
         } else {
-          // We don't have any sub-enums.  Override the field type so that it is
-          // not needed.
-          field->UPB_PRIVATE(descriptortype) = kUpb_FieldType_Int32;
-          field->UPB_PRIVATE(submsg_ofs) = kUpb_NoSub;
+          return false;
         }
       }
     }

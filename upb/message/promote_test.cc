@@ -81,14 +81,12 @@ TEST(GeneratedCode, FindUnknown) {
 
   upb_FindUnknownRet result = upb_Message_FindUnknown(
       UPB_UPCAST(base_msg),
-      upb_MiniTableExtension_Number(&upb_test_ModelExtension1_model_ext_ext),
-      0);
+      upb_MiniTableExtension_Number(upb_test_ModelExtension1_model_ext_ext), 0);
   EXPECT_EQ(kUpb_FindUnknown_Ok, result.status);
 
   result = upb_Message_FindUnknown(
       UPB_UPCAST(base_msg),
-      upb_MiniTableExtension_Number(&upb_test_ModelExtension2_model_ext_ext),
-      0);
+      upb_MiniTableExtension_Number(upb_test_ModelExtension2_model_ext_ext), 0);
   EXPECT_EQ(kUpb_FindUnknown_NotPresent, result.status);
 
   upb_Arena_Free(arena);
@@ -125,7 +123,7 @@ TEST(GeneratedCode, PromoteFromMultiple) {
 
   upb_MessageValue value;
   upb_GetExtension_Status result = upb_Message_GetOrPromoteExtension(
-      UPB_UPCAST(parsed), &upb_test_ModelExtension1_model_ext_ext, options,
+      UPB_UPCAST(parsed), upb_test_ModelExtension1_model_ext_ext, options,
       arena, &value);
   ASSERT_EQ(result, kUpb_GetExtension_Ok);
   upb_test_ModelExtension1* parsed_ex =
@@ -135,8 +133,7 @@ TEST(GeneratedCode, PromoteFromMultiple) {
 
   upb_FindUnknownRet found = upb_Message_FindUnknown(
       UPB_UPCAST(parsed),
-      upb_MiniTableExtension_Number(&upb_test_ModelExtension1_model_ext_ext),
-      0);
+      upb_MiniTableExtension_Number(upb_test_ModelExtension1_model_ext_ext), 0);
   EXPECT_EQ(kUpb_FindUnknown_NotPresent, found.status);
 
   upb_Arena_Free(arena);
@@ -188,7 +185,7 @@ TEST(GeneratedCode, Extensions) {
 
   // Test known GetExtension 1
   promote_status = upb_Message_GetOrPromoteExtension(
-      UPB_UPCAST(msg), &upb_test_ModelExtension1_model_ext_ext, 0, arena,
+      UPB_UPCAST(msg), upb_test_ModelExtension1_model_ext_ext, 0, arena,
       &value);
   ext1 = (upb_test_ModelExtension1*)value.msg_val;
   EXPECT_EQ(kUpb_GetExtension_Ok, promote_status);
@@ -197,7 +194,7 @@ TEST(GeneratedCode, Extensions) {
 
   // Test known GetExtension 2
   promote_status = upb_Message_GetOrPromoteExtension(
-      UPB_UPCAST(msg), &upb_test_ModelExtension2_model_ext_ext, 0, arena,
+      UPB_UPCAST(msg), upb_test_ModelExtension2_model_ext_ext, 0, arena,
       &value);
   ext2 = (upb_test_ModelExtension2*)value.msg_val;
   EXPECT_EQ(kUpb_GetExtension_Ok, promote_status);
@@ -205,7 +202,7 @@ TEST(GeneratedCode, Extensions) {
 
   // Test known GetExtension 3
   promote_status = upb_Message_GetOrPromoteExtension(
-      UPB_UPCAST(msg), &upb_test_ModelExtension2_model_ext_2_ext, 0, arena,
+      UPB_UPCAST(msg), upb_test_ModelExtension2_model_ext_2_ext, 0, arena,
       &value);
   ext2 = (upb_test_ModelExtension2*)value.msg_val;
   EXPECT_EQ(kUpb_GetExtension_Ok, promote_status);
@@ -213,7 +210,7 @@ TEST(GeneratedCode, Extensions) {
 
   // Test known GetExtension 4
   promote_status = upb_Message_GetOrPromoteExtension(
-      UPB_UPCAST(msg), &upb_test_ModelExtension2_model_ext_3_ext, 0, arena,
+      UPB_UPCAST(msg), upb_test_ModelExtension2_model_ext_3_ext, 0, arena,
       &value);
   ext2 = (upb_test_ModelExtension2*)value.msg_val;
   EXPECT_EQ(kUpb_GetExtension_Ok, promote_status);
@@ -221,7 +218,7 @@ TEST(GeneratedCode, Extensions) {
 
   // Test known GetExtension 5
   promote_status = upb_Message_GetOrPromoteExtension(
-      UPB_UPCAST(msg), &upb_test_ModelExtension2_model_ext_4_ext, 0, arena,
+      UPB_UPCAST(msg), upb_test_ModelExtension2_model_ext_4_ext, 0, arena,
       &value);
   ext2 = (upb_test_ModelExtension2*)value.msg_val;
   EXPECT_EQ(kUpb_GetExtension_Ok, promote_status);
@@ -229,7 +226,7 @@ TEST(GeneratedCode, Extensions) {
 
   // Test known GetExtension 6
   promote_status = upb_Message_GetOrPromoteExtension(
-      UPB_UPCAST(msg), &upb_test_ModelExtension2_model_ext_5_ext, 0, arena,
+      UPB_UPCAST(msg), upb_test_ModelExtension2_model_ext_5_ext, 0, arena,
       &value);
   ext2 = (upb_test_ModelExtension2*)value.msg_val;
   EXPECT_EQ(kUpb_GetExtension_Ok, promote_status);
@@ -246,7 +243,7 @@ TEST(GeneratedCode, Extensions) {
 
   // Test unknown GetExtension.
   promote_status = upb_Message_GetOrPromoteExtension(
-      UPB_UPCAST(base_msg), &upb_test_ModelExtension1_model_ext_ext, 0, arena,
+      UPB_UPCAST(base_msg), upb_test_ModelExtension1_model_ext_ext, 0, arena,
       &value);
   ext1 = (upb_test_ModelExtension1*)value.msg_val;
   EXPECT_EQ(kUpb_GetExtension_Ok, promote_status);
@@ -256,7 +253,7 @@ TEST(GeneratedCode, Extensions) {
 
   // Test unknown GetExtension.
   promote_status = upb_Message_GetOrPromoteExtension(
-      UPB_UPCAST(base_msg), &upb_test_ModelExtension2_model_ext_ext, 0, arena,
+      UPB_UPCAST(base_msg), upb_test_ModelExtension2_model_ext_ext, 0, arena,
       &value);
   ext2 = (upb_test_ModelExtension2*)value.msg_val;
   EXPECT_EQ(kUpb_GetExtension_Ok, promote_status);
@@ -265,7 +262,7 @@ TEST(GeneratedCode, Extensions) {
 
   // Test unknown GetExtension.
   promote_status = upb_Message_GetOrPromoteExtension(
-      UPB_UPCAST(base_msg), &upb_test_ModelExtension2_model_ext_2_ext, 0, arena,
+      UPB_UPCAST(base_msg), upb_test_ModelExtension2_model_ext_2_ext, 0, arena,
       &value);
   ext2 = (upb_test_ModelExtension2*)value.msg_val;
   EXPECT_EQ(kUpb_GetExtension_Ok, promote_status);
@@ -274,7 +271,7 @@ TEST(GeneratedCode, Extensions) {
 
   // Test unknown GetExtension.
   promote_status = upb_Message_GetOrPromoteExtension(
-      UPB_UPCAST(base_msg), &upb_test_ModelExtension2_model_ext_3_ext, 0, arena,
+      UPB_UPCAST(base_msg), upb_test_ModelExtension2_model_ext_3_ext, 0, arena,
       &value);
   ext2 = (upb_test_ModelExtension2*)value.msg_val;
   EXPECT_EQ(kUpb_GetExtension_Ok, promote_status);
@@ -283,7 +280,7 @@ TEST(GeneratedCode, Extensions) {
 
   // Test unknown GetExtension.
   promote_status = upb_Message_GetOrPromoteExtension(
-      UPB_UPCAST(base_msg), &upb_test_ModelExtension2_model_ext_4_ext, 0, arena,
+      UPB_UPCAST(base_msg), upb_test_ModelExtension2_model_ext_4_ext, 0, arena,
       &value);
   ext2 = (upb_test_ModelExtension2*)value.msg_val;
   EXPECT_EQ(kUpb_GetExtension_Ok, promote_status);
@@ -292,7 +289,7 @@ TEST(GeneratedCode, Extensions) {
 
   // Test unknown GetExtension.
   promote_status = upb_Message_GetOrPromoteExtension(
-      UPB_UPCAST(base_msg), &upb_test_ModelExtension2_model_ext_5_ext, 0, arena,
+      UPB_UPCAST(base_msg), upb_test_ModelExtension2_model_ext_5_ext, 0, arena,
       &value);
   ext2 = (upb_test_ModelExtension2*)value.msg_val;
   EXPECT_EQ(kUpb_GetExtension_Ok, promote_status);

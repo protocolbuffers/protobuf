@@ -636,7 +636,7 @@ MessageLite* ExtensionSet::MutableRepeatedMessage(int number, int index) {
 }
 
 MessageLite* ExtensionSet::AddMessage(Arena* arena, int number, FieldType type,
-                                      const ClassData* class_data,
+                                      const MessageLite& prototype,
                                       const FieldDescriptor* descriptor) {
   Extension* extension;
   if (MaybeNewExtension(arena, number, descriptor, &extension)) {
@@ -649,9 +649,10 @@ MessageLite* ExtensionSet::AddMessage(Arena* arena, int number, FieldType type,
   } else {
     ABSL_DCHECK_TYPE(*extension, REPEATED_FIELD, MESSAGE);
   }
+
   return reinterpret_cast<internal::RepeatedPtrFieldBase*>(
              extension->ptr.repeated_message_value)
-      ->AddFromClassData<GenericTypeHandler<MessageLite>>(arena, class_data);
+      ->AddFromPrototype<GenericTypeHandler<MessageLite>>(arena, &prototype);
 }
 
 // Defined in extension_set_heavy.cc.
@@ -1912,14 +1913,6 @@ LazyEagerVerifyFnType FindExtensionLazyEagerVerifyFn(
   return nullptr;
 }
 
-std::atomic<ExtensionSet::LazyMessageExtension* (*)(Arena* arena)>
-    ExtensionSet::maybe_create_lazy_extension_;
-
-#if defined(PROTOBUF_INTERNAL_DIRECT_LAZY_FIELD_IN_EXTENSION_SET)
-LazyField* ExtensionSet::MaybeCreateLazyExtension(Arena* arena) {
-  return nullptr;
-}
-#endif  // defined(PROTOBUF_INTERNAL_DIRECT_LAZY_FIELD_IN_EXTENSION_SET)
 
 }  // namespace internal
 }  // namespace protobuf

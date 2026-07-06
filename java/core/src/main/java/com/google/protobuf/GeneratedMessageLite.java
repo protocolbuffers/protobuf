@@ -499,6 +499,10 @@ public abstract class GeneratedMessageLite<
 
     /** All subclasses implement this. */
     public BuilderType mergeFrom(MessageType message) {
+      if (message != null && !getDefaultInstanceForType().getClass().isInstance(message)) {
+        throw new IllegalArgumentException(
+            "mergeFrom(MessageLite) can only merge messages of the same type.");
+      }
       if (getDefaultInstanceForType().equals(message)) {
         return (BuilderType) this;
       }
@@ -558,7 +562,8 @@ public abstract class GeneratedMessageLite<
       return (BuilderType) this;
     }
 
-    private static <MessageType> void mergeFromInstance(MessageType dest, MessageType src) {
+    private static <MessageType extends GeneratedMessageLite<?, ?>> void mergeFromInstance(
+        MessageType dest, MessageType src) {
       Protobuf.getInstance().schemaFor(dest).mergeFrom(dest, src);
     }
 
@@ -1461,16 +1466,19 @@ public abstract class GeneratedMessageLite<
     }
 
     private Class<?> resolveMessageClass() throws ClassNotFoundException {
-      if (messageClass == null) {
-        Class<?> clazz =
+      Class<?> clazz = messageClass;
+      if (clazz == null) {
+        clazz =
             Class.forName(
                 messageClassName, /* initialize= */ false, getClass().getClassLoader());
-        if (!MessageLite.class.isAssignableFrom(clazz)) {
-          throw new ClassNotFoundException();
-        }
-        return clazz;
       }
-      return messageClass;
+      if (!MessageLite.class.isAssignableFrom(clazz)) {
+        throw new ClassNotFoundException();
+      }
+      if (!clazz.getName().equals(messageClassName)) {
+        throw new ClassNotFoundException();
+      }
+      return clazz;
     }
   }
 

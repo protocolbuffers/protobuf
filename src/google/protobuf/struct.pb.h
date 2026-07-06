@@ -42,15 +42,6 @@
 
 #define PROTOBUF_INTERNAL_EXPORT_google_2fprotobuf_2fstruct_2eproto PROTOBUF_EXPORT
 
-namespace google {
-namespace protobuf {
-namespace internal {
-template <typename T>
-::absl::string_view GetAnyMessageName();
-}  // namespace internal
-}  // namespace protobuf
-}  // namespace google
-
 // Internal implementation detail -- do not use these members.
 struct PROTOBUF_EXPORT TableStruct_google_2fprotobuf_2fstruct_2eproto {
   static const ::uint32_t offsets[];
@@ -151,6 +142,8 @@ using ::google::protobuf::internal::generated_enum::AbslUnparseFlag;
 
 class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED ListValue final : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:google.protobuf.ListValue) */ {
+  using Super_ = ::google::protobuf::Message;
+
  public:
   inline ListValue() : ListValue(nullptr) {}
   ~ListValue() PROTOBUF_FINAL;
@@ -225,11 +218,11 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED ListValue final : p
 
   [[nodiscard]] ListValue* PROTOBUF_NONNULL
   New(::google::protobuf::Arena* PROTOBUF_NULLABLE arena = nullptr) const {
-    return ::google::protobuf::Message::DefaultConstruct<ListValue>(arena);
+    return Super_::DefaultConstruct<ListValue>(arena);
   }
-  using ::google::protobuf::Message::CopyFrom;
+  using Super_::CopyFrom;
   void CopyFrom(const ListValue& from);
-  using ::google::protobuf::Message::MergeFrom;
+  using Super_::MergeFrom;
   void MergeFrom(const ListValue& from) { ListValue::MergeImpl(*this, from); }
 
   private:
@@ -270,8 +263,6 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED ListValue final : p
   static void SharedDtor(MessageLite& self);
   void InternalSwap(ListValue* PROTOBUF_NONNULL other);
  private:
-  template <typename T>
-  friend ::absl::string_view(::google::protobuf::internal::GetAnyMessageName)();
   static ::absl::string_view FullMessageName() { return "google.protobuf.ListValue"; }
 
   explicit ListValue(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
@@ -300,8 +291,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED ListValue final : p
     kValuesFieldNumber = 1,
   };
   // repeated .google.protobuf.Value values = 1;
-  [[nodiscard]] int values_size()
-      const;
+  [[nodiscard]] int values_size() const;
   private:
   int _internal_values_size() const;
 
@@ -363,6 +353,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED ListValue final : p
 
 class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Struct final : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:google.protobuf.Struct) */ {
+  using Super_ = ::google::protobuf::Message;
+
  public:
   inline Struct() : Struct(nullptr) {}
   ~Struct() PROTOBUF_FINAL;
@@ -437,11 +429,11 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Struct final : publ
 
   [[nodiscard]] Struct* PROTOBUF_NONNULL
   New(::google::protobuf::Arena* PROTOBUF_NULLABLE arena = nullptr) const {
-    return ::google::protobuf::Message::DefaultConstruct<Struct>(arena);
+    return Super_::DefaultConstruct<Struct>(arena);
   }
-  using ::google::protobuf::Message::CopyFrom;
+  using Super_::CopyFrom;
   void CopyFrom(const Struct& from);
-  using ::google::protobuf::Message::MergeFrom;
+  using Super_::MergeFrom;
   void MergeFrom(const Struct& from) { Struct::MergeImpl(*this, from); }
 
   private:
@@ -482,8 +474,6 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Struct final : publ
   static void SharedDtor(MessageLite& self);
   void InternalSwap(Struct* PROTOBUF_NONNULL other);
  private:
-  template <typename T>
-  friend ::absl::string_view(::google::protobuf::internal::GetAnyMessageName)();
   static ::absl::string_view FullMessageName() { return "google.protobuf.Struct"; }
 
   explicit Struct(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
@@ -512,8 +502,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Struct final : publ
     kFieldsFieldNumber = 1,
   };
   // map<string, .google.protobuf.Value> fields = 1;
-  [[nodiscard]] int fields_size()
-      const;
+  [[nodiscard]] int fields_size() const;
   private:
   int _internal_fields_size() const;
 
@@ -572,11 +561,12 @@ class PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Struct_FieldsEntry_DoNotUse final
     : public ::google::protobuf::internal::MapEntry<::std::string, ::google::protobuf::Message,
                              ::google::protobuf::internal::WireFormatLite::TYPE_STRING,
                              ::google::protobuf::internal::WireFormatLite::TYPE_MESSAGE> {
- public:
-  using SuperType =
+  using Super_ =
       ::google::protobuf::internal::MapEntry<::std::string, ::google::protobuf::Message,
                       ::google::protobuf::internal::WireFormatLite::TYPE_STRING,
                       ::google::protobuf::internal::WireFormatLite::TYPE_MESSAGE>;
+
+ public:
   Struct_FieldsEntry_DoNotUse();
   template <typename = void>
   explicit constexpr Struct_FieldsEntry_DoNotUse(::google::protobuf::internal::ConstantInitialized,
@@ -619,6 +609,8 @@ class PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Struct_FieldsEntry_DoNotUse final
 
 class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Value final : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:google.protobuf.Value) */ {
+  using Super_ = ::google::protobuf::Message;
+
  public:
   inline Value() : Value(nullptr) {}
   ~Value() PROTOBUF_FINAL;
@@ -702,11 +694,11 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Value final : publi
 
   [[nodiscard]] Value* PROTOBUF_NONNULL
   New(::google::protobuf::Arena* PROTOBUF_NULLABLE arena = nullptr) const {
-    return ::google::protobuf::Message::DefaultConstruct<Value>(arena);
+    return Super_::DefaultConstruct<Value>(arena);
   }
-  using ::google::protobuf::Message::CopyFrom;
+  using Super_::CopyFrom;
   void CopyFrom(const Value& from);
-  using ::google::protobuf::Message::MergeFrom;
+  using Super_::MergeFrom;
   void MergeFrom(const Value& from) { Value::MergeImpl(*this, from); }
 
   private:
@@ -747,8 +739,6 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Value final : publi
   static void SharedDtor(MessageLite& self);
   void InternalSwap(Value* PROTOBUF_NONNULL other);
  private:
-  template <typename T>
-  friend ::absl::string_view(::google::protobuf::internal::GetAnyMessageName)();
   static ::absl::string_view FullMessageName() { return "google.protobuf.Value"; }
 
   explicit Value(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
@@ -782,8 +772,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Value final : publi
     kListValueFieldNumber = 6,
   };
   // .google.protobuf.NullValue null_value = 1;
-  [[nodiscard]] bool has_null_value()
-      const;
+  [[nodiscard]] bool has_null_value() const;
   void clear_null_value() ;
   [[nodiscard]] ::google::protobuf::NullValue null_value() const;
   void set_null_value(::google::protobuf::NullValue value);
@@ -794,8 +783,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Value final : publi
 
   public:
   // double number_value = 2;
-  [[nodiscard]] bool has_number_value()
-      const;
+  [[nodiscard]] bool has_number_value() const;
   void clear_number_value() ;
   [[nodiscard]] double number_value() const;
   void set_number_value(double value);
@@ -806,8 +794,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Value final : publi
 
   public:
   // string string_value = 3;
-  [[nodiscard]] bool has_string_value()
-      const;
+  [[nodiscard]] bool has_string_value() const;
   void clear_string_value() ;
   [[nodiscard]] const ::std::string& string_value() const;
   template <typename Arg_ = const ::std::string&, typename... Args_>
@@ -823,8 +810,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Value final : publi
 
   public:
   // bool bool_value = 4;
-  [[nodiscard]] bool has_bool_value()
-      const;
+  [[nodiscard]] bool has_bool_value() const;
   void clear_bool_value() ;
   [[nodiscard]] bool bool_value() const;
   void set_bool_value(bool value);
@@ -835,8 +821,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Value final : publi
 
   public:
   // .google.protobuf.Struct struct_value = 5;
-  [[nodiscard]] bool has_struct_value()
-      const;
+  [[nodiscard]] bool has_struct_value() const;
   private:
   bool _internal_has_struct_value() const;
 
@@ -855,8 +840,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Value final : publi
 
   public:
   // .google.protobuf.ListValue list_value = 6;
-  [[nodiscard]] bool has_list_value()
-      const;
+  [[nodiscard]] bool has_list_value() const;
   private:
   bool _internal_has_list_value() const;
 
@@ -1234,8 +1218,7 @@ inline ::google::protobuf::Struct* PROTOBUF_NONNULL Value::_internal_mutable_str
   if (kind_case() != kStructValue) {
     clear_kind();
     set_has_struct_value();
-    _impl_.kind_.struct_value_ = 
-        ::google::protobuf::Message::DefaultConstruct<::google::protobuf::Struct>(GetArena());
+    _impl_.kind_.struct_value_ = Super_::DefaultConstruct<::google::protobuf::Struct>(GetArena());
   }
   return _impl_.kind_.struct_value_;
 }
@@ -1316,8 +1299,7 @@ inline ::google::protobuf::ListValue* PROTOBUF_NONNULL Value::_internal_mutable_
   if (kind_case() != kListValue) {
     clear_kind();
     set_has_list_value();
-    _impl_.kind_.list_value_ = 
-        ::google::protobuf::Message::DefaultConstruct<::google::protobuf::ListValue>(GetArena());
+    _impl_.kind_.list_value_ = Super_::DefaultConstruct<::google::protobuf::ListValue>(GetArena());
   }
   return _impl_.kind_.list_value_;
 }

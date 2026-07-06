@@ -7,9 +7,13 @@
 
 #include "python/descriptor_containers.h"
 
+#include "google/protobuf/breaking_changes.h"
 #include "python/descriptor.h"
 #include "python/protobuf.h"
 #include "upb/reflection/def.h"
+
+// Must be last.
+#include "upb/port/def.inc"
 
 // Implements __repr__ as str(dict(self)).
 static PyObject* PyUpb_DescriptorMap_Repr(PyObject* _self) {
@@ -32,6 +36,7 @@ typedef enum {
   kPyUpb_CompareEqual,
   kPyUpb_CompareNotEqual,
   kPyUpb_CompareError,
+  kPyUpb_CompareNotImplemented,
 } PyUpb_CompareResult;
 
 // -----------------------------------------------------------------------------
@@ -228,7 +233,13 @@ static PyUpb_CompareResult PyUpb_GenericSequence_IsEqual(
     }
   }
 
-  if (!PyList_Check(other)) return kPyUpb_CompareNotEqual;
+  if (!PyList_Check(other)) {
+#if PROTOBUF_PY_FUTURE_CONTAINER_EQ_RETURNS_NOTIMPLEMENTED
+    return kPyUpb_CompareNotImplemented;
+#else
+    return kPyUpb_CompareNotEqual;
+#endif
+  }
 
   // return list(self) == other
   // We can clamp `i` to int because GenericSequence uses int for size (this
@@ -264,6 +275,12 @@ static PyObject* PyUpb_GenericSequence_RichCompare(PyObject* _self,
   }
   PyUpb_CompareResult eq = PyUpb_GenericSequence_IsEqual(self, other);
   switch (eq) {
+    case kPyUpb_CompareNotImplemented:
+#if PROTOBUF_PY_FUTURE_CONTAINER_EQ_RETURNS_NOTIMPLEMENTED
+      Py_RETURN_NOTIMPLEMENTED;
+#else
+      UPB_UNREACHABLE();  // Unreachable when this breaking change is disabled.
+#endif
     case kPyUpb_CompareError:
       return NULL;
     case kPyUpb_CompareEqual:
@@ -536,7 +553,13 @@ static PyUpb_CompareResult PyUpb_ByNameMap_IsEqual(PyUpb_ByNameMap* self,
     }
   }
 
-  if (!PyDict_Check(other)) return kPyUpb_CompareNotEqual;
+  if (!PyDict_Check(other)) {
+#if PROTOBUF_PY_FUTURE_CONTAINER_EQ_RETURNS_NOTIMPLEMENTED
+    return kPyUpb_CompareNotImplemented;
+#else
+    return kPyUpb_CompareNotEqual;
+#endif
+  }
 
   PyObject* self_dict = PyDict_New();
   if (PyDict_Merge(self_dict, (PyObject*)self, 0) < 0) {
@@ -558,6 +581,12 @@ static PyObject* PyUpb_ByNameMap_RichCompare(PyObject* _self, PyObject* other,
   }
   PyUpb_CompareResult eq = PyUpb_ByNameMap_IsEqual(self, other);
   switch (eq) {
+    case kPyUpb_CompareNotImplemented:
+#if PROTOBUF_PY_FUTURE_CONTAINER_EQ_RETURNS_NOTIMPLEMENTED
+      Py_RETURN_NOTIMPLEMENTED;
+#else
+      UPB_UNREACHABLE();  // Unreachable when this breaking change is disabled.
+#endif
     case kPyUpb_CompareError:
       return NULL;
     case kPyUpb_CompareEqual:
@@ -777,7 +806,13 @@ static PyUpb_CompareResult PyUpb_ByNumberMap_IsEqual(PyUpb_ByNumberMap* self,
     }
   }
 
-  if (!PyDict_Check(other)) return kPyUpb_CompareNotEqual;
+  if (!PyDict_Check(other)) {
+#if PROTOBUF_PY_FUTURE_CONTAINER_EQ_RETURNS_NOTIMPLEMENTED
+    return kPyUpb_CompareNotImplemented;
+#else
+    return kPyUpb_CompareNotEqual;
+#endif
+  }
 
   PyObject* self_dict = PyDict_New();
   if (PyDict_Merge(self_dict, (PyObject*)self, 0) < 0) {
@@ -799,6 +834,12 @@ static PyObject* PyUpb_ByNumberMap_RichCompare(PyObject* _self, PyObject* other,
   }
   PyUpb_CompareResult eq = PyUpb_ByNumberMap_IsEqual(self, other);
   switch (eq) {
+    case kPyUpb_CompareNotImplemented:
+#if PROTOBUF_PY_FUTURE_CONTAINER_EQ_RETURNS_NOTIMPLEMENTED
+      Py_RETURN_NOTIMPLEMENTED;
+#else
+      UPB_UNREACHABLE();  // Unreachable when this breaking change is disabled.
+#endif
     case kPyUpb_CompareError:
       return NULL;
     case kPyUpb_CompareEqual:
@@ -854,3 +895,5 @@ bool PyUpb_InitDescriptorContainers(PyObject* m) {
          s->by_name_iterator_type && s->by_number_iterator_type &&
          s->generic_sequence_type;
 }
+
+#include "upb/port/undef.inc"

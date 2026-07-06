@@ -57,7 +57,7 @@ constexpr SourceContext::ParseTableT_ SourceContext::InternalGenerateParseTable_
       offsetof(ParseTableT_, field_names),  // no aux_entries
       class_data,
       nullptr,  // post_loop_handler
-      ::_pbi::TcParser::GenericFallback,  // fallback
+      ::_pbi::TcParser::MpUnknownFields,  // fallback
       #ifdef PROTOBUF_PREFETCH_PARSE_TABLE
       ::_pbi::TcParser::GetTable<::google::protobuf::SourceContext>(),  // to_prefetch
       #endif  // PROTOBUF_PREFETCH_PARSE_TABLE
@@ -92,7 +92,7 @@ inline constexpr SourceContext::Impl_::Impl_(
 template <typename>
 constexpr SourceContext::SourceContext(::_pbi::ConstantInitialized,
                        const ::_pbi::ClassData* PROTOBUF_NONNULL class_data)
-    : ::google::protobuf::Message(
+    : Super_(
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           class_data
 #endif  // PROTOBUF_CUSTOM_VTABLE
@@ -120,10 +120,10 @@ constexpr auto SourceContext::InternalGenerateClassData_(
 #endif
           nullptr,  // IsInitialized
           &SourceContext::MergeImpl,
-          ::google::protobuf::Message::GetNewImpl<SourceContext>(),
+          Super_::GetNewImpl<SourceContext>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           &SourceContext::SharedDtor,
-          ::google::protobuf::Message::GetClearImpl<SourceContext>(), &SourceContext::ByteSizeLong,
+          Super_::GetClearImpl<SourceContext>(), &SourceContext::ByteSizeLong,
               &SourceContext::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
           PROTOBUF_FIELD_OFFSET(SourceContext, _impl_._cached_size_),
@@ -237,9 +237,9 @@ namespace protobuf {
 
 SourceContext::SourceContext(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-    : ::google::protobuf::Message(arena, SourceContext_get_class_data()) {
+    : Super_(arena, SourceContext_get_class_data()) {
 #else   // PROTOBUF_CUSTOM_VTABLE
-    : ::google::protobuf::Message(arena) {
+    : Super_(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
   SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.SourceContext)
@@ -255,10 +255,10 @@ SourceContext::SourceContext(
     ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
     const SourceContext& from)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-    : ::google::protobuf::Message(arena, SourceContext_get_class_data()) {
+    : Super_(arena, SourceContext_get_class_data()) {
 
 #else   // PROTOBUF_CUSTOM_VTABLE
-    : ::google::protobuf::Message(arena) {
+    : Super_(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
   SourceContext* const _this = this;
   (void)_this;
@@ -318,15 +318,14 @@ PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const SourceContext::ParseTableT_
         SourceContext::InternalGenerateParseTable_(SourceContext_class_data_.base());
 #endif  // !PROTOBUF_MESSAGE_GLOBALS
 PROTOBUF_NOINLINE void SourceContext::Clear() {
-// @@protoc_insertion_point(message_clear_start:google.protobuf.SourceContext)
+  auto& this_ [[maybe_unused]] = *this;
+  // @@protoc_insertion_point(message_clear_start:google.protobuf.SourceContext)
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  ::uint32_t cached_has_bits = 0;
-  // Prevent compiler warnings about cached_has_bits being unused
-  (void) cached_has_bits;
+  ::uint32_t cached_has_bits [[maybe_unused]] = 0;
 
-  cached_has_bits = _impl_._has_bits_[0];
+  cached_has_bits = this_._impl_._has_bits_[0];
   if (CheckHasBit(cached_has_bits, 0x00000001U)) {
-    _impl_.file_name_.ClearNonDefaultToEmpty();
+    this_._impl_.file_name_.ClearNonDefaultToEmpty();
   }
   _impl_._has_bits_.Clear();
   _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
@@ -380,9 +379,7 @@ PROTOBUF_NOINLINE void SourceContext::Clear() {
   // @@protoc_insertion_point(message_byte_size_start:google.protobuf.SourceContext)
   ::size_t total_size = 0;
 
-  ::uint32_t cached_has_bits = 0;
-  // Prevent compiler warnings about cached_has_bits being unused
-  (void)cached_has_bits;
+  ::uint32_t cached_has_bits [[maybe_unused]] = 0;
 
    {
     // string file_name = 1;
@@ -443,7 +440,7 @@ void SourceContext::InternalSwap(SourceContext* PROTOBUF_RESTRICT PROTOBUF_NONNU
 }
 
 ::google::protobuf::Metadata SourceContext::GetMetadata() const {
-  return ::google::protobuf::Message::GetMetadataImpl(GetClassData()->full());
+  return Super_::GetMetadataImpl(GetClassData()->full());
 }
 // @@protoc_insertion_point(namespace_scope)
 }  // namespace protobuf
