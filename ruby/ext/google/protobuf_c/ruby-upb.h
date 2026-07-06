@@ -4261,6 +4261,27 @@ UPB_NODISCARD bool UPB_PRIVATE(_upb_Message_AddUnknownV)(
 UPB_NODISCARD bool UPB_PRIVATE(_upb_Message_ReserveSlot)(
     struct upb_Message* msg, upb_Arena* arena);
 
+typedef enum {
+  kUpb_MessageUnknownType_StringView,
+  kUpb_MessageUnknownType_NonCanonicalExtension,
+} upb_MessageUnknownType;
+
+// Represents an unknown field in a message, whether it's in a serialized
+// (upb_StringView) or parsed non-canonical extension (upb_Extension*) format.
+typedef struct upb_MessageUnknown {
+  uint8_t type;
+  union {
+    upb_StringView bytes;
+    const upb_Extension* extension;
+  } value;
+} upb_MessageUnknown;
+
+typedef enum upb_Message_DeleteUnknownStatus {
+  kUpb_DeleteUnknown_DeletedLast,
+  kUpb_DeleteUnknown_IterUpdated,
+  kUpb_DeleteUnknown_AllocFail,
+} upb_Message_DeleteUnknownStatus;
+
 #define kUpb_Message_UnknownBegin 0
 #define kUpb_Message_ExtensionBegin 0
 
@@ -4282,12 +4303,6 @@ UPB_INLINE bool upb_Message_NextUnknown(const struct upb_Message* msg,
   data->data = NULL;
   *iter = i;
   return false;
-}
-
-UPB_INLINE bool upb_Message_HasUnknown(const struct upb_Message* msg) {
-  upb_StringView data;
-  uintptr_t iter = kUpb_Message_UnknownBegin;
-  return upb_Message_NextUnknown(msg, &data, &iter);
 }
 
 UPB_INLINE bool upb_Message_NextExtension(const struct upb_Message* msg,
@@ -5550,10 +5565,24 @@ UPB_NODISCARD UPB_API upb_Message* upb_Message_New(const upb_MiniTable* m,
 #define kUpb_Message_UnknownBegin 0
 #define kUpb_Message_ExtensionBegin 0
 
+// TODO: b/510055656 - Legacy API that works with messages that only have
+// unknown data in upb_StringView format. Use `upb_Message_NextUnknown2` for
+// messages that may have non-canonical extensions.
 UPB_INLINE bool upb_Message_NextUnknown(const upb_Message* msg,
                                         upb_StringView* data, uintptr_t* iter);
 
-UPB_INLINE bool upb_Message_HasUnknown(const upb_Message* msg);
+UPB_INLINE bool upb_Message_HasUnknown(const upb_Message* msg) {
+  const upb_Message_Internal* in = UPB_PRIVATE(_upb_Message_GetInternal)(msg);
+  if (!in) return false;
+  for (size_t i = 0; i < in->size; i++) {
+    upb_TaggedAuxPtr tagged_ptr = in->aux_data[i];
+    if (tagged_ptr.ptr != 0 &&
+        !upb_TaggedAuxPtr_IsSemanticallyKnown(tagged_ptr)) {
+      return true;
+    }
+  }
+  return false;
+}
 
 // Removes a segment of unknown data from the message, advancing to the next
 // segment.  Returns false if the removed segment was at the end of the last
@@ -5581,11 +5610,10 @@ UPB_INLINE bool upb_Message_HasUnknown(const upb_Message* msg);
 //
 // The range given in `data` must be contained inside the most recently
 // returned region.
-typedef enum upb_Message_DeleteUnknownStatus {
-  kUpb_DeleteUnknown_DeletedLast,
-  kUpb_DeleteUnknown_IterUpdated,
-  kUpb_DeleteUnknown_AllocFail,
-} upb_Message_DeleteUnknownStatus;
+//
+// TODO: b/510055656 - Legacy API that works with messages that only have
+// unknown data in upb_StringView format. Use `upb_Message_DeleteUnknown2` for
+// messages that may have non-canonical extensions.
 UPB_NODISCARD upb_Message_DeleteUnknownStatus upb_Message_DeleteUnknown(
     upb_Message* msg, upb_StringView* data, uintptr_t* iter, upb_Arena* arena);
 
@@ -16228,6 +16256,90 @@ bool _upb_mapsorter_pushexts(_upb_mapsorter* s, const upb_Message_Internal* in,
 
 
 #endif /* UPB_MESSAGE_INTERNAL_MAP_SORTER_H_ */
+
+#ifndef UPB_MESSAGE_UNKNOWN_FIELDS_H_
+#define UPB_MESSAGE_UNKNOWN_FIELDS_H_
+
+#include <stddef.h>
+#include <stdint.h>
+
+
+// Must be last.
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+// Support iteration over unknown (upb_MessageUnknown*), including unknown
+// upb_StringView and non-canonical extensions (upb_Extension*).
+UPB_INLINE bool upb_Message_NextUnknown2(const struct upb_Message* msg,
+                                         struct upb_MessageUnknown* data,
+                                         uintptr_t* iter) {
+  const upb_Message_Internal* in = UPB_PRIVATE(_upb_Message_GetInternal)(msg);
+  size_t i = *iter;
+  if (in) {
+    while (i < in->size) {
+      upb_TaggedAuxPtr tagged_ptr = in->aux_data[i++];
+      if (upb_TaggedAuxPtr_IsUnknownStringView(tagged_ptr)) {
+        data->type = kUpb_MessageUnknownType_StringView;
+        data->value.bytes = *upb_TaggedPtrAux_StringViewRepr(tagged_ptr);
+        *iter = i;
+        return true;
+      } else if (upb_TaggedAuxPtr_IsNonCanonicalExtension(tagged_ptr)) {
+        data->type = kUpb_MessageUnknownType_NonCanonicalExtension;
+        data->value.extension =
+            upb_TaggedAuxPtr_NonCanonicalExtension(tagged_ptr);
+        *iter = i;
+        return true;
+      }
+    }
+  }
+  data->type = kUpb_MessageUnknownType_StringView;
+  data->value.bytes.size = 0;
+  data->value.bytes.data = NULL;
+  *iter = i;
+  return false;
+}
+
+// Removes a segment of unknown data from the message, advancing to the next
+// segment.  Returns false if the removed segment was at the end of the last
+// chunk.
+//
+// This must be done while iterating:
+//
+//   uintptr_t iter = kUpb_Message_UnknownBegin;
+//   upb_MessageUnknown data;
+//   // Iterate chunks
+//   while (upb_Message_NextUnknown2(msg, &data, &iter)) {
+//     // Iterate within a chunk, deleting ranges
+//     while (ShouldDeleteSubSegment(&data)) {
+//       // Data now points to the region to be deleted
+//       switch (upb_Message_DeleteUnknown2(msg, &data, &iter)) {
+//         case kUpb_Message_DeleteUnknown_DeletedLast: return ok;
+//         case kUpb_Message_DeleteUnknown_IterUpdated: break;
+//         // If DeleteUnknown returned kUpb_Message_DeleteUnknown_IterUpdated,
+//         // then data now points to the remaining unknown fields after the
+//         // region that was just deleted.
+//         case kUpb_Message_DeleteUnknown_AllocFail: return err;
+//       }
+//     }
+//   }
+//
+// The range given in `data` must be contained inside the most recently
+// returned region.
+//
+// Support deletion of unknown (upb_MessageUnknown*), including unknown
+// upb_StringView and non-canonical extensions (upb_Extension*).
+UPB_NODISCARD upb_Message_DeleteUnknownStatus upb_Message_DeleteUnknown2(
+    struct upb_Message* msg, struct upb_MessageUnknown* data, uintptr_t* iter,
+    struct upb_Arena* arena);
+
+#ifdef __cplusplus
+} /* extern "C" */
+#endif
+
+
+#endif /* UPB_MESSAGE_UNKNOWN_FIELDS_H_ */
 
 #ifndef UPB_MESSAGE_COMPARE_H_
 #define UPB_MESSAGE_COMPARE_H_

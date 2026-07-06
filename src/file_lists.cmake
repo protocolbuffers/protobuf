@@ -698,6 +698,7 @@ set(libupb_srcs
   ${protobuf_SOURCE_DIR}/upb/message/map_sorter.c
   ${protobuf_SOURCE_DIR}/upb/message/merge.c
   ${protobuf_SOURCE_DIR}/upb/message/message.c
+  ${protobuf_SOURCE_DIR}/upb/message/unknown_fields.c
   ${protobuf_SOURCE_DIR}/upb/mini_descriptor/build_enum.c
   ${protobuf_SOURCE_DIR}/upb/mini_descriptor/decode.c
   ${protobuf_SOURCE_DIR}/upb/mini_descriptor/internal/base92.c
@@ -787,6 +788,7 @@ set(libupb_hdrs
   ${protobuf_SOURCE_DIR}/upb/message/map_gencode_util.h
   ${protobuf_SOURCE_DIR}/upb/message/merge.h
   ${protobuf_SOURCE_DIR}/upb/message/message.h
+  ${protobuf_SOURCE_DIR}/upb/message/unknown_fields.h
   ${protobuf_SOURCE_DIR}/upb/message/value.h
   ${protobuf_SOURCE_DIR}/upb/mini_descriptor/build_enum.h
   ${protobuf_SOURCE_DIR}/upb/mini_descriptor/decode.h
