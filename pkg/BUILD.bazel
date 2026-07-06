@@ -246,6 +246,7 @@ cc_dist_library(
         "//upb/message:compare",
         "//upb/message:convert",
         "//upb/message:copy",
+        "//upb/message:message_unknowns",
         "//upb/mini_table:compat",
         "//upb/mini_table:debug_string",
         "//upb/text",

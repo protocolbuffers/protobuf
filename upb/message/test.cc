@@ -35,11 +35,14 @@
 #include "upb/message/array.h"
 #include "upb/message/compare.h"
 #include "upb/message/internal/accessors.h"
+#include "upb/message/internal/extension.h"
+#include "upb/message/internal/message.h"
 #include "upb/message/map.h"
 #include "upb/message/message.h"
 #include "upb/message/test.upb.h"
 #include "upb/message/test.upb_minitable.h"
 #include "upb/message/test.upbdefs.h"
+#include "upb/message/unknown_fields.h"
 #include "upb/message/value.h"
 #include "upb/mini_descriptor/decode.h"
 #include "upb/mini_table/debug_string.h"
@@ -1013,4 +1016,265 @@ TEST(MessageTest, ArenaSpaceAllocatedAfterDecode) {
   uintptr_t space_allocated_after =
       upb_Arena_SpaceAllocated(arena.ptr(), nullptr);
   EXPECT_GT(space_allocated_after, space_allocated_before + 297u);
+}
+
+TEST(MessageTest, NextUnknown2AndDeleteUnknown2) {
+  upb::Arena arena;
+  upb_test_TestExtensions* ext_msg = upb_test_TestExtensions_new(arena.ptr());
+
+  // 0. Verify a clean/empty message doesn't report unknowns and handles NULL
+  //    internal data correctly.
+  EXPECT_FALSE(upb_Message_HasUnknown(UPB_UPCAST(ext_msg)));
+  {
+    uintptr_t iter = kUpb_Message_UnknownBegin;
+    upb_MessageUnknown unknown;
+    EXPECT_FALSE(
+        upb_Message_NextUnknown2(UPB_UPCAST(ext_msg), &unknown, &iter));
+  }
+
+  // Tag 5 (varint), value 147
+  char region[] = {0x28, static_cast<char>(0x93), 0x01};
+  upb_DecodeStatus decode_status =
+      upb_Decode(region, sizeof(region), UPB_UPCAST(ext_msg),
+                 &upb_0test__TestExtensions_msg_init, nullptr, 0, arena.ptr());
+  ASSERT_EQ(decode_status, kUpb_DecodeStatus_Ok);
+
+  // 2. Add a non-canonical extension of tag 1000
+  int32_t val = 42;
+  bool set_ext_ok = UPB_PRIVATE(_upb_Message_SetNonCanonicalExtension)(
+      UPB_UPCAST(ext_msg), upb_test_TestExtensions_optional_int32_ext_ext, &val,
+      arena.ptr());
+  ASSERT_TRUE(set_ext_ok);
+
+  // 2.5 Add a canonical extension of tag 1002 (should be skipped by
+  //     NextUnknown2)
+  upb_test_TestExtensions* sub_msg = upb_test_TestExtensions_new(arena.ptr());
+  bool set_canonical_ok = upb_Message_SetExtension(
+      UPB_UPCAST(ext_msg), upb_test_optional_msg_ext_ext, &sub_msg,
+      arena.ptr());
+  ASSERT_TRUE(set_canonical_ok);
+
+  // 3. Iterate over the unknown fields using upb_Message_NextUnknown2
+  {
+    uintptr_t iter = kUpb_Message_UnknownBegin;
+    upb_MessageUnknown unknown;
+    bool found_bytes = false;
+    bool found_ext = false;
+
+    while (upb_Message_NextUnknown2(UPB_UPCAST(ext_msg), &unknown, &iter)) {
+      if (unknown.type == kUpb_MessageUnknownType_StringView) {
+        EXPECT_FALSE(found_bytes);
+        found_bytes = true;
+        EXPECT_EQ(unknown.value.bytes.size, sizeof(region));
+        EXPECT_EQ(memcmp(unknown.value.bytes.data, region, sizeof(region)), 0);
+      } else if (unknown.type ==
+                 kUpb_MessageUnknownType_NonCanonicalExtension) {
+        EXPECT_FALSE(found_ext);
+        found_ext = true;
+        const upb_Extension* ext =
+            (const upb_Extension*)unknown.value.extension;
+        EXPECT_EQ(ext->ext, upb_test_TestExtensions_optional_int32_ext_ext);
+        EXPECT_EQ(ext->data.int32_val, 42);
+      } else {
+        FAIL() << "Unexpected unknown type: " << (int)unknown.type;
+      }
+    }
+    EXPECT_TRUE(found_bytes);
+    EXPECT_TRUE(found_ext);
+  }
+
+  // 4. Test upb_Message_HasUnknown (it uses upb_Message_NextUnknown2
+  //    under the hood)
+  EXPECT_TRUE(upb_Message_HasUnknown(UPB_UPCAST(ext_msg)));
+
+  // 5. Test upb_Message_DeleteUnknown2 on non-canonical extension
+  {
+    uintptr_t iter = kUpb_Message_UnknownBegin;
+    upb_MessageUnknown unknown;
+    bool deleted_ext = false;
+
+    if (upb_Message_NextUnknown2(UPB_UPCAST(ext_msg), &unknown, &iter)) {
+      do {
+        if (unknown.type == kUpb_MessageUnknownType_NonCanonicalExtension) {
+          upb_Message_DeleteUnknownStatus status = upb_Message_DeleteUnknown2(
+              UPB_UPCAST(ext_msg), &unknown, &iter, arena.ptr());
+          EXPECT_TRUE(status == kUpb_DeleteUnknown_IterUpdated ||
+                      status == kUpb_DeleteUnknown_DeletedLast);
+          deleted_ext = true;
+          if (status == kUpb_DeleteUnknown_DeletedLast) {
+            break;
+          }
+          continue;
+        }
+      } while (upb_Message_NextUnknown2(UPB_UPCAST(ext_msg), &unknown, &iter));
+    }
+    EXPECT_TRUE(deleted_ext);
+
+    // After deleting the extension, verify only the bytes unknown field
+    // remains.
+    iter = kUpb_Message_UnknownBegin;
+    bool found_bytes = false;
+    bool found_ext = false;
+    while (upb_Message_NextUnknown2(UPB_UPCAST(ext_msg), &unknown, &iter)) {
+      if (unknown.type == kUpb_MessageUnknownType_StringView) {
+        found_bytes = true;
+      } else if (unknown.type ==
+                 kUpb_MessageUnknownType_NonCanonicalExtension) {
+        found_ext = true;
+      }
+    }
+    EXPECT_TRUE(found_bytes);
+    EXPECT_FALSE(found_ext);
+  }
+
+  // 6. Test deleting the remaining unknown bytes field.
+  {
+    uintptr_t iter = kUpb_Message_UnknownBegin;
+    upb_MessageUnknown unknown;
+    bool deleted_bytes = false;
+
+    if (upb_Message_NextUnknown2(UPB_UPCAST(ext_msg), &unknown, &iter)) {
+      do {
+        if (unknown.type == kUpb_MessageUnknownType_StringView) {
+          upb_Message_DeleteUnknownStatus status = upb_Message_DeleteUnknown2(
+              UPB_UPCAST(ext_msg), &unknown, &iter, arena.ptr());
+          EXPECT_EQ(status, kUpb_DeleteUnknown_DeletedLast);
+          deleted_bytes = true;
+          break;
+        }
+      } while (upb_Message_NextUnknown2(UPB_UPCAST(ext_msg), &unknown, &iter));
+    }
+    EXPECT_TRUE(deleted_bytes);
+    EXPECT_FALSE(upb_Message_HasUnknown(UPB_UPCAST(ext_msg)));
+  }
+}
+
+TEST(MessageTest, DeleteUnknown2Partial) {
+  upb::Arena arena;
+  upb_test_TestExtensions* ext_msg = upb_test_TestExtensions_new(arena.ptr());
+
+  // Add 10 bytes of unknown data: tag 5, length delimited, value "12345678"
+  // Tag 5, wire type 2: 0x2A
+  // Length 8: 0x08
+  // Data: "12345678"
+  char region[] = {0x2A, 0x08, '1', '2', '3', '4', '5', '6', '7', '8'};
+  upb_DecodeStatus decode_status =
+      upb_Decode(region, sizeof(region), UPB_UPCAST(ext_msg),
+                 &upb_0test__TestExtensions_msg_init, nullptr, 0, arena.ptr());
+  ASSERT_EQ(decode_status, kUpb_DecodeStatus_Ok);
+
+  // 1. Test Strip Prefix
+  {
+    uintptr_t iter = kUpb_Message_UnknownBegin;
+    upb_MessageUnknown unknown;
+    ASSERT_TRUE(upb_Message_NextUnknown2(UPB_UPCAST(ext_msg), &unknown, &iter));
+    ASSERT_EQ(unknown.type, kUpb_MessageUnknownType_StringView);
+    ASSERT_EQ(unknown.value.bytes.size, sizeof(region));
+
+    // We want to delete the first 2 bytes: {0x2A, 0x08}
+    upb_MessageUnknown to_delete = unknown;
+    to_delete.value.bytes.size = 2;
+
+    upb_Message_DeleteUnknownStatus status = upb_Message_DeleteUnknown2(
+        UPB_UPCAST(ext_msg), &to_delete, &iter, arena.ptr());
+    EXPECT_EQ(status, kUpb_DeleteUnknown_IterUpdated);
+
+    // After Strip Prefix, the remaining part should be returned in to_delete
+    EXPECT_EQ(to_delete.value.bytes.size, sizeof(region) - 2);
+    EXPECT_EQ(to_delete.value.bytes.data, unknown.value.bytes.data + 2);
+
+    // Verify message state: Reset iter and verify the remaining part is there
+    iter = kUpb_Message_UnknownBegin;
+    ASSERT_TRUE(upb_Message_NextUnknown2(UPB_UPCAST(ext_msg), &unknown, &iter));
+    EXPECT_EQ(unknown.value.bytes.size, sizeof(region) - 2);
+    EXPECT_EQ(unknown.value.bytes.data, to_delete.value.bytes.data);
+  }
+
+  // Reload the message with fresh data for the next test
+  ext_msg = upb_test_TestExtensions_new(arena.ptr());
+  decode_status =
+      upb_Decode(region, sizeof(region), UPB_UPCAST(ext_msg),
+                 &upb_0test__TestExtensions_msg_init, nullptr, 0, arena.ptr());
+  ASSERT_EQ(decode_status, kUpb_DecodeStatus_Ok);
+
+  // 2. Test Split in Middle
+  {
+    // Add a non-canonical extension to ensure in->size > 1, triggering memmove
+    int32_t val = 42;
+    ASSERT_TRUE(UPB_PRIVATE(_upb_Message_SetNonCanonicalExtension)(
+        UPB_UPCAST(ext_msg), upb_test_TestExtensions_optional_int32_ext_ext,
+        &val, arena.ptr()));
+
+    uintptr_t iter = kUpb_Message_UnknownBegin;
+    upb_MessageUnknown unknown;
+    ASSERT_TRUE(upb_Message_NextUnknown2(UPB_UPCAST(ext_msg), &unknown, &iter));
+    ASSERT_EQ(unknown.type, kUpb_MessageUnknownType_StringView);
+
+    // We want to delete bytes 4 and 5: {'3', '4'}
+    upb_MessageUnknown to_delete = unknown;
+    to_delete.value.bytes.data = unknown.value.bytes.data + 4;
+    to_delete.value.bytes.size = 2;
+
+    upb_Message_DeleteUnknownStatus status = upb_Message_DeleteUnknown2(
+        UPB_UPCAST(ext_msg), &to_delete, &iter, arena.ptr());
+    EXPECT_EQ(status, kUpb_DeleteUnknown_IterUpdated);
+
+    // After Split in Middle, DeleteUnknown2 falls through and calls
+    // NextUnknown2. It should return the SUFFIX block!
+    EXPECT_EQ(to_delete.type, kUpb_MessageUnknownType_StringView);
+    EXPECT_EQ(to_delete.value.bytes.size, 4u);
+    EXPECT_EQ(to_delete.value.bytes.data, unknown.value.bytes.data + 6);
+
+    // Verify message state: Reset iter and verify we have THREE blocks now
+    // (Prefix, Suffix, Extension).
+    iter = kUpb_Message_UnknownBegin;
+
+    // First block (Prefix)
+    ASSERT_TRUE(upb_Message_NextUnknown2(UPB_UPCAST(ext_msg), &unknown, &iter));
+    EXPECT_EQ(unknown.value.bytes.size, 4u);
+    EXPECT_EQ(memcmp(unknown.value.bytes.data, region, 4), 0);
+
+    // Second block (Suffix)
+    ASSERT_TRUE(upb_Message_NextUnknown2(UPB_UPCAST(ext_msg), &unknown, &iter));
+    EXPECT_EQ(unknown.value.bytes.size, 4u);
+    EXPECT_EQ(memcmp(unknown.value.bytes.data, region + 6, 4), 0);
+
+    // Third block (Extension)
+    ASSERT_TRUE(upb_Message_NextUnknown2(UPB_UPCAST(ext_msg), &unknown, &iter));
+    EXPECT_EQ(unknown.type, kUpb_MessageUnknownType_NonCanonicalExtension);
+
+    // No more blocks
+    EXPECT_FALSE(
+        upb_Message_NextUnknown2(UPB_UPCAST(ext_msg), &unknown, &iter));
+  }
+
+  // Reload the message with fresh data for the next test
+  ext_msg = upb_test_TestExtensions_new(arena.ptr());
+  decode_status =
+      upb_Decode(region, sizeof(region), UPB_UPCAST(ext_msg),
+                 &upb_0test__TestExtensions_msg_init, nullptr, 0, arena.ptr());
+  ASSERT_EQ(decode_status, kUpb_DecodeStatus_Ok);
+
+  // 3. Test Truncate Suffix
+  {
+    uintptr_t iter = kUpb_Message_UnknownBegin;
+    upb_MessageUnknown unknown;
+    ASSERT_TRUE(upb_Message_NextUnknown2(UPB_UPCAST(ext_msg), &unknown, &iter));
+    ASSERT_EQ(unknown.type, kUpb_MessageUnknownType_StringView);
+
+    // We want to delete the last 2 bytes: {'7', '8'}
+    upb_MessageUnknown to_delete = unknown;
+    to_delete.value.bytes.data = unknown.value.bytes.data + 8;
+    to_delete.value.bytes.size = 2;
+
+    upb_Message_DeleteUnknownStatus status = upb_Message_DeleteUnknown2(
+        UPB_UPCAST(ext_msg), &to_delete, &iter, arena.ptr());
+    EXPECT_EQ(status, kUpb_DeleteUnknown_DeletedLast);
+
+    // Verify message state
+    iter = kUpb_Message_UnknownBegin;
+    ASSERT_TRUE(upb_Message_NextUnknown2(UPB_UPCAST(ext_msg), &unknown, &iter));
+    EXPECT_EQ(unknown.value.bytes.size, 8u);
+    EXPECT_EQ(memcmp(unknown.value.bytes.data, region, 8), 0);
+  }
 }
