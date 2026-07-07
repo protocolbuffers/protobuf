@@ -4662,9 +4662,13 @@ TEST_F(CommandLineInterfaceTest, GeneratorPluginNotFoundInPath) {
       "--proto_path=$tmpdir error.proto");
 
 #ifdef _WIN32
+  // On Windows a PATH-searched plugin is launched through `cmd.exe /c`, which
+  // starts successfully and then fails to find the plugin, exiting nonzero.
+  // cmd.exe's own "not recognized" message is locale dependent, so assert on
+  // the stable status-code line protoc emits for the failed child.
   ExpectErrorSubstring(
-      absl::StrCat("--no_such_plugin_out: prefix-gen-no_such_plugin: ",
-                   Subprocess::Win32ErrorMessage(ERROR_FILE_NOT_FOUND)));
+      "--no_such_plugin_out: prefix-gen-no_such_plugin: Plugin failed with "
+      "status code");
 #else
   // Error written to stdout by child process after exec() fails.
   ExpectErrorSubstring(
