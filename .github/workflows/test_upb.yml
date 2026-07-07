@@ -44,12 +44,12 @@ jobs:
     steps:
       - name: Checkout pending changes
         if: ${{ !matrix.config.continuous-only || inputs.continuous-run }}
-        uses: protocolbuffers/protobuf-ci/checkout@v5
+        uses: protocolbuffers/protobuf-ci/checkout@test_node_24
         with:
           ref: ${{ inputs.safe-checkout }}
       - name: Run tests
         if: ${{ !matrix.config.continuous-only || inputs.continuous-run }}
-        uses: protocolbuffers/protobuf-ci/bazel-docker@v5
+        uses: protocolbuffers/protobuf-ci/bazel-docker@test_node_24
         with:
           image: ${{ matrix.config.image || 'us-docker.pkg.dev/protobuf-build/containers/test/linux/sanitize:8.0.1-a6ca8ba8e77d63471b4ad05f8643e1fc58b30e12' }}
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
@@ -64,11 +64,11 @@ jobs:
     runs-on: windows-2022
     steps:
       - name: Checkout pending changes
-        uses: protocolbuffers/protobuf-ci/checkout@v5
+        uses: protocolbuffers/protobuf-ci/checkout@test_node_24
         with:
           ref: ${{ inputs.safe-checkout }}
       - name: Run tests
-        uses: protocolbuffers/protobuf-ci/bazel@v5
+        uses: protocolbuffers/protobuf-ci/bazel@test_node_24
         with:
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-cache: "upb-bazel-windows"
@@ -88,7 +88,7 @@ jobs:
     runs-on: macos-14
     steps:
       - name: Checkout pending changes
-        uses: protocolbuffers/protobuf-ci/checkout@v5
+        uses: protocolbuffers/protobuf-ci/checkout@test_node_24
         with:
           ref: ${{ inputs.safe-checkout }}
       - name: Setup Python
@@ -98,7 +98,7 @@ jobs:
           cache: pip
           cache-dependency-path: 'python/requirements.txt'
       - name: Run tests
-        uses: protocolbuffers/protobuf-ci/bazel@v5
+        uses: protocolbuffers/protobuf-ci/bazel@test_node_24
         with:
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-cache: "upb-bazel-macos"
@@ -111,11 +111,11 @@ jobs:
     if: ${{ github.event_name != 'pull_request_target' }}
     steps:
       - name: Checkout pending changes
-        uses: protocolbuffers/protobuf-ci/checkout@v5
+        uses: protocolbuffers/protobuf-ci/checkout@test_node_24
         with:
           ref: ${{ inputs.safe-checkout }}
       - name: Build Wheels
-        uses: protocolbuffers/protobuf-ci/bazel-docker@v5
+        uses: protocolbuffers/protobuf-ci/bazel-docker@test_node_24
         with:
           image: us-docker.pkg.dev/protobuf-build/release-containers/linux/apple:9.0.0-9fc33a0c378b5affd3c85d3f5ae4f330993048f7
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
@@ -290,7 +290,7 @@ jobs:
     steps:
       - name: Checkout pending changes
         if: ${{ inputs.continuous-run }}
-        uses: protocolbuffers/protobuf-ci/checkout@v5
+        uses: protocolbuffers/protobuf-ci/checkout@test_node_24
         with:
           ref: ${{ inputs.safe-checkout }}
       - name: Download Wheels
