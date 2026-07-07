@@ -58,12 +58,12 @@ jobs:
     steps:
       - name: Checkout pending changes
         if: ${{ !matrix.continuous-only || inputs.continuous-run }}
-        uses: protocolbuffers/protobuf-ci/checkout@v5
+        uses: protocolbuffers/protobuf-ci/checkout@5.0.3
         with:
           ref: ${{ inputs.safe-checkout }}
       - name: Run tests
         if: ${{ !matrix.continuous-only || inputs.continuous-run }}
-        uses: protocolbuffers/protobuf-ci/bazel-docker@v5
+        uses: protocolbuffers/protobuf-ci/bazel-docker@5.0.3
         with:
           image: us-docker.pkg.dev/protobuf-build/containers/test/linux/php:9.0.0-${{ matrix.version }}-a6ca8ba8e77d63471b4ad05f8643e1fc58b30e12
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
@@ -106,14 +106,14 @@ jobs:
     steps:
       - name: Checkout pending changes
         if: ${{ !matrix.continuous-only || inputs.continuous-run }}
-        uses: protocolbuffers/protobuf-ci/checkout@v5
+        uses: protocolbuffers/protobuf-ci/checkout@5.0.3
         with:
           ref: ${{ inputs.safe-checkout }}
 
       - name: Cross compile protoc for i386
         if: ${{ !matrix.continuous-only || inputs.continuous-run }}
         id: cross-compile
-        uses: protocolbuffers/protobuf-ci/cross-compile-protoc@v5
+        uses: protocolbuffers/protobuf-ci/cross-compile-protoc@5.0.3
         with:
           image: us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:9.0.0-9dca0d9417f43f5f1e97e59969fb0f3e6ae3bd9c
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
@@ -121,7 +121,7 @@ jobs:
 
       - name: Run tests
         if: ${{ !matrix.continuous-only || inputs.continuous-run }}
-        uses: protocolbuffers/protobuf-ci/docker@v5
+        uses: protocolbuffers/protobuf-ci/docker@5.0.3
         with:
           image: ${{ env.image }}
           platform: linux/386
@@ -139,20 +139,20 @@ jobs:
     runs-on: ubuntu-22-4core
     steps:
       - name: Checkout pending changes
-        uses: protocolbuffers/protobuf-ci/checkout@v5
+        uses: protocolbuffers/protobuf-ci/checkout@5.0.3
         with:
           ref: ${{ inputs.safe-checkout }}
 
       - name: Cross compile protoc for aarch64
         id: cross-compile
-        uses: protocolbuffers/protobuf-ci/cross-compile-protoc@v5
+        uses: protocolbuffers/protobuf-ci/cross-compile-protoc@5.0.3
         with:
           image: us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:9.0.0-9dca0d9417f43f5f1e97e59969fb0f3e6ae3bd9c
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           architecture: linux-aarch64
 
       - name: Run tests
-        uses: protocolbuffers/protobuf-ci/docker@v5
+        uses: protocolbuffers/protobuf-ci/docker@5.0.3
         with:
           image: us-docker.pkg.dev/protobuf-build/containers/test/linux/php-aarch64@sha256:77ff9fdec867bbfb290ee0b10d8b7a3e5e434155daa5ec93de7341c7592b858d
           platform: linux/arm64
@@ -178,7 +178,7 @@ jobs:
     steps:
       - name: Checkout pending changes
         if: ${{ !matrix.continuous-only || inputs.continuous-run }}
-        uses: protocolbuffers/protobuf-ci/checkout@v5
+        uses: protocolbuffers/protobuf-ci/checkout@5.0.3
         with:
           ref: ${{ inputs.safe-checkout }}
 
@@ -194,14 +194,14 @@ jobs:
 
       - name: Setup composer
         if: ${{ !matrix.continuous-only || inputs.continuous-run }}
-        uses: protocolbuffers/protobuf-ci/composer-setup@v5
+        uses: protocolbuffers/protobuf-ci/composer-setup@5.0.3
         with:
           cache-prefix: php-${{ matrix.version }}
           directory: php
 
       - name: Run tests
         if: ${{ !matrix.continuous-only || inputs.continuous-run }}
-        uses: protocolbuffers/protobuf-ci/bash@v5
+        uses: protocolbuffers/protobuf-ci/bash@5.0.3
         with:
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-version: 9.0.0
@@ -217,7 +217,7 @@ jobs:
 
       - name: Run conformance tests
         if: ${{ !matrix.continuous-only || inputs.continuous-run }}
-        uses: protocolbuffers/protobuf-ci/bazel@v5
+        uses: protocolbuffers/protobuf-ci/bazel@5.0.3
         with:
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           version: 9.0.0 # Bazel version
