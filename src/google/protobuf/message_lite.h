@@ -29,7 +29,6 @@
 #include <cstring>
 #include <iosfwd>
 #include <memory>
-#include <new>
 #include <string>
 #include <type_traits>
 #include <utility>
@@ -833,7 +832,20 @@ class PROTOBUF_EXPORT MessageLite {
         CopyConstruct(arena, reinterpret_cast<const MessageLite&>(from)));
   }
 
-
+  // `CheckTypeAndMergeFrom()` and should be preferred by friended internal
+  // callers that have the right `ClassData` handy.
+  // REQUIRES: Both `this` and `other` are the exact same class as represented
+  // by `data`. If there is a mismatch, CHECK-fails in debug builds or causes UB
+  // in release builds (probably a crash).
+  PROTOBUF_ALWAYS_INLINE void MergeFromWithClassData(
+      const MessageLite& other, const internal::ClassData* data) {
+    ABSL_DCHECK(data != nullptr);
+    ABSL_DCHECK(GetClassData() == data && other.GetClassData() == data)
+        << "Invalid call to " << __func__ << ": this=" << GetTypeName()
+        << " other=" << other.GetTypeName()
+        << " data=" << data->default_instance()->GetTypeName();
+    data->merge_to_from(*this, other);
+  }
 
   const internal::TcParseTableBase* GetTcParseTable() const {
     auto* data = GetClassData();
@@ -988,8 +1000,6 @@ class PROTOBUF_EXPORT MessageLite {
   friend class internal::WeakFieldMap;
   friend class internal::WireFormatLite;
   friend class internal::RustMapHelper;
-
-
   template <typename Type>
   friend class Arena::InternalHelper;
 
