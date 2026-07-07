@@ -2587,14 +2587,14 @@ size_t MessageGenerator::GenerateOffsets(io::Printer* p) {
     // offset.
 
     if (ShouldSplit(field, options_)) {
-      format(" | ::_pbi::kSplitFieldOffsetMask");
+      format(" | ::_pbi::kSplitFieldOffsetTag");
     }
     if (IsEagerlyVerifiedLazy(field, options_)) {
-      format(" | ::_pbi::kLazyMask");
+      format(" | ::_pbi::kLazyOffsetTag");
     } else if (IsStringInlined(field, options_)) {
-      format(" | ::_pbi::kInlinedMask");
+      format(" | ::_pbi::kInlinedOffsetTag");
     } else if (IsMicroString(field, options_)) {
-      format(" | ::_pbi::kMicroStringMask");
+      format(" | ::_pbi::kMicroStringOffsetTag");
     }
     format(",\n");
   }

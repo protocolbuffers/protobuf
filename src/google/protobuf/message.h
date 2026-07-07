@@ -1940,7 +1940,7 @@ const Type& Reflection::GetRaw(const Message& message,
                                const FieldDescriptor* field) const {
   VerifyFieldType<Type>(field);
 
-  const uint32_t field_offset = schema_.GetFieldOffset<Type>(field);
+  const uint32_t field_offset = schema_.GetFieldOffset(field);
 
   if (ABSL_PREDICT_FALSE(schema_.IsSplit(field))) {
     ABSL_DCHECK(!schema_.InRealOneof(field))
@@ -1981,7 +1981,7 @@ Type* Reflection::MutableRaw(Message* message,
     return reinterpret_cast<Type*>(MutableRawSplitImpl(message, field));
   }
 
-  const uint32_t field_offset = schema_.GetFieldOffset<Type>(field);
+  const uint32_t field_offset = schema_.GetFieldOffset(field);
   return internal::GetPointerAtOffset<Type>(message, field_offset);
 }
 
