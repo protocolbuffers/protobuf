@@ -60,6 +60,11 @@ bootstrap_cc_library(
     ],
 )
 
+alias(
+    name = "reflection_cc",
+    actual = ":reflection",
+)
+
 bootstrap_cc_library(
     name = "internal",
     srcs = [
@@ -136,6 +141,11 @@ bootstrap_cc_library(
         "//upb/port",
         "//upb/wire",
     ],
+)
+
+alias(
+    name = "internal_cc",
+    actual = ":internal",
 )
 
 cc_library(
