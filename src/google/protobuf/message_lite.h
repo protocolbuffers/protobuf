@@ -206,6 +206,7 @@ class InternalMetadataOffset;
 template <typename T, size_t kFieldOffset>
 struct InternalMetadataOffsetHelper;
 class LazyField;
+class ReflectionVisit;
 class RepeatedPtrFieldBase;
 class TcParser;
 struct TcParseTableBase;
@@ -965,6 +966,7 @@ class PROTOBUF_EXPORT MessageLite {
   template <typename T, size_t kFieldOffset>
   friend struct internal::InternalMetadataOffsetHelper;
   friend class internal::LazyField;
+  friend internal::ReflectionVisit;
   friend internal::RepeatedPtrFieldBase;
   friend class internal::SwapFieldHelper;
   friend class internal::TcParser;

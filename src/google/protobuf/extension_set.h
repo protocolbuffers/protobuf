@@ -28,8 +28,6 @@
 #include <variant>
 #include <vector>
 
-#include "absl/log/absl_log.h"
-
 #include "google/protobuf/stubs/common.h"
 #include "absl/base/casts.h"
 #include "absl/base/prefetch.h"
@@ -393,7 +391,13 @@ class PROTOBUF_EXPORT ExtensionSet {
     }
   }
 
-  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD const MessageLite& GetMessage(
+  template <typename Strategy>
+  const MessageLite& GetMessageGeneric(Strategy strategy, Arena* arena,
+                                       int number) const;
+
+  [[nodiscard]] const MessageLite& GetMessageByClassData(
+      Arena* arena, int number, const ClassData* class_data) const;
+  [[nodiscard]] const MessageLite& GetMessageByPrototype(
       Arena* arena, int number, const MessageLite& default_value) const;
   PROTOBUF_FUTURE_ADD_EARLY_NODISCARD const MessageLite& GetMessage(
       Arena* arena, int number, const Descriptor* message_type,
@@ -404,8 +408,16 @@ class PROTOBUF_EXPORT ExtensionSet {
   // type.
 #define desc const FieldDescriptor* descriptor  // avoid line wrapping
   std::string* MutableString(Arena* arena, int number, FieldType type, desc);
-  MessageLite* MutableMessage(Arena* arena, int number, FieldType type,
-                              const MessageLite& prototype, desc);
+
+  template <typename Strategy>
+  MessageLite* MutableMessageGeneric(Strategy strategy, Arena* arena,
+                                     int number, FieldType type, desc);
+  MessageLite* MutableMessageByPrototype(Arena* arena, int number,
+                                         FieldType type,
+                                         const MessageLite& prototype, desc);
+  MessageLite* MutableMessageByClassData(Arena* arena, int number,
+                                         FieldType type,
+                                         const ClassData* class_data, desc);
   MessageLite* MutableMessage(Arena* arena, const FieldDescriptor* descriptor,
                               MessageFactory* factory);
   // Adds the given message to the ExtensionSet, taking ownership of the
@@ -418,9 +430,9 @@ class PROTOBUF_EXPORT ExtensionSet {
                                       const FieldDescriptor* descriptor,
                                       MessageLite* message);
   [[nodiscard]] MessageLite* ReleaseMessage(Arena* arena, int number,
-                                            const MessageLite& prototype);
+                                            const ClassData* class_data);
   MessageLite* UnsafeArenaReleaseMessage(Arena* arena, int number,
-                                         const MessageLite& prototype);
+                                         const ClassData* class_data);
 
   [[nodiscard]] MessageLite* ReleaseMessage(Arena* arena,
                                             const FieldDescriptor* descriptor,
@@ -1652,11 +1664,14 @@ class MessageTypeTraits {
   typedef MessageTypeTraits<Type> Singular;
   static constexpr bool kLifetimeBound = true;
 
+  static constexpr const internal::ClassData* class_data() {
+    return internal::MessageTraits<Type>::class_data();
+  }
   PROTOBUF_FUTURE_ADD_EARLY_NODISCARD static inline ConstType Get(
       Arena* arena, int number, const ExtensionSet& set,
-      ConstType default_value) {
+      ConstType /* default_value */) {
     return static_cast<const Type&>(
-        set.GetMessage(arena, number, default_value));
+        set.GetMessageByClassData(arena, number, class_data()));
   }
   PROTOBUF_FUTURE_ADD_EARLY_NODISCARD static inline std::nullptr_t GetPtr(
       int /* number */, const ExtensionSet& /* set */,
@@ -1666,8 +1681,8 @@ class MessageTypeTraits {
   }
   static inline MutableType Mutable(Arena* arena, int number,
                                     FieldType field_type, ExtensionSet* set) {
-    return static_cast<Type*>(set->MutableMessage(
-        arena, number, field_type, Type::default_instance(), nullptr));
+    return static_cast<Type*>(set->MutableMessageByClassData(
+        arena, number, field_type, class_data(), nullptr));
   }
   static inline void SetAllocated(Arena* arena, int number,
                                   FieldType field_type, MutableType message,
@@ -1684,14 +1699,13 @@ class MessageTypeTraits {
   [[nodiscard]] static inline MutableType Release(Arena* arena, int number,
                                                   FieldType /* field_type */,
                                                   ExtensionSet* set) {
-    return static_cast<Type*>(
-        set->ReleaseMessage(arena, number, Type::default_instance()));
+    return static_cast<Type*>(set->ReleaseMessage(arena, number, class_data()));
   }
   static inline MutableType UnsafeArenaRelease(Arena* arena, int number,
                                                FieldType /* field_type */,
                                                ExtensionSet* set) {
-    return static_cast<Type*>(set->UnsafeArenaReleaseMessage(
-        arena, number, Type::default_instance()));
+    return static_cast<Type*>(
+        set->UnsafeArenaReleaseMessage(arena, number, class_data()));
   }
 };
 

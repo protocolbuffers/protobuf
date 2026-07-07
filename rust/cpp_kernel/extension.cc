@@ -86,15 +86,15 @@ google::protobuf::rust::PtrAndLen proto2_rust_Message_get_extension_string(
 const google::protobuf::MessageLite* proto2_rust_Message_get_extension_message(
     const google::protobuf::MessageLite* m, int32_t number,
     const google::protobuf::MessageLite* default_instance) {
-  return &GetExtensionSet(m)->GetMessage(m->GetArena(), number,
-                                         *default_instance);
+  return &GetExtensionSet(m)->GetMessageByPrototype(m->GetArena(), number,
+                                                    *default_instance);
 }
 
 google::protobuf::MessageLite* proto2_rust_Message_mutable_extension_message(
     google::protobuf::MessageLite* m, int32_t number, int32_t type,
     const google::protobuf::MessageLite* default_instance) {
-  return GetExtensionSet(m)->MutableMessage(m->GetArena(), number, type,
-                                            *default_instance, nullptr);
+  return GetExtensionSet(m)->MutableMessageByPrototype(
+      m->GetArena(), number, type, *default_instance, nullptr);
 }
 
 }  // extern "C"
