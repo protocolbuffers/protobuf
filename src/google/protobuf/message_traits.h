@@ -19,29 +19,21 @@
 namespace google {
 namespace protobuf {
 
+class Message;
 class MessageLite;
 
 namespace internal {
 
 struct ClassData;
 
-// Returns the ClassData for the given message.
-//
-// A template to avoid depending on message_lite.h.
 template <typename MessageT>
-const ClassData* GetClassData(const MessageT& msg) {
-  if constexpr (std::is_same_v<MessageT, MessageLite>) {
-    return msg.GetClassData();
-  } else {
-    return GetClassData(static_cast<const MessageLite&>(msg));
-  }
-}
+const ClassData* GetClassData(const MessageT& msg);
 
 template <typename T>
 struct FallbackMessageTraits {
   static const void* default_instance() { return &T::default_instance(); }
   static constexpr const auto* class_data() {
-    return GetClassData(T::default_instance());
+    return GetClassData(static_cast<const MessageLite&>(T::default_instance()));
   }
   static const auto* tc_table() { return class_data()->GetTcParseTable(); }
   // We can't make a constexpr pointer to the default, so use a function pointer
@@ -61,6 +53,19 @@ struct MessageTraitsImpl {
 };
 template <typename T>
 using MessageTraits = decltype(MessageTraitsImpl::value<T>);
+
+// Returns the ClassData for the given message.
+//
+// A template to avoid depending on message_lite.h.
+template <typename MessageT>
+const ClassData* GetClassData(const MessageT& msg) {
+  if constexpr (std::is_same_v<MessageT, MessageLite> ||
+                std::is_same_v<MessageT, Message>) {
+    return msg.GetClassData();
+  } else {
+    return MessageTraits<MessageT>::class_data();
+  }
+}
 
 }  // namespace internal
 }  // namespace protobuf

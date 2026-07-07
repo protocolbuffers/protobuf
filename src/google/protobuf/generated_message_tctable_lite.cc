@@ -35,6 +35,7 @@
 #include "google/protobuf/io/zero_copy_stream_impl_lite.h"
 #include "google/protobuf/map.h"
 #include "google/protobuf/message_lite.h"
+#include "google/protobuf/message_traits.h"
 #include "google/protobuf/micro_string.h"
 #include "google/protobuf/parse_context.h"
 #include "google/protobuf/port.h"
@@ -632,8 +633,8 @@ PROTOBUF_ALWAYS_INLINE MessageLite* TcParser::NewMessage(
 
 MessageLite* TcParser::AddMessage(const ClassData* class_data,
                                   RepeatedPtrFieldBase& field, Arena* arena) {
-  return field.AddFromPrototype<GenericTypeHandler<MessageLite>>(
-      arena, class_data->default_instance());
+  return field.AddFromClassData<GenericTypeHandler<MessageLite>>(arena,
+                                                                 class_data);
 }
 
 template <bool kIsTable>

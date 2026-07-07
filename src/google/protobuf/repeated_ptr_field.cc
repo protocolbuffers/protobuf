@@ -221,11 +221,10 @@ int RepeatedPtrFieldBase::MergeIntoClearedMessages(
   auto dst = reinterpret_cast<MessageLite**>(elements() + current_size_);
   auto src = reinterpret_cast<MessageLite* const*>(from.elements());
   int count = std::min(ClearedCount(), from.current_size_);
+  const ClassData* class_data = GetClassData(*src[0]);
   for (int i = 0; i < count; ++i) {
     ABSL_DCHECK(src[i] != nullptr);
-    ABSL_DCHECK(TypeId::Get(*src[i]) == TypeId::Get(*src[0]))
-        << src[i]->GetTypeName() << " vs " << src[0]->GetTypeName();
-    dst[i]->CheckTypeAndMergeFrom(*src[i]);
+    dst[i]->MergeFromWithClassData(*src[i], class_data);
   }
   return count;
 }
@@ -266,28 +265,18 @@ template <>
 void RepeatedPtrFieldBase::MergeFrom<MessageLite>(
     const RepeatedPtrFieldBase& from, Arena* arena) {
   ABSL_DCHECK(from.current_size_ > 0);
-  int new_size = current_size_ + from.current_size_;
-  auto dst = reinterpret_cast<MessageLite**>(InternalReserve(new_size, arena));
-  auto src = reinterpret_cast<MessageLite const* const*>(from.elements());
-  auto end = src + from.current_size_;
-  const MessageLite* prototype = src[0];
-  ABSL_DCHECK(prototype != nullptr);
-  if (ABSL_PREDICT_FALSE(ClearedCount() > 0)) {
-    int recycled = MergeIntoClearedMessages(from);
-    dst += recycled;
-    src += recycled;
-  }
-  for (; src < end; ++src, ++dst) {
-    ABSL_DCHECK(*src != nullptr);
-    ABSL_DCHECK(TypeId::Get(**src) == TypeId::Get(*prototype))
-        << (**src).GetTypeName() << " vs " << prototype->GetTypeName();
-    *dst = prototype->New(arena);
-    (*dst)->CheckTypeAndMergeFrom(**src);
-  }
-  ExchangeCurrentSize(new_size);
-  if (new_size > allocated_size()) {
-    rep()->allocated_size = new_size;
-  }
+  const ClassData* class_data =
+      GetClassData(*reinterpret_cast<const MessageLite*>(from.element_at(0)));
+  MergeFromInternal<MessageLite>(
+      from, arena,
+      [class_data](Arena* arena, MessageLite* dst, const MessageLite& src) {
+        dst->MergeFromWithClassData(src, class_data);
+      },
+      [class_data](Arena* arena, const MessageLite& src) -> MessageLite* {
+        MessageLite* dst = class_data->New(arena);
+        dst->MergeFromWithClassData(src, class_data);
+        return dst;
+      });
 }
 
 }  // namespace internal
