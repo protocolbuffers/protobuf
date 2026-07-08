@@ -29,7 +29,7 @@ namespace LegacyFeaturesUnittest {
             "c01lc3NhZ2USHQoOcmVxdWlyZWRfZmllbGQYASABKAVCBaoBAggDEk0KD2Rl",
             "bGltaXRlZF9maWVsZBgCIAEoCzItLmxlZ2FjeV9mZWF0dXJlc191bml0dGVz",
             "dC5UZXN0RWRpdGlvbnNNZXNzYWdlQgWqAQIoAjoHYgXKPgIoAkIYQhZVbml0",
-            "dGVzdExlZ2FjeUZlYXR1cmVzYghlZGl0aW9uc3DpB3ojZ29vZ2xlL3Byb3Rv",
+            "dGVzdExlZ2FjeUZlYXR1cmVzYghlZGl0aW9uc3DqB3ojZ29vZ2xlL3Byb3Rv",
             "YnVmL2phdmFfZmVhdHVyZXMucHJvdG8="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { },
