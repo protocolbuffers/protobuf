@@ -30,9 +30,8 @@ jobs:
         include:
           # Test both FFI and Native implementations on the highest and lowest
           # Ruby versions for CRuby and JRuby
-          - { name: Ruby 3.1, ruby: ruby-3.1.6, ffi: NATIVE }
-          - { name: Ruby 3.1, ruby: ruby-3.1.6, ffi: FFI }
-          - { name: Ruby 3.2, ruby: ruby-3.2.6, continuous-only: true }
+          - { name: Ruby 3.2, ruby: ruby-3.2.6, ffi: NATIVE }
+          - { name: Ruby 3.2, ruby: ruby-3.2.6, ffi: FFI }
           - { name: Ruby 3.3, ruby: ruby-3.3.6, continuous-only: true }
           - { name: Ruby 3.4, ruby: ruby-3.4.1, continuous-only: true }
           - { name: Ruby 4.0, ruby: ruby-4.0.0, ffi: NATIVE }
@@ -82,14 +81,14 @@ jobs:
         id: cross-compile
         uses: protocolbuffers/protobuf-ci/cross-compile-protoc@v5
         with:
-          image: us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:8.0.1-e78301df86b3e4c46ec9ac4d98be00e19305d8f3
+          image: us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:8.6.0-9dca0d9417f43f5f1e97e59969fb0f3e6ae3bd9c
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           architecture: linux-i386
 
       - name: Run tests
         uses: protocolbuffers/protobuf-ci/docker@v5
         with:
-          image: i386/ruby:3.1.6-bullseye
+          image: i386/ruby:3.2.11-bookworm
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           command: >-
             /bin/bash -cex '
@@ -115,7 +114,7 @@ jobs:
         id: cross-compile
         uses: protocolbuffers/protobuf-ci/cross-compile-protoc@v5
         with:
-          image: us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:8.0.1-e78301df86b3e4c46ec9ac4d98be00e19305d8f3
+          image: us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:8.6.0-9dca0d9417f43f5f1e97e59969fb0f3e6ae3bd9c
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           architecture: linux-aarch64
 
@@ -123,7 +122,7 @@ jobs:
         if: ${{ inputs.continuous-run }}
         uses: protocolbuffers/protobuf-ci/docker@v5
         with:
-          image: arm64v8/ruby:3.1.4-buster
+          image: arm64v8/ruby:3.2.11-bookworm
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           command: >-
             /bin/bash -cex '
@@ -142,9 +141,8 @@ jobs:
         # Test both FFI and Native implementations on the highest and lowest
         # Ruby versions for CRuby.
         # Quote versions numbers otherwise 3.0 will render as 3
-        - { version: "3.1", ffi: NATIVE }
-        - { version: "3.1", ffi: FFI }
-        - { version: "3.2", continuous-only: true }
+        - { version: "3.2", ffi: NATIVE }
+        - { version: "3.2", ffi: FFI }
         - { version: "3.3", continuous-only: true }
         - { version: "3.4", ffi: NATIVE }
         - { version: "3.4", ffi: FFI }
@@ -187,9 +185,8 @@ jobs:
         include:
           # Test both FFI and Native implementations on the highest and lowest
           # Ruby versions for CRuby and JRuby.
-          - { name: Ruby 3.1, ruby: ruby-3.1.6, ffi: NATIVE }
-          - { name: Ruby 3.1, ruby: ruby-3.1.6, ffi: FFI }
-          - { name: Ruby 3.2, ruby: ruby-3.2.6, continuous-only: true }
+          - { name: Ruby 3.2, ruby: ruby-3.2.6, ffi: NATIVE }
+          - { name: Ruby 3.2, ruby: ruby-3.2.6, ffi: FFI }
           - { name: Ruby 3.3, ruby: ruby-3.3.6, continuous-only: true }
           - { name: Ruby 3.4, ruby: ruby-3.4.1, continuous-only: true }
           - { name: Ruby 4.0, ruby: ruby-4.0.0, ffi: NATIVE }

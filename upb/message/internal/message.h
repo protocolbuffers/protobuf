@@ -42,15 +42,27 @@ extern const double kUpb_NaN;
 // Internal members of a upb_Message that track unknown fields and/or
 // extensions. We can change this without breaking binary compatibility.
 
+// LINT.IfChange(tagged_aux_type)
 typedef struct upb_TaggedAuxPtr {
-  // Two lowest bits form a tag:
-  // 00 - non-aliased unknown data
-  // 10 - aliased unknown data
-  // 01 - extension
+  // Three lowest bits form a tag:
+  // 000 - non-aliased unknown data (upb_StringView*)
+  // 100 - aliased unknown data (upb_StringView*)
+  // 001 - non-canonical extension (upb_Extension*)
+  // 011 - canonical extension (upb_Extension*)
   //
-  // The main semantic difference between aliased and non-aliased unknown data
-  // is that non-aliased unknown data can be assumed to have the following
-  // layout:
+  // Bit 0 (lowest bit): Represents the data format in memory (1 for parsed
+  //   form, 0 for serialized form).
+  // Bit 1 (middle bit): Represents whether the data is semantically known or
+  //   not (1 for known, 0 for unknown).
+  // Bit 2 (highest bit): Aliased/Non-aliased (1 for aliased, 0 for
+  //   non-aliased).
+  //
+  // Following this tag structure, we can later use tag `010` for lazy
+  // extensions.
+  //
+  // The main semantic difference between aliased and non-aliased
+  // unknown data is that non-aliased unknown data can be assumed to have the
+  // following layout:
   //
   //   [upb_StringView] [data]
   //
@@ -64,55 +76,75 @@ typedef struct upb_TaggedAuxPtr {
   // For aliased unknown data, this layout is _not_ guaranteed, since the
   // pointer to the StringView can be anywhere in the allocation, and the
   // StringView may point to non-data memory.
+  //
+  // For a non-canonical extension, its schema is known but not
+  // the one expected by the message, so it should be treated like an unknown
+  // field, but is stored as an extension to lazily defer serialization.
   uintptr_t ptr;
 } upb_TaggedAuxPtr;
 
-UPB_INLINE bool upb_TaggedAuxPtr_IsExtension(upb_TaggedAuxPtr ptr) {
-  return ptr.ptr & 1;
+// If this returns true, then the entry is semantically known (but may be in
+// either parsed or unparsed form).
+UPB_INLINE bool upb_TaggedAuxPtr_IsSemanticallyKnown(upb_TaggedAuxPtr ptr) {
+  return (ptr.ptr & 0x2) != 0;
 }
 
-UPB_INLINE bool upb_TaggedAuxPtr_IsUnknown(upb_TaggedAuxPtr ptr) {
-  return (ptr.ptr != 0) && ((ptr.ptr & 1) == 0);
+UPB_INLINE bool upb_TaggedAuxPtr_IsCanonicalExtension(upb_TaggedAuxPtr ptr) {
+  return (ptr.ptr & 3) == 3;
+}
+
+UPB_INLINE bool upb_TaggedAuxPtr_IsNonCanonicalExtension(upb_TaggedAuxPtr ptr) {
+  return (ptr.ptr & 3) == 1;
+}
+
+// Returns true if the entry is aliased/non-aliased unknown data.
+UPB_INLINE bool upb_TaggedAuxPtr_IsUnknownStringView(upb_TaggedAuxPtr ptr) {
+  return (ptr.ptr != 0) && ((ptr.ptr & 3) == 0);
 }
 
 UPB_INLINE bool upb_TaggedAuxPtr_IsUnknownAliased(upb_TaggedAuxPtr ptr) {
-  return (ptr.ptr != 0) && ((ptr.ptr & 2) == 2);
+  return (ptr.ptr != 0) && ((ptr.ptr & 5) == 4);
 }
 
-UPB_INLINE upb_Extension* upb_TaggedAuxPtr_Extension(upb_TaggedAuxPtr ptr) {
-  UPB_ASSERT(upb_TaggedAuxPtr_IsExtension(ptr));
-  return (upb_Extension*)(ptr.ptr & ~3ULL);
+UPB_INLINE upb_Extension* upb_TaggedAuxPtr_CanonicalExtension(
+    upb_TaggedAuxPtr ptr) {
+  UPB_ASSERT(upb_TaggedAuxPtr_IsCanonicalExtension(ptr));
+  return (upb_Extension*)(ptr.ptr & ~7ULL);
 }
 
-UPB_INLINE upb_StringView* upb_TaggedAuxPtr_UnknownData(upb_TaggedAuxPtr ptr) {
-  UPB_ASSERT(!upb_TaggedAuxPtr_IsExtension(ptr));
-  return (upb_StringView*)(ptr.ptr & ~3ULL);
+UPB_INLINE upb_Extension* upb_TaggedAuxPtr_NonCanonicalExtension(
+    upb_TaggedAuxPtr ptr) {
+  UPB_ASSERT(upb_TaggedAuxPtr_IsNonCanonicalExtension(ptr));
+  return (upb_Extension*)(ptr.ptr & ~7ULL);
 }
+
+// Returns a pointer to the aliased or unaliased unknown upb_StringView* data.
+UPB_INLINE upb_StringView* upb_TaggedPtrAux_StringViewRepr(
+    upb_TaggedAuxPtr ptr) {
+  UPB_ASSERT(upb_TaggedAuxPtr_IsUnknownStringView(ptr));
+  return (upb_StringView*)(ptr.ptr & ~7ULL);
+}
+
+// LINT.ThenChange(//depot/google3/third_party/upb/bits/golang/message.go:tagged_aux_type)
 
 typedef enum {
-  kUpb_TaggedAuxType_Extension,
-  kUpb_TaggedAuxType_Unknown,
-  kUpb_TaggedAuxType_AliasedUnknown
+  kUpb_TaggedAuxType_Unknown = 0,                // tag 000
+  kUpb_TaggedAuxType_NonCanonicalExtension = 1,  // tag 001
+  kUpb_TaggedAuxType_CanonicalExtension = 3,     // tag 011
+  kUpb_TaggedAuxType_AliasedUnknown = 4          // tag 100
 } upb_TaggedAuxType;
 
 typedef union {
   upb_Extension* extension;
-  upb_StringView unknown_data;
+  const upb_StringView* unknown_data;
 } upb_TaggedAux;
 
 UPB_INLINE upb_TaggedAuxType upb_TaggedAux_Get(upb_TaggedAuxPtr ptr,
                                                upb_TaggedAux* data) {
-  if (upb_TaggedAuxPtr_IsExtension(ptr)) {
-    data->extension = upb_TaggedAuxPtr_Extension(ptr);
-    return kUpb_TaggedAuxType_Extension;
-  } else if (upb_TaggedAuxPtr_IsUnknownAliased(ptr)) {
-    data->unknown_data = *upb_TaggedAuxPtr_UnknownData(ptr);
-    return kUpb_TaggedAuxType_AliasedUnknown;
-  } else {
-    UPB_ASSERT(upb_TaggedAuxPtr_IsUnknown(ptr));
-    data->unknown_data = *upb_TaggedAuxPtr_UnknownData(ptr);
-    return kUpb_TaggedAuxType_Unknown;
-  }
+  uintptr_t untagged = ptr.ptr & ~7ULL;
+  UPB_ASSERT((untagged & 7) == 0);
+  memcpy(data, &untagged, sizeof(*data));
+  return (upb_TaggedAuxType)(ptr.ptr & 7);
 }
 
 UPB_INLINE upb_TaggedAuxPtr upb_TaggedAuxPtr_Null(void) {
@@ -122,7 +154,16 @@ UPB_INLINE upb_TaggedAuxPtr upb_TaggedAuxPtr_Null(void) {
 }
 
 UPB_INLINE upb_TaggedAuxPtr
-upb_TaggedAuxPtr_MakeExtension(const upb_Extension* e) {
+upb_TaggedAuxPtr_MakeCanonicalExtension(const upb_Extension* e) {
+  UPB_ASSERT(((uintptr_t)e & 7) == 0);
+  upb_TaggedAuxPtr ptr;
+  ptr.ptr = (uintptr_t)e | 3;
+  return ptr;
+}
+
+UPB_INLINE upb_TaggedAuxPtr
+upb_TaggedAuxPtr_MakeNonCanonicalExtension(const upb_Extension* e) {
+  UPB_ASSERT(((uintptr_t)e & 7) == 0);
   upb_TaggedAuxPtr ptr;
   ptr.ptr = (uintptr_t)e | 1;
   return ptr;
@@ -133,6 +174,7 @@ upb_TaggedAuxPtr_MakeExtension(const upb_Extension* e) {
 // view.
 UPB_INLINE upb_TaggedAuxPtr
 upb_TaggedAuxPtr_MakeUnknownData(const upb_StringView* sv) {
+  UPB_ASSERT(((uintptr_t)sv & 7) == 0);
   upb_TaggedAuxPtr ptr;
   ptr.ptr = (uintptr_t)sv;
   return ptr;
@@ -142,8 +184,9 @@ upb_TaggedAuxPtr_MakeUnknownData(const upb_StringView* sv) {
 // the data it points to.
 UPB_INLINE upb_TaggedAuxPtr
 upb_TaggedAuxPtr_MakeUnknownDataAliased(const upb_StringView* sv) {
+  UPB_ASSERT(((uintptr_t)sv & 7) == 0);
   upb_TaggedAuxPtr ptr;
-  ptr.ptr = (uintptr_t)sv | 2;
+  ptr.ptr = (uintptr_t)sv | 4;
   return ptr;
 }
 
@@ -265,8 +308,8 @@ UPB_NODISCARD UPB_INLINE bool UPB_PRIVATE(
   upb_Message_Internal* in = UPB_PRIVATE(_upb_Message_GetInternal)(msg);
   if (in && in->size) {
     upb_TaggedAuxPtr ptr = in->aux_data[in->size - 1];
-    if (upb_TaggedAuxPtr_IsUnknown(ptr)) {
-      upb_StringView* existing = upb_TaggedAuxPtr_UnknownData(ptr);
+    if (upb_TaggedAuxPtr_IsUnknownStringView(ptr)) {
+      upb_StringView* existing = upb_TaggedPtrAux_StringViewRepr(ptr);
       // Fast path if the field we're adding is immediately after the last
       // added unknown field.
       //
@@ -319,6 +362,27 @@ UPB_NODISCARD bool UPB_PRIVATE(_upb_Message_AddUnknownV)(
 UPB_NODISCARD bool UPB_PRIVATE(_upb_Message_ReserveSlot)(
     struct upb_Message* msg, upb_Arena* arena);
 
+typedef enum {
+  kUpb_MessageUnknownType_StringView,
+  kUpb_MessageUnknownType_NonCanonicalExtension,
+} upb_MessageUnknownType;
+
+// Represents an unknown field in a message, whether it's in a serialized
+// (upb_StringView) or parsed non-canonical extension (upb_Extension*) format.
+typedef struct upb_MessageUnknown {
+  uint8_t type;
+  union {
+    upb_StringView bytes;
+    const upb_Extension* extension;
+  } value;
+} upb_MessageUnknown;
+
+typedef enum upb_Message_DeleteUnknownStatus {
+  kUpb_DeleteUnknown_DeletedLast,
+  kUpb_DeleteUnknown_IterUpdated,
+  kUpb_DeleteUnknown_AllocFail,
+} upb_Message_DeleteUnknownStatus;
+
 #define kUpb_Message_UnknownBegin 0
 #define kUpb_Message_ExtensionBegin 0
 
@@ -329,8 +393,8 @@ UPB_INLINE bool upb_Message_NextUnknown(const struct upb_Message* msg,
   if (in) {
     while (i < in->size) {
       upb_TaggedAuxPtr tagged_ptr = in->aux_data[i++];
-      if (upb_TaggedAuxPtr_IsUnknown(tagged_ptr)) {
-        *data = *upb_TaggedAuxPtr_UnknownData(tagged_ptr);
+      if (upb_TaggedAuxPtr_IsUnknownStringView(tagged_ptr)) {
+        *data = *upb_TaggedPtrAux_StringViewRepr(tagged_ptr);
         *iter = i;
         return true;
       }
@@ -342,12 +406,6 @@ UPB_INLINE bool upb_Message_NextUnknown(const struct upb_Message* msg,
   return false;
 }
 
-UPB_INLINE bool upb_Message_HasUnknown(const struct upb_Message* msg) {
-  upb_StringView data;
-  uintptr_t iter = kUpb_Message_UnknownBegin;
-  return upb_Message_NextUnknown(msg, &data, &iter);
-}
-
 UPB_INLINE bool upb_Message_NextExtension(const struct upb_Message* msg,
                                           const upb_MiniTableExtension** out_e,
                                           upb_MessageValue* out_v,
@@ -357,8 +415,9 @@ UPB_INLINE bool upb_Message_NextExtension(const struct upb_Message* msg,
   if (in) {
     while (i < in->size) {
       upb_TaggedAuxPtr tagged_ptr = in->aux_data[i++];
-      if (upb_TaggedAuxPtr_IsExtension(tagged_ptr)) {
-        const upb_Extension* ext = upb_TaggedAuxPtr_Extension(tagged_ptr);
+      if (upb_TaggedAuxPtr_IsCanonicalExtension(tagged_ptr)) {
+        const upb_Extension* ext =
+            upb_TaggedAuxPtr_CanonicalExtension(tagged_ptr);
 
         // Empty repeated fields or maps semantically don't exist.
         if (UPB_PRIVATE(_upb_Extension_IsEmpty)(ext)) continue;
@@ -385,10 +444,10 @@ UPB_INLINE bool UPB_PRIVATE(_upb_Message_NextExtensionReverse)(
   while (i < size) {
     upb_TaggedAuxPtr tagged_ptr = in->aux_data[size - 1 - i];
     i++;
-    if (!upb_TaggedAuxPtr_IsExtension(tagged_ptr)) {
+    if (!upb_TaggedAuxPtr_IsCanonicalExtension(tagged_ptr)) {
       continue;
     }
-    const upb_Extension* ext = upb_TaggedAuxPtr_Extension(tagged_ptr);
+    const upb_Extension* ext = upb_TaggedAuxPtr_CanonicalExtension(tagged_ptr);
 
     // Empty repeated fields or maps semantically don't exist.
     if (UPB_PRIVATE(_upb_Extension_IsEmpty)(ext)) continue;

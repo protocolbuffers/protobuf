@@ -56,7 +56,7 @@ constexpr CppFeatures::ParseTableT_ CppFeatures::InternalGenerateParseTable_(con
       offsetof(ParseTableT_, aux_entries),
       class_data,
       nullptr,  // post_loop_handler
-      ::_pbi::TcParser::GenericFallback,  // fallback
+      ::_pbi::TcParser::MpUnknownFields,  // fallback
       #ifdef PROTOBUF_PREFETCH_PARSE_TABLE
       ::_pbi::TcParser::GetTable<::pb::CppFeatures>(),  // to_prefetch
       #endif  // PROTOBUF_PREFETCH_PARSE_TABLE

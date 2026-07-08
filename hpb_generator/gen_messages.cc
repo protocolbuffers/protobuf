@@ -263,7 +263,8 @@ void WriteModelPublicDeclaration(
              $class_name$(upb_Message* msg, upb_Arena* arena) : $class_name$Access() {
                msg_ = ($c_api_msg_type$*)msg;
                arena_ = ::hpb::interop::upb::UnwrapArena(owned_arena_);
-               upb_Arena_Fuse(arena_, arena);
+               bool fused = upb_Arena_Fuse(arena_, arena);
+               ABSL_DCHECK(fused);
              }
              ::hpb::Arena owned_arena_;
              friend struct ::hpb::internal::PrivateAccess;

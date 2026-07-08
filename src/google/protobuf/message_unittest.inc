@@ -868,6 +868,79 @@ TEST(MESSAGE_TEST_NAME, DynamicCastMessage) {
                                  test_all_types_pointer_const_ref));
 }
 
+TEST(MESSAGE_TEST_NAME, DynamicCastMessageBetweenBaseClasses) {
+  UNITTEST::TestAllTypes test_all_types;
+  MessageLite* message_lite_ptr = &test_all_types;
+  Message* message_ptr = &test_all_types;
+
+  // Tests MessageLite -> Message casts.
+  {
+    MessageLite* message_lite_ptr = &test_all_types;
+    EXPECT_EQ(DynamicCastMessage<Message>(message_lite_ptr), message_ptr);
+
+    const MessageLite* message_lite_const_ptr = &test_all_types;
+    EXPECT_EQ(DynamicCastMessage<Message>(message_lite_const_ptr), message_ptr);
+
+    MessageLite& message_lite_ref = test_all_types;
+    EXPECT_EQ(&DynamicCastMessage<Message>(message_lite_ref), message_ptr);
+
+    const MessageLite& message_lite_const_ref = test_all_types;
+    EXPECT_EQ(&DynamicCastMessage<Message>(message_lite_const_ref),
+              message_ptr);
+  }
+
+  // Tests Message -> MessageLite casts.
+  {
+    Message* message_ptr = &test_all_types;
+    EXPECT_EQ(DynamicCastMessage<MessageLite>(message_ptr), message_lite_ptr);
+
+    const Message* message_const_ptr = &test_all_types;
+    EXPECT_EQ(DynamicCastMessage<MessageLite>(message_const_ptr),
+              message_lite_ptr);
+
+    Message& message_ref = test_all_types;
+    EXPECT_EQ(&DynamicCastMessage<MessageLite>(message_ref), message_lite_ptr);
+
+    const Message& message_const_ref = test_all_types;
+    EXPECT_EQ(&DynamicCastMessage<MessageLite>(message_const_ref),
+              message_lite_ptr);
+  }
+
+  // Tests MessageLite -> MessageLite casts.
+  {
+    MessageLite* message_lite_ptr = &test_all_types;
+    EXPECT_EQ(DynamicCastMessage<MessageLite>(message_lite_ptr),
+              message_lite_ptr);
+
+    const MessageLite* message_lite_const_ptr = &test_all_types;
+    EXPECT_EQ(DynamicCastMessage<MessageLite>(message_lite_const_ptr),
+              message_lite_ptr);
+
+    MessageLite& message_lite_ref = test_all_types;
+    EXPECT_EQ(&DynamicCastMessage<MessageLite>(message_lite_ref),
+              message_lite_ptr);
+
+    const MessageLite& message_lite_const_ref = test_all_types;
+    EXPECT_EQ(&DynamicCastMessage<MessageLite>(message_lite_const_ref),
+              message_lite_ptr);
+  }
+
+  // Tests Message -> Message casts.
+  {
+    Message* message_ptr = &test_all_types;
+    EXPECT_EQ(DynamicCastMessage<Message>(message_ptr), message_ptr);
+
+    const Message* message_const_ptr = &test_all_types;
+    EXPECT_EQ(DynamicCastMessage<Message>(message_const_ptr), message_ptr);
+
+    Message& message_ref = test_all_types;
+    EXPECT_EQ(&DynamicCastMessage<Message>(message_ref), message_ptr);
+
+    const Message& message_const_ref = test_all_types;
+    EXPECT_EQ(&DynamicCastMessage<Message>(message_const_ref), message_ptr);
+  }
+}
+
 TEST(MESSAGE_TEST_NAME, DynamicCastMessageLiteSharedPtrs) {
   auto test_all_types = std::make_shared<UNITTEST::TestAllTypes>();
 
@@ -948,6 +1021,77 @@ TEST(MESSAGE_TEST_NAME, DownCastMessageValidType) {
   const MessageLite& test_all_types_pointer_const_ref = test_all_types;
   EXPECT_EQ(&test_all_types, &DownCastMessage<UNITTEST::TestAllTypes>(
                                  test_all_types_pointer_const_ref));
+}
+
+TEST(MESSAGE_TEST_NAME, DownCastMessageBetweenBaseClasses) {
+  UNITTEST::TestAllTypes test_all_types;
+  MessageLite* message_lite_ptr = &test_all_types;
+  Message* message_ptr = &test_all_types;
+
+  // Tests MessageLite -> Message casts.
+  {
+    MessageLite* message_lite_ptr = &test_all_types;
+    EXPECT_EQ(DownCastMessage<Message>(message_lite_ptr), message_ptr);
+
+    const MessageLite* message_lite_const_ptr = &test_all_types;
+    EXPECT_EQ(DownCastMessage<Message>(message_lite_const_ptr), message_ptr);
+
+    MessageLite& message_lite_ref = test_all_types;
+    EXPECT_EQ(&DownCastMessage<Message>(message_lite_ref), message_ptr);
+
+    const MessageLite& message_lite_const_ref = test_all_types;
+    EXPECT_EQ(&DownCastMessage<Message>(message_lite_const_ref), message_ptr);
+  }
+
+  // Tests Message -> MessageLite casts.
+  {
+    Message* message_ptr = &test_all_types;
+    EXPECT_EQ(DownCastMessage<MessageLite>(message_ptr), message_lite_ptr);
+
+    const Message* message_const_ptr = &test_all_types;
+    EXPECT_EQ(DownCastMessage<MessageLite>(message_const_ptr),
+              message_lite_ptr);
+
+    Message& message_ref = test_all_types;
+    EXPECT_EQ(&DownCastMessage<MessageLite>(message_ref), message_lite_ptr);
+
+    const Message& message_const_ref = test_all_types;
+    EXPECT_EQ(&DownCastMessage<MessageLite>(message_const_ref),
+              message_lite_ptr);
+  }
+
+  // Tests MessageLite -> MessageLite casts.
+  {
+    MessageLite* message_lite_ptr = &test_all_types;
+    EXPECT_EQ(DownCastMessage<MessageLite>(message_lite_ptr), message_lite_ptr);
+
+    const MessageLite* message_lite_const_ptr = &test_all_types;
+    EXPECT_EQ(DownCastMessage<MessageLite>(message_lite_const_ptr),
+              message_lite_ptr);
+
+    MessageLite& message_lite_ref = test_all_types;
+    EXPECT_EQ(&DownCastMessage<MessageLite>(message_lite_ref),
+              message_lite_ptr);
+
+    const MessageLite& message_lite_const_ref = test_all_types;
+    EXPECT_EQ(&DownCastMessage<MessageLite>(message_lite_const_ref),
+              message_lite_ptr);
+  }
+
+  // Tests Message -> Message casts.
+  {
+    Message* message_ptr = &test_all_types;
+    EXPECT_EQ(DownCastMessage<Message>(message_ptr), message_ptr);
+
+    const Message* message_const_ptr = &test_all_types;
+    EXPECT_EQ(DownCastMessage<Message>(message_const_ptr), message_ptr);
+
+    Message& message_ref = test_all_types;
+    EXPECT_EQ(&DownCastMessage<Message>(message_ref), message_ptr);
+
+    const Message& message_const_ref = test_all_types;
+    EXPECT_EQ(&DownCastMessage<Message>(message_const_ref), message_ptr);
+  }
 }
 
 TEST(MESSAGE_TEST_NAME, DownCastMessageLiteSharedPtrs) {

@@ -20,6 +20,7 @@
 #include <ostream>
 #include <string>
 #include <utility>
+#include <variant>
 
 #include "absl/base/optimization.h"
 #include "absl/log/absl_check.h"
@@ -36,9 +37,12 @@
 #include "google/protobuf/io/zero_copy_stream.h"
 #include "google/protobuf/io/zero_copy_stream_impl.h"
 #include "google/protobuf/io/zero_copy_stream_impl_lite.h"
+#include "google/protobuf/message_traits.h"
 #include "google/protobuf/metadata_lite.h"
 #include "google/protobuf/parse_context.h"
 #include "google/protobuf/port.h"
+#include "google/protobuf/type_id.h"
+#include "google/protobuf/unknown_field_set.h"
 
 
 // Must be included last.
@@ -108,16 +112,6 @@ const char* MessageLite::_InternalParse(const char* ptr,
 
 absl::string_view MessageLite::GetTypeName() const {
   return TypeId::Get(*this).name();
-}
-
-absl::string_view TypeId::name() const {
-  if (!data_->is_lite) {
-    // For !LITE messages, we use the descriptor method function.
-    return data_->full().descriptor_methods()->get_type_name(data_);
-  }
-
-  // For LITE messages, the type name is accessed via ClassDataLite.
-  return static_cast<const internal::ClassDataLite*>(data_)->type_name();
 }
 
 std::string MessageLite::InitializationErrorString() const {
@@ -208,15 +202,24 @@ void MessageLite::LogInitializationErrorMessage() const {
 
 namespace internal {
 
-void FailDynamicCast(const MessageLite& from, const MessageLite& to) {
-  const auto to_name = to.GetTypeName();
+void FailDynamicCast(
+    const MessageLite& from,
+    std::variant<const char*, const MessageLite*> to_type_name) {
+  absl::string_view to_type_name_str;
+  if (std::holds_alternative<const char*>(to_type_name)) {
+    to_type_name_str = std::get<const char*>(to_type_name);
+  } else {
+    to_type_name_str =
+        std::get<const MessageLite*>(to_type_name)->GetTypeName();
+  }
   if (internal::GetClassData(from)->is_dynamic) {
     ABSL_LOG(FATAL)
         << "Cannot downcast from a DynamicMessage to generated type "
-        << to_name;
+        << to_type_name_str;
   }
   const auto from_name = from.GetTypeName();
-  ABSL_LOG(FATAL) << "Cannot downcast " << from_name << " to " << to_name;
+  ABSL_LOG(FATAL) << "Cannot downcast " << from_name << " to "
+                  << to_type_name_str;
 }
 
 template <bool aliasing>
@@ -757,6 +760,9 @@ template <>
 void InternalMetadata::DoSwap<std::string>(std::string* other) {
   mutable_unknown_fields<std::string>()->swap(*other);
 }
+
+template UnknownFieldSet*
+InternalMetadata::mutable_unknown_fields_slow<UnknownFieldSet>();
 
 }  // namespace internal
 

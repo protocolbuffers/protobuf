@@ -32,8 +32,11 @@
 #define GOOGLE_PROTOBUF_DESCRIPTOR_H__
 
 #include <atomic>
+#include <cstddef>
 #include <cstdint>
+#include <cstring>
 #include <iterator>
+#include <limits>
 #include <memory>
 #include <string>
 #include <type_traits>
@@ -49,6 +52,7 @@
 #include "absl/functional/function_ref.h"
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
+#include "absl/log/log.h"
 #include "absl/strings/str_format.h"
 #include "absl/strings/string_view.h"
 #include "absl/synchronization/mutex.h"
@@ -122,7 +126,9 @@ class Message;
 class Reflection;
 
 // Defined in descriptor.cc
+namespace internal {
 class DescriptorBuilder;
+}
 class FileDescriptorTables;
 
 // Defined in unknown_field_set.h.
@@ -155,6 +161,10 @@ class DescriptorTest;
 class FeaturesTest;
 class ValidationErrorTest;
 }  // namespace descriptor_unittest
+
+namespace json_internal {
+struct Proto2Descriptor;
+}  // namespace json_internal
 
 // Defined in printer.h
 namespace io {
@@ -637,7 +647,7 @@ class PROTOBUF_EXPORT Descriptor : private internal::SymbolBase {
 
     friend class Descriptor;
     friend class DescriptorPool;
-    friend class DescriptorBuilder;
+    friend class internal::DescriptorBuilder;
     friend class SymbolChecker;
   };
 
@@ -844,7 +854,7 @@ class PROTOBUF_EXPORT Descriptor : private internal::SymbolBase {
 
   // Must be constructed using DescriptorPool.
   Descriptor();
-  friend class DescriptorBuilder;
+  friend class internal::DescriptorBuilder;
   friend class DescriptorPool;
   friend class EnumDescriptor;
   friend class FieldDescriptor;
@@ -1343,7 +1353,7 @@ class PROTOBUF_EXPORT FieldDescriptor : private internal::SymbolBase,
 
   // Must be constructed using DescriptorPool.
   FieldDescriptor();
-  friend class DescriptorBuilder;
+  friend class internal::DescriptorBuilder;
   friend class FileDescriptor;
   friend class Descriptor;
   friend class OneofDescriptor;
@@ -1450,7 +1460,7 @@ class PROTOBUF_EXPORT OneofDescriptor : private internal::SymbolBase {
 
   // Must be constructed using DescriptorPool.
   OneofDescriptor();
-  friend class DescriptorBuilder;
+  friend class internal::DescriptorBuilder;
   friend class Descriptor;
   friend class FieldDescriptor;
   friend class Reflection;
@@ -1671,7 +1681,7 @@ class PROTOBUF_EXPORT EnumDescriptor : private internal::SymbolBase {
 
   // Must be constructed using DescriptorPool.
   EnumDescriptor();
-  friend class DescriptorBuilder;
+  friend class internal::DescriptorBuilder;
   friend class Descriptor;
   friend class FieldDescriptor;
   friend class FileDescriptorTables;
@@ -1787,7 +1797,7 @@ class PROTOBUF_EXPORT EnumValueDescriptor : private internal::SymbolBaseN<0>,
 
   // Must be constructed using DescriptorPool.
   EnumValueDescriptor();
-  friend class DescriptorBuilder;
+  friend class internal::DescriptorBuilder;
   friend class EnumDescriptor;
   friend class DescriptorPool;
   friend class FileDescriptorTables;
@@ -1896,7 +1906,7 @@ class PROTOBUF_EXPORT ServiceDescriptor : private internal::SymbolBase {
 
   // Must be constructed using DescriptorPool.
   ServiceDescriptor();
-  friend class DescriptorBuilder;
+  friend class internal::DescriptorBuilder;
   friend class FileDescriptor;
   friend class MethodDescriptor;
 };
@@ -2006,7 +2016,7 @@ class PROTOBUF_EXPORT MethodDescriptor : private internal::SymbolBase {
 
   // Must be constructed using DescriptorPool.
   MethodDescriptor();
-  friend class DescriptorBuilder;
+  friend class internal::DescriptorBuilder;
   friend class ServiceDescriptor;
 };
 
@@ -2247,7 +2257,7 @@ class PROTOBUF_EXPORT FileDescriptor : private internal::SymbolBase {
   // descriptor.cc and update them to initialize the field.
 
   FileDescriptor();
-  friend class DescriptorBuilder;
+  friend class internal::DescriptorBuilder;
   friend class DescriptorPool;
   friend class Descriptor;
   friend class FieldDescriptor;
@@ -2683,7 +2693,7 @@ class PROTOBUF_EXPORT DescriptorPool {
   friend class ServiceDescriptor;
   friend class MethodDescriptor;
   friend class FileDescriptor;
-  friend class DescriptorBuilder;
+  friend class internal::DescriptorBuilder;
   friend class FileDescriptorTables;
   friend class google::protobuf::descriptor_unittest::DescriptorPoolMemoizationTest;
   friend class google::protobuf::descriptor_unittest::ValidationErrorTest;
@@ -2691,6 +2701,7 @@ class PROTOBUF_EXPORT DescriptorPool {
   friend class TextFormat;
   friend Reflection;
   friend class ::google::protobuf::compiler::java::MemoizeProjection;
+  friend struct ::google::protobuf::json_internal::Proto2Descriptor;
 
   struct MemoBase {
     virtual ~MemoBase() = default;
@@ -2716,11 +2727,17 @@ class PROTOBUF_EXPORT DescriptorPool {
   static const auto& MemoizeProjection(const Desc* descriptor, Func func) {
     using ResultT = std::decay_t<decltype(func(descriptor))>;
     auto* pool = GetPool(descriptor);
-    static_assert(std::is_empty_v<Func> ||
-                  std::is_function_v<std::remove_pointer_t<Func>>);
-    // This static bool is unique per-Func, so its address can be used as a key.
-    static bool type_key;
-    auto key = std::pair<const void*, const void*>(descriptor, &type_key);
+    const void* secondary_key;
+    if constexpr (std::is_function_v<std::remove_pointer_t<Func>>) {
+      secondary_key = reinterpret_cast<const void*>(func);
+    } else if constexpr (std::is_empty_v<Func>) {
+      static bool type_key;
+      secondary_key = &type_key;
+    } else {
+      static_assert(sizeof(Func) == 0,
+                    "Func must be an empty functor or a function pointer.");
+    }
+    auto key = std::pair<const void*, const void*>(descriptor, secondary_key);
     {
       absl::ReaderMutexLock lock(&pool->field_memo_table_mutex_);
       auto it = pool->field_memo_table_->find(key);

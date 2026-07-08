@@ -10,6 +10,10 @@ load("@rules_cc//cc:cc_test.bzl", "cc_test")
 load("@rules_cc//cc:defs.bzl", "cc_library")
 load("//bazel:proto_library.bzl", "proto_library")
 load("//upb/bazel:copts.bzl", "UPB_DEFAULT_COPTS", "UPB_DEFAULT_CPPOPTS", "UPB_DEFAULT_FEATURES")
+load(
+    "//upb/bazel:upb_minitable_proto_library.bzl",
+    "upb_minitable_proto_library",
+)
 load("//upb/bazel:upb_proto_library.bzl", "upb_proto_library")
 
 package(default_applicable_licenses = ["//:license"])
@@ -128,12 +132,15 @@ cc_test(
     copts = UPB_DEFAULT_CPPOPTS,
     features = UPB_DEFAULT_FEATURES,
     deps = [
+        ":decode_test_upb_minitable_proto",
+        ":decode_test_upb_proto",
         ":wire",
         "//upb/base",
         "//upb/mem",
         "//upb/message",
         "//upb/message:message_cc",
         "//upb/mini_descriptor",
+        "//upb/mini_descriptor:internal",
         "//upb/mini_table",
         "//upb/port",
         "//upb/wire/decode_fast:combinations",
@@ -145,6 +152,21 @@ cc_test(
         "@googletest//:gtest",
         "@googletest//:gtest_main",
     ],
+)
+
+proto_library(
+    name = "decode_test_proto",
+    srcs = ["decode_test.proto"],
+)
+
+upb_proto_library(
+    name = "decode_test_upb_proto",
+    deps = [":decode_test_proto"],
+)
+
+upb_minitable_proto_library(
+    name = "decode_test_upb_minitable_proto",
+    deps = [":decode_test_proto"],
 )
 
 proto_library(
@@ -303,6 +325,7 @@ cc_library(
     hdrs = ["internal/eps_copy_input_stream.h"],
     visibility = [
         "//upb:__pkg__",
+        "//upb/message:__subpackages__",
         "//upb/wire/decode_fast:__subpackages__",
     ],
     deps = [

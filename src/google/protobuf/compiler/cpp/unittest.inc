@@ -1311,13 +1311,15 @@ TEST_F(GENERATED_SERVICE_TEST_NAME, CallMethodTypeFailure) {
   EXPECT_DEBUG_DEATH(
       mock_service_.CallMethod(foo_, &mock_controller_, &foo_request_,
                                &bar_response_, done_.get()),
-      "DynamicCastMessage");
+      "Cannot downcast proto2_unittest.*.BarResponse to "
+      "proto2_unittest.*.FooResponse");
 
   mock_service_.Reset();
   EXPECT_DEBUG_DEATH(
       mock_service_.CallMethod(foo_, &mock_controller_, &bar_request_,
                                &foo_response_, done_.get()),
-      "DynamicCastMessage");
+      "Cannot downcast proto2_unittest.*.BarRequest to "
+      "proto2_unittest.*.FooRequest");
 #endif  // GTEST_HAS_DEATH_TEST
 }
 

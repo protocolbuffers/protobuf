@@ -651,6 +651,27 @@ bool AllAreInitialized(const TypeDefinedMapFieldBase<Key, T>& field) {
   return true;
 }
 
+template <typename Derived, typename Key, typename T>
+using MapFieldWithArena = FieldWithArena<MapField<Derived, Key, T>>;
+
+template <typename Derived, typename Key, typename T>
+struct FieldArenaRep<MapField<Derived, Key, T>> {
+  using Type = MapFieldWithArena<Derived, Key, T>;
+
+  static inline MapField<Derived, Key, T>* Get(Type* arena_rep) {
+    return &arena_rep->field();
+  }
+};
+
+template <typename Derived, typename Key, typename T>
+struct FieldArenaRep<const MapField<Derived, Key, T>> {
+  using Type = const MapFieldWithArena<Derived, Key, T>;
+
+  static inline const MapField<Derived, Key, T>* Get(Type* arena_rep) {
+    return &arena_rep->field();
+  }
+};
+
 }  // namespace internal
 
 // MapValueConstRef points to a map value. Users can NOT modify

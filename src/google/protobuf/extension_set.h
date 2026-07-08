@@ -244,7 +244,10 @@ class PROTOBUF_EXPORT DescriptorPoolExtensionFinder {
 };
 
 // Turn on direct LazyField access.
+#if !defined( \
+    PROTOBUF_INTERNAL_DIRECT_LAZY_FIELD_IN_EXTENSION_SET_TEMPORARY_OPTOUT)
 #define PROTOBUF_INTERNAL_DIRECT_LAZY_FIELD_IN_EXTENSION_SET
+#endif
 
 // This is an internal helper class intended for use within the protocol buffer
 // library and generated classes.  Clients should not use it directly.  Instead,

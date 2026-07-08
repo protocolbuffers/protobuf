@@ -99,7 +99,8 @@ class Duration extends \Google\Protobuf\Internal\Message
      *           to +999,999,999 inclusive.
      * }
      */
-    public function __construct($data = NULL) {
+    public function __construct($data = null)
+    {
         \GPBMetadata\Google\Protobuf\Duration::initOnce();
         parent::__construct($data);
     }

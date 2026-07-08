@@ -135,8 +135,8 @@ void ConvertFuzz(const upb::fuzz::MiniTableFuzzInput& input, uint64_t mask1,
     return;
   }
 
-  const upb_Message* msg_dst =
-      upb_Message_Convert(msg_src, src_mt, dst_mt, exts, arena);
+  const upb_Message* msg_dst = upb_Message_Convert(
+      msg_src, src_mt, dst_mt, exts, decode_options, encode_options, arena);
   if (!msg_dst) {
     return;
   }
@@ -345,6 +345,30 @@ TEST(ConvertFuzz, ConvertFuzzRegression7) {
       4098521408, 80);
 }
 
+TEST(ConvertFuzz, ConvertFuzzRegression8) {
+  ConvertFuzz(
+      upb::fuzz::MiniTableFuzzInput{{"$Rh&G"}, {"", ""}, "#j%### &", {}},
+      11766057900109844910u, 3051086136682536822,
+      std::string(
+          "\251\005PPP\310\305QPPPPRrPPPPPPPDPPPPPPPMPRR\000R\r\rPPPPPPPPPPPP]]"
+          "PPb\320T\266\225\r\r\253PPPPPPPPPPPPPPPPPPPPPiiPP}\276\177=\010\010|"
+          "}N\320PPPPPPPP\rP\341PPP\221\023P>PUPPPPPPPPPPP;",
+          128),
+      3342580205, 67649);
+}
+
+TEST(ConvertFuzz, ConvertFuzzRegression_ConvertClosedEnumWithUnknown) {
+  std::vector<std::string> enum_mds = {
+      "!!\003\003\003\003\003\003\003\003@\000\000\000\000ooo\000\0006\001"};
+  for (int i = 0; i < 1870; ++i) {
+    enum_mds.push_back("/");
+  }
+  ConvertFuzz(upb::fuzz::MiniTableFuzzInput{{"$$H_B4"}, enum_mds, "", {0}},
+              8159560341278556898ULL, 12315457061443390189ULL,
+              std::string("\022\nCd_\213\356\000\001\020\234\013", 12),
+              3740129997ULL, 2289667495ULL);
+}
+
 TEST(ConvertFuzz, ConvertFuzzEncodeRegression) {
   ConvertFuzz(
       upb::fuzz::MiniTableFuzzInput{{"$$$$$$$$$$$$$$$$$$", "", "", "", "", ""},
@@ -397,8 +421,8 @@ void ArbitraryMiniTableConvertFuzz(const upb::fuzz::MiniTableFuzzInput& input1,
   }
 
   // Path A: Direct conversion
-  const upb_Message* msg_dst =
-      upb_Message_Convert(msg_src, mt1, mt2, exts2, arena);
+  const upb_Message* msg_dst = upb_Message_Convert(
+      msg_src, mt1, mt2, exts2, decode_options, encode_options, arena);
   if (!msg_dst) {
     return;
   }
@@ -520,6 +544,16 @@ TEST(ConvertFuzz, ArbitraryMiniTableConvertFuzzRegression8) {
       1153856912);
 }
 
+TEST(ConvertFuzz, ArbitraryMiniTableConvertFuzzRegression9) {
+  ArbitraryMiniTableConvertFuzz(
+      upb::fuzz::MiniTableFuzzInput{
+          {"$1G2", "%1*", "\'"}, {"\260", "\260"}, "", {2147483647, 821344772}},
+      upb::fuzz::MiniTableFuzzInput{
+          {"", ""}, {"\002", "\371\377"}, std::string("\000", 1), {2147483647}},
+      std::string("\022\003\n\001\025\022\000a\000\210\210\000\202\257\257\005",
+                  16),
+      4058141318, 2394867369);
+}
 TEST(ConvertFuzz, ArbitraryMiniTableConvertFuzzRegression_b522284547) {
   ArbitraryMiniTableConvertFuzz(
       upb::fuzz::MiniTableFuzzInput{

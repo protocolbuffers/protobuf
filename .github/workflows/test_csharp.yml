@@ -27,7 +27,7 @@ jobs:
       - name: Run tests
         uses: protocolbuffers/protobuf-ci/docker@v5
         with:
-          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/csharp:9.0.0-3.1.415-8.0.100-05b57cb3d33f45f689c1dace146b6b9619d78872
+          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/csharp:9.0.0-3.1.415-8.0.100-a6ca8ba8e77d63471b4ad05f8643e1fc58b30e12
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           entrypoint: /bin/bash
           command: >-
@@ -43,7 +43,7 @@ jobs:
       - name: Run conformance tests
         uses: protocolbuffers/protobuf-ci/bazel-docker@v5
         with:
-          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/csharp:9.0.0-3.1.415-8.0.100-05b57cb3d33f45f689c1dace146b6b9619d78872
+          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/csharp:9.0.0-3.1.415-8.0.100-a6ca8ba8e77d63471b4ad05f8643e1fc58b30e12
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-cache: csharp_linux
           bazel: test //csharp:conformance_test --action_env=PATH --action_env=DOTNET_CLI_TELEMETRY_OPTOUT=1 --test_env=DOTNET_CLI_HOME=/home/bazel

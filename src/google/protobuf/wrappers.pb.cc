@@ -73,7 +73,7 @@ constexpr UInt64Value::ParseTableT_ UInt64Value::InternalGenerateParseTable_(con
       offsetof(ParseTableT_, field_names),  // no aux_entries
       class_data,
       nullptr,  // post_loop_handler
-      ::_pbi::TcParser::GenericFallback,  // fallback
+      ::_pbi::TcParser::MpUnknownFields,  // fallback
       #ifdef PROTOBUF_PREFETCH_PARSE_TABLE
       ::_pbi::TcParser::GetTable<::google::protobuf::UInt64Value>(),  // to_prefetch
       #endif  // PROTOBUF_PREFETCH_PARSE_TABLE
@@ -213,7 +213,7 @@ constexpr UInt32Value::ParseTableT_ UInt32Value::InternalGenerateParseTable_(con
       offsetof(ParseTableT_, field_names),  // no aux_entries
       class_data,
       nullptr,  // post_loop_handler
-      ::_pbi::TcParser::GenericFallback,  // fallback
+      ::_pbi::TcParser::MpUnknownFields,  // fallback
       #ifdef PROTOBUF_PREFETCH_PARSE_TABLE
       ::_pbi::TcParser::GetTable<::google::protobuf::UInt32Value>(),  // to_prefetch
       #endif  // PROTOBUF_PREFETCH_PARSE_TABLE
@@ -353,7 +353,7 @@ constexpr StringValue::ParseTableT_ StringValue::InternalGenerateParseTable_(con
       offsetof(ParseTableT_, field_names),  // no aux_entries
       class_data,
       nullptr,  // post_loop_handler
-      ::_pbi::TcParser::GenericFallback,  // fallback
+      ::_pbi::TcParser::MpUnknownFields,  // fallback
       #ifdef PROTOBUF_PREFETCH_PARSE_TABLE
       ::_pbi::TcParser::GetTable<::google::protobuf::StringValue>(),  // to_prefetch
       #endif  // PROTOBUF_PREFETCH_PARSE_TABLE
@@ -498,7 +498,7 @@ constexpr Int64Value::ParseTableT_ Int64Value::InternalGenerateParseTable_(const
       offsetof(ParseTableT_, field_names),  // no aux_entries
       class_data,
       nullptr,  // post_loop_handler
-      ::_pbi::TcParser::GenericFallback,  // fallback
+      ::_pbi::TcParser::MpUnknownFields,  // fallback
       #ifdef PROTOBUF_PREFETCH_PARSE_TABLE
       ::_pbi::TcParser::GetTable<::google::protobuf::Int64Value>(),  // to_prefetch
       #endif  // PROTOBUF_PREFETCH_PARSE_TABLE
@@ -638,7 +638,7 @@ constexpr Int32Value::ParseTableT_ Int32Value::InternalGenerateParseTable_(const
       offsetof(ParseTableT_, field_names),  // no aux_entries
       class_data,
       nullptr,  // post_loop_handler
-      ::_pbi::TcParser::GenericFallback,  // fallback
+      ::_pbi::TcParser::MpUnknownFields,  // fallback
       #ifdef PROTOBUF_PREFETCH_PARSE_TABLE
       ::_pbi::TcParser::GetTable<::google::protobuf::Int32Value>(),  // to_prefetch
       #endif  // PROTOBUF_PREFETCH_PARSE_TABLE
@@ -778,7 +778,7 @@ constexpr FloatValue::ParseTableT_ FloatValue::InternalGenerateParseTable_(const
       offsetof(ParseTableT_, field_names),  // no aux_entries
       class_data,
       nullptr,  // post_loop_handler
-      ::_pbi::TcParser::GenericFallback,  // fallback
+      ::_pbi::TcParser::MpUnknownFields,  // fallback
       #ifdef PROTOBUF_PREFETCH_PARSE_TABLE
       ::_pbi::TcParser::GetTable<::google::protobuf::FloatValue>(),  // to_prefetch
       #endif  // PROTOBUF_PREFETCH_PARSE_TABLE
@@ -918,7 +918,7 @@ constexpr DoubleValue::ParseTableT_ DoubleValue::InternalGenerateParseTable_(con
       offsetof(ParseTableT_, field_names),  // no aux_entries
       class_data,
       nullptr,  // post_loop_handler
-      ::_pbi::TcParser::GenericFallback,  // fallback
+      ::_pbi::TcParser::MpUnknownFields,  // fallback
       #ifdef PROTOBUF_PREFETCH_PARSE_TABLE
       ::_pbi::TcParser::GetTable<::google::protobuf::DoubleValue>(),  // to_prefetch
       #endif  // PROTOBUF_PREFETCH_PARSE_TABLE
@@ -1058,7 +1058,7 @@ constexpr BytesValue::ParseTableT_ BytesValue::InternalGenerateParseTable_(const
       offsetof(ParseTableT_, field_names),  // no aux_entries
       class_data,
       nullptr,  // post_loop_handler
-      ::_pbi::TcParser::GenericFallback,  // fallback
+      ::_pbi::TcParser::MpUnknownFields,  // fallback
       #ifdef PROTOBUF_PREFETCH_PARSE_TABLE
       ::_pbi::TcParser::GetTable<::google::protobuf::BytesValue>(),  // to_prefetch
       #endif  // PROTOBUF_PREFETCH_PARSE_TABLE
@@ -1200,7 +1200,7 @@ constexpr BoolValue::ParseTableT_ BoolValue::InternalGenerateParseTable_(const :
       offsetof(ParseTableT_, field_names),  // no aux_entries
       class_data,
       nullptr,  // post_loop_handler
-      ::_pbi::TcParser::GenericFallback,  // fallback
+      ::_pbi::TcParser::MpUnknownFields,  // fallback
       #ifdef PROTOBUF_PREFETCH_PARSE_TABLE
       ::_pbi::TcParser::GetTable<::google::protobuf::BoolValue>(),  // to_prefetch
       #endif  // PROTOBUF_PREFETCH_PARSE_TABLE

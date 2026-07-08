@@ -888,9 +888,15 @@ static const char* upb_MtDecoder_DoBuildMiniTableExtension(
   if (!ret || count != 1) return NULL;
 
   upb_MiniTableField* f = &ext->UPB_PRIVATE(field);
+  uint32_t fieldnum = upb_MiniTableField_Number(f);
 
-  if (upb_MiniTable_FindFieldByNumber(extendee, upb_MiniTableField_Number(f)) !=
-      NULL) {
+  const uint32_t kMaxFieldNumber = (1 << 29) - 1;
+  if (fieldnum == 0 ||
+      (fieldnum > kMaxFieldNumber && !upb_MiniTable_IsMessageSet(extendee))) {
+    upb_MdDecoder_ErrorJmp(&decoder->base, "Invalid extension field number");
+  }
+
+  if (upb_MiniTable_FindFieldByNumber(extendee, fieldnum) != NULL) {
     upb_MdDecoder_ErrorJmp(&decoder->base,
                            "Extension overlaps with a known field");
   }
