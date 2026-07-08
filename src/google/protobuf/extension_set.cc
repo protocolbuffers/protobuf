@@ -396,7 +396,9 @@ uint8_t* ExtensionSet::InternalSerializeMessage(
   ABSL_DCHECK(!extension->is_lazy);
   const auto* msg = extension->ptr.message_value;
   return WireFormatLite::InternalWriteMessage(
-      number, *msg, msg->GetCachedSize(), target, stream);
+      number, *msg,
+      stream->use_sizes() ? stream->ChompSize() : msg->GetCachedSize(), target,
+      stream);
 }
 
 // -------------------------------------------------------------------
@@ -1224,6 +1226,36 @@ size_t ExtensionSet::ByteSize() const {
   return total_size;
 }
 
+size_t ExtensionSet::ByteSize(std::vector<::size_t>& sizes) const {
+  size_t total_size = 0;
+  ForEach(
+      [&total_size, &sizes](int number, const Extension& ext) {
+        total_size += ext.ByteSize(number, sizes);
+      },
+      Prefetch{});
+  return total_size;
+}
+
+size_t ExtensionSet::ByteSize(int start_field_number, int end_field_number,
+                              std::vector<::size_t>& sizes) const {
+  size_t total_size = 0;
+  if (ABSL_PREDICT_FALSE(is_large())) {
+    const auto& end = map_.large->end();
+    for (auto it = map_.large->lower_bound(start_field_number);
+         it != end && it->first < end_field_number; ++it) {
+      total_size += it->second.ByteSize(it->first, sizes);
+    }
+  } else {
+    const KeyValue* end = flat_end();
+    const KeyValue* it = flat_begin();
+    while (it != end && it->first < start_field_number) ++it;
+    for (; it != end && it->first < end_field_number; ++it) {
+      total_size += it->second.ByteSize(it->first, sizes);
+    }
+  }
+  return total_size;
+}
+
 // Defined in extension_set_heavy.cc.
 // int ExtensionSet::SpaceUsedExcludingSelf() const
 
@@ -1418,6 +1450,163 @@ size_t ExtensionSet::Extension::ByteSize(int number) const {
         ABSL_DCHECK(!is_lazy);
         result += WireFormatLite::LengthDelimitedSize(
             ptr.message_value->ByteSizeLong());
+        break;
+      }
+
+      // Stuff with fixed size.
+#define HANDLE_TYPE(UPPERCASE, CAMELCASE)         \
+  case WireFormatLite::TYPE_##UPPERCASE:          \
+    result += WireFormatLite::k##CAMELCASE##Size; \
+    break
+        HANDLE_TYPE(FIXED32, Fixed32);
+        HANDLE_TYPE(FIXED64, Fixed64);
+        HANDLE_TYPE(SFIXED32, SFixed32);
+        HANDLE_TYPE(SFIXED64, SFixed64);
+        HANDLE_TYPE(FLOAT, Float);
+        HANDLE_TYPE(DOUBLE, Double);
+        HANDLE_TYPE(BOOL, Bool);
+#undef HANDLE_TYPE
+    }
+  }
+
+  return result;
+}
+
+size_t ExtensionSet::Extension::ByteSize(int number,
+                                         std::vector<::size_t>& sizes) const {
+  size_t result = 0;
+
+  if (is_repeated) {
+    if (is_packed) {
+      switch (real_type(type)) {
+#define HANDLE_TYPE(UPPERCASE, CAMELCASE, LOWERCASE)                     \
+  case WireFormatLite::TYPE_##UPPERCASE:                                 \
+    for (int i = 0; i < ptr.repeated_##LOWERCASE##_value->size(); i++) { \
+      result += WireFormatLite::CAMELCASE##Size(                         \
+          ptr.repeated_##LOWERCASE##_value->Get(i));                     \
+    }                                                                    \
+    break
+
+        HANDLE_TYPE(INT32, Int32, int32_t);
+        HANDLE_TYPE(INT64, Int64, int64_t);
+        HANDLE_TYPE(UINT32, UInt32, uint32_t);
+        HANDLE_TYPE(UINT64, UInt64, uint64_t);
+        HANDLE_TYPE(SINT32, SInt32, int32_t);
+        HANDLE_TYPE(SINT64, SInt64, int64_t);
+        HANDLE_TYPE(ENUM, Enum, int32_t);
+#undef HANDLE_TYPE
+
+        // Stuff with fixed size.
+#define HANDLE_TYPE(UPPERCASE, CAMELCASE, LOWERCASE)                 \
+  case WireFormatLite::TYPE_##UPPERCASE:                             \
+    result += WireFormatLite::k##CAMELCASE##Size *                   \
+              FromIntSize(ptr.repeated_##LOWERCASE##_value->size()); \
+    break
+        HANDLE_TYPE(FIXED32, Fixed32, uint32_t);
+        HANDLE_TYPE(FIXED64, Fixed64, uint64_t);
+        HANDLE_TYPE(SFIXED32, SFixed32, int32_t);
+        HANDLE_TYPE(SFIXED64, SFixed64, int64_t);
+        HANDLE_TYPE(FLOAT, Float, float);
+        HANDLE_TYPE(DOUBLE, Double, double);
+        HANDLE_TYPE(BOOL, Bool, bool);
+#undef HANDLE_TYPE
+
+        case WireFormatLite::TYPE_STRING:
+        case WireFormatLite::TYPE_BYTES:
+        case WireFormatLite::TYPE_GROUP:
+        case WireFormatLite::TYPE_MESSAGE:
+          ABSL_LOG(FATAL) << "Non-primitive types can't be packed.";
+          break;
+      }
+
+      cached_size.set(ToCachedSize(result));
+      if (result > 0) {
+        result += io::CodedOutputStream::VarintSize32(result);
+        result += io::CodedOutputStream::VarintSize32(WireFormatLite::MakeTag(
+            number, WireFormatLite::WIRETYPE_LENGTH_DELIMITED));
+      }
+    } else {
+      size_t tag_size = WireFormatLite::TagSize(number, real_type(type));
+
+      switch (real_type(type)) {
+#define HANDLE_TYPE(UPPERCASE, CAMELCASE, LOWERCASE)                      \
+  case WireFormatLite::TYPE_##UPPERCASE:                                  \
+    result +=                                                             \
+        tag_size * FromIntSize(ptr.repeated_##LOWERCASE##_value->size()); \
+    for (int i = 0; i < ptr.repeated_##LOWERCASE##_value->size(); i++) {  \
+      result += WireFormatLite::CAMELCASE##Size(                          \
+          ptr.repeated_##LOWERCASE##_value->Get(i));                      \
+    }                                                                     \
+    break
+
+        HANDLE_TYPE(INT32, Int32, int32_t);
+        HANDLE_TYPE(INT64, Int64, int64_t);
+        HANDLE_TYPE(UINT32, UInt32, uint32_t);
+        HANDLE_TYPE(UINT64, UInt64, uint64_t);
+        HANDLE_TYPE(SINT32, SInt32, int32_t);
+        HANDLE_TYPE(SINT64, SInt64, int64_t);
+        HANDLE_TYPE(STRING, String, string);
+        HANDLE_TYPE(BYTES, Bytes, string);
+        HANDLE_TYPE(ENUM, Enum, int32_t);
+#undef HANDLE_TYPE
+
+        // Repeated Message and Group need special handling to pass sizes.
+        case WireFormatLite::TYPE_GROUP:
+          result += tag_size * FromIntSize(ptr.repeated_message_value->size());
+          for (int i = 0; i < ptr.repeated_message_value->size(); i++) {
+            result += WireFormatLite::GroupSize(
+                ptr.repeated_message_value->Get(i), sizes);
+          }
+          break;
+        case WireFormatLite::TYPE_MESSAGE:
+          result += tag_size * FromIntSize(ptr.repeated_message_value->size());
+          for (int i = 0; i < ptr.repeated_message_value->size(); i++) {
+            result += WireFormatLite::MessageSize(
+                ptr.repeated_message_value->Get(i), sizes);
+          }
+          break;
+
+          // Stuff with fixed size.
+#define HANDLE_TYPE(UPPERCASE, CAMELCASE, LOWERCASE)                 \
+  case WireFormatLite::TYPE_##UPPERCASE:                             \
+    result += (tag_size + WireFormatLite::k##CAMELCASE##Size) *      \
+              FromIntSize(ptr.repeated_##LOWERCASE##_value->size()); \
+    break
+          HANDLE_TYPE(FIXED32, Fixed32, uint32_t);
+          HANDLE_TYPE(FIXED64, Fixed64, uint64_t);
+          HANDLE_TYPE(SFIXED32, SFixed32, int32_t);
+          HANDLE_TYPE(SFIXED64, SFixed64, int64_t);
+          HANDLE_TYPE(FLOAT, Float, float);
+          HANDLE_TYPE(DOUBLE, Double, double);
+          HANDLE_TYPE(BOOL, Bool, bool);
+#undef HANDLE_TYPE
+      }
+    }
+  } else if (!is_cleared) {
+    result += WireFormatLite::TagSize(number, real_type(type));
+    switch (real_type(type)) {
+#define HANDLE_TYPE(UPPERCASE, CAMELCASE, LOWERCASE)      \
+  case WireFormatLite::TYPE_##UPPERCASE:                  \
+    result += WireFormatLite::CAMELCASE##Size(LOWERCASE); \
+    break
+
+      HANDLE_TYPE(INT32, Int32, int32_t_value);
+      HANDLE_TYPE(INT64, Int64, int64_t_value);
+      HANDLE_TYPE(UINT32, UInt32, uint32_t_value);
+      HANDLE_TYPE(UINT64, UInt64, uint64_t_value);
+      HANDLE_TYPE(SINT32, SInt32, int32_t_value);
+      HANDLE_TYPE(SINT64, SInt64, int64_t_value);
+      HANDLE_TYPE(STRING, String, *ptr.string_value);
+      HANDLE_TYPE(BYTES, Bytes, *ptr.string_value);
+      HANDLE_TYPE(ENUM, Enum, int32_t_value);
+#undef HANDLE_TYPE
+      case WireFormatLite::TYPE_GROUP:
+        result += WireFormatLite::GroupSize(*ptr.message_value, sizes);
+        break;
+      case WireFormatLite::TYPE_MESSAGE: {
+        ABSL_DCHECK(!is_lazy);
+        result += WireFormatLite::LengthDelimitedSize(
+            ptr.message_value->ByteSizeLongImpl(sizes));
         break;
       }
 
@@ -1765,6 +1954,7 @@ uint8_t* ExtensionSet::Extension::InternalSerializeFieldWithCachedSizesToArray(
 #undef HANDLE_TYPE
         case WireFormatLite::TYPE_GROUP:
           for (int i = 0; i < ptr.repeated_message_value->size(); i++) {
+            if (stream->use_sizes()) stream->ChompSize();
             target = stream->EnsureSpace(target);
             target = WireFormatLite::InternalWriteGroup(
                 number, ptr.repeated_message_value->Get(i), target, stream);
@@ -1774,7 +1964,9 @@ uint8_t* ExtensionSet::Extension::InternalSerializeFieldWithCachedSizesToArray(
           for (int i = 0; i < ptr.repeated_message_value->size(); i++) {
             auto& msg = ptr.repeated_message_value->Get(i);
             target = WireFormatLite::InternalWriteMessage(
-                number, msg, msg.GetCachedSize(), target, stream);
+                number, msg,
+                stream->use_sizes() ? stream->ChompSize() : msg.GetCachedSize(),
+                target, stream);
           }
           break;
       }
@@ -1811,6 +2003,7 @@ uint8_t* ExtensionSet::Extension::InternalSerializeFieldWithCachedSizesToArray(
       HANDLE_TYPE(BYTES, Bytes, *ptr.string_value);
 #undef HANDLE_TYPE
       case WireFormatLite::TYPE_GROUP:
+        if (stream->use_sizes()) stream->ChompSize();
         target = stream->EnsureSpace(target);
         target = WireFormatLite::InternalWriteGroup(number, *ptr.message_value,
                                                     target, stream);
@@ -1818,7 +2011,9 @@ uint8_t* ExtensionSet::Extension::InternalSerializeFieldWithCachedSizesToArray(
       case WireFormatLite::TYPE_MESSAGE:
         ABSL_DCHECK(!is_lazy);
         target = WireFormatLite::InternalWriteMessage(
-            number, *ptr.message_value, ptr.message_value->GetCachedSize(),
+            number, *ptr.message_value,
+            stream->use_sizes() ? stream->ChompSize()
+                                : ptr.message_value->GetCachedSize(),
             target, stream);
         break;
     }
@@ -1865,7 +2060,9 @@ ExtensionSet::Extension::InternalSerializeMessageSetItemWithCachedSizesToArray(
   } else {
     target = WireFormatLite::InternalWriteMessage(
         WireFormatLite::kMessageSetMessageNumber, *ptr.message_value,
-        ptr.message_value->GetCachedSize(), target, stream);
+        stream->use_sizes() ? stream->ChompSize()
+                            : ptr.message_value->GetCachedSize(),
+        target, stream);
   }
   // End group.
   target = stream->EnsureSpace(target);
@@ -1894,11 +2091,42 @@ size_t ExtensionSet::Extension::MessageSetItemByteSize(int number) const {
          WireFormatLite::LengthDelimitedSize(ptr.message_value->ByteSizeLong());
 }
 
+size_t ExtensionSet::Extension::MessageSetItemByteSize(
+    int number, std::vector<::size_t>& sizes) const {
+  if (type != WireFormatLite::TYPE_MESSAGE || is_repeated) {
+    // Not a valid MessageSet extension, but compute the byte size for it the
+    // normal way.
+    return ByteSize(number, sizes);
+  }
+
+  if (is_cleared) return 0;
+
+  size_t our_size = WireFormatLite::kMessageSetItemTagsSize;
+
+  // type_id
+  our_size += io::CodedOutputStream::VarintSize32(number);
+
+  // message
+  ABSL_DCHECK(!is_lazy);
+  return our_size + WireFormatLite::LengthDelimitedSize(
+                        ptr.message_value->ByteSizeLongImpl(sizes));
+}
+
 size_t ExtensionSet::MessageSetByteSize() const {
   size_t total_size = 0;
   ForEach(
       [&total_size](int number, const Extension& ext) {
         total_size += ext.MessageSetItemByteSize(number);
+      },
+      Prefetch{});
+  return total_size;
+}
+
+size_t ExtensionSet::MessageSetByteSize(std::vector<::size_t>& sizes) const {
+  size_t total_size = 0;
+  ForEach(
+      [&total_size, &sizes](int number, const Extension& ext) {
+        total_size += ext.MessageSetItemByteSize(number, sizes);
       },
       Prefetch{});
   return total_size;

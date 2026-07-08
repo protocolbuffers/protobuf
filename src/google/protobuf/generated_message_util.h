@@ -434,6 +434,11 @@ struct PrivateAccess {
     return T::FullMessageName();
   }
 
+  static size_t ByteSizeLong(const MessageLite& msg,
+                             std::vector<size_t>& sizes) {
+    return msg.ByteSizeLongImpl(sizes);
+  }
+
   static internal::ExtensionSet* GetExtensionSet(MessageLite* msg);
   static const internal::ExtensionSet* GetExtensionSet(const MessageLite* msg);
 

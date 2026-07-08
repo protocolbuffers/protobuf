@@ -3875,8 +3875,9 @@ const internal::TcParseTableBase* Reflection::CreateTcParseTable() const {
       static_cast<uint16_t>(
           schema_.HasHasbits()
               ? schema_.HasBitsOffset()
-              // Just put something safe here. _cached_size_ is fine.
-              : schema_.default_instance()->GetClassData()->cached_size_offset),
+              // Just put something safe here. _internal_metadata_ is fine.
+              : static_cast<uint16_t>(
+                    PROTOBUF_FIELD_OFFSET(MessageLite, _internal_metadata_))),
       schema_.HasExtensionSet()
           ? static_cast<uint16_t>(schema_.GetExtensionSetOffset())
           : uint16_t{0},

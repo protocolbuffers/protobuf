@@ -112,6 +112,7 @@
 #include "absl/numeric/bits.h"
 #include "absl/strings/cord.h"
 #include "absl/strings/string_view.h"
+#include "absl/types/span.h"
 #include "google/protobuf/endian.h"
 
 // Must be included last.
@@ -646,28 +647,52 @@ class PROTOBUF_EXPORT PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED
 
   // Initialize from a stream.
   EpsCopyOutputStream(ZeroCopyOutputStream* stream, bool deterministic,
-                      uint8_t** pp)
+                      uint8_t** pp, absl::Span<const size_t> sizes = {})
       : end_(buffer_),
         stream_(stream),
-        is_serialization_deterministic_(deterministic) {
+        is_serialization_deterministic_(deterministic),
+        sizes_(sizes),
+        use_sizes_(!sizes.empty()) {
     *pp = buffer_;
   }
 
   // Only for array serialization. No overflow protection, end_ will be the
   // pointed to the end of the array. When using this the total size is already
   // known, so no need to maintain the slop region.
-  EpsCopyOutputStream(void* data, int size, bool deterministic)
+  EpsCopyOutputStream(void* data, int size, bool deterministic,
+                      absl::Span<const size_t> sizes = {})
       : end_(static_cast<uint8_t*>(data) + size),
         buffer_end_(nullptr),
         stream_(nullptr),
-        is_serialization_deterministic_(deterministic) {}
+        is_serialization_deterministic_(deterministic),
+        sizes_(sizes),
+        use_sizes_(!sizes.empty()) {}
 
   // Initialize from stream but with the first buffer already given (eager).
   EpsCopyOutputStream(void* data, int size, ZeroCopyOutputStream* stream,
-                      bool deterministic, uint8_t** pp)
-      : stream_(stream), is_serialization_deterministic_(deterministic) {
+                      bool deterministic, uint8_t** pp,
+                      absl::Span<const size_t> sizes = {})
+      : stream_(stream),
+        is_serialization_deterministic_(deterministic),
+        sizes_(sizes),
+        use_sizes_(!sizes.empty()) {
     *pp = SetInitialBuffer(data, size);
   }
+
+  size_t ChompSize() {
+    ABSL_DCHECK(!sizes_.empty());
+    size_t size = sizes_.front();
+    sizes_.remove_prefix(1);
+    return size;
+  }
+
+  void SetSizes(absl::Span<const size_t> sizes) {
+    sizes_ = sizes;
+    use_sizes_ = !sizes.empty();
+  }
+
+  bool use_sizes() const { return use_sizes_; }
+  void set_use_sizes(bool b) { use_sizes_ = b && !sizes_.empty(); }
 
   // Flush everything that's written into the underlying ZeroCopyOutputStream
   // and trims the underlying stream to the location of ptr.
@@ -864,6 +889,8 @@ class PROTOBUF_EXPORT PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED
   bool aliasing_enabled_ = false;  // See EnableAliasing().
   bool is_serialization_deterministic_;
   bool skip_check_consistency_ = false;
+  absl::Span<const size_t> sizes_;
+  bool use_sizes_ = false;
 
   uint8_t* EnsureSpaceFallback(uint8_t* ptr);
   inline uint8_t* Next();

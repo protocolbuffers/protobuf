@@ -34,6 +34,7 @@
 #include <type_traits>
 #include <utility>
 #include <variant>
+#include <vector>
 
 #include "absl/base/attributes.h"
 #include "absl/base/macros.h"
@@ -774,16 +775,17 @@ class PROTOBUF_EXPORT MessageLite {
   // sub-message is changed, all of its parents' cached sizes would need to be
   // invalidated, which is too much work for an otherwise inlined setter
   // method.)
-#if defined(PROTOBUF_CUSTOM_VTABLE)
-  [[nodiscard]] int GetCachedSize() const { return AccessCachedSize().Get(); }
-#else
-  [[nodiscard]] int GetCachedSize() const;
-#endif
+  [[nodiscard]] int GetCachedSize() const {
+    return static_cast<int>(ByteSizeLong());
+  }
 
   PROTOBUF_FUTURE_ADD_EARLY_NODISCARD const char* _InternalParse(
       const char* ptr, internal::ParseContext* ctx);
 
  protected:
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD virtual size_t ByteSizeLongImpl(
+      std::vector<size_t>& sizes) const;
+
   // Message implementations require access to internally visible API.
   static constexpr internal::InternalVisibility internal_visibility() {
     return internal::InternalVisibility{};
@@ -876,14 +878,6 @@ class PROTOBUF_EXPORT MessageLite {
 #if defined(PROTOBUF_CUSTOM_VTABLE)
   const internal::ClassData* _class_data_;
 #endif  // PROTOBUF_CUSTOM_VTABLE
-
-  // Return the cached size object as described by
-  // ClassData::cached_size_offset.
-  const internal::CachedSize& AccessCachedSize() const {
-    return *reinterpret_cast<const internal::CachedSize*>(
-        reinterpret_cast<const char*>(this) +
-        GetClassData()->cached_size_offset);
-  }
 
   // The following methods should be used to access has bits. They enable
   // measuring the cost of checking/setting has bits with inline frame data.

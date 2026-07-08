@@ -353,9 +353,7 @@ void Message::ClearImpl() {
 
 size_t Message::ByteSizeLongImpl(const MessageLite& msg) {
   auto& _this = DownCastMessage<Message>(msg);
-  size_t size = WireFormat::ByteSize(_this);
-  _this.AccessCachedSize().Set(internal::ToCachedSize(size));
-  return size;
+  return WireFormat::ByteSize(_this);
 }
 
 uint8_t* Message::_InternalSerializeImpl(const MessageLite& msg,
@@ -444,11 +442,7 @@ uint8_t* Message::_InternalSerialize(uint8_t* target,
   return WireFormat::_InternalSerialize(*this, target, stream);
 }
 
-size_t Message::ByteSizeLong() const {
-  size_t size = WireFormat::ByteSize(*this);
-  AccessCachedSize().Set(internal::ToCachedSize(size));
-  return size;
-}
+size_t Message::ByteSizeLong() const { return WireFormat::ByteSize(*this); }
 #endif  // !PROTOBUF_CUSTOM_VTABLE
 
 size_t Message::ComputeUnknownFieldsSize(
@@ -456,7 +450,9 @@ size_t Message::ComputeUnknownFieldsSize(
   total_size += WireFormat::ComputeUnknownFieldsSize(
       _internal_metadata_.unknown_fields<UnknownFieldSet>(
           UnknownFieldSet::default_instance));
-  cached_size->Set(internal::ToCachedSize(total_size));
+  if (cached_size != nullptr) {
+    cached_size->Set(internal::ToCachedSize(total_size));
+  }
   return total_size;
 }
 
@@ -465,7 +461,9 @@ size_t Message::MaybeComputeUnknownFieldsSize(
   if (ABSL_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
     return ComputeUnknownFieldsSize(total_size, cached_size);
   }
-  cached_size->Set(internal::ToCachedSize(total_size));
+  if (cached_size != nullptr) {
+    cached_size->Set(internal::ToCachedSize(total_size));
+  }
   return total_size;
 }
 

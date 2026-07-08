@@ -227,10 +227,10 @@ void ParseFunctionGenerator::GenerateParseTableHelperDefinition(
             if (has_hasbits_ || IsMapEntryMessage(descriptor_)) {
               p->Emit("PROTOBUF_FIELD_OFFSET($Msg$, _impl_._has_bits_),\n");
             } else {
-              // Just put something safe here. _cached_size_ is fine.
+              // Just put something safe here. _internal_metadata_ is fine.
               p->Emit(R"cc(
                 PROTOBUF_FIELD_OFFSET($Msg$,
-                                      _impl_._cached_size_),  // no hasbits
+                                      _internal_metadata_),  // no hasbits
               )cc");
             }
           }},

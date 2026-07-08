@@ -23,6 +23,7 @@
 #include <limits>
 #include <string>
 #include <utility>
+#include <vector>
 
 #include "absl/base/casts.h"
 #include "absl/base/optimization.h"
@@ -671,8 +672,14 @@ class PROTOBUF_EXPORT WireFormatLite {
   PROTOBUF_FUTURE_ADD_EARLY_NODISCARD static inline size_t GroupSize(
       const MessageType& value);
   template <typename MessageType>
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD static inline size_t GroupSize(
+      const MessageType& value, std::vector<::size_t>& sizes);
+  template <typename MessageType>
   PROTOBUF_FUTURE_ADD_EARLY_NODISCARD static inline size_t MessageSize(
       const MessageType& value);
+  template <typename MessageType>
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD static inline size_t MessageSize(
+      const MessageType& value, std::vector<::size_t>& sizes);
 
   // Given the length of data, calculate the byte size of the data on the
   // wire if we encode the data as a length delimited field.
@@ -1617,8 +1624,19 @@ inline size_t WireFormatLite::GroupSize(const MessageType& value) {
   return value.ByteSizeLong();
 }
 template <typename MessageType>
+inline size_t WireFormatLite::GroupSize(const MessageType& value,
+                                        std::vector<::size_t>& sizes) {
+  return static_cast<const MessageLite&>(value).ByteSizeLongImpl(sizes);
+}
+template <typename MessageType>
 inline size_t WireFormatLite::MessageSize(const MessageType& value) {
   return LengthDelimitedSize(value.ByteSizeLong());
+}
+template <typename MessageType>
+inline size_t WireFormatLite::MessageSize(const MessageType& value,
+                                          std::vector<::size_t>& sizes) {
+  return LengthDelimitedSize(
+      static_cast<const MessageLite&>(value).ByteSizeLongImpl(sizes));
 }
 
 inline size_t WireFormatLite::LengthDelimitedSize(size_t length) {

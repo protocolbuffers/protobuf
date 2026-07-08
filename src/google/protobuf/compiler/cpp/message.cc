@@ -1486,7 +1486,7 @@ void MessageGenerator::GenerateImplDefinition(io::Printer* p) {
   if (HasSimpleBaseClass(descriptor_, options_)) return;
   // Prepare decls for _cached_size_ and _has_bits_.  Their position in the
   // output will be determined later.
-  bool need_to_emit_cached_size = true;
+  bool need_to_emit_cached_size = false;
   const size_t sizeof_has_bits = field_layout_.HasBitsSize();
 
   // To minimize padding, data members are divided into three sections:
@@ -1952,13 +1952,19 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
               ABSL_ATTRIBUTE_REINITIALIZES void Clear() PROTOBUF_FINAL;
 #if defined(PROTOBUF_CUSTOM_VTABLE)
               private:
-              $nodiscard $static ::size_t ByteSizeLong(const $pb$::MessageLite& msg);
+              $nodiscard $static::size_t ByteSizeLongImpl(
+                  const $pb$::MessageLite& msg, ::std::vector<::size_t>& sizes);
+              $nodiscard $static::size_t ByteSizeLong(const $pb$::MessageLite& msg);
               $nodiscard $static $uint8$* $nonnull$ _InternalSerialize(
                   const $pb$::MessageLite& msg, $uint8$* $nonnull$ target,
                   $pb$::io::EpsCopyOutputStream* $nonnull$ stream);
 
               public:
               $nodiscard $::size_t ByteSizeLong() const { return ByteSizeLong(*this); }
+              $nodiscard $::size_t ByteSizeLongImpl(
+                  ::std::vector<::size_t>& sizes) const final {
+                return ByteSizeLongImpl(*this, sizes);
+              }
               $nodiscard $$uint8$* $nonnull$ _InternalSerialize(
                   $uint8$* $nonnull$ target,
                   $pb$::io::EpsCopyOutputStream* $nonnull$ stream) const {
@@ -1966,6 +1972,14 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
               }
 #else   // PROTOBUF_CUSTOM_VTABLE
               $nodiscard $::size_t ByteSizeLong() const final;
+              $nodiscard $::size_t ByteSizeLongImpl(
+                  ::std::vector<::size_t>& sizes) const final;
+
+              private:
+              $nodiscard $static::size_t ByteSizeLongImpl(
+                  const $pb$::MessageLite& msg, ::std::vector<::size_t>& sizes);
+
+              public:
               $nodiscard $$uint8$* $nonnull$ _InternalSerialize(
                   //~
                   $uint8$* $nonnull$ target,
@@ -1988,10 +2002,6 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
           if (HasSimpleBaseClass(descriptor_, options_)) return;
           p->Emit(
               R"cc(
-                $nodiscard $int GetCachedSize() const {
-                  return $cached_size$.Get();
-                }
-
                 private:
                 void SharedCtor($pb$::Arena* $nullable$ arena);
                 static void SharedDtor(MessageLite& self);
@@ -3903,7 +3913,7 @@ void MessageGenerator::GenerateInternalGenerateClassData(io::Printer* p) {
                     &$Msg$::SharedDtor,
                     $custom_vtable_methods$,
 #endif  // PROTOBUF_CUSTOM_VTABLE
-                    PROTOBUF_FIELD_OFFSET($Msg$, $cached_size$),
+                    0,
                     false,
                 },
 #ifdef PROTOBUF_MESSAGE_GLOBALS
@@ -3941,7 +3951,7 @@ void MessageGenerator::GenerateInternalGenerateClassData(io::Printer* p) {
                     &$Msg$::SharedDtor,
                     $custom_vtable_methods$,
 #endif  // PROTOBUF_CUSTOM_VTABLE
-                    PROTOBUF_FIELD_OFFSET($Msg$, $cached_size$),
+                    0,
                     true,
                 },
                 "$full_name$",
@@ -5199,28 +5209,52 @@ void MessageGenerator::GenerateByteSize(io::Printer* p) {
     // Special-case MessageSet.
     p->Emit(
         R"cc(
-#if defined(PROTOBUF_CUSTOM_VTABLE)
-          ::size_t $Msg$::ByteSizeLong(const MessageLite& base) {
+          ::size_t $Msg$::ByteSizeLongImpl(const MessageLite& base,
+                                           ::std::vector<::size_t>& sizes) {
             const $Msg$& this_ = static_cast<const $Msg$&>(base);
-#else   // PROTOBUF_CUSTOM_VTABLE
-          ::size_t $Msg$::ByteSizeLong() const {
-            const $Msg$& this_ = *this;
-#endif  // PROTOBUF_CUSTOM_VTABLE
             $WeakDescriptorSelfPin$;
             $annotate_bytesize$;
             // @@protoc_insertion_point(message_set_byte_size_start:$full_name$)
-            ::size_t total_size = this_.$extensions$.MessageSetByteSize();
+            ::size_t slot_index = sizes.size();
+            sizes.push_back(0);
+            ::size_t total_size = this_.$extensions$.MessageSetByteSize(sizes);
             if (ABSL_PREDICT_FALSE(this_.$have_unknown_fields$)) {
               total_size += ::_pbi::ComputeUnknownMessageSetItemsSize(
                   this_.$unknown_fields$);
             }
-            this_.$cached_size$.Set(::_pbi::ToCachedSize(total_size));
+            sizes[slot_index] = total_size;
             return total_size;
           }
+
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+          ::size_t $Msg$::ByteSizeLong(const MessageLite& base) {
+            ::std::vector<::size_t> sizes;
+            return ByteSizeLongImpl(base, sizes);
+          }
+#else   // PROTOBUF_CUSTOM_VTABLE
+          ::size_t $Msg$::ByteSizeLong() const {
+            ::std::vector<::size_t> sizes;
+            return ByteSizeLongImpl(*this, sizes);
+          }
+          ::size_t $Msg$::ByteSizeLongImpl(::std::vector<::size_t>& sizes) const {
+            return ByteSizeLongImpl(*this, sizes);
+          }
+#endif  // PROTOBUF_CUSTOM_VTABLE
         )cc");
     p->Emit("\n");
     return;
   }
+
+  std::vector<const FieldDescriptor*> ordered_fields =
+      SortFieldsByNumber(descriptor_);
+
+  std::vector<const Descriptor::ExtensionRange*> sorted_extensions;
+  sorted_extensions.reserve(descriptor_->extension_range_count());
+  for (int i = 0; i < descriptor_->extension_range_count(); ++i) {
+    sorted_extensions.push_back(descriptor_->extension_range(i));
+  }
+  std::sort(sorted_extensions.begin(), sorted_extensions.end(),
+            ExtensionRangeSorter());
 
   p->Emit(
       {{"handle_extension_set",
@@ -5320,8 +5354,10 @@ void MessageGenerator::GenerateByteSize(io::Printer* p) {
             // path of unknown fields in tail position. This allows for
             // better code generation of this function for simple protos.
             p->Emit(R"cc(
-              return this_.MaybeComputeUnknownFieldsSize(total_size,
-                                                         &this_.$cached_size$);
+              total_size =
+                  this_.MaybeComputeUnknownFieldsSize(total_size, nullptr);
+              sizes[slot_index] = total_size;
+              return total_size;
             )cc");
           } else {
             // We update _cached_size_ even though this is a const method.
@@ -5337,22 +5373,47 @@ void MessageGenerator::GenerateByteSize(io::Printer* p) {
               if (ABSL_PREDICT_FALSE(this_.$have_unknown_fields$)) {
                 total_size += this_.$unknown_fields$.size();
               }
-              this_.$cached_size$.Set(::_pbi::ToCachedSize(total_size));
+              sizes[slot_index] = total_size;
               return total_size;
             )cc");
           }
+        }},
+       {"bytesize_prepass",
+        [&] {
+          size_t i = 0;
+          size_t j = 0;
+          for (; i < ordered_fields.size() || j < sorted_extensions.size();) {
+            bool no_more_extensions = j == sorted_extensions.size();
+            if (no_more_extensions ||
+                (i < ordered_fields.size() &&
+                 ordered_fields[i]->number() <
+                     sorted_extensions[j]->start_number())) {
+              const FieldDescriptor* field = ordered_fields[i++];
+              if (field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE &&
+                  !field->is_map() && !field->options().weak()) {
+                field_generators_.get(field).GenerateByteSizePrePass(p);
+              }
+            } else {
+              const Descriptor::ExtensionRange* range = sorted_extensions[j++];
+              p->Emit({{"start", range->start_number()},
+                       {"end", range->end_number()}},
+                      R"cc(
+                        this_._impl_._extensions_.ByteSize($start$, $end$,
+                                                           sizes);
+                      )cc");
+            }
+          }
         }}},
       R"cc(
-#if defined(PROTOBUF_CUSTOM_VTABLE)
-        ::size_t $Msg$::ByteSizeLong(const MessageLite& base) {
+        ::size_t $Msg$::ByteSizeLongImpl(const MessageLite& base,
+                                         ::std::vector<::size_t>& sizes) {
           const $Msg$& this_ = static_cast<const $Msg$&>(base);
-#else   // PROTOBUF_CUSTOM_VTABLE
-        ::size_t $Msg$::ByteSizeLong() const {
-          const $Msg$& this_ = *this;
-#endif  // PROTOBUF_CUSTOM_VTABLE
           $WeakDescriptorSelfPin$;
           $annotate_bytesize$;
           // @@protoc_insertion_point(message_byte_size_start:$full_name$)
+          ::size_t slot_index = sizes.size();
+          sizes.push_back(0);
+          $bytesize_prepass$;
           ::size_t total_size = 0;
           $handle_extension_set$;
 
@@ -5364,6 +5425,21 @@ void MessageGenerator::GenerateByteSize(io::Printer* p) {
           $handle_weak_fields$;
           $handle_unknown_fields$;
         }
+
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+        ::size_t $Msg$::ByteSizeLong(const MessageLite& base) {
+          ::std::vector<::size_t> sizes;
+          return ByteSizeLongImpl(base, sizes);
+        }
+#else   // PROTOBUF_CUSTOM_VTABLE
+        ::size_t $Msg$::ByteSizeLong() const {
+          ::std::vector<::size_t> sizes;
+          return ByteSizeLongImpl(*this, sizes);
+        }
+        ::size_t $Msg$::ByteSizeLongImpl(::std::vector<::size_t>& sizes) const {
+          return ByteSizeLongImpl(*this, sizes);
+        }
+#endif  // PROTOBUF_CUSTOM_VTABLE
       )cc");
 }
 

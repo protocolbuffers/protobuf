@@ -184,6 +184,7 @@ void FileGenerator::GenerateFile(io::Printer* p, GeneratedFileType file_type,
     #include <string>
     #include <type_traits>
     #include <utility>
+    #include <vector>
 
     // clang-format off
     $cb$;

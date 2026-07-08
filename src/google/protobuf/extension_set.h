@@ -605,9 +605,16 @@ class PROTOBUF_EXPORT ExtensionSet {
 
   // Returns the total serialized size of all the extensions.
   PROTOBUF_FUTURE_ADD_EARLY_NODISCARD size_t ByteSize() const;
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD size_t
+  ByteSize(std::vector<::size_t>& sizes) const;
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD size_t
+  ByteSize(int start_field_number, int end_field_number,
+           std::vector<::size_t>& sizes) const;
 
   // Like ByteSize() but uses MessageSet format.
   PROTOBUF_FUTURE_ADD_EARLY_NODISCARD size_t MessageSetByteSize() const;
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD size_t
+  MessageSetByteSize(std::vector<::size_t>& sizes) const;
 
   // Returns (an estimate of) the total number of bytes used for storing the
   // extensions in memory, excluding sizeof(*this).  If the ExtensionSet is
@@ -728,7 +735,10 @@ class PROTOBUF_EXPORT ExtensionSet {
         const MessageLite* extendee, const ExtensionSet* extension_set,
         int number, uint8_t* target, io::EpsCopyOutputStream* stream) const;
     size_t ByteSize(int number) const;
+    size_t ByteSize(int number, std::vector<::size_t>& sizes) const;
     size_t MessageSetItemByteSize(int number) const;
+    size_t MessageSetItemByteSize(int number,
+                                  std::vector<::size_t>& sizes) const;
     void Clear();
     int GetSize() const;
     void Free();

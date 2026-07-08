@@ -184,6 +184,8 @@ class FieldGeneratorBase {
 
   virtual void GenerateByteSize(io::Printer* p) const = 0;
 
+  virtual void GenerateByteSizePrePass(io::Printer* p) const {}
+
   virtual void GenerateIsInitialized(io::Printer* p) const {
     ABSL_CHECK(!NeedsIsInitialized());
   }
@@ -467,6 +469,11 @@ class FieldGenerator {
   void GenerateByteSize(io::Printer* p) const {
     auto vars = PushVarsForCall(p);
     impl_->GenerateByteSize(p);
+  }
+
+  void GenerateByteSizePrePass(io::Printer* p) const {
+    auto vars = PushVarsForCall(p);
+    impl_->GenerateByteSizePrePass(p);
   }
 
   // Generates lines to call IsInitialized() for eligible message fields. Non

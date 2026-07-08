@@ -21,6 +21,7 @@
 #include <string>
 #include <utility>
 #include <variant>
+#include <vector>
 
 #include "absl/base/optimization.h"
 #include "absl/log/absl_check.h"
@@ -137,9 +138,13 @@ std::string MessageLite::DebugString() const {
   return absl::StrCat("MessageLite at 0x", absl::Hex(this));
 }
 
-#if !defined(PROTOBUF_CUSTOM_VTABLE)
-int MessageLite::GetCachedSize() const { return AccessCachedSize().Get(); }
-#endif
+size_t MessageLite::ByteSizeLongImpl(std::vector<size_t>& sizes) const {
+  size_t slot_index = sizes.size();
+  sizes.push_back(0);
+  size_t size = ByteSizeLong();
+  sizes[slot_index] = size;
+  return size;
+}
 
 namespace {
 
@@ -481,7 +486,7 @@ bool MessageLite::ParsePartialFromString(const absl::Cord& data) {
 // ===================================================================
 
 inline uint8_t* SerializeToArrayImpl(const MessageLite& msg, uint8_t* target,
-                                     int size) {
+                                     int size, absl::Span<const size_t> sizes) {
   constexpr bool debug = false;
   if (debug) {
     // Force serialization to a stream with a block size of 1, which forces
@@ -491,7 +496,7 @@ inline uint8_t* SerializeToArrayImpl(const MessageLite& msg, uint8_t* target,
     uint8_t* ptr;
     io::EpsCopyOutputStream out(
         &stream, io::CodedOutputStream::IsDefaultSerializationDeterministic(),
-        &ptr);
+        &ptr, sizes.empty() ? sizes : sizes.subspan(1));
     ptr = msg._InternalSerialize(ptr, &out);
     // TODO: Remove this suppression.
     (void)out.Trim(ptr);
@@ -500,11 +505,17 @@ inline uint8_t* SerializeToArrayImpl(const MessageLite& msg, uint8_t* target,
   } else {
     io::EpsCopyOutputStream out(
         target, size,
-        io::CodedOutputStream::IsDefaultSerializationDeterministic());
+        io::CodedOutputStream::IsDefaultSerializationDeterministic(),
+        sizes.empty() ? sizes : sizes.subspan(1));
     uint8_t* res = msg._InternalSerialize(target, &out);
     ABSL_DCHECK(target + size == res);
     return res;
   }
+}
+
+inline uint8_t* SerializeToArrayImpl(const MessageLite& msg, uint8_t* target,
+                                     int size) {
+  return SerializeToArrayImpl(msg, target, size, {});
 }
 
 uint8_t* MessageLite::SerializeWithCachedSizesToArray(uint8_t* target) const {
@@ -521,13 +532,17 @@ bool MessageLite::SerializeToCodedStream(io::CodedOutputStream* output) const {
 
 bool MessageLite::SerializePartialToCodedStream(
     io::CodedOutputStream* output) const {
-  const size_t size = ByteSizeLong();  // Force size to be cached.
+  std::vector<size_t> sizes;
+  const size_t size = ByteSizeLongImpl(sizes);  // Force size to be cached.
   if (size > INT_MAX) {
     ABSL_LOG(ERROR) << GetTypeName()
                     << " exceeded maximum protobuf size of 2GB: " << size;
     return false;
   }
 
+  output->EpsCopy()->SetSizes(sizes.empty()
+                                  ? absl::Span<const size_t>()
+                                  : absl::Span<const size_t>(sizes).subspan(1));
   int original_byte_count = output->ByteCount();
   SerializeWithCachedSizes(output);
   if (output->HadError()) {
@@ -552,7 +567,8 @@ bool MessageLite::SerializeToZeroCopyStream(
 
 bool MessageLite::SerializePartialToZeroCopyStream(
     io::ZeroCopyOutputStream* output) const {
-  const size_t size = ByteSizeLong();  // Force size to be cached.
+  std::vector<size_t> sizes;
+  const size_t size = ByteSizeLongImpl(sizes);  // Force size to be cached.
   if (size > INT_MAX) {
     ABSL_LOG(ERROR) << GetTypeName()
                     << " exceeded maximum protobuf size of 2GB: " << size;
@@ -562,7 +578,9 @@ bool MessageLite::SerializePartialToZeroCopyStream(
   uint8_t* target;
   io::EpsCopyOutputStream stream(
       output, io::CodedOutputStream::IsDefaultSerializationDeterministic(),
-      &target);
+      &target,
+      sizes.empty() ? absl::Span<const size_t>()
+                    : absl::Span<const size_t>(sizes).subspan(1));
   target = _InternalSerialize(target, &stream);
   // TODO: Remove this suppression.
   (void)stream.Trim(target);
@@ -601,7 +619,8 @@ bool MessageLite::AppendToString(std::string* output) const {
 
 bool MessageLite::AppendPartialToString(std::string* output) const {
   size_t old_size = output->size();
-  size_t byte_size = ByteSizeLong();
+  std::vector<size_t> sizes;
+  size_t byte_size = ByteSizeLongImpl(sizes);
   if (byte_size > INT_MAX) {
     ABSL_LOG(ERROR) << GetTypeName()
                     << " exceeded maximum protobuf size of 2GB: " << byte_size;
@@ -612,7 +631,7 @@ bool MessageLite::AppendPartialToString(std::string* output) const {
       output, old_size + byte_size);
   uint8_t* start =
       reinterpret_cast<uint8_t*>(io::mutable_string_data(output) + old_size);
-  SerializeToArrayImpl(*this, start, byte_size);
+  SerializeToArrayImpl(*this, start, byte_size, sizes);
   return true;
 }
 
@@ -633,7 +652,8 @@ bool MessageLite::SerializeToArray(void* data, int size) const {
 }
 
 bool MessageLite::SerializePartialToArray(void* data, int size) const {
-  const size_t byte_size = ByteSizeLong();
+  std::vector<size_t> sizes;
+  const size_t byte_size = ByteSizeLongImpl(sizes);
   if (byte_size > INT_MAX) {
     ABSL_LOG(ERROR) << GetTypeName()
                     << " exceeded maximum protobuf size of 2GB: " << byte_size;
@@ -641,7 +661,7 @@ bool MessageLite::SerializePartialToArray(void* data, int size) const {
   }
   if (size < static_cast<int64_t>(byte_size)) return false;
   uint8_t* start = reinterpret_cast<uint8_t*>(data);
-  SerializeToArrayImpl(*this, start, byte_size);
+  SerializeToArrayImpl(*this, start, byte_size, sizes);
   return true;
 }
 
@@ -670,7 +690,8 @@ bool MessageLite::AppendToString(absl::Cord* output) const {
 bool MessageLite::AppendPartialToString(absl::Cord* output) const {
   // For efficiency, we'd like to pass a size hint to CordOutputStream with
   // the exact total size expected.
-  const size_t size = ByteSizeLong();
+  std::vector<size_t> sizes;
+  const size_t size = ByteSizeLongImpl(sizes);
   if (size > INT_MAX) {
     ABSL_LOG(ERROR) << "Exceeded maximum protobuf size of 2GB: " << size;
     return false;
@@ -693,7 +714,9 @@ bool MessageLite::AppendPartialToString(absl::Cord* output) const {
     // may in the future use the extra slop bytes if available.
     io::EpsCopyOutputStream out(
         target, static_cast<int>(available.size()),
-        io::CodedOutputStream::IsDefaultSerializationDeterministic());
+        io::CodedOutputStream::IsDefaultSerializationDeterministic(),
+        sizes.empty() ? absl::Span<const size_t>()
+                      : absl::Span<const size_t>(sizes).subspan(1));
     auto res = _InternalSerialize(target, &out);
     ABSL_DCHECK_EQ(static_cast<const void*>(res),
                    static_cast<const void*>(target + size));
@@ -710,7 +733,9 @@ bool MessageLite::AppendPartialToString(absl::Cord* output) const {
                                      total_size);
   io::EpsCopyOutputStream out(
       target, static_cast<int>(available.size()), &output_stream,
-      io::CodedOutputStream::IsDefaultSerializationDeterministic(), &target);
+      io::CodedOutputStream::IsDefaultSerializationDeterministic(), &target,
+      sizes.empty() ? absl::Span<const size_t>()
+                    : absl::Span<const size_t>(sizes).subspan(1));
   target = _InternalSerialize(target, &out);
   // TODO: Remove this suppression.
   (void)out.Trim(target);

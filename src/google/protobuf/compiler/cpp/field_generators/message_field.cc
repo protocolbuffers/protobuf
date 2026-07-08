@@ -114,6 +114,7 @@ class SingularMessage : public FieldGeneratorBase {
   void GenerateCopyConstructorCode(io::Printer* p) const override;
   void GenerateSerializeWithCachedSizesToArray(io::Printer* p) const override;
   void GenerateByteSize(io::Printer* p) const override;
+  void GenerateByteSizePrePass(io::Printer* p) const override;
   void GenerateIsInitialized(io::Printer* p) const override;
   bool NeedsIsInitialized() const override;
   void GenerateConstexprAggregateInitializer(io::Printer* p) const override;
@@ -393,11 +394,14 @@ void SingularMessage::GenerateSerializeWithCachedSizesToArray(
   if (!is_group()) {
     p->Emit(R"cc(
       target = $pbi$::WireFormatLite::InternalWrite$DeclaredType$(
-          $number$, *this_.$field_$, this_.$field_$->GetCachedSize(), target,
-          stream);
+          $number$, *this_.$field_$,
+          stream->use_sizes() ? stream->ChompSize()
+                              : this_.$field_$->GetCachedSize(),
+          target, stream);
     )cc");
   } else {
     p->Emit(R"cc(
+      if (stream->use_sizes()) stream->ChompSize();
       target = stream->EnsureSpace(target);
       target = $pbi$::WireFormatLite::InternalWrite$DeclaredType$(
           $number$, *this_.$field_$, target, stream);
@@ -407,9 +411,36 @@ void SingularMessage::GenerateSerializeWithCachedSizesToArray(
 
 void SingularMessage::GenerateByteSize(io::Printer* p) const {
   p->Emit(R"cc(
-    total_size += $kTagBytes$ +
-                  $pbi$::WireFormatLite::$DeclaredType$Size(*this_.$field_$);
+    total_size += $kTagBytes$ + size_$number$;
   )cc");
+}
+
+void SingularMessage::GenerateByteSizePrePass(io::Printer* p) const {
+  if (field_->real_containing_oneof() != nullptr) {
+    p->Emit(R"cc(
+      ::size_t size_$number$ = 0;
+      if (this_.$has_field$) {
+        size_$number$ =
+            $pbi$::WireFormatLite::$DeclaredType$Size(*this_.$field_$, sizes);
+      }
+    )cc");
+  } else if (has_hasbit_) {
+    p->Emit(R"cc(
+      ::size_t size_$number$ = 0;
+      if (CheckHasBit(this_.$has_bits_array$, $has_mask$)) {
+        size_$number$ =
+            $pbi$::WireFormatLite::$DeclaredType$Size(*this_.$field_$, sizes);
+      }
+    )cc");
+  } else {
+    p->Emit(R"cc(
+      ::size_t size_$number$ = 0;
+      if (this_._internal_has_$name$()) {
+        size_$number$ =
+            $pbi$::WireFormatLite::$DeclaredType$Size(*this_.$field_$, sizes);
+      }
+    )cc");
+  }
 }
 
 void SingularMessage::GenerateIsInitialized(io::Printer* p) const {
@@ -732,6 +763,7 @@ class RepeatedMessage : public FieldGeneratorBase {
   void GenerateDestructorCode(io::Printer* p) const override;
   void GenerateSerializeWithCachedSizesToArray(io::Printer* p) const override;
   void GenerateByteSize(io::Printer* p) const override;
+  void GenerateByteSizePrePass(io::Printer* p) const override;
   void GenerateIsInitialized(io::Printer* p) const override;
   bool NeedsIsInitialized() const override;
 
@@ -1026,11 +1058,15 @@ void RepeatedMessage::GenerateSerializeWithCachedSizesToArray(
               p->Emit(
                   R"cc(
                     target = $pbi$::WireFormatLite::InternalWrite$DeclaredType$(
-                        $number$, **it, (**it).GetCachedSize(), target, stream);
+                        $number$, **it,
+                        stream->use_sizes() ? stream->ChompSize()
+                                            : (**it).GetCachedSize(),
+                        target, stream);
                   )cc");
             } else {
               p->Emit(
                   R"cc(
+                    if (stream->use_sizes()) stream->ChompSize();
                     target = stream->EnsureSpace(target);
                     target = $pbi$::WireFormatLite::InternalWrite$DeclaredType$(
                         $number$, **it, target, stream);
@@ -1053,12 +1089,15 @@ void RepeatedMessage::GenerateSerializeWithCachedSizesToArray(
                   R"cc(
                     const auto& repfield = this_._internal_$name$().Get(i);
                     target = $pbi$::WireFormatLite::InternalWrite$DeclaredType$(
-                        $number$, repfield, repfield.GetCachedSize(), target,
-                        stream);
+                        $number$, repfield,
+                        stream->use_sizes() ? stream->ChompSize()
+                                            : repfield.GetCachedSize(),
+                        target, stream);
                   )cc");
             } else {
               p->Emit(
                   R"cc(
+                    if (stream->use_sizes()) stream->ChompSize();
                     target = stream->EnsureSpace(target);
                     target = $pbi$::WireFormatLite::InternalWrite$DeclaredType$(
                         $number$, this_._internal_$name$().Get(i), target,
@@ -1079,11 +1118,18 @@ void RepeatedMessage::GenerateSerializeWithCachedSizesToArray(
 void RepeatedMessage::GenerateByteSize(io::Printer* p) const {
   p->Emit(
       R"cc(
-        total_size += $kTagBytes$UL * this_._internal_$name$_size();
-        for (const auto& msg : this_._internal$_weak$_$name$()) {
-          total_size += $pbi$::WireFormatLite::$DeclaredType$Size(msg);
-        }
+        total_size +=
+            $kTagBytes$UL * this_._internal_$name$_size() + size_$number$;
       )cc");
+}
+
+void RepeatedMessage::GenerateByteSizePrePass(io::Printer* p) const {
+  p->Emit(R"cc(
+    ::size_t size_$number$ = 0;
+    for (const auto& msg : this_._internal$_weak$_$name$()) {
+      size_$number$ += $pbi$::WireFormatLite::$DeclaredType$Size(msg, sizes);
+    }
+  )cc");
 }
 
 void RepeatedMessage::GenerateIsInitialized(io::Printer* p) const {

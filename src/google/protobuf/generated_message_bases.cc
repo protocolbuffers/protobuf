@@ -45,7 +45,7 @@ void ZeroFieldsBase::SharedDtor(MessageLite& msg) {
 
 size_t ZeroFieldsBase::ByteSizeLong(const MessageLite& base) {
   auto& msg = static_cast<const ZeroFieldsBase&>(base);
-  return msg.MaybeComputeUnknownFieldsSize(0, &msg._impl_._cached_size_);
+  return msg.MaybeComputeUnknownFieldsSize(0, nullptr);
 }
 
 ::uint8_t* ZeroFieldsBase::_InternalSerialize(const MessageLite& msg,

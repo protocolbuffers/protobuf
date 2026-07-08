@@ -224,8 +224,12 @@ inline uint8_t* MapTypeHandler<WireFormatLite::TYPE_MESSAGE, Type>::Write(
     int field, const MapEntryAccessorType& value, uint8_t* ptr,
     io::EpsCopyOutputStream* stream) {
   ptr = stream->EnsureSpace(ptr);
-  return WireFormatLite::InternalWriteMessage(
+  bool old_use_sizes = stream->use_sizes();
+  stream->set_use_sizes(false);
+  uint8_t* res = WireFormatLite::InternalWriteMessage(
       field, value, value.GetCachedSize(), ptr, stream);
+  stream->set_use_sizes(old_use_sizes);
+  return res;
 }
 
 #define WRITE_METHOD(FieldType, DeclaredType)                     \
