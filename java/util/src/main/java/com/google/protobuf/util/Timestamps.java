@@ -24,7 +24,6 @@ import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.Locale;
 import java.util.TimeZone;
-import java.util.logging.Logger;
 import javax.annotation.Nullable;
 
 /**
@@ -32,8 +31,6 @@ import javax.annotation.Nullable;
  * {@link IllegalArgumentException} if the input(s) are not {@linkplain #isValid(Timestamp) valid}.
  */
 public final class Timestamps {
-
-  private static final Logger logger = Logger.getLogger(Timestamps.class.getName());
 
   // Timestamp for "0001-01-01T00:00:00Z"
   static final long TIMESTAMP_SECONDS_MIN = -62135596800L;
@@ -248,20 +245,7 @@ public final class Timestamps {
       secondValue = timeValue.substring(0, pointPosition);
       nanoValue = timeValue.substring(pointPosition + 1);
     }
-    SimpleDateFormat sdf = timestampFormat.get();
-    Date date;
-    boolean wasLenient = sdf.isLenient();
-    try {
-      sdf.setLenient(false);
-      date = sdf.parse(secondValue);
-    } catch (ParseException e) {
-      sdf.setLenient(true);
-      date = sdf.parse(secondValue);
-      logger.warning(
-          "Invalid timestamp detected: " + value + ". This will become an error in 2027.");
-    } finally {
-      sdf.setLenient(wasLenient);
-    }
+    Date date = timestampFormat.get().parse(secondValue);
     long seconds = date.getTime() / MILLIS_PER_SECOND;
     int nanos = nanoValue.isEmpty() ? 0 : parseNanos(nanoValue);
     // Parse timezone offsets.

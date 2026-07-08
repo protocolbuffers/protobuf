@@ -23,10 +23,6 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.TimeZone;
-import java.util.logging.Handler;
-import java.util.logging.Level;
-import java.util.logging.LogRecord;
-import java.util.logging.Logger;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -372,41 +368,6 @@ public class TimestampsTest {
     // TODO: b/379874415 - this shouldn't parse successfully
     assertThat(Timestamps.parse(value)).isEqualTo(Timestamps.parse(expected));
     assertThat(Timestamps.parseUnchecked(value)).isEqualTo(Timestamps.parse(expected));
-  }
-
-  @Test
-  @GwtIncompatible("ParseException is not supported in Xplat")
-  @J2ObjCIncompatible
-  public void testTimestampParseInvalidLenientDateLogsWarning() throws Exception {
-    final String value = "2000-40-01T00:00:00Z";
-
-    List<LogRecord> records = new ArrayList<>();
-    Handler handler =
-        new Handler() {
-          @Override
-          public void publish(LogRecord record) {
-            records.add(record);
-          }
-
-          @Override
-          public void flush() {}
-
-          @Override
-          public void close() {}
-        };
-
-    Logger logger = Logger.getLogger(Timestamps.class.getName());
-    logger.addHandler(handler);
-
-    try {
-      assertThat(Timestamps.parse(value)).isNotNull();
-
-      assertThat(records).hasSize(1);
-      assertThat(records.get(0).getLevel()).isEqualTo(Level.WARNING);
-      assertThat(records.get(0).getMessage()).contains("Invalid timestamp detected");
-    } finally {
-      logger.removeHandler(handler);
-    }
   }
 
   @GwtIncompatible("ParseException is not supported in Xplat")
