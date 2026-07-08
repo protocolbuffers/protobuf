@@ -120,8 +120,6 @@ class FieldGeneratorBase {
 
   virtual void GeneratePrivateMembers(io::Printer* p) const = 0;
 
-  virtual void GenerateSecondaryPrivateMembers(io::Printer* p) const {}
-
   virtual void GenerateStaticMembers(io::Printer* p) const {}
 
   virtual void GenerateAccessorDeclarations(io::Printer* p) const = 0;
@@ -291,14 +289,6 @@ class FieldGenerator {
   void GeneratePrivateMembers(io::Printer* p) const {
     auto vars = PushVarsForCall(p);
     impl_->GeneratePrivateMembers(p);
-  }
-
-  // Prints the secondary private members needed to represent this field.
-  //
-  // These are placed inside the class definition after everything else.
-  void GenerateSecondaryPrivateMembers(io::Printer* p) const {
-    auto vars = PushVarsForCall(p);
-    impl_->GenerateSecondaryPrivateMembers(p);
   }
 
   // Prints static members needed to represent this field.

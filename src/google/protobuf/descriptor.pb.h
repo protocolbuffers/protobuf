@@ -1767,12 +1767,12 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED SourceCodeInfo_Loca
     ::google::protobuf::internal::HasBits<1> _has_bits_;
     ::google::protobuf::internal::CachedSize _cached_size_;
     ::google::protobuf::RepeatedField<::int32_t> path_;
+    ::google::protobuf::internal::CachedSize _path_cached_byte_size_;
     ::google::protobuf::RepeatedField<::int32_t> span_;
+    ::google::protobuf::internal::CachedSize _span_cached_byte_size_;
     ::google::protobuf::RepeatedPtrField<::std::string> leading_detached_comments_;
     ::google::protobuf::internal::ArenaStringPtr leading_comments_;
     ::google::protobuf::internal::ArenaStringPtr trailing_comments_;
-    ::google::protobuf::internal::CachedSize _path_cached_byte_size_;
-    ::google::protobuf::internal::CachedSize _span_cached_byte_size_;
     PROTOBUF_TSAN_DECLARE_MEMBER
   };
   union { Impl_ _impl_; };
@@ -2057,11 +2057,11 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED GeneratedCodeInfo_A
     ::google::protobuf::internal::HasBits<1> _has_bits_;
     ::google::protobuf::internal::CachedSize _cached_size_;
     ::google::protobuf::RepeatedField<::int32_t> path_;
+    ::google::protobuf::internal::CachedSize _path_cached_byte_size_;
     ::google::protobuf::internal::ArenaStringPtr source_file_;
     ::int32_t begin_;
     ::int32_t end_;
     int semantic_;
-    ::google::protobuf::internal::CachedSize _path_cached_byte_size_;
     PROTOBUF_TSAN_DECLARE_MEMBER
   };
   union { Impl_ _impl_; };
