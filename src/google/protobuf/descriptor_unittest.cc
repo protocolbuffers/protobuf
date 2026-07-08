@@ -8881,7 +8881,7 @@ TEST_F(ValidationErrorTest, MapEntryOrphanedWithZeroFields) {
       "} ",
 
       "foo.proto: OrphanedMapEntry: NAME: Messages with map_entry set must "
-      "have exactly 2 fields.\n");
+      "have at least 2 fields.\n");
 }
 
 TEST_F(ValidationErrorTest, MapEntryOrphanedWithOneField) {
@@ -8897,7 +8897,7 @@ TEST_F(ValidationErrorTest, MapEntryOrphanedWithOneField) {
       "} ",
 
       "foo.proto: OrphanedMapEntry: NAME: Messages with map_entry set must "
-      "have exactly 2 fields.\n");
+      "have at least 2 fields.\n");
 }
 
 TEST_F(ValidationErrorTest, MapEntryExtensionRange) {
@@ -9338,8 +9338,8 @@ TEST_F(ValidationErrorTest, MapEntryExtraField) {
       file_proto.mutable_message_type(0)->mutable_nested_type(0));
   BuildFileWithErrors(
       file_proto,
-      "foo.proto: Foo.FooMapEntry: NAME: "
-      "Messages with map_entry set must have exactly 2 fields.\n");
+      "foo.proto: Foo.foo_map: TYPE: map_entry should not be set explicitly. "
+      "Use map<KeyType, ValueType> instead.\n");
 }
 
 // Test for the scenario:
