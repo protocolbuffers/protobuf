@@ -154,6 +154,15 @@ def FixFiles(config):
   file_pairs = _GetFilePairs(config)
   missing_files, stale_files = _GetMissingAndStaleFiles(file_pairs)
 
+  for pair in missing_files:
+    print("File %s does not exist" % pair.target)
+
+  for pair in stale_files:
+    with open(pair.generated) as g, open(pair.target) as t:
+      diff = ''.join(difflib.unified_diff(g.read().splitlines(keepends=True),
+                                          t.read().splitlines(keepends=True)))
+      print("File %s is out of date:\n%s" % (pair.target, diff))
+
   _CopyFiles(stale_files + missing_files)
 
 

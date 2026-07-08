@@ -12,6 +12,20 @@ cd $(dirname -- "$0")
 
 readonly BazelBin="${BAZEL:-bazel} ${BAZEL_STARTUP_FLAGS}"
 
+DIRECT_FIX=false
+BAZEL_ARGS=()
+
+for arg in "$@"; do
+  case $arg in
+    --direct-fix)
+      DIRECT_FIX=true
+      ;;
+    *)
+      BAZEL_ARGS+=("$arg")
+      ;;
+  esac
+done
+
 STALENESS_TESTS=(
   "csharp:generated_csharp_defaults_staleness_test"
   "java/core:generated_java_defaults_staleness_test"
@@ -29,16 +43,21 @@ STALENESS_TESTS=(
 
 # Run and fix all staleness tests.
 for test in ${STALENESS_TESTS[@]}; do
-  ${BazelBin} test $test "$@" || ./bazel-bin/${test%%:*}/${test#*:} --fix
+  if [ "$DIRECT_FIX" = true ]; then
+    ${BazelBin} build $test "${BAZEL_ARGS[@]}"
+    ./bazel-bin/${test%%:*}/${test#*:} --fix
+  else
+    ${BazelBin} test $test "${BAZEL_ARGS[@]}" || ./bazel-bin/${test%%:*}/${test#*:} --fix
+  fi
 done
 
 # Generate C# code.
 # This doesn't currently have Bazel staleness tests, but there's an existing
 # shell script that generates everything required. The output files are stable,
 # so just regenerating in place should be harmless. 
-${BazelBin} build src/google/protobuf/compiler:protoc "$@"
-${BazelBin} build //csharp/protos/unittest_deep_dependencies:generate_cached_protos "$@"
-${BazelBin} build //csharp/protos/unittest_deep_dependencies:generate_notcached_protos "$@"
+${BazelBin} build src/google/protobuf/compiler:protoc "${BAZEL_ARGS[@]}"
+${BazelBin} build //csharp/protos/unittest_deep_dependencies:generate_cached_protos "${BAZEL_ARGS[@]}"
+${BazelBin} build //csharp/protos/unittest_deep_dependencies:generate_notcached_protos "${BAZEL_ARGS[@]}"
 (export PROTOC=$PWD/bazel-bin/protoc && cd csharp && ./generate_protos.sh)
 
 echo "::endgroup::"
