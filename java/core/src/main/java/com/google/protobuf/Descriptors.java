@@ -591,13 +591,134 @@ public final class Descriptors {
      */
     public static void internalUpdateFileDescriptor(
         FileDescriptor descriptor, ExtensionRegistry registry) {
-      ByteString bytes = descriptor.proto.toByteString();
+      final FileDescriptorProto originalProto = descriptor.proto;
       try {
-        FileDescriptorProto proto = FileDescriptorProto.parseFrom(bytes, registry);
+        FileDescriptorProto proto = updateFileDescriptorProto(originalProto, registry);
         descriptor.setProto(proto);
       } catch (InvalidProtocolBufferException e) {
         throw new IllegalArgumentException(
             "Failed to parse protocol buffer descriptor for generated code.", e);
+      }
+    }
+
+    @SuppressWarnings("unchecked")
+    private static <T extends Message> T updateOptions(T options, ExtensionRegistry registry)
+        throws InvalidProtocolBufferException {
+      UnknownFieldSet unknownFields = options.getUnknownFields();
+      if (unknownFields.isEmpty()) {
+        return options;
+      }
+      Message parsed = options.getDefaultInstanceForType().getParserForType()
+          .parseFrom(unknownFields.toByteString(), registry);
+      return (T) options.toBuilder()
+          .setUnknownFields(UnknownFieldSet.getDefaultInstance())
+          .mergeFrom(parsed)
+          .build();
+    }
+
+    private static FileDescriptorProto updateFileDescriptorProto(
+        FileDescriptorProto proto, ExtensionRegistry registry)
+        throws InvalidProtocolBufferException {
+      FileDescriptorProto.Builder builder = proto.toBuilder();
+      if (builder.hasOptions()) {
+        builder.setOptions(updateOptions(builder.getOptions(), registry));
+      }
+      for (int i = 0; i < builder.getMessageTypeCount(); i++) {
+        DescriptorProto message = builder.getMessageType(i);
+        if (hasUnknownOptions(message)) {
+          updateDescriptorProto(builder.getMessageTypeBuilder(i), registry);
+        }
+      }
+      for (int i = 0; i < builder.getEnumTypeCount(); i++) {
+        EnumDescriptorProto enumProto = builder.getEnumType(i);
+        if (hasUnknownOptions(enumProto)) {
+          updateEnumDescriptorProto(builder.getEnumTypeBuilder(i), registry);
+        }
+      }
+      for (int i = 0; i < builder.getServiceCount(); i++) {
+        ServiceDescriptorProto service = builder.getService(i);
+        if (hasUnknownOptions(service)) {
+          updateServiceDescriptorProto(builder.getServiceBuilder(i), registry);
+        }
+      }
+      for (int i = 0; i < builder.getExtensionCount(); i++) {
+        FieldDescriptorProto extension = builder.getExtension(i);
+        if (!extension.getOptions().getUnknownFields().isEmpty()) {
+          FieldDescriptorProto.Builder childBuilder = builder.getExtensionBuilder(i);
+          childBuilder.setOptions(updateOptions(childBuilder.getOptions(), registry));
+        }
+      }
+      return builder.build();
+    }
+
+    private static void updateDescriptorProto(
+        DescriptorProto.Builder builder, ExtensionRegistry registry)
+        throws InvalidProtocolBufferException {
+      if (builder.hasOptions()) {
+        builder.setOptions(updateOptions(builder.getOptions(), registry));
+      }
+      for (int i = 0; i < builder.getFieldCount(); i++) {
+        FieldDescriptorProto field = builder.getField(i);
+        if (!field.getOptions().getUnknownFields().isEmpty()) {
+          FieldDescriptorProto.Builder childBuilder = builder.getFieldBuilder(i);
+          childBuilder.setOptions(updateOptions(childBuilder.getOptions(), registry));
+        }
+      }
+      for (int i = 0; i < builder.getNestedTypeCount(); i++) {
+        DescriptorProto nestedType = builder.getNestedType(i);
+        if (hasUnknownOptions(nestedType)) {
+          updateDescriptorProto(builder.getNestedTypeBuilder(i), registry);
+        }
+      }
+      for (int i = 0; i < builder.getEnumTypeCount(); i++) {
+        EnumDescriptorProto enumProto = builder.getEnumType(i);
+        if (hasUnknownOptions(enumProto)) {
+          updateEnumDescriptorProto(builder.getEnumTypeBuilder(i), registry);
+        }
+      }
+      for (int i = 0; i < builder.getExtensionCount(); i++) {
+        FieldDescriptorProto extension = builder.getExtension(i);
+        if (!extension.getOptions().getUnknownFields().isEmpty()) {
+          FieldDescriptorProto.Builder childBuilder = builder.getExtensionBuilder(i);
+          childBuilder.setOptions(updateOptions(childBuilder.getOptions(), registry));
+        }
+      }
+      for (int i = 0; i < builder.getOneofDeclCount(); i++) {
+        OneofDescriptorProto oneof = builder.getOneofDecl(i);
+        if (!oneof.getOptions().getUnknownFields().isEmpty()) {
+          OneofDescriptorProto.Builder childBuilder = builder.getOneofDeclBuilder(i);
+          childBuilder.setOptions(updateOptions(childBuilder.getOptions(), registry));
+        }
+      }
+    }
+
+    private static void updateEnumDescriptorProto(
+        EnumDescriptorProto.Builder builder, ExtensionRegistry registry)
+        throws InvalidProtocolBufferException {
+      if (builder.hasOptions()) {
+        builder.setOptions(updateOptions(builder.getOptions(), registry));
+      }
+      for (int i = 0; i < builder.getValueCount(); i++) {
+        EnumValueDescriptorProto value = builder.getValue(i);
+        if (!value.getOptions().getUnknownFields().isEmpty()) {
+          EnumValueDescriptorProto.Builder childBuilder = builder.getValueBuilder(i);
+          childBuilder.setOptions(updateOptions(childBuilder.getOptions(), registry));
+        }
+      }
+    }
+
+    private static void updateServiceDescriptorProto(
+        ServiceDescriptorProto.Builder builder, ExtensionRegistry registry)
+        throws InvalidProtocolBufferException {
+      if (builder.hasOptions()) {
+        builder.setOptions(updateOptions(builder.getOptions(), registry));
+      }
+      for (int i = 0; i < builder.getMethodCount(); i++) {
+        MethodDescriptorProto method = builder.getMethod(i);
+        if (!method.getOptions().getUnknownFields().isEmpty()) {
+          MethodDescriptorProto.Builder childBuilder = builder.getMethodBuilder(i);
+          childBuilder.setOptions(updateOptions(childBuilder.getOptions(), registry));
+        }
       }
     }
 
@@ -862,6 +983,101 @@ public final class Descriptors {
       } catch (DescriptorValidationException e) {
         throw new IllegalArgumentException("Invalid features for \"" + proto.getName() + "\".", e);
       }
+    }
+
+    static boolean hasUnknownOptions(FileDescriptorProto proto) {
+      if (!proto.getOptions().getUnknownFields().isEmpty()) {
+        return true;
+      }
+      for (DescriptorProto message : proto.getMessageTypeList()) {
+        if (hasUnknownOptions(message)) {
+          return true;
+        }
+      }
+      for (EnumDescriptorProto enumProto : proto.getEnumTypeList()) {
+        if (hasUnknownOptions(enumProto)) {
+          return true;
+        }
+      }
+      for (ServiceDescriptorProto service : proto.getServiceList()) {
+        if (hasUnknownOptions(service)) {
+          return true;
+        }
+      }
+      for (FieldDescriptorProto extension : proto.getExtensionList()) {
+        if (hasUnknownOptions(extension)) {
+          return true;
+        }
+      }
+      return false;
+    }
+
+    private static boolean hasUnknownOptions(DescriptorProto message) {
+      if (!message.getOptions().getUnknownFields().isEmpty()) {
+        return true;
+      }
+      for (FieldDescriptorProto field : message.getFieldList()) {
+        if (hasUnknownOptions(field)) {
+          return true;
+        }
+      }
+      for (FieldDescriptorProto extension : message.getExtensionList()) {
+        if (hasUnknownOptions(extension)) {
+          return true;
+        }
+      }
+      for (DescriptorProto nested : message.getNestedTypeList()) {
+        if (hasUnknownOptions(nested)) {
+          return true;
+        }
+      }
+      for (EnumDescriptorProto enumProto : message.getEnumTypeList()) {
+        if (hasUnknownOptions(enumProto)) {
+          return true;
+        }
+      }
+      for (OneofDescriptorProto oneof : message.getOneofDeclList()) {
+        if (!oneof.getOptions().getUnknownFields().isEmpty()) {
+          return true;
+        }
+      }
+      for (DescriptorProto.ExtensionRange range : message.getExtensionRangeList()) {
+        if (!range.getOptions().getUnknownFields().isEmpty()) {
+          return true;
+        }
+      }
+      return false;
+    }
+
+    private static boolean hasUnknownOptions(FieldDescriptorProto field) {
+      if (!field.getOptions().getUnknownFields().isEmpty()) {
+        return true;
+      }
+      return false;
+    }
+
+    private static boolean hasUnknownOptions(EnumDescriptorProto enumProto) {
+      if (!enumProto.getOptions().getUnknownFields().isEmpty()) {
+        return true;
+      }
+      for (EnumValueDescriptorProto value : enumProto.getValueList()) {
+        if (!value.getOptions().getUnknownFields().isEmpty()) {
+          return true;
+        }
+      }
+      return false;
+    }
+
+    private static boolean hasUnknownOptions(ServiceDescriptorProto service) {
+      if (!service.getOptions().getUnknownFields().isEmpty()) {
+        return true;
+      }
+      for (MethodDescriptorProto method : service.getMethodList()) {
+        if (!method.getOptions().getUnknownFields().isEmpty()) {
+          return true;
+        }
+      }
+      return false;
     }
   }
 

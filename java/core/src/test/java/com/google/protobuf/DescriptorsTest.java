@@ -57,8 +57,11 @@ import proto2_unittest.UnittestProto.TestService;
 import proto2_unittest.UnittestRetention;
 import protobuf_unittest.UnittestProto3Extensions.Proto3FileExtensions;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
@@ -728,6 +731,31 @@ public class DescriptorsTest {
       assertThat(method.getOptions().hasExtension(UnittestCustomOptions.methodOpt1)).isTrue();
       assertThat(method.getOptions().getExtension(UnittestCustomOptions.methodOpt1))
           .isEqualTo(UnittestCustomOptions.MethodOpt1.METHODOPT1_VAL2);
+    }
+
+    @Test
+    public void testRecursiveOptionsUpdateMatchesBaseline() throws Exception {
+      // 1. Get the baseline built FileDescriptor. It was double-parsed using the baseline.
+      FileDescriptor baselineDesc = UnittestCustomOptions.getDescriptor();
+
+      // 2. Get the registry that has the custom option extensions.
+      ExtensionRegistry registry = ExtensionRegistry.newInstance();
+      UnittestCustomOptions.registerAllExtensions(registry);
+
+      // 3. Build a raw FileDescriptor from the raw bytes of UnittestCustomOptions descriptor,
+      // but WITHOUT passing the registry to the initial buildFrom call.
+      // This means all custom options will be raw unknown fields.
+      FileDescriptor rawDesc = FileDescriptor.buildFrom(
+          baselineDesc.toProto(),
+          baselineDesc.getDependencies().toArray(new FileDescriptor[0]),
+          /* allowUnknownDependencies = */ false);
+
+      // 4. Update the descriptor in-place using our new targeted update logic.
+      FileDescriptor.internalUpdateFileDescriptor(rawDesc, registry);
+
+      // 5. Verify that the updated descriptor is identical to the baseline double-parsed one!
+      // Compare the serialized file protos to ensure they match exactly.
+      assertThat(rawDesc.toProto()).isEqualTo(baselineDesc.toProto());
     }
 
     @Test
@@ -1588,6 +1616,266 @@ public class DescriptorsTest {
     public void testProto3ExtensionHasPresence() {
       assertThat(Proto3FileExtensions.singularInt.getDescriptor().hasPresence()).isTrue();
       assertThat(Proto3FileExtensions.repeatedInt.getDescriptor().hasPresence()).isFalse();
+    }
+
+    @Test
+    public void testOptionsFieldsCount() {
+      // Crawl descriptor.proto to count fields named verbatim "options"
+      List<List<FieldDescriptor>> paths = new ArrayList<>();
+      Set<Descriptor> visited = new HashSet<>();
+      findOptionsPaths(FileDescriptorProto.getDescriptor(), new ArrayList<>(), paths, visited);
+
+      // We assert that there are exactly 9 transitively reachable options fields.
+      // If a new options field is added in descriptor.proto, this assertion will fail,
+      // reminding us to add a test case for it and update hasUnknownOptions.
+      assertThat(paths).hasSize(9);
+    }
+
+    @Test
+    public void testHasUnknownOptions() throws Exception {
+      FileDescriptorProto baseProto = FileDescriptorProto.newBuilder().setName("foo.proto").build();
+      assertThat(FileDescriptor.hasUnknownOptions(baseProto)).isFalse();
+
+      UnknownFieldSet unknown =
+          UnknownFieldSet.newBuilder()
+              .addField(12345, UnknownFieldSet.Field.newBuilder().addVarint(1).build())
+              .build();
+
+      // Test unknown fields on all 9 options types. Combined with the above test which verifies
+      // there are exactly 9 options types, we verify that hasUnknownOptions didn't miss any options
+      // types.
+      assertThat(
+              FileDescriptor.hasUnknownOptions(
+                  FileDescriptorProto.newBuilder(baseProto)
+                      .setOptions(FileOptions.newBuilder().setUnknownFields(unknown))
+                      .build()))
+          .isTrue();
+
+      assertThat(
+              FileDescriptor.hasUnknownOptions(
+                  FileDescriptorProto.newBuilder(baseProto)
+                      .addMessageType(
+                          DescriptorProto.newBuilder()
+                              .setName("M")
+                              .setOptions(
+                                  DescriptorProtos.MessageOptions.newBuilder()
+                                      .setUnknownFields(unknown)))
+                      .build()))
+          .isTrue();
+
+      assertThat(
+              FileDescriptor.hasUnknownOptions(
+                  FileDescriptorProto.newBuilder(baseProto)
+                      .addMessageType(
+                          DescriptorProto.newBuilder()
+                              .setName("M")
+                              .addField(
+                                  FieldDescriptorProto.newBuilder()
+                                      .setName("f")
+                                      .setOptions(
+                                          FieldOptions.newBuilder().setUnknownFields(unknown))))
+                      .build()))
+          .isTrue();
+
+      assertThat(
+              FileDescriptor.hasUnknownOptions(
+                  FileDescriptorProto.newBuilder(baseProto)
+                      .addMessageType(
+                          DescriptorProto.newBuilder()
+                              .setName("M")
+                              .addOneofDecl(
+                                  OneofDescriptorProto.newBuilder()
+                                      .setName("o")
+                                      .setOptions(
+                                          DescriptorProtos.OneofOptions.newBuilder()
+                                              .setUnknownFields(unknown))))
+                      .build()))
+          .isTrue();
+
+      assertThat(
+              FileDescriptor.hasUnknownOptions(
+                  FileDescriptorProto.newBuilder(baseProto)
+                      .addEnumType(
+                          EnumDescriptorProto.newBuilder()
+                              .setName("E")
+                              .setOptions(
+                                  DescriptorProtos.EnumOptions.newBuilder()
+                                      .setUnknownFields(unknown)))
+                      .build()))
+          .isTrue();
+
+      assertThat(
+              FileDescriptor.hasUnknownOptions(
+                  FileDescriptorProto.newBuilder(baseProto)
+                      .addEnumType(
+                          EnumDescriptorProto.newBuilder()
+                              .setName("E")
+                              .addValue(
+                                  EnumValueDescriptorProto.newBuilder()
+                                      .setName("V")
+                                      .setOptions(
+                                          DescriptorProtos.EnumValueOptions.newBuilder()
+                                              .setUnknownFields(unknown))))
+                      .build()))
+          .isTrue();
+
+      assertThat(
+              FileDescriptor.hasUnknownOptions(
+                  FileDescriptorProto.newBuilder(baseProto)
+                      .addService(
+                          ServiceDescriptorProto.newBuilder()
+                              .setName("S")
+                              .setOptions(
+                                  DescriptorProtos.ServiceOptions.newBuilder()
+                                      .setUnknownFields(unknown)))
+                      .build()))
+          .isTrue();
+
+      assertThat(
+              FileDescriptor.hasUnknownOptions(
+                  FileDescriptorProto.newBuilder(baseProto)
+                      .addService(
+                          ServiceDescriptorProto.newBuilder()
+                              .setName("S")
+                              .addMethod(
+                                  MethodDescriptorProto.newBuilder()
+                                      .setName("M")
+                                      .setOptions(
+                                          DescriptorProtos.MethodOptions.newBuilder()
+                                              .setUnknownFields(unknown))))
+                      .build()))
+          .isTrue();
+
+      assertThat(
+              FileDescriptor.hasUnknownOptions(
+                  FileDescriptorProto.newBuilder(baseProto)
+                      .addMessageType(
+                          DescriptorProto.newBuilder()
+                              .setName("M")
+                              .addExtensionRange(
+                                  DescriptorProto.ExtensionRange.newBuilder()
+                                      .setStart(1)
+                                      .setEnd(10)
+                                      .setOptions(
+                                          DescriptorProtos.ExtensionRangeOptions.newBuilder()
+                                              .setUnknownFields(unknown))))
+                      .build()))
+          .isTrue();
+    }
+
+    @Test
+    public void testHasUnknownOptions_nonOptionsUnknownsIgnored() throws Exception {
+      FileDescriptorProto baseProto = FileDescriptorProto.newBuilder().setName("foo.proto").build();
+      UnknownFieldSet unknown =
+          UnknownFieldSet.newBuilder()
+              .addField(12345, UnknownFieldSet.Field.newBuilder().addVarint(1).build())
+              .build();
+
+      // Test that unknown fields on the descriptor messages themselves are ignored (returns false)
+      assertThat(
+              FileDescriptor.hasUnknownOptions(
+                  FileDescriptorProto.newBuilder(baseProto).setUnknownFields(unknown).build()))
+          .isFalse();
+
+      assertThat(
+              FileDescriptor.hasUnknownOptions(
+                  FileDescriptorProto.newBuilder(baseProto)
+                      .addMessageType(DescriptorProto.newBuilder().setUnknownFields(unknown))
+                      .build()))
+          .isFalse();
+
+      assertThat(
+              FileDescriptor.hasUnknownOptions(
+                  FileDescriptorProto.newBuilder(baseProto)
+                      .addMessageType(
+                          DescriptorProto.newBuilder()
+                              .setName("M")
+                              .addField(
+                                  FieldDescriptorProto.newBuilder().setUnknownFields(unknown)))
+                      .build()))
+          .isFalse();
+
+      assertThat(
+              FileDescriptor.hasUnknownOptions(
+                  FileDescriptorProto.newBuilder(baseProto)
+                      .addMessageType(
+                          DescriptorProto.newBuilder()
+                              .setName("M")
+                              .addOneofDecl(
+                                  OneofDescriptorProto.newBuilder().setUnknownFields(unknown)))
+                      .build()))
+          .isFalse();
+
+      assertThat(
+              FileDescriptor.hasUnknownOptions(
+                  FileDescriptorProto.newBuilder(baseProto)
+                      .addEnumType(EnumDescriptorProto.newBuilder().setUnknownFields(unknown))
+                      .build()))
+          .isFalse();
+
+      assertThat(
+              FileDescriptor.hasUnknownOptions(
+                  FileDescriptorProto.newBuilder(baseProto)
+                      .addEnumType(
+                          EnumDescriptorProto.newBuilder()
+                              .setName("E")
+                              .addValue(
+                                  EnumValueDescriptorProto.newBuilder().setUnknownFields(unknown)))
+                      .build()))
+          .isFalse();
+
+      assertThat(
+              FileDescriptor.hasUnknownOptions(
+                  FileDescriptorProto.newBuilder(baseProto)
+                      .addService(ServiceDescriptorProto.newBuilder().setUnknownFields(unknown))
+                      .build()))
+          .isFalse();
+
+      assertThat(
+              FileDescriptor.hasUnknownOptions(
+                  FileDescriptorProto.newBuilder(baseProto)
+                      .addService(
+                          ServiceDescriptorProto.newBuilder()
+                              .setName("S")
+                              .addMethod(
+                                  MethodDescriptorProto.newBuilder().setUnknownFields(unknown)))
+                      .build()))
+          .isFalse();
+
+      assertThat(
+              FileDescriptor.hasUnknownOptions(
+                  FileDescriptorProto.newBuilder(baseProto)
+                      .addMessageType(
+                          DescriptorProto.newBuilder()
+                              .setName("M")
+                              .addExtensionRange(
+                                  DescriptorProto.ExtensionRange.newBuilder()
+                                      .setStart(1)
+                                      .setEnd(10)
+                                      .setUnknownFields(unknown)))
+                      .build()))
+          .isFalse();
+    }
+
+    private static void findOptionsPaths(
+        Descriptor descriptor,
+        java.util.List<FieldDescriptor> currentPath,
+        java.util.List<java.util.List<FieldDescriptor>> paths,
+        java.util.Set<Descriptor> visited) {
+      if (!visited.add(descriptor)) {
+        return;
+      }
+      for (FieldDescriptor field : descriptor.getFields()) {
+        if (field.getName().equals("options")) {
+          java.util.List<FieldDescriptor> path = new java.util.ArrayList<>(currentPath);
+          path.add(field);
+          paths.add(path);
+        } else if (field.getType() == FieldDescriptor.Type.MESSAGE) {
+          currentPath.add(field);
+          findOptionsPaths(field.getMessageType(), currentPath, paths, visited);
+          currentPath.remove(currentPath.size() - 1);
+        }
+      }
     }
   }
 
