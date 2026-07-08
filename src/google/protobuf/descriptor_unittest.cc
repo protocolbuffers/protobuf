@@ -4062,7 +4062,7 @@ TEST_P(AllowUnknownDependenciesTest,
   ASSERT_EQ(1, extendee->extension_range_count());
 
   // This must not crash. Previously dereferenced nullptr via options().
-  EXPECT_NO_FATAL_FAILURE(extendee->DebugString());
+  EXPECT_FALSE(extendee->DebugString().empty());
 }
 
 TEST_P(AllowUnknownDependenciesTest, CustomOption) {
