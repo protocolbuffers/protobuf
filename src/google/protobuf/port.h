@@ -198,7 +198,7 @@ struct ArenaInitialized {
 
 template <typename To, typename From>
 void AssertDownCast(From* from) {
-  static_assert(std::is_base_of<From, To>::value, "illegal DownCast");
+  static_assert(std::is_base_of_v<From, To>, "illegal DownCast");
 
   // Check that this function is not used to downcast message types.
   // For those we should use {Down,Dynamic}CastTo{Message,Generated}.
@@ -736,6 +736,13 @@ PROTOBUF_ALWAYS_INLINE void TSanWrite(const void*) {}
 template <typename T>
 using type_identity_t = std::enable_if_t<true, T>;
 
+// Evaluates to the input value, but it makes it type-dependent on `T`.
+// This allows "late binding" of known types to avoid circular dependencies.
+template <typename T, typename U>
+U&& TypeDependent(U&& value) {
+  return std::forward<U>(value);
+}
+
 template <typename T>
 constexpr T* Launder(T* p) {
 #if defined(__cpp_lib_launder) && __cpp_lib_launder >= 201606L
@@ -907,7 +914,12 @@ using GlobalEmptyString = std::conditional_t<
 PROTOBUF_EXPORT extern GlobalEmptyString fixed_address_empty_string;
 
 PROTOBUF_EXPORT ABSL_ATTRIBUTE_NORETURN PROTOBUF_NOINLINE void
-HandleAddOverflow(int a, int b);
+HandleAddOverflow(absl::int128 a, absl::int128 b);
+
+template <typename T, typename U>
+ABSL_ATTRIBUTE_NORETURN PROTOBUF_NOINLINE void HandleAddOverflow(T a, U b) {
+  HandleAddOverflow(absl::int128(a), absl::int128(b));
+}
 
 #if ABSL_HAVE_BUILTIN(__builtin_add_overflow)
 template <typename IntType1, typename IntType2>

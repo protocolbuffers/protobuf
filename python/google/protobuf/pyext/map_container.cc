@@ -285,6 +285,7 @@ PyObject* Clear(PyObject* _self) {
   const Reflection* reflection = message->GetReflection();
 
   reflection->ClearField(message, self->parent_field_descriptor);
+  self->version++;
 
   Py_RETURN_NONE;
 }

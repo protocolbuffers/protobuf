@@ -66,7 +66,7 @@ class ProtoTest(unittest.TestCase):
   def test_serialize_length_prefixed_fake_io(self, message_module):
     class FakeBytesIO(io.BytesIO):
 
-      def write(self, b: bytes) -> int:
+      def write(self, b: bytes) -> int:  # pyrefly: ignore[bad-override]
         return 0
 
     msg = message_module.TestAllTypes(optional_int32=123)

@@ -13,11 +13,11 @@ option features.message_encoding = DELIMITED;
 option java_package = "com.google.protobuf_test_messages.edition_unstable";
 option objc_class_prefix = "EditionUnstable";
 
-message ComplexMessage {
+export message ComplexMessage {
   int32 d = 1;
 }
 
-message TestAllTypesEditionUnstable {
+export message TestAllTypesEditionUnstable {
   // Singular
   int32 optional_int32 = 1;
 
@@ -51,11 +51,11 @@ message TestAllTypesEditionUnstable {
   extensions 120 to 200;
 }
 
-message ForeignMessageEditionUnstable {
+export message ForeignMessageEditionUnstable {
   int32 c = 1;
 }
 
-enum ForeignEnumEditionUnstable {
+export enum ForeignEnumEditionUnstable {
   FOREIGN_FOO = 0;
   FOREIGN_BAR = 1;
   FOREIGN_BAZ = 2;

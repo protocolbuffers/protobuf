@@ -27,6 +27,7 @@
 #include <vector>
 
 #include "absl/base/macros.h"
+#include "absl/base/optimization.h"
 #include "absl/cleanup/cleanup.h"
 #include "absl/container/btree_set.h"
 #include "absl/log/absl_check.h"
@@ -2203,11 +2204,28 @@ void TextFormat::FastFieldValuePrinter::PrintEnum(
   generator->PrintString(name);
 }
 
+namespace {
+
+bool ContainsCharactersToCEscape(absl::string_view val) {
+  bool needs_escape = false;
+  for (unsigned char c : val) {
+    needs_escape |=
+        ((c < 32) | (c > 126) | (c == '"') | (c == '\'') | (c == '\\'));
+  }
+  return needs_escape;
+}
+
+}  // namespace
+
 void TextFormat::FastFieldValuePrinter::PrintString(
     const std::string& val, BaseTextGenerator* generator) const {
   generator->PrintLiteral("\"");
   if (!val.empty()) {
-    generator->PrintString(absl::CEscape(val));
+    if (ABSL_PREDICT_FALSE(ContainsCharactersToCEscape(val))) {
+      generator->PrintString(absl::CEscape(val));
+    } else {
+      generator->PrintString(val);
+    }
   }
   generator->PrintLiteral("\"");
 }

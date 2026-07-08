@@ -585,7 +585,7 @@ jobs:
           ref: ${{ inputs.safe-checkout }}
       - name: Checkout Abseil HEAD
         if: ${{ inputs.continuous-run }}
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           repository: abseil/abseil-cpp
           path: abseil-cpp-head

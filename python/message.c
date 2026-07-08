@@ -2126,6 +2126,9 @@ static PyObject* PyUpb_MessageMeta_GetAttr(PyObject* self, PyObject* name) {
   // that were previously calculated and cached in the type's dict.
   PyObject* ret = cpython_bits.type_getattro(self, name);
   if (ret) return ret;
+  if (!PyErr_ExceptionMatches(PyExc_AttributeError)) {
+    return NULL;
+  }
 
   // We did not find a cached attribute. Try to calculate the attribute
   // dynamically, using the descriptor as an argument.
@@ -2138,7 +2141,9 @@ static PyObject* PyUpb_MessageMeta_GetAttr(PyObject* self, PyObject* name) {
     return ret;
   }
 
-  PyErr_SetObject(PyExc_AttributeError, name);
+  if (!PyErr_Occurred()) {
+    PyErr_SetObject(PyExc_AttributeError, name);
+  }
   return NULL;
 }
 

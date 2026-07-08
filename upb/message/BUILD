@@ -46,6 +46,7 @@ cc_library(
     visibility = ["//visibility:public"],
     deps = [
         ":internal",
+        ":message_unknowns",
         ":types",
         "//upb/base",
         "//upb/base:internal",
@@ -53,6 +54,38 @@ cc_library(
         "//upb/mem",
         "//upb/mini_table",
         "//upb/mini_table:internal",
+        "//upb/port",
+    ],
+)
+
+cc_library(
+    name = "message_unknowns",
+    srcs = [
+        "unknown_fields.c",
+    ],
+    hdrs = [
+        "unknown_fields.h",
+    ],
+    copts = UPB_DEFAULT_COPTS,
+    features = UPB_DEFAULT_FEATURES,
+    visibility = [
+        "//pkg:__pkg__",
+        "//python:__pkg__",
+        "//third_party/cel/c/internal:__pkg__",
+        "//third_party/upb/wasm_abi/upb:__pkg__",
+        "//upb:__pkg__",
+        "//video/youtube/utils/elements/client/component_type:__pkg__",
+        "//video/youtube/utils/elements/client/component_type/subscription_processors:__pkg__",
+        "//video/youtube/utils/elements/data_layer:__pkg__",
+        "//video/youtube/utils/elements/javascript/client/proto/upb/native:__pkg__",
+        "//video/youtube/utils/elements/upb/crosslang:__pkg__",
+    ],
+    deps = [
+        ":internal",
+        ":types",
+        "//upb/base",
+        "//upb/mem",
+        "//upb/mem:internal",
         "//upb/port",
     ],
 )
@@ -186,6 +219,7 @@ cc_library(
     features = UPB_DEFAULT_FEATURES,
     visibility = ["//visibility:public"],
     deps = [
+        ":copy",
         ":internal",
         ":message",
         "//upb/base",
@@ -193,6 +227,7 @@ cc_library(
         "//upb/mini_table",
         "//upb/port",
         "//upb/wire",
+        "//upb/wire:encoder",
         "//upb/wire:eps_copy_input_stream",
         "//upb/wire:reader",
     ],
@@ -437,6 +472,7 @@ cc_test(
         "//upb/mini_descriptor",
         "//upb/mini_descriptor:internal",
         "//upb/mini_table",
+        "//upb/port",
         "//upb/test:test_messages_proto2_upb_proto",
         "//upb/test:test_messages_proto3_upb_proto",
         "//upb/test:test_proto_upb_minitable",
@@ -478,6 +514,7 @@ cc_test(
         ":message_test_upb_minitable_proto",
         ":message_test_upb_proto",
         ":message_test_upb_proto_reflection",
+        ":message_unknowns",
         "//upb/base",
         "//upb/json",
         "//upb/mem",
@@ -492,6 +529,7 @@ cc_test(
         "//upb/text:debug",
         "//upb/wire",
         "//upb/wire:eps_copy_input_stream",
+        "//upb/wire:eps_copy_input_stream_internal",
         "//upb/wire:reader",
         "//upb/wire:writer",
         "@abseil-cpp//absl/cleanup",

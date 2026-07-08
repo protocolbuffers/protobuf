@@ -114,7 +114,7 @@ class DescriptorBuilder {
   bool had_errors_;
   std::string filename_;
   FileDescriptor* file_;
-  FileDescriptorTables* file_tables_;
+  FileDescriptorTables* file_tables_ = nullptr;
   absl::flat_hash_set<const FileDescriptor*> dependencies_;
   absl::flat_hash_set<const FileDescriptor*> option_dependencies_;
 

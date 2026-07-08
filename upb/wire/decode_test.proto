@@ -1,0 +1,17 @@
+syntax = "proto2";
+
+package upb_decode_test;
+
+message TestMessageSet {
+  option message_set_wire_format = true;
+
+  extensions 4 to max;
+}
+
+message SubMessage {
+  optional int32 val = 1;
+}
+
+extend TestMessageSet {
+  optional SubMessage ext_message_set = 2000;
+}
