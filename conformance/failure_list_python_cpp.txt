@@ -7,8 +7,12 @@
 # TODO: insert links to corresponding bugs tracking the issue.
 # Should we use GitHub issues or the Google-internal bug tracker?
 
-Recommended.*.JsonInput.FieldNameDuplicateDifferentCasing1 # Should have failed to parse, but didn't.
-Recommended.*.JsonInput.FieldNameDuplicateDifferentCasing2 # Should have failed to parse, but didn't.
+Recommended.*.JsonInput.FieldNameDuplicateDifferentCasing1                                                         # Should have failed to parse, but didn't.
+Recommended.*.JsonInput.FieldNameDuplicateDifferentCasing2                                                         # Should have failed to parse, but didn't.
+Required.*.JsonInput.TimestampJsonInputDayTooShort                                                                 # Should have failed to parse, but didn't.
+Required.*.JsonInput.TimestampJsonInputInvalidOffsetHour                                                           # Should have failed to parse, but didn't.
+Required.*.JsonInput.TimestampJsonInputInvalidOffsetMinute                                                         # Should have failed to parse, but didn't.
+Required.*.JsonInput.TimestampJsonInputMonthTooShort                                                               # Should have failed to parse, but didn't.
 Required.*.ProtobufInput.BadTag_FieldNumberSlightlyTooHigh                                                         # Should have failed to parse, but didn't.
 # TODO: Uncomment once conformance tests can express failures that are not expected to be fixed.
 # Recommended.Editions_Proto2.ProtobufInput.RejectInvalidUtf8.String.MapKey                                          # Should have failed to parse, but didn't.

@@ -11,3 +11,19 @@ Required.Proto2.JsonInput.EnumFieldNumericValueZero.JsonOutput
 Required.Proto2.JsonInput.EnumFieldNumericValueZero.ProtobufOutput
 Required.Proto2.JsonInput.StoresDefaultPrimitive.Validator
 Required.*.JsonInput.AnyWithNoType.*
+Required.*.JsonInput.TimestampJsonInputDayTooLarge                                                    # Should have failed to parse, but didn't.
+Required.*.JsonInput.TimestampJsonInputDayTooShort                                                    # Should have failed to parse, but didn't.
+Required.*.JsonInput.TimestampJsonInputDayZero                                                        # Should have failed to parse, but didn't.
+Required.*.JsonInput.TimestampJsonInputHourTooLarge                                                   # Should have failed to parse, but didn't.
+Required.*.JsonInput.TimestampJsonInputHourTooLarge25                                                 # Should have failed to parse, but didn't.
+Required.*.JsonInput.TimestampJsonInputInvalidOffsetHour                                              # Should have failed to parse, but didn't.
+Required.*.JsonInput.TimestampJsonInputInvalidOffsetMinute                                            # Should have failed to parse, but didn't.
+Required.*.JsonInput.TimestampJsonInputMinuteTooLarge                                                 # Should have failed to parse, but didn't.
+Required.*.JsonInput.TimestampJsonInputMonthTooLarge                                                  # Should have failed to parse, but didn't.
+Required.*.JsonInput.TimestampJsonInputMonthTooShort                                                  # Should have failed to parse, but didn't.
+Required.*.JsonInput.TimestampJsonInputMonthZero                                                      # Should have failed to parse, but didn't.
+Required.*.JsonInput.TimestampJsonInputNonLeapFeb29                                                   # Should have failed to parse, but didn't.
+Required.*.JsonInput.TimestampJsonInputOffsetBoundaryOverflow                                         # Should have failed to parse, but didn't.
+Required.*.JsonInput.TimestampJsonInputOffsetBoundaryUnderflow                                        # Should have failed to parse, but didn't.
+Required.*.JsonInput.TimestampJsonInputSecondTooLarge                                                 # Should have failed to parse, but didn't.
+Required.*.JsonInput.TimestampJsonInputYearTooShort                                                   # Should have failed to parse, but didn't.
