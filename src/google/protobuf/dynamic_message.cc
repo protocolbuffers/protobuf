@@ -267,7 +267,7 @@ uint32_t FieldFlags(const FieldDescriptor* field) {
       !field->is_extension() &&                      //
       field->cpp_type() == field->CPPTYPE_STRING &&  //
       field->cpp_string_type() == FieldDescriptor::CppStringType::kView) {
-    return internal::kMicroStringMask;
+    return internal::kMicroStringOffsetTag;
   }
   return 0;
 }
@@ -345,10 +345,6 @@ class DynamicMessage final : public Message {
   static void* NewImpl(const void* prototype, void* mem, Arena* arena);
   static void DestroyImpl(MessageLite& msg);
 
-  // If `T` is not `void`, it will mask bits off the offset via alignment.
-  // Used to remove feature masks that are part of the reflection
-  // implementation.
-  template <typename T>
   uint32_t FieldOffset(int i) const;
   internal::InternalMetadataOffset FieldInternalMetadataOffset(int i) const;
   template <typename T = void>
@@ -500,27 +496,21 @@ DynamicMessage::DynamicMessage(DynamicMessageFactory::TypeInfo* type_info,
   SharedCtor(lock_factory);
 }
 
-template <typename T>
 inline uint32_t DynamicMessage::FieldOffset(int i) const {
-  uint32_t mask = ~uint32_t{0};
-  if constexpr (!std::is_void_v<T>) {
-    mask = ~(uint32_t{alignof(T)} - 1);
-  }
-  return type_info_->offsets[i] & mask;
+  return type_info_->offsets[i] & ~internal::kAllOffsetTags;
 }
 inline internal::InternalMetadataOffset
 DynamicMessage::FieldInternalMetadataOffset(int i) const {
-  size_t field_offset = FieldOffset<void>(i);
   return internal::InternalMetadataOffset::BuildFromDynamicOffset<
-      DynamicMessage>(field_offset);
+      DynamicMessage>(FieldOffset(i));
 }
 template <typename T>
 inline T* DynamicMessage::MutableRaw(int i) {
-  return reinterpret_cast<T*>(OffsetToPointer(FieldOffset<T>(i)));
+  return reinterpret_cast<T*>(OffsetToPointer(FieldOffset(i)));
 }
 template <typename T>
 inline const T& DynamicMessage::GetRaw(int i) const {
-  return *reinterpret_cast<const T*>(OffsetToPointer(FieldOffset<T>(i)));
+  return *reinterpret_cast<const T*>(OffsetToPointer(FieldOffset(i)));
 }
 inline void* DynamicMessage::MutableExtensionsRaw() {
   return OffsetToPointer(type_info_->extensions_offset);

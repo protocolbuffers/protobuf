@@ -318,8 +318,8 @@ void SingularMessage::GenerateMessageClearingCode(io::Printer* p) const {
   ABSL_CHECK(has_hasbit_);
   p->Emit(
       R"cc(
-        $DCHK$($field_$ != nullptr);
-        $field_$->Clear();
+        $DCHK$(this_.$field_$ != nullptr);
+        this_.$field_$->Clear();
       )cc");
 }
 
@@ -725,6 +725,7 @@ class RepeatedMessage : public FieldGeneratorBase {
   void GenerateAccessorDeclarations(io::Printer* p) const override;
   void GenerateInlineAccessorDefinitions(io::Printer* p) const override;
   void GenerateClearingCode(io::Printer* p) const override;
+  void GenerateMessageClearingCode(io::Printer* p) const override;
   void GenerateMergingCode(io::Printer* p) const override;
   void GenerateSwappingCode(io::Printer* p) const override;
   void GenerateCopyConstructorCode(io::Printer* p) const override;
@@ -949,6 +950,14 @@ void RepeatedMessage::GenerateInlineAccessorDefinitions(io::Printer* p) const {
   }
 }
 
+void RepeatedMessage::GenerateMessageClearingCode(io::Printer* p) const {
+  if (should_split()) {
+    p->Emit("this_.$field_$.ClearIfNotDefault();\n");
+  } else {
+    p->Emit("$field_$.Clear();\n");
+  }
+}
+
 void RepeatedMessage::GenerateClearingCode(io::Printer* p) const {
   if (should_split()) {
     p->Emit("$field_$.ClearIfNotDefault();\n");
@@ -1109,17 +1118,17 @@ bool RepeatedMessage::RequiresArena(GeneratorFunction func) const {
 
 std::unique_ptr<FieldGeneratorBase> MakeSinguarMessageGenerator(
     const FieldDescriptor* desc, const Options& options) {
-  return absl::make_unique<SingularMessage>(desc, options);
+  return std::make_unique<SingularMessage>(desc, options);
 }
 
 std::unique_ptr<FieldGeneratorBase> MakeRepeatedMessageGenerator(
     const FieldDescriptor* desc, const Options& options) {
-  return absl::make_unique<RepeatedMessage>(desc, options);
+  return std::make_unique<RepeatedMessage>(desc, options);
 }
 
 std::unique_ptr<FieldGeneratorBase> MakeOneofMessageGenerator(
     const FieldDescriptor* desc, const Options& options) {
-  return absl::make_unique<OneofMessage>(desc, options);
+  return std::make_unique<OneofMessage>(desc, options);
 }
 
 }  // namespace cpp

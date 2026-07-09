@@ -452,8 +452,7 @@ class PROTOBUF_EXPORT Message : public MessageLite {
 
 namespace internal {
 // Creates and returns an allocation for a split message.
-void* CreateSplitMessageGeneric(Arena* arena, const void* default_split,
-                                size_t size);
+void CreateSplitMessageGeneric(Arena* arena, void** split, size_t size);
 
 // Forward-declare interfaces used to implement RepeatedFieldRef.
 // These are protobuf internals that users shouldn't care about.
@@ -694,7 +693,7 @@ class PROTOBUF_EXPORT Reflection final {
         return *flat;
       }
       if (!buffer_) {
-        buffer_ = absl::make_unique<std::string>();
+        buffer_ = std::make_unique<std::string>();
       }
       absl::CopyCordToString(cord, buffer_.get());
       return *buffer_;
@@ -1646,22 +1645,6 @@ void LinkMessageReflection() {
   internal::StrongReferenceToType<T>();
 }
 
-// Specializations to handle cast to `Message`. We can check the `is_lite` bit
-// in the class data.
-template <>
-[[nodiscard]] inline const Message* DynamicCastMessage(
-    const MessageLite* from) {
-  return from == nullptr || internal::GetClassData(*from)->is_lite
-             ? nullptr
-             : static_cast<const Message*>(from);
-}
-template <>
-[[nodiscard]] inline const Message* DownCastMessage(const MessageLite* from) {
-  ABSL_DCHECK_EQ(DynamicCastMessage<Message>(from), from)
-      << "Cannot downcast " << from->GetTypeName() << " to Message";
-  return static_cast<const Message*>(from);
-}
-
 // Specializations to handle smart pointers to `Message`. Without these,
 // `google::protobuf::DynamicCastMessage(std::shared_ptr<Message>)` is ambiguous
 // (`const MessageLite` vs `MessageLite`).
@@ -1957,7 +1940,7 @@ const Type& Reflection::GetRaw(const Message& message,
                                const FieldDescriptor* field) const {
   VerifyFieldType<Type>(field);
 
-  const uint32_t field_offset = schema_.GetFieldOffset<Type>(field);
+  const uint32_t field_offset = schema_.GetFieldOffset(field);
 
   if (ABSL_PREDICT_FALSE(schema_.IsSplit(field))) {
     ABSL_DCHECK(!schema_.InRealOneof(field))
@@ -1998,7 +1981,7 @@ Type* Reflection::MutableRaw(Message* message,
     return reinterpret_cast<Type*>(MutableRawSplitImpl(message, field));
   }
 
-  const uint32_t field_offset = schema_.GetFieldOffset<Type>(field);
+  const uint32_t field_offset = schema_.GetFieldOffset(field);
   return internal::GetPointerAtOffset<Type>(message, field_offset);
 }
 

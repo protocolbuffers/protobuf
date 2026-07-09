@@ -16,11 +16,11 @@
 #include "upb/mem/arena.h"
 #include "upb/message/accessors.h"
 #include "upb/message/array.h"
-#include "upb/message/internal/array.h"
 #include "upb/message/internal/extension.h"
 #include "upb/message/internal/message.h"
 #include "upb/message/map.h"
 #include "upb/message/message.h"
+#include "upb/message/unknown_fields.h"
 #include "upb/mini_table/extension.h"
 #include "upb/mini_table/field.h"
 #include "upb/mini_table/message.h"
@@ -32,7 +32,7 @@
 #include "upb/port/def.inc"
 
 // Parses unknown data by merging into existing base_message or creating a
-// new message usingg mini_table.
+// new message using mini_table.
 static upb_UnknownToMessageRet upb_MiniTable_ParseUnknownMessage(
     const char* unknown_data, size_t unknown_size,
     const upb_MiniTable* mini_table, upb_Message* base_message,
@@ -227,7 +227,12 @@ upb_UnknownToMessageRet upb_MiniTable_PromoteUnknownToMessage(
           message = ret.message;
           upb_StringView del =
               upb_StringView_FromDataAndSize(unknown_data, unknown_size);
-          upb_Message_DeleteUnknown(msg, &del, &(unknown.iter), arena);
+          upb_Message_DeleteUnknownStatus del_status =
+              upb_Message_DeleteUnknown(msg, &del, &(unknown.iter), arena);
+          if (del_status == kUpb_DeleteUnknown_AllocFail) {
+            ret.status = kUpb_UnknownToMessage_OutOfMemory;
+            return ret;
+          }
         }
       } break;
       case kUpb_FindUnknown_ParseError:
@@ -277,7 +282,9 @@ upb_UnknownToMessage_Status upb_MiniTable_PromoteUnknownToMessageArray(
         value.msg_val = ret.message;
         // Allocate array on demand before append.
         if (!repeated_messages) {
-          upb_Message_ResizeArrayUninitialized(msg, field, 0, arena);
+          if (!upb_Message_ResizeArrayUninitialized(msg, field, 0, arena)) {
+            return kUpb_UnknownToMessage_OutOfMemory;
+          }
           repeated_messages = upb_Message_GetMutableArray(msg, field);
         }
         if (!upb_Array_Append(repeated_messages, value, arena)) {
@@ -285,7 +292,11 @@ upb_UnknownToMessage_Status upb_MiniTable_PromoteUnknownToMessageArray(
         }
         upb_StringView del =
             upb_StringView_FromDataAndSize(unknown.ptr, unknown.len);
-        upb_Message_DeleteUnknown(msg, &del, &unknown.iter, arena);
+        upb_Message_DeleteUnknownStatus del_status =
+            upb_Message_DeleteUnknown(msg, &del, &(unknown.iter), arena);
+        if (del_status == kUpb_DeleteUnknown_AllocFail) {
+          return kUpb_UnknownToMessage_OutOfMemory;
+        }
       } else {
         return ret.status;
       }
@@ -323,7 +334,11 @@ upb_UnknownToMessage_Status upb_MiniTable_PromoteUnknownToMap(
     if (!insert_success) return kUpb_UnknownToMessage_OutOfMemory;
     upb_StringView del =
         upb_StringView_FromDataAndSize(unknown.ptr, unknown.len);
-    upb_Message_DeleteUnknown(msg, &del, &unknown.iter, arena);
+    upb_Message_DeleteUnknownStatus del_status =
+        upb_Message_DeleteUnknown(msg, &del, &unknown.iter, arena);
+    if (del_status == kUpb_DeleteUnknown_AllocFail) {
+      return kUpb_UnknownToMessage_OutOfMemory;
+    }
   }
   return kUpb_UnknownToMessage_Ok;
 }

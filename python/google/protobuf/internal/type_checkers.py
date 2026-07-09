@@ -121,8 +121,8 @@ class BoolValueChecker(object):
     if not hasattr(proposed_value, '__index__'):
       # Under NumPy 2.3, numpy.bool does not have an __index__ method.
       if (
-          type(proposed_value).__module__ == 'numpy'
-          and type(proposed_value).__name__ == 'bool'
+          getattr(type(proposed_value), '__module__', None) == 'numpy'
+          and getattr(type(proposed_value), '__name__', None) == 'bool'
       ):
         return bool(proposed_value)
       message = '%.1024r has type %s, but expected one of: %s' % (
@@ -133,8 +133,8 @@ class BoolValueChecker(object):
       raise TypeError(message)
 
     if (
-        type(proposed_value).__module__ == 'numpy'
-        and type(proposed_value).__name__ == 'ndarray'
+        getattr(type(proposed_value), '__module__', None) == 'numpy'
+        and getattr(type(proposed_value), '__name__', None) == 'ndarray'
     ):
       message = '%.1024r has type %s, but expected one of: %s' % (
           proposed_value,
@@ -166,8 +166,8 @@ class IntValueChecker(object):
       raise TypeError(message)
 
     if not hasattr(proposed_value, '__index__') or (
-        type(proposed_value).__module__ == 'numpy'
-        and type(proposed_value).__name__ == 'ndarray'
+        getattr(type(proposed_value), '__module__', None) == 'numpy'
+        and getattr(type(proposed_value), '__name__', None) == 'ndarray'
     ):
       message = '%.1024r has type %s, but expected one of: %s' % (
           proposed_value,
@@ -301,8 +301,8 @@ class DoubleValueChecker(object):
         not hasattr(proposed_value, '__float__')
         and not hasattr(proposed_value, '__index__')
     ) or (
-        type(proposed_value).__module__ == 'numpy'
-        and type(proposed_value).__name__ == 'ndarray'
+        getattr(type(proposed_value), '__module__', None) == 'numpy'
+        and getattr(type(proposed_value), '__name__', None) == 'ndarray'
     ):
       message = '%.1024r has type %s, but expected one of: int, float' % (
           proposed_value,

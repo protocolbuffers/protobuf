@@ -555,7 +555,7 @@ class DispatcherTestProto : public Message {
   using InternalArenaConstructable_ = void;
   using DestructorSkippable_ = void;
   // For the test below to construct.
-  explicit constexpr DispatcherTestProto(absl::in_place_t)
+  explicit constexpr DispatcherTestProto(std::in_place_t)
       : Message(static_cast<internal::ClassData*>(nullptr)) {}
   explicit DispatcherTestProto(Arena*) : Message(nullptr, nullptr) {
     ABSL_LOG(FATAL);

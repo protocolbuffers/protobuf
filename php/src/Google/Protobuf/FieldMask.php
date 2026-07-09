@@ -181,7 +181,8 @@ class FieldMask extends \Google\Protobuf\Internal\Message
      *           The set of field mask paths.
      * }
      */
-    public function __construct($data = NULL) {
+    public function __construct($data = null)
+    {
         \GPBMetadata\Google\Protobuf\FieldMask::initOnce();
         parent::__construct($data);
     }

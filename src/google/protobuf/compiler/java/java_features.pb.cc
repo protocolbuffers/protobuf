@@ -56,7 +56,7 @@ constexpr JavaFeatures_NestInFileClassFeature::ParseTableT_ JavaFeatures_NestInF
       offsetof(ParseTableT_, field_names),  // no aux_entries
       class_data,
       nullptr,  // post_loop_handler
-      ::_pbi::TcParser::GenericFallback,  // fallback
+      ::_pbi::TcParser::MpUnknownFields,  // fallback
       #ifdef PROTOBUF_PREFETCH_PARSE_TABLE
       ::_pbi::TcParser::GetTable<::pb::JavaFeatures_NestInFileClassFeature>(),  // to_prefetch
       #endif  // PROTOBUF_PREFETCH_PARSE_TABLE
@@ -182,7 +182,7 @@ constexpr JavaFeatures::ParseTableT_ JavaFeatures::InternalGenerateParseTable_(c
       offsetof(ParseTableT_, aux_entries),
       class_data,
       nullptr,  // post_loop_handler
-      ::_pbi::TcParser::GenericFallback,  // fallback
+      ::_pbi::TcParser::MpUnknownFields,  // fallback
       #ifdef PROTOBUF_PREFETCH_PARSE_TABLE
       ::_pbi::TcParser::GetTable<::pb::JavaFeatures>(),  // to_prefetch
       #endif  // PROTOBUF_PREFETCH_PARSE_TABLE
@@ -579,19 +579,18 @@ PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const JavaFeatures::ParseTableT_
         JavaFeatures::InternalGenerateParseTable_(JavaFeatures_class_data_.base());
 #endif  // !PROTOBUF_MESSAGE_GLOBALS
 PROTOBUF_NOINLINE void JavaFeatures::Clear() {
+  auto& this_ [[maybe_unused]] = *this;
   // @@protoc_insertion_point(message_clear_start:pb.JavaFeatures)
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  ::uint32_t cached_has_bits = 0;
-  // Prevent compiler warnings about cached_has_bits being unused
-  (void)cached_has_bits;
+  ::uint32_t cached_has_bits [[maybe_unused]] = 0;
 
-  cached_has_bits = _impl_._has_bits_[0];
+  cached_has_bits = this_._impl_._has_bits_[0];
   if (BatchCheckHasBit(cached_has_bits, 0x0000001fU)) {
-    ::memset(
-        &_impl_.utf8_validation_, 0,
-        static_cast<::size_t>(reinterpret_cast<char*>(&_impl_.nest_in_file_class_) -
-                              reinterpret_cast<char*>(&_impl_.utf8_validation_)) +
-            sizeof(_impl_.nest_in_file_class_));
+    ::memset(&this_._impl_.utf8_validation_, 0,
+             static_cast<::size_t>(
+                 reinterpret_cast<char*>(&this_._impl_.nest_in_file_class_) -
+                 reinterpret_cast<char*>(&this_._impl_.utf8_validation_)) +
+                 sizeof(_impl_.nest_in_file_class_));
   }
   _impl_._has_bits_.Clear();
   _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
@@ -670,9 +669,7 @@ PROTOBUF_NOINLINE void JavaFeatures::Clear() {
   // @@protoc_insertion_point(message_byte_size_start:pb.JavaFeatures)
   ::size_t total_size = 0;
 
-  ::uint32_t cached_has_bits = 0;
-  // Prevent compiler warnings about cached_has_bits being unused
-  (void)cached_has_bits;
+  ::uint32_t cached_has_bits [[maybe_unused]] = 0;
 
   ::_pbi::Prefetch5LinesFrom7Lines(&this_);
   cached_has_bits = this_._impl_._has_bits_[0];

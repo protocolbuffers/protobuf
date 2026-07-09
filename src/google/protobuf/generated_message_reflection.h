@@ -61,13 +61,19 @@ class WeakFieldMap;  // weak_field_map.h
 // Tag used on offsets for fields that don't have a real offset.
 // For example, weak message fields go into the WeakFieldMap and not in an
 // actual field.
-inline constexpr uint32_t kInvalidFieldOffsetTag = 0x40000000u;
+inline constexpr uint32_t kInvalidFieldOffsetTag = 0x10000000u;
 
-// Mask used on offsets for split fields.
-inline constexpr uint32_t kSplitFieldOffsetMask = 0x80000000u;
-inline constexpr uint32_t kLazyMask = 0x1u;
-inline constexpr uint32_t kInlinedMask = 0x1u;
-inline constexpr uint32_t kMicroStringMask = 0x2u;
+// Tags used in field offsets to indicate extra information about the field.
+// This information can't be derived from the descriptor.
+// We reuse tags that can't go on the same field.
+inline constexpr uint32_t kSplitFieldOffsetTag = 0x80000000u;
+inline constexpr uint32_t kLazyOffsetTag = 0x40000000u;
+inline constexpr uint32_t kInlinedOffsetTag = 0x40000000u;
+inline constexpr uint32_t kMicroStringOffsetTag = 0x20000000u;
+
+inline constexpr uint32_t kAllOffsetTags = kSplitFieldOffsetTag |
+                                           kLazyOffsetTag | kInlinedOffsetTag |
+                                           kMicroStringOffsetTag;
 
 // Structs that the code generator emits directly to describe a message.
 // These should never used directly except to build a ReflectionSchema
@@ -146,9 +152,8 @@ class ReflectionSchema {
   }
 
   // Offset of any field.
-  template <typename Type = void>
   uint32_t GetFieldOffset(const FieldDescriptor* field) const {
-    return OffsetValue<Type>(offsets_[field->index()], field->type());
+    return OffsetValue(offsets_[field->index()]);
   }
 
   bool IsFieldInlined(const FieldDescriptor* field) const {
@@ -214,7 +219,7 @@ class ReflectionSchema {
   // of the underlying data depends on the field's type.
   const void* GetFieldDefault(const FieldDescriptor* field) const {
     return reinterpret_cast<const uint8_t*>(default_instance_) +
-           OffsetValue<void>(offsets_[field->index()], field->type());
+           OffsetValue(offsets_[field->index()]);
   }
 
   // Returns true if the field is implicitly backed by LazyField.
@@ -228,7 +233,7 @@ class ReflectionSchema {
 
   bool IsSplit(const FieldDescriptor* field) const {
     return split_offset_ != -1 &&
-           (offsets_[field->index()] & kSplitFieldOffsetMask) != 0;
+           (offsets_[field->index()] & kSplitFieldOffsetTag) != 0;
   }
 
   // Byte offset of _split_.
@@ -250,26 +255,12 @@ class ReflectionSchema {
 
   // We tag offset values to provide additional data about fields (such as
   // "unused" or "lazy" or "inlined").
-  template <typename Type>
-  static uint32_t OffsetValue(uint32_t v, FieldDescriptor::Type type) {
-    if constexpr (!std::is_void_v<Type>) {
-      // If the type is passed, statically use the alignment for the mask.
-      // Faster than checking `type`.
-      return v & ~kSplitFieldOffsetMask & ~(alignof(Type) - 1);
-    }
-    if (type == FieldDescriptor::TYPE_MESSAGE ||
-        type == FieldDescriptor::TYPE_STRING ||
-        type == FieldDescriptor::TYPE_BYTES) {
-      return v & ~kSplitFieldOffsetMask & ~kInlinedMask & ~kLazyMask &
-             ~kMicroStringMask;
-    }
-    return v & (~kSplitFieldOffsetMask);
-  }
+  static uint32_t OffsetValue(uint32_t v) { return v & ~kAllOffsetTags; }
 
   static bool Inlined(uint32_t v, FieldDescriptor::Type type) {
     if (type == FieldDescriptor::TYPE_STRING ||
         type == FieldDescriptor::TYPE_BYTES) {
-      return (v & kInlinedMask) != 0u;
+      return (v & kInlinedOffsetTag) != 0u;
     } else {
       // Non string/byte fields are not inlined.
       return false;
@@ -280,7 +271,7 @@ class ReflectionSchema {
     ABSL_DCHECK(type == FieldDescriptor::TYPE_STRING ||
                 type == FieldDescriptor::TYPE_BYTES)
         << type;
-    return (v & kMicroStringMask) != 0u;
+    return (v & kMicroStringOffsetTag) != 0u;
   }
 
   const Message* default_instance_;

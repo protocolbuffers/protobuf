@@ -712,6 +712,7 @@ cc_library(
         "raw_ptr.cc",
         "repeated_field.cc",
         "repeated_ptr_field.cc",
+        "unknown_field_set_lite.cc",
         "wire_format_lite.cc",
     ],
     # TODO Fix ODR violations across BUILD.bazel files.
@@ -747,6 +748,7 @@ cc_library(
         "runtime_version.h",
         "serial_arena.h",
         "thread_safe_arena.h",
+        "unknown_field_set.h",
         "wire_format_lite.h",
     ],
     copts = COPTS + select({
@@ -766,11 +768,14 @@ cc_library(
         ":arena_align",
         ":arena_allocation_policy",
         ":arena_cleanup",
+        ":class_data",
         ":endian",
         ":internal_visibility",
+        ":message_traits",
         ":micro_string",
         ":port",
         ":string_block",
+        ":type_id",
         ":varint_shuffle",
         "//src/google/protobuf/io",
         "//src/google/protobuf/stubs:lite",
@@ -808,6 +813,7 @@ PROTOBUF_HEADERS = [
     "cpp_file_options.pb.h",
     "descriptor.h",
     "descriptor.pb.h",
+    "descriptor_builder.h",
     "descriptor_database.h",
     "descriptor_visitor.h",
     "dynamic_message.h",
@@ -830,6 +836,7 @@ PROTOBUF_HEADERS = [
     "reflection_visit_fields.h",
     "reflection_visit_field_info.h",
     "service.h",
+    "symbol.h",
     "text_format.h",
     "unknown_field_set.h",
     "wire_format.h",
@@ -858,6 +865,7 @@ cc_library(
         "reflection_mode.cc",
         "reflection_ops.cc",
         "service.cc",
+        "symbol.cc",
         "symbol_checker.cc",
         "text_format.cc",
         "unknown_field_set.cc",
@@ -871,13 +879,16 @@ cc_library(
         "//:__subpackages__",
     ],
     deps = [
+        ":class_data",
         ":internal_visibility",
+        ":message_traits",
         ":micro_string",
         ":naming_style",
         ":port",
         ":protobuf_lite",
         ":repeated_field_proxy",
         ":symbol_checker",
+        ":type_id",
         "//src/google/protobuf/io",
         "//src/google/protobuf/io:gzip_stream",
         "//src/google/protobuf/io:printer",
@@ -899,6 +910,7 @@ cc_library(
         "@abseil-cpp//absl/functional:function_ref",
         "@abseil-cpp//absl/functional:overload",
         "@abseil-cpp//absl/hash",
+        "@abseil-cpp//absl/log",
         "@abseil-cpp//absl/log:absl_check",
         "@abseil-cpp//absl/log:absl_log",
         "@abseil-cpp//absl/memory",
@@ -988,6 +1000,36 @@ cc_library(
         "//src/google/protobuf/util:json_util",
         "//src/google/protobuf/util:time_util",
         "//src/google/protobuf/util:type_resolver",
+    ],
+)
+
+cc_library(
+    name = "class_data",
+    hdrs = ["class_data.h"],
+    strip_include_prefix = "/src",
+    deps = [
+        ":port",
+        "@abseil-cpp//absl/log:absl_check",
+    ],
+)
+
+cc_library(
+    name = "message_traits",
+    hdrs = ["message_traits.h"],
+    strip_include_prefix = "/src",
+)
+
+cc_library(
+    name = "type_id",
+    srcs = ["type_id.cc"],
+    hdrs = ["type_id.h"],
+    strip_include_prefix = "/src",
+    visibility = ["//visibility:public"],
+    deps = [
+        ":class_data",
+        ":message_traits",
+        ":port",
+        "@abseil-cpp//absl/strings:string_view",
     ],
 )
 

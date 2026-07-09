@@ -23,6 +23,7 @@ def benchmark(
   @google_benchmark.register
   @google_benchmark.option.unit(google_benchmark.kMillisecond)
   @google_benchmark.option.arg_names(['num_bytes'])
+  @google_benchmark.option.arg(1024 * 1024 * 20)
   @google_benchmark.option.arg(1024 * 1024 * 100)
   @functools.wraps(func)
   def wrapper(state: google_benchmark.State) -> None:
@@ -30,6 +31,137 @@ def benchmark(
     state.bytes_processed = state.iterations * state.range(0)
 
   return wrapper
+
+
+@benchmark
+def bench_build_message_via_slice(state: google_benchmark.State):
+  arr = make_array(state.range(0)).view(dtype=np.int32)
+  while state:
+    msg = unittest_pb2.TestAllTypes()
+    msg.repeated_int32[:] = arr
+
+
+@benchmark
+def bench_build_message(state: google_benchmark.State):
+  arr = make_array(state.range(0)).view(dtype=np.int32)
+  while state:
+    _ = unittest_pb2.TestAllTypes(repeated_int32=arr)
+
+
+@benchmark
+def bench_build_message_nested_via_slice(state: google_benchmark.State):
+  arr = make_array(state.range(0)).view(dtype=np.int32)
+  while state:
+    msg = unittest_pb2.NestedTestAllTypes()
+    msg.payload.repeated_int32[:] = arr
+
+
+@benchmark
+def bench_build_nested_message_dict(state: google_benchmark.State):
+  arr = make_array(state.range(0)).view(dtype=np.int32)
+  while state:
+    _ = unittest_pb2.NestedTestAllTypes(payload=dict(repeated_int32=arr))
+
+
+@benchmark
+def bench_build_nested_message_int32(state: google_benchmark.State):
+  arr = make_array(state.range(0)).view(dtype=np.int32)
+  while state:
+    _ = unittest_pb2.NestedTestAllTypes(
+        payload=unittest_pb2.TestAllTypes(repeated_int32=arr)
+    )
+
+
+@benchmark
+def bench_build_nested_message_cord(state: google_benchmark.State):
+  chunk_size = state.range(0) // 1000
+  strings = ['a' * chunk_size] * 1000
+  while state:
+    _ = unittest_pb2.NestedTestAllTypes(
+        payload=unittest_pb2.TestAllTypes(repeated_cord=strings)
+    )
+
+
+@benchmark
+def bench_build_nested_message_string_piece(state: google_benchmark.State):
+  chunk_size = state.range(0) // 1000
+  strings = ['a' * chunk_size] * 1000
+  while state:
+    _ = unittest_pb2.NestedTestAllTypes(
+        payload=unittest_pb2.TestAllTypes(repeated_string_piece=strings)
+    )
+
+
+@benchmark
+def bench_build_nested_message_nested_message(state: google_benchmark.State):
+  subs = [unittest_pb2.TestAllTypes.NestedMessage(bb=123)] * (
+      state.range(0) // 8
+  )
+  while state:
+    _ = unittest_pb2.NestedTestAllTypes(
+        payload=unittest_pb2.TestAllTypes(repeated_nested_message=subs)
+    )
+
+
+@benchmark
+def bench_assign_repeated_float(state: google_benchmark.State):
+  arr = make_array(state.range(0)).view(dtype=np.float32)
+  msg = unittest_pb2.TestAllTypes()
+  msg_source = unittest_pb2.TestAllTypes()
+  msg_source.repeated_float.extend(arr)
+  while state:
+    state.pause_timing()
+    msg.Clear()
+    state.resume_timing()
+    msg.repeated_float[:] = msg_source.repeated_float
+
+
+@benchmark
+def bench_assign_repeated_int64_to_int32(state: google_benchmark.State):
+  arr = make_array(state.range(0)).view(dtype=np.int64)
+  msg = unittest_pb2.TestAllTypes()
+  msg_source = unittest_pb2.TestAllTypes()
+  msg_source.repeated_int64.extend(arr)
+  while state:
+    state.pause_timing()
+    msg.Clear()
+    state.resume_timing()
+    msg.repeated_int32[:] = msg_source.repeated_int64
+
+
+@benchmark
+def bench_assign_repeated_double_to_float(state: google_benchmark.State):
+  arr = make_array(state.range(0)).view(dtype=np.float64)
+  msg = unittest_pb2.TestAllTypes()
+  msg_source = unittest_pb2.TestAllTypes()
+  msg_source.repeated_double.extend(arr)
+  while state:
+    state.pause_timing()
+    msg.Clear()
+    state.resume_timing()
+    msg.repeated_float[:] = msg_source.repeated_double
+
+
+@benchmark
+def bench_assign_numpy_int64_to_int32(state: google_benchmark.State):
+  arr = make_array(state.range(0)).view(dtype=np.int64)
+  msg = unittest_pb2.TestAllTypes()
+  while state:
+    state.pause_timing()
+    msg.Clear()
+    state.resume_timing()
+    msg.repeated_int32[:] = arr
+
+
+@benchmark
+def bench_assign_numpy_double_to_float(state: google_benchmark.State):
+  arr = make_array(state.range(0)).view(dtype=np.float64)
+  msg = unittest_pb2.TestAllTypes()
+  while state:
+    state.pause_timing()
+    msg.Clear()
+    state.resume_timing()
+    msg.repeated_float[:] = arr
 
 
 @benchmark
@@ -41,6 +173,35 @@ def bench_extend_int32(state: google_benchmark.State):
     msg.Clear()
     state.resume_timing()
     msg.repeated_int32.extend(arr)
+
+
+@benchmark
+def bench_decode_from_bytes(state: google_benchmark.State):
+  arr = make_array(state.range(0))
+  msg = unittest_pb2.TestAllTypes()
+  msg.optional_bytes = memoryview(arr)
+  msg_bytes = msg.SerializeToString()
+  while state:
+    _ = unittest_pb2.TestAllTypes.FromString(msg_bytes)
+
+
+@benchmark
+def bench_decode_from_memoryview(state: google_benchmark.State):
+  arr = make_array(state.range(0))
+  msg = unittest_pb2.TestAllTypes()
+  msg.optional_bytes = memoryview(arr)
+  msg_bytes = memoryview(msg.SerializeToString())
+  while state:
+    _ = unittest_pb2.TestAllTypes.FromString(msg_bytes)
+
+
+@benchmark
+def bench_encode_into_bytes(state: google_benchmark.State):
+  arr = make_array(state.range(0))
+  msg = unittest_pb2.TestAllTypes()
+  msg.optional_bytes = memoryview(arr)
+  while state:
+    _ = msg.SerializeToString()
 
 
 @benchmark
@@ -60,7 +221,7 @@ def bench_assign_extend_int32(state: google_benchmark.State):
   msg = unittest_pb2.TestAllTypes()
   msg.repeated_int32[:] = arr
   while state:
-    msg.repeated_int32[len(arr):] = arr
+    msg.repeated_int32[len(arr) :] = arr
     state.pause_timing()
     msg.repeated_int32[:] = arr
     state.resume_timing()
@@ -133,8 +294,7 @@ def bench_assign_bytes_with_conversion(state: google_benchmark.State):
 
 
 if __name__ == '__main__':
-  if __name__ == '__main__':
-    if any(arg.startswith('--benchmark_filter') for arg in sys.argv):
-      google_benchmark.main()
-    else:
-      print('No benchmark filter specified. Skipping benchmarks.')
+  if any(arg.startswith('--benchmark_filter') for arg in sys.argv):
+    google_benchmark.main()
+  else:
+    print('No benchmark filter specified. Skipping benchmarks.')

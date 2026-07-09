@@ -1466,16 +1466,19 @@ public abstract class GeneratedMessageLite<
     }
 
     private Class<?> resolveMessageClass() throws ClassNotFoundException {
-      if (messageClass == null) {
-        Class<?> clazz =
+      Class<?> clazz = messageClass;
+      if (clazz == null) {
+        clazz =
             Class.forName(
                 messageClassName, /* initialize= */ false, getClass().getClassLoader());
-        if (!MessageLite.class.isAssignableFrom(clazz)) {
-          throw new ClassNotFoundException();
-        }
-        return clazz;
       }
-      return messageClass;
+      if (!MessageLite.class.isAssignableFrom(clazz)) {
+        throw new ClassNotFoundException();
+      }
+      if (!clazz.getName().equals(messageClassName)) {
+        throw new ClassNotFoundException();
+      }
+      return clazz;
     }
   }
 

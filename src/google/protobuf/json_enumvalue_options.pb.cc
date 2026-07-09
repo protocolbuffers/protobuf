@@ -57,7 +57,7 @@ constexpr JsonEnumValueOptions::ParseTableT_ JsonEnumValueOptions::InternalGener
       offsetof(ParseTableT_, field_names),  // no aux_entries
       class_data,
       nullptr,  // post_loop_handler
-      ::_pbi::TcParser::GenericFallback,  // fallback
+      ::_pbi::TcParser::MpUnknownFields,  // fallback
       #ifdef PROTOBUF_PREFETCH_PARSE_TABLE
       ::_pbi::TcParser::GetTable<::pb::enumvalue::JsonEnumValueOptions>(),  // to_prefetch
       #endif  // PROTOBUF_PREFETCH_PARSE_TABLE
@@ -212,7 +212,7 @@ const char descriptor_table_protodef_google_2fprotobuf_2fjson_5fenumvalue_5fopti
     "scriptor.proto\"(\n\024JsonEnumValueOptions\022\016"
     "\n\006string\030\001 \001(\tX\001:\\\n\004json\022!.google.protob"
     "uf.EnumValueOptions\030\346\007 \001(\0132\".pb.enumvalu"
-    "e.JsonEnumValueOptionsB\006\262\001\003\010\217Nb\010editions"
+    "e.JsonEnumValueOptionsB\006\262\001\003\010\352\007b\010editions"
     "p\351\007"
 };
 static const ::_pbi::DescriptorTable* PROTOBUF_NONNULL const
@@ -323,15 +323,14 @@ PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const JsonEnumValueOptions::ParseTableT_
         JsonEnumValueOptions::InternalGenerateParseTable_(JsonEnumValueOptions_class_data_.base());
 #endif  // !PROTOBUF_MESSAGE_GLOBALS
 PROTOBUF_NOINLINE void JsonEnumValueOptions::Clear() {
+  auto& this_ [[maybe_unused]] = *this;
   // @@protoc_insertion_point(message_clear_start:pb.enumvalue.JsonEnumValueOptions)
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  ::uint32_t cached_has_bits = 0;
-  // Prevent compiler warnings about cached_has_bits being unused
-  (void)cached_has_bits;
+  ::uint32_t cached_has_bits [[maybe_unused]] = 0;
 
-  cached_has_bits = _impl_._has_bits_[0];
+  cached_has_bits = this_._impl_._has_bits_[0];
   if (CheckHasBit(cached_has_bits, 0x00000001U)) {
-    _impl_.string_.ClearNonDefaultToEmpty();
+    this_._impl_.string_.ClearNonDefaultToEmpty();
   }
   _impl_._has_bits_.Clear();
   _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
@@ -383,9 +382,7 @@ PROTOBUF_NOINLINE void JsonEnumValueOptions::Clear() {
   // @@protoc_insertion_point(message_byte_size_start:pb.enumvalue.JsonEnumValueOptions)
   ::size_t total_size = 0;
 
-  ::uint32_t cached_has_bits = 0;
-  // Prevent compiler warnings about cached_has_bits being unused
-  (void)cached_has_bits;
+  ::uint32_t cached_has_bits [[maybe_unused]] = 0;
 
    {
     // string string = 1;

@@ -467,7 +467,7 @@ std::string Generator::GetResolvedFeatures(
   ABSL_CHECK(feature_set != nullptr)
       << "Malformed descriptor.proto doesn't contain "
       << FeatureSet::GetDescriptor()->full_name();
-  auto message_factory = absl::make_unique<DynamicMessageFactory>();
+  auto message_factory = std::make_unique<DynamicMessageFactory>();
   auto features =
       absl::WrapUnique(message_factory->GetPrototype(feature_set)->New());
   ABSL_CHECK(features->ParseFromString(

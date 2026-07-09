@@ -87,6 +87,12 @@ class NumpyIntProtoTest(unittest.TestCase):
     message.repeated_int64[:] = padded_array
     np.testing.assert_equal(padded_np_array, message.repeated_int64)
 
+  def testNumpyRepeatedFieldSliceTruncate(self):
+    message.repeated_int64[:] = np.arange(5, dtype=np.int64)
+    message.repeated_int64[2:] = np.array([], dtype=np.int64)
+    expected = np.arange(2, dtype=np.int64)
+    np.testing.assert_equal(expected, message.repeated_int64)
+
   def testNumpyRepeatedFieldSelfExtend(self):
     np_array = np.arange(5, dtype=np.int64)
     message.repeated_int64[:] = np_array
@@ -214,6 +220,32 @@ class NumpyIntProtoTest(unittest.TestCase):
     with self.assertRaises(TypeError):
       message.optional_int64 = np_22_float_array
 
+  def testRepeatedFieldSelfSliceAssignment(self):
+    msg = unittest_pb2.NestedTestAllTypes()
+    msg.payload.repeated_int32[:] = np.arange(4, dtype=np.int32)
+    msg.payload.repeated_int32[:] = np.asarray(msg.payload.repeated_int32)
+    self.assertEqual([0, 1, 2, 3], msg.payload.repeated_int32)
+
+  def testNumpyArrayIsMutableCopy(self):
+    msg = unittest_pb2.NestedTestAllTypes()
+    msg.payload.repeated_int32[:] = np.arange(4, dtype=np.int32)
+    arr = np.asarray(msg.payload.repeated_int32)
+    arr[0] = 100
+    self.assertEqual([0, 1, 2, 3], msg.payload.repeated_int32)
+    np.testing.assert_equal([100, 1, 2, 3], arr)
+
+  def testNumpyDifferentIntTypeSliceAssignment(self):
+    msg = unittest_pb2.NestedTestAllTypes()
+    # int64 -> int32
+    msg.payload.repeated_int32[:] = np.arange(4, dtype=np.int64)
+    self.assertEqual([0, 1, 2, 3], msg.payload.repeated_int32)
+    # int32 -> int64
+    msg.payload.repeated_int64[:] = np.arange(4, dtype=np.int32)
+    self.assertEqual([0, 1, 2, 3], msg.payload.repeated_int64)
+    # int64 overflow -> int32
+    with self.assertRaises((ValueError, OverflowError, TypeError)):
+      msg.payload.repeated_int32[:] = np.array([0, 1, 2, 2**35], dtype=np.int64)
+
 
 @testing_refleaks.TestCase
 class NumpyFloatProtoTest(unittest.TestCase):
@@ -267,6 +299,20 @@ class NumpyFloatProtoTest(unittest.TestCase):
       message.optional_float = np_11_object_array_float
     with self.assertRaises(TypeError):
       message.optional_float = np_22_object_array_float
+
+  def testNumpyDifferentFloatTypeSliceAssignment(self):
+    msg = unittest_pb2.NestedTestAllTypes()
+    # float64 -> float32
+    msg.payload.repeated_float[:] = np.array([1.5, 2.5, 3.5], dtype=np.float64)
+    self.assertEqual([1.5, 2.5, 3.5], msg.payload.repeated_float)
+    # float32 -> float64
+    msg.payload.repeated_double[:] = np.array([1.5, 2.5, 3.5], dtype=np.float32)
+    self.assertEqual([1.5, 2.5, 3.5], msg.payload.repeated_double)
+    # float64 overflow -> float32
+    msg.payload.repeated_float[:] = np.array(
+        [1.5, 2.5, 1e300], dtype=np.float64
+    )
+    self.assertEqual([1.5, 2.5, float('inf')], msg.payload.repeated_float)
 
 
 @testing_refleaks.TestCase
@@ -742,6 +788,64 @@ class NumpyBindingTest(parameterized.TestCase):
     m = message_module.TestAllTypes(repeated_int32=[1, 2, 3])
     arr = np.array(m.repeated_int32, order='F')
     np.testing.assert_equal(arr, np.array([1, 2, 3]))
+
+  @parameterized.product(
+      message_module=[unittest_pb2, unittest_proto3_arena_pb2],
+      field_name=[
+          'repeated_int32',
+          'repeated_int64',
+          'repeated_uint32',
+          'repeated_uint64',
+          'repeated_sint32',
+          'repeated_sint64',
+          'repeated_fixed32',
+          'repeated_fixed64',
+          'repeated_sfixed32',
+          'repeated_sfixed64',
+      ],
+      dtype=[
+          np.int8,
+          np.int16,
+          np.int32,
+          np.int64,
+          np.uint8,
+          np.uint16,
+          np.uint32,
+          np.uint64,
+      ],
+  )
+  def test_assign_integer_numpy_array_to_repeated(
+      self, message_module, field_name, dtype
+  ):
+    m = message_module.TestAllTypes()
+    field = getattr(m, field_name)
+    arr = np.array([0, 1, 2, 3], dtype=dtype)
+    field[:] = arr
+    self.assertEqual([0, 1, 2, 3], field)
+    field[1:-1] = arr
+    self.assertEqual([0, 0, 1, 2, 3, 3], field)
+
+  @parameterized.product(
+      message_module=[unittest_pb2, unittest_proto3_arena_pb2],
+      field_name=[
+          'repeated_float',
+          'repeated_double',
+      ],
+      dtype=[
+          np.float32,
+          np.float64,
+      ],
+  )
+  def test_assign_float_numpy_array_to_repeated(
+      self, message_module, field_name, dtype
+  ):
+    m = message_module.TestAllTypes()
+    field = getattr(m, field_name)
+    arr = np.array([1.5, 2.5, 3.5], dtype=dtype)
+    field[:] = arr
+    self.assertEqual([1.5, 2.5, 3.5], field)
+    field[1:-1] = arr
+    self.assertEqual([1.5, 1.5, 2.5, 3.5, 3.5], field)
 
 
 if __name__ == '__main__':

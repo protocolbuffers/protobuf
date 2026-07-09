@@ -1866,7 +1866,7 @@ class FeatureInheritanceTest(unittest.TestCase):
             )
         ],
         minimum_edition=descriptor_pb2.Edition.EDITION_PROTO2,
-        maximum_edition=descriptor_pb2.Edition.EDITION_2024,
+        maximum_edition=descriptor_pb2.Edition.EDITION_2026,
     )
     defaults.defaults[0].overridable_features.Extensions[
         unittest_features_pb2.test
@@ -2042,6 +2042,14 @@ class FeatureInheritanceTest(unittest.TestCase):
     SetTestFeature(self.method_proto, 5)
     pool = self.BuildPool()
     self.assertEqual(GetTestFeature(pool.method), 5)
+
+
+@testing_refleaks.TestCase
+class ExtensionRangesRefleakTest(unittest.TestCase):
+
+  def testExtensionRangesRefleak(self):
+    _ = unittest_pb2.TestAllExtensions.DESCRIPTOR.extension_ranges
+    _ = unittest_pb2.TestMultipleExtensionRanges.DESCRIPTOR.extension_ranges
 
 
 if __name__ == '__main__':

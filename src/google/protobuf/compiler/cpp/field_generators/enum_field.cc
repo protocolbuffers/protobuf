@@ -72,6 +72,12 @@ class SingularEnum : public FieldGeneratorBase {
     )cc");
   }
 
+  void GenerateMessageClearingCode(io::Printer* p) const override {
+    p->Emit(R"cc(
+      this_.$field_$ = $kDefault$;
+    )cc");
+  }
+
   void GenerateClearingCode(io::Printer* p) const override {
     p->Emit(R"cc(
       $field_$ = $kDefault$;
@@ -238,10 +244,30 @@ class RepeatedEnum : public FieldGeneratorBase {
       )cc");
     }
 
+#if defined(PROTOBUF_INTERNAL_TEMPORARY_CACHED_SIZE_LAYOUT_OPTOUT)
     if (has_cached_size_) {
       p->Emit(R"cc(
         $pbi$::CachedSize $cached_size_name$;
       )cc");
+    }
+#endif
+  }
+
+  void GenerateSecondaryPrivateMembers(io::Printer* p) const override {
+#if !defined(PROTOBUF_INTERNAL_TEMPORARY_CACHED_SIZE_LAYOUT_OPTOUT)
+    if (has_cached_size_) {
+      p->Emit(R"cc(
+        $pbi$::CachedSize $cached_size_name$;
+      )cc");
+    }
+#endif
+  }
+
+  void GenerateMessageClearingCode(io::Printer* p) const override {
+    if (should_split()) {
+      p->Emit("this_.$field_$.ClearIfNotDefault();\n");
+    } else {
+      p->Emit("$field_$.Clear();\n");
     }
   }
 
@@ -324,7 +350,7 @@ class RepeatedEnum : public FieldGeneratorBase {
     p->Emit({InternalMetadataOffsetSub(p)},
             R"cc(
               $name$_ {
-                visibility, $internal_metadata_offset$, from.$name$_
+                visibility, $internal_metadata_offset$, arena, from.$name$_
               }
             )cc");
   }
@@ -596,12 +622,12 @@ void RepeatedEnum::GenerateByteSize(io::Printer* p) const {
 
 std::unique_ptr<FieldGeneratorBase> MakeSinguarEnumGenerator(
     const FieldDescriptor* desc, const Options& options) {
-  return absl::make_unique<SingularEnum>(desc, options);
+  return std::make_unique<SingularEnum>(desc, options);
 }
 
 std::unique_ptr<FieldGeneratorBase> MakeRepeatedEnumGenerator(
     const FieldDescriptor* desc, const Options& options) {
-  return absl::make_unique<RepeatedEnum>(desc, options);
+  return std::make_unique<RepeatedEnum>(desc, options);
 }
 
 }  // namespace cpp

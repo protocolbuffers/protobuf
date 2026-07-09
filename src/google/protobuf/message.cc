@@ -474,12 +474,12 @@ size_t Message::SpaceUsedLong() const {
 }
 
 namespace internal {
-void* CreateSplitMessageGeneric(Arena* arena, const void* default_split,
-                                size_t size) {
-  void* split =
+void CreateSplitMessageGeneric(Arena* arena, void** split, size_t size) {
+  void* new_split =
       (arena == nullptr) ? Allocate(size) : arena->AllocateAligned(size);
-  memcpy(split, default_split, size);
-  return split;
+  const void* default_split = *split;
+  *split = new_split;
+  memcpy(new_split, default_split, size);
 }
 }  // namespace internal
 
@@ -738,8 +738,6 @@ template void InternalMetadata::DoMergeFrom<UnknownFieldSet>(
     const UnknownFieldSet& other);
 template void InternalMetadata::DoSwap<UnknownFieldSet>(UnknownFieldSet* other);
 template void InternalMetadata::DeleteOutOfLineHelper<UnknownFieldSet>();
-template UnknownFieldSet*
-InternalMetadata::mutable_unknown_fields_slow<UnknownFieldSet>();
 }  // namespace internal
 
 
