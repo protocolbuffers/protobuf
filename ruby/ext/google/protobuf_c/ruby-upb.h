@@ -18829,7 +18829,19 @@ char* encode_message(char* ptr, upb_encstate* e, const upb_Message* msg,
                      const upb_MiniTable* m, size_t* size);
 
 #define kUpb_Encoder_EncodeVarint32MaxSize 5
+#define kUpb_Encoder_EncodeVarint64MaxSize 10
+
 static char* upb_Encoder_EncodeVarint32(uint32_t val, char* ptr) {
+  do {
+    uint8_t byte = val & 0x7fU;
+    val >>= 7;
+    if (val) byte |= 0x80U;
+    *(ptr++) = byte;
+  } while (val);
+  return ptr;
+}
+
+static char* upb_Encoder_EncodeVarint64(uint64_t val, char* ptr) {
   do {
     uint8_t byte = val & 0x7fU;
     val >>= 7;
@@ -18848,10 +18860,11 @@ bool _upb_Encoder_AddEnumValueToUnknown(upb_Message* msg,
   // so we just re-encode the tag and value here.
   const uint32_t tag =
       ((uint32_t)field->UPB_PRIVATE(number) << 3) | kUpb_WireType_Varint;
-  char buf[2 * kUpb_Encoder_EncodeVarint32MaxSize];
+  char buf[kUpb_Encoder_EncodeVarint32MaxSize +
+           kUpb_Encoder_EncodeVarint64MaxSize];
   char* end = buf;
   end = upb_Encoder_EncodeVarint32(tag, end);
-  end = upb_Encoder_EncodeVarint32(val, end);
+  end = upb_Encoder_EncodeVarint64(val, end);
 
   return UPB_PRIVATE(_upb_Message_AddUnknown)(msg, buf, end - buf, arena,
                                               kUpb_AddUnknown_Copy);
