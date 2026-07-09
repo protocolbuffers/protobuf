@@ -530,6 +530,70 @@ TEST_F(JavaGeneratorTest, ExtensionsPublicImportsAreKnown) {
 }
 
 
+TEST_F(JavaGeneratorTest, OptimizeForJavaJit) {
+  std::string schema = R"schema(
+      edition = "2023";
+      package foo;
+      option java_multiple_files = true;
+      option optimize_for_java_jit = true;
+
+      message Foo {
+  )schema";
+  for (int i = 1; i <= 35; i++) {
+    absl::StrAppend(&schema, "  int32 f", i, " = ", i, ";\n");
+  }
+  schema += "}\n";
+
+  CreateTempFile("foo.proto", schema);
+
+  RunProtoc(
+      "protocol_compiler --java_out=$tmpdir --experimental_editions "
+      "-I$tmpdir foo.proto");
+
+  ExpectNoErrors();
+  EXPECT_TRUE(FileGenerated(PACKAGE_PREFIX "foo/Foo.java"));
+
+  // Check that mergeFrom calls the partial merge methods:
+  EXPECT_TRUE(FileContainsSubstring(PACKAGE_PREFIX "foo/Foo.java",
+                                    "mergeFromPartial0(other);"));
+  EXPECT_TRUE(FileContainsSubstring(PACKAGE_PREFIX "foo/Foo.java",
+                                    "mergeFromPartial1(other);"));
+  // And that the methods are declared:
+  EXPECT_TRUE(FileContainsSubstring(PACKAGE_PREFIX "foo/Foo.java",
+                                    "private void mergeFromPartial0("));
+  EXPECT_TRUE(FileContainsSubstring(PACKAGE_PREFIX "foo/Foo.java",
+                                    "private void mergeFromPartial1("));
+}
+
+TEST_F(JavaGeneratorTest, OptimizeForJavaJitDisabled) {
+  std::string schema = R"schema(
+      edition = "2023";
+      package foo;
+      option java_multiple_files = true;
+
+      message Foo {
+  )schema";
+  for (int i = 1; i <= 35; i++) {
+    absl::StrAppend(&schema, "  int32 f", i, " = ", i, ";\n");
+  }
+  schema += "}\n";
+
+  CreateTempFile("foo.proto", schema);
+
+  RunProtoc(
+      "protocol_compiler --java_out=$tmpdir --experimental_editions "
+      "-I$tmpdir foo.proto");
+
+  ExpectNoErrors();
+  EXPECT_TRUE(FileGenerated(PACKAGE_PREFIX "foo/Foo.java"));
+
+  // Check that mergeFrom does NOT call the partial merge methods:
+  EXPECT_FALSE(FileContainsSubstring(PACKAGE_PREFIX "foo/Foo.java",
+                                     "mergeFromPartial0(other);"));
+  EXPECT_FALSE(FileContainsSubstring(PACKAGE_PREFIX "foo/Foo.java",
+                                     "private void mergeFromPartial0("));
+}
+
 }  // namespace
 }  // namespace java
 }  // namespace compiler

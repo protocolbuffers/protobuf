@@ -1,0 +1,57 @@
+edition = "2023";
+
+package huge_message_jit;
+
+option java_package = "com.google.protobuf";
+option java_outer_classname = "HugeMessageJitProto";
+option optimize_for_java_jit = true;
+
+message HugeMessage {
+  int32 f1 = 1;
+  int32 f2 = 2;
+  int32 f3 = 3;
+  int32 f4 = 4;
+  int32 f5 = 5;
+  int32 f6 = 6;
+  int32 f7 = 7;
+  int32 f8 = 8;
+  int32 f9 = 9;
+  int32 f10 = 10;
+  int32 f11 = 11;
+  int32 f12 = 12;
+  int32 f13 = 13;
+  int32 f14 = 14;
+  int32 f15 = 15;
+  int32 f16 = 16;
+  int32 f17 = 17;
+  int32 f18 = 18;
+  int32 f19 = 19;
+  int32 f20 = 20;
+  int32 f21 = 21;
+  int32 f22 = 22;
+  int32 f23 = 23;
+  int32 f24 = 24;
+  int32 f25 = 25;
+  int32 f26 = 26;
+  int32 f27 = 27;
+  int32 f28 = 28;
+  int32 f29 = 29;
+  int32 f30 = 30;
+  int32 f31 = 31;
+  int32 f32 = 32;
+  int32 f33 = 33;
+  int32 f34 = 34;
+  int32 f35 = 35;
+
+  oneof test_oneof {
+    string oneof_string = 36;
+    int32 oneof_int = 37;
+  }
+
+  extensions 100 to 1000;
+}
+
+extend HugeMessage {
+  int32 extension_field = 100;
+  string extension_field2 = 101;
+}

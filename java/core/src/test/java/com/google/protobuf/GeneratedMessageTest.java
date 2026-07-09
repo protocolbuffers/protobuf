@@ -13,6 +13,7 @@ import static org.junit.Assert.assertThrows;
 
 import com.google.protobuf.Descriptors.Descriptor;
 import com.google.protobuf.Descriptors.FieldDescriptor;
+import com.google.protobuf.HugeMessageJitProto.HugeMessage;
 import com.google.protobuf.test.UnittestImport;
 import proto2_unittest.EnumWithNoOuter;
 import proto2_unittest.MessageWithNoOuter;
@@ -87,6 +88,73 @@ public class GeneratedMessageTest {
   @After
   public void tearDown() {
     GeneratedMessage.setAlwaysUseFieldBuildersForTesting(false);
+  }
+
+  @Test
+  public void testOptimizeForJavaJitMergeFrom_overridesOneofAndExtension() {
+    HugeMessage.Builder builder1 = HugeMessage.newBuilder();
+    HugeMessage.Builder builder2 = HugeMessage.newBuilder();
+
+    builder1.setF1(1);
+    builder1.setF35(35);
+    builder1.setOneofString("oneof_builder1");
+    builder1.setExtension(HugeMessageJitProto.extensionField, 100);
+
+    builder2.setF2(2);
+    builder2.setF34(34);
+    builder2.setOneofInt(200); // Overrides oneof_string
+    builder2.setExtension(HugeMessageJitProto.extensionField, 300); // Overrides extensionField
+
+    builder1.mergeFrom(builder2.build());
+
+    assertThat(builder1.getF1()).isEqualTo(1);
+    assertThat(builder1.getF2()).isEqualTo(2);
+    assertThat(builder1.getF34()).isEqualTo(34);
+    assertThat(builder1.getF35()).isEqualTo(35);
+    assertThat(builder1.getTestOneofCase()).isEqualTo(HugeMessage.TestOneofCase.ONEOF_INT);
+    assertThat(builder1.getOneofInt()).isEqualTo(200);
+    assertThat(builder1.getOneofString()).isEmpty();
+    assertThat(builder1.getExtension(HugeMessageJitProto.extensionField)).isEqualTo(300);
+  }
+
+  @Test
+  public void testOptimizeForJavaJitMergeFrom_keepsExistingOneofAndExtensionIfSourceMissing() {
+    HugeMessage.Builder builder1 = HugeMessage.newBuilder();
+    HugeMessage.Builder builder2 = HugeMessage.newBuilder();
+
+    builder1.setF1(1);
+    builder1.setF35(35);
+    builder1.setOneofString("oneof_builder1");
+    builder1.setExtension(HugeMessageJitProto.extensionField, 100);
+
+    builder2.setF2(2);
+    builder2.setF34(34);
+    // test_oneof and extensions NOT set in builder2
+
+    builder1.mergeFrom(builder2.build());
+
+    assertThat(builder1.getF1()).isEqualTo(1);
+    assertThat(builder1.getF2()).isEqualTo(2);
+    assertThat(builder1.getF34()).isEqualTo(34);
+    assertThat(builder1.getF35()).isEqualTo(35);
+    assertThat(builder1.getTestOneofCase()).isEqualTo(HugeMessage.TestOneofCase.ONEOF_STRING);
+    assertThat(builder1.getOneofString()).isEqualTo("oneof_builder1");
+    assertThat(builder1.getExtension(HugeMessageJitProto.extensionField)).isEqualTo(100);
+  }
+
+  @Test
+  public void testOptimizeForJavaJitMergeFrom_preservesDifferentExtensions() {
+    HugeMessage.Builder builder1 = HugeMessage.newBuilder();
+    HugeMessage.Builder builder2 = HugeMessage.newBuilder();
+
+    builder1.setExtension(HugeMessageJitProto.extensionField, 100);
+    builder2.setExtension(HugeMessageJitProto.extensionField2, "ext2_builder2");
+
+    builder1.mergeFrom(builder2.build());
+
+    assertThat(builder1.getExtension(HugeMessageJitProto.extensionField)).isEqualTo(100);
+    assertThat(builder1.getExtension(HugeMessageJitProto.extensionField2))
+        .isEqualTo("ext2_builder2");
   }
 
   @Test

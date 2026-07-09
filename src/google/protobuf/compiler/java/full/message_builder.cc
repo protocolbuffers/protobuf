@@ -26,6 +26,7 @@
 #include "google/protobuf/compiler/java/context.h"
 #include "google/protobuf/compiler/java/doc_comment.h"
 #include "google/protobuf/compiler/java/field_common.h"
+#include "google/protobuf/compiler/java/generator_common.h"
 #include "google/protobuf/compiler/java/generator_factory.h"
 #include "google/protobuf/compiler/java/helpers.h"
 #include "google/protobuf/compiler/java/full/enum.h"
@@ -50,6 +51,14 @@ using internal::WireFormat;
 using internal::WireFormatLite;
 
 namespace {
+
+// The maximum number of fields/oneofs to merge in a single method.
+// This is to avoid JVM method size limits (64KB) and support JIT compilation.
+constexpr int kMaxMergerUnitsPerMethod = 32;
+// The number of parts to split the mergeFrom method into if it exceeds the
+// threshold.
+constexpr int kSplitParts = 32;
+
 std::string MapValueImmutableClassdName(const Descriptor* descriptor,
                                         ClassNameResolver* name_resolver) {
   const FieldDescriptor* value_field = descriptor->map_value();
@@ -74,6 +83,158 @@ bool BitfieldTracksMutability(const FieldDescriptor* const descriptor) {
       return false;
   }
 }
+
+// MergerContext holds the context needed to generate merging code for
+// a message. It is created once for each message and then passed around to
+// the recursive helper methods that generate the merging code.
+struct MergerContext {
+  const Descriptor* descriptor;
+  Context* context;
+  ClassNameResolver* name_resolver;
+  const FieldGeneratorMap<ImmutableFieldGenerator>& field_generators;
+};
+
+// A MergerUnit represents a field or oneof that will be processed by the
+// mergeFrom method or its recursive helper methods.
+struct MergerUnit {
+  enum Type { FIELD, ONEOF };
+  Type type;
+  const FieldDescriptor* field;
+  const OneofDescriptor* oneof;
+};
+
+void GenerateMergerUnitCode(io::Printer* printer, const MergerUnit& unit,
+                            const MergerContext& merger_context) {
+  if (unit.type == MergerUnit::FIELD) {
+    merger_context.field_generators.get(unit.field)
+        .GenerateMergingCode(printer);
+  } else if (unit.type == MergerUnit::ONEOF) {
+    const OneofDescriptor* oneof = unit.oneof;
+    printer->Print(
+        "switch (other.get$oneof_capitalized_name$Case()) {\n",
+        "oneof_capitalized_name",
+        merger_context.context->GetOneofGeneratorInfo(oneof)->capitalized_name);
+    printer->Indent();
+    for (int j = 0; j < oneof->field_count(); j++) {
+      const FieldDescriptor* field = oneof->field(j);
+      printer->Print("case $field_name$: {\n", "field_name",
+                     absl::AsciiStrToUpper(field->name()));
+      printer->Indent();
+      merger_context.field_generators.get(field).GenerateMergingCode(printer);
+      printer->Print("break;\n");
+      printer->Outdent();
+      printer->Print("}\n");
+    }
+    printer->Print(
+        "case $cap_oneof_name$_NOT_SET: {\n"
+        "  break;\n"
+        "}\n",
+        "cap_oneof_name",
+        absl::AsciiStrToUpper(
+            merger_context.context->GetOneofGeneratorInfo(oneof)->name));
+    printer->Outdent();
+    printer->Print("}\n");
+  }
+}
+
+// Forward declaration because SplitAndProcessMergerUnits and
+// GenerateMergeFromHelperMethods are mutually recursive.
+void GenerateMergeFromHelperMethods(io::Printer* printer,
+                                    const std::vector<MergerUnit>& merger_units,
+                                    int start, int end,
+                                    absl::string_view suffix,
+                                    const MergerContext& merger_context);
+
+enum SplitAction { GENERATE_CALLS, GENERATE_METHODS };
+
+void SplitAndProcessMergerUnits(io::Printer* printer,
+                                const std::vector<MergerUnit>& merger_units,
+                                int start, int end, absl::string_view suffix,
+                                const MergerContext& merger_context,
+                                SplitAction action) {
+  int num_units = end - start;
+  int base_size = num_units / kSplitParts;
+  int remainder = num_units % kSplitParts;
+
+  int current_start = start;
+  for (int i = 0; i < kSplitParts; i++) {
+    int part_size = base_size + (i < remainder ? 1 : 0);
+    if (part_size == 0) break;
+    int current_end = current_start + part_size;
+
+    std::string sub_suffix =
+        suffix.empty() ? absl::StrCat(i) : absl::StrCat(suffix, "_", i);
+
+    if (action == GENERATE_CALLS) {
+      printer->Print("mergeFromPartial$sub_suffix$(other);\n", "sub_suffix",
+                     sub_suffix);
+    } else {
+      GenerateMergeFromHelperMethods(printer, merger_units, current_start,
+                                     current_end, sub_suffix, merger_context);
+    }
+
+    current_start = current_end;
+  }
+}
+
+// Recursively generates helper methods for mergeFrom. It splits the merger
+// units into parts and generates a method for each part. If a part is still
+// too large, it recursively splits it further. This ensures that the generated
+// methods are small enough to be efficiently JIT compiled.
+//
+// Parameters:
+// - printer: Code printer used to generate the output.
+// - merger_units: The list of fields/oneofs (MergerUnits) to be processed.
+// - start: The starting index (inclusive) of the merger units subset for this
+//     recursive call.
+// - end: The ending index (exclusive) of the merger units subset for this
+//     recursive call.
+// - suffix: The suffix to append to the helper method name (e.g., "0", "0_1")
+//     to ensure uniqueness.
+// - merger_context: Context object holding helper structures like name resolver
+//     and field generators.
+void GenerateMergeFromHelperMethods(io::Printer* printer,
+                                    const std::vector<MergerUnit>& merger_units,
+                                    int start, int end,
+                                    absl::string_view suffix,
+                                    const MergerContext& merger_context) {
+  int num_units = end - start;
+  // If the number of units is small enough, generate the actual merging code
+  // inline in this helper method.
+  if (num_units <= kMaxMergerUnitsPerMethod) {
+    printer->Print(
+        "private void mergeFromPartial$suffix$($classname$ other) {\n",
+        "suffix", suffix, "classname",
+        merger_context.name_resolver->GetImmutableClassName(
+            merger_context.descriptor));
+    printer->Indent();
+    for (int i = start; i < end; i++) {
+      GenerateMergerUnitCode(printer, merger_units[i], merger_context);
+    }
+    printer->Outdent();
+    printer->Print("}\n\n");
+    return;
+  }
+
+  // Otherwise, split the units into kSplitParts parts and generate a method
+  // that calls the sub-helper methods.
+  printer->Print("private void mergeFromPartial$suffix$($classname$ other) {\n",
+                 "suffix", suffix, "classname",
+                 merger_context.name_resolver->GetImmutableClassName(
+                     merger_context.descriptor));
+  printer->Indent();
+
+  // First, generate the calls to the sub-helpers.
+  SplitAndProcessMergerUnits(printer, merger_units, start, end, suffix,
+                             merger_context, GENERATE_CALLS);
+  printer->Outdent();
+  printer->Print("}\n\n");
+
+  // Then, recursively generate the sub-helper methods.
+  SplitAndProcessMergerUnits(printer, merger_units, start, end, suffix,
+                             merger_context, GENERATE_METHODS);
+}
+
 }  // namespace
 
 MessageBuilderGenerator::MessageBuilderGenerator(const Descriptor* descriptor,
@@ -451,63 +612,79 @@ void MessageBuilderGenerator::GenerateCommonBuilderMethods(
         "\n",
         "classname", name_resolver_->GetImmutableClassName(descriptor_));
 
-    printer->Print(
-        "public Builder mergeFrom($classname$ other) {\n"
-        // Optimization:  If other is the default instance, we know none of its
-        //   fields are set so we can skip the merge.
-        "  if (other == $classname$.getDefaultInstance()) return this;\n",
-        "classname", name_resolver_->GetImmutableClassName(descriptor_));
-    printer->Indent();
-
+    std::vector<MergerUnit> merger_units;
     for (int i = 0; i < descriptor_->field_count(); i++) {
       if (!IsRealOneof(descriptor_->field(i))) {
-        field_generators_.get(descriptor_->field(i))
-            .GenerateMergingCode(printer);
+        merger_units.push_back(
+            {MergerUnit::FIELD, descriptor_->field(i), nullptr});
       }
     }
-
-    // Merge oneof fields.
     for (auto& kv : oneofs_) {
-      const OneofDescriptor* oneof = kv.second;
-      printer->Print("switch (other.get$oneof_capitalized_name$Case()) {\n",
-                     "oneof_capitalized_name",
-                     context_->GetOneofGeneratorInfo(oneof)->capitalized_name);
-      printer->Indent();
-      for (int j = 0; j < oneof->field_count(); j++) {
-        const FieldDescriptor* field = oneof->field(j);
-        printer->Print("case $field_name$: {\n", "field_name",
-                       absl::AsciiStrToUpper(field->name()));
-        printer->Indent();
-        field_generators_.get(field).GenerateMergingCode(printer);
-        printer->Print("break;\n");
-        printer->Outdent();
-        printer->Print("}\n");
-      }
+      merger_units.push_back({MergerUnit::ONEOF, nullptr, kv.second});
+    }
+
+    MergerContext merger_context{descriptor_, context_, name_resolver_,
+                                 field_generators_};
+
+    // If the option optimize_for_java_jit is set and the number of merger units
+    // exceeds the JIT compilation method size threshold, we split the mergeFrom
+    // method into multiple smaller helper methods to support efficient JIT
+    // compilation. If JIT compilation is not enabled, we generate the entire
+    // mergeFrom method inline.
+    if (descriptor_->file()->options().optimize_for_java_jit() &&
+        merger_units.size() > kMaxMergerUnitsPerMethod) {
       printer->Print(
-          "case $cap_oneof_name$_NOT_SET: {\n"
-          "  break;\n"
-          "}\n",
-          "cap_oneof_name",
-          absl::AsciiStrToUpper(context_->GetOneofGeneratorInfo(oneof)->name));
+          "public Builder mergeFrom($classname$ other) {\n"
+          "  if (other == $classname$.getDefaultInstance()) return this;\n",
+          "classname", name_resolver_->GetImmutableClassName(descriptor_));
+      printer->Indent();
+
+      int num_units = merger_units.size();
+      SplitAndProcessMergerUnits(printer, merger_units, 0, num_units, "",
+                                 merger_context, GENERATE_CALLS);
+
       printer->Outdent();
-      printer->Print("}\n");
+
+      if (descriptor_->extension_range_count() > 0) {
+        printer->Print("  this.mergeExtensionFields(other);\n");
+      }
+      printer->Print("  this.mergeUnknownFields(other.getUnknownFields());\n");
+      printer->Print("  onChanged();\n");
+      printer->Print(
+          "  return this;\n"
+          "}\n"
+          "\n");
+
+      // Generate helper methods.
+      SplitAndProcessMergerUnits(printer, merger_units, 0, num_units, "",
+                                 merger_context, GENERATE_METHODS);
+
+    } else {
+      printer->Print(
+          "public Builder mergeFrom($classname$ other) {\n"
+          // Optimization: If other is the default instance, we know none of
+          // its fields are set so we can skip the merge.
+          "  if (other == $classname$.getDefaultInstance()) return this;\n",
+          "classname", name_resolver_->GetImmutableClassName(descriptor_));
+      printer->Indent();
+
+      for (const auto& unit : merger_units) {
+        GenerateMergerUnitCode(printer, unit, merger_context);
+      }
+
+      printer->Outdent();
+
+      // if message type has extensions
+      if (descriptor_->extension_range_count() > 0) {
+        printer->Print("  this.mergeExtensionFields(other);\n");
+      }
+      printer->Print("  this.mergeUnknownFields(other.getUnknownFields());\n");
+      printer->Print("  onChanged();\n");
+      printer->Print(
+          "  return this;\n"
+          "}\n"
+          "\n");
     }
-
-    printer->Outdent();
-
-    // if message type has extensions
-    if (descriptor_->extension_range_count() > 0) {
-      printer->Print("  this.mergeExtensionFields(other);\n");
-    }
-
-    printer->Print("  this.mergeUnknownFields(other.getUnknownFields());\n");
-
-    printer->Print("  onChanged();\n");
-
-    printer->Print(
-        "  return this;\n"
-        "}\n"
-        "\n");
   }
 }
 
