@@ -1339,6 +1339,7 @@ set(upb_test_files
   ${protobuf_SOURCE_DIR}/upb/message/map_test.cc
   ${protobuf_SOURCE_DIR}/upb/message/merge_test.cc
   ${protobuf_SOURCE_DIR}/upb/message/test.cc
+  ${protobuf_SOURCE_DIR}/upb/message/unknown_fields_test.cc
   ${protobuf_SOURCE_DIR}/upb/message/utf8_test.cc
   ${protobuf_SOURCE_DIR}/upb/mini_descriptor/internal/encode_test.cc
   ${protobuf_SOURCE_DIR}/upb/mini_table/compat_test.cc

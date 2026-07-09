@@ -7797,6 +7797,61 @@ void upb_Message_Freeze(upb_Message* msg, const upb_MiniTable* m) {
 
 // Must be last.
 
+static upb_FindUnknownRet2 upb_FindUnknownRet2_ParseError(void) {
+  return (upb_FindUnknownRet2){.status = kUpb_FindUnknown_ParseError};
+}
+
+upb_FindUnknownRet2 upb_Message_FindUnknown2(const struct upb_Message* msg,
+                                             uint32_t field_number,
+                                             int depth_limit) {
+  depth_limit = depth_limit ? depth_limit : 100;
+  upb_FindUnknownRet2 ret;
+  ret.iter = kUpb_Message_UnknownBegin;
+  while (upb_Message_NextUnknown2(msg, &ret.unknown, &ret.iter)) {
+    if (ret.unknown.type == kUpb_MessageUnknownType_StringView) {
+      upb_EpsCopyInputStream stream;
+      const char* ptr = ret.unknown.value.bytes.data;
+      upb_EpsCopyInputStream_Init(&stream, &ptr, ret.unknown.value.bytes.size);
+
+      while (!upb_EpsCopyInputStream_IsDone(&stream, &ptr)) {
+        uint32_t tag;
+        const char* unknown_begin = ptr;
+        ptr = upb_WireReader_ReadTag(ptr, &tag, &stream);
+        if (!ptr) return upb_FindUnknownRet2_ParseError();
+        if (field_number == upb_WireReader_GetFieldNumber(tag)) {
+          upb_StringView data;
+          ret.status = kUpb_FindUnknown_Ok;
+          upb_EpsCopyCapture capture;
+          upb_EpsCopyCapture_Start(&capture, &stream, unknown_begin);
+          ptr = _upb_WireReader_SkipValue(ptr, tag, depth_limit, &stream);
+          if (!ptr || !upb_EpsCopyCapture_End(&capture, &stream, ptr, &data)) {
+            return upb_FindUnknownRet2_ParseError();
+          }
+          ret.unknown.value.bytes = data;
+          return ret;
+        }
+
+        ptr = _upb_WireReader_SkipValue(ptr, tag, depth_limit, &stream);
+        if (!ptr) return upb_FindUnknownRet2_ParseError();
+      }
+    } else if (ret.unknown.type ==
+               kUpb_MessageUnknownType_NonCanonicalExtension) {
+      uint32_t ext_field_number =
+          upb_MiniTableExtension_Number(ret.unknown.value.extension->ext);
+      if (ext_field_number == field_number) {
+        ret.status = kUpb_FindUnknown_Ok;
+        return ret;
+      }
+    }
+  }
+  ret.status = kUpb_FindUnknown_NotPresent;
+  ret.unknown.type = kUpb_MessageUnknownType_StringView;
+  ret.unknown.value.bytes.data = NULL;
+  ret.unknown.value.bytes.size = 0;
+  ret.iter = kUpb_Message_UnknownBegin;
+  return ret;
+}
+
 upb_Message_DeleteUnknownStatus upb_Message_DeleteUnknown2(
     struct upb_Message* msg, struct upb_MessageUnknown* data, uintptr_t* iter,
     struct upb_Arena* arena) {
