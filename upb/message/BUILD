@@ -86,7 +86,10 @@ cc_library(
         "//upb/base",
         "//upb/mem",
         "//upb/mem:internal",
+        "//upb/mini_table",
         "//upb/port",
+        "//upb/wire:eps_copy_input_stream",
+        "//upb/wire:reader",
     ],
 )
 
@@ -222,6 +225,7 @@ cc_library(
         ":copy",
         ":internal",
         ":message",
+        ":message_unknowns",
         "//upb/base",
         "//upb/mem",
         "//upb/mini_table",
@@ -465,6 +469,7 @@ cc_test(
         ":copy",
         ":internal",
         ":message",
+        ":message_unknowns",
         ":promote",
         "//src/google/protobuf",
         "//upb/base",
@@ -480,6 +485,25 @@ cc_test(
         "//upb/wire",
         "@abseil-cpp//absl/container:flat_hash_set",
         "@abseil-cpp//absl/strings:string_view",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "unknown_fields_test",
+    srcs = ["unknown_fields_test.cc"],
+    deps = [
+        ":internal",
+        ":message",
+        ":message_unknowns",
+        "//upb/base",
+        "//upb/mem",
+        "//upb/mini_table",
+        "//upb/port",
+        "//upb/test:test_proto_upb_minitable",
+        "//upb/test:test_upb_proto",
+        "//upb/wire",
         "@googletest//:gtest",
         "@googletest//:gtest_main",
     ],
