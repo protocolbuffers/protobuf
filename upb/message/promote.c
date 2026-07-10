@@ -127,6 +127,26 @@ upb_GetExtension_Status upb_Message_GetOrPromoteExtension(
     return kUpb_GetExtension_Ok;
   }
 
+  if (upb_MiniTableField_IsArray((const upb_MiniTableField*)ext_table)) {
+    upb_UnknownToMessage_Status array_status =
+        upb_MiniTable_PromoteUnknownToMessageArray(
+            msg, (const upb_MiniTableField*)ext_table,
+            upb_MiniTableExtension_GetSubMessage(ext_table), decode_options,
+            arena);
+    if (array_status == kUpb_UnknownToMessage_OutOfMemory) {
+      return kUpb_GetExtension_OutOfMemory;
+    }
+    if (array_status == kUpb_UnknownToMessage_ParseError) {
+      return kUpb_GetExtension_ParseError;
+    }
+    extension = UPB_PRIVATE(_upb_Message_Getext)(msg, ext_table);
+    if (extension) {
+      memcpy(value, &extension->data, sizeof(upb_MessageValue));
+      return kUpb_GetExtension_Ok;
+    }
+    return kUpb_GetExtension_NotPresent;
+  }
+
   // Check unknown fields, if available promote.
   int found_count = 0;
   uint32_t field_number = upb_MiniTableExtension_Number(ext_table);

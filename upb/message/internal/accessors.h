@@ -377,7 +377,12 @@ UPB_API_INLINE const upb_Array* upb_Message_GetArray(
   UPB_PRIVATE(_upb_MiniTableField_CheckIsArray)(f);
   upb_Array* ret;
   const upb_Array* default_val = NULL;
-  _upb_Message_GetNonExtensionField(msg, f, &default_val, &ret);
+  if (upb_MiniTableField_IsExtension(f)) {
+    _upb_Message_GetExtensionField(msg, (const upb_MiniTableExtension*)f,
+                                   &default_val, &ret);
+  } else {
+    _upb_Message_GetNonExtensionField(msg, f, &default_val, &ret);
+  }
   return ret;
 }
 
