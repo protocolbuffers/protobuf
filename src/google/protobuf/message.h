@@ -1171,10 +1171,6 @@ class PROTOBUF_EXPORT Reflection final {
                                      const Message& message);
   friend void internal::MaybePoisonAfterClear(Message* root);
 
-  // Last non weak field index. This is an optimization when most weak fields
-  // are at the end of the containing message. If a message proto doesn't
-  // contain weak fields, then this field equals descriptor_->field_count().
-  int last_non_weak_field_index_;
   // The table-driven parser table.
   // This table is generated on demand for Message types that did not override
   // _InternalParse. It uses the reflection information to do so.

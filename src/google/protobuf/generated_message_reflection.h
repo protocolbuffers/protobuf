@@ -56,12 +56,6 @@ class DefaultEmptyOneof;
 struct MessageGlobalsBase;
 // Defined in other files.
 class ExtensionSet;  // extension_set.h
-class WeakFieldMap;  // weak_field_map.h
-
-// Tag used on offsets for fields that don't have a real offset.
-// For example, weak message fields go into the WeakFieldMap and not in an
-// actual field.
-inline constexpr uint32_t kInvalidFieldOffsetTag = 0x10000000u;
 
 // Tags used in field offsets to indicate extra information about the field.
 // This information can't be derived from the descriptor.
@@ -134,8 +128,7 @@ class ReflectionSchema {
   ReflectionSchema(const Message* default_instance, const uint32_t* offsets,
                    const uint32_t* has_bit_indices, int has_bits_offset,
                    int extensions_offset, int oneof_case_offset,
-                   int object_size, int weak_field_map_offset, int split_offset,
-                   int sizeof_split);
+                   int object_size, int split_offset, int sizeof_split);
 
   // Helper function to transform migration schema into reflection schema.
   static ReflectionSchema MigrationToReflectionSchema(
@@ -207,10 +200,6 @@ class ReflectionSchema {
     return static_cast<uint32_t>(extensions_offset_);
   }
 
-  // The off set of WeakFieldMap when the message contains weak fields.
-  // The default is 0 for now.
-  int GetWeakFieldMapOffset() const { return weak_field_map_offset_; }
-
   bool IsDefaultInstance(const Message& message) const {
     return &message == default_instance_;
   }
@@ -248,7 +237,6 @@ class ReflectionSchema {
   }
 
 
-  bool HasWeakFields() const { return weak_field_map_offset_ > 0; }
 
  private:
   ReflectionSchema() = default;
@@ -281,7 +269,7 @@ class ReflectionSchema {
   int extensions_offset_;
   int oneof_case_offset_;
   int object_size_;
-  int weak_field_map_offset_;
+
   int split_offset_;
   int sizeof_split_;
 };
