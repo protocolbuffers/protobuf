@@ -175,6 +175,34 @@ class MustBeConstructedWithOneThroughEight {
   std::string eight_;
 };
 
+// When running this test, use the following arguments: --config=asan
+TEST(ArenaTest, SizedDeleteMismatchTest) {
+  if (!internal::HaveAllocateAtLeastHook()) {
+    GTEST_SKIP() << "AllocateAtLeastHook() not available";
+  }
+
+  auto hook = [](size_t size, void* context) -> internal::SizedPtr {
+    // We allocate the exact size, but we lie to the caller that we gave them
+    // more memory. This simulates TCMalloc returning the size class capacity
+    // (or GWP-ASan usable capacity). We use a size that has a remainder when
+    // computing capacity. kHeaderSize = 16, kEntrySize = 16. Let's pretend we
+    // allocated 104 bytes when they asked for 64 bytes.
+    size_t returned_size = size + 40;
+    return {::operator new(size), returned_size};
+  };
+
+  internal::SetAllocateAtLeastHook(hook, nullptr);
+
+  {
+    ArenaOptions options;
+    options.start_block_size = 64;
+    Arena arena(options);
+    Arena::CreateArray<char>(&arena, 1);
+  }
+
+  internal::SetAllocateAtLeastHook(nullptr, nullptr);
+}
+
 TEST(ArenaTest, ArenaConstructable) {
   EXPECT_TRUE(Arena::is_arena_constructable<TestAllTypes>::type::value);
   EXPECT_TRUE(Arena::is_arena_constructable<const TestAllTypes>::type::value);
