@@ -63,11 +63,7 @@ bootstrap_cc_library(
 alias(
     name = "reflection_cc",
     actual = ":reflection",
-    visibility = [
-        "//java/com/google/protobuf/interop:__subpackages__",
-        "//net/proto2/interop:__pkg__",
-        "//upb:friends",
-    ],
+    visibility = ["//visibility:public"],
 )
 
 bootstrap_cc_library(
