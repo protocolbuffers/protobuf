@@ -434,6 +434,7 @@ cc_test(
         ":copy",
         ":internal",
         ":message",
+        ":message_unknowns",
         "//src/google/protobuf",
         "//upb/base",
         "//upb/mem",

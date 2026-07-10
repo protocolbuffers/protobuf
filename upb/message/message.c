@@ -6,6 +6,7 @@
 // https://developers.google.com/open-source/licenses/bsd
 
 #include "upb/message/message.h"
+#include "upb/message/unknown_fields.h"
 
 #include <stdarg.h>
 #include <stddef.h>
