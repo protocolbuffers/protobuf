@@ -684,7 +684,7 @@ Error, UINTPTR_MAX is undefined
 #define _UPB_STRINGIFY2(x) #x
 #define _UPB_STRINGIFY(x) _UPB_STRINGIFY2(x)
 
-#if defined(__ELF__)
+#if defined(__ELF__) && !UPB_HAS_FEATURE(dataflow_sanitizer)
 /*
  * Workaround for b/456308964 and b/456317163. Although weak constructors
  * resolve to a single function body, Clang still emits a pointer into
