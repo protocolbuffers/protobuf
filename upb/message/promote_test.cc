@@ -29,7 +29,7 @@
 #include "upb/mem/arena.hpp"
 #include "upb/message/accessors.h"
 #include "upb/message/array.h"
-#include "upb/message/copy.h"
+#include "upb/message/internal/accessors.h"
 #include "upb/message/internal/message.h"
 #include "upb/message/map.h"
 #include "upb/message/message.h"
@@ -45,7 +45,9 @@
 #include "upb/test/test.upb.h"
 #include "upb/test/test.upb_minitable.h"
 #include "upb/wire/decode.h"
-#include "upb/wire/encode.h"
+
+// Must be last.
+#include "upb/port/def.inc"
 
 namespace {
 
@@ -506,4 +508,203 @@ TEST(GeneratedCode, PromoteUnknownToMapOld) {
   upb_Arena_Free(arena);
 }
 
+TEST(GeneratedCode, PromoteNonCanonicalExtension) {
+  upb::Arena arena;
+
+  // 1. Build custom different mini-table
+  upb::MtDataEncoder e;
+  e.StartMessage(0);
+  e.PutField(kUpb_FieldType_String, 25, 0);
+
+  upb_Status status;
+  upb_Status_Clear(&status);
+  upb_MiniTable* custom_sub_table = upb_MiniTable_Build(
+      e.data().data(), e.data().size(), arena.ptr(), &status);
+  ASSERT_TRUE(status.ok);
+
+  upb_MiniTableExtension custom_ext = *upb_test_ModelExtension1_model_ext_ext;
+  upb_MiniTableExtension_SetSubMessage(&custom_ext, custom_sub_table);
+
+  // 2. Create base message msg to hold our non-canonical extension
+  upb_test_ModelWithExtensions* msg =
+      upb_test_ModelWithExtensions_new(arena.ptr());
+
+  // 3. Create submsg parsed under custom_sub_table ("World")
+  upb_Message* extension1 = _upb_Message_New(custom_sub_table, arena.ptr());
+  upb_MessageValue val_str;
+  val_str.str_val = upb_StringView_FromString("World");
+  const upb_MiniTableField* custom_f =
+      upb_MiniTable_GetFieldByIndex(custom_sub_table, 0);
+  upb_Message_SetString(extension1, custom_f, val_str.str_val, arena.ptr());
+
+  // 4. Attach custom parsed submessage "World" to msg as a non-canonical
+  // extension under the different custom mini-table layout.
+  UPB_PRIVATE(_upb_Message_SetNonCanonicalExtension)(
+      UPB_UPCAST(msg), &custom_ext, &extension1, arena.ptr());
+
+  // 5. Promote the extension using standard compiled mini-table ModelExtension1
+  upb_MessageValue val;
+  upb_GetExtension_Status promote_status = upb_Message_GetOrPromoteExtension(
+      UPB_UPCAST(msg), upb_test_ModelExtension1_model_ext_ext,
+      kUpb_DecodeOption_AliasString, arena.ptr(), &val);
+
+  ASSERT_EQ(kUpb_GetExtension_Ok, promote_status);
+
+  // 6. Verify that the engine correctly converted the shape and promoted the
+  // value!
+  upb_test_ModelExtension1* ext_msg = (upb_test_ModelExtension1*)val.msg_val;
+  upb_StringView field = upb_test_ModelExtension1_str(ext_msg);
+  EXPECT_EQ(absl::string_view(field.data, field.size), "World");
+
+  EXPECT_EQ(1, upb_Message_ExtensionCount(UPB_UPCAST(msg)));
+
+  // 7. Verify that upb_Message_NextExtension works and iterates over the
+  // promoted extension!
+  uintptr_t ext_iter = kUpb_Message_ExtensionBegin;
+  const upb_MiniTableExtension* ext_out = nullptr;
+  upb_MessageValue val_out;
+  EXPECT_TRUE(upb_Message_NextExtension(UPB_UPCAST(msg), &ext_out, &val_out,
+                                        &ext_iter));
+  EXPECT_EQ(
+      upb_MiniTableExtension_Number(ext_out),
+      upb_MiniTableExtension_Number(upb_test_ModelExtension1_model_ext_ext));
+
+  upb_test_ModelExtension1* ext_msg_iter =
+      (upb_test_ModelExtension1*)val_out.msg_val;
+  upb_StringView field_iter = upb_test_ModelExtension1_str(ext_msg_iter);
+  EXPECT_EQ(absl::string_view(field_iter.data, field_iter.size), "World");
+
+  EXPECT_FALSE(upb_Message_NextExtension(UPB_UPCAST(msg), &ext_out, &val_out,
+                                         &ext_iter));
+
+  // 8. Verify that the promoted non-canonical extension is indeed no longer
+  // present in unknowns
+  upb_FindUnknownRet found = upb_Message_FindUnknown(UPB_UPCAST(msg), 1547, 0);
+  EXPECT_EQ(kUpb_FindUnknown_NotPresent, found.status);
+}
+
+TEST(GeneratedCode, PromoteNonCanonicalExtensionWithSameMinitable) {
+  upb::Arena arena;
+  upb_test_ModelWithExtensions* msg =
+      upb_test_ModelWithExtensions_new(arena.ptr());
+  upb_test_ModelExtension1* extension1 =
+      upb_test_ModelExtension1_new(arena.ptr());
+  upb_test_ModelExtension1_set_str(extension1,
+                                   upb_StringView_FromString("World"));
+
+  UPB_PRIVATE(_upb_Message_SetNonCanonicalExtension)(
+      UPB_UPCAST(msg), upb_test_ModelExtension1_model_ext_ext,
+      (upb_Message**)&extension1, arena.ptr());
+
+  upb_MessageValue val;
+  upb_GetExtension_Status promote_status = upb_Message_GetOrPromoteExtension(
+      UPB_UPCAST(msg), upb_test_ModelExtension1_model_ext_ext,
+      kUpb_DecodeOption_AliasString, arena.ptr(), &val);
+
+  EXPECT_EQ(kUpb_GetExtension_Ok, promote_status);
+  upb_test_ModelExtension1* ext_msg = (upb_test_ModelExtension1*)val.msg_val;
+  upb_StringView field = upb_test_ModelExtension1_str(ext_msg);
+  EXPECT_EQ(absl::string_view(field.data, field.size), "World");
+  EXPECT_EQ(1, upb_Message_ExtensionCount(UPB_UPCAST(msg)));
+  uintptr_t ext_iter = kUpb_Message_ExtensionBegin;
+  const upb_MiniTableExtension* ext_out = nullptr;
+  upb_MessageValue val_out;
+  EXPECT_TRUE(upb_Message_NextExtension(UPB_UPCAST(msg), &ext_out, &val_out,
+                                        &ext_iter));
+  EXPECT_FALSE(upb_Message_NextExtension(UPB_UPCAST(msg), &ext_out, &val_out,
+                                         &ext_iter));
+  upb_FindUnknownRet found = upb_Message_FindUnknown(UPB_UPCAST(msg), 1547, 0);
+  EXPECT_EQ(kUpb_FindUnknown_NotPresent, found.status);
+}
+
+TEST(GeneratedCode, PromoteNonCanonicalExtensionWithDifferentMinitable) {
+  upb::Arena arena;
+
+  // 1. Build custom different mini-table for the non-canonical extension ("ext"
+  // layout) It has an int32 field at tag 1.
+  upb_Status status;
+  upb_Status_Clear(&status);
+  upb::MtDataEncoder e_ext;
+  e_ext.StartMessage(0);
+  e_ext.PutField(kUpb_FieldType_Int32, 1, 0);
+
+  upb_MiniTable* custom_sub_table_ext = upb_MiniTable_Build(
+      e_ext.data().data(), e_ext.data().size(), arena.ptr(), &status);
+  ASSERT_TRUE(status.ok);
+
+  // 2. Build target mini-table for the base field ("base" layout, matching
+  // field tag 1 int32)
+  upb::MtDataEncoder e_base;
+  e_base.StartMessage(0);
+  e_base.PutField(kUpb_FieldType_Int32, 1, 0);
+
+  upb_MiniTable* custom_sub_table_base = upb_MiniTable_Build(
+      e_base.data().data(), e_base.data().size(), arena.ptr(), &status);
+  ASSERT_TRUE(status.ok);
+
+  // 3. Create target extension descriptor pointing to custom_sub_table_base
+  upb_MiniTableExtension target_ext = *upb_test_ModelExtension1_model_ext_ext;
+  upb_MiniTableExtension_SetSubMessage(&target_ext, custom_sub_table_base);
+
+  // 4. Create a custom extension descriptor matching field number 1547 and
+  // pointing to custom_sub_table_ext
+  upb_MiniTableExtension custom_ext = *upb_test_ModelExtension1_model_ext_ext;
+  upb_MiniTableExtension_SetSubMessage(&custom_ext, custom_sub_table_ext);
+
+  // 5. Create base msg
+  upb_test_ModelWithExtensions* msg =
+      upb_test_ModelWithExtensions_new(arena.ptr());
+
+  // 6. Populate the submsg parsed under custom_sub_table_ext with value 42 at
+  // tag 1
+  upb_Message* extension1 = _upb_Message_New(custom_sub_table_ext, arena.ptr());
+  const upb_MiniTableField* custom_f =
+      upb_MiniTable_GetFieldByIndex(custom_sub_table_ext, 0);
+  upb_Message_SetInt32(extension1, custom_f, 42, arena.ptr());
+
+  // 7. Attach it as a non-canonical extension to msg using field 1547
+  UPB_PRIVATE(_upb_Message_SetNonCanonicalExtension)(
+      UPB_UPCAST(msg), &custom_ext, &extension1, arena.ptr());
+
+  // 8. Run extension promotion using targeting target_ext layout
+  upb_MessageValue val;
+  upb_GetExtension_Status promote_status = upb_Message_GetOrPromoteExtension(
+      UPB_UPCAST(msg), &target_ext, kUpb_DecodeOption_AliasString, arena.ptr(),
+      &val);
+
+  EXPECT_EQ(promote_status, kUpb_GetExtension_Ok);
+
+  // 9. Retrieve and verify that it successfully converted and promoted the
+  // actual value
+  upb_Message* promoted_message = (upb_Message*)val.msg_val;
+  ASSERT_NE(promoted_message, nullptr);
+
+  const upb_MiniTableField* base_f =
+      upb_MiniTable_GetFieldByIndex(custom_sub_table_base, 0);
+  int32_t promoted_value = upb_Message_GetInt32(promoted_message, base_f, 0);
+  EXPECT_EQ(promoted_value, 42);
+
+  EXPECT_EQ(1, upb_Message_ExtensionCount(UPB_UPCAST(msg)));
+
+  // 10. Verify that upb_Message_NextExtension successfully works and returns
+  // true!
+  uintptr_t ext_iter = kUpb_Message_ExtensionBegin;
+  const upb_MiniTableExtension* ext_out = nullptr;
+  upb_MessageValue val_out;
+  EXPECT_TRUE(upb_Message_NextExtension(UPB_UPCAST(msg), &ext_out, &val_out,
+                                        &ext_iter));
+  EXPECT_EQ(upb_MiniTableExtension_Number(ext_out), 1547);
+
+  upb_Message* ext_msg_iter = (upb_Message*)val_out.msg_val;
+  int32_t promoted_value_iter = upb_Message_GetInt32(ext_msg_iter, base_f, 0);
+  EXPECT_EQ(promoted_value_iter, 42);
+
+  EXPECT_FALSE(upb_Message_NextExtension(UPB_UPCAST(msg), &ext_out, &val_out,
+                                         &ext_iter));
+
+  // 11. Verify that the promoted non-canonical extension is indeed no longer
+  // present in unknowns
+  upb_FindUnknownRet found = upb_Message_FindUnknown(UPB_UPCAST(msg), 1547, 0);
+  EXPECT_EQ(kUpb_FindUnknown_NotPresent, found.status);
+}
 }  // namespace
