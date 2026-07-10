@@ -6,4 +6,14 @@
 # https://developers.google.com/open-source/licenses/bsd
 
 visibility("public")
-upb_clients = ["//..."]
+upb_clients = [
+    "//...",
+    # go/keep-sorted start
+    "@com_github_grpc_grpc//...",
+    "@com_google_cel_cpp//...",
+    "@com_google_googleapis//...",
+    "@com_google_protobuf//...",
+    "@com_google_s2a_proto//...",
+    "@phst_rules_elisp//...",
+    # go/keep-sorted end
+]
