@@ -307,6 +307,21 @@ enum class CompareResult {
   kNotImplemented,
 };
 
+static CompareResult CompareUnrecognized() {
+#if PROTOBUF_PY_FUTURE_CONTAINER_EQ_RETURNS_NOTIMPLEMENTED
+  return CompareResult::kNotImplemented;
+#else
+  if (PyErr_WarnEx(
+          PyExc_FutureWarning,
+          "Comparing descriptor containers with unrecognized types will return "
+          "NotImplemented in 2027.",
+          3) < 0) {
+    return CompareResult::kError;
+  }
+  return CompareResult::kNotEqual;
+#endif
+}
+
 // A sequence container can only be equal to another sequence container, or (for
 // backward compatibility) to a list containing the same items.
 static CompareResult DescriptorSequence_Equal(PyContainer* self,
@@ -347,13 +362,7 @@ static CompareResult DescriptorSequence_Equal(PyContainer* self,
     return CompareResult::kEqual;
   }
 
-#if PROTOBUF_PY_FUTURE_CONTAINER_EQ_RETURNS_NOTIMPLEMENTED
-  // Any other object is not implemented.
-  return CompareResult::kNotImplemented;
-#else
-  // Any other object is different.
-  return CompareResult::kNotEqual;
-#endif
+  return CompareUnrecognized();
 }
 
 // A mapping container can only be equal to another mapping container, or (for
@@ -401,13 +410,7 @@ static CompareResult DescriptorMapping_Equal(PyContainer* self,
     return CompareResult::kEqual;
   }
 
-#if PROTOBUF_PY_FUTURE_CONTAINER_EQ_RETURNS_NOTIMPLEMENTED
-  // Any other object is not implemented.
-  return CompareResult::kNotImplemented;
-#else
-  // Any other object is different.
-  return CompareResult::kNotEqual;
-#endif
+  return CompareUnrecognized();
 }
 
 static PyObject* RichCompare(PyContainer* self, PyObject* other, int opid) {
