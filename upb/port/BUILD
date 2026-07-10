@@ -21,7 +21,8 @@ cc_library(
     ],
     copts = UPB_DEFAULT_COPTS,
     defines = select({
-        "//upb:fasttable_enabled_setting": ["UPB_ENABLE_FASTTABLE"],
+        "//upb:fasttable_enabled_explicit_true": ["UPB_ENABLE_FASTTABLE"],
+        "//upb:fasttable_enabled_setting": ["UPB_TRY_ENABLE_FASTTABLE"],
         "//conditions:default": [],
     }),
     features = UPB_DEFAULT_FEATURES,
