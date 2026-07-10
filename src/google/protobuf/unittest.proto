@@ -2729,3 +2729,7 @@ message TestAllTypesAsExtension {
     TestAllTypes ext = 10;
   }
 }
+
+message TestUnverifiedLazyWithExtensions {
+  TestAllExtensions field = 1 [unverified_lazy = true];
+}
