@@ -1,6 +1,8 @@
-edition = "2024";
+edition = "2026";
 
 package editions_unittest;
+
+option features.default_symbol_visibility = EXPORT_TOP_LEVEL;
 
 message MessageImport {
   int32 a = 1;

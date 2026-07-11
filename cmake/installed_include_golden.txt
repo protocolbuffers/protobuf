@@ -129,6 +129,7 @@ google/protobuf/serial_arena.h
 google/protobuf/service.h
 google/protobuf/source_context.pb.h
 google/protobuf/source_context.proto
+google/protobuf/static_message_factory.h
 google/protobuf/string_block.h
 google/protobuf/struct.pb.h
 google/protobuf/struct.proto
@@ -189,6 +190,7 @@ upb/message/map.h
 upb/message/map_gencode_util.h
 upb/message/merge.h
 upb/message/message.h
+upb/message/unknown_fields.h
 upb/message/value.h
 upb/mini_descriptor/build_enum.h
 upb/mini_descriptor/decode.h

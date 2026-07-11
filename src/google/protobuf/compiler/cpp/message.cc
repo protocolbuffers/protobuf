@@ -169,16 +169,10 @@ std::string GenerateConditionMaybeWithProbabilityForGroup(
 void PrintPresenceCheckCondition(const FieldDescriptor* field,
                                  const FieldLayout& field_layout,
                                  io::Printer* p, const Options& options) {
-  PROTOBUF_IGNORE_DEPRECATION_START
-  if (!field->options().weak()) {
-    PROTOBUF_IGNORE_DEPRECATION_STOP
-    int has_bit_index = field_layout.GetHasBitIndex(field).value();
-    p->Emit({{"condition", GenerateConditionMaybeWithProbabilityForField(
-                               has_bit_index, field, options)}},
-            R"cc($condition$)cc");
-  } else {
-    p->Emit(R"cc(has_$name$())cc");
-  }
+  int has_bit_index = field_layout.GetHasBitIndex(field).value();
+  p->Emit({{"condition", GenerateConditionMaybeWithProbabilityForField(
+                             has_bit_index, field, options)}},
+          R"cc($condition$)cc");
 }
 
 struct FieldOrderingByNumber {
@@ -629,8 +623,7 @@ MessageGenerator::MessageGenerator(
       index_in_file_messages_(index_in_file_messages),
       options_(options),
       field_generators_(descriptor),
-      field_layout_(FieldLayout::BuildOptimizedLayout(
-          descriptor, options, std::ref(num_weak_fields_))) {
+      field_layout_(FieldLayout::BuildOptimizedLayout(descriptor, options)) {
   field_generators_.Build(options_, field_layout_);
 
   for (int i = 0; i < descriptor->field_count(); ++i) {
@@ -700,13 +693,9 @@ void MessageGenerator::GenerateFieldAccessorDeclarations(io::Printer* p) {
                         optimized_order.end());
 
   for (auto field : internal::FieldRange(descriptor_)) {
-    PROTOBUF_IGNORE_DEPRECATION_START
-    const bool field_is_weak = field->options().weak();
-    PROTOBUF_IGNORE_DEPRECATION_STOP
-    if (!field->real_containing_oneof() && !field_is_weak) {
-      continue;
+    if (field->real_containing_oneof()) {
+      ordered_fields.push_back(field);
     }
-    ordered_fields.push_back(field);
   }
 
   if (!ordered_fields.empty()) {
@@ -1075,19 +1064,7 @@ void MessageGenerator::GenerateFieldAccessorDeclarations(io::Printer* p) {
 void MessageGenerator::GenerateSingularFieldHasBits(
     const FieldDescriptor* field, io::Printer* p) {
   auto t = p->WithVars(MakeTrackerCalls(field, options_));
-  PROTOBUF_IGNORE_DEPRECATION_START
-  if (field->options().weak()) {
-    PROTOBUF_IGNORE_DEPRECATION_STOP
-    p->Emit(
-        R"cc(
-          inline bool $Msg$::has_$name$() const {
-            $WeakDescriptorSelfPin$;
-            $annotate_has$;
-            return $weak_field_map$.Has($number$);
-          }
-        )cc");
-    return;
-  }
+
   if (GetFieldHasbitMode(field, options_) == HasbitMode::kTrueHasbit) {
     auto v = p->WithVars(HasBitVars(field));
     p->Emit(
@@ -1292,17 +1269,6 @@ void MessageGenerator::EmitCheckAndUpdateByteSizeForField(
                              /*with_enclosing_braces_always=*/true);
     return;
   }
-  PROTOBUF_IGNORE_DEPRECATION_START
-  if (field->options().weak()) {
-    PROTOBUF_IGNORE_DEPRECATION_STOP
-    p->Emit({{"emit_body", [&] { emit_body(); }}},
-            R"cc(
-              if (has_$name$()) {
-                $emit_body$;
-              }
-            )cc");
-    return;
-  }
 
   int has_bit_index = field_layout_.GetHasBitIndex(field).value();
   p->Emit({{"condition", GenerateConditionMaybeWithProbabilityForField(
@@ -1326,10 +1292,7 @@ void MessageGenerator::EmitCheckAndUpdateByteSizeForField(
 void MessageGenerator::MaybeEmitUpdateCachedHasbits(
     const FieldDescriptor* field, io::Printer* p,
     int& cached_has_word_index) const {
-  PROTOBUF_IGNORE_DEPRECATION_START
-  const bool field_is_weak = field->options().weak();
-  PROTOBUF_IGNORE_DEPRECATION_STOP
-  if (!HasHasbit(field, options_) || field_is_weak) {
+  if (!HasHasbit(field, options_)) {
     return;
   }
 
@@ -1540,6 +1503,14 @@ void MessageGenerator::GenerateImplDefinition(io::Printer* p) {
             }
           }
         }},
+       {"secondary_field_members",
+        [&] {
+          for (auto field : field_layout_.optimized_order()) {
+            if (!ShouldSplit(field, options_)) {
+              field_generators_.get(field).GenerateSecondaryPrivateMembers(p);
+            }
+          }
+        }},
        {"decl_split",
         [&] {
           if (!ShouldSplit(descriptor_, options_)) return;
@@ -1608,14 +1579,7 @@ void MessageGenerator::GenerateImplDefinition(io::Printer* p) {
                     $uint32$ _oneof_case_[$count$];
                   )cc");
         }},
-       {"weak_field_map",
-        [&] {
-          if (num_weak_fields_ == 0) return;
 
-          p->Emit(R"cc(
-            $pbi$::WeakFieldMap _weak_field_map_;
-          )cc");
-        }},
        {"union_impl",
         [&] {
           // Only create the _impl_ field if it contains data.
@@ -1651,7 +1615,7 @@ void MessageGenerator::GenerateImplDefinition(io::Printer* p) {
           //~ Members assumed to align to 4 bytes:
           $cached_size_if_no_hasbits$;
           $oneof_case$;
-          $weak_field_map$;
+          $secondary_field_members$;
           //~ For detecting when concurrent accessor calls cause races.
           PROTOBUF_TSAN_DECLARE_MEMBER
         };
@@ -2084,11 +2048,7 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
         [&] {
           for (auto field : internal::FieldRange(descriptor_)) {
             // set_has_***() generated in all oneofs.
-            PROTOBUF_IGNORE_DEPRECATION_START
-            const bool field_is_weak = field->options().weak();
-            PROTOBUF_IGNORE_DEPRECATION_STOP
-            if (!field->is_repeated() && !field_is_weak &&
-                field->real_containing_oneof()) {
+            if (!field->is_repeated() && field->real_containing_oneof()) {
               p->Emit({{"field_name", FieldName(field)}}, R"cc(
                 void set_has_$field_name$();
               )cc");
@@ -2521,8 +2481,8 @@ size_t MessageGenerator::GenerateOffsets(io::Printer* p) {
       field_layout_.HasHasbits() || IsMapEntryMessage(descriptor_);
   const bool has_extensions = descriptor_->extension_range_count() > 0;
   const bool has_oneofs = descriptor_->real_oneof_decl_count() > 0;
-  const bool has_weak_fields = num_weak_fields_ > 0;
-  // NOTE: We can cleanup two bits from old donated logic.
+  // NOTE: We can cleanup three bits from old logic.
+  const bool has_weak_fields = false;
   const bool has_inline_strings = false;
   const bool has_split = ShouldSplit(descriptor_, options_);
 
@@ -2543,9 +2503,7 @@ size_t MessageGenerator::GenerateOffsets(io::Printer* p) {
   if (has_oneofs) {
     format("PROTOBUF_FIELD_OFFSET($classtype$, $oneof_case$[0]),\n");
   }
-  if (has_weak_fields) {
-    format("PROTOBUF_FIELD_OFFSET($classtype$, $weak_field_map$),\n");
-  }
+
   if (has_split) {
     format(
         "PROTOBUF_FIELD_OFFSET($classtype$, $split$),\n"
@@ -2560,13 +2518,7 @@ size_t MessageGenerator::GenerateOffsets(io::Printer* p) {
   for (auto field : internal::FieldRange(descriptor_)) {
     // TODO: We should not have an entry in the offset table for fields
     // that do not use them.
-    PROTOBUF_IGNORE_DEPRECATION_START
-    if (field->options().weak()) {
-      PROTOBUF_IGNORE_DEPRECATION_STOP
-      // Mark the field to prevent unintentional access through reflection.
-      // Don't use the top bit because that is for unused fields.
-      format("::_pbi::kInvalidFieldOffsetTag");
-    } else if (field->real_containing_oneof()) {
+    if (field->real_containing_oneof()) {
       format("PROTOBUF_FIELD_OFFSET($classtype$, _impl_.$1$_)",
              field->real_containing_oneof()->name());
     } else {
@@ -2587,14 +2539,14 @@ size_t MessageGenerator::GenerateOffsets(io::Printer* p) {
     // offset.
 
     if (ShouldSplit(field, options_)) {
-      format(" | ::_pbi::kSplitFieldOffsetMask");
+      format(" | ::_pbi::kSplitFieldOffsetTag");
     }
     if (IsEagerlyVerifiedLazy(field, options_)) {
-      format(" | ::_pbi::kLazyMask");
+      format(" | ::_pbi::kLazyOffsetTag");
     } else if (IsStringInlined(field, options_)) {
-      format(" | ::_pbi::kInlinedMask");
+      format(" | ::_pbi::kInlinedOffsetTag");
     } else if (IsMicroString(field, options_)) {
-      format(" | ::_pbi::kMicroStringMask");
+      format(" | ::_pbi::kMicroStringOffsetTag");
     }
     format(",\n");
   }
@@ -2774,17 +2726,6 @@ void MessageGenerator::GenerateImplMemberInit(io::Printer* p,
     }
   };
 
-  auto init_weak_field_map = [&] {
-    if (num_weak_fields_ && init_type != InitType::kConstexpr) {
-      separator();
-      if (init_type == InitType::kArenaCopy) {
-        p->Emit("_weak_field_map_{visibility, arena, from._weak_field_map_}");
-      } else {
-        p->Emit("_weak_field_map_{visibility, arena}");
-      }
-    }
-  };
-
   // Initialization order of the various fields inside `_impl_(...)`
   init_extensions();
   init_has_bits();
@@ -2792,7 +2733,6 @@ void MessageGenerator::GenerateImplMemberInit(io::Printer* p,
   init_split();
   init_oneofs();
   init_oneof_cases();
-  init_weak_field_map();
 }
 
 void MessageGenerator::GenerateSharedConstructorCode(io::Printer* p) {
@@ -2864,14 +2804,7 @@ void MessageGenerator::GenerateSharedDestructorCode(io::Printer* p) {
                        )cc");
              }
            }},
-          {"weak_fields_dtor",
-           [&] {
-             if (num_weak_fields_ == 0) return;
-             // Generate code to destruct oneofs. Clearing should do the work.
-             p->Emit(R"cc(
-               this_.$weak_field_map$.ClearAll();
-             )cc");
-           }},
+
           {"impl_dtor", [&] { p->Emit("this_._impl_.~Impl_();\n"); }},
       },
       R"cc(
@@ -2884,7 +2817,6 @@ void MessageGenerator::GenerateSharedDestructorCode(io::Printer* p) {
           $field_dtors$;
           $split_field_dtors$;
           $oneof_field_dtors$;
-          $weak_fields_dtor$;
           $impl_dtor$;
         }
       )cc");
@@ -3018,7 +2950,6 @@ bool MessageGenerator::CanUseTrivialCopy() const {
   if (ShouldSplit(descriptor_, options_)) return false;
   if (HasSimpleBaseClass(descriptor_, options_)) return false;
   if (descriptor_->extension_range_count() > 0) return false;
-  if (num_weak_fields_ > 0) return false;
 
   // If all fields are trivially copyable then we can use the trivial copy
   // constructor of Impl_
@@ -3572,14 +3503,7 @@ void MessageGenerator::GenerateClear(io::Printer* p) {
                )cc");
              }
            }},
-          {"maybe_clear_weak_fields",
-           [&] {
-             if (num_weak_fields_) {
-               p->Emit(R"cc(
-                 $weak_field_map$.ClearAll();
-               )cc");
-             }
-           }},
+
           {"maybe_clear_hasbits",
            [&] {
              if (field_layout_.HasHasbits()) {
@@ -3599,7 +3523,6 @@ void MessageGenerator::GenerateClear(io::Printer* p) {
           $maybe_clear_extensions$;
           $clear_fields$;
           $clear_oneofs$;
-          $maybe_clear_weak_fields$;
           $maybe_clear_hasbits$;
           _internal_metadata_.Clear<$unknown_fields_type$>();
         }
@@ -3741,11 +3664,6 @@ void MessageGenerator::GenerateSwap(io::Printer* p) {
       format("swap($oneof_case$[$1$], other->$oneof_case$[$1$]);\n", i);
     }
 
-    if (num_weak_fields_) {
-      format(
-          "$weak_field_map$.UnsafeArenaSwap(&other->$weak_field_map$)"
-          ";\n");
-    }
   } else {
     format("GetReflection()->Swap(this, other);");
   }
@@ -3765,10 +3683,6 @@ MessageGenerator::NewOpRequirements MessageGenerator::GetNewOp() const {
 
   if (NeedsArenaDestructor() == ArenaDtorNeeds::kRequired) {
     // We can't skip the ArenaDtor for these messages.
-    op.needs_to_run_constructor = true;
-  }
-
-  if (num_weak_fields_ != 0) {
     op.needs_to_run_constructor = true;
   }
 
@@ -4155,11 +4069,8 @@ bool MessageGenerator::EmitMergeChunks(io::Printer* p, bool is_split) {
               generator.GenerateMergingCode(p);
             },
             /*with_enclosing_braces_always=*/true);
-        PROTOBUF_IGNORE_DEPRECATION_START
-      } else if (field->options().weak() ||
-                 cached_has_word_index !=
-                     field_layout_.GetHasWordIndex(field).value()) {
-        PROTOBUF_IGNORE_DEPRECATION_STOP
+      } else if (cached_has_word_index !=
+                 field_layout_.GetHasWordIndex(field).value()) {
         // Check hasbit, not using cached bits.
         auto v = p->WithVars(HasBitVars(field));
         p->Emit(
@@ -4351,14 +4262,7 @@ void MessageGenerator::GenerateClassSpecificMergeImpl(io::Printer* p) {
                 )cc");
           }
         }},
-       {"merge_weak_fields",
-        [&] {
-          if (num_weak_fields_) {
-            p->Emit(R"cc(
-              _this->$weak_field_map$.MergeFrom(from.$weak_field_map$);
-            )cc");
-          }
-        }},
+
        {"merge_extensions",
         [&] {
           // Merging of extensions and unknown fields is done last, to maximize
@@ -4387,7 +4291,6 @@ void MessageGenerator::GenerateClassSpecificMergeImpl(io::Printer* p) {
           $merge_split$;
           $merge_hasbits$;
           $merge_oneof$;
-          $merge_weak_fields$;
           $merge_extensions$;
           _this->_internal_metadata_.MergeFrom<$unknown_fields_type$>(
               from._internal_metadata_);
@@ -4511,14 +4414,6 @@ void MessageGenerator::GenerateSerializeOneField(io::Printer* p,
   auto emit_body = [&] {
     field_generators_.get(field).GenerateSerializeWithCachedSizesToArray(p);
   };
-
-  PROTOBUF_IGNORE_DEPRECATION_START
-  if (field->options().weak()) {
-    PROTOBUF_IGNORE_DEPRECATION_STOP
-    emit_body();
-    p->Emit("\n");
-    return;
-  }
 
   PrintFieldComment(Formatter{p}, field, options_);
   if (HasHasbit(field, options_)) {
@@ -4790,28 +4685,7 @@ void MessageGenerator::GenerateSerializeWithCachedSizesBody(io::Printer* p) {
     int max_end_ = 0;
   };
 
-  // We need to track the largest weak field, because weak fields are serialized
-  // differently than normal fields.  The WeakFieldMap::FieldWriter will
-  // serialize all weak fields that are ordinally between the last serialized
-  // weak field and the current field.  In order to guarantee that all weak
-  // fields are serialized, we need to make sure to emit the code to serialize
-  // the largest weak field present at some point.
-  class LargestWeakFieldHolder {
-   public:
-    const FieldDescriptor* Release() {
-      const FieldDescriptor* result = field_;
-      field_ = nullptr;
-      return result;
-    }
-    void ReplaceIfLarger(const FieldDescriptor* field) {
-      if (field_ == nullptr || field_->number() < field->number()) {
-        field_ = field;
-      }
-    }
 
-   private:
-    const FieldDescriptor* field_ = nullptr;
-  };
 
   std::vector<const FieldDescriptor*> ordered_fields =
       SortFieldsByNumber(descriptor_);
@@ -4825,14 +4699,6 @@ void MessageGenerator::GenerateSerializeWithCachedSizesBody(io::Printer* p) {
             ExtensionRangeSorter());
   p->Emit(
       {
-          {"handle_weak_fields",
-           [&] {
-             if (num_weak_fields_ == 0) return;
-             p->Emit(R"cc(
-               ::_pbi::WeakFieldMap::FieldWriter field_writer(
-                   this_.$weak_field_map$);
-             )cc");
-           }},
           {"serialize_split_var",
            [&] {
              if (!ShouldSplit(descriptor_, options_)) return;
@@ -4846,7 +4712,7 @@ void MessageGenerator::GenerateSerializeWithCachedSizesBody(io::Printer* p) {
              // Merge fields and extension ranges, sorted by field number.
              LazySerializerEmitter e(this, p, options_);
              LazyExtensionRangeEmitter re(this, p);
-             LargestWeakFieldHolder largest_weak_field;
+
              size_t i, j;
              for (i = 0, j = 0;
                   i < ordered_fields.size() || j < sorted_extensions.size();) {
@@ -4857,23 +4723,13 @@ void MessageGenerator::GenerateSerializeWithCachedSizesBody(io::Printer* p) {
                         sorted_extensions[j]->start_number())) {
                  const FieldDescriptor* field = ordered_fields[i++];
                  re.Flush(no_more_extensions);
-                 PROTOBUF_IGNORE_DEPRECATION_START
-                 if (field->options().weak()) {
-                   PROTOBUF_IGNORE_DEPRECATION_STOP
-                   largest_weak_field.ReplaceIfLarger(field);
-                   PrintFieldComment(Formatter{p}, field, options_);
-                 } else {
-                   e.EmitIfNotNull(largest_weak_field.Release());
-                   e.Emit(field);
-                 }
+                 e.Emit(field);
                } else {
-                 e.EmitIfNotNull(largest_weak_field.Release());
                  e.Flush();
                  re.AddToRange(sorted_extensions[j++]);
                }
              }
              re.Flush(/*is_last_range=*/true);
-             e.EmitIfNotNull(largest_weak_field.Release());
            }},
           {"handle_unknown_fields",
            [&] {
@@ -4893,7 +4749,6 @@ void MessageGenerator::GenerateSerializeWithCachedSizesBody(io::Printer* p) {
            }},
       },
       R"cc(
-        $handle_weak_fields$;
         $uint32$ cached_has_bits = 0;
         (void)cached_has_bits;
         $serialize_split_var$;
@@ -4926,14 +4781,7 @@ void MessageGenerator::GenerateSerializeWithCachedSizesBodyShuffled(
   p->Emit(
       {
           {"last_field", num_fields - 1},
-          {"field_writer",
-           [&] {
-             if (num_weak_fields_ == 0) return;
-             p->Emit(R"cc(
-               ::_pbi::WeakFieldMap::FieldWriter field_writer(
-                   this_.$weak_field_map$);
-             )cc");
-           }},
+
           {"ordered_cases",
            [&] {
              size_t index = 0;
@@ -4984,7 +4832,6 @@ void MessageGenerator::GenerateSerializeWithCachedSizesBodyShuffled(
            }},
       },
       R"cc(
-        $field_writer$;
         for (int i = $last_field$; i >= 0; i--) {
           switch (i) {
             $ordered_cases$;
@@ -5305,14 +5152,7 @@ void MessageGenerator::GenerateByteSize(io::Printer* p) {
                 )cc");
           }
         }},
-       {"handle_weak_fields",
-        [&] {
-          if (num_weak_fields_ == 0) return;
-          // TagSize + MessageSize
-          p->Emit(R"cc(
-            total_size += this_.$weak_field_map$.ByteSizeLong();
-          )cc");
-        }},
+
        {"handle_unknown_fields",
         [&] {
           if (UseUnknownFieldSet(descriptor_->file(), options_)) {
@@ -5361,7 +5201,6 @@ void MessageGenerator::GenerateByteSize(io::Printer* p) {
           $prefetch$;
           $handle_fields$;
           $handle_oneof_fields$;
-          $handle_weak_fields$;
           $handle_unknown_fields$;
         }
       )cc");
@@ -5408,7 +5247,6 @@ bool MessageGenerator::NeedsIsInitialized() {
   for (const auto* field : field_layout_.optimized_order()) {
     if (field_generators_.get(field).NeedsIsInitialized()) return true;
   }
-  if (num_weak_fields_ != 0) return true;
 
   for (const auto* oneof : OneOfRange(descriptor_)) {
     for (const auto* field : internal::FieldRange(oneof)) {
@@ -5472,14 +5310,7 @@ void MessageGenerator::GenerateIsInitialized(io::Printer* p) {
                f.GenerateIsInitialized(p);
              }
            }},
-          {"test_weak_fields",
-           [&] {
-             if (num_weak_fields_ == 0) return;
-             p->Emit(R"cc(
-               if (!this_.$weak_field_map$.IsInitialized())
-                 return false;
-             )cc");
-           }},
+
           {"test_oneof_fields",
            [&] {
              for (const auto* oneof : OneOfRange(descriptor_)) {
@@ -5523,7 +5354,6 @@ void MessageGenerator::GenerateIsInitialized(io::Printer* p) {
           $test_extensions$;
           $test_required_fields$;
           $test_ordinary_fields$;
-          $test_weak_fields$;
           $test_oneof_fields$;
           return true;
         }
