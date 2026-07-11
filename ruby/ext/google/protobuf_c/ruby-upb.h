@@ -676,41 +676,20 @@ Error, UINTPTR_MAX is undefined
 #define _UPB_CONSTRUCTOR_PLACEHOLDER(unique_name)
 #endif
 
-#define _UPB_STRINGIFY2(x) #x
-#define _UPB_STRINGIFY(x) _UPB_STRINGIFY2(x)
-
-#if defined(__ELF__)
-/*
- * Workaround for b/456308964 and b/456317163. Although weak constructors
- * resolve to a single function body, Clang still emits a pointer into
- * .init_array for every translation unit, causing the constructor to be
- * executed multiple times and inflating binary size. We wrap the .init_array
- * entry in a COMDAT group (using inline assembly) to force the linker to
- * deduplicate the pointer to exactly one instance.
- */
-#define UPB_CONSTRUCTOR(name, unique_name)                                       \
-  _UPB_CONSTRUCTOR_PLACEHOLDER(unique_name)                                      \
-  __attribute__((weak, visibility("hidden"))) void UPB_PRIVATE(name)(void);      \
-  __asm__(                                                                     \
-      ".pushsection .init_array,\"awG\",%init_array," _UPB_STRINGIFY(UPB_PRIVATE(name)) ",comdat\n" \
-      ".dc.a " _UPB_STRINGIFY(UPB_PRIVATE(name)) "\n"                          \
-      ".popsection\n"                                                          \
-  ); \
-  __attribute__((weak, visibility("hidden"))) void UPB_PRIVATE(name)(void)
-#elif defined(__wasm__) || defined(__MACH__)
+#if defined(__ELF__) || defined(__wasm__) || defined(__MACH__)
 #define UPB_CONSTRUCTOR(name, unique_name)                                   \
   _UPB_CONSTRUCTOR_PLACEHOLDER(unique_name)                                  \
   __attribute__((weak, visibility("hidden"), constructor)) void UPB_PRIVATE( \
       name)(void)
 #elif defined(_MSC_VER)
-  /*
-   * See: https://stackoverflow.com/questions/1113409
-   *
-   * The /include pragma suggested in the link above doesn't work in our case
-   * because it requires globally unique names. We need a different solution
-   * to prevent optimizers from removing the constructor. Our solution is to
-   * create a dummy exported weak symbol that prevent this stripping.
-   */
+/*
+ * See: https://stackoverflow.com/questions/1113409
+ *
+ * The /include pragma suggested in the link above doesn't work in our case
+ * because it requires globally unique names. We need a different solution
+ * to prevent optimizers from removing the constructor. Our solution is to
+ * create a dummy exported weak symbol that prevent this stripping.
+ */
 #pragma section(".CRT$XCT", read)
 #define UPB_CONSTRUCTOR(name, unique_name)                                   \
   static void __cdecl UPB_PRIVATE(name)(void);                               \
@@ -721,7 +700,7 @@ Error, UINTPTR_MAX is undefined
   static void __cdecl UPB_PRIVATE(name)(void)
 
 #else
-  // No constructor support, nothing we can do except not break builds.
+// No constructor support, nothing we can do except not break builds.
 #define UPB_CONSTRUCTOR(name, unique_name) static void UPB_PRIVATE(name)(void)
 #endif
 
@@ -760,9 +739,9 @@ Error, UINTPTR_MAX is undefined
 
 #elif defined(__ELF__) || defined(__wasm__)
 
-  // On ELF, weak aliases work properly, so we can have all weak MiniTables
-  // point to the same empty singleton MiniTable. This reduces code size if many
-  // MiniTables are tree shaken.
+// On ELF, weak aliases work properly, so we can have all weak MiniTables point
+// to the same empty singleton MiniTable. This reduces code size if many
+// MiniTables are tree shaken.
 #define UPB_WEAK_SINGLETON_PLACEHOLDER_MINITABLE()               \
   __attribute__((weak))                                          \
   const upb_MiniTable kUpb_WeakSingletonPlaceholderMiniTable = { \
@@ -19037,5 +19016,3 @@ UPB_PRIVATE(upb_WireWriter_VarintUnusedSizeFromLeadingZeros64)(uint64_t clz) {
 #undef UPB_DEPRECATE_AND_INLINE
 #undef UPB_MAYBE_ASSUME
 #undef UPB_ATTR_CONST
-#undef _UPB_STRINGIFY
-#undef _UPB_STRINGIFY2
