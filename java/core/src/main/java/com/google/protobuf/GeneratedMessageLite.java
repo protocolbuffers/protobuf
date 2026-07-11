@@ -358,27 +358,13 @@ public abstract class GeneratedMessageLite<
     return dynamicMethod(MethodToInvoke.BUILD_MESSAGE_INFO, null, null);
   }
 
-  private static final Map<Class<?>, Parser<?>> parserMap = new ConcurrentHashMap<>();
+  private static final Map<Class<?>, GeneratedMessageLite<?, ?>> defaultInstanceMap =
+      new ConcurrentHashMap<>();
 
-  @SuppressWarnings("unchecked") // Guaranteed by the map's invariant.
-  @DoNotInline
-  public static <T extends GeneratedMessageLite<T, ?>> Parser<T> getParserForClass(Class<T> clazz) {
-    Parser<?> parser = parserMap.get(clazz);
-    if (parser == null) {
-      GeneratedMessageLite<?, ?> defaultInstance = getDefaultInstance(clazz);
-      if (defaultInstance == null) {
-        throw new IllegalStateException("Default instance cannot be null.");
-      }
-      parser = parserMap.get(clazz);
-    }
-    return (Parser<T>) parser;
-  }
-
-  @SuppressWarnings({"unchecked", "rawtypes", "ImpossibleNullComparison"}) // fallback can be null during bootstrap/Samsung workaround.
-  @DoNotInline
+  @SuppressWarnings("unchecked")
   static <T extends GeneratedMessageLite<?, ?>> T getDefaultInstance(Class<T> clazz) {
-    Parser<?> parser = parserMap.get(clazz);
-    if (parser == null) {
+    T result = (T) defaultInstanceMap.get(clazz);
+    if (result == null) {
       // Foo.class does not initialize the class so we need to force the initialization in order to
       // get the default instance registered.
       try {
@@ -386,23 +372,22 @@ public abstract class GeneratedMessageLite<
       } catch (ClassNotFoundException e) {
         throw new IllegalStateException("Class initialization cannot fail.", e);
       }
-      parser = parserMap.get(clazz);
+      result = (T) defaultInstanceMap.get(clazz);
     }
-    if (parser == null) {
+    if (result == null) {
       // On some Samsung devices, this still doesn't return a valid value for some reason. We add a
       // reflective fallback to keep the device running. See b/114675342.
-      T fallback = (T) UnsafeUtil.allocateInstance(clazz).getDefaultInstanceForType();
+      result = (T) UnsafeUtil.allocateInstance(clazz).getDefaultInstanceForType();
       // A sanity check to ensure that <clinit> was actually invoked.
-      if (fallback == null) {
+      if (result == null) {
         throw new IllegalStateException();
       }
-      parser = new DefaultInstanceBasedParser(fallback);
-      parserMap.put(clazz, parser);
+      defaultInstanceMap.put(clazz, result);
     }
-    return (T) ((DefaultInstanceBasedParser) parser).defaultInstance;
+    return result;
   }
 
-  protected static <T extends GeneratedMessageLite<T, ?>> void registerDefaultInstance(
+  protected static <T extends GeneratedMessageLite<?, ?>> void registerDefaultInstance(
       Class<T> clazz, T defaultInstance) {
     // Default instances must be immutable.
     // Marking immutable here to avoid extra bytecode in every generated message class.
@@ -410,7 +395,7 @@ public abstract class GeneratedMessageLite<
     // 1. All sub-messages are initialized to null / default instances and thus immutable
     // 2. All lists are initialized to default instance empty lists which are also immutable.
     defaultInstance.markImmutable();
-    parserMap.put(clazz, new DefaultInstanceBasedParser<T>(defaultInstance));
+    defaultInstanceMap.put(clazz, defaultInstance);
   }
 
   protected static Object newMessageInfo(
