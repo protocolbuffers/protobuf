@@ -245,6 +245,7 @@ upb_Message* _upb_Message_Copy(upb_Message* dst, const upb_Message* src,
 
   for (size_t i = 0; i < in->size; i++) {
     upb_TaggedAuxPtr tagged_ptr = in->aux_data[i];
+    if (tagged_ptr.ptr == 0) continue;
     if (upb_TaggedAuxPtr_IsCanonicalExtension(tagged_ptr)) {
       // Clone extension
       const upb_Extension* msg_ext =
@@ -315,6 +316,10 @@ bool upb_Message_ShallowCopy(upb_Message* dst, const upb_Message* src,
   dst_in->capacity = in->size;
 
   for (size_t i = 0; i < in->size; i++) {
+    if (in->aux_data[i].ptr == 0) {
+      dst_in->aux_data[i] = upb_TaggedAuxPtr_Null();
+      continue;
+    }
     upb_TaggedAux aux;
     switch (upb_TaggedAux_Get(in->aux_data[i], &aux)) {
       case kUpb_TaggedAuxType_CanonicalExtension: {

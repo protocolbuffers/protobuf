@@ -449,6 +449,61 @@ TEST(GeneratedCode, ShallowCopyIncludesExtensions) {
   upb_Arena_Free(arena);
 }
 
+TEST(GeneratedCode, ShallowCopyHandlesClearedExtensions) {
+  upb_Arena* source_arena = upb_Arena_New();
+  upb_test_ModelWithExtensions* msg =
+      upb_test_ModelWithExtensions_new(source_arena);
+  upb_test_ModelExtension1* ext1 = upb_test_ModelExtension1_new(source_arena);
+  upb_test_ModelExtension1_set_str(ext1, upb_StringView_FromString(kTestStr1));
+  upb_test_ModelExtension1_set_model_ext(msg, ext1, source_arena);
+
+  // Clear the extension, creating a tombstone in aux_data.
+  upb_Message_ClearExtension(UPB_UPCAST(msg),
+                             upb_test_ModelExtension1_model_ext_ext);
+
+  upb_Arena* arena = upb_Arena_New();
+  upb_test_ModelWithExtensions* dst = upb_test_ModelWithExtensions_new(arena);
+
+  // This should not crash.
+  EXPECT_TRUE(upb_Message_ShallowCopy(UPB_UPCAST(dst), UPB_UPCAST(msg),
+                                      &upb_0test__ModelWithExtensions_msg_init,
+                                      arena));
+
+  // The extension should not be present in dst.
+  EXPECT_EQ(upb_test_ModelExtension1_model_ext(dst), nullptr);
+
+  upb_Arena_Free(source_arena);
+  upb_Arena_Free(arena);
+}
+
+TEST(GeneratedCode, DeepCloneHandlesClearedExtensions) {
+  upb_Arena* source_arena = upb_Arena_New();
+  upb_test_ModelWithExtensions* msg =
+      upb_test_ModelWithExtensions_new(source_arena);
+  upb_test_ModelExtension1* ext1 = upb_test_ModelExtension1_new(source_arena);
+  upb_test_ModelExtension1_set_str(ext1, upb_StringView_FromString(kTestStr1));
+  upb_test_ModelExtension1_set_model_ext(msg, ext1, source_arena);
+
+  // Clear the extension, creating a tombstone in aux_data.
+  upb_Message_ClearExtension(UPB_UPCAST(msg),
+                             upb_test_ModelExtension1_model_ext_ext);
+
+  upb_Arena* arena = upb_Arena_New();
+
+  // This should not crash.
+  upb_Message* clone = upb_Message_DeepClone(
+      UPB_UPCAST(msg), &upb_0test__ModelWithExtensions_msg_init, arena);
+  EXPECT_NE(clone, nullptr);
+
+  // The extension should not be present in clone.
+  EXPECT_EQ(
+      upb_test_ModelExtension1_model_ext((upb_test_ModelWithExtensions*)clone),
+      nullptr);
+
+  upb_Arena_Free(source_arena);
+  upb_Arena_Free(arena);
+}
+
 std::vector<std::string_view> GetUnknownFields(const upb_Message* msg) {
   std::vector<std::string_view> result;
   upb_StringView data;
