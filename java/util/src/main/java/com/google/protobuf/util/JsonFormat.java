@@ -75,6 +75,7 @@ import javax.annotation.Nullable;
 public class JsonFormat {
   private static final Logger logger = Logger.getLogger(JsonFormat.class.getName());
 
+
   private JsonFormat() {}
 
   /** Creates a {@link Printer} with default configurations. */
@@ -1656,6 +1657,8 @@ public class JsonFormat {
     private final int recursionLimit;
     private final boolean legacyLenient;
     private int currentDepth;
+    private final Map<EnumDescriptor, AlternativeEnumJsonNames> enumJsonNamesCache =
+        new HashMap<>();
 
     ParserImpl(
         com.google.protobuf.TypeRegistry registry,
@@ -2453,11 +2456,11 @@ public class JsonFormat {
         }
 
         // Check custom JSON names first for strings
-        for (EnumValueDescriptor ev : enumDescriptor.getValues()) {
-          JsonEnumValueOptions ext = ev.getOptions().getExtension(JsonEnumvalueOptionsProto.json);
-          if (ext.hasString() && ext.getString().equals(value)) {
-            return ev;
-          }
+        AlternativeEnumJsonNames enumJsonNames =
+            enumJsonNamesCache.computeIfAbsent(enumDescriptor, AlternativeEnumJsonNames::new);
+        EnumValueDescriptor ev = enumJsonNames.map.get(value);
+        if (ev != null) {
+          return ev;
         }
       }
 
@@ -2563,6 +2566,21 @@ public class JsonFormat {
         default:
           throw new InvalidProtocolBufferException("Invalid field type: " + field.getType());
       }
+    }
+  }
+
+  private static final class AlternativeEnumJsonNames {
+    final Map<String, EnumValueDescriptor> map;
+
+    AlternativeEnumJsonNames(EnumDescriptor enumDescriptor) {
+      Map<String, EnumValueDescriptor> m = new HashMap<>();
+      for (EnumValueDescriptor ev : enumDescriptor.getValues()) {
+        JsonEnumValueOptions ext = ev.getOptions().getExtension(JsonEnumvalueOptionsProto.json);
+        if (ext.hasString()) {
+          m.put(ext.getString(), ev);
+        }
+      }
+      this.map = Collections.unmodifiableMap(m);
     }
   }
 }
