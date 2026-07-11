@@ -34,4 +34,5 @@ enum Helmet {
 message Knight {
   Armor armor = 1;
   Helmet helmet = 2;
+  repeated Armor armors = 3;
 }
