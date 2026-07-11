@@ -316,10 +316,6 @@ proto_library(
     testonly = True,
     srcs = ["json_enumval_custom_string.proto"],
     strip_import_prefix = "/src",
-    visibility = [
-        "//:__subpackages__",
-        "//src/google/protobuf:__subpackages__",
-    ],
     deps = ["//src/google/protobuf:json_options_proto"],
 )
 

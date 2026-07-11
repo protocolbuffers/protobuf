@@ -1,4 +1,5 @@
 load("@rules_java//java:java_library.bzl", "java_library")
+load("@rules_pkg//pkg:mappings.bzl", "pkg_files", "strip_prefix")
 load("//:protobuf_version.bzl", "PROTOBUF_JAVA_VERSION")
 load("//bazel:java_proto_library.bzl", "java_proto_library")
 load("//bazel:proto_library.bzl", "proto_library")
@@ -12,7 +13,6 @@ java_library(
     ]),
     visibility = ["//visibility:public"],
     deps = [
-        ":json_enumvalue_options_java_proto",
         "//java/core",
         "@maven//:com_google_code_findbugs_jsr305",
         "@maven//:com_google_code_gson_gson",
@@ -31,7 +31,6 @@ protobuf_versioned_java_library(
     bundle_symbolic_name = "com.google.protobuf.util",
     visibility = ["//visibility:public"],
     deps = [
-        ":json_enumvalue_options_java_proto",
         "//java/core",
         "@maven//:com_google_code_findbugs_jsr305",
         "@maven//:com_google_code_gson_gson",
@@ -64,9 +63,6 @@ filegroup(
 proto_library(
     name = "test_protos",
     srcs = glob(["src/test/proto/**/*.proto"]),
-    option_deps = [
-        "//:json_options_proto",
-    ],
     deps = [
         "//:any_proto",
         "//:duration_proto",
@@ -80,12 +76,6 @@ proto_library(
 java_proto_library(
     name = "test_protos_java_proto",
     deps = [":test_protos"],
-)
-
-java_proto_library(
-    name = "json_enumvalue_options_java_proto",
-    visibility = ["//visibility:public"],
-    deps = ["//:json_enumvalue_options_proto"],
 )
 
 junit_tests(
