@@ -313,9 +313,8 @@ void RegisterExtensions(Output& output, absl::string_view unique_name) {
          unique_name);
   // TODO Although we define this function as weak and only one
   // copy will ever exist in any binary, every instance will get registered as a
-  // separate constructor call. This is avoidable via comdat on ELF but not
-  // mach-o. To avoid duplicate registrations, we use a static variable to
-  // ensure that the function is only executed once.
+  // separate constructor call.  To avoid duplicate registrations, we use a
+  // static variable to ensure that the function is only executed once.
   output("  static bool finished = false;\n");
   output("  if (finished) return;\n");
   output("  finished = true;\n");
