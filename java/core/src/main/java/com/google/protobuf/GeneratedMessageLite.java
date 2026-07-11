@@ -358,27 +358,42 @@ public abstract class GeneratedMessageLite<
     return dynamicMethod(MethodToInvoke.BUILD_MESSAGE_INFO, null, null);
   }
 
-  private static final Map<Class<?>, Parser<?>> parserMap = new ConcurrentHashMap<>();
+  private static final Map<Class<?>, Object> parserOrInstanceMap = new ConcurrentHashMap<>();
 
-  @SuppressWarnings("unchecked") // Guaranteed by the map's invariant.
+  @SuppressWarnings({
+    "unchecked",
+    "CheckReturnValue",
+    "IgnoredPureGetter"
+  }) // Guaranteed by the map's invariant.
   @DoNotInline
   public static <T extends GeneratedMessageLite<T, ?>> Parser<T> getParserForClass(Class<T> clazz) {
-    Parser<?> parser = parserMap.get(clazz);
-    if (parser == null) {
-      GeneratedMessageLite<?, ?> defaultInstance = getDefaultInstance(clazz);
-      if (defaultInstance == null) {
-        throw new IllegalStateException("Default instance cannot be null.");
-      }
-      parser = parserMap.get(clazz);
+    Object parserOrInstance = parserOrInstanceMap.get(clazz);
+    if (parserOrInstance == null) {
+      Object unused = getDefaultInstance(clazz);
+      parserOrInstance = parserOrInstanceMap.get(clazz);
     }
-    return (Parser<T>) parser;
+    if (parserOrInstance == null) {
+      throw new IllegalStateException("Default instance cannot be null.");
+    }
+    if (parserOrInstance instanceof Parser) {
+      return (Parser<T>) parserOrInstance;
+    }
+    Parser<T> parser = new DefaultInstanceBasedParser<>((T) parserOrInstance);
+    if (parserOrInstanceMap.replace(clazz, parserOrInstance, parser)) {
+      return parser;
+    }
+    return (Parser<T>) parserOrInstanceMap.get(clazz);
   }
 
-  @SuppressWarnings({"unchecked", "rawtypes", "ImpossibleNullComparison"}) // fallback can be null during bootstrap/Samsung workaround.
+  @SuppressWarnings({
+    "unchecked",
+    "rawtypes",
+    "ImpossibleNullComparison"
+  }) // fallback can be null during bootstrap/Samsung workaround.
   @DoNotInline
   static <T extends GeneratedMessageLite<?, ?>> T getDefaultInstance(Class<T> clazz) {
-    Parser<?> parser = parserMap.get(clazz);
-    if (parser == null) {
+    Object parserOrInstance = parserOrInstanceMap.get(clazz);
+    if (parserOrInstance == null) {
       // Foo.class does not initialize the class so we need to force the initialization in order to
       // get the default instance registered.
       try {
@@ -386,9 +401,9 @@ public abstract class GeneratedMessageLite<
       } catch (ClassNotFoundException e) {
         throw new IllegalStateException("Class initialization cannot fail.", e);
       }
-      parser = parserMap.get(clazz);
+      parserOrInstance = parserOrInstanceMap.get(clazz);
     }
-    if (parser == null) {
+    if (parserOrInstance == null) {
       // On some Samsung devices, this still doesn't return a valid value for some reason. We add a
       // reflective fallback to keep the device running. See b/114675342.
       T fallback = (T) UnsafeUtil.allocateInstance(clazz).getDefaultInstanceForType();
@@ -396,10 +411,13 @@ public abstract class GeneratedMessageLite<
       if (fallback == null) {
         throw new IllegalStateException();
       }
-      parser = new DefaultInstanceBasedParser(fallback);
-      parserMap.put(clazz, parser);
+      parserOrInstance = fallback;
+      parserOrInstanceMap.put(clazz, parserOrInstance);
     }
-    return (T) ((DefaultInstanceBasedParser) parser).defaultInstance;
+    if (parserOrInstance instanceof GeneratedMessageLite) {
+      return (T) parserOrInstance;
+    }
+    return (T) ((DefaultInstanceBasedParser) parserOrInstance).defaultInstance;
   }
 
   protected static <T extends GeneratedMessageLite<T, ?>> void registerDefaultInstance(
@@ -410,7 +428,7 @@ public abstract class GeneratedMessageLite<
     // 1. All sub-messages are initialized to null / default instances and thus immutable
     // 2. All lists are initialized to default instance empty lists which are also immutable.
     defaultInstance.markImmutable();
-    parserMap.put(clazz, new DefaultInstanceBasedParser<T>(defaultInstance));
+    parserOrInstanceMap.put(clazz, defaultInstance);
   }
 
   protected static Object newMessageInfo(
