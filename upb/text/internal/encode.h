@@ -230,7 +230,7 @@ UPB_INLINE size_t UPB_PRIVATE(_upb_TextEncode_Nullz)(txtenc* e, size_t size) {
 
 const char* UPB_PRIVATE(_upb_TextEncode_Unknown)(txtenc* e, const char* ptr,
                                                  upb_EpsCopyInputStream* stream,
-                                                 int groupnum);
+                                                 int groupnum, int depth);
 
 void UPB_PRIVATE(_upb_TextEncode_ParseUnknown)(txtenc* e,
                                                const upb_Message* msg);
