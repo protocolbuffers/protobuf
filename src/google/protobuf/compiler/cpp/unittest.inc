@@ -37,13 +37,12 @@
 // visual studio to compile (report internal errors).
 #include "google/protobuf/unittest_enormous_descriptor.pb.h"
 #endif
-#include "google/protobuf/stubs/callback.h"
-#include "google/protobuf/stubs/common.h"
 #include "google/protobuf/descriptor.pb.h"
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 #include "absl/base/casts.h"
 #include "absl/strings/substitute.h"
+#include "third_party/gloop/base/callback-types.h"
 #include "google/protobuf/arena.h"
 #include "google/protobuf/compiler/cpp/helpers.h"
 #include "google/protobuf/compiler/cpp/test_bad_identifiers_editions.pb.h"
