@@ -108,14 +108,17 @@ bool PyUpb_RepeatedContainer_IsFrozen(PyUpb_RepeatedContainer* self) {
   if (PyUpb_RepeatedContainer_IsStub(self)) {
     return PyUpb_Message_IsFrozen(self->ptr.parent);
   } else {
-    return upb_Array_IsFrozen(self->ptr.arr);
+    return upb_Array_IsFrozen(self->ptr.arr) ||
+           PyUpb_Arena_IsFrozen(self->arena);
   }
 }
 
 upb_Array* PyUpb_RepeatedContainer_AssureWritable(PyObject* _self) {
   PyUpb_RepeatedContainer* self = (PyUpb_RepeatedContainer*)_self;
   if (PyUpb_RepeatedContainer_IsFrozen(self)) {
-    return (upb_Array*)PyUpb_SetFrozenErrorWithMsg("Container is immutable");
+    if (!PyUpb_CheckFrozen(true, "Container is immutable")) {
+      return NULL;
+    }
   }
 
   upb_Array* arr = PyUpb_RepeatedContainer_GetIfReified(self);
@@ -967,7 +970,9 @@ static PyObject* PyUpb_RepeatedContainer_Sort(PyObject* pself, PyObject* args,
   }
 
   if (PyUpb_RepeatedContainer_IsFrozen((PyUpb_RepeatedContainer*)pself)) {
-    return PyUpb_SetFrozenErrorWithMsg("Container is immutable");
+    if (!PyUpb_CheckFrozen(true, "Container is immutable")) {
+      return NULL;
+    }
   }
 
   // TODO:b/517235198 - Reify even for empty sequences.
