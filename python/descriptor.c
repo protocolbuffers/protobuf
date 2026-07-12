@@ -141,6 +141,8 @@ static PyObject* PyUpb_DescriptorBase_GetCached(PyObject** cached,
 
 #if PROTOBUF_PY_FUTURE_FREEZE_OPTIONS
     upb_Message_Freeze(opts2, opts2_layout);
+#else
+    PyUpb_Arena_SetFrozen(py_arena, true);
 #endif
     *cached = PyUpb_Message_Get(opts2, m, py_arena);
     Py_DECREF(py_arena);
