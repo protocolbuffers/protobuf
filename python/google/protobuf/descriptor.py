@@ -245,6 +245,12 @@ class DescriptorBase(metaclass=DescriptorMetaclass):
     # If either has been reset by gencode, reload options.
     if not self._options or not self._loaded_options:
       self._LazyLoadOptions()
+    if (
+        self._options
+        and hasattr(self._options, '_SetFrozen')
+        and not getattr(self._options, '_frozen', False)
+    ):
+      self._options._SetFrozen()
     return self._options
 
 
