@@ -106,7 +106,8 @@ jobs:
             echo "continuous-run=continuous" >> "$GITHUB_OUTPUT"
             echo "continuous-prefix=(Continuous)" >> "$GITHUB_OUTPUT"
           fi
-
+       - name: Debug SHA
+        run: echo "The current SHA being used is ${{ github.event.pull_request.head.sha }}"
   remove-tag:
     name: Remove safety tag
     needs: [set-vars]
