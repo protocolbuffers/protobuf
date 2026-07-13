@@ -25,6 +25,7 @@ class CodedInputStream
     private $total_bytes_read;
 
     const MAX_VARINT_BYTES = 10;
+    const MAX_TAG_BYTES = 5;
     const DEFAULT_RECURSION_LIMIT = 100;
 
     public function __construct($buffer, $recursion_limit = self::DEFAULT_RECURSION_LIMIT)
@@ -242,14 +243,22 @@ class CodedInputStream
             return 0;
         }
 
+        $start = $this->current;
         $result = 0;
-        // The largest tag is 2^29 - 1, which can be represented by int32.
-        $success = $this->readVarint32($result);
-        if ($success) {
-            return $result;
-        } else {
-            return 0;
+        if (!$this->readVarint32($result)) {
+            throw new GPBDecodeException("Malformed tag varint.");
         }
+        $tag_bytes = $this->current - $start;
+        // A tag fits in 32 bits.
+        if ($tag_bytes > self::MAX_TAG_BYTES ||
+            ($tag_bytes === self::MAX_TAG_BYTES &&
+                ord($this->buffer[$this->current - 1]) > 0x0F)) {
+            throw new GPBDecodeException("Malformed tag varint.");
+        }
+        if ($result === 0) {
+            throw new GPBDecodeException("Illegal field number zero.");
+        }
+        return $result;
     }
 
     public function readRaw($size, &$buffer)
