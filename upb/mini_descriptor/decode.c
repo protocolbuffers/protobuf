@@ -516,6 +516,9 @@ static const char* upb_MtDecoder_Parse(upb_MtDecoder* d, const char* ptr,
       ptr = upb_MdDecoder_DecodeBase92Varint(&d->base, ptr, ch,
                                              kUpb_EncodedValue_MinSkip,
                                              kUpb_EncodedValue_MaxSkip, &skip);
+      if (skip == 0) {
+        upb_MdDecoder_ErrorJmp(&d->base, "Invalid skip value: 0");
+      }
       last_field_number += skip;
       last_field_number--;  // Next field seen will increment.
     } else {
@@ -831,6 +834,14 @@ done:
   }
 #endif
   UPB_PRIVATE(upb_MiniTable_CheckInvariants)(ret);
+
+#ifndef NDEBUG
+  for (int i = 1; i < upb_MiniTable_FieldCount(ret); i++) {
+    const upb_MiniTableField* f1 = upb_MiniTable_GetFieldByIndex(ret, i - 1);
+    const upb_MiniTableField* f2 = upb_MiniTable_GetFieldByIndex(ret, i);
+    UPB_ASSERT(upb_MiniTableField_Number(f2) > upb_MiniTableField_Number(f1));
+  }
+#endif
   return ret;
 }
 
@@ -894,9 +905,15 @@ static const char* upb_MtDecoder_DoBuildMiniTableExtension(
   if (!ret || count != 1) return NULL;
 
   upb_MiniTableField* f = &ext->UPB_PRIVATE(field);
+  uint32_t fieldnum = upb_MiniTableField_Number(f);
 
-  if (upb_MiniTable_FindFieldByNumber(extendee, upb_MiniTableField_Number(f)) !=
-      NULL) {
+  const uint32_t kMaxFieldNumber = (1 << 29) - 1;
+  if (fieldnum == 0 ||
+      (fieldnum > kMaxFieldNumber && !upb_MiniTable_IsMessageSet(extendee))) {
+    upb_MdDecoder_ErrorJmp(&decoder->base, "Invalid extension field number");
+  }
+
+  if (upb_MiniTable_FindFieldByNumber(extendee, fieldnum) != NULL) {
     upb_MdDecoder_ErrorJmp(&decoder->base,
                            "Extension overlaps with a known field");
   }

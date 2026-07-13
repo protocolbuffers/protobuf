@@ -363,26 +363,9 @@ void ImmutableMessageLiteGenerator::Generate(io::Printer* printer) {
       "  return DEFAULT_INSTANCE;\n"
       "}\n"
       "case GET_PARSER: {\n"
-      // Generally one would use the lazy initialization holder pattern for
-      // manipulating static fields but that has exceptional cost on Android as
-      // it will generate an extra class for every message. Instead, use the
-      // double-check locking pattern which works just as well.
-      //
-      // The "parser" temporary mirrors the "PARSER" field to eliminate a read
-      // at the final return statement.
-      "  com.google.protobuf.Parser<$classname$> parser = PARSER;\n"
-      "  if (parser == null) {\n"
-      "    synchronized ($classname$.class) {\n"
-      "      parser = PARSER;\n"
-      "      if (parser == null) {\n"
-      "        parser =\n"
-      "            new DefaultInstanceBasedParser<$classname$>(\n"
-      "                DEFAULT_INSTANCE);\n"
-      "        PARSER = parser;\n"
-      "      }\n"
-      "    }\n"
-      "  }\n"
-      "  return parser;\n",
+      "  return "
+      "com.google.protobuf.GeneratedMessageLite.getParserForClass($classname$."
+      "class);\n",
       "classname", name_resolver_->GetImmutableClassName(descriptor_));
 
   if (HasRequiredFields(descriptor_)) {
@@ -727,11 +710,10 @@ void ImmutableMessageLiteGenerator::GenerateConstructor(io::Printer* printer) {
 // ===================================================================
 void ImmutableMessageLiteGenerator::GenerateParser(io::Printer* printer) {
   printer->Print(
-      "private static volatile com.google.protobuf.Parser<$classname$> "
-      "PARSER;\n"
-      "\n"
       "public static com.google.protobuf.Parser<$classname$> parser() {\n"
-      "  return DEFAULT_INSTANCE.getParserForType();\n"
+      "  return "
+      "com.google.protobuf.GeneratedMessageLite.getParserForClass($classname$."
+      "class);\n"
       "}\n",
       "classname", descriptor_->name());
 }

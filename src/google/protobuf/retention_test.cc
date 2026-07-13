@@ -225,7 +225,10 @@ TEST(RetentionTest, StripSourceRetentionOptionsWithSourceCodeInfo) {
   FileDescriptorProto stripped_file = compiler::StripSourceRetentionOptions(
       *pool.FindFileByName("retention.proto"),
       /*include_source_code_info=*/true);
-  EXPECT_EQ(stripped_file.source_code_info().location_size(), 63);
+
+  // The number of locations is reduced by the number of stripped elements.
+  EXPECT_EQ(file_descriptor.source_code_info().location_size(), 88);
+  EXPECT_EQ(stripped_file.source_code_info().location_size(), 73);
 }
 
 TEST(RetentionTest, RemoveEmptyOptions) {

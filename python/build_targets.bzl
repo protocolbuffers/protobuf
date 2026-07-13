@@ -153,12 +153,14 @@ def build_targets(name):
             "@abseil-cpp//absl/base:core_headers",
             "@abseil-cpp//absl/base:no_destructor",
             "@abseil-cpp//absl/container:flat_hash_map",
+            "@abseil-cpp//absl/functional:function_ref",
             "@abseil-cpp//absl/log:absl_check",
             "@abseil-cpp//absl/log:absl_log",
             "@abseil-cpp//absl/status",
             "@abseil-cpp//absl/status:statusor",
             "@abseil-cpp//absl/strings",
             "@abseil-cpp//absl/synchronization",
+            "@abseil-cpp//absl/types:span",
             "@system_python//:python_headers",
         ],
     )
@@ -182,7 +184,7 @@ def build_targets(name):
     compile_edition_defaults(
         name = "python_edition_defaults",
         srcs = ["//:descriptor_proto"],
-        maximum_edition = "2024",
+        maximum_edition = "2026",
         minimum_edition = "PROTO2",
     )
 
@@ -481,6 +483,7 @@ def build_targets(name):
             "//src/google/protobuf/io",
             "@abseil-cpp//absl/log:absl_check",
             "@abseil-cpp//absl/status",
+            "@abseil-cpp//absl/status:statusor",
             "@system_python//:python_headers",
         ],
     )

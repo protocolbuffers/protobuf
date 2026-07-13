@@ -7,6 +7,7 @@
 
 #include "python/map.h"
 
+#include "google/protobuf/breaking_changes.h"
 #include "python/convert.h"
 #include "python/message.h"
 #include "python/protobuf.h"
@@ -130,15 +131,16 @@ bool PyUpb_MapContainer_IsFrozen(PyUpb_MapContainer* self) {
   if (PyUpb_MapContainer_IsStub(self)) {
     return PyUpb_Message_IsFrozen(self->ptr.parent);
   } else {
-    return upb_Map_IsFrozen(self->ptr.map);
+    return upb_Map_IsFrozen(self->ptr.map) || PyUpb_Arena_IsFrozen(self->arena);
   }
 }
 
 upb_Map* PyUpb_MapContainer_AssureWritable(PyObject* _self) {
   PyUpb_MapContainer* self = (PyUpb_MapContainer*)_self;
   if (PyUpb_MapContainer_IsFrozen(self)) {
-    PyErr_SetString(PyExc_TypeError, "Map is read-only");
-    return NULL;
+    if (!PyUpb_CheckFrozen(true, "Map is immutable")) {
+      return NULL;
+    }
   }
 
   self->version++;
@@ -234,6 +236,7 @@ static int PyUpb_MapContainer_Contains(PyObject* _self, PyObject* key) {
 static PyObject* PyUpb_MapContainer_Clear(PyObject* _self, PyObject* key) {
   upb_Map* map = PyUpb_MapContainer_AssureWritable(_self);
   if (!map) return NULL;
+  // TODO: b/517235198 - Reify even for empty sequences.
   if (upb_Map_Size(map) > 0) {
     upb_Map_Clear(map);
   }
@@ -575,7 +578,6 @@ bool PyUpb_Map_Init(PyObject* m) {
   state->map_iterator_type = PyUpb_AddClass(m, &PyUpb_MapIterator_Spec);
 
   Py_DECREF(base);
-  Py_DECREF(methods);
 
   return state->message_map_container_type &&
          state->scalar_map_container_type && state->map_iterator_type;

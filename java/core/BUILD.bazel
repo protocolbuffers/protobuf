@@ -20,7 +20,6 @@ LITE_SRCS = [
     "src/main/java/com/google/protobuf/AllocatedBuffer.java",
     "src/main/java/com/google/protobuf/Android.java",
     "src/main/java/com/google/protobuf/ArrayDecoders.java",
-    "src/main/java/com/google/protobuf/BinaryReader.java",
     "src/main/java/com/google/protobuf/BooleanArrayList.java",
     "src/main/java/com/google/protobuf/BufferAllocator.java",
     "src/main/java/com/google/protobuf/ByteOutput.java",
@@ -90,7 +89,6 @@ LITE_SRCS = [
     "src/main/java/com/google/protobuf/ProtobufArrayList.java",
     "src/main/java/com/google/protobuf/ProtocolStringList.java",
     "src/main/java/com/google/protobuf/RawMessageInfo.java",
-    "src/main/java/com/google/protobuf/Reader.java",
     "src/main/java/com/google/protobuf/RopeByteString.java",
     "src/main/java/com/google/protobuf/RuntimeVersion.java",
     "src/main/java/com/google/protobuf/Schema.java",
@@ -107,7 +105,6 @@ LITE_SRCS = [
     "src/main/java/com/google/protobuf/UnsafeUtil.java",
     "src/main/java/com/google/protobuf/Utf8.java",
     "src/main/java/com/google/protobuf/WireFormat.java",
-    "src/main/java/com/google/protobuf/Writer.java",
 ]
 
 FULL_SRCS = glob(
@@ -224,7 +221,7 @@ compile_edition_defaults(
         "//:descriptor_proto",
         "//:java_features_proto",
     ],
-    maximum_edition = "2024",
+    maximum_edition = "2026",
     minimum_edition = "PROTO2",
 )
 
@@ -426,7 +423,7 @@ build_test(
 conformance_test(
     name = "conformance_test",
     failure_list = "//conformance:failure_list_java.txt",
-    maximum_edition = "2024",
+    maximum_edition = "2026",
     testee = "//conformance:conformance_java",
     text_format_failure_list = "//conformance:text_format_failure_list_java.txt",
 )
@@ -555,6 +552,7 @@ LITE_TEST_EXCLUSIONS = [
     "src/test/java/com/google/protobuf/ExtensionRegistryFactoryTest.java",
     "src/test/java/com/google/protobuf/FieldPresenceTest.java",
     "src/test/java/com/google/protobuf/ForceFieldBuildersPreRun.java",
+    "src/test/java/com/google/protobuf/GeneratedMessageLazyEqualsTest.java",
     "src/test/java/com/google/protobuf/GeneratedMessageTest.java",
     "src/test/java/com/google/protobuf/GeneratorNamesTest.java",
     "src/test/java/com/google/protobuf/ImportOptionTest.java",
@@ -640,6 +638,7 @@ junit_tests(
         exclude = [
             # Depends on test protos or API changes added in v4.x.x (e.g. editions)
             "src/test/java/com/google/protobuf/TextFormatTest.java",
+            "src/test/java/com/google/protobuf/GeneratedMessageLazyEqualsTest.java",
             "src/test/java/com/google/protobuf/DescriptorsTest.java",
             "src/test/java/com/google/protobuf/DebugFormatTest.java",
             "src/test/java/com/google/protobuf/CodedOutputStreamTest.java",
@@ -702,6 +701,7 @@ junit_tests(
         exclude = [
             # Depends on test protos or API changes added in v4.x.x (e.g. editions)
             "src/test/java/com/google/protobuf/TextFormatTest.java",
+            "src/test/java/com/google/protobuf/GeneratedMessageLazyEqualsTest.java",
             "src/test/java/com/google/protobuf/DescriptorsTest.java",
             "src/test/java/com/google/protobuf/DebugFormatTest.java",
             "src/test/java/com/google/protobuf/CodedOutputStreamTest.java",

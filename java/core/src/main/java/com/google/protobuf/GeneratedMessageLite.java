@@ -358,13 +358,40 @@ public abstract class GeneratedMessageLite<
     return dynamicMethod(MethodToInvoke.BUILD_MESSAGE_INFO, null, null);
   }
 
-  private static final Map<Class<?>, GeneratedMessageLite<?, ?>> defaultInstanceMap =
-      new ConcurrentHashMap<>();
+  private static final Map<Class<?>, Object> parserOrInstanceMap = new ConcurrentHashMap<>();
 
-  @SuppressWarnings("unchecked")
+  @SuppressWarnings({
+    "unchecked"
+  }) // Guaranteed by the map's invariant.
+  @DoNotInline
+  public static <T extends GeneratedMessageLite<T, ?>> Parser<T> getParserForClass(Class<T> clazz) {
+    Object parserOrInstance = parserOrInstanceMap.get(clazz);
+    if (parserOrInstance == null) {
+      Object unused = getDefaultInstance(clazz);
+      parserOrInstance = parserOrInstanceMap.get(clazz);
+    }
+    if (parserOrInstance == null) {
+      throw new IllegalStateException("Default instance cannot be null.");
+    }
+    if (parserOrInstance instanceof Parser) {
+      return (Parser<T>) parserOrInstance;
+    }
+    Parser<T> parser = new DefaultInstanceBasedParser<>((T) parserOrInstance);
+    if (parserOrInstanceMap.replace(clazz, parserOrInstance, parser)) {
+      return parser;
+    }
+    return (Parser<T>) parserOrInstanceMap.get(clazz);
+  }
+
+  @SuppressWarnings({
+    "unchecked",
+    "rawtypes",
+    "ImpossibleNullComparison"
+  }) // fallback can be null during bootstrap/Samsung workaround.
+  @DoNotInline
   static <T extends GeneratedMessageLite<?, ?>> T getDefaultInstance(Class<T> clazz) {
-    T result = (T) defaultInstanceMap.get(clazz);
-    if (result == null) {
+    Object parserOrInstance = parserOrInstanceMap.get(clazz);
+    if (parserOrInstance == null) {
       // Foo.class does not initialize the class so we need to force the initialization in order to
       // get the default instance registered.
       try {
@@ -372,22 +399,26 @@ public abstract class GeneratedMessageLite<
       } catch (ClassNotFoundException e) {
         throw new IllegalStateException("Class initialization cannot fail.", e);
       }
-      result = (T) defaultInstanceMap.get(clazz);
+      parserOrInstance = parserOrInstanceMap.get(clazz);
     }
-    if (result == null) {
+    if (parserOrInstance == null) {
       // On some Samsung devices, this still doesn't return a valid value for some reason. We add a
       // reflective fallback to keep the device running. See b/114675342.
-      result = (T) UnsafeUtil.allocateInstance(clazz).getDefaultInstanceForType();
+      T fallback = (T) UnsafeUtil.allocateInstance(clazz).getDefaultInstanceForType();
       // A sanity check to ensure that <clinit> was actually invoked.
-      if (result == null) {
+      if (fallback == null) {
         throw new IllegalStateException();
       }
-      defaultInstanceMap.put(clazz, result);
+      parserOrInstance = fallback;
+      parserOrInstanceMap.put(clazz, parserOrInstance);
     }
-    return result;
+    if (parserOrInstance instanceof GeneratedMessageLite) {
+      return (T) parserOrInstance;
+    }
+    return (T) ((DefaultInstanceBasedParser) parserOrInstance).defaultInstance;
   }
 
-  protected static <T extends GeneratedMessageLite<?, ?>> void registerDefaultInstance(
+  protected static <T extends GeneratedMessageLite<T, ?>> void registerDefaultInstance(
       Class<T> clazz, T defaultInstance) {
     // Default instances must be immutable.
     // Marking immutable here to avoid extra bytecode in every generated message class.
@@ -395,7 +426,7 @@ public abstract class GeneratedMessageLite<
     // 1. All sub-messages are initialized to null / default instances and thus immutable
     // 2. All lists are initialized to default instance empty lists which are also immutable.
     defaultInstance.markImmutable();
-    defaultInstanceMap.put(clazz, defaultInstance);
+    parserOrInstanceMap.put(clazz, defaultInstance);
   }
 
   protected static Object newMessageInfo(
@@ -499,6 +530,10 @@ public abstract class GeneratedMessageLite<
 
     /** All subclasses implement this. */
     public BuilderType mergeFrom(MessageType message) {
+      if (message != null && !getDefaultInstanceForType().getClass().isInstance(message)) {
+        throw new IllegalArgumentException(
+            "mergeFrom(MessageLite) can only merge messages of the same type.");
+      }
       if (getDefaultInstanceForType().equals(message)) {
         return (BuilderType) this;
       }
@@ -538,9 +573,7 @@ public abstract class GeneratedMessageLite<
     }
 
     @Override
-    public BuilderType mergeFrom(
-        com.google.protobuf.CodedInputStream input,
-        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+    public BuilderType mergeFrom(CodedInputStream input, ExtensionRegistryLite extensionRegistry)
         throws IOException {
       copyOnWrite();
       try {
@@ -558,7 +591,8 @@ public abstract class GeneratedMessageLite<
       return (BuilderType) this;
     }
 
-    private static <MessageType> void mergeFromInstance(MessageType dest, MessageType src) {
+    private static <MessageType extends GeneratedMessageLite<?, ?>> void mergeFromInstance(
+        MessageType dest, MessageType src) {
       Protobuf.getInstance().schemaFor(dest).mergeFrom(dest, src);
     }
 
@@ -1461,16 +1495,19 @@ public abstract class GeneratedMessageLite<
     }
 
     private Class<?> resolveMessageClass() throws ClassNotFoundException {
-      if (messageClass == null) {
-        Class<?> clazz =
+      Class<?> clazz = messageClass;
+      if (clazz == null) {
+        clazz =
             Class.forName(
                 messageClassName, /* initialize= */ false, getClass().getClassLoader());
-        if (!MessageLite.class.isAssignableFrom(clazz)) {
-          throw new ClassNotFoundException();
-        }
-        return clazz;
       }
-      return messageClass;
+      if (!MessageLite.class.isAssignableFrom(clazz)) {
+        throw new ClassNotFoundException();
+      }
+      if (!clazz.getName().equals(messageClassName)) {
+        throw new ClassNotFoundException();
+      }
+      return clazz;
     }
   }
 

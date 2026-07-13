@@ -167,7 +167,7 @@ bool _upb_mapsorter_pushexts(_upb_mapsorter* s, const upb_Message_Internal* in,
                              _upb_sortedmap* sorted) {
   size_t count = 0;
   for (size_t i = 0; i < in->size; i++) {
-    count += upb_TaggedAuxPtr_IsExtension(in->aux_data[i]);
+    count += upb_TaggedAuxPtr_IsCanonicalExtension(in->aux_data[i]);
   }
   if (!_upb_mapsorter_resize(s, sorted, count)) return false;
   if (count == 0) return true;
@@ -175,8 +175,8 @@ bool _upb_mapsorter_pushexts(_upb_mapsorter* s, const upb_Message_Internal* in,
       (const upb_Extension**)&s->entries[sorted->start];
   for (size_t i = 0; i < in->size; i++) {
     upb_TaggedAuxPtr tagged_ptr = in->aux_data[i];
-    if (upb_TaggedAuxPtr_IsExtension(tagged_ptr)) {
-      *entry++ = upb_TaggedAuxPtr_Extension(tagged_ptr);
+    if (upb_TaggedAuxPtr_IsCanonicalExtension(tagged_ptr)) {
+      *entry++ = upb_TaggedAuxPtr_CanonicalExtension(tagged_ptr);
     }
   }
   qsort(&s->entries[sorted->start], count, sizeof(*s->entries),

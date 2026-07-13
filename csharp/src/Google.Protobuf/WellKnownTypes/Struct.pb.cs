@@ -58,9 +58,9 @@ namespace Google.Protobuf.WellKnownTypes {
   /// the null value for the `Value` type union.
   ///
   /// A field of type `NullValue` with any value other than `0` is considered
-  /// invalid. Most ProtoJSON serializers will emit a Value with a `null_value` set
-  /// as a JSON `null` regardless of the integer value, and so will round trip to
-  /// a `0` value.
+  /// invalid. Most ProtoJSON serializers will emit a `Value` with a `null_value`
+  /// set as a JSON `null` regardless of the integer value, and so will round trip
+  /// to a `0` value.
   /// </summary>
   public enum NullValue {
     /// <summary>

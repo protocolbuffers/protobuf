@@ -102,7 +102,7 @@ static void upb_UnknownFields_Merge(upb_UnknownField* arr, size_t start,
   if (ptr1 < end1) {
     memcpy(out, ptr1, (end1 - ptr1) * sizeof(*out));
   } else if (ptr2 < end2) {
-    memcpy(out, ptr1, (end2 - ptr2) * sizeof(*out));
+    memcpy(out, ptr2, (end2 - ptr2) * sizeof(*out));
   }
 }
 

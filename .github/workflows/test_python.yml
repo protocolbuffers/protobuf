@@ -50,7 +50,7 @@ jobs:
             targets: //python/... //python:aarch64_test
             # TODO Enable this once conformance tests are fixed.
             flags: --define=use_fast_cpp_protos=true --test_tag_filters=-conformance
-            image: us-docker.pkg.dev/protobuf-build/containers/test/linux/emulation:8.0.1-aarch64-168f9c9d015a0fa16611e1e9eede796fe9bfbb69
+            image: us-docker.pkg.dev/protobuf-build/containers/test/linux/emulation:8.0.1-aarch64-a6ca8ba8e77d63471b4ad05f8643e1fc58b30e12
 
     name: ${{ matrix.continuous-only && inputs.continuous-prefix || '' }} Linux ${{ matrix.type }} ${{ matrix.version }} ${{ matrix.nobzlmod && 'No Bzlmod' || '' }}
     runs-on: ubuntu-latest

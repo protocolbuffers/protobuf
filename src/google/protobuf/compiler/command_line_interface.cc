@@ -1413,6 +1413,20 @@ int CommandLineInterface::Run(int argc, const char* const argv[]) {
       validation_error = true;
     }
 
+    if (file->options().cc_generic_services() ||
+        file->options().java_generic_services() ||
+        file->options().py_generic_services()) {
+      error_collector->RecordWarning(
+          file->name(), "options", nullptr,
+          DescriptorPool::ErrorCollector::OPTION_VALUE,
+          "Generic services (cc_generic_services, java_generic_services, and "
+          "py_generic_services) are deprecated in favor of using plugins that "
+          "generate code specific to your particular RPC system. Additional "
+          "code generator options may be required to enable generic services "
+          "and total removal of these options is planned in future breaking "
+          "releases.");
+    }
+
     google::protobuf::internal::VisitDescriptors(
         *file, [&](const FieldDescriptor& field) {
           if (HasReservedFieldNumber(&field)) {
@@ -3073,6 +3087,16 @@ bool CommandLineInterface::GenerateCodeFromResponse(
           "$0: First file chunk returned by plugin did not specify a file "
           "name.",
           plugin_name);
+      return false;
+    }
+
+    // This is only reachable for generators that are statically linked into
+    // protoc. For subprocess plugins, their responses go through wire-format
+    // parsing which already rejects payloads > 2 GiB.
+    if (output_file.content().size() > INT_MAX) {
+      *error = absl::Substitute(
+          "$0: Generated file $1 is too large (exceeds 2 GiB limit).",
+          plugin_name, output_file.name());
       return false;
     }
 

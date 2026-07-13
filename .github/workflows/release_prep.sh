@@ -44,10 +44,8 @@ INTEGRITY_ASSET_URL=$(echo "$RELEASE_JSON" | jq -r '.assets[] | select(.name=="t
 
 # Check if the asset was found (jq emits "null" or empty if missing)
 if [[ -n "$INTEGRITY_ASSET_URL" && "$INTEGRITY_ASSET_URL" != "null" ]]; then
-  echo "Found pre-computed tool_integrity.bzl asset! Downloading."
   curl -sSL -o "${INTEGRITY_FILE}" "$INTEGRITY_ASSET_URL"
 else
-  echo "No pre-computed tool_integrity.bzl found. Falling back to dynamic API dictionary assembly."
   cat >"${INTEGRITY_FILE}" <<EOF
 """Generated during release by release_prep.sh"""
 

@@ -1156,13 +1156,14 @@ class PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Map
   using hasher = absl::Hash<typename TS::ViewType>;
 
   constexpr Map() : Map(internal::InternalMetadataOffset()) {}
-  Map(const Map& other) : Map(internal::InternalMetadataOffset(), other) {}
+  Map(const Map& other)
+      : Map(internal::InternalMetadataOffset(), /*arena=*/nullptr, other) {}
 
   Map(internal::InternalVisibility, internal::InternalMetadataOffset offset)
       : Map(offset) {}
   Map(internal::InternalVisibility, internal::InternalMetadataOffset offset,
-      const Map& other)
-      : Map(offset, other) {}
+      Arena* arena, const Map& other)
+      : Map(offset, arena, other) {}
 
   Map(Map&& other) noexcept : Map(internal::InternalMetadataOffset()) {
     if (other.arena() != nullptr) {
@@ -1203,9 +1204,10 @@ class PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Map
     StaticValidityCheck();
   }
 
-  Map(internal::InternalMetadataOffset offset, const Map& other) : Map(offset) {
+  Map(internal::InternalMetadataOffset offset, Arena* arena, const Map& other)
+      : Map(offset) {
     StaticValidityCheck();
-    CopyFromImpl(arena(), other);
+    CopyFromImpl(arena, other);
   }
 
   static_assert(!std::is_const<mapped_type>::value &&

@@ -513,7 +513,7 @@ void SingularString::GenerateMessageClearingCode(io::Printer* p) const {
     // Clear to a non-empty default is more involved, as we try to use the
     // Arena if one is present and may need to reallocate the string.
     p->Emit(R"cc(
-      $field_$.ClearToDefault($lazy_var$, GetArena());
+      this_.$field_$.ClearToDefault($lazy_var$, this_.GetArena());
     )cc");
     return;
   }
@@ -521,7 +521,7 @@ void SingularString::GenerateMessageClearingCode(io::Printer* p) const {
   p->Emit({{"Clear", HasHasbit(field_, options_) ? "ClearNonDefaultToEmpty"
                                                  : "ClearToEmpty"}},
           R"cc(
-            $field_$.$Clear$();
+            this_.$field_$.$Clear$();
           )cc");
 }
 
@@ -668,6 +668,14 @@ class RepeatedString : public FieldGeneratorBase {
       p->Emit(R"cc(
         $pb$::RepeatedPtrField<::std::string> $name$_;
       )cc");
+    }
+  }
+
+  void GenerateMessageClearingCode(io::Printer* p) const override {
+    if (should_split()) {
+      p->Emit("this_.$field_$.ClearIfNotDefault();\n");
+    } else {
+      p->Emit("$field_$.Clear();\n");
     }
   }
 
@@ -978,12 +986,12 @@ void RepeatedString::GenerateSerializeWithCachedSizesToArray(
 
 std::unique_ptr<FieldGeneratorBase> MakeSinguarStringGenerator(
     const FieldDescriptor* desc, const Options& options) {
-  return absl::make_unique<SingularString>(desc, options);
+  return std::make_unique<SingularString>(desc, options);
 }
 
 std::unique_ptr<FieldGeneratorBase> MakeRepeatedStringGenerator(
     const FieldDescriptor* desc, const Options& options) {
-  return absl::make_unique<RepeatedString>(desc, options);
+  return std::make_unique<RepeatedString>(desc, options);
 }
 
 }  // namespace cpp

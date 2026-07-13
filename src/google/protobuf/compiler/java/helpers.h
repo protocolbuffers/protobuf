@@ -315,8 +315,7 @@ int FixedSize(FieldDescriptor::Type type);
 
 // Comparators used to sort fields in MessageGenerator
 struct FieldOrderingByNumber {
-  inline bool operator()(const FieldDescriptor* a,
-                         const FieldDescriptor* b) const {
+  bool operator()(const FieldDescriptor* a, const FieldDescriptor* b) const {
     return a->number() < b->number();
   }
 };

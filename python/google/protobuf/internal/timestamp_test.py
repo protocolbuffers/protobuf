@@ -54,7 +54,7 @@ class TimestampTest(unittest.TestCase):
   def test_timestamp_datetime(self):
     naive_utc_epoch = datetime.datetime(1970, 1, 1)
     message = well_known_types_test_pb2.WKTMessage()
-    message.optional_timestamp = naive_utc_epoch
+    message.optional_timestamp = naive_utc_epoch  # pyrefly: ignore[bad-assignment]
     self.assertEqual(0, message.optional_timestamp.seconds)  # pytype: disable=attribute-error
     self.assertEqual(0, message.optional_timestamp.nanos)  # pytype: disable=attribute-error
     self.assertEqual(
@@ -112,7 +112,7 @@ class TimestampTest(unittest.TestCase):
   def test_assign_duration_to_timestamp(self):
     message = well_known_types_test_pb2.WKTMessage()
     with self.assertRaises((TypeError)):
-      message.optional_timestamp = datetime.timedelta(microseconds=123)
+      message.optional_timestamp = datetime.timedelta(microseconds=123)  # pyrefly: ignore[bad-assignment]
 
 
 if __name__ == '__main__':

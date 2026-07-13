@@ -306,43 +306,50 @@ void PopulateFastFields(
 
   for (size_t i = 0; i < field_entries.size(); ++i) {
     const auto& entry = field_entries[i];
-    const auto& options = fields[i];
-    if (!IsFieldEligibleForFastParsing(entry, options, message_options)) {
+    const auto* field = entry.field;
+
+    if (field->number() >= 1 << 11) {
+      // We only do fast parsers for 1 and 2 byte tags.
       continue;
     }
 
-    const auto* field = entry.field;
+    const auto& options = fields[i];
     const uint32_t tag = GetRecodedTagForFastParsing(field);
     const uint32_t fast_idx = TcParseTableBase::TagToIdx(tag, result.size());
-
     TailCallTableInfo::FastFieldInfo& info = result[fast_idx];
-    if (info.AsNonField() != nullptr) {
-      // Right now non-field means END_GROUP which is guaranteed to be present.
-      continue;
-    }
-    if (auto* as_field = info.AsField()) {
-      // This field entry is already filled. Skip if previous entry is more
-      // likely present.
-      if (as_field->presence_probability >= options.presence_probability) {
+
+    if (IsFieldEligibleForFastParsing(entry, options, message_options)) {
+      if (!info.IsBetterFast(options.presence_probability)) {
         continue;
       }
+      auto& fast_field =
+          info.data.emplace<TailCallTableInfo::FastFieldInfo::Field>(
+              MakeFastFieldEntry(entry, options, message_options));
+      fast_field.field = field;
+      fast_field.coded_tag = tag;
+      // If this field does not have presence, then it can set an out-of-bounds
+      // bit (tailcall parsing uses a uint64_t for hasbits, but only stores 32).
+      fast_field.hasbit_idx = entry.hasbit_idx >= 0 ? entry.hasbit_idx : 63;
+      // 0.05 was selected based on load tests where 0.1 and 0.01 were also
+      // evaluated and worse.
+      constexpr float kMinPresence = 0.05f;
+      important_fields |= uint32_t{options.presence_probability >= kMinPresence}
+                          << fast_idx;
+    } else {
+      if (!info.IsBetterMpFast(options.presence_probability)) {
+        continue;
+      }
+      auto& fast_field =
+          info.data.emplace<TailCallTableInfo::FastFieldInfo::MpField>();
+      fast_field.func = field->number() < 16 ? TcParseFunction::kFastMiniParse1
+                                             : TcParseFunction::kFastMiniParse2;
+      fast_field.field = field;
+      fast_field.coded_tag = tag;
+      fast_field.function_index =
+          entry.type_card & TcParser::kMiniParseTableTypeCardMask;
+      fast_field.field_index = i;
+      fast_field.presence_probability = options.presence_probability;
     }
-
-    // We reset the entry even if it had a field already.
-    // Fill in this field's entry:
-    auto& fast_field =
-        info.data.emplace<TailCallTableInfo::FastFieldInfo::Field>(
-            MakeFastFieldEntry(entry, options, message_options));
-    fast_field.field = field;
-    fast_field.coded_tag = tag;
-    // If this field does not have presence, then it can set an out-of-bounds
-    // bit (tailcall parsing uses a uint64_t for hasbits, but only stores 32).
-    fast_field.hasbit_idx = entry.hasbit_idx >= 0 ? entry.hasbit_idx : 63;
-    // 0.05 was selected based on load tests where 0.1 and 0.01 were also
-    // evaluated and worse.
-    constexpr float kMinPresence = 0.05f;
-    important_fields |= uint32_t{options.presence_probability >= kMinPresence}
-                        << fast_idx;
   }
 }
 
@@ -861,7 +868,10 @@ TailCallTableInfo::TailCallTableInfo(
       // Reflection and weak messages have the reflection fallback
       : !message_options.uses_codegen || HasWeakFields(descriptor)
           ? TcParseFunction::kReflectionFallback
-      // Codegen messages have lite and non-lite version
+      // Messages without extensions fallback directly to MpUnknownFields
+      : descriptor->extension_range_count() == 0
+          ? TcParseFunction::kMpUnknownFields
+      // Codegen messages with extensions have lite and non-lite version
       : message_options.is_lite ? TcParseFunction::kGenericFallbackLite
                                 : TcParseFunction::kGenericFallback;
 
@@ -949,7 +959,7 @@ TailCallTableInfo::TailCallTableInfo(
       // important field (meaning the surviving entry is not) or the surviving
       // entry is empty.
       if (((important_fields >> merge_i) & 1) != 0 ||
-          fast_fields[i].is_empty()) {
+          fast_fields[i] < fast_fields[merge_i]) {
         fast_fields[i] = fast_fields[merge_i];
       }
     }

@@ -106,12 +106,13 @@ public abstract class AbstractProto3LiteSchemaTest extends AbstractSchemaTest<Pr
     assertThat(empty.getSerializedSize()).isEqualTo(expectedMessage.getSerializedSize());
   }
 
+  @SuppressWarnings("unchecked")
   @Test
   public void mapsShouldRoundtrip() throws IOException {
     roundtrip(
         "Proto3MessageLiteWithMaps",
         new Proto3MessageLiteFactory(2, 10, 2, 2).newMessageWithMaps(),
-        Protobuf.getInstance().schemaFor(Proto3MessageLiteWithMaps.class));
+        Protobuf.getInstance().schemaFor((Class) Proto3MessageLiteWithMaps.class));
   }
 
   private static Proto3MessageLite.Builder newBuilder() {

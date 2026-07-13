@@ -10,6 +10,7 @@ google/protobuf/arena_cleanup.h
 google/protobuf/arenastring.h
 google/protobuf/arenaz_sampler.h
 google/protobuf/c_sharp_features.proto
+google/protobuf/class_data.h
 google/protobuf/compiler/code_generator.h
 google/protobuf/compiler/code_generator_lite.h
 google/protobuf/compiler/command_line_interface.h
@@ -49,6 +50,7 @@ google/protobuf/descriptor.pb.h
 google/protobuf/descriptor.proto
 google/protobuf/descriptor.upb.h
 google/protobuf/descriptor.upb_minitable.h
+google/protobuf/descriptor_builder.h
 google/protobuf/descriptor_database.h
 google/protobuf/descriptor_legacy.h
 google/protobuf/descriptor_lite.h
@@ -100,9 +102,11 @@ google/protobuf/map_field_lite.h
 google/protobuf/map_type_handler.h
 google/protobuf/message.h
 google/protobuf/message_lite.h
+google/protobuf/message_traits.h
 google/protobuf/metadata.h
 google/protobuf/metadata_lite.h
 google/protobuf/micro_string.h
+google/protobuf/naming_style.h
 google/protobuf/os_macros_restore.inc
 google/protobuf/os_macros_undef.inc
 google/protobuf/parse_context.h
@@ -125,6 +129,7 @@ google/protobuf/serial_arena.h
 google/protobuf/service.h
 google/protobuf/source_context.pb.h
 google/protobuf/source_context.proto
+google/protobuf/static_message_factory.h
 google/protobuf/string_block.h
 google/protobuf/struct.pb.h
 google/protobuf/struct.proto
@@ -133,6 +138,7 @@ google/protobuf/stubs/common.h
 google/protobuf/stubs/platform_macros.h
 google/protobuf/stubs/port.h
 google/protobuf/stubs/status_macros.h
+google/protobuf/symbol.h
 google/protobuf/symbol_checker.h
 google/protobuf/text_format.h
 google/protobuf/thread_safe_arena.h
@@ -140,6 +146,7 @@ google/protobuf/timestamp.pb.h
 google/protobuf/timestamp.proto
 google/protobuf/type.pb.h
 google/protobuf/type.proto
+google/protobuf/type_id.h
 google/protobuf/unknown_field_set.h
 google/protobuf/util/delimited_message_util.h
 google/protobuf/util/field_comparator.h
@@ -169,7 +176,6 @@ upb/json/decode.h
 upb/json/encode.h
 upb/lex/atoi.h
 upb/lex/round_trip.h
-upb/lex/strtod.h
 upb/lex/unicode.h
 upb/mem/alloc.h
 upb/mem/arena.h
@@ -184,6 +190,7 @@ upb/message/map.h
 upb/message/map_gencode_util.h
 upb/message/merge.h
 upb/message/message.h
+upb/message/unknown_fields.h
 upb/message/value.h
 upb/mini_descriptor/build_enum.h
 upb/mini_descriptor/decode.h

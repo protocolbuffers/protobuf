@@ -368,7 +368,7 @@
 #ifdef PROTOBUF_RESTRICT
 #error PROTOBUF_RESTRICT was previously defined
 #endif
-#if defined(__clang__) || defined(__GNUC__)
+#if defined(__clang__) || defined(__GNUC__) || defined(_MSC_VER)
 #define PROTOBUF_RESTRICT __restrict
 #else
 #define PROTOBUF_RESTRICT
@@ -813,19 +813,16 @@ namespace internal {
 #ifdef PROTOBUF_MESSAGE_GLOBALS
 #error PROTOBUF_MESSAGE_GLOBALS was previously defined
 #endif
-#if defined(PROTOBUF_ENABLE_MESSAGE_GLOBALS) || \
-    defined(PROTOBUF_ENABLE_STABLE_EXPERIMENTS)
+#if !defined(PROTOBUF_MESSAGE_GLOBALS_TEMPORARY_OPTOUT) && \
+    defined(ABSL_HAVE_ADDRESS_SANITIZER)
 #define PROTOBUF_MESSAGE_GLOBALS
-
 #define PROTOBUF_MESSAGE_GLOBALS_CONST const
-// PowerPC tools complain about section type mismatch.
-#if !defined(__powerpc__)
-#define PROTOBUF_MESSAGE_GLOBALS_SECTION(x) ABSL_ATTRIBUTE_SECTION_VARIABLE(x)
-#else  // defined(__powerpc__)
-#define PROTOBUF_MESSAGE_GLOBALS_SECTION(x)
-#endif  // defined(__powerpc__)
-#else
+#endif  // PROTOBUF_MESSAGE_GLOBALS_TEMPORARY_OPTOUT
+
+#if !defined(PROTOBUF_MESSAGE_GLOBALS_CONST)
 #define PROTOBUF_MESSAGE_GLOBALS_CONST
+#endif
+#if !defined(PROTOBUF_MESSAGE_GLOBALS_SECTION)
 #define PROTOBUF_MESSAGE_GLOBALS_SECTION(x)
 #endif
 

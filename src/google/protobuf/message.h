@@ -98,6 +98,7 @@
 #include <optional>
 #include <string>
 #include <type_traits>
+#include <utility>
 #include <vector>
 
 #include "absl/base/attributes.h"
@@ -180,7 +181,8 @@ class CodedInputStream;      // coded_stream.h
 class CodedOutputStream;     // coded_stream.h
 }  // namespace io
 namespace python {
-class MapReflectionFriend;  // scalar_map_container.h
+class RepeatedScalarContainerFriend;  // repeated_scalar_container.cc
+class MapReflectionFriend;            // scalar_map_container.h
 class MessageReflectionFriend;
 }  // namespace python
 namespace expr {
@@ -199,7 +201,11 @@ PROTOBUF_EXPORT std::string Utf8Format(
     const Message& message);  // text_format.cc
 namespace util {
 class MessageDifferencer;
-}
+}  // namespace util
+
+namespace json_internal {
+struct UnparseProto2Descriptor;
+}  // namespace json_internal
 
 
 namespace internal {
@@ -446,8 +452,7 @@ class PROTOBUF_EXPORT Message : public MessageLite {
 
 namespace internal {
 // Creates and returns an allocation for a split message.
-void* CreateSplitMessageGeneric(Arena* arena, const void* default_split,
-                                size_t size);
+void CreateSplitMessageGeneric(Arena* arena, void** split, size_t size);
 
 // Forward-declare interfaces used to implement RepeatedFieldRef.
 // These are protobuf internals that users shouldn't care about.
@@ -688,7 +693,7 @@ class PROTOBUF_EXPORT Reflection final {
         return *flat;
       }
       if (!buffer_) {
-        buffer_ = absl::make_unique<std::string>();
+        buffer_ = std::make_unique<std::string>();
       }
       absl::CopyCordToString(cord, buffer_.get());
       return *buffer_;
@@ -1161,14 +1166,11 @@ class PROTOBUF_EXPORT Reflection final {
   friend struct internal::MapDynamicFieldInfo;
   friend class internal::ReflectionVisit;
   friend internal::DescriptorMethodsFriend;
+  friend json_internal::UnparseProto2Descriptor;
   friend bool internal::IsDescendant(const Message& root,
                                      const Message& message);
   friend void internal::MaybePoisonAfterClear(Message* root);
 
-  // Last non weak field index. This is an optimization when most weak fields
-  // are at the end of the containing message. If a message proto doesn't
-  // contain weak fields, then this field equals descriptor_->field_count().
-  int last_non_weak_field_index_;
   // The table-driven parser table.
   // This table is generated on demand for Message types that did not override
   // _InternalParse. It uses the reflection information to do so.
@@ -1190,9 +1192,8 @@ class PROTOBUF_EXPORT Reflection final {
   }
 
   const TcParseTableBase* CreateTcParseTable() const;
-  void PopulateTcParseFastEntries(
-      const internal::TailCallTableInfo& table_info,
-      TcParseTableBase::FastFieldEntry* fast_entries) const;
+  void PopulateTcParseFastEntries(const internal::TailCallTableInfo& table_info,
+                                  TcParseTableBase* tc_table) const;
   void PopulateTcParseEntries(internal::TailCallTableInfo& table_info,
                               TcParseTableBase::FieldEntry* entries) const;
   void PopulateTcParseFieldAux(const internal::TailCallTableInfo& table_info,
@@ -1220,6 +1221,7 @@ class PROTOBUF_EXPORT Reflection final {
   friend class GeneratedMessageReflectionTestHelper;
   friend class python::MapReflectionFriend;
   friend class python::MessageReflectionFriend;
+  friend class python::RepeatedScalarContainerFriend;
   friend class util::MessageDifferencer;
 #define GOOGLE_PROTOBUF_HAS_CEL_MAP_REFLECTION_FRIEND
   friend class expr::CelMapReflectionFriend;
@@ -1488,6 +1490,27 @@ class PROTOBUF_EXPORT Reflection final {
                                              const Reflection* reflection,
                                              const char* ptr,
                                              internal::ParseContext* ctx);
+  void SetStringView(Message* message, const FieldDescriptor* field,
+                     absl::string_view value) const;
+  void SetRepeatedStringView(Message* message, const FieldDescriptor* field,
+                             int index, absl::string_view value) const;
+  void AddStringView(Message* message, const FieldDescriptor* field,
+                     absl::string_view value) const;
+
+  // Supports const absl::Cord&, std::string&& and absl::string_view.
+  template <typename String>
+  void SetStringImpl(Message* message, const FieldDescriptor* field,
+                     String&& value) const;
+
+  // Supports const absl::Cord&, std::string&& and absl::string_view.
+  template <typename String>
+  void SetRepeatedStringImpl(Message* message, const FieldDescriptor* field,
+                             int index, String&& value) const;
+
+  // Supports const absl::Cord&, std::string&& and absl::string_view.
+  template <typename String>
+  void AddStringImpl(Message* message, const FieldDescriptor* field,
+                     String&& value) const;
 };
 
 extern template void Reflection::SwapFieldsImpl<true>(
@@ -1618,20 +1641,47 @@ void LinkMessageReflection() {
   internal::StrongReferenceToType<T>();
 }
 
-// Specializations to handle cast to `Message`. We can check the `is_lite` bit
-// in the class data.
-template <>
-[[nodiscard]] inline const Message* DynamicCastMessage(
-    const MessageLite* from) {
-  return from == nullptr || internal::GetClassData(*from)->is_lite
-             ? nullptr
-             : static_cast<const Message*>(from);
+// Specializations to handle smart pointers to `Message`. Without these,
+// `google::protobuf::DynamicCastMessage(std::shared_ptr<Message>)` is ambiguous
+// (`const MessageLite` vs `MessageLite`).
+
+template <typename T>
+PROTOBUF_FUTURE_ADD_EARLY_NODISCARD std::shared_ptr<T> DynamicCastMessage(
+    std::shared_ptr<Message> ptr) {
+  if (auto* res = DynamicCastMessage<T>(ptr.get())) {
+    // Use aliasing constructor to keep the same control block.
+    return std::shared_ptr<T>(std::move(ptr), res);
+  } else {
+    return nullptr;
+  }
 }
-template <>
-[[nodiscard]] inline const Message* DownCastMessage(const MessageLite* from) {
-  ABSL_DCHECK_EQ(DynamicCastMessage<Message>(from), from)
-      << "Cannot downcast " << from->GetTypeName() << " to Message";
-  return static_cast<const Message*>(from);
+
+template <typename T>
+PROTOBUF_FUTURE_ADD_EARLY_NODISCARD std::shared_ptr<const T> DynamicCastMessage(
+    std::shared_ptr<const Message> ptr) {
+  if (auto* res = DynamicCastMessage<T>(ptr.get())) {
+    // Use aliasing constructor to keep the same control block.
+    return std::shared_ptr<const T>(std::move(ptr), res);
+  } else {
+    return nullptr;
+  }
+}
+
+// Overloads for `std::shared_ptr` to substitute `down_pointer_cast`
+template <typename T>
+PROTOBUF_FUTURE_ADD_EARLY_NODISCARD std::shared_ptr<T> DownCastMessage(
+    std::shared_ptr<Message> ptr) {
+  auto* res = DownCastMessage<T>(ptr.get());
+  // Use aliasing constructor to keep the same control block.
+  return std::shared_ptr<T>(std::move(ptr), res);
+}
+
+template <typename T>
+PROTOBUF_FUTURE_ADD_EARLY_NODISCARD std::shared_ptr<const T> DownCastMessage(
+    std::shared_ptr<const Message> ptr) {
+  auto* res = DownCastMessage<T>(ptr.get());
+  // Use aliasing constructor to keep the same control block.
+  return std::shared_ptr<const T>(std::move(ptr), res);
 }
 
 // =============================================================================
@@ -1886,7 +1936,7 @@ const Type& Reflection::GetRaw(const Message& message,
                                const FieldDescriptor* field) const {
   VerifyFieldType<Type>(field);
 
-  const uint32_t field_offset = schema_.GetFieldOffset<Type>(field);
+  const uint32_t field_offset = schema_.GetFieldOffset(field);
 
   if (ABSL_PREDICT_FALSE(schema_.IsSplit(field))) {
     ABSL_DCHECK(!schema_.InRealOneof(field))
@@ -1927,7 +1977,7 @@ Type* Reflection::MutableRaw(Message* message,
     return reinterpret_cast<Type*>(MutableRawSplitImpl(message, field));
   }
 
-  const uint32_t field_offset = schema_.GetFieldOffset<Type>(field);
+  const uint32_t field_offset = schema_.GetFieldOffset(field);
   return internal::GetPointerAtOffset<Type>(message, field_offset);
 }
 

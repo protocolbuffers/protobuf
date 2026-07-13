@@ -29,6 +29,7 @@
 #include <Python.h>
 
 #include "absl/status/status.h"
+#include "absl/status/statusor.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor_database.h"
 #include "google/protobuf/message.h"
@@ -145,8 +146,26 @@ struct PyProto_API {
   // functions that process C++ descriptors or messages created from this pool
   // can work and return their Python counterparts.
   // On error, returns nullptr and sets a Python exception.
+  //
+  // Warning: This is a flawed and unsafe API because the returned Python object
+  // can be arbitrarily lifetime-extended beyond the C++ pool's lifetime. Prefer
+  // DescriptorPool_FromSharedPool() or DescriptorPool_FromPool() with
+  // unique_ptrs.
+  [[deprecated(
+      "DescriptorPool_FromPool() is unsafe because the returned Python object "
+      "can outlive the underlying C++ pool. "
+      "Prefer DescriptorPool_FromSharedPool(). or "
+      "DescriptorPool_FromPool() "
+      "with unique_ptrs.")]]
   virtual PyObject* DescriptorPool_FromPool(
       const google::protobuf::DescriptorPool* pool) const = 0;
+
+  // Wraps a C++ descriptor pool (held by shared_ptr) in a Python object.
+  // The Python object extends the lifetime of the C++ pool and optional
+  // database.
+  virtual PyObject* DescriptorPool_FromSharedPool(
+      std::shared_ptr<const google::protobuf::DescriptorPool> pool,
+      std::shared_ptr<const google::protobuf::DescriptorDatabase> database) const = 0;
 
   // Takes ownership of a C++ DescriptorPool and returns a Python DescriptorPool
   // that wraps it.

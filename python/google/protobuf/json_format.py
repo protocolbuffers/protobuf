@@ -289,8 +289,7 @@ class _Printer(object):
         return None
       enum_value = field.enum_type.values_by_number.get(value, None)
       if enum_value is not None:
-        pool = self.descriptor_pool or descriptor_pool.Default()
-        option = _GetJsonEnumValueOption(enum_value, pool)
+        option = _GetJsonEnumValueOption(enum_value)
         if option is not None:
           return option.string
         return enum_value.name
@@ -907,20 +906,20 @@ class _Parser(object):
       if not self.ignore_unknown_fields:
         raise
 
-def _GetJsonEnumValueOption(ev, pool=None):
+def _GetJsonEnumValueOption(ev):
   """Helper to get the JsonEnumValueOptions for an enum value.
 
   Args:
     ev: The EnumValueDescriptor.
-    pool: The descriptor pool to use. Defaults to descriptor_pool.Default().
+
   Returns:
     The JsonEnumValueOptions message if the extension is present,
     otherwise None.
   """
-  if pool is None:
-    pool = descriptor_pool.Default()
   try:
-    extension_descriptor = pool.FindExtensionByName('pb.enumvalue.json')
+    extension_descriptor = descriptor_pool.Default().FindExtensionByName(
+        'pb.enumvalue.json'
+    )
   except KeyError:
     return None
   if ev.GetOptions().HasExtension(extension_descriptor):

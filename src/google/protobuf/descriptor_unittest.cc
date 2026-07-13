@@ -9905,7 +9905,7 @@ TEST_F(FeaturesTest, Edition2026Defaults) {
                 message_encoding: LENGTH_PREFIXED
                 json_format: ALLOW
                 enforce_naming_style: STYLE2026
-                default_symbol_visibility: EXPORT_TOP_LEVEL
+                default_symbol_visibility: STRICT
                 enforce_proto_limits: PROTO_LIMITS2026
                 [pb.cpp] {
                   legacy_closed_enum: false
@@ -14375,6 +14375,34 @@ TEST_F(DescriptorPoolMemoizationTest, SupportsDifferentDescriptorTypes) {
   EXPECT_EQ(counter, 3);
 }
 
+// We define two helper functions with the exact same type signature
+// (absl::string_view(*)(const Descriptor*)) but different addresses.
+// We use them to test that MemoizeProjection does not cause key collisions
+// in the cache when passed different function pointers of the identical type.
+namespace {
+absl::string_view FunctionPointer1(const Descriptor* desc) {
+  return desc->name();
+}
+
+absl::string_view FunctionPointer2(const Descriptor* desc) {
+  return desc->full_name();
+}
+}  // namespace
+
+TEST_F(DescriptorPoolMemoizationTest, MemoizeProjectionFunctionPointers) {
+  const Descriptor* descriptor = proto2_unittest::TestAllTypes::descriptor();
+
+  const absl::string_view& res1 =
+      DescriptorPoolMemoizationTest::MemoizeProjection(descriptor,
+                                                       FunctionPointer1);
+  const absl::string_view& res2 =
+      DescriptorPoolMemoizationTest::MemoizeProjection(descriptor,
+                                                       FunctionPointer2);
+
+  EXPECT_EQ(res1, "TestAllTypes");
+  EXPECT_EQ(res2, "proto2_unittest.TestAllTypes");
+}
+
 TEST_F(DescriptorPoolMemoizationTest, MemoizeProjectionMultithreaded) {
   auto name_lambda = [](const FieldDescriptor* field) {
     return field->full_name();
@@ -16301,6 +16329,20 @@ TEST_F(SourceLocationTest, InterpretedOptionSourceLocation) {
                                  "option java_package = \"com.foo.bar\";"));
 
     EXPECT_FALSE(file_desc->GetSourceLocation(unint, &loc));
+
+    SourceCodePath name_path = {FileDescriptorProto::kOptionsFieldNumber,
+                                FileOptions::kJavaPackageFieldNumber,
+                                UninterpretedOption::kNameFieldNumber};
+    EXPECT_TRUE(file_desc->GetSourceLocation(name_path, &loc));
+    EXPECT_THAT(loc,
+                MatchesSubstring(kSourceLocationTestInput, "java_package"));
+
+    SourceCodePath val_path = {FileDescriptorProto::kOptionsFieldNumber,
+                               FileOptions::kJavaPackageFieldNumber,
+                               UninterpretedOption::kStringValueFieldNumber};
+    EXPECT_TRUE(file_desc->GetSourceLocation(val_path, &loc));
+    EXPECT_THAT(loc,
+                MatchesSubstring(kSourceLocationTestInput, "\"com.foo.bar\""));
   }
   {
     SourceCodePath path = {FileDescriptorProto::kOptionsFieldNumber,
@@ -16312,6 +16354,19 @@ TEST_F(SourceLocationTest, InterpretedOptionSourceLocation) {
                                       "option (test_file_opt) = \"foobar\";"));
 
     EXPECT_FALSE(file_desc->GetSourceLocation(unint, &loc));
+
+    SourceCodePath name_path = {FileDescriptorProto::kOptionsFieldNumber,
+                                kCustomOptionFieldNumber,
+                                UninterpretedOption::kNameFieldNumber};
+    EXPECT_TRUE(file_desc->GetSourceLocation(name_path, &loc));
+    EXPECT_THAT(loc,
+                MatchesSubstring(kSourceLocationTestInput, "(test_file_opt)"));
+
+    SourceCodePath val_path = {FileDescriptorProto::kOptionsFieldNumber,
+                               kCustomOptionFieldNumber,
+                               UninterpretedOption::kStringValueFieldNumber};
+    EXPECT_TRUE(file_desc->GetSourceLocation(val_path, &loc));
+    EXPECT_THAT(loc, MatchesSubstring(kSourceLocationTestInput, "\"foobar\""));
   }
 
   // Message option

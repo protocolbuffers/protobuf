@@ -2544,7 +2544,7 @@ TEST_F(CommandLineInterfaceTest, UnstableEditionWithoutFlag) {
       "--test_out=$tmpdir foo.proto");
   ExpectErrorSubstring(
       "foo.proto: is a file using edition UNSTABLE, which is later than "
-      "the protoc maximum supported edition 2024.");
+      "the protoc maximum supported edition 2026.");
 }
 
 TEST_F(CommandLineInterfaceTest, EditionDefaults) {
@@ -2619,8 +2619,23 @@ TEST_F(CommandLineInterfaceTest, EditionDefaults) {
         enforce_proto_limits: LEGACY_NO_EXPLICIT_LIMITS
       }
     }
+    defaults {
+      edition: EDITION_2026
+      overridable_features {
+        field_presence: EXPLICIT
+        enum_type: OPEN
+        repeated_field_encoding: PACKED
+        utf8_validation: VERIFY
+        message_encoding: LENGTH_PREFIXED
+        json_format: ALLOW
+        enforce_naming_style: STYLE2026
+        default_symbol_visibility: STRICT
+        enforce_proto_limits: PROTO_LIMITS2026
+      }
+      fixed_features {}
+    }
     minimum_edition: EDITION_PROTO2
-    maximum_edition: EDITION_2024
+    maximum_edition: EDITION_2026
   )pb"));
 }
 
@@ -2706,7 +2721,7 @@ TEST_F(CommandLineInterfaceTest, EditionDefaultsWithMaximum) {
             message_encoding: LENGTH_PREFIXED
             json_format: ALLOW
             enforce_naming_style: STYLE2026
-            default_symbol_visibility: EXPORT_TOP_LEVEL
+            default_symbol_visibility: STRICT
             enforce_proto_limits: PROTO_LIMITS2026
           }
           fixed_features {}
@@ -2824,7 +2839,7 @@ TEST_F(CommandLineInterfaceTest, EditionDefaultsWithMinimum) {
             message_encoding: LENGTH_PREFIXED
             json_format: ALLOW
             enforce_naming_style: STYLE2026
-            default_symbol_visibility: EXPORT_TOP_LEVEL
+            default_symbol_visibility: STRICT
             enforce_proto_limits: PROTO_LIMITS2026
           }
           fixed_features {}
@@ -5712,6 +5727,42 @@ TEST_F(CommandLineInterfaceTest, VisibilityFeatureSetStrictBadNestedMessage) {
   ExpectErrorSubstring(
       "vis.proto: \"naming.LocalOuter.Inner\" is a nested message and cannot "
       "be `export` with STRICT default_symbol_visibility");
+}
+
+TEST_F(CommandLineInterfaceTest, JavaGenericServicesWarning) {
+  CreateTempFile("foo.proto",
+                 "syntax = \"proto2\";\n"
+                 "option java_generic_services = true;\n"
+                 "message Foo {}\n");
+
+  Run("protocol_compiler --test_out=$tmpdir "
+      "--proto_path=$tmpdir foo.proto");
+
+  ExpectWarningSubstring("Generic services");
+}
+
+TEST_F(CommandLineInterfaceTest, CppGenericServicesWarning) {
+  CreateTempFile("foo.proto",
+                 "syntax = \"proto2\";\n"
+                 "option cc_generic_services = true;\n"
+                 "message Foo {}\n");
+
+  Run("protocol_compiler --test_out=$tmpdir "
+      "--proto_path=$tmpdir foo.proto");
+
+  ExpectWarningSubstring("Generic services");
+}
+
+TEST_F(CommandLineInterfaceTest, PythonGenericServicesWarning) {
+  CreateTempFile("foo.proto",
+                 "syntax = \"proto2\";\n"
+                 "option py_generic_services = true;\n"
+                 "message Foo {}\n");
+
+  Run("protocol_compiler --test_out=$tmpdir "
+      "--proto_path=$tmpdir foo.proto");
+
+  ExpectWarningSubstring("Generic services");
 }
 
 // ===================================================================

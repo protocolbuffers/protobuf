@@ -15,6 +15,7 @@ import warnings
 from google.protobuf import descriptor
 from google.protobuf import descriptor_pb2
 from google.protobuf import descriptor_pool
+from google.protobuf import message
 from google.protobuf import symbol_database
 from google.protobuf import text_format
 from google.protobuf.internal import api_implementation
@@ -281,17 +282,19 @@ class DescriptorTest(unittest.TestCase):
     )
 
   @unittest.skipIf(
-      api_implementation.Type() == 'python', 'Not fixed yet in pure Python'
-  )
-  @unittest.skipIf(api_implementation.Type() == 'cpp', 'Not fixed yet in C++')
-  @unittest.skipIf(
       api_implementation.Type() == 'upb',
       'Needs to wait for a breaking change release in OSS'
   )
+  @unittest.skipIf(
+      api_implementation.Type() == 'cpp',
+      'Needs to wait for a breaking change release in OSS'
+  )
+  @unittest.skipIf(
+      api_implementation.Type() == 'python',
+      'Needs to wait for a breaking change release in OSS'
+  )
   def testModifyFrozenMessage(self):
-    # At least upb raises TypeError Other 2 implementations will likely be 
-    # fixed to be consistent with upb.
-    immutability_error = TypeError
+    immutability_error = message.FrozenInstanceError
     message_options = self.my_message.GetOptions()
     other_options = descriptor_pb2.MessageOptions()
     other_options.deprecated = True
@@ -335,24 +338,53 @@ class DescriptorTest(unittest.TestCase):
 
     # Unset submessage mutation
     complex_opt1 = unittest_custom_options_pb2.complex_opt1
-    stub_submsg = unittest_pb2.TestAllTypes.DESCRIPTOR.GetOptions().Extensions[complex_opt1]
+    stub_submsg = unittest_pb2.TestAllTypes.DESCRIPTOR.GetOptions().Extensions[
+        complex_opt1
+    ]
     with self.assertRaises(immutability_error):
       stub_submsg.foo = 5
 
     # Non-empty repeated field mutation
-    complex_options_msg = unittest_custom_options_pb2.VariousComplexOptions.DESCRIPTOR.GetOptions()
+    complex_options_msg = (
+        unittest_custom_options_pb2.VariousComplexOptions.DESCRIPTOR.GetOptions()
+    )
     non_empty_repeated = complex_options_msg.Extensions[complex_opt1].foo4
     self.assertEqual(len(non_empty_repeated), 2)
     with self.assertRaises(immutability_error):
       non_empty_repeated.clear()
     with self.assertRaises(immutability_error):
       non_empty_repeated.sort()
+    with self.assertRaises(immutability_error):
+      non_empty_repeated.remove(99)
+    with self.assertRaises(immutability_error):
+      non_empty_repeated.pop()
+    with self.assertRaises(immutability_error):
+      non_empty_repeated.reverse()
+
+    # Non-empty repeated composite field item access
+    complex_opt2 = unittest_custom_options_pb2.complex_opt2
+    non_empty_repeated_composite = complex_options_msg.Extensions[
+        complex_opt2
+    ].barney
+    self.assertEqual(len(non_empty_repeated_composite), 2)
+    first_barney = non_empty_repeated_composite[0]
+    self.assertEqual(first_barney.waldo, 101)
+    with self.assertRaises(immutability_error):
+      first_barney.waldo = 999
 
     # Extension dict mutation
     with self.assertRaises(immutability_error):
       message_options.Extensions[complex_opt1] = descriptor_pb2.MessageOptions()
+
+    message_opt1 = unittest_custom_options_pb2.message_opt1
+    with self.assertRaises(immutability_error):
+      message_options.Extensions[message_opt1] = -56
+
     with self.assertRaises(immutability_error):
       del message_options.Extensions[complex_opt1]
+
+    with self.assertRaises(immutability_error):
+      message_options.ClearExtension(complex_opt1)
 
     # Map field mutations
     map_field = stub_submsg.my_map
@@ -384,6 +416,41 @@ class DescriptorTest(unittest.TestCase):
 
     # Modification is (unfortunately) reflected in the descriptor.
     self.assertTrue(self.my_message.GetOptions().deprecated)
+
+  def testImmutableMapLookup(self):
+    complex_opt1 = unittest_custom_options_pb2.complex_opt1
+    complex_options_msg = (
+        unittest_custom_options_pb2.VariousComplexOptions.DESCRIPTOR.GetOptions()
+    )
+    immutable_map = complex_options_msg.Extensions[complex_opt1].my_map
+
+    # Test lookups.
+    self.assertEqual(immutable_map['key'], 123)
+    self.assertEqual(immutable_map['other_key'], 456)
+    self.assertIn('key', immutable_map)
+    self.assertIn('other_key', immutable_map)
+    self.assertNotIn('nonexistent_key', immutable_map)
+    self.assertEqual(len(immutable_map), 2)
+
+    # Test lookups via bytes.
+    self.assertEqual(immutable_map[b'key'], 123)
+    self.assertEqual(immutable_map[b'other_key'], 456)
+    self.assertIn(b'key', immutable_map)
+    self.assertIn(b'other_key', immutable_map)
+    self.assertNotIn(b'nonexistent_key', immutable_map)
+    self.assertEqual(len(immutable_map), 2)
+
+    # Test iteration.
+    self.assertEqual(set(immutable_map.keys()), {'key', 'other_key'})
+    self.assertEqual(set(immutable_map.values()), {123, 456})
+    self.assertEqual(
+        set(immutable_map.items()), {('key', 123), ('other_key', 456)}
+    )
+
+    # # Test get().
+    self.assertEqual(immutable_map.get('key'), 123)
+    self.assertEqual(immutable_map.get('nonexistent_key'), None)
+    self.assertEqual(immutable_map.get('nonexistent_key', 999), 999)
 
   def testSimpleCustomOptions(self):
     file_descriptor = unittest_custom_options_pb2.DESCRIPTOR
@@ -1799,7 +1866,7 @@ class FeatureInheritanceTest(unittest.TestCase):
             )
         ],
         minimum_edition=descriptor_pb2.Edition.EDITION_PROTO2,
-        maximum_edition=descriptor_pb2.Edition.EDITION_2024,
+        maximum_edition=descriptor_pb2.Edition.EDITION_2026,
     )
     defaults.defaults[0].overridable_features.Extensions[
         unittest_features_pb2.test
@@ -1975,6 +2042,14 @@ class FeatureInheritanceTest(unittest.TestCase):
     SetTestFeature(self.method_proto, 5)
     pool = self.BuildPool()
     self.assertEqual(GetTestFeature(pool.method), 5)
+
+
+@testing_refleaks.TestCase
+class ExtensionRangesRefleakTest(unittest.TestCase):
+
+  def testExtensionRangesRefleak(self):
+    _ = unittest_pb2.TestAllExtensions.DESCRIPTOR.extension_ranges
+    _ = unittest_pb2.TestMultipleExtensionRanges.DESCRIPTOR.extension_ranges
 
 
 if __name__ == '__main__':

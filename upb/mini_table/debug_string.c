@@ -75,9 +75,10 @@ static size_t upb_MiniTablePrinter_NullTerminate(upb_MiniTablePrinter* p,
 static int upb_MiniTablePrinter_InsertNext(upb_MiniTablePrinter* p,
                                            const void* key, bool visited) {
   uint64_t id = p->count++;
-  upb_inttable_insert(&p->inttable, (intptr_t)key,
-                      upb_value_uint64(id | (visited ? 0x100000000 : 0)),
-                      p->arena);
+  bool ok = upb_inttable_insert(
+      &p->inttable, (intptr_t)key,
+      upb_value_uint64(id | (visited ? 0x100000000 : 0)), p->arena);
+  UPB_ASSERT(ok);
   return id;
 }
 

@@ -507,6 +507,10 @@ bool Message_InitFromPhp(upb_Message* msg, const upb_MessageDef* m, zval* init,
 
     if (!val) return true;  // Finished iteration.
 
+    if (Z_TYPE(key) != IS_STRING) {
+      convert_to_string(&key);
+    }
+
     if (Z_ISREF_P(val)) {
       ZVAL_DEREF(val);
     }
@@ -682,15 +686,26 @@ PHP_METHOD(Message, mergeFromString) {
   Message* intern = (Message*)Z_OBJ_P(getThis());
   char* data = NULL;
   zend_long data_len;
+  zend_long recursion_limit = 0; /* 0 = use library default */
   const upb_MiniTable* l = upb_MessageDef_MiniTable(intern->desc->msgdef);
   upb_Arena* arena = Arena_Get(&intern->arena);
 
-  if (zend_parse_parameters(ZEND_NUM_ARGS(), "s", &data, &data_len) ==
-      FAILURE) {
+  if (zend_parse_parameters(ZEND_NUM_ARGS(), "s|l", &data, &data_len,
+                            &recursion_limit) == FAILURE) {
     return;
   }
 
-  if (upb_Decode(data, data_len, intern->msg, l, NULL, 0, arena) !=
+  int options = 0;
+  if (recursion_limit != 0) {
+    if (recursion_limit < 1 || recursion_limit > 0xffff) {
+      zend_throw_exception_ex(NULL, 0,
+                              "recursion_limit must be between 1 and 65535");
+      return;
+    }
+    options = upb_DecodeOptions_MaxDepth((uint16_t)recursion_limit);
+  }
+
+  if (upb_Decode(data, data_len, intern->msg, l, NULL, options, arena) !=
       kUpb_DecodeStatus_Ok) {
     zend_throw_exception_ex(NULL, 0, "Error occurred during parsing");
     return;
@@ -705,14 +720,33 @@ PHP_METHOD(Message, mergeFromString) {
  */
 PHP_METHOD(Message, serializeToString) {
   Message* intern = (Message*)Z_OBJ_P(getThis());
+  zend_long recursion_limit = 0; /* 0 = use library default */
   const upb_MiniTable* l = upb_MessageDef_MiniTable(intern->desc->msgdef);
-  upb_Arena* tmp_arena = upb_Arena_New();
   char* data;
   size_t size;
 
+  if (zend_parse_parameters(ZEND_NUM_ARGS(), "|l", &recursion_limit) ==
+      FAILURE) {
+    return;
+  }
+
+  int options = 0;
+  if (recursion_limit != 0) {
+    if (recursion_limit < 1 || recursion_limit > 0xffff) {
+      zend_throw_exception_ex(NULL, 0,
+                              "recursion_limit must be between 1 and 65535");
+      return;
+    }
+    options = upb_EncodeOptions_MaxDepth((uint16_t)recursion_limit);
+  }
+
+  upb_Arena* tmp_arena = upb_Arena_New();
   upb_EncodeStatus status =
-      upb_Encode(intern->msg, l, 0, tmp_arena, &data, &size);
-  if (!Message_checkEncodeStatus(status)) return;
+      upb_Encode(intern->msg, l, options, tmp_arena, &data, &size);
+  if (!Message_checkEncodeStatus(status)) {
+    upb_Arena_Free(tmp_arena);
+    return;
+  }
 
   if (!data) {
     zend_throw_exception_ex(NULL, 0, "Error occurred during serialization");
@@ -1095,6 +1129,15 @@ ZEND_BEGIN_ARG_INFO_EX(arginfo_mergeFrom, 0, 0, 1)
   ZEND_ARG_INFO(0, data)
 ZEND_END_ARG_INFO()
 
+ZEND_BEGIN_ARG_INFO_EX(arginfo_mergeFromString, 0, 0, 1)
+  ZEND_ARG_INFO(0, data)
+  ZEND_ARG_INFO(0, recursion_limit)
+ZEND_END_ARG_INFO()
+
+ZEND_BEGIN_ARG_INFO_EX(arginfo_serializeToString, 0, 0, 0)
+  ZEND_ARG_INFO(0, recursion_limit)
+ZEND_END_ARG_INFO()
+
 ZEND_BEGIN_ARG_INFO_EX(arginfo_mergeFromWithArg, 0, 0, 1)
   ZEND_ARG_INFO(0, data)
   ZEND_ARG_INFO(0, arg)
@@ -1112,8 +1155,8 @@ ZEND_END_ARG_INFO()
 static zend_function_entry Message_methods[] = {
   PHP_ME(Message, clear,                 arginfo_void,      ZEND_ACC_PUBLIC)
   PHP_ME(Message, discardUnknownFields,  arginfo_void,      ZEND_ACC_PUBLIC)
-  PHP_ME(Message, serializeToString,     arginfo_void,      ZEND_ACC_PUBLIC)
-  PHP_ME(Message, mergeFromString,       arginfo_mergeFrom, ZEND_ACC_PUBLIC)
+  PHP_ME(Message, serializeToString,     arginfo_serializeToString, ZEND_ACC_PUBLIC)
+  PHP_ME(Message, mergeFromString,       arginfo_mergeFromString,   ZEND_ACC_PUBLIC)
   PHP_ME(Message, serializeToJsonString, arginfo_serializeToJsonString,      ZEND_ACC_PUBLIC)
   PHP_ME(Message, mergeFromJsonString,   arginfo_mergeFromWithArg, ZEND_ACC_PUBLIC)
   PHP_ME(Message, mergeFrom,             arginfo_mergeFrom, ZEND_ACC_PUBLIC)

@@ -36,7 +36,8 @@ class UInt32Value extends \Google\Protobuf\Internal\Message
      *           The uint32 value.
      * }
      */
-    public function __construct($data = NULL) {
+    public function __construct($data = null)
+    {
         \GPBMetadata\Google\Protobuf\Wrappers::initOnce();
         parent::__construct($data);
     }

@@ -657,19 +657,6 @@ std::string FileDllExport(const FileDescriptor* file, const Options& options) {
   return UniqueName("PROTOBUF_INTERNAL_EXPORT", file, options);
 }
 
-std::string SuperClassName(const Descriptor* descriptor,
-                           const Options& options) {
-  if (!HasDescriptorMethods(descriptor->file(), options)) {
-    return absl::StrCat("::", ProtobufNamespace(options), "::MessageLite");
-  }
-  auto simple_base = SimpleBaseClass(descriptor, options);
-  if (simple_base.empty()) {
-    return absl::StrCat("::", ProtobufNamespace(options), "::Message");
-  }
-  return absl::StrCat("::", ProtobufNamespace(options),
-                      "::internal::", simple_base);
-}
-
 std::string FieldName(const FieldDescriptor* field) {
   if (field->containing_type() != nullptr &&
       field->containing_type()->options().no_standard_descriptor_accessor() &&
@@ -1851,24 +1838,16 @@ void ListAllFields(const FileDescriptor* d,
 }
 
 bool IsLayoutOptimized(const FieldDescriptor* field, const Options& options) {
-  return field->real_containing_oneof() == nullptr && !IsWeak(field, options);
+  return field->real_containing_oneof() == nullptr;
 }
 
-int CollectFieldsExcludingWeakAndOneof(
-    const Descriptor* d, const Options& options,
-    std::vector<const FieldDescriptor*>& fields) {
-  int num_weak_fields = 0;
+void CollectFieldsExcludingOneof(const Descriptor* d, const Options& options,
+                                 std::vector<const FieldDescriptor*>& fields) {
   for (auto field : internal::FieldRange(d)) {
-    if (IsWeak(field, options)) {
-      ++num_weak_fields;
-    }
-
     if (IsLayoutOptimized(field, options)) {
       fields.push_back(field);
     }
   }
-
-  return num_weak_fields;
 }
 
 void ListAllTypesForServices(const FileDescriptor* fd,

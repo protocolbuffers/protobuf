@@ -73,7 +73,7 @@ namespace UnitTest.Issues.TestProtos.SelfreferentialOptions {
     private static readonly pb::MessageParser<FooOptions> _parser = new pb::MessageParser<FooOptions>(() => new FooOptions());
     private pb::UnknownFieldSet _unknownFields;
     private pb::ExtensionSet<FooOptions> _extensions;
-    private pb::ExtensionSet<FooOptions> _Extensions { get { return _extensions; } }
+    private pb::ExtensionSet<FooOptions>  _Extensions { get { return _extensions; } }
     private int _hasBits0;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]

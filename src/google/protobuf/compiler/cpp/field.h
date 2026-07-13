@@ -23,6 +23,7 @@
 #include "absl/strings/string_view.h"
 #include "absl/types/optional.h"
 #include "absl/types/span.h"
+#include "google/protobuf/compiler/cpp/field_layout.h"
 #include "google/protobuf/compiler/cpp/helpers.h"
 #include "google/protobuf/compiler/cpp/options.h"
 #include "google/protobuf/cpp_features.pb.h"
@@ -118,6 +119,8 @@ class FieldGeneratorBase {
   virtual std::vector<io::Printer::Sub> MakeVars() const { return {}; }
 
   virtual void GeneratePrivateMembers(io::Printer* p) const = 0;
+
+  virtual void GenerateSecondaryPrivateMembers(io::Printer* p) const {}
 
   virtual void GenerateStaticMembers(io::Printer* p) const {}
 
@@ -288,6 +291,14 @@ class FieldGenerator {
   void GeneratePrivateMembers(io::Printer* p) const {
     auto vars = PushVarsForCall(p);
     impl_->GeneratePrivateMembers(p);
+  }
+
+  // Prints the secondary private members needed to represent this field.
+  //
+  // These are placed inside the class definition after everything else.
+  void GenerateSecondaryPrivateMembers(io::Printer* p) const {
+    auto vars = PushVarsForCall(p);
+    impl_->GenerateSecondaryPrivateMembers(p);
   }
 
   // Prints static members needed to represent this field.
@@ -505,7 +516,7 @@ class FieldGeneratorTable {
   FieldGeneratorTable(const FieldGeneratorTable&) = delete;
   FieldGeneratorTable& operator=(const FieldGeneratorTable&) = delete;
 
-  void Build(const Options& options, absl::Span<const int32_t> has_bit_indices);
+  void Build(const Options& options, const FieldLayout& field_layout);
 
   const FieldGenerator& get(const FieldDescriptor* field) const {
     ABSL_CHECK_EQ(field->containing_type(), descriptor_);

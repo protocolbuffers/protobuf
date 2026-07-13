@@ -82,7 +82,7 @@ class PROTOC_EXPORT SCCAnalyzer {
   // Tarjan's Strongly Connected Components algo
   NodeData DFS(const Descriptor* descriptor) {
     // Mark visited by inserting in map.
-    auto ins = cache_.try_emplace(descriptor, absl::make_unique<NodeData>());
+    auto ins = cache_.try_emplace(descriptor, std::make_unique<NodeData>());
     // Must not have visited already.
     ABSL_DCHECK(ins.second);
     NodeData& result = *ins.first->second;

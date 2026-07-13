@@ -25,5 +25,5 @@ local message JsonEnumValueOptions {
 
 extend google.protobuf.EnumValueOptions {
   JsonEnumValueOptions json = 998
-      [feature_support = { edition_introduced: EDITION_UNSTABLE }];
+      [feature_support = { edition_introduced: EDITION_2026 }];
 }

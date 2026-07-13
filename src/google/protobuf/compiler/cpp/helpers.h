@@ -203,10 +203,6 @@ std::string DescriptorTableName(const FileDescriptor* file,
 // dllexport needed for the target file, if any.
 std::string FileDllExport(const FileDescriptor* file, const Options& options);
 
-// Name of the base class: google::protobuf::Message or google::protobuf::MessageLite.
-std::string SuperClassName(const Descriptor* descriptor,
-                           const Options& options);
-
 // Add an underscore if necessary to prevent conflicting with known names and
 // keywords.
 // We use the context and the kind of entity to try to determine if mangling is
@@ -766,13 +762,9 @@ void ListAllFields(const FileDescriptor* d,
 // optimizer.
 bool IsLayoutOptimized(const FieldDescriptor* field, const Options& options);
 
-// Collects all fields from the given descriptor, excluding weak fields and
-// fields in oneofs.
-//
-// Returns the number of weak fields.
-int CollectFieldsExcludingWeakAndOneof(
-    const Descriptor* d, const Options& options,
-    std::vector<const FieldDescriptor*>& fields);
+// Collects all fields from the given descriptor, excluding fields in oneofs.
+void CollectFieldsExcludingOneof(const Descriptor* d, const Options& options,
+                                 std::vector<const FieldDescriptor*>& fields);
 
 template <bool do_nested_types, class T>
 void ForEachField(const Descriptor* d, T&& func) {
@@ -1027,8 +1019,7 @@ class PROTOC_EXPORT Formatter {
 
   // Convenience overloads to accept different types as arguments.
   static std::string ToString(absl::string_view s) { return std::string(s); }
-  template <typename I, typename = typename std::enable_if<
-                            std::is_integral<I>::value>::type>
+  template <typename I, typename = std::enable_if_t<std::is_integral_v<I>>>
   static std::string ToString(I x) {
     return absl::StrCat(x);
   }

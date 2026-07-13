@@ -213,7 +213,7 @@ void ExtensionSet::DeleteFlatMap(const ExtensionSet::KeyValue* flat,
                                  uint16_t flat_capacity) {
   // Arena::CreateArray already requires a trivially destructible type, but
   // ensure this constraint is not violated in the future.
-  static_assert(std::is_trivially_destructible<KeyValue>::value,
+  static_assert(std::is_trivially_destructible_v<KeyValue>,
                 "CreateArray requires a trivially destructible type");
   // A const-cast is needed, but this is safe as we are about to deallocate the
   // array.
@@ -636,7 +636,7 @@ MessageLite* ExtensionSet::MutableRepeatedMessage(int number, int index) {
 }
 
 MessageLite* ExtensionSet::AddMessage(Arena* arena, int number, FieldType type,
-                                      const ClassData* class_data,
+                                      const MessageLite& prototype,
                                       const FieldDescriptor* descriptor) {
   Extension* extension;
   if (MaybeNewExtension(arena, number, descriptor, &extension)) {
@@ -649,9 +649,10 @@ MessageLite* ExtensionSet::AddMessage(Arena* arena, int number, FieldType type,
   } else {
     ABSL_DCHECK_TYPE(*extension, REPEATED_FIELD, MESSAGE);
   }
+
   return reinterpret_cast<internal::RepeatedPtrFieldBase*>(
              extension->ptr.repeated_message_value)
-      ->AddFromClassData<GenericTypeHandler<MessageLite>>(arena, class_data);
+      ->AddFromPrototype<GenericTypeHandler<MessageLite>>(arena, &prototype);
 }
 
 // Defined in extension_set_heavy.cc.

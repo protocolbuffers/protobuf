@@ -73,6 +73,7 @@ typedef struct {
   PyObject* encode_error_class;
   PyObject* enum_type_wrapper_class;
   PyObject* message_class;
+  PyObject* frozen_instance_error_class;
   PyTypeObject* cmessage_type;
   PyTypeObject* message_meta_type;
   PyObject* listfields_item_key;
@@ -172,6 +173,8 @@ PyUpb_WeakMap* PyUpb_ObjCache_Instance(void);
 
 PyObject* PyUpb_Arena_New(void);
 upb_Arena* PyUpb_Arena_Get(PyObject* arena);
+bool PyUpb_Arena_IsFrozen(PyObject* arena);
+void PyUpb_Arena_SetFrozen(PyObject* arena, bool frozen);
 
 // -----------------------------------------------------------------------------
 // Utilities
@@ -226,4 +229,16 @@ const char* PyUpb_VerifyStrData(PyObject* obj);
 // or descriptor sequence of size 'size'.
 bool PyUpb_IndexToRange(PyObject* index, Py_ssize_t size, Py_ssize_t* i,
                         Py_ssize_t* count, Py_ssize_t* step);
+
+// Sets a Python FrozenInstanceError with the default error message
+// ("Message is immutable.") and returns NULL.
+PyObject* PyUpb_SetFrozenError(void);
+// Sets a Python FrozenInstanceError with the given custom message and returns
+// NULL.
+PyObject* PyUpb_SetFrozenErrorWithMsg(const char* msg);
+// Emits a DeprecationWarning when mutating a frozen message or container in
+// OSS.
+int PyUpb_WarnFrozen(void);
+bool PyUpb_CheckFrozen(bool is_frozen, const char* error_msg);
+
 #endif  // PYUPB_PROTOBUF_H__

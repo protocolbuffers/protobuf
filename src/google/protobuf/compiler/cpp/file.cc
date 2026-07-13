@@ -235,16 +235,6 @@ void FileGenerator::GenerateSharedHeaderCode(io::Printer* p) {
           {"undefs", [&] { GenerateMacroUndefs(p); }},
           {"global_state_decls",
            [&] { GenerateGlobalStateFunctionDeclarations(p); }},
-          {"any_metadata",
-           [&] {
-             NamespaceOpener ns(ProtobufNamespace(options_), p);
-             p->Emit(R"cc(
-               namespace internal {
-               template <typename T>
-               ::absl::string_view GetAnyMessageName();
-               }  // namespace internal
-             )cc");
-           }},
           {"fwd_decls", [&] { GenerateForwardDeclarations(p); }},
           {"proto2_ns_enums",
            [&] { GenerateProto2NamespaceEnumSpecializations(p); }},
@@ -289,8 +279,6 @@ void FileGenerator::GenerateSharedHeaderCode(io::Printer* p) {
 
           #define $dllexport_macro$$ dllexport_decl$
           $undefs$
-
-          $any_metadata$;
 
           $global_state_decls$;
           $fwd_decls$
@@ -1533,10 +1521,7 @@ void FileGenerator::GenerateLibraryIncludes(io::Printer* p) {
   if (UsingImplicitWeakFields(file_, options_)) {
     IncludeFile("third_party/protobuf/implicit_weak_message.h", p);
   }
-  if (HasWeakFields(file_, options_)) {
-    ABSL_CHECK(!options_.opensource_runtime);
-    IncludeFile("third_party/protobuf/weak_field_map.h", p);
-  }
+
   if (HasLazyFields(file_, options_)) {
     ABSL_CHECK(!options_.opensource_runtime);
     IncludeFile("third_party/protobuf/lazy_field.h", p);

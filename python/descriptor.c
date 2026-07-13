@@ -141,6 +141,8 @@ static PyObject* PyUpb_DescriptorBase_GetCached(PyObject** cached,
 
 #if PROTOBUF_PY_FUTURE_FREEZE_OPTIONS
     upb_Message_Freeze(opts2, opts2_layout);
+#else
+    PyUpb_Arena_SetFrozen(py_arena, true);
 #endif
     *cached = PyUpb_Message_Get(opts2, m, py_arena);
     Py_DECREF(py_arena);
@@ -355,7 +357,10 @@ static PyObject* PyUpb_Descriptor_GetExtensionRanges(PyObject* _self,
         upb_MessageDef_ExtensionRange(self->def, i);
     PyObject* start = PyLong_FromLong(upb_ExtensionRange_Start(range));
     PyObject* end = PyLong_FromLong(upb_ExtensionRange_End(range));
-    PyList_SetItem(range_list, i, PyTuple_Pack(2, start, end));
+    PyObject* tuple = PyTuple_Pack(2, start, end);
+    Py_DECREF(start);
+    Py_DECREF(end);
+    PyList_SetItem(range_list, i, tuple);
   }
 
   return range_list;

@@ -6437,7 +6437,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
     private static readonly pb::MessageParser<TestAllExtensions> _parser = new pb::MessageParser<TestAllExtensions>(() => new TestAllExtensions());
     private pb::UnknownFieldSet _unknownFields;
     private pb::ExtensionSet<TestAllExtensions> _extensions;
-    private pb::ExtensionSet<TestAllExtensions> _Extensions { get { return _extensions; } }
+    private pb::ExtensionSet<TestAllExtensions>  _Extensions { get { return _extensions; } }
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static pb::MessageParser<TestAllExtensions> Parser { get { return _parser; } }
@@ -7571,7 +7571,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
     private static readonly pb::MessageParser<TestGroupExtension> _parser = new pb::MessageParser<TestGroupExtension>(() => new TestGroupExtension());
     private pb::UnknownFieldSet _unknownFields;
     private pb::ExtensionSet<TestGroupExtension> _extensions;
-    private pb::ExtensionSet<TestGroupExtension> _Extensions { get { return _extensions; } }
+    private pb::ExtensionSet<TestGroupExtension>  _Extensions { get { return _extensions; } }
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static pb::MessageParser<TestGroupExtension> Parser { get { return _parser; } }
@@ -11033,7 +11033,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
     private static readonly pb::MessageParser<TestEmptyMessageWithExtensions> _parser = new pb::MessageParser<TestEmptyMessageWithExtensions>(() => new TestEmptyMessageWithExtensions());
     private pb::UnknownFieldSet _unknownFields;
     private pb::ExtensionSet<TestEmptyMessageWithExtensions> _extensions;
-    private pb::ExtensionSet<TestEmptyMessageWithExtensions> _Extensions { get { return _extensions; } }
+    private pb::ExtensionSet<TestEmptyMessageWithExtensions>  _Extensions { get { return _extensions; } }
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static pb::MessageParser<TestEmptyMessageWithExtensions> Parser { get { return _parser; } }
@@ -11239,7 +11239,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
     private static readonly pb::MessageParser<TestMultipleExtensionRanges> _parser = new pb::MessageParser<TestMultipleExtensionRanges>(() => new TestMultipleExtensionRanges());
     private pb::UnknownFieldSet _unknownFields;
     private pb::ExtensionSet<TestMultipleExtensionRanges> _extensions;
-    private pb::ExtensionSet<TestMultipleExtensionRanges> _Extensions { get { return _extensions; } }
+    private pb::ExtensionSet<TestMultipleExtensionRanges>  _Extensions { get { return _extensions; } }
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static pb::MessageParser<TestMultipleExtensionRanges> Parser { get { return _parser; } }
@@ -15907,7 +15907,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
     private static readonly pb::MessageParser<TestFieldOrderings> _parser = new pb::MessageParser<TestFieldOrderings>(() => new TestFieldOrderings());
     private pb::UnknownFieldSet _unknownFields;
     private pb::ExtensionSet<TestFieldOrderings> _extensions;
-    private pb::ExtensionSet<TestFieldOrderings> _Extensions { get { return _extensions; } }
+    private pb::ExtensionSet<TestFieldOrderings>  _Extensions { get { return _extensions; } }
     private int _hasBits0;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
@@ -26050,7 +26050,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
     private static readonly pb::MessageParser<TestPackedExtensions> _parser = new pb::MessageParser<TestPackedExtensions>(() => new TestPackedExtensions());
     private pb::UnknownFieldSet _unknownFields;
     private pb::ExtensionSet<TestPackedExtensions> _extensions;
-    private pb::ExtensionSet<TestPackedExtensions> _Extensions { get { return _extensions; } }
+    private pb::ExtensionSet<TestPackedExtensions>  _Extensions { get { return _extensions; } }
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static pb::MessageParser<TestPackedExtensions> Parser { get { return _parser; } }
@@ -26256,7 +26256,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
     private static readonly pb::MessageParser<TestUnpackedExtensions> _parser = new pb::MessageParser<TestUnpackedExtensions>(() => new TestUnpackedExtensions());
     private pb::UnknownFieldSet _unknownFields;
     private pb::ExtensionSet<TestUnpackedExtensions> _extensions;
-    private pb::ExtensionSet<TestUnpackedExtensions> _Extensions { get { return _extensions; } }
+    private pb::ExtensionSet<TestUnpackedExtensions>  _Extensions { get { return _extensions; } }
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static pb::MessageParser<TestUnpackedExtensions> Parser { get { return _parser; } }
@@ -27508,7 +27508,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
     private static readonly pb::MessageParser<TestParsingMerge> _parser = new pb::MessageParser<TestParsingMerge>(() => new TestParsingMerge());
     private pb::UnknownFieldSet _unknownFields;
     private pb::ExtensionSet<TestParsingMerge> _extensions;
-    private pb::ExtensionSet<TestParsingMerge> _Extensions { get { return _extensions; } }
+    private pb::ExtensionSet<TestParsingMerge>  _Extensions { get { return _extensions; } }
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static pb::MessageParser<TestParsingMerge> Parser { get { return _parser; } }
@@ -30783,7 +30783,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
     private static readonly pb::MessageParser<TestHugeFieldNumbers> _parser = new pb::MessageParser<TestHugeFieldNumbers>(() => new TestHugeFieldNumbers());
     private pb::UnknownFieldSet _unknownFields;
     private pb::ExtensionSet<TestHugeFieldNumbers> _extensions;
-    private pb::ExtensionSet<TestHugeFieldNumbers> _Extensions { get { return _extensions; } }
+    private pb::ExtensionSet<TestHugeFieldNumbers>  _Extensions { get { return _extensions; } }
     private int _hasBits0;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
@@ -31902,7 +31902,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
     private static readonly pb::MessageParser<TestExtensionInsideTable> _parser = new pb::MessageParser<TestExtensionInsideTable>(() => new TestExtensionInsideTable());
     private pb::UnknownFieldSet _unknownFields;
     private pb::ExtensionSet<TestExtensionInsideTable> _extensions;
-    private pb::ExtensionSet<TestExtensionInsideTable> _Extensions { get { return _extensions; } }
+    private pb::ExtensionSet<TestExtensionInsideTable>  _Extensions { get { return _extensions; } }
     private int _hasBits0;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
