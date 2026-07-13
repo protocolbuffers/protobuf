@@ -19,6 +19,7 @@ def _protoc_authenticity_impl(ctx):
         mnemonic = "ProtocAuthenticityCheck",
         outputs = [validation_output],
         tools = [proto_lang_toolchain_info.proto_compiler],
+        toolchain = toolchains.PROTO_TOOLCHAIN,
         command = """\
         {protoc} --version > {validation_output}
         grep -q -e "-dev$" {validation_output} && {{

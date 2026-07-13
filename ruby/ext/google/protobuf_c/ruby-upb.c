@@ -3809,10 +3809,12 @@ static size_t jsondec_unicode(jsondec* d, char* out) {
 static void jsondec_resize(jsondec* d, char** buf, char** end, char** buf_end) {
   size_t oldsize = *buf_end - *buf;
   size_t len = *end - *buf;
+
+  jsondec_checkoom(d, oldsize <= SIZE_MAX / 2);
   size_t size = UPB_MAX(8, 2 * oldsize);
 
   *buf = upb_Arena_Realloc(d->arena, *buf, len, size);
-  if (!*buf) jsondec_err(d, "Out of memory");
+  jsondec_checkoom(d, *buf);
 
   *end = *buf + len;
   *buf_end = *buf + size;
@@ -4388,7 +4390,8 @@ static void jsondec_field(jsondec* d, upb_Message* msg,
   } else {
     upb_JsonMessageValue val = jsondec_value(d, f);
     if (!val.ignore) {
-      upb_Message_SetFieldByDef(msg, f, val.value, d->arena);
+      jsondec_checkoom(d,
+                       upb_Message_SetFieldByDef(msg, f, val.value, d->arena));
     }
   }
 
@@ -4552,10 +4555,12 @@ static void jsondec_timestamp(jsondec* d, upb_Message* msg,
     jsondec_err(d, "Timestamp out of range");
   }
 
-  upb_Message_SetFieldByDef(msg, upb_MessageDef_FindFieldByNumber(m, 1),
-                            seconds, d->arena);
-  upb_Message_SetFieldByDef(msg, upb_MessageDef_FindFieldByNumber(m, 2), nanos,
-                            d->arena);
+  jsondec_checkoom(
+      d, upb_Message_SetFieldByDef(msg, upb_MessageDef_FindFieldByNumber(m, 1),
+                                   seconds, d->arena));
+  jsondec_checkoom(
+      d, upb_Message_SetFieldByDef(msg, upb_MessageDef_FindFieldByNumber(m, 2),
+                                   nanos, d->arena));
   return;
 
 malformed:
@@ -4589,10 +4594,12 @@ static void jsondec_duration(jsondec* d, upb_Message* msg,
     nanos.int32_val = -nanos.int32_val;
   }
 
-  upb_Message_SetFieldByDef(msg, upb_MessageDef_FindFieldByNumber(m, 1),
-                            seconds, d->arena);
-  upb_Message_SetFieldByDef(msg, upb_MessageDef_FindFieldByNumber(m, 2), nanos,
-                            d->arena);
+  jsondec_checkoom(
+      d, upb_Message_SetFieldByDef(msg, upb_MessageDef_FindFieldByNumber(m, 1),
+                                   seconds, d->arena));
+  jsondec_checkoom(
+      d, upb_Message_SetFieldByDef(msg, upb_MessageDef_FindFieldByNumber(m, 2),
+                                   nanos, d->arena));
 }
 
 static void jsondec_listvalue(jsondec* d, upb_Message* msg,
@@ -4696,7 +4703,7 @@ static void jsondec_wellknownvalue(jsondec* d, upb_Message* msg,
       UPB_UNREACHABLE();
   }
 
-  upb_Message_SetFieldByDef(msg, f, val, d->arena);
+  jsondec_checkoom(d, upb_Message_SetFieldByDef(msg, f, val, d->arena));
 }
 
 static upb_StringView jsondec_mask(jsondec* d, const char* buf,
@@ -4788,7 +4795,8 @@ static const upb_MessageDef* jsondec_typeurl(jsondec* d, upb_Message* msg,
   upb_MessageValue val;
 
   val.str_val = type_url;
-  upb_Message_SetFieldByDef(msg, type_url_f, val, d->arena);
+  jsondec_checkoom(d,
+                   upb_Message_SetFieldByDef(msg, type_url_f, val, d->arena));
 
   /* Find message name after the last '/' */
   while (ptr > type_url.data && *--ptr != '/') {
@@ -4876,7 +4884,8 @@ static void jsondec_any(jsondec* d, upb_Message* msg, const upb_MessageDef* m) {
   if (status != kUpb_EncodeStatus_Ok) {
     jsondec_errf(d, "Encode failed: %s", upb_EncodeStatus_String(status));
   }
-  upb_Message_SetFieldByDef(msg, value_f, encoded, d->arena);
+  jsondec_checkoom(d,
+                   upb_Message_SetFieldByDef(msg, value_f, encoded, d->arena));
 }
 
 static void jsondec_wrapper(jsondec* d, upb_Message* msg,
@@ -4885,7 +4894,8 @@ static void jsondec_wrapper(jsondec* d, upb_Message* msg,
   const upb_FieldDef* value_f = upb_MessageDef_FindFieldByNumber(m, 1);
   upb_JsonMessageValue val = jsondec_value(d, value_f);
   UPB_ASSUME(val.ignore == false);  // Wrapper cannot be an enum.
-  upb_Message_SetFieldByDef(msg, value_f, val.value, d->arena);
+  jsondec_checkoom(
+      d, upb_Message_SetFieldByDef(msg, value_f, val.value, d->arena));
 }
 
 static void jsondec_wellknown(jsondec* d, upb_Message* msg,
@@ -7675,60 +7685,20 @@ upb_Message_DeleteUnknownStatus upb_Message_DeleteUnknown(upb_Message* msg,
                                                           upb_StringView* data,
                                                           uintptr_t* iter,
                                                           upb_Arena* arena) {
-  UPB_ASSERT(!upb_Message_IsFrozen(msg));
-  UPB_ASSERT(*iter != kUpb_Message_UnknownBegin);
-  upb_Message_Internal* in = UPB_PRIVATE(_upb_Message_GetInternal)(msg);
-  UPB_ASSERT(in);
-  UPB_ASSERT(*iter <= in->size);
-  upb_TaggedAuxPtr unknown_ptr = in->aux_data[*iter - 1];
-  UPB_ASSERT(upb_TaggedAuxPtr_IsUnknownStringView(unknown_ptr));
-  upb_StringView* unknown = upb_TaggedPtrAux_StringViewRepr(unknown_ptr);
-  if (unknown->data == data->data && unknown->size == data->size) {
-    // Remove whole field
-    in->aux_data[*iter - 1] = upb_TaggedAuxPtr_Null();
-  } else if (unknown->data == data->data) {
-    // Strip prefix
-    unknown->data += data->size;
-    unknown->size -= data->size;
-    *data = *unknown;
-    return kUpb_DeleteUnknown_IterUpdated;
-  } else if (unknown->data + unknown->size == data->data + data->size) {
-    // Truncate existing field
-    unknown->size -= data->size;
-    if (!upb_TaggedAuxPtr_IsUnknownAliased(unknown_ptr)) {
-      in->aux_data[*iter - 1] =
-          upb_TaggedAuxPtr_MakeUnknownDataAliased(unknown);
-    }
-  } else {
-    UPB_ASSERT(unknown->data < data->data &&
-               unknown->data + unknown->size > data->data + data->size);
-    // Split in the middle
-    upb_StringView* prefix = unknown;
-    upb_StringView* suffix = upb_Arena_Malloc(arena, sizeof(upb_StringView));
-    if (!suffix) {
-      return kUpb_DeleteUnknown_AllocFail;
-    }
-    if (!UPB_PRIVATE(_upb_Message_ReserveSlot)(msg, arena)) {
-      return kUpb_DeleteUnknown_AllocFail;
-    }
-    in = UPB_PRIVATE(_upb_Message_GetInternal)(msg);
-    if (*iter != in->size) {
-      // Shift later entries down so that unknown field ordering is preserved
-      memmove(&in->aux_data[*iter + 1], &in->aux_data[*iter],
-              sizeof(upb_TaggedAuxPtr) * (in->size - *iter));
-    }
-    in->aux_data[*iter] = upb_TaggedAuxPtr_MakeUnknownDataAliased(suffix);
-    if (!upb_TaggedAuxPtr_IsUnknownAliased(unknown_ptr)) {
-      in->aux_data[*iter - 1] = upb_TaggedAuxPtr_MakeUnknownDataAliased(prefix);
-    }
-    in->size++;
-    suffix->data = data->data + data->size;
-    suffix->size = (prefix->data + prefix->size) - suffix->data;
-    prefix->size = data->data - prefix->data;
+  upb_MessageUnknown unknown;
+  unknown.type = kUpb_MessageUnknownType_StringView;
+  unknown.value.bytes = *data;
+
+  upb_Message_DeleteUnknownStatus res =
+      upb_Message_DeleteUnknown2(msg, &unknown, iter, arena);
+  UPB_ASSERT(unknown.type == kUpb_MessageUnknownType_StringView);
+  if (res == kUpb_DeleteUnknown_IterUpdated ||
+      res == kUpb_DeleteUnknown_DeletedLast) {
+    // the unknown data remains the same on the result of
+    // kUpb_DeleteUnknown_AllocFail.
+    *data = unknown.value.bytes;
   }
-  return upb_Message_NextUnknown(msg, data, iter)
-             ? kUpb_DeleteUnknown_IterUpdated
-             : kUpb_DeleteUnknown_DeletedLast;
+  return res;
 }
 
 size_t upb_Message_ExtensionCount(const upb_Message* msg) {
@@ -7817,6 +7787,143 @@ void upb_Message_Freeze(upb_Message* msg, const upb_MiniTable* m) {
         break;
     }
   }
+}
+
+
+#include <stddef.h>
+#include <stdint.h>
+#include <string.h>
+
+
+// Must be last.
+
+static upb_FindUnknownRet2 upb_FindUnknownRet2_ParseError(void) {
+  return (upb_FindUnknownRet2){.status = kUpb_FindUnknown_ParseError};
+}
+
+upb_FindUnknownRet2 upb_Message_FindUnknown2(const struct upb_Message* msg,
+                                             uint32_t field_number,
+                                             int depth_limit) {
+  depth_limit = depth_limit ? depth_limit : 100;
+  upb_FindUnknownRet2 ret;
+  ret.iter = kUpb_Message_UnknownBegin;
+  while (upb_Message_NextUnknown2(msg, &ret.unknown, &ret.iter)) {
+    if (ret.unknown.type == kUpb_MessageUnknownType_StringView) {
+      upb_EpsCopyInputStream stream;
+      const char* ptr = ret.unknown.value.bytes.data;
+      upb_EpsCopyInputStream_Init(&stream, &ptr, ret.unknown.value.bytes.size);
+
+      while (!upb_EpsCopyInputStream_IsDone(&stream, &ptr)) {
+        uint32_t tag;
+        const char* unknown_begin = ptr;
+        ptr = upb_WireReader_ReadTag(ptr, &tag, &stream);
+        if (!ptr) return upb_FindUnknownRet2_ParseError();
+        if (field_number == upb_WireReader_GetFieldNumber(tag)) {
+          upb_StringView data;
+          ret.status = kUpb_FindUnknown_Ok;
+          upb_EpsCopyCapture capture;
+          upb_EpsCopyCapture_Start(&capture, &stream, unknown_begin);
+          ptr = _upb_WireReader_SkipValue(ptr, tag, depth_limit, &stream);
+          if (!ptr || !upb_EpsCopyCapture_End(&capture, &stream, ptr, &data)) {
+            return upb_FindUnknownRet2_ParseError();
+          }
+          ret.unknown.value.bytes = data;
+          return ret;
+        }
+
+        ptr = _upb_WireReader_SkipValue(ptr, tag, depth_limit, &stream);
+        if (!ptr) return upb_FindUnknownRet2_ParseError();
+      }
+    } else if (ret.unknown.type ==
+               kUpb_MessageUnknownType_NonCanonicalExtension) {
+      uint32_t ext_field_number =
+          upb_MiniTableExtension_Number(ret.unknown.value.extension->ext);
+      if (ext_field_number == field_number) {
+        ret.status = kUpb_FindUnknown_Ok;
+        return ret;
+      }
+    }
+  }
+  ret.status = kUpb_FindUnknown_NotPresent;
+  ret.unknown.type = kUpb_MessageUnknownType_StringView;
+  ret.unknown.value.bytes.data = NULL;
+  ret.unknown.value.bytes.size = 0;
+  ret.iter = kUpb_Message_UnknownBegin;
+  return ret;
+}
+
+upb_Message_DeleteUnknownStatus upb_Message_DeleteUnknown2(
+    struct upb_Message* msg, struct upb_MessageUnknown* data, uintptr_t* iter,
+    struct upb_Arena* arena) {
+  UPB_ASSERT(!upb_Message_IsFrozen(msg));
+  UPB_ASSERT(*iter != kUpb_Message_UnknownBegin);
+  upb_Message_Internal* in = UPB_PRIVATE(_upb_Message_GetInternal)(msg);
+  UPB_ASSERT(in);
+  UPB_ASSERT(*iter <= in->size);
+  upb_TaggedAuxPtr unknown_ptr = in->aux_data[*iter - 1];
+
+  if (data->type == kUpb_MessageUnknownType_NonCanonicalExtension) {
+    UPB_ASSERT(upb_TaggedAuxPtr_IsNonCanonicalExtension(unknown_ptr));
+    // When the unknown is a non-canonical extension, we just remove it from the
+    // aux data array.
+    in->aux_data[*iter - 1] = upb_TaggedAuxPtr_Null();
+    return upb_Message_NextUnknown2(msg, data, iter)
+               ? kUpb_DeleteUnknown_IterUpdated
+               : kUpb_DeleteUnknown_DeletedLast;
+  }
+
+  UPB_ASSERT(upb_TaggedAuxPtr_IsUnknownStringView(unknown_ptr));
+  upb_StringView* unknown = upb_TaggedPtrAux_StringViewRepr(unknown_ptr);
+  UPB_ASSERT(data->type == kUpb_MessageUnknownType_StringView);
+  upb_StringView* data_bytes = &data->value.bytes;
+  if (unknown->data == data_bytes->data && unknown->size == data_bytes->size) {
+    // Remove whole field
+    in->aux_data[*iter - 1] = upb_TaggedAuxPtr_Null();
+  } else if (unknown->data == data_bytes->data) {
+    // Strip prefix
+    unknown->data += data_bytes->size;
+    unknown->size -= data_bytes->size;
+    *data_bytes = *unknown;
+    return kUpb_DeleteUnknown_IterUpdated;
+  } else if (unknown->data + unknown->size ==
+             data_bytes->data + data_bytes->size) {
+    // Truncate existing field
+    unknown->size -= data_bytes->size;
+    if (!upb_TaggedAuxPtr_IsUnknownAliased(unknown_ptr)) {
+      in->aux_data[*iter - 1] =
+          upb_TaggedAuxPtr_MakeUnknownDataAliased(unknown);
+    }
+  } else {
+    UPB_ASSERT(unknown->data < data_bytes->data &&
+               unknown->data + unknown->size >
+                   data_bytes->data + data_bytes->size);
+    // Split in the middle
+    upb_StringView* prefix = unknown;
+    upb_StringView* suffix = upb_Arena_Malloc(arena, sizeof(upb_StringView));
+    if (!suffix) {
+      return kUpb_DeleteUnknown_AllocFail;
+    }
+    if (!UPB_PRIVATE(_upb_Message_ReserveSlot)(msg, arena)) {
+      return kUpb_DeleteUnknown_AllocFail;
+    }
+    in = UPB_PRIVATE(_upb_Message_GetInternal)(msg);
+    if (*iter != in->size) {
+      // Shift later entries down so that unknown field ordering is preserved
+      memmove(&in->aux_data[*iter + 1], &in->aux_data[*iter],
+              sizeof(upb_TaggedAuxPtr) * (in->size - *iter));
+    }
+    in->aux_data[*iter] = upb_TaggedAuxPtr_MakeUnknownDataAliased(suffix);
+    if (!upb_TaggedAuxPtr_IsUnknownAliased(unknown_ptr)) {
+      in->aux_data[*iter - 1] = upb_TaggedAuxPtr_MakeUnknownDataAliased(prefix);
+    }
+    in->size++;
+    suffix->data = data_bytes->data + data_bytes->size;
+    suffix->size = (prefix->data + prefix->size) - suffix->data;
+    prefix->size = data_bytes->data - prefix->data;
+  }
+  return upb_Message_NextUnknown2(msg, data, iter)
+             ? kUpb_DeleteUnknown_IterUpdated
+             : kUpb_DeleteUnknown_DeletedLast;
 }
 
 
@@ -9502,6 +9609,9 @@ static const char* upb_MtDecoder_Parse(upb_MtDecoder* d, const char* ptr,
       ptr = upb_MdDecoder_DecodeBase92Varint(&d->base, ptr, ch,
                                              kUpb_EncodedValue_MinSkip,
                                              kUpb_EncodedValue_MaxSkip, &skip);
+      if (skip == 0) {
+        upb_MdDecoder_ErrorJmp(&d->base, "Invalid skip value: 0");
+      }
       last_field_number += skip;
       last_field_number--;  // Next field seen will increment.
     } else {
@@ -9811,6 +9921,14 @@ done:
   }
 #endif
   UPB_PRIVATE(upb_MiniTable_CheckInvariants)(ret);
+
+#ifndef NDEBUG
+  for (int i = 1; i < upb_MiniTable_FieldCount(ret); i++) {
+    const upb_MiniTableField* f1 = upb_MiniTable_GetFieldByIndex(ret, i - 1);
+    const upb_MiniTableField* f2 = upb_MiniTable_GetFieldByIndex(ret, i);
+    UPB_ASSERT(upb_MiniTableField_Number(f2) > upb_MiniTableField_Number(f1));
+  }
+#endif
   return ret;
 }
 
@@ -12937,6 +13055,7 @@ struct upb_FileDef {
   const upb_FileDef** deps;
   const int32_t* public_deps;
   const int32_t* weak_deps;
+  const char** option_deps;
   const upb_MessageDef* top_lvl_msgs;
   const upb_EnumDef* top_lvl_enums;
   const upb_FieldDef* top_lvl_exts;
@@ -12947,6 +13066,7 @@ struct upb_FileDef {
   int dep_count;
   int public_dep_count;
   int weak_dep_count;
+  int option_dep_count;
   int top_lvl_msg_count;
   int top_lvl_enum_count;
   int top_lvl_ext_count;
@@ -13002,6 +13122,15 @@ int upb_FileDef_PublicDependencyCount(const upb_FileDef* f) {
 
 int upb_FileDef_WeakDependencyCount(const upb_FileDef* f) {
   return f->weak_dep_count;
+}
+
+const char* upb_FileDef_OptionDependency(const upb_FileDef* f, int i) {
+  UPB_ASSERT(0 <= i && i < f->option_dep_count);
+  return f->option_deps[i];
+}
+
+int upb_FileDef_OptionDependencyCount(const upb_FileDef* f) {
+  return f->option_dep_count;
 }
 
 const int32_t* _upb_FileDef_PublicDependencyIndexes(const upb_FileDef* f) {
@@ -13303,6 +13432,14 @@ void _upb_FileDef_Create(upb_DefBuilder* ctx,
                            (int)weak_deps[i]);
     }
     mutable_weak_deps[i] = weak_deps[i];
+  }
+
+  const upb_StringView* option_deps;
+  option_deps = google_protobuf_FileDescriptorProto_option_dependency(file_proto, &n);
+  file->option_dep_count = n;
+  file->option_deps = UPB_DEFBUILDER_ALLOCARRAY(ctx, const char*, n);
+  for (size_t i = 0; i < n; i++) {
+    file->option_deps[i] = _strviewdup(ctx, option_deps[i]);
   }
 
   // Create enums.
@@ -15826,6 +15963,13 @@ static google_protobuf_FileDescriptorProto* filedef_toproto(upb_ToProto_Context*
       google_protobuf_FileDescriptorProto_resize_weak_dependency(proto, n, ctx->arena);
   const int32_t* weak_dep_nums = _upb_FileDef_WeakDependencyIndexes(f);
   if (n) memcpy(weak_deps, weak_dep_nums, n * sizeof(int32_t));
+
+  n = upb_FileDef_OptionDependencyCount(f);
+  upb_StringView* option_deps =
+      google_protobuf_FileDescriptorProto_resize_option_dependency(proto, n, ctx->arena);
+  for (size_t i = 0; i < n; i++) {
+    option_deps[i] = strviewdup(ctx, upb_FileDef_OptionDependency(f, i));
+  }
 
   n = upb_FileDef_TopLevelMessageCount(f);
   google_protobuf_DescriptorProto** msgs =

@@ -3743,6 +3743,13 @@ public final class Descriptors {
 
       containingType = parent;
       fieldCount = 0;
+
+      if (parent.getFile().tables.findSymbol(fullName) != null) {
+        logger.warning(
+            "Oneof "
+                + fullName
+                + " collides with another symbol. This will become an error in 2027.");
+      }
     }
 
     private final int index;

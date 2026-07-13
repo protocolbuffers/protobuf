@@ -4261,6 +4261,27 @@ UPB_NODISCARD bool UPB_PRIVATE(_upb_Message_AddUnknownV)(
 UPB_NODISCARD bool UPB_PRIVATE(_upb_Message_ReserveSlot)(
     struct upb_Message* msg, upb_Arena* arena);
 
+typedef enum {
+  kUpb_MessageUnknownType_StringView,
+  kUpb_MessageUnknownType_NonCanonicalExtension,
+} upb_MessageUnknownType;
+
+// Represents an unknown field in a message, whether it's in a serialized
+// (upb_StringView) or parsed non-canonical extension (upb_Extension*) format.
+typedef struct upb_MessageUnknown {
+  uint8_t type;
+  union {
+    upb_StringView bytes;
+    const upb_Extension* extension;
+  } value;
+} upb_MessageUnknown;
+
+typedef enum upb_Message_DeleteUnknownStatus {
+  kUpb_DeleteUnknown_DeletedLast,
+  kUpb_DeleteUnknown_IterUpdated,
+  kUpb_DeleteUnknown_AllocFail,
+} upb_Message_DeleteUnknownStatus;
+
 #define kUpb_Message_UnknownBegin 0
 #define kUpb_Message_ExtensionBegin 0
 
@@ -4282,12 +4303,6 @@ UPB_INLINE bool upb_Message_NextUnknown(const struct upb_Message* msg,
   data->data = NULL;
   *iter = i;
   return false;
-}
-
-UPB_INLINE bool upb_Message_HasUnknown(const struct upb_Message* msg) {
-  upb_StringView data;
-  uintptr_t iter = kUpb_Message_UnknownBegin;
-  return upb_Message_NextUnknown(msg, &data, &iter);
 }
 
 UPB_INLINE bool upb_Message_NextExtension(const struct upb_Message* msg,
@@ -4527,13 +4542,13 @@ UPB_INLINE_IF_NOT_GCC bool UPB_PRIVATE(_upb_MiniTableField_DataEquals)(
 
 UPB_INLINE void UPB_PRIVATE(_upb_MiniTableField_DataClear)(
     const upb_MiniTableField* f, void* val) {
-  const char zero[16] = {0};
+  UPB_ALIGN_AS(8) const char zero[16] = {0};
   UPB_PRIVATE(_upb_MiniTableField_DataCopy)(f, val, zero);
 }
 
 UPB_INLINE bool UPB_PRIVATE(_upb_MiniTableField_DataIsZero)(
     const upb_MiniTableField* f, const void* val) {
-  const char zero[16] = {0};
+  UPB_ALIGN_AS(8) const char zero[16] = {0};
   return UPB_PRIVATE(_upb_MiniTableField_DataEquals)(f, val, zero);
 }
 
@@ -5208,7 +5223,7 @@ UPB_API_INLINE void upb_Message_ClearBaseField(struct upb_Message* msg,
     if (*ptr != upb_MiniTableField_Number(f)) return;
     *ptr = 0;
   }
-  const char zeros[16] = {0};
+  UPB_ALIGN_AS(8) const char zeros[16] = {0};
   UPB_PRIVATE(_upb_MiniTableField_DataCopy)
   (f, UPB_PRIVATE(_upb_Message_MutableDataPtr)(msg, f), zeros);
 }
@@ -5550,10 +5565,24 @@ UPB_NODISCARD UPB_API upb_Message* upb_Message_New(const upb_MiniTable* m,
 #define kUpb_Message_UnknownBegin 0
 #define kUpb_Message_ExtensionBegin 0
 
+// TODO: b/510055656 - Legacy API that works with messages that only have
+// unknown data in upb_StringView format. Use `upb_Message_NextUnknown2` for
+// messages that may have non-canonical extensions.
 UPB_INLINE bool upb_Message_NextUnknown(const upb_Message* msg,
                                         upb_StringView* data, uintptr_t* iter);
 
-UPB_INLINE bool upb_Message_HasUnknown(const upb_Message* msg);
+UPB_INLINE bool upb_Message_HasUnknown(const upb_Message* msg) {
+  const upb_Message_Internal* in = UPB_PRIVATE(_upb_Message_GetInternal)(msg);
+  if (!in) return false;
+  for (size_t i = 0; i < in->size; i++) {
+    upb_TaggedAuxPtr tagged_ptr = in->aux_data[i];
+    if (tagged_ptr.ptr != 0 &&
+        !upb_TaggedAuxPtr_IsSemanticallyKnown(tagged_ptr)) {
+      return true;
+    }
+  }
+  return false;
+}
 
 // Removes a segment of unknown data from the message, advancing to the next
 // segment.  Returns false if the removed segment was at the end of the last
@@ -5581,11 +5610,10 @@ UPB_INLINE bool upb_Message_HasUnknown(const upb_Message* msg);
 //
 // The range given in `data` must be contained inside the most recently
 // returned region.
-typedef enum upb_Message_DeleteUnknownStatus {
-  kUpb_DeleteUnknown_DeletedLast,
-  kUpb_DeleteUnknown_IterUpdated,
-  kUpb_DeleteUnknown_AllocFail,
-} upb_Message_DeleteUnknownStatus;
+//
+// TODO: b/510055656 - Legacy API that works with messages that only have
+// unknown data in upb_StringView format. Use `upb_Message_DeleteUnknown2` for
+// messages that may have non-canonical extensions.
 UPB_NODISCARD upb_Message_DeleteUnknownStatus upb_Message_DeleteUnknown(
     upb_Message* msg, upb_StringView* data, uintptr_t* iter, upb_Arena* arena);
 
@@ -15192,6 +15220,8 @@ const upb_FileDef* upb_FileDef_Dependency(const upb_FileDef* f, int i);
 int upb_FileDef_DependencyCount(const upb_FileDef* f);
 bool upb_FileDef_HasOptions(const upb_FileDef* f);
 UPB_API const char* upb_FileDef_Name(const upb_FileDef* f);
+const char* upb_FileDef_OptionDependency(const upb_FileDef* f, int i);
+int upb_FileDef_OptionDependencyCount(const upb_FileDef* f);
 const google_protobuf_FileOptions* upb_FileDef_Options(const upb_FileDef* f);
 const google_protobuf_FeatureSet* upb_FileDef_ResolvedFeatures(const upb_FileDef* f);
 const char* upb_FileDef_Package(const upb_FileDef* f);
@@ -16229,115 +16259,8 @@ bool _upb_mapsorter_pushexts(_upb_mapsorter* s, const upb_Message_Internal* in,
 
 #endif /* UPB_MESSAGE_INTERNAL_MAP_SORTER_H_ */
 
-#ifndef UPB_MESSAGE_COMPARE_H_
-#define UPB_MESSAGE_COMPARE_H_
-
-#include <stddef.h>
-
-
-// Must be last.
-
-enum {
-  // If set, upb_Message_IsEqual() will attempt to compare unknown fields.
-  // By its very nature this comparison is inexact.
-  kUpb_CompareOption_IncludeUnknownFields = (1 << 0)
-};
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-// Returns true if no known fields or extensions are set in the message.
-UPB_API bool upb_Message_IsEmpty(const upb_Message* msg,
-                                 const upb_MiniTable* m);
-
-UPB_API bool upb_Message_IsEqual(const upb_Message* msg1,
-                                 const upb_Message* msg2,
-                                 const upb_MiniTable* m, int options);
-
-// If |ctype| is a message then |m| must point to its minitable.
-UPB_API_INLINE bool upb_MessageValue_IsEqual(upb_MessageValue val1,
-                                             upb_MessageValue val2,
-                                             upb_CType ctype,
-                                             const upb_MiniTable* m,
-                                             int options) {
-  switch (ctype) {
-    case kUpb_CType_Bool:
-      return val1.bool_val == val2.bool_val;
-
-    case kUpb_CType_Float:
-    case kUpb_CType_Int32:
-    case kUpb_CType_UInt32:
-    case kUpb_CType_Enum:
-      return val1.int32_val == val2.int32_val;
-
-    case kUpb_CType_Double:
-    case kUpb_CType_Int64:
-    case kUpb_CType_UInt64:
-      return val1.int64_val == val2.int64_val;
-
-    case kUpb_CType_String:
-    case kUpb_CType_Bytes:
-      return upb_StringView_IsEqual(val1.str_val, val2.str_val);
-
-    case kUpb_CType_Message:
-      return upb_Message_IsEqual(val1.msg_val, val2.msg_val, m, options);
-
-    default:
-      UPB_UNREACHABLE();
-      return false;
-  }
-}
-
-#ifdef __cplusplus
-} /* extern "C" */
-#endif
-
-
-#endif  // UPB_MESSAGE_COMPARE_H_
-
-#ifndef UPB_MESSAGE_INTERNAL_COMPARE_UNKNOWN_H_
-#define UPB_MESSAGE_INTERNAL_COMPARE_UNKNOWN_H_
-
-#include <stddef.h>
-
-// Must be last.
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-// Returns true if unknown fields from the two messages are equal when sorted
-// and varints are made canonical.
-//
-// This function is discouraged, as the comparison is inherently lossy without
-// schema data:
-//
-//  1. We don't know whether delimited fields are sub-messages. Unknown
-//     sub-messages will therefore not have their fields sorted and varints
-//     canonicalized.
-//  2. We don't know about oneof/non-repeated fields, which should semantically
-//     discard every value except the last.
-
-typedef enum {
-  kUpb_UnknownCompareResult_Equal = 0,
-  kUpb_UnknownCompareResult_NotEqual = 1,
-  kUpb_UnknownCompareResult_OutOfMemory = 2,
-  kUpb_UnknownCompareResult_MaxDepthExceeded = 3,
-} upb_UnknownCompareResult;
-
-upb_UnknownCompareResult UPB_PRIVATE(_upb_Message_UnknownFieldsAreEqual)(
-    const upb_Message* msg1, const upb_Message* msg2, int max_depth);
-
-#ifdef __cplusplus
-} /* extern "C" */
-#endif
-
-
-#endif /* UPB_MESSAGE_INTERNAL_COMPARE_UNKNOWN_H_ */
-
-#ifndef GOOGLE_UPB_UPB_MESSAGE_INTERNAL_ITERATOR_H__
-#define GOOGLE_UPB_UPB_MESSAGE_INTERNAL_ITERATOR_H__
+#ifndef UPB_MESSAGE_UNKNOWN_FIELDS_H_
+#define UPB_MESSAGE_UNKNOWN_FIELDS_H_
 
 #include <stddef.h>
 #include <stdint.h>
@@ -16345,14 +16268,106 @@ upb_UnknownCompareResult UPB_PRIVATE(_upb_Message_UnknownFieldsAreEqual)(
 
 // Must be last.
 
-#define kUpb_BaseField_Begin ((size_t)-1)
-bool UPB_PRIVATE(_upb_Message_NextBaseField)(const upb_Message* msg,
-                                             const upb_MiniTable* m,
-                                             const upb_MiniTableField** out_f,
-                                             upb_MessageValue* out_v,
-                                             uintptr_t* iter);
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-#endif  // GOOGLE_UPB_UPB_MESSAGE_INTERNAL_ITERATOR_H__
+// Support iteration over unknown (upb_MessageUnknown*), including unknown
+// upb_StringView and non-canonical extensions (upb_Extension*).
+UPB_INLINE bool upb_Message_NextUnknown2(const struct upb_Message* msg,
+                                         struct upb_MessageUnknown* data,
+                                         uintptr_t* iter) {
+  const upb_Message_Internal* in = UPB_PRIVATE(_upb_Message_GetInternal)(msg);
+  size_t i = *iter;
+  if (in) {
+    while (i < in->size) {
+      upb_TaggedAuxPtr tagged_ptr = in->aux_data[i++];
+      if (upb_TaggedAuxPtr_IsUnknownStringView(tagged_ptr)) {
+        data->type = kUpb_MessageUnknownType_StringView;
+        data->value.bytes = *upb_TaggedPtrAux_StringViewRepr(tagged_ptr);
+        *iter = i;
+        return true;
+      } else if (upb_TaggedAuxPtr_IsNonCanonicalExtension(tagged_ptr)) {
+        data->type = kUpb_MessageUnknownType_NonCanonicalExtension;
+        data->value.extension =
+            upb_TaggedAuxPtr_NonCanonicalExtension(tagged_ptr);
+        *iter = i;
+        return true;
+      }
+    }
+  }
+  data->type = kUpb_MessageUnknownType_StringView;
+  data->value.bytes.size = 0;
+  data->value.bytes.data = NULL;
+  *iter = i;
+  return false;
+}
+
+typedef enum {
+  kUpb_FindUnknown_Ok,
+  kUpb_FindUnknown_NotPresent,
+  kUpb_FindUnknown_ParseError,
+} upb_FindUnknown_Status;
+
+typedef struct {
+  upb_FindUnknown_Status status;
+  struct upb_MessageUnknown unknown;
+  uintptr_t iter;
+} upb_FindUnknownRet2;
+
+// Finds first occurrence of unknown data (upb_MessageUnknown) by tag id in
+// message, including unknown upb_StringView and non-canonical extensions
+// (upb_Extension*).
+//
+// If multiple matching entries exist for the same field number (e.g. both a
+// raw unknown upb_StringView and a non-canonical extension), this function
+// returns the one encountered first in internal iteration order (which follows
+// the order they were added or parsed).
+//
+// A depth_limit of zero means to just use the upb default depth limit.
+upb_FindUnknownRet2 upb_Message_FindUnknown2(const struct upb_Message* msg,
+                                             uint32_t field_number,
+                                             int depth_limit);
+
+// Removes a segment of unknown data from the message, advancing to the next
+// segment.  Returns false if the removed segment was at the end of the last
+// chunk.
+//
+// This must be done while iterating:
+//
+//   uintptr_t iter = kUpb_Message_UnknownBegin;
+//   upb_MessageUnknown data;
+//   // Iterate chunks
+//   while (upb_Message_NextUnknown2(msg, &data, &iter)) {
+//     // Iterate within a chunk, deleting ranges
+//     while (ShouldDeleteSubSegment(&data)) {
+//       // Data now points to the region to be deleted
+//       switch (upb_Message_DeleteUnknown2(msg, &data, &iter)) {
+//         case kUpb_Message_DeleteUnknown_DeletedLast: return ok;
+//         case kUpb_Message_DeleteUnknown_IterUpdated: break;
+//         // If DeleteUnknown returned kUpb_Message_DeleteUnknown_IterUpdated,
+//         // then data now points to the remaining unknown fields after the
+//         // region that was just deleted.
+//         case kUpb_Message_DeleteUnknown_AllocFail: return err;
+//       }
+//     }
+//   }
+//
+// The range given in `data` must be contained inside the most recently
+// returned region.
+//
+// Support deletion of unknown (upb_MessageUnknown*), including unknown
+// upb_StringView and non-canonical extensions (upb_Extension*).
+UPB_NODISCARD upb_Message_DeleteUnknownStatus upb_Message_DeleteUnknown2(
+    struct upb_Message* msg, struct upb_MessageUnknown* data, uintptr_t* iter,
+    struct upb_Arena* arena);
+
+#ifdef __cplusplus
+} /* extern "C" */
+#endif
+
+
+#endif /* UPB_MESSAGE_UNKNOWN_FIELDS_H_ */
 
 #ifndef UPB_WIRE_EPS_COPY_INPUT_STREAM_H_
 #define UPB_WIRE_EPS_COPY_INPUT_STREAM_H_
@@ -17139,6 +17154,131 @@ UPB_INLINE const char* upb_WireReader_SkipValue(
 
 #endif  // UPB_WIRE_READER_H_
 
+#ifndef UPB_MESSAGE_COMPARE_H_
+#define UPB_MESSAGE_COMPARE_H_
+
+#include <stddef.h>
+
+
+// Must be last.
+
+enum {
+  // If set, upb_Message_IsEqual() will attempt to compare unknown fields.
+  // By its very nature this comparison is inexact.
+  kUpb_CompareOption_IncludeUnknownFields = (1 << 0)
+};
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+// Returns true if no known fields or extensions are set in the message.
+UPB_API bool upb_Message_IsEmpty(const upb_Message* msg,
+                                 const upb_MiniTable* m);
+
+UPB_API bool upb_Message_IsEqual(const upb_Message* msg1,
+                                 const upb_Message* msg2,
+                                 const upb_MiniTable* m, int options);
+
+// If |ctype| is a message then |m| must point to its minitable.
+UPB_API_INLINE bool upb_MessageValue_IsEqual(upb_MessageValue val1,
+                                             upb_MessageValue val2,
+                                             upb_CType ctype,
+                                             const upb_MiniTable* m,
+                                             int options) {
+  switch (ctype) {
+    case kUpb_CType_Bool:
+      return val1.bool_val == val2.bool_val;
+
+    case kUpb_CType_Float:
+    case kUpb_CType_Int32:
+    case kUpb_CType_UInt32:
+    case kUpb_CType_Enum:
+      return val1.int32_val == val2.int32_val;
+
+    case kUpb_CType_Double:
+    case kUpb_CType_Int64:
+    case kUpb_CType_UInt64:
+      return val1.int64_val == val2.int64_val;
+
+    case kUpb_CType_String:
+    case kUpb_CType_Bytes:
+      return upb_StringView_IsEqual(val1.str_val, val2.str_val);
+
+    case kUpb_CType_Message:
+      return upb_Message_IsEqual(val1.msg_val, val2.msg_val, m, options);
+
+    default:
+      UPB_UNREACHABLE();
+      return false;
+  }
+}
+
+#ifdef __cplusplus
+} /* extern "C" */
+#endif
+
+
+#endif  // UPB_MESSAGE_COMPARE_H_
+
+#ifndef UPB_MESSAGE_INTERNAL_COMPARE_UNKNOWN_H_
+#define UPB_MESSAGE_INTERNAL_COMPARE_UNKNOWN_H_
+
+#include <stddef.h>
+
+// Must be last.
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+// Returns true if unknown fields from the two messages are equal when sorted
+// and varints are made canonical.
+//
+// This function is discouraged, as the comparison is inherently lossy without
+// schema data:
+//
+//  1. We don't know whether delimited fields are sub-messages. Unknown
+//     sub-messages will therefore not have their fields sorted and varints
+//     canonicalized.
+//  2. We don't know about oneof/non-repeated fields, which should semantically
+//     discard every value except the last.
+
+typedef enum {
+  kUpb_UnknownCompareResult_Equal = 0,
+  kUpb_UnknownCompareResult_NotEqual = 1,
+  kUpb_UnknownCompareResult_OutOfMemory = 2,
+  kUpb_UnknownCompareResult_MaxDepthExceeded = 3,
+} upb_UnknownCompareResult;
+
+upb_UnknownCompareResult UPB_PRIVATE(_upb_Message_UnknownFieldsAreEqual)(
+    const upb_Message* msg1, const upb_Message* msg2, int max_depth);
+
+#ifdef __cplusplus
+} /* extern "C" */
+#endif
+
+
+#endif /* UPB_MESSAGE_INTERNAL_COMPARE_UNKNOWN_H_ */
+
+#ifndef GOOGLE_UPB_UPB_MESSAGE_INTERNAL_ITERATOR_H__
+#define GOOGLE_UPB_UPB_MESSAGE_INTERNAL_ITERATOR_H__
+
+#include <stddef.h>
+#include <stdint.h>
+
+
+// Must be last.
+
+#define kUpb_BaseField_Begin ((size_t)-1)
+bool UPB_PRIVATE(_upb_Message_NextBaseField)(const upb_Message* msg,
+                                             const upb_MiniTable* m,
+                                             const upb_MiniTableField** out_f,
+                                             upb_MessageValue* out_v,
+                                             uintptr_t* iter);
+
+#endif  // GOOGLE_UPB_UPB_MESSAGE_INTERNAL_ITERATOR_H__
+
 #ifndef UPB_MESSAGE_COPY_H_
 #define UPB_MESSAGE_COPY_H_
 
@@ -17893,7 +18033,7 @@ upb_MessageDef* _upb_MessageDefs_New(
 // features. This is used for feature resolution under Editions.
 // NOLINTBEGIN
 // clang-format off
-#define UPB_INTERNAL_UPB_EDITION_DEFAULTS "\n\031\030\204\007\"\000*\022\010\001\020\002\030\002 \003(\0010\0028\002@\001H\001\n\031\030\347\007\"\000*\022\010\002\020\001\030\001 \002(\0010\0018\002@\001H\001\n\031\030\350\007\"\014\010\001\020\001\030\001 \002(\0010\001*\0068\002@\001H\001\n\031\030\351\007\"\020\010\001\020\001\030\001 \002(\0010\0018\001@\002*\002H\001 \346\007(\351\007"
+#define UPB_INTERNAL_UPB_EDITION_DEFAULTS "\n\031\030\204\007\"\000*\022\010\001\020\002\030\002 \003(\0010\0028\002@\001H\001\n\031\030\347\007\"\000*\022\010\002\020\001\030\001 \002(\0010\0018\002@\001H\001\n\031\030\350\007\"\014\010\001\020\001\030\001 \002(\0010\001*\0068\002@\001H\001\n\031\030\351\007\"\020\010\001\020\001\030\001 \002(\0010\0018\001@\002*\002H\001\n\031\030\352\007\"\022\010\001\020\001\030\001 \002(\0010\0018\003@\004H\002*\000 \346\007(\352\007"
 // clang-format on
 // NOLINTEND
 
@@ -18717,7 +18857,19 @@ char* encode_message(char* ptr, upb_encstate* e, const upb_Message* msg,
                      const upb_MiniTable* m, size_t* size);
 
 #define kUpb_Encoder_EncodeVarint32MaxSize 5
+#define kUpb_Encoder_EncodeVarint64MaxSize 10
+
 static char* upb_Encoder_EncodeVarint32(uint32_t val, char* ptr) {
+  do {
+    uint8_t byte = val & 0x7fU;
+    val >>= 7;
+    if (val) byte |= 0x80U;
+    *(ptr++) = byte;
+  } while (val);
+  return ptr;
+}
+
+static char* upb_Encoder_EncodeVarint64(uint64_t val, char* ptr) {
   do {
     uint8_t byte = val & 0x7fU;
     val >>= 7;
@@ -18736,10 +18888,11 @@ bool _upb_Encoder_AddEnumValueToUnknown(upb_Message* msg,
   // so we just re-encode the tag and value here.
   const uint32_t tag =
       ((uint32_t)field->UPB_PRIVATE(number) << 3) | kUpb_WireType_Varint;
-  char buf[2 * kUpb_Encoder_EncodeVarint32MaxSize];
+  char buf[kUpb_Encoder_EncodeVarint32MaxSize +
+           kUpb_Encoder_EncodeVarint64MaxSize];
   char* end = buf;
   end = upb_Encoder_EncodeVarint32(tag, end);
-  end = upb_Encoder_EncodeVarint32(val, end);
+  end = upb_Encoder_EncodeVarint64(val, end);
 
   return UPB_PRIVATE(_upb_Message_AddUnknown)(msg, buf, end - buf, arena,
                                               kUpb_AddUnknown_Copy);

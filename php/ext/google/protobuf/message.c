@@ -507,6 +507,10 @@ bool Message_InitFromPhp(upb_Message* msg, const upb_MessageDef* m, zval* init,
 
     if (!val) return true;  // Finished iteration.
 
+    if (Z_TYPE(key) != IS_STRING) {
+      convert_to_string(&key);
+    }
+
     if (Z_ISREF_P(val)) {
       ZVAL_DEREF(val);
     }
