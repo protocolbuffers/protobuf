@@ -2136,4 +2136,52 @@ class EncodeDecodeTest extends TestBase
         }
         $this->assertTrue($threwTooLarge, 'recursion_limit > 65535 must throw');
     }
+
+    public function testDecodeTruncatedTagVarintThrows()
+    {
+        $this->expectException(Exception::class);
+
+        $m = new TestMessage();
+        $m->mergeFromString("\x08\x01\x80");
+    }
+
+    public function testDecodeZeroTagThrows()
+    {
+        $this->expectException(Exception::class);
+
+        $m = new TestMessage();
+        $m->mergeFromString("\x00");
+    }
+
+    public function testDecodeOverlongTagVarintThrows()
+    {
+        $this->expectException(Exception::class);
+
+        $m = new TestMessage();
+        $m->mergeFromString("\x88\x80\x80\x80\x80\x80\x80\x80\x00\xd2\x09");
+    }
+
+    public function testDecodeTagVarintAboveUint32MaxThrows()
+    {
+        $this->expectException(Exception::class);
+
+        $m = new TestMessage();
+        $m->mergeFromString("\x88\x80\x80\x80\x40\xd2\x09");
+    }
+
+    public function testDecodeTagVarintMoreThanTenBytesThrows()
+    {
+        $this->expectException(Exception::class);
+
+        $m = new TestMessage();
+        $m->mergeFromString(
+            "\x88\x80\x80\x80\x80\x80\x80\x80\x80\x80\x80\x00\xd2\x09");
+    }
+
+    public function testDecodeOverlongVarintValueIsAccepted()
+    {
+        $m = new TestMessage();
+        $m->mergeFromString("\x08\x81\x80\x80\x80\x80\x80\x80\x80\x80\x00");
+        $this->assertSame(1, $m->getOptionalInt32());
+    }
 }
