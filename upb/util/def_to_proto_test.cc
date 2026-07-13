@@ -345,4 +345,122 @@ TEST(FuzzTest, OptionDependency) {
       )pb"));
 }
 
+TEST(FuzzTest, FloatDefaultValueFormattingScientificThreshold) {
+  // 779999744.0f (>= 1e7) tests scientific notation threshold formatting.
+  // Standard printf("%.9g") produces "779999744", while C++ SimpleFtoa produces
+  // "7.7999974e+08".
+  RoundTripDescriptor(ParseTextProtoOrDie(R"pb(
+    file {
+      name: "test.proto"
+      message_type {
+        name: "M"
+        field {
+          name: "f"
+          number: 1
+          label: LABEL_OPTIONAL
+          type: TYPE_FLOAT
+          default_value: "779999744"
+        }
+      }
+    }
+  )pb"));
+}
+
+TEST(FuzzTest, FloatDefaultValueFormattingExponentPrecision) {
+  // 7.77777765e+32f tests shortest round-trip digit precision.
+  // Standard printf("%.9g") produces "7.77777765e+32", while C++ SimpleFtoa
+  // produces "7.777778e+32".
+  RoundTripDescriptor(ParseTextProtoOrDie(R"pb(
+    file {
+      name: "test.proto"
+      message_type {
+        name: "M"
+        field {
+          name: "f"
+          number: 1
+          label: LABEL_OPTIONAL
+          type: TYPE_FLOAT
+          default_value: "7.7777776e+32"
+        }
+      }
+    }
+  )pb"));
+}
+
+TEST(FuzzTest, InvalidMapEntryValueRepeated) {
+  RoundTripDescriptor(ParseTextProtoOrDie(R"pb(
+    file {
+      name: "test.proto"
+      message_type {
+        name: "MapEntry"
+        options { map_entry: true }
+        field { name: "key" number: 1 label: LABEL_OPTIONAL type: TYPE_STRING }
+        field { name: "value" number: 2 label: LABEL_REPEATED type: TYPE_INT32 }
+      }
+    }
+  )pb"));
+}
+
+TEST(FuzzTest, InvalidMapEntryKeyRepeated) {
+  RoundTripDescriptor(ParseTextProtoOrDie(R"pb(
+    file {
+      name: "test.proto"
+      message_type {
+        name: "MapEntry"
+        options { map_entry: true }
+        field { name: "key" number: 1 label: LABEL_REPEATED type: TYPE_STRING }
+        field { name: "value" number: 2 label: LABEL_OPTIONAL type: TYPE_INT32 }
+      }
+    }
+  )pb"));
+}
+
+TEST(FuzzTest, InvalidMapEntryFieldCount) {
+  RoundTripDescriptor(ParseTextProtoOrDie(R"pb(
+    file {
+      name: "test.proto"
+      message_type {
+        name: "MapEntry"
+        options { map_entry: true }
+        field { name: "key" number: 1 label: LABEL_OPTIONAL type: TYPE_STRING }
+      }
+    }
+  )pb"));
+}
+
+TEST(FuzzTest, InvalidMapEntryFieldNumbers) {
+  RoundTripDescriptor(ParseTextProtoOrDie(R"pb(
+    file {
+      name: "test.proto"
+      message_type {
+        name: "MapEntry"
+        options { map_entry: true }
+        field { name: "key" number: 3 label: LABEL_OPTIONAL type: TYPE_STRING }
+        field { name: "value" number: 4 label: LABEL_OPTIONAL type: TYPE_INT32 }
+      }
+    }
+  )pb"));
+}
+
+TEST(FuzzTest, InvalidMapEntryFieldInOneof) {
+  RoundTripDescriptor(ParseTextProtoOrDie(R"pb(
+    file {
+      name: "test.proto"
+      message_type {
+        name: "MapEntry"
+        options { map_entry: true }
+        field {
+          name: "key"
+          number: 1
+          label: LABEL_OPTIONAL
+          type: TYPE_STRING
+          oneof_index: 0
+        }
+        field { name: "value" number: 2 label: LABEL_OPTIONAL type: TYPE_INT32 }
+        oneof_decl { name: "foo" }
+      }
+    }
+  )pb"));
+}
+
 }  // namespace upb_test
