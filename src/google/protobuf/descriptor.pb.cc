@@ -7865,6 +7865,20 @@ Edition_descriptor() {
   ::google::protobuf::internal::AssignDescriptors(&descriptor_table_google_2fprotobuf_2fdescriptor_2eproto);
   return file_level_enum_descriptors_google_2fprotobuf_2fdescriptor_2eproto[19];
 }
+const ::google::protobuf::internal::ChunkInfo Edition_chunks_[] = {
+    {0, 2, 0},
+    {900, 900, 4294966399},
+    {998, 1002, 4294966302},
+    {9999, 9999, 4294957306},
+    {99997, 99999, 4294867309},
+    {2147483647, 2147483647, 2147483662},
+}; PROTOBUF_CONSTINIT
+    ::google::protobuf::internal::ChunkyEnumCacheInfo Edition_chunky_info = {
+        {},
+        6,
+        14,
+        Edition_chunks_,
+        &Edition_descriptor};
 PROTOBUF_CONSTINIT const uint32_t Edition_internal_data_[] = {
     196608u, 720896u, 99997u, 1000u, 99999u, 998u, 1002u, 99998u, 2147483647u, 900u, 999u, 1001u, 9999u, };
 [[nodiscard]] const ::google::protobuf::EnumDescriptor* PROTOBUF_NONNULL

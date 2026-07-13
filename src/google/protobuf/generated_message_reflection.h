@@ -26,6 +26,7 @@
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/generated_enum_reflection.h"
 #include "google/protobuf/has_bits.h"
+#include "google/protobuf/message_lite.h"
 #include "google/protobuf/unknown_field_set.h"
 
 // Must be included last.
@@ -352,6 +353,45 @@ const std::string& NameOfDenseEnum(int v) {
     }
   }
   return NameOfDenseEnumSlow(v, &deci);
+}
+
+struct ChunkInfo {
+  int min_val;
+  int max_val;
+  uint32_t adjusted_offset;
+};
+
+struct ChunkyEnumCacheInfo {
+  mutable std::atomic<const std::string**> cache;
+  int num_chunks;
+  int total_size;
+  const ChunkInfo* chunks;
+  const EnumDescriptor* (*descriptor_fn)();
+};
+
+PROTOBUF_EXPORT const std::string& NameOfChunkyEnumSlow(
+    int v, const ChunkyEnumCacheInfo* info);
+
+template <const ChunkyEnumCacheInfo* info>
+inline const std::string& NameOfChunkyEnum(int v) {
+  const std::string** cache = info->cache.load(std::memory_order_acquire);
+  if (ABSL_PREDICT_TRUE(cache != nullptr)) {
+    for (int i = 0; i < info->num_chunks; ++i) {
+      const auto& chunk = info->chunks[i];
+      if (v >= chunk.min_val && v <= chunk.max_val) {
+        return *cache[static_cast<uint32_t>(v) + chunk.adjusted_offset];
+      }
+      if (chunk.min_val > v) {
+        // Chunks are sorted. If we've reached a chunk with a min_val larger
+        // than v, it fells between chunks and is not a valid enum.
+        return GetEmptyStringAlreadyInited();
+      }
+    }
+    // If we've reached the end of the chunks without finding a match, it's not
+    // a valid enum.
+    return GetEmptyStringAlreadyInited();
+  }
+  return NameOfChunkyEnumSlow(v, info);
 }
 
 // Returns whether this type of field is stored in the split struct as a raw

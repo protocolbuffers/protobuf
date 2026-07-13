@@ -242,10 +242,66 @@ PROTOBUF_NOINLINE const std::string& NameOfDenseEnumSlow(
     return *new_cache[v - deci->min_val];
   } else {
     // In the time it took to create our enum cache, another thread also
-    //  created one, and put it into deci->cache.  So delete ours, and
+    // created one, and put it into deci->cache.  So delete ours, and
     // use theirs instead.
     delete[] new_cache;
     return *old_cache[v - deci->min_val];
+  }
+}
+
+const std::string** MakeChunkyEnumCache(const ChunkyEnumCacheInfo* info) {
+  auto* str_ptrs = new const std::string*[info->total_size]();
+  const EnumDescriptor* desc = info->descriptor_fn();
+  const int count = desc->value_count();
+  for (int i = 0; i < count; ++i) {
+    const int num = desc->value(i)->number();
+    for (int j = 0; j < info->num_chunks; ++j) {
+      const auto& chunk = info->chunks[j];
+      if (num >= chunk.min_val && num <= chunk.max_val) {
+        size_t idx = static_cast<uint32_t>(num) + chunk.adjusted_offset;
+        // Don't overwrite an existing entry; in case of duplication, the first
+        // one wins.
+        if (str_ptrs[idx] == nullptr) {
+          str_ptrs[idx] = &internal::NameOfEnumAsString(desc->value(i));
+        }
+        break;
+      }
+    }
+  }
+  // Change any unfilled entries to point to the empty string.
+  for (int i = 0; i < info->total_size; ++i) {
+    if (str_ptrs[i] == nullptr) str_ptrs[i] = &GetEmptyStringAlreadyInited();
+  }
+  return str_ptrs;
+}
+
+PROTOBUF_NOINLINE const std::string& NameOfChunkyEnumSlow(
+    int v, const ChunkyEnumCacheInfo* info) {
+  int chunk_idx = -1;
+  for (int i = 0; i < info->num_chunks; ++i) {
+    if (v >= info->chunks[i].min_val && v <= info->chunks[i].max_val) {
+      chunk_idx = i;
+      break;
+    }
+  }
+  if (chunk_idx == -1) return GetEmptyStringAlreadyInited();
+
+  const std::string** new_cache = MakeChunkyEnumCache(info);
+  const std::string** old_cache = nullptr;
+
+  if (info->cache.compare_exchange_strong(old_cache, new_cache,
+                                          std::memory_order_release,
+                                          std::memory_order_acquire)) {
+    // We successfully stored our new cache, and the old value was nullptr.
+    return *new_cache[static_cast<uint32_t>(v) +
+                      info->chunks[chunk_idx].adjusted_offset];
+  } else {
+    // In the time it took to create our enum cache, another thread also
+    // created one, and put it into info->cache.  So delete ours, and
+    // use theirs instead.
+    delete[] new_cache;
+    return *old_cache[static_cast<uint32_t>(v) +
+                      info->chunks[chunk_idx].adjusted_offset];
   }
 }
 

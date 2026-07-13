@@ -1206,7 +1206,13 @@ template <typename T>
   static_assert(::std::is_same<T, Edition>::value ||
                     ::std::is_integral<T>::value,
                 "Incorrect type passed to Edition_Name().");
-  return ::google::protobuf::internal::NameOfEnum(Edition_descriptor(), value);
+  return Edition_Name(static_cast<Edition>(value));
+}
+extern ::google::protobuf::internal::ChunkyEnumCacheInfo Edition_chunky_info;
+template <>
+[[nodiscard]] inline const ::std::string& Edition_Name(Edition value) {
+  return ::google::protobuf::internal::NameOfChunkyEnum<&Edition_chunky_info>(
+      static_cast<int>(value));
 }
 [[nodiscard]] inline bool Edition_Parse(
     ::absl::string_view name, Edition* PROTOBUF_NONNULL value) {

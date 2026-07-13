@@ -21,7 +21,6 @@
 
 #include "absl/algorithm/container.h"
 #include "absl/container/btree_map.h"
-#include "absl/container/btree_set.h"
 #include "absl/container/flat_hash_map.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
@@ -31,6 +30,7 @@
 #include "google/protobuf/compiler/cpp/options.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/generated_enum_util.h"
+#include "google/protobuf/generated_message_reflection.h"
 
 namespace google {
 namespace protobuf {
@@ -108,8 +108,9 @@ EnumGenerator::EnumGenerator(const EnumDescriptor* descriptor,
   size_t values_range = static_cast<size_t>(limits_.max->number()) -
                         static_cast<size_t>(limits_.min->number());
   size_t total_values = static_cast<size_t>(enum_->value_count());
-  should_cache_ = has_reflection_ &&
-                  (values_range < 16u || values_range < total_values * 2u);
+  should_use_dense_cache_ =
+      has_reflection_ &&
+      (values_range < 16u || values_range < total_values * 2u);
 
   sorted_unique_values_.reserve(enum_->value_count());
   for (int i = 0; i < enum_->value_count(); ++i) {
@@ -120,6 +121,46 @@ EnumGenerator::EnumGenerator(const EnumDescriptor* descriptor,
   sorted_unique_values_.erase(
       std::unique(sorted_unique_values_.begin(), sorted_unique_values_.end()),
       sorted_unique_values_.end());
+
+  // Chunking analysis
+  if (has_reflection_ && !should_use_dense_cache_ &&
+      !sorted_unique_values_.empty()) {
+    std::vector<internal::ChunkInfo> chunks;
+    int32_t current_min = sorted_unique_values_[0];
+    int32_t current_max = sorted_unique_values_[0];
+    uint32_t total_size = 0;
+    uint32_t current_chunk_size = 0;
+    auto add_chunk = [&](int min_val, int max_val) {
+      chunks.push_back(
+          {min_val, max_val,
+           static_cast<uint32_t>(total_size) - static_cast<uint32_t>(min_val)});
+      // Inclusive size needed for [min, max].
+      total_size += (max_val - min_val + 1);
+      current_chunk_size = 0;
+    };
+    for (size_t i = 1; i < sorted_unique_values_.size(); ++i) {
+      int32_t val = sorted_unique_values_[i];
+      uint32_t maybe_chunk_width = val - current_min;
+      current_chunk_size++;
+      // If adding val to the current chunk would make the chunk too wide or
+      // sparse, start a new chunk based on the previous value - val will be the
+      // start of the next chunk. Threshold for each chunk is the same as for
+      // the single dense cache, above.
+      if (maybe_chunk_width > 16u &&
+          maybe_chunk_width > current_chunk_size * 2u) {
+        add_chunk(current_min, current_max);
+        current_min = val;
+      }
+      current_max = val;
+    }
+    add_chunk(current_min, current_max);
+
+    if (chunks.size() <= 8 && total_size <= 1024) {
+      should_use_chunky_cache_ = true;
+      chunky_chunks_ = std::move(chunks);
+      chunky_total_size_ = total_size;
+    }
+  }
 }
 
 void EnumGenerator::GenerateDefinition(io::Printer* p) {
@@ -234,7 +275,7 @@ void EnumGenerator::GenerateDefinition(io::Printer* p) {
     )cc");
   };
 
-  if (should_cache_ || !has_reflection_) {
+  if (should_use_dense_cache_ || should_use_chunky_cache_ || !has_reflection_) {
     p->Emit({{"static_assert", write_assert}}, R"cc(
       template <typename T>
       $nodiscard $$return_type$ $Msg_Enum$_Name(T value) {
@@ -242,7 +283,7 @@ void EnumGenerator::GenerateDefinition(io::Printer* p) {
         return $Msg_Enum$_Name(static_cast<$Msg_Enum$>(value));
       }
     )cc");
-    if (should_cache_) {
+    if (should_use_dense_cache_) {
       // Using the NameOfEnum routine can be slow, so we create a small
       // cache of pointers to the std::string objects that reflection
       // stores internally.  This cache is a simple contiguous array of
@@ -251,6 +292,15 @@ void EnumGenerator::GenerateDefinition(io::Printer* p) {
         template <>
         $nodiscard $inline $return_type$ $Msg_Enum$_Name($Msg_Enum$ value) {
           return $pbi$::NameOfDenseEnum<$Msg_Enum$_descriptor, $kMin$, $kMax$>(
+              static_cast<int>(value));
+        }
+      )cc");
+    } else if (should_use_chunky_cache_) {
+      p->Emit(R"cc(
+        extern $pbi$::ChunkyEnumCacheInfo $Msg_Enum$_chunky_info;
+        template <>
+        $nodiscard $inline $return_type$ $Msg_Enum$_Name($Msg_Enum$ value) {
+          return $pbi$::NameOfChunkyEnum<&$Msg_Enum$_chunky_info>(
               static_cast<int>(value));
         }
       )cc");
@@ -439,6 +489,34 @@ void EnumGenerator::GenerateMethods(int idx, io::Printer* p) {
         return $file_level_enum_descriptors$[$idx$];
       }
     )cc");
+
+    if (should_use_chunky_cache_) {
+      p->Emit(
+          {
+              {"chunks_decl",
+               [&] {
+                 p->Emit("const $pbi$::ChunkInfo $Msg_Enum$_chunks_[] = {\n");
+                 for (const auto& chunk : chunky_chunks_) {
+                   p->Emit({{"min", chunk.min_val},
+                            {"max", chunk.max_val},
+                            {"offset", chunk.adjusted_offset}},
+                           "    {$min$, $max$, $offset$},\n");
+                 }
+                 p->Emit("};");
+               }},
+              {"num_chunks", static_cast<int>(chunky_chunks_.size())},
+              {"total_size", chunky_total_size_},
+          },
+          R"cc(
+            $chunks_decl$ PROTOBUF_CONSTINIT
+                $pbi$::ChunkyEnumCacheInfo $Msg_Enum$_chunky_info = {
+                    {},
+                    $num_chunks$,
+                    $total_size$,
+                    $Msg_Enum$_chunks_,
+                    &$Msg_Enum$_descriptor};
+          )cc");
+    }
   }
 
   // Always generate the data array, even on the simple cases because someone

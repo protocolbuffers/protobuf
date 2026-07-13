@@ -12,10 +12,12 @@
 #ifndef GOOGLE_PROTOBUF_COMPILER_CPP_ENUM_H__
 #define GOOGLE_PROTOBUF_COMPILER_CPP_ENUM_H__
 
-#include <string>
+#include <cstdint>
+#include <vector>
 
 #include "google/protobuf/compiler/cpp/options.h"
 #include "google/protobuf/descriptor.h"
+#include "google/protobuf/generated_message_reflection.h"
 #include "google/protobuf/io/printer.h"
 
 namespace google {
@@ -72,9 +74,12 @@ class EnumGenerator {
   std::vector<int> sorted_unique_values_;
 
   bool generate_array_size_;
-  bool should_cache_;
+  bool should_use_dense_cache_ = false;
+  bool should_use_chunky_cache_ = false;
   bool has_reflection_;
   ValueLimits limits_;
+  std::vector<internal::ChunkInfo> chunky_chunks_;
+  uint32_t chunky_total_size_ = 0;
 };
 
 }  // namespace cpp
