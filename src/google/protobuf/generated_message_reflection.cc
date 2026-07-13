@@ -47,7 +47,6 @@
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/descriptor_lite.h"
 #include "google/protobuf/extension_set.h"
-#include "google/protobuf/generated_enum_util.h"
 #include "google/protobuf/generated_message_tctable_decl.h"
 #include "google/protobuf/generated_message_tctable_gen.h"
 #include "google/protobuf/generated_message_tctable_impl.h"
@@ -241,6 +240,40 @@ PROTOBUF_NOINLINE const std::string& NameOfDenseEnumSlow(
     deci->cache.store(new_cache, std::memory_order_release);
   });
   return *deci->cache.load(std::memory_order_acquire)[v - deci->min_val];
+}
+
+const std::string** InitializeFastEnumCache(FastEnumCacheInfo* info) {
+  absl::call_once(info->loaded, [info]() {
+    const ChunkInfo& last_chunk = info->chunks.back();
+    const uint32_t total_size =
+        last_chunk.offset +
+        static_cast<uint32_t>(last_chunk.max_val - last_chunk.min_val) + 1;
+    const std::string** str_ptrs = new const std::string*[total_size];
+    std::fill_n(str_ptrs, total_size, &GetEmptyStringAlreadyInited());
+    const EnumDescriptor* desc = info->descriptor_fn();
+    const int count = desc->value_count();
+    // Iterate in reverse order to ensure that if there are aliases, the first
+    // one wins.
+    for (int i = count - 1; i >= 0; --i) {
+      const int num = desc->value(i)->number();
+      for (const ChunkInfo& chunk : info->chunks) {
+        if (num >= chunk.min_val) {
+          if (num <= chunk.max_val) {
+            str_ptrs[chunk.offset +
+                     static_cast<uint32_t>(num - chunk.min_val)] =
+                &internal::NameOfEnumAsString(desc->value(i));
+            break;
+          }
+        } else {
+          break;
+        }
+      }
+    }
+    // Atomically publish the cache. Doing this inside the call_once ensures
+    // that no thread sees the uninitialized or partially initialized cache.
+    info->flat_cache.store(str_ptrs, std::memory_order_release);
+  });
+  return info->flat_cache.load(std::memory_order_acquire);
 }
 
 bool IsMatchingCType(const FieldDescriptor* field, int ctype) {
