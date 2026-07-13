@@ -557,9 +557,7 @@ public abstract class GeneratedMessageLite<
     }
 
     @Override
-    public BuilderType mergeFrom(
-        com.google.protobuf.CodedInputStream input,
-        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+    public BuilderType mergeFrom(CodedInputStream input, ExtensionRegistryLite extensionRegistry)
         throws IOException {
       copyOnWrite();
       try {
@@ -598,16 +596,16 @@ public abstract class GeneratedMessageLite<
       extends MessageLiteOrBuilder {
 
     /** Check if a singular extension is present. */
-    <Type> boolean hasExtension(ExtensionLite<MessageType, Type> extension);
+    <T> boolean hasExtension(ExtensionLite<MessageType, T> extension);
 
     /** Get the number of elements in a repeated extension. */
-    <Type> int getExtensionCount(ExtensionLite<MessageType, List<Type>> extension);
+    <T> int getExtensionCount(ExtensionLite<MessageType, List<T>> extension);
 
     /** Get the value of an extension. */
-    <Type> Type getExtension(ExtensionLite<MessageType, Type> extension);
+    <T> T getExtension(ExtensionLite<MessageType, T> extension);
 
     /** Get one element of a repeated extension. */
-    <Type> Type getExtension(ExtensionLite<MessageType, List<Type>> extension, int index);
+    <T> T getExtension(ExtensionLite<MessageType, List<T>> extension, int index);
   }
 
   /** Lite equivalent of {@link GeneratedMessage.ExtendableMessage}. */
@@ -918,7 +916,7 @@ public abstract class GeneratedMessageLite<
 
     /** Check if a singular extension is present. */
     @Override
-    public final <Type> boolean hasExtension(final ExtensionLite<MessageType, Type> extension) {
+    public final <T> boolean hasExtension(final ExtensionLite<MessageType, Type> extension) {
       GeneratedExtension<MessageType, Type> extensionLite = checkIsLite(extension);
 
       verifyExtensionContainingType(extensionLite);
