@@ -4542,13 +4542,13 @@ UPB_INLINE_IF_NOT_GCC bool UPB_PRIVATE(_upb_MiniTableField_DataEquals)(
 
 UPB_INLINE void UPB_PRIVATE(_upb_MiniTableField_DataClear)(
     const upb_MiniTableField* f, void* val) {
-  const char zero[16] = {0};
+  UPB_ALIGN_AS(8) const char zero[16] = {0};
   UPB_PRIVATE(_upb_MiniTableField_DataCopy)(f, val, zero);
 }
 
 UPB_INLINE bool UPB_PRIVATE(_upb_MiniTableField_DataIsZero)(
     const upb_MiniTableField* f, const void* val) {
-  const char zero[16] = {0};
+  UPB_ALIGN_AS(8) const char zero[16] = {0};
   return UPB_PRIVATE(_upb_MiniTableField_DataEquals)(f, val, zero);
 }
 
@@ -5223,7 +5223,7 @@ UPB_API_INLINE void upb_Message_ClearBaseField(struct upb_Message* msg,
     if (*ptr != upb_MiniTableField_Number(f)) return;
     *ptr = 0;
   }
-  const char zeros[16] = {0};
+  UPB_ALIGN_AS(8) const char zeros[16] = {0};
   UPB_PRIVATE(_upb_MiniTableField_DataCopy)
   (f, UPB_PRIVATE(_upb_Message_MutableDataPtr)(msg, f), zeros);
 }
