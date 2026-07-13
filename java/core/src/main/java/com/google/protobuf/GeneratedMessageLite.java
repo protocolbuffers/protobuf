@@ -374,7 +374,11 @@ public abstract class GeneratedMessageLite<
     return (Parser<T>) parser;
   }
 
-  @SuppressWarnings({"unchecked", "rawtypes", "ImpossibleNullComparison"}) // fallback can be null during bootstrap/Samsung workaround.
+  @SuppressWarnings({
+    "unchecked",
+    "rawtypes",
+    "ImpossibleNullComparison"
+  }) // fallback can be null during bootstrap/Samsung workaround.
   @DoNotInline
   static <T extends GeneratedMessageLite<?, ?>> T getDefaultInstance(Class<T> clazz) {
     Parser<?> parser = parserMap.get(clazz);
@@ -557,9 +561,7 @@ public abstract class GeneratedMessageLite<
     }
 
     @Override
-    public BuilderType mergeFrom(
-        com.google.protobuf.CodedInputStream input,
-        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+    public BuilderType mergeFrom(CodedInputStream input, ExtensionRegistryLite extensionRegistry)
         throws IOException {
       copyOnWrite();
       try {
