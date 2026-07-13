@@ -574,6 +574,31 @@ static uint64_t _upb_MessageDef_Modifiers(const upb_MessageDef* m) {
   return out;
 }
 
+static bool _upb_MessageDef_IsValidMapEntry(const upb_MessageDef* m) {
+  if (m->field_count != 2 || m->real_oneof_count != 0) return false;
+
+  const upb_FieldDef* key_field = upb_MessageDef_Field(m, 0);
+  const upb_FieldDef* val_field = upb_MessageDef_Field(m, 1);
+  if (key_field == NULL || val_field == NULL) return false;
+
+  if (upb_FieldDef_Number(key_field) != 1 ||
+      upb_FieldDef_Number(val_field) != 2) {
+    return false;
+  }
+
+  if (upb_FieldDef_IsRepeated(key_field) ||
+      upb_FieldDef_IsRepeated(val_field)) {
+    return false;
+  }
+
+  if (upb_FieldDef_ContainingOneof(key_field) != NULL ||
+      upb_FieldDef_ContainingOneof(val_field) != NULL) {
+    return false;
+  }
+
+  return true;
+}
+
 static bool _upb_MessageDef_EncodeMap(upb_DescState* s, const upb_MessageDef* m,
                                       upb_Arena* a) {
   if (m->field_count != 2) return false;
@@ -645,7 +670,7 @@ bool upb_MessageDef_MiniDescriptorEncode(const upb_MessageDef* m, upb_Arena* a,
 
   if (!_upb_DescState_Grow(&s, a)) return false;
 
-  if (upb_MessageDef_IsMapEntry(m)) {
+  if (upb_MessageDef_IsMapEntry(m) && _upb_MessageDef_IsValidMapEntry(m)) {
     if (!_upb_MessageDef_EncodeMap(&s, m, a)) return false;
   } else if (google_protobuf_MessageOptions_message_set_wire_format(m->opts)) {
     if (!_upb_MessageDef_EncodeMessageSet(&s, m, a)) return false;

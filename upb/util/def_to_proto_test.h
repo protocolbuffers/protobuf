@@ -71,18 +71,6 @@ static void AddFile(google::protobuf::FileDescriptorProto& file, upb::DefPool* p
     ASSERT_NE(proto, nullptr);
     upb::FileDefPtr file_def = pool->AddFile(proto, &status);
 
-    // Ideally we could assert that file_def is present here.  After all, any
-    // descriptor accepted by C++ should be by definition valid.  However C++
-    // performs some of its validation at the .proto file parser level instead
-    // of when validating descriptors.  As as result, C++ will accept some
-    // unreasonable descriptors like:
-    //   file { name: "" package: "0" }
-    //
-    // There is no .proto file that will produce this descriptor, but
-    // BuildFile() accepts it.  We should probably clean up these cases so C++
-    // will reject them too.
-    if (!file_def) return;
-
     ASSERT_TRUE(status.ok()) << status.error_message();
     google_protobuf_FileDescriptorProto* upb_proto =
         upb_FileDef_ToProto(file_def.ptr(), arena.ptr());

@@ -345,4 +345,38 @@ TEST(FuzzTest, OptionDependency) {
       )pb"));
 }
 
+TEST(FuzzTest, FusionInvocation720da658Regression) {
+  RoundTripDescriptor(ParseTextProtoOrDie(R"pb(
+    file { name: "" package: ""
+           enum_type {
+             name: "_"
+             value { name: "W" number: 2147483647
+                     options {
+                       deprecated: true
+                       features {
+                         enum_type: OPEN
+                         utf8_validation: UNVERIFIED
+                         json_format: LEGACY_BEST_EFFORT
+                         enforce_naming_style: STYLE2026
+                         default_symbol_visibility: LOCAL_ALL
+                         [pb.cpp] { enum_name_uses_string_view: false }
+                       }
+                     }
+  )pb"));
+}
+
+TEST(FuzzTest, InvalidMapEntryValueRepeated) {
+  RoundTripDescriptor(ParseTextProtoOrDie(R"pb(
+    file {
+      name: "test.proto"
+      message_type {
+        name: "MapEntry"
+        options { map_entry: true }
+        field { name: "key" number: 1 label: LABEL_OPTIONAL type: TYPE_STRING }
+        field { name: "value" number: 2 label: LABEL_REPEATED type: TYPE_INT32 }
+      }
+    }
+  )pb"));
+}
+
 }  // namespace upb_test

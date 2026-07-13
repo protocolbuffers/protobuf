@@ -153,14 +153,14 @@ UPB_INLINE void _upb_DefBuilder_CheckIdentFull(upb_DefBuilder* ctx,
     const char c = name.data[i];
     const char d = c | 0x20;  // force lowercase
     const bool is_alpha = (('a' <= d) & (d <= 'z')) | (c == '_');
-    const bool is_numer = ('0' <= c) & (c <= '9') & !start;
+    const bool is_numer = ('0' <= c) & (c <= '9');
     const bool is_dot = (c == '.') & !start;
 
     good &= is_alpha | is_numer | is_dot;
-    start = is_dot;
+    start = (c == '.');
   }
 
-  if (!good) _upb_DefBuilder_CheckIdentSlow(ctx, name, true);
+  if (!good || start) _upb_DefBuilder_CheckIdentSlow(ctx, name, true);
 }
 
 UPB_INLINE bool _upb_DefBuilder_IsLegacyEdition(google_protobuf_Edition edition) {
