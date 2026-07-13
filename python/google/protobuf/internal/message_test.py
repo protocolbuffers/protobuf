@@ -531,16 +531,85 @@ class MessageTest(unittest.TestCase):
     self.assertEqual([1, 2, 3, 4], msg.payload.repeated_int32)
 
   def testRepeatedFieldSelfSliceAssignment(self, message_module):
-      msg = message_module.NestedTestAllTypes()
-      msg.payload.repeated_int32[:] = [1, 2, 3, 4]
-      msg.payload.repeated_int32[:] = msg.payload.repeated_int32
+    msg = message_module.NestedTestAllTypes()
+    for field_name in [
+        'repeated_int32',
+        'repeated_int64',
+        'repeated_uint32',
+        'repeated_uint64',
+        'repeated_sint32',
+        'repeated_sint64',
+        'repeated_fixed32',
+        'repeated_fixed64',
+        'repeated_sfixed32',
+        'repeated_sfixed64',
+    ]:
+      field = getattr(msg.payload, field_name)
+      field[:] = [1, 2, 3, 4]
+      field[:] = field
+      self.assertEqual([1, 2, 3, 4], field)
+      field[:] = field[1:-1]
+      self.assertEqual([2, 3], field)
+    for field_name in [
+        'repeated_float',
+        'repeated_double',
+    ]:
+      field = getattr(msg.payload, field_name)
+      field[:] = [1.25, 2.25, 3.25, 4.25]
+      field[:] = field
+      self.assertEqual([1.25, 2.25, 3.25, 4.25], field)
+
+  def testRepeatedFieldExtendWithPartialSuccess(self, message_module):
+    msg = message_module.NestedTestAllTypes()
+    msg.payload.repeated_int32[:] = [1, 2, 3, 4]
+    with self.assertRaises(ValueError):
+      msg.payload.repeated_int32.extend([4, 5, 6, 2**34])
+    if api_implementation.Type() == 'cpp':
+      self.assertEqual([1, 2, 3, 4, 4, 5, 6], msg.payload.repeated_int32)
+    else:
       self.assertEqual([1, 2, 3, 4], msg.payload.repeated_int32)
 
+  def testRepeatedFieldSubSliceAssignment(self, message_module):
+    msg = message_module.NestedTestAllTypes()
+    msg.payload.repeated_int32[:] = range(1, 6)
+    msg.payload.repeated_int32[1:3] = msg.payload.repeated_int32[2:4]
+    self.assertEqual([1, 3, 4, 4, 5], msg.payload.repeated_int32)
+    msg.payload.repeated_int32.extend(msg.payload.repeated_int32[1:3])
+    self.assertEqual([1, 3, 4, 4, 5, 3, 4], msg.payload.repeated_int32)
+
+  def testRepeatedFieldDifferentTypeSliceAssignment(self, message_module):
+    msg1 = message_module.NestedTestAllTypes()
+    msg2 = message_module.NestedTestAllTypes()
+    # int64 -> int32
+    msg2.payload.repeated_int64[:] = [1, 2, 3, 4]
+    msg1.payload.repeated_int32[:] = msg2.payload.repeated_int64
+    self.assertEqual([1, 2, 3, 4], msg1.payload.repeated_int32)
+    # int32 -> int64
+    msg2.payload.repeated_int32[:] = [1, 2, 3, 4]
+    msg1.payload.repeated_int64[:] = msg2.payload.repeated_int32
+    self.assertEqual([1, 2, 3, 4], msg1.payload.repeated_int64)
+    # int64 overflow -> int32
+    msg2.payload.repeated_int64[:] = [1, 2, 3, 2**35]
+    with self.assertRaises((ValueError, OverflowError, TypeError)):
+      msg1.payload.repeated_int32[:] = msg2.payload.repeated_int64
+    # double -> float
+    msg2.payload.repeated_double[:] = [1.5, 2.5, 3.5]
+    msg1.payload.repeated_float[:] = msg2.payload.repeated_double
+    self.assertEqual([1.5, 2.5, 3.5], msg1.payload.repeated_float)
+    # float -> double
+    msg2.payload.repeated_float[:] = [1.5, 2.5, 3.5]
+    msg1.payload.repeated_double[:] = msg2.payload.repeated_float
+    self.assertEqual([1.5, 2.5, 3.5], msg1.payload.repeated_double)
+
+    msg2.payload.repeated_double[:] = [1.5, 2.5, 1e300]
+    msg1.payload.repeated_float[:] = msg2.payload.repeated_double
+    self.assertEqual([1.5, 2.5, float('inf')], msg1.payload.repeated_float)
+
   def testRepeatedFieldSelfExtend(self, message_module):
-      msg = message_module.NestedTestAllTypes()
-      msg.payload.repeated_int32[:] = [1, 2, 3, 4]
-      msg.payload.repeated_int32.extend(msg.payload.repeated_int32)
-      self.assertEqual([1, 2, 3, 4] * 2, msg.payload.repeated_int32)
+    msg = message_module.NestedTestAllTypes()
+    msg.payload.repeated_int32[:] = [1, 2, 3, 4]
+    msg.payload.repeated_int32.extend(msg.payload.repeated_int32)
+    self.assertEqual([1, 2, 3, 4] * 2, msg.payload.repeated_int32)
 
   def testAssignOutOfRange(self, message_module):
     msg = message_module.NestedTestAllTypes()

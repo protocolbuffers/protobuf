@@ -401,10 +401,14 @@ class FlatAllocation {
 };
 
 template <typename... T>
-TypeMap<IntT, T...> CalculateEnds(const TypeMap<IntT, T...>& sizes) {
-  int total = 0;
+absl::optional<TypeMap<IntT, T...>> CalculateEnds(
+    const TypeMap<IntT, T...>& sizes) {
+  int64_t total = 0;
   TypeMap<IntT, T...> out;
-  ((out.template Get<T>() = total += sizeof(T) * sizes.template Get<T>()), ...);
+  ((out.template Get<T>() = total +=
+    static_cast<int64_t>(sizeof(T)) * sizes.template Get<T>()),
+   ...);
+  if (total > std::numeric_limits<int>::max()) return absl::nullopt;
   return out;
 }
 
@@ -422,17 +426,30 @@ class FlatAllocatorImpl {
   void PlanArray(int array_size) {
     // We can't call PlanArray after FinalizePlanning has been called.
     ABSL_CHECK(!has_allocated());
+    ABSL_DCHECK_GE(array_size, 0);
     if (std::is_trivially_destructible<U>::value) {
       // Trivial types are aligned to 8 bytes.
       static_assert(alignof(U) <= 8, "");
-      total_.template Get<char>() += RoundUpTo<8>(array_size * sizeof(U));
+      int64_t bytes =
+          RoundUpTo<8>(static_cast<int64_t>(array_size) * sizeof(U));
+      int& total_char = total_.template Get<char>();
+      int64_t sum = static_cast<int64_t>(total_char) + bytes;
+      if (sum > std::numeric_limits<int>::max()) {
+        overflow_ = true;
+      }
+      total_char = static_cast<int>(sum);
     } else {
       // Since we can't use `if constexpr`, just make the expression compile
       // when this path is not taken.
       using TypeToUse =
           typename std::conditional<std::is_trivially_destructible<U>::value,
                                     char, U>::type;
-      total_.template Get<TypeToUse>() += array_size;
+      int& total_type = total_.template Get<TypeToUse>();
+      int64_t sum = static_cast<int64_t>(total_type) + array_size;
+      if (sum > std::numeric_limits<int>::max()) {
+        overflow_ = true;
+      }
+      total_type = static_cast<int>(sum);
     }
   }
 
@@ -625,13 +642,18 @@ class FlatAllocatorImpl {
   }
 
   template <typename Alloc>
-  void FinalizePlanning(Alloc& alloc) {
+  [[nodiscard]] bool FinalizePlanning(Alloc& alloc) {
     ABSL_CHECK(!has_allocated());
+    if (overflow_) return false;
 
     flat_alloc_ = alloc->CreateFlatAlloc(total_);
+    if (flat_alloc_ == nullptr) {
+      return false;
+    }
     pointers_ = flat_alloc_->Pointers();
 
     ABSL_CHECK(has_allocated());
+    return true;
   }
 
   void ExpectConsumed() const {
@@ -671,6 +693,7 @@ class FlatAllocatorImpl {
   TypeMap<PointerT, T...> pointers_;
   TypeMap<IntT, T...> total_;
   TypeMap<IntT, T...> used_;
+  bool overflow_ = false;
 };
 
 static auto DisableTracking() {
@@ -982,43 +1005,79 @@ using SymbolsByParentSet =
     absl::flat_hash_set<OffsetT<const internal::SymbolBase>, SymbolByParentHash,
                         SymbolByParentEq>;
 
-template <typename DescriptorT>
-struct DescriptorsByNameHash {
+template <typename Projection>
+struct ProjectedHash {
   using is_transparent = void;
 
-  size_t operator()(absl::string_view name) const { return absl::HashOf(name); }
-
-  size_t operator()(const DescriptorT* file) const {
-    return absl::HashOf(file->name());
+  template <typename T>
+  size_t operator()(const T& value) const {
+    return absl::HashOf(Projection{}(value));
   }
 };
 
-template <typename DescriptorT>
-struct DescriptorsByNameEq {
+template <typename Projection>
+struct ProjectedEq {
   using is_transparent = void;
 
-  bool operator()(absl::string_view lhs, absl::string_view rhs) const {
-    return lhs == rhs;
+  template <typename T, typename U>
+  bool operator()(const T& lhs, const U& rhs) const {
+    return Projection{}(lhs) == Projection{}(rhs);
   }
-  bool operator()(absl::string_view lhs, const DescriptorT* rhs) const {
-    return lhs == rhs->name();
+};
+
+template <typename T, typename Projection>
+using ProjectedSet =
+    absl::flat_hash_set<T, ProjectedHash<Projection>, ProjectedEq<Projection>>;
+
+template <typename DescriptorT>
+struct DescriptorNameProjection {
+  absl::string_view operator()(const DescriptorT* descriptor) const {
+    return descriptor->name();
   }
-  bool operator()(const DescriptorT* lhs, absl::string_view rhs) const {
-    return lhs->name() == rhs;
-  }
-  bool operator()(const DescriptorT* lhs, const DescriptorT* rhs) const {
-    return lhs == rhs || lhs->name() == rhs->name();
-  }
+  absl::string_view operator()(absl::string_view name) const { return name; }
 };
 
 template <typename DescriptorT>
 using DescriptorsByNameSet =
-    absl::flat_hash_set<const DescriptorT*, DescriptorsByNameHash<DescriptorT>,
-                        DescriptorsByNameEq<DescriptorT>>;
+    ProjectedSet<const DescriptorT*, DescriptorNameProjection<DescriptorT>>;
 
-using FieldsByNameMap =
-    absl::flat_hash_map<std::pair<const void*, absl::string_view>,
-                        const FieldDescriptor*>;
+static const void* GetFieldParent(const FieldDescriptor* field) {
+  if (field->is_extension()) {
+    if (field->extension_scope() == nullptr) {
+      return field->file();
+    } else {
+      return field->extension_scope();
+    }
+  } else {
+    return field->containing_type();
+  }
+}
+
+struct LowercaseNameProjection {
+  std::pair<const void*, absl::string_view> operator()(
+      const FieldDescriptor* field) const {
+    return {GetFieldParent(field), field->lowercase_name()};
+  }
+  auto operator()(std::pair<const void*, absl::string_view> query) const {
+    return query;
+  }
+};
+
+using FieldsByLowercaseNameSet =
+    ProjectedSet<const FieldDescriptor*, LowercaseNameProjection>;
+
+struct CamelcaseNameProjection {
+  std::pair<const void*, absl::string_view> operator()(
+      const FieldDescriptor* field) const {
+    return {GetFieldParent(field), field->camelcase_name()};
+  }
+  auto operator()(std::pair<const void*, absl::string_view> query) const {
+    return query;
+  }
+};
+
+using FieldsByCamelcaseNameSet =
+    ProjectedSet<const FieldDescriptor*, CamelcaseNameProjection>;
 
 struct ParentNumberQuery {
   std::pair<const void*, int> query;
@@ -1303,7 +1362,6 @@ class FileDescriptorTables {
   }
 
  private:
-  const void* FindParentForFieldsByMap(const FieldDescriptor* field) const;
   static void FieldsByLowercaseNamesLazyInitStatic(
       const FileDescriptorTables* tables);
   void FieldsByLowercaseNamesLazyInitInternal() const;
@@ -1322,8 +1380,10 @@ class FileDescriptorTables {
   // Make these fields atomic to avoid race conditions with
   // GetEstimatedOwnedMemoryBytesSize. Once the pointer is set the map won't
   // change anymore.
-  mutable std::atomic<const FieldsByNameMap*> fields_by_lowercase_name_{};
-  mutable std::atomic<const FieldsByNameMap*> fields_by_camelcase_name_{};
+  mutable std::atomic<const FieldsByLowercaseNameSet*>
+      fields_by_lowercase_name_{};
+  mutable std::atomic<const FieldsByCamelcaseNameSet*>
+      fields_by_camelcase_name_{};
   FieldsByNumberSet fields_by_number_;  // Not including extensions.
   EnumValuesByNumberSetOffsetPtr enum_values_by_number_;
   mutable EnumValuesByNumberSet unknown_enum_values_by_number_
@@ -1790,32 +1850,26 @@ inline const FieldDescriptor* FileDescriptorTables::FindFieldByNumber(
                                        : it->Resolve(flat_buffer_.data());
 }
 
-const void* FileDescriptorTables::FindParentForFieldsByMap(
-    const FieldDescriptor* field) const {
-  if (field->is_extension()) {
-    if (field->extension_scope() == nullptr) {
-      return field->file();
-    } else {
-      return field->extension_scope();
-    }
-  } else {
-    return field->containing_type();
-  }
-}
-
 void FileDescriptorTables::FieldsByLowercaseNamesLazyInitStatic(
     const FileDescriptorTables* tables) {
   tables->FieldsByLowercaseNamesLazyInitInternal();
 }
 
 void FileDescriptorTables::FieldsByLowercaseNamesLazyInitInternal() const {
-  auto* map = new FieldsByNameMap;
+  auto* set = new FieldsByLowercaseNameSet;
   for (auto symbol : symbols_by_parent_) {
     const FieldDescriptor* field = Resolve(symbol).field_descriptor();
     if (!field) continue;
-    (*map)[{FindParentForFieldsByMap(field), field->lowercase_name()}] = field;
+    auto [it, inserted] = set->insert(field);
+    if (!inserted) {
+      // If we already have a field with this lowercase name, keep the last one.
+      // Since conflicts are rare, we resolve this inline by erasing and
+      // inserting.
+      set->erase(it);
+      set->insert(field);
+    }
   }
-  fields_by_lowercase_name_.store(map, std::memory_order_release);
+  fields_by_lowercase_name_.store(set, std::memory_order_release);
 }
 
 inline const FieldDescriptor* FileDescriptorTables::FindFieldByLowercaseName(
@@ -1825,9 +1879,10 @@ inline const FieldDescriptor* FileDescriptorTables::FindFieldByLowercaseName(
                   this);
   const auto* fields =
       fields_by_lowercase_name_.load(std::memory_order_acquire);
-  auto it = fields->find({parent, lowercase_name});
+  auto it = fields->find(
+      std::pair<const void*, absl::string_view>(parent, lowercase_name));
   if (it == fields->end()) return nullptr;
-  return it->second;
+  return *it;
 }
 
 void FileDescriptorTables::FieldsByCamelcaseNamesLazyInitStatic(
@@ -1836,19 +1891,20 @@ void FileDescriptorTables::FieldsByCamelcaseNamesLazyInitStatic(
 }
 
 void FileDescriptorTables::FieldsByCamelcaseNamesLazyInitInternal() const {
-  auto* map = new FieldsByNameMap;
+  auto* set = new FieldsByCamelcaseNameSet;
   for (auto symbol : symbols_by_parent_) {
     const FieldDescriptor* field = Resolve(symbol).field_descriptor();
     if (!field) continue;
-    const void* parent = FindParentForFieldsByMap(field);
-    // If we already have a field with this camelCase name, keep the field with
-    // the smallest field number. This way we get a deterministic mapping.
-    const FieldDescriptor*& found = (*map)[{parent, field->camelcase_name()}];
-    if (found == nullptr || found->number() > field->number()) {
-      found = field;
+    auto [it, inserted] = set->insert(field);
+    if (!inserted && (*it)->number() > field->number()) {
+      // If we already have a field with this camelCase name, keep the field
+      // with the smallest field number. This way we get a deterministic
+      // mapping.
+      set->erase(it);
+      set->insert(field);
     }
   }
-  fields_by_camelcase_name_.store(map, std::memory_order_release);
+  fields_by_camelcase_name_.store(set, std::memory_order_release);
 }
 
 inline const FieldDescriptor* FileDescriptorTables::FindFieldByCamelcaseName(
@@ -1857,9 +1913,10 @@ inline const FieldDescriptor* FileDescriptorTables::FindFieldByCamelcaseName(
                   FileDescriptorTables::FieldsByCamelcaseNamesLazyInitStatic,
                   this);
   auto* fields = fields_by_camelcase_name_.load(std::memory_order_acquire);
-  auto it = fields->find({parent, camelcase_name});
+  auto it = fields->find(
+      std::pair<const void*, absl::string_view>(parent, camelcase_name));
   if (it == fields->end()) return nullptr;
-  return it->second;
+  return *it;
 }
 
 inline const EnumValueDescriptor* FileDescriptorTables::FindEnumValueByNumber(
@@ -1922,7 +1979,7 @@ FileDescriptorTables::FindEnumValueByNumberCreatingIfUnknown(
     {
       // Must lock the pool because we will do allocations in the shared arena.
       absl::MutexLockMaybe l2(pool->mutex_);
-      alloc.FinalizePlanning(tables);
+      ABSL_CHECK(alloc.FinalizePlanning(tables));
     }
     EnumValueDescriptor* result = alloc.AllocateArray<EnumValueDescriptor>(1);
     result->all_names_ = alloc.AllocateStrings(
@@ -2062,14 +2119,23 @@ template <typename... T>
 internal::FlatAllocator::Allocation* DescriptorPool::Tables::CreateFlatAlloc(
     const TypeMap<IntT, T...>& sizes) {
   auto ends = CalculateEnds(sizes);
+  if (!ends.has_value()) {
+    return nullptr;
+  }
+
   using FlatAlloc = internal::FlatAllocator::Allocation;
 
-  int last_end = ends.template Get<
+  int last_end = ends->template Get<
       typename std::tuple_element<sizeof...(T) - 1, std::tuple<T...>>::type>();
-  size_t total_size =
-      last_end + RoundUpTo<FlatAlloc::kMaxAlign>(sizeof(FlatAlloc));
+  int64_t total_size = static_cast<int64_t>(last_end) +
+                       RoundUpTo<FlatAlloc::kMaxAlign>(sizeof(FlatAlloc));
+
+  if (total_size > std::numeric_limits<int>::max()) {
+    return nullptr;
+  }
+
   char* data = static_cast<char*>(internal::Allocate(total_size));
-  auto* res = ::new (data) FlatAlloc(ends);
+  auto* res = ::new (data) FlatAlloc(*ends);
   flat_allocs_.emplace_back(res);
 
   return res;
@@ -4710,7 +4776,7 @@ Symbol DescriptorPool::NewPlaceholderWithMutexHeld(
       alloc.PlanArray<Descriptor::ExtensionRange>(1);
     }
   }
-  alloc.FinalizePlanning(tables_);
+  ABSL_CHECK(alloc.FinalizePlanning(tables_));
 
   const std::string::size_type dotpos = placeholder_full_name.find_last_of('.');
   if (dotpos != std::string::npos) {
@@ -4806,7 +4872,7 @@ FileDescriptor* DescriptorPool::NewPlaceholderFile(
   internal::FlatAllocator alloc;
   alloc.PlanArray<FileDescriptor>(1);
   alloc.PlanArray<std::string>(1);
-  alloc.FinalizePlanning(tables_);
+  ABSL_CHECK(alloc.FinalizePlanning(tables_));
 
   return NewPlaceholderFileWithMutexHeld(name, alloc);
 }
@@ -5490,11 +5556,16 @@ const FileDescriptor* internal::DescriptorBuilder::BuildFile(
 
   auto alloc = std::make_unique<internal::FlatAllocator>();
   PlanAllocationSize(proto, *alloc);
-  alloc->FinalizePlanning(tables_);
-  FileDescriptor* result = BuildFileImpl(proto, *alloc);
+  FileDescriptor* result = nullptr;
+  if (!alloc->FinalizePlanning(tables_)) {
+    AddError(proto.name(), proto, DescriptorPool::ErrorCollector::OTHER,
+             "The file is too large.");
+  } else {
+    result = BuildFileImpl(proto, *alloc);
+  }
 
-  file_tables_->FinalizeTables();
   if (result) {
+    file_tables_->FinalizeTables();
     tables_->ClearLastCheckpoint();
     result->finished_building_ = true;
     alloc->ExpectConsumed();
@@ -5646,7 +5717,7 @@ FileDescriptor* internal::DescriptorBuilder::BuildFileImpl(
           internal::FlatAllocator lazy_dep_alloc;
           lazy_dep_alloc.PlanArray<FileDescriptor>(1);
           lazy_dep_alloc.PlanArray<std::string>(1);
-          lazy_dep_alloc.FinalizePlanning(tables_);
+          ABSL_CHECK(lazy_dep_alloc.FinalizePlanning(tables_));
           dependency =
               pool_->NewPlaceholderFileWithMutexHeld(name, lazy_dep_alloc);
           if (is_option_dep) {
@@ -10039,12 +10110,7 @@ bool HasPreservingUnknownEnumSemantics(const FieldDescriptor* field) {
 }
 
 HasbitMode GetFieldHasbitModeWithoutProfile(const FieldDescriptor* field) {
-  // Do not generate hasbits for "real-oneof", weak, or extension fields.
-  PROTOBUF_IGNORE_DEPRECATION_START
-  const bool field_is_weak = field->options().weak();
-  PROTOBUF_IGNORE_DEPRECATION_STOP
-  if (field->real_containing_oneof() || field_is_weak ||
-      field->is_extension()) {
+  if (field->real_containing_oneof() || field->is_extension()) {
     return HasbitMode::kNoHasbit;
   }
 

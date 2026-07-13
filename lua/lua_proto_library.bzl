@@ -60,6 +60,7 @@ def _compile_upb_protos(ctx, proto_info, proto_sources):
     files = [_generate_output_file(ctx, name, "_pb.lua") for name in proto_sources]
     transitive_sets = proto_info.transitive_descriptor_sets.to_list()
     ctx.actions.run(
+        mnemonic = "CompileUpbProtos",
         inputs = depset(
             direct = [proto_info.direct_descriptor_set],
             transitive = [proto_info.transitive_descriptor_sets],

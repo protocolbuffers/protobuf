@@ -313,9 +313,7 @@ static PyObject* GetOrBuildMessageInDefaultPool(
     }
   }
 
-#if PROTOBUF_PY_FUTURE_FREEZE_OPTIONS
   cmsg->state = MESSAGE_FROZEN;
-#endif
 
   // Cache the result.
   {

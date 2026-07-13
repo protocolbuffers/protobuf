@@ -2727,11 +2727,17 @@ class PROTOBUF_EXPORT DescriptorPool {
   static const auto& MemoizeProjection(const Desc* descriptor, Func func) {
     using ResultT = std::decay_t<decltype(func(descriptor))>;
     auto* pool = GetPool(descriptor);
-    static_assert(std::is_empty_v<Func> ||
-                  std::is_function_v<std::remove_pointer_t<Func>>);
-    // This static bool is unique per-Func, so its address can be used as a key.
-    static bool type_key;
-    auto key = std::pair<const void*, const void*>(descriptor, &type_key);
+    const void* secondary_key;
+    if constexpr (std::is_function_v<std::remove_pointer_t<Func>>) {
+      secondary_key = reinterpret_cast<const void*>(func);
+    } else if constexpr (std::is_empty_v<Func>) {
+      static bool type_key;
+      secondary_key = &type_key;
+    } else {
+      static_assert(sizeof(Func) == 0,
+                    "Func must be an empty functor or a function pointer.");
+    }
+    auto key = std::pair<const void*, const void*>(descriptor, secondary_key);
     {
       absl::ReaderMutexLock lock(&pool->field_memo_table_mutex_);
       auto it = pool->field_memo_table_->find(key);

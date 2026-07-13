@@ -405,6 +405,7 @@ class RepeatedPrimitive final : public FieldGeneratorBase {
   }
 
   void GeneratePrivateMembers(io::Printer* p) const override;
+  void GenerateSecondaryPrivateMembers(io::Printer* p) const override;
   void GenerateAccessorDeclarations(io::Printer* p) const override;
   void GenerateInlineAccessorDefinitions(io::Printer* p) const override;
   void GenerateSerializeWithCachedSizesToArray(io::Printer* p) const override;
@@ -432,13 +433,25 @@ void RepeatedPrimitive::GeneratePrivateMembers(io::Printer* p) const {
       $pb$::RepeatedField<$Type$> $name$_;
     )cc");
   }
-
+#if defined(PROTOBUF_INTERNAL_TEMPORARY_CACHED_SIZE_LAYOUT_OPTOUT)
   if (HasCachedSize()) {
     p->Emit({{"_cached_size_", MakeVarintCachedSizeName(field_)}},
             R"cc(
               $pbi$::CachedSize $_cached_size_$;
             )cc");
   }
+#endif
+}
+
+void RepeatedPrimitive::GenerateSecondaryPrivateMembers(io::Printer* p) const {
+#if !defined(PROTOBUF_INTERNAL_TEMPORARY_CACHED_SIZE_LAYOUT_OPTOUT)
+  if (HasCachedSize()) {
+    p->Emit({{"_cached_size_", MakeVarintCachedSizeName(field_)}},
+            R"cc(
+              $pbi$::CachedSize $_cached_size_$;
+            )cc");
+  }
+#endif
 }
 
 void RepeatedPrimitive::GenerateAccessorDeclarations(io::Printer* p) const {
