@@ -79,6 +79,14 @@ static void RepeatedField_destructor(zend_object* obj) {
  *   $rf1 == $rf2
  */
 static int RepeatedField_compare_objects(zval* rf1, zval* rf2) {
+  // The engine passes the other operand through unchecked; do not reinterpret a
+  // non-object or a foreign object as a RepeatedField*.
+  if (Z_TYPE_P(rf1) != IS_OBJECT || Z_TYPE_P(rf2) != IS_OBJECT ||
+      Z_OBJCE_P(rf1) != RepeatedField_class_entry ||
+      Z_OBJCE_P(rf2) != RepeatedField_class_entry) {
+    return ZEND_UNCOMPARABLE;
+  }
+
   RepeatedField* intern1 = (RepeatedField*)Z_OBJ_P(rf1);
   RepeatedField* intern2 = (RepeatedField*)Z_OBJ_P(rf2);
 
