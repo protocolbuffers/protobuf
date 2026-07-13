@@ -16,15 +16,20 @@
 #ifndef GOOGLE_PROTOBUF_GENERATED_ENUM_REFLECTION_H__
 #define GOOGLE_PROTOBUF_GENERATED_ENUM_REFLECTION_H__
 
+#include <array>
+#include <atomic>
 #include <cstddef>
 #include <iterator>
 #include <string>
 #include <type_traits>
 
+#include "absl/base/call_once.h"
+#include "absl/base/optimization.h"
 #include "absl/log/absl_check.h"
 #include "absl/strings/string_view.h"
+#include "absl/types/span.h"
 #include "google/protobuf/generated_enum_util.h"
-#include "google/protobuf/port.h"
+#include "google/protobuf/message_lite.h"
 
 #ifdef SWIG
 #error "You cannot SWIG proto headers"
@@ -75,6 +80,74 @@ PROTOBUF_FUTURE_ADD_EARLY_NODISCARD bool ParseNamedEnum(
 PROTOBUF_FUTURE_ADD_EARLY_NODISCARD
 PROTOBUF_EXPORT const std::string& NameOfEnum(
     const EnumDescriptor* PROTOBUF_NONNULL descriptor, int value);
+
+// The chunk info format for storing enum name-to-value mapping used with
+// chunky enums.
+struct ChunkInfo {
+  int min_val;
+  int max_val;
+};
+
+template <size_t N>
+constexpr std::array<size_t, N> GetChunkOffsets(
+    const std::array<const ChunkInfo, N>& chunks) {
+  std::array<size_t, N> offsets{};
+  if constexpr (N > 0) {
+    offsets[0] = 0;
+    for (size_t i = 1; i < N; ++i) {
+      offsets[i] =
+          offsets[i - 1] +
+          static_cast<size_t>(chunks[i - 1].max_val - chunks[i - 1].min_val) +
+          1;
+    }
+  }
+  return offsets;
+}
+
+struct FastEnumCache {
+  absl::once_flag loaded;
+  std::atomic<const std::string * PROTOBUF_NONNULL * PROTOBUF_NULLABLE>
+      flat_cache{nullptr};
+};
+
+const std::string * PROTOBUF_NONNULL *
+    PROTOBUF_NONNULL InitializeFastEnumCache(
+        FastEnumCache* PROTOBUF_NONNULL fast_enum_cache,
+        const EnumDescriptor* PROTOBUF_NONNULL desc,
+        absl::Span<const ChunkInfo> chunks);
+
+// Similar to the routine NameOfEnum, this routine returns the name of an enum.
+// Unlike that routine, it allocates, on-demand, a block of pointers to the
+// std::string objects allocated by reflection to store the enum names. This
+// way, as long as the enum values are fairly dense, looking them up can be
+// very fast.
+template <typename Enum>
+inline const std::string& NameOfChunkyEnum(int v) {
+  constexpr auto kChunks = ProtobufInternalEnumChunks(Enum{});
+  constexpr auto kChunkOffsets = GetChunkOffsets(kChunks);
+  static FastEnumCache fast_enum_cache = {/* once_flag */ {},
+                                          /* atomic ptr */ {}};
+  const std::string* PROTOBUF_NONNULL* PROTOBUF_NULLABLE cache =
+      fast_enum_cache.flat_cache.load(std::memory_order_acquire);
+  if (cache == nullptr) {
+    cache = InitializeFastEnumCache(&fast_enum_cache, GetEnumDescriptor<Enum>(),
+                                    kChunks);
+  }
+  for (size_t i = 0; i < kChunks.size(); ++i) {
+    const ChunkInfo& chunk = kChunks[i];
+    if (v >= chunk.min_val && v <= chunk.max_val) {
+      return *cache[kChunkOffsets[i] + static_cast<size_t>(v - chunk.min_val)];
+    }
+  }
+
+  // Prevent the compiler from pre-loading the empty string address.
+  // Otherwise, it adds an instruction to every in-bounds-call (adding ~5%
+  // to cpu).
+  // We expect to see many more in-bounds calls than out-of-bounds calls, so
+  // this is a net win.
+  ABSL_BLOCK_TAIL_CALL_OPTIMIZATION();
+  return GetEmptyStringAlreadyInited();
+}
 
 template <typename Enum>
 class EnumeratedEnumView {
