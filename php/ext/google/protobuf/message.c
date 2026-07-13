@@ -1399,6 +1399,19 @@ PHP_METHOD(google_protobuf_Timestamp, toDateTime) {
   upb_MessageValue seconds = Message_getval(intern, "seconds");
   upb_MessageValue nanos = Message_getval(intern, "nanos");
 
+  // A google.protobuf.Timestamp requires 0 <= nanos < 1e9 (see the field
+  // documentation in timestamp.proto).  Out-of-range values are reachable from
+  // untrusted wire input, which is not range-checked on decode, and would
+  // render to a string date_create_from_format() cannot parse (e.g. a negative
+  // nanos produces "0.-01000"), so reject them up front with a clear error.
+  if (nanos.int32_val < 0 || nanos.int32_val >= 1000000000) {
+    zend_throw_exception_ex(NULL, 0,
+                            "Cannot convert Timestamp with nanos %d outside "
+                            "[0, 1000000000) to DateTime.",
+                            nanos.int32_val);
+    return;
+  }
+
   // Get formatted time string.
   char formatted_time[32];
   snprintf(formatted_time, sizeof(formatted_time), "%" PRId64 ".%06" PRId32,
@@ -1428,6 +1441,17 @@ PHP_METHOD(google_protobuf_Timestamp, toDateTime) {
   zval_dtor(&function_name);
   zval_dtor(&format_string);
   zval_dtor(&formatted_time_php);
+
+  // date_create_from_format() returns false (not a DateTime) when the formatted
+  // string fails to parse.  In that case its returned zval is IS_FALSE, but its
+  // value union still holds the DateTime that date_create_from_format() already
+  // freed, so running ZVAL_OBJ(Z_OBJ(datetime)) unconditionally would republish
+  // a freed object to the engine (use-after-free).  Check the type first and,
+  // like the pure-PHP implementation, return false on failure.
+  if (Z_TYPE(datetime) != IS_OBJECT) {
+    zval_dtor(&datetime);
+    RETURN_FALSE;
+  }
 
   ZVAL_OBJ(return_value, Z_OBJ(datetime));
 }
