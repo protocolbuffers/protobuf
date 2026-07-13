@@ -1546,14 +1546,7 @@ public class JsonFormat {
             if (printingEnumsAsInts || ((EnumValueDescriptor) value).getIndex() == -1) {
               generator.print(String.valueOf(((EnumValueDescriptor) value).getNumber()));
             } else {
-              EnumValueDescriptor enumValue = (EnumValueDescriptor) value;
-              JsonEnumValueOptions ext =
-                  enumValue.getOptions().getExtension(JsonEnumvalueOptionsProto.json);
-              if (ext.hasString()) {
-                printStringEscapedAndQuoted(ext.getString());
-              } else {
-                generator.print("\"" + enumValue.getName() + "\"");
-              }
+              generator.print("\"" + ((EnumValueDescriptor) value).getName() + "\"");
             }
           }
           break;
@@ -2435,55 +2428,31 @@ public class JsonFormat {
     @Nullable
     private EnumValueDescriptor parseEnum(EnumDescriptor enumDescriptor, JsonElement json)
         throws InvalidProtocolBufferException {
-
-      if (!json.isJsonPrimitive()) {
-        throw new InvalidProtocolBufferException(
-            "Invalid enum value: " + json + " for enum type: " + enumDescriptor.getFullName());
-      }
-
-      JsonPrimitive primitive = json.getAsJsonPrimitive();
-      final boolean isString = primitive.isString();
-      final boolean isNumber = primitive.isNumber();
-
-      if (isString) {
-        String value = primitive.getAsString();
-        EnumValueDescriptor result = enumDescriptor.findValueByName(value);
-        if (result != null) {
-          return result;
-        }
-
-        // Check custom JSON names first for strings
-        for (EnumValueDescriptor ev : enumDescriptor.getValues()) {
-          JsonEnumValueOptions ext = ev.getOptions().getExtension(JsonEnumvalueOptionsProto.json);
-          if (ext.hasString() && ext.getString().equals(value)) {
-            return ev;
-          }
-        }
-      }
-
-      // Parse numbers (or stringified numbers as a fallback)
-      if (isString || isNumber) {
+      String value = json.getAsString();
+      EnumValueDescriptor result = enumDescriptor.findValueByName(value);
+      if (result == null) {
+        // Try to interpret the value as a number.
         try {
           int numericValue = parseInt32(json);
-          EnumValueDescriptor result =
-              enumDescriptor.isClosed()
-                  ? enumDescriptor.findValueByNumber(numericValue)
-                  : enumDescriptor.findValueByNumberCreatingIfUnknown(numericValue);
-          if (result != null) {
-            return result;
+          if (enumDescriptor.isClosed()) {
+            result = enumDescriptor.findValueByNumber(numericValue);
+          } else {
+            result = enumDescriptor.findValueByNumberCreatingIfUnknown(numericValue);
           }
         } catch (InvalidProtocolBufferException e) {
-          // Fall through.
+          // Fall through. This exception is about invalid int32 value we get from parseInt32() but
+          // that's not the exception we want the user to see. Since result == null, we will throw
+          // an exception later.
+        }
+
+        // todo(elharo): if we are ignoring unknown fields, shouldn't we still
+        // throw InvalidProtocolBufferException for a non-numeric value here?
+        if (result == null && !ignoringUnknownFields) {
+          throw new InvalidProtocolBufferException(
+              "Invalid enum value: " + value + " for enum type: " + enumDescriptor.getFullName());
         }
       }
-
-      // todo(elharo): if we are ignoring unknown fields, shouldn't we still
-      // throw InvalidProtocolBufferException for a non-numeric value here?
-      if (!ignoringUnknownFields) {
-        throw new InvalidProtocolBufferException(
-            "Invalid enum value: " + json + " for enum type: " + enumDescriptor.getFullName());
-      }
-      return null;
+      return result;
     }
 
     @SuppressWarnings("AvoidValueSetter")
