@@ -194,8 +194,10 @@ UPB_INLINE_IF_NOT_GCC bool UPB_PRIVATE(_upb_MiniTableField_DataEquals)(
     case kUpb_FieldRep_8Byte:
       return memcmp(a, b, 8) == 0;
     case kUpb_FieldRep_StringView: {
-      const upb_StringView sa = *(const upb_StringView*)a;
-      const upb_StringView sb = *(const upb_StringView*)b;
+      upb_StringView sa;
+      upb_StringView sb;
+      memcpy(&sa, a, sizeof(upb_StringView));
+      memcpy(&sb, b, sizeof(upb_StringView));
       return upb_StringView_IsEqual(sa, sb);
     }
   }
@@ -204,14 +206,14 @@ UPB_INLINE_IF_NOT_GCC bool UPB_PRIVATE(_upb_MiniTableField_DataEquals)(
 
 UPB_INLINE void UPB_PRIVATE(_upb_MiniTableField_DataClear)(
     const upb_MiniTableField* f, void* val) {
-  const char zero[16] = {0};
-  UPB_PRIVATE(_upb_MiniTableField_DataCopy)(f, val, zero);
+  const upb_MessageValue zero = upb_MessageValue_Zero();
+  UPB_PRIVATE(_upb_MiniTableField_DataCopy)(f, val, &zero);
 }
 
 UPB_INLINE bool UPB_PRIVATE(_upb_MiniTableField_DataIsZero)(
     const upb_MiniTableField* f, const void* val) {
-  const char zero[16] = {0};
-  return UPB_PRIVATE(_upb_MiniTableField_DataEquals)(f, val, zero);
+  const upb_MessageValue zero = upb_MessageValue_Zero();
+  return UPB_PRIVATE(_upb_MiniTableField_DataEquals)(f, val, &zero);
 }
 
 // Here we define universal getter/setter functions for message fields.
