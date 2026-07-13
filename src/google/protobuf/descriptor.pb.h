@@ -1031,7 +1031,14 @@ template <typename T>
   static_assert(::std::is_same<T, Edition>::value ||
                     ::std::is_integral<T>::value,
                 "Incorrect type passed to Edition_Name().");
-  return ::google::protobuf::internal::NameOfEnum(Edition_descriptor(), value);
+  return Edition_Name(static_cast<Edition>(value));
+}
+template <>
+[[nodiscard]] inline const ::std::string& Edition_Name(Edition value) {
+  static constexpr std::array<::google::protobuf::internal::ChunkInfo, 6> kChunks =
+      {{ {0, 2, 0}, {900, 900, 3}, {998, 1002, 4}, {9999, 9999, 9}, {99997, 99999, 10}, {2147483647, 2147483647, 13} }};
+  return ::google::protobuf::internal::NameOfChunkyEnum<Edition_descriptor, kChunks>(
+      static_cast<int>(value));
 }
 [[nodiscard]] inline bool Edition_Parse(
     ::absl::string_view name, Edition* PROTOBUF_NONNULL value) {
