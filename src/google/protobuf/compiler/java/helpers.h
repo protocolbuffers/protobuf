@@ -54,10 +54,6 @@ void PrintGeneratedAnnotation(io::Printer* printer, char delimiter = '$',
                               absl::string_view annotation_file = "",
                               Options options = {});
 
-bool IsSequentialEnum(const EnumDescriptor* descriptor, int* min_val,
-                      int* max_val);
-bool IsBitmaskEnum(const EnumDescriptor* descriptor, uint64_t* mask);
-
 // If a GeneratedMessageLite contains non-lite enums, then its verifier
 // must be instantiated inline, rather than retrieved from the enum class.
 void PrintEnumVerifierLogic(
