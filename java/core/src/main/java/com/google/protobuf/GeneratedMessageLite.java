@@ -41,9 +41,9 @@ import java.util.concurrent.ConcurrentHashMap;
  * @author kenton@google.com Kenton Varda
  */
 public abstract class GeneratedMessageLite<
-        MessageT extends GeneratedMessageLite<MessageT, BuilderType>,
-        BuilderType extends GeneratedMessageLite.Builder<MessageT, BuilderType>>
-    extends AbstractMessageLite<MessageT, BuilderType> {
+        MessageT extends GeneratedMessageLite<MessageT, BuilderT>,
+        BuilderT extends GeneratedMessageLite.Builder<MessageT, BuilderT>>
+    extends AbstractMessageLite<MessageT, BuilderT> {
 
   /* For use by lite runtime only */
   static final int UNINITIALIZED_SERIALIZED_SIZE = 0x7FFFFFFF;
@@ -104,8 +104,8 @@ public abstract class GeneratedMessageLite<
 
   @Override
   @SuppressWarnings("unchecked") // Guaranteed by runtime.
-  public final BuilderType newBuilderForType() {
-    return (BuilderType) dynamicMethod(MethodToInvoke.NEW_BUILDER, null, null);
+  public final BuilderT newBuilderForType() {
+    return (BuilderT) dynamicMethod(MethodToInvoke.NEW_BUILDER, null, null);
   }
 
   @SuppressWarnings("unchecked") // Guaranteed by runtime.
@@ -234,8 +234,8 @@ public abstract class GeneratedMessageLite<
 
   @Override
   @SuppressWarnings("unchecked")
-  public final BuilderType toBuilder() {
-    BuilderType builder = (BuilderType) dynamicMethod(MethodToInvoke.NEW_BUILDER, null, null);
+  public final BuilderT toBuilder() {
+    BuilderT builder = (BuilderT) dynamicMethod(MethodToInvoke.NEW_BUILDER, null, null);
     return builder.mergeFrom((MessageT) this);
   }
 
@@ -273,7 +273,7 @@ public abstract class GeneratedMessageLite<
    *       value.
    *   <li>{@code SET_MEMOIZED_IS_INITIALIZED} sets the memoized {@code isInitialized} byte value to
    *       1 if the first parameter is not null, or to 0 if the first parameter is null.
-   *   <li>{@code NEW_BUILDER} returns a {@code BuilderType} instance.
+   *   <li>{@code NEW_BUILDER} returns a {@code BuilderT} instance.
    * </ul>
    *
    * This method, plus the implementation of the Builder, enables the Builder class to be proguarded
@@ -348,7 +348,7 @@ public abstract class GeneratedMessageLite<
     if (nullableSchema == null) {
       return Protobuf.getInstance().schemaFor(this).getSerializedSize(this);
     } else {
-      return ((Schema<GeneratedMessageLite<MessageT, BuilderType>>) nullableSchema)
+      return ((Schema<GeneratedMessageLite<MessageT, BuilderT>>) nullableSchema)
           .getSerializedSize(this);
     }
   }
@@ -445,9 +445,9 @@ public abstract class GeneratedMessageLite<
 
   @SuppressWarnings("unchecked")
   public abstract static class Builder<
-          MessageT extends GeneratedMessageLite<MessageT, BuilderType>,
-          BuilderType extends Builder<MessageT, BuilderType>>
-      extends AbstractMessageLite.Builder<MessageT, BuilderType> {
+          MessageT extends GeneratedMessageLite<MessageT, BuilderT>,
+          BuilderT extends Builder<MessageT, BuilderT>>
+      extends AbstractMessageLite.Builder<MessageT, BuilderT> {
 
     private final MessageT defaultInstance;
     protected MessageT instance;
@@ -488,18 +488,18 @@ public abstract class GeneratedMessageLite<
     }
 
     @Override
-    public final BuilderType clear() {
+    public final BuilderT clear() {
       // No need to copy on write since we're dropping the instance anyway.
       if (defaultInstance.isMutable()) {
         throw new IllegalArgumentException("Default instance must be immutable.");
       }
       instance = newMutableInstance(); // should be defaultInstance;
-      return (BuilderType) this;
+      return (BuilderT) this;
     }
 
     @Override
-    public BuilderType clone() {
-      BuilderType builder = (BuilderType) getDefaultInstanceForType().newBuilderForType();
+    public BuilderT clone() {
+      BuilderT builder = (BuilderT) getDefaultInstanceForType().newBuilderForType();
       builder.instance = buildPartial();
       return builder;
     }
@@ -524,26 +524,26 @@ public abstract class GeneratedMessageLite<
     }
 
     @Override
-    protected BuilderType internalMergeFrom(MessageT message) {
+    protected BuilderT internalMergeFrom(MessageT message) {
       return mergeFrom(message);
     }
 
     /** All subclasses implement this. */
-    public BuilderType mergeFrom(MessageT message) {
+    public BuilderT mergeFrom(MessageT message) {
       if (message != null && !getDefaultInstanceForType().getClass().isInstance(message)) {
         throw new IllegalArgumentException(
             "mergeFrom(MessageLite) can only merge messages of the same type.");
       }
       if (getDefaultInstanceForType().equals(message)) {
-        return (BuilderType) this;
+        return (BuilderT) this;
       }
       copyOnWrite();
       mergeFromInstance(instance, message);
-      return (BuilderType) this;
+      return (BuilderT) this;
     }
 
     @Override
-    public BuilderType mergeFrom(
+    public BuilderT mergeFrom(
         byte[] input, int offset, int length, ExtensionRegistryLite extensionRegistry)
         throws InvalidProtocolBufferException {
       copyOnWrite();
@@ -563,17 +563,17 @@ public abstract class GeneratedMessageLite<
       } catch (IOException e) {
         throw new RuntimeException("Reading from byte array should not throw IOException.", e);
       }
-      return (BuilderType) this;
+      return (BuilderT) this;
     }
 
     @Override
-    public BuilderType mergeFrom(byte[] input, int offset, int length)
+    public BuilderT mergeFrom(byte[] input, int offset, int length)
         throws InvalidProtocolBufferException {
       return mergeFrom(input, offset, length, ExtensionRegistryLite.getEmptyRegistry());
     }
 
     @Override
-    public BuilderType mergeFrom(CodedInputStream input, ExtensionRegistryLite extensionRegistry)
+    public BuilderT mergeFrom(CodedInputStream input, ExtensionRegistryLite extensionRegistry)
         throws IOException {
       copyOnWrite();
       try {
@@ -588,7 +588,7 @@ public abstract class GeneratedMessageLite<
         }
         throw e;
       }
-      return (BuilderType) this;
+      return (BuilderT) this;
     }
 
     private static <MessageT extends GeneratedMessageLite<?, ?>> void mergeFromInstance(
@@ -607,8 +607,8 @@ public abstract class GeneratedMessageLite<
 
   /** Lite equivalent of {@link com.google.protobuf.GeneratedMessage.ExtendableMessageOrBuilder}. */
   public interface ExtendableMessageOrBuilder<
-          MessageT extends ExtendableMessage<MessageT, BuilderType>,
-          BuilderType extends ExtendableBuilder<MessageT, BuilderType>>
+          MessageT extends ExtendableMessage<MessageT, BuilderT>,
+          BuilderT extends ExtendableBuilder<MessageT, BuilderT>>
       extends MessageLiteOrBuilder {
 
     /** Check if a singular extension is present. */
@@ -626,10 +626,10 @@ public abstract class GeneratedMessageLite<
 
   /** Lite equivalent of {@link GeneratedMessage.ExtendableMessage}. */
   public abstract static class ExtendableMessage<
-          MessageT extends ExtendableMessage<MessageT, BuilderType>,
-          BuilderType extends ExtendableBuilder<MessageT, BuilderType>>
-      extends GeneratedMessageLite<MessageT, BuilderType>
-      implements ExtendableMessageOrBuilder<MessageT, BuilderType> {
+          MessageT extends ExtendableMessage<MessageT, BuilderT>,
+          BuilderT extends ExtendableBuilder<MessageT, BuilderT>>
+      extends GeneratedMessageLite<MessageT, BuilderT>
+      implements ExtendableMessageOrBuilder<MessageT, BuilderT> {
 
     /** Represents the set of extensions on this message. For use by generated code only. */
     protected FieldSet<ExtensionDescriptor> extensions = FieldSet.emptySet();
@@ -1041,10 +1041,10 @@ public abstract class GeneratedMessageLite<
   /** Lite equivalent of {@link GeneratedMessage.ExtendableBuilder}. */
   @SuppressWarnings("unchecked")
   public abstract static class ExtendableBuilder<
-          MessageT extends ExtendableMessage<MessageT, BuilderType>,
-          BuilderType extends ExtendableBuilder<MessageT, BuilderType>>
-      extends Builder<MessageT, BuilderType>
-      implements ExtendableMessageOrBuilder<MessageT, BuilderType> {
+          MessageT extends ExtendableMessage<MessageT, BuilderT>,
+          BuilderT extends ExtendableBuilder<MessageT, BuilderT>>
+      extends Builder<MessageT, BuilderT>
+      implements ExtendableMessageOrBuilder<MessageT, BuilderT> {
     protected ExtendableBuilder(MessageT defaultInstance) {
       super(defaultInstance);
     }
@@ -1117,7 +1117,7 @@ public abstract class GeneratedMessageLite<
     }
 
     /** Set the value of an extension. */
-    public final <Type> BuilderType setExtension(
+    public final <Type> BuilderT setExtension(
         final ExtensionLite<MessageT, Type> extension, final Type value) {
       GeneratedExtension<MessageT, Type> extensionLite = checkIsLite(extension);
 
@@ -1125,11 +1125,11 @@ public abstract class GeneratedMessageLite<
       copyOnWrite();
       ensureExtensionsAreMutable()
           .setField(extensionLite.descriptor, extensionLite.toFieldSetType(value));
-      return (BuilderType) this;
+      return (BuilderT) this;
     }
 
     /** Set the value of one element of a repeated extension. */
-    public final <Type> BuilderType setExtension(
+    public final <Type> BuilderT setExtension(
         final ExtensionLite<MessageT, List<Type>> extension, final int index, final Type value) {
       GeneratedExtension<MessageT, List<Type>> extensionLite = checkIsLite(extension);
 
@@ -1138,11 +1138,11 @@ public abstract class GeneratedMessageLite<
       ensureExtensionsAreMutable()
           .setRepeatedField(
               extensionLite.descriptor, index, extensionLite.singularToFieldSetType(value));
-      return (BuilderType) this;
+      return (BuilderT) this;
     }
 
     /** Append a value to a repeated extension. */
-    public final <Type> BuilderType addExtension(
+    public final <Type> BuilderT addExtension(
         final ExtensionLite<MessageT, List<Type>> extension, final Type value) {
       GeneratedExtension<MessageT, List<Type>> extensionLite = checkIsLite(extension);
 
@@ -1150,17 +1150,17 @@ public abstract class GeneratedMessageLite<
       copyOnWrite();
       ensureExtensionsAreMutable()
           .addRepeatedField(extensionLite.descriptor, extensionLite.singularToFieldSetType(value));
-      return (BuilderType) this;
+      return (BuilderT) this;
     }
 
     /** Clear an extension. */
-    public final BuilderType clearExtension(final ExtensionLite<MessageT, ?> extension) {
+    public final BuilderT clearExtension(final ExtensionLite<MessageT, ?> extension) {
       GeneratedExtension<MessageT, ?> extensionLite = checkIsLite(extension);
 
       verifyExtensionContainingType(extensionLite);
       copyOnWrite();
       ensureExtensionsAreMutable().clearField(extensionLite.descriptor);
-      return (BuilderType) this;
+      return (BuilderT) this;
     }
   }
 
@@ -1511,8 +1511,8 @@ public abstract class GeneratedMessageLite<
 
   /** Checks that the {@link Extension} is Lite and returns it as a {@link GeneratedExtension}. */
   private static <
-          MessageT extends ExtendableMessage<MessageT, BuilderType>,
-          BuilderType extends ExtendableBuilder<MessageT, BuilderType>,
+          MessageT extends ExtendableMessage<MessageT, BuilderT>,
+          BuilderT extends ExtendableBuilder<MessageT, BuilderT>,
           T>
       GeneratedExtension<MessageT, T> checkIsLite(ExtensionLite<MessageT, T> extension) {
     if (!extension.isLite()) {
