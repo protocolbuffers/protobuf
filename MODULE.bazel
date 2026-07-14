@@ -193,7 +193,7 @@ rust.toolchain(
     versions = ["1.85.0"],
 )
 
-crate = use_extension("@rules_rust//crate_universe:extension.bzl", "crate")
+crate = use_extension("@rules_rust//crate_universe:extension.bzl", "crate", dev_dependency = True)
 crate.spec(
     package = "googletest",
     version = ">0.0.0",
