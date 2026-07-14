@@ -127,7 +127,7 @@ struct PROTOBUF_EXPORT ClassData {
   internal::MessageCreator message_creator;
 #if defined(PROTOBUF_CUSTOM_VTABLE)
   void (*destroy_message)(MessageLite& msg);
-  void (MessageLite::*clear)();
+  void (*clear)(MessageLite& msg);
   size_t (*byte_size_long)(const MessageLite&);
   uint8_t* (*serialize)(const MessageLite& msg, uint8_t* ptr,
                         io::EpsCopyOutputStream* stream);
@@ -171,7 +171,7 @@ struct PROTOBUF_EXPORT ClassData {
       void (*merge_to_from)(MessageLite& to, const MessageLite& from_msg),
       internal::MessageCreator message_creator,
       [[maybe_unused]] void (*destroy_message)(MessageLite& msg),  //
-      [[maybe_unused]] void (MessageLite::*clear)(),
+      [[maybe_unused]] void (*clear)(MessageLite& msg),
       [[maybe_unused]] size_t (*byte_size_long)(const MessageLite&),
       [[maybe_unused]] uint8_t* (*serialize)(const MessageLite& msg,
                                              uint8_t* ptr,

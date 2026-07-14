@@ -1913,15 +1913,16 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
             // virtual overrides. This reduces the number of functions in the
             // binary in both modes.
             p->Emit(R"cc(
-              ABSL_ATTRIBUTE_REINITIALIZES void Clear() PROTOBUF_FINAL;
 #if defined(PROTOBUF_CUSTOM_VTABLE)
               private:
-              $nodiscard $static ::size_t ByteSizeLong(const $pb$::MessageLite& msg);
+              static void Clear($pb$::MessageLite& msg);
+              $nodiscard $static::size_t ByteSizeLong(const $pb$::MessageLite& msg);
               $nodiscard $static $uint8$* $nonnull$ _InternalSerialize(
                   const $pb$::MessageLite& msg, $uint8$* $nonnull$ target,
                   $pb$::io::EpsCopyOutputStream* $nonnull$ stream);
 
               public:
+              ABSL_ATTRIBUTE_REINITIALIZES void Clear() { Clear(*this); }
               $nodiscard $::size_t ByteSizeLong() const { return ByteSizeLong(*this); }
               $nodiscard $$uint8$* $nonnull$ _InternalSerialize(
                   $uint8$* $nonnull$ target,
@@ -1929,6 +1930,7 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
                 return _InternalSerialize(*this, target, stream);
               }
 #else   // PROTOBUF_CUSTOM_VTABLE
+              ABSL_ATTRIBUTE_REINITIALIZES void Clear() PROTOBUF_FINAL;
               $nodiscard $::size_t ByteSizeLong() const final;
               $nodiscard $$uint8$* $nonnull$ _InternalSerialize(
                   //~
@@ -3481,7 +3483,7 @@ void MessageGenerator::GenerateClear(io::Printer* p) {
           {"maybe_clear_extensions",
            [&] {
              if (descriptor_->extension_range_count() > 0) {
-               p->Emit(R"cc($extensions$.Clear();)cc");
+               p->Emit(R"cc(this_.$extensions$.Clear();)cc");
              }
            }},
           {"clear_fields",
@@ -3489,8 +3491,8 @@ void MessageGenerator::GenerateClear(io::Printer* p) {
              EmitClearChunks(p, /* is_split= */ false);
              if (ShouldSplit(descriptor_, options_)) {
                p->Emit(R"cc(
-                 if (ABSL_PREDICT_FALSE(!IsSplitMessageDefault())) {
-                   _Internal::ClearSplit(*this);
+                 if (ABSL_PREDICT_FALSE(!this_.IsSplitMessageDefault())) {
+                   _Internal::ClearSplit(this_);
                  }
                )cc");
              }
@@ -3499,7 +3501,7 @@ void MessageGenerator::GenerateClear(io::Printer* p) {
            [&] {
              for (auto oneof : OneOfRange(descriptor_)) {
                p->Emit({{"name", oneof->name()}}, R"cc(
-                 clear_$name$();
+                 this_.clear_$name$();
                )cc");
              }
            }},
@@ -3508,23 +3510,29 @@ void MessageGenerator::GenerateClear(io::Printer* p) {
            [&] {
              if (field_layout_.HasHasbits()) {
                p->Emit(R"cc(
-                 $has_bits$.Clear();
+                 this_.$has_bits$.Clear();
                )cc");
              }
            }},
       },
       R"cc(
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+        PROTOBUF_NOINLINE void $Msg$::Clear(MessageLite& base) {
+          $Msg$& this_ = static_cast<$Msg$&>(base);
+#else   // PROTOBUF_CUSTOM_VTABLE
         PROTOBUF_NOINLINE void $Msg$::Clear() {
-          auto& this_ [[maybe_unused]] = *this;
+          $Msg$& this_ [[maybe_unused]] = *this;
+#endif  // PROTOBUF_CUSTOM_VTABLE
+
           // @@protoc_insertion_point(message_clear_start:$full_name$)
-          $pbi$::TSanWrite(&_impl_);
+          $pbi$::TSanWrite(&this_._impl_);
           ::uint32_t cached_has_bits [[maybe_unused]] = 0;
 
           $maybe_clear_extensions$;
           $clear_fields$;
           $clear_oneofs$;
           $maybe_clear_hasbits$;
-          _internal_metadata_.Clear<$unknown_fields_type$>();
+          this_._internal_metadata_.Clear<$unknown_fields_type$>();
         }
       )cc");
 }
@@ -3769,13 +3777,12 @@ void MessageGenerator::GenerateInternalGenerateClassData(io::Printer* p) {
     if (HasGeneratedMethods(descriptor_->file(), options_) &&
         !IsMapEntryMessage(descriptor_)) {
       p->Emit(R"cc(
-        Super_::GetClearImpl<$Msg$>(), &$Msg$::ByteSizeLong,
-            &$Msg$::_InternalSerialize,
+        &$Msg$::Clear, &$Msg$::ByteSizeLong, &$Msg$::_InternalSerialize,
       )cc");
     } else {
       p->Emit(R"cc(
-        static_cast<void ($pb$::MessageLite::*)()>(&$Msg$::ClearImpl),
-            Super_::ByteSizeLongImpl, Super_::_InternalSerializeImpl,
+        &$Msg$::ClearImpl, Super_::ByteSizeLongImpl,
+            Super_::_InternalSerializeImpl,
       )cc");
     }
   };

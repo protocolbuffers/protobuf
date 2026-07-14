@@ -136,8 +136,7 @@ constexpr auto Any::InternalGenerateClassData_(
           Super_::GetNewImpl<Any>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           &Any::SharedDtor,
-          Super_::GetClearImpl<Any>(), &Any::ByteSizeLong,
-              &Any::_InternalSerialize,
+          &Any::Clear, &Any::ByteSizeLong, &Any::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
           PROTOBUF_FIELD_OFFSET(Any, _impl_._cached_size_),
           false,
@@ -346,10 +345,16 @@ PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const Any::ParseTableT_
     Any::_table_ =
         Any::InternalGenerateParseTable_(Any_class_data_.base());
 #endif  // !PROTOBUF_MESSAGE_GLOBALS
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+PROTOBUF_NOINLINE void Any::Clear(MessageLite& base) {
+  Any& this_ = static_cast<Any&>(base);
+#else   // PROTOBUF_CUSTOM_VTABLE
 PROTOBUF_NOINLINE void Any::Clear() {
-  auto& this_ [[maybe_unused]] = *this;
+  Any& this_ [[maybe_unused]] = *this;
+#endif  // PROTOBUF_CUSTOM_VTABLE
+
   // @@protoc_insertion_point(message_clear_start:google.protobuf.Any)
-  ::google::protobuf::internal::TSanWrite(&_impl_);
+  ::google::protobuf::internal::TSanWrite(&this_._impl_);
   ::uint32_t cached_has_bits [[maybe_unused]] = 0;
 
   cached_has_bits = this_._impl_._has_bits_[0];
@@ -361,8 +366,8 @@ PROTOBUF_NOINLINE void Any::Clear() {
       this_._impl_.value_.ClearNonDefaultToEmpty();
     }
   }
-  _impl_._has_bits_.Clear();
-  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
+  this_._impl_._has_bits_.Clear();
+  this_._internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
 }
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)

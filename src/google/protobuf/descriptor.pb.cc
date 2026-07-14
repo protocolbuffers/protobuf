@@ -198,8 +198,7 @@ constexpr auto UninterpretedOption_NamePart::InternalGenerateClassData_(
           Super_::GetNewImpl<UninterpretedOption_NamePart>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           &UninterpretedOption_NamePart::SharedDtor,
-          Super_::GetClearImpl<UninterpretedOption_NamePart>(), &UninterpretedOption_NamePart::ByteSizeLong,
-              &UninterpretedOption_NamePart::_InternalSerialize,
+          &UninterpretedOption_NamePart::Clear, &UninterpretedOption_NamePart::ByteSizeLong, &UninterpretedOption_NamePart::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
           PROTOBUF_FIELD_OFFSET(UninterpretedOption_NamePart, _impl_._cached_size_),
           false,
@@ -391,8 +390,7 @@ constexpr auto SourceCodeInfo_Location::InternalGenerateClassData_(
           Super_::GetNewImpl<SourceCodeInfo_Location>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           &SourceCodeInfo_Location::SharedDtor,
-          Super_::GetClearImpl<SourceCodeInfo_Location>(), &SourceCodeInfo_Location::ByteSizeLong,
-              &SourceCodeInfo_Location::_InternalSerialize,
+          &SourceCodeInfo_Location::Clear, &SourceCodeInfo_Location::ByteSizeLong, &SourceCodeInfo_Location::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
           PROTOBUF_FIELD_OFFSET(SourceCodeInfo_Location, _impl_._cached_size_),
           false,
@@ -576,8 +574,7 @@ constexpr auto GeneratedCodeInfo_Annotation::InternalGenerateClassData_(
           Super_::GetNewImpl<GeneratedCodeInfo_Annotation>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           &GeneratedCodeInfo_Annotation::SharedDtor,
-          Super_::GetClearImpl<GeneratedCodeInfo_Annotation>(), &GeneratedCodeInfo_Annotation::ByteSizeLong,
-              &GeneratedCodeInfo_Annotation::_InternalSerialize,
+          &GeneratedCodeInfo_Annotation::Clear, &GeneratedCodeInfo_Annotation::ByteSizeLong, &GeneratedCodeInfo_Annotation::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
           PROTOBUF_FIELD_OFFSET(GeneratedCodeInfo_Annotation, _impl_._cached_size_),
           false,
@@ -761,8 +758,7 @@ constexpr auto FieldOptions_FeatureSupport::InternalGenerateClassData_(
           Super_::GetNewImpl<FieldOptions_FeatureSupport>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           &FieldOptions_FeatureSupport::SharedDtor,
-          Super_::GetClearImpl<FieldOptions_FeatureSupport>(), &FieldOptions_FeatureSupport::ByteSizeLong,
-              &FieldOptions_FeatureSupport::_InternalSerialize,
+          &FieldOptions_FeatureSupport::Clear, &FieldOptions_FeatureSupport::ByteSizeLong, &FieldOptions_FeatureSupport::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
           PROTOBUF_FIELD_OFFSET(FieldOptions_FeatureSupport, _impl_._cached_size_),
           false,
@@ -918,8 +914,7 @@ constexpr auto FieldOptions_EditionDefault::InternalGenerateClassData_(
           Super_::GetNewImpl<FieldOptions_EditionDefault>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           &FieldOptions_EditionDefault::SharedDtor,
-          Super_::GetClearImpl<FieldOptions_EditionDefault>(), &FieldOptions_EditionDefault::ByteSizeLong,
-              &FieldOptions_EditionDefault::_InternalSerialize,
+          &FieldOptions_EditionDefault::Clear, &FieldOptions_EditionDefault::ByteSizeLong, &FieldOptions_EditionDefault::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
           PROTOBUF_FIELD_OFFSET(FieldOptions_EditionDefault, _impl_._cached_size_),
           false,
@@ -1048,8 +1043,7 @@ constexpr auto FeatureSet_VisibilityFeature::InternalGenerateClassData_(
           Super_::GetNewImpl<FeatureSet_VisibilityFeature>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           &FeatureSet_VisibilityFeature::SharedDtor,
-          Super_::GetClearImpl<FeatureSet_VisibilityFeature>(), &FeatureSet_VisibilityFeature::ByteSizeLong,
-              &FeatureSet_VisibilityFeature::_InternalSerialize,
+          &FeatureSet_VisibilityFeature::Clear, &FeatureSet_VisibilityFeature::ByteSizeLong, &FeatureSet_VisibilityFeature::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
           PROTOBUF_FIELD_OFFSET(FeatureSet_VisibilityFeature, _impl_._cached_size_),
           false,
@@ -1178,8 +1172,7 @@ constexpr auto FeatureSet_ProtoLimitsFeature::InternalGenerateClassData_(
           Super_::GetNewImpl<FeatureSet_ProtoLimitsFeature>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           &FeatureSet_ProtoLimitsFeature::SharedDtor,
-          Super_::GetClearImpl<FeatureSet_ProtoLimitsFeature>(), &FeatureSet_ProtoLimitsFeature::ByteSizeLong,
-              &FeatureSet_ProtoLimitsFeature::_InternalSerialize,
+          &FeatureSet_ProtoLimitsFeature::Clear, &FeatureSet_ProtoLimitsFeature::ByteSizeLong, &FeatureSet_ProtoLimitsFeature::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
           PROTOBUF_FIELD_OFFSET(FeatureSet_ProtoLimitsFeature, _impl_._cached_size_),
           false,
@@ -1397,8 +1390,7 @@ constexpr auto FeatureSet::InternalGenerateClassData_(
           Super_::GetNewImpl<FeatureSet>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           &FeatureSet::SharedDtor,
-          Super_::GetClearImpl<FeatureSet>(), &FeatureSet::ByteSizeLong,
-              &FeatureSet::_InternalSerialize,
+          &FeatureSet::Clear, &FeatureSet::ByteSizeLong, &FeatureSet::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
           PROTOBUF_FIELD_OFFSET(FeatureSet, _impl_._cached_size_),
           false,
@@ -1578,8 +1570,7 @@ constexpr auto ExtensionRangeOptions_Declaration::InternalGenerateClassData_(
           Super_::GetNewImpl<ExtensionRangeOptions_Declaration>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           &ExtensionRangeOptions_Declaration::SharedDtor,
-          Super_::GetClearImpl<ExtensionRangeOptions_Declaration>(), &ExtensionRangeOptions_Declaration::ByteSizeLong,
-              &ExtensionRangeOptions_Declaration::_InternalSerialize,
+          &ExtensionRangeOptions_Declaration::Clear, &ExtensionRangeOptions_Declaration::ByteSizeLong, &ExtensionRangeOptions_Declaration::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
           PROTOBUF_FIELD_OFFSET(ExtensionRangeOptions_Declaration, _impl_._cached_size_),
           false,
@@ -1731,8 +1722,7 @@ constexpr auto EnumDescriptorProto_EnumReservedRange::InternalGenerateClassData_
           Super_::GetNewImpl<EnumDescriptorProto_EnumReservedRange>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           &EnumDescriptorProto_EnumReservedRange::SharedDtor,
-          Super_::GetClearImpl<EnumDescriptorProto_EnumReservedRange>(), &EnumDescriptorProto_EnumReservedRange::ByteSizeLong,
-              &EnumDescriptorProto_EnumReservedRange::_InternalSerialize,
+          &EnumDescriptorProto_EnumReservedRange::Clear, &EnumDescriptorProto_EnumReservedRange::ByteSizeLong, &EnumDescriptorProto_EnumReservedRange::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
           PROTOBUF_FIELD_OFFSET(EnumDescriptorProto_EnumReservedRange, _impl_._cached_size_),
           false,
@@ -1884,8 +1874,7 @@ constexpr auto DescriptorProto_ReservedRange::InternalGenerateClassData_(
           Super_::GetNewImpl<DescriptorProto_ReservedRange>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           &DescriptorProto_ReservedRange::SharedDtor,
-          Super_::GetClearImpl<DescriptorProto_ReservedRange>(), &DescriptorProto_ReservedRange::ByteSizeLong,
-              &DescriptorProto_ReservedRange::_InternalSerialize,
+          &DescriptorProto_ReservedRange::Clear, &DescriptorProto_ReservedRange::ByteSizeLong, &DescriptorProto_ReservedRange::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
           PROTOBUF_FIELD_OFFSET(DescriptorProto_ReservedRange, _impl_._cached_size_),
           false,
@@ -2089,8 +2078,7 @@ constexpr auto UninterpretedOption::InternalGenerateClassData_(
           Super_::GetNewImpl<UninterpretedOption>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           &UninterpretedOption::SharedDtor,
-          Super_::GetClearImpl<UninterpretedOption>(), &UninterpretedOption::ByteSizeLong,
-              &UninterpretedOption::_InternalSerialize,
+          &UninterpretedOption::Clear, &UninterpretedOption::ByteSizeLong, &UninterpretedOption::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
           PROTOBUF_FIELD_OFFSET(UninterpretedOption, _impl_._cached_size_),
           false,
@@ -2245,8 +2233,7 @@ constexpr auto SourceCodeInfo::InternalGenerateClassData_(
           Super_::GetNewImpl<SourceCodeInfo>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           &SourceCodeInfo::SharedDtor,
-          Super_::GetClearImpl<SourceCodeInfo>(), &SourceCodeInfo::ByteSizeLong,
-              &SourceCodeInfo::_InternalSerialize,
+          &SourceCodeInfo::Clear, &SourceCodeInfo::ByteSizeLong, &SourceCodeInfo::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
           PROTOBUF_FIELD_OFFSET(SourceCodeInfo, _impl_._cached_size_),
           false,
@@ -2401,8 +2388,7 @@ constexpr auto GeneratedCodeInfo::InternalGenerateClassData_(
           Super_::GetNewImpl<GeneratedCodeInfo>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           &GeneratedCodeInfo::SharedDtor,
-          Super_::GetClearImpl<GeneratedCodeInfo>(), &GeneratedCodeInfo::ByteSizeLong,
-              &GeneratedCodeInfo::_InternalSerialize,
+          &GeneratedCodeInfo::Clear, &GeneratedCodeInfo::ByteSizeLong, &GeneratedCodeInfo::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
           PROTOBUF_FIELD_OFFSET(GeneratedCodeInfo, _impl_._cached_size_),
           false,
@@ -2574,8 +2560,7 @@ constexpr auto FeatureSetDefaults_FeatureSetEditionDefault::InternalGenerateClas
           Super_::GetNewImpl<FeatureSetDefaults_FeatureSetEditionDefault>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           &FeatureSetDefaults_FeatureSetEditionDefault::SharedDtor,
-          Super_::GetClearImpl<FeatureSetDefaults_FeatureSetEditionDefault>(), &FeatureSetDefaults_FeatureSetEditionDefault::ByteSizeLong,
-              &FeatureSetDefaults_FeatureSetEditionDefault::_InternalSerialize,
+          &FeatureSetDefaults_FeatureSetEditionDefault::Clear, &FeatureSetDefaults_FeatureSetEditionDefault::ByteSizeLong, &FeatureSetDefaults_FeatureSetEditionDefault::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
           PROTOBUF_FIELD_OFFSET(FeatureSetDefaults_FeatureSetEditionDefault, _impl_._cached_size_),
           false,
@@ -2754,8 +2739,7 @@ constexpr auto ServiceOptions::InternalGenerateClassData_(
           Super_::GetNewImpl<ServiceOptions>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           &ServiceOptions::SharedDtor,
-          Super_::GetClearImpl<ServiceOptions>(), &ServiceOptions::ByteSizeLong,
-              &ServiceOptions::_InternalSerialize,
+          &ServiceOptions::Clear, &ServiceOptions::ByteSizeLong, &ServiceOptions::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
           PROTOBUF_FIELD_OFFSET(ServiceOptions, _impl_._cached_size_),
           false,
@@ -2926,8 +2910,7 @@ constexpr auto OneofOptions::InternalGenerateClassData_(
           Super_::GetNewImpl<OneofOptions>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           &OneofOptions::SharedDtor,
-          Super_::GetClearImpl<OneofOptions>(), &OneofOptions::ByteSizeLong,
-              &OneofOptions::_InternalSerialize,
+          &OneofOptions::Clear, &OneofOptions::ByteSizeLong, &OneofOptions::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
           PROTOBUF_FIELD_OFFSET(OneofOptions, _impl_._cached_size_),
           false,
@@ -3117,8 +3100,7 @@ constexpr auto MethodOptions::InternalGenerateClassData_(
           Super_::GetNewImpl<MethodOptions>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           &MethodOptions::SharedDtor,
-          Super_::GetClearImpl<MethodOptions>(), &MethodOptions::ByteSizeLong,
-              &MethodOptions::_InternalSerialize,
+          &MethodOptions::Clear, &MethodOptions::ByteSizeLong, &MethodOptions::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
           PROTOBUF_FIELD_OFFSET(MethodOptions, _impl_._cached_size_),
           false,
@@ -3317,8 +3299,7 @@ constexpr auto MessageOptions::InternalGenerateClassData_(
           Super_::GetNewImpl<MessageOptions>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           &MessageOptions::SharedDtor,
-          Super_::GetClearImpl<MessageOptions>(), &MessageOptions::ByteSizeLong,
-              &MessageOptions::_InternalSerialize,
+          &MessageOptions::Clear, &MessageOptions::ByteSizeLong, &MessageOptions::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
           PROTOBUF_FIELD_OFFSET(MessageOptions, _impl_._cached_size_),
           false,
@@ -3642,8 +3623,7 @@ constexpr auto FileOptions::InternalGenerateClassData_(
           Super_::GetNewImpl<FileOptions>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           &FileOptions::SharedDtor,
-          Super_::GetClearImpl<FileOptions>(), &FileOptions::ByteSizeLong,
-              &FileOptions::_InternalSerialize,
+          &FileOptions::Clear, &FileOptions::ByteSizeLong, &FileOptions::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
           PROTOBUF_FIELD_OFFSET(FileOptions, _impl_._cached_size_),
           false,
@@ -3908,8 +3888,7 @@ constexpr auto FieldOptions::InternalGenerateClassData_(
           Super_::GetNewImpl<FieldOptions>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           &FieldOptions::SharedDtor,
-          Super_::GetClearImpl<FieldOptions>(), &FieldOptions::ByteSizeLong,
-              &FieldOptions::_InternalSerialize,
+          &FieldOptions::Clear, &FieldOptions::ByteSizeLong, &FieldOptions::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
           PROTOBUF_FIELD_OFFSET(FieldOptions, _impl_._cached_size_),
           false,
@@ -4076,8 +4055,7 @@ constexpr auto FeatureSetDefaults::InternalGenerateClassData_(
           Super_::GetNewImpl<FeatureSetDefaults>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           &FeatureSetDefaults::SharedDtor,
-          Super_::GetClearImpl<FeatureSetDefaults>(), &FeatureSetDefaults::ByteSizeLong,
-              &FeatureSetDefaults::_InternalSerialize,
+          &FeatureSetDefaults::Clear, &FeatureSetDefaults::ByteSizeLong, &FeatureSetDefaults::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
           PROTOBUF_FIELD_OFFSET(FeatureSetDefaults, _impl_._cached_size_),
           false,
@@ -4273,8 +4251,7 @@ constexpr auto ExtensionRangeOptions::InternalGenerateClassData_(
           Super_::GetNewImpl<ExtensionRangeOptions>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           &ExtensionRangeOptions::SharedDtor,
-          Super_::GetClearImpl<ExtensionRangeOptions>(), &ExtensionRangeOptions::ByteSizeLong,
-              &ExtensionRangeOptions::_InternalSerialize,
+          &ExtensionRangeOptions::Clear, &ExtensionRangeOptions::ByteSizeLong, &ExtensionRangeOptions::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
           PROTOBUF_FIELD_OFFSET(ExtensionRangeOptions, _impl_._cached_size_),
           false,
@@ -4472,8 +4449,7 @@ constexpr auto EnumValueOptions::InternalGenerateClassData_(
           Super_::GetNewImpl<EnumValueOptions>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           &EnumValueOptions::SharedDtor,
-          Super_::GetClearImpl<EnumValueOptions>(), &EnumValueOptions::ByteSizeLong,
-              &EnumValueOptions::_InternalSerialize,
+          &EnumValueOptions::Clear, &EnumValueOptions::ByteSizeLong, &EnumValueOptions::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
           PROTOBUF_FIELD_OFFSET(EnumValueOptions, _impl_._cached_size_),
           false,
@@ -4663,8 +4639,7 @@ constexpr auto EnumOptions::InternalGenerateClassData_(
           Super_::GetNewImpl<EnumOptions>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           &EnumOptions::SharedDtor,
-          Super_::GetClearImpl<EnumOptions>(), &EnumOptions::ByteSizeLong,
-              &EnumOptions::_InternalSerialize,
+          &EnumOptions::Clear, &EnumOptions::ByteSizeLong, &EnumOptions::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
           PROTOBUF_FIELD_OFFSET(EnumOptions, _impl_._cached_size_),
           false,
@@ -4824,8 +4799,7 @@ constexpr auto OneofDescriptorProto::InternalGenerateClassData_(
           Super_::GetNewImpl<OneofDescriptorProto>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           &OneofDescriptorProto::SharedDtor,
-          Super_::GetClearImpl<OneofDescriptorProto>(), &OneofDescriptorProto::ByteSizeLong,
-              &OneofDescriptorProto::_InternalSerialize,
+          &OneofDescriptorProto::Clear, &OneofDescriptorProto::ByteSizeLong, &OneofDescriptorProto::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
           PROTOBUF_FIELD_OFFSET(OneofDescriptorProto, _impl_._cached_size_),
           false,
@@ -5019,8 +4993,7 @@ constexpr auto MethodDescriptorProto::InternalGenerateClassData_(
           Super_::GetNewImpl<MethodDescriptorProto>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           &MethodDescriptorProto::SharedDtor,
-          Super_::GetClearImpl<MethodDescriptorProto>(), &MethodDescriptorProto::ByteSizeLong,
-              &MethodDescriptorProto::_InternalSerialize,
+          &MethodDescriptorProto::Clear, &MethodDescriptorProto::ByteSizeLong, &MethodDescriptorProto::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
           PROTOBUF_FIELD_OFFSET(MethodDescriptorProto, _impl_._cached_size_),
           false,
@@ -5255,8 +5228,7 @@ constexpr auto FieldDescriptorProto::InternalGenerateClassData_(
           Super_::GetNewImpl<FieldDescriptorProto>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           &FieldDescriptorProto::SharedDtor,
-          Super_::GetClearImpl<FieldDescriptorProto>(), &FieldDescriptorProto::ByteSizeLong,
-              &FieldDescriptorProto::_InternalSerialize,
+          &FieldDescriptorProto::Clear, &FieldDescriptorProto::ByteSizeLong, &FieldDescriptorProto::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
           PROTOBUF_FIELD_OFFSET(FieldDescriptorProto, _impl_._cached_size_),
           false,
@@ -5424,8 +5396,7 @@ constexpr auto EnumValueDescriptorProto::InternalGenerateClassData_(
           Super_::GetNewImpl<EnumValueDescriptorProto>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           &EnumValueDescriptorProto::SharedDtor,
-          Super_::GetClearImpl<EnumValueDescriptorProto>(), &EnumValueDescriptorProto::ByteSizeLong,
-              &EnumValueDescriptorProto::_InternalSerialize,
+          &EnumValueDescriptorProto::Clear, &EnumValueDescriptorProto::ByteSizeLong, &EnumValueDescriptorProto::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
           PROTOBUF_FIELD_OFFSET(EnumValueDescriptorProto, _impl_._cached_size_),
           false,
@@ -5591,8 +5562,7 @@ constexpr auto DescriptorProto_ExtensionRange::InternalGenerateClassData_(
           Super_::GetNewImpl<DescriptorProto_ExtensionRange>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           &DescriptorProto_ExtensionRange::SharedDtor,
-          Super_::GetClearImpl<DescriptorProto_ExtensionRange>(), &DescriptorProto_ExtensionRange::ByteSizeLong,
-              &DescriptorProto_ExtensionRange::_InternalSerialize,
+          &DescriptorProto_ExtensionRange::Clear, &DescriptorProto_ExtensionRange::ByteSizeLong, &DescriptorProto_ExtensionRange::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
           PROTOBUF_FIELD_OFFSET(DescriptorProto_ExtensionRange, _impl_._cached_size_),
           false,
@@ -5769,8 +5739,7 @@ constexpr auto ServiceDescriptorProto::InternalGenerateClassData_(
           Super_::GetNewImpl<ServiceDescriptorProto>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           &ServiceDescriptorProto::SharedDtor,
-          Super_::GetClearImpl<ServiceDescriptorProto>(), &ServiceDescriptorProto::ByteSizeLong,
-              &ServiceDescriptorProto::_InternalSerialize,
+          &ServiceDescriptorProto::Clear, &ServiceDescriptorProto::ByteSizeLong, &ServiceDescriptorProto::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
           PROTOBUF_FIELD_OFFSET(ServiceDescriptorProto, _impl_._cached_size_),
           false,
@@ -5983,8 +5952,7 @@ constexpr auto EnumDescriptorProto::InternalGenerateClassData_(
           Super_::GetNewImpl<EnumDescriptorProto>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           &EnumDescriptorProto::SharedDtor,
-          Super_::GetClearImpl<EnumDescriptorProto>(), &EnumDescriptorProto::ByteSizeLong,
-              &EnumDescriptorProto::_InternalSerialize,
+          &EnumDescriptorProto::Clear, &EnumDescriptorProto::ByteSizeLong, &EnumDescriptorProto::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
           PROTOBUF_FIELD_OFFSET(EnumDescriptorProto, _impl_._cached_size_),
           false,
@@ -6280,8 +6248,7 @@ constexpr auto DescriptorProto::InternalGenerateClassData_(
           Super_::GetNewImpl<DescriptorProto>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           &DescriptorProto::SharedDtor,
-          Super_::GetClearImpl<DescriptorProto>(), &DescriptorProto::ByteSizeLong,
-              &DescriptorProto::_InternalSerialize,
+          &DescriptorProto::Clear, &DescriptorProto::ByteSizeLong, &DescriptorProto::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
           PROTOBUF_FIELD_OFFSET(DescriptorProto, _impl_._cached_size_),
           false,
@@ -6589,8 +6556,7 @@ constexpr auto FileDescriptorProto::InternalGenerateClassData_(
           Super_::GetNewImpl<FileDescriptorProto>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           &FileDescriptorProto::SharedDtor,
-          Super_::GetClearImpl<FileDescriptorProto>(), &FileDescriptorProto::ByteSizeLong,
-              &FileDescriptorProto::_InternalSerialize,
+          &FileDescriptorProto::Clear, &FileDescriptorProto::ByteSizeLong, &FileDescriptorProto::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
           PROTOBUF_FIELD_OFFSET(FileDescriptorProto, _impl_._cached_size_),
           false,
@@ -6745,8 +6711,7 @@ constexpr auto FileDescriptorSet::InternalGenerateClassData_(
           Super_::GetNewImpl<FileDescriptorSet>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           &FileDescriptorSet::SharedDtor,
-          Super_::GetClearImpl<FileDescriptorSet>(), &FileDescriptorSet::ByteSizeLong,
-              &FileDescriptorSet::_InternalSerialize,
+          &FileDescriptorSet::Clear, &FileDescriptorSet::ByteSizeLong, &FileDescriptorSet::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
           PROTOBUF_FIELD_OFFSET(FileDescriptorSet, _impl_._cached_size_),
           false,
@@ -7973,19 +7938,25 @@ PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const FileDescriptorSet::ParseTableT_
     FileDescriptorSet::_table_ =
         FileDescriptorSet::InternalGenerateParseTable_(FileDescriptorSet_class_data_.base());
 #endif  // !PROTOBUF_MESSAGE_GLOBALS
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+PROTOBUF_NOINLINE void FileDescriptorSet::Clear(MessageLite& base) {
+  FileDescriptorSet& this_ = static_cast<FileDescriptorSet&>(base);
+#else   // PROTOBUF_CUSTOM_VTABLE
 PROTOBUF_NOINLINE void FileDescriptorSet::Clear() {
-  auto& this_ [[maybe_unused]] = *this;
+  FileDescriptorSet& this_ [[maybe_unused]] = *this;
+#endif  // PROTOBUF_CUSTOM_VTABLE
+
   // @@protoc_insertion_point(message_clear_start:google.protobuf.FileDescriptorSet)
-  ::google::protobuf::internal::TSanWrite(&_impl_);
+  ::google::protobuf::internal::TSanWrite(&this_._impl_);
   ::uint32_t cached_has_bits [[maybe_unused]] = 0;
 
-  _impl_._extensions_.Clear();
+  this_._impl_._extensions_.Clear();
   cached_has_bits = this_._impl_._has_bits_[0];
   if (CheckHasBit(cached_has_bits, 0x00000001U)) {
-    _impl_.file_.Clear();
+    this_._impl_.file_.Clear();
   }
-  _impl_._has_bits_.Clear();
-  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
+  this_._impl_._has_bits_.Clear();
+  this_._internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
 }
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
@@ -8317,37 +8288,43 @@ PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const FileDescriptorProto::ParseTableT_
     FileDescriptorProto::_table_ =
         FileDescriptorProto::InternalGenerateParseTable_(FileDescriptorProto_class_data_.base());
 #endif  // !PROTOBUF_MESSAGE_GLOBALS
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+PROTOBUF_NOINLINE void FileDescriptorProto::Clear(MessageLite& base) {
+  FileDescriptorProto& this_ = static_cast<FileDescriptorProto&>(base);
+#else   // PROTOBUF_CUSTOM_VTABLE
 PROTOBUF_NOINLINE void FileDescriptorProto::Clear() {
-  auto& this_ [[maybe_unused]] = *this;
+  FileDescriptorProto& this_ [[maybe_unused]] = *this;
+#endif  // PROTOBUF_CUSTOM_VTABLE
+
   // @@protoc_insertion_point(message_clear_start:google.protobuf.FileDescriptorProto)
-  ::google::protobuf::internal::TSanWrite(&_impl_);
+  ::google::protobuf::internal::TSanWrite(&this_._impl_);
   ::uint32_t cached_has_bits [[maybe_unused]] = 0;
 
   cached_has_bits = this_._impl_._has_bits_[0];
   if (BatchCheckHasBit(cached_has_bits, 0x000000ffU)) {
     if (CheckHasBit(cached_has_bits, 0x00000001U)) {
-      _impl_.dependency_.Clear();
+      this_._impl_.dependency_.Clear();
     }
     if (CheckHasBit(cached_has_bits, 0x00000002U)) {
-      _impl_.message_type_.Clear();
+      this_._impl_.message_type_.Clear();
     }
     if (CheckHasBit(cached_has_bits, 0x00000004U)) {
-      _impl_.enum_type_.Clear();
+      this_._impl_.enum_type_.Clear();
     }
     if (CheckHasBit(cached_has_bits, 0x00000008U)) {
-      _impl_.service_.Clear();
+      this_._impl_.service_.Clear();
     }
     if (CheckHasBit(cached_has_bits, 0x00000010U)) {
-      _impl_.extension_.Clear();
+      this_._impl_.extension_.Clear();
     }
     if (CheckHasBit(cached_has_bits, 0x00000020U)) {
-      _impl_.public_dependency_.Clear();
+      this_._impl_.public_dependency_.Clear();
     }
     if (CheckHasBit(cached_has_bits, 0x00000040U)) {
-      _impl_.weak_dependency_.Clear();
+      this_._impl_.weak_dependency_.Clear();
     }
     if (CheckHasBit(cached_has_bits, 0x00000080U)) {
-      _impl_.option_dependency_.Clear();
+      this_._impl_.option_dependency_.Clear();
     }
   }
   if (BatchCheckHasBit(cached_has_bits, 0x00001f00U)) {
@@ -8370,8 +8347,8 @@ PROTOBUF_NOINLINE void FileDescriptorProto::Clear() {
     }
   }
   this_._impl_.edition_ = 0;
-  _impl_._has_bits_.Clear();
-  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
+  this_._impl_._has_bits_.Clear();
+  this_._internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
 }
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
@@ -8879,10 +8856,16 @@ PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const DescriptorProto_ExtensionRange::ParseTab
     DescriptorProto_ExtensionRange::_table_ =
         DescriptorProto_ExtensionRange::InternalGenerateParseTable_(DescriptorProto_ExtensionRange_class_data_.base());
 #endif  // !PROTOBUF_MESSAGE_GLOBALS
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+PROTOBUF_NOINLINE void DescriptorProto_ExtensionRange::Clear(MessageLite& base) {
+  DescriptorProto_ExtensionRange& this_ = static_cast<DescriptorProto_ExtensionRange&>(base);
+#else   // PROTOBUF_CUSTOM_VTABLE
 PROTOBUF_NOINLINE void DescriptorProto_ExtensionRange::Clear() {
-  auto& this_ [[maybe_unused]] = *this;
+  DescriptorProto_ExtensionRange& this_ [[maybe_unused]] = *this;
+#endif  // PROTOBUF_CUSTOM_VTABLE
+
   // @@protoc_insertion_point(message_clear_start:google.protobuf.DescriptorProto.ExtensionRange)
-  ::google::protobuf::internal::TSanWrite(&_impl_);
+  ::google::protobuf::internal::TSanWrite(&this_._impl_);
   ::uint32_t cached_has_bits [[maybe_unused]] = 0;
 
   cached_has_bits = this_._impl_._has_bits_[0];
@@ -8897,8 +8880,8 @@ PROTOBUF_NOINLINE void DescriptorProto_ExtensionRange::Clear() {
                  reinterpret_cast<char*>(&this_._impl_.start_)) +
                  sizeof(_impl_.end_));
   }
-  _impl_._has_bits_.Clear();
-  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
+  this_._impl_._has_bits_.Clear();
+  this_._internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
 }
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
@@ -9127,10 +9110,16 @@ PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const DescriptorProto_ReservedRange::ParseTabl
     DescriptorProto_ReservedRange::_table_ =
         DescriptorProto_ReservedRange::InternalGenerateParseTable_(DescriptorProto_ReservedRange_class_data_.base());
 #endif  // !PROTOBUF_MESSAGE_GLOBALS
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+PROTOBUF_NOINLINE void DescriptorProto_ReservedRange::Clear(MessageLite& base) {
+  DescriptorProto_ReservedRange& this_ = static_cast<DescriptorProto_ReservedRange&>(base);
+#else   // PROTOBUF_CUSTOM_VTABLE
 PROTOBUF_NOINLINE void DescriptorProto_ReservedRange::Clear() {
-  auto& this_ [[maybe_unused]] = *this;
+  DescriptorProto_ReservedRange& this_ [[maybe_unused]] = *this;
+#endif  // PROTOBUF_CUSTOM_VTABLE
+
   // @@protoc_insertion_point(message_clear_start:google.protobuf.DescriptorProto.ReservedRange)
-  ::google::protobuf::internal::TSanWrite(&_impl_);
+  ::google::protobuf::internal::TSanWrite(&this_._impl_);
   ::uint32_t cached_has_bits [[maybe_unused]] = 0;
 
   cached_has_bits = this_._impl_._has_bits_[0];
@@ -9141,8 +9130,8 @@ PROTOBUF_NOINLINE void DescriptorProto_ReservedRange::Clear() {
                  reinterpret_cast<char*>(&this_._impl_.start_)) +
                  sizeof(_impl_.end_));
   }
-  _impl_._has_bits_.Clear();
-  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
+  this_._impl_._has_bits_.Clear();
+  this_._internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
 }
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
@@ -9458,37 +9447,43 @@ PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const DescriptorProto::ParseTableT_
     DescriptorProto::_table_ =
         DescriptorProto::InternalGenerateParseTable_(DescriptorProto_class_data_.base());
 #endif  // !PROTOBUF_MESSAGE_GLOBALS
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+PROTOBUF_NOINLINE void DescriptorProto::Clear(MessageLite& base) {
+  DescriptorProto& this_ = static_cast<DescriptorProto&>(base);
+#else   // PROTOBUF_CUSTOM_VTABLE
 PROTOBUF_NOINLINE void DescriptorProto::Clear() {
-  auto& this_ [[maybe_unused]] = *this;
+  DescriptorProto& this_ [[maybe_unused]] = *this;
+#endif  // PROTOBUF_CUSTOM_VTABLE
+
   // @@protoc_insertion_point(message_clear_start:google.protobuf.DescriptorProto)
-  ::google::protobuf::internal::TSanWrite(&_impl_);
+  ::google::protobuf::internal::TSanWrite(&this_._impl_);
   ::uint32_t cached_has_bits [[maybe_unused]] = 0;
 
   cached_has_bits = this_._impl_._has_bits_[0];
   if (BatchCheckHasBit(cached_has_bits, 0x000000ffU)) {
     if (CheckHasBit(cached_has_bits, 0x00000001U)) {
-      _impl_.field_.Clear();
+      this_._impl_.field_.Clear();
     }
     if (CheckHasBit(cached_has_bits, 0x00000002U)) {
-      _impl_.nested_type_.Clear();
+      this_._impl_.nested_type_.Clear();
     }
     if (CheckHasBit(cached_has_bits, 0x00000004U)) {
-      _impl_.enum_type_.Clear();
+      this_._impl_.enum_type_.Clear();
     }
     if (CheckHasBit(cached_has_bits, 0x00000008U)) {
-      _impl_.extension_range_.Clear();
+      this_._impl_.extension_range_.Clear();
     }
     if (CheckHasBit(cached_has_bits, 0x00000010U)) {
-      _impl_.extension_.Clear();
+      this_._impl_.extension_.Clear();
     }
     if (CheckHasBit(cached_has_bits, 0x00000020U)) {
-      _impl_.oneof_decl_.Clear();
+      this_._impl_.oneof_decl_.Clear();
     }
     if (CheckHasBit(cached_has_bits, 0x00000040U)) {
-      _impl_.reserved_range_.Clear();
+      this_._impl_.reserved_range_.Clear();
     }
     if (CheckHasBit(cached_has_bits, 0x00000080U)) {
-      _impl_.reserved_name_.Clear();
+      this_._impl_.reserved_name_.Clear();
     }
   }
   if (BatchCheckHasBit(cached_has_bits, 0x00000300U)) {
@@ -9501,8 +9496,8 @@ PROTOBUF_NOINLINE void DescriptorProto::Clear() {
     }
   }
   this_._impl_.visibility_ = 0;
-  _impl_._has_bits_.Clear();
-  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
+  this_._impl_._has_bits_.Clear();
+  this_._internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
 }
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
@@ -9971,10 +9966,16 @@ PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const ExtensionRangeOptions_Declaration::Parse
     ExtensionRangeOptions_Declaration::_table_ =
         ExtensionRangeOptions_Declaration::InternalGenerateParseTable_(ExtensionRangeOptions_Declaration_class_data_.base());
 #endif  // !PROTOBUF_MESSAGE_GLOBALS
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+PROTOBUF_NOINLINE void ExtensionRangeOptions_Declaration::Clear(MessageLite& base) {
+  ExtensionRangeOptions_Declaration& this_ = static_cast<ExtensionRangeOptions_Declaration&>(base);
+#else   // PROTOBUF_CUSTOM_VTABLE
 PROTOBUF_NOINLINE void ExtensionRangeOptions_Declaration::Clear() {
-  auto& this_ [[maybe_unused]] = *this;
+  ExtensionRangeOptions_Declaration& this_ [[maybe_unused]] = *this;
+#endif  // PROTOBUF_CUSTOM_VTABLE
+
   // @@protoc_insertion_point(message_clear_start:google.protobuf.ExtensionRangeOptions.Declaration)
-  ::google::protobuf::internal::TSanWrite(&_impl_);
+  ::google::protobuf::internal::TSanWrite(&this_._impl_);
   ::uint32_t cached_has_bits [[maybe_unused]] = 0;
 
   cached_has_bits = this_._impl_._has_bits_[0];
@@ -9993,8 +9994,8 @@ PROTOBUF_NOINLINE void ExtensionRangeOptions_Declaration::Clear() {
                  reinterpret_cast<char*>(&this_._impl_.number_)) +
                  sizeof(_impl_.repeated_));
   }
-  _impl_._has_bits_.Clear();
-  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
+  this_._impl_._has_bits_.Clear();
+  this_._internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
 }
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
@@ -10275,20 +10276,26 @@ PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const ExtensionRangeOptions::ParseTableT_
     ExtensionRangeOptions::_table_ =
         ExtensionRangeOptions::InternalGenerateParseTable_(ExtensionRangeOptions_class_data_.base());
 #endif  // !PROTOBUF_MESSAGE_GLOBALS
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+PROTOBUF_NOINLINE void ExtensionRangeOptions::Clear(MessageLite& base) {
+  ExtensionRangeOptions& this_ = static_cast<ExtensionRangeOptions&>(base);
+#else   // PROTOBUF_CUSTOM_VTABLE
 PROTOBUF_NOINLINE void ExtensionRangeOptions::Clear() {
-  auto& this_ [[maybe_unused]] = *this;
+  ExtensionRangeOptions& this_ [[maybe_unused]] = *this;
+#endif  // PROTOBUF_CUSTOM_VTABLE
+
   // @@protoc_insertion_point(message_clear_start:google.protobuf.ExtensionRangeOptions)
-  ::google::protobuf::internal::TSanWrite(&_impl_);
+  ::google::protobuf::internal::TSanWrite(&this_._impl_);
   ::uint32_t cached_has_bits [[maybe_unused]] = 0;
 
-  _impl_._extensions_.Clear();
+  this_._impl_._extensions_.Clear();
   cached_has_bits = this_._impl_._has_bits_[0];
   if (BatchCheckHasBit(cached_has_bits, 0x0000000fU)) {
     if (CheckHasBit(cached_has_bits, 0x00000001U)) {
-      _impl_.declaration_.Clear();
+      this_._impl_.declaration_.Clear();
     }
     if (CheckHasBit(cached_has_bits, 0x00000002U)) {
-      _impl_.uninterpreted_option_.Clear();
+      this_._impl_.uninterpreted_option_.Clear();
     }
     if (CheckHasBit(cached_has_bits, 0x00000004U)) {
       ABSL_DCHECK(this_._impl_.features_ != nullptr);
@@ -10296,8 +10303,8 @@ PROTOBUF_NOINLINE void ExtensionRangeOptions::Clear() {
     }
     this_._impl_.verification_ = 1;
   }
-  _impl_._has_bits_.Clear();
-  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
+  this_._impl_._has_bits_.Clear();
+  this_._internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
 }
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
@@ -10617,10 +10624,16 @@ PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const FieldDescriptorProto::ParseTableT_
     FieldDescriptorProto::_table_ =
         FieldDescriptorProto::InternalGenerateParseTable_(FieldDescriptorProto_class_data_.base());
 #endif  // !PROTOBUF_MESSAGE_GLOBALS
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+PROTOBUF_NOINLINE void FieldDescriptorProto::Clear(MessageLite& base) {
+  FieldDescriptorProto& this_ = static_cast<FieldDescriptorProto&>(base);
+#else   // PROTOBUF_CUSTOM_VTABLE
 PROTOBUF_NOINLINE void FieldDescriptorProto::Clear() {
-  auto& this_ [[maybe_unused]] = *this;
+  FieldDescriptorProto& this_ [[maybe_unused]] = *this;
+#endif  // PROTOBUF_CUSTOM_VTABLE
+
   // @@protoc_insertion_point(message_clear_start:google.protobuf.FieldDescriptorProto)
-  ::google::protobuf::internal::TSanWrite(&_impl_);
+  ::google::protobuf::internal::TSanWrite(&this_._impl_);
   ::uint32_t cached_has_bits [[maybe_unused]] = 0;
 
   cached_has_bits = this_._impl_._has_bits_[0];
@@ -10657,8 +10670,8 @@ PROTOBUF_NOINLINE void FieldDescriptorProto::Clear() {
     this_._impl_.label_ = 1;
     this_._impl_.type_ = 1;
   }
-  _impl_._has_bits_.Clear();
-  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
+  this_._impl_._has_bits_.Clear();
+  this_._internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
 }
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
@@ -11023,10 +11036,16 @@ PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const OneofDescriptorProto::ParseTableT_
     OneofDescriptorProto::_table_ =
         OneofDescriptorProto::InternalGenerateParseTable_(OneofDescriptorProto_class_data_.base());
 #endif  // !PROTOBUF_MESSAGE_GLOBALS
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+PROTOBUF_NOINLINE void OneofDescriptorProto::Clear(MessageLite& base) {
+  OneofDescriptorProto& this_ = static_cast<OneofDescriptorProto&>(base);
+#else   // PROTOBUF_CUSTOM_VTABLE
 PROTOBUF_NOINLINE void OneofDescriptorProto::Clear() {
-  auto& this_ [[maybe_unused]] = *this;
+  OneofDescriptorProto& this_ [[maybe_unused]] = *this;
+#endif  // PROTOBUF_CUSTOM_VTABLE
+
   // @@protoc_insertion_point(message_clear_start:google.protobuf.OneofDescriptorProto)
-  ::google::protobuf::internal::TSanWrite(&_impl_);
+  ::google::protobuf::internal::TSanWrite(&this_._impl_);
   ::uint32_t cached_has_bits [[maybe_unused]] = 0;
 
   cached_has_bits = this_._impl_._has_bits_[0];
@@ -11039,8 +11058,8 @@ PROTOBUF_NOINLINE void OneofDescriptorProto::Clear() {
       this_._impl_.options_->Clear();
     }
   }
-  _impl_._has_bits_.Clear();
-  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
+  this_._impl_._has_bits_.Clear();
+  this_._internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
 }
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
@@ -11251,10 +11270,16 @@ PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const EnumDescriptorProto_EnumReservedRange::P
     EnumDescriptorProto_EnumReservedRange::_table_ =
         EnumDescriptorProto_EnumReservedRange::InternalGenerateParseTable_(EnumDescriptorProto_EnumReservedRange_class_data_.base());
 #endif  // !PROTOBUF_MESSAGE_GLOBALS
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+PROTOBUF_NOINLINE void EnumDescriptorProto_EnumReservedRange::Clear(MessageLite& base) {
+  EnumDescriptorProto_EnumReservedRange& this_ = static_cast<EnumDescriptorProto_EnumReservedRange&>(base);
+#else   // PROTOBUF_CUSTOM_VTABLE
 PROTOBUF_NOINLINE void EnumDescriptorProto_EnumReservedRange::Clear() {
-  auto& this_ [[maybe_unused]] = *this;
+  EnumDescriptorProto_EnumReservedRange& this_ [[maybe_unused]] = *this;
+#endif  // PROTOBUF_CUSTOM_VTABLE
+
   // @@protoc_insertion_point(message_clear_start:google.protobuf.EnumDescriptorProto.EnumReservedRange)
-  ::google::protobuf::internal::TSanWrite(&_impl_);
+  ::google::protobuf::internal::TSanWrite(&this_._impl_);
   ::uint32_t cached_has_bits [[maybe_unused]] = 0;
 
   cached_has_bits = this_._impl_._has_bits_[0];
@@ -11265,8 +11290,8 @@ PROTOBUF_NOINLINE void EnumDescriptorProto_EnumReservedRange::Clear() {
                  reinterpret_cast<char*>(&this_._impl_.start_)) +
                  sizeof(_impl_.end_));
   }
-  _impl_._has_bits_.Clear();
-  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
+  this_._impl_._has_bits_.Clear();
+  this_._internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
 }
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
@@ -11522,22 +11547,28 @@ PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const EnumDescriptorProto::ParseTableT_
     EnumDescriptorProto::_table_ =
         EnumDescriptorProto::InternalGenerateParseTable_(EnumDescriptorProto_class_data_.base());
 #endif  // !PROTOBUF_MESSAGE_GLOBALS
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+PROTOBUF_NOINLINE void EnumDescriptorProto::Clear(MessageLite& base) {
+  EnumDescriptorProto& this_ = static_cast<EnumDescriptorProto&>(base);
+#else   // PROTOBUF_CUSTOM_VTABLE
 PROTOBUF_NOINLINE void EnumDescriptorProto::Clear() {
-  auto& this_ [[maybe_unused]] = *this;
+  EnumDescriptorProto& this_ [[maybe_unused]] = *this;
+#endif  // PROTOBUF_CUSTOM_VTABLE
+
   // @@protoc_insertion_point(message_clear_start:google.protobuf.EnumDescriptorProto)
-  ::google::protobuf::internal::TSanWrite(&_impl_);
+  ::google::protobuf::internal::TSanWrite(&this_._impl_);
   ::uint32_t cached_has_bits [[maybe_unused]] = 0;
 
   cached_has_bits = this_._impl_._has_bits_[0];
   if (BatchCheckHasBit(cached_has_bits, 0x0000001fU)) {
     if (CheckHasBit(cached_has_bits, 0x00000001U)) {
-      _impl_.value_.Clear();
+      this_._impl_.value_.Clear();
     }
     if (CheckHasBit(cached_has_bits, 0x00000002U)) {
-      _impl_.reserved_range_.Clear();
+      this_._impl_.reserved_range_.Clear();
     }
     if (CheckHasBit(cached_has_bits, 0x00000004U)) {
-      _impl_.reserved_name_.Clear();
+      this_._impl_.reserved_name_.Clear();
     }
     if (CheckHasBit(cached_has_bits, 0x00000008U)) {
       this_._impl_.name_.ClearNonDefaultToEmpty();
@@ -11548,8 +11579,8 @@ PROTOBUF_NOINLINE void EnumDescriptorProto::Clear() {
     }
   }
   this_._impl_.visibility_ = 0;
-  _impl_._has_bits_.Clear();
-  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
+  this_._impl_._has_bits_.Clear();
+  this_._internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
 }
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
@@ -11875,10 +11906,16 @@ PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const EnumValueDescriptorProto::ParseTableT_
     EnumValueDescriptorProto::_table_ =
         EnumValueDescriptorProto::InternalGenerateParseTable_(EnumValueDescriptorProto_class_data_.base());
 #endif  // !PROTOBUF_MESSAGE_GLOBALS
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+PROTOBUF_NOINLINE void EnumValueDescriptorProto::Clear(MessageLite& base) {
+  EnumValueDescriptorProto& this_ = static_cast<EnumValueDescriptorProto&>(base);
+#else   // PROTOBUF_CUSTOM_VTABLE
 PROTOBUF_NOINLINE void EnumValueDescriptorProto::Clear() {
-  auto& this_ [[maybe_unused]] = *this;
+  EnumValueDescriptorProto& this_ [[maybe_unused]] = *this;
+#endif  // PROTOBUF_CUSTOM_VTABLE
+
   // @@protoc_insertion_point(message_clear_start:google.protobuf.EnumValueDescriptorProto)
-  ::google::protobuf::internal::TSanWrite(&_impl_);
+  ::google::protobuf::internal::TSanWrite(&this_._impl_);
   ::uint32_t cached_has_bits [[maybe_unused]] = 0;
 
   cached_has_bits = this_._impl_._has_bits_[0];
@@ -11892,8 +11929,8 @@ PROTOBUF_NOINLINE void EnumValueDescriptorProto::Clear() {
     }
   }
   this_._impl_.number_ = 0;
-  _impl_._has_bits_.Clear();
-  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
+  this_._impl_._has_bits_.Clear();
+  this_._internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
 }
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
@@ -12150,16 +12187,22 @@ PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const ServiceDescriptorProto::ParseTableT_
     ServiceDescriptorProto::_table_ =
         ServiceDescriptorProto::InternalGenerateParseTable_(ServiceDescriptorProto_class_data_.base());
 #endif  // !PROTOBUF_MESSAGE_GLOBALS
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+PROTOBUF_NOINLINE void ServiceDescriptorProto::Clear(MessageLite& base) {
+  ServiceDescriptorProto& this_ = static_cast<ServiceDescriptorProto&>(base);
+#else   // PROTOBUF_CUSTOM_VTABLE
 PROTOBUF_NOINLINE void ServiceDescriptorProto::Clear() {
-  auto& this_ [[maybe_unused]] = *this;
+  ServiceDescriptorProto& this_ [[maybe_unused]] = *this;
+#endif  // PROTOBUF_CUSTOM_VTABLE
+
   // @@protoc_insertion_point(message_clear_start:google.protobuf.ServiceDescriptorProto)
-  ::google::protobuf::internal::TSanWrite(&_impl_);
+  ::google::protobuf::internal::TSanWrite(&this_._impl_);
   ::uint32_t cached_has_bits [[maybe_unused]] = 0;
 
   cached_has_bits = this_._impl_._has_bits_[0];
   if (BatchCheckHasBit(cached_has_bits, 0x00000007U)) {
     if (CheckHasBit(cached_has_bits, 0x00000001U)) {
-      _impl_.method_.Clear();
+      this_._impl_.method_.Clear();
     }
     if (CheckHasBit(cached_has_bits, 0x00000002U)) {
       this_._impl_.name_.ClearNonDefaultToEmpty();
@@ -12169,8 +12212,8 @@ PROTOBUF_NOINLINE void ServiceDescriptorProto::Clear() {
       this_._impl_.options_->Clear();
     }
   }
-  _impl_._has_bits_.Clear();
-  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
+  this_._impl_._has_bits_.Clear();
+  this_._internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
 }
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
@@ -12440,10 +12483,16 @@ PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const MethodDescriptorProto::ParseTableT_
     MethodDescriptorProto::_table_ =
         MethodDescriptorProto::InternalGenerateParseTable_(MethodDescriptorProto_class_data_.base());
 #endif  // !PROTOBUF_MESSAGE_GLOBALS
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+PROTOBUF_NOINLINE void MethodDescriptorProto::Clear(MessageLite& base) {
+  MethodDescriptorProto& this_ = static_cast<MethodDescriptorProto&>(base);
+#else   // PROTOBUF_CUSTOM_VTABLE
 PROTOBUF_NOINLINE void MethodDescriptorProto::Clear() {
-  auto& this_ [[maybe_unused]] = *this;
+  MethodDescriptorProto& this_ [[maybe_unused]] = *this;
+#endif  // PROTOBUF_CUSTOM_VTABLE
+
   // @@protoc_insertion_point(message_clear_start:google.protobuf.MethodDescriptorProto)
-  ::google::protobuf::internal::TSanWrite(&_impl_);
+  ::google::protobuf::internal::TSanWrite(&this_._impl_);
   ::uint32_t cached_has_bits [[maybe_unused]] = 0;
 
   cached_has_bits = this_._impl_._has_bits_[0];
@@ -12467,8 +12516,8 @@ PROTOBUF_NOINLINE void MethodDescriptorProto::Clear() {
                reinterpret_cast<char*>(&this_._impl_.server_streaming_) -
                reinterpret_cast<char*>(&this_._impl_.client_streaming_)) +
                sizeof(_impl_.server_streaming_));
-  _impl_._has_bits_.Clear();
-  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
+  this_._impl_._has_bits_.Clear();
+  this_._internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
 }
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
@@ -12808,13 +12857,19 @@ PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const FileOptions::ParseTableT_
     FileOptions::_table_ =
         FileOptions::InternalGenerateParseTable_(FileOptions_class_data_.base());
 #endif  // !PROTOBUF_MESSAGE_GLOBALS
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+PROTOBUF_NOINLINE void FileOptions::Clear(MessageLite& base) {
+  FileOptions& this_ = static_cast<FileOptions&>(base);
+#else   // PROTOBUF_CUSTOM_VTABLE
 PROTOBUF_NOINLINE void FileOptions::Clear() {
-  auto& this_ [[maybe_unused]] = *this;
+  FileOptions& this_ [[maybe_unused]] = *this;
+#endif  // PROTOBUF_CUSTOM_VTABLE
+
   // @@protoc_insertion_point(message_clear_start:google.protobuf.FileOptions)
-  ::google::protobuf::internal::TSanWrite(&_impl_);
+  ::google::protobuf::internal::TSanWrite(&this_._impl_);
   ::uint32_t cached_has_bits [[maybe_unused]] = 0;
 
-  _impl_._extensions_.Clear();
+  this_._impl_._extensions_.Clear();
   cached_has_bits = this_._impl_._has_bits_[0];
   if (BatchCheckHasBit(cached_has_bits, 0x000000ffU)) {
     if (CheckHasBit(cached_has_bits, 0x00000001U)) {
@@ -12870,11 +12925,11 @@ PROTOBUF_NOINLINE void FileOptions::Clear() {
     this_._impl_.optimize_for_ = 1;
     this_._impl_.cc_enable_arenas_ = true;
     if (CheckHasBit(cached_has_bits, 0x00100000U)) {
-      _impl_.uninterpreted_option_.Clear();
+      this_._impl_.uninterpreted_option_.Clear();
     }
   }
-  _impl_._has_bits_.Clear();
-  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
+  this_._impl_._has_bits_.Clear();
+  this_._internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
 }
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
@@ -13412,13 +13467,19 @@ PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const MessageOptions::ParseTableT_
     MessageOptions::_table_ =
         MessageOptions::InternalGenerateParseTable_(MessageOptions_class_data_.base());
 #endif  // !PROTOBUF_MESSAGE_GLOBALS
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+PROTOBUF_NOINLINE void MessageOptions::Clear(MessageLite& base) {
+  MessageOptions& this_ = static_cast<MessageOptions&>(base);
+#else   // PROTOBUF_CUSTOM_VTABLE
 PROTOBUF_NOINLINE void MessageOptions::Clear() {
-  auto& this_ [[maybe_unused]] = *this;
+  MessageOptions& this_ [[maybe_unused]] = *this;
+#endif  // PROTOBUF_CUSTOM_VTABLE
+
   // @@protoc_insertion_point(message_clear_start:google.protobuf.MessageOptions)
-  ::google::protobuf::internal::TSanWrite(&_impl_);
+  ::google::protobuf::internal::TSanWrite(&this_._impl_);
   ::uint32_t cached_has_bits [[maybe_unused]] = 0;
 
-  _impl_._extensions_.Clear();
+  this_._impl_._extensions_.Clear();
   cached_has_bits = this_._impl_._has_bits_[0];
   if (CheckHasBit(cached_has_bits, 0x00000001U)) {
     ABSL_DCHECK(this_._impl_.features_ != nullptr);
@@ -13431,11 +13492,11 @@ PROTOBUF_NOINLINE void MessageOptions::Clear() {
                  reinterpret_cast<char*>(&this_._impl_.message_set_wire_format_)) +
                  sizeof(_impl_.deprecated_legacy_json_field_conflicts_));
     if (CheckHasBit(cached_has_bits, 0x00000040U)) {
-      _impl_.uninterpreted_option_.Clear();
+      this_._impl_.uninterpreted_option_.Clear();
     }
   }
-  _impl_._has_bits_.Clear();
-  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
+  this_._impl_._has_bits_.Clear();
+  this_._internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
 }
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
@@ -13736,10 +13797,16 @@ PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const FieldOptions_EditionDefault::ParseTableT
     FieldOptions_EditionDefault::_table_ =
         FieldOptions_EditionDefault::InternalGenerateParseTable_(FieldOptions_EditionDefault_class_data_.base());
 #endif  // !PROTOBUF_MESSAGE_GLOBALS
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+PROTOBUF_NOINLINE void FieldOptions_EditionDefault::Clear(MessageLite& base) {
+  FieldOptions_EditionDefault& this_ = static_cast<FieldOptions_EditionDefault&>(base);
+#else   // PROTOBUF_CUSTOM_VTABLE
 PROTOBUF_NOINLINE void FieldOptions_EditionDefault::Clear() {
-  auto& this_ [[maybe_unused]] = *this;
+  FieldOptions_EditionDefault& this_ [[maybe_unused]] = *this;
+#endif  // PROTOBUF_CUSTOM_VTABLE
+
   // @@protoc_insertion_point(message_clear_start:google.protobuf.FieldOptions.EditionDefault)
-  ::google::protobuf::internal::TSanWrite(&_impl_);
+  ::google::protobuf::internal::TSanWrite(&this_._impl_);
   ::uint32_t cached_has_bits [[maybe_unused]] = 0;
 
   cached_has_bits = this_._impl_._has_bits_[0];
@@ -13747,8 +13814,8 @@ PROTOBUF_NOINLINE void FieldOptions_EditionDefault::Clear() {
     this_._impl_.value_.ClearNonDefaultToEmpty();
   }
   this_._impl_.edition_ = 0;
-  _impl_._has_bits_.Clear();
-  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
+  this_._impl_._has_bits_.Clear();
+  this_._internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
 }
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
@@ -13969,10 +14036,16 @@ PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const FieldOptions_FeatureSupport::ParseTableT
     FieldOptions_FeatureSupport::_table_ =
         FieldOptions_FeatureSupport::InternalGenerateParseTable_(FieldOptions_FeatureSupport_class_data_.base());
 #endif  // !PROTOBUF_MESSAGE_GLOBALS
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+PROTOBUF_NOINLINE void FieldOptions_FeatureSupport::Clear(MessageLite& base) {
+  FieldOptions_FeatureSupport& this_ = static_cast<FieldOptions_FeatureSupport&>(base);
+#else   // PROTOBUF_CUSTOM_VTABLE
 PROTOBUF_NOINLINE void FieldOptions_FeatureSupport::Clear() {
-  auto& this_ [[maybe_unused]] = *this;
+  FieldOptions_FeatureSupport& this_ [[maybe_unused]] = *this;
+#endif  // PROTOBUF_CUSTOM_VTABLE
+
   // @@protoc_insertion_point(message_clear_start:google.protobuf.FieldOptions.FeatureSupport)
-  ::google::protobuf::internal::TSanWrite(&_impl_);
+  ::google::protobuf::internal::TSanWrite(&this_._impl_);
   ::uint32_t cached_has_bits [[maybe_unused]] = 0;
 
   cached_has_bits = this_._impl_._has_bits_[0];
@@ -13991,8 +14064,8 @@ PROTOBUF_NOINLINE void FieldOptions_FeatureSupport::Clear() {
                  reinterpret_cast<char*>(&this_._impl_.edition_introduced_)) +
                  sizeof(_impl_.edition_removed_));
   }
-  _impl_._has_bits_.Clear();
-  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
+  this_._impl_._has_bits_.Clear();
+  this_._internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
 }
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
@@ -14308,20 +14381,26 @@ PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const FieldOptions::ParseTableT_
     FieldOptions::_table_ =
         FieldOptions::InternalGenerateParseTable_(FieldOptions_class_data_.base());
 #endif  // !PROTOBUF_MESSAGE_GLOBALS
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+PROTOBUF_NOINLINE void FieldOptions::Clear(MessageLite& base) {
+  FieldOptions& this_ = static_cast<FieldOptions&>(base);
+#else   // PROTOBUF_CUSTOM_VTABLE
 PROTOBUF_NOINLINE void FieldOptions::Clear() {
-  auto& this_ [[maybe_unused]] = *this;
+  FieldOptions& this_ [[maybe_unused]] = *this;
+#endif  // PROTOBUF_CUSTOM_VTABLE
+
   // @@protoc_insertion_point(message_clear_start:google.protobuf.FieldOptions)
-  ::google::protobuf::internal::TSanWrite(&_impl_);
+  ::google::protobuf::internal::TSanWrite(&this_._impl_);
   ::uint32_t cached_has_bits [[maybe_unused]] = 0;
 
-  _impl_._extensions_.Clear();
+  this_._impl_._extensions_.Clear();
   cached_has_bits = this_._impl_._has_bits_[0];
   if (BatchCheckHasBit(cached_has_bits, 0x0000000fU)) {
     if (CheckHasBit(cached_has_bits, 0x00000001U)) {
-      _impl_.edition_defaults_.Clear();
+      this_._impl_.edition_defaults_.Clear();
     }
     if (CheckHasBit(cached_has_bits, 0x00000002U)) {
-      _impl_.uninterpreted_option_.Clear();
+      this_._impl_.uninterpreted_option_.Clear();
     }
     if (CheckHasBit(cached_has_bits, 0x00000004U)) {
       ABSL_DCHECK(this_._impl_.features_ != nullptr);
@@ -14346,11 +14425,11 @@ PROTOBUF_NOINLINE void FieldOptions::Clear() {
                  reinterpret_cast<char*>(&this_._impl_.weak_)) +
                  sizeof(_impl_.retention_));
     if (CheckHasBit(cached_has_bits, 0x00002000U)) {
-      _impl_.targets_.Clear();
+      this_._impl_.targets_.Clear();
     }
   }
-  _impl_._has_bits_.Clear();
-  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
+  this_._impl_._has_bits_.Clear();
+  this_._internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
 }
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
@@ -14797,25 +14876,31 @@ PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const OneofOptions::ParseTableT_
     OneofOptions::_table_ =
         OneofOptions::InternalGenerateParseTable_(OneofOptions_class_data_.base());
 #endif  // !PROTOBUF_MESSAGE_GLOBALS
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+PROTOBUF_NOINLINE void OneofOptions::Clear(MessageLite& base) {
+  OneofOptions& this_ = static_cast<OneofOptions&>(base);
+#else   // PROTOBUF_CUSTOM_VTABLE
 PROTOBUF_NOINLINE void OneofOptions::Clear() {
-  auto& this_ [[maybe_unused]] = *this;
+  OneofOptions& this_ [[maybe_unused]] = *this;
+#endif  // PROTOBUF_CUSTOM_VTABLE
+
   // @@protoc_insertion_point(message_clear_start:google.protobuf.OneofOptions)
-  ::google::protobuf::internal::TSanWrite(&_impl_);
+  ::google::protobuf::internal::TSanWrite(&this_._impl_);
   ::uint32_t cached_has_bits [[maybe_unused]] = 0;
 
-  _impl_._extensions_.Clear();
+  this_._impl_._extensions_.Clear();
   cached_has_bits = this_._impl_._has_bits_[0];
   if (BatchCheckHasBit(cached_has_bits, 0x00000003U)) {
     if (CheckHasBit(cached_has_bits, 0x00000001U)) {
-      _impl_.uninterpreted_option_.Clear();
+      this_._impl_.uninterpreted_option_.Clear();
     }
     if (CheckHasBit(cached_has_bits, 0x00000002U)) {
       ABSL_DCHECK(this_._impl_.features_ != nullptr);
       this_._impl_.features_->Clear();
     }
   }
-  _impl_._has_bits_.Clear();
-  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
+  this_._impl_._has_bits_.Clear();
+  this_._internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
 }
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
@@ -15091,13 +15176,19 @@ PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const EnumOptions::ParseTableT_
     EnumOptions::_table_ =
         EnumOptions::InternalGenerateParseTable_(EnumOptions_class_data_.base());
 #endif  // !PROTOBUF_MESSAGE_GLOBALS
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+PROTOBUF_NOINLINE void EnumOptions::Clear(MessageLite& base) {
+  EnumOptions& this_ = static_cast<EnumOptions&>(base);
+#else   // PROTOBUF_CUSTOM_VTABLE
 PROTOBUF_NOINLINE void EnumOptions::Clear() {
-  auto& this_ [[maybe_unused]] = *this;
+  EnumOptions& this_ [[maybe_unused]] = *this;
+#endif  // PROTOBUF_CUSTOM_VTABLE
+
   // @@protoc_insertion_point(message_clear_start:google.protobuf.EnumOptions)
-  ::google::protobuf::internal::TSanWrite(&_impl_);
+  ::google::protobuf::internal::TSanWrite(&this_._impl_);
   ::uint32_t cached_has_bits [[maybe_unused]] = 0;
 
-  _impl_._extensions_.Clear();
+  this_._impl_._extensions_.Clear();
   cached_has_bits = this_._impl_._has_bits_[0];
   if (CheckHasBit(cached_has_bits, 0x00000001U)) {
     ABSL_DCHECK(this_._impl_.features_ != nullptr);
@@ -15109,10 +15200,10 @@ PROTOBUF_NOINLINE void EnumOptions::Clear() {
                reinterpret_cast<char*>(&this_._impl_.allow_alias_)) +
                sizeof(_impl_.deprecated_legacy_json_field_conflicts_));
   if (CheckHasBit(cached_has_bits, 0x00000010U)) {
-    _impl_.uninterpreted_option_.Clear();
+    this_._impl_.uninterpreted_option_.Clear();
   }
-  _impl_._has_bits_.Clear();
-  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
+  this_._impl_._has_bits_.Clear();
+  this_._internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
 }
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
@@ -15428,17 +15519,23 @@ PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const EnumValueOptions::ParseTableT_
     EnumValueOptions::_table_ =
         EnumValueOptions::InternalGenerateParseTable_(EnumValueOptions_class_data_.base());
 #endif  // !PROTOBUF_MESSAGE_GLOBALS
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+PROTOBUF_NOINLINE void EnumValueOptions::Clear(MessageLite& base) {
+  EnumValueOptions& this_ = static_cast<EnumValueOptions&>(base);
+#else   // PROTOBUF_CUSTOM_VTABLE
 PROTOBUF_NOINLINE void EnumValueOptions::Clear() {
-  auto& this_ [[maybe_unused]] = *this;
+  EnumValueOptions& this_ [[maybe_unused]] = *this;
+#endif  // PROTOBUF_CUSTOM_VTABLE
+
   // @@protoc_insertion_point(message_clear_start:google.protobuf.EnumValueOptions)
-  ::google::protobuf::internal::TSanWrite(&_impl_);
+  ::google::protobuf::internal::TSanWrite(&this_._impl_);
   ::uint32_t cached_has_bits [[maybe_unused]] = 0;
 
-  _impl_._extensions_.Clear();
+  this_._impl_._extensions_.Clear();
   cached_has_bits = this_._impl_._has_bits_[0];
   if (BatchCheckHasBit(cached_has_bits, 0x00000007U)) {
     if (CheckHasBit(cached_has_bits, 0x00000001U)) {
-      _impl_.uninterpreted_option_.Clear();
+      this_._impl_.uninterpreted_option_.Clear();
     }
     if (CheckHasBit(cached_has_bits, 0x00000002U)) {
       ABSL_DCHECK(this_._impl_.features_ != nullptr);
@@ -15454,8 +15551,8 @@ PROTOBUF_NOINLINE void EnumValueOptions::Clear() {
                reinterpret_cast<char*>(&this_._impl_.debug_redact_) -
                reinterpret_cast<char*>(&this_._impl_.deprecated_)) +
                sizeof(_impl_.debug_redact_));
-  _impl_._has_bits_.Clear();
-  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
+  this_._impl_._has_bits_.Clear();
+  this_._internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
 }
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
@@ -15771,17 +15868,23 @@ PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const ServiceOptions::ParseTableT_
     ServiceOptions::_table_ =
         ServiceOptions::InternalGenerateParseTable_(ServiceOptions_class_data_.base());
 #endif  // !PROTOBUF_MESSAGE_GLOBALS
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+PROTOBUF_NOINLINE void ServiceOptions::Clear(MessageLite& base) {
+  ServiceOptions& this_ = static_cast<ServiceOptions&>(base);
+#else   // PROTOBUF_CUSTOM_VTABLE
 PROTOBUF_NOINLINE void ServiceOptions::Clear() {
-  auto& this_ [[maybe_unused]] = *this;
+  ServiceOptions& this_ [[maybe_unused]] = *this;
+#endif  // PROTOBUF_CUSTOM_VTABLE
+
   // @@protoc_insertion_point(message_clear_start:google.protobuf.ServiceOptions)
-  ::google::protobuf::internal::TSanWrite(&_impl_);
+  ::google::protobuf::internal::TSanWrite(&this_._impl_);
   ::uint32_t cached_has_bits [[maybe_unused]] = 0;
 
-  _impl_._extensions_.Clear();
+  this_._impl_._extensions_.Clear();
   cached_has_bits = this_._impl_._has_bits_[0];
   if (BatchCheckHasBit(cached_has_bits, 0x00000003U)) {
     if (CheckHasBit(cached_has_bits, 0x00000001U)) {
-      _impl_.uninterpreted_option_.Clear();
+      this_._impl_.uninterpreted_option_.Clear();
     }
     if (CheckHasBit(cached_has_bits, 0x00000002U)) {
       ABSL_DCHECK(this_._impl_.features_ != nullptr);
@@ -15789,8 +15892,8 @@ PROTOBUF_NOINLINE void ServiceOptions::Clear() {
     }
   }
   this_._impl_.deprecated_ = false;
-  _impl_._has_bits_.Clear();
-  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
+  this_._impl_._has_bits_.Clear();
+  this_._internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
 }
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
@@ -16082,17 +16185,23 @@ PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const MethodOptions::ParseTableT_
     MethodOptions::_table_ =
         MethodOptions::InternalGenerateParseTable_(MethodOptions_class_data_.base());
 #endif  // !PROTOBUF_MESSAGE_GLOBALS
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+PROTOBUF_NOINLINE void MethodOptions::Clear(MessageLite& base) {
+  MethodOptions& this_ = static_cast<MethodOptions&>(base);
+#else   // PROTOBUF_CUSTOM_VTABLE
 PROTOBUF_NOINLINE void MethodOptions::Clear() {
-  auto& this_ [[maybe_unused]] = *this;
+  MethodOptions& this_ [[maybe_unused]] = *this;
+#endif  // PROTOBUF_CUSTOM_VTABLE
+
   // @@protoc_insertion_point(message_clear_start:google.protobuf.MethodOptions)
-  ::google::protobuf::internal::TSanWrite(&_impl_);
+  ::google::protobuf::internal::TSanWrite(&this_._impl_);
   ::uint32_t cached_has_bits [[maybe_unused]] = 0;
 
-  _impl_._extensions_.Clear();
+  this_._impl_._extensions_.Clear();
   cached_has_bits = this_._impl_._has_bits_[0];
   if (BatchCheckHasBit(cached_has_bits, 0x00000003U)) {
     if (CheckHasBit(cached_has_bits, 0x00000001U)) {
-      _impl_.uninterpreted_option_.Clear();
+      this_._impl_.uninterpreted_option_.Clear();
     }
     if (CheckHasBit(cached_has_bits, 0x00000002U)) {
       ABSL_DCHECK(this_._impl_.features_ != nullptr);
@@ -16106,8 +16215,8 @@ PROTOBUF_NOINLINE void MethodOptions::Clear() {
                  reinterpret_cast<char*>(&this_._impl_.deprecated_)) +
                  sizeof(_impl_.idempotency_level_));
   }
-  _impl_._has_bits_.Clear();
-  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
+  this_._impl_._has_bits_.Clear();
+  this_._internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
 }
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
@@ -16383,10 +16492,16 @@ PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const UninterpretedOption_NamePart::ParseTable
     UninterpretedOption_NamePart::_table_ =
         UninterpretedOption_NamePart::InternalGenerateParseTable_(UninterpretedOption_NamePart_class_data_.base());
 #endif  // !PROTOBUF_MESSAGE_GLOBALS
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+PROTOBUF_NOINLINE void UninterpretedOption_NamePart::Clear(MessageLite& base) {
+  UninterpretedOption_NamePart& this_ = static_cast<UninterpretedOption_NamePart&>(base);
+#else   // PROTOBUF_CUSTOM_VTABLE
 PROTOBUF_NOINLINE void UninterpretedOption_NamePart::Clear() {
-  auto& this_ [[maybe_unused]] = *this;
+  UninterpretedOption_NamePart& this_ [[maybe_unused]] = *this;
+#endif  // PROTOBUF_CUSTOM_VTABLE
+
   // @@protoc_insertion_point(message_clear_start:google.protobuf.UninterpretedOption.NamePart)
-  ::google::protobuf::internal::TSanWrite(&_impl_);
+  ::google::protobuf::internal::TSanWrite(&this_._impl_);
   ::uint32_t cached_has_bits [[maybe_unused]] = 0;
 
   cached_has_bits = this_._impl_._has_bits_[0];
@@ -16394,8 +16509,8 @@ PROTOBUF_NOINLINE void UninterpretedOption_NamePart::Clear() {
     this_._impl_.name_part_.ClearNonDefaultToEmpty();
   }
   this_._impl_.is_extension_ = false;
-  _impl_._has_bits_.Clear();
-  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
+  this_._impl_._has_bits_.Clear();
+  this_._internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
 }
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
@@ -16635,16 +16750,22 @@ PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const UninterpretedOption::ParseTableT_
     UninterpretedOption::_table_ =
         UninterpretedOption::InternalGenerateParseTable_(UninterpretedOption_class_data_.base());
 #endif  // !PROTOBUF_MESSAGE_GLOBALS
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+PROTOBUF_NOINLINE void UninterpretedOption::Clear(MessageLite& base) {
+  UninterpretedOption& this_ = static_cast<UninterpretedOption&>(base);
+#else   // PROTOBUF_CUSTOM_VTABLE
 PROTOBUF_NOINLINE void UninterpretedOption::Clear() {
-  auto& this_ [[maybe_unused]] = *this;
+  UninterpretedOption& this_ [[maybe_unused]] = *this;
+#endif  // PROTOBUF_CUSTOM_VTABLE
+
   // @@protoc_insertion_point(message_clear_start:google.protobuf.UninterpretedOption)
-  ::google::protobuf::internal::TSanWrite(&_impl_);
+  ::google::protobuf::internal::TSanWrite(&this_._impl_);
   ::uint32_t cached_has_bits [[maybe_unused]] = 0;
 
   cached_has_bits = this_._impl_._has_bits_[0];
   if (BatchCheckHasBit(cached_has_bits, 0x0000000fU)) {
     if (CheckHasBit(cached_has_bits, 0x00000001U)) {
-      _impl_.name_.Clear();
+      this_._impl_.name_.Clear();
     }
     if (CheckHasBit(cached_has_bits, 0x00000002U)) {
       this_._impl_.identifier_value_.ClearNonDefaultToEmpty();
@@ -16663,8 +16784,8 @@ PROTOBUF_NOINLINE void UninterpretedOption::Clear() {
                  reinterpret_cast<char*>(&this_._impl_.positive_int_value_)) +
                  sizeof(_impl_.double_value_));
   }
-  _impl_._has_bits_.Clear();
-  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
+  this_._impl_._has_bits_.Clear();
+  this_._internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
 }
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
@@ -17105,13 +17226,19 @@ PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const FeatureSet::ParseTableT_
     FeatureSet::_table_ =
         FeatureSet::InternalGenerateParseTable_(FeatureSet_class_data_.base());
 #endif  // !PROTOBUF_MESSAGE_GLOBALS
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+PROTOBUF_NOINLINE void FeatureSet::Clear(MessageLite& base) {
+  FeatureSet& this_ = static_cast<FeatureSet&>(base);
+#else   // PROTOBUF_CUSTOM_VTABLE
 PROTOBUF_NOINLINE void FeatureSet::Clear() {
-  auto& this_ [[maybe_unused]] = *this;
+  FeatureSet& this_ [[maybe_unused]] = *this;
+#endif  // PROTOBUF_CUSTOM_VTABLE
+
   // @@protoc_insertion_point(message_clear_start:google.protobuf.FeatureSet)
-  ::google::protobuf::internal::TSanWrite(&_impl_);
+  ::google::protobuf::internal::TSanWrite(&this_._impl_);
   ::uint32_t cached_has_bits [[maybe_unused]] = 0;
 
-  _impl_._extensions_.Clear();
+  this_._impl_._extensions_.Clear();
   cached_has_bits = this_._impl_._has_bits_[0];
   if (BatchCheckHasBit(cached_has_bits, 0x000000ffU)) {
     ::memset(&this_._impl_.field_presence_, 0,
@@ -17121,8 +17248,8 @@ PROTOBUF_NOINLINE void FeatureSet::Clear() {
                  sizeof(_impl_.default_symbol_visibility_));
   }
   this_._impl_.enforce_proto_limits_ = 0;
-  _impl_._has_bits_.Clear();
-  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
+  this_._impl_._has_bits_.Clear();
+  this_._internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
 }
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
@@ -17468,10 +17595,16 @@ PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const FeatureSetDefaults_FeatureSetEditionDefa
     FeatureSetDefaults_FeatureSetEditionDefault::_table_ =
         FeatureSetDefaults_FeatureSetEditionDefault::InternalGenerateParseTable_(FeatureSetDefaults_FeatureSetEditionDefault_class_data_.base());
 #endif  // !PROTOBUF_MESSAGE_GLOBALS
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+PROTOBUF_NOINLINE void FeatureSetDefaults_FeatureSetEditionDefault::Clear(MessageLite& base) {
+  FeatureSetDefaults_FeatureSetEditionDefault& this_ = static_cast<FeatureSetDefaults_FeatureSetEditionDefault&>(base);
+#else   // PROTOBUF_CUSTOM_VTABLE
 PROTOBUF_NOINLINE void FeatureSetDefaults_FeatureSetEditionDefault::Clear() {
-  auto& this_ [[maybe_unused]] = *this;
+  FeatureSetDefaults_FeatureSetEditionDefault& this_ [[maybe_unused]] = *this;
+#endif  // PROTOBUF_CUSTOM_VTABLE
+
   // @@protoc_insertion_point(message_clear_start:google.protobuf.FeatureSetDefaults.FeatureSetEditionDefault)
-  ::google::protobuf::internal::TSanWrite(&_impl_);
+  ::google::protobuf::internal::TSanWrite(&this_._impl_);
   ::uint32_t cached_has_bits [[maybe_unused]] = 0;
 
   cached_has_bits = this_._impl_._has_bits_[0];
@@ -17486,8 +17619,8 @@ PROTOBUF_NOINLINE void FeatureSetDefaults_FeatureSetEditionDefault::Clear() {
     }
   }
   this_._impl_.edition_ = 0;
-  _impl_._has_bits_.Clear();
-  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
+  this_._impl_._has_bits_.Clear();
+  this_._internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
 }
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
@@ -17754,15 +17887,21 @@ PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const FeatureSetDefaults::ParseTableT_
     FeatureSetDefaults::_table_ =
         FeatureSetDefaults::InternalGenerateParseTable_(FeatureSetDefaults_class_data_.base());
 #endif  // !PROTOBUF_MESSAGE_GLOBALS
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+PROTOBUF_NOINLINE void FeatureSetDefaults::Clear(MessageLite& base) {
+  FeatureSetDefaults& this_ = static_cast<FeatureSetDefaults&>(base);
+#else   // PROTOBUF_CUSTOM_VTABLE
 PROTOBUF_NOINLINE void FeatureSetDefaults::Clear() {
-  auto& this_ [[maybe_unused]] = *this;
+  FeatureSetDefaults& this_ [[maybe_unused]] = *this;
+#endif  // PROTOBUF_CUSTOM_VTABLE
+
   // @@protoc_insertion_point(message_clear_start:google.protobuf.FeatureSetDefaults)
-  ::google::protobuf::internal::TSanWrite(&_impl_);
+  ::google::protobuf::internal::TSanWrite(&this_._impl_);
   ::uint32_t cached_has_bits [[maybe_unused]] = 0;
 
   cached_has_bits = this_._impl_._has_bits_[0];
   if (CheckHasBit(cached_has_bits, 0x00000001U)) {
-    _impl_.defaults_.Clear();
+    this_._impl_.defaults_.Clear();
   }
   if (BatchCheckHasBit(cached_has_bits, 0x00000006U)) {
     ::memset(&this_._impl_.minimum_edition_, 0,
@@ -17771,8 +17910,8 @@ PROTOBUF_NOINLINE void FeatureSetDefaults::Clear() {
                  reinterpret_cast<char*>(&this_._impl_.minimum_edition_)) +
                  sizeof(_impl_.maximum_edition_));
   }
-  _impl_._has_bits_.Clear();
-  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
+  this_._impl_._has_bits_.Clear();
+  this_._internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
 }
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
@@ -18052,22 +18191,28 @@ PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const SourceCodeInfo_Location::ParseTableT_
     SourceCodeInfo_Location::_table_ =
         SourceCodeInfo_Location::InternalGenerateParseTable_(SourceCodeInfo_Location_class_data_.base());
 #endif  // !PROTOBUF_MESSAGE_GLOBALS
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+PROTOBUF_NOINLINE void SourceCodeInfo_Location::Clear(MessageLite& base) {
+  SourceCodeInfo_Location& this_ = static_cast<SourceCodeInfo_Location&>(base);
+#else   // PROTOBUF_CUSTOM_VTABLE
 PROTOBUF_NOINLINE void SourceCodeInfo_Location::Clear() {
-  auto& this_ [[maybe_unused]] = *this;
+  SourceCodeInfo_Location& this_ [[maybe_unused]] = *this;
+#endif  // PROTOBUF_CUSTOM_VTABLE
+
   // @@protoc_insertion_point(message_clear_start:google.protobuf.SourceCodeInfo.Location)
-  ::google::protobuf::internal::TSanWrite(&_impl_);
+  ::google::protobuf::internal::TSanWrite(&this_._impl_);
   ::uint32_t cached_has_bits [[maybe_unused]] = 0;
 
   cached_has_bits = this_._impl_._has_bits_[0];
   if (BatchCheckHasBit(cached_has_bits, 0x0000001fU)) {
     if (CheckHasBit(cached_has_bits, 0x00000001U)) {
-      _impl_.path_.Clear();
+      this_._impl_.path_.Clear();
     }
     if (CheckHasBit(cached_has_bits, 0x00000002U)) {
-      _impl_.span_.Clear();
+      this_._impl_.span_.Clear();
     }
     if (CheckHasBit(cached_has_bits, 0x00000004U)) {
-      _impl_.leading_detached_comments_.Clear();
+      this_._impl_.leading_detached_comments_.Clear();
     }
     if (CheckHasBit(cached_has_bits, 0x00000008U)) {
       this_._impl_.leading_comments_.ClearNonDefaultToEmpty();
@@ -18076,8 +18221,8 @@ PROTOBUF_NOINLINE void SourceCodeInfo_Location::Clear() {
       this_._impl_.trailing_comments_.ClearNonDefaultToEmpty();
     }
   }
-  _impl_._has_bits_.Clear();
-  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
+  this_._impl_._has_bits_.Clear();
+  this_._internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
 }
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
@@ -18364,19 +18509,25 @@ PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const SourceCodeInfo::ParseTableT_
     SourceCodeInfo::_table_ =
         SourceCodeInfo::InternalGenerateParseTable_(SourceCodeInfo_class_data_.base());
 #endif  // !PROTOBUF_MESSAGE_GLOBALS
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+PROTOBUF_NOINLINE void SourceCodeInfo::Clear(MessageLite& base) {
+  SourceCodeInfo& this_ = static_cast<SourceCodeInfo&>(base);
+#else   // PROTOBUF_CUSTOM_VTABLE
 PROTOBUF_NOINLINE void SourceCodeInfo::Clear() {
-  auto& this_ [[maybe_unused]] = *this;
+  SourceCodeInfo& this_ [[maybe_unused]] = *this;
+#endif  // PROTOBUF_CUSTOM_VTABLE
+
   // @@protoc_insertion_point(message_clear_start:google.protobuf.SourceCodeInfo)
-  ::google::protobuf::internal::TSanWrite(&_impl_);
+  ::google::protobuf::internal::TSanWrite(&this_._impl_);
   ::uint32_t cached_has_bits [[maybe_unused]] = 0;
 
-  _impl_._extensions_.Clear();
+  this_._impl_._extensions_.Clear();
   cached_has_bits = this_._impl_._has_bits_[0];
   if (CheckHasBit(cached_has_bits, 0x00000001U)) {
-    _impl_.location_.Clear();
+    this_._impl_.location_.Clear();
   }
-  _impl_._has_bits_.Clear();
-  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
+  this_._impl_._has_bits_.Clear();
+  this_._internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
 }
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
@@ -18613,16 +18764,22 @@ PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const GeneratedCodeInfo_Annotation::ParseTable
     GeneratedCodeInfo_Annotation::_table_ =
         GeneratedCodeInfo_Annotation::InternalGenerateParseTable_(GeneratedCodeInfo_Annotation_class_data_.base());
 #endif  // !PROTOBUF_MESSAGE_GLOBALS
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+PROTOBUF_NOINLINE void GeneratedCodeInfo_Annotation::Clear(MessageLite& base) {
+  GeneratedCodeInfo_Annotation& this_ = static_cast<GeneratedCodeInfo_Annotation&>(base);
+#else   // PROTOBUF_CUSTOM_VTABLE
 PROTOBUF_NOINLINE void GeneratedCodeInfo_Annotation::Clear() {
-  auto& this_ [[maybe_unused]] = *this;
+  GeneratedCodeInfo_Annotation& this_ [[maybe_unused]] = *this;
+#endif  // PROTOBUF_CUSTOM_VTABLE
+
   // @@protoc_insertion_point(message_clear_start:google.protobuf.GeneratedCodeInfo.Annotation)
-  ::google::protobuf::internal::TSanWrite(&_impl_);
+  ::google::protobuf::internal::TSanWrite(&this_._impl_);
   ::uint32_t cached_has_bits [[maybe_unused]] = 0;
 
   cached_has_bits = this_._impl_._has_bits_[0];
   if (BatchCheckHasBit(cached_has_bits, 0x00000003U)) {
     if (CheckHasBit(cached_has_bits, 0x00000001U)) {
-      _impl_.path_.Clear();
+      this_._impl_.path_.Clear();
     }
     if (CheckHasBit(cached_has_bits, 0x00000002U)) {
       this_._impl_.source_file_.ClearNonDefaultToEmpty();
@@ -18635,8 +18792,8 @@ PROTOBUF_NOINLINE void GeneratedCodeInfo_Annotation::Clear() {
                  reinterpret_cast<char*>(&this_._impl_.begin_)) +
                  sizeof(_impl_.semantic_));
   }
-  _impl_._has_bits_.Clear();
-  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
+  this_._impl_._has_bits_.Clear();
+  this_._internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
 }
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
@@ -18907,18 +19064,24 @@ PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const GeneratedCodeInfo::ParseTableT_
     GeneratedCodeInfo::_table_ =
         GeneratedCodeInfo::InternalGenerateParseTable_(GeneratedCodeInfo_class_data_.base());
 #endif  // !PROTOBUF_MESSAGE_GLOBALS
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+PROTOBUF_NOINLINE void GeneratedCodeInfo::Clear(MessageLite& base) {
+  GeneratedCodeInfo& this_ = static_cast<GeneratedCodeInfo&>(base);
+#else   // PROTOBUF_CUSTOM_VTABLE
 PROTOBUF_NOINLINE void GeneratedCodeInfo::Clear() {
-  auto& this_ [[maybe_unused]] = *this;
+  GeneratedCodeInfo& this_ [[maybe_unused]] = *this;
+#endif  // PROTOBUF_CUSTOM_VTABLE
+
   // @@protoc_insertion_point(message_clear_start:google.protobuf.GeneratedCodeInfo)
-  ::google::protobuf::internal::TSanWrite(&_impl_);
+  ::google::protobuf::internal::TSanWrite(&this_._impl_);
   ::uint32_t cached_has_bits [[maybe_unused]] = 0;
 
   cached_has_bits = this_._impl_._has_bits_[0];
   if (CheckHasBit(cached_has_bits, 0x00000001U)) {
-    _impl_.annotation_.Clear();
+    this_._impl_.annotation_.Clear();
   }
-  _impl_._has_bits_.Clear();
-  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
+  this_._impl_._has_bits_.Clear();
+  this_._internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
 }
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)

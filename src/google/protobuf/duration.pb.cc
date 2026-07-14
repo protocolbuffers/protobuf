@@ -125,8 +125,7 @@ constexpr auto Duration::InternalGenerateClassData_(
           Super_::GetNewImpl<Duration>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           &Duration::SharedDtor,
-          Super_::GetClearImpl<Duration>(), &Duration::ByteSizeLong,
-              &Duration::_InternalSerialize,
+          &Duration::Clear, &Duration::ByteSizeLong, &Duration::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
           PROTOBUF_FIELD_OFFSET(Duration, _impl_._cached_size_),
           false,
@@ -313,10 +312,16 @@ PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const Duration::ParseTableT_
     Duration::_table_ =
         Duration::InternalGenerateParseTable_(Duration_class_data_.base());
 #endif  // !PROTOBUF_MESSAGE_GLOBALS
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+PROTOBUF_NOINLINE void Duration::Clear(MessageLite& base) {
+  Duration& this_ = static_cast<Duration&>(base);
+#else   // PROTOBUF_CUSTOM_VTABLE
 PROTOBUF_NOINLINE void Duration::Clear() {
-  auto& this_ [[maybe_unused]] = *this;
+  Duration& this_ [[maybe_unused]] = *this;
+#endif  // PROTOBUF_CUSTOM_VTABLE
+
   // @@protoc_insertion_point(message_clear_start:google.protobuf.Duration)
-  ::google::protobuf::internal::TSanWrite(&_impl_);
+  ::google::protobuf::internal::TSanWrite(&this_._impl_);
   ::uint32_t cached_has_bits [[maybe_unused]] = 0;
 
   cached_has_bits = this_._impl_._has_bits_[0];
@@ -327,8 +332,8 @@ PROTOBUF_NOINLINE void Duration::Clear() {
                  reinterpret_cast<char*>(&this_._impl_.seconds_)) +
                  sizeof(_impl_.nanos_));
   }
-  _impl_._has_bits_.Clear();
-  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
+  this_._impl_._has_bits_.Clear();
+  this_._internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
 }
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
