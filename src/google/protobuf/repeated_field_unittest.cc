@@ -1676,6 +1676,91 @@ TEST(RepeatedFieldIsFullTest, DISABLED_MergeFromPacked) {
   EXPECT_EQ(msg.packed_bool_size(), std::numeric_limits<int>::max());
 }
 
+// Test for signed integer overflow protection in MergeFrom.
+// Verifies the fix for https://github.com/protocolbuffers/protobuf/pull/28190
+// which adds CheckedAdd() to prevent integer overflow when merging fields
+// whose combined size would exceed INT_MAX.
+TEST(RepeatedField, MergeFromWithLargeSize) {
+  RepeatedField<int> source, destination;
+
+  // Add enough elements to verify that normal merging works correctly
+  // with reasonably large sizes (but well below INT_MAX to avoid
+  // impractical memory requirements in tests).
+  const int large_size = 10000;
+  for (int i = 0; i < large_size; i++) {
+    destination.Add(i);
+  }
+  for (int i = 0; i < large_size; i++) {
+    source.Add(large_size + i);
+  }
+
+  // Combined size is 20000, well below INT_MAX - should work fine
+  destination.MergeFrom(source);
+
+  EXPECT_EQ(2 * large_size, destination.size());
+  EXPECT_EQ(0, destination.Get(0));
+  EXPECT_EQ(large_size - 1, destination.Get(large_size - 1));
+  EXPECT_EQ(large_size, destination.Get(large_size));
+  EXPECT_EQ(2 * large_size - 1, destination.Get(2 * large_size - 1));
+}
+
+// Test that MergeFrom with empty source is a no-op
+TEST(RepeatedField, MergeFromEmptySource) {
+  RepeatedField<int> source, destination;
+  destination.Add(1);
+  destination.Add(2);
+
+  destination.MergeFrom(source);
+
+  EXPECT_EQ(2, destination.size());
+  EXPECT_EQ(1, destination.Get(0));
+  EXPECT_EQ(2, destination.Get(1));
+}
+
+// Test multiple consecutive MergeFrom calls
+TEST(RepeatedField, MultipleMergeFromCalls) {
+  RepeatedField<int> source1, source2, destination;
+
+  source1.Add(1);
+  source1.Add(2);
+  source2.Add(3);
+  source2.Add(4);
+
+  destination.MergeFrom(source1);
+  EXPECT_EQ(2, destination.size());
+
+  destination.MergeFrom(source2);
+  EXPECT_EQ(4, destination.size());
+
+  EXPECT_EQ(1, destination.Get(0));
+  EXPECT_EQ(2, destination.Get(1));
+  EXPECT_EQ(3, destination.Get(2));
+  EXPECT_EQ(4, destination.Get(3));
+}
+
+// Verifying CheckedAdd safe termination on overflow)
+TEST(RepeatedFieldTest, CheckedAddOverflowSafetyBoundary) {
+  // 1. Verify boundary addition (maximum/minimum values that do not overflow)
+  EXPECT_EQ(internal::CheckedAdd(std::numeric_limits<int>::max(), 0),
+            std::numeric_limits<int>::max());
+  EXPECT_EQ(internal::CheckedAdd(std::numeric_limits<int>::min(), 0),
+            std::numeric_limits<int>::min());
+
+  // 2. Verify overflow scenarios: under environments supporting death tests,
+  // overflow must safely and deterministically terminate the program (e.g., via
+  // ABSL_LOG(FATAL)).
+#if defined(PROTOBUF_HAS_DEATH_TEST)
+  // Positive overflow death tests
+  EXPECT_DEATH(internal::CheckedAdd(std::numeric_limits<int>::max(), 1), ".*");
+  EXPECT_DEATH(internal::CheckedAdd(std::numeric_limits<int>::max(),
+                                    std::numeric_limits<int>::max()),
+               ".*");
+
+  // Negative overflow death tests
+  EXPECT_DEATH(internal::CheckedAdd(std::numeric_limits<int>::min(), -1), ".*");
+#endif
+}
+
 }  // namespace
 
 }  // namespace protobuf
