@@ -11,6 +11,7 @@
 
 #include "google/protobuf/compiler/java/lite/enum.h"
 
+#include <cstdint>
 #include <string>
 #include <utility>
 #include <vector>
@@ -194,23 +195,56 @@ void EnumLiteGenerator::Generate(io::Printer* printer) {
       "          return $classname$.forNumber(number);\n"
       "        }\n"
       "      };\n"
-      "\n"
-      "public static com.google.protobuf.Internal.EnumVerifier \n"
-      "    internalGetVerifier() {\n"
-      "  return $classname$Verifier.INSTANCE;\n"
-      "}\n"
-      "\n"
-      "private static final class $classname$Verifier implements \n"
-      "     com.google.protobuf.Internal.EnumVerifier { \n"
-      "        static final com.google.protobuf.Internal.EnumVerifier\n"
-      "            INSTANCE = new $classname$Verifier();\n"
-      "        @java.lang.Override\n"
-      "        public boolean isInRange(int number) {\n"
-      "          return $classname$.forNumber(number) != null;\n"
-      "        }\n"
-      "      };\n"
       "\n",
       "classname", descriptor_->name());
+
+  int min_val = 0;
+  int max_val = 0;
+  uint64_t mask = 0;
+  if (IsSequentialEnum(descriptor_, &min_val, &max_val)) {
+    printer->Print(
+        "public static com.google.protobuf.Internal.EnumVerifier \n"
+        "    internalGetVerifier() {\n"
+        "  return internalVerifier;\n"
+        "}\n"
+        "\n"
+        "private static final com.google.protobuf.Internal.EnumVerifier "
+        "internalVerifier =\n"
+        "    new com.google.protobuf.Internal.SequentialEnumVerifier($min$, "
+        "$max$);\n"
+        "\n",
+        "min", absl::StrCat(min_val), "max", absl::StrCat(max_val));
+  } else if (IsBitmaskEnum(descriptor_, &mask)) {
+    printer->Print(
+        "public static com.google.protobuf.Internal.EnumVerifier \n"
+        "    internalGetVerifier() {\n"
+        "  return internalVerifier;\n"
+        "}\n"
+        "\n"
+        "private static final com.google.protobuf.Internal.EnumVerifier \n"
+        "internalVerifier =\n"
+        "    new com.google.protobuf.Internal.BitmaskEnumVerifier(0x$mask$L);\n"
+        "\n",
+        "mask", absl::StrCat(absl::Hex(mask, absl::kZeroPad16)));
+  } else {
+    printer->Print(
+        "public static com.google.protobuf.Internal.EnumVerifier \n"
+        "    internalGetVerifier() {\n"
+        "  return $classname$Verifier.INSTANCE;\n"
+        "}\n"
+        "\n"
+        "private static final class $classname$Verifier implements \n"
+        "     com.google.protobuf.Internal.EnumVerifier { \n"
+        "        static final com.google.protobuf.Internal.EnumVerifier\n"
+        "            INSTANCE = new $classname$Verifier();\n"
+        "        @java.lang.Override\n"
+        "        public boolean isInRange(int number) {\n"
+        "          return $classname$.forNumber(number) != null;\n"
+        "        }\n"
+        "      };\n"
+        "\n",
+        "classname", descriptor_->name());
+  }
   if (!google::protobuf::internal::IsOss()) {
     printer->Print(
         "/**\n"
