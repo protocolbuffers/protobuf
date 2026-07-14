@@ -423,7 +423,7 @@ class PROTOBUF_EXPORT MessageLite {
   // will likely be needed again, so the memory used may not be freed.
   // To ensure that all memory used by a Message is freed, you must delete it.
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-  void Clear() { (this->*class_data()->clear)(); }
+  void Clear() { this->class_data()->clear(*this); }
 #else
   virtual void Clear() = 0;
 #endif  // PROTOBUF_CUSTOM_VTABLE
@@ -806,18 +806,6 @@ class PROTOBUF_EXPORT MessageLite {
       return internal::MessageCreator(&T::PlacementNew_, sizeof(T), alignof(T));
     }
   }
-
-#if defined(PROTOBUF_CUSTOM_VTABLE)
-  template <typename T>
-  static constexpr auto GetClearImpl() {
-    return static_cast<void (MessageLite::*)()>(&T::Clear);
-  }
-#else   // PROTOBUF_CUSTOM_VTABLE
-  // When custom vtables are off we avoid instantiating the functions because we
-  // will not use them anyway. Less work for the compiler.
-  template <typename T>
-  using GetClearImpl = std::nullptr_t;
-#endif  // PROTOBUF_CUSTOM_VTABLE
 
   template <typename T>
   PROTOBUF_ALWAYS_INLINE static T* CopyConstruct(Arena* arena, const T& from) {

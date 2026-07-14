@@ -123,8 +123,7 @@ constexpr auto JsonEnumValueOptions::InternalGenerateClassData_(
           Super_::GetNewImpl<JsonEnumValueOptions>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           &JsonEnumValueOptions::SharedDtor,
-          Super_::GetClearImpl<JsonEnumValueOptions>(), &JsonEnumValueOptions::ByteSizeLong,
-              &JsonEnumValueOptions::_InternalSerialize,
+          &JsonEnumValueOptions::Clear, &JsonEnumValueOptions::ByteSizeLong, &JsonEnumValueOptions::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
           PROTOBUF_FIELD_OFFSET(JsonEnumValueOptions, _impl_._cached_size_),
           false,
@@ -322,18 +321,24 @@ PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const JsonEnumValueOptions::ParseTableT_
     JsonEnumValueOptions::_table_ =
         JsonEnumValueOptions::InternalGenerateParseTable_(JsonEnumValueOptions_class_data_.base());
 #endif  // !PROTOBUF_MESSAGE_GLOBALS
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+PROTOBUF_NOINLINE void JsonEnumValueOptions::Clear(MessageLite& base) {
+  JsonEnumValueOptions& this_ = static_cast<JsonEnumValueOptions&>(base);
+#else   // PROTOBUF_CUSTOM_VTABLE
 PROTOBUF_NOINLINE void JsonEnumValueOptions::Clear() {
-  auto& this_ [[maybe_unused]] = *this;
+  JsonEnumValueOptions& this_ [[maybe_unused]] = *this;
+#endif  // PROTOBUF_CUSTOM_VTABLE
+
   // @@protoc_insertion_point(message_clear_start:pb.enumvalue.JsonEnumValueOptions)
-  ::google::protobuf::internal::TSanWrite(&_impl_);
+  ::google::protobuf::internal::TSanWrite(&this_._impl_);
   ::uint32_t cached_has_bits [[maybe_unused]] = 0;
 
   cached_has_bits = this_._impl_._has_bits_[0];
   if (CheckHasBit(cached_has_bits, 0x00000001U)) {
     this_._impl_.string_.ClearNonDefaultToEmpty();
   }
-  _impl_._has_bits_.Clear();
-  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
+  this_._impl_._has_bits_.Clear();
+  this_._internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
 }
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)

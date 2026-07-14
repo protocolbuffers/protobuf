@@ -148,8 +148,7 @@ constexpr auto Version::InternalGenerateClassData_(
           Super_::GetNewImpl<Version>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           &Version::SharedDtor,
-          Super_::GetClearImpl<Version>(), &Version::ByteSizeLong,
-              &Version::_InternalSerialize,
+          &Version::Clear, &Version::ByteSizeLong, &Version::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
           PROTOBUF_FIELD_OFFSET(Version, _impl_._cached_size_),
           false,
@@ -321,8 +320,7 @@ constexpr auto CodeGeneratorResponse_File::InternalGenerateClassData_(
           Super_::GetNewImpl<CodeGeneratorResponse_File>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           &CodeGeneratorResponse_File::SharedDtor,
-          Super_::GetClearImpl<CodeGeneratorResponse_File>(), &CodeGeneratorResponse_File::ByteSizeLong,
-              &CodeGeneratorResponse_File::_InternalSerialize,
+          &CodeGeneratorResponse_File::Clear, &CodeGeneratorResponse_File::ByteSizeLong, &CodeGeneratorResponse_File::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
           PROTOBUF_FIELD_OFFSET(CodeGeneratorResponse_File, _impl_._cached_size_),
           false,
@@ -504,8 +502,7 @@ constexpr auto CodeGeneratorResponse::InternalGenerateClassData_(
           Super_::GetNewImpl<CodeGeneratorResponse>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           &CodeGeneratorResponse::SharedDtor,
-          Super_::GetClearImpl<CodeGeneratorResponse>(), &CodeGeneratorResponse::ByteSizeLong,
-              &CodeGeneratorResponse::_InternalSerialize,
+          &CodeGeneratorResponse::Clear, &CodeGeneratorResponse::ByteSizeLong, &CodeGeneratorResponse::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
           PROTOBUF_FIELD_OFFSET(CodeGeneratorResponse, _impl_._cached_size_),
           false,
@@ -702,8 +699,7 @@ constexpr auto CodeGeneratorRequest::InternalGenerateClassData_(
           Super_::GetNewImpl<CodeGeneratorRequest>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           &CodeGeneratorRequest::SharedDtor,
-          Super_::GetClearImpl<CodeGeneratorRequest>(), &CodeGeneratorRequest::ByteSizeLong,
-              &CodeGeneratorRequest::_InternalSerialize,
+          &CodeGeneratorRequest::Clear, &CodeGeneratorRequest::ByteSizeLong, &CodeGeneratorRequest::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
           PROTOBUF_FIELD_OFFSET(CodeGeneratorRequest, _impl_._cached_size_),
           false,
@@ -989,10 +985,16 @@ PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const Version::ParseTableT_
     Version::_table_ =
         Version::InternalGenerateParseTable_(Version_class_data_.base());
 #endif  // !PROTOBUF_MESSAGE_GLOBALS
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+PROTOBUF_NOINLINE void Version::Clear(MessageLite& base) {
+  Version& this_ = static_cast<Version&>(base);
+#else   // PROTOBUF_CUSTOM_VTABLE
 PROTOBUF_NOINLINE void Version::Clear() {
-  auto& this_ [[maybe_unused]] = *this;
+  Version& this_ [[maybe_unused]] = *this;
+#endif  // PROTOBUF_CUSTOM_VTABLE
+
   // @@protoc_insertion_point(message_clear_start:google.protobuf.compiler.Version)
-  ::google::protobuf::internal::TSanWrite(&_impl_);
+  ::google::protobuf::internal::TSanWrite(&this_._impl_);
   ::uint32_t cached_has_bits [[maybe_unused]] = 0;
 
   cached_has_bits = this_._impl_._has_bits_[0];
@@ -1006,8 +1008,8 @@ PROTOBUF_NOINLINE void Version::Clear() {
                  reinterpret_cast<char*>(&this_._impl_.major_)) +
                  sizeof(_impl_.patch_));
   }
-  _impl_._has_bits_.Clear();
-  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
+  this_._impl_._has_bits_.Clear();
+  this_._internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
 }
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
@@ -1299,19 +1301,25 @@ PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const CodeGeneratorRequest::ParseTableT_
     CodeGeneratorRequest::_table_ =
         CodeGeneratorRequest::InternalGenerateParseTable_(CodeGeneratorRequest_class_data_.base());
 #endif  // !PROTOBUF_MESSAGE_GLOBALS
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+PROTOBUF_NOINLINE void CodeGeneratorRequest::Clear(MessageLite& base) {
+  CodeGeneratorRequest& this_ = static_cast<CodeGeneratorRequest&>(base);
+#else   // PROTOBUF_CUSTOM_VTABLE
 PROTOBUF_NOINLINE void CodeGeneratorRequest::Clear() {
-  auto& this_ [[maybe_unused]] = *this;
+  CodeGeneratorRequest& this_ [[maybe_unused]] = *this;
+#endif  // PROTOBUF_CUSTOM_VTABLE
+
   // @@protoc_insertion_point(message_clear_start:google.protobuf.compiler.CodeGeneratorRequest)
-  ::google::protobuf::internal::TSanWrite(&_impl_);
+  ::google::protobuf::internal::TSanWrite(&this_._impl_);
   ::uint32_t cached_has_bits [[maybe_unused]] = 0;
 
   cached_has_bits = this_._impl_._has_bits_[0];
   if (BatchCheckHasBit(cached_has_bits, 0x0000001fU)) {
     if (CheckHasBit(cached_has_bits, 0x00000001U)) {
-      _impl_.file_to_generate_.Clear();
+      this_._impl_.file_to_generate_.Clear();
     }
     if (CheckHasBit(cached_has_bits, 0x00000002U)) {
-      _impl_.proto_file_.Clear();
+      this_._impl_.proto_file_.Clear();
     }
     if (CheckHasBit(cached_has_bits, 0x00000004U)) {
       this_._impl_.parameter_.ClearNonDefaultToEmpty();
@@ -1321,11 +1329,11 @@ PROTOBUF_NOINLINE void CodeGeneratorRequest::Clear() {
       this_._impl_.compiler_version_->Clear();
     }
     if (CheckHasBit(cached_has_bits, 0x00000010U)) {
-      _impl_.source_file_descriptors_.Clear();
+      this_._impl_.source_file_descriptors_.Clear();
     }
   }
-  _impl_._has_bits_.Clear();
-  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
+  this_._impl_._has_bits_.Clear();
+  this_._internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
 }
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
@@ -1635,10 +1643,16 @@ PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const CodeGeneratorResponse_File::ParseTableT_
     CodeGeneratorResponse_File::_table_ =
         CodeGeneratorResponse_File::InternalGenerateParseTable_(CodeGeneratorResponse_File_class_data_.base());
 #endif  // !PROTOBUF_MESSAGE_GLOBALS
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+PROTOBUF_NOINLINE void CodeGeneratorResponse_File::Clear(MessageLite& base) {
+  CodeGeneratorResponse_File& this_ = static_cast<CodeGeneratorResponse_File&>(base);
+#else   // PROTOBUF_CUSTOM_VTABLE
 PROTOBUF_NOINLINE void CodeGeneratorResponse_File::Clear() {
-  auto& this_ [[maybe_unused]] = *this;
+  CodeGeneratorResponse_File& this_ [[maybe_unused]] = *this;
+#endif  // PROTOBUF_CUSTOM_VTABLE
+
   // @@protoc_insertion_point(message_clear_start:google.protobuf.compiler.CodeGeneratorResponse.File)
-  ::google::protobuf::internal::TSanWrite(&_impl_);
+  ::google::protobuf::internal::TSanWrite(&this_._impl_);
   ::uint32_t cached_has_bits [[maybe_unused]] = 0;
 
   cached_has_bits = this_._impl_._has_bits_[0];
@@ -1657,8 +1671,8 @@ PROTOBUF_NOINLINE void CodeGeneratorResponse_File::Clear() {
       this_._impl_.generated_code_info_->Clear();
     }
   }
-  _impl_._has_bits_.Clear();
-  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
+  this_._impl_._has_bits_.Clear();
+  this_._internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
 }
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
@@ -1924,16 +1938,22 @@ PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const CodeGeneratorResponse::ParseTableT_
     CodeGeneratorResponse::_table_ =
         CodeGeneratorResponse::InternalGenerateParseTable_(CodeGeneratorResponse_class_data_.base());
 #endif  // !PROTOBUF_MESSAGE_GLOBALS
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+PROTOBUF_NOINLINE void CodeGeneratorResponse::Clear(MessageLite& base) {
+  CodeGeneratorResponse& this_ = static_cast<CodeGeneratorResponse&>(base);
+#else   // PROTOBUF_CUSTOM_VTABLE
 PROTOBUF_NOINLINE void CodeGeneratorResponse::Clear() {
-  auto& this_ [[maybe_unused]] = *this;
+  CodeGeneratorResponse& this_ [[maybe_unused]] = *this;
+#endif  // PROTOBUF_CUSTOM_VTABLE
+
   // @@protoc_insertion_point(message_clear_start:google.protobuf.compiler.CodeGeneratorResponse)
-  ::google::protobuf::internal::TSanWrite(&_impl_);
+  ::google::protobuf::internal::TSanWrite(&this_._impl_);
   ::uint32_t cached_has_bits [[maybe_unused]] = 0;
 
   cached_has_bits = this_._impl_._has_bits_[0];
   if (BatchCheckHasBit(cached_has_bits, 0x00000003U)) {
     if (CheckHasBit(cached_has_bits, 0x00000001U)) {
-      _impl_.file_.Clear();
+      this_._impl_.file_.Clear();
     }
     if (CheckHasBit(cached_has_bits, 0x00000002U)) {
       this_._impl_.error_.ClearNonDefaultToEmpty();
@@ -1946,8 +1966,8 @@ PROTOBUF_NOINLINE void CodeGeneratorResponse::Clear() {
                  reinterpret_cast<char*>(&this_._impl_.supported_features_)) +
                  sizeof(_impl_.maximum_edition_));
   }
-  _impl_._has_bits_.Clear();
-  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
+  this_._impl_._has_bits_.Clear();
+  this_._internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
 }
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
