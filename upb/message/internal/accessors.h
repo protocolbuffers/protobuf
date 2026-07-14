@@ -194,8 +194,10 @@ UPB_INLINE_IF_NOT_GCC bool UPB_PRIVATE(_upb_MiniTableField_DataEquals)(
     case kUpb_FieldRep_8Byte:
       return memcmp(a, b, 8) == 0;
     case kUpb_FieldRep_StringView: {
-      const upb_StringView sa = *(const upb_StringView*)a;
-      const upb_StringView sb = *(const upb_StringView*)b;
+      upb_StringView sa;
+      upb_StringView sb;
+      memcpy(&sa, a, sizeof(sa));
+      memcpy(&sb, b, sizeof(sb));
       return upb_StringView_IsEqual(sa, sb);
     }
   }
