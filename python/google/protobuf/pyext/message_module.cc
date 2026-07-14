@@ -295,6 +295,16 @@ bool CopyToOwnedMsg(google::protobuf::Message** copy, const google::protobuf::Me
 
 // C++ API.  Clients get at this via proto_api.h
 struct ApiImplementation : google::protobuf::python::PyProto_API {
+  PyObject* legacy_pools_;
+
+  ApiImplementation() {
+    legacy_pools_ = PyList_New(0);
+  }
+
+  ~ApiImplementation() override {
+    Py_XDECREF(legacy_pools_);
+  }
+
   absl::StatusOr<google::protobuf::python::PythonMessageMutator> GetClearedMessageMutator(
       PyObject* py_msg) const override {
     if (PyObject_TypeCheck(py_msg, google::protobuf::python::CMessage_Type)) {
@@ -380,7 +390,11 @@ struct ApiImplementation : google::protobuf::python::PyProto_API {
   }
   PyObject* DescriptorPool_FromPool(
       const google::protobuf::DescriptorPool* pool) const override {
-    return google::protobuf::python::PyDescriptorPool_FromPool(pool);
+    PyObject* py_pool = google::protobuf::python::PyDescriptorPool_FromPool(pool);
+    if (py_pool != nullptr && legacy_pools_ != nullptr) {
+      PyList_Append(legacy_pools_, py_pool);
+    }
+    return py_pool;
   }
   PyObject* DescriptorPool_FromSharedPool(
       std::shared_ptr<const google::protobuf::DescriptorPool> pool,
