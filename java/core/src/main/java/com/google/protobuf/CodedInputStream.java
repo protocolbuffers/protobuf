@@ -117,7 +117,7 @@ public abstract class CodedInputStream {
   }
 
   @SuppressWarnings("NonFinalStaticField")
-  private static VarintExperiment varintExperiment = VarintExperiment.CONTROL;
+  private static VarintExperiment varintExperiment = VarintExperiment.NEW_ALL_CASES;
 
   /** Method to enable new varint experiment. Only for Search to use for evaluation. */
   static void setVarintExperiment(VarintExperiment experiment) {
