@@ -2136,4 +2136,99 @@ class EncodeDecodeTest extends TestBase
         }
         $this->assertTrue($threwTooLarge, 'recursion_limit > 65535 must throw');
     }
+
+    public function testDecodeDuplicatedSingularMessageFieldMerges()
+    {
+        $first = new TestMessage();
+        $sub = new Sub();
+        $sub->setA(1);
+        $sub->setB([1]);
+        $first->setOptionalMessage($sub);
+
+        $second = new TestMessage();
+        $sub = new Sub();
+        $sub->setB([2]);
+        $second->setOptionalMessage($sub);
+
+        $m = new TestMessage();
+        $m->mergeFromString(
+            $first->serializeToString() . $second->serializeToString());
+
+        $this->assertSame(1, $m->getOptionalMessage()->getA());
+        $this->assertSame(2, count($m->getOptionalMessage()->getB()));
+        $this->assertSame(1, $m->getOptionalMessage()->getB()[0]);
+        $this->assertSame(2, $m->getOptionalMessage()->getB()[1]);
+    }
+
+    public function testDecodeDuplicatedOneofMessageFieldMerges()
+    {
+        $first = new TestMessage();
+        $sub = new Sub();
+        $sub->setA(1);
+        $sub->setB([1]);
+        $first->setOneofMessage($sub);
+
+        $second = new TestMessage();
+        $sub = new Sub();
+        $sub->setB([2]);
+        $second->setOneofMessage($sub);
+
+        $m = new TestMessage();
+        $m->mergeFromString(
+            $first->serializeToString() . $second->serializeToString());
+
+        $this->assertSame(1, $m->getOneofMessage()->getA());
+        $this->assertSame(2, count($m->getOneofMessage()->getB()));
+        $this->assertSame(1, $m->getOneofMessage()->getB()[0]);
+        $this->assertSame(2, $m->getOneofMessage()->getB()[1]);
+    }
+
+    public function testDecodeOneofMessageAfterOtherCaseStartsFresh()
+    {
+        $first = new TestMessage();
+        $sub = new Sub();
+        $sub->setA(1);
+        $first->setOneofMessage($sub);
+
+        $second = new TestMessage();
+        $second->setOneofInt32(5);
+
+        $third = new TestMessage();
+        $sub = new Sub();
+        $sub->setB([2]);
+        $third->setOneofMessage($sub);
+
+        $m = new TestMessage();
+        $m->mergeFromString(
+            $first->serializeToString() .
+            $second->serializeToString() .
+            $third->serializeToString());
+
+        $this->assertSame(0, $m->getOneofMessage()->getA());
+        $this->assertSame(1, count($m->getOneofMessage()->getB()));
+        $this->assertSame(2, $m->getOneofMessage()->getB()[0]);
+    }
+
+    public function testMergeFromStringIntoPopulatedMessageMergesSubmessage()
+    {
+        $first = new TestMessage();
+        $sub = new Sub();
+        $sub->setA(1);
+        $sub->setB([1]);
+        $first->setOptionalMessage($sub);
+
+        $second = new TestMessage();
+        $sub = new Sub();
+        $sub->setB([2]);
+        $second->setOptionalMessage($sub);
+
+        $m = new TestMessage();
+        $m->mergeFromString($first->serializeToString());
+        $m->mergeFromString($second->serializeToString());
+
+        $this->assertSame(1, $m->getOptionalMessage()->getA());
+        $this->assertSame(2, count($m->getOptionalMessage()->getB()));
+        $this->assertSame(1, $m->getOptionalMessage()->getB()[0]);
+        $this->assertSame(2, $m->getOptionalMessage()->getB()[1]);
+    }
 }
