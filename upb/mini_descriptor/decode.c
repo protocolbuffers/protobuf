@@ -642,6 +642,9 @@ static void upb_MtDecoder_AssignHasbits(upb_MtDecoder* d) {
     upb_MiniTableField* field =
         (upb_MiniTableField*)&d->table.UPB_PRIVATE(fields)[i];
     if (field->UPB_PRIVATE(offset) == kHasbitPresence) {
+      if (last_hasbit >= INT16_MAX) {
+        upb_MdDecoder_ErrorJmp(&d->base, "Too many fields with presence");
+      }
       field->presence = ++last_hasbit;
     }
   }
@@ -671,6 +674,12 @@ static void upb_MtDecoder_AssignOffsets(upb_MtDecoder* d) {
   for (upb_OneOfLayoutItem* item = d->oneofs.data; item < oneof_end; item++) {
     upb_MiniTableField* f = &d->fields[item->field_index];
     uint16_t case_offset = upb_MtDecoder_Place(d, kUpb_OneOf_CaseFieldRep);
+    // The case offset is stored negated in the int16_t presence field, so it
+    // must fit in the positive int16_t range or it would alias a hasbit index.
+    if (case_offset > INT16_MAX) {
+      upb_MdDecoder_ErrorJmp(&d->base,
+                             "Message size exceeded maximum size for oneofs");
+    }
     uint16_t data_offset = upb_MtDecoder_Place(d, item->rep);
     while (true) {
       f->presence = ~case_offset;
