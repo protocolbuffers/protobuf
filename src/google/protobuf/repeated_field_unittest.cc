@@ -1647,11 +1647,6 @@ TEST(RepeatedFieldIsFullTest, DISABLED_MergeFromPacked) {
   EXPECT_EQ(msg.packed_bool_size(), std::numeric_limits<int>::max());
 }
 
-
-// ============================================================================
-// Part 1: Functional/Regression Tests (Verifying normal MergeFrom behavior)
-// ============================================================================
-
 // Test for signed integer overflow protection in MergeFrom.
 // Verifies the fix for https://github.com/protocolbuffers/protobuf/pull/28190
 // which adds CheckedAdd() to prevent integer overflow when merging fields
@@ -1714,9 +1709,8 @@ TEST(RepeatedField, MultipleMergeFromCalls) {
   EXPECT_EQ(4, destination.Get(3));
 }
 
-// ============================================================================
-// Part 2: Security Boundary Tests (Verifying CheckedAdd safe termination on overflow)
-// ============================================================================
+
+//Verifying CheckedAdd safe termination on overflow)
 TEST(RepeatedFieldTest, CheckedAddOverflowSafetyBoundary) {
   // 1. Verify boundary addition (maximum/minimum values that do not overflow)
   EXPECT_EQ(internal::CheckedAdd(std::numeric_limits<int>::max(), 0), std::numeric_limits<int>::max());
