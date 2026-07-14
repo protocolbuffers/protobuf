@@ -360,9 +360,7 @@ public abstract class GeneratedMessageLite<
 
   private static final Map<Class<?>, Object> parserOrInstanceMap = new ConcurrentHashMap<>();
 
-  @SuppressWarnings({
-    "unchecked"
-  }) // Guaranteed by the map's invariant.
+  @SuppressWarnings({"unchecked"}) // Guaranteed by the map's invariant.
   @DoNotInline
   public static <T extends GeneratedMessageLite<T, ?>> Parser<T> getParserForClass(Class<T> clazz) {
     Object parserOrInstance = parserOrInstanceMap.get(clazz);
@@ -612,16 +610,18 @@ public abstract class GeneratedMessageLite<
       extends MessageLiteOrBuilder {
 
     /** Check if a singular extension is present. */
-    <Type> boolean hasExtension(ExtensionLite<MessageT, Type> extension);
+    <ExtensionT> boolean hasExtension(ExtensionLite<MessageT, ExtensionT> extension);
 
     /** Get the number of elements in a repeated extension. */
-    <Type> int getExtensionCount(ExtensionLite<MessageT, List<Type>> extension);
+    <SingleExtensionT> int getExtensionCount(
+        ExtensionLite<MessageT, List<SingleExtensionT>> extension);
 
     /** Get the value of an extension. */
-    <Type> Type getExtension(ExtensionLite<MessageT, Type> extension);
+    <ExtensionT> ExtensionT getExtension(ExtensionLite<MessageT, ExtensionT> extension);
 
     /** Get one element of a repeated extension. */
-    <Type> Type getExtension(ExtensionLite<MessageT, List<Type>> extension, int index);
+    <ExtensionT> ExtensionT getExtension(
+        ExtensionLite<MessageT, List<ExtensionT>> extension, int index);
   }
 
   /** Lite equivalent of {@link GeneratedMessage.ExtendableMessage}. */
@@ -930,8 +930,9 @@ public abstract class GeneratedMessageLite<
 
     /** Check if a singular extension is present. */
     @Override
-    public final <Type> boolean hasExtension(final ExtensionLite<MessageT, Type> extension) {
-      GeneratedExtension<MessageT, Type> extensionLite = checkIsLite(extension);
+    public final <ExtensionT> boolean hasExtension(
+        final ExtensionLite<MessageT, ExtensionT> extension) {
+      GeneratedExtension<MessageT, ExtensionT> extensionLite = checkIsLite(extension);
 
       verifyExtensionContainingType(extensionLite);
       return extensions.hasField(extensionLite.descriptor);
@@ -939,8 +940,9 @@ public abstract class GeneratedMessageLite<
 
     /** Get the number of elements in a repeated extension. */
     @Override
-    public final <Type> int getExtensionCount(final ExtensionLite<MessageT, List<Type>> extension) {
-      GeneratedExtension<MessageT, List<Type>> extensionLite = checkIsLite(extension);
+    public final <SingleExtensionT> int getExtensionCount(
+        final ExtensionLite<MessageT, List<SingleExtensionT>> extension) {
+      GeneratedExtension<MessageT, List<SingleExtensionT>> extensionLite = checkIsLite(extension);
 
       verifyExtensionContainingType(extensionLite);
       return extensions.getRepeatedFieldCount(extensionLite.descriptor);
@@ -949,27 +951,28 @@ public abstract class GeneratedMessageLite<
     /** Get the value of an extension. */
     @Override
     @SuppressWarnings("unchecked")
-    public final <Type> Type getExtension(final ExtensionLite<MessageT, Type> extension) {
-      GeneratedExtension<MessageT, Type> extensionLite = checkIsLite(extension);
+    public final <ExtensionT> ExtensionT getExtension(
+        final ExtensionLite<MessageT, ExtensionT> extension) {
+      GeneratedExtension<MessageT, ExtensionT> extensionLite = checkIsLite(extension);
 
       verifyExtensionContainingType(extensionLite);
       final Object value = extensions.getField(extensionLite.descriptor);
       if (value == null) {
         return extensionLite.defaultValue;
       } else {
-        return (Type) extensionLite.fromFieldSetType(value);
+        return (ExtensionT) extensionLite.fromFieldSetType(value);
       }
     }
 
     /** Get one element of a repeated extension. */
     @Override
     @SuppressWarnings("unchecked")
-    public final <Type> Type getExtension(
-        final ExtensionLite<MessageT, List<Type>> extension, final int index) {
-      GeneratedExtension<MessageT, List<Type>> extensionLite = checkIsLite(extension);
+    public final <ExtensionT> ExtensionT getExtension(
+        final ExtensionLite<MessageT, List<ExtensionT>> extension, final int index) {
+      GeneratedExtension<MessageT, List<ExtensionT>> extensionLite = checkIsLite(extension);
 
       verifyExtensionContainingType(extensionLite);
-      return (Type)
+      return (ExtensionT)
           extensionLite.singularFromFieldSetType(
               extensions.getRepeatedField(extensionLite.descriptor, index));
     }
@@ -1091,33 +1094,36 @@ public abstract class GeneratedMessageLite<
 
     /** Check if a singular extension is present. */
     @Override
-    public final <Type> boolean hasExtension(final ExtensionLite<MessageT, Type> extension) {
+    public final <ExtensionT> boolean hasExtension(
+        final ExtensionLite<MessageT, ExtensionT> extension) {
       return instance.hasExtension(extension);
     }
 
     /** Get the number of elements in a repeated extension. */
     @Override
-    public final <Type> int getExtensionCount(final ExtensionLite<MessageT, List<Type>> extension) {
+    public final <SingleExtensionT> int getExtensionCount(
+        final ExtensionLite<MessageT, List<SingleExtensionT>> extension) {
       return instance.getExtensionCount(extension);
     }
 
     /** Get the value of an extension. */
     @Override
-    public final <Type> Type getExtension(final ExtensionLite<MessageT, Type> extension) {
+    public final <ExtensionT> ExtensionT getExtension(
+        final ExtensionLite<MessageT, ExtensionT> extension) {
       return instance.getExtension(extension);
     }
 
     /** Get one element of a repeated extension. */
     @Override
-    public final <Type> Type getExtension(
-        final ExtensionLite<MessageT, List<Type>> extension, final int index) {
+    public final <ExtensionT> ExtensionT getExtension(
+        final ExtensionLite<MessageT, List<ExtensionT>> extension, final int index) {
       return instance.getExtension(extension, index);
     }
 
     /** Set the value of an extension. */
-    public final <Type> BuilderT setExtension(
-        final ExtensionLite<MessageT, Type> extension, final Type value) {
-      GeneratedExtension<MessageT, Type> extensionLite = checkIsLite(extension);
+    public final <ExtensionT> BuilderT setExtension(
+        final ExtensionLite<MessageT, ExtensionT> extension, final ExtensionT value) {
+      GeneratedExtension<MessageT, ExtensionT> extensionLite = checkIsLite(extension);
 
       verifyExtensionContainingType(extensionLite);
       copyOnWrite();
@@ -1127,9 +1133,11 @@ public abstract class GeneratedMessageLite<
     }
 
     /** Set the value of one element of a repeated extension. */
-    public final <Type> BuilderT setExtension(
-        final ExtensionLite<MessageT, List<Type>> extension, final int index, final Type value) {
-      GeneratedExtension<MessageT, List<Type>> extensionLite = checkIsLite(extension);
+    public final <ExtensionT> BuilderT setExtension(
+        final ExtensionLite<MessageT, List<ExtensionT>> extension,
+        final int index,
+        final ExtensionT value) {
+      GeneratedExtension<MessageT, List<ExtensionT>> extensionLite = checkIsLite(extension);
 
       verifyExtensionContainingType(extensionLite);
       copyOnWrite();
@@ -1140,9 +1148,9 @@ public abstract class GeneratedMessageLite<
     }
 
     /** Append a value to a repeated extension. */
-    public final <Type> BuilderT addExtension(
-        final ExtensionLite<MessageT, List<Type>> extension, final Type value) {
-      GeneratedExtension<MessageT, List<Type>> extensionLite = checkIsLite(extension);
+    public final <ExtensionT> BuilderT addExtension(
+        final ExtensionLite<MessageT, List<ExtensionT>> extension, final ExtensionT value) {
+      GeneratedExtension<MessageT, List<ExtensionT>> extensionLite = checkIsLite(extension);
 
       verifyExtensionContainingType(extensionLite);
       copyOnWrite();
@@ -1165,16 +1173,16 @@ public abstract class GeneratedMessageLite<
   // -----------------------------------------------------------------
 
   /** For use by generated code only. */
-  public static <ContainingType extends MessageLite, Type>
-      GeneratedExtension<ContainingType, Type> newSingularGeneratedExtension(
+  public static <ContainingType extends MessageLite, ExtensionT>
+      GeneratedExtension<ContainingType, ExtensionT> newSingularGeneratedExtension(
           final ContainingType containingTypeDefaultInstance,
-          final Type defaultValue,
+          final ExtensionT defaultValue,
           final MessageLite messageDefaultInstance,
           final Internal.EnumLiteMap<?> enumTypeMap,
           final int number,
           final WireFormat.FieldType type,
           final Class<?> singularType) {
-    return new GeneratedExtension<ContainingType, Type>(
+    return new GeneratedExtension<ContainingType, ExtensionT>(
         containingTypeDefaultInstance,
         defaultValue,
         messageDefaultInstance,
@@ -1184,8 +1192,8 @@ public abstract class GeneratedMessageLite<
   }
 
   /** For use by generated code only. */
-  public static <ContainingType extends MessageLite, Type>
-      GeneratedExtension<ContainingType, Type> newRepeatedGeneratedExtension(
+  public static <ContainingType extends MessageLite, ExtensionT>
+      GeneratedExtension<ContainingType, ExtensionT> newRepeatedGeneratedExtension(
           final ContainingType containingTypeDefaultInstance,
           final MessageLite messageDefaultInstance,
           final Internal.EnumLiteMap<?> enumTypeMap,
@@ -1193,9 +1201,9 @@ public abstract class GeneratedMessageLite<
           final WireFormat.FieldType type,
           final boolean isPacked,
           final Class<?> singularType) {
-    @SuppressWarnings("unchecked") // Subclasses ensure Type is a List
-    Type emptyList = (Type) ProtobufArrayList.emptyList();
-    return new GeneratedExtension<ContainingType, Type>(
+    @SuppressWarnings("unchecked") // Subclasses ensure ExtensionT is a List
+    ExtensionT emptyList = (ExtensionT) ProtobufArrayList.emptyList();
+    return new GeneratedExtension<ContainingType, ExtensionT>(
         containingTypeDefaultInstance,
         emptyList,
         messageDefaultInstance,
@@ -1311,8 +1319,8 @@ public abstract class GeneratedMessageLite<
    * <p>Users should ignore the contents of this class and only use objects of this type as
    * parameters to extension accessors and ExtensionRegistry.add().
    */
-  public static class GeneratedExtension<ContainingType extends MessageLite, Type>
-      extends ExtensionLite<ContainingType, Type> {
+  public static class GeneratedExtension<ContainingType extends MessageLite, ExtensionT>
+      extends ExtensionLite<ContainingType, ExtensionT> {
 
     /**
      * Create a new instance with the given parameters.
@@ -1323,7 +1331,7 @@ public abstract class GeneratedMessageLite<
      */
     GeneratedExtension(
         final ContainingType containingTypeDefaultInstance,
-        final Type defaultValue,
+        final ExtensionT defaultValue,
         final MessageLite messageDefaultInstance,
         final ExtensionDescriptor descriptor,
         final Class<?> singularType) {
@@ -1343,7 +1351,7 @@ public abstract class GeneratedMessageLite<
     }
 
     final ContainingType containingTypeDefaultInstance;
-    final Type defaultValue;
+    final ExtensionT defaultValue;
     final MessageLite messageDefaultInstance;
     final ExtensionDescriptor descriptor;
 
@@ -1428,7 +1436,7 @@ public abstract class GeneratedMessageLite<
     }
 
     @Override
-    public Type getDefaultValue() {
+    public ExtensionT getDefaultValue() {
       return defaultValue;
     }
   }
