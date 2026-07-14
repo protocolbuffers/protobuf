@@ -27,6 +27,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 /**
  * Lite version of {@link GeneratedMessage}.
@@ -358,7 +359,8 @@ public abstract class GeneratedMessageLite<
     return dynamicMethod(MethodToInvoke.BUILD_MESSAGE_INFO, null, null);
   }
 
-  private static final Map<Class<?>, Object> parserOrInstanceMap = new ConcurrentHashMap<>();
+  private static final ConcurrentMap<Class<?>, Object> parserOrInstanceMap =
+      new ConcurrentHashMap<>();
 
   @SuppressWarnings({"unchecked"}) // Guaranteed by the map's invariant.
   @DoNotInline
