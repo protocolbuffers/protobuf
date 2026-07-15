@@ -1973,6 +1973,16 @@ public class JsonFormatTest {
     assertThat(actualBuilder.build()).isEqualTo(expected);
   }
 
+  // TODO: b/534418787 - Investigate this behavior further, especially in conformance tests.
+  @Test
+  public void testParserSingleElementArrayForNonRepeatedIntegerEnum() throws Exception {
+    TestAllTypes.Builder actualBuilder = TestAllTypes.newBuilder();
+    mergeFromJson("{\"optionalNestedEnum\": [2]}", actualBuilder);
+
+    TestAllTypes expected = TestAllTypes.newBuilder().setOptionalNestedEnum(NestedEnum.BAZ).build();
+    assertThat(actualBuilder.build()).isEqualTo(expected);
+  }
+
   @Test
   public void testCustomJsonName() throws Exception {
     TestCustomJsonName message = TestCustomJsonName.newBuilder().setValue(12345).build();
