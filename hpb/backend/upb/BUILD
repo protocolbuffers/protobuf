@@ -40,6 +40,7 @@ cc_library(
     visibility = [
         "//hpb:__subpackages__",
         "//hpb_generator:__subpackages__",
+        "//java/com/google/android/libraries/multiplatform/elements/testing/testability:__pkg__",
     ],
     deps = [
         "//hpb:ptr",
