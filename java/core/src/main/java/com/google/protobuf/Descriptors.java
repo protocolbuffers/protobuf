@@ -965,6 +965,10 @@ public final class Descriptors {
       return Collections.unmodifiableList(Arrays.asList(fields));
     }
 
+    List<FieldDescriptor> getFieldsSortedByNumber() {
+      return Collections.unmodifiableList(Arrays.asList(fieldsSortedByNumber));
+    }
+
     /** Get a count of this message type's fields. */
     public int getFieldCount() {
       return fields.length;
