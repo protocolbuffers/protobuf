@@ -322,7 +322,10 @@ static const char* _upb_Decoder_DecodeEnumPacked(
   while (!upb_EpsCopyInputStream_IsDone(EPS(d), &ptr)) {
     wireval elem;
     ptr = upb_WireReader_ReadVarint(ptr, &elem.uint64_val, EPS(d));
-    if (!upb_MiniTableEnum_CheckValue(e, elem.uint64_val)) {
+    // e is NULL when the field's sub-enum has not been linked (a MiniTable
+    // built from a mini descriptor before upb_MiniTable_Link). Route every
+    // value to the unknown field set rather than dereferencing NULL.
+    if (!e || !upb_MiniTableEnum_CheckValue(e, elem.uint64_val)) {
       upb_Message* unknown_msg =
           field->UPB_PRIVATE(mode) & kUpb_LabelFlags_IsExtension
               ? d->original_msg
@@ -890,7 +893,10 @@ const char* _upb_Decoder_DecodeWireValue(upb_Decoder* d, const char* ptr,
       ptr = upb_WireReader_ReadVarint(ptr, &val->uint64_val, EPS(d));
       if (upb_MiniTableField_IsClosedEnum(field)) {
         const upb_MiniTableEnum* e = upb_MiniTable_GetSubEnumTable(field);
-        if (!upb_MiniTableEnum_CheckValue(e, val->uint64_val)) {
+        // A MiniTable built from a mini descriptor has unlinked sub-enums until
+        // upb_MiniTable_Link() runs, so e may be NULL here. Treat the value as
+        // unknown rather than dereferencing NULL in CheckValue.
+        if (!e || !upb_MiniTableEnum_CheckValue(e, val->uint64_val)) {
           *op = kUpb_DecodeOp_UnknownField;
           return ptr;
         }
