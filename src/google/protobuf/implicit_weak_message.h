@@ -139,20 +139,18 @@ class ImplicitWeakTypeHandler {
   typedef MessageLite Type;
   static constexpr bool Moveable = false;
 
-  static inline MessageLite* NewFromPrototype(const MessageLite* prototype,
-                                              Arena* arena = nullptr) {
+  static MessageLite* NewFromPrototype(const MessageLite* prototype,
+                                       Arena* arena = nullptr) {
     return prototype->New(arena);
   }
 
-  static inline void Delete(MessageLite* value, Arena* arena) {
+  static void Delete(MessageLite* value, Arena* arena) {
     if (arena == nullptr) {
       delete value;
     }
   }
-  static inline Arena* GetArena(MessageLite* value) {
-    return value->GetArena();
-  }
-  static inline void Clear(MessageLite* value) { value->Clear(); }
+  static Arena* GetArena(MessageLite* value) { return value->GetArena(); }
+  static void Clear(MessageLite* value) { value->Clear(); }
   static void Merge(const MessageLite& from, MessageLite* to) {
     to->CheckTypeAndMergeFrom(from);
   }
