@@ -61,9 +61,6 @@
 namespace google {
 namespace protobuf {
 
-template <typename T>
-class RepeatedPtrField;
-
 class FastReflectionMessageMutator;
 class FastReflectionStringSetter;
 class Reflection;
@@ -97,10 +94,6 @@ inline constexpr bool is_concrete_proto_message_v =
     is_concrete_proto_message<T>::value;
 
 namespace internal {
-
-// TODO: Remove this once we have a better way to do this.
-PROTOBUF_EXPORT void GenericSwap(MessageLite* lhs, MessageLite* rhs);
-PROTOBUF_EXPORT void GenericSwap(Message* lhs, Message* rhs);
 
 struct PrivateAccess;
 
@@ -821,8 +814,6 @@ class PROTOBUF_EXPORT MessageLite {
         CopyConstruct(arena, reinterpret_cast<const MessageLite&>(from)));
   }
 
-
-
   const internal::TcParseTableBase* GetTcParseTable() const {
     auto* data = GetClassData();
     ABSL_DCHECK(data != nullptr);
@@ -952,6 +943,7 @@ class PROTOBUF_EXPORT MessageLite {
 #endif
 
  private:
+  friend internal::ClassData;
   friend class internal::MessageCreator;
   friend class FastReflectionMessageMutator;
   friend class AssignDescriptorsHelper;
@@ -976,15 +968,11 @@ class PROTOBUF_EXPORT MessageLite {
   friend class internal::WeakFieldMap;
   friend class internal::WireFormatLite;
   friend class internal::RustMapHelper;
-
-
   template <typename Type>
   friend class Arena::InternalHelper;
 
   template <typename MessageT>
   friend const internal::ClassData* internal::GetClassData(const MessageT& msg);
-  friend void internal::GenericSwap(MessageLite* lhs, MessageLite* rhs);
-  friend void internal::GenericSwap(Message* lhs, Message* rhs);
 
   static bool CheckFieldPresence(const internal::ParseContext& ctx,
                                  const MessageLite& msg,

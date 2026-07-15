@@ -18,10 +18,12 @@
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
 #include "absl/strings/str_cat.h"
+#include "google/protobuf/class_data.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/map_field.h"
 #include "google/protobuf/message_lite.h"
+#include "google/protobuf/message_traits.h"
 #include "google/protobuf/port.h"
 #include "google/protobuf/unknown_field_set.h"
 
@@ -435,13 +437,14 @@ void GenericSwap(Message* lhs, Message* rhs) {
 
   // Improve efficiency by placing the temporary on an arena so that messages
   // are copied twice rather than three times.
-  Message* tmp = rhs->New(arena);
-  tmp->CheckTypeAndMergeFrom(*lhs);
+  const ClassData* class_data = GetClassData(*lhs);
+  Message* tmp = static_cast<Message*>(class_data->New(arena));
+  class_data->MergeToFrom(*tmp, *lhs);
   lhs->Clear();
-  lhs->CheckTypeAndMergeFrom(*rhs);
+  class_data->MergeToFrom(*lhs, *rhs);
   if (internal::DebugHardenForceCopyInSwap()) {
     rhs->Clear();
-    rhs->CheckTypeAndMergeFrom(*tmp);
+    class_data->MergeToFrom(*rhs, *tmp);
     if (arena == nullptr) delete tmp;
   } else {
     rhs->GetReflection()->Swap(tmp, rhs);
