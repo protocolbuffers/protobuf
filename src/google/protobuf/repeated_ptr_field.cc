@@ -53,7 +53,7 @@ void** RepeatedPtrFieldBase::InternalExtend(int extend_amount, Arena* arena) {
   Rep* new_rep = nullptr;
 
   int new_capacity = internal::CalculateReserveSize<void*, kRepHeaderSize>(
-      old_capacity, old_capacity + extend_amount);
+      old_capacity, internal::CheckedAdd(old_capacity, extend_amount));
   {
     ABSL_DCHECK_LE(new_capacity, kMaxCapacity)
         << "New capacity is too large to fit into internal representation";
@@ -173,7 +173,7 @@ PROTOBUF_ALWAYS_INLINE void RepeatedPtrFieldBase::MergeFromInternal(
   Prefetch5LinesFrom1Line(&from);
   ABSL_DCHECK_EQ(arena, GetArena());
   ABSL_DCHECK_NE(&from, this);
-  int new_size = current_size_ + from.current_size_;
+  int new_size = internal::CheckedAdd(current_size_, from.current_size_);
   auto dst = reinterpret_cast<T**>(InternalReserve(new_size, arena));
   auto src = reinterpret_cast<T* const*>(from.elements());
   auto end = src + from.current_size_;
@@ -266,7 +266,7 @@ template <>
 void RepeatedPtrFieldBase::MergeFrom<MessageLite>(
     const RepeatedPtrFieldBase& from, Arena* arena) {
   ABSL_DCHECK(from.current_size_ > 0);
-  int new_size = current_size_ + from.current_size_;
+  int new_size = internal::CheckedAdd(current_size_, from.current_size_);
   auto dst = reinterpret_cast<MessageLite**>(InternalReserve(new_size, arena));
   auto src = reinterpret_cast<MessageLite const* const*>(from.elements());
   auto end = src + from.current_size_;

@@ -598,9 +598,6 @@ class ABSL_ATTRIBUTE_WARN_UNUSED PROTOBUF_DECLSPEC_EMPTY_BASES
 
   template <typename ArenaProvider>
   void ReserveWithArena(ArenaProvider arena_provider, int new_size);
-  void GrowByWithArena(Arena* arena, int grow_by) {
-    ReserveWithArena(arena, size() + grow_by);
-  }
 
   template <typename ArenaProvider>
   void* AddUninitializedWithArena(ArenaProvider arena_provider);
@@ -1220,11 +1217,12 @@ inline void RepeatedField<Element>::RemoveLast() {
 template <typename Element>
 void RepeatedField<Element>::ExtractSubrange(int start, int num,
                                              Element* elements) {
-  ABSL_DCHECK_GE(start, 0);
-  ABSL_DCHECK_GE(num, 0);
+  internal::RuntimeAssertInBoundsGE(start, 0);
+  internal::RuntimeAssertInBoundsGE(num, 0);
   const bool is_soo = this->is_soo();
   const int old_size = size();
-  ABSL_DCHECK_LE(start + num, old_size);
+  internal::RuntimeAssertInBoundsLE(static_cast<int64_t>(start) + num,
+                                    old_size);
   Element* elem = unsafe_elements(is_soo);
 
   // Save the values of the removed elements if requested.
@@ -1256,10 +1254,10 @@ inline void RepeatedField<Element>::MergeFrom(const RepeatedField& other) {
   const bool other_is_soo = other.is_soo();
   if (auto other_size = other.size()) {
     const int old_size = size();
-    Reserve(old_size + other_size);
+    const int new_size = internal::CheckedAdd(old_size, other_size);
+    Reserve(new_size);
     const bool is_soo = this->is_soo();
-    Element* dst =
-        elements(is_soo) + ExchangeCurrentSize(old_size + other_size);
+    Element* dst = elements(is_soo) + ExchangeCurrentSize(new_size);
     UninitializedCopyN(other.elements(other_is_soo), other_size, dst);
   }
 }
