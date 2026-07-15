@@ -214,6 +214,19 @@ struct PROTOBUF_EXPORT ClassData {
   uint32_t allocation_size() const { return message_creator.allocation_size(); }
 
   uint8_t alignment() const { return message_creator.alignment(); }
+
+  template <typename MessageLite = google::protobuf::MessageLite>
+  PROTOBUF_ALWAYS_INLINE void MergeToFrom(MessageLite& to,
+                                          const MessageLite& from) const {
+    ABSL_DCHECK(this == to.GetClassData())
+        << "Incorrect class data passed to MergeToFrom: expected "
+        << to.GetTypeName() << ", got "
+        << TypeDependent<MessageLite>(prototype)->GetTypeName();
+    ABSL_DCHECK(this == from.GetClassData())
+        << "Invalid call to MergeFrom between types " << to.GetTypeName()
+        << " and " << from.GetTypeName();
+    this->merge_to_from(to, from);
+  }
 };
 
 #ifndef PROTOBUF_MESSAGE_GLOBALS

@@ -36,15 +36,19 @@
 #include "absl/container/btree_map.h"
 #include "absl/log/absl_check.h"
 #include "absl/strings/string_view.h"
+#include "google/protobuf/class_data.h"
 #include "google/protobuf/generated_enum_util.h"
+#include "google/protobuf/generated_message_tctable_decl.h"
 #include "google/protobuf/internal_visibility.h"
-#include "google/protobuf/port.h"
 #include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/message_lite.h"
+#include "google/protobuf/message_traits.h"
 #include "google/protobuf/parse_context.h"
+#include "google/protobuf/port.h"
 #include "google/protobuf/repeated_field.h"
 #include "google/protobuf/repeated_ptr_field.h"
 #include "google/protobuf/wire_format_lite.h"
+
 
 // clang-format off
 #include "google/protobuf/port_def.inc"  // Must be last
@@ -185,6 +189,14 @@ struct ExtensionInfo {
     }
 
     const internal::TcParseTableBase* GetTcTable() const { return tc_table; }
+
+    const ClassData* GetClassData() const {
+#if defined(PROTOBUF_MESSAGE_GLOBALS)
+      return internal::MessageGlobalsBase::GetClassData(globals);
+#else
+      return tc_table->class_data;
+#endif
+    }
   };
 
   union {
@@ -480,7 +492,7 @@ class PROTOBUF_EXPORT ExtensionSet {
 #define desc const FieldDescriptor* descriptor  // avoid line wrapping
   std::string* AddString(Arena* arena, int number, FieldType type, desc);
   MessageLite* AddMessage(Arena* arena, int number, FieldType type,
-                          const MessageLite& prototype, desc);
+                          const ClassData* class_data, desc);
   MessageLite* AddMessage(Arena* arena, const FieldDescriptor* descriptor,
                           MessageFactory* factory);
   void AddAllocatedMessage(Arena* arena, const FieldDescriptor* descriptor,
@@ -1722,8 +1734,9 @@ class RepeatedMessageTypeTraits {
   }
   static inline MutableType Add(Arena* arena, int number, FieldType field_type,
                                 ExtensionSet* set) {
-    return static_cast<Type*>(set->AddMessage(
-        arena, number, field_type, Type::default_instance(), nullptr));
+    static const ClassData* class_data = MessageTraits<Type>::class_data();
+    return static_cast<Type*>(
+        set->AddMessage(arena, number, field_type, class_data, nullptr));
   }
   PROTOBUF_FUTURE_ADD_EARLY_NODISCARD static inline const RepeatedPtrField<
       Type>&
