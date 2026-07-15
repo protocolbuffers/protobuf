@@ -80,7 +80,7 @@ static zend_object* Message_create(zend_class_entry* class_type) {
 static void Message_dtor(zend_object* obj) {
   Message* intern = (Message*)obj;
   ObjCache_Delete(intern->msg);
-  zval_dtor(&intern->arena);
+  zval_ptr_dtor(&intern->arena);
   zend_object_std_dtor(&intern->std);
 }
 
@@ -520,6 +520,7 @@ bool Message_InitFromPhp(upb_Message* msg, const upb_MessageDef* m, zval* init,
 
     if (!f) {
       zend_throw_exception_ex(NULL, 0, "No such field %s", Z_STRVAL_P(&key));
+      zval_ptr_dtor(&key);
       return false;
     }
 
@@ -527,25 +528,32 @@ bool Message_InitFromPhp(upb_Message* msg, const upb_MessageDef* m, zval* init,
     if (Z_TYPE_P(val) == IS_NULL && upb_FieldDef_IsOptional(f)) {
       upb_Message_ClearFieldByDef(msg, f);
       zend_hash_move_forward_ex(table, &pos);
-      zval_dtor(&key);
+      zval_ptr_dtor(&key);
       continue;
     }
 
     if (upb_FieldDef_IsMap(f)) {
       msgval.map_val = MapField_GetUpbMap(val, MapType_Get(f), arena);
-      if (!msgval.map_val) return false;
+      if (!msgval.map_val) {
+        zval_ptr_dtor(&key);
+        return false;
+      }
     } else if (upb_FieldDef_IsRepeated(f)) {
       msgval.array_val = RepeatedField_GetUpbArray(val, TypeInfo_Get(f), arena);
-      if (!msgval.array_val) return false;
+      if (!msgval.array_val) {
+        zval_ptr_dtor(&key);
+        return false;
+      }
     } else {
       if (!Convert_PhpToUpbAutoWrap(val, &msgval, TypeInfo_Get(f), arena)) {
+        zval_ptr_dtor(&key);
         return false;
       }
     }
 
     upb_Message_SetFieldByDef(msg, f, msgval, arena);
     zend_hash_move_forward_ex(table, &pos);
-    zval_dtor(&key);
+    zval_ptr_dtor(&key);
   }
 }
 
