@@ -39,7 +39,6 @@ PROTOBUF_MAVEN_ARTIFACTS = [
     "com.google.code.gson:gson:2.8.9",
     "com.google.errorprone:error_prone_annotations:2.5.1",
     "com.google.j2objc:j2objc-annotations:2.8",
-    "com.google.guava:guava:32.0.1-jre",
 ]
 
 def _github_archive(repo, commit, **kwargs):
