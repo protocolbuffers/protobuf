@@ -345,4 +345,23 @@ TEST(FuzzTest, OptionDependency) {
       )pb"));
 }
 
+TEST(FuzzTest, InvalidOneofFieldLabel) {
+  RoundTripDescriptor(ParseTextProtoOrDie(R"pb(
+    file {
+      name: "test.proto"
+      message_type {
+        name: "M"
+        field {
+          name: "f"
+          number: 1
+          label: LABEL_REQUIRED
+          type: TYPE_INT32
+          oneof_index: 0
+        }
+        oneof_decl { name: "o" }
+      }
+    }
+  )pb"));
+}
+
 }  // namespace upb_test

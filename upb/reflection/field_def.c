@@ -720,13 +720,6 @@ static void _upb_FieldDef_Create(upb_DefBuilder* ctx, const char* prefix,
    * to the field_proto until later when we can properly resolve it. */
   f->sub.unresolved = field_proto;
 
-  if (google_protobuf_FieldDescriptorProto_has_oneof_index(field_proto)) {
-    if (upb_FieldDef_Label(f) != kUpb_Label_Optional) {
-      _upb_DefBuilder_Errf(ctx, "fields in oneof must have OPTIONAL label (%s)",
-                           f->full_name);
-    }
-  }
-
   f->has_presence =
       (!upb_FieldDef_IsRepeated(f)) &&
       (f->is_extension || _upb_FileDef_ImplicitFieldPresenceDisabled(f->file) ||
