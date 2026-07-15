@@ -380,11 +380,51 @@ void _upb_FileDef_Create(upb_DefBuilder* ctx,
   strs = google_protobuf_FileDescriptorProto_dependency(file_proto, &n);
   file->dep_count = n;
   file->deps = UPB_DEFBUILDER_ALLOCARRAY(ctx, const upb_FileDef*, n);
+  memset(file->deps, 0, n * sizeof(*file->deps));
 
-  for (size_t i = 0; i < n; i++) {
+  weak_deps = google_protobuf_FileDescriptorProto_weak_dependency(file_proto, &n);
+  file->weak_dep_count = n;
+  file->weak_deps = UPB_DEFBUILDER_ALLOCARRAY(ctx, const int32_t, n);
+  int32_t* mutable_weak_deps = (int32_t*)file->weak_deps;
+
+  for (int i = 0; i < file->weak_dep_count; i++) {
+    int32_t dep_idx = weak_deps[i];
+    if (dep_idx < 0 || dep_idx >= file->dep_count) {
+      _upb_DefBuilder_Errf(ctx, "weak_dep %d is out of range", (int)dep_idx);
+    }
+    mutable_weak_deps[i] = dep_idx;
+  }
+
+  const upb_MessageDef* dummy_msg = NULL;
+  if (file->weak_dep_count > 0) {
+    if (file->edition == google_protobuf_EDITION_PROTO3) {
+      _upb_DefBuilder_Errf(ctx, "weak imports are not supported in proto3.");
+    }
+    if (file->edition >= google_protobuf_EDITION_2024) {
+      _upb_DefBuilder_Errf(
+          ctx, "weak imports are not allowed under edition 2024 and beyond.");
+    }
+    dummy_msg = upb_DefPool_FindMessageByName(ctx->symtab, "google.protobuf.Empty");
+    if (!dummy_msg) {
+      _upb_DefBuilder_Errf(
+          ctx,
+          "To use weak fields in proto2 C++ API, an explicit dependency to "
+          "net/proto2/proto/empty.proto must be added.");
+    }
+    for (int i = 0; i < file->weak_dep_count; i++) {
+      file->deps[weak_deps[i]] = upb_MessageDef_File(dummy_msg);
+    }
+  }
+
+  for (int i = 0; i < file->dep_count; i++) {
     upb_StringView str = strs[i];
-    file->deps[i] =
+    const upb_FileDef* loaded_file =
         upb_DefPool_FindFileByNameWithSize(ctx->symtab, str.data, str.size);
+    if (loaded_file) {
+      file->deps[i] = loaded_file;
+    }
+    // No need to check for weak deps here, since they are prefilled with
+    // dummy_msg.
     if (!file->deps[i]) {
       _upb_DefBuilder_Errf(ctx,
                            "Depends on file '" UPB_STRINGVIEW_FORMAT
@@ -403,18 +443,6 @@ void _upb_FileDef_Create(upb_DefBuilder* ctx,
                            (int)public_deps[i]);
     }
     mutable_public_deps[i] = public_deps[i];
-  }
-
-  weak_deps = google_protobuf_FileDescriptorProto_weak_dependency(file_proto, &n);
-  file->weak_dep_count = n;
-  file->weak_deps = UPB_DEFBUILDER_ALLOCARRAY(ctx, const int32_t, n);
-  int32_t* mutable_weak_deps = (int32_t*)file->weak_deps;
-  for (size_t i = 0; i < n; i++) {
-    if (weak_deps[i] < 0 || weak_deps[i] >= file->dep_count) {
-      _upb_DefBuilder_Errf(ctx, "weak_dep %d is out of range",
-                           (int)weak_deps[i]);
-    }
-    mutable_weak_deps[i] = weak_deps[i];
   }
 
   const upb_StringView* option_deps;
