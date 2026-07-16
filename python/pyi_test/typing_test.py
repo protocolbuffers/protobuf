@@ -7,9 +7,14 @@
 
 import datetime
 
-from typing_extensions import reveal_type
+from typing_extensions import assert_never, reveal_type
 
-from python.pyi_test import fixture_import_pb2, fixture_pb2, self_fields_pb2
+from python.pyi_test import (
+    fixture_import_pb2,
+    fixture_pb2,
+    keyword_oneof_pb2,
+    self_fields_pb2,
+)
 
 
 step = fixture_pb2.Step(
@@ -30,8 +35,28 @@ reveal_type(step.detail)
 reveal_type(step.payload)
 reveal_type(step.imported.value)
 reveal_type(step.state)
+reveal_type(step.WhichOneof("_detail"))
+reveal_type(step.WhichOneof("result"))
+reveal_type(step.WhichOneof(b"result"))
 nested = fixture_pb2.Step.Nested(started="started")
 reveal_type(nested.started)
+reveal_type(nested.WhichOneof("event"))
+keyword = keyword_oneof_pb2.KeywordOneof()
+reveal_type(keyword.WhichOneof("choice"))
+shadowed = keyword_oneof_pb2.ShadowedOneof(WhichOneof="field")
+reveal_type(shadowed.WhichOneof)
+
+action = step.WhichOneof("action")
+reveal_type(action)
+if action == "a":
+    reveal_type(step.a)
+elif action == "b":
+    reveal_type(step.b)
+elif action is None:
+    pass
+else:
+    assert_never(action)
+
 self_fields = self_fields_pb2.SelfFields(
     something=1,
     self="self",
@@ -44,3 +69,13 @@ reveal_type(self_fields.self_)
 fixture_pb2.Step(payload="not bytes")
 step.payload = "not bytes"
 fixture_pb2.Step(not_a_field="unknown")
+step.WhichOneof("not_a_oneof")
+step.WhichOneof(oneof_group="action")
+self_fields.WhichOneof("not_a_oneof")
+
+if action == "a":
+    pass
+elif action is None:
+    pass
+else:
+    assert_never(action)

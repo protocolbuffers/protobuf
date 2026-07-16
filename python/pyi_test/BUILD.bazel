@@ -51,6 +51,21 @@ pyi_files(
     dep = ":self_fields_py_pb2",
 )
 
+proto_library(
+    name = "keyword_oneof_proto",
+    srcs = ["keyword_oneof.proto"],
+)
+
+py_proto_library(
+    name = "keyword_oneof_py_pb2",
+    deps = [":keyword_oneof_proto"],
+)
+
+pyi_files(
+    name = "keyword_oneof_pyi",
+    dep = ":keyword_oneof_py_pb2",
+)
+
 py_test(
     name = "golden_test",
     size = "small",
@@ -58,10 +73,12 @@ py_test(
     args = [
         "$(locations :fixture_pyi)",
         "$(locations :self_fields_pyi)",
+        "$(locations :keyword_oneof_pyi)",
     ],
     data = glob(["*_pb2.pyi.golden"]) + [
         ":fixture_pyi",
         ":self_fields_pyi",
+        ":keyword_oneof_pyi",
     ],
     tags = [
         "manual",
@@ -99,6 +116,8 @@ py_test(
         "typing_test.py",
         ":fixture_py_pb2",
         ":fixture_pyi",
+        ":keyword_oneof_py_pb2",
+        ":keyword_oneof_pyi",
         ":mypy_bin",
         ":node",
         ":self_fields_pyi",

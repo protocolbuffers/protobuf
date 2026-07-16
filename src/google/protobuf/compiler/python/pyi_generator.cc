@@ -72,6 +72,9 @@ struct ImportModules {
   bool has_optional = false;    // typing.Optional
   bool has_union = false;       // typing.Union
   bool has_callable = false;    // typing.Callable
+  bool has_oneof = false;       // typing.Literal
+  bool has_no_oneof = false;    // typing.NoReturn
+  bool has_overloads = false;   // typing.overload
   bool has_well_known_type = false;
   bool has_datetime = false;
 };
@@ -100,6 +103,17 @@ void CheckImportModules(const Descriptor* descriptor,
   }
   if (IsWellKnownType(descriptor->full_name())) {
     import_modules->has_well_known_type = true;
+  }
+  if (descriptor->FindFieldByName("WhichOneof") == nullptr) {
+    if (descriptor->oneof_decl_count() == 0) {
+      import_modules->has_no_oneof = true;
+    } else {
+      import_modules->has_oneof = true;
+      import_modules->has_optional = true;
+    }
+    if (descriptor->oneof_decl_count() > 1) {
+      import_modules->has_overloads = true;
+    }
   }
   for (int i = 0; i < descriptor->field_count(); ++i) {
     const FieldDescriptor* field = descriptor->field(i);
@@ -285,11 +299,20 @@ void PyiGenerator::PrintImports() const {
     printer_->Print("Callable as _Callable, ");
   }
   printer_->Print("ClassVar as _ClassVar");
+  if (import_modules.has_oneof) {
+    printer_->Print(", Literal as _Literal");
+  }
+  if (import_modules.has_no_oneof) {
+    printer_->Print(", NoReturn as _NoReturn");
+  }
   if (import_modules.has_optional) {
     printer_->Print(", Optional as _Optional");
   }
   if (import_modules.has_union) {
     printer_->Print(", Union as _Union");
+  }
+  if (import_modules.has_overloads) {
+    printer_->Print(", overload as _overload");
   }
   printer_->Print("\n");
 
@@ -580,6 +603,34 @@ void PyiGenerator::PrintMessage(const Descriptor& message_descriptor,
     printer_->Print(", **kwargs");
   }
   printer_->Print(") -> None: ...\n");
+
+  // Include synthetic proto3-optional oneofs: Python exposes them through
+  // WhichOneof, so these signatures describe runtime reflection, not accessors.
+  // A field named WhichOneof shadows the method in the default runtime.
+  if (message_descriptor.FindFieldByName("WhichOneof") == nullptr) {
+    const int oneof_count = message_descriptor.oneof_decl_count();
+    if (oneof_count == 0) {
+      printer_->Print(
+          "def WhichOneof(self, oneof_group: _NoReturn, /) -> None: ...\n");
+    }
+    for (int i = 0; i < oneof_count; ++i) {
+      const OneofDescriptor* oneof = message_descriptor.oneof_decl(i);
+      if (oneof_count > 1) {
+        printer_->Print("@_overload\n");
+      }
+      printer_->Print(
+          "def WhichOneof(self, oneof_group: "
+          "_Literal[\"$name$\", b\"$name$\"], /) -> _Optional[_Literal[",
+          "name", oneof->name());
+      for (int j = 0; j < oneof->field_count(); ++j) {
+        if (j > 0) {
+          printer_->Print(", ");
+        }
+        printer_->Print("\"$name$\"", "name", oneof->field(j)->name());
+      }
+      printer_->Print("]]: ...\n");
+    }
+  }
   printer_->Outdent();
 }
 
