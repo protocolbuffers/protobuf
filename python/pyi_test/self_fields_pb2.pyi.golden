@@ -1,6 +1,6 @@
 from google.protobuf import descriptor as _descriptor
 from google.protobuf import message as _message
-from typing import ClassVar as _ClassVar, Optional as _Optional
+from typing import ClassVar as _ClassVar, NoReturn as _NoReturn, Optional as _Optional
 
 DESCRIPTOR: _descriptor.FileDescriptor
 
@@ -13,3 +13,4 @@ class SelfFields(_message.Message):
     self: str
     self_: str
     def __init__(self__, something: _Optional[int] = ..., self: _Optional[str] = ..., self_: _Optional[str] = ...) -> None: ...
+    def WhichOneof(self, oneof_group: _NoReturn, /) -> None: ...
