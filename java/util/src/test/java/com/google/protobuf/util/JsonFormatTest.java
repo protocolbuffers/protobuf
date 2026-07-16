@@ -1913,6 +1913,25 @@ public class JsonFormatTest {
   }
 
   @Test
+  public void testParserIgnoringUnknownEnumsUnknownNumber() throws Exception {
+    // Unknown integer enum value for an open enum creates an unknown EnumValueDescriptor
+    // rather than being ignored as an unknown field.
+    TestAllTypes.Builder builder = TestAllTypes.newBuilder();
+    String json = "{\n  \"optionalNestedEnum\": 99999\n}";
+    JsonFormat.parser().ignoringUnknownFields().merge(json, builder);
+    assertThat(builder.getOptionalNestedEnumValue()).isEqualTo(99999);
+  }
+
+  @Test
+  public void testParserIgnoringUnknownEnumsBoolean() throws Exception {
+    // Boolean enum value when ignoring unknown fields is ignored (value remains default 0).
+    TestAllTypes.Builder builder = TestAllTypes.newBuilder();
+    String json = "{\n  \"optionalNestedEnum\": true\n}";
+    JsonFormat.parser().ignoringUnknownFields().merge(json, builder);
+    assertThat(builder.getOptionalNestedEnumValue()).isEqualTo(0);
+  }
+
+  @Test
   public void testParserSupportAliasEnums() throws Exception {
     TestAllTypes.Builder builder = TestAllTypes.newBuilder();
     String json = "{\n" + "  \"optionalAliasedEnum\": \"QUX\"\n" + "}";
