@@ -19,6 +19,7 @@ load("//build_defs:cpp_opts.bzl", "COPTS")
 load("//conformance:defs.bzl", "conformance_test")
 load("//editions:defaults.bzl", "compile_edition_defaults", "embed_edition_defaults")
 load(":internal.bzl", "internal_copy_files", "internal_is_windows", "internal_py_test")
+load("@rules_python//python/cc:py_extension.bzl", "py_extension")
 
 def build_targets(name):
     """
@@ -116,6 +117,57 @@ def build_targets(name):
 
     cc_binary(
         name = "google/protobuf/pyext/_message.so",
+        srcs = native.glob([
+            "google/protobuf/pyext/*.cc",
+            "google/protobuf/pyext/*.h",
+        ]),
+        copts = COPTS + [
+            "-DGOOGLE_PROTOBUF_HAS_ONEOF=1",
+        ] + select({
+            "//conditions:default": [],
+            ":allow_oversize_protos": ["-DPROTOBUF_PYTHON_ALLOW_OVERSIZE_PROTOS=1"],
+        }),
+        linkopts = select({
+            "@platforms//os:osx": ["-Wl,-undefined,dynamic_lookup"],
+            "//conditions:default": [],
+        }),
+        includes = ["."],
+        linkshared = 1,
+        linkstatic = 1,
+        tags = [
+            # Exclude this target from wildcard expansion (//...) because it may
+            # not even be buildable. It will be built if it is needed according
+            # to :use_fast_cpp_protos.
+            # https://docs.bazel.build/versions/master/be/common-definitions.html#common-attributes
+            "manual",
+        ],
+        deps = [
+            ":proto_api",
+            ":breaking_changes",
+            "//src/google/protobuf",
+            "//src/google/protobuf:port",
+            "//src/google/protobuf:protobuf_lite",
+            "//src/google/protobuf/io",
+            "//src/google/protobuf/io:tokenizer",
+            "//src/google/protobuf/stubs:lite",
+            "//src/google/protobuf/util:differencer",
+            "@abseil-cpp//absl/base:core_headers",
+            "@abseil-cpp//absl/base:no_destructor",
+            "@abseil-cpp//absl/container:flat_hash_map",
+            "@abseil-cpp//absl/functional:function_ref",
+            "@abseil-cpp//absl/log:absl_check",
+            "@abseil-cpp//absl/log:absl_log",
+            "@abseil-cpp//absl/status",
+            "@abseil-cpp//absl/status:statusor",
+            "@abseil-cpp//absl/strings",
+            "@abseil-cpp//absl/synchronization",
+            "@abseil-cpp//absl/types:span",
+            "@system_python//:python_headers",
+        ],
+    )
+
+    py_extension(
+        name = "message_ext",
         srcs = native.glob([
             "google/protobuf/pyext/*.cc",
             "google/protobuf/pyext/*.h",
