@@ -608,10 +608,12 @@ Error, UINTPTR_MAX is undefined
 #define UPB_LINKARR_APPEND(name) \
   __attribute__((                \
       section("linkarr_" #name))) UPB_LINKARR_ATTR UPB_NO_SANITIZE_ADDRESS
-#define UPB_LINKARR_DECLARE(name, type) \
-  extern type __start_linkarr_##name;   \
-  extern type __stop_linkarr_##name;    \
-  UPB_LINKARR_APPEND(name)              \
+#define UPB_LINKARR_DECLARE(name, type)                                       \
+  UPB_STATIC_ASSERT(sizeof("__la_" #name) <= 17,                              \
+                    "Linker array name too long for Mach-O (16-char limit)"); \
+  extern type __start_linkarr_##name;                                         \
+  extern type __stop_linkarr_##name;                                          \
+  UPB_LINKARR_APPEND(name)                                                    \
   UPB_LINKARR_SENTINEL type UPB_linkarr_internal_empty_##name[1]
 #define UPB_LINKARR_START(name) (&__start_linkarr_##name)
 #define UPB_LINKARR_STOP(name) (&__stop_linkarr_##name)
@@ -622,13 +624,15 @@ Error, UINTPTR_MAX is undefined
 #define UPB_LINKARR_APPEND(name) \
   __attribute__((                \
       section("__DATA,__la_" #name))) UPB_LINKARR_ATTR UPB_NO_SANITIZE_ADDRESS
-#define UPB_LINKARR_DECLARE(name, type)     \
-  extern type __start_linkarr_##name __asm( \
-      "section$start$__DATA$__la_" #name);  \
-  extern type __stop_linkarr_##name __asm(  \
-      "section$end$__DATA$"                 \
-      "__la_" #name);                       \
-  UPB_LINKARR_APPEND(name)                  \
+#define UPB_LINKARR_DECLARE(name, type)                                       \
+  UPB_STATIC_ASSERT(sizeof("__la_" #name) <= 17,                              \
+                    "Linker array name too long for Mach-O (16-char limit)"); \
+  extern type __start_linkarr_##name __asm(                                   \
+      "section$start$__DATA$__la_" #name);                                    \
+  extern type __stop_linkarr_##name __asm(                                    \
+      "section$end$__DATA$"                                                   \
+      "__la_" #name);                                                         \
+  UPB_LINKARR_APPEND(name)                                                    \
   UPB_LINKARR_SENTINEL type UPB_linkarr_internal_empty_##name[1]
 #define UPB_LINKARR_START(name) (&__start_linkarr_##name)
 #define UPB_LINKARR_STOP(name) (&__stop_linkarr_##name)
@@ -666,7 +670,9 @@ Error, UINTPTR_MAX is undefined
 
 // Linker arrays are not supported on this platform.  Make macros no-ops.
 #define UPB_LINKARR_APPEND(name)
-#define UPB_LINKARR_DECLARE(name, type)
+#define UPB_LINKARR_DECLARE(name, type)          \
+  UPB_STATIC_ASSERT(sizeof("__la_" #name) <= 17, \
+                    "Linker array name too long for Mach-O (16-char limit)")
 #define UPB_LINKARR_START(name) (NULL)
 #define UPB_LINKARR_STOP(name) (NULL)
 
