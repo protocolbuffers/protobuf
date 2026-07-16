@@ -57,7 +57,7 @@ jobs:
             targets: "//src/... //src/google/protobuf/compiler:protoc_aarch64_test //third_party/utf8_range/..."
             image: "us-docker.pkg.dev/protobuf-build/containers/test/linux/emulation:8.0.1-aarch64-a6ca8ba8e77d63471b4ad05f8643e1fc58b30e12"
     name: ${{ matrix.config.continuous-only && inputs.continuous-prefix || '' }} Linux ${{ matrix.config.name }}
-    runs-on: ${{ matrix.config.runner || 'ubuntu-latest' }}
+    runs-on: ${{ matrix.config.runner || 'ubuntu-22-4core' }}
     steps:
       - name: Checkout pending changes
         if: ${{ !matrix.config.continuous-only || inputs.continuous-run }}
