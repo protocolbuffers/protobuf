@@ -309,7 +309,7 @@ void WriteExtension(const DefPoolPair& pools, upb::FieldDefPtr ext,
 
 void RegisterExtensions(Output& output, absl::string_view unique_name) {
   output("UPB_LINKARR_DECLARE(upb_AllExts, const upb_MiniTableExtension*);\n");
-  output("UPB_CONSTRUCTOR(upb_GeneratedRegistry_Constructor, $0, {\n",
+  output("UPB_CONSTRUCTOR(upb_GeneratedRegistry_Constructor, $0) {\n",
          unique_name);
   // TODO Although we define this function as weak and only one
   // copy will ever exist in any binary, every instance will get registered as a
@@ -326,7 +326,7 @@ void RegisterExtensions(Output& output, absl::string_view unique_name) {
   output("  UPB_ASSERT(entry.next == NULL);\n");
   output("  entry.next = UPB_PRIVATE(upb_generated_extension_list);\n");
   output("  UPB_PRIVATE(upb_generated_extension_list) = &entry;\n");
-  output("})\n");
+  output("}\n");
 }
 
 }  // namespace
