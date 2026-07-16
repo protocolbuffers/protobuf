@@ -560,6 +560,10 @@ bool Message_InitFromPhp(upb_Message* msg, const upb_MessageDef* m, zval* init,
 static void Message_Initialize(Message* intern, const Descriptor* desc) {
   intern->desc = desc;
   const upb_MiniTable* t = upb_MessageDef_MiniTable(desc->msgdef);
+  if (Z_TYPE(intern->arena) != IS_NULL) {
+    zval_ptr_dtor(&intern->arena);
+    ZVAL_NULL(&intern->arena);
+  }
   Arena_Init(&intern->arena);
   intern->msg = upb_Message_New(t, Arena_Get(&intern->arena));
   ObjCache_Add(intern->msg, &intern->std);
@@ -576,6 +580,10 @@ PHP_METHOD(Message, __construct) {
   const Descriptor* desc;
   zend_class_entry* ce = Z_OBJCE_P(getThis());
   zval* init_arr = NULL;
+
+  if (zend_parse_parameters(ZEND_NUM_ARGS(), "|a!", &init_arr) == FAILURE) {
+    return;
+  }
 
   // This descriptor should always be available, as the generated __construct
   // method calls initOnce() to load the descriptor prior to calling us.
@@ -597,10 +605,6 @@ PHP_METHOD(Message, __construct) {
   }
 
   Message_Initialize(intern, desc);
-
-  if (zend_parse_parameters(ZEND_NUM_ARGS(), "|a!", &init_arr) == FAILURE) {
-    return;
-  }
 
   if (init_arr) {
     Message_InitFromPhp(intern->msg, desc->msgdef, init_arr,
