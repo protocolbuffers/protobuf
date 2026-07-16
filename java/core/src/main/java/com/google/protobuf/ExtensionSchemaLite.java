@@ -13,8 +13,15 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * This class is for Lite runtime use only.
+ *
+ * <p>For details on what this means regarding performance and security characteristics, see {@link
+ * ForLiteOnly}.
+ */
 @CheckReturnValue
 @SuppressWarnings({"unchecked", "rawtypes"})
+@ForLiteOnly
 final class ExtensionSchemaLite extends ExtensionSchema<ExtensionDescriptor> {
 
   @Override

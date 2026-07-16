@@ -7,8 +7,14 @@
 
 package com.google.protobuf;
 
-/** A factory for message info that is generated into the message itself. */
+/**
+ * A factory for message info that is generated into the message itself.
+ *
+ * <p>This class is for Lite runtime use only. For details on what this means regarding performance
+ * and security characteristics, see {@link ForLiteOnly}.
+ */
 @ExperimentalApi
+@ForLiteOnly
 class GeneratedMessageInfoFactory implements MessageInfoFactory {
 
   private static final GeneratedMessageInfoFactory instance = new GeneratedMessageInfoFactory();

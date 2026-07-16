@@ -10,7 +10,14 @@ package com.google.protobuf;
 import java.io.IOException;
 import java.util.Map;
 
+/**
+ * This class is for Lite runtime use only.
+ *
+ * <p>For details on what this means regarding performance and security characteristics, see {@link
+ * ForLiteOnly}.
+ */
 @CheckReturnValue
+@ForLiteOnly
 abstract class ExtensionSchema<T extends FieldSet.FieldDescriptorLite<T>> {
 
   /** Returns true for messages that support extensions. */

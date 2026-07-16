@@ -20,6 +20,7 @@ import static com.google.protobuf.ArrayDecoders.decodeFixed64List;
 import static com.google.protobuf.ArrayDecoders.decodeFloat;
 import static com.google.protobuf.ArrayDecoders.decodeFloatList;
 import static com.google.protobuf.ArrayDecoders.decodeGroupList;
+import static com.google.protobuf.ArrayDecoders.decodeLengthPrefixVarint;
 import static com.google.protobuf.ArrayDecoders.decodeMessageField;
 import static com.google.protobuf.ArrayDecoders.decodeMessageList;
 import static com.google.protobuf.ArrayDecoders.decodePackedBoolList;
@@ -38,7 +39,6 @@ import static com.google.protobuf.ArrayDecoders.decodeStringList;
 import static com.google.protobuf.ArrayDecoders.decodeStringListRequireUtf8;
 import static com.google.protobuf.ArrayDecoders.decodeStringRequireUtf8;
 import static com.google.protobuf.ArrayDecoders.decodeUnknownField;
-import static com.google.protobuf.ArrayDecoders.decodeLengthPrefixVarint;
 import static com.google.protobuf.ArrayDecoders.decodeVarint32;
 import static com.google.protobuf.ArrayDecoders.decodeVarint32List;
 import static com.google.protobuf.ArrayDecoders.decodeVarint64;
@@ -64,9 +64,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-/** Schema used for standard messages. */
+/**
+ * Schema used for standard messages.
+ *
+ * <p>This class is for Lite runtime use only. For details on what this means regarding performance
+ * and security characteristics, see {@link ForLiteOnly}.
+ */
 @CheckReturnValue
 @SuppressWarnings({"unchecked", "rawtypes", "removal"})
+@ForLiteOnly
 final class MessageSchema<T> implements Schema<T> {
   private static final int INTS_PER_FIELD = 3;
   private static final int OFFSET_BITS = 20;

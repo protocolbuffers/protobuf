@@ -10,7 +10,14 @@ package com.google.protobuf;
 import com.google.protobuf.MapEntryLite.Metadata;
 import java.util.Map;
 
+/**
+ * This class is for Lite runtime use only.
+ *
+ * <p>For details on what this means regarding performance and security characteristics, see {@link
+ * ForLiteOnly}.
+ */
 @CheckReturnValue
+@ForLiteOnly
 final class MapFieldSchemaLite implements MapFieldSchema {
 
   @Override

@@ -9,8 +9,15 @@ package com.google.protobuf;
 
 import java.io.IOException;
 
+/**
+ * This class is for Lite runtime use only.
+ *
+ * <p>For details on what this means regarding performance and security characteristics, see {@link
+ * ForLiteOnly}.
+ */
 @ExperimentalApi
 @CheckReturnValue
+@ForLiteOnly
 abstract class UnknownFieldSchema<T, B> {
 
   static final int DEFAULT_RECURSION_LIMIT = 100;

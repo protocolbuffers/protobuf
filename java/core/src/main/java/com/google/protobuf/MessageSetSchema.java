@@ -11,8 +11,14 @@ import java.io.IOException;
 import java.util.Iterator;
 import java.util.Map.Entry;
 
-/** Schema used for proto2 messages using message_set_wireformat. */
+/**
+ * Schema used for proto2 messages using message_set_wireformat.
+ *
+ * <p>This class is for Lite runtime use only. For details on what this means regarding performance
+ * and security characteristics, see {@link ForLiteOnly}.
+ */
 @CheckReturnValue
+@ForLiteOnly
 final class MessageSetSchema<T> implements Schema<T> {
   private final MessageLite defaultInstance;
   private final UnknownFieldSchema<?, ?> unknownFieldSchema;

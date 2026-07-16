@@ -9,7 +9,14 @@ package com.google.protobuf;
 
 import java.io.IOException;
 
+/**
+ * This class is for Lite runtime use only.
+ *
+ * <p>For details on what this means regarding performance and security characteristics, see {@link
+ * ForLiteOnly}.
+ */
 @CheckReturnValue
+@ForLiteOnly
 class UnknownFieldSetLiteSchema
     extends UnknownFieldSchema<UnknownFieldSetLite, UnknownFieldSetLite> {
 

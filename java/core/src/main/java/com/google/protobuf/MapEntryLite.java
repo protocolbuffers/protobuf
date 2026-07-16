@@ -14,11 +14,15 @@ import java.util.Map;
 /**
  * Implements the lite version of map entry messages.
  *
+ * <p>This class is for Lite runtime use only. For details on what this means regarding performance
+ * and security characteristics, see {@link ForLiteOnly}.
+ *
  * <p>This class serves as an utility class to help do serialization/parsing of map entries. It's
  * used in generated code and also in the full version MapEntry message.
  *
  * <p>Protobuf internal. Users shouldn't use.
  */
+@ForLiteOnly
 public class MapEntryLite<K, V> {
 
   static class Metadata<K, V> {

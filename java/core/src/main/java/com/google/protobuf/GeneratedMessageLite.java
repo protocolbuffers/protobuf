@@ -41,6 +41,13 @@ import java.util.concurrent.ConcurrentMap;
  *
  * @author kenton@google.com Kenton Varda
  */
+/**
+ * This class is for Lite runtime use only.
+ *
+ * <p>For details on what this means regarding performance and security characteristics, see {@link
+ * ForLiteOnly}.
+ */
+@ForLiteOnly
 public abstract class GeneratedMessageLite<
         MessageT extends GeneratedMessageLite<MessageT, BuilderT>,
         BuilderT extends GeneratedMessageLite.Builder<MessageT, BuilderT>>

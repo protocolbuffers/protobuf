@@ -16,10 +16,16 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.RandomAccess;
 
-/** Helper methods used by schemas. */
+/**
+ * Helper methods used by schemas.
+ *
+ * <p>This class is for Lite runtime use only. For details on what this means regarding performance
+ * and security characteristics, see {@link ForLiteOnly}.
+ */
 @ExperimentalApi
 @CheckReturnValue
 @SuppressWarnings("rawtypes")
+@ForLiteOnly
 final class SchemaUtil {
   private static final Class<?> GENERATED_MESSAGE_CLASS = getGeneratedMessageClass();
   private static final UnknownFieldSchema<?, ?> UNKNOWN_FIELD_SET_LITE_SCHEMA =

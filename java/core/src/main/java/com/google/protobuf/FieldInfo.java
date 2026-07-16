@@ -12,9 +12,15 @@ import static com.google.protobuf.Internal.checkNotNull;
 import com.google.protobuf.Internal.EnumVerifier;
 import java.lang.reflect.Field;
 
-/** Information for a single field in a protobuf message class. */
+/**
+ * Information for a single field in a protobuf message class.
+ *
+ * <p>This class is for Lite runtime use only. For details on what this means regarding performance
+ * and security characteristics, see {@link ForLiteOnly}.
+ */
 @CheckReturnValue
 @ExperimentalApi
+@ForLiteOnly
 final class FieldInfo implements Comparable<FieldInfo> {
   private final Field field;
   private final FieldType type;
