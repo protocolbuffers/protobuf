@@ -521,7 +521,6 @@ py_binary(
         "//conformance/test_protos:test_messages_edition_unstable_py_pb2",
         "//editions:test_messages_proto2_editions_py_pb2",
         "//editions:test_messages_proto3_editions_py_pb2",
-        "//python:_message",  # Make upb visible if we need it.
         "//python:conformance_test_py_proto",
     ],
 )
