@@ -68,7 +68,7 @@ public abstract class GeneratedMessageLite<
   protected UnknownFieldSetLite unknownFields = UnknownFieldSetLite.getDefaultInstance();
 
   final boolean isMutable() {
-    return (memoizedSerializedSize & MUTABLE_FLAG_MASK) != 0;
+    return memoizedSerializedSize < 0;
   }
 
   final void markImmutable() {
