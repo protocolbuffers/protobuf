@@ -530,4 +530,76 @@ public class WireFormatTest {
     assertThat(message.hasFooInt()).isFalse();
     assertThat(message.hasFooString()).isTrue();
   }
+
+  private static byte[] makeRecursiveMessageSet(int depth, boolean payloadFirst) throws Exception {
+    if (depth == 0) {
+      return new byte[0];
+    }
+    int typeId = TYPE_ID_1;
+    byte[] nextLevelMSet = makeRecursiveMessageSet(depth - 1, payloadFirst);
+    
+    ByteArrayOutputStream payloadOut = new ByteArrayOutputStream();
+    CodedOutputStream codedPayload = CodedOutputStream.newInstance(payloadOut);
+    codedPayload.writeBytes(16, ByteString.copyFrom(nextLevelMSet));
+    codedPayload.flush();
+    byte[] payloadBytes = payloadOut.toByteArray();
+
+    ByteArrayOutputStream itemOut = new ByteArrayOutputStream();
+    itemOut.write(0x0b); // Start group 1
+    if (payloadFirst) {
+      itemOut.write(0x1a);
+      writeVarint32(itemOut, payloadBytes.length);
+      itemOut.write(payloadBytes);
+      itemOut.write(0x10);
+      writeVarint32(itemOut, typeId);
+    } else {
+      itemOut.write(0x10);
+      writeVarint32(itemOut, typeId);
+      itemOut.write(0x1a);
+      writeVarint32(itemOut, payloadBytes.length);
+      itemOut.write(payloadBytes);
+    }
+    itemOut.write(0x0c); // End group 1
+    return itemOut.toByteArray();
+  }
+
+  private static void writeVarint32(ByteArrayOutputStream out, int value) throws java.io.IOException {
+    while (true) {
+      if ((value & ~0x7F) == 0) {
+        out.write(value);
+        return;
+      } else {
+        out.write((value & 0x7F) | 0x80);
+        value >>>= 7;
+      }
+    }
+  }
+
+  @Test
+  public void testMessageSetRecursionLimit_typeIdFirst() throws Exception {
+    ExtensionRegistryLite.setEagerlyParseMessageSets(true);
+    ExtensionRegistry registry = ExtensionRegistry.newInstance();
+    registry.add(TestMessageSetExtension1.messageSetExtension);
+    byte[] bytes = makeRecursiveMessageSet(101, false);
+    try {
+      TestMessageSet.parseFrom(bytes, registry);
+      com.google.common.truth.Truth.assertWithMessage("Expected InvalidProtocolBufferException").fail();
+    } catch (InvalidProtocolBufferException e) {
+      assertThat(e.getMessage()).contains("too many levels of nesting");
+    }
+  }
+
+  @Test
+  public void testMessageSetRecursionLimit_payloadFirst() throws Exception {
+    ExtensionRegistryLite.setEagerlyParseMessageSets(true);
+    ExtensionRegistry registry = ExtensionRegistry.newInstance();
+    registry.add(TestMessageSetExtension1.messageSetExtension);
+    byte[] bytes = makeRecursiveMessageSet(101, true);
+    try {
+      TestMessageSet.parseFrom(new java.io.ByteArrayInputStream(bytes), registry);
+      com.google.common.truth.Truth.assertWithMessage("Expected InvalidProtocolBufferException").fail();
+    } catch (InvalidProtocolBufferException e) {
+      assertThat(e.getMessage()).contains("too many levels of nesting");
+    }
+  }
 }

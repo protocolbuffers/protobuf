@@ -306,7 +306,8 @@ class MessageReflection {
         ByteString bytes,
         ExtensionRegistryLite registry,
         Descriptors.FieldDescriptor descriptor,
-        Message defaultInstance)
+        Message defaultInstance,
+        CodedInputStream parentInput)
         throws IOException;
 
     /**
@@ -518,7 +519,8 @@ class MessageReflection {
         ByteString bytes,
         ExtensionRegistryLite extensionRegistry,
         Descriptors.FieldDescriptor field,
-        Message defaultInstance)
+        Message defaultInstance,
+        CodedInputStream parentInput)
         throws IOException {
       Message.Builder subBuilder;
       // When default instance is not null. The field is an extension field.
@@ -533,7 +535,10 @@ class MessageReflection {
           subBuilder.mergeFrom(originalMessage);
         }
       }
-      subBuilder.mergeFrom(bytes, extensionRegistry);
+      CodedInputStream input = bytes.newCodedInput();
+      input.copyRecursionDepthFrom(parentInput);
+      subBuilder.mergeFrom(input, extensionRegistry);
+      input.checkLastTagWas(0);
       return subBuilder.buildPartial();
     }
 
@@ -828,7 +833,8 @@ class MessageReflection {
         ByteString bytes,
         ExtensionRegistryLite registry,
         Descriptors.FieldDescriptor field,
-        Message defaultInstance)
+        Message defaultInstance,
+        CodedInputStream parentInput)
         throws IOException {
       Message.Builder subBuilder = defaultInstance.newBuilderForType();
       if (!field.isRepeated()) {
@@ -837,7 +843,10 @@ class MessageReflection {
           subBuilder.mergeFrom(originalMessage);
         }
       }
-      subBuilder.mergeFrom(bytes, registry);
+      CodedInputStream input = bytes.newCodedInput();
+      input.copyRecursionDepthFrom(parentInput);
+      subBuilder.mergeFrom(input, registry);
+      input.checkLastTagWas(0);
       return subBuilder.buildPartial();
     }
 
@@ -1072,7 +1081,8 @@ class MessageReflection {
         ByteString bytes,
         ExtensionRegistryLite registry,
         Descriptors.FieldDescriptor field,
-        Message defaultInstance)
+        Message defaultInstance,
+        CodedInputStream parentInput)
         throws IOException {
       Message.Builder subBuilder = defaultInstance.newBuilderForType();
       if (!field.isRepeated()) {
@@ -1081,7 +1091,10 @@ class MessageReflection {
           subBuilder.mergeFrom(originalMessage);
         }
       }
-      subBuilder.mergeFrom(bytes, registry);
+      CodedInputStream input = bytes.newCodedInput();
+      input.copyRecursionDepthFrom(parentInput);
+      subBuilder.mergeFrom(input, registry);
+      input.checkLastTagWas(0);
       return subBuilder.buildPartial();
     }
 
@@ -1369,7 +1382,7 @@ class MessageReflection {
     // Process the raw bytes.
     if (rawBytes != null && typeId != 0) { // Zero is not a valid type ID.
       if (extension != null) { // We known the type
-        mergeMessageSetExtensionFromBytes(rawBytes, extension, extensionRegistry, target);
+        mergeMessageSetExtensionFromBytes(rawBytes, extension, extensionRegistry, target, input);
       } else { // We don't know how to parse this. Ignore it.
         if (rawBytes != null && unknownFields != null) {
           unknownFields.mergeField(
@@ -1383,7 +1396,8 @@ class MessageReflection {
       ByteString rawBytes,
       ExtensionRegistry.ExtensionInfo extension,
       ExtensionRegistryLite extensionRegistry,
-      MergeTarget target)
+      MergeTarget target,
+      CodedInputStream parentInput)
       throws IOException {
 
     Descriptors.FieldDescriptor field = extension.descriptor;
@@ -1393,7 +1407,7 @@ class MessageReflection {
       // If the field already exists, we just parse the field.
       Object value =
           target.parseMessageFromBytes(
-              rawBytes, extensionRegistry, field, extension.defaultInstance);
+              rawBytes, extensionRegistry, field, extension.defaultInstance, parentInput);
       target.setField(field, value);
     } else {
       // Use InternalLazyField to load MessageSet lazily.
