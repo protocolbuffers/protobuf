@@ -1913,6 +1913,25 @@ public class JsonFormatTest {
   }
 
   @Test
+  public void testParserIgnoringUnknownEnumsUnknownNumber() throws Exception {
+    // Unknown integer enum value for an open enum creates an unknown EnumValueDescriptor
+    // rather than being ignored as an unknown field.
+    TestAllTypes.Builder builder = TestAllTypes.newBuilder();
+    String json = "{\n  \"optionalNestedEnum\": 99999\n}";
+    JsonFormat.parser().ignoringUnknownFields().merge(json, builder);
+    assertThat(builder.getOptionalNestedEnumValue()).isEqualTo(99999);
+  }
+
+  @Test
+  public void testParserIgnoringUnknownEnumsBoolean() throws Exception {
+    // Boolean enum value when ignoring unknown fields is ignored (value remains default 0).
+    TestAllTypes.Builder builder = TestAllTypes.newBuilder();
+    String json = "{\n  \"optionalNestedEnum\": true\n}";
+    JsonFormat.parser().ignoringUnknownFields().merge(json, builder);
+    assertThat(builder.getOptionalNestedEnumValue()).isEqualTo(0);
+  }
+
+  @Test
   public void testParserSupportAliasEnums() throws Exception {
     TestAllTypes.Builder builder = TestAllTypes.newBuilder();
     String json = "{\n" + "  \"optionalAliasedEnum\": \"QUX\"\n" + "}";
@@ -1958,6 +1977,26 @@ public class JsonFormatTest {
   public void testParserIntegerEnumValue() throws Exception {
     TestAllTypes.Builder actualBuilder = TestAllTypes.newBuilder();
     mergeFromJson("{\"optionalNestedEnum\": 2}", actualBuilder);
+
+    TestAllTypes expected = TestAllTypes.newBuilder().setOptionalNestedEnum(NestedEnum.BAZ).build();
+    assertThat(actualBuilder.build()).isEqualTo(expected);
+  }
+
+  // TODO: b/534418787 - Investigate this behavior further, especially in conformance tests.
+  @Test
+  public void testParserSingleElementArrayForNonRepeatedEnum() throws Exception {
+    TestAllTypes.Builder actualBuilder = TestAllTypes.newBuilder();
+    mergeFromJson("{\"optionalNestedEnum\": [\"FOO\"]}", actualBuilder);
+
+    TestAllTypes expected = TestAllTypes.newBuilder().setOptionalNestedEnum(NestedEnum.FOO).build();
+    assertThat(actualBuilder.build()).isEqualTo(expected);
+  }
+
+  // TODO: b/534418787 - Investigate this behavior further, especially in conformance tests.
+  @Test
+  public void testParserSingleElementArrayForNonRepeatedIntegerEnum() throws Exception {
+    TestAllTypes.Builder actualBuilder = TestAllTypes.newBuilder();
+    mergeFromJson("{\"optionalNestedEnum\": [2]}", actualBuilder);
 
     TestAllTypes expected = TestAllTypes.newBuilder().setOptionalNestedEnum(NestedEnum.BAZ).build();
     assertThat(actualBuilder.build()).isEqualTo(expected);

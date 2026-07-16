@@ -90,54 +90,62 @@ final class TextFormatEscaper {
     return escapeBytes(input.toByteArray());
   }
 
+  private static final String[] REPLACEMENT_CHARS;
+
+  static {
+    REPLACEMENT_CHARS = new String[128];
+    for (int i = 0; i <= 0x1f; i++) {
+      REPLACEMENT_CHARS[i] = String.format("\\%03o", i);
+    }
+    REPLACEMENT_CHARS[0x7f] = "\\177";
+    REPLACEMENT_CHARS['\"'] = "\\\"";
+    REPLACEMENT_CHARS['\''] = "\\\'";
+    REPLACEMENT_CHARS['\\'] = "\\\\";
+    REPLACEMENT_CHARS['\t'] = "\\t";
+    REPLACEMENT_CHARS['\b'] = "\\b";
+    REPLACEMENT_CHARS['\n'] = "\\n";
+    REPLACEMENT_CHARS['\r'] = "\\r";
+    REPLACEMENT_CHARS['\f'] = "\\f";
+    REPLACEMENT_CHARS[0x07] = "\\a";
+    REPLACEMENT_CHARS[0x0b] = "\\v";
+  }
+
   /** Like {@link #escapeBytes(ByteString)}, but escapes a text string. */
   static String escapeText(String input) {
-    boolean hasSingleQuote = false;
-    boolean hasDoubleQuote = false;
-    boolean hasBackslash = false;
-
-    for (int i = 0; i < input.length(); ++i) {
+    int len = input.length();
+    StringBuilder builder = null;
+    int last = 0;
+    for (int i = 0; i < len; i++) {
       char c = input.charAt(i);
-
-      // If there are any characters outside of ASCII range we eagerly convert to UTF and escape on
-      // those bytes (including quotes as well). Note that escaping to UTF8 bytes instead of \\u
-      // sequences is itself somewhat nonsensical, but JavaProto has behaved this way for a long
-      // time, and changing the behavior would be disruptive.
-      if (c < 0x20 || c > 0x7e) {
+      // If there are any characters outside of ASCII range (> 127) we eagerly convert to UTF and
+      // escape on those bytes (including quotes as well). Note that escaping to UTF8 bytes instead
+      // of \\u sequences is itself somewhat nonsensical, but JavaProto has behaved this way for a
+      // long time, and changing the behavior would be disruptive.
+      if (c > 127) {
         return escapeBytes(input.getBytes(StandardCharsets.UTF_8));
       }
-
-      // While in this loop, keep track if there are any single quotes, double quotes, or
-      // backslashes. This can help avoid multiple passes over the string looking for each of the
-      // bad characters.
-      switch (c) {
-        case '\'':
-          hasSingleQuote = true;
-          break;
-        case '"':
-          hasDoubleQuote = true;
-          break;
-        case '\\':
-          hasBackslash = true;
-          break;
-        default:
-          break;
+      String replacement = REPLACEMENT_CHARS[c];
+      if (replacement == null) {
+        continue;
       }
+      if (builder == null) {
+        builder = new StringBuilder(len + 16);
+      }
+      if (last < i) {
+        builder.append(input, last, i);
+      }
+      builder.append(replacement);
+      last = i + 1;
     }
-
-    // Note: escape backslashes first. Order matters to avoid double-escaping the backslashes that
-    // are added when escaping the quotes.
-    if (hasBackslash) {
-      input = input.replace("\\", "\\\\");
+    // If builder is null, we made it through the entire input without needing any escaping,
+    // so we can return the original string verbatim with zero allocations.
+    if (builder == null) {
+      return input;
     }
-    if (hasSingleQuote) {
-      input = input.replace("\'", "\\\'");
+    if (last < len) {
+      builder.append(input, last, len);
     }
-    if (hasDoubleQuote) {
-      input = input.replace("\"", "\\\"");
-    }
-
-    return input;
+    return builder.toString();
   }
 
   /** Escape double quotes and backslashes in a String for unicode output of a message. */

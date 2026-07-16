@@ -3,7 +3,7 @@
 
 module(
     name = "protobuf",
-    version = "36.0-dev",  # Automatically updated on release
+    version = "37.0-dev",  # Automatically updated on release
     bazel_compatibility = [">=8.0.0"],
     compatibility_level = 1,
     repo_name = "com_google_protobuf",
@@ -193,7 +193,7 @@ rust.toolchain(
     versions = ["1.85.0"],
 )
 
-crate = use_extension("@rules_rust//crate_universe:extension.bzl", "crate")
+crate = use_extension("@rules_rust//crate_universe:extensions.bzl", "crate")
 crate.spec(
     package = "googletest",
     version = ">0.0.0",

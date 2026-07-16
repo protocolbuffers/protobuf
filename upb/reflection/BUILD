@@ -63,6 +63,7 @@ bootstrap_cc_library(
 alias(
     name = "reflection_cc",
     actual = ":reflection",
+    visibility = ["//visibility:public"],
 )
 
 bootstrap_cc_library(
@@ -146,6 +147,7 @@ bootstrap_cc_library(
 alias(
     name = "internal_cc",
     actual = ":internal",
+    visibility = ["//upb:__subpackages__"],
 )
 
 cc_library(

@@ -22,8 +22,6 @@ FUZZ_TEST(FuzzTest, RoundTripDescriptor)
                 // upb_FileDef_ToProto() does not attempt to preserve
                 // source_code_info.
                 .WithFieldUnset("source_code_info")
-                // TODO: Restore `option_dependency` after fixing
-                .WithFieldUnset("option_dependency")
                 .WithProtobufField(
                     "service",
                     ::fuzztest::Arbitrary<google::protobuf::ServiceDescriptorProto>())));

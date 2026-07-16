@@ -14,6 +14,7 @@
 #include <cstring>
 #include <functional>
 #include <iterator>
+#include <limits>
 #include <list>
 #include <memory>
 #include <string>
@@ -55,6 +56,7 @@ using ::testing::AllOf;
 using ::testing::ElementsAre;
 using ::testing::ElementsAreArray;
 using ::testing::Ge;
+using ::testing::HasSubstr;
 using ::testing::Le;
 
 using String = std::string;
@@ -72,6 +74,26 @@ class RepeatedPtrFieldTest : public testing::Test {
   template <typename T>
   static int ClearedCount(RepeatedPtrField<T>& field) {
     return field.ClearedCount();
+  }
+
+  // To test CheckedAdd overflow bounds checking without allocating massive
+  // amounts of memory (e.g. 16GB for 2B pointers in RepeatedPtrField), we
+  // allocate a small Rep container and then manually set its capacity and
+  // size to std::numeric_limits<int>::max() using these friend helpers.
+  template <typename T>
+  static void SetFakeCapacityAndSize(RepeatedPtrField<T>* field, int capacity,
+                                     int size) {
+    field->Reserve(10);
+    RepeatedPtrFieldBase* base = field;
+    base->rep()->capacity = capacity;
+    base->rep()->allocated_size = size;
+    base->current_size_ = size;
+  }
+
+  template <typename T>
+  static void SetFakeSizeOnly(RepeatedPtrField<T>* field, int size) {
+    RepeatedPtrFieldBase* base = field;
+    base->current_size_ = size;
   }
 };
 
@@ -2021,6 +2043,79 @@ TEST_F(RepeatedPtrFieldInsertionIteratorsTest, MoveProtos) {
   }
 }
 
+
+class RepeatedPtrFieldIsFullTest : public RepeatedPtrFieldTest {
+ protected:
+  void SetUp() override {
+    if (GetBoundsCheckMode() != BoundsCheckMode::kAbort) {
+      GTEST_SKIP() << "Preemtive abort is not enabled.";
+    }
+  }
+};
+
+TEST_F(RepeatedPtrFieldIsFullTest, InternalExtendAbortOnFull) {
+  EXPECT_DEATH(
+      {
+        RepeatedPtrField<std::string> field;
+        SetFakeCapacityAndSize(&field, std::numeric_limits<int>::max(),
+                               std::numeric_limits<int>::max());
+        field.Add();
+      },
+      HasSubstr("Integer overflow in CheckedAdd: 2147483647 + 1"));
+}
+
+TEST_F(RepeatedPtrFieldIsFullTest, MergeFromInternalAbortOnFull) {
+  EXPECT_DEATH(
+      {
+        RepeatedPtrField<std::string> f1;
+        RepeatedPtrField<std::string> f2;
+        f2.Add("abc");
+        SetFakeSizeOnly(&f1, std::numeric_limits<int>::max());
+        f1.MergeFrom(f2);
+      },
+      HasSubstr("Integer overflow in CheckedAdd: 2147483647 + 1"));
+}
+
+TEST_F(RepeatedPtrFieldIsFullTest, MergeFromConcreteAbortOnFull) {
+  EXPECT_DEATH(
+      {
+        RepeatedPtrField<LargeMsg> f1;
+        RepeatedPtrField<LargeMsg> f2;
+        LargeMsg msg;
+        f2.Add()->CopyFrom(msg);
+        SetFakeSizeOnly(&f1, std::numeric_limits<int>::max());
+        f1.MergeFrom(f2);
+      },
+      HasSubstr("Integer overflow in CheckedAdd: 2147483647 + 1"));
+}
+
+TEST_F(RepeatedPtrFieldIsFullTest, MergeFromLiteAbortOnFull) {
+  EXPECT_DEATH(
+      {
+        RepeatedPtrField<MessageLite> f1;
+        RepeatedPtrField<MessageLite> f2;
+        f2.AddAllocated(new LargeMsg());
+        SetFakeSizeOnly(&f1, std::numeric_limits<int>::max());
+        f1.MergeFrom(f2);
+      },
+      HasSubstr("Integer overflow in CheckedAdd: 2147483647 + 1"));
+}
+
+TEST_F(RepeatedPtrFieldIsFullTest, ExtractSubrangeNegativeStart) {
+  RepeatedPtrField<std::string> field;
+  std::string* catcher[1];
+  EXPECT_DEATH(
+      field.ExtractSubrange(-1, 0, catcher),
+      HasSubstr("Value (-1) must be greater than or equal to limit (0)"));
+}
+
+TEST_F(RepeatedPtrFieldIsFullTest, ExtractSubrangeNegativeNum) {
+  RepeatedPtrField<std::string> field;
+  std::string* catcher[1];
+  EXPECT_DEATH(
+      field.ExtractSubrange(0, -1, catcher),
+      HasSubstr("Value (-1) must be greater than or equal to limit (0)"));
+}
 
 }  // namespace internal
 }  // namespace protobuf

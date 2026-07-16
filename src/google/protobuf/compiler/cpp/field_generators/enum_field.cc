@@ -244,18 +244,30 @@ class RepeatedEnum : public FieldGeneratorBase {
       )cc");
     }
 
+#if defined(PROTOBUF_INTERNAL_TEMPORARY_CACHED_SIZE_LAYOUT_OPTOUT)
     if (has_cached_size_) {
       p->Emit(R"cc(
         $pbi$::CachedSize $cached_size_name$;
       )cc");
     }
+#endif
+  }
+
+  void GenerateSecondaryPrivateMembers(io::Printer* p) const override {
+#if !defined(PROTOBUF_INTERNAL_TEMPORARY_CACHED_SIZE_LAYOUT_OPTOUT)
+    if (has_cached_size_) {
+      p->Emit(R"cc(
+        $pbi$::CachedSize $cached_size_name$;
+      )cc");
+    }
+#endif
   }
 
   void GenerateMessageClearingCode(io::Printer* p) const override {
     if (should_split()) {
       p->Emit("this_.$field_$.ClearIfNotDefault();\n");
     } else {
-      p->Emit("$field_$.Clear();\n");
+      p->Emit("this_.$field_$.Clear();\n");
     }
   }
 
