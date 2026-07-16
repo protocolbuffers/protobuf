@@ -40,6 +40,11 @@ bazel_dep(name = "rules_kotlin", version = "2.3.20")
 bazel_dep(name = "rules_license", version = "1.0.0")
 bazel_dep(name = "rules_pkg", version = "1.0.1")
 bazel_dep(name = "rules_python", version = "1.6.0")
+git_override(
+    module_name = "rules_python",
+    remote = "https://github.com/rsartor-cmd/rules_python",
+    commit = "f5cbb95c34512dac1920ed35d855b2c655b0a431",
+)
 bazel_dep(name = "rules_rust", version = "0.69.0")
 
 bazel_dep(name = "rules_ruby", version = "0.20.1", dev_dependency = True)
