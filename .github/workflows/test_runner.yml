@@ -261,8 +261,93 @@ jobs:
     needs: [set-vars, validate-yaml, bazel, cpp, java, python, ruby, php, php-ext, csharp, objectivec, rust, upb, hpb, staleness]
     runs-on: ubuntu-latest
     steps:
+      - name: Intentional Failure for Testing
+        run: exit 1
       - name: Check test results
         run: "${{ !contains(join(needs.*.result, ' '), 'failure') && !contains(join(needs.*.result, ' '), 'cancelled') }}"
     # This workflow must run even if one or more of the dependent workflows
     # failed.
     if: always()
+
+  report-buganizer-failure:
+    name: Report Failure to Buganizer
+    needs: [set-vars, all-blocking-tests]
+    if: always() && contains(needs.all-blocking-tests.result, 'failure') # && (github.event_name == 'schedule' || needs.set-vars.outputs.continuous-run != '')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Authenticate to GCP
+        id: auth
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GAR_SERVICE_ACCOUNT }}
+
+      - name: Install dependencies
+        run: python3 -m pip install google-auth requests
+
+      - name: Search and Create/Update Buganizer Ticket
+        run: |
+          ACCESS_TOKEN=$(python3 -c "import google.auth; import google.auth.transport.requests; creds, _ = google.auth.default(scopes=['https://www.googleapis.com/auth/buganizer']); creds.refresh(google.auth.transport.requests.Request()); print(creds.token)")
+          echo "::add-mask::$ACCESS_TOKEN"
+          if [ -z "$ACCESS_TOKEN" ]; then
+            echo "Error: Failed to obtain access token."
+            exit 1
+          fi
+
+          WORKFLOW_NAME="${{ github.workflow }}"
+          RUN_URL="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          BUG_TITLE="GHA Continuous Failure: ${WORKFLOW_NAME}"
+
+          QUERY="componentid:1156986 status:open \"${BUG_TITLE}\""
+          ENCODED_QUERY=$(python3 -c "import urllib.parse, sys; print(urllib.parse.quote(sys.argv[1]))" "$QUERY")
+
+          echo "Searching for existing bug..."
+          SEARCH_RES=$(curl -S -X GET "https://issuetracker.googleapis.com/v1/issues?query=${ENCODED_QUERY}" \
+            -H "Authorization: Bearer ${ACCESS_TOKEN}" \
+            -H "Content-Type: application/json")
+
+          if echo "$SEARCH_RES" | jq -e '.error' > /dev/null; then
+            echo "Error from IssueTracker API during search: $SEARCH_RES"
+            exit 1
+          fi
+          echo "Search completed."
+
+          EXISTING_ISSUE_ID=$(echo "$SEARCH_RES" | jq -r '.issues[0].issueId // empty')
+
+          if [ -n "$EXISTING_ISSUE_ID" ]; then
+            echo "Found existing open bug b/${EXISTING_ISSUE_ID}. Appending comment..."
+            COMMENT_RES=$(curl -S -X POST "https://issuetracker.googleapis.com/v1/issues/${EXISTING_ISSUE_ID}/comments" \
+              -H "Authorization: Bearer ${ACCESS_TOKEN}" \
+              -H "Content-Type: application/json" \
+              -d "{
+                \"comment\": \"Continuous failure occurred again in run:\n${RUN_URL}\"
+              }")
+            if echo "$COMMENT_RES" | jq -e '.error' > /dev/null; then
+              echo "Error appending comment: $COMMENT_RES"
+              exit 1
+            fi
+            echo "Successfully appended comment to b/${EXISTING_ISSUE_ID}."
+          else
+            echo "No open bug found. Creating new bug in component 1156986..."
+            CREATE_RES=$(curl -S -X POST "https://issuetracker.googleapis.com/v1/issues" \
+              -H "Authorization: Bearer ${ACCESS_TOKEN}" \
+              -H "Content-Type: application/json" \
+              -d "{
+                \"issue_state\": {
+                  \"component_id\": 1156986,
+                  \"title\": \"${BUG_TITLE}\",
+                  \"type\": \"BUG\",
+                  \"priority\": \"P2\",
+                  \"status\": \"NEW\"
+                },
+                \"issue_comment\": {
+                  \"comment\": \"Continuous GHA workflow failed.\n\nWorkflow: ${WORKFLOW_NAME}\nRun URL: ${RUN_URL}\"
+                }
+              }")
+            if echo "$CREATE_RES" | jq -e '.error' > /dev/null; then
+              echo "Error creating issue: $CREATE_RES"
+              exit 1
+            fi
+            NEW_ISSUE_ID=$(echo "$CREATE_RES" | jq -r '.issueId // empty')
+            echo "Successfully created new bug b/${NEW_ISSUE_ID}."
+          fi
+

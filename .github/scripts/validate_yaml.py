@@ -40,6 +40,7 @@ with open(
   all_jobs = list(data['jobs'].keys())
   all_jobs.remove('all-blocking-tests')
   all_jobs.remove('remove-tag')
+  all_jobs.remove('report-buganizer-failure')
 
   passed = True
   blocking_jobs = data['jobs']['all-blocking-tests']['needs']
