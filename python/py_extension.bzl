@@ -31,6 +31,7 @@ def py_extension(name, srcs, copts, deps = [], **kwargs):
             "//python:limited_api_3.10": ["@python-3.10.0//:python_headers"],
             "//python:limited_api_3.10_win32": ["@nuget_python_i686_3.10.0//:python_limited_api"],
             "//python:limited_api_3.10_win64": ["@nuget_python_x86-64_3.10.0//:python_limited_api"],
+            "//python:limited_api_3.11_win_arm64": ["@nuget_python_arm64_3.11.9//:python_limited_api"],
             "//conditions:default": ["@system_python//:python_headers"],
         }),
         **kwargs

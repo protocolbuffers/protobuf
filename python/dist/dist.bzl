@@ -26,6 +26,8 @@ def _get_suffix(ctx, limited_api, python_version):
             abi = "win32"
         elif cpu == "x86_64":
             abi = "win_amd64"
+        elif cpu == "aarch64":
+            abi = "win_arm64"
         else:
             fail("Unsupported CPU: " + cpu)
         return ".cp{}-{}.{}".format(python_version, abi, "pyd")
