@@ -46,6 +46,11 @@ final class CodedInputStreamReader {
     this.input.wrapper = this;
   }
 
+  /** Returns the remaining recursion budget for this CodedInputStream. */
+  int getRemainingRecursionDepth() {
+    return input.getRemainingRecursionDepth();
+  }
+
   public boolean shouldDiscardUnknownFields() {
     return input.shouldDiscardUnknownFields();
   }

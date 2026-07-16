@@ -227,4 +227,64 @@ public class LazilyParsedMessageSetTest {
     assertThat(container)
         .isEqualTo(TestMessageSetWireFormatContainer.parseFrom(bytes, extensionRegistry));
   }
+
+  private ByteString makeRecursivePayload(int depth) throws Exception {
+    ByteString payload = ByteString.copyFromUtf8("payload");
+    for (int i = 0; i < depth; ++i) {
+      ByteString.Output extOut = ByteString.newOutput();
+      CodedOutputStream extCout = CodedOutputStream.newInstance(extOut);
+      // Write to the `recursive` field.
+      extCout.writeBytes(16, payload);
+      extCout.flush();
+      ByteString extPayload = extOut.toByteString();
+
+      ByteString.Output out = ByteString.newOutput();
+      CodedOutputStream cout = CodedOutputStream.newInstance(out);
+
+      // Item 1: normal order, ID first
+      cout.writeTag(1, WireFormat.WIRETYPE_START_GROUP);
+      cout.writeUInt32(2, TestMessageSetExtension1.messageSetExtension.getNumber());
+      cout.writeBytes(3, ByteString.EMPTY);
+      cout.writeTag(1, WireFormat.WIRETYPE_END_GROUP);
+
+      // Item 2: reversed order, payload first
+      cout.writeTag(1, WireFormat.WIRETYPE_START_GROUP);
+      cout.writeBytes(3, extPayload);
+      cout.writeUInt32(2, TestMessageSetExtension1.messageSetExtension.getNumber());
+      cout.writeTag(1, WireFormat.WIRETYPE_END_GROUP);
+
+      cout.flush();
+      payload = out.toByteString();
+    }
+    return payload;
+  }
+
+  private void testMessageSetRecursionLimit(boolean eager) throws Exception {
+    boolean originalEagerlyParse = ExtensionRegistryLite.isEagerlyParseMessageSets();
+    ExtensionRegistryLite.setEagerlyParseMessageSets(eager);
+    try {
+      ByteString payload = makeRecursivePayload(2000);
+
+      ExtensionRegistry registry = ExtensionRegistry.newInstance();
+      registry.add(TestMessageSetExtension1.messageSetExtension);
+
+      Throwable exception =
+          assertThrows(
+              InvalidProtocolBufferException.class,
+              () -> TestMessageSet.parseFrom(payload, registry));
+      assertThat(exception).hasMessageThat().contains("too many levels of nesting");
+    } finally {
+      ExtensionRegistryLite.setEagerlyParseMessageSets(originalEagerlyParse);
+    }
+  }
+
+  @Test
+  public void testRecursionLimit_eagerMessageSet() throws Exception {
+    testMessageSetRecursionLimit(/* eager= */ true);
+  }
+
+  @Test
+  public void testRecursionLimit_lazyMessageSet() throws Exception {
+    testMessageSetRecursionLimit(/* eager= */ false);
+  }
 }

@@ -66,11 +66,12 @@ abstract class ExtensionSchema<T extends FieldSet.FieldDescriptorLite<T>> {
       throws IOException;
 
   /**
-   * Parses the entire content of a {@link ByteString} as one MessageSet item. Unlike {@link
-   * #parseLengthPrefixedMessageSetItem}, there isn't a length-prefix.
+   * Parses the entire content of a {@link CodedInputStream} that wraps a {@link ByteString} as one
+   * MessageSet item. Unlike {@link #parseLengthPrefixedMessageSetItem}, there isn't a
+   * length-prefix.
    */
   abstract void parseMessageSetItem(
-      ByteString data,
+      CodedInputStream input,
       Object extension,
       ExtensionRegistryLite extensionRegistry,
       FieldSet<T> extensions)

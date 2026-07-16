@@ -538,6 +538,17 @@ public abstract class CodedInputStream {
   }
 
   /**
+   * Returns the remaining recursion depth for the current input stream, taking into account the
+   * current message and group depths.
+   *
+   * <p>This method is intended for internal use only, and is currently only used for message set
+   * parsing.
+   */
+  final int getRemainingRecursionDepth() {
+    return recursionLimit - messageDepth - groupDepth;
+  }
+
+  /**
    * Only valid for {@link InputStream}-backed streams.
    *
    * <p>Set the maximum message size. In order to prevent malicious messages from exhausting memory
