@@ -73,6 +73,7 @@ abstract class ExtensionSchema<T extends FieldSet.FieldDescriptorLite<T>> {
       ByteString data,
       Object extension,
       ExtensionRegistryLite extensionRegistry,
-      FieldSet<T> extensions)
+      FieldSet<T> extensions,
+      CodedInputStreamReader parentReader)
       throws IOException;
 }

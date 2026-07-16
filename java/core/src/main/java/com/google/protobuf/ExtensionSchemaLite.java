@@ -544,7 +544,8 @@ final class ExtensionSchemaLite extends ExtensionSchema<ExtensionDescriptor> {
       ByteString data,
       Object extensionObject,
       ExtensionRegistryLite extensionRegistry,
-      FieldSet<ExtensionDescriptor> extensions)
+      FieldSet<ExtensionDescriptor> extensions,
+      CodedInputStreamReader parentReader)
       throws IOException {
     GeneratedMessageLite.GeneratedExtension<?, ?> extension =
         (GeneratedMessageLite.GeneratedExtension<?, ?>) extensionObject;
@@ -552,6 +553,7 @@ final class ExtensionSchemaLite extends ExtensionSchema<ExtensionDescriptor> {
     MessageLite.Builder builder = extension.getMessageDefaultInstance().newBuilderForType();
 
     final CodedInputStream input = data.newCodedInput();
+    input.copyRecursionDepthFrom(parentReader.getCodedInput());
 
     builder.mergeFrom(input, extensionRegistry);
     extensions.setField(extension.descriptor, builder.buildPartial());

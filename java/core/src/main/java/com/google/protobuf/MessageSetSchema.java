@@ -360,7 +360,8 @@ final class MessageSetSchema<T> implements Schema<T> {
       if (extension != null) { // We known the type
         // TODO: Instead of reading into a temporary ByteString, maybe there is a way
         // to read directly from CodedInputStreamReader to the submessage?
-        extensionSchema.parseMessageSetItem(rawBytes, extension, extensionRegistry, extensions);
+        extensionSchema.parseMessageSetItem(
+            rawBytes, extension, extensionRegistry, extensions, reader);
       } else {
         unknownFieldSchema.addLengthDelimited(unknownFields, typeId, rawBytes);
       }

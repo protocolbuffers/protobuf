@@ -538,6 +538,12 @@ public abstract class CodedInputStream {
     return oldLimit;
   }
 
+  final void copyRecursionDepthFrom(final CodedInputStream other) {
+    this.messageDepth = other.messageDepth;
+    this.groupDepth = other.groupDepth;
+    this.recursionLimit = other.recursionLimit;
+  }
+
   /**
    * Only valid for {@link InputStream}-backed streams.
    *

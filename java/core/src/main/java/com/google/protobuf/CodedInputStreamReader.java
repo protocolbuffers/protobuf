@@ -41,6 +41,10 @@ final class CodedInputStreamReader {
     return new CodedInputStreamReader(input);
   }
 
+  CodedInputStream getCodedInput() {
+    return input;
+  }
+
   private CodedInputStreamReader(CodedInputStream input) {
     this.input = Internal.checkNotNull(input, "input");
     this.input.wrapper = this;
@@ -203,16 +207,13 @@ final class CodedInputStreamReader {
     endGroupTag = WireFormat.makeTag(WireFormat.getTagFieldNumber(tag), WIRETYPE_END_GROUP);
 
     ++input.groupDepth;
-    try {
-      schema.mergeFrom(target, this, extensionRegistry);
-      if (tag != endGroupTag) {
-        throw InvalidProtocolBufferException.parseFailure();
-      }
-    } finally {
-      --input.groupDepth;
-      // Restore the old end group tag.
-      endGroupTag = prevEndGroupTag;
+    schema.mergeFrom(target, this, extensionRegistry);
+    if (tag != endGroupTag) {
+      throw InvalidProtocolBufferException.parseFailure();
     }
+    --input.groupDepth;
+    // Restore the old end group tag.
+    endGroupTag = prevEndGroupTag;
   }
 
   private <T> T readGroup(Schema<T> schema, ExtensionRegistryLite extensionRegistry)
