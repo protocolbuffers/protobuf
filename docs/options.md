@@ -573,3 +573,13 @@ about your project (name and website) so we can add an entry for you.
 
     *   Website: https://github.com/protocgen/proto2type
     *   Extensions: 1307
+
+1.  protoc-gen-openapi
+
+    *   Website: https://github.com/engine-public/protoc-gen-openapi
+    *   Extensions: 1308
+
+1.  Motif
+
+    *   Website: https://motif.io
+    *   Extensions: 1309

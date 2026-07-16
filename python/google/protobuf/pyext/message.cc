@@ -29,6 +29,7 @@
 #include "absl/log/absl_check.h"
 #include "absl/strings/match.h"
 #include "absl/strings/str_cat.h"
+#include "google/protobuf/breaking_changes.h"
 #include "google/protobuf/pyext/lazy_unique_ptr.h"
 
 #ifndef PyVarObject_HEAD_INIT
@@ -494,6 +495,26 @@ PyObject* SetMessageFrozenError() {
   return SetFrozenError("Message is immutable.");
 }
 
+int WarnMessageFrozen() {
+  return PyErr_WarnEx(
+      PyExc_FutureWarning,
+      "Mutating messages or containers returned by GetOptions() is deprecated"
+      " and will raise an exception in a future release.",
+      3);
+}
+
+int CheckFrozen(CMessage* parent, const char* error_msg) {
+  if (parent->state == MESSAGE_FROZEN) {
+#if PROTOBUF_PY_FUTURE_FREEZE_OPTIONS
+    SetFrozenError(error_msg);
+    return -1;
+#else
+    return WarnMessageFrozen();
+#endif
+  }
+  return 0;
+}
+
 // Format an error message for unexpected types.
 // Always return with an exception set.
 void FormatTypeError(PyObject* arg, const char* expected_types) {
@@ -834,8 +855,10 @@ Message* AssureWritable(CMessage* self) {
     case MESSAGE_MUTABLE:
       return const_cast<Message*>(self->message);
     case MESSAGE_FROZEN:
-      SetMessageFrozenError();
-      return nullptr;
+      if (CheckFrozen(self, "Message is immutable.") < 0) {
+        return nullptr;
+      }
+      return const_cast<Message*>(self->message);
     case MESSAGE_MUTABLE_DEFAULT:
       break;
   }
@@ -1025,8 +1048,7 @@ int DeleteRepeatedField(CMessage* self, const FieldDescriptor* field_descriptor,
 int CheckRepeatedFieldDeletion(CMessage* parent,
                                const FieldDescriptor* field_descriptor,
                                PyObject* slice) {
-  if (parent->state == python::MESSAGE_FROZEN) {
-    SetMessageFrozenError();
+  if (CheckFrozen(parent, "Message is immutable.") < 0) {
     return -1;
   }
 

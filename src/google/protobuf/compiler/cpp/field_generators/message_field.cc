@@ -501,7 +501,6 @@ class OneofMessage : public SingularMessage {
   void GenerateInlineAccessorDefinitions(io::Printer* p) const override;
   void GenerateNonInlineAccessorDefinitions(io::Printer* p) const override;
   void GenerateClearingCode(io::Printer* p) const override;
-  void GenerateMessageClearingCode(io::Printer* p) const override;
   void GenerateSwappingCode(io::Printer* p) const override;
   void GenerateDestructorCode(io::Printer* p) const override;
   void GenerateCopyConstructorCode(io::Printer* p) const override;
@@ -649,10 +648,6 @@ void OneofMessage::GenerateClearingCode(io::Printer* p) const {
               $poison_or_clear$;
             }
           )cc");
-}
-
-void OneofMessage::GenerateMessageClearingCode(io::Printer* p) const {
-  GenerateClearingCode(p);
 }
 
 void OneofMessage::GenerateSwappingCode(io::Printer* p) const {
@@ -954,7 +949,7 @@ void RepeatedMessage::GenerateMessageClearingCode(io::Printer* p) const {
   if (should_split()) {
     p->Emit("this_.$field_$.ClearIfNotDefault();\n");
   } else {
-    p->Emit("$field_$.Clear();\n");
+    p->Emit("this_.$field_$.Clear();\n");
   }
 }
 

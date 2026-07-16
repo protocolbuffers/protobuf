@@ -74,6 +74,19 @@ def _get_import_path(proto_file):
     return repo_path
 
 def _output_directory(proto_info, root):
+    """Returns the physical output directory path for generated proto files.
+
+    This computes the correct directory path, correctly routing outputs into the virtual imports
+    directory if the `proto_library` uses `import_prefix` or `strip_import_prefix`.
+
+    Args:
+      proto_info: (ProtoInfo) The ProtoInfo provider from the proto_library.
+      root: (File|root) The root directory (e.g., `ctx.bin_dir` or `ctx.genfiles_dir`) under which
+        the generated files should be placed.
+
+    Returns:
+      (str) The physical output directory path.
+    """
     proto_source_root = proto_info.proto_source_root
     if proto_source_root.startswith(root.path):
         #TODO: remove this branch when bin_dir is removed from proto_source_root
@@ -344,6 +357,7 @@ proto_common = struct(
     experimental_should_generate_code = _experimental_should_generate_code,
     experimental_filter_sources = _experimental_filter_sources,
     get_import_path = _get_import_path,
+    output_directory = _output_directory,
     ProtoLangToolchainInfo = ProtoLangToolchainInfo,
     INCOMPATIBLE_ENABLE_PROTO_TOOLCHAIN_RESOLUTION = toolchains.INCOMPATIBLE_ENABLE_PROTO_TOOLCHAIN_RESOLUTION,
     INCOMPATIBLE_PASS_TOOLCHAIN_TYPE = True,

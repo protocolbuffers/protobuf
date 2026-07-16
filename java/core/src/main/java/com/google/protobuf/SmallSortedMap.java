@@ -76,20 +76,20 @@ class SmallSortedMap<K extends FieldSet.FieldDescriptorLite<K>> extends Abstract
   // time it is requested and reused henceforth.
   private volatile EntrySet lazyEntrySet;
 
-  private volatile boolean isSortedAndDedupped;
+  private volatile boolean isSortedAndDeduped;
 
   SmallSortedMap() {
     isImmutable = false;
     entries = null;
     size = 0;
-    isSortedAndDedupped = true;
+    isSortedAndDeduped = true;
   }
 
   SmallSortedMap(int initialCapacity) {
     isImmutable = false;
     entries = new Object[initialCapacity];
     size = 0;
-    isSortedAndDedupped = true;
+    isSortedAndDeduped = true;
   }
 
   /**
@@ -202,7 +202,7 @@ class SmallSortedMap<K extends FieldSet.FieldDescriptorLite<K>> extends Abstract
 
     // ensureCapacity relies on the original putSorted to work correctly, so defer updating it until
     // after the call to ensureCapacity().
-    boolean putSorted = isSortedAndDedupped;
+    boolean putSorted = isSortedAndDeduped;
 
     if (size > 0) {
       int comp = key.compareTo(((Entry) entries[size - 1]).getKey());
@@ -218,7 +218,7 @@ class SmallSortedMap<K extends FieldSet.FieldDescriptorLite<K>> extends Abstract
     }
     ensureCapacity(size + 1);
     entries[size++] = new Entry(key, value);
-    isSortedAndDedupped = putSorted;
+    isSortedAndDeduped = putSorted;
     return null; // Note: doesn't return previous value to optimize for insertion speed
   }
 
@@ -228,7 +228,7 @@ class SmallSortedMap<K extends FieldSet.FieldDescriptorLite<K>> extends Abstract
     if (size != 0) {
       entries = null;
       size = 0;
-      isSortedAndDedupped = true;
+      isSortedAndDeduped = true;
     }
   }
 
@@ -262,7 +262,7 @@ class SmallSortedMap<K extends FieldSet.FieldDescriptorLite<K>> extends Abstract
     if (minCapacity > entries.length) {
       // Catch before growing: if we are out of order, we might be full due to duplicates.
       // Sorting and deduplicating in-place will collapse duplicates and free up capacity.
-      if (!isSortedAndDedupped) {
+      if (!isSortedAndDeduped) {
         ensureSortedAndDeduplicated();
         // If deduplication collapsed the size enough to satisfy minCapacity, return without
         // growing.
@@ -293,12 +293,12 @@ class SmallSortedMap<K extends FieldSet.FieldDescriptorLite<K>> extends Abstract
     if (isImmutable) {
       return;
     }
-    if (!isSortedAndDedupped) {
+    if (!isSortedAndDeduped) {
       // Synchronize on the map to support concurrent read-only access. When multiple threads
       // concurrently invoke read operations on a mutable map that has unsorted entries, they must
       // safely coordinate the lazy sorting and deduplication without data corruption.
       synchronized (this) {
-        if (isSortedAndDedupped) {
+        if (isSortedAndDeduped) {
           return;
         }
         if (size <= 1) {
@@ -322,7 +322,7 @@ class SmallSortedMap<K extends FieldSet.FieldDescriptorLite<K>> extends Abstract
           // Clear out the unused entries to allow garbage collection.
           Arrays.fill(entries, newSize, entries.length, null);
         }
-        this.isSortedAndDedupped = true;
+        this.isSortedAndDeduped = true;
       }
     }
   }

@@ -184,6 +184,8 @@ foreach(Camel
     Protobuf_LITE_LIBRARY
     Protobuf_LITE_LIBRARY_DEBUG
     )
-    string(TOUPPER ${Camel} UPPER)
-    set(${UPPER} ${${Camel}})
+    if(DEFINED ${Camel})
+        string(TOUPPER ${Camel} UPPER)
+        set(${UPPER} ${${Camel}})
+    endif()
 endforeach()

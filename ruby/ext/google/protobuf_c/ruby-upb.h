@@ -37,6 +37,13 @@
 #define UPB_GNUC_MIN(x, y) 0
 #endif
 
+#if defined(__clang__) && defined(__clang_major__) && defined(__clang_minor__)
+#define UPB_CLANG_MIN(x, y) \
+  (__clang_major__ > (x) || __clang_major__ == (x) && __clang_minor__ >= (y))
+#else
+#define UPB_CLANG_MIN(x, y) 0
+#endif
+
 // Macros for checking for compiler attributes, defined here to avoid the
 // problem described in
 // https://gcc.gnu.org/onlinedocs/cpp/_005f_005fhas_005fattribute.html.
@@ -676,11 +683,44 @@ Error, UINTPTR_MAX is undefined
 #define _UPB_CONSTRUCTOR_PLACEHOLDER(unique_name)
 #endif
 
-#if defined(__ELF__) || defined(__wasm__) || defined(__MACH__)
-#define UPB_CONSTRUCTOR(name, unique_name)                                   \
+#define _UPB_STRINGIFY2(x) #x
+#define _UPB_STRINGIFY(x) _UPB_STRINGIFY2(x)
+
+#if defined(__ELF__) && (UPB_GNUC_MIN(15, 1) || UPB_CLANG_MIN(21, 1))
+/*
+ * Workaround for b/456308964 and b/456317163. Although weak constructors
+ * resolve to a single function body, Clang still emits a pointer into
+ * .init_array for every translation unit, causing the constructor to be
+ * executed multiple times and inflating binary size. We wrap the .init_array
+ * entry in a COMDAT group (using inline assembly) to force the linker to
+ * deduplicate the pointer to exactly one instance. %cc is used in preference to
+ * the more widely available %c because %c may under some circumstances still
+ * output a function name including relocation information, which will then
+ * confuse the linker. This was only a problem on gcc; when %cc was introduced
+ * to clang it was just an alias to %c, and clang's %c had already done the
+ * checks that %cc introduced to gcc.
+ * References:
+ * https://github.com/gcc-mirror/gcc/commit/74d6a676034b3ab20c387f12f19f5597e4f1c9fa
+ * https://github.com/llvm/llvm-project/pull/127719#issuecomment-2686276305
+ */
+#define UPB_CONSTRUCTOR(name, unique_name, ...)                              \
+  _UPB_CONSTRUCTOR_PLACEHOLDER(unique_name)                                  \
+  __attribute__((weak, visibility("hidden"))) void UPB_PRIVATE(name)(void) { \
+    __asm__(                                                                 \
+        ".pushsection .init_array,\"awG\",%%init_array, %cc0, comdat\n"      \
+        ".dc.a %cc0\n"                                                       \
+        ".popsection\n"                                                      \
+        :                                                                    \
+        : "X"(UPB_PRIVATE(name)));                                           \
+    __VA_ARGS__                                                              \
+  }
+#elif defined(__ELF__) || defined(__wasm__) || defined(__MACH__)
+#define UPB_CONSTRUCTOR(name, unique_name, ...)                              \
   _UPB_CONSTRUCTOR_PLACEHOLDER(unique_name)                                  \
   __attribute__((weak, visibility("hidden"), constructor)) void UPB_PRIVATE( \
-      name)(void)
+      name)(void) {                                                          \
+    __VA_ARGS__                                                              \
+  }
 #elif defined(_MSC_VER)
 /*
  * See: https://stackoverflow.com/questions/1113409
@@ -691,17 +731,17 @@ Error, UINTPTR_MAX is undefined
  * create a dummy exported weak symbol that prevent this stripping.
  */
 #pragma section(".CRT$XCT", read)
-#define UPB_CONSTRUCTOR(name, unique_name)                                   \
+#define UPB_CONSTRUCTOR(name, unique_name, ...)                              \
   static void __cdecl UPB_PRIVATE(name)(void);                               \
   __declspec(allocate(".CRT$XCT"), selectany) void(                          \
       __cdecl * UPB_PRIVATE(name##_))(void) = UPB_PRIVATE(name);             \
   __declspec(selectany, dllexport) void* UPB_PRIVATE(name##_force_linkage) = \
       &UPB_PRIVATE(name##_);                                                 \
-  static void __cdecl UPB_PRIVATE(name)(void)
-
+  static void __cdecl UPB_PRIVATE(name)(void) { __VA_ARGS__ }
 #else
 // No constructor support, nothing we can do except not break builds.
-#define UPB_CONSTRUCTOR(name, unique_name) static void UPB_PRIVATE(name)(void)
+#define UPB_CONSTRUCTOR(name, unique_name, ...) \
+  static void UPB_PRIVATE(name)(void) { __VA_ARGS__ }
 #endif
 
 //
@@ -739,8 +779,8 @@ Error, UINTPTR_MAX is undefined
 
 #elif defined(__ELF__) || defined(__wasm__)
 
-// On ELF, weak aliases work properly, so we can have all weak MiniTables point
-// to the same empty singleton MiniTable. This reduces code size if many
+// On ELF, weak aliases work properly, so we can have all weak MiniTables
+// point to the same empty singleton MiniTable. This reduces code size if many
 // MiniTables are tree shaken.
 #define UPB_WEAK_SINGLETON_PLACEHOLDER_MINITABLE()               \
   __attribute__((weak))                                          \
@@ -4395,12 +4435,22 @@ extern "C" {
 
 // Hasbit access ///////////////////////////////////////////////////////////////
 
+UPB_INLINE bool UPB_PRIVATE(_upb_Message_GetHasbitFromOffset)(
+    const struct upb_Message* msg, int byte_offset, int bit_mask) {
+  return (*UPB_PTR_AT(msg, byte_offset, const char) & bit_mask) != 0;
+}
+
 UPB_INLINE bool UPB_PRIVATE(_upb_Message_GetHasbit)(
     const struct upb_Message* msg, const upb_MiniTableField* f) {
   const uint16_t offset = UPB_PRIVATE(_upb_MiniTableField_HasbitOffset)(f);
   const char mask = UPB_PRIVATE(_upb_MiniTableField_HasbitMask)(f);
 
-  return (*UPB_PTR_AT(msg, offset, const char) & mask) != 0;
+  return UPB_PRIVATE(_upb_Message_GetHasbitFromOffset)(msg, offset, mask);
+}
+
+UPB_INLINE void UPB_PRIVATE(_upb_Message_SetHasbitFromOffset)(
+    const struct upb_Message* msg, int byte_offset, int bit_mask) {
+  (*UPB_PTR_AT(msg, byte_offset, char)) |= bit_mask;
 }
 
 UPB_INLINE void UPB_PRIVATE(_upb_Message_SetHasbit)(
@@ -4408,7 +4458,7 @@ UPB_INLINE void UPB_PRIVATE(_upb_Message_SetHasbit)(
   const uint16_t offset = UPB_PRIVATE(_upb_MiniTableField_HasbitOffset)(f);
   const char mask = UPB_PRIVATE(_upb_MiniTableField_HasbitMask)(f);
 
-  (*UPB_PTR_AT(msg, offset, char)) |= mask;
+  UPB_PRIVATE(_upb_Message_SetHasbitFromOffset)(msg, offset, mask);
 }
 
 UPB_INLINE void UPB_PRIVATE(_upb_Message_ClearHasbit)(
@@ -4542,13 +4592,13 @@ UPB_INLINE_IF_NOT_GCC bool UPB_PRIVATE(_upb_MiniTableField_DataEquals)(
 
 UPB_INLINE void UPB_PRIVATE(_upb_MiniTableField_DataClear)(
     const upb_MiniTableField* f, void* val) {
-  const char zero[16] = {0};
+  UPB_ALIGN_AS(8) const char zero[16] = {0};
   UPB_PRIVATE(_upb_MiniTableField_DataCopy)(f, val, zero);
 }
 
 UPB_INLINE bool UPB_PRIVATE(_upb_MiniTableField_DataIsZero)(
     const upb_MiniTableField* f, const void* val) {
-  const char zero[16] = {0};
+  UPB_ALIGN_AS(8) const char zero[16] = {0};
   return UPB_PRIVATE(_upb_MiniTableField_DataEquals)(f, val, zero);
 }
 
@@ -5223,7 +5273,7 @@ UPB_API_INLINE void upb_Message_ClearBaseField(struct upb_Message* msg,
     if (*ptr != upb_MiniTableField_Number(f)) return;
     *ptr = 0;
   }
-  const char zeros[16] = {0};
+  UPB_ALIGN_AS(8) const char zeros[16] = {0};
   UPB_PRIVATE(_upb_MiniTableField_DataCopy)
   (f, UPB_PRIVATE(_upb_Message_MutableDataPtr)(msg, f), zeros);
 }
@@ -15220,6 +15270,8 @@ const upb_FileDef* upb_FileDef_Dependency(const upb_FileDef* f, int i);
 int upb_FileDef_DependencyCount(const upb_FileDef* f);
 bool upb_FileDef_HasOptions(const upb_FileDef* f);
 UPB_API const char* upb_FileDef_Name(const upb_FileDef* f);
+const char* upb_FileDef_OptionDependency(const upb_FileDef* f, int i);
+int upb_FileDef_OptionDependencyCount(const upb_FileDef* f);
 const google_protobuf_FileOptions* upb_FileDef_Options(const upb_FileDef* f);
 const google_protobuf_FeatureSet* upb_FileDef_ResolvedFeatures(const upb_FileDef* f);
 const char* upb_FileDef_Package(const upb_FileDef* f);
@@ -16301,6 +16353,32 @@ UPB_INLINE bool upb_Message_NextUnknown2(const struct upb_Message* msg,
   return false;
 }
 
+typedef enum {
+  kUpb_FindUnknown_Ok,
+  kUpb_FindUnknown_NotPresent,
+  kUpb_FindUnknown_ParseError,
+} upb_FindUnknown_Status;
+
+typedef struct {
+  upb_FindUnknown_Status status;
+  struct upb_MessageUnknown unknown;
+  uintptr_t iter;
+} upb_FindUnknownRet2;
+
+// Finds first occurrence of unknown data (upb_MessageUnknown) by tag id in
+// message, including unknown upb_StringView and non-canonical extensions
+// (upb_Extension*).
+//
+// If multiple matching entries exist for the same field number (e.g. both a
+// raw unknown upb_StringView and a non-canonical extension), this function
+// returns the one encountered first in internal iteration order (which follows
+// the order they were added or parsed).
+//
+// A depth_limit of zero means to just use the upb default depth limit.
+upb_FindUnknownRet2 upb_Message_FindUnknown2(const struct upb_Message* msg,
+                                             uint32_t field_number,
+                                             int depth_limit);
+
 // Removes a segment of unknown data from the message, advancing to the next
 // segment.  Returns false if the removed segment was at the end of the last
 // chunk.
@@ -16340,131 +16418,6 @@ UPB_NODISCARD upb_Message_DeleteUnknownStatus upb_Message_DeleteUnknown2(
 
 
 #endif /* UPB_MESSAGE_UNKNOWN_FIELDS_H_ */
-
-#ifndef UPB_MESSAGE_COMPARE_H_
-#define UPB_MESSAGE_COMPARE_H_
-
-#include <stddef.h>
-
-
-// Must be last.
-
-enum {
-  // If set, upb_Message_IsEqual() will attempt to compare unknown fields.
-  // By its very nature this comparison is inexact.
-  kUpb_CompareOption_IncludeUnknownFields = (1 << 0)
-};
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-// Returns true if no known fields or extensions are set in the message.
-UPB_API bool upb_Message_IsEmpty(const upb_Message* msg,
-                                 const upb_MiniTable* m);
-
-UPB_API bool upb_Message_IsEqual(const upb_Message* msg1,
-                                 const upb_Message* msg2,
-                                 const upb_MiniTable* m, int options);
-
-// If |ctype| is a message then |m| must point to its minitable.
-UPB_API_INLINE bool upb_MessageValue_IsEqual(upb_MessageValue val1,
-                                             upb_MessageValue val2,
-                                             upb_CType ctype,
-                                             const upb_MiniTable* m,
-                                             int options) {
-  switch (ctype) {
-    case kUpb_CType_Bool:
-      return val1.bool_val == val2.bool_val;
-
-    case kUpb_CType_Float:
-    case kUpb_CType_Int32:
-    case kUpb_CType_UInt32:
-    case kUpb_CType_Enum:
-      return val1.int32_val == val2.int32_val;
-
-    case kUpb_CType_Double:
-    case kUpb_CType_Int64:
-    case kUpb_CType_UInt64:
-      return val1.int64_val == val2.int64_val;
-
-    case kUpb_CType_String:
-    case kUpb_CType_Bytes:
-      return upb_StringView_IsEqual(val1.str_val, val2.str_val);
-
-    case kUpb_CType_Message:
-      return upb_Message_IsEqual(val1.msg_val, val2.msg_val, m, options);
-
-    default:
-      UPB_UNREACHABLE();
-      return false;
-  }
-}
-
-#ifdef __cplusplus
-} /* extern "C" */
-#endif
-
-
-#endif  // UPB_MESSAGE_COMPARE_H_
-
-#ifndef UPB_MESSAGE_INTERNAL_COMPARE_UNKNOWN_H_
-#define UPB_MESSAGE_INTERNAL_COMPARE_UNKNOWN_H_
-
-#include <stddef.h>
-
-// Must be last.
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-// Returns true if unknown fields from the two messages are equal when sorted
-// and varints are made canonical.
-//
-// This function is discouraged, as the comparison is inherently lossy without
-// schema data:
-//
-//  1. We don't know whether delimited fields are sub-messages. Unknown
-//     sub-messages will therefore not have their fields sorted and varints
-//     canonicalized.
-//  2. We don't know about oneof/non-repeated fields, which should semantically
-//     discard every value except the last.
-
-typedef enum {
-  kUpb_UnknownCompareResult_Equal = 0,
-  kUpb_UnknownCompareResult_NotEqual = 1,
-  kUpb_UnknownCompareResult_OutOfMemory = 2,
-  kUpb_UnknownCompareResult_MaxDepthExceeded = 3,
-} upb_UnknownCompareResult;
-
-upb_UnknownCompareResult UPB_PRIVATE(_upb_Message_UnknownFieldsAreEqual)(
-    const upb_Message* msg1, const upb_Message* msg2, int max_depth);
-
-#ifdef __cplusplus
-} /* extern "C" */
-#endif
-
-
-#endif /* UPB_MESSAGE_INTERNAL_COMPARE_UNKNOWN_H_ */
-
-#ifndef GOOGLE_UPB_UPB_MESSAGE_INTERNAL_ITERATOR_H__
-#define GOOGLE_UPB_UPB_MESSAGE_INTERNAL_ITERATOR_H__
-
-#include <stddef.h>
-#include <stdint.h>
-
-
-// Must be last.
-
-#define kUpb_BaseField_Begin ((size_t)-1)
-bool UPB_PRIVATE(_upb_Message_NextBaseField)(const upb_Message* msg,
-                                             const upb_MiniTable* m,
-                                             const upb_MiniTableField** out_f,
-                                             upb_MessageValue* out_v,
-                                             uintptr_t* iter);
-
-#endif  // GOOGLE_UPB_UPB_MESSAGE_INTERNAL_ITERATOR_H__
 
 #ifndef UPB_WIRE_EPS_COPY_INPUT_STREAM_H_
 #define UPB_WIRE_EPS_COPY_INPUT_STREAM_H_
@@ -17251,6 +17204,131 @@ UPB_INLINE const char* upb_WireReader_SkipValue(
 
 #endif  // UPB_WIRE_READER_H_
 
+#ifndef UPB_MESSAGE_COMPARE_H_
+#define UPB_MESSAGE_COMPARE_H_
+
+#include <stddef.h>
+
+
+// Must be last.
+
+enum {
+  // If set, upb_Message_IsEqual() will attempt to compare unknown fields.
+  // By its very nature this comparison is inexact.
+  kUpb_CompareOption_IncludeUnknownFields = (1 << 0)
+};
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+// Returns true if no known fields or extensions are set in the message.
+UPB_API bool upb_Message_IsEmpty(const upb_Message* msg,
+                                 const upb_MiniTable* m);
+
+UPB_API bool upb_Message_IsEqual(const upb_Message* msg1,
+                                 const upb_Message* msg2,
+                                 const upb_MiniTable* m, int options);
+
+// If |ctype| is a message then |m| must point to its minitable.
+UPB_API_INLINE bool upb_MessageValue_IsEqual(upb_MessageValue val1,
+                                             upb_MessageValue val2,
+                                             upb_CType ctype,
+                                             const upb_MiniTable* m,
+                                             int options) {
+  switch (ctype) {
+    case kUpb_CType_Bool:
+      return val1.bool_val == val2.bool_val;
+
+    case kUpb_CType_Float:
+    case kUpb_CType_Int32:
+    case kUpb_CType_UInt32:
+    case kUpb_CType_Enum:
+      return val1.int32_val == val2.int32_val;
+
+    case kUpb_CType_Double:
+    case kUpb_CType_Int64:
+    case kUpb_CType_UInt64:
+      return val1.int64_val == val2.int64_val;
+
+    case kUpb_CType_String:
+    case kUpb_CType_Bytes:
+      return upb_StringView_IsEqual(val1.str_val, val2.str_val);
+
+    case kUpb_CType_Message:
+      return upb_Message_IsEqual(val1.msg_val, val2.msg_val, m, options);
+
+    default:
+      UPB_UNREACHABLE();
+      return false;
+  }
+}
+
+#ifdef __cplusplus
+} /* extern "C" */
+#endif
+
+
+#endif  // UPB_MESSAGE_COMPARE_H_
+
+#ifndef UPB_MESSAGE_INTERNAL_COMPARE_UNKNOWN_H_
+#define UPB_MESSAGE_INTERNAL_COMPARE_UNKNOWN_H_
+
+#include <stddef.h>
+
+// Must be last.
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+// Returns true if unknown fields from the two messages are equal when sorted
+// and varints are made canonical.
+//
+// This function is discouraged, as the comparison is inherently lossy without
+// schema data:
+//
+//  1. We don't know whether delimited fields are sub-messages. Unknown
+//     sub-messages will therefore not have their fields sorted and varints
+//     canonicalized.
+//  2. We don't know about oneof/non-repeated fields, which should semantically
+//     discard every value except the last.
+
+typedef enum {
+  kUpb_UnknownCompareResult_Equal = 0,
+  kUpb_UnknownCompareResult_NotEqual = 1,
+  kUpb_UnknownCompareResult_OutOfMemory = 2,
+  kUpb_UnknownCompareResult_MaxDepthExceeded = 3,
+} upb_UnknownCompareResult;
+
+upb_UnknownCompareResult UPB_PRIVATE(_upb_Message_UnknownFieldsAreEqual)(
+    const upb_Message* msg1, const upb_Message* msg2, int max_depth);
+
+#ifdef __cplusplus
+} /* extern "C" */
+#endif
+
+
+#endif /* UPB_MESSAGE_INTERNAL_COMPARE_UNKNOWN_H_ */
+
+#ifndef GOOGLE_UPB_UPB_MESSAGE_INTERNAL_ITERATOR_H__
+#define GOOGLE_UPB_UPB_MESSAGE_INTERNAL_ITERATOR_H__
+
+#include <stddef.h>
+#include <stdint.h>
+
+
+// Must be last.
+
+#define kUpb_BaseField_Begin ((size_t)-1)
+bool UPB_PRIVATE(_upb_Message_NextBaseField)(const upb_Message* msg,
+                                             const upb_MiniTable* m,
+                                             const upb_MiniTableField** out_f,
+                                             upb_MessageValue* out_v,
+                                             uintptr_t* iter);
+
+#endif  // GOOGLE_UPB_UPB_MESSAGE_INTERNAL_ITERATOR_H__
+
 #ifndef UPB_MESSAGE_COPY_H_
 #define UPB_MESSAGE_COPY_H_
 
@@ -17888,14 +17966,16 @@ UPB_INLINE void _upb_DefBuilder_CheckIdentFull(upb_DefBuilder* ctx,
     const char c = name.data[i];
     const char d = c | 0x20;  // force lowercase
     const bool is_alpha = (('a' <= d) & (d <= 'z')) | (c == '_');
-    const bool is_numer = ('0' <= c) & (c <= '9') & !start;
+    // Accept a leading digit even though protoc would reject it because the
+    // C++ DescriptorPool accepts it, and upb should be as relaxed as C++.
+    const bool is_number = ('0' <= c) & (c <= '9');
     const bool is_dot = (c == '.') & !start;
 
-    good &= is_alpha | is_numer | is_dot;
-    start = is_dot;
+    good &= is_alpha | is_number | is_dot;
+    start = (c == '.');
   }
 
-  if (!good) _upb_DefBuilder_CheckIdentSlow(ctx, name, true);
+  if (!good || start) _upb_DefBuilder_CheckIdentSlow(ctx, name, true);
 }
 
 UPB_INLINE bool _upb_DefBuilder_IsLegacyEdition(google_protobuf_Edition edition) {
@@ -18829,7 +18909,19 @@ char* encode_message(char* ptr, upb_encstate* e, const upb_Message* msg,
                      const upb_MiniTable* m, size_t* size);
 
 #define kUpb_Encoder_EncodeVarint32MaxSize 5
+#define kUpb_Encoder_EncodeVarint64MaxSize 10
+
 static char* upb_Encoder_EncodeVarint32(uint32_t val, char* ptr) {
+  do {
+    uint8_t byte = val & 0x7fU;
+    val >>= 7;
+    if (val) byte |= 0x80U;
+    *(ptr++) = byte;
+  } while (val);
+  return ptr;
+}
+
+static char* upb_Encoder_EncodeVarint64(uint64_t val, char* ptr) {
   do {
     uint8_t byte = val & 0x7fU;
     val >>= 7;
@@ -18848,10 +18940,11 @@ bool _upb_Encoder_AddEnumValueToUnknown(upb_Message* msg,
   // so we just re-encode the tag and value here.
   const uint32_t tag =
       ((uint32_t)field->UPB_PRIVATE(number) << 3) | kUpb_WireType_Varint;
-  char buf[2 * kUpb_Encoder_EncodeVarint32MaxSize];
+  char buf[kUpb_Encoder_EncodeVarint32MaxSize +
+           kUpb_Encoder_EncodeVarint64MaxSize];
   char* end = buf;
   end = upb_Encoder_EncodeVarint32(tag, end);
-  end = upb_Encoder_EncodeVarint32(val, end);
+  end = upb_Encoder_EncodeVarint64(val, end);
 
   return UPB_PRIVATE(_upb_Message_AddUnknown)(msg, buf, end - buf, arena,
                                               kUpb_AddUnknown_Copy);
@@ -18951,6 +19044,7 @@ UPB_PRIVATE(upb_WireWriter_VarintUnusedSizeFromLeadingZeros64)(uint64_t clz) {
 #undef UPB_TSAN
 #undef UPB_DEPRECATED
 #undef UPB_GNUC_MIN
+#undef UPB_CLANG_MIN
 #undef UPB_DESCRIPTOR_UPB_H_FILENAME
 #undef UPB_DESC_MINITABLE
 #undef UPB_IS_GOOGLE3
@@ -18977,3 +19071,6 @@ UPB_PRIVATE(upb_WireWriter_VarintUnusedSizeFromLeadingZeros64)(uint64_t clz) {
 #undef UPB_DEPRECATE_AND_INLINE
 #undef UPB_MAYBE_ASSUME
 #undef UPB_ATTR_CONST
+#undef _UPB_STRINGIFY
+#undef _UPB_STRINGIFY2
+#undef UPB_CONSTRUCTOR

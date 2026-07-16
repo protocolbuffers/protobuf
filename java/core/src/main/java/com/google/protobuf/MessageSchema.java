@@ -38,6 +38,7 @@ import static com.google.protobuf.ArrayDecoders.decodeStringList;
 import static com.google.protobuf.ArrayDecoders.decodeStringListRequireUtf8;
 import static com.google.protobuf.ArrayDecoders.decodeStringRequireUtf8;
 import static com.google.protobuf.ArrayDecoders.decodeUnknownField;
+import static com.google.protobuf.ArrayDecoders.decodeLengthPrefixVarint;
 import static com.google.protobuf.ArrayDecoders.decodeVarint32;
 import static com.google.protobuf.ArrayDecoders.decodeVarint32List;
 import static com.google.protobuf.ArrayDecoders.decodeVarint64;
@@ -3011,11 +3012,8 @@ final class MessageSchema<T> implements Schema<T> {
       Map<K, V> target,
       Registers registers)
       throws IOException {
-    position = decodeVarint32(data, position, registers);
+    position = decodeLengthPrefixVarint(data, position, limit, registers);
     final int length = registers.int1;
-    if (length < 0 || length > limit - position) {
-      throw InvalidProtocolBufferException.truncatedMessage();
-    }
     final int end = position + length;
     K key = metadata.defaultKey;
     V value = metadata.defaultValue;
@@ -3326,7 +3324,7 @@ final class MessageSchema<T> implements Schema<T> {
         break;
       case 59: // ONEOF_STRING:
         if (wireType == WireFormat.WIRETYPE_LENGTH_DELIMITED) {
-          position = decodeVarint32(data, position, registers);
+          position = decodeLengthPrefixVarint(data, position, data.length, registers);
           final int length = registers.int1;
           if (length == 0) {
             unsafe.putObject(message, fieldOffset, "");

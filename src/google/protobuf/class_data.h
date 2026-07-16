@@ -127,7 +127,7 @@ struct PROTOBUF_EXPORT ClassData {
   internal::MessageCreator message_creator;
 #if defined(PROTOBUF_CUSTOM_VTABLE)
   void (*destroy_message)(MessageLite& msg);
-  void (MessageLite::*clear)();
+  void (*clear)(MessageLite& msg);
   size_t (*byte_size_long)(const MessageLite&);
   uint8_t* (*serialize)(const MessageLite& msg, uint8_t* ptr,
                         io::EpsCopyOutputStream* stream);
@@ -171,7 +171,7 @@ struct PROTOBUF_EXPORT ClassData {
       void (*merge_to_from)(MessageLite& to, const MessageLite& from_msg),
       internal::MessageCreator message_creator,
       [[maybe_unused]] void (*destroy_message)(MessageLite& msg),  //
-      [[maybe_unused]] void (MessageLite::*clear)(),
+      [[maybe_unused]] void (*clear)(MessageLite& msg),
       [[maybe_unused]] size_t (*byte_size_long)(const MessageLite&),
       [[maybe_unused]] uint8_t* (*serialize)(const MessageLite& msg,
                                              uint8_t* ptr,
@@ -214,6 +214,19 @@ struct PROTOBUF_EXPORT ClassData {
   uint32_t allocation_size() const { return message_creator.allocation_size(); }
 
   uint8_t alignment() const { return message_creator.alignment(); }
+
+  template <typename MessageLite = google::protobuf::MessageLite>
+  PROTOBUF_ALWAYS_INLINE void MergeToFrom(MessageLite& to,
+                                          const MessageLite& from) const {
+    ABSL_DCHECK(this == to.GetClassData())
+        << "Incorrect class data passed to MergeToFrom: expected "
+        << to.GetTypeName() << ", got "
+        << TypeDependent<MessageLite>(default_instance())->GetTypeName();
+    ABSL_DCHECK(this == from.GetClassData())
+        << "Invalid call to MergeFrom between types " << to.GetTypeName()
+        << " and " << from.GetTypeName();
+    this->merge_to_from(to, from);
+  }
 };
 
 #ifndef PROTOBUF_MESSAGE_GLOBALS

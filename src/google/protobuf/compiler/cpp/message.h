@@ -228,7 +228,6 @@ class MessageGenerator {
   std::vector<const EnumGenerator*> enum_generators_;
   std::vector<const ExtensionGenerator*> extension_generators_;
   int num_required_fields_ = 0;
-  int num_weak_fields_ = 0;
 
   FieldLayout field_layout_;
 

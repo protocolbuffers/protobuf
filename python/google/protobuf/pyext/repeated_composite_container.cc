@@ -16,6 +16,7 @@
 #include "google/protobuf/dynamic_message.h"
 #include "google/protobuf/message.h"
 #include "google/protobuf/reflection.h"
+#include "google/protobuf/breaking_changes.h"
 #include "google/protobuf/pyext/descriptor.h"
 #include "google/protobuf/pyext/descriptor_pool.h"
 #include "google/protobuf/pyext/message.h"
@@ -28,9 +29,6 @@ namespace python {
 
 namespace repeated_composite_container {
 
-static PyObject* SetContainerFrozenError() {
-  return SetFrozenError("Container is immutable");
-}
 
 // ---------------------------------------------------------------------
 // len()
@@ -285,8 +283,8 @@ static PyObject* Remove(PyObject* pself, PyObject* value) {
   RepeatedCompositeContainer* self =
       reinterpret_cast<RepeatedCompositeContainer*>(pself);
 
-  if (self->parent->state == python::MESSAGE_FROZEN) {
-    return SetContainerFrozenError();
+  if (CheckFrozen(self->parent, "Container is immutable") < 0) {
+    return nullptr;
   }
 
   Py_ssize_t len = Length(reinterpret_cast<PyObject*>(self));
@@ -406,8 +404,8 @@ static PyObject* Sort(PyObject* pself, PyObject* args, PyObject* kwds) {
   RepeatedCompositeContainer* self =
       reinterpret_cast<RepeatedCompositeContainer*>(pself);
 
-  if (self->parent->state == python::MESSAGE_FROZEN) {
-    return SetContainerFrozenError();
+  if (CheckFrozen(self->parent, "Container is immutable") < 0) {
+    return nullptr;
   }
 
   // Support the old sort_function argument for backwards
@@ -455,8 +453,8 @@ static PyObject* Reverse(PyObject* pself) {
   RepeatedCompositeContainer* self =
       reinterpret_cast<RepeatedCompositeContainer*>(pself);
 
-  if (self->parent->state == python::MESSAGE_FROZEN) {
-    return SetContainerFrozenError();
+  if (CheckFrozen(self->parent, "Container is immutable") < 0) {
+    return nullptr;
   }
 
   // TODO: b/517235198 - Reify even for empty sequences.
@@ -499,8 +497,8 @@ static PyObject* Pop(PyObject* pself, PyObject* args) {
   RepeatedCompositeContainer* self =
       reinterpret_cast<RepeatedCompositeContainer*>(pself);
 
-  if (self->parent->state == python::MESSAGE_FROZEN) {
-    return SetContainerFrozenError();
+  if (CheckFrozen(self->parent, "Container is immutable") < 0) {
+    return nullptr;
   }
 
   Py_ssize_t index = -1;
@@ -602,7 +600,7 @@ PyTypeObject RepeatedCompositeContainer_Type = {
 #if PY_VERSION_HEX >= 0x03080000
     0,  //  tp_vectorcall_offset
 #else
-    nullptr,             //  tp_print
+    nullptr,  //  tp_print
 #endif
     nullptr,                                   //  tp_getattr
     nullptr,                                   //  tp_setattr

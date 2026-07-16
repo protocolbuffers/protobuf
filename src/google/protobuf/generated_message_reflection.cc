@@ -119,8 +119,7 @@ ReflectionSchema::ReflectionSchema(const Message* default_instance,
                                    const uint32_t* has_bit_indices,
                                    int has_bits_offset, int extensions_offset,
                                    int oneof_case_offset, int object_size,
-                                   int weak_field_map_offset, int split_offset,
-                                   int sizeof_split)
+                                   int split_offset, int sizeof_split)
     : default_instance_(default_instance),
       offsets_(offsets),
       has_bit_indices_(has_bit_indices),
@@ -128,7 +127,6 @@ ReflectionSchema::ReflectionSchema(const Message* default_instance,
       extensions_offset_(extensions_offset),
       oneof_case_offset_(oneof_case_offset),
       object_size_(object_size),
-      weak_field_map_offset_(weak_field_map_offset),
       split_offset_(split_offset),
       sizeof_split_(sizeof_split) {}
 
@@ -162,7 +160,7 @@ ReflectionSchema ReflectionSchema::MigrationToReflectionSchema(
   result.has_bits_offset_ = next();
   result.extensions_offset_ = next();
   result.oneof_case_offset_ = next();
-  result.weak_field_map_offset_ = next();
+  next();  // Skip weak_field_map_offset.
   // Old result.inlined_string_donated_offset_
   ABSL_CHECK_EQ(next(), ~uint32_t{});
   result.split_offset_ = next();
@@ -483,14 +481,11 @@ static void ReportReflectionUsageEnumTypeError(
 Reflection::Reflection(const Descriptor* descriptor,
                        const internal::ReflectionSchema& schema,
                        const DescriptorPool* pool, MessageFactory* factory)
-    : last_non_weak_field_index_(-1),
-      descriptor_(descriptor),
+    : descriptor_(descriptor),
       message_factory_(factory),
       descriptor_pool_(
           (pool == nullptr) ? DescriptorPool::internal_generated_pool() : pool),
-      schema_(schema) {
-  last_non_weak_field_index_ = descriptor_->field_count() - 1;
-}
+      schema_(schema) {}
 
 Reflection::~Reflection() {
   // No need to use sized delete. This code path is uncommon and it would not be
@@ -550,8 +545,7 @@ size_t Reflection::SpaceUsedLong(const Message& message) const {
   if (schema_.HasExtensionSet()) {
     total_size += GetExtensionSet(message).SpaceUsedExcludingSelfLong();
   }
-  for (int i = 0; i <= last_non_weak_field_index_; i++) {
-    const FieldDescriptor* field = descriptor_->field(i);
+  for (const FieldDescriptor* field : internal::FieldRange(descriptor_)) {
     if (field->is_repeated()) {
       switch (field->cpp_type()) {
 #define HANDLE_TYPE(UPPERCASE, LOWERCASE)                          \
@@ -603,6 +597,7 @@ size_t Reflection::SpaceUsedLong(const Message& message) const {
       if (schema_.InRealOneof(field) && !HasOneofField(message, field)) {
         continue;
       }
+
       switch (field->cpp_type()) {
         case FieldDescriptor::CPPTYPE_INT32:
         case FieldDescriptor::CPPTYPE_INT64:
@@ -670,6 +665,7 @@ size_t Reflection::SpaceUsedLong(const Message& message) const {
       }
     }
   }
+
   if (internal::DebugHardenFuzzMessageSpaceUsedLong()) {
     // Use both `this` and `dummy` to generate the seed so that the scale factor
     // is both per-object and non-predictable, but consistent across multiple
@@ -1404,9 +1400,9 @@ void Reflection::InternalSwap(Message* lhs, Message* rhs) const {
 
   MutableInternalMetadata(lhs)->InternalSwap(MutableInternalMetadata(rhs));
 
-  for (int i = 0; i <= last_non_weak_field_index_; i++) {
-    const FieldDescriptor* field = descriptor_->field(i);
+  for (const FieldDescriptor* field : internal::FieldRange(descriptor_)) {
     if (schema_.InRealOneof(field)) continue;
+
     if (schema_.IsSplit(field)) {
       continue;
     }
@@ -1415,6 +1411,7 @@ void Reflection::InternalSwap(Message* lhs, Message* rhs) const {
   if (schema_.IsSplit()) {
     std::swap(*MutableSplitField(lhs), *MutableSplitField(rhs));
   }
+
   const int oneof_decl_count = descriptor_->real_oneof_decl_count();
   for (int i = 0; i < oneof_decl_count; i++) {
     const OneofDescriptor* oneof = descriptor_->real_oneof_decl(i);
@@ -1557,6 +1554,7 @@ void Reflection::ClearField(Message* message,
   } else if (schema_.InRealOneof(field)) {
     ClearOneofField(message, field);
     return;
+
   } else if (!HasFieldWithHasbits(*message, field)) {
     // Clear the has bit even if the field is not present. If this is an empty
     // repeated field with a set has bit, we want to clear the has bit.
@@ -1878,10 +1876,10 @@ inline int32_t Reflection::IsEmptyOrCollectSetFields(
   uint32_t last = 0;  // UINT32_MAX if out-of-order
   // Stifle unused variable compilation error when kForIsEmpty is true.
   [[maybe_unused]] const auto append_to_output =
-      [&last, output](const FieldDescriptor& field) {
+      [&last, output](const FieldDescriptor* field [[maybe_unused]]) {
         if constexpr (!kForIsEmpty) {
-          CheckInOrder(&field, &last);
-          output->push_back(&field);
+          CheckInOrder(field, &last);
+          output->push_back(field);
         }
       };
   // Core functionality difference depending on the value of kForIsEmpty. If we
@@ -1896,25 +1894,25 @@ inline int32_t Reflection::IsEmptyOrCollectSetFields(
   } while (false)
 
   int i = -1;
-  for (const FieldDescriptor& field :
-       absl::MakeSpan(descriptor.fields_, last_non_weak_field_index_ + 1)) {
+  for (const FieldDescriptor* field : internal::FieldRange(&descriptor)) {
     ++i;
-    const OneofDescriptor* containing_oneof = field.containing_oneof();
-    if (schema_.InRealOneof(&field)) {
+    const OneofDescriptor* containing_oneof = field->containing_oneof();
+    if (schema_.InRealOneof(field)) {
       uint32_t oneof_case = GetConstRefAtOffset<uint32_t>(
           message, schema_.GetOneofCaseOffset(containing_oneof));
       // Equivalent to: HasOneofField(message, field)
-      if (static_cast<int64_t>(oneof_case) == field.number()) {
+      if (static_cast<int64_t>(oneof_case) == field->number()) {
         PROTO_REFLECTION_APPEND_OR_RETURN();
       }
+
     } else if (uint32_t hasbit_index =
-                   schema_.HasBitIndex(&field, /*field_index=*/i);
+                   schema_.HasBitIndex(field, /*field_index=*/i);
                hasbit_index != static_cast<uint32_t>(kNoHasbit)) {
       // Equivalent to: HasFieldSingular(message, field)
-      if (IsFieldPresentGivenHasbits(message, &field, has_bits, hasbit_index)) {
+      if (IsFieldPresentGivenHasbits(message, field, has_bits, hasbit_index)) {
         PROTO_REFLECTION_APPEND_OR_RETURN();
       }
-    } else if (HasFieldWithHasbits(message, &field)) {
+    } else if (HasFieldWithHasbits(message, field)) {
       PROTO_REFLECTION_APPEND_OR_RETURN();
     }
   }
@@ -1942,6 +1940,7 @@ void Reflection::ListFields(const Message& message,
     last = output->back()->number();
   }
   size_t last_size = output->size();
+
   if (schema_.HasExtensionSet()) {
     // Descriptors of ExtensionSet are appended in their increasing order.
     GetExtensionSet(message).AppendToList(descriptor, descriptor_pool_, output);
@@ -1967,6 +1966,7 @@ bool Reflection::IsEmptyIgnoringUnknownFieldsImpl(
     return false;
   }
   return
+
       !(schema_.HasExtensionSet() && !GetExtensionSet(message).IsEmpty());
 }
 
@@ -2672,7 +2672,6 @@ void Reflection::UnsafeArenaSetAllocatedMessage(
     const FieldDescriptor* field) const {
   USAGE_MUTABLE_CHECK_ALL(SetAllocatedMessage, SINGULAR, MESSAGE);
 
-
   Arena* arena = message->GetArena();
   if (field->is_extension()) {
     MutableExtensionSet(message)->UnsafeArenaSetAllocatedMessage(
@@ -3309,9 +3308,6 @@ bool Reflection::IsFieldPresentGivenHasbits(const Message& message,
 
 bool Reflection::HasFieldWithHasbits(const Message& message,
                                      const FieldDescriptor* field) const {
-  PROTOBUF_IGNORE_DEPRECATION_START
-  ABSL_DCHECK(!field->options().weak());
-  PROTOBUF_IGNORE_DEPRECATION_STOP
   ABSL_DCHECK(!field->is_extension());
   if (schema_.HasBitIndex(field) != static_cast<uint32_t>(kNoHasbit)) {
     return IsFieldPresentGivenHasbits(message, field, GetHasBits(message),
@@ -3344,9 +3340,6 @@ bool Reflection::HasFieldWithHasbits(const Message& message,
 
 void Reflection::SetHasBit(Message* message,
                            const FieldDescriptor* field) const {
-  PROTOBUF_IGNORE_DEPRECATION_START
-  ABSL_DCHECK(!field->options().weak());
-  PROTOBUF_IGNORE_DEPRECATION_STOP
   const uint32_t index = schema_.HasBitIndex(field);
   if (index == static_cast<uint32_t>(kNoHasbit)) return;
   MutableHasBits(message)[index / 32] |=
@@ -3355,9 +3348,6 @@ void Reflection::SetHasBit(Message* message,
 
 void Reflection::ClearHasBit(Message* message,
                              const FieldDescriptor* field) const {
-  PROTOBUF_IGNORE_DEPRECATION_START
-  ABSL_DCHECK(!field->options().weak());
-  PROTOBUF_IGNORE_DEPRECATION_STOP
   const uint32_t index = schema_.HasBitIndex(field);
   if (index == static_cast<uint32_t>(kNoHasbit)) return;
   MutableHasBits(message)[index / 32] &=
@@ -3366,9 +3356,6 @@ void Reflection::ClearHasBit(Message* message,
 
 void Reflection::NaiveSwapHasBit(Message* message1, Message* message2,
                                  const FieldDescriptor* field) const {
-  PROTOBUF_IGNORE_DEPRECATION_START
-  ABSL_DCHECK(!field->options().weak());
-  PROTOBUF_IGNORE_DEPRECATION_STOP
   if (!schema_.HasHasbits() ||
       schema_.HasBitIndex(field) == static_cast<uint32_t>(kNoHasbit)) {
     return;

@@ -442,7 +442,7 @@ class PROTOBUF_EXPORT Message : public MessageLite {
 
   // Reflection based version for reflection based types.
   static void MergeImpl(MessageLite& to, const MessageLite& from);
-  void ClearImpl();
+  static void ClearImpl(MessageLite& msg);
   static size_t ByteSizeLongImpl(const MessageLite& msg);
   static uint8_t* _InternalSerializeImpl(const MessageLite& msg,
                                          uint8_t* target,
@@ -1171,10 +1171,6 @@ class PROTOBUF_EXPORT Reflection final {
                                      const Message& message);
   friend void internal::MaybePoisonAfterClear(Message* root);
 
-  // Last non weak field index. This is an optimization when most weak fields
-  // are at the end of the containing message. If a message proto doesn't
-  // contain weak fields, then this field equals descriptor_->field_count().
-  int last_non_weak_field_index_;
   // The table-driven parser table.
   // This table is generated on demand for Message types that did not override
   // _InternalParse. It uses the reflection information to do so.
@@ -1345,7 +1341,7 @@ class PROTOBUF_EXPORT Reflection final {
                         const OneofDescriptor* oneof_descriptor) const;
   inline uint32_t* MutableOneofCase(
       Message* message, const OneofDescriptor* oneof_descriptor) const;
-  inline bool HasExtensionSet(const Message& /* message */) const {
+  bool HasExtensionSet(const Message& /* message */) const {
     return schema_.HasExtensionSet();
   }
   const internal::ExtensionSet& GetExtensionSet(const Message& message) const;
@@ -1360,11 +1356,11 @@ class PROTOBUF_EXPORT Reflection final {
     return &message->_internal_metadata_;
   }
 
-  inline bool IsInlined(const FieldDescriptor* field) const {
+  bool IsInlined(const FieldDescriptor* field) const {
     return schema_.IsFieldInlined(field);
   }
 
-  inline bool IsMicroString(const FieldDescriptor* field) const {
+  bool IsMicroString(const FieldDescriptor* field) const {
     return schema_.IsFieldMicroString(field);
   }
 
@@ -1531,7 +1527,7 @@ extern template void Reflection::SwapFieldsImpl<false>(
 // around GetPrototype for details
 class PROTOBUF_EXPORT MessageFactory {
  public:
-  inline MessageFactory() = default;
+  MessageFactory() = default;
   MessageFactory(const MessageFactory&) = delete;
   MessageFactory& operator=(const MessageFactory&) = delete;
   virtual ~MessageFactory();

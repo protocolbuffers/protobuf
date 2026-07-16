@@ -244,8 +244,10 @@ class PROTOBUF_EXPORT DescriptorPoolExtensionFinder {
 };
 
 // Turn on direct LazyField access.
-#if !defined( \
-    PROTOBUF_INTERNAL_DIRECT_LAZY_FIELD_IN_EXTENSION_SET_TEMPORARY_OPTOUT)
+// Use PROTOBUF_ENABLE_STABLE_EXPERIMENTS to turn on the old code for now.
+#if !defined(                                                                 \
+    PROTOBUF_INTERNAL_DIRECT_LAZY_FIELD_IN_EXTENSION_SET_TEMPORARY_OPTOUT) && \
+    !defined(PROTOBUF_ENABLE_STABLE_EXPERIMENTS)
 #define PROTOBUF_INTERNAL_DIRECT_LAZY_FIELD_IN_EXTENSION_SET
 #endif
 

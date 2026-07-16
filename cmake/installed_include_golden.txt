@@ -129,6 +129,7 @@ google/protobuf/serial_arena.h
 google/protobuf/service.h
 google/protobuf/source_context.pb.h
 google/protobuf/source_context.proto
+google/protobuf/static_message_factory.h
 google/protobuf/string_block.h
 google/protobuf/struct.pb.h
 google/protobuf/struct.proto

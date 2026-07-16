@@ -481,7 +481,7 @@ void SingularString::GenerateClearingCode(io::Printer* p) const {
 void SingularString::GenerateMessageClearingCode(io::Printer* p) const {
   if (is_oneof()) {
     p->Emit(R"cc(
-      $field_$.Destroy();
+      this_.$field_$.Destroy();
     )cc");
     return;
   }
@@ -505,7 +505,7 @@ void SingularString::GenerateMessageClearingCode(io::Printer* p) const {
     // For non-inlined strings, we distinguish from non-default by comparing
     // instances, rather than contents.
     p->Emit(R"cc(
-      $DCHK$(!$field_$.IsDefault());
+      $DCHK$(!this_.$field_$.IsDefault());
     )cc");
   }
 
@@ -675,7 +675,7 @@ class RepeatedString : public FieldGeneratorBase {
     if (should_split()) {
       p->Emit("this_.$field_$.ClearIfNotDefault();\n");
     } else {
-      p->Emit("$field_$.Clear();\n");
+      p->Emit("this_.$field_$.Clear();\n");
     }
   }
 

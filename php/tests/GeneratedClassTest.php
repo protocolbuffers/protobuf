@@ -73,6 +73,14 @@ class GeneratedClassTest extends TestBase
         $this->assertSame(1, $m->getOptionalInt32());
     }
 
+    public function testInitializerWithIntegerKey()
+    {
+        $this->expectException(\Exception::class);
+        // "No such field 42" or "Invalid message property: 42"
+        $this->expectExceptionMessage('42');
+        new TestMessage(['42' => 'val']);
+    }
+
     #########################################################
     # Test int32 field.
     #########################################################
