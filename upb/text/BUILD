@@ -82,6 +82,7 @@ cc_library(
         "//upb/message",
         "//upb/message:internal",
         "//upb/port",
+        "//upb/wire:constants",
         "//upb/wire:eps_copy_input_stream",
         "//upb/wire:reader",
     ],

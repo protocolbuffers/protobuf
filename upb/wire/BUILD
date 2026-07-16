@@ -243,6 +243,14 @@ cc_library(
 )
 
 cc_library(
+    name = "constants",
+    hdrs = ["internal/constants.h"],
+    copts = UPB_DEFAULT_COPTS,
+    features = UPB_DEFAULT_FEATURES,
+    visibility = ["//visibility:public"],
+)
+
+cc_library(
     name = "reader_internal",
     hdrs = ["internal/reader.h"],
     copts = UPB_DEFAULT_COPTS,
