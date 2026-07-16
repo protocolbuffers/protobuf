@@ -214,6 +214,10 @@ bool Generator::Generate(const FileDescriptor* file,
   GeneratorOptions options = ParseParameter(parameter, error);
   if (!error->empty()) return false;
 
+  if (!ValidatePythonModuleNames(file, error)) {
+    return false;
+  }
+
   // Generate pyi typing information
   if (options.generate_pyi) {
     python::PyiGenerator pyi_generator;
