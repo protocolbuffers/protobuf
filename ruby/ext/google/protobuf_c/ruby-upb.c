@@ -710,16 +710,17 @@ Error, UINTPTR_MAX is undefined
  * https://github.com/gcc-mirror/gcc/commit/74d6a676034b3ab20c387f12f19f5597e4f1c9fa
  * https://github.com/llvm/llvm-project/pull/127719#issuecomment-2686276305
  */
-#define UPB_CONSTRUCTOR(name, unique_name, ...)                              \
-  _UPB_CONSTRUCTOR_PLACEHOLDER(unique_name)                                  \
-  __attribute__((weak, visibility("hidden"))) void UPB_PRIVATE(name)(void) { \
-    __asm__(                                                                 \
-        ".pushsection .init_array,\"awG\",%%init_array, %cc0, comdat\n"      \
-        ".dc.a %cc0\n"                                                       \
-        ".popsection\n"                                                      \
-        :                                                                    \
-        : "X"(UPB_PRIVATE(name)));                                           \
-    __VA_ARGS__                                                              \
+#define UPB_CONSTRUCTOR(name, unique_name, ...)                             \
+  _UPB_CONSTRUCTOR_PLACEHOLDER(unique_name)                                 \
+  __attribute__((weak, used, visibility("hidden"))) void UPB_PRIVATE(name)( \
+      void) {                                                               \
+    __asm__(                                                                \
+        ".pushsection .init_array,\"awG\",%%init_array, %cc0, comdat\n"     \
+        ".dc.a %cc0\n"                                                      \
+        ".popsection\n"                                                     \
+        :                                                                   \
+        : "X"(UPB_PRIVATE(name)));                                          \
+    __VA_ARGS__                                                             \
   }
 #elif defined(__ELF__) || defined(__wasm__) || defined(__MACH__)
 #define UPB_CONSTRUCTOR(name, unique_name, ...)                              \
