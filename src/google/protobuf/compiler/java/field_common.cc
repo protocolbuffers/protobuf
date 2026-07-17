@@ -3,7 +3,9 @@
 #include <cstddef>
 #include <string>
 
+#include "absl/container/btree_set.h"
 #include "absl/strings/str_cat.h"
+#include "absl/strings/str_format.h"
 #include "google/protobuf/compiler/java/helpers.h"
 #include "google/protobuf/compiler/java/names.h"
 #include "google/protobuf/descriptor.h"
@@ -103,6 +105,29 @@ void SetCommonOneofVariables(
       absl::StrCat(info->name, "Case_ == ", descriptor->number());
   (*variables)["negated_has_oneof_case_message"] =
       absl::StrCat(info->name, "Case_ != ", descriptor->number());
+
+  (*variables)["clear_oneof_has_bits_builder"] =
+      absl::StrCat("clear", info->capitalized_name, "HasBits();");
+  (*variables)["set_has_field_bit_builder"] =
+      absl::StrCat(GenerateSetBit(descriptor->index()), ";");
+
+  const OneofDescriptor* oneof = descriptor->containing_oneof();
+  absl::btree_set<int> bit_fields;
+  for (int i = 0; i < oneof->field_count(); i++) {
+    bit_fields.insert(oneof->field(i)->index() / 32);
+  }
+  std::string set_bit_value =
+      absl::StrFormat("0x%08x", 1u << (descriptor->index() % 32));
+  (*variables)["set_bit_value"] = set_bit_value;
+  if (bit_fields.size() <= 1) {
+    (*variables)["set_oneof_internal_builder"] =
+        absl::StrCat("set", info->capitalized_name, "Internal(",
+                     descriptor->number(), ", ", set_bit_value, ", ");
+  } else {
+    (*variables)["set_oneof_internal_builder"] = absl::StrCat(
+        "set", info->capitalized_name, "Internal(", descriptor->index() / 32,
+        ", ", descriptor->number(), ", ", set_bit_value, ", ");
+  }
 }
 
 void PrintExtraFieldInfo(

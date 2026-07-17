@@ -57,6 +57,12 @@ class MessageBuilderGenerator {
   void GenerateBuilderMergeFromSubfunction(
       io::Printer* printer, absl::Span<const std::string> merging_code_blocks,
       absl::string_view method_suffix);
+  void GenClearOneofHasBits(
+      io::Printer* printer, const OneofDescriptor* oneof,
+      const absl::flat_hash_map<absl::string_view, std::string>& vars);
+  void GenOneofSetter(
+      io::Printer* printer, const OneofDescriptor* oneof,
+      const absl::flat_hash_map<absl::string_view, std::string>& vars);
   void GenerateBuildPartial(io::Printer* printer);
   int GenerateBuildPartialPiece(io::Printer* printer, int piece,
                                 int first_field);

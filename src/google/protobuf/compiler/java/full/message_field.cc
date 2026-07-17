@@ -550,14 +550,13 @@ void ImmutableMessageOneofFieldGenerator::GenerateBuilderMembers(
       "$deprecation$public Builder ${$set$capitalized_name$$}$($type$ value)",
 
       "java.util.Objects.requireNonNull(value);\n"
-      "$oneof_name$_ = value;\n"
+      "$set_oneof_internal_builder$value);\n"
       "$on_changed$\n",
 
+      "$set_oneof_internal_builder$value);\n"
       "$name$Builder_.setMessage(value);\n",
 
-      "$set_oneof_case_message$;\n"
-      "return this;\n",
-      Semantic::kSet);
+      "return this;\n", Semantic::kSet);
 
   // Field.Builder setField(Field.Builder builderForValue)
   WriteFieldDocComment(printer, descriptor_, context_->options());
@@ -566,14 +565,13 @@ void ImmutableMessageOneofFieldGenerator::GenerateBuilderMembers(
       "$deprecation$public Builder ${$set$capitalized_name$$}$(\n"
       "    $type$.Builder builderForValue)",
 
-      "$oneof_name$_ = builderForValue.build();\n"
+      "$set_oneof_internal_builder$builderForValue.build());\n"
       "$on_changed$\n",
 
+      "$set_oneof_internal_builder$builderForValue.build());\n"
       "$name$Builder_.setMessage(builderForValue.build());\n",
 
-      "$set_oneof_case_message$;\n"
-      "return this;\n",
-      Semantic::kSet);
+      "return this;\n", Semantic::kSet);
 
   // Field.Builder mergeField(Field value)
   WriteFieldDocComment(printer, descriptor_, context_->options());
@@ -588,17 +586,18 @@ void ImmutableMessageOneofFieldGenerator::GenerateBuilderMembers(
       "} else {\n"
       "  $oneof_name$_ = value;\n"
       "}\n"
+      "$set_oneof_internal_builder$$oneof_name$_);\n"
       "$on_changed$\n",
 
       "if ($has_oneof_case_message$) {\n"
+      "  $set_oneof_internal_builder$null);\n"
       "  $name$Builder_.mergeFrom(value);\n"
       "} else {\n"
+      "  $set_oneof_internal_builder$null);\n"
       "  $name$Builder_.setMessage(value);\n"
       "}\n",
 
-      "$set_oneof_case_message$;\n"
-      "return this;\n",
-      Semantic::kSet);
+      "return this;\n", Semantic::kSet);
 
   // Field.Builder clearField()
   WriteFieldDocComment(printer, descriptor_, context_->options());
@@ -608,12 +607,14 @@ void ImmutableMessageOneofFieldGenerator::GenerateBuilderMembers(
       "if ($has_oneof_case_message$) {\n"
       "  $clear_oneof_case_message$;\n"
       "  $oneof_name$_ = null;\n"
+      "  $clear_has_field_bit_builder$\n"
       "  $on_changed$\n"
       "}\n",
 
       "if ($has_oneof_case_message$) {\n"
       "  $clear_oneof_case_message$;\n"
       "  $oneof_name$_ = null;\n"
+      "  $clear_has_field_bit_builder$\n"
       "}\n"
       "$name$Builder_.clear();\n",
 
@@ -663,7 +664,7 @@ void ImmutableMessageOneofFieldGenerator::GenerateBuilderMembers(
       "            isClean());\n"
       "    $oneof_name$_ = null;\n"
       "  }\n"
-      "  $set_oneof_case_message$;\n"
+      "  $set_oneof_internal_builder$null);\n"
       "  $on_changed$\n"
       "  return $name$Builder_;\n"
       "}\n");
@@ -682,9 +683,13 @@ void ImmutableMessageOneofFieldGenerator::GenerateBuilderClearCode(
 void ImmutableMessageOneofFieldGenerator::GenerateBuildingCode(
     io::Printer* printer) const {
   printer->Print(variables_,
-                 "if ($has_oneof_case_message$ &&\n"
-                 "    $name$Builder_ != null) {\n"
-                 "  result.$oneof_name$_ = $name$Builder_.build();\n"
+                 "if ($get_has_field_bit_from_local$) {\n"
+                 "  result.$oneof_name$Case_ = $oneof_name$Case_;\n"
+                 "  if ($name$Builder_ != null) {\n"
+                 "    result.$oneof_name$_ = $name$Builder_.build();\n"
+                 "  } else {\n"
+                 "    result.$oneof_name$_ = this.$oneof_name$_;\n"
+                 "  }\n"
                  "}\n");
 }
 
@@ -702,14 +707,14 @@ void ImmutableMessageOneofFieldGenerator::GenerateBuilderParsingCode(
                    "    "
                    "internalGet$capitalized_name$FieldBuilder().getBuilder(),\n"
                    "    extensionRegistry);\n"
-                   "$set_oneof_case_message$;\n");
+                   "$set_oneof_internal_builder$null);\n");
   } else {
     printer->Print(variables_,
                    "input.readMessage(\n"
                    "    "
                    "internalGet$capitalized_name$FieldBuilder().getBuilder(),\n"
                    "    extensionRegistry);\n"
-                   "$set_oneof_case_message$;\n");
+                   "$set_oneof_internal_builder$null);\n");
   }
 }
 

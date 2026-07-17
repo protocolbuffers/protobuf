@@ -17,11 +17,13 @@
 #include <string>
 #include <vector>
 
+#include "absl/container/btree_map.h"
 #include "absl/container/btree_set.h"
 #include "absl/container/flat_hash_map.h"
 #include "absl/log/absl_check.h"
 #include "absl/strings/ascii.h"
 #include "absl/strings/str_cat.h"
+#include "absl/strings/str_format.h"
 #include "absl/strings/str_replace.h"
 #include "absl/strings/string_view.h"
 #include "absl/types/span.h"
@@ -172,12 +174,14 @@ void MessageBuilderGenerator::Generate(io::Printer* printer) {
                    "      $oneof_name$Case_);\n"
                    "}\n");
     printer->Annotate("{", "}", oneof);
+    GenClearOneofHasBits(printer, oneof, vars);
+    GenOneofSetter(printer, oneof, vars);
     // clearOneof()
     printer->Print(vars,
-                   "\n"
                    "public Builder ${$clear$oneof_capitalized_name$$}$() {\n"
                    "  $oneof_name$Case_ = 0;\n"
                    "  $oneof_name$_ = null;\n"
+                   "  clear$oneof_capitalized_name$HasBits();\n"
                    "  onChanged();\n"
                    "  return this;\n"
                    "}\n"
@@ -213,6 +217,75 @@ void MessageBuilderGenerator::Generate(io::Printer* printer) {
 }
 
 // ===================================================================
+
+void MessageBuilderGenerator::GenClearOneofHasBits(
+    io::Printer* printer, const OneofDescriptor* oneof,
+    const absl::flat_hash_map<absl::string_view, std::string>& vars) {
+  printer->Print(
+      vars, "private void ${$clear$oneof_capitalized_name$HasBits$}$() {\n");
+  printer->Indent();
+  absl::btree_map<int, uint32_t> masks_by_int;
+  for (int i = 0; i < oneof->field_count(); i++) {
+    int bit_index = field_generators_.get(oneof->field(i)).GetBuilderBitIndex();
+    masks_by_int[bit_index / 32] |= (1u << (bit_index % 32));
+  }
+  for (const auto& [int_index, mask] : masks_by_int) {
+    printer->Print("$bit_field_name$ = ($bit_field_name$ & ~$mask$);\n",
+                   "bit_field_name", GetBitFieldName(int_index), "mask",
+                   absl::StrFormat("0x%08x", mask));
+  }
+  printer->Outdent();
+  printer->Print("}\n");
+}
+
+void MessageBuilderGenerator::GenOneofSetter(
+    io::Printer* printer, const OneofDescriptor* oneof,
+    const absl::flat_hash_map<absl::string_view, std::string>& vars) {
+  absl::btree_set<int> bit_fields;
+  for (int i = 0; i < oneof->field_count(); i++) {
+    int bit_index = field_generators_.get(oneof->field(i)).GetBuilderBitIndex();
+    bit_fields.insert(bit_index / 32);
+  }
+  auto setter_vars = vars;
+  setter_vars["bit_field_name"] =
+      GetBitFieldName(bit_fields.empty() ? 0 : *bit_fields.begin());
+
+  if (bit_fields.size() <= 1) {
+    printer->Print(setter_vars,
+                   "private void ${$set$oneof_capitalized_name$Internal$}$(\n"
+                   "    int oneOfCase, int hasBit, java.lang.Object value) {\n"
+                   "  clear$oneof_capitalized_name$HasBits();\n"
+                   "  $bit_field_name$ |= hasBit;\n"
+                   "  $oneof_name$Case_ = oneOfCase;\n"
+                   "  $oneof_name$_ = value;\n"
+                   "}\n");
+  } else {
+    printer->Print(
+        setter_vars,
+        "private void ${$set$oneof_capitalized_name$Internal$}$(\n"
+        "    int bitFieldIndex, int oneOfCase, int hasBit, java.lang.Object "
+        "value) {\n"
+        "  clear$oneof_capitalized_name$HasBits();\n"
+        "  switch (bitFieldIndex) {\n");
+    printer->Indent();
+    printer->Indent();
+    for (int int_index : bit_fields) {
+      printer->Print(
+          "case $int_index$:\n"
+          "  $bit_field_name$ |= hasBit;\n"
+          "  break;\n",
+          "int_index", absl::StrCat(int_index), "bit_field_name",
+          GetBitFieldName(int_index));
+    }
+    printer->Outdent();
+    printer->Outdent();
+    printer->Print(vars,
+                   "  }\n"
+                   "  $oneof_name$Case_ = oneOfCase;\n"
+                   "  $oneof_name$_ = value;\n"
+                   "}\n");
+  }
+}
 
 void MessageBuilderGenerator::GenerateDescriptorMethods(io::Printer* printer) {
   if (!descriptor_->options().no_standard_descriptor_accessor()) {
@@ -643,10 +716,6 @@ void MessageBuilderGenerator::GenerateBuildPartial(io::Printer* printer) {
     }
   }
 
-  if (!oneofs_.empty()) {
-    printer->Print("buildPartialOneofs(result);\n");
-  }
-
   printer->Outdent();
   printer->Print(
       "  onBuilt();\n"
@@ -672,34 +741,10 @@ void MessageBuilderGenerator::GenerateBuildPartial(io::Printer* printer) {
     printer->Print("}\n\n");
   }
 
-  // Build non-oneof fields
+  // Build all fields in chunks organized by bitfield membership.
   int start_field = 0;
   for (int i = 0; i < totalBuilderInts; i++) {
     start_field = GenerateBuildPartialPiece(printer, i, start_field);
-  }
-
-  // Build Oneofs
-  if (!oneofs_.empty()) {
-    printer->Print("private void buildPartialOneofs($classname$ result) {\n",
-                   "classname",
-                   name_resolver_->GetImmutableClassName(descriptor_));
-    printer->Indent();
-    for (auto& kv : oneofs_) {
-      const OneofDescriptor* oneof = kv.second;
-      printer->Print(
-          "result.$oneof_name$Case_ = $oneof_name$Case_;\n"
-          "result.$oneof_name$_ = this.$oneof_name$_;\n",
-          "oneof_name", context_->GetOneofGeneratorInfo(oneof)->name);
-      for (int i = 0; i < oneof->field_count(); ++i) {
-        if (oneof->field(i)->message_type() != nullptr) {
-          const ImmutableFieldGenerator& field =
-              field_generators_.get(oneof->field(i));
-          field.GenerateBuildingCode(printer);
-        }
-      }
-    }
-    printer->Outdent();
-    printer->Print("}\n\n");
   }
 }
 
@@ -716,23 +761,33 @@ int MessageBuilderGenerator::GenerateBuildPartialPiece(io::Printer* printer,
 
   int bit = 0;
   int next = first_field;
-  for (; bit < 32 && next < descriptor_->field_count(); ++next) {
-    const ImmutableFieldGenerator& field =
-        field_generators_.get(descriptor_->field(next));
-    bit += field.GetNumBitsForBuilder();
+  struct OneofGroup {
+    uint32_t mask = 0;
+  };
+  absl::flat_hash_map<const OneofDescriptor*, OneofGroup> piece_oneof_groups;
 
-    // Skip oneof fields that are handled separately
-    if (IsRealOneof(descriptor_->field(next))) {
-      continue;
-    }
+  for (; bit < 32 && next < descriptor_->field_count(); ++next) {
+    const FieldDescriptor* field_desc = descriptor_->field(next);
+    const ImmutableFieldGenerator& field = field_generators_.get(field_desc);
+    bit += field.GetNumBitsForBuilder();
 
     // Skip repeated fields because they are currently handled
     // in separate buildPartial sub-methods.
-    if (BitfieldTracksMutability(descriptor_->field(next))) {
+    if (BitfieldTracksMutability(field_desc)) {
       continue;
     }
     // Skip fields without presence bits in the builder
     if (field.GetNumBitsForBuilder() == 0) {
+      continue;
+    }
+
+    // Sub-message fields in oneofs are handled individually (like non-oneof
+    // fields) since they need to deal with sub-builders.
+    if (IsRealOneof(field_desc) &&
+        GetJavaType(field_desc) != JAVATYPE_MESSAGE) {
+      int bit_index = field.GetBuilderBitIndex();
+      piece_oneof_groups[field_desc->containing_oneof()].mask |=
+          (1u << (bit_index % 32));
       continue;
     }
 
@@ -748,6 +803,20 @@ int MessageBuilderGenerator::GenerateBuildPartialPiece(io::Printer* printer,
 
     // Copy the field from the builder to the message
     field.GenerateBuildingCode(printer);
+  }
+
+  for (const auto& kv : oneofs_) {
+    const OneofDescriptor* oneof = kv.second;
+    auto it = piece_oneof_groups.find(oneof);
+    if (it == piece_oneof_groups.end()) continue;
+    printer->Print(
+        "if (($from_bit_field_name$ & $mask$) != 0) {\n"
+        "  result.$oneof_name$Case_ = $oneof_name$Case_;\n"
+        "  result.$oneof_name$_ = this.$oneof_name$_;\n"
+        "}\n",
+        "from_bit_field_name", absl::StrCat("from_", GetBitFieldName(piece)),
+        "mask", absl::StrFormat("0x%08x", it->second.mask), "oneof_name",
+        context_->GetOneofGeneratorInfo(oneof)->name);
   }
 
   // Copy the bit field results to the generated message

@@ -439,8 +439,7 @@ void ImmutableEnumOneofFieldGenerator::GenerateBuilderMembers(
     printer->Print(variables_,
                    "$deprecation$public Builder "
                    "${$set$capitalized_name$Value$}$(int value) {\n"
-                   "  $set_oneof_case_message$;\n"
-                   "  $oneof_name$_ = value;\n"
+                   "  $set_oneof_internal_builder$value);\n"
                    "  onChanged();\n"
                    "  return this;\n"
                    "}\n");
@@ -467,8 +466,7 @@ void ImmutableEnumOneofFieldGenerator::GenerateBuilderMembers(
                  "$deprecation$public Builder "
                  "${$set$capitalized_name$$}$($type$ value) {\n"
                  "  $null_check$\n"
-                 "  $set_oneof_case_message$;\n"
-                 "  $oneof_name$_ = value.getNumber();\n"
+                 "  $set_oneof_internal_builder$value.getNumber());\n"
                  "  onChanged();\n"
                  "  return this;\n"
                  "}\n");
@@ -483,6 +481,7 @@ void ImmutableEnumOneofFieldGenerator::GenerateBuilderMembers(
       "  if ($has_oneof_case_message$) {\n"
       "    $clear_oneof_case_message$;\n"
       "    $oneof_name$_ = null;\n"
+      "    $clear_has_field_bit_builder$\n"
       "    onChanged();\n"
       "  }\n"
       "  return this;\n"
@@ -497,7 +496,7 @@ void ImmutableEnumOneofFieldGenerator::GenerateBuilderClearCode(
 
 void ImmutableEnumOneofFieldGenerator::GenerateBuildingCode(
     io::Printer* printer) const {
-  // No-Op: Handled by single statement for the oneof
+  // No-Op: Handled by single block statement in GenerateBuildPartialPiece.
 }
 
 void ImmutableEnumOneofFieldGenerator::GenerateMergingCode(
@@ -517,8 +516,7 @@ void ImmutableEnumOneofFieldGenerator::GenerateBuilderParsingCode(
   if (SupportUnknownEnumValue(descriptor_)) {
     printer->Print(variables_,
                    "int rawValue = input.readEnum();\n"
-                   "$set_oneof_case_message$;\n"
-                   "$oneof_name$_ = rawValue;\n");
+                   "$set_oneof_internal_builder$rawValue);\n");
   } else {
     printer->Print(variables_,
                    "int rawValue = input.readEnum();\n"
@@ -527,8 +525,7 @@ void ImmutableEnumOneofFieldGenerator::GenerateBuilderParsingCode(
                    "if (value == null) {\n"
                    "  mergeUnknownVarintField($number$, rawValue);\n"
                    "} else {\n"
-                   "  $set_oneof_case_message$;\n"
-                   "  $oneof_name$_ = rawValue;\n"
+                   "  $set_oneof_internal_builder$rawValue);\n"
                    "}\n");
   }
 }
