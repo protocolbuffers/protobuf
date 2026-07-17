@@ -346,12 +346,12 @@ struct PROTOBUF_EXPORT ClassDataFull : ClassData {
 // ClassDataLite as well.
 struct PROTOBUF_EXPORT ClassDataFull : ClassData {
   constexpr ClassDataFull(ClassData base, ReflectionData* reflection_data)
-      : ClassData(base), aux_data{.reflection_data = reflection_data} {
+      : ClassData(base), aux_data(reflection_data) {
     ABSL_DCHECK(!is_lite);
   }
 
   constexpr ClassDataFull(ClassData base, const char* type_name)
-      : ClassData(base), aux_data{.type_name = type_name} {
+      : ClassData(base), aux_data(type_name) {
     ABSL_DCHECK(is_lite);
   }
 
@@ -393,6 +393,10 @@ struct PROTOBUF_EXPORT ClassDataFull : ClassData {
   }
 
   union ReflectionDataOrTypeName {
+    constexpr ReflectionDataOrTypeName(ReflectionData* reflection_data)
+        : reflection_data(reflection_data) {}
+    constexpr ReflectionDataOrTypeName(const char* type_name)
+        : type_name(type_name) {}
     ReflectionData* reflection_data;
     const char* type_name;
   } aux_data;
