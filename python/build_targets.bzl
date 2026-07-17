@@ -34,7 +34,7 @@ def build_targets(name):
             "//conditions:default": [],
             ":use_fast_cpp_protos": [
                 ":google/protobuf/internal/_api_implementation.so",
-                ":google/protobuf/pyext/_message.so",
+                ":google/protobuf/pyext/_message",
             ],
         }),
         visibility = ["//:__pkg__"],
@@ -115,59 +115,8 @@ def build_targets(name):
         visibility = ["//python:__subpackages__"],
     )
 
-    cc_binary(
-        name = "google/protobuf/pyext/_message.so",
-        srcs = native.glob([
-            "google/protobuf/pyext/*.cc",
-            "google/protobuf/pyext/*.h",
-        ]),
-        copts = COPTS + [
-            "-DGOOGLE_PROTOBUF_HAS_ONEOF=1",
-        ] + select({
-            "//conditions:default": [],
-            ":allow_oversize_protos": ["-DPROTOBUF_PYTHON_ALLOW_OVERSIZE_PROTOS=1"],
-        }),
-        linkopts = select({
-            "@platforms//os:osx": ["-Wl,-undefined,dynamic_lookup"],
-            "//conditions:default": [],
-        }),
-        includes = ["."],
-        linkshared = 1,
-        linkstatic = 1,
-        tags = [
-            # Exclude this target from wildcard expansion (//...) because it may
-            # not even be buildable. It will be built if it is needed according
-            # to :use_fast_cpp_protos.
-            # https://docs.bazel.build/versions/master/be/common-definitions.html#common-attributes
-            "manual",
-        ],
-        deps = [
-            ":proto_api",
-            ":breaking_changes",
-            "//src/google/protobuf",
-            "//src/google/protobuf:port",
-            "//src/google/protobuf:protobuf_lite",
-            "//src/google/protobuf/io",
-            "//src/google/protobuf/io:tokenizer",
-            "//src/google/protobuf/stubs:lite",
-            "//src/google/protobuf/util:differencer",
-            "@abseil-cpp//absl/base:core_headers",
-            "@abseil-cpp//absl/base:no_destructor",
-            "@abseil-cpp//absl/container:flat_hash_map",
-            "@abseil-cpp//absl/functional:function_ref",
-            "@abseil-cpp//absl/log:absl_check",
-            "@abseil-cpp//absl/log:absl_log",
-            "@abseil-cpp//absl/status",
-            "@abseil-cpp//absl/status:statusor",
-            "@abseil-cpp//absl/strings",
-            "@abseil-cpp//absl/synchronization",
-            "@abseil-cpp//absl/types:span",
-            "@rules_python//python/cc:current_py_cc_headers",
-        ],
-    )
-
     py_extension(
-        name = "message_ext",
+        name = "google/protobuf/pyext/_message",
         srcs = native.glob([
             "google/protobuf/pyext/*.cc",
             "google/protobuf/pyext/*.h",
@@ -213,7 +162,6 @@ def build_targets(name):
             "@abseil-cpp//absl/strings",
             "@abseil-cpp//absl/synchronization",
             "@abseil-cpp//absl/types:span",
-            "@system_python//:python_headers",
         ],
     )
 
@@ -221,7 +169,7 @@ def build_targets(name):
         name = "aarch64_test",
         bazel_binaries = [
             "google/protobuf/internal/_api_implementation.so",
-            "google/protobuf/pyext/_message.so",
+            "google/protobuf/pyext/_message",
         ],
     )
 
@@ -229,7 +177,7 @@ def build_targets(name):
         name = "x86_64_test",
         bazel_binaries = [
             "google/protobuf/internal/_api_implementation.so",
-            "google/protobuf/pyext/_message.so",
+            "google/protobuf/pyext/_message",
         ],
     )
 
