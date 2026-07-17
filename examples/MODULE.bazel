@@ -22,4 +22,11 @@ bazel_dep(name = "bazel_skylib", version = "1.7.1")
 bazel_dep(name = "rules_cc", version = "0.2.18")
 bazel_dep(name = "rules_java", version = "8.6.1")
 bazel_dep(name = "rules_pkg", version = "1.0.1")
-bazel_dep(name = "rules_python", version = "1.6.0")
+bazel_dep(name = "rules_python", version = "2.2.0")
+
+# TODO: rsartor - Remove this override once rules_python is updated to 2.2+.
+git_override(
+    module_name = "rules_python",
+    commit = "cd3d854888afe2b72f716ffd1ad191770b3d7646",
+    remote = "https://github.com/rsartor-cmd/rules_python",
+)

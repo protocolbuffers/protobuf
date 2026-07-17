@@ -39,7 +39,15 @@ bazel_dep(name = "rules_jvm_external", version = "6.7")
 bazel_dep(name = "rules_kotlin", version = "2.3.20")
 bazel_dep(name = "rules_license", version = "1.0.0")
 bazel_dep(name = "rules_pkg", version = "1.0.1")
-bazel_dep(name = "rules_python", version = "1.6.0")
+bazel_dep(name = "rules_python", version = "2.2.0")
+
+# TODO: rsartor - Remove this override once rules_python is updated to 2.2+.
+git_override(
+    module_name = "rules_python",
+    commit = "cd3d854888afe2b72f716ffd1ad191770b3d7646",
+    remote = "https://github.com/rsartor-cmd/rules_python",
+)
+
 bazel_dep(name = "rules_rust", version = "0.69.0")
 
 bazel_dep(name = "rules_ruby", version = "0.20.1", dev_dependency = True)
@@ -75,6 +83,7 @@ ruby.toolchain(
     version = "system",
 )
 use_repo(ruby, "ruby")
+
 ruby.bundle_fetch(
     name = "protobuf_bundle",
     gem_checksums = {
