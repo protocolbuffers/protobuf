@@ -10854,6 +10854,9 @@ static const char* upb_MtDecoder_Parse(upb_MtDecoder* d, const char* ptr,
       if (skip == 0) {
         upb_MdDecoder_ErrorJmp(&d->base, "Invalid skip value: 0");
       }
+      if (skip > UINT32_MAX - last_field_number) {
+        upb_MdDecoder_ErrorJmp(&d->base, "Field number overflow");
+      }
       last_field_number += skip;
       last_field_number--;  // Next field seen will increment.
     } else {
