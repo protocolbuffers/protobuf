@@ -217,8 +217,6 @@ int ImmutablePrimitiveFieldGenerator::GetNumBitsForMessage() const {
   return HasHasbit(descriptor_) ? 1 : 0;
 }
 
-int ImmutablePrimitiveFieldGenerator::GetNumBitsForBuilder() const { return 1; }
-
 void ImmutablePrimitiveFieldGenerator::GenerateInterfaceMembers(
     io::Printer* printer) const {
   if (descriptor_->has_presence()) {
@@ -647,10 +645,6 @@ RepeatedImmutablePrimitiveFieldGenerator::
 
 int RepeatedImmutablePrimitiveFieldGenerator::GetNumBitsForMessage() const {
   return 0;
-}
-
-int RepeatedImmutablePrimitiveFieldGenerator::GetNumBitsForBuilder() const {
-  return 1;
 }
 
 void RepeatedImmutablePrimitiveFieldGenerator::GenerateInterfaceMembers(

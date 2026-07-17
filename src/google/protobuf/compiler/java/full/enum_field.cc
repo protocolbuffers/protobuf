@@ -133,8 +133,6 @@ int ImmutableEnumFieldGenerator::GetNumBitsForMessage() const {
   return HasHasbit(descriptor_) ? 1 : 0;
 }
 
-int ImmutableEnumFieldGenerator::GetNumBitsForBuilder() const { return 1; }
-
 void ImmutableEnumFieldGenerator::GenerateInterfaceMembers(
     io::Printer* printer) const {
   if (descriptor_->has_presence()) {
@@ -596,10 +594,6 @@ RepeatedImmutableEnumFieldGenerator::~RepeatedImmutableEnumFieldGenerator() =
 
 int RepeatedImmutableEnumFieldGenerator::GetNumBitsForMessage() const {
   return 0;
-}
-
-int RepeatedImmutableEnumFieldGenerator::GetNumBitsForBuilder() const {
-  return 1;
 }
 
 void RepeatedImmutableEnumFieldGenerator::GenerateInterfaceMembers(
