@@ -27,8 +27,6 @@ final class ManifestSchemaFactory {
   }
 
   public <T> Schema<T> createSchema(Class<T> messageType) {
-    SchemaUtil.requireGeneratedMessage(messageType);
-
     if (!useLiteRuntime(messageType)) {
       throw new IllegalArgumentException(
           "Full runtime messages are not supported by this schema factory: "
