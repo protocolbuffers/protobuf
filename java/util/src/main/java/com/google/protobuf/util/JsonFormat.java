@@ -1656,6 +1656,8 @@ public class JsonFormat {
     private final int recursionLimit;
     private final boolean legacyLenient;
     private int currentDepth;
+    private final Map<EnumDescriptor, AlternativeEnumJsonNames> enumJsonNamesCache =
+        new HashMap<>();
 
     ParserImpl(
         com.google.protobuf.TypeRegistry registry,
@@ -2455,15 +2457,16 @@ public class JsonFormat {
         return result;
       }
 
+      // Custom JSON string lookup is restricted strictly to string primitives, explicitly
+      // rejecting single-element arrays of custom names (e.g., ["custom_enum_name"]).
       if (json.isJsonPrimitive() && json.getAsJsonPrimitive().isString()) {
-        for (EnumValueDescriptor ev : enumDescriptor.getValues()) {
-          JsonEnumValueOptions ext = ev.getOptions().getExtension(JsonEnumvalueOptionsProto.json);
-          if (ext.hasString() && ext.getString().equals(name)) {
-            return ev;
-          }
+        AlternativeEnumJsonNames enumJsonNames =
+            enumJsonNamesCache.computeIfAbsent(enumDescriptor, AlternativeEnumJsonNames::new);
+        result = enumJsonNames.map.get(name);
+        if (result != null) {
+          return result;
         }
       }
-
       try {
         int numericValue = parseInt32(json);
         result =
@@ -2477,7 +2480,6 @@ public class JsonFormat {
         // Fall through when json is not a valid int32 value (e.g., when json is a string like
         // "XXX" or boolean true).
       }
-
       // todo(elharo): if we are ignoring unknown fields, shouldn't we still
       // throw InvalidProtocolBufferException for a non-numeric value here?
       if (!ignoringUnknownFields) {
@@ -2563,6 +2565,21 @@ public class JsonFormat {
 
         default:
           throw new InvalidProtocolBufferException("Invalid field type: " + field.getType());
+      }
+    }
+
+    private static final class AlternativeEnumJsonNames {
+      final Map<String, EnumValueDescriptor> map;
+
+      AlternativeEnumJsonNames(EnumDescriptor enumDescriptor) {
+        Map<String, EnumValueDescriptor> m = new HashMap<>();
+        for (EnumValueDescriptor ev : enumDescriptor.getValues()) {
+          JsonEnumValueOptions ext = ev.getOptions().getExtension(JsonEnumvalueOptionsProto.json);
+          if (ext.hasString()) {
+            m.put(ext.getString(), ev);
+          }
+        }
+        this.map = Collections.unmodifiableMap(m);
       }
     }
   }
