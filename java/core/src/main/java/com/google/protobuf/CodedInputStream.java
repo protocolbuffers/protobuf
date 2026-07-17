@@ -642,6 +642,19 @@ public abstract class CodedInputStream {
   public abstract int getTotalBytesRead();
 
   /**
+   * Scans ahead the next {@code length} bytes and returns the exact number of varints that can be
+   * parsed. This can be used to perfectly size collections when parsing packed repeated fields. By
+   * default, it returns a heuristic based upper-bound.
+   *
+   * <p>Precondition: this method assumes that the next {@code length} bytes represent a valid
+   * packed varints field.
+   *
+   * @param length The number of bytes in the packed payload.
+   * @return The exact number if possible, otherwise a safe estimate.
+   */
+  public abstract int countPackedVarints(int length);
+
+  /**
    * Read one byte from the input.
    *
    * @throws InvalidProtocolBufferException The end of the stream or the current limit was reached.
@@ -1548,6 +1561,23 @@ public abstract class CodedInputStream {
     }
 
     @Override
+    public int countPackedVarints(int length) {
+      if (length < 0 || length > limit - pos) {
+        return 0;
+      }
+      int count = 0;
+
+      // Counts of terminating bytes to determine how many varints are in the packed field.
+      final int end = pos + length;
+      for (int i = pos; i < end; i++) {
+        if (buffer[i] >= 0) {
+          count++;
+        }
+      }
+      return count;
+    }
+
+    @Override
     public byte readRawByte() throws IOException {
       if (pos == limit) {
         throw InvalidProtocolBufferException.truncatedMessage();
@@ -2316,6 +2346,19 @@ public abstract class CodedInputStream {
     @Override
     public int getTotalBytesRead() {
       return totalBytesRetired + pos;
+    }
+
+    @Override
+    public int countPackedVarints(int length) {
+      if (length <= 0) {
+        return 0;
+      }
+      // Heuristic: If we don't know (e.g. streaming case), we assume an average size.
+      // A varint can be up to 10 bytes, but we could overshoot by a lot (10x) if we assume
+      // 1 byte. We assume a 5-byte average (a 2x overshoot on average), which is bounded
+      // by the normal amount of memory wasted by ArrayLists.
+      // This also prevents OOMs due to pre-allocation from arbitrarily large lengths.
+      return Math.min(length / 5, 4096);
     }
 
     /**
