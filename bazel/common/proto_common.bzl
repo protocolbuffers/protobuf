@@ -9,40 +9,8 @@
 
 load("@proto_bazel_features//:features.bzl", "bazel_features")
 load("//bazel/common:proto_lang_toolchain_info.bzl", "ProtoLangToolchainInfo")
+load("//bazel/common:proto_path_mapping.bzl", "proto_path_mapping")
 load("//bazel/private:toolchain_helpers.bzl", "toolchains")
-
-def _import_virtual_proto_path(path):
-    """Imports all paths for virtual imports.
-
-      They're of the form:
-      'bazel-out/k8-fastbuild/bin/external/foo/e/_virtual_imports/e' or
-      'bazel-out/foo/k8-fastbuild/bin/e/_virtual_imports/e'"""
-    if path.count("/") > 4:
-        return "-I%s" % path
-    return None
-
-def _import_repo_proto_path(path):
-    """Imports all paths for generated files in external repositories.
-
-      They are of the form:
-      'bazel-out/k8-fastbuild/bin/external/foo' or
-      'bazel-out/foo/k8-fastbuild/bin'"""
-    path_count = path.count("/")
-    if path_count > 2 and path_count <= 4:
-        return "-I%s" % path
-    return None
-
-def _import_main_output_proto_path(path):
-    """Imports all paths for generated files or source files in external repositories.
-
-      They're of the form:
-      'bazel-out/k8-fastbuild/bin'
-      'external/foo'
-      '../foo'
-    """
-    if path.count("/") <= 2 and path != ".":
-        return "-I%s" % path
-    return None
 
 def _remove_repo(file):
     """Removes `../repo/` prefix from path, e.g. `../repo/package/path -> package/path`"""
@@ -206,9 +174,33 @@ def _compile(
     # For example: 'bazel-out/k8-fastbuild/bin/external/foo' needs to be listed
     # before 'bazel-out/k8-fastbuild/bin'. If not, protoc will discover file under
     # the shorter path and use 'external/foo/...' as its package path.
-    args.add_all(proto_info.transitive_proto_path, map_each = _import_virtual_proto_path)
-    args.add_all(proto_info.transitive_proto_path, map_each = _import_repo_proto_path)
-    args.add_all(proto_info.transitive_proto_path, map_each = _import_main_output_proto_path)
+    #
+    # Why transitive_sources (File objects) instead of transitive_proto_path (strings)?
+    #
+    # transitive_proto_path is a depset of strings — proto source root paths
+    # computed at analysis time via _from_root() in
+    # third_party/protobuf/bazel/private/proto_info.bzl. Each string
+    # is derived from src.root.path, so it bakes the execution-root path (e.g.,
+    # 'bazel-out/k8-fastbuild/bin') at analysis time, bypassing path mapping.
+    #
+    # transitive_sources is a depset of File objects — the same .proto files,
+    # but as File objects whose .path and .root.path are evaluated at execution
+    # time inside the map_each callback, enabling path mapping to rewrite them
+    # to config-agnostic form (e.g., 'bazel-out/cfg/bin').
+    #
+    # transitive_proto_path is derived from transitive_sources:
+    #   root_paths = _uniq([src.root.path for src in srcs])
+    #   transitive_proto_path = depset(direct=[_from_root(root, ...) for root in root_paths], ...)
+    # So both contain the same source root information — the difference is whether
+    # .path is evaluated at analysis time (string) or execution time (File).
+    #
+    # Three separate args.add_all calls preserve the ordering required by protoc:
+    # most specific (virtual imports) → external repo → least specific (main output).
+    # The catch-all (import_main_output_from_file) excludes files already handled
+    # by the first two callbacks. See proto_path_mapping.bzl for the callbacks.
+    args.add_all(proto_info.transitive_sources, map_each = proto_path_mapping.import_virtual_from_file, uniquify = True)
+    args.add_all(proto_info.transitive_sources, map_each = proto_path_mapping.import_external_repo_from_file, uniquify = True)
+    args.add_all(proto_info.transitive_sources, map_each = proto_path_mapping.import_main_output_from_file, uniquify = True)
     args.add("-I.")  # Needs to come last
 
     args.add_all(proto_lang_toolchain_info.protoc_opts)
