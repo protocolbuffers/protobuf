@@ -15,7 +15,6 @@ import static com.google.protobuf.WireFormat.FIXED64_SIZE;
 import static com.google.protobuf.WireFormat.MAX_VARINT_SIZE;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
@@ -1787,31 +1786,6 @@ public abstract class CodedInputStream {
       }
     }
 
-    /** Collects the bytes skipped and returns the data in a ByteBuffer. */
-    private class SkippedDataSink implements RefillCallback {
-      private int lastPos = pos;
-      private ByteArrayOutputStream byteArrayStream;
-
-      @Override
-      public void onRefill() {
-        if (byteArrayStream == null) {
-          byteArrayStream = new ByteArrayOutputStream();
-        }
-        byteArrayStream.write(buffer, lastPos, pos - lastPos);
-        lastPos = 0;
-      }
-
-      /** Gets skipped data in a ByteBuffer. This method should only be called once. */
-      ByteBuffer getSkippedData() {
-        if (byteArrayStream == null) {
-          return ByteBuffer.wrap(buffer, lastPos, pos - lastPos);
-        } else {
-          byteArrayStream.write(buffer, lastPos, pos);
-          return ByteBuffer.wrap(byteArrayStream.toByteArray());
-        }
-      }
-    }
-
     // -----------------------------------------------------------------
 
     @Override
@@ -2344,12 +2318,6 @@ public abstract class CodedInputStream {
       return totalBytesRetired + pos;
     }
 
-    private interface RefillCallback {
-      void onRefill();
-    }
-
-    private RefillCallback refillCallback = null;
-
     /**
      * Reads more bytes from the input, making at least {@code n} bytes available in the buffer.
      * Caller must ensure that the requested space is not yet available, and that the requested
@@ -2396,10 +2364,6 @@ public abstract class CodedInputStream {
       if (isBeyondLimit(rawPos, n, currentLimit)) {
         // Oops, we hit a limit.
         return false;
-      }
-
-      if (refillCallback != null) {
-        refillCallback.onRefill();
       }
 
       int tempPos = pos;
@@ -2709,37 +2673,34 @@ public abstract class CodedInputStream {
         throw InvalidProtocolBufferException.truncatedMessage();
       }
 
-      int totalSkipped = 0;
-      if (refillCallback == null) {
-        // Skipping more bytes than are in the buffer.  First skip what we have.
-        totalBytesRetired += pos;
-        totalSkipped = bufferSize - pos;
-        bufferSize = 0;
-        pos = 0;
+      // Skipping more bytes than are in the buffer.  First skip what we have.
+      totalBytesRetired += pos;
+      int totalSkipped = bufferSize - pos;
+      bufferSize = 0;
+      pos = 0;
 
-        try {
-          while (totalSkipped < size) {
-            int toSkip = size - totalSkipped;
-            long skipped = skip(input, toSkip);
-            if (skipped < 0 || skipped > toSkip) {
-              throw new IllegalStateException(
-                  input.getClass()
-                      + "#skip returned invalid result: "
-                      + skipped
-                      + "\nThe InputStream implementation is buggy.");
-            } else if (skipped == 0) {
-              // The API contract of skip() permits an inputstream to skip zero bytes for any reason
-              // it wants. In particular, ByteArrayInputStream will just return zero over and over
-              // when it's at the end of its input. In order to actually confirm that we've hit the
-              // end of input, we need to issue a read call via the other path.
-              break;
-            }
-            totalSkipped += (int) skipped;
+      try {
+        while (totalSkipped < size) {
+          int toSkip = size - totalSkipped;
+          long skipped = skip(input, toSkip);
+          if (skipped < 0 || skipped > toSkip) {
+            throw new IllegalStateException(
+                input.getClass()
+                    + "#skip returned invalid result: "
+                    + skipped
+                    + "\nThe InputStream implementation is buggy.");
+          } else if (skipped == 0) {
+            // The API contract of skip() permits an inputstream to skip zero bytes for any reason
+            // it wants. In particular, ByteArrayInputStream will just return zero over and over
+            // when it's at the end of its input. In order to actually confirm that we've hit the
+            // end of input, we need to issue a read call via the other path.
+            break;
           }
-        } finally {
-          totalBytesRetired += totalSkipped;
-          recomputeBufferSizeAfterLimit();
+          totalSkipped += (int) skipped;
         }
+      } finally {
+        totalBytesRetired += totalSkipped;
+        recomputeBufferSizeAfterLimit();
       }
       if (totalSkipped < size) {
         // Skipping more bytes than are in the buffer.  First skip what we have.
