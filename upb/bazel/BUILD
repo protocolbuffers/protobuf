@@ -30,3 +30,13 @@ bzl_library(
         "@rules_cc//cc/common",
     ],
 )
+
+exports_files(
+    [
+        "upb_c_proto_library.bzl",
+        "upb_minitable_proto_library.bzl",
+        "upb_proto_library.bzl",
+        "upb_proto_reflection_library.bzl",
+    ],
+    visibility = ["//multiplatform/elements:__subpackages__"],
+)
