@@ -124,6 +124,7 @@ jobs:
         with:
           image: arm64v8/ruby:3.2.11-bookworm
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
+          platform: linux/arm64
           command: >-
             /bin/bash -cex '
             gem install bundler -v 2.6.6;
