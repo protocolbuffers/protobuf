@@ -466,7 +466,10 @@ struct DynamicMessageFactory::TypeInfo {
     // class_data within it) in PROTOBUF_MESSAGE_GLOBALS builds.
     {
       auto* base = const_cast<internal::ClassData*>(class_data.base());
+#ifndef PROTOBUF_MESSAGE_GLOBALS
+      base->prototype = nullptr;
       base->tc_table = nullptr;
+#endif  // PROTOBUF_MESSAGE_GLOBALS
       base->is_initialized = nullptr;
       base->merge_to_from = nullptr;
       std::memset(&base->message_creator, 0xCD,
