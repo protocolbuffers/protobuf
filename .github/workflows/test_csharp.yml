@@ -25,7 +25,7 @@ jobs:
 
       # TODO Run this with Bazel once codegen is handled properly.
       - name: Run tests
-        uses: protocolbuffers/protobuf-ci/docker@v5
+        uses: protocolbuffers/protobuf-ci/docker@fab0fe16551ad4cdb90d6ee158fb060c9cc2012b
         with:
           image: us-docker.pkg.dev/protobuf-build/containers/test/linux/csharp:9.2.0-3.1.415-8.0.100-5bb1a8fdfc30f8c21c1b38cf053d2db9fca865a7
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
@@ -65,7 +65,7 @@ jobs:
       - name: Run tests
         uses: protocolbuffers/protobuf-ci/bash@v5
         with:
-          bazel-version: 9.0.0
+          bazel-version: 9.2.0
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           command: |
             dotnet build csharp/src/Google.Protobuf.sln
@@ -83,7 +83,7 @@ jobs:
       - name: Build protobuf C# tests under x86_64 docker image
         # Tests are built "dotnet publish" because we want all the dependencies to the copied to the destination directory
         # (we want to avoid references to ~/.nuget that won't be available in the subsequent docker run)
-        uses: protocolbuffers/protobuf-ci/docker@v5
+        uses: protocolbuffers/protobuf-ci/docker@fab0fe16551ad4cdb90d6ee158fb060c9cc2012b
         with:
           image: mcr.microsoft.com/dotnet/sdk:8.0.100-bookworm-slim
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}

@@ -86,7 +86,7 @@ jobs:
           architecture: linux-i386
 
       - name: Run tests
-        uses: protocolbuffers/protobuf-ci/docker@v5
+        uses: protocolbuffers/protobuf-ci/docker@fab0fe16551ad4cdb90d6ee158fb060c9cc2012b
         with:
           image: i386/ruby:3.2.11-bookworm
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
@@ -123,6 +123,8 @@ jobs:
         uses: protocolbuffers/protobuf-ci/docker@v5
         with:
           image: ruby:3.2.11-bookworm
+          # TODO: rsartor - Remove this once protobuf-ci is updated.
+          staleness-image: "us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:8.7.0-4d8e80ef93b0219fb907af9dd4596b92946995d8"
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           platform: linux/arm64
           command: >-
@@ -173,7 +175,7 @@ jobs:
         if: ${{ !matrix.continuous-only || inputs.continuous-run }}
         uses: protocolbuffers/protobuf-ci/bazel@v5
         with:
-          version: 9.0.0 # Bazel version
+          version: 9.2.0 # Bazel version
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-cache: ruby_macos/${{ matrix.version }}
           bazel: test //ruby/... --test_env=KOKORO_RUBY_VERSION=${{ matrix.version }} --test_env=BAZEL=true ${{ matrix.ffi == 'FFI' && '--//ruby:ffi=enabled --test_env=PROTOCOL_BUFFERS_RUBY_IMPLEMENTATION=FFI' || '' }}
