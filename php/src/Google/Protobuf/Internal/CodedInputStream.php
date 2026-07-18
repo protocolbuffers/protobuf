@@ -26,6 +26,7 @@ class CodedInputStream
     private $total_bytes_read;
 
     const MAX_VARINT_BYTES = 10;
+    const MAX_TAG_BYTES = 5;
     const DEFAULT_RECURSION_LIMIT = 100;
     const DEFAULT_TOTAL_BYTES_LIMIT = 33554432; // 32 << 20, 32MB
 
@@ -258,14 +259,26 @@ class CodedInputStream
             return 0;
         }
 
+        // Bytes remain, so the buffer must hold a tag varint decoding to at
+        // most 2^32 - 1 (field number 2^29 - 1, wire type 7) within five
+        // bytes. A truncated, overlong, out of range, or zero tag varint is
+        // corruption, not a legitimate message end. Returning 0 for it would
+        // make the caller silently discard the remaining input.
+        $start = $this->current;
         $result = 0;
-        // The largest tag is 2^29 - 1, which can be represented by int32.
-        $success = $this->readVarint32($result);
-        if ($success) {
-            return $result;
-        } else {
-            return 0;
+        if (!$this->readVarint32($result)) {
+            throw new GPBDecodeException("Malformed tag varint.");
         }
+        $tag_bytes = $this->current - $start;
+        if ($tag_bytes > self::MAX_TAG_BYTES ||
+            ($tag_bytes === self::MAX_TAG_BYTES &&
+                ord($this->buffer[$this->current - 1]) > 0x0F)) {
+            throw new GPBDecodeException("Malformed tag varint.");
+        }
+        if ($result === 0) {
+            throw new GPBDecodeException("Illegal field number zero.");
+        }
+        return $result;
     }
 
     public function readRaw($size, &$buffer)
