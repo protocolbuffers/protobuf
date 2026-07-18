@@ -229,7 +229,7 @@ class PROTOBUF_EXPORT UnknownFieldSet {
   PROTOBUF_FUTURE_ADD_EARLY_NODISCARD bool ParseFromArray(const void* data,
                                                           int size);
   PROTOBUF_FUTURE_ADD_EARLY_NODISCARD bool ParseFromString(
-      const absl::string_view data);
+      absl::string_view data);
 
   // Merges this message's unknown field data (if any).  This works whether
   // the message is a lite or full proto (for legacy reasons, lite and full

@@ -54,7 +54,7 @@ namespace protobuf {
 MessageLite* MessageLite::CopyConstruct(Arena* arena, const MessageLite& from) {
   auto* data = from.GetClassData();
   auto* res = data->New(arena);
-  data->merge_to_from(*res, from);
+  data->MergeToFrom(*res, from);
   return res;
 }
 
@@ -86,7 +86,7 @@ void MessageLite::CheckTypeAndMergeFrom(const MessageLite& other) {
   ABSL_CHECK_EQ(data, other_data)
       << "Invalid call to CheckTypeAndMergeFrom between types " << GetTypeName()
       << " and " << other.GetTypeName();
-  data->merge_to_from(*this, other);
+  data->MergeToFrom(*this, other);
 }
 
 MessageLite* MessageLite::New(Arena* arena) const {

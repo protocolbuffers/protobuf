@@ -130,8 +130,6 @@ int ImmutableStringFieldGenerator::GetNumBitsForMessage() const {
   return HasHasbit(descriptor_) ? 1 : 0;
 }
 
-int ImmutableStringFieldGenerator::GetNumBitsForBuilder() const { return 1; }
-
 // A note about how strings are handled. This code used to just store a String
 // in the Message. This had two issues:
 //
@@ -710,10 +708,6 @@ RepeatedImmutableStringFieldGenerator::
 
 int RepeatedImmutableStringFieldGenerator::GetNumBitsForMessage() const {
   return 0;
-}
-
-int RepeatedImmutableStringFieldGenerator::GetNumBitsForBuilder() const {
-  return 1;
 }
 
 void RepeatedImmutableStringFieldGenerator::GenerateInterfaceMembers(

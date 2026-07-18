@@ -30,9 +30,8 @@ jobs:
         include:
           # Test both FFI and Native implementations on the highest and lowest
           # Ruby versions for CRuby and JRuby
-          - { name: Ruby 3.1, ruby: ruby-3.1.6, ffi: NATIVE }
-          - { name: Ruby 3.1, ruby: ruby-3.1.6, ffi: FFI }
-          - { name: Ruby 3.2, ruby: ruby-3.2.6, continuous-only: true }
+          - { name: Ruby 3.2, ruby: ruby-3.2.6, ffi: NATIVE }
+          - { name: Ruby 3.2, ruby: ruby-3.2.6, ffi: FFI }
           - { name: Ruby 3.3, ruby: ruby-3.3.6, continuous-only: true }
           - { name: Ruby 3.4, ruby: ruby-3.4.1, continuous-only: true }
           - { name: Ruby 4.0, ruby: ruby-4.0.0, ffi: NATIVE }
@@ -89,7 +88,7 @@ jobs:
       - name: Run tests
         uses: protocolbuffers/protobuf-ci/docker@v5
         with:
-          image: i386/ruby:3.1.6-bullseye
+          image: i386/ruby:3.2.11-bookworm
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           command: >-
             /bin/bash -cex '
@@ -123,8 +122,9 @@ jobs:
         if: ${{ inputs.continuous-run }}
         uses: protocolbuffers/protobuf-ci/docker@v5
         with:
-          image: arm64v8/ruby:3.1.4-buster
+          image: ruby:3.2.11-bookworm
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
+          platform: linux/arm64
           command: >-
             /bin/bash -cex '
             gem install bundler -v 2.6.6;
@@ -142,9 +142,8 @@ jobs:
         # Test both FFI and Native implementations on the highest and lowest
         # Ruby versions for CRuby.
         # Quote versions numbers otherwise 3.0 will render as 3
-        - { version: "3.1", ffi: NATIVE }
-        - { version: "3.1", ffi: FFI }
-        - { version: "3.2", continuous-only: true }
+        - { version: "3.2", ffi: NATIVE }
+        - { version: "3.2", ffi: FFI }
         - { version: "3.3", continuous-only: true }
         - { version: "3.4", ffi: NATIVE }
         - { version: "3.4", ffi: FFI }
@@ -162,7 +161,7 @@ jobs:
 
       - name: Pin Ruby version
         if: ${{ !matrix.continuous-only || inputs.continuous-run }}
-        uses: ruby/setup-ruby@ae195bbe749a7cef685ac729197124a48305c1cb # v1.276.0
+        uses: ruby/setup-ruby@6e5d382445ae5590b7449d8b3bc8cb1c2c27f617 # v1.317.0
         with:
           ruby-version: ${{ matrix.version }}
 
@@ -187,9 +186,8 @@ jobs:
         include:
           # Test both FFI and Native implementations on the highest and lowest
           # Ruby versions for CRuby and JRuby.
-          - { name: Ruby 3.1, ruby: ruby-3.1.6, ffi: NATIVE }
-          - { name: Ruby 3.1, ruby: ruby-3.1.6, ffi: FFI }
-          - { name: Ruby 3.2, ruby: ruby-3.2.6, continuous-only: true }
+          - { name: Ruby 3.2, ruby: ruby-3.2.6, ffi: NATIVE }
+          - { name: Ruby 3.2, ruby: ruby-3.2.6, ffi: FFI }
           - { name: Ruby 3.3, ruby: ruby-3.3.6, continuous-only: true }
           - { name: Ruby 3.4, ruby: ruby-3.4.1, continuous-only: true }
           - { name: Ruby 4.0, ruby: ruby-4.0.0, ffi: NATIVE }

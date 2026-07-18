@@ -207,6 +207,33 @@ TEST_F(RepeatedFieldIsFullTest, AddInputIterAbortOnFull) {
                HasSubstr("Integer overflow in CheckedAdd: 2147483647 + 1"));
 }
 
+TEST_F(RepeatedFieldIsFullTest, MergeFromAbortOnFull) {
+  RepeatedField<bool> f1 = MakeFullField();
+  RepeatedField<bool> f2;
+  f2.Add(true);
+  EXPECT_DEATH(f1.MergeFrom(f2),
+               HasSubstr("Integer overflow in CheckedAdd: 2147483647 + 1"));
+}
+
+TEST_F(RepeatedFieldIsFullTest, ExtractSubrangeOverflow) {
+  EXPECT_DEATH(MakeFullField().ExtractSubrange(2147483640, 10, nullptr),
+               HasSubstr("Value (2147483650) must be less than or equal to "
+                         "limit (2147483647)"));
+}
+TEST_F(RepeatedFieldIsFullTest, ExtractSubrangeNegativeStart) {
+  RepeatedField<int> field;
+  EXPECT_DEATH(
+      field.ExtractSubrange(-1, 0, nullptr),
+      HasSubstr("Value (-1) must be greater than or equal to limit (0)"));
+}
+
+TEST_F(RepeatedFieldIsFullTest, ExtractSubrangeNegativeNum) {
+  RepeatedField<int> field;
+  EXPECT_DEATH(
+      field.ExtractSubrange(0, -1, nullptr),
+      HasSubstr("Value (-1) must be greater than or equal to limit (0)"));
+}
+
 // Test operations on a RepeatedField which is large enough to allocate a
 // separate array.
 TEST(RepeatedField, Large) {

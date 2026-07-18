@@ -137,7 +137,7 @@ FieldGeneratorBase::FieldGeneratorBase(const FieldDescriptor* field,
       is_message_ = true;
       is_group_ = field->type() == FieldDescriptor::TYPE_GROUP;
       is_foreign_ = IsCrossFileMessage(field);
-      is_weak_ = IsImplicitWeakField(field, options);
+      is_weak_ = IsImplicitWeakField(field, options) || IsWeak(field, options);
       is_lazy_ = IsLazy(field, options);
       has_trivial_value_ = !(is_repeated_or_map || is_lazy_);
       has_default_constexpr_constructor_ = is_repeated_or_map || is_lazy_;

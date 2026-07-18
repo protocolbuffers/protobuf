@@ -598,9 +598,6 @@ class ABSL_ATTRIBUTE_WARN_UNUSED PROTOBUF_DECLSPEC_EMPTY_BASES
 
   template <typename ArenaProvider>
   void ReserveWithArena(ArenaProvider arena_provider, int new_size);
-  void GrowByWithArena(Arena* arena, int grow_by) {
-    ReserveWithArena(arena, size() + grow_by);
-  }
 
   template <typename ArenaProvider>
   void* AddUninitializedWithArena(ArenaProvider arena_provider);
@@ -631,16 +628,16 @@ class ABSL_ATTRIBUTE_WARN_UNUSED PROTOBUF_DECLSPEC_EMPTY_BASES
   // This function is identical to `std::uninitialized_copy_n(src, n, dst)`
   // except that we explicit declare the memory to not be aliased, which will
   // result in `memcpy` code generation instead of `memmove` for trivial types.
-  static inline void UninitializedCopyN(const Element* PROTOBUF_RESTRICT src,
-                                        int n, Element* PROTOBUF_RESTRICT dst) {
+  static void UninitializedCopyN(const Element* PROTOBUF_RESTRICT src, int n,
+                                 Element* PROTOBUF_RESTRICT dst) {
     std::uninitialized_copy_n(src, n, dst);
   }
 
   // Copy constructs `[begin, end)` instances in place into the array `dst`.
   // See above `UninitializedCopyN()` function comments for more information.
   template <typename Iter>
-  static inline void UninitializedCopy(Iter begin, Iter end,
-                                       Element* PROTOBUF_RESTRICT dst) {
+  static void UninitializedCopy(Iter begin, Iter end,
+                                Element* PROTOBUF_RESTRICT dst) {
     std::uninitialized_copy(begin, end, dst);
   }
 
@@ -696,7 +693,7 @@ class ABSL_ATTRIBUTE_WARN_UNUSED PROTOBUF_DECLSPEC_EMPTY_BASES
   // size. This function is intended to be the only place where
   // size is modified, with the exception of `AddInputIterator()`
   // where the size of added items is not known in advance.
-  inline int ExchangeCurrentSize(int new_size) {
+  int ExchangeCurrentSize(int new_size) {
     const int prev_size = size();
     AnnotateSize(prev_size, new_size);
     set_size(new_size);
@@ -1220,11 +1217,12 @@ inline void RepeatedField<Element>::RemoveLast() {
 template <typename Element>
 void RepeatedField<Element>::ExtractSubrange(int start, int num,
                                              Element* elements) {
-  ABSL_DCHECK_GE(start, 0);
-  ABSL_DCHECK_GE(num, 0);
+  internal::RuntimeAssertInBoundsGE(start, 0);
+  internal::RuntimeAssertInBoundsGE(num, 0);
   const bool is_soo = this->is_soo();
   const int old_size = size();
-  ABSL_DCHECK_LE(start + num, old_size);
+  internal::RuntimeAssertInBoundsLE(static_cast<int64_t>(start) + num,
+                                    old_size);
   Element* elem = unsafe_elements(is_soo);
 
   // Save the values of the removed elements if requested.
