@@ -416,7 +416,7 @@ class Message
             case GPBType::MESSAGE:
                 if ($field->isMap()) {
                     $value = new MapEntry($field->getMessageType());
-                } else {
+                } elseif (is_null($value)) {
                     $klass = $field->getMessageType()->getClass();
                     $value = new $klass;
                 }
@@ -500,6 +500,16 @@ class Message
             $this->skipField($input, $tag);
             return;
         } elseif ($value_format === GPBWire::NORMAL_FORMAT) {
+            if ($field->getType() === GPBType::MESSAGE &&
+                !$field->isMap() &&
+                !$field->isRepeated()) {
+                // A duplicated singular message field must merge into the
+                // existing submessage rather than replace it. Oneof getters
+                // use readOneof(), which returns null unless that exact case
+                // is set, so a switched oneof case still starts fresh.
+                $getter = $field->getGetter();
+                $value = $this->$getter();
+            }
             self::parseFieldFromStreamNoTag($input, $field, $value);
         } elseif ($value_format === GPBWire::PACKED_FORMAT) {
             $length = 0;
