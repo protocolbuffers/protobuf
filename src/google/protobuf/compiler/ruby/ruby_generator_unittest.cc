@@ -10,10 +10,12 @@
 #include <list>
 #include <memory>
 
+#include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/testing/file.h"
 #include "google/protobuf/testing/googletest.h"
 #include <gtest/gtest.h>
 #include "google/protobuf/compiler/command_line_interface.h"
+#include "google/protobuf/compiler/command_line_interface_tester.h"
 #include "google/protobuf/io/printer.h"
 #include "google/protobuf/io/zero_copy_stream.h"
 
@@ -103,6 +105,75 @@ TEST(RubyGeneratorTest, Proto3ExplicitPackageTest) {
 
 TEST(RubyGeneratorTest, Proto3ExplicitLegacyPackageTest) {
   RubyTest("/ruby_generated_pkg_explicit_legacy");
+}
+
+class RubyGeneratorCliTest : public CommandLineInterfaceTester {
+ protected:
+  RubyGeneratorCliTest() {
+    RegisterGenerator("--ruby_out", std::make_unique<Generator>(),
+                      "Ruby test generator");
+
+    CreateTempFile(
+        "google/protobuf/descriptor.proto",
+        google::protobuf::DescriptorProto::descriptor()->file()->DebugString());
+  }
+};
+
+TEST_F(RubyGeneratorCliTest, InvalidRubyPackageRejected) {
+  CreateTempFile("foo.proto",
+                 R"schema(
+    syntax = "proto3";
+    option ruby_package = "MyApp;`rm -rf /`#";
+    message Foo {
+      int32 bar = 1;
+    })schema");
+
+  RunProtoc(
+      "protocol_compiler --proto_path=$tmpdir --ruby_out=$tmpdir foo.proto");
+
+  ExpectErrorSubstring("Invalid character");
+}
+
+TEST_F(RubyGeneratorCliTest, ValidRubyPackageAccepted) {
+  CreateTempFile("foo.proto",
+                 R"schema(
+    syntax = "proto3";
+    option ruby_package = "MyApp::Models::V2";
+    message Foo {
+      int32 bar = 1;
+    })schema");
+
+  RunProtoc(
+      "protocol_compiler --proto_path=$tmpdir --ruby_out=$tmpdir foo.proto");
+
+  ExpectNoErrors();
+}
+
+TEST_F(RubyGeneratorCliTest, RubyPackageSemicolonRejected) {
+  CreateTempFile("foo.proto",
+                 R"schema(
+    syntax = "proto3";
+    option ruby_package = "MyApp;system('id')";
+    message Foo {
+      int32 bar = 1;
+    })schema");
+
+  RunProtoc(
+      "protocol_compiler --proto_path=$tmpdir --ruby_out=$tmpdir foo.proto");
+
+  ExpectErrorSubstring("Invalid character");
+}
+
+TEST_F(RubyGeneratorCliTest, RubyPackageNewlineRejected) {
+  CreateTempFile("foo.proto",
+                 "syntax = \"proto3\";\n"
+                 "option ruby_package = \"MyApp\\neval(bad)\";\n"
+                 "message Foo { int32 bar = 1; }\n");
+
+  RunProtoc(
+      "protocol_compiler --proto_path=$tmpdir --ruby_out=$tmpdir foo.proto");
+
+  ExpectErrorSubstring("Invalid");
 }
 
 }  // namespace

@@ -24,6 +24,7 @@ namespace ruby {
 std::string GetRequireName(absl::string_view proto_file);
 std::string PackageToModule(absl::string_view name);
 std::string RubifyConstant(absl::string_view name);
+bool IsValidRubyPackage(absl::string_view pkg, std::string* error);
 int GeneratePackageModules(const FileDescriptor* file, io::Printer* printer);
 void EndPackageModules(int levels, io::Printer* printer);
 
