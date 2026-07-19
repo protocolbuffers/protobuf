@@ -951,6 +951,8 @@ cc_library(
     visibility = ["//visibility:private"],
     deps = [
         ":port",
+        "@abseil-cpp//absl/algorithm:container",
+        "@abseil-cpp//absl/log:absl_check",
         "@abseil-cpp//absl/status",
         "@abseil-cpp//absl/strings",
         "@abseil-cpp//absl/strings:charset",
