@@ -1,0 +1,16 @@
+$ sfw --help
+
+Socket Firewall Free - Network security proxy for package managers
+
+Runs any package manager command with network traffic filtering.
+
+Usage:
+  sfw <command>...
+  sfw --help
+
+  Examples:
+    sfw npm install
+    sfw pip install requests
+
+Provided under the following license:
+https://github.com/SocketDev/sfw-free/blob/main/README.md#license
