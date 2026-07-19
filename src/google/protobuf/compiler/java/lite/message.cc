@@ -357,16 +357,6 @@ void ImmutableMessageLiteGenerator::Generate(io::Printer* printer) {
   GenerateDynamicMethodNewBuildMessageInfo(printer);
   printer->Outdent();
 
-  printer->Print(
-      "}\n"
-      "case GET_DEFAULT_INSTANCE: {\n"
-      "  return DEFAULT_INSTANCE;\n"
-      "}\n"
-      "case GET_PARSER: {\n"
-      "  return "
-      "com.google.protobuf.GeneratedMessageLite.getParserForClass($classname$."
-      "class);\n",
-      "classname", name_resolver_->GetImmutableClassName(descriptor_));
 
   if (HasRequiredFields(descriptor_)) {
     printer->Print(

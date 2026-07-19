@@ -94,13 +94,13 @@ public abstract class GeneratedMessageLite<
   @Override
   @SuppressWarnings("unchecked") // Guaranteed by runtime.
   public final Parser<MessageT> getParserForType() {
-    return (Parser<MessageT>) dynamicMethod(MethodToInvoke.GET_PARSER, null, null);
+    return (Parser<MessageT>) getParserForClass((Class<MessageT>) getClass());
   }
 
   @Override
   @SuppressWarnings("unchecked") // Guaranteed by runtime.
   public final MessageT getDefaultInstanceForType() {
-    return (MessageT) dynamicMethod(MethodToInvoke.GET_DEFAULT_INSTANCE, null, null);
+    return (MessageT) getDefaultInstance((Class<MessageT>) getClass());
   }
 
   @Override
@@ -254,9 +254,7 @@ public abstract class GeneratedMessageLite<
     // Rely on static state
     BUILD_MESSAGE_INFO,
     NEW_MUTABLE_INSTANCE,
-    NEW_BUILDER,
-    GET_DEFAULT_INSTANCE,
-    GET_PARSER;
+    NEW_BUILDER;
   }
 
   /**
@@ -402,15 +400,15 @@ public abstract class GeneratedMessageLite<
       parserOrInstance = parserOrInstanceMap.get(clazz);
     }
     if (parserOrInstance == null) {
-      // On some Samsung devices, this still doesn't return a valid value for some reason. We add a
-      // reflective fallback to keep the device running. See b/114675342.
-      T fallback = (T) UnsafeUtil.allocateInstance(clazz).getDefaultInstanceForType();
-      // A sanity check to ensure that <clinit> was actually invoked.
-      if (fallback == null) {
-        throw new IllegalStateException();
-      }
-      parserOrInstance = fallback;
-      parserOrInstanceMap.put(clazz, parserOrInstance);
+      // On some Samsung devices (b/114675342), Class.forName() fails to trigger <clinit>.
+      // Allocating an instance forces the JVM to execute <clinit>, which invokes
+      // registerDefaultInstance() to populate parserOrInstanceMap without triggering method call cycles.
+      @SuppressWarnings("unused")
+      Object unused = UnsafeUtil.allocateInstance(clazz);
+      parserOrInstance = parserOrInstanceMap.get(clazz);
+    }
+    if (parserOrInstance == null) {
+      throw new IllegalStateException("Failed to initialize default instance for " + clazz.getName());
     }
     if (parserOrInstance instanceof GeneratedMessageLite) {
       return (T) parserOrInstance;
