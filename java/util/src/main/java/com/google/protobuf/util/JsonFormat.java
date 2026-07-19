@@ -79,7 +79,7 @@ public class JsonFormat {
 
   /** Creates a {@link Printer} with default configurations. */
   public static Printer printer() {
-    boolean printingFullyQualifiedExtensionNamesDefaultValue = false;
+    boolean printingFullyQualifiedExtensionNamesDefaultValue = true;
     return new Printer(
         com.google.protobuf.TypeRegistry.getEmptyTypeRegistry(),
         TypeRegistry.getEmptyTypeRegistry(),

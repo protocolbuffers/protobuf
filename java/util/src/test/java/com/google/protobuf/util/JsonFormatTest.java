@@ -206,6 +206,75 @@ public class JsonFormatTest {
   }
 
   @Test
+  public void testExtensionFields_defaultPrinter_printsFullyQualifiedNamesAndRoundTrips()
+      throws Exception {
+    TypeRegistry registry =
+        TypeRegistry.newBuilder().add(TestAllTypesProto2.getDescriptor()).build();
+    JsonFormat.Printer printer = JsonFormat.printer().usingTypeRegistry(registry);
+    TestAllTypesProto2 message =
+        TestAllTypesProto2.newBuilder()
+            .setExtension(JsonTestProto2.extensionInt32, 123)
+            .setExtension(
+                JsonTestProto2.extensionRepeatedBool, ImmutableList.of(true, false, false))
+            .setExtension(
+                JsonTestProto2.extensionNestedMessage,
+                TestAllTypesProto2.NestedMessage.newBuilder().setValue(789).build())
+            .build();
+
+    String json = printer.print(message);
+
+    String expectedJsonWithFullnames =
+        "{\n"
+            + "  \"[json_test_proto2.extension_int32]\": 123,\n"
+            + "  \"[json_test_proto2.extension_repeated_bool]\": [true, false, false],\n"
+            + "  \"[json_test_proto2.extension_nested_message]\": {\n"
+            + "    \"value\": 789\n"
+            + "  }\n"
+            + "}";
+    assertThat(json).isEqualTo(expectedJsonWithFullnames);
+    // Assert round-trip success.
+    JsonFormat.Parser parser =
+        JsonFormat.parser()
+            .usingTypeRegistry(registry)
+            .usingExtensionRegistry(makeExtensionRegistry());
+    Message.Builder builder = message.newBuilderForType();
+    parser.merge(json, builder);
+    Message parsedMessage = builder.build();
+    assertThat(parsedMessage.toString()).isEqualTo(message.toString());
+  }
+
+  @Test
+  public void
+      testExtensionFields_defaultPrinter_withSameShortName_doesNotDuplicateKeysAndRoundTrips()
+          throws Exception {
+    TypeRegistry registry =
+        TypeRegistry.newBuilder().add(TestAllTypesProto2.getDescriptor()).build();
+    JsonFormat.Printer printer = JsonFormat.printer().usingTypeRegistry(registry);
+    TestAllTypesProto2 message =
+        TestAllTypesProto2.newBuilder()
+            .setExtensionSameName("Field entry")
+            .setExtension(JsonTestProto2.extensionSameName, "Extension entry")
+            .build();
+
+    String json = printer.print(message);
+    String expectedJsonWithFullnames =
+        "{\n"
+            + "  \"extensionSameName\": \"Field entry\",\n"
+            + "  \"[json_test_proto2.extension_same_name]\": \"Extension entry\"\n"
+            + "}";
+    assertThat(json).isEqualTo(expectedJsonWithFullnames);
+    // Assert round-trip success.
+    JsonFormat.Parser parser =
+        JsonFormat.parser()
+            .usingTypeRegistry(registry)
+            .usingExtensionRegistry(makeExtensionRegistry());
+    Message.Builder builder = message.newBuilderForType();
+    parser.merge(json, builder);
+    Message parsedMessage = builder.build();
+    assertThat(parsedMessage.toString()).isEqualTo(message.toString());
+  }
+
+  @Test
   public void
       testExtensionFields_printingFullyQualifiedExtensionNames_arePrintedWithFullyQualifiedName()
           throws Exception {
