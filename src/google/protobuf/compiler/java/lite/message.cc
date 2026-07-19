@@ -355,22 +355,16 @@ void ImmutableMessageLiteGenerator::Generate(io::Printer* printer) {
 
   printer->Indent();
   GenerateDynamicMethodNewBuildMessageInfo(printer);
-  printer->Outdent();
+  printer->Print("}\n");
 
-  printer->Print(
-      "}\n"
-      "case GET_DEFAULT_INSTANCE: {\n"
-      "  return DEFAULT_INSTANCE;\n"
-      "}\n"
-      "case GET_PARSER: {\n"
-      "  return "
-      "com.google.protobuf.GeneratedMessageLite.getParserForClass($classname$."
-      "class);\n",
-      "classname", name_resolver_->GetImmutableClassName(descriptor_));
-
+  // GET_MEMOIZED_IS_INITIALIZED and SET_MEMOIZED_IS_INITIALIZED cases are only
+  // generated for messages that actually contain required fields (or nested
+  // messages with required fields). For messages without required fields, these
+  // cases are omitted to reduce gencode size. Unhandled cases in dynamicMethod
+  // return null, causing GeneratedMessageLite.isInitialized() to delegate
+  // directly to MessageSchema.isInitialized(), which evaluates to true in O(1).
   if (HasRequiredFields(descriptor_)) {
     printer->Print(
-        "}\n"
         "case GET_MEMOIZED_IS_INITIALIZED: {\n"
         "  return memoizedIsInitialized;\n"
         "}\n"
@@ -378,23 +372,12 @@ void ImmutableMessageLiteGenerator::Generate(io::Printer* printer) {
         "  memoizedIsInitialized = (byte) (arg0 == null ? 0 : 1);\n"
         "  return null;\n"
         "}\n");
-  } else {
-    printer->Print(
-        "}\n"
-        "case GET_MEMOIZED_IS_INITIALIZED: {\n"
-        "  return (byte) 1;\n"
-        "}\n"
-        "// SET_MEMOIZED_IS_INITIALIZED is never called for this message.\n"
-        "// So it can do anything. Combine with default case for smaller "
-        "codegen.\n"
-        "case SET_MEMOIZED_IS_INITIALIZED:\n");
   }
 
   printer->Outdent();
   printer->Print(
       "}\n"
-      "// Should never happen. Generates tight code to throw an exception.\n"
-      "throw null;\n");
+      "return null;\n");
   printer->Outdent();
   printer->Print(
       "}\n"

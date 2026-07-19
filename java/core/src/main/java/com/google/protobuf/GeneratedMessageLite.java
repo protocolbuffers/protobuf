@@ -94,13 +94,13 @@ public abstract class GeneratedMessageLite<
   @Override
   @SuppressWarnings("unchecked") // Guaranteed by runtime.
   public final Parser<MessageT> getParserForType() {
-    return (Parser<MessageT>) dynamicMethod(MethodToInvoke.GET_PARSER, null, null);
+    return getParserForClass((Class<MessageT>) getClass());
   }
 
   @Override
   @SuppressWarnings("unchecked") // Guaranteed by runtime.
   public final MessageT getDefaultInstanceForType() {
-    return (MessageT) dynamicMethod(MethodToInvoke.GET_DEFAULT_INSTANCE, null, null);
+    return getDefaultInstance((Class<MessageT>) getClass());
   }
 
   @Override
@@ -254,9 +254,7 @@ public abstract class GeneratedMessageLite<
     // Rely on static state
     BUILD_MESSAGE_INFO,
     NEW_MUTABLE_INSTANCE,
-    NEW_BUILDER,
-    GET_DEFAULT_INSTANCE,
-    GET_PARSER;
+    NEW_BUILDER;
   }
 
   /**
@@ -402,15 +400,17 @@ public abstract class GeneratedMessageLite<
       parserOrInstance = parserOrInstanceMap.get(clazz);
     }
     if (parserOrInstance == null) {
-      // On some Samsung devices, this still doesn't return a valid value for some reason. We add a
-      // reflective fallback to keep the device running. See b/114675342.
-      T fallback = (T) UnsafeUtil.allocateInstance(clazz).getDefaultInstanceForType();
-      // A sanity check to ensure that <clinit> was actually invoked.
-      if (fallback == null) {
-        throw new IllegalStateException();
-      }
-      parserOrInstance = fallback;
-      parserOrInstanceMap.put(clazz, parserOrInstance);
+      // On some Samsung devices (b/114675342), Class.forName() fails to trigger <clinit>.
+      // Allocating an instance forces the JVM to execute <clinit>, which invokes
+      // registerDefaultInstance() to populate parserOrInstanceMap without triggering method call
+      // cycles.
+      @SuppressWarnings("unused")
+      Object unused = UnsafeUtil.allocateInstance(clazz);
+      parserOrInstance = parserOrInstanceMap.get(clazz);
+    }
+    if (parserOrInstance == null) {
+      throw new IllegalStateException(
+          "Failed to initialize default instance for " + clazz.getName());
     }
     if (parserOrInstance instanceof GeneratedMessageLite) {
       return (T) parserOrInstance;
@@ -1533,16 +1533,22 @@ public abstract class GeneratedMessageLite<
   /** A static helper method for checking if a message is initialized, optionally memoizing. */
   private static final <T extends GeneratedMessageLite<T, ?>> boolean isInitialized(
       T message, boolean shouldMemoize) {
-    byte memoizedIsInitialized =
-        (Byte) message.dynamicMethod(MethodToInvoke.GET_MEMOIZED_IS_INITIALIZED, null, null);
-    if (memoizedIsInitialized == 1) {
-      return true;
-    }
-    if (memoizedIsInitialized == 0) {
-      return false;
+    // Messages without required fields omit GET_MEMOIZED_IS_INITIALIZED and
+    // SET_MEMOIZED_IS_INITIALIZED switch cases from dynamicMethod to minimize gencode size.
+    // For those messages, dynamicMethod returns null, skipping memoization and delegating directly
+    // to MessageSchema.isInitialized(), which evaluates to true in O(1) time.
+    Object memoized = message.dynamicMethod(MethodToInvoke.GET_MEMOIZED_IS_INITIALIZED, null, null);
+    if (memoized instanceof Byte) {
+      byte memoizedIsInitialized = (Byte) memoized;
+      if (memoizedIsInitialized == 1) {
+        return true;
+      }
+      if (memoizedIsInitialized == 0) {
+        return false;
+      }
     }
     boolean isInitialized = Protobuf.getInstance().schemaFor(message).isInitialized(message);
-    if (shouldMemoize) {
+    if (shouldMemoize && memoized != null) {
       // TODO: remove the unused variable
       Object unused =
           message.dynamicMethod(
