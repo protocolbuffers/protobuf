@@ -139,7 +139,7 @@ rust_test(
         "--cfg=bzl",
     ],
     deps = [
-        "@crate_index//:googletest",
+        "@crate_dev_index//:googletest",
     ],
 )
 
@@ -197,7 +197,7 @@ rust_test(
         "--cfg=bzl",
     ],
     deps = [
-        "@crate_index//:googletest",
+        "@crate_dev_index//:googletest",
     ],
 )
 
@@ -284,7 +284,7 @@ rust_library(
     visibility = [":protobuf_internal"],
     deps = [
         ":protobuf_cpp",
-        "@crate_index//:googletest",
+        "@crate_dev_index//:googletest",
     ],
 )
 
@@ -299,7 +299,7 @@ rust_library(
     visibility = [":protobuf_internal"],
     deps = [
         ":protobuf_upb",
-        "@crate_index//:googletest",
+        "@crate_dev_index//:googletest",
     ],
 )
 
