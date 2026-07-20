@@ -13,7 +13,6 @@
 
 #include <algorithm>
 #include <cstdint>
-#include <memory>
 #include <string>
 #include <vector>
 
@@ -29,7 +28,6 @@
 #include "google/protobuf/compiler/java/context.h"
 #include "google/protobuf/compiler/java/doc_comment.h"
 #include "google/protobuf/compiler/java/field_common.h"
-#include "google/protobuf/compiler/java/generator_factory.h"
 #include "google/protobuf/compiler/java/helpers.h"
 #include "google/protobuf/compiler/java/full/enum.h"
 #include "google/protobuf/compiler/java/full/extension.h"
