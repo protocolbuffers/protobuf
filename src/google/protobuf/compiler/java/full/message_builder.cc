@@ -647,6 +647,8 @@ void MessageBuilderGenerator::GenerateBuildPartial(io::Printer* printer) {
     printer->Print("buildPartialOneofs(result);\n");
   }
 
+  GenerateBuildPartialMemoizedIsInitialized(printer);
+
   printer->Outdent();
   printer->Print(
       "  onBuilt();\n"
@@ -701,6 +703,95 @@ void MessageBuilderGenerator::GenerateBuildPartial(io::Printer* printer) {
     printer->Outdent();
     printer->Print("}\n\n");
   }
+}
+
+void MessageBuilderGenerator::GenerateBuildPartialMemoizedIsInitialized(
+    io::Printer* printer) {
+  if (!context_->HasGeneratedMethods(descriptor_)) {
+    return;
+  }
+  if (!HasRequiredFields(descriptor_)) {
+    if (google::protobuf::internal::IsOss()) {
+      printer->Print("result.memoizedIsInitialized = 1;\n");
+    }
+    return;
+  }
+
+  printer->Print("int isInitialized = 1;\n");
+
+  for (int i = 0; i < descriptor_->field_count(); i++) {
+    const FieldDescriptor* field = descriptor_->field(i);
+    const FieldGeneratorInfo* info = context_->GetFieldGeneratorInfo(field);
+
+    if (field->is_required()) {
+      printer->Print(
+          "if (!has$name$()) {\n"
+          "  isInitialized = 0;\n"
+          "}\n",
+          "name", info->capitalized_name);
+    }
+  }
+
+  for (int i = 0; i < descriptor_->field_count(); i++) {
+    const FieldDescriptor* field = descriptor_->field(i);
+    const FieldGeneratorInfo* info = context_->GetFieldGeneratorInfo(field);
+    if (GetJavaType(field) == JAVATYPE_MESSAGE &&
+        HasRequiredFields(field->message_type())) {
+      if (field->is_required()) {
+        printer->Print(
+            "if (isInitialized == 1 && !get$name$().isInitialized()) {\n"
+            "  isInitialized = 0;\n"
+            "}\n",
+            "name", info->capitalized_name);
+      } else if (field->is_repeated()) {
+        if (IsMapEntry(field->message_type())) {
+          printer->Print(
+              "if (isInitialized == 1) {\n"
+              "  for ($type$ item : get$name$Map().values()) {\n"
+              "    if (!item.isInitialized()) {\n"
+              "      isInitialized = 0;\n"
+              "      break;\n"
+              "    }\n"
+              "  }\n"
+              "}\n",
+              "type",
+              MapValueImmutableClassdName(field->message_type(),
+                                          name_resolver_),
+              "name", info->capitalized_name);
+        } else {
+          printer->Print(
+              "if (isInitialized == 1) {\n"
+              "  for (int i = 0; i < get$name$Count(); i++) {\n"
+              "    if (!get$name$(i).isInitialized()) {\n"
+              "      isInitialized = 0;\n"
+              "      break;\n"
+              "    }\n"
+              "  }\n"
+              "}\n",
+              "type",
+              name_resolver_->GetImmutableClassName(field->message_type()),
+              "name", info->capitalized_name);
+        }
+      } else {
+        printer->Print(
+            "if (isInitialized == 1 && has$name$()) {\n"
+            "  if (!get$name$().isInitialized()) {\n"
+            "    isInitialized = 0;\n"
+            "  }\n"
+            "}\n",
+            "name", info->capitalized_name);
+      }
+    }
+  }
+
+  if (descriptor_->extension_range_count() > 0) {
+    printer->Print(
+        "if (isInitialized == 1 && !extensionsAreInitialized()) {\n"
+        "  isInitialized = 0;\n"
+        "}\n");
+  }
+
+  printer->Print("result.memoizedIsInitialized = (byte) isInitialized;\n");
 }
 
 int MessageBuilderGenerator::GenerateBuildPartialPiece(io::Printer* printer,
@@ -861,6 +952,20 @@ void MessageBuilderGenerator::GenerateBuilderPackedFieldParsingCase(
 // ===================================================================
 
 void MessageBuilderGenerator::GenerateIsInitialized(io::Printer* printer) {
+  if (!google::protobuf::internal::IsOss()) {
+    // If the message transitively has no required fields or extensions,
+    // isInitialized() is always true.
+    if (!HasRequiredFields(descriptor_)) {
+      printer->Print(
+          "@java.lang.Override\n"
+          "public final boolean isInitialized() {\n"
+          "  return true;\n"
+          "}\n"
+          "\n");
+      return;
+    }
+  }
+
   printer->Print(
       "@java.lang.Override\n"
       "public final boolean isInitialized() {\n");
