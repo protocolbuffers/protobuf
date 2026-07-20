@@ -10,6 +10,12 @@
 # One line to make it easy to remove with sed.
 -assumevalues class com.google.protobuf.Android { static boolean ASSUME_ANDROID return true; }
 
+# bypass full runtime inheritence checks in lite runtime. These are on the
+# critical path for startup.
+-assumevalues class com.google.protobuf.Android {
+   static boolean assumeLiteRuntime return true;
+}
+
 -keepclassmembers class * extends com.google.protobuf.GeneratedMessageLite {
   <fields>;
 }

@@ -103,8 +103,8 @@ class BuildFileErrorCollector : public DescriptorPool::ErrorCollector {
 // Create a Python DescriptorPool object, but does not fill the "pool"
 // attribute.
 static PyDescriptorPool* _CreateDescriptorPool() {
-  PyDescriptorPool* cpool = PyObject_GC_New(
-      PyDescriptorPool, &PyDescriptorPool_Type);
+  PyDescriptorPool* cpool =
+      PyObject_GC_New(PyDescriptorPool, &PyDescriptorPool_Type);
   if (cpool == nullptr) {
     return nullptr;
   }
@@ -120,8 +120,8 @@ static PyDescriptorPool* _CreateDescriptorPool() {
       new absl::flat_hash_map<const void*, PyObject*>();
   cpool->cache_mutex = new FreeThreadingMutex();
 
-  cpool->py_message_factory = message_factory::NewMessageFactory(
-      &PyMessageFactory_Type, cpool);
+  cpool->py_message_factory =
+      message_factory::NewMessageFactory(&PyMessageFactory_Type, cpool);
   if (cpool->py_message_factory == nullptr) {
     Py_DECREF(cpool);
     return nullptr;
@@ -194,8 +194,7 @@ static PyDescriptorPool* PyDescriptorPool_NewWithDatabase(
 }
 
 // The public DescriptorPool constructor.
-static PyObject* New(PyTypeObject* type,
-                     PyObject* args, PyObject* kwargs) {
+static PyObject* New(PyTypeObject* type, PyObject* args, PyObject* kwargs) {
   static const char* kwlist[] = {"descriptor_db", nullptr};
   PyObject* py_database = nullptr;
   if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|O",
@@ -286,8 +285,6 @@ static PyObject* FindMessageByName(PyObject* self, PyObject* arg) {
 
   return PyMessageDescriptor_FromDescriptor(message_descriptor);
 }
-
-
 
 
 static PyObject* FindFileByName(PyObject* self, PyObject* arg) {
@@ -459,8 +456,8 @@ static PyObject* FindExtensionByNumber(PyObject* self, PyObject* args) {
   if (!PyArg_ParseTuple(args, "Oi", &message_descriptor, &number)) {
     return nullptr;
   }
-  const Descriptor* descriptor = PyMessageDescriptor_AsDescriptor(
-      message_descriptor);
+  const Descriptor* descriptor =
+      PyMessageDescriptor_AsDescriptor(message_descriptor);
   if (descriptor == nullptr) {
     return nullptr;
   }
@@ -549,8 +546,8 @@ static PyObject* AddSerializedFile(PyObject* pself, PyObject* serialized_pb) {
     generated_file = self->underlay->FindFileByName(file_proto.name());
   }
   if (generated_file != nullptr) {
-    return PyFileDescriptor_FromDescriptorWithSerializedPb(
-        generated_file, serialized_pb);
+    return PyFileDescriptor_FromDescriptorWithSerializedPb(generated_file,
+                                                           serialized_pb);
   }
 
   BuildFileErrorCollector error_collector;
@@ -566,8 +563,8 @@ static PyObject* AddSerializedFile(PyObject* pself, PyObject* serialized_pb) {
   }
 
 
-  return PyFileDescriptor_FromDescriptorWithSerializedPb(
-      descriptor, serialized_pb);
+  return PyFileDescriptor_FromDescriptorWithSerializedPb(descriptor,
+                                                         serialized_pb);
 }
 
 static PyObject* Add(PyObject* self, PyObject* file_descriptor_proto) {
@@ -705,8 +702,7 @@ PyTypeObject PyDescriptorPool_Type = {
 static PyDescriptorPool* python_generated_pool = nullptr;
 
 bool InitDescriptorPool() {
-  if (PyType_Ready(&PyDescriptorPool_Type) < 0)
-    return false;
+  if (PyType_Ready(&PyDescriptorPool_Type) < 0) return false;
 
   // The Pool of messages declared in Python libraries.
   // generated_pool() contains all messages already linked in C++ libraries, and
@@ -730,9 +726,7 @@ bool InitDescriptorPool() {
 // Today it's the python_generated_pool.
 // TODO: Remove all usages of this function: the pool should be
 // derived from the context.
-PyDescriptorPool* GetDefaultDescriptorPool() {
-  return python_generated_pool;
-}
+PyDescriptorPool* GetDefaultDescriptorPool() { return python_generated_pool; }
 
 PyDescriptorPool* GetDescriptorPool_FromPool(const DescriptorPool* pool) {
   // Fast path for standard descriptors.

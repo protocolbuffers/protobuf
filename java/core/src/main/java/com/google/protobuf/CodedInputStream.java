@@ -15,7 +15,6 @@ import static com.google.protobuf.WireFormat.FIXED64_SIZE;
 import static com.google.protobuf.WireFormat.MAX_VARINT_SIZE;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
@@ -117,7 +116,7 @@ public abstract class CodedInputStream {
   }
 
   @SuppressWarnings("NonFinalStaticField")
-  private static VarintExperiment varintExperiment = VarintExperiment.CONTROL;
+  private static VarintExperiment varintExperiment = VarintExperiment.NEW_ALL_CASES;
 
   /** Method to enable new varint experiment. Only for Search to use for evaluation. */
   static void setVarintExperiment(VarintExperiment experiment) {
@@ -641,6 +640,19 @@ public abstract class CodedInputStream {
    * this value to zero.
    */
   public abstract int getTotalBytesRead();
+
+  /**
+   * Scans ahead the next {@code length} bytes and returns the exact number of varints that can be
+   * parsed. This can be used to perfectly size collections when parsing packed repeated fields. By
+   * default, it returns a heuristic based upper-bound.
+   *
+   * <p>Precondition: this method assumes that the next {@code length} bytes represent a valid
+   * packed varints field.
+   *
+   * @param length The number of bytes in the packed payload.
+   * @return The exact number if possible, otherwise a safe estimate.
+   */
+  public abstract int countPackedVarints(int length);
 
   /**
    * Read one byte from the input.
@@ -1549,6 +1561,23 @@ public abstract class CodedInputStream {
     }
 
     @Override
+    public int countPackedVarints(int length) {
+      if (length < 0 || length > limit - pos) {
+        return 0;
+      }
+      int count = 0;
+
+      // Counts of terminating bytes to determine how many varints are in the packed field.
+      final int end = pos + length;
+      for (int i = pos; i < end; i++) {
+        if (buffer[i] >= 0) {
+          count++;
+        }
+      }
+      return count;
+    }
+
+    @Override
     public byte readRawByte() throws IOException {
       if (pos == limit) {
         throw InvalidProtocolBufferException.truncatedMessage();
@@ -1784,31 +1813,6 @@ public abstract class CodedInputStream {
           }
         default:
           throw InvalidProtocolBufferException.invalidWireType();
-      }
-    }
-
-    /** Collects the bytes skipped and returns the data in a ByteBuffer. */
-    private class SkippedDataSink implements RefillCallback {
-      private int lastPos = pos;
-      private ByteArrayOutputStream byteArrayStream;
-
-      @Override
-      public void onRefill() {
-        if (byteArrayStream == null) {
-          byteArrayStream = new ByteArrayOutputStream();
-        }
-        byteArrayStream.write(buffer, lastPos, pos - lastPos);
-        lastPos = 0;
-      }
-
-      /** Gets skipped data in a ByteBuffer. This method should only be called once. */
-      ByteBuffer getSkippedData() {
-        if (byteArrayStream == null) {
-          return ByteBuffer.wrap(buffer, lastPos, pos - lastPos);
-        } else {
-          byteArrayStream.write(buffer, lastPos, pos);
-          return ByteBuffer.wrap(byteArrayStream.toByteArray());
-        }
       }
     }
 
@@ -2344,11 +2348,18 @@ public abstract class CodedInputStream {
       return totalBytesRetired + pos;
     }
 
-    private interface RefillCallback {
-      void onRefill();
+    @Override
+    public int countPackedVarints(int length) {
+      if (length <= 0) {
+        return 0;
+      }
+      // Heuristic: If we don't know (e.g. streaming case), we assume an average size.
+      // A varint can be up to 10 bytes, but we could overshoot by a lot (10x) if we assume
+      // 1 byte. We assume a 5-byte average (a 2x overshoot on average), which is bounded
+      // by the normal amount of memory wasted by ArrayLists.
+      // This also prevents OOMs due to pre-allocation from arbitrarily large lengths.
+      return Math.min(length / 5, 4096);
     }
-
-    private RefillCallback refillCallback = null;
 
     /**
      * Reads more bytes from the input, making at least {@code n} bytes available in the buffer.
@@ -2396,10 +2407,6 @@ public abstract class CodedInputStream {
       if (isBeyondLimit(rawPos, n, currentLimit)) {
         // Oops, we hit a limit.
         return false;
-      }
-
-      if (refillCallback != null) {
-        refillCallback.onRefill();
       }
 
       int tempPos = pos;
@@ -2709,37 +2716,34 @@ public abstract class CodedInputStream {
         throw InvalidProtocolBufferException.truncatedMessage();
       }
 
-      int totalSkipped = 0;
-      if (refillCallback == null) {
-        // Skipping more bytes than are in the buffer.  First skip what we have.
-        totalBytesRetired += pos;
-        totalSkipped = bufferSize - pos;
-        bufferSize = 0;
-        pos = 0;
+      // Skipping more bytes than are in the buffer.  First skip what we have.
+      totalBytesRetired += pos;
+      int totalSkipped = bufferSize - pos;
+      bufferSize = 0;
+      pos = 0;
 
-        try {
-          while (totalSkipped < size) {
-            int toSkip = size - totalSkipped;
-            long skipped = skip(input, toSkip);
-            if (skipped < 0 || skipped > toSkip) {
-              throw new IllegalStateException(
-                  input.getClass()
-                      + "#skip returned invalid result: "
-                      + skipped
-                      + "\nThe InputStream implementation is buggy.");
-            } else if (skipped == 0) {
-              // The API contract of skip() permits an inputstream to skip zero bytes for any reason
-              // it wants. In particular, ByteArrayInputStream will just return zero over and over
-              // when it's at the end of its input. In order to actually confirm that we've hit the
-              // end of input, we need to issue a read call via the other path.
-              break;
-            }
-            totalSkipped += (int) skipped;
+      try {
+        while (totalSkipped < size) {
+          int toSkip = size - totalSkipped;
+          long skipped = skip(input, toSkip);
+          if (skipped < 0 || skipped > toSkip) {
+            throw new IllegalStateException(
+                input.getClass()
+                    + "#skip returned invalid result: "
+                    + skipped
+                    + "\nThe InputStream implementation is buggy.");
+          } else if (skipped == 0) {
+            // The API contract of skip() permits an inputstream to skip zero bytes for any reason
+            // it wants. In particular, ByteArrayInputStream will just return zero over and over
+            // when it's at the end of its input. In order to actually confirm that we've hit the
+            // end of input, we need to issue a read call via the other path.
+            break;
           }
-        } finally {
-          totalBytesRetired += totalSkipped;
-          recomputeBufferSizeAfterLimit();
+          totalSkipped += (int) skipped;
         }
+      } finally {
+        totalBytesRetired += totalSkipped;
+        recomputeBufferSizeAfterLimit();
       }
       if (totalSkipped < size) {
         // Skipping more bytes than are in the buffer.  First skip what we have.

@@ -1866,7 +1866,7 @@ class FeatureInheritanceTest(unittest.TestCase):
             )
         ],
         minimum_edition=descriptor_pb2.Edition.EDITION_PROTO2,
-        maximum_edition=descriptor_pb2.Edition.EDITION_2024,
+        maximum_edition=descriptor_pb2.Edition.EDITION_2026,
     )
     defaults.defaults[0].overridable_features.Extensions[
         unittest_features_pb2.test

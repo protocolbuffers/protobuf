@@ -173,6 +173,8 @@ PyUpb_WeakMap* PyUpb_ObjCache_Instance(void);
 
 PyObject* PyUpb_Arena_New(void);
 upb_Arena* PyUpb_Arena_Get(PyObject* arena);
+bool PyUpb_Arena_IsFrozen(PyObject* arena);
+void PyUpb_Arena_SetFrozen(PyObject* arena, bool frozen);
 
 // -----------------------------------------------------------------------------
 // Utilities
@@ -234,5 +236,9 @@ PyObject* PyUpb_SetFrozenError(void);
 // Sets a Python FrozenInstanceError with the given custom message and returns
 // NULL.
 PyObject* PyUpb_SetFrozenErrorWithMsg(const char* msg);
+// Emits a DeprecationWarning when mutating a frozen message or container in
+// OSS.
+int PyUpb_WarnFrozen(void);
+bool PyUpb_CheckFrozen(bool is_frozen, const char* error_msg);
 
 #endif  // PYUPB_PROTOBUF_H__

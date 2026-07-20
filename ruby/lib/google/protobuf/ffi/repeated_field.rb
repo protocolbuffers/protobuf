@@ -387,8 +387,8 @@ module Google
         instance
       end
 
-      def fuse_arena(arena)
-        arena.fuse(arena)
+      def fuse_arena(other_arena)
+        @arena.fuse(other_arena)
       end
 
       extend Google::Protobuf::Internal::Convert

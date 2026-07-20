@@ -21,29 +21,12 @@ import java.util.RandomAccess;
 @CheckReturnValue
 @SuppressWarnings("rawtypes")
 final class SchemaUtil {
-  private static final Class<?> GENERATED_MESSAGE_CLASS = getGeneratedMessageClass();
   private static final UnknownFieldSchema<?, ?> UNKNOWN_FIELD_SET_LITE_SCHEMA =
       new UnknownFieldSetLiteSchema();
 
   private static final int DEFAULT_LOOK_UP_START_NUMBER = 40;
 
   private SchemaUtil() {}
-
-  /**
-   * Requires that the given message extend {@link com.google.protobuf.GeneratedMessage} or {@link
-   * GeneratedMessageLite}.
-   */
-  public static void requireGeneratedMessage(Class<?> messageType) {
-    // TODO decide if we're keeping support for Full in schema classes and handle this
-    // better.
-    if (!GeneratedMessageLite.class.isAssignableFrom(messageType)
-        && !Android.assumeLiteRuntime
-        && GENERATED_MESSAGE_CLASS != null
-        && !GENERATED_MESSAGE_CLASS.isAssignableFrom(messageType)) {
-      throw new IllegalArgumentException(
-          "Message classes must extend GeneratedMessage or GeneratedMessageLite");
-    }
-  }
 
   public static void writeDouble(int fieldNumber, double value, CodedOutputStreamWriter writer)
       throws IOException {

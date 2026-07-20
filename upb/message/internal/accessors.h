@@ -57,12 +57,22 @@ extern "C" {
 
 // Hasbit access ///////////////////////////////////////////////////////////////
 
+UPB_INLINE bool UPB_PRIVATE(_upb_Message_GetHasbitFromOffset)(
+    const struct upb_Message* msg, int byte_offset, int bit_mask) {
+  return (*UPB_PTR_AT(msg, byte_offset, const char) & bit_mask) != 0;
+}
+
 UPB_INLINE bool UPB_PRIVATE(_upb_Message_GetHasbit)(
     const struct upb_Message* msg, const upb_MiniTableField* f) {
   const uint16_t offset = UPB_PRIVATE(_upb_MiniTableField_HasbitOffset)(f);
   const char mask = UPB_PRIVATE(_upb_MiniTableField_HasbitMask)(f);
 
-  return (*UPB_PTR_AT(msg, offset, const char) & mask) != 0;
+  return UPB_PRIVATE(_upb_Message_GetHasbitFromOffset)(msg, offset, mask);
+}
+
+UPB_INLINE void UPB_PRIVATE(_upb_Message_SetHasbitFromOffset)(
+    const struct upb_Message* msg, int byte_offset, int bit_mask) {
+  (*UPB_PTR_AT(msg, byte_offset, char)) |= bit_mask;
 }
 
 UPB_INLINE void UPB_PRIVATE(_upb_Message_SetHasbit)(
@@ -70,7 +80,7 @@ UPB_INLINE void UPB_PRIVATE(_upb_Message_SetHasbit)(
   const uint16_t offset = UPB_PRIVATE(_upb_MiniTableField_HasbitOffset)(f);
   const char mask = UPB_PRIVATE(_upb_MiniTableField_HasbitMask)(f);
 
-  (*UPB_PTR_AT(msg, offset, char)) |= mask;
+  UPB_PRIVATE(_upb_Message_SetHasbitFromOffset)(msg, offset, mask);
 }
 
 UPB_INLINE void UPB_PRIVATE(_upb_Message_ClearHasbit)(
@@ -204,13 +214,13 @@ UPB_INLINE_IF_NOT_GCC bool UPB_PRIVATE(_upb_MiniTableField_DataEquals)(
 
 UPB_INLINE void UPB_PRIVATE(_upb_MiniTableField_DataClear)(
     const upb_MiniTableField* f, void* val) {
-  const char zero[16] = {0};
+  UPB_ALIGN_AS(8) const char zero[16] = {0};
   UPB_PRIVATE(_upb_MiniTableField_DataCopy)(f, val, zero);
 }
 
 UPB_INLINE bool UPB_PRIVATE(_upb_MiniTableField_DataIsZero)(
     const upb_MiniTableField* f, const void* val) {
-  const char zero[16] = {0};
+  UPB_ALIGN_AS(8) const char zero[16] = {0};
   return UPB_PRIVATE(_upb_MiniTableField_DataEquals)(f, val, zero);
 }
 
@@ -885,7 +895,7 @@ UPB_API_INLINE void upb_Message_ClearBaseField(struct upb_Message* msg,
     if (*ptr != upb_MiniTableField_Number(f)) return;
     *ptr = 0;
   }
-  const char zeros[16] = {0};
+  UPB_ALIGN_AS(8) const char zeros[16] = {0};
   UPB_PRIVATE(_upb_MiniTableField_DataCopy)
   (f, UPB_PRIVATE(_upb_Message_MutableDataPtr)(msg, f), zeros);
 }

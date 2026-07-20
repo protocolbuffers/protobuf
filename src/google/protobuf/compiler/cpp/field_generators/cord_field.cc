@@ -68,6 +68,7 @@ class CordFieldGenerator : public FieldGeneratorBase {
   void GenerateAccessorDeclarations(io::Printer* p) const override;
   void GenerateInlineAccessorDefinitions(io::Printer* p) const override;
   void GenerateClearingCode(io::Printer* p) const override;
+  void GenerateMessageClearingCode(io::Printer* p) const override;
   void GenerateMergingCode(io::Printer* p) const override;
   void GenerateSwappingCode(io::Printer* p) const override;
   void GenerateArenaDestructorCode(io::Printer* p) const override;
@@ -243,6 +244,19 @@ void CordFieldGenerator::GenerateClearingCode(io::Printer* p) const {
   } else {
     p->Emit(R"cc(
       $field_$ = ::absl::string_view($default$, $default_length$);
+    )cc");
+  }
+}
+
+void CordFieldGenerator::GenerateMessageClearingCode(io::Printer* p) const {
+  auto v = p->WithVars(variables_);
+  if (field_->default_value_string().empty()) {
+    p->Emit(R"cc(
+      this_.$field_$.Clear();
+    )cc");
+  } else {
+    p->Emit(R"cc(
+      this_.$field_$ = ::absl::string_view($default$, $default_length$);
     )cc");
   }
 }

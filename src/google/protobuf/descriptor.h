@@ -125,9 +125,11 @@ class MessageLite;
 class Message;
 class Reflection;
 
-// Defined in descriptor.cc
 namespace internal {
+// Defined in descriptor_builder.h
 class DescriptorBuilder;
+// Defined in option_interpreter.cc
+class AggregateOptionFinder;
 }
 class FileDescriptorTables;
 
@@ -1354,6 +1356,7 @@ class PROTOBUF_EXPORT FieldDescriptor : private internal::SymbolBase,
   // Must be constructed using DescriptorPool.
   FieldDescriptor();
   friend class internal::DescriptorBuilder;
+  friend class internal::AggregateOptionFinder;
   friend class FileDescriptor;
   friend class Descriptor;
   friend class OneofDescriptor;

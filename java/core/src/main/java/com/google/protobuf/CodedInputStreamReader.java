@@ -138,7 +138,6 @@ final class CodedInputStreamReader {
         (Schema<T>) Protobuf.getInstance().schemaFor((Class) clazz), extensionRegistry);
   }
 
-  @SuppressWarnings("unchecked")
   public <T> T readMessageBySchemaWithCheck(
       Schema<T> schema, ExtensionRegistryLite extensionRegistry) throws IOException {
     requireWireType(WIRETYPE_LENGTH_DELIMITED);

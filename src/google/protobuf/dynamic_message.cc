@@ -267,7 +267,7 @@ uint32_t FieldFlags(const FieldDescriptor* field) {
       !field->is_extension() &&                      //
       field->cpp_type() == field->CPPTYPE_STRING &&  //
       field->cpp_string_type() == FieldDescriptor::CppStringType::kView) {
-    return internal::kMicroStringMask;
+    return internal::kMicroStringOffsetTag;
   }
   return 0;
 }
@@ -345,10 +345,6 @@ class DynamicMessage final : public Message {
   static void* NewImpl(const void* prototype, void* mem, Arena* arena);
   static void DestroyImpl(MessageLite& msg);
 
-  // If `T` is not `void`, it will mask bits off the offset via alignment.
-  // Used to remove feature masks that are part of the reflection
-  // implementation.
-  template <typename T>
   uint32_t FieldOffset(int i) const;
   internal::InternalMetadataOffset FieldInternalMetadataOffset(int i) const;
   template <typename T = void>
@@ -356,7 +352,7 @@ class DynamicMessage final : public Message {
   template <typename T = void>
   const T& GetRaw(int i) const;
   void* MutableExtensionsRaw();
-  void* MutableWeakFieldMapRaw();
+
   void* MutableOneofCaseRaw(int i);
   void* MutableOneofFieldRaw(const FieldDescriptor* f);
 
@@ -400,7 +396,6 @@ struct DynamicMessageFactory::TypeInfo {
   //   important (the prototype must be deleted *before* the offsets).
   std::unique_ptr<uint32_t[]> offsets;
   std::unique_ptr<uint32_t[]> has_bits_indices;
-  int weak_field_map_offset;  // The offset for the weak_field_map;
 
 #ifndef PROTOBUF_MESSAGE_GLOBALS
   internal::ClassDataFull class_data = {
@@ -411,7 +406,7 @@ struct DynamicMessageFactory::TypeInfo {
           &DynamicMessage::MergeImpl,
           internal::MessageCreator(),  // to be filled later
           &DynamicMessage::DestroyImpl,
-          static_cast<void (MessageLite::*)()>(&DynamicMessage::ClearImpl),
+          &DynamicMessage::ClearImpl,
           DynamicMessage::ByteSizeLongImpl,
           DynamicMessage::_InternalSerializeImpl,
           PROTOBUF_FIELD_OFFSET(DynamicMessage, cached_byte_size_),
@@ -500,34 +495,26 @@ DynamicMessage::DynamicMessage(DynamicMessageFactory::TypeInfo* type_info,
   SharedCtor(lock_factory);
 }
 
-template <typename T>
 inline uint32_t DynamicMessage::FieldOffset(int i) const {
-  uint32_t mask = ~uint32_t{0};
-  if constexpr (!std::is_void_v<T>) {
-    mask = ~(uint32_t{alignof(T)} - 1);
-  }
-  return type_info_->offsets[i] & mask;
+  return type_info_->offsets[i] & ~internal::kAllOffsetTags;
 }
 inline internal::InternalMetadataOffset
 DynamicMessage::FieldInternalMetadataOffset(int i) const {
-  size_t field_offset = FieldOffset<void>(i);
   return internal::InternalMetadataOffset::BuildFromDynamicOffset<
-      DynamicMessage>(field_offset);
+      DynamicMessage>(FieldOffset(i));
 }
 template <typename T>
 inline T* DynamicMessage::MutableRaw(int i) {
-  return reinterpret_cast<T*>(OffsetToPointer(FieldOffset<T>(i)));
+  return reinterpret_cast<T*>(OffsetToPointer(FieldOffset(i)));
 }
 template <typename T>
 inline const T& DynamicMessage::GetRaw(int i) const {
-  return *reinterpret_cast<const T*>(OffsetToPointer(FieldOffset<T>(i)));
+  return *reinterpret_cast<const T*>(OffsetToPointer(FieldOffset(i)));
 }
 inline void* DynamicMessage::MutableExtensionsRaw() {
   return OffsetToPointer(type_info_->extensions_offset);
 }
-inline void* DynamicMessage::MutableWeakFieldMapRaw() {
-  return OffsetToPointer(type_info_->weak_field_map_offset);
-}
+
 inline void* DynamicMessage::MutableOneofCaseRaw(int i) {
   return OffsetToPointer(type_info_->oneof_case_offset + sizeof(uint32_t) * i);
 }
@@ -550,6 +537,7 @@ void DynamicMessage::SharedCtor(bool lock_factory) {
 
   const Descriptor* descriptor = type_info_->GetClassDataFull().descriptor();
   Arena* arena = GetArena();
+
   // Initialize oneof cases.
   int oneof_count = 0;
   for (int i = 0; i < descriptor->real_oneof_decl_count(); ++i) {
@@ -565,6 +553,7 @@ void DynamicMessage::SharedCtor(bool lock_factory) {
     if (InRealOneof(field)) {
       continue;
     }
+
     switch (field->cpp_type()) {
 #define HANDLE_TYPE(CPPTYPE, TYPE)                                         \
   case FieldDescriptor::CPPTYPE_##CPPTYPE:                                 \
@@ -711,6 +700,7 @@ DynamicMessage::~DynamicMessage() {
   // be touched.
   for (int i = 0; i < descriptor->field_count(); i++) {
     const FieldDescriptor* field = descriptor->field(i);
+
     if (InRealOneof(field)) {
       void* field_ptr = MutableOneofCaseRaw(field->containing_oneof()->index());
       if (*(reinterpret_cast<const int32_t*>(field_ptr)) == field->number()) {
@@ -1035,8 +1025,6 @@ const Message* DynamicMessageFactory::GetPrototypeNoLock(
     size += kMaxOneofUnionSize;
   }
 
-  type_info->weak_field_map_offset = -1;
-
 #ifndef PROTOBUF_MESSAGE_GLOBALS
   type_info->MutableClassDataFull().message_creator =
       internal::MessageCreator(DynamicMessage::NewImpl, size, kSafeAlignment);
@@ -1061,7 +1049,7 @@ const Message* DynamicMessageFactory::GetPrototypeNoLock(
               internal::MessageCreator(DynamicMessage::NewImpl, size,
                                        kSafeAlignment),
               &DynamicMessage::DestroyImpl,
-              static_cast<void (MessageLite::*)()>(&DynamicMessage::ClearImpl),
+              &DynamicMessage::ClearImpl,
               DynamicMessage::ByteSizeLongImpl,
               DynamicMessage::_InternalSerializeImpl,
               PROTOBUF_FIELD_OFFSET(DynamicMessage, cached_byte_size_),
@@ -1085,7 +1073,6 @@ const Message* DynamicMessageFactory::GetPrototypeNoLock(
       type_info->oneof_case_offset,
       /*object_size=*/
       static_cast<int>(type_info->GetClassDataFull().allocation_size()),
-      type_info->weak_field_map_offset,
       /*split_offset=*/-1,
       /*sizeof_split=*/-1);
 

@@ -23,6 +23,7 @@
 // is written this way.
 
 #include <cstdint>
+#include <functional>
 #include <limits>
 #include <memory>
 #include <vector>
@@ -1115,8 +1116,7 @@ class GENERATED_SERVICE_TEST_NAME : public testing::Test {
           method_(""),
           controller_(nullptr),
           request_(nullptr),
-          response_(nullptr),
-          done_(nullptr) {}
+          response_(nullptr) {}
 
     ~MockTestService() override = default;
 
@@ -1132,7 +1132,7 @@ class GENERATED_SERVICE_TEST_NAME : public testing::Test {
       controller_ = controller;
       request_ = request;
       response_ = response;
-      done_ = done;
+      done->Run();
     }
 
     void Bar(RpcController* controller, const UNITTEST::BarRequest* request,
@@ -1143,7 +1143,7 @@ class GENERATED_SERVICE_TEST_NAME : public testing::Test {
       controller_ = controller;
       request_ = request;
       response_ = response;
-      done_ = done;
+      done->Run();
     }
 
     // ---------------------------------------------------------------
@@ -1153,7 +1153,6 @@ class GENERATED_SERVICE_TEST_NAME : public testing::Test {
     RpcController* controller_;
     const Message* request_;
     Message* response_;
-    Closure* done_;
   };
 
   class MockRpcChannel : public RpcChannel {
@@ -1164,7 +1163,6 @@ class GENERATED_SERVICE_TEST_NAME : public testing::Test {
           controller_(nullptr),
           request_(nullptr),
           response_(nullptr),
-          done_(nullptr),
           destroyed_(nullptr) {}
 
     ~MockRpcChannel() override {
@@ -1184,7 +1182,7 @@ class GENERATED_SERVICE_TEST_NAME : public testing::Test {
       controller_ = controller;
       request_ = request;
       response_ = response;
-      done_ = done;
+      done->Run();
     }
 
     // ---------------------------------------------------------------
@@ -1194,7 +1192,6 @@ class GENERATED_SERVICE_TEST_NAME : public testing::Test {
     RpcController* controller_;
     const Message* request_;
     Message* response_;
-    Closure* done_;
     bool* destroyed_;
   };
 
@@ -1282,23 +1279,23 @@ TEST_F(GENERATED_SERVICE_TEST_NAME, OwnsChannel) {
 
 TEST_F(GENERATED_SERVICE_TEST_NAME, CallMethod) {
   // Test that CallMethod() works.
+  Closure* done = done_.get();
 
   // Call Foo() via CallMethod().
-  mock_service_.CallMethod(foo_, &mock_controller_,
-                           &foo_request_, &foo_response_, done_.get());
+  mock_service_.CallMethod(foo_, &mock_controller_, &foo_request_,
+                           &foo_response_, done);
 
   ASSERT_TRUE(mock_service_.called_);
 
   EXPECT_EQ("Foo"            , mock_service_.method_    );
   EXPECT_EQ(&mock_controller_, mock_service_.controller_);
   EXPECT_EQ(&foo_request_    , mock_service_.request_   );
-  EXPECT_EQ(&foo_response_   , mock_service_.response_  );
-  EXPECT_EQ(done_.get()      , mock_service_.done_      );
+  EXPECT_EQ(&foo_response_, mock_service_.response_);
 
   // Try again, but call Bar() instead.
   mock_service_.Reset();
-  mock_service_.CallMethod(bar_, &mock_controller_,
-                           &bar_request_, &bar_response_, done_.get());
+  mock_service_.CallMethod(bar_, &mock_controller_, &bar_request_,
+                           &bar_response_, done);
 
   ASSERT_TRUE(mock_service_.called_);
   EXPECT_EQ("Bar", mock_service_.method_);
@@ -1307,17 +1304,19 @@ TEST_F(GENERATED_SERVICE_TEST_NAME, CallMethod) {
 TEST_F(GENERATED_SERVICE_TEST_NAME, CallMethodTypeFailure) {
   // Verify death if we call Foo() with Bar's message types.
 
+  Closure* done = done_.get();
+
 #if GTEST_HAS_DEATH_TEST  // death tests do not work on Windows yet
   EXPECT_DEBUG_DEATH(
       mock_service_.CallMethod(foo_, &mock_controller_, &foo_request_,
-                               &bar_response_, done_.get()),
+                               &bar_response_, done),
       "Cannot downcast proto2_unittest.*.BarResponse to "
       "proto2_unittest.*.FooResponse");
 
   mock_service_.Reset();
   EXPECT_DEBUG_DEATH(
       mock_service_.CallMethod(foo_, &mock_controller_, &bar_request_,
-                               &foo_response_, done_.get()),
+                               &foo_response_, done),
       "Cannot downcast proto2_unittest.*.BarRequest to "
       "proto2_unittest.*.FooRequest");
 #endif  // GTEST_HAS_DEATH_TEST
@@ -1348,8 +1347,7 @@ TEST_F(GENERATED_SERVICE_TEST_NAME, Stub) {
   EXPECT_EQ(foo_             , mock_channel_.method_    );
   EXPECT_EQ(&mock_controller_, mock_channel_.controller_);
   EXPECT_EQ(&foo_request_    , mock_channel_.request_   );
-  EXPECT_EQ(&foo_response_   , mock_channel_.response_  );
-  EXPECT_EQ(done_.get()      , mock_channel_.done_      );
+  EXPECT_EQ(&foo_response_, mock_channel_.response_);
 
   // Call Bar() via the stub.
   mock_channel_.Reset();

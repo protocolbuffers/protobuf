@@ -7,6 +7,7 @@
 
 #include "python/map.h"
 
+#include "google/protobuf/breaking_changes.h"
 #include "python/convert.h"
 #include "python/message.h"
 #include "python/protobuf.h"
@@ -130,14 +131,16 @@ bool PyUpb_MapContainer_IsFrozen(PyUpb_MapContainer* self) {
   if (PyUpb_MapContainer_IsStub(self)) {
     return PyUpb_Message_IsFrozen(self->ptr.parent);
   } else {
-    return upb_Map_IsFrozen(self->ptr.map);
+    return upb_Map_IsFrozen(self->ptr.map) || PyUpb_Arena_IsFrozen(self->arena);
   }
 }
 
 upb_Map* PyUpb_MapContainer_AssureWritable(PyObject* _self) {
   PyUpb_MapContainer* self = (PyUpb_MapContainer*)_self;
   if (PyUpb_MapContainer_IsFrozen(self)) {
-    return (upb_Map*)PyUpb_SetFrozenErrorWithMsg("Map is immutable");
+    if (!PyUpb_CheckFrozen(true, "Map is immutable")) {
+      return NULL;
+    }
   }
 
   self->version++;
