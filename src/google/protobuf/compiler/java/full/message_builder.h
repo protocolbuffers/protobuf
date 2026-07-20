@@ -58,6 +58,7 @@ class MessageBuilderGenerator {
       io::Printer* printer, absl::Span<const std::string> merging_code_blocks,
       absl::string_view method_suffix);
   void GenerateBuildPartial(io::Printer* printer);
+  void GenerateBuildPartialMemoizedIsInitialized(io::Printer* printer);
   int GenerateBuildPartialPiece(io::Printer* printer, int piece,
                                 int first_field);
   int GenerateBuildPartialPieceWithoutPresence(io::Printer* printer, int piece,
