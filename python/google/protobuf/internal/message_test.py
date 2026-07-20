@@ -1987,6 +1987,57 @@ class MessageTest(unittest.TestCase):
         m, 'Extensions', unittest_pb2.optional_int32_extension, True
     )
 
+  def testOneofSwitchMergeUAF(self, message_module):
+    m = message_module.TestAllTypes()
+    m.oneof_nested_message.bb = 42
+    data1 = m.SerializeToString()
+
+    m2 = message_module.TestAllTypes()
+    m2.ParseFromString(data1)
+    sub_ref = m2.oneof_nested_message
+
+    m3 = message_module.TestAllTypes()
+    m3.oneof_uint32 = 100
+    data2 = m3.SerializeToString()
+
+    m2.MergeFromString(data2)
+
+    # Accessing sub_ref would trigger UAF before the fix because the C++
+    # message was deleted on oneof switch. With the fix, the message is
+    # released/detached, so the wrapper remains valid and keeps its value.
+    self.assertEqual(42, sub_ref.bb)
+
+  def testOneofMergePreservesExisting(self, message_module):
+    m = message_module.TestAllTypes()
+    sub_ref = m.oneof_nested_message
+    sub_ref.bb = 42
+
+    m2 = message_module.TestAllTypes()
+    m2.optional_int32 = 100
+    data = m2.SerializeToString()
+
+    m.MergeFromString(data)
+
+    self.assertTrue(m.HasField('oneof_nested_message'))
+    self.assertEqual(42, m.oneof_nested_message.bb)
+    _ = sub_ref
+
+  def testOneofMergeMergesSameField(self, message_module):
+    m = message_module.TestAllTypes()
+    sub_ref = m.oneof_nested_message
+    sub_ref.bb = 42
+
+    m2 = message_module.TestAllTypes()
+    m2.oneof_nested_message.bb = 43
+    data = m2.SerializeToString()
+
+    m.MergeFromString(data)
+
+    self.assertTrue(m.HasField('oneof_nested_message'))
+    self.assertEqual(43, m.oneof_nested_message.bb)
+    self.assertEqual(43, sub_ref.bb)
+    _ = sub_ref
+
 
 @testing_refleaks.TestCase
 class TestRecursiveGroup(unittest.TestCase):
