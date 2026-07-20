@@ -2564,11 +2564,11 @@ cc_test(
     }),
     deps = [
         ":cc_test_protos",
-        ":port",
         ":protobuf",
         ":test_util",
         "//src/google/protobuf/stubs",
-        "@abseil-cpp//absl/base",
+        "@abseil-cpp//absl/log:absl_check",
+        "@abseil-cpp//absl/strings",
         "@abseil-cpp//absl/strings:cord",
         "@googletest//:gtest",
         "@googletest//:gtest_main",

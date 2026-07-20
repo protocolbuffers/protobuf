@@ -15,6 +15,7 @@
 #include "absl/log/absl_check.h"
 #include "absl/strings/cord.h"
 #include "google/protobuf/map_field.h"
+#include "google/protobuf/message.h"
 #include "google/protobuf/port.h"
 #include "google/protobuf/reflection.h"
 #include "google/protobuf/repeated_field.h"
@@ -89,7 +90,8 @@ class RepeatedFieldWrapper : public RandomAccessRepeatedFieldAccessor {
   void Set(Field* data, int index, const Value* value) const override {
     MutableRepeatedField(data)->Set(index, ConvertToT(value));
   }
-  void Add(Field* data, const Value* value) const override {
+  void Add(Field* data, const Value* value,
+           const Value* /*prototype*/) const override {
     MutableRepeatedField(data)->Add(ConvertToT(value));
   }
   void RemoveLast(Field* data) const override {
@@ -147,19 +149,20 @@ class RepeatedPtrFieldWrapper : public RandomAccessRepeatedFieldAccessor {
   void Set(Field* data, int index, const Value* value) const override {
     ConvertToT(value, MutableRepeatedField(data)->Mutable(index));
   }
-  void Add(Field* data, const Value* value) const override {
-    T* allocated = New(value);
+  void Add(Field* data, const Value* value,
+           const Value* prototype) const override {
+    T* allocated = New(prototype);
     ConvertToT(value, allocated);
     MutableRepeatedField(data)->AddAllocated(allocated);
   }
-  void AddRange(Field* data, const Value* values, int value_size,
-                size_t size) const override {
+  void AddRange(Field* data, const Value* values, int value_size, size_t size,
+                const Value* prototype) const override {
     auto* repeated = MutableRepeatedField(data);
     int old_size = repeated->size();
     repeated->Reserve(internal::CheckedAdd(old_size, size));
     const char* ptr = reinterpret_cast<const char*>(values);
     for (size_t i = 0; i < size; ++i) {
-      Add(data, ptr);
+      Add(data, ptr, prototype);
       ptr += value_size;
     }
   }
@@ -185,10 +188,9 @@ class RepeatedPtrFieldWrapper : public RandomAccessRepeatedFieldAccessor {
   }
 
   // Create a new T instance. For repeated message fields, T can be specified
-  // as google::protobuf::Message so we can't use "new T()" directly. In that case, value
-  // should be a message of the same type (it's ensured by the caller) and a
-  // new message object will be created using it.
-  virtual T* New(const Value* value) const = 0;
+  // as google::protobuf::Message so we can't use "new T()" directly. In that case,
+  // `prototype` should the prototype of the message to be created.
+  virtual T* New(const Value* prototype) const = 0;
 
   // Convert an object received by this accessor to an object that will be
   // stored in the underlying RepeatedPtrField.
@@ -222,8 +224,8 @@ class RepeatedFieldPrimitiveAccessor final : public RepeatedFieldWrapper<T> {
     MutableRepeatedField(data)->Swap(MutableRepeatedField(other_data));
   }
 
-  void AddRange(Field* data, const Value* values, int value_size,
-                size_t size) const override {
+  void AddRange(Field* data, const Value* values, int value_size, size_t size,
+                const Value* /*prototype*/) const override {
     const T* ptr = reinterpret_cast<const T*>(values);
     MutableRepeatedField(data)->Add(ptr, ptr + size);
   }
@@ -296,8 +298,8 @@ class RepeatedPtrFieldMessageAccessor
   }
 
  protected:
-  Message* New(const Value* value) const override {
-    return static_cast<const Message*>(value)->New();
+  Message* New(const Value* prototype) const override {
+    return static_cast<const Message*>(prototype)->New();
   }
   void ConvertToT(const Value* value, Message* result) const override {
     result->CopyFrom(*static_cast<const Message*>(value));
