@@ -778,6 +778,12 @@ fn test_oneof_accessors() {
     assert_that!(msg.foo(), matches_pattern!(not_set(_)));
     assert_that!(msg.foo_case(), eq(FooCase::not_set));
 
+    // Verify that unsupported StringPiece and Cord fields are present in Case and View enums (without payload).
+    let _ = FooCase::FooStringPiece;
+    let _ = FooStringPiece;
+    let _ = FooCase::FooCord;
+    let _ = FooCord;
+
     msg.set_foo_int(7);
     assert_that!(msg.has_foo_int(), eq(true));
     assert_that!(msg.foo_int_opt(), eq(Some(7)));
@@ -843,6 +849,10 @@ fn test_msg_oneof_default_accessors() {
 
     let mut msg = unittest_rust_proto::TestOneof2::new();
     assert_that!(msg.bar(), matches_pattern!(not_set(_)));
+
+    // Verify that unsupported Cord field is present in Case and View enums (without payload).
+    let _ = BarCase::BarCord;
+    let _ = BarCord;
 
     msg.set_bar_int(7);
     assert_that!(msg.bar_int_opt(), eq(Some(7)));
