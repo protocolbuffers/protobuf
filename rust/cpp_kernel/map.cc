@@ -212,6 +212,16 @@ void proto2_rust_map_clear(google::protobuf::internal::UntypedMapBase* m) {
   m->ClearTable(m->arena(), /*reset=*/true);
 }
 
+void proto2_rust_map_copy_from_view(
+    google::protobuf::internal::UntypedMapBase* m,
+    const google::protobuf::internal::UntypedMapBase* src) {
+  if (m == src) return;
+  m->ClearTable(m->arena(), /*reset=*/true);
+  // A "merge" is logically equivalent to a copy since the destination map is
+  // ensured to be empty after ClearTable.
+  m->UntypedMergeFrom(m->arena(), *src);
+}
+
 #define DEFINE_KEY_SPECIFIC_MAP_OPERATIONS(cpp_type, suffix)                \
   bool proto2_rust_map_insert_##suffix(google::protobuf::internal::UntypedMapBase* m, \
                                        cpp_type key,                        \

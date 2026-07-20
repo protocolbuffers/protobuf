@@ -35,6 +35,11 @@ pub trait UpbTypeConversions<Tag>: Proxied {
     /// - `dest` must be a valid mutable array of `Self`.
     /// - `arena` must point to an arena that will outlive `dest`.
     unsafe fn copy_repeated(src: RawArray, dest: RawArray, arena: RawArena);
+
+    /// # Safety
+    /// - `val` must be the correct variant for `Self`.
+    /// - `arena` must be a valid arena.
+    unsafe fn clone_message_value(val: upb_MessageValue, arena: RawArena) -> upb_MessageValue;
 }
 
 impl<T> UpbTypeConversions<MessageTag> for T
@@ -97,6 +102,13 @@ where
             }
         }
     }
+
+    unsafe fn clone_message_value(val: upb_MessageValue, arena: RawArena) -> upb_MessageValue {
+        let cloned_msg = unsafe {
+            upb_Message_DeepClone(val.msg_val.unwrap(), Self::mini_table(), arena).unwrap()
+        };
+        upb_MessageValue { msg_val: Some(cloned_msg) }
+    }
 }
 
 impl<T> UpbTypeConversions<EnumTag> for T
@@ -135,6 +147,10 @@ where
         unsafe {
             <i32 as UpbTypeConversions<PrimitiveTag>>::copy_repeated(src, dest, arena);
         }
+    }
+
+    unsafe fn clone_message_value(val: upb_MessageValue, _arena: RawArena) -> upb_MessageValue {
+        val
     }
 }
 
@@ -178,6 +194,11 @@ macro_rules! impl_upb_type_conversions_for_scalars {
                           upb_Array_MutableDataPtr(dest).cast::<u8>(),
                           size_of::<$t>() * len);
                     }
+                }
+
+                #[inline(always)]
+                unsafe fn clone_message_value(val: upb_MessageValue, _arena: RawArena) -> upb_MessageValue {
+                    val
                 }
             }
         )*
@@ -232,6 +253,10 @@ impl UpbTypeConversions<PrimitiveTag> for ProtoBytes {
             copy_repeated_bytes(src, dest, arena);
         }
     }
+
+    unsafe fn clone_message_value(val: upb_MessageValue, arena: RawArena) -> upb_MessageValue {
+        unsafe { clone_message_value_bytes(val, arena) }
+    }
 }
 
 impl UpbTypeConversions<PrimitiveTag> for ProtoString {
@@ -265,6 +290,10 @@ impl UpbTypeConversions<PrimitiveTag> for ProtoString {
             copy_repeated_bytes(src, dest, arena);
         }
     }
+
+    unsafe fn clone_message_value(val: upb_MessageValue, arena: RawArena) -> upb_MessageValue {
+        unsafe { clone_message_value_bytes(val, arena) }
+    }
 }
 
 /// # Safety
@@ -293,4 +322,17 @@ unsafe fn copy_repeated_bytes(src: RawArray, dest: RawArray, arena: RawArena) {
             *dest_ptr = arena.copy_slice_in(src_ptr.as_ref()).unwrap().into();
         }
     }
+}
+
+// SAFETY: `arena` must be valid
+unsafe fn clone_message_value_bytes(val: upb_MessageValue, arena: RawArena) -> upb_MessageValue {
+    let src_str = unsafe { val.str_val };
+    if src_str.len == 0 {
+        return val;
+    }
+    // SAFETY: We checked that `len > 0`. `src_str.ptr` is valid.
+    let slice = unsafe { std::slice::from_raw_parts(src_str.ptr, src_str.len) };
+    let arena = std::mem::ManuallyDrop::new(unsafe { Arena::from_raw(arena) });
+    let dest_slice = arena.copy_slice_in(slice).unwrap();
+    upb_MessageValue { str_val: upb::StringView { ptr: dest_slice.as_ptr(), len: src_str.len } }
 }

@@ -6,6 +6,7 @@ unsafe extern "C" {
     pub fn proto2_rust_map_new(key_prototype: FfiMapValue, value_prototype: FfiMapValue) -> RawMap;
     pub fn proto2_rust_map_free(m: RawMap);
     pub fn proto2_rust_map_clear(m: RawMap);
+    pub fn proto2_rust_map_copy_from_view(m: RawMap, src: RawMap);
     pub fn proto2_rust_map_size(m: RawMap) -> usize;
     pub fn proto2_rust_map_iter(m: RawMap) -> UntypedMapIterator;
 }
@@ -462,6 +463,16 @@ where
     fn map_clear<Key: MapKey>(_private: Private, mut map: MapMut<Key, Self>) {
         unsafe {
             proto2_rust_map_clear(map.as_raw(Private));
+        }
+    }
+
+    fn map_copy_from_view<Key: MapKey>(
+        _private: Private,
+        src: MapView<Key, Self>,
+        mut map: MapMut<Key, Self>,
+    ) {
+        unsafe {
+            proto2_rust_map_copy_from_view(map.as_raw(Private), src.as_raw(Private));
         }
     }
 
