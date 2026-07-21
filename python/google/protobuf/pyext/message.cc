@@ -2356,9 +2356,9 @@ PyObject* InternalGetScalar(const Message* message,
       break;
     }
     case FieldDescriptor::CPPTYPE_ENUM: {
-      const EnumValueDescriptor* enum_value =
-          message->GetReflection()->GetEnum(*message, field_descriptor);
-      result = PyLong_FromLong(enum_value->number());
+      int enum_value =
+          message->GetReflection()->GetEnumValue(*message, field_descriptor);
+      result = PyLong_FromLong(enum_value);
       break;
     }
     default:
