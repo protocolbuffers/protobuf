@@ -2789,6 +2789,11 @@ void BinaryAndJsonConformanceSuiteImpl<
                    R"({"optionalNestedEnum": 0})", "optional_nested_enum: FOO");
   RunValidJsonTest("EnumFieldNumericValueNonZero", REQUIRED,
                    R"({"optionalNestedEnum": 1})", "optional_nested_enum: BAR");
+  // Arrays are not allowed for non-repeated enum fields.
+  ExpectParseFailureForJson("EnumFieldSingleElementArrayEnumName", REQUIRED,
+                            R"({"optionalNestedEnum": ["FOO"]})");
+  ExpectParseFailureForJson("EnumFieldSingleElementArrayNumericValue", REQUIRED,
+                            R"({"optionalNestedEnum": [2]})");
 
   if (run_proto3_tests_) {
     // Unknown enum values are represented as numeric values.
