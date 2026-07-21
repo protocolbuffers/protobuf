@@ -45,6 +45,7 @@ google/protobuf/cpp_features.pb.h
 google/protobuf/cpp_features.proto
 google/protobuf/cpp_file_options.pb.h
 google/protobuf/cpp_file_options.proto
+google/protobuf/cpp_options.proto
 google/protobuf/descriptor.h
 google/protobuf/descriptor.pb.h
 google/protobuf/descriptor.proto
@@ -95,6 +96,7 @@ google/protobuf/java_features.proto
 google/protobuf/json/json.h
 google/protobuf/json_enumvalue_options.pb.h
 google/protobuf/json_enumvalue_options.proto
+google/protobuf/json_options.proto
 google/protobuf/map.h
 google/protobuf/map_entry.h
 google/protobuf/map_field.h

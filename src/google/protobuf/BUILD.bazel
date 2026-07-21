@@ -1214,6 +1214,20 @@ filegroup(
 )
 
 filegroup(
+    name = "release_all_options_proto_srcs",
+    srcs = glob(
+        [
+            "*_options.proto",
+        ],
+        exclude = [
+            "internal_options.proto",
+            "*test*.proto",
+        ],
+    ),
+    visibility = ["//pkg:__pkg__"],
+)
+
+filegroup(
     name = "testdata",
     srcs = glob(["testdata/**/*"]) + [
         "descriptor.cc",
