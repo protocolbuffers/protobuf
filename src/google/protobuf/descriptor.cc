@@ -1898,7 +1898,7 @@ FileDescriptorTables::FindEnumValueByNumberCreatingIfUnknown(
     // later.
     std::string enum_value_name =
         absl::StrFormat("UNKNOWN_ENUM_VALUE_%s_%d", parent->name(), number);
-    auto* pool = DescriptorPool::generated_pool();
+    auto* pool = parent->file()->pool();
     auto* tables = const_cast<DescriptorPool::Tables*>(pool->tables_.get());
     internal::FlatAllocator alloc;
     alloc.PlanArray<EnumValueDescriptor>(1);
