@@ -1954,6 +1954,7 @@ static PyUpb_MessageMeta* PyUpb_GetMessageMeta(PyObject* cls) {
 
 static const upb_MessageDef* PyUpb_MessageMeta_GetMsgdef(PyObject* cls) {
   PyUpb_MessageMeta* self = PyUpb_GetMessageMeta(cls);
+  if (!self->py_message_descriptor) return NULL;
   return PyUpb_Descriptor_GetDef(self->py_message_descriptor);
 }
 

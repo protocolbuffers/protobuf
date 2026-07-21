@@ -81,6 +81,7 @@ static PyObject* PyUpb_DescriptorBase_Get(PyUpb_DescriptorType type,
 
 static PyUpb_DescriptorBase* PyUpb_DescriptorBase_Check(
     PyObject* obj, PyUpb_DescriptorType type) {
+  if (!obj) return NULL;
   PyUpb_ModuleState* state = PyUpb_ModuleState_MaybeGet();
   if (!state) {
     return (PyUpb_DescriptorBase*)obj;
