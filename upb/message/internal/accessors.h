@@ -532,8 +532,7 @@ upb_Message_GetOrCreateMutableMessage(struct upb_Message* msg,
   UPB_ASSERT(arena);
   UPB_ASSUME(upb_MiniTableField_CType(f) == kUpb_CType_Message);
   UPB_ASSUME(!upb_MiniTableField_IsExtension(f));
-  struct upb_Message* sub_message =
-      *UPB_PTR_AT(msg, f->UPB_ONLYBITS(offset), struct upb_Message*);
+  struct upb_Message* sub_message = upb_Message_GetMutableMessage(msg, f);
   if (!sub_message) {
     const upb_MiniTable* sub_mini_table = upb_MiniTable_SubMessage(f);
     UPB_ASSERT(sub_mini_table);

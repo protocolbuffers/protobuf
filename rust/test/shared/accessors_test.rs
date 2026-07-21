@@ -821,6 +821,23 @@ fn test_oneof_accessors() {
 }
 
 #[gtest]
+fn test_oneof_message_mut_with_different_case_set() {
+    use unittest_rust_proto::TestOneof2;
+
+    let mut msg = TestOneof2::new();
+
+    msg.as_mut().set_foo_int(0x12345678);
+    assert_that!(msg.foo_int_opt(), eq(Some(0x12345678)));
+
+    let mut msg_mut = msg.as_mut();
+    let mut foo_msg_mut = msg_mut.foo_message_mut();
+    foo_msg_mut.set_moo_int(999);
+
+    assert_that!(msg.foo_int_opt(), eq(None));
+    assert_that!(msg.foo_message().moo_int(), eq(999));
+}
+
+#[gtest]
 fn test_msg_oneof_default_accessors() {
     use unittest_rust_proto::test_oneof2::{BarCase, BarOneof::*, NestedEnum};
 
