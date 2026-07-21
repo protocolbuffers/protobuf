@@ -22,6 +22,7 @@
 #include "absl/status/statusor.h"
 #include "absl/strings/string_view.h"
 #include "absl/strings/substitute.h"
+#include "third_party/gloop/util/status/status_macros.h"
 #include "google/protobuf/compiler/parser.h"
 #include "google/protobuf/cpp_features.pb.h"
 #include "google/protobuf/descriptor.h"
@@ -33,7 +34,6 @@
 #include "google/protobuf/text_format.h"
 #include "google/protobuf/unittest_custom_options.pb.h"
 #include "google/protobuf/unittest_features.pb.h"
-#include "google/protobuf/stubs/status_macros.h"
 
 // Must be included last.
 #include "google/protobuf/port_def.inc"
