@@ -1,0 +1,14 @@
+edition = "2024";
+
+package protobuf_test;
+
+import "google/protobuf/descriptor.proto";
+
+message RecursiveOption {
+  RecursiveOption r = 1;
+  int32 v = 2;
+}
+
+extend .google.protobuf.FileOptions {
+  RecursiveOption e = 53572519;
+}

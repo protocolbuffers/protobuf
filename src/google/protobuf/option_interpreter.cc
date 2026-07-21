@@ -331,6 +331,15 @@ bool OptionInterpreter::InterpretSingleOption(
         } else {
           // Drill down into the submessage.
           intermediate_fields.push_back(field);
+          const int max_option_name_depth =
+              io::CodedInputStream::GetDefaultRecursionLimit();
+          if (intermediate_fields.size() > max_option_name_depth) {
+            return AddNameError([&] {
+              return absl::StrCat("Option \"", debug_msg_name,
+                                  "\" exceeds maximum option name depth of ",
+                                  max_option_name_depth, ".");
+            });
+          }
           descriptor = field->message_type();
         }
       }

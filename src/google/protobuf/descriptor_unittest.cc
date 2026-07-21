@@ -5097,6 +5097,7 @@ TEST(CustomOptions, DebugString) {
       descriptor->DebugString());
 }
 
+
 TEST(CustomOptions, FeatureSupportInvalidDeprecatedAfterRemoved) {
   DescriptorPool pool;
   pool.EnforceFeatureSupportValidation(true);
