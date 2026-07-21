@@ -27,6 +27,7 @@
 #include "google/protobuf/message_lite.h"
 #include "google/protobuf/parse_context.h"
 #include "google/protobuf/port.h"
+#include "google/protobuf/test_protos/tctable_long_name_test.pb.h"
 #include "google/protobuf/unittest.pb.h"
 #include "google/protobuf/wire_format_lite.h"
 
@@ -991,6 +992,24 @@ TEST(GeneratedMessageTctableLiteTest,
   EXPECT_LE(proto.vals().Capacity(), 2048);
 }
 
+
+TEST(GeneratedTcTableLiteTest, MessageNameCharOverflowIfSigned) {
+  using ReproProto = proto2_unittest::
+      MessageNameOfSize112_AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA;  // NOLINT
+  ASSERT_EQ(ReproProto::descriptor()->full_name().size(), 128);
+
+  ReproProto message;
+  std::string serialized = "\x0A\x03\xFF\xFF\xFF";
+  EXPECT_FALSE(message.ParseFromString(serialized));
+}
+
+TEST(GeneratedTcTableLiteTest, FieldNameLongNameSignExtensionBugRealProto) {
+  using ReproProto = proto2_unittest::MessageWithLongFieldName;
+  ASSERT_EQ(ReproProto::descriptor()->FindFieldByNumber(1)->name().size(), 128);
+  ReproProto message;
+  std::string serialized = "\x0A\x03\xFF\xFF\xFF";
+  EXPECT_FALSE(message.ParseFromString(serialized));
+}
 
 
 }  // namespace internal

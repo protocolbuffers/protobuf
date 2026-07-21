@@ -2206,6 +2206,7 @@ cc_test(
         ":protobuf",
         ":protobuf_lite",
         "//src/google/protobuf/io",
+        "//src/google/protobuf/test_protos:test_cc_protos",
         "@abseil-cpp//absl/algorithm:container",
         "@abseil-cpp//absl/log:absl_check",
         "@abseil-cpp//absl/log:absl_log",
