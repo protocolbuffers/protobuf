@@ -8036,6 +8036,37 @@ TEST_F(ValidationErrorTest, GroupFieldPointingToMapEntryIsNotMap) {
       "instead.\n");
 }
 
+TEST_F(ValidationErrorTest, MapEntryOrphanedWithZeroFields) {
+  // A map_entry message with 0 fields and no parent field referencing it.
+  // ValidateMapEntry only runs when a parent field references the map entry,
+  // so the field count check in CrossLinkMessage is needed to catch this.
+  BuildFileWithErrors(
+      "name: 'foo.proto' "
+      "message_type { "
+      "  name: 'OrphanedMapEntry' "
+      "  options { map_entry: true } "
+      "} ",
+
+      "foo.proto: OrphanedMapEntry: NAME: Messages with map_entry set must "
+      "have at least 2 fields.\n");
+}
+
+TEST_F(ValidationErrorTest, MapEntryOrphanedWithOneField) {
+  // A map_entry message with only 1 field (missing value field).
+  BuildFileWithErrors(
+      "name: 'foo.proto' "
+      "message_type { "
+      "  name: 'OrphanedMapEntry' "
+      "  options { map_entry: true } "
+      "  field { "
+      "    name: 'key' number: 1 type: TYPE_INT32 label: LABEL_OPTIONAL "
+      "  } "
+      "} ",
+
+      "foo.proto: OrphanedMapEntry: NAME: Messages with map_entry set must "
+      "have at least 2 fields.\n");
+}
+
 TEST_F(ValidationErrorTest, MapEntryExtensionRange) {
   FileDescriptorProto file_proto;
   FillValidMapEntry(&file_proto);
@@ -8349,7 +8380,10 @@ TEST_F(ValidationErrorTest, MapEntryExtraField) {
       "  number: 3 "
       "} ",
       file_proto.mutable_message_type(0)->mutable_nested_type(0));
-  BuildFileWithErrors(file_proto, kMapEntryErrorMessage);
+  BuildFileWithErrors(
+      file_proto,
+      "foo.proto: Foo.foo_map: TYPE: map_entry should not be set explicitly. "
+      "Use map<KeyType, ValueType> instead.\n");
 }
 
 // Test for the scenario:
