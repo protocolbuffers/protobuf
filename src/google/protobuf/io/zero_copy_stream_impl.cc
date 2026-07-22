@@ -26,8 +26,10 @@
 
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
+#include "absl/types/optional.h"
 #include "google/protobuf/io/io_win32.h"
 #include "google/protobuf/io/zero_copy_stream_impl.h"
+#include "google/protobuf/io/zero_copy_stream_impl_lite.h"
 
 
 namespace google {
@@ -90,8 +92,16 @@ FileInputStream::CopyingFileInputStream::CopyingFileInputStream(
       close_on_delete_(false),
       is_closed_(false),
       errno_(0),
-      previous_seek_failed_(false) {
+      previous_seek_failed_(false),
+      file_bytes_remaining_(absl::nullopt) {
 #ifndef _WIN32
+  struct stat statbuf;
+  if (fstat(file_, &statbuf) == 0 && S_ISREG(statbuf.st_mode)) {
+    off_t current = lseek(file_, 0, SEEK_CUR);
+    if (current != off_t{-1}) {
+      file_bytes_remaining_ = statbuf.st_size - current;
+    }
+  }
   int flags = fcntl(file_, F_GETFL);
   flags &= ~O_NONBLOCK;
   fcntl(file_, F_SETFL, flags);
@@ -129,6 +139,8 @@ int FileInputStream::CopyingFileInputStream::Read(void* buffer, int size) {
   if (result < 0) {
     // Read error (not EOF).
     errno_ = errno;
+  } else if (file_bytes_remaining_.has_value()) {
+    *file_bytes_remaining_ -= result;
   }
 
   return result;
@@ -137,19 +149,26 @@ int FileInputStream::CopyingFileInputStream::Read(void* buffer, int size) {
 int FileInputStream::CopyingFileInputStream::Skip(int count) {
   ABSL_CHECK(!is_closed_);
 
-  if (!previous_seek_failed_ && lseek(file_, count, SEEK_CUR) != (off_t)-1) {
-    // Seek succeeded.
-    return count;
-  } else {
-    // Failed to seek.
-
-    // Note to self:  Don't seek again.  This file descriptor doesn't
-    // support it.
-    previous_seek_failed_ = true;
-
-    // Use the default implementation.
-    return CopyingInputStream::Skip(count);
+  if (!previous_seek_failed_) {
+    off_t seek_amount = count;
+    if (file_bytes_remaining_.has_value() && count > *file_bytes_remaining_) {
+      seek_amount = *file_bytes_remaining_;
+    }
+    if (lseek(file_, seek_amount, SEEK_CUR) != off_t{-1}) {
+      if (file_bytes_remaining_.has_value()) {
+        *file_bytes_remaining_ -= seek_amount;
+      }
+      return seek_amount;
+    }
   }
+
+  // Failed to seek.
+  // Note to self:  Don't seek again.  This file descriptor doesn't
+  // support it.
+  previous_seek_failed_ = true;
+
+  // Use the default implementation.
+  return CopyingInputStream::Skip(count);
 }
 
 // ===================================================================
