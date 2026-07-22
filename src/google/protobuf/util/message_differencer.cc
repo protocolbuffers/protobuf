@@ -268,6 +268,13 @@ bool MessageDifferencer::MapEntryKeyComparator::IsMatch(
 bool MessageDifferencer::Equals(const Message& message1,
                                 const Message& message2) {
   MessageDifferencer differencer;
+  // Treat NaN as equal to itself so that Equals() is reflexive: for any
+  // message m, Equals(m, m) must return true.  Without this, IEEE 754
+  // NaN != NaN propagates through the field comparator and breaks
+  // reflexivity for messages containing float/double NaN fields.
+  DefaultFieldComparator comparator;
+  comparator.set_treat_nan_as_equal(true);
+  differencer.set_field_comparator(&comparator);
 
   return differencer.Compare(message1, message2);
 }
@@ -276,6 +283,9 @@ bool MessageDifferencer::Equivalent(const Message& message1,
                                     const Message& message2) {
   MessageDifferencer differencer;
   differencer.set_message_field_comparison(MessageDifferencer::EQUIVALENT);
+  DefaultFieldComparator comparator;
+  comparator.set_treat_nan_as_equal(true);
+  differencer.set_field_comparator(&comparator);
 
   return differencer.Compare(message1, message2);
 }
@@ -284,6 +294,9 @@ bool MessageDifferencer::ApproximatelyEquals(const Message& message1,
                                              const Message& message2) {
   MessageDifferencer differencer;
   differencer.set_float_comparison(MessageDifferencer::APPROXIMATE);
+  DefaultFieldComparator comparator;
+  comparator.set_treat_nan_as_equal(true);
+  differencer.set_field_comparator(&comparator);
 
   return differencer.Compare(message1, message2);
 }
@@ -293,6 +306,9 @@ bool MessageDifferencer::ApproximatelyEquivalent(const Message& message1,
   MessageDifferencer differencer;
   differencer.set_message_field_comparison(MessageDifferencer::EQUIVALENT);
   differencer.set_float_comparison(MessageDifferencer::APPROXIMATE);
+  DefaultFieldComparator comparator;
+  comparator.set_treat_nan_as_equal(true);
+  differencer.set_field_comparator(&comparator);
 
   return differencer.Compare(message1, message2);
 }
