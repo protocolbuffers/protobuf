@@ -718,10 +718,9 @@ static PyObject* Item(PyObject* pself, Py_ssize_t index) {
       break;
     }
     case FieldDescriptor::CPPTYPE_ENUM: {
-      const EnumValueDescriptor* enum_value =
-          message->GetReflection()->GetRepeatedEnum(*message, field_descriptor,
-                                                    index);
-      result = PyLong_FromLong(enum_value->number());
+      int enum_value = message->GetReflection()->GetRepeatedEnumValue(
+          *message, field_descriptor, index);
+      result = PyLong_FromLong(enum_value);
       break;
     }
     case FieldDescriptor::CPPTYPE_STRING: {

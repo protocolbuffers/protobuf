@@ -428,7 +428,7 @@ static absl::string_view FindName(const char* name_data, size_t entries,
   size_t num_sizes = (entries + 7) & -8;
   auto* uint8s = reinterpret_cast<const uint8_t*>(name_data);
   size_t pos = std::accumulate(uint8s, uint8s + index, num_sizes);
-  size_t size = name_data[index];
+  size_t size = uint8s[index];
   auto* start = &name_data[pos];
   return {start, size};
 }

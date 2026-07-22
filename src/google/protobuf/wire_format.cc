@@ -1372,12 +1372,12 @@ uint8_t* WireFormat::InternalSerializeField(const FieldDescriptor* field,
       } break;
 
       case FieldDescriptor::TYPE_ENUM: {
-        const EnumValueDescriptor* value =
+        int value =
             field->is_repeated()
-                ? message_reflection->GetRepeatedEnum(message, field, j)
-                : message_reflection->GetEnum(message, field);
-        target = WireFormatLite::WriteEnumToArray(field->number(),
-                                                  value->number(), target);
+                ? message_reflection->GetRepeatedEnumValue(message, field, j)
+                : message_reflection->GetEnumValue(message, field);
+        target =
+            WireFormatLite::WriteEnumToArray(field->number(), value, target);
         break;
       }
 
@@ -1711,11 +1711,11 @@ size_t WireFormat::FieldDataOnlyByteSize(const FieldDescriptor* field,
       if (field->is_repeated()) {
         for (size_t j = 0; j < count; j++) {
           data_size += WireFormatLite::EnumSize(
-              message_reflection->GetRepeatedEnum(message, field, j)->number());
+              message_reflection->GetRepeatedEnumValue(message, field, j));
         }
       } else {
         data_size += WireFormatLite::EnumSize(
-            message_reflection->GetEnum(message, field)->number());
+            message_reflection->GetEnumValue(message, field));
       }
       break;
     }

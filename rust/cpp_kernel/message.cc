@@ -45,6 +45,31 @@ void proto2_rust_Message_merge_from(google::protobuf::MessageLite* dst,
   dst->CheckTypeAndMergeFrom(src);
 }
 
+void proto2_rust_Message_take_from(google::protobuf::MessageLite* dst,
+                                   google::protobuf::MessageLite* src) {
+  // Rust guarantees that dst and src do not alias.
+
+  dst->Clear();
+  if constexpr (kHasFullRuntime) {
+    if (auto* dst_msg = google::protobuf::DynamicCastMessage<google::protobuf::Message>(dst)) {
+      // Rust's TakeFrom trait bounds (MutProxied = Self::Proxied) guarantee at
+      // compile time that dst and src point to instances of the exact same
+      // C++ message class. Therefore, if dst is a google::protobuf::Message, src is
+      // guaranteed to also be a google::protobuf::Message, allowing us to safely
+      // static_cast and skip a second runtime dynamic_cast check.
+      auto* src_msg = static_cast<google::protobuf::Message*>(src);
+      if (const auto* reflection = dst_msg->GetReflection()) {
+        // TODO: Use a generic Move operation here instead of Swap,
+        // which will be more efficient if the protos are in different arenas.
+        reflection->Swap(dst_msg, src_msg);
+        return;
+      }
+    }
+  }
+  dst->CheckTypeAndMergeFrom(*src);
+  src->Clear();
+}
+
 // Returns a pointer to the descriptor of the message, or nullptr if
 // the message is not google::protobuf::Message.
 const void* proto2_rust_Message_get_descriptor(const google::protobuf::MessageLite* m) {

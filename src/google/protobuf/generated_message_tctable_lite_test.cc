@@ -8,7 +8,9 @@
 #include <cstddef>
 #include <cstdint>
 #include <cstring>
+#include <memory>
 
+#include "google/protobuf/descriptor.pb.h"
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 #include "absl/algorithm/container.h"
@@ -21,12 +23,16 @@
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor_database.h"
 #include "google/protobuf/descriptor_visitor.h"
+#include "google/protobuf/dynamic_message.h"
 #include "google/protobuf/generated_message_tctable_decl.h"
+#include "google/protobuf/generated_message_tctable_gen.h"
 #include "google/protobuf/generated_message_tctable_impl.h"
 #include "google/protobuf/io/coded_stream.h"
+#include "google/protobuf/io/zero_copy_stream_impl_lite.h"
 #include "google/protobuf/message_lite.h"
 #include "google/protobuf/parse_context.h"
 #include "google/protobuf/port.h"
+#include "google/protobuf/test_protos/tctable_long_name_test.pb.h"
 #include "google/protobuf/unittest.pb.h"
 #include "google/protobuf/wire_format_lite.h"
 
@@ -992,6 +998,102 @@ TEST(GeneratedMessageTctableLiteTest,
 }
 
 
+TEST(GeneratedTcTableLiteTest, MessageNameCharOverflowIfSigned) {
+  using ReproProto = proto2_unittest::
+      MessageNameOfSize112_AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA;  // NOLINT
+  ASSERT_EQ(ReproProto::descriptor()->full_name().size(), 128);
+
+  ReproProto message;
+  std::string serialized = "\x0A\x03\xFF\xFF\xFF";
+  EXPECT_FALSE(message.ParseFromString(serialized));
+}
+
+TEST(GeneratedTcTableLiteTest, FieldNameLongNameSignExtensionBugRealProto) {
+  using ReproProto = proto2_unittest::MessageWithLongFieldName;
+  ASSERT_EQ(ReproProto::descriptor()->FindFieldByNumber(1)->name().size(), 128);
+  ReproProto message;
+  std::string serialized = "\x0A\x03\xFF\xFF\xFF";
+  EXPECT_FALSE(message.ParseFromString(serialized));
+}
+
+
+TEST(TcParserTest, OobGenReproduction) {
+  constexpr int kStartFieldNumber = 33;
+  constexpr int kFieldSpacing = TailCallTableInfo::kMaxSkipEntrySpacing;
+
+  constexpr int kTargetSkipEntryNum = 0xFFFF;
+  constexpr int kTargetDistance = kTargetSkipEntryNum * /* bits-per-entry */ 16;
+  constexpr int kLastStepSpacing = kTargetDistance % kFieldSpacing;
+
+  // Each field spaced kFieldSpacing apart adds (kFieldSpacing / 16) entries
+  // to the skip table block.
+  constexpr int kEntriesPerField = kFieldSpacing / 16;
+
+  // We want to overflow the uint16_t entry count (65535).
+  // The first field adds 1 entry, and each subsequent field adds
+  // kEntriesPerField. We want total_entries >= 65536 to overflow. 1 +
+  // kEntriesPerField * (kNumFields - 1) >= 65536 kNumFields - 1 >= (65536 - 1)
+  // / kEntriesPerField (round up)
+  constexpr int kTargetEntries = 65536;
+  constexpr int kNumFields =
+      (kTargetEntries - 1 + kEntriesPerField - 1) / kEntriesPerField + 1;
+
+  // The count wraps to:
+  constexpr int kTotalEntries = 1 + kEntriesPerField * (kNumFields - 1);
+  constexpr int kWrappedCount = kTotalEntries % 65536;
+  static_assert(kWrappedCount == 3,
+                "Wrapped count must be 3 to trigger the bug");
+
+  // entries[kWrappedCount] (entries[3]) is a filler entry for the first field.
+  // Filler entries have skipmap = 0xFFFF and field_entry_offset = 1.
+  // Reinterpreted fstart = skipmap | (field_entry_offset << 16) =
+  // 0xFFFF | (1 << 16) = 131071. We need target field number > fstart to
+  // trigger OOB.
+  constexpr int kReinterpretedFstart = 0xFFFF | (1 << 16);
+  constexpr int kTargetFieldNumber = kReinterpretedFstart + 1;  // 131072
+
+  FileDescriptorProto file_proto;
+  file_proto.set_name("poc.proto");
+  file_proto.set_syntax("editions");
+  file_proto.set_edition(Edition::EDITION_2023);
+
+  DescriptorProto* message_proto = file_proto.add_message_type();
+  message_proto->set_name("M");
+
+  int fnum = kStartFieldNumber;
+  for (int i = 0; i < kNumFields; ++i) {
+    FieldDescriptorProto* field = message_proto->add_field();
+    field->set_name(absl::StrCat("f_", i));
+    field->set_number(fnum);
+    field->set_label(FieldDescriptorProto::LABEL_OPTIONAL);
+    field->set_type(FieldDescriptorProto::TYPE_INT32);
+
+    // We need to adjust one of them to ensure exact 0xFFFF overflow.
+    fnum += i == kNumFields - 2 ? kLastStepSpacing : kFieldSpacing;
+  }
+
+  DescriptorPool pool;
+  pool.EnforceProtoLimits(false);
+  const FileDescriptor* file_desc = pool.BuildFile(file_proto);
+  ASSERT_NE(file_desc, nullptr);
+
+  const Descriptor* desc = file_desc->FindMessageTypeByName("M");
+  ASSERT_NE(desc, nullptr);
+
+  DynamicMessageFactory factory(&pool);
+  std::unique_ptr<Message> msg(factory.GetPrototype(desc)->New());
+
+  std::string payload;
+  {
+    io::StringOutputStream output(&payload);
+    io::CodedOutputStream coded_output(&output);
+    coded_output.WriteVarint32(WireFormatLite::MakeTag(
+        kTargetFieldNumber, WireFormatLite::WIRETYPE_VARINT));
+    coded_output.WriteVarint32(1);  // value
+  }
+
+  (void)msg->ParseFromString(payload);
+}
 
 }  // namespace internal
 }  // namespace protobuf

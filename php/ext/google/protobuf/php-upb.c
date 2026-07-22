@@ -714,7 +714,7 @@ Error, UINTPTR_MAX is undefined
   _UPB_CONSTRUCTOR_PLACEHOLDER(unique_name)                                 \
   __attribute__((weak, used, visibility("hidden"))) void UPB_PRIVATE(name)( \
       void) {                                                               \
-    __asm__(                                                                \
+    __asm__ volatile(                                                       \
         ".pushsection .init_array,\"awG\",%%init_array, %cc0, comdat\n"     \
         ".dc.a %cc0\n"                                                      \
         ".popsection\n"                                                     \

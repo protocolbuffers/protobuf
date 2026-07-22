@@ -713,7 +713,7 @@ Error, UINTPTR_MAX is undefined
   _UPB_CONSTRUCTOR_PLACEHOLDER(unique_name)                                 \
   __attribute__((weak, used, visibility("hidden"))) void UPB_PRIVATE(name)( \
       void) {                                                               \
-    __asm__(                                                                \
+    __asm__ volatile(                                                       \
         ".pushsection .init_array,\"awG\",%%init_array, %cc0, comdat\n"     \
         ".dc.a %cc0\n"                                                      \
         ".popsection\n"                                                     \
@@ -4917,8 +4917,7 @@ upb_Message_GetOrCreateMutableMessage(struct upb_Message* msg,
   UPB_ASSERT(arena);
   UPB_ASSUME(upb_MiniTableField_CType(f) == kUpb_CType_Message);
   UPB_ASSUME(!upb_MiniTableField_IsExtension(f));
-  struct upb_Message* sub_message =
-      *UPB_PTR_AT(msg, f->UPB_ONLYBITS(offset), struct upb_Message*);
+  struct upb_Message* sub_message = upb_Message_GetMutableMessage(msg, f);
   if (!sub_message) {
     const upb_MiniTable* sub_mini_table = upb_MiniTable_SubMessage(f);
     UPB_ASSERT(sub_mini_table);

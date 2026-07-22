@@ -104,10 +104,14 @@
 namespace google {
 namespace protobuf {
 
+using ::google::protobuf::internal::CamelCaseSize;
 using ::google::protobuf::internal::DescriptorBuilder;
+using ::google::protobuf::internal::JsonNameSize;
 using ::google::protobuf::internal::OptionsToInterpret;
 using ::google::protobuf::internal::SourceCodePath;
 using ::google::protobuf::internal::Symbol;
+using ::google::protobuf::internal::ToCamelCase;
+using ::google::protobuf::internal::ToJsonName;
 
 namespace {
 
@@ -119,61 +123,6 @@ constexpr int kMaxFieldsPerMessage = std::numeric_limits<int32_t>::max();
 constexpr int kMaxFieldsPerMessage = 65535;
 #endif  // PROTOBUF_UNSAFE_DISABLE_MAX_FIELD_COUNT_CHECK
 
-
-size_t CamelCaseSize(const absl::string_view input) {
-  return input.size() - absl::c_count(input, '_');
-}
-
-std::string ToCamelCase(const absl::string_view input, bool lower_first) {
-  bool capitalize_next = !lower_first;
-  std::string result;
-  result.reserve(input.size());
-
-  for (char character : input) {
-    if (character == '_') {
-      capitalize_next = true;
-    } else if (capitalize_next) {
-      result.push_back(absl::ascii_toupper(character));
-      capitalize_next = false;
-    } else {
-      result.push_back(character);
-    }
-  }
-
-  // Lower-case the first letter.
-  if (lower_first && !result.empty()) {
-    result[0] = absl::ascii_tolower(result[0]);
-  }
-
-  ABSL_DCHECK_EQ(CamelCaseSize(input), result.size());
-
-  return result;
-}
-
-size_t JsonNameSize(const absl::string_view input) {
-  return input.size() - absl::c_count(input, '_');
-}
-
-std::string ToJsonName(const absl::string_view input) {
-  bool capitalize_next = false;
-  std::string result;
-  result.reserve(input.size());
-
-  for (char character : input) {
-    if (character == '_') {
-      capitalize_next = true;
-    } else if (capitalize_next) {
-      result.push_back(absl::ascii_toupper(character));
-      capitalize_next = false;
-    } else {
-      result.push_back(character);
-    }
-  }
-
-  ABSL_DCHECK_EQ(JsonNameSize(input), result.size());
-
-  return result;
-}
 
 template <typename OptionsT>
 bool IsLegacyJsonFieldConflictEnabled(const OptionsT& options) {
@@ -820,27 +769,6 @@ const int FieldDescriptor::kLastReservedNumber;
 #endif
 
 namespace {
-
-std::string EnumValueToPascalCase(const std::string& input) {
-  bool next_upper = true;
-  std::string result;
-  result.reserve(input.size());
-
-  for (char character : input) {
-    if (character == '_') {
-      next_upper = true;
-    } else {
-      if (next_upper) {
-        result.push_back(absl::ascii_toupper(character));
-      } else {
-        result.push_back(absl::ascii_tolower(character));
-      }
-      next_upper = false;
-    }
-  }
-
-  return result;
-}
 
 // Class to remove an enum prefix from enum values.
 class PrefixRemover {
