@@ -21,6 +21,7 @@
 #include <iosfwd>
 
 #include "absl/strings/cord.h"
+#include "absl/types/optional.h"
 #include "google/protobuf/io/zero_copy_stream.h"
 #include "google/protobuf/io/zero_copy_stream_impl_lite.h"
 
@@ -105,6 +106,7 @@ class PROTOBUF_EXPORT FileInputStream final : public ZeroCopyInputStream {
     // Did we try to seek once and fail?  If so, we assume this file descriptor
     // doesn't support seeking and won't try again.
     bool previous_seek_failed_;
+    absl::optional<off_t> file_bytes_remaining_;
   };
 
   CopyingFileInputStream copying_input_;
