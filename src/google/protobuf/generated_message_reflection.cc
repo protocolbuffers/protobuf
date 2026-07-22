@@ -1305,6 +1305,11 @@ void Reflection::SwapFieldsImpl(
   absl::flat_hash_set<int> swapped_oneof;
 
   for (const auto* field : fields) {
+    ABSL_CHECK_EQ(field->containing_type(), descriptor_)
+        << "Field \"" << field->full_name()
+        << "\" does not belong to message type \"" << descriptor_->full_name()
+        << "\".  SwapFields() requires all fields to belong to the message's "
+           "own descriptor.";
     if (field->is_extension()) {
       if constexpr (unsafe_shallow_swap) {
         MutableExtensionSet(message1)->UnsafeShallowSwapExtension(
