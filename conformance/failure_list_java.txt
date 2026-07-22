@@ -44,6 +44,22 @@ Required.*.JsonInput.Int32FieldPlusSign                                         
 Required.*.JsonInput.RepeatedFieldWrongElementTypeExpectingStringsGotBool                                          # Should have failed to parse, but didn't.
 Required.*.JsonInput.RepeatedFieldWrongElementTypeExpectingStringsGotInt                                           # Should have failed to parse, but didn't.
 Required.*.JsonInput.StringFieldNotAString                                                                         # Should have failed to parse, but didn't.
+Required.*.JsonInput.TimestampJsonInputDayTooLarge                                                                 # Should have failed to parse, but didn't.
+Required.*.JsonInput.TimestampJsonInputDayTooShort                                                                 # Should have failed to parse, but didn't.
+Required.*.JsonInput.TimestampJsonInputDayZero                                                                     # Should have failed to parse, but didn't.
+Required.*.JsonInput.TimestampJsonInputHourTooLarge                                                                # Should have failed to parse, but didn't.
+Required.*.JsonInput.TimestampJsonInputHourTooLarge25                                                              # Should have failed to parse, but didn't.
+Required.*.JsonInput.TimestampJsonInputInvalidNanos                                                                # Should have failed to parse, but didn't.
+Required.*.JsonInput.TimestampJsonInputInvalidOffsetHour                                                           # Should have failed to parse, but didn't.
+Required.*.JsonInput.TimestampJsonInputInvalidOffsetMinute                                                         # Should have failed to parse, but didn't.
+Required.*.JsonInput.TimestampJsonInputMinuteTooLarge                                                              # Should have failed to parse, but didn't.
+Required.*.JsonInput.TimestampJsonInputMonthTooLarge                                                               # Should have failed to parse, but didn't.
+Required.*.JsonInput.TimestampJsonInputMonthTooShort                                                               # Should have failed to parse, but didn't.
+Required.*.JsonInput.TimestampJsonInputMonthZero                                                                   # Should have failed to parse, but didn't.
+Required.*.JsonInput.TimestampJsonInputNonLeapFeb29                                                                # Should have failed to parse, but didn't.
+Required.*.JsonInput.TimestampJsonInputSecondTooLarge                                                              # Should have failed to parse, but didn't.
+Required.*.JsonInput.TimestampJsonInputYearTooLong                                                                 # Should have failed to parse, but didn't.
+Required.*.JsonInput.TimestampJsonInputYearTooShort                                                                # Should have failed to parse, but didn't.
 Required.*.ProtobufInput.UnknownOrdering.ProtobufOutput                                                            # Unknown field mismatch
 Required.*.ProtobufInput.BadTag_FieldNumberTooHigh                                                                 # Should have failed to parse, but didn't.
 Required.*.ProtobufInput.BadTag_FieldNumberSlightlyTooHigh                                                         # Should have failed to parse, but didn't.
