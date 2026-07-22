@@ -28,4 +28,5 @@ enum Armor {
 
 message Knight {
   Armor armor = 1;
+  repeated Armor armors = 2;
 }
