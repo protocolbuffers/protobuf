@@ -74,6 +74,7 @@ static PyObject* PyUpb_DescriptorBase_Get(PyUpb_DescriptorType type,
 
   if (!base) {
     base = PyUpb_DescriptorBase_DoCreate(type, def, file);
+    if (!base) return NULL;
   }
 
   return &base->ob_base;
@@ -119,18 +120,30 @@ static PyObject* PyUpb_DescriptorBase_GetCached(PyObject** cached,
     // layout as the C types that were compiled in.
     size_t size;
     PyObject* py_arena = PyUpb_Arena_New();
+    if (!py_arena) return NULL;
     upb_Arena* arena = PyUpb_Arena_Get(py_arena);
     char* pb;
-    // TODO: Need to correctly handle failed return codes.
-    (void)upb_Encode(opts, layout, 0, arena, &pb, &size);
+    upb_EncodeStatus es = upb_Encode(opts, layout, 0, arena, &pb, &size);
+    if (es != kUpb_EncodeStatus_Ok) {
+      Py_DECREF(py_arena);
+      PyErr_SetNone(PyExc_MemoryError);
+      return NULL;
+    }
     const upb_MiniTable* opts2_layout = upb_MessageDef_MiniTable(m);
     upb_Message* opts2 = upb_Message_New(opts2_layout, arena);
-    assert(opts2);
+    if (!opts2) {
+      Py_DECREF(py_arena);
+      PyErr_SetNone(PyExc_MemoryError);
+      return NULL;
+    }
     upb_DecodeStatus ds =
         upb_Decode(pb, size, opts2, opts2_layout,
                    upb_DefPool_ExtensionRegistry(symtab), 0, arena);
-    (void)ds;
-    assert(ds == kUpb_DecodeStatus_Ok);
+    if (ds != kUpb_DecodeStatus_Ok) {
+      Py_DECREF(py_arena);
+      PyErr_SetNone(PyExc_MemoryError);
+      return NULL;
+    }
 
     if (strip_field) {
       const upb_FieldDef* field =

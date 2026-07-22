@@ -9,6 +9,7 @@
 
 #include <string.h>
 
+#include "upb/mem/internal/alloc.h"
 #include "upb/port/sanitizers.h"
 
 #ifdef UPB_TRACING_ENABLED
@@ -503,11 +504,14 @@ void* UPB_PRIVATE(_upb_Arena_SlowMalloc)(upb_Arena* a, size_t span) {
   } else {
     UPB_PRIVATE(_upb_Arena_UseBlock)(a, block, block_size);
     UPB_ASSERT(UPB_PRIVATE(_upb_ArenaHas)(a) >= span);
-    return upb_Arena_Malloc(a, size);
+    return _upb_Arena_Malloc_Unchecked(a, size);
   }
 }
 
 static upb_Arena* _upb_Arena_InitSlow(upb_alloc* alloc, size_t first_size) {
+  if (!upb_AllocationCount_IncrementAndCheck()) {
+    return NULL;
+  }
   if (!alloc) return NULL;
 
   // We need to malloc the initial block.
