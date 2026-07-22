@@ -45,6 +45,10 @@ def _java_info_subject(info, *, meta):
             _filter_inpackage(self.actual.transitive_compile_time_jars, meta.ctx.label),
             meta = self.meta.derive("transitive_compile_time_jars_in_package()"),
         ),
+        compile_jars = lambda *a, **k: subjects.depset_file(
+            self.actual.compile_jars,
+            meta = self.meta.derive("compile_jars()"),
+        ),
     )
     return public
 
