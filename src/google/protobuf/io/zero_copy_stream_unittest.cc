@@ -45,6 +45,7 @@
 #include "google/protobuf/testing/file.h"
 #include "google/protobuf/testing/file.h"
 #include <gtest/gtest.h>
+#include "absl/cleanup/cleanup.h"
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
 #include "absl/status/status.h"
@@ -1460,6 +1461,29 @@ TEST_F(IoTest, FileIo) {
 
       close(file);
     }
+  }
+}
+
+TEST_F(IoTest, FileInputStreamSkipPastEof) {
+  std::string filename =
+      absl::StrCat(::testing::TempDir(), "/zero_copy_stream_skip_test_file");
+  int file =
+      open(filename.c_str(), O_RDWR | O_CREAT | O_TRUNC | O_BINARY, 0777);
+  ASSERT_GE(file, 0);
+  absl::Cleanup close_file = [file] { close(file); };
+
+  // Write 5 bytes
+  ASSERT_EQ(write(file, "hello", 5), 5);
+
+  // Rewind
+  ASSERT_NE(lseek(file, 0, SEEK_SET), off_t{-1});
+
+  {
+    FileInputStream input(file);
+    // Skips past EOF. Contract says this must return false.
+    EXPECT_FALSE(input.Skip(10));
+    // ByteCount should be at EOF (5).
+    EXPECT_EQ(input.ByteCount(), 5);
   }
 }
 
