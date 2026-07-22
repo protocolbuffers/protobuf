@@ -107,11 +107,19 @@ jobs:
     name: ${{ matrix.continuous-only && inputs.continuous-prefix || '' }} Linux Release ${{ matrix.arch }}
     runs-on: ubuntu-22-4core
     steps:
+      - name: Check initial disk space
+        if: ${{ !matrix.continuous-only || inputs.continuous-run }}
+        shell: bash
+        run: df -h
       - name: Checkout pending changes
         if: ${{ !matrix.continuous-only || inputs.continuous-run }}
         uses: protocolbuffers/protobuf-ci/checkout@v5
         with:
           ref: ${{ inputs.safe-checkout }}
+      - name: Check disk space after checkout
+        if: ${{ !matrix.continuous-only || inputs.continuous-run }}
+        shell: bash
+        run: df -h
       - name: Cross compile protoc for ${{ matrix.arch }}
         if: ${{ !matrix.continuous-only || inputs.continuous-run }}
         id: cross-compile
@@ -120,12 +128,20 @@ jobs:
           image: us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:8.6.0-9dca0d9417f43f5f1e97e59969fb0f3e6ae3bd9c
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           architecture: linux-${{ matrix.arch }}
+      - name: Check disk space after cross compile
+        if: ${{ !matrix.continuous-only || inputs.continuous-run }}
+        shell: bash
+        run: df -h
       - name: Setup sccache
         if: ${{ !matrix.continuous-only || inputs.continuous-run }}
         uses: protocolbuffers/protobuf-ci/sccache@v5
         with:
           cache-prefix: linux-release-${{ matrix.arch }}
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
+      - name: Check disk space after setup sccache
+        if: ${{ !matrix.continuous-only || inputs.continuous-run }}
+        shell: bash
+        run: df -h
       - name: Run tests
         if: ${{ !matrix.continuous-only || inputs.continuous-run }}
         uses: protocolbuffers/protobuf-ci/docker@v5
@@ -143,6 +159,10 @@ jobs:
             cmake --build . --parallel 20;
             ctest --no-tests=error --parallel 20;
             sccache -s"
+      - name: Check disk space after run tests
+        if: ${{ !matrix.continuous-only || inputs.continuous-run }}
+        shell: bash
+        run: df -h
 
   linux-cmake:
     strategy:
