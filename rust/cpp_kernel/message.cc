@@ -2,7 +2,9 @@
 
 #include <cstddef>
 #include <limits>
+#include <string>
 
+#include "absl/log/absl_log.h"
 #include "google/protobuf/message_lite.h"
 #include "rust/cpp_kernel/serialized_data.h"
 #include "rust/cpp_kernel/strings.h"
