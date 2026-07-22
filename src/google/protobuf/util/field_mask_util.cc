@@ -14,11 +14,11 @@
 #include <utility>
 #include <vector>
 
+#include "google/protobuf/field_mask.pb.h"
 #include "absl/container/btree_map.h"
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
 #include "absl/log/die_if_null.h"
-#include "absl/memory/memory.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_join.h"
 #include "absl/strings/str_split.h"
