@@ -46,10 +46,19 @@ const upb_MessageDef* PyUpb_DescriptorPool_GetFileProtoDef(void) {
 static PyObject* PyUpb_DescriptorPool_DoCreateWithCache(
     PyTypeObject* type, PyObject* db, PyUpb_WeakMap* obj_cache) {
   PyUpb_DescriptorPool* pool = (void*)PyType_GenericAlloc(type, 0);
+  if (!pool) return NULL;
   pool->symtab = upb_DefPool_New();
+  if (!pool->symtab) {
+    Py_DECREF(pool);
+    PyErr_SetNone(PyExc_MemoryError);
+    return NULL;
+  }
   pool->db = db;
   Py_XINCREF(pool->db);
-  PyUpb_KnownObjCache_Add(obj_cache, pool->symtab, &pool->ob_base);
+  if (!PyUpb_KnownObjCache_Add(obj_cache, pool->symtab, &pool->ob_base)) {
+    Py_DECREF(pool);
+    return NULL;
+  }
   return &pool->ob_base;
 }
 

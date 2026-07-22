@@ -139,9 +139,15 @@ static upb_MessageValue PyUpb_MaybeCopyString(const char* ptr, size_t size,
   upb_MessageValue ret;
   ret.str_val.size = size;
   if (arena) {
-    char* buf = upb_Arena_Malloc(arena, size);
-    memcpy(buf, ptr, size);
-    ret.str_val.data = buf;
+    if (size == 0) {
+      ret.str_val.data = "";
+    } else {
+      char* buf = upb_Arena_Malloc(arena, size);
+      if (buf) {
+        memcpy(buf, ptr, size);
+      }
+      ret.str_val.data = buf;
+    }
   } else {
     ret.str_val.data = ptr;
   }
@@ -296,6 +302,10 @@ bool PyUpb_PyToUpb(PyObject* obj, const upb_FieldDef* f, upb_MessageValue* val,
       Py_ssize_t size;
       if (PyBytes_AsStringAndSize(obj, &ptr, &size) < 0) return false;
       *val = PyUpb_MaybeCopyString(ptr, size, arena);
+      if (size > 0 && !val->str_val.data) {
+        PyErr_SetNone(PyExc_MemoryError);
+        return false;
+      }
       return true;
     }
     case kUpb_CType_String: {
@@ -313,11 +323,19 @@ bool PyUpb_PyToUpb(PyObject* obj, const upb_FieldDef* f, upb_MessageValue* val,
           return false;
         }
         *val = PyUpb_MaybeCopyString(ptr, size, arena);
+        if (size > 0 && !val->str_val.data) {
+          PyErr_SetNone(PyExc_MemoryError);
+          return false;
+        }
         return true;
       }
       const char* ptr = PyUnicode_AsUTF8AndSize(obj, &size);
       if (PyErr_Occurred()) return false;
       *val = PyUpb_MaybeCopyString(ptr, size, arena);
+      if (size > 0 && !val->str_val.data) {
+        PyErr_SetNone(PyExc_MemoryError);
+        return false;
+      }
       return true;
     }
     case kUpb_CType_Message:

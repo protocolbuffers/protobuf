@@ -10,6 +10,8 @@
 
 #include <stddef.h>
 
+#include "upb/mem/internal/alloc.h"
+
 // Must be last.
 #include "upb/port/def.inc"
 
@@ -41,6 +43,9 @@ struct upb_alloc {
 
 UPB_NODISCARD UPB_INLINE void* upb_malloc(upb_alloc* alloc, size_t size) {
   UPB_ASSERT(alloc);
+  if (!upb_AllocationCount_IncrementAndCheck()) {
+    return NULL;
+  }
   return alloc->func(alloc, NULL, 0, size, NULL);
 }
 
@@ -51,6 +56,9 @@ typedef struct {
 
 UPB_INLINE upb_SizedPtr upb_SizeReturningMalloc(upb_alloc* alloc, size_t size) {
   UPB_ASSERT(alloc);
+  if (!upb_AllocationCount_IncrementAndCheck()) {
+    return (upb_SizedPtr){.p = NULL, .n = 0};
+  }
   upb_SizedPtr result;
   result.n = 0;
   result.p = alloc->func(alloc, NULL, 0, size, &result.n);
@@ -61,6 +69,11 @@ UPB_INLINE upb_SizedPtr upb_SizeReturningMalloc(upb_alloc* alloc, size_t size) {
 UPB_NODISCARD UPB_INLINE void* upb_realloc(upb_alloc* alloc, void* ptr,
                                            size_t oldsize, size_t size) {
   UPB_ASSERT(alloc);
+  if (size != 0) {
+    if (!upb_AllocationCount_IncrementAndCheck()) {
+      return NULL;
+    }
+  }
   return alloc->func(alloc, ptr, oldsize, size, NULL);
 }
 
@@ -93,6 +106,17 @@ UPB_NODISCARD UPB_INLINE void* upb_grealloc(void* ptr, size_t oldsize,
 }
 
 UPB_INLINE void upb_gfree(void* ptr) { upb_free(&upb_alloc_global, ptr); }
+
+// Returns whether thread-local allocation count/ OOM-simulation features
+// are supported.
+UPB_API UPB_NODISCARD bool upb_AllocationCount_IsAvailable(void);
+// Returns the thread-local allocation count since the last reset.
+UPB_API UPB_NODISCARD size_t upb_AllocationCount_Get(void);
+// Resets the thread-local allocation count and failure threshold.
+UPB_API void upb_AllocationCount_Reset(void);
+// Artificially triggers memory allocation failure in the thread on the n-th
+// allocation.
+UPB_API void upb_AllocationCount_FailOn(size_t n);
 
 #ifdef __cplusplus
 } /* extern "C" */

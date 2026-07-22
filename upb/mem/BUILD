@@ -34,6 +34,7 @@ cc_library(
 cc_library(
     name = "internal",
     hdrs = [
+        "internal/alloc.h",
         "internal/arena.h",
     ],
     copts = UPB_DEFAULT_COPTS,
