@@ -40,6 +40,7 @@
 #include "absl/strings/str_replace.h"
 #include "absl/strings/substitute.h"
 #include "google/protobuf/descriptor.h"
+#include "google/protobuf/dynamic_message.h"
 #include "google/protobuf/io/tokenizer.h"
 #include "google/protobuf/io/zero_copy_stream_impl.h"
 #include "google/protobuf/io/zero_copy_stream_impl_lite.h"
@@ -293,6 +294,41 @@ TEST_F(TextFormatTest, ShortFormat) {
                   "map_redacted_string: $0 "
                   "map_unredacted_string \\{ key: \"ghi\" value: \"jkl\" \\}",
                   value_replacement, kTextMarkerRegex)));
+}
+
+TEST_F(TextFormatTest, RedactionWithUndeclaredEnumOption) {
+  FileDescriptorProto file;
+  file.set_name("evil.proto");
+  file.set_package("evil");
+  file.set_edition(Edition::EDITION_2024);
+
+  DescriptorProto* msg = file.add_message_type();
+  msg->set_name("M");
+
+  FieldDescriptorProto* fld = msg->add_field();
+  fld->set_name("x");
+  fld->set_number(1);
+  fld->set_type(FieldDescriptorProto::TYPE_INT32);
+
+  // Set the compiled-in message-typed extension on the field's options,
+  // with an undeclared open-enum value.
+  FieldOptions* opts = fld->mutable_options();
+  proto2_unittest::TestNestedMessageEnum* nested_enum =
+      opts->MutableExtension(proto2_unittest::test_nested_message_enum);
+  nested_enum->add_direct_enum(
+      static_cast<proto2_unittest::MetaAnnotatedEnum>(999));
+
+  // Use the generated pool underlay so it can load the extension.
+  DescriptorPool pool(DescriptorPool::generated_pool());
+  const FileDescriptor* fd = pool.BuildFile(file);
+  ASSERT_NE(fd, nullptr);
+  const Descriptor* d = fd->message_type(0);
+
+  DynamicMessageFactory factory(&pool);
+  std::unique_ptr<Message> m(factory.GetPrototype(d)->New());
+  ASSERT_TRUE(TextFormat::ParseFromString("x: 42", m.get()));
+  // The field should be printed fine.
+  EXPECT_THAT(m->DebugString(), HasSubstr("x: 42"));
 }
 
 TEST_F(TextFormatTest, Utf8Format) {
