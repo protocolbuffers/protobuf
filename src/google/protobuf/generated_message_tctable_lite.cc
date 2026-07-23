@@ -1220,7 +1220,7 @@ PROTOBUF_ALWAYS_INLINE const char* TcParser::RepeatedVarint(
   } while (ctx->DataAvailable(ptr2) &&
            UnalignedLoad<TagType>(ptr2) == expected_tag);
   int added = 0;
-  field.Reserve(field.size() + len);
+  field.Reserve(internal::CheckedAdd(field.size(), len));
   // Allows us to skip SOO checks.
   FieldType* x = field.AddNAlreadyReserved(len);
   do {
