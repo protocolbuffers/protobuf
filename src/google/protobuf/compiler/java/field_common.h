@@ -1,8 +1,10 @@
 #ifndef GOOGLE_PROTOBUF_COMPILER_JAVA_FIELD_COMMON_H__
 #define GOOGLE_PROTOBUF_COMPILER_JAVA_FIELD_COMMON_H__
 
+#include <cstdint>
 #include <string>
 
+#include "absl/container/btree_map.h"
 #include "google/protobuf/compiler/java/options.h"
 #include "google/protobuf/descriptor.h"
 
@@ -23,6 +25,8 @@ struct FieldGeneratorInfo {
 struct OneofGeneratorInfo {
   std::string name;
   std::string capitalized_name;
+  absl::btree_map<int, uint32_t> masks_by_int;
+  absl::btree_map<int, uint32_t> non_message_masks_by_int;
 };
 
 // Set some common variables used in variable FieldGenerators.
@@ -34,6 +38,17 @@ void SetCommonFieldVariables(
 void SetCommonOneofVariables(
     const FieldDescriptor* descriptor, const OneofGeneratorInfo* info,
     absl::flat_hash_map<absl::string_view, std::string>* variables);
+
+// Write code to clear bit fields for a oneof.
+void WriteClearOneofHasBits(const OneofGeneratorInfo* info,
+                            io::Printer* printer);
+
+// Write code to set a oneof field to a given value expression and update
+// has bits and case field.
+void WriteSetOneof(
+    io::Printer* printer,
+    const absl::flat_hash_map<absl::string_view, std::string>& variables,
+    const OneofGeneratorInfo* info, absl::string_view value);
 
 // Print useful comments before a field's accessors.
 void PrintExtraFieldInfo(

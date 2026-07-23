@@ -56,18 +56,12 @@ void SetMessageVariables(
   (*variables)["on_changed"] = "onChanged();";
   (*variables)["get_parser"] = "parser()";
 
-  if (HasHasbit(descriptor)) {
-    // For singular messages and builders, one bit is used for the hasField bit.
-    // Note that these have a trailing ";".
-    (*variables)["set_has_field_bit_to_local"] =
-        GenerateSetBitToLocal(bit_index);
+  (*variables)["set_has_field_bit_to_local"] = GenerateSetBitToLocal(bit_index);
 
-    (*variables)["is_field_present"] = GenerateGetBit(bit_index);
-  } else {
-    (*variables)["set_has_field_bit_to_local"] = "";
-    variables->insert(
-        {"is_field_present", absl::StrCat((*variables)["name"], "_ != null")});
-  }
+  (*variables)["is_field_present"] = GenerateGetBit(bit_index);
+  (*variables)["is_other_field_present"] = GenerateGetBitFromOther(bit_index);
+  variables->insert({"is_field_value_not_default",
+                     absl::StrCat((*variables)["name"], "_ != null")});
 
   // For repeated builders, one bit is used for whether the array is immutable.
   (*variables)["get_mutable_bit_builder"] = GenerateGetBit(bit_index);
@@ -174,7 +168,6 @@ void ImmutableMessageFieldGenerator::GenerateMembers(
     io::Printer* printer) const {
   printer->Print(variables_, "private $type$ $name$_;\n");
   PrintExtraFieldInfo(variables_, printer);
-
   GenerateHasMethod(printer);
   GenerateGetMethod(printer);
   GenerateGetOrBuilderMethod(printer);
@@ -452,7 +445,7 @@ void ImmutableMessageFieldGenerator::GenerateBuilderClearCode(
 void ImmutableMessageFieldGenerator::GenerateMergingCode(
     io::Printer* printer) const {
   printer->Print(variables_,
-                 "if (other.has$capitalized_name$()) {\n"
+                 "if ($is_other_field_present$) {\n"
                  "  merge$capitalized_name$(other.get$capitalized_name$());\n"
                  "}\n");
 }
@@ -463,11 +456,9 @@ void ImmutableMessageFieldGenerator::GenerateBuildingCode(
                  "if ($get_has_field_bit_from_local$) {\n"
                  "  result.$name$_ = $name$Builder_ == null\n"
                  "      ? $name$_\n"
-                 "      : $name$Builder_.build();\n");
-  if (GetNumBits() > 0) {
-    printer->Print(variables_, "  $set_has_field_bit_to_local$;\n");
-  }
-  printer->Print("}\n");
+                 "      : $name$Builder_.build();\n"
+                 "  $set_has_field_bit_to_local$;\n"
+                 "}\n");
 }
 
 void ImmutableMessageFieldGenerator::GenerateBuilderParsingCode(
@@ -487,12 +478,12 @@ void ImmutableMessageFieldGenerator::GenerateSerializationCode(
 
 void ImmutableMessageFieldGenerator::GenerateSerializedSizeCode(
     io::Printer* printer) const {
-  printer->Print(
-      variables_,
-      "if ($is_field_present$) {\n"
-      "  size += com.google.protobuf.CodedOutputStream\n"
-      "    .compute$group_or_message$Size($number$, get$capitalized_name$());\n"
-      "}\n");
+  printer->Print(variables_,
+                 "if ($is_field_present$) {\n"
+                 "  size += com.google.protobuf.CodedOutputStream\n"
+                 "    .compute$group_or_message$Size($number$, "
+                 "get$capitalized_name$());\n"
+                 "}\n");
 }
 
 void ImmutableMessageFieldGenerator::GenerateEqualsCode(
@@ -515,12 +506,21 @@ std::string ImmutableMessageFieldGenerator::GetBoxedType() const {
 
 // ===================================================================
 
+const OneofGeneratorInfo*
+ImmutableMessageFieldGenerator::GetOneofGeneratorInfo() const {
+  return context_->GetOneofGeneratorInfo(descriptor_->containing_oneof());
+}
+
+// ===================================================================
+
 ImmutableMessageOneofFieldGenerator::ImmutableMessageOneofFieldGenerator(
     const FieldDescriptor* descriptor, int bit_index, Context* context)
     : ImmutableMessageFieldGenerator(descriptor, bit_index, context) {
   const OneofGeneratorInfo* info =
       context->GetOneofGeneratorInfo(descriptor->containing_oneof());
   SetCommonOneofVariables(descriptor, info, &variables_);
+  variables_["set_has_field_bit_builder"] =
+      absl::StrCat(GenerateSetBit(bit_index), ";");
 }
 
 ImmutableMessageOneofFieldGenerator::~ImmutableMessageOneofFieldGenerator() =
@@ -627,6 +627,7 @@ void ImmutableMessageOneofFieldGenerator::GenerateBuilderSetMethod(
       "$name$Builder_.setMessage(value);\n",
 
       "$set_oneof_case_message$;\n"
+      "$set_has_field_bit_builder$\n"
       "return this;\n",
       Semantic::kSet);
 }
@@ -635,41 +636,74 @@ void ImmutableMessageOneofFieldGenerator::GenerateBuilderSetBuilderMethod(
     io::Printer* printer) const {
   // Field.Builder setField(Field.Builder builderForValue)
   WriteFieldDocComment(printer, descriptor_, context_->options());
-  printer->Print(variables_,
-                 "$deprecation$public Builder ${$set$capitalized_name$$}$(\n"
-                 "    $type$.Builder builderForValue) {\n"
-                 "  java.util.Objects.requireNonNull(builderForValue);\n"
-                 "  return set$capitalized_name$(builderForValue.build());\n"
-                 "}\n");
-  printer->Annotate("{", "}", descriptor_, Semantic::kSet);
+  PrintNestedBuilderFunction(
+      printer,
+      "$deprecation$public Builder ${$set$capitalized_name$$}$(\n"
+      "    $type$.Builder builderForValue)",
+
+      "$oneof_name$_ = builderForValue.build();\n"
+      "$on_changed$\n",
+
+      "$name$Builder_.setMessage(builderForValue.build());\n",
+
+      "$set_oneof_case_message$;\n"
+      "$set_has_field_bit_builder$\n"
+      "return this;\n",
+      Semantic::kSet);
 }
 
 void ImmutableMessageOneofFieldGenerator::GenerateBuilderMergeMethod(
     io::Printer* printer) const {
   // Field.Builder mergeField(Field value)
   WriteFieldDocComment(printer, descriptor_, context_->options());
-  PrintNestedBuilderFunction(
-      printer,
-      "$deprecation$public Builder ${$merge$capitalized_name$$}$($type$ value)",
-
-      "if ($has_oneof_case_message$ &&\n"
-      "    $oneof_name$_ != $type$.getDefaultInstance()) {\n"
-      "  $oneof_name$_ = $type$.newBuilder(($type$) $oneof_name$_)\n"
-      "      .mergeFrom(value).buildPartial();\n"
-      "} else {\n"
-      "  $oneof_name$_ = value;\n"
-      "}\n"
-      "$on_changed$\n",
-
-      "if ($has_oneof_case_message$) {\n"
-      "  $name$Builder_.mergeFrom(value);\n"
-      "} else {\n"
-      "  $name$Builder_.setMessage(value);\n"
-      "}\n",
-
-      "$set_oneof_case_message$;\n"
-      "return this;\n",
-      Semantic::kSet);
+  printer->Print(variables_,
+                 "$deprecation$public Builder "
+                 "${$merge$capitalized_name$$}$($type$ value) {\n"
+                 "  if ($name$Builder_ == null) {\n"
+                 "    if ($has_oneof_case_message$ &&\n"
+                 "        $oneof_name$_ != $type$.getDefaultInstance()) {\n");
+  printer->Indent();
+  printer->Indent();
+  printer->Indent();
+  WriteSetOneof(printer, variables_, GetOneofGeneratorInfo(),
+                "$type$.newBuilder(($type$) "
+                "$oneof_name$_).mergeFrom(value).buildPartial()");
+  printer->Outdent();
+  printer->Outdent();
+  printer->Outdent();
+  printer->Print(variables_, "    } else {\n");
+  printer->Indent();
+  printer->Indent();
+  printer->Indent();
+  WriteSetOneof(printer, variables_, GetOneofGeneratorInfo(), "value");
+  printer->Outdent();
+  printer->Outdent();
+  printer->Outdent();
+  printer->Print(variables_,
+                 "    }\n"
+                 "    $on_changed$\n"
+                 "  } else {\n"
+                 "    if ($has_oneof_case_message$) {\n"
+                 "      $name$Builder_.mergeFrom(value);\n"
+                 "    } else {\n"
+                 "      $name$Builder_.setMessage(value);\n"
+                 "    }\n");
+  printer->Indent();
+  printer->Indent();
+  // We need to set the oneof case and builder bit without clearing bits or
+  // overwriting value Actually, writeSetOneof overwrites $oneof_name$_ which is
+  // wrong here. We can just call WriteClearOneofHasBits, then set oneof case,
+  // then bit.
+  WriteClearOneofHasBits(GetOneofGeneratorInfo(), printer);
+  printer->Outdent();
+  printer->Outdent();
+  printer->Print(variables_,
+                 "    $set_oneof_case_message$;\n"
+                 "    $set_has_field_bit_builder$\n"
+                 "  }\n"
+                 "  return this;\n"
+                 "}\n");
+  printer->Annotate("{", "}", descriptor_, Semantic::kSet);
 }
 
 void ImmutableMessageOneofFieldGenerator::GenerateBuilderClearMethod(
@@ -681,12 +715,14 @@ void ImmutableMessageOneofFieldGenerator::GenerateBuilderClearMethod(
 
       "if ($has_oneof_case_message$) {\n"
       "  $clear_oneof_case_message$;\n"
+      "  $clear_has_field_bit_builder$\n"
       "  $oneof_name$_ = null;\n"
       "  $on_changed$\n"
       "}\n",
 
       "if ($has_oneof_case_message$) {\n"
       "  $clear_oneof_case_message$;\n"
+      "  $clear_has_field_bit_builder$\n"
       "  $oneof_name$_ = null;\n"
       "}\n"
       "$name$Builder_.clear();\n",
@@ -748,6 +784,7 @@ void ImmutableMessageOneofFieldGenerator::
       "    $oneof_name$_ = null;\n"
       "  }\n"
       "  $set_oneof_case_message$;\n"
+      "  $set_has_field_bit_builder$\n"
       "  $on_changed$\n"
       "  return $name$Builder_;\n"
       "}\n");
@@ -789,10 +826,17 @@ void ImmutableMessageOneofFieldGenerator::GenerateBuilderClearCode(
 void ImmutableMessageOneofFieldGenerator::GenerateBuildingCode(
     io::Printer* printer) const {
   printer->Print(variables_,
-                 "if ($has_oneof_case_message$ &&\n"
-                 "    $name$Builder_ != null) {\n"
-                 "  result.$oneof_name$_ = $name$Builder_.build();\n"
-                 "}\n");
+                 "if ($get_has_field_bit_from_local$) {\n"
+                 "  result.$set_oneof_case_message$;\n"
+                 "  if ($name$Builder_ != null) {\n"
+                 "    result.$oneof_name$_ = $name$Builder_.build();\n"
+                 "  } else {\n"
+                 "    result.$oneof_name$_ = this.$oneof_name$_;\n"
+                 "  }\n");
+  if (GetNumBits() > 0) {
+    printer->Print(variables_, "  $set_has_field_bit_to_local$;\n");
+  }
+  printer->Print("}\n");
 }
 
 void ImmutableMessageOneofFieldGenerator::GenerateMergingCode(
@@ -848,13 +892,6 @@ RepeatedImmutableMessageFieldGenerator::RepeatedImmutableMessageFieldGenerator(
 RepeatedImmutableMessageFieldGenerator::
     ~RepeatedImmutableMessageFieldGenerator() = default;
 
-void RepeatedImmutableMessageFieldGenerator::GenerateInterfaceGetListMethod(
-    io::Printer* printer) const {
-  WriteFieldDocComment(printer, descriptor_, context_->options());
-  printer->Print(variables_,
-                 "$deprecation$java.util.List<$type$> \n"
-                 "    get$capitalized_name$List();\n");
-}
 
 void RepeatedImmutableMessageFieldGenerator::GenerateInterfaceGetCountMethod(
     io::Printer* printer) const {
@@ -889,13 +926,12 @@ void RepeatedImmutableMessageFieldGenerator::
 
 void RepeatedImmutableMessageFieldGenerator::GenerateInterfaceMembers(
     io::Printer* printer) const {
-  // TODO: In the future, consider having methods specific to the
-  // interface so that builders can choose dynamically to either return a
-  // message or a nested builder, so that asking for the interface doesn't
-  // cause a message to ever be built.
-  GenerateInterfaceGetListMethod(printer);
-  GenerateInterfaceGetMethod(printer);
+  WriteFieldDocComment(printer, descriptor_, context_->options());
+  printer->Print(variables_,
+                 "$deprecation$java.util.List<$type$> \n"
+                 "    get$capitalized_name$List();\n");
   GenerateInterfaceGetCountMethod(printer);
+  GenerateInterfaceGetMethod(printer);
   GenerateInterfaceGetOrBuilderListMethod(printer);
   GenerateInterfaceGetOrBuilderMethod(printer);
 }

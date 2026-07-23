@@ -23,8 +23,10 @@ namespace google {
 namespace protobuf {
 namespace compiler {
 namespace java {
-class Context;            // context.h
+class Context;  // context.h
+struct OneofGeneratorInfo;
 class ClassNameResolver;  // name_resolver.h
+struct OneofGeneratorInfo;
 }  // namespace java
 }  // namespace compiler
 }  // namespace protobuf
@@ -63,6 +65,8 @@ class ImmutableEnumFieldGenerator : public ImmutableFieldGenerator {
   void GenerateHashCode(io::Printer* printer) const override;
 
   std::string GetBoxedType() const override;
+
+  const OneofGeneratorInfo* GetOneofGeneratorInfo() const;
 
  private:
   void GenerateInterfaceHasMethod(io::Printer* printer) const;

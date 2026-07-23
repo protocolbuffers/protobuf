@@ -282,6 +282,7 @@ std::string GenerateClearBit(int bitIndex);
 // the message.
 // Example: "((from_bitField1_ & 0x04) == 0x04)"
 std::string GenerateGetBitFromLocal(int bitIndex);
+std::string GenerateGetBitFromOther(int bitIndex);
 
 // Does the same as GenerateSetBit but operates on the bit field on a local
 // variable. This is used by the builder to copy the value in the builder to
@@ -349,6 +350,10 @@ bool IsRealOneof(const FieldDescriptor* descriptor);
 
 inline bool HasHasbit(const FieldDescriptor* descriptor) {
   return descriptor->has_presence() && !descriptor->real_containing_oneof();
+}
+
+inline bool HasHazzerMethod(const FieldDescriptor* descriptor) {
+  return descriptor->has_presence();
 }
 
 // Whether unknown enum values are kept (i.e., not stored in UnknownFieldSet

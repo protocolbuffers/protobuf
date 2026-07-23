@@ -627,16 +627,24 @@ std::string GenerateSetBit(int bitIndex) {
   return GenerateSetBitInternal("", bitIndex);
 }
 
-std::string GenerateClearBit(int bitIndex) {
-  std::string varName = GetBitFieldNameForBit(bitIndex);
+std::string GenerateClearBitInternal(absl::string_view prefix, int bitIndex) {
+  std::string varName = absl::StrCat(prefix, GetBitFieldNameForBit(bitIndex));
   int bitInVarIndex = bitIndex % 32;
 
   return absl::StrCat(varName, " = (", varName, " & ~",
                       bit_masks[bitInVarIndex], ")");
 }
 
+std::string GenerateClearBit(int bitIndex) {
+  return GenerateClearBitInternal("", bitIndex);
+}
+
 std::string GenerateGetBitFromLocal(int bitIndex) {
   return GenerateGetBitInternal("from_", bitIndex);
+}
+
+std::string GenerateGetBitFromOther(int bitIndex) {
+  return GenerateGetBitInternal("other.", bitIndex);
 }
 
 std::string GenerateSetBitToLocal(int bitIndex) {

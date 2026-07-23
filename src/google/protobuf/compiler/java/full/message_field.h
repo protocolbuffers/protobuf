@@ -22,7 +22,8 @@ namespace google {
 namespace protobuf {
 namespace compiler {
 namespace java {
-class Context;            // context.h
+class Context;  // context.h
+struct OneofGeneratorInfo;
 class ClassNameResolver;  // name_resolver.h
 }  // namespace java
 }  // namespace compiler
@@ -64,6 +65,8 @@ class ImmutableMessageFieldGenerator : public ImmutableFieldGenerator {
 
   std::string GetBoxedType() const override;
 
+  const OneofGeneratorInfo* GetOneofGeneratorInfo() const;
+
  protected:
   virtual void PrintNestedBuilderCondition(
       io::Printer* printer, const char* regular_case,
@@ -101,6 +104,7 @@ class ImmutableMessageOneofFieldGenerator
  public:
   ImmutableMessageOneofFieldGenerator(const FieldDescriptor* descriptor,
                                       int bit_index, Context* context);
+  void GenerateBuilderParserMethod(io::Printer* printer) const;
   ImmutableMessageOneofFieldGenerator(
       const ImmutableMessageOneofFieldGenerator&) = delete;
   ImmutableMessageOneofFieldGenerator& operator=(

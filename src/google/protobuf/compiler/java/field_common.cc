@@ -4,6 +4,7 @@
 #include <string>
 
 #include "absl/strings/str_cat.h"
+#include "absl/strings/str_format.h"
 #include "google/protobuf/compiler/java/helpers.h"
 #include "google/protobuf/compiler/java/names.h"
 #include "google/protobuf/descriptor.h"
@@ -103,6 +104,28 @@ void SetCommonOneofVariables(
       absl::StrCat(info->name, "Case_ == ", descriptor->number());
   (*variables)["negated_has_oneof_case_message"] =
       absl::StrCat(info->name, "Case_ != ", descriptor->number());
+  (*variables)["set_has_field_bit_builder"] =
+      absl::StrCat(GenerateSetBit(descriptor->index()), ";");
+}
+
+void WriteClearOneofHasBits(const OneofGeneratorInfo* info,
+                            io::Printer* printer) {
+  for (const auto& [int_index, mask] : info->masks_by_int) {
+    printer->Print("$bit_field_name$ = ($bit_field_name$ & ~$mask$);\n",
+                   "bit_field_name", GetBitFieldName(int_index), "mask",
+                   absl::StrFormat("0x%08x", mask));
+  }
+}
+
+void WriteSetOneof(
+    io::Printer* printer,
+    const absl::flat_hash_map<absl::string_view, std::string>& variables,
+    const OneofGeneratorInfo* info, absl::string_view value) {
+  WriteClearOneofHasBits(info, printer);
+  printer->Print(variables, absl::StrCat("$oneof_name$_ = ", value,
+                                         ";\n"
+                                         "$set_oneof_case_message$;\n"
+                                         "$set_has_field_bit_builder$\n"));
 }
 
 void PrintExtraFieldInfo(

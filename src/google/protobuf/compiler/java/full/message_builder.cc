@@ -17,11 +17,13 @@
 #include <string>
 #include <vector>
 
+#include "absl/container/btree_map.h"
 #include "absl/container/btree_set.h"
 #include "absl/container/flat_hash_map.h"
 #include "absl/log/absl_check.h"
 #include "absl/strings/ascii.h"
 #include "absl/strings/str_cat.h"
+#include "absl/strings/str_format.h"
 #include "absl/strings/str_replace.h"
 #include "absl/strings/string_view.h"
 #include "absl/types/span.h"
@@ -174,9 +176,11 @@ void MessageBuilderGenerator::Generate(io::Printer* printer) {
     printer->Annotate("{", "}", oneof);
     // clearOneof()
     printer->Print(vars,
-                   "\n"
                    "public Builder ${$clear$oneof_capitalized_name$$}$() {\n"
-                   "  $oneof_name$Case_ = 0;\n"
+                   "  $oneof_name$Case_ = 0;\n");
+    const OneofGeneratorInfo* info = context_->GetOneofGeneratorInfo(oneof);
+    WriteClearOneofHasBits(info, printer);
+    printer->Print(vars,
                    "  $oneof_name$_ = null;\n"
                    "  onChanged();\n"
                    "  return this;\n"
@@ -643,10 +647,6 @@ void MessageBuilderGenerator::GenerateBuildPartial(io::Printer* printer) {
     }
   }
 
-  if (!oneofs_.empty()) {
-    printer->Print("buildPartialOneofs(result);\n");
-  }
-
   printer->Outdent();
   printer->Print(
       "  onBuilt();\n"
@@ -677,30 +677,6 @@ void MessageBuilderGenerator::GenerateBuildPartial(io::Printer* printer) {
   for (int i = 0; i < totalBuilderInts; i++) {
     start_field = GenerateBuildPartialShard(printer, i, start_field);
   }
-
-  // Build Oneofs
-  if (!oneofs_.empty()) {
-    printer->Print("private void buildPartialOneofs($classname$ result) {\n",
-                   "classname",
-                   name_resolver_->GetImmutableClassName(descriptor_));
-    printer->Indent();
-    for (auto& kv : oneofs_) {
-      const OneofDescriptor* oneof = kv.second;
-      printer->Print(
-          "result.$oneof_name$Case_ = $oneof_name$Case_;\n"
-          "result.$oneof_name$_ = this.$oneof_name$_;\n",
-          "oneof_name", context_->GetOneofGeneratorInfo(oneof)->name);
-      for (int i = 0; i < oneof->field_count(); ++i) {
-        if (oneof->field(i)->message_type() != nullptr) {
-          const ImmutableFieldGenerator& field =
-              field_generators_.get(oneof->field(i));
-          field.GenerateBuildingCode(printer);
-        }
-      }
-    }
-    printer->Outdent();
-    printer->Print("}\n\n");
-  }
 }
 
 int MessageBuilderGenerator::GenerateBuildPartialShard(io::Printer* printer,
@@ -716,23 +692,26 @@ int MessageBuilderGenerator::GenerateBuildPartialShard(io::Printer* printer,
 
   int bit = 0;
   int next = first_field;
-  for (; bit < 32 && next < descriptor_->field_count(); ++next) {
-    const ImmutableFieldGenerator& field =
-        field_generators_.get(descriptor_->field(next));
-    bit += field.GetNumBits();
 
-    // Skip oneof fields that are handled separately
-    if (IsRealOneof(descriptor_->field(next))) {
-      continue;
-    }
+  for (; bit < 32 && next < descriptor_->field_count(); ++next) {
+    const FieldDescriptor* field_desc = descriptor_->field(next);
+    const ImmutableFieldGenerator& field = field_generators_.get(field_desc);
+    bit += field.GetNumBits();
 
     // Skip repeated fields because they are currently handled
     // in separate buildPartial sub-methods.
-    if (BitfieldTracksMutability(descriptor_->field(next))) {
+    if (BitfieldTracksMutability(field_desc)) {
       continue;
     }
     // Skip fields without presence bits in the builder
     if (field.GetNumBits() == 0) {
+      continue;
+    }
+
+    // Non-message oneof fields are handled together in a single block below per
+    // piece.
+    if (IsRealOneof(field_desc) &&
+        GetJavaType(field_desc) != JAVATYPE_MESSAGE) {
       continue;
     }
 
@@ -748,6 +727,23 @@ int MessageBuilderGenerator::GenerateBuildPartialShard(io::Printer* printer,
 
     // Copy the field from the builder to the message
     field.GenerateBuildingCode(printer);
+  }
+
+  for (const auto& kv : oneofs_) {
+    const OneofDescriptor* oneof = kv.second;
+    const OneofGeneratorInfo* info = context_->GetOneofGeneratorInfo(oneof);
+    auto it = info->non_message_masks_by_int.find(shard);
+    if (it == info->non_message_masks_by_int.end() || it->second == 0) {
+      continue;
+    }
+    printer->Print(
+        "if (($from_bit_field_name$ & $mask$) != 0) {\n"
+        "  result.$oneof_name$Case_ = $oneof_name$Case_;\n"
+        "  result.$oneof_name$_ = this.$oneof_name$_;\n"
+        "}\n",
+        "from_bit_field_name", absl::StrCat("from_", GetBitFieldName(shard)),
+        "mask", absl::StrFormat("0x%08x", it->second), "oneof_name",
+        info->name);
   }
 
   // Copy the bit field results to the generated message
