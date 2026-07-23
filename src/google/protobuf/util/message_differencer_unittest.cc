@@ -14,6 +14,7 @@
 #include "google/protobuf/util/message_differencer.h"
 
 #include <algorithm>
+#include <cstdint>
 #include <random>
 #include <string>
 #include <vector>
@@ -4334,6 +4335,143 @@ TEST(Anytest, TreatAsSet_DifferentType) {
   util::MessageDifferencer message_differencer;
   message_differencer.TreatAsSet(GetFieldDescriptor(m1, "repeated_any_value"));
   EXPECT_TRUE(message_differencer.Compare(m1, m2));
+}
+
+TEST(MessageDifferencerTest, TreatAsSet_LargeUnorderedSet) {
+  proto2_unittest::TestDiffMessage msg1;
+  proto2_unittest::TestDiffMessage msg2;
+  const int kNumElements = 5000;
+  for (int i = 0; i < kNumElements; ++i) {
+    msg1.add_rv(i);
+    msg2.add_rv(kNumElements - 1 - i);
+  }
+
+  util::MessageDifferencer differencer;
+  differencer.TreatAsSet(GetFieldDescriptor(msg1, "rv"));
+  EXPECT_TRUE(differencer.Compare(msg1, msg2));
+
+  // Verify that an unequal element is detected correctly.
+  msg2.set_rv(2500, -1);
+  EXPECT_FALSE(differencer.Compare(msg1, msg2));
+}
+
+TEST(MessageDifferencerTest, TreatAsSet_LargeUnorderedSet_AllPrimitiveTypes) {
+  unittest::TestAllTypes msg1;
+  unittest::TestAllTypes msg2;
+  const int n = 20;  // > 4 to trigger hash matching
+  for (int i = 0; i < n; ++i) {
+    int j = n - 1 - i;
+    msg1.add_repeated_int32(i);
+    msg2.add_repeated_int32(j);
+
+    msg1.add_repeated_int64(i * 1000LL);
+    msg2.add_repeated_int64(j * 1000LL);
+
+    msg1.add_repeated_uint32(static_cast<uint32_t>(i) * 10U);
+    msg2.add_repeated_uint32(static_cast<uint32_t>(j) * 10U);
+
+    msg1.add_repeated_uint64(static_cast<uint64_t>(i) * 10000ULL);
+    msg2.add_repeated_uint64(static_cast<uint64_t>(j) * 10000ULL);
+
+    msg1.add_repeated_float(i * 1.5f);
+    msg2.add_repeated_float(j * 1.5f);
+
+    msg1.add_repeated_double(i * 2.5);
+    msg2.add_repeated_double(j * 2.5);
+
+    msg1.add_repeated_bool(i % 2 == 0);
+    msg2.add_repeated_bool((n - 1 - i) % 2 == 0);
+
+    msg1.add_repeated_nested_enum(i % 2 == 0 ? unittest::TestAllTypes::FOO
+                                             : unittest::TestAllTypes::BAR);
+    msg2.add_repeated_nested_enum((n - 1 - i) % 2 == 0
+                                      ? unittest::TestAllTypes::FOO
+                                      : unittest::TestAllTypes::BAR);
+
+    // Small strings (<= 64 bytes)
+    msg1.add_repeated_string(absl::StrCat("small_str_", i));
+    msg2.add_repeated_string(absl::StrCat("small_str_", j));
+  }
+
+  util::MessageDifferencer differencer;
+  differencer.TreatAsSet(GetFieldDescriptor(msg1, "repeated_int32"));
+  differencer.TreatAsSet(GetFieldDescriptor(msg1, "repeated_int64"));
+  differencer.TreatAsSet(GetFieldDescriptor(msg1, "repeated_uint32"));
+  differencer.TreatAsSet(GetFieldDescriptor(msg1, "repeated_uint64"));
+  differencer.TreatAsSet(GetFieldDescriptor(msg1, "repeated_float"));
+  differencer.TreatAsSet(GetFieldDescriptor(msg1, "repeated_double"));
+  differencer.TreatAsSet(GetFieldDescriptor(msg1, "repeated_bool"));
+  differencer.TreatAsSet(GetFieldDescriptor(msg1, "repeated_nested_enum"));
+  differencer.TreatAsSet(GetFieldDescriptor(msg1, "repeated_string"));
+
+  EXPECT_TRUE(differencer.Compare(msg1, msg2));
+}
+
+TEST(MessageDifferencerTest, TreatAsSet_LargeUnorderedSet_LargeStrings) {
+  unittest::TestAllTypes msg1;
+  unittest::TestAllTypes msg2;
+  const int n = 10;
+  for (int i = 0; i < n; ++i) {
+    int j = n - 1 - i;
+    // Large strings (> 64 bytes) to test prefix + suffix sample hashing
+    std::string s1 = absl::StrCat("large_prefix_header_string_padding_", i,
+                                  std::string(100, 'x'), "_suffix_tail_", i);
+    std::string s2 = absl::StrCat("large_prefix_header_string_padding_", j,
+                                  std::string(100, 'x'), "_suffix_tail_", j);
+    msg1.add_repeated_string(s1);
+    msg2.add_repeated_string(s2);
+  }
+
+  util::MessageDifferencer differencer;
+  differencer.TreatAsSet(GetFieldDescriptor(msg1, "repeated_string"));
+  EXPECT_TRUE(differencer.Compare(msg1, msg2));
+
+  // Mismatch in large string suffix
+  msg2.set_repeated_string(
+      5, absl::StrCat("large_prefix_header_string_padding_5",
+                      std::string(100, 'x'), "_suffix_DIFFERENT"));
+  EXPECT_FALSE(differencer.Compare(msg1, msg2));
+}
+
+TEST(MessageDifferencerTest, TreatAsSet_LargeUnorderedSet_WithReporter) {
+  unittest::TestAllTypes msg1;
+  unittest::TestAllTypes msg2;
+  const int n = 10;
+  for (int i = 0; i < n; ++i) {
+    msg1.add_repeated_int32(i);
+    msg2.add_repeated_int32(n - 1 - i);
+  }
+  msg2.set_repeated_int32(5, -999);
+
+  util::MessageDifferencer differencer;
+  differencer.TreatAsSet(GetFieldDescriptor(msg1, "repeated_int32"));
+  std::string diff_report;
+  differencer.ReportDifferencesToString(&diff_report);
+  EXPECT_FALSE(differencer.Compare(msg1, msg2));
+  EXPECT_FALSE(diff_report.empty());
+}
+
+TEST(MessageDifferencerTest, TreatAsSet_LargeUnorderedSet_Messages) {
+  proto2_unittest::TestDiffMessage msg1;
+  proto2_unittest::TestDiffMessage msg2;
+  const int n = 10;
+  for (int i = 0; i < n; ++i) {
+    int j = n - 1 - i;
+    auto* item1 = msg1.add_item();
+    item1->set_a(i);
+    item1->set_b(absl::StrCat("item_", i));
+
+    auto* item2 = msg2.add_item();
+    item2->set_a(j);
+    item2->set_b(absl::StrCat("item_", j));
+  }
+
+  util::MessageDifferencer differencer;
+  differencer.TreatAsSet(GetFieldDescriptor(msg1, "item"));
+  EXPECT_TRUE(differencer.Compare(msg1, msg2));
+
+  msg2.mutable_item(5)->set_a(-999);
+  EXPECT_FALSE(differencer.Compare(msg1, msg2));
 }
 
 

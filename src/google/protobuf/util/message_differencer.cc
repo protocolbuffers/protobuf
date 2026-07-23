@@ -1885,6 +1885,63 @@ bool MaximumMatcher::FindArgumentPathDFS(int v, std::vector<bool>* visited) {
 
 }  // namespace
 
+inline size_t HashStringSample(absl::string_view value) {
+  constexpr size_t kHalfMaxSampleBytes = 32;
+  auto hash_chunk = [](absl::string_view s) -> size_t {
+    size_t h = 2166136261u;
+    for (char c : s) {
+      h = (h ^ static_cast<size_t>(static_cast<unsigned char>(c))) * 16777619u;
+    }
+    return h;
+  };
+  if (value.size() <= kHalfMaxSampleBytes * 2) {
+    return hash_chunk(value);
+  }
+  size_t h1 = hash_chunk(value.substr(0, kHalfMaxSampleBytes));
+  size_t h2 = hash_chunk(
+      value.substr(value.size() - kHalfMaxSampleBytes, kHalfMaxSampleBytes));
+  return h1 ^ (h2 << 1);
+}
+
+size_t GetRepeatedElementHash(const Message& message,
+                              const FieldDescriptor* field, int index) {
+  const Reflection* reflection = message.GetReflection();
+  switch (field->cpp_type()) {
+    case FieldDescriptor::CPPTYPE_INT32:
+      return static_cast<size_t>(
+          reflection->GetRepeatedInt32(message, field, index));
+    case FieldDescriptor::CPPTYPE_INT64:
+      return static_cast<size_t>(
+          reflection->GetRepeatedInt64(message, field, index));
+    case FieldDescriptor::CPPTYPE_UINT32:
+      return static_cast<size_t>(
+          reflection->GetRepeatedUInt32(message, field, index));
+    case FieldDescriptor::CPPTYPE_UINT64:
+      return static_cast<size_t>(
+          reflection->GetRepeatedUInt64(message, field, index));
+    case FieldDescriptor::CPPTYPE_DOUBLE:
+      return std::hash<double>()(
+          reflection->GetRepeatedDouble(message, field, index));
+    case FieldDescriptor::CPPTYPE_FLOAT:
+      return std::hash<float>()(
+          reflection->GetRepeatedFloat(message, field, index));
+    case FieldDescriptor::CPPTYPE_BOOL:
+      return static_cast<size_t>(
+          reflection->GetRepeatedBool(message, field, index));
+    case FieldDescriptor::CPPTYPE_ENUM:
+      return static_cast<size_t>(
+          reflection->GetRepeatedEnumValue(message, field, index));
+    case FieldDescriptor::CPPTYPE_STRING: {
+      std::string scratch;
+      return HashStringSample(reflection->GetRepeatedStringReference(
+          message, field, index, &scratch));
+    }
+    case FieldDescriptor::CPPTYPE_MESSAGE:
+      break;
+  }
+  return 0;
+}
+
 bool MessageDifferencer::MatchRepeatedFieldIndices(
     const Message& message1, const Message& message2, int unpacked_any,
     const FieldDescriptor* repeated_field,
@@ -1971,68 +2028,110 @@ bool MessageDifferencer::MatchRepeatedFieldIndices(
         }
       }
     }
-    for (int i = start_offset; i < count1; ++i) {
-      // Indicates any matched elements for this repeated field.
-      bool match = false;
-      int matched_j = -1;
+    // Avoid hash map construction overhead for small element counts where
+    // simple direct comparison is faster and avoids hashing large payloads.
+    constexpr int kMinElementsForHashMatching = 4;
+    const bool use_hash_matching =
+        IsTreatedAsSet(repeated_field) && !is_treated_as_smart_set &&
+        (count1 - start_offset) > kMinElementsForHashMatching &&
+        (count2 - start_offset) > kMinElementsForHashMatching;
 
-      for (int j = start_offset; j < count2; j++) {
-        if (match_list2->at(j) != -1) {
-          if (!is_treated_as_smart_set || num_diffs_list1[i] == 0 ||
-              num_diffs_list1[match_list2->at(j)] == 0) {
-            continue;
+    if (use_hash_matching) {
+      absl::flat_hash_map<size_t, std::vector<int>> hash_to_indices2;
+      for (int j = start_offset; j < count2; ++j) {
+        if (match_list2->at(j) == -1) {
+          size_t h2 = GetRepeatedElementHash(message2, repeated_field, j);
+          hash_to_indices2[h2].push_back(j);
+        }
+      }
+
+      for (int i = start_offset; i < count1; ++i) {
+        bool match = false;
+        size_t h1 = GetRepeatedElementHash(message1, repeated_field, i);
+        auto it = hash_to_indices2.find(h1);
+        if (it != hash_to_indices2.end()) {
+          for (int j : it->second) {
+            if (match_list2->at(j) != -1) continue;
+            if (IsMatch(repeated_field, key_comparator, &message1, &message2,
+                        unpacked_any, parent_fields, nullptr, i, j)) {
+              match_list1->at(i) = j;
+              match_list2->at(j) = i;
+              match = true;
+              break;
+            }
           }
         }
-
-        if (is_treated_as_smart_set) {
-          num_diffs_reporter.Reset();
-          match =
-              IsMatch(repeated_field, key_comparator, &message1, &message2,
-                      unpacked_any, parent_fields, &num_diffs_reporter, i, j);
-        } else {
-          match = IsMatch(repeated_field, key_comparator, &message1, &message2,
-                          unpacked_any, parent_fields, nullptr, i, j);
+        if (!match) {
+          if (reporter == nullptr) return false;
+          success = false;
         }
+      }
+    } else {
+      for (int i = start_offset; i < count1; ++i) {
+        // Indicates any matched elements for this repeated field.
+        bool match = false;
+        int matched_j = -1;
 
-        if (is_treated_as_smart_set) {
-          if (match) {
-            num_diffs_list1[i] = 0;
-          } else if (repeated_field->cpp_type() ==
-                     FieldDescriptor::CPPTYPE_MESSAGE) {
-            // Replace with the one with fewer diffs.
-            const int32_t num_diffs = num_diffs_reporter.GetNumDiffs();
-            if (num_diffs < num_diffs_list1[i]) {
-              // If j has been already matched to some element, ensure the
-              // current num_diffs is smaller.
-              if (match_list2->at(j) == -1 ||
-                  num_diffs < num_diffs_list1[match_list2->at(j)]) {
-                num_diffs_list1[i] = num_diffs;
-                match = true;
+        for (int j = start_offset; j < count2; j++) {
+          if (match_list2->at(j) != -1) {
+            if (!is_treated_as_smart_set || num_diffs_list1[i] == 0 ||
+                num_diffs_list1[match_list2->at(j)] == 0) {
+              continue;
+            }
+          }
+
+          if (is_treated_as_smart_set) {
+            num_diffs_reporter.Reset();
+            match =
+                IsMatch(repeated_field, key_comparator, &message1, &message2,
+                        unpacked_any, parent_fields, &num_diffs_reporter, i, j);
+          } else {
+            match =
+                IsMatch(repeated_field, key_comparator, &message1, &message2,
+                        unpacked_any, parent_fields, nullptr, i, j);
+          }
+
+          if (is_treated_as_smart_set) {
+            if (match) {
+              num_diffs_list1[i] = 0;
+            } else if (repeated_field->cpp_type() ==
+                       FieldDescriptor::CPPTYPE_MESSAGE) {
+              // Replace with the one with fewer diffs.
+              const int32_t num_diffs = num_diffs_reporter.GetNumDiffs();
+              if (num_diffs < num_diffs_list1[i]) {
+                // If j has been already matched to some element, ensure the
+                // current num_diffs is smaller.
+                if (match_list2->at(j) == -1 ||
+                    num_diffs < num_diffs_list1[match_list2->at(j)]) {
+                  num_diffs_list1[i] = num_diffs;
+                  match = true;
+                }
               }
+            }
+          }
+
+          if (match) {
+            matched_j = j;
+            if (!is_treated_as_smart_set || num_diffs_list1[i] == 0) {
+              break;
             }
           }
         }
 
+        match = (matched_j != -1);
         if (match) {
-          matched_j = j;
-          if (!is_treated_as_smart_set || num_diffs_list1[i] == 0) {
-            break;
+          if (is_treated_as_smart_set && match_list2->at(matched_j) != -1) {
+            // This is to revert the previously matched index in list2.
+            match_list1->at(match_list2->at(matched_j)) = -1;
+            match = false;
           }
+          match_list1->at(i) = matched_j;
+          match_list2->at(matched_j) = i;
         }
-      }
 
-      match = (matched_j != -1);
-      if (match) {
-        if (is_treated_as_smart_set && match_list2->at(matched_j) != -1) {
-          // This is to revert the previously matched index in list2.
-          match_list1->at(match_list2->at(matched_j)) = -1;
-          match = false;
-        }
-        match_list1->at(i) = matched_j;
-        match_list2->at(matched_j) = i;
+        if (!match && reporter == nullptr) return false;
+        success = success && match;
       }
-      if (!match && reporter == nullptr) return false;
-      success = success && match;
     }
   }
 
