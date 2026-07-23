@@ -87,24 +87,29 @@ unsafe impl<K: MapKey, V: MapValue> Send for Map<K, V> {}
 impl<K: MapKey, V: MapValue> SealedInternal for Map<K, V> {}
 
 impl<K: MapKey, V: MapValue> Map<K, V> {
+    #[inline]
     pub fn new() -> Self {
         V::map_new(Private)
     }
 
+    #[inline]
     pub fn as_mut(&mut self) -> MapMut<'_, K, V> {
         MapMut { inner: self.inner.as_mut(), _phantom: PhantomData }
     }
 
+    #[inline]
     pub fn as_view(&self) -> MapView<'_, K, V> {
         MapView { raw: self.inner.raw, _phantom: PhantomData }
     }
 
     #[doc(hidden)]
+    #[inline]
     pub fn from_inner(_: Private, inner: InnerMap) -> Self {
         Self { inner, _phantom: PhantomData }
     }
 
     #[doc(hidden)]
+    #[inline]
     pub fn as_raw(&self, _: Private) -> RawMap {
         self.inner.raw
     }
@@ -210,6 +215,7 @@ impl<'msg, K: ?Sized, V: ?Sized> MapView<'msg, K, V> {
 }
 
 impl<'msg, K: MapKey, V: MapValue> MapView<'msg, K, V> {
+    #[inline]
     pub fn get<'a>(self, key: impl Into<View<'a, K>>) -> Option<View<'msg, V>>
     where
         K: 'a,
@@ -217,14 +223,17 @@ impl<'msg, K: MapKey, V: MapValue> MapView<'msg, K, V> {
         V::map_get(Private, self, key.into())
     }
 
+    #[inline]
     pub fn len(self) -> usize {
         V::map_len(Private, self)
     }
 
+    #[inline]
     pub fn is_empty(self) -> bool {
         self.len() == 0
     }
 
+    #[inline]
     pub fn contains_key<'a>(self, key: impl Into<View<'a, K>>) -> bool
     where
         K: 'a,
@@ -361,14 +370,17 @@ impl<'msg, K: ?Sized, V: ?Sized> MapMut<'msg, K, V> {
 }
 
 impl<'msg, K: MapKey, V: MapValue> MapMut<'msg, K, V> {
+    #[inline]
     pub fn len(&self) -> usize {
         self.as_view().len()
     }
 
+    #[inline]
     pub fn is_empty(&self) -> bool {
         self.len() == 0
     }
 
+    #[inline]
     pub fn contains_key<'a>(&self, key: impl Into<View<'a, K>>) -> bool
     where
         K: 'a,
@@ -379,22 +391,27 @@ impl<'msg, K: MapKey, V: MapValue> MapMut<'msg, K, V> {
     /// Adds a key-value pair to the map.
     ///
     /// Returns `true` if the entry was newly inserted.
+    #[inline]
     pub fn insert<'a>(&mut self, key: impl Into<View<'a, K>>, value: impl IntoProxied<V>) -> bool {
         V::map_insert(Private, self.as_mut(), key.into(), value)
     }
 
+    #[inline]
     pub fn remove<'a>(&mut self, key: impl Into<View<'a, K>>) -> bool {
         V::map_remove(Private, self.as_mut(), key.into())
     }
 
+    #[inline]
     pub fn clear(&mut self) {
         V::map_clear(Private, self.as_mut())
     }
 
+    #[inline]
     pub fn get<'a>(&self, key: impl Into<View<'a, K>>) -> Option<View<'_, V>> {
         V::map_get(Private, self.as_view(), key.into())
     }
 
+    #[inline]
     pub fn get_mut<'a>(&mut self, key: impl Into<View<'a, K>>) -> Option<Mut<'_, V>>
     where
         V: Message,
@@ -416,6 +433,7 @@ impl<'msg, K: MapKey, V: MapValue> MapMut<'msg, K, V> {
     /// Returns an iterator visiting all key-value pairs in arbitrary order.
     ///
     /// The iterator element type is `(View<K>, View<V>)`.
+    #[inline]
     pub fn iter(&self) -> MapIter<'_, K, V> {
         self.into_iter()
     }
@@ -423,6 +441,7 @@ impl<'msg, K: MapKey, V: MapValue> MapMut<'msg, K, V> {
     /// Returns an iterator visiting all keys in arbitrary order.
     ///
     /// The iterator element type is `View<K>`.
+    #[inline]
     pub fn keys(&self) -> impl Iterator<Item = View<'_, K>> + '_ {
         self.as_view().keys()
     }
@@ -430,6 +449,7 @@ impl<'msg, K: MapKey, V: MapValue> MapMut<'msg, K, V> {
     /// Returns an iterator visiting all values in arbitrary order.
     ///
     /// The iterator element type is `View<V>`.
+    #[inline]
     pub fn values(&self) -> impl Iterator<Item = View<'_, V>> + '_ {
         self.as_view().values()
     }
