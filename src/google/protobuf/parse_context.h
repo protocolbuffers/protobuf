@@ -1515,6 +1515,8 @@ const char* EpsCopyInputStream::ReadPackedFixed(const char* ptr, Arena* arena,
   while (size > nbytes) {
     int num = nbytes / sizeof(T);
     int old_entries = out->size();
+    GOOGLE_PROTOBUF_PARSER_ASSERT(num <=
+                                  std::numeric_limits<int>::max() - old_entries);
     out->ReserveWithArena(arena, old_entries + num);
     int block_size = num * sizeof(T);
     auto dst = out->AddNAlreadyReserved(num);
@@ -1535,6 +1537,8 @@ const char* EpsCopyInputStream::ReadPackedFixed(const char* ptr, Arena* arena,
   int block_size = num * sizeof(T);
   if (num == 0) return size == block_size ? ptr : nullptr;
   int old_entries = out->size();
+  GOOGLE_PROTOBUF_PARSER_ASSERT(num <=
+                                std::numeric_limits<int>::max() - old_entries);
   out->ReserveWithArena(arena, old_entries + num);
   auto dst = out->AddNAlreadyReserved(num);
 #ifdef ABSL_IS_LITTLE_ENDIAN
@@ -1578,6 +1582,10 @@ const char* EpsCopyInputStream::ReadPackedVarintArrayWithField(
         if (VerifyBoolsAssumingLargeArray(ptr, end)) {
           // Each byte is 0 or 1.
           const int count = end - ptr;
+          if (ABSL_PREDICT_FALSE(count >
+                                 std::numeric_limits<int>::max() - out.size())) {
+            return nullptr;
+          }
           out.ReserveWithArena(arena, out.size() + count);
           T* x = out.AddNAlreadyReserved(count);
           // For T being bool, conv must be equivalent to a conversion to bool
@@ -1591,6 +1599,10 @@ const char* EpsCopyInputStream::ReadPackedVarintArrayWithField(
     if (count == end - ptr) {
       // We have exactly one element per byte, so avoid the costly varint
       // parsing.
+      if (ABSL_PREDICT_FALSE(count >
+                             std::numeric_limits<int>::max() - out.size())) {
+        return nullptr;
+      }
       out.ReserveWithArena(arena, out.size() + count);
       T* x = out.AddNAlreadyReserved(count);
       for (; ptr != end; ++ptr) {
@@ -1602,6 +1614,10 @@ const char* EpsCopyInputStream::ReadPackedVarintArrayWithField(
       // we need to account for that.
       if (end[-1] & 0x80) count++;
       int old_size = out.size();
+      if (ABSL_PREDICT_FALSE(count >
+                             std::numeric_limits<int>::max() - old_size)) {
+        return nullptr;
+      }
       out.ReserveWithArena(arena, old_size + count);
       T* x = out.AddNAlreadyReserved(count);
       ptr = ReadPackedVarintArray(ptr, end, [&](uint64_t varint) {
