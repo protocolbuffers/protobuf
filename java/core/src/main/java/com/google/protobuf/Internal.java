@@ -17,6 +17,7 @@ import java.util.AbstractList;
 import java.util.AbstractMap;
 import java.util.AbstractSet;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -323,6 +324,8 @@ public final class Internal {
     return true;
   }
 
+  private static final int DEFAULT_BUFFER_SIZE = 4096;
+
   /** Helper method for implementing {@link Message#hashCode()} for bytes field. */
   public static int hashCodeByteBuffer(List<ByteBuffer> list) {
     int hash = 1;
@@ -331,8 +334,6 @@ public final class Internal {
     }
     return hash;
   }
-
-  private static final int DEFAULT_BUFFER_SIZE = 4096;
 
   /** Helper method for implementing {@link Message#hashCode()} for bytes field. */
   public static int hashCodeByteBuffer(ByteBuffer bytes) {
@@ -359,11 +360,12 @@ public final class Internal {
     }
   }
 
+  // Safe because we access the class dynamically via reflection.
   @SuppressWarnings("unchecked")
   public static <T extends MessageLite> T getDefaultInstance(Class<T> clazz) {
     try {
       Method method = clazz.getMethod("getDefaultInstance");
-      return (T) method.invoke(method);
+      return clazz.cast(method.invoke(method));
     } catch (Exception e) {
       throw new RuntimeException("Failed to get default instance for " + clazz, e);
     }
@@ -444,8 +446,8 @@ public final class Internal {
     }
   }
 
-  /** Wrap around a {@code Map<K, RealValue>} and provide a {@code Map<K, V>} interface. */
-  public static class MapAdapter<K, V, RealValue> extends AbstractMap<K, V> {
+  /** Wrap around a {@code Map<K, RealValueT>} and provide a {@code Map<K, V>} interface. */
+  public static class MapAdapter<K, V, RealValueT> extends AbstractMap<K, V> {
     /** An interface used to convert between two types. */
     public interface Converter<A, B> {
       B doForward(A object);
@@ -469,17 +471,17 @@ public final class Internal {
       };
     }
 
-    private final Map<K, RealValue> realMap;
-    private final Converter<RealValue, V> valueConverter;
+    private final Map<K, RealValueT> realMap;
+    private final Converter<RealValueT, V> valueConverter;
 
-    public MapAdapter(Map<K, RealValue> realMap, Converter<RealValue, V> valueConverter) {
+    public MapAdapter(Map<K, RealValueT> realMap, Converter<RealValueT, V> valueConverter) {
       this.realMap = realMap;
       this.valueConverter = valueConverter;
     }
 
     @Override
     public V get(Object key) {
-      RealValue result = realMap.get(key);
+      RealValueT result = realMap.get(key);
       if (result == null) {
         return null;
       }
@@ -488,7 +490,7 @@ public final class Internal {
 
     @Override
     public V put(K key, V value) {
-      RealValue oldValue = realMap.put(key, valueConverter.doBackward(value));
+      RealValueT oldValue = realMap.put(key, valueConverter.doBackward(value));
       if (oldValue == null) {
         return null;
       }
@@ -501,9 +503,9 @@ public final class Internal {
     }
 
     private class SetAdapter extends AbstractSet<Map.Entry<K, V>> {
-      private final Set<Map.Entry<K, RealValue>> realSet;
+      private final Set<Map.Entry<K, RealValueT>> realSet;
 
-      public SetAdapter(Set<Map.Entry<K, RealValue>> realSet) {
+      public SetAdapter(Set<Map.Entry<K, RealValueT>> realSet) {
         this.realSet = realSet;
       }
 
@@ -519,9 +521,9 @@ public final class Internal {
     }
 
     private class IteratorAdapter implements Iterator<Map.Entry<K, V>> {
-      private final Iterator<Map.Entry<K, RealValue>> realIterator;
+      private final Iterator<Map.Entry<K, RealValueT>> realIterator;
 
-      public IteratorAdapter(Iterator<Map.Entry<K, RealValue>> realIterator) {
+      public IteratorAdapter(Iterator<Map.Entry<K, RealValueT>> realIterator) {
         this.realIterator = realIterator;
       }
 
@@ -542,9 +544,9 @@ public final class Internal {
     }
 
     private class EntryAdapter implements Map.Entry<K, V> {
-      private final Map.Entry<K, RealValue> realEntry;
+      private final Map.Entry<K, RealValueT> realEntry;
 
-      public EntryAdapter(Map.Entry<K, RealValue> realEntry) {
+      public EntryAdapter(Map.Entry<K, RealValueT> realEntry) {
         this.realEntry = realEntry;
       }
 
@@ -560,7 +562,7 @@ public final class Internal {
 
       @Override
       public V setValue(V value) {
-        RealValue oldValue = realEntry.setValue(valueConverter.doBackward(value));
+        RealValueT oldValue = realEntry.setValue(valueConverter.doBackward(value));
         if (oldValue == null) {
           return null;
         }
@@ -608,6 +610,53 @@ public final class Internal {
 
     /** Returns a mutable clone of this list with the specified capacity. */
     ProtobufList<E> mutableCopyWithCapacity(int capacity);
+
+    /** Appends the values to the end of the list. */
+    @SuppressWarnings("unchecked")
+    static <E> ProtobufList<E> concatenate(ProtobufList<E> list, Iterable<? extends E> values) {
+      // If the list is empty and the values are a ProtobufList, we may be able to avoid a copy.
+      if (list.isEmpty() && values instanceof ProtobufList) {
+        ProtobufList<E> other = (ProtobufList<E>) values;
+        if (other.isEmpty()) {
+          return list;
+        }
+
+        if (!other.isModifiable()) {
+          // If the values List is immutable, we can just return it.
+          return other;
+        }
+        // Otherwise, we need to make a copy of the values List.
+        return other.mutableCopyWithCapacity(other.size());
+      }
+
+      // If values is a Collection, we can pre-size the list.
+      if (values instanceof Collection) {
+        Collection<? extends E> other = (Collection<? extends E>) values;
+
+        if (!list.isModifiable()) {
+          list = list.mutableCopyWithCapacity(list.size() + other.size());
+        }
+      }
+
+      Iterator<? extends E> it = values.iterator();
+      if (!it.hasNext()) {
+        // If the values Iterable is empty, we can just return the original list.
+        return list;
+      }
+
+      if (!list.isModifiable()) {
+        list = list.mutableCopyWithCapacity(list.size() + 1);
+      }
+
+      while (it.hasNext()) {
+        E value = it.next();
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        list.add(value);
+      }
+      return list;
+    }
   }
 
   /**

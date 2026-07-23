@@ -9,13 +9,17 @@ package com.google.protobuf;
 
 import static java.lang.Math.max;
 
-import com.google.protobuf.Internal.ProtobufList;
+import java.io.ObjectStreamException;
+import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.RandomAccess;
 
 /** Implements {@link ProtobufList} for non-primitive and {@link String} types. */
-final class ProtobufArrayList<E> extends AbstractProtobufList<E> implements RandomAccess {
+final class ProtobufArrayList<E> extends AbstractProtobufList<E>
+    implements RandomAccess
+{
 
   private static final Object[] EMPTY_ARRAY = new Object[0];
 
