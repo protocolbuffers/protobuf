@@ -1,7 +1,6 @@
 # Protobuf IO library.
 
 load("@rules_cc//cc:defs.bzl", "cc_library", "cc_test")
-load("@rules_pkg//pkg:mappings.bzl", "pkg_files", "strip_prefix")
 load("//build_defs:cpp_opts.bzl", "COPTS")
 
 package(
@@ -38,6 +37,7 @@ cc_library(
         "@abseil-cpp//absl/strings",
         "@abseil-cpp//absl/strings:cord",
         "@abseil-cpp//absl/strings:internal",
+        "@abseil-cpp//absl/types:optional",
         "@abseil-cpp//absl/types:span",
     ],
 )
@@ -215,6 +215,7 @@ cc_test(
         "@abseil-cpp//absl/base",
         "@abseil-cpp//absl/base:core_headers",
         "@abseil-cpp//absl/base:log_severity",
+        "@abseil-cpp//absl/cleanup",
         "@abseil-cpp//absl/container:flat_hash_map",
         "@abseil-cpp//absl/log:absl_check",
         "@abseil-cpp//absl/log:absl_log",
