@@ -55,6 +55,7 @@ void Map::InMsgImpl(Context& ctx, const FieldDescriptor& field,
         [&] {
           if (ctx.is_upb()) {
             ctx.Emit(R"rs(
+                    #[inline]
                     pub fn $field$($view_self$)
                       -> $pb$::MapView<$view_lifetime$, $Key$, $Value$> {
                       unsafe {
@@ -68,6 +69,7 @@ void Map::InMsgImpl(Context& ctx, const FieldDescriptor& field,
                     })rs");
           } else {
             ctx.Emit({{"getter_thunk", ThunkName(ctx, field, "get")}}, R"rs(
+                    #[inline]
                     pub fn $field$($view_self$)
                       -> $pb$::MapView<$view_lifetime$, $Key$, $Value$> {
                       unsafe {
@@ -84,6 +86,7 @@ void Map::InMsgImpl(Context& ctx, const FieldDescriptor& field,
           }
           if (ctx.is_upb()) {
             ctx.Emit({}, R"rs(
+                    #[inline]
                     pub fn $field$_mut(&mut self)
                       -> $pb$::MapMut<'_, $Key$, $Value$> {
                       unsafe {
@@ -98,6 +101,7 @@ void Map::InMsgImpl(Context& ctx, const FieldDescriptor& field,
           } else {
             ctx.Emit({{"getter_mut_thunk", ThunkName(ctx, field, "get_mut")}},
                      R"rs(
+                    #[inline]
                     pub fn $field$_mut(&mut self)
                       -> $pb$::MapMut<'_, $Key$, $Value$> {
                       let inner = $pbr$::InnerMapMut::new(
@@ -113,6 +117,7 @@ void Map::InMsgImpl(Context& ctx, const FieldDescriptor& field,
           }
           if (ctx.is_upb()) {
             ctx.Emit({}, R"rs(
+                  #[inline]
                   pub fn set_$raw_field_name$(
                       &mut self,
                       src: impl $pb$::IntoProxied<$pb$::Map<$Key$, $Value$>>) {
@@ -127,6 +132,7 @@ void Map::InMsgImpl(Context& ctx, const FieldDescriptor& field,
           } else {
             ctx.Emit({{"move_setter_thunk", ThunkName(ctx, field, "set")}},
                      R"rs(
+                  #[inline]
                   pub fn set_$raw_field_name$(
                       &mut self,
                       src: impl $pb$::IntoProxied<$pb$::Map<$Key$, $Value$>>) {
