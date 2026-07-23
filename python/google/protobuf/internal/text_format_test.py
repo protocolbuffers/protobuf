@@ -810,6 +810,32 @@ class TextFormatParserTests(TextFormatBase):
           f'got {type(exc).__name__}: {exc}'
       )
 
+  def testRecommendedRecursionLimitConstant(self, message_module):
+    del message_module
+    # The exported constant matches the Java Text Format parser's default
+    # (TextFormat.Parser.Builder#setRecursionLimit initializes to 100) and the
+    # binary wire-format default across language ports, so a message that
+    # round-trips through those parsers also round-trips through Python Text
+    # Format when the constant is opted into.
+    self.assertEqual(text_format.DEFAULT_RECURSION_LIMIT, 100)
+    message = descriptor_pb2.DescriptorProto()
+    too_deep_text = 'nested_type {' * 200 + '}' * 200
+    with self.assertRaisesRegex(
+        text_format.ParseError, 'Message too deep'
+    ):
+      text_format.Parse(
+          too_deep_text,
+          message,
+          max_recursion_depth=text_format.DEFAULT_RECURSION_LIMIT,
+      )
+    # A shallow input still parses normally with the constant applied.
+    shallow_text = 'nested_type {' * 10 + '}' * 10
+    text_format.Parse(
+        shallow_text,
+        descriptor_pb2.DescriptorProto(),
+        max_recursion_depth=text_format.DEFAULT_RECURSION_LIMIT,
+    )
+
   def testParseAllFields(self, message_module):
     message = message_module.TestAllTypes()
     test_util.SetAllFields(message)
