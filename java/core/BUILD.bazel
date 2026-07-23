@@ -127,6 +127,8 @@ internal_gen_well_known_protos_java(
         "//:empty_proto",
         "//:field_mask_proto",
         "//:java_features_proto",
+        "//:json_enumvalue_options_proto",
+        "//:json_options_proto",
         "//:source_context_proto",
         "//:struct_proto",
         "//:timestamp_proto",
