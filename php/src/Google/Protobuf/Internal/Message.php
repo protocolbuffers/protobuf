@@ -932,6 +932,10 @@ class Message
                 if ($value === "NaN") {
                     return NAN;
                 }
+                if (!is_numeric($value)) {
+                   throw new GPBDecodeException(
+                       "Invalid data type for float field");
+                }
                 return $value;
             case GPBType::INT32:
             case GPBType::SINT32:
@@ -1283,6 +1287,10 @@ class Message
             } else if ($field->isRepeated()) {
                 if (is_null($value)) {
                     continue;
+                }
+                if (!is_array($value)) {
+                    throw new GPBDecodeException(
+                        "Invalid data type for repeated field");
                 }
                 foreach ($value as $tmp) {
                     if (is_null($tmp)) {
