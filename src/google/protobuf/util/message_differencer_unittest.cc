@@ -4336,6 +4336,24 @@ TEST(Anytest, TreatAsSet_DifferentType) {
   EXPECT_TRUE(message_differencer.Compare(m1, m2));
 }
 
+TEST(MessageDifferencerTest, TreatAsSet_LargeUnorderedSet) {
+  proto2_unittest::TestDiffMessage msg1;
+  proto2_unittest::TestDiffMessage msg2;
+  const int kNumElements = 5000;
+  for (int i = 0; i < kNumElements; ++i) {
+    msg1.add_rv(i);
+    msg2.add_rv(kNumElements - 1 - i);
+  }
+
+  util::MessageDifferencer differencer;
+  differencer.TreatAsSet(GetFieldDescriptor(msg1, "rv"));
+  EXPECT_TRUE(differencer.Compare(msg1, msg2));
+
+  // Verify that an unequal element is detected correctly.
+  msg2.set_rv(2500, -1);
+  EXPECT_FALSE(differencer.Compare(msg1, msg2));
+}
+
 
 }  // namespace
 }  // namespace protobuf

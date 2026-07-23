@@ -416,10 +416,9 @@ class PROTOBUF_EXPORT MessageDifferencer {
   // above, extra values added to repeated fields of the second message will
   // not cause the comparison to fail.
   //
-  // Note that set comparison is currently O(k * n^2) (where n is the total
-  // number of elements, and k is the average size of each element). In theory
-  // it could be made O(n * k) with a more complex hashing implementation. Feel
-  // free to contribute one if the current implementation is too slow for you.
+  // Note that set comparison runs in average O(n * k) time using hash-based
+  // element matching (where n is the total number of elements, and k is the
+  // average size of each element).
   // If partial matching is also enabled, the time complexity will be O(k * n^2
   // + n^3) in which n^3 is the time complexity of the maximum matching
   // algorithm.
