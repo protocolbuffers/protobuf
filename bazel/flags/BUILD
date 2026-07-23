@@ -1,5 +1,6 @@
 load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
-load("@bazel_skylib//rules:common_settings.bzl", "bool_flag", "string_flag", "string_list_flag")
+load("@bazel_skylib//rules:common_settings.bzl", "bool_flag")
+load("//bazel/private:compat_flag.bzl", "compat_bool_flag", "compat_string_list_flag")
 
 package(
     default_applicable_licenses = ["//:license"],
@@ -25,9 +26,10 @@ filegroup(
     ],
 )
 
-bool_flag(
+compat_bool_flag(
     name = "experimental_proto_descriptor_sets_include_source_info",
     build_setting_default = False,
+    fragment_field = "experimental_proto_descriptorsets_include_source_info",
     scope = "universal",
 )
 
@@ -36,9 +38,10 @@ label_flag(
     build_setting_default = "@bazel_tools//tools/proto:protoc",
 )
 
-string_list_flag(
+compat_string_list_flag(
     name = "protocopt",
     build_setting_default = [],
+    fragment_field = "experimental_protoc_opts",
     scope = "universal",
 )
 
@@ -75,39 +78,45 @@ config_setting(
 )
 
 # TODO: deprecate this flag.
-string_flag(
+compat_bool_flag(
     name = "strict_proto_deps",
-    build_setting_default = "error",
+    build_setting_default = True,
+    fragment_field = "strict_proto_deps",
     scope = "universal",
-    values = [
-        "off",
-        "OFF",
-        "warn",
-        "WARN",
-        "error",
-        "ERROR",
-        "strict",
-        "STRICT",
-        "default",
-        "DEFAULT",
-    ],
+    values = {
+        False: [
+            "off",
+            "OFF",
+        ],
+        True: [
+            "warn",
+            "WARN",
+            "error",
+            "ERROR",
+            "strict",
+            "STRICT",
+        ],
+    },
 )
 
 # TODO: deprecate this flag.
-string_flag(
+compat_bool_flag(
     name = "strict_public_imports",
-    build_setting_default = "off",
+    build_setting_default = False,
+    fragment_field = "strict_public_imports",
     scope = "universal",
-    values = [
-        "off",
-        "OFF",
-        "warn",
-        "WARN",
-        "error",
-        "ERROR",
-        "strict",
-        "STRICT",
-        "default",
-        "DEFAULT",
-    ],
+    values = {
+        False: [
+            "off",
+            "OFF",
+        ],
+        True: [
+            "warn",
+            "WARN",
+            "error",
+            "ERROR",
+            "strict",
+            "STRICT",
+        ],
+    },
 )

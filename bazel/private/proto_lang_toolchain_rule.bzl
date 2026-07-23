@@ -7,11 +7,11 @@
 #
 """Implementation of the proto_lang_toolchain rule."""
 
+load("@bazel_skylib//rules:common_settings.bzl", "BuildSettingInfo")
 load("@proto_bazel_features//:features.bzl", "bazel_features")
 load("//bazel/common:proto_common.bzl", "proto_common")
 load("//bazel/common:proto_info.bzl", "ProtoInfo")
 load("//bazel/common:proto_lang_toolchain_info.bzl", "ProtoLangToolchainInfo")
-load("//bazel/flags:flags.bzl", "get_flag_value")
 load("//bazel/private:toolchain_helpers.bzl", "toolchains")
 
 def _rule_impl(ctx):
@@ -34,7 +34,7 @@ def _rule_impl(ctx):
         protoc_opts = ctx.toolchains[toolchains.PROTO_TOOLCHAIN].proto.protoc_opts
     else:
         proto_compiler = ctx.attr._proto_compiler.files_to_run
-        protoc_opts = get_flag_value(ctx, "protocopt")
+        protoc_opts = list(ctx.attr._protocopt[BuildSettingInfo].value)
 
     if ctx.attr.protoc_minimal_do_not_use:
         proto_compiler = ctx.attr.protoc_minimal_do_not_use.files_to_run
