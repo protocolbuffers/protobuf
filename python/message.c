@@ -1098,7 +1098,10 @@ bool PyUpb_Message_IsFrozen(PyObject* _self) {
  * Attribute lookup must find both message fields and base class methods like
  * msg.SerializeToString().
  */
-__attribute__((flatten)) static PyObject* PyUpb_Message_GetAttr(
+#if defined(__GNUC__) || defined(__clang__)
+__attribute__((flatten))
+#endif
+static PyObject* PyUpb_Message_GetAttr(
     PyObject* _self, PyObject* attr) {
   PyUpb_Message* self = (void*)_self;
 
