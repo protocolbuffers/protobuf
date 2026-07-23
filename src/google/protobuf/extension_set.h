@@ -1082,7 +1082,7 @@ class PROTOBUF_EXPORT ExtensionSet {
       Arena* arena, Extension& dst_extension, const MessageLite* extendee,
       int number, const Extension& other_extension, Arena* other_arena);
 
-  inline static bool is_packable(WireFormatLite::WireType type) {
+  static bool is_packable(WireFormatLite::WireType type) {
     switch (type) {
       case WireFormatLite::WIRETYPE_VARINT:
       case WireFormatLite::WIRETYPE_FIXED64:
@@ -1329,17 +1329,17 @@ class PrimitiveTypeTraits {
   typedef PrimitiveTypeTraits<Type> Singular;
   static constexpr bool kLifetimeBound = false;
 
-  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD static inline ConstType Get(
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD static ConstType Get(
       int number, const ExtensionSet& set, ConstType default_value) {
     return set.Get<Type>(number, default_value);
   }
 
-  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD static inline const ConstType* GetPtr(
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD static const ConstType* GetPtr(
       int number, const ExtensionSet& set, const ConstType& default_value) {
     return &set.Get<Type>(number, default_value);
   }
-  static inline void Set(Arena* arena, int number, FieldType field_type,
-                         ConstType value, ExtensionSet* set) {
+  static void Set(Arena* arena, int number, FieldType field_type,
+                  ConstType value, ExtensionSet* set) {
     set->Set<Type>(arena, number, field_type, value, nullptr);
   }
 };
@@ -1356,22 +1356,23 @@ class RepeatedPrimitiveTypeTraits {
 
   typedef RepeatedField<Type> RepeatedFieldType;
 
-  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD static inline Type Get(
-      int number, const ExtensionSet& set, int index) {
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD static Type Get(int number,
+                                                      const ExtensionSet& set,
+                                                      int index) {
     return set.GetRepeated<Type>(number, index);
   }
-  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD static inline const Type* GetPtr(
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD static const Type* GetPtr(
       int number, const ExtensionSet& set, int index) {
     return &set.GetRepeated<Type>(number, index);
   }
   PROTOBUF_FUTURE_ADD_EARLY_NODISCARD static inline const RepeatedField<
       ConstType>*
   GetRepeatedPtr(int number, const ExtensionSet& set);
-  static inline void Set(int number, int index, Type value, ExtensionSet* set) {
+  static void Set(int number, int index, Type value, ExtensionSet* set) {
     set->SetRepeated<Type>(number, index, value);
   }
-  static inline void Add(Arena* arena, int number, FieldType field_type,
-                         bool is_packed, Type value, ExtensionSet* set) {
+  static void Add(Arena* arena, int number, FieldType field_type,
+                  bool is_packed, Type value, ExtensionSet* set) {
     set->Add<Type>(arena, number, field_type, is_packed, value, nullptr);
   }
 
@@ -1453,22 +1454,22 @@ class PROTOBUF_EXPORT StringTypeTraits {
   typedef StringTypeTraits Singular;
   static constexpr bool kLifetimeBound = true;
 
-  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD static inline const std::string& Get(
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD static const std::string& Get(
       Arena* arena, int number, const ExtensionSet& set,
       ConstType default_value) {
     return set.Get<std::string>(number, default_value);
   }
-  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD static inline const std::string* GetPtr(
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD static const std::string* GetPtr(
       int number, const ExtensionSet& set, ConstType default_value) {
     // Note that we can pass `nullptr` arena since the arena argument is unused.
     return &Get(/*arena=*/nullptr, number, set, default_value);
   }
-  static inline void Set(Arena* arena, int number, FieldType field_type,
-                         const std::string& value, ExtensionSet* set) {
+  static void Set(Arena* arena, int number, FieldType field_type,
+                  const std::string& value, ExtensionSet* set) {
     set->Set<std::string>(arena, number, field_type, value, nullptr);
   }
-  static inline std::string* Mutable(Arena* arena, int number,
-                                     FieldType field_type, ExtensionSet* set) {
+  static std::string* Mutable(Arena* arena, int number, FieldType field_type,
+                              ExtensionSet* set) {
     return set->MutableString(arena, number, field_type, nullptr);
   }
 };
@@ -1484,46 +1485,45 @@ class PROTOBUF_EXPORT RepeatedStringTypeTraits {
 
   typedef RepeatedPtrField<std::string> RepeatedFieldType;
 
-  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD static inline const std::string& Get(
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD static const std::string& Get(
       int number, const ExtensionSet& set, int index) {
     return set.GetRepeated<std::string>(number, index);
   }
-  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD static inline const std::string* GetPtr(
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD static const std::string* GetPtr(
       int number, const ExtensionSet& set, int index) {
     return &Get(number, set, index);
   }
-  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD static inline const RepeatedPtrField<
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD static const RepeatedPtrField<
       std::string>*
   GetRepeatedPtr(int number, const ExtensionSet& set) {
     return &GetRepeated(number, set);
   }
-  static inline void Set(int number, int index, const std::string& value,
-                         ExtensionSet* set) {
+  static void Set(int number, int index, const std::string& value,
+                  ExtensionSet* set) {
     set->SetRepeated<std::string>(number, index, value);
   }
-  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD static inline std::string* Mutable(
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD static std::string* Mutable(
       int number, int index, ExtensionSet* set) {
     return set->MutableRepeatedString(number, index);
   }
-  static inline void Add(Arena* arena, int number, FieldType field_type,
-                         bool /*is_packed*/, const std::string& value,
-                         ExtensionSet* set) {
+  static void Add(Arena* arena, int number, FieldType field_type,
+                  bool /*is_packed*/, const std::string& value,
+                  ExtensionSet* set) {
     set->Add<std::string>(arena, number, field_type, nullptr) = value;
   }
-  static inline std::string* Add(Arena* arena, int number, FieldType field_type,
-                                 ExtensionSet* set) {
+  static std::string* Add(Arena* arena, int number, FieldType field_type,
+                          ExtensionSet* set) {
     return &set->Add<std::string>(arena, number, field_type, nullptr);
   }
 
-  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD static inline const RepeatedPtrField<
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD static const RepeatedPtrField<
       std::string>&
   GetRepeated(int number, const ExtensionSet& set) {
     return *reinterpret_cast<const RepeatedPtrField<std::string>*>(
         set.GetRawRepeatedField(number, GetDefaultRepeatedField()));
   }
 
-  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD static inline RepeatedPtrField<
-      std::string>*
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD static RepeatedPtrField<std::string>*
   MutableRepeated(Arena* arena, int number, FieldType field_type,
                   bool is_packed, ExtensionSet* set) {
     return reinterpret_cast<RepeatedPtrField<std::string>*>(
@@ -1553,16 +1553,16 @@ class EnumTypeTraits {
   typedef EnumTypeTraits<Type> Singular;
   static constexpr bool kLifetimeBound = false;
 
-  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD static inline ConstType Get(
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD static ConstType Get(
       int number, const ExtensionSet& set, ConstType default_value) {
     return static_cast<Type>(set.Get<int>(number, default_value));
   }
-  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD static inline const ConstType* GetPtr(
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD static const ConstType* GetPtr(
       int number, const ExtensionSet& set, const ConstType& default_value) {
     return reinterpret_cast<const Type*>(&set.Get<int>(number, default_value));
   }
-  static inline void Set(Arena* arena, int number, FieldType field_type,
-                         ConstType value, ExtensionSet* set) {
+  static void Set(Arena* arena, int number, FieldType field_type,
+                  ConstType value, ExtensionSet* set) {
     ABSL_DCHECK(
         internal::ValidateEnum(value, EnumTraits<Type>::validation_data()));
     set->Set<int>(arena, number, field_type, value, nullptr);
@@ -1581,27 +1581,26 @@ class RepeatedEnumTypeTraits {
 
   typedef RepeatedField<Type> RepeatedFieldType;
 
-  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD static inline ConstType Get(
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD static ConstType Get(
       int number, const ExtensionSet& set, int index) {
     return static_cast<Type>(set.GetRepeated<int>(number, index));
   }
-  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD static inline const ConstType* GetPtr(
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD static const ConstType* GetPtr(
       int number, const ExtensionSet& set, int index) {
     return reinterpret_cast<const Type*>(&set.GetRepeated<int>(number, index));
   }
-  static inline void Set(int number, int index, ConstType value,
-                         ExtensionSet* set) {
+  static void Set(int number, int index, ConstType value, ExtensionSet* set) {
     ABSL_DCHECK(
         internal::ValidateEnum(value, EnumTraits<Type>::validation_data()));
     set->SetRepeated<int>(number, index, value);
   }
-  static inline void Add(Arena* arena, int number, FieldType field_type,
-                         bool is_packed, ConstType value, ExtensionSet* set) {
+  static void Add(Arena* arena, int number, FieldType field_type,
+                  bool is_packed, ConstType value, ExtensionSet* set) {
     ABSL_DCHECK(
         internal::ValidateEnum(value, EnumTraits<Type>::validation_data()));
     set->Add<int>(arena, number, field_type, is_packed, value, nullptr);
   }
-  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD static inline const RepeatedField<Type>&
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD static const RepeatedField<Type>&
   GetRepeated(int number, const ExtensionSet& set) {
     // Hack: the `Extension` struct stores a RepeatedField<int> for enums.
     // RepeatedField<int> cannot implicitly convert to RepeatedField<EnumType>
@@ -1610,11 +1609,11 @@ class RepeatedEnumTypeTraits {
     return *reinterpret_cast<const RepeatedField<Type>*>(
         set.GetRawRepeatedField(number, GetDefaultRepeatedField()));
   }
-  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD static inline const RepeatedField<Type>*
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD static const RepeatedField<Type>*
   GetRepeatedPtr(int number, const ExtensionSet& set) {
     return &GetRepeated(number, set);
   }
-  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD static inline RepeatedField<Type>*
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD static RepeatedField<Type>*
   MutableRepeated(Arena* arena, int number, FieldType field_type,
                   bool is_packed, ExtensionSet* set) {
     return reinterpret_cast<RepeatedField<Type>*>(set->MutableRawRepeatedField(
@@ -1652,44 +1651,42 @@ class MessageTypeTraits {
   typedef MessageTypeTraits<Type> Singular;
   static constexpr bool kLifetimeBound = true;
 
-  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD static inline ConstType Get(
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD static ConstType Get(
       Arena* arena, int number, const ExtensionSet& set,
       ConstType default_value) {
     return static_cast<const Type&>(
         set.GetMessage(arena, number, default_value));
   }
-  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD static inline std::nullptr_t GetPtr(
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD static std::nullptr_t GetPtr(
       int /* number */, const ExtensionSet& /* set */,
       ConstType /* default_value */) {
     // Cannot be implemented because of forward declared messages?
     return nullptr;
   }
-  static inline MutableType Mutable(Arena* arena, int number,
-                                    FieldType field_type, ExtensionSet* set) {
+  static MutableType Mutable(Arena* arena, int number, FieldType field_type,
+                             ExtensionSet* set) {
     return static_cast<Type*>(set->MutableMessage(
         arena, number, field_type, Type::default_instance(), nullptr));
   }
-  static inline void SetAllocated(Arena* arena, int number,
-                                  FieldType field_type, MutableType message,
-                                  ExtensionSet* set) {
+  static void SetAllocated(Arena* arena, int number, FieldType field_type,
+                           MutableType message, ExtensionSet* set) {
     set->SetAllocatedMessage(arena, number, field_type, nullptr, message);
   }
-  static inline void UnsafeArenaSetAllocated(Arena* arena, int number,
-                                             FieldType field_type,
-                                             MutableType message,
-                                             ExtensionSet* set) {
+  static void UnsafeArenaSetAllocated(Arena* arena, int number,
+                                      FieldType field_type, MutableType message,
+                                      ExtensionSet* set) {
     set->UnsafeArenaSetAllocatedMessage(arena, number, field_type, nullptr,
                                         message);
   }
-  [[nodiscard]] static inline MutableType Release(Arena* arena, int number,
-                                                  FieldType /* field_type */,
-                                                  ExtensionSet* set) {
+  [[nodiscard]] static MutableType Release(Arena* arena, int number,
+                                           FieldType /* field_type */,
+                                           ExtensionSet* set) {
     return static_cast<Type*>(
         set->ReleaseMessage(arena, number, Type::default_instance()));
   }
-  static inline MutableType UnsafeArenaRelease(Arena* arena, int number,
-                                               FieldType /* field_type */,
-                                               ExtensionSet* set) {
+  static MutableType UnsafeArenaRelease(Arena* arena, int number,
+                                        FieldType /* field_type */,
+                                        ExtensionSet* set) {
     return static_cast<Type*>(set->UnsafeArenaReleaseMessage(
         arena, number, Type::default_instance()));
   }
@@ -1716,31 +1713,30 @@ class RepeatedMessageTypeTraits {
 
   typedef RepeatedPtrField<Type> RepeatedFieldType;
 
-  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD static inline ConstType Get(
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD static ConstType Get(
       int number, const ExtensionSet& set, int index) {
     return static_cast<const Type&>(set.GetRepeatedMessage(number, index));
   }
-  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD static inline std::nullptr_t GetPtr(
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD static std::nullptr_t GetPtr(
       int /* number */, const ExtensionSet& /* set */, int /* index */) {
     // Cannot be implemented because of forward declared messages?
     return nullptr;
   }
-  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD static inline std::nullptr_t
-  GetRepeatedPtr(int /* number */, const ExtensionSet& /* set */) {
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD static std::nullptr_t GetRepeatedPtr(
+      int /* number */, const ExtensionSet& /* set */) {
     // Cannot be implemented because of forward declared messages?
     return nullptr;
   }
-  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD static inline MutableType Mutable(
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD static MutableType Mutable(
       int number, int index, ExtensionSet* set) {
     return static_cast<Type*>(set->MutableRepeatedMessage(number, index));
   }
-  static inline MutableType Add(Arena* arena, int number, FieldType field_type,
-                                ExtensionSet* set) {
+  static MutableType Add(Arena* arena, int number, FieldType field_type,
+                         ExtensionSet* set) {
     return static_cast<Type*>(set->AddMessage(
         arena, number, field_type, MessageTraits<Type>::class_data(), nullptr));
   }
-  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD static inline const RepeatedPtrField<
-      Type>&
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD static const RepeatedPtrField<Type>&
   GetRepeated(int number, const ExtensionSet& set) {
     // See notes above in RepeatedEnumTypeTraits::GetRepeated(): same
     // casting hack applies here, because a RepeatedPtrField<MessageLite>
@@ -1750,7 +1746,7 @@ class RepeatedMessageTypeTraits {
     return *reinterpret_cast<const RepeatedPtrField<Type>*>(
         set.GetRawRepeatedField(number, GetDefaultRepeatedField()));
   }
-  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD static inline RepeatedPtrField<Type>*
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD static RepeatedPtrField<Type>*
   MutableRepeated(Arena* arena, int number, FieldType field_type,
                   bool is_packed, ExtensionSet* set) {
     return reinterpret_cast<RepeatedPtrField<Type>*>(
@@ -1798,9 +1794,7 @@ class ExtensionIdentifier {
                                 typename TypeTraits::InitType default_value)
       : number_(number), default_value_(default_value) {}
 
-  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD inline int number() const {
-    return number_;
-  }
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD int number() const { return number_; }
   PROTOBUF_FUTURE_ADD_EARLY_NODISCARD typename TypeTraits::ConstType
   default_value() const {
     return TypeTraits::FromInitType(default_value_);
