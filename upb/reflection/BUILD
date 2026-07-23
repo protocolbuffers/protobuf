@@ -38,9 +38,7 @@ bootstrap_cc_library(
     name = "reflection",
     hdrs = [
         "def.h",
-        "def.hpp",
         "message.h",
-        "message.hpp",
     ],
     bootstrap_deps = [
         ":internal",
@@ -60,10 +58,30 @@ bootstrap_cc_library(
     ],
 )
 
-alias(
+bootstrap_cc_library(
     name = "reflection_cc",
-    actual = ":reflection",
+    hdrs = [
+        "def.hpp",
+        "message.hpp",
+    ],
+    bootstrap_deps = [
+        ":descriptor_upb_proto",
+        ":internal",
+        ":internal_cc",
+        ":reflection",
+    ],
+    copts = UPB_DEFAULT_COPTS,
+    features = UPB_DEFAULT_FEATURES,
     visibility = ["//visibility:public"],
+    deps = [
+        "//upb/base",
+        "//upb/mem",
+        "//upb/message",
+        "//upb/mini_descriptor",
+        "//upb/mini_table",
+        "//upb/port",
+        "@abseil-cpp//absl/log:absl_check",
+    ],
 )
 
 bootstrap_cc_library(
@@ -92,7 +110,6 @@ bootstrap_cc_library(
     hdrs = [
         "common.h",
         "def.h",
-        "def.hpp",
         "def_pool.h",
         "def_type.h",
         "enum_def.h",
@@ -116,7 +133,6 @@ bootstrap_cc_library(
         "internal/service_def.h",
         "internal/upb_edition_defaults.h",
         "message.h",
-        "message.hpp",
         "message_def.h",
         "message_reserved_range.h",
         "method_def.h",
@@ -144,10 +160,28 @@ bootstrap_cc_library(
     ],
 )
 
-alias(
+bootstrap_cc_library(
     name = "internal_cc",
-    actual = ":internal",
+    hdrs = [
+        "def.hpp",
+        "message.hpp",
+    ],
+    bootstrap_deps = [
+        ":descriptor_upb_proto",
+        ":internal",
+    ],
+    copts = UPB_DEFAULT_COPTS,
+    features = UPB_DEFAULT_FEATURES,
     visibility = ["//upb:__subpackages__"],
+    deps = [
+        "//upb/base",
+        "//upb/mem",
+        "//upb/message",
+        "//upb/mini_descriptor",
+        "//upb/mini_table",
+        "//upb/port",
+        "@abseil-cpp//absl/log:absl_check",
+    ],
 )
 
 cc_library(
@@ -200,7 +234,9 @@ cc_test(
     ],
     deps = [
         ":internal",
+        ":internal_cc",
         ":reflection",
+        ":reflection_cc",
         "//src/google/protobuf",
         "//src/google/protobuf:descriptor_upb_c_proto",
         "//src/google/protobuf:unittest_upb_reflection_proto",
