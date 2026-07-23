@@ -932,6 +932,10 @@ class Message
                 if ($value === "NaN") {
                     return NAN;
                 }
+                if (!is_numeric($value)) {
+                   throw new GPBDecodeException(
+                       "Invalid data type for float field");
+                }
                 return $value;
             case GPBType::INT32:
             case GPBType::SINT32:
