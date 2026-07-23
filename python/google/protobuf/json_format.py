@@ -513,6 +513,7 @@ class _Parser(object):
     self.descriptor_pool = descriptor_pool
     self.max_recursion_depth = max_recursion_depth
     self.recursion_depth = 0
+    self._custom_enum_names_cache = {}
 
   def ConvertMessage(self, value, message, path):
     """Convert a JSON object into a message.
@@ -848,7 +849,11 @@ class _Parser(object):
     value_field = field.message_type.fields_by_name['value']
     for key in value:
       key_value = _ConvertScalarFieldValue(
-          key, key_field, '{0}.key'.format(path), True
+          key,
+          key_field,
+          '{0}.key'.format(path),
+          True,
+          self._custom_enum_names_cache,
       )
       if value_field.cpp_type == descriptor.FieldDescriptor.CPPTYPE_MESSAGE:
         self.ConvertMessage(
@@ -868,7 +873,9 @@ class _Parser(object):
   def _ConvertAndSetScalar(self, message, field, js_value, path):
     """Convert scalar from js_value and assign it to message.field."""
     try:
-      value = _ConvertScalarFieldValue(js_value, field, path)
+      value = _ConvertScalarFieldValue(
+          js_value, field, path, False, self._custom_enum_names_cache
+      )
       if field.is_extension:
         message.Extensions[field] = value
       else:
@@ -884,7 +891,9 @@ class _Parser(object):
         repeated = message.Extensions[repeated_field]
       else:
         repeated = getattr(message, repeated_field.name)
-      value = _ConvertScalarFieldValue(js_value, repeated_field, path)
+      value = _ConvertScalarFieldValue(
+          js_value, repeated_field, path, False, self._custom_enum_names_cache
+      )
       repeated.append(value)
     except EnumStringValueParseError:
       if not self.ignore_unknown_fields:
@@ -900,11 +909,14 @@ class _Parser(object):
               js_value,
               map_field.message_type.fields_by_name['value'],
               path,
+              False,
+              self._custom_enum_names_cache,
           )
       )
     except EnumStringValueParseError:
       if not self.ignore_unknown_fields:
         raise
+
 
 def _GetJsonEnumValueOption(ev):
   """Helper to get the JsonEnumValueOptions for an enum value.
@@ -926,7 +938,48 @@ def _GetJsonEnumValueOption(ev):
     return ev.GetOptions().Extensions[extension_descriptor]
   return None
 
-def _ConvertScalarFieldValue(value, field, path, require_str=False):
+
+def _GetCustomJsonEnumNames(enum_type, custom_enum_names_cache=None):
+  """Helper to get a mapping from custom JSON name to EnumValueDescriptor.
+
+  Args:
+    enum_type: The EnumDescriptor.
+    custom_enum_names_cache: An optional dict to store/lookup the cached map.
+
+  Returns:
+    A dict mapping custom JSON name strings to EnumValueDescriptors.
+  """
+  if (
+      custom_enum_names_cache is not None
+      and enum_type in custom_enum_names_cache
+  ):
+    return custom_enum_names_cache[enum_type]
+
+  custom_names = {}
+  try:
+    extension_descriptor = descriptor_pool.Default().FindExtensionByName(
+        'pb.enumvalue.json'
+    )
+  except KeyError:
+    extension_descriptor = None
+
+  if extension_descriptor is not None:
+    for ev in enum_type.values:
+      options = ev.GetOptions()
+      if options.HasExtension(extension_descriptor):
+        option = options.Extensions[extension_descriptor]
+        if option.HasField('string'):
+          custom_names[option.string] = ev
+
+  if custom_enum_names_cache is not None:
+    custom_enum_names_cache[enum_type] = custom_names
+
+  return custom_names
+
+
+def _ConvertScalarFieldValue(
+    value, field, path, require_str=False, custom_enum_names_cache=None
+):
   """Convert a single scalar field value.
 
   Args:
@@ -934,6 +987,7 @@ def _ConvertScalarFieldValue(value, field, path, require_str=False):
     field: The descriptor of the field to convert.
     path: parent path to log parse error info.
     require_str: If True, the field value must be a str.
+    custom_enum_names_cache: An optional dict to store/lookup custom enum names.
 
   Returns:
     The converted scalar field value
@@ -968,12 +1022,11 @@ def _ConvertScalarFieldValue(value, field, path, require_str=False):
       # Convert an enum value.
       enum_value = field.enum_type.values_by_name.get(value, None)
       # First check to see if we have a custom enum string.
-      if enum_value is None:
-        for ev in field.enum_type.values:
-          option = _GetJsonEnumValueOption(ev)
-          if option is not None and option.string == value:
-            enum_value = ev
-            break
+      if enum_value is None and isinstance(value, str):
+        custom_names = _GetCustomJsonEnumNames(
+            field.enum_type, custom_enum_names_cache
+        )
+        enum_value = custom_names.get(value, None)
       # If not, try parsing it as an integer.
       if enum_value is None:
         try:
