@@ -19,7 +19,7 @@ bzl_library(
     deps = ["//bazel/common:proto_info_bzl"],
 )
 
-# Aggregate all the features owned by the Protobuf repo.
+# Aggregate all the features owned by the Protobuf repo (up to Edition 2026).
 compile_edition_defaults(
     name = "protobuf_defaults",
     testonly = True,
