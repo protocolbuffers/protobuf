@@ -231,7 +231,7 @@ bool Reparse(PyMessageFactory* message_factory, const Message& from,
   (void)from.SerializeToString(&serialized);
   io::CodedInputStream input(
       reinterpret_cast<const uint8_t*>(serialized.c_str()), serialized.size());
-  input.SetExtensionRegistry(message_factory->pool->pool,
+  input.SetExtensionRegistry(message_factory->pool->pool->get(),
                              message_factory->message_factory);
   bool success = to->ParseFromCodedStream(&input);
   if (!success) {
@@ -313,9 +313,7 @@ static PyObject* GetOrBuildMessageInDefaultPool(
     }
   }
 
-#if PROTOBUF_PY_FUTURE_FREEZE_OPTIONS
   cmsg->state = MESSAGE_FROZEN;
-#endif
 
   // Cache the result.
   {

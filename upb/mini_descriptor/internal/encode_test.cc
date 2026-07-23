@@ -19,14 +19,13 @@
 #include "upb/base/descriptor_constants.h"
 #include "upb/base/status.hpp"
 #include "upb/mem/arena.hpp"
-#include "upb/message/internal/accessors.h"
 #include "upb/mini_descriptor/decode.h"
 #include "upb/mini_descriptor/internal/base92.h"
 #include "upb/mini_descriptor/internal/modifiers.h"
 #include "upb/mini_table/enum.h"
 #include "upb/mini_table/field.h"
+#include "upb/mini_table/internal/message.h"
 #include "upb/mini_table/message.h"
-#include "upb/mini_table/sub.h"
 
 // Must be last.
 #include "upb/port/def.inc"
@@ -198,6 +197,48 @@ TEST_P(MiniTableTest, SizeOverflow) {
   upb_MiniTable* table2 = _upb_MiniTable_Build(
       e.data().data(), e.data().size(), GetParam(), arena.ptr(), status.ptr());
   ASSERT_EQ(nullptr, table2) << status.error_message();
+}
+
+TEST_P(MiniTableTest, PresenceOverflow) {
+  // Each hasbit field consumes one int16_t presence index. A message with more
+  // presence fields than fit in that index must be rejected instead of
+  // truncating the index, which would alias a scalar field onto a oneof.
+  upb::Arena arena;
+  upb::MtDataEncoder e;
+  ASSERT_TRUE(e.StartMessage(0));
+  // Far more presence fields than the int16_t index holds, but few enough bytes
+  // to stay under the message size limit.
+  for (uint32_t i = 1; i <= 40000; i++) {
+    ASSERT_TRUE(e.PutField(kUpb_FieldType_Bool, i, 0));
+  }
+  upb::Status status;
+  upb_MiniTable* table = _upb_MiniTable_Build(
+      e.data().data(), e.data().size(), GetParam(), arena.ptr(), status.ptr());
+  EXPECT_EQ(nullptr, table);
+}
+
+TEST_P(MiniTableTest, OneofCaseOverflow) {
+  // The oneof case offset is stored negated in the int16_t presence field, so a
+  // oneof whose case is placed beyond the positive int16_t range must be
+  // rejected instead of aliasing the oneof onto a hasbit field.
+  upb::Arena arena;
+  upb::MtDataEncoder e;
+  ASSERT_TRUE(e.StartMessage(0));
+  uint32_t field_num = 0;
+  // No-presence single-byte fields push the oneof case offset past INT16_MAX
+  // while keeping the message under the size limit.
+  for (uint32_t i = 0; i < 40000; i++) {
+    ASSERT_TRUE(e.PutField(kUpb_FieldType_Bool, ++field_num,
+                           kUpb_FieldModifier_IsProto3Singular));
+  }
+  uint32_t oneof_field = ++field_num;
+  ASSERT_TRUE(e.PutField(kUpb_FieldType_Bool, oneof_field, 0));
+  ASSERT_TRUE(e.StartOneof());
+  ASSERT_TRUE(e.PutOneofField(oneof_field));
+  upb::Status status;
+  upb_MiniTable* table = _upb_MiniTable_Build(
+      e.data().data(), e.data().size(), GetParam(), arena.ptr(), status.ptr());
+  EXPECT_EQ(nullptr, table);
 }
 
 INSTANTIATE_TEST_SUITE_P(Platforms, MiniTableTest,

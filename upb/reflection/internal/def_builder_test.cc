@@ -42,10 +42,10 @@ TEST_P(FullIdentTestBase, CheckFullIdent) {
 INSTANTIATE_TEST_SUITE_P(FullIdentTest, FullIdentTestBase,
                          testing::ValuesIn(std::vector<IdentTestData>{
                              {"foo.bar", true},
-                             {"foo.", true},
                              {"foo", true},
+                             {"foo.7bar", true},
 
-                             {"foo.7bar", false},
+                             {"foo.", false},
                              {".foo", false},
                              {"#", false},
                              {".", false},
@@ -76,9 +76,9 @@ INSTANTIATE_TEST_SUITE_P(PartIdentTest, PartIdentTestBase,
                          testing::ValuesIn(std::vector<IdentTestData>{
                              {"foo", true},
                              {"foo1", true},
+                             {"1foo", true},
 
                              {"foo.bar", false},
-                             {"1foo", false},
                              {"#", false},
                              {".", false},
                              {"", false}}));

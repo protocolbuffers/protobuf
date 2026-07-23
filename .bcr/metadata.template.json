@@ -4,110 +4,122 @@
     {
       "email": "protobuf-packages@google.com",
       "github": "protobuf-team-bot",
+      "github_user_id": 105450428,
       "name": "Protobuf Team"
     },
     {
       "email": "sandyzhang@google.com",
       "github": "zhangskz",
+      "github_user_id": 89936743,
       "name": "Sandy Zhang"
     },
     {
       "email": "mkruskal@google.com",
       "github": "mkruskal-google",
+      "github_user_id": 62662355,
       "name": "Mike Kruskal"
     },
     {
       "email": "gberg@google.com",
       "github": "googleberg",
+      "github_user_id": 107155935,
       "name": "Jerry Berg"
     },
     {
       "email": "deannagarcia@google.com",
       "github": "deannagarcia",
+      "github_user_id": 69992229,
       "name": "Deanna Garcia",
       "do_not_notify": true
     },
     {
       "email": "esrauch@google.com",
       "github": "esrauchg",
+      "github_user_id": 140440793,
       "name": "Em Rauch",
       "do_not_notify": true
     },
     {
       "email": "haberman@google.com",
       "github": "haberman",
+      "github_user_id": 1270,
       "name": "Josh Haberman",
-      "do_not_notify": true
-    },
-    {
-      "email": "hongshin@google.com",
-      "github": "honglooker",
-      "name": "Hong Shin",
       "do_not_notify": true
     },
     {
       "email": "jatl@google.com",
       "github": "JasonLunn",
+      "github_user_id": 778854,
       "name": "Jason Lunn",
       "do_not_notify": true
     },
     {
       "email": "jieluo@google.com",
       "github": "anandolee",
+      "github_user_id": 11618033,
       "name": "Jie Luo",
       "do_not_notify": true
     },
     {
       "email": "salo@google.com",
       "github": "salo",
+      "github_user_id": 152465,
       "name": "Eric Salo",
       "do_not_notify": true
     },
     {
       "email": "sangki@google.com",
       "github": "jguamie",
+      "github_user_id": 35405521,
       "name": "John Lee",
       "do_not_notify": true
     },
     {
       "email": "sbenza@google.com",
       "github": "sbenzaquen",
+      "github_user_id": 14094653,
       "name": "Samuel Benzaquen",
       "do_not_notify": true
     },
     {
       "email": "shaod@google.com",
       "github": "shaod2",
+      "github_user_id": 67387070,
       "name": "Dennis Shao",
       "do_not_notify": true
     },
     {
       "email": "tonyliaoss@google.com",
       "github": "tonyliaoss",
+      "github_user_id": 1459994,
       "name": "Tony Liao",
       "do_not_notify": true
     },
     {
       "email": "rgoldfinger@google.com",
       "github": "rgoldfinger6",
+      "github_user_id": 94469227,
       "name": "Rachel Goldfinger",
       "do_not_notify": true
     },
     {
       "email": "jamiepilgrim@google.com",
       "github": "pilgrimmemoirs",
+      "github_user_id": 8316393,
       "name": "Jamie Pilgrim",
       "do_not_notify": true
     },
     {
       "email": "karenwuz@google.com",
       "github": "karenwuz",
+      "github_user_id": 242015323,
       "name": "Karen Wu",
       "do_not_notify": true
     },
     {
       "email": "runze@google.com",
       "github": "runzw",
+      "github_user_id": 78052475,
       "name": "Runze Wang",
       "do_not_notify": true
     }

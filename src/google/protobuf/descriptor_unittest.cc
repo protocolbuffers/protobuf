@@ -9905,7 +9905,7 @@ TEST_F(FeaturesTest, Edition2026Defaults) {
                 message_encoding: LENGTH_PREFIXED
                 json_format: ALLOW
                 enforce_naming_style: STYLE2026
-                default_symbol_visibility: EXPORT_TOP_LEVEL
+                default_symbol_visibility: STRICT
                 enforce_proto_limits: PROTO_LIMITS2026
                 [pb.cpp] {
                   legacy_closed_enum: false
@@ -14373,6 +14373,34 @@ TEST_F(DescriptorPoolMemoizationTest, SupportsDifferentDescriptorTypes) {
             DescriptorPoolMemoizationTest::MemoizeProjection(
                 descriptor->nested_type(0), name_lambda));
   EXPECT_EQ(counter, 3);
+}
+
+// We define two helper functions with the exact same type signature
+// (absl::string_view(*)(const Descriptor*)) but different addresses.
+// We use them to test that MemoizeProjection does not cause key collisions
+// in the cache when passed different function pointers of the identical type.
+namespace {
+absl::string_view FunctionPointer1(const Descriptor* desc) {
+  return desc->name();
+}
+
+absl::string_view FunctionPointer2(const Descriptor* desc) {
+  return desc->full_name();
+}
+}  // namespace
+
+TEST_F(DescriptorPoolMemoizationTest, MemoizeProjectionFunctionPointers) {
+  const Descriptor* descriptor = proto2_unittest::TestAllTypes::descriptor();
+
+  const absl::string_view& res1 =
+      DescriptorPoolMemoizationTest::MemoizeProjection(descriptor,
+                                                       FunctionPointer1);
+  const absl::string_view& res2 =
+      DescriptorPoolMemoizationTest::MemoizeProjection(descriptor,
+                                                       FunctionPointer2);
+
+  EXPECT_EQ(res1, "TestAllTypes");
+  EXPECT_EQ(res2, "proto2_unittest.TestAllTypes");
 }
 
 TEST_F(DescriptorPoolMemoizationTest, MemoizeProjectionMultithreaded) {

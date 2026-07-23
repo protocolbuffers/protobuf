@@ -3,7 +3,7 @@
 
 module(
     name = "protobuf",
-    version = "36.0-dev",  # Automatically updated on release
+    version = "37.0-dev",  # Automatically updated on release
     bazel_compatibility = [">=8.0.0"],
     compatibility_level = 1,
     repo_name = "com_google_protobuf",
@@ -75,7 +75,6 @@ ruby.toolchain(
     version = "system",
 )
 use_repo(ruby, "ruby")
-
 ruby.bundle_fetch(
     name = "protobuf_bundle",
     gem_checksums = {
@@ -194,10 +193,10 @@ rust.toolchain(
     versions = ["1.85.0"],
 )
 
-crate = use_extension("@rules_rust//crate_universe:extension.bzl", "crate")
+crate = use_extension("@rules_rust//crate_universe:extensions.bzl", "crate")
 crate.spec(
     package = "googletest",
-    version = ">0.0.0",
+    version = "0.14.2",
 )
 crate.spec(
     package = "linkme",
@@ -205,15 +204,16 @@ crate.spec(
 )
 crate.spec(
     package = "paste",
-    version = ">=1",
+    version = "1.0.15",
 )
 crate.spec(
     package = "quote",
-    version = ">=1",
+    version = "1.0.38",
 )
 crate.spec(
     package = "syn",
-    version = ">=2",
+    version = ">=2, <3",
+    features = ["full"],
 )
 crate.from_specs()
 use_repo(crate, crate_index = "crates")
@@ -356,3 +356,8 @@ use_repo(
     "nuget_python_x86-64_3.10.0",
     "python-3.10.0",
 )
+
+bazel_dep(name = "jq.bzl", version = "0.6.1", dev_dependency = True)
+
+jq = use_extension("@jq.bzl//jq:extensions.bzl", "toolchains", dev_dependency = True)
+use_repo(jq, "jq_toolchains")

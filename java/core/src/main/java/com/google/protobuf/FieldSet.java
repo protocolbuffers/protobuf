@@ -53,23 +53,23 @@ final class FieldSet<T extends FieldSet.FieldDescriptorLite<T>> {
     void internalMergeFrom(Object to, Object from);
   }
 
-  private final SmallSortedMap<T, Object> fields;
+  private final SmallSortedMap<T> fields;
   private boolean isImmutable;
   private boolean hasLazyField;
 
   /** Construct a new FieldSet. */
   private FieldSet() {
-    this.fields = SmallSortedMap.newFieldMap();
+    this.fields = new SmallSortedMap<>();
   }
 
   /** Construct an empty FieldSet. This is only used to initialize DEFAULT_INSTANCE. */
   @SuppressWarnings("unused")
   private FieldSet(final boolean dummy) {
-    this(SmallSortedMap.<T>newFieldMap());
+    this(new SmallSortedMap<T>());
     makeImmutable();
   }
 
-  private FieldSet(SmallSortedMap<T, Object> fields) {
+  private FieldSet(SmallSortedMap<T> fields) {
     this.fields = fields;
     makeImmutable();
   }
@@ -102,15 +102,9 @@ final class FieldSet<T extends FieldSet.FieldDescriptorLite<T>> {
     if (isImmutable) {
       return;
     }
-    int n = fields.getNumArrayEntries(); // Optimisation: hoist out of hot loop.
+    int n = fields.size(); // Optimisation: hoist out of hot loop.
     for (int i = 0; i < n; ++i) {
       Entry<T, Object> entry = fields.getArrayEntryAt(i);
-      Object value = entry.getValue();
-      if (value instanceof GeneratedMessageLite) {
-        ((GeneratedMessageLite<?, ?>) value).makeImmutable();
-      }
-    }
-    for (Map.Entry<T, Object> entry : fields.getOverflowEntries()) {
       Object value = entry.getValue();
       if (value instanceof GeneratedMessageLite) {
         ((GeneratedMessageLite<?, ?>) value).makeImmutable();
@@ -145,7 +139,7 @@ final class FieldSet<T extends FieldSet.FieldDescriptorLite<T>> {
     return equals(this.fields, other.fields);
   }
 
-  private static boolean equals(SmallSortedMap<?, ?> m1, SmallSortedMap<?, ?> m2) {
+  private static boolean equals(SmallSortedMap<?> m1, SmallSortedMap<?> m2) {
     if (m1.size() != m2.size()) {
       return false;
     }
@@ -194,13 +188,11 @@ final class FieldSet<T extends FieldSet.FieldDescriptorLite<T>> {
   public FieldSet<T> clone() {
     // We can't just call fields.clone because List objects in the map
     // should not be shared.
+    // TODO: b/513203684 - Consider passing the capacity to the new FieldSet and SmallSortedMap.
     FieldSet<T> clone = FieldSet.newFieldSet();
-    int n = fields.getNumArrayEntries(); // Optimisation: hoist out of hot loop.
+    int n = fields.size(); // Optimisation: hoist out of hot loop.
     for (int i = 0; i < n; i++) {
       Map.Entry<T, Object> entry = fields.getArrayEntryAt(i);
-      clone.setField(entry.getKey(), entry.getValue());
-    }
-    for (Map.Entry<T, Object> entry : fields.getOverflowEntries()) {
       clone.setField(entry.getKey(), entry.getValue());
     }
     clone.hasLazyField = hasLazyField;
@@ -218,7 +210,7 @@ final class FieldSet<T extends FieldSet.FieldDescriptorLite<T>> {
   /** Get a simple map containing all the fields. */
   public Map<T, Object> getAllFields() {
     if (hasLazyField) {
-      SmallSortedMap<T, Object> result =
+      SmallSortedMap<T> result =
           cloneAllFieldsMap(fields, /* copyList= */ false, /* resolveLazyFields= */ true);
       if (fields.isImmutable()) {
         result.makeImmutable();
@@ -228,15 +220,12 @@ final class FieldSet<T extends FieldSet.FieldDescriptorLite<T>> {
     return fields.isImmutable() ? fields : Collections.unmodifiableMap(fields);
   }
 
-  private static <T extends FieldDescriptorLite<T>> SmallSortedMap<T, Object> cloneAllFieldsMap(
-      SmallSortedMap<T, Object> fields, boolean copyList, boolean resolveLazyFields) {
-    SmallSortedMap<T, Object> result = SmallSortedMap.newFieldMap();
-    int n = fields.getNumArrayEntries(); // Optimisation: hoist out of hot loop.
+  private static <T extends FieldDescriptorLite<T>> SmallSortedMap<T> cloneAllFieldsMap(
+      SmallSortedMap<T> fields, boolean copyList, boolean resolveLazyFields) {
+    int n = fields.size(); // Optimisation: hoist out of hot loop.
+    SmallSortedMap<T> result = new SmallSortedMap<>(n);
     for (int i = 0; i < n; i++) {
       cloneFieldEntry(result, fields.getArrayEntryAt(i), copyList, resolveLazyFields);
-    }
-    for (Map.Entry<T, Object> entry : fields.getOverflowEntries()) {
-      cloneFieldEntry(result, entry, copyList, resolveLazyFields);
     }
     return result;
   }
@@ -463,14 +452,9 @@ final class FieldSet<T extends FieldSet.FieldDescriptorLite<T>> {
    * caller to check that all required fields are present.
    */
   public boolean isInitialized() {
-    int n = fields.getNumArrayEntries(); // Optimisation: hoist out of hot loop.
+    int n = fields.size(); // Optimisation: hoist out of hot loop.
     for (int i = 0; i < n; i++) {
       if (!isInitialized(fields.getArrayEntryAt(i))) {
-        return false;
-      }
-    }
-    for (final Map.Entry<T, Object> entry : fields.getOverflowEntries()) {
-      if (!isInitialized(entry)) {
         return false;
       }
     }
@@ -527,12 +511,9 @@ final class FieldSet<T extends FieldSet.FieldDescriptorLite<T>> {
 
   /** Like {@link Message.Builder#mergeFrom(Message)}, but merges from another {@link FieldSet}. */
   public void mergeFrom(final FieldSet<T> other) {
-    int n = other.fields.getNumArrayEntries(); // Optimisation: hoist out of hot loop.
+    int n = other.fields.size(); // Optimisation: hoist out of hot loop.
     for (int i = 0; i < n; i++) {
       mergeFromField(other.fields.getArrayEntryAt(i));
-    }
-    for (final Map.Entry<T, Object> entry : other.fields.getOverflowEntries()) {
-      mergeFromField(entry);
     }
   }
 
@@ -623,24 +604,18 @@ final class FieldSet<T extends FieldSet.FieldDescriptorLite<T>> {
 
   /** See {@link Message#writeTo(CodedOutputStream)}. */
   public void writeTo(final CodedOutputStream output) throws IOException {
-    int n = fields.getNumArrayEntries(); // Optimisation: hoist out of hot loop.
+    int n = fields.size(); // Optimisation: hoist out of hot loop.
     for (int i = 0; i < n; i++) {
       final Map.Entry<T, Object> entry = fields.getArrayEntryAt(i);
-      writeField(entry.getKey(), entry.getValue(), output);
-    }
-    for (final Map.Entry<T, Object> entry : fields.getOverflowEntries()) {
       writeField(entry.getKey(), entry.getValue(), output);
     }
   }
 
   /** Like {@link #writeTo} but uses MessageSet wire format. */
   public void writeMessageSetTo(final CodedOutputStream output) throws IOException {
-    int n = fields.getNumArrayEntries(); // Optimisation: hoist out of hot loop.
+    int n = fields.size(); // Optimisation: hoist out of hot loop.
     for (int i = 0; i < n; i++) {
       writeMessageSetTo(fields.getArrayEntryAt(i), output);
-    }
-    for (final Map.Entry<T, Object> entry : fields.getOverflowEntries()) {
-      writeMessageSetTo(entry, output);
     }
   }
 
@@ -819,12 +794,9 @@ final class FieldSet<T extends FieldSet.FieldDescriptorLite<T>> {
    */
   public int getSerializedSize() {
     int size = 0;
-    int n = fields.getNumArrayEntries(); // Optimisation: hoist out of hot loop.
+    int n = fields.size(); // Optimisation: hoist out of hot loop.
     for (int i = 0; i < n; i++) {
       final Map.Entry<T, Object> entry = fields.getArrayEntryAt(i);
-      size += computeFieldSize(entry.getKey(), entry.getValue());
-    }
-    for (final Map.Entry<T, Object> entry : fields.getOverflowEntries()) {
       size += computeFieldSize(entry.getKey(), entry.getValue());
     }
     return size;
@@ -833,12 +805,9 @@ final class FieldSet<T extends FieldSet.FieldDescriptorLite<T>> {
   /** Like {@link #getSerializedSize} but uses MessageSet wire format. */
   public int getMessageSetSerializedSize() {
     int size = 0;
-    int n = fields.getNumArrayEntries(); // Optimisation: hoist out of hot loop.
+    int n = fields.size(); // Optimisation: hoist out of hot loop.
     for (int i = 0; i < n; i++) {
       size += getMessageSetSerializedSize(fields.getArrayEntryAt(i));
-    }
-    for (final Map.Entry<T, Object> entry : fields.getOverflowEntries()) {
-      size += getMessageSetSerializedSize(entry);
     }
     return size;
   }
@@ -990,16 +959,16 @@ final class FieldSet<T extends FieldSet.FieldDescriptorLite<T>> {
    */
   static final class Builder<T extends FieldDescriptorLite<T>> {
 
-    private SmallSortedMap<T, Object> fields;
+    private SmallSortedMap<T> fields;
     private boolean hasLazyField;
     private boolean isMutable;
     private boolean hasNestedBuilders;
 
     private Builder() {
-      this(SmallSortedMap.<T>newFieldMap());
+      this(new SmallSortedMap<T>());
     }
 
-    private Builder(SmallSortedMap<T, Object> fields) {
+    private Builder(SmallSortedMap<T> fields) {
       this.fields = fields;
       this.isMutable = true;
     }
@@ -1029,7 +998,7 @@ final class FieldSet<T extends FieldSet.FieldDescriptorLite<T>> {
         return FieldSet.emptySet();
       }
       isMutable = false;
-      SmallSortedMap<T, Object> fieldsForBuild = fields;
+      SmallSortedMap<T> fieldsForBuild = fields;
       if (hasNestedBuilders) {
         // Make a copy of the fields map with all Builders replaced by Message.
         fieldsForBuild =
@@ -1042,13 +1011,10 @@ final class FieldSet<T extends FieldSet.FieldDescriptorLite<T>> {
     }
 
     private static <T extends FieldDescriptorLite<T>> void replaceBuilders(
-        SmallSortedMap<T, Object> fieldMap, boolean partial) {
-      int n = fieldMap.getNumArrayEntries(); // Optimisation: hoist out of hot loop.
+        SmallSortedMap<T> fieldMap, boolean partial) {
+      int n = fieldMap.size(); // Optimisation: hoist out of hot loop.
       for (int i = 0; i < n; i++) {
         replaceBuilders(fieldMap.getArrayEntryAt(i), partial);
-      }
-      for (Map.Entry<T, Object> entry : fieldMap.getOverflowEntries()) {
-        replaceBuilders(entry, partial);
       }
     }
 
@@ -1119,7 +1085,7 @@ final class FieldSet<T extends FieldSet.FieldDescriptorLite<T>> {
     /** Get a simple map containing all the fields. */
     public Map<T, Object> getAllFields() {
       if (hasLazyField) {
-        SmallSortedMap<T, Object> result =
+        SmallSortedMap<T> result =
             cloneAllFieldsMap(fields, /* copyList= */ false, /* resolveLazyFields= */ true);
         if (fields.isImmutable()) {
           result.makeImmutable();
@@ -1353,14 +1319,9 @@ final class FieldSet<T extends FieldSet.FieldDescriptorLite<T>> {
      * caller to check that all required fields are present.
      */
     public boolean isInitialized() {
-      int n = fields.getNumArrayEntries(); // Optimisation: hoist out of hot loop.
+      int n = fields.size(); // Optimisation: hoist out of hot loop.
       for (int i = 0; i < n; i++) {
         if (!FieldSet.isInitialized(fields.getArrayEntryAt(i))) {
-          return false;
-        }
-      }
-      for (final Map.Entry<T, Object> entry : fields.getOverflowEntries()) {
-        if (!FieldSet.isInitialized(entry)) {
           return false;
         }
       }
@@ -1372,12 +1333,9 @@ final class FieldSet<T extends FieldSet.FieldDescriptorLite<T>> {
      */
     public void mergeFrom(final FieldSet<T> other) {
       ensureIsMutable();
-      int n = other.fields.getNumArrayEntries(); // Optimisation: hoist out of hot loop.
+      int n = other.fields.size(); // Optimisation: hoist out of hot loop.
       for (int i = 0; i < n; i++) {
         mergeFromField(other.fields.getArrayEntryAt(i));
-      }
-      for (final Map.Entry<T, Object> entry : other.fields.getOverflowEntries()) {
-        mergeFromField(entry);
       }
     }
 

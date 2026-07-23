@@ -32,14 +32,14 @@ proto_library(
 conformance_test(
     name = "conformance_test",
     failure_list = "//conformance:failure_list_csharp.txt",
-    maximum_edition = "2024",
+    maximum_edition = "2026",
     testee = "//conformance:conformance_csharp",
 )
 
 conformance_test(
     name = "conformance_performance_test",
     failure_list = "//conformance:failure_list_csharp_performance.txt",
-    maximum_edition = "2024",
+    maximum_edition = "2026",
     performance = True,
     testee = "//conformance:conformance_csharp",
 )

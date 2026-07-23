@@ -29,6 +29,7 @@
 #include "absl/log/absl_check.h"
 #include "absl/strings/match.h"
 #include "absl/strings/str_cat.h"
+#include "google/protobuf/breaking_changes.h"
 #include "google/protobuf/pyext/lazy_unique_ptr.h"
 
 #ifndef PyVarObject_HEAD_INIT
@@ -494,6 +495,26 @@ PyObject* SetMessageFrozenError() {
   return SetFrozenError("Message is immutable.");
 }
 
+int WarnMessageFrozen() {
+  return PyErr_WarnEx(
+      PyExc_FutureWarning,
+      "Mutating messages or containers returned by GetOptions() is deprecated"
+      " and will raise an exception in a future release.",
+      3);
+}
+
+int CheckFrozen(CMessage* parent, const char* error_msg) {
+  if (parent->state == MESSAGE_FROZEN) {
+#if PROTOBUF_PY_FUTURE_FREEZE_OPTIONS
+    SetFrozenError(error_msg);
+    return -1;
+#else
+    return WarnMessageFrozen();
+#endif
+  }
+  return 0;
+}
+
 // Format an error message for unexpected types.
 // Always return with an exception set.
 void FormatTypeError(PyObject* arg, const char* expected_types) {
@@ -834,8 +855,10 @@ Message* AssureWritable(CMessage* self) {
     case MESSAGE_MUTABLE:
       return const_cast<Message*>(self->message);
     case MESSAGE_FROZEN:
-      SetMessageFrozenError();
-      return nullptr;
+      if (CheckFrozen(self, "Message is immutable.") < 0) {
+        return nullptr;
+      }
+      return const_cast<Message*>(self->message);
     case MESSAGE_MUTABLE_DEFAULT:
       break;
   }
@@ -1025,8 +1048,7 @@ int DeleteRepeatedField(CMessage* self, const FieldDescriptor* field_descriptor,
 int CheckRepeatedFieldDeletion(CMessage* parent,
                                const FieldDescriptor* field_descriptor,
                                PyObject* slice) {
-  if (parent->state == python::MESSAGE_FROZEN) {
-    SetMessageFrozenError();
+  if (CheckFrozen(parent, "Message is immutable.") < 0) {
     return -1;
   }
 
@@ -1395,12 +1417,17 @@ static void Dealloc(CMessage* self) {
     if (self->parent_field_descriptor->is_repeated()) {
       CMessage::SubMessagesMap* child_submessages =
           parent->child_submessages.TryGet();
-      if (child_submessages) child_submessages->Erase(self->message);
+      if (child_submessages) {
+        child_submessages->EraseIfEqual(self->message,
+                                        reinterpret_cast<PyObject*>(self));
+      }
     } else {
       CMessage::CompositeFieldsMap* composite_fields =
           parent->composite_fields.TryGet();
-      if (composite_fields)
-        composite_fields->Erase(self->parent_field_descriptor);
+      if (composite_fields) {
+        composite_fields->EraseIfEqual(self->parent_field_descriptor,
+                                       reinterpret_cast<PyObject*>(self));
+      }
     }
     Py_CLEAR(self->parent);
   }
@@ -1613,7 +1640,8 @@ static int InternalReparentFields(
     Py_INCREF(new_message);
     Py_DECREF(to_release->parent);
     to_release->parent = new_message;
-    self_child_submessages->Erase(to_release->message);
+    self_child_submessages->Erase(to_release->message,
+                                  to_release->AsPyObject());
     new_child_submessages->Set(to_release->message, to_release->AsPyObject());
   }
 
@@ -1624,7 +1652,8 @@ static int InternalReparentFields(
     Py_INCREF(new_message);
     Py_DECREF(to_release->parent);
     to_release->parent = new_message;
-    self_composite_fields->Erase(to_release->parent_field_descriptor);
+    self_composite_fields->Erase(to_release->parent_field_descriptor,
+                                 to_release->AsPyObject());
     new_composite_fields->Set(to_release->parent_field_descriptor,
                               to_release->AsPyObject());
   }
@@ -2044,7 +2073,7 @@ static PyObject* MergeFromString(CMessage* self, PyObject* arg) {
       depth, false, &ptr,
       absl::string_view(static_cast<const char*>(data.buf), data.len));
 
-  ctx.data().pool = factory->pool->pool;
+  ctx.data().pool = factory->pool->pool->get();
   ctx.data().factory = factory->message_factory;
 
   ptr = message->_InternalParse(ptr, &ctx);
@@ -2159,7 +2188,8 @@ static PyObject* ListFields(CMessage* self) {
       // When using the default descriptor pool, avoid exposing extensions that
       // happened to be linked in from C++ but not imported via Python.  This is
       // for consistency with the pure Python implementation.
-      if (fields[i]->file()->pool() == GetDefaultDescriptorPool()->pool &&
+      if (fields[i]->file()->pool() ==
+              GetDefaultDescriptorPool()->pool->get() &&
           fields[i]->message_type() != nullptr &&
           message_factory::GetMessageClass(GetFactoryForMessage(self),
                                            fields[i]->message_type()) ==
@@ -2333,9 +2363,9 @@ PyObject* InternalGetScalar(const Message* message,
       break;
     }
     case FieldDescriptor::CPPTYPE_ENUM: {
-      const EnumValueDescriptor* enum_value =
-          message->GetReflection()->GetEnum(*message, field_descriptor);
-      result = PyLong_FromLong(enum_value->number());
+      int enum_value =
+          message->GetReflection()->GetEnumValue(*message, field_descriptor);
+      result = PyLong_FromLong(enum_value);
       break;
     }
     default:
@@ -2863,7 +2893,7 @@ void ContainerBase::RemoveFromParentCache() {
   if (parent) {
     if (CMessage::CompositeFieldsMap* fields =
             parent->composite_fields.TryGet()) {
-      fields->Erase(this->parent_field_descriptor);
+      fields->EraseIfEqual(this->parent_field_descriptor, this->AsPyObject());
     }
     Py_CLEAR(parent);
   }
@@ -2907,7 +2937,7 @@ CMessage* CMessage::MaybeReleaseSubMessage(const Message* sub_message) {
   released->parent_field_descriptor = nullptr;
   released->state = MESSAGE_MUTABLE;
   // Delete it from the cache.
-  sub_messages->Erase(sub_message);
+  sub_messages->Erase(sub_message, released->AsPyObject());
   // child_submessages->Get returned a new reference.
   Py_DECREF(released);
   return released;

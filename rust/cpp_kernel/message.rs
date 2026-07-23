@@ -10,6 +10,7 @@ unsafe extern "C" {
     pub fn proto2_rust_Message_serialized_len(m: RawMessage) -> usize;
     pub fn proto2_rust_Message_copy_from(dst: RawMessage, src: RawMessage);
     pub fn proto2_rust_Message_merge_from(dst: RawMessage, src: RawMessage);
+    pub fn proto2_rust_Message_take_from(dst: RawMessage, src: RawMessage);
     pub fn proto2_rust_Message_get_descriptor(m: RawMessage) -> *const std::ffi::c_void;
 }
 
@@ -302,14 +303,16 @@ impl<T: CppGetRawMessage> Serialize for T {
 
 impl<T> TakeFrom for T
 where
-    Self: CopyFrom + AsMut,
-    for<'a> Mut<'a, <Self as AsMut>::MutProxied>: Clear,
+    Self: AsMut,
+    for<'a> Mut<'a, Self::Proxied>: CppGetRawMessageMut,
 {
     fn take_from(&mut self, mut src: impl AsMut<MutProxied = Self::Proxied>) {
-        let mut src = src.as_mut();
-        // TODO: b/393559271 - Optimize this copy out.
-        CopyFrom::copy_from(self, AsView::as_view(&src));
-        Clear::clear(&mut src);
+        unsafe {
+            proto2_rust_Message_take_from(
+                self.as_mut().get_raw_message_mut(Private),
+                src.as_mut().get_raw_message_mut(Private),
+            );
+        }
     }
 }
 

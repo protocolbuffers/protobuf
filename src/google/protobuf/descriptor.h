@@ -32,8 +32,11 @@
 #define GOOGLE_PROTOBUF_DESCRIPTOR_H__
 
 #include <atomic>
+#include <cstddef>
 #include <cstdint>
+#include <cstring>
 #include <iterator>
+#include <limits>
 #include <memory>
 #include <string>
 #include <type_traits>
@@ -49,6 +52,7 @@
 #include "absl/functional/function_ref.h"
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
+#include "absl/log/log.h"
 #include "absl/strings/str_format.h"
 #include "absl/strings/string_view.h"
 #include "absl/synchronization/mutex.h"
@@ -121,9 +125,11 @@ class MessageLite;
 class Message;
 class Reflection;
 
-// Defined in descriptor.cc
 namespace internal {
+// Defined in descriptor_builder.h
 class DescriptorBuilder;
+// Defined in option_interpreter.cc
+class AggregateOptionFinder;
 }
 class FileDescriptorTables;
 
@@ -157,6 +163,10 @@ class DescriptorTest;
 class FeaturesTest;
 class ValidationErrorTest;
 }  // namespace descriptor_unittest
+
+namespace json_internal {
+struct Proto2Descriptor;
+}  // namespace json_internal
 
 // Defined in printer.h
 namespace io {
@@ -1346,6 +1356,7 @@ class PROTOBUF_EXPORT FieldDescriptor : private internal::SymbolBase,
   // Must be constructed using DescriptorPool.
   FieldDescriptor();
   friend class internal::DescriptorBuilder;
+  friend class internal::AggregateOptionFinder;
   friend class FileDescriptor;
   friend class Descriptor;
   friend class OneofDescriptor;
@@ -2693,6 +2704,7 @@ class PROTOBUF_EXPORT DescriptorPool {
   friend class TextFormat;
   friend Reflection;
   friend class ::google::protobuf::compiler::java::MemoizeProjection;
+  friend struct ::google::protobuf::json_internal::Proto2Descriptor;
 
   struct MemoBase {
     virtual ~MemoBase() = default;
@@ -2718,11 +2730,17 @@ class PROTOBUF_EXPORT DescriptorPool {
   static const auto& MemoizeProjection(const Desc* descriptor, Func func) {
     using ResultT = std::decay_t<decltype(func(descriptor))>;
     auto* pool = GetPool(descriptor);
-    static_assert(std::is_empty_v<Func> ||
-                  std::is_function_v<std::remove_pointer_t<Func>>);
-    // This static bool is unique per-Func, so its address can be used as a key.
-    static bool type_key;
-    auto key = std::pair<const void*, const void*>(descriptor, &type_key);
+    const void* secondary_key;
+    if constexpr (std::is_function_v<std::remove_pointer_t<Func>>) {
+      secondary_key = reinterpret_cast<const void*>(func);
+    } else if constexpr (std::is_empty_v<Func>) {
+      static bool type_key;
+      secondary_key = &type_key;
+    } else {
+      static_assert(sizeof(Func) == 0,
+                    "Func must be an empty functor or a function pointer.");
+    }
+    auto key = std::pair<const void*, const void*>(descriptor, secondary_key);
     {
       absl::ReaderMutexLock lock(&pool->field_memo_table_mutex_);
       auto it = pool->field_memo_table_->find(key);

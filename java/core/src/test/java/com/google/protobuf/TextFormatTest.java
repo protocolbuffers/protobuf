@@ -997,6 +997,8 @@ public class TextFormatTest {
 
     assertThat(TextFormat.escapeText(ESCAPE_TEST_STRING)).isEqualTo(ESCAPE_TEST_STRING_ESCAPED);
     assertThat(TextFormat.unescapeText(ESCAPE_TEST_STRING_ESCAPED)).isEqualTo(ESCAPE_TEST_STRING);
+    assertThat(TextFormat.escapeText("foo\nbar")).isEqualTo("foo\\nbar");
+    assertThat(TextFormat.unescapeText("foo\\nbar")).isEqualTo("foo\nbar");
 
     // Invariant
     assertThat(TextFormat.escapeBytes(bytes("hello"))).isEqualTo("hello");

@@ -5,13 +5,20 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
+#include <cstddef>
+#include <iterator>
 #include <string>
 
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
+#include "absl/log/absl_check.h"
 #include "absl/status/status.h"
+#include "absl/status/status_matchers.h"
+#include "absl/strings/string_view.h"
+#include "google/protobuf/arena.h"
 #include "google/protobuf/json/json.h"
 #include "google/protobuf/json/json_enumval_custom_string.pb.h"
+
 
 #ifndef EXPECT_OK
 #define EXPECT_OK(x) EXPECT_TRUE(x.ok())
@@ -21,8 +28,10 @@ namespace google {
 namespace protobuf {
 namespace {
 
+using ::absl_testing::StatusIs;
 using json_enumval_custom_string::Armor;
 using json_enumval_custom_string::Knight;
+using ::testing::HasSubstr;
 
 // Gorget does not have a custom json enumval string set, so it defaults to
 // the original enumval: ARMOR_GORGET.
@@ -79,6 +88,20 @@ TEST(JsonEnumvalCustomStringTest, GauntletSerialization) {
 // Test the intersection of case-insensitive and custom json enumval.
 TEST(JsonEnumvalCustomStringTest, CaseInsensitiveGauntletParsing) {
   std::string json_res = "{\"armor\":\"A\\\"b\"}";
+  json::ParseOptions parse_options;
+  parse_options.case_insensitive_enum_parsing = true;
+
+  Knight msg2;
+  absl::Status parse_status =
+      json::JsonStringToMessage(json_res, &msg2, parse_options);
+
+  EXPECT_OK(parse_status);
+  EXPECT_EQ(msg2.armor(), Armor::ARMOR_GAUNTLET);
+}
+
+// Test that regular case-insensitive payloads can still be parsed.
+TEST(JsonEnumvalCustomStringTest, CaseInsensitiveGauntletRawNameParsing) {
+  std::string json_res = "{\"armor\":\"armor_GAUNtlet\"}";
   json::ParseOptions parse_options;
   parse_options.case_insensitive_enum_parsing = true;
 
@@ -234,6 +257,17 @@ TEST(JsonEnumvalCustomStringTest, GreatHelmIntOverride) {
   EXPECT_OK(status);
   EXPECT_EQ(json_res, R"json({"armor":1})json");
 }
+
+// TODO: b/534418787 - Investigate this behavior further, especially in
+// conformance tests.
+TEST(JsonEnumvalCustomStringTest, ParserSingleElementArrayEnumName) {
+  Knight msg;
+  absl::Status status = json::JsonStringToMessage(
+      R"json({"armor":["ARMOR_GREAT_HELM"]})json", &msg);
+  EXPECT_THAT(status, StatusIs(absl::StatusCode::kInvalidArgument,
+                               HasSubstr("invalid JSON")));
+}
+
 }  // namespace
 }  // namespace protobuf
 }  // namespace google

@@ -71,7 +71,7 @@ class PROTOBUF_EXPORT ImplicitWeakMessage final : public MessageLite {
 
   const ClassData* GetClassData() const PROTOBUF_FINAL;
 
-  void Clear() PROTOBUF_FINAL { data_->clear(); }
+  void Clear() PROTOBUF_FINAL { ClearImpl(*this); }
 
   size_t ByteSizeLong() const PROTOBUF_FINAL {
     size_t size = data_ == nullptr ? 0 : data_->size();
@@ -108,6 +108,8 @@ class PROTOBUF_EXPORT ImplicitWeakMessage final : public MessageLite {
   friend ImplicitWeakMessageDefaultType;
 
   static void MergeImpl(MessageLite&, const MessageLite&);
+
+  static void ClearImpl(MessageLite& msg);
 
   static void DestroyImpl(MessageLite& msg) {
     static_cast<ImplicitWeakMessage&>(msg).~ImplicitWeakMessage();

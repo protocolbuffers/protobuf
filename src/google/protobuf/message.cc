@@ -347,8 +347,8 @@ void Message::MergeImpl(MessageLite& to, const MessageLite& from) {
                        DownCastMessage<Message>(&to));
 }
 
-void Message::ClearImpl() {
-  ReflectionOps::Clear(DownCastMessage<Message>(this));
+void Message::ClearImpl(MessageLite& msg) {
+  ReflectionOps::Clear(DownCastMessage<Message>(&msg));
 }
 
 size_t Message::ByteSizeLongImpl(const MessageLite& msg) {
@@ -371,7 +371,7 @@ void Message::MergeFrom(const Message& from) {
   if (class_to == nullptr || class_to != class_from) {
     ReflectionOps::Merge(from, this);
   } else {
-    class_to->full().merge_to_from(*this, from);
+    class_to->MergeToFrom(*this, from);
   }
 }
 
@@ -388,7 +388,7 @@ void Message::CopyFrom(const Message& from) {
     ABSL_DCHECK(!internal::IsDescendant(from, *this))
         << "Target of CopyFrom cannot be a descendant of the source.";
     Clear();
-    class_to->full().merge_to_from(*this, from);
+    class_to->MergeToFrom(*this, from);
   } else {
     const Descriptor* descriptor = GetDescriptor();
     ABSL_CHECK_EQ(from.GetDescriptor(), descriptor)
@@ -738,8 +738,6 @@ template void InternalMetadata::DoMergeFrom<UnknownFieldSet>(
     const UnknownFieldSet& other);
 template void InternalMetadata::DoSwap<UnknownFieldSet>(UnknownFieldSet* other);
 template void InternalMetadata::DeleteOutOfLineHelper<UnknownFieldSet>();
-template UnknownFieldSet*
-InternalMetadata::mutable_unknown_fields_slow<UnknownFieldSet>();
 }  // namespace internal
 
 

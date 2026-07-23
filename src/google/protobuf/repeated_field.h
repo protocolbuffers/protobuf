@@ -301,21 +301,21 @@ class ABSL_ATTRIBUTE_WARN_UNUSED PROTOBUF_DECLSPEC_EMPTY_BASES
   static_assert(
       alignof(Arena) >= alignof(Element),
       "We only support types that have an alignment smaller than Arena");
-  static_assert(!std::is_const<Element>::value,
+  static_assert(!std::is_const_v<Element>,
                 "We do not support const value types.");
-  static_assert(!std::is_volatile<Element>::value,
+  static_assert(!std::is_volatile_v<Element>,
                 "We do not support volatile value types.");
-  static_assert(!std::is_pointer<Element>::value,
+  static_assert(!std::is_pointer_v<Element>,
                 "We do not support pointer value types.");
-  static_assert(!std::is_reference<Element>::value,
+  static_assert(!std::is_reference_v<Element>,
                 "We do not support reference value types.");
   static constexpr PROTOBUF_ALWAYS_INLINE void StaticValidityCheck() {
     static_assert(
-        std::disjunction<internal::is_supported_integral_type<Element>,
-                         internal::is_supported_floating_point_type<Element>,
-                         std::is_same<absl::Cord, Element>,
-                         std::is_same<UnknownField, Element>,
-                         is_proto_enum<Element>>::value,
+        std::disjunction_v<internal::is_supported_integral_type<Element>,
+                           internal::is_supported_floating_point_type<Element>,
+                           std::is_same<absl::Cord, Element>,
+                           std::is_same<UnknownField, Element>,
+                           is_proto_enum<Element>>,
         "We only support non-string scalars in RepeatedField.");
   }
 
@@ -337,9 +337,8 @@ class ABSL_ATTRIBUTE_WARN_UNUSED PROTOBUF_DECLSPEC_EMPTY_BASES
       : RepeatedField(internal::InternalMetadataOffset(), /*arena=*/nullptr,
                       rhs) {}
 
-  template <typename Iter,
-            typename = typename std::enable_if<std::is_constructible<
-                Element, decltype(*std::declval<Iter>())>::value>::type>
+  template <typename Iter, typename = std::enable_if_t<std::is_constructible_v<
+                               Element, decltype(*std::declval<Iter>())>>>
   RepeatedField(Iter begin, Iter end);
 
   // Arena enabled constructors: for internal use only.
@@ -599,9 +598,6 @@ class ABSL_ATTRIBUTE_WARN_UNUSED PROTOBUF_DECLSPEC_EMPTY_BASES
 
   template <typename ArenaProvider>
   void ReserveWithArena(ArenaProvider arena_provider, int new_size);
-  void GrowByWithArena(Arena* arena, int grow_by) {
-    ReserveWithArena(arena, size() + grow_by);
-  }
 
   template <typename ArenaProvider>
   void* AddUninitializedWithArena(ArenaProvider arena_provider);
@@ -632,16 +628,16 @@ class ABSL_ATTRIBUTE_WARN_UNUSED PROTOBUF_DECLSPEC_EMPTY_BASES
   // This function is identical to `std::uninitialized_copy_n(src, n, dst)`
   // except that we explicit declare the memory to not be aliased, which will
   // result in `memcpy` code generation instead of `memmove` for trivial types.
-  static inline void UninitializedCopyN(const Element* PROTOBUF_RESTRICT src,
-                                        int n, Element* PROTOBUF_RESTRICT dst) {
+  static void UninitializedCopyN(const Element* PROTOBUF_RESTRICT src, int n,
+                                 Element* PROTOBUF_RESTRICT dst) {
     std::uninitialized_copy_n(src, n, dst);
   }
 
   // Copy constructs `[begin, end)` instances in place into the array `dst`.
   // See above `UninitializedCopyN()` function comments for more information.
   template <typename Iter>
-  static inline void UninitializedCopy(Iter begin, Iter end,
-                                       Element* PROTOBUF_RESTRICT dst) {
+  static void UninitializedCopy(Iter begin, Iter end,
+                                Element* PROTOBUF_RESTRICT dst) {
     std::uninitialized_copy(begin, end, dst);
   }
 
@@ -649,7 +645,7 @@ class ABSL_ATTRIBUTE_WARN_UNUSED PROTOBUF_DECLSPEC_EMPTY_BASES
   // This function does nothing if `Element` is trivial.
   static void Destroy([[maybe_unused]] const Element* begin,
                       [[maybe_unused]] const Element* end) {
-    if constexpr (!std::is_trivially_destructible<Element>::value) {
+    if constexpr (!std::is_trivially_destructible_v<Element>) {
       std::for_each(begin, end, [&](const Element& e) { e.~Element(); });
     }
   }
@@ -697,7 +693,7 @@ class ABSL_ATTRIBUTE_WARN_UNUSED PROTOBUF_DECLSPEC_EMPTY_BASES
   // size. This function is intended to be the only place where
   // size is modified, with the exception of `AddInputIterator()`
   // where the size of added items is not known in advance.
-  inline int ExchangeCurrentSize(int new_size) {
+  int ExchangeCurrentSize(int new_size) {
     const int prev_size = size();
     AnnotateSize(prev_size, new_size);
     set_size(new_size);
@@ -1038,7 +1034,7 @@ inline void* RepeatedField<Element>::AddUninitializedWithArena(
   bool is_soo = this->is_soo();
   const int old_size = size();
   if (ABSL_PREDICT_FALSE(old_size == Capacity(is_soo))) {
-    Grow(arena_provider, is_soo, old_size, old_size + 1);
+    Grow(arena_provider, is_soo, old_size, internal::CheckedAdd(old_size, 1));
     is_soo = false;
   }
   return unsafe_elements(is_soo) + ExchangeCurrentSize(old_size + 1);
@@ -1067,7 +1063,7 @@ inline auto RepeatedField<Element>::AddWithArena(ArenaProvider arena_provider,
   int capacity = Capacity(is_soo);
   Element* elem = unsafe_elements(is_soo);
   if (ABSL_PREDICT_FALSE(old_size == capacity)) {
-    Grow(arena_provider, is_soo, old_size, old_size + 1);
+    Grow(arena_provider, is_soo, old_size, internal::CheckedAdd(old_size, 1));
     is_soo = false;
     capacity = Capacity(is_soo);
     elem = unsafe_elements(is_soo);
@@ -1125,10 +1121,8 @@ inline void RepeatedField<Element>::AddForwardIterator(
   ABSL_CHECK_LE(distance, static_cast<size_t>(std::numeric_limits<int>::max()))
       << "Input too large";
   // Check again for signed overflow.
-  const int delta = static_cast<int>(distance);
-  ABSL_CHECK_LE(old_size, std::numeric_limits<int>::max() - delta)
-      << "Input too large";
-  const int new_size = old_size + delta;
+  const int new_size =
+      internal::CheckedAdd(old_size, static_cast<int>(distance));
   if (ABSL_PREDICT_FALSE(new_size > capacity)) {
     Grow(arena_provider, is_soo, old_size, new_size);
     is_soo = false;
@@ -1166,7 +1160,8 @@ inline void RepeatedField<Element>::AddInputIterator(
   while (begin != end) {
     if (ABSL_PREDICT_FALSE(first == last)) {
       size = first - elem;
-      GrowNoAnnotate(arena_provider, is_soo, size, size + 1);
+      GrowNoAnnotate(arena_provider, is_soo, size,
+                     internal::CheckedAdd(size, 1));
       is_soo = false;
       elem = unsafe_elements(is_soo);
       capacity = Capacity(is_soo);
@@ -1193,9 +1188,9 @@ template <typename Element>
 template <typename ArenaProvider, typename Iter>
 inline void RepeatedField<Element>::AddWithArena(ArenaProvider arena_provider,
                                                  Iter begin, Iter end) {
-  if (std::is_base_of<
+  if (std::is_base_of_v<
           std::forward_iterator_tag,
-          typename std::iterator_traits<Iter>::iterator_category>::value) {
+          typename std::iterator_traits<Iter>::iterator_category>) {
     AddForwardIterator(arena_provider, begin, end);
   } else {
     AddInputIterator(arena_provider, begin, end);
@@ -1222,11 +1217,12 @@ inline void RepeatedField<Element>::RemoveLast() {
 template <typename Element>
 void RepeatedField<Element>::ExtractSubrange(int start, int num,
                                              Element* elements) {
-  ABSL_DCHECK_GE(start, 0);
-  ABSL_DCHECK_GE(num, 0);
+  internal::RuntimeAssertInBoundsGE(start, 0);
+  internal::RuntimeAssertInBoundsGE(num, 0);
   const bool is_soo = this->is_soo();
   const int old_size = size();
-  ABSL_DCHECK_LE(start + num, old_size);
+  internal::RuntimeAssertInBoundsLE(static_cast<int64_t>(start) + num,
+                                    old_size);
   Element* elem = unsafe_elements(is_soo);
 
   // Save the values of the removed elements if requested.
@@ -1258,10 +1254,10 @@ inline void RepeatedField<Element>::MergeFrom(const RepeatedField& other) {
   const bool other_is_soo = other.is_soo();
   if (auto other_size = other.size()) {
     const int old_size = size();
-    Reserve(internal::CheckedAdd(old_size, other_size));
+    const int new_size = internal::CheckedAdd(old_size, other_size);
+    Reserve(new_size);
     const bool is_soo = this->is_soo();
-    Element* dst =
-        elements(is_soo) + ExchangeCurrentSize(old_size + other_size);
+    Element* dst = elements(is_soo) + ExchangeCurrentSize(new_size);
     UninitializedCopyN(other.elements(other_is_soo), other_size, dst);
   }
 }
@@ -1590,7 +1586,7 @@ PROTOBUF_NOINLINE void RepeatedField<Element>::GrowNoAnnotate(
   if (old_size > 0) {
     Element* pnew = new_rep->elements<Element>();
     Element* pold = elements(was_soo);
-    if constexpr (std::is_trivially_copyable<Element>::value ||
+    if constexpr (std::is_trivially_copyable_v<Element> ||
                   absl::is_trivially_relocatable<Element>::value) {
       memcpy(static_cast<void*>(pnew), pold, old_size * sizeof(Element));
     } else {
@@ -1658,8 +1654,7 @@ namespace internal {
 template <typename Element>
 class RepeatedIterator {
  private:
-  using traits =
-      std::iterator_traits<typename std::remove_const<Element>::type*>;
+  using traits = std::iterator_traits<std::remove_const_t<Element>*>;
 
  public:
   // Note: value_type is never cv-qualified.

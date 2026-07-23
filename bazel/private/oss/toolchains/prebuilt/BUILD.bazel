@@ -6,6 +6,7 @@ In particular, see comment below on the toolchain#toolchain attribute.
 
 load("//toolchain:platforms.bzl", "PROTOBUF_PLATFORMS")
 load(":protoc_authenticity.bzl", "protoc_authenticity")
+load(":tool_integrity.bzl", "RELEASE_VERSION")
 
 [
     toolchain(
@@ -19,6 +20,7 @@ load(":protoc_authenticity.bzl", "protoc_authenticity")
         toolchain_type = "@com_google_protobuf//bazel/private:proto_toolchain_type",
     )
     for platform, meta in PROTOBUF_PLATFORMS.items()
+    if not RELEASE_VERSION.endswith("-dev")
 ]
 
 # Support verification of user-registered toolchains
