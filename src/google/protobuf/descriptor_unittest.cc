@@ -7060,6 +7060,19 @@ TEST_F(ValidationErrorTest, OutputTypeNotAMessage) {
 }
 
 
+TEST_F(ValidationErrorTest, WeakOnNonMessageField) {
+  BuildFileWithErrors(
+      "name: \"foo.proto\" "
+      "message_type { "
+      "  name: \"Foo\" "
+      "  field { name:\"bar\" number:1 label:LABEL_OPTIONAL "
+      "          type:TYPE_INT32 "
+      "          options { weak: true } } "
+      "} ",
+      "foo.proto: Foo.bar: TYPE: [weak = true] can only be specified for "
+      "submessage fields.\n");
+}
+
 TEST_F(ValidationErrorTest, IllegalPackedField) {
   BuildFileWithErrors(
       "name: \"foo.proto\" "
