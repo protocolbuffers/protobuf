@@ -81,6 +81,8 @@ _message_target_compatible_with = {
 filegroup(
     name = "message_srcs",
     srcs = [
+        "buffer_convert.c",
+        "buffer_convert.h",
         "convert.c",
         "convert.h",
         "descriptor.c",

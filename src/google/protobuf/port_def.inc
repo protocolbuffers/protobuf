@@ -813,19 +813,17 @@ namespace internal {
 #ifdef PROTOBUF_MESSAGE_GLOBALS
 #error PROTOBUF_MESSAGE_GLOBALS was previously defined
 #endif
-#if defined(PROTOBUF_ENABLE_MESSAGE_GLOBALS) || \
-    defined(PROTOBUF_ENABLE_STABLE_EXPERIMENTS)
+// Use PROTOBUF_ENABLE_STABLE_EXPERIMENTS to turn on the old code for now.
+#if !defined(PROTOBUF_MESSAGE_GLOBALS_TEMPORARY_OPTOUT) && \
+    !defined(PROTOBUF_ENABLE_STABLE_EXPERIMENTS)
 #define PROTOBUF_MESSAGE_GLOBALS
-
 #define PROTOBUF_MESSAGE_GLOBALS_CONST const
-// PowerPC tools complain about section type mismatch.
-#if !defined(__powerpc__)
-#define PROTOBUF_MESSAGE_GLOBALS_SECTION(x) ABSL_ATTRIBUTE_SECTION_VARIABLE(x)
-#else  // defined(__powerpc__)
-#define PROTOBUF_MESSAGE_GLOBALS_SECTION(x)
-#endif  // defined(__powerpc__)
-#else
+#endif  // PROTOBUF_MESSAGE_GLOBALS_TEMPORARY_OPTOUT
+
+#if !defined(PROTOBUF_MESSAGE_GLOBALS_CONST)
 #define PROTOBUF_MESSAGE_GLOBALS_CONST
+#endif
+#if !defined(PROTOBUF_MESSAGE_GLOBALS_SECTION)
 #define PROTOBUF_MESSAGE_GLOBALS_SECTION(x)
 #endif
 

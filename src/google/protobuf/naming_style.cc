@@ -7,9 +7,12 @@
 
 #include "google/protobuf/naming_style.h"
 
+#include <cstddef>
 #include <cstdint>
 #include <string>
 
+#include "absl/algorithm/container.h"
+#include "absl/log/absl_check.h"
 #include "absl/status/status.h"
 #include "absl/strings/ascii.h"
 #include "absl/strings/charset.h"
@@ -18,6 +21,13 @@
 namespace google {
 namespace protobuf {
 namespace internal {
+size_t CamelCaseSize(const absl::string_view input) {
+  return input.size() - absl::c_count(input, '_');
+}
+
+size_t JsonNameSize(const absl::string_view input) {
+  return input.size() - absl::c_count(input, '_');
+}
 
 bool ContainsBadUnderscores(absl::string_view name) {
   if (name.empty()) {
@@ -92,6 +102,74 @@ absl::Status IsValidUpperSnakeCaseName(absl::string_view name) {
     return absl::InvalidArgumentError("contains style violating underscores");
   }
   return absl::OkStatus();
+}
+
+std::string ToCamelCase(const absl::string_view input, bool lower_first) {
+  bool capitalize_next = !lower_first;
+  std::string result;
+  result.reserve(input.size());
+
+  for (char character : input) {
+    if (character == '_') {
+      capitalize_next = true;
+    } else if (capitalize_next) {
+      result.push_back(absl::ascii_toupper(character));
+      capitalize_next = false;
+    } else {
+      result.push_back(character);
+    }
+  }
+
+  // Lower-case the first letter.
+  if (lower_first && !result.empty()) {
+    result[0] = absl::ascii_tolower(result[0]);
+  }
+
+  ABSL_DCHECK_EQ(CamelCaseSize(input), result.size());
+
+  return result;
+}
+
+std::string ToJsonName(const absl::string_view input) {
+  bool capitalize_next = false;
+  std::string result;
+  result.reserve(input.size());
+
+  for (char character : input) {
+    if (character == '_') {
+      capitalize_next = true;
+    } else if (capitalize_next) {
+      result.push_back(absl::ascii_toupper(character));
+      capitalize_next = false;
+    } else {
+      result.push_back(character);
+    }
+  }
+
+  ABSL_DCHECK_EQ(JsonNameSize(input), result.size());
+
+  return result;
+}
+
+std::string EnumValueToPascalCase(const absl::string_view input) {
+  bool next_upper = true;
+  std::string result;
+  result.reserve(input.size());
+
+  for (char character : input) {
+    if (character == '_') {
+      next_upper = true;
+    } else {
+      if (next_upper) {
+        result.push_back(absl::ascii_toupper(character));
+      } else {
+        result.push_back(absl::ascii_tolower(character));
+      }
+      next_upper = false;
+    }
+  }
+
+  return result;
 }
 
 }  // namespace internal

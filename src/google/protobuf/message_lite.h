@@ -61,9 +61,6 @@
 namespace google {
 namespace protobuf {
 
-template <typename T>
-class RepeatedPtrField;
-
 class FastReflectionMessageMutator;
 class FastReflectionStringSetter;
 class Reflection;
@@ -97,10 +94,6 @@ inline constexpr bool is_concrete_proto_message_v =
     is_concrete_proto_message<T>::value;
 
 namespace internal {
-
-// TODO: Remove this once we have a better way to do this.
-PROTOBUF_EXPORT void GenericSwap(MessageLite* lhs, MessageLite* rhs);
-PROTOBUF_EXPORT void GenericSwap(Message* lhs, Message* rhs);
 
 struct PrivateAccess;
 
@@ -396,7 +389,9 @@ class PROTOBUF_EXPORT MessageLite {
  public:
   MessageLite(const MessageLite&) = delete;
   MessageLite& operator=(const MessageLite&) = delete;
+#if !defined(PROTOBUF_PROTECTED_MESSAGE_BASE_DESTRUCTOR)
   PROTOBUF_VIRTUAL ~MessageLite() = default;
+#endif  // !PROTOBUF_PROTECTED_MESSAGE_BASE_DESTRUCTOR
 
   // Basic Operations ------------------------------------------------
 
@@ -423,7 +418,7 @@ class PROTOBUF_EXPORT MessageLite {
   // will likely be needed again, so the memory used may not be freed.
   // To ensure that all memory used by a Message is freed, you must delete it.
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-  void Clear() { (this->*class_data()->clear)(); }
+  void Clear() { this->class_data()->clear(*this); }
 #else
   virtual void Clear() = 0;
 #endif  // PROTOBUF_CUSTOM_VTABLE
@@ -784,6 +779,10 @@ class PROTOBUF_EXPORT MessageLite {
       const char* ptr, internal::ParseContext* ctx);
 
  protected:
+#if defined(PROTOBUF_PROTECTED_MESSAGE_BASE_DESTRUCTOR)
+  ~MessageLite() = default;
+#endif  // PROTOBUF_PROTECTED_MESSAGE_BASE_DESTRUCTOR
+
   // Message implementations require access to internally visible API.
   static constexpr internal::InternalVisibility internal_visibility() {
     return internal::InternalVisibility{};
@@ -807,18 +806,6 @@ class PROTOBUF_EXPORT MessageLite {
     }
   }
 
-#if defined(PROTOBUF_CUSTOM_VTABLE)
-  template <typename T>
-  static constexpr auto GetClearImpl() {
-    return static_cast<void (MessageLite::*)()>(&T::Clear);
-  }
-#else   // PROTOBUF_CUSTOM_VTABLE
-  // When custom vtables are off we avoid instantiating the functions because we
-  // will not use them anyway. Less work for the compiler.
-  template <typename T>
-  using GetClearImpl = std::nullptr_t;
-#endif  // PROTOBUF_CUSTOM_VTABLE
-
   template <typename T>
   PROTOBUF_ALWAYS_INLINE static T* CopyConstruct(Arena* arena, const T& from) {
     return static_cast<T*>(Arena::CopyConstruct<T>(arena, &from));
@@ -832,8 +819,6 @@ class PROTOBUF_EXPORT MessageLite {
     return reinterpret_cast<Message*>(
         CopyConstruct(arena, reinterpret_cast<const MessageLite&>(from)));
   }
-
-
 
   const internal::TcParseTableBase* GetTcParseTable() const {
     auto* data = GetClassData();
@@ -964,6 +949,7 @@ class PROTOBUF_EXPORT MessageLite {
 #endif
 
  private:
+  friend internal::ClassData;
   friend class internal::MessageCreator;
   friend class FastReflectionMessageMutator;
   friend class AssignDescriptorsHelper;
@@ -988,15 +974,11 @@ class PROTOBUF_EXPORT MessageLite {
   friend class internal::WeakFieldMap;
   friend class internal::WireFormatLite;
   friend class internal::RustMapHelper;
-
-
   template <typename Type>
   friend class Arena::InternalHelper;
 
   template <typename MessageT>
   friend const internal::ClassData* internal::GetClassData(const MessageT& msg);
-  friend void internal::GenericSwap(MessageLite* lhs, MessageLite* rhs);
-  friend void internal::GenericSwap(Message* lhs, Message* rhs);
 
   static bool CheckFieldPresence(const internal::ParseContext& ctx,
                                  const MessageLite& msg,

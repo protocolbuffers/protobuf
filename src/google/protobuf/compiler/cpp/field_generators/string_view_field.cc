@@ -356,7 +356,7 @@ void SingularStringView::GenerateClearingCode(io::Printer* p) const {
 void SingularStringView::GenerateMessageClearingCode(io::Printer* p) const {
   if (is_oneof()) {
     p->Emit(R"cc(
-      $field_$.Destroy();
+      this_.$field_$.Destroy();
     )cc");
     return;
   }
@@ -372,7 +372,7 @@ void SingularStringView::GenerateMessageClearingCode(io::Printer* p) const {
 
   if (is_inlined() && HasHasbit(field_, options_)) {
     p->Emit(R"cc(
-      $DCHK$(!$field_$.IsDefault());
+      $DCHK$(!this_.$field_$.IsDefault());
     )cc");
   }
 
@@ -566,7 +566,7 @@ class RepeatedStringView : public FieldGeneratorBase {
     if (should_split()) {
       p->Emit("this_.$field_$.ClearIfNotDefault();\n");
     } else {
-      p->Emit("$field_$.Clear();\n");
+      p->Emit("this_.$field_$.Clear();\n");
     }
   }
 

@@ -106,6 +106,18 @@ final class ArrayDecoders {
     return position;
   }
 
+  static int decodeLengthPrefixVarint(byte[] data, int position, int limit, Registers registers)
+      throws InvalidProtocolBufferException {
+    position = decodeVarint32(data, position, registers);
+    final int length = registers.int1;
+    if (length < 0) {
+      throw InvalidProtocolBufferException.negativeSize();
+    } else if (length > limit - position) {
+      throw InvalidProtocolBufferException.truncatedMessage();
+    }
+    return position;
+  }
+
   /**
    * Decodes a varint. Returns the position after the varint. The decoded varint is stored in
    * registers.long1.
@@ -168,11 +180,9 @@ final class ArrayDecoders {
   /** Decodes a string value. */
   static int decodeString(byte[] data, int position, Registers registers)
       throws InvalidProtocolBufferException {
-    position = decodeVarint32(data, position, registers);
+    position = decodeLengthPrefixVarint(data, position, data.length, registers);
     final int length = registers.int1;
-    if (length < 0) {
-      throw InvalidProtocolBufferException.negativeSize();
-    } else if (length == 0) {
+    if (length == 0) {
       registers.object1 = "";
       return position;
     } else {
@@ -184,11 +194,9 @@ final class ArrayDecoders {
   /** Decodes a string value with utf8 check. */
   static int decodeStringRequireUtf8(byte[] data, int position, Registers registers)
       throws InvalidProtocolBufferException {
-    position = decodeVarint32(data, position, registers);
+    position = decodeLengthPrefixVarint(data, position, data.length, registers);
     final int length = registers.int1;
-    if (length < 0) {
-      throw InvalidProtocolBufferException.negativeSize();
-    } else if (length == 0) {
+    if (length == 0) {
       registers.object1 = "";
       return position;
     } else {
@@ -200,13 +208,9 @@ final class ArrayDecoders {
   /** Decodes a bytes value. */
   static int decodeBytes(byte[] data, int position, Registers registers)
       throws InvalidProtocolBufferException {
-    position = decodeVarint32(data, position, registers);
+    position = decodeLengthPrefixVarint(data, position, data.length, registers);
     final int length = registers.int1;
-    if (length < 0) {
-      throw InvalidProtocolBufferException.negativeSize();
-    } else if (length > data.length - position) {
-      throw InvalidProtocolBufferException.truncatedMessage();
-    } else if (length == 0) {
+    if (length == 0) {
       registers.object1 = ByteString.EMPTY;
       return position;
     } else {
@@ -241,14 +245,8 @@ final class ArrayDecoders {
   static <T> int mergeMessageField(
       Object msg, Schema<T> schema, byte[] data, int position, int limit, Registers registers)
       throws IOException {
-    int length = data[position++];
-    if (length < 0) {
-      position = decodeVarint32(length, data, position, registers);
-      length = registers.int1;
-    }
-    if (length < 0 || length > limit - position) {
-      throw InvalidProtocolBufferException.truncatedMessage();
-    }
+    position = decodeLengthPrefixVarint(data, position, limit, registers);
+    int length = registers.int1;
     registers.recursionDepth++;
     checkRecursionLimit(registers.recursionDepth);
     schema.mergeFrom((T) msg, data, position, position + length, registers);
@@ -436,14 +434,8 @@ final class ArrayDecoders {
   static int decodePackedVarint32List(
       byte[] data, int position, ProtobufList<?> list, Registers registers) throws IOException {
     final IntArrayList output = (IntArrayList) list;
-    position = decodeVarint32(data, position, registers);
+    position = decodeLengthPrefixVarint(data, position, data.length, registers);
     final int packedDataByteSize = registers.int1;
-    if (packedDataByteSize < 0) {
-      throw InvalidProtocolBufferException.negativeSize();
-    }
-    if (packedDataByteSize > data.length - position) {
-      throw InvalidProtocolBufferException.truncatedMessage();
-    }
     final int fieldLimit = position + packedDataByteSize;
     while (position < fieldLimit) {
       position = decodeVarint32(data, position, registers);
@@ -459,14 +451,8 @@ final class ArrayDecoders {
   static int decodePackedVarint64List(
       byte[] data, int position, ProtobufList<?> list, Registers registers) throws IOException {
     final LongArrayList output = (LongArrayList) list;
-    position = decodeVarint32(data, position, registers);
+    position = decodeLengthPrefixVarint(data, position, data.length, registers);
     final int packedDataByteSize = registers.int1;
-    if (packedDataByteSize < 0) {
-      throw InvalidProtocolBufferException.negativeSize();
-    }
-    if (packedDataByteSize > data.length - position) {
-      throw InvalidProtocolBufferException.truncatedMessage();
-    }
     final int fieldLimit = position + packedDataByteSize;
     while (position < fieldLimit) {
       position = decodeVarint64(data, position, registers);
@@ -483,14 +469,8 @@ final class ArrayDecoders {
       byte[] data, int position, ProtobufList<?> list, Registers registers)
       throws InvalidProtocolBufferException {
     final IntArrayList output = (IntArrayList) list;
-    position = decodeVarint32(data, position, registers);
+    position = decodeLengthPrefixVarint(data, position, data.length, registers);
     final int packedDataByteSize = registers.int1;
-    if (packedDataByteSize < 0) {
-      throw InvalidProtocolBufferException.negativeSize();
-    }
-    if (packedDataByteSize > data.length - position) {
-      throw InvalidProtocolBufferException.truncatedMessage();
-    }
     final int fieldLimit = position + packedDataByteSize;
     output.ensureCapacity(output.size() + packedDataByteSize / 4);
     while (position < fieldLimit) {
@@ -508,14 +488,8 @@ final class ArrayDecoders {
       byte[] data, int position, ProtobufList<?> list, Registers registers)
       throws InvalidProtocolBufferException {
     final LongArrayList output = (LongArrayList) list;
-    position = decodeVarint32(data, position, registers);
+    position = decodeLengthPrefixVarint(data, position, data.length, registers);
     final int packedDataByteSize = registers.int1;
-    if (packedDataByteSize < 0) {
-      throw InvalidProtocolBufferException.negativeSize();
-    }
-    if (packedDataByteSize > data.length - position) {
-      throw InvalidProtocolBufferException.truncatedMessage();
-    }
     final int fieldLimit = position + packedDataByteSize;
     output.ensureCapacity(output.size() + packedDataByteSize / 8);
     while (position < fieldLimit) {
@@ -533,14 +507,8 @@ final class ArrayDecoders {
       byte[] data, int position, ProtobufList<?> list, Registers registers)
       throws InvalidProtocolBufferException {
     final FloatArrayList output = (FloatArrayList) list;
-    position = decodeVarint32(data, position, registers);
+    position = decodeLengthPrefixVarint(data, position, data.length, registers);
     final int packedDataByteSize = registers.int1;
-    if (packedDataByteSize < 0) {
-      throw InvalidProtocolBufferException.negativeSize();
-    }
-    if (packedDataByteSize > data.length - position) {
-      throw InvalidProtocolBufferException.truncatedMessage();
-    }
     final int fieldLimit = position + packedDataByteSize;
     output.ensureCapacity(output.size() + packedDataByteSize / 4);
     while (position < fieldLimit) {
@@ -558,14 +526,8 @@ final class ArrayDecoders {
       byte[] data, int position, ProtobufList<?> list, Registers registers)
       throws InvalidProtocolBufferException {
     final DoubleArrayList output = (DoubleArrayList) list;
-    position = decodeVarint32(data, position, registers);
+    position = decodeLengthPrefixVarint(data, position, data.length, registers);
     final int packedDataByteSize = registers.int1;
-    if (packedDataByteSize < 0) {
-      throw InvalidProtocolBufferException.negativeSize();
-    }
-    if (packedDataByteSize > data.length - position) {
-      throw InvalidProtocolBufferException.truncatedMessage();
-    }
     final int fieldLimit = position + packedDataByteSize;
     output.ensureCapacity(output.size() + packedDataByteSize / 8);
     while (position < fieldLimit) {
@@ -583,14 +545,8 @@ final class ArrayDecoders {
       byte[] data, int position, ProtobufList<?> list, Registers registers)
       throws InvalidProtocolBufferException {
     final BooleanArrayList output = (BooleanArrayList) list;
-    position = decodeVarint32(data, position, registers);
+    position = decodeLengthPrefixVarint(data, position, data.length, registers);
     final int packedDataByteSize = registers.int1;
-    if (packedDataByteSize < 0) {
-      throw InvalidProtocolBufferException.negativeSize();
-    }
-    if (packedDataByteSize > data.length - position) {
-      throw InvalidProtocolBufferException.truncatedMessage();
-    }
     final int fieldLimit = position + packedDataByteSize;
     while (position < fieldLimit) {
       position = decodeVarint64(data, position, registers);
@@ -607,14 +563,8 @@ final class ArrayDecoders {
       byte[] data, int position, ProtobufList<?> list, Registers registers)
       throws InvalidProtocolBufferException {
     final IntArrayList output = (IntArrayList) list;
-    position = decodeVarint32(data, position, registers);
+    position = decodeLengthPrefixVarint(data, position, data.length, registers);
     final int packedDataByteSize = registers.int1;
-    if (packedDataByteSize < 0) {
-      throw InvalidProtocolBufferException.negativeSize();
-    }
-    if (packedDataByteSize > data.length - position) {
-      throw InvalidProtocolBufferException.truncatedMessage();
-    }
     final int fieldLimit = position + packedDataByteSize;
     while (position < fieldLimit) {
       position = decodeVarint32(data, position, registers);
@@ -631,14 +581,8 @@ final class ArrayDecoders {
       byte[] data, int position, ProtobufList<?> list, Registers registers)
       throws InvalidProtocolBufferException {
     final LongArrayList output = (LongArrayList) list;
-    position = decodeVarint32(data, position, registers);
+    position = decodeLengthPrefixVarint(data, position, data.length, registers);
     final int packedDataByteSize = registers.int1;
-    if (packedDataByteSize < 0) {
-      throw InvalidProtocolBufferException.negativeSize();
-    }
-    if (packedDataByteSize > data.length - position) {
-      throw InvalidProtocolBufferException.truncatedMessage();
-    }
     final int fieldLimit = position + packedDataByteSize;
     while (position < fieldLimit) {
       position = decodeVarint64(data, position, registers);
@@ -656,11 +600,9 @@ final class ArrayDecoders {
       int tag, byte[] data, int position, int limit, ProtobufList<?> list, Registers registers)
       throws InvalidProtocolBufferException {
     final ProtobufList<String> output = (ProtobufList<String>) list;
-    position = decodeVarint32(data, position, registers);
+    position = decodeLengthPrefixVarint(data, position, data.length, registers);
     final int length = registers.int1;
-    if (length < 0) {
-      throw InvalidProtocolBufferException.negativeSize();
-    } else if (length == 0) {
+    if (length == 0) {
       output.add("");
     } else {
       String value = new String(data, position, length, StandardCharsets.UTF_8);
@@ -672,11 +614,9 @@ final class ArrayDecoders {
       if (tag != registers.int1) {
         break;
       }
-      position = decodeVarint32(data, nextPosition, registers);
+      position = decodeLengthPrefixVarint(data, nextPosition, data.length, registers);
       final int nextLength = registers.int1;
-      if (nextLength < 0) {
-        throw InvalidProtocolBufferException.negativeSize();
-      } else if (nextLength == 0) {
+      if (nextLength == 0) {
         output.add("");
       } else {
         String value = new String(data, position, nextLength, StandardCharsets.UTF_8);
@@ -695,11 +635,9 @@ final class ArrayDecoders {
       int tag, byte[] data, int position, int limit, ProtobufList<?> list, Registers registers)
       throws InvalidProtocolBufferException {
     final ProtobufList<String> output = (ProtobufList<String>) list;
-    position = decodeVarint32(data, position, registers);
+    position = decodeLengthPrefixVarint(data, position, data.length, registers);
     final int length = registers.int1;
-    if (length < 0) {
-      throw InvalidProtocolBufferException.negativeSize();
-    } else if (length == 0) {
+    if (length == 0) {
       output.add("");
     } else {
       if (!Utf8.isValidUtf8(data, position, position + length)) {
@@ -714,11 +652,9 @@ final class ArrayDecoders {
       if (tag != registers.int1) {
         break;
       }
-      position = decodeVarint32(data, nextPosition, registers);
+      position = decodeLengthPrefixVarint(data, nextPosition, data.length, registers);
       final int nextLength = registers.int1;
-      if (nextLength < 0) {
-        throw InvalidProtocolBufferException.negativeSize();
-      } else if (nextLength == 0) {
+      if (nextLength == 0) {
         output.add("");
       } else {
         if (!Utf8.isValidUtf8(data, position, position + nextLength)) {
@@ -738,13 +674,9 @@ final class ArrayDecoders {
       int tag, byte[] data, int position, int limit, ProtobufList<?> list, Registers registers)
       throws InvalidProtocolBufferException {
     final ProtobufList<ByteString> output = (ProtobufList<ByteString>) list;
-    position = decodeVarint32(data, position, registers);
+    position = decodeLengthPrefixVarint(data, position, data.length, registers);
     final int length = registers.int1;
-    if (length < 0) {
-      throw InvalidProtocolBufferException.negativeSize();
-    } else if (length > data.length - position) {
-      throw InvalidProtocolBufferException.truncatedMessage();
-    } else if (length == 0) {
+    if (length == 0) {
       output.add(ByteString.EMPTY);
     } else {
       output.add(ByteString.copyFrom(data, position, length));
@@ -755,13 +687,9 @@ final class ArrayDecoders {
       if (tag != registers.int1) {
         break;
       }
-      position = decodeVarint32(data, nextPosition, registers);
+      position = decodeLengthPrefixVarint(data, nextPosition, data.length, registers);
       final int nextLength = registers.int1;
-      if (nextLength < 0) {
-        throw InvalidProtocolBufferException.negativeSize();
-      } else if (nextLength > data.length - position) {
-        throw InvalidProtocolBufferException.truncatedMessage();
-      } else if (nextLength == 0) {
+      if (nextLength == 0) {
         output.add(ByteString.EMPTY);
       } else {
         output.add(ByteString.copyFrom(data, position, nextLength));
@@ -1095,13 +1023,9 @@ final class ArrayDecoders {
         unknownFields.storeField(tag, decodeFixed64(data, position));
         return position + 8;
       case WireFormat.WIRETYPE_LENGTH_DELIMITED:
-        position = decodeVarint32(data, position, registers);
+        position = decodeLengthPrefixVarint(data, position, data.length, registers);
         final int length = registers.int1;
-        if (length < 0) {
-          throw InvalidProtocolBufferException.negativeSize();
-        } else if (length > data.length - position) {
-          throw InvalidProtocolBufferException.truncatedMessage();
-        } else if (length == 0) {
+        if (length == 0) {
           unknownFields.storeField(tag, ByteString.EMPTY);
         } else {
           unknownFields.storeField(tag, ByteString.copyFrom(data, position, length));
@@ -1147,7 +1071,7 @@ final class ArrayDecoders {
       case WireFormat.WIRETYPE_FIXED64:
         return position + 8;
       case WireFormat.WIRETYPE_LENGTH_DELIMITED:
-        position = decodeVarint32(data, position, registers);
+        position = decodeLengthPrefixVarint(data, position, data.length, registers);
         return position + registers.int1;
       case WireFormat.WIRETYPE_START_GROUP:
         final int endGroup = (tag & ~0x7) | WireFormat.WIRETYPE_END_GROUP;

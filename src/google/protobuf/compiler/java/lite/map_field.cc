@@ -10,6 +10,7 @@
 #include <cstdint>
 #include <string>
 
+#include "absl/strings/str_cat.h"
 #include "google/protobuf/compiler/code_generator_lite.h"
 #include "google/protobuf/compiler/java/context.h"
 #include "google/protobuf/compiler/java/doc_comment.h"
@@ -127,9 +128,6 @@ void SetMessageVariables(
   (*variables)["deprecation"] =
       descriptor->options().deprecated() ? "@java.lang.Deprecated " : "";
 
-  variables->insert(
-      {"default_entry", absl::StrCat((*variables)["capitalized_name"],
-                                     "DefaultEntryHolder.defaultEntry")});
   // { and } variables are used as delimiters when emitting annotations.
   (*variables)["{"] = "";
   (*variables)["}"] = "";
@@ -259,18 +257,7 @@ void ImmutableMapFieldLiteGenerator::GenerateInterfaceMembers(
 
 void ImmutableMapFieldLiteGenerator::GenerateMembers(
     io::Printer* printer) const {
-  printer->Print(
-      variables_,
-      "private static final class $capitalized_name$DefaultEntryHolder {\n"
-      "  static final com.google.protobuf.MapEntryLite<\n"
-      "      $type_parameters$> defaultEntry =\n"
-      "          com.google.protobuf.MapEntryLite\n"
-      "          .<$type_parameters$>newDefaultInstance(\n"
-      "              $key_wire_type$,\n"
-      "              $key_default_value$,\n"
-      "              $value_wire_type$,\n"
-      "              $value_default_value$);\n"
-      "}\n");
+  const FieldDescriptor* value = MapValueField(descriptor_);
   printer->Print(variables_,
                  "private com.google.protobuf.MapFieldLite<\n"
                  "    $type_parameters$> $name$_ =\n"
@@ -304,7 +291,6 @@ void ImmutableMapFieldLiteGenerator::GenerateMembers(
                  "}\n");
   printer->Annotate("{", "}", descriptor_);
 
-  const FieldDescriptor* value = MapValueField(descriptor_);
   if (GetJavaType(value) == JAVATYPE_ENUM) {
     printer->Print(
         variables_,
@@ -525,7 +511,12 @@ void ImmutableMapFieldLiteGenerator::GenerateFieldInfo(
                               output);
   printer->Print(variables_,
                  "\"$name$_\",\n"
-                 "$default_entry$,\n");
+                 "com.google.protobuf.MapEntryLite\n"
+                 ".<$type_parameters$>newDefaultInstance(\n"
+                 "    $key_wire_type$,\n"
+                 "    $key_default_value$,\n"
+                 "    $value_wire_type$,\n"
+                 "    $value_default_value$),\n");
   const FieldDescriptor* value = MapValueField(descriptor_);
   if (!SupportUnknownEnumValue(value) && GetJavaType(value) == JAVATYPE_ENUM) {
     PrintEnumVerifierLogic(printer, MapValueField(descriptor_), variables_,

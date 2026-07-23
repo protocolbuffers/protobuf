@@ -965,6 +965,10 @@ public final class Descriptors {
       return Collections.unmodifiableList(Arrays.asList(fields));
     }
 
+    List<FieldDescriptor> getFieldsSortedByNumber() {
+      return Collections.unmodifiableList(Arrays.asList(fieldsSortedByNumber));
+    }
+
     /** Get a count of this message type's fields. */
     public int getFieldCount() {
       return fields.length;
@@ -3743,6 +3747,13 @@ public final class Descriptors {
 
       containingType = parent;
       fieldCount = 0;
+
+      if (parent.getFile().tables.findSymbol(fullName) != null) {
+        logger.warning(
+            "Oneof "
+                + fullName
+                + " collides with another symbol. This will become an error in 2027.");
+      }
     }
 
     private final int index;

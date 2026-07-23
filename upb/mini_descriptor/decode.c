@@ -516,6 +516,12 @@ static const char* upb_MtDecoder_Parse(upb_MtDecoder* d, const char* ptr,
       ptr = upb_MdDecoder_DecodeBase92Varint(&d->base, ptr, ch,
                                              kUpb_EncodedValue_MinSkip,
                                              kUpb_EncodedValue_MaxSkip, &skip);
+      if (skip == 0) {
+        upb_MdDecoder_ErrorJmp(&d->base, "Invalid skip value: 0");
+      }
+      if (skip > UINT32_MAX - last_field_number) {
+        upb_MdDecoder_ErrorJmp(&d->base, "Field number overflow");
+      }
       last_field_number += skip;
       last_field_number--;  // Next field seen will increment.
     } else {
@@ -639,6 +645,9 @@ static void upb_MtDecoder_AssignHasbits(upb_MtDecoder* d) {
     upb_MiniTableField* field =
         (upb_MiniTableField*)&d->table.UPB_PRIVATE(fields)[i];
     if (field->UPB_PRIVATE(offset) == kHasbitPresence) {
+      if (last_hasbit >= INT16_MAX) {
+        upb_MdDecoder_ErrorJmp(&d->base, "Too many fields with presence");
+      }
       field->presence = ++last_hasbit;
     }
   }
@@ -668,6 +677,12 @@ static void upb_MtDecoder_AssignOffsets(upb_MtDecoder* d) {
   for (upb_OneOfLayoutItem* item = d->oneofs.data; item < oneof_end; item++) {
     upb_MiniTableField* f = &d->fields[item->field_index];
     uint16_t case_offset = upb_MtDecoder_Place(d, kUpb_OneOf_CaseFieldRep);
+    // The case offset is stored negated in the int16_t presence field, so it
+    // must fit in the positive int16_t range or it would alias a hasbit index.
+    if (case_offset > INT16_MAX) {
+      upb_MdDecoder_ErrorJmp(&d->base,
+                             "Message size exceeded maximum size for oneofs");
+    }
     uint16_t data_offset = upb_MtDecoder_Place(d, item->rep);
     while (true) {
       f->presence = ~case_offset;
@@ -825,6 +840,14 @@ done:
   }
 #endif
   UPB_PRIVATE(upb_MiniTable_CheckInvariants)(ret);
+
+#ifndef NDEBUG
+  for (int i = 1; i < upb_MiniTable_FieldCount(ret); i++) {
+    const upb_MiniTableField* f1 = upb_MiniTable_GetFieldByIndex(ret, i - 1);
+    const upb_MiniTableField* f2 = upb_MiniTable_GetFieldByIndex(ret, i);
+    UPB_ASSERT(upb_MiniTableField_Number(f2) > upb_MiniTableField_Number(f1));
+  }
+#endif
   return ret;
 }
 

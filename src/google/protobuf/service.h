@@ -77,6 +77,7 @@
 #ifndef GOOGLE_PROTOBUF_SERVICE_H__
 #define GOOGLE_PROTOBUF_SERVICE_H__
 
+#include <functional>
 #include <string>
 
 #include "google/protobuf/stubs/callback.h"
@@ -111,7 +112,7 @@ class Message;            // message.h
 // its exact type at compile time (analogous to Reflection).
 class PROTOBUF_EXPORT Service {
  public:
-  inline Service() {}
+  Service() {}
   Service(const Service&) = delete;
   Service& operator=(const Service&) = delete;
   virtual ~Service();
@@ -150,9 +151,11 @@ class PROTOBUF_EXPORT Service {
   // * If the RPC failed, "response"'s contents are undefined.  The
   //   RpcController can be queried to determine if an error occurred and
   //   possibly to get more information about the error.
+  //
   virtual void CallMethod(const MethodDescriptor* method,
                           RpcController* controller, const Message* request,
-                          Message* response, Closure* done) = 0;
+                          Message* response, Closure* done)
+      = 0;
 
   // CallMethod() requires that the request and response passed in are of a
   // particular subclass of Message.  GetRequestPrototype() and
@@ -183,7 +186,7 @@ class PROTOBUF_EXPORT Service {
 // advanced features (e.g. deadline propagation).
 class PROTOBUF_EXPORT RpcController {
  public:
-  inline RpcController() {}
+  RpcController() {}
   RpcController(const RpcController&) = delete;
   RpcController& operator=(const RpcController&) = delete;
   virtual ~RpcController();
@@ -235,7 +238,8 @@ class PROTOBUF_EXPORT RpcController {
   // will be called immediately.
   //
   // NotifyOnCancel() must be called no more than once per request.
-  virtual void NotifyOnCancel(Closure* callback) = 0;
+  virtual void NotifyOnCancel(Closure* callback)
+      = 0;
 };
 
 // Abstract interface for an RPC channel.  An RpcChannel represents a
@@ -248,7 +252,7 @@ class PROTOBUF_EXPORT RpcController {
 //   service->MyMethod(request, &response, callback);
 class PROTOBUF_EXPORT RpcChannel {
  public:
-  inline RpcChannel() {}
+  RpcChannel() {}
   RpcChannel(const RpcChannel&) = delete;
   RpcChannel& operator=(const RpcChannel&) = delete;
   virtual ~RpcChannel();
@@ -260,8 +264,10 @@ class PROTOBUF_EXPORT RpcChannel {
   // method->input_type() and method->output_type().
   virtual void CallMethod(const MethodDescriptor* method,
                           RpcController* controller, const Message* request,
-                          Message* response, Closure* done) = 0;
+                          Message* response, Closure* done)
+      = 0;
 };
+
 
 }  // namespace protobuf
 }  // namespace google

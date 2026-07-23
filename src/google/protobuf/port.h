@@ -272,7 +272,7 @@ enum { kCacheAlignment = alignof(max_align_t) };  // do the best we can
 // The maximum byte alignment we support.
 enum { kMaxMessageAlignment = 8 };
 
-inline constexpr bool EnableStableExperiments() {
+constexpr bool EnableStableExperiments() {
 #if defined(PROTOBUF_ENABLE_STABLE_EXPERIMENTS)
   return true;
 #else
@@ -280,22 +280,20 @@ inline constexpr bool EnableStableExperiments() {
 #endif
 }
 
-inline constexpr bool EnableExperimentalMicroString() {
+constexpr bool EnableExperimentalMicroString() {
 #if defined(PROTOBUF_ENABLE_EXPERIMENTAL_MICRO_STRING)
   return true;
 #endif
   return EnableStableExperiments();
 }
 
-inline constexpr bool ForceInlineStringInProtoc() {
+constexpr bool ForceInlineStringInProtoc() { return EnableStableExperiments(); }
+
+constexpr bool ForceEagerlyVerifiedLazyInProtoc() {
   return EnableStableExperiments();
 }
 
-inline constexpr bool ForceEagerlyVerifiedLazyInProtoc() {
-  return EnableStableExperiments();
-}
-
-inline constexpr bool ForceSplitFieldsInProtoc() {
+constexpr bool ForceSplitFieldsInProtoc() {
 #if defined(PROTOBUF_FORCE_SPLIT)
   return true;
 #else
@@ -305,7 +303,7 @@ inline constexpr bool ForceSplitFieldsInProtoc() {
 
 // Returns true if debug hardening for clearing oneof message on arenas is
 // enabled.
-inline constexpr bool DebugHardenClearOneofMessageOnArena() {
+constexpr bool DebugHardenClearOneofMessageOnArena() {
 #ifdef NDEBUG
   return false;
 #else
@@ -357,7 +355,7 @@ constexpr bool DebugHardenFuzzMessageSpaceUsedLong() {
   return false;
 }
 
-inline constexpr bool DebugHardenCheckHasBitConsistency() {
+constexpr bool DebugHardenCheckHasBitConsistency() {
 #if !defined(NDEBUG) || defined(ABSL_HAVE_ADDRESS_SANITIZER) || \
     defined(ABSL_HAVE_MEMORY_SANITIZER) || defined(ABSL_HAVE_THREAD_SANITIZER)
   return true;
@@ -379,9 +377,9 @@ inline void AssertBytesAreReadable(const volatile char* p, int n) {
 
 // Returns true if pointers are 8B aligned, leaving least significant 3 bits
 // available.
-inline constexpr bool PtrIsAtLeast8BAligned() { return alignof(void*) >= 8; }
+constexpr bool PtrIsAtLeast8BAligned() { return alignof(void*) >= 8; }
 
-inline constexpr bool IsLazyParsingSupported() {
+constexpr bool IsLazyParsingSupported() {
   // We need 3 bits for pointer tagging in lazy parsing.
   return PtrIsAtLeast8BAligned();
 }
@@ -678,7 +676,7 @@ inline bool IsMemoryPoisoned([[maybe_unused]] const void* p) {
 #endif
 }
 
-inline constexpr bool ShouldBatchSingularString() {
+constexpr bool ShouldBatchSingularString() {
 #ifdef PROTOBUF_INTERNAL_BATCH_SINGULAR_STRING
   return true;
 #else
@@ -686,7 +684,7 @@ inline constexpr bool ShouldBatchSingularString() {
 #endif
 }
 
-inline constexpr bool ShouldBatchRepeatedString() {
+constexpr bool ShouldBatchRepeatedString() {
 #ifdef PROTOBUF_INTERNAL_BATCH_REPEATED_STRING
   return true;
 #else
@@ -694,7 +692,7 @@ inline constexpr bool ShouldBatchRepeatedString() {
 #endif
 }
 
-inline constexpr bool ShouldBatchRepeatedNumeric() {
+constexpr bool ShouldBatchRepeatedNumeric() {
 #ifdef PROTOBUF_INTERNAL_BATCH_REPEATED_NUMERIC
   return true;
 #else
@@ -702,7 +700,7 @@ inline constexpr bool ShouldBatchRepeatedNumeric() {
 #endif
 }
 
-inline constexpr bool UseBatchOffset() {
+constexpr bool UseBatchOffset() {
 #ifdef PROTOBUF_INTERNAL_USE_BATCH_OFFSET
   return true;
 #else
@@ -970,25 +968,6 @@ PROTOBUF_EXPORT constexpr BoundsCheckMode GetBoundsCheckMode() {
 #endif
 }
 
-
-#if defined(__x86_64__) && defined(__SSE4_2__)
-
-constexpr bool HasCrc32() { return true; }
-inline uint32_t Crc32(uint32_t crc, uint64_t v) {
-  return __builtin_ia32_crc32di(crc, v);
-}
-
-#elif defined(__ARM_FEATURE_CRC32)
-
-constexpr bool HasCrc32() { return true; }
-inline uint32_t Crc32(uint32_t crc, uint64_t v) { return __crc32cd(crc, v); }
-
-#else
-
-constexpr bool HasCrc32() { return false; }
-inline uint32_t Crc32(uint32_t, uint64_t) { return 0; }
-
-#endif
 
 // Check minimum Protobuf support defined at:
 // https://github.com/google/oss-policies-info/blob/main/foundational-cxx-support-matrix.md

@@ -14,12 +14,11 @@
 #include <string>
 #include <vector>
 
-#include "absl/status/status.h"
-#include "absl/strings/string_view.h"
-
 #include "absl/container/flat_hash_map.h"
 #include "absl/container/flat_hash_set.h"
 #include "absl/functional/function_ref.h"
+#include "absl/status/status.h"
+#include "absl/strings/string_view.h"
 #include "absl/types/optional.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
@@ -35,6 +34,9 @@
 namespace google {
 namespace protobuf {
 namespace internal {
+
+class OptionInterpreter;
+class AggregateOptionFinder;
 
 // A path through a FileDescriptorProto to a specific location of source code,
 // e.g. a field name. See SourceCodeInfo.Location.path in descriptor.proto for
@@ -422,145 +424,6 @@ class DescriptorBuilder {
                                           const FieldDescriptorProto& proto,
                                           absl::string_view type);
 
-  // A helper class for interpreting options.
-  class OptionInterpreter {
-   public:
-    // Creates an interpreter that operates in the context of the pool of the
-    // specified builder, which must not be nullptr. We don't take ownership of
-    // the builder.
-    explicit OptionInterpreter(DescriptorBuilder* builder);
-    OptionInterpreter(const OptionInterpreter&) = delete;
-    OptionInterpreter& operator=(const OptionInterpreter&) = delete;
-
-    ~OptionInterpreter();
-
-    // Interprets the uninterpreted options in the specified Options message.
-    // On error, calls AddError() on the underlying builder and returns false.
-    // Otherwise returns true.
-    bool InterpretOptionExtensions(OptionsToInterpret* options_to_interpret);
-
-    // Interprets the uninterpreted feature options in the specified Options
-    // message. On error, calls AddError() on the underlying builder and returns
-    // false. Otherwise returns true.
-    bool InterpretNonExtensionOptions(OptionsToInterpret* options_to_interpret);
-
-    // Updates the given source code info by re-writing uninterpreted option
-    // locations to refer to the corresponding interpreted option.
-    void UpdateSourceCodeInfo(SourceCodeInfo* info);
-
-    class AggregateOptionFinder;
-
-   private:
-    bool InterpretOptionsImpl(OptionsToInterpret* options_to_interpret,
-                              bool skip_extensions);
-
-    // Interprets uninterpreted_option_ on the specified message, which
-    // must be the mutable copy of the original options message to which
-    // uninterpreted_option_ belongs. The given src_path is the source
-    // location path to the uninterpreted option, and options_path is the
-    // source location path to the options message. The location paths are
-    // recorded and then used in UpdateSourceCodeInfo.
-    // The features boolean controls whether or not we should only interpret
-    // feature options or skip them entirely.
-    bool InterpretSingleOption(Message* options, const SourceCodePath& src_path,
-                               const SourceCodePath& options_path,
-                               bool skip_extensions);
-
-    // Adds the uninterpreted_option to the given options message verbatim.
-    // Used when AllowUnknownDependencies() is in effect and we can't find
-    // the option's definition.
-    void AddWithoutInterpreting(const UninterpretedOption& uninterpreted_option,
-                                Message* options);
-
-    // A recursive helper function that drills into the intermediate fields
-    // in unknown_fields to check if field innermost_field is set on the
-    // innermost message. Returns false and sets an error if so.
-    bool ExamineIfOptionIsSet(
-        std::vector<const FieldDescriptor*>::const_iterator
-            intermediate_fields_iter,
-        std::vector<const FieldDescriptor*>::const_iterator
-            intermediate_fields_end,
-        const FieldDescriptor* innermost_field,
-        const std::string& debug_msg_name,
-        const UnknownFieldSet& unknown_fields);
-
-    // Validates the value for the option field of the currently interpreted
-    // option and then sets it on the unknown_field.
-    bool SetOptionValue(const FieldDescriptor* option_field,
-                        UnknownFieldSet* unknown_fields, Message* options);
-
-    // Parses an aggregate value for a CPPTYPE_MESSAGE option and
-    // saves it into *unknown_fields.
-    bool SetAggregateOption(const FieldDescriptor* option_field,
-                            UnknownFieldSet* unknown_fields, Message* options);
-
-    // Convenience functions to set an int field the right way, depending on
-    // its wire type (a single int CppType can represent multiple wire types).
-    void SetInt32(int number, int32_t value, FieldDescriptor::Type type,
-                  UnknownFieldSet* unknown_fields);
-    void SetInt64(int number, int64_t value, FieldDescriptor::Type type,
-                  UnknownFieldSet* unknown_fields);
-    void SetUInt32(int number, uint32_t value, FieldDescriptor::Type type,
-                   UnknownFieldSet* unknown_fields);
-    void SetUInt64(int number, uint64_t value, FieldDescriptor::Type type,
-                   UnknownFieldSet* unknown_fields);
-
-    // A helper function that adds an error at the specified location of the
-    // option we're currently interpreting, and returns false.
-    bool AddOptionError(DescriptorPool::ErrorCollector::ErrorLocation location,
-                        absl::FunctionRef<std::string()> make_error) {
-      builder_->AddError(options_to_interpret_->element_name,
-                         *uninterpreted_option_, location, make_error);
-      return false;
-    }
-
-    // A helper function that adds an error at the location of the option name
-    // and returns false.
-    bool AddNameError(absl::FunctionRef<std::string()> make_error) {
-#ifdef PROTOBUF_INTERNAL_IGNORE_FIELD_NAME_ERRORS_
-      return true;
-#else   // PROTOBUF_INTERNAL_IGNORE_FIELD_NAME_ERRORS_
-      return AddOptionError(DescriptorPool::ErrorCollector::OPTION_NAME,
-                            make_error);
-#endif  // PROTOBUF_INTERNAL_IGNORE_FIELD_NAME_ERRORS_
-    }
-
-    // A helper function that adds an error at the location of the option name
-    // and returns false.
-    bool AddValueError(absl::FunctionRef<std::string()> make_error) {
-      return AddOptionError(DescriptorPool::ErrorCollector::OPTION_VALUE,
-                            make_error);
-    }
-
-    // We interpret against this builder's pool. Is never nullptr. We don't own
-    // this pointer.
-    DescriptorBuilder* builder_;
-
-    // The options we're currently interpreting, or nullptr if we're not in a
-    // call to InterpretOptions.
-    const OptionsToInterpret* options_to_interpret_;
-
-    // The option we're currently interpreting within options_to_interpret_, or
-    // nullptr if we're not in a call to InterpretOptions(). This points to a
-    // submessage of the original option, not the mutable copy. Therefore we
-    // can use it to find locations recorded by the parser.
-    const UninterpretedOption* uninterpreted_option_;
-
-    // This maps the element path of uninterpreted options to the element path
-    // of the resulting interpreted option. This is used to modify a file's
-    // source code info to account for option interpretation.
-    absl::flat_hash_map<SourceCodePath, SourceCodePath> interpreted_paths_;
-
-    // This maps the path to a repeated option field to the known number of
-    // elements the field contains. This is used to track the compute the
-    // index portion of the element path when interpreting a single option.
-    absl::flat_hash_map<SourceCodePath, int> repeated_option_counts_;
-
-    // Factory used to create the dynamic messages we need to parse
-    // any aggregate option values we encounter.
-    DynamicMessageFactory dynamic_factory_;
-  };
-
   // Work-around for broken compilers:  According to the C++ standard,
   // OptionInterpreter should have access to the private members of any class
   // which has declared DescriptorBuilder as a friend.  Unfortunately some old
@@ -569,7 +432,7 @@ class DescriptorBuilder {
   // redundantly declare OptionInterpreter a friend just to make things extra
   // clear for these bad compilers.
   friend class OptionInterpreter;
-  friend class OptionInterpreter::AggregateOptionFinder;
+  friend class AggregateOptionFinder;
 
   static bool get_allow_unknown(const DescriptorPool* pool) {
     return pool->allow_unknown_;
@@ -644,8 +507,7 @@ class DescriptorBuilder {
                       const FieldDescriptorProto& proto);
 
   template <typename DescriptorT, typename DescriptorProtoT>
-  void ValidateNamingStyle(const DescriptorT*,
-                           const DescriptorProtoT&);
+  void ValidateNamingStyle(const DescriptorT*, const DescriptorProtoT&);
 
   template <typename DescriptorT>
   bool IsStyleOrGreater(const DescriptorT* descriptor,

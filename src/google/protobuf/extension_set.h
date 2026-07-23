@@ -36,15 +36,19 @@
 #include "absl/container/btree_map.h"
 #include "absl/log/absl_check.h"
 #include "absl/strings/string_view.h"
+#include "google/protobuf/class_data.h"
 #include "google/protobuf/generated_enum_util.h"
+#include "google/protobuf/generated_message_tctable_decl.h"
 #include "google/protobuf/internal_visibility.h"
-#include "google/protobuf/port.h"
 #include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/message_lite.h"
+#include "google/protobuf/message_traits.h"
 #include "google/protobuf/parse_context.h"
+#include "google/protobuf/port.h"
 #include "google/protobuf/repeated_field.h"
 #include "google/protobuf/repeated_ptr_field.h"
 #include "google/protobuf/wire_format_lite.h"
+
 
 // clang-format off
 #include "google/protobuf/port_def.inc"  // Must be last
@@ -185,6 +189,16 @@ struct ExtensionInfo {
     }
 
     const internal::TcParseTableBase* GetTcTable() const { return tc_table; }
+
+    const ClassData* GetClassData() const {
+#if defined(PROTOBUF_MESSAGE_GLOBALS)
+      return internal::MessageGlobalsBase::GetClassData(globals);
+#elif defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
+      return tc_table->class_data;
+#else
+      return internal::GetClassData(*prototype);
+#endif
+    }
   };
 
   union {
@@ -244,8 +258,10 @@ class PROTOBUF_EXPORT DescriptorPoolExtensionFinder {
 };
 
 // Turn on direct LazyField access.
-#if !defined( \
-    PROTOBUF_INTERNAL_DIRECT_LAZY_FIELD_IN_EXTENSION_SET_TEMPORARY_OPTOUT)
+// Use PROTOBUF_ENABLE_STABLE_EXPERIMENTS to turn on the old code for now.
+#if !defined(                                                                 \
+    PROTOBUF_INTERNAL_DIRECT_LAZY_FIELD_IN_EXTENSION_SET_TEMPORARY_OPTOUT) && \
+    !defined(PROTOBUF_ENABLE_STABLE_EXPERIMENTS)
 #define PROTOBUF_INTERNAL_DIRECT_LAZY_FIELD_IN_EXTENSION_SET
 #endif
 
@@ -478,7 +494,7 @@ class PROTOBUF_EXPORT ExtensionSet {
 #define desc const FieldDescriptor* descriptor  // avoid line wrapping
   std::string* AddString(Arena* arena, int number, FieldType type, desc);
   MessageLite* AddMessage(Arena* arena, int number, FieldType type,
-                          const MessageLite& prototype, desc);
+                          const ClassData* class_data, desc);
   MessageLite* AddMessage(Arena* arena, const FieldDescriptor* descriptor,
                           MessageFactory* factory);
   void AddAllocatedMessage(Arena* arena, const FieldDescriptor* descriptor,
@@ -1721,7 +1737,7 @@ class RepeatedMessageTypeTraits {
   static inline MutableType Add(Arena* arena, int number, FieldType field_type,
                                 ExtensionSet* set) {
     return static_cast<Type*>(set->AddMessage(
-        arena, number, field_type, Type::default_instance(), nullptr));
+        arena, number, field_type, MessageTraits<Type>::class_data(), nullptr));
   }
   PROTOBUF_FUTURE_ADD_EARLY_NODISCARD static inline const RepeatedPtrField<
       Type>&
