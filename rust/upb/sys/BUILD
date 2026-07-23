@@ -59,9 +59,11 @@ cc_library(
         "//upb/message:copy",
         "//upb/mini_descriptor",
         "//upb/mini_table",
+        "//upb/text",
         "//upb/text:debug",
         "//upb/wire:byte_size",
     ],
+    alwayslink = 1,
 )
 
 pkg_files(
