@@ -82,16 +82,15 @@ UPB_INLINE bool _upb_MiniTableField_IsExtensionCompatible(
          upb_MiniTableField_IsArray(dst_f) == upb_MiniTableField_IsArray(src_f);
 }
 
-static void upb_Message_SetFieldOrExtension(upb_Message* msg,
-                                            const upb_MiniTableField* f,
-                                            const upb_MiniTableExtension* ext,
-                                            const upb_MessageValue* val,
-                                            upb_Arena* arena) {
+UPB_NODISCARD static bool upb_Message_SetFieldOrExtension(
+    upb_Message* msg, const upb_MiniTableField* f,
+    const upb_MiniTableExtension* ext, const upb_MessageValue* val,
+    upb_Arena* arena) {
   if (ext != NULL) {
-    upb_Message_SetExtension(msg, ext, val, arena);
-  } else {
-    upb_Message_SetBaseField(msg, f, val);
+    return upb_Message_SetExtension(msg, ext, val, arena);
   }
+  upb_Message_SetBaseField(msg, f, val);
+  return true;
 }
 
 static void upb_Message_EncodeFieldAsUnknown(
@@ -175,7 +174,7 @@ static void upb_Array_DeepConvert(
     }
   }
   if (dst_i != size) {
-    upb_Array_Resize(dst, dst_i, c->arena);
+    (void)upb_Array_Resize(dst, dst_i, c->arena);
   }
 }
 
@@ -443,18 +442,25 @@ static void upb_Message_ConvertExtensions(upb_Converter* c, upb_Message* dst,
                                   src_sub_mt, dst_f, dst, extreg, depth);
             upb_MessageValue valid_val;
             valid_val.array_val = dst_arr;
-            upb_Message_SetFieldOrExtension(dst, dst_f, dst_ext, &valid_val,
-                                            c->arena);
+            if (!upb_Message_SetFieldOrExtension(dst, dst_f, dst_ext,
+                                                 &valid_val, c->arena)) {
+              upb_ErrorHandler_ThrowError(&c->err, kUpb_ErrorCode_OutOfMemory);
+            }
           } else {
             // Array of messages, and the sub message types are the same.
             // Shallow copy.
-            upb_Message_SetFieldOrExtension(dst, dst_f, dst_ext, &val,
-                                            c->arena);
+            if (!upb_Message_SetFieldOrExtension(dst, dst_f, dst_ext, &val,
+                                                 c->arena)) {
+              upb_ErrorHandler_ThrowError(&c->err, kUpb_ErrorCode_OutOfMemory);
+            }
           }
         } else if (dst_sub_mt == src_sub_mt) {
           // Scalar message, and the message types are the same.
           // Shallow copy.
-          upb_Message_SetFieldOrExtension(dst, dst_f, dst_ext, &val, c->arena);
+          if (!upb_Message_SetFieldOrExtension(dst, dst_f, dst_ext, &val,
+                                               c->arena)) {
+            upb_ErrorHandler_ThrowError(&c->err, kUpb_ErrorCode_OutOfMemory);
+          }
         } else {
           // Scalar message, and the message types differ. Perform conversion.
           upb_Message* dst_sub = upb_Message_New(dst_sub_mt, c->arena);
@@ -466,8 +472,10 @@ static void upb_Message_ConvertExtensions(upb_Converter* c, upb_Message* dst,
 
           upb_MessageValue valid_val;
           valid_val.msg_val = dst_sub;
-          upb_Message_SetFieldOrExtension(dst, dst_f, dst_ext, &valid_val,
-                                          c->arena);
+          if (!upb_Message_SetFieldOrExtension(dst, dst_f, dst_ext, &valid_val,
+                                               c->arena)) {
+            upb_ErrorHandler_ThrowError(&c->err, kUpb_ErrorCode_OutOfMemory);
+          }
         }
       } else {
         // Scalar non-message type.
@@ -480,8 +488,10 @@ static void upb_Message_ConvertExtensions(upb_Converter* c, upb_Message* dst,
                                   dst, extreg, depth);
             upb_MessageValue valid_val;
             valid_val.array_val = dst_arr;
-            upb_Message_SetFieldOrExtension(dst, dst_f, dst_ext, &valid_val,
-                                            c->arena);
+            if (!upb_Message_SetFieldOrExtension(dst, dst_f, dst_ext,
+                                                 &valid_val, c->arena)) {
+              upb_ErrorHandler_ThrowError(&c->err, kUpb_ErrorCode_OutOfMemory);
+            }
             continue;
           } else {
             const upb_MiniTableEnum* dst_e =
@@ -497,7 +507,10 @@ static void upb_Message_ConvertExtensions(upb_Converter* c, upb_Message* dst,
             }
           }
         }
-        upb_Message_SetFieldOrExtension(dst, dst_f, dst_ext, &val, c->arena);
+        if (!upb_Message_SetFieldOrExtension(dst, dst_f, dst_ext, &val,
+                                             c->arena)) {
+          upb_ErrorHandler_ThrowError(&c->err, kUpb_ErrorCode_OutOfMemory);
+        }
       }
     } else {
       // Since this extension is not known in the destination schema, encode it
