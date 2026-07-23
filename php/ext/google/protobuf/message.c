@@ -67,6 +67,8 @@ static zend_object* Message_create(zend_class_entry* class_type) {
   intern->std.handlers = &message_object_handlers;
   intern->desc = NULL;
   ZVAL_NULL(&intern->arena);
+  // Prevent Message_free from reading garbage memory.
+  intern->msg = NULL;
   return &intern->std;
 }
 
@@ -1458,7 +1460,7 @@ void Message_ModuleInit() {
   message_ce->create_object = Message_create;
 
   memcpy(h, &std_object_handlers, sizeof(zend_object_handlers));
-  h->dtor_obj = Message_dtor;
+  h->free_obj = Message_dtor;
   h->compare = Message_compare_objects;
   h->read_property = Message_read_property;
   h->write_property = Message_write_property;
