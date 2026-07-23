@@ -91,6 +91,8 @@ class DescriptorBuilder {
   const FileDescriptor* BuildFile(const FileDescriptorProto& proto);
 
  private:
+  static constexpr size_t kMaxNumErrors = 1000;
+
   DescriptorBuilder(const DescriptorPool* pool, DescriptorPool::Tables* tables,
                     DescriptorPool::DeferredValidation& deferred_validation,
                     DescriptorPool::ErrorCollector* error_collector);
@@ -100,6 +102,8 @@ class DescriptorBuilder {
   // Non-recursive part of BuildFile functionality.
   FileDescriptor* BuildFileImpl(const FileDescriptorProto& proto,
                                 internal::FlatAllocator& alloc);
+
+  bool has_errors() const { return error_count_ != 0; }
 
   const DescriptorPool* pool_;
   DescriptorPool::Tables* tables_;  // for convenience
@@ -113,7 +117,8 @@ class DescriptorBuilder {
   // can later (after cross-linking) interpret those options.
   std::vector<OptionsToInterpret> options_to_interpret_;
 
-  bool had_errors_;
+  size_t error_count_ = 0;
+  size_t warning_count_ = 0;
   std::string filename_;
   FileDescriptor* file_;
   FileDescriptorTables* file_tables_ = nullptr;
