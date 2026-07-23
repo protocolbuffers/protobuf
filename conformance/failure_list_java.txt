@@ -36,6 +36,8 @@ Recommended.*.FieldMaskPathsDontRoundTrip.JsonOutput                            
 Recommended.*.FieldMaskTooManyUnderscore.JsonOutput                                                                # Should have failed to serialize, but didn't.
 Recommended.*.JsonInput.FieldMaskInvalidCharacter                                                                  # Should have failed to parse, but didn't.
 Required.*.JsonInput.EnumFieldNotQuoted                                                                            # Should have failed to parse, but didn't.
+Required.*.JsonInput.EnumFieldSingleElementArrayEnumName                                                           # Should have failed to parse, but didn't.
+Required.*.JsonInput.EnumFieldSingleElementArrayNumericValue                                                      # Should have failed to parse, but didn't.
 Required.*.JsonInput.Int32FieldLeadingZero                                                                         # Should have failed to parse, but didn't.
 Required.*.JsonInput.Int32FieldNegativeWithLeadingZero                                                             # Should have failed to parse, but didn't.
 Required.*.JsonInput.Int32FieldPlusSign                                                                            # Should have failed to parse, but didn't.

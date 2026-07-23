@@ -2136,4 +2136,23 @@ class EncodeDecodeTest extends TestBase
         }
         $this->assertTrue($threwTooLarge, 'recursion_limit > 65535 must throw');
     }
+
+    public function testLargeMessageWithSubMessage()
+    {
+        // 33MB string to exceed the 32MB former limit.
+        $str = str_repeat('a', 33 * 1024 * 1024);
+        $m = new TestMessage();
+        $m->setOptionalString($str);
+        $sub = new Sub();
+        $sub->setA(42);
+        $m->setOptionalMessage($sub);
+
+        $data = $m->serializeToString();
+        $this->assertNotEmpty($data);
+
+        $m2 = new TestMessage();
+        $m2->mergeFromString($data);
+        $this->assertEquals(42, $m2->getOptionalMessage()->getA());
+        $this->assertEquals(33 * 1024 * 1024, strlen($m2->getOptionalString()));
+    }
 }

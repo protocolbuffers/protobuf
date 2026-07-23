@@ -1417,12 +1417,17 @@ static void Dealloc(CMessage* self) {
     if (self->parent_field_descriptor->is_repeated()) {
       CMessage::SubMessagesMap* child_submessages =
           parent->child_submessages.TryGet();
-      if (child_submessages) child_submessages->Erase(self->message);
+      if (child_submessages) {
+        child_submessages->EraseIfEqual(self->message,
+                                        reinterpret_cast<PyObject*>(self));
+      }
     } else {
       CMessage::CompositeFieldsMap* composite_fields =
           parent->composite_fields.TryGet();
-      if (composite_fields)
-        composite_fields->Erase(self->parent_field_descriptor);
+      if (composite_fields) {
+        composite_fields->EraseIfEqual(self->parent_field_descriptor,
+                                       reinterpret_cast<PyObject*>(self));
+      }
     }
     Py_CLEAR(self->parent);
   }
@@ -1635,7 +1640,8 @@ static int InternalReparentFields(
     Py_INCREF(new_message);
     Py_DECREF(to_release->parent);
     to_release->parent = new_message;
-    self_child_submessages->Erase(to_release->message);
+    self_child_submessages->Erase(to_release->message,
+                                  to_release->AsPyObject());
     new_child_submessages->Set(to_release->message, to_release->AsPyObject());
   }
 
@@ -1646,7 +1652,8 @@ static int InternalReparentFields(
     Py_INCREF(new_message);
     Py_DECREF(to_release->parent);
     to_release->parent = new_message;
-    self_composite_fields->Erase(to_release->parent_field_descriptor);
+    self_composite_fields->Erase(to_release->parent_field_descriptor,
+                                 to_release->AsPyObject());
     new_composite_fields->Set(to_release->parent_field_descriptor,
                               to_release->AsPyObject());
   }
@@ -2356,9 +2363,9 @@ PyObject* InternalGetScalar(const Message* message,
       break;
     }
     case FieldDescriptor::CPPTYPE_ENUM: {
-      const EnumValueDescriptor* enum_value =
-          message->GetReflection()->GetEnum(*message, field_descriptor);
-      result = PyLong_FromLong(enum_value->number());
+      int enum_value =
+          message->GetReflection()->GetEnumValue(*message, field_descriptor);
+      result = PyLong_FromLong(enum_value);
       break;
     }
     default:
@@ -2886,7 +2893,7 @@ void ContainerBase::RemoveFromParentCache() {
   if (parent) {
     if (CMessage::CompositeFieldsMap* fields =
             parent->composite_fields.TryGet()) {
-      fields->Erase(this->parent_field_descriptor);
+      fields->EraseIfEqual(this->parent_field_descriptor, this->AsPyObject());
     }
     Py_CLEAR(parent);
   }
@@ -2930,7 +2937,7 @@ CMessage* CMessage::MaybeReleaseSubMessage(const Message* sub_message) {
   released->parent_field_descriptor = nullptr;
   released->state = MESSAGE_MUTABLE;
   // Delete it from the cache.
-  sub_messages->Erase(sub_message);
+  sub_messages->Erase(sub_message, released->AsPyObject());
   // child_submessages->Get returned a new reference.
   Py_DECREF(released);
   return released;

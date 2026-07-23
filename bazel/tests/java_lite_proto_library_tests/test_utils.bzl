@@ -33,6 +33,10 @@ def _java_info_subject(info, *, meta):
             _filter_inpackage(self.actual.transitive_source_jars, meta.ctx.label),
             meta = self.meta.derive("transitive_source_jars_in_package()"),
         ),
+        source_jars = lambda *a, **k: subjects.depset_file(
+            self.actual.source_jars,
+            meta = self.meta.derive("source_jars()"),
+        ),
         transitive_runtime_jars = lambda *a, **k: subjects.depset_file(
             self.actual.transitive_runtime_jars,
             meta = self.meta.derive("transitive_runtime_jars()"),
@@ -44,6 +48,10 @@ def _java_info_subject(info, *, meta):
         transitive_compile_time_jars_in_package = lambda *a, **k: subjects.depset_file(
             _filter_inpackage(self.actual.transitive_compile_time_jars, meta.ctx.label),
             meta = self.meta.derive("transitive_compile_time_jars_in_package()"),
+        ),
+        compile_jars = lambda *a, **k: subjects.depset_file(
+            self.actual.compile_jars,
+            meta = self.meta.derive("compile_jars()"),
         ),
     )
     return public

@@ -52,3 +52,7 @@ Required.*.ProtobufInput.BadTag_FieldNumberTooHigh                              
 Required.*.ProtobufInput.BadTag_FieldNumberSlightlyTooHigh                                                         # Should have failed to parse, but didn't.
 Required.*.ProtobufInput.BadTag_OverlongVarint                                                                     # Should have failed to parse, but didn't.
 Required.*.ProtobufInput.BadTag_VarintMoreThanTenBytes                                                             # Should have failed to parse, but didn't.
+Required.*.JsonInput.DoubleFieldFalseValue                                                                         # Should have failed to parse, but didn't.
+Required.*.JsonInput.DoubleFieldTrueValue                                                                          # Should have failed to parse, but didn't.
+Required.*.JsonInput.FloatFieldFalseValue                                                                          # Should have failed to parse, but didn't.
+Required.*.JsonInput.FloatFieldTrueValue                                                                           # Should have failed to parse, but didn't.

@@ -34,6 +34,7 @@ directly instead of this class.
 __author__ = 'matthewtoia@google.com (Matt Toia)'
 
 import collections
+import copy
 import threading
 import warnings
 
@@ -127,6 +128,18 @@ class DescriptorPool(object):
     )
     self._edition_defaults = None
     self._feature_cache = dict()
+    self._lock = threading.RLock()
+
+  def __deepcopy__(self, memo):
+    cls = self.__class__
+    result = cls.__new__(cls)
+    memo[id(self)] = result
+    for k, v in self.__dict__.items():
+      if k == '_lock':
+        result._lock = threading.RLock()
+      else:
+        setattr(result, k, copy.deepcopy(v, memo))
+    return result
 
   def _CheckConflictRegister(self, desc, desc_name, file_name):
     """Check if the descriptor name conflicts with another of the same name.
@@ -843,7 +856,13 @@ class DescriptorPool(object):
     Returns:
       A FileDescriptor matching the passed in proto.
     """
-    if file_proto.name not in self._file_descriptors:
+    if file_proto.name in self._file_descriptors:
+      return self._file_descriptors[file_proto.name]
+
+    with self._lock:
+      if file_proto.name in self._file_descriptors:
+        return self._file_descriptors[file_proto.name]
+
       built_deps = list(self._GetDeps(file_proto.dependency))
       direct_deps = [self.FindFileByName(n) for n in file_proto.dependency]
       public_deps = [direct_deps[i] for i in file_proto.public_dependency]
@@ -938,20 +957,20 @@ class DescriptorPool(object):
 
       self._file_descriptors[file_proto.name] = file_descriptor
 
-    # Add extensions to the pool
-    def AddExtensionForNested(message_type):
-      for nested in message_type.nested_types:
-        AddExtensionForNested(nested)
-      for extension in message_type.extensions:
+      # Add extensions to the pool
+      def AddExtensionForNested(message_type):
+        for nested in message_type.nested_types:
+          AddExtensionForNested(nested)
+        for extension in message_type.extensions:
+          self._AddExtensionDescriptor(extension)
+
+      file_desc = self._file_descriptors[file_proto.name]
+      for extension in file_desc.extensions_by_name.values():
         self._AddExtensionDescriptor(extension)
+      for message_type in file_desc.message_types_by_name.values():
+        AddExtensionForNested(message_type)
 
-    file_desc = self._file_descriptors[file_proto.name]
-    for extension in file_desc.extensions_by_name.values():
-      self._AddExtensionDescriptor(extension)
-    for message_type in file_desc.message_types_by_name.values():
-      AddExtensionForNested(message_type)
-
-    return file_desc
+      return file_desc
 
   def _ConvertMessageDescriptor(
       self, desc_proto, package=None, file_desc=None, scope=None, syntax=None

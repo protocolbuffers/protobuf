@@ -2525,6 +2525,12 @@ void BinaryAndJsonConformanceSuiteImpl<
   ExpectParseFailureForJson("Uint64FieldNotInteger", REQUIRED,
                             R"({"optionalUint64": "0.5"})");
 
+  // Parser reject boolean values for integer fields.
+  ExpectParseFailureForJson("Int32FieldTrueValue", REQUIRED,
+                            R"({"optionalInt32": true})");
+  ExpectParseFailureForJson("Int32FieldFalseValue", REQUIRED,
+                            R"({"optionalInt32": false})");
+
   // Parser reject non-numeric string values.
   ExpectParseFailureForJson("Int32FieldStringValuePartiallyNumeric", REQUIRED,
                             R"({"optionalInt32": "12abc"})");
@@ -2696,6 +2702,12 @@ void BinaryAndJsonConformanceSuiteImpl<
   ExpectParseFailureForJson("FloatFieldStringValuePartiallyNumericUnicode",
                             REQUIRED, R"({"optionalFloat": "12谷歌34"})");
 
+  // Parser reject boolean values for float fields.
+  ExpectParseFailureForJson("FloatFieldTrueValue", REQUIRED,
+                            R"({"optionalFloat": true})");
+  ExpectParseFailureForJson("FloatFieldFalseValue", REQUIRED,
+                            R"({"optionalFloat": false})");
+
   // Double fields.
   RunValidJsonTest("DoubleFieldMinPositiveValue", REQUIRED,
                    R"({"optionalDouble": 2.22507e-308})",
@@ -2761,6 +2773,12 @@ void BinaryAndJsonConformanceSuiteImpl<
   ExpectParseFailureForJson("DoubleFieldStringValueNonNumeric", REQUIRED,
                             R"({"optionalDouble": "abc"})");
 
+  // Parser reject boolean values for double fields.
+  ExpectParseFailureForJson("DoubleFieldTrueValue", REQUIRED,
+                            R"({"optionalDouble": true})");
+  ExpectParseFailureForJson("DoubleFieldFalseValue", REQUIRED,
+                            R"({"optionalDouble": false})");
+
   // Enum fields.
   RunValidJsonTest("EnumField", REQUIRED, R"({"optionalNestedEnum": "FOO"})",
                    "optional_nested_enum: FOO");
@@ -2789,6 +2807,17 @@ void BinaryAndJsonConformanceSuiteImpl<
                    R"({"optionalNestedEnum": 0})", "optional_nested_enum: FOO");
   RunValidJsonTest("EnumFieldNumericValueNonZero", REQUIRED,
                    R"({"optionalNestedEnum": 1})", "optional_nested_enum: BAR");
+  // Arrays are not allowed for non-repeated enum fields.
+  ExpectParseFailureForJson("EnumFieldSingleElementArrayEnumName", REQUIRED,
+                            R"({"optionalNestedEnum": ["FOO"]})");
+  ExpectParseFailureForJson("EnumFieldSingleElementArrayNumericValue", REQUIRED,
+                            R"({"optionalNestedEnum": [2]})");
+
+  // Booleans are not allowed for enum fields.
+  ExpectParseFailureForJson("EnumFieldTrueValue", REQUIRED,
+                            R"({"optionalNestedEnum": true})");
+  ExpectParseFailureForJson("EnumFieldFalseValue", REQUIRED,
+                            R"({"optionalNestedEnum": false})");
 
   if (run_proto3_tests_) {
     // Unknown enum values are represented as numeric values.

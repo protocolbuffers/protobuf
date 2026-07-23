@@ -21,17 +21,16 @@
 #include <tuple>
 #include <type_traits>
 #include <utility>
-#include <variant>
 
 #include "absl/base/attributes.h"
 #include "absl/base/optimization.h"
 #include "absl/container/flat_hash_set.h"
-#include "absl/functional/overload.h"
 #include "absl/hash/hash.h"
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
 #include "absl/numeric/bits.h"
 #include "google/protobuf/arena.h"
+#include "google/protobuf/class_data.h"
 #include "google/protobuf/extension_set_inl.h"  // IWYU pragma: keep
 #include "google/protobuf/internal_visibility.h"
 #include "google/protobuf/io/coded_stream.h"
@@ -636,7 +635,7 @@ MessageLite* ExtensionSet::MutableRepeatedMessage(int number, int index) {
 }
 
 MessageLite* ExtensionSet::AddMessage(Arena* arena, int number, FieldType type,
-                                      const MessageLite& prototype,
+                                      const ClassData* class_data,
                                       const FieldDescriptor* descriptor) {
   Extension* extension;
   if (MaybeNewExtension(arena, number, descriptor, &extension)) {
@@ -652,7 +651,7 @@ MessageLite* ExtensionSet::AddMessage(Arena* arena, int number, FieldType type,
 
   return reinterpret_cast<internal::RepeatedPtrFieldBase*>(
              extension->ptr.repeated_message_value)
-      ->AddFromPrototype<GenericTypeHandler<MessageLite>>(arena, &prototype);
+      ->AddFromClassData<GenericTypeHandler<MessageLite>>(arena, class_data);
 }
 
 // Defined in extension_set_heavy.cc.

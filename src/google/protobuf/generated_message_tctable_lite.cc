@@ -27,6 +27,7 @@
 #include "absl/strings/string_view.h"
 #include "absl/types/optional.h"
 #include "google/protobuf/arenastring.h"
+#include "google/protobuf/class_data.h"
 #include "google/protobuf/generated_enum_util.h"
 #include "google/protobuf/generated_message_tctable_decl.h"
 #include "google/protobuf/generated_message_tctable_impl.h"
@@ -320,7 +321,7 @@ static uint32_t FastDecodeTag(uint16_t coded_tag) {
 
 // Field lookup table layout:
 //
-// Because it consists of a series of variable-length segments, the lookuup
+// Because it consists of a series of variable-length segments, the lookup
 // table is organized within an array of uint16_t, and each element is either
 // a uint16_t or a uint32_t stored little-endian as a pair of uint16_t.
 //
@@ -428,7 +429,7 @@ static absl::string_view FindName(const char* name_data, size_t entries,
   size_t num_sizes = (entries + 7) & -8;
   auto* uint8s = reinterpret_cast<const uint8_t*>(name_data);
   size_t pos = std::accumulate(uint8s, uint8s + index, num_sizes);
-  size_t size = name_data[index];
+  size_t size = uint8s[index];
   auto* start = &name_data[pos];
   return {start, size};
 }
@@ -632,8 +633,8 @@ PROTOBUF_ALWAYS_INLINE MessageLite* TcParser::NewMessage(
 
 MessageLite* TcParser::AddMessage(const ClassData* class_data,
                                   RepeatedPtrFieldBase& field, Arena* arena) {
-  return field.AddFromPrototype<GenericTypeHandler<MessageLite>>(
-      arena, class_data->default_instance());
+  return field.AddFromClassData<GenericTypeHandler<MessageLite>>(arena,
+                                                                 class_data);
 }
 
 template <bool kIsTable>
@@ -1219,7 +1220,7 @@ PROTOBUF_ALWAYS_INLINE const char* TcParser::RepeatedVarint(
   } while (ctx->DataAvailable(ptr2) &&
            UnalignedLoad<TagType>(ptr2) == expected_tag);
   int added = 0;
-  field.Reserve(field.size() + len);
+  field.Reserve(internal::CheckedAdd(field.size(), len));
   // Allows us to skip SOO checks.
   FieldType* x = field.AddNAlreadyReserved(len);
   do {

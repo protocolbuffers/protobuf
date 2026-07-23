@@ -2730,6 +2730,17 @@ TEST(GeneratedMapFieldTest, SerializationToArray) {
   MapTestUtil::ExpectMapFieldsSet(message2);
 }
 
+TEST(GeneratedMapFieldTest, SerializeLargeString) {
+  if (sizeof(void*) < 8) {
+    GTEST_SKIP() << "Not enough memory for this test.";
+  }
+  UNITTEST::TestMap msg;
+  // Overflow 32-bit ints.
+  (*msg.mutable_map_string_string())[""].resize(size_t{1} << 32);
+  std::string str;
+  EXPECT_FALSE(msg.SerializeToString(&str)) << "Actual size=" << str.size();
+}
+
 // Test the generated SerializeWithCachedSizes()
 TEST(GeneratedMapFieldTest, SerializationToStream) {
   UNITTEST::TestMap message1, message2;

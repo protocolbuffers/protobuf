@@ -13,6 +13,7 @@
 
 #include <cstddef>
 #include <cstdint>
+#include <limits>
 #include <string>
 
 #include "absl/base/casts.h"
@@ -55,6 +56,19 @@ TEST(RepeatedVarint, Int32) {
   }
 
   EXPECT_EQ(expected, WireFormatLite::Int32Size(v));
+}
+
+TEST(RepeatedVarint, Int32Overflow) {
+  if (sizeof(size_t) < 8) {
+    GTEST_SKIP() << "Skipping test on 32-bit platform";
+    return;
+  }
+
+  RepeatedField<int32_t> v;
+  constexpr size_t kNumElements = std::numeric_limits<uint32_t>::max() / 10 + 1;
+  // Each -1 will be 10 bytes.
+  v.resize(kNumElements, -1);
+  EXPECT_EQ(kNumElements * 10, WireFormatLite::Int32Size(v));
 }
 
 TEST(RepeatedVarint, Int64) {
