@@ -216,4 +216,23 @@ where
             //         with the variants for K and V active.
             .map(|(k, v)| unsafe { (K::from_message_value(k), Self::from_message_value(v)) })
     }
+
+    fn map_copy_from_view<K: MapKey>(
+        _private: Private,
+        src: View<'_, Map<K, Self>>,
+        mut dest: MapMut<'_, K, Self>,
+    ) {
+        unsafe {
+            upb_Map_Clear(dest.as_raw(Private));
+            let mut iter = RawMapIter::new(src.as_raw(Private));
+            while let Some((k, v)) = iter.next_unchecked() {
+                let arena = dest.raw_arena(Private);
+
+                let cloned_k = K::clone_message_value(k, arena);
+                let cloned_v = Self::clone_message_value(v, arena);
+
+                upb_Map_Insert(dest.as_raw(Private), cloned_k, cloned_v, arena);
+            }
+        }
+    }
 }

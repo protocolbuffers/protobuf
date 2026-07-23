@@ -33,6 +33,9 @@ pub trait MapValue: Singular + SealedInternal {
     fn map_clear<K: MapKey>(_: Private, map: MapMut<K, Self>);
 
     #[doc(hidden)]
+    fn map_copy_from_view<K: MapKey>(_: Private, src: MapView<K, Self>, map: MapMut<K, Self>);
+
+    #[doc(hidden)]
     fn map_len<K: MapKey>(_: Private, map: MapView<K, Self>) -> usize;
 
     #[doc(hidden)]
@@ -406,11 +409,14 @@ impl<'msg, K: MapKey, V: MapValue> MapMut<'msg, K, V> {
         &mut self,
         src: impl IntoIterator<Item = (impl Into<View<'a, K>>, impl IntoProxied<V>)>,
     ) {
-        //TODO
         self.clear();
         for (k, v) in src.into_iter() {
             self.insert(k, v);
         }
+    }
+
+    pub fn copy_from_view(&mut self, src: View<'_, Map<K, V>>) {
+        V::map_copy_from_view(Private, src, self.as_mut())
     }
 
     /// Returns an iterator visiting all key-value pairs in arbitrary order.
@@ -706,6 +712,29 @@ mod tests {
 
         let mut map_mut = map.as_mut();
         map_mut.copy_from(&map_2);
+
+        assert_that!(
+            map.as_view(),
+            unordered_elements_are![
+                eq((2, ProtoStr::from_str("bing"))),
+                eq((3, ProtoStr::from_str("bong")))
+            ]
+        );
+    }
+
+    #[gtest]
+    fn test_copy_from_view() {
+        let mut map: Map<i32, ProtoString> = Map::new();
+        let mut map_mut = map.as_mut();
+        map_mut.extend([(0, "fizz"), (1, "buzz"), (2, "fizzbuzz")]);
+
+        let mut map_2: Map<i32, ProtoString> = Map::new();
+        let mut map_2_mut = map_2.as_mut();
+        map_2_mut.extend([(2, "bing"), (3, "bong")]);
+
+        // Test copy_from_view -> native `upb_Map_Clear`
+        let mut map_mut = map.as_mut();
+        map_mut.copy_from_view(map_2.as_view());
 
         assert_that!(
             map.as_view(),
