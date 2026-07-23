@@ -1,0 +1,11 @@
+edition = "2024";
+
+package proto2_unittest;
+
+message TestOpenEnum {
+  enum Enum {
+    UNKNOWN = 0;
+  }
+
+  Enum e = 1;
+}

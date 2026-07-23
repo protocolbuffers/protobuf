@@ -35,6 +35,7 @@
 #include "google/protobuf/arena.h"
 #include "google/protobuf/compiler/cpp/cpp_file_options_test.pb.h"
 #include "google/protobuf/descriptor.h"
+#include "google/protobuf/dynamic_message.h"
 #include "google/protobuf/map_test_util.h"
 #include "google/protobuf/map_unittest.pb.h"
 #include "google/protobuf/message.h"
