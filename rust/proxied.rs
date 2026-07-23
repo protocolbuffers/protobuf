@@ -55,7 +55,7 @@ pub trait Proxied: SealedInternal + AsView<Proxied = Self> + Sized + 'static {
     /// The proxy type that provides shared access to a `T`, like a `&'msg T`.
     ///
     /// Most code should use the type alias [`View`].
-    type View<'msg>: AsView<Proxied = Self> + IntoView<'msg>;
+    type View<'msg>: AsView<Proxied = Self> + IntoView<'msg> + std::fmt::Debug;
 }
 
 /// A type that can be be accessed through a reference-like proxy.
