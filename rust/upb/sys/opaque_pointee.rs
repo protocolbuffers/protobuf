@@ -10,6 +10,7 @@
 // This is a workaround until stabilization of [`extern type`].
 // TODO: convert to extern type once stabilized.
 // [`extern type`]: https://github.com/rust-lang/rust/issues/43467
+#[macro_export]
 macro_rules! opaque_pointee {
     ($name: ident) => {
         #[repr(C)]
@@ -20,4 +21,4 @@ macro_rules! opaque_pointee {
     };
 }
 
-pub(crate) use opaque_pointee;
+pub use opaque_pointee;
