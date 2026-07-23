@@ -4781,7 +4781,8 @@ Symbol DescriptorPool::NewPlaceholderWithMutexHeld(
       // kMaxNumber + 1 because ExtensionRange::end is exclusive.
       placeholder_message->extension_ranges_[0].end_ =
           FieldDescriptor::kMaxNumber + 1;
-      placeholder_message->extension_ranges_[0].options_ = nullptr;
+      placeholder_message->extension_ranges_[0].options_ =
+          &ExtensionRangeOptions::default_instance();
       placeholder_message->extension_ranges_[0].proto_features_ =
           &FeatureSet::default_instance();
       placeholder_message->extension_ranges_[0].merged_features_ =

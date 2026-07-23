@@ -4039,6 +4039,32 @@ TEST_P(AllowUnknownDependenciesTest, UnknownExtendee) {
 }
 
 
+TEST_P(AllowUnknownDependenciesTest,
+       PlaceholderExtensionRangeDebugString) {
+  // Regression test: placeholder extendable messages previously had
+  // extension_ranges_[0].options_ = nullptr, which caused a null pointer
+  // dereference when DebugString() was called. The options_ field should
+  // use the default instance, consistent with all other placeholder options.
+
+  FileDescriptorProto extension_proto;
+
+  ASSERT_TRUE(TextFormat::ParseFromString(
+      "name: 'extension.proto'"
+      "extension { extendee: 'UnknownType' name:'some_extension' number:123"
+      "            label:LABEL_OPTIONAL type:TYPE_INT32 }",
+      &extension_proto));
+  const FileDescriptor* file = BuildFile(extension_proto);
+
+  ASSERT_TRUE(file != nullptr);
+  ASSERT_EQ(1, file->extension_count());
+  const Descriptor* extendee = file->extension(0)->containing_type();
+  EXPECT_TRUE(extendee->is_placeholder());
+  ASSERT_EQ(1, extendee->extension_range_count());
+
+  // This must not crash. Previously dereferenced nullptr via options().
+  EXPECT_FALSE(extendee->DebugString().empty());
+}
+
 TEST_P(AllowUnknownDependenciesTest, CustomOption) {
   // Test that we can use a custom option without having parsed
   // descriptor.proto.
