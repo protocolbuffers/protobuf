@@ -633,8 +633,10 @@ class PROTOBUF_EXPORT Reflection final {
                              const FieldDescriptor* field) const;
   [[nodiscard]] std::string GetString(const Message& message,
                                       const FieldDescriptor* field) const;
-  [[nodiscard]] const EnumValueDescriptor* GetEnum(
-      const Message& message, const FieldDescriptor* field) const;
+  [[nodiscard]] [[deprecated(
+      "Please use GetEnumValue() instead. GetEnum() will be "
+      "removed in Q1 2027.")]] const EnumValueDescriptor*
+  GetEnum(const Message& message, const FieldDescriptor* field) const;
 
   // GetEnumValue() returns an enum field's value as an integer rather than
   // an EnumValueDescriptor*. If the integer value does not correspond to a
@@ -818,8 +820,11 @@ class PROTOBUF_EXPORT Reflection final {
   [[nodiscard]] std::string GetRepeatedString(const Message& message,
                                               const FieldDescriptor* field,
                                               int index) const;
-  [[nodiscard]] const EnumValueDescriptor* GetRepeatedEnum(
-      const Message& message, const FieldDescriptor* field, int index) const;
+  [[nodiscard]] [[deprecated(
+      "Please use GetRepeatedEnumValue() instead. GetRepeatedEnum() will be "
+      "removed in Q1 2027.")]] const EnumValueDescriptor*
+  GetRepeatedEnum(const Message& message, const FieldDescriptor* field,
+                  int index) const;
   // GetRepeatedEnumValue() returns an enum field's value as an integer rather
   // than an EnumValueDescriptor*. If the integer value does not correspond to a
   // known value descriptor, a new value descriptor is created. (Such a value
