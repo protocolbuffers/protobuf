@@ -1177,7 +1177,9 @@ void Tokenizer::ParseStringAppend(const std::string& text,
   // downsize the output.
   const size_t new_len = text_size + output->size();
   if (new_len > output->capacity()) {
-    output->reserve(new_len);
+    // Make sure to use amortized growth if we already have a value.
+    output->reserve(
+        output->empty() ? new_len : std::max(new_len, output->capacity() * 2));
   }
 
   // Loop through the string copying characters to "output" and
