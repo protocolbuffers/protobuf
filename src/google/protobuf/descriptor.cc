@@ -4449,20 +4449,30 @@ bool internal::DescriptorBuilder::IsInPackage(const FileDescriptor* file,
           file->package()[package_name.size()] == '.');
 }
 
+static void RecordAllPublicDepsInto(
+    const FileDescriptor* file,
+    absl::flat_hash_set<const FileDescriptor*>& out) {
+  std::vector<const FileDescriptor*> queue = {file};
+  while (!queue.empty()) {
+    file = queue.back();
+    queue.pop_back();
+
+    if (file == nullptr || !out.insert(file).second) continue;
+
+    for (int i = 0; i < file->public_dependency_count(); i++) {
+      queue.push_back(file->public_dependency(i));
+    }
+  }
+}
+
 void internal::DescriptorBuilder::RecordPublicDependencies(
     const FileDescriptor* file) {
-  if (file == nullptr || !dependencies_.insert(file).second) return;
-  for (int i = 0; file != nullptr && i < file->public_dependency_count(); i++) {
-    RecordPublicDependencies(file->public_dependency(i));
-  }
+  RecordAllPublicDepsInto(file, dependencies_);
 }
 
 void internal::DescriptorBuilder::RecordPublicOptionDependencies(
     const FileDescriptor* file) {
-  if (file == nullptr || !option_dependencies_.insert(file).second) return;
-  for (int i = 0; i < file->public_dependency_count(); i++) {
-    RecordPublicOptionDependencies(file->public_dependency(i));
-  }
+  RecordAllPublicDepsInto(file, option_dependencies_);
 }
 
 Symbol internal::DescriptorBuilder::FindSymbolNotEnforcingDepsHelper(
