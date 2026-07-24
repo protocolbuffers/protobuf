@@ -137,6 +137,66 @@ TEST_F(PhpGeneratorTest, ImportPublic) {
   ExpectNoErrors();
 }
 
+TEST_F(PhpGeneratorTest, InvalidPhpNamespaceRejected) {
+  CreateTempFile("foo.proto",
+                 R"schema(
+    syntax = "proto3";
+    option php_namespace = "App\\Models;evil();//";
+    message Foo {
+      int32 bar = 1;
+    })schema");
+
+  RunProtoc(
+      "protocol_compiler --proto_path=$tmpdir --php_out=$tmpdir foo.proto");
+
+  ExpectErrorSubstring("Invalid character");
+}
+
+TEST_F(PhpGeneratorTest, InvalidPhpMetadataNamespaceRejected) {
+  CreateTempFile("foo.proto",
+                 R"schema(
+    syntax = "proto3";
+    option php_metadata_namespace = "GPBMetadata{system('rm -rf /')}";
+    message Foo {
+      int32 bar = 1;
+    })schema");
+
+  RunProtoc(
+      "protocol_compiler --proto_path=$tmpdir --php_out=$tmpdir foo.proto");
+
+  ExpectErrorSubstring("Invalid character");
+}
+
+TEST_F(PhpGeneratorTest, ValidPhpNamespaceAccepted) {
+  CreateTempFile("foo.proto",
+                 R"schema(
+    syntax = "proto3";
+    option php_namespace = "App\\Models\\V2";
+    message Foo {
+      int32 bar = 1;
+    })schema");
+
+  RunProtoc(
+      "protocol_compiler --proto_path=$tmpdir --php_out=$tmpdir foo.proto");
+
+  ExpectNoErrors();
+}
+
+TEST_F(PhpGeneratorTest, UnicodePhpNamespaceAccepted) {
+  CreateTempFile("foo.proto",
+                 R"schema(
+    syntax = "proto3";
+    option php_namespace = "App\\Models\\V2";
+    message Foo {
+      int32 bar = 1;
+    })schema");
+
+  RunProtoc(
+      "protocol_compiler --proto_path=$tmpdir --php_out=$tmpdir foo.proto");
+
+  ExpectNoErrors();
+}
+
 }  // namespace
 }  // namespace php
 }  // namespace compiler
