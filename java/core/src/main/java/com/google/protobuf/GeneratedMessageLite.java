@@ -872,7 +872,13 @@ public abstract class GeneratedMessageLite<
       // Process the raw bytes.
       if (rawBytes != null && typeId != 0) { // Zero is not a valid type ID.
         if (extension != null) { // We known the type
-          mergeMessageSetExtensionFromBytes(rawBytes, extensionRegistry, extension);
+          CodedInputStream subInput = rawBytes.newCodedInput();
+          int remainingInputRecursionLimit = input.getRemainingRecursionDepth();
+          if (--remainingInputRecursionLimit < 0) {
+            throw InvalidProtocolBufferException.recursionLimitExceeded();
+          }
+          subInput.setRecursionLimit(remainingInputRecursionLimit);
+          mergeMessageSetExtension(subInput, extensionRegistry, extension);
         } else { // We don't know how to parse this. Ignore it.
           if (rawBytes != null) {
             mergeLengthDelimitedField(typeId, rawBytes);
@@ -893,8 +899,8 @@ public abstract class GeneratedMessageLite<
       boolean unused = parseExtension(input, extensionRegistry, extension, tag, fieldNumber);
     }
 
-    private void mergeMessageSetExtensionFromBytes(
-        ByteString rawBytes,
+    private void mergeMessageSetExtension(
+        CodedInputStream input,
         ExtensionRegistryLite extensionRegistry,
         GeneratedExtension<?, ?> extension)
         throws IOException {
@@ -906,7 +912,7 @@ public abstract class GeneratedMessageLite<
       if (subBuilder == null) {
         subBuilder = extension.getMessageDefaultInstance().newBuilderForType();
       }
-      subBuilder.mergeFrom(rawBytes, extensionRegistry);
+      subBuilder.mergeFrom(input, extensionRegistry);
       MessageLite value = subBuilder.build();
 
       ensureExtensionsAreMutable()

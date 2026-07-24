@@ -360,7 +360,15 @@ final class MessageSetSchema<T> implements Schema<T> {
       if (extension != null) { // We known the type
         // TODO: Instead of reading into a temporary ByteString, maybe there is a way
         // to read directly from CodedInputStreamReader to the submessage?
-        extensionSchema.parseMessageSetItem(rawBytes, extension, extensionRegistry, extensions);
+        int remainingInputRecursionLimit = reader.getRemainingRecursionDepth();
+        if (--remainingInputRecursionLimit < 0) {
+          throw InvalidProtocolBufferException.recursionLimitExceeded();
+        }
+        CodedInputStream rawBytesInput = rawBytes.newCodedInput();
+        rawBytesInput.setRecursionLimit(remainingInputRecursionLimit);
+
+        extensionSchema.parseMessageSetItem(
+            rawBytesInput, extension, extensionRegistry, extensions);
       } else {
         unknownFieldSchema.addLengthDelimited(unknownFields, typeId, rawBytes);
       }

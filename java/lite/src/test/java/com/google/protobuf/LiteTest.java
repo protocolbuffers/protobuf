@@ -36,6 +36,7 @@ import map_lite_test.MapTestProto.TestMap;
 import map_lite_test.MapTestProto.TestMap.MessageValue;
 import proto2_unittest.NestedExtensionLite;
 import proto2_unittest.NonNestedExtensionLite;
+import proto2_unittest.UnittestMset.TestMessageSetExtension1;
 import proto2_unittest.UnittestProto.TestOneof2;
 import proto2_unittest.lite_equals_and_hash.LiteEqualsAndHash.Bar;
 import proto2_unittest.lite_equals_and_hash.LiteEqualsAndHash.BarPrime;
@@ -44,6 +45,7 @@ import proto2_unittest.lite_equals_and_hash.LiteEqualsAndHash.NestedValue;
 import proto2_unittest.lite_equals_and_hash.LiteEqualsAndHash.TestOneofEquals;
 import proto2_unittest.lite_equals_and_hash.LiteEqualsAndHash.TestOneofWithMultipleVariants;
 import proto2_unittest.lite_equals_and_hash.LiteEqualsAndHash.TestRecursiveOneof;
+import proto2_wireformat_unittest.UnittestMsetWireFormat.TestMessageSet;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -3204,5 +3206,49 @@ public class LiteTest {
     // Now it should be the parser
     assertThat(after).isInstanceOf(Parser.class);
     assertThat(after).isSameInstanceAs(parser);
+  }
+
+  private ByteString makeRecursivePayload(int depth) throws IOException {
+    ByteString payload = ByteString.copyFromUtf8("payload");
+    for (int i = 0; i < depth; ++i) {
+      ByteString.Output extOut = ByteString.newOutput();
+      CodedOutputStream extCout = CodedOutputStream.newInstance(extOut);
+      // Write to the `recursive` field.
+      extCout.writeBytes(16, payload);
+      extCout.flush();
+      ByteString extPayload = extOut.toByteString();
+
+      ByteString.Output out = ByteString.newOutput();
+      CodedOutputStream cout = CodedOutputStream.newInstance(out);
+
+      // Item 1: normal order, ID first
+      cout.writeTag(1, WireFormat.WIRETYPE_START_GROUP);
+      cout.writeUInt32(2, TestMessageSetExtension1.messageSetExtension.getNumber());
+      cout.writeBytes(3, ByteString.EMPTY);
+      cout.writeTag(1, WireFormat.WIRETYPE_END_GROUP);
+
+      // Item 2: reversed order, payload first
+      cout.writeTag(1, WireFormat.WIRETYPE_START_GROUP);
+      cout.writeBytes(3, extPayload);
+      cout.writeUInt32(2, TestMessageSetExtension1.messageSetExtension.getNumber());
+      cout.writeTag(1, WireFormat.WIRETYPE_END_GROUP);
+
+      cout.flush();
+      payload = out.toByteString();
+    }
+    return payload;
+  }
+
+  @Test
+  public void testMessageSetRecursionLimit() throws Exception {
+    ByteString payload = makeRecursivePayload(2000);
+    ExtensionRegistryLite registry = ExtensionRegistryLite.newInstance();
+    registry.add(TestMessageSetExtension1.messageSetExtension);
+
+    Throwable exception =
+        assertThrows(
+            InvalidProtocolBufferException.class,
+            () -> TestMessageSet.parseFrom(payload, registry));
+    assertThat(exception).hasMessageThat().contains("too many levels of nesting");
   }
 }

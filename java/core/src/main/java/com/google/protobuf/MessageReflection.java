@@ -294,19 +294,8 @@ class MessageReflection {
         CodedInputStream input,
         ExtensionRegistryLite registry,
         Descriptors.FieldDescriptor descriptor,
-        Message defaultInstance)
-        throws IOException;
-
-    /**
-     * Parse from a ByteString into a sub field message defined based on either FieldDescriptor or
-     * the default instance. There isn't a varint indicating the length of the message at the
-     * beginning of the input ByteString.
-     */
-    Object parseMessageFromBytes(
-        ByteString bytes,
-        ExtensionRegistryLite registry,
-        Descriptors.FieldDescriptor descriptor,
-        Message defaultInstance)
+        Message defaultInstance,
+        boolean inputLengthPrefixed)
         throws IOException;
 
     /**
@@ -494,7 +483,8 @@ class MessageReflection {
         CodedInputStream input,
         ExtensionRegistryLite extensionRegistry,
         Descriptors.FieldDescriptor field,
-        Message defaultInstance)
+        Message defaultInstance,
+        boolean inputLengthPrefixed)
         throws IOException {
       Message.Builder subBuilder;
       // When default instance is not null. The field is an extension field.
@@ -509,31 +499,11 @@ class MessageReflection {
           subBuilder.mergeFrom(originalMessage);
         }
       }
-      input.readMessage(subBuilder, extensionRegistry);
-      return subBuilder.buildPartial();
-    }
-
-    @Override
-    public Object parseMessageFromBytes(
-        ByteString bytes,
-        ExtensionRegistryLite extensionRegistry,
-        Descriptors.FieldDescriptor field,
-        Message defaultInstance)
-        throws IOException {
-      Message.Builder subBuilder;
-      // When default instance is not null. The field is an extension field.
-      if (defaultInstance != null) {
-        subBuilder = defaultInstance.newBuilderForType();
+      if (inputLengthPrefixed) {
+        input.readMessage(subBuilder, extensionRegistry);
       } else {
-        subBuilder = builder.newBuilderForField(field);
+        subBuilder.mergeFrom(input, extensionRegistry);
       }
-      if (!field.isRepeated()) {
-        Message originalMessage = (Message) getField(field);
-        if (originalMessage != null) {
-          subBuilder.mergeFrom(originalMessage);
-        }
-      }
-      subBuilder.mergeFrom(bytes, extensionRegistry);
       return subBuilder.buildPartial();
     }
 
@@ -762,7 +732,8 @@ class MessageReflection {
         CodedInputStream input,
         ExtensionRegistryLite registry,
         Descriptors.FieldDescriptor field,
-        Message defaultInstance)
+        Message defaultInstance,
+        boolean inputLengthPrefixed)
         throws IOException {
       Message.Builder subBuilder = defaultInstance.newBuilderForType();
       if (!field.isRepeated()) {
@@ -771,7 +742,11 @@ class MessageReflection {
           subBuilder.mergeFrom(originalMessage);
         }
       }
-      input.readMessage(subBuilder, registry);
+      if (inputLengthPrefixed) {
+        input.readMessage(subBuilder, registry);
+      } else {
+        subBuilder.mergeFrom(input, registry);
+      }
       return subBuilder.buildPartial();
     }
 
@@ -821,24 +796,6 @@ class MessageReflection {
         input.readMessage(subBuilder, extensionRegistry);
         Object unused = addRepeatedField(field, subBuilder.buildPartial());
       }
-    }
-
-    @Override
-    public Object parseMessageFromBytes(
-        ByteString bytes,
-        ExtensionRegistryLite registry,
-        Descriptors.FieldDescriptor field,
-        Message defaultInstance)
-        throws IOException {
-      Message.Builder subBuilder = defaultInstance.newBuilderForType();
-      if (!field.isRepeated()) {
-        Message originalMessage = (Message) getField(field);
-        if (originalMessage != null) {
-          subBuilder.mergeFrom(originalMessage);
-        }
-      }
-      subBuilder.mergeFrom(bytes, registry);
-      return subBuilder.buildPartial();
     }
 
     @Override
@@ -977,7 +934,8 @@ class MessageReflection {
         CodedInputStream input,
         ExtensionRegistryLite registry,
         Descriptors.FieldDescriptor field,
-        Message defaultInstance)
+        Message defaultInstance,
+        boolean inputLengthPrefixed)
         throws IOException {
       Message.Builder subBuilder = defaultInstance.newBuilderForType();
       if (!field.isRepeated()) {
@@ -986,7 +944,11 @@ class MessageReflection {
           subBuilder.mergeFrom(originalMessage);
         }
       }
-      input.readMessage(subBuilder, registry);
+      if (inputLengthPrefixed) {
+        input.readMessage(subBuilder, registry);
+      } else {
+        subBuilder.mergeFrom(input, registry);
+      }
       return subBuilder.buildPartial();
     }
 
@@ -1065,24 +1027,6 @@ class MessageReflection {
         input.readMessage(subBuilder, extensionRegistry);
         Object unused = addRepeatedField(field, subBuilder.buildPartial());
       }
-    }
-
-    @Override
-    public Object parseMessageFromBytes(
-        ByteString bytes,
-        ExtensionRegistryLite registry,
-        Descriptors.FieldDescriptor field,
-        Message defaultInstance)
-        throws IOException {
-      Message.Builder subBuilder = defaultInstance.newBuilderForType();
-      if (!field.isRepeated()) {
-        Message originalMessage = (Message) getField(field);
-        if (originalMessage != null) {
-          subBuilder.mergeFrom(originalMessage);
-        }
-      }
-      subBuilder.mergeFrom(bytes, registry);
-      return subBuilder.buildPartial();
     }
 
     @Override
@@ -1369,7 +1313,7 @@ class MessageReflection {
     // Process the raw bytes.
     if (rawBytes != null && typeId != 0) { // Zero is not a valid type ID.
       if (extension != null) { // We known the type
-        mergeMessageSetExtensionFromBytes(rawBytes, extension, extensionRegistry, target);
+        mergeMessageSetExtensionFromBytes(rawBytes, extension, extensionRegistry, target, input);
       } else { // We don't know how to parse this. Ignore it.
         if (rawBytes != null && unknownFields != null) {
           unknownFields.mergeField(
@@ -1383,17 +1327,30 @@ class MessageReflection {
       ByteString rawBytes,
       ExtensionRegistry.ExtensionInfo extension,
       ExtensionRegistryLite extensionRegistry,
-      MergeTarget target)
+      MergeTarget target,
+      CodedInputStream input)
       throws IOException {
 
     Descriptors.FieldDescriptor field = extension.descriptor;
     boolean hasOriginalValue = target.hasField(field);
 
+    // TODO: b/535485217 - Consider letting InternalLazyField to concat the bytes to avoid parsing
+    // if the existing field is a lazy field with lazy bytes.
     if (hasOriginalValue || ExtensionRegistryLite.isEagerlyParseMessageSets()) {
       // If the field already exists, we just parse the field.
+      int remainingInputRecursionLimit = input.getRemainingRecursionDepth();
+      if (--remainingInputRecursionLimit < 0) {
+        throw InvalidProtocolBufferException.recursionLimitExceeded();
+      }
+      CodedInputStream subInput = rawBytes.newCodedInput();
+      subInput.setRecursionLimit(remainingInputRecursionLimit);
       Object value =
-          target.parseMessageFromBytes(
-              rawBytes, extensionRegistry, field, extension.defaultInstance);
+          target.parseMessage(
+              subInput,
+              extensionRegistry,
+              field,
+              extension.defaultInstance,
+              /* inputLengthPrefixed= */ false);
       target.setField(field, value);
     } else {
       // Use InternalLazyField to load MessageSet lazily.
@@ -1410,7 +1367,13 @@ class MessageReflection {
       MergeTarget target)
       throws IOException {
     Descriptors.FieldDescriptor field = extension.descriptor;
-    Object value = target.parseMessage(input, extensionRegistry, field, extension.defaultInstance);
+    Object value =
+        target.parseMessage(
+            input,
+            extensionRegistry,
+            field,
+            extension.defaultInstance,
+            /* inputLengthPrefixed= */ true);
     target.setField(field, value);
   }
 }
