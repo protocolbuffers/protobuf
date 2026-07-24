@@ -304,8 +304,6 @@ pkg_files(
     strip_prefix = strip_prefix.from_root(""),
 )
 
-# NOTE: This package currently only works for macos and ubuntu, MSVC users
-# should use a binary wheel.
 pkg_tar(
     name = "source_tarball",
     srcs = [
