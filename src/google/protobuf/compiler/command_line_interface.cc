@@ -1255,8 +1255,15 @@ bool ValidateTargetConstraints(const Message& options,
     std::unique_ptr<Message> dynamic_message(
         factory.GetPrototype(descriptor)->New());
     std::string serialized;
-    ABSL_CHECK(options.SerializeToString(&serialized));
-    ABSL_CHECK(dynamic_message->ParseFromString(serialized));
+    if (!options.SerializeToString(&serialized) ||
+        !dynamic_message->ParseFromString(serialized)) {
+      error_collector.RecordError(
+          file_name, "", nullptr,
+          DescriptorPool::ErrorCollector::OPTION_NAME,
+          "Failed to parse options while validating option target "
+          "constraints.");
+      return false;
+    }
     return ValidateTargetConstraintsRecursive(*dynamic_message, error_collector,
                                               file_name, target_type);
   }

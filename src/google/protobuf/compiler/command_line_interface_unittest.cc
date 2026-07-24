@@ -3962,6 +3962,49 @@ TEST_F(CommandLineInterfaceTest, OptionImportWithDebugRedactDeeplyNested) {
       "option file_opt marked debug_redact");
 }
 
+TEST_F(CommandLineInterfaceTest,
+       DeeplyNestedCustomOptionReportsParseFailureWithoutCrashing) {
+  CreateTempFile("google/protobuf/descriptor.proto",
+                 google::protobuf::DescriptorProto::descriptor()
+                     ->file()
+                     ->DebugString());
+
+  std::string option = "  option (fomo_node) = {";
+  for (int i = 0; i < 100; ++i) {
+    absl::StrAppend(&option, " child {");
+  }
+  for (int i = 0; i < 100; ++i) {
+    absl::StrAppend(&option, " }");
+  }
+  absl::StrAppend(&option, " };\n");
+
+  CreateTempFile("foo.proto",
+                 absl::StrCat(R"schema(
+                    syntax = "proto2";
+                    package fomo.worker;
+                    import "google/protobuf/descriptor.proto";
+
+                    message Node {
+                      optional Node child = 1;
+                    }
+
+                    extend google.protobuf.MessageOptions {
+                      optional Node fomo_node = 51234;
+                    }
+
+                    message Victim {
+)schema",
+                              option, R"schema(
+                    }
+)schema"));
+
+  Run("protocol_compiler --descriptor_set_out=$tmpdir/descriptor_set "
+      "--proto_path=$tmpdir foo.proto");
+
+  ExpectErrorSubstring(
+      "Failed to parse options while validating option target constraints.");
+}
+
 TEST_F(CommandLineInterfaceTest, DescriptorSetOptionRetention) {
   // clang-format off
   CreateTempFile(
