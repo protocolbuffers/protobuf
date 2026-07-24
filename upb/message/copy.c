@@ -39,6 +39,9 @@ static upb_StringView upb_Clone_StringView(upb_StringView str,
     return upb_StringView_FromDataAndSize(NULL, 0);
   }
   void* cloned_data = upb_Arena_Malloc(arena, str.size);
+  if (cloned_data == NULL) {
+    return upb_StringView_FromDataAndSize(NULL, 0);
+  }
   upb_StringView cloned_str =
       upb_StringView_FromDataAndSize(cloned_data, str.size);
   memcpy(cloned_data, str.data, str.size);
