@@ -751,6 +751,11 @@ static void _upb_FieldDef_CreateExt(
 
   f->scope.extension_scope = m;
   _upb_DefBuilder_Add(ctx, f->full_name, _upb_DefType_Pack(f, UPB_DEFTYPE_EXT));
+  if (ctx->ext_count > UINT16_MAX) {
+    _upb_DefBuilder_Errf(
+        ctx, "too many extensions in file (%d, max %d) for field %s",
+        ctx->ext_count, UINT16_MAX, f->full_name);
+  }
   f->layout_index = ctx->ext_count++;
 
   if (ctx->layout) {

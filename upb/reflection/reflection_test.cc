@@ -389,5 +389,35 @@ TEST(ReflectionTest, ZeroWeakDependencyIndexWithNoDeps) {
   EXPECT_THAT(std::string(status.message()), HasSubstr("out of range"));
 }
 
+TEST(ReflectionTest, TooManyExtensions) {
+  google::protobuf::FileDescriptorProto proto;
+  proto.set_name("test.proto");
+  proto.set_syntax("proto2");
+
+  auto* msg = proto.add_message_type();
+  msg->set_name("TestMessage");
+  auto* range = msg->add_extension_range();
+  range->set_start(1);
+  range->set_end(100000);
+
+  for (int i = 0; i <= 65536; ++i) {
+    auto* ext = proto.add_extension();
+    ext->set_name(absl::StrCat("ext_", i));
+    ext->set_number(i + 1);
+    ext->set_label(google::protobuf::FieldDescriptorProto::LABEL_OPTIONAL);
+    ext->set_type(google::protobuf::FieldDescriptorProto::TYPE_INT32);
+    ext->set_extendee("TestMessage");
+  }
+
+  google::protobuf::FileDescriptorSet set;
+  *set.add_file() = proto;
+  absl::StatusOr<upb::DefPool> pool = LoadDescriptorSetFromProto(set);
+  EXPECT_FALSE(pool.ok());
+  if (!pool.ok()) {
+    EXPECT_THAT(std::string(pool.status().message()),
+                HasSubstr("too many extensions"));
+  }
+}
+
 }  // namespace
 }  // namespace upb_test
