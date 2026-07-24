@@ -1,8 +1,8 @@
 load("@rules_java//java:java_library.bzl", "java_library")
 
 java_library(
-    name = "checked_in_gencode",
-    srcs = glob(["**/*.java"]),
-    visibility = ["//compatibility:__subpackages__"],
-    deps = ["//:protobuf_java"],
+	name = "checked_in_gencode",
+	srcs = glob(["**/*.java"]),
+	deps = ["//:protobuf_java"],
+	visibility = ["//compatibility:__subpackages__"],
 )
