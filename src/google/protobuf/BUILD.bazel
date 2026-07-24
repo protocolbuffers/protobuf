@@ -2085,6 +2085,7 @@ cc_test(
         ":test_util2",
         "//src/google/protobuf/io",
         "//src/google/protobuf/stubs",
+        "//src/google/protobuf/test_protos:test_cc_protos",
         "//src/google/protobuf/testing",
         "//src/google/protobuf/testing:file",
         "//src/google/protobuf/util:differencer",
