@@ -2371,9 +2371,7 @@ public abstract class CodedInputStream {
      */
     private void refillBuffer(int n) throws IOException {
       if (!tryRefillBuffer(n)) {
-        // We have to distinguish the exception between sizeLimitExceeded and truncatedMessage. So
-        // we just throw an sizeLimitExceeded exception here if it exceeds the sizeLimit
-        if (n > sizeLimit - totalBytesRetired - pos) {
+        if (isBeyondLimit(totalBytesRetired + pos, n, sizeLimit)) {
           throw InvalidProtocolBufferException.sizeLimitExceeded();
         } else {
           throw InvalidProtocolBufferException.truncatedMessage();
@@ -2420,6 +2418,9 @@ public abstract class CodedInputStream {
       }
 
       // Here we should refill the buffer as many bytes as possible.
+      int consumedBytes = totalBytesRetired + bufferSize;
+      int sizeBudget = (sizeLimit < consumedBytes || consumedBytes < 0)
+          ? 0 : sizeLimit - consumedBytes;
       int bytesRead =
           read(
               input,
@@ -2429,7 +2430,7 @@ public abstract class CodedInputStream {
                   //  the size of allocated but unused bytes in the buffer
                   buffer.length - bufferSize,
                   //  do not exceed the total bytes limit
-                  sizeLimit - totalBytesRetired - bufferSize));
+                  sizeBudget));
       if (bytesRead == 0 || bytesRead < -1 || bytesRead > buffer.length) {
         throw new IllegalStateException(
             input.getClass()
