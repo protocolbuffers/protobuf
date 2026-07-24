@@ -1466,10 +1466,6 @@ class DescriptorCopyToProtoTest(unittest.TestCase):
         method_descriptor, descriptor_pb2.MethodDescriptorProto, expected_ascii
     )
 
-  @unittest.skipIf(
-      api_implementation.Type() == 'python', 'Pure python does not raise error.'
-  )
-  # TODO: Fix pure python to check with the proto type.
   def testCopyToProto_TypeError(self):
     file_proto = descriptor_pb2.FileDescriptorProto()
     self.assertRaises(
@@ -1482,6 +1478,11 @@ class DescriptorCopyToProtoTest(unittest.TestCase):
     )
     self.assertRaises(
         TypeError, unittest_pb2.TestService.DESCRIPTOR.CopyToProto, file_proto
+    )
+    self.assertRaises(
+        TypeError,
+        unittest_pb2.TestService.DESCRIPTOR.FindMethodByName('Foo').CopyToProto,
+        file_proto,
     )
     proto = descriptor_pb2.DescriptorProto()
     self.assertRaises(
