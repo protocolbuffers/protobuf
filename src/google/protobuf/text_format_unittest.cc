@@ -84,7 +84,9 @@ using ::absl_testing::StatusIs;
 using ::google::protobuf::internal::UnsetFieldsMetadataTextFormatTestUtil;
 using ::testing::_;
 using ::testing::AllOf;
+using ::testing::Gt;
 using ::testing::HasSubstr;
+using ::testing::Lt;
 using ::testing::UnorderedElementsAre;
 
 absl::string_view GetSubstring(absl::string_view input,
@@ -1390,6 +1392,7 @@ TEST_F(TextFormatTest, ParseConcatenatedString) {
   // Compare.
   EXPECT_EQ("foobar", proto_.optional_string());
 }
+
 
 TEST_F(TextFormatTest, ParseFloatWithSuffix) {
   // Test that we can parse a floating-point value with 'f' appended to the
