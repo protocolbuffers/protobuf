@@ -3,6 +3,7 @@
 
 #include "absl/log/absl_check.h"
 #include "google/protobuf/arena.h"
+#include "google/protobuf/class_data.h"
 #include "google/protobuf/message_lite.h"
 
 // Must be included last.
@@ -23,6 +24,21 @@ class ByPrototype {
 
  private:
   const MessageLite* prototype_;
+};
+
+class ByClassData {
+ public:
+  explicit ByClassData(const internal::ClassData* class_data)
+      : class_data_(class_data) {}
+
+  MessageLite* New(Arena* arena) const { return class_data_->New(arena); }
+
+  const MessageLite& Default() const {
+    return *class_data_->default_instance();
+  }
+
+ private:
+  const internal::ClassData* class_data_;
 };
 
 template <typename MessageType>

@@ -35,10 +35,12 @@
 #include "google/protobuf/internal_visibility.h"
 #include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/message_lite.h"
+#include "google/protobuf/message_traits.h"
 #include "google/protobuf/metadata_lite.h"
 #include "google/protobuf/parse_context.h"
 #include "google/protobuf/port.h"
 #include "google/protobuf/repeated_field.h"
+#include "google/protobuf/static_message_factory.h"
 #include "google/protobuf/wire_format_lite.h"
 
 
@@ -446,12 +448,14 @@ std::string* ExtensionSet::AddString(Arena* arena, int number, FieldType type,
 // -------------------------------------------------------------------
 // Messages
 
-const MessageLite& ExtensionSet::GetMessage(
-    Arena* arena, int number, const MessageLite& default_value) const {
+template <typename Strategy>
+const MessageLite& ExtensionSet::GetMessageGeneric(Strategy strategy,
+                                                   Arena* arena,
+                                                   int number) const {
   const Extension* extension = FindOrNull(number);
   if (extension == nullptr) {
     // Not present.  Return the default value.
-    return default_value;
+    return strategy.Default();
   } else {
     ABSL_DCHECK_TYPE(*extension, OPTIONAL_FIELD, MESSAGE);
     ABSL_DCHECK(!extension->is_lazy);
@@ -459,15 +463,25 @@ const MessageLite& ExtensionSet::GetMessage(
   }
 }
 
+const MessageLite& ExtensionSet::GetMessageByClassData(
+    Arena* arena, int number, const ClassData* class_data) const {
+  return GetMessageGeneric(ByClassData(class_data), arena, number);
+}
+
+const MessageLite& ExtensionSet::GetMessageByPrototype(
+    Arena* arena, int number, const MessageLite& default_value) const {
+  return GetMessageGeneric(ByPrototype(&default_value), arena, number);
+}
+
 // Defined in extension_set_heavy.cc.
 // const MessageLite& ExtensionSet::GetMessage(Arena* arena, int number,
 //                                             const Descriptor* message_type,
 //                                             MessageFactory* factory) const
 
-MessageLite* ExtensionSet::MutableMessage(Arena* arena, int number,
-                                          FieldType type,
-                                          const MessageLite& prototype,
-                                          const FieldDescriptor* descriptor) {
+template <typename Strategy>
+MessageLite* ExtensionSet::MutableMessageGeneric(
+    Strategy strategy, Arena* arena, int number, FieldType type,
+    const FieldDescriptor* descriptor) {
   Extension* extension;
   if (MaybeNewExtension(arena, number, descriptor, &extension)) {
     extension->type = type;
@@ -475,7 +489,7 @@ MessageLite* ExtensionSet::MutableMessage(Arena* arena, int number,
     extension->is_repeated = false;
     extension->is_pointer = true;
     extension->is_lazy = false;
-    extension->ptr.message_value = prototype.New(arena);
+    extension->ptr.message_value = strategy.New(arena);
     extension->is_cleared = false;
     return extension->ptr.message_value;
   } else {
@@ -484,6 +498,20 @@ MessageLite* ExtensionSet::MutableMessage(Arena* arena, int number,
     ABSL_DCHECK(!extension->is_lazy);
     return extension->ptr.message_value;
   }
+}
+
+MessageLite* ExtensionSet::MutableMessageByPrototype(
+    Arena* arena, int number, FieldType type, const MessageLite& prototype,
+    const FieldDescriptor* descriptor) {
+  return MutableMessageGeneric(ByPrototype(&prototype), arena, number, type,
+                               descriptor);
+}
+
+MessageLite* ExtensionSet::MutableMessageByClassData(
+    Arena* arena, int number, FieldType type, const ClassData* class_data,
+    const FieldDescriptor* descriptor) {
+  return MutableMessageGeneric(ByClassData(class_data), arena, number, type,
+                               descriptor);
 }
 
 // Defined in extension_set_heavy.cc.
@@ -570,7 +598,7 @@ void ExtensionSet::UnsafeArenaSetAllocatedMessage(
 }
 
 MessageLite* ExtensionSet::ReleaseMessage(Arena* arena, int number,
-                                          const MessageLite& prototype) {
+                                          const ClassData* class_data) {
   Extension* extension = FindOrNull(number);
   if (extension == nullptr) {
     // Not present.  Return nullptr.
@@ -596,7 +624,7 @@ MessageLite* ExtensionSet::ReleaseMessage(Arena* arena, int number,
 }
 
 MessageLite* ExtensionSet::UnsafeArenaReleaseMessage(
-    Arena* arena, int number, const MessageLite& prototype) {
+    Arena* arena, int number, const ClassData* class_data) {
   Extension* extension = FindOrNull(number);
   if (extension == nullptr) {
     // Not present.  Return nullptr.
