@@ -21,6 +21,7 @@
 #include "upb/mem/arena.hpp"
 #include "upb/mini_descriptor/decode.h"
 #include "upb/mini_descriptor/internal/base92.h"
+#include "upb/mini_descriptor/link.h"
 #include "upb/mini_descriptor/internal/modifiers.h"
 #include "upb/mini_table/enum.h"
 #include "upb/mini_table/field.h"
@@ -297,6 +298,25 @@ TEST(MiniTableTest, SubsInitializedToNull) {
       upb_MiniTable_FieldIsLinked(upb_MiniTable_GetFieldByIndex(table, 0)));
   EXPECT_FALSE(
       upb_MiniTable_FieldIsLinked(upb_MiniTable_GetFieldByIndex(table, 1)));
+}
+
+TEST(MiniTableTest, LinkShortSubTableArray) {
+  upb::Arena arena;
+  upb::MtDataEncoder e;
+  // Message with two message fields, so linking expects two sub-tables.
+  ASSERT_TRUE(e.StartMessage(0));
+  ASSERT_TRUE(e.PutField(kUpb_FieldType_Message, 1, 0));
+  ASSERT_TRUE(e.PutField(kUpb_FieldType_Message, 2, 0));
+  upb::Status status;
+  upb_MiniTable* table = upb_MiniTable_Build(e.data().data(), e.data().size(),
+                                             arena.ptr(), status.ptr());
+  ASSERT_NE(nullptr, table);
+  ASSERT_EQ(upb_MiniTable_FieldCount(table), 2);
+
+  // Passing an array shorter than the number of message fields must fail
+  // cleanly without reading past the end of the array.
+  const upb_MiniTable* subs[1] = {nullptr};
+  EXPECT_FALSE(upb_MiniTable_Link(table, subs, 1, nullptr, 0));
 }
 
 TEST(MiniTableEnumTest, PositiveAndNegative) {
