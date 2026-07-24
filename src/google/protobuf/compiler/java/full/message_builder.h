@@ -12,6 +12,8 @@
 #ifndef GOOGLE_PROTOBUF_COMPILER_JAVA_IMMUTABLE_MESSAGE_BUILDER_H__
 #define GOOGLE_PROTOBUF_COMPILER_JAVA_IMMUTABLE_MESSAGE_BUILDER_H__
 
+#include <cstddef>
+#include <cstdint>
 #include <memory>
 #include <string>
 #include <vector>
@@ -64,7 +66,10 @@ class MessageBuilderGenerator {
                                                int first_field);
   void GenerateDescriptorMethods(io::Printer* printer);
   void GenerateBuilderParsingMethods(io::Printer* printer);
-  void GenerateBuilderFieldParsingCases(io::Printer* printer);
+  void GenerateBuilderShardedDefaultCase(
+      io::Printer* printer, const std::vector<int32_t>& shard_fields);
+  int32_t GenerateBuilderMergeFromShard(io::Printer* printer, int shard);
+  void GenerateBuilderFieldParsingCases(io::Printer* printer, int shard = 0);
   void GenerateBuilderFieldParsingCase(io::Printer* printer,
                                        const FieldDescriptor* field);
   void GenerateBuilderPackedFieldParsingCase(io::Printer* printer,
@@ -75,6 +80,7 @@ class MessageBuilderGenerator {
   Context* context_;
   ClassNameResolver* name_resolver_;
   FieldGeneratorMap<ImmutableFieldGenerator> field_generators_;
+  const std::vector<const FieldDescriptor*> sorted_fields_;
   absl::btree_map<int, const OneofDescriptor*> oneofs_;
 };
 

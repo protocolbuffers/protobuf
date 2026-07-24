@@ -100,7 +100,8 @@ MessageBuilderGenerator::MessageBuilderGenerator(const Descriptor* descriptor,
     : descriptor_(descriptor),
       context_(context),
       name_resolver_(context->GetNameResolver()),
-      field_generators_(MakeImmutableFieldGenerators(descriptor, context_)) {
+      field_generators_(MakeImmutableFieldGenerators(descriptor, context_)),
+      sorted_fields_(SortFieldsByNumber(descriptor)) {
   ABSL_CHECK(HasDescriptorMethods(descriptor->file(), context->EnforceLite()))
       << "Generator factory error: A non-lite message generator is used to "
          "generate lite messages.";
@@ -766,6 +767,25 @@ int MessageBuilderGenerator::GenerateBuildPartialPiece(io::Printer* printer,
 
 void MessageBuilderGenerator::GenerateBuilderParsingMethods(
     io::Printer* printer) {
+  const bool needs_sharding =
+      descriptor_->field_count() > kMergeMethodSplitThreshold;
+
+  // We shard by field number rather than tag to avoid signed integer
+  // overflow / wraparound issues for large tag numbers in Java.
+  // Shard 0 (the first kMergeMethodSplitThreshold fields) is inlined directly
+  // inside the main switch (tag) statement. Shards 1..num_shards-1 are
+  // generated as mergeFrom_autosplit_<shard> helper methods.
+  std::vector<int32_t> shard_fields;
+  if (needs_sharding) {
+    const int num_shards =
+        (descriptor_->field_count() + kMergeMethodSplitThreshold - 1) /
+        kMergeMethodSplitThreshold;
+    shard_fields.reserve(num_shards - 1);
+    for (int shard = 1; shard < num_shards; shard++) {
+      shard_fields.push_back(GenerateBuilderMergeFromShard(printer, shard));
+    }
+  }
+
   printer->Print(
       "@java.lang.Override\n"
       "public Builder mergeFrom(\n"
@@ -780,24 +800,32 @@ void MessageBuilderGenerator::GenerateBuilderParsingMethods(
       "      switch (tag) {\n"
       "        case 0:\n"  // zero signals EOF / limit reached
       "          done = true;\n"
-      "          break;\n");
-  printer->Indent();  // method
-  printer->Indent();  // try
-  printer->Indent();  // while
-  printer->Indent();  // switch
-  GenerateBuilderFieldParsingCases(printer);
-  printer->Outdent();  // switch
-  printer->Outdent();  // while
-  printer->Outdent();  // try
-  printer->Outdent();  // method
+      "          continue;\n");
+  printer->Indent();
+  printer->Indent();
+  printer->Indent();
+  printer->Indent();
+
+  GenerateBuilderFieldParsingCases(printer, /* shard= */ 0);
+
+  printer->Outdent();
+  printer->Print("default: {\n");
+  printer->Indent();
+
+  if (needs_sharding) {
+    GenerateBuilderShardedDefaultCase(printer, shard_fields);
+  } else {
+    printer->Print(
+        "done = !super.parseUnknownField(input, extensionRegistry, tag);\n"
+        "continue;\n");
+  }
+  printer->Outdent();
+  printer->Print("} // default:\n");
+
+  printer->Outdent();
+  printer->Outdent();
+  printer->Outdent();
   printer->Print(
-      "        default: {\n"
-      "          if (!super.parseUnknownField(input, extensionRegistry, tag)) "
-      "{\n"
-      "            done = true; // was an endgroup tag\n"
-      "          }\n"
-      "          break;\n"
-      "        } // default:\n"
       "      } // switch (tag)\n"
       "    } // while (!done)\n"
       "  } catch (com.google.protobuf.InvalidProtocolBufferException e) {\n"
@@ -809,12 +837,72 @@ void MessageBuilderGenerator::GenerateBuilderParsingMethods(
       "}\n");
 }
 
+void MessageBuilderGenerator::GenerateBuilderShardedDefaultCase(
+    io::Printer* printer, const std::vector<int32_t>& shard_fields) {
+  const int num_sub_shards = shard_fields.size();
+  if (num_sub_shards > 1) {
+    printer->Print(
+        "int field_number = tag >>> 3;\n"
+        "if (field_number <= $max_field$) {\n"
+        "  done = mergeFrom_autosplit_1(tag, input, extensionRegistry);\n"
+        "  continue;\n"
+        "}",
+        "max_field", absl::StrCat(shard_fields[0]));
+
+    for (int i = 1; i < num_sub_shards - 1; i++) {
+      int shard = i + 1;
+      printer->Print(
+          " else if (field_number <= $max_field$) {\n"
+          "  done = mergeFrom_autosplit_$shard$(tag, input, "
+          "extensionRegistry);\n"
+          "  continue;\n"
+          "}\n",
+          "max_field", absl::StrCat(shard_fields[i]), "shard",
+          absl::StrCat(shard));
+    }
+  }
+
+  // Last shard is unconditional
+  printer->Print(
+      "done = mergeFrom_autosplit_$shard$(tag, input, extensionRegistry);\n"
+      "continue;\n",
+      "shard", absl::StrCat(num_sub_shards));
+}
+
+int32_t MessageBuilderGenerator::GenerateBuilderMergeFromShard(
+    io::Printer* printer, int shard) {
+  printer->Print(
+      "private boolean mergeFrom_autosplit_$shard$(\n"
+      "    int tag, com.google.protobuf.CodedInputStream input,\n"
+      "    com.google.protobuf.ExtensionRegistryLite extensionRegistry)\n"
+      "    throws java.io.IOException {\n"
+      "  switch (tag) {\n",
+      "shard", absl::StrCat(shard));
+  printer->Indent();
+  printer->Indent();
+  GenerateBuilderFieldParsingCases(printer, shard);
+  printer->Outdent();
+  printer->Outdent();
+  printer->Print(
+      "    default: {\n"
+      "      return !super.parseUnknownField(input, extensionRegistry, tag);\n"
+      "    }\n"
+      "  }\n"
+      "  return false;\n"
+      "}\n");
+  const int limit_index = std::min((shard + 1) * kMergeMethodSplitThreshold,
+                                   descriptor_->field_count());
+  const FieldDescriptor* last_field = sorted_fields_[limit_index - 1];
+  return last_field->number();
+}
+
 void MessageBuilderGenerator::GenerateBuilderFieldParsingCases(
-    io::Printer* printer) {
-  std::vector<const FieldDescriptor*> sorted_fields(
-      SortFieldsByNumber(descriptor_));
-  for (int i = 0; i < descriptor_->field_count(); i++) {
-    const FieldDescriptor* field = sorted_fields[i];
+    io::Printer* printer, int shard) {
+  const int start_index = shard * kMergeMethodSplitThreshold;
+  const int limit_index = std::min(start_index + kMergeMethodSplitThreshold,
+                                   descriptor_->field_count());
+  for (int i = start_index; i < limit_index; i++) {
+    const FieldDescriptor* field = sorted_fields_[i];
     GenerateBuilderFieldParsingCase(printer, field);
     if (field->is_packable()) {
       GenerateBuilderPackedFieldParsingCase(printer, field);
