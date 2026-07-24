@@ -345,4 +345,51 @@ TEST(FuzzTest, OptionDependency) {
       )pb"));
 }
 
+TEST(FuzzTest, MissingWeakDependency) {
+  RoundTripDescriptor(ParseTextProtoOrDie(R"pb(
+    file {
+      name: "test.proto"
+      dependency: "nonexistent.proto"
+      weak_dependency: 0
+    }
+  )pb"));
+}
+
+TEST(FuzzTest, MissingWeakDependencyField) {
+  RoundTripDescriptor(ParseTextProtoOrDie(R"pb(
+    file {
+      name: "test.proto"
+      dependency: "nonexistent.proto"
+      weak_dependency: 0
+      message_type {
+        name: "TestMessage"
+        field {
+          name: "foo"
+          number: 1
+          type: TYPE_MESSAGE
+          type_name: ".MissingMessage"
+        }
+      }
+    }
+  )pb"));
+}
+
+TEST(FuzzTest, WeakDependencyOutOfRange) {
+  RoundTripDescriptor(ParseTextProtoOrDie(R"pb(
+    file { name: "test.proto" dependency: "foo.proto" weak_dependency: 5 }
+  )pb"));
+}
+
+TEST(FuzzTest, MultipleWeakDependencies) {
+  RoundTripDescriptor(ParseTextProtoOrDie(R"pb(
+    file {
+      name: "test.proto"
+      dependency: "nonexistent1.proto"
+      dependency: "nonexistent2.proto"
+      weak_dependency: 0
+      weak_dependency: 1
+    }
+  )pb"));
+}
+
 }  // namespace upb_test
