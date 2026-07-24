@@ -456,3 +456,8 @@ with info about your project (name and website) so we can add an entry for you.
 
     *   Website: https://github.com/Neakxs/protocel
     *   Extension: 1177-1178
+
+1.  proto2mcp
+
+    *   Website: https://github.com/protocgen/proto2mcp
+    *   Extension: 1179-1181
