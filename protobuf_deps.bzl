@@ -29,6 +29,7 @@ py_repositories()
 ```
 """
 
+load("@bazel_tools//tools/build_defs/repo:git.bzl", "git_repository")
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 load("//bazel/private/oss:proto_bazel_features.bzl", "proto_bazel_features")  # buildifier: disable=bzl-visibility
 load("//python/dist:python_downloads.bzl", "python_nuget_package", "python_source_archive")
@@ -129,11 +130,10 @@ def protobuf_deps():
         proto_bazel_features(name = "proto_bazel_features")
 
     if not native.existing_rule("rules_python"):
-        http_archive(
+        git_repository(
             name = "rules_python",
-            sha256 = "fa7dd2c6b7d63b3585028dd8a90a6cf9db83c33b250959c2ee7b583a6c130e12",
-            strip_prefix = "rules_python-1.6.0",
-            url = "https://github.com/bazel-contrib/rules_python/releases/download/1.6.0/rules_python-1.6.0.tar.gz",
+            remote = "https://github.com/rsartor-cmd/rules_python",
+            commit = "cd3d854888afe2b72f716ffd1ad191770b3d7646",
         )
 
     if not native.existing_rule("system_python"):
