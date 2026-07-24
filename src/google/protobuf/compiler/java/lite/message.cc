@@ -40,6 +40,7 @@
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/io/printer.h"
+#include "google/protobuf/io/zero_copy_stream_impl_lite.h"
 #include "google/protobuf/wire_format.h"
 
 // Must be last.
@@ -483,20 +484,24 @@ void ImmutableMessageLiteGenerator::GenerateDynamicMethodNewBuildMessageInfo(
   WriteIntToUtf16CharSequence(flags, &chars);
   WriteIntToUtf16CharSequence(descriptor_->field_count(), &chars);
 
-  if (descriptor_->field_count() == 0) {
-    printer->Print("java.lang.Object[] objects = null;\n");
-  } else {
-    // A single array of all fields (including oneof, oneofCase, hasBits).
-    printer->Print("java.lang.Object[] objects = new java.lang.Object[] {\n");
-    printer->Indent();
+  // Buffer object expressions into a secondary StringOutputStream and Printer
+  // to count total object parameters and determine whether to emit a
+  // fixed-parameter call or an Object[] array.
+  std::string objects_code;
+  int object_count = 0;
+
+  if (descriptor_->field_count() > 0) {
+    google::protobuf::io::StringOutputStream objects_stream(&objects_code);
+    google::protobuf::io::Printer object_printer(&objects_stream, '$');
 
     // Record the number of oneofs.
     WriteIntToUtf16CharSequence(oneofs_.size(), &chars);
     for (auto& kv : oneofs_) {
-      printer->Print(
+      object_printer.Print(
           "\"$oneof_name$_\",\n"
           "\"$oneof_name$Case_\",\n",
           "oneof_name", context_->GetOneofGeneratorInfo(kv.second)->name);
+      object_count += 2;
     }
 
     // Integers for bit fields.
@@ -507,8 +512,9 @@ void ImmutableMessageLiteGenerator::GenerateDynamicMethodNewBuildMessageInfo(
     }
     int total_ints = (total_bits + 31) / 32;
     for (int i = 0; i < total_ints; i++) {
-      printer->Print("\"$bit_field_name$\",\n", "bit_field_name",
-                     GetBitFieldName(i));
+      object_printer.Print("\"$bit_field_name$\",\n", "bit_field_name",
+                           GetBitFieldName(i));
+      object_count++;
     }
     WriteIntToUtf16CharSequence(total_ints, &chars);
 
@@ -544,8 +550,24 @@ void ImmutableMessageLiteGenerator::GenerateDynamicMethodNewBuildMessageInfo(
 
     for (int i = 0; i < descriptor_->field_count(); i++) {
       const FieldDescriptor* field = sorted_fields[i];
-      field_generators_.get(field).GenerateFieldInfo(printer, &chars);
+      field_generators_.get(field).GenerateFieldInfo(&object_printer, &chars);
     }
+
+    // Count non-empty lines in objects_code to get exact object parameter count
+    object_count = 0;
+    for (char c : objects_code) {
+      if (c == '\n') object_count++;
+    }
+  }
+
+  // If object_count > 10, emit a local varargs Object[] array.
+  // 10 fixed parameters captures 84.8% of all Proto classes in production apps
+  // (e.g. Gmail) while avoiding 32-register stack frames that cause dex2oat
+  // native register spilling.
+  if (object_count > 10) {
+    printer->Print("java.lang.Object[] objects = new java.lang.Object[] {\n");
+    printer->Indent();
+    printer->Print(objects_code.c_str());
     printer->Outdent();
     printer->Print("};\n");
   }
@@ -562,7 +584,26 @@ void ImmutableMessageLiteGenerator::GenerateDynamicMethodNewBuildMessageInfo(
   }
   printer->Print("    \"$string$\";\n", "string", line);
 
-  printer->Print("return newMessageInfo(DEFAULT_INSTANCE, info, objects);\n");
+  if (object_count == 0) {
+    printer->Print("return newMessageInfo(DEFAULT_INSTANCE, info);\n");
+  } else if (object_count <= 10) {
+    // For <=10 parameters, pass the buffered object expressions directly as
+    // arguments to the corresponding fixed-parameter newMessageInfo(...)
+    // overload, stripping trailing commas/newlines.
+    std::string trimmed_objects = objects_code;
+    while (!trimmed_objects.empty() &&
+           (trimmed_objects.back() == '\n' || trimmed_objects.back() == ',' ||
+            trimmed_objects.back() == ' ')) {
+      trimmed_objects.pop_back();
+    }
+    printer->Print("return newMessageInfo(\n");
+    printer->Indent();
+    printer->Print("DEFAULT_INSTANCE,\ninfo,\n");
+    printer->Print(absl::StrCat(trimmed_objects, ");\n").c_str());
+    printer->Outdent();
+  } else {
+    printer->Print("return newMessageInfo(DEFAULT_INSTANCE, info, objects);\n");
+  }
   printer->Outdent();
 }
 

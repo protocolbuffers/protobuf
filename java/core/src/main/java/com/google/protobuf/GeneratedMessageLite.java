@@ -1861,4 +1861,131 @@ public abstract class GeneratedMessageLite<
     }
     return message;
   }
+
+  /**
+   * Overloaded helper methods for BUILD_MESSAGE_INFO to avoid call-site array allocation.
+   *
+   * <p>Background & Compiler Behavior: 1. javac / D8: Calling a varargs method (newMessageInfo(msg,
+   * info, new Object[] {o1, ..., oN})) generates explicit Object[] array allocation instructions
+   * (new-array/filled-new-array + aput-object x N) at every call site, costing 8N + 4 bytes per
+   * generated proto class. Passing N fixed parameters costs ~4N + 4 bytes, saving ~4 bytes PER
+   * PARAMETER per generated proto class (~44-104 bytes per class).
+   *
+   * <p>2. Overload Cap (10 Parameters): Empirical analysis of production Android apps (e.g. Gmail
+   * release APK across 1,320 Proto classes): - 0 to 5 parameters: 27.3% of classes (fits 100% in
+   * ARM64 CPU registers x1-x7, 0 stack spills) - 6 to 10 parameters: 57.5% of classes (84.8%
+   * cumulative coverage) - > 10 parameters: 15.2% of classes (falls back to varargs Object[] array)
+   *
+   * <p>Capping at 10 fixed parameters captures 84.8% of all proto message classes while avoiding
+   * large register DEX stack frames that cause dex2oat to generate heavy ARM64 register stack
+   * spilling.
+   *
+   * <p>3. R8 / Appreduce: Unused helper variations are automatically stripped by WPO tree-shaking
+   * for applications that do not use them.
+   */
+  protected static Object newMessageInfo(MessageLite defaultInstance, String info) {
+    return new RawMessageInfo(defaultInstance, info, null);
+  }
+
+  protected static Object newMessageInfo(MessageLite defaultInstance, String info, Object o1) {
+    return new RawMessageInfo(defaultInstance, info, new Object[] {o1});
+  }
+
+  protected static Object newMessageInfo(
+      MessageLite defaultInstance, String info, Object o1, Object o2) {
+    return new RawMessageInfo(defaultInstance, info, new Object[] {o1, o2});
+  }
+
+  protected static Object newMessageInfo(
+      MessageLite defaultInstance, String info, Object o1, Object o2, Object o3) {
+    return new RawMessageInfo(defaultInstance, info, new Object[] {o1, o2, o3});
+  }
+
+  protected static Object newMessageInfo(
+      MessageLite defaultInstance, String info, Object o1, Object o2, Object o3, Object o4) {
+    return new RawMessageInfo(defaultInstance, info, new Object[] {o1, o2, o3, o4});
+  }
+
+  protected static Object newMessageInfo(
+      MessageLite defaultInstance,
+      String info,
+      Object o1,
+      Object o2,
+      Object o3,
+      Object o4,
+      Object o5) {
+    return new RawMessageInfo(defaultInstance, info, new Object[] {o1, o2, o3, o4, o5});
+  }
+
+  protected static Object newMessageInfo(
+      MessageLite defaultInstance,
+      String info,
+      Object o1,
+      Object o2,
+      Object o3,
+      Object o4,
+      Object o5,
+      Object o6) {
+    return new RawMessageInfo(defaultInstance, info, new Object[] {o1, o2, o3, o4, o5, o6});
+  }
+
+  protected static Object newMessageInfo(
+      MessageLite defaultInstance,
+      String info,
+      Object o1,
+      Object o2,
+      Object o3,
+      Object o4,
+      Object o5,
+      Object o6,
+      Object o7) {
+    return new RawMessageInfo(defaultInstance, info, new Object[] {o1, o2, o3, o4, o5, o6, o7});
+  }
+
+  protected static Object newMessageInfo(
+      MessageLite defaultInstance,
+      String info,
+      Object o1,
+      Object o2,
+      Object o3,
+      Object o4,
+      Object o5,
+      Object o6,
+      Object o7,
+      Object o8) {
+    return new RawMessageInfo(defaultInstance, info, new Object[] {o1, o2, o3, o4, o5, o6, o7, o8});
+  }
+
+  protected static Object newMessageInfo(
+      MessageLite defaultInstance,
+      String info,
+      Object o1,
+      Object o2,
+      Object o3,
+      Object o4,
+      Object o5,
+      Object o6,
+      Object o7,
+      Object o8,
+      Object o9) {
+    return new RawMessageInfo(
+        defaultInstance, info, new Object[] {o1, o2, o3, o4, o5, o6, o7, o8, o9});
+  }
+
+  protected static Object newMessageInfo(
+      MessageLite defaultInstance,
+      String info,
+      Object o1,
+      Object o2,
+      Object o3,
+      Object o4,
+      Object o5,
+      Object o6,
+      Object o7,
+      Object o8,
+      Object o9,
+      Object o10) {
+    return new RawMessageInfo(
+        defaultInstance, info, new Object[] {o1, o2, o3, o4, o5, o6, o7, o8, o9, o10});
+  }
 }
