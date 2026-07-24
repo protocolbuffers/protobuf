@@ -3212,18 +3212,6 @@ inline absl::string_view FieldDescriptor::cpp_type_name() const {
   return kCppTypeToName[kTypeToCppTypeMap[type()]];
 }
 
-inline FieldDescriptor::CppType FieldDescriptor::TypeToCppType(Type type) {
-  return kTypeToCppTypeMap[type];
-}
-
-inline absl::string_view FieldDescriptor::TypeName(Type type) {
-  return kTypeToName[type];
-}
-
-inline absl::string_view FieldDescriptor::CppTypeName(CppType cpp_type) {
-  return kCppTypeToName[cpp_type];
-}
-
 inline bool FieldDescriptor::IsTypePackable(Type field_type) {
   return (field_type != FieldDescriptor::TYPE_STRING &&
           field_type != FieldDescriptor::TYPE_GROUP &&

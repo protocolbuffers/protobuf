@@ -690,6 +690,22 @@ Descriptor::WellKnownType FindWellKnownType(absl::string_view name) {
 
 }  // namespace
 
+FieldDescriptor::CppType FieldDescriptor::TypeToCppType(Type type) {
+  ABSL_CHECK(type >= 0 && type <= MAX_TYPE) << "Invalid input value.";
+  return kTypeToCppTypeMap[type];
+}
+
+absl::string_view FieldDescriptor::TypeName(Type type) {
+  ABSL_CHECK(type >= 0 && type <= MAX_TYPE) << "Invalid input value.";
+  return kTypeToName[type];
+}
+
+absl::string_view FieldDescriptor::CppTypeName(CppType cpp_type) {
+  ABSL_CHECK(cpp_type >= 0 && cpp_type <= MAX_CPPTYPE)
+      << "Invalid input value.";
+  return kCppTypeToName[cpp_type];
+}
+
 const FieldDescriptor::CppType
     FieldDescriptor::kTypeToCppTypeMap[MAX_TYPE + 1] = {
         static_cast<CppType>(0),  // 0 is reserved for errors
