@@ -13,6 +13,7 @@
 #include "google/protobuf/extension_set.h"
 #include "google/protobuf/generated_message_util.h"
 #include "google/protobuf/message_lite.h"
+#include "google/protobuf/message_traits.h"
 #include "rust/cpp_kernel/strings.h"
 
 static const google::protobuf::internal::ExtensionSet* GetExtensionSet(
@@ -86,15 +87,17 @@ google::protobuf::rust::PtrAndLen proto2_rust_Message_get_extension_string(
 const google::protobuf::MessageLite* proto2_rust_Message_get_extension_message(
     const google::protobuf::MessageLite* m, int32_t number,
     const google::protobuf::MessageLite* default_instance) {
-  return &GetExtensionSet(m)->GetMessage(m->GetArena(), number,
-                                         *default_instance);
+  const auto* class_data = google::protobuf::internal::GetClassData(*default_instance);
+  return &GetExtensionSet(m)->GetMessageByClassData(m->GetArena(), number,
+                                                    class_data);
 }
 
 google::protobuf::MessageLite* proto2_rust_Message_mutable_extension_message(
     google::protobuf::MessageLite* m, int32_t number, int32_t type,
     const google::protobuf::MessageLite* default_instance) {
-  return GetExtensionSet(m)->MutableMessage(m->GetArena(), number, type,
-                                            *default_instance, nullptr);
+  const auto* class_data = google::protobuf::internal::GetClassData(*default_instance);
+  return GetExtensionSet(m)->MutableMessageByClassData(
+      m->GetArena(), number, type, class_data, nullptr);
 }
 
 }  // extern "C"

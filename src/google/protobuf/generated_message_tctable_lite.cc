@@ -36,6 +36,7 @@
 #include "google/protobuf/io/zero_copy_stream_impl_lite.h"
 #include "google/protobuf/map.h"
 #include "google/protobuf/message_lite.h"
+#include "google/protobuf/message_traits.h"
 #include "google/protobuf/micro_string.h"
 #include "google/protobuf/parse_context.h"
 #include "google/protobuf/port.h"
@@ -686,28 +687,12 @@ PROTOBUF_ALWAYS_INLINE const char* TcParser::SingularParseMessageAuxImpl(
   SyncHasbits(msg, hasbits, table);
   auto& field = RefAt<MessageLite*>(msg, data.offset());
   const auto aux = *table->field_aux(data.aux_idx());
-#ifndef PROTOBUF_MESSAGE_GLOBALS
-  const auto* inner_table =
-      aux_is_table ? aux.table_ptr() : aux.message_default()->GetTcParseTable();
+
+  auto [inner_table, class_data] =
+      GetTableAndClassDataFromAux<aux_is_table>(aux);
   if (field == nullptr) {
-    field = NewMessage(inner_table->class_data, msg->GetArena());
+    field = NewMessage(class_data, msg->GetArena());
   }
-#else
-  const TcParseTableBase* inner_table;
-  if constexpr (aux_is_table) {
-    inner_table = MessageGlobalsBase::ToParseTableBase(aux.message_globals());
-    if (field == nullptr) {
-      field =
-          NewMessage(MessageGlobalsBase::GetClassData(aux.message_globals()),
-                     msg->GetArena());
-    }
-  } else {
-    inner_table = aux.message_default()->GetTcParseTable();
-    if (field == nullptr) {
-      field = NewMessage(inner_table->class_data, msg->GetArena());
-    }
-  }
-#endif  // PROTOBUF_MESSAGE_GLOBALS
   const auto inner_loop = [&](const char* ptr) {
     return ParseLoop(field, ptr, ctx, inner_table);
   };

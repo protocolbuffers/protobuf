@@ -58,6 +58,7 @@
 #include "google/protobuf/map_field.h"
 #include "google/protobuf/message.h"
 #include "google/protobuf/message_lite.h"
+#include "google/protobuf/message_traits.h"
 #include "google/protobuf/micro_string.h"
 #include "google/protobuf/port.h"
 #include "google/protobuf/raw_ptr.h"
@@ -3863,7 +3864,8 @@ const internal::TcParseTableBase* Reflection::CreateTcParseTable() const {
           schema_.HasHasbits()
               ? schema_.HasBitsOffset()
               // Just put something safe here. _cached_size_ is fine.
-              : schema_.default_instance()->GetClassData()->cached_size_offset),
+              : internal::GetClassData(*schema_.default_instance())
+                    ->cached_size_offset),
       schema_.HasExtensionSet()
           ? static_cast<uint16_t>(schema_.GetExtensionSetOffset())
           : uint16_t{0},
@@ -3875,7 +3877,7 @@ const internal::TcParseTableBase* Reflection::CreateTcParseTable() const {
       static_cast<uint16_t>(fields.size()),
       static_cast<uint16_t>(table_info.aux_entries.size()),
       aux_offset,
-      schema_.default_instance()->GetClassData(),
+      internal::GetClassData(*schema_.default_instance()),
       nullptr,
       GetFastParseFunction(table_info.fallback_function)
 #ifdef PROTOBUF_PREFETCH_PARSE_TABLE
@@ -3936,7 +3938,7 @@ class AssignDescriptorsHelper {
     if (message_globals_data_[0] != nullptr) {
       auto* default_instance =
           MessageGlobalsBase::ToDefaultInstance(message_globals_data_[0]);
-      auto& class_data = default_instance->GetClassData()->full();
+      auto& class_data = internal::GetClassData(*default_instance)->full();
       // If there is no descriptor_table in the class data, then it is not
       // interested in receiving reflection information either.
       if (class_data.descriptor_table() != nullptr) {
