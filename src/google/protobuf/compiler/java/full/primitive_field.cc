@@ -548,8 +548,7 @@ void ImmutablePrimitiveOneofFieldGenerator::GenerateBuilderMembers(
                  "$deprecation$public Builder "
                  "${$set$capitalized_name$$}$($type$ value) {\n"
                  "  $null_check$\n"
-                 "  $set_oneof_case_message$;\n"
-                 "  $oneof_name$_ = value;\n"
+                 "  $set_oneof_internal_builder$value);\n"
                  "  $on_changed$\n"
                  "  return this;\n"
                  "}\n");
@@ -564,6 +563,7 @@ void ImmutablePrimitiveOneofFieldGenerator::GenerateBuilderMembers(
       "  if ($has_oneof_case_message$) {\n"
       "    $clear_oneof_case_message$;\n"
       "    $oneof_name$_ = null;\n"
+      "    $clear_has_field_bit_builder$\n"
       "    $on_changed$\n"
       "  }\n"
       "  return this;\n"
@@ -579,7 +579,7 @@ void ImmutablePrimitiveOneofFieldGenerator::GenerateBuilderClearCode(
 
 void ImmutablePrimitiveOneofFieldGenerator::GenerateBuildingCode(
     io::Printer* printer) const {
-  // no-op
+  // No-Op: Handled by single block statement in GenerateBuildPartialPiece.
 }
 
 void ImmutablePrimitiveOneofFieldGenerator::GenerateMergingCode(
@@ -590,9 +590,9 @@ void ImmutablePrimitiveOneofFieldGenerator::GenerateMergingCode(
 
 void ImmutablePrimitiveOneofFieldGenerator::GenerateBuilderParsingCode(
     io::Printer* printer) const {
-  printer->Print(variables_,
-                 "$oneof_name$_ = input.read$capitalized_type$();\n"
-                 "$set_oneof_case_message$;\n");
+  printer->Print(
+      variables_,
+      "$set_oneof_internal_builder$input.read$capitalized_type$());\n");
 }
 
 void ImmutablePrimitiveOneofFieldGenerator::GenerateSerializationCode(

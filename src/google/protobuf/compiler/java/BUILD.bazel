@@ -216,7 +216,9 @@ cc_library(
     deps = [
         ":helpers",
         "//src/google/protobuf",
+        "@abseil-cpp//absl/container:btree",
         "@abseil-cpp//absl/strings",
+        "@abseil-cpp//absl/strings:str_format",
     ],
 )
 
