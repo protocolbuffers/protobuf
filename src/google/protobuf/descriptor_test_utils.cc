@@ -42,8 +42,10 @@ void MockErrorCollector::RecordError(absl::string_view filename,
                                      const Message* descriptor,
                                      ErrorLocation location,
                                      absl::string_view message) {
-  absl::SubstituteAndAppend(&text_, "$0: $1: $2: $3\n", filename, element_name,
+  std::string& e = text_lines_.emplace_back();
+  absl::SubstituteAndAppend(&e, "$0: $1: $2: $3", filename, element_name,
                             ErrorLocationName(location), message);
+  absl::StrAppend(&text_, e, "\n");
 }
 
 // implements ErrorCollector ---------------------------------------
@@ -52,8 +54,10 @@ void MockErrorCollector::RecordWarning(absl::string_view filename,
                                        const Message* descriptor,
                                        ErrorLocation location,
                                        absl::string_view message) {
-  absl::SubstituteAndAppend(&warning_text_, "$0: $1: $2: $3\n", filename,
+  std::string& w = warn_lines_.emplace_back();
+  absl::SubstituteAndAppend(&warning_text_, "$0: $1: $2: $3", filename,
                             element_name, ErrorLocationName(location), message);
+  absl::StrAppend(&warning_text_, w, "\n");
 }
 
 // ===================================================================
@@ -113,6 +117,16 @@ void ValidationErrorTest::BuildFileWithErrors(
   FileDescriptorProto file_proto;
   ASSERT_TRUE(TextFormat::ParseFromString(file_text, &file_proto));
   BuildFileWithErrors(file_proto, expected_errors);
+}
+
+void ValidationErrorTest::BuildFileWithErrorList(
+    const FileDescriptorProto& file_proto,
+    testing::Matcher<std::vector<std::string>> expected_errors,
+    testing::Matcher<std::vector<std::string>> expected_warnings) {
+  MockErrorCollector error_collector;
+  pool_.BuildFileCollectingErrors(file_proto, &error_collector);
+  EXPECT_THAT(error_collector.text_lines_, expected_errors);
+  EXPECT_THAT(error_collector.warn_lines_, expected_warnings);
 }
 
 // Parse a proto file and build it.  Expect errors to be produced which match

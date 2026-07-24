@@ -92,12 +92,14 @@ using ::google::protobuf::internal::cpp::HasbitMode;
 using ::google::protobuf::internal::cpp::HasHasbitWithoutProfile;
 using ::google::protobuf::internal::cpp::HasPreservingUnknownEnumSemantics;
 using ::google::protobuf::internal::cpp::Utf8CheckMode;
+using ::testing::_;
 using ::testing::AnyOf;
 using ::testing::AtLeast;
 using ::testing::ElementsAre;
 using ::testing::HasSubstr;
 using ::testing::NotNull;
 using ::testing::Return;
+using ::testing::SizeIs;
 
 absl::Status GetStatus(const absl::Status& s) { return s; }
 template <typename T>
@@ -5542,6 +5544,43 @@ TEST_F(ValidationErrorTest, ReservedRangeOverlap) {
 
       "foo.proto: Foo: NUMBER: Reserved range 5 to 14"
       " overlaps with already-defined range 10 to 19.\n");
+}
+
+TEST_F(ValidationErrorTest, LimitNumberOfErrors) {
+  FileDescriptorProto file;
+  file.set_name("foo.proto");
+  auto* m = file.add_message_type();
+  m->set_name("Foo");
+  // This would generate O(N^2) errors
+  for (int i = 0; i < 100; ++i) {
+    auto* r = m->add_reserved_range();
+    r->set_start(100);
+    r->set_end(200);
+  }
+  // DescriptorBuilder::kMaxNumErrors
+  BuildFileWithErrorList(file, SizeIs(1000));
+}
+
+TEST_F(ValidationErrorTest, LimitNumberOfWarnings) {
+  constexpr int N = 1100;
+  // Create N deps.
+  for (int i = 0; i < N; ++i) {
+    FileDescriptorProto file;
+    file.set_name(absl::StrCat("dep", i, ".proto"));
+    ASSERT_TRUE(pool_.BuildFile(file));
+  }
+
+  FileDescriptorProto file;
+  file.set_name("foo.proto");
+
+  // This generates one warning per dep.
+  for (int i = 0; i < N; ++i) {
+    file.add_dependency(absl::StrCat("dep", i, ".proto"));
+  }
+
+  pool_.AddDirectInputFile(file.name());
+  // DescriptorBuilder::kMaxNumErrors
+  BuildFileWithErrorList(file, _, SizeIs(1000));
 }
 
 TEST_F(ValidationErrorTest, ReservedNameError) {
