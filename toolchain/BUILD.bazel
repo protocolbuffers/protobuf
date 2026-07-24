@@ -163,3 +163,35 @@ cc_toolchain_config(
     target_cpu = "x86_64",
     target_full_name = "x86_64-w64-mingw32",
 )
+
+# Windows on ARM64, cross-compiled from Linux (same clang --target= approach as
+# win64-config). Unlike x86, GCC's mingw-w64 does NOT support Windows on ARM
+# (https://github.com/mstorsjo/llvm-mingw), so this target must use an
+# llvm-mingw aarch64-w64-mingw32 sysroot rather than the Debian GCC mingw
+# packages the win32/win64 configs rely on.
+#
+# REQUIRES a container change: the release image must ship llvm-mingw providing
+# the aarch64-w64-mingw32 sysroot/CRT and lld. The paths below assume a typical
+# llvm-mingw install rooted at /opt/llvm-mingw and MUST be adjusted to match
+# whatever the container provides.
+#
+# CAVEAT for review: cc_toolchain_config.bzl hard-codes "-lstdc++" in the link
+# flags. llvm-mingw ships libc++ (not libstdc++). If the extension pulls in any
+# C++ runtime symbols, either the container must provide a libstdc++-compatible
+# lib for aarch64-w64-mingw32, or cc_toolchain_config.bzl needs a per-target
+# override to link "-lc++" for this triple. The upb _message extension is C, so
+# this may be a no-op in practice, but it is unverified until the container
+# exists.
+cc_toolchain_config(
+    name = "win-arm64-config",
+    extra_linker_flags = [
+        # Use lld; llvm-mingw does not ship GNU binutils ld for this target.
+        "-fuse-ld=lld",
+        "-ldbghelp",
+    ],
+    # llvm-mingw's per-target sysroot; contains include/ and lib/ for the triple.
+    linker_path = "/opt/llvm-mingw/bin",
+    sysroot = "/opt/llvm-mingw/aarch64-w64-mingw32",
+    target_cpu = "aarch64",
+    target_full_name = "aarch64-w64-mingw32",
+)

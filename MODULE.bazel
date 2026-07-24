@@ -331,6 +331,7 @@ register_toolchains(
     "//toolchain:linux-x86_64-toolchain",
     "//toolchain:win32-toolchain",
     "//toolchain:win64-toolchain",
+    "//toolchain:win-arm64-toolchain",
     "//toolchain:k8-toolchain",
 )
 
@@ -350,10 +351,20 @@ python_headers.nuget_package(
     sha256 = "4474c83c25625d93e772e926f95f4cd398a0abbb52793625fa30f39af3d2cc00",
     version = "3.10.0",
 )
+
+# Windows on ARM64 uses the abi3 limited API from Python 3.11 (the first CPython
+# version with official Windows/ARM64 builds), so it links python3.lib from the
+# pythonarm64 NuGet package.
+python_headers.nuget_package(
+    cpu = "arm64",
+    sha256 = "2f5b3bee38850fdde1b44227a23b8130d329839558376d2eb11099ce2b2cc33c",
+    version = "3.11.9",
+)
 use_repo(
     python_headers,
     "nuget_python_i686_3.10.0",
     "nuget_python_x86-64_3.10.0",
+    "nuget_python_arm64_3.11.9",
     "python-3.10.0",
 )
 
