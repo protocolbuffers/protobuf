@@ -1271,6 +1271,8 @@ set(conformance_runner_srcs
   ${protobuf_SOURCE_DIR}/conformance/conformance_test_runner.cc
   ${protobuf_SOURCE_DIR}/conformance/failure_list_trie_node.cc
   ${protobuf_SOURCE_DIR}/conformance/fork_pipe_runner.cc
+  ${protobuf_SOURCE_DIR}/conformance/fork_pipe_runner_posix.cc
+  ${protobuf_SOURCE_DIR}/conformance/fork_pipe_runner_win32.cc
   ${protobuf_SOURCE_DIR}/conformance/text_format_conformance_suite.cc
 )
 

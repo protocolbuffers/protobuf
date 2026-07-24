@@ -113,11 +113,13 @@ add_executable(conformance_test_runner
   ${conformance_runner_srcs}
   ${conformance_runner_hdrs}
 )
+protobuf_configure_target(conformance_test_runner)
 
 add_executable(conformance_cpp
   ${conformance_testee_srcs}
   ${conformance_testee_hdrs}
 )
+protobuf_configure_target(conformance_cpp)
 
 target_include_directories(
   conformance_test_runner

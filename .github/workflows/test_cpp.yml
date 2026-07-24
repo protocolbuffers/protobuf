@@ -445,15 +445,15 @@ jobs:
           - name: Windows Bazel
             os: windows-2022
             cache_key: windows-2022-msvc-cl
-            bazel: test //src/...  --config=msvc-cl --test_tag_filters=-conformance --build_tag_filters=-conformance
+            bazel: test //src/... //third_party/utf8_range/... //conformance:conformance_framework_tests --config=msvc-cl
           - name: Windows Bazel C++20
             os: windows-2022
             cache_key: windows-2022-msvc-cl
-            bazel: test //src/...  --config=msvc-cl --cxxopt="-std:c++20" --test_tag_filters=-conformance --build_tag_filters=-conformance
+            bazel: test //src/... //third_party/utf8_range/... //conformance:conformance_framework_tests --config=msvc-cl --cxxopt="-std:c++20"
           - name: Windows Bazel clang-cl
             os: windows-2022
             cache_key: windows-2022-clang-cl
-            bazel: test //src/...  --test_tag_filters=-conformance --build_tag_filters=-conformance
+            bazel: test //src/... //third_party/utf8_range/... //conformance:conformance_framework_tests
     name: ${{ matrix.continuous-only && inputs.continuous-prefix || '' }} ${{ matrix.name }}
     runs-on: ${{ matrix.os }}
     steps:
@@ -483,7 +483,7 @@ jobs:
           - name: Windows CMake
             os: windows-2022
             flags: >-
-              -G Ninja -Dprotobuf_WITH_ZLIB=OFF -Dprotobuf_BUILD_CONFORMANCE=OFF
+              -G Ninja -Dprotobuf_WITH_ZLIB=OFF
               -Dprotobuf_BUILD_SHARED_LIBS=OFF
               -Dprotobuf_BUILD_EXAMPLES=ON
             vsversion: '2022'
@@ -491,7 +491,7 @@ jobs:
           - name: Windows CMake 32-bit
             os: windows-2022
             flags: >-
-              -G Ninja -Dprotobuf_WITH_ZLIB=OFF -Dprotobuf_BUILD_CONFORMANCE=OFF
+              -G Ninja -Dprotobuf_WITH_ZLIB=OFF
             vsversion: '2022'
             windows-arch: 'win32'
             cache-prefix: windows-2022-win32-cmake
@@ -499,16 +499,16 @@ jobs:
           - name: Windows CMake Shared
             os: windows-2022
             flags: >-
-              -G Ninja -Dprotobuf_WITH_ZLIB=OFF -Dprotobuf_BUILD_CONFORMANCE=OFF
+              -G Ninja -Dprotobuf_WITH_ZLIB=OFF
               -Dprotobuf_BUILD_SHARED_LIBS=ON
             vsversion: '2022'
             cache-prefix: windows-2022-cmake
           - name: Windows CMake Install
             os: windows-2022
             install-flags: >-
-              -G Ninja -Dprotobuf_WITH_ZLIB=OFF -Dprotobuf_BUILD_CONFORMANCE=OFF
+              -G Ninja -Dprotobuf_WITH_ZLIB=OFF
             flags: >-
-              -G Ninja -Dprotobuf_WITH_ZLIB=OFF -Dprotobuf_BUILD_CONFORMANCE=OFF
+              -G Ninja -Dprotobuf_WITH_ZLIB=OFF
               -Dprotobuf_REMOVE_INSTALLED_HEADERS=ON
               -Dprotobuf_BUILD_PROTOBUF_BINARIES=OFF
             vsversion: '2022'

@@ -186,7 +186,11 @@ cc_library(
 
 cc_library(
     name = "fork_pipe_runner",
-    srcs = ["fork_pipe_runner.cc"],
+    srcs = [
+        "fork_pipe_runner.cc",
+        "fork_pipe_runner_posix.cc",
+        "fork_pipe_runner_win32.cc",
+    ],
     hdrs = ["fork_pipe_runner.h"],
     deps = [
         ":conformance_cc_proto",
