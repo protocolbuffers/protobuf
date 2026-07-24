@@ -16,6 +16,7 @@
 #include <cstdint>
 #include <cstdlib>
 #include <cstring>
+#include <limits>
 #include <memory>
 #include <new>  // IWYU pragma: keep for operator new
 #include <string>
@@ -72,6 +73,7 @@ using proto2_unittest::TestRepeatedString;
 using ::testing::AnyOf;
 using ::testing::ElementsAre;
 using ::testing::ElementsAreArray;
+using ::testing::Gt;
 using ::testing::HasSubstr;
 using ::testing::Optional;
 using ::testing::Pointee;
@@ -1784,6 +1786,28 @@ TEST(ArenaTest, StartingBlockSize) {
   Arena custom_arena(options);
   EXPECT_NE(Arena::CreateArray<char>(&custom_arena, 1), nullptr);
   EXPECT_EQ(custom_arena.SpaceAllocated(), options.start_block_size);
+}
+
+TEST(ArenaTest, VeryLargeAllocIn32BitMode) {
+  if (sizeof(size_t) != 4) {
+    GTEST_SKIP() << "Only care about 32-bit mode.";
+  }
+
+  // We can't allocate more than ptrdiff_t, but we test that we actually attempt
+  // to do it instead of somehow returning an invalid buffer.
+  // We do that by crashing in the allocator if we see the very large request
+  // and detecting the correct crash.
+
+  ArenaOptions options;
+  options.block_alloc = [](size_t n) -> void* {
+    if (n > size_t{std::numeric_limits<ptrdiff_t>::max()}) return nullptr;
+    return ::operator new(n);
+  };
+  options.block_dealloc = [](void* ptr, size_t n) { ::operator delete(ptr); };
+
+  Arena arena(options);
+  EXPECT_DEATH(arena.AllocateAligned(size_t{1} << 31),
+               "Failed to allocate memory.");
 }
 
 TEST(ArenaTest, BlockSizeDoubling) {
