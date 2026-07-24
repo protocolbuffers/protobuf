@@ -6,7 +6,7 @@
 # https://developers.google.com/open-source/licenses/bsd
 
 load("@bazel_skylib//lib:selects.bzl", "selects")
-load("@bazel_skylib//rules:common_settings.bzl", "bool_flag")
+load("@bazel_skylib//rules:common_settings.bzl", "string_flag")
 load("@rules_cc//cc:defs.bzl", "cc_library")
 load("@rules_python//python:defs.bzl", "py_binary")
 load("//upb/bazel:copts.bzl", "UPB_DEFAULT_COPTS", "UPB_DEFAULT_FEATURES")
@@ -42,26 +42,92 @@ config_setting(
     visibility = UPB_CONFIG_VISIBILITY,
 )
 
-bool_flag(
+# FastTable flag definition + enablement rules.
+# FastTable will only enable for builds targeting 64bit.
+# If not explicitly specified, FastTable will enable by default for non-opt builds.
+string_flag(
     name = "fasttable_enabled",
-    build_setting_default = False,
+    build_setting_default = "auto",
     scope = "universal",
+    values = [
+        "true",
+        "false",
+        "auto",
+        "True",
+        "False",
+        "Auto",
+    ],
     visibility = UPB_CONFIG_VISIBILITY,
 )
 
 config_setting(
-    name = "fasttable_enabled_setting_flag",
+    name = "fasttable_enabled_true",
     flag_values = {"//upb:fasttable_enabled": "true"},
-    visibility = UPB_CONFIG_VISIBILITY,
+)
+
+config_setting(
+    name = "fasttable_enabled_True_cap",
+    flag_values = {"//upb:fasttable_enabled": "True"},
 )
 
 selects.config_setting_group(
-    name = "fasttable_enabled_setting",
-    match_all = [
-        ":fasttable_enabled_setting_flag",
-        ":any_64bit",
+    name = "fasttable_enabled_explicit_true",
+    match_any = [
+        ":fasttable_enabled_true",
+        ":fasttable_enabled_True_cap",
     ],
-    visibility = UPB_CONFIG_VISIBILITY,
+)
+
+config_setting(
+    name = "fasttable_enabled_auto",
+    flag_values = {"//upb:fasttable_enabled": "auto"},
+)
+
+config_setting(
+    name = "fasttable_enabled_Auto_cap",
+    flag_values = {"//upb:fasttable_enabled": "Auto"},
+)
+
+selects.config_setting_group(
+    name = "fasttable_enabled_is_auto",
+    match_any = [
+        ":fasttable_enabled_auto",
+        ":fasttable_enabled_Auto_cap",
+    ],
+)
+
+config_setting(
+    name = "dbg_mode",
+    values = {"compilation_mode": "dbg"},
+)
+
+config_setting(
+    name = "fastbuild_mode",
+    values = {"compilation_mode": "fastbuild"},
+)
+
+selects.config_setting_group(
+    name = "non_opt_build",
+    match_any = [
+        ":dbg_mode",
+        ":fastbuild_mode",
+    ],
+)
+
+selects.config_setting_group(
+    name = "fasttable_enabled_default_active",
+    match_all = [
+        ":fasttable_enabled_is_auto",
+        ":non_opt_build",
+    ],
+)
+
+selects.config_setting_group(
+    name = "fasttable_enabled_active",
+    match_any = [
+        ":fasttable_enabled_explicit_true",
+        ":fasttable_enabled_default_active",
+    ],
 )
 
 selects.config_setting_group(
@@ -76,6 +142,15 @@ selects.config_setting_group(
         "@platforms//cpu:s390x",
         "@platforms//cpu:wasm64",
         "@platforms//cpu:x86_64",
+    ],
+    visibility = UPB_CONFIG_VISIBILITY,
+)
+
+selects.config_setting_group(
+    name = "fasttable_enabled_setting",
+    match_all = [
+        ":fasttable_enabled_active",
+        ":any_64bit",
     ],
     visibility = UPB_CONFIG_VISIBILITY,
 )
