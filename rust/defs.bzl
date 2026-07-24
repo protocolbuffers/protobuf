@@ -45,13 +45,13 @@ def rust_proto_library(name, deps, **args):
     rust_upb_proto_library(
         name = name + "_upb_rust_proto",
         deps = deps,
-        visibility = ["//rust/test:__subpackages__"],
+        visibility = [Label("//rust/test:__subpackages__")],
         **args
     )
 
     rust_cc_proto_library(
         name = name + "_cpp_rust_proto",
         deps = deps,
-        visibility = ["//rust/test:__subpackages__"],
+        visibility = [Label("//rust/test:__subpackages__")],
         **args
     )
