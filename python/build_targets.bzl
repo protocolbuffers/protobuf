@@ -40,7 +40,21 @@ def build_targets(name):
         deps = [
             ":python_srcs",
             ":well_known_types_py_pb2",
-        ],
+        ] + select({
+            # Bundle the native upb extension by default so that
+            # google._upb._message is importable and api_implementation selects
+            # the fast upb backend -- matching the behavior of the published
+            # wheel, where upb is the default. Without this, bazel consumers of
+            # :protobuf_python silently fall back to the pure-Python backend.
+            #
+            # Omit it under use_fast_cpp_protos (the user explicitly opted into
+            # the cpp backend, which is bundled via data above), and where
+            # python is unavailable (:_message is target_incompatible there).
+            ":use_fast_cpp_protos": [],
+            "@system_python//:none": [],
+            "@system_python//:unsupported": [],
+            "//conditions:default": [":_message"],
+        }),
     )
 
     native.config_setting(
