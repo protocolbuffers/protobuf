@@ -337,6 +337,24 @@ const Descriptor* DefaultFinderFindAnyType(const Message& message,
                                            const std::string& name) {
   return message.GetDescriptor()->file()->pool()->FindMessageTypeByName(name);
 }
+
+void ReportErrorImpl(int line, int col, absl::string_view message,
+                     const Descriptor* root_message_type,
+                     io::ErrorCollector* error_collector) {
+  if (error_collector == nullptr) {
+    if (line >= 0) {
+      ABSL_LOG(ERROR) << "Error parsing text-format "
+                      << root_message_type->full_name() << ": " << (line + 1)
+                      << ":" << (col + 1) << ": " << message;
+    } else {
+      ABSL_LOG(ERROR) << "Error parsing text-format "
+                      << root_message_type->full_name() << ": " << message;
+    }
+  } else {
+    error_collector->RecordError(line, col, message);
+  }
+}
+
 }  // namespace
 
 auto TextFormat::Parser::UnsetFieldsMetadata::GetUnsetFieldId(
@@ -454,18 +472,7 @@ class TextFormat::Parser::ParserImpl {
 
   void ReportError(int line, int col, absl::string_view message) {
     had_errors_ = true;
-    if (error_collector_ == nullptr) {
-      if (line >= 0) {
-        ABSL_LOG(ERROR) << "Error parsing text-format "
-                        << root_message_type_->full_name() << ": " << (line + 1)
-                        << ":" << (col + 1) << ": " << message;
-      } else {
-        ABSL_LOG(ERROR) << "Error parsing text-format "
-                        << root_message_type_->full_name() << ": " << message;
-      }
-    } else {
-      error_collector_->RecordError(line, col, message);
-    }
+    ReportErrorImpl(line, col, message, root_message_type_, error_collector_);
   }
 
   void ReportWarning(int line, int col, const absl::string_view message) {
@@ -1959,22 +1966,18 @@ TextFormat::Parser::Parser()
       allow_singular_overwrites_(false),
       recursion_limit_(kDefaultRecursionLimit) {}
 
-namespace {
-
 template <typename T>
-bool CheckParseInputSize(T& input, io::ErrorCollector* error_collector) {
+bool TextFormat::Parser::CheckParseInputSize(T& input, Message* output) const {
   if (input.size() > INT_MAX) {
-    error_collector->RecordError(
-        -1, 0,
-        absl::StrCat(
-            "Input size too large: ", static_cast<int64_t>(input.size()),
-            " bytes", " > ", INT_MAX, " bytes."));
+    ReportErrorImpl(-1, 0,
+                    absl::StrCat("Input size too large: ",
+                                 static_cast<int64_t>(input.size()), " bytes",
+                                 " > ", INT_MAX, " bytes."),
+                    output->GetDescriptor(), error_collector_);
     return false;
   }
   return true;
 }
-
-}  // namespace
 
 bool TextFormat::Parser::Parse(io::ZeroCopyInputStream* input,
                                Message* output) {
@@ -1995,14 +1998,14 @@ bool TextFormat::Parser::Parse(io::ZeroCopyInputStream* input,
 
 bool TextFormat::Parser::ParseFromString(absl::string_view input,
                                          Message* output) {
-  DO(CheckParseInputSize(input, error_collector_));
+  DO(CheckParseInputSize(input, output));
   io::ArrayInputStream input_stream(input.data(), input.size());
   return Parse(&input_stream, output);
 }
 
 bool TextFormat::Parser::ParseFromCord(const absl::Cord& input,
                                        Message* output) {
-  DO(CheckParseInputSize(input, error_collector_));
+  DO(CheckParseInputSize(input, output));
   io::CordInputStream input_stream(&input);
   return Parse(&input_stream, output);
 }
@@ -2020,7 +2023,7 @@ bool TextFormat::Parser::Merge(io::ZeroCopyInputStream* input,
 
 bool TextFormat::Parser::MergeFromString(absl::string_view input,
                                          Message* output) {
-  DO(CheckParseInputSize(input, error_collector_));
+  DO(CheckParseInputSize(input, output));
   io::ArrayInputStream input_stream(input.data(), input.size());
   return Merge(&input_stream, output);
 }

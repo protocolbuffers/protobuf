@@ -863,6 +863,9 @@ class PROTOBUF_EXPORT TextFormat {
     // representations (see text_format.cc for implementation).
     class ParserImpl;
 
+    template <typename T>
+    bool CheckParseInputSize(T& input, Message* output) const;
+
     // Like TextFormat::Merge().  The provided implementation is used
     // to do the parsing.
     bool MergeUsingImpl(io::ZeroCopyInputStream* input, Message* output,

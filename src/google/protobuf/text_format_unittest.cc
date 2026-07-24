@@ -82,6 +82,7 @@ namespace text_format_unittest {
 using ::absl_testing::IsOk;
 using ::absl_testing::StatusIs;
 using ::google::protobuf::internal::UnsetFieldsMetadataTextFormatTestUtil;
+using ::testing::_;
 using ::testing::AllOf;
 using ::testing::HasSubstr;
 using ::testing::UnorderedElementsAre;
@@ -293,6 +294,64 @@ TEST_F(TextFormatTest, ShortFormat) {
                   "map_redacted_string: $0 "
                   "map_unredacted_string \\{ key: \"ghi\" value: \"jkl\" \\}",
                   value_replacement, kTextMarkerRegex)));
+}
+
+TEST_F(TextFormatTest, InputTooLarge) {
+  if (sizeof(size_t) <= sizeof(int)) {
+    GTEST_SKIP() << "Not supported in platform.";
+  }
+  unittest::TestAllTypes msg;
+
+  constexpr absl::string_view kError = "Input size too large";
+
+  const auto expect_error = [&](auto f) {
+    {
+      // First without a collector.
+      TextFormat::Parser parser;
+      absl::ScopedMockLog log(absl::MockLogDefault::kDisallowUnexpected);
+      EXPECT_CALL(log, Log(absl::LogSeverity::kError, _, HasSubstr(kError)))
+          .Times(1);
+      log.StartCapturingLogs();
+      EXPECT_FALSE(f(parser));
+    }
+
+    // Then with a collector.
+    TextFormat::Parser parser;
+    class MockErrorCollector : public io::ErrorCollector {
+     public:
+      MockErrorCollector() = default;
+      ~MockErrorCollector() override = default;
+
+      std::string text_;
+
+      // implements ErrorCollector -------------------------------------
+      void RecordError(int line, int column,
+                       absl::string_view message) override {
+        text_ = absl::StrCat(message);
+      }
+
+      void RecordWarning(int line, int column,
+                         absl::string_view message) override {}
+    };
+
+    MockErrorCollector error_collector;
+    parser.RecordErrorsTo(&error_collector);
+    EXPECT_FALSE(f(parser));
+    EXPECT_THAT(error_collector.text_, HasSubstr(kError));
+  };
+
+  // Use a fake string_view with very large size.
+  // The contents don't matter because it should fail just by the size.
+  const absl::string_view too_large_sv(
+      "asdf", size_t{std::numeric_limits<int>::max()} + 1);
+  expect_error([&](auto& p) { return p.ParseFromString(too_large_sv, &msg); });
+  expect_error([&](auto& p) { return p.MergeFromString(too_large_sv, &msg); });
+
+  absl::Cord too_large_cord("sdaf");
+  while (too_large_cord.size() < std::numeric_limits<int>::max()) {
+    too_large_cord.Append(too_large_cord);
+  }
+  expect_error([&](auto& p) { return p.ParseFromCord(too_large_cord, &msg); });
 }
 
 TEST_F(TextFormatTest, Utf8Format) {
