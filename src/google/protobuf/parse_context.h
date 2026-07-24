@@ -183,7 +183,12 @@ class PROTOBUF_EXPORT EpsCopyInputStream {
     return LimitToken(old_limit - limit);
   }
 
-  [[nodiscard]] bool PopLimit(LimitToken delta) {
+  // Takes the token by rvalue reference rather than by value. LimitToken uses
+  // ASan memory poisoning, and a by-value parameter can share a stack slot with
+  // the moved-from caller token; the move then poisons the slot the parameter
+  // occupies, and reading it here trips a use-after-poison. Binding directly to
+  // the caller's token avoids the extra copy and the shared-slot hazard.
+  [[nodiscard]] bool PopLimit(LimitToken&& delta) {
     // We must update the limit first before the early return. Otherwise, we can
     // end up with an invalid limit and it can lead to integer overflows.
     int old_limit = limit_ + std::move(delta).token();
