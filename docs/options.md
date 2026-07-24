@@ -583,3 +583,8 @@ about your project (name and website) so we can add an entry for you.
 
     *   Website: https://motif.io
     *   Extensions: 1309
+
+1.  Teleport
+
+    *   Website: https://goteleport.com
+    *   Extensions: 1310
