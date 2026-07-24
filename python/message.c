@@ -1471,13 +1471,13 @@ PyObject* PyUpb_Message_MergeFromString(PyObject* _self, PyObject* arg) {
   upb_DecodeStatus status =
       upb_Decode(buf, size, self->ptr.msg, layout, extreg, options, arena);
   Py_XDECREF(mv_contiguous);
+  PyUpb_Message_SyncSubobjs(self);
   if (status != kUpb_DecodeStatus_Ok) {
     PyErr_Format(
         state->decode_error_class, "Error parsing message with type '%s': %s",
         upb_MessageDef_FullName(msgdef), upb_DecodeStatus_String(status));
     return NULL;
   }
-  PyUpb_Message_SyncSubobjs(self);
   return PyLong_FromSsize_t(size);
 }
 

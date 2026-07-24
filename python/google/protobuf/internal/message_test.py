@@ -1182,6 +1182,18 @@ class MessageTest(unittest.TestCase):
     m1.MergeFromString(b'')  # field state should not change
     self.assertFalse(m1.HasField('optional_nested_message'))
 
+  def testMergeFromStringDecodeErrorSync(self, message_module):
+    m = message_module.NestedTestAllTypes()
+    s1 = m.child
+    self.assertFalse(m.HasField('child'))
+    # Wire bytes: field 1 (child), length 3.
+    # Payload: valid tag 1 (0x08, 0x01) + malformed tag (0xff).
+    invalid_bytes = b'\x0a\x03\x08\x01\xff'
+    with self.assertRaises(message.DecodeError):
+      m.MergeFromString(invalid_bytes)
+    s2 = m.child
+    self.assertIs(s1, s2)
+
   def ensureNestedMessageExists(self, msg, attribute):
     """Make sure that a nested message object exists.
 
