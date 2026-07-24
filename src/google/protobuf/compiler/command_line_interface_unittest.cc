@@ -4106,6 +4106,36 @@ TEST_F(CommandLineInterfaceTest, WriteDependencyManifestFileForAbsolutePath) {
                     "$tmpdir/foo.proto\\\n $tmpdir/bar.proto");
 }
 
+TEST_F(CommandLineInterfaceTest, WriteDependencyManifestFileEscapesMakeSyntax) {
+  const std::string dependency = "foo$(shell touch DEP).proto";
+  const std::string input = "bar$(shell touch PWNED).proto";
+
+  CreateTempFile(dependency,
+                 "syntax = \"proto2\";\n"
+                 "message Foo {}\n");
+  CreateTempFile(input,
+                 absl::StrCat("syntax = \"proto2\";\n"
+                              "import \"",
+                              dependency,
+                              "\";\n"
+                              "message Bar {\n"
+                              "  optional Foo foo = 1;\n"
+                              "}\n"));
+
+  SwitchToTempDirectory();
+  DisallowPlugins();
+  RunWithArgs({"protocol_compiler", "--dependency_out=manifest", "--test_out=.",
+               input});
+
+  ExpectNoErrors();
+
+  ExpectFileContent(
+      "manifest",
+      "bar$$(shell\\ touch\\ PWNED).proto.MockCodeGenerator.test_generator: "
+      "foo$$(shell\\ touch\\ DEP).proto\\\n"
+      " bar$$(shell\\ touch\\ PWNED).proto");
+}
+
 TEST_F(CommandLineInterfaceTest,
        WriteDependencyManifestFileWithDescriptorSetOut) {
   CreateTempFile("foo.proto",
