@@ -13,6 +13,8 @@
 #include <stdarg.h>
 #include <stddef.h>
 #include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 #include "google/protobuf/descriptor.upb.h"
@@ -146,6 +148,53 @@ static upb_StringView default_bytes(upb_ToProto_Context* ctx,
   return (upb_StringView){.data = p, .size = n};
 }
 
+// Formats float default values into string representation matching C++
+// SimpleFtoa (absl::numbers_internal::RoundTripFloatToBuffer) and
+// DescriptorPool::CopyTo().
+//
+// Standard C printf("%.9g") formatting differs from SimpleFtoa in two key ways:
+// 1. Scientific Notation Threshold:
+//    SimpleFtoa switches to scientific notation for numbers >= 1e7 or < 1e-4.
+//    Example: 779999744.0f
+//    - Standard printf("%.9g") -> "779999744"
+//    - SimpleFtoa -> "7.7999974e+08"
+// 2. Shortest Round-Trip Precision:
+//    SimpleFtoa uses the minimum number of significant digits (7 to 9) required
+//    to uniquely reconstruct the exact IEEE 754 32-bit float value.
+//    Example: 7.77777765e+32f
+//    - Standard printf("%.9g") -> "7.77777765e+32" (9 digits)
+//    - SimpleFtoa -> "7.777778e+32" (7 digits, as 7.777778e+32 parses back
+//    to 7.77777765e+32f)
+static upb_StringView float_default_string(upb_ToProto_Context* ctx, float f) {
+  if (isnan(f)) return strviewdup(ctx, "nan");
+  if (isinf(f)) return strviewdup(ctx, f > 0 ? "inf" : "-inf");
+  if (f == 0.0f) {
+    return signbit(f) ? strviewdup(ctx, "-0") : strviewdup(ctx, "0");
+  }
+
+  char buf[64];
+  float abs_f = fabsf(f);
+  bool force_sci = (abs_f >= 1e7f || abs_f < 1e-4f);
+
+  for (int prec = 7; prec <= 9; prec++) {
+    if (force_sci) {
+      snprintf(buf, sizeof(buf), "%.*g", prec, f);
+      if (strchr(buf, 'e') == NULL && strchr(buf, 'E') == NULL) {
+        snprintf(buf, sizeof(buf), "%.*e", prec - 1, f);
+      }
+    } else {
+      snprintf(buf, sizeof(buf), "%.*g", prec, f);
+    }
+
+    if (strtof(buf, NULL) == f) {
+      return strviewdup(ctx, buf);
+    }
+  }
+
+  snprintf(buf, sizeof(buf), "%.9g", f);
+  return strviewdup(ctx, buf);
+}
+
 static upb_StringView default_string(upb_ToProto_Context* ctx,
                                      const upb_FieldDef* f) {
   upb_MessageValue d = upb_FieldDef_Default(f);
@@ -180,7 +229,7 @@ static upb_StringView default_string(upb_ToProto_Context* ctx,
     case kUpb_CType_UInt32:
       return printf_dup(ctx, "%" PRIu32, d.uint32_val);
     case kUpb_CType_Float:
-      return printf_dup(ctx, "%.9g", d.float_val);
+      return float_default_string(ctx, d.float_val);
     case kUpb_CType_Double:
       return printf_dup(ctx, "%.17g", d.double_val);
     case kUpb_CType_String:
