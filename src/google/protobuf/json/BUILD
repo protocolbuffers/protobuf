@@ -90,7 +90,7 @@ cc_library(
         "//src/google/protobuf/io",
         "//src/google/protobuf/io:tokenizer",
         "//src/google/protobuf/io:zero_copy_sink",
-        "//src/google/protobuf/stubs",
+        "//third_party/gloop/util/status:status_macros",
         "@abseil-cpp//absl/algorithm:container",
         "@abseil-cpp//absl/log:absl_check",
         "@abseil-cpp//absl/strings",
