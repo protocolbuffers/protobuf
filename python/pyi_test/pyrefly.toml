@@ -1,0 +1,3 @@
+project-includes = ["typing_test.py"]
+search-path = ["../..", ".."]
+python-version = "3.10.0"

@@ -43,6 +43,31 @@ bazel_dep(name = "rules_python", version = "1.6.0")
 bazel_dep(name = "rules_rust", version = "0.69.0")
 
 bazel_dep(name = "rules_ruby", version = "0.20.1", dev_dependency = True)
+bazel_dep(name = "rules_multitool", version = "1.11.1", dev_dependency = True)
+bazel_dep(name = "rules_nodejs", version = "6.7.5", dev_dependency = True)
+
+multitool = use_extension("@rules_multitool//multitool:extension.bzl", "multitool", dev_dependency = True)
+multitool.hub(
+    hub_name = "pyi_test_tools",
+    lockfile = "//python/pyi_test:multitool.lock.json",
+)
+use_repo(multitool, "multitool", "pyi_test_tools")
+register_toolchains("@pyi_test_tools//toolchains:all", dev_dependency = True)
+
+node = use_extension("@rules_nodejs//nodejs:extensions.bzl", "node", dev_dependency = True)
+node.toolchain(node_version = "22.23.1")
+use_repo(node, "nodejs_toolchains")
+
+http_archive = use_repo_rule("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+
+http_archive(
+    name = "pyright",
+    build_file_content = 'exports_files(["index.js"], visibility = ["//visibility:public"])\nfilegroup(name = "dist", srcs = glob(["dist/**"], exclude = ["dist/typeshed-fallback/stubs/**"]), visibility = ["//visibility:public"])',
+    dev_dependency = True,
+    sha256 = "bd5c488fc20fa237a944279bf32cae2f986cf10d5d5d9e8705819859daeb2f4a",
+    strip_prefix = "package",
+    urls = ["https://registry.npmjs.org/pyright/-/pyright-1.1.411.tgz"],
+)
 
 # Workaround for https://github.com/bazelbuild/bazel-central-registry/issues/4230
 # rules_fuzzing 0.5.3 is not yet available in BCR.
@@ -153,7 +178,17 @@ pip = use_extension("@rules_python//python/extensions:pip.bzl", "pip", dev_depen
     for python_version in SUPPORTED_PYTHON_VERSIONS
 ]
 
-use_repo(pip, "protobuf_pip_deps")
+[
+    pip.parse(
+        hub_name = "pyi_test_pip_deps",
+        python_interpreter_target = "@system_python//:interpreter",
+        python_version = python_version,
+        requirements_lock = "//python/pyi_test:requirements.txt",
+    )
+    for python_version in SUPPORTED_PYTHON_VERSIONS
+]
+
+use_repo(pip, "protobuf_pip_deps", "pyi_test_pip_deps")
 
 local_runtime_repo = use_repo_rule(
     "@rules_python//python/local_toolchains:repos.bzl",

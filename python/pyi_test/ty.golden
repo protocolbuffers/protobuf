@@ -1,0 +1,13 @@
+python/pyi_test/typing_test.py:28:13: info[revealed-type] Revealed type: `bool`
+python/pyi_test/typing_test.py:29:13: info[revealed-type] Revealed type: `str`
+python/pyi_test/typing_test.py:30:13: info[revealed-type] Revealed type: `bytes`
+python/pyi_test/typing_test.py:31:13: info[revealed-type] Revealed type: `str`
+python/pyi_test/typing_test.py:32:13: info[revealed-type] Revealed type: `State`
+python/pyi_test/typing_test.py:34:13: info[revealed-type] Revealed type: `str`
+python/pyi_test/typing_test.py:40:13: info[revealed-type] Revealed type: `int`
+python/pyi_test/typing_test.py:41:13: info[revealed-type] Revealed type: `str`
+python/pyi_test/typing_test.py:42:13: info[revealed-type] Revealed type: `str`
+python/pyi_test/typing_test.py:44:18: error[invalid-argument-type] Argument to `Step.__init__` is incorrect: Expected `bytes | None`, found `Literal["not bytes"]`
+python/pyi_test/typing_test.py:45:1: error[invalid-assignment] Object of type `Literal["not bytes"]` is not assignable to attribute `payload` of type `bytes`
+python/pyi_test/typing_test.py:46:18: error[unknown-argument] Argument `not_a_field` does not match any known parameter of `Step.__init__`
+Found 12 diagnostics
