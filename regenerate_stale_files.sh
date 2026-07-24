@@ -25,6 +25,7 @@ STALENESS_TESTS=(
   "ruby/ext/google/protobuf_c:test_amalgamation_staleness"
   "upb/reflection:descriptor_upb_proto_staleness_test"
   "upb_generator:plugin_upb_proto_staleness_test"
+  "python/pyi_test:golden_test"
 )
 
 # Run and fix all staleness tests.
