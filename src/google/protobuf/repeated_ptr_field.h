@@ -41,6 +41,7 @@
 #include "absl/strings/string_view.h"
 #include "google/protobuf/arena.h"
 #include "google/protobuf/arena_align.h"
+#include "google/protobuf/class_data.h"
 #include "google/protobuf/field_with_arena.h"
 #include "google/protobuf/internal_metadata_locator.h"
 #include "google/protobuf/internal_visibility.h"
@@ -392,6 +393,21 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
     };
   }
 
+  // Creates and adds an element using the given ClassData, without introducing
+  // a link-time dependency on the concrete message type. This is generally
+  // faster and should be preferred over the equivalent `AddFromPrototype()` if
+  // the caller already has or can get the `ClassData`, and especially if
+  // elements are added repeatedly.
+  //
+  // Pre-condition: `class_data` must not be nullptr.
+  template <typename TypeHandler>
+  PROTOBUF_ALWAYS_INLINE Value<TypeHandler>* AddFromClassData(
+      Arena* arena, const ClassData* class_data) {
+    using H = CommonHandler<TypeHandler>;
+    Value<TypeHandler>* result = cast<TypeHandler>(
+        AddInternal(arena, H::GetNewFromClassDataFunc(class_data)));
+    return result;
+  }
 
   template <typename TypeHandler>
   void Clear() {
@@ -1081,8 +1097,16 @@ class GenericTypeHandler {
   static constexpr auto GetNewFromPrototypeFunc(const Type* prototype) {
     static_assert(std::is_base_of_v<MessageLite, Type>);
     ABSL_DCHECK(prototype != nullptr);
-    return
-        [prototype](Arena* arena, void*& ptr) { ptr = prototype->New(arena); };
+    return [prototype](Arena* arena, void*& ptr) {
+      ptr = GetClassData(*prototype)->New(arena);
+    };
+  }
+  static constexpr auto GetNewFromClassDataFunc(
+      const ClassData* class_data ABSL_ATTRIBUTE_LIFETIME_BOUND) {
+    ABSL_DCHECK(class_data != nullptr);
+    return [class_data](Arena* arena, void*& ptr) {
+      ptr = class_data->New(arena);
+    };
   }
 
   static Arena* GetArena(Type* value) { return Arena::InternalGetArena(value); }

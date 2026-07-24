@@ -1578,7 +1578,7 @@ const char* EpsCopyInputStream::ReadPackedVarintArrayWithField(
         if (VerifyBoolsAssumingLargeArray(ptr, end)) {
           // Each byte is 0 or 1.
           const int count = end - ptr;
-          out.ReserveWithArena(arena, out.size() + count);
+          out.ReserveWithArena(arena, internal::CheckedAdd(out.size(), count));
           T* x = out.AddNAlreadyReserved(count);
           // For T being bool, conv must be equivalent to a conversion to bool
           // (zigzag encoding is not applicable), so it can be skipped.
@@ -1591,7 +1591,7 @@ const char* EpsCopyInputStream::ReadPackedVarintArrayWithField(
     if (count == end - ptr) {
       // We have exactly one element per byte, so avoid the costly varint
       // parsing.
-      out.ReserveWithArena(arena, out.size() + count);
+      out.ReserveWithArena(arena, internal::CheckedAdd(out.size(), count));
       T* x = out.AddNAlreadyReserved(count);
       for (; ptr != end; ++ptr) {
         *x = conv(static_cast<uint8_t>(*ptr));
@@ -1602,7 +1602,7 @@ const char* EpsCopyInputStream::ReadPackedVarintArrayWithField(
       // we need to account for that.
       if (end[-1] & 0x80) count++;
       int old_size = out.size();
-      out.ReserveWithArena(arena, old_size + count);
+      out.ReserveWithArena(arena, internal::CheckedAdd(old_size, count));
       T* x = out.AddNAlreadyReserved(count);
       ptr = ReadPackedVarintArray(ptr, end, [&](uint64_t varint) {
         *x = conv(varint);
