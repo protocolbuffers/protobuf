@@ -588,3 +588,8 @@ about your project (name and website) so we can add an entry for you.
 
     *   Website: https://goteleport.com
     *   Extensions: 1310
+
+1.  proto2mcp
+
+    *   Website: https://github.com/protocgen/proto2mcp
+    *   Extensions: 1311-1313
