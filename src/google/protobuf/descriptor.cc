@@ -17,6 +17,7 @@
 #include <algorithm>
 #include <array>
 #include <atomic>
+#include <cassert>
 #include <cstdint>
 #include <cstdlib>
 #include <cstring>
@@ -31,6 +32,7 @@
 #include <tuple>
 #include <type_traits>
 #include <utility>
+#include <variant>
 #include <vector>
 
 #include "absl/algorithm/container.h"
@@ -130,7 +132,6 @@ bool IsLegacyJsonFieldConflictEnabled(const OptionsT& options) {
   return options.deprecated_legacy_json_field_conflicts();
   PROTOBUF_IGNORE_DEPRECATION_STOP
 }
-
 
 template <int R>
 constexpr size_t RoundUpTo(size_t n) {
@@ -1363,6 +1364,25 @@ class FlatAllocator
                           MessageOptions, FieldOptions, EnumOptions,
                           EnumValueOptions, ExtensionRangeOptions, OneofOptions,
                           ServiceOptions, MethodOptions, FileOptions>())) {};
+
+std::variant<const FileDescriptor*, const Descriptor*>
+FieldExtensionScope::GetExtensionScope() const {
+  if (encoded_scope & 1) {
+    return reinterpret_cast<const FileDescriptor*>(encoded_scope ^ 1);
+  }
+  return reinterpret_cast<const Descriptor*>(encoded_scope);
+}
+
+void FieldExtensionScope::SetExtensionScope(
+    std::variant<const FileDescriptor*, const Descriptor*> scope) {
+  if (std::holds_alternative<const FileDescriptor*>(scope)) {
+    encoded_scope =
+        reinterpret_cast<uintptr_t>(std::get<const FileDescriptor*>(scope)) | 1;
+  } else {
+    encoded_scope =
+        reinterpret_cast<uintptr_t>(std::get<const Descriptor*>(scope));
+  }
+}
 
 }  // namespace internal
 
@@ -2914,6 +2934,36 @@ std::string FieldDescriptor::DefaultValueAsString(
 
 Descriptor::Descriptor() = default;
 FieldDescriptor::FieldDescriptor() {}
+
+const Descriptor* FieldDescriptor::containing_type() const {
+  if (is_oneof_) {
+    return containing_oneof()->containing_type();
+  }
+  if (is_extension_) {
+    return scope_.extension->extendee;
+  }
+  return scope_.containing_type;
+}
+
+const Descriptor* FieldDescriptor::extension_scope() const {
+  ABSL_CHECK(is_extension_);
+  auto scope = scope_.extension->GetExtensionScope();
+  if (std::holds_alternative<const Descriptor*>(scope)) {
+    return std::get<const Descriptor*>(scope);
+  }
+  return nullptr;
+}
+
+const FileDescriptor* FieldDescriptor::file() const {
+  if (!is_extension_) {
+    return containing_type()->file();
+  }
+  auto scope = scope_.extension->GetExtensionScope();
+  if (std::holds_alternative<const FileDescriptor*>(scope)) {
+    return std::get<const FileDescriptor*>(scope);
+  }
+  return std::get<const Descriptor*>(scope)->file();
+}
 OneofDescriptor::OneofDescriptor() = default;
 EnumDescriptor::EnumDescriptor() = default;
 EnumValueDescriptor::EnumValueDescriptor() = default;
@@ -6287,7 +6337,6 @@ void internal::DescriptorBuilder::BuildFieldOrExtension(
 
   ValidateSymbolName(proto.name(), result->full_name(), proto);
 
-  result->file_ = file_;
   result->number_ = proto.number();
   result->is_extension_ = is_extension;
   result->is_oneof_ = false;
@@ -6333,8 +6382,17 @@ void internal::DescriptorBuilder::BuildFieldOrExtension(
   }
 
   // Some of these may be filled in when cross-linking.
-  result->containing_type_ = nullptr;
-  result->type_once_ = nullptr;
+  if (is_extension) {
+    // Extensions keep their scope data (extendee + declaration scope) out of
+    // line, since they need two pointers and are rare. Allocate it up front so
+    // the scope pointer is always valid; the extendee is filled in during
+    // cross-linking.
+    result->scope_.extension =
+        tables_->Allocate<internal::FieldExtensionScope>();
+  } else {
+    result->scope_.containing_type = nullptr;
+  }
+  result->type_descriptor_.init_once.store(0, std::memory_order_relaxed);
   result->default_value_enum_ = nullptr;
 
   result->has_default_value_ = proto.has_default_value();
@@ -6519,7 +6577,17 @@ void internal::DescriptorBuilder::BuildFieldOrExtension(
                "FieldDescriptorProto.extendee not set for extension field.");
     }
 
-    result->scope_.extension_scope = parent;
+    if (parent != nullptr) {
+      // Parent is guaranteed to be in the same file, so we don't need
+      // to save file_.
+      assert(parent->file() == file_);
+      result->scope_.extension->SetExtensionScope(parent);
+    } else {
+      // A toplevel "extend" statement. Here, we need to save file_ since
+      // we can get from nowhere else. Note that the extendee will be the
+      // extension source, so it may be from a different file.
+      result->scope_.extension->SetExtensionScope(file_);
+    }
 
     if (proto.has_oneof_index()) {
       AddError(result->full_name(), proto, DescriptorPool::ErrorCollector::TYPE,
@@ -6533,7 +6601,9 @@ void internal::DescriptorBuilder::BuildFieldOrExtension(
                "FieldDescriptorProto.extendee set for non-extension field.");
     }
 
-    result->containing_type_ = parent;
+    // Non-extension field must always have a parent type.
+    assert(parent != nullptr);
+    result->scope_.containing_type = parent;
 
     if (proto.has_oneof_index()) {
       if (proto.oneof_index() < 0 ||
@@ -7236,7 +7306,7 @@ void internal::DescriptorBuilder::CrossLinkField(
       return;
     }
 
-    field->containing_type_ = extendee.descriptor();
+    field->scope_.extension->extendee = extendee.descriptor();
 
     const Descriptor::ExtensionRange* extension_range =
         field->containing_type()->FindExtensionRangeContainingNumber(
@@ -7301,10 +7371,12 @@ void internal::DescriptorBuilder::CrossLinkField(
         int name_sizes = static_cast<int>(name.size() + 1 +
                                           proto.default_value().size() + 1);
 
-        field->type_once_ = ::new (tables_->AllocateBytes(
+        auto* once = ::new (tables_->AllocateBytes(
             static_cast<int>(sizeof(absl::once_flag)) + name_sizes))
             absl::once_flag{};
-        char* names = reinterpret_cast<char*>(field->type_once_ + 1);
+        field->type_descriptor_.init_once.store(
+            reinterpret_cast<uintptr_t>(once) | 1, std::memory_order_relaxed);
+        char* names = reinterpret_cast<char*>(once + 1);
 
         memcpy(names, name.c_str(), name.size() + 1);
         memcpy(names + name.size() + 1, proto.default_value().c_str(),
@@ -7358,7 +7430,8 @@ void internal::DescriptorBuilder::CrossLinkField(
     }
 
     if (field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
-      field->type_descriptor_.message_type = type.descriptor();
+      field->type_descriptor_.message_type.store(type.descriptor(),
+                                                 std::memory_order_relaxed);
       if (field->type_descriptor_.message_type == nullptr) {
         AddError(field->full_name(), proto,
                  DescriptorPool::ErrorCollector::TYPE, [&] {
@@ -7372,7 +7445,9 @@ void internal::DescriptorBuilder::CrossLinkField(
       // referencing a map_entry message must not set is_map_.
       field->is_map_ =
           field->type_ == FieldDescriptor::TYPE_MESSAGE &&
-          field->type_descriptor_.message_type->options().map_entry();
+          field->type_descriptor_.message_type.load(std::memory_order_relaxed)
+              ->options()
+              .map_entry();
 
       if (field->has_default_value()) {
         AddError(field->full_name(), proto,
@@ -7380,7 +7455,8 @@ void internal::DescriptorBuilder::CrossLinkField(
                  "Messages can't have default values.");
       }
     } else if (field->cpp_type() == FieldDescriptor::CPPTYPE_ENUM) {
-      field->type_descriptor_.enum_type = type.enum_descriptor();
+      field->type_descriptor_.enum_type.store(type.enum_descriptor(),
+                                              std::memory_order_relaxed);
       if (field->type_descriptor_.enum_type == nullptr) {
         AddError(field->full_name(), proto,
                  DescriptorPool::ErrorCollector::TYPE, [&] {
@@ -7863,7 +7939,7 @@ void internal::DescriptorBuilder::ValidateOptions(
 
   // Note:  Default instance may not yet be initialized here, so we have to
   //   avoid reading from it.
-  if (field->containing_type_ != nullptr &&
+  if (field->containing_type() != nullptr &&
       &field->containing_type()->options() !=
           &MessageOptions::default_instance() &&
       field->containing_type()->options().message_set_wire_format()) {
@@ -7881,7 +7957,7 @@ void internal::DescriptorBuilder::ValidateOptions(
   }
 
   // Lite extensions can only be of Lite types.
-  if (IsLite(field->file()) && field->containing_type_ != nullptr &&
+  if (IsLite(field->file()) && field->containing_type() != nullptr &&
       !IsLite(field->containing_type()->file())) {
     AddError(field->full_name(), proto,
              DescriptorPool::ErrorCollector::EXTENDEE,
@@ -8873,7 +8949,11 @@ Symbol DescriptorPool::CrossLinkOnDemandHelper(absl::string_view name,
 void FieldDescriptor::InternalTypeOnceInit() const {
   ABSL_CHECK(file()->finished_building_ == true);
   const EnumDescriptor* enum_type = nullptr;
-  const char* lazy_type_name = reinterpret_cast<const char*>(type_once_ + 1);
+  const Descriptor* message_type = nullptr;
+  uintptr_t ptr = type_descriptor_.init_once.load(std::memory_order_relaxed);
+  ABSL_CHECK(ptr & 1);
+  auto* once = reinterpret_cast<const absl::once_flag*>(ptr ^ 1);
+  const char* lazy_type_name = reinterpret_cast<const char*>(once + 1);
   const char* lazy_default_value_enum_name =
       lazy_type_name + strlen(lazy_type_name) + 1;
   Symbol result = file()->pool()->CrossLinkOnDemandHelper(
@@ -8881,10 +8961,10 @@ void FieldDescriptor::InternalTypeOnceInit() const {
   if (result.type() == Symbol::MESSAGE) {
     ABSL_CHECK(type_ == FieldDescriptor::TYPE_MESSAGE ||
                type_ == FieldDescriptor::TYPE_GROUP);
-    type_descriptor_.message_type = result.descriptor();
+    message_type = result.descriptor();
   } else if (result.type() == Symbol::ENUM) {
     ABSL_CHECK(type_ == FieldDescriptor::TYPE_ENUM);
-    enum_type = type_descriptor_.enum_type = result.enum_descriptor();
+    enum_type = result.enum_descriptor();
   }
 
   if (enum_type) {
@@ -8912,10 +8992,30 @@ void FieldDescriptor::InternalTypeOnceInit() const {
       default_value_enum_ = enum_type->value(0);
     }
   }
+
+  // Store the type pointer with release only after all fields are initialized,
+  // clearing the init_once tag bit.
+  if (message_type) {
+    type_descriptor_.message_type.store(message_type,
+                                        std::memory_order_release);
+  } else if (enum_type) {
+    type_descriptor_.enum_type.store(enum_type, std::memory_order_release);
+  } else {  // Shouldn't happen, but just to be sure.
+    type_descriptor_.init_once.store(0, std::memory_order_release);
+  }
 }
 
 void FieldDescriptor::TypeOnceInit(const FieldDescriptor* to_init) {
   to_init->InternalTypeOnceInit();
+}
+
+void FieldDescriptor::MaybeTypeOnceInit(const FieldDescriptor* to_init) {
+  uintptr_t ptr =
+      to_init->type_descriptor_.init_once.load(std::memory_order_acquire);
+  if (ptr & 1) {
+    auto* once = reinterpret_cast<absl::once_flag*>(ptr ^ 1);
+    absl::call_once(*once, FieldDescriptor::TypeOnceInit, to_init);
+  }
 }
 
 // message_type(), enum_type(), default_value_enum(), and type()
@@ -8923,28 +9023,22 @@ void FieldDescriptor::TypeOnceInit(const FieldDescriptor* to_init) {
 // import building and cross linking of a field of a message.
 const Descriptor* FieldDescriptor::message_type() const {
   if (type_ == TYPE_MESSAGE || type_ == TYPE_GROUP) {
-    if (type_once_) {
-      absl::call_once(*type_once_, FieldDescriptor::TypeOnceInit, this);
-    }
-    return type_descriptor_.message_type;
+    MaybeTypeOnceInit(this);
+    return type_descriptor_.message_type.load(std::memory_order_relaxed);
   }
   return nullptr;
 }
 
 const EnumDescriptor* FieldDescriptor::enum_type() const {
   if (type_ == TYPE_ENUM) {
-    if (type_once_) {
-      absl::call_once(*type_once_, FieldDescriptor::TypeOnceInit, this);
-    }
-    return type_descriptor_.enum_type;
+    MaybeTypeOnceInit(this);
+    return type_descriptor_.enum_type.load(std::memory_order_relaxed);
   }
   return nullptr;
 }
 
 const EnumValueDescriptor* FieldDescriptor::default_value_enum() const {
-  if (type_once_) {
-    absl::call_once(*type_once_, FieldDescriptor::TypeOnceInit, this);
-  }
+  MaybeTypeOnceInit(this);
   return default_value_enum_;
 }
 

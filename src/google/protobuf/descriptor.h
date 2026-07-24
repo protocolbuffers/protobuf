@@ -41,6 +41,7 @@
 #include <string>
 #include <type_traits>
 #include <utility>
+#include <variant>
 #include <vector>
 
 #include "absl/base/attributes.h"
@@ -130,7 +131,7 @@ namespace internal {
 class DescriptorBuilder;
 // Defined in option_interpreter.cc
 class AggregateOptionFinder;
-}
+}  // namespace internal
 class FileDescriptorTables;
 
 // Defined in unknown_field_set.h.
@@ -376,6 +377,28 @@ const std::string& NameOfEnumAsString(const EnumValueDescriptor* descriptor);
 struct NameLimits {
   static constexpr int kPackageName = 511;
   static constexpr int kReservedName = std::numeric_limits<uint16_t>::max();
+};
+
+// Out-of-line scope data for extension fields only. Extension fields are rare
+// (~1% of all fields) but need two extra pointers (the extendee and their
+// declaration scope). Storing that data out of line lets a regular
+// (non-extension) FieldDescriptor pay for only a single scope pointer.
+struct FieldExtensionScope {
+  std::variant<const FileDescriptor*, const Descriptor*> GetExtensionScope()
+      const;
+
+  void SetExtensionScope(
+      std::variant<const FileDescriptor*, const Descriptor*> scope);
+
+  // The message being extended. Returned by FieldDescriptor::containing_type().
+  // Filled in during cross-linking, so it starts out null.
+  const Descriptor* extendee = nullptr;
+
+  // Where the extension was declared. If LSB=1, it stores a const
+  // FileDescriptor* for a top-level `extend` statement. Otherwise it stores the
+  // const Descriptor* of the enclosing message, or null. Use
+  // GetExtensionScope() instead of reading this field directly.
+  uintptr_t encoded_scope = 0;
 };
 
 }  // namespace internal
@@ -1308,22 +1331,36 @@ class PROTOBUF_EXPORT FieldDescriptor : private internal::SymbolBase,
   // and its indices above.
   int number_;
   internal::DescriptorNames all_names_;
-  const FileDescriptor* file_;
 
-  // The once_flag is followed by a NUL terminated string for the type name and
-  // enum default value (or empty string if no default enum).
-  absl::once_flag* type_once_;
   static void TypeOnceInit(const FieldDescriptor* to_init);
+  static void MaybeTypeOnceInit(const FieldDescriptor* to_init);
   void InternalTypeOnceInit() const;
-  const Descriptor* containing_type_;
+
+  // `scope_` points to the object that contains this field.
+  //
+  //   * is_oneof_:     `containing_oneof`; the containing message type is
+  //                    derived via containing_oneof()->containing_type().
+  //   * is_extension_: `extension`, out-of-line data holding the extendee
+  //                      (containing_type()) and the declaration scope.
+  //   * else:          `containing_type`, the containing message type.
   union {
+    const Descriptor* containing_type;
     const OneofDescriptor* containing_oneof;
-    const Descriptor* extension_scope;
+    internal::FieldExtensionScope* extension;
   } scope_;
-  union {
-    mutable const Descriptor* message_type;
-    mutable const EnumDescriptor* enum_type;
-  } type_descriptor_;
+
+  // `type_descriptor_` points to the message or the enum descriptor for this
+  // field. It may be build lazily, in which case, we initialize the LSB to 1.
+  // On the first read, we fill either message_type or enum_type. Because
+  // {message,enum}_type is a pointer, it will have LSB=0.
+  union TypeDescriptor {
+    mutable std::atomic<uintptr_t> init_once;
+    mutable std::atomic<const Descriptor*> message_type;
+    mutable std::atomic<const EnumDescriptor*> enum_type;
+    TypeDescriptor() { memset(this, 0, sizeof(*this)); }
+  };
+  TypeDescriptor type_descriptor_;
+
   const FieldOptions* options_;
   const FeatureSet* proto_features_;
   const FeatureSet* merged_features_;
@@ -1362,7 +1399,7 @@ class PROTOBUF_EXPORT FieldDescriptor : private internal::SymbolBase,
   friend class OneofDescriptor;
 };
 
-PROTOBUF_INTERNAL_CHECK_CLASS_SIZE(FieldDescriptor, 88);
+PROTOBUF_INTERNAL_CHECK_CLASS_SIZE(FieldDescriptor, 64);
 
 // Describes a oneof defined in a message type.
 class PROTOBUF_EXPORT OneofDescriptor : private internal::SymbolBase {
@@ -2940,10 +2977,8 @@ PROTOBUF_DEFINE_OPTIONS_ACCESSOR(Descriptor, MessageOptions)
 PROTOBUF_DEFINE_ACCESSOR(Descriptor, is_placeholder, bool)
 
 PROTOBUF_DEFINE_NAME_ACCESSOR(FieldDescriptor)
-PROTOBUF_DEFINE_ACCESSOR(FieldDescriptor, file, const FileDescriptor*)
 PROTOBUF_DEFINE_ACCESSOR(FieldDescriptor, number, int)
 PROTOBUF_DEFINE_ACCESSOR(FieldDescriptor, is_extension, bool)
-PROTOBUF_DEFINE_ACCESSOR(FieldDescriptor, containing_type, const Descriptor*)
 PROTOBUF_DEFINE_OPTIONS_ACCESSOR(FieldDescriptor, FieldOptions)
 PROTOBUF_DEFINE_ACCESSOR(FieldDescriptor, has_default_value, bool)
 PROTOBUF_DEFINE_ACCESSOR(FieldDescriptor, has_json_name, bool)
@@ -3097,11 +3132,6 @@ inline int FieldDescriptor::index_in_oneof() const {
   return static_cast<int>(this - scope_.containing_oneof->field(0));
 }
 
-inline const Descriptor* FieldDescriptor::extension_scope() const {
-  ABSL_CHECK(is_extension_);
-  return scope_.extension_scope;
-}
-
 inline FieldDescriptor::Type FieldDescriptor::type() const {
   return static_cast<Type>(type_);
 }
@@ -3144,7 +3174,7 @@ inline int FieldDescriptor::index() const {
   } else if (extension_scope() != nullptr) {
     return static_cast<int>(this - extension_scope()->extensions_);
   } else {
-    return static_cast<int>(this - file_->extensions_);
+    return static_cast<int>(this - file()->extensions_);
   }
 }
 
