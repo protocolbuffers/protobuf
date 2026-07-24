@@ -345,4 +345,46 @@ TEST(FuzzTest, OptionDependency) {
       )pb"));
 }
 
+TEST(FuzzTest, FloatDefaultValueFormattingScientificThreshold) {
+  // 779999744.0f (>= 1e7) tests scientific notation threshold formatting.
+  // Standard printf("%.9g") produces "779999744", while C++ SimpleFtoa produces
+  // "7.7999974e+08".
+  RoundTripDescriptor(ParseTextProtoOrDie(R"pb(
+    file {
+      name: "test.proto"
+      message_type {
+        name: "M"
+        field {
+          name: "f"
+          number: 1
+          label: LABEL_OPTIONAL
+          type: TYPE_FLOAT
+          default_value: "7.7999974e+08"
+        }
+      }
+    }
+  )pb"));
+}
+
+TEST(FuzzTest, FloatDefaultValueFormattingExponentPrecision) {
+  // 7.77777765e+32f tests shortest round-trip digit precision.
+  // Standard printf("%.9g") produces "7.77777765e+32", while C++ SimpleFtoa
+  // produces "7.777778e+32".
+  RoundTripDescriptor(ParseTextProtoOrDie(R"pb(
+    file {
+      name: "test.proto"
+      message_type {
+        name: "M"
+        field {
+          name: "f"
+          number: 1
+          label: LABEL_OPTIONAL
+          type: TYPE_FLOAT
+          default_value: "7.777778e+32"
+        }
+      }
+    }
+  )pb"));
+}
+
 }  // namespace upb_test
