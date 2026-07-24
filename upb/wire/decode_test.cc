@@ -731,6 +731,61 @@ TEST(DecodeTest, MessageSetConsecutiveUnknowns) {
   }
 }
 
+TEST(DecodeTest, FieldZeroRejected) {
+  Arena mt_arena;
+
+  // 1. Empty message with field 0 varint payload.
+  {
+    upb_MiniTable* empty_mt =
+        (upb_MiniTable*)upb_Arena_Malloc(mt_arena.ptr(), sizeof(upb_MiniTable));
+    memset(empty_mt, 0, sizeof(upb_MiniTable));
+    empty_mt->UPB_PRIVATE(size) = sizeof(upb_Message);
+    empty_mt->UPB_ONLYBITS(field_count) = 0;
+
+    std::string payload("\x00\x00", 2);
+    for (int options : GetDecodeOptionsToTest()) {
+      Arena msg_arena;
+      upb_Message* msg = upb_Message_New(empty_mt, msg_arena.ptr());
+      upb_DecodeStatus result =
+          upb_Decode(payload.data(), payload.size(), msg, empty_mt, nullptr,
+                     options, msg_arena.ptr());
+      EXPECT_EQ(result, kUpb_DecodeStatus_Malformed);
+    }
+  }
+
+  // 2. Field 0 varint inside unknown group.
+  {
+    auto [mt, field] = MiniTable::MakeSingleFieldTable<field_types::Int32>(
+        1, kUpb_DecodeFast_Scalar, mt_arena.ptr());
+
+    // Field 2 (StartGroup) containing Field 0 varint.
+    std::string payload("\x13\x00\x00\x14", 4);
+    for (int options : GetDecodeOptionsToTest()) {
+      Arena msg_arena;
+      upb_Message* msg = upb_Message_New(mt, msg_arena.ptr());
+      upb_DecodeStatus result =
+          upb_Decode(payload.data(), payload.size(), msg, mt, nullptr, options,
+                     msg_arena.ptr());
+      EXPECT_EQ(result, kUpb_DecodeStatus_Malformed);
+    }
+  }
+
+  // 3. Field 0 varint inside MessageSet item.
+  {
+    const upb_MiniTable* mset_mt = &upb_0decode_0test__TestMessageSet_msg_init;
+    // Field 1 (StartGroup for MessageSet Item) containing Field 0 varint.
+    std::string payload("\x0b\x00\x00\x0c", 4);
+    for (int options : GetDecodeOptionsToTest()) {
+      Arena msg_arena;
+      upb_Message* msg = upb_Message_New(mset_mt, msg_arena.ptr());
+      upb_DecodeStatus result =
+          upb_Decode(payload.data(), payload.size(), msg, mset_mt, nullptr,
+                     options, msg_arena.ptr());
+      EXPECT_EQ(result, kUpb_DecodeStatus_Malformed);
+    }
+  }
+}
+
 }  // namespace
 
 }  // namespace test
