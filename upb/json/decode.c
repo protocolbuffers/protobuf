@@ -661,11 +661,97 @@ static const char* jsondec_buftoint64(jsondec* d, const char* ptr,
   return out;
 }
 
+static bool jsondec_isdigit_char(char ch) { return ch >= '0' && ch <= '9'; }
+
+static void jsondec_check_number_string(jsondec* d, upb_StringView str) {
+  const char* ptr = str.data;
+  const char* end = str.data + str.size;
+  if (ptr == end) {
+    jsondec_err(d, "Non-number characters in quoted integer");
+  }
+  if (*ptr == '-') ptr++;
+  if (ptr == end || !jsondec_isdigit_char(*ptr)) {
+    jsondec_err(d, "Non-number characters in quoted integer");
+  }
+  if (*ptr == '0') {
+    ptr++;
+  } else {
+    while (ptr < end && jsondec_isdigit_char(*ptr)) ptr++;
+  }
+  if (ptr < end && *ptr == '.') {
+    ptr++;
+    if (ptr == end || !jsondec_isdigit_char(*ptr)) {
+      jsondec_err(d, "Non-number characters in quoted integer");
+    }
+    while (ptr < end && jsondec_isdigit_char(*ptr)) ptr++;
+  }
+  if (ptr < end && (*ptr == 'e' || *ptr == 'E')) {
+    ptr++;
+    if (ptr < end && (*ptr == '+' || *ptr == '-')) ptr++;
+    if (ptr == end || !jsondec_isdigit_char(*ptr)) {
+      jsondec_err(d, "Non-number characters in quoted integer");
+    }
+    while (ptr < end && jsondec_isdigit_char(*ptr)) ptr++;
+  }
+  if (ptr != end) {
+    jsondec_err(d, "Non-number characters in quoted integer");
+  }
+}
+
+static double jsondec_strtod_checked(jsondec* d, upb_StringView str) {
+  char nullz[64];
+  char* end;
+  double val;
+  jsondec_check_number_string(d, str);
+  if (str.size > sizeof(nullz) - 1) {
+    jsondec_err(d, "excessively long number");
+  }
+  memcpy(nullz, str.data, str.size);
+  nullz[str.size] = '\0';
+  val = strtod(nullz, &end);
+  if (end != nullz + str.size) {
+    jsondec_err(d, "Non-number characters in quoted integer");
+  }
+  if (val > DBL_MAX || val < -DBL_MAX) {
+    jsondec_err(d, "Number out of range");
+  }
+  return val;
+}
+
+static int64_t jsondec_strtoint64_slow(jsondec* d, upb_StringView str) {
+  double dbl = jsondec_strtod_checked(d, str);
+  int64_t ret;
+  if (dbl > 9223372036854774784.0 || dbl < -9223372036854775808.0) {
+    jsondec_err(d, "JSON number is out of range.");
+  }
+  ret = dbl; /* must be guarded, overflow here is UB */
+  if (ret != dbl) {
+    jsondec_errf(d, "JSON number was not integral (%f != %" PRId64 ")", dbl,
+                 ret);
+  }
+  return ret;
+}
+
+static uint64_t jsondec_strtouint64_slow(jsondec* d, upb_StringView str) {
+  double dbl = jsondec_strtod_checked(d, str);
+  uint64_t ret;
+  if (dbl > 18446744073709549568.0 || dbl < 0) {
+    jsondec_err(d, "JSON number is out of range.");
+  }
+  ret = dbl; /* must be guarded, overflow here is UB */
+  if (ret != dbl) {
+    jsondec_errf(d, "JSON number was not integral (%f != %" PRIu64 ")", dbl,
+                 ret);
+  }
+  return ret;
+}
+
 static uint64_t jsondec_strtouint64(jsondec* d, upb_StringView str) {
   const char* end = str.data + str.size;
   uint64_t ret;
-  if (jsondec_buftouint64(d, str.data, end, &ret) != end) {
-    jsondec_err(d, "Non-number characters in quoted integer");
+  if (str.size == 0 || !jsondec_isdigit_char(str.data[0]) ||
+      jsondec_buftouint64(d, str.data, end, &ret) != end) {
+    return jsondec_strtouint64_slow(d, str);
   }
   return ret;
 }
@@ -673,8 +759,10 @@ static uint64_t jsondec_strtouint64(jsondec* d, upb_StringView str) {
 static int64_t jsondec_strtoint64(jsondec* d, upb_StringView str) {
   const char* end = str.data + str.size;
   int64_t ret;
-  if (jsondec_buftoint64(d, str.data, end, &ret, NULL) != end) {
-    jsondec_err(d, "Non-number characters in quoted integer");
+  size_t digits_at = (str.size > 0 && str.data[0] == '-') ? 1 : 0;
+  if (str.size == digits_at || !jsondec_isdigit_char(str.data[digits_at]) ||
+      jsondec_buftoint64(d, str.data, end, &ret, NULL) != end) {
+    return jsondec_strtoint64_slow(d, str);
   }
   return ret;
 }
@@ -1469,6 +1557,10 @@ static void jsondec_any(jsondec* d, upb_Message* msg, const upb_MessageDef* m) {
   }
 
   if (!any_m) {
+    if (!pre_type_data) {
+      jsondec_objend(d);
+      return;
+    }
     jsondec_err(d, "Any object didn't contain a '@type' field");
   }
 
