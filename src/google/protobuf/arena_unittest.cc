@@ -39,6 +39,7 @@
 #include "absl/synchronization/barrier.h"
 #include "absl/types/optional.h"
 #include "absl/utility/utility.h"
+#include "google/protobuf/arena_allocation_policy.h"
 #include "google/protobuf/arena_cleanup.h"
 #include "google/protobuf/arena_test_util.h"
 #include "google/protobuf/descriptor.h"
@@ -424,6 +425,25 @@ TEST(ArenaTest, InitialBlockTooSmall) {
     // initially-provided block.
     memset(p, '\0', 96);
   }
+}
+
+// Regression test: TaggedAllocationPolicyPtr borrows the low bits of an
+// AllocationPolicy*. It must reserve no more bits than AllocationPolicy's
+// alignment guarantees, otherwise it corrupts the pointer when the policy is
+// only 4-byte aligned (which can happen on 32-bit targets, where
+// alignof(AllocationPolicy) == 4). Constructing a 4 mod 8 address reproduces
+// the corruption: the old 3-bit mask cleared bit 2 and returned `policy - 4`.
+// (The pointer is never dereferenced to stay alignment-UB-clean under UBSan;
+// pointer identity is sufficient to detect the bug.)
+TEST(TaggedAllocationPolicyPtr, RoundTripsFourByteAlignedPointer) {
+  alignas(8) unsigned char storage[8 + sizeof(internal::AllocationPolicy)];
+  auto* policy = reinterpret_cast<internal::AllocationPolicy*>(storage + 4);
+  ASSERT_EQ(reinterpret_cast<uintptr_t>(policy) % 8, 4u);
+
+  internal::TaggedAllocationPolicyPtr tagged;
+  tagged.set_policy(policy);
+
+  EXPECT_EQ(tagged.get(), policy);
 }
 
 TEST(ArenaTest, CreateDestroy) {
