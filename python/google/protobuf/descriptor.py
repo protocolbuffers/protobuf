@@ -254,6 +254,28 @@ class DescriptorBase(metaclass=DescriptorMetaclass):
     return self._options
 
 
+def _CheckCopyToProtoType(proto, expected_full_name):
+  """Raises TypeError if proto is not a message of the expected descriptor type.
+
+  Mirrors the check performed by the C++/upb backends so that CopyToProto()
+  behaves consistently across implementations instead of silently reparsing the
+  serialized descriptor into a mismatched message type.
+
+  Args:
+    proto: The target message passed to CopyToProto().
+    expected_full_name: Fully-qualified name of the descriptor_pb2 message the
+      caller is expected to pass.
+  """
+  actual_full_name = getattr(
+      getattr(proto, 'DESCRIPTOR', None), 'full_name', None
+  )
+  if actual_full_name != expected_full_name:
+    raise TypeError(
+        "CopyToProto: message is of incorrect type '%s' (expected '%s')"
+        % (actual_full_name, expected_full_name)
+    )
+
+
 class _NestedDescriptorBase(DescriptorBase):
   """Common class for descriptors that can be nested."""
 
@@ -299,16 +321,21 @@ class _NestedDescriptorBase(DescriptorBase):
     self._serialized_start = serialized_start
     self._serialized_end = serialized_end
 
-  def CopyToProto(self, proto):
+  def CopyToProto(self, proto, expected_proto_type=None):
     """Copies this to the matching proto in descriptor_pb2.
 
     Args:
       proto: An empty proto instance from descriptor_pb2.
+      expected_proto_type: If set, the fully-qualified name of the descriptor
+        proto message that ``proto`` must be, checked before serialization.
 
     Raises:
+      TypeError: If proto is not of the expected descriptor proto type.
       Error: If self couldn't be serialized, due to to few constructor
         arguments.
     """
+    if expected_proto_type is not None:
+      _CheckCopyToProtoType(proto, expected_proto_type)
     if (
         self.file is not None
         and self._serialized_start is not None
@@ -520,7 +547,9 @@ class Descriptor(_NestedDescriptorBase):
       proto: An empty descriptor_pb2.DescriptorProto.
     """
     # This function is overridden to give a better doc comment.
-    super(Descriptor, self).CopyToProto(proto)
+    super(Descriptor, self).CopyToProto(
+        proto, 'google.protobuf.DescriptorProto'
+    )
 
 
 # TODO: We should have aggressive checking here,
@@ -998,7 +1027,9 @@ class EnumDescriptor(_NestedDescriptorBase):
       proto (descriptor_pb2.EnumDescriptorProto): An empty descriptor proto.
     """
     # This function is overridden to give a better doc comment.
-    super(EnumDescriptor, self).CopyToProto(proto)
+    super(EnumDescriptor, self).CopyToProto(
+        proto, 'google.protobuf.EnumDescriptorProto'
+    )
 
 
 class EnumValueDescriptor(DescriptorBase):
@@ -1225,7 +1256,9 @@ class ServiceDescriptor(_NestedDescriptorBase):
       proto (descriptor_pb2.ServiceDescriptorProto): An empty descriptor proto.
     """
     # This function is overridden to give a better doc comment.
-    super(ServiceDescriptor, self).CopyToProto(proto)
+    super(ServiceDescriptor, self).CopyToProto(
+        proto, 'google.protobuf.ServiceDescriptorProto'
+    )
 
 
 class MethodDescriptor(DescriptorBase):
@@ -1319,6 +1352,7 @@ class MethodDescriptor(DescriptorBase):
       Error: If self couldn't be serialized, due to too few constructor
         arguments.
     """
+    _CheckCopyToProtoType(proto, 'google.protobuf.MethodDescriptorProto')
     if self.containing_service is not None:
       from google.protobuf import descriptor_pb2
 
@@ -1435,6 +1469,7 @@ class FileDescriptor(DescriptorBase):
     Args:
       proto: An empty descriptor_pb2.FileDescriptorProto.
     """
+    _CheckCopyToProtoType(proto, 'google.protobuf.FileDescriptorProto')
     proto.ParseFromString(self.serialized_pb)
 
   @property
