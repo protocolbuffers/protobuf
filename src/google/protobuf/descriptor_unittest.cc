@@ -17593,13 +17593,16 @@ TEST_F(SourceLocationTest, InterpretedOptionSourceLocation) {
   // Enum value options
   {
     // option w/ message type that directly sets field
-    SourceCodePath path = {FileDescriptorProto::kEnumTypeFieldNumber,
-                           0,
-                           EnumDescriptorProto::kValueFieldNumber,
-                           0,
-                           EnumValueDescriptorProto::kOptionsFieldNumber,
-                           kCustomOptionFieldNumber,
-                           kAFieldNumber};
+    SourceCodePath custom_option_path = {
+        FileDescriptorProto::kEnumTypeFieldNumber,
+        0,
+        EnumDescriptorProto::kValueFieldNumber,
+        0,
+        EnumValueDescriptorProto::kOptionsFieldNumber,
+        kCustomOptionFieldNumber};
+    SourceCodePath legacy_path = custom_option_path;
+    legacy_path.push_back(kAFieldNumber);
+
     SourceCodePath unint = {FileDescriptorProto::kEnumTypeFieldNumber,
                             0,
                             EnumDescriptorProto::kValueFieldNumber,
@@ -17607,11 +17610,17 @@ TEST_F(SourceLocationTest, InterpretedOptionSourceLocation) {
                             EnumValueDescriptorProto::kOptionsFieldNumber,
                             EnumValueOptions::kUninterpretedOptionFieldNumber,
                             0};
-    EXPECT_TRUE(file_desc->GetSourceLocation(path, &loc));
+    EXPECT_TRUE(file_desc->GetSourceLocation(legacy_path, &loc));
+    EXPECT_THAT(loc, MatchesSubstring(kSourceLocationTestInput,
+                                      "(test_enumval_opt).a = 100"));
+
+    EXPECT_TRUE(file_desc->GetSourceLocation(custom_option_path, &loc));
     EXPECT_THAT(loc, MatchesSubstring(kSourceLocationTestInput,
                                       "(test_enumval_opt).a = 100"));
 
     EXPECT_FALSE(file_desc->GetSourceLocation(unint, &loc));
+
+// TODO: b/168903973 - Remove once we update the format.
   }
   {
     SourceCodePath path = {FileDescriptorProto::kEnumTypeFieldNumber,
