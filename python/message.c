@@ -754,44 +754,68 @@ static void PyUpb_Message_Reify(PyUpb_Message* self, const upb_FieldDef* f,
  */
 static void PyUpb_Message_SyncSubobjs(PyUpb_Message* self) {
   PyUpb_WeakMap* subobj_map = self->unset_subobj_map;
-  if (!subobj_map) return;
-
   upb_Message* msg = PyUpb_Message_GetMsg(self);
-  intptr_t iter = PYUPB_WEAKMAP_BEGIN;
-  const void* key;
-  PyObject* obj;
 
-  // The last ref to this message could disappear during iteration.
-  // When we call PyUpb_*Container_Reify() below, the container will drop
-  // its ref on `self`.  If that was the last ref on self, the object will be
-  // deleted, and `subobj_map` along with it.  We need it to live until we are
-  // done iterating.
-  Py_INCREF(&self->ob_base);
+  if (subobj_map) {
+    intptr_t iter = PYUPB_WEAKMAP_BEGIN;
+    const void* key;
+    PyObject* obj;
 
-  while (PyUpb_WeakMap_Next(subobj_map, &key, &obj, &iter)) {
-    const upb_FieldDef* f = key;
-    if (upb_FieldDef_HasPresence(f) && !upb_Message_HasFieldByDef(msg, f))
-      continue;
-    upb_MessageValue msgval = upb_Message_GetFieldByDef(msg, f);
-    if (upb_FieldDef_IsMap(f)) {
-      if (!msgval.map_val) continue;
-      PyUpb_MapContainer_Reify(obj, (upb_Map*)msgval.map_val, subobj_map, iter);
-    } else if (upb_FieldDef_IsRepeated(f)) {
-      if (!msgval.array_val) continue;
-      PyUpb_RepeatedContainer_Reify(obj, (upb_Array*)msgval.array_val,
-                                    subobj_map, iter);
-    } else {
-      PyUpb_Message* sub = (void*)obj;
-      assert(self == sub->ptr.parent);
-      PyUpb_Message_Reify(sub, f, (upb_Message*)msgval.msg_val, subobj_map,
-                          iter);
+    // The last ref to this message could disappear during iteration.
+    // When we call PyUpb_*Container_Reify() below, the container will drop
+    // its ref on `self`.  If that was the last ref on self, the object will be
+    // deleted, and `subobj_map` along with it.  We need it to live until we
+    // are done iterating.
+    Py_INCREF(&self->ob_base);
+
+    while (PyUpb_WeakMap_Next(subobj_map, &key, &obj, &iter)) {
+      const upb_FieldDef* f = key;
+      if (upb_FieldDef_HasPresence(f) && !upb_Message_HasFieldByDef(msg, f))
+        continue;
+      upb_MessageValue msgval = upb_Message_GetFieldByDef(msg, f);
+      if (upb_FieldDef_IsMap(f)) {
+        if (!msgval.map_val) continue;
+        PyUpb_MapContainer_Reify(obj, (upb_Map*)msgval.map_val, subobj_map,
+                                 iter);
+      } else if (upb_FieldDef_IsRepeated(f)) {
+        if (!msgval.array_val) continue;
+        PyUpb_RepeatedContainer_Reify(obj, (upb_Array*)msgval.array_val,
+                                      subobj_map, iter);
+      } else {
+        PyUpb_Message* sub = (void*)obj;
+        assert(self == sub->ptr.parent);
+        PyUpb_Message_Reify(sub, f, (upb_Message*)msgval.msg_val, subobj_map,
+                            iter);
+      }
     }
+
+    Py_DECREF(&self->ob_base);
   }
 
-  Py_DECREF(&self->ob_base);
-
-  // TODO: present fields need to be iterated too if they can reach
-  // a WeakMap.
+  // Recursively sync present submessage children that have their own
+  // unset_subobj_map.  Without this, a child reified earlier (removed from
+  // our unset_subobj_map) retains stale stubs when C-level data is mutated
+  // by MergeFrom/CopyFrom/MergeFromString on this message.  Accessing the
+  // child's field would create a second ObjCache wrapper for the same
+  // upb_Message*, leading to use-after-free on dealloc.
+  const upb_MessageDef* msgdef = _PyUpb_Message_GetMsgdef(self);
+  int n = upb_MessageDef_FieldCount(msgdef);
+  for (int i = 0; i < n; i++) {
+    const upb_FieldDef* f = upb_MessageDef_Field(msgdef, i);
+    if (!upb_FieldDef_IsSubMessage(f) || upb_FieldDef_IsMap(f) ||
+        upb_FieldDef_IsRepeated(f))
+      continue;
+    if (!upb_Message_HasFieldByDef(msg, f)) continue;
+    const upb_Message* sub_msg = upb_Message_GetFieldByDef(msg, f).msg_val;
+    if (!sub_msg) continue;
+    PyObject* sub_obj = PyUpb_ObjCache_Get(sub_msg);
+    if (!sub_obj) continue;
+    PyUpb_Message* sub = (PyUpb_Message*)sub_obj;
+    if (sub->unset_subobj_map) {
+      PyUpb_Message_SyncSubobjs(sub);
+    }
+    Py_DECREF(sub_obj);
+  }
 }
 
 static PyObject* PyUpb_Message_ToString(PyUpb_Message* self) {
