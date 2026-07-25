@@ -7,7 +7,9 @@
 
 #include "google/protobuf/compiler/csharp/csharp_reflection_class.h"
 
-#include <sstream>
+#include <memory>
+#include <string>
+#include <vector>
 
 #include "absl/strings/str_join.h"
 #include "google/protobuf/compiler/code_generator.h"
@@ -17,6 +19,7 @@
 #include "google/protobuf/compiler/csharp/csharp_helpers.h"
 #include "google/protobuf/compiler/csharp/csharp_message.h"
 #include "google/protobuf/compiler/csharp/csharp_options.h"
+#include "google/protobuf/compiler/csharp/csharp_source_generator_base.h"
 #include "google/protobuf/compiler/csharp/names.h"
 #include "google/protobuf/compiler/csharp/c_sharp_features.pb.h"
 #include "google/protobuf/descriptor.h"
