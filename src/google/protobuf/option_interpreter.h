@@ -228,6 +228,11 @@ class OptionInterpreter {
   // source code info to account for option interpretation.
   absl::flat_hash_map<SourceCodePath, SourceCodePath> interpreted_paths_;
 
+  // Maps the source code path of an uninterpreted dot-notation option to the
+  // sequence of destination paths for each component in the dot-separated name.
+  absl::flat_hash_map<SourceCodePath, std::vector<SourceCodePath>>
+      dot_notation_name_paths_;
+
   // This maps the path to a repeated option field to the known number of
   // elements the field contains. This is used to track the compute the
   // index portion of the element path when interpreting a single option.

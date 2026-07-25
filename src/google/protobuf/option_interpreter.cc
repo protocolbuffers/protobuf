@@ -235,8 +235,12 @@ bool OptionInterpreter::InterpretSingleOption(
   std::string debug_msg_name = "";
 
   SourceCodePath dest_path;
+  std::vector<SourceCodePath> part_dest_paths;
   if (update_source_code_info_) {
     dest_path = options_path;
+    if (uninterpreted_option_->name_size() > 1) {
+      part_dest_paths.reserve(uninterpreted_option_->name_size());
+    }
   }
 
   for (int i = 0; i < uninterpreted_option_->name_size(); ++i) {
@@ -313,8 +317,14 @@ bool OptionInterpreter::InterpretSingleOption(
       }
     } else {
       if (update_source_code_info_) {
+        if (i > 0) {
+          dest_path.push_back(-UninterpretedOption::kAggregateValueFieldNumber);
+        }
         // accumulate field numbers to form path to interpreted option
         dest_path.push_back(field->number());
+        if (uninterpreted_option_->name_size() > 1) {
+          part_dest_paths.push_back(dest_path);
+        }
       }
 
       // Special handling to prevent feature use in the same file as the
@@ -373,6 +383,9 @@ bool OptionInterpreter::InterpretSingleOption(
     if (field->is_repeated()) {
       int index = repeated_option_counts_[dest_path]++;
       dest_path.push_back(index);
+      if (!part_dest_paths.empty()) {
+        part_dest_paths.back().push_back(index);
+      }
     }
   }
 
@@ -424,6 +437,9 @@ bool OptionInterpreter::InterpretSingleOption(
 
   if (update_source_code_info_) {
     interpreted_paths_[src_path] = dest_path;
+    if (uninterpreted_option_->name_size() > 1) {
+      dot_notation_name_paths_[src_path] = std::move(part_dest_paths);
+    }
   }
 
   return true;
@@ -483,6 +499,8 @@ void OptionInterpreter::UpdateSourceCodeInfo(SourceCodeInfo* info) {
   // child sub-locations are inspected and either remapped or removed.
   bool matched = false;
 
+  const std::vector<SourceCodePath>* dot_name_paths = nullptr;
+
   for (RepeatedPtrField<SourceCodeInfo_Location>::iterator loc = locs->begin();
        loc != locs->end(); loc++) {
     if (matched) {
@@ -502,7 +520,7 @@ void OptionInterpreter::UpdateSourceCodeInfo(SourceCodeInfo* info) {
       if (loc_matches) {
         // TODO: b/168903973 - Remove once we update the format.
         // don't copy this row since it is a sub-location that we're removing
-        // (or we already mapped it if it's a direct child)
+        // (or we already mapped it if it's a direct child / name component)
         continue;
       }
 
@@ -523,6 +541,9 @@ void OptionInterpreter::UpdateSourceCodeInfo(SourceCodeInfo* info) {
     matched = true;
     match_src = std::move(curr_path);
     match_dest = entry->second;
+    auto dot_it = dot_notation_name_paths_.find(match_src);
+    dot_name_paths =
+        (dot_it != dot_notation_name_paths_.end()) ? &dot_it->second : nullptr;
 
     if (!copying) {
       // initialize the copy we are building

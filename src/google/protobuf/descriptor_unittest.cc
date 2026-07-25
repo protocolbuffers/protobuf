@@ -17593,13 +17593,17 @@ TEST_F(SourceLocationTest, InterpretedOptionSourceLocation) {
   // Enum value options
   {
     // option w/ message type that directly sets field
-    SourceCodePath path = {FileDescriptorProto::kEnumTypeFieldNumber,
-                           0,
-                           EnumDescriptorProto::kValueFieldNumber,
-                           0,
-                           EnumValueDescriptorProto::kOptionsFieldNumber,
-                           kCustomOptionFieldNumber,
-                           kAFieldNumber};
+    SourceCodePath custom_option_path = {
+        FileDescriptorProto::kEnumTypeFieldNumber,
+        0,
+        EnumDescriptorProto::kValueFieldNumber,
+        0,
+        EnumValueDescriptorProto::kOptionsFieldNumber,
+        kCustomOptionFieldNumber};
+    SourceCodePath path = custom_option_path;
+    path.push_back(-UninterpretedOption::kAggregateValueFieldNumber);
+    path.push_back(kAFieldNumber);
+
     SourceCodePath unint = {FileDescriptorProto::kEnumTypeFieldNumber,
                             0,
                             EnumDescriptorProto::kValueFieldNumber,
@@ -17612,6 +17616,8 @@ TEST_F(SourceLocationTest, InterpretedOptionSourceLocation) {
                                       "(test_enumval_opt).a = 100"));
 
     EXPECT_FALSE(file_desc->GetSourceLocation(unint, &loc));
+
+// TODO: b/168903973 - Remove once we update the format.
   }
   {
     SourceCodePath path = {FileDescriptorProto::kEnumTypeFieldNumber,
