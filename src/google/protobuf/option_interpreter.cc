@@ -235,8 +235,12 @@ bool OptionInterpreter::InterpretSingleOption(
   std::string debug_msg_name = "";
 
   SourceCodePath dest_path;
+  std::vector<SourceCodePath> part_dest_paths;
   if (update_source_code_info_) {
     dest_path = options_path;
+    if (uninterpreted_option_->name_size() > 1) {
+      part_dest_paths.reserve(uninterpreted_option_->name_size());
+    }
   }
 
   for (int i = 0; i < uninterpreted_option_->name_size(); ++i) {
@@ -313,8 +317,14 @@ bool OptionInterpreter::InterpretSingleOption(
       }
     } else {
       if (update_source_code_info_) {
+        if (i > 0) {
+          dest_path.push_back(UninterpretedOption::kAggregateValueFieldNumber);
+        }
         // accumulate field numbers to form path to interpreted option
         dest_path.push_back(field->number());
+        if (uninterpreted_option_->name_size() > 1) {
+          part_dest_paths.push_back(dest_path);
+        }
       }
 
       // Special handling to prevent feature use in the same file as the
@@ -373,6 +383,9 @@ bool OptionInterpreter::InterpretSingleOption(
     if (field->is_repeated()) {
       int index = repeated_option_counts_[dest_path]++;
       dest_path.push_back(index);
+      if (!part_dest_paths.empty()) {
+        part_dest_paths.back().push_back(index);
+      }
     }
   }
 
@@ -424,6 +437,9 @@ bool OptionInterpreter::InterpretSingleOption(
 
   if (update_source_code_info_) {
     interpreted_paths_[src_path] = dest_path;
+    if (uninterpreted_option_->name_size() > 1) {
+      dot_notation_name_paths_[src_path] = std::move(part_dest_paths);
+    }
   }
 
   return true;
@@ -483,6 +499,8 @@ void OptionInterpreter::UpdateSourceCodeInfo(SourceCodeInfo* info) {
   // child sub-locations are inspected and either remapped or removed.
   bool matched = false;
 
+  const std::vector<SourceCodePath>* dot_name_paths = nullptr;
+
   for (RepeatedPtrField<SourceCodeInfo_Location>::iterator loc = locs->begin();
        loc != locs->end(); loc++) {
     if (matched) {
@@ -503,33 +521,53 @@ void OptionInterpreter::UpdateSourceCodeInfo(SourceCodeInfo* info) {
         if (loc->path_size() == static_cast<int64_t>(match_src.size() + 1)) {
           int uninterpreted_field = loc->path(match_src.size());
 
-          SourceCodeInfo_Location* mapped_loc = new_locs.Add();
-          *mapped_loc = *loc;
-          mapped_loc->mutable_path()->Assign(match_dest.begin(),
-                                             match_dest.end());
-          mapped_loc->add_path(uninterpreted_field);
+          if (uninterpreted_field == UninterpretedOption::kNameFieldNumber &&
+              dot_name_paths != nullptr) {
+            // Drop concatenated option name location for dot-notation options;
+            // per-component locations will be added below.
+          } else {
+            SourceCodeInfo_Location* mapped_loc = new_locs.Add();
+            *mapped_loc = *loc;
+            mapped_loc->mutable_path()->Assign(match_dest.begin(),
+                                               match_dest.end());
+            mapped_loc->add_path(uninterpreted_field);
 
-          if (uninterpreted_field ==
-              UninterpretedOption::kAggregateValueFieldNumber) {
-            auto it = agg_loc_map.find(loc->path());
-            if (it != agg_loc_map.end()) {
-              for (const AggregateFieldLocation* afl : it->second) {
-                SourceCodeInfo_Location* name_loc = new_locs.Add();
-                name_loc->mutable_path()->Assign(afl->field_dest_path.begin(),
-                                                 afl->field_dest_path.end());
-                name_loc->add_path(UninterpretedOption::kNameFieldNumber);
-                SetSpan(name_loc, *loc, afl->name_range);
-                SourceCodeInfo_Location* val_loc = new_locs.Add();
-                val_loc->mutable_path()->Assign(afl->field_dest_path.begin(),
-                                                afl->field_dest_path.end());
-                val_loc->add_path(afl->value_marker);
-                SetSpan(val_loc, *loc, afl->val_range);
+            if (uninterpreted_field ==
+                UninterpretedOption::kAggregateValueFieldNumber) {
+              auto it = agg_loc_map.find(loc->path());
+              if (it != agg_loc_map.end()) {
+                for (const AggregateFieldLocation* afl : it->second) {
+                  SourceCodeInfo_Location* name_loc = new_locs.Add();
+                  name_loc->mutable_path()->Assign(afl->field_dest_path.begin(),
+                                                   afl->field_dest_path.end());
+                  name_loc->add_path(UninterpretedOption::kNameFieldNumber);
+                  SetSpan(name_loc, *loc, afl->name_range);
+                  SourceCodeInfo_Location* val_loc = new_locs.Add();
+                  val_loc->mutable_path()->Assign(afl->field_dest_path.begin(),
+                                                  afl->field_dest_path.end());
+                  val_loc->add_path(afl->value_marker);
+                  SetSpan(val_loc, *loc, afl->val_range);
+                }
               }
             }
           }
+        } else if (loc->path_size() ==
+                       static_cast<int64_t>(match_src.size() + 2) &&
+                   dot_name_paths != nullptr &&
+                   loc->path(match_src.size()) ==
+                       UninterpretedOption::kNameFieldNumber) {
+          size_t part_idx = loc->path(match_src.size() + 1);
+          if (part_idx < dot_name_paths->size()) {
+            SourceCodeInfo_Location* name_loc = new_locs.Add();
+            *name_loc = *loc;
+            const SourceCodePath& part_dest = (*dot_name_paths)[part_idx];
+            name_loc->mutable_path()->Assign(part_dest.begin(),
+                                             part_dest.end());
+            name_loc->add_path(UninterpretedOption::kNameFieldNumber);
+          }
         }
         // don't copy this row since it is a sub-location that we're removing
-        // (or we already mapped it if it's a direct child)
+        // (or we already mapped it if it's a direct child / name component)
         continue;
       }
 
@@ -550,6 +588,9 @@ void OptionInterpreter::UpdateSourceCodeInfo(SourceCodeInfo* info) {
     matched = true;
     match_src = std::move(curr_path);
     match_dest = entry->second;
+    auto dot_it = dot_notation_name_paths_.find(match_src);
+    dot_name_paths =
+        (dot_it != dot_notation_name_paths_.end()) ? &dot_it->second : nullptr;
 
     if (!copying) {
       // initialize the copy we are building

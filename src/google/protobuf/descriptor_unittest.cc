@@ -16689,13 +16689,17 @@ TEST_F(SourceLocationTest, InterpretedOptionSourceLocation) {
   // Enum value options
   {
     // option w/ message type that directly sets field
-    SourceCodePath path = {FileDescriptorProto::kEnumTypeFieldNumber,
-                           0,
-                           EnumDescriptorProto::kValueFieldNumber,
-                           0,
-                           EnumValueDescriptorProto::kOptionsFieldNumber,
-                           kCustomOptionFieldNumber,
-                           kAFieldNumber};
+    SourceCodePath custom_option_path = {
+        FileDescriptorProto::kEnumTypeFieldNumber,
+        0,
+        EnumDescriptorProto::kValueFieldNumber,
+        0,
+        EnumValueDescriptorProto::kOptionsFieldNumber,
+        kCustomOptionFieldNumber};
+    SourceCodePath path = custom_option_path;
+    path.push_back(UninterpretedOption::kAggregateValueFieldNumber);
+    path.push_back(kAFieldNumber);
+
     SourceCodePath unint = {FileDescriptorProto::kEnumTypeFieldNumber,
                             0,
                             EnumDescriptorProto::kValueFieldNumber,
@@ -16708,6 +16712,22 @@ TEST_F(SourceLocationTest, InterpretedOptionSourceLocation) {
                                       "(test_enumval_opt).a = 100"));
 
     EXPECT_FALSE(file_desc->GetSourceLocation(unint, &loc));
+
+    SourceCodePath top_name_path = custom_option_path;
+    top_name_path.push_back(UninterpretedOption::kNameFieldNumber);
+    EXPECT_TRUE(file_desc->GetSourceLocation(top_name_path, &loc));
+    EXPECT_THAT(
+        loc, MatchesSubstring(kSourceLocationTestInput, "(test_enumval_opt)"));
+
+    SourceCodePath sub_name_path = path;
+    sub_name_path.push_back(UninterpretedOption::kNameFieldNumber);
+    EXPECT_TRUE(file_desc->GetSourceLocation(sub_name_path, &loc));
+    EXPECT_THAT(loc, MatchesSubstring(kSourceLocationTestInput, "a"));
+
+    SourceCodePath val_path = path;
+    val_path.push_back(UninterpretedOption::kPositiveIntValueFieldNumber);
+    EXPECT_TRUE(file_desc->GetSourceLocation(val_path, &loc));
+    EXPECT_THAT(loc, MatchesSubstring(kSourceLocationTestInput, "100"));
   }
   {
     SourceCodePath path = {FileDescriptorProto::kEnumTypeFieldNumber,
