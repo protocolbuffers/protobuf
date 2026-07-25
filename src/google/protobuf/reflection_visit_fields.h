@@ -16,6 +16,7 @@
 #include "google/protobuf/generated_message_reflection.h"
 #include "google/protobuf/has_bits.h"
 #include "google/protobuf/message.h"
+#include "google/protobuf/message_traits.h"
 #include "google/protobuf/port.h"
 #include "google/protobuf/reflection.h"
 #include "google/protobuf/reflection_visit_field_info.h"
