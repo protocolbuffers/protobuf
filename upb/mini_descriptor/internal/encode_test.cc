@@ -22,10 +22,13 @@
 #include "upb/mini_descriptor/decode.h"
 #include "upb/mini_descriptor/internal/base92.h"
 #include "upb/mini_descriptor/internal/modifiers.h"
+#include "upb/message/message.h"
+#include "upb/mini_descriptor/internal/modifiers.h"
 #include "upb/mini_table/enum.h"
 #include "upb/mini_table/field.h"
 #include "upb/mini_table/internal/message.h"
 #include "upb/mini_table/message.h"
+#include "upb/wire/decode.h"
 
 // Must be last.
 #include "upb/port/def.inc"
@@ -338,4 +341,32 @@ TEST_P(MiniTableTest, Extendible) {
   ASSERT_NE(nullptr, table);
   EXPECT_EQ(kUpb_ExtMode_Extendable,
             table->UPB_PRIVATE(ext) & kUpb_ExtMode_Extendable);
+}
+
+// A MiniTable built from a mini descriptor has its closed-enum fields unlinked
+// (upb_MiniTable_GetSubEnumTable returns NULL) until upb_MiniTable_Link runs.
+// Decoding wire data against such a table must treat the enum value as an
+// unknown field rather than dereferencing the NULL sub-enum table.
+TEST_P(MiniTableTest, DecodeClosedEnumFieldWithUnlinkedSubEnum) {
+  upb::Arena arena;
+  upb::MtDataEncoder e;
+  ASSERT_TRUE(e.StartMessage(0));
+  ASSERT_TRUE(
+      e.PutField(kUpb_FieldType_Enum, 1, kUpb_FieldModifier_IsClosedEnum));
+
+  upb::Status status;
+  upb_MiniTable* table = _upb_MiniTable_Build(
+      e.data().data(), e.data().size(), GetParam(), arena.ptr(), status.ptr());
+  ASSERT_NE(nullptr, table);
+  // The sub-enum was never linked, so it is NULL.
+  ASSERT_EQ(nullptr, upb_MiniTable_GetSubEnumTable(
+                         upb_MiniTable_FindFieldByNumber(table, 1)));
+
+  // Field 1, varint, value 52: hits the closed-enum check path in the decoder.
+  const char wire[] = {0x08, 0x34};
+  upb_Message* msg = upb_Message_New(table, arena.ptr());
+  // Must not crash; the value is dropped to the unknown field set.
+  upb_DecodeStatus st =
+      upb_Decode(wire, sizeof(wire), msg, table, nullptr, 0, arena.ptr());
+  EXPECT_EQ(kUpb_DecodeStatus_Ok, st);
 }
