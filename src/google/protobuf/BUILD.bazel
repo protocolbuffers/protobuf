@@ -360,6 +360,20 @@ cc_proto_library(
 )
 
 proto_library(
+    name = "rust_options_proto",
+    srcs = ["rust_options.proto"],
+    strip_import_prefix = "/src",
+    visibility = ["//:__subpackages__"],
+    deps = [":descriptor_proto"],
+)
+
+cc_proto_library(
+    name = "rust_options_cc_proto",
+    visibility = ["//:__subpackages__"],
+    deps = [":rust_options_proto"],
+)
+
+proto_library(
     name = "cpp_options_proto",
     srcs = ["cpp_options.proto"],
     strip_import_prefix = "/src",

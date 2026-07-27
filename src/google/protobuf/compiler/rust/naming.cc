@@ -29,6 +29,7 @@
 #include "google/protobuf/compiler/rust/rust_keywords.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/port.h"
+#include "google/protobuf/unknown_field_set.h"
 
 // Must be included last.
 #include "google/protobuf/port_def.inc"
@@ -194,6 +195,62 @@ std::string RsViewType(Context& ctx, const FieldDescriptor& field,
   internal::Unreachable();
 }
 
+bool GetRustOptionBool(const FileDescriptor* file,
+                       absl::string_view option_name) {
+  // We use the dynamic pool to discover field numbers without hardcoding.
+  const FieldDescriptor* dynamic_ext =
+      file->pool()->FindExtensionByName("pb.file.rust");
+  if (!dynamic_ext || !dynamic_ext->message_type()) return false;
+
+  const FieldDescriptor* opt_field =
+      dynamic_ext->message_type()->FindFieldByName(option_name);
+  if (!opt_field || opt_field->type() != FieldDescriptor::TYPE_BOOL)
+    return false;
+
+  const Message& options = file->options();
+  const Reflection* reflection = options.GetReflection();
+
+  // ONLY use reflection if the extension is known to the static descriptor pool
+  // to avoid SIGABRT cross-pool validation failures in reflection->HasField.
+  const FieldDescriptor* static_ext =
+      options.GetDescriptor()->file()->pool()->FindExtensionByName(
+          "pb.file.rust");
+
+  if (static_ext && reflection->HasField(options, static_ext)) {
+    const Message& rust_options = reflection->GetMessage(options, static_ext);
+    const FieldDescriptor* static_opt_field =
+        rust_options.GetDescriptor()->FindFieldByName(option_name);
+    if (static_opt_field) {
+      return rust_options.GetReflection()->GetBool(rust_options,
+                                                   static_opt_field);
+    }
+  }
+
+  // Fallback to unknown fields.
+  const UnknownFieldSet& unknown_fields = reflection->GetUnknownFields(options);
+  for (int i = 0; i < unknown_fields.field_count(); ++i) {
+    const UnknownField& field = unknown_fields.field(i);
+    if (field.number() == dynamic_ext->number() &&
+        field.type() == UnknownField::TYPE_LENGTH_DELIMITED) {
+      UnknownFieldSet rust_options_unknown;
+      if (rust_options_unknown.ParseFromString(field.length_delimited())) {
+        for (int j = 0; j < rust_options_unknown.field_count(); ++j) {
+          const UnknownField& inner = rust_options_unknown.field(j);
+          if (inner.number() == opt_field->number() &&
+              inner.type() == UnknownField::TYPE_VARINT) {
+            return inner.varint() != 0;
+          }
+        }
+      }
+    }
+  }
+  return false;
+}
+
+bool EmitPackageAsMods(const FileDescriptor* file) {
+  return GetRustOptionBool(file, "emit_package_as_mods");
+}
+
 static std::string RustModuleForContainingType(
     Context& ctx, const Descriptor* containing_type,
     const FileDescriptor& file) {
@@ -209,22 +266,34 @@ static std::string RustModuleForContainingType(
   // Reverse the vector to get submodules in outer-to-inner order).
   std::reverse(modules.begin(), modules.end());
 
-  // If there are any modules at all, push an empty string on the end so that
-  // we get the trailing ::
-  if (!modules.empty()) {
-    modules.push_back("");
-  }
-
   std::string crate_relative = absl::StrJoin(modules, "::");
+
+  if (EmitPackageAsMods(&file)) {
+    std::string pkg = std::string(file.package());
+    if (!pkg.empty()) {
+      std::vector<std::string> pkg_parts;
+      for (absl::string_view p : absl::StrSplit(pkg, '.', absl::SkipEmpty())) {
+        pkg_parts.push_back(RsSafeName(p));
+      }
+      std::string pkg_path = absl::StrJoin(pkg_parts, "::");
+      if (crate_relative.empty()) {
+        crate_relative = pkg_path;
+      } else {
+        crate_relative = absl::StrCat(pkg_path, "::", crate_relative);
+      }
+    }
+  }
 
   if (IsInCurrentlyGeneratingCrate(ctx, file)) {
     std::string prefix;
     for (size_t i = 0; i < ctx.GetModuleDepth(); ++i) {
       prefix += "super::";
     }
-    return absl::StrCat(prefix, crate_relative);
+    return absl::StrCat(prefix, crate_relative,
+                        crate_relative.empty() ? "" : "::");
   }
-  return absl::StrCat(GetCrateName(ctx, file), "::", crate_relative);
+  return absl::StrCat(GetCrateName(ctx, file), "::", crate_relative,
+                      crate_relative.empty() ? "" : "::");
 }
 
 std::string RustModule(Context& ctx, const Descriptor& msg) {

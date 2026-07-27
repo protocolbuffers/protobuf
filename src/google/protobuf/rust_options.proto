@@ -1,0 +1,16 @@
+// Protocol Buffers - Google's data interchange format
+// Copyright 2024 Google LLC.  All rights reserved.
+
+edition = "2024";
+
+package pb.file;
+
+import "google/protobuf/descriptor.proto";
+
+message RustOptions {
+  bool emit_package_as_mods = 1;
+}
+
+extend google.protobuf.FileOptions {
+  RustOptions rust = 998 [feature_support = { edition_introduced: EDITION_2026 }];
+}

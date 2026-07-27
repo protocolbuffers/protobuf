@@ -7,6 +7,9 @@
 
 #include "google/protobuf/compiler/rust/generator.h"
 
+#include <algorithm>
+#include <cstddef>
+#include <map>
 #include <memory>
 #include <string>
 #include <utility>
@@ -22,6 +25,7 @@
 #include "absl/strings/match.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_replace.h"
+#include "absl/strings/str_split.h"
 #include "absl/strings/string_view.h"
 #include "absl/strings/strip.h"
 #include "absl/types/span.h"
@@ -126,8 +130,9 @@ void EmitEntryPointRsFile(GeneratorContext* generator_context,
   Context ctx = ctx_without_printer.WithPrinter(&printer);
 
   // Declare the submodules for all of the the generated code and pub re-export
-  // all of them into a flat namespace.
+  // all of them into a flat namespace or properly nested mods.
   RelativePath primary_relpath(entry_point_rs_file_path);
+  std::vector<const FileDescriptor*> mod_files;
   for (const FileDescriptor* file : files) {
     std::string non_primary_file_path = GetRsFile(ctx, *file);
     std::string relative_mod_path =
@@ -142,11 +147,100 @@ void EmitEntryPointRsFile(GeneratorContext* generator_context,
               #[allow(nonstandard_style, unused, unreachable_pub)]
               #[doc(hidden)]
               mod internal_do_not_use_$mod_name$;
+            )rs");
 
+    if (EmitPackageAsMods(file) && !file->package().empty()) {
+      mod_files.push_back(file);
+    } else {
+      ctx.Emit({{"mod_name", RustInternalModuleName(*file)}},
+               R"rs(
               #[allow(nonstandard_style, unused)]
               #[doc(inline)]
               pub use internal_do_not_use_$mod_name$::*;
-            )rs");
+             )rs");
+    }
+  }
+
+  if (!mod_files.empty()) {
+    // If emit_package_as_mods option is enabled, emit the `pub use` statements
+    // wrapped in nested `pub mod`s that mirror the protobuf package structure.
+    //
+    // For example, given files with protobuf packages that have short-name
+    // collisions if flattened (e.g. all define a `Config` message):
+    //   `foo.bar`
+    //   `foo.bar.baz`
+    //   `foo.qux`
+    //
+    // The following code will dynamically emit the nested Rust modules like so:
+    //
+    //   pub mod foo {
+    //     pub mod bar {
+    //       // exports foo.bar.Config
+    //       pub use super::super::internal_do_not_use_foo_bar::*;
+    //       pub mod baz {
+    //         // exports foo.bar.baz.Config
+    //         pub use super::super::super::internal_do_not_use_foo_bar_baz::*;
+    //       }
+    //     }
+    //     pub mod qux {
+    //       // exports foo.qux.Config
+    //       pub use super::super::internal_do_not_use_foo_qux::*;
+    //     }
+    //   }
+    //
+    std::sort(mod_files.begin(), mod_files.end(),
+              [](const FileDescriptor* a, const FileDescriptor* b) {
+                return a->package() < b->package();
+              });
+
+    std::string current_package;
+    std::vector<std::string> current_scope;
+    std::string super_prefix;
+    bool first_file = true;
+
+    for (const FileDescriptor* file : mod_files) {
+      if (first_file || file->package() != current_package) {
+        current_package = file->package();
+        first_file = false;
+
+        std::vector<std::string> new_scope;
+        for (absl::string_view p :
+             absl::StrSplit(file->package(), '.', absl::SkipEmpty())) {
+          new_scope.push_back(RsSafeName(p));
+        }
+
+        size_t len = std::min(current_scope.size(), new_scope.size());
+        size_t common_idx = 0;
+        while (common_idx < len &&
+               current_scope[common_idx] == new_scope[common_idx]) {
+          ++common_idx;
+        }
+
+        for (size_t i = current_scope.size(); i > common_idx; --i) {
+          ctx.Emit("}\n");
+        }
+        for (size_t i = common_idx; i < new_scope.size(); ++i) {
+          ctx.Emit({{"ns", new_scope[i]}},
+                   "#[allow(nonstandard_style, unused)]\npub mod $ns$ {\n");
+        }
+
+        current_scope = std::move(new_scope);
+
+        super_prefix.clear();
+        for (size_t i = 0; i < current_scope.size(); ++i) {
+          super_prefix += "super::";
+        }
+      }
+
+      ctx.Emit({{"mod_name", RustInternalModuleName(*file)},
+                {"super_prefix", super_prefix}},
+               "#[allow(nonstandard_style, unused)]\n#[doc(inline)]\npub use "
+               "$super_prefix$internal_do_not_use_$mod_name$::*;\n");
+    }
+
+    for (size_t i = 0; i < current_scope.size(); ++i) {
+      ctx.Emit("}\n");
+    }
   }
 
   auto v = ctx.printer().WithVars({

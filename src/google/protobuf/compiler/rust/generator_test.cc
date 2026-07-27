@@ -203,6 +203,69 @@ TEST_F(RustGeneratorTest, EmitsEnumMetadata) {
       "Alias1", GeneratedCodeInfo::Annotation::NONE, 1);
 }
 
+TEST_F(RustGeneratorTest, EmitsNestedModsWhenOptionIsTrue) {
+  CreateTempFile("google/protobuf/rust_options.proto", R"schema(
+    syntax = "proto2";
+    package pb.file;
+    import "google/protobuf/descriptor.proto";
+    message RustOptions {
+      optional bool emit_package_as_mods = 1;
+    }
+    extend google.protobuf.FileOptions {
+      optional RustOptions rust = 998;
+    }
+  )schema");
+  CreateTempFile("foo_bar.proto", R"schema(
+    syntax = "proto2";
+    import "google/protobuf/rust_options.proto";
+    package foo.bar;
+    option (pb.file.rust).emit_package_as_mods = true;
+    message Config {}
+  )schema");
+  CreateTempFile("foo_bar_baz.proto", R"schema(
+    syntax = "proto2";
+    import "google/protobuf/rust_options.proto";
+    package foo.bar.baz;
+    option (pb.file.rust).emit_package_as_mods = true;
+    message Config {
+      oneof config_type {
+        int32 id = 1;
+        string user = 2;
+      }
+    }
+  )schema");
+  CreateTempFile("foo_qux.proto", R"schema(
+    syntax = "proto2";
+    import "google/protobuf/rust_options.proto";
+    package foo.qux;
+    option (pb.file.rust).emit_package_as_mods = true;
+    message Config {}
+  )schema");
+  RunProtoc(
+      "protocol_compiler --proto_path=$tmpdir "
+      "--rust_out=$tmpdir "
+      "--rust_opt=experimental-codegen=enabled,kernel=cpp "
+      "foo_bar.proto foo_bar_baz.proto foo_qux.proto");
+
+  ExpectNoErrors();
+  std::string file_contents = FileContents("generated.rs");
+  EXPECT_THAT(file_contents, HasSubstr("pub mod foo {\n"));
+  EXPECT_THAT(file_contents, HasSubstr("pub mod bar {\n"));
+  EXPECT_THAT(
+      file_contents,
+      HasSubstr("pub use super::super::internal_do_not_use_foo__bar::*;\n"));
+  EXPECT_THAT(file_contents, HasSubstr("pub mod baz {\n"));
+  EXPECT_THAT(
+      file_contents,
+      HasSubstr(
+          "pub use "
+          "super::super::super::internal_do_not_use_foo__bar__baz::*;\n"));
+  EXPECT_THAT(file_contents, HasSubstr("pub mod qux {\n"));
+  EXPECT_THAT(
+      file_contents,
+      HasSubstr("pub use super::super::internal_do_not_use_foo__qux::*;\n"));
+}
+
 }  // namespace
 }  // namespace rust
 }  // namespace compiler

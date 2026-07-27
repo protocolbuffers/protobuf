@@ -28,6 +28,10 @@ std::string GetCrateName(Context& ctx, const FileDescriptor& dep);
 // be the first .proto src proto file).
 std::string GetEntryPointRsFilePath(Context& ctx, const FileDescriptor& file);
 
+// Evaluates whether the given file has `option
+// (pb.file.rust).emit_package_as_mods = true;`
+bool EmitPackageAsMods(const FileDescriptor* file);
+
 std::string GetRsFile(Context& ctx, const FileDescriptor& file);
 std::string GetThunkCcFile(Context& ctx, const FileDescriptor& file);
 std::string GetHeaderFile(Context& ctx, const FileDescriptor& file);
