@@ -101,24 +101,24 @@ public abstract class GeneratedMessageLite<
   @Override
   @SuppressWarnings("unchecked") // Guaranteed by runtime.
   public final Parser<MessageT> getParserForType() {
-    return (Parser<MessageT>) dynamicMethod(MethodToInvoke.GET_PARSER, null, null);
+    return getParserForClass((Class<MessageT>) getClass());
   }
 
   @Override
   @SuppressWarnings("unchecked") // Guaranteed by runtime.
   public final MessageT getDefaultInstanceForType() {
-    return (MessageT) dynamicMethod(MethodToInvoke.GET_DEFAULT_INSTANCE, null, null);
+    return getDefaultInstance((Class<MessageT>) getClass());
   }
 
   @Override
   @SuppressWarnings("unchecked") // Guaranteed by runtime.
   public final BuilderT newBuilderForType() {
-    return (BuilderT) dynamicMethod(MethodToInvoke.NEW_BUILDER, null, null);
+    return (BuilderT) dynamicMethod(MethodToInvoke.NEW_BUILDER, (byte) 0);
   }
 
   @SuppressWarnings("unchecked") // Guaranteed by runtime.
   final MessageT newMutableInstance() {
-    return (MessageT) dynamicMethod(MethodToInvoke.NEW_MUTABLE_INSTANCE, null, null);
+    return (MessageT) dynamicMethod(MethodToInvoke.NEW_MUTABLE_INSTANCE, (byte) 0);
   }
 
   /**
@@ -223,7 +223,7 @@ public abstract class GeneratedMessageLite<
           Message2T extends GeneratedMessageLite<Message2T, Builder2T>,
           Builder2T extends GeneratedMessageLite.Builder<Message2T, Builder2T>>
       Builder2T createBuilder() {
-    return (Builder2T) dynamicMethod(MethodToInvoke.NEW_BUILDER, null, null);
+    return (Builder2T) dynamicMethod(MethodToInvoke.NEW_BUILDER, (byte) 0);
   }
 
   @SuppressWarnings("unchecked") // Guaranteed by runtime.
@@ -243,13 +243,13 @@ public abstract class GeneratedMessageLite<
   @Override
   @SuppressWarnings("unchecked")
   public final BuilderT toBuilder() {
-    BuilderT builder = (BuilderT) dynamicMethod(MethodToInvoke.NEW_BUILDER, null, null);
+    BuilderT builder = (BuilderT) dynamicMethod(MethodToInvoke.NEW_BUILDER, (byte) 0);
     return builder.mergeFrom((MessageT) this);
   }
 
   /**
    * Defines which method path to invoke in {@link GeneratedMessageLite
-   * #dynamicMethod(MethodToInvoke, Object...)}.
+   * #dynamicMethod(MethodToInvoke, byte)}.
    *
    * <p>For use by generated code only.
    */
@@ -261,9 +261,7 @@ public abstract class GeneratedMessageLite<
     // Rely on static state
     BUILD_MESSAGE_INFO,
     NEW_MUTABLE_INSTANCE,
-    NEW_BUILDER,
-    GET_DEFAULT_INSTANCE,
-    GET_PARSER;
+    NEW_BUILDER;
   }
 
   /**
@@ -280,7 +278,7 @@ public abstract class GeneratedMessageLite<
    *   <li>{@code GET_MEMOIZED_IS_INITIALIZED} returns the memoized {@code isInitialized} byte
    *       value.
    *   <li>{@code SET_MEMOIZED_IS_INITIALIZED} sets the memoized {@code isInitialized} byte value to
-   *       1 if the first parameter is not null, or to 0 if the first parameter is null.
+   *       the value of the first parameter.
    *   <li>{@code NEW_BUILDER} returns a {@code BuilderT} instance.
    * </ul>
    *
@@ -291,8 +289,7 @@ public abstract class GeneratedMessageLite<
    */
   protected abstract Object dynamicMethod(
       MethodToInvoke method,
-          Object arg0,
-          Object arg1);
+      byte arg0);
 
   final void clearMemoizedSerializedSize() {
     setMemoizedSerializedSize(UNINITIALIZED_SERIALIZED_SIZE);
@@ -363,7 +360,7 @@ public abstract class GeneratedMessageLite<
 
   /** Constructs a {@link MessageInfo} for this message type. */
   final Object buildMessageInfo() throws Exception {
-    return dynamicMethod(MethodToInvoke.BUILD_MESSAGE_INFO, null, null);
+    return dynamicMethod(MethodToInvoke.BUILD_MESSAGE_INFO, (byte) 0);
   }
 
   private static final ConcurrentMap<Class<?>, Object> parserOrInstanceMap =
@@ -409,10 +406,15 @@ public abstract class GeneratedMessageLite<
       parserOrInstance = parserOrInstanceMap.get(clazz);
     }
     if (parserOrInstance == null) {
-      // On some Samsung devices, this still doesn't return a valid value for some reason. We add a
-      // reflective fallback to keep the device running. See b/114675342.
-      T fallback = (T) UnsafeUtil.allocateInstance(clazz).getDefaultInstanceForType();
-      // A sanity check to ensure that <clinit> was actually invoked.
+      // On some Samsung devices (b/114675342), the map may still be empty. We force class
+      // initialization by allocating an instance and calling NEW_BUILDER. The generated
+      // Builder constructor references the MyMessage.DEFAULT_INSTANCE static field, forcing
+      // the JVM to execute <clinit>. We then retrieve the default instance directly from the
+      // builder and populate the map, ensuring it works even if <clinit> didn't register it.
+      T instance = (T) UnsafeUtil.allocateInstance(clazz);
+      Builder<?, ?> builder =
+          (Builder<?, ?>) instance.dynamicMethod(MethodToInvoke.NEW_BUILDER, (byte) 0);
+      T fallback = (T) builder.defaultInstance;
       if (fallback == null) {
         throw new IllegalStateException();
       }
@@ -929,7 +931,7 @@ public abstract class GeneratedMessageLite<
     }
 
     private void verifyExtensionContainingType(final GeneratedExtension<MessageT, ?> extension) {
-      if (extension.getContainingTypeDefaultInstance() != getDefaultInstanceForType()) {
+      if (extension.getContainingTypeDefaultInstance().getClass() != this.getClass()) {
         // This can only happen if someone uses unchecked operations.
         throw new IllegalArgumentException(
             "This extension is for a different message type.  Please make "
@@ -1543,7 +1545,7 @@ public abstract class GeneratedMessageLite<
     // Messages without required fields omit GET_MEMOIZED_IS_INITIALIZED and
     // SET_MEMOIZED_IS_INITIALIZED switch cases from dynamicMethod to minimize gencode size.
     // For those messages, dynamicMethod returns null, and we can safely return true.
-    Object memoized = message.dynamicMethod(MethodToInvoke.GET_MEMOIZED_IS_INITIALIZED, null, null);
+    Object memoized = message.dynamicMethod(MethodToInvoke.GET_MEMOIZED_IS_INITIALIZED, (byte) 0);
     if (memoized == null) {
       return true;
     }
@@ -1561,7 +1563,7 @@ public abstract class GeneratedMessageLite<
       // TODO: remove the unused variable
       Object unused =
           message.dynamicMethod(
-              MethodToInvoke.SET_MEMOIZED_IS_INITIALIZED, isInitialized ? message : null, null);
+              MethodToInvoke.SET_MEMOIZED_IS_INITIALIZED, (byte) (isInitialized ? 1 : 0));
     }
     return isInitialized;
   }
