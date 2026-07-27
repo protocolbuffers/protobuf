@@ -1540,13 +1540,21 @@ public abstract class GeneratedMessageLite<
   /** A static helper method for checking if a message is initialized, optionally memoizing. */
   private static final <T extends GeneratedMessageLite<T, ?>> boolean isInitialized(
       T message, boolean shouldMemoize) {
-    byte memoizedIsInitialized =
-        (Byte) message.dynamicMethod(MethodToInvoke.GET_MEMOIZED_IS_INITIALIZED, null, null);
-    if (memoizedIsInitialized == 1) {
+    // Messages without required fields omit GET_MEMOIZED_IS_INITIALIZED and
+    // SET_MEMOIZED_IS_INITIALIZED switch cases from dynamicMethod to minimize gencode size.
+    // For those messages, dynamicMethod returns null, and we can safely return true.
+    Object memoized = message.dynamicMethod(MethodToInvoke.GET_MEMOIZED_IS_INITIALIZED, null, null);
+    if (memoized == null) {
       return true;
     }
-    if (memoizedIsInitialized == 0) {
-      return false;
+    if (memoized instanceof Byte) {
+      byte memoizedIsInitialized = (Byte) memoized;
+      if (memoizedIsInitialized == 1) {
+        return true;
+      }
+      if (memoizedIsInitialized == 0) {
+        return false;
+      }
     }
     boolean isInitialized = Protobuf.getInstance().schemaFor(message).isInitialized(message);
     if (shouldMemoize) {
