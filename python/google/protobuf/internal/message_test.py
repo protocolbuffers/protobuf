@@ -1194,6 +1194,37 @@ class MessageTest(unittest.TestCase):
     s2 = m.child
     self.assertIs(s1, s2)
 
+  def testSyncSubobjsPresentChildStubs(self, message_module):
+    """SyncSubobjs must recurse into present children to sync their stubs.
+
+    When MergeFromString runs on a grandparent, it may populate fields inside
+    a present (already-reified) child at the C level.  If that child has stale
+    stubs in its own unset_subobj_map, SyncSubobjs must descend into it so the
+    stubs are reified before any other code path creates a second wrapper for
+    the same upb_Message.  Without this, a duplicate ObjCache key is created,
+    leading to use-after-free on dealloc.
+    """
+    m = message_module.NestedTestAllTypes()
+    # Reify m.child by setting a field on it (makes child present, removes it
+    # from m.unset_subobj_map).
+    m.child.payload.optional_int32 = 1
+    child = m.child
+    # Create a stub for child.child in child.unset_subobj_map.
+    grandchild = child.child
+    self.assertFalse(child.HasField('child'))
+
+    # Merge data that populates child.child at the C level.
+    other = message_module.NestedTestAllTypes()
+    other.child.child.payload.optional_int32 = 42
+    m.MergeFromString(other.SerializeToString())
+
+    # After merge, SyncSubobjs(m) must recurse into child and reify the
+    # grandchild stub.  Without the fix, child.child creates a second wrapper
+    # for the same C message (duplicate ObjCache key -> UAF on dealloc).
+    grandchild2 = child.child
+    self.assertIs(grandchild, grandchild2)
+    self.assertEqual(42, grandchild.payload.optional_int32)
+
   def ensureNestedMessageExists(self, msg, attribute):
     """Make sure that a nested message object exists.
 
