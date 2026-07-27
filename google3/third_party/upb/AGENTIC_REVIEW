@@ -1,0 +1,2 @@
+# Protobuf Review Agent Configuration
+review_capability_skills: "third_party/protobuf/skills/protobuf_review/SKILL.md"
