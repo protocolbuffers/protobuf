@@ -2126,3 +2126,27 @@ static int odr [[maybe_unused]] =
     (::google::protobuf::internal::StrongPointer(&CodegenGetExtensionInt32), 0);
 
 #include "google/protobuf/port_undef.inc"
+
+// Test that MessageSet recursion depth is enforced.
+TEST(MessageSetRecursionTest, RecursionLimitEnforced) {
+  const int depth = 200;  // Exceeds default limit of 100.
+  // Build a deeply nested UnknownFieldSet payload.
+  google::protobuf::UnknownFieldSet fields;
+  google::protobuf::UnknownFieldSet* current = &fields;
+  for (int i = 0; i < depth; ++i) {
+    google::protobuf::UnknownFieldSet* nested = current->AddGroup(1);
+    current = nested;
+  }
+  std::string data;
+  google::protobuf::io::StringOutputStream stream(&data);
+  fields.SerializeToStream(&stream);
+
+  google::protobuf::io::ArrayInputStream input(data.data(), data.size());
+  google::protobuf::io::CodedInputStream coded_input(&input);
+  coded_input.SetRecursionLimit(100);
+
+  google::protobuf::UnknownFieldSet parsed;
+  bool success = parsed.ParseFromCodedStream(&coded_input);
+  EXPECT_FALSE(success);
+  EXPECT_TRUE(coded_input.RecursionBudgetExceeded());
+}
