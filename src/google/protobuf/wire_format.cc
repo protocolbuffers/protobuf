@@ -655,9 +655,12 @@ struct WireFormat::MessageSetParser {
             // Use Spawn to transfer all attributes for recursion.
             // However, use Spawn<1> to decrease depth an extra time to take
             // into account that `payload` came from a subfield.
+  // Increment depth before spawning
+  if (--ctx->depth_ < 0) { return nullptr; }
             ParseContext tmp_ctx(ParseContext::Spawn<1>{}, *ctx, &p, payload);
             GOOGLE_PROTOBUF_PARSER_ASSERT(p);
             GOOGLE_PROTOBUF_PARSER_ASSERT(value->_InternalParse(p, &tmp_ctx) &&
+  ctx->depth_++;  // Decrement after parsing
                                            tmp_ctx.EndedAtLimit());
           }
           state = State::kDone;
