@@ -2029,20 +2029,29 @@ public class JsonFormat {
     // values never exceed ~350 characters, so 1000 is a generous upper bound.
     private static final int MAX_NUMERIC_STRING_LENGTH = 1000;
 
+    // Largest |BigDecimal.scale()| accepted for a JSON numeric value. Comfortably
+    // above the exponent range of double (~1e-324 to 1e308), the widest protobuf
+    // numeric type, and small enough that the BigInteger materialized by later
+    // arithmetic stays bounded.
+    private static final int MAX_NUMERIC_SCALE = 1000;
+
     private static BigDecimal parseBigDecimal(String value) throws InvalidProtocolBufferException {
       if (value.length() > MAX_NUMERIC_STRING_LENGTH) {
         throw new InvalidProtocolBufferException(
             "Numeric value is too long: " + value.length() + " characters");
       }
       BigDecimal result = new BigDecimal(value);
-      // Reject values whose unscaled representation would be excessively large.
-      // Scientific notation like "1e999" is only 5 characters but would produce a
-      // 999-digit BigInteger during compareTo/remainder/intValue operations.
-      // Valid protobuf numeric values (up to uint64 max = ~1.8e19) never need
-      // more than ~20 digits, so a limit of 100 is generous.
-      if (Math.abs(result.scale()) > 100 || result.precision() + Math.abs(result.scale()) > 100) {
+      // Compact scientific notation such as "1e536870000" is short enough to pass
+      // the length check above, but materializes a multi-million-digit BigInteger
+      // inside the compareTo()/remainder() calls made by the callers below, which
+      // can occupy a thread for minutes. Bound the exponent as well as the string
+      // length. The widest protobuf numeric type is double, whose magnitude spans
+      // roughly 1e-324 to 1e308, so no valid value approaches this limit; at the
+      // limit the BigInteger is about a thousand digits and the arithmetic stays
+      // in the low milliseconds.
+      if (Math.abs(result.scale()) > MAX_NUMERIC_SCALE) {
         throw new InvalidProtocolBufferException(
-            "Numeric value scale is too large: " + value);
+            "Numeric value is out of range: " + value);
       }
       return result;
     }
