@@ -660,7 +660,7 @@ void ImmutableStringOneofFieldGenerator::GenerateMergingCode(
 
 void ImmutableStringOneofFieldGenerator::GenerateBuildingCode(
     io::Printer* printer) const {
-  // No-Op: oneof fields are built by a single statement
+  // No-Op: Handled by single block statement in GenerateBuildPartialShard.
 }
 
 void ImmutableStringOneofFieldGenerator::GenerateBuilderParsingCode(

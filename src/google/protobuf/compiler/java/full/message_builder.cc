@@ -633,13 +633,14 @@ void MessageBuilderGenerator::GenerateBuildPartial(io::Printer* printer) {
     }
   }
 
-  // One buildPartial#() per from_bit_field
+  // One buildPartial_autosplit_#() per from_bit_field
   int totalBuilderInts = (descriptor_->field_count() + 31) / 32;
   if (totalBuilderInts > 0) {
     for (int i = 0; i < totalBuilderInts; ++i) {
       printer->Print(
-          "if ($bit_field_name$ != 0) { buildPartial$piece$(result); }\n",
-          "bit_field_name", GetBitFieldName(i), "piece", absl::StrCat(i));
+          "if ($bit_field_name$ != 0) { "
+          "buildPartial_autosplit_$shard$(result); }\n",
+          "bit_field_name", GetBitFieldName(i), "shard", absl::StrCat(i));
     }
   }
 
@@ -672,10 +673,10 @@ void MessageBuilderGenerator::GenerateBuildPartial(io::Printer* printer) {
     printer->Print("}\n\n");
   }
 
-  // Build non-oneof fields
+  // Build all fields in shards organized by bitfield membership.
   int start_field = 0;
   for (int i = 0; i < totalBuilderInts; i++) {
-    start_field = GenerateBuildPartialPiece(printer, i, start_field);
+    start_field = GenerateBuildPartialShard(printer, i, start_field);
   }
 
   // Build Oneofs
@@ -703,14 +704,14 @@ void MessageBuilderGenerator::GenerateBuildPartial(io::Printer* printer) {
   }
 }
 
-int MessageBuilderGenerator::GenerateBuildPartialPiece(io::Printer* printer,
-                                                       int piece,
+int MessageBuilderGenerator::GenerateBuildPartialShard(io::Printer* printer,
+                                                       int shard,
                                                        int first_field) {
   printer->Print(
-      "private void buildPartial$piece$($classname$ result) {\n"
+      "private void buildPartial_autosplit_$shard$($classname$ result) {\n"
       "  int from_$bit_field_name$ = $bit_field_name$;\n",
-      "classname", name_resolver_->GetImmutableClassName(descriptor_), "piece",
-      absl::StrCat(piece), "bit_field_name", GetBitFieldName(piece));
+      "classname", name_resolver_->GetImmutableClassName(descriptor_), "shard",
+      absl::StrCat(shard), "bit_field_name", GetBitFieldName(shard));
   printer->Indent();
   absl::btree_set<int> declared_to_bitfields;
 
