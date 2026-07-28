@@ -28,7 +28,6 @@
 #include "upb/mini_table/internal/field.h"
 #include "upb/mini_table/internal/size_log2.h"
 #include "upb/mini_table/message.h"
-#include "upb/mini_table/sub.h"
 
 // Must be last.
 #include "upb/port/def.inc"
@@ -311,10 +310,13 @@ bool upb_Message_ShallowCopy(upb_Message* dst, const upb_Message* src,
   upb_Message_Internal* dst_in = upb_Arena_Malloc(arena, size);
   if (!dst_in) return false;
 
-  dst_in->size = in->size;
+  dst_in->size = 0;
   dst_in->capacity = in->size;
 
   for (size_t i = 0; i < in->size; i++) {
+    if (upb_TaggedAuxPtr_IsNull(in->aux_data[i])) {
+      continue;
+    }
     upb_TaggedAux aux;
     switch (upb_TaggedAux_Get(in->aux_data[i], &aux)) {
       case kUpb_TaggedAuxType_CanonicalExtension: {
@@ -322,7 +324,8 @@ bool upb_Message_ShallowCopy(upb_Message* dst, const upb_Message* src,
         upb_Extension* dst_ext = upb_Arena_Malloc(arena, sizeof(upb_Extension));
         if (!dst_ext) return false;
         *dst_ext = *msg_ext;
-        dst_in->aux_data[i] = upb_TaggedAuxPtr_MakeCanonicalExtension(dst_ext);
+        dst_in->aux_data[dst_in->size++] =
+            upb_TaggedAuxPtr_MakeCanonicalExtension(dst_ext);
         break;
       }
       case kUpb_TaggedAuxType_Unknown:
@@ -331,7 +334,8 @@ bool upb_Message_ShallowCopy(upb_Message* dst, const upb_Message* src,
             upb_Arena_Malloc(arena, sizeof(upb_StringView));
         if (!dst_sv) return false;
         *dst_sv = *aux.unknown_data;
-        dst_in->aux_data[i] = upb_TaggedAuxPtr_MakeUnknownDataAliased(dst_sv);
+        dst_in->aux_data[dst_in->size++] =
+            upb_TaggedAuxPtr_MakeUnknownDataAliased(dst_sv);
         break;
       }
       case kUpb_TaggedAuxType_NonCanonicalExtension: {
@@ -339,7 +343,7 @@ bool upb_Message_ShallowCopy(upb_Message* dst, const upb_Message* src,
         upb_Extension* dst_ext = upb_Arena_Malloc(arena, sizeof(upb_Extension));
         if (!dst_ext) return false;
         *dst_ext = *msg_ext;
-        dst_in->aux_data[i] =
+        dst_in->aux_data[dst_in->size++] =
             upb_TaggedAuxPtr_MakeNonCanonicalExtension(dst_ext);
         break;
       }
