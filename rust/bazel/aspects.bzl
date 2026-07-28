@@ -10,6 +10,7 @@
 load("@bazel_tools//tools/cpp:toolchain_utils.bzl", "find_cpp_toolchain")
 load("@rules_cc//cc/common:cc_common.bzl", "cc_common")
 load("@rules_cc//cc/common:cc_info.bzl", "CcInfo")
+load("@rules_cc//cc/common:cc_shared_library_hint_info.bzl", "CcSharedLibraryHintInfo")
 load("@rules_rust//:version.bzl", RUST_VERSION = "VERSION")
 
 # buildifier: disable=bzl-visibility
@@ -488,23 +489,34 @@ def _rust_proto_aspect_common(target, ctx, is_upb):
         aliases = aliases,
         runtime = runtime,
     )
-    return [RustProtoInfo(
-        dep_variant_infos = [dep_variant_info],
-        exports_dep_variant_infos = exports_dep_variant_infos,
-        crate_mapping = depset(
-            direct = [CrateMappingInfo(
-                crate_name = encode_label_as_crate_name(ctx.label),
-                import_paths = tuple([get_import_path(f) for f in proto_srcs]),
-            )],
-            transitive = transitive_crate_mappings,
+    hint_attributes = ["deps", "exports", "_proto_lang_toolchain", "_extra_deps"]
+    if not is_upb:
+        hint_attributes.append("_cpp_thunks_deps")
+        hint_attributes.append("_cc_lib")
+    return [
+        RustProtoInfo(
+            dep_variant_infos = [dep_variant_info],
+            exports_dep_variant_infos = exports_dep_variant_infos,
+            crate_mapping = depset(
+                direct = [CrateMappingInfo(
+                    crate_name = encode_label_as_crate_name(ctx.label),
+                    import_paths = tuple([get_import_path(f) for f in proto_srcs]),
+                )],
+                transitive = transitive_crate_mappings,
+            ),
         ),
-    )]
+        CcSharedLibraryHintInfo(
+            attributes = hint_attributes,
+            owners = [ctx.label],
+        ),
+    ]
 
 def _make_proto_library_aspect(is_upb):
     return aspect(
         implementation = (_rust_upb_proto_aspect_impl if is_upb else _rust_cc_proto_aspect_impl),
         attr_aspects = ["deps", "exports"],
         requires = ([] if is_upb else [cc_proto_aspect]),
+        required_providers = [ProtoInfo],
         attrs = {
             "_cpp_thunks_deps": attr.label_list(
                 default = [
@@ -548,6 +560,7 @@ def _make_proto_library_aspect(is_upb):
             "@rules_rust//rust:toolchain_type",
             "@bazel_tools//tools/cpp:toolchain_type",
         ],
+        provides = [RustProtoInfo, CcSharedLibraryHintInfo],
     )
 
 rust_upb_proto_library_aspect = _make_proto_library_aspect(is_upb = True)
