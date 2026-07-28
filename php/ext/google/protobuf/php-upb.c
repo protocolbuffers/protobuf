@@ -7124,6 +7124,7 @@ int upb_Unicode_ToUTF8(uint32_t cp, char* out) {
 }
 
 
+#include <stdint.h>
 #include <stdlib.h>
 
 // Must be last.
@@ -7139,6 +7140,54 @@ static void* upb_global_allocfunc(upb_alloc* alloc, void* ptr, size_t oldsize,
   } else {
     return realloc(ptr, size);
   }
+}
+
+#ifdef UPB_ALLOCATION_COUNT
+#if (defined(__STDC_VERSION__) && (__STDC_VERSION__ >= 201112L) && \
+     !defined(__STDC_NO_THREADS__)) ||                             \
+    UPB_HAS_EXTENSION(c_thread_local)
+#define UPB_THREAD_LOCAL _Thread_local
+#elif defined(_MSC_VER)
+#define UPB_THREAD_LOCAL __declspec(thread)
+#elif defined(__GNUC__) || defined(__clang__)
+#define UPB_THREAD_LOCAL __thread
+#else
+#define UPB_THREAD_LOCAL
+#endif
+
+UPB_THREAD_LOCAL size_t upb_arena_alloc_count = 0;
+UPB_THREAD_LOCAL size_t upb_arena_alloc_fail_on = SIZE_MAX;
+
+#undef UPB_THREAD_LOCAL
+#endif
+
+UPB_NODISCARD bool upb_AllocationCount_IsAvailable(void) {
+#ifdef UPB_ALLOCATION_COUNT
+  return true;
+#else
+  return false;
+#endif
+}
+
+UPB_NODISCARD size_t upb_AllocationCount_Get(void) {
+#ifdef UPB_ALLOCATION_COUNT
+  return upb_arena_alloc_count;
+#else
+  return 0;
+#endif
+}
+
+void upb_AllocationCount_Reset(void) {
+#ifdef UPB_ALLOCATION_COUNT
+  upb_arena_alloc_count = 0;
+  upb_arena_alloc_fail_on = SIZE_MAX;
+#endif
+}
+
+void upb_AllocationCount_FailOn(size_t n) {
+#ifdef UPB_ALLOCATION_COUNT
+  upb_arena_alloc_fail_on = n;
+#endif
 }
 
 upb_alloc upb_alloc_global = {&upb_global_allocfunc};
@@ -7635,11 +7684,14 @@ void* UPB_PRIVATE(_upb_Arena_SlowMalloc)(upb_Arena* a, size_t span) {
   } else {
     UPB_PRIVATE(_upb_Arena_UseBlock)(a, block, block_size);
     UPB_ASSERT(UPB_PRIVATE(_upb_ArenaHas)(a) >= span);
-    return upb_Arena_Malloc(a, size);
+    return _upb_Arena_Malloc_Unchecked(a, size);
   }
 }
 
 static upb_Arena* _upb_Arena_InitSlow(upb_alloc* alloc, size_t first_size) {
+  if (!upb_AllocationCount_IncrementAndCheck()) {
+    return NULL;
+  }
   if (!alloc) return NULL;
 
   // We need to malloc the initial block.
@@ -8916,6 +8968,7 @@ void _upb_Message_DiscardUnknown_shallow(upb_Message* msg) {
   uint32_t size = 0;
   for (uint32_t i = 0; i < in->size; i++) {
     upb_TaggedAuxPtr tagged_ptr = in->aux_data[i];
+    // Only keep semantically known fields (i.e., canonical extensions).
     if (upb_TaggedAuxPtr_IsSemanticallyKnown(tagged_ptr)) {
       in->aux_data[size++] = tagged_ptr;
     }
@@ -8997,14 +9050,9 @@ void upb_Message_Freeze(upb_Message* msg, const upb_MiniTable* m) {
   // TODO: b/376969853 - use iterator API
   uint32_t size = in ? in->size : 0;
   for (size_t i = 0; i < size; i++) {
-    upb_TaggedAuxPtr tagged_ptr = in->aux_data[i];
-    upb_TaggedAux aux;
-    upb_TaggedAuxType type = upb_TaggedAux_Get(tagged_ptr, &aux);
-    if (type != kUpb_TaggedAuxType_CanonicalExtension &&
-        type != kUpb_TaggedAuxType_NonCanonicalExtension) {
-      continue;
-    }
-    const upb_Extension* ext = aux.extension;
+    const upb_Extension* ext =
+        upb_TaggedAuxPtr_TryGetExtension(in->aux_data[i]);
+    if (!ext) continue;
     const upb_MiniTableExtension* e = ext->ext;
     const upb_MiniTableField* f = &e->UPB_PRIVATE(field);
     const upb_MiniTable* m2 = upb_MiniTableExtension_GetSubMessage(e);
@@ -9339,8 +9387,11 @@ bool upb_Message_IsEqual(const upb_Message* msg1, const upb_Message* msg2,
 }
 
 
+#include <setjmp.h>
 #include <stdint.h>
+#include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 
 // Must be last.
@@ -9366,6 +9417,7 @@ struct upb_UnknownFields {
 
 typedef struct {
   upb_EpsCopyInputStream stream;
+  upb_encstate encoder;  // For encoding non-canonical extensions.
   upb_Arena* arena;
   upb_UnknownField* tmp;
   size_t tmp_size;
@@ -9574,11 +9626,34 @@ static upb_UnknownFields* upb_UnknownFields_Build(upb_UnknownField_Context* ctx,
       .last_tag = 0,
   };
   uintptr_t iter = kUpb_Message_UnknownBegin;
-  upb_StringView view;
-  while (upb_Message_NextUnknown(msg, &view, &iter)) {
-    upb_EpsCopyInputStream_Init(&ctx->stream, &view.data, view.size);
-    upb_CombineUnknownFields(ctx, &builder, &view.data);
-    UPB_ASSERT(upb_EpsCopyInputStream_IsDone(&ctx->stream, &view.data) &&
+  upb_MessageUnknown data;
+  while (upb_Message_NextUnknown2(msg, &data, &iter)) {
+    const char* ptr;
+    size_t size;
+    if (data.type == kUpb_MessageUnknownType_StringView) {
+      upb_StringView view = data.value.bytes;
+      ptr = view.data;
+      size = view.size;
+    } else {
+      UPB_ASSERT(data.type == kUpb_MessageUnknownType_NonCanonicalExtension);
+      char* enc_buf = upb_BackAlloc_Init(&ctx->encoder.alloc, ctx->arena);
+      ctx->encoder.status = kUpb_EncodeStatus_Ok;
+      // Encode non-canonical extension to buffer.
+      const upb_Extension* ext = (const upb_Extension*)data.value.extension;
+      bool is_message_set = false;
+      const upb_MiniTable* extendee = upb_MiniTableExtension_Extendee(ext->ext);
+      if (extendee) {
+        is_message_set = upb_MiniTable_IsMessageSet(extendee);
+      }
+      UPB_PRIVATE(_upb_Encode_Extension)(&ctx->encoder, ext->ext, ext->data,
+                                         is_message_set, &enc_buf, &size,
+                                         /*options=*/0);
+      ptr = enc_buf;
+    }
+
+    upb_EpsCopyInputStream_Init(&ctx->stream, &ptr, size);
+    upb_CombineUnknownFields(ctx, &builder, &ptr);
+    UPB_ASSERT(upb_EpsCopyInputStream_IsDone(&ctx->stream, &ptr) &&
                !upb_EpsCopyInputStream_IsError(&ctx->stream));
   }
   upb_UnknownFields* fields = upb_UnknownFields_DoBuild(ctx, &builder);
@@ -9646,10 +9721,24 @@ static upb_UnknownCompareResult upb_UnknownField_Compare(
   if (UPB_SETJMP(ctx->err) == 0) {
     ret = upb_UnknownField_DoCompare(ctx, msg1, msg2);
   } else {
+    // If status is still Equal, the jump must have originated from the Encoder
+    // (which only updates ctx->encoder.status). We must map it to a context
+    // error.
+    if (ctx->status == kUpb_UnknownCompareResult_Equal) {
+      if (ctx->encoder.status == kUpb_EncodeStatus_OutOfMemory) {
+        ctx->status = kUpb_UnknownCompareResult_OutOfMemory;
+      } else if (ctx->encoder.status == kUpb_EncodeStatus_MaxDepthExceeded) {
+        ctx->status = kUpb_UnknownCompareResult_MaxDepthExceeded;
+      } else {
+        ctx->status = kUpb_UnknownCompareResult_OutOfMemory;
+      }
+      upb_BackAlloc_Abort(&ctx->encoder.alloc);
+    }
     ret = ctx->status;
     UPB_ASSERT(ret != kUpb_UnknownCompareResult_Equal);
   }
 
+  UPB_PRIVATE(_upb_encstate_destroy)(&ctx->encoder);
   upb_Arena_Free(ctx->arena);
   upb_gfree(ctx->tmp);
   return ret;
@@ -9671,6 +9760,7 @@ upb_UnknownCompareResult UPB_PRIVATE(_upb_Message_UnknownFieldsAreEqual)(
   };
 
   if (!ctx.arena) return kUpb_UnknownCompareResult_OutOfMemory;
+  UPB_PRIVATE(_upb_encstate_init)(&ctx.encoder, &ctx.err, ctx.arena);
 
   return upb_UnknownField_Compare(&ctx, msg1, msg2);
 }
@@ -9895,13 +9985,13 @@ upb_Message* _upb_Message_Copy(upb_Message* dst, const upb_Message* src,
 
   for (size_t i = 0; i < in->size; i++) {
     upb_TaggedAuxPtr tagged_ptr = in->aux_data[i];
-    if (upb_TaggedAuxPtr_IsCanonicalExtension(tagged_ptr)) {
-      // Clone extension
-      const upb_Extension* msg_ext =
-          upb_TaggedAuxPtr_CanonicalExtension(tagged_ptr);
+    if (upb_TaggedAuxPtr_IsExtension(tagged_ptr)) {
+      // Clone a canonical or non-canonical upb_Extension*.
+      const upb_Extension* msg_ext = upb_TaggedAuxPtr_Extension(tagged_ptr);
       const upb_MiniTableField* field = &msg_ext->ext->UPB_PRIVATE(field);
-      upb_Extension* dst_ext = UPB_PRIVATE(_upb_Message_GetOrCreateExtension)(
-          dst, msg_ext->ext, arena);
+      upb_Extension* dst_ext =
+          UPB_PRIVATE(_upb_Message_GetOrCreateExtensionWithTag)(
+              dst, msg_ext->ext, arena, upb_TaggedAuxPtr_Type(tagged_ptr));
       if (!dst_ext) return NULL;
       if (upb_MiniTableField_IsScalar(field)) {
         if (!upb_Clone_ExtensionValue(msg_ext->ext, msg_ext, dst_ext, arena)) {
@@ -9919,7 +10009,7 @@ upb_Message* _upb_Message_Copy(upb_Message* dst, const upb_Message* src,
         dst_ext->data.array_val = cloned_array;
       }
     } else if (upb_TaggedAuxPtr_IsUnknownStringView(tagged_ptr)) {
-      // Clone unknown
+      // Clone an aliased or non-aliased unknown upb_StringView.
       upb_StringView* unknown = upb_TaggedPtrAux_StringViewRepr(tagged_ptr);
       // Make a copy into destination arena.
       if (!UPB_PRIVATE(_upb_Message_AddUnknown)(
@@ -9928,7 +10018,6 @@ upb_Message* _upb_Message_Copy(upb_Message* dst, const upb_Message* src,
       }
     }
   }
-
   return dst;
 }
 
@@ -9961,38 +10050,24 @@ bool upb_Message_ShallowCopy(upb_Message* dst, const upb_Message* src,
   upb_Message_Internal* dst_in = upb_Arena_Malloc(arena, size);
   if (!dst_in) return false;
 
-  dst_in->size = in->size;
+  dst_in->size = 0;
   dst_in->capacity = in->size;
 
   for (size_t i = 0; i < in->size; i++) {
-    upb_TaggedAux aux;
-    switch (upb_TaggedAux_Get(in->aux_data[i], &aux)) {
-      case kUpb_TaggedAuxType_CanonicalExtension: {
-        const upb_Extension* msg_ext = aux.extension;
-        upb_Extension* dst_ext = upb_Arena_Malloc(arena, sizeof(upb_Extension));
-        if (!dst_ext) return false;
-        *dst_ext = *msg_ext;
-        dst_in->aux_data[i] = upb_TaggedAuxPtr_MakeCanonicalExtension(dst_ext);
-        break;
-      }
-      case kUpb_TaggedAuxType_Unknown:
-      case kUpb_TaggedAuxType_AliasedUnknown: {
-        upb_StringView* dst_sv =
-            upb_Arena_Malloc(arena, sizeof(upb_StringView));
-        if (!dst_sv) return false;
-        *dst_sv = *aux.unknown_data;
-        dst_in->aux_data[i] = upb_TaggedAuxPtr_MakeUnknownDataAliased(dst_sv);
-        break;
-      }
-      case kUpb_TaggedAuxType_NonCanonicalExtension: {
-        const upb_Extension* msg_ext = aux.extension;
-        upb_Extension* dst_ext = upb_Arena_Malloc(arena, sizeof(upb_Extension));
-        if (!dst_ext) return false;
-        *dst_ext = *msg_ext;
-        dst_in->aux_data[i] =
-            upb_TaggedAuxPtr_MakeNonCanonicalExtension(dst_ext);
-        break;
-      }
+    upb_TaggedAuxPtr tagged_ptr = in->aux_data[i];
+    if (upb_TaggedAuxPtr_IsExtension(tagged_ptr)) {
+      const upb_Extension* msg_ext = upb_TaggedAuxPtr_Extension(tagged_ptr);
+      upb_Extension* dst_ext = upb_Arena_Malloc(arena, sizeof(upb_Extension));
+      if (!dst_ext) return false;
+      *dst_ext = *msg_ext;
+      dst_in->aux_data[dst_in->size++] = upb_TaggedAuxPtr_MakeExtension(
+          dst_ext, upb_TaggedAuxPtr_Type(tagged_ptr));
+    } else if (upb_TaggedAuxPtr_IsUnknownStringView(tagged_ptr)) {
+      upb_StringView* dst_sv = upb_Arena_Malloc(arena, sizeof(upb_StringView));
+      if (!dst_sv) return false;
+      *dst_sv = *upb_TaggedPtrAux_StringViewRepr(tagged_ptr);
+      dst_in->aux_data[dst_in->size++] =
+          upb_TaggedAuxPtr_MakeUnknownDataAliased(dst_sv);
     }
   }
 
@@ -10066,9 +10141,9 @@ const upb_Extension* UPB_PRIVATE(_upb_Message_Getext)(
   return NULL;
 }
 
-UPB_INLINE upb_Extension* _upb_Message_GetOrCreateExtensionInternal(
+upb_Extension* UPB_PRIVATE(_upb_Message_GetOrCreateExtensionWithTag)(
     struct upb_Message* msg, const upb_MiniTableExtension* e, upb_Arena* a,
-    bool canonical) {
+    upb_TaggedAuxType tag) {
   UPB_ASSERT(!upb_Message_IsFrozen(msg));
   upb_Extension* ext = (upb_Extension*)UPB_PRIVATE(_upb_Message_Getext)(msg, e);
   if (ext) return ext;
@@ -10079,22 +10154,20 @@ UPB_INLINE upb_Extension* _upb_Message_GetOrCreateExtensionInternal(
   if (!ext) return NULL;
   memset(ext, 0, sizeof(upb_Extension));
   ext->ext = e;
-  in->aux_data[in->size++] =
-      canonical ? upb_TaggedAuxPtr_MakeCanonicalExtension(ext)
-                : upb_TaggedAuxPtr_MakeNonCanonicalExtension(ext);
+  in->aux_data[in->size++] = upb_TaggedAuxPtr_MakeExtension(ext, tag);
   return ext;
 }
 
 upb_Extension* UPB_PRIVATE(_upb_Message_GetOrCreateExtension)(
     struct upb_Message* msg, const upb_MiniTableExtension* e, upb_Arena* a) {
-  return _upb_Message_GetOrCreateExtensionInternal(msg, e, a,
-                                                   /*canonical=*/true);
+  return UPB_PRIVATE(_upb_Message_GetOrCreateExtensionWithTag)(
+      msg, e, a, kUpb_TaggedAuxType_CanonicalExtension);
 }
 
 upb_Extension* UPB_PRIVATE(_upb_Message_CreateNonCanonicalExtension)(
     struct upb_Message* msg, const upb_MiniTableExtension* e, upb_Arena* a) {
-  return _upb_Message_GetOrCreateExtensionInternal(msg, e, a,
-                                                   /*canonical=*/false);
+  return UPB_PRIVATE(_upb_Message_GetOrCreateExtensionWithTag)(
+      msg, e, a, kUpb_TaggedAuxType_NonCanonicalExtension);
 }
 
 
@@ -11159,8 +11232,11 @@ done:
 
 #if UPB_FASTTABLE
   upb_DecodeFast_TableEntry fasttable[32];
-  int fasttable_size = upb_DecodeFast_BuildTable(&decoder->table, fasttable);
-  mt_size += fasttable_size * sizeof(fasttable[0]);
+  int fasttable_size = 0;
+  if (decoder->platform == kUpb_MiniTablePlatform_64Bit) {
+    fasttable_size = upb_DecodeFast_BuildTable(&decoder->table, fasttable);
+    mt_size += fasttable_size * sizeof(fasttable[0]);
+  }
 #endif
 
   upb_MiniTable* ret = upb_Arena_Malloc(decoder->arena, mt_size);
@@ -18125,6 +18201,9 @@ static char* upb_BackAlloc_Realloc(upb_BackAlloc* a, char* ptr, size_t n) {
 }
 
 char* upb_BackAlloc_Grow(upb_BackAlloc* a, char* ptr, size_t n) {
+  if (!upb_AllocationCount_IncrementAndCheck()) {
+    return NULL;
+  }
   if (a->limit == a->buf) {
     // First allocation: try to steal a block.
     size_t size = n;
@@ -18849,8 +18928,8 @@ static char* encode_exts(char* ptr, upb_encstate* e, const upb_MiniTable* m,
   upb_Message_Internal* in = UPB_PRIVATE(_upb_Message_GetInternal)(msg);
   if (!in) return ptr;
 
-  /* Encode all extensions together. Unlike C++, we do not attempt to keep
-   * these in field number order relative to normal fields or even to each
+  /* Encode all canonical extensions together. Unlike C++, we do not attempt to
+   * keep these in field number order relative to normal fields or even to each
    * other. */
   uintptr_t iter = kUpb_Message_ExtensionBegin;
   const upb_MiniTableExtension* ext;
@@ -18895,22 +18974,26 @@ char* encode_message(char* ptr, upb_encstate* e, const upb_Message* msg,
     }
   }
 
-  if ((e->options & kUpb_EncodeOption_SkipUnknown) == 0) {
-    size_t unknown_size = 0;
-    uintptr_t iter = kUpb_Message_UnknownBegin;
-    upb_StringView unknown;
-    // Need to write in reverse order, but iteration is in-order; scan to
-    // reserve capacity up front, then write in-order
-    while (upb_Message_NextUnknown(msg, &unknown, &iter)) {
-      unknown_size += unknown.size;
-    }
-    if (unknown_size != 0) {
-      ptr = encode_reserve(ptr, e, unknown_size);
-      char* tmp_ptr = ptr;
-      iter = kUpb_Message_UnknownBegin;
-      while (upb_Message_NextUnknown(msg, &unknown, &iter)) {
-        memcpy(tmp_ptr, unknown.data, unknown.size);
-        tmp_ptr += unknown.size;
+  bool skip_unknown = (e->options & kUpb_EncodeOption_SkipUnknown) != 0;
+  const upb_Message_Internal* in = UPB_PRIVATE(_upb_Message_GetInternal)(msg);
+  if (!skip_unknown && in) {
+    // Iterate backwards because the encoder builds the buffer in reverse
+    // (from end to start). This ensures that unknown fields and non-canonical
+    // extensions are emitted in their original forward order.
+    size_t i = in->size;
+    while (i > 0) {
+      i--;
+      upb_TaggedAuxPtr tagged_ptr = in->aux_data[i];
+      if (upb_TaggedAuxPtr_IsUnknownStringView(tagged_ptr)) {
+        const upb_StringView* unknown =
+            upb_TaggedPtrAux_StringViewRepr(tagged_ptr);
+        ptr = encode_bytes(ptr, e, unknown->data, unknown->size);
+      } else if (upb_TaggedAuxPtr_IsNonCanonicalExtension(tagged_ptr)) {
+        const upb_Extension* ext =
+            upb_TaggedAuxPtr_NonCanonicalExtension(tagged_ptr);
+        ptr = encode_ext(ptr, e, ext->ext, ext->data,
+                         UPB_PRIVATE(_upb_MiniTable_ExtModeBase)(m) ==
+                             kUpb_ExtMode_IsMessageSet);
       }
     }
   }

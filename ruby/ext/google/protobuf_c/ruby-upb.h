@@ -948,6 +948,58 @@ UPB_INLINE int upb_StringView_Compare(upb_StringView a, upb_StringView b) {
 
 #include <stddef.h>
 
+#ifndef GOOGLE_UPB_UPB_MEM_INTERNAL_ALLOC_H__
+#define GOOGLE_UPB_UPB_MEM_INTERNAL_ALLOC_H__
+
+#include <stddef.h>
+
+// Must be last.
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+#if (defined(__STDC_VERSION__) && (__STDC_VERSION__ >= 201112L) && \
+     !defined(__STDC_NO_THREADS__)) ||                             \
+    UPB_HAS_EXTENSION(c_thread_local)
+#define UPB_THREAD_LOCAL _Thread_local
+#elif defined(_MSC_VER)
+#define UPB_THREAD_LOCAL __declspec(thread)
+#elif defined(__GNUC__) || defined(__clang__)
+#define UPB_THREAD_LOCAL __thread
+#else
+#define UPB_THREAD_LOCAL
+#endif
+
+#if !defined(NDEBUG)
+#define UPB_ALLOCATION_COUNT
+#endif
+
+#ifdef UPB_ALLOCATION_COUNT
+extern UPB_THREAD_LOCAL size_t upb_arena_alloc_count;
+extern UPB_THREAD_LOCAL size_t upb_arena_alloc_fail_on;
+
+#undef UPB_THREAD_LOCAL
+
+#endif
+
+UPB_NODISCARD UPB_FORCEINLINE bool upb_AllocationCount_IncrementAndCheck(void) {
+#ifdef UPB_ALLOCATION_COUNT
+  bool ok = (upb_arena_alloc_count != upb_arena_alloc_fail_on);
+  upb_arena_alloc_count++;
+  return ok;
+#else
+  return true;
+#endif
+}
+
+#ifdef __cplusplus
+} /* extern "C" */
+#endif
+
+
+#endif  // GOOGLE_UPB_UPB_MEM_INTERNAL_ALLOC_H__
+
 // Must be last.
 
 #ifdef __cplusplus
@@ -978,6 +1030,9 @@ struct upb_alloc {
 
 UPB_NODISCARD UPB_INLINE void* upb_malloc(upb_alloc* alloc, size_t size) {
   UPB_ASSERT(alloc);
+  if (!upb_AllocationCount_IncrementAndCheck()) {
+    return NULL;
+  }
   return alloc->func(alloc, NULL, 0, size, NULL);
 }
 
@@ -989,6 +1044,11 @@ typedef struct {
 UPB_INLINE upb_SizedPtr upb_SizeReturningMalloc(upb_alloc* alloc, size_t size) {
   UPB_ASSERT(alloc);
   upb_SizedPtr result;
+  if (!upb_AllocationCount_IncrementAndCheck()) {
+    result.p = NULL;
+    result.n = 0;
+    return result;
+  }
   result.n = 0;
   result.p = alloc->func(alloc, NULL, 0, size, &result.n);
   result.n = result.p != NULL ? UPB_MAX(result.n, size) : 0;
@@ -998,6 +1058,11 @@ UPB_INLINE upb_SizedPtr upb_SizeReturningMalloc(upb_alloc* alloc, size_t size) {
 UPB_NODISCARD UPB_INLINE void* upb_realloc(upb_alloc* alloc, void* ptr,
                                            size_t oldsize, size_t size) {
   UPB_ASSERT(alloc);
+  if (size != 0) {
+    if (!upb_AllocationCount_IncrementAndCheck()) {
+      return NULL;
+    }
+  }
   return alloc->func(alloc, ptr, oldsize, size, NULL);
 }
 
@@ -1030,6 +1095,17 @@ UPB_NODISCARD UPB_INLINE void* upb_grealloc(void* ptr, size_t oldsize,
 }
 
 UPB_INLINE void upb_gfree(void* ptr) { upb_free(&upb_alloc_global, ptr); }
+
+// Returns whether thread-local allocation count/ OOM-simulation features
+// are supported.
+UPB_API UPB_NODISCARD bool upb_AllocationCount_IsAvailable(void);
+// Returns the thread-local allocation count since the last reset.
+UPB_API UPB_NODISCARD size_t upb_AllocationCount_Get(void);
+// Resets the thread-local allocation count and failure threshold.
+UPB_API void upb_AllocationCount_Reset(void);
+// Artificially triggers memory allocation failure in the thread on the n-th
+// allocation.
+UPB_API void upb_AllocationCount_FailOn(size_t n);
 
 #ifdef __cplusplus
 } /* extern "C" */
@@ -1287,7 +1363,8 @@ UPB_INLINE bool UPB_PRIVATE(_upb_Arena_IsAligned)(const void* ptr) {
   return (uintptr_t)ptr % UPB_MALLOC_ALIGN == 0;
 }
 
-UPB_API_INLINE void* upb_Arena_Malloc(struct upb_Arena* a, size_t size) {
+UPB_API_INLINE void* _upb_Arena_Malloc_Unchecked(struct upb_Arena* a,
+                                                 size_t size) {
   UPB_PRIVATE(upb_Xsan_AccessReadWrite)(UPB_XSAN(a));
 
   size_t span = UPB_PRIVATE(_upb_Arena_AllocSpan)(size);
@@ -1304,6 +1381,13 @@ UPB_API_INLINE void* upb_Arena_Malloc(struct upb_Arena* a, size_t size) {
   UPB_ASSERT(UPB_PRIVATE(_upb_Arena_IsAligned)(a->UPB_ONLYBITS(ptr)));
 
   return UPB_PRIVATE(upb_Xsan_NewUnpoisonedRegion)(UPB_XSAN(a), ret, size);
+}
+
+UPB_API_INLINE void* upb_Arena_Malloc(struct upb_Arena* a, size_t size) {
+  if (!upb_AllocationCount_IncrementAndCheck()) {
+    return NULL;
+  }
+  return _upb_Arena_Malloc_Unchecked(a, size);
 }
 
 UPB_API_INLINE void upb_Arena_ShrinkLast(struct upb_Arena* a, void* ptr,
@@ -1890,6 +1974,13 @@ UPB_API_INLINE size_t upb_Array_Capacity(const struct upb_Array* arr) {
 // Must be last.
 
 #define UPB_OPAQUE(x) x##_opaque
+
+typedef enum {
+  kUpb_TaggedAuxType_Unknown = 0,                // tag 000
+  kUpb_TaggedAuxType_NonCanonicalExtension = 1,  // tag 001
+  kUpb_TaggedAuxType_CanonicalExtension = 3,     // tag 011
+  kUpb_TaggedAuxType_AliasedUnknown = 4          // tag 100
+} upb_TaggedAuxType;
 
 struct upb_Message {
   union {
@@ -3145,6 +3236,7 @@ UPB_INLINE uint64_t upb_BigEndian64(uint64_t val) {
 #define UPB_MESSAGE_INTERNAL_EXTENSION_H_
 
 #include <stddef.h>
+#include <stdint.h>
 
 
 #ifndef UPB_MESSAGE_INTERNAL_MAP_H_
@@ -3920,6 +4012,12 @@ typedef struct {
 extern "C" {
 #endif
 
+UPB_NODISCARD upb_Extension* UPB_PRIVATE(
+    _upb_Message_GetOrCreateExtensionWithTag)(struct upb_Message* msg,
+                                              const upb_MiniTableExtension* ext,
+                                              upb_Arena* arena,
+                                              upb_TaggedAuxType tag);
+
 // Adds the given extension data to the given message.
 // |ext| is copied into the message instance.
 // This logically replaces any previously-added extension with this number.
@@ -4029,27 +4127,40 @@ typedef struct upb_TaggedAuxPtr {
   uintptr_t ptr;
 } upb_TaggedAuxPtr;
 
+UPB_INLINE bool upb_TaggedAuxPtr_IsNull(upb_TaggedAuxPtr ptr) {
+  return ptr.ptr == 0;
+}
+
+UPB_INLINE upb_TaggedAuxType upb_TaggedAuxPtr_Type(upb_TaggedAuxPtr ptr) {
+  return (upb_TaggedAuxType)(ptr.ptr & 7);
+}
+
 // If this returns true, then the entry is semantically known (but may be in
 // either parsed or unparsed form).
 UPB_INLINE bool upb_TaggedAuxPtr_IsSemanticallyKnown(upb_TaggedAuxPtr ptr) {
-  return (ptr.ptr & 0x2) != 0;
+  return !upb_TaggedAuxPtr_IsNull(ptr) && ((ptr.ptr & 0x2) != 0);
 }
 
 UPB_INLINE bool upb_TaggedAuxPtr_IsCanonicalExtension(upb_TaggedAuxPtr ptr) {
-  return (ptr.ptr & 3) == 3;
+  return !upb_TaggedAuxPtr_IsNull(ptr) && ((ptr.ptr & 3) == 3);
 }
 
 UPB_INLINE bool upb_TaggedAuxPtr_IsNonCanonicalExtension(upb_TaggedAuxPtr ptr) {
-  return (ptr.ptr & 3) == 1;
+  return !upb_TaggedAuxPtr_IsNull(ptr) && ((ptr.ptr & 3) == 1);
+}
+
+// Returns true if the entry is a canonical or non-canonical extension.
+UPB_INLINE bool upb_TaggedAuxPtr_IsExtension(upb_TaggedAuxPtr ptr) {
+  return !upb_TaggedAuxPtr_IsNull(ptr) && ((ptr.ptr & 1) != 0);
 }
 
 // Returns true if the entry is aliased/non-aliased unknown data.
 UPB_INLINE bool upb_TaggedAuxPtr_IsUnknownStringView(upb_TaggedAuxPtr ptr) {
-  return (ptr.ptr != 0) && ((ptr.ptr & 3) == 0);
+  return !upb_TaggedAuxPtr_IsNull(ptr) && ((ptr.ptr & 3) == 0);
 }
 
 UPB_INLINE bool upb_TaggedAuxPtr_IsUnknownAliased(upb_TaggedAuxPtr ptr) {
-  return (ptr.ptr != 0) && ((ptr.ptr & 5) == 4);
+  return !upb_TaggedAuxPtr_IsNull(ptr) && ((ptr.ptr & 5) == 4);
 }
 
 UPB_INLINE upb_Extension* upb_TaggedAuxPtr_CanonicalExtension(
@@ -4064,6 +4175,22 @@ UPB_INLINE upb_Extension* upb_TaggedAuxPtr_NonCanonicalExtension(
   return (upb_Extension*)(ptr.ptr & ~7ULL);
 }
 
+UPB_INLINE upb_Extension* upb_TaggedAuxPtr_Extension(upb_TaggedAuxPtr ptr) {
+  UPB_ASSERT(upb_TaggedAuxPtr_IsExtension(ptr));
+  return (upb_Extension*)(ptr.ptr & ~7ULL);
+}
+
+// Returns the extension pointer if the tagged pointer is a canonical or
+// non-canonical extension, otherwise returns NULL.
+UPB_INLINE upb_Extension* upb_TaggedAuxPtr_TryGetExtension(
+    upb_TaggedAuxPtr ptr) {
+  if (upb_TaggedAuxPtr_IsCanonicalExtension(ptr) ||
+      upb_TaggedAuxPtr_IsNonCanonicalExtension(ptr)) {
+    return (upb_Extension*)(ptr.ptr & ~7ULL);
+  }
+  return NULL;
+}
+
 // Returns a pointer to the aliased or unaliased unknown upb_StringView* data.
 UPB_INLINE upb_StringView* upb_TaggedPtrAux_StringViewRepr(
     upb_TaggedAuxPtr ptr) {
@@ -4073,13 +4200,6 @@ UPB_INLINE upb_StringView* upb_TaggedPtrAux_StringViewRepr(
 
 // LINT.ThenChange(//depot/google3/third_party/upb/bits/golang/message.go:tagged_aux_type)
 
-typedef enum {
-  kUpb_TaggedAuxType_Unknown = 0,                // tag 000
-  kUpb_TaggedAuxType_NonCanonicalExtension = 1,  // tag 001
-  kUpb_TaggedAuxType_CanonicalExtension = 3,     // tag 011
-  kUpb_TaggedAuxType_AliasedUnknown = 4          // tag 100
-} upb_TaggedAuxType;
-
 typedef union {
   upb_Extension* extension;
   const upb_StringView* unknown_data;
@@ -4087,15 +4207,26 @@ typedef union {
 
 UPB_INLINE upb_TaggedAuxType upb_TaggedAux_Get(upb_TaggedAuxPtr ptr,
                                                upb_TaggedAux* data) {
+  UPB_ASSERT(!upb_TaggedAuxPtr_IsNull(ptr));
   uintptr_t untagged = ptr.ptr & ~7ULL;
   UPB_ASSERT((untagged & 7) == 0);
   memcpy(data, &untagged, sizeof(*data));
-  return (upb_TaggedAuxType)(ptr.ptr & 7);
+  return upb_TaggedAuxPtr_Type(ptr);
 }
 
 UPB_INLINE upb_TaggedAuxPtr upb_TaggedAuxPtr_Null(void) {
   upb_TaggedAuxPtr ptr;
   ptr.ptr = 0;
+  return ptr;
+}
+
+UPB_INLINE upb_TaggedAuxPtr
+upb_TaggedAuxPtr_MakeExtension(const upb_Extension* e, upb_TaggedAuxType type) {
+  UPB_ASSERT(((uintptr_t)e & 7) == 0);
+  UPB_ASSERT(type == kUpb_TaggedAuxType_CanonicalExtension ||
+             type == kUpb_TaggedAuxType_NonCanonicalExtension);
+  upb_TaggedAuxPtr ptr;
+  ptr.ptr = (uintptr_t)e | type;
   return ptr;
 }
 
@@ -4223,7 +4354,8 @@ UPB_NODISCARD UPB_INLINE struct upb_Message* _upb_Message_New(
   return msg;
 }
 
-// Discards the unknown fields for this message only.
+// Discards the unknown fields (including non-canonical extensions) for this
+// message only.
 void _upb_Message_DiscardUnknown_shallow(struct upb_Message* msg);
 
 UPB_NODISCARD UPB_NOINLINE bool UPB_PRIVATE(_upb_Message_AddUnknownSlowPath)(
@@ -16415,6 +16547,7 @@ UPB_INLINE void _upb_mapsorter_popmap(_upb_mapsorter* s,
 bool _upb_mapsorter_pushmap(_upb_mapsorter* s, upb_FieldType key_type,
                             const struct upb_Map* map, _upb_sortedmap* sorted);
 
+// Pushes canonical extensions from the given message onto the sorter.
 bool _upb_mapsorter_pushexts(_upb_mapsorter* s, const upb_Message_Internal* in,
                              _upb_sortedmap* sorted);
 
@@ -17151,6 +17284,9 @@ UPB_INLINE const char* upb_WireReader_SkipGroup(
 UPB_FORCEINLINE const char* _upb_WireReader_SkipValueForceInline(
     const char* ptr, uint32_t tag, int depth_limit,
     upb_EpsCopyInputStream* stream) {
+  if (UPB_UNLIKELY((tag >> 3) == 0)) {
+    return UPB_PRIVATE(upb_EpsCopyInputStream_ReturnError)(stream);
+  }
   switch (upb_WireReader_GetWireType(tag)) {
     case kUpb_WireType_Varint:
       return upb_WireReader_SkipVarint(ptr, stream);
@@ -17334,6 +17470,201 @@ bool UPB_PRIVATE(_upb_Message_NextBaseField)(const upb_Message* msg,
                                              uintptr_t* iter);
 
 #endif  // GOOGLE_UPB_UPB_MESSAGE_INTERNAL_ITERATOR_H__
+
+#ifndef GOOGLE_UPB_UPB_WIRE_INTERNAL_BACK_ALLOC_H__
+#define GOOGLE_UPB_UPB_WIRE_INTERNAL_BACK_ALLOC_H__
+
+#include <stddef.h>
+
+
+// Must be last.
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+// Allocates memory from the back of the arena.
+typedef struct {
+  upb_Arena* arena;
+  char *buf, *limit;
+  bool standalone;
+} upb_BackAlloc;
+
+// Needed because C doesn't allow NULL - NULL.
+extern char upb_BackAlloc_sentinel;
+
+char* upb_BackAlloc_Grow(upb_BackAlloc* a, char* ptr, size_t need);
+
+UPB_INLINE char* upb_BackAlloc_Init(upb_BackAlloc* a, upb_Arena* arena) {
+  a->arena = arena;
+  // This could eagerly steal whatever's in the arena, since stealing with a
+  // minimum of 0 can't fail.
+  a->buf = &upb_BackAlloc_sentinel;
+  a->limit = &upb_BackAlloc_sentinel;
+  a->standalone = false;
+  return a->limit;
+}
+
+UPB_INLINE void upb_BackAlloc_Abort(upb_BackAlloc* a) {
+  if (a->standalone) {
+    UPB_PRIVATE(_upb_Arena_FreeBlock)(a->arena, a->buf);
+  } else if (a->limit != a->buf) {
+    UPB_PRIVATE(_upb_Arena_UseBlock)(a->arena, a->buf, a->limit - a->buf);
+  }
+}
+
+UPB_INLINE size_t upb_BackAlloc_Finish(upb_BackAlloc* a, const char* ptr) {
+  if (a->standalone) {
+    UPB_PRIVATE(_upb_Arena_AddBlock)(a->arena, a->buf);
+  }
+  if (ptr != a->buf) {
+    UPB_PRIVATE(_upb_Arena_UseBlock)(a->arena, a->buf, ptr - a->buf);
+  }
+  return a->limit - ptr;
+}
+
+UPB_FORCEINLINE bool upb_BackAlloc_HasBytes(const upb_BackAlloc* a,
+                                            const char* ptr, size_t need) {
+  size_t have = ptr - a->buf;
+  return have >= need;
+}
+
+UPB_FORCEINLINE char* upb_BackAlloc_Reserve(upb_BackAlloc* a, char* ptr,
+                                            size_t need) {
+  return upb_BackAlloc_HasBytes(a, ptr, need)
+             ? ptr - need
+             : upb_BackAlloc_Grow(a, ptr, need);
+}
+
+UPB_INLINE size_t upb_BackAlloc_Size(const upb_BackAlloc* a, const char* ptr) {
+  return a->limit - ptr;
+}
+
+#ifdef __cplusplus
+} /* extern "C" */
+#endif
+
+
+#endif  // GOOGLE_UPB_UPB_WIRE_INTERNAL_BACK_ALLOC_H__
+
+#ifndef UPB_WIRE_INTERNAL_ENCODE_H_
+#define UPB_WIRE_INTERNAL_ENCODE_H_
+
+#include <setjmp.h>
+#include <stddef.h>
+#include <stdint.h>
+
+
+// Must be last.
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+typedef struct {
+  upb_BackAlloc alloc;
+  int options;
+  int depth;
+  upb_EncodeStatus status;
+  _upb_mapsorter sorter;
+  jmp_buf* err;
+} upb_encstate;
+
+UPB_INLINE char* UPB_PRIVATE(_upb_encstate_init)(upb_encstate* e, jmp_buf* err,
+                                                 upb_Arena* arena) {
+  e->status = kUpb_EncodeStatus_Ok;
+  char* ptr = upb_BackAlloc_Init(&e->alloc, arena);
+  e->options = 0;
+  e->depth = 0;
+  e->err = err;
+  _upb_mapsorter_init(&e->sorter);
+  return ptr;
+}
+
+UPB_INLINE void UPB_PRIVATE(_upb_encstate_destroy)(upb_encstate* e) {
+  _upb_mapsorter_destroy(&e->sorter);
+}
+
+// Internal version of upb_Encode that encodes a single field.
+//
+// The caller must clean up the `upb_encstate` by calling
+// `_upb_encstate_destroy(e)` when done.
+upb_EncodeStatus UPB_PRIVATE(_upb_Encode_Field)(upb_encstate* e,
+                                                const upb_Message* msg,
+                                                const upb_MiniTableField* field,
+                                                char** buf, size_t* size,
+                                                int options);
+
+// Internal version of upb_Encode that encodes a single extension.
+//
+// The caller must clean up the `upb_encstate` by calling
+// `_upb_encstate_destroy(e)` when done.
+upb_EncodeStatus UPB_PRIVATE(_upb_Encode_Extension)(
+    upb_encstate* e, const upb_MiniTableExtension* ext,
+    upb_MessageValue ext_val, bool is_message_set, char** buf, size_t* size,
+    int options);
+
+char* encode_message(char* ptr, upb_encstate* e, const upb_Message* msg,
+                     const upb_MiniTable* m, size_t* size);
+
+#define kUpb_Encoder_EncodeVarint32MaxSize 5
+#define kUpb_Encoder_EncodeVarint64MaxSize 10
+
+static char* upb_Encoder_EncodeVarint32(uint32_t val, char* ptr) {
+  do {
+    uint8_t byte = val & 0x7fU;
+    val >>= 7;
+    if (val) byte |= 0x80U;
+    *(ptr++) = byte;
+  } while (val);
+  return ptr;
+}
+
+static char* upb_Encoder_EncodeVarint64(uint64_t val, char* ptr) {
+  do {
+    uint8_t byte = val & 0x7fU;
+    val >>= 7;
+    if (val) byte |= 0x80U;
+    *(ptr++) = byte;
+  } while (val);
+  return ptr;
+}
+
+UPB_INLINE
+bool _upb_Encoder_AddEnumValueToUnknown(upb_Message* msg,
+                                        const upb_MiniTableField* field,
+                                        uint64_t val, upb_Arena* arena) {
+  // Unrecognized enum goes into unknown fields.
+  // For packed fields the tag could be arbitrarily far in the past,
+  // so we just re-encode the tag and value here.
+  const uint32_t tag =
+      ((uint32_t)field->UPB_PRIVATE(number) << 3) | kUpb_WireType_Varint;
+  char buf[kUpb_Encoder_EncodeVarint32MaxSize +
+           kUpb_Encoder_EncodeVarint64MaxSize];
+  char* end = buf;
+  end = upb_Encoder_EncodeVarint32(tag, end);
+  end = upb_Encoder_EncodeVarint64(val, end);
+
+  return UPB_PRIVATE(_upb_Message_AddUnknown)(msg, buf, end - buf, arena,
+                                              kUpb_AddUnknown_Copy);
+}
+
+bool _upb_Encoder_AddMapEntryUnknown(upb_Message* msg,
+                                     const upb_MiniTableField* field,
+                                     upb_Message* ent_msg,
+                                     const upb_MiniTable* entry,
+                                     upb_Arena* arena);
+
+upb_EncodeStatus _upb_Encode(const upb_Message* msg, const upb_MiniTable* l,
+                             int options, upb_Arena* arena, char** buf,
+                             size_t* size, bool prepend_len);
+
+#ifdef __cplusplus
+} /* extern "C" */
+#endif
+
+
+#endif /* UPB_WIRE_INTERNAL_ENCODE_H_ */
 
 #ifndef UPB_MESSAGE_COPY_H_
 #define UPB_MESSAGE_COPY_H_
@@ -18777,201 +19108,6 @@ void _upb_Decoder_AddEnumValueToUnknown(upb_Decoder* d, upb_Message* msg,
 
 
 #endif /* UPB_WIRE_INTERNAL_DECODER_H_ */
-
-#ifndef UPB_WIRE_INTERNAL_ENCODE_H_
-#define UPB_WIRE_INTERNAL_ENCODE_H_
-
-#include <setjmp.h>
-#include <stddef.h>
-#include <stdint.h>
-
-
-#ifndef GOOGLE_UPB_UPB_WIRE_INTERNAL_BACK_ALLOC_H__
-#define GOOGLE_UPB_UPB_WIRE_INTERNAL_BACK_ALLOC_H__
-
-#include <stddef.h>
-
-
-// Must be last.
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-// Allocates memory from the back of the arena.
-typedef struct {
-  upb_Arena* arena;
-  char *buf, *limit;
-  bool standalone;
-} upb_BackAlloc;
-
-// Needed because C doesn't allow NULL - NULL.
-extern char upb_BackAlloc_sentinel;
-
-char* upb_BackAlloc_Grow(upb_BackAlloc* a, char* ptr, size_t need);
-
-UPB_INLINE char* upb_BackAlloc_Init(upb_BackAlloc* a, upb_Arena* arena) {
-  a->arena = arena;
-  // This could eagerly steal whatever's in the arena, since stealing with a
-  // minimum of 0 can't fail.
-  a->buf = &upb_BackAlloc_sentinel;
-  a->limit = &upb_BackAlloc_sentinel;
-  a->standalone = false;
-  return a->limit;
-}
-
-UPB_INLINE void upb_BackAlloc_Abort(upb_BackAlloc* a) {
-  if (a->standalone) {
-    UPB_PRIVATE(_upb_Arena_FreeBlock)(a->arena, a->buf);
-  } else if (a->limit != a->buf) {
-    UPB_PRIVATE(_upb_Arena_UseBlock)(a->arena, a->buf, a->limit - a->buf);
-  }
-}
-
-UPB_INLINE size_t upb_BackAlloc_Finish(upb_BackAlloc* a, const char* ptr) {
-  if (a->standalone) {
-    UPB_PRIVATE(_upb_Arena_AddBlock)(a->arena, a->buf);
-  }
-  if (ptr != a->buf) {
-    UPB_PRIVATE(_upb_Arena_UseBlock)(a->arena, a->buf, ptr - a->buf);
-  }
-  return a->limit - ptr;
-}
-
-UPB_FORCEINLINE bool upb_BackAlloc_HasBytes(const upb_BackAlloc* a,
-                                            const char* ptr, size_t need) {
-  size_t have = ptr - a->buf;
-  return have >= need;
-}
-
-UPB_FORCEINLINE char* upb_BackAlloc_Reserve(upb_BackAlloc* a, char* ptr,
-                                            size_t need) {
-  return upb_BackAlloc_HasBytes(a, ptr, need)
-             ? ptr - need
-             : upb_BackAlloc_Grow(a, ptr, need);
-}
-
-UPB_INLINE size_t upb_BackAlloc_Size(const upb_BackAlloc* a, const char* ptr) {
-  return a->limit - ptr;
-}
-
-#ifdef __cplusplus
-} /* extern "C" */
-#endif
-
-
-#endif  // GOOGLE_UPB_UPB_WIRE_INTERNAL_BACK_ALLOC_H__
-
-// Must be last.
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-typedef struct {
-  upb_BackAlloc alloc;
-  int options;
-  int depth;
-  upb_EncodeStatus status;
-  _upb_mapsorter sorter;
-  jmp_buf* err;
-} upb_encstate;
-
-UPB_INLINE char* UPB_PRIVATE(_upb_encstate_init)(upb_encstate* e, jmp_buf* err,
-                                                 upb_Arena* arena) {
-  e->status = kUpb_EncodeStatus_Ok;
-  char* ptr = upb_BackAlloc_Init(&e->alloc, arena);
-  e->options = 0;
-  e->depth = 0;
-  e->err = err;
-  _upb_mapsorter_init(&e->sorter);
-  return ptr;
-}
-
-UPB_INLINE void UPB_PRIVATE(_upb_encstate_destroy)(upb_encstate* e) {
-  _upb_mapsorter_destroy(&e->sorter);
-}
-
-// Internal version of upb_Encode that encodes a single field.
-//
-// The caller must clean up the `upb_encstate` by calling
-// `_upb_encstate_destroy(e)` when done.
-upb_EncodeStatus UPB_PRIVATE(_upb_Encode_Field)(upb_encstate* e,
-                                                const upb_Message* msg,
-                                                const upb_MiniTableField* field,
-                                                char** buf, size_t* size,
-                                                int options);
-
-// Internal version of upb_Encode that encodes a single extension.
-//
-// The caller must clean up the `upb_encstate` by calling
-// `_upb_encstate_destroy(e)` when done.
-upb_EncodeStatus UPB_PRIVATE(_upb_Encode_Extension)(
-    upb_encstate* e, const upb_MiniTableExtension* ext,
-    upb_MessageValue ext_val, bool is_message_set, char** buf, size_t* size,
-    int options);
-
-char* encode_message(char* ptr, upb_encstate* e, const upb_Message* msg,
-                     const upb_MiniTable* m, size_t* size);
-
-#define kUpb_Encoder_EncodeVarint32MaxSize 5
-#define kUpb_Encoder_EncodeVarint64MaxSize 10
-
-static char* upb_Encoder_EncodeVarint32(uint32_t val, char* ptr) {
-  do {
-    uint8_t byte = val & 0x7fU;
-    val >>= 7;
-    if (val) byte |= 0x80U;
-    *(ptr++) = byte;
-  } while (val);
-  return ptr;
-}
-
-static char* upb_Encoder_EncodeVarint64(uint64_t val, char* ptr) {
-  do {
-    uint8_t byte = val & 0x7fU;
-    val >>= 7;
-    if (val) byte |= 0x80U;
-    *(ptr++) = byte;
-  } while (val);
-  return ptr;
-}
-
-UPB_INLINE
-bool _upb_Encoder_AddEnumValueToUnknown(upb_Message* msg,
-                                        const upb_MiniTableField* field,
-                                        uint64_t val, upb_Arena* arena) {
-  // Unrecognized enum goes into unknown fields.
-  // For packed fields the tag could be arbitrarily far in the past,
-  // so we just re-encode the tag and value here.
-  const uint32_t tag =
-      ((uint32_t)field->UPB_PRIVATE(number) << 3) | kUpb_WireType_Varint;
-  char buf[kUpb_Encoder_EncodeVarint32MaxSize +
-           kUpb_Encoder_EncodeVarint64MaxSize];
-  char* end = buf;
-  end = upb_Encoder_EncodeVarint32(tag, end);
-  end = upb_Encoder_EncodeVarint64(val, end);
-
-  return UPB_PRIVATE(_upb_Message_AddUnknown)(msg, buf, end - buf, arena,
-                                              kUpb_AddUnknown_Copy);
-}
-
-bool _upb_Encoder_AddMapEntryUnknown(upb_Message* msg,
-                                     const upb_MiniTableField* field,
-                                     upb_Message* ent_msg,
-                                     const upb_MiniTable* entry,
-                                     upb_Arena* arena);
-
-upb_EncodeStatus _upb_Encode(const upb_Message* msg, const upb_MiniTable* l,
-                             int options, upb_Arena* arena, char** buf,
-                             size_t* size, bool prepend_len);
-
-#ifdef __cplusplus
-} /* extern "C" */
-#endif
-
-
-#endif /* UPB_WIRE_INTERNAL_ENCODE_H_ */
 #ifndef GOOGLE_UPB_UPB_WIRE_WRITER_H__
 #define GOOGLE_UPB_UPB_WIRE_WRITER_H__
 
