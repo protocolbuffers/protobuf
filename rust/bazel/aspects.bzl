@@ -248,7 +248,7 @@ def _compile_cc(
         linking_context = linking_context,
     )
 
-def _compile_rust(ctx, attr, src, extra_srcs, deps, aliases, runtime):
+def _compile_rust(ctx, attr, src, extra_srcs, deps, aliases, runtime, is_upb):
     """Compiles a Rust source file.
 
     Eventually this function could be upstreamed into rules_rust and be made present in rust_common.
@@ -303,6 +303,14 @@ def _compile_rust(ctx, attr, src, extra_srcs, deps, aliases, runtime):
     rustc_compile_action_extra_args = {}
     if _rust_version_ge("0.70"):
         rustc_compile_action_extra_args["allowed_unstable_rust_features"] = ["register_tool"]
+
+    suffix = "upb_rust_proto" if is_upb else "cpp_rust_proto"
+    proto_name = ctx.label.name
+    if proto_name.endswith("_proto"):
+        proto_name = proto_name.removesuffix("_proto")
+    elif proto_name.endswith("proto"):
+        proto_name = proto_name.removesuffix("proto")
+    owner = ctx.label.same_package_label(proto_name + "_" + suffix)
     providers = rustc_compile_action(
         ctx = ctx,
         attr = attr,
@@ -326,14 +334,19 @@ def _compile_rust(ctx, attr, src, extra_srcs, deps, aliases, runtime):
             rustc_env = {},
             compile_data = depset([]),
             compile_data_targets = depset([]),
-            owner = ctx.label,
+            owner = owner,
         ),
         output_hash = output_hash,
         **rustc_compile_action_extra_args
     )
 
+    crate_info = _get_crate_info(providers)
+    crate_info_dict = structs.to_dict(crate_info)
+    crate_info_dict["owner"] = ctx.label
+    crate_info = CrateInfo(**crate_info_dict)
+
     return DepVariantInfo(
-        crate_info = _get_crate_info(providers),
+        crate_info = crate_info,
         dep_info = _get_dep_info(providers),
         cc_info = _get_cc_info(providers),
         build_info = None,
@@ -487,6 +500,7 @@ def _rust_proto_aspect_common(target, ctx, is_upb):
         deps = deps,
         aliases = aliases,
         runtime = runtime,
+        is_upb = is_upb,
     )
     return [RustProtoInfo(
         dep_variant_infos = [dep_variant_info],

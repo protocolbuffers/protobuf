@@ -109,18 +109,28 @@ def _rust_proto_library_impl(ctx):
     ]
 
 def _make_rust_proto_library(is_upb):
+    attrs = {
+        "deps": attr.label_list(
+            mandatory = True,
+            providers = [ProtoInfo],
+            aspects = [rust_upb_proto_library_aspect if is_upb else rust_cc_proto_library_aspect],
+        ),
+        "_proto_lang_toolchain": attr.label(
+            default = Label(proto_rust_toolchain_label(is_upb)),
+        ),
+    }
+    if not is_upb:
+        attrs["_cpp_thunks_deps"] = attr.label_list(
+            default = [
+                Label("//rust:cpp_api"),
+                Label("//src/google/protobuf"),
+                Label("//src/google/protobuf:protobuf_lite"),
+            ],
+        )
+
     return rule(
         implementation = _rust_proto_library_impl,
-        attrs = {
-            "deps": attr.label_list(
-                mandatory = True,
-                providers = [ProtoInfo],
-                aspects = [rust_upb_proto_library_aspect if is_upb else rust_cc_proto_library_aspect],
-            ),
-            "_proto_lang_toolchain": attr.label(
-                default = Label(proto_rust_toolchain_label(is_upb)),
-            ),
-        },
+        attrs = attrs,
         toolchains = [
             "@rules_rust//rust:toolchain_type",
         ],
