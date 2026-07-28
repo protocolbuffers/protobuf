@@ -1007,6 +1007,109 @@ TEST(MessageTest, DiscardUnknownsNonCanonicalExtensions) {
   EXPECT_EQ(upb_test_TestExtensions_optional_int32_ext(msg), 123);
 }
 
+TEST(MessageTest, OverwriteNonCanonicalExtensionNoDuplicates) {
+  upb::Arena arena;
+  upb_test_TestExtensions* ext_msg = upb_test_TestExtensions_new(arena.ptr());
+  upb_Message* msg = UPB_UPCAST(ext_msg);
+
+  int32_t val1 = 42;
+  ASSERT_TRUE(UPB_PRIVATE(_upb_Message_SetNonCanonicalExtension)(
+      msg, upb_test_TestExtensions_optional_int32_ext_ext, &val1, arena.ptr()));
+
+  int32_t val2 = 43;
+  ASSERT_TRUE(UPB_PRIVATE(_upb_Message_SetNonCanonicalExtension)(
+      msg, upb_test_TestExtensions_optional_int32_ext_ext, &val2, arena.ptr()));
+
+  // Count non-canonical extensions
+  int count = 0;
+  uintptr_t iter = kUpb_Message_UnknownBegin;
+  upb_MessageUnknown unknown;
+  while (upb_Message_NextUnknown2(msg, &unknown, &iter)) {
+    if (unknown.type == kUpb_MessageUnknownType_NonCanonicalExtension) {
+      if (unknown.value.extension->ext ==
+          upb_test_TestExtensions_optional_int32_ext_ext) {
+        count++;
+      }
+    }
+  }
+
+  EXPECT_EQ(count, 1);
+}
+
+TEST(MessageTest, CoexistCanonicalAndNonCanonicalExtension) {
+  upb::Arena arena;
+  upb_test_TestExtensions* ext_msg = upb_test_TestExtensions_new(arena.ptr());
+  upb_Message* msg = UPB_UPCAST(ext_msg);
+
+  // 1. Set as Non-Canonical
+  int32_t val1 = 42;
+  ASSERT_TRUE(UPB_PRIVATE(_upb_Message_SetNonCanonicalExtension)(
+      msg, upb_test_TestExtensions_optional_int32_ext_ext, &val1, arena.ptr()));
+
+  // 2. Set as Canonical
+  upb_test_TestExtensions_set_optional_int32_ext(ext_msg, 43, arena.ptr());
+
+  // Verify Canonical accessor sees 43
+  EXPECT_TRUE(upb_test_TestExtensions_has_optional_int32_ext(ext_msg));
+  EXPECT_EQ(upb_test_TestExtensions_optional_int32_ext(ext_msg), 43);
+
+  // Verify Non-Canonical iterator sees 42
+  {
+    uintptr_t iter = kUpb_Message_UnknownBegin;
+    upb_MessageUnknown unknown;
+    bool found = false;
+    while (upb_Message_NextUnknown2(msg, &unknown, &iter)) {
+      if (unknown.type == kUpb_MessageUnknownType_NonCanonicalExtension) {
+        if (unknown.value.extension->ext ==
+            upb_test_TestExtensions_optional_int32_ext_ext) {
+          const int32_t* pval = (const int32_t*)&unknown.value.extension->data;
+          EXPECT_EQ(*pval, 42);
+          found = true;
+          break;
+        }
+      }
+    }
+    EXPECT_TRUE(found);
+  }
+}
+
+TEST(MessageTest, CoexistCanonicalAndNonCanonicalExtensionReverse) {
+  upb::Arena arena;
+  upb_test_TestExtensions* ext_msg = upb_test_TestExtensions_new(arena.ptr());
+  upb_Message* msg = UPB_UPCAST(ext_msg);
+
+  // 1. Set as Canonical
+  upb_test_TestExtensions_set_optional_int32_ext(ext_msg, 43, arena.ptr());
+
+  // 2. Set as Non-Canonical
+  int32_t val1 = 42;
+  ASSERT_TRUE(UPB_PRIVATE(_upb_Message_SetNonCanonicalExtension)(
+      msg, upb_test_TestExtensions_optional_int32_ext_ext, &val1, arena.ptr()));
+
+  // Verify Canonical accessor sees 43
+  EXPECT_TRUE(upb_test_TestExtensions_has_optional_int32_ext(ext_msg));
+  EXPECT_EQ(upb_test_TestExtensions_optional_int32_ext(ext_msg), 43);
+
+  // Verify Non-Canonical iterator sees 42
+  {
+    uintptr_t iter = kUpb_Message_UnknownBegin;
+    upb_MessageUnknown unknown;
+    bool found = false;
+    while (upb_Message_NextUnknown2(msg, &unknown, &iter)) {
+      if (unknown.type == kUpb_MessageUnknownType_NonCanonicalExtension) {
+        if (unknown.value.extension->ext ==
+            upb_test_TestExtensions_optional_int32_ext_ext) {
+          const int32_t* pval = (const int32_t*)&unknown.value.extension->data;
+          EXPECT_EQ(*pval, 42);
+          found = true;
+          break;
+        }
+      }
+    }
+    EXPECT_TRUE(found);
+  }
+}
+
 /* Tests some somewhat tricky math used in size calculations while encoding */
 TEST(MessageTest, SkippedVarintSize) {
   for (uint32_t clz = 0; clz <= 64; clz++) {
