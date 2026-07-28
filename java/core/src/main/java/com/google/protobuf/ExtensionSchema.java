@@ -10,7 +10,14 @@ package com.google.protobuf;
 import java.io.IOException;
 import java.util.Map;
 
+/**
+ * This class is for Lite runtime use only.
+ *
+ * <p>For details on what this means regarding performance and security characteristics, see {@link
+ * ForLiteOnly}.
+ */
 @CheckReturnValue
+@ForLiteOnly
 abstract class ExtensionSchema<T extends FieldSet.FieldDescriptorLite<T>> {
 
   /** Returns true for messages that support extensions. */
@@ -66,11 +73,12 @@ abstract class ExtensionSchema<T extends FieldSet.FieldDescriptorLite<T>> {
       throws IOException;
 
   /**
-   * Parses the entire content of a {@link ByteString} as one MessageSet item. Unlike {@link
-   * #parseLengthPrefixedMessageSetItem}, there isn't a length-prefix.
+   * Parses the entire content of a {@link CodedInputStream} that wraps a {@link ByteString} as one
+   * MessageSet item. Unlike {@link #parseLengthPrefixedMessageSetItem}, there isn't a
+   * length-prefix.
    */
   abstract void parseMessageSetItem(
-      ByteString data,
+      CodedInputStream input,
       Object extension,
       ExtensionRegistryLite extensionRegistry,
       FieldSet<T> extensions)

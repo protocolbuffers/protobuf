@@ -246,14 +246,9 @@ void upb_Message_Freeze(upb_Message* msg, const upb_MiniTable* m) {
   // TODO: b/376969853 - use iterator API
   uint32_t size = in ? in->size : 0;
   for (size_t i = 0; i < size; i++) {
-    upb_TaggedAuxPtr tagged_ptr = in->aux_data[i];
-    upb_TaggedAux aux;
-    upb_TaggedAuxType type = upb_TaggedAux_Get(tagged_ptr, &aux);
-    if (type != kUpb_TaggedAuxType_CanonicalExtension &&
-        type != kUpb_TaggedAuxType_NonCanonicalExtension) {
-      continue;
-    }
-    const upb_Extension* ext = aux.extension;
+    const upb_Extension* ext =
+        upb_TaggedAuxPtr_TryGetExtension(in->aux_data[i]);
+    if (!ext) continue;
     const upb_MiniTableExtension* e = ext->ext;
     const upb_MiniTableField* f = &e->UPB_PRIVATE(field);
     const upb_MiniTable* m2 = upb_MiniTableExtension_GetSubMessage(e);

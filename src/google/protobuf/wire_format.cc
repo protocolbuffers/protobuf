@@ -652,10 +652,11 @@ struct WireFormat::MessageSetParser {
                     : reflection->MutableMessage(msg, field,
                                                  ctx->data().factory);
             const char* p;
-            // We can't use regular parse from string as we have to track
-            // proper recursion depth and descriptor pools. Spawn a new
-            // ParseContext inheriting those attributes.
-            ParseContext tmp_ctx(ParseContext::kSpawn, *ctx, &p, payload);
+            // Use Spawn to transfer all attributes for recursion.
+            // However, use Spawn<1> to decrease depth an extra time to take
+            // into account that `payload` came from a subfield.
+            ParseContext tmp_ctx(ParseContext::Spawn<1>{}, *ctx, &p, payload);
+            GOOGLE_PROTOBUF_PARSER_ASSERT(p);
             GOOGLE_PROTOBUF_PARSER_ASSERT(value->_InternalParse(p, &tmp_ctx) &&
                                            tmp_ctx.EndedAtLimit());
           }

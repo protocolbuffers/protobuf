@@ -83,27 +83,31 @@ typedef struct upb_TaggedAuxPtr {
   uintptr_t ptr;
 } upb_TaggedAuxPtr;
 
+UPB_INLINE bool upb_TaggedAuxPtr_IsNull(upb_TaggedAuxPtr ptr) {
+  return ptr.ptr == 0;
+}
+
 // If this returns true, then the entry is semantically known (but may be in
 // either parsed or unparsed form).
 UPB_INLINE bool upb_TaggedAuxPtr_IsSemanticallyKnown(upb_TaggedAuxPtr ptr) {
-  return (ptr.ptr & 0x2) != 0;
+  return !upb_TaggedAuxPtr_IsNull(ptr) && ((ptr.ptr & 0x2) != 0);
 }
 
 UPB_INLINE bool upb_TaggedAuxPtr_IsCanonicalExtension(upb_TaggedAuxPtr ptr) {
-  return (ptr.ptr & 3) == 3;
+  return !upb_TaggedAuxPtr_IsNull(ptr) && ((ptr.ptr & 3) == 3);
 }
 
 UPB_INLINE bool upb_TaggedAuxPtr_IsNonCanonicalExtension(upb_TaggedAuxPtr ptr) {
-  return (ptr.ptr & 3) == 1;
+  return !upb_TaggedAuxPtr_IsNull(ptr) && ((ptr.ptr & 3) == 1);
 }
 
 // Returns true if the entry is aliased/non-aliased unknown data.
 UPB_INLINE bool upb_TaggedAuxPtr_IsUnknownStringView(upb_TaggedAuxPtr ptr) {
-  return (ptr.ptr != 0) && ((ptr.ptr & 3) == 0);
+  return !upb_TaggedAuxPtr_IsNull(ptr) && ((ptr.ptr & 3) == 0);
 }
 
 UPB_INLINE bool upb_TaggedAuxPtr_IsUnknownAliased(upb_TaggedAuxPtr ptr) {
-  return (ptr.ptr != 0) && ((ptr.ptr & 5) == 4);
+  return !upb_TaggedAuxPtr_IsNull(ptr) && ((ptr.ptr & 5) == 4);
 }
 
 UPB_INLINE upb_Extension* upb_TaggedAuxPtr_CanonicalExtension(
@@ -116,6 +120,17 @@ UPB_INLINE upb_Extension* upb_TaggedAuxPtr_NonCanonicalExtension(
     upb_TaggedAuxPtr ptr) {
   UPB_ASSERT(upb_TaggedAuxPtr_IsNonCanonicalExtension(ptr));
   return (upb_Extension*)(ptr.ptr & ~7ULL);
+}
+
+// Returns the extension pointer if the tagged pointer is a canonical or
+// non-canonical extension, otherwise returns NULL.
+UPB_INLINE upb_Extension* upb_TaggedAuxPtr_TryGetExtension(
+    upb_TaggedAuxPtr ptr) {
+  if (upb_TaggedAuxPtr_IsCanonicalExtension(ptr) ||
+      upb_TaggedAuxPtr_IsNonCanonicalExtension(ptr)) {
+    return (upb_Extension*)(ptr.ptr & ~7ULL);
+  }
+  return NULL;
 }
 
 // Returns a pointer to the aliased or unaliased unknown upb_StringView* data.
@@ -141,6 +156,7 @@ typedef union {
 
 UPB_INLINE upb_TaggedAuxType upb_TaggedAux_Get(upb_TaggedAuxPtr ptr,
                                                upb_TaggedAux* data) {
+  UPB_ASSERT(!upb_TaggedAuxPtr_IsNull(ptr));
   uintptr_t untagged = ptr.ptr & ~7ULL;
   UPB_ASSERT((untagged & 7) == 0);
   memcpy(data, &untagged, sizeof(*data));

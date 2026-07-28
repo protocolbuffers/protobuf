@@ -5929,6 +5929,7 @@ int upb_Unicode_ToUTF8(uint32_t cp, char* out) {
 }
 
 
+#include <stdint.h>
 #include <stdlib.h>
 
 // Must be last.
@@ -5944,6 +5945,54 @@ static void* upb_global_allocfunc(upb_alloc* alloc, void* ptr, size_t oldsize,
   } else {
     return realloc(ptr, size);
   }
+}
+
+#ifdef UPB_ALLOCATION_COUNT
+#if (defined(__STDC_VERSION__) && (__STDC_VERSION__ >= 201112L) && \
+     !defined(__STDC_NO_THREADS__)) ||                             \
+    UPB_HAS_EXTENSION(c_thread_local)
+#define UPB_THREAD_LOCAL _Thread_local
+#elif defined(_MSC_VER)
+#define UPB_THREAD_LOCAL __declspec(thread)
+#elif defined(__GNUC__) || defined(__clang__)
+#define UPB_THREAD_LOCAL __thread
+#else
+#define UPB_THREAD_LOCAL
+#endif
+
+UPB_THREAD_LOCAL size_t upb_arena_alloc_count = 0;
+UPB_THREAD_LOCAL size_t upb_arena_alloc_fail_on = SIZE_MAX;
+
+#undef UPB_THREAD_LOCAL
+#endif
+
+UPB_NODISCARD bool upb_AllocationCount_IsAvailable(void) {
+#ifdef UPB_ALLOCATION_COUNT
+  return true;
+#else
+  return false;
+#endif
+}
+
+UPB_NODISCARD size_t upb_AllocationCount_Get(void) {
+#ifdef UPB_ALLOCATION_COUNT
+  return upb_arena_alloc_count;
+#else
+  return 0;
+#endif
+}
+
+void upb_AllocationCount_Reset(void) {
+#ifdef UPB_ALLOCATION_COUNT
+  upb_arena_alloc_count = 0;
+  upb_arena_alloc_fail_on = SIZE_MAX;
+#endif
+}
+
+void upb_AllocationCount_FailOn(size_t n) {
+#ifdef UPB_ALLOCATION_COUNT
+  upb_arena_alloc_fail_on = n;
+#endif
 }
 
 upb_alloc upb_alloc_global = {&upb_global_allocfunc};
@@ -6440,11 +6489,14 @@ void* UPB_PRIVATE(_upb_Arena_SlowMalloc)(upb_Arena* a, size_t span) {
   } else {
     UPB_PRIVATE(_upb_Arena_UseBlock)(a, block, block_size);
     UPB_ASSERT(UPB_PRIVATE(_upb_ArenaHas)(a) >= span);
-    return upb_Arena_Malloc(a, size);
+    return _upb_Arena_Malloc_Unchecked(a, size);
   }
 }
 
 static upb_Arena* _upb_Arena_InitSlow(upb_alloc* alloc, size_t first_size) {
+  if (!upb_AllocationCount_IncrementAndCheck()) {
+    return NULL;
+  }
   if (!alloc) return NULL;
 
   // We need to malloc the initial block.
@@ -7802,14 +7854,9 @@ void upb_Message_Freeze(upb_Message* msg, const upb_MiniTable* m) {
   // TODO: b/376969853 - use iterator API
   uint32_t size = in ? in->size : 0;
   for (size_t i = 0; i < size; i++) {
-    upb_TaggedAuxPtr tagged_ptr = in->aux_data[i];
-    upb_TaggedAux aux;
-    upb_TaggedAuxType type = upb_TaggedAux_Get(tagged_ptr, &aux);
-    if (type != kUpb_TaggedAuxType_CanonicalExtension &&
-        type != kUpb_TaggedAuxType_NonCanonicalExtension) {
-      continue;
-    }
-    const upb_Extension* ext = aux.extension;
+    const upb_Extension* ext =
+        upb_TaggedAuxPtr_TryGetExtension(in->aux_data[i]);
+    if (!ext) continue;
     const upb_MiniTableExtension* e = ext->ext;
     const upb_MiniTableField* f = &e->UPB_PRIVATE(field);
     const upb_MiniTable* m2 = upb_MiniTableExtension_GetSubMessage(e);
@@ -8766,10 +8813,13 @@ bool upb_Message_ShallowCopy(upb_Message* dst, const upb_Message* src,
   upb_Message_Internal* dst_in = upb_Arena_Malloc(arena, size);
   if (!dst_in) return false;
 
-  dst_in->size = in->size;
+  dst_in->size = 0;
   dst_in->capacity = in->size;
 
   for (size_t i = 0; i < in->size; i++) {
+    if (upb_TaggedAuxPtr_IsNull(in->aux_data[i])) {
+      continue;
+    }
     upb_TaggedAux aux;
     switch (upb_TaggedAux_Get(in->aux_data[i], &aux)) {
       case kUpb_TaggedAuxType_CanonicalExtension: {
@@ -8777,7 +8827,8 @@ bool upb_Message_ShallowCopy(upb_Message* dst, const upb_Message* src,
         upb_Extension* dst_ext = upb_Arena_Malloc(arena, sizeof(upb_Extension));
         if (!dst_ext) return false;
         *dst_ext = *msg_ext;
-        dst_in->aux_data[i] = upb_TaggedAuxPtr_MakeCanonicalExtension(dst_ext);
+        dst_in->aux_data[dst_in->size++] =
+            upb_TaggedAuxPtr_MakeCanonicalExtension(dst_ext);
         break;
       }
       case kUpb_TaggedAuxType_Unknown:
@@ -8786,7 +8837,8 @@ bool upb_Message_ShallowCopy(upb_Message* dst, const upb_Message* src,
             upb_Arena_Malloc(arena, sizeof(upb_StringView));
         if (!dst_sv) return false;
         *dst_sv = *aux.unknown_data;
-        dst_in->aux_data[i] = upb_TaggedAuxPtr_MakeUnknownDataAliased(dst_sv);
+        dst_in->aux_data[dst_in->size++] =
+            upb_TaggedAuxPtr_MakeUnknownDataAliased(dst_sv);
         break;
       }
       case kUpb_TaggedAuxType_NonCanonicalExtension: {
@@ -8794,7 +8846,7 @@ bool upb_Message_ShallowCopy(upb_Message* dst, const upb_Message* src,
         upb_Extension* dst_ext = upb_Arena_Malloc(arena, sizeof(upb_Extension));
         if (!dst_ext) return false;
         *dst_ext = *msg_ext;
-        dst_in->aux_data[i] =
+        dst_in->aux_data[dst_in->size++] =
             upb_TaggedAuxPtr_MakeNonCanonicalExtension(dst_ext);
         break;
       }
@@ -9964,8 +10016,11 @@ done:
 
 #if UPB_FASTTABLE
   upb_DecodeFast_TableEntry fasttable[32];
-  int fasttable_size = upb_DecodeFast_BuildTable(&decoder->table, fasttable);
-  mt_size += fasttable_size * sizeof(fasttable[0]);
+  int fasttable_size = 0;
+  if (decoder->platform == kUpb_MiniTablePlatform_64Bit) {
+    fasttable_size = upb_DecodeFast_BuildTable(&decoder->table, fasttable);
+    mt_size += fasttable_size * sizeof(fasttable[0]);
+  }
 #endif
 
   upb_MiniTable* ret = upb_Arena_Malloc(decoder->arena, mt_size);
@@ -17640,6 +17695,9 @@ static char* upb_BackAlloc_Realloc(upb_BackAlloc* a, char* ptr, size_t n) {
 }
 
 char* upb_BackAlloc_Grow(upb_BackAlloc* a, char* ptr, size_t n) {
+  if (!upb_AllocationCount_IncrementAndCheck()) {
+    return NULL;
+  }
   if (a->limit == a->buf) {
     // First allocation: try to steal a block.
     size_t size = n;
