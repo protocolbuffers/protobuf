@@ -4372,7 +4372,6 @@ internal::DescriptorBuilder::DescriptorBuilder(
       tables_(tables),
       deferred_validation_(deferred_validation),
       error_collector_(error_collector),
-      had_errors_(false),
       possible_undeclared_dependency_(nullptr),
       undefine_resolved_name_("") {}
 
@@ -4382,9 +4381,12 @@ PROTOBUF_NOINLINE void internal::DescriptorBuilder::AddError(
     const absl::string_view element_name, const Message& descriptor,
     DescriptorPool::ErrorCollector::ErrorLocation location,
     absl::FunctionRef<std::string()> make_error) {
+  if (++error_count_ > kMaxNumErrors) {
+    return;
+  }
   std::string error = make_error();
   if (error_collector_ == nullptr) {
-    if (!had_errors_) {
+    if (error_count_ == 1) {
       ABSL_LOG(ERROR) << "Invalid proto descriptor for file \"" << filename_
                       << "\":";
     }
@@ -4393,7 +4395,6 @@ PROTOBUF_NOINLINE void internal::DescriptorBuilder::AddError(
     error_collector_->RecordError(filename_, element_name, &descriptor,
                                   location, error);
   }
-  had_errors_ = true;
 }
 
 PROTOBUF_NOINLINE void internal::DescriptorBuilder::AddError(
@@ -4442,6 +4443,9 @@ PROTOBUF_NOINLINE void internal::DescriptorBuilder::AddWarning(
     const absl::string_view element_name, const Message& descriptor,
     DescriptorPool::ErrorCollector::ErrorLocation location,
     absl::FunctionRef<std::string()> make_error) {
+  if (++warning_count_ > kMaxNumErrors) {
+    return;
+  }
   std::string error = make_error();
   if (error_collector_ == nullptr) {
     ABSL_LOG(WARNING) << filename_ << " " << element_name << ": " << error;
@@ -4871,7 +4875,7 @@ bool internal::DescriptorBuilder::AddSymbol(const absl::string_view full_name,
     if (!file_tables_->AddAliasUnderParent(parent, name, symbol)) {
       // This is only possible if there was already an error adding something of
       // the same name.
-      if (!had_errors_) {
+      if (!has_errors()) {
         ABSL_DLOG(FATAL) << "\"" << full_name
                          << "\" not previously defined in "
                             "symbols_by_name_, but was defined in "
@@ -5811,8 +5815,9 @@ FileDescriptor* internal::DescriptorBuilder::BuildFileImpl(
   // Interpret only the non-extension options first, including features and
   // their extensions.  This has to be done in two passes, since option
   // extensions defined in this file may have features attached to them.
-  if (!had_errors_) {
-    OptionInterpreter option_interpreter(this);
+  if (!has_errors()) {
+    OptionInterpreter option_interpreter(
+        this, /*update_source_code_info=*/info != nullptr);
     for (std::vector<OptionsToInterpret>::iterator iter =
              options_to_interpret_.begin();
          iter != options_to_interpret_.end(); ++iter) {
@@ -5863,7 +5868,7 @@ FileDescriptor* internal::DescriptorBuilder::BuildFileImpl(
 
   // Validate options. See comments at InternalSetLazilyBuildDependencies about
   // error checking and lazy import building.
-  if (!had_errors_ && !pool_->lazily_build_dependencies_) {
+  if (!has_errors() && !pool_->lazily_build_dependencies_) {
     internal::VisitDescriptors(
         *result, proto, [&](const auto& descriptor, const auto& desc_proto) {
           ValidateOptions(&descriptor, desc_proto);
@@ -5872,7 +5877,7 @@ FileDescriptor* internal::DescriptorBuilder::BuildFileImpl(
 
   // Additional naming conflict check for map entry types. Only need to check
   // this if there are already errors.
-  if (had_errors_) {
+  if (has_errors()) {
     for (int i = 0; i < proto.message_type_size(); ++i) {
       DetectMapConflicts(result->message_type(i), proto.message_type(i));
     }
@@ -5882,14 +5887,14 @@ FileDescriptor* internal::DescriptorBuilder::BuildFileImpl(
   // Again, see comments at InternalSetLazilyBuildDependencies about error
   // checking. Also, don't log unused dependencies if there were previous
   // errors, since the results might be inaccurate.
-  if (!had_errors_ && !unused_dependency_.empty() &&
+  if (!has_errors() && !unused_dependency_.empty() &&
       !pool_->lazily_build_dependencies_) {
     LogUnusedDependency(proto, result);
   }
 
   // Store feature information for deferred validation outside of the database
   // mutex.
-  if (!had_errors_ && !pool_->lazily_build_dependencies_) {
+  if (!has_errors() && !pool_->lazily_build_dependencies_) {
     internal::VisitDescriptors(
         *result, proto, [&](const auto& descriptor, const auto& desc_proto) {
           if (!IsDefaultInstance(*descriptor.proto_features_)) {
@@ -5906,7 +5911,7 @@ FileDescriptor* internal::DescriptorBuilder::BuildFileImpl(
         });
   }
 
-  if (!had_errors_ && pool_->enforce_naming_style_) {
+  if (!has_errors() && pool_->enforce_naming_style_) {
     internal::VisitDescriptors(
         *result, proto, [&](const auto& descriptor, const auto& desc_proto) {
           if (IsStyleOrGreater(&descriptor, FeatureSet::STYLE2024)) {
@@ -5915,7 +5920,7 @@ FileDescriptor* internal::DescriptorBuilder::BuildFileImpl(
         });
   }
 
-  if (!had_errors_ && pool_->enforce_proto_limits_) {
+  if (!has_errors() && pool_->enforce_proto_limits_) {
     internal::VisitDescriptors(
         *result, proto, [&](const auto& descriptor, const auto& desc_proto) {
           if (internal::InternalFeatureHelper::GetFeatures(descriptor)
@@ -5925,7 +5930,7 @@ FileDescriptor* internal::DescriptorBuilder::BuildFileImpl(
           }
         });
   }
-  if (!had_errors_ && pool_->enforce_symbol_visibility_) {
+  if (!has_errors() && pool_->enforce_symbol_visibility_) {
     SymbolChecker symbol_checker(result, proto);
     // Check Symbol Visibility and future co-location Rules.
     auto errors = symbol_checker.CheckSymbolVisibilityRules();
@@ -5938,7 +5943,7 @@ FileDescriptor* internal::DescriptorBuilder::BuildFileImpl(
     }
   }
 
-  if (had_errors_) {
+  if (has_errors()) {
     return nullptr;
   } else {
     return result;
@@ -7083,7 +7088,7 @@ void internal::DescriptorBuilder::CrossLinkMessage(
         out_oneof_decl.fields_ = message->field(i);
       }
 
-      if (!had_errors_) {
+      if (!has_errors()) {
         // Verify that they are contiguous.
         // This is assumed by OneofDescriptor::field(i).
         // But only if there are no errors.
@@ -7144,13 +7149,13 @@ void internal::DescriptorBuilder::CrossLinkMessage(
 void internal::DescriptorBuilder::CheckExtensionDeclarationFieldType(
     const FieldDescriptor& field, const FieldDescriptorProto& proto,
     absl::string_view type) {
-  if (had_errors_) return;
+  if (has_errors()) return;
   std::string actual_type(field.type_name());
   std::string expected_type(type);
   if (field.message_type() || field.enum_type()) {
     // Field message type descriptor can be in a partial state which will cause
     // segmentation fault if it is being accessed.
-    if (had_errors_) return;
+    if (has_errors()) return;
     absl::string_view full_name = field.message_type() != nullptr
                                       ? field.message_type()->full_name()
                                       : field.enum_type()->full_name();

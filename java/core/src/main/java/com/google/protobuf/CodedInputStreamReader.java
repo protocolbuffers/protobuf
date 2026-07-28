@@ -46,6 +46,11 @@ final class CodedInputStreamReader {
     this.input.wrapper = this;
   }
 
+  /** Returns the remaining recursion budget for this CodedInputStream. */
+  int getRemainingRecursionDepth() {
+    return input.getRemainingRecursionDepth();
+  }
+
   public boolean shouldDiscardUnknownFields() {
     return input.shouldDiscardUnknownFields();
   }
@@ -168,17 +173,9 @@ final class CodedInputStreamReader {
 
   private <T> void mergeMessageFieldInternal(
       T target, Schema<T> schema, ExtensionRegistryLite extensionRegistry) throws IOException {
-    int size = input.readUInt32();
-    input.checkRecursionLimit();
-
-    // Push the new limit.
-    final int prevLimit = input.pushLimit(size);
-    ++input.messageDepth;
+    final int prevLimit = input.pushLimitBeforeMessage();
     schema.mergeFrom(target, this, extensionRegistry);
-    input.checkLastTagWas(0);
-    --input.messageDepth;
-    // Restore the previous limit.
-    input.popLimit(prevLimit);
+    input.popLimitAfterMessage(prevLimit);
   }
 
   // Should have the same semantics of CodedInputStream#readMessage()
@@ -1227,6 +1224,9 @@ final class CodedInputStreamReader {
         }
       }
       target.put(key, value);
+      if (input.getBytesUntilLimit() != 0) {
+        throw InvalidProtocolBufferException.truncatedMessage();
+      }
     } finally {
       // Restore the previous limit.
       input.popLimit(prevLimit);

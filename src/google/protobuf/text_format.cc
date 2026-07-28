@@ -19,6 +19,7 @@
 #include <cmath>
 #include <cstddef>
 #include <cstdint>
+#include <iterator>
 #include <limits>
 #include <memory>
 #include <random>
@@ -3344,7 +3345,7 @@ TextMarkerGenerator TextMarkerGenerator::CreateRandom() {
       static_cast<uint64_t>(absl::ToUnixMicros(absl::Now()))};
 
   size_t redaction_marker_index = std::uniform_int_distribution<size_t>{
-      0, ABSL_ARRAYSIZE(kRedactionMarkers) - 1}(random);
+      0, std::size(kRedactionMarkers) - 1}(random);
 
   size_t random_marker_size =
       std::uniform_int_distribution<size_t>{1, kRandomMarker.size()}(random);

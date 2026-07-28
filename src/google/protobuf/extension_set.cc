@@ -35,6 +35,7 @@
 #include "google/protobuf/internal_visibility.h"
 #include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/message_lite.h"
+#include "google/protobuf/message_traits.h"
 #include "google/protobuf/metadata_lite.h"
 #include "google/protobuf/parse_context.h"
 #include "google/protobuf/port.h"
@@ -446,12 +447,12 @@ std::string* ExtensionSet::AddString(Arena* arena, int number, FieldType type,
 // -------------------------------------------------------------------
 // Messages
 
-const MessageLite& ExtensionSet::GetMessage(
-    Arena* arena, int number, const MessageLite& default_value) const {
+const MessageLite& ExtensionSet::GetMessageByClassData(
+    Arena* arena, int number, const ClassData* class_data) const {
   const Extension* extension = FindOrNull(number);
   if (extension == nullptr) {
     // Not present.  Return the default value.
-    return default_value;
+    return *class_data->default_instance();
   } else {
     ABSL_DCHECK_TYPE(*extension, OPTIONAL_FIELD, MESSAGE);
     ABSL_DCHECK(!extension->is_lazy);
@@ -464,10 +465,9 @@ const MessageLite& ExtensionSet::GetMessage(
 //                                             const Descriptor* message_type,
 //                                             MessageFactory* factory) const
 
-MessageLite* ExtensionSet::MutableMessage(Arena* arena, int number,
-                                          FieldType type,
-                                          const MessageLite& prototype,
-                                          const FieldDescriptor* descriptor) {
+MessageLite* ExtensionSet::MutableMessageByClassData(
+    Arena* arena, int number, FieldType type, const ClassData* class_data,
+    const FieldDescriptor* descriptor) {
   Extension* extension;
   if (MaybeNewExtension(arena, number, descriptor, &extension)) {
     extension->type = type;
@@ -475,7 +475,7 @@ MessageLite* ExtensionSet::MutableMessage(Arena* arena, int number,
     extension->is_repeated = false;
     extension->is_pointer = true;
     extension->is_lazy = false;
-    extension->ptr.message_value = prototype.New(arena);
+    extension->ptr.message_value = class_data->New(arena);
     extension->is_cleared = false;
     return extension->ptr.message_value;
   } else {
@@ -570,7 +570,7 @@ void ExtensionSet::UnsafeArenaSetAllocatedMessage(
 }
 
 MessageLite* ExtensionSet::ReleaseMessage(Arena* arena, int number,
-                                          const MessageLite& prototype) {
+                                          const ClassData* class_data) {
   Extension* extension = FindOrNull(number);
   if (extension == nullptr) {
     // Not present.  Return nullptr.
@@ -596,7 +596,7 @@ MessageLite* ExtensionSet::ReleaseMessage(Arena* arena, int number,
 }
 
 MessageLite* ExtensionSet::UnsafeArenaReleaseMessage(
-    Arena* arena, int number, const MessageLite& prototype) {
+    Arena* arena, int number, const ClassData* class_data) {
   Extension* extension = FindOrNull(number);
   if (extension == nullptr) {
     // Not present.  Return nullptr.

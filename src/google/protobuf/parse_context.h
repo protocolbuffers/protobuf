@@ -698,20 +698,27 @@ class PROTOBUF_EXPORT ParseContext : public EpsCopyInputStream {
     *start = InitFrom(std::forward<T>(args)...);
   }
 
+  template <int kReduction>
   struct Spawn {};
-  static constexpr Spawn kSpawn = {};
+  static constexpr Spawn<0> kSpawn = {};
 
   // Creates a new context from a given "ctx" to inherit a few attributes to
   // emulate continued parsing. For example, recursion depth or descriptor pools
   // must be passed down to a new "spawned" context to maintain the same parse
   // context. Note that the spawned context always disables aliasing (different
   // input).
-  template <typename... T>
-  ParseContext(Spawn, const ParseContext& ctx, const char** start, T&&... args)
+  template <int kDepthReduction, typename... T>
+  ParseContext(Spawn<kDepthReduction>, const ParseContext& ctx,
+               const char** start, T&&... args)
       : EpsCopyInputStream(false),
-        depth_(ctx.depth_),
+        depth_(ctx.depth_ - kDepthReduction),
         data_(ctx.data_)
   {
+    if (kDepthReduction != 0 && depth_ < 0) {
+      // Fail right away.
+      *start = nullptr;
+      return;
+    }
     *start = InitFrom(std::forward<T>(args)...);
   }
 

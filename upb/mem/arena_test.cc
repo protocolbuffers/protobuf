@@ -1020,4 +1020,43 @@ TEST(ArenaDeathTest, ArenaRefFuseCycle) {
 
 #endif  // UPB_SUPPRESS_MISSING_ATOMICS
 
+TEST(ArenaTest, AllocationCountFailureInjection) {
+  if (!upb_AllocationCount_IsAvailable()) {
+    return;
+  }
+  // Try normal scenario
+  upb_AllocationCount_Reset();
+  upb_Arena* arena = upb_Arena_New();
+  EXPECT_NE(arena, nullptr);
+  // Allocate some blocks
+  for (int i = 0; i < 10; ++i) {
+    void* p = upb_Arena_Malloc(arena, 500);
+    EXPECT_NE(p, nullptr);
+  }
+  size_t total = upb_AllocationCount_Get();
+  EXPECT_GT(total, 0);
+  upb_Arena_Free(arena);
+
+  // Now verify failure after i allocations
+  for (size_t i = 0; i < total; ++i) {
+    upb_AllocationCount_Reset();
+    upb_AllocationCount_FailOn(i);
+    // The i-th arena-level initial or block allocation should fail.
+    upb_Arena* fail_arena = upb_Arena_New();
+    if (fail_arena != nullptr) {
+      bool failed = false;
+      for (int j = 0; j < 10; ++j) {
+        void* p = upb_Arena_Malloc(fail_arena, 500);
+        if (p == nullptr) {
+          failed = true;
+          break;
+        }
+      }
+      upb_Arena_Free(fail_arena);
+      EXPECT_TRUE(failed);
+    }
+  }
+  upb_AllocationCount_Reset();
+}
+
 }  // namespace

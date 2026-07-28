@@ -20,6 +20,7 @@
 #include <cstdlib>
 #include <deque>
 #include <functional>
+#include <initializer_list>
 #include <iostream>
 #include <limits>
 #include <memory>
@@ -92,12 +93,14 @@ using ::google::protobuf::internal::cpp::HasbitMode;
 using ::google::protobuf::internal::cpp::HasHasbitWithoutProfile;
 using ::google::protobuf::internal::cpp::HasPreservingUnknownEnumSemantics;
 using ::google::protobuf::internal::cpp::Utf8CheckMode;
+using ::testing::_;
 using ::testing::AnyOf;
 using ::testing::AtLeast;
 using ::testing::ElementsAre;
 using ::testing::HasSubstr;
 using ::testing::NotNull;
 using ::testing::Return;
+using ::testing::SizeIs;
 
 absl::Status GetStatus(const absl::Status& s) { return s; }
 template <typename T>
@@ -5578,6 +5581,43 @@ TEST_F(ValidationErrorTest, ReservedRangeOverlap) {
 
       "foo.proto: Foo: NUMBER: Reserved range 5 to 14"
       " overlaps with already-defined range 10 to 19.\n");
+}
+
+TEST_F(ValidationErrorTest, LimitNumberOfErrors) {
+  FileDescriptorProto file;
+  file.set_name("foo.proto");
+  auto* m = file.add_message_type();
+  m->set_name("Foo");
+  // This would generate O(N^2) errors
+  for (int i = 0; i < 100; ++i) {
+    auto* r = m->add_reserved_range();
+    r->set_start(100);
+    r->set_end(200);
+  }
+  // DescriptorBuilder::kMaxNumErrors
+  BuildFileWithErrorList(file, SizeIs(1000));
+}
+
+TEST_F(ValidationErrorTest, LimitNumberOfWarnings) {
+  constexpr int N = 1100;
+  // Create N deps.
+  for (int i = 0; i < N; ++i) {
+    FileDescriptorProto file;
+    file.set_name(absl::StrCat("dep", i, ".proto"));
+    ASSERT_TRUE(pool_.BuildFile(file));
+  }
+
+  FileDescriptorProto file;
+  file.set_name("foo.proto");
+
+  // This generates one warning per dep.
+  for (int i = 0; i < N; ++i) {
+    file.add_dependency(absl::StrCat("dep", i, ".proto"));
+  }
+
+  pool_.AddDirectInputFile(file.name());
+  // DescriptorBuilder::kMaxNumErrors
+  BuildFileWithErrorList(file, _, SizeIs(1000));
 }
 
 TEST_F(ValidationErrorTest, ReservedNameError) {
@@ -16093,9 +16133,11 @@ const char* const kSourceLocationTestInput =
     "message A {\n"
     "  option (test_msg_opt) = \"foobar\";\n"
     "  optional int32 a = 1 [deprecated = true];\n"
+    "  repeated int32 rep = 5;\n"
     "  message B {\n"
     "    required double b = 1 [(test_field_opt) = \"foobar\"];\n"
     "  }\n"
+    "  optional B b_sub = 6;\n"
     "  oneof c {\n"
     "    option (test_oneof_opt) = \"foobar\";\n"
     "    string d = 2;\n"
@@ -16112,7 +16154,7 @@ const char* const kSourceLocationTestInput =
     "  MAYBE = 3;\n"
     "}\n"
     "service S {\n"
-    "  option (test_svc_opt) = {a:100};\n"
+    "  option (test_svc_opt) = {a:100, rep: [1, 2, 3], b_sub: {b: 200}};\n"
     "  option (test_svc_opt) = {a:200};\n"
     "  option (test_svc_opt) = {a:300};\n"
     "  rpc Method(A) returns (A.B);\n"
@@ -16231,6 +16273,12 @@ class SourceLocationTest : public testing::Test {
   static constexpr int kCustomOptionFieldNumber = 10101;
   // tag number of field "a" in message type "A" in above test file
   static constexpr int kAFieldNumber = 1;
+  // tag number of field "rep" in message type "A" in above test file
+  static constexpr int kRepFieldNumber = 5;
+  // tag number of field "b_sub" in message type "A" in above test file
+  static constexpr int kBSubFieldNumber = 6;
+  // tag number of field "b" in message type "B" in above test file
+  static constexpr int kBFieldNumber = 1;
 };
 
 // TODO: implement support for option fields and for
@@ -16250,9 +16298,11 @@ TEST_F(SourceLocationTest, GetSourceLocation) {
                   "message A {\n"
                   "  option (test_msg_opt) = \"foobar\";\n"
                   "  optional int32 a = 1 [deprecated = true];\n"
+                  "  repeated int32 rep = 5;\n"
                   "  message B {\n"
                   "    required double b = 1 [(test_field_opt) = \"foobar\"];\n"
                   "  }\n"
+                  "  optional B b_sub = 6;\n"
                   "  oneof c {\n"
                   "    option (test_oneof_opt) = \"foobar\";\n"
                   "    string d = 2;\n"
@@ -16293,7 +16343,8 @@ TEST_F(SourceLocationTest, GetSourceLocation) {
   EXPECT_THAT(loc,
               MatchesSubstring(kSourceLocationTestInput,
                                "service S {\n"
-                               "  option (test_svc_opt) = {a:100};\n"
+                               "  option (test_svc_opt) = {a:100, rep: [1, 2, "
+                               "3], b_sub: {b: 200}};\n"
                                "  option (test_svc_opt) = {a:200};\n"
                                "  option (test_svc_opt) = {a:300};\n"
                                "  rpc Method(A) returns (A.B);\n"
@@ -16308,6 +16359,115 @@ TEST_F(SourceLocationTest, GetSourceLocation) {
   EXPECT_TRUE(m_desc->GetSourceLocation(&loc));
   EXPECT_THAT(loc, MatchesSubstring(kSourceLocationTestInput,
                                     "rpc Method(A) returns (A.B);"));
+}
+
+TEST_F(SourceLocationTest, AggregateOptionSourceLocation) {
+  SourceLocation loc;
+  const FileDescriptor* file_desc =
+      ABSL_DIE_IF_NULL(pool_.FindFileByName("/test/test.proto"));
+
+  SourceCodePath base_path = {FileDescriptorProto::kServiceFieldNumber,
+                              0,
+                              ServiceDescriptorProto::kOptionsFieldNumber,
+                              kCustomOptionFieldNumber,
+                              0,
+                              UninterpretedOption::kAggregateValueFieldNumber};
+
+  auto make_path = [&](std::initializer_list<int> sub) {
+    SourceCodePath path = base_path;
+    path.insert(path.end(), sub.begin(), sub.end());
+    return path;
+  };
+
+  // Verify what base_path matches directly (the entire aggregate block).
+  {
+    EXPECT_TRUE(file_desc->GetSourceLocation(base_path, &loc));
+    EXPECT_THAT(loc,
+                MatchesSubstring(kSourceLocationTestInput,
+                                 "{a:100, rep: [1, 2, 3], b_sub: {b: 200}}"));
+  }
+
+  // Path to "a" inside {a:100}
+  {
+    SourceCodePath path =
+        make_path({kAFieldNumber, UninterpretedOption::kNameFieldNumber});
+    EXPECT_TRUE(file_desc->GetSourceLocation(path, &loc));
+    EXPECT_THAT(loc, MatchesSubstring(kSourceLocationTestInput, "a"));
+  }
+
+  // Path to "100" inside {a:100}
+  {
+    SourceCodePath path = make_path(
+        {kAFieldNumber, UninterpretedOption::kPositiveIntValueFieldNumber});
+    EXPECT_TRUE(file_desc->GetSourceLocation(path, &loc));
+    EXPECT_THAT(loc, MatchesSubstring(kSourceLocationTestInput, "100"));
+  }
+
+  // Path to the name of the top-level option (test_svc_opt)
+  {
+    SourceCodePath path = {FileDescriptorProto::kServiceFieldNumber,
+                           0,
+                           ServiceDescriptorProto::kOptionsFieldNumber,
+                           kCustomOptionFieldNumber,
+                           0,
+                           UninterpretedOption::kNameFieldNumber};
+    EXPECT_TRUE(file_desc->GetSourceLocation(path, &loc));
+    EXPECT_THAT(loc,
+                MatchesSubstring(kSourceLocationTestInput, "(test_svc_opt)"));
+  }
+
+  // Path to "1" inside {rep: [1, 2, 3]}
+  {
+    SourceCodePath path =
+        make_path({kRepFieldNumber, 0,
+                   UninterpretedOption::kPositiveIntValueFieldNumber});
+    EXPECT_TRUE(file_desc->GetSourceLocation(path, &loc));
+    EXPECT_THAT(loc, MatchesSubstring(kSourceLocationTestInput, "1"));
+  }
+
+  // Path to "2" inside {rep: [1, 2, 3]}
+  {
+    SourceCodePath path =
+        make_path({kRepFieldNumber, 1,
+                   UninterpretedOption::kPositiveIntValueFieldNumber});
+    EXPECT_TRUE(file_desc->GetSourceLocation(path, &loc));
+    EXPECT_THAT(loc, MatchesSubstring(kSourceLocationTestInput, "2"));
+  }
+
+  // Path to "3" inside {rep: [1, 2, 3]}
+  {
+    SourceCodePath path =
+        make_path({kRepFieldNumber, 2,
+                   UninterpretedOption::kPositiveIntValueFieldNumber});
+    EXPECT_TRUE(file_desc->GetSourceLocation(path, &loc));
+    EXPECT_THAT(loc, MatchesSubstring(kSourceLocationTestInput, "3"));
+  }
+
+  // Path to "b_sub" inside {..., b_sub: {b: 200}}
+  {
+    SourceCodePath path =
+        make_path({kBSubFieldNumber, UninterpretedOption::kNameFieldNumber});
+    EXPECT_TRUE(file_desc->GetSourceLocation(path, &loc));
+    EXPECT_THAT(loc, MatchesSubstring(kSourceLocationTestInput, "b_sub"));
+  }
+
+  // Path to "b" inside {..., b_sub: {b: 200}}
+  {
+    SourceCodePath path = make_path(
+        {kBSubFieldNumber, UninterpretedOption::kAggregateValueFieldNumber,
+         kBFieldNumber, UninterpretedOption::kNameFieldNumber});
+    EXPECT_TRUE(file_desc->GetSourceLocation(path, &loc));
+    EXPECT_THAT(loc, MatchesSubstring(kSourceLocationTestInput, "b"));
+  }
+
+  // Path to "200" inside {..., b_sub: {b: 200}}
+  {
+    SourceCodePath path = make_path(
+        {kBSubFieldNumber, UninterpretedOption::kAggregateValueFieldNumber,
+         kBFieldNumber, UninterpretedOption::kDoubleValueFieldNumber});
+    EXPECT_TRUE(file_desc->GetSourceLocation(path, &loc));
+    EXPECT_THAT(loc, MatchesSubstring(kSourceLocationTestInput, "200"));
+  }
 }
 
 TEST_F(SourceLocationTest, ExtensionSourceLocation) {
@@ -16580,7 +16740,8 @@ TEST_F(SourceLocationTest, InterpretedOptionSourceLocation) {
                             ServiceOptions::kUninterpretedOptionFieldNumber, 0};
     EXPECT_TRUE(file_desc->GetSourceLocation(path, &loc));
     EXPECT_THAT(loc, MatchesSubstring(kSourceLocationTestInput,
-                                      "option (test_svc_opt) = {a:100};"));
+                                      "option (test_svc_opt) = {a:100, rep: "
+                                      "[1, 2, 3], b_sub: {b: 200}};"));
 
     EXPECT_FALSE(file_desc->GetSourceLocation(unint, &loc));
   }
