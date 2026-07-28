@@ -14,6 +14,8 @@
 
 #include <string>
 
+#include "absl/container/flat_hash_map.h"
+#include "absl/strings/string_view.h"
 #include "google/protobuf/compiler/java/full/field_generator.h"
 #include "google/protobuf/descriptor.h"
 

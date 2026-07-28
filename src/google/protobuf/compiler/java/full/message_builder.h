@@ -19,6 +19,7 @@
 #include "absl/container/btree_map.h"
 #include "absl/strings/string_view.h"
 #include "absl/types/span.h"
+#include "google/protobuf/compiler/java/generator_common.h"
 #include "google/protobuf/compiler/java/full/field_generator.h"
 #include "google/protobuf/descriptor.h"
 
