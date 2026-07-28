@@ -8997,14 +8997,9 @@ void upb_Message_Freeze(upb_Message* msg, const upb_MiniTable* m) {
   // TODO: b/376969853 - use iterator API
   uint32_t size = in ? in->size : 0;
   for (size_t i = 0; i < size; i++) {
-    upb_TaggedAuxPtr tagged_ptr = in->aux_data[i];
-    upb_TaggedAux aux;
-    upb_TaggedAuxType type = upb_TaggedAux_Get(tagged_ptr, &aux);
-    if (type != kUpb_TaggedAuxType_CanonicalExtension &&
-        type != kUpb_TaggedAuxType_NonCanonicalExtension) {
-      continue;
-    }
-    const upb_Extension* ext = aux.extension;
+    const upb_Extension* ext =
+        upb_TaggedAuxPtr_TryGetExtension(in->aux_data[i]);
+    if (!ext) continue;
     const upb_MiniTableExtension* e = ext->ext;
     const upb_MiniTableField* f = &e->UPB_PRIVATE(field);
     const upb_MiniTable* m2 = upb_MiniTableExtension_GetSubMessage(e);
@@ -9961,10 +9956,13 @@ bool upb_Message_ShallowCopy(upb_Message* dst, const upb_Message* src,
   upb_Message_Internal* dst_in = upb_Arena_Malloc(arena, size);
   if (!dst_in) return false;
 
-  dst_in->size = in->size;
+  dst_in->size = 0;
   dst_in->capacity = in->size;
 
   for (size_t i = 0; i < in->size; i++) {
+    if (upb_TaggedAuxPtr_IsNull(in->aux_data[i])) {
+      continue;
+    }
     upb_TaggedAux aux;
     switch (upb_TaggedAux_Get(in->aux_data[i], &aux)) {
       case kUpb_TaggedAuxType_CanonicalExtension: {
@@ -9972,7 +9970,8 @@ bool upb_Message_ShallowCopy(upb_Message* dst, const upb_Message* src,
         upb_Extension* dst_ext = upb_Arena_Malloc(arena, sizeof(upb_Extension));
         if (!dst_ext) return false;
         *dst_ext = *msg_ext;
-        dst_in->aux_data[i] = upb_TaggedAuxPtr_MakeCanonicalExtension(dst_ext);
+        dst_in->aux_data[dst_in->size++] =
+            upb_TaggedAuxPtr_MakeCanonicalExtension(dst_ext);
         break;
       }
       case kUpb_TaggedAuxType_Unknown:
@@ -9981,7 +9980,8 @@ bool upb_Message_ShallowCopy(upb_Message* dst, const upb_Message* src,
             upb_Arena_Malloc(arena, sizeof(upb_StringView));
         if (!dst_sv) return false;
         *dst_sv = *aux.unknown_data;
-        dst_in->aux_data[i] = upb_TaggedAuxPtr_MakeUnknownDataAliased(dst_sv);
+        dst_in->aux_data[dst_in->size++] =
+            upb_TaggedAuxPtr_MakeUnknownDataAliased(dst_sv);
         break;
       }
       case kUpb_TaggedAuxType_NonCanonicalExtension: {
@@ -9989,7 +9989,7 @@ bool upb_Message_ShallowCopy(upb_Message* dst, const upb_Message* src,
         upb_Extension* dst_ext = upb_Arena_Malloc(arena, sizeof(upb_Extension));
         if (!dst_ext) return false;
         *dst_ext = *msg_ext;
-        dst_in->aux_data[i] =
+        dst_in->aux_data[dst_in->size++] =
             upb_TaggedAuxPtr_MakeNonCanonicalExtension(dst_ext);
         break;
       }
