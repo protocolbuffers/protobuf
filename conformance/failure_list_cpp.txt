@@ -34,6 +34,17 @@ Recommended.*.FieldMaskTooManyUnderscore.JsonOutput                             
 Recommended.*.JsonInput.FieldMaskInvalidCharacter                                                                  # Should have failed to parse, but didn't.
 Required.*.JsonInput.SingleValueForRepeatedFieldInt32                                                              # Should have failed to parse, but didn't.
 Required.*.JsonInput.SingleValueForRepeatedFieldMessage                                                            # Should have failed to parse, but didn't.
+Required.*.JsonInput.TimestampJsonInputDayTooLarge                                                                 # Should have failed to parse, but didn't.
+Required.*.JsonInput.TimestampJsonInputHourTooLarge                                                                # Should have failed to parse, but didn't.
+Required.*.JsonInput.TimestampJsonInputHourTooLarge25                                                              # Should have failed to parse, but didn't.
+Required.*.JsonInput.TimestampJsonInputInvalidOffsetHour                                                           # Should have failed to parse, but didn't.
+Required.*.JsonInput.TimestampJsonInputInvalidOffsetMinute                                                         # Should have failed to parse, but didn't.
+Required.*.JsonInput.TimestampJsonInputMinuteTooLarge                                                              # Should have failed to parse, but didn't.
+Required.*.JsonInput.TimestampJsonInputMonthTooLarge                                                               # Should have failed to parse, but didn't.
+Required.*.JsonInput.TimestampJsonInputNonLeapFeb29                                                                # Should have failed to parse, but didn't.
+Required.*.JsonInput.TimestampJsonInputOffsetBoundaryOverflow                                                      # Should have failed to parse, but didn't.
+Required.*.JsonInput.TimestampJsonInputOffsetBoundaryUnderflow                                                     # Should have failed to parse, but didn't.
+Required.*.JsonInput.TimestampJsonInputSecondTooLarge                                                              # Should have failed to parse, but didn't.
 Required.*.ProtobufInput.BadTag_FieldNumberSlightlyTooHigh                                                         # Should have failed to parse, but didn't.
 # TODO: Uncomment once conformance tests can express failures that are not expected to be fixed.
 # Recommended.Editions_Proto2.ProtobufInput.RejectInvalidUtf8.String.MapKey                                          # Should have failed to parse, but didn't.

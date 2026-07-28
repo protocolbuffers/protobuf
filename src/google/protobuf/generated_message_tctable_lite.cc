@@ -27,6 +27,7 @@
 #include "absl/strings/string_view.h"
 #include "absl/types/optional.h"
 #include "google/protobuf/arenastring.h"
+#include "google/protobuf/class_data.h"
 #include "google/protobuf/generated_enum_util.h"
 #include "google/protobuf/generated_message_tctable_decl.h"
 #include "google/protobuf/generated_message_tctable_impl.h"
@@ -35,6 +36,7 @@
 #include "google/protobuf/io/zero_copy_stream_impl_lite.h"
 #include "google/protobuf/map.h"
 #include "google/protobuf/message_lite.h"
+#include "google/protobuf/message_traits.h"
 #include "google/protobuf/micro_string.h"
 #include "google/protobuf/parse_context.h"
 #include "google/protobuf/port.h"
@@ -320,7 +322,7 @@ static uint32_t FastDecodeTag(uint16_t coded_tag) {
 
 // Field lookup table layout:
 //
-// Because it consists of a series of variable-length segments, the lookuup
+// Because it consists of a series of variable-length segments, the lookup
 // table is organized within an array of uint16_t, and each element is either
 // a uint16_t or a uint32_t stored little-endian as a pair of uint16_t.
 //
@@ -632,8 +634,8 @@ PROTOBUF_ALWAYS_INLINE MessageLite* TcParser::NewMessage(
 
 MessageLite* TcParser::AddMessage(const ClassData* class_data,
                                   RepeatedPtrFieldBase& field, Arena* arena) {
-  return field.AddFromPrototype<GenericTypeHandler<MessageLite>>(
-      arena, class_data->default_instance());
+  return field.AddFromClassData<GenericTypeHandler<MessageLite>>(arena,
+                                                                 class_data);
 }
 
 template <bool kIsTable>
@@ -685,28 +687,14 @@ PROTOBUF_ALWAYS_INLINE const char* TcParser::SingularParseMessageAuxImpl(
   SyncHasbits(msg, hasbits, table);
   auto& field = RefAt<MessageLite*>(msg, data.offset());
   const auto aux = *table->field_aux(data.aux_idx());
-#ifndef PROTOBUF_MESSAGE_GLOBALS
-  const auto* inner_table =
-      aux_is_table ? aux.table_ptr() : aux.message_default()->GetTcParseTable();
+
+  // Captured structured bindings are a C++20 feature.
+  auto [inner_table_alias, class_data] =
+      GetTableAndClassDataFromAux<aux_is_table>(aux);
+  const TcParseTableBase* inner_table = inner_table_alias;
   if (field == nullptr) {
-    field = NewMessage(inner_table->class_data, msg->GetArena());
+    field = NewMessage(class_data, msg->GetArena());
   }
-#else
-  const TcParseTableBase* inner_table;
-  if constexpr (aux_is_table) {
-    inner_table = MessageGlobalsBase::ToParseTableBase(aux.message_globals());
-    if (field == nullptr) {
-      field =
-          NewMessage(MessageGlobalsBase::GetClassData(aux.message_globals()),
-                     msg->GetArena());
-    }
-  } else {
-    inner_table = aux.message_default()->GetTcParseTable();
-    if (field == nullptr) {
-      field = NewMessage(inner_table->class_data, msg->GetArena());
-    }
-  }
-#endif  // PROTOBUF_MESSAGE_GLOBALS
   const auto inner_loop = [&](const char* ptr) {
     return ParseLoop(field, ptr, ctx, inner_table);
   };
@@ -1219,7 +1207,7 @@ PROTOBUF_ALWAYS_INLINE const char* TcParser::RepeatedVarint(
   } while (ctx->DataAvailable(ptr2) &&
            UnalignedLoad<TagType>(ptr2) == expected_tag);
   int added = 0;
-  field.Reserve(field.size() + len);
+  field.Reserve(internal::CheckedAdd(field.size(), len));
   // Allows us to skip SOO checks.
   FieldType* x = field.AddNAlreadyReserved(len);
   do {

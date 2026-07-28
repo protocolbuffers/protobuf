@@ -21,20 +21,27 @@
 #include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
 #include "upb/base/string_view.h"
+#include "upb/base/upcast.h"
 #include "upb/mem/arena.h"
 #include "upb/mem/arena.hpp"
 #include "upb/message/accessors.h"
 #include "upb/message/accessors.hpp"
 #include "upb/message/array.h"
+#include "upb/message/internal/accessors.h"
+#include "upb/message/internal/message.h"
 #include "upb/message/message.h"
+#include "upb/message/unknown_fields.h"
 #include "upb/mini_descriptor/decode.h"
 #include "upb/mini_descriptor/link.h"
 #include "upb/mini_table/extension.h"
 #include "upb/mini_table/extension_registry.h"
 #include "upb/mini_table/field.h"
 #include "upb/mini_table/message.h"
+#include "upb/test/test.upb.h"
+#include "upb/test/test.upb_minitable.h"
 #include "upb/wire/decode_fast/combinations.h"
 #include "upb/wire/decode_test.upb_minitable.h"
+#include "upb/wire/encode.h"
 #include "upb/wire/test_util/field_types.h"
 #include "upb/wire/test_util/make_mini_table.h"
 #include "upb/wire/test_util/wire_message.h"
@@ -611,6 +618,139 @@ TEST(DecodeTest, MaxDepthPayloadParsesSuccessfully) {
   }
 }
 
+TEST(DecodeTest, DecodeNonCanonicalExtensionAsUnknown) {
+  upb::Arena arena;
+
+  // 1. Create base msg which starts empty
+  upb_test_ModelWithExtensions* msg =
+      upb_test_ModelWithExtensions_new(arena.ptr());
+
+  // 2. Create parsed submessage ("World")
+  upb_Message* extension1 =
+      UPB_UPCAST(upb_test_ModelExtension1_new(arena.ptr()));
+  upb_test_ModelExtension1_set_str((upb_test_ModelExtension1*)extension1,
+                                   upb_StringView_FromString("World"));
+
+  // 3. msg has a non-canonical extension A
+  UPB_PRIVATE(_upb_Message_SetNonCanonicalExtension)(
+      UPB_UPCAST(msg), upb_test_ModelExtension1_model_ext_ext, &extension1,
+      arena.ptr());
+
+  // Verify extension count is 0 before encoding/decoding.
+  EXPECT_EQ((int)upb_Message_ExtensionCount(UPB_UPCAST(msg)), 0);
+
+  // 5. Obtain encoded non-canonical extension A by serializing msg
+  char* buf;
+  size_t size;
+  upb_EncodeStatus enc_status =
+      upb_Encode(UPB_UPCAST(msg), &upb_0test__ModelWithExtensions_msg_init, 0,
+                 arena.ptr(), &buf, &size);
+  ASSERT_EQ(enc_status, kUpb_EncodeStatus_Ok);
+  ASSERT_GT(size, 0u);
+
+  // 6. Decode with extreg = nullptr (so the encoded extension A is decoded as
+  // unknown bytes)
+  upb_DecodeStatus dec_status = upb_Decode(
+      buf, size, UPB_UPCAST(msg), &upb_0test__ModelWithExtensions_msg_init,
+      /*extreg=*/nullptr, 0, arena.ptr());
+  ASSERT_EQ(dec_status, kUpb_DecodeStatus_Ok);
+
+  // 7. Verify that we end up with exactly one non-canonical extension A + one
+  // unknown bytes block representing A
+  int non_canonical_count = 0;
+  int unknown_bytes_count = 0;
+  uintptr_t iter = kUpb_Message_UnknownBegin;
+  upb_MessageUnknown data;
+  while (upb_Message_NextUnknown2(UPB_UPCAST(msg), &data, &iter)) {
+    if (data.type == kUpb_MessageUnknownType_NonCanonicalExtension) {
+      non_canonical_count++;
+    } else if (data.type == kUpb_MessageUnknownType_StringView) {
+      unknown_bytes_count++;
+    }
+  }
+  EXPECT_EQ(non_canonical_count, 1);
+  EXPECT_EQ(unknown_bytes_count, 1);
+
+  // Verify extension APIs: there are zero canonical extensions.
+  EXPECT_EQ((int)upb_Message_ExtensionCount(UPB_UPCAST(msg)), 0);
+  uintptr_t ext_iter = kUpb_Message_ExtensionBegin;
+  const upb_MiniTableExtension* ext_out = nullptr;
+  upb_MessageValue val_out;
+  EXPECT_FALSE(upb_Message_NextExtension(UPB_UPCAST(msg), &ext_out, &val_out,
+                                         &ext_iter));
+}
+
+TEST(DecodeTest, DecodeExtensionAsUnknownWithPreexistingUnknown) {
+  upb::Arena arena;
+
+  // 1. Create a temporary message to serialize the extension
+  upb_test_ModelWithExtensions* tmp_msg =
+      upb_test_ModelWithExtensions_new(arena.ptr());
+
+  // 2. Create parsed submessage ("World")
+  upb_Message* extension1 =
+      UPB_UPCAST(upb_test_ModelExtension1_new(arena.ptr()));
+  upb_test_ModelExtension1_set_str((upb_test_ModelExtension1*)extension1,
+                                   upb_StringView_FromString("World"));
+
+  // 3. Attach to tmp_msg as a non-canonical extension so we can serialize it to
+  // get the bytes
+  UPB_PRIVATE(_upb_Message_SetNonCanonicalExtension)(
+      UPB_UPCAST(tmp_msg), upb_test_ModelExtension1_model_ext_ext, &extension1,
+      arena.ptr());
+
+  // 5. Obtain encoded extension A by serializing tmp_msg
+  char* buf;
+  size_t size;
+  upb_EncodeStatus enc_status =
+      upb_Encode(UPB_UPCAST(tmp_msg), &upb_0test__ModelWithExtensions_msg_init,
+                 0, arena.ptr(), &buf, &size);
+  ASSERT_EQ(enc_status, kUpb_EncodeStatus_Ok);
+  ASSERT_GT(size, 0u);
+
+  // 6. Create destination message and put the serialized bytes as an unknown
+  // field on msg
+  upb_test_ModelWithExtensions* msg =
+      upb_test_ModelWithExtensions_new(arena.ptr());
+  bool add_ok = UPB_PRIVATE(_upb_Message_AddUnknown)(
+      UPB_UPCAST(msg), buf, size, arena.ptr(), kUpb_AddUnknown_Alias);
+  ASSERT_TRUE(add_ok);
+
+  // Verify extension count is 0 before decoding.
+  EXPECT_EQ((int)upb_Message_ExtensionCount(UPB_UPCAST(msg)), 0);
+
+  // 7. Decode with extreg = nullptr (so the encoded extension A is decoded as
+  // unknown bytes)
+  upb_DecodeStatus dec_status = upb_Decode(
+      buf, size, UPB_UPCAST(msg), &upb_0test__ModelWithExtensions_msg_init,
+      /*extreg=*/nullptr, 0, arena.ptr());
+  ASSERT_EQ(dec_status, kUpb_DecodeStatus_Ok);
+
+  // 8. Verify that we end up with exactly two unknown bytes blocks representing
+  // A
+  int non_canonical_count = 0;
+  int unknown_bytes_count = 0;
+  uintptr_t iter = kUpb_Message_UnknownBegin;
+  upb_MessageUnknown data;
+  while (upb_Message_NextUnknown2(UPB_UPCAST(msg), &data, &iter)) {
+    if (data.type == kUpb_MessageUnknownType_NonCanonicalExtension) {
+      non_canonical_count++;
+    } else if (data.type == kUpb_MessageUnknownType_StringView) {
+      unknown_bytes_count++;
+    }
+  }
+  EXPECT_EQ(non_canonical_count, 0);
+  EXPECT_EQ(unknown_bytes_count, 2);
+
+  // Verify extension APIs: there are zero canonical extensions.
+  EXPECT_EQ((int)upb_Message_ExtensionCount(UPB_UPCAST(msg)), 0);
+  uintptr_t ext_iter = kUpb_Message_ExtensionBegin;
+  const upb_MiniTableExtension* ext_out = nullptr;
+  upb_MessageValue val_out;
+  EXPECT_FALSE(upb_Message_NextExtension(UPB_UPCAST(msg), &ext_out, &val_out,
+                                         &ext_iter));
+}
+
 TEST(DecodeTest, DecodeGroupFieldFromDelimitedWireFormatAsUnknown) {
   upb::Arena mt_arena;
   upb::Arena msg_arena;
@@ -728,6 +868,61 @@ TEST(DecodeTest, MessageSetConsecutiveUnknowns) {
 
     // Check if the extension was successfully parsed.
     EXPECT_TRUE(upb_Message_HasExtension(msg, ext));
+  }
+}
+
+TEST(DecodeTest, FieldZeroRejected) {
+  Arena mt_arena;
+
+  // 1. Empty message with field 0 varint payload.
+  {
+    upb_MiniTable* empty_mt =
+        (upb_MiniTable*)upb_Arena_Malloc(mt_arena.ptr(), sizeof(upb_MiniTable));
+    memset(empty_mt, 0, sizeof(upb_MiniTable));
+    empty_mt->UPB_PRIVATE(size) = sizeof(upb_Message);
+    empty_mt->UPB_ONLYBITS(field_count) = 0;
+
+    std::string payload("\x00\x00", 2);
+    for (int options : GetDecodeOptionsToTest()) {
+      Arena msg_arena;
+      upb_Message* msg = upb_Message_New(empty_mt, msg_arena.ptr());
+      upb_DecodeStatus result =
+          upb_Decode(payload.data(), payload.size(), msg, empty_mt, nullptr,
+                     options, msg_arena.ptr());
+      EXPECT_EQ(result, kUpb_DecodeStatus_Malformed);
+    }
+  }
+
+  // 2. Field 0 varint inside unknown group.
+  {
+    auto [mt, field] = MiniTable::MakeSingleFieldTable<field_types::Int32>(
+        1, kUpb_DecodeFast_Scalar, mt_arena.ptr());
+
+    // Field 2 (StartGroup) containing Field 0 varint.
+    std::string payload("\x13\x00\x00\x14", 4);
+    for (int options : GetDecodeOptionsToTest()) {
+      Arena msg_arena;
+      upb_Message* msg = upb_Message_New(mt, msg_arena.ptr());
+      upb_DecodeStatus result =
+          upb_Decode(payload.data(), payload.size(), msg, mt, nullptr, options,
+                     msg_arena.ptr());
+      EXPECT_EQ(result, kUpb_DecodeStatus_Malformed);
+    }
+  }
+
+  // 3. Field 0 varint inside MessageSet item.
+  {
+    const upb_MiniTable* mset_mt = &upb_0decode_0test__TestMessageSet_msg_init;
+    // Field 1 (StartGroup for MessageSet Item) containing Field 0 varint.
+    std::string payload("\x0b\x00\x00\x0c", 4);
+    for (int options : GetDecodeOptionsToTest()) {
+      Arena msg_arena;
+      upb_Message* msg = upb_Message_New(mset_mt, msg_arena.ptr());
+      upb_DecodeStatus result =
+          upb_Decode(payload.data(), payload.size(), msg, mset_mt, nullptr,
+                     options, msg_arena.ptr());
+      EXPECT_EQ(result, kUpb_DecodeStatus_Malformed);
+    }
   }
 }
 

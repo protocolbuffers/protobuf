@@ -12,6 +12,7 @@ import static com.google.protobuf.WireFormat.FIXED64_SIZE;
 import static com.google.protobuf.WireFormat.MAX_VARINT32_SIZE;
 import static com.google.protobuf.WireFormat.MAX_VARINT_SIZE;
 import static java.lang.Math.max;
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -1426,29 +1427,35 @@ public abstract class CodedOutputStream extends ByteOutput {
 
     @Override
     public final void writeStringNoTag(String value) throws IOException {
-      final int oldPosition = position;
-      try {
-        // UTF-8 byte length of the string is at least its UTF-16 code unit length (value.length()),
-        // and at most 3 times of it. We take advantage of this in both branches below.
-        final int maxLength = value.length() * Utf8.MAX_BYTES_PER_CHAR;
-        final int maxLengthVarIntSize = computeUInt32SizeNoTag(maxLength);
-        final int minLengthVarIntSize = computeUInt32SizeNoTag(value.length());
-        if (minLengthVarIntSize == maxLengthVarIntSize) {
+      if (Utf8.ENCODES_VIA_INTERMEDIATE_ARRAY) {
+        final byte[] encoded = value.getBytes(UTF_8);
+        writeUInt32NoTag(encoded.length);
+        write(encoded, 0, encoded.length);
+      } else {
+        // Encoding writes straight into the buffer, so the length is not known up front. Reserve
+        // the smallest prefix it could need, encode, and shift the bytes right if the real length
+        // needs a wider one. This approach is allocation-free.
+        final int oldPosition = position;
+        try {
+          final int minLengthVarIntSize = computeUInt32SizeNoTag(value.length());
           position = oldPosition + minLengthVarIntSize;
-          int newPosition = Utf8.encode(value, buffer, position, buffer.length - position);
-          // Since this class is stateful and tracks the position, we rewind and store the state,
-          // prepend the length, then reset it back to the end of the string.
+          final int newPosition = Utf8.encode(value, buffer, position, buffer.length - position);
+          final int length = newPosition - oldPosition - minLengthVarIntSize;
+          final int lengthVarIntSize = computeUInt32SizeNoTag(length);
+          if (lengthVarIntSize != minLengthVarIntSize) {
+            System.arraycopy(
+                buffer,
+                oldPosition + minLengthVarIntSize,
+                buffer,
+                oldPosition + lengthVarIntSize,
+                length);
+          }
           position = oldPosition;
-          int length = newPosition - oldPosition - minLengthVarIntSize;
           writeUInt32NoTag(length);
-          position = newPosition;
-        } else {
-          int length = Utf8.encodedLength(value);
-          writeUInt32NoTag(length);
-          position = Utf8.encode(value, buffer, position, buffer.length - position);
+          position = oldPosition + lengthVarIntSize + length;
+        } catch (IndexOutOfBoundsException e) {
+          throw new OutOfSpaceException(e);
         }
-      } catch (IndexOutOfBoundsException e) {
-        throw new OutOfSpaceException(e);
       }
     }
 
