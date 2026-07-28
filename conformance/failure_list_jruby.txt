@@ -179,3 +179,6 @@ Required.*.JsonInput.TimestampJsonInputNonLeapFeb29                             
 Required.*.JsonInput.TimestampJsonInputSecondTooLarge                                                 # Should have failed to parse, but didn't.
 Required.*.JsonInput.TimestampJsonInputYearTooLong                                                    # Should have failed to parse, but didn't.
 Required.*.JsonInput.TimestampJsonInputYearTooShort                                                   # Should have failed to parse, but didn't.
+Recommended.Proto2.ProtobufInput.ValidMessageSetEncoding.DuplicateDifferentTypeId.ProtobufOutput                      # Output was not equivalent to reference message
+Recommended.Proto2.ProtobufInput.ValidMessageSetEncoding.DuplicateValue.ProtobufOutput                                # Output was not equivalent to reference message
+Recommended.Proto2.ProtobufInput.ValidMessageSetEncoding.DuplicateValueOutOfOrder.ProtobufOutput                      # Output was not equivalent to reference message

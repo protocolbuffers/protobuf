@@ -498,6 +498,64 @@ void BinaryAndJsonConformanceSuite::RunMessageSetTests() {
            })pb"
       // clang-format on
   );
+
+  // [type_id, value, type_id (different)] -> first type_id and value honored.
+  RunValidBinaryProtobufTest<TestAllTypesProto2>(
+      absl::StrCat("ValidMessageSetEncoding.DuplicateDifferentTypeId"),
+      RECOMMENDED,
+      len(500,
+          group(
+              1,
+              absl::StrCat(
+                  field(2, WireFormatLite::WIRETYPE_VARINT, varint(4135312)),
+                  len(3, field(9, WireFormatLite::WIRETYPE_VARINT, varint(99))),
+                  field(2, WireFormatLite::WIRETYPE_VARINT, varint(1547769))))),
+      // clang-format off
+      R"pb(message_set_correct: {
+             [protobuf_test_messages.proto2
+                  .TestAllTypesProto2.MessageSetCorrectExtension2]: { i: 99 }
+            })pb"
+      // clang-format on
+  );
+
+  // [type_id, value, value] -> first value honored, no merge.
+  RunValidBinaryProtobufTest<TestAllTypesProto2>(
+      absl::StrCat("ValidMessageSetEncoding.DuplicateValue"), RECOMMENDED,
+      len(500,
+          group(
+              1,
+              absl::StrCat(
+                  field(2, WireFormatLite::WIRETYPE_VARINT, varint(4135312)),
+                  len(3, field(9, WireFormatLite::WIRETYPE_VARINT, varint(99))),
+                  len(3,
+                      field(9, WireFormatLite::WIRETYPE_VARINT, varint(88)))))),
+      // clang-format off
+      R"pb(message_set_correct: {
+             [protobuf_test_messages.proto2
+                  .TestAllTypesProto2.MessageSetCorrectExtension2]: { i: 99 }
+            })pb"
+      // clang-format on
+  );
+
+  // [value, type_id, value] -> first value honored, no merge.
+  RunValidBinaryProtobufTest<TestAllTypesProto2>(
+      absl::StrCat("ValidMessageSetEncoding.DuplicateValueOutOfOrder"),
+      RECOMMENDED,
+      len(500,
+          group(
+              1,
+              absl::StrCat(
+                  len(3, field(9, WireFormatLite::WIRETYPE_VARINT, varint(99))),
+                  field(2, WireFormatLite::WIRETYPE_VARINT, varint(4135312)),
+                  len(3,
+                      field(9, WireFormatLite::WIRETYPE_VARINT, varint(88)))))),
+      // clang-format off
+      R"pb(message_set_correct: {
+             [protobuf_test_messages.proto2
+                  .TestAllTypesProto2.MessageSetCorrectExtension2]: { i: 99 }
+            })pb"
+      // clang-format on
+  );
 }
 
 void BinaryAndJsonConformanceSuite::RunRecursionLimitTests() {
