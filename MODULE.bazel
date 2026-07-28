@@ -196,7 +196,7 @@ rust.toolchain(
 crate = use_extension("@rules_rust//crate_universe:extensions.bzl", "crate")
 crate.spec(
     package = "googletest",
-    version = ">0.0.0",
+    version = "0.14.2",
 )
 crate.spec(
     package = "linkme",
@@ -204,15 +204,16 @@ crate.spec(
 )
 crate.spec(
     package = "paste",
-    version = ">=1",
+    version = "1.0.15",
 )
 crate.spec(
     package = "quote",
-    version = ">=1",
+    version = "1.0.38",
 )
 crate.spec(
     package = "syn",
-    version = ">=2",
+    version = ">=2, <3",
+    features = ["full"],
 )
 crate.from_specs()
 use_repo(crate, crate_index = "crates")

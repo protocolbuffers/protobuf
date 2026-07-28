@@ -49,6 +49,8 @@ struct PROTOBUF_EXPORT TailCallTableInfo {
   // The tailcall parser can only update the first 32 hasbits. Fields with
   // has-bits beyond the first 32 are handled by mini parsing/fallback.
   static constexpr int kMaxFastFieldHasbitIndex = 31;
+  // Max padding used within a SkipEntryBlock between entries.
+  static constexpr int kMaxSkipEntrySpacing = 96;
 
   struct MessageOptions {
     bool is_lite;

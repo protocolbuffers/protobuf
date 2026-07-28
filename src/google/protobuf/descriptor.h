@@ -125,9 +125,11 @@ class MessageLite;
 class Message;
 class Reflection;
 
-// Defined in descriptor.cc
 namespace internal {
+// Defined in descriptor_builder.h
 class DescriptorBuilder;
+// Defined in option_interpreter.cc
+class AggregateOptionFinder;
 }
 class FileDescriptorTables;
 
@@ -1354,6 +1356,7 @@ class PROTOBUF_EXPORT FieldDescriptor : private internal::SymbolBase,
   // Must be constructed using DescriptorPool.
   FieldDescriptor();
   friend class internal::DescriptorBuilder;
+  friend class internal::AggregateOptionFinder;
   friend class FileDescriptor;
   friend class Descriptor;
   friend class OneofDescriptor;
@@ -3207,18 +3210,6 @@ inline FieldDescriptor::CppType FieldDescriptor::cpp_type() const {
 
 inline absl::string_view FieldDescriptor::cpp_type_name() const {
   return kCppTypeToName[kTypeToCppTypeMap[type()]];
-}
-
-inline FieldDescriptor::CppType FieldDescriptor::TypeToCppType(Type type) {
-  return kTypeToCppTypeMap[type];
-}
-
-inline absl::string_view FieldDescriptor::TypeName(Type type) {
-  return kTypeToName[type];
-}
-
-inline absl::string_view FieldDescriptor::CppTypeName(CppType cpp_type) {
-  return kCppTypeToName[cpp_type];
 }
 
 inline bool FieldDescriptor::IsTypePackable(Type field_type) {

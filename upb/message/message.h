@@ -20,6 +20,7 @@
 #include "upb/message/array.h"
 #include "upb/message/internal/message.h"
 #include "upb/message/internal/types.h"
+#include "upb/message/unknown_fields.h"
 #include "upb/mini_table/extension.h"
 #include "upb/mini_table/message.h"
 

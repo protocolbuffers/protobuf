@@ -861,6 +861,18 @@ void MessageBuilderGenerator::GenerateBuilderPackedFieldParsingCase(
 // ===================================================================
 
 void MessageBuilderGenerator::GenerateIsInitialized(io::Printer* printer) {
+  // If the message transitively has no required fields or extensions,
+  // isInitialized() is always true.
+  if (!HasRequiredFields(descriptor_)) {
+    printer->Print(
+        "@java.lang.Override\n"
+        "public final boolean isInitialized() {\n"
+        "  return true;\n"
+        "}\n"
+        "\n");
+    return;
+  }
+
   printer->Print(
       "@java.lang.Override\n"
       "public final boolean isInitialized() {\n");

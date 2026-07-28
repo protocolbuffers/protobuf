@@ -74,6 +74,7 @@ set(libprotobuf_srcs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/message_lite.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/micro_string.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/naming_style.cc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/option_interpreter.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/parse_context.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/port.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/raw_ptr.cc
@@ -187,6 +188,7 @@ set(libprotobuf_hdrs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/metadata_lite.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/micro_string.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/naming_style.h
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/option_interpreter.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/os_macros_restore.inc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/os_macros_undef.inc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/parse_context.h
@@ -769,6 +771,7 @@ set(libupb_hdrs
   ${protobuf_SOURCE_DIR}/upb/mem/alloc.h
   ${protobuf_SOURCE_DIR}/upb/mem/arena.h
   ${protobuf_SOURCE_DIR}/upb/mem/arena.hpp
+  ${protobuf_SOURCE_DIR}/upb/mem/internal/alloc.h
   ${protobuf_SOURCE_DIR}/upb/mem/internal/arena.h
   ${protobuf_SOURCE_DIR}/upb/message/accessors.h
   ${protobuf_SOURCE_DIR}/upb/message/array.h
@@ -1438,9 +1441,13 @@ set(protobuf_test_protos_files
   ${protobuf_SOURCE_DIR}/src/google/protobuf/map_unittest.proto
   ${protobuf_SOURCE_DIR}/src/google/protobuf/test_protos/abseil_flag_test.proto
   ${protobuf_SOURCE_DIR}/src/google/protobuf/test_protos/forced_micro_string.proto
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/test_protos/lazy_field_test.proto
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/test_protos/proto_with_many_options.proto
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/test_protos/recursive_message_set.proto
   ${protobuf_SOURCE_DIR}/src/google/protobuf/test_protos/repeated_field_proxy_import_message.proto
   ${protobuf_SOURCE_DIR}/src/google/protobuf/test_protos/repeated_field_proxy_test.proto
   ${protobuf_SOURCE_DIR}/src/google/protobuf/test_protos/repeated_ptr_field_test.proto
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/test_protos/tctable_long_name_test.proto
   ${protobuf_SOURCE_DIR}/src/google/protobuf/unittest.proto
   ${protobuf_SOURCE_DIR}/src/google/protobuf/unittest_arena.proto
   ${protobuf_SOURCE_DIR}/src/google/protobuf/unittest_custom_features.proto

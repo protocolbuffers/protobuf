@@ -7,8 +7,14 @@
 
 package com.google.protobuf;
 
-/** A MessageInfo object describes a proto message type. */
+/**
+ * A MessageInfo object describes a proto message type.
+ *
+ * <p>This class is for Lite runtime use only. For details on what this means regarding performance
+ * and security characteristics, see {@link ForLiteOnly}.
+ */
 @CheckReturnValue
+@ForLiteOnly
 interface MessageInfo {
   /** Gets syntax for this type. */
   ProtoSyntax getSyntax();

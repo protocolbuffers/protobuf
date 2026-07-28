@@ -376,6 +376,120 @@ class FreeThreadingTest(unittest.TestCase):
     for thread in threads:
       thread.join()
 
+  @unittest.skipIf(
+      api_implementation.Type() == 'upb',
+      'Upb has not been fixed to handle this case.',
+  )
+  def testConcurrentDescriptorDeallocRace(self):
+    """Tests descriptor cache interning under concurrent deallocation."""
+    pool = descriptor_pool.DescriptorPool()
+    file_proto = descriptor_pb2.FileDescriptorProto(name='race.proto')
+    file_proto.message_type.add(name='RaceMessage')
+    pool.Add(file_proto)
+
+    barrier = threading.Barrier(10)
+    errors = []
+
+    def Worker():
+      barrier.wait()
+      for _ in range(500):
+        try:
+          d1 = pool.FindMessageTypeByName('RaceMessage')
+          d2 = pool.FindMessageTypeByName('RaceMessage')
+          if d1 is not d2:
+            errors.append('Descriptor interning broken')
+            break
+          # Explicitly delete local references to trigger concurrent tp_dealloc
+          del d1
+          del d2
+        except Exception as e:
+          errors.append(str(e))
+          break
+
+    threads = [threading.Thread(target=Worker) for _ in range(10)]
+    for t in threads:
+      t.start()
+    for t in threads:
+      t.join()
+    self.assertEqual([], errors)
+
+  @unittest.skipIf(
+      api_implementation.Type() == 'upb',
+      'Upb has not been fixed to handle this case.',
+  )
+  def testConcurrentSubmessageDeallocRace(self):
+    """Tests child submessage wrapper interning under concurrent deallocation."""
+    msg = unittest_proto3_pb2.TestAllTypes()
+    msg.repeated_nested_message.add(bb=123)
+
+    barrier = threading.Barrier(10)
+    errors = []
+
+    def Worker():
+      barrier.wait()
+      for _ in range(500):
+        try:
+          m1 = msg.repeated_nested_message[0]
+          m2 = msg.repeated_nested_message[0]
+          if m1 is not m2:
+            errors.append('Child submessage interning broken')
+            break
+          del m1
+          del m2
+        except Exception as e:
+          errors.append(str(e))
+          break
+
+    threads = [threading.Thread(target=Worker) for _ in range(10)]
+    for t in threads:
+      t.start()
+    for t in threads:
+      t.join()
+    self.assertEqual([], errors)
+
+  @unittest.skipIf(
+      api_implementation.Type() == 'upb',
+      'Upb has not been fixed to handle this case.',
+  )
+  def testConcurrentCompositeFieldDeallocRace(self):
+    """Tests composite field wrapper interning under concurrent deallocation."""
+    msg = unittest_proto3_pb2.TestAllTypes()
+
+    barrier = threading.Barrier(10)
+    errors = []
+
+    def Worker():
+      barrier.wait()
+      for _ in range(500):
+        try:
+          # Test singular composite field wrapper
+          sub1 = msg.optional_nested_message
+          sub2 = msg.optional_nested_message
+          if sub1 is not sub2:
+            errors.append('Singular composite field interning broken')
+            break
+          del sub1
+          del sub2
+
+          # Test repeated container wrapper
+          rep1 = msg.repeated_int32
+          rep2 = msg.repeated_int32
+          if rep1 is not rep2:
+            errors.append('Repeated container interning broken')
+            break
+          del rep1
+          del rep2
+        except Exception as e:
+          errors.append(str(e))
+          break
+
+    threads = [threading.Thread(target=Worker) for _ in range(10)]
+    for t in threads:
+      t.start()
+    for t in threads:
+      t.join()
+    self.assertEqual([], errors)
+
   @unittest.skipIf(not ALSO_RUN_BENCHMARKS, 'Benchmarks are disabled.')
   def testConcurrentGetOptionsBenchmark(self):
     """Benchmarks concurrent GetOptions calls."""
