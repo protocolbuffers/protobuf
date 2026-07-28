@@ -460,6 +460,12 @@ def build_targets(name):
     )
 
     internal_py_test(
+        name = "recursive_map_test",
+        srcs = ["google/protobuf/internal/recursive_map_test.py"],
+        env = {"PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION": "python"},
+    )
+
+    internal_py_test(
         name = "wire_format_test",
         srcs = ["google/protobuf/internal/wire_format_test.py"],
     )
