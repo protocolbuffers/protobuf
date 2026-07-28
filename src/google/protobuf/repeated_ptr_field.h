@@ -1850,7 +1850,7 @@ PROTOBUF_NDEBUG_INLINE void RepeatedPtrField<Element>::AddWithArena(
           std::forward_iterator_tag,
           typename std::iterator_traits<Iter>::iterator_category>) {
     int reserve = static_cast<int>(std::distance(begin, end));
-    ReserveWithArena(arena, size() + reserve);
+    ReserveWithArena(arena, internal::CheckedAdd(size(), reserve));
   }
   for (; begin != end; ++begin) {
     *AddWithArena(arena) = *begin;
@@ -2152,7 +2152,16 @@ class RustRepeatedMessageHelper {
   }
 
   static void Reserve(RepeatedPtrFieldBase& field, size_t additional) {
-    field.ReserveWithArena(field.GetArena(), field.size() + additional);
+    // Bound `additional` to int range first to match the int-typed contract of
+    // ReserveWithArena, then route through CheckedAdd so signed overflow is
+    // caught rather than silently wrapping.
+    if (additional > static_cast<size_t>(std::numeric_limits<int>::max())) {
+      internal::HandleAddOverflow(field.size(),
+                                  std::numeric_limits<int>::max());
+    }
+    field.ReserveWithArena(
+        field.GetArena(),
+        internal::CheckedAdd(field.size(), static_cast<int>(additional)));
   }
 
   static const MessageLite& At(const RepeatedPtrFieldBase& field,
