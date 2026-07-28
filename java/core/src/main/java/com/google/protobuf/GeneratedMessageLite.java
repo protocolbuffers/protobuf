@@ -436,6 +436,7 @@ public abstract class GeneratedMessageLite<
     parserOrInstanceMap.put(clazz, defaultInstance);
   }
 
+  @DoNotInline
   protected static Object newMessageInfo(
       MessageLite defaultInstance, String info, Object[] objects) {
     return new RawMessageInfo(defaultInstance, info, objects);
