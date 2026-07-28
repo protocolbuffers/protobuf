@@ -624,12 +624,29 @@ public abstract class CodedInputStream {
   @CanIgnoreReturnValue
   public abstract int pushLimit(int byteLimit) throws InvalidProtocolBufferException;
 
+  final int pushLimitBeforeMessage() throws IOException {
+    final int length = readRawVarint32();
+    checkRecursionLimit();
+    final int oldLimit = pushLimit(length);
+    ++messageDepth;
+    return oldLimit;
+  }
+
   /**
    * Discards the current limit, returning to the previous limit.
    *
    * @param oldLimit The old limit, as returned by {@code pushLimit}.
    */
   public abstract void popLimit(final int oldLimit);
+
+  final void popLimitAfterMessage(int oldLimit) throws IOException {
+    checkLastTagWas(0);
+    --messageDepth;
+    if (getBytesUntilLimit() != 0) {
+      throw InvalidProtocolBufferException.truncatedMessage();
+    }
+    popLimit(oldLimit);
+  }
 
   /**
    * Returns the number of bytes to be read before the current limit. If no limit is set, returns
@@ -1113,23 +1130,6 @@ public abstract class CodedInputStream {
       T result = parser.parsePartialFrom(this, extensionRegistry);
       popLimitAfterMessage(oldLimit);
       return result;
-    }
-
-    private int pushLimitBeforeMessage() throws IOException {
-      final int length = readRawVarint32Expected5BytesMax();
-      checkRecursionLimit();
-      final int oldLimit = pushLimit(length);
-      ++messageDepth;
-      return oldLimit;
-    }
-
-    private void popLimitAfterMessage(int oldLimit) throws IOException {
-      checkLastTagWas(0);
-      --messageDepth;
-      if (getBytesUntilLimit() != 0) {
-        throw InvalidProtocolBufferException.truncatedMessage();
-      }
-      popLimit(oldLimit);
     }
 
     private ByteString readBytesInternal(boolean requireUtf8) throws IOException {
@@ -1974,23 +1974,6 @@ public abstract class CodedInputStream {
       T result = parser.parsePartialFrom(this, extensionRegistry);
       popLimitAfterMessage(oldLimit);
       return result;
-    }
-
-    private int pushLimitBeforeMessage() throws IOException {
-      final int length = readRawVarint32();
-      checkRecursionLimit();
-      final int oldLimit = pushLimit(length);
-      ++messageDepth;
-      return oldLimit;
-    }
-
-    private void popLimitAfterMessage(int oldLimit) throws IOException {
-      checkLastTagWas(0);
-      --messageDepth;
-      if (getBytesUntilLimit() != 0) {
-        throw InvalidProtocolBufferException.truncatedMessage();
-      }
-      popLimit(oldLimit);
     }
 
     private ByteString readBytesInternal(boolean requireUtf8) throws IOException {
