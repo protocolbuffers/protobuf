@@ -218,6 +218,56 @@ public class LazyStringArrayList extends AbstractProtobufList<String>
   }
 
   @Override
+  public boolean equals(
+          Object o) {
+    if (o == this) {
+      return true;
+    }
+    if (o instanceof LazyStringArrayList) {
+      LazyStringArrayList otherArray = (LazyStringArrayList) o;
+      int size = size();
+      if (size != otherArray.size()) {
+        return false;
+      }
+      // Note: This could be more efficient if we kept the two sides lazy when both are
+      // ByteStrings, but we cannot simply compare getByteString(i) because different invalid
+      // UTF-8 byte sequences can decode to identical Java Strings (with Unicode replacement
+      // characters \uFFFD). If we compared raw bytes, two lists could be unequal while lazy,
+      // but become equal after calling get(). To compare them lazily without decoding, we
+      // would need something like boolean equalsAsJavaLangString(ByteString a, ByteString b)
+      // in Utf8.java to retain that behavior.
+      for (int i = 0; i < size; i++) {
+        if (!get(i).equals(otherArray.get(i))) {
+          return false;
+        }
+      }
+      return true;
+    }
+    if (!(o instanceof List)) {
+      return false;
+    }
+    // Handle lists that do not support RandomAccess as efficiently as possible by using an iterator
+    // based approach in our super class. Otherwise our index based approach will avoid those
+    // allocations.
+    if (!(o instanceof RandomAccess)) {
+      return super.equals(o);
+    }
+
+    List<?> other = (List<?>) o;
+    int size = size();
+    if (size != other.size()) {
+      return false;
+    }
+
+    for (int i = 0; i < size; i++) {
+      if (!get(i).equals(other.get(i))) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  @Override
   public Object getRaw(int index) {
     return list.get(index);
   }
