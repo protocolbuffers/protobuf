@@ -948,6 +948,58 @@ UPB_INLINE int upb_StringView_Compare(upb_StringView a, upb_StringView b) {
 
 #include <stddef.h>
 
+#ifndef GOOGLE_UPB_UPB_MEM_INTERNAL_ALLOC_H__
+#define GOOGLE_UPB_UPB_MEM_INTERNAL_ALLOC_H__
+
+#include <stddef.h>
+
+// Must be last.
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+#if (defined(__STDC_VERSION__) && (__STDC_VERSION__ >= 201112L) && \
+     !defined(__STDC_NO_THREADS__)) ||                             \
+    UPB_HAS_EXTENSION(c_thread_local)
+#define UPB_THREAD_LOCAL _Thread_local
+#elif defined(_MSC_VER)
+#define UPB_THREAD_LOCAL __declspec(thread)
+#elif defined(__GNUC__) || defined(__clang__)
+#define UPB_THREAD_LOCAL __thread
+#else
+#define UPB_THREAD_LOCAL
+#endif
+
+#if !defined(NDEBUG)
+#define UPB_ALLOCATION_COUNT
+#endif
+
+#ifdef UPB_ALLOCATION_COUNT
+extern UPB_THREAD_LOCAL size_t upb_arena_alloc_count;
+extern UPB_THREAD_LOCAL size_t upb_arena_alloc_fail_on;
+
+#undef UPB_THREAD_LOCAL
+
+#endif
+
+UPB_NODISCARD UPB_FORCEINLINE bool upb_AllocationCount_IncrementAndCheck(void) {
+#ifdef UPB_ALLOCATION_COUNT
+  bool ok = (upb_arena_alloc_count != upb_arena_alloc_fail_on);
+  upb_arena_alloc_count++;
+  return ok;
+#else
+  return true;
+#endif
+}
+
+#ifdef __cplusplus
+} /* extern "C" */
+#endif
+
+
+#endif  // GOOGLE_UPB_UPB_MEM_INTERNAL_ALLOC_H__
+
 // Must be last.
 
 #ifdef __cplusplus
@@ -978,6 +1030,9 @@ struct upb_alloc {
 
 UPB_NODISCARD UPB_INLINE void* upb_malloc(upb_alloc* alloc, size_t size) {
   UPB_ASSERT(alloc);
+  if (!upb_AllocationCount_IncrementAndCheck()) {
+    return NULL;
+  }
   return alloc->func(alloc, NULL, 0, size, NULL);
 }
 
@@ -989,6 +1044,11 @@ typedef struct {
 UPB_INLINE upb_SizedPtr upb_SizeReturningMalloc(upb_alloc* alloc, size_t size) {
   UPB_ASSERT(alloc);
   upb_SizedPtr result;
+  if (!upb_AllocationCount_IncrementAndCheck()) {
+    result.p = NULL;
+    result.n = 0;
+    return result;
+  }
   result.n = 0;
   result.p = alloc->func(alloc, NULL, 0, size, &result.n);
   result.n = result.p != NULL ? UPB_MAX(result.n, size) : 0;
@@ -998,6 +1058,11 @@ UPB_INLINE upb_SizedPtr upb_SizeReturningMalloc(upb_alloc* alloc, size_t size) {
 UPB_NODISCARD UPB_INLINE void* upb_realloc(upb_alloc* alloc, void* ptr,
                                            size_t oldsize, size_t size) {
   UPB_ASSERT(alloc);
+  if (size != 0) {
+    if (!upb_AllocationCount_IncrementAndCheck()) {
+      return NULL;
+    }
+  }
   return alloc->func(alloc, ptr, oldsize, size, NULL);
 }
 
@@ -1030,6 +1095,17 @@ UPB_NODISCARD UPB_INLINE void* upb_grealloc(void* ptr, size_t oldsize,
 }
 
 UPB_INLINE void upb_gfree(void* ptr) { upb_free(&upb_alloc_global, ptr); }
+
+// Returns whether thread-local allocation count/ OOM-simulation features
+// are supported.
+UPB_API UPB_NODISCARD bool upb_AllocationCount_IsAvailable(void);
+// Returns the thread-local allocation count since the last reset.
+UPB_API UPB_NODISCARD size_t upb_AllocationCount_Get(void);
+// Resets the thread-local allocation count and failure threshold.
+UPB_API void upb_AllocationCount_Reset(void);
+// Artificially triggers memory allocation failure in the thread on the n-th
+// allocation.
+UPB_API void upb_AllocationCount_FailOn(size_t n);
 
 #ifdef __cplusplus
 } /* extern "C" */
@@ -1287,7 +1363,8 @@ UPB_INLINE bool UPB_PRIVATE(_upb_Arena_IsAligned)(const void* ptr) {
   return (uintptr_t)ptr % UPB_MALLOC_ALIGN == 0;
 }
 
-UPB_API_INLINE void* upb_Arena_Malloc(struct upb_Arena* a, size_t size) {
+UPB_API_INLINE void* _upb_Arena_Malloc_Unchecked(struct upb_Arena* a,
+                                                 size_t size) {
   UPB_PRIVATE(upb_Xsan_AccessReadWrite)(UPB_XSAN(a));
 
   size_t span = UPB_PRIVATE(_upb_Arena_AllocSpan)(size);
@@ -1304,6 +1381,13 @@ UPB_API_INLINE void* upb_Arena_Malloc(struct upb_Arena* a, size_t size) {
   UPB_ASSERT(UPB_PRIVATE(_upb_Arena_IsAligned)(a->UPB_ONLYBITS(ptr)));
 
   return UPB_PRIVATE(upb_Xsan_NewUnpoisonedRegion)(UPB_XSAN(a), ret, size);
+}
+
+UPB_API_INLINE void* upb_Arena_Malloc(struct upb_Arena* a, size_t size) {
+  if (!upb_AllocationCount_IncrementAndCheck()) {
+    return NULL;
+  }
+  return _upb_Arena_Malloc_Unchecked(a, size);
 }
 
 UPB_API_INLINE void upb_Arena_ShrinkLast(struct upb_Arena* a, void* ptr,

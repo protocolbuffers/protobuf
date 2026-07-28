@@ -771,6 +771,7 @@ set(libupb_hdrs
   ${protobuf_SOURCE_DIR}/upb/mem/alloc.h
   ${protobuf_SOURCE_DIR}/upb/mem/arena.h
   ${protobuf_SOURCE_DIR}/upb/mem/arena.hpp
+  ${protobuf_SOURCE_DIR}/upb/mem/internal/alloc.h
   ${protobuf_SOURCE_DIR}/upb/mem/internal/arena.h
   ${protobuf_SOURCE_DIR}/upb/message/accessors.h
   ${protobuf_SOURCE_DIR}/upb/message/array.h
