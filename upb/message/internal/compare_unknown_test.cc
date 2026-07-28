@@ -127,6 +127,41 @@ TEST(CompareTest, MaxDepth) {
           1));
 }
 
+// Test with enough fields to trigger reallocation in the merge sort tmp buffer
+// (initial capacity is 8). Also exercises the right-half remainder path in
+// upb_UnknownFields_Merge where ptr2 < end2.
+TEST(CompareTest, SortReallocation) {
+  // 20 fields in descending order forces merge sort to reallocate beyond the
+  // initial tmp buffer of 8, and the reversed ordering ensures the right-half
+  // remainder branch is exercised during merges.
+  WireMessage descending = {
+      {20, Varint(20)}, {19, Varint(19)}, {18, Varint(18)},
+      {17, Varint(17)}, {16, Varint(16)}, {15, Varint(15)},
+      {14, Varint(14)}, {13, Varint(13)}, {12, Varint(12)},
+      {11, Varint(11)}, {10, Varint(10)}, {9, Varint(9)},
+      {8, Varint(8)},   {7, Varint(7)},   {6, Varint(6)},
+      {5, Varint(5)},   {4, Varint(4)},   {3, Varint(3)},
+      {2, Varint(2)},   {1, Varint(1)},
+  };
+  WireMessage ascending = {
+      {1, Varint(1)},   {2, Varint(2)},   {3, Varint(3)},
+      {4, Varint(4)},   {5, Varint(5)},   {6, Varint(6)},
+      {7, Varint(7)},   {8, Varint(8)},   {9, Varint(9)},
+      {10, Varint(10)}, {11, Varint(11)}, {12, Varint(12)},
+      {13, Varint(13)}, {14, Varint(14)}, {15, Varint(15)},
+      {16, Varint(16)}, {17, Varint(17)}, {18, Varint(18)},
+      {19, Varint(19)}, {20, Varint(20)},
+  };
+  EXPECT_EQ(kUpb_UnknownCompareResult_Equal,
+            CompareUnknown(descending, ascending));
+
+  // Verify inequality still detected after sort.
+  WireMessage ascending_modified = ascending;
+  ascending_modified.back() = {20, Varint(999)};
+  EXPECT_EQ(kUpb_UnknownCompareResult_NotEqual,
+            CompareUnknown(descending, ascending_modified));
+}
+
 }  // namespace
 
 }  // namespace test

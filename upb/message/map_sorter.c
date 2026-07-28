@@ -105,15 +105,15 @@ static int (*const compar[kUpb_FieldType_SizeOf])(const void*, const void*) = {
 };
 
 static bool _upb_mapsorter_resize(_upb_mapsorter* s, _upb_sortedmap* sorted,
-                                  int size) {
+                                  size_t size) {
   sorted->start = s->size;
   sorted->pos = sorted->start;
   sorted->end = sorted->start + size;
 
   if (sorted->end > s->cap) {
-    const int oldsize = s->cap * sizeof(*s->entries);
+    const size_t oldsize = s->cap * sizeof(*s->entries);
     s->cap = upb_RoundUpToPowerOfTwo(sorted->end);
-    const int newsize = s->cap * sizeof(*s->entries);
+    const size_t newsize = s->cap * sizeof(*s->entries);
     s->entries = upb_grealloc(s->entries, oldsize, newsize);
     if (!s->entries) return false;
   }
@@ -124,7 +124,7 @@ static bool _upb_mapsorter_resize(_upb_mapsorter* s, _upb_sortedmap* sorted,
 
 bool _upb_mapsorter_pushmap(_upb_mapsorter* s, upb_FieldType key_type,
                             const upb_Map* map, _upb_sortedmap* sorted) {
-  int map_size = _upb_Map_Size(map);
+  size_t map_size = _upb_Map_Size(map);
 
   if (!_upb_mapsorter_resize(s, sorted, map_size)) return false;
 
