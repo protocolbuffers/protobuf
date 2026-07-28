@@ -30,7 +30,6 @@
 
 #include <cstdint>
 
-#include "absl/base/optimization.h"
 #include "google/protobuf/extension_set.h"
 #include "google/protobuf/generated_message_tctable_impl.h"
 #include "google/protobuf/message.h"

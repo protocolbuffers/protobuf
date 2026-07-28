@@ -8,7 +8,6 @@
 #include "google/protobuf/naming_style.h"
 
 #include <cstddef>
-#include <cstdint>
 #include <string>
 
 #include "absl/algorithm/container.h"
