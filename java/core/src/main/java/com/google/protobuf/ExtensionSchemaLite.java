@@ -548,7 +548,7 @@ final class ExtensionSchemaLite extends ExtensionSchema<ExtensionDescriptor> {
 
   @Override
   void parseMessageSetItem(
-      ByteString data,
+      CodedInputStream input,
       Object extensionObject,
       ExtensionRegistryLite extensionRegistry,
       FieldSet<ExtensionDescriptor> extensions)
@@ -557,8 +557,6 @@ final class ExtensionSchemaLite extends ExtensionSchema<ExtensionDescriptor> {
         (GeneratedMessageLite.GeneratedExtension<?, ?>) extensionObject;
 
     MessageLite.Builder builder = extension.getMessageDefaultInstance().newBuilderForType();
-
-    final CodedInputStream input = data.newCodedInput();
 
     builder.mergeFrom(input, extensionRegistry);
     extensions.setField(extension.descriptor, builder.buildPartial());
