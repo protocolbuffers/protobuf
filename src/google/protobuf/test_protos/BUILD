@@ -12,6 +12,7 @@ proto_library(
     srcs = glob(["*.proto"]),
     strip_import_prefix = "/src",
     deps = [
+        "//:descriptor_proto",
         "//src/google/protobuf:cpp_features_proto",
     ],
 )

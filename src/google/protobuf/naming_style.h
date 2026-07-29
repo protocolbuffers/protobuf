@@ -8,6 +8,7 @@
 #ifndef GOOGLE_PROTOBUF_NAMING_STYLE_H__
 #define GOOGLE_PROTOBUF_NAMING_STYLE_H__
 
+#include <cstddef>
 #include <string>
 
 #include "absl/status/status.h"
@@ -28,6 +29,14 @@ PROTOBUF_EXPORT bool ContainsBadUnderscores(absl::string_view name);
 PROTOBUF_EXPORT absl::Status IsValidTitleCaseName(absl::string_view name);
 PROTOBUF_EXPORT absl::Status IsValidLowerSnakeCaseName(absl::string_view name);
 PROTOBUF_EXPORT absl::Status IsValidUpperSnakeCaseName(absl::string_view name);
+
+PROTOBUF_EXPORT size_t CamelCaseSize(absl::string_view input);
+PROTOBUF_EXPORT size_t JsonNameSize(absl::string_view input);
+
+PROTOBUF_EXPORT std::string ToCamelCase(absl::string_view input,
+                                        bool lower_first = false);
+PROTOBUF_EXPORT std::string ToJsonName(absl::string_view input);
+PROTOBUF_EXPORT std::string EnumValueToPascalCase(absl::string_view input);
 
 }  // namespace internal
 }  // namespace protobuf

@@ -519,6 +519,9 @@ static const char* upb_MtDecoder_Parse(upb_MtDecoder* d, const char* ptr,
       if (skip == 0) {
         upb_MdDecoder_ErrorJmp(&d->base, "Invalid skip value: 0");
       }
+      if (skip > UINT32_MAX - last_field_number) {
+        upb_MdDecoder_ErrorJmp(&d->base, "Field number overflow");
+      }
       last_field_number += skip;
       last_field_number--;  // Next field seen will increment.
     } else {
@@ -821,8 +824,11 @@ done:
 
 #if UPB_FASTTABLE
   upb_DecodeFast_TableEntry fasttable[32];
-  int fasttable_size = upb_DecodeFast_BuildTable(&decoder->table, fasttable);
-  mt_size += fasttable_size * sizeof(fasttable[0]);
+  int fasttable_size = 0;
+  if (decoder->platform == kUpb_MiniTablePlatform_64Bit) {
+    fasttable_size = upb_DecodeFast_BuildTable(&decoder->table, fasttable);
+    mt_size += fasttable_size * sizeof(fasttable[0]);
+  }
 #endif
 
   upb_MiniTable* ret = upb_Arena_Malloc(decoder->arena, mt_size);

@@ -844,6 +844,37 @@ TEST(CordInputStreamTest, SkipToEnd) {
   EXPECT_EQ(stream.ByteCount(), 10000);
 }
 
+TEST(CordInputStreamTest, HugeCordNodes) {
+  if (sizeof(void*) < 8) {
+    GTEST_SKIP() << "Not enough memory for test.";
+  }
+
+  std::string input_str;
+  // We don't care about the bytes, so avoid the cost.
+  absl::strings_internal::STLStringResizeUninitializedAmortized(
+      &input_str,
+      // Something larger than INT_MAX
+      3'000'000'000);
+  absl::Cord source = absl::MakeCordFromExternal(input_str, [](auto) {});
+  ASSERT_EQ(source.Chunks().begin()->size(), input_str.size());
+
+  const char* expected_next = input_str.data();
+  size_t size_to_go = input_str.size();
+
+  CordInputStream stream(&source);
+  while (size_to_go > 0) {
+    const void* data;
+    int size;
+    ASSERT_TRUE(stream.Next(&data, &size));
+    ASSERT_EQ(data, static_cast<const void*>(expected_next));
+    ASSERT_GT(size, 0);
+    ASSERT_LE(size, size_to_go);
+
+    expected_next += size;
+    size_to_go -= size;
+  }
+}
+
 TEST_F(IoTest, CordIo) {
   CordOutputStream output;
   int size = WriteStuff(&output);

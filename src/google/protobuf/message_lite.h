@@ -389,7 +389,9 @@ class PROTOBUF_EXPORT MessageLite {
  public:
   MessageLite(const MessageLite&) = delete;
   MessageLite& operator=(const MessageLite&) = delete;
+#if !defined(PROTOBUF_PROTECTED_MESSAGE_BASE_DESTRUCTOR)
   PROTOBUF_VIRTUAL ~MessageLite() = default;
+#endif  // !PROTOBUF_PROTECTED_MESSAGE_BASE_DESTRUCTOR
 
   // Basic Operations ------------------------------------------------
 
@@ -777,6 +779,10 @@ class PROTOBUF_EXPORT MessageLite {
       const char* ptr, internal::ParseContext* ctx);
 
  protected:
+#if defined(PROTOBUF_PROTECTED_MESSAGE_BASE_DESTRUCTOR)
+  ~MessageLite() = default;
+#endif  // PROTOBUF_PROTECTED_MESSAGE_BASE_DESTRUCTOR
+
   // Message implementations require access to internally visible API.
   static constexpr internal::InternalVisibility internal_visibility() {
     return internal::InternalVisibility{};

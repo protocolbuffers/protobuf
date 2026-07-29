@@ -1,0 +1,30 @@
+// Protocol Buffers - Google's data interchange format
+// Copyright 2008 Google Inc.  All rights reserved.
+
+syntax = "proto2";
+
+package protobuf_lazy_test;
+
+message LazyTestAllExtensions {
+  extensions 1 to max;
+}
+
+message TestUnverifiedLazyWithExtensions {
+  optional LazyTestAllExtensions field = 1 [unverified_lazy = true];
+}
+
+message TestVerifiedLazyWithExtensions {
+  optional LazyTestAllExtensions field = 1 [lazy = true];
+}
+
+message TestEagerWithExtensions {
+  optional LazyTestAllExtensions field = 1;
+}
+
+message TestNestedLazyNested {
+  optional LazyTestAllExtensions submessage = 1 [lazy = true];
+}
+
+message TestNestedLazy {
+  optional TestNestedLazyNested nested = 1 [lazy = true];
+}

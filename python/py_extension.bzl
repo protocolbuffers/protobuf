@@ -24,6 +24,8 @@ def py_extension(name, srcs, copts, deps = [], **kwargs):
             ): ["-Wl,-undefined,dynamic_lookup"],
             "//python/dist:windows_x86_32": ["-static-libgcc"],
             "//conditions:default": [],
+        }) + select({
+            "//conditions:default": [],
         }),
         linkshared = True,
         linkstatic = True,

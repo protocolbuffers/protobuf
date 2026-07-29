@@ -242,12 +242,25 @@ std::string RustModule(Context& ctx, const OneofDescriptor& oneof) {
 }
 
 std::string RustInternalModuleName(const FileDescriptor& file) {
-  return RsSafeName(
-      absl::StrReplaceAll(StripProto(file.name()), {
-                                                       {"_", "__"},
-                                                       {"/", "_s"},
-                                                       {"-", "__"},
-                                                   }));
+  std::string result;
+  result.reserve(file.name().size());
+  for (char c : StripProto(file.name())) {
+    if (c == '_') {
+      result += "__";
+    } else if (c == '-') {
+      result += "__";
+    } else if (c == '/') {
+      result += "_s";
+    } else if (absl::ascii_isalnum(c)) {
+      result += c;
+    } else {
+      // Escape any other characters that aren't valid in Rust identifiers
+      // by substituting them with an underscore followed by their hex value
+      // and another underscore (e.g. '.' becomes '_2e_').
+      absl::StrAppendFormat(&result, "_%02x_", static_cast<unsigned char>(c));
+    }
+  }
+  return RsSafeName(result);
 }
 
 std::string FieldInfoComment(Context& ctx, const FieldDescriptor& field) {

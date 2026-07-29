@@ -11,7 +11,9 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "upb/base/string_view.h"
 #include "upb/mem/internal/arena.h"
+#include "upb/message/internal/extension.h"
 #include "upb/message/internal/message.h"
 #include "upb/message/internal/types.h"
 
@@ -21,6 +23,21 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+typedef enum {
+  kUpb_MessageUnknownType_StringView,
+  kUpb_MessageUnknownType_NonCanonicalExtension,
+} upb_MessageUnknownType;
+
+// Represents an unknown field in a message, whether it's in a serialized
+// (upb_StringView) or parsed non-canonical extension (upb_Extension*) format.
+typedef struct upb_MessageUnknown {
+  uint8_t type;
+  union {
+    upb_StringView bytes;
+    const upb_Extension* extension;
+  } value;
+} upb_MessageUnknown;
 
 // Support iteration over unknown (upb_MessageUnknown*), including unknown
 // upb_StringView and non-canonical extensions (upb_Extension*).
@@ -79,6 +96,12 @@ upb_FindUnknownRet2 upb_Message_FindUnknown2(const struct upb_Message* msg,
                                              uint32_t field_number,
                                              int depth_limit);
 
+typedef enum {
+  kUpb_DeleteUnknown_DeletedLast,
+  kUpb_DeleteUnknown_IterUpdated,
+  kUpb_DeleteUnknown_AllocFail,
+} upb_Message_DeleteUnknownStatus;
+
 // Removes a segment of unknown data from the message, advancing to the next
 // segment.  Returns false if the removed segment was at the end of the last
 // chunk.
@@ -93,9 +116,9 @@ upb_FindUnknownRet2 upb_Message_FindUnknown2(const struct upb_Message* msg,
 //     while (ShouldDeleteSubSegment(&data)) {
 //       // Data now points to the region to be deleted
 //       switch (upb_Message_DeleteUnknown2(msg, &data, &iter)) {
-//         case kUpb_Message_DeleteUnknown_DeletedLast: return ok;
-//         case kUpb_Message_DeleteUnknown_IterUpdated: break;
-//         // If DeleteUnknown returned kUpb_Message_DeleteUnknown_IterUpdated,
+//         case kUpb_DeleteUnknown_DeletedLast: return ok;
+//         case kUpb_DeleteUnknown_IterUpdated: break;
+//         // If DeleteUnknown returned kUpb_DeleteUnknown_IterUpdated,
 //         // then data now points to the remaining unknown fields after the
 //         // region that was just deleted.
 //         case kUpb_Message_DeleteUnknown_AllocFail: return err;

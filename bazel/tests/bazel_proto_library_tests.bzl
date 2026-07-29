@@ -45,6 +45,8 @@ def bazel_proto_library_test_suite(name):
         _test_proto_library_without_sources,
         _test_proto_library_with_generated_sources,
         _test_proto_library_with_mixed_sources,
+        _test_strict_proto_deps_starlark_override_native,
+        _test_strict_proto_deps_starlark_off_native_on,
     ]
 
     # Flipping experimental flag in test requires Bazel 8
@@ -649,7 +651,7 @@ def _test_experimental_proto_descriptor_sets_include_source_info(name):
         name = name,
         target = name + "_a_proto",
         impl = _test_experimental_proto_descriptor_sets_include_source_info_impl,
-        config_settings = {"@@//bazel/flags:experimental_proto_descriptor_sets_include_source_info": True},
+        config_settings = {"@@//bazel/flags:experimental_proto_descriptor_sets_include_source_info": "true"},
     )
 
 def _test_experimental_proto_descriptor_sets_include_source_info_impl(env, target):
@@ -773,3 +775,27 @@ def _test_proto_library_with_mixed_sources_impl(env, target):
         target.label.package + "/a.proto",
         target.label.package + "/generated2.proto",
     ])
+
+def _test_strict_proto_deps_starlark_override_native(name):
+    util.helper_target(proto_library, name = name + "_foo", srcs = ["foo.proto", "bar.proto"])
+
+    analysis_test(
+        name = name,
+        target = name + "_foo",
+        impl = _test_descriptor_set_output_strict_deps_strict_impl,
+        config_settings = {
+            "@@//bazel/flags:strict_proto_deps": "error",
+        },
+    )
+
+def _test_strict_proto_deps_starlark_off_native_on(name):
+    util.helper_target(proto_library, name = name + "_foo", srcs = ["foo.proto"])
+
+    analysis_test(
+        name = name,
+        target = name + "_foo",
+        impl = _test_descriptor_set_output_strict_deps_disabled_impl,
+        config_settings = {
+            "@@//bazel/flags:strict_proto_deps": "off",
+        },
+    )

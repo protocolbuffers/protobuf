@@ -116,8 +116,6 @@ int ImmutableMessageFieldGenerator::GetNumBitsForMessage() const {
   return HasHasbit(descriptor_) ? 1 : 0;
 }
 
-int ImmutableMessageFieldGenerator::GetNumBitsForBuilder() const { return 1; }
-
 void ImmutableMessageFieldGenerator::GenerateInterfaceMembers(
     io::Printer* printer) const {
   // TODO: In the future, consider having a method specific to the
@@ -350,6 +348,45 @@ void ImmutableMessageFieldGenerator::GenerateBuilderMembers(
       "  }\n"
       "  return $name$Builder_;\n"
       "}\n");
+
+  // Private parse method for this field, created to avoid code size too large
+  // issues in the try-catch block.
+  printer->Print(
+      variables_,
+      "private void parse$capitalized_name$Field(\n"
+      "    com.google.protobuf.CodedInputStream input,\n"
+      "    com.google.protobuf.ExtensionRegistryLite extensionRegistry)\n"
+      "    throws java.io.IOException {\n");
+  printer->Indent();
+
+  if (GetType(descriptor_) == FieldDescriptor::TYPE_GROUP) {
+    printer->Print(variables_,
+                   "if ($name$_ != null || $name$Builder_ != null) {\n"
+                   "  input.readGroup($number$,\n"
+                   "      "
+                   "internalGet$capitalized_name$FieldBuilder().getBuilder(),\n"
+                   "      extensionRegistry);\n"
+                   "} else {\n"
+                   "  $name$_ = input.readGroup($number$, $type$.parser(),\n"
+                   "      extensionRegistry);\n"
+                   "}\n"
+                   "$set_has_field_bit_builder$\n");
+  } else {
+    printer->Print(
+        variables_,
+        "if ($name$_ != null || $name$Builder_ != null) {\n"
+        "  input.readMessage(\n"
+        "      "
+        "internalGet$capitalized_name$FieldBuilder().getBuilder(),\n"
+        "      extensionRegistry);\n"
+        "} else {\n"
+        "  $name$_ = input.readMessage($type$.parser(), extensionRegistry);\n"
+        "}\n"
+        "$set_has_field_bit_builder$\n");
+  }
+
+  printer->Outdent();
+  printer->Print("}\n");
 }
 
 void ImmutableMessageFieldGenerator::GenerateFieldBuilderInitializationCode(
@@ -394,21 +431,8 @@ void ImmutableMessageFieldGenerator::GenerateBuildingCode(
 
 void ImmutableMessageFieldGenerator::GenerateBuilderParsingCode(
     io::Printer* printer) const {
-  if (GetType(descriptor_) == FieldDescriptor::TYPE_GROUP) {
-    printer->Print(variables_,
-                   "input.readGroup($number$,\n"
-                   "    "
-                   "internalGet$capitalized_name$FieldBuilder().getBuilder(),\n"
-                   "    extensionRegistry);\n"
-                   "$set_has_field_bit_builder$\n");
-  } else {
-    printer->Print(variables_,
-                   "input.readMessage(\n"
-                   "    "
-                   "internalGet$capitalized_name$FieldBuilder().getBuilder(),\n"
-                   "    extensionRegistry);\n"
-                   "$set_has_field_bit_builder$\n");
-  }
+  printer->Print(variables_,
+                 "parse$capitalized_name$Field(input, extensionRegistry);\n");
 }
 
 void ImmutableMessageFieldGenerator::GenerateSerializationCode(
@@ -747,10 +771,6 @@ RepeatedImmutableMessageFieldGenerator::
 
 int RepeatedImmutableMessageFieldGenerator::GetNumBitsForMessage() const {
   return 0;
-}
-
-int RepeatedImmutableMessageFieldGenerator::GetNumBitsForBuilder() const {
-  return 1;
 }
 
 void RepeatedImmutableMessageFieldGenerator::GenerateInterfaceMembers(

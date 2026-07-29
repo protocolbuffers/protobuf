@@ -5550,7 +5550,7 @@ void MessageGenerator::GenerateSourceDefaultInstance(io::Printer* p) {
              if (!is_file_descriptor_proto) return;
              p->Emit(R"cc(
 #if !defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-               void Init() { ::new (&_default) $Msg$(); }
+               void Init() { ::new (this) $globals_type$(); }
 #endif  // !PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
              )cc");
            }},

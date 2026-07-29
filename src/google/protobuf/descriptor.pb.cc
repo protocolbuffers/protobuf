@@ -231,7 +231,7 @@ struct UninterpretedOption_NamePartGlobalsTypeInternal : ::_pbi::MessageGlobalsB
   {
   }
   #if !defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  void Init() { ::new (&_default) UninterpretedOption_NamePart(); }
+  void Init() { ::new (this) UninterpretedOption_NamePartGlobalsTypeInternal(); }
   #endif  // !PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
   ~UninterpretedOption_NamePartGlobalsTypeInternal() {}
   union {
@@ -423,7 +423,7 @@ struct SourceCodeInfo_LocationGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
   {
   }
   #if !defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  void Init() { ::new (&_default) SourceCodeInfo_Location(); }
+  void Init() { ::new (this) SourceCodeInfo_LocationGlobalsTypeInternal(); }
   #endif  // !PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
   ~SourceCodeInfo_LocationGlobalsTypeInternal() {}
   union {
@@ -607,7 +607,7 @@ struct GeneratedCodeInfo_AnnotationGlobalsTypeInternal : ::_pbi::MessageGlobalsB
   {
   }
   #if !defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  void Init() { ::new (&_default) GeneratedCodeInfo_Annotation(); }
+  void Init() { ::new (this) GeneratedCodeInfo_AnnotationGlobalsTypeInternal(); }
   #endif  // !PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
   ~GeneratedCodeInfo_AnnotationGlobalsTypeInternal() {}
   union {
@@ -791,7 +791,7 @@ struct FieldOptions_FeatureSupportGlobalsTypeInternal : ::_pbi::MessageGlobalsBa
   {
   }
   #if !defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  void Init() { ::new (&_default) FieldOptions_FeatureSupport(); }
+  void Init() { ::new (this) FieldOptions_FeatureSupportGlobalsTypeInternal(); }
   #endif  // !PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
   ~FieldOptions_FeatureSupportGlobalsTypeInternal() {}
   union {
@@ -947,7 +947,7 @@ struct FieldOptions_EditionDefaultGlobalsTypeInternal : ::_pbi::MessageGlobalsBa
   {
   }
   #if !defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  void Init() { ::new (&_default) FieldOptions_EditionDefault(); }
+  void Init() { ::new (this) FieldOptions_EditionDefaultGlobalsTypeInternal(); }
   #endif  // !PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
   ~FieldOptions_EditionDefaultGlobalsTypeInternal() {}
   union {
@@ -1076,7 +1076,7 @@ struct FeatureSet_VisibilityFeatureGlobalsTypeInternal : ::_pbi::MessageGlobalsB
   {
   }
   #if !defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  void Init() { ::new (&_default) FeatureSet_VisibilityFeature(); }
+  void Init() { ::new (this) FeatureSet_VisibilityFeatureGlobalsTypeInternal(); }
   #endif  // !PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
   ~FeatureSet_VisibilityFeatureGlobalsTypeInternal() {}
   union {
@@ -1205,7 +1205,7 @@ struct FeatureSet_ProtoLimitsFeatureGlobalsTypeInternal : ::_pbi::MessageGlobals
   {
   }
   #if !defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  void Init() { ::new (&_default) FeatureSet_ProtoLimitsFeature(); }
+  void Init() { ::new (this) FeatureSet_ProtoLimitsFeatureGlobalsTypeInternal(); }
   #endif  // !PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
   ~FeatureSet_ProtoLimitsFeatureGlobalsTypeInternal() {}
   union {
@@ -1423,7 +1423,7 @@ struct FeatureSetGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
   {
   }
   #if !defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  void Init() { ::new (&_default) FeatureSet(); }
+  void Init() { ::new (this) FeatureSetGlobalsTypeInternal(); }
   #endif  // !PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
   ~FeatureSetGlobalsTypeInternal() {}
   union {
@@ -1603,7 +1603,7 @@ struct ExtensionRangeOptions_DeclarationGlobalsTypeInternal : ::_pbi::MessageGlo
   {
   }
   #if !defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  void Init() { ::new (&_default) ExtensionRangeOptions_Declaration(); }
+  void Init() { ::new (this) ExtensionRangeOptions_DeclarationGlobalsTypeInternal(); }
   #endif  // !PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
   ~ExtensionRangeOptions_DeclarationGlobalsTypeInternal() {}
   union {
@@ -1755,7 +1755,7 @@ struct EnumDescriptorProto_EnumReservedRangeGlobalsTypeInternal : ::_pbi::Messag
   {
   }
   #if !defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  void Init() { ::new (&_default) EnumDescriptorProto_EnumReservedRange(); }
+  void Init() { ::new (this) EnumDescriptorProto_EnumReservedRangeGlobalsTypeInternal(); }
   #endif  // !PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
   ~EnumDescriptorProto_EnumReservedRangeGlobalsTypeInternal() {}
   union {
@@ -1907,7 +1907,7 @@ struct DescriptorProto_ReservedRangeGlobalsTypeInternal : ::_pbi::MessageGlobals
   {
   }
   #if !defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  void Init() { ::new (&_default) DescriptorProto_ReservedRange(); }
+  void Init() { ::new (this) DescriptorProto_ReservedRangeGlobalsTypeInternal(); }
   #endif  // !PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
   ~DescriptorProto_ReservedRangeGlobalsTypeInternal() {}
   union {
@@ -2111,7 +2111,7 @@ struct UninterpretedOptionGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
   {
   }
   #if !defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  void Init() { ::new (&_default) UninterpretedOption(); }
+  void Init() { ::new (this) UninterpretedOptionGlobalsTypeInternal(); }
   #endif  // !PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
   ~UninterpretedOptionGlobalsTypeInternal() {}
   union {
@@ -2266,7 +2266,7 @@ struct SourceCodeInfoGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
   {
   }
   #if !defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  void Init() { ::new (&_default) SourceCodeInfo(); }
+  void Init() { ::new (this) SourceCodeInfoGlobalsTypeInternal(); }
   #endif  // !PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
   ~SourceCodeInfoGlobalsTypeInternal() {}
   union {
@@ -2421,7 +2421,7 @@ struct GeneratedCodeInfoGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
   {
   }
   #if !defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  void Init() { ::new (&_default) GeneratedCodeInfo(); }
+  void Init() { ::new (this) GeneratedCodeInfoGlobalsTypeInternal(); }
   #endif  // !PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
   ~GeneratedCodeInfoGlobalsTypeInternal() {}
   union {
@@ -2593,7 +2593,7 @@ struct FeatureSetDefaults_FeatureSetEditionDefaultGlobalsTypeInternal : ::_pbi::
   {
   }
   #if !defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  void Init() { ::new (&_default) FeatureSetDefaults_FeatureSetEditionDefault(); }
+  void Init() { ::new (this) FeatureSetDefaults_FeatureSetEditionDefaultGlobalsTypeInternal(); }
   #endif  // !PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
   ~FeatureSetDefaults_FeatureSetEditionDefaultGlobalsTypeInternal() {}
   union {
@@ -2772,7 +2772,7 @@ struct ServiceOptionsGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
   {
   }
   #if !defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  void Init() { ::new (&_default) ServiceOptions(); }
+  void Init() { ::new (this) ServiceOptionsGlobalsTypeInternal(); }
   #endif  // !PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
   ~ServiceOptionsGlobalsTypeInternal() {}
   union {
@@ -2943,7 +2943,7 @@ struct OneofOptionsGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
   {
   }
   #if !defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  void Init() { ::new (&_default) OneofOptions(); }
+  void Init() { ::new (this) OneofOptionsGlobalsTypeInternal(); }
   #endif  // !PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
   ~OneofOptionsGlobalsTypeInternal() {}
   union {
@@ -3133,7 +3133,7 @@ struct MethodOptionsGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
   {
   }
   #if !defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  void Init() { ::new (&_default) MethodOptions(); }
+  void Init() { ::new (this) MethodOptionsGlobalsTypeInternal(); }
   #endif  // !PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
   ~MethodOptionsGlobalsTypeInternal() {}
   union {
@@ -3332,7 +3332,7 @@ struct MessageOptionsGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
   {
   }
   #if !defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  void Init() { ::new (&_default) MessageOptions(); }
+  void Init() { ::new (this) MessageOptionsGlobalsTypeInternal(); }
   #endif  // !PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
   ~MessageOptionsGlobalsTypeInternal() {}
   union {
@@ -3656,7 +3656,7 @@ struct FileOptionsGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
   {
   }
   #if !defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  void Init() { ::new (&_default) FileOptions(); }
+  void Init() { ::new (this) FileOptionsGlobalsTypeInternal(); }
   #endif  // !PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
   ~FileOptionsGlobalsTypeInternal() {}
   union {
@@ -3921,7 +3921,7 @@ struct FieldOptionsGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
   {
   }
   #if !defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  void Init() { ::new (&_default) FieldOptions(); }
+  void Init() { ::new (this) FieldOptionsGlobalsTypeInternal(); }
   #endif  // !PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
   ~FieldOptionsGlobalsTypeInternal() {}
   union {
@@ -4088,7 +4088,7 @@ struct FeatureSetDefaultsGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
   {
   }
   #if !defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  void Init() { ::new (&_default) FeatureSetDefaults(); }
+  void Init() { ::new (this) FeatureSetDefaultsGlobalsTypeInternal(); }
   #endif  // !PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
   ~FeatureSetDefaultsGlobalsTypeInternal() {}
   union {
@@ -4284,7 +4284,7 @@ struct ExtensionRangeOptionsGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
   {
   }
   #if !defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  void Init() { ::new (&_default) ExtensionRangeOptions(); }
+  void Init() { ::new (this) ExtensionRangeOptionsGlobalsTypeInternal(); }
   #endif  // !PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
   ~ExtensionRangeOptionsGlobalsTypeInternal() {}
   union {
@@ -4482,7 +4482,7 @@ struct EnumValueOptionsGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
   {
   }
   #if !defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  void Init() { ::new (&_default) EnumValueOptions(); }
+  void Init() { ::new (this) EnumValueOptionsGlobalsTypeInternal(); }
   #endif  // !PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
   ~EnumValueOptionsGlobalsTypeInternal() {}
   union {
@@ -4672,7 +4672,7 @@ struct EnumOptionsGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
   {
   }
   #if !defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  void Init() { ::new (&_default) EnumOptions(); }
+  void Init() { ::new (this) EnumOptionsGlobalsTypeInternal(); }
   #endif  // !PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
   ~EnumOptionsGlobalsTypeInternal() {}
   union {
@@ -4832,7 +4832,7 @@ struct OneofDescriptorProtoGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
   {
   }
   #if !defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  void Init() { ::new (&_default) OneofDescriptorProto(); }
+  void Init() { ::new (this) OneofDescriptorProtoGlobalsTypeInternal(); }
   #endif  // !PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
   ~OneofDescriptorProtoGlobalsTypeInternal() {}
   union {
@@ -5026,7 +5026,7 @@ struct MethodDescriptorProtoGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
   {
   }
   #if !defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  void Init() { ::new (&_default) MethodDescriptorProto(); }
+  void Init() { ::new (this) MethodDescriptorProtoGlobalsTypeInternal(); }
   #endif  // !PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
   ~MethodDescriptorProtoGlobalsTypeInternal() {}
   union {
@@ -5261,7 +5261,7 @@ struct FieldDescriptorProtoGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
   {
   }
   #if !defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  void Init() { ::new (&_default) FieldDescriptorProto(); }
+  void Init() { ::new (this) FieldDescriptorProtoGlobalsTypeInternal(); }
   #endif  // !PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
   ~FieldDescriptorProtoGlobalsTypeInternal() {}
   union {
@@ -5429,7 +5429,7 @@ struct EnumValueDescriptorProtoGlobalsTypeInternal : ::_pbi::MessageGlobalsBase 
   {
   }
   #if !defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  void Init() { ::new (&_default) EnumValueDescriptorProto(); }
+  void Init() { ::new (this) EnumValueDescriptorProtoGlobalsTypeInternal(); }
   #endif  // !PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
   ~EnumValueDescriptorProtoGlobalsTypeInternal() {}
   union {
@@ -5595,7 +5595,7 @@ struct DescriptorProto_ExtensionRangeGlobalsTypeInternal : ::_pbi::MessageGlobal
   {
   }
   #if !defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  void Init() { ::new (&_default) DescriptorProto_ExtensionRange(); }
+  void Init() { ::new (this) DescriptorProto_ExtensionRangeGlobalsTypeInternal(); }
   #endif  // !PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
   ~DescriptorProto_ExtensionRangeGlobalsTypeInternal() {}
   union {
@@ -5772,7 +5772,7 @@ struct ServiceDescriptorProtoGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
   {
   }
   #if !defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  void Init() { ::new (&_default) ServiceDescriptorProto(); }
+  void Init() { ::new (this) ServiceDescriptorProtoGlobalsTypeInternal(); }
   #endif  // !PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
   ~ServiceDescriptorProtoGlobalsTypeInternal() {}
   union {
@@ -5985,7 +5985,7 @@ struct EnumDescriptorProtoGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
   {
   }
   #if !defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  void Init() { ::new (&_default) EnumDescriptorProto(); }
+  void Init() { ::new (this) EnumDescriptorProtoGlobalsTypeInternal(); }
   #endif  // !PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
   ~EnumDescriptorProtoGlobalsTypeInternal() {}
   union {
@@ -6281,7 +6281,7 @@ struct DescriptorProtoGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
   {
   }
   #if !defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  void Init() { ::new (&_default) DescriptorProto(); }
+  void Init() { ::new (this) DescriptorProtoGlobalsTypeInternal(); }
   #endif  // !PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
   ~DescriptorProtoGlobalsTypeInternal() {}
   union {
@@ -6589,7 +6589,7 @@ struct FileDescriptorProtoGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
   {
   }
   #if !defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  void Init() { ::new (&_default) FileDescriptorProto(); }
+  void Init() { ::new (this) FileDescriptorProtoGlobalsTypeInternal(); }
   #endif  // !PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
   ~FileDescriptorProtoGlobalsTypeInternal() {}
   union {
@@ -6744,7 +6744,7 @@ struct FileDescriptorSetGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
   {
   }
   #if !defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  void Init() { ::new (&_default) FileDescriptorSet(); }
+  void Init() { ::new (this) FileDescriptorSetGlobalsTypeInternal(); }
   #endif  // !PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
   ~FileDescriptorSetGlobalsTypeInternal() {}
   union {
