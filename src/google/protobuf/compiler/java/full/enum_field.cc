@@ -497,7 +497,7 @@ void ImmutableEnumOneofFieldGenerator::GenerateBuilderClearCode(
 
 void ImmutableEnumOneofFieldGenerator::GenerateBuildingCode(
     io::Printer* printer) const {
-  // No-Op: Handled by single statement for the oneof
+  // No-Op: Handled by single block statement in GenerateBuildPartialShard.
 }
 
 void ImmutableEnumOneofFieldGenerator::GenerateMergingCode(
