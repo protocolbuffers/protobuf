@@ -575,6 +575,74 @@ TEST(DecodeTest, ConsecutiveUnknownFieldsWithAlias) {
   }
 }
 
+TEST(DecodeTest, DecodeEmptyStringWithoutAlias) {
+  char trace_buf[64];
+  Arena mt_arena;
+
+  auto [mt, field] = MiniTable::MakeSingleFieldTable<field_types::String>(
+      1, kUpb_DecodeFast_Scalar, mt_arena.ptr());
+
+  // Create payload with empty string: field 1, wire type 2 (length-delimited),
+  // length 0, no data. This is the specific case that triggered the
+  // zero-size malloc vulnerability (commit 2027f1fd6).
+  std::string payload = ToBinaryPayload(
+      wire_types::WireMessage{{1, wire_types::Delimited{""}}});
+
+  for (int extra_options : GetDecodeOptionsToTest()) {
+    // Test WITHOUT kUpb_DecodeOption_AliasString (the vulnerable path).
+    // Before the fix, this would attempt malloc(0) for empty strings, which
+    // could return NULL on some systems and cause decode to fail incorrectly.
+    {
+      Arena msg_arena;
+      upb_Message* msg = upb_Message_New(mt, msg_arena.ptr());
+      memset(trace_buf, 0, sizeof(trace_buf));
+
+      int options = extra_options;  // No aliasing
+      upb_DecodeStatus result = upb_DecodeWithTrace(
+          payload.data(), payload.size(), msg, mt, nullptr, options,
+          msg_arena.ptr(), trace_buf, sizeof(trace_buf));
+
+      // Verify decode succeeded (no crash/error from zero-size malloc attempt)
+      ASSERT_EQ(result, kUpb_DecodeStatus_Ok)
+          << upb_DecodeStatus_String(result);
+
+      // Verify the string field exists and is empty
+      ASSERT_TRUE(upb_Message_HasBaseField(msg, field));
+      std::string decoded_value =
+          GetOptionalField<std::string>(msg, field).value();
+      EXPECT_EQ(decoded_value, "");
+
+      // Verify trace shows field was decoded through expected path
+      EXPECT_EQ(absl::string_view(trace_buf),
+                ExpectedSingleFieldTrace(mt, field));
+    }
+
+    // Also test WITH kUpb_DecodeOption_AliasString (for comparison).
+    // This path doesn't malloc at all, so it was never vulnerable,
+    // but verify it also handles empty strings correctly.
+    {
+      Arena msg_arena2;
+      upb_Message* msg2 = upb_Message_New(mt, msg_arena2.ptr());
+      memset(trace_buf, 0, sizeof(trace_buf));
+
+      int alias_options = extra_options | kUpb_DecodeOption_AliasString;
+      upb_DecodeStatus result = upb_DecodeWithTrace(
+          payload.data(), payload.size(), msg2, mt, nullptr, alias_options,
+          msg_arena2.ptr(), trace_buf, sizeof(trace_buf));
+
+      // Should also succeed
+      ASSERT_EQ(result, kUpb_DecodeStatus_Ok)
+          << upb_DecodeStatus_String(result);
+      ASSERT_TRUE(upb_Message_HasBaseField(msg2, field));
+      std::string decoded_value =
+          GetOptionalField<std::string>(msg2, field).value();
+      EXPECT_EQ(decoded_value, "");
+      EXPECT_EQ(absl::string_view(trace_buf),
+                ExpectedSingleFieldTrace(mt, field));
+    }
+  }
+}
+
 TEST(DecodeTest, MaxDepthPayloadParsesSuccessfully) {
   upb::Arena mt_arena;
   upb::Arena msg_arena;
