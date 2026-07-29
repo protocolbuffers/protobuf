@@ -58,17 +58,14 @@ bool PyWeakValueMap::TrySet(const void* key, PyObject*& value) {
   return false;
 }
 
-bool PyWeakValueMap::Erase(const void* key) {
-  absl::MutexLock lock(&mutex_);
-  return cache_.erase(key) != 0;
-}
-
-void PyWeakValueMap::EraseIfEqual(const void* key, PyObject* value) {
+bool PyWeakValueMap::EraseIfEqualImpl(const void* key, PyObject* value) {
   absl::MutexLock lock(&mutex_);
   auto it = cache_.find(key);
   if (it != cache_.end() && it->second == value) {
     cache_.erase(it);
+    return true;
   }
+  return false;
 }
 
 bool PyWeakValueMap::IsEmpty() const {
@@ -99,12 +96,12 @@ PyObject* PyWeakValueMap::Get(const void* key, const PyTypeObject* type) {
   return it->second;
 }
 
-bool PyWeakValueMap::Erase(const void* key) { return cache_.erase(key) != 0; }
-
-void PyWeakValueMap::EraseIfEqual(const void* key, PyObject* value) {
+bool PyWeakValueMap::EraseIfEqualImpl(const void* key, PyObject* value) {
   auto it = cache_.find(key);
+  // In a single-threaded build, the object is guaranteed to be in the map.
   ABSL_CHECK(it != cache_.end() && it->second == value);
   cache_.erase(it);
+  return true;
 }
 
 bool PyWeakValueMap::IsEmpty() const { return cache_.empty(); }

@@ -453,7 +453,6 @@ TailCallTableInfo::NumToEntryTable MakeNumToEntryTable(
   if (field_entry_index == N) return num_to_entry_table;
 
   TailCallTableInfo::SkipEntryBlock* block = nullptr;
-  bool start_new_block = true;
   // To determine sparseness, track the field number corresponding to
   // the start of the most recent skip entry.
   uint32_t last_skip_entry_start = 0;
@@ -461,30 +460,40 @@ TailCallTableInfo::NumToEntryTable MakeNumToEntryTable(
     auto* field_descriptor = ordered_fields[field_entry_index].field;
     uint32_t fnum = static_cast<uint32_t>(field_descriptor->number());
     ABSL_CHECK_GT(fnum, last_skip_entry_start);
-    if (start_new_block == false) {
-      // If the next field number is within 15 of the last_skip_entry_start, we
-      // continue writing just to that entry.  If it's between 16 and 31 more,
-      // then we just extend the current block by one. If it's more than 31
-      // more, we have to add empty skip entries in order to continue using the
-      // existing block.  Obviously it's just 32 more, it doesn't make sense to
-      // start a whole new block, since new blocks mean having to write out
-      // their starting field number, which is 32 bits, as well as the size of
-      // the additional block, which is 16... while an empty SkipEntry16 only
-      // costs 32 bits.  So if it was 48 more, it's a slight space win; we save
-      // 16 bits, but probably at the cost of slower run time.  We're choosing
-      // 96 for now.
-      if (fnum - last_skip_entry_start > 96) start_new_block = true;
-    }
-    if (start_new_block) {
+
+    const auto new_block = [&] {
       num_to_entry_table.blocks.push_back({fnum});
       block = &num_to_entry_table.blocks.back();
-      start_new_block = false;
+    };
+
+    // If the next field number is within 15 of the last_skip_entry_start, we
+    // continue writing just to that entry.  If it's between 16 and 31 more,
+    // then we just extend the current block by one. If it's more than 31
+    // more, we have to add empty skip entries in order to continue using the
+    // existing block.  Obviously it's just 32 more, it doesn't make sense to
+    // start a whole new block, since new blocks mean having to write out
+    // their starting field number, which is 32 bits, as well as the size of
+    // the additional block, which is 16... while an empty SkipEntry16 only
+    // costs 32 bits.  So if it was 48 more, it's a slight space win; we save
+    // 16 bits, but probably at the cost of slower run time.  We're choosing
+    // TailCallTableInfo::kMaxSkipEntrySpacing for now.
+    if (block == nullptr || fnum - last_skip_entry_start >
+                                TailCallTableInfo::kMaxSkipEntrySpacing) {
+      new_block();
     }
 
-    auto skip_entry_num = (fnum - block->first_fnum) / 16;
-    auto skip_entry_index = (fnum - block->first_fnum) % 16;
-    while (skip_entry_num >= block->entries.size())
+    uint32_t skip_entry_num = (fnum - block->first_fnum) / 16;
+
+    if (skip_entry_num >= 0xFFFF) {
+      // If the current block is full, start a new one.
+      new_block();
+      skip_entry_num = (fnum - block->first_fnum) / 16;
+    }
+
+    uint32_t skip_entry_index = (fnum - block->first_fnum) % 16;
+    while (skip_entry_num >= block->entries.size()) {
       block->entries.push_back({0xFFFF, field_entry_index});
+    }
     block->entries[skip_entry_num].skipmap -= 1 << (skip_entry_index);
 
     last_skip_entry_start = fnum - skip_entry_index;

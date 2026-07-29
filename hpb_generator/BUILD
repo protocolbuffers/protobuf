@@ -129,7 +129,7 @@ cc_library(
         "//src/google/protobuf/io",
         "//src/google/protobuf/io:printer",
         "//upb/port",
-        "//upb/reflection",
+        "//upb/reflection:reflection_cc",
         "//upb_generator/common:cpp_to_upb_def",
         "@abseil-cpp//absl/strings",
         "@abseil-cpp//absl/strings:string_view",

@@ -152,6 +152,7 @@ def build_targets(name):
             "//src/google/protobuf/util:differencer",
             "@abseil-cpp//absl/base:core_headers",
             "@abseil-cpp//absl/base:no_destructor",
+            "@abseil-cpp//absl/cleanup",
             "@abseil-cpp//absl/container:flat_hash_map",
             "@abseil-cpp//absl/functional:function_ref",
             "@abseil-cpp//absl/log:absl_check",

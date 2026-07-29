@@ -62,6 +62,28 @@ TEST(NamingStyleTest, IsValidUpperSnakeCaseName) {
   EXPECT_THAT(IsValidUpperSnakeCaseName(""), Not(IsOk()));
 }
 
+TEST(NamingStyleTest, ToCamelCase) {
+  EXPECT_EQ(ToCamelCase("foo_bar", /*lower_first=*/true), "fooBar");
+  EXPECT_EQ(ToCamelCase("foo_bar", /*lower_first=*/false), "FooBar");
+  EXPECT_EQ(ToCamelCase("Foo_bar", /*lower_first=*/true), "fooBar");
+  EXPECT_EQ(ToCamelCase("foo_bar_baz", /*lower_first=*/true), "fooBarBaz");
+  EXPECT_EQ(ToCamelCase("", /*lower_first=*/true), "");
+}
+
+TEST(NamingStyleTest, ToJsonName) {
+  EXPECT_EQ(ToJsonName("foo_bar"), "fooBar");
+  EXPECT_EQ(ToJsonName("foo_bar_baz"), "fooBarBaz");
+  EXPECT_EQ(ToJsonName("fooBar"), "fooBar");
+  EXPECT_EQ(ToJsonName(""), "");
+}
+
+TEST(NamingStyleTest, EnumValueToPascalCase) {
+  EXPECT_EQ(EnumValueToPascalCase("FOO_BAR"), "FooBar");
+  EXPECT_EQ(EnumValueToPascalCase("foo_bar"), "FooBar");
+  EXPECT_EQ(EnumValueToPascalCase("FOO"), "Foo");
+  EXPECT_EQ(EnumValueToPascalCase(""), "");
+}
+
 }  // namespace
 }  // namespace internal
 }  // namespace protobuf

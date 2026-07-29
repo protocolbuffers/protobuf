@@ -3,6 +3,7 @@
 
 #include "absl/log/absl_check.h"
 #include "google/protobuf/arena.h"
+#include "google/protobuf/class_data.h"
 #include "google/protobuf/message_lite.h"
 
 // Must be included last.
@@ -13,16 +14,19 @@ namespace protobuf {
 
 namespace internal {
 
-class ByPrototype {
+class ByClassData {
  public:
-  explicit ByPrototype(const MessageLite* prototype) : prototype_(prototype) {}
+  explicit ByClassData(const internal::ClassData* class_data)
+      : class_data_(class_data) {}
 
-  MessageLite* New(Arena* arena) const { return prototype_->New(arena); }
+  MessageLite* New(Arena* arena) const { return class_data_->New(arena); }
 
-  const MessageLite& Default() const { return *prototype_; }
+  const MessageLite& Default() const {
+    return *class_data_->default_instance();
+  }
 
  private:
-  const MessageLite* prototype_;
+  const internal::ClassData* class_data_;
 };
 
 template <typename MessageType>

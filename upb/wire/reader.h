@@ -128,6 +128,9 @@ UPB_INLINE const char* upb_WireReader_SkipGroup(
 UPB_FORCEINLINE const char* _upb_WireReader_SkipValueForceInline(
     const char* ptr, uint32_t tag, int depth_limit,
     upb_EpsCopyInputStream* stream) {
+  if (UPB_UNLIKELY((tag >> 3) == 0)) {
+    return UPB_PRIVATE(upb_EpsCopyInputStream_ReturnError)(stream);
+  }
   switch (upb_WireReader_GetWireType(tag)) {
     case kUpb_WireType_Varint:
       return upb_WireReader_SkipVarint(ptr, stream);

@@ -202,7 +202,7 @@ class PROTOBUF_EXPORT SerialArena {
     ABSL_DCHECK(internal::ArenaAlignDefault::IsAligned(n));
     ABSL_DCHECK_GE(limit_, ptr());
     char* ret = ptr();
-    if (ABSL_PREDICT_FALSE(limit_ - ret < static_cast<ptrdiff_t>(n))) {
+    if (ABSL_PREDICT_FALSE(static_cast<size_t>(limit_ - ret) < n)) {
       return false;
     }
     internal::UnpoisonMemoryRegion(ret, n);
