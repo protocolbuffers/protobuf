@@ -110,8 +110,23 @@ inline bool IsDescriptorOptionMessage(const Descriptor* descriptor) {
 }
 
 inline bool IsWrapperType(const FieldDescriptor* descriptor) {
-  return descriptor->type() == FieldDescriptor::TYPE_MESSAGE &&
-      descriptor->message_type()->file()->name() == "google/protobuf/wrappers.proto";
+  if (descriptor->type() != FieldDescriptor::TYPE_MESSAGE) {
+    return false;
+  }
+  switch (descriptor->message_type()->well_known_type()) {
+    case Descriptor::WELLKNOWNTYPE_DOUBLEVALUE:
+    case Descriptor::WELLKNOWNTYPE_FLOATVALUE:
+    case Descriptor::WELLKNOWNTYPE_INT64VALUE:
+    case Descriptor::WELLKNOWNTYPE_UINT64VALUE:
+    case Descriptor::WELLKNOWNTYPE_INT32VALUE:
+    case Descriptor::WELLKNOWNTYPE_UINT32VALUE:
+    case Descriptor::WELLKNOWNTYPE_STRINGVALUE:
+    case Descriptor::WELLKNOWNTYPE_BYTESVALUE:
+    case Descriptor::WELLKNOWNTYPE_BOOLVALUE:
+      return true;
+    default:
+      return false;
+  }
 }
 
 inline bool SupportsPresenceApi(const FieldDescriptor* descriptor) {

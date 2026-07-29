@@ -11,6 +11,7 @@
 #include <gtest/gtest.h>
 #include "google/protobuf/compiler/command_line_interface.h"
 #include "google/protobuf/compiler/csharp/csharp_helpers.h"
+#include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/io/printer.h"
 #include "google/protobuf/io/zero_copy_stream.h"
@@ -48,6 +49,101 @@ TEST(DescriptorProtoHelpers, IsDescriptorOptionMessage) {
   EXPECT_TRUE(IsDescriptorOptionMessage(FileOptions::descriptor()));
   EXPECT_FALSE(IsDescriptorOptionMessage(google::protobuf::Any::descriptor()));
   EXPECT_FALSE(IsDescriptorOptionMessage(DescriptorProto::descriptor()));
+}
+
+TEST(CSharpWrapperType, IsWrapperTypeIgnoresDefiningFileName) {
+  struct WrapperType {
+    const char* message_name;
+    const char* full_name;
+    const char* field_name;
+    FieldDescriptorProto::Type value_type;
+  };
+  constexpr WrapperType kWrapperTypes[] = {
+      {"DoubleValue", ".google.protobuf.DoubleValue", "double_value",
+       FieldDescriptorProto::TYPE_DOUBLE},
+      {"FloatValue", ".google.protobuf.FloatValue", "float_value",
+       FieldDescriptorProto::TYPE_FLOAT},
+      {"Int64Value", ".google.protobuf.Int64Value", "int64_value",
+       FieldDescriptorProto::TYPE_INT64},
+      {"UInt64Value", ".google.protobuf.UInt64Value", "uint64_value",
+       FieldDescriptorProto::TYPE_UINT64},
+      {"Int32Value", ".google.protobuf.Int32Value", "int32_value",
+       FieldDescriptorProto::TYPE_INT32},
+      {"UInt32Value", ".google.protobuf.UInt32Value", "uint32_value",
+       FieldDescriptorProto::TYPE_UINT32},
+      {"StringValue", ".google.protobuf.StringValue", "string_value",
+       FieldDescriptorProto::TYPE_STRING},
+      {"BytesValue", ".google.protobuf.BytesValue", "bytes_value",
+       FieldDescriptorProto::TYPE_BYTES},
+      {"BoolValue", ".google.protobuf.BoolValue", "bool_value",
+       FieldDescriptorProto::TYPE_BOOL},
+  };
+
+  DescriptorPool pool;
+  FileDescriptorProto wrappers_file;
+  wrappers_file.set_name("Google/protobuf/wrappers.proto");
+  wrappers_file.set_package("google.protobuf");
+  wrappers_file.set_syntax("proto3");
+  for (const auto& wrapper : kWrapperTypes) {
+    DescriptorProto* wrapper_message = wrappers_file.add_message_type();
+    wrapper_message->set_name(wrapper.message_name);
+    FieldDescriptorProto* value = wrapper_message->add_field();
+    value->set_name("value");
+    value->set_number(1);
+    value->set_type(wrapper.value_type);
+  }
+  wrappers_file.add_message_type()->set_name("Any");
+  ASSERT_NE(pool.BuildFile(wrappers_file), nullptr);
+
+  FileDescriptorProto user_file;
+  user_file.set_name("wrapper_fields.proto");
+  user_file.set_package("test");
+  user_file.set_syntax("proto3");
+  user_file.add_dependency(wrappers_file.name());
+  user_file.add_message_type()->set_name("StringValue");
+
+  DescriptorProto* message = user_file.add_message_type();
+  message->set_name("WrapperFields");
+  int field_number = 1;
+  for (const auto& wrapper : kWrapperTypes) {
+    FieldDescriptorProto* field = message->add_field();
+    field->set_name(wrapper.field_name);
+    field->set_number(field_number++);
+    field->set_type(FieldDescriptorProto::TYPE_MESSAGE);
+    field->set_type_name(wrapper.full_name);
+  }
+
+  FieldDescriptorProto* non_wrapper = message->add_field();
+  non_wrapper->set_name("not_a_wrapper");
+  non_wrapper->set_number(field_number++);
+  non_wrapper->set_type(FieldDescriptorProto::TYPE_MESSAGE);
+  non_wrapper->set_type_name(".test.StringValue");
+
+  FieldDescriptorProto* non_wrapper_wkt = message->add_field();
+  non_wrapper_wkt->set_name("any");
+  non_wrapper_wkt->set_number(field_number++);
+  non_wrapper_wkt->set_type(FieldDescriptorProto::TYPE_MESSAGE);
+  non_wrapper_wkt->set_type_name(".google.protobuf.Any");
+
+  FieldDescriptorProto* scalar = message->add_field();
+  scalar->set_name("scalar");
+  scalar->set_number(field_number);
+  scalar->set_type(FieldDescriptorProto::TYPE_STRING);
+
+  const FileDescriptor* file = pool.BuildFile(user_file);
+  ASSERT_NE(file, nullptr);
+  const Descriptor* wrapper_fields =
+      file->FindMessageTypeByName("WrapperFields");
+  ASSERT_NE(wrapper_fields, nullptr);
+
+  int field_index = 0;
+  for (const auto& wrapper : kWrapperTypes) {
+    EXPECT_TRUE(IsWrapperType(wrapper_fields->field(field_index++)))
+        << wrapper.full_name;
+  }
+  EXPECT_FALSE(IsWrapperType(wrapper_fields->field(field_index++)));
+  EXPECT_FALSE(IsWrapperType(wrapper_fields->field(field_index++)));
+  EXPECT_FALSE(IsWrapperType(wrapper_fields->field(field_index)));
 }
 
 TEST(CSharpIdentifiers, UnderscoresToCamelCase) {
