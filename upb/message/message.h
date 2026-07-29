@@ -62,7 +62,7 @@ UPB_INLINE bool upb_Message_HasUnknown(const upb_Message* msg) {
   if (!in) return false;
   for (size_t i = 0; i < in->size; i++) {
     upb_TaggedAuxPtr tagged_ptr = in->aux_data[i];
-    if (tagged_ptr.ptr != 0 &&
+    if (!upb_TaggedAuxPtr_IsNull(tagged_ptr) &&
         !upb_TaggedAuxPtr_IsSemanticallyKnown(tagged_ptr)) {
       return true;
     }
