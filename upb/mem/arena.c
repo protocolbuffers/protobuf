@@ -161,6 +161,15 @@ static uintptr_t _upb_Arena_TaggedFromRefcount(uintptr_t refcount) {
   return parent_or_count;
 }
 
+static uintptr_t _upb_Arena_RefDeltaFromTagged(uintptr_t tagged_count) {
+  UPB_ASSERT(_upb_Arena_IsTaggedRefcount(tagged_count));
+  return tagged_count & ~1;
+}
+
+static uintptr_t _upb_Arena_RefDeltaFromRefcount(uint32_t refcount) {
+  return (uintptr_t)refcount << 1;
+}
+
 static upb_ArenaInternal* _upb_Arena_PointerFromTagged(
     uintptr_t parent_or_count) {
   UPB_ASSERT(_upb_Arena_IsTaggedPointer(parent_or_count));
@@ -266,6 +275,7 @@ static upb_ArenaRoot _upb_Arena_FindRoot(upb_ArenaInternal* ai) {
   // (LDA vs DMB ISH). Even though this is a reread, we know it must be a tagged
   // pointer because if this Arena isn't a root, it can't ever become one.
   poc = upb_Atomic_Load(&ai->parent_or_count, memory_order_acquire);
+  UPB_PRIVATE(upb_Xsan_AccessReadOnly)(UPB_XSAN(ai));
   do {
     upb_ArenaInternal* next = _upb_Arena_PointerFromTagged(poc);
     UPB_PRIVATE(upb_Xsan_AccessReadOnly)(UPB_XSAN(next));
@@ -788,7 +798,8 @@ void upb_Arena_SetAllocCleanup(upb_Arena* a, upb_AllocCleanupFunc* func) {
 // Thread safe.
 static upb_ArenaInternal* _upb_Arena_DoFuse(upb_ArenaInternal** ai1,
                                             upb_ArenaInternal** ai2,
-                                            uintptr_t* ref_delta) {
+                                            uintptr_t* ref_delta,
+                                            bool* abort_fuse) {
   // `parent_or_count` has two distinct modes
   // -  parent pointer mode
   // -  refcount mode
@@ -799,7 +810,16 @@ static upb_ArenaInternal* _upb_Arena_DoFuse(upb_ArenaInternal** ai1,
   upb_ArenaRoot r1 = _upb_Arena_FindRoot(*ai1);
   upb_ArenaRoot r2 = _upb_Arena_FindRoot(*ai2);
 
-  if (r1.root == r2.root) return r1.root;  // Already fused.
+  if (r1.root == r2.root) {
+    *abort_fuse = true;
+    return r1.root;  // Already fused.
+  }
+
+  if (_upb_ArenaInternal_HasInitialBlock(r1.root) ||
+      _upb_ArenaInternal_HasInitialBlock(r2.root)) {
+    *abort_fuse = true;
+    return NULL;
+  }
 
   *ai1 = r1.root;
   *ai2 = r2.root;
@@ -824,7 +844,7 @@ static upb_ArenaInternal* _upb_Arena_DoFuse(upb_ArenaInternal** ai1,
   // different node, during a previous and failed DoFuse() attempt. But we will
   // not lose track of these refs because we always add them to our overall
   // delta.
-  uintptr_t r2_untagged_count = r2.tagged_count & ~1;
+  uintptr_t r2_untagged_count = _upb_Arena_RefDeltaFromTagged(r2.tagged_count);
   uintptr_t with_r2_refs = r1.tagged_count + r2_untagged_count;
   if (!upb_Atomic_CompareExchangeStrong(
           &r1.root->parent_or_count, &r1.tagged_count, with_r2_refs,
@@ -847,6 +867,65 @@ static upb_ArenaInternal* _upb_Arena_DoFuse(upb_ArenaInternal** ai1,
   // append `r2` to `r1`'s linked list.
   _upb_Arena_DoFuseArenaLists(r1.root, r2.root);
   return r1.root;
+}
+
+// Thread safe.
+static upb_ArenaInternal* _upb_Arena_DoFuseMove(upb_ArenaInternal** ai_dest,
+                                                upb_ArenaInternal** ai_src,
+                                                uintptr_t* ref_delta) {
+  upb_ArenaRoot r_dest = _upb_Arena_FindRoot(*ai_dest);
+  upb_ArenaRoot r_src = _upb_Arena_FindRoot(*ai_src);
+
+  if (r_dest.root == r_src.root) return r_dest.root;  // Already fused.
+
+  UPB_ASSERT(!_upb_ArenaInternal_HasInitialBlock(r_src.root));
+  UPB_ASSERT(_upb_Arena_RefCountFromTagged(r_src.tagged_count) == 1);
+
+  *ai_dest = r_dest.root;
+  *ai_src = r_src.root;
+
+  if (_upb_ArenaInternal_HasInitialBlock(r_dest.root)) {
+    // dest has an initial block, src does not. dest wins as parent root.
+  } else {
+    // Neither has an initial block. Order by memory address.
+    if ((uintptr_t)r_dest.root > (uintptr_t)r_src.root) {
+      // r_src is lower address; it becomes parent root, r_dest becomes child.
+      if (!upb_Atomic_CompareExchangeStrong(
+              &r_src.root->parent_or_count, &r_src.tagged_count,
+              r_dest.tagged_count, memory_order_release,
+              memory_order_acquire)) {
+        return NULL;
+      }
+      uintptr_t expected_dest = r_dest.tagged_count;
+      if (!upb_Atomic_CompareExchangeStrong(
+              &r_dest.root->parent_or_count, &expected_dest,
+              _upb_Arena_TaggedFromPointer(r_src.root), memory_order_release,
+              memory_order_acquire)) {
+        // Unlike regular DoFuse (which adds r2's entire refcount to r1), here
+        // we overwrote r_src's refcount from 1 to r_dest. Since r_src already
+        // had 1 reference before the CAS, the net refcount increase on r_src is
+        // r_dest - 1. We record this difference in ref_delta so it can be
+        // subtracted later.
+        *ref_delta += _upb_Arena_RefDeltaFromRefcount(
+            _upb_Arena_RefCountFromTagged(r_dest.tagged_count) - 1);
+        return NULL;
+      }
+      _upb_Arena_DoFuseArenaLists(r_src.root, r_dest.root);
+      return r_src.root;
+    }
+  }
+
+  // r_dest is parent root, r_src becomes child. Since r_src is being moved
+  // (refcount 1 consumed), 0 refs transfer to r_dest.
+  if (!upb_Atomic_CompareExchangeStrong(
+          &r_src.root->parent_or_count, &r_src.tagged_count,
+          _upb_Arena_TaggedFromPointer(r_dest.root), memory_order_release,
+          memory_order_acquire)) {
+    return NULL;
+  }
+
+  _upb_Arena_DoFuseArenaLists(r_dest.root, r_src.root);
+  return r_dest.root;
 }
 
 // Thread safe.
@@ -894,13 +973,51 @@ bool upb_Arena_Fuse(const upb_Arena* a1, const upb_Arena* a2) {
 
   // The number of refs we ultimately need to transfer to the new root.
   uintptr_t ref_delta = 0;
+  bool abort_fuse = false;
   while (true) {
-    upb_ArenaInternal* new_root = _upb_Arena_DoFuse(&ai1, &ai2, &ref_delta);
+    upb_ArenaInternal* new_root =
+        _upb_Arena_DoFuse(&ai1, &ai2, &ref_delta, &abort_fuse);
     if (new_root != NULL && _upb_Arena_FixupRefs(new_root, ref_delta)) {
 #if UPB_ENABLE_REF_CYCLE_CHECKS
       UPB_ASSERT(!upb_Arena_HasRefChain(a1, a2));
 #endif
       return true;
+    }
+    if (abort_fuse) {
+      return false;
+    }
+  }
+}
+
+void upb_Arena_FuseMove(const upb_Arena* dest, const upb_Arena* src) {
+  if (dest == src) return;  // trivial fuse
+
+  // We cannot simply call upb_Arena_Fuse() here because:
+  // 1. FuseMove supports a `dest` with an initial block, which Fuse rejects.
+  // 2. FuseMove consumes the reference to `src` (effectively releasing it).
+  //    Even if `dest` lacks an initial block, implementing this as Fuse(dest,
+  //    src) followed by Free(src) would be incorrect: Fuse temporarily raises
+  //    the refcount of the destination arena's root before Free decrements it.
+  //    If another thread concurrently attempts a FuseMove using this root as
+  //    the `src` arena (which is valid since the logical refcount is 1), it
+  //    would see the temporarily raised refcount (>1) and fail the refcount-1
+  //    assertion.
+#ifdef UPB_TRACING_ENABLED
+  upb_Arena_LogFuse(dest, src);
+#endif
+
+  upb_ArenaInternal* ai_dest = upb_Arena_Internal(dest);
+  upb_ArenaInternal* ai_src = upb_Arena_Internal(src);
+
+  uintptr_t ref_delta = 0;
+  while (true) {
+    upb_ArenaInternal* new_root =
+        _upb_Arena_DoFuseMove(&ai_dest, &ai_src, &ref_delta);
+    if (new_root != NULL && _upb_Arena_FixupRefs(new_root, ref_delta)) {
+#if UPB_ENABLE_REF_CYCLE_CHECKS
+      UPB_ASSERT(!upb_Arena_HasRefChain(dest, src));
+#endif
+      return;
     }
   }
 }
@@ -927,6 +1044,7 @@ bool upb_Arena_IncRefFor(const upb_Arena* a, const void* owner) {
 
 retry:
   r = _upb_Arena_FindRoot(r.root);
+  if (_upb_ArenaInternal_HasInitialBlock(r.root)) return false;
   if (upb_Atomic_CompareExchangeWeak(
           &r.root->parent_or_count, &r.tagged_count,
           _upb_Arena_TaggedFromRefcount(

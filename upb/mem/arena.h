@@ -62,6 +62,22 @@ UPB_API void upb_Arena_SetAllocCleanup(upb_Arena* a,
 // threads.
 UPB_API bool upb_Arena_Fuse(const upb_Arena* a, const upb_Arena* b);
 
+// Fuses the lifetime of two arenas and consumes a reference to `src`.
+//
+// Unlike Fuse, this function is not commutative: `src` is the arena whose
+// reference is being consumed. This operation is valid if and only if `src`
+// lacks an initial block and currently has a refcount of 1. Unlike
+// `upb_Arena_Fuse`, this operation succeeds even when `dest` has an initial
+// block.
+//
+// Because `src` (lacking an initial block) has its only reference released,
+// no external references remain to extend the lifetime of `dest` if `dest` has
+// an initial block. This allows fusing multiple heap-allocated arenas onto an
+// arena with an initial block.
+//
+// This operation is safe to use concurrently from multiple threads.
+UPB_API void upb_Arena_FuseMove(const upb_Arena* dest, const upb_Arena* src);
+
 // This operation is safe to use concurrently from multiple threads.
 UPB_API bool upb_Arena_IsFused(const upb_Arena* a, const upb_Arena* b);
 

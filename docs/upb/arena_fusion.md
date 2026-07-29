@@ -261,6 +261,69 @@ C -> B [weight=0.001, color="red"]
 }
 ```
 
+## FuseMove
+
+In regular fusion, both arenas retain their existing references, and fusing can
+extend the lifetime of either arena. Consequently, `upb_Arena_Fuse` cannot be
+used on an arena with an initial block, because an external reference to the
+fused heap arena could extend the group's lifetime beyond the initial block's
+scope.
+
+`upb_Arena_FuseMove(dest, src)` is an atomic operation that combines fusing two
+arenas with releasing the reference count of `src`. This function is not
+commutative: the developer explicitly specifies `src` as the arena whose
+reference is consumed. It can be used if and only if `src` lacks an initial
+block and has a refcount of 1. Misuse of the API (such as passing a `src` with
+an initial block or a refcount other than 1, or attempting to fuse two initial
+blocks) is checked with assertions in debug builds (`UPB_ASSERT`).
+
+Because `src`'s only reference is released during the operation, no external
+references remain on `src` to extend the lifetime of `dest`. This allows fusing
+multiple heap-allocated arenas onto an arena with an initial block.
+
+Consider moving heap arena B (refcount 1, no initial block) into stack arena A
+(refcount 1, has initial block):
+
+```dot
+digraph {
+A [label="A (refs=1, init_block)"]
+B [label="B (refs=1, heap)"]
+A -> B [style=dashed]
+B -> A [style=dashed]
+}
+```
+
+When `upb_Arena_FuseMove(A, B)` is called, B's refcount of 1 is consumed by the
+move. Because B has 0 remaining independent references, no refcount is added to
+A. B's `parent_or_count` is atomically compare-and-exchanged to point to A:
+
+```dot
+digraph {
+A [label="A (refs=1, init_block)"]
+B [label="B (heap)"]
+A -> B [dir=back]
+A -> B [style=dashed]
+A -> B [weight=0.001, color="red"]
+B -> A [weight=0.001, color="blue"]
+}
+```
+
+Now B is reachable from A's root. When A's scope ends and its refcount reaches
+0, traversing the linked list A->B will free B's heap blocks while leaving A's
+initial block untouched.
+
+To prevent reference cycles or lock-free deadlocks during concurrent fusions,
+upb establishes a strict total order when choosing the root: an arena with an
+initial block is always selected as the root over a heap arena. Thus, an
+initial-block arena is guaranteed to remain at the root of its disjoint-set
+tree, allowing $O(1)$ rejection if two different initial-block groups attempt to
+fuse.
+
+upb arena allocation is single threaded; using FuseMove allows allocating a heap
+arena for some additional data on another thread and fusing it onto the existing
+"owner" arena in a way that will always succeed, regardless of whether the owner
+arena is managed by refcount or has an external lifetime.
+
 ## One-Way References
 
 Fusion creates a bi-directional lifetime dependency between arenas: fused arenas

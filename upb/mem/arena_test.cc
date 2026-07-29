@@ -394,6 +394,142 @@ TEST(ArenaTest, FixedInitialBlockNoAlloc) {
   upb_Arena_Free(arena);
 }
 
+TEST(ArenaTest, FuseMoveBasic) {
+  upb_Arena* arena1 = upb_Arena_New();
+  upb_Arena* arena2 = upb_Arena_New();
+
+  upb_Arena_FuseMove(arena1, arena2);
+  EXPECT_TRUE(upb_Arena_IsFused(arena1, arena2));
+
+  // arena2 had refcount 1, which was consumed by FuseMove.
+  // We only free arena1.
+  upb_Arena_Free(arena1);
+}
+
+TEST(ArenaTest, FuseMoveWithInitialBlock) {
+  char buf[1024];
+  upb_Arena* init_arena = upb_Arena_Init(buf, sizeof(buf), &upb_alloc_global);
+  upb_Arena* heap_arena = upb_Arena_New();
+
+  // Fusing heap_arena (refcount 1, no init block) into init_arena should
+  // succeed.
+  upb_Arena_FuseMove(init_arena, heap_arena);
+  EXPECT_TRUE(upb_Arena_IsFused(init_arena, heap_arena));
+
+  // Allocate something on heap_arena to make sure it has dynamically allocated
+  // memory.
+  void* ptr = upb_Arena_Malloc(heap_arena, 100);
+  EXPECT_NE(ptr, nullptr);
+
+  // Only free init_arena since heap_arena's reference was consumed.
+  upb_Arena_Free(init_arena);
+}
+
+TEST(ArenaTest, FuseMoveMultipleHeapArenasOntoInitialBlock) {
+  char buf[1024];
+  upb_Arena* init_arena = upb_Arena_Init(buf, sizeof(buf), &upb_alloc_global);
+
+  const int kNumChildArenas = 5;
+  upb_Arena* children[kNumChildArenas];
+  for (int i = 0; i < kNumChildArenas; ++i) {
+    children[i] = upb_Arena_New();
+    void* ptr = upb_Arena_Malloc(children[i], 64);
+    EXPECT_NE(ptr, nullptr);
+    upb_Arena_FuseMove(init_arena, children[i]);
+    EXPECT_TRUE(upb_Arena_IsFused(init_arena, children[i]));
+  }
+
+  // Freeing init_arena should free all child heap arenas without errors or
+  // leaks.
+  upb_Arena_Free(init_arena);
+}
+
+TEST(ArenaTest, FuseMoveConcurrent) {
+  char buf[1024];
+  upb_Arena* init_arena = upb_Arena_Init(buf, sizeof(buf), &upb_alloc_global);
+  std::vector<std::thread> threads;
+  const int kNumThreads = 10;
+  for (int i = 0; i < kNumThreads; ++i) {
+    threads.emplace_back([&init_arena]() {
+      upb_Arena* child = upb_Arena_New();
+      (void)upb_Arena_Malloc(child, 128);
+      upb_Arena_FuseMove(init_arena, child);
+    });
+  }
+  for (auto& thread : threads) {
+    thread.join();
+  }
+  upb_Arena_Free(init_arena);
+}
+
+TEST(ArenaTest, FuseMoveRaceTest) {
+  std::vector<std::thread> threads;
+  const size_t kNumThreads = 8;
+  const size_t kNumGroups = 500;
+  std::vector<std::array<upb_Arena*, 9>> groups;
+  for (size_t i = 0; i < kNumGroups; ++i) {
+    std::array<upb_Arena*, 9> arr;
+    arr[0] = upb_Arena_New();
+    for (size_t j = 1; j < kNumThreads + 1; ++j) {
+      arr[j] = upb_Arena_New();
+    }
+    groups.push_back(arr);
+  }
+  for (size_t i = 0; i < kNumThreads; ++i) {
+    size_t tid = i;
+    threads.emplace_back([&, tid]() {
+      for (size_t group_idx = 0; group_idx < groups.size(); ++group_idx) {
+        upb_Arena* parent = groups[group_idx][0];
+        upb_Arena* child = groups[group_idx][tid + 1];
+        (void)upb_Arena_Malloc(child, 128);
+        upb_Arena_FuseMove(parent, child);
+        for (size_t j = 0; j < 9; ++j) {
+          (void)upb_Arena_IsFused(child, groups[group_idx][j]);
+        }
+        size_t count = 0;
+        (void)upb_Arena_SpaceAllocated(parent, &count);
+      }
+    });
+  }
+  for (auto& thread : threads) {
+    thread.join();
+  }
+  for (size_t i = 0; i < groups.size(); ++i) {
+    EXPECT_EQ(upb_Arena_DebugRefCount(groups[i][0]), 1);
+    upb_Arena_Free(groups[i][0]);
+  }
+}
+
+TEST(ArenaTest, IncRefForAfterFuseMove) {
+  char buf[1024];
+  upb_Arena* init_arena = upb_Arena_Init(buf, sizeof(buf), &upb_alloc_global);
+  upb_Arena* heap_arena = upb_Arena_New();
+
+  upb_Arena_FuseMove(init_arena, heap_arena);
+
+  // heap_arena is now part of a group rooted at init_arena (which has an
+  // initial block). Thus, it cannot be refcounted anymore.
+  EXPECT_FALSE(upb_Arena_IncRefFor(heap_arena, nullptr));
+
+  upb_Arena_Free(init_arena);
+}
+
+TEST(ArenaTest, FuseAfterFuseMove) {
+  char buf[1024];
+  upb_Arena* init_arena = upb_Arena_Init(buf, sizeof(buf), &upb_alloc_global);
+  upb_Arena* heap_arena1 = upb_Arena_New();
+  upb_Arena* heap_arena2 = upb_Arena_New();
+
+  upb_Arena_FuseMove(init_arena, heap_arena1);
+
+  // Fusing heap_arena2 with heap_arena1 should fail because heap_arena1
+  // is now fused to an initial block arena (init_arena).
+  EXPECT_FALSE(upb_Arena_Fuse(heap_arena1, heap_arena2));
+
+  upb_Arena_Free(init_arena);
+  upb_Arena_Free(heap_arena2);
+}
+
 class Environment {
  public:
   void RandomNewFree(absl::BitGen& gen, size_t min_index = 0) {
@@ -1012,6 +1148,31 @@ TEST(ArenaDeathTest, ArenaRefFuseCycle) {
 
         thread1.join();
         thread2.join();
+      },
+      "");
+}
+
+TEST(ArenaDeathTest, FuseMoveDeathTests) {
+  ASSERT_DEATH(
+      {
+        char buf1[1024];
+        char buf2[1024];
+        upb_Arena* init_arena1 =
+            upb_Arena_Init(buf1, sizeof(buf1), &upb_alloc_global);
+        upb_Arena* init_arena2 =
+            upb_Arena_Init(buf2, sizeof(buf2), &upb_alloc_global);
+        upb_Arena_FuseMove(init_arena1, init_arena2);
+      },
+      "");
+
+  ASSERT_DEATH(
+      {
+        char buf1[1024];
+        upb_Arena* init_arena1 =
+            upb_Arena_Init(buf1, sizeof(buf1), &upb_alloc_global);
+        upb_Arena* heap_arena = upb_Arena_New();
+        EXPECT_TRUE(upb_Arena_IncRefFor(heap_arena, &buf1));
+        upb_Arena_FuseMove(init_arena1, heap_arena);
       },
       "");
 }
