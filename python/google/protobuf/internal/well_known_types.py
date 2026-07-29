@@ -4,7 +4,6 @@
 # Use of this source code is governed by a BSD-style
 # license that can be found in the LICENSE file or at
 # https://developers.google.com/open-source/licenses/bsd
-
 """Contains well known classes.
 
 This files defines well known classes which need extra maintenance including:
@@ -695,7 +694,6 @@ class ListValue(object):
 
 
 collections.abc.MutableSequence.register(ListValue)
-
 
 # LINT.IfChange(wktbases)
 WKTBASES = {

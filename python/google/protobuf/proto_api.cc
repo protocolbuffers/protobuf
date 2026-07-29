@@ -50,11 +50,13 @@ PythonMessageMutator::~PythonMessageMutator() {
     (void)message_->SerializePartialToString(&wire);
     PyObject* py_wire = PyBytes_FromStringAndSize(
         wire.data(), static_cast<Py_ssize_t>(wire.size()));
-    PyObject* parse =
-        PyObject_CallMethod(py_msg_, "ParseFromString", "O", py_wire);
-    Py_DECREF(py_wire);
-    if (parse != nullptr) {
-      Py_DECREF(parse);
+    if (py_wire != nullptr) {
+      PyObject* parse =
+          PyObject_CallMethod(py_msg_, "ParseFromString", "O", py_wire);
+      Py_DECREF(py_wire);
+      if (parse != nullptr) {
+        Py_DECREF(parse);
+      }
     }
   }
   Py_DECREF(py_msg_);

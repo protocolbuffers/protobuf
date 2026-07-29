@@ -30,99 +30,104 @@
 
 """A bare-bones unit test that doesn't load any generated code."""
 
-
 import unittest
 from google.protobuf.pyext import _message
 from google3.net.proto2.python.internal import api_implementation
-from google.protobuf import unittest_pb2
-from google.protobuf import map_unittest_pb2
-from google.protobuf import descriptor_pool
-from google.protobuf import text_format
-from google.protobuf import message_factory
-from google.protobuf import message
 from google3.net.proto2.python.internal import factory_test1_pb2
 from google3.net.proto2.python.internal import factory_test2_pb2
 from google3.net.proto2.python.internal import more_extensions_pb2
 from google.protobuf import descriptor_pb2
+from google.protobuf import descriptor_pool
+from google.protobuf import map_unittest_pb2
+from google.protobuf import message
+from google.protobuf import message_factory
+from google.protobuf import text_format
+from google.protobuf import unittest_pb2
+
 
 class TestMessageExtension(unittest.TestCase):
 
-    def test_descriptor_pool(self):
-        serialized_desc = b'\n\ntest.proto\"\x0e\n\x02M1*\x08\x08\x01\x10\x80\x80\x80\x80\x02:\x15\n\x08test_ext\x12\x03.M1\x18\x01 \x01(\x05'
-        pool = _message.DescriptorPool()
-        file_desc = pool.AddSerializedFile(serialized_desc)
-        self.assertEqual("test.proto", file_desc.name)
-        ext_desc = pool.FindExtensionByName("test_ext")
-        self.assertEqual(1, ext_desc.number)
+  def test_descriptor_pool(self):
+    serialized_desc = (
+        b'\n\ntest.proto"\x0e\n\x02M1*\x08\x08\x01\x10\x80\x80\x80\x80\x02:\x15\n\x08test_ext\x12\x03.M1\x18\x01'
+        b" \x01(\x05"
+    )
+    pool = _message.DescriptorPool()
+    file_desc = pool.AddSerializedFile(serialized_desc)
+    self.assertEqual("test.proto", file_desc.name)
+    ext_desc = pool.FindExtensionByName("test_ext")
+    self.assertEqual(1, ext_desc.number)
 
-        # Test object cache: repeatedly retrieving the same descriptor
-        # should result in the same object
-        self.assertIs(ext_desc, pool.FindExtensionByName("test_ext"))
+    # Test object cache: repeatedly retrieving the same descriptor
+    # should result in the same object
+    self.assertIs(ext_desc, pool.FindExtensionByName("test_ext"))
 
+  def test_lib_is_upb(self):
+    # Ensure we are not pulling in a different protobuf library on the
+    # system.
+    print(_message._IS_UPB)
+    self.assertTrue(_message._IS_UPB)
+    self.assertEqual(api_implementation.Type(), "cpp")
 
-    def test_lib_is_upb(self):
-        # Ensure we are not pulling in a different protobuf library on the
-        # system.
-        print(_message._IS_UPB)
-        self.assertTrue(_message._IS_UPB)
-        self.assertEqual(api_implementation.Type(), "cpp")
+  def test_repeated_field_slice_delete(self):
+    def test_slice(start, end, step):
+      vals = list(range(20))
+      message = unittest_pb2.TestAllTypes(repeated_int32=vals)
+      del vals[start:end:step]
+      del message.repeated_int32[start:end:step]
+      self.assertEqual(vals, list(message.repeated_int32))
 
-    def test_repeated_field_slice_delete(self):
-        def test_slice(start, end, step):
-            vals = list(range(20))
-            message = unittest_pb2.TestAllTypes(repeated_int32=vals)
-            del vals[start:end:step]
-            del message.repeated_int32[start:end:step]
-            self.assertEqual(vals, list(message.repeated_int32))
-        test_slice(3, 11, 1)
-        test_slice(3, 11, 2)
-        test_slice(3, 11, 3)
-        test_slice(11, 3, -1)
-        test_slice(11, 3, -2)
-        test_slice(11, 3, -3)
-        test_slice(10, 25, 4)
-    
-    def testExtensionsErrors(self):
-        msg = unittest_pb2.TestAllTypes()
-        self.assertRaises(AttributeError, getattr, msg, 'Extensions')
-    
-    def testClearStubMapField(self):
-        msg = map_unittest_pb2.TestMapSubmessage()
-        int32_map = msg.test_map.map_int32_int32
-        msg.test_map.ClearField("map_int32_int32")
-        int32_map[123] = 456
-        self.assertEqual(0, msg.test_map.ByteSize())
+    test_slice(3, 11, 1)
+    test_slice(3, 11, 2)
+    test_slice(3, 11, 3)
+    test_slice(11, 3, -1)
+    test_slice(11, 3, -2)
+    test_slice(11, 3, -3)
+    test_slice(10, 25, 4)
 
-    def testClearReifiedMapField(self):
-        msg = map_unittest_pb2.TestMap()
-        int32_map = msg.map_int32_int32
-        int32_map[123] = 456
-        msg.ClearField("map_int32_int32")
-        int32_map[111] = 222
-        self.assertEqual(0, msg.ByteSize())
+  def testExtensionsErrors(self):
+    msg = unittest_pb2.TestAllTypes()
+    self.assertRaises(AttributeError, getattr, msg, "Extensions")
 
-    def testClearStubRepeatedField(self):
-        msg = unittest_pb2.NestedTestAllTypes()
-        int32_array = msg.payload.repeated_int32
-        msg.payload.ClearField("repeated_int32")
-        int32_array.append(123)
-        self.assertEqual(0, msg.payload.ByteSize())
+  def testClearStubMapField(self):
+    msg = map_unittest_pb2.TestMapSubmessage()
+    int32_map = msg.test_map.map_int32_int32
+    msg.test_map.ClearField("map_int32_int32")
+    int32_map[123] = 456
+    self.assertEqual(0, msg.test_map.ByteSize())
 
-    def testClearReifiedRepeatdField(self):
-        msg = unittest_pb2.TestAllTypes()
-        int32_array = msg.repeated_int32
-        int32_array.append(123)
-        self.assertNotEqual(0, msg.ByteSize())
-        msg.ClearField("repeated_int32")
-        int32_array.append(123)
-        self.assertEqual(0, msg.ByteSize())
+  def testClearReifiedMapField(self):
+    msg = map_unittest_pb2.TestMap()
+    int32_map = msg.map_int32_int32
+    int32_map[123] = 456
+    msg.ClearField("map_int32_int32")
+    int32_map[111] = 222
+    self.assertEqual(0, msg.ByteSize())
 
-    def testFloatPrinting(self):
-        message = unittest_pb2.TestAllTypes()
-        message.optional_float = -0.0
-        self.assertEqual(str(message), 'optional_float: -0\n')
+  def testClearStubRepeatedField(self):
+    msg = unittest_pb2.NestedTestAllTypes()
+    int32_array = msg.payload.repeated_int32
+    msg.payload.ClearField("repeated_int32")
+    int32_array.append(123)
+    self.assertEqual(0, msg.payload.ByteSize())
+
+  def testClearReifiedRepeatdField(self):
+    msg = unittest_pb2.TestAllTypes()
+    int32_array = msg.repeated_int32
+    int32_array.append(123)
+    self.assertNotEqual(0, msg.ByteSize())
+    msg.ClearField("repeated_int32")
+    int32_array.append(123)
+    self.assertEqual(0, msg.ByteSize())
+
+  def testFloatPrinting(self):
+    message = unittest_pb2.TestAllTypes()
+    message.optional_float = -0.0
+    self.assertEqual(str(message), "optional_float: -0\n")
+
 
 class OversizeProtosTest(unittest.TestCase):
+
   def setUp(self):
     msg = unittest_pb2.NestedTestAllTypes()
     m = msg
@@ -130,17 +135,19 @@ class OversizeProtosTest(unittest.TestCase):
       m = m.child
     m.Clear()
     self.p_serialized = msg.SerializeToString()
-    
+
   def testAssertOversizeProto(self):
     from google.protobuf.pyext._message import SetAllowOversizeProtos
+
     SetAllowOversizeProtos(False)
     q = unittest_pb2.NestedTestAllTypes()
     with self.assertRaises(message.DecodeError):
       q.ParseFromString(self.p_serialized)
       print(q)
-  
+
   def testSucceedOversizeProto(self):
     from google.protobuf.pyext._message import SetAllowOversizeProtos
+
     SetAllowOversizeProtos(True)
     q = unittest_pb2.NestedTestAllTypes()
     q.ParseFromString(self.p_serialized)
@@ -159,12 +166,12 @@ class OversizeProtosTest(unittest.TestCase):
 
     # Set some normal fields.
     extendee_proto.optional_int32 = 1
-    extendee_proto.repeated_string.append('hi')
+    extendee_proto.repeated_string.append("hi")
 
     expected = {
         extension_int32: True,
         extension_msg: True,
-        extension_repeated: True
+        extension_repeated: True,
     }
     count = 0
     for item in extendee_proto.Extensions:
@@ -173,15 +180,18 @@ class OversizeProtosTest(unittest.TestCase):
       count += 1
     self.assertEqual(count, 3)
     self.assertEqual(len(expected), 0)
-  
+
   def testIsInitializedStub(self):
     proto = unittest_pb2.TestRequiredForeign()
     self.assertTrue(proto.IsInitialized())
     self.assertFalse(proto.optional_message.IsInitialized())
     errors = []
     self.assertFalse(proto.optional_message.IsInitialized(errors))
-    self.assertEqual(['a', 'b', 'c'], errors)
-    self.assertRaises(message.EncodeError, proto.optional_message.SerializeToString)
+    self.assertEqual(["a", "b", "c"], errors)
+    self.assertRaises(
+        message.EncodeError, proto.optional_message.SerializeToString
+    )
 
-if __name__ == '__main__':
-    unittest.main(verbosity=2)
+
+if __name__ == "__main__":
+  unittest.main(verbosity=2)

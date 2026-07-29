@@ -5,6 +5,7 @@
 # license that can be found in the LICENSE file or at
 # https://developers.google.com/open-source/licenses/bsd
 
+load("@bazel_skylib//lib:selects.bzl", "selects")
 load("@bazel_skylib//rules:common_settings.bzl", "bool_flag")
 load("@rules_cc//cc:defs.bzl", "cc_library")
 load("@rules_python//python:defs.bzl", "py_binary")
@@ -25,38 +26,58 @@ exports_files(
     visibility = ["//upb/cmake:__pkg__"],
 )
 
+UPB_CONFIG_VISIBILITY = [
+    "//benchmarks:__subpackages__",
+    "//hpb:__subpackages__",
+    "//hpb_generator:__subpackages__",
+    "//lua:__pkg__",
+    "//python:__pkg__",
+    "//upb:__subpackages__",
+    "//upb_generator:__subpackages__",
+]
+
 config_setting(
     name = "windows",
     constraint_values = ["@platforms//os:windows"],
-    visibility = [
-        "//benchmarks:__subpackages__",
-        "//hpb:__subpackages__",
-        "//hpb_generator:__subpackages__",
-        "//lua:__pkg__",
-        "//python:__pkg__",
-        "//upb:__subpackages__",
-        "//upb_generator:__subpackages__",
-    ],
+    visibility = UPB_CONFIG_VISIBILITY,
 )
 
 bool_flag(
     name = "fasttable_enabled",
     build_setting_default = False,
-    visibility = [
-        "//upb/bazel:__pkg__",
-    ],
+    scope = "universal",
+    visibility = UPB_CONFIG_VISIBILITY,
 )
 
 config_setting(
-    name = "fasttable_enabled_setting",
+    name = "fasttable_enabled_setting_flag",
     flag_values = {"//upb:fasttable_enabled": "true"},
-    visibility = [
-        "//benchmarks:__subpackages__",
-        "//lua:__pkg__",
-        "//python:__pkg__",
-        "//upb:__subpackages__",
-        "//upb_generator:__subpackages__",
+    visibility = UPB_CONFIG_VISIBILITY,
+)
+
+selects.config_setting_group(
+    name = "fasttable_enabled_setting",
+    match_all = [
+        ":fasttable_enabled_setting_flag",
+        ":any_64bit",
     ],
+    visibility = UPB_CONFIG_VISIBILITY,
+)
+
+selects.config_setting_group(
+    name = "any_64bit",
+    match_any = [
+        "@platforms//cpu:aarch64",
+        "@platforms//cpu:arm64",
+        "@platforms//cpu:cortex-r82",
+        "@platforms//cpu:mips64",
+        "@platforms//cpu:ppc64le",
+        "@platforms//cpu:riscv64",
+        "@platforms//cpu:s390x",
+        "@platforms//cpu:wasm64",
+        "@platforms//cpu:x86_64",
+    ],
+    visibility = UPB_CONFIG_VISIBILITY,
 )
 
 upb_proto_library_copts(
@@ -110,7 +131,8 @@ cc_library(
         ":fasttable_enabled_setting": [
             "//upb/wire/decode_fast:field_parsers",
         ],
-        "//conditions:default": [],
+        "//conditions:default": [
+        ],
     }),
 )
 
@@ -144,6 +166,7 @@ upb_amalgamation(
         "//upb/mem",
         "//upb/mem:internal",
         "//upb/message",
+        "//upb/message:message_unknowns",
         "//upb/message:compare",
         "//upb/message:copy",
         "//upb/message:internal",
@@ -160,8 +183,10 @@ upb_amalgamation(
         "//upb/text:debug",
         "//upb/text:internal",
         "//upb/wire",
+        "//upb/wire:back_alloc",
         "//upb/wire:byte_size",
         "//upb/wire:decoder",
+        "//upb/wire:encoder",
         "//upb/wire:eps_copy_input_stream",
         "//upb/wire:eps_copy_input_stream_internal",
         "//upb/wire:reader",
@@ -199,6 +224,7 @@ upb_amalgamation(
         "//upb/mem",
         "//upb/mem:internal",
         "//upb/message",
+        "//upb/message:message_unknowns",
         "//upb/message:compare",
         "//upb/message:copy",
         "//upb/message:internal",
@@ -213,7 +239,9 @@ upb_amalgamation(
         "//upb/reflection:descriptor_upb_proto",
         "//upb/reflection:internal",
         "//upb/wire",
+        "//upb/wire:back_alloc",
         "//upb/wire:decoder",
+        "//upb/wire:encoder",
         "//upb/wire:eps_copy_input_stream",
         "//upb/wire:eps_copy_input_stream_internal",
         "//upb/wire:reader",
@@ -251,6 +279,7 @@ upb_amalgamation(
         "//upb/mem",
         "//upb/mem:internal",
         "//upb/message",
+        "//upb/message:message_unknowns",
         "//upb/message:compare",
         "//upb/message:copy",
         "//upb/message:internal",
@@ -266,7 +295,9 @@ upb_amalgamation(
         "//upb/reflection:internal",
         "//upb/util:def_to_proto",
         "//upb/wire",
+        "//upb/wire:back_alloc",
         "//upb/wire:decoder",
+        "//upb/wire:encoder",
         "//upb/wire:eps_copy_input_stream",
         "//upb/wire:eps_copy_input_stream_internal",
         "//upb/wire:reader",
@@ -311,6 +342,7 @@ filegroup(
         "//src/google/protobuf:well_known_type_protos",
         "//upb/json:test_protos",
         "//upb/message:test_protos",
+        "//upb/mini_table:test_protos",
         "//upb/test:test_protos",
         "//upb/util:test_protos",
         "//upb/wire:test_protos",

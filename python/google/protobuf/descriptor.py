@@ -4,7 +4,6 @@
 # Use of this source code is governed by a BSD-style
 # license that can be found in the LICENSE file or at
 # https://developers.google.com/open-source/licenses/bsd
-
 """Descriptors essentially contain exactly the information found in a .proto
 
 file, in types that make this information accessible in Python.
@@ -101,8 +100,17 @@ _FEATURESET_ENUM_TYPE_CLOSED = 2
 # users to notice and do not cause timeout.
 _Deprecated.count = 100
 
-
 _internal_create_key = object()
+
+
+def _CheckCopyToProtoType(proto, proto_type_name):
+  """Ensures CopyToProto receives the matching descriptor proto type."""
+  # pylint: disable=g-import-not-at-top
+  from google.protobuf import descriptor_pb2
+
+  proto_type = getattr(descriptor_pb2, proto_type_name)
+  if getattr(proto, 'DESCRIPTOR', None) is not proto_type.DESCRIPTOR:
+    raise TypeError('Not a %s message' % proto_type.DESCRIPTOR.full_name)
 
 
 class DescriptorBase(metaclass=DescriptorMetaclass):
@@ -247,6 +255,12 @@ class DescriptorBase(metaclass=DescriptorMetaclass):
     # If either has been reset by gencode, reload options.
     if not self._options or not self._loaded_options:
       self._LazyLoadOptions()
+    if (
+        self._options
+        and hasattr(self._options, '_SetFrozen')
+        and not getattr(self._options, '_frozen', False)
+    ):
+      self._options._SetFrozen()
     return self._options
 
 
@@ -516,6 +530,7 @@ class Descriptor(_NestedDescriptorBase):
       proto: An empty descriptor_pb2.DescriptorProto.
     """
     # This function is overridden to give a better doc comment.
+    _CheckCopyToProtoType(proto, 'DescriptorProto')
     super(Descriptor, self).CopyToProto(proto)
 
 
@@ -994,6 +1009,7 @@ class EnumDescriptor(_NestedDescriptorBase):
       proto (descriptor_pb2.EnumDescriptorProto): An empty descriptor proto.
     """
     # This function is overridden to give a better doc comment.
+    _CheckCopyToProtoType(proto, 'EnumDescriptorProto')
     super(EnumDescriptor, self).CopyToProto(proto)
 
 
@@ -1221,6 +1237,7 @@ class ServiceDescriptor(_NestedDescriptorBase):
       proto (descriptor_pb2.ServiceDescriptorProto): An empty descriptor proto.
     """
     # This function is overridden to give a better doc comment.
+    _CheckCopyToProtoType(proto, 'ServiceDescriptorProto')
     super(ServiceDescriptor, self).CopyToProto(proto)
 
 
@@ -1315,6 +1332,7 @@ class MethodDescriptor(DescriptorBase):
       Error: If self couldn't be serialized, due to too few constructor
         arguments.
     """
+    _CheckCopyToProtoType(proto, 'MethodDescriptorProto')
     if self.containing_service is not None:
       from google.protobuf import descriptor_pb2
 
@@ -1431,6 +1449,7 @@ class FileDescriptor(DescriptorBase):
     Args:
       proto: An empty descriptor_pb2.FileDescriptorProto.
     """
+    _CheckCopyToProtoType(proto, 'FileDescriptorProto')
     proto.ParseFromString(self.serialized_pb)
 
   @property

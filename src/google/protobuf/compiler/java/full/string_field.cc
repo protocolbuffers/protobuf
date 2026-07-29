@@ -57,8 +57,7 @@ void SetPrimitiveVariables(
       absl::StrCat(static_cast<int32_t>(WireFormat::MakeTag(descriptor)));
   (*variables)["tag_size"] = absl::StrCat(
       WireFormat::TagSize(descriptor->number(), GetType(descriptor)));
-  (*variables)["null_check"] =
-      "if (value == null) { throw new NullPointerException(); }";
+  (*variables)["null_check"] = "java.util.Objects.requireNonNull(value);";
   (*variables)["isStringEmpty"] =
       "com.google.protobuf.GeneratedMessage.isStringEmpty";
   (*variables)["writeString"] =
@@ -130,8 +129,6 @@ int ImmutableStringFieldGenerator::GetBuilderBitIndex() const {
 int ImmutableStringFieldGenerator::GetNumBitsForMessage() const {
   return HasHasbit(descriptor_) ? 1 : 0;
 }
-
-int ImmutableStringFieldGenerator::GetNumBitsForBuilder() const { return 1; }
 
 // A note about how strings are handled. This code used to just store a String
 // in the Message. This had two issues:
@@ -663,7 +660,7 @@ void ImmutableStringOneofFieldGenerator::GenerateMergingCode(
 
 void ImmutableStringOneofFieldGenerator::GenerateBuildingCode(
     io::Printer* printer) const {
-  // No-Op: oneof fields are built by a single statement
+  // No-Op: Handled by single block statement in GenerateBuildPartialShard.
 }
 
 void ImmutableStringOneofFieldGenerator::GenerateBuilderParsingCode(
@@ -711,10 +708,6 @@ RepeatedImmutableStringFieldGenerator::
 
 int RepeatedImmutableStringFieldGenerator::GetNumBitsForMessage() const {
   return 0;
-}
-
-int RepeatedImmutableStringFieldGenerator::GetNumBitsForBuilder() const {
-  return 1;
 }
 
 void RepeatedImmutableStringFieldGenerator::GenerateInterfaceMembers(

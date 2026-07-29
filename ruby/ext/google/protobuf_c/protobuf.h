@@ -39,6 +39,7 @@ const upb_FieldDef* map_field_value(const upb_FieldDef* field);
 
 VALUE Arena_new();
 upb_Arena* Arena_get(VALUE arena);
+void Arena_raise_oom(void);
 
 // Fuses this arena to another, throwing a Ruby exception if this is not
 // possible.

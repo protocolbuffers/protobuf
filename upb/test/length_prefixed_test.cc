@@ -31,7 +31,7 @@ static void TestEncodeDecodeRoundTrip(
     ASSERT_TRUE(upb_EncodeLengthPrefixed(UPB_UPCAST(msg), kTestMiniTable, 0,
                                          arena, &buf,
                                          &size) == kUpb_EncodeStatus_Ok);
-    ASSERT_GT(size, 0);  // Even empty messages are 1 byte in this encoding.
+    ASSERT_GT(size, 0u);  // Even empty messages are 1 byte in this encoding.
     s.append(std::string(buf, size));
   }
 
@@ -44,7 +44,7 @@ static void TestEncodeDecodeRoundTrip(
     ASSERT_TRUE(upb_DecodeLengthPrefixed(
                     s.data(), s.length(), UPB_UPCAST(msg), &num_bytes_read,
                     kTestMiniTable, nullptr, 0, arena) == kUpb_DecodeStatus_Ok);
-    ASSERT_GT(num_bytes_read, 0);
+    ASSERT_GT(num_bytes_read, 0u);
     decoded.push_back(msg);
     s = s.substr(num_bytes_read);
   }

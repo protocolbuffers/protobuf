@@ -387,7 +387,7 @@ namespace ProtobufTestMessages.Proto2 {
     private static readonly pb::MessageParser<TestAllTypesProto2> _parser = new pb::MessageParser<TestAllTypesProto2>(() => new TestAllTypesProto2());
     private pb::UnknownFieldSet _unknownFields;
     private pb::ExtensionSet<TestAllTypesProto2> _extensions;
-    private pb::ExtensionSet<TestAllTypesProto2> _Extensions { get { return _extensions; } }
+    private pb::ExtensionSet<TestAllTypesProto2>  _Extensions { get { return _extensions; } }
     private int _hasBits0;
     private int _hasBits1;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -6855,7 +6855,7 @@ namespace ProtobufTestMessages.Proto2 {
         private static readonly pb::MessageParser<MessageSetCorrect> _parser = new pb::MessageParser<MessageSetCorrect>(() => new MessageSetCorrect());
         private pb::UnknownFieldSet _unknownFields;
         private pb::ExtensionSet<MessageSetCorrect> _extensions;
-        private pb::ExtensionSet<MessageSetCorrect> _Extensions { get { return _extensions; } }
+        private pb::ExtensionSet<MessageSetCorrect>  _Extensions { get { return _extensions; } }
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
         public static pb::MessageParser<MessageSetCorrect> Parser { get { return _parser; } }
@@ -9861,7 +9861,7 @@ namespace ProtobufTestMessages.Proto2 {
     private static readonly pb::MessageParser<TestAllRequiredTypesProto2> _parser = new pb::MessageParser<TestAllRequiredTypesProto2>(() => new TestAllRequiredTypesProto2());
     private pb::UnknownFieldSet _unknownFields;
     private pb::ExtensionSet<TestAllRequiredTypesProto2> _extensions;
-    private pb::ExtensionSet<TestAllRequiredTypesProto2> _Extensions { get { return _extensions; } }
+    private pb::ExtensionSet<TestAllRequiredTypesProto2>  _Extensions { get { return _extensions; } }
     private int _hasBits0;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
@@ -12674,7 +12674,7 @@ namespace ProtobufTestMessages.Proto2 {
         private static readonly pb::MessageParser<MessageSetCorrect> _parser = new pb::MessageParser<MessageSetCorrect>(() => new MessageSetCorrect());
         private pb::UnknownFieldSet _unknownFields;
         private pb::ExtensionSet<MessageSetCorrect> _extensions;
-        private pb::ExtensionSet<MessageSetCorrect> _Extensions { get { return _extensions; } }
+        private pb::ExtensionSet<MessageSetCorrect>  _Extensions { get { return _extensions; } }
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
         public static pb::MessageParser<MessageSetCorrect> Parser { get { return _parser; } }

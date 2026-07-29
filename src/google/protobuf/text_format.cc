@@ -19,6 +19,7 @@
 #include <cmath>
 #include <cstddef>
 #include <cstdint>
+#include <iterator>
 #include <limits>
 #include <memory>
 #include <random>
@@ -27,6 +28,8 @@
 #include <vector>
 
 #include "absl/base/macros.h"
+#include "absl/base/optimization.h"
+#include "absl/cleanup/cleanup.h"
 #include "absl/container/btree_set.h"
 #include "absl/log/absl_check.h"
 #include "absl/memory/memory.h"
@@ -335,6 +338,24 @@ const Descriptor* DefaultFinderFindAnyType(const Message& message,
                                            const std::string& name) {
   return message.GetDescriptor()->file()->pool()->FindMessageTypeByName(name);
 }
+
+void ReportErrorImpl(int line, int col, absl::string_view message,
+                     const Descriptor* root_message_type,
+                     io::ErrorCollector* error_collector) {
+  if (error_collector == nullptr) {
+    if (line >= 0) {
+      ABSL_LOG(ERROR) << "Error parsing text-format "
+                      << root_message_type->full_name() << ": " << (line + 1)
+                      << ":" << (col + 1) << ": " << message;
+    } else {
+      ABSL_LOG(ERROR) << "Error parsing text-format "
+                      << root_message_type->full_name() << ": " << message;
+    }
+  } else {
+    error_collector->RecordError(line, col, message);
+  }
+}
+
 }  // namespace
 
 auto TextFormat::Parser::UnsetFieldsMetadata::GetUnsetFieldId(
@@ -452,18 +473,7 @@ class TextFormat::Parser::ParserImpl {
 
   void ReportError(int line, int col, absl::string_view message) {
     had_errors_ = true;
-    if (error_collector_ == nullptr) {
-      if (line >= 0) {
-        ABSL_LOG(ERROR) << "Error parsing text-format "
-                        << root_message_type_->full_name() << ": " << (line + 1)
-                        << ":" << (col + 1) << ": " << message;
-      } else {
-        ABSL_LOG(ERROR) << "Error parsing text-format "
-                        << root_message_type_->full_name() << ": " << message;
-      }
-    } else {
-      error_collector_->RecordError(line, col, message);
-    }
+    ReportErrorImpl(line, col, message, root_message_type_, error_collector_);
   }
 
   void ReportWarning(int line, int col, const absl::string_view message) {
@@ -508,12 +518,23 @@ class TextFormat::Parser::ParserImpl {
   // This method checks to see that the end delimiter at the conclusion of
   // the consumption matches the starting delimiter passed in here.
   bool ConsumeMessage(Message* message, const std::string& delimiter) {
+    if (--recursion_limit_ < 0) {
+      ReportError(
+          absl::StrCat("Message is too deep, the parser exceeded the "
+                       "configured recursion limit of ",
+                       initial_recursion_limit_, "."));
+      return false;
+    }
+
+    auto cleanup = absl::MakeCleanup([this] { ++recursion_limit_; });
+
     while (!LookingAt(">") && !LookingAt("}")) {
       DO(ConsumeField(message));
     }
 
     // Confirm that we have a valid ending delimiter.
     DO(Consume(delimiter));
+
     return true;
   }
 
@@ -792,7 +813,10 @@ class TextFormat::Parser::ParserImpl {
       if (consumed_semicolon) {
         TryConsumeWhitespace();
       }
-      if (consumed_semicolon && field->options().weak() &&
+      PROTOBUF_IGNORE_DEPRECATION_START
+      const bool field_is_weak = field->options().weak();
+      PROTOBUF_IGNORE_DEPRECATION_STOP
+      if (consumed_semicolon && field_is_weak &&
           LookingAtType(io::Tokenizer::TYPE_STRING)) {
         // we are getting a bytes string for a weak field.
         int v_start_line = tokenizer_.current().line;
@@ -885,13 +909,6 @@ class TextFormat::Parser::ParserImpl {
 
   bool ConsumeFieldMessage(Message* message, const Reflection* reflection,
                            const FieldDescriptor* field) {
-    if (--recursion_limit_ < 0) {
-      ReportError(
-          absl::StrCat("Message is too deep, the parser exceeded the "
-                       "configured recursion limit of ",
-                       initial_recursion_limit_, "."));
-      return false;
-    }
     // If the parse information tree is not nullptr, create a nested one
     // for the nested message.
     ParseInfoTree* parent = parse_info_tree_;
@@ -911,8 +928,6 @@ class TextFormat::Parser::ParserImpl {
                         delimiter));
     }
 
-    ++recursion_limit_;
-
     // Reset the parse information tree.
     parse_info_tree_ = parent;
     return true;
@@ -929,6 +944,8 @@ class TextFormat::Parser::ParserImpl {
       return false;
     }
 
+    auto cleanup = absl::MakeCleanup([this] { ++recursion_limit_; });
+
     std::string delimiter;
     DO(ConsumeMessageDelimiter(&delimiter));
     while (!LookingAt(">") && !LookingAt("}")) {
@@ -936,7 +953,6 @@ class TextFormat::Parser::ParserImpl {
     }
     DO(Consume(delimiter));
 
-    ++recursion_limit_;
     return true;
   }
 
@@ -1099,11 +1115,12 @@ class TextFormat::Parser::ParserImpl {
       return false;
     }
 
+    auto cleanup = absl::MakeCleanup([this] { ++recursion_limit_; });
+
     if (LookingAtType(io::Tokenizer::TYPE_STRING)) {
       while (LookingAtType(io::Tokenizer::TYPE_STRING)) {
         tokenizer_.Next();
       }
-      ++recursion_limit_;
       return true;
     }
     if (TryConsume("[")) {
@@ -1120,7 +1137,6 @@ class TextFormat::Parser::ParserImpl {
           DO(Consume(","));
         }
       }
-      ++recursion_limit_;
       return true;
     }
     // Possible field values other than string:
@@ -1151,7 +1167,6 @@ class TextFormat::Parser::ParserImpl {
       std::string text = tokenizer_.current().text;
       ReportError(
           absl::StrCat("Cannot skip field value, unexpected token: ", text));
-      ++recursion_limit_;
       return false;
     }
     // Combination of '-' and TYPE_IDENTIFIER may result in an invalid field
@@ -1166,12 +1181,10 @@ class TextFormat::Parser::ParserImpl {
       if (text != "inf" &&
           text != "infinity" && text != "nan") {
         ReportError(absl::StrCat("Invalid float number: ", text));
-        ++recursion_limit_;
         return false;
       }
     }
     tokenizer_.Next();
-    ++recursion_limit_;
     return true;
   }
 
@@ -1658,6 +1671,7 @@ class TextFormat::Printer::TextGenerator
           // Saw newline.  If there is more text, we may need to insert an
           // indent here.  So, write what we have so far, including the '\n'.
           Write(text + pos, i - pos + 1);
+          if (failed_) return;
           pos = i + 1;
 
           // Setting this true will cause the next Write() to insert an indent
@@ -1678,7 +1692,7 @@ class TextFormat::Printer::TextGenerator
   // True if any write to the underlying stream failed.  (We don't just
   // crash in this case because this is an I/O failure, not a programming
   // error.)
-  bool failed() const { return failed_; }
+  bool failed() const override { return failed_; }
 
   void PrintMaybeWithMarker(MarkerToken, absl::string_view text) override {
     Print(text.data(), text.size());
@@ -1925,6 +1939,20 @@ MessageFactory* TextFormat::Finder::FindExtensionFactory(
 
 // ===========================================================================
 
+// Note: this value is intentionally unbounded by default. This is due to the
+// use-cases of TextProto primarily being to parse trusted inputs, alongside a
+// strong need to avoid breaking long-standing and working as intended usages
+// parsing messages which exceed depth 100. Use-cases which need to limit this
+// (e.g. anything parsing of untrusted TextProto inputs) must explicitly opt
+// into a limit.
+//
+// At a future date we may consider reducing this default, but we have
+// no concrete plans to do so. PRs proposing to reduce this value to 100
+// unfortunately will not be accepted at this time.
+//
+// See comment on TextFormat class in text_format.h for more info.
+static constexpr int kDefaultRecursionLimit = std::numeric_limits<int>::max();
+
 TextFormat::Parser::Parser()
     : error_collector_(nullptr),
       finder_(nullptr),
@@ -1937,24 +1965,20 @@ TextFormat::Parser::Parser()
       allow_field_number_(false),
       allow_relaxed_whitespace_(false),
       allow_singular_overwrites_(false),
-      recursion_limit_(std::numeric_limits<int>::max()) {}
-
-namespace {
+      recursion_limit_(kDefaultRecursionLimit) {}
 
 template <typename T>
-bool CheckParseInputSize(T& input, io::ErrorCollector* error_collector) {
+bool TextFormat::Parser::CheckParseInputSize(T& input, Message* output) const {
   if (input.size() > INT_MAX) {
-    error_collector->RecordError(
-        -1, 0,
-        absl::StrCat(
-            "Input size too large: ", static_cast<int64_t>(input.size()),
-            " bytes", " > ", INT_MAX, " bytes."));
+    ReportErrorImpl(-1, 0,
+                    absl::StrCat("Input size too large: ",
+                                 static_cast<int64_t>(input.size()), " bytes",
+                                 " > ", INT_MAX, " bytes."),
+                    output->GetDescriptor(), error_collector_);
     return false;
   }
   return true;
 }
-
-}  // namespace
 
 bool TextFormat::Parser::Parse(io::ZeroCopyInputStream* input,
                                Message* output) {
@@ -1975,14 +1999,14 @@ bool TextFormat::Parser::Parse(io::ZeroCopyInputStream* input,
 
 bool TextFormat::Parser::ParseFromString(absl::string_view input,
                                          Message* output) {
-  DO(CheckParseInputSize(input, error_collector_));
+  DO(CheckParseInputSize(input, output));
   io::ArrayInputStream input_stream(input.data(), input.size());
   return Parse(&input_stream, output);
 }
 
 bool TextFormat::Parser::ParseFromCord(const absl::Cord& input,
                                        Message* output) {
-  DO(CheckParseInputSize(input, error_collector_));
+  DO(CheckParseInputSize(input, output));
   io::CordInputStream input_stream(&input);
   return Parse(&input_stream, output);
 }
@@ -2000,7 +2024,7 @@ bool TextFormat::Parser::Merge(io::ZeroCopyInputStream* input,
 
 bool TextFormat::Parser::MergeFromString(absl::string_view input,
                                          Message* output) {
-  DO(CheckParseInputSize(input, error_collector_));
+  DO(CheckParseInputSize(input, output));
   io::ArrayInputStream input_stream(input.data(), input.size());
   return Merge(&input_stream, output);
 }
@@ -2185,11 +2209,28 @@ void TextFormat::FastFieldValuePrinter::PrintEnum(
   generator->PrintString(name);
 }
 
+namespace {
+
+bool ContainsCharactersToCEscape(absl::string_view val) {
+  bool needs_escape = false;
+  for (unsigned char c : val) {
+    needs_escape |=
+        ((c < 32) | (c > 126) | (c == '"') | (c == '\'') | (c == '\\'));
+  }
+  return needs_escape;
+}
+
+}  // namespace
+
 void TextFormat::FastFieldValuePrinter::PrintString(
     const std::string& val, BaseTextGenerator* generator) const {
   generator->PrintLiteral("\"");
   if (!val.empty()) {
-    generator->PrintString(absl::CEscape(val));
+    if (ABSL_PREDICT_FALSE(ContainsCharactersToCEscape(val))) {
+      generator->PrintString(absl::CEscape(val));
+    } else {
+      generator->PrintString(val);
+    }
   }
   generator->PrintLiteral("\"");
 }
@@ -2557,7 +2598,7 @@ void TextFormat::Printer::Print(const Message& message,
 
 void TextFormat::Printer::PrintMessage(const Message& message,
                                        BaseTextGenerator* generator) const {
-  if (generator == nullptr) {
+  if (generator == nullptr || generator->failed()) {
     return;
   }
   const Descriptor* descriptor = message.GetDescriptor();
@@ -2578,6 +2619,7 @@ void TextFormat::Printer::PrintMessage(const Message& message,
     std::sort(fields.begin(), fields.end(), FieldIndexSorter());
   }
   for (const FieldDescriptor* field : fields) {
+    if (generator->failed()) return;
     PrintField(message, reflection, field, generator);
   }
   if (!hide_unknown_fields_) {
@@ -2804,6 +2846,7 @@ void TextFormat::Printer::PrintField(const Message& message,
     count = 1;
   }
 
+  if (generator->failed()) return;
   bool is_map = field->is_map();
   const internal::MapEntries map_entries =
       is_map
@@ -2811,6 +2854,7 @@ void TextFormat::Printer::PrintField(const Message& message,
           : internal::MapEntries();
 
   for (int j = 0; j < count; ++j) {
+    if (generator->failed()) return;
     const int field_index = field->is_repeated() ? j : -1;
 
     PrintFieldName(message, field_index, count, reflection, field, generator);
@@ -2858,6 +2902,7 @@ void TextFormat::Printer::PrintShortRepeatedField(
                  field, generator);
   generator->PrintMaybeWithMarker(MarkerToken(), ": ", "[");
   for (int i = 0; i < size; i++) {
+    if (generator->failed()) return;
     if (i > 0) generator->PrintLiteral(", ");
     PrintFieldValue(message, reflection, field, i, generator);
   }
@@ -3016,6 +3061,7 @@ void TextFormat::Printer::PrintUnknownFields(
     const UnknownFieldSet& unknown_fields, BaseTextGenerator* generator,
     int recursion_budget) const {
   for (int i = 0; i < unknown_fields.field_count(); i++) {
+    if (generator->failed()) return;
     const UnknownField& field = unknown_fields.field(i);
 
     switch (field.type()) {
@@ -3183,6 +3229,10 @@ TextFormat::RedactionState TextFormat::IsOptionSensitive(
                          : reflection->GetEnumValue(opts, option);
       const EnumValueDescriptor* option_value =
           option->enum_type()->FindValueByNumber(enum_val);
+      if (option_value == nullptr) {
+        // Ignore values we don't know about.
+        continue;
+      }
       if (option_value->options().debug_redact()) {
         return TextFormat::RedactionState{true, false};
       }
@@ -3295,7 +3345,7 @@ TextMarkerGenerator TextMarkerGenerator::CreateRandom() {
       static_cast<uint64_t>(absl::ToUnixMicros(absl::Now()))};
 
   size_t redaction_marker_index = std::uniform_int_distribution<size_t>{
-      0, ABSL_ARRAYSIZE(kRedactionMarkers) - 1}(random);
+      0, std::size(kRedactionMarkers) - 1}(random);
 
   size_t random_marker_size =
       std::uniform_int_distribution<size_t>{1, kRandomMarker.size()}(random);

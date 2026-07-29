@@ -35,18 +35,6 @@
 namespace google {
 namespace protobuf {
 
-void UnknownFieldSet::ClearFallback() {
-  auto& fields = this->fields();
-  ABSL_DCHECK(!fields.empty());
-  if (arena() == nullptr) {
-    int n = fields.size();
-    do {
-      fields[--n].Delete();
-    } while (n > 0);
-  }
-  fields.Clear();
-}
-
 void UnknownFieldSet::MergeFrom(const UnknownFieldSet& other) {
   int other_field_count = other.field_count();
   if (other_field_count > 0) {
@@ -108,25 +96,12 @@ size_t UnknownFieldSet::SpaceUsedLong() const {
   return sizeof(*this) + SpaceUsedExcludingSelf();
 }
 
-void UnknownFieldSet::AddVarint(int number, uint64_t value) {
-  auto& field = *fields().Add();
-  field.number_ = number;
-  field.SetType(UnknownField::TYPE_VARINT);
-  field.data_.varint = value;
+int UnknownFieldSet::SpaceUsedExcludingSelf() const {
+  return internal::ToIntSize(SpaceUsedExcludingSelfLong());
 }
 
-void UnknownFieldSet::AddFixed32(int number, uint32_t value) {
-  auto& field = *fields().Add();
-  field.number_ = number;
-  field.SetType(UnknownField::TYPE_FIXED32);
-  field.data_.fixed32 = value;
-}
-
-void UnknownFieldSet::AddFixed64(int number, uint64_t value) {
-  auto& field = *fields().Add();
-  field.number_ = number;
-  field.SetType(UnknownField::TYPE_FIXED64);
-  field.data_.fixed64 = value;
+int UnknownFieldSet::SpaceUsed() const {
+  return internal::ToIntSize(SpaceUsedLong());
 }
 
 void UnknownFieldSet::AddLengthDelimited(int number, const absl::Cord& value) {
@@ -143,21 +118,7 @@ void UnknownFieldSet::AddLengthDelimited(int number, std::string&& value) {
 }
 template void UnknownFieldSet::AddLengthDelimited(int, std::string&&);
 
-std::string* UnknownFieldSet::AddLengthDelimited(int number) {
-  auto& field = *fields().Add();
-  field.number_ = number;
-  field.SetType(UnknownField::TYPE_LENGTH_DELIMITED);
-  field.data_.string_value = Arena::Create<std::string>(arena());
-  return field.data_.string_value;
-}
 
-UnknownFieldSet* UnknownFieldSet::AddGroup(int number) {
-  auto& field = *fields().Add();
-  field.number_ = number;
-  field.SetType(UnknownField::TYPE_GROUP);
-  field.data_.group = Arena::Create<UnknownFieldSet>(arena());
-  return field.data_.group;
-}
 
 void UnknownFieldSet::AddField(const UnknownField& field) {
   fields().Add(field.DeepCopy(arena()));
@@ -220,6 +181,10 @@ bool UnknownFieldSet::ParseFromArray(const void* data, int size) {
   return ParseFromZeroCopyStream(&input);
 }
 
+bool UnknownFieldSet::ParseFromString(const absl::string_view data) {
+  return ParseFromArray(data.data(), static_cast<int>(data.size()));
+}
+
 bool UnknownFieldSet::SerializeToString(std::string* output) const {
   const size_t size =
       google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(*this);
@@ -246,19 +211,6 @@ bool UnknownFieldSet::SerializeToCord(absl::Cord* output) const {
   }
   *output = cord_output_stream.Consume();
   return true;
-}
-
-void UnknownField::Delete() {
-  switch (type()) {
-    case UnknownField::TYPE_LENGTH_DELIMITED:
-      delete data_.string_value;
-      break;
-    case UnknownField::TYPE_GROUP:
-      delete data_.group;
-      break;
-    default:
-      break;
-  }
 }
 
 UnknownField UnknownField::DeepCopy(Arena* arena) const {
@@ -289,6 +241,15 @@ void UnknownFieldSet::SwapSlow(UnknownFieldSet* other) {
   other->MergeFrom(tmp);
 }
 
+void UnknownFieldSet::Swap(UnknownFieldSet* x) {
+  if (arena() == x->arena()) {
+    fields().Swap(&x->fields());
+  } else {
+    // We might need to do a deep copy, so use Merge instead
+    SwapSlow(x);
+  }
+}
+
 uint8_t* UnknownField::InternalSerializeLengthDelimitedNoTag(
     uint8_t* target, io::EpsCopyOutputStream* stream) const {
   ABSL_DCHECK_EQ(TYPE_LENGTH_DELIMITED, type());
@@ -298,53 +259,7 @@ uint8_t* UnknownField::InternalSerializeLengthDelimitedNoTag(
   return target;
 }
 
-namespace internal {
 
-class UnknownFieldParserHelper {
- public:
-  explicit UnknownFieldParserHelper(UnknownFieldSet* unknown)
-      : unknown_(unknown) {}
-
-  void AddVarint(uint32_t num, uint64_t value) {
-    unknown_->AddVarint(num, value);
-  }
-  void AddFixed64(uint32_t num, uint64_t value) {
-    unknown_->AddFixed64(num, value);
-  }
-  const char* ParseLengthDelimited(uint32_t num, const char* ptr,
-                                   ParseContext* ctx) {
-    std::string* s = unknown_->AddLengthDelimited(num);
-    int size = ReadSize(&ptr);
-    GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
-    return ctx->ReadString(ptr, size, s);
-  }
-  const char* ParseGroup(uint32_t num, const char* ptr, ParseContext* ctx) {
-    return ctx->ParseGroupInlined(ptr, num * 8 + 3, [&](const char* ptr) {
-      UnknownFieldParserHelper child(unknown_->AddGroup(num));
-      return WireFormatParser(child, ptr, ctx);
-    });
-  }
-  void AddFixed32(uint32_t num, uint32_t value) {
-    unknown_->AddFixed32(num, value);
-  }
-
- private:
-  UnknownFieldSet* unknown_;
-};
-
-const char* UnknownGroupParse(UnknownFieldSet* unknown, const char* ptr,
-                              ParseContext* ctx) {
-  UnknownFieldParserHelper field_parser(unknown);
-  return WireFormatParser(field_parser, ptr, ctx);
-}
-
-const char* UnknownFieldParse(uint64_t tag, UnknownFieldSet* unknown,
-                              const char* ptr, ParseContext* ctx) {
-  UnknownFieldParserHelper field_parser(unknown);
-  return FieldParser(tag, field_parser, ptr, ctx);
-}
-
-}  // namespace internal
 }  // namespace protobuf
 }  // namespace google
 

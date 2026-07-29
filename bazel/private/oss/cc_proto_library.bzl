@@ -7,11 +7,11 @@
 #
 """Bazel's implementation of cc_proto_library"""
 
+load("@bazel_skylib//rules:common_settings.bzl", "BuildSettingInfo")
 load("@rules_cc//cc:find_cc_toolchain.bzl", "use_cc_toolchain")
 load("@rules_cc//cc/common:cc_info.bzl", "CcInfo")
 load("//bazel/common:proto_common.bzl", "proto_common")
 load("//bazel/common:proto_info.bzl", "ProtoInfo")
-load("//bazel/flags:flags.bzl", "get_flag_value")
 load("//bazel/private:cc_proto_support.bzl", "cc_proto_compile_and_link")
 load("//bazel/private:toolchain_helpers.bzl", "toolchains")
 
@@ -59,8 +59,8 @@ def _aspect_impl(target, ctx):
 
     if should_generate_code:
         if len(proto_info.direct_sources) != 0:
-            source_suffixes = get_flag_value(ctx, "cc_proto_library_source_suffixes")
-            header_suffixes = get_flag_value(ctx, "cc_proto_library_header_suffixes")
+            source_suffixes = ctx.attr._cc_proto_library_source_suffixes[BuildSettingInfo].value
+            header_suffixes = ctx.attr._cc_proto_library_header_suffixes[BuildSettingInfo].value
             sources = _get_output_files(ctx.actions, proto_info, source_suffixes)
             headers = _get_output_files(ctx.actions, proto_info, header_suffixes)
             header_provider = _ProtoCcHeaderInfo(headers = depset(headers))
@@ -125,9 +125,6 @@ cc_proto_aspect = aspect(
                 ),
             } |
             toolchains.if_legacy_toolchain({
-                "_aspect_cc_proto_toolchain": attr.label(
-                    default = configuration_field(fragment = "proto", name = "proto_toolchain_for_cc"),
-                ),
                 "_proto_toolchain_for_cc": attr.label(
                     default = Label("//bazel/flags/cc:proto_toolchain_for_cc"),
                 ),
@@ -196,9 +193,6 @@ The list of <a href="protocol-buffer.html#proto_library"><code>proto_library</co
 rules to generate C++ code for.""",
         ),
     } | toolchains.if_legacy_toolchain({
-        "_aspect_cc_proto_toolchain": attr.label(
-            default = configuration_field(fragment = "proto", name = "proto_toolchain_for_cc"),
-        ),
         "_proto_toolchain_for_cc": attr.label(
             default = "//bazel/flags/cc:proto_toolchain_for_cc",
         ),

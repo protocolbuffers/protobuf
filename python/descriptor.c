@@ -7,14 +7,34 @@
 
 #include "python/descriptor.h"
 
+// clang-format off
+#include "Python.h"
+// clang-format on
+#include <assert.h>
+#include <stddef.h>
+#include <stdint.h>
+#include <string.h>
+
+#include "google/protobuf/descriptor.upb_minitable.h"
+#include "google/protobuf/breaking_changes.h"
 #include "python/convert.h"
 #include "python/descriptor_containers.h"
 #include "python/descriptor_pool.h"
 #include "python/message.h"
 #include "python/protobuf.h"
+#include "upb/base/descriptor_constants.h"
 #include "upb/base/upcast.h"
+#include "upb/mem/arena.h"
+#include "upb/message/message.h"
+#include "upb/mini_table/message.h"
 #include "upb/reflection/def.h"
+#include "upb/reflection/message.h"
 #include "upb/util/def_to_proto.h"
+
+// Must be last.
+#include "upb/port/def.inc"
+#include "upb/wire/decode.h"
+#include "upb/wire/encode.h"
 
 // -----------------------------------------------------------------------------
 // DescriptorBase
@@ -70,6 +90,7 @@ static PyObject* PyUpb_DescriptorBase_Get(PyUpb_DescriptorType type,
 
   if (!base) {
     base = PyUpb_DescriptorBase_DoCreate(type, def, file);
+    if (!base) return NULL;
   }
 
   return &base->ob_base;
@@ -77,7 +98,10 @@ static PyObject* PyUpb_DescriptorBase_Get(PyUpb_DescriptorType type,
 
 static PyUpb_DescriptorBase* PyUpb_DescriptorBase_Check(
     PyObject* obj, PyUpb_DescriptorType type) {
-  PyUpb_ModuleState* state = PyUpb_ModuleState_Get();
+  PyUpb_ModuleState* state = PyUpb_ModuleState_MaybeGet();
+  if (!state) {
+    return (PyUpb_DescriptorBase*)obj;
+  }
   PyTypeObject* type_obj = state->descriptor_types[type];
   if (!PyObject_TypeCheck(obj, type_obj)) {
     PyErr_Format(PyExc_TypeError, "Expected object of type %S, but got %R",
@@ -92,6 +116,7 @@ static PyObject* PyUpb_DescriptorBase_GetCached(PyObject** cached,
                                                 const upb_MiniTable* layout,
                                                 const char* msg_name,
                                                 const char* strip_field) {
+  PyObject* py_arena = NULL;
   if (!*cached) {
     // Load descriptors protos if they are not loaded already. We have to do
     // this lazily, otherwise, it would lead to circular imports.
@@ -111,19 +136,40 @@ static PyObject* PyUpb_DescriptorBase_GetCached(PyObject** cached,
     // the descriptor_pb2 that was loaded at runtime has the same members or
     // layout as the C types that were compiled in.
     size_t size;
-    PyObject* py_arena = PyUpb_Arena_New();
+    py_arena = PyUpb_Arena_New();
+    if (!py_arena) goto err;
     upb_Arena* arena = PyUpb_Arena_Get(py_arena);
     char* pb;
-    // TODO: Need to correctly handle failed return codes.
-    (void)upb_Encode(opts, layout, 0, arena, &pb, &size);
+    upb_EncodeStatus es = upb_Encode(opts, layout, 0, arena, &pb, &size);
+    if (es != kUpb_EncodeStatus_Ok) {
+      if (es == kUpb_EncodeStatus_OutOfMemory) {
+        PyErr_SetNone(PyExc_MemoryError);
+      } else {
+        PyErr_Format(PyUpb_ModuleState_Get()->decode_error_class,
+                     "Error parsing descriptor: %s",
+                     upb_EncodeStatus_String(es));
+      }
+      goto err;
+    }
     const upb_MiniTable* opts2_layout = upb_MessageDef_MiniTable(m);
     upb_Message* opts2 = upb_Message_New(opts2_layout, arena);
-    assert(opts2);
+    if (!opts2) {
+      PyErr_SetNone(PyExc_MemoryError);
+      goto err;
+    }
     upb_DecodeStatus ds =
         upb_Decode(pb, size, opts2, opts2_layout,
                    upb_DefPool_ExtensionRegistry(symtab), 0, arena);
-    (void)ds;
-    assert(ds == kUpb_DecodeStatus_Ok);
+    if (ds != kUpb_DecodeStatus_Ok) {
+      if (ds == kUpb_DecodeStatus_OutOfMemory) {
+        PyErr_SetNone(PyExc_MemoryError);
+      } else {
+        PyErr_Format(PyUpb_ModuleState_Get()->decode_error_class,
+                     "Error parsing descriptor: %s",
+                     upb_DecodeStatus_String(ds));
+      }
+      goto err;
+    }
 
     if (strip_field) {
       const upb_FieldDef* field =
@@ -132,12 +178,20 @@ static PyObject* PyUpb_DescriptorBase_GetCached(PyObject** cached,
       upb_Message_ClearFieldByDef(opts2, field);
     }
 
+#if PROTOBUF_PY_FUTURE_FREEZE_OPTIONS
+    upb_Message_Freeze(opts2, opts2_layout);
+#else
+    PyUpb_Arena_SetFrozen(py_arena, true);
+#endif
     *cached = PyUpb_Message_Get(opts2, m, py_arena);
     Py_DECREF(py_arena);
   }
 
   Py_INCREF(*cached);
   return *cached;
+err:
+  Py_XDECREF(py_arena);
+  return NULL;
 }
 
 static PyObject* PyUpb_DescriptorBase_GetOptions(PyObject** cached,
@@ -255,6 +309,12 @@ PyObject* PyUpb_Descriptor_GetClass(const upb_MessageDef* m) {
   PyObject* ret = PyUpb_ObjCache_Get(upb_MessageDef_MiniTable(m));
   if (ret) return ret;
 
+  PyUpb_ModuleState* state = PyUpb_ModuleState_MaybeGet();
+  if (!state) {
+    PyErr_SetString(PyExc_RuntimeError, "Interpreter is finalizing");
+    return NULL;
+  }
+
   // On demand create the clss if not exist. However, if users repeatedly
   // create and destroy a class, it could trigger a loop. This is not an
   // issue now, but if we see CPU waste for repeatedly create and destroy
@@ -339,7 +399,10 @@ static PyObject* PyUpb_Descriptor_GetExtensionRanges(PyObject* _self,
         upb_MessageDef_ExtensionRange(self->def, i);
     PyObject* start = PyLong_FromLong(upb_ExtensionRange_Start(range));
     PyObject* end = PyLong_FromLong(upb_ExtensionRange_End(range));
-    PyList_SetItem(range_list, i, PyTuple_Pack(2, start, end));
+    PyObject* tuple = PyTuple_Pack(2, start, end);
+    Py_DECREF(start);
+    Py_DECREF(end);
+    PyList_SetItem(range_list, i, tuple);
   }
 
   return range_list;
@@ -1909,3 +1972,5 @@ bool PyUpb_InitDescriptor(PyObject* m) {
          PyUpb_SetIntAttr(fd, "CPPTYPE_BYTES", CPPTYPE_STRING) &&
          PyUpb_SetIntAttr(fd, "CPPTYPE_MESSAGE", CPPTYPE_MESSAGE);
 }
+
+#include "upb/port/undef.inc"

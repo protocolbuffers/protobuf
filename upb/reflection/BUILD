@@ -60,6 +60,12 @@ bootstrap_cc_library(
     ],
 )
 
+alias(
+    name = "reflection_cc",
+    actual = ":reflection",
+    visibility = ["//visibility:public"],
+)
+
 bootstrap_cc_library(
     name = "internal",
     srcs = [
@@ -138,6 +144,12 @@ bootstrap_cc_library(
     ],
 )
 
+alias(
+    name = "internal_cc",
+    actual = ":internal",
+    visibility = ["//upb:__subpackages__"],
+)
+
 cc_library(
     name = "generated_reflection_support",
     hdrs = [
@@ -211,7 +223,7 @@ compile_edition_defaults(
     srcs = [
         "//:descriptor_proto",
     ],
-    maximum_edition = "2024",
+    maximum_edition = "2026",
     minimum_edition = "PROTO2",
 )
 

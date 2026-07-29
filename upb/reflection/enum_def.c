@@ -301,9 +301,6 @@ static void create_enumdef(upb_DefBuilder* ctx, const char* prefix,
   e->res_names = _upb_EnumReservedNames_New(ctx, n_res_name, res_names);
 
   e->visibility = google_protobuf_EnumDescriptorProto_visibility(enum_proto);
-
-  if (!upb_inttable_compact(&e->iton, ctx->arena)) _upb_DefBuilder_OomErr(ctx);
-
   if (upb_EnumDef_IsClosed(e)) {
     if (ctx->layout) {
       e->layout = upb_MiniTableFile_Enum(ctx->layout, ctx->enum_count++);

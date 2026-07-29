@@ -158,7 +158,7 @@ class GPBJsonWire
                 } elseif ($value === -INF) {
                     $str_value = "\"-Infinity\"";
                 } else {
-                    $str_value = sprintf("%.8g", $value);
+                    $str_value = sprintf("%.8h", $value);
                 }
                 $output->writeRaw($str_value, strlen($str_value));
                 break;
@@ -170,7 +170,7 @@ class GPBJsonWire
                 } elseif ($value === -INF) {
                     $str_value = "\"-Infinity\"";
                 } else {
-                    $str_value = sprintf("%.17g", $value);
+                    $str_value = sprintf("%.17h", $value);
                 }
                 $output->writeRaw($str_value, strlen($str_value));
                 break;

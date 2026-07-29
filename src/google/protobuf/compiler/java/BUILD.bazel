@@ -2,6 +2,7 @@
 # Protocol Buffers Compiler - Java code generator
 ################################################################################
 
+load("@rules_cc//cc:cc_binary.bzl", "cc_binary")
 load("@rules_cc//cc:defs.bzl", "cc_library", "cc_test")
 load("@rules_pkg//pkg:mappings.bzl", "pkg_files", "strip_prefix")
 load("//build_defs:cpp_opts.bzl", "COPTS")
@@ -9,6 +10,16 @@ load("//build_defs:cpp_opts.bzl", "COPTS")
 package(
     default_visibility = [
         "//src/google/protobuf/compiler/java:__subpackages__",
+    ],
+)
+
+cc_binary(
+    name = "protoc-gen-java",
+    srcs = ["plugin_main.cc"],
+    visibility = ["//visibility:public"],
+    deps = [
+        ":java",
+        "//src/google/protobuf/compiler:plugin",
     ],
 )
 

@@ -531,6 +531,7 @@ rust_library(
     name = "same_name_direct_deps_rust_consumer",
     testonly = True,
     srcs = ["same_name_direct_deps_consumer.rs"],
+    edition = "2024",
     deps = [":same_name_direct_deps_rust_proto"],
 )
 
@@ -554,6 +555,7 @@ rust_library(
     name = "same_name_exported_deps_rust_consumer",
     testonly = True,
     srcs = ["same_name_exported_deps_consumer.rs"],
+    edition = "2024",
     deps = [":same_name_exported_deps_rust_proto"],
 )
 
@@ -577,6 +579,7 @@ rust_library(
     name = "same_name_double_alias_exported_deps_rust_consumer",
     testonly = True,
     srcs = ["same_name_double_alias_exported_deps_consumer.rs"],
+    edition = "2024",
     deps = [":same_name_double_alias_exported_deps_rust_proto"],
 )
 

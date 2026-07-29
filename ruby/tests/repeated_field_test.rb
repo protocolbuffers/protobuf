@@ -364,6 +364,23 @@ class RepeatedFieldTest < Test::Unit::TestCase
     end
   end
 
+  def test_plus_fuse_arena
+    rf1 = Google::Protobuf::RepeatedField.new(:message, TestMessage2)
+    rf2 = Google::Protobuf::RepeatedField.new(:message, TestMessage2)
+
+    rf2.push(TestMessage2.new(:foo => 42))
+
+    combined = rf1 + rf2
+
+    assert_equal(1, combined.length)
+    assert_equal(42, combined[0].foo)
+
+    rf2 = nil
+    GC.start
+
+    assert_equal(42, combined[0].foo)
+  end
+
   def test_replace
     m = TestMessage.new
     reference_arr = %w(foo bar baz)
@@ -560,6 +577,33 @@ class RepeatedFieldTest < Test::Unit::TestCase
     assert_equal m.repeated_string, result
   end
 
+  def test_subarray_len_exceeds_size
+  # Regression: RepeatedField#[beg, len] with len > size used to read past
+  # the end of the underlying upb_Array buffer, returning adjacent arena
+  # bytes (info disclosure on numeric fields) or crashing the process
+  # (string/message fields). Behaviour must match Ruby Array#[beg, len]:
+  # clamp len to what is available and never read OOB.
+  m = TestMessage.new
+  m.repeated_string += %w(a b c)
+  m.repeated_int32  += [10, 20, 30]
+
+  # len far exceeds size: must clamp, must not crash
+  assert_equal %w(a b c), m.repeated_string[0, 1_000_000]
+  assert_equal [10, 20, 30], m.repeated_int32[0, 1_000_000]
+
+  # Partial overlap: only the in-bounds portion is returned
+  assert_equal %w(b c), m.repeated_string[1, 100]
+  assert_equal [20, 30], m.repeated_int32[1, 100]
+
+  # beg == size with any len: empty array
+  assert_equal [], m.repeated_string[3, 1_000_000]
+  assert_equal [], m.repeated_int32[3, 1_000_000]
+
+  # Negative len: nil (matches Ruby Array#[] semantics)
+  assert_nil m.repeated_string[0, -1]
+  assert_nil m.repeated_int32[1, -5]
+end
+  
   def test_slice!
     m = TestMessage.new
     reference_arr = %w(foo bar baz bar fizz buzz)

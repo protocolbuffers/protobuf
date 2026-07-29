@@ -7,11 +7,16 @@
 // https://developers.google.com/open-source/licenses/bsd
 #endregion
 
+#if DEBUG
+    #define WITH_BENCHMARKING
+#endif
+
 using Google.Protobuf.Collections;
 using Google.Protobuf.WellKnownTypes;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using static Google.Protobuf.Reflection.SourceCodeInfo.Types;
@@ -62,6 +67,62 @@ namespace Google.Protobuf.Reflection
         }
 
         private readonly Lazy<Dictionary<IDescriptor, DescriptorDeclaration>> declarations;
+
+        private static readonly Dictionary<string, List<Extension>> allDependedExtensionsCache = new();
+        private static bool extensionCachingEnabled = true;
+
+        /// <summary>
+        /// Disables caching of discovered extensions. Greatly reduces performance in highly nested protos but lowers the memory usage.
+        /// </summary>
+        public static void DisableExtensionCaching()
+        {
+            extensionCachingEnabled = false;
+        }
+
+#if WITH_BENCHMARKING
+
+        /// <summary>
+        /// Resets the benchmarking counters.
+        /// </summary>
+        public static void ResetCounters()
+        {
+            GetAllExtensionsCount = 0;
+            TotalReturnedExtensionsCount = 0;
+            GetAllGeneratedExtensionsCount = 0;
+            GetAllDependedExtensionsCount = 0;
+            GetAllDependedExtensionsFromMessageCount = 0;
+        }
+
+        internal static long GetAllExtensionsCount { get; private set; }
+        internal static long TotalReturnedExtensionsCount { get; private set;}
+        internal static long GetAllGeneratedExtensionsCount { get; private set; }
+        internal static long GetAllDependedExtensionsCount { get; private set; }
+        internal static long GetAllDependedExtensionsFromMessageCount { get; private set; }
+
+        internal static TextWriter WriteBenchmark(TextWriter writer)
+        {
+            if (writer == null)
+            {
+                return writer;
+            }
+
+            writer.WriteLine($"GetAllExtensionsCount: {GetAllExtensionsCount}");
+            writer.WriteLine($"GetAllGeneratedExtensionsCount: {GetAllGeneratedExtensionsCount}");
+            writer.WriteLine($"GetAllDependedExtensionsCount: {GetAllDependedExtensionsCount}");
+            writer.WriteLine($"GetAllDependedExtensionsFromMessageCount: {GetAllDependedExtensionsFromMessageCount}");
+            writer.WriteLine($"TotalReturnedExtensionsCount: {TotalReturnedExtensionsCount}");
+
+            return writer;
+        }
+#else
+        internal static TextWriter WriteBenchmark(TextWriter writer)
+        {
+            writer?.WriteLine("Benchmarking is disabled");
+
+            return writer;
+        }
+#endif
+
 
         private FileDescriptor(ByteString descriptorData, FileDescriptorProto proto, IList<FileDescriptor> dependencies, DescriptorPool pool, bool allowUnknownDependencies, GeneratedClrTypeInfo generatedCodeInfo)
         {
@@ -417,7 +478,7 @@ namespace Google.Protobuf.Reflection
             FileDescriptor[] dependencies,
             GeneratedClrTypeInfo generatedCodeInfo)
         {
-            ExtensionRegistry registry = new ExtensionRegistry();
+            ExtensionRegistry registry = new();
             registry.AddRange(GetAllExtensions(dependencies, generatedCodeInfo));
 
             FileDescriptorProto proto;
@@ -444,29 +505,60 @@ namespace Google.Protobuf.Reflection
 
         private static IEnumerable<Extension> GetAllExtensions(FileDescriptor[] dependencies, GeneratedClrTypeInfo generatedInfo)
         {
-            return dependencies.SelectMany(GetAllDependedExtensions).Distinct(ExtensionRegistry.ExtensionComparer.Instance).Concat(GetAllGeneratedExtensions(generatedInfo));
+#if WITH_BENCHMARKING
+            GetAllExtensionsCount++;
+#endif
+
+            var allExtensions = dependencies.SelectMany(GetAllDependedExtensions).Distinct(ExtensionRegistry.ExtensionComparer.Instance).Concat(GetAllGeneratedExtensions(generatedInfo)).ToList();
+
+#if WITH_BENCHMARKING
+            TotalReturnedExtensionsCount += allExtensions.Count;
+#endif
+
+            return allExtensions;
         }
 
         private static IEnumerable<Extension> GetAllGeneratedExtensions(GeneratedClrTypeInfo generated)
         {
-            return generated.Extensions.Concat(generated.NestedTypes.Where(t => t != null).SelectMany(GetAllGeneratedExtensions));
+#if WITH_BENCHMARKING
+            GetAllGeneratedExtensionsCount++;
+#endif
+            return generated.Extensions.Concat(generated.NestedTypes.Where(t => t != null).SelectMany(GetAllGeneratedExtensions)).ToList();
         }
 
         private static IEnumerable<Extension> GetAllDependedExtensions(FileDescriptor descriptor)
         {
-            return descriptor.Extensions.UnorderedExtensions
+            if (extensionCachingEnabled && allDependedExtensionsCache.TryGetValue(descriptor.Name, out List<Extension> cachedExtensions))
+            {
+                return cachedExtensions;
+            }
+
+#if WITH_BENCHMARKING
+            GetAllDependedExtensionsCount++;
+#endif
+            var extensions = descriptor.Extensions.UnorderedExtensions
                 .Select(s => s.Extension)
                 .Where(e => e != null)
                 .Concat(descriptor.Dependencies.Concat(descriptor.PublicDependencies).SelectMany(GetAllDependedExtensions))
-                .Concat(descriptor.MessageTypes.SelectMany(GetAllDependedExtensionsFromMessage));
+                .Concat(descriptor.MessageTypes.SelectMany(GetAllDependedExtensionsFromMessage)).ToList();
+
+            if (extensionCachingEnabled)
+            {
+                allDependedExtensionsCache[descriptor.Name] = extensions;
+            }
+
+            return extensions;
         }
 
         private static IEnumerable<Extension> GetAllDependedExtensionsFromMessage(MessageDescriptor descriptor)
         {
+#if WITH_BENCHMARKING
+            GetAllDependedExtensionsFromMessageCount++;
+#endif
             return descriptor.Extensions.UnorderedExtensions
                 .Select(s => s.Extension)
                 .Where(e => e != null)
-                .Concat(descriptor.NestedTypes.SelectMany(GetAllDependedExtensionsFromMessage));
+                .Concat(descriptor.NestedTypes.SelectMany(GetAllDependedExtensionsFromMessage)).ToList();
         }
 
         /// <summary>

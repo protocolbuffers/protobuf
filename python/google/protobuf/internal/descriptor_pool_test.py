@@ -111,73 +111,97 @@ class DescriptorPoolTestBase(object):
 
   def testFindFileContainingSymbol(self):
     file_desc1 = self.pool.FindFileContainingSymbol(
-        'google.protobuf.python.internal.Factory1Message')
+        'google.protobuf.python.internal.Factory1Message'
+    )
     self.assertIsInstance(file_desc1, descriptor.FileDescriptor)
-    self.assertEqual('google/protobuf/internal/factory_test1.proto',
-                     file_desc1.name)
+    self.assertEqual(
+        'google/protobuf/internal/factory_test1.proto',
+        file_desc1.name,
+    )
     self.assertEqual('google.protobuf.python.internal', file_desc1.package)
     self.assertIn('Factory1Message', file_desc1.message_types_by_name)
 
     file_desc2 = self.pool.FindFileContainingSymbol(
-        'google.protobuf.python.internal.Factory2Message')
+        'google.protobuf.python.internal.Factory2Message'
+    )
     self.assertIsInstance(file_desc2, descriptor.FileDescriptor)
-    self.assertEqual('google/protobuf/internal/factory_test2.proto',
-                     file_desc2.name)
+    self.assertEqual(
+        'google/protobuf/internal/factory_test2.proto',
+        file_desc2.name,
+    )
     self.assertEqual('google.protobuf.python.internal', file_desc2.package)
     self.assertIn('Factory2Message', file_desc2.message_types_by_name)
 
     # Tests top level extension.
     file_desc3 = self.pool.FindFileContainingSymbol(
-        'google.protobuf.python.internal.another_field')
+        'google.protobuf.python.internal.another_field'
+    )
     self.assertIsInstance(file_desc3, descriptor.FileDescriptor)
-    self.assertEqual('google/protobuf/internal/factory_test2.proto',
-                     file_desc3.name)
+    self.assertEqual(
+        'google/protobuf/internal/factory_test2.proto',
+        file_desc3.name,
+    )
 
     # Tests nested extension inside a message.
     file_desc4 = self.pool.FindFileContainingSymbol(
-        'google.protobuf.python.internal.Factory2Message.one_more_field')
+        'google.protobuf.python.internal.Factory2Message.one_more_field'
+    )
     self.assertIsInstance(file_desc4, descriptor.FileDescriptor)
-    self.assertEqual('google/protobuf/internal/factory_test2.proto',
-                     file_desc4.name)
+    self.assertEqual(
+        'google/protobuf/internal/factory_test2.proto',
+        file_desc4.name,
+    )
 
     file_desc5 = self.pool.FindFileContainingSymbol(
-        'proto2_unittest.TestService')
+        'proto2_unittest.TestService'
+    )
     self.assertIsInstance(file_desc5, descriptor.FileDescriptor)
-    self.assertEqual('google/protobuf/unittest.proto',
-                     file_desc5.name)
+    self.assertEqual('google/protobuf/unittest.proto', file_desc5.name)
     # Tests the generated pool.
     assert descriptor_pool.Default().FindFileContainingSymbol(
-        'google.protobuf.python.internal.Factory2Message.one_more_field')
+        'google.protobuf.python.internal.Factory2Message.one_more_field'
+    )
     assert descriptor_pool.Default().FindFileContainingSymbol(
-        'google.protobuf.python.internal.another_field')
+        'google.protobuf.python.internal.another_field'
+    )
     assert descriptor_pool.Default().FindFileContainingSymbol(
-        'proto2_unittest.TestService')
+        'proto2_unittest.TestService'
+    )
 
     # Can find field.
     file_desc6 = self.pool.FindFileContainingSymbol(
-        'google.protobuf.python.internal.Factory1Message.list_value')
+        'google.protobuf.python.internal.Factory1Message.list_value'
+    )
     self.assertIsInstance(file_desc6, descriptor.FileDescriptor)
-    self.assertEqual('google/protobuf/internal/factory_test1.proto',
-                     file_desc6.name)
+    self.assertEqual(
+        'google/protobuf/internal/factory_test1.proto',
+        file_desc6.name,
+    )
 
     # Can find top level Enum value.
     file_desc7 = self.pool.FindFileContainingSymbol(
-        'google.protobuf.python.internal.FACTORY_1_VALUE_0')
+        'google.protobuf.python.internal.FACTORY_1_VALUE_0'
+    )
     self.assertIsInstance(file_desc7, descriptor.FileDescriptor)
-    self.assertEqual('google/protobuf/internal/factory_test1.proto',
-                     file_desc7.name)
+    self.assertEqual(
+        'google/protobuf/internal/factory_test1.proto',
+        file_desc7.name,
+    )
 
     # Can find nested Enum value.
     file_desc8 = self.pool.FindFileContainingSymbol(
-        'proto2_unittest.TestAllTypes.FOO')
+        'proto2_unittest.TestAllTypes.FOO'
+    )
     self.assertIsInstance(file_desc8, descriptor.FileDescriptor)
-    self.assertEqual('google/protobuf/unittest.proto',
-                     file_desc8.name)
+    self.assertEqual('google/protobuf/unittest.proto', file_desc8.name)
 
     # TODO: Add tests for no package when b/13860351 is fixed.
 
-    self.assertRaises(KeyError, self.pool.FindFileContainingSymbol,
-                      'google.protobuf.python.internal.Factory1Message.none_field')
+    self.assertRaises(
+        KeyError,
+        self.pool.FindFileContainingSymbol,
+        'google.protobuf.python.internal.Factory1Message.none_field',
+    )
 
   def testCrossFileMessageTypesByName(self):
     self.assertIs(
@@ -230,11 +254,13 @@ class DescriptorPoolTestBase(object):
 
   def testFindMessageTypeByName(self):
     msg1 = self.pool.FindMessageTypeByName(
-        'google.protobuf.python.internal.Factory1Message')
+        'google.protobuf.python.internal.Factory1Message'
+    )
     self.assertIsInstance(msg1, descriptor.Descriptor)
     self.assertEqual('Factory1Message', msg1.name)
-    self.assertEqual('google.protobuf.python.internal.Factory1Message',
-                     msg1.full_name)
+    self.assertEqual(
+        'google.protobuf.python.internal.Factory1Message', msg1.full_name
+    )
     self.assertEqual(None, msg1.containing_type)
     self.assertFalse(msg1.has_options)
 
@@ -246,17 +272,22 @@ class DescriptorPoolTestBase(object):
     self.assertEqual('NestedFactory1Enum', nested_enum1.name)
     self.assertEqual(msg1, nested_enum1.containing_type)
 
-    self.assertEqual(nested_msg1, msg1.fields_by_name[
-        'nested_factory_1_message'].message_type)
-    self.assertEqual(nested_enum1, msg1.fields_by_name[
-        'nested_factory_1_enum'].enum_type)
+    self.assertEqual(
+        nested_msg1,
+        msg1.fields_by_name['nested_factory_1_message'].message_type,
+    )
+    self.assertEqual(
+        nested_enum1, msg1.fields_by_name['nested_factory_1_enum'].enum_type
+    )
 
     msg2 = self.pool.FindMessageTypeByName(
-        'google.protobuf.python.internal.Factory2Message')
+        'google.protobuf.python.internal.Factory2Message'
+    )
     self.assertIsInstance(msg2, descriptor.Descriptor)
     self.assertEqual('Factory2Message', msg2.name)
-    self.assertEqual('google.protobuf.python.internal.Factory2Message',
-                     msg2.full_name)
+    self.assertEqual(
+        'google.protobuf.python.internal.Factory2Message', msg2.full_name
+    )
     self.assertIsNone(msg2.containing_type)
 
     nested_msg2 = msg2.nested_types[0]
@@ -267,47 +298,56 @@ class DescriptorPoolTestBase(object):
     self.assertEqual('NestedFactory2Enum', nested_enum2.name)
     self.assertEqual(msg2, nested_enum2.containing_type)
 
-    self.assertEqual(nested_msg2, msg2.fields_by_name[
-        'nested_factory_2_message'].message_type)
-    self.assertEqual(nested_enum2, msg2.fields_by_name[
-        'nested_factory_2_enum'].enum_type)
+    self.assertEqual(
+        nested_msg2,
+        msg2.fields_by_name['nested_factory_2_message'].message_type,
+    )
+    self.assertEqual(
+        nested_enum2, msg2.fields_by_name['nested_factory_2_enum'].enum_type
+    )
 
     self.assertTrue(msg2.fields_by_name['int_with_default'].has_default_value)
     self.assertEqual(
-        1776, msg2.fields_by_name['int_with_default'].default_value)
+        1776, msg2.fields_by_name['int_with_default'].default_value
+    )
 
     self.assertTrue(
-        msg2.fields_by_name['double_with_default'].has_default_value)
+        msg2.fields_by_name['double_with_default'].has_default_value
+    )
     self.assertEqual(
-        9.99, msg2.fields_by_name['double_with_default'].default_value)
+        9.99, msg2.fields_by_name['double_with_default'].default_value
+    )
 
     self.assertTrue(
-        msg2.fields_by_name['string_with_default'].has_default_value)
+        msg2.fields_by_name['string_with_default'].has_default_value
+    )
     self.assertEqual(
-        'hello world', msg2.fields_by_name['string_with_default'].default_value)
+        'hello world', msg2.fields_by_name['string_with_default'].default_value
+    )
 
     self.assertTrue(msg2.fields_by_name['bool_with_default'].has_default_value)
     self.assertFalse(msg2.fields_by_name['bool_with_default'].default_value)
 
     self.assertTrue(msg2.fields_by_name['enum_with_default'].has_default_value)
-    self.assertEqual(
-        1, msg2.fields_by_name['enum_with_default'].default_value)
+    self.assertEqual(1, msg2.fields_by_name['enum_with_default'].default_value)
 
     msg3 = self.pool.FindMessageTypeByName(
-        'google.protobuf.python.internal.Factory2Message.NestedFactory2Message')
+        'google.protobuf.python.internal.Factory2Message.NestedFactory2Message'
+    )
     self.assertEqual(nested_msg2, msg3)
 
     self.assertTrue(msg2.fields_by_name['bytes_with_default'].has_default_value)
     self.assertEqual(
-        b'a\xfb\x00c',
-        msg2.fields_by_name['bytes_with_default'].default_value)
+        b'a\xfb\x00c', msg2.fields_by_name['bytes_with_default'].default_value
+    )
 
     self.assertEqual(1, len(msg2.oneofs))
     self.assertEqual(1, len(msg2.oneofs_by_name))
     self.assertEqual(2, len(msg2.oneofs[0].fields))
     for name in ['oneof_int', 'oneof_string']:
-      self.assertEqual(msg2.oneofs[0],
-                       msg2.fields_by_name[name].containing_oneof)
+      self.assertEqual(
+          msg2.oneofs[0], msg2.fields_by_name[name].containing_oneof
+      )
       self.assertIn(msg2.fields_by_name[name], msg2.oneofs[0].fields)
 
   def testFindTypeErrors(self):
@@ -337,33 +377,41 @@ class DescriptorPoolTestBase(object):
 
   def testFindEnumTypeByName(self):
     enum1 = self.pool.FindEnumTypeByName(
-        'google.protobuf.python.internal.Factory1Enum')
+        'google.protobuf.python.internal.Factory1Enum'
+    )
     self.assertIsInstance(enum1, descriptor.EnumDescriptor)
     self.assertEqual(0, enum1.values_by_name['FACTORY_1_VALUE_0'].number)
     self.assertEqual(1, enum1.values_by_name['FACTORY_1_VALUE_1'].number)
     self.assertFalse(enum1.has_options)
 
     nested_enum1 = self.pool.FindEnumTypeByName(
-        'google.protobuf.python.internal.Factory1Message.NestedFactory1Enum')
+        'google.protobuf.python.internal.Factory1Message.NestedFactory1Enum'
+    )
     self.assertIsInstance(nested_enum1, descriptor.EnumDescriptor)
     self.assertEqual(
-        0, nested_enum1.values_by_name['NESTED_FACTORY_1_VALUE_0'].number)
+        0, nested_enum1.values_by_name['NESTED_FACTORY_1_VALUE_0'].number
+    )
     self.assertEqual(
-        1, nested_enum1.values_by_name['NESTED_FACTORY_1_VALUE_1'].number)
+        1, nested_enum1.values_by_name['NESTED_FACTORY_1_VALUE_1'].number
+    )
 
     enum2 = self.pool.FindEnumTypeByName(
-        'google.protobuf.python.internal.Factory2Enum')
+        'google.protobuf.python.internal.Factory2Enum'
+    )
     self.assertIsInstance(enum2, descriptor.EnumDescriptor)
     self.assertEqual(0, enum2.values_by_name['FACTORY_2_VALUE_0'].number)
     self.assertEqual(1, enum2.values_by_name['FACTORY_2_VALUE_1'].number)
 
     nested_enum2 = self.pool.FindEnumTypeByName(
-        'google.protobuf.python.internal.Factory2Message.NestedFactory2Enum')
+        'google.protobuf.python.internal.Factory2Message.NestedFactory2Enum'
+    )
     self.assertIsInstance(nested_enum2, descriptor.EnumDescriptor)
     self.assertEqual(
-        0, nested_enum2.values_by_name['NESTED_FACTORY_2_VALUE_0'].number)
+        0, nested_enum2.values_by_name['NESTED_FACTORY_2_VALUE_0'].number
+    )
     self.assertEqual(
-        1, nested_enum2.values_by_name['NESTED_FACTORY_2_VALUE_1'].number)
+        1, nested_enum2.values_by_name['NESTED_FACTORY_2_VALUE_1'].number
+    )
 
   def testFindEnumTypeByNameFailure(self):
     with self.assertRaises(KeyError):
@@ -371,7 +419,8 @@ class DescriptorPoolTestBase(object):
 
   def testFindFieldByName(self):
     field = self.pool.FindFieldByName(
-        'google.protobuf.python.internal.Factory1Message.list_value')
+        'google.protobuf.python.internal.Factory1Message.list_value'
+    )
     self.assertEqual(field.name, 'list_value')
     self.assertTrue(field.is_repeated)
     self.assertFalse(field.has_options)
@@ -381,7 +430,8 @@ class DescriptorPoolTestBase(object):
 
   def testFindOneofByName(self):
     oneof = self.pool.FindOneofByName(
-        'google.protobuf.python.internal.Factory2Message.oneof_field')
+        'google.protobuf.python.internal.Factory2Message.oneof_field'
+    )
     self.assertEqual(oneof.name, 'oneof_field')
     with self.assertRaises(KeyError):
       self.pool.FindOneofByName('Does not exist')
@@ -389,11 +439,13 @@ class DescriptorPoolTestBase(object):
   def testFindExtensionByName(self):
     # An extension defined in a message.
     extension = self.pool.FindExtensionByName(
-        'google.protobuf.python.internal.Factory2Message.one_more_field')
+        'google.protobuf.python.internal.Factory2Message.one_more_field'
+    )
     self.assertEqual(extension.name, 'one_more_field')
     # An extension defined at file scope.
     extension = self.pool.FindExtensionByName(
-        'google.protobuf.python.internal.another_field')
+        'google.protobuf.python.internal.another_field'
+    )
     self.assertEqual(extension.name, 'another_field')
     self.assertEqual(extension.number, 1002)
     with self.assertRaises(KeyError):
@@ -401,14 +453,17 @@ class DescriptorPoolTestBase(object):
 
   def testFindAllExtensions(self):
     factory1_message = self.pool.FindMessageTypeByName(
-        'google.protobuf.python.internal.Factory1Message')
+        'google.protobuf.python.internal.Factory1Message'
+    )
     factory2_message = self.pool.FindMessageTypeByName(
-        'google.protobuf.python.internal.Factory2Message')
+        'google.protobuf.python.internal.Factory2Message'
+    )
     # An extension defined in a message.
     one_more_field = factory2_message.extensions_by_name['one_more_field']
     # An extension defined at file scope.
     factory_test2 = self.pool.FindFileByName(
-        'google/protobuf/internal/factory_test2.proto')
+        'google/protobuf/internal/factory_test2.proto'
+    )
     another_field = factory_test2.extensions_by_name['another_field']
     message_field1 = factory_test2.extensions_by_name['message_field1']
     message_field2 = factory_test2.extensions_by_name['message_field2']
@@ -427,10 +482,12 @@ class DescriptorPoolTestBase(object):
 
   def testFindExtensionByNumber(self):
     factory1_message = self.pool.FindMessageTypeByName(
-        'google.protobuf.python.internal.Factory1Message')
+        'google.protobuf.python.internal.Factory1Message'
+    )
     # Build factory_test2.proto which will put extensions to the pool
     self.pool.FindFileByName(
-        'google/protobuf/internal/factory_test2.proto')
+        'google/protobuf/internal/factory_test2.proto'
+    )
 
     # An extension defined in a message.
     extension = self.pool.FindExtensionByNumber(factory1_message, 1001)
@@ -489,10 +546,12 @@ class DescriptorPoolTestBase(object):
       self.pool.FindFieldByName('google.protobuf.python.internal.another_field')
     with self.assertRaises(KeyError):
       self.pool.FindFieldByName(
-          'google.protobuf.python.internal.Factory2Message.one_more_field')
+          'google.protobuf.python.internal.Factory2Message.one_more_field'
+      )
     with self.assertRaises(KeyError):
       self.pool.FindExtensionByName(
-          'google.protobuf.python.internal.Factory1Message.list_value')
+          'google.protobuf.python.internal.Factory1Message.list_value'
+      )
 
   def testFindService(self):
     service = self.pool.FindServiceByName('proto2_unittest.TestService')
@@ -521,19 +580,26 @@ class DescriptorPoolTestBase(object):
         return
     self.pool = descriptor_pool.DescriptorPool()
     file1 = self.pool.AddSerializedFile(
-        self.factory_test1_fd.SerializeToString())
+        self.factory_test1_fd.SerializeToString()
+    )
     file2 = self.pool.AddSerializedFile(
-        self.factory_test2_fd.SerializeToString())
-    self.assertEqual(file1.name,
-                     'google/protobuf/internal/factory_test1.proto')
-    self.assertEqual(file2.name,
-                     'google/protobuf/internal/factory_test2.proto')
+        self.factory_test2_fd.SerializeToString()
+    )
+    self.assertEqual(
+        file1.name,
+        'google/protobuf/internal/factory_test1.proto',
+    )
+    self.assertEqual(
+        file2.name,
+        'google/protobuf/internal/factory_test2.proto',
+    )
     self.testFindMessageTypeByName()
     self.pool.AddSerializedFile(timestamp_pb2.DESCRIPTOR.serialized_pb)
     self.pool.AddSerializedFile(duration_pb2.DESCRIPTOR.serialized_pb)
     self.pool.AddSerializedFile(struct_pb2.DESCRIPTOR.serialized_pb)
     file_json = self.pool.AddSerializedFile(
-        more_messages_pb2.DESCRIPTOR.serialized_pb)
+        more_messages_pb2.DESCRIPTOR.serialized_pb
+    )
     field = file_json.message_types_by_name['class'].fields_by_name['int_field']
     self.assertEqual(field.json_name, 'json_int')
 
@@ -546,25 +612,32 @@ class DescriptorPoolTestBase(object):
         return
     self.pool = descriptor_pool.DescriptorPool()
     file1_first = self.pool.AddSerializedFile(
-        self.factory_test1_fd.SerializeToString())
+        self.factory_test1_fd.SerializeToString()
+    )
     file1_again = self.pool.AddSerializedFile(
-        self.factory_test1_fd.SerializeToString())
+        self.factory_test1_fd.SerializeToString()
+    )
     self.assertIs(file1_first, file1_again)
 
   def testEnumDefaultValue(self):
     """Test the default value of enums which don't start at zero."""
+
     def _CheckDefaultValue(file_descriptor):
-      default_value = (file_descriptor
-                       .message_types_by_name['DescriptorPoolTest1']
-                       .fields_by_name['nested_enum']
-                       .default_value)
-      self.assertEqual(default_value,
-                       descriptor_pool_test1_pb2.DescriptorPoolTest1.BETA)
+      default_value = (
+          file_descriptor.message_types_by_name['DescriptorPoolTest1']
+          .fields_by_name['nested_enum']
+          .default_value
+      )
+      self.assertEqual(
+          default_value, descriptor_pool_test1_pb2.DescriptorPoolTest1.BETA
+      )
+
     # First check what the generated descriptor contains.
     _CheckDefaultValue(descriptor_pool_test1_pb2.DESCRIPTOR)
     # Then check the generated pool. Normally this is the same descriptor.
     file_descriptor = symbol_database.Default().pool.FindFileByName(
-        'google/protobuf/internal/descriptor_pool_test1.proto')
+        'google/protobuf/internal/descriptor_pool_test1.proto'
+    )
     self.assertIs(file_descriptor, descriptor_pool_test1_pb2.DESCRIPTOR)
     _CheckDefaultValue(file_descriptor)
 
@@ -576,15 +649,18 @@ class DescriptorPoolTestBase(object):
         return
     # Then check the dynamic pool and its internal DescriptorDatabase.
     descriptor_proto = descriptor_pb2.FileDescriptorProto.FromString(
-        descriptor_pool_test1_pb2.DESCRIPTOR.serialized_pb)
+        descriptor_pool_test1_pb2.DESCRIPTOR.serialized_pb
+    )
     self.pool.Add(descriptor_proto)
     # And do the same check as above
     file_descriptor = self.pool.FindFileByName(
-        'google/protobuf/internal/descriptor_pool_test1.proto')
+        'google/protobuf/internal/descriptor_pool_test1.proto'
+    )
     _CheckDefaultValue(file_descriptor)
 
   def testDefaultValueForCustomMessages(self):
     """Check the value returned by non-existent fields."""
+
     def _CheckValueAndType(value, expected_value, expected_type):
       self.assertEqual(value, expected_value)
       self.assertIsInstance(value, expected_type)
@@ -603,22 +679,34 @@ class DescriptorPoolTestBase(object):
       _CheckValueAndType(msg.optional_float, 0, (float, int))
       _CheckValueAndType(msg.optional_double, 0, (float, int))
       _CheckValueAndType(msg.optional_bool, False, bool)
-      _CheckValueAndType(msg.optional_string, u'', unicode_type)
+      _CheckValueAndType(msg.optional_string, '', unicode_type)
       _CheckValueAndType(msg.optional_bytes, b'', bytes)
       _CheckValueAndType(msg.optional_nested_enum, msg.FOO, int)
+
     # First for the generated message
     _CheckDefaultValues(unittest_pb2.TestAllTypes())
     # Then for a message built with from the DescriptorPool.
     pool = descriptor_pool.DescriptorPool()
-    pool.Add(descriptor_pb2.FileDescriptorProto.FromString(
-        unittest_import_public_pb2.DESCRIPTOR.serialized_pb))
-    pool.Add(descriptor_pb2.FileDescriptorProto.FromString(
-        unittest_import_pb2.DESCRIPTOR.serialized_pb))
-    pool.Add(descriptor_pb2.FileDescriptorProto.FromString(
-        unittest_pb2.DESCRIPTOR.serialized_pb))
+    pool.Add(
+        descriptor_pb2.FileDescriptorProto.FromString(
+            unittest_import_public_pb2.DESCRIPTOR.serialized_pb
+        )
+    )
+    pool.Add(
+        descriptor_pb2.FileDescriptorProto.FromString(
+            unittest_import_pb2.DESCRIPTOR.serialized_pb
+        )
+    )
+    pool.Add(
+        descriptor_pb2.FileDescriptorProto.FromString(
+            unittest_pb2.DESCRIPTOR.serialized_pb
+        )
+    )
     message_class = message_factory.GetMessageClass(
         pool.FindMessageTypeByName(
-            unittest_pb2.TestAllTypes.DESCRIPTOR.full_name))
+            unittest_pb2.TestAllTypes.DESCRIPTOR.full_name
+        )
+    )
     _CheckDefaultValues(message_class())
 
   def testAddFileDescriptor(self):
@@ -640,18 +728,23 @@ class DescriptorPoolTestBase(object):
         # TODO: Fix python and cpp extension diff.
         return
     timestamp_desc = descriptor_pb2.FileDescriptorProto.FromString(
-        timestamp_pb2.DESCRIPTOR.serialized_pb)
+        timestamp_pb2.DESCRIPTOR.serialized_pb
+    )
     duration_desc = descriptor_pb2.FileDescriptorProto.FromString(
-        duration_pb2.DESCRIPTOR.serialized_pb)
+        duration_pb2.DESCRIPTOR.serialized_pb
+    )
     struct_desc = descriptor_pb2.FileDescriptorProto.FromString(
         struct_pb2.DESCRIPTOR.serialized_pb
     )
     more_messages_desc = descriptor_pb2.FileDescriptorProto.FromString(
-        more_messages_pb2.DESCRIPTOR.serialized_pb)
+        more_messages_pb2.DESCRIPTOR.serialized_pb
+    )
     test1_desc = descriptor_pb2.FileDescriptorProto.FromString(
-        descriptor_pool_test1_pb2.DESCRIPTOR.serialized_pb)
+        descriptor_pool_test1_pb2.DESCRIPTOR.serialized_pb
+    )
     test2_desc = descriptor_pb2.FileDescriptorProto.FromString(
-        descriptor_pool_test2_pb2.DESCRIPTOR.serialized_pb)
+        descriptor_pool_test2_pb2.DESCRIPTOR.serialized_pb
+    )
     self.pool.Add(timestamp_desc)
     self.pool.Add(duration_desc)
     self.pool.Add(struct_desc)
@@ -669,7 +762,8 @@ class DescriptorPoolTestBase(object):
         # TODO: Fix python and cpp extension diff.
         return
     unittest_fd = descriptor_pb2.FileDescriptorProto.FromString(
-        unittest_pb2.DESCRIPTOR.serialized_pb)
+        unittest_pb2.DESCRIPTOR.serialized_pb
+    )
     conflict_fd = copy.deepcopy(unittest_fd)
     conflict_fd.name = 'other_file'
     if api_implementation.Type() != 'python':
@@ -677,22 +771,23 @@ class DescriptorPoolTestBase(object):
     else:
       pool = copy.deepcopy(self.pool)
       file_descriptor = unittest_pb2.DESCRIPTOR
-      pool._AddDescriptor(
-          file_descriptor.message_types_by_name['TestAllTypes'])
-      pool._AddEnumDescriptor(
-          file_descriptor.enum_types_by_name['ForeignEnum'])
+      pool._AddDescriptor(file_descriptor.message_types_by_name['TestAllTypes'])
+      pool._AddEnumDescriptor(file_descriptor.enum_types_by_name['ForeignEnum'])
       pool._AddServiceDescriptor(
-          file_descriptor.services_by_name['TestService'])
+          file_descriptor.services_by_name['TestService']
+      )
       pool._AddExtensionDescriptor(
-          file_descriptor.extensions_by_name['optional_int32_extension'])
+          file_descriptor.extensions_by_name['optional_int32_extension']
+      )
       pool.Add(unittest_fd)
       with warnings.catch_warnings(record=True) as w:
         warnings.simplefilter('always')
         pool.Add(conflict_fd)
         self.assertTrue(len(w))
         self.assertIs(w[0].category, RuntimeWarning)
-        self.assertIn('Conflict register for file "other_file": ',
-                      str(w[0].message))
+        self.assertIn(
+            'Conflict register for file "other_file": ', str(w[0].message)
+        )
       pool.FindFileByName(unittest_fd.name)
       with self.assertRaises(TypeError):
         pool.FindFileByName(conflict_fd.name)
@@ -701,20 +796,24 @@ class DescriptorPoolTestBase(object):
     f = descriptor_pb2.FileDescriptorProto(
         name='google/protobuf/internal/not_type.proto',
         package='google.protobuf.python.internal',
-        syntax='proto3')
-    f.enum_type.add(name='TestEnum').value.add(name='DEFAULTVALUE',
-                                               number=0)
+        syntax='proto3',
+    )
+    f.enum_type.add(name='TestEnum').value.add(name='DEFAULTVALUE', number=0)
     msg_proto = f.message_type.add(name='TestMessage')
     msg_proto.nested_type.add(name='Nested')
     # type may not set if type_name is set in FieldDescriptorProto
-    msg_proto.field.add(name='nested_field',
-                        number=1,
-                        label=descriptor.FieldDescriptor.LABEL_OPTIONAL,
-                        type_name='Nested')
-    msg_proto.field.add(name='enum_field',
-                        number=2,
-                        label=descriptor.FieldDescriptor.LABEL_REPEATED,
-                        type_name='TestEnum')
+    msg_proto.field.add(
+        name='nested_field',
+        number=1,
+        label=descriptor.FieldDescriptor.LABEL_OPTIONAL,
+        type_name='Nested',
+    )
+    msg_proto.field.add(
+        name='enum_field',
+        number=2,
+        label=descriptor.FieldDescriptor.LABEL_REPEATED,
+        type_name='TestEnum',
+    )
     pool = descriptor_pool.DescriptorPool()
     pool.Add(f)
     file_des = pool.FindFileByName('google/protobuf/internal/not_type.proto')
@@ -729,40 +828,52 @@ class DescriptorPoolTestBase(object):
     if api_implementation.Type() == 'python':
       self.assertTrue(enum_field.is_packed)
 
+
 @testing_refleaks.TestCase
 class DefaultDescriptorPoolTest(DescriptorPoolTestBase, unittest.TestCase):
 
   def setUp(self):
     self.pool = descriptor_pool.Default()
     self.factory_test1_fd = descriptor_pb2.FileDescriptorProto.FromString(
-        factory_test1_pb2.DESCRIPTOR.serialized_pb)
+        factory_test1_pb2.DESCRIPTOR.serialized_pb
+    )
     self.factory_test2_fd = descriptor_pb2.FileDescriptorProto.FromString(
-        factory_test2_pb2.DESCRIPTOR.serialized_pb)
+        factory_test2_pb2.DESCRIPTOR.serialized_pb
+    )
 
   def testFindMethods(self):
     self.assertIs(
         self.pool.FindFileByName('google/protobuf/unittest.proto'),
-        unittest_pb2.DESCRIPTOR)
+        unittest_pb2.DESCRIPTOR,
+    )
     self.assertIs(
         self.pool.FindMessageTypeByName('proto2_unittest.TestAllTypes'),
-        unittest_pb2.TestAllTypes.DESCRIPTOR)
+        unittest_pb2.TestAllTypes.DESCRIPTOR,
+    )
     self.assertIs(
         self.pool.FindFieldByName(
-            'proto2_unittest.TestAllTypes.optional_int32'),
-        unittest_pb2.TestAllTypes.DESCRIPTOR.fields_by_name['optional_int32'])
+            'proto2_unittest.TestAllTypes.optional_int32'
+        ),
+        unittest_pb2.TestAllTypes.DESCRIPTOR.fields_by_name['optional_int32'],
+    )
     self.assertIs(
         self.pool.FindEnumTypeByName('proto2_unittest.ForeignEnum'),
-        unittest_pb2.ForeignEnum.DESCRIPTOR)
+        unittest_pb2.ForeignEnum.DESCRIPTOR,
+    )
     self.assertIs(
         self.pool.FindExtensionByName(
-            'proto2_unittest.optional_int32_extension'),
-        unittest_pb2.DESCRIPTOR.extensions_by_name['optional_int32_extension'])
+            'proto2_unittest.optional_int32_extension'
+        ),
+        unittest_pb2.DESCRIPTOR.extensions_by_name['optional_int32_extension'],
+    )
     self.assertIs(
         self.pool.FindOneofByName('proto2_unittest.TestAllTypes.oneof_field'),
-        unittest_pb2.TestAllTypes.DESCRIPTOR.oneofs_by_name['oneof_field'])
+        unittest_pb2.TestAllTypes.DESCRIPTOR.oneofs_by_name['oneof_field'],
+    )
     self.assertIs(
         self.pool.FindServiceByName('proto2_unittest.TestService'),
-        unittest_pb2.DESCRIPTOR.services_by_name['TestService'])
+        unittest_pb2.DESCRIPTOR.services_by_name['TestService'],
+    )
 
 
 @testing_refleaks.TestCase
@@ -771,42 +882,71 @@ class CreateDescriptorPoolTest(DescriptorPoolTestBase, unittest.TestCase):
   def setUp(self):
     self.pool = descriptor_pool.DescriptorPool()
     self.factory_test1_fd = descriptor_pb2.FileDescriptorProto.FromString(
-        factory_test1_pb2.DESCRIPTOR.serialized_pb)
+        factory_test1_pb2.DESCRIPTOR.serialized_pb
+    )
     self.factory_test2_fd = descriptor_pb2.FileDescriptorProto.FromString(
-        factory_test2_pb2.DESCRIPTOR.serialized_pb)
+        factory_test2_pb2.DESCRIPTOR.serialized_pb
+    )
     self.pool.Add(self.factory_test1_fd)
     self.pool.Add(self.factory_test2_fd)
 
-    self.pool.Add(descriptor_pb2.FileDescriptorProto.FromString(
-        unittest_import_public_pb2.DESCRIPTOR.serialized_pb))
-    self.pool.Add(descriptor_pb2.FileDescriptorProto.FromString(
-        unittest_import_pb2.DESCRIPTOR.serialized_pb))
-    self.pool.Add(descriptor_pb2.FileDescriptorProto.FromString(
-        unittest_pb2.DESCRIPTOR.serialized_pb))
-    self.pool.Add(descriptor_pb2.FileDescriptorProto.FromString(
-        no_package_pb2.DESCRIPTOR.serialized_pb))
+    self.pool.Add(
+        descriptor_pb2.FileDescriptorProto.FromString(
+            unittest_import_public_pb2.DESCRIPTOR.serialized_pb
+        )
+    )
+    self.pool.Add(
+        descriptor_pb2.FileDescriptorProto.FromString(
+            unittest_import_pb2.DESCRIPTOR.serialized_pb
+        )
+    )
+    self.pool.Add(
+        descriptor_pb2.FileDescriptorProto.FromString(
+            unittest_pb2.DESCRIPTOR.serialized_pb
+        )
+    )
+    self.pool.Add(
+        descriptor_pb2.FileDescriptorProto.FromString(
+            no_package_pb2.DESCRIPTOR.serialized_pb
+        )
+    )
 
 
 @testing_refleaks.TestCase
-class SecondaryDescriptorFromDescriptorDB(DescriptorPoolTestBase,
-                                          unittest.TestCase):
+class SecondaryDescriptorFromDescriptorDB(
+    DescriptorPoolTestBase, unittest.TestCase
+):
 
   def setUp(self):
     self.factory_test1_fd = descriptor_pb2.FileDescriptorProto.FromString(
-        factory_test1_pb2.DESCRIPTOR.serialized_pb)
+        factory_test1_pb2.DESCRIPTOR.serialized_pb
+    )
     self.factory_test2_fd = descriptor_pb2.FileDescriptorProto.FromString(
-        factory_test2_pb2.DESCRIPTOR.serialized_pb)
+        factory_test2_pb2.DESCRIPTOR.serialized_pb
+    )
     self.db = descriptor_database.DescriptorDatabase()
     self.db.Add(self.factory_test1_fd)
     self.db.Add(self.factory_test2_fd)
-    self.db.Add(descriptor_pb2.FileDescriptorProto.FromString(
-        unittest_import_public_pb2.DESCRIPTOR.serialized_pb))
-    self.db.Add(descriptor_pb2.FileDescriptorProto.FromString(
-        unittest_import_pb2.DESCRIPTOR.serialized_pb))
-    self.db.Add(descriptor_pb2.FileDescriptorProto.FromString(
-        unittest_pb2.DESCRIPTOR.serialized_pb))
-    self.db.Add(descriptor_pb2.FileDescriptorProto.FromString(
-        no_package_pb2.DESCRIPTOR.serialized_pb))
+    self.db.Add(
+        descriptor_pb2.FileDescriptorProto.FromString(
+            unittest_import_public_pb2.DESCRIPTOR.serialized_pb
+        )
+    )
+    self.db.Add(
+        descriptor_pb2.FileDescriptorProto.FromString(
+            unittest_import_pb2.DESCRIPTOR.serialized_pb
+        )
+    )
+    self.db.Add(
+        descriptor_pb2.FileDescriptorProto.FromString(
+            unittest_pb2.DESCRIPTOR.serialized_pb
+        )
+    )
+    self.db.Add(
+        descriptor_pb2.FileDescriptorProto.FromString(
+            no_package_pb2.DESCRIPTOR.serialized_pb
+        )
+    )
     self.pool = descriptor_pool.DescriptorPool(descriptor_db=self.db)
 
   # TODO: b/387527786 - This is a helper function for testErrorCollector to
@@ -927,8 +1067,9 @@ class SecondaryDescriptorFromDescriptorDB(DescriptorPoolTestBase,
 
     with self.assertRaises(KeyError) as exc:
       self.pool.FindFileByName('none_file')
-    self.assertIn(str(exc.exception), ('\'none_file\'',
-                                       '\"Couldn\'t find file none_file\"'))
+    self.assertIn(
+        str(exc.exception), ("'none_file'", '"Couldn\'t find file none_file"')
+    )
 
     # Pure python _ConvertFileProtoToFileDescriptor() method has side effect
     # that all the symbols found in the file will load into the pool even the
@@ -946,8 +1087,9 @@ class SecondaryDescriptorFromDescriptorDB(DescriptorPoolTestBase,
 
 class ProtoFile(object):
 
-  def __init__(self, name, package, messages, dependencies=None,
-               public_dependencies=None):
+  def __init__(
+      self, name, package, messages, dependencies=None, public_dependencies=None
+  ):
     self.name = name
     self.package = package
     self.messages = messages
@@ -989,8 +1131,9 @@ class EnumType(object):
 
 class MessageType(object):
 
-  def __init__(self, type_dict, field_list, is_extendable=False,
-               extensions=None):
+  def __init__(
+      self, type_dict, field_list, is_extendable=False, extensions=None
+  ):
     self.type_dict = type_dict
     self.field_list = field_list
     self.is_extendable = is_extendable
@@ -1035,11 +1178,14 @@ class EnumField(object):
     test.assertEqual(index, field_desc.index)
     test.assertEqual(self.number, field_desc.number)
     test.assertEqual(descriptor.FieldDescriptor.TYPE_ENUM, field_desc.type)
-    test.assertEqual(descriptor.FieldDescriptor.CPPTYPE_ENUM,
-                     field_desc.cpp_type)
+    test.assertEqual(
+        descriptor.FieldDescriptor.CPPTYPE_ENUM, field_desc.cpp_type
+    )
     test.assertTrue(field_desc.has_default_value)
-    test.assertEqual(enum_desc.values_by_name[self.default_value].number,
-                     field_desc.default_value)
+    test.assertEqual(
+        enum_desc.values_by_name[self.default_value].number,
+        field_desc.default_value,
+    )
     test.assertFalse(enum_desc.values_by_name[self.default_value].has_options)
     test.assertEqual(msg_desc, field_desc.containing_type)
     test.assertEqual(enum_desc, field_desc.enum_type)
@@ -1061,8 +1207,9 @@ class MessageField(object):
     test.assertEqual(index, field_desc.index)
     test.assertEqual(self.number, field_desc.number)
     test.assertEqual(descriptor.FieldDescriptor.TYPE_MESSAGE, field_desc.type)
-    test.assertEqual(descriptor.FieldDescriptor.CPPTYPE_MESSAGE,
-                     field_desc.cpp_type)
+    test.assertEqual(
+        descriptor.FieldDescriptor.CPPTYPE_MESSAGE, field_desc.cpp_type
+    )
     test.assertFalse(field_desc.has_default_value)
     test.assertEqual(msg_desc, field_desc.containing_type)
     test.assertEqual(field_type_desc, field_desc.message_type)
@@ -1084,8 +1231,9 @@ class StringField(object):
     test.assertEqual(index, field_desc.index)
     test.assertEqual(self.number, field_desc.number)
     test.assertEqual(descriptor.FieldDescriptor.TYPE_STRING, field_desc.type)
-    test.assertEqual(descriptor.FieldDescriptor.CPPTYPE_STRING,
-                     field_desc.cpp_type)
+    test.assertEqual(
+        descriptor.FieldDescriptor.CPPTYPE_STRING, field_desc.cpp_type
+    )
     test.assertTrue(field_desc.has_default_value)
     test.assertEqual(self.default_value, field_desc.default_value)
     test.assertEqual(file_desc, field_desc.file)
@@ -1105,8 +1253,9 @@ class ExtensionField(object):
     test.assertEqual(self.number, field_desc.number)
     test.assertEqual(index, field_desc.index)
     test.assertEqual(descriptor.FieldDescriptor.TYPE_MESSAGE, field_desc.type)
-    test.assertEqual(descriptor.FieldDescriptor.CPPTYPE_MESSAGE,
-                     field_desc.cpp_type)
+    test.assertEqual(
+        descriptor.FieldDescriptor.CPPTYPE_MESSAGE, field_desc.cpp_type
+    )
     test.assertFalse(field_desc.has_default_value)
     test.assertTrue(field_desc.is_extension)
     test.assertEqual(msg_desc, field_desc.extension_scope)
@@ -1124,32 +1273,40 @@ class AddDescriptorTest(unittest.TestCase):
     self.assertEqual(
         'proto2_unittest.TestAllTypes',
         pool.FindMessageTypeByName(
-            prefix + 'proto2_unittest.TestAllTypes').full_name)
+            prefix + 'proto2_unittest.TestAllTypes'
+        ).full_name,
+    )
 
     # AddDescriptor is not recursive.
     with self.assertRaises(KeyError):
       pool.FindMessageTypeByName(
-          prefix + 'proto2_unittest.TestAllTypes.NestedMessage')
+          prefix + 'proto2_unittest.TestAllTypes.NestedMessage'
+      )
 
     pool._AddDescriptor(unittest_pb2.TestAllTypes.NestedMessage.DESCRIPTOR)
     self.assertEqual(
         'proto2_unittest.TestAllTypes.NestedMessage',
         pool.FindMessageTypeByName(
-            prefix + 'proto2_unittest.TestAllTypes.NestedMessage').full_name)
+            prefix + 'proto2_unittest.TestAllTypes.NestedMessage'
+        ).full_name,
+    )
 
     # Files are implicitly also indexed when messages are added.
     self.assertEqual(
         'google/protobuf/unittest.proto',
-        pool.FindFileByName(
-            'google/protobuf/unittest.proto').name)
+        pool.FindFileByName('google/protobuf/unittest.proto').name,
+    )
 
     self.assertEqual(
         'google/protobuf/unittest.proto',
         pool.FindFileContainingSymbol(
-            prefix + 'proto2_unittest.TestAllTypes.NestedMessage').name)
+            prefix + 'proto2_unittest.TestAllTypes.NestedMessage'
+        ).name,
+    )
 
-  @unittest.skipIf(api_implementation.Type() != 'python',
-                   'Only pure python allows _Add*()')
+  @unittest.skipIf(
+      api_implementation.Type() != 'python', 'Only pure python allows _Add*()'
+  )
   def testMessage(self):
     self._TestMessage('')
     self._TestMessage('.')
@@ -1162,37 +1319,44 @@ class AddDescriptorTest(unittest.TestCase):
     self.assertEqual(
         'proto2_unittest.ForeignEnum',
         pool.FindEnumTypeByName(
-            prefix + 'proto2_unittest.ForeignEnum').full_name)
+            prefix + 'proto2_unittest.ForeignEnum'
+        ).full_name,
+    )
 
     # AddEnumDescriptor is not recursive.
     with self.assertRaises(KeyError):
-      pool.FindEnumTypeByName(
-          prefix + 'proto2_unittest.ForeignEnum.NestedEnum')
+      pool.FindEnumTypeByName(prefix + 'proto2_unittest.ForeignEnum.NestedEnum')
 
     self.assertEqual(
         'proto2_unittest.TestAllTypes.NestedEnum',
         pool.FindEnumTypeByName(
-            prefix + 'proto2_unittest.TestAllTypes.NestedEnum').full_name)
+            prefix + 'proto2_unittest.TestAllTypes.NestedEnum'
+        ).full_name,
+    )
 
     # Files are implicitly also indexed when enums are added.
     self.assertEqual(
         'google/protobuf/unittest.proto',
-        pool.FindFileByName(
-            'google/protobuf/unittest.proto').name)
+        pool.FindFileByName('google/protobuf/unittest.proto').name,
+    )
 
     self.assertEqual(
         'google/protobuf/unittest.proto',
         pool.FindFileContainingSymbol(
-            prefix + 'proto2_unittest.TestAllTypes.NestedEnum').name)
+            prefix + 'proto2_unittest.TestAllTypes.NestedEnum'
+        ).name,
+    )
 
-  @unittest.skipIf(api_implementation.Type() != 'python',
-                   'Only pure python allows _Add*()')
+  @unittest.skipIf(
+      api_implementation.Type() != 'python', 'Only pure python allows _Add*()'
+  )
   def testEnum(self):
     self._TestEnum('')
     self._TestEnum('.')
 
-  @unittest.skipIf(api_implementation.Type() != 'python',
-                   'Only pure python allows _Add*()')
+  @unittest.skipIf(
+      api_implementation.Type() != 'python', 'Only pure python allows _Add*()'
+  )
   def testService(self):
     pool = descriptor_pool.DescriptorPool()
     with self.assertRaises(KeyError):
@@ -1200,23 +1364,24 @@ class AddDescriptorTest(unittest.TestCase):
     pool._AddServiceDescriptor(unittest_pb2._TESTSERVICE)
     self.assertEqual(
         'proto2_unittest.TestService',
-        pool.FindServiceByName('proto2_unittest.TestService').full_name)
+        pool.FindServiceByName('proto2_unittest.TestService').full_name,
+    )
 
-  @unittest.skipIf(api_implementation.Type() != 'python',
-                   'Only pure python allows _Add*()')
+  @unittest.skipIf(
+      api_implementation.Type() != 'python', 'Only pure python allows _Add*()'
+  )
   def testFile(self):
     pool = descriptor_pool.DescriptorPool()
     pool._AddFileDescriptor(unittest_pb2.DESCRIPTOR)
     self.assertEqual(
         'google/protobuf/unittest.proto',
-        pool.FindFileByName(
-            'google/protobuf/unittest.proto').name)
+        pool.FindFileByName('google/protobuf/unittest.proto').name,
+    )
 
     # AddFileDescriptor is not recursive; messages and enums within files must
     # be explicitly registered.
     with self.assertRaises(KeyError):
-      pool.FindFileContainingSymbol(
-          'proto2_unittest.TestAllTypes')
+      pool.FindFileContainingSymbol('proto2_unittest.TestAllTypes')
 
   def testEmptyDescriptorPool(self):
     # Check that an empty DescriptorPool() contains no messages.
@@ -1234,30 +1399,35 @@ class AddDescriptorTest(unittest.TestCase):
     # Create a new pool, and add a file descriptor.
     pool = descriptor_pool.DescriptorPool()
     file_desc = descriptor_pb2.FileDescriptorProto(
-        name='some/file.proto', package='package')
+        name='some/file.proto', package='package'
+    )
     file_desc.message_type.add(name='Message')
     pool.Add(file_desc)
-    self.assertEqual(pool.FindFileByName('some/file.proto').name,
-                     'some/file.proto')
-    self.assertEqual(pool.FindMessageTypeByName('package.Message').name,
-                     'Message')
+    self.assertEqual(
+        pool.FindFileByName('some/file.proto').name, 'some/file.proto'
+    )
+    self.assertEqual(
+        pool.FindMessageTypeByName('package.Message').name, 'Message'
+    )
     # Test no package
     file_proto = descriptor_pb2.FileDescriptorProto(
-        name='some/filename/container.proto')
-    message_proto = file_proto.message_type.add(
-        name='TopMessage')
+        name='some/filename/container.proto'
+    )
+    message_proto = file_proto.message_type.add(name='TopMessage')
     message_proto.field.add(
         name='bb',
         number=1,
         type=descriptor_pb2.FieldDescriptorProto.TYPE_INT32,
-        label=descriptor_pb2.FieldDescriptorProto.LABEL_OPTIONAL)
+        label=descriptor_pb2.FieldDescriptorProto.LABEL_OPTIONAL,
+    )
     enum_proto = file_proto.enum_type.add(name='TopEnum')
     enum_proto.value.add(name='FOREIGN_FOO', number=4)
     file_proto.service.add(name='TopService')
     pool = descriptor_pool.DescriptorPool()
     pool.Add(file_proto)
-    self.assertEqual('TopMessage',
-                     pool.FindMessageTypeByName('TopMessage').name)
+    self.assertEqual(
+        'TopMessage', pool.FindMessageTypeByName('TopMessage').name
+    )
     self.assertEqual('TopEnum', pool.FindEnumTypeByName('TopEnum').name)
     self.assertEqual('TopService', pool.FindServiceByName('TopService').name)
 
@@ -1531,95 +1701,138 @@ TEST1_FILE = ProtoFile(
     'google/protobuf/internal/descriptor_pool_test1.proto',
     'google.protobuf.python.internal',
     {
-        'DescriptorPoolTest1': MessageType({
-            'NestedEnum': EnumType([('ALPHA', 1), ('BETA', 2)]),
-            'NestedMessage': MessageType({
-                'NestedEnum': EnumType([('EPSILON', 5), ('ZETA', 6)]),
-                'DeepNestedMessage': MessageType({
-                    'NestedEnum': EnumType([('ETA', 7), ('THETA', 8)]),
-                }, [
-                    ('nested_enum', EnumField(1, 'NestedEnum', 'ETA')),
-                    ('nested_field', StringField(2, 'theta')),
-                ]),
-            }, [
-                ('nested_enum', EnumField(1, 'NestedEnum', 'ZETA')),
-                ('nested_field', StringField(2, 'beta')),
-                ('deep_nested_message', MessageField(3, 'DeepNestedMessage')),
-            ])
-        }, [
-            ('nested_enum', EnumField(1, 'NestedEnum', 'BETA')),
-            ('nested_message', MessageField(2, 'NestedMessage')),
-        ], is_extendable=True),
-
-        'DescriptorPoolTest2': MessageType({
-            'NestedEnum': EnumType([('GAMMA', 3), ('DELTA', 4)]),
-            'NestedMessage': MessageType({
-                'NestedEnum': EnumType([('IOTA', 9), ('KAPPA', 10)]),
-                'DeepNestedMessage': MessageType({
-                    'NestedEnum': EnumType([('LAMBDA', 11), ('MU', 12)]),
-                }, [
-                    ('nested_enum', EnumField(1, 'NestedEnum', 'MU')),
-                    ('nested_field', StringField(2, 'lambda')),
-                ]),
-            }, [
-                ('nested_enum', EnumField(1, 'NestedEnum', 'IOTA')),
-                ('nested_field', StringField(2, 'delta')),
-                ('deep_nested_message', MessageField(3, 'DeepNestedMessage')),
-            ])
-        }, [
-            ('nested_enum', EnumField(1, 'NestedEnum', 'GAMMA')),
-            ('nested_message', MessageField(2, 'NestedMessage')),
-        ]),
-    })
+        'DescriptorPoolTest1': MessageType(
+            {
+                'NestedEnum': EnumType([('ALPHA', 1), ('BETA', 2)]),
+                'NestedMessage': MessageType(
+                    {
+                        'NestedEnum': EnumType([('EPSILON', 5), ('ZETA', 6)]),
+                        'DeepNestedMessage': MessageType(
+                            {
+                                'NestedEnum': EnumType(
+                                    [('ETA', 7), ('THETA', 8)]
+                                ),
+                            },
+                            [
+                                (
+                                    'nested_enum',
+                                    EnumField(1, 'NestedEnum', 'ETA'),
+                                ),
+                                ('nested_field', StringField(2, 'theta')),
+                            ],
+                        ),
+                    },
+                    [
+                        ('nested_enum', EnumField(1, 'NestedEnum', 'ZETA')),
+                        ('nested_field', StringField(2, 'beta')),
+                        (
+                            'deep_nested_message',
+                            MessageField(3, 'DeepNestedMessage'),
+                        ),
+                    ],
+                ),
+            },
+            [
+                ('nested_enum', EnumField(1, 'NestedEnum', 'BETA')),
+                ('nested_message', MessageField(2, 'NestedMessage')),
+            ],
+            is_extendable=True,
+        ),
+        'DescriptorPoolTest2': MessageType(
+            {
+                'NestedEnum': EnumType([('GAMMA', 3), ('DELTA', 4)]),
+                'NestedMessage': MessageType(
+                    {
+                        'NestedEnum': EnumType([('IOTA', 9), ('KAPPA', 10)]),
+                        'DeepNestedMessage': MessageType(
+                            {
+                                'NestedEnum': EnumType(
+                                    [('LAMBDA', 11), ('MU', 12)]
+                                ),
+                            },
+                            [
+                                (
+                                    'nested_enum',
+                                    EnumField(1, 'NestedEnum', 'MU'),
+                                ),
+                                ('nested_field', StringField(2, 'lambda')),
+                            ],
+                        ),
+                    },
+                    [
+                        ('nested_enum', EnumField(1, 'NestedEnum', 'IOTA')),
+                        ('nested_field', StringField(2, 'delta')),
+                        (
+                            'deep_nested_message',
+                            MessageField(3, 'DeepNestedMessage'),
+                        ),
+                    ],
+                ),
+            },
+            [
+                ('nested_enum', EnumField(1, 'NestedEnum', 'GAMMA')),
+                ('nested_message', MessageField(2, 'NestedMessage')),
+            ],
+        ),
+    },
+)
 
 
 TEST2_FILE = ProtoFile(
     'google/protobuf/internal/descriptor_pool_test2.proto',
-    'google.protobuf.python.internal', {
-        'DescriptorPoolTest3':
-            MessageType(
-                {
-                    'NestedEnum':
-                        EnumType([('NU', 13), ('XI', 14)]),
-                    'NestedMessage':
-                        MessageType(
+    'google.protobuf.python.internal',
+    {
+        'DescriptorPoolTest3': MessageType(
+            {
+                'NestedEnum': EnumType([('NU', 13), ('XI', 14)]),
+                'NestedMessage': MessageType(
+                    {
+                        'NestedEnum': EnumType([('OMICRON', 15), ('PI', 16)]),
+                        'DeepNestedMessage': MessageType(
                             {
-                                'NestedEnum':
-                                    EnumType([('OMICRON', 15), ('PI', 16)]),
-                                'DeepNestedMessage':
-                                    MessageType(
-                                        {
-                                            'NestedEnum':
-                                                EnumType([('RHO', 17),
-                                                          ('SIGMA', 18)]),
-                                        }, [
-                                            ('nested_enum',
-                                             EnumField(1, 'NestedEnum', 'RHO')),
-                                            ('nested_field',
-                                             StringField(2, 'sigma')),
-                                        ]),
-                            }, [
-                                ('nested_enum', EnumField(
-                                    1, 'NestedEnum', 'PI')),
-                                ('nested_field', StringField(2, 'nu')),
-                                ('deep_nested_message',
-                                 MessageField(3, 'DeepNestedMessage')),
-                            ])
-                }, [
-                    ('nested_enum', EnumField(1, 'NestedEnum', 'XI')),
-                    ('nested_message', MessageField(2, 'NestedMessage')),
-                ],
-                extensions=[
-                    ('descriptor_pool_test',
-                     ExtensionField(1001, 'DescriptorPoolTest1')),
-                ]),
+                                'NestedEnum': EnumType(
+                                    [('RHO', 17), ('SIGMA', 18)]
+                                ),
+                            },
+                            [
+                                (
+                                    'nested_enum',
+                                    EnumField(1, 'NestedEnum', 'RHO'),
+                                ),
+                                ('nested_field', StringField(2, 'sigma')),
+                            ],
+                        ),
+                    },
+                    [
+                        ('nested_enum', EnumField(1, 'NestedEnum', 'PI')),
+                        ('nested_field', StringField(2, 'nu')),
+                        (
+                            'deep_nested_message',
+                            MessageField(3, 'DeepNestedMessage'),
+                        ),
+                    ],
+                ),
+            },
+            [
+                ('nested_enum', EnumField(1, 'NestedEnum', 'XI')),
+                ('nested_message', MessageField(2, 'NestedMessage')),
+            ],
+            extensions=[
+                (
+                    'descriptor_pool_test',
+                    ExtensionField(1001, 'DescriptorPoolTest1'),
+                ),
+            ],
+        ),
     },
     dependencies=[
         'google/protobuf/internal/more_messages.proto',
         'google/protobuf/internal/descriptor_pool_test1.proto',
     ],
     public_dependencies=[
-        'google/protobuf/internal/more_messages.proto'])
+        'google/protobuf/internal/more_messages.proto'
+    ],
+)
 
 
 class LocalFakeDB(descriptor_database.DescriptorDatabase):

@@ -186,8 +186,8 @@ cc_library(
 
 cc_binary(
     name = "protoc-gen-rust",
-    srcs = ["main.cc"],
-    visibility = ["//rust:__pkg__"],
+    srcs = ["plugin_main.cc"],
+    visibility = ["//visibility:public"],
     deps = [
         ":rust",
         "//src/google/protobuf/compiler:plugin",

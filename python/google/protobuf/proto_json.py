@@ -4,21 +4,21 @@
 # Use of this source code is governed by a BSD-style
 # license that can be found in the LICENSE file or at
 # https://developers.google.com/open-source/licenses/bsd
-
 """Contains the Nextgen Pythonic Protobuf JSON APIs."""
 
 from typing import Optional, Type
 
-from google.protobuf.message import Message
-from google.protobuf.descriptor_pool import DescriptorPool
 from google.protobuf import json_format
+from google.protobuf.descriptor_pool import DescriptorPool
+from google.protobuf.message import Message
+
 
 def serialize(
     message: Message,
-    always_print_fields_with_no_presence: bool=False,
-    preserving_proto_field_name: bool=False,
-    use_integers_for_enums: bool=False,
-    descriptor_pool: Optional[DescriptorPool]=None,
+    always_print_fields_with_no_presence: bool = False,
+    preserving_proto_field_name: bool = False,
+    use_integers_for_enums: bool = False,
+    descriptor_pool: Optional[DescriptorPool] = None,
 ) -> dict:
   """Converts protobuf message to a dictionary.
 
@@ -47,12 +47,13 @@ def serialize(
       use_integers_for_enums=use_integers_for_enums,
   )
 
+
 def parse(
     message_class: Type[Message],
     js_dict: dict,
-    ignore_unknown_fields: bool=False,
-    descriptor_pool: Optional[DescriptorPool]=None,
-    max_recursion_depth: int=100
+    ignore_unknown_fields: bool = False,
+    descriptor_pool: Optional[DescriptorPool] = None,
+    max_recursion_depth: int = 100,
 ) -> Message:
   """Parses a JSON dictionary representation into a message.
 

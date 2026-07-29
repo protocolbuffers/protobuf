@@ -13,8 +13,6 @@ load("//bazel/common:proto_info.bzl", "ProtoInfo")
 load("//bazel/private:java_proto_support.bzl", "JavaProtoAspectInfo", "java_compile_for_protos", "java_info_merge_for_protos")
 load("//bazel/private:toolchain_helpers.bzl", "toolchains")
 
-_PROTO_TOOLCHAIN_ATTR = "_aspect_proto_toolchain_for_javalite"
-
 _JAVA_LITE_PROTO_TOOLCHAIN = Label("//bazel/private:javalite_toolchain_type")
 
 def _aspect_impl(target, ctx):
@@ -71,9 +69,6 @@ _java_lite_proto_aspect = aspect(
     implementation = _aspect_impl,
     attr_aspects = ["deps", "exports"],
     attrs = toolchains.if_legacy_toolchain({
-        _PROTO_TOOLCHAIN_ATTR: attr.label(
-            default = configuration_field(fragment = "proto", name = "proto_toolchain_for_java_lite"),
-        ),
         "_proto_toolchain_for_javalite": attr.label(
             default = Label("//bazel/flags/java:proto_toolchain_for_javalite"),
         ),
@@ -167,9 +162,6 @@ The list of <a href="protocol-buffer.html#proto_library"><code>proto_library</co
 rules to generate Java code for.
 """),
     } | toolchains.if_legacy_toolchain({
-        _PROTO_TOOLCHAIN_ATTR: attr.label(
-            default = configuration_field(fragment = "proto", name = "proto_toolchain_for_java_lite"),
-        ),
         "_proto_toolchain_for_javalite": attr.label(
             default = Label("//bazel/flags/java:proto_toolchain_for_javalite"),
         ),

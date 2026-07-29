@@ -306,43 +306,50 @@ void PopulateFastFields(
 
   for (size_t i = 0; i < field_entries.size(); ++i) {
     const auto& entry = field_entries[i];
-    const auto& options = fields[i];
-    if (!IsFieldEligibleForFastParsing(entry, options, message_options)) {
+    const auto* field = entry.field;
+
+    if (field->number() >= 1 << 11) {
+      // We only do fast parsers for 1 and 2 byte tags.
       continue;
     }
 
-    const auto* field = entry.field;
+    const auto& options = fields[i];
     const uint32_t tag = GetRecodedTagForFastParsing(field);
     const uint32_t fast_idx = TcParseTableBase::TagToIdx(tag, result.size());
-
     TailCallTableInfo::FastFieldInfo& info = result[fast_idx];
-    if (info.AsNonField() != nullptr) {
-      // Right now non-field means END_GROUP which is guaranteed to be present.
-      continue;
-    }
-    if (auto* as_field = info.AsField()) {
-      // This field entry is already filled. Skip if previous entry is more
-      // likely present.
-      if (as_field->presence_probability >= options.presence_probability) {
+
+    if (IsFieldEligibleForFastParsing(entry, options, message_options)) {
+      if (!info.IsBetterFast(options.presence_probability)) {
         continue;
       }
+      auto& fast_field =
+          info.data.emplace<TailCallTableInfo::FastFieldInfo::Field>(
+              MakeFastFieldEntry(entry, options, message_options));
+      fast_field.field = field;
+      fast_field.coded_tag = tag;
+      // If this field does not have presence, then it can set an out-of-bounds
+      // bit (tailcall parsing uses a uint64_t for hasbits, but only stores 32).
+      fast_field.hasbit_idx = entry.hasbit_idx >= 0 ? entry.hasbit_idx : 63;
+      // 0.05 was selected based on load tests where 0.1 and 0.01 were also
+      // evaluated and worse.
+      constexpr float kMinPresence = 0.05f;
+      important_fields |= uint32_t{options.presence_probability >= kMinPresence}
+                          << fast_idx;
+    } else {
+      if (!info.IsBetterMpFast(options.presence_probability)) {
+        continue;
+      }
+      auto& fast_field =
+          info.data.emplace<TailCallTableInfo::FastFieldInfo::MpField>();
+      fast_field.func = field->number() < 16 ? TcParseFunction::kFastMiniParse1
+                                             : TcParseFunction::kFastMiniParse2;
+      fast_field.field = field;
+      fast_field.coded_tag = tag;
+      fast_field.function_index =
+          entry.type_card & TcParser::kMiniParseTableTypeCardMask;
+      fast_field.field_index = i;
+      fast_field.presence_probability = options.presence_probability;
     }
-
-    // We reset the entry even if it had a field already.
-    // Fill in this field's entry:
-    auto& fast_field =
-        info.data.emplace<TailCallTableInfo::FastFieldInfo::Field>(
-            MakeFastFieldEntry(entry, options, message_options));
-    fast_field.field = field;
-    fast_field.coded_tag = tag;
-    // If this field does not have presence, then it can set an out-of-bounds
-    // bit (tailcall parsing uses a uint64_t for hasbits, but only stores 32).
-    fast_field.hasbit_idx = entry.hasbit_idx >= 0 ? entry.hasbit_idx : 63;
-    // 0.05 was selected based on load tests where 0.1 and 0.01 were also
-    // evaluated and worse.
-    constexpr float kMinPresence = 0.05f;
-    important_fields |= uint32_t{options.presence_probability >= kMinPresence}
-                        << fast_idx;
   }
 }
 
@@ -446,7 +453,6 @@ TailCallTableInfo::NumToEntryTable MakeNumToEntryTable(
   if (field_entry_index == N) return num_to_entry_table;
 
   TailCallTableInfo::SkipEntryBlock* block = nullptr;
-  bool start_new_block = true;
   // To determine sparseness, track the field number corresponding to
   // the start of the most recent skip entry.
   uint32_t last_skip_entry_start = 0;
@@ -454,30 +460,40 @@ TailCallTableInfo::NumToEntryTable MakeNumToEntryTable(
     auto* field_descriptor = ordered_fields[field_entry_index].field;
     uint32_t fnum = static_cast<uint32_t>(field_descriptor->number());
     ABSL_CHECK_GT(fnum, last_skip_entry_start);
-    if (start_new_block == false) {
-      // If the next field number is within 15 of the last_skip_entry_start, we
-      // continue writing just to that entry.  If it's between 16 and 31 more,
-      // then we just extend the current block by one. If it's more than 31
-      // more, we have to add empty skip entries in order to continue using the
-      // existing block.  Obviously it's just 32 more, it doesn't make sense to
-      // start a whole new block, since new blocks mean having to write out
-      // their starting field number, which is 32 bits, as well as the size of
-      // the additional block, which is 16... while an empty SkipEntry16 only
-      // costs 32 bits.  So if it was 48 more, it's a slight space win; we save
-      // 16 bits, but probably at the cost of slower run time.  We're choosing
-      // 96 for now.
-      if (fnum - last_skip_entry_start > 96) start_new_block = true;
-    }
-    if (start_new_block) {
+
+    const auto new_block = [&] {
       num_to_entry_table.blocks.push_back({fnum});
       block = &num_to_entry_table.blocks.back();
-      start_new_block = false;
+    };
+
+    // If the next field number is within 15 of the last_skip_entry_start, we
+    // continue writing just to that entry.  If it's between 16 and 31 more,
+    // then we just extend the current block by one. If it's more than 31
+    // more, we have to add empty skip entries in order to continue using the
+    // existing block.  Obviously it's just 32 more, it doesn't make sense to
+    // start a whole new block, since new blocks mean having to write out
+    // their starting field number, which is 32 bits, as well as the size of
+    // the additional block, which is 16... while an empty SkipEntry16 only
+    // costs 32 bits.  So if it was 48 more, it's a slight space win; we save
+    // 16 bits, but probably at the cost of slower run time.  We're choosing
+    // TailCallTableInfo::kMaxSkipEntrySpacing for now.
+    if (block == nullptr || fnum - last_skip_entry_start >
+                                TailCallTableInfo::kMaxSkipEntrySpacing) {
+      new_block();
     }
 
-    auto skip_entry_num = (fnum - block->first_fnum) / 16;
-    auto skip_entry_index = (fnum - block->first_fnum) % 16;
-    while (skip_entry_num >= block->entries.size())
+    uint32_t skip_entry_num = (fnum - block->first_fnum) / 16;
+
+    if (skip_entry_num >= 0xFFFF) {
+      // If the current block is full, start a new one.
+      new_block();
+      skip_entry_num = (fnum - block->first_fnum) / 16;
+    }
+
+    uint32_t skip_entry_index = (fnum - block->first_fnum) % 16;
+    while (skip_entry_num >= block->entries.size()) {
       block->entries.push_back({0xFFFF, field_entry_index});
+    }
     block->entries[skip_entry_num].skipmap -= 1 << (skip_entry_index);
 
     last_skip_entry_start = fnum - skip_entry_index;
@@ -665,7 +681,9 @@ uint16_t MakeTypeCardForField(const FieldDescriptor* field, bool has_hasbit,
 
 bool HasWeakFields(const Descriptor* descriptor) {
   for (int i = 0; i < descriptor->field_count(); i++) {
+    PROTOBUF_IGNORE_DEPRECATION_START
     if (descriptor->field(i)->options().weak()) {
+      PROTOBUF_IGNORE_DEPRECATION_STOP
       return true;
     }
   }
@@ -702,9 +720,11 @@ uint32_t FastParseTableSize(size_t num_fields,
 }
 
 bool IsFieldTypeEligibleForFastParsing(const FieldDescriptor* field) {
+  PROTOBUF_IGNORE_DEPRECATION_START
+  const bool field_is_weak = field->options().weak();
+  PROTOBUF_IGNORE_DEPRECATION_STOP
   // Map, oneof, weak, and split fields are not handled on the fast path.
-  if (field->is_map() || field->real_containing_oneof() ||
-      field->options().weak()) {
+  if (field->is_map() || field->real_containing_oneof() || field_is_weak) {
     return false;
   }
 
@@ -737,11 +757,14 @@ TailCallTableInfo::BuildFieldEntries(
     auto* field = options.field;
     // In the following code where we assign kSubTable to aux entries, only
     // the following typed fields are supported.
+    PROTOBUF_IGNORE_DEPRECATION_START
+    const bool field_is_weak = field->options().weak();
+    PROTOBUF_IGNORE_DEPRECATION_STOP
     return (field->type() == FieldDescriptor::TYPE_MESSAGE ||
             field->type() == FieldDescriptor::TYPE_GROUP) &&
-           !field->is_map() && !field->options().weak() &&
-           !HasLazyRep(field, options) && !options.is_implicitly_weak &&
-           options.use_direct_tcparser_table && is_non_cold(options);
+           !field->is_map() && !field_is_weak && !HasLazyRep(field, options) &&
+           !options.is_implicitly_weak && options.use_direct_tcparser_table &&
+           is_non_cold(options);
   };
   for (const FieldOptions& options : ordered_fields) {
     if (is_non_cold_subtable(options)) {
@@ -779,7 +802,9 @@ TailCallTableInfo::BuildFieldEntries(
             aux_entries.push_back({kEnumValidator, {map_value}});
           }
         }
+        PROTOBUF_IGNORE_DEPRECATION_START
       } else if (field->options().weak()) {
+        PROTOBUF_IGNORE_DEPRECATION_STOP
         // Disable the type card for this entry to force the fallback.
         entry.type_card = 0;
       } else if (HasLazyRep(field, options)) {
@@ -852,7 +877,10 @@ TailCallTableInfo::TailCallTableInfo(
       // Reflection and weak messages have the reflection fallback
       : !message_options.uses_codegen || HasWeakFields(descriptor)
           ? TcParseFunction::kReflectionFallback
-      // Codegen messages have lite and non-lite version
+      // Messages without extensions fallback directly to MpUnknownFields
+      : descriptor->extension_range_count() == 0
+          ? TcParseFunction::kMpUnknownFields
+      // Codegen messages with extensions have lite and non-lite version
       : message_options.is_lite ? TcParseFunction::kGenericFallbackLite
                                 : TcParseFunction::kGenericFallback;
 
@@ -940,7 +968,7 @@ TailCallTableInfo::TailCallTableInfo(
       // important field (meaning the surviving entry is not) or the surviving
       // entry is empty.
       if (((important_fields >> merge_i) & 1) != 0 ||
-          fast_fields[i].is_empty()) {
+          fast_fields[i] < fast_fields[merge_i]) {
         fast_fields[i] = fast_fields[merge_i];
       }
     }

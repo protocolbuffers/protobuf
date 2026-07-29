@@ -10,8 +10,8 @@ load("//build_defs:cpp_opts.bzl", "COPTS")
 
 cc_binary(
     name = "protoc-gen-cpp",
-    srcs = ["main.cc"],
-    visibility = ["//:__pkg__"],
+    srcs = ["plugin_main.cc"],
+    visibility = ["//visibility:public"],
     deps = [
         ":cpp",
         "//src/google/protobuf/compiler:plugin",
@@ -85,6 +85,7 @@ cc_library(
         "field_generators/primitive_field.cc",
         "field_generators/string_field.cc",
         "field_generators/string_view_field.cc",
+        "field_layout.cc",
         "file.cc",
         "generator.cc",
         "ifndef_guard.cc",
@@ -101,6 +102,7 @@ cc_library(
         "field.h",
         "field_chunk.h",
         "field_generators/generators.h",
+        "field_layout.h",
         "file.h",
         "generator.h",
         "ifndef_guard.h",
@@ -134,11 +136,13 @@ cc_library(
         "//src/google/protobuf/io:printer",
         "@abseil-cpp//absl/algorithm:container",
         "@abseil-cpp//absl/base:core_headers",
+        "@abseil-cpp//absl/base:nullability",
         "@abseil-cpp//absl/container:btree",
         "@abseil-cpp//absl/container:flat_hash_map",
         "@abseil-cpp//absl/container:flat_hash_set",
         "@abseil-cpp//absl/container:layout",
         "@abseil-cpp//absl/functional:any_invocable",
+        "@abseil-cpp//absl/functional:function_ref",
         "@abseil-cpp//absl/log:absl_check",
         "@abseil-cpp//absl/log:absl_log",
         "@abseil-cpp//absl/log:die_if_null",
@@ -297,6 +301,22 @@ cc_test(
     ],
 )
 
+proto_library(
+    name = "cpp_file_options_test_proto",
+    testonly = 1,
+    srcs = ["cpp_file_options_test.proto"],
+    option_deps = ["//src/google/protobuf:cpp_options_proto"],
+    strip_import_prefix = "/src",
+    visibility = ["//src/google/protobuf:__pkg__"],
+)
+
+cc_proto_library(
+    name = "cpp_file_options_test_cc_proto",
+    testonly = 1,
+    visibility = ["//src/google/protobuf:__pkg__"],
+    deps = [":cpp_file_options_test_proto"],
+)
+
 cc_test(
     name = "message_size_unittest",
     srcs = ["message_size_unittest.cc"],
@@ -439,9 +459,13 @@ filegroup(
 filegroup(
     name = "test_proto_srcs",
     srcs = [
+        "cpp_file_options_test.proto",
         "test_bad_identifiers_editions.proto",
         "test_bad_identifiers_proto2.proto",
         "test_large_enum_value.proto",
     ],
-    visibility = ["//src/google/protobuf/compiler:__pkg__"],
+    visibility = [
+        "//src/google/protobuf:__pkg__",
+        "//src/google/protobuf/compiler:__pkg__",
+    ],
 )

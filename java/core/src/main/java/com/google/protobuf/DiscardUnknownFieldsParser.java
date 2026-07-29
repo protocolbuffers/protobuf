@@ -25,6 +25,12 @@ public final class DiscardUnknownFieldsParser {
    *
    * <p>Like all other implementations of {@code Parser}, this parser is stateless and thread-safe.
    *
+   * <p>Note that this discards fields which were totally unknown to the schema, but it does not
+   * discard unrecognized closed enum values (where the field was known but the value was not). This
+   * means that {@code message.getUnknownFields()} might still be non-empty for the parsed message.
+   * Open enums are recommended for improved behavior in the face of unrecognized values (open enums
+   * are the default in all syntaxes except for Proto2).
+   *
    * @param parser The delegated parser that parses messages.
    * @return a {@link Parser} that will discard unknown fields during parsing.
    */

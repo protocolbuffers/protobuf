@@ -75,9 +75,10 @@ static size_t upb_MiniTablePrinter_NullTerminate(upb_MiniTablePrinter* p,
 static int upb_MiniTablePrinter_InsertNext(upb_MiniTablePrinter* p,
                                            const void* key, bool visited) {
   uint64_t id = p->count++;
-  upb_inttable_insert(&p->inttable, (intptr_t)key,
-                      upb_value_uint64(id | (visited ? 0x100000000 : 0)),
-                      p->arena);
+  bool ok = upb_inttable_insert(
+      &p->inttable, (intptr_t)key,
+      upb_value_uint64(id | (visited ? 0x100000000 : 0)), p->arena);
+  UPB_ASSERT(ok);
   return id;
 }
 
@@ -251,6 +252,9 @@ static void upb_MiniTablePrinter_PrintMessage(upb_MiniTablePrinter* p,
   if (mini_table->UPB_PRIVATE(ext) & kUpb_ExtMode_IsMapEntry) {
     upb_MiniTablePrinter_Printf(p, " | MapEntry");
   }
+  if (mini_table->UPB_PRIVATE(ext) & kUpb_ExtMode_AllFastFieldsAssigned) {
+    upb_MiniTablePrinter_Printf(p, " | AllFieldsAssigned");
+  }
   upb_MiniTablePrinter_Printf(p, ")\n");
   upb_MiniTablePrinter_Printf(p, "  .fields[%d] = {\n",
                               mini_table->UPB_PRIVATE(field_count));
@@ -262,6 +266,7 @@ static void upb_MiniTablePrinter_PrintMessage(upb_MiniTablePrinter* p,
 
   upb_MiniTablePrinter_Printf(p, "  }\n");
 
+#if UPB_FASTTABLE
   int mask = (int8_t)mini_table->UPB_PRIVATE(table_mask);
   if (mask != -1) {
     int size = (mask >> 3) + 1;
@@ -273,8 +278,8 @@ static void upb_MiniTablePrinter_PrintMessage(upb_MiniTablePrinter* p,
       upb_MiniTablePrinter_Printf(p, "    FastTableEntry {\n");
       upb_MiniTablePrinter_Printf(p, "      .field_data = %016" PRIx64 ",\n",
                                   entry->field_data);
-      upb_MiniTablePrinter_Printf(p, "      .field_parser = %p\n",
-                                  entry->field_parser);
+      upb_MiniTablePrinter_Printf(p, "      .field_parser = %s\n",
+                                  entry->field_parser ? "[ptr]" : "(nil)");
       upb_MiniTablePrinter_Printf(p, "      .field_number = %d\n",
                                   (((int)entry->field_data >> 3) & 0xf) |
                                       (((int)entry->field_data >> 4) & 0x7f0));
@@ -283,6 +288,7 @@ static void upb_MiniTablePrinter_PrintMessage(upb_MiniTablePrinter* p,
 
     upb_MiniTablePrinter_Printf(p, "  }\n");
   }
+#endif
 
   upb_MiniTablePrinter_Printf(p, "}\n\n");
 

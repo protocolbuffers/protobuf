@@ -7,9 +7,9 @@
 
 """Unittest for thread safe"""
 
-import sys
 import threading
 import time
+import timeit
 import unittest
 
 from google.protobuf import descriptor_pb2
@@ -20,6 +20,9 @@ from google.protobuf.internal import testing_refleaks
 
 from google.protobuf import unittest_pb2
 from google.protobuf import unittest_proto3_pb2
+
+# Enable this to run the benchmarks.
+ALSO_RUN_BENCHMARKS = False
 
 
 @testing_refleaks.TestCase
@@ -302,6 +305,211 @@ class FreeThreadingTest(unittest.TestCase):
 
       for thread in threads:
         thread.join()
+
+  @unittest.skipIf(
+      api_implementation.Type() == 'upb',
+      'Upb has not been fixed to handle this case.',
+  )
+  def testConcurrentGetOptionsRace(self):
+    """Reproduces a data race in GetOptions."""
+
+    def AccessOptions(barrier):
+      barrier.wait()
+      _ = unittest_proto3_pb2.TestAllTypes.DESCRIPTOR.GetOptions()
+
+    for _ in range(100):
+      threads = []
+      barrier = threading.Barrier(20)
+
+      for _ in range(20):
+        thread = threading.Thread(target=AccessOptions, args=(barrier,))
+        threads.append(thread)
+        thread.start()
+
+      for thread in threads:
+        thread.join()
+
+  @unittest.skipIf(
+      api_implementation.Type() == 'upb',
+      'Upb has not been fixed to handle this case.',
+  )
+  def testConcurrentGetAndRegisterMessageClassDataRace(self):
+    """Reproduces the data race in GetMessageClass/RegisterMessageClass."""
+    pool = descriptor_pool.DescriptorPool()
+
+    # Create and register a base Message class to look up
+    file_proto = descriptor_pb2.FileDescriptorProto(name='base.proto')
+    file_proto.message_type.add(name='BaseMessage')
+    pool.Add(file_proto)
+    base_desc = pool.FindMessageTypeByName('BaseMessage')
+    message_factory.GetMessageClass(base_desc)
+
+    # Pre-create descriptors for modification
+    num_descriptors = 500
+    descriptors = []
+    for i in range(num_descriptors):
+      name = f'DynamicMessage_{i}'
+      f_proto = descriptor_pb2.FileDescriptorProto(name=f'{name}.proto')
+      f_proto.message_type.add(name=name)
+      pool.Add(f_proto)
+      descriptors.append(pool.FindMessageTypeByName(name))
+
+    barrier = threading.Barrier(10)
+
+    def Task(thread_id: int):
+      barrier.wait()
+      if thread_id % 2 == 0:
+        # Reader thread: repeatedly looks up the existing message class
+        for _ in range(200):
+          message_factory.GetMessageClass(base_desc)
+      else:
+        # Writer thread: registers new message classes concurrently
+        start_idx = (thread_id // 2) * 100
+        for i in range(start_idx, start_idx + 100):
+          message_factory.GetMessageClass(descriptors[i])
+
+    threads = []
+    for i in range(10):
+      threads.append(threading.Thread(target=Task, args=(i,)))
+    for thread in threads:
+      thread.start()
+    for thread in threads:
+      thread.join()
+
+  @unittest.skipIf(
+      api_implementation.Type() == 'upb',
+      'Upb has not been fixed to handle this case.',
+  )
+  def testConcurrentDescriptorDeallocRace(self):
+    """Tests descriptor cache interning under concurrent deallocation."""
+    pool = descriptor_pool.DescriptorPool()
+    file_proto = descriptor_pb2.FileDescriptorProto(name='race.proto')
+    file_proto.message_type.add(name='RaceMessage')
+    pool.Add(file_proto)
+
+    barrier = threading.Barrier(10)
+    errors = []
+
+    def Worker():
+      barrier.wait()
+      for _ in range(500):
+        try:
+          d1 = pool.FindMessageTypeByName('RaceMessage')
+          d2 = pool.FindMessageTypeByName('RaceMessage')
+          if d1 is not d2:
+            errors.append('Descriptor interning broken')
+            break
+          # Explicitly delete local references to trigger concurrent tp_dealloc
+          del d1
+          del d2
+        except Exception as e:
+          errors.append(str(e))
+          break
+
+    threads = [threading.Thread(target=Worker) for _ in range(10)]
+    for t in threads:
+      t.start()
+    for t in threads:
+      t.join()
+    self.assertEqual([], errors)
+
+  @unittest.skipIf(
+      api_implementation.Type() == 'upb',
+      'Upb has not been fixed to handle this case.',
+  )
+  def testConcurrentSubmessageDeallocRace(self):
+    """Tests child submessage wrapper interning under concurrent deallocation."""
+    msg = unittest_proto3_pb2.TestAllTypes()
+    msg.repeated_nested_message.add(bb=123)
+
+    barrier = threading.Barrier(10)
+    errors = []
+
+    def Worker():
+      barrier.wait()
+      for _ in range(500):
+        try:
+          m1 = msg.repeated_nested_message[0]
+          m2 = msg.repeated_nested_message[0]
+          if m1 is not m2:
+            errors.append('Child submessage interning broken')
+            break
+          del m1
+          del m2
+        except Exception as e:
+          errors.append(str(e))
+          break
+
+    threads = [threading.Thread(target=Worker) for _ in range(10)]
+    for t in threads:
+      t.start()
+    for t in threads:
+      t.join()
+    self.assertEqual([], errors)
+
+  @unittest.skipIf(
+      api_implementation.Type() == 'upb',
+      'Upb has not been fixed to handle this case.',
+  )
+  def testConcurrentCompositeFieldDeallocRace(self):
+    """Tests composite field wrapper interning under concurrent deallocation."""
+    msg = unittest_proto3_pb2.TestAllTypes()
+
+    barrier = threading.Barrier(10)
+    errors = []
+
+    def Worker():
+      barrier.wait()
+      for _ in range(500):
+        try:
+          # Test singular composite field wrapper
+          sub1 = msg.optional_nested_message
+          sub2 = msg.optional_nested_message
+          if sub1 is not sub2:
+            errors.append('Singular composite field interning broken')
+            break
+          del sub1
+          del sub2
+
+          # Test repeated container wrapper
+          rep1 = msg.repeated_int32
+          rep2 = msg.repeated_int32
+          if rep1 is not rep2:
+            errors.append('Repeated container interning broken')
+            break
+          del rep1
+          del rep2
+        except Exception as e:
+          errors.append(str(e))
+          break
+
+    threads = [threading.Thread(target=Worker) for _ in range(10)]
+    for t in threads:
+      t.start()
+    for t in threads:
+      t.join()
+    self.assertEqual([], errors)
+
+  @unittest.skipIf(not ALSO_RUN_BENCHMARKS, 'Benchmarks are disabled.')
+  def testConcurrentGetOptionsBenchmark(self):
+    """Benchmarks concurrent GetOptions calls."""
+    if ALSO_RUN_BENCHMARKS:
+
+      def AccessOptions():
+        for _ in range(1000000):
+          _ = unittest_proto3_pb2.TestAllTypes.DESCRIPTOR.GetOptions()
+
+      def RunAllThreads():
+        self.RunThreads(20, AccessOptions)
+
+      duration = timeit.timeit(RunAllThreads, number=10)
+      duration_ms = duration * 1000
+      print(
+          'ConcurrentGetOptionsBenchmark (20 threads x 1000000 calls x 10'
+          f' runs): {duration_ms:.2f}ms'
+      )
+    else:
+      print('Skipping benchmark in non-benchmark mode.')
 
 
 if __name__ == '__main__':

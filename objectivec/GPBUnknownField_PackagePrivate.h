@@ -9,22 +9,16 @@
 
 #import "GPBUnknownField.h"
 
-@interface GPBUnknownField () {
- @package
-  int32_t number_;
-  GPBUnknownFieldType type_;
-
-  union {
-    uint64_t intValue;                 // type == Varint, Fixed32, Fixed64
-    NSData *_Nonnull lengthDelimited;  // type == LengthDelimited
-    GPBUnknownFields *_Nonnull group;  // type == Group
-  } storage_;
-}
+@interface GPBUnknownField ()
 
 - (nonnull instancetype)initWithNumber:(int32_t)number varint:(uint64_t)varint;
 - (nonnull instancetype)initWithNumber:(int32_t)number fixed32:(uint32_t)fixed32;
 - (nonnull instancetype)initWithNumber:(int32_t)number fixed64:(uint64_t)fixed64;
 - (nonnull instancetype)initWithNumber:(int32_t)number lengthDelimited:(nonnull NSData *)data;
 - (nonnull instancetype)initWithNumber:(int32_t)number group:(nonnull GPBUnknownFields *)group;
+
+- (size_t)computeSerializedSize __attribute__((objc_direct));
+- (void)writeToCodedOutputStream:(nonnull GPBCodedOutputStream *)output
+    __attribute__((objc_direct));
 
 @end

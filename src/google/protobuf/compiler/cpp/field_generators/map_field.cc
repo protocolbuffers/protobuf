@@ -101,6 +101,12 @@ class Map : public FieldGeneratorBase {
     )cc");
   }
 
+  void GenerateMessageClearingCode(io::Printer* p) const override {
+    p->Emit(R"cc(
+      this_.$field_$.Clear();
+    )cc");
+  }
+
   void GenerateMergingCode(io::Printer* p) const override {
     p->Emit(R"cc(
       _this->$field_$.MergeFrom(from.$field_$);

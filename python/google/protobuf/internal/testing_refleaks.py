@@ -48,8 +48,12 @@ class ReferenceLeakCheckerMixin(object):
 
   def run(self, result=None):
     testMethod = getattr(self, self._testMethodName)
-    expecting_failure_method = getattr(testMethod, "__unittest_expecting_failure__", False)
-    expecting_failure_class = getattr(self, "__unittest_expecting_failure__", False)
+    expecting_failure_method = getattr(
+        testMethod, "__unittest_expecting_failure__", False
+    )
+    expecting_failure_class = getattr(
+        self, "__unittest_expecting_failure__", False
+    )
     if expecting_failure_class or expecting_failure_method:
       return
 
@@ -106,13 +110,15 @@ class ReferenceLeakCheckerMixin(object):
     return sys.gettotalrefcount()
 
 
-if hasattr(sys, 'gettotalrefcount'):
+if hasattr(sys, "gettotalrefcount"):
 
   def TestCase(test_class):
     new_bases = (ReferenceLeakCheckerMixin,) + test_class.__bases__
     new_class = type(test_class)(
-        test_class.__name__, new_bases, dict(test_class.__dict__))
+        test_class.__name__, new_bases, dict(test_class.__dict__)
+    )
     return new_class
+
   SkipReferenceLeakChecker = unittest.skip
 
 else:
@@ -123,6 +129,8 @@ else:
 
   def SkipReferenceLeakChecker(reason):
     del reason  # Don't skip, so don't need a reason.
+
     def Same(func):
       return func
+
     return Same

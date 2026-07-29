@@ -153,7 +153,8 @@ class FileDescriptorProto extends \Google\Protobuf\Internal\Message
      *           developers should rely on the protoreflect APIs for their client language.
      * }
      */
-    public function __construct($data = NULL) {
+    public function __construct($data = null)
+    {
         \GPBMetadata\Google\Protobuf\Internal\Descriptor::initOnce();
         parent::__construct($data);
     }

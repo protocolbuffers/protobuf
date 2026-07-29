@@ -17,20 +17,12 @@ void proto2_rust_Message_clear(google::protobuf::MessageLite* m) { m->Clear(); }
 
 bool proto2_rust_Message_parse(google::protobuf::MessageLite* m,
                                google::protobuf::rust::PtrAndLen input) {
-  if (input.len > std::numeric_limits<int>::max()) {
-    return false;
-  }
-  return m->ParseFromString(
-      absl::string_view(input.ptr, static_cast<int>(input.len)));
+  return m->ParseFromString(input.AsStringView());
 }
 
 bool proto2_rust_Message_parse_dont_enforce_required(
     google::protobuf::MessageLite* m, google::protobuf::rust::PtrAndLen input) {
-  if (input.len > std::numeric_limits<int>::max()) {
-    return false;
-  }
-  return m->ParsePartialFromString(
-      absl::string_view(input.ptr, static_cast<int>(input.len)));
+  return m->ParsePartialFromString(input.AsStringView());
 }
 
 bool proto2_rust_Message_serialize(const google::protobuf::MessageLite* m,
@@ -51,6 +43,31 @@ void proto2_rust_Message_copy_from(google::protobuf::MessageLite* dst,
 void proto2_rust_Message_merge_from(google::protobuf::MessageLite* dst,
                                     const google::protobuf::MessageLite& src) {
   dst->CheckTypeAndMergeFrom(src);
+}
+
+void proto2_rust_Message_take_from(google::protobuf::MessageLite* dst,
+                                   google::protobuf::MessageLite* src) {
+  // Rust guarantees that dst and src do not alias.
+
+  dst->Clear();
+  if constexpr (kHasFullRuntime) {
+    if (auto* dst_msg = google::protobuf::DynamicCastMessage<google::protobuf::Message>(dst)) {
+      // Rust's TakeFrom trait bounds (MutProxied = Self::Proxied) guarantee at
+      // compile time that dst and src point to instances of the exact same
+      // C++ message class. Therefore, if dst is a google::protobuf::Message, src is
+      // guaranteed to also be a google::protobuf::Message, allowing us to safely
+      // static_cast and skip a second runtime dynamic_cast check.
+      auto* src_msg = static_cast<google::protobuf::Message*>(src);
+      if (const auto* reflection = dst_msg->GetReflection()) {
+        // TODO: Use a generic Move operation here instead of Swap,
+        // which will be more efficient if the protos are in different arenas.
+        reflection->Swap(dst_msg, src_msg);
+        return;
+      }
+    }
+  }
+  dst->CheckTypeAndMergeFrom(*src);
+  src->Clear();
 }
 
 // Returns a pointer to the descriptor of the message, or nullptr if

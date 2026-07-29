@@ -40,8 +40,7 @@ namespace {
 using Sub = ::google::protobuf::io::Printer::Sub;
 
 struct FieldOrderingByNumber {
-  inline bool operator()(const FieldDescriptor* a,
-                         const FieldDescriptor* b) const {
+  bool operator()(const FieldDescriptor* a, const FieldDescriptor* b) const {
     return a->number() < b->number();
   }
 };
@@ -112,8 +111,7 @@ int OrderGroupForFieldDescriptor(const FieldDescriptor* descriptor) {
 }
 
 struct FieldOrderingByStorageSize {
-  inline bool operator()(const FieldDescriptor* a,
-                         const FieldDescriptor* b) const {
+  bool operator()(const FieldDescriptor* a, const FieldDescriptor* b) const {
     // Order by grouping.
     const int order_group_a = OrderGroupForFieldDescriptor(a);
     const int order_group_b = OrderGroupForFieldDescriptor(b);

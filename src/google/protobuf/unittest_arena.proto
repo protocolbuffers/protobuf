@@ -5,13 +5,12 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
-edition = "2024";
+edition = "2026";
 
 package proto2_arena_unittest;
 
 // Use expanded encoding for repeated fields by default (proto2 behavior).
 option features.repeated_field_encoding = EXPANDED;
-option cc_enable_arenas = true;
 
 message NestedMessage {
   int32 d = 1;

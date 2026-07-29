@@ -334,4 +334,15 @@ TEST(FuzzTest, EnumVisibility) {
       )pb"));
 }
 
+TEST(FuzzTest, OptionDependency) {
+  RoundTripDescriptor(ParseTextProtoOrDie(
+      R"pb(file {
+             name: "c"
+             edition: EDITION_2024
+             option_dependency: "\t"
+             option_dependency: ""
+           }
+      )pb"));
+}
+
 }  // namespace upb_test

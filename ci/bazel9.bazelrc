@@ -1,1 +1,3 @@
 build --incompatible_exclude_starlark_flags_from_exec_config
+# TODO: Remove --repo_contents_cache
+common --repo_contents_cache=

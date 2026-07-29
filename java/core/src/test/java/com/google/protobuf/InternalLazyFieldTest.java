@@ -37,7 +37,7 @@ public final class InternalLazyFieldTest {
     this.mode = mode;
   }
 
-  @Parameters
+  @Parameters(name = "mode={0}")
   public static List<Object[]> data() {
     return Arrays.asList(
         new Object[][] {
@@ -102,14 +102,15 @@ public final class InternalLazyFieldTest {
   public void testGetValueDataWtihInvalidExtension() {
     TestAllExtensions message =
         TestAllExtensions.newBuilder()
-            .setExtension(TestRequired.single, TestRequired.getDefaultInstance())
+            .setExtension(
+                TestRequired.single,
+                TestRequired.newBuilder().setA(1).buildPartial()) // missing b and c
             .buildPartial();
     InternalLazyField lazyField = createLazyFieldWithBytesFromMessage(message);
 
     if (mode == ExtensionRegistryLite.LazyExtensionMode.LAZY_VERIFY_ON_ACCESS) {
       TestAllExtensions parent = (TestAllExtensions) lazyField.getValue();
-      assertThrows(
-          InvalidProtobufRuntimeException.class, () -> parent.getExtension(TestRequired.single));
+      assertThat(parent.getExtension(TestRequired.single).getA()).isEqualTo(1);
     } else {
       assertThat(lazyField.getValue()).isEqualTo(TestAllExtensions.getDefaultInstance());
     }
@@ -210,6 +211,61 @@ public final class InternalLazyFieldTest {
     TestAllExtensions message = TestUtil.getAllExtensionsSet();
     InternalLazyField lazyField = createLazyFieldWithBytesFromMessage(message);
     assertThat(lazyField).isEqualTo(message);
+  }
+
+  @Test
+  public void testEqualsLazyFieldsSameBytesSameRegistry() throws Exception {
+    ByteString invalidBytes = ByteString.copyFromUtf8("invalid");
+    InternalLazyField lazyField1 =
+        new InternalLazyField(TestAllTypes.getDefaultInstance(), EXTENSION_REGISTRY, invalidBytes);
+    InternalLazyField lazyField2 =
+        new InternalLazyField(TestAllTypes.getDefaultInstance(), EXTENSION_REGISTRY, invalidBytes);
+
+    // Identical bytes and registry should be equal without resolving.
+    assertThat(lazyField1).isEqualTo(lazyField2);
+  }
+
+  @Test
+  public void testEqualsLazyFieldsDifferentBytesSameRegistry() throws Exception {
+    InternalLazyField lazyField1 =
+        new InternalLazyField(
+            TestAllTypes.getDefaultInstance(),
+            EXTENSION_REGISTRY,
+            ByteString.copyFromUtf8("invalid1"));
+    InternalLazyField lazyField2 =
+        new InternalLazyField(
+            TestAllTypes.getDefaultInstance(),
+            EXTENSION_REGISTRY,
+            ByteString.copyFromUtf8("invalid2"));
+
+    // Different bytes will fall back to parsing, which throws for invalid bytes in
+    // LAZY_VERIFY_ON_ACCESS mode.
+    if (mode == ExtensionRegistryLite.LazyExtensionMode.LAZY_VERIFY_ON_ACCESS) {
+      assertThrows(InvalidProtobufRuntimeException.class, () -> lazyField1.equals(lazyField2));
+    } else {
+      // In EAGER mode, they will both just return default instance upon parsing, so they will be
+      // equal.
+      assertThat(lazyField1).isEqualTo(lazyField2);
+    }
+  }
+
+  @Test
+  public void testEqualsLazyFieldsSameBytesDifferentRegistry() throws Exception {
+    ByteString invalidBytes = ByteString.copyFromUtf8("invalid");
+    ExtensionRegistryLite registry1 = ExtensionRegistryLite.newInstance();
+    ExtensionRegistryLite registry2 = ExtensionRegistryLite.newInstance();
+    InternalLazyField lazyField1 =
+        new InternalLazyField(TestAllTypes.getDefaultInstance(), registry1, invalidBytes);
+    InternalLazyField lazyField2 =
+        new InternalLazyField(TestAllTypes.getDefaultInstance(), registry2, invalidBytes);
+
+    // Different registry instance will fall back to parsing, which throws for invalid bytes in
+    // LAZY_VERIFY_ON_ACCESS mode.
+    if (mode == ExtensionRegistryLite.LazyExtensionMode.LAZY_VERIFY_ON_ACCESS) {
+      assertThrows(InvalidProtobufRuntimeException.class, () -> lazyField1.equals(lazyField2));
+    } else {
+      assertThat(lazyField1).isEqualTo(lazyField2);
+    }
   }
 
   // Tests for mergeFrom(InternalLazyField lazyField, CodedInputStream input,
@@ -396,13 +452,24 @@ public final class InternalLazyFieldTest {
   // Tests for mergeFrom(InternalLazyField self, InternalLazyField other)
 
   @Test
-  public void testMergeFromDifferentDefaultInstances() throws Exception {
+  public void testMergeFromDifferentDefaultInstances() {
     InternalLazyField lazyField1 =
         new InternalLazyField(
-            TestAllTypes.getDefaultInstance(), EXTENSION_REGISTRY, ByteString.EMPTY);
+            TestAllTypes.getDefaultInstance(),
+            EXTENSION_REGISTRY,
+            TestUtil.getAllSet().toByteString());
     InternalLazyField lazyField2 =
         new InternalLazyField(
-            TestAllExtensions.getDefaultInstance(), EXTENSION_REGISTRY, ByteString.EMPTY);
+            TestAllExtensions.getDefaultInstance(),
+            EXTENSION_REGISTRY,
+            TestAllExtensions.newBuilder()
+                .setExtension(UnittestProto.optionalInt32Extension, 1)
+                .setExtension(UnittestProto.optionalInt64Extension, 2L)
+                .build()
+                .toByteString());
+
+    MessageLite unused = lazyField1.getValue();
+    unused = lazyField2.getValue();
 
     Throwable exception =
         assertThrows(
@@ -410,7 +477,7 @@ public final class InternalLazyFieldTest {
             () -> InternalLazyField.mergeFrom(lazyField1, lazyField2));
     assertThat(exception)
         .hasMessageThat()
-        .contains("LazyFields with different default instances cannot be merged.");
+        .contains("mergeFrom(Message) can only merge messages of the same type");
   }
 
   @Test

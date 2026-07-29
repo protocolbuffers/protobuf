@@ -6,6 +6,7 @@
 # https://developers.google.com/open-source/licenses/bsd
 
 """Contains metaclasses used to create protocol service and service stub
+
 classes from ServiceDescriptor objects at runtime.
 
 The GeneratedServiceType and GeneratedServiceStubType metaclasses are used to
@@ -17,7 +18,6 @@ __author__ = 'petar@google.com (Petar Petrov)'
 
 
 class GeneratedServiceType(type):
-
   """Metaclass for service classes created at runtime from ServiceDescriptors.
 
   Implementations for all methods described in the Service class are added here
@@ -42,8 +42,7 @@ class GeneratedServiceType(type):
     """Creates a message service class.
 
     Args:
-      name: Name of the class (ignored, but required by the metaclass
-        protocol).
+      name: Name of the class (ignored, but required by the metaclass protocol).
       bases: Base classes of the class being constructed.
       dictionary: The class dictionary of the class being constructed.
         dictionary[_DESCRIPTOR_KEY] must contain a ServiceDescriptor object
@@ -61,7 +60,6 @@ class GeneratedServiceType(type):
 
 
 class GeneratedServiceStubType(GeneratedServiceType):
-
   """Metaclass for service stubs created at runtime from ServiceDescriptors.
 
   This class has similar responsibilities as GeneratedServiceType, except that
@@ -92,7 +90,6 @@ class GeneratedServiceStubType(GeneratedServiceType):
 
 
 class _ServiceBuilder(object):
-
   """This class constructs a protocol service class using a service descriptor.
 
   Given a service descriptor, this class constructs a class that represents
@@ -105,8 +102,8 @@ class _ServiceBuilder(object):
     """Initializes an instance of the service class builder.
 
     Args:
-      service_descriptor: ServiceDescriptor to use when constructing the
-        service class.
+      service_descriptor: ServiceDescriptor to use when constructing the service
+        class.
     """
     self.descriptor = service_descriptor
 
@@ -123,8 +120,9 @@ class _ServiceBuilder(object):
     # Making sure to use exact argument names from the abstract interface in
     # service.py to match the type signature
     def _WrapCallMethod(self, method_descriptor, rpc_controller, request, done):
-      return builder._CallMethod(self, method_descriptor, rpc_controller,
-                                 request, done)
+      return builder._CallMethod(
+          self, method_descriptor, rpc_controller, request, done
+      )
 
     def _WrapGetRequestClass(self, method_descriptor):
       return builder._GetRequestClass(method_descriptor)
@@ -141,8 +139,9 @@ class _ServiceBuilder(object):
     for method in builder.descriptor.methods:
       setattr(cls, method.name, builder._GenerateNonImplementedMethod(method))
 
-  def _CallMethod(self, srvc, method_descriptor,
-                  rpc_controller, request, callback):
+  def _CallMethod(
+      self, srvc, method_descriptor, rpc_controller, request, callback
+  ):
     """Calls the method described by a given method descriptor.
 
     Args:
@@ -154,7 +153,8 @@ class _ServiceBuilder(object):
     """
     if method_descriptor.containing_service != self.descriptor:
       raise RuntimeError(
-          'CallMethod() given method descriptor for wrong service type.')
+          'CallMethod() given method descriptor for wrong service type.'
+      )
     method = getattr(srvc, method_descriptor.name)
     return method(rpc_controller, request, callback)
 
@@ -171,7 +171,8 @@ class _ServiceBuilder(object):
     """
     if method_descriptor.containing_service != self.descriptor:
       raise RuntimeError(
-          'GetRequestClass() given method descriptor for wrong service type.')
+          'GetRequestClass() given method descriptor for wrong service type.'
+      )
     return method_descriptor.input_type._concrete_class
 
   def _GetResponseClass(self, method_descriptor):
@@ -187,7 +188,8 @@ class _ServiceBuilder(object):
     """
     if method_descriptor.containing_service != self.descriptor:
       raise RuntimeError(
-          'GetResponseClass() given method descriptor for wrong service type.')
+          'GetResponseClass() given method descriptor for wrong service type.'
+      )
     return method_descriptor.output_type._concrete_class
 
   def _GenerateNonImplementedMethod(self, method):
@@ -201,7 +203,8 @@ class _ServiceBuilder(object):
       A method that can be added to the service class.
     """
     return lambda inst, rpc_controller, request, callback: (
-        self._NonImplementedMethod(method.name, rpc_controller, callback))
+        self._NonImplementedMethod(method.name, rpc_controller, callback)
+    )
 
   def _NonImplementedMethod(self, method_name, rpc_controller, callback):
     """The body of all methods in the generated service class.
@@ -216,7 +219,6 @@ class _ServiceBuilder(object):
 
 
 class _ServiceStubBuilder(object):
-
   """Constructs a protocol service stub class using a service descriptor.
 
   Given a service descriptor, this class constructs a suitable stub class.
@@ -231,8 +233,8 @@ class _ServiceStubBuilder(object):
     """Initializes an instance of the service stub class builder.
 
     Args:
-      service_descriptor: ServiceDescriptor to use when constructing the
-        stub class.
+      service_descriptor: ServiceDescriptor to use when constructing the stub
+        class.
     """
     self.descriptor = service_descriptor
 
@@ -245,17 +247,22 @@ class _ServiceStubBuilder(object):
 
     def _ServiceStubInit(stub, rpc_channel):
       stub.rpc_channel = rpc_channel
+
     self.cls = cls
     cls.__init__ = _ServiceStubInit
     for method in self.descriptor.methods:
       setattr(cls, method.name, self._GenerateStubMethod(method))
 
   def _GenerateStubMethod(self, method):
-    return (lambda inst, rpc_controller, request, callback=None:
-        self._StubMethod(inst, method, rpc_controller, request, callback))
+    return (
+        lambda inst, rpc_controller, request, callback=None: self._StubMethod(
+            inst, method, rpc_controller, request, callback
+        )
+    )
 
-  def _StubMethod(self, stub, method_descriptor,
-                  rpc_controller, request, callback):
+  def _StubMethod(
+      self, stub, method_descriptor, rpc_controller, request, callback
+  ):
     """The body of all service methods in the generated stub class.
 
     Args:
@@ -264,9 +271,14 @@ class _ServiceStubBuilder(object):
       rpc_controller: Rpc controller to execute the method.
       request: Request protocol message.
       callback: A callback to execute when the method finishes.
+
     Returns:
       Response message (in case of blocking call).
     """
     return stub.rpc_channel.CallMethod(
-        method_descriptor, rpc_controller, request,
-        method_descriptor.output_type._concrete_class, callback)
+        method_descriptor,
+        rpc_controller,
+        request,
+        method_descriptor.output_type._concrete_class,
+        callback,
+    )

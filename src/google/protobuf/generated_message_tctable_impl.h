@@ -362,11 +362,15 @@ inline void AlignFail(std::integral_constant<size_t, 1>,
   PROTOBUF_TC_PARSE_FUNCTION_X(MessageSetWireFormatParseLoopLite) \
   PROTOBUF_TC_PARSE_FUNCTION_X(MessageSetWireFormatParseLoop)     \
   PROTOBUF_TC_PARSE_FUNCTION_X(ReflectionParseLoop)               \
+  /* These functions have the FastMp function ABI */              \
+  PROTOBUF_TC_PARSE_FUNCTION_X(FastMiniParse1)                    \
+  PROTOBUF_TC_PARSE_FUNCTION_X(FastMiniParse2)                    \
   /* These functions have the fallback ABI */                     \
   PROTOBUF_TC_PARSE_FUNCTION_X(GenericFallback)                   \
   PROTOBUF_TC_PARSE_FUNCTION_X(GenericFallbackLite)               \
   PROTOBUF_TC_PARSE_FUNCTION_X(ReflectionFallback)                \
-  PROTOBUF_TC_PARSE_FUNCTION_X(DiscardEverythingFallback)
+  PROTOBUF_TC_PARSE_FUNCTION_X(DiscardEverythingFallback)         \
+  PROTOBUF_TC_PARSE_FUNCTION_X(MpUnknownFields)
 
 #define PROTOBUF_TC_PARSE_FUNCTION_X(value) k##value,
 enum class TcParseFunction : uint8_t { kNone, PROTOBUF_TC_PARSE_FUNCTION_LIST };
@@ -382,7 +386,7 @@ class PROTOBUF_EXPORT TcParser final {
   }
 #else
   static const TcParseTableBase* GetTable() {
-    return MessageGlobalsBase::ToParseTableBase(MessageTraits<T>::globals());
+    return MessageTraits<T>::tc_table();
   }
 #endif
 
@@ -429,6 +433,8 @@ class PROTOBUF_EXPORT TcParser final {
   // even when this is enabled.
   PROTOBUF_CC static const char* DiscardEverythingFallback(
       PROTOBUF_TC_PARAM_DECL);
+  // Fallback handler for parsing unknown fields directly.
+  PROTOBUF_CC static const char* MpUnknownFields(PROTOBUF_TC_PARAM_DECL);
 
   // These follow the "fast" function ABI but implement the whole loop for
   // message_set_wire_format types.
@@ -833,6 +839,13 @@ class PROTOBUF_EXPORT TcParser final {
   PROTOBUF_NOINLINE PROTOBUF_CC static const char* FastEndG2(
       PROTOBUF_TC_PARAM_DECL);
 
+  // "Fast" mini parsing.
+  // We have one for 1 and 2 byte tags.
+  PROTOBUF_NOINLINE PROTOBUF_CC static const char* FastMiniParse1(
+      PROTOBUF_TC_PARAM_DECL);
+  PROTOBUF_NOINLINE PROTOBUF_CC static const char* FastMiniParse2(
+      PROTOBUF_TC_PARAM_DECL);
+
   // For `map` mini parsing generate a type card for the key/value.
   static constexpr MapAuxInfo GetMapAuxInfo(bool fail_on_utf8_failure,
                                             bool validated_enum_value,
@@ -856,7 +869,13 @@ class PROTOBUF_EXPORT TcParser final {
   static void CheckHasBitConsistency(const MessageLite* msg,
                                      const TcParseTableBase* table);
 
+  static constexpr uint16_t kMiniParseTableTypeCardMask =
+      +field_layout::kSplitMask | field_layout::kFkMask;
+
  private:
+  static const TailCallParseFunc kMiniParseTable[];
+  static const size_t kMiniParseTableSize;
+
   // Returns true if the repeated field is empty. This method is not
   // well-optimized, so it should only be called in debug builds.
   static bool RepeatedFieldIsEmptySlow(
@@ -864,12 +883,13 @@ class PROTOBUF_EXPORT TcParser final {
       const TcParseTableBase::FieldEntry& entry, const void* base,
       bool is_split);
 
+  template <typename TagTaype>
+  PROTOBUF_ALWAYS_INLINE PROTOBUF_CC static const char* FastMpImpl(
+      PROTOBUF_TC_PARAM_DECL);
+
   // Optimized small tag varint parser for int32/int64
   template <typename FieldType>
   PROTOBUF_CC static const char* FastVarintS1(PROTOBUF_TC_PARAM_DECL);
-
-  static LazyEagerVerifyFnType GetLazyEagerVerifyFn(
-      const google::protobuf::internal::TcParseTableBase* table, uint32_t field_number);
 
   friend class GeneratedTcTableLiteTest;
   static void* MaybeGetSplitBase(MessageLite* msg, bool is_split,
@@ -934,39 +954,16 @@ class PROTOBUF_EXPORT TcParser final {
 
   class ScopedArenaSwap;
 
-  struct UnknownFieldOps {
-    void (*write_varint)(MessageLite* msg, int number, int value);
-    void (*write_length_delimited)(MessageLite* msg, int number,
-                                   absl::string_view value);
-  };
+  static void WriteVarintToUnknown(MessageLite* msg,
+                                   const ClassData* class_data, int number,
+                                   int value);
+  static void WriteLengthDelimitedToUnknown(MessageLite* msg,
+                                            const ClassData* class_data,
+                                            int number,
+                                            absl::string_view value);
 
-  static const UnknownFieldOps& GetUnknownFieldOps(
-      const TcParseTableBase* table);
-
-  template <typename UnknownFieldsT>
-  static void WriteVarintToUnknown(MessageLite* msg, int number, int value) {
-    internal::WriteVarint(
-        number, value,
-        msg->_internal_metadata_.mutable_unknown_fields<UnknownFieldsT>());
-  }
-  template <typename UnknownFieldsT>
-  static void WriteLengthDelimitedToUnknown(MessageLite* msg, int number,
-                                            absl::string_view value) {
-    internal::WriteLengthDelimited(
-        number, value,
-        msg->_internal_metadata_.mutable_unknown_fields<UnknownFieldsT>());
-  }
-
-  template <class MessageBaseT, class UnknownFieldsT>
+  template <class MessageBaseT>
   PROTOBUF_CC static const char* GenericFallbackImpl(PROTOBUF_TC_PARAM_DECL) {
-    if (ABSL_PREDICT_FALSE(ptr == nullptr)) {
-      // This is the ABI used by GetUnknownFieldOps(). Return the vtable.
-      static constexpr UnknownFieldOps kOps = {
-          WriteVarintToUnknown<UnknownFieldsT>,
-          WriteLengthDelimitedToUnknown<UnknownFieldsT>};
-      return reinterpret_cast<const char*>(&kOps);
-    }
-
     SyncHasbits(msg, hasbits, table);
     uint32_t tag = data.tag();
     if ((tag & 7) == WireFormatLite::WIRETYPE_END_GROUP || tag == 0) {
@@ -974,22 +971,11 @@ class PROTOBUF_EXPORT TcParser final {
       return ptr;
     }
 
-    if (table->extension_offset != 0) {
-      // We don't need to check the extension ranges. If it is not an extension
-      // it will be handled just like if it was an unknown extension: sent to
-      // the unknown field set.
-      return RefAt<ExtensionSet>(msg, table->extension_offset)
-          .ParseField(
-              tag, ptr,
-              static_cast<const MessageBaseT*>(table->default_instance()),
-              &msg->_internal_metadata_, ctx);
-    } else {
-      // Otherwise, we directly put it on the unknown field set.
-      return UnknownFieldParse(
-          tag,
-          msg->_internal_metadata_.mutable_unknown_fields<UnknownFieldsT>(),
-          ptr, ctx);
-    }
+    ABSL_DCHECK(table->extension_offset != 0);
+    return RefAt<ExtensionSet>(msg, table->extension_offset)
+        .ParseField(tag, ptr,
+                    static_cast<const MessageBaseT*>(table->default_instance()),
+                    &msg->_internal_metadata_, ctx);
   }
 
   template <class MessageBaseT>

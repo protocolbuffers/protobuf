@@ -16,13 +16,11 @@ cc_library(
     srcs = [
         "atoi.c",
         "round_trip.c",
-        "strtod.c",
         "unicode.c",
     ],
     hdrs = [
         "atoi.h",
         "round_trip.h",
-        "strtod.h",
         "unicode.h",
     ],
     copts = UPB_DEFAULT_COPTS,

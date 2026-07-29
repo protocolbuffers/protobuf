@@ -20,7 +20,16 @@
                 format:@"GPBUnknownField is the wrong type"]; \
   }
 
-@implementation GPBUnknownField
+@implementation GPBUnknownField {
+  int32_t number_;
+  GPBUnknownFieldType type_;
+
+  union {
+    uint64_t intValue;                 // type == Varint, Fixed32, Fixed64
+    NSData *_Nonnull lengthDelimited;  // type == LengthDelimited
+    GPBUnknownFields *_Nonnull group;  // type == Group
+  } storage_;
+}
 
 @synthesize number = number_;
 @synthesize type = type_;
@@ -158,8 +167,8 @@
 }
 
 - (NSUInteger)hash {
-  const int prime = 31;
-  NSUInteger result = prime * number_ + type_;
+  const NSUInteger prime = 31;
+  NSUInteger result = prime * (NSUInteger)number_ + type_;
   switch (type_) {
     case GPBUnknownFieldTypeVarint:
     case GPBUnknownFieldTypeFixed32:
@@ -196,6 +205,47 @@
       break;
   }
   return description;
+}
+
+#pragma mark - Internal Methods
+
+- (size_t)computeSerializedSize {
+  switch (type_) {
+    case GPBUnknownFieldTypeVarint:
+      return GPBComputeUInt64Size(number_, storage_.intValue);
+    case GPBUnknownFieldTypeFixed32:
+      return GPBComputeFixed32Size(number_, (uint32_t)storage_.intValue);
+    case GPBUnknownFieldTypeFixed64:
+      return GPBComputeFixed64Size(number_, storage_.intValue);
+    case GPBUnknownFieldTypeLengthDelimited:
+      return GPBComputeBytesSize(number_, storage_.lengthDelimited);
+    case GPBUnknownFieldTypeGroup:
+      return (GPBComputeTagSize(number_) * 2) + [storage_.group computeSerializedSize];
+  }
+}
+
+- (void)writeToCodedOutputStream:(nonnull GPBCodedOutputStream *)output {
+  switch (type_) {
+    case GPBUnknownFieldTypeVarint:
+      [output writeUInt64:number_ value:storage_.intValue];
+      break;
+    case GPBUnknownFieldTypeFixed32:
+      [output writeFixed32:number_ value:(uint32_t)storage_.intValue];
+      break;
+    case GPBUnknownFieldTypeFixed64:
+      [output writeFixed64:number_ value:storage_.intValue];
+      break;
+    case GPBUnknownFieldTypeLengthDelimited:
+      [output writeBytes:number_ value:storage_.lengthDelimited];
+      break;
+    case GPBUnknownFieldTypeGroup:
+      [output writeRawVarint32:(int32_t)GPBWireFormatMakeTag((uint32_t)number_,
+                                                             GPBWireFormatStartGroup)];
+      [storage_.group writeToCodedOutputStream:output];
+      [output
+          writeRawVarint32:(int32_t)GPBWireFormatMakeTag((uint32_t)number_, GPBWireFormatEndGroup)];
+      break;
+  }
 }
 
 #pragma clang diagnostic pop

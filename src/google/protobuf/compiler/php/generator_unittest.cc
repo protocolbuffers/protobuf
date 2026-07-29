@@ -105,6 +105,38 @@ TEST_F(PhpGeneratorTest, ClosedEnumError) {
   ExpectErrorSubstring("Can't generate PHP code for closed enum Foo");
 }
 
+TEST_F(PhpGeneratorTest, ImportPublic) {
+  CreateTempFile("common.proto",
+                 R"schema(
+    syntax = "proto3";
+    package prototest;
+    message Common {
+      string data = 1;
+    })schema");
+
+  CreateTempFile("prototest.proto",
+                 R"schema(
+    syntax = "proto3";
+    package prototest;
+    import public "common.proto";
+    )schema");
+
+  CreateTempFile("usecase.proto",
+                 R"schema(
+    syntax = "proto3";
+    package usecasetest;
+    import "prototest.proto";
+    message UseCase {
+      prototest.Common commonUse = 1;
+    })schema");
+
+  RunProtoc(
+      "protocol_compiler --proto_path=$tmpdir --php_out=$tmpdir "
+      "common.proto prototest.proto usecase.proto");
+
+  ExpectNoErrors();
+}
+
 }  // namespace
 }  // namespace php
 }  // namespace compiler

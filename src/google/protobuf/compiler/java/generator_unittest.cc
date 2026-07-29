@@ -137,7 +137,7 @@ TEST_F(JavaGeneratorTest, NestInFileClassFeatureDefaultEdition2024) {
       "protocol_compiler --proto_path=$tmpdir --java_out=$tmpdir "
       "--experimental_editions foo.proto");
 
-  ExpectNoErrors();
+  ExpectWarningSubstring("Generic services");
   EXPECT_TRUE(FileGenerated(PACKAGE_PREFIX "proto2_unittest/FooProto.java"));
   EXPECT_TRUE(FileGenerated(PACKAGE_PREFIX "proto2_unittest/MessageA.java"));
   EXPECT_TRUE(FileGenerated(PACKAGE_PREFIX "proto2_unittest/MessageB.java"));
@@ -246,7 +246,7 @@ TEST_F(JavaGeneratorTest, SplitNestInFileClassServiceFeatureEdition2024) {
       "protocol_compiler --proto_path=$tmpdir --java_out=$tmpdir "
       "--experimental_editions foo.proto");
 
-  ExpectNoErrors();
+  ExpectWarningSubstring("Generic services");
   EXPECT_TRUE(FileGenerated(PACKAGE_PREFIX "proto2_unittest/FooProto.java"));
   EXPECT_TRUE(
       FileGenerated(PACKAGE_PREFIX "proto2_unittest/UnnestedService.java"));

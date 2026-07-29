@@ -512,9 +512,11 @@ bool CordInputStream::NextChunk(size_t skip) {
 bool CordInputStream::Next(const void** data, int* size) {
   if (available_ > 0 || NextChunk(0)) {
     *data = data_ + size_ - available_;
-    *size = available_;
-    bytes_remaining_ -= available_;
-    available_ = 0;
+    size_t consumed =
+        std::min(available_, size_t{std::numeric_limits<int>::max()});
+    *size = consumed;
+    bytes_remaining_ -= consumed;
+    available_ -= consumed;
     return true;
   }
   return false;

@@ -20,29 +20,16 @@ git archive --format=tar --prefix=${PREFIX}/ ${TAG} > $ARCHIVE_TMP
 # Delete the placeholder file
 tar --file $ARCHIVE_TMP --delete $INTEGRITY_FILE
 
-# Use jq to translate GitHub Releases json into a Starlark object
-filter_releases=$(cat <<'EOF'
-# Read the file assets already present on the release
-reduce .assets[] as $a (
-  # Start with an empty dictionary, and for each asset, add
-  {}; . + {
-    # The format required in starlark, i.e. "release-name": "deadbeef123"
-    ($a.name): ($a.digest | sub("^sha256:"; ""))
-  }
-)
-EOF
-)
-
 mkdir -p "$(dirname "$INTEGRITY_FILE")"
-cat >${INTEGRITY_FILE} <<EOF
-"Generated during release by release_prep.sh"
 
-RELEASE_VERSION="${TAG}"
-RELEASED_BINARY_INTEGRITY = $(
-curl -s https://api.github.com/repos/protocolbuffers/protobuf/releases/tags/${TAG} \
-  | jq -f <(echo "$filter_releases")
-)
-EOF
+# Fetch release payload once
+RELEASE_API_URL="https://api.github.com/repos/protocolbuffers/protobuf/releases/tags/${TAG}"
+RELEASE_JSON=$(curl -sSL "$RELEASE_API_URL")
+
+# Extract the download URL for tool_integrity.bzl
+INTEGRITY_ASSET_URL=$(echo "$RELEASE_JSON" | jq -r '.assets[] | select(.name=="tool_integrity.bzl") | .browser_download_url')
+
+curl -sSL -o "${INTEGRITY_FILE}" "$INTEGRITY_ASSET_URL"
 
 # Append that generated file back into the archive
 tar --file $ARCHIVE_TMP --append ${INTEGRITY_FILE}

@@ -12,6 +12,7 @@ import copy
 import unittest
 
 from google.protobuf.internal import testing_refleaks
+
 from absl.testing import parameterized
 from google.protobuf import unittest_pb2
 from google.protobuf import unittest_proto3_arena_pb2

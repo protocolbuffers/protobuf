@@ -204,6 +204,24 @@ impl<'msg, T: Singular> RepeatedView<'msg, T> {
     pub fn iter(self) -> RepeatedIter<'msg, T> {
         self.into_iter()
     }
+
+    /// Returns the first element of the repeated field, or `None` if it is empty.
+    #[inline]
+    pub fn first(self) -> Option<View<'msg, T>> {
+        self.get(0)
+    }
+
+    /// Returns the last element of the repeated field, or `None` if it is empty.
+    #[inline]
+    pub fn last(self) -> Option<View<'msg, T>> {
+        let len = self.len();
+        if len == 0 {
+            None
+        } else {
+            // SAFETY: len is not 0, so len - 1 is a valid index
+            unsafe { Some(self.get_unchecked(len - 1)) }
+        }
+    }
 }
 
 impl<'msg, T: Singular> AsView for RepeatedView<'msg, T> {
@@ -380,6 +398,18 @@ impl<'msg, T: Singular> RepeatedMut<'msg, T> {
     pub fn clear(&mut self) {
         T::repeated_clear(Private, self.as_mut())
     }
+
+    /// Returns the first element of the repeated field, or `None` if it is empty.
+    #[inline]
+    pub fn first(&self) -> Option<View<'_, T>> {
+        self.as_view().first()
+    }
+
+    /// Returns the last element of the repeated field, or `None` if it is empty.
+    #[inline]
+    pub fn last(&self) -> Option<View<'_, T>> {
+        self.as_view().last()
+    }
 }
 
 impl<'msg, T: Singular> IntoProxied<Repeated<T>> for RepeatedMut<'msg, T> {
@@ -441,11 +471,23 @@ where
     }
 }
 
+impl<T: Singular, U> std::iter::FromIterator<U> for Repeated<T>
+where
+    U: IntoProxied<T>,
+{
+    fn from_iter<I: IntoIterator<Item = U>>(iter: I) -> Self {
+        let mut repeated = Repeated::new();
+        repeated.as_mut().extend(iter);
+        repeated
+    }
+}
+
 /// An iterator over the values inside of a [`View<Repeated<T>>`](RepeatedView).
 #[derive(Clone)]
 pub struct RepeatedIter<'msg, T> {
     view: RepeatedView<'msg, T>,
     current_index: usize,
+    end_index: usize,
 }
 
 impl<'msg, T> Debug for RepeatedIter<'msg, T> {
@@ -462,11 +504,13 @@ impl<'msg, T: Singular> iter::Iterator for RepeatedIter<'msg, T> {
 
     #[inline]
     fn next(&mut self) -> Option<Self::Item> {
-        let val = self.view.get(self.current_index);
-        if val.is_some() {
-            self.current_index += 1;
+        if self.current_index >= self.end_index {
+            return None;
         }
-        val
+        // SAFETY: current_index < end_index <= view.len()
+        let val = unsafe { self.view.get_unchecked(self.current_index) };
+        self.current_index += 1;
+        Some(val)
     }
 
     fn size_hint(&self) -> (usize, Option<usize>) {
@@ -477,11 +521,22 @@ impl<'msg, T: Singular> iter::Iterator for RepeatedIter<'msg, T> {
 
 impl<'msg, T: Singular> ExactSizeIterator for RepeatedIter<'msg, T> {
     fn len(&self) -> usize {
-        self.view.len() - self.current_index
+        self.end_index - self.current_index
     }
 }
 
-// TODO: impl DoubleEndedIterator
+impl<'msg, T: Singular> iter::DoubleEndedIterator for RepeatedIter<'msg, T> {
+    #[inline]
+    fn next_back(&mut self) -> Option<Self::Item> {
+        if self.current_index >= self.end_index {
+            return None;
+        }
+        self.end_index -= 1;
+        // SAFETY: current_index <= end_index < view.len()
+        Some(unsafe { self.view.get_unchecked(self.end_index) })
+    }
+}
+
 impl<'msg, T: Singular> FusedIterator for RepeatedIter<'msg, T> {}
 
 impl<'msg, T: Singular> iter::IntoIterator for RepeatedView<'msg, T> {
@@ -489,7 +544,7 @@ impl<'msg, T: Singular> iter::IntoIterator for RepeatedView<'msg, T> {
     type IntoIter = RepeatedIter<'msg, T>;
 
     fn into_iter(self) -> Self::IntoIter {
-        RepeatedIter { view: self, current_index: 0 }
+        RepeatedIter { view: self, current_index: 0, end_index: self.len() }
     }
 }
 
@@ -498,7 +553,7 @@ impl<'msg, T: Singular> iter::IntoIterator for &'_ RepeatedView<'msg, T> {
     type IntoIter = RepeatedIter<'msg, T>;
 
     fn into_iter(self) -> Self::IntoIter {
-        RepeatedIter { view: *self, current_index: 0 }
+        RepeatedIter { view: *self, current_index: 0, end_index: self.len() }
     }
 }
 
@@ -507,7 +562,8 @@ impl<'borrow, T: Singular> iter::IntoIterator for &'borrow RepeatedMut<'_, T> {
     type IntoIter = RepeatedIter<'borrow, T>;
 
     fn into_iter(self) -> Self::IntoIter {
-        RepeatedIter { view: self.as_view(), current_index: 0 }
+        let view = self.as_view();
+        RepeatedIter { view, current_index: 0, end_index: view.len() }
     }
 }
 
@@ -515,7 +571,7 @@ impl<'borrow, T: Singular> iter::IntoIterator for &'borrow RepeatedMut<'_, T> {
 pub struct RepeatedMutIter<'msg, T> {
     inner: InnerRepeatedMut<'msg>,
     current_index: usize,
-    len: usize,
+    end_index: usize,
     _phantom: PhantomData<&'msg mut T>,
 }
 
@@ -524,7 +580,7 @@ impl<'msg, T: Message> iter::Iterator for RepeatedMutIter<'msg, T> {
 
     #[inline]
     fn next(&mut self) -> Option<Self::Item> {
-        if self.current_index >= self.len {
+        if self.current_index >= self.end_index {
             return None;
         }
         let index = self.current_index;
@@ -547,7 +603,26 @@ impl<'msg, T: Message> iter::Iterator for RepeatedMutIter<'msg, T> {
 
 impl<'msg, T: Message> ExactSizeIterator for RepeatedMutIter<'msg, T> {
     fn len(&self) -> usize {
-        self.len - self.current_index
+        self.end_index - self.current_index
+    }
+}
+
+impl<'msg, T: Message> iter::DoubleEndedIterator for RepeatedMutIter<'msg, T> {
+    #[inline]
+    fn next_back(&mut self) -> Option<Self::Item> {
+        if self.current_index >= self.end_index {
+            return None;
+        }
+        self.end_index -= 1;
+        let index = self.end_index;
+
+        // SAFETY: index is guaranteed to be in bounds.
+        let val = unsafe {
+            let temp_repeated = RepeatedMut::from_inner(Private, self.inner);
+            T::repeated_get_mut_unchecked(Private, temp_repeated, index)
+        };
+
+        Some(val)
     }
 }
 
@@ -557,10 +632,34 @@ impl<'msg, T: Message> RepeatedMut<'msg, T> {
     /// Returns an iterator that allows modifying each value.
     pub fn iter_mut(self) -> RepeatedMutIter<'msg, T> {
         RepeatedMutIter {
-            len: self.len(),
+            end_index: self.len(),
             inner: self.inner,
             current_index: 0,
             _phantom: PhantomData,
+        }
+    }
+
+    /// Returns a mutable reference to the first element of the repeated field, or `None` if it is empty.
+    #[inline]
+    pub fn first_mut<'r>(&'r mut self) -> Option<Mut<'msg, T>>
+    where
+        'r: 'msg,
+    {
+        self.get_mut(0)
+    }
+
+    /// Returns a mutable reference to the last element of the repeated field, or `None` if it is empty.
+    #[inline]
+    pub fn last_mut<'r>(&'r mut self) -> Option<Mut<'msg, T>>
+    where
+        'r: 'msg,
+    {
+        let len = self.len();
+        if len == 0 {
+            None
+        } else {
+            // SAFETY: len is not 0, so len - 1 is valid
+            Some(unsafe { self.get_mut_unchecked(len - 1) })
         }
     }
 }
@@ -638,5 +737,41 @@ mod tests {
         let mut clone = iter.clone();
         assert_that!(clone.next(), eq(Some(1)));
         assert_that!(iter.next(), eq(Some(1)));
+    }
+    #[gtest]
+    fn test_first_last() {
+        let mut r = Repeated::<i32>::new();
+        assert!(r.as_view().first().is_none());
+        assert!(r.as_view().last().is_none());
+        assert!(r.as_mut().first().is_none());
+        assert!(r.as_mut().last().is_none());
+
+        let mut m = r.as_mut();
+        m.push(10);
+        assert_that!(m.first(), eq(Some(10)));
+        assert_that!(m.last(), eq(Some(10)));
+        assert_that!(m.as_view().first(), eq(Some(10)));
+        assert_that!(m.as_view().last(), eq(Some(10)));
+
+        m.push(20);
+        assert_that!(m.first(), eq(Some(10)));
+        assert_that!(m.last(), eq(Some(20)));
+    }
+
+    #[gtest]
+    fn test_double_ended_iter() {
+        let r: Repeated<i32> = [1, 2, 3].into_iter().collect();
+        let mut iter = r.as_view().into_iter();
+        assert_that!(iter.next(), eq(Some(1)));
+        assert_that!(iter.next_back(), eq(Some(3)));
+        assert_that!(iter.next(), eq(Some(2)));
+        assert_that!(iter.next(), eq(None));
+        assert_that!(iter.next_back(), eq(None));
+    }
+
+    #[gtest]
+    fn test_from_iter() {
+        let r: Repeated<i32> = [10, 20, 30].into_iter().collect();
+        assert_that!(r.as_view(), elements_are![eq(10), eq(20), eq(30)]);
     }
 }

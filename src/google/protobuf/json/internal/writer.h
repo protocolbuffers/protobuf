@@ -15,6 +15,7 @@
 #include <type_traits>
 #include <utility>
 
+#include "absl/strings/numbers.h"
 #include "absl/strings/str_format.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/io/strtod.h"
@@ -64,8 +65,7 @@ void EachInner(const Tuple& value, F f, std::index_sequence<i...>) {
 // Executes f on each element of value.
 template <typename Tuple, typename F>
 void Each(const Tuple& value, F f) {
-  EachInner(value, f,
-            std::make_index_sequence<std::tuple_size<Tuple>::value>());
+  EachInner(value, f, std::make_index_sequence<std::tuple_size_v<Tuple>>());
 }
 
 // See JsonWriter::Write().
@@ -116,31 +116,27 @@ class JsonWriter {
   }
 
   void Write(int32_t val) {
-    char buf[22];
-    int len = absl::SNPrintF(buf, sizeof(buf), "%d", val);
-    absl::string_view view(buf, static_cast<size_t>(len));
-    Write(view);
+    char buf[absl::numbers_internal::kFastToBufferSize];
+    char* end = absl::numbers_internal::FastIntToBuffer(val, buf);
+    Write(absl::string_view(buf, static_cast<size_t>(end - buf)));
   }
 
   void Write(uint32_t val) {
-    char buf[22];
-    int len = absl::SNPrintF(buf, sizeof(buf), "%d", val);
-    absl::string_view view(buf, static_cast<size_t>(len));
-    Write(view);
+    char buf[absl::numbers_internal::kFastToBufferSize];
+    char* end = absl::numbers_internal::FastIntToBuffer(val, buf);
+    Write(absl::string_view(buf, static_cast<size_t>(end - buf)));
   }
 
   void Write(int64_t val) {
-    char buf[22];
-    int len = absl::SNPrintF(buf, sizeof(buf), "%d", val);
-    absl::string_view view(buf, static_cast<size_t>(len));
-    Write(view);
+    char buf[absl::numbers_internal::kFastToBufferSize];
+    char* end = absl::numbers_internal::FastIntToBuffer(val, buf);
+    Write(absl::string_view(buf, static_cast<size_t>(end - buf)));
   }
 
   void Write(uint64_t val) {
-    char buf[22];
-    int len = absl::SNPrintF(buf, sizeof(buf), "%d", val);
-    absl::string_view view(buf, static_cast<size_t>(len));
-    Write(view);
+    char buf[absl::numbers_internal::kFastToBufferSize];
+    char* end = absl::numbers_internal::FastIntToBuffer(val, buf);
+    Write(absl::string_view(buf, static_cast<size_t>(end - buf)));
   }
 
   template <typename... Ts>
@@ -154,7 +150,7 @@ class JsonWriter {
   auto Write(Ts... args) ->
       // This bit of SFINAE avoids this function being called with one argument,
       // so the other overloads of Write() can be picked up instead.
-      typename std::enable_if<sizeof...(Ts) != 1, void>::type {
+      std::enable_if_t<sizeof...(Ts) != 1, void> {
     Each(std::make_tuple(args...), [this](auto x) { this->Write(x); });
   }
 
@@ -192,6 +188,7 @@ class JsonWriter {
   }
 
   void WriteQuoted(absl::string_view val) { WriteEscapedUtf8(val); }
+  void WriteQuoted(const std::string& val) { WriteEscapedUtf8(val); }
 
   // Tries to write a non-finite double if necessary; returns false if
   // nothing was written.

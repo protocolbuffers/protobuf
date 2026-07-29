@@ -33,7 +33,8 @@ class FileDescriptorSet extends \Google\Protobuf\Internal\Message
      *     @type \Google\Protobuf\Internal\FileDescriptorProto[] $file
      * }
      */
-    public function __construct($data = NULL) {
+    public function __construct($data = null)
+    {
         \GPBMetadata\Google\Protobuf\Internal\Descriptor::initOnce();
         parent::__construct($data);
     }

@@ -18,8 +18,8 @@ extern "C" {
 #endif
 
 typedef struct UPB_PRIVATE(upb_GeneratedExtensionListEntry) {
-  const struct upb_MiniTableExtension* start;
-  const struct upb_MiniTableExtension* stop;
+  const struct upb_MiniTableExtension** start;
+  const struct upb_MiniTableExtension** stop;
   const struct UPB_PRIVATE(upb_GeneratedExtensionListEntry) * next;
 } UPB_PRIVATE(upb_GeneratedExtensionListEntry);
 

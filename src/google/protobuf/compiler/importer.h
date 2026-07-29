@@ -180,7 +180,7 @@ class PROTOBUF_EXPORT Importer {
 
   // The DescriptorPool in which all imported FileDescriptors and their
   // contents are stored.
-  inline const DescriptorPool* pool() const { return &pool_; }
+  const DescriptorPool* pool() const { return &pool_; }
 
   void AddDirectInputFile(absl::string_view file_name,
                           bool unused_import_is_error = false);
@@ -313,7 +313,7 @@ class PROTOBUF_EXPORT DiskSourceTree : public SourceTree {
     std::string virtual_path;
     std::string disk_path;
 
-    inline Mapping(std::string virtual_path_param, std::string disk_path_param)
+    Mapping(std::string virtual_path_param, std::string disk_path_param)
         : virtual_path(std::move(virtual_path_param)),
           disk_path(std::move(disk_path_param)) {}
   };

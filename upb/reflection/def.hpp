@@ -502,6 +502,13 @@ class FileDefPtr {
     return FileDefPtr(upb_FileDef_PublicDependency(ptr_, index));
   }
 
+  int option_dependency_count() const {
+    return upb_FileDef_OptionDependencyCount(ptr_);
+  }
+  const char* option_dependency(int index) const {
+    return upb_FileDef_OptionDependency(ptr_, index);
+  }
+
   int toplevel_enum_count() const {
     return upb_FileDef_TopLevelEnumCount(ptr_);
   }

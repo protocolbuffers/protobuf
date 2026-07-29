@@ -107,6 +107,14 @@ message ExtremeDefaults {
   optional int64 int64_min = 1 [default = -9223372036854775808];
 }
 
+message OneofWithMessages {
+  oneof oneof_field {
+    MessageName msg1 = 1;
+    MessageName msg2 = 2;
+    int32 i32 = 3;
+  }
+}
+
 message TestReserved {
   optional string new = 1;
   optional string parse = 2;

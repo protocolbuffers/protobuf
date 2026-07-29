@@ -4,12 +4,14 @@
 # Use of this source code is governed by a BSD-style
 # license that can be found in the LICENSE file or at
 # https://developers.google.com/open-source/licenses/bsd
-
 """Encoding related utilities."""
+
 import re
+
 
 def _AsciiIsPrint(i):
   return i >= 32 and i < 127
+
 
 def _MakeStrEscapes():
   ret = {}
@@ -20,9 +22,10 @@ def _MakeStrEscapes():
   ret[ord('\n')] = r'\n'  # optional escape
   ret[ord('\r')] = r'\r'  # optional escape
   ret[ord('"')] = r'\"'  # necessary escape
-  ret[ord('\'')] = r"\'"  # optional escape
+  ret[ord("'")] = r'\''  # optional escape
   ret[ord('\\')] = r'\\'  # necessary escape
   return ret
+
 
 # Maps int -> char, performing string escapes.
 _str_escapes = _MakeStrEscapes()
@@ -40,9 +43,9 @@ def _DecodeUtf8EscapeErrors(text_bytes):
       ret += text_bytes.decode('utf-8').translate(_str_escapes)
       text_bytes = ''
     except UnicodeDecodeError as e:
-      ret += text_bytes[:e.start].decode('utf-8').translate(_str_escapes)
+      ret += text_bytes[: e.start].decode('utf-8').translate(_str_escapes)
       ret += _byte_escapes[text_bytes[e.start]]
-      text_bytes = text_bytes[e.start+1:]
+      text_bytes = text_bytes[e.start + 1 :]
   return ret
 
 
@@ -51,9 +54,10 @@ def CEscape(text, as_utf8) -> str:
 
   Args:
     text: A byte string to be escaped.
-    as_utf8: Specifies if result may contain non-ASCII characters.
-        In Python 3 this allows unescaped non-ASCII Unicode characters.
-        In Python 2 the return value will be valid UTF-8 rather than only ASCII.
+    as_utf8: Specifies if result may contain non-ASCII characters. In Python 3
+      this allows unescaped non-ASCII Unicode characters. In Python 2 the return
+      value will be valid UTF-8 rather than only ASCII.
+
   Returns:
     Escaped string (str).
   """
@@ -82,6 +86,7 @@ def CUnescape(text: str) -> bytes:
 
   Args:
     text: The data to parse in a str.
+
   Returns:
     A byte string.
   """

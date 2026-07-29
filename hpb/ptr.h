@@ -14,7 +14,7 @@
 namespace hpb {
 
 template <typename T>
-using Proxy = std::conditional_t<std::is_const<T>::value,
+using Proxy = std::conditional_t<std::is_const_v<T>,
                                  typename std::remove_const_t<T>::CProxy,
                                  typename T::Proxy>;
 
@@ -48,7 +48,7 @@ class Ptr final {
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wclass-conversion"
 #endif
-  template <typename U = T, std::enable_if_t<!std::is_const<U>::value, int> = 0>
+  template <typename U = T, std::enable_if_t<!std::is_const_v<U>, int> = 0>
   operator Ptr<const T>() const {
     Proxy<const T> p(p_);
     return Ptr<const T>(&p);

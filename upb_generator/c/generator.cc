@@ -322,11 +322,11 @@ void GenerateExtensionInHeader(Context& c, upb::FieldDefPtr ext) {
       },
       R"cc(
         UPB_INLINE bool $ident_base$_has_$name$(const struct $ctype$* msg) {
-          return upb_Message_HasExtension((upb_Message*)msg, &$ext_var$);
+          return upb_Message_HasExtension((upb_Message*)msg, $ext_var$);
         }
 
         UPB_INLINE void $ident_base$_clear_$name$(struct $ctype$* msg) {
-          upb_Message_ClearExtension((upb_Message*)msg, &$ext_var$);
+          upb_Message_ClearExtension((upb_Message*)msg, $ext_var$);
         }
       )cc");
 
@@ -346,7 +346,7 @@ void GenerateExtensionInHeader(Context& c, upb::FieldDefPtr ext) {
         R"cc(
           UPB_INLINE $ctype_const$
           $ident_base$_$name$(const struct $ctype$* msg) {
-            const upb_MiniTableExtension* ext = &$ext_var$;
+            const upb_MiniTableExtension* ext = $ext_var$;
             UPB_ASSUME(upb_MiniTableField_IsScalar(&ext->UPB_PRIVATE(field)));
             UPB_ASSUME(UPB_PRIVATE(_upb_MiniTableField_GetRep)(
                            &ext->UPB_PRIVATE(field)) == $rep$);
@@ -359,7 +359,7 @@ void GenerateExtensionInHeader(Context& c, upb::FieldDefPtr ext) {
           UPB_INLINE void $ident_base$_set_$name$(struct $ctype$* msg,
                                                   $ctype_const$ val,
                                                   upb_Arena* arena) {
-            const upb_MiniTableExtension* ext = &$ext_var$;
+            const upb_MiniTableExtension* ext = $ext_var$;
             UPB_ASSUME(upb_MiniTableField_IsScalar(&ext->UPB_PRIVATE(field)));
             UPB_ASSUME(UPB_PRIVATE(_upb_MiniTableField_GetRep)(
                            &ext->UPB_PRIVATE(field)) == $rep$);
@@ -1170,29 +1170,33 @@ void WriteResolveCalls(Context& c, upb::MessageDefPtr msg) {
     upb::FieldDefPtr field = msg.field(i);
     if (!field.message_type() && !field.enum_subdef()) continue;
     if (field.message_type()) {
-      c.Emit(
-          {{"number", absl::StrCat(field.number())},
-           {"msg_mini_table",
-            MessageMiniTableRef(field.message_type(), c.options())}},
-          R"cc(
-            upb_MiniTable_SetSubMessage(
-                mini_table,
-                (upb_MiniTableField*)upb_MiniTable_FindFieldByNumber(mini_table,
-                                                                     $number$),
-                $msg_mini_table$);
-          )cc");
+      c.Emit({{"number", absl::StrCat(field.number())},
+              {"msg_mini_table",
+               MessageMiniTableRef(field.message_type(), c.options())}},
+             R"cc(
+               if (!upb_MiniTable_SetSubMessage(
+                       mini_table,
+                       (upb_MiniTableField*)upb_MiniTable_FindFieldByNumber(
+                           mini_table, $number$),
+                       $msg_mini_table$)) {
+                 fprintf(stderr, "Failed to link submessage for $name$\n");
+                 abort();
+               }
+             )cc");
     } else if (field.enum_subdef() && field.enum_subdef().is_closed()) {
-      c.Emit(
-          {{"number", absl::StrCat(field.number())},
-           {"enum_mini_table",
-            EnumMiniTableRef(field.enum_subdef(), c.options())}},
-          R"cc(
-            upb_MiniTable_SetSubEnum(
-                mini_table,
-                (upb_MiniTableField*)upb_MiniTable_FindFieldByNumber(mini_table,
-                                                                     $number$),
-                $enum_mini_table$);
-          )cc");
+      c.Emit({{"number", absl::StrCat(field.number())},
+              {"enum_mini_table",
+               EnumMiniTableRef(field.enum_subdef(), c.options())}},
+             R"cc(
+               if (!upb_MiniTable_SetSubEnum(
+                       mini_table,
+                       (upb_MiniTableField*)upb_MiniTable_FindFieldByNumber(
+                           mini_table, $number$),
+                       $enum_mini_table$)) {
+                 fprintf(stderr, "Failed to link enum for $name$\n");
+                 abort();
+               }
+             )cc");
     }
   }
 }

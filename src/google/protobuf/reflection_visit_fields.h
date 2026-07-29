@@ -16,6 +16,7 @@
 #include "google/protobuf/generated_message_reflection.h"
 #include "google/protobuf/has_bits.h"
 #include "google/protobuf/message.h"
+#include "google/protobuf/message_traits.h"
 #include "google/protobuf/port.h"
 #include "google/protobuf/reflection.h"
 #include "google/protobuf/reflection_visit_field_info.h"
@@ -95,18 +96,14 @@ void ReflectionVisit::VisitFields(MessageT& message, CallbackFn&& func,
   const Reflection* reflection = message.GetReflection();
   const auto& schema = GetSchema(reflection);
 
-  ABSL_CHECK(!schema.HasWeakFields()) << "weak fields are not supported";
-
   // See Reflection::ListFields for the optimization.
   const uint32_t* const has_bits =
       schema.HasHasbits() ? reflection->GetHasBits(message) : nullptr;
-  const uint32_t* const has_bits_indices = schema.has_bit_indices_;
   const Descriptor* descriptor = GetDescriptor(reflection);
   const int field_count = descriptor->field_count();
 
   for (int i = 0; i < field_count; i++) {
     const FieldDescriptor* field = descriptor->field(i);
-    ABSL_DCHECK(!field->options().weak()) << "weak fields are not supported";
 
     if (!ShouldVisit(mask, field->cpp_type())) continue;
 
@@ -190,12 +187,10 @@ void ReflectionVisit::VisitFields(MessageT& message, CallbackFn&& func,
 #undef PROTOBUF_IMPL_STRING_CASE
     } else if (schema.InRealOneof(field)) {
       const OneofDescriptor* containing_oneof = field->containing_oneof();
-      const uint32_t* const oneof_case_array =
-          internal::GetConstPointerAtOffset<uint32_t>(
-              &message, schema.oneof_case_offset_);
+      uint32_t oneof_case = internal::GetConstRefAtOffset<uint32_t>(
+          message, schema.GetOneofCaseOffset(containing_oneof));
       // Equivalent to: !HasOneofField(message, field)
-      if (static_cast<int64_t>(oneof_case_array[containing_oneof->index()]) !=
-          field->number()) {
+      if (static_cast<int64_t>(oneof_case) != field->number()) {
         continue;
       }
       switch (field->type()) {
@@ -246,7 +241,7 @@ void ReflectionVisit::VisitFields(MessageT& message, CallbackFn&& func,
 #undef PROTOBUF_HANDLE_CASE
       }
     } else {
-      auto index = has_bits_indices[i];
+      uint32_t index = schema.HasBitIndex(field, /*field_index=*/i);
       bool check_hasbits =
           has_bits && index != static_cast<uint32_t>(kNoHasbit);
       if (ABSL_PREDICT_TRUE(check_hasbits)) {

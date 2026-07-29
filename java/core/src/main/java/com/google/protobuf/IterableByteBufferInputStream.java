@@ -46,12 +46,6 @@ final class IterableByteBufferInputStream extends InputStream {
   /** Current ByteBuffer's array offset */
   private int currentArrayOffset;
 
-  /**
-   * If the current ByteBuffer is unsafe-direct based, currentAddress is the start address of this
-   * ByteBuffer; otherwise should be zero.
-   */
-  private long currentAddress;
-
   IterableByteBufferInputStream(Iterable<ByteBuffer> data) {
     iterator = data.iterator();
     dataSize = 0;
@@ -63,7 +57,6 @@ final class IterableByteBufferInputStream extends InputStream {
     if (!getNextByteBuffer()) {
       currentByteBuffer = EMPTY_BYTE_BUFFER;
       currentByteBufferPos = 0;
-      currentAddress = 0;
     }
   }
 
@@ -84,7 +77,6 @@ final class IterableByteBufferInputStream extends InputStream {
       currentArrayOffset = currentByteBuffer.arrayOffset();
     } else {
       hasArray = false;
-      currentAddress = UnsafeUtil.addressOffset(currentByteBuffer);
       currentArray = null;
     }
     return true;
@@ -107,7 +99,7 @@ final class IterableByteBufferInputStream extends InputStream {
       updateCurrentByteBufferPos(1);
       return result;
     } else {
-      int result = UnsafeUtil.getByte(currentByteBufferPos + currentAddress) & 0xFF;
+      int result = currentByteBuffer.get(currentByteBufferPos) & 0xFF;
       updateCurrentByteBufferPos(1);
       return result;
     }

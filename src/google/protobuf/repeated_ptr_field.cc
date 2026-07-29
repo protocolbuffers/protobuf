@@ -22,7 +22,9 @@
 #include "absl/base/prefetch.h"
 #include "absl/log/absl_check.h"
 #include "google/protobuf/arena.h"
+#include "google/protobuf/class_data.h"
 #include "google/protobuf/message_lite.h"
+#include "google/protobuf/message_traits.h"
 #include "google/protobuf/port.h"
 #include "google/protobuf/repeated_field.h"
 
@@ -53,7 +55,7 @@ void** RepeatedPtrFieldBase::InternalExtend(int extend_amount, Arena* arena) {
   Rep* new_rep = nullptr;
 
   int new_capacity = internal::CalculateReserveSize<void*, kRepHeaderSize>(
-      old_capacity, old_capacity + extend_amount);
+      old_capacity, internal::CheckedAdd(old_capacity, extend_amount));
   {
     ABSL_DCHECK_LE(new_capacity, kMaxCapacity)
         << "New capacity is too large to fit into internal representation";
@@ -100,8 +102,43 @@ void RepeatedPtrFieldBase::ReserveWithArena(Arena* arena, int capacity) {
   }
 }
 
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+void RepeatedPtrFieldBase::DestroyMessageLites(const ClassData* class_data) {
+  ABSL_DCHECK(NeedsDestroy());
+  ABSL_DCHECK_EQ(GetArena(), nullptr);
+
+  using H = GenericTypeHandler<MessageLite>;
+  const int n = allocated_size();
+  ABSL_DCHECK_LE(n, Capacity());
+  void** elems = elements();
+  void (*destroy)(MessageLite&) = class_data->destroy_message;
+  const size_t allocation_size = class_data->allocation_size();
+  for (int i = 0; i < n; i++) {
+    if (i + 5 < n) {
+      absl::PrefetchToLocalCacheNta(elems[i + 5]);
+    }
+    auto* ptr = cast<H>(elems[i]);
+    destroy(*ptr);
+    internal::SizedDelete(ptr, allocation_size);
+  }
+  if (!using_sso()) {
+    internal::SizedDelete(rep(), Capacity() * sizeof(void*) + kRepHeaderSize);
+  }
+}
+#endif  // PROTOBUF_CUSTOM_VTABLE
+
 void RepeatedPtrFieldBase::DestroyProtos() {
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+  if (allocated_size() > 0) {
+    using H = GenericTypeHandler<MessageLite>;
+    const ClassData* class_data = cast<H>(elements()[0])->GetClassData();
+    PROTOBUF_ALWAYS_INLINE_CALL DestroyMessageLites(class_data);
+  } else if (!using_sso()) {
+    internal::SizedDelete(rep(), Capacity() * sizeof(void*) + kRepHeaderSize);
+  }
+#else
   PROTOBUF_ALWAYS_INLINE_CALL Destroy<GenericTypeHandler<MessageLite>>();
+#endif
 
   // TODO:  Eliminate this store when invoked from the destructor,
   // since it is dead.
@@ -138,7 +175,7 @@ PROTOBUF_ALWAYS_INLINE void RepeatedPtrFieldBase::MergeFromInternal(
   Prefetch5LinesFrom1Line(&from);
   ABSL_DCHECK_EQ(arena, GetArena());
   ABSL_DCHECK_NE(&from, this);
-  int new_size = current_size_ + from.current_size_;
+  int new_size = internal::CheckedAdd(current_size_, from.current_size_);
   auto dst = reinterpret_cast<T**>(InternalReserve(new_size, arena));
   auto src = reinterpret_cast<T* const*>(from.elements());
   auto end = src + from.current_size_;
@@ -189,7 +226,7 @@ int RepeatedPtrFieldBase::MergeIntoClearedMessages(
   const ClassData* class_data = GetClassData(*src[0]);
   for (int i = 0; i < count; ++i) {
     ABSL_DCHECK(src[i] != nullptr);
-    dst[i]->MergeFromWithClassData(*src[i], class_data);
+    class_data->MergeToFrom(*dst[i], *src[i]);
   }
   return count;
 }
@@ -235,11 +272,11 @@ void RepeatedPtrFieldBase::MergeFrom<MessageLite>(
   MergeFromInternal<MessageLite>(
       from, arena,
       [class_data](Arena* arena, MessageLite* dst, const MessageLite& src) {
-        dst->MergeFromWithClassData(src, class_data);
+        class_data->MergeToFrom(*dst, src);
       },
       [class_data](Arena* arena, const MessageLite& src) -> MessageLite* {
         MessageLite* dst = class_data->New(arena);
-        dst->MergeFromWithClassData(src, class_data);
+        class_data->MergeToFrom(*dst, src);
         return dst;
       });
 }

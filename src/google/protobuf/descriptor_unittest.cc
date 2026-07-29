@@ -20,6 +20,7 @@
 #include <cstdlib>
 #include <deque>
 #include <functional>
+#include <initializer_list>
 #include <iostream>
 #include <limits>
 #include <memory>
@@ -92,12 +93,14 @@ using ::google::protobuf::internal::cpp::HasbitMode;
 using ::google::protobuf::internal::cpp::HasHasbitWithoutProfile;
 using ::google::protobuf::internal::cpp::HasPreservingUnknownEnumSemantics;
 using ::google::protobuf::internal::cpp::Utf8CheckMode;
+using ::testing::_;
 using ::testing::AnyOf;
 using ::testing::AtLeast;
 using ::testing::ElementsAre;
 using ::testing::HasSubstr;
 using ::testing::NotNull;
 using ::testing::Return;
+using ::testing::SizeIs;
 
 absl::Status GetStatus(const absl::Status& s) { return s; }
 template <typename T>
@@ -118,6 +121,99 @@ namespace protobuf {
 
 // Can't use an anonymous namespace here due to brokenness of Tru64 compiler.
 namespace descriptor_unittest {
+
+std::string TextProtoTooManyFieldsPerMessageForEdition(
+    absl::string_view edition, absl::string_view opt_out = "") {
+  std::string text_proto_string = absl::Substitute(R"schema(
+    edition = "$0";
+    package limit1;
+    message M {
+      $1
+  )schema",
+                                                   edition, opt_out);
+
+  // Continuously append to the textproto string up to our proto limit.
+  for (int i = 1; i <= (internal::kLimit2026FieldsPerMessage + 1); ++i) {
+    absl::StrAppend(&text_proto_string,
+                    absl::StrFormat("    int32 field_%d = %d;\n", i, i));
+  }
+  absl::StrAppend(&text_proto_string, "}");
+
+  return text_proto_string;
+}
+
+std::string TextProtoTooManyValuesPerEnumForEdition(
+    absl::string_view edition, absl::string_view opt_out = "") {
+  std::string text_proto_string = absl::Substitute(R"schema(
+    edition = "$0";
+    package limit1;
+    message M {
+      enum E {
+        $1
+        E_UNKNOWN = 0;
+  )schema",
+                                                   edition, opt_out);
+  // Continuously append to the textproto string up to our proto limit.
+  for (int i = 1; i <= (internal::kLimit2026ValuesPerEnum + 1); ++i) {
+    absl::StrAppend(&text_proto_string,
+                    absl::StrFormat("        NUMBER_%d = %d;", i, i));
+  }
+  absl::StrAppend(&text_proto_string, R"schema(
+      }
+      E enum_field = 1;
+    }
+  )schema");
+
+  return text_proto_string;
+}
+
+std::string TextProtoTooManyFieldsPerOneofForEdition(
+    absl::string_view edition, absl::string_view opt_out = "") {
+  std::string text_proto_string = absl::Substitute(R"schema(
+    edition = "$0";
+    package limit1;
+    message M {
+      oneof O {
+        $1
+  )schema",
+                                                   edition, opt_out);
+  // Continuously append to the textproto string up to our proto limit.
+  for (int i = 1; i <= (internal::kLimit2026FieldsPerOneof + 1); ++i) {
+    absl::StrAppend(&text_proto_string,
+                    absl::StrFormat("        int32 int_field_%d = %d;", i, i));
+  }
+  absl::StrAppend(&text_proto_string, R"schema(
+      }
+    }
+  )schema");
+
+  return text_proto_string;
+}
+
+std::string TextProtoTooManyOneofsPerMessageForEdition(
+    absl::string_view edition, absl::string_view opt_out = "") {
+  std::string text_proto_string = absl::Substitute(R"schema(
+    edition = "$0";
+    package limit1;
+    message M {
+      $1
+  )schema",
+                                                   edition, opt_out);
+  // Continuously append to the textproto string up to our proto limit.
+  for (int i = 1; i <= (internal::kLimit2026OneofsPerMessage + 1); ++i) {
+    absl::StrAppend(&text_proto_string, absl::StrFormat(R"schema(
+                      oneof O_%d {
+                        int32 int_field_%d = %d;
+                      }
+                    )schema",
+                                                        i, i, i));
+  }
+  absl::StrAppend(&text_proto_string, R"schema(
+    }
+  )schema");
+
+  return text_proto_string;
+}
 
 // Some helpers to make assembling descriptors faster.
 DescriptorProto* AddMessage(FileDescriptorProto* file,
@@ -3066,24 +3162,28 @@ TEST_F(MiscTest, StaticTypeNames) {
 
   typedef FieldDescriptor FD;  // avoid ugly line wrapping
 
-  EXPECT_EQ(absl::string_view("double"), FD::TypeName(FD::TYPE_DOUBLE));
-  EXPECT_EQ(absl::string_view("float"), FD::TypeName(FD::TYPE_FLOAT));
-  EXPECT_EQ(absl::string_view("int64"), FD::TypeName(FD::TYPE_INT64));
-  EXPECT_EQ(absl::string_view("uint64"), FD::TypeName(FD::TYPE_UINT64));
-  EXPECT_EQ(absl::string_view("int32"), FD::TypeName(FD::TYPE_INT32));
-  EXPECT_EQ(absl::string_view("fixed64"), FD::TypeName(FD::TYPE_FIXED64));
-  EXPECT_EQ(absl::string_view("fixed32"), FD::TypeName(FD::TYPE_FIXED32));
-  EXPECT_EQ(absl::string_view("bool"), FD::TypeName(FD::TYPE_BOOL));
-  EXPECT_EQ(absl::string_view("string"), FD::TypeName(FD::TYPE_STRING));
-  EXPECT_EQ(absl::string_view("group"), FD::TypeName(FD::TYPE_GROUP));
-  EXPECT_EQ(absl::string_view("message"), FD::TypeName(FD::TYPE_MESSAGE));
-  EXPECT_EQ(absl::string_view("bytes"), FD::TypeName(FD::TYPE_BYTES));
-  EXPECT_EQ(absl::string_view("uint32"), FD::TypeName(FD::TYPE_UINT32));
-  EXPECT_EQ(absl::string_view("enum"), FD::TypeName(FD::TYPE_ENUM));
-  EXPECT_EQ(absl::string_view("sfixed32"), FD::TypeName(FD::TYPE_SFIXED32));
-  EXPECT_EQ(absl::string_view("sfixed64"), FD::TypeName(FD::TYPE_SFIXED64));
-  EXPECT_EQ(absl::string_view("sint32"), FD::TypeName(FD::TYPE_SINT32));
-  EXPECT_EQ(absl::string_view("sint64"), FD::TypeName(FD::TYPE_SINT64));
+  EXPECT_EQ("ERROR", FD::TypeName(FD::Type{}));
+  EXPECT_EQ("double", FD::TypeName(FD::TYPE_DOUBLE));
+  EXPECT_EQ("float", FD::TypeName(FD::TYPE_FLOAT));
+  EXPECT_EQ("int64", FD::TypeName(FD::TYPE_INT64));
+  EXPECT_EQ("uint64", FD::TypeName(FD::TYPE_UINT64));
+  EXPECT_EQ("int32", FD::TypeName(FD::TYPE_INT32));
+  EXPECT_EQ("fixed64", FD::TypeName(FD::TYPE_FIXED64));
+  EXPECT_EQ("fixed32", FD::TypeName(FD::TYPE_FIXED32));
+  EXPECT_EQ("bool", FD::TypeName(FD::TYPE_BOOL));
+  EXPECT_EQ("string", FD::TypeName(FD::TYPE_STRING));
+  EXPECT_EQ("group", FD::TypeName(FD::TYPE_GROUP));
+  EXPECT_EQ("message", FD::TypeName(FD::TYPE_MESSAGE));
+  EXPECT_EQ("bytes", FD::TypeName(FD::TYPE_BYTES));
+  EXPECT_EQ("uint32", FD::TypeName(FD::TYPE_UINT32));
+  EXPECT_EQ("enum", FD::TypeName(FD::TYPE_ENUM));
+  EXPECT_EQ("sfixed32", FD::TypeName(FD::TYPE_SFIXED32));
+  EXPECT_EQ("sfixed64", FD::TypeName(FD::TYPE_SFIXED64));
+  EXPECT_EQ("sint32", FD::TypeName(FD::TYPE_SINT32));
+  EXPECT_EQ("sint64", FD::TypeName(FD::TYPE_SINT64));
+
+  EXPECT_DEATH((void)FD::TypeName(static_cast<FD::Type>(FD::MAX_TYPE + 1)),
+               "Invalid input value");
 }
 
 TEST_F(MiscTest, CppTypes) {
@@ -3159,16 +3259,48 @@ TEST_F(MiscTest, StaticCppTypeNames) {
 
   typedef FieldDescriptor FD;  // avoid ugly line wrapping
 
-  EXPECT_EQ(absl::string_view("int32"), FD::CppTypeName(FD::CPPTYPE_INT32));
-  EXPECT_EQ(absl::string_view("int64"), FD::CppTypeName(FD::CPPTYPE_INT64));
-  EXPECT_EQ(absl::string_view("uint32"), FD::CppTypeName(FD::CPPTYPE_UINT32));
-  EXPECT_EQ(absl::string_view("uint64"), FD::CppTypeName(FD::CPPTYPE_UINT64));
-  EXPECT_EQ(absl::string_view("double"), FD::CppTypeName(FD::CPPTYPE_DOUBLE));
-  EXPECT_EQ(absl::string_view("float"), FD::CppTypeName(FD::CPPTYPE_FLOAT));
-  EXPECT_EQ(absl::string_view("bool"), FD::CppTypeName(FD::CPPTYPE_BOOL));
-  EXPECT_EQ(absl::string_view("enum"), FD::CppTypeName(FD::CPPTYPE_ENUM));
-  EXPECT_EQ(absl::string_view("string"), FD::CppTypeName(FD::CPPTYPE_STRING));
-  EXPECT_EQ(absl::string_view("message"), FD::CppTypeName(FD::CPPTYPE_MESSAGE));
+  EXPECT_EQ("ERROR", FD::CppTypeName(FD::CppType{}));
+  EXPECT_EQ("int32", FD::CppTypeName(FD::CPPTYPE_INT32));
+  EXPECT_EQ("int64", FD::CppTypeName(FD::CPPTYPE_INT64));
+  EXPECT_EQ("uint32", FD::CppTypeName(FD::CPPTYPE_UINT32));
+  EXPECT_EQ("uint64", FD::CppTypeName(FD::CPPTYPE_UINT64));
+  EXPECT_EQ("double", FD::CppTypeName(FD::CPPTYPE_DOUBLE));
+  EXPECT_EQ("float", FD::CppTypeName(FD::CPPTYPE_FLOAT));
+  EXPECT_EQ("bool", FD::CppTypeName(FD::CPPTYPE_BOOL));
+  EXPECT_EQ("enum", FD::CppTypeName(FD::CPPTYPE_ENUM));
+  EXPECT_EQ("string", FD::CppTypeName(FD::CPPTYPE_STRING));
+  EXPECT_EQ("message", FD::CppTypeName(FD::CPPTYPE_MESSAGE));
+
+  EXPECT_DEATH(
+      (void)FD::CppTypeName(static_cast<FD::CppType>(FD::MAX_CPPTYPE + 1)),
+      "Invalid input value");
+}
+
+TEST_F(MiscTest, StaticTypeToCppType) {
+  typedef FieldDescriptor FD;  // avoid ugly line wrapping
+                               //
+  EXPECT_EQ(FD::CppType{}, FD::TypeToCppType(FD::Type{}));
+  EXPECT_EQ(FD::CPPTYPE_DOUBLE, FD::TypeToCppType(FD::TYPE_DOUBLE));
+  EXPECT_EQ(FD::CPPTYPE_FLOAT, FD::TypeToCppType(FD::TYPE_FLOAT));
+  EXPECT_EQ(FD::CPPTYPE_INT64, FD::TypeToCppType(FD::TYPE_INT64));
+  EXPECT_EQ(FD::CPPTYPE_UINT64, FD::TypeToCppType(FD::TYPE_UINT64));
+  EXPECT_EQ(FD::CPPTYPE_INT32, FD::TypeToCppType(FD::TYPE_INT32));
+  EXPECT_EQ(FD::CPPTYPE_UINT64, FD::TypeToCppType(FD::TYPE_FIXED64));
+  EXPECT_EQ(FD::CPPTYPE_UINT32, FD::TypeToCppType(FD::TYPE_FIXED32));
+  EXPECT_EQ(FD::CPPTYPE_BOOL, FD::TypeToCppType(FD::TYPE_BOOL));
+  EXPECT_EQ(FD::CPPTYPE_STRING, FD::TypeToCppType(FD::TYPE_STRING));
+  EXPECT_EQ(FD::CPPTYPE_MESSAGE, FD::TypeToCppType(FD::TYPE_GROUP));
+  EXPECT_EQ(FD::CPPTYPE_MESSAGE, FD::TypeToCppType(FD::TYPE_MESSAGE));
+  EXPECT_EQ(FD::CPPTYPE_STRING, FD::TypeToCppType(FD::TYPE_BYTES));
+  EXPECT_EQ(FD::CPPTYPE_UINT32, FD::TypeToCppType(FD::TYPE_UINT32));
+  EXPECT_EQ(FD::CPPTYPE_ENUM, FD::TypeToCppType(FD::TYPE_ENUM));
+  EXPECT_EQ(FD::CPPTYPE_INT32, FD::TypeToCppType(FD::TYPE_SFIXED32));
+  EXPECT_EQ(FD::CPPTYPE_INT64, FD::TypeToCppType(FD::TYPE_SFIXED64));
+  EXPECT_EQ(FD::CPPTYPE_INT32, FD::TypeToCppType(FD::TYPE_SINT32));
+  EXPECT_EQ(FD::CPPTYPE_INT64, FD::TypeToCppType(FD::TYPE_SINT64));
+
+  EXPECT_DEATH((void)FD::TypeToCppType(static_cast<FD::Type>(FD::MAX_TYPE + 1)),
+               "Invalid input value");
 }
 
 TEST_F(MiscTest, MessageType) {
@@ -5449,6 +5581,43 @@ TEST_F(ValidationErrorTest, ReservedRangeOverlap) {
 
       "foo.proto: Foo: NUMBER: Reserved range 5 to 14"
       " overlaps with already-defined range 10 to 19.\n");
+}
+
+TEST_F(ValidationErrorTest, LimitNumberOfErrors) {
+  FileDescriptorProto file;
+  file.set_name("foo.proto");
+  auto* m = file.add_message_type();
+  m->set_name("Foo");
+  // This would generate O(N^2) errors
+  for (int i = 0; i < 100; ++i) {
+    auto* r = m->add_reserved_range();
+    r->set_start(100);
+    r->set_end(200);
+  }
+  // DescriptorBuilder::kMaxNumErrors
+  BuildFileWithErrorList(file, SizeIs(1000));
+}
+
+TEST_F(ValidationErrorTest, LimitNumberOfWarnings) {
+  constexpr int N = 1100;
+  // Create N deps.
+  for (int i = 0; i < N; ++i) {
+    FileDescriptorProto file;
+    file.set_name(absl::StrCat("dep", i, ".proto"));
+    ASSERT_TRUE(pool_.BuildFile(file));
+  }
+
+  FileDescriptorProto file;
+  file.set_name("foo.proto");
+
+  // This generates one warning per dep.
+  for (int i = 0; i < N; ++i) {
+    file.add_dependency(absl::StrCat("dep", i, ".proto"));
+  }
+
+  pool_.AddDirectInputFile(file.name());
+  // DescriptorBuilder::kMaxNumErrors
+  BuildFileWithErrorList(file, _, SizeIs(1000));
 }
 
 TEST_F(ValidationErrorTest, ReservedNameError) {
@@ -7915,6 +8084,34 @@ TEST_F(ValidationErrorTest, MapEntryBase) {
   BuildFile(text_proto);
 }
 
+TEST_F(ValidationErrorTest, GroupFieldPointingToMapEntryIsNotMap) {
+  // TYPE_GROUP field referencing a map_entry message should produce a
+  // validation error. Groups cannot be map entries.
+  BuildFileWithErrors(
+      "name: 'group_map.proto' "
+      "message_type { "
+      "  name: 'Foo' "
+      "  field { "
+      "    name: 'foomapentry' number: 1 label: LABEL_REPEATED "
+      "    type: TYPE_GROUP type_name: 'FooMapEntry' "
+      "  } "
+      "  nested_type { "
+      "    name: 'FooMapEntry' "
+      "    options { map_entry: true } "
+      "    field { "
+      "      name: 'key' number: 1 type: TYPE_INT32 label: LABEL_OPTIONAL "
+      "    } "
+      "    field { "
+      "      name: 'value' number: 2 type: TYPE_INT32 label: LABEL_OPTIONAL "
+      "    } "
+      "  } "
+      "} ",
+
+      "group_map.proto: Foo.foomapentry: TYPE: Groups cannot be map entries. "
+      "Use a regular message field with map<KeyType, ValueType> syntax "
+      "instead.\n");
+}
+
 TEST_F(ValidationErrorTest, MapEntryExtensionRange) {
   FileDescriptorProto file_proto;
   FillValidMapEntry(&file_proto);
@@ -9316,6 +9513,7 @@ TEST_F(FeaturesTest, Proto2Features) {
                 json_format: LEGACY_BEST_EFFORT
                 enforce_naming_style: STYLE_LEGACY
                 default_symbol_visibility: EXPORT_ALL
+                enforce_proto_limits: LEGACY_NO_EXPLICIT_LIMITS
                 [pb.cpp] {
                   legacy_closed_enum: true
                   string_type: STRING
@@ -9331,6 +9529,7 @@ TEST_F(FeaturesTest, Proto2Features) {
                 json_format: LEGACY_BEST_EFFORT
                 enforce_naming_style: STYLE_LEGACY
                 default_symbol_visibility: EXPORT_ALL
+                enforce_proto_limits: LEGACY_NO_EXPLICIT_LIMITS
                 [pb.cpp] {
                   legacy_closed_enum: true
                   string_type: STRING
@@ -9346,6 +9545,7 @@ TEST_F(FeaturesTest, Proto2Features) {
                 json_format: LEGACY_BEST_EFFORT
                 enforce_naming_style: STYLE_LEGACY
                 default_symbol_visibility: EXPORT_ALL
+                enforce_proto_limits: LEGACY_NO_EXPLICIT_LIMITS
                 [pb.cpp] {
                   legacy_closed_enum: true
                   string_type: STRING
@@ -9429,6 +9629,7 @@ TEST_F(FeaturesTest, Proto3Features) {
                 json_format: ALLOW
                 enforce_naming_style: STYLE_LEGACY
                 default_symbol_visibility: EXPORT_ALL
+                enforce_proto_limits: LEGACY_NO_EXPLICIT_LIMITS
                 [pb.cpp] {
                   legacy_closed_enum: false
                   string_type: STRING
@@ -9444,6 +9645,7 @@ TEST_F(FeaturesTest, Proto3Features) {
                 json_format: ALLOW
                 enforce_naming_style: STYLE_LEGACY
                 default_symbol_visibility: EXPORT_ALL
+                enforce_proto_limits: LEGACY_NO_EXPLICIT_LIMITS
                 [pb.cpp] {
                   legacy_closed_enum: false
                   string_type: STRING
@@ -9627,6 +9829,7 @@ TEST_F(FeaturesTest, Edition2023Defaults) {
                 json_format: ALLOW
                 enforce_naming_style: STYLE_LEGACY
                 default_symbol_visibility: EXPORT_ALL
+                enforce_proto_limits: LEGACY_NO_EXPLICIT_LIMITS
                 [pb.cpp] {
                   legacy_closed_enum: false
                   string_type: STRING
@@ -9744,6 +9947,42 @@ TEST_F(FeaturesTest, Edition2024Defaults) {
                 json_format: ALLOW
                 enforce_naming_style: STYLE2024
                 default_symbol_visibility: EXPORT_TOP_LEVEL
+                enforce_proto_limits: LEGACY_NO_EXPLICIT_LIMITS
+                [pb.cpp] {
+                  legacy_closed_enum: false
+                  string_type: VIEW
+                  enum_name_uses_string_view: true
+                  repeated_type: LEGACY
+                }
+              )pb"));
+
+  // Since pb::test is registered in the pool, it should end up with defaults in
+  // our FeatureSet.
+  EXPECT_TRUE(GetFeatures(file).HasExtension(pb::test));
+  EXPECT_EQ(GetFeatures(file).GetExtension(pb::test).file_feature(),
+            pb::VALUE3);
+}
+
+TEST_F(FeaturesTest, Edition2026Defaults) {
+  FileDescriptorProto file_proto = ParseTextOrDie(R"pb(
+    name: "foo.proto"
+    syntax: "editions"
+    edition: EDITION_2026
+  )pb");
+
+  BuildDescriptorMessagesInTestPool();
+  const FileDescriptor* file = ABSL_DIE_IF_NULL(pool_.BuildFile(file_proto));
+  EXPECT_THAT(file->options(), EqualsProto(""));
+  EXPECT_THAT(GetCoreFeatures(file), EqualsProto(R"pb(
+                field_presence: EXPLICIT
+                enum_type: OPEN
+                repeated_field_encoding: PACKED
+                utf8_validation: VERIFY
+                message_encoding: LENGTH_PREFIXED
+                json_format: ALLOW
+                enforce_naming_style: STYLE2026
+                default_symbol_visibility: STRICT
+                enforce_proto_limits: PROTO_LIMITS2026
                 [pb.cpp] {
                   legacy_closed_enum: false
                   string_type: VIEW
@@ -9780,6 +10019,7 @@ TEST_F(FeaturesBaseTest, DefaultEdition2023Defaults) {
                 json_format: ALLOW
                 enforce_naming_style: STYLE_LEGACY
                 default_symbol_visibility: EXPORT_ALL
+                enforce_proto_limits: LEGACY_NO_EXPLICIT_LIMITS
                 [pb.cpp] {
                   legacy_closed_enum: false
                   string_type: STRING
@@ -9811,6 +10051,7 @@ TEST_F(FeaturesTest, ClearsOptions) {
                 json_format: ALLOW
                 enforce_naming_style: STYLE_LEGACY
                 default_symbol_visibility: EXPORT_ALL
+                enforce_proto_limits: LEGACY_NO_EXPLICIT_LIMITS
                 [pb.cpp] {
                   legacy_closed_enum: false
                   string_type: STRING
@@ -10181,6 +10422,7 @@ TEST_F(FeaturesTest, NoOptions) {
                 json_format: ALLOW
                 enforce_naming_style: STYLE_LEGACY
                 default_symbol_visibility: EXPORT_ALL
+                enforce_proto_limits: LEGACY_NO_EXPLICIT_LIMITS
                 [pb.cpp] {
                   legacy_closed_enum: false
                   string_type: STRING
@@ -10217,6 +10459,7 @@ TEST_F(FeaturesTest, FileFeatures) {
                 json_format: ALLOW
                 enforce_naming_style: STYLE_LEGACY
                 default_symbol_visibility: EXPORT_ALL
+                enforce_proto_limits: LEGACY_NO_EXPLICIT_LIMITS
                 [pb.cpp] {
                   legacy_closed_enum: false
                   string_type: STRING
@@ -10301,6 +10544,7 @@ TEST_F(FeaturesTest, MessageFeaturesDefault) {
                 json_format: ALLOW
                 enforce_naming_style: STYLE_LEGACY
                 default_symbol_visibility: EXPORT_ALL
+                enforce_proto_limits: LEGACY_NO_EXPLICIT_LIMITS
                 [pb.cpp] {
                   legacy_closed_enum: false
                   string_type: STRING
@@ -10415,6 +10659,7 @@ TEST_F(FeaturesTest, FieldFeaturesDefault) {
                 json_format: ALLOW
                 enforce_naming_style: STYLE_LEGACY
                 default_symbol_visibility: EXPORT_ALL
+                enforce_proto_limits: LEGACY_NO_EXPLICIT_LIMITS
                 [pb.cpp] {
                   legacy_closed_enum: false
                   string_type: STRING
@@ -10824,7 +11069,7 @@ TEST_F(FeaturesTest, NoNamingStyleViolationsWithCollisionsInStyle2024) {
 
   // Check that naming collisions are allowed in STYLE2024.
   ASSERT_THAT(ParseAndBuildFile("naming.proto", R"schema(
-    edition = "UNSTABLE";
+    edition = "2026";
     option features.enforce_naming_style = STYLE2024;
     package naming;
     message Foo {
@@ -10841,7 +11086,7 @@ TEST_F(FeaturesTest, NoNamingStyleViolationsWithCollisionsInStyle2026) {
 
   // These are allowed because they don't collide with any existing field.
   ASSERT_THAT(ParseAndBuildFile("naming.proto", R"schema(
-    edition = "UNSTABLE";
+    edition = "2026";
     option features.enforce_naming_style = STYLE2026;
     package naming;
     message Foo {
@@ -10859,7 +11104,7 @@ TEST_F(FeaturesTest, NoNamingStyleViolationsWithCollisionsOneOfInStyle2026) {
 
   // This is allowed because the oneof doesn't collide with any existing field.
   ASSERT_THAT(ParseAndBuildFile("naming.proto", R"schema(
-    edition = "UNSTABLE";
+    edition = "2026";
     option features.enforce_naming_style = STYLE2026;
     package naming;
     message Foo {
@@ -10897,7 +11142,7 @@ TEST_P(CollisionNameTest, NamingStyleViolationsWithCollisionsInStyle2026) {
   pool_.EnforceNamingStyle(true);
   const CollisionNameParam& param = GetParam();
   std::string schema = absl::Substitute(R"schema(
-    edition = "UNSTABLE";
+    edition = "2026";
     message Foo {
       string $0 = 1;
       string test_field = 2;
@@ -10916,7 +11161,7 @@ TEST_P(CollisionNameTest, NamingStyleViolationsInvalidFieldNameInStyle2026) {
   BuildDescriptorMessagesInTestPool();
   pool_.EnforceNamingStyle(true);
   std::string schema = absl::StrCat(R"schema(
-    edition = "UNSTABLE";
+    edition = "2026";
     message Foo {
       string descriptor = 1;
     }
@@ -10932,7 +11177,7 @@ TEST_P(CollisionNameTest,
   BuildDescriptorMessagesInTestPool();
   pool_.EnforceNamingStyle(true);
   std::string schema = absl::StrCat(R"schema(
-    edition = "UNSTABLE";
+    edition = "2026";
     message Foo {
       oneof bar {
         string has_test_field = 1;
@@ -10952,7 +11197,7 @@ TEST_P(CollisionNameTest,
   BuildDescriptorMessagesInTestPool();
   pool_.EnforceNamingStyle(true);
   std::string schema = absl::StrCat(R"schema(
-    edition = "UNSTABLE";
+    edition = "2026";
     message Foo {
       oneof has_test_field {
         string test_field = 1;
@@ -10971,7 +11216,7 @@ TEST_P(CollisionNameTest,
   BuildDescriptorMessagesInTestPool();
   pool_.EnforceNamingStyle(true);
   std::string schema = absl::StrCat(R"schema(
-    edition = "UNSTABLE";
+    edition = "2026";
     message Foo {
       oneof test_field {
         string has_test_field = 1;
@@ -10988,7 +11233,7 @@ TEST_P(CollisionNameTest, NamingStyleViolationsInvalidOneOfNameInStyle2026) {
   BuildDescriptorMessagesInTestPool();
   pool_.EnforceNamingStyle(true);
   std::string schema = absl::StrCat(R"schema(
-    edition = "UNSTABLE";
+    edition = "2026";
     message Foo {
       oneof descriptor {
         string test_field = 1;
@@ -11200,6 +11445,151 @@ TEST_F(FeaturesTest, BadMethodName) {
       "Method name badMethodName should begin with a capital letter");
 }
 
+TEST_F(FeaturesTest, LegacyNoExplicitLimitsFieldsPerMessage) {
+  BuildDescriptorMessagesInTestPool();
+  pool_.EnforceProtoLimits(true);
+
+  std::string text_proto_string =
+      TextProtoTooManyFieldsPerMessageForEdition("2024");
+
+  // Edition 2024 and earlier protos are not subject to limit enforcement.
+  ASSERT_THAT(ParseAndBuildFile("limit1.proto", text_proto_string), NotNull());
+}
+
+TEST_F(FeaturesTest, ProtoLimits2026FieldsPerMessage) {
+  BuildDescriptorMessagesInTestPool();
+  pool_.EnforceProtoLimits(true);
+
+  std::string text_proto_string =
+      TextProtoTooManyFieldsPerMessageForEdition("2026");
+
+  ParseAndBuildFileWithErrorSubstr(
+      "limit1.proto", text_proto_string,
+      "Message name M should not contain more than 1500 fields "
+      "(features.enforce_proto_limits = LEGACY_NO_EXPLICIT_LIMITS "
+      "can be used to opt out of this check)");
+}
+
+TEST_F(FeaturesTest, ProtoLimits2026FieldsPerMessageOptOut) {
+  BuildDescriptorMessagesInTestPool();
+  pool_.EnforceProtoLimits(true);
+
+  std::string text_proto_string = TextProtoTooManyFieldsPerMessageForEdition(
+      "2026", /*opt_out=*/
+      "option features.enforce_proto_limits = LEGACY_NO_EXPLICIT_LIMITS;");
+
+  // With an explicit opt-out, we do not enforce proto limits.
+  ASSERT_THAT(ParseAndBuildFile("limit1.proto", text_proto_string), NotNull());
+}
+
+TEST_F(FeaturesTest, LegacyNoExplicitLimitsValuesPerEnum) {
+  BuildDescriptorMessagesInTestPool();
+  pool_.EnforceProtoLimits(true);
+
+  // Edition 2024 and earlier protos are not subject to limit enforcement.
+  std::string text_proto_string =
+      TextProtoTooManyValuesPerEnumForEdition("2024");
+
+  ASSERT_THAT(ParseAndBuildFile("limit1.proto", text_proto_string), NotNull());
+}
+
+TEST_F(FeaturesTest, ProtoLimits2026ValuesPerEnum) {
+  BuildDescriptorMessagesInTestPool();
+  pool_.EnforceProtoLimits(true);
+
+  std::string text_proto_string =
+      TextProtoTooManyValuesPerEnumForEdition("2026");
+
+  ParseAndBuildFileWithErrorSubstr(
+      "limit1.proto", text_proto_string,
+      "Enum name E should not contain more than 1700 values "
+      "(features.enforce_proto_limits = LEGACY_NO_EXPLICIT_LIMITS "
+      "can be used to opt out of this check)");
+}
+
+TEST_F(FeaturesTest, ProtoLimits2026ValuesPerEnumOptOut) {
+  BuildDescriptorMessagesInTestPool();
+  pool_.EnforceProtoLimits(true);
+
+  std::string text_proto_string = TextProtoTooManyValuesPerEnumForEdition(
+      "2026", /*opt_out=*/
+      "option features.enforce_proto_limits = LEGACY_NO_EXPLICIT_LIMITS;");
+
+  ASSERT_THAT(ParseAndBuildFile("limit1.proto", text_proto_string), NotNull());
+}
+
+TEST_F(FeaturesTest, LegacyNoExplicitLimitsFieldsPerOneof) {
+  BuildDescriptorMessagesInTestPool();
+  pool_.EnforceProtoLimits(true);
+
+  // Edition 2024 and earlier protos are not subject to limit enforcement.
+  std::string text_proto_string =
+      TextProtoTooManyFieldsPerOneofForEdition("2024");
+
+  ASSERT_THAT(ParseAndBuildFile("limit1.proto", text_proto_string), NotNull());
+}
+
+TEST_F(FeaturesTest, ProtoLimits2026FieldsPerOneof) {
+  BuildDescriptorMessagesInTestPool();
+  pool_.EnforceProtoLimits(true);
+
+  std::string text_proto_string =
+      TextProtoTooManyFieldsPerOneofForEdition("2026");
+
+  ParseAndBuildFileWithErrorSubstr(
+      "limit1.proto", text_proto_string,
+      "Oneof name O should not contain more than 1200 fields "
+      "(features.enforce_proto_limits = LEGACY_NO_EXPLICIT_LIMITS "
+      "can be used to opt out of this check)");
+}
+
+TEST_F(FeaturesTest, ProtoLimits2026FieldsPerOneofOptOut) {
+  BuildDescriptorMessagesInTestPool();
+  pool_.EnforceProtoLimits(true);
+
+  std::string text_proto_string = TextProtoTooManyFieldsPerOneofForEdition(
+      "2026", /*opt_out=*/
+      "option features.enforce_proto_limits = LEGACY_NO_EXPLICIT_LIMITS;");
+
+  ASSERT_THAT(ParseAndBuildFile("limit1.proto", text_proto_string), NotNull());
+}
+
+TEST_F(FeaturesTest, LegacyNoExplicitLimitsOneofsPerMessage) {
+  BuildDescriptorMessagesInTestPool();
+  pool_.EnforceProtoLimits(true);
+
+  // Edition 2024 and earlier protos are not subject to limit enforcement.
+  std::string text_proto_string =
+      TextProtoTooManyOneofsPerMessageForEdition("2024");
+
+  ASSERT_THAT(ParseAndBuildFile("limit1.proto", text_proto_string), NotNull());
+}
+
+TEST_F(FeaturesTest, ProtoLimits2026OneofsPerMessage) {
+  BuildDescriptorMessagesInTestPool();
+  pool_.EnforceProtoLimits(true);
+
+  std::string text_proto_string =
+      TextProtoTooManyOneofsPerMessageForEdition("2026");
+
+  ParseAndBuildFileWithErrorSubstr(
+      "limit1.proto", text_proto_string,
+      "Message name M should not contain more than 1000 oneofs "
+      "(features.enforce_proto_limits = LEGACY_NO_EXPLICIT_LIMITS "
+      "can be used to opt out of this check)");
+}
+
+TEST_F(FeaturesTest, ProtoLimits2026OneofsPerMessageOptOut) {
+  BuildDescriptorMessagesInTestPool();
+  pool_.EnforceProtoLimits(true);
+
+  std::string text_proto_string = TextProtoTooManyOneofsPerMessageForEdition(
+      "2026", /*opt_out=*/
+      "option features.enforce_proto_limits = LEGACY_NO_EXPLICIT_LIMITS;");
+
+  ASSERT_THAT(ParseAndBuildFile("limit1.proto", text_proto_string), NotNull());
+}
+
 TEST_F(FeaturesTest, MapFieldFeaturesInheritedMessageEncoding) {
   BuildDescriptorMessagesInTestPool();
   const FileDescriptor* file = ParseAndBuildFile("foo.proto", R"schema(
@@ -11341,6 +11731,7 @@ TEST_F(FeaturesTest, EnumFeaturesDefault) {
                 json_format: ALLOW
                 enforce_naming_style: STYLE_LEGACY
                 default_symbol_visibility: EXPORT_ALL
+                enforce_proto_limits: LEGACY_NO_EXPLICIT_LIMITS
                 [pb.cpp] {
                   legacy_closed_enum: false
                   string_type: STRING
@@ -11459,6 +11850,7 @@ TEST_F(FeaturesTest, EnumValueFeaturesDefault) {
                 json_format: ALLOW
                 enforce_naming_style: STYLE_LEGACY
                 default_symbol_visibility: EXPORT_ALL
+                enforce_proto_limits: LEGACY_NO_EXPLICIT_LIMITS
                 [pb.cpp] {
                   legacy_closed_enum: false
                   string_type: STRING
@@ -11561,6 +11953,7 @@ TEST_F(FeaturesTest, OneofFeaturesDefault) {
                 json_format: ALLOW
                 enforce_naming_style: STYLE_LEGACY
                 default_symbol_visibility: EXPORT_ALL
+                enforce_proto_limits: LEGACY_NO_EXPLICIT_LIMITS
                 [pb.cpp] {
                   legacy_closed_enum: false
                   string_type: STRING
@@ -11672,6 +12065,7 @@ TEST_F(FeaturesTest, ExtensionRangeFeaturesDefault) {
                 json_format: ALLOW
                 enforce_naming_style: STYLE_LEGACY
                 default_symbol_visibility: EXPORT_ALL
+                enforce_proto_limits: LEGACY_NO_EXPLICIT_LIMITS
                 [pb.cpp] {
                   legacy_closed_enum: false
                   string_type: STRING
@@ -11768,6 +12162,7 @@ TEST_F(FeaturesTest, ServiceFeaturesDefault) {
                 json_format: ALLOW
                 enforce_naming_style: STYLE_LEGACY
                 default_symbol_visibility: EXPORT_ALL
+                enforce_proto_limits: LEGACY_NO_EXPLICIT_LIMITS
                 [pb.cpp] {
                   legacy_closed_enum: false
                   string_type: STRING
@@ -11841,6 +12236,7 @@ TEST_F(FeaturesTest, MethodFeaturesDefault) {
                 json_format: ALLOW
                 enforce_naming_style: STYLE_LEGACY
                 default_symbol_visibility: EXPORT_ALL
+                enforce_proto_limits: LEGACY_NO_EXPLICIT_LIMITS
                 [pb.cpp] {
                   legacy_closed_enum: false
                   string_type: STRING
@@ -13051,6 +13447,7 @@ TEST_F(FeaturesTest, UninterpretedOptions) {
                 json_format: ALLOW
                 enforce_naming_style: STYLE_LEGACY
                 default_symbol_visibility: EXPORT_ALL
+                enforce_proto_limits: LEGACY_NO_EXPLICIT_LIMITS
                 [pb.cpp] {
                   legacy_closed_enum: false
                   string_type: STRING
@@ -13899,6 +14296,7 @@ TEST_F(DescriptorPoolFeaturesTest, OverrideDefaults) {
         json_format: ALLOW
         enforce_naming_style: STYLE_LEGACY
         default_symbol_visibility: EXPORT_ALL
+        enforce_proto_limits: LEGACY_NO_EXPLICIT_LIMITS
       }
     }
     minimum_edition: EDITION_PROTO2
@@ -13923,6 +14321,7 @@ TEST_F(DescriptorPoolFeaturesTest, OverrideDefaults) {
                 json_format: ALLOW
                 enforce_naming_style: STYLE_LEGACY
                 default_symbol_visibility: EXPORT_ALL
+                enforce_proto_limits: LEGACY_NO_EXPLICIT_LIMITS
               )pb"));
 }
 
@@ -13939,6 +14338,7 @@ TEST_F(DescriptorPoolFeaturesTest, OverrideFieldDefaults) {
         json_format: ALLOW
         enforce_naming_style: STYLE_LEGACY
         default_symbol_visibility: EXPORT_ALL
+        enforce_proto_limits: LEGACY_NO_EXPLICIT_LIMITS
       }
     }
     minimum_edition: EDITION_PROTO2
@@ -13968,6 +14368,7 @@ TEST_F(DescriptorPoolFeaturesTest, OverrideFieldDefaults) {
                 json_format: ALLOW
                 enforce_naming_style: STYLE_LEGACY
                 default_symbol_visibility: EXPORT_ALL
+                enforce_proto_limits: LEGACY_NO_EXPLICIT_LIMITS
               )pb"));
 }
 
@@ -14048,6 +14449,34 @@ TEST_F(DescriptorPoolMemoizationTest, SupportsDifferentDescriptorTypes) {
             DescriptorPoolMemoizationTest::MemoizeProjection(
                 descriptor->nested_type(0), name_lambda));
   EXPECT_EQ(counter, 3);
+}
+
+// We define two helper functions with the exact same type signature
+// (absl::string_view(*)(const Descriptor*)) but different addresses.
+// We use them to test that MemoizeProjection does not cause key collisions
+// in the cache when passed different function pointers of the identical type.
+namespace {
+absl::string_view FunctionPointer1(const Descriptor* desc) {
+  return desc->name();
+}
+
+absl::string_view FunctionPointer2(const Descriptor* desc) {
+  return desc->full_name();
+}
+}  // namespace
+
+TEST_F(DescriptorPoolMemoizationTest, MemoizeProjectionFunctionPointers) {
+  const Descriptor* descriptor = proto2_unittest::TestAllTypes::descriptor();
+
+  const absl::string_view& res1 =
+      DescriptorPoolMemoizationTest::MemoizeProjection(descriptor,
+                                                       FunctionPointer1);
+  const absl::string_view& res2 =
+      DescriptorPoolMemoizationTest::MemoizeProjection(descriptor,
+                                                       FunctionPointer2);
+
+  EXPECT_EQ(res1, "TestAllTypes");
+  EXPECT_EQ(res2, "proto2_unittest.TestAllTypes");
 }
 
 TEST_F(DescriptorPoolMemoizationTest, MemoizeProjectionMultithreaded) {
@@ -15704,9 +16133,11 @@ const char* const kSourceLocationTestInput =
     "message A {\n"
     "  option (test_msg_opt) = \"foobar\";\n"
     "  optional int32 a = 1 [deprecated = true];\n"
+    "  repeated int32 rep = 5;\n"
     "  message B {\n"
     "    required double b = 1 [(test_field_opt) = \"foobar\"];\n"
     "  }\n"
+    "  optional B b_sub = 6;\n"
     "  oneof c {\n"
     "    option (test_oneof_opt) = \"foobar\";\n"
     "    string d = 2;\n"
@@ -15723,7 +16154,7 @@ const char* const kSourceLocationTestInput =
     "  MAYBE = 3;\n"
     "}\n"
     "service S {\n"
-    "  option (test_svc_opt) = {a:100};\n"
+    "  option (test_svc_opt) = {a:100, rep: [1, 2, 3], b_sub: {b: 200}};\n"
     "  option (test_svc_opt) = {a:200};\n"
     "  option (test_svc_opt) = {a:300};\n"
     "  rpc Method(A) returns (A.B);\n"
@@ -15842,6 +16273,12 @@ class SourceLocationTest : public testing::Test {
   static constexpr int kCustomOptionFieldNumber = 10101;
   // tag number of field "a" in message type "A" in above test file
   static constexpr int kAFieldNumber = 1;
+  // tag number of field "rep" in message type "A" in above test file
+  static constexpr int kRepFieldNumber = 5;
+  // tag number of field "b_sub" in message type "A" in above test file
+  static constexpr int kBSubFieldNumber = 6;
+  // tag number of field "b" in message type "B" in above test file
+  static constexpr int kBFieldNumber = 1;
 };
 
 // TODO: implement support for option fields and for
@@ -15861,9 +16298,11 @@ TEST_F(SourceLocationTest, GetSourceLocation) {
                   "message A {\n"
                   "  option (test_msg_opt) = \"foobar\";\n"
                   "  optional int32 a = 1 [deprecated = true];\n"
+                  "  repeated int32 rep = 5;\n"
                   "  message B {\n"
                   "    required double b = 1 [(test_field_opt) = \"foobar\"];\n"
                   "  }\n"
+                  "  optional B b_sub = 6;\n"
                   "  oneof c {\n"
                   "    option (test_oneof_opt) = \"foobar\";\n"
                   "    string d = 2;\n"
@@ -15904,7 +16343,8 @@ TEST_F(SourceLocationTest, GetSourceLocation) {
   EXPECT_THAT(loc,
               MatchesSubstring(kSourceLocationTestInput,
                                "service S {\n"
-                               "  option (test_svc_opt) = {a:100};\n"
+                               "  option (test_svc_opt) = {a:100, rep: [1, 2, "
+                               "3], b_sub: {b: 200}};\n"
                                "  option (test_svc_opt) = {a:200};\n"
                                "  option (test_svc_opt) = {a:300};\n"
                                "  rpc Method(A) returns (A.B);\n"
@@ -15919,6 +16359,115 @@ TEST_F(SourceLocationTest, GetSourceLocation) {
   EXPECT_TRUE(m_desc->GetSourceLocation(&loc));
   EXPECT_THAT(loc, MatchesSubstring(kSourceLocationTestInput,
                                     "rpc Method(A) returns (A.B);"));
+}
+
+TEST_F(SourceLocationTest, AggregateOptionSourceLocation) {
+  SourceLocation loc;
+  const FileDescriptor* file_desc =
+      ABSL_DIE_IF_NULL(pool_.FindFileByName("/test/test.proto"));
+
+  SourceCodePath base_path = {FileDescriptorProto::kServiceFieldNumber,
+                              0,
+                              ServiceDescriptorProto::kOptionsFieldNumber,
+                              kCustomOptionFieldNumber,
+                              0,
+                              UninterpretedOption::kAggregateValueFieldNumber};
+
+  auto make_path = [&](std::initializer_list<int> sub) {
+    SourceCodePath path = base_path;
+    path.insert(path.end(), sub.begin(), sub.end());
+    return path;
+  };
+
+  // Verify what base_path matches directly (the entire aggregate block).
+  {
+    EXPECT_TRUE(file_desc->GetSourceLocation(base_path, &loc));
+    EXPECT_THAT(loc,
+                MatchesSubstring(kSourceLocationTestInput,
+                                 "{a:100, rep: [1, 2, 3], b_sub: {b: 200}}"));
+  }
+
+  // Path to "a" inside {a:100}
+  {
+    SourceCodePath path =
+        make_path({kAFieldNumber, UninterpretedOption::kNameFieldNumber});
+    EXPECT_TRUE(file_desc->GetSourceLocation(path, &loc));
+    EXPECT_THAT(loc, MatchesSubstring(kSourceLocationTestInput, "a"));
+  }
+
+  // Path to "100" inside {a:100}
+  {
+    SourceCodePath path = make_path(
+        {kAFieldNumber, UninterpretedOption::kPositiveIntValueFieldNumber});
+    EXPECT_TRUE(file_desc->GetSourceLocation(path, &loc));
+    EXPECT_THAT(loc, MatchesSubstring(kSourceLocationTestInput, "100"));
+  }
+
+  // Path to the name of the top-level option (test_svc_opt)
+  {
+    SourceCodePath path = {FileDescriptorProto::kServiceFieldNumber,
+                           0,
+                           ServiceDescriptorProto::kOptionsFieldNumber,
+                           kCustomOptionFieldNumber,
+                           0,
+                           UninterpretedOption::kNameFieldNumber};
+    EXPECT_TRUE(file_desc->GetSourceLocation(path, &loc));
+    EXPECT_THAT(loc,
+                MatchesSubstring(kSourceLocationTestInput, "(test_svc_opt)"));
+  }
+
+  // Path to "1" inside {rep: [1, 2, 3]}
+  {
+    SourceCodePath path =
+        make_path({kRepFieldNumber, 0,
+                   UninterpretedOption::kPositiveIntValueFieldNumber});
+    EXPECT_TRUE(file_desc->GetSourceLocation(path, &loc));
+    EXPECT_THAT(loc, MatchesSubstring(kSourceLocationTestInput, "1"));
+  }
+
+  // Path to "2" inside {rep: [1, 2, 3]}
+  {
+    SourceCodePath path =
+        make_path({kRepFieldNumber, 1,
+                   UninterpretedOption::kPositiveIntValueFieldNumber});
+    EXPECT_TRUE(file_desc->GetSourceLocation(path, &loc));
+    EXPECT_THAT(loc, MatchesSubstring(kSourceLocationTestInput, "2"));
+  }
+
+  // Path to "3" inside {rep: [1, 2, 3]}
+  {
+    SourceCodePath path =
+        make_path({kRepFieldNumber, 2,
+                   UninterpretedOption::kPositiveIntValueFieldNumber});
+    EXPECT_TRUE(file_desc->GetSourceLocation(path, &loc));
+    EXPECT_THAT(loc, MatchesSubstring(kSourceLocationTestInput, "3"));
+  }
+
+  // Path to "b_sub" inside {..., b_sub: {b: 200}}
+  {
+    SourceCodePath path =
+        make_path({kBSubFieldNumber, UninterpretedOption::kNameFieldNumber});
+    EXPECT_TRUE(file_desc->GetSourceLocation(path, &loc));
+    EXPECT_THAT(loc, MatchesSubstring(kSourceLocationTestInput, "b_sub"));
+  }
+
+  // Path to "b" inside {..., b_sub: {b: 200}}
+  {
+    SourceCodePath path = make_path(
+        {kBSubFieldNumber, UninterpretedOption::kAggregateValueFieldNumber,
+         kBFieldNumber, UninterpretedOption::kNameFieldNumber});
+    EXPECT_TRUE(file_desc->GetSourceLocation(path, &loc));
+    EXPECT_THAT(loc, MatchesSubstring(kSourceLocationTestInput, "b"));
+  }
+
+  // Path to "200" inside {..., b_sub: {b: 200}}
+  {
+    SourceCodePath path = make_path(
+        {kBSubFieldNumber, UninterpretedOption::kAggregateValueFieldNumber,
+         kBFieldNumber, UninterpretedOption::kDoubleValueFieldNumber});
+    EXPECT_TRUE(file_desc->GetSourceLocation(path, &loc));
+    EXPECT_THAT(loc, MatchesSubstring(kSourceLocationTestInput, "200"));
+  }
 }
 
 TEST_F(SourceLocationTest, ExtensionSourceLocation) {
@@ -15976,6 +16525,20 @@ TEST_F(SourceLocationTest, InterpretedOptionSourceLocation) {
                                  "option java_package = \"com.foo.bar\";"));
 
     EXPECT_FALSE(file_desc->GetSourceLocation(unint, &loc));
+
+    SourceCodePath name_path = {FileDescriptorProto::kOptionsFieldNumber,
+                                FileOptions::kJavaPackageFieldNumber,
+                                UninterpretedOption::kNameFieldNumber};
+    EXPECT_TRUE(file_desc->GetSourceLocation(name_path, &loc));
+    EXPECT_THAT(loc,
+                MatchesSubstring(kSourceLocationTestInput, "java_package"));
+
+    SourceCodePath val_path = {FileDescriptorProto::kOptionsFieldNumber,
+                               FileOptions::kJavaPackageFieldNumber,
+                               UninterpretedOption::kStringValueFieldNumber};
+    EXPECT_TRUE(file_desc->GetSourceLocation(val_path, &loc));
+    EXPECT_THAT(loc,
+                MatchesSubstring(kSourceLocationTestInput, "\"com.foo.bar\""));
   }
   {
     SourceCodePath path = {FileDescriptorProto::kOptionsFieldNumber,
@@ -15987,6 +16550,19 @@ TEST_F(SourceLocationTest, InterpretedOptionSourceLocation) {
                                       "option (test_file_opt) = \"foobar\";"));
 
     EXPECT_FALSE(file_desc->GetSourceLocation(unint, &loc));
+
+    SourceCodePath name_path = {FileDescriptorProto::kOptionsFieldNumber,
+                                kCustomOptionFieldNumber,
+                                UninterpretedOption::kNameFieldNumber};
+    EXPECT_TRUE(file_desc->GetSourceLocation(name_path, &loc));
+    EXPECT_THAT(loc,
+                MatchesSubstring(kSourceLocationTestInput, "(test_file_opt)"));
+
+    SourceCodePath val_path = {FileDescriptorProto::kOptionsFieldNumber,
+                               kCustomOptionFieldNumber,
+                               UninterpretedOption::kStringValueFieldNumber};
+    EXPECT_TRUE(file_desc->GetSourceLocation(val_path, &loc));
+    EXPECT_THAT(loc, MatchesSubstring(kSourceLocationTestInput, "\"foobar\""));
   }
 
   // Message option
@@ -16164,7 +16740,8 @@ TEST_F(SourceLocationTest, InterpretedOptionSourceLocation) {
                             ServiceOptions::kUninterpretedOptionFieldNumber, 0};
     EXPECT_TRUE(file_desc->GetSourceLocation(path, &loc));
     EXPECT_THAT(loc, MatchesSubstring(kSourceLocationTestInput,
-                                      "option (test_svc_opt) = {a:100};"));
+                                      "option (test_svc_opt) = {a:100, rep: "
+                                      "[1, 2, 3], b_sub: {b: 200}};"));
 
     EXPECT_FALSE(file_desc->GetSourceLocation(unint, &loc));
   }

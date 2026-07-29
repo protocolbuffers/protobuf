@@ -68,7 +68,8 @@ class MethodDescriptorProto extends \Google\Protobuf\Internal\Message
      *           Identifies if server streams multiple server messages
      * }
      */
-    public function __construct($data = NULL) {
+    public function __construct($data = null)
+    {
         \GPBMetadata\Google\Protobuf\Internal\Descriptor::initOnce();
         parent::__construct($data);
     }

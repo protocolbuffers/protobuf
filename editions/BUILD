@@ -27,7 +27,7 @@ compile_edition_defaults(
         "//java/core:java_features_proto",
         "//src/google/protobuf:cpp_features_proto",
     ],
-    maximum_edition = "2024",
+    maximum_edition = "2026",
     minimum_edition = "2023",
     # Test with HEAD protoc for any behavior change, other usages don't need this.
     protoc = "//src/google/protobuf/compiler:protoc_minimal",
@@ -49,6 +49,16 @@ compile_edition_defaults(
     srcs = ["//src/google/protobuf:unittest_features_proto"],
     maximum_edition = "2024",
     minimum_edition = "2024",
+    # Test with HEAD protoc for any behavior change, other usages don't need this.
+    protoc = "//src/google/protobuf/compiler:protoc_minimal",
+)
+
+compile_edition_defaults(
+    name = "test_defaults_2026",
+    testonly = True,
+    srcs = ["//src/google/protobuf:unittest_features_proto"],
+    maximum_edition = "2026",
+    minimum_edition = "2026",
     # Test with HEAD protoc for any behavior change, other usages don't need this.
     protoc = "//src/google/protobuf/compiler:protoc_minimal",
 )
@@ -177,6 +187,7 @@ cc_test(
         ":protobuf_defaults",
         ":test_defaults_2023",
         ":test_defaults_2024",
+        ":test_defaults_2026",
         ":test_defaults_far_future",
         ":test_defaults_future",
     ],

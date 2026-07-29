@@ -55,6 +55,8 @@ class FieldGeneratorBase : public SourceGeneratorBase {
  protected:
   const FieldDescriptor* descriptor_;
   const int presenceIndex_;
+  // NRT = Nullable Reference Types
+  bool nrt_enabled_;
   absl::flat_hash_map<absl::string_view, std::string> variables_;
 
   void AddDeprecatedFlag(io::Printer* printer);

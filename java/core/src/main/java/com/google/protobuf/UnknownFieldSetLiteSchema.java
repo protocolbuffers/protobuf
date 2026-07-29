@@ -9,14 +9,21 @@ package com.google.protobuf;
 
 import java.io.IOException;
 
+/**
+ * This class is for Lite runtime use only.
+ *
+ * <p>For details on what this means regarding performance and security characteristics, see {@link
+ * ForLiteOnly}.
+ */
 @CheckReturnValue
+@ForLiteOnly
 class UnknownFieldSetLiteSchema
     extends UnknownFieldSchema<UnknownFieldSetLite, UnknownFieldSetLite> {
 
   UnknownFieldSetLiteSchema() {}
 
   @Override
-  boolean shouldDiscardUnknownFields(Reader reader) {
+  boolean shouldDiscardUnknownFields(CodedInputStreamReader reader) {
     // We never drop unknown fields in lite.
     return false;
   }
@@ -90,12 +97,13 @@ class UnknownFieldSetLiteSchema
   }
 
   @Override
-  void writeTo(UnknownFieldSetLite fields, Writer writer) throws IOException {
+  void writeTo(UnknownFieldSetLite fields, CodedOutputStreamWriter writer) throws IOException {
     fields.writeTo(writer);
   }
 
   @Override
-  void writeAsMessageSetTo(UnknownFieldSetLite fields, Writer writer) throws IOException {
+  void writeAsMessageSetTo(UnknownFieldSetLite fields, CodedOutputStreamWriter writer)
+      throws IOException {
     fields.writeAsMessageSetTo(writer);
   }
 

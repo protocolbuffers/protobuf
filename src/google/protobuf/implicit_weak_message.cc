@@ -40,6 +40,10 @@ void ImplicitWeakMessage::MergeImpl(MessageLite& self,
   }
 }
 
+void ImplicitWeakMessage::ClearImpl(MessageLite& msg) {
+  static_cast<ImplicitWeakMessage&>(msg).data_->clear();
+}
+
 constexpr auto ImplicitWeakMessage::InternalGenerateClassData_(
     const MessageLite& prototype, const TcParseTableBase* tc_table) {
   return ClassDataLite{
@@ -56,7 +60,7 @@ constexpr auto ImplicitWeakMessage::InternalGenerateClassData_(
                                    sizeof(ImplicitWeakMessage),
                                    alignof(ImplicitWeakMessage)),
           &DestroyImpl,
-          GetClearImpl<ImplicitWeakMessage>(),
+          &ClearImpl,
           &ByteSizeLongImpl,
           &_InternalSerializeImpl,
           PROTOBUF_FIELD_OFFSET(ImplicitWeakMessage, cached_size_),

@@ -21,21 +21,21 @@
 #include <tuple>
 #include <type_traits>
 #include <utility>
-#include <variant>
 
 #include "absl/base/attributes.h"
 #include "absl/base/optimization.h"
 #include "absl/container/flat_hash_set.h"
-#include "absl/functional/overload.h"
 #include "absl/hash/hash.h"
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
 #include "absl/numeric/bits.h"
 #include "google/protobuf/arena.h"
+#include "google/protobuf/class_data.h"
 #include "google/protobuf/extension_set_inl.h"  // IWYU pragma: keep
 #include "google/protobuf/internal_visibility.h"
 #include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/message_lite.h"
+#include "google/protobuf/message_traits.h"
 #include "google/protobuf/metadata_lite.h"
 #include "google/protobuf/parse_context.h"
 #include "google/protobuf/port.h"
@@ -213,7 +213,7 @@ void ExtensionSet::DeleteFlatMap(const ExtensionSet::KeyValue* flat,
                                  uint16_t flat_capacity) {
   // Arena::CreateArray already requires a trivially destructible type, but
   // ensure this constraint is not violated in the future.
-  static_assert(std::is_trivially_destructible<KeyValue>::value,
+  static_assert(std::is_trivially_destructible_v<KeyValue>,
                 "CreateArray requires a trivially destructible type");
   // A const-cast is needed, but this is safe as we are about to deallocate the
   // array.
@@ -447,12 +447,12 @@ std::string* ExtensionSet::AddString(Arena* arena, int number, FieldType type,
 // -------------------------------------------------------------------
 // Messages
 
-const MessageLite& ExtensionSet::GetMessage(
-    Arena* arena, int number, const MessageLite& default_value) const {
+const MessageLite& ExtensionSet::GetMessageByClassData(
+    Arena* arena, int number, const ClassData* class_data) const {
   const Extension* extension = FindOrNull(number);
   if (extension == nullptr) {
     // Not present.  Return the default value.
-    return default_value;
+    return *class_data->default_instance();
   } else {
     ABSL_DCHECK_TYPE(*extension, OPTIONAL_FIELD, MESSAGE);
     ABSL_DCHECK(!extension->is_lazy);
@@ -465,10 +465,9 @@ const MessageLite& ExtensionSet::GetMessage(
 //                                             const Descriptor* message_type,
 //                                             MessageFactory* factory) const
 
-MessageLite* ExtensionSet::MutableMessage(Arena* arena, int number,
-                                          FieldType type,
-                                          const MessageLite& prototype,
-                                          const FieldDescriptor* descriptor) {
+MessageLite* ExtensionSet::MutableMessageByClassData(
+    Arena* arena, int number, FieldType type, const ClassData* class_data,
+    const FieldDescriptor* descriptor) {
   Extension* extension;
   if (MaybeNewExtension(arena, number, descriptor, &extension)) {
     extension->type = type;
@@ -476,7 +475,7 @@ MessageLite* ExtensionSet::MutableMessage(Arena* arena, int number,
     extension->is_repeated = false;
     extension->is_pointer = true;
     extension->is_lazy = false;
-    extension->ptr.message_value = prototype.New(arena);
+    extension->ptr.message_value = class_data->New(arena);
     extension->is_cleared = false;
     return extension->ptr.message_value;
   } else {
@@ -571,7 +570,7 @@ void ExtensionSet::UnsafeArenaSetAllocatedMessage(
 }
 
 MessageLite* ExtensionSet::ReleaseMessage(Arena* arena, int number,
-                                          const MessageLite& prototype) {
+                                          const ClassData* class_data) {
   Extension* extension = FindOrNull(number);
   if (extension == nullptr) {
     // Not present.  Return nullptr.
@@ -597,7 +596,7 @@ MessageLite* ExtensionSet::ReleaseMessage(Arena* arena, int number,
 }
 
 MessageLite* ExtensionSet::UnsafeArenaReleaseMessage(
-    Arena* arena, int number, const MessageLite& prototype) {
+    Arena* arena, int number, const ClassData* class_data) {
   Extension* extension = FindOrNull(number);
   if (extension == nullptr) {
     // Not present.  Return nullptr.
@@ -649,6 +648,7 @@ MessageLite* ExtensionSet::AddMessage(Arena* arena, int number, FieldType type,
   } else {
     ABSL_DCHECK_TYPE(*extension, REPEATED_FIELD, MESSAGE);
   }
+
   return reinterpret_cast<internal::RepeatedPtrFieldBase*>(
              extension->ptr.repeated_message_value)
       ->AddFromClassData<GenericTypeHandler<MessageLite>>(arena, class_data);
@@ -1912,14 +1912,6 @@ LazyEagerVerifyFnType FindExtensionLazyEagerVerifyFn(
   return nullptr;
 }
 
-std::atomic<ExtensionSet::LazyMessageExtension* (*)(Arena* arena)>
-    ExtensionSet::maybe_create_lazy_extension_;
-
-#if defined(PROTOBUF_INTERNAL_DIRECT_LAZY_FIELD_IN_EXTENSION_SET)
-LazyField* ExtensionSet::MaybeCreateLazyExtension(Arena* arena) {
-  return nullptr;
-}
-#endif  // defined(PROTOBUF_INTERNAL_DIRECT_LAZY_FIELD_IN_EXTENSION_SET)
 
 }  // namespace internal
 }  // namespace protobuf

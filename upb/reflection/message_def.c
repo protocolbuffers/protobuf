@@ -745,7 +745,6 @@ static void create_msgdef(upb_DefBuilder* ctx, const char* prefix,
   m->real_oneof_count = m->oneof_count - synthetic_count;
 
   assign_msg_wellknowntype(m);
-  if (!upb_inttable_compact(&m->itof, ctx->arena)) _upb_DefBuilder_OomErr(ctx);
 
   const google_protobuf_EnumDescriptorProto* const* enums =
       google_protobuf_DescriptorProto_enum_type(msg_proto, &n_enum);

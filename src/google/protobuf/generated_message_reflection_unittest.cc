@@ -33,6 +33,7 @@
 #include "absl/strings/cord.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/arena.h"
+#include "google/protobuf/compiler/cpp/cpp_file_options_test.pb.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/map_test_util.h"
 #include "google/protobuf/map_unittest.pb.h"
@@ -2033,6 +2034,13 @@ TEST(GeneratedMessageReflection, ImportOption) {
   EXPECT_EQ(7740937,
             field_descriptor->options().unknown_fields().field(0).number());
   EXPECT_EQ(3, field_descriptor->options().unknown_fields().field(0).fixed64());
+}
+
+TEST(CppNamespaceOption, NewNamespaceSymbolSameProtoName) {
+  cpp::file::NewMessage new_message;
+
+  EXPECT_EQ(new_message.GetDescriptor()->file()->package(),
+            "cpp.file.options.test");
 }
 
 }  // namespace

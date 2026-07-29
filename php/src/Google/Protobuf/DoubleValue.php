@@ -36,7 +36,8 @@ class DoubleValue extends \Google\Protobuf\Internal\Message
      *           The double value.
      * }
      */
-    public function __construct($data = NULL) {
+    public function __construct($data = null)
+    {
         \GPBMetadata\Google\Protobuf\Wrappers::initOnce();
         parent::__construct($data);
     }

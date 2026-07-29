@@ -40,12 +40,6 @@ class ProtoAPIDescriptorDatabase : public google::protobuf::DescriptorDatabase {
 
   bool FindFileByName(absl::string_view filename,
                       google::protobuf::FileDescriptorProto* output) override {
-    if (PyErr_Occurred()) {
-      // If an error has already occurred, PyObject_CallMethod will assert.
-      // Reset it so we can continue.
-      PyErr_Clear();
-    }
-
     PyObject* pyfile_name =
         PyUnicode_FromStringAndSize(filename.data(), filename.size());
     if (pyfile_name == nullptr) {
@@ -57,8 +51,9 @@ class ProtoAPIDescriptorDatabase : public google::protobuf::DescriptorDatabase {
         PyObject_CallMethod(pool_, "FindFileByName", "O", pyfile_name);
     Py_DECREF(pyfile_name);
     if (pyfile == nullptr) {
-      PyErr_Format(PyExc_TypeError, "Default python pool fail to find %s",
-                   filename.data());
+      if (PyErr_ExceptionMatches(PyExc_KeyError)) {
+        PyErr_Clear();
+      }
       return false;
     }
 
@@ -367,7 +362,7 @@ struct ApiImplementation : google::protobuf::python::PyProto_API {
   }
 
   const google::protobuf::DescriptorPool* GetDefaultDescriptorPool() const override {
-    return google::protobuf::python::GetDefaultDescriptorPool()->pool;
+    return google::protobuf::python::GetDefaultDescriptorPool()->pool->get();
   }
 
   google::protobuf::MessageFactory* GetDefaultMessageFactory() const override {
@@ -386,6 +381,12 @@ struct ApiImplementation : google::protobuf::python::PyProto_API {
   PyObject* DescriptorPool_FromPool(
       const google::protobuf::DescriptorPool* pool) const override {
     return google::protobuf::python::PyDescriptorPool_FromPool(pool);
+  }
+  PyObject* DescriptorPool_FromSharedPool(
+      std::shared_ptr<const google::protobuf::DescriptorPool> pool,
+      std::shared_ptr<const google::protobuf::DescriptorDatabase> database)
+      const override {
+    return google::protobuf::python::PyDescriptorPool_FromSharedPool(pool, database);
   }
   PyObject* DescriptorPool_FromPool(
       std::unique_ptr<const google::protobuf::DescriptorPool> pool,

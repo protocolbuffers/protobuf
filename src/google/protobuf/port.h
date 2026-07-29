@@ -32,6 +32,8 @@
 #include "absl/base/attributes.h"
 #include "absl/base/config.h"
 #include "absl/base/dynamic_annotations.h"
+#include "absl/numeric/bits.h"
+#include "absl/numeric/int128.h"
 #include "absl/strings/string_view.h"
 #include "absl/types/optional.h"
 
@@ -136,7 +138,7 @@ inline void SetAllocateAtLeastHook(AllocateAtLeastHookFn fn, void* context) {}
 
 // Allocates `size` bytes. This wrapper allows memory allocations to be
 // optimized by the compiler since `operator new` is considered observable.
-inline void* Allocate(size_t size) {
+PROTOBUF_ALWAYS_INLINE PROTOBUF_MALLOC void* Allocate(size_t size) {
 #if ABSL_HAVE_BUILTIN(__builtin_operator_new)
   // Allows the compiler to merge or optimize away the allocation even if it
   // would violate the observability guarantees of ::operator new.
@@ -196,7 +198,7 @@ struct ArenaInitialized {
 
 template <typename To, typename From>
 void AssertDownCast(From* from) {
-  static_assert(std::is_base_of<From, To>::value, "illegal DownCast");
+  static_assert(std::is_base_of_v<From, To>, "illegal DownCast");
 
   // Check that this function is not used to downcast message types.
   // For those we should use {Down,Dynamic}CastTo{Message,Generated}.
@@ -270,7 +272,7 @@ enum { kCacheAlignment = alignof(max_align_t) };  // do the best we can
 // The maximum byte alignment we support.
 enum { kMaxMessageAlignment = 8 };
 
-inline constexpr bool EnableStableExperiments() {
+constexpr bool EnableStableExperiments() {
 #if defined(PROTOBUF_ENABLE_STABLE_EXPERIMENTS)
   return true;
 #else
@@ -278,22 +280,20 @@ inline constexpr bool EnableStableExperiments() {
 #endif
 }
 
-inline constexpr bool EnableExperimentalMicroString() {
+constexpr bool EnableExperimentalMicroString() {
 #if defined(PROTOBUF_ENABLE_EXPERIMENTAL_MICRO_STRING)
   return true;
 #endif
   return EnableStableExperiments();
 }
 
-inline constexpr bool ForceInlineStringInProtoc() {
+constexpr bool ForceInlineStringInProtoc() { return EnableStableExperiments(); }
+
+constexpr bool ForceEagerlyVerifiedLazyInProtoc() {
   return EnableStableExperiments();
 }
 
-inline constexpr bool ForceEagerlyVerifiedLazyInProtoc() {
-  return EnableStableExperiments();
-}
-
-inline constexpr bool ForceSplitFieldsInProtoc() {
+constexpr bool ForceSplitFieldsInProtoc() {
 #if defined(PROTOBUF_FORCE_SPLIT)
   return true;
 #else
@@ -303,7 +303,7 @@ inline constexpr bool ForceSplitFieldsInProtoc() {
 
 // Returns true if debug hardening for clearing oneof message on arenas is
 // enabled.
-inline constexpr bool DebugHardenClearOneofMessageOnArena() {
+constexpr bool DebugHardenClearOneofMessageOnArena() {
 #ifdef NDEBUG
   return false;
 #else
@@ -355,7 +355,7 @@ constexpr bool DebugHardenFuzzMessageSpaceUsedLong() {
   return false;
 }
 
-inline constexpr bool DebugHardenCheckHasBitConsistency() {
+constexpr bool DebugHardenCheckHasBitConsistency() {
 #if !defined(NDEBUG) || defined(ABSL_HAVE_ADDRESS_SANITIZER) || \
     defined(ABSL_HAVE_MEMORY_SANITIZER) || defined(ABSL_HAVE_THREAD_SANITIZER)
   return true;
@@ -377,9 +377,9 @@ inline void AssertBytesAreReadable(const volatile char* p, int n) {
 
 // Returns true if pointers are 8B aligned, leaving least significant 3 bits
 // available.
-inline constexpr bool PtrIsAtLeast8BAligned() { return alignof(void*) >= 8; }
+constexpr bool PtrIsAtLeast8BAligned() { return alignof(void*) >= 8; }
 
-inline constexpr bool IsLazyParsingSupported() {
+constexpr bool IsLazyParsingSupported() {
   // We need 3 bits for pointer tagging in lazy parsing.
   return PtrIsAtLeast8BAligned();
 }
@@ -670,13 +670,13 @@ inline void UnpoisonMemoryRegion([[maybe_unused]] const void* p,
 
 inline bool IsMemoryPoisoned([[maybe_unused]] const void* p) {
 #if defined(ABSL_HAVE_ADDRESS_SANITIZER)
-  return __asan_address_is_poisoned(p);
+  return __asan_address_is_poisoned(p) != 0;
 #else
   return false;
 #endif
 }
 
-inline constexpr bool ShouldBatchSingularString() {
+constexpr bool ShouldBatchSingularString() {
 #ifdef PROTOBUF_INTERNAL_BATCH_SINGULAR_STRING
   return true;
 #else
@@ -684,7 +684,7 @@ inline constexpr bool ShouldBatchSingularString() {
 #endif
 }
 
-inline constexpr bool ShouldBatchRepeatedString() {
+constexpr bool ShouldBatchRepeatedString() {
 #ifdef PROTOBUF_INTERNAL_BATCH_REPEATED_STRING
   return true;
 #else
@@ -692,7 +692,7 @@ inline constexpr bool ShouldBatchRepeatedString() {
 #endif
 }
 
-inline constexpr bool ShouldBatchRepeatedNumeric() {
+constexpr bool ShouldBatchRepeatedNumeric() {
 #ifdef PROTOBUF_INTERNAL_BATCH_REPEATED_NUMERIC
   return true;
 #else
@@ -700,7 +700,7 @@ inline constexpr bool ShouldBatchRepeatedNumeric() {
 #endif
 }
 
-inline constexpr bool UseBatchOffset() {
+constexpr bool UseBatchOffset() {
 #ifdef PROTOBUF_INTERNAL_USE_BATCH_OFFSET
   return true;
 #else
@@ -733,6 +733,13 @@ PROTOBUF_ALWAYS_INLINE void TSanWrite(const void*) {}
 // templates.
 template <typename T>
 using type_identity_t = std::enable_if_t<true, T>;
+
+// Evaluates to the input value, but it makes it type-dependent on `T`.
+// This allows "late binding" of known types to avoid circular dependencies.
+template <typename T, typename U>
+U&& TypeDependent(U&& value) {
+  return std::forward<U>(value);
+}
 
 template <typename T>
 constexpr T* Launder(T* p) {
@@ -778,16 +785,33 @@ constexpr bool EnableCustomNewFor() {
 //   PROTOBUF_DEBUG_COUNTER("Foo.Slow").Inc();
 //   ...
 // }
+//
+// It also supports bucket based distributions. It has two methods:
+//
+// PROTOBUF_DEBUG_COUNTER("Foo.Slow").IncLog(x);
+//
+// where `x` is a uint64_t value and it will add the value to the log-based
+// bucket for it.
+//
+// PROTOBUF_DEBUG_COUNTER("Foo.Slow").IncBucket(x);
+//
+// where `x` is in the range [0,64] and increases the bucket directly.
 class PROTOBUF_EXPORT RealDebugCounter {
  public:
+  static constexpr size_t kNumBuckets = 64;
   explicit RealDebugCounter(absl::string_view name) { Register(name); }
-  // Lossy increment.
-  void Inc() { counter_.store(value() + 1, std::memory_order_relaxed); }
-  size_t value() const { return counter_.load(std::memory_order_relaxed); }
+  void Inc() { IncBucket(0); }
+  void IncLog(uint64_t value) { IncBucket(absl::bit_width(value)); }
+  void IncBucket(size_t b) {
+    // clamp to prevent UB if IncBucket is called out of range.
+    b %= kNumBuckets;
+    // Lossy increment.
+    counters_[b].store(counters_[b].load(std::memory_order_relaxed) + 1);
+  }
 
  private:
   void Register(absl::string_view name);
-  std::atomic<size_t> counter_{};
+  std::atomic<size_t>* counters_;
 };
 
 // When the feature is not enabled, the type is a noop.
@@ -795,6 +819,8 @@ class NoopDebugCounter {
  public:
   explicit constexpr NoopDebugCounter() = default;
   constexpr void Inc() {}
+  constexpr void IncLog(uint64_t) {}
+  constexpr void IncBucket(size_t) {}
 };
 
 // Pretty random large number that seems like a safe allocation on most systems.
@@ -806,18 +832,54 @@ inline constexpr size_t kSafeStringSize = 50000000;
 
 // Take advantage of C++20 constexpr support in std::string.
 class alignas(8) GlobalEmptyStringConstexpr {
+  template <typename T>
+  struct NonConstexprAllocator {
+    using value_type = T;
+    using size_type = size_t;
+    using difference_type = ptrdiff_t;
+
+    constexpr NonConstexprAllocator() = default;
+
+    // Following the minimum requirements for an allocator:
+    // https://en.cppreference.com/cpp/named_req/Allocator
+    // Conversion constructor.
+    template <typename U>
+    constexpr NonConstexprAllocator(NonConstexprAllocator<U>) {}
+
+    friend constexpr bool operator==(NonConstexprAllocator,
+                                     NonConstexprAllocator) {
+      return true;
+    }
+    friend constexpr bool operator!=(NonConstexprAllocator,
+                                     NonConstexprAllocator) {
+      return false;
+    }
+
+    T* allocate(size_t);
+    void deallocate(void*, size_t);
+  };
+
  public:
   const std::string& get() const { return value_; }
   // Nothing to init, or destroy.
   std::string* Init() const { return nullptr; }
 
-  // Disable the optimization for MSVC and Xtensa.
   // There are some builds where the default constructed string can't be used as
   // `constinit` even though the constructor is `constexpr` and can be used
   // during constant evaluation.
-#if !defined(_MSC_VER) && !defined(__XTENSA__)
+  // We probe them by trying to construct the string during constant evaluation
+  // with a non-constexpr allocator. If the default construction/destruction
+  // attempts to use the allocator it won't be able to and SFINAE will trigger.
+  // The standard only guarantees that std::string can be used during constant
+  // evaluation, not that a constant evaluated instance can leak into runtime.
+  // Memory allocated during constant evaluation can't be used for runtime
+  // objects.
+#if !defined(__XTENSA__)
+  // Disable the optimization for Xtensa.
   // Compilation fails on Xtensa: b/467129751
-  template <typename T = std::string, bool = (T(), true)>
+  template <
+      typename Alloc = NonConstexprAllocator<char>,
+      int = std::basic_string<char, std::char_traits<char>, Alloc>().size()>
   static constexpr std::true_type HasConstexprDefaultConstructor(int) {
     return {};
   }
@@ -850,55 +912,55 @@ using GlobalEmptyString = std::conditional_t<
 PROTOBUF_EXPORT extern GlobalEmptyString fixed_address_empty_string;
 
 PROTOBUF_EXPORT ABSL_ATTRIBUTE_NORETURN PROTOBUF_NOINLINE void
-HandleAddOverflow(int a, int b);
+HandleAddOverflow(absl::int128 a, absl::int128 b);
 
+template <typename T, typename U>
+ABSL_ATTRIBUTE_NORETURN PROTOBUF_NOINLINE void HandleAddOverflow(T a, U b) {
+  HandleAddOverflow(absl::int128(a), absl::int128(b));
+}
+
+#if ABSL_HAVE_BUILTIN(__builtin_add_overflow)
+template <typename IntType1, typename IntType2>
+inline int CheckedAdd(IntType1 a, IntType2 b) {
+  int sum;
+  bool overflow = __builtin_add_overflow(a, b, &sum);
+  if (ABSL_PREDICT_FALSE(overflow)) {
+    HandleAddOverflow(a, b);
+  }
+  return sum;
+}
+#else
 inline int CheckedAdd(int a, int b) {
   int sum;
-#if ABSL_HAVE_BUILTIN(__builtin_add_overflow)
-  bool overflow = __builtin_add_overflow(a, b, &sum);
-#else
   int64_t sum64 = static_cast<int64_t>(a) + static_cast<int64_t>(b);
   sum = static_cast<int>(sum64);
   bool overflow = sum64 != sum;
-#endif
   if (ABSL_PREDICT_FALSE(overflow)) {
     HandleAddOverflow(a, b);
   }
   return sum;
 }
 
+template <typename ScalarType1, typename ScalarType2>
+inline int CheckedAdd(ScalarType1 a, ScalarType2 b) {
+  static_assert(std::is_integral_v<ScalarType1>);
+  static_assert(std::is_integral_v<ScalarType2>);
+  absl::int128 sum128 = absl::int128(a) + absl::int128(b);
+  int sum = static_cast<int>(sum128);
+  bool overflow = sum128 != absl::int128(sum);
+  if (ABSL_PREDICT_FALSE(overflow)) {
+    HandleAddOverflow(a, b);
+  }
+  return sum;
+}
+#endif
+
 enum class BoundsCheckMode { kNoEnforcement, kReturnDefault, kAbort };
 
 PROTOBUF_EXPORT constexpr BoundsCheckMode GetBoundsCheckMode() {
-#if defined(PROTO2_OPENSOURCE) || \
-    defined(PROTOBUF_INTERNAL_BOUNDS_CHECK_MODE_ABORT)
   return BoundsCheckMode::kAbort;
-#elif defined(PROTOBUF_INTERNAL_BOUNDS_CHECK_MODE_RETURN_DEFAULT)
-  return BoundsCheckMode::kReturnDefault;
-#else
-  return BoundsCheckMode::kNoEnforcement;
-#endif
 }
 
-
-#if defined(__x86_64__) && defined(__SSE4_2__)
-
-constexpr bool HasCrc32() { return true; }
-inline uint32_t Crc32(uint32_t crc, uint64_t v) {
-  return __builtin_ia32_crc32di(crc, v);
-}
-
-#elif defined(__ARM_FEATURE_CRC32)
-
-constexpr bool HasCrc32() { return true; }
-inline uint32_t Crc32(uint32_t crc, uint64_t v) { return __crc32cd(crc, v); }
-
-#else
-
-constexpr bool HasCrc32() { return false; }
-inline uint32_t Crc32(uint32_t, uint64_t) { return 0; }
-
-#endif
 
 // Check minimum Protobuf support defined at:
 // https://github.com/google/oss-policies-info/blob/main/foundational-cxx-support-matrix.md

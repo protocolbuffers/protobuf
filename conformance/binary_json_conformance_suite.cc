@@ -72,6 +72,14 @@ std::string GetTypeUrl(const Descriptor* message) {
   return absl::StrCat(kTypeUrlPrefix, "/", message->full_name());
 }
 
+std::string str_repeat(absl::string_view s, int count) {
+  std::string result;
+  for (int i = 0; i < count; ++i) {
+    absl::StrAppend(&result, s);
+  }
+  return result;
+}
+
 /* Routines for building arbitrary protos *************************************/
 
 // We would use CodedOutputStream except that we want more freedom to build
@@ -2517,6 +2525,12 @@ void BinaryAndJsonConformanceSuiteImpl<
   ExpectParseFailureForJson("Uint64FieldNotInteger", REQUIRED,
                             R"({"optionalUint64": "0.5"})");
 
+  // Parser reject boolean values for integer fields.
+  ExpectParseFailureForJson("Int32FieldTrueValue", REQUIRED,
+                            R"({"optionalInt32": true})");
+  ExpectParseFailureForJson("Int32FieldFalseValue", REQUIRED,
+                            R"({"optionalInt32": false})");
+
   // Parser reject non-numeric string values.
   ExpectParseFailureForJson("Int32FieldStringValuePartiallyNumeric", REQUIRED,
                             R"({"optionalInt32": "12abc"})");
@@ -2688,6 +2702,12 @@ void BinaryAndJsonConformanceSuiteImpl<
   ExpectParseFailureForJson("FloatFieldStringValuePartiallyNumericUnicode",
                             REQUIRED, R"({"optionalFloat": "12谷歌34"})");
 
+  // Parser reject boolean values for float fields.
+  ExpectParseFailureForJson("FloatFieldTrueValue", REQUIRED,
+                            R"({"optionalFloat": true})");
+  ExpectParseFailureForJson("FloatFieldFalseValue", REQUIRED,
+                            R"({"optionalFloat": false})");
+
   // Double fields.
   RunValidJsonTest("DoubleFieldMinPositiveValue", REQUIRED,
                    R"({"optionalDouble": 2.22507e-308})",
@@ -2753,6 +2773,12 @@ void BinaryAndJsonConformanceSuiteImpl<
   ExpectParseFailureForJson("DoubleFieldStringValueNonNumeric", REQUIRED,
                             R"({"optionalDouble": "abc"})");
 
+  // Parser reject boolean values for double fields.
+  ExpectParseFailureForJson("DoubleFieldTrueValue", REQUIRED,
+                            R"({"optionalDouble": true})");
+  ExpectParseFailureForJson("DoubleFieldFalseValue", REQUIRED,
+                            R"({"optionalDouble": false})");
+
   // Enum fields.
   RunValidJsonTest("EnumField", REQUIRED, R"({"optionalNestedEnum": "FOO"})",
                    "optional_nested_enum: FOO");
@@ -2781,6 +2807,17 @@ void BinaryAndJsonConformanceSuiteImpl<
                    R"({"optionalNestedEnum": 0})", "optional_nested_enum: FOO");
   RunValidJsonTest("EnumFieldNumericValueNonZero", REQUIRED,
                    R"({"optionalNestedEnum": 1})", "optional_nested_enum: BAR");
+  // Arrays are not allowed for non-repeated enum fields.
+  ExpectParseFailureForJson("EnumFieldSingleElementArrayEnumName", REQUIRED,
+                            R"({"optionalNestedEnum": ["FOO"]})");
+  ExpectParseFailureForJson("EnumFieldSingleElementArrayNumericValue", REQUIRED,
+                            R"({"optionalNestedEnum": [2]})");
+
+  // Booleans are not allowed for enum fields.
+  ExpectParseFailureForJson("EnumFieldTrueValue", REQUIRED,
+                            R"({"optionalNestedEnum": true})");
+  ExpectParseFailureForJson("EnumFieldFalseValue", REQUIRED,
+                            R"({"optionalNestedEnum": false})");
 
   if (run_proto3_tests_) {
     // Unknown enum values are represented as numeric values.
@@ -3368,6 +3405,71 @@ void BinaryAndJsonConformanceSuiteImpl<
         return value["optionalTimestamp"].asString() ==
                "1970-01-01T00:00:00.000000010Z";
       });
+
+  // Out of bounds / invalid components should JSON parse fail
+  ExpectParseFailureForJson("TimestampJsonInputMonthTooLarge", REQUIRED,
+                            R"({"optionalTimestamp": "1970-13-01T00:00:00Z"})");
+  ExpectParseFailureForJson("TimestampJsonInputMonthZero", REQUIRED,
+                            R"({"optionalTimestamp": "1970-00-01T00:00:00Z"})");
+  ExpectParseFailureForJson("TimestampJsonInputDayTooLarge", REQUIRED,
+                            R"({"optionalTimestamp": "1970-01-32T00:00:00Z"})");
+  ExpectParseFailureForJson("TimestampJsonInputDayZero", REQUIRED,
+                            R"({"optionalTimestamp": "1970-01-00T00:00:00Z"})");
+  ExpectParseFailureForJson("TimestampJsonInputHourTooLarge", REQUIRED,
+                            R"({"optionalTimestamp": "1970-01-01T24:00:00Z"})");
+  ExpectParseFailureForJson("TimestampJsonInputHourTooLarge25", REQUIRED,
+                            R"({"optionalTimestamp": "1970-01-01T25:00:00Z"})");
+  ExpectParseFailureForJson("TimestampJsonInputMinuteTooLarge", REQUIRED,
+                            R"({"optionalTimestamp": "1970-01-01T00:60:00Z"})");
+  ExpectParseFailureForJson("TimestampJsonInputSecondTooLarge", REQUIRED,
+                            R"({"optionalTimestamp": "1970-01-01T00:00:60Z"})");
+  ExpectParseFailureForJson(
+      "TimestampJsonInputInvalidOffsetHour", REQUIRED,
+      R"({"optionalTimestamp": "1970-01-01T00:00:00+24:00"})");
+  ExpectParseFailureForJson(
+      "TimestampJsonInputInvalidOffsetMinute", REQUIRED,
+      R"({"optionalTimestamp": "1970-01-01T00:00:00+00:60"})");
+  ExpectParseFailureForJson(
+      "TimestampJsonInputOffsetBoundaryUnderflow", REQUIRED,
+      R"({"optionalTimestamp": "0001-01-01T00:00:00+00:01"})");
+  ExpectParseFailureForJson(
+      "TimestampJsonInputOffsetBoundaryOverflow", REQUIRED,
+      R"({"optionalTimestamp": "9999-12-31T23:59:59-00:01"})");
+  ExpectParseFailureForJson(
+      "TimestampJsonInputInvalidNanos", REQUIRED,
+      R"({"optionalTimestamp": "1970-01-01T00:00:00.1234567890Z"})");
+  ExpectParseFailureForJson(
+      "TimestampJsonInputInvalidCharsInNanos", REQUIRED,
+      R"({"optionalTimestamp": "1970-01-01T00:00:00.123aZ"})");
+  ExpectParseFailureForJson("TimestampJsonInputYearTooShort", REQUIRED,
+                            R"({"optionalTimestamp": "999-01-01T00:00:00Z"})");
+  ExpectParseFailureForJson(
+      "TimestampJsonInputYearTooLong", REQUIRED,
+      R"({"optionalTimestamp": "00001-01-01T00:00:00Z"})");
+  ExpectParseFailureForJson("TimestampJsonInputMonthTooShort", REQUIRED,
+                            R"({"optionalTimestamp": "1970-1-01T00:00:00Z"})");
+  ExpectParseFailureForJson("TimestampJsonInputDayTooShort", REQUIRED,
+                            R"({"optionalTimestamp": "1970-01-1T00:00:00Z"})");
+  ExpectParseFailureForJson("TimestampJsonInputNonLeapFeb29", REQUIRED,
+                            R"({"optionalTimestamp": "2001-02-29T00:00:00Z"})");
+
+  // Honoring time zones correctly
+  RunValidJsonTest("TimestampJsonInputLeapFeb29", REQUIRED,
+                   R"({"optionalTimestamp": "2000-02-29T00:00:00Z"})",
+                   "optional_timestamp: {seconds: 951782400}");
+  RunValidJsonTest("TimestampWithOffsetShiftsDay", REQUIRED,
+
+                   R"({"optionalTimestamp": "1970-01-02T01:00:00+02:00"})",
+                   "optional_timestamp: {seconds: 82800}");
+  RunValidJsonTest("TimestampWithOffsetBoundaryInBoundsMin", REQUIRED,
+                   R"({"optionalTimestamp": "0001-01-01T00:00:00-00:01"})",
+                   "optional_timestamp: {seconds: -62135596740}");
+  RunValidJsonTest("TimestampWithOffsetBoundaryInBoundsMax", REQUIRED,
+                   R"({"optionalTimestamp": "9999-12-31T23:59:59+00:01"})",
+                   "optional_timestamp: {seconds: 253402300739}");
+  RunValidJsonTest("TimestampWithComplexOffset", REQUIRED,
+                   R"({"optionalTimestamp": "1970-01-01T00:00:00-11:30"})",
+                   "optional_timestamp: {seconds: 41400}");
 }
 
 template <typename MessageType>
@@ -3471,6 +3573,31 @@ void BinaryAndJsonConformanceSuiteImpl<MessageType>::RunJsonTestsForStruct() {
     }
   }
       )");
+
+  RunValidJsonTest(
+      "StructDeepNesting25", RECOMMENDED,
+      absl::StrCat(R"({"optionalStruct": {)", str_repeat(R"("n": {)", 25),
+                   R"("value": 1)", std::string(25, '}'), "}}"),
+      absl::StrCat("optional_struct: {\n",
+                   str_repeat("  fields: {\n"
+                              "    key: \"n\"\n"
+                              "    value: {\n"
+                              "      struct_value: {\n",
+                              25),
+                   "        fields: {\n"
+                   "          key: \"value\"\n"
+                   "          value: { number_value: 1 }\n"
+                   "        }\n",
+                   str_repeat("      }\n"
+                              "    }\n"
+                              "  }\n",
+                              25),
+                   "}\n"));
+
+  ExpectParseFailureForJson(
+      "StructDeepNesting200", RECOMMENDED,
+      absl::StrCat(R"({"optionalStruct": {)", str_repeat(R"("n": {)", 200),
+                   R"("value": 1)", std::string(200, '}'), "}}"));
 }
 
 template <typename MessageType>
@@ -3561,6 +3688,47 @@ void BinaryAndJsonConformanceSuiteImpl<MessageType>::RunJsonTestsForValue() {
                                 "optional_value: { number_value: nan}");
   ExpectSerializeFailureForJson("ValueRejectInfNumberValue", RECOMMENDED,
                                 "optional_value: { number_value: inf}");
+  RunValidJsonTest("ListValueDeepNesting25", RECOMMENDED,
+                   absl::StrCat(R"({"optionalValue": )", std::string(25, '['),
+                                "1", std::string(25, ']'), "}"),
+                   absl::StrCat("optional_value: {\n",
+                                str_repeat("  list_value: {\n"
+                                           "    values: {\n",
+                                           25),
+                                "      number_value: 1\n",
+                                str_repeat("    }\n"
+                                           "  }\n",
+                                           25),
+                                "}\n"));
+
+  ExpectParseFailureForJson(
+      "ListValueDeepNesting200", RECOMMENDED,
+      absl::StrCat(R"({"optionalValue": )", std::string(200, '['), "1",
+                   std::string(200, ']'), "}"));
+  RunValidJsonTest(
+      "ValueDeepNesting25", RECOMMENDED,
+      absl::StrCat(R"({"optionalValue": {)", str_repeat(R"("n": {)", 25),
+                   R"("value": 1)", std::string(25, '}'), "}}"),
+      absl::StrCat("optional_value: {\n", "  struct_value: {\n",
+                   str_repeat("    fields: {\n"
+                              "      key: \"n\"\n"
+                              "      value: {\n"
+                              "        struct_value: {\n",
+                              25),
+                   "          fields: {\n"
+                   "            key: \"value\"\n"
+                   "            value: { number_value: 1 }\n"
+                   "          }\n",
+                   str_repeat("        }\n"
+                              "      }\n"
+                              "    }\n",
+                              25),
+                   "  }\n", "}\n"));
+
+  ExpectParseFailureForJson(
+      "ValueDeepNesting200", RECOMMENDED,
+      absl::StrCat(R"({"optionalValue": {)", str_repeat(R"("n": {)", 200),
+                   R"("value": 1)", std::string(200, '}'), "}}"));
 }
 
 template <typename MessageType>
@@ -3865,11 +4033,11 @@ BinaryAndJsonConformanceSuiteImpl<MessageType>::GetFieldForOneofType(
 template <typename MessageType>
 std::string BinaryAndJsonConformanceSuiteImpl<MessageType>::SyntaxIdentifier()
     const {
-  if (std::is_same<MessageType, TestAllTypesProto2>::value) {
+  if (std::is_same_v<MessageType, TestAllTypesProto2>) {
     return "Proto2";
-  } else if (std::is_same<MessageType, TestAllTypesProto3>::value) {
+  } else if (std::is_same_v<MessageType, TestAllTypesProto3>) {
     return "Proto3";
-  } else if (std::is_same<MessageType, TestAllTypesProto2Editions>::value) {
+  } else if (std::is_same_v<MessageType, TestAllTypesProto2Editions>) {
     return "Editions_Proto2";
   } else {
     return "Editions_Proto3";

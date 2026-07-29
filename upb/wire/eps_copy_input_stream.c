@@ -16,11 +16,10 @@
 // Must be last.
 #include "upb/port/def.inc"
 
-const char* UPB_PRIVATE(upb_EpsCopyInputStream_ReturnError)(
-    upb_EpsCopyInputStream* e) {
+UPB_NORETURN UPB_NOINLINE void UPB_PRIVATE(
+    upb_EpsCopyInputStream_ThrowMalformed)(upb_EpsCopyInputStream* e) {
   e->error = true;
-  if (e->err) upb_ErrorHandler_ThrowError(e->err, kUpb_ErrorCode_Malformed);
-  return NULL;
+  upb_ErrorHandler_ThrowError(e->err, kUpb_ErrorCode_Malformed);
 }
 
 const char* UPB_PRIVATE(upb_EpsCopyInputStream_IsDoneFallback)(

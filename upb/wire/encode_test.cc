@@ -3,17 +3,24 @@
 #include <setjmp.h>
 #include <stddef.h>
 
+#include <cstdint>
+
 #include <gtest/gtest.h>
 #include "upb/mem/arena.h"
 #include "upb/message/array.h"
+#include "upb/message/internal/accessors.h"
+#include "upb/message/internal/extension.h"
 #include "upb/message/internal/map_sorter.h"
+#include "upb/message/internal/message.h"
 #include "upb/message/message.h"
+#include "upb/message/unknown_fields.h"
 #include "upb/mini_table/extension.h"
 #include "upb/mini_table/extension_registry.h"
 #include "upb/mini_table/field.h"
 #include "upb/mini_table/message.h"
 #include "upb/wire/decode.h"
 #include "upb/wire/encode_test.upb.h"
+#include "upb/wire/encode_test.upb_minitable.h"
 #include "upb/wire/internal/encoder.h"
 
 // Must be last.
@@ -60,12 +67,12 @@ TEST(EncodeTest, EncodeFieldSuccess) {
   // Encode field.
   const upb_MiniTable* mt = &upb_0wire_0test__TestInt32_msg_init;
   const upb_MiniTableField* field = upb_MiniTable_FindFieldByNumber(mt, 1);
-  char* buf;
+  char* buf = e.alloc.limit;
   size_t size;
   upb_EncodeStatus status = UPB_PRIVATE(_upb_Encode_Field)(
       &e, (upb_Message*)msg, field, &buf, &size, e.options);
   EXPECT_EQ(status, kUpb_EncodeStatus_Ok);
-  EXPECT_GT(size, 0);
+  EXPECT_GT(size, 0u);
 
   // Verify that the encoded field can be decoded back to the original message
   // with the same value.
@@ -91,12 +98,12 @@ TEST(EncodeTest, EncodeFieldSuccessEmptyMessage) {
   // Encode empty message field.
   const upb_MiniTable* mt = &upb_0wire_0test__TestInt32_msg_init;
   const upb_MiniTableField* field = upb_MiniTable_FindFieldByNumber(mt, 1);
-  char* buf;
+  char* buf = e.alloc.limit;
   size_t size;
   upb_EncodeStatus status = UPB_PRIVATE(_upb_Encode_Field)(
       &e, (upb_Message*)msg, field, &buf, &size, e.options);
   EXPECT_EQ(status, kUpb_EncodeStatus_Ok);
-  EXPECT_EQ(size, 0);
+  EXPECT_EQ(size, 0u);
 
   _upb_mapsorter_destroy(&e.sorter);
   upb_Arena_Free(arena);
@@ -115,7 +122,7 @@ TEST(EncodeTest, EncodeFieldMaxDepthExceeded) {
 
   const upb_MiniTable* mt = &upb_0wire_0test__TestRecursive_msg_init;
   const upb_MiniTableField* field = upb_MiniTable_FindFieldByNumber(mt, 1);
-  char* buf;
+  char* buf = e.alloc.limit;
   size_t size;
   e.options = upb_EncodeOptions_MaxDepth(1);
   DoEncodeFieldMaxDepthExceeded(err, e, (upb_Message*)msg, field, buf, size);
@@ -131,22 +138,22 @@ TEST(EncodeTest, EncodeExtensionSuccess) {
   jmp_buf err;
   UPB_PRIVATE(_upb_encstate_init)(&e, &err, arena);
 
-  const upb_MiniTableExtension* ext = &upb_wire_test_ext_i32_ext;
+  const upb_MiniTableExtension* ext = upb_wire_test_ext_i32_ext;
   upb_MessageValue ext_val;
   ext_val.int32_val = 42;
 
   // Encode extension.
-  char* buf;
+  char* buf = e.alloc.limit;
   size_t size;
   upb_EncodeStatus status = UPB_PRIVATE(_upb_Encode_Extension)(
       &e, ext, ext_val, false, &buf, &size, e.options);
   EXPECT_EQ(status, kUpb_EncodeStatus_Ok);
-  EXPECT_GT(size, 0);
+  EXPECT_GT(size, 0u);
 
   // Verify that the encoded extension can be decoded back to the original
   // extension value.
   upb_ExtensionRegistry* ext_reg = upb_ExtensionRegistry_New(arena);
-  const upb_MiniTableExtension* ext_array[1] = {&upb_wire_test_ext_i32_ext};
+  const upb_MiniTableExtension* ext_array[1] = {upb_wire_test_ext_i32_ext};
   upb_ExtensionRegistry_AddArray(ext_reg, ext_array, 1);
 
   upb_wire_test_TestExtensions* decoded_msg =
@@ -166,18 +173,18 @@ TEST(EncodeTest, EncodeExtensionSuccessEmptyMessage) {
   jmp_buf err;
   UPB_PRIVATE(_upb_encstate_init)(&e, &err, arena);
 
-  const upb_MiniTableExtension* ext = &upb_wire_test_ext_i32_ext;
+  const upb_MiniTableExtension* ext = upb_wire_test_ext_i32_ext;
   // Zero int32 won't be serialized.
   upb_MessageValue ext_val;
   ext_val.int32_val = 0;
 
   // Encode empty extension.
-  char* buf;
+  char* buf = e.alloc.limit;
   size_t size;
   upb_EncodeStatus status = UPB_PRIVATE(_upb_Encode_Extension)(
       &e, ext, ext_val, false, &buf, &size, e.options);
   EXPECT_EQ(status, kUpb_EncodeStatus_Ok);
-  EXPECT_GT(size, 0);
+  EXPECT_GT(size, 0u);
 
   _upb_mapsorter_destroy(&e.sorter);
   upb_Arena_Free(arena);
@@ -190,11 +197,11 @@ TEST(EncodeTest, EncodeExtensionMaxDepthExceeded) {
   jmp_buf err;
   UPB_PRIVATE(_upb_encstate_init)(&e, &err, arena);
 
-  const upb_MiniTableExtension* ext = &upb_wire_test_ext_recursive_ext;
+  const upb_MiniTableExtension* ext = upb_wire_test_ext_recursive_ext;
   upb_MessageValue ext_val;
   ext_val.msg_val = (upb_Message*)upb_wire_test_TestRecursive_new(arena);
 
-  char* buf;
+  char* buf = e.alloc.limit;
   size_t size;
   e.options = upb_EncodeOptions_MaxDepth(1);
   DoEncodeExtensionMaxDepthExceeded(err, e, ext, ext_val, buf, size);
@@ -203,6 +210,292 @@ TEST(EncodeTest, EncodeExtensionMaxDepthExceeded) {
   upb_Arena_Free(arena);
 }
 
+TEST(EncodeTest, EncodeNonCanonicalExtensionSuccess) {
+  upb_Arena* arena = upb_Arena_New();
+
+  upb_wire_test_TestExtensions* msg = upb_wire_test_TestExtensions_new(arena);
+
+  // Attach scalar extension as non-canonical
+  int32_t val = 42;
+  UPB_PRIVATE(_upb_Message_SetNonCanonicalExtension)(
+      (upb_Message*)msg, upb_wire_test_ext_i32_ext, &val, arena);
+
+  // Encode the message.
+  char* buf;
+  size_t size;
+  upb_EncodeStatus status =
+      upb_Encode((upb_Message*)msg, &upb_0wire_0test__TestExtensions_msg_init,
+                 0, arena, &buf, &size);
+  EXPECT_EQ(status, kUpb_EncodeStatus_Ok);
+  EXPECT_GT(size, 0u);
+
+  // Verify that the encoded bytes can be decoded back using the registry!
+  upb_ExtensionRegistry* ext_reg = upb_ExtensionRegistry_New(arena);
+  const upb_MiniTableExtension* ext_array[1] = {upb_wire_test_ext_i32_ext};
+  upb_ExtensionRegistry_AddArray(ext_reg, ext_array, 1);
+
+  upb_wire_test_TestExtensions* decoded_msg =
+      upb_wire_test_TestExtensions_parse_ex(buf, size, ext_reg, 0, arena);
+  EXPECT_NE(decoded_msg, nullptr);
+  EXPECT_TRUE(upb_wire_test_has_ext_i32(decoded_msg));
+  EXPECT_EQ(upb_wire_test_ext_i32(decoded_msg), 42);
+
+  upb_Arena_Free(arena);
+}
+
+TEST(EncodeTest, SkipUnknownNonCanonicalExtensionSuccess) {
+  upb_Arena* arena = upb_Arena_New();
+
+  upb_wire_test_TestExtensions* msg = upb_wire_test_TestExtensions_new(arena);
+
+  // 1. Add a canonical extension (ext_i32, tag 100) to msg
+  upb_Extension* canonical_ext = UPB_PRIVATE(_upb_Message_GetOrCreateExtension)(
+      (upb_Message*)msg, upb_wire_test_ext_i32_ext, arena);
+  canonical_ext->data.int32_val = 1000;
+
+  // 2. Attach a non-canonical extension (ext_recursive, tag 101) to msg
+  upb_wire_test_TestRecursive* sub_msg = upb_wire_test_TestRecursive_new(arena);
+  UPB_PRIVATE(_upb_Message_SetNonCanonicalExtension)(
+      (upb_Message*)msg, upb_wire_test_ext_recursive_ext, &sub_msg, arena);
+
+  // 3. Also add some standard raw unknown bytes (tag 150)
+  char raw_unknown[] = "\x08\x96\x01";  // tag 1 = 150
+  UPB_PRIVATE(_upb_Message_AddUnknown)((upb_Message*)msg, raw_unknown,
+                                       sizeof(raw_unknown) - 1, arena,
+                                       kUpb_AddUnknown_Copy);
+
+  // Encode the message WITH kUpb_EncodeOption_SkipUnknown option!
+  char* buf;
+  size_t size;
+  upb_EncodeStatus status =
+      upb_Encode((upb_Message*)msg, &upb_0wire_0test__TestExtensions_msg_init,
+                 kUpb_EncodeOption_SkipUnknown, arena, &buf, &size);
+  EXPECT_EQ(status, kUpb_EncodeStatus_Ok);
+
+  // Parse back the serialized bytes.
+  // It MUST contain the canonical extension,
+  // but the non-canonical extension and standard raw unknown bytes MUST be
+  // successfully skipped.
+  upb_ExtensionRegistry* ext_reg = upb_ExtensionRegistry_New(arena);
+  const upb_MiniTableExtension* ext_array[2] = {
+      upb_wire_test_ext_i32_ext, upb_wire_test_ext_recursive_ext};
+  upb_ExtensionRegistry_AddArray(ext_reg, ext_array, 2);
+
+  upb_wire_test_TestExtensions* decoded_msg =
+      upb_wire_test_TestExtensions_parse_ex(buf, size, ext_reg, 0, arena);
+  EXPECT_NE(decoded_msg, nullptr);
+
+  // Verify canonical extension was NOT skipped and is present
+  EXPECT_TRUE(upb_wire_test_has_ext_i32(decoded_msg));
+  EXPECT_EQ(upb_wire_test_ext_i32(decoded_msg), 1000);
+
+  // Verify non-canonical extension WAS skipped
+  EXPECT_FALSE(upb_Message_HasExtension((const upb_Message*)decoded_msg,
+                                        upb_wire_test_ext_recursive_ext));
+
+  // Verify raw unknown bytes WERE skipped and are discarded
+  upb_MessageUnknown data;
+  uintptr_t iter = kUpb_Message_UnknownBegin;
+  EXPECT_FALSE(
+      upb_Message_NextUnknown2((const upb_Message*)decoded_msg, &data, &iter));
+
+  upb_Arena_Free(arena);
+}
+
+TEST(EncodeTest, EncodeNonCanonicalExtensionDeterministicSuccess) {
+  upb_Arena* arena = upb_Arena_New();
+
+  upb_wire_test_TestExtensions* msg = upb_wire_test_TestExtensions_new(arena);
+
+  // 1. Attach scalar extension as non-canonical (tag 100)
+  int32_t val = 42;
+  UPB_PRIVATE(_upb_Message_SetNonCanonicalExtension)(
+      (upb_Message*)msg, upb_wire_test_ext_i32_ext, &val, arena);
+
+  // 2. Attach recursive extension as non-canonical (tag 101)
+  upb_wire_test_TestRecursive* sub_msg = upb_wire_test_TestRecursive_new(arena);
+  UPB_PRIVATE(_upb_Message_SetNonCanonicalExtension)(
+      (upb_Message*)msg, upb_wire_test_ext_recursive_ext, &sub_msg, arena);
+
+  // Encode the message with deterministic option!
+  char* buf;
+  size_t size;
+  upb_EncodeStatus status =
+      upb_Encode((upb_Message*)msg, &upb_0wire_0test__TestExtensions_msg_init,
+                 kUpb_EncodeOption_Deterministic, arena, &buf, &size);
+  EXPECT_EQ(status, kUpb_EncodeStatus_Ok);
+  EXPECT_GT(size, 0u);
+
+  // Verify that the encoded bytes can be decoded back using the registry!
+  upb_ExtensionRegistry* ext_reg = upb_ExtensionRegistry_New(arena);
+  const upb_MiniTableExtension* ext_array[2] = {
+      upb_wire_test_ext_i32_ext, upb_wire_test_ext_recursive_ext};
+  upb_ExtensionRegistry_AddArray(ext_reg, ext_array, 2);
+
+  upb_wire_test_TestExtensions* decoded_msg =
+      upb_wire_test_TestExtensions_parse_ex(buf, size, ext_reg, 0, arena);
+  EXPECT_NE(decoded_msg, nullptr);
+
+  EXPECT_TRUE(upb_wire_test_has_ext_i32(decoded_msg));
+  EXPECT_EQ(upb_wire_test_ext_i32(decoded_msg), 42);
+  EXPECT_TRUE(upb_wire_test_has_ext_recursive(decoded_msg));
+
+  // Explicitly verify that the extensions are successfully serialized and
+  // resolved from the encoded message payload.
+  EXPECT_EQ((int)upb_Message_ExtensionCount((const upb_Message*)decoded_msg),
+            2);
+
+  // Verify that if we decode without a registry, the non-canonical extensions
+  // remain as raw unknown bytes inside the decoded message.
+  upb_wire_test_TestExtensions* decoded_as_unknown =
+      upb_wire_test_TestExtensions_parse_ex(buf, size, nullptr, 0, arena);
+  EXPECT_NE(decoded_as_unknown, nullptr);
+  EXPECT_EQ(
+      (int)upb_Message_ExtensionCount((const upb_Message*)decoded_as_unknown),
+      0);
+  EXPECT_TRUE(upb_Message_HasUnknown((const upb_Message*)decoded_as_unknown));
+
+  int unknown_bytes_count = 0;
+  upb_MessageUnknown udata;
+  uintptr_t uiter = kUpb_Message_UnknownBegin;
+  while (upb_Message_NextUnknown2((const upb_Message*)decoded_as_unknown,
+                                  &udata, &uiter)) {
+    if (udata.type == kUpb_MessageUnknownType_StringView) {
+      unknown_bytes_count++;
+    }
+  }
+  EXPECT_GT(unknown_bytes_count, 0);
+
+  upb_Arena_Free(arena);
+}
+
+TEST(EncodeTest, SkipUnknownNonCanonicalExtensionDeterministicSuccess) {
+  upb_Arena* arena = upb_Arena_New();
+
+  upb_wire_test_TestExtensions* msg = upb_wire_test_TestExtensions_new(arena);
+
+  // 1. Add a canonical extension (ext_i32, tag 100) to msg
+  upb_Extension* canonical_ext = UPB_PRIVATE(_upb_Message_GetOrCreateExtension)(
+      (upb_Message*)msg, upb_wire_test_ext_i32_ext, arena);
+  canonical_ext->data.int32_val = 1000;
+
+  // 2. Attach a non-canonical extension (ext_recursive, tag 101) to msg
+  upb_wire_test_TestRecursive* sub_msg = upb_wire_test_TestRecursive_new(arena);
+  UPB_PRIVATE(_upb_Message_SetNonCanonicalExtension)(
+      (upb_Message*)msg, upb_wire_test_ext_recursive_ext, &sub_msg, arena);
+
+  // 3. Also add some standard raw unknown bytes (tag 150)
+  char raw_unknown[] = "\x08\x96\x01";  // tag 1 = 150
+  UPB_PRIVATE(_upb_Message_AddUnknown)((upb_Message*)msg, raw_unknown,
+                                       sizeof(raw_unknown) - 1, arena,
+                                       kUpb_AddUnknown_Copy);
+
+  // Encode the message WITH kUpb_EncodeOption_SkipUnknown |
+  // kUpb_EncodeOption_Deterministic!
+  char* buf;
+  size_t size;
+  upb_EncodeStatus status = upb_Encode(
+      (upb_Message*)msg, &upb_0wire_0test__TestExtensions_msg_init,
+      kUpb_EncodeOption_SkipUnknown | kUpb_EncodeOption_Deterministic, arena,
+      &buf, &size);
+  EXPECT_EQ(status, kUpb_EncodeStatus_Ok);
+
+  // Parse back the serialized bytes.
+  // It MUST contain the canonical extension,
+  // but the non-canonical extension and standard raw unknown bytes MUST be
+  // successfully skipped.
+  upb_ExtensionRegistry* ext_reg = upb_ExtensionRegistry_New(arena);
+  const upb_MiniTableExtension* ext_array[2] = {
+      upb_wire_test_ext_i32_ext, upb_wire_test_ext_recursive_ext};
+  upb_ExtensionRegistry_AddArray(ext_reg, ext_array, 2);
+
+  upb_wire_test_TestExtensions* decoded_msg =
+      upb_wire_test_TestExtensions_parse_ex(buf, size, ext_reg, 0, arena);
+  EXPECT_NE(decoded_msg, nullptr);
+
+  // Verify canonical extension was NOT skipped and is present
+  EXPECT_TRUE(upb_wire_test_has_ext_i32(decoded_msg));
+  EXPECT_EQ(upb_wire_test_ext_i32(decoded_msg), 1000);
+
+  // Verify non-canonical extension WAS skipped
+  EXPECT_FALSE(upb_Message_HasExtension((const upb_Message*)decoded_msg,
+                                        upb_wire_test_ext_recursive_ext));
+
+  // Verify raw unknown bytes WERE skipped and are discarded
+  upb_MessageUnknown data;
+  uintptr_t iter = kUpb_Message_UnknownBegin;
+  EXPECT_FALSE(
+      upb_Message_NextUnknown2((const upb_Message*)decoded_msg, &data, &iter));
+
+  upb_Arena_Free(arena);
+}
+
+TEST(EncodeTest, MixedExtensionAndUnknownOrderSuccess) {
+  upb_Arena* arena = upb_Arena_New();
+  upb_wire_test_TestExtensions* msg = upb_wire_test_TestExtensions_new(arena);
+
+  // 1. Add Unknown 1 (Tag 10, Varint)
+  char unknown1[] = "\x50\x64";
+  UPB_PRIVATE(_upb_Message_AddUnknown)((upb_Message*)msg, unknown1,
+                                       sizeof(unknown1) - 1, arena,
+                                       kUpb_AddUnknown_Copy);
+
+  // 2. Add Non-Canonical Extension 1 (Tag 100, ext_i32)
+  int32_t val1 = 42;
+  UPB_PRIVATE(_upb_Message_SetNonCanonicalExtension)(
+      (upb_Message*)msg, upb_wire_test_ext_i32_ext, &val1, arena);
+
+  // 3. Add Unknown 2 (Tag 12, Varint)
+  char unknown2[] = "\x60\x64";
+  UPB_PRIVATE(_upb_Message_AddUnknown)((upb_Message*)msg, unknown2,
+                                       sizeof(unknown2) - 1, arena,
+                                       kUpb_AddUnknown_Copy);
+
+  // 4. Add Canonical Extension 1 (Tag 101, ext_recursive)
+  upb_wire_test_TestRecursive* sub_msg = upb_wire_test_TestRecursive_new(arena);
+  upb_Extension* canonical_ext = UPB_PRIVATE(_upb_Message_GetOrCreateExtension)(
+      (upb_Message*)msg, upb_wire_test_ext_recursive_ext, arena);
+  canonical_ext->data.msg_val = (upb_Message*)sub_msg;
+
+  // Encode the message
+  char* buf;
+  size_t size;
+  upb_EncodeStatus status =
+      upb_Encode((upb_Message*)msg, &upb_0wire_0test__TestExtensions_msg_init,
+                 kUpb_EncodeOption_Deterministic, arena, &buf, &size);
+  ASSERT_EQ(status, kUpb_EncodeStatus_Ok);
+
+  // Verify encoded buffer directly
+  ASSERT_EQ(size, 10u);
+
+  // Expected order in buffer (reading from index 0):
+  // 1. Canonical Extension 1 (Tag 101) -> Grouped and placed first
+  // 2. Unknown 1 (Tag 10)
+  // 3. Non-Canonical Extension 1 (Tag 100)
+  // 4. Unknown 2 (Tag 12)
+
+  // 1. Canonical Extension 1 (Tag 101, LenDelim) -> 0xAA 0x06,
+  // Length 0 -> 0x00
+  EXPECT_EQ((uint8_t)buf[0], 0xAA);
+  EXPECT_EQ((uint8_t)buf[1], 0x06);
+  EXPECT_EQ((uint8_t)buf[2], 0x00);
+
+  // 2. Unknown 1 (Tag 10, Varint) -> 0x50, Value 100 -> 0x64
+  EXPECT_EQ((uint8_t)buf[3], 0x50);
+  EXPECT_EQ((uint8_t)buf[4], 0x64);
+
+  // 3. Non-Canonical Extension 1 (Tag 100, Varint) -> 0xA0 0x06,
+  // Value 42 -> 0x2A
+  EXPECT_EQ((uint8_t)buf[5], 0xA0);
+  EXPECT_EQ((uint8_t)buf[6], 0x06);
+  EXPECT_EQ((uint8_t)buf[7], 0x2A);
+
+  // 4. Unknown 2 (Tag 12, Varint) -> 0x60, Value 100 -> 0x64
+  EXPECT_EQ((uint8_t)buf[8], 0x60);
+  EXPECT_EQ((uint8_t)buf[9], 0x64);
+
+  upb_Arena_Free(arena);
+}
 }  // namespace
 }  // namespace upb
 

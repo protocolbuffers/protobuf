@@ -20,7 +20,6 @@ from google.protobuf.internal import wire_format
 
 from absl.testing import parameterized
 
-
 _INPUT_BYTES = b'\x84r\x12'
 _EXPECTED = (14596, 18)
 
@@ -29,11 +28,11 @@ _EXPECTED = (14596, 18)
 class DecoderTest(parameterized.TestCase):
 
   def test_decode_varint_bytes(self):
-    (size, pos) = decoder._DecodeVarint(_INPUT_BYTES, 0)
+    size, pos = decoder._DecodeVarint(_INPUT_BYTES, 0)
     self.assertEqual(size, _EXPECTED[0])
     self.assertEqual(pos, 2)
 
-    (size, pos) = decoder._DecodeVarint(_INPUT_BYTES, 2)
+    size, pos = decoder._DecodeVarint(_INPUT_BYTES, 2)
     self.assertEqual(size, _EXPECTED[1])
     self.assertEqual(pos, 3)
 

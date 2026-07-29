@@ -8,6 +8,9 @@
 #ifndef PYUPB_DESCRIPTOR_POOL_H__
 #define PYUPB_DESCRIPTOR_POOL_H__
 
+// clang-format off
+#include "Python.h"
+// clang-format on
 #include <stdbool.h>
 
 #include "protobuf.h"

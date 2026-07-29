@@ -267,6 +267,8 @@ PHP_METHOD(MapField, __construct) {
       break;
     default:
       zend_error(E_USER_ERROR, "Invalid key type for map.");
+      // Only reachable if a custom error handler bypasses the E_USER_ERROR.
+      return;
   }
 
   if (intern->type.val_type.type == kUpb_CType_Message && klass == NULL) {

@@ -971,7 +971,7 @@ static void add_descriptor(upb_DefPool* symtab,
  * Adds the given descriptor data to this DescriptorPool.
  */
 static void add_descriptor_set(upb_DefPool* symtab, const char* data,
-                               int data_len, upb_Arena* arena) {
+                               size_t data_len, upb_Arena* arena) {
   size_t i, n;
   google_protobuf_FileDescriptorSet* set;
   const google_protobuf_FileDescriptorProto* const* files;

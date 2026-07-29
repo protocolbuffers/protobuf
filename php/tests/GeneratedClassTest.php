@@ -73,6 +73,14 @@ class GeneratedClassTest extends TestBase
         $this->assertSame(1, $m->getOptionalInt32());
     }
 
+    public function testInitializerWithIntegerKey()
+    {
+        $this->expectException(\Exception::class);
+        // "No such field 42" or "Invalid message property: 42"
+        $this->expectExceptionMessage('42');
+        new TestMessage(['42' => 'val']);
+    }
+
     #########################################################
     # Test int32 field.
     #########################################################
@@ -1131,6 +1139,9 @@ class GeneratedClassTest extends TestBase
         $m = new \Lower\PBnull();
         $m = new \Lower\PBvoid();
         $m = new \Lower\PBiterable();
+        $m = new \Lower\PBobject();
+        $m = new \Lower\PBmixed();
+        $m = new \Lower\PBnever();
 
         $m = new \Upper\PBABSTRACT();
         $m = new \Upper\PBAND();
@@ -1212,6 +1223,9 @@ class GeneratedClassTest extends TestBase
         $m = new \Upper\PBNULL();
         $m = new \Upper\PBVOID();
         $m = new \Upper\PBITERABLE();
+        $m = new \Upper\PBOBJECT();
+        $m = new \Upper\PBMIXED();
+        $m = new \Upper\PBNEVER();
 
         $m = new \Lower_enum\PBabstract();
         $m = new \Lower_enum\PBand();
@@ -1293,6 +1307,9 @@ class GeneratedClassTest extends TestBase
         $m = new \Lower_enum\PBnull();
         $m = new \Lower_enum\PBvoid();
         $m = new \Lower_enum\PBiterable();
+        $m = new \Lower_enum\PBobject();
+        $m = new \Lower_enum\PBmixed();
+        $m = new \Lower_enum\PBnever();
 
         $m = new \Upper_enum\PBABSTRACT();
         $m = new \Upper_enum\PBAND();
@@ -1374,6 +1391,9 @@ class GeneratedClassTest extends TestBase
         $m = new \Upper_enum\PBNULL();
         $m = new \Upper_enum\PBVOID();
         $m = new \Upper_enum\PBITERABLE();
+        $m = new \Upper_enum\PBOBJECT();
+        $m = new \Upper_enum\PBMIXED();
+        $m = new \Upper_enum\PBNEVER();
 
         $m = \Lower_enum_value\NotAllowed::PBabstract;
         $m = \Lower_enum_value\NotAllowed::PBand;
@@ -1455,6 +1475,9 @@ class GeneratedClassTest extends TestBase
         $m = \Lower_enum_value\NotAllowed::parent;
         $m = \Lower_enum_value\NotAllowed::self;
         $m = \Lower_enum_value\NotAllowed::readonly;
+        $m = \Lower_enum_value\NotAllowed::object;
+        $m = \Lower_enum_value\NotAllowed::mixed;
+        $m = \Lower_enum_value\NotAllowed::never;
 
         $m = \Upper_enum_value\NotAllowed::PBABSTRACT;
         $m = \Upper_enum_value\NotAllowed::PBAND;
@@ -1536,6 +1559,9 @@ class GeneratedClassTest extends TestBase
         $m = \Upper_enum_value\NotAllowed::PARENT;
         $m = \Upper_enum_value\NotAllowed::SELF;
         $m = \Upper_enum_value\NotAllowed::READONLY;
+        $m = \Upper_enum_value\NotAllowed::OBJECT;
+        $m = \Upper_enum_value\NotAllowed::MIXED;
+        $m = \Upper_enum_value\NotAllowed::NEVER;
 
         $this->assertTrue(true);
     }

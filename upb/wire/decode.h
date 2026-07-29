@@ -13,6 +13,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "upb/base/error_handler.h"
 #include "upb/mem/arena.h"
 #include "upb/message/message.h"
 #include "upb/mini_table/extension_registry.h"
@@ -83,16 +84,19 @@ UPB_INLINE int upb_Decode_LimitDepth(uint32_t decode_options, uint32_t limit) {
 
 // LINT.IfChange
 typedef enum {
-  kUpb_DecodeStatus_Ok = 0,
-  kUpb_DecodeStatus_OutOfMemory = 1,  // Arena alloc failed
-  kUpb_DecodeStatus_Malformed = 2,    // Wire format was corrupt
-  kUpb_DecodeStatus_BadUtf8 = 3,      // String field had bad UTF-8
+  kUpb_DecodeStatus_Ok = kUpb_ErrorCode_Ok,
+  kUpb_DecodeStatus_OutOfMemory =
+      kUpb_ErrorCode_OutOfMemory,  // Arena alloc failed
+  kUpb_DecodeStatus_Malformed =
+      kUpb_ErrorCode_Malformed,  // Wire format was corrupt
   kUpb_DecodeStatus_MaxDepthExceeded =
-      4,  // Exceeded upb_DecodeOptions_MaxDepth
+      kUpb_ErrorCode_MaxDepthExceeded,  // Exceeded upb_DecodeOptions_MaxDepth
+
+  kUpb_DecodeStatus_BadUtf8 = 10,  // String field had bad UTF-8
 
   // kUpb_DecodeOption_CheckRequired failed (see above), but the parse otherwise
   // succeeded.
-  kUpb_DecodeStatus_MissingRequired = 5,
+  kUpb_DecodeStatus_MissingRequired = 11,
 } upb_DecodeStatus;
 // LINT.ThenChange(//depot/google3/third_party/upb/rust/sys/wire/wire.rs:decode_status)
 

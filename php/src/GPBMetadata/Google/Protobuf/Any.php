@@ -7,9 +7,9 @@ namespace GPBMetadata\Google\Protobuf;
 
 class Any
 {
-    public static $is_initialized = false;
+    public static bool $is_initialized = false;
 
-    public static function initOnce() {
+    public static function initOnce(): void {
         $pool = \Google\Protobuf\Internal\DescriptorPool::getGeneratedPool();
 
         if (static::$is_initialized == true) {

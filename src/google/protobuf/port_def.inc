@@ -207,6 +207,17 @@
 #define PROTOBUF_NOINLINE __declspec(noinline)
 #endif
 
+#ifdef PROTOBUF_MALLOC
+#error PROTOBUF_MALLOC was previously defined
+#endif
+#if defined(__GNUC__)
+#define PROTOBUF_MALLOC __attribute__((malloc))
+#elif defined(_MSC_VER) && _MSC_VER >= 1400
+#define PROTOBUF_MALLOC __declspec(restrict)
+#else
+#define PROTOBUF_MALLOC
+#endif
+
 #ifdef PROTOBUF_MUSTTAIL
 #error PROTOBUF_MUSTTAIL was previously defined
 #endif
@@ -249,6 +260,11 @@
   _Pragma("GCC diagnostic push")          \
   _Pragma("GCC diagnostic ignored \"-Wdeprecated-declarations\"")
 #define PROTOBUF_IGNORE_DEPRECATION_STOP _Pragma("GCC diagnostic pop")
+#elif defined(_MSC_VER)
+#define PROTOBUF_IGNORE_DEPRECATION_START \
+  __pragma(warning(push))                 \
+  __pragma(warning(disable: 4996))
+#define PROTOBUF_IGNORE_DEPRECATION_STOP __pragma(warning(pop))
 #else
 #define PROTOBUF_IGNORE_DEPRECATION_START
 #define PROTOBUF_IGNORE_DEPRECATION_STOP
@@ -352,7 +368,7 @@
 #ifdef PROTOBUF_RESTRICT
 #error PROTOBUF_RESTRICT was previously defined
 #endif
-#if defined(__clang__) || defined(__GNUC__)
+#if defined(__clang__) || defined(__GNUC__) || defined(_MSC_VER)
 #define PROTOBUF_RESTRICT __restrict
 #else
 #define PROTOBUF_RESTRICT
@@ -765,6 +781,24 @@ namespace internal {
 #define PROTOBUF_REFACTOR_INLINE()
 #endif
 
+// PROTOBUF_NULL_AFTER_MOVE tells clang-tidy that a user-defined
+// smart-pointer-like type makes guarantees on the state of a moved-from object,
+// leaving it in a null state, where it can be used as long as it is not
+// dereferenced. In other words, these are the same semantics that smart
+// pointers from the standard library provide.
+//
+// The clang-tidy check bugprone-use-after-move allows member functions of types
+// marked with this attribute to be called on objects that have been moved from;
+// without the attribute, this would result in a use-after-move warning.
+#ifdef PROTOBUF_NULL_AFTER_MOVE
+#error PROTOBUF_NULL_AFTER_MOVE was previously defined
+#endif  // PROTOBUF_NULL_AFTER_MOVE
+#if defined(ABSL_ATTRIBUTE_NULL_AFTER_MOVE)
+#define PROTOBUF_NULL_AFTER_MOVE ABSL_ATTRIBUTE_NULL_AFTER_MOVE
+#else
+#define PROTOBUF_NULL_AFTER_MOVE
+#endif  // defined(ABSL_ATTRIBUTE_NULL_AFTER_MOVE)
+
 #ifdef PROTOBUF_NONNULL
 #error PROTOBUF_NONNULL was previously defined
 #endif
@@ -779,19 +813,17 @@ namespace internal {
 #ifdef PROTOBUF_MESSAGE_GLOBALS
 #error PROTOBUF_MESSAGE_GLOBALS was previously defined
 #endif
-#if defined(PROTOBUF_ENABLE_MESSAGE_GLOBALS) || \
-    defined(PROTOBUF_ENABLE_STABLE_EXPERIMENTS)
+// Use PROTOBUF_ENABLE_STABLE_EXPERIMENTS to turn on the old code for now.
+#if !defined(PROTOBUF_MESSAGE_GLOBALS_TEMPORARY_OPTOUT) && \
+    !defined(PROTOBUF_ENABLE_STABLE_EXPERIMENTS)
 #define PROTOBUF_MESSAGE_GLOBALS
-
 #define PROTOBUF_MESSAGE_GLOBALS_CONST const
-// PowerPC tools complain about section type mismatch.
-#if !defined(__powerpc__)
-#define PROTOBUF_MESSAGE_GLOBALS_SECTION(x) ABSL_ATTRIBUTE_SECTION_VARIABLE(x)
-#else  // defined(__powerpc__)
-#define PROTOBUF_MESSAGE_GLOBALS_SECTION(x)
-#endif  // defined(__powerpc__)
-#else
+#endif  // PROTOBUF_MESSAGE_GLOBALS_TEMPORARY_OPTOUT
+
+#if !defined(PROTOBUF_MESSAGE_GLOBALS_CONST)
 #define PROTOBUF_MESSAGE_GLOBALS_CONST
+#endif
+#if !defined(PROTOBUF_MESSAGE_GLOBALS_SECTION)
 #define PROTOBUF_MESSAGE_GLOBALS_SECTION(x)
 #endif
 

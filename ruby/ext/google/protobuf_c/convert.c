@@ -24,6 +24,7 @@ static upb_StringView Convert_StringData(VALUE str, upb_Arena* arena) {
   upb_StringView ret;
   if (arena) {
     char* ptr = upb_Arena_Malloc(arena, RSTRING_LEN(str));
+    if (!ptr) Arena_raise_oom();
     memcpy(ptr, RSTRING_PTR(str), RSTRING_LEN(str));
     ret.data = ptr;
   } else {
@@ -112,8 +113,8 @@ VALUE Convert_CheckStringUtf8(VALUE str) {
     // not mean that it is *valid* UTF-8.  We have to check separately
     // whether it is valid.
     if (rb_enc_str_coderange(str) == ENC_CODERANGE_BROKEN) {
-      VALUE exc = rb_const_get_at(
-          rb_cEncoding, rb_intern("InvalidByteSequenceError"));
+      VALUE exc =
+          rb_const_get_at(rb_cEncoding, rb_intern("InvalidByteSequenceError"));
       rb_raise(exc, "String is invalid UTF-8");
     }
   } else {
@@ -226,8 +227,8 @@ upb_MessageValue Convert_RubyToUpb(VALUE value, const char* name,
       }
       break;
     default:
-      rb_raise(cTypeError,
-                "Convert_RubyToUpb(): Unexpected type %d", (int)type_info.type);
+      rb_raise(cTypeError, "Convert_RubyToUpb(): Unexpected type %d",
+               (int)type_info.type);
   }
 
   return ret;
@@ -292,6 +293,7 @@ upb_MessageValue Msgval_DeepCopy(upb_MessageValue msgval, TypeInfo type_info,
     case kUpb_CType_Bytes: {
       size_t n = msgval.str_val.size;
       char* mem = upb_Arena_Malloc(arena, n);
+      if (!mem) Arena_raise_oom();
       new_msgval.str_val.data = mem;
       new_msgval.str_val.size = n;
       memcpy(mem, msgval.str_val.data, n);

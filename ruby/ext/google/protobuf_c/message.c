@@ -286,7 +286,9 @@ static void Message_setfield(upb_Message* msg, const upb_FieldDef* f, VALUE val,
     msgval =
         Convert_RubyToUpb(val, upb_FieldDef_Name(f), TypeInfo_get(f), arena);
   }
-  upb_Message_SetFieldByDef(msg, f, msgval, arena);
+  if (!upb_Message_SetFieldByDef(msg, f, msgval, arena)) {
+    Arena_raise_oom();
+  }
 }
 
 VALUE Message_getfield_frozen(const upb_Message* msg, const upb_FieldDef* f,
@@ -328,6 +330,7 @@ VALUE Message_getfield(VALUE _self, const upb_FieldDef* f) {
   upb_Arena* arena = Arena_get(self->arena);
   if (upb_FieldDef_IsMap(f)) {
     upb_Map* map = upb_Message_Mutable(msg, f, arena).map;
+    if (!map) Arena_raise_oom();
     const upb_FieldDef* key_f = map_field_key(f);
     const upb_FieldDef* val_f = map_field_value(f);
     upb_CType key_type = upb_FieldDef_CType(key_f);
@@ -335,10 +338,12 @@ VALUE Message_getfield(VALUE _self, const upb_FieldDef* f) {
     return Map_GetRubyWrapper(map, key_type, value_type_info, self->arena);
   } else if (upb_FieldDef_IsRepeated(f)) {
     upb_Array* arr = upb_Message_Mutable(msg, f, arena).array;
+    if (!arr) Arena_raise_oom();
     return RepeatedField_GetRubyWrapper(arr, TypeInfo_get(f), self->arena);
   } else if (upb_FieldDef_IsSubMessage(f)) {
     if (!upb_Message_HasFieldByDef(msg, f)) return Qnil;
     upb_Message* submsg = upb_Message_Mutable(msg, f, arena).msg;
+    if (!submsg) Arena_raise_oom();
     const upb_MessageDef* m = upb_FieldDef_MessageSubDef(f);
     return Message_GetRubyWrapper(submsg, m, self->arena);
   } else {
@@ -390,7 +395,10 @@ static VALUE Message_field_accessor(VALUE _self, const upb_FieldDef* f,
         upb_MessageValue msgval = Convert_RubyToUpb(
             argv[1], upb_FieldDef_Name(f), TypeInfo_get(val_f), arena);
         upb_Message* wrapper = upb_Message_Mutable(msg, f, arena).msg;
-        upb_Message_SetFieldByDef(wrapper, val_f, msgval, arena);
+        if (!wrapper) Arena_raise_oom();
+        if (!upb_Message_SetFieldByDef(wrapper, val_f, msgval, arena)) {
+          Arena_raise_oom();
+        }
       }
       return Qnil;
     }
@@ -401,6 +409,9 @@ static VALUE Message_field_accessor(VALUE _self, const upb_FieldDef* f,
       if (upb_FieldDef_IsRepeated(f)) {
         // Map repeated fields to a new type with ints
         VALUE arr = rb_ary_new();
+        if (msgval.array_val == NULL) {
+          return arr;
+        }
         size_t i, n = upb_Array_Size(msgval.array_val);
         for (i = 0; i < n; i++) {
           upb_MessageValue elem = upb_Array_Get(msgval.array_val, i);
@@ -522,13 +533,16 @@ static int Map_initialize_kwarg(VALUE key, VALUE val, VALUE _self) {
     const upb_MiniTable* t =
         upb_MessageDef_MiniTable(map_init->val_type.def.msgdef);
     upb_Message* msg = upb_Message_New(t, map_init->arena);
+    if (!msg) Arena_raise_oom();
     Message_InitFromValue(msg, map_init->val_type.def.msgdef, val,
                           map_init->arena);
     v.msg_val = msg;
   } else {
     v = Convert_RubyToUpb(val, "", map_init->val_type, map_init->arena);
   }
-  upb_Map_Set(map_init->map, k, v, map_init->arena);
+  if (!upb_Map_Set(map_init->map, k, v, map_init->arena)) {
+    Arena_raise_oom();
+  }
   return ST_CONTINUE;
 }
 
@@ -553,6 +567,7 @@ static upb_MessageValue MessageValue_FromValue(VALUE val, TypeInfo info,
     upb_MessageValue msgval;
     const upb_MiniTable* t = upb_MessageDef_MiniTable(info.def.msgdef);
     upb_Message* msg = upb_Message_New(t, arena);
+    if (!msg) Arena_raise_oom();
     Message_InitFromValue(msg, info.def.msgdef, val, arena);
     msgval.msg_val = msg;
     return msgval;
@@ -580,7 +595,9 @@ static void RepeatedField_InitFromValue(upb_Array* arr, const upb_FieldDef* f,
     } else {
       msgval = Convert_RubyToUpb(entry, upb_FieldDef_Name(f), type_info, arena);
     }
-    upb_Array_Append(arr, msgval, arena);
+    if (!upb_Array_Append(arr, msgval, arena)) {
+      Arena_raise_oom();
+    }
   }
 }
 
@@ -590,13 +607,16 @@ static void Message_InitFieldFromValue(upb_Message* msg, const upb_FieldDef* f,
 
   if (upb_FieldDef_IsMap(f)) {
     upb_Map* map = upb_Message_Mutable(msg, f, arena).map;
+    if (!map) Arena_raise_oom();
     Map_InitFromValue(map, f, val, arena);
   } else if (upb_FieldDef_IsRepeated(f)) {
     upb_Array* arr = upb_Message_Mutable(msg, f, arena).array;
+    if (!arr) Arena_raise_oom();
     RepeatedField_InitFromValue(arr, f, val, arena);
   } else if (upb_FieldDef_IsSubMessage(f)) {
     if (TYPE(val) == T_HASH) {
       upb_Message* submsg = upb_Message_Mutable(msg, f, arena).msg;
+      if (!submsg) Arena_raise_oom();
       Message_InitFromValue(submsg, upb_FieldDef_MessageSubDef(f), val, arena);
     } else {
       Message_setfield(msg, f, val, arena);
@@ -604,7 +624,9 @@ static void Message_InitFieldFromValue(upb_Message* msg, const upb_FieldDef* f,
   } else {
     upb_MessageValue msgval =
         Convert_RubyToUpb(val, upb_FieldDef_Name(f), TypeInfo_get(f), arena);
-    upb_Message_SetFieldByDef(msg, f, msgval, arena);
+    if (!upb_Message_SetFieldByDef(msg, f, msgval, arena)) {
+      Arena_raise_oom();
+    }
   }
 }
 
@@ -665,6 +687,7 @@ static VALUE Message_initialize(int argc, VALUE* argv, VALUE _self) {
   upb_Arena* arena = Arena_get(arena_rb);
   const upb_MiniTable* t = upb_MessageDef_MiniTable(self->msgdef);
   upb_Message* msg = upb_Message_New(t, arena);
+  if (!msg) Arena_raise_oom();
 
   Message_InitPtr(_self, msg, arena_rb);
 
@@ -730,6 +753,9 @@ uint64_t Message_Hash(const upb_Message* msg, const upb_MessageDef* m,
   if (upb_Status_IsOk(&status)) {
     return return_value;
   } else {
+    if (strcmp(upb_Status_ErrorMessage(&status), "Out of memory") == 0) {
+      Arena_raise_oom();
+    }
     rb_raise(cParseError, "Message_Hash(): %s",
              upb_Status_ErrorMessage(&status));
   }
@@ -934,8 +960,10 @@ static VALUE Message_index_set(VALUE _self, VALUE field_name, VALUE value) {
   }
 
   val = Convert_RubyToUpb(value, upb_FieldDef_Name(f), TypeInfo_get(f), arena);
-  upb_Message_SetFieldByDef(Message_GetMutable(_self, NULL), f, val, arena);
-
+  if (!upb_Message_SetFieldByDef(Message_GetMutable(_self, NULL), f, val,
+                                 arena)) {
+    Arena_raise_oom();
+  }
   return Qnil;
 }
 
@@ -992,6 +1020,9 @@ VALUE Message_decode_bytes(size_t size, const char* bytes, int options,
   upb_DecodeStatus status = upb_Decode(bytes, size, (upb_Message*)msg->msg,
                                        upb_MessageDef_MiniTable(msg->msgdef),
                                        extreg, options, Arena_get(msg->arena));
+  if (status == kUpb_DecodeStatus_OutOfMemory) {
+    Arena_raise_oom();
+  }
   if (status != kUpb_DecodeStatus_Ok) {
     rb_raise(cParseError, "Error occurred during parsing");
   }
@@ -1055,16 +1086,24 @@ static VALUE Message_decode_json(int argc, VALUE* argv, VALUE klass) {
   const upb_DefPool* pool = upb_FileDef_Pool(upb_MessageDef_File(msg->msgdef));
 
   int result = upb_JsonDecodeDetectingNonconformance(
-      RSTRING_PTR(data), RSTRING_LEN(data), (upb_Message*)msg->msg,
-      msg->msgdef, pool, options, Arena_get(msg->arena), &status);
+      RSTRING_PTR(data), RSTRING_LEN(data), (upb_Message*)msg->msg, msg->msgdef,
+      pool, options, Arena_get(msg->arena), &status);
 
   switch (result) {
     case kUpb_JsonDecodeResult_Ok:
       break;
-    case kUpb_JsonDecodeResult_Error:
+    case kUpb_JsonDecodeResult_Error: {
+      VALUE pending_err = rb_errinfo();
+      if (!NIL_P(pending_err)) {
+        rb_set_errinfo(Qnil);
+        rb_exc_raise(pending_err);
+      }
+
       rb_raise(cParseError, "Error occurred during parsing: %s",
                upb_Status_ErrorMessage(&status));
+
       break;
+    }
   }
 
   return msg_rb;
@@ -1110,6 +1149,9 @@ static VALUE Message_encode(int argc, VALUE* argv, VALUE klass) {
   }
 
   upb_Arena* arena = upb_Arena_New();
+  if (!arena) {
+    Arena_raise_oom();
+  }
 
   upb_EncodeStatus status =
       upb_Encode(msg->msg, upb_MessageDef_MiniTable(msg->msgdef), options,
@@ -1120,10 +1162,18 @@ static VALUE Message_encode(int argc, VALUE* argv, VALUE klass) {
     rb_enc_associate(ret, rb_ascii8bit_encoding());
     upb_Arena_Free(arena);
     return ret;
-  } else {
-    upb_Arena_Free(arena);
+  }
+  upb_Arena_Free(arena);
+  if (status == kUpb_EncodeStatus_OutOfMemory) {
+    Arena_raise_oom();
+  }
+  if (status == kUpb_EncodeStatus_MaxDepthExceeded) {
     rb_raise(rb_eRuntimeError, "Exceeded maximum depth (possibly cycle)");
   }
+  if (status == kUpb_EncodeStatus_MaxSizeExceeded) {
+    rb_raise(rb_eRuntimeError, "Exceeded maximum size");
+  }
+  rb_raise(cParseError, "Unknown encoding error");
 }
 
 /*
@@ -1307,9 +1357,15 @@ VALUE build_module_from_enumdesc(VALUE _enumdesc) {
   int n = upb_EnumDef_ValueCount(e);
   for (int i = 0; i < n; i++) {
     const upb_EnumValueDef* ev = upb_EnumDef_Value(e, i);
-    upb_Arena* arena = upb_Arena_New();
     const char* src_name = upb_EnumValueDef_Name(ev);
-    char* name = upb_strdup2(src_name, strlen(src_name), arena);
+    size_t len = strlen(src_name);
+    upb_Arena* arena = upb_Arena_NewSized(len);
+    if (!arena) Arena_raise_oom();
+    char* name = upb_strdup2(src_name, len, arena);
+    if (!name) {
+      upb_Arena_Free(arena);
+      Arena_raise_oom();
+    }
     int32_t value = upb_EnumValueDef_Number(ev);
     if (name[0] < 'A' || name[0] > 'Z') {
       if (name[0] >= 'a' && name[0] <= 'z') {
@@ -1338,21 +1394,40 @@ upb_Message* Message_deep_copy(const upb_Message* msg, const upb_MessageDef* m,
                                upb_Arena* arena) {
   // Serialize and parse.
   upb_Arena* tmp_arena = upb_Arena_New();
+  if (!tmp_arena) {
+    Arena_raise_oom();
+  }
   const upb_MiniTable* layout = upb_MessageDef_MiniTable(m);
   size_t size;
 
   upb_Message* new_msg = upb_Message_New(layout, arena);
+  if (!new_msg) {
+    upb_Arena_Free(tmp_arena);
+    Arena_raise_oom();
+  }
   char* data;
 
   const upb_FileDef* file = upb_MessageDef_File(m);
   const upb_ExtensionRegistry* extreg =
       upb_DefPool_ExtensionRegistry(upb_FileDef_Pool(file));
-  if (upb_Encode(msg, layout, 0, tmp_arena, &data, &size) !=
-          kUpb_EncodeStatus_Ok ||
-      upb_Decode(data, size, new_msg, layout, extreg, 0, arena) !=
-          kUpb_DecodeStatus_Ok) {
+  upb_EncodeStatus encode_status =
+      upb_Encode(msg, layout, 0, tmp_arena, &data, &size);
+  if (encode_status == kUpb_EncodeStatus_OutOfMemory) {
     upb_Arena_Free(tmp_arena);
-    rb_raise(cParseError, "Error occurred copying proto");
+    Arena_raise_oom();
+  } else if (encode_status != kUpb_EncodeStatus_Ok) {
+    upb_Arena_Free(tmp_arena);
+    rb_raise(cParseError, "Error occurred copying proto during encode");
+  }
+
+  upb_DecodeStatus decode_status =
+      upb_Decode(data, size, new_msg, layout, extreg, 0, arena);
+  if (decode_status == kUpb_DecodeStatus_OutOfMemory) {
+    upb_Arena_Free(tmp_arena);
+    Arena_raise_oom();
+  } else if (decode_status != kUpb_DecodeStatus_Ok) {
+    upb_Arena_Free(tmp_arena);
+    rb_raise(cParseError, "Error occurred copying proto during decode");
   }
 
   upb_Arena_Free(tmp_arena);
@@ -1389,8 +1464,10 @@ const upb_Message* Message_GetUpbMessage(VALUE value, const upb_MessageDef* m,
         time = rb_time_timespec(value);
         sec.int64_val = time.tv_sec;
         nsec.int32_val = time.tv_nsec;
-        upb_Message_SetFieldByDef(msg, sec_f, sec, arena);
-        upb_Message_SetFieldByDef(msg, nsec_f, nsec, arena);
+        if (!upb_Message_SetFieldByDef(msg, sec_f, sec, arena) ||
+            !upb_Message_SetFieldByDef(msg, nsec_f, nsec, arena)) {
+          Arena_raise_oom();
+        }
         return msg;
       }
       case kUpb_WellKnown_Duration: {
@@ -1405,8 +1482,10 @@ const upb_Message* Message_GetUpbMessage(VALUE value, const upb_MessageDef* m,
 
         sec.int64_val = NUM2LL(value);
         nsec.int32_val = round((NUM2DBL(value) - NUM2LL(value)) * 1000000000);
-        upb_Message_SetFieldByDef(msg, sec_f, sec, arena);
-        upb_Message_SetFieldByDef(msg, nsec_f, nsec, arena);
+        if (!upb_Message_SetFieldByDef(msg, sec_f, sec, arena) ||
+            !upb_Message_SetFieldByDef(msg, nsec_f, nsec, arena)) {
+          Arena_raise_oom();
+        }
         return msg;
       }
       default:

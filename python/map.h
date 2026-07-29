@@ -8,6 +8,9 @@
 #ifndef PYUPB_MAP_H__
 #define PYUPB_MAP_H__
 
+// clang-format off
+#include "Python.h"
+// clang-format on
 #include <stdbool.h>
 
 #include "python/protobuf.h"
@@ -32,8 +35,10 @@ PyObject* PyUpb_MapContainer_GetOrCreateWrapper(upb_Map* map,
 upb_Map* PyUpb_MapContainer_Reify(PyObject* self, upb_Map* map,
                                   PyUpb_WeakMap* subobj_map, intptr_t iter);
 
-// Reifies this map object if it is not already reified.
-upb_Map* PyUpb_MapContainer_EnsureReified(PyObject* self);
+// Reifies this map object if it is not already reified, and ensures it is
+// mutable. If the parent message (for stubs) or the map itself (for reified
+// maps) is frozen, this function will set a Python TypeError and return NULL.
+upb_Map* PyUpb_MapContainer_AssureWritable(PyObject* self);
 
 // Invalidates any existing iterators for the map `obj`.
 void PyUpb_MapContainer_Invalidate(PyObject* obj);

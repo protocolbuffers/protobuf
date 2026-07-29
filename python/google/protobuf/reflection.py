@@ -6,8 +6,8 @@
 # https://developers.google.com/open-source/licenses/bsd
 
 # This code is meant to work on Python 2.4 and above only.
-
 """Contains a metaclass and helper functions used to create
+
 protocol message classes from Descriptor objects at runtime.
 
 Recall that a metaclass is the "type" of a class.

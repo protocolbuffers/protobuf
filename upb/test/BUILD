@@ -292,6 +292,7 @@ cc_test(
         ":empty_upb_proto_reflection",
         ":test_messages_proto2_upb_proto",
         ":test_messages_proto3_upb_proto",
+        ":test_proto_upb_minitable",
         ":test_upb_proto",
         "//upb/base",
         "//upb/mem",

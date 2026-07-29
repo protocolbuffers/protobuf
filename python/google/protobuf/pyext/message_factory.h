@@ -12,8 +12,10 @@
 #include <Python.h>
 
 #include <unordered_map>
+
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/pyext/descriptor_pool.h"
+#include "google/protobuf/pyext/free_threading_mutex.h"
 
 namespace google {
 namespace protobuf {
@@ -46,6 +48,9 @@ struct PyMessageFactory {
   typedef std::unordered_map<const Descriptor*, CMessageClass*>
       ClassesByMessageMap;
   ClassesByMessageMap* classes_by_descriptor;
+
+  // Mutex protecting classes_by_descriptor in free-threaded builds.
+  FreeThreadingMutex* classes_by_descriptor_mutex;
 };
 
 extern PyTypeObject PyMessageFactory_Type;

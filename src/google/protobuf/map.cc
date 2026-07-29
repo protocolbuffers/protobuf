@@ -283,7 +283,7 @@ UntypedMapBase::TypeInfo UntypedMapBase::GetTypeInfoDynamic(
 void UntypedMapBase::InsertOrReplaceNodes(Arena* arena, NodeBase* list,
                                           map_index_t count) {
   if (ABSL_PREDICT_FALSE(count == 0)) return;
-  VisitKeyType([=](auto key_type) {
+  VisitKeyType([this, arena, list, count](auto key_type) {
     using Key = typename decltype(key_type)::type;
     static_cast<KeyMapBase<Key>&>(*this).InsertOrReplaceNodes(
         arena, static_cast<typename KeyMapBase<Key>::KeyNode*>(list), count);

@@ -62,8 +62,7 @@ void SetEnumVariables(
       static_cast<int32_t>(internal::WireFormat::MakeTag(descriptor)));
   (*variables)["tag_size"] = absl::StrCat(
       internal::WireFormat::TagSize(descriptor->number(), GetType(descriptor)));
-  (*variables)["null_check"] =
-      "if (value == null) { throw new NullPointerException(); }";
+  (*variables)["null_check"] = "java.util.Objects.requireNonNull(value);";
   // TODO: Add @deprecated javadoc when generating javadoc is supported
   // by the proto compiler
   (*variables)["deprecation"] =
@@ -133,8 +132,6 @@ int ImmutableEnumFieldGenerator::GetBuilderBitIndex() const {
 int ImmutableEnumFieldGenerator::GetNumBitsForMessage() const {
   return HasHasbit(descriptor_) ? 1 : 0;
 }
-
-int ImmutableEnumFieldGenerator::GetNumBitsForBuilder() const { return 1; }
 
 void ImmutableEnumFieldGenerator::GenerateInterfaceMembers(
     io::Printer* printer) const {
@@ -500,7 +497,7 @@ void ImmutableEnumOneofFieldGenerator::GenerateBuilderClearCode(
 
 void ImmutableEnumOneofFieldGenerator::GenerateBuildingCode(
     io::Printer* printer) const {
-  // No-Op: Handled by single statement for the oneof
+  // No-Op: Handled by single block statement in GenerateBuildPartialShard.
 }
 
 void ImmutableEnumOneofFieldGenerator::GenerateMergingCode(
@@ -597,10 +594,6 @@ RepeatedImmutableEnumFieldGenerator::~RepeatedImmutableEnumFieldGenerator() =
 
 int RepeatedImmutableEnumFieldGenerator::GetNumBitsForMessage() const {
   return 0;
-}
-
-int RepeatedImmutableEnumFieldGenerator::GetNumBitsForBuilder() const {
-  return 1;
 }
 
 void RepeatedImmutableEnumFieldGenerator::GenerateInterfaceMembers(
@@ -705,14 +698,17 @@ void RepeatedImmutableEnumFieldGenerator::GenerateMembers(
 
 void RepeatedImmutableEnumFieldGenerator::GenerateBuilderMembers(
     io::Printer* printer) const {
-  printer->Print(variables_,
-                 "private $field_list_type$ $name$_ = $empty_list$;\n"
-                 "private void ensure$capitalized_name$IsMutable() {\n"
-                 "  if (!$name$_.isModifiable()) {\n"
-                 "    $name$_ = makeMutableCopy($name$_);\n"
-                 "  }\n"
-                 "  $set_has_field_bit_builder$\n"
-                 "}\n");
+  // We use one method and pass -1 when capacity is unknown to control class
+  // size.
+  printer->Print(
+      variables_,
+      "private $field_list_type$ $name$_ = $empty_list$;\n"
+      "private void ensure$capitalized_name$IsMutable(int capacity) {\n"
+      "  if (!$name$_.isModifiable()) {\n"
+      "    $name$_ = makeMutableCopy($name$_, capacity);\n"
+      "  }\n"
+      "  $set_has_field_bit_builder$\n"
+      "}\n");
 
   WriteFieldAccessorDocComment(printer, descriptor_, LIST_GETTER,
                                context_->options());
@@ -751,7 +747,7 @@ void RepeatedImmutableEnumFieldGenerator::GenerateBuilderMembers(
                  "$deprecation$public Builder ${$set$capitalized_name$$}$(\n"
                  "    int index, $type$ value) {\n"
                  "  $null_check$\n"
-                 "  ensure$capitalized_name$IsMutable();\n"
+                 "  ensure$capitalized_name$IsMutable(/* capacity= */ -1);\n"
                  "  $name$_.setInt(index, value.getNumber());\n"
                  "  onChanged();\n"
                  "  return this;\n"
@@ -764,7 +760,7 @@ void RepeatedImmutableEnumFieldGenerator::GenerateBuilderMembers(
                  "$deprecation$public Builder "
                  "${$add$capitalized_name$$}$($type$ value) {\n"
                  "  $null_check$\n"
-                 "  ensure$capitalized_name$IsMutable();\n"
+                 "  ensure$capitalized_name$IsMutable(/* capacity= */ -1);\n"
                  "  $name$_.addInt(value.getNumber());\n"
                  "  onChanged();\n"
                  "  return this;\n"
@@ -776,7 +772,7 @@ void RepeatedImmutableEnumFieldGenerator::GenerateBuilderMembers(
   printer->Print(variables_,
                  "$deprecation$public Builder ${$addAll$capitalized_name$$}$(\n"
                  "    java.lang.Iterable<? extends $type$> values) {\n"
-                 "  ensure$capitalized_name$IsMutable();\n"
+                 "  ensure$capitalized_name$IsMutable(/* capacity= */ -1);\n"
                  "  for ($type$ value : values) {\n"
                  "    $name$_.addInt(value.getNumber());\n"
                  "  }\n"
@@ -822,7 +818,7 @@ void RepeatedImmutableEnumFieldGenerator::GenerateBuilderMembers(
         variables_,
         "$deprecation$public Builder ${$set$capitalized_name$Value$}$(\n"
         "    int index, int value) {\n"
-        "  ensure$capitalized_name$IsMutable();\n"
+        "  ensure$capitalized_name$IsMutable(/* capacity= */ -1);\n"
         "  $name$_.setInt(index, value);\n"
         "  onChanged();\n"
         "  return this;\n"
@@ -834,7 +830,7 @@ void RepeatedImmutableEnumFieldGenerator::GenerateBuilderMembers(
     printer->Print(variables_,
                    "$deprecation$public Builder "
                    "${$add$capitalized_name$Value$}$(int value) {\n"
-                   "  ensure$capitalized_name$IsMutable();\n"
+                   "  ensure$capitalized_name$IsMutable(/* capacity= */ -1);\n"
                    "  $name$_.addInt(value);\n"
                    "  onChanged();\n"
                    "  return this;\n"
@@ -847,7 +843,7 @@ void RepeatedImmutableEnumFieldGenerator::GenerateBuilderMembers(
         variables_,
         "$deprecation$public Builder ${$addAll$capitalized_name$Value$}$(\n"
         "    java.lang.Iterable<java.lang.Integer> values) {\n"
-        "  ensure$capitalized_name$IsMutable();\n"
+        "  ensure$capitalized_name$IsMutable(/* capacity= */ -1);\n"
         "  for (int value : values) {\n"
         "    $name$_.addInt(value);\n"
         "  }\n"
@@ -887,7 +883,7 @@ void RepeatedImmutableEnumFieldGenerator::GenerateMergingCode(
                  "    $name_make_immutable$;\n"
                  "    $set_has_field_bit_builder$\n"
                  "  } else {\n"
-                 "    ensure$capitalized_name$IsMutable();\n"
+                 "    ensure$capitalized_name$IsMutable(/* capacity= */ -1);\n"
                  "    $name$_.addAll(other.$name$_);\n"
                  "  }\n"
                  "  $on_changed$\n"
@@ -911,7 +907,7 @@ void RepeatedImmutableEnumFieldGenerator::GenerateBuilderParsingCode(
   if (SupportUnknownEnumValue(descriptor_)) {
     printer->Print(variables_,
                    "int tmpRaw = input.readEnum();\n"
-                   "ensure$capitalized_name$IsMutable();\n"
+                   "ensure$capitalized_name$IsMutable(/* capacity= */ -1);\n"
                    "$name$_.addInt(tmpRaw);\n");
   } else {
     printer->Print(variables_,
@@ -921,7 +917,7 @@ void RepeatedImmutableEnumFieldGenerator::GenerateBuilderParsingCode(
                    "if (tmpValue == null) {\n"
                    "  mergeUnknownVarintField($number$, tmpRaw);\n"
                    "} else {\n"
-                   "  ensure$capitalized_name$IsMutable();\n"
+                   "  ensure$capitalized_name$IsMutable(/* capacity= */ -1);\n"
                    "  $name$_.addInt(tmpRaw);\n"
                    "}\n");
   }
@@ -933,7 +929,8 @@ void RepeatedImmutableEnumFieldGenerator::GenerateBuilderParsingCodeFromPacked(
     printer->Print(variables_,
                    "int length = input.readRawVarint32();\n"
                    "int limit = input.pushLimit(length);\n"
-                   "ensure$capitalized_name$IsMutable();\n"
+                   "int count = input.countPackedVarints(length);\n"
+                   "ensure$capitalized_name$IsMutable(count);\n"
                    "while (input.getBytesUntilLimit() > 0) {\n"
                    "  $name$_.addInt(input.readEnum());\n"
                    "}\n"
@@ -942,7 +939,8 @@ void RepeatedImmutableEnumFieldGenerator::GenerateBuilderParsingCodeFromPacked(
     printer->Print(variables_,
                    "int length = input.readRawVarint32();\n"
                    "int limit = input.pushLimit(length);\n"
-                   "ensure$capitalized_name$IsMutable();\n"
+                   "int count = input.countPackedVarints(length);\n"
+                   "ensure$capitalized_name$IsMutable(count);\n"
                    "while (input.getBytesUntilLimit() > 0) {\n"
                    "  int tmpRaw = input.readEnum();\n"
                    "  $type$ tmpValue =\n"

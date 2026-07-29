@@ -276,6 +276,9 @@ conformance_test(
 
 conformance_test(
     name = "conformance_test_jruby",
+    env = {
+        "JRUBY_OPTS": "--dev",
+    },
     failure_list = "//conformance:failure_list_jruby.txt",
     maximum_edition = "2023",
     target_compatible_with = select({
@@ -289,6 +292,7 @@ conformance_test(
     name = "conformance_test_jruby_ffi",
     env = {
         "PROTOCOL_BUFFERS_RUBY_IMPLEMENTATION": "ffi",
+        "JRUBY_OPTS": "--dev",
     },
     failure_list = "//conformance:failure_list_jruby_ffi.txt",
     maximum_edition = "2023",

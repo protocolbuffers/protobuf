@@ -59,7 +59,7 @@ struct [[nodiscard]] ThreadSafeArenaStats
   // 1 << (kLogMaxSizeForBinZero + i)].  The final bin stores info about blocks
   // of size \in [kMaxSizeForPenultimateBin + 1,
   // std::numeric_limits<size_t>::max()].
-  static constexpr size_t kBlockHistogramBins = 15;
+  static constexpr size_t kBlockHistogramBins = 16;
   static constexpr size_t kLogMaxSizeForBinZero = 7;
   static constexpr size_t kMaxSizeForBinZero = (1 << kLogMaxSizeForBinZero);
   static constexpr size_t kMaxSizeForPenultimateBin =

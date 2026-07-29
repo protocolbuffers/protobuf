@@ -198,24 +198,28 @@ avxcheckUTF8Bytes(__m256i current_bytes,
 
 /* Return 0 on success, -1 on error */
 int utf8_lemire_avx2(const unsigned char *src, int len) {
+  if (len < 0) return -1;
   size_t i = 0;
+  size_t src_len = (size_t)len;
   __m256i has_error = _mm256_setzero_si256();
   struct avx_processed_utf_bytes previous = {
       .rawbytes = _mm256_setzero_si256(),
       .high_nibbles = _mm256_setzero_si256(),
       .carried_continuations = _mm256_setzero_si256()};
-  if (len >= 32) {
-    for (; i <= len - 32; i += 32) {
+  if (src_len >= 32) {
+    for (; i <= src_len - 32; i += 32) {
       __m256i current_bytes = _mm256_loadu_si256((const __m256i *)(src + i));
       previous = avxcheckUTF8Bytes(current_bytes, &previous, &has_error);
     }
   }
 
   // last part
-  if (i < len) {
+  if (i < src_len) {
     char buffer[32];
+    size_t remaining = src_len - i;
+    if (remaining > 32) remaining = 32;
     memset(buffer, 0, 32);
-    memcpy(buffer, src + i, len - i);
+    memcpy(buffer, src + i, remaining);
     __m256i current_bytes = _mm256_loadu_si256((const __m256i *)(buffer));
     previous = avxcheckUTF8Bytes(current_bytes, &previous, &has_error);
   } else {

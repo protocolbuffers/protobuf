@@ -50,7 +50,7 @@ jobs:
             targets: //python/... //python:aarch64_test
             # TODO Enable this once conformance tests are fixed.
             flags: --define=use_fast_cpp_protos=true --test_tag_filters=-conformance
-            image: us-docker.pkg.dev/protobuf-build/containers/test/linux/emulation:8.0.1-aarch64-168f9c9d015a0fa16611e1e9eede796fe9bfbb69
+            image: us-docker.pkg.dev/protobuf-build/containers/test/linux/emulation:8.0.1-aarch64-a6ca8ba8e77d63471b4ad05f8643e1fc58b30e12
 
     name: ${{ matrix.continuous-only && inputs.continuous-prefix || '' }} Linux ${{ matrix.type }} ${{ matrix.version }} ${{ matrix.nobzlmod && 'No Bzlmod' || '' }}
     runs-on: ubuntu-latest
@@ -64,7 +64,7 @@ jobs:
         if: ${{ !matrix.continuous-only || inputs.continuous-run }}
         uses: protocolbuffers/protobuf-ci/bazel-docker@v5
         with:
-          image: ${{ matrix.image || format('us-docker.pkg.dev/protobuf-build/containers/test/linux/python:8.0.1-{0}-5237f14696e60e4b050edfbf7ba9b374f37f83c6', matrix.version) }}
+          image: ${{ matrix.image || format('us-docker.pkg.dev/protobuf-build/containers/test/linux/python:9.0.0-{0}-7932bf8b25fb76a111e7257d151a6a58d5c3c671', matrix.version) }}
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-cache: python_linux/${{ matrix.type }}_${{ matrix.version }}
           bazel: test ${{ matrix.targets }} ${{ matrix.flags }} ${{ matrix.nobzlmod && '--noenable_bzlmod' || '' }} --test_env=KOKORO_PYTHON_VERSION
@@ -115,7 +115,7 @@ jobs:
         env:
           KOKORO_PYTHON_VERSION: ${{ matrix.version }}
         with:
-          version: 8.0.1 # Bazel version
+          version: 9.0.0 # Bazel version
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-cache: python_macos/${{ matrix.type }}_${{ matrix.version }}
           bazel: >-

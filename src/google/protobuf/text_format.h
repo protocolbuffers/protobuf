@@ -166,6 +166,8 @@ class PROTOBUF_EXPORT TextFormat {
    public:
     virtual ~BaseTextGenerator();
 
+    virtual bool failed() const { return false; }
+
     virtual void Indent() {}
     virtual void Outdent() {}
     // Returns the current indentation size in characters.
@@ -860,6 +862,9 @@ class PROTOBUF_EXPORT TextFormat {
     // Forward declaration of an internal class used to parse text
     // representations (see text_format.cc for implementation).
     class ParserImpl;
+
+    template <typename T>
+    bool CheckParseInputSize(T& input, Message* output) const;
 
     // Like TextFormat::Merge().  The provided implementation is used
     // to do the parsing.

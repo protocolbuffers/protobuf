@@ -4,9 +4,7 @@
 # Use of this source code is governed by a BSD-style
 # license that can be found in the LICENSE file or at
 # https://developers.google.com/open-source/licenses/bsd
-
-"""Determine which implementation of the protobuf API is used in this process.
-"""
+"""Determine which implementation of the protobuf API is used in this process."""
 
 import importlib
 import os
@@ -33,7 +31,8 @@ try:
   # The compile-time constants in the _api_implementation module can be used to
   # switch to a certain implementation of the Python API at build time.
   _implementation_type = _ApiVersionToImplementationType(
-      _api_implementation.api_version)
+      _api_implementation.api_version
+  )
 except ImportError:
   pass  # Unspecified by compiler flags.
 
@@ -57,22 +56,26 @@ if _implementation_type is None:
   else:
     _implementation_type = 'python'
 
-
 # This environment variable can be used to switch to a certain implementation
 # of the Python API, overriding the compile-time constants in the
 # _api_implementation module. Right now only 'python', 'cpp' and 'upb' are
 # valid values. Any other value will raise error.
-_implementation_type = os.getenv('PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION',
-                                 _implementation_type)
+_implementation_type = os.getenv(
+    'PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION', _implementation_type
+)
 
 if _implementation_type not in ('python', 'cpp', 'upb'):
-  raise ValueError('PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION {0} is not '
-                   'supported. Please set to \'python\', \'cpp\' or '
-                   '\'upb\'.'.format(_implementation_type))
+  raise ValueError(
+      'PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION {0} is not '
+      "supported. Please set to 'python', 'cpp' or "
+      "'upb'.".format(_implementation_type)
+  )
 
 if 'PyPy' in sys.version and _implementation_type == 'cpp':
-  warnings.warn('PyPy does not work yet with cpp protocol buffers. '
-                'Falling back to the python implementation.')
+  warnings.warn(
+      'PyPy does not work yet with cpp protocol buffers. '
+      'Falling back to the python implementation.'
+  )
   _implementation_type = 'python'
 
 _c_module = None
@@ -81,24 +84,27 @@ if _implementation_type == 'cpp':
   try:
     # pylint: disable=g-import-not-at-top
     from google.protobuf.pyext import _message
+
     sys.modules['google3.net.proto2.python.internal.cpp._message'] = _message
     _c_module = _message
     del _message
   except ImportError:
     # TODO: fail back to python
-    warnings.warn(
-        'Selected implementation cpp is not available.')
+    warnings.warn('Selected implementation cpp is not available.')
     pass
 
 if _implementation_type == 'upb':
   try:
     # pylint: disable=g-import-not-at-top
     from google._upb import _message
+
     _c_module = _message
     del _message
   except ImportError:
-    warnings.warn('Selected implementation upb is not available. '
-                  'Falling back to the python implementation.')
+    warnings.warn(
+        'Selected implementation upb is not available. '
+        'Falling back to the python implementation.'
+    )
     _implementation_type = 'python'
     pass
 
@@ -118,6 +124,7 @@ try:
   #
   # pylint: disable=g-import-not-at-top,unused-import
   from google.protobuf import enable_deterministic_proto_serialization
+
   _python_deterministic_proto_serialization = True
 except ImportError:
   _python_deterministic_proto_serialization = False

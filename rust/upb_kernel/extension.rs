@@ -131,7 +131,7 @@ impl<Extendee: Message, V: Message> ExtGetMut<Extendee, V, MessageTag>
             // SAFETY: The arena associated with a `Mut<'msg, _>` proxy lives for at least `'msg`.
             // `UpbGetArena::get_arena` returns an `&Arena` tied to the local borrow of `msg`,
             // but we can safely extend it back to `'msg` here because `msg` holds an `&'msg Arena`.
-            let arena_ref: &'msg Arena = std::mem::transmute(msg.get_arena(Private));
+            let arena_ref: &'msg Arena = &*(msg.get_arena(Private) as *const Arena);
 
             // TODO: upb should have a GetOrCreateExtension operation instead of this dance.
             let raw_msg = match upb_Message_HasExtension(
@@ -211,7 +211,10 @@ where
     ) -> Mut<'msg, Repeated<V>> {
         let mut msg = msg.into_mut();
 
-        let arena_ref: &'msg Arena = unsafe { std::mem::transmute(msg.get_arena(Private)) };
+        // SAFETY: The arena associated with a `Mut<'msg, _>` proxy lives for at least `'msg`.
+        // `UpbGetArena::get_arena` returns an `&Arena` tied to the local borrow of `msg`,
+        // but we can safely extend it back to `'msg` here because `msg` holds an `&'msg Arena`.
+        let arena_ref: &'msg Arena = unsafe { &*(msg.get_arena(Private) as *const Arena) };
         let raw_array = unsafe {
             upb_Message_GetExtensionMutableArray(
                 msg.get_ptr_mut(Private).raw(),

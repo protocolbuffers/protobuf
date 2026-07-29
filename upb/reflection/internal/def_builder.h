@@ -30,6 +30,9 @@
 
 // We want to copy the options verbatim into the destination options proto.
 // We use serialize+parse as our deep copy.
+#define _UPB_FREEZE_OPTIONS(target, options_type) \
+  upb_Message_Freeze((upb_Message*)target, UPB_DESC_MINITABLE(options_type))
+
 #define UPB_DEF_SET_OPTIONS(target, desc_type, options_type, proto)        \
   if (google_protobuf_##desc_type##_has_options(proto)) {                           \
     size_t size;                                                           \
@@ -40,6 +43,7 @@
         pb, size, _upb_DefPool_GeneratedExtensionRegistry(ctx->symtab), 0, \
         _upb_DefBuilder_Arena(ctx));                                       \
     if (!target) _upb_DefBuilder_OomErr(ctx);                              \
+    _UPB_FREEZE_OPTIONS(target, options_type);                             \
   } else {                                                                 \
     target = (const google_protobuf_##options_type*)kUpbDefOptDefault;              \
   }
@@ -149,14 +153,16 @@ UPB_INLINE void _upb_DefBuilder_CheckIdentFull(upb_DefBuilder* ctx,
     const char c = name.data[i];
     const char d = c | 0x20;  // force lowercase
     const bool is_alpha = (('a' <= d) & (d <= 'z')) | (c == '_');
-    const bool is_numer = ('0' <= c) & (c <= '9') & !start;
+    // Accept a leading digit even though protoc would reject it because the
+    // C++ DescriptorPool accepts it, and upb should be as relaxed as C++.
+    const bool is_number = ('0' <= c) & (c <= '9');
     const bool is_dot = (c == '.') & !start;
 
-    good &= is_alpha | is_numer | is_dot;
-    start = is_dot;
+    good &= is_alpha | is_number | is_dot;
+    start = (c == '.');
   }
 
-  if (!good) _upb_DefBuilder_CheckIdentSlow(ctx, name, true);
+  if (!good || start) _upb_DefBuilder_CheckIdentSlow(ctx, name, true);
 }
 
 UPB_INLINE bool _upb_DefBuilder_IsLegacyEdition(google_protobuf_Edition edition) {

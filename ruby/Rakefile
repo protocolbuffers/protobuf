@@ -152,7 +152,7 @@ else
     ['x86-mingw32', 'x64-mingw-ucrt', 'x86_64-linux', 'x86-linux'].each do |plat|
       RakeCompilerDock.sh <<-"EOT", platform: plat
         bundle && \
-        IN_DOCKER=true rake native:#{plat} pkg/#{spec.full_name}-#{plat}.gem RUBY_CC_VERSION=3.1.0:3.0.0:2.7.0
+        IN_DOCKER=true rake native:#{plat} pkg/#{spec.full_name}-#{plat}.gem RUBY_CC_VERSION=3.2.6
       EOT
     end
   end
@@ -160,7 +160,7 @@ else
   if RUBY_PLATFORM =~ /darwin/
     task 'gem:native' do
       system "rake genproto"
-      system "rake cross native gem RUBY_CC_VERSION=3.1.0"
+      system "rake cross native gem RUBY_CC_VERSION=3.2.6"
     end
   else
     task 'gem:native' => [:genproto, 'gem:windows', 'gem:java']

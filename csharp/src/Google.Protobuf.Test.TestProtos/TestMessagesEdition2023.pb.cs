@@ -467,7 +467,7 @@ namespace ProtobufTestMessages.Editions {
     private static readonly pb::MessageParser<TestAllTypesEdition2023> _parser = new pb::MessageParser<TestAllTypesEdition2023>(() => new TestAllTypesEdition2023());
     private pb::UnknownFieldSet _unknownFields;
     private pb::ExtensionSet<TestAllTypesEdition2023> _extensions;
-    private pb::ExtensionSet<TestAllTypesEdition2023> _Extensions { get { return _extensions; } }
+    private pb::ExtensionSet<TestAllTypesEdition2023>  _Extensions { get { return _extensions; } }
     private int _hasBits0;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]

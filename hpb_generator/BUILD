@@ -59,7 +59,7 @@ cc_library(
     hdrs = [
         "generator.h",
     ],
-    visibility = ["//visibility:private"],
+    visibility = ["//hpb_generator:__subpackages__"],
     deps = [
         ":context",
         ":gen_utils",
@@ -69,6 +69,7 @@ cc_library(
         "//src/google/protobuf/compiler:code_generator",
         "//src/google/protobuf/compiler:code_generator_lite",
         "//src/google/protobuf/compiler:plugin",
+        "//src/google/protobuf/io:printer",
         "//upb_generator:common",
         "//upb_generator:file_layout",
         "//upb_generator/c:names",
@@ -108,7 +109,7 @@ cc_library(
     name = "names",
     srcs = ["names.cc"],
     hdrs = ["names.h"],
-    visibility = ["//visibility:private"],
+    visibility = ["//hpb_generator:__subpackages__"],
     deps = [
         ":context",
         ":keywords",
@@ -128,7 +129,7 @@ cc_library(
         "//src/google/protobuf/io",
         "//src/google/protobuf/io:printer",
         "//upb/port",
-        "//upb/reflection",
+        "//upb/reflection:reflection_cc",
         "//upb_generator/common:cpp_to_upb_def",
         "@abseil-cpp//absl/strings",
         "@abseil-cpp//absl/strings:string_view",

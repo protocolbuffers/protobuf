@@ -112,8 +112,7 @@ void SetPrimitiveVariables(
   (*variables)["tag_size"] = absl::StrCat(
       WireFormat::TagSize(descriptor->number(), GetType(descriptor)));
   if (IsReferenceType(GetJavaType(descriptor))) {
-    (*variables)["null_check"] =
-        "if (value == null) { throw new NullPointerException(); }";
+    (*variables)["null_check"] = "java.util.Objects.requireNonNull(value);";
   } else {
     (*variables)["null_check"] = "";
   }
@@ -217,8 +216,6 @@ int ImmutablePrimitiveFieldGenerator::GetBuilderBitIndex() const {
 int ImmutablePrimitiveFieldGenerator::GetNumBitsForMessage() const {
   return HasHasbit(descriptor_) ? 1 : 0;
 }
-
-int ImmutablePrimitiveFieldGenerator::GetNumBitsForBuilder() const { return 1; }
 
 void ImmutablePrimitiveFieldGenerator::GenerateInterfaceMembers(
     io::Printer* printer) const {
@@ -582,7 +579,7 @@ void ImmutablePrimitiveOneofFieldGenerator::GenerateBuilderClearCode(
 
 void ImmutablePrimitiveOneofFieldGenerator::GenerateBuildingCode(
     io::Printer* printer) const {
-  // no-op
+  // No-Op: Handled by single block statement in GenerateBuildPartialShard.
 }
 
 void ImmutablePrimitiveOneofFieldGenerator::GenerateMergingCode(
@@ -650,10 +647,6 @@ int RepeatedImmutablePrimitiveFieldGenerator::GetNumBitsForMessage() const {
   return 0;
 }
 
-int RepeatedImmutablePrimitiveFieldGenerator::GetNumBitsForBuilder() const {
-  return 1;
-}
-
 void RepeatedImmutablePrimitiveFieldGenerator::GenerateInterfaceMembers(
     io::Printer* printer) const {
   WriteFieldAccessorDocComment(printer, descriptor_, LIST_GETTER,
@@ -718,24 +711,17 @@ void RepeatedImmutablePrimitiveFieldGenerator::GenerateBuilderMembers(
   // list. The presence bit allows us to skip work on blocks of 32 fields by
   // by checking if the entire bit-field int == 0 (none of the fields are
   // present).
-  printer->Print(variables_,
-                 "private $field_list_type$ $name$_ = $empty_list$;\n"
-                 "private void ensure$capitalized_name$IsMutable() {\n"
-                 "  if (!$name$_.isModifiable()) {\n"
-                 "    $name$_ = makeMutableCopy($name$_);\n"
-                 "  }\n"
-                 "  $set_has_field_bit_builder$\n"
-                 "}\n");
-  if (FixedSize(GetType(descriptor_)) != -1) {
-    printer->Print(
-        variables_,
-        "private void ensure$capitalized_name$IsMutable(int capacity) {\n"
-        "  if (!$name$_.isModifiable()) {\n"
-        "    $name$_ = makeMutableCopy($name$_, capacity);\n"
-        "  }\n"
-        "  $set_has_field_bit_builder$\n"
-        "}\n");
-  }
+  // We use one method and pass -1 when capacity is unknown to control class
+  // size.
+  printer->Print(
+      variables_,
+      "private $field_list_type$ $name$_ = $empty_list$;\n"
+      "private void ensure$capitalized_name$IsMutable(int capacity) {\n"
+      "  if (!$name$_.isModifiable()) {\n"
+      "    $name$_ = makeMutableCopy($name$_, capacity);\n"
+      "  }\n"
+      "  $set_has_field_bit_builder$\n"
+      "}\n");
 
   // Note:  We return an unmodifiable list because otherwise the caller
   //   could hold on to the returned list and modify it after the message
@@ -773,7 +759,7 @@ void RepeatedImmutablePrimitiveFieldGenerator::GenerateBuilderMembers(
                  "$deprecation$public Builder ${$set$capitalized_name$$}$(\n"
                  "    int index, $type$ value) {\n"
                  "  $null_check$\n"
-                 "  ensure$capitalized_name$IsMutable();\n"
+                 "  ensure$capitalized_name$IsMutable(/* capacity= */ -1);\n"
                  "  $repeated_set$(index, value);\n"
                  "  $set_has_field_bit_builder$\n"
                  "  $on_changed$\n"
@@ -787,7 +773,7 @@ void RepeatedImmutablePrimitiveFieldGenerator::GenerateBuilderMembers(
                  "$deprecation$public Builder "
                  "${$add$capitalized_name$$}$($type$ value) {\n"
                  "  $null_check$\n"
-                 "  ensure$capitalized_name$IsMutable();\n"
+                 "  ensure$capitalized_name$IsMutable(/* capacity= */ -1);\n"
                  "  $repeated_add$(value);\n"
                  "  $set_has_field_bit_builder$\n"
                  "  $on_changed$\n"
@@ -800,7 +786,7 @@ void RepeatedImmutablePrimitiveFieldGenerator::GenerateBuilderMembers(
   printer->Print(variables_,
                  "$deprecation$public Builder ${$addAll$capitalized_name$$}$(\n"
                  "    java.lang.Iterable<? extends $boxed_type$> values) {\n"
-                 "  ensure$capitalized_name$IsMutable();\n"
+                 "  ensure$capitalized_name$IsMutable(/* capacity= */ -1);\n"
                  "  com.google.protobuf.AbstractMessageLite.Builder.addAll(\n"
                  "      values, $name$_);\n"
                  "  $set_has_field_bit_builder$\n"
@@ -852,7 +838,7 @@ void RepeatedImmutablePrimitiveFieldGenerator::GenerateMergingCode(
                  "    $set_has_field_bit_builder$\n");
   printer->Print(variables_,
                  "  } else {\n"
-                 "    ensure$capitalized_name$IsMutable();\n"
+                 "    ensure$capitalized_name$IsMutable(/* capacity= */ -1);\n"
                  "    $name$_.addAll(other.$name$_);\n"
                  "  }\n"
                  "  $on_changed$\n"
@@ -874,7 +860,7 @@ void RepeatedImmutablePrimitiveFieldGenerator::GenerateBuilderParsingCode(
     io::Printer* printer) const {
   printer->Print(variables_,
                  "$type$ v = input.read$capitalized_type$();\n"
-                 "ensure$capitalized_name$IsMutable();\n"
+                 "ensure$capitalized_name$IsMutable(/* capacity= */ -1);\n"
                  "$repeated_add$(v);\n");
 }
 
@@ -895,7 +881,8 @@ void RepeatedImmutablePrimitiveFieldGenerator::
     printer->Print(variables_,
                    "int length = input.readRawVarint32();\n"
                    "int limit = input.pushLimit(length);\n"
-                   "ensure$capitalized_name$IsMutable();\n"
+                   "int count = input.countPackedVarints(length);\n"
+                   "ensure$capitalized_name$IsMutable(count);\n"
                    "while (input.getBytesUntilLimit() > 0) {\n"
                    "  $repeated_add$(input.read$capitalized_type$());\n"
                    "}\n"

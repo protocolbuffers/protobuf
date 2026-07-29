@@ -184,6 +184,7 @@ void MicroString::SetImpl(absl::string_view data, Arena* arena,
       h->ChangeSize(0);
       return;
     } else if (h->capacity >= data.size()) {
+      PROTOBUF_DEBUG_COUNTER("MicroString_Set.MicroRep").IncLog(data.size());
       // We unpoison the buffer first, memmove, then repoison to the new size.
       // We can't poison to the new size first because the input data might be
       // aliasing the previously allowed part of `this`.
@@ -203,6 +204,8 @@ void MicroString::SetImpl(absl::string_view data, Arena* arena,
           h->ChangeSize(0);
           return;
         } else if (h->capacity >= data.size()) {
+          PROTOBUF_DEBUG_COUNTER("MicroString_Set.LargeRep")
+              .IncLog(data.size());
           h->Unpoison();
           memmove(h->payload, data.data(), data.size());
           h->ChangeSize(data.size());
@@ -213,6 +216,7 @@ void MicroString::SetImpl(absl::string_view data, Arena* arena,
       case kString: {
         auto* h = string_rep();
         if (h->str.capacity() >= data.size()) {
+          PROTOBUF_DEBUG_COUNTER("MicroString_Set.String").IncLog(data.size());
           h->str.assign(data.data(), data.size());
           h->ResetBase();
           return;
@@ -232,6 +236,7 @@ void MicroString::SetImpl(absl::string_view data, Arena* arena,
   // If we fit in the inline space, use it.
   if (data.size() <= inline_capacity) {
     set_inline_size(data.size());
+    PROTOBUF_DEBUG_COUNTER("MicroString_Set.Inline").IncBucket(data.size());
     if (!data.empty()) {
       memmove(inline_head(), data.data(), data.size());
     }
@@ -240,6 +245,7 @@ void MicroString::SetImpl(absl::string_view data, Arena* arena,
 
   // Try MicroString rep first.
   if (data.size() <= kMaxMicroRepCapacity) {
+    PROTOBUF_DEBUG_COUNTER("MicroString_Set.MicroRep").IncLog(data.size());
     MicroRep* h = AllocateMicroRep(data.size(), arena);
     memcpy(h->data(), data.data(), data.size());
     return;
@@ -248,6 +254,7 @@ void MicroString::SetImpl(absl::string_view data, Arena* arena,
   // Input is too big for MicroString, use the large large_rep representation.
   LargeRep* h = AllocateOwnedRep(data.size(), arena);
   memcpy(h->payload, data.data(), data.size());
+  PROTOBUF_DEBUG_COUNTER("MicroString_Set.LargeRep").IncLog(data.size());
 }
 
 void MicroString::SetAlias(absl::string_view data, Arena* arena,

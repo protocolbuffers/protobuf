@@ -130,6 +130,11 @@ void GenerateOneofDefinition(Context& ctx, const OneofDescriptor& oneof) {
              for (int i = 0; i < oneof.field_count(); ++i) {
                auto& field = *oneof.field(i);
                if (!IsSupportedOneofFieldCase(ctx, field)) {
+                 ctx.Emit({{"name", OneofCaseRsName(field)},
+                           {"number", std::to_string(field.number())}},
+                          R"rs(
+                        $name$ = $number$, // Note: no payload for unsupported string type.
+                )rs");
                  continue;
                }
                std::string rs_type = RsTypeNameView(ctx, field);
@@ -137,7 +142,7 @@ void GenerateOneofDefinition(Context& ctx, const OneofDescriptor& oneof) {
                          {"type", rs_type},
                          {"number", std::to_string(field.number())}},
                         R"rs($name$($type$) = $number$,
-                )rs");
+                 )rs");
              }
            }},
       },
@@ -165,9 +170,6 @@ void GenerateOneofDefinition(Context& ctx, const OneofDescriptor& oneof) {
              [&] {
                for (int i = 0; i < oneof.field_count(); ++i) {
                  auto& field = *oneof.field(i);
-                 if (!IsSupportedOneofFieldCase(ctx, field)) {
-                   continue;
-                 }
                  ctx.Emit({{"name", OneofCaseRsName(field)},
                            {"number", std::to_string(field.number())}},
                           R"rs($name$ = $number$,
@@ -178,9 +180,6 @@ void GenerateOneofDefinition(Context& ctx, const OneofDescriptor& oneof) {
              [&] {
                for (int i = 0; i < oneof.field_count(); ++i) {
                  auto& field = *oneof.field(i);
-                 if (!IsSupportedOneofFieldCase(ctx, field)) {
-                   continue;
-                 }
                  ctx.Emit({{"name", OneofCaseRsName(field)},
                            {"number", std::to_string(field.number())}},
                           R"rs($number$ => Some($case_enum_name$::$name$),
@@ -228,6 +227,16 @@ void GenerateOneofAccessors(Context& ctx, const OneofDescriptor& oneof,
           for (int i = 0; i < oneof.field_count(); ++i) {
             auto& field = *oneof.field(i);
             if (!IsSupportedOneofFieldCase(ctx, field)) {
+              ctx.Emit(
+                  {
+                      {"case", OneofCaseRsName(field)},
+                      {"view_enum", OneofViewEnumRsName(oneof)},
+                      {"oneof_enum_module", RustModule(ctx, oneof)},
+                  },
+                  R"rs(
+                  $oneof_enum_module$$case_enum_name$::$case$ =>
+                      $oneof_enum_module$$view_enum_name$::$case$,
+                  )rs");
               continue;
             }
             std::string rs_type = RsTypeNameView(ctx, field);
@@ -268,7 +277,8 @@ void GenerateOneofAccessors(Context& ctx, const OneofDescriptor& oneof,
         pub fn $oneof_name$($self$) -> $oneof_enum_module$$view_enum_name$<$view_lifetime$> {
           match $self$.$oneof_name$_case() {
             $view_cases$
-            _ => $oneof_enum_module$$view_enum_name$::not_set(std::marker::PhantomData)
+            $oneof_enum_module$$case_enum_name$::not_set =>
+                      $oneof_enum_module$$view_enum_name$::not_set(std::marker::PhantomData)
           }
         }
 

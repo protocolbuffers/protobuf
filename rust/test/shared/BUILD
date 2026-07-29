@@ -43,7 +43,11 @@ rust_test(
     aliases = {
         "//rust:protobuf_upb_export": "protobuf",
     },
-    rustc_flags = ["--cfg=bzl"],
+    edition = "2024",
+    rustc_flags = [
+        "--cfg=bzl",
+        "--cfg=upb_kernel",
+    ],
     deps = [
         "//rust:protobuf_upb_export",
         "//rust/test:unittest_upb_rust_proto",
@@ -57,7 +61,11 @@ rust_test(
     aliases = {
         "//rust:protobuf_cpp_export": "protobuf",
     },
-    rustc_flags = ["--cfg=bzl"],
+    edition = "2024",
+    rustc_flags = [
+        "--cfg=bzl",
+        "--cfg=cpp_kernel",
+    ],
     deps = [
         "//rust:protobuf_cpp_export",
         "//rust/test:unittest_cpp_rust_proto",
@@ -71,6 +79,7 @@ rust_test(
     aliases = {
         "//rust:protobuf_upb_export": "protobuf",
     },
+    edition = "2024",
     rustc_flags = ["--cfg=bzl"],
     deps = [
         "//rust:protobuf_upb_export",
@@ -86,6 +95,7 @@ rust_test(
     aliases = {
         "//rust:protobuf_cpp_export": "protobuf",
     },
+    edition = "2024",
     rustc_flags = ["--cfg=bzl"],
     deps = [
         "//rust:protobuf_cpp_export",
@@ -98,6 +108,7 @@ rust_test(
 rust_test(
     name = "edition2023_cpp_test",
     srcs = ["edition2023_test.rs"],
+    edition = "2024",
     rustc_flags = ["--cfg=bzl"],
     deps = [
         "//rust/test:edition2023_cpp_rust_proto",
@@ -108,6 +119,7 @@ rust_test(
 rust_test(
     name = "edition2023_upb_test",
     srcs = ["edition2023_test.rs"],
+    edition = "2024",
     rustc_flags = ["--cfg=bzl"],
     deps = [
         "//rust/test:edition2023_upb_rust_proto",
@@ -121,6 +133,7 @@ rust_test(
     aliases = {
         "//rust:protobuf_cpp_export": "protobuf",
     },
+    edition = "2024",
     rustc_flags = ["--cfg=bzl"],
     deps = [
         "//rust:protobuf_cpp_export",
@@ -136,6 +149,7 @@ rust_test(
     aliases = {
         "//rust:protobuf_upb_export": "protobuf",
     },
+    edition = "2024",
     rustc_flags = ["--cfg=bzl"],
     deps = [
         "//rust:protobuf_upb_export",
@@ -148,6 +162,7 @@ rust_test(
 rust_test(
     name = "import_public_cpp_test",
     srcs = ["import_public_test.rs"],
+    edition = "2024",
     rustc_flags = ["--cfg=bzl"],
     deps = [
         "//rust/test:import_public_cpp_rust_proto",
@@ -158,6 +173,7 @@ rust_test(
 rust_test(
     name = "import_public_upb_test",
     srcs = ["import_public_test.rs"],
+    edition = "2024",
     rustc_flags = ["--cfg=bzl"],
     deps = [
         "//rust/test:import_public_upb_rust_proto",
@@ -168,6 +184,7 @@ rust_test(
 rust_test(
     name = "package_cpp_test",
     srcs = ["package_test.rs"],
+    edition = "2024",
     rustc_flags = ["--cfg=bzl"],
     deps = [
         "//rust/test:dots_in_package_cpp_rust_proto",
@@ -180,6 +197,7 @@ rust_test(
 rust_test(
     name = "package_upb_test",
     srcs = ["package_test.rs"],
+    edition = "2024",
     rustc_flags = ["--cfg=bzl"],
     deps = [
         "//rust/test:dots_in_package_upb_rust_proto",
@@ -192,12 +210,14 @@ rust_test(
 rust_test(
     name = "package_disambiguation_cpp_test",
     srcs = ["package_disambiguation_test.rs"],
+    edition = "2024",
     deps = ["//rust/test:package_disabiguation_cpp_rust_proto"],
 )
 
 rust_test(
     name = "package_disambiguation_upb_test",
     srcs = ["package_disambiguation_test.rs"],
+    edition = "2024",
     deps = ["//rust/test:package_disabiguation_upb_rust_proto"],
 )
 
@@ -207,6 +227,7 @@ rust_test(
     aliases = {
         "//rust:protobuf_cpp_export": "protobuf",
     },
+    edition = "2024",
     rustc_flags = ["--cfg=bzl"],
     deps = [
         "//rust:protobuf_cpp_export",
@@ -222,6 +243,7 @@ rust_test(
     aliases = {
         "//rust:protobuf_upb_export": "protobuf",
     },
+    edition = "2024",
     rustc_flags = ["--cfg=bzl"],
     deps = [
         "//rust:protobuf_upb_export",
@@ -234,6 +256,7 @@ rust_test(
 rust_test(
     name = "nested_types_cpp_test",
     srcs = ["nested_types_test.rs"],
+    edition = "2024",
     rustc_flags = ["--cfg=bzl"],
     deps = [
         "//rust/test:unittest_cpp_rust_proto",
@@ -244,6 +267,7 @@ rust_test(
 rust_test(
     name = "nested_types_upb_test",
     srcs = ["nested_types_test.rs"],
+    edition = "2024",
     rustc_flags = ["--cfg=bzl"],
     deps = [
         "//rust/test:unittest_upb_rust_proto",
@@ -257,6 +281,7 @@ rust_test(
     aliases = {
         "//rust:protobuf_cpp_export": "protobuf",
     },
+    edition = "2024",
     proc_macro_deps = [
         "@crate_index//:paste",
     ],
@@ -275,6 +300,7 @@ rust_test(
     aliases = {
         "//rust:protobuf_upb_export": "protobuf",
     },
+    edition = "2024",
     proc_macro_deps = [
         "@crate_index//:paste",
     ],
@@ -293,6 +319,7 @@ rust_test(
     aliases = {
         "//rust:protobuf_cpp_export": "protobuf",
     },
+    edition = "2024",
     rustc_flags = ["--cfg=bzl"],
     deps = [
         "//rust:protobuf_cpp_export",
@@ -308,6 +335,7 @@ rust_test(
     aliases = {
         "//rust:protobuf_upb_export": "protobuf",
     },
+    edition = "2024",
     rustc_flags = ["--cfg=bzl"],
     deps = [
         "//rust:protobuf_upb_export",
@@ -323,6 +351,7 @@ rust_test(
     aliases = {
         "//rust:protobuf_upb_export": "protobuf",
     },
+    edition = "2024",
     proc_macro_deps = [
         "@crate_index//:paste",
     ],
@@ -342,6 +371,7 @@ rust_test(
     aliases = {
         "//rust:protobuf_cpp_export": "protobuf",
     },
+    edition = "2024",
     proc_macro_deps = [
         "@crate_index//:paste",
     ],
@@ -361,6 +391,7 @@ rust_test(
     aliases = {
         "//rust:protobuf_cpp_export": "protobuf",
     },
+    edition = "2024",
     rustc_flags = ["--cfg=bzl"],
     deps = [
         "//rust:protobuf_cpp_export",
@@ -376,6 +407,7 @@ rust_test(
     aliases = {
         "//rust:protobuf_upb_export": "protobuf",
     },
+    edition = "2024",
     rustc_flags = ["--cfg=bzl"],
     deps = [
         "//rust:protobuf_upb_export",
@@ -391,6 +423,7 @@ rust_test(
     aliases = {
         "//rust:protobuf_cpp_export": "protobuf",
     },
+    edition = "2024",
     proc_macro_deps = [
         "@crate_index//:paste",
     ],
@@ -408,6 +441,7 @@ rust_test(
     aliases = {
         "//rust:protobuf_upb_export": "protobuf",
     },
+    edition = "2024",
     proc_macro_deps = [
         "@crate_index//:paste",
     ],
@@ -425,6 +459,7 @@ rust_test(
     aliases = {
         "//rust:protobuf_cpp_export": "protobuf",
     },
+    edition = "2024",
     proc_macro_deps = [
         "@crate_index//:paste",
     ],
@@ -444,6 +479,7 @@ rust_test(
     aliases = {
         "//rust:protobuf_upb_export": "protobuf",
     },
+    edition = "2024",
     proc_macro_deps = [
         "@crate_index//:paste",
     ],
@@ -460,6 +496,7 @@ rust_test(
 rust_test(
     name = "fields_with_imported_types_cpp_test",
     srcs = ["fields_with_imported_types_test.rs"],
+    edition = "2024",
     rustc_flags = ["--cfg=bzl"],
     deps = [
         "//rust:protobuf_cpp_export",
@@ -472,6 +509,7 @@ rust_test(
 rust_test(
     name = "fields_with_imported_types_upb_test",
     srcs = ["fields_with_imported_types_test.rs"],
+    edition = "2024",
     rustc_flags = ["--cfg=bzl"],
     deps = [
         "//rust:protobuf_upb_export",
@@ -487,6 +525,7 @@ rust_test(
     aliases = {
         "//rust:protobuf_cpp": "protobuf",
     },
+    edition = "2024",
     rustc_flags = ["--cfg=bzl"],
     deps = [
         "//rust:protobuf_cpp",
@@ -501,6 +540,7 @@ rust_test(
     aliases = {
         "//rust:protobuf_upb": "protobuf",
     },
+    edition = "2024",
     rustc_flags = ["--cfg=bzl"],
     deps = [
         "//rust:protobuf_upb",
@@ -515,6 +555,7 @@ rust_test(
     aliases = {
         "//rust:protobuf_cpp": "protobuf",
     },
+    edition = "2024",
     rustc_flags = ["--cfg=bzl"],
     deps = [
         "//rust:protobuf_cpp",
@@ -529,6 +570,7 @@ rust_test(
     aliases = {
         "//rust:protobuf_upb": "protobuf",
     },
+    edition = "2024",
     rustc_flags = ["--cfg=bzl"],
     deps = [
         "//rust:protobuf_upb",
@@ -543,6 +585,7 @@ rust_test(
     aliases = {
         "//rust:protobuf_cpp": "protobuf",
     },
+    edition = "2024",
     rustc_flags = ["--cfg=bzl"],
     deps = [
         "//rust:protobuf_cpp",
@@ -559,6 +602,7 @@ rust_test(
         "//rust:protobuf_upb": "protobuf",
         "//rust:protobuf_gtest_matchers_upb": "protobuf_gtest_matchers",
     },
+    edition = "2024",
     rustc_flags = ["--cfg=bzl"],
     deps = [
         "//rust:protobuf_gtest_matchers_upb",
@@ -576,6 +620,7 @@ rust_test(
         "//rust:protobuf_cpp": "protobuf",
         "//rust:protobuf_gtest_matchers_cpp": "protobuf_gtest_matchers",
     },
+    edition = "2024",
     proc_macro_deps = [
         "@crate_index//:paste",
     ],
@@ -597,6 +642,7 @@ rust_test(
         "//rust:protobuf_upb": "protobuf",
         "//rust:protobuf_gtest_matchers_upb": "protobuf_gtest_matchers",
     },
+    edition = "2024",
     proc_macro_deps = [
         "@crate_index//:paste",
     ],
@@ -617,6 +663,7 @@ rust_test(
     aliases = {
         "//rust:protobuf_cpp_export": "protobuf",
     },
+    edition = "2024",
     rustc_flags = ["--cfg=bzl"],
     deps = [
         "//rust:protobuf_cpp_export",
@@ -630,6 +677,7 @@ rust_test(
     aliases = {
         "//rust:protobuf_upb_export": "protobuf",
     },
+    edition = "2024",
     rustc_flags = ["--cfg=bzl"],
     deps = [
         "//rust:protobuf_upb_export",
@@ -643,6 +691,7 @@ rust_test(
     aliases = {
         "//rust:protobuf_cpp_export": "protobuf",
     },
+    edition = "2024",
     rustc_flags = ["--cfg=bzl"],
     deps = [
         "//rust:protobuf_cpp_export",
@@ -657,6 +706,7 @@ rust_test(
     aliases = {
         "//rust:protobuf_upb_export": "protobuf",
     },
+    edition = "2024",
     rustc_flags = ["--cfg=bzl"],
     deps = [
         "//rust:protobuf_upb_export",

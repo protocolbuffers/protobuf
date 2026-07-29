@@ -100,7 +100,6 @@ cc_library(
     visibility = ["//visibility:public"],
     deps = [
         "//upb/base",
-        "//upb/mem",
         "//upb/message:types",
         "//upb/port",
     ],
@@ -154,6 +153,28 @@ cc_test(
     ],
 )
 
+cc_test(
+    name = "generated_registry_empty_test",
+    srcs = ["generated_registry_empty_test.cc"],
+    linkstatic = 1,
+    deps = [
+        ":generated_registry_empty_test_upb_minitable_proto",
+        ":mini_table",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
+    ],
+)
+
+proto_library(
+    name = "generated_registry_empty_test_proto",
+    srcs = ["generated_registry_empty_test.proto"],
+)
+
+upb_minitable_proto_library(
+    name = "generated_registry_empty_test_upb_minitable_proto",
+    deps = [":generated_registry_empty_test_proto"],
+)
+
 proto_library(
     name = "message_benchmark_proto",
     testonly = 1,
@@ -203,18 +224,63 @@ cc_binary(
     ],
 )
 
+# The staleness_test macro is not configuration-aware and its
+# "outs" attribute is not configurable via select(). To support testing
+# staleness in both standard and fasttable configurations, we define two
+# separate tests and use configuration-aware genrules to ensure each test
+# only performs real validation when its configuration is active.
+#
+# We move the generator binary to "srcs" so that it is built in the target
+# configuration (not the exec configuration), ensuring it correctly receives
+# the fasttable enablement flag.
 genrule(
-    name = "debug_string_test_txt",
+    name = "debug_string_test_txt_gen",
+    srcs = select({
+        "//upb:fasttable_enabled_setting": ["debug_string_test.txt"],
+        "//conditions:default": [],
+    }),
     outs = ["generated/debug_string_test.txt"],
-    cmd = "$(location :debug_string_test_generate) > $@",
+    cmd = select({
+        "//upb:fasttable_enabled_setting": "cp $(location debug_string_test.txt) $@",
+        "//conditions:default": "$(location :debug_string_test_generate) > $@",
+    }),
+    tools = [":debug_string_test_generate"],
+)
+
+genrule(
+    name = "debug_string_test_fasttable_txt_gen",
+    srcs = select({
+        "//upb:fasttable_enabled_setting": [],
+        "//conditions:default": ["debug_string_test.fasttable.txt"],
+    }),
+    outs = ["generated/debug_string_test.fasttable.txt"],
+    cmd = select({
+        "//upb:fasttable_enabled_setting": "$(location :debug_string_test_generate) > $@",
+        "//conditions:default": "cp $(location debug_string_test.fasttable.txt) $@",
+    }),
     tools = [":debug_string_test_generate"],
 )
 
 staleness_test(
-    name = "debug_string_staleness_test",
+    name = "debug_string_staleness_test_standard",
     outs = ["debug_string_test.txt"],
     generated_pattern = "generated/%s",
     target_files = ["debug_string_test.txt"],
+)
+
+staleness_test(
+    name = "debug_string_staleness_test_fasttable",
+    outs = ["debug_string_test.fasttable.txt"],
+    generated_pattern = "generated/%s",
+    target_files = ["debug_string_test.fasttable.txt"],
+)
+
+test_suite(
+    name = "debug_string_staleness_test",
+    tests = [
+        ":debug_string_staleness_test_fasttable",
+        ":debug_string_staleness_test_standard",
+    ],
 )
 
 filegroup(
@@ -236,6 +302,16 @@ filegroup(
     srcs = glob(
         [
             "**/*test.cc",
+        ],
+    ),
+    visibility = ["//upb:__pkg__"],
+)
+
+filegroup(
+    name = "test_protos",
+    srcs = glob(
+        [
+            "**/*test.proto",
         ],
     ),
     visibility = ["//upb:__pkg__"],

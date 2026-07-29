@@ -38,21 +38,30 @@ const upb_MiniTable* google__protobuf__compiler__CodeGeneratorRequest_msg_init()
             upb_Status_ErrorMessage(&status));
     abort();
   }
-  upb_MiniTable_SetSubMessage(
-      mini_table,
-      (upb_MiniTableField*)upb_MiniTable_FindFieldByNumber(mini_table,
-                                                           15),
-      google__protobuf__FileDescriptorProto_msg_init());
-  upb_MiniTable_SetSubMessage(
-      mini_table,
-      (upb_MiniTableField*)upb_MiniTable_FindFieldByNumber(mini_table,
-                                                           17),
-      google__protobuf__FileDescriptorProto_msg_init());
-  upb_MiniTable_SetSubMessage(
-      mini_table,
-      (upb_MiniTableField*)upb_MiniTable_FindFieldByNumber(mini_table,
-                                                           3),
-      google__protobuf__compiler__Version_msg_init());
+  if (!upb_MiniTable_SetSubMessage(
+          mini_table,
+          (upb_MiniTableField*)upb_MiniTable_FindFieldByNumber(
+              mini_table, 15),
+          google__protobuf__FileDescriptorProto_msg_init())) {
+    fprintf(stderr, "Failed to link submessage for google__protobuf__compiler__CodeGeneratorRequest_msg_init\n");
+    abort();
+  }
+  if (!upb_MiniTable_SetSubMessage(
+          mini_table,
+          (upb_MiniTableField*)upb_MiniTable_FindFieldByNumber(
+              mini_table, 17),
+          google__protobuf__FileDescriptorProto_msg_init())) {
+    fprintf(stderr, "Failed to link submessage for google__protobuf__compiler__CodeGeneratorRequest_msg_init\n");
+    abort();
+  }
+  if (!upb_MiniTable_SetSubMessage(
+          mini_table,
+          (upb_MiniTableField*)upb_MiniTable_FindFieldByNumber(
+              mini_table, 3),
+          google__protobuf__compiler__Version_msg_init())) {
+    fprintf(stderr, "Failed to link submessage for google__protobuf__compiler__CodeGeneratorRequest_msg_init\n");
+    abort();
+  }
    return mini_table;
 }
 
@@ -69,11 +78,14 @@ const upb_MiniTable* google__protobuf__compiler__CodeGeneratorResponse_msg_init(
             upb_Status_ErrorMessage(&status));
     abort();
   }
-  upb_MiniTable_SetSubMessage(
-      mini_table,
-      (upb_MiniTableField*)upb_MiniTable_FindFieldByNumber(mini_table,
-                                                           15),
-      google__protobuf__compiler__CodeGeneratorResponse__File_msg_init());
+  if (!upb_MiniTable_SetSubMessage(
+          mini_table,
+          (upb_MiniTableField*)upb_MiniTable_FindFieldByNumber(
+              mini_table, 15),
+          google__protobuf__compiler__CodeGeneratorResponse__File_msg_init())) {
+    fprintf(stderr, "Failed to link submessage for google__protobuf__compiler__CodeGeneratorResponse_msg_init\n");
+    abort();
+  }
    return mini_table;
 }
 
@@ -90,11 +102,14 @@ const upb_MiniTable* google__protobuf__compiler__CodeGeneratorResponse__File_msg
             upb_Status_ErrorMessage(&status));
     abort();
   }
-  upb_MiniTable_SetSubMessage(
-      mini_table,
-      (upb_MiniTableField*)upb_MiniTable_FindFieldByNumber(mini_table,
-                                                           16),
-      google__protobuf__GeneratedCodeInfo_msg_init());
+  if (!upb_MiniTable_SetSubMessage(
+          mini_table,
+          (upb_MiniTableField*)upb_MiniTable_FindFieldByNumber(
+              mini_table, 16),
+          google__protobuf__GeneratedCodeInfo_msg_init())) {
+    fprintf(stderr, "Failed to link submessage for google__protobuf__compiler__CodeGeneratorResponse__File_msg_init\n");
+    abort();
+  }
    return mini_table;
 }
 

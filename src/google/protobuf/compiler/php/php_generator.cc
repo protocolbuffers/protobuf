@@ -39,9 +39,9 @@ constexpr absl::string_view kDescriptorMetadataFile =
 constexpr absl::string_view kDescriptorPackageName =
     "Google\\Protobuf\\Internal";
 constexpr absl::string_view kValidConstantNames[] = {
-    "int",  "float", "bool",     "string", "true", "false",
-    "null", "void",  "iterable", "parent", "self", "readonly"};
-const int kValidConstantNamesSize = 12;
+    "int",      "float",  "bool", "string",   "true",   "false", "null", "void",
+    "iterable", "parent", "self", "readonly", "object", "mixed", "never"};
+const int kValidConstantNamesSize = 15;
 const int kFieldSetter = 1;
 const int kFieldGetter = 2;
 const int kFieldProperty = 3;
@@ -890,7 +890,7 @@ void GenerateFieldAccessor(const FieldDescriptor* field, const Options& options,
         "public function set^camel_name^Unwrapped($var)\n"
         "{\n"
         "    $this->writeWrapperValue(\"^field_name^\", $var);\n"
-        "    return $this;"
+        "    return $this;\n"
         "}\n\n",
         "camel_name", UnderscoresToCamelCase(field->name(), true), "field_name",
         field->name());
@@ -993,8 +993,8 @@ void GenerateMessageToPool(absl::string_view name_prefix,
 void GenerateAddFileToPool(const FileDescriptor* file, const Options& options,
                            io::Printer* printer) {
   printer->Print(
-      "public static $is_initialized = false;\n\n"
-      "public static function initOnce() {\n");
+      "public static bool $is_initialized = false;\n\n"
+      "public static function initOnce(): void {\n");
   Indent(printer);
 
   if (options.aggregate_metadata) {
@@ -1046,6 +1046,12 @@ void GenerateAddFileToPool(const FileDescriptor* file, const Options& options,
           break;
         }
       }
+
+      // Clear public_dependency and weak_dependency since they contain indices
+      // into the dependency array which we just modified above. PHP handles
+      // dependency loading through initOnce() calls instead.
+      file_proto->clear_public_dependency();
+      file_proto->clear_weak_dependency();
 
       // Filter out all extensions, since we do not support extension yet.
       file_proto->clear_extension();
@@ -1172,6 +1178,12 @@ void GenerateAddFilesToPool(const FileDescriptor* file, const Options& options,
           break;
         }
       }
+
+      // Clear public_dependency and weak_dependency since they contain indices
+      // into the dependency array which we just modified above. PHP handles
+      // dependency loading through initOnce() calls instead.
+      file_proto->clear_public_dependency();
+      file_proto->clear_weak_dependency();
 
       // Filter out all extensions, since we do not support extension yet.
       file_proto->clear_extension();
@@ -1470,7 +1482,7 @@ bool GenerateMessageFile(const FileDescriptor* file, const Descriptor* message,
   printer.Print("\n");
 
   GenerateMessageConstructorDocComment(&printer, message, options);
-  printer.Print("public function __construct($data = NULL) {\n");
+  printer.Print("public function __construct($data = null)\n{\n");
   Indent(&printer);
 
   std::string metadata_filename = GeneratedMetadataFileName(file, options);

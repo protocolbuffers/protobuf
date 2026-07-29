@@ -14,11 +14,27 @@ using google::protobuf::compiler::rust::ScreamingSnakeToUpperCamelCase;
 
 namespace {
 TEST(RustProtoNaming, RustInternalModuleName) {
-  google::protobuf::FileDescriptorProto foo_file;
-  foo_file.set_name("strong_bad/lol.proto");
-  google::protobuf::DescriptorPool pool;
-  const google::protobuf::FileDescriptor* fd = pool.BuildFile(foo_file);
-  EXPECT_EQ(RustInternalModuleName(*fd), "strong__bad_slol");
+  auto get_internal_module_name = [](const std::string& name) {
+    google::protobuf::FileDescriptorProto file_proto;
+    file_proto.set_name(name);
+    google::protobuf::DescriptorPool pool;
+    return RustInternalModuleName(*pool.BuildFile(file_proto));
+  };
+
+  EXPECT_EQ(get_internal_module_name("strong_bad/lol.proto"),
+            "strong__bad_slol");
+  EXPECT_EQ(get_internal_module_name("0.1.proto"), "0_2e_1");
+  EXPECT_EQ(get_internal_module_name("_.proto"), "__");
+  EXPECT_EQ(get_internal_module_name("abc   .proto"), "abc_20__20__20_");
+  EXPECT_EQ(get_internal_module_name("hello (2).proto"), "hello_20__28_2_29_");
+  EXPECT_EQ(get_internal_module_name("k8s.min.proto"), "k8s_2e_min");
+  EXPECT_EQ(get_internal_module_name("c++.proto"), "c_2b__2b_");
+  EXPECT_EQ(get_internal_module_name("hello,world.proto"), "hello_2c_world");
+  EXPECT_EQ(get_internal_module_name("hello..world.proto"),
+            "hello_2e__2e_world");
+  EXPECT_EQ(get_internal_module_name("hello_你好.proto"),
+            "hello___e4__bd__a0__e5__a5__bd_");
+  EXPECT_EQ(get_internal_module_name("my-message.proto"), "my__message");
 }
 
 TEST(RustProtoNaming, CamelToSnakeCase) {

@@ -754,12 +754,14 @@ class Message
      * specified message.
      *
      * @param string $data Binary protobuf data.
+     * @param int $recursion_limit Maximum message nesting depth allowed while
+     *     parsing. Defaults to 100.
      * @return null
      * @throws \Exception Invalid data.
      */
-    public function mergeFromString($data)
+    public function mergeFromString($data, $recursion_limit = CodedInputStream::DEFAULT_RECURSION_LIMIT)
     {
-        $input = new CodedInputStream($data);
+        $input = new CodedInputStream($data, $recursion_limit);
         $this->parseFromStream($input);
     }
 
@@ -1567,9 +1569,15 @@ class Message
 
     /**
      * Serialize the message to string.
+     * @param int $recursion_limit Accepted for API parity with the C extension
+     *     (and with mergeFromString). The pure-PHP encoder (CodedOutputStream)
+     *     does not enforce a recursion-depth guard, so this argument has no
+     *     effect here and deep messages always serialize successfully. The C
+     *     extension does enforce it and throws "Max nesting exceeded" past the
+     *     limit. Defaults to 100.
      * @return string Serialized binary protobuf data.
      */
-    public function serializeToString()
+    public function serializeToString($recursion_limit = CodedInputStream::DEFAULT_RECURSION_LIMIT)
     {
         $output = new CodedOutputStream($this->byteSize());
         $this->serializeToStream($output);

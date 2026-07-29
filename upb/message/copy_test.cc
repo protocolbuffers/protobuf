@@ -27,9 +27,12 @@
 #include "upb/base/upcast.h"
 #include "upb/mem/arena.h"
 #include "upb/message/accessors.h"
+#include "upb/message/internal/accessors.h"
+#include "upb/message/internal/extension.h"
 #include "upb/message/internal/message.h"
 #include "upb/message/map.h"
 #include "upb/message/message.h"
+#include "upb/message/unknown_fields.h"
 #include "upb/mini_table/field.h"
 #include "upb/mini_table/message.h"
 #include "upb/test/test.upb.h"
@@ -66,15 +69,15 @@ TEST(GeneratedCode, DeepCloneMessageScalarAndString) {
       find_proto2_field(kFieldOptionalInt32);
   const upb_MiniTableField* optional_string_field =
       find_proto2_field(kFieldOptionalString);
-  upb_Message_SetInt32(UPB_UPCAST(msg), optional_int32_field, kTestInt32,
-                       nullptr);
+  ASSERT_TRUE(upb_Message_SetInt32(UPB_UPCAST(msg), optional_int32_field,
+                                   kTestInt32, nullptr));
   char* string_in_arena =
       (char*)upb_Arena_Malloc(source_arena, sizeof(kTestStr1));
   memcpy(string_in_arena, kTestStr1, sizeof(kTestStr1));
-  upb_Message_SetString(
+  ASSERT_TRUE(upb_Message_SetString(
       UPB_UPCAST(msg), optional_string_field,
       upb_StringView_FromDataAndSize(string_in_arena, sizeof(kTestStr1) - 1),
-      source_arena);
+      source_arena));
   upb_Arena* arena = upb_Arena_New();
   protobuf_test_messages_proto2_TestAllTypesProto2* clone =
       (protobuf_test_messages_proto2_TestAllTypesProto2*)upb_Message_DeepClone(
@@ -361,8 +364,8 @@ TEST(GeneratedCode, DeepCloneMessageWithUnknowns) {
   ASSERT_EQ(status, kUpb_EncodeStatus_Ok);
   std::string unknown_data(data, len);
   // Add unknown data.
-  UPB_PRIVATE(_upb_Message_AddUnknown)
-  (UPB_UPCAST(msg), data, len, source_arena, kUpb_AddUnknown_Copy);
+  ASSERT_TRUE(UPB_PRIVATE(_upb_Message_AddUnknown)(
+      UPB_UPCAST(msg), data, len, source_arena, kUpb_AddUnknown_Copy));
   // Create clone.
   upb_Arena* clone_arena = upb_Arena_New();
   protobuf_test_messages_proto2_TestAllTypesProto2* clone =
@@ -449,6 +452,84 @@ TEST(GeneratedCode, ShallowCopyIncludesExtensions) {
   upb_Arena_Free(arena);
 }
 
+TEST(GeneratedCode, ShallowCopyHandlesClearedExtensions) {
+  upb_Arena* source_arena = upb_Arena_New();
+  upb_test_ModelWithExtensions* msg =
+      upb_test_ModelWithExtensions_new(source_arena);
+  upb_test_ModelExtension1* ext1 = upb_test_ModelExtension1_new(source_arena);
+  upb_test_ModelExtension1_set_str(ext1, upb_StringView_FromString(kTestStr1));
+  upb_test_ModelExtension1_set_model_ext(msg, ext1, source_arena);
+
+  // Clear the extension, creating a tombstone in aux_data.
+  upb_Message_ClearExtension(UPB_UPCAST(msg),
+                             upb_test_ModelExtension1_model_ext_ext);
+
+  // Verify source has a tombstone (size is 1).
+  upb_Message_Internal* msg_in =
+      UPB_PRIVATE(_upb_Message_GetInternal)(UPB_UPCAST(msg));
+  EXPECT_NE(msg_in, nullptr);
+  EXPECT_EQ(msg_in->size, 1);
+
+  upb_Arena* arena = upb_Arena_New();
+  upb_test_ModelWithExtensions* dst = upb_test_ModelWithExtensions_new(arena);
+
+  // This should not crash.
+  EXPECT_TRUE(upb_Message_ShallowCopy(UPB_UPCAST(dst), UPB_UPCAST(msg),
+                                      &upb_0test__ModelWithExtensions_msg_init,
+                                      arena));
+
+  // The extension should not be present in dst.
+  EXPECT_EQ(upb_test_ModelExtension1_model_ext(dst), nullptr);
+
+  // Verify internal array size is compacted in dst (size is 0).
+  upb_Message_Internal* dst_in =
+      UPB_PRIVATE(_upb_Message_GetInternal)(UPB_UPCAST(dst));
+  EXPECT_NE(dst_in, nullptr);
+  EXPECT_EQ(dst_in->size, 0);
+
+  upb_Arena_Free(source_arena);
+  upb_Arena_Free(arena);
+}
+
+TEST(GeneratedCode, DeepCloneHandlesClearedExtensions) {
+  upb_Arena* source_arena = upb_Arena_New();
+  upb_test_ModelWithExtensions* msg =
+      upb_test_ModelWithExtensions_new(source_arena);
+  upb_test_ModelExtension1* ext1 = upb_test_ModelExtension1_new(source_arena);
+  upb_test_ModelExtension1_set_str(ext1, upb_StringView_FromString(kTestStr1));
+  upb_test_ModelExtension1_set_model_ext(msg, ext1, source_arena);
+
+  // Clear the extension, creating a tombstone in aux_data.
+  upb_Message_ClearExtension(UPB_UPCAST(msg),
+                             upb_test_ModelExtension1_model_ext_ext);
+
+  // Verify source has a tombstone (size is 1).
+  upb_Message_Internal* msg_in =
+      UPB_PRIVATE(_upb_Message_GetInternal)(UPB_UPCAST(msg));
+  EXPECT_NE(msg_in, nullptr);
+  EXPECT_EQ(msg_in->size, 1);
+
+  upb_Arena* arena = upb_Arena_New();
+
+  // This should not crash.
+  upb_Message* clone = upb_Message_DeepClone(
+      UPB_UPCAST(msg), &upb_0test__ModelWithExtensions_msg_init, arena);
+  EXPECT_NE(clone, nullptr);
+
+  // The extension should not be present in clone.
+  EXPECT_EQ(
+      upb_test_ModelExtension1_model_ext((upb_test_ModelWithExtensions*)clone),
+      nullptr);
+
+  // Verify internal array is compacted (DeepClone doesn't create internal data
+  // if empty).
+  upb_Message_Internal* clone_in = UPB_PRIVATE(_upb_Message_GetInternal)(clone);
+  EXPECT_EQ(clone_in, nullptr);
+
+  upb_Arena_Free(source_arena);
+  upb_Arena_Free(arena);
+}
+
 std::vector<std::string_view> GetUnknownFields(const upb_Message* msg) {
   std::vector<std::string_view> result;
   upb_StringView data;
@@ -467,9 +548,9 @@ TEST(GeneratedCode, ShallowCopyIncludesUnknowns) {
   // Add some unknown data.
   std::string_view unknown_data1 =
       "\x08\x01";  // Field 1, wire type 0 (varint), value 1
-  UPB_PRIVATE(_upb_Message_AddUnknown)(UPB_UPCAST(msg), unknown_data1.data(),
-                                       unknown_data1.size(), source_arena,
-                                       kUpb_AddUnknown_Copy);
+  ASSERT_TRUE(UPB_PRIVATE(_upb_Message_AddUnknown)(
+      UPB_UPCAST(msg), unknown_data1.data(), unknown_data1.size(), source_arena,
+      kUpb_AddUnknown_Copy));
   std::vector<std::string_view> only_unknown_data1 = {unknown_data1};
 
   upb_Arena* arena = upb_Arena_New();
@@ -501,9 +582,9 @@ TEST(GeneratedCode, ShallowCopyIncludesUnknowns) {
   // Add MORE unknown data to dst.
   std::string_view unknown_data2 =
       "\x10\x02";  // Field 2, wire type 0 (varint), value 2
-  UPB_PRIVATE(_upb_Message_AddUnknown)(UPB_UPCAST(dst), unknown_data2.data(),
-                                       unknown_data2.size(), arena,
-                                       kUpb_AddUnknown_Copy);
+  ASSERT_TRUE(UPB_PRIVATE(_upb_Message_AddUnknown)(
+      UPB_UPCAST(dst), unknown_data2.data(), unknown_data2.size(), arena,
+      kUpb_AddUnknown_Copy));
 
   // Verify src still only has the first unknown data.
   EXPECT_EQ(GetUnknownFields(UPB_UPCAST(msg)), only_unknown_data1);
@@ -533,4 +614,53 @@ TEST(GeneratedCode, ShallowCloneMessage) {
   upb_Arena_Free(arena);
 }
 
+TEST(GeneratedCode, DeepCloneMessageNonCanonicalExtensions) {
+  upb_Arena* source_arena = upb_Arena_New();
+  upb_test_ModelWithExtensions* msg =
+      upb_test_ModelWithExtensions_new(source_arena);
+  upb_test_ModelExtension1* ext1 = upb_test_ModelExtension1_new(source_arena);
+  upb_test_ModelExtension1_set_str(ext1,
+                                   upb_StringView_FromString("LifecycleValue"));
+
+  // Attach as non-canonical extension
+  UPB_PRIVATE(_upb_Message_SetNonCanonicalExtension)(
+      UPB_UPCAST(msg), upb_test_ModelExtension1_model_ext_ext, &ext1,
+      source_arena);
+
+  // Deep clone msg to clone
+  upb_Arena* arena = upb_Arena_New();
+  upb_test_ModelWithExtensions* clone =
+      (upb_test_ModelWithExtensions*)upb_Message_DeepClone(
+          UPB_UPCAST(msg), &upb_0test__ModelWithExtensions_msg_init, arena);
+  ASSERT_NE(clone, nullptr);
+
+  // Mutate original
+  upb_test_ModelExtension1_set_str(ext1, upb_StringView_FromString("Mutated"));
+  upb_Arena_Free(source_arena);
+
+  // Check if clone has the non-canonical extension and it's unmodified
+  upb_MessageUnknown data;
+  uintptr_t iter = kUpb_Message_UnknownBegin;
+  bool has_non_canonical = false;
+  const upb_Extension* ext_found = nullptr;
+  while (upb_Message_NextUnknown2(UPB_UPCAST(clone), &data, &iter)) {
+    if (data.type == kUpb_MessageUnknownType_NonCanonicalExtension) {
+      has_non_canonical = true;
+      ext_found = (const upb_Extension*)data.value.extension;
+    }
+  }
+  EXPECT_TRUE(has_non_canonical);
+  ASSERT_NE(ext_found, nullptr);
+
+  const upb_test_ModelExtension1* cloned_ext =
+      (const upb_test_ModelExtension1*)ext_found->data.msg_val;
+  EXPECT_TRUE(
+      upb_StringView_IsEqual(upb_test_ModelExtension1_str(cloned_ext),
+                             upb_StringView_FromString("LifecycleValue")));
+
+  upb_Arena_Free(arena);
+}
+
 }  // namespace
+
+#include "upb/port/undef.inc"

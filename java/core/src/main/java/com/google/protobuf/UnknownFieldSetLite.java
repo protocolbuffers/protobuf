@@ -12,14 +12,20 @@ import java.util.Arrays;
 
 /**
  * {@code UnknownFieldSetLite} is used to keep track of fields which were seen when parsing a
- * protocol message but whose field numbers or types are unrecognized. This most frequently occurs
- * when new fields are added to a message type and then messages containing those fields are read by
- * old software that was compiled before the new types were added.
+ * protocol message but whose field numbers or types are unrecognized.
+ *
+ * <p>This class is for Lite runtime use only. For details on what this means regarding performance
+ * and security characteristics, see {@link ForLiteOnly}.
+ *
+ * <p>This most frequently occurs when new fields are added to a message type and then messages
+ * containing those fields are read by old software that was compiled before the new types were
+ * added.
  *
  * <p>For use by generated code only.
  *
  * @author dweis@google.com (Daniel Weis)
  */
+@ForLiteOnly
 public final class UnknownFieldSetLite {
 
   // Arbitrarily chosen.
@@ -148,41 +154,28 @@ public final class UnknownFieldSetLite {
   }
 
   /** Serializes the set and writes it to {@code writer} using {@code MessageSet} wire format. */
-  void writeAsMessageSetTo(Writer writer) throws IOException {
-    if (writer.fieldOrder() == Writer.FieldOrder.DESCENDING) {
-      // Write fields in descending order.
-      for (int i = count - 1; i >= 0; i--) {
-        int fieldNumber = WireFormat.getTagFieldNumber(tags[i]);
-        writer.writeMessageSetItem(fieldNumber, objects[i]);
-      }
-    } else {
-      // Write fields in ascending order.
-      for (int i = 0; i < count; i++) {
-        int fieldNumber = WireFormat.getTagFieldNumber(tags[i]);
-        writer.writeMessageSetItem(fieldNumber, objects[i]);
-      }
+  void writeAsMessageSetTo(CodedOutputStreamWriter writer) throws IOException {
+    // Write fields in ascending order.
+    for (int i = 0; i < count; i++) {
+      int fieldNumber = WireFormat.getTagFieldNumber(tags[i]);
+      writer.writeMessageSetItem(fieldNumber, objects[i]);
     }
   }
 
   /** Serializes the set and writes it to {@code writer}. */
-  public void writeTo(Writer writer) throws IOException {
+  public void writeTo(CodedOutputStreamWriter writer) throws IOException {
     if (count == 0) {
       return;
     }
 
     // TODO: tags are not sorted, so there's no write order guarantees
-    if (writer.fieldOrder() == Writer.FieldOrder.ASCENDING) {
-      for (int i = 0; i < count; ++i) {
-        writeField(tags[i], objects[i], writer);
-      }
-    } else {
-      for (int i = count - 1; i >= 0; --i) {
-        writeField(tags[i], objects[i], writer);
-      }
+    for (int i = 0; i < count; ++i) {
+      writeField(tags[i], objects[i], writer);
     }
   }
 
-  private static void writeField(int tag, Object object, Writer writer) throws IOException {
+  private static void writeField(int tag, Object object, CodedOutputStreamWriter writer)
+      throws IOException {
     int fieldNumber = WireFormat.getTagFieldNumber(tag);
     switch (WireFormat.getTagWireType(tag)) {
       case WireFormat.WIRETYPE_VARINT:
@@ -198,15 +191,9 @@ public final class UnknownFieldSetLite {
         writer.writeBytes(fieldNumber, (ByteString) object);
         break;
       case WireFormat.WIRETYPE_START_GROUP:
-        if (writer.fieldOrder() == Writer.FieldOrder.ASCENDING) {
-          writer.writeStartGroup(fieldNumber);
-          ((UnknownFieldSetLite) object).writeTo(writer);
-          writer.writeEndGroup(fieldNumber);
-        } else {
-          writer.writeEndGroup(fieldNumber);
-          ((UnknownFieldSetLite) object).writeTo(writer);
-          writer.writeStartGroup(fieldNumber);
-        }
+        writer.writeStartGroup(fieldNumber);
+        ((UnknownFieldSetLite) object).writeTo(writer);
+        writer.writeEndGroup(fieldNumber);
         break;
       default:
         // TODO: Change writeTo to throw IOException?

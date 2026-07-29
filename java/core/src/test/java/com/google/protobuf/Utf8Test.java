@@ -21,8 +21,8 @@ import org.junit.runners.JUnit4;
 public class Utf8Test {
   private static final int NUM_CHARS = 16384;
 
-  private static final Utf8.Processor safeProcessor = new Utf8.SafeProcessor();
-  private static final Utf8.Processor unsafeProcessor = new Utf8.UnsafeProcessor();
+  private static final Utf8.Processor mobileProcessor = new Utf8.MobileProcessor();
+  private static final Utf8.Processor serverProcessor = new Utf8.ServerProcessor();
 
   @Test
   public void testEncode() {
@@ -87,49 +87,42 @@ public class Utf8Test {
 
   private static void assertIsValid(byte[] data, boolean valid) {
     assertWithMessage("isValidUtf8[ARRAY]")
-        .that(safeProcessor.isValidUtf8(data, 0, data.length))
-        .isEqualTo(valid);
-    assertWithMessage("isValidUtf8[ARRAY_UNSAFE]")
-        .that(unsafeProcessor.isValidUtf8(data, 0, data.length))
+        .that(Utf8.isValidUtf8(data, 0, data.length))
         .isEqualTo(valid);
 
     ByteBuffer buffer = ByteBuffer.wrap(data);
     assertWithMessage("isValidUtf8[NIO_HEAP]")
-        .that(safeProcessor.isValidUtf8BufferDefault(buffer, buffer.position(), buffer.remaining()))
+        .that(Utf8.isValidUtf8(buffer))
         .isEqualTo(valid);
 
     // Direct buffers.
     buffer = ByteBuffer.allocateDirect(data.length);
     buffer.put(data);
     buffer.flip();
-    assertWithMessage("isValidUtf8[NIO_DEFAULT]")
-        .that(safeProcessor.isValidUtf8BufferDefault(buffer, buffer.position(), buffer.remaining()))
-        .isEqualTo(valid);
-    assertWithMessage("isValidUtf8[NIO_UNSAFE]")
-        .that(
-            unsafeProcessor.isValidUtf8BufferDirect(buffer, buffer.position(), buffer.remaining()))
+    assertWithMessage("isValidUtf8[NIO_DIRECT]")
+        .that(Utf8.isValidUtf8(buffer))
         .isEqualTo(valid);
   }
 
   private static void assertEncoding(String message) {
     byte[] expected = message.getBytes(StandardCharsets.UTF_8);
-    byte[] output = encodeToByteArray(message, expected.length, safeProcessor);
+    byte[] output = encodeToByteArray(message, expected.length, mobileProcessor);
     assertWithMessage("encodeUtf8[ARRAY]")
         .that(output).isEqualTo(expected);
 
-    output = encodeToByteArray(message, expected.length, unsafeProcessor);
+    output = encodeToByteArray(message, expected.length, serverProcessor);
     assertWithMessage("encodeUtf8[ARRAY_UNSAFE]")
         .that(output).isEqualTo(expected);
 
-    output = encodeToByteBuffer(message, expected.length, false, safeProcessor);
+    output = encodeToByteBuffer(message, expected.length, false, mobileProcessor);
     assertWithMessage("encodeUtf8[NIO_HEAP]")
         .that(output).isEqualTo(expected);
 
-    output = encodeToByteBuffer(message, expected.length, true, safeProcessor);
+    output = encodeToByteBuffer(message, expected.length, true, mobileProcessor);
     assertWithMessage("encodeUtf8[NIO_DEFAULT]")
         .that(output).isEqualTo(expected);
 
-    output = encodeToByteBuffer(message, expected.length, true, unsafeProcessor);
+    output = encodeToByteBuffer(message, expected.length, true, serverProcessor);
     assertWithMessage("encodeUtf8[NIO_UNSAFE]")
         .that(output).isEqualTo(expected);
   }
@@ -139,7 +132,7 @@ public class Utf8Test {
     Class<ArrayIndexOutOfBoundsException> clazz = ArrayIndexOutOfBoundsException.class;
 
     try {
-      encodeToByteArray(message, length, safeProcessor);
+      encodeToByteArray(message, length, mobileProcessor);
       assertWithMessage("Expected " + clazz.getSimpleName()).fail();
     } catch (Throwable t) {
       // Expected
@@ -150,7 +143,7 @@ public class Utf8Test {
     }
 
     try {
-      encodeToByteArray(message, length, unsafeProcessor);
+      encodeToByteArray(message, length, serverProcessor);
       assertWithMessage("Expected " + clazz.getSimpleName()).fail();
     } catch (Throwable t) {
       assertThat(t).isInstanceOf(clazz);
@@ -160,18 +153,7 @@ public class Utf8Test {
     }
 
     try {
-      encodeToByteBuffer(message, length, false, safeProcessor);
-      assertWithMessage("Expected " + clazz.getSimpleName()).fail();
-    } catch (Throwable t) {
-      // Expected
-      assertThat(t).isInstanceOf(clazz);
-      assertThat(t)
-          .hasMessageThat()
-          .isEqualTo("Not enough space in output buffer to encode UTF-8 string");
-    }
-
-    try {
-      encodeToByteBuffer(message, length, true, safeProcessor);
+      encodeToByteBuffer(message, length, false, mobileProcessor);
       assertWithMessage("Expected " + clazz.getSimpleName()).fail();
     } catch (Throwable t) {
       // Expected
@@ -182,7 +164,18 @@ public class Utf8Test {
     }
 
     try {
-      encodeToByteBuffer(message, length, true, unsafeProcessor);
+      encodeToByteBuffer(message, length, true, mobileProcessor);
+      assertWithMessage("Expected " + clazz.getSimpleName()).fail();
+    } catch (Throwable t) {
+      // Expected
+      assertThat(t).isInstanceOf(clazz);
+      assertThat(t)
+          .hasMessageThat()
+          .isEqualTo("Not enough space in output buffer to encode UTF-8 string");
+    }
+
+    try {
+      encodeToByteBuffer(message, length, true, serverProcessor);
       assertWithMessage("Expected " + clazz.getSimpleName()).fail();
     } catch (Throwable t) {
       // Expected

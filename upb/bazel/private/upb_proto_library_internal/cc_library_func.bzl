@@ -7,7 +7,7 @@ load("@rules_cc//cc/common:cc_info.bzl", "CcInfo")
 def upb_use_cpp_toolchain():
     return use_cpp_toolchain()
 
-def cc_library_func(ctx, name, hdrs, srcs, copts, dep_ccinfos, includes = [], alwayslink = False):
+def cc_library_func(ctx, name, hdrs, srcs, copts, dep_ccinfos, includes = [], alwayslink = False, **kwargs):
     """Like cc_library(), but callable from rules.
 
     Args:
@@ -18,6 +18,8 @@ def cc_library_func(ctx, name, hdrs, srcs, copts, dep_ccinfos, includes = [], al
       copts: Additional options for cc compilation.
       dep_ccinfos: CcInfo providers of dependencies we should build/link against.
       includes: Additional include paths.
+      alwayslink: Whether the library should be always linked.
+      **kwargs: Additional arguments passed to cc_common.compile.
 
     Returns:
       CcInfo provider for this compilation.
@@ -43,6 +45,7 @@ def cc_library_func(ctx, name, hdrs, srcs, copts, dep_ccinfos, includes = [], al
         public_hdrs = hdrs,
         user_compile_flags = copts,
         compilation_contexts = compilation_contexts,
+        **kwargs
     )
 
     # buildifier: disable=unused-variable

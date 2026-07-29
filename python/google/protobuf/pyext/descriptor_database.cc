@@ -57,7 +57,7 @@ static bool GetFileDescriptorProto(PyObject* py_descriptor,
   if (PyObject_TypeCheck(py_descriptor, CMessage_Type) &&
       message->message->GetDescriptor() == filedescriptor_descriptor) {
     // Fast path: Just use the pointer.
-    FileDescriptorProto* file_proto =
+    const FileDescriptorProto* file_proto =
         google::protobuf::DownCastMessage<FileDescriptorProto>(message->message);
     *output = *file_proto;
     return true;

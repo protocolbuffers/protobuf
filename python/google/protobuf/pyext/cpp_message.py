@@ -4,7 +4,6 @@
 # Use of this source code is governed by a BSD-style
 # license that can be found in the LICENSE file or at
 # https://developers.google.com/open-source/licenses/bsd
-
 """Protocol message implementation hooks for C++ implementation.
 
 Contains helper functions used to create protocol message classes from
@@ -15,7 +14,6 @@ __author__ = 'tibell@google.com (Johan Tibell)'
 
 from google.protobuf.internal import api_implementation
 
-
 # pylint: disable=protected-access
 _message = api_implementation._c_module
 # TODO: Remove this import after fix api_implementation
@@ -24,7 +22,6 @@ if _message is None:
 
 
 class GeneratedProtocolMessageType(_message.MessageMeta):
-
   """Metaclass for protocol message classes created at runtime from Descriptors.
 
   The protocol compiler currently uses this metaclass to create protocol
