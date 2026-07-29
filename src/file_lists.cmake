@@ -668,6 +668,8 @@ set(libprotoc_hdrs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/subprocess.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/versions.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/zip_writer.h
+  ${protobuf_SOURCE_DIR}/upb/reflection/def.hpp
+  ${protobuf_SOURCE_DIR}/upb/reflection/message.hpp
   ${protobuf_SOURCE_DIR}/upb_generator/common.h
   ${protobuf_SOURCE_DIR}/upb_generator/common/names.h
   ${protobuf_SOURCE_DIR}/upb_generator/file_layout.h
@@ -829,7 +831,6 @@ set(libupb_hdrs
   ${protobuf_SOURCE_DIR}/upb/port/vsnprintf_compat.h
   ${protobuf_SOURCE_DIR}/upb/reflection/common.h
   ${protobuf_SOURCE_DIR}/upb/reflection/def.h
-  ${protobuf_SOURCE_DIR}/upb/reflection/def.hpp
   ${protobuf_SOURCE_DIR}/upb/reflection/def_pool.h
   ${protobuf_SOURCE_DIR}/upb/reflection/def_type.h
   ${protobuf_SOURCE_DIR}/upb/reflection/descriptor_bootstrap.h
@@ -854,7 +855,6 @@ set(libupb_hdrs
   ${protobuf_SOURCE_DIR}/upb/reflection/internal/service_def.h
   ${protobuf_SOURCE_DIR}/upb/reflection/internal/upb_edition_defaults.h
   ${protobuf_SOURCE_DIR}/upb/reflection/message.h
-  ${protobuf_SOURCE_DIR}/upb/reflection/message.hpp
   ${protobuf_SOURCE_DIR}/upb/reflection/message_def.h
   ${protobuf_SOURCE_DIR}/upb/reflection/message_reserved_range.h
   ${protobuf_SOURCE_DIR}/upb/reflection/method_def.h
@@ -910,6 +910,8 @@ set(protoc-gen-upb_hdrs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/plugin.pb.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/retention.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/scc.h
+  ${protobuf_SOURCE_DIR}/upb/reflection/def.hpp
+  ${protobuf_SOURCE_DIR}/upb/reflection/message.hpp
   ${protobuf_SOURCE_DIR}/upb_generator/c/names.h
   ${protobuf_SOURCE_DIR}/upb_generator/c/names_internal.h
   ${protobuf_SOURCE_DIR}/upb_generator/common.h
@@ -948,6 +950,8 @@ set(protoc-gen-upbdefs_hdrs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/plugin.pb.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/retention.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/scc.h
+  ${protobuf_SOURCE_DIR}/upb/reflection/def.hpp
+  ${protobuf_SOURCE_DIR}/upb/reflection/message.hpp
   ${protobuf_SOURCE_DIR}/upb_generator/common.h
   ${protobuf_SOURCE_DIR}/upb_generator/common/names.h
   ${protobuf_SOURCE_DIR}/upb_generator/file_layout.h
@@ -983,6 +987,8 @@ set(protoc-gen-upb_minitable_hdrs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/plugin.pb.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/retention.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/scc.h
+  ${protobuf_SOURCE_DIR}/upb/reflection/def.hpp
+  ${protobuf_SOURCE_DIR}/upb/reflection/message.hpp
   ${protobuf_SOURCE_DIR}/upb_generator/common.h
   ${protobuf_SOURCE_DIR}/upb_generator/common/names.h
   ${protobuf_SOURCE_DIR}/upb_generator/file_layout.h
@@ -1245,6 +1251,8 @@ set(upb_test_util_srcs
 
 # @//pkg:upb_test_util
 set(upb_test_util_hdrs
+  ${protobuf_SOURCE_DIR}/upb/reflection/def.hpp
+  ${protobuf_SOURCE_DIR}/upb/reflection/message.hpp
   ${protobuf_SOURCE_DIR}/upb/test/fuzz_util.h
   ${protobuf_SOURCE_DIR}/upb/test/parse_text_proto.h
   ${protobuf_SOURCE_DIR}/upb/util/def_to_proto_test.h
