@@ -182,23 +182,59 @@ const rb_data_type_t Arena_type = {
     .flags = RUBY_TYPED_FREE_IMMEDIATELY | RUBY_TYPED_WB_PROTECTED,
 };
 
+struct ruby_upb_xrealloc_args {
+  void* ptr;
+  size_t size;
+};
+
+static VALUE safe_xrealloc_wrapper(VALUE arg) {
+  struct ruby_upb_xrealloc_args* args = (struct ruby_upb_xrealloc_args*)arg;
+
+  // If xrealloc fails, it will longjmp out of this function immediately.
+  // If it succeeds, we return the pointer cast as a VALUE.
+  void* new_ptr = xrealloc(args->ptr, args->size);
+  return (VALUE)new_ptr;
+}
+
 static void* ruby_upb_allocfunc(upb_alloc* alloc, void* ptr, size_t oldsize,
                                 size_t size, size_t* actual_size) {
   if (size == 0) {
     xfree(ptr);
     return NULL;
   } else {
-    return xrealloc(ptr, size);
+    struct ruby_upb_xrealloc_args args = {ptr, size};
+    int state = 0;
+
+    void* new_ptr =
+        (void*)rb_protect(safe_xrealloc_wrapper, (VALUE)&args, &state);
+
+    // Exception caught, but rb_errinfo still has the original error for
+    // consumption by the caller
+    return state ? NULL : new_ptr;
   }
 }
 
 upb_alloc ruby_upb_alloc = {&ruby_upb_allocfunc};
 
+void Arena_raise_oom() {
+  VALUE pending_err = rb_errinfo();
+  if (!NIL_P(pending_err)) {
+    rb_set_errinfo(Qnil);
+    rb_exc_raise(pending_err);
+  }
+  rb_raise(rb_eNoMemError, "Failed to allocate arena.");
+}
+
 static VALUE Arena_alloc(VALUE klass) {
-  Arena* arena = ALLOC(Arena);
-  arena->arena = upb_Arena_Init(NULL, 0, &ruby_upb_alloc);
-  arena->pinned_objs = Qnil;
-  return TypedData_Wrap_Struct(klass, &Arena_type, arena);
+  Arena* rb_arena = ALLOC(Arena);
+  upb_Arena* arena = upb_Arena_Init(NULL, 0, &ruby_upb_alloc);
+  if (!arena) {
+    xfree(rb_arena);
+    Arena_raise_oom();
+  }
+  rb_arena->arena = arena;
+  rb_arena->pinned_objs = Qnil;
+  return TypedData_Wrap_Struct(klass, &Arena_type, rb_arena);
 }
 
 upb_Arena* Arena_get(VALUE _arena) {
@@ -317,6 +353,26 @@ VALUE Google_Protobuf_deep_copy(VALUE self, VALUE obj) {
   }
 }
 
+static VALUE Google_Protobuf_Internal_allocation_count_is_available(
+    VALUE self) {
+  return upb_AllocationCount_IsAvailable() ? Qtrue : Qfalse;
+}
+
+static VALUE Google_Protobuf_Internal_allocation_count_get(VALUE self) {
+  return ULL2NUM(upb_AllocationCount_Get());
+}
+
+static VALUE Google_Protobuf_Internal_allocation_count_reset(VALUE self) {
+  upb_AllocationCount_Reset();
+  return Qnil;
+}
+
+static VALUE Google_Protobuf_Internal_allocation_count_fail_on(VALUE self,
+                                                               VALUE n) {
+  upb_AllocationCount_FailOn(NUM2ULL(n));
+  return Qnil;
+}
+
 // -----------------------------------------------------------------------------
 // Initialization/entry point.
 // -----------------------------------------------------------------------------
@@ -342,6 +398,19 @@ __attribute__((visibility("default"))) void Init_protobuf_c() {
   rb_define_singleton_method(protobuf, "discard_unknown",
                              Google_Protobuf_discard_unknown, 1);
   rb_define_singleton_method(protobuf, "deep_copy", Google_Protobuf_deep_copy,
+                             1);
+
+  VALUE internal = rb_const_get(protobuf, rb_intern("Internal"));
+  rb_define_singleton_method(
+      internal, "allocation_count_is_available",
+      Google_Protobuf_Internal_allocation_count_is_available, 0);
+  rb_define_singleton_method(internal, "allocation_count_get",
+                             Google_Protobuf_Internal_allocation_count_get, 0);
+  rb_define_singleton_method(internal, "allocation_count_reset",
+                             Google_Protobuf_Internal_allocation_count_reset,
+                             0);
+  rb_define_singleton_method(internal, "allocation_count_fail_on",
+                             Google_Protobuf_Internal_allocation_count_fail_on,
                              1);
 }
 
