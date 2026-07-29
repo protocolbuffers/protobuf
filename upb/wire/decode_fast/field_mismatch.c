@@ -105,8 +105,12 @@ UPB_PRESERVE_NONE upb_FastDecoder_Return _upb_FastDecoder_DecodeCheckMiniTable(
 #endif
   uint32_t gap_lo, gap_hi;
   upb_DecodeFastNext ret;
-  if (UPB_PRIVATE(_upb_MiniTable_FindUnknownGap)(table, field_num, &gap_lo,
-                                                 &gap_hi)) {
+  if (UPB_UNLIKELY(field_num == 0 || field_num >= ((uint32_t)1 << 29))) {
+    // Field number 0 (and >= 2^29) is invalid; the generic decoder rejects it,
+    // and _upb_MiniTable_FindUnknownGap requires number != 0.
+    UPB_DECODEFAST_ERROR(d, kUpb_DecodeStatus_Malformed, &ret);
+  } else if (UPB_PRIVATE(_upb_MiniTable_FindUnknownGap)(table, field_num,
+                                                        &gap_lo, &gap_hi)) {
     data = upb_DecodeFast_PackGaps(gap_lo, gap_hi);
     ret = kUpb_DecodeFastNext_DecodeUnknownValue;
   } else {
