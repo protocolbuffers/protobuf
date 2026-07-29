@@ -111,6 +111,22 @@ cc_library(
 )
 
 cc_library(
+    name = "message_unknowns_testonly",
+    testonly = 1,
+    hdrs = ["unknown_fields_testonly.h"],
+    copts = UPB_DEFAULT_COPTS,
+    features = UPB_DEFAULT_FEATURES,
+    visibility = ["//upb:friends"],
+    deps = [
+        ":internal",
+        ":message",
+        "//upb/mem",
+        "//upb/mini_table",
+        "//upb/port",
+    ],
+)
+
+cc_library(
     name = "internal",
     srcs = [
         "internal/extension.c",
