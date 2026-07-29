@@ -724,8 +724,8 @@ static char* encode_exts(char* ptr, upb_encstate* e, const upb_MiniTable* m,
   upb_Message_Internal* in = UPB_PRIVATE(_upb_Message_GetInternal)(msg);
   if (!in) return ptr;
 
-  /* Encode all extensions together. Unlike C++, we do not attempt to keep
-   * these in field number order relative to normal fields or even to each
+  /* Encode all canonical extensions together. Unlike C++, we do not attempt to
+   * keep these in field number order relative to normal fields or even to each
    * other. */
   uintptr_t iter = kUpb_Message_ExtensionBegin;
   const upb_MiniTableExtension* ext;
@@ -770,22 +770,26 @@ char* encode_message(char* ptr, upb_encstate* e, const upb_Message* msg,
     }
   }
 
-  if ((e->options & kUpb_EncodeOption_SkipUnknown) == 0) {
-    size_t unknown_size = 0;
-    uintptr_t iter = kUpb_Message_UnknownBegin;
-    upb_StringView unknown;
-    // Need to write in reverse order, but iteration is in-order; scan to
-    // reserve capacity up front, then write in-order
-    while (upb_Message_NextUnknown(msg, &unknown, &iter)) {
-      unknown_size += unknown.size;
-    }
-    if (unknown_size != 0) {
-      ptr = encode_reserve(ptr, e, unknown_size);
-      char* tmp_ptr = ptr;
-      iter = kUpb_Message_UnknownBegin;
-      while (upb_Message_NextUnknown(msg, &unknown, &iter)) {
-        memcpy(tmp_ptr, unknown.data, unknown.size);
-        tmp_ptr += unknown.size;
+  bool skip_unknown = (e->options & kUpb_EncodeOption_SkipUnknown) != 0;
+  const upb_Message_Internal* in = UPB_PRIVATE(_upb_Message_GetInternal)(msg);
+  if (!skip_unknown && in) {
+    // Iterate backwards because the encoder builds the buffer in reverse
+    // (from end to start). This ensures that unknown fields and non-canonical
+    // extensions are emitted in their original forward order.
+    size_t i = in->size;
+    while (i > 0) {
+      i--;
+      upb_TaggedAuxPtr tagged_ptr = in->aux_data[i];
+      if (upb_TaggedAuxPtr_IsUnknownStringView(tagged_ptr)) {
+        const upb_StringView* unknown =
+            upb_TaggedPtrAux_StringViewRepr(tagged_ptr);
+        ptr = encode_bytes(ptr, e, unknown->data, unknown->size);
+      } else if (upb_TaggedAuxPtr_IsNonCanonicalExtension(tagged_ptr)) {
+        const upb_Extension* ext =
+            upb_TaggedAuxPtr_NonCanonicalExtension(tagged_ptr);
+        ptr = encode_ext(ptr, e, ext->ext, ext->data,
+                         UPB_PRIVATE(_upb_MiniTable_ExtModeBase)(m) ==
+                             kUpb_ExtMode_IsMessageSet);
       }
     }
   }

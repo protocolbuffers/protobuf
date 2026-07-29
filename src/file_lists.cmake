@@ -771,6 +771,7 @@ set(libupb_hdrs
   ${protobuf_SOURCE_DIR}/upb/mem/alloc.h
   ${protobuf_SOURCE_DIR}/upb/mem/arena.h
   ${protobuf_SOURCE_DIR}/upb/mem/arena.hpp
+  ${protobuf_SOURCE_DIR}/upb/mem/internal/alloc.h
   ${protobuf_SOURCE_DIR}/upb/mem/internal/arena.h
   ${protobuf_SOURCE_DIR}/upb/message/accessors.h
   ${protobuf_SOURCE_DIR}/upb/message/array.h
@@ -1440,6 +1441,7 @@ set(protobuf_test_protos_files
   ${protobuf_SOURCE_DIR}/src/google/protobuf/map_unittest.proto
   ${protobuf_SOURCE_DIR}/src/google/protobuf/test_protos/abseil_flag_test.proto
   ${protobuf_SOURCE_DIR}/src/google/protobuf/test_protos/forced_micro_string.proto
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/test_protos/lazy_field_test.proto
   ${protobuf_SOURCE_DIR}/src/google/protobuf/test_protos/proto_with_many_options.proto
   ${protobuf_SOURCE_DIR}/src/google/protobuf/test_protos/recursive_message_set.proto
   ${protobuf_SOURCE_DIR}/src/google/protobuf/test_protos/repeated_field_proxy_import_message.proto

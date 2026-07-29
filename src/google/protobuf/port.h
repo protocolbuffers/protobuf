@@ -958,14 +958,7 @@ inline int CheckedAdd(ScalarType1 a, ScalarType2 b) {
 enum class BoundsCheckMode { kNoEnforcement, kReturnDefault, kAbort };
 
 PROTOBUF_EXPORT constexpr BoundsCheckMode GetBoundsCheckMode() {
-#if defined(PROTO2_OPENSOURCE) || \
-    defined(PROTOBUF_INTERNAL_BOUNDS_CHECK_MODE_ABORT)
   return BoundsCheckMode::kAbort;
-#elif defined(PROTOBUF_INTERNAL_BOUNDS_CHECK_MODE_RETURN_DEFAULT)
-  return BoundsCheckMode::kReturnDefault;
-#else
-  return BoundsCheckMode::kNoEnforcement;
-#endif
 }
 
 

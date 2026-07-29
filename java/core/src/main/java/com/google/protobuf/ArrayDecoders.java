@@ -17,12 +17,16 @@ import java.nio.charset.StandardCharsets;
 /**
  * Helper functions to decode protobuf wire format from a byte array.
  *
+ * <p>This class is for Lite runtime use only. For details on what this means regarding performance
+ * and security characteristics, see {@link ForLiteOnly}.
+ *
  * <p>Note that these functions don't do boundary check on the byte array but instead rely on Java
  * VM to check it. That means parsing routines utilizing these functions must catch
  * IndexOutOfBoundsException and convert it to protobuf's InvalidProtocolBufferException when
  * crossing protobuf public API boundaries.
  */
 @CheckReturnValue
+@ForLiteOnly
 final class ArrayDecoders {
   static final int DEFAULT_RECURSION_LIMIT = 100;
 

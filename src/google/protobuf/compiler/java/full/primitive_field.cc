@@ -579,7 +579,7 @@ void ImmutablePrimitiveOneofFieldGenerator::GenerateBuilderClearCode(
 
 void ImmutablePrimitiveOneofFieldGenerator::GenerateBuildingCode(
     io::Printer* printer) const {
-  // no-op
+  // No-Op: Handled by single block statement in GenerateBuildPartialShard.
 }
 
 void ImmutablePrimitiveOneofFieldGenerator::GenerateMergingCode(
