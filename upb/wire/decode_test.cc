@@ -786,6 +786,30 @@ TEST(DecodeTest, FieldZeroRejected) {
   }
 }
 
+TEST(FastTableSize, OverlongDelimitedSizeMustMatchGenericDecoder) {
+#if UPB_FASTTABLE
+  upb::Arena mt_arena;
+  auto [mt, field] = MiniTable::MakeSingleFieldTable<field_types::Bytes>(
+      1, kUpb_DecodeFast_Scalar, mt_arena.ptr());
+  (void)field;
+  // Field 1 (bytes, delimited) with a 5-byte size varint whose true value is
+  // 2^32 (bytes 80 80 80 80 10). The generic decoder accumulates the size in
+  // uint64_t and rejects any value > INT32_MAX as malformed. The fasttable's
+  // _upb_DecodeFast_DecodeSizeSlow accumulated in uint32_t, so 2^32 truncated
+  // to 0 and the field was accepted as empty. Both decoders must agree.
+  const std::string payload("\x0A\x80\x80\x80\x80\x10", 6);
+  for (int options : GetDecodeOptionsToTest()) {
+    upb::Arena msg_arena;
+    upb_Message* msg = upb_Message_New(mt, msg_arena.ptr());
+    upb_DecodeStatus result =
+        upb_Decode(payload.data(), payload.size(), msg, mt, nullptr, options,
+                   msg_arena.ptr());
+    EXPECT_EQ(result, kUpb_DecodeStatus_Malformed)
+        << "options=" << options << " got " << upb_DecodeStatus_String(result);
+  }
+#endif
+}
+
 }  // namespace
 
 }  // namespace test
