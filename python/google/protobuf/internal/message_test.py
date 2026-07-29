@@ -81,6 +81,13 @@ class MessageTest(unittest.TestCase):
       msg3.MergeFrom(msg2)
       _ = msg3.optional_string
       _ = msg3.optional_bytes
+      _ = msg3.ByteSize()
+      _ = msg3.SerializePartialToString()
+      _ = msg3.ListFields()
+      _ = msg3.DiscardUnknownFields()
+
+      msg4 = message_module.TestAllTypes()
+      msg4.CopyFrom(msg3)
 
       if hasattr(message_module, 'TestAllExtensions'):
         ext_msg = message_module.TestAllExtensions()
@@ -95,6 +102,9 @@ class MessageTest(unittest.TestCase):
         _ = ext_msg3.Extensions[
             unittest_pb2.optional_nested_message_extension
         ].bb
+
+        ext_msg4 = message_module.TestAllExtensions()
+        ext_msg4.CopyFrom(ext_msg3)
 
         # MessageSet extensions coverage
         mset_msg = message_set_extensions_pb2.TestMessageSet()
@@ -113,6 +123,9 @@ class MessageTest(unittest.TestCase):
         mset_msg3.MergeFrom(mset_msg2)
         _ = mset_msg3.Extensions[ext1].i
         _ = mset_msg3.Extensions[ext2].str
+
+        mset_msg4 = message_set_extensions_pb2.TestMessageSet()
+        mset_msg4.CopyFrom(mset_msg3)
 
         # Unknown fields in MessageSet representation
         mset_unknown = message_set_extensions_pb2.TestMessageSet()
