@@ -1,0 +1,8 @@
+syntax = "proto3";
+
+package third_party.protobuf.rust.test.cc_shared_library_interop;
+
+message Foo {
+  string text = 1;
+  int32 value = 2;
+}

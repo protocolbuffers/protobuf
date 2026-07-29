@@ -8,6 +8,7 @@
 """This file implements rust_proto_library (rule implementations)."""
 
 load("@rules_cc//cc/common:cc_info.bzl", "CcInfo")
+load("@rules_cc//cc/common:cc_shared_library_hint_info.bzl", "CcSharedLibraryHintInfo")
 load("@rules_rust//rust:defs.bzl", "rust_common")
 load("@rules_rust//rust:rust_common.bzl", "CrateInfo", "DepInfo")
 load("//bazel/common:proto_common.bzl", "proto_common")
@@ -97,6 +98,15 @@ def _rust_proto_library_impl(ctx):
 
     crate_info_with_rust_proto_name = rust_common.crate_info(**fields)
 
+    # The aspect uses a custom synthetic owner label to avoid clashing with
+    # C++ proto aspect owner (see aspects.bzl). We reconstruct the same label
+    # here and pass it to CcSharedLibraryHintInfo so that cc_shared_library
+    # knows that this target (ctx.label) is also the owner of linker inputs
+    # produced by the aspect.
+    # The _cpp_thunks_deps implicit attribute (shared by the aspect) supplies
+    # the link-time dependencies of Rust bindings.
+    aspect_owner = dep.label.same_package_label(dep.label.name + "__rust_proto_aspect")
+
     return [
         ProtoCrateNamesInfo(
             crate_name = crate_info_with_rust_proto_name.name,
@@ -105,26 +115,41 @@ def _rust_proto_library_impl(ctx):
         crate_info_with_rust_proto_name,
         dep_variant_info.dep_info,
         dep_variant_info.cc_info,
+        CcSharedLibraryHintInfo(
+            owners = [ctx.label, aspect_owner],
+        ),
         DefaultInfo(files = dep_variant_info.crate_info.srcs),
     ]
 
 def _make_rust_proto_library(is_upb):
+    attrs = {
+        "deps": attr.label_list(
+            mandatory = True,
+            providers = [ProtoInfo],
+            aspects = [rust_upb_proto_library_aspect if is_upb else rust_cc_proto_library_aspect],
+        ),
+        "_proto_lang_toolchain": attr.label(
+            default = Label(proto_rust_toolchain_label(is_upb)),
+        ),
+    }
+    if not is_upb:
+        # LINT.IfChange(cpp_thunks_deps)
+        attrs["_cpp_thunks_deps"] = attr.label_list(
+            default = [
+                Label("//rust:cpp_api"),
+                Label("//src/google/protobuf"),
+                Label("//src/google/protobuf:protobuf_lite"),
+            ],
+        )
+        # LINT.ThenChange(//depot/google3/third_party/protobuf/rust/bazel/aspects.bzl:cpp_thunks_deps)
+
     return rule(
         implementation = _rust_proto_library_impl,
-        attrs = {
-            "deps": attr.label_list(
-                mandatory = True,
-                providers = [ProtoInfo],
-                aspects = [rust_upb_proto_library_aspect if is_upb else rust_cc_proto_library_aspect],
-            ),
-            "_proto_lang_toolchain": attr.label(
-                default = Label(proto_rust_toolchain_label(is_upb)),
-            ),
-        },
+        attrs = attrs,
         toolchains = [
             "@rules_rust//rust:toolchain_type",
         ],
-        provides = [ProtoCrateNamesInfo, CrateInfo, DepInfo, CcInfo],
+        provides = [ProtoCrateNamesInfo, CrateInfo, DepInfo, CcInfo, CcSharedLibraryHintInfo],
     )
 
 rust_upb_proto_library = _make_rust_proto_library(is_upb = True)

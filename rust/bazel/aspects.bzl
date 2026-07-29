@@ -234,18 +234,40 @@ def _compile_cc(
         compilation_contexts = [cc_info.compilation_context],
     )
 
-    (linking_context, _) = cc_common.create_linking_context_from_compilation_outputs(
+    (_, linking_outputs) = cc_common.create_linking_context_from_compilation_outputs(
         name = src.short_path,
         actions = ctx.actions,
         feature_configuration = feature_configuration,
         cc_toolchain = cc_toolchain,
         compilation_outputs = compilation_outputs,
-        linking_contexts = [cc_info.linking_context],
+    )
+
+    # For cc_shared_library support, we use a custom synthetic label as the owner
+    # of the CcInfo's linker inputs of the generated C++ thunks.
+    # This prevents conflicts with the C++ proto aspect and allows the rust_proto_library
+    # wrapping target to set up hints to the cc_shared_library aspect that
+    # effectively supplies the link-time dependencies of the thunks.
+    owner = ctx.label.same_package_label(ctx.label.name + "__rust_proto_aspect")
+    libraries = []
+    if linking_outputs.library_to_link:
+        libraries.append(linking_outputs.library_to_link)
+
+    linker_input = cc_common.create_linker_input(
+        owner = owner,
+        libraries = depset(libraries),
+    )
+
+    new_linking_context = cc_common.create_linking_context(
+        linker_inputs = depset([linker_input]),
+    )
+
+    merged_linking_context = cc_common.merge_linking_contexts(
+        linking_contexts = [new_linking_context, cc_info.linking_context],
     )
 
     return CcInfo(
         compilation_context = compilation_context,
-        linking_context = linking_context,
+        linking_context = merged_linking_context,
     )
 
 def _compile_rust(ctx, attr, src, extra_srcs, deps, aliases, runtime):
@@ -303,6 +325,14 @@ def _compile_rust(ctx, attr, src, extra_srcs, deps, aliases, runtime):
     rustc_compile_action_extra_args = {}
     if _rust_version_ge("0.70"):
         rustc_compile_action_extra_args["allowed_unstable_rust_features"] = ["register_tool"]
+
+    # For cc_shared_library support, we use a custom synthetic label as the owner
+    # of the CcInfo's linker inputs of the generated Rust bindings.
+    # The cc_shared_library graph structure aspect groups linker inputs by owner.
+    # If we use ctx.label, it will conflict with the C++ proto aspect which also
+    # uses ctx.label. By using a unique synthetic label, we avoid this conflict
+    # and can later map this owner to the rust_proto_library wrapper target.
+    owner = ctx.label.same_package_label(ctx.label.name + "__rust_proto_aspect")
     providers = rustc_compile_action(
         ctx = ctx,
         attr = attr,
@@ -326,14 +356,23 @@ def _compile_rust(ctx, attr, src, extra_srcs, deps, aliases, runtime):
             rustc_env = {},
             compile_data = depset([]),
             compile_data_targets = depset([]),
-            owner = ctx.label,
+            owner = owner,
         ),
         output_hash = output_hash,
         **rustc_compile_action_extra_args
     )
 
+    crate_info = _get_crate_info(providers)
+    crate_info_dict = structs.to_dict(crate_info)
+
+    # We override the owner in CrateInfo back to ctx.label (the proto_library)
+    # because downstream Rust targets depending on the generated aspect expect
+    # the CrateInfo owner to match the proto_library label.
+    crate_info_dict["owner"] = ctx.label
+    crate_info = CrateInfo(**crate_info_dict)
+
     return DepVariantInfo(
-        crate_info = _get_crate_info(providers),
+        crate_info = crate_info,
         dep_info = _get_dep_info(providers),
         cc_info = _get_cc_info(providers),
         build_info = None,
@@ -507,6 +546,7 @@ def _make_proto_library_aspect(is_upb):
         requires = ([] if is_upb else [cc_proto_aspect]),
         required_providers = [ProtoInfo],
         attrs = {
+            # LINT.IfChange(cpp_thunks_deps)
             "_cpp_thunks_deps": attr.label_list(
                 default = [
                     Label("//rust:cpp_api"),
@@ -514,6 +554,7 @@ def _make_proto_library_aspect(is_upb):
                     Label("//src/google/protobuf:protobuf_lite"),
                 ],
             ),
+            # LINT.ThenChange(//depot/google3/third_party/protobuf/rust/rules.bzl:cpp_thunks_deps)
             "_error_format": attr.label(
                 default = Label("@rules_rust//:error_format"),
             ),
