@@ -69,6 +69,7 @@ cc_library(
     copts = UPB_DEFAULT_COPTS,
     features = UPB_DEFAULT_FEATURES,
     visibility = [
+        "//hpb/internal:__pkg__",
         "//pkg:__pkg__",
         "//python:__pkg__",
         "//third_party/cel/c/internal:__pkg__",

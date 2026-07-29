@@ -20,6 +20,7 @@
 #include "upb/message/copy.h"
 #include "upb/message/message.h"
 #include "upb/message/promote.h"
+#include "upb/message/unknown_fields.h"
 #include "upb/mini_table/extension.h"
 #include "upb/mini_table/message.h"
 #include "upb/wire/encode.h"
@@ -58,7 +59,7 @@ bool HasExtensionOrUnknown(const upb_Message* msg,
   if (upb_Message_HasExtension(msg, eid)) return true;
 
   const uint32_t number = upb_MiniTableExtension_Number(eid);
-  return upb_Message_FindUnknown(msg, number, 0).status == kUpb_FindUnknown_Ok;
+  return upb_Message_FindUnknown2(msg, number, 0).status == kUpb_FindUnknown_Ok;
 }
 
 bool GetOrPromoteExtension(const upb_Message* msg,

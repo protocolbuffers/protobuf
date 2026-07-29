@@ -74,6 +74,7 @@ cc_library(
         "//upb/mem",
         "//upb/message",
         "//upb/message:copy",
+        "//upb/message:message_unknowns",
         "//upb/message:promote",
         "//upb/mini_table",
         "//upb/wire",
