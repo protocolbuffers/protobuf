@@ -4,6 +4,7 @@
 # license that can be found in the LICENSE file or at
 # https://opensource.org/licenses/MIT.
 
+load("@rules_cc//cc:cc_binary.bzl", "cc_binary")
 load("@rules_cc//cc:cc_test.bzl", "cc_test")
 load("@rules_cc//cc:defs.bzl", "cc_library")
 load("@rules_license//rules:license.bzl", "license")
@@ -72,5 +73,16 @@ cc_test(
         "@abseil-cpp//absl/strings",
         "@googletest//:gtest",
         "@googletest//:gtest_main",
+    ],
+)
+
+cc_binary(
+    name = "utf8_validity_benchmark",
+    testonly = True,
+    srcs = ["utf8_validity_benchmark.cc"],
+    deps = [
+        ":utf8_validity",
+        "//third_party/benchmark",
+        "//third_party/benchmark:benchmark_main",
     ],
 )

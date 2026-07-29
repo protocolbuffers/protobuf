@@ -21,6 +21,10 @@
 #include <stdint.h>
 #include <string.h>
 
+#if defined(__SSE2__)
+#include <emmintrin.h>
+#endif
+
 #if defined(__GNUC__)
 #define FORCE_INLINE_ATTR __attribute__((always_inline)) inline
 #elif defined(_MSC_VER)
@@ -159,6 +163,18 @@ static inline int utf8_range_CodepointSkipBackwards(int32_t codepoint_word) {
  */
 static inline const char* utf8_range_SkipAscii(const char* data,
                                                const char* end) {
+
+  #if defined(__SSE2__)
+  // Sixteen bytes per iteration. movemask gathers the high bit of every byte
+  // into the low 16 bits of an int, so a count of trailing zeros locates the
+  // first non-ASCII byte directly.
+  while (16 <= end - data) {
+    const int mask = _mm_movemask_epi8(_mm_loadu_si128((const __m128i*)data));
+    if (mask != 0) return data + __builtin_ctz((unsigned)mask);
+    data += 16;
+  }
+  #endif
+  // Fallback for non-SSE2 platforms or when less than 16 bytes remain.
   while (8 <= end - data &&
          (utf8_range_UnalignedLoad64(data) & 0x8080808080808080) == 0) {
     data += 8;
@@ -182,6 +198,9 @@ static FORCE_INLINE_ATTR size_t utf8_range_Validate(
   const char* const data_original = data;
   const char* const end = data + len;
   data = utf8_range_SkipAscii(data, end);
+  if (data == end) {
+    return return_position ? len : 1;
+  }
   /* SIMD algorithm always outperforms the naive version for any data of
      length >=16.
    */
