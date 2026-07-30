@@ -1479,21 +1479,51 @@ TEST(LiteTest, FileWithOnlyAnEnumGeneratesProperValidationHooks) {
 }
 
 
-// Regression test for ReadPackedFixed() when a fixed-width packed field starts
-// near the end of an input buffer. The first 4-byte block contains the tag,
-// length, and only one payload byte, so the loop sees size > nbytes with
-// nbytes < sizeof(float).
-TEST(LiteTest, PackedFixedFieldCrossesInputBufferWithPartialElement) {
-  const std::string packed_float =
-      std::string("\xA2\x06\x08\x00\x00\x00\x00\x00\x00\x00\x00",
-                  11);
-  io::ArrayInputStream input(packed_float.data(), packed_float.size(), 4);
-  proto2_unittest::TestPackedTypesLite message;
-
-  EXPECT_TRUE(message.ParseFromZeroCopyStream(&input));
-  ASSERT_EQ(message.packed_float_size(), 2);
-  EXPECT_FLOAT_EQ(message.packed_float(0), 0.0f);
-  EXPECT_FLOAT_EQ(message.packed_float(1), 0.0f);
+// Regression tests for ReadPackedFixed() when a fixed-width packed field
+// starts near the end of an input buffer. Each 4-byte first block contains the
+// two-byte tag, one-byte length, and only one payload byte. ReadPackedFixed()
+// therefore enters its while-loop with nbytes == 1 and num == 0. Each parse
+// starts with an unbacked RepeatedField so UBSan detects the null-destination
+// zero-byte memcpy if the guard is removed.
+TEST(LiteTest, PackedFixedFieldsCrossInputBufferBeforeFirstElement) {
+  {
+    const std::string data =
+        std::string("\xA2\x06\x04\x00\x00\x00\x00", 7);
+    io::ArrayInputStream input(data.data(), data.size(), 4);
+    proto2_unittest::TestPackedTypesLite message;
+    ASSERT_TRUE(message.ParseFromZeroCopyStream(&input));
+    ASSERT_EQ(message.packed_float_size(), 1);
+    EXPECT_FLOAT_EQ(message.packed_float(0), 0.0f);
+  }
+  {
+    const std::string data =
+        std::string("\xAA\x06\x08\x00\x00\x00\x00\x00\x00\x00\x00",
+                    11);
+    io::ArrayInputStream input(data.data(), data.size(), 4);
+    proto2_unittest::TestPackedTypesLite message;
+    ASSERT_TRUE(message.ParseFromZeroCopyStream(&input));
+    ASSERT_EQ(message.packed_double_size(), 1);
+    EXPECT_DOUBLE_EQ(message.packed_double(0), 0.0);
+  }
+  {
+    const std::string data =
+        std::string("\x82\x06\x04\x00\x00\x00\x00", 7);
+    io::ArrayInputStream input(data.data(), data.size(), 4);
+    proto2_unittest::TestPackedTypesLite message;
+    ASSERT_TRUE(message.ParseFromZeroCopyStream(&input));
+    ASSERT_EQ(message.packed_fixed32_size(), 1);
+    EXPECT_EQ(message.packed_fixed32(0), 0);
+  }
+  {
+    const std::string data =
+        std::string("\x8A\x06\x08\x00\x00\x00\x00\x00\x00\x00\x00",
+                    11);
+    io::ArrayInputStream input(data.data(), data.size(), 4);
+    proto2_unittest::TestPackedTypesLite message;
+    ASSERT_TRUE(message.ParseFromZeroCopyStream(&input));
+    ASSERT_EQ(message.packed_fixed64_size(), 1);
+    EXPECT_EQ(message.packed_fixed64(0), 0);
+  }
 }
 
 }  // namespace
