@@ -10,9 +10,11 @@
 #include <cstddef>
 #include <string>
 
+#include "google/protobuf/field_mask.upb.h"
 #include "google/protobuf/struct.upb.h"
 #include <gtest/gtest.h>
 #include "upb/base/status.hpp"
+#include "upb/base/string_view.h"
 #include "upb/base/upcast.h"
 #include "upb/json/test.upb.h"
 #include "upb/json/test.upbdefs.h"
@@ -35,6 +37,19 @@ static std::string JsonEncode(const upb_test_Box* msg, int options) {
                                json_buf, json_size + 1, status.ptr());
   EXPECT_EQ(size, json_size);
   return std::string(json_buf, json_size);
+}
+
+// Returns the error message, or "" if encoding unexpectedly succeeded.
+static std::string JsonEncodeError(const upb_test_Box* msg, int options) {
+  upb::Status status;
+  upb::DefPool defpool;
+  upb::MessageDefPtr m(upb_test_Box_getmsgdef(defpool.ptr()));
+  EXPECT_TRUE(m.ptr() != nullptr);
+
+  size_t size = upb_JsonEncode(UPB_UPCAST(msg), m.ptr(), defpool.ptr(), options,
+                               nullptr, 0, status.ptr());
+  if (size != static_cast<size_t>(-1)) return "";
+  return std::string(status.error_message());
 }
 
 // Encode a single optional enum.
@@ -95,4 +110,43 @@ TEST(JsonTest, EncodeConflictJsonName) {
   upb_test_Box* new_box = upb_test_Box_new(a.ptr());
   upb_test_Box_set_new_value(new_box, 2);
   EXPECT_EQ(R"({"value":2})", JsonEncode(new_box, 0));
+}
+
+TEST(JsonTest, EncodeFieldMask) {
+  upb::Arena a;
+
+  upb_test_Box* box = upb_test_Box_new(a.ptr());
+  google_protobuf_FieldMask* mask = upb_test_Box_mutable_mask_val(box, a.ptr());
+  google_protobuf_FieldMask_add_paths(
+      mask, upb_StringView_FromString("foo_bar.baz1"), a.ptr());
+
+  EXPECT_EQ(R"({"maskVal":"fooBar.baz1"})", JsonEncode(box, 0));
+}
+
+TEST(JsonTest, EncodeFieldMaskRejectsInvalidCharacters) {
+  upb::Arena a;
+
+  upb_test_Box* box = upb_test_Box_new(a.ptr());
+  google_protobuf_FieldMask* mask = upb_test_Box_mutable_mask_val(box, a.ptr());
+  google_protobuf_FieldMask_add_paths(
+      mask, upb_StringView_FromString("a\",\"injected\":\"b"), a.ptr());
+
+  EXPECT_NE("", JsonEncodeError(box, 0));
+}
+
+TEST(JsonTest, EncodeEscapesJsonName) {
+  upb::Arena a;
+  upb::Status status;
+  upb::DefPool defpool;
+  upb::MessageDefPtr m(upb_test_UnescapedJsonName_getmsgdef(defpool.ptr()));
+  ASSERT_TRUE(m.ptr() != nullptr);
+
+  upb_test_UnescapedJsonName* msg = upb_test_UnescapedJsonName_new(a.ptr());
+  upb_test_UnescapedJsonName_set_a(msg, 2);
+
+  char buf[64];
+  size_t size = upb_JsonEncode(UPB_UPCAST(msg), m.ptr(), defpool.ptr(), 0, buf,
+                               sizeof(buf), status.ptr());
+  ASSERT_LT(size, sizeof(buf));
+  EXPECT_EQ(R"({"a\":1,\"b":2})", std::string(buf, size));
 }
