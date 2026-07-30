@@ -854,6 +854,7 @@ set(libupb_hdrs
   ${protobuf_SOURCE_DIR}/upb/reflection/internal/oneof_def.h
   ${protobuf_SOURCE_DIR}/upb/reflection/internal/service_def.h
   ${protobuf_SOURCE_DIR}/upb/reflection/internal/upb_edition_defaults.h
+  ${protobuf_SOURCE_DIR}/upb/reflection/json_enumvalue_options_bootstrap.h
   ${protobuf_SOURCE_DIR}/upb/reflection/message.h
   ${protobuf_SOURCE_DIR}/upb/reflection/message_def.h
   ${protobuf_SOURCE_DIR}/upb/reflection/message_reserved_range.h
@@ -1301,6 +1302,9 @@ set(upb_test_protos_files
   ${protobuf_SOURCE_DIR}/src/google/protobuf/duration.proto
   ${protobuf_SOURCE_DIR}/src/google/protobuf/empty.proto
   ${protobuf_SOURCE_DIR}/src/google/protobuf/field_mask.proto
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/json/json_enumval_custom_string.proto
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/json_enumvalue_options.proto
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/json_options.proto
   ${protobuf_SOURCE_DIR}/src/google/protobuf/source_context.proto
   ${protobuf_SOURCE_DIR}/src/google/protobuf/struct.proto
   ${protobuf_SOURCE_DIR}/src/google/protobuf/test_messages_proto2.proto
