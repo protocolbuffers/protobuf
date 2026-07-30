@@ -9,40 +9,8 @@
 
 load("@proto_bazel_features//:features.bzl", "bazel_features")
 load("//bazel/common:proto_lang_toolchain_info.bzl", "ProtoLangToolchainInfo")
+load("//bazel/common:proto_path_mapping.bzl", "proto_path_mapping")
 load("//bazel/private:toolchain_helpers.bzl", "toolchains")
-
-def _import_virtual_proto_path(path):
-    """Imports all paths for virtual imports.
-
-      They're of the form:
-      'bazel-out/k8-fastbuild/bin/external/foo/e/_virtual_imports/e' or
-      'bazel-out/foo/k8-fastbuild/bin/e/_virtual_imports/e'"""
-    if path.count("/") > 4:
-        return "-I%s" % path
-    return None
-
-def _import_repo_proto_path(path):
-    """Imports all paths for generated files in external repositories.
-
-      They are of the form:
-      'bazel-out/k8-fastbuild/bin/external/foo' or
-      'bazel-out/foo/k8-fastbuild/bin'"""
-    path_count = path.count("/")
-    if path_count > 2 and path_count <= 4:
-        return "-I%s" % path
-    return None
-
-def _import_main_output_proto_path(path):
-    """Imports all paths for generated files or source files in external repositories.
-
-      They're of the form:
-      'bazel-out/k8-fastbuild/bin'
-      'external/foo'
-      '../foo'
-    """
-    if path.count("/") <= 2 and path != ".":
-        return "-I%s" % path
-    return None
 
 def _remove_repo(file):
     """Removes `../repo/` prefix from path, e.g. `../repo/package/path -> package/path`"""
@@ -190,10 +158,17 @@ def _compile(
                     fail("generated_files only expected a single file")
                 plugin_output = generated_files[0]
             else:
-                plugin_output = _output_directory(proto_info, generated_files[0].root)
+                plugin_output = [generated_files[0]]
 
     if plugin_output:
-        args.add(plugin_output, format = proto_lang_toolchain_info.out_replacement_format_flag)
+        if type(plugin_output) == type([]):
+            args.add_all(
+                plugin_output,
+                map_each = proto_path_mapping.output_directory_from_file,
+                format_each = proto_lang_toolchain_info.out_replacement_format_flag,
+            )
+        else:
+            args.add(plugin_output, format = proto_lang_toolchain_info.out_replacement_format_flag)
     if proto_lang_toolchain_info.plugin:
         tools.append(proto_lang_toolchain_info.plugin)
         args.add(proto_lang_toolchain_info.plugin.executable, format = proto_lang_toolchain_info.plugin_format_flag)
@@ -206,9 +181,10 @@ def _compile(
     # For example: 'bazel-out/k8-fastbuild/bin/external/foo' needs to be listed
     # before 'bazel-out/k8-fastbuild/bin'. If not, protoc will discover file under
     # the shorter path and use 'external/foo/...' as its package path.
-    args.add_all(proto_info.transitive_proto_path, map_each = _import_virtual_proto_path)
-    args.add_all(proto_info.transitive_proto_path, map_each = _import_repo_proto_path)
-    args.add_all(proto_info.transitive_proto_path, map_each = _import_main_output_proto_path)
+    # Bucket transitive_sources by protoc precedence (virtual → external → main output)
+    # and add -I flags via a single map_each pass.
+    ordered_sources = proto_path_mapping.bucket_transitive_sources(proto_info.transitive_sources)
+    args.add_all(ordered_sources, map_each = proto_path_mapping.import_proto_path_from_file, uniquify = True)
     args.add("-I.")  # Needs to come last
 
     args.add_all(proto_lang_toolchain_info.protoc_opts)
