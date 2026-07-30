@@ -1483,8 +1483,8 @@ TEST(LiteTest, FileWithOnlyAnEnumGeneratesProperValidationHooks) {
 // starts near the end of an input buffer. Each 4-byte first block contains the
 // two-byte tag, one-byte length, and only one payload byte. ReadPackedFixed()
 // therefore enters its while-loop with nbytes == 1 and num == 0. Each parse
-// starts with an unbacked RepeatedField so UBSan detects the null-destination
-// zero-byte memcpy if the guard is removed.
+// starts with an unbacked RepeatedField, exercising the exact path protected by
+// the num > 0 guard.
 TEST(LiteTest, PackedFixedFieldsCrossInputBufferBeforeFirstElement) {
   {
     const std::string data =
