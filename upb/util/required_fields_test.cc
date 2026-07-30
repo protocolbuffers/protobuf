@@ -23,6 +23,38 @@
 #include "upb/util/required_fields_test.upb.h"
 #include "upb/util/required_fields_test.upbdefs.h"
 
+namespace {
+
+struct FailingAllocState {
+  upb_alloc_func* delegate;
+  int fail_after;
+};
+
+static FailingAllocState g_failing_alloc_state;
+
+void* FailingAlloc(upb_alloc* alloc, void* ptr, size_t oldsize, size_t size,
+                   size_t* actual_size) {
+  if (size != 0 && g_failing_alloc_state.fail_after-- <= 0) return nullptr;
+  return g_failing_alloc_state.delegate(alloc, ptr, oldsize, size, actual_size);
+}
+
+class ScopedGlobalAllocFailure {
+ public:
+  explicit ScopedGlobalAllocFailure(int fail_after) {
+    old_func_ = upb_alloc_global.func;
+    g_failing_alloc_state.delegate = old_func_;
+    g_failing_alloc_state.fail_after = fail_after;
+    upb_alloc_global.func = FailingAlloc;
+  }
+
+  ~ScopedGlobalAllocFailure() { upb_alloc_global.func = old_func_; }
+
+ private:
+  upb_alloc_func* old_func_;
+};
+
+}  // namespace
+
 std::vector<std::string> PathsToText(upb_FieldPathEntry* entry) {
   std::vector<std::string> ret;
   char buf[1024];  // Larger than anything we'll use in this test.
@@ -220,4 +252,21 @@ TYPED_TEST(RequiredFieldsTest, TestRequired) {
       }
       )json",
       {R"(map_string_message["d\"ef"].required_int32)"});
+}
+
+TYPED_TEST(RequiredFieldsTest, AllocationFailureInPathCollectionIsHandled) {
+  upb::Arena arena;
+  upb::DefPool defpool;
+  auto* test_msg = TypeParam::NewMessage(arena.ptr());
+  upb::MessageDefPtr m = TypeParam::GetMessageDef(defpool.ptr());
+
+  upb_FieldPathEntry* entries = reinterpret_cast<upb_FieldPathEntry*>(0x1);
+  {
+    // First dynamic allocation in path collection fails deterministically.
+    ScopedGlobalAllocFailure fail_alloc(/*fail_after=*/0);
+    bool has_unset = upb_util_HasUnsetRequired(UPB_UPCAST(test_msg), m.ptr(),
+                                               defpool.ptr(), &entries);
+    EXPECT_FALSE(has_unset);
+    EXPECT_EQ(entries, nullptr);
+  }
 }

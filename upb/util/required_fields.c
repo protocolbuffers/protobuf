@@ -169,11 +169,25 @@ static void upb_FieldPathVector_Reserve(upb_FindContext* ctx,
                                         upb_FieldPathVector* vec,
                                         size_t elems) {
   if (vec->cap - vec->size < elems) {
-    const int oldsize = vec->cap * sizeof(*vec->path);
+    if (vec->cap > SIZE_MAX / sizeof(*vec->path)) {
+      UPB_LONGJMP(ctx->err, 1);
+    }
+    const size_t oldsize = vec->cap * sizeof(*vec->path);
+    if (SIZE_MAX - vec->size < elems) {
+      UPB_LONGJMP(ctx->err, 1);
+    }
     size_t need = vec->size + elems;
     vec->cap = UPB_MAX(4, vec->cap);
-    while (vec->cap < need) vec->cap *= 2;
-    const int newsize = vec->cap * sizeof(*vec->path);
+    while (vec->cap < need) {
+      if (vec->cap > SIZE_MAX / 2) {
+        UPB_LONGJMP(ctx->err, 1);
+      }
+      vec->cap *= 2;
+    }
+    if (vec->cap > SIZE_MAX / sizeof(*vec->path)) {
+      UPB_LONGJMP(ctx->err, 1);
+    }
+    const size_t newsize = vec->cap * sizeof(*vec->path);
     vec->path = upb_grealloc(vec->path, oldsize, newsize);
     if (!vec->path) {
       UPB_LONGJMP(ctx->err, 1);
@@ -291,6 +305,14 @@ bool upb_util_HasUnsetRequired(const upb_Message* msg, const upb_MessageDef* m,
   ctx.ext_pool = ext_pool;
   upb_FieldPathVector_Init(&ctx.stack);
   upb_FieldPathVector_Init(&ctx.out_fields);
+
+  if (UPB_SETJMP(ctx.err)) {
+    upb_gfree(ctx.stack.path);
+    upb_gfree(ctx.out_fields.path);
+    if (fields) *fields = NULL;
+    return false;
+  }
+
   upb_util_FindUnsetRequiredInternal(&ctx, msg, m);
   upb_gfree(ctx.stack.path);
 
