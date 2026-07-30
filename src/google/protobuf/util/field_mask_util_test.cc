@@ -5,8 +5,6 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
-#include "google/protobuf/util/field_mask_util.h"
-
 #include <algorithm>
 #include <cstdint>
 #include <string>

@@ -12,7 +12,6 @@
 #include <algorithm>
 #include <cfloat>
 #include <cmath>
-#include <limits>
 #include <string>
 
 #include "absl/log/absl_check.h"
