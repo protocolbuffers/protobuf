@@ -7,6 +7,7 @@
 
 #include "google/protobuf/json/internal/writer.h"
 
+#include <cmath>
 #include <cstddef>
 #include <cstdint>
 #include <limits>
@@ -14,7 +15,9 @@
 
 #include "absl/algorithm/container.h"
 #include "absl/log/absl_check.h"
+#include "absl/numeric/bits.h"
 #include "absl/strings/charset.h"
+#include "absl/strings/str_format.h"
 #include "absl/strings/string_view.h"
 
 // Must be included last.
