@@ -115,6 +115,8 @@ if (protobuf_BUILD_LIBUPB)
     FILES
       ${protobuf_SOURCE_DIR}/upb/reflection/cmake/google/protobuf/descriptor.upb.h
       ${protobuf_SOURCE_DIR}/upb/reflection/cmake/google/protobuf/descriptor.upb_minitable.h
+      ${protobuf_SOURCE_DIR}/upb/reflection/cmake/google/protobuf/json_enumvalue_options.upb.h
+      ${protobuf_SOURCE_DIR}/upb/reflection/cmake/google/protobuf/json_enumvalue_options.upb_minitable.h
     DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/google/protobuf
     COMPONENT protobuf-headers
   )

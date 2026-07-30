@@ -726,7 +726,8 @@ Error, UINTPTR_MAX is undefined
         : "X"(UPB_PRIVATE(name)));                                          \
     __VA_ARGS__                                                             \
   }
-#elif defined(__ELF__) || defined(__wasm__) || defined(__MACH__)
+#elif defined(__ELF__) || defined(__wasm__) || defined(__MACH__) || \
+    defined(__MINGW32__)
 #define UPB_CONSTRUCTOR(name, unique_name, ...)                              \
   _UPB_CONSTRUCTOR_PLACEHOLDER(unique_name)                                  \
   __attribute__((weak, visibility("hidden"), constructor)) void UPB_PRIVATE( \
@@ -752,8 +753,13 @@ Error, UINTPTR_MAX is undefined
   static void __cdecl UPB_PRIVATE(name)(void) { __VA_ARGS__ }
 #else
 // No constructor support, nothing we can do except not break builds.
+#if defined(__GNUC__) || defined(__clang__)
+#define UPB_CONSTRUCTOR(name, unique_name, ...) \
+  static __attribute__((used)) void UPB_PRIVATE(name)(void) { __VA_ARGS__ }
+#else
 #define UPB_CONSTRUCTOR(name, unique_name, ...) \
   static void UPB_PRIVATE(name)(void) { __VA_ARGS__ }
+#endif
 #endif
 
 //
@@ -791,9 +797,9 @@ Error, UINTPTR_MAX is undefined
 
 #elif defined(__ELF__) || defined(__wasm__)
 
-// On ELF, weak aliases work properly, so we can have all weak MiniTables
-// point to the same empty singleton MiniTable. This reduces code size if many
-// MiniTables are tree shaken.
+  // On ELF, weak aliases work properly, so we can have all weak MiniTables
+  // point to the same empty singleton MiniTable. This reduces code size if many
+  // MiniTables are tree shaken.
 #define UPB_WEAK_SINGLETON_PLACEHOLDER_MINITABLE()               \
   __attribute__((weak))                                          \
   const upb_MiniTable kUpb_WeakSingletonPlaceholderMiniTable = { \

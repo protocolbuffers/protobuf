@@ -34,6 +34,19 @@ bootstrap_upb_proto_library(
     strip_prefix = "third_party/protobuf/github/bootstrap/src",
 )
 
+bootstrap_upb_proto_library(
+    name = "json_enumvalue_options_upb_proto",
+    bootstrap_hdr = "json_enumvalue_options_bootstrap.h",
+    proto_lib_deps = ["//src/google/protobuf:json_enumvalue_options_proto"],
+    src_files = ["google/protobuf/json_enumvalue_options.proto"],
+    src_rules = [
+        "//:descriptor_proto_srcs",
+        "//:json_enumvalue_options_proto_srcs",
+    ],
+    strip_prefix = "third_party/protobuf/github/bootstrap/src",
+    deps = [":descriptor_upb_proto"],
+)
+
 bootstrap_cc_library(
     name = "reflection",
     hdrs = [
@@ -139,7 +152,10 @@ bootstrap_cc_library(
         "oneof_def.h",
         "service_def.h",
     ],
-    bootstrap_deps = [":descriptor_upb_proto"],
+    bootstrap_deps = [
+        ":descriptor_upb_proto",
+        ":json_enumvalue_options_upb_proto",
+    ],
     copts = UPB_DEFAULT_COPTS,
     features = UPB_DEFAULT_FEATURES,
     visibility = ["//visibility:public"],
