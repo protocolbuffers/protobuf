@@ -1552,8 +1552,7 @@ UPB_API void upb_Arena_SetAllocCleanup(upb_Arena* a,
 // transitively fused together will be freed until all of them have reached a
 // zero refcount. This operation is safe to use concurrently from multiple
 // threads.
-UPB_NODISCARD UPB_API bool upb_Arena_Fuse(const upb_Arena* a,
-                                          const upb_Arena* b);
+UPB_API bool upb_Arena_Fuse(const upb_Arena* a, const upb_Arena* b);
 
 // This operation is safe to use concurrently from multiple threads.
 UPB_API bool upb_Arena_IsFused(const upb_Arena* a, const upb_Arena* b);
@@ -5874,7 +5873,7 @@ UPB_INLINE bool upb_Message_HasUnknown(const upb_Message* msg) {
   if (!in) return false;
   for (size_t i = 0; i < in->size; i++) {
     upb_TaggedAuxPtr tagged_ptr = in->aux_data[i];
-    if (tagged_ptr.ptr != 0 &&
+    if (!upb_TaggedAuxPtr_IsNull(tagged_ptr) &&
         !upb_TaggedAuxPtr_IsSemanticallyKnown(tagged_ptr)) {
       return true;
     }

@@ -9779,10 +9779,11 @@ static upb_StringView upb_Clone_StringView(upb_StringView str,
     return upb_StringView_FromDataAndSize(NULL, 0);
   }
   void* cloned_data = upb_Arena_Malloc(arena, str.size);
-  upb_StringView cloned_str =
-      upb_StringView_FromDataAndSize(cloned_data, str.size);
+  if (cloned_data == NULL) {
+    return upb_StringView_FromDataAndSize(NULL, 0);
+  }
   memcpy(cloned_data, str.data, str.size);
-  return cloned_str;
+  return upb_StringView_FromDataAndSize(cloned_data, str.size);
 }
 
 static bool upb_Clone_MessageValue(void* value, upb_CType value_type,
@@ -9906,6 +9907,7 @@ static bool upb_Message_Array_DeepClone(const upb_Array* array,
                               ? upb_MiniTable_GetSubMessageTable(field)
                               : NULL,
                           arena);
+  if (!cloned_array) return false;
 
   // Clear out upb_Array* due to parent memcpy.
   upb_Message_SetBaseField(clone, field, &cloned_array);
@@ -9940,9 +9942,8 @@ upb_Message* _upb_Message_Copy(upb_Message* dst, const upb_Message* src,
                 upb_MiniTable_GetSubMessageTable(field);
             upb_Message* dst_sub_message =
                 upb_Message_DeepClone(sub_message, sub_message_table, arena);
-            if (dst_sub_message == NULL) {
-              return NULL;
-            }
+            if (dst_sub_message == NULL) goto err;
+
             upb_Message_SetBaseFieldMessage(dst, field, dst_sub_message);
           }
         } break;
@@ -9950,10 +9951,10 @@ upb_Message* _upb_Message_Copy(upb_Message* dst, const upb_Message* src,
         case kUpb_CType_Bytes: {
           upb_StringView str = upb_Message_GetString(src, field, empty_string);
           if (str.size != 0) {
-            if (!upb_Message_SetString(
-                    dst, field, upb_Clone_StringView(str, arena), arena)) {
-              return NULL;
-            }
+            upb_StringView cloned_str = upb_Clone_StringView(str, arena);
+            if (cloned_str.data == NULL) goto err;
+
+            if (!upb_Message_SetString(dst, field, cloned_str, arena)) goto err;
           }
         } break;
         default:
@@ -9965,7 +9966,7 @@ upb_Message* _upb_Message_Copy(upb_Message* dst, const upb_Message* src,
         const upb_Map* map = upb_Message_GetMap(src, field);
         if (map != NULL) {
           if (!upb_Message_Map_DeepClone(map, mini_table, field, dst, arena)) {
-            return NULL;
+            goto err;
           }
         }
       } else {
@@ -9973,7 +9974,7 @@ upb_Message* _upb_Message_Copy(upb_Message* dst, const upb_Message* src,
         if (array != NULL) {
           if (!upb_Message_Array_DeepClone(array, mini_table, field, dst,
                                            arena)) {
-            return NULL;
+            goto err;
           }
         }
       }
@@ -9992,10 +9993,11 @@ upb_Message* _upb_Message_Copy(upb_Message* dst, const upb_Message* src,
       upb_Extension* dst_ext =
           UPB_PRIVATE(_upb_Message_GetOrCreateExtensionWithTag)(
               dst, msg_ext->ext, arena, upb_TaggedAuxPtr_Type(tagged_ptr));
-      if (!dst_ext) return NULL;
+      if (!dst_ext) goto err;
+
       if (upb_MiniTableField_IsScalar(field)) {
         if (!upb_Clone_ExtensionValue(msg_ext->ext, msg_ext, dst_ext, arena)) {
-          return NULL;
+          goto err;
         }
       } else {
         upb_Array* msg_array = (upb_Array*)msg_ext->data.array_val;
@@ -10003,9 +10005,8 @@ upb_Message* _upb_Message_Copy(upb_Message* dst, const upb_Message* src,
         upb_Array* cloned_array = upb_Array_DeepClone(
             msg_array, upb_MiniTableField_CType(field),
             upb_MiniTableExtension_GetSubMessage(msg_ext->ext), arena);
-        if (!cloned_array) {
-          return NULL;
-        }
+        if (!cloned_array) goto err;
+
         dst_ext->data.array_val = cloned_array;
       }
     } else if (upb_TaggedAuxPtr_IsUnknownStringView(tagged_ptr)) {
@@ -10014,11 +10015,15 @@ upb_Message* _upb_Message_Copy(upb_Message* dst, const upb_Message* src,
       // Make a copy into destination arena.
       if (!UPB_PRIVATE(_upb_Message_AddUnknown)(
               dst, unknown->data, unknown->size, arena, kUpb_AddUnknown_Copy)) {
-        return NULL;
+        goto err;
       }
     }
   }
   return dst;
+
+err:
+  upb_Message_Clear(dst, mini_table);
+  return NULL;
 }
 
 bool upb_Message_DeepCopy(upb_Message* dst, const upb_Message* src,
@@ -10034,6 +10039,7 @@ bool upb_Message_DeepCopy(upb_Message* dst, const upb_Message* src,
 upb_Message* upb_Message_DeepClone(const upb_Message* msg,
                                    const upb_MiniTable* m, upb_Arena* arena) {
   upb_Message* clone = upb_Message_New(m, arena);
+  if (!clone) return NULL;
   return _upb_Message_Copy(clone, msg, m, arena);
 }
 

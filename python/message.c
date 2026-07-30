@@ -20,6 +20,7 @@
 #include "python/map.h"
 #include "python/protobuf.h"
 #include "python/repeated.h"
+#include "upb/mem/alloc.h"
 #include "upb/mem/arena.h"
 #include "upb/message/array.h"
 #include "upb/message/compare.h"
@@ -1702,30 +1703,41 @@ static PyObject* PyUpb_Message_FindInitializationErrors(PyObject* _self,
   const upb_DefPool* ext_pool = upb_FileDef_Pool(upb_MessageDef_File(msgdef));
   upb_FieldPathEntry* fields_base;
   PyObject* ret = PyList_New(0);
-  if (upb_util_HasUnsetRequired(msg, msgdef, ext_pool, &fields_base)) {
-    upb_FieldPathEntry* fields = fields_base;
-    char* buf = NULL;
-    size_t size = 0;
-    assert(fields->field);
-    while (fields->field) {
-      upb_FieldPathEntry* field = fields;
-      size_t need = upb_FieldPath_ToText(&fields, buf, size);
-      if (need >= size) {
-        fields = field;
-        size = size ? size * 2 : 16;
-        while (size <= need) size *= 2;
-        buf = realloc(buf, size);
-        need = upb_FieldPath_ToText(&fields, buf, size);
-        assert(size > need);
-      }
-      PyObject* str = PyUnicode_FromString(buf);
-      PyList_Append(ret, str);
-      Py_DECREF(str);
-    }
-    free(buf);
-    free(fields_base);
+  if (!ret) return NULL;
+  if (!upb_util_HasUnsetRequired(msg, msgdef, ext_pool, &fields_base)) {
+    return ret;
   }
+  upb_FieldPathEntry* fields = fields_base;
+  char* buf = NULL;
+  size_t size = 0;
+  assert(fields->field);
+  while (fields->field) {
+    upb_FieldPathEntry* field = fields;
+    size_t need = upb_FieldPath_ToText(&fields, buf, size);
+    if (need >= size) {
+      fields = field;
+      size = size ? size * 2 : 16;
+      while (size <= need) size *= 2;
+      buf = realloc(buf, size);
+      if (!buf) goto realloc_err;
+      need = upb_FieldPath_ToText(&fields, buf, size);
+      assert(size > need);
+    }
+    PyObject* str = PyUnicode_FromString(buf);
+    if (!str) goto err;
+    int appended = PyList_Append(ret, str);
+    Py_DECREF(str);
+    if (appended < 0) goto err;
+  }
+done:
+  free(buf);
+  upb_gfree(fields_base);
   return ret;
+realloc_err:
+  PyErr_SetNone(PyExc_MemoryError);
+err:
+  Py_CLEAR(ret);
+  goto done;
 }
 
 static PyObject* PyUpb_Message_FromString(PyObject* cls, PyObject* serialized) {
