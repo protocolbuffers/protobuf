@@ -95,6 +95,8 @@ google/protobuf/java_features.proto
 google/protobuf/json/json.h
 google/protobuf/json_enumvalue_options.pb.h
 google/protobuf/json_enumvalue_options.proto
+google/protobuf/json_enumvalue_options.upb.h
+google/protobuf/json_enumvalue_options.upb_minitable.h
 google/protobuf/map.h
 google/protobuf/map_entry.h
 google/protobuf/map_field.h
@@ -221,6 +223,7 @@ upb/reflection/enum_value_def.h
 upb/reflection/extension_range.h
 upb/reflection/field_def.h
 upb/reflection/file_def.h
+upb/reflection/json_enumvalue_options_bootstrap.h
 upb/reflection/message.h
 upb/reflection/message.hpp
 upb/reflection/message_def.h

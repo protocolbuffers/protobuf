@@ -9,6 +9,9 @@ set(bootstrap_sources
   ${bootstrap_cmake_dir}/google/protobuf/descriptor.upb.h
   ${bootstrap_cmake_dir}/google/protobuf/descriptor.upb_minitable.h
   ${bootstrap_cmake_dir}/google/protobuf/descriptor.upb_minitable.c
+  ${bootstrap_cmake_dir}/google/protobuf/json_enumvalue_options.upb.h
+  ${bootstrap_cmake_dir}/google/protobuf/json_enumvalue_options.upb_minitable.h
+  ${bootstrap_cmake_dir}/google/protobuf/json_enumvalue_options.upb_minitable.c
 )
 
 # Note: upb does not support shared library builds, and is intended to be
