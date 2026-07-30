@@ -438,6 +438,7 @@ set(libprotoc_srcs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/full/enum.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/full/enum_field.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/full/extension.cc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/full/field_generator.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/full/generator_factory.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/full/make_field_gens.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/full/map_field.cc
