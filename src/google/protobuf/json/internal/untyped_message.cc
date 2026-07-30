@@ -26,12 +26,12 @@
 #include "absl/strings/string_view.h"
 #include "absl/types/optional.h"
 #include "absl/types/span.h"
+#include "third_party/gloop/util/status/status_macros.h"
 #include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/port.h"
 #include "google/protobuf/util/type_resolver.h"
 #include "google/protobuf/wire_format_lite.h"
 #include "utf8_validity.h"
-#include "google/protobuf/stubs/status_macros.h"
 
 // Must be included last.
 #include "google/protobuf/port_def.inc"
