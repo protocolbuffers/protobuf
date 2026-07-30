@@ -24,6 +24,7 @@ static upb_StringView Convert_StringData(VALUE str, upb_Arena* arena) {
   upb_StringView ret;
   if (arena) {
     char* ptr = upb_Arena_Malloc(arena, RSTRING_LEN(str));
+    if (!ptr) Arena_raise_oom();
     memcpy(ptr, RSTRING_PTR(str), RSTRING_LEN(str));
     ret.data = ptr;
   } else {
@@ -292,6 +293,7 @@ upb_MessageValue Msgval_DeepCopy(upb_MessageValue msgval, TypeInfo type_info,
     case kUpb_CType_Bytes: {
       size_t n = msgval.str_val.size;
       char* mem = upb_Arena_Malloc(arena, n);
+      if (!mem) Arena_raise_oom();
       new_msgval.str_val.data = mem;
       new_msgval.str_val.size = n;
       memcpy(mem, msgval.str_val.data, n);

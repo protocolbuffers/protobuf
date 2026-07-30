@@ -24,6 +24,7 @@ enum Armor {
   ARMOR_SABATON = 7 [(pb.enumvalue.json).string = "sabaton"];
   ARMOR_SOLLERET = 7 [(pb.enumvalue.json).string = "sabaton"];
   ARMOR_HACHI_MAI_DO = 8 [(pb.enumvalue.json).string = "8"];
+  ARMOR_GREAVES = 9 [(pb.enumvalue.json).string = "ARMOR_GREAVES"];
 }
 
 message Knight {

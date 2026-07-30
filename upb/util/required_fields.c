@@ -17,6 +17,7 @@
 #include <string.h>
 
 #include "upb/base/descriptor_constants.h"
+#include "upb/base/status.h"
 #include "upb/mem/alloc.h"
 #include "upb/message/array.h"
 #include "upb/message/map.h"
@@ -282,24 +283,47 @@ static void upb_util_FindUnsetRequiredInternal(upb_FindContext* ctx,
   }
 }
 
+static bool upb_util_DoHasUnsetRequired(upb_FindContext* ctx,
+                                        const upb_Message* msg,
+                                        const upb_MessageDef* m) {
+  if (UPB_SETJMP(ctx->err) != 0) {
+    return false;
+  }
+  upb_util_FindUnsetRequiredInternal(ctx, msg, m);
+  return true;
+}
+
 bool upb_util_HasUnsetRequired(const upb_Message* msg, const upb_MessageDef* m,
                                const upb_DefPool* ext_pool,
-                               upb_FieldPathEntry** fields) {
+                               upb_FieldPathEntry** fields,
+                               upb_Status* status) {
   upb_FindContext ctx;
   ctx.has_unset_required = false;
   ctx.save_paths = fields != NULL;
   ctx.ext_pool = ext_pool;
   upb_FieldPathVector_Init(&ctx.stack);
   upb_FieldPathVector_Init(&ctx.out_fields);
-  upb_util_FindUnsetRequiredInternal(&ctx, msg, m);
-  upb_gfree(ctx.stack.path);
 
-  if (ctx.has_unset_required && fields) {
-    upb_FieldPathVector_Reserve(&ctx, &ctx.out_fields, 1);
-    ctx.out_fields.path[ctx.out_fields.size] =
-        (upb_FieldPathEntry){.field = NULL};
-    *fields = ctx.out_fields.path;
+  if (upb_util_DoHasUnsetRequired(&ctx, msg, m)) {
+    upb_gfree(ctx.stack.path);
+
+    if (ctx.has_unset_required && fields) {
+      upb_FieldPathVector_Reserve(&ctx, &ctx.out_fields, 1);
+      ctx.out_fields.path[ctx.out_fields.size] =
+          (upb_FieldPathEntry){.field = NULL};
+      *fields = ctx.out_fields.path;
+    }
+
+    return ctx.has_unset_required;
+  } else {
+    upb_gfree(ctx.stack.path);
+    upb_gfree(ctx.out_fields.path);
+    if (fields) {
+      *fields = NULL;
+    }
+    if (status) {
+      upb_Status_SetErrorMessage(status, "out of memory");
+    }
+    return false;
   }
-
-  return ctx.has_unset_required;
 }

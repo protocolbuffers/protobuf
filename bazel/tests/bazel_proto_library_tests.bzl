@@ -28,6 +28,7 @@ def bazel_proto_library_test_suite(name):
         _test_strip_import_prefix_without_deps,
         _test_strict_public_imports_enabled,
         _test_strict_public_imports_disabled,
+        _test_strict_public_imports_default,
         _test_strict_public_imports_transitive_exports,
         _test_strip_import_prefix_with_deps,
         _test_exported_stripped_import_prefixes,
@@ -359,6 +360,22 @@ def _test_strict_public_imports_disabled_impl(env, target):
     )
     action.argv().not_contains("--allowed_public_imports=")
 
+def _test_strict_public_imports_default(name):
+    util.helper_target(proto_library, name = name + "_foo", srcs = ["foo.proto"])
+
+    analysis_test(
+        name = name,
+        target = name + "_foo",
+        impl = _test_strict_public_imports_default_impl,
+    )
+
+def _test_strict_public_imports_default_impl(env, target):
+    action = env.expect.that_target(target).action_generating(
+        "{package}/{name}-descriptor-set.proto.bin",
+    )
+
+    action.argv().not_contains("--allowed_public_imports=")
+
 def _test_strict_public_imports_transitive_exports(name):
     util.helper_target(
         proto_library,
@@ -651,7 +668,7 @@ def _test_experimental_proto_descriptor_sets_include_source_info(name):
         name = name,
         target = name + "_a_proto",
         impl = _test_experimental_proto_descriptor_sets_include_source_info_impl,
-        config_settings = {"@@//bazel/flags:experimental_proto_descriptor_sets_include_source_info": True},
+        config_settings = {"@@//bazel/flags:experimental_proto_descriptor_sets_include_source_info": "true"},
     )
 
 def _test_experimental_proto_descriptor_sets_include_source_info_impl(env, target):

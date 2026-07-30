@@ -31,9 +31,13 @@ std::string ToPreproc(absl::string_view str) {
 
 }  // namespace
 
-bool IsDescriptorProto(absl::string_view filename) {
+bool IsReflectionBootstrapProto(absl::string_view filename) {
   return filename == "net/proto2/proto/descriptor.proto" ||
-         filename == "google/protobuf/descriptor.proto";
+         filename == "google/protobuf/descriptor.proto" ||
+         filename == "src/google/protobuf/descriptor.proto" ||
+         filename == "third_party/protobuf/json_enumvalue_options.proto" ||
+         filename == "google/protobuf/json_enumvalue_options.proto" ||
+         filename == "src/google/protobuf/json_enumvalue_options.proto";
 }
 
 std::string StripExtension(absl::string_view fname) {

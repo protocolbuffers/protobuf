@@ -14,6 +14,7 @@
 #include <memory>
 #include <string>
 
+#include "absl/log/absl_check.h"
 #include "upb/base/descriptor_constants.h"
 #include "upb/base/status.hpp"
 #include "upb/base/string_view.h"
@@ -27,7 +28,6 @@
 #include "upb/reflection/descriptor_bootstrap.h"
 #include "upb/reflection/internal/def_pool.h"
 #include "upb/reflection/internal/enum_def.h"
-#include "upb/reflection/message.h"
 
 // Must be last
 #include "upb/port/def.inc"
@@ -65,7 +65,9 @@ class FieldDefPtr {
   std::string MiniDescriptorEncode() const {
     upb::Arena arena;
     upb_StringView md;
-    upb_FieldDef_MiniDescriptorEncode(ptr_, arena.ptr(), &md);
+    // TODO: Change to absl::ThrowStdBadAlloc once our min absl version is above
+    // 202603
+    ABSL_CHECK(upb_FieldDef_MiniDescriptorEncode(ptr_, arena.ptr(), &md));
     return std::string(md.data, md.size);
   }
 
@@ -207,7 +209,9 @@ class MessageDefPtr {
   std::string MiniDescriptorEncode() const {
     upb::Arena arena;
     upb_StringView md;
-    upb_MessageDef_MiniDescriptorEncode(ptr_, arena.ptr(), &md);
+    // TODO: Change to absl::ThrowStdBadAlloc once our min absl version is above
+    // 202603
+    ABSL_CHECK(upb_MessageDef_MiniDescriptorEncode(ptr_, arena.ptr(), &md));
     return std::string(md.data, md.size);
   }
 
@@ -401,6 +405,7 @@ class EnumValDefPtr {
 
   int32_t number() const { return upb_EnumValueDef_Number(ptr_); }
   const char* full_name() const { return upb_EnumValueDef_FullName(ptr_); }
+  const char* json_name() const { return upb_EnumValueDef_JsonName(ptr_); }
   const char* name() const { return upb_EnumValueDef_Name(ptr_); }
 
  private:
@@ -423,7 +428,9 @@ class EnumDefPtr {
   std::string MiniDescriptorEncode() const {
     upb::Arena arena;
     upb_StringView md;
-    upb_EnumDef_MiniDescriptorEncode(ptr_, arena.ptr(), &md);
+    // TODO: Change to absl::ThrowStdBadAlloc once our min absl version is above
+    // 202603
+    ABSL_CHECK(upb_EnumDef_MiniDescriptorEncode(ptr_, arena.ptr(), &md));
     return std::string(md.data, md.size);
   }
 
@@ -450,6 +457,10 @@ class EnumDefPtr {
   int value_count() const { return upb_EnumDef_ValueCount(ptr_); }
   EnumValDefPtr value(int i) const {
     return EnumValDefPtr(upb_EnumDef_Value(ptr_, i));
+  }
+
+  EnumValDefPtr FindValueByJsonName(const char* name) const {
+    return EnumValDefPtr(upb_EnumDef_FindByJsonName(ptr_, name));
   }
 
   // Lookups from name to integer, returning true if found.
