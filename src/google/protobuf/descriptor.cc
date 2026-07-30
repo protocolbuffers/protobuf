@@ -1735,9 +1735,10 @@ inline auto FileDescriptorTables::FindNestedSymbol(
 
 Symbol DescriptorPool::Tables::FindByNameHelper(const DescriptorPool* pool,
                                                 absl::string_view name) {
-  if (pool->mutex_ != nullptr) {
+  absl::Mutex* const pool_mutex = pool->mutex_;
+  if (pool_mutex != nullptr) {
     // Fast path: the Symbol is already cached.  This is just a hash lookup.
-    absl::ReaderMutexLock lock(pool->mutex_);
+    absl::ReaderMutexLock lock(pool_mutex);
     if (known_bad_symbols_.empty() && known_bad_files_.empty()) {
       Symbol result = FindSymbol(name);
       if (!result.IsNull()) return result;
@@ -1746,17 +1747,19 @@ Symbol DescriptorPool::Tables::FindByNameHelper(const DescriptorPool* pool,
   DescriptorPool::DeferredValidation deferred_validation(pool);
   Symbol result;
   {
-    absl::MutexLockMaybe lock(pool->mutex_);
+    absl::MutexLockMaybe lock(pool_mutex);
     if (pool->fallback_database_ != nullptr) {
       known_bad_symbols_.clear();
       known_bad_files_.clear();
     }
     result = FindSymbol(name);
 
-    if (result.IsNull() && pool->underlay_ != nullptr) {
-      // Symbol not found; check the underlay.
-      result =
-          pool->underlay_->tables_->FindByNameHelper(pool->underlay_, name);
+    if (result.IsNull()) {
+      if (const DescriptorPool* pool_underlay = pool->underlay_;
+          pool_underlay != nullptr) {
+        // Symbol not found; check the underlay.
+        result = pool_underlay->tables_->FindByNameHelper(pool_underlay, name);
+      }
     }
 
     if (result.IsNull()) {
