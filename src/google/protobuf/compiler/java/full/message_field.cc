@@ -20,6 +20,7 @@
 #include "google/protobuf/compiler/java/doc_comment.h"
 #include "google/protobuf/compiler/java/field_common.h"
 #include "google/protobuf/compiler/java/helpers.h"
+#include "google/protobuf/compiler/java/full/field_generator.h"
 #include "google/protobuf/compiler/java/name_resolver.h"
 #include "google/protobuf/io/printer.h"
 #include "google/protobuf/wire_format.h"
@@ -92,11 +93,8 @@ void SetMessageVariables(
 ImmutableMessageFieldGenerator::ImmutableMessageFieldGenerator(
     const FieldDescriptor* descriptor, int messageBitIndex, int builderBitIndex,
     Context* context)
-    : descriptor_(descriptor),
-      message_bit_index_(messageBitIndex),
-      builder_bit_index_(builderBitIndex),
-      name_resolver_(context->GetNameResolver()),
-      context_(context) {
+    : ImmutableFieldGenerator(descriptor, messageBitIndex, builderBitIndex,
+                              context) {
   SetMessageVariables(descriptor, messageBitIndex, builderBitIndex,
                       context->GetFieldGeneratorInfo(descriptor),
                       name_resolver_, &variables_, context);
@@ -104,18 +102,9 @@ ImmutableMessageFieldGenerator::ImmutableMessageFieldGenerator(
 
 ImmutableMessageFieldGenerator::~ImmutableMessageFieldGenerator() = default;
 
-int ImmutableMessageFieldGenerator::GetMessageBitIndex() const {
-  return message_bit_index_;
-}
-
-int ImmutableMessageFieldGenerator::GetBuilderBitIndex() const {
-  return builder_bit_index_;
-}
-
 int ImmutableMessageFieldGenerator::GetNumBitsForMessage() const {
   return HasHasbit(descriptor_) ? 1 : 0;
 }
-
 void ImmutableMessageFieldGenerator::GenerateInterfaceMembers(
     io::Printer* printer) const {
   // TODO: In the future, consider having a method specific to the

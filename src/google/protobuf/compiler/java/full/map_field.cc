@@ -16,6 +16,7 @@
 #include "google/protobuf/compiler/java/doc_comment.h"
 #include "google/protobuf/compiler/java/field_common.h"
 #include "google/protobuf/compiler/java/helpers.h"
+#include "google/protobuf/compiler/java/full/field_generator.h"
 #include "google/protobuf/compiler/java/internal_helpers.h"
 #include "google/protobuf/compiler/java/name_resolver.h"
 #include "google/protobuf/io/printer.h"
@@ -53,11 +54,8 @@ std::string WireType(const FieldDescriptor* field) {
 ImmutableMapFieldGenerator::ImmutableMapFieldGenerator(
     const FieldDescriptor* descriptor, int messageBitIndex, int builderBitIndex,
     Context* context)
-    : descriptor_(descriptor),
-      message_bit_index_(messageBitIndex),
-      builder_bit_index_(builderBitIndex),
-      name_resolver_(context->GetNameResolver()),
-      context_(context) {
+    : ImmutableFieldGenerator(descriptor, messageBitIndex, builderBitIndex,
+                              context) {
   SetMessageVariables(context->GetFieldGeneratorInfo(descriptor));
 }
 
@@ -175,16 +173,7 @@ void ImmutableMapFieldGenerator::SetMessageVariables(
       absl::StrCat(GenerateClearBit(builder_bit_index_), ";");
 }
 
-int ImmutableMapFieldGenerator::GetMessageBitIndex() const {
-  return message_bit_index_;
-}
-
-int ImmutableMapFieldGenerator::GetBuilderBitIndex() const {
-  return builder_bit_index_;
-}
-
 int ImmutableMapFieldGenerator::GetNumBitsForMessage() const { return 0; }
-
 void ImmutableMapFieldGenerator::GenerateInterfaceMembers(
     io::Printer* printer) const {
   WriteFieldDocComment(printer, descriptor_, context_->options());
