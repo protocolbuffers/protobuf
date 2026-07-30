@@ -507,6 +507,12 @@ alias(
 )
 
 alias(
+    name = "json_enumvalue_options_proto_srcs",
+    actual = "//src/google/protobuf:json_enumvalue_options_proto_srcs",
+    visibility = ["//visibility:public"],
+)
+
+alias(
     name = "json_enumvalue_options_cc_proto",
     actual = "//src/google/protobuf:json_enumvalue_options_cc_proto",
     visibility = ["//visibility:public"],

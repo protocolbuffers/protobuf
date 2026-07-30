@@ -681,8 +681,46 @@ Error, UINTPTR_MAX is undefined
 #define _UPB_CONSTRUCTOR_PLACEHOLDER(unique_name)
 #endif
 
+<<<<<<< HEAD
 #if defined(__ELF__) || defined(__wasm__) || defined(__MACH__)
 #define UPB_CONSTRUCTOR(name, unique_name)                                   \
+=======
+#define _UPB_STRINGIFY2(x) #x
+#define _UPB_STRINGIFY(x) _UPB_STRINGIFY2(x)
+
+#if defined(__ELF__) && (UPB_GNUC_MIN(15, 1) || UPB_CLANG_MIN(21, 1))
+/*
+ * Workaround for b/456308964 and b/456317163. Although weak constructors
+ * resolve to a single function body, Clang still emits a pointer into
+ * .init_array for every translation unit, causing the constructor to be
+ * executed multiple times and inflating binary size. We wrap the .init_array
+ * entry in a COMDAT group (using inline assembly) to force the linker to
+ * deduplicate the pointer to exactly one instance. %cc is used in preference to
+ * the more widely available %c because %c may under some circumstances still
+ * output a function name including relocation information, which will then
+ * confuse the linker. This was only a problem on gcc; when %cc was introduced
+ * to clang it was just an alias to %c, and clang's %c had already done the
+ * checks that %cc introduced to gcc.
+ * References:
+ * https://github.com/gcc-mirror/gcc/commit/74d6a676034b3ab20c387f12f19f5597e4f1c9fa
+ * https://github.com/llvm/llvm-project/pull/127719#issuecomment-2686276305
+ */
+#define UPB_CONSTRUCTOR(name, unique_name, ...)                             \
+  _UPB_CONSTRUCTOR_PLACEHOLDER(unique_name)                                 \
+  __attribute__((weak, used, visibility("hidden"))) void UPB_PRIVATE(name)( \
+      void) {                                                               \
+    __asm__ volatile(                                                       \
+        ".pushsection .init_array,\"awG\",%%init_array, %cc0, comdat\n"     \
+        ".dc.a %cc0\n"                                                      \
+        ".popsection\n"                                                     \
+        :                                                                   \
+        : "X"(UPB_PRIVATE(name)));                                          \
+    __VA_ARGS__                                                             \
+  }
+#elif defined(__ELF__) || defined(__wasm__) || defined(__MACH__) || \
+    defined(__MINGW32__)
+#define UPB_CONSTRUCTOR(name, unique_name, ...)                              \
+>>>>>>> 8111a7473d (json/upb: Implement json EnumValueName for upb)
   _UPB_CONSTRUCTOR_PLACEHOLDER(unique_name)                                  \
   __attribute__((weak, visibility("hidden"), constructor)) void UPB_PRIVATE( \
       name)(void)
@@ -706,7 +744,17 @@ Error, UINTPTR_MAX is undefined
 
 #else
 // No constructor support, nothing we can do except not break builds.
+<<<<<<< HEAD
 #define UPB_CONSTRUCTOR(name, unique_name) static void UPB_PRIVATE(name)(void)
+=======
+#if defined(__GNUC__) || defined(__clang__)
+#define UPB_CONSTRUCTOR(name, unique_name, ...) \
+  static __attribute__((used)) void UPB_PRIVATE(name)(void) { __VA_ARGS__ }
+#else
+#define UPB_CONSTRUCTOR(name, unique_name, ...) \
+  static void UPB_PRIVATE(name)(void) { __VA_ARGS__ }
+>>>>>>> 8111a7473d (json/upb: Implement json EnumValueName for upb)
+#endif
 #endif
 
 //

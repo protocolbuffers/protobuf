@@ -401,6 +401,7 @@ class EnumValDefPtr {
 
   int32_t number() const { return upb_EnumValueDef_Number(ptr_); }
   const char* full_name() const { return upb_EnumValueDef_FullName(ptr_); }
+  const char* json_name() const { return upb_EnumValueDef_JsonName(ptr_); }
   const char* name() const { return upb_EnumValueDef_Name(ptr_); }
 
  private:
@@ -450,6 +451,10 @@ class EnumDefPtr {
   int value_count() const { return upb_EnumDef_ValueCount(ptr_); }
   EnumValDefPtr value(int i) const {
     return EnumValDefPtr(upb_EnumDef_Value(ptr_, i));
+  }
+
+  EnumValDefPtr FindValueByJsonName(const char* name) const {
+    return EnumValDefPtr(upb_EnumDef_FindByJsonName(ptr_, name));
   }
 
   // Lookups from name to integer, returning true if found.
