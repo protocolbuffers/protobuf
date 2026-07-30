@@ -242,19 +242,13 @@ void ImmutableMessageFieldGenerator::GenerateBuilderMembers(
 
   // Field.Builder setField(Field.Builder builderForValue)
   WriteFieldDocComment(printer, descriptor_, context_->options());
-  PrintNestedBuilderFunction(
-      printer,
-      "$deprecation$public Builder ${$set$capitalized_name$$}$(\n"
-      "    $type$.Builder builderForValue)",
-
-      "$name$_ = builderForValue.build();\n",
-
-      "$name$Builder_.setMessage(builderForValue.build());\n",
-
-      "$set_has_field_bit_builder$\n"
-      "$on_changed$\n"
-      "return this;\n",
-      Semantic::kSet);
+  printer->Print(variables_,
+                 "$deprecation$public Builder ${$set$capitalized_name$$}$(\n"
+                 "    $type$.Builder builderForValue) {\n"
+                 "  java.util.Objects.requireNonNull(builderForValue);\n"
+                 "  return set$capitalized_name$(builderForValue.build());\n"
+                 "}\n");
+  printer->Annotate("{", "}", descriptor_, Semantic::kSet);
 
   // Message.Builder mergeField(Field value)
   WriteFieldDocComment(printer, descriptor_, context_->options());
@@ -576,19 +570,13 @@ void ImmutableMessageOneofFieldGenerator::GenerateBuilderMembers(
 
   // Field.Builder setField(Field.Builder builderForValue)
   WriteFieldDocComment(printer, descriptor_, context_->options());
-  PrintNestedBuilderFunction(
-      printer,
-      "$deprecation$public Builder ${$set$capitalized_name$$}$(\n"
-      "    $type$.Builder builderForValue)",
-
-      "$oneof_name$_ = builderForValue.build();\n"
-      "$on_changed$\n",
-
-      "$name$Builder_.setMessage(builderForValue.build());\n",
-
-      "$set_oneof_case_message$;\n"
-      "return this;\n",
-      Semantic::kSet);
+  printer->Print(variables_,
+                 "$deprecation$public Builder ${$set$capitalized_name$$}$(\n"
+                 "    $type$.Builder builderForValue) {\n"
+                 "  java.util.Objects.requireNonNull(builderForValue);\n"
+                 "  return set$capitalized_name$(builderForValue.build());\n"
+                 "}\n");
+  printer->Annotate("{", "}", descriptor_, Semantic::kSet);
 
   // Field.Builder mergeField(Field value)
   WriteFieldDocComment(printer, descriptor_, context_->options());
@@ -967,18 +955,14 @@ void RepeatedImmutableMessageFieldGenerator::GenerateBuilderMembers(
 
   // Builder setRepeatedField(int index, Field.Builder builderForValue)
   WriteFieldDocComment(printer, descriptor_, context_->options());
-  PrintNestedBuilderFunction(
-      printer,
+  printer->Print(
+      variables_,
       "$deprecation$public Builder ${$set$capitalized_name$$}$(\n"
-      "    int index, $type$.Builder builderForValue)",
-
-      "ensure$capitalized_name$IsMutable();\n"
-      "$name$_.set(index, builderForValue.build());\n"
-      "$on_changed$\n",
-
-      "$name$Builder_.setMessage(index, builderForValue.build());\n",
-
-      "return this;\n", Semantic::kSet);
+      "    int index, $type$.Builder builderForValue) {\n"
+      "  java.util.Objects.requireNonNull(builderForValue);\n"
+      "  return set$capitalized_name$(index, builderForValue.build());\n"
+      "}\n");
+  printer->Annotate("{", "}", descriptor_, Semantic::kSet);
 
   // Builder addRepeatedField(Field value)
   WriteFieldDocComment(printer, descriptor_, context_->options());
@@ -1014,33 +998,24 @@ void RepeatedImmutableMessageFieldGenerator::GenerateBuilderMembers(
 
   // Builder addRepeatedField(Field.Builder builderForValue)
   WriteFieldDocComment(printer, descriptor_, context_->options());
-  PrintNestedBuilderFunction(
-      printer,
-      "$deprecation$public Builder ${$add$capitalized_name$$}$(\n"
-      "    $type$.Builder builderForValue)",
-
-      "ensure$capitalized_name$IsMutable();\n"
-      "$name$_.add(builderForValue.build());\n"
-      "$on_changed$\n",
-
-      "$name$Builder_.addMessage(builderForValue.build());\n",
-
-      "return this;\n", Semantic::kSet);
+  printer->Print(variables_,
+                 "$deprecation$public Builder ${$add$capitalized_name$$}$(\n"
+                 "    $type$.Builder builderForValue) {\n"
+                 "  java.util.Objects.requireNonNull(builderForValue);\n"
+                 "  return add$capitalized_name$(builderForValue.build());\n"
+                 "}\n");
+  printer->Annotate("{", "}", descriptor_, Semantic::kSet);
 
   // Builder addRepeatedField(int index, Field.Builder builderForValue)
   WriteFieldDocComment(printer, descriptor_, context_->options());
-  PrintNestedBuilderFunction(
-      printer,
+  printer->Print(
+      variables_,
       "$deprecation$public Builder ${$add$capitalized_name$$}$(\n"
-      "    int index, $type$.Builder builderForValue)",
-
-      "ensure$capitalized_name$IsMutable();\n"
-      "$name$_.add(index, builderForValue.build());\n"
-      "$on_changed$\n",
-
-      "$name$Builder_.addMessage(index, builderForValue.build());\n",
-
-      "return this;\n", Semantic::kSet);
+      "    int index, $type$.Builder builderForValue) {\n"
+      "  java.util.Objects.requireNonNull(builderForValue);\n"
+      "  return add$capitalized_name$(index, builderForValue.build());\n"
+      "}\n");
+  printer->Annotate("{", "}", descriptor_, Semantic::kSet);
 
   // Builder addAllRepeatedField(Iterable<Field> values)
   WriteFieldDocComment(printer, descriptor_, context_->options());
