@@ -51,6 +51,7 @@ class PROTOC_EXPORT FileGenerator {
   // info_path, if non-empty, should be the path (relative to printer's
   // output) to the metadata file describing this proto header.
   void GenerateProtoHeader(io::Printer* p, absl::string_view info_path);
+  void GenerateProtoFwdHeader(io::Printer* p);
   // info_path, if non-empty, should be the path (relative to printer's
   // output) to the metadata file describing this PB header.
   void GeneratePBHeader(io::Printer* p, absl::string_view info_path);
