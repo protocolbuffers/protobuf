@@ -137,6 +137,22 @@ TEST_F(PhpGeneratorTest, ImportPublic) {
   ExpectNoErrors();
 }
 
+// TODO Remove this test once full Edition 2026 support is in PHP
+TEST_F(PhpGeneratorTest, Edition2026Fails) {
+  CreateTempFile("foo.proto",
+                 R"schema(
+    edition = "2026";
+    enum Foo {
+      BAR = 0;
+    })schema");
+
+  RunProtoc(
+      "protocol_compiler --proto_path=$tmpdir --php_out=$tmpdir foo.proto");
+
+  ExpectErrorSubstring(
+      "PHP does not yet fully support Edition 2026, but is coming soon.");
+}
+
 }  // namespace
 }  // namespace php
 }  // namespace compiler

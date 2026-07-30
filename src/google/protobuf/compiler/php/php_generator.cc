@@ -2212,6 +2212,12 @@ bool Generator::Generate(const FileDescriptor* file, const Options& options,
         "Can only generate PHP code for google/protobuf/descriptor.proto.\n";
     return false;
   }
+  // TODO Remove once full Edition 2026 support is in PHP
+  if (GetEdition(*file) >= Edition::EDITION_2026) {
+    *error =
+        "PHP does not yet fully support Edition 2026, but is coming soon.\n";
+    return false;
+  }
 
   return GenerateFile(file, options, generator_context, error);
 }
