@@ -66,6 +66,7 @@ cc_library(
         "@abseil-cpp//absl/container:flat_hash_set",
         "@abseil-cpp//absl/log:absl_log",
         "@abseil-cpp//absl/strings",
+        "@abseil-cpp//absl/strings:charset",
     ],
 )
 
