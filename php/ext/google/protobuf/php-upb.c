@@ -38,6 +38,13 @@
 #define UPB_GNUC_MIN(x, y) 0
 #endif
 
+#if defined(__clang__) && defined(__clang_major__) && defined(__clang_minor__)
+#define UPB_CLANG_MIN(x, y) \
+  (__clang_major__ > (x) || __clang_major__ == (x) && __clang_minor__ >= (y))
+#else
+#define UPB_CLANG_MIN(x, y) 0
+#endif
+
 // Macros for checking for compiler attributes, defined here to avoid the
 // problem described in
 // https://gcc.gnu.org/onlinedocs/cpp/_005f_005fhas_005fattribute.html.
@@ -602,10 +609,12 @@ Error, UINTPTR_MAX is undefined
 #define UPB_LINKARR_APPEND(name) \
   __attribute__((                \
       section("linkarr_" #name))) UPB_LINKARR_ATTR UPB_NO_SANITIZE_ADDRESS
-#define UPB_LINKARR_DECLARE(name, type) \
-  extern type __start_linkarr_##name;   \
-  extern type __stop_linkarr_##name;    \
-  UPB_LINKARR_APPEND(name)              \
+#define UPB_LINKARR_DECLARE(name, type)                                       \
+  UPB_STATIC_ASSERT(sizeof("__la_" #name) <= 17,                              \
+                    "Linker array name too long for Mach-O (16-char limit)"); \
+  extern type __start_linkarr_##name;                                         \
+  extern type __stop_linkarr_##name;                                          \
+  UPB_LINKARR_APPEND(name)                                                    \
   UPB_LINKARR_SENTINEL type UPB_linkarr_internal_empty_##name[1]
 #define UPB_LINKARR_START(name) (&__start_linkarr_##name)
 #define UPB_LINKARR_STOP(name) (&__stop_linkarr_##name)
@@ -616,13 +625,15 @@ Error, UINTPTR_MAX is undefined
 #define UPB_LINKARR_APPEND(name) \
   __attribute__((                \
       section("__DATA,__la_" #name))) UPB_LINKARR_ATTR UPB_NO_SANITIZE_ADDRESS
-#define UPB_LINKARR_DECLARE(name, type)     \
-  extern type __start_linkarr_##name __asm( \
-      "section$start$__DATA$__la_" #name);  \
-  extern type __stop_linkarr_##name __asm(  \
-      "section$end$__DATA$"                 \
-      "__la_" #name);                       \
-  UPB_LINKARR_APPEND(name)                  \
+#define UPB_LINKARR_DECLARE(name, type)                                       \
+  UPB_STATIC_ASSERT(sizeof("__la_" #name) <= 17,                              \
+                    "Linker array name too long for Mach-O (16-char limit)"); \
+  extern type __start_linkarr_##name __asm(                                   \
+      "section$start$__DATA$__la_" #name);                                    \
+  extern type __stop_linkarr_##name __asm(                                    \
+      "section$end$__DATA$"                                                   \
+      "__la_" #name);                                                         \
+  UPB_LINKARR_APPEND(name)                                                    \
   UPB_LINKARR_SENTINEL type UPB_linkarr_internal_empty_##name[1]
 #define UPB_LINKARR_START(name) (&__start_linkarr_##name)
 #define UPB_LINKARR_STOP(name) (&__stop_linkarr_##name)
@@ -660,7 +671,9 @@ Error, UINTPTR_MAX is undefined
 
 // Linker arrays are not supported on this platform.  Make macros no-ops.
 #define UPB_LINKARR_APPEND(name)
-#define UPB_LINKARR_DECLARE(name, type)
+#define UPB_LINKARR_DECLARE(name, type)          \
+  UPB_STATIC_ASSERT(sizeof("__la_" #name) <= 17, \
+                    "Linker array name too long for Mach-O (16-char limit)")
 #define UPB_LINKARR_START(name) (NULL)
 #define UPB_LINKARR_STOP(name) (NULL)
 
@@ -677,11 +690,46 @@ Error, UINTPTR_MAX is undefined
 #define _UPB_CONSTRUCTOR_PLACEHOLDER(unique_name)
 #endif
 
-#if defined(__ELF__) || defined(__wasm__) || defined(__MACH__)
-#define UPB_CONSTRUCTOR(name, unique_name)                                   \
+#define _UPB_STRINGIFY2(x) #x
+#define _UPB_STRINGIFY(x) _UPB_STRINGIFY2(x)
+
+#if defined(__ELF__) && (UPB_GNUC_MIN(15, 1) || UPB_CLANG_MIN(21, 1))
+/*
+ * Workaround for b/456308964 and b/456317163. Although weak constructors
+ * resolve to a single function body, Clang still emits a pointer into
+ * .init_array for every translation unit, causing the constructor to be
+ * executed multiple times and inflating binary size. We wrap the .init_array
+ * entry in a COMDAT group (using inline assembly) to force the linker to
+ * deduplicate the pointer to exactly one instance. %cc is used in preference to
+ * the more widely available %c because %c may under some circumstances still
+ * output a function name including relocation information, which will then
+ * confuse the linker. This was only a problem on gcc; when %cc was introduced
+ * to clang it was just an alias to %c, and clang's %c had already done the
+ * checks that %cc introduced to gcc.
+ * References:
+ * https://github.com/gcc-mirror/gcc/commit/74d6a676034b3ab20c387f12f19f5597e4f1c9fa
+ * https://github.com/llvm/llvm-project/pull/127719#issuecomment-2686276305
+ */
+#define UPB_CONSTRUCTOR(name, unique_name, ...)                             \
+  _UPB_CONSTRUCTOR_PLACEHOLDER(unique_name)                                 \
+  __attribute__((weak, used, visibility("hidden"))) void UPB_PRIVATE(name)( \
+      void) {                                                               \
+    __asm__ volatile(                                                       \
+        ".pushsection .init_array,\"awG\",%%init_array, %cc0, comdat\n"     \
+        ".dc.a %cc0\n"                                                      \
+        ".popsection\n"                                                     \
+        :                                                                   \
+        : "X"(UPB_PRIVATE(name)));                                          \
+    __VA_ARGS__                                                             \
+  }
+#elif defined(__ELF__) || defined(__wasm__) || defined(__MACH__) || \
+    defined(__MINGW32__)
+#define UPB_CONSTRUCTOR(name, unique_name, ...)                              \
   _UPB_CONSTRUCTOR_PLACEHOLDER(unique_name)                                  \
   __attribute__((weak, visibility("hidden"), constructor)) void UPB_PRIVATE( \
-      name)(void)
+      name)(void) {                                                          \
+    __VA_ARGS__                                                              \
+  }
 #elif defined(_MSC_VER)
 /*
  * See: https://stackoverflow.com/questions/1113409
@@ -692,17 +740,22 @@ Error, UINTPTR_MAX is undefined
  * create a dummy exported weak symbol that prevent this stripping.
  */
 #pragma section(".CRT$XCT", read)
-#define UPB_CONSTRUCTOR(name, unique_name)                                   \
+#define UPB_CONSTRUCTOR(name, unique_name, ...)                              \
   static void __cdecl UPB_PRIVATE(name)(void);                               \
   __declspec(allocate(".CRT$XCT"), selectany) void(                          \
       __cdecl * UPB_PRIVATE(name##_))(void) = UPB_PRIVATE(name);             \
   __declspec(selectany, dllexport) void* UPB_PRIVATE(name##_force_linkage) = \
       &UPB_PRIVATE(name##_);                                                 \
-  static void __cdecl UPB_PRIVATE(name)(void)
-
+  static void __cdecl UPB_PRIVATE(name)(void) { __VA_ARGS__ }
 #else
 // No constructor support, nothing we can do except not break builds.
-#define UPB_CONSTRUCTOR(name, unique_name) static void UPB_PRIVATE(name)(void)
+#if defined(__GNUC__) || defined(__clang__)
+#define UPB_CONSTRUCTOR(name, unique_name, ...) \
+  static __attribute__((used)) void UPB_PRIVATE(name)(void) { __VA_ARGS__ }
+#else
+#define UPB_CONSTRUCTOR(name, unique_name, ...) \
+  static void UPB_PRIVATE(name)(void) { __VA_ARGS__ }
+#endif
 #endif
 
 //
@@ -740,9 +793,9 @@ Error, UINTPTR_MAX is undefined
 
 #elif defined(__ELF__) || defined(__wasm__)
 
-// On ELF, weak aliases work properly, so we can have all weak MiniTables point
-// to the same empty singleton MiniTable. This reduces code size if many
-// MiniTables are tree shaken.
+  // On ELF, weak aliases work properly, so we can have all weak MiniTables
+  // point to the same empty singleton MiniTable. This reduces code size if many
+  // MiniTables are tree shaken.
 #define UPB_WEAK_SINGLETON_PLACEHOLDER_MINITABLE()               \
   __attribute__((weak))                                          \
   const upb_MiniTable kUpb_WeakSingletonPlaceholderMiniTable = { \
@@ -2389,7 +2442,7 @@ const upb_MiniTableEnum google__protobuf__SymbolVisibility_enum_init = {
     },
 };
 
-static const upb_MiniTable *messages_layout[35] = {
+static const upb_MiniTable *messages_layout_google_protobuf_descriptor_proto_upb_file_layout[35] = {
   &google__protobuf__FileDescriptorSet_msg_init,
   &google__protobuf__FileDescriptorProto_msg_init,
   &google__protobuf__DescriptorProto_msg_init,
@@ -2427,7 +2480,7 @@ static const upb_MiniTable *messages_layout[35] = {
   &google__protobuf__GeneratedCodeInfo__Annotation_msg_init,
 };
 
-static const upb_MiniTableEnum *enums_layout[21] = {
+static const upb_MiniTableEnum *enums_layout_google_protobuf_descriptor_proto_upb_file_layout[21] = {
   &google__protobuf__Edition_enum_init,
   &google__protobuf__ExtensionRangeOptions__VerificationState_enum_init,
   &google__protobuf__FeatureSet__EnforceNamingStyle_enum_init,
@@ -2452,8 +2505,8 @@ static const upb_MiniTableEnum *enums_layout[21] = {
 };
 
 const upb_MiniTableFile google_protobuf_descriptor_proto_upb_file_layout = {
-  messages_layout,
-  enums_layout,
+  messages_layout_google_protobuf_descriptor_proto_upb_file_layout,
+  enums_layout_google_protobuf_descriptor_proto_upb_file_layout,
   NULL,
   35,
   21,
@@ -2471,7 +2524,7 @@ const upb_MiniTableFile google_protobuf_descriptor_proto_upb_file_layout = {
 
 
 
-static const char descriptor[14056] = {
+static const char descriptor_google_protobuf_descriptor_proto_upbdefinit[14056] = {
     '\n', ' ', 'g', 'o', 'o', 'g', 'l', 'e', '/', 'p', 'r', 'o',
     't', 'o', 'b', 'u', 'f', '/', 'd', 'e', 's', 'c', 'r', 'i',
     'p', 't', 'o', 'r', '.', 'p', 'r', 'o', 't', 'o', '\022', '\017',
@@ -3646,15 +3699,142 @@ static const char descriptor[14056] = {
     't', 'i', 'o', 'n',
 };
 
-static _upb_DefPool_Init *deps[1] = {
+static _upb_DefPool_Init* deps_google_protobuf_descriptor_proto_upbdefinit[1] = {
     NULL,
 };
 
 _upb_DefPool_Init google_protobuf_descriptor_proto_upbdefinit = {
-    deps,
+    deps_google_protobuf_descriptor_proto_upbdefinit,
     &google_protobuf_descriptor_proto_upb_file_layout,
     "google/protobuf/descriptor.proto",
-    UPB_STRINGVIEW_INIT(descriptor, sizeof(descriptor)),
+    UPB_STRINGVIEW_INIT(descriptor_google_protobuf_descriptor_proto_upbdefinit,
+                        sizeof(descriptor_google_protobuf_descriptor_proto_upbdefinit)),
+};
+
+/* This file was generated by upb_generator from the input file:
+ *
+ *     google/protobuf/json_enumvalue_options.proto
+ *
+ * Do not edit -- your changes will be discarded when the file is
+ * regenerated.
+ * NO CHECKED-IN PROTOBUF GENCODE */
+
+#include <stddef.h>
+
+// Must be last.
+
+extern const UPB_PRIVATE(upb_GeneratedExtensionListEntry)* UPB_PRIVATE(upb_generated_extension_list);
+typedef struct {
+  upb_MiniTableField fields[1];
+} pb__enumvalue__JsonEnumValueOptions_msg_init_Fields;
+
+static const pb__enumvalue__JsonEnumValueOptions_msg_init_Fields pb_enumvalue_JsonEnumValueOptions__fields = {{
+  {1, UPB_SIZE(12, 16), 64, kUpb_NoSub, 9, (int)kUpb_FieldMode_Scalar | ((int)kUpb_FieldRep_StringView << kUpb_FieldRep_Shift)},
+}};
+
+const upb_MiniTable pb__enumvalue__JsonEnumValueOptions_msg_init = {
+  &pb_enumvalue_JsonEnumValueOptions__fields.fields[0],
+  UPB_SIZE(24, 32), 1, kUpb_ExtMode_NonExtendable, 1, UPB_FASTTABLE_MASK(8), 0,
+#ifdef UPB_TRACING_ENABLED
+  "pb.enumvalue.JsonEnumValueOptions",
+#endif
+  UPB_FASTTABLE_INIT({
+    {0x0000000000000000, &_upb_FastDecoder_DecodeUnknown},
+    {0x001000000000000a, &upb_DecodeFast_String_Scalar_Tag1Byte},
+  })
+};
+
+static const upb_MiniTableExtension pb_enumvalue_json_ext_obj = {
+  {998, 0, 0, UPB_SIZE(3, 4), 11, (int)kUpb_FieldMode_Scalar | (int)kUpb_LabelFlags_IsExtension | ((int)UPB_SIZE(kUpb_FieldRep_4Byte, kUpb_FieldRep_8Byte) << kUpb_FieldRep_Shift)},
+  {.UPB_PRIVATE(submsg) = &pb__enumvalue__JsonEnumValueOptions_msg_init},
+  &google__protobuf__EnumValueOptions_msg_init,
+
+};
+UPB_LINKARR_APPEND(upb_AllExts)
+const upb_MiniTableExtension* pb_enumvalue_json_ext = &pb_enumvalue_json_ext_obj;
+  static const upb_MiniTable *messages_layout_google_protobuf_json_enumvalue_options_proto_upb_file_layout[1] = {
+  &pb__enumvalue__JsonEnumValueOptions_msg_init,
+};
+
+
+static const upb_MiniTableExtension *extensions_layout_google_protobuf_json_enumvalue_options_proto_upb_file_layout[1] = {
+  &pb_enumvalue_json_ext_obj,
+};
+
+UPB_LINKARR_DECLARE(upb_AllExts, const upb_MiniTableExtension*);
+UPB_CONSTRUCTOR(upb_GeneratedRegistry_Constructor, google_protobuf_json_enumvalue_options_proto_ext_constructor, {
+  static bool finished = false;
+  if (finished) return;
+  finished = true;
+  static UPB_PRIVATE(upb_GeneratedExtensionListEntry) entry = {
+    UPB_LINKARR_START(upb_AllExts),
+    UPB_LINKARR_STOP(upb_AllExts),
+    NULL
+  };
+  UPB_ASSERT(entry.next == NULL);
+  entry.next = UPB_PRIVATE(upb_generated_extension_list);
+  UPB_PRIVATE(upb_generated_extension_list) = &entry;
+})
+const upb_MiniTableFile google_protobuf_json_enumvalue_options_proto_upb_file_layout = {
+  messages_layout_google_protobuf_json_enumvalue_options_proto_upb_file_layout,
+  NULL,
+  extensions_layout_google_protobuf_json_enumvalue_options_proto_upb_file_layout,
+  1,
+  0,
+  1,
+};
+
+
+/* This file was generated by upb_generator from the input file:
+ *
+ *     google/protobuf/json_enumvalue_options.proto
+ *
+ * Do not edit -- your changes will be discarded when the file is
+ * regenerated.
+ * NO CHECKED-IN PROTOBUF GENCODE */
+
+
+
+extern _upb_DefPool_Init google_protobuf_descriptor_proto_upbdefinit;
+
+static const char descriptor_google_protobuf_json_enumvalue_options_proto_upbdefinit[285] = {
+    '\n', ',', 'g', 'o', 'o', 'g', 'l', 'e', '/', 'p', 'r', 'o',
+    't', 'o', 'b', 'u', 'f', '/', 'j', 's', 'o', 'n', '_', 'e',
+    'n', 'u', 'm', 'v', 'a', 'l', 'u', 'e', '_', 'o', 'p', 't',
+    'i', 'o', 'n', 's', '.', 'p', 'r', 'o', 't', 'o', '\022', '\014',
+    'p', 'b', '.', 'e', 'n', 'u', 'm', 'v', 'a', 'l', 'u', 'e',
+    '\032', ' ', 'g', 'o', 'o', 'g', 'l', 'e', '/', 'p', 'r', 'o',
+    't', 'o', 'b', 'u', 'f', '/', 'd', 'e', 's', 'c', 'r', 'i',
+    'p', 't', 'o', 'r', '.', 'p', 'r', 'o', 't', 'o', '\"', '0',
+    '\n', '\024', 'J', 's', 'o', 'n', 'E', 'n', 'u', 'm', 'V', 'a',
+    'l', 'u', 'e', 'O', 'p', 't', 'i', 'o', 'n', 's', '\022', '\026',
+    '\n', '\006', 's', 't', 'r', 'i', 'n', 'g', '\030', '\001', ' ', '\001',
+    '(', '\t', 'R', '\006', 's', 't', 'r', 'i', 'n', 'g', 'X', '\001',
+    ':', 'b', '\n', '\004', 'j', 's', 'o', 'n', '\022', '!', '.', 'g',
+    'o', 'o', 'g', 'l', 'e', '.', 'p', 'r', 'o', 't', 'o', 'b',
+    'u', 'f', '.', 'E', 'n', 'u', 'm', 'V', 'a', 'l', 'u', 'e',
+    'O', 'p', 't', 'i', 'o', 'n', 's', '\030', '\346', '\007', ' ', '\001',
+    '(', '\013', '2', '\"', '.', 'p', 'b', '.', 'e', 'n', 'u', 'm',
+    'v', 'a', 'l', 'u', 'e', '.', 'J', 's', 'o', 'n', 'E', 'n',
+    'u', 'm', 'V', 'a', 'l', 'u', 'e', 'O', 'p', 't', 'i', 'o',
+    'n', 's', 'B', '\006', '\262', '\001', '\003', '\010', '\352', '\007', 'R', '\004',
+    'j', 's', 'o', 'n', 'B', '\032', '\n', '\030', 'c', 'o', 'm', '.',
+    'g', 'o', 'o', 'g', 'l', 'e', '.', 'p', 'r', 'o', 't', 'o',
+    'b', 'u', 'f', '.', 'u', 't', 'i', 'l', 'b', '\010', 'e', 'd',
+    'i', 't', 'i', 'o', 'n', 's', 'p', '\351', '\007',
+};
+
+static _upb_DefPool_Init* deps_google_protobuf_json_enumvalue_options_proto_upbdefinit[2] = {
+    &google_protobuf_descriptor_proto_upbdefinit,
+    NULL,
+};
+
+_upb_DefPool_Init google_protobuf_json_enumvalue_options_proto_upbdefinit = {
+    deps_google_protobuf_json_enumvalue_options_proto_upbdefinit,
+    &google_protobuf_json_enumvalue_options_proto_upb_file_layout,
+    "google/protobuf/json_enumvalue_options.proto",
+    UPB_STRINGVIEW_INIT(descriptor_google_protobuf_json_enumvalue_options_proto_upbdefinit,
+                        sizeof(descriptor_google_protobuf_json_enumvalue_options_proto_upbdefinit)),
 };
 
 
@@ -5403,7 +5583,7 @@ static upb_JsonMessageValue jsondec_enum(jsondec* d, const upb_FieldDef* f) {
       upb_StringView str = jsondec_string(d);
       const upb_EnumDef* e = upb_FieldDef_EnumSubDef(f);
       const upb_EnumValueDef* ev =
-          upb_EnumDef_FindValueByNameWithSize(e, str.data, str.size);
+          upb_EnumDef_FindByJsonNameWithSize(e, str.data, str.size);
       upb_JsonMessageValue val = {.ignore = false};
       if (ev) {
         val.value.int32_val = upb_EnumValueDef_Number(ev);
@@ -6181,11 +6361,12 @@ int upb_JsonDecodeDetectingNonconformance(const char* buf, size_t size,
 }
 
 
-#include <ctype.h>
 #include <float.h>
 #include <inttypes.h>
 #include <math.h>
+#include <setjmp.h>
 #include <stdarg.h>
+#include <stdint.h>
 #include <string.h>
 
 
@@ -6212,6 +6393,7 @@ static void jsonenc_msgfields(jsonenc* e, const upb_Message* msg,
                               const upb_MessageDef* m, bool first);
 static void jsonenc_value(jsonenc* e, const upb_Message* msg,
                           const upb_MessageDef* m);
+static void jsonenc_string(jsonenc* e, upb_StringView str);
 
 UPB_NORETURN static void jsonenc_err(jsonenc* e, const char* msg) {
   upb_Status_SetErrorMessage(e->status, msg);
@@ -6373,7 +6555,8 @@ static void jsonenc_enum(int32_t val, const upb_FieldDef* f, jsonenc* e) {
             : upb_EnumDef_FindValueByNumber(e_def, val);
 
     if (ev) {
-      jsonenc_printf(e, "\"%s\"", upb_EnumValueDef_Name(ev));
+      const char* name = upb_EnumValueDef_JsonName(ev);
+      jsonenc_string(e, upb_StringView_FromString(name));
     } else {
       jsonenc_printf(e, "%" PRId32, val);
     }
@@ -12710,6 +12893,28 @@ struct upb_EnumDef {
   bool is_sorted;  // Whether all of the values are defined in ascending order.
 };
 
+// We store both regular proto enum names and custom JSON enum names in the
+// same strtable (ntoi). This is safe because protoc enforces that custom JSON
+// enum names never conflict with default enum names across different enum
+// values (or are identical, in which case we leave the entry untagged). Because
+// upb_EnumValueDef pointers are arena-aligned to at least 4 bytes (bit 0 is
+// always 0 for untagged pointers), we set bit 0 to tag custom JSON-only names
+// so that regular name lookups can ignore them.
+static const uintptr_t kUpb_EnumDef_JsonOnlyTag = 1ULL;
+
+static upb_value _upb_EnumDef_TagJsonOnly(upb_value v) {
+  v.val |= kUpb_EnumDef_JsonOnlyTag;
+  return v;
+}
+
+static bool _upb_EnumDef_IsJsonOnly(upb_value v) {
+  return (v.val & kUpb_EnumDef_JsonOnlyTag) != 0;
+}
+
+static const upb_EnumValueDef* _upb_EnumDef_Untag(upb_value v) {
+  return (const upb_EnumValueDef*)(v.val & ~kUpb_EnumDef_JsonOnlyTag);
+}
+
 upb_EnumDef* _upb_EnumDef_At(const upb_EnumDef* e, int i) {
   return (upb_EnumDef*)&e[i];
 }
@@ -12718,18 +12923,43 @@ const upb_MiniTableEnum* _upb_EnumDef_MiniTable(const upb_EnumDef* e) {
   return e->layout;
 }
 
-bool _upb_EnumDef_Insert(upb_EnumDef* e, upb_EnumValueDef* v, upb_Arena* a) {
+void _upb_EnumDef_Insert(upb_DefBuilder* ctx, upb_EnumDef* e,
+                         upb_EnumValueDef* v) {
   const char* name = upb_EnumValueDef_Name(v);
   const upb_value val = upb_value_constptr(v);
-  bool ok = upb_strtable_insert(&e->ntoi, name, strlen(name), val, a);
-  if (!ok) return false;
+  bool ok = upb_strtable_insert(&e->ntoi, name, strlen(name), val, ctx->arena);
+  if (!ok) _upb_DefBuilder_OomErr(ctx);
 
-  // Multiple enumerators can have the same number, first one wins.
+  // Aliased enum values can share the same custom JSON name, first one wins.
+  const char* json_name = upb_EnumValueDef_JsonName(v);
+  size_t json_len = strlen(json_name);
+  if (strcmp(json_name, name) != 0) {
+    upb_value existing_value;
+    if (upb_strtable_lookup2(&e->ntoi, json_name, json_len, &existing_value)) {
+      const upb_EnumValueDef* enumval = _upb_EnumDef_Untag(existing_value);
+      if (upb_EnumValueDef_Number(enumval) != upb_EnumValueDef_Number(v)) {
+        // If the custom JSON name exists, but points to a value with a
+        // different number, then this is a parse/conflict error.
+        _upb_DefBuilder_Errf(ctx,
+                             "duplicate custom json_name (%s) in enum (%s)",
+                             json_name, upb_EnumDef_FullName(e));
+      }
+    } else {
+      upb_value json_val = _upb_EnumDef_TagJsonOnly(val);
+      if (!upb_strtable_insert(&e->ntoi, json_name, json_len, json_val,
+                               ctx->arena)) {
+        _upb_DefBuilder_OomErr(ctx);
+      }
+    }
+  }
+
+  // Multiple enum values can have the same number, first one wins.
   const int number = upb_EnumValueDef_Number(v);
   if (!upb_inttable_lookup(&e->iton, number, NULL)) {
-    return upb_inttable_insert(&e->iton, number, val, a);
+    if (!upb_inttable_insert(&e->iton, number, val, ctx->arena)) {
+      _upb_DefBuilder_OomErr(ctx);
+    }
   }
-  return true;
 }
 
 const google_protobuf_EnumOptions* upb_EnumDef_Options(const upb_EnumDef* e) {
@@ -12786,6 +13016,16 @@ upb_StringView upb_EnumDef_ReservedName(const upb_EnumDef* e, int i) {
 
 int upb_EnumDef_ValueCount(const upb_EnumDef* e) { return e->value_count; }
 
+const upb_EnumValueDef* upb_EnumDef_FindByJsonNameWithSize(const upb_EnumDef* e,
+                                                           const char* name,
+                                                           size_t size) {
+  upb_value v;
+  if (!upb_strtable_lookup2(&e->ntoi, name, size, &v)) {
+    return NULL;
+  }
+  return _upb_EnumDef_Untag(v);
+}
+
 const upb_EnumValueDef* upb_EnumDef_FindValueByName(const upb_EnumDef* e,
                                                     const char* name) {
   return upb_EnumDef_FindValueByNameWithSize(e, name, strlen(name));
@@ -12794,9 +13034,13 @@ const upb_EnumValueDef* upb_EnumDef_FindValueByName(const upb_EnumDef* e,
 const upb_EnumValueDef* upb_EnumDef_FindValueByNameWithSize(
     const upb_EnumDef* e, const char* name, size_t size) {
   upb_value v;
-  return upb_strtable_lookup2(&e->ntoi, name, size, &v)
-             ? upb_value_getconstptr(v)
-             : NULL;
+  if (!upb_strtable_lookup2(&e->ntoi, name, size, &v)) {
+    return NULL;
+  }
+  if (_upb_EnumDef_IsJsonOnly(v)) {
+    return NULL;
+  }
+  return upb_value_getconstptr(v);
 }
 
 const upb_EnumValueDef* upb_EnumDef_FindValueByNumber(const upb_EnumDef* e,
@@ -12937,7 +13181,7 @@ static void create_enumdef(upb_DefBuilder* ctx, const char* prefix,
                          upb_EnumDef_FullName(e));
   }
 
-  bool ok = upb_strtable_init(&e->ntoi, n_value, ctx->arena);
+  bool ok = upb_strtable_init(&e->ntoi, n_value * 2, ctx->arena);
   if (!ok) _upb_DefBuilder_OomErr(ctx);
 
   ok = upb_inttable_init(&e->iton, ctx->arena);
@@ -13054,6 +13298,7 @@ struct upb_EnumValueDef {
   const google_protobuf_FeatureSet* resolved_features;
   const upb_EnumDef* parent;
   const char* full_name;
+  const char* json_name;
   int32_t number;
 };
 
@@ -13075,7 +13320,7 @@ const upb_EnumValueDef** _upb_EnumValueDefs_Sorted(const upb_EnumValueDef* v,
       (upb_EnumValueDef**)upb_Arena_Malloc(a, n * sizeof(void*));
   if (!out) return NULL;
 
-  for (int i = 0; i < n; i++) {
+  for (size_t i = 0; i < n; i++) {
     out[i] = (upb_EnumValueDef*)&v[i];
   }
   qsort(out, n, sizeof(void*), _upb_EnumValueDef_Compare);
@@ -13105,6 +13350,10 @@ const char* upb_EnumValueDef_FullName(const upb_EnumValueDef* v) {
   return v->full_name;
 }
 
+const char* upb_EnumValueDef_JsonName(const upb_EnumValueDef* v) {
+  return v->json_name ? v->json_name : upb_EnumValueDef_Name(v);
+}
+
 const char* upb_EnumValueDef_Name(const upb_EnumValueDef* v) {
   return _upb_DefBuilder_FullToShort(v->full_name);
 }
@@ -13114,6 +13363,19 @@ int32_t upb_EnumValueDef_Number(const upb_EnumValueDef* v) { return v->number; }
 uint32_t upb_EnumValueDef_Index(const upb_EnumValueDef* v) {
   // Compute index in our parent's array.
   return v - upb_EnumDef_Value(v->parent, 0);
+}
+
+static const char* _upb_EnumValueDef_ExtractJsonName(
+    upb_DefBuilder* ctx, const upb_EnumValueDef* v) {
+  if (!upb_EnumValueDef_HasOptions(v)) return NULL;
+  const google_protobuf_EnumValueOptions* opts = (const google_protobuf_EnumValueOptions*)v->opts;
+  if (!pb_enumvalue_has_json(opts)) return NULL;
+  const pb_enumvalue_JsonEnumValueOptions* json_opts = pb_enumvalue_json(opts);
+  if (!json_opts || !pb_enumvalue_JsonEnumValueOptions_has_string(json_opts)) {
+    return NULL;
+  }
+  upb_StringView str = pb_enumvalue_JsonEnumValueOptions_string(json_opts);
+  return upb_strdup2(str.data, str.size, ctx->arena);
 }
 
 static void create_enumvaldef(upb_DefBuilder* ctx, const char* prefix,
@@ -13130,11 +13392,11 @@ static void create_enumvaldef(upb_DefBuilder* ctx, const char* prefix,
   v->parent = e;  // Must happen prior to _upb_DefBuilder_Add()
   v->full_name = _upb_DefBuilder_MakeFullName(ctx, prefix, name);
   v->number = google_protobuf_EnumValueDescriptorProto_number(val_proto);
+  v->json_name = _upb_EnumValueDef_ExtractJsonName(ctx, v);
   _upb_DefBuilder_Add(ctx, v->full_name,
                       _upb_DefType_Pack(v, UPB_DEFTYPE_ENUMVAL));
 
-  bool ok = _upb_EnumDef_Insert(e, v, ctx->arena);
-  if (!ok) _upb_DefBuilder_OomErr(ctx);
+  _upb_EnumDef_Insert(ctx, e, v);
 }
 
 // Allocate and initialize an array of |n| enum value defs owned by |e|.
@@ -19094,6 +19356,7 @@ const char* UPB_PRIVATE(_upb_WireReader_SkipGroup)(
 #undef UPB_TSAN
 #undef UPB_DEPRECATED
 #undef UPB_GNUC_MIN
+#undef UPB_CLANG_MIN
 #undef UPB_DESCRIPTOR_UPB_H_FILENAME
 #undef UPB_DESC_MINITABLE
 #undef UPB_IS_GOOGLE3
@@ -19120,3 +19383,6 @@ const char* UPB_PRIVATE(_upb_WireReader_SkipGroup)(
 #undef UPB_DEPRECATE_AND_INLINE
 #undef UPB_MAYBE_ASSUME
 #undef UPB_ATTR_CONST
+#undef _UPB_STRINGIFY
+#undef _UPB_STRINGIFY2
+#undef UPB_CONSTRUCTOR
