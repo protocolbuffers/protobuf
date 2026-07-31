@@ -4180,8 +4180,8 @@ class SourceInfoTest : public ParserTest {
     int index;
 
     inline SpanKey() = default;
-    inline SpanKey(const Message& descriptor_proto_param,
-                   const FieldDescriptor* field_param, int index_param)
+    SpanKey(const Message& descriptor_proto_param,
+            const FieldDescriptor* field_param, int index_param)
         : descriptor_proto(&descriptor_proto_param),
           field(field_param),
           index(index_param) {}
