@@ -15,7 +15,7 @@ load("//upb/cmake:build_defs.bzl", "staleness_test")
 filegroup(
     name = "c_sharp_features_proto_srcs",
     srcs = ["google/protobuf/c_sharp_features.proto"],
-    visibility = ["//:__subpackages__"],
+    visibility = ["//src/google/protobuf:__pkg__"],
 )
 
 proto_library(
