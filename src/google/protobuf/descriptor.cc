@@ -148,13 +148,12 @@ template <typename T>
 constexpr size_t EffectiveAlignof() {
   // `char` is special in that it gets aligned to 8. It is where we drop the
   // trivial structs.
-  return std::is_same<T, char>::value ? 8 : alignof(T);
+  return std::is_same_v<T, char> ? 8 : alignof(T);
 }
 
 template <int align, typename U, typename... T>
-using AppendIfAlign =
-    typename std::conditional<EffectiveAlignof<U>() == align, void (*)(T..., U),
-                              void (*)(T...)>::type;
+using AppendIfAlign = std::conditional_t<EffectiveAlignof<U>() == align,
+                                         void (*)(T..., U), void (*)(T...)>;
 
 // Metafunction to sort types in descending order of alignment.
 // Useful for the flat allocator to ensure proper alignment of all elements
@@ -200,7 +199,7 @@ constexpr int FindTypeIndex() {
 
 template <typename T, typename T1, typename... Ts>
 constexpr int FindTypeIndex() {
-  return std::is_same<T, T1>::value ? 0 : FindTypeIndex<T, Ts...>() + 1;
+  return std::is_same_v<T, T1> ? 0 : FindTypeIndex<T, Ts...>() + 1;
 }
 
 // A type to value map, where the possible keys as specified in `Keys...`.
@@ -268,7 +267,7 @@ class FlatAllocation {
   }
 
   template <int I>
-  using type = typename std::tuple_element<I, std::tuple<T...>>::type;
+  using type = std::tuple_element_t<I, std::tuple<T...>>;
 
   // Gets a tuple of the head pointers for the arrays
   TypeMap<PointerT, T...> Pointers() const {
@@ -282,8 +281,8 @@ class FlatAllocation {
   // Total number of bytes used by all arrays.
   int total_bytes() const {
     // Get the last end.
-    return ends_.template Get<typename std::tuple_element<
-        sizeof...(T) - 1, std::tuple<T...>>::type>();
+    return ends_.template Get<
+        std::tuple_element_t<sizeof...(T) - 1, std::tuple<T...>>>();
   }
 
 
@@ -292,8 +291,7 @@ class FlatAllocation {
     constexpr int type_index = FindTypeIndex<U, T...>();
     // Avoid a negative value here to keep it compiling when type_index == 0
     constexpr int prev_type_index = type_index == 0 ? 0 : type_index - 1;
-    using PrevType =
-        typename std::tuple_element<prev_type_index, std::tuple<T...>>::type;
+    using PrevType = std::tuple_element_t<prev_type_index, std::tuple<T...>>;
     // Ensure the types are properly aligned.
     static_assert(EffectiveAlignof<PrevType>() >= EffectiveAlignof<U>(), "");
     return type_index == 0 ? RoundUpTo<kMaxAlign>(sizeof(FlatAllocation))
@@ -326,7 +324,7 @@ class FlatAllocation {
   template <typename U>
   bool Init() {
     // Skip for the `char` block. No need to zero initialize it.
-    if (std::is_same<U, char>::value) return true;
+    if (std::is_same_v<U, char>) return true;
     for (char *p = data() + BeginOffset<U>(), *end = data() + EndOffset<U>();
          p != end; p += sizeof(U)) {
       ::new (p) U{};
@@ -336,7 +334,7 @@ class FlatAllocation {
 
   template <typename U>
   bool Destroy() {
-    if (std::is_trivially_destructible<U>::value) return true;
+    if (std::is_trivially_destructible_v<U>) return true;
     for (U *it = Begin<U>(), *end = End<U>(); it != end; ++it) {
       it->~U();
     }
@@ -377,7 +375,7 @@ class FlatAllocatorImpl {
     // We can't call PlanArray after FinalizePlanning has been called.
     ABSL_CHECK(!has_allocated());
     ABSL_DCHECK_GE(array_size, 0);
-    if (std::is_trivially_destructible<U>::value) {
+    if (std::is_trivially_destructible_v<U>) {
       // Trivial types are aligned to 8 bytes.
       static_assert(alignof(U) <= 8, "");
       int64_t bytes =
@@ -392,8 +390,7 @@ class FlatAllocatorImpl {
       // Since we can't use `if constexpr`, just make the expression compile
       // when this path is not taken.
       using TypeToUse =
-          typename std::conditional<std::is_trivially_destructible<U>::value,
-                                    char, U>::type;
+          std::conditional_t<std::is_trivially_destructible_v<U>, char, U>;
       int& total_type = total_.template Get<TypeToUse>();
       int64_t sum = static_cast<int64_t>(total_type) + array_size;
       if (sum > std::numeric_limits<int>::max()) {
@@ -405,8 +402,8 @@ class FlatAllocatorImpl {
 
   template <typename U>
   U* AllocateArray(int array_size) {
-    constexpr bool trivial = std::is_trivially_destructible<U>::value;
-    using TypeToUse = typename std::conditional<trivial, char, U>::type;
+    constexpr bool trivial = std::is_trivially_destructible_v<U>;
+    using TypeToUse = std::conditional_t<trivial, char, U>;
 
     // We can only allocate after FinalizePlanning has been called.
     ABSL_CHECK(has_allocated());
@@ -1655,7 +1652,7 @@ class DescriptorPool::Tables {
   std::vector<std::pair<const Descriptor*, int>> extensions_after_checkpoint_;
 };
 
-DescriptorPool::Tables::Tables() {}
+DescriptorPool::Tables::Tables() = default;
 
 DescriptorPool::Tables::~Tables() { ABSL_DCHECK(checkpoints_.empty()); }
 
@@ -2045,7 +2042,7 @@ const FeatureSet* DescriptorPool::Tables::InternFeatureSet(
 
 template <typename Type>
 Type* DescriptorPool::Tables::Allocate() {
-  static_assert(std::is_trivially_destructible<Type>::value, "");
+  static_assert(std::is_trivially_destructible_v<Type>, "");
   static_assert(alignof(Type) <= 8, "");
   return ::new (AllocateBytes(sizeof(Type))) Type{};
 }
@@ -2070,7 +2067,7 @@ internal::FlatAllocator::Allocation* DescriptorPool::Tables::CreateFlatAlloc(
   using FlatAlloc = internal::FlatAllocator::Allocation;
 
   int last_end = ends->template Get<
-      typename std::tuple_element<sizeof...(T) - 1, std::tuple<T...>>::type>();
+      std::tuple_element_t<sizeof...(T) - 1, std::tuple<T...>>>();
   int64_t total_size = static_cast<int64_t>(last_end) +
                        RoundUpTo<FlatAlloc::kMaxAlign>(sizeof(FlatAlloc));
 
@@ -5830,12 +5827,10 @@ FileDescriptor* internal::DescriptorBuilder::BuildFileImpl(
       auto cleanup = DisableTracking();
       internal::VisitDescriptors(
           *result, proto, [&](const auto& descriptor, const auto& proto) {
-            using OptionsT =
-                typename std::remove_const<typename std::remove_pointer<
-                    decltype(descriptor.options_)>::type>::type;
-            using DescriptorT =
-                typename std::remove_const<typename std::remove_reference<
-                    decltype(descriptor)>::type>::type;
+            using OptionsT = std::remove_const_t<
+                std::remove_pointer_t<decltype(descriptor.options_)>>;
+            using DescriptorT = std::remove_const_t<
+                std::remove_reference_t<decltype(descriptor)>>;
 
             ResolveFeatures(
                 proto, const_cast<DescriptorT*>(&descriptor),
