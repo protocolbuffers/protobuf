@@ -506,7 +506,7 @@ public class JsonFormat {
     private final boolean legacyLenient;
 
     // The default parsing recursion limit is aligned with the proto binary parser.
-    private static final int DEFAULT_RECURSION_LIMIT = 100;
+    private static final int DEFAULT_RECURSION_LIMIT = 1000;
 
     private Parser(
         com.google.protobuf.TypeRegistry registry,
