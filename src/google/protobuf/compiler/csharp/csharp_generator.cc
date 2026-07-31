@@ -9,6 +9,10 @@
 
 #include <sstream>
 
+#include "absl/strings/ascii.h"
+#include "absl/strings/charset.h"
+#include "absl/strings/str_cat.h"
+#include "absl/strings/string_view.h"
 #include "google/protobuf/compiler/code_generator.h"
 #include "google/protobuf/compiler/csharp/csharp_helpers.h"
 #include "google/protobuf/compiler/csharp/csharp_options.h"
@@ -23,6 +27,31 @@ namespace google {
 namespace protobuf {
 namespace compiler {
 namespace csharp {
+
+namespace {
+
+// Characters that could enable code injection in generated C# code.
+constexpr absl::CharSet kBannedNamespaceChars =
+    absl::CharSet(";{}()'\"`$#=<>|&[]/\\@\n\r!?*~^%,") |
+    absl::CharSet::Char('\0');
+
+// Validates that a csharp_namespace option does not contain characters that
+// could allow code injection into generated C# code. Uses a denylist approach
+// to allow Unicode identifiers while blocking dangerous characters.
+bool IsValidCSharpNamespace(absl::string_view ns, std::string* error) {
+  for (char c : ns) {
+    if (kBannedNamespaceChars.contains(c)) {
+      *error = absl::StrCat(
+          "Invalid character in csharp_namespace option: character '",
+          std::string(1, c),
+          "' is not allowed because it could enable code injection.");
+      return false;
+    }
+  }
+  return true;
+}
+
+}  // namespace
 
 Generator::Generator() = default;
 Generator::~Generator() = default;
@@ -61,6 +90,12 @@ bool Generator::Generate(const FileDescriptor* file,
       cli_options.strip_nonfunctional_codegen = true;
     } else {
       *error = absl::StrCat("Unknown generator option: ", options[i].first);
+      return false;
+    }
+  }
+
+  if (file->options().has_csharp_namespace()) {
+    if (!IsValidCSharpNamespace(file->options().csharp_namespace(), error)) {
       return false;
     }
   }
