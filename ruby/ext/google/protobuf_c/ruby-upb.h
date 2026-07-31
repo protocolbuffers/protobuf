@@ -4008,7 +4008,7 @@ UPB_API_INLINE const upb_MiniTableField* upb_MiniTableExtension_ToField(
 // This is rather wasteful for scalars (in the extreme case of bool,
 // it wastes 15 bytes). We accept this because we expect messages to be
 // the most common extension type.
-typedef struct {
+typedef struct upb_Extension {
   const upb_MiniTableExtension* ext;
   upb_MessageValue data;
 } upb_Extension;
@@ -5723,6 +5723,8 @@ UPB_API_INLINE bool upb_Map_IsFrozen(const upb_Map* map);
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+struct upb_Extension;
 
 typedef enum {
   kUpb_MessageUnknownType_StringView,
