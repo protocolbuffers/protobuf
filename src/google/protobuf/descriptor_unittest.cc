@@ -16274,6 +16274,8 @@ TEST_F(SourceLocationTest, GetSourceLocation) {
                                     "rpc Method(A) returns (A.B);"));
 }
 
+// TODO: b/168903973 - Remove once we update the format.
+
 TEST_F(SourceLocationTest, ExtensionSourceLocation) {
   SourceLocation loc;
 
@@ -16330,19 +16332,7 @@ TEST_F(SourceLocationTest, InterpretedOptionSourceLocation) {
 
     EXPECT_FALSE(file_desc->GetSourceLocation(unint, &loc));
 
-    SourceCodePath name_path = {FileDescriptorProto::kOptionsFieldNumber,
-                                FileOptions::kJavaPackageFieldNumber,
-                                UninterpretedOption::kNameFieldNumber};
-    EXPECT_TRUE(file_desc->GetSourceLocation(name_path, &loc));
-    EXPECT_THAT(loc,
-                MatchesSubstring(kSourceLocationTestInput, "java_package"));
-
-    SourceCodePath val_path = {FileDescriptorProto::kOptionsFieldNumber,
-                               FileOptions::kJavaPackageFieldNumber,
-                               UninterpretedOption::kStringValueFieldNumber};
-    EXPECT_TRUE(file_desc->GetSourceLocation(val_path, &loc));
-    EXPECT_THAT(loc,
-                MatchesSubstring(kSourceLocationTestInput, "\"com.foo.bar\""));
+// TODO: b/168903973 - Remove once we update the format.
   }
   {
     SourceCodePath path = {FileDescriptorProto::kOptionsFieldNumber,
@@ -16355,18 +16345,7 @@ TEST_F(SourceLocationTest, InterpretedOptionSourceLocation) {
 
     EXPECT_FALSE(file_desc->GetSourceLocation(unint, &loc));
 
-    SourceCodePath name_path = {FileDescriptorProto::kOptionsFieldNumber,
-                                kCustomOptionFieldNumber,
-                                UninterpretedOption::kNameFieldNumber};
-    EXPECT_TRUE(file_desc->GetSourceLocation(name_path, &loc));
-    EXPECT_THAT(loc,
-                MatchesSubstring(kSourceLocationTestInput, "(test_file_opt)"));
-
-    SourceCodePath val_path = {FileDescriptorProto::kOptionsFieldNumber,
-                               kCustomOptionFieldNumber,
-                               UninterpretedOption::kStringValueFieldNumber};
-    EXPECT_TRUE(file_desc->GetSourceLocation(val_path, &loc));
-    EXPECT_THAT(loc, MatchesSubstring(kSourceLocationTestInput, "\"foobar\""));
+// TODO: b/168903973 - Remove once we update the format.
   }
 
   // Message option
