@@ -20,7 +20,6 @@
 #include "google/protobuf/compiler/java/doc_comment.h"
 #include "google/protobuf/compiler/java/field_common.h"
 #include "google/protobuf/compiler/java/helpers.h"
-#include "google/protobuf/compiler/java/full/field_generator.h"
 #include "google/protobuf/compiler/java/name_resolver.h"
 #include "google/protobuf/io/printer.h"
 #include "google/protobuf/wire_format.h"
@@ -105,30 +104,42 @@ ImmutableMessageFieldGenerator::~ImmutableMessageFieldGenerator() = default;
 int ImmutableMessageFieldGenerator::GetNumBitsForMessage() const {
   return HasHasbit(descriptor_) ? 1 : 0;
 }
-void ImmutableMessageFieldGenerator::GenerateInterfaceMembers(
+
+void ImmutableMessageFieldGenerator::GenerateInterfaceHasMethod(
     io::Printer* printer) const {
-  // TODO: In the future, consider having a method specific to the
-  // interface so that builders can choose dynamically to either return a
-  // message or a nested builder, so that asking for the interface doesn't
-  // cause a message to ever be built.
   WriteFieldAccessorDocComment(printer, descriptor_, HAZZER,
                                context_->options());
   printer->Print(variables_, "$deprecation$boolean has$capitalized_name$();\n");
+}
+
+void ImmutableMessageFieldGenerator::GenerateInterfaceGetMethod(
+    io::Printer* printer) const {
   WriteFieldAccessorDocComment(printer, descriptor_, GETTER,
                                context_->options());
   printer->Print(variables_, "$deprecation$$type$ get$capitalized_name$();\n");
+}
 
+void ImmutableMessageFieldGenerator::GenerateInterfaceGetOrBuilderMethod(
+    io::Printer* printer) const {
   WriteFieldDocComment(printer, descriptor_, context_->options());
   printer->Print(
       variables_,
       "$deprecation$$type$OrBuilder get$capitalized_name$OrBuilder();\n");
 }
 
-void ImmutableMessageFieldGenerator::GenerateMembers(
+void ImmutableMessageFieldGenerator::GenerateInterfaceMembers(
     io::Printer* printer) const {
-  printer->Print(variables_, "private $type$ $name$_;\n");
-  PrintExtraFieldInfo(variables_, printer);
+  // TODO: In the future, consider having a method specific to the
+  // interface so that builders can choose dynamically to either return a
+  // message or a nested builder, so that asking for the interface doesn't
+  // cause a message to ever be built.
+  GenerateInterfaceHasMethod(printer);
+  GenerateInterfaceGetMethod(printer);
+  GenerateInterfaceGetOrBuilderMethod(printer);
+}
 
+void ImmutableMessageFieldGenerator::GenerateHasMethod(
+    io::Printer* printer) const {
   WriteFieldAccessorDocComment(printer, descriptor_, HAZZER,
                                context_->options());
   printer->Print(variables_,
@@ -137,7 +148,10 @@ void ImmutableMessageFieldGenerator::GenerateMembers(
                  "  return $is_field_present_message$;\n"
                  "}\n");
   printer->Annotate("{", "}", descriptor_);
+}
 
+void ImmutableMessageFieldGenerator::GenerateGetMethod(
+    io::Printer* printer) const {
   WriteFieldAccessorDocComment(printer, descriptor_, GETTER,
                                context_->options());
   printer->Print(
@@ -147,7 +161,10 @@ void ImmutableMessageFieldGenerator::GenerateMembers(
       "  return $name$_ == null ? $type$.getDefaultInstance() : $name$_;\n"
       "}\n");
   printer->Annotate("{", "}", descriptor_);
+}
 
+void ImmutableMessageFieldGenerator::GenerateGetOrBuilderMethod(
+    io::Printer* printer) const {
   WriteFieldDocComment(printer, descriptor_, context_->options());
   printer->Print(
       variables_,
@@ -157,6 +174,16 @@ void ImmutableMessageFieldGenerator::GenerateMembers(
       "  return $name$_ == null ? $type$.getDefaultInstance() : $name$_;\n"
       "}\n");
   printer->Annotate("{", "}", descriptor_);
+}
+
+void ImmutableMessageFieldGenerator::GenerateMembers(
+    io::Printer* printer) const {
+  printer->Print(variables_, "private $type$ $name$_;\n");
+  PrintExtraFieldInfo(variables_, printer);
+
+  GenerateHasMethod(printer);
+  GenerateGetMethod(printer);
+  GenerateGetOrBuilderMethod(printer);
 }
 
 void ImmutableMessageFieldGenerator::PrintNestedBuilderCondition(
@@ -190,23 +217,8 @@ void ImmutableMessageFieldGenerator::PrintNestedBuilderFunction(
   printer->Print("}\n");
 }
 
-void ImmutableMessageFieldGenerator::GenerateBuilderMembers(
+void ImmutableMessageFieldGenerator::GenerateBuilderHasMethod(
     io::Printer* printer) const {
-  // When using nested-builders, the code initially works just like the
-  // non-nested builder case. It only creates a nested builder lazily on
-  // demand and then forever delegates to it after creation.
-  printer->Print(variables_, "private $type$ $name$_;\n");
-
-  printer->Print(variables_,
-                 // If this builder is non-null, it is used and the other fields
-                 // are ignored.
-                 "private com.google.protobuf.SingleFieldBuilder<\n"
-                 "    $type$, $type$.Builder, $type$OrBuilder> $name$Builder_;"
-                 "\n");
-
-  // The comments above the methods below are based on a hypothetical
-  // field of type "Field" called "Field".
-
   // boolean hasField()
   WriteFieldAccessorDocComment(printer, descriptor_, HAZZER,
                                context_->options());
@@ -215,7 +227,10 @@ void ImmutableMessageFieldGenerator::GenerateBuilderMembers(
                  "  return $get_has_field_bit_builder$;\n"
                  "}\n");
   printer->Annotate("{", "}", descriptor_);
+}
 
+void ImmutableMessageFieldGenerator::GenerateBuilderGetMethod(
+    io::Printer* printer) const {
   // Field getField()
   WriteFieldAccessorDocComment(printer, descriptor_, GETTER,
                                context_->options());
@@ -223,7 +238,10 @@ void ImmutableMessageFieldGenerator::GenerateBuilderMembers(
       printer, "$deprecation$public $type$ ${$get$capitalized_name$$}$()",
       "return $name$_ == null ? $type$.getDefaultInstance() : $name$_;\n",
       "return $name$Builder_.getMessage();\n", nullptr);
+}
 
+void ImmutableMessageFieldGenerator::GenerateBuilderSetMethod(
+    io::Printer* printer) const {
   // Field.Builder setField(Field value)
   WriteFieldDocComment(printer, descriptor_, context_->options());
   PrintNestedBuilderFunction(
@@ -239,7 +257,10 @@ void ImmutableMessageFieldGenerator::GenerateBuilderMembers(
       "$on_changed$\n"
       "return this;\n",
       Semantic::kSet);
+}
 
+void ImmutableMessageFieldGenerator::GenerateBuilderSetBuilderMethod(
+    io::Printer* printer) const {
   // Field.Builder setField(Field.Builder builderForValue)
   WriteFieldDocComment(printer, descriptor_, context_->options());
   printer->Print(variables_,
@@ -249,7 +270,10 @@ void ImmutableMessageFieldGenerator::GenerateBuilderMembers(
                  "  return set$capitalized_name$(builderForValue.build());\n"
                  "}\n");
   printer->Annotate("{", "}", descriptor_, Semantic::kSet);
+}
 
+void ImmutableMessageFieldGenerator::GenerateBuilderMergeMethod(
+    io::Printer* printer) const {
   // Message.Builder mergeField(Field value)
   WriteFieldDocComment(printer, descriptor_, context_->options());
   PrintNestedBuilderFunction(
@@ -271,7 +295,10 @@ void ImmutableMessageFieldGenerator::GenerateBuilderMembers(
       "}\n"
       "return this;\n",
       Semantic::kSet);
+}
 
+void ImmutableMessageFieldGenerator::GenerateBuilderClearMethod(
+    io::Printer* printer) const {
   // Message.Builder clearField()
   WriteFieldDocComment(printer, descriptor_, context_->options());
   printer->Print(
@@ -287,7 +314,10 @@ void ImmutableMessageFieldGenerator::GenerateBuilderMembers(
       "  return this;\n"
       "}\n");
   printer->Annotate("{", "}", descriptor_, Semantic::kSet);
+}
 
+void ImmutableMessageFieldGenerator::GenerateBuilderGetBuilderMethod(
+    io::Printer* printer) const {
   // Field.Builder getFieldBuilder()
   WriteFieldDocComment(printer, descriptor_, context_->options());
   printer->Print(variables_,
@@ -299,7 +329,10 @@ void ImmutableMessageFieldGenerator::GenerateBuilderMembers(
                  "internalGet$capitalized_name$FieldBuilder().getBuilder();\n"
                  "}\n");
   printer->Annotate("{", "}", descriptor_, Semantic::kSet);
+}
 
+void ImmutableMessageFieldGenerator::GenerateBuilderGetOrBuilderMethod(
+    io::Printer* printer) const {
   // FieldOrBuilder getFieldOrBuilder()
   WriteFieldDocComment(printer, descriptor_, context_->options());
   printer->Print(variables_,
@@ -313,7 +346,10 @@ void ImmutableMessageFieldGenerator::GenerateBuilderMembers(
                  "  }\n"
                  "}\n");
   printer->Annotate("{", "}", descriptor_);
+}
 
+void ImmutableMessageFieldGenerator::
+    GenerateBuilderInternalGetFieldBuilderMethod(io::Printer* printer) const {
   // SingleFieldBuilder getFieldFieldBuilder
   WriteFieldDocComment(printer, descriptor_, context_->options());
   printer->Print(
@@ -331,7 +367,10 @@ void ImmutableMessageFieldGenerator::GenerateBuilderMembers(
       "  }\n"
       "  return $name$Builder_;\n"
       "}\n");
+}
 
+void ImmutableMessageFieldGenerator::GenerateBuilderParseMethod(
+    io::Printer* printer) const {
   // Private parse method for this field, created to avoid code size too large
   // issues in the try-catch block.
   printer->Print(
@@ -367,9 +406,34 @@ void ImmutableMessageFieldGenerator::GenerateBuilderMembers(
         "}\n"
         "$set_has_field_bit_builder$\n");
   }
-
   printer->Outdent();
   printer->Print("}\n");
+}
+
+void ImmutableMessageFieldGenerator::GenerateBuilderMembers(
+    io::Printer* printer) const {
+  // When using nested-builders, the code initially works just like the
+  // non-nested builder case. It only creates a nested builder lazily on
+  // demand and then forever delegates to it after creation.
+  printer->Print(variables_, "private $type$ $name$_;\n");
+
+  printer->Print(variables_,
+                 // If this builder is non-null, it is used and the other fields
+                 // are ignored.
+                 "private com.google.protobuf.SingleFieldBuilder<\n"
+                 "    $type$, $type$.Builder, $type$OrBuilder> $name$Builder_;"
+                 "\n");
+
+  GenerateBuilderHasMethod(printer);
+  GenerateBuilderGetMethod(printer);
+  GenerateBuilderSetMethod(printer);
+  GenerateBuilderSetBuilderMethod(printer);
+  GenerateBuilderMergeMethod(printer);
+  GenerateBuilderClearMethod(printer);
+  GenerateBuilderGetBuilderMethod(printer);
+  GenerateBuilderGetOrBuilderMethod(printer);
+  GenerateBuilderInternalGetFieldBuilderMethod(printer);
+  GenerateBuilderParseMethod(printer);
 }
 
 void ImmutableMessageFieldGenerator::GenerateFieldBuilderInitializationCode(
@@ -470,9 +534,8 @@ ImmutableMessageOneofFieldGenerator::ImmutableMessageOneofFieldGenerator(
 ImmutableMessageOneofFieldGenerator::~ImmutableMessageOneofFieldGenerator() =
     default;
 
-void ImmutableMessageOneofFieldGenerator::GenerateMembers(
+void ImmutableMessageOneofFieldGenerator::GenerateHasMethod(
     io::Printer* printer) const {
-  PrintExtraFieldInfo(variables_, printer);
   WriteFieldAccessorDocComment(printer, descriptor_, HAZZER,
                                context_->options());
   printer->Print(variables_,
@@ -481,7 +544,10 @@ void ImmutableMessageOneofFieldGenerator::GenerateMembers(
                  "  return $has_oneof_case_message$;\n"
                  "}\n");
   printer->Annotate("{", "}", descriptor_);
+}
 
+void ImmutableMessageOneofFieldGenerator::GenerateGetMethod(
+    io::Printer* printer) const {
   WriteFieldAccessorDocComment(printer, descriptor_, GETTER,
                                context_->options());
   printer->Print(variables_,
@@ -493,7 +559,10 @@ void ImmutableMessageOneofFieldGenerator::GenerateMembers(
                  "  return $type$.getDefaultInstance();\n"
                  "}\n");
   printer->Annotate("{", "}", descriptor_);
+}
 
+void ImmutableMessageOneofFieldGenerator::GenerateGetOrBuilderMethod(
+    io::Printer* printer) const {
   WriteFieldDocComment(printer, descriptor_, context_->options());
   printer->Print(variables_,
                  "@java.lang.Override\n"
@@ -507,21 +576,16 @@ void ImmutableMessageOneofFieldGenerator::GenerateMembers(
   printer->Annotate("{", "}", descriptor_);
 }
 
-void ImmutableMessageOneofFieldGenerator::GenerateBuilderMembers(
+void ImmutableMessageOneofFieldGenerator::GenerateMembers(
     io::Printer* printer) const {
-  // When using nested-builders, the code initially works just like the
-  // non-nested builder case. It only creates a nested builder lazily on
-  // demand and then forever delegates to it after creation.
-  printer->Print(variables_,
-                 // If this builder is non-null, it is used and the other fields
-                 // are ignored.
-                 "private com.google.protobuf.SingleFieldBuilder<\n"
-                 "    $type$, $type$.Builder, $type$OrBuilder> $name$Builder_;"
-                 "\n");
+  PrintExtraFieldInfo(variables_, printer);
+  GenerateHasMethod(printer);
+  GenerateGetMethod(printer);
+  GenerateGetOrBuilderMethod(printer);
+}
 
-  // The comments above the methods below are based on a hypothetical
-  // field of type "Field" called "Field".
-
+void ImmutableMessageOneofFieldGenerator::GenerateBuilderHasMethod(
+    io::Printer* printer) const {
   // boolean hasField()
   WriteFieldAccessorDocComment(printer, descriptor_, HAZZER,
                                context_->options());
@@ -531,7 +595,10 @@ void ImmutableMessageOneofFieldGenerator::GenerateBuilderMembers(
                  "  return $has_oneof_case_message$;\n"
                  "}\n");
   printer->Annotate("{", "}", descriptor_);
+}
 
+void ImmutableMessageOneofFieldGenerator::GenerateBuilderGetMethod(
+    io::Printer* printer) const {
   // Field getField()
   WriteFieldAccessorDocComment(printer, descriptor_, GETTER,
                                context_->options());
@@ -551,7 +618,10 @@ void ImmutableMessageOneofFieldGenerator::GenerateBuilderMembers(
       "return $type$.getDefaultInstance();\n",
 
       nullptr);
+}
 
+void ImmutableMessageOneofFieldGenerator::GenerateBuilderSetMethod(
+    io::Printer* printer) const {
   // Field.Builder setField(Field value)
   WriteFieldDocComment(printer, descriptor_, context_->options());
   PrintNestedBuilderFunction(
@@ -567,7 +637,10 @@ void ImmutableMessageOneofFieldGenerator::GenerateBuilderMembers(
       "$set_oneof_case_message$;\n"
       "return this;\n",
       Semantic::kSet);
+}
 
+void ImmutableMessageOneofFieldGenerator::GenerateBuilderSetBuilderMethod(
+    io::Printer* printer) const {
   // Field.Builder setField(Field.Builder builderForValue)
   WriteFieldDocComment(printer, descriptor_, context_->options());
   printer->Print(variables_,
@@ -577,7 +650,10 @@ void ImmutableMessageOneofFieldGenerator::GenerateBuilderMembers(
                  "  return set$capitalized_name$(builderForValue.build());\n"
                  "}\n");
   printer->Annotate("{", "}", descriptor_, Semantic::kSet);
+}
 
+void ImmutableMessageOneofFieldGenerator::GenerateBuilderMergeMethod(
+    io::Printer* printer) const {
   // Field.Builder mergeField(Field value)
   WriteFieldDocComment(printer, descriptor_, context_->options());
   PrintNestedBuilderFunction(
@@ -602,7 +678,10 @@ void ImmutableMessageOneofFieldGenerator::GenerateBuilderMembers(
       "$set_oneof_case_message$;\n"
       "return this;\n",
       Semantic::kSet);
+}
 
+void ImmutableMessageOneofFieldGenerator::GenerateBuilderClearMethod(
+    io::Printer* printer) const {
   // Field.Builder clearField()
   WriteFieldDocComment(printer, descriptor_, context_->options());
   PrintNestedBuilderFunction(
@@ -621,7 +700,10 @@ void ImmutableMessageOneofFieldGenerator::GenerateBuilderMembers(
       "$name$Builder_.clear();\n",
 
       "return this;\n", Semantic::kSet);
+}
 
+void ImmutableMessageOneofFieldGenerator::GenerateBuilderGetBuilderMethod(
+    io::Printer* printer) const {
   // $type$.Builder getFieldBuilder
   WriteFieldDocComment(printer, descriptor_, context_->options());
   printer->Print(variables_,
@@ -631,6 +713,10 @@ void ImmutableMessageOneofFieldGenerator::GenerateBuilderMembers(
                  "internalGet$capitalized_name$FieldBuilder().getBuilder();\n"
                  "}\n");
   printer->Annotate("{", "}", descriptor_, Semantic::kSet);
+}
+
+void ImmutableMessageOneofFieldGenerator::GenerateBuilderGetOrBuilderMethod(
+    io::Printer* printer) const {
   WriteFieldDocComment(printer, descriptor_, context_->options());
   printer->Print(
       variables_,
@@ -647,7 +733,10 @@ void ImmutableMessageOneofFieldGenerator::GenerateBuilderMembers(
       "  }\n"
       "}\n");
   printer->Annotate("{", "}", descriptor_);
+}
 
+void ImmutableMessageOneofFieldGenerator::
+    GenerateBuilderInternalGetFieldBuilderMethod(io::Printer* printer) const {
   // SingleFieldBuilder internalGetFieldFieldBuilder
   WriteFieldDocComment(printer, descriptor_, context_->options());
   printer->Print(
@@ -671,6 +760,29 @@ void ImmutableMessageOneofFieldGenerator::GenerateBuilderMembers(
       "  return $name$Builder_;\n"
       "}\n");
   printer->Annotate("{", "}", descriptor_, Semantic::kSet);
+}
+
+void ImmutableMessageOneofFieldGenerator::GenerateBuilderMembers(
+    io::Printer* printer) const {
+  // When using nested-builders, the code initially works just like the
+  // non-nested builder case. It only creates a nested builder lazily on
+  // demand and then forever delegates to it after creation.
+  printer->Print(variables_,
+                 // If this builder is non-null, it is used and the other fields
+                 // are ignored.
+                 "private com.google.protobuf.SingleFieldBuilder<\n"
+                 "    $type$, $type$.Builder, $type$OrBuilder> $name$Builder_;"
+                 "\n");
+
+  GenerateBuilderHasMethod(printer);
+  GenerateBuilderGetMethod(printer);
+  GenerateBuilderSetMethod(printer);
+  GenerateBuilderSetBuilderMethod(printer);
+  GenerateBuilderMergeMethod(printer);
+  GenerateBuilderClearMethod(printer);
+  GenerateBuilderGetBuilderMethod(printer);
+  GenerateBuilderGetOrBuilderMethod(printer);
+  GenerateBuilderInternalGetFieldBuilderMethod(printer);
 }
 
 void ImmutableMessageOneofFieldGenerator::GenerateBuilderClearCode(
@@ -750,27 +862,38 @@ int RepeatedImmutableMessageFieldGenerator::GetNumBitsForMessage() const {
   return 0;
 }
 
-void RepeatedImmutableMessageFieldGenerator::GenerateInterfaceMembers(
+void RepeatedImmutableMessageFieldGenerator::GenerateInterfaceGetListMethod(
     io::Printer* printer) const {
-  // TODO: In the future, consider having methods specific to the
-  // interface so that builders can choose dynamically to either return a
-  // message or a nested builder, so that asking for the interface doesn't
-  // cause a message to ever be built.
   WriteFieldDocComment(printer, descriptor_, context_->options());
   printer->Print(variables_,
                  "$deprecation$java.util.List<$type$> \n"
                  "    get$capitalized_name$List();\n");
-  WriteFieldDocComment(printer, descriptor_, context_->options());
-  printer->Print(variables_,
-                 "$deprecation$$type$ get$capitalized_name$(int index);\n");
+}
+
+void RepeatedImmutableMessageFieldGenerator::GenerateInterfaceGetCountMethod(
+    io::Printer* printer) const {
   WriteFieldDocComment(printer, descriptor_, context_->options());
   printer->Print(variables_,
                  "$deprecation$int get$capitalized_name$Count();\n");
+}
 
+void RepeatedImmutableMessageFieldGenerator::GenerateInterfaceGetMethod(
+    io::Printer* printer) const {
+  WriteFieldDocComment(printer, descriptor_, context_->options());
+  printer->Print(variables_,
+                 "$deprecation$$type$ get$capitalized_name$(int index);\n");
+}
+
+void RepeatedImmutableMessageFieldGenerator::
+    GenerateInterfaceGetOrBuilderListMethod(io::Printer* printer) const {
   WriteFieldDocComment(printer, descriptor_, context_->options());
   printer->Print(variables_,
                  "$deprecation$java.util.List<? extends $type$OrBuilder> \n"
                  "    get$capitalized_name$OrBuilderList();\n");
+}
+
+void RepeatedImmutableMessageFieldGenerator::
+    GenerateInterfaceGetOrBuilderMethod(io::Printer* printer) const {
   WriteFieldDocComment(printer, descriptor_, context_->options());
   printer->Print(
       variables_,
@@ -778,12 +901,21 @@ void RepeatedImmutableMessageFieldGenerator::GenerateInterfaceMembers(
       "    int index);\n");
 }
 
-void RepeatedImmutableMessageFieldGenerator::GenerateMembers(
+void RepeatedImmutableMessageFieldGenerator::GenerateInterfaceMembers(
     io::Printer* printer) const {
-  printer->Print(variables_,
-                 "@SuppressWarnings(\"serial\")\n"
-                 "private java.util.List<$type$> $name$_;\n");
-  PrintExtraFieldInfo(variables_, printer);
+  // TODO: In the future, consider having methods specific to the
+  // interface so that builders can choose dynamically to either return a
+  // message or a nested builder, so that asking for the interface doesn't
+  // cause a message to ever be built.
+  GenerateInterfaceGetListMethod(printer);
+  GenerateInterfaceGetMethod(printer);
+  GenerateInterfaceGetCountMethod(printer);
+  GenerateInterfaceGetOrBuilderListMethod(printer);
+  GenerateInterfaceGetOrBuilderMethod(printer);
+}
+
+void RepeatedImmutableMessageFieldGenerator::GenerateGetListMethod(
+    io::Printer* printer) const {
   WriteFieldDocComment(printer, descriptor_, context_->options());
   printer->Print(variables_,
                  "@java.lang.Override\n"
@@ -792,7 +924,10 @@ void RepeatedImmutableMessageFieldGenerator::GenerateMembers(
                  "  return $name$_;\n"  // note:  unmodifiable list
                  "}\n");
   printer->Annotate("{", "}", descriptor_);
+}
 
+void RepeatedImmutableMessageFieldGenerator::GenerateGetOrBuilderListMethod(
+    io::Printer* printer) const {
   // List<FieldOrBuilder> getFieldOrBuilderList()
   WriteFieldDocComment(printer, descriptor_, context_->options());
   printer->Print(
@@ -803,7 +938,10 @@ void RepeatedImmutableMessageFieldGenerator::GenerateMembers(
       "  return $name$_;\n"
       "}\n");
   printer->Annotate("{", "}", descriptor_);
+}
 
+void RepeatedImmutableMessageFieldGenerator::GenerateGetCountMethod(
+    io::Printer* printer) const {
   // int getFieldCount()
   WriteFieldDocComment(printer, descriptor_, context_->options());
   printer->Print(
@@ -813,7 +951,10 @@ void RepeatedImmutableMessageFieldGenerator::GenerateMembers(
       "  return $name$_.size();\n"
       "}\n");
   printer->Annotate("{", "}", descriptor_);
+}
 
+void RepeatedImmutableMessageFieldGenerator::GenerateGetMethod(
+    io::Printer* printer) const {
   // Field getField(int index)
   WriteFieldDocComment(printer, descriptor_, context_->options());
   printer->Print(
@@ -823,7 +964,10 @@ void RepeatedImmutableMessageFieldGenerator::GenerateMembers(
       "  return $name$_.get(index);\n"
       "}\n");
   printer->Annotate("{", "}", descriptor_);
+}
 
+void RepeatedImmutableMessageFieldGenerator::GenerateGetOrBuilderMethod(
+    io::Printer* printer) const {
   // FieldOrBuilder getFieldOrBuilder(int index)
   WriteFieldDocComment(printer, descriptor_, context_->options());
   printer->Print(variables_,
@@ -836,58 +980,23 @@ void RepeatedImmutableMessageFieldGenerator::GenerateMembers(
   printer->Annotate("{", "}", descriptor_);
 }
 
-void RepeatedImmutableMessageFieldGenerator::PrintNestedBuilderCondition(
-    io::Printer* printer, const char* regular_case,
-    const char* nested_builder_case) const {
-  printer->Print(variables_, "if ($name$Builder_ == null) {\n");
-  printer->Indent();
-  printer->Print(variables_, regular_case);
-  printer->Outdent();
-  printer->Print("} else {\n");
-  printer->Indent();
-  printer->Print(variables_, nested_builder_case);
-  printer->Outdent();
-  printer->Print("}\n");
-}
-
-void RepeatedImmutableMessageFieldGenerator::PrintNestedBuilderFunction(
-    io::Printer* printer, const char* method_prototype,
-    const char* regular_case, const char* nested_builder_case,
-    const char* trailing_code,
-    absl::optional<io::AnnotationCollector::Semantic> semantic) const {
-  printer->Print(variables_, method_prototype);
-  printer->Annotate("{", "}", descriptor_, semantic);
-  printer->Print(" {\n");
-  printer->Indent();
-  PrintNestedBuilderCondition(printer, regular_case, nested_builder_case);
-  if (trailing_code != nullptr) {
-    printer->Print(variables_, trailing_code);
-  }
-  printer->Outdent();
-  printer->Print("}\n");
-}
-
-void RepeatedImmutableMessageFieldGenerator::GenerateBuilderMembers(
+void RepeatedImmutableMessageFieldGenerator::GenerateMembers(
     io::Printer* printer) const {
-  // When using nested-builders, the code initially works just like the
-  // non-nested builder case. It only creates a nested builder lazily on
-  // demand and then forever delegates to it after creation.
+  printer->Print(variables_,
+                 "@SuppressWarnings(\"serial\")\n"
+                 "private java.util.List<$type$> $name$_;\n");
+  PrintExtraFieldInfo(variables_, printer);
+  GenerateGetListMethod(printer);
+  GenerateGetOrBuilderListMethod(printer);
+  GenerateGetCountMethod(printer);
+  GenerateGetMethod(printer);
+  GenerateGetOrBuilderMethod(printer);
+}
 
+void RepeatedImmutableMessageFieldGenerator::GenerateEnsureIsMutableMethod(
+    io::Printer* printer) const {
   printer->Print(
       variables_,
-      // Used when the builder is null.
-      // One field is the list and the other field keeps track of whether the
-      // list is immutable. If it's immutable, the invariant is that it must
-      // either an instance of Collections.emptyList() or it's an ArrayList
-      // wrapped in a Collections.unmodifiableList() wrapper and nobody else has
-      // a reference to the underlying ArrayList. This invariant allows us to
-      // share instances of lists between protocol buffers avoiding expensive
-      // memory allocations. Note, immutable is a strong guarantee here -- not
-      // just that the list cannot be modified via the reference but that the
-      // list can never be modified.
-      "private java.util.List<$type$> $name$_ =\n"
-      "  java.util.Collections.emptyList();\n"
-
       "private void ensure$capitalized_name$IsMutable() {\n"
       "  if (!$get_mutable_bit_builder$) {\n"
       "    $name$_ = new java.util.ArrayList<$type$>($name$_);\n"
@@ -895,18 +1004,10 @@ void RepeatedImmutableMessageFieldGenerator::GenerateBuilderMembers(
       "   }\n"
       "}\n"
       "\n");
+}
 
-  printer->Print(
-      variables_,
-      // If this builder is non-null, it is used and the other fields are
-      // ignored.
-      "private com.google.protobuf.RepeatedFieldBuilder<\n"
-      "    $type$, $type$.Builder, $type$OrBuilder> $name$Builder_;\n"
-      "\n");
-
-  // The comments above the methods below are based on a hypothetical
-  // repeated field of type "Field" called "RepeatedField".
-
+void RepeatedImmutableMessageFieldGenerator::GenerateBuilderGetListMethod(
+    io::Printer* printer) const {
   // List<Field> getRepeatedFieldList()
   WriteFieldDocComment(printer, descriptor_, context_->options());
   PrintNestedBuilderFunction(
@@ -918,7 +1019,10 @@ void RepeatedImmutableMessageFieldGenerator::GenerateBuilderMembers(
       "return $name$Builder_.getMessageList();\n",
 
       nullptr);
+}
 
+void RepeatedImmutableMessageFieldGenerator::GenerateBuilderGetCountMethod(
+    io::Printer* printer) const {
   // int getRepeatedFieldCount()
   WriteFieldDocComment(printer, descriptor_, context_->options());
   PrintNestedBuilderFunction(
@@ -927,7 +1031,10 @@ void RepeatedImmutableMessageFieldGenerator::GenerateBuilderMembers(
       "return $name$_.size();\n", "return $name$Builder_.getCount();\n",
 
       nullptr);
+}
 
+void RepeatedImmutableMessageFieldGenerator::GenerateBuilderGetMethod(
+    io::Printer* printer) const {
   // Field getRepeatedField(int index)
   WriteFieldDocComment(printer, descriptor_, context_->options());
   PrintNestedBuilderFunction(
@@ -939,7 +1046,10 @@ void RepeatedImmutableMessageFieldGenerator::GenerateBuilderMembers(
       "return $name$Builder_.getMessage(index);\n",
 
       nullptr);
+}
 
+void RepeatedImmutableMessageFieldGenerator::GenerateBuilderSetMethod(
+    io::Printer* printer) const {
   // Builder setRepeatedField(int index, Field value)
   WriteFieldDocComment(printer, descriptor_, context_->options());
   PrintNestedBuilderFunction(
@@ -952,7 +1062,10 @@ void RepeatedImmutableMessageFieldGenerator::GenerateBuilderMembers(
       "$on_changed$\n",
       "$name$Builder_.setMessage(index, value);\n", "return this;\n",
       Semantic::kSet);
+}
 
+void RepeatedImmutableMessageFieldGenerator::GenerateBuilderSetBuilderMethod(
+    io::Printer* printer) const {
   // Builder setRepeatedField(int index, Field.Builder builderForValue)
   WriteFieldDocComment(printer, descriptor_, context_->options());
   printer->Print(
@@ -963,7 +1076,10 @@ void RepeatedImmutableMessageFieldGenerator::GenerateBuilderMembers(
       "  return set$capitalized_name$(index, builderForValue.build());\n"
       "}\n");
   printer->Annotate("{", "}", descriptor_, Semantic::kSet);
+}
 
+void RepeatedImmutableMessageFieldGenerator::GenerateBuilderAddMethod(
+    io::Printer* printer) const {
   // Builder addRepeatedField(Field value)
   WriteFieldDocComment(printer, descriptor_, context_->options());
   PrintNestedBuilderFunction(
@@ -979,7 +1095,10 @@ void RepeatedImmutableMessageFieldGenerator::GenerateBuilderMembers(
       "$name$Builder_.addMessage(value);\n",
 
       "return this;\n", Semantic::kSet);
+}
 
+void RepeatedImmutableMessageFieldGenerator::GenerateBuilderAddAtIndexMethod(
+    io::Printer* printer) const {
   // Builder addRepeatedField(int index, Field value)
   WriteFieldDocComment(printer, descriptor_, context_->options());
   PrintNestedBuilderFunction(
@@ -995,7 +1114,10 @@ void RepeatedImmutableMessageFieldGenerator::GenerateBuilderMembers(
       "$name$Builder_.addMessage(index, value);\n",
 
       "return this;\n", Semantic::kSet);
+}
 
+void RepeatedImmutableMessageFieldGenerator::GenerateBuilderAddBuilderMethod(
+    io::Printer* printer) const {
   // Builder addRepeatedField(Field.Builder builderForValue)
   WriteFieldDocComment(printer, descriptor_, context_->options());
   printer->Print(variables_,
@@ -1005,7 +1127,10 @@ void RepeatedImmutableMessageFieldGenerator::GenerateBuilderMembers(
                  "  return add$capitalized_name$(builderForValue.build());\n"
                  "}\n");
   printer->Annotate("{", "}", descriptor_, Semantic::kSet);
+}
 
+void RepeatedImmutableMessageFieldGenerator::
+    GenerateBuilderAddBuilderAtIndexMethod(io::Printer* printer) const {
   // Builder addRepeatedField(int index, Field.Builder builderForValue)
   WriteFieldDocComment(printer, descriptor_, context_->options());
   printer->Print(
@@ -1016,7 +1141,10 @@ void RepeatedImmutableMessageFieldGenerator::GenerateBuilderMembers(
       "  return add$capitalized_name$(index, builderForValue.build());\n"
       "}\n");
   printer->Annotate("{", "}", descriptor_, Semantic::kSet);
+}
 
+void RepeatedImmutableMessageFieldGenerator::GenerateBuilderAddAllMethod(
+    io::Printer* printer) const {
   // Builder addAllRepeatedField(Iterable<Field> values)
   WriteFieldDocComment(printer, descriptor_, context_->options());
   PrintNestedBuilderFunction(
@@ -1032,7 +1160,10 @@ void RepeatedImmutableMessageFieldGenerator::GenerateBuilderMembers(
       "$name$Builder_.addAllMessages(values);\n",
 
       "return this;\n", Semantic::kSet);
+}
 
+void RepeatedImmutableMessageFieldGenerator::GenerateBuilderClearMethod(
+    io::Printer* printer) const {
   // Builder clearRepeatedField()
   WriteFieldDocComment(printer, descriptor_, context_->options());
   PrintNestedBuilderFunction(
@@ -1045,7 +1176,10 @@ void RepeatedImmutableMessageFieldGenerator::GenerateBuilderMembers(
       "$name$Builder_.clear();\n",
 
       "return this;\n", Semantic::kSet);
+}
 
+void RepeatedImmutableMessageFieldGenerator::GenerateBuilderRemoveMethod(
+    io::Printer* printer) const {
   // Builder removeRepeatedField(int index)
   WriteFieldDocComment(printer, descriptor_, context_->options());
   PrintNestedBuilderFunction(
@@ -1059,7 +1193,10 @@ void RepeatedImmutableMessageFieldGenerator::GenerateBuilderMembers(
       "$name$Builder_.remove(index);\n",
 
       "return this;\n", Semantic::kSet);
+}
 
+void RepeatedImmutableMessageFieldGenerator::GenerateBuilderGetBuilderMethod(
+    io::Printer* printer) const {
   // Field.Builder getRepeatedFieldBuilder(int index)
   WriteFieldDocComment(printer, descriptor_, context_->options());
   printer->Print(
@@ -1071,7 +1208,10 @@ void RepeatedImmutableMessageFieldGenerator::GenerateBuilderMembers(
       "\n"
       "}\n");
   printer->Annotate("{", "}", descriptor_, Semantic::kSet);
+}
 
+void RepeatedImmutableMessageFieldGenerator::GenerateBuilderGetOrBuilderMethod(
+    io::Printer* printer) const {
   // FieldOrBuilder getRepeatedFieldOrBuilder(int index)
   WriteFieldDocComment(printer, descriptor_, context_->options());
   printer->Print(variables_,
@@ -1085,7 +1225,10 @@ void RepeatedImmutableMessageFieldGenerator::GenerateBuilderMembers(
                  "  }\n"
                  "}\n");
   printer->Annotate("{", "}", descriptor_);
+}
 
+void RepeatedImmutableMessageFieldGenerator::
+    GenerateBuilderGetOrBuilderListMethod(io::Printer* printer) const {
   // List<FieldOrBuilder> getRepeatedFieldOrBuilderList()
   WriteFieldDocComment(printer, descriptor_, context_->options());
   printer->Print(
@@ -1099,7 +1242,10 @@ void RepeatedImmutableMessageFieldGenerator::GenerateBuilderMembers(
       "  }\n"
       "}\n");
   printer->Annotate("{", "}", descriptor_);
+}
 
+void RepeatedImmutableMessageFieldGenerator::
+    GenerateBuilderAddBuilderNoArgsMethod(io::Printer* printer) const {
   // Field.Builder addRepeatedField()
   WriteFieldDocComment(printer, descriptor_, context_->options());
   printer->Print(variables_,
@@ -1110,7 +1256,10 @@ void RepeatedImmutableMessageFieldGenerator::GenerateBuilderMembers(
                  "      $type$.getDefaultInstance());\n"
                  "}\n");
   printer->Annotate("{", "}", descriptor_, Semantic::kSet);
+}
 
+void RepeatedImmutableMessageFieldGenerator::
+    GenerateBuilderAddBuilderAtIndexNoArgsMethod(io::Printer* printer) const {
   // Field.Builder addRepeatedFieldBuilder(int index)
   WriteFieldDocComment(printer, descriptor_, context_->options());
   printer->Print(
@@ -1122,7 +1271,10 @@ void RepeatedImmutableMessageFieldGenerator::GenerateBuilderMembers(
       "      index, $type$.getDefaultInstance());\n"
       "}\n");
   printer->Annotate("{", "}", descriptor_, Semantic::kSet);
+}
 
+void RepeatedImmutableMessageFieldGenerator::
+    GenerateBuilderGetBuilderListMethod(io::Printer* printer) const {
   // List<Field.Builder> getRepeatedFieldBuilderList()
   WriteFieldDocComment(printer, descriptor_, context_->options());
   printer->Print(variables_,
@@ -1131,7 +1283,13 @@ void RepeatedImmutableMessageFieldGenerator::GenerateBuilderMembers(
                  "  return "
                  "internalGet$capitalized_name$FieldBuilder()."
                  "getBuilderList();\n"
-                 "}\n"
+                 "}\n");
+  printer->Annotate("{", "}", descriptor_, Semantic::kSet);
+}
+
+void RepeatedImmutableMessageFieldGenerator::
+    GenerateBuilderInternalGetFieldBuilderMethod(io::Printer* printer) const {
+  printer->Print(variables_,
                  "private com.google.protobuf.RepeatedFieldBuilder<\n"
                  "    $type$, $type$.Builder, $type$OrBuilder> \n"
                  "    internalGet$capitalized_name$FieldBuilder() {\n"
@@ -1147,7 +1305,53 @@ void RepeatedImmutableMessageFieldGenerator::GenerateBuilderMembers(
                  "  }\n"
                  "  return $name$Builder_;\n"
                  "}\n");
-  printer->Annotate("{", "}", descriptor_, Semantic::kSet);
+}
+
+void RepeatedImmutableMessageFieldGenerator::GenerateBuilderMembers(
+    io::Printer* printer) const {
+  // Used when the builder is null.
+  // One field is the list and the other field keeps track of whether the
+  // list is immutable. If it's immutable, the invariant is that it must
+  // either an instance of Collections.emptyList() or it's an ArrayList
+  // wrapped in a Collections.unmodifiableList() wrapper and nobody else has
+  // a reference to the underlying ArrayList. This invariant allows us to
+  // share instances of lists between protocol buffers avoiding expensive
+  // memory allocations. Note, immutable is a strong guarantee here -- not
+  // just that the list cannot be modified via the reference but that the
+  // list can never be modified.
+  printer->Print(variables_,
+                 "private java.util.List<$type$> $name$_ =\n"
+                 "  java.util.Collections.emptyList();\n");
+
+  GenerateEnsureIsMutableMethod(printer);
+
+  printer->Print(
+      variables_,
+      // If this builder is non-null, it is used and the other fields are
+      // ignored.
+      "private com.google.protobuf.RepeatedFieldBuilder<\n"
+      "    $type$, $type$.Builder, $type$OrBuilder> $name$Builder_;\n"
+      "\n");
+
+  GenerateBuilderGetListMethod(printer);
+  GenerateBuilderGetCountMethod(printer);
+  GenerateBuilderGetMethod(printer);
+  GenerateBuilderSetMethod(printer);
+  GenerateBuilderSetBuilderMethod(printer);
+  GenerateBuilderAddMethod(printer);
+  GenerateBuilderAddAtIndexMethod(printer);
+  GenerateBuilderAddBuilderMethod(printer);
+  GenerateBuilderAddBuilderAtIndexMethod(printer);
+  GenerateBuilderAddAllMethod(printer);
+  GenerateBuilderClearMethod(printer);
+  GenerateBuilderRemoveMethod(printer);
+  GenerateBuilderGetBuilderMethod(printer);
+  GenerateBuilderGetOrBuilderMethod(printer);
+  GenerateBuilderGetOrBuilderListMethod(printer);
+  GenerateBuilderAddBuilderNoArgsMethod(printer);
+  GenerateBuilderAddBuilderAtIndexNoArgsMethod(printer);
+  GenerateBuilderGetBuilderListMethod(printer);
+  GenerateBuilderInternalGetFieldBuilderMethod(printer);
 }
 
 void RepeatedImmutableMessageFieldGenerator::

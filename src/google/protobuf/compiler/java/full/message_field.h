@@ -76,6 +76,26 @@ class ImmutableMessageFieldGenerator : public ImmutableFieldGenerator {
       const char* trailing_code,
       absl::optional<io::AnnotationCollector::Semantic> semantic =
           absl::nullopt) const;
+
+ private:
+  void GenerateInterfaceHasMethod(io::Printer* printer) const;
+  void GenerateInterfaceGetMethod(io::Printer* printer) const;
+  void GenerateInterfaceGetOrBuilderMethod(io::Printer* printer) const;
+
+  void GenerateHasMethod(io::Printer* printer) const;
+  void GenerateGetMethod(io::Printer* printer) const;
+  void GenerateGetOrBuilderMethod(io::Printer* printer) const;
+
+  void GenerateBuilderHasMethod(io::Printer* printer) const;
+  void GenerateBuilderGetMethod(io::Printer* printer) const;
+  void GenerateBuilderSetMethod(io::Printer* printer) const;
+  void GenerateBuilderSetBuilderMethod(io::Printer* printer) const;
+  void GenerateBuilderMergeMethod(io::Printer* printer) const;
+  void GenerateBuilderClearMethod(io::Printer* printer) const;
+  void GenerateBuilderGetBuilderMethod(io::Printer* printer) const;
+  void GenerateBuilderGetOrBuilderMethod(io::Printer* printer) const;
+  void GenerateBuilderInternalGetFieldBuilderMethod(io::Printer* printer) const;
+  void GenerateBuilderParseMethod(io::Printer* printer) const;
 };
 
 class ImmutableMessageOneofFieldGenerator
@@ -98,6 +118,21 @@ class ImmutableMessageOneofFieldGenerator
   void GenerateBuilderParsingCode(io::Printer* printer) const override;
   void GenerateSerializationCode(io::Printer* printer) const override;
   void GenerateSerializedSizeCode(io::Printer* printer) const override;
+
+ private:
+  void GenerateHasMethod(io::Printer* printer) const;
+  void GenerateGetMethod(io::Printer* printer) const;
+  void GenerateGetOrBuilderMethod(io::Printer* printer) const;
+
+  void GenerateBuilderHasMethod(io::Printer* printer) const;
+  void GenerateBuilderGetMethod(io::Printer* printer) const;
+  void GenerateBuilderSetMethod(io::Printer* printer) const;
+  void GenerateBuilderSetBuilderMethod(io::Printer* printer) const;
+  void GenerateBuilderMergeMethod(io::Printer* printer) const;
+  void GenerateBuilderClearMethod(io::Printer* printer) const;
+  void GenerateBuilderGetBuilderMethod(io::Printer* printer) const;
+  void GenerateBuilderGetOrBuilderMethod(io::Printer* printer) const;
+  void GenerateBuilderInternalGetFieldBuilderMethod(io::Printer* printer) const;
 };
 
 class RepeatedImmutableMessageFieldGenerator
@@ -131,16 +166,39 @@ class RepeatedImmutableMessageFieldGenerator
 
   std::string GetBoxedType() const override;
 
- protected:
-  void PrintNestedBuilderCondition(
-      io::Printer* printer, const char* regular_case,
-      const char* nested_builder_case) const override;
-  void PrintNestedBuilderFunction(
-      io::Printer* printer, const char* method_prototype,
-      const char* regular_case, const char* nested_builder_case,
-      const char* trailing_code,
-      absl::optional<io::AnnotationCollector::Semantic> semantic =
-          absl::nullopt) const override;
+ private:
+  void GenerateInterfaceGetListMethod(io::Printer* printer) const;
+  void GenerateInterfaceGetCountMethod(io::Printer* printer) const;
+  void GenerateInterfaceGetMethod(io::Printer* printer) const;
+  void GenerateInterfaceGetOrBuilderListMethod(io::Printer* printer) const;
+  void GenerateInterfaceGetOrBuilderMethod(io::Printer* printer) const;
+
+  void GenerateGetListMethod(io::Printer* printer) const;
+  void GenerateGetCountMethod(io::Printer* printer) const;
+  void GenerateGetMethod(io::Printer* printer) const;
+  void GenerateGetOrBuilderListMethod(io::Printer* printer) const;
+  void GenerateGetOrBuilderMethod(io::Printer* printer) const;
+
+  void GenerateEnsureIsMutableMethod(io::Printer* printer) const;
+  void GenerateBuilderGetListMethod(io::Printer* printer) const;
+  void GenerateBuilderGetCountMethod(io::Printer* printer) const;
+  void GenerateBuilderGetMethod(io::Printer* printer) const;
+  void GenerateBuilderSetMethod(io::Printer* printer) const;
+  void GenerateBuilderSetBuilderMethod(io::Printer* printer) const;
+  void GenerateBuilderAddMethod(io::Printer* printer) const;
+  void GenerateBuilderAddAtIndexMethod(io::Printer* printer) const;
+  void GenerateBuilderAddBuilderMethod(io::Printer* printer) const;
+  void GenerateBuilderAddBuilderAtIndexMethod(io::Printer* printer) const;
+  void GenerateBuilderAddAllMethod(io::Printer* printer) const;
+  void GenerateBuilderClearMethod(io::Printer* printer) const;
+  void GenerateBuilderRemoveMethod(io::Printer* printer) const;
+  void GenerateBuilderGetBuilderMethod(io::Printer* printer) const;
+  void GenerateBuilderGetOrBuilderMethod(io::Printer* printer) const;
+  void GenerateBuilderGetOrBuilderListMethod(io::Printer* printer) const;
+  void GenerateBuilderAddBuilderNoArgsMethod(io::Printer* printer) const;
+  void GenerateBuilderAddBuilderAtIndexNoArgsMethod(io::Printer* printer) const;
+  void GenerateBuilderGetBuilderListMethod(io::Printer* printer) const;
+  void GenerateBuilderInternalGetFieldBuilderMethod(io::Printer* printer) const;
 };
 
 }  // namespace java
