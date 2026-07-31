@@ -216,6 +216,29 @@ TEST(UnknownFieldSpecialTest, UnknownVarintFollowedByEndGroupInGroup) {
   EXPECT_EQ(captured_unknown, "\x10\x7B");
 }
 
+TEST(UnknownFieldSpecialTest, LargeTagUnknownGroupField) {
+  char trace_buf[64];
+  upb::Arena msg_arena;
+  upb::Arena mt_arena;
+
+  // Create a MiniTable with field 1 (Int32).
+  auto [mt, field] = MiniTable::MakeSingleFieldTable<field_types::Int32>(
+      1, kUpb_DecodeFast_Scalar, mt_arena.ptr());
+  upb_Message* msg = upb_Message_New(mt, msg_arena.ptr());
+  ASSERT_NE(msg, nullptr);
+
+  // Field 2048 Group: tag = (2048 << 3) | 3 = 16387 = \x83\x80\x01.
+  // Group content: field 1 varint 123 (\x08\x7B), then EndGroup tag for field
+  // 2048: \x84\x80\x01.
+  std::string payload = "\x83\x80\x01\x08\x7B\x84\x80\x01";
+
+  upb_DecodeStatus result =
+      upb_DecodeWithTrace(payload.data(), payload.size(), msg, mt, nullptr, 0,
+                          msg_arena.ptr(), trace_buf, sizeof(trace_buf));
+
+  EXPECT_EQ(result, kUpb_DecodeStatus_Ok) << upb_DecodeStatus_String(result);
+}
+
 }  // namespace
 }  // namespace test
 }  // namespace upb
