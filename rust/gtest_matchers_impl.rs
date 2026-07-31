@@ -9,6 +9,22 @@ use googletest::description::Description;
 use googletest::matcher::{Matcher, MatcherBase, MatcherResult};
 use protobuf::__internal::MatcherEq;
 
+////////////////////////////////////////////////////////////////////////////////
+// Matchers
+////////////////////////////////////////////////////////////////////////////////
+
+/// Matches a protobuf message for equality.
+///
+/// This method may have false-negatives or false-positives in the face of unknown fields; see the
+/// comments on `message_eq` in message.rs for precise semantics.
+pub fn proto_eq<T: MatcherEq>(expected: T) -> MessageMatcher<T> {
+    MessageMatcher { expected }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// Implementation details
+////////////////////////////////////////////////////////////////////////////////
+
 #[derive(MatcherBase)]
 pub struct MessageMatcher<T: MatcherEq> {
     expected: T,
@@ -44,8 +60,4 @@ where
             MatcherResult::NoMatch => format!("is not equal to {:?}", self.expected).into(),
         }
     }
-}
-
-pub fn proto_eq<T: MatcherEq>(expected: T) -> MessageMatcher<T> {
-    MessageMatcher { expected }
 }
