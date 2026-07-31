@@ -628,14 +628,8 @@ static size_t VarintSize(const T* data, const int n) {
     } else if (SignExtended) {
       msb_sum += x >> 31;
     }
-    // clang is so smart that it produces optimal SIMD sequence unrolling
-    // the loop 8 ints at a time. With a sequence of 4
-    // cmpres = cmpgt x, sizeclass  ( -1 or 0)
-    // sum = sum - cmpres
-    if (x > 0x7F) sum++;
-    if (x > 0x3FFF) sum++;
-    if (x > 0x1FFFFF) sum++;
-    if (x > 0xFFFFFFF) sum++;
+    // both clang and gcc are smart enough to vectorize this.
+    sum += (x > 0x7F) + (x > 0x3FFF) + (x > 0x1FFFFF) + (x > 0xFFFFFFF);
   }
 #ifdef __clang__
 // Clang is not smart enough to see that this loop doesn't run many times
@@ -671,15 +665,12 @@ static size_t VarintSize64(const T* data, const int n) {
       x = WireFormatLite::ZigZagEncode64(x);
     }
     // First step is a binary search, we can't branch in sse so we use the
-    // result of the compare to adjust sum and appropriately. This code is
-    // written to make clang recognize the vectorization.
+    // result of the compare to adjust sum and appropriately.
     uint64_t tmp = x >= (static_cast<uint64_t>(1) << 35) ? -1 : 0;
     sum += 5 & tmp;
     x >>= 35 & tmp;
-    if (x > 0x7F) sum++;
-    if (x > 0x3FFF) sum++;
-    if (x > 0x1FFFFF) sum++;
-    if (x > 0xFFFFFFF) sum++;
+    // both clang and gcc are smart enough to vectorize this.
+    sum += (x > 0x7F) + (x > 0x3FFF) + (x > 0x1FFFFF) + (x > 0xFFFFFFF);
   }
 #ifdef __clang__
 // Clang is not smart enough to see that this loop doesn't run many times
@@ -699,11 +690,10 @@ static size_t VarintSize64(const T* data, const int n) {
 
 // On machines without a vector count-leading-zeros instruction such as SVE CLZ
 // on arm or VPLZCNT on x86, SSE or AVX2 instructions can allow vectorization of
-// the size calculation loop. GCC does not detect this autovectorization
-// opportunity, so only enable for clang.
+// the size calculation loop.
 // When last tested, AVX512-vectorized lzcnt was slower than the SSE/AVX2
 // implementation, so __AVX512CD__ is not checked.
-#if defined(__SSE__) && defined(__clang__)
+#if defined(__SSE__)
 size_t WireFormatLite::Int32Size(const RepeatedField<int32_t>& value) {
   return VarintSize<false, true>(value.data(), value.size());
 }
@@ -721,7 +711,7 @@ size_t WireFormatLite::EnumSize(const RepeatedField<int>& value) {
   return VarintSize<false, true>(value.data(), value.size());
 }
 
-#else  // !(defined(__SSE__) && defined(__clang__))
+#else  // !(defined(__SSE__))
 
 size_t WireFormatLite::Int32Size(const RepeatedField<int32_t>& value) {
   size_t out = 0;
