@@ -13,6 +13,7 @@
 #include <string>
 
 #include "absl/container/flat_hash_set.h"
+#include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
 #include "absl/strings/escaping.h"
 #include "absl/strings/match.h"
