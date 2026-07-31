@@ -16,6 +16,7 @@
 #include "absl/container/flat_hash_set.h"
 #include "absl/log/absl_log.h"
 #include "absl/strings/ascii.h"
+#include "absl/strings/charset.h"
 #include "absl/strings/escaping.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_replace.h"
@@ -59,6 +60,26 @@ struct Options {
 };
 
 namespace {
+
+// Characters that could enable code injection in generated PHP code.
+constexpr absl::CharSet kBannedPhpNamespaceChars =
+    absl::CharSet(";{}()'\"`$#=<>|&[]/\n\r!?*~^%@,") |
+    absl::CharSet::Char('\0');
+
+// Validates that a PHP namespace/metadata namespace option does not contain
+// characters that could allow code injection into generated PHP code.
+bool IsValidPhpNamespace(absl::string_view ns, std::string* error) {
+  for (char c : ns) {
+    if (kBannedPhpNamespaceChars.contains(c)) {
+      *error = absl::StrCat(
+          "Invalid character in PHP namespace option: character '",
+          std::string(1, c),
+          "' is not allowed because it could enable code injection.");
+      return false;
+    }
+  }
+  return true;
+}
 
 // Forward decls.
 std::string PhpName(absl::string_view full_name, const Options& options);
@@ -1534,6 +1555,17 @@ bool GenerateMessageFile(const FileDescriptor* file, const Descriptor* message,
 
 bool GenerateFile(const FileDescriptor* file, const Options& options,
                   GeneratorContext* generator_context, std::string* error) {
+  if (file->options().has_php_namespace()) {
+    if (!IsValidPhpNamespace(file->options().php_namespace(), error)) {
+      return false;
+    }
+  }
+  if (file->options().has_php_metadata_namespace()) {
+    if (!IsValidPhpNamespace(file->options().php_metadata_namespace(), error)) {
+      return false;
+    }
+  }
+
   GenerateMetadataFile(file, options, generator_context);
 
   for (int i = 0; i < file->message_type_count(); i++) {
