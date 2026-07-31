@@ -193,7 +193,7 @@ proto_library(
         "//:__pkg__",
         "//editions:__pkg__",
         "//java/__subpackages__",
-        "//pkg:__pkg__",
+        "//src/google/protobuf:__pkg__",
     ],
     deps = ["//:descriptor_proto"],
 )
@@ -211,8 +211,8 @@ filegroup(
     name = "java_features_proto_srcs",
     srcs = ["src/main/resources/google/protobuf/java_features.proto"],
     visibility = [
-        "//pkg:__pkg__",
         "//python:__pkg__",
+        "//src/google/protobuf:__pkg__",
     ],
 )
 
