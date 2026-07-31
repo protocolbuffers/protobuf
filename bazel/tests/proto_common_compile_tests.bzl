@@ -7,11 +7,13 @@
 #
 """Tests for `proto_common.compile` function."""
 
+load("@bazel_skylib//rules:common_settings.bzl", "BuildSettingInfo")
 load("@rules_testing//lib:analysis_test.bzl", "analysis_test", "test_suite")
 load("@rules_testing//lib:truth.bzl", "matching")
 load("@rules_testing//lib:util.bzl", "util")
 load("//bazel:proto_library.bzl", "proto_library")
 load("//bazel/tests/testdata:compile_rule.bzl", "compile_rule")
+load("//bazel/toolchains:proto_lang_toolchain.bzl", "proto_lang_toolchain")
 
 protocol_compiler = "/protoc"
 
@@ -37,6 +39,9 @@ def proto_common_compile_test_suite(name):
             _test_compile_direct_generated_protos,
             _test_compile_indirect_generated_protos,
             _test_compile_override_progress_message,
+            _test_proto_toolchain_for_cc_flag_override,
+            _test_proto_toolchain_for_java_flag_override,
+            _test_proto_toolchain_for_javalite_flag_override,
         ],
     )
 
@@ -393,3 +398,69 @@ def _test_compile_override_progress_message(name):
 def _test_compile_override_progress_message_impl(env, target):
     action = env.expect.that_target(target).action_named("MyMnemonic")
     env.expect.that_str(repr(action.actual)).contains("My custom progress message //")
+
+def _test_proto_toolchain_for_cc_flag_override(name):
+    util.helper_target(
+        proto_lang_toolchain,
+        name = name + "_custom_cc_toolchain",
+        command_line = "$(OUT)",
+        mnemonic = "CustomCcMnemonic",
+    )
+
+    analysis_test(
+        name = name,
+        target = "@//bazel/flags/cc:proto_toolchain_for_cc",
+        impl = _test_proto_toolchain_for_cc_flag_override_impl,
+        config_settings = {
+            "@@//bazel/flags/cc:proto_toolchain_for_cc": "//bazel/tests:" + name + "_custom_cc_toolchain",
+        },
+    )
+
+def _test_proto_toolchain_for_cc_flag_override_impl(env, target):
+    env.expect.that_target(target).has_provider(BuildSettingInfo)
+    val = target[BuildSettingInfo].value
+    env.expect.that_str(str(val)).contains("_custom_cc_toolchain")
+
+def _test_proto_toolchain_for_java_flag_override(name):
+    util.helper_target(
+        proto_lang_toolchain,
+        name = name + "_custom_java_toolchain",
+        command_line = "$(OUT)",
+        mnemonic = "CustomJavaMnemonic",
+    )
+
+    analysis_test(
+        name = name,
+        target = "@//bazel/flags/java:proto_toolchain_for_java",
+        impl = _test_proto_toolchain_for_java_flag_override_impl,
+        config_settings = {
+            "@@//bazel/flags/java:proto_toolchain_for_java": "//bazel/tests:" + name + "_custom_java_toolchain",
+        },
+    )
+
+def _test_proto_toolchain_for_java_flag_override_impl(env, target):
+    env.expect.that_target(target).has_provider(BuildSettingInfo)
+    val = target[BuildSettingInfo].value
+    env.expect.that_str(str(val)).contains("_custom_java_toolchain")
+
+def _test_proto_toolchain_for_javalite_flag_override(name):
+    util.helper_target(
+        proto_lang_toolchain,
+        name = name + "_custom_javalite_toolchain",
+        command_line = "$(OUT)",
+        mnemonic = "CustomJavaLiteMnemonic",
+    )
+
+    analysis_test(
+        name = name,
+        target = "@//bazel/flags/java:proto_toolchain_for_javalite",
+        impl = _test_proto_toolchain_for_javalite_flag_override_impl,
+        config_settings = {
+            "@@//bazel/flags/java:proto_toolchain_for_javalite": "//bazel/tests:" + name + "_custom_javalite_toolchain",
+        },
+    )
+
+def _test_proto_toolchain_for_javalite_flag_override_impl(env, target):
+    env.expect.that_target(target).has_provider(BuildSettingInfo)
+    val = target[BuildSettingInfo].value
+    env.expect.that_str(str(val)).contains("_custom_javalite_toolchain")

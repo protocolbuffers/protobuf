@@ -386,13 +386,13 @@ for use with MessageSet.
         # buildifier: disable=attr-license (calling attr.license())
         "licenses": attr.license() if hasattr(attr, "license") else attr.string_list(),
         "_experimental_proto_descriptor_sets_include_source_info": attr.label(
-            default = "//bazel/flags:experimental_proto_descriptor_sets_include_source_info",
+            default = Label("//bazel/flags:experimental_proto_descriptor_sets_include_source_info"),
         ),
         "_strict_proto_deps": attr.label(
-            default = "//bazel/flags:strict_proto_deps",
+            default = Label("//bazel/flags:strict_proto_deps"),
         ),
         "_strict_public_imports": attr.label(
-            default = "//bazel/flags:strict_public_imports",
+            default = Label("//bazel/flags:strict_public_imports"),
         ),
     } | toolchains.if_legacy_toolchain({
         "_proto_compiler": attr.label(

@@ -211,7 +211,7 @@ def _test_descriptor_set_output_strict_deps(name):
             name + "_depends_on_alias",
         ],
         impl = _test_descriptor_set_output_strict_deps_impl,
-        config_settings = {"//command_line_option:strict_proto_deps": "error"},
+        config_settings = {"@@//bazel/flags:strict_proto_deps": "error"},
     )
 
 def _test_descriptor_set_output_strict_deps_impl(env, targets):
@@ -253,7 +253,7 @@ def _test_descriptor_set_output_strict_deps_multiple_srcs(name):
         name = name,
         target = name + "_foo",
         impl = _test_descriptor_set_output_strict_deps_multiple_srcs_impl,
-        config_settings = {"//command_line_option:strict_proto_deps": "error"},
+        config_settings = {"@@//bazel/flags:strict_proto_deps": "error"},
     )
 
 def _test_descriptor_set_output_strict_deps_multiple_srcs_impl(env, target):
@@ -273,7 +273,7 @@ def _test_descriptor_set_output_strict_deps_strict(name):
         name = name,
         target = name + "_foo",
         impl = _test_descriptor_set_output_strict_deps_strict_impl,
-        config_settings = {"//command_line_option:strict_proto_deps": "strict"},
+        config_settings = {"@@//bazel/flags:strict_proto_deps": "strict"},
     )
 
 def _test_descriptor_set_output_strict_deps_strict_impl(env, target):
@@ -293,7 +293,7 @@ def _test_descriptor_set_output_strict_deps_disabled(name):
         name = name,
         target = name + "_foo",
         impl = _test_descriptor_set_output_strict_deps_disabled_impl,
-        config_settings = {"//command_line_option:strict_proto_deps": "off"},
+        config_settings = {"@@//bazel/flags:strict_proto_deps": "off"},
     )
 
 def _test_descriptor_set_output_strict_deps_disabled_impl(env, target):
@@ -336,7 +336,7 @@ def _test_strict_public_imports_enabled(name):
         name = name,
         target = name + "_foo",
         impl = _test_strict_public_imports_enabled_impl,
-        config_settings = {"//command_line_option:strict_public_imports": "ERROR"},
+        config_settings = {"@@//bazel/flags:strict_public_imports": "ERROR"},
     )
 
 def _test_strict_public_imports_enabled_impl(env, target):
@@ -352,7 +352,7 @@ def _test_strict_public_imports_disabled(name):
         name = name,
         target = name + "_foo",
         impl = _test_strict_public_imports_disabled_impl,
-        config_settings = {"//command_line_option:strict_public_imports": "OFF"},
+        config_settings = {"@@//bazel/flags:strict_public_imports": "OFF"},
     )
 
 def _test_strict_public_imports_disabled_impl(env, target):
@@ -397,7 +397,7 @@ def _test_strict_public_imports_transitive_exports(name):
         name = name,
         target = name + "_top",
         impl = _test_strict_public_imports_transitive_exports_impl,
-        config_settings = {"//command_line_option:strict_public_imports": "ERROR"},
+        config_settings = {"@@//bazel/flags:strict_public_imports": "ERROR"},
     )
 
 def _test_strict_public_imports_transitive_exports_impl(env, target):
@@ -603,7 +603,7 @@ def _test_strip_import_prefix_with_strict_proto_deps(name):
         name = name,
         target = name + "_d",
         impl = _test_strip_import_prefix_with_strict_proto_deps_impl,
-        config_settings = {"//command_line_option:strict_proto_deps": "STRICT"},
+        config_settings = {"@@//bazel/flags:strict_proto_deps": "STRICT"},
     )
 
 def _test_strip_import_prefix_with_strict_proto_deps_impl(env, target):
@@ -630,7 +630,7 @@ def _test_dep_on_strip_import_prefix_with_strict_proto_deps(name):
         name = name,
         target = name + "_e",
         impl = _test_dep_on_strip_import_prefix_with_strict_proto_deps_impl,
-        config_settings = {"//command_line_option:strict_proto_deps": "STRICT"},
+        config_settings = {"@@//bazel/flags:strict_proto_deps": "STRICT"},
     )
 
 def _test_dep_on_strip_import_prefix_with_strict_proto_deps_impl(env, target):
