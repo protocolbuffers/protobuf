@@ -989,60 +989,6 @@ set(protoc-gen-upb_minitable_hdrs
   ${protobuf_SOURCE_DIR}/upb_generator/plugin_bootstrap.h
 )
 
-# @//src/google/protobuf:well_known_type_protos
-set(wkt_protos_files
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/any.proto
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/api.proto
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/duration.proto
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/empty.proto
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/field_mask.proto
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/source_context.proto
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/struct.proto
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/timestamp.proto
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/type.proto
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/wrappers.proto
-)
-
-# @//src/google/protobuf:cpp_file_options_proto
-set(cpp_file_options_proto_proto_srcs
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/cpp_file_options.proto
-)
-
-# @//src/google/protobuf:cpp_file_options_proto
-set(cpp_file_options_proto_srcs
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/cpp_file_options.proto.pb.cc
-)
-
-# @//src/google/protobuf:cpp_file_options_proto
-set(cpp_file_options_proto_hdrs
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/cpp_file_options.proto.pb.h
-)
-
-# @//src/google/protobuf:cpp_file_options_proto
-set(cpp_file_options_proto_files
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/cpp_file_options_proto-descriptor-set.proto.bin
-)
-
-# @//src/google/protobuf:cpp_features_proto
-set(cpp_features_proto_proto_srcs
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/cpp_features.proto
-)
-
-# @//src/google/protobuf:cpp_features_proto
-set(cpp_features_proto_srcs
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/cpp_features.proto.pb.cc
-)
-
-# @//src/google/protobuf:cpp_features_proto
-set(cpp_features_proto_hdrs
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/cpp_features.proto.pb.h
-)
-
-# @//src/google/protobuf:cpp_features_proto
-set(cpp_features_proto_files
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/cpp_features_proto-descriptor-set.proto.bin
-)
-
 # @//src/google/protobuf:descriptor_proto
 set(descriptor_proto_proto_srcs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/descriptor.proto
@@ -1061,34 +1007,6 @@ set(descriptor_proto_hdrs
 # @//src/google/protobuf:descriptor_proto
 set(descriptor_proto_files
   ${protobuf_SOURCE_DIR}/src/google/protobuf/descriptor_proto-descriptor-set.proto.bin
-)
-
-# @//src/google/protobuf:json_enumvalue_options_proto
-set(json_enumvalue_options_proto_proto_srcs
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/json_enumvalue_options.proto
-)
-
-# @//src/google/protobuf:json_enumvalue_options_proto
-set(json_enumvalue_options_proto_srcs
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/json_enumvalue_options.proto.pb.cc
-)
-
-# @//src/google/protobuf:json_enumvalue_options_proto
-set(json_enumvalue_options_proto_hdrs
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/json_enumvalue_options.proto.pb.h
-)
-
-# @//src/google/protobuf:json_enumvalue_options_proto
-set(json_enumvalue_options_proto_files
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/json_enumvalue_options_proto-descriptor-set.proto.bin
-)
-
-# @//src/google/protobuf:json_enumvalue_options_cc_proto
-set(json_enumvalue_options_cc_proto_files
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/_virtual_imports/json_enumvalue_options_proto/google/protobuf/json_enumvalue_options.pb.cc
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/_virtual_imports/json_enumvalue_options_proto/google/protobuf/json_enumvalue_options.pb.h
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/libjson_enumvalue_options_proto.a
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/libjson_enumvalue_options_proto.so
 )
 
 # @//src/google/protobuf/compiler:plugin_proto
@@ -1111,64 +1029,27 @@ set(plugin_proto_files
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/plugin_proto-descriptor-set.proto.bin
 )
 
-# @//csharp:c_sharp_features_proto
-set(c_sharp_features_proto_proto_srcs
+# @//src/google/protobuf:release_all_options_proto_srcs
+set(release_all_options_protos_files
   ${protobuf_SOURCE_DIR}/csharp/google/protobuf/c_sharp_features.proto
-)
-
-# @//csharp:c_sharp_features_proto
-set(c_sharp_features_proto_srcs
-  ${protobuf_SOURCE_DIR}/csharp/google/protobuf/c_sharp_features.proto.pb.cc
-)
-
-# @//csharp:c_sharp_features_proto
-set(c_sharp_features_proto_hdrs
-  ${protobuf_SOURCE_DIR}/csharp/google/protobuf/c_sharp_features.proto.pb.h
-)
-
-# @//csharp:c_sharp_features_proto
-set(c_sharp_features_proto_files
-  ${protobuf_SOURCE_DIR}/csharp/c_sharp_features_proto-descriptor-set.proto.bin
-)
-
-# @//java/core:java_features_proto
-set(java_features_proto_proto_srcs
-  ${protobuf_SOURCE_DIR}/java/core/src/main/resources/google/protobuf/java_features.proto
-)
-
-# @//java/core:java_features_proto
-set(java_features_proto_srcs
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/java_features.proto.pb.cc
-)
-
-# @//java/core:java_features_proto
-set(java_features_proto_hdrs
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/java_features.proto.pb.h
-)
-
-# @//java/core:java_features_proto
-set(java_features_proto_files
-  ${protobuf_SOURCE_DIR}/java/core/java_features_proto-descriptor-set.proto.bin
-)
-
-# @//go:go_features_proto
-set(go_features_proto_proto_srcs
   ${protobuf_SOURCE_DIR}/go/google/protobuf/go_features.proto
-)
-
-# @//go:go_features_proto
-set(go_features_proto_srcs
-  ${protobuf_SOURCE_DIR}/go/go_features.proto.pb.cc
-)
-
-# @//go:go_features_proto
-set(go_features_proto_hdrs
-  ${protobuf_SOURCE_DIR}/go/go_features.proto.pb.h
-)
-
-# @//go:go_features_proto
-set(go_features_proto_files
-  ${protobuf_SOURCE_DIR}/go/go_features_proto-descriptor-set.proto.bin
+  ${protobuf_SOURCE_DIR}/java/core/src/main/resources/google/protobuf/java_features.proto
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/any.proto
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/api.proto
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/cpp_features.proto
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/cpp_file_options.proto
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/cpp_options.proto
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/descriptor.proto
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/duration.proto
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/empty.proto
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/field_mask.proto
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/json_enumvalue_options.proto
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/json_options.proto
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/source_context.proto
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/struct.proto
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/timestamp.proto
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/type.proto
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/wrappers.proto
 )
 
 # @//pkg:common_test
