@@ -9288,19 +9288,7 @@ void internal::DescriptorBuilder::OptionInterpreter::UpdateSourceCodeInfo(
       }
 
       if (loc_matches) {
-        if (loc->path_size() == static_cast<int64_t>(match_src.size() + 1)) {
-          int uninterpreted_field = loc->path(match_src.size());
-
-          SourceCodeInfo_Location* mapped_loc = new_locs.Add();
-          *mapped_loc = *loc;
-          mapped_loc->mutable_path()->Assign(match_dest.begin(),
-                                             match_dest.end());
-          mapped_loc->add_path(uninterpreted_field);
-
-          // TODO: b/168903973 - recursively process options with aggregate
-          // values and add locations. Example: [(my_opt) = {a: 1, b: 2}]
-          // Locations of `a` and `b` are not added yet.
-        }
+        // TODO: b/168903973 - Remove once we update the format.
         // don't copy this row since it is a sub-location that we're removing
         // (or we already mapped it if it's a direct child)
         continue;
