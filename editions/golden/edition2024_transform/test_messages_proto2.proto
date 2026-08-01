@@ -17,6 +17,7 @@ edition = "2024";
 
 package protobuf_test_messages.proto2;
 
+import option "third_party/golang/protobuf/v2/src/google/protobuf/go_features.proto";
 import option "google/protobuf/java_features.proto";
 import option "google/protobuf/java_mutable_features.proto";
 import option "google/protobuf/cpp_features.proto";

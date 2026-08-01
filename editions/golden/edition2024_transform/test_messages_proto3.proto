@@ -25,6 +25,7 @@ import "google/protobuf/struct.proto";
 import "google/protobuf/timestamp.proto";
 import "google/protobuf/wrappers.proto";
 
+import option "third_party/golang/protobuf/v2/src/google/protobuf/go_features.proto";
 import option "google/protobuf/java_features.proto";
 import option "google/protobuf/java_mutable_features.proto";
 import option "google/protobuf/cpp_features.proto";

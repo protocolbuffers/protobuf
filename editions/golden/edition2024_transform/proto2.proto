@@ -19,6 +19,7 @@ package protobuf_editions_test;
 import "editions/input/edition2023_transform/proto3.proto";
 
 import option "net/proto/proto1_features.proto";
+import option "third_party/golang/protobuf/v2/src/google/protobuf/go_features.proto";
 import option "google/protobuf/java_features.proto";
 import option "google/protobuf/cpp_features.proto";
 
