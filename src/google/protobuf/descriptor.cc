@@ -5484,9 +5484,18 @@ const FileDescriptor* internal::DescriptorBuilder::BuildFile(
     return nullptr;
   }
 
-  // If we have a fallback_database_, and we aren't doing lazy import building,
-  // attempt to load all dependencies now, before checkpointing tables_.  This
-  // avoids confusion with recursive checkpoints.
+  // If we have a fallback_database_ and we aren't doing lazy import building,
+  // we must eagerly build all dependencies and populate tables_ before
+  // proceeding with BuildFile. This satisfies the following constraints:
+  // 1. BuildFileImpl receives a pre-planned internal::FlatAllocator.
+  //    Dynamically building dependencies from the fallback database mid-build
+  //    would disrupt these memory transaction boundaries, as the new files
+  //    would allocate into tables_ while the current file's layout is only
+  //    partially constructed.
+  // 2. We avoid creating nested tables_ checkpoints mid-build. This ensures
+  //    that if a file fails to build (e.g., size limits), it cleanly rolls back
+  //    its own state without corrupting or relying on a dynamically loaded
+  //    dependency's checkpoint.
   if (!pool_->lazily_build_dependencies_) {
     if (pool_->fallback_database_ != nullptr) {
       tables_->pending_files_.push_back(proto.name());
@@ -5500,6 +5509,7 @@ const FileDescriptor* internal::DescriptorBuilder::BuildFile(
             (pool_->underlay_ == nullptr ||
              pool_->underlay_->FindFileByName(name) == nullptr)) {
           // We don't care what this returns since we'll find out below anyway.
+          internal::ScopedFallbackDatabaseErrorSuppressor suppressor;
           pool_->TryFindFileInFallbackDatabase(name, deferred_validation_);
         }
       }
