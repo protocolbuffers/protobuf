@@ -159,6 +159,7 @@ absl::StatusOr<ConformanceResponse> Harness::RunTest(
       options.ignore_unknown_fields =
           (request.test_category() ==
            conformance::JSON_IGNORE_UNKNOWN_PARSING_TEST);
+      options.allow_legacy_nonconformant_behavior = false;
       absl::Status status = JsonStringToMessage(request.json_payload(),
                                                 test_message.get(), options);
       if (!status.ok()) {

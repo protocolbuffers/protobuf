@@ -189,7 +189,11 @@ absl::Status WriteSingular(JsonWriter& writer, Field<Traits> field,
     case FieldDescriptor::TYPE_BOOL: {
       auto x = Traits::GetBool(field, std::forward<Args>(args)...);
       RETURN_IF_ERROR(x.status());
-      writer.Write(*x ? "true" : "false");
+      if (writer.options().always_print_bools_as_ints) {
+        writer.Write(*x ? "1" : "0");
+      } else {
+        writer.Write(*x ? "true" : "false");
+      }
       break;
     }
     case FieldDescriptor::TYPE_STRING: {
@@ -312,7 +316,11 @@ absl::Status WriteMapKey(JsonWriter& writer, const Entry& entry,
     case FieldDescriptor::TYPE_BOOL: {
       auto x = Traits::GetBool(field, entry);
       RETURN_IF_ERROR(x.status());
-      writer.Write(MakeQuoted(*x ? "true" : "false"));
+      if (writer.options().always_print_bools_as_ints) {
+        writer.Write(MakeQuoted(*x ? "1" : "0"));
+      } else {
+        writer.Write(MakeQuoted(*x ? "true" : "false"));
+      }
       break;
     }
     case FieldDescriptor::TYPE_STRING: {

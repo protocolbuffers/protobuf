@@ -57,6 +57,9 @@ struct PrintOptions {
   // Whether to always print enums as ints. By default they are rendered as
   // strings.
   bool always_print_enums_as_ints = false;
+  // Whether to always print bools as ints (1 or 0). By default they are
+  // rendered as true or false.
+  bool always_print_bools_as_ints = false;
   // Whether to preserve proto field names
   bool preserve_proto_field_names = false;
   // If set, int64 values that can be represented exactly as a double are

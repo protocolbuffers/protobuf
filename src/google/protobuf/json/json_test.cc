@@ -355,6 +355,115 @@ TEST_P(JsonTest, TestPrintEnumsAsIntsWithDefaultValue) {
 }
 
 
+TEST_P(JsonTest, TestAlwaysPrintBoolsAsInts) {
+  TestMessage orig;
+  orig.set_bool_value(true);
+  orig.add_repeated_bool_value(true);
+  orig.add_repeated_bool_value(false);
+
+  PrintOptions print_options;
+  print_options.always_print_bools_as_ints = true;
+
+  auto printed = ToJson(orig, print_options);
+  ASSERT_THAT(printed,
+              IsOkAndHolds("{\"boolValue\":1,\"repeatedBoolValue\":[1,0]}"));
+
+  // Parse back with default options (allow_legacy_nonconformant_behavior=true)
+  auto parsed = ToProto<TestMessage>(*printed);
+  ASSERT_OK(parsed);
+  EXPECT_TRUE(parsed->bool_value());
+  EXPECT_THAT(parsed->repeated_bool_value(), ElementsAre(true, false));
+
+  // Parse back with allow_legacy_nonconformant_behavior=false should fail
+  ParseOptions parse_options;
+  parse_options.allow_legacy_nonconformant_behavior = false;
+  EXPECT_THAT(ToProto<TestMessage>(*printed, parse_options),
+              StatusIs(absl::StatusCode::kInvalidArgument));
+}
+
+TEST_P(JsonTest, TestAlwaysPrintBoolsAsIntsMap) {
+  PrintOptions print_options;
+  print_options.always_print_bools_as_ints = true;
+
+  {
+    TestMap orig;
+    orig.mutable_bool_map()->insert({true, 10});
+    auto printed = ToJson(orig, print_options);
+    ASSERT_THAT(printed, IsOkAndHolds("{\"boolMap\":{\"1\":10}}"));
+    auto parsed = ToProto<TestMap>(*printed);
+    ASSERT_OK(parsed);
+    EXPECT_THAT(parsed->bool_map(),
+                testing::UnorderedElementsAre(testing::Pair(true, 10)));
+  }
+
+  {
+    TestMap orig;
+    orig.mutable_bool_map()->insert({false, 20});
+    auto printed = ToJson(orig, print_options);
+    ASSERT_THAT(printed, IsOkAndHolds("{\"boolMap\":{\"0\":20}}"));
+    auto parsed = ToProto<TestMap>(*printed);
+    ASSERT_OK(parsed);
+    EXPECT_THAT(parsed->bool_map(),
+                testing::UnorderedElementsAre(testing::Pair(false, 20)));
+  }
+
+  // Parse back with allow_legacy_nonconformant_behavior=false should fail
+  ParseOptions parse_options;
+  parse_options.allow_legacy_nonconformant_behavior = false;
+  EXPECT_THAT(ToProto<TestMap>("{\"boolMap\":{\"1\":10}}", parse_options),
+              StatusIs(absl::StatusCode::kInvalidArgument));
+  EXPECT_THAT(ToProto<TestMap>("{\"boolMap\":{\"0\":20}}", parse_options),
+              StatusIs(absl::StatusCode::kInvalidArgument));
+}
+
+TEST_P(JsonTest, TestParseBoolsAsIntsLegacy) {
+  // Test parsing unquoted 1/0 for bool field
+  {
+    TestMessage m;
+    ASSERT_OK(ToProto(m, "{\"boolValue\":1}"));
+    EXPECT_TRUE(m.bool_value());
+
+    ASSERT_OK(ToProto(m, "{\"boolValue\":0}"));
+    EXPECT_FALSE(m.bool_value());
+
+    ParseOptions options;
+    options.allow_legacy_nonconformant_behavior = false;
+    EXPECT_THAT(ToProto(m, "{\"boolValue\":1}", options),
+                StatusIs(absl::StatusCode::kInvalidArgument));
+    EXPECT_THAT(ToProto(m, "{\"boolValue\":0}", options),
+                StatusIs(absl::StatusCode::kInvalidArgument));
+  }
+
+  // Test parsing quoted "1"/"0" for bool field
+  {
+    TestMessage m;
+    ASSERT_OK(ToProto(m, "{\"boolValue\":\"1\"}"));
+    EXPECT_TRUE(m.bool_value());
+
+    ASSERT_OK(ToProto(m, "{\"boolValue\":\"0\"}"));
+    EXPECT_FALSE(m.bool_value());
+
+    ParseOptions options;
+    options.allow_legacy_nonconformant_behavior = false;
+    EXPECT_THAT(ToProto(m, "{\"boolValue\":\"1\"}", options),
+                StatusIs(absl::StatusCode::kInvalidArgument));
+  }
+
+  // Test parsing quoted "1"/"0" for map key
+  {
+    TestMap m;
+    ASSERT_OK(ToProto(m, "{\"boolMap\":{\"1\":10,\"0\":20}}"));
+    EXPECT_THAT(m.bool_map(),
+                testing::UnorderedElementsAre(testing::Pair(true, 10),
+                                              testing::Pair(false, 20)));
+
+    ParseOptions options;
+    options.allow_legacy_nonconformant_behavior = false;
+    EXPECT_THAT(ToProto(m, "{\"boolMap\":{\"1\":10}}", options),
+                StatusIs(absl::StatusCode::kInvalidArgument));
+  }
+}
+
 TEST_P(JsonTest, QuotedEnumValue) {
   auto m = ToProto<TestEnumValue>(R"json(
     {"enumValue1": "1"}

@@ -490,6 +490,22 @@ absl::Status ParseSingular(JsonLexer& lex, Field<Traits> field,
 
           break;
         }
+        case JsonLexer::kNum: {
+          if (!lex.options().allow_legacy_nonconformant_behavior) {
+            goto bad;
+          }
+
+          auto x = lex.ParseRawNumber();
+          RETURN_IF_ERROR(x.status());
+
+          int val;
+          if (!absl::SimpleAtoi(x->value.AsView(), &val) ||
+              (val != 0 && val != 1)) {
+            return x->loc.Invalid("expected 1 or 0");
+          }
+          Traits::SetBool(field, msg, val == 1);
+          break;
+        }
         bad:
         default:
           return lex.Invalid("expected 'true' or 'false'");
@@ -583,7 +599,8 @@ absl::Status EmitNull(JsonLexer& lex, Field<Traits> field, Msg<Traits>& msg) {
 // map entry message 'entry' of type 'type'.
 template <typename Traits>
 absl::Status ParseMapKey(const Desc<Traits>& type, Msg<Traits>& entry,
-                         LocationWith<MaybeOwnedString>& key) {
+                         LocationWith<MaybeOwnedString>& key,
+                         bool allow_legacy = false) {
   auto key_field = Traits::KeyField(type);
   switch (Traits::FieldType(key_field)) {
     case FieldDescriptor::TYPE_INT64:
@@ -628,6 +645,10 @@ absl::Status ParseMapKey(const Desc<Traits>& type, Msg<Traits>& entry,
       if (key.value == "true") {
         Traits::SetBool(key_field, entry, true);
       } else if (key.value == "false") {
+        Traits::SetBool(key_field, entry, false);
+      } else if (allow_legacy && key.value == "1") {
+        Traits::SetBool(key_field, entry, true);
+      } else if (allow_legacy && key.value == "0") {
         Traits::SetBool(key_field, entry, false);
       } else {
         return key.loc.Invalid(absl::StrFormat("expected bool string, got '%s'",
@@ -717,7 +738,9 @@ absl::Status ParseMapOfEnumsEntry(JsonLexer& lex, Field<Traits> map_field,
     return Traits::NewMsg(
         map_field, parent_msg,
         [&](const Desc<Traits>& type, Msg<Traits>& entry) -> absl::Status {
-          RETURN_IF_ERROR(ParseMapKey<Traits>(type, entry, key));
+          RETURN_IF_ERROR(ParseMapKey<Traits>(
+              type, entry, key,
+              lex.options().allow_legacy_nonconformant_behavior));
           Traits::SetEnum(Traits::ValueField(type), entry, *enum_value);
           return absl::OkStatus();
         });
@@ -753,7 +776,9 @@ absl::Status ParseMapEntry(JsonLexer& lex, Field<Traits> map_field,
   return Traits::NewMsg(
       map_field, parent_msg,
       [&](const Desc<Traits>& type, Msg<Traits>& entry) -> absl::Status {
-        RETURN_IF_ERROR(ParseMapKey<Traits>(type, entry, key));
+        RETURN_IF_ERROR(ParseMapKey<Traits>(
+            type, entry, key,
+            lex.options().allow_legacy_nonconformant_behavior));
         return ParseSingular<Traits>(lex, Traits::ValueField(type), entry);
       });
 }
@@ -1060,11 +1085,6 @@ absl::Status ParseAny(JsonLexer& lex, const Desc<Traits>& desc,
   // limit.
   JsonLexer any_lex(&in, lex.options(), &lex.path(), mark.loc);
 
-  if (!type_url.has_value() &&
-      !lex.options().allow_legacy_nonconformant_behavior) {
-    return mark.loc.Invalid("missing @type in Any");
-  }
-
   if (type_url.has_value()) {
     Traits::SetString(Traits::MustHaveField(desc, 1), msg, type_url->AsView());
     return Traits::NewDynamic(
@@ -1076,13 +1096,9 @@ absl::Status ParseAny(JsonLexer& lex, const Desc<Traits>& desc,
                                       /*any_reparse=*/true);
         });
   } else {
-    // Empty {} is accepted in legacy mode.
-    ABSL_DCHECK(lex.options().allow_legacy_nonconformant_behavior);
-    RETURN_IF_ERROR(any_lex.VisitObject([&](auto&) {
-      return mark.loc.Invalid(
-          "in legacy mode, missing @type in Any is only allowed for an empty "
-          "object");
-    }));
+    // Empty {} is accepted.
+    RETURN_IF_ERROR(any_lex.VisitObject(
+        [&](auto&) { return mark.loc.Invalid("missing @type in Any"); }));
     return absl::OkStatus();
   }
 }
