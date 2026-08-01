@@ -20,7 +20,6 @@
 
 #ifndef GOOGLE_PROTOBUF_REPEATED_FIELD_H__
 #define GOOGLE_PROTOBUF_REPEATED_FIELD_H__
-
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
