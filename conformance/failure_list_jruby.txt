@@ -11,7 +11,6 @@ Recommended.Proto2.JsonInput.BoolMapFieldKeyNotQuoted
 Recommended.Proto2.JsonInput.DoubleFieldInfinityNotQuoted
 Recommended.Proto2.JsonInput.DoubleFieldNanNotQuoted
 Recommended.Proto2.JsonInput.DoubleFieldNegativeInfinityNotQuoted
-Recommended.Proto2.JsonInput.FieldNameDuplicate
 Recommended.Proto2.JsonInput.FieldNameExtension.Validator
 Recommended.Proto2.JsonInput.FieldNameNotQuoted
 Recommended.Proto2.JsonInput.FloatFieldInfinityNotQuoted
@@ -39,7 +38,6 @@ Recommended.Proto3.JsonInput.DoubleFieldInfinityNotQuoted
 Recommended.Proto3.JsonInput.DoubleFieldNanNotQuoted
 Recommended.Proto3.JsonInput.DoubleFieldNegativeInfinityNotQuoted
 Recommended.Proto3.JsonInput.FieldMaskInvalidCharacter
-Recommended.Proto3.JsonInput.FieldNameDuplicate
 Recommended.Proto3.JsonInput.FieldNameNotQuoted
 Recommended.Proto3.JsonInput.FloatFieldInfinityNotQuoted
 Recommended.Proto3.JsonInput.FloatFieldNanNotQuoted
@@ -86,7 +84,6 @@ Recommended.Editions_Proto2.JsonInput.BoolMapFieldKeyNotQuoted
 Recommended.Editions_Proto2.JsonInput.DoubleFieldInfinityNotQuoted
 Recommended.Editions_Proto2.JsonInput.DoubleFieldNanNotQuoted
 Recommended.Editions_Proto2.JsonInput.DoubleFieldNegativeInfinityNotQuoted
-Recommended.Editions_Proto2.JsonInput.FieldNameDuplicate
 Recommended.Editions_Proto2.JsonInput.FieldNameExtension.Validator
 Recommended.Editions_Proto2.JsonInput.FieldNameNotQuoted
 Recommended.Editions_Proto2.JsonInput.FloatFieldInfinityNotQuoted
@@ -114,7 +111,6 @@ Recommended.Editions_Proto3.JsonInput.DoubleFieldInfinityNotQuoted
 Recommended.Editions_Proto3.JsonInput.DoubleFieldNanNotQuoted
 Recommended.Editions_Proto3.JsonInput.DoubleFieldNegativeInfinityNotQuoted
 Recommended.Editions_Proto3.JsonInput.FieldMaskInvalidCharacter
-Recommended.Editions_Proto3.JsonInput.FieldNameDuplicate
 Recommended.Editions_Proto3.JsonInput.FieldNameNotQuoted
 Recommended.Editions_Proto3.JsonInput.FloatFieldInfinityNotQuoted
 Recommended.Editions_Proto3.JsonInput.FloatFieldNanNotQuoted

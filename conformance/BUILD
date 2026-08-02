@@ -145,6 +145,7 @@ cc_library(
         "//src/google/protobuf",
         "//src/google/protobuf:protobuf_lite",
         "//src/google/protobuf/json",
+        "//src/google/protobuf/util:differencer",
         "//src/google/protobuf/util:type_resolver",
         "@abseil-cpp//absl/log:absl_check",
         "@abseil-cpp//absl/log:absl_log",
