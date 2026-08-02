@@ -1,0 +1,10 @@
+<project name="generate-sources">
+    <echo message="Running protoc ..."/>
+    <mkdir dir="${generated.sources.dir}"/>
+    <exec executable="${protoc}">
+        <arg value="--java_out=${generated.sources.dir}"/>
+        <arg value="--proto_path=${protobuf.source.dir}"/>
+        <arg value="${protobuf.source.dir}/google/protobuf/json_options.proto"/>
+        <arg value="${protobuf.source.dir}/google/protobuf/json_enumvalue_options.proto"/>
+    </exec>
+</project>

@@ -52,6 +52,9 @@ bool upb_DecodeFast_SingleMessage(upb_Decoder* d, const char** ptr, void* dst,
 
   if (c->is_repeated || UPB_LIKELY(*submsg_dst == NULL)) {
     c->msg = *submsg_dst = _upb_Message_New(c->table, &d->arena);
+    if (c->msg == NULL) {
+      _upb_FastDecoder_ErrorJmp(d, kUpb_DecodeStatus_OutOfMemory);
+    }
   } else {
     c->msg = *submsg_dst;  // Reusing non-repeated message.
   }

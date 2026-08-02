@@ -830,7 +830,7 @@ static upb_JsonMessageValue jsondec_enum(jsondec* d, const upb_FieldDef* f) {
       upb_StringView str = jsondec_string(d);
       const upb_EnumDef* e = upb_FieldDef_EnumSubDef(f);
       const upb_EnumValueDef* ev =
-          upb_EnumDef_FindValueByNameWithSize(e, str.data, str.size);
+          upb_EnumDef_FindByJsonNameWithSize(e, str.data, str.size);
       upb_JsonMessageValue val = {.ignore = false};
       if (ev) {
         val.value.int32_val = upb_EnumValueDef_Number(ev);

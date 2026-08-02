@@ -22,6 +22,7 @@
 #include "google/protobuf/compiler/java/doc_comment.h"
 #include "google/protobuf/compiler/java/field_common.h"
 #include "google/protobuf/compiler/java/helpers.h"
+#include "google/protobuf/compiler/java/full/field_generator.h"
 #include "google/protobuf/compiler/java/internal_helpers.h"
 #include "google/protobuf/compiler/java/name_resolver.h"
 #include "google/protobuf/io/printer.h"
@@ -106,11 +107,8 @@ void SetPrimitiveVariables(
 ImmutableStringFieldGenerator::ImmutableStringFieldGenerator(
     const FieldDescriptor* descriptor, int messageBitIndex, int builderBitIndex,
     Context* context)
-    : descriptor_(descriptor),
-      message_bit_index_(messageBitIndex),
-      builder_bit_index_(builderBitIndex),
-      context_(context),
-      name_resolver_(context->GetNameResolver()) {
+    : ImmutableFieldGenerator(descriptor, messageBitIndex, builderBitIndex,
+                              context) {
   SetPrimitiveVariables(descriptor, messageBitIndex, builderBitIndex,
                         context->GetFieldGeneratorInfo(descriptor),
                         name_resolver_, &variables_, context);
@@ -118,18 +116,9 @@ ImmutableStringFieldGenerator::ImmutableStringFieldGenerator(
 
 ImmutableStringFieldGenerator::~ImmutableStringFieldGenerator() = default;
 
-int ImmutableStringFieldGenerator::GetMessageBitIndex() const {
-  return message_bit_index_;
-}
-
-int ImmutableStringFieldGenerator::GetBuilderBitIndex() const {
-  return builder_bit_index_;
-}
-
 int ImmutableStringFieldGenerator::GetNumBitsForMessage() const {
   return HasHasbit(descriptor_) ? 1 : 0;
 }
-
 // A note about how strings are handled. This code used to just store a String
 // in the Message. This had two issues:
 //

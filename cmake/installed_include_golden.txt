@@ -45,6 +45,7 @@ google/protobuf/cpp_features.pb.h
 google/protobuf/cpp_features.proto
 google/protobuf/cpp_file_options.pb.h
 google/protobuf/cpp_file_options.proto
+google/protobuf/cpp_options.proto
 google/protobuf/descriptor.h
 google/protobuf/descriptor.pb.h
 google/protobuf/descriptor.proto
@@ -95,6 +96,9 @@ google/protobuf/java_features.proto
 google/protobuf/json/json.h
 google/protobuf/json_enumvalue_options.pb.h
 google/protobuf/json_enumvalue_options.proto
+google/protobuf/json_enumvalue_options.upb.h
+google/protobuf/json_enumvalue_options.upb_minitable.h
+google/protobuf/json_options.proto
 google/protobuf/map.h
 google/protobuf/map_entry.h
 google/protobuf/map_field.h
@@ -213,7 +217,6 @@ upb/port/undef.inc
 upb/port/vsnprintf_compat.h
 upb/reflection/common.h
 upb/reflection/def.h
-upb/reflection/def.hpp
 upb/reflection/def_pool.h
 upb/reflection/def_type.h
 upb/reflection/descriptor_bootstrap.h
@@ -223,8 +226,8 @@ upb/reflection/enum_value_def.h
 upb/reflection/extension_range.h
 upb/reflection/field_def.h
 upb/reflection/file_def.h
+upb/reflection/json_enumvalue_options_bootstrap.h
 upb/reflection/message.h
-upb/reflection/message.hpp
 upb/reflection/message_def.h
 upb/reflection/message_reserved_range.h
 upb/reflection/method_def.h

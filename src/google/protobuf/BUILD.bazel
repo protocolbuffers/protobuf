@@ -405,6 +405,24 @@ cc_proto_library(
     deps = [":json_enumvalue_options_proto"],
 )
 
+upb_c_proto_library(
+    name = "json_enumvalue_options_upb_c_proto",
+    visibility = ["//:__subpackages__"],
+    deps = [":json_enumvalue_options_proto"],
+)
+
+upb_minitable_proto_library(
+    name = "json_enumvalue_options_upb_minitable_proto",
+    visibility = ["//:__subpackages__"],
+    deps = [":json_enumvalue_options_proto"],
+)
+
+upb_proto_reflection_library(
+    name = "json_enumvalue_options_upb_reflection_proto",
+    visibility = ["//:__subpackages__"],
+    deps = [":json_enumvalue_options_proto"],
+)
+
 ################################################################################
 # C++ Runtime Library
 ################################################################################
@@ -1208,8 +1226,107 @@ filegroup(
 )
 
 filegroup(
+    name = "json_enumvalue_options_proto_srcs",
+    srcs = ["json_enumvalue_options.proto"],
+    visibility = ["//:__subpackages__"],
+)
+
+filegroup(
     name = "cpp_features_proto_srcs",
     srcs = ["cpp_features.proto"],
+    visibility = ["//:__subpackages__"],
+)
+
+# TODO: Revisit location of aggregate rules
+filegroup(
+    name = "language_neutral_proto_srcs",
+    srcs = [
+        ":json_options_proto_srcs",
+        ":well_known_type_protos",
+    ],
+    visibility = [
+        "//ruby:__pkg__",
+    ],
+)
+
+filegroup(
+    name = "release_all_options_proto_srcs",
+    srcs = [
+        ":cpp_release_options_proto_srcs",
+        ":descriptor_proto_srcs",
+        ":language_neutral_proto_srcs",
+        "//csharp:c_sharp_features_proto_srcs",
+        "//go:go_features_proto_srcs",
+        "//java/core:java_features_proto_srcs",
+    ],
+    visibility = [
+        "//java/core:__pkg__",
+        "//pkg:__pkg__",
+        "//python/dist:__pkg__",
+    ],
+)
+
+proto_library(
+    name = "language_neutral_protos",
+    srcs = [":language_neutral_proto_srcs"],
+    strip_import_prefix = "/src",
+    visibility = [
+        "//python/dist:__pkg__",
+    ],
+    exports = [
+        ":descriptor_proto",
+    ],
+    deps = [
+        ":descriptor_proto",
+    ],
+)
+
+proto_library(
+    name = "release_all_options_protos",
+    srcs = [],
+    strip_import_prefix = "/src",
+    visibility = [
+        "//java/core:__pkg__",
+        "//pkg:__pkg__",
+        "//python/dist:__pkg__",
+    ],
+    exports = [
+        ":cpp_release_options_protos",
+        ":descriptor_proto",
+        ":language_neutral_protos",
+        # TODO: Create //lang:lang_release_options_protos targets for each language and
+        # depend on those instead.
+        "//csharp:c_sharp_features_proto",
+        "//go:go_features_proto",
+        "//java/core:java_features_proto",
+    ],
+    deps = [
+        ":cpp_release_options_protos",
+        ":descriptor_proto",
+        ":language_neutral_protos",
+        # TODO: Create //lang:lang_release_options_protos targets for each language and
+        # depend on those instead.
+        "//csharp:c_sharp_features_proto",
+        "//go:go_features_proto",
+        "//java/core:java_features_proto",
+    ],
+)
+
+filegroup(
+    name = "cpp_release_options_proto_srcs",
+    srcs = glob(["cpp_*options.proto"]) + ["cpp_features.proto"],
+)
+
+proto_library(
+    name = "cpp_release_options_protos",
+    srcs = [":cpp_release_options_proto_srcs"],
+    strip_import_prefix = "/src",
+    deps = [":descriptor_proto"],
+)
+
+filegroup(
+    name = "json_options_proto_srcs",
+    srcs = glob(["json_*options.proto"]),
     visibility = ["//:__subpackages__"],
 )
 
@@ -1559,7 +1676,7 @@ exports_files(
         "//:__pkg__",
         "//python:__pkg__",
         "//ruby:__pkg__",
-        "//upb:__pkg__",
+        "//upb:__subpackages__",
     ],
 )
 

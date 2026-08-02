@@ -12,29 +12,45 @@
 
 #include "google/protobuf/struct.upb.h"
 #include <gtest/gtest.h>
+#include "google/protobuf/json/json_enumval_custom_string.upb.h"
+#include "google/protobuf/json/json_enumval_custom_string.upbdefs.h"
 #include "upb/base/status.hpp"
 #include "upb/base/upcast.h"
 #include "upb/json/test.upb.h"
 #include "upb/json/test.upbdefs.h"
 #include "upb/mem/arena.h"
 #include "upb/mem/arena.hpp"
+#include "upb/message/message.h"
+#include "upb/reflection/def.h"
 #include "upb/reflection/def.hpp"
 
-static std::string JsonEncode(const upb_test_Box* msg, int options) {
+static std::string JsonEncodeGeneric(
+    const upb_Message* msg, const upb_MessageDef* (*getmsgdef)(upb_DefPool*),
+    int options) {
   upb::Arena a;
   upb::Status status;
   upb::DefPool defpool;
-  upb::MessageDefPtr m(upb_test_Box_getmsgdef(defpool.ptr()));
-  EXPECT_TRUE(m.ptr() != nullptr);
+  const upb_MessageDef* m = getmsgdef(defpool.ptr());
+  EXPECT_TRUE(m != nullptr);
 
-  size_t json_size = upb_JsonEncode(UPB_UPCAST(msg), m.ptr(), defpool.ptr(),
-                                    options, nullptr, 0, status.ptr());
+  size_t json_size =
+      upb_JsonEncode(msg, m, defpool.ptr(), options, nullptr, 0, status.ptr());
   char* json_buf = (char*)upb_Arena_Malloc(a.ptr(), json_size + 1);
 
-  size_t size = upb_JsonEncode(UPB_UPCAST(msg), m.ptr(), defpool.ptr(), options,
-                               json_buf, json_size + 1, status.ptr());
+  size_t size = upb_JsonEncode(msg, m, defpool.ptr(), options, json_buf,
+                               json_size + 1, status.ptr());
   EXPECT_EQ(size, json_size);
   return std::string(json_buf, json_size);
+}
+
+static std::string JsonEncode(const upb_test_Box* msg, int options) {
+  return JsonEncodeGeneric(UPB_UPCAST(msg), upb_test_Box_getmsgdef, options);
+}
+
+static std::string JsonEncodeKnight(
+    const json_enumval_custom_string_Knight* msg, int options) {
+  return JsonEncodeGeneric(
+      UPB_UPCAST(msg), json_enumval_custom_string_Knight_getmsgdef, options);
 }
 
 // Encode a single optional enum.
@@ -95,4 +111,112 @@ TEST(JsonTest, EncodeConflictJsonName) {
   upb_test_Box* new_box = upb_test_Box_new(a.ptr());
   upb_test_Box_set_new_value(new_box, 2);
   EXPECT_EQ(R"({"value":2})", JsonEncode(new_box, 0));
+}
+
+// Test encoding when the enum value has no custom string option set, verifying
+// it falls back to the default enum value name ("ARMOR_GORGET").
+TEST(JsonTest, EncodeEnumMissingCustomStringOption) {
+  upb::Arena a;
+  json_enumval_custom_string_Knight* knight =
+      json_enumval_custom_string_Knight_new(a.ptr());
+  json_enumval_custom_string_Knight_set_armor(
+      knight, json_enumval_custom_string_ARMOR_GORGET);
+  EXPECT_EQ(R"({"armor":"ARMOR_GORGET"})", JsonEncodeKnight(knight, 0));
+}
+
+// Test encoding when a standard custom string option is defined ("gr8 helm").
+TEST(JsonTest, EncodeEnumWithCustomString) {
+  upb::Arena a;
+  json_enumval_custom_string_Knight* knight =
+      json_enumval_custom_string_Knight_new(a.ptr());
+  json_enumval_custom_string_Knight_set_armor(
+      knight, json_enumval_custom_string_ARMOR_GREAT_HELM);
+  EXPECT_EQ(R"({"armor":"gr8 helm"})", JsonEncodeKnight(knight, 0));
+}
+
+// Test encoding when the custom string option contains double quotes requiring
+// escaping ("a\"b").
+TEST(JsonTest, EncodeEnumCustomStringWithEscapedQuotes) {
+  upb::Arena a;
+  json_enumval_custom_string_Knight* knight =
+      json_enumval_custom_string_Knight_new(a.ptr());
+  json_enumval_custom_string_Knight_set_armor(
+      knight, json_enumval_custom_string_ARMOR_GAUNTLET);
+  EXPECT_EQ("{\"armor\":\"a\\\"b\"}", JsonEncodeKnight(knight, 0));
+}
+
+// Test encoding when the custom string option is enclosed within double quotes
+// ("\"plate\"").
+TEST(JsonTest, EncodeEnumCustomStringEnclosedInQuotes) {
+  upb::Arena a;
+  json_enumval_custom_string_Knight* knight =
+      json_enumval_custom_string_Knight_new(a.ptr());
+  json_enumval_custom_string_Knight_set_armor(
+      knight, json_enumval_custom_string_ARMOR_PLATE);
+  EXPECT_EQ("{\"armor\":\"\\\"plate\\\"\"}", JsonEncodeKnight(knight, 0));
+}
+
+// Test encoding when the custom string option is an empty string ("").
+TEST(JsonTest, EncodeEnumEmptyCustomString) {
+  upb::Arena a;
+  json_enumval_custom_string_Knight* knight =
+      json_enumval_custom_string_Knight_new(a.ptr());
+  json_enumval_custom_string_Knight_set_armor(
+      knight, json_enumval_custom_string_ARMOR_COIF);
+  EXPECT_EQ(R"({"armor":""})", JsonEncodeKnight(knight, 0));
+}
+
+// Test encoding when the custom string option contains control characters (tab
+// and newline) requiring escaping ("p\taul\ndron").
+TEST(JsonTest, EncodeEnumCustomStringWithEscapedControlChars) {
+  upb::Arena a;
+  json_enumval_custom_string_Knight* knight =
+      json_enumval_custom_string_Knight_new(a.ptr());
+  json_enumval_custom_string_Knight_set_armor(
+      knight, json_enumval_custom_string_ARMOR_PAULDRON);
+  EXPECT_EQ(R"({"armor":"p\taul\ndron"})", JsonEncodeKnight(knight, 0));
+}
+
+// Test encoding an enum value that has aliased values sharing a custom string
+// option ("sabaton").
+TEST(JsonTest, EncodeEnumAliasedCustomString) {
+  upb::Arena a;
+  json_enumval_custom_string_Knight* knight =
+      json_enumval_custom_string_Knight_new(a.ptr());
+  json_enumval_custom_string_Knight_set_armor(
+      knight, json_enumval_custom_string_ARMOR_SABATON);
+  EXPECT_EQ(R"({"armor":"sabaton"})", JsonEncodeKnight(knight, 0));
+}
+
+// Test encoding when the custom string option consists of numeric digits ("8").
+TEST(JsonTest, EncodeEnumNumericCustomString) {
+  upb::Arena a;
+  json_enumval_custom_string_Knight* knight =
+      json_enumval_custom_string_Knight_new(a.ptr());
+  json_enumval_custom_string_Knight_set_armor(
+      knight, json_enumval_custom_string_ARMOR_HACHI_MAI_DO);
+  EXPECT_EQ(R"({"armor":"8"})", JsonEncodeKnight(knight, 0));
+}
+
+// Test encoding an enum value whose custom string option is identical to its
+// original enum value name.
+TEST(JsonTest, EncodeEnumCustomStringSameAsName) {
+  upb::Arena a;
+  json_enumval_custom_string_Knight* knight =
+      json_enumval_custom_string_Knight_new(a.ptr());
+  json_enumval_custom_string_Knight_set_armor(
+      knight, json_enumval_custom_string_ARMOR_GREAVES);
+  EXPECT_EQ(R"({"armor":"ARMOR_GREAVES"})", JsonEncodeKnight(knight, 0));
+}
+
+// Test encoding when upb_JsonEncode_FormatEnumsAsIntegers is set, verifying
+// integer format option overrides the custom string option.
+TEST(JsonTest, EncodeEnumWithIntegerFormatOverride) {
+  upb::Arena a;
+  json_enumval_custom_string_Knight* knight =
+      json_enumval_custom_string_Knight_new(a.ptr());
+  json_enumval_custom_string_Knight_set_armor(
+      knight, json_enumval_custom_string_ARMOR_GREAT_HELM);
+  EXPECT_EQ(R"({"armor":1})",
+            JsonEncodeKnight(knight, upb_JsonEncode_FormatEnumsAsIntegers));
 }

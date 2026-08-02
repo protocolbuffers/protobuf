@@ -47,8 +47,6 @@ class ImmutablePrimitiveFieldGenerator : public ImmutableFieldGenerator {
 
   // implements ImmutableFieldGenerator
   // ---------------------------------------
-  int GetMessageBitIndex() const override;
-  int GetBuilderBitIndex() const override;
   int GetNumBitsForMessage() const override;
   void GenerateInterfaceMembers(io::Printer* printer) const override;
   void GenerateMembers(io::Printer* printer) const override;
@@ -68,12 +66,6 @@ class ImmutablePrimitiveFieldGenerator : public ImmutableFieldGenerator {
   std::string GetBoxedType() const override;
 
  protected:
-  const FieldDescriptor* descriptor_;
-  int message_bit_index_;
-  int builder_bit_index_;
-  absl::flat_hash_map<absl::string_view, std::string> variables_;
-  Context* context_;
-  ClassNameResolver* name_resolver_;
 };
 
 class ImmutablePrimitiveOneofFieldGenerator

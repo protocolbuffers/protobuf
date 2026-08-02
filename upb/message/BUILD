@@ -69,6 +69,7 @@ cc_library(
     copts = UPB_DEFAULT_COPTS,
     features = UPB_DEFAULT_FEATURES,
     visibility = [
+        "//hpb/internal:__pkg__",
         "//pkg:__pkg__",
         "//python:__pkg__",
         "//third_party/cel/c/internal:__pkg__",
@@ -106,6 +107,22 @@ cc_library(
         ":message",
         "//upb/base",
         "//upb/mini_table",
+    ],
+)
+
+cc_library(
+    name = "message_unknowns_testonly",
+    testonly = 1,
+    hdrs = ["unknown_fields_testonly.h"],
+    copts = UPB_DEFAULT_COPTS,
+    features = UPB_DEFAULT_FEATURES,
+    visibility = ["//upb:friends"],
+    deps = [
+        ":internal",
+        ":message",
+        "//upb/mem",
+        "//upb/mini_table",
+        "//upb/port",
     ],
 )
 
@@ -562,6 +579,9 @@ cc_test(
         "//upb/mini_table:internal",
         "//upb/port",
         "//upb/reflection",
+        "//upb/reflection:internal",
+        "//upb/reflection:internal_cc",
+        "//upb/reflection:reflection_cc",
         "//upb/test:fuzz_util",
         "//upb/test:test_messages_proto3_upb_proto",
         "//upb/text:debug",

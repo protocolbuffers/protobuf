@@ -32,8 +32,10 @@ UPB_CONFIG_VISIBILITY = [
     "//hpb_generator:__subpackages__",
     "//lua:__pkg__",
     "//python:__pkg__",
+    "//src/google/protobuf/compiler:__subpackages__",
     "//upb:__subpackages__",
     "//upb_generator:__subpackages__",
+    "//src/google/protobuf/compiler:__subpackages__",
 ]
 
 config_setting(
@@ -159,6 +161,8 @@ upb_amalgamation(
         ":generated_code_support",
         "//src/google/protobuf:descriptor_upb_c_proto",
         "//src/google/protobuf:descriptor_upb_minitable_proto",
+        "//src/google/protobuf:json_enumvalue_options_upb_c_proto",
+        "//src/google/protobuf:json_enumvalue_options_upb_minitable_proto",
         "//upb/base",
         "//upb/base:internal",
         "//upb/hash:hash",
@@ -179,6 +183,7 @@ upb_amalgamation(
         "//upb/port",
         "//upb/reflection",
         "//upb/reflection:descriptor_upb_proto",
+        "//upb/reflection:json_enumvalue_options_upb_proto",
         "//upb/reflection:internal",
         "//upb/text:debug",
         "//upb/text:internal",
@@ -216,6 +221,9 @@ upb_amalgamation(
         "//src/google/protobuf:descriptor_upb_c_proto",
         "//src/google/protobuf:descriptor_upb_minitable_proto",
         "//src/google/protobuf:descriptor_upb_reflection_proto",
+        "//src/google/protobuf:json_enumvalue_options_upb_c_proto",
+        "//src/google/protobuf:json_enumvalue_options_upb_minitable_proto",
+        "//src/google/protobuf:json_enumvalue_options_upb_reflection_proto",
         "//upb/base",
         "//upb/base:internal",
         "//upb/hash:hash",
@@ -237,6 +245,7 @@ upb_amalgamation(
         "//upb/port",
         "//upb/reflection",
         "//upb/reflection:descriptor_upb_proto",
+        "//upb/reflection:json_enumvalue_options_upb_proto",
         "//upb/reflection:internal",
         "//upb/wire",
         "//upb/wire:back_alloc",
@@ -271,6 +280,8 @@ upb_amalgamation(
         ":generated_code_support",
         "//src/google/protobuf:descriptor_upb_c_proto",
         "//src/google/protobuf:descriptor_upb_minitable_proto",
+        "//src/google/protobuf:json_enumvalue_options_upb_c_proto",
+        "//src/google/protobuf:json_enumvalue_options_upb_minitable_proto",
         "//upb/base",
         "//upb/base:internal",
         "//upb/hash:hash",
@@ -292,6 +303,7 @@ upb_amalgamation(
         "//upb/port",
         "//upb/reflection",
         "//upb/reflection:descriptor_upb_proto",
+        "//upb/reflection:json_enumvalue_options_upb_proto",
         "//upb/reflection:internal",
         "//upb/util:def_to_proto",
         "//upb/wire",
@@ -336,6 +348,7 @@ filegroup(
 
 filegroup(
     name = "test_protos",
+    testonly = 1,
     srcs = [
         "//src/google/protobuf:test_messages_proto2.proto",
         "//src/google/protobuf:test_messages_proto3.proto",

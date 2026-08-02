@@ -28,6 +28,7 @@ def bazel_proto_library_test_suite(name):
         _test_strip_import_prefix_without_deps,
         _test_strict_public_imports_enabled,
         _test_strict_public_imports_disabled,
+        _test_strict_public_imports_default,
         _test_strict_public_imports_transitive_exports,
         _test_strip_import_prefix_with_deps,
         _test_exported_stripped_import_prefixes,
@@ -299,6 +300,7 @@ def _test_descriptor_set_output_strict_deps_disabled_impl(env, target):
     action = env.expect.that_target(target).action_generating(
         "{package}/{name}-descriptor-set.proto.bin",
     )
+
     action.argv().not_contains("--direct_dependencies")
     action.argv().not_contains_predicate(matching.str_matches("--direct_dependencies_violation_msg=*"))
 
@@ -357,6 +359,22 @@ def _test_strict_public_imports_disabled_impl(env, target):
     action = env.expect.that_target(target).action_generating(
         "{package}/{name}-descriptor-set.proto.bin",
     )
+    action.argv().not_contains("--allowed_public_imports=")
+
+def _test_strict_public_imports_default(name):
+    util.helper_target(proto_library, name = name + "_foo", srcs = ["foo.proto"])
+
+    analysis_test(
+        name = name,
+        target = name + "_foo",
+        impl = _test_strict_public_imports_default_impl,
+    )
+
+def _test_strict_public_imports_default_impl(env, target):
+    action = env.expect.that_target(target).action_generating(
+        "{package}/{name}-descriptor-set.proto.bin",
+    )
+
     action.argv().not_contains("--allowed_public_imports=")
 
 def _test_strict_public_imports_transitive_exports(name):

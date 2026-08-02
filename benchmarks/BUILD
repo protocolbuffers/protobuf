@@ -102,6 +102,7 @@ cc_test(
         "//upb/mini_table",
         "//upb/reflection",
         "//upb/reflection:internal",
+        "//upb/reflection:reflection_cc",
         "//upb/wire",
         "@abseil-cpp//absl/container:flat_hash_set",
         "@abseil-cpp//absl/log:absl_check",

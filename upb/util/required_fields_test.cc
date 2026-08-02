@@ -61,7 +61,7 @@ class RequiredFieldsTest : public testing::Test {
     upb_FieldPathEntry* entries = nullptr;
     EXPECT_EQ(!missing.empty(),
               upb_util_HasUnsetRequired(UPB_UPCAST(test_msg), m.ptr(),
-                                        defpool.ptr(), &entries));
+                                        defpool.ptr(), &entries, status.ptr()));
     if (entries) {
       EXPECT_EQ(missing, PathsToText(entries));
       free(entries);
@@ -71,7 +71,7 @@ class RequiredFieldsTest : public testing::Test {
     // about them.
     EXPECT_EQ(!missing.empty(),
               upb_util_HasUnsetRequired(UPB_UPCAST(test_msg), m.ptr(),
-                                        defpool.ptr(), nullptr));
+                                        defpool.ptr(), nullptr, status.ptr()));
   }
 };
 
