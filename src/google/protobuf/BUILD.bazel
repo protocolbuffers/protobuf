@@ -405,6 +405,24 @@ cc_proto_library(
     deps = [":json_enumvalue_options_proto"],
 )
 
+upb_c_proto_library(
+    name = "json_enumvalue_options_upb_c_proto",
+    visibility = ["//:__subpackages__"],
+    deps = [":json_enumvalue_options_proto"],
+)
+
+upb_minitable_proto_library(
+    name = "json_enumvalue_options_upb_minitable_proto",
+    visibility = ["//:__subpackages__"],
+    deps = [":json_enumvalue_options_proto"],
+)
+
+upb_proto_reflection_library(
+    name = "json_enumvalue_options_upb_reflection_proto",
+    visibility = ["//:__subpackages__"],
+    deps = [":json_enumvalue_options_proto"],
+)
+
 ################################################################################
 # C++ Runtime Library
 ################################################################################
@@ -1203,6 +1221,12 @@ filegroup(
 )
 
 filegroup(
+    name = "json_enumvalue_options_proto_srcs",
+    srcs = ["json_enumvalue_options.proto"],
+    visibility = ["//:__subpackages__"],
+)
+
+filegroup(
     name = "cpp_features_proto_srcs",
     srcs = ["cpp_features.proto"],
     visibility = ["//:__subpackages__"],
@@ -1554,7 +1578,7 @@ exports_files(
         "//:__pkg__",
         "//python:__pkg__",
         "//ruby:__pkg__",
-        "//upb:__pkg__",
+        "//upb:__subpackages__",
     ],
 )
 
