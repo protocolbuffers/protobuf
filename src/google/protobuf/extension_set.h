@@ -696,7 +696,7 @@ class PROTOBUF_EXPORT ExtensionSet {
   static bool FieldTypeIsPointer(FieldType type);
 
   size_t GetMessageByteSizeLong(int number) const;
-  uint8_t* InternalSerializeMessage(int number, const MessageLite* prototype,
+  uint8_t* InternalSerializeMessage(int number, const ClassData* class_data,
                                     uint8_t* target,
                                     io::EpsCopyOutputStream* stream) const;
 
@@ -1132,9 +1132,9 @@ class PROTOBUF_EXPORT ExtensionSet {
     return expected_wire_type == wire_type;
   }
 
-  // Find the prototype for a LazyMessage from the extension registry. Returns
-  // null if the extension is not found.
-  static const MessageLite* GetPrototypeForLazyMessage(
+  // Returns the ClassData for a LazyMessage from the extension registry.
+  // Returns null if the extension is not found.
+  static const ClassData* GetClassDataForLazyMessage(
       const MessageLite* extendee, int number);
 
   // Returns true if extension is present and lazy.

@@ -386,7 +386,7 @@ size_t ExtensionSet::GetMessageByteSizeLong(int number) const {
 }
 
 uint8_t* ExtensionSet::InternalSerializeMessage(
-    int number, const MessageLite* prototype, uint8_t* target,
+    int number, const ClassData* class_data, uint8_t* target,
     io::EpsCopyOutputStream* stream) const {
   const Extension* extension = FindOrNull(number);
   ABSL_CHECK(extension != nullptr) << "not present";
@@ -1825,7 +1825,7 @@ uint8_t* ExtensionSet::Extension::InternalSerializeFieldWithCachedSizesToArray(
   return target;
 }
 
-const MessageLite* ExtensionSet::GetPrototypeForLazyMessage(
+const ClassData* ExtensionSet::GetClassDataForLazyMessage(
     const MessageLite* extendee, int number) {
   GeneratedExtensionFinder finder(extendee);
   bool was_packed_on_wire = false;
@@ -1835,7 +1835,7 @@ const MessageLite* ExtensionSet::GetPrototypeForLazyMessage(
           &extension_info, &was_packed_on_wire)) {
     return nullptr;
   }
-  return extension_info.message_info.GetPrototype();
+  return extension_info.message_info.GetClassData();
 }
 
 uint8_t*

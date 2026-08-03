@@ -1345,7 +1345,8 @@ class PROTOBUF_EXPORT Reflection final {
   template <typename Type>
   const Type& DefaultRaw(const FieldDescriptor* field) const;
 
-  const Message* GetDefaultMessageInstance(const FieldDescriptor* field) const;
+  const internal::ClassData* GetMessageClassData(
+      const FieldDescriptor* field) const;
 
   const uint32_t* GetHasBits(const Message& message) const;
   inline uint32_t* MutableHasBits(Message* message) const;

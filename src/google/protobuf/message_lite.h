@@ -258,6 +258,10 @@ struct MessageGlobalsBase {
       const void* default_instance) {
     return reinterpret_cast<const MessageGlobalsBase*>(default_instance);
   }
+
+  static const MessageGlobalsBase* FromClassData(const ClassData* class_data) {
+    return FromDefaultInstance(class_data->default_instance());
+  }
 };
 
 template <const auto* kDefault, const auto* kClassData>
@@ -301,6 +305,10 @@ struct MessageGlobalsBase {
     return static_cast<const MessageGlobalsBase*>(globals)->class_data.base();
   }
   constexpr const ClassData* GetClassData() const { return class_data.base(); }
+
+  static const MessageGlobalsBase* FromClassData(const void* class_data) {
+    return reinterpret_cast<const MessageGlobalsBase*>(class_data);
+  }
 
   explicit constexpr MessageGlobalsBase(ClassDataFull class_data)
       : class_data(class_data) {}
