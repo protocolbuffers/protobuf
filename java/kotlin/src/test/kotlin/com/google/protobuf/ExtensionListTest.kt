@@ -47,7 +47,7 @@ class ExtensionListTest {
         TestProto.repeatedExtension,
         mutableListOf(1, 2, 3),
       )
-    assertThat(extensionList is MutableList<*>).isFalse()
+    assertThat((extensionList as Any) is MutableList<*>).isFalse()
   }
 
   @Suppress("PLATFORM_CLASS_MAPPED_TO_KOTLIN", "UNCHECKED_CAST")
