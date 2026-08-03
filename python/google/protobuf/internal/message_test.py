@@ -85,9 +85,20 @@ class MessageTest(unittest.TestCase):
       _ = msg3.SerializePartialToString()
       _ = msg3.ListFields()
       _ = msg3.DiscardUnknownFields()
+      _ = msg3.FindInitializationErrors()
 
       msg4 = message_module.TestAllTypes()
       msg4.CopyFrom(msg3)
+
+      # Try deepcopy
+      _ = copy.deepcopy(msg3)
+
+      # Try other upb message APIs
+      _ = msg3.ByteSize()
+      _ = msg3.SerializePartialToString()
+      _ = msg3.ListFields()
+      _ = msg3.FindInitializationErrors()
+      _ = msg3.DiscardUnknownFields()
 
       if hasattr(message_module, 'TestAllExtensions'):
         ext_msg = message_module.TestAllExtensions()

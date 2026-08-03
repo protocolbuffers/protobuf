@@ -22,6 +22,7 @@
 #include "google/protobuf/compiler/java/doc_comment.h"
 #include "google/protobuf/compiler/java/field_common.h"
 #include "google/protobuf/compiler/java/helpers.h"
+#include "google/protobuf/compiler/java/full/field_generator.h"
 #include "google/protobuf/compiler/java/internal_helpers.h"
 #include "google/protobuf/compiler/java/name_resolver.h"
 #include "google/protobuf/io/printer.h"
@@ -109,11 +110,8 @@ void SetEnumVariables(
 ImmutableEnumFieldGenerator::ImmutableEnumFieldGenerator(
     const FieldDescriptor* descriptor, int message_bit_index,
     int builder_bit_index, Context* context)
-    : descriptor_(descriptor),
-      message_bit_index_(message_bit_index),
-      builder_bit_index_(builder_bit_index),
-      context_(context),
-      name_resolver_(context->GetNameResolver()) {
+    : ImmutableFieldGenerator(descriptor, message_bit_index, builder_bit_index,
+                              context) {
   SetEnumVariables(descriptor, message_bit_index, builder_bit_index,
                    context->GetFieldGeneratorInfo(descriptor), name_resolver_,
                    &variables_, context);
@@ -121,18 +119,9 @@ ImmutableEnumFieldGenerator::ImmutableEnumFieldGenerator(
 
 ImmutableEnumFieldGenerator::~ImmutableEnumFieldGenerator() = default;
 
-int ImmutableEnumFieldGenerator::GetMessageBitIndex() const {
-  return message_bit_index_;
-}
-
-int ImmutableEnumFieldGenerator::GetBuilderBitIndex() const {
-  return builder_bit_index_;
-}
-
 int ImmutableEnumFieldGenerator::GetNumBitsForMessage() const {
   return HasHasbit(descriptor_) ? 1 : 0;
 }
-
 void ImmutableEnumFieldGenerator::GenerateInterfaceMembers(
     io::Printer* printer) const {
   if (descriptor_->has_presence()) {

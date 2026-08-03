@@ -40,6 +40,7 @@
 #include "google/protobuf/test_messages_proto3.pb.h"
 #include "google/protobuf/text_format.h"
 #include "google/protobuf/unknown_field_set.h"
+#include "google/protobuf/util/message_differencer.h"
 #include "google/protobuf/util/type_resolver_util.h"
 #include "google/protobuf/wire_format_lite.h"
 
@@ -841,6 +842,66 @@ void BinaryAndJsonConformanceSuiteImpl<MessageType>::ExpectParseFailureForJson(
   } else {
     test.set_failure_message("Should have failed to parse, but didn't.");
     suite_.ReportFailure(test, level, request, response);
+  }
+}
+
+template <typename MessageType>
+void BinaryAndJsonConformanceSuiteImpl<MessageType>::
+    RunValidJsonTestOrParseFailure(const std::string& test_name,
+                                   ConformanceLevel level,
+                                   const std::string& input_json,
+                                   const std::string& equivalent_text_format) {
+  MessageType prototype;
+  ConformanceRequestSetting setting(
+      level, ::conformance::JSON, ::conformance::PROTOBUF,
+      ::conformance::JSON_TEST, prototype, test_name, input_json);
+  const ConformanceRequest& request = setting.GetRequest();
+  ConformanceResponse response;
+  std::string effective_test_name =
+      absl::StrCat(setting.ConformanceLevelToString(level), ".",
+                   SyntaxIdentifier(), ".JsonInput.", test_name);
+
+  if (!suite_.RunTest(effective_test_name, request, &response)) {
+    return;
+  }
+
+  TestStatus test;
+  test.set_name(effective_test_name);
+  if (response.result_case() == ConformanceResponse::kParseError) {
+    suite_.ReportSuccess(test);
+  } else if (response.result_case() == ConformanceResponse::kSkipped) {
+    suite_.ReportSkip(test, request, response);
+  } else {
+    std::unique_ptr<Message> reference_message(setting.NewTestMessage());
+    ABSL_CHECK(TextFormat::ParseFromString(equivalent_text_format,
+                                           reference_message.get()))
+        << "Failed to parse data for test case: " << setting.GetTestName()
+        << ", data: " << equivalent_text_format;
+    std::unique_ptr<Message> test_message(setting.NewTestMessage());
+    bool parsed = false;
+    if (response.result_case() == ConformanceResponse::kProtobufPayload) {
+      parsed = test_message->ParseFromString(response.protobuf_payload());
+    }
+    if (!parsed) {
+      test.set_failure_message("Malformed protobuf response");
+      suite_.ReportFailure(test, level, request, response);
+      return;
+    }
+
+    util::MessageDifferencer differencer;
+    util::DefaultFieldComparator field_comparator;
+    field_comparator.set_treat_nan_as_equal(true);
+    differencer.set_field_comparator(&field_comparator);
+    std::string differences;
+    differencer.ReportDifferencesToString(&differences);
+    if (differencer.Compare(*reference_message, *test_message)) {
+      suite_.ReportSuccess(test);
+    } else {
+      test.set_failure_message(
+          "Should have failed to parse or matched expected output but did "
+          "not.");
+      suite_.ReportFailure(test, level, request, response);
+    }
   }
 }
 
@@ -2369,22 +2430,27 @@ void BinaryAndJsonConformanceSuiteImpl<
   ExpectParseFailureForJson(
       "MissingCommaMultiline", RECOMMENDED,
       "{\n  \"optionalInt32\": 1\n  \"optionalInt64\": 2\n}");
-  // Duplicated field names are not allowed.
-  ExpectParseFailureForJson("FieldNameDuplicate", RECOMMENDED,
-                            R"({
-        "optionalNestedMessage": {"a": 1},
-        "optionalNestedMessage": {}
-      })");
-  ExpectParseFailureForJson("FieldNameDuplicateDifferentCasing1", RECOMMENDED,
-                            R"({
-        "optional_nested_message": {"a": 1},
-        "optionalNestedMessage": {}
-      })");
-  ExpectParseFailureForJson("FieldNameDuplicateDifferentCasing2", RECOMMENDED,
-                            R"({
-        "optionalNestedMessage": {"a": 1},
-        "optional_nested_message": {}
-      })");
+  // Duplicated field names have either last-wins or parse failure.
+  RunValidJsonTestOrParseFailure("FieldNameDuplicate", RECOMMENDED,
+                                 R"({
+                                   "optionalNestedMessage": {"a": 1},
+                                   "optionalNestedMessage": {}
+                                 })",
+                                 "optional_nested_message: {}");
+  RunValidJsonTestOrParseFailure("FieldNameDuplicateDifferentCasing1",
+                                 RECOMMENDED,
+                                 R"({
+                                   "optional_nested_message": {"a": 1},
+                                   "optionalNestedMessage": {}
+                                 })",
+                                 "optional_nested_message: {}");
+  RunValidJsonTestOrParseFailure("FieldNameDuplicateDifferentCasing2",
+                                 RECOMMENDED,
+                                 R"({
+                                   "optionalNestedMessage": {"a": 1},
+                                   "optional_nested_message": {}
+                                 })",
+                                 "optional_nested_message: {}");
   // Serializers should use lowerCamelCase by default.
   RunValidJsonTestWithValidator("FieldNameInLowerCamelCase", REQUIRED,
                                 R"({
@@ -2883,8 +2949,12 @@ void BinaryAndJsonConformanceSuiteImpl<
                    "optional_nested_message: {a: 1234}");
 
   // Oneof fields.
-  ExpectParseFailureForJson("OneofFieldDuplicate", REQUIRED,
-                            R"({"oneofUint32": 1, "oneofString": "test"})");
+  RunValidJsonTestOrParseFailure("OneofFieldDuplicate", REQUIRED,
+                                 R"({"oneofUint32": 1, "oneofString": "test"})",
+                                 "oneof_string: \"test\"");
+  RunValidJsonTestOrParseFailure("OneofFieldDuplicate2", REQUIRED,
+                                 R"({"oneofString": "test", "oneofUint32": 1})",
+                                 "oneof_uint32: 1");
   RunValidJsonTest("OneofFieldNullFirst", REQUIRED,
                    R"({"oneofUint32": null, "oneofString": "test"})",
                    "oneof_string: \"test\"");

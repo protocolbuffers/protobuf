@@ -33,6 +33,7 @@
 #include "absl/strings/string_view.h"
 #include "google/protobuf/compiler/parser.h"
 #include "google/protobuf/descriptor.pb.h"
+#include "google/protobuf/descriptor_database.h"
 #include "google/protobuf/io/tokenizer.h"
 #include "google/protobuf/io/zero_copy_stream_impl.h"
 #include "google/protobuf/text_format.h"
@@ -137,7 +138,8 @@ bool SourceTreeDescriptorDatabase::FindFileByName(absl::string_view filename,
         fallback_database_->FindFileByName(filename, output)) {
       return true;
     }
-    if (error_collector_ != nullptr) {
+    if (error_collector_ != nullptr &&
+        !internal::ScopedFallbackDatabaseErrorSuppressor::IsSuppressed()) {
       error_collector_->RecordError(filename, -1, 0,
                                     source_tree_->GetLastErrorMessage());
     }

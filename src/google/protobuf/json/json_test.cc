@@ -1305,6 +1305,23 @@ TEST_P(JsonTest, TestAny) {
   EXPECT_EQ(round_trip->value(), "");
 }
 
+TEST_P(JsonTest, TestAnyWrappingEmptyValue) {
+  google::protobuf::Value empty_value;
+  google::protobuf::Any any;
+  ASSERT_TRUE(any.PackFrom(empty_value));
+
+  auto as_json = ToJson(any);
+  ASSERT_OK(as_json);
+  EXPECT_EQ(*as_json,
+            R"({"@type":"type.googleapis.com/google.protobuf.Value"})");
+
+  auto round_trip = ToProto<google::protobuf::Any>(*as_json);
+  ASSERT_OK(round_trip);
+  EXPECT_EQ(round_trip->type_url(),
+            "type.googleapis.com/google.protobuf.Value");
+  EXPECT_EQ(round_trip->value(), "");
+}
+
 TEST_P(JsonTest, TestDuration) {
   auto m = ToProto<proto3::TestDuration>(R"json(
     {

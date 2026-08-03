@@ -1,18 +1,28 @@
 load("@rules_java//java:java_library.bzl", "java_library")
+load("//:protobuf.bzl", "internal_gen_well_known_protos_java")
 load("//:protobuf_version.bzl", "PROTOBUF_JAVA_VERSION")
 load("//bazel:java_proto_library.bzl", "java_proto_library")
 load("//bazel:proto_library.bzl", "proto_library")
 load("//build_defs:java_opts.bzl", "protobuf_java_export", "protobuf_versioned_java_library")
 load("//java/internal:testing.bzl", "junit_tests")
 
+internal_gen_well_known_protos_java(
+    name = "gen_language_neutral_protos_java",
+    deps = [
+        "//:json_enumvalue_options_proto",
+        "//:json_options_proto",
+    ],
+)
+
 java_library(
     name = "util",
     srcs = glob([
         "src/main/java/com/google/protobuf/util/*.java",
-    ]),
+    ]) + [
+        ":gen_language_neutral_protos_java",
+    ],
     visibility = ["//visibility:public"],
     deps = [
-        ":json_enumvalue_options_java_proto",
         "//java/core",
         "@maven//:com_google_code_findbugs_jsr305",
         "@maven//:com_google_code_gson_gson",
@@ -24,14 +34,15 @@ protobuf_versioned_java_library(
     name = "util_bundle",
     srcs = glob([
         "src/main/java/com/google/protobuf/util/*.java",
-    ]),
+    ]) + [
+        ":gen_language_neutral_protos_java",
+    ],
     automatic_module_name = "com.google.protobuf.util",
     bundle_description = "Utilities for Protocol Buffers",
     bundle_name = "Protocol Buffers [Util]",
     bundle_symbolic_name = "com.google.protobuf.util",
     visibility = ["//visibility:public"],
     deps = [
-        ":json_enumvalue_options_java_proto",
         "//java/core",
         "@maven//:com_google_code_findbugs_jsr305",
         "@maven//:com_google_code_gson_gson",
@@ -45,6 +56,9 @@ protobuf_java_export(
     deploy_env = ["//java/core"],
     maven_coordinates = "com.google.protobuf:protobuf-java-util:%s" % PROTOBUF_JAVA_VERSION,
     pom_template = "pom_template.xml",
+    resources = [
+        "//src/google/protobuf:json_options_proto_srcs",
+    ],
     tags = ["manual"],
     visibility = ["//java:__pkg__"],
     runtime_deps = [":util_bundle"],

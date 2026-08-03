@@ -360,6 +360,16 @@ class PROTOC_EXPORT CommandLineInterface {
       const TransitiveDependencyOptions& options =
           TransitiveDependencyOptions()) const;
 
+  // Like GetTransitiveDependencies, but only includes option dependencies.
+  // Option dependencies are only needed for files that are parsed by the protoc
+  // compiler.
+  void GetTransitiveOptionDependencies(
+      const FileDescriptor* file,
+      absl::flat_hash_set<const FileDescriptor*>* already_seen,
+      RepeatedPtrField<FileDescriptorProto>* output,
+      const TransitiveDependencyOptions& options =
+          TransitiveDependencyOptions()) const;
+
 
   // -----------------------------------------------------------------
 
