@@ -2112,6 +2112,22 @@ TEST(ExtensionSetTest, MessageSetRecursionLimitIsConsistent) {
   }
 }
 
+TEST(ExtensionSetTest, MergeLargeExtensionSetToEmpty) {
+  ExtensionSet src;
+  ExtensionSet dst;
+  constexpr int kNumExtensions = 70000;  // > 2**16 (65536)
+  for (int i = 1; i <= kNumExtensions; ++i) {
+    src.Set<int32_t>(/*arena=*/nullptr, i, WireFormatLite::TYPE_INT32, i,
+                     /*descriptor=*/nullptr);
+  }
+  dst.MergeFrom(/*arena=*/nullptr, /*extendee=*/nullptr, src,
+                /*other_arena=*/nullptr);
+  EXPECT_EQ(dst.NumExtensions(), kNumExtensions);
+  for (int i = 1; i <= kNumExtensions; ++i) {
+    EXPECT_EQ(dst.Get<int32_t>(i, 0), i);
+  }
+}
+
 }  // namespace
 }  // namespace internal
 }  // namespace protobuf
