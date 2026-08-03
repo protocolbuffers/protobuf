@@ -74,6 +74,7 @@ set(libprotobuf_srcs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/message_lite.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/micro_string.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/naming_style.cc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/offset_ptr.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/option_interpreter.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/parse_context.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/port.cc
@@ -188,6 +189,7 @@ set(libprotobuf_hdrs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/metadata_lite.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/micro_string.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/naming_style.h
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/offset_ptr.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/option_interpreter.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/os_macros_restore.inc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/os_macros_undef.inc
@@ -259,6 +261,7 @@ set(libprotobuf_lite_srcs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/map.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/message_lite.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/micro_string.cc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/offset_ptr.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/parse_context.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/port.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/raw_ptr.cc
@@ -307,6 +310,7 @@ set(libprotobuf_lite_hdrs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/message_traits.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/metadata_lite.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/micro_string.h
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/offset_ptr.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/os_macros_restore.inc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/os_macros_undef.inc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/parse_context.h
@@ -1291,6 +1295,7 @@ set(protobuf_test_files
   ${protobuf_SOURCE_DIR}/src/google/protobuf/naming_style_test.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/no_field_presence_map_test.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/no_field_presence_test.cc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/offset_ptr_test.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/port_test.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/preserve_unknown_enum_test.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/proto3_arena_lite_unittest.cc
