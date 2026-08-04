@@ -37,25 +37,25 @@ jobs:
           - { name: No-RTTI, flags: --cxxopt=-fno-rtti, continuous-only: true }
         include:
           # Set defaults
-          - image: us-docker.pkg.dev/protobuf-build/containers/test/linux/sanitize:8.0.1-a6ca8ba8e77d63471b4ad05f8643e1fc58b30e12
+          - image: us-docker.pkg.dev/protobuf-build/containers/test/linux/sanitize:8.7.0-5bb1a8fdfc30f8c21c1b38cf053d2db9fca865a7
           - targets: //pkg/... //src/... //third_party/utf8_range/... //conformance:conformance_framework_tests
           # Override cases with custom images
           - config: { name: "Bazel8", flags: --cxxopt="-Wno-self-assign-overloaded" }
             cache_key: Bazel8
-            image: "us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:8.6.0-9dca0d9417f43f5f1e97e59969fb0f3e6ae3bd9c"
+            image: "us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:8.7.0-4d8e80ef93b0219fb907af9dd4596b92946995d8"
             targets: "//src/... //third_party/utf8_range/..."
           - config: { name: "Bazel9", flags: "--cxxopt=-Wno-self-assign-overloaded" }
             cache_key: Bazel9
-            image: "us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:9.0.0-9dca0d9417f43f5f1e97e59969fb0f3e6ae3bd9c"
+            image: "us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:9.2.0-4d8e80ef93b0219fb907af9dd4596b92946995d8"
             targets: "//src/... //third_party/utf8_range/..."
           - config: { name: "TCMalloc" }
             cache_key: TcMalloc
-            image: "us-docker.pkg.dev/protobuf-build/containers/test/linux/tcmalloc:8.0.1-a6ca8ba8e77d63471b4ad05f8643e1fc58b30e12"
+            image: "us-docker.pkg.dev/protobuf-build/containers/test/linux/tcmalloc:8.7.0-5bb1a8fdfc30f8c21c1b38cf053d2db9fca865a7 "
             targets: "//src/... //third_party/utf8_range/..."
           - config: { name: "aarch64", flags: "--platforms=//build_defs:linux-aarch_64" }
             cache_key: aarch64-bazel8
             targets: "//src/... //src/google/protobuf/compiler:protoc_aarch64_test //third_party/utf8_range/..."
-            image: "us-docker.pkg.dev/protobuf-build/containers/test/linux/emulation:8.0.1-aarch64-a6ca8ba8e77d63471b4ad05f8643e1fc58b30e12"
+            image: "us-docker.pkg.dev/protobuf-build/containers/test/linux/emulation:8.7.0-aarch64-5bb1a8fdfc30f8c21c1b38cf053d2db9fca865a7 "
     name: ${{ matrix.config.continuous-only && inputs.continuous-prefix || '' }} Linux ${{ matrix.config.name }}
     runs-on: ${{ matrix.config.runner || 'ubuntu-latest' }}
     steps:
@@ -64,6 +64,15 @@ jobs:
         uses: protocolbuffers/protobuf-ci/checkout@v5
         with:
           ref: ${{ inputs.safe-checkout }}
+      - name: Prime the cache
+        if: ${{ !matrix.config.continuous-only || inputs.continuous-run }}
+        uses: protocolbuffers/protobuf-ci/bazel-docker@v5
+        with:
+          image: ${{ matrix.image }}
+          credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
+          bazel-cache: cpp_linux/${{ matrix.cache_key }}
+          bazel: fetch ${{ matrix.targets }} ${{ matrix.config.flags }}
+          exclude-targets: ${{ matrix.exclude-targets }}
       - name: Run tests
         if: ${{ !matrix.config.continuous-only || inputs.continuous-run }}
         uses: protocolbuffers/protobuf-ci/bazel-docker@v5
@@ -78,7 +87,7 @@ jobs:
     strategy:
       fail-fast: false   # Don't cancel all jobs if one fails.
       matrix:
-        version: ['10.4', '13.1']
+        version: ['10.5', '13.4']
     name: ${{ matrix.config.continuous-only && inputs.continuous-prefix || '' }} Linux GCC ${{ matrix.version }}
     runs-on: ubuntu-latest
     steps:
@@ -87,11 +96,19 @@ jobs:
         if: ${{ !matrix.config.continuous-only || inputs.continuous-run }}
         with:
           ref: ${{ inputs.safe-checkout }}
+      - name: Prime the cache
+        uses: protocolbuffers/protobuf-ci/bazel-docker@v5
+        if: ${{ !matrix.config.continuous-only || inputs.continuous-run }}
+        with:
+          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/gcc:8.7.0-${{ matrix.version }}-5bb1a8fdfc30f8c21c1b38cf053d2db9fca865a7
+          credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
+          bazel-cache: cpp_linux/gcc-${{ matrix.version }}
+          bazel: fetch //pkg/... //src/... //third_party/utf8_range/... //conformance:conformance_framework_tests
       - name: Run tests
         uses: protocolbuffers/protobuf-ci/bazel-docker@v5
         if: ${{ !matrix.config.continuous-only || inputs.continuous-run }}
         with:
-          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/gcc:8.0.1-${{ matrix.version }}-e78301df86b3e4c46ec9ac4d98be00e19305d8f3
+          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/gcc:8.7.0-${{ matrix.version }}-5bb1a8fdfc30f8c21c1b38cf053d2db9fca865a7
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-cache: cpp_linux/gcc-${{ matrix.version }}
           bazel: test //pkg/... //src/... //third_party/utf8_range/... //conformance:conformance_framework_tests
@@ -125,7 +142,7 @@ jobs:
         id: cross-compile
         uses: protocolbuffers/protobuf-ci/cross-compile-protoc@v5
         with:
-          image: us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:8.6.0-9dca0d9417f43f5f1e97e59969fb0f3e6ae3bd9c
+          image: us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:8.7.0-4d8e80ef93b0219fb907af9dd4596b92946995d8
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           architecture: linux-${{ matrix.arch }}
       - name: Check disk space after cross compile
@@ -146,7 +163,7 @@ jobs:
         if: ${{ !matrix.continuous-only || inputs.continuous-run }}
         uses: protocolbuffers/protobuf-ci/docker@v5
         with:
-          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/emulation:8.0.1-${{ matrix.arch }}-a6ca8ba8e77d63471b4ad05f8643e1fc58b30e12
+          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/emulation:8.7.0-${{ matrix.arch }}-5bb1a8fdfc30f8c21c1b38cf053d2db9fca865a7
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           entrypoint: bash
           command: >
@@ -306,7 +323,7 @@ jobs:
         with:
           name: installed_files_${{ matrix.build }}
           path: ${{ matrix.build }}
-      
+
       - name: Compare against golden
         run: |
           set +e
@@ -386,7 +403,7 @@ jobs:
         if: ${{ !matrix.continuous-only || inputs.continuous-run }}
         uses: protocolbuffers/protobuf-ci/docker@v5
         with:
-          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/gcc:8.0.1-12.2-168f9c9d015a0fa16611e1e9eede796fe9bfbb69
+          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/gcc:8.7.0-12.5-5bb1a8fdfc30f8c21c1b38cf053d2db9fca865a7
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           entrypoint: bash
           command: >-
@@ -608,7 +625,7 @@ jobs:
         if: ${{ inputs.continuous-run }}
         uses: protocolbuffers/protobuf-ci/bazel-docker@v5
         with:
-          image: us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:9.0.0-7932bf8b25fb76a111e7257d151a6a58d5c3c671
+          image: us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:9.2.0-4d8e80ef93b0219fb907af9dd4596b92946995d8
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-cache: cpp_linux/abseil_head
           bazel: test //src/... --override_module=abseil-cpp=abseil-cpp-head
