@@ -1,6 +1,6 @@
 #region Copyright notice and license
 // Protocol Buffers - Google's data interchange format
-// Copyright 2015 Google Inc.  All rights reserved.
+// Copyright 2015 Google LLC.  All rights reserved.
 //
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file or at
@@ -15,6 +15,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
 
@@ -759,6 +760,27 @@ namespace Google.Protobuf
         private bool TryParseEnumStringValue(FieldDescriptor field, string text, out object value)
         {
             var enumValue = field.EnumType.FindValueByName(text);
+            if (enumValue == null)
+            {
+                var clrType = field.EnumType.ClrType;
+                if (clrType != null)
+                {
+                    var declaredFields = clrType.GetTypeInfo()
+                        .DeclaredFields.Where(f => f.IsStatic);
+                    foreach (var clrField in declaredFields)
+                    {
+                        var attr = clrField
+                            .GetCustomAttribute<OriginalNameAttribute>();
+                        if (attr?.JsonEnumValueName == text)
+                        {
+                            enumValue = field.EnumType
+                                .FindValueByName(attr.Name);
+                            break;
+                        }
+                    }
+                }
+            }
+
             if (enumValue == null)
             {
                 if (settings.IgnoreUnknownFields)
