@@ -10287,12 +10287,21 @@ upb_Extension* UPB_PRIVATE(_upb_Message_GetOrCreateExtensionWithTag)(
     struct upb_Message* msg, const upb_MiniTableExtension* e, upb_Arena* a,
     upb_TaggedAuxType tag) {
   UPB_ASSERT(!upb_Message_IsFrozen(msg));
-  upb_Extension* ext = (upb_Extension*)UPB_PRIVATE(_upb_Message_Getext)(msg, e);
-  if (ext) return ext;
-
+  // For Canonical Extensions, we check whether the extension has already been
+  // set. If we find an extension with the same pointer and tag, we reuse it to
+  // prevent duplicate entries for the same extension.
+  //
+  // For Non-Canonical Extensions, we do NOT reuse them, matching the behavior
+  // of adding a unknown StringView (through `_upb_Message_AddUnknown`) which
+  // accumulates.
+  if (tag == kUpb_TaggedAuxType_CanonicalExtension) {
+    upb_Extension* ext =
+        (upb_Extension*)UPB_PRIVATE(_upb_Message_Getext)(msg, e);
+    if (ext) return ext;
+  }
   if (!UPB_PRIVATE(_upb_Message_ReserveSlot)(msg, a)) return NULL;
   upb_Message_Internal* in = UPB_PRIVATE(_upb_Message_GetInternal)(msg);
-  ext = upb_Arena_Malloc(a, sizeof(upb_Extension));
+  upb_Extension* ext = upb_Arena_Malloc(a, sizeof(upb_Extension));
   if (!ext) return NULL;
   memset(ext, 0, sizeof(upb_Extension));
   ext->ext = e;
