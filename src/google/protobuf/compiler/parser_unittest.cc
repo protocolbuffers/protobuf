@@ -2293,6 +2293,46 @@ TEST_F(ParseErrorTest, NestingIsLimitedWithoutCrashing) {
   ExpectHasErrors(input(), error);
 }
 
+TEST_F(ParseErrorTest, GroupNestingIsLimitedWithoutCrashing) {
+  std::string start = "syntax = \"proto2\";\nmessage M {\n";
+  std::string end = "}\n";
+
+  const auto add = [&](int i) {
+    std::string i_str = std::to_string(i);
+    absl::StrAppend(&start, "  optional group G", i_str, " = ", i_str, " {\n");
+    absl::StrAppend(&end, "  }\n");
+  };
+  const auto input = [&] { return absl::StrCat(start, end); };
+
+  // The first ones work correctly.
+  // Note that MaxMessageDeclarationNestingDepth() limit is shared between
+  // message and group nesting. The outer message M takes 1 level, so we can
+  // nest up to MaxMessageDeclarationNestingDepth() - 2 groups.
+  for (int i = 1; i < internal::cpp::MaxMessageDeclarationNestingDepth() - 1;
+       ++i) {
+    add(i);
+    const std::string str = input();
+    SetupParser(str);
+    FileDescriptorProto proto;
+    proto.set_name("foo.proto");
+    EXPECT_TRUE(parser_->Parse(input_.get(), &proto)) << input();
+    EXPECT_EQ(io::Tokenizer::TYPE_END, input_->current().type);
+    ASSERT_EQ("", error_collector_.text_);
+    DescriptorPool pool;
+    ASSERT_TRUE(pool.BuildFile(proto));
+  }
+  // The rest have parsing errors but they don't crash no matter how deep we
+  // make them.
+  const auto error = testing::HasSubstr(
+      "Reached maximum recursion limit for nested messages.");
+  add(internal::cpp::MaxMessageDeclarationNestingDepth() - 1);
+  ExpectHasErrors(input(), error);
+  for (int i = 0; i < 1000; ++i) {
+    add(internal::cpp::MaxMessageDeclarationNestingDepth() + i);
+  }
+  ExpectHasErrors(input(), error);
+}
+
 TEST_F(ParseErrorTest, MissingFieldNumber) {
   ExpectHasErrors(
       "message TestMessage {\n"
