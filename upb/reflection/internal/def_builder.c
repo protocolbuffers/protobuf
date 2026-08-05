@@ -138,7 +138,9 @@ const void* _upb_DefBuilder_ResolveAny(upb_DefBuilder* ctx,
   } else {
     // Remove components from base until we find an entry or run out.
     size_t baselen = base ? strlen(base) : 0;
+    if (SIZE_MAX - sym.size < baselen + 1) _upb_DefBuilder_OomErr(ctx);
     char* tmp = upb_gmalloc(sym.size + baselen + 1);
+    if (!tmp) _upb_DefBuilder_OomErr(ctx);
     while (1) {
       char* p = tmp;
       if (baselen) {

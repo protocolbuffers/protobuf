@@ -80,8 +80,10 @@ static void upb_UnknownFields_Grow(upb_UnknownField_Context* ctx,
                                    upb_UnknownField** ptr,
                                    upb_UnknownField** end) {
   size_t old = (*ptr - *base);
+  if (old > SIZE_MAX / 2) upb_UnknownFields_OutOfMemory(ctx);
   size_t new = UPB_MAX(4, old * 2);
 
+  if (SIZE_MAX / sizeof(**base) < new) upb_UnknownFields_OutOfMemory(ctx);
   *base = upb_Arena_Realloc(ctx->arena, *base, old * sizeof(**base),
                             new * sizeof(**base));
   if (!*base) upb_UnknownFields_OutOfMemory(ctx);
@@ -131,11 +133,25 @@ static void upb_UnknownFields_SortRecursive(upb_UnknownField* arr, size_t start,
 static void upb_UnknownFields_Sort(upb_UnknownField_Context* ctx,
                                    upb_UnknownFields* fields) {
   if (ctx->tmp_size < fields->size) {
-    const int oldsize = ctx->tmp_size * sizeof(*ctx->tmp);
+    if (SIZE_MAX / sizeof(*ctx->tmp) < ctx->tmp_size) {
+      upb_UnknownFields_OutOfMemory(ctx);
+    }
+    size_t oldsize = ctx->tmp_size * sizeof(*ctx->tmp);
     ctx->tmp_size = UPB_MAX(8, ctx->tmp_size);
-    while (ctx->tmp_size < fields->size) ctx->tmp_size *= 2;
-    const int newsize = ctx->tmp_size * sizeof(*ctx->tmp);
+    while (ctx->tmp_size < fields->size) {
+      if (ctx->tmp_size > SIZE_MAX / 2) {
+        upb_UnknownFields_OutOfMemory(ctx);
+      }
+      ctx->tmp_size *= 2;
+    }
+    if (SIZE_MAX / sizeof(*ctx->tmp) < ctx->tmp_size) {
+      upb_UnknownFields_OutOfMemory(ctx);
+    }
+    size_t newsize = ctx->tmp_size * sizeof(*ctx->tmp);
     ctx->tmp = upb_grealloc(ctx->tmp, oldsize, newsize);
+    if (!ctx->tmp) {
+      upb_UnknownFields_OutOfMemory(ctx);
+    }
   }
   upb_UnknownFields_SortRecursive(fields->fields, 0, fields->size, ctx->tmp);
 }
