@@ -85,6 +85,31 @@ cc_library(
 )
 
 cc_library(
+    name = "encode_extension",
+    srcs = ["encode_extension.c"],
+    hdrs = ["encode_extension.h"],
+    copts = UPB_DEFAULT_COPTS,
+    features = UPB_DEFAULT_FEATURES,
+    visibility = [
+        "//pkg:__pkg__",
+        "//python:__pkg__",
+        "//upb:__pkg__",
+        "//upb/message:__subpackages__",
+        "//upb/text:__subpackages__",
+        "//video/youtube/utils/elements/client/component_type:__pkg__",
+    ],
+    deps = [
+        ":back_alloc",
+        ":encoder",
+        "//upb/base",
+        "//upb/mem:internal",
+        "//upb/message:internal",
+        "//upb/mini_table",
+        "//upb/port",
+    ],
+)
+
+cc_library(
     name = "wire",
     srcs = [
         "decode.c",

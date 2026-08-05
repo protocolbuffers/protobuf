@@ -14,9 +14,14 @@
 #include "upb/base/descriptor_constants.h"
 #include "upb/base/string_view.h"
 #include "upb/lex/round_trip.h"
+#include "upb/mem/arena.h"
 #include "upb/message/array.h"
+#include "upb/message/internal/extension.h"
 #include "upb/message/message.h"
+#include "upb/message/unknown_fields.h"
 #include "upb/text/options.h"
+#include "upb/wire/encode.h"
+#include "upb/wire/encode_extension.h"
 #include "upb/wire/eps_copy_input_stream.h"
 #include "upb/wire/reader.h"
 #include "upb/wire/types.h"
@@ -137,17 +142,34 @@ void UPB_PRIVATE(_upb_TextEncode_ParseUnknown)(txtenc* e,
                                                const upb_Message* msg) {
   if ((e->options & UPB_TXTENC_SKIPUNKNOWN) != 0) return;
 
+  upb_Arena* arena = upb_Arena_New();
+  if (!arena) return;
+
   uintptr_t iter = kUpb_Message_UnknownBegin;
-  upb_StringView view;
-  while (upb_Message_NextUnknown(msg, &view, &iter)) {
+  upb_MessageUnknown unknown;
+  while (upb_Message_NextUnknown2(msg, &unknown, &iter)) {
+    upb_StringView view;
+    if (unknown.type == kUpb_MessageUnknownType_StringView) {
+      view = unknown.value.bytes;
+    } else {
+      UPB_ASSERT(unknown.type == kUpb_MessageUnknownType_NonCanonicalExtension);
+      const upb_Extension* ext = unknown.value.extension;
+      if (upb_EncodeExtension(ext, arena, &view, /*encode_options=*/0) !=
+          kUpb_EncodeStatus_Ok) {
+        // Failed to encode extension, skip it.
+        continue;
+      }
+    }
+
     char* start = e->ptr;
     upb_EpsCopyInputStream stream;
     upb_EpsCopyInputStream_Init(&stream, &view.data, view.size);
     if (!UPB_PRIVATE(_upb_TextEncode_Unknown)(e, view.data, &stream, -1)) {
-      /* Unknown failed to parse, back up and don't print it at all. */
+      // Unknown failed to parse, back up and don't print it at all.
       e->ptr = start;
     }
   }
+  upb_Arena_Free(arena);
 }
 
 void UPB_PRIVATE(_upb_TextEncode_Scalar)(txtenc* e, upb_MessageValue val,

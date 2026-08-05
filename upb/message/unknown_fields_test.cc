@@ -23,13 +23,17 @@
 #include "upb/message/internal/accessors.h"
 #include "upb/message/internal/message.h"
 #include "upb/message/message.h"
+#include "upb/message/test.upb.h"
+#include "upb/message/test.upb_minitable.h"
 #include "upb/mini_table/extension.h"
 #include "upb/test/test.upb.h"
 #include "upb/test/test.upb_minitable.h"
 #include "upb/wire/decode.h"
+#include "upb/wire/encode_extension.h"
 
 // Must be last.
 #include "upb/port/def.inc"
+#include "upb/wire/encode.h"
 
 namespace {
 
@@ -240,4 +244,63 @@ TEST(GeneratedCode, HasUnknownMultipleUnknownsDeleteOne) {
 
   upb_Arena_Free(arena);
 }
+
+TEST(GeneratedCode, MessageUnknown_Encode_NonCanonicalExtension) {
+  upb_Arena* arena = upb_Arena_New();
+
+  upb_test_ModelWithExtensions* msg = upb_test_ModelWithExtensions_new(arena);
+  upb_test_ModelExtension2* extension2 = upb_test_ModelExtension2_new(arena);
+  upb_test_ModelExtension2_set_i(extension2, 42);
+
+  bool set_ext_ok = UPB_PRIVATE(_upb_Message_SetNonCanonicalExtension)(
+      UPB_UPCAST(msg), upb_test_ModelExtension2_model_ext_ext, &extension2,
+      arena);
+  EXPECT_TRUE(set_ext_ok);
+
+  upb_FindUnknownRet2 result = upb_Message_FindUnknown2(
+      UPB_UPCAST(msg),
+      upb_MiniTableExtension_Number(upb_test_ModelExtension2_model_ext_ext), 0);
+  EXPECT_EQ(kUpb_FindUnknown_Ok, result.status);
+  EXPECT_EQ(kUpb_MessageUnknownType_NonCanonicalExtension, result.unknown.type);
+
+  upb_StringView view;
+  upb_EncodeStatus status =
+      upb_EncodeExtension(result.unknown.value.extension, arena, &view,
+                          /*encode_options=*/0);
+  EXPECT_EQ(kUpb_EncodeStatus_Ok, status);
+  EXPECT_GT(view.size, 0);
+
+  upb_Arena_Free(arena);
+}
+
+TEST(GeneratedCode, MessageUnknown_Encode_NonCanonicalMessageSetExtension) {
+  upb_Arena* arena = upb_Arena_New();
+
+  upb_test_TestMessageSet* mset = upb_test_TestMessageSet_new(arena);
+  upb_test_MessageSetMember* member = upb_test_MessageSetMember_new(arena);
+  upb_test_MessageSetMember_set_optional_int32(member, 42);
+
+  bool set_ext_ok = UPB_PRIVATE(_upb_Message_SetNonCanonicalExtension)(
+      UPB_UPCAST(mset), upb_test_MessageSetMember_message_set_extension_ext,
+      &member, arena);
+  EXPECT_TRUE(set_ext_ok);
+
+  upb_FindUnknownRet2 result = upb_Message_FindUnknown2(
+      UPB_UPCAST(mset),
+      upb_MiniTableExtension_Number(
+          upb_test_MessageSetMember_message_set_extension_ext),
+      0);
+  EXPECT_EQ(kUpb_FindUnknown_Ok, result.status);
+  EXPECT_EQ(kUpb_MessageUnknownType_NonCanonicalExtension, result.unknown.type);
+
+  upb_StringView view;
+  upb_EncodeStatus status =
+      upb_EncodeExtension(result.unknown.value.extension, arena, &view,
+                          /*encode_options=*/0);
+  EXPECT_EQ(kUpb_EncodeStatus_Ok, status);
+  EXPECT_GT(view.size, 0);
+
+  upb_Arena_Free(arena);
+}
+
 }  // namespace

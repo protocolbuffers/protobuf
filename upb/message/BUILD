@@ -46,7 +46,6 @@ cc_library(
     visibility = ["//visibility:public"],
     deps = [
         ":internal",
-        ":message_unknowns",
         ":types",
         "//upb/base",
         "//upb/base:internal",
@@ -75,6 +74,7 @@ cc_library(
         "//third_party/cel/c/internal:__pkg__",
         "//third_party/upb/wasm_abi/upb:__pkg__",
         "//upb:__pkg__",
+        "//upb/text:__subpackages__",
         "//upb/wire:__pkg__",
         "//video/youtube/utils/elements/client/component_type:__pkg__",
         "//video/youtube/utils/elements/client/component_type/subscription_processors:__pkg__",
@@ -527,6 +527,8 @@ cc_test(
     deps = [
         ":internal",
         ":message",
+        ":message_test_upb_minitable_proto",
+        ":message_test_upb_proto",
         ":message_unknowns",
         "//upb/base",
         "//upb/mem",
@@ -535,6 +537,7 @@ cc_test(
         "//upb/test:test_proto_upb_minitable",
         "//upb/test:test_upb_proto",
         "//upb/wire",
+        "//upb/wire:encode_extension",
         "@googletest//:gtest",
         "@googletest//:gtest_main",
     ],
