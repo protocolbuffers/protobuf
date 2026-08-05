@@ -46,6 +46,43 @@ TEST_F(PhpGeneratorTest, Basic) {
   ExpectNoErrors();
 }
 
+TEST_F(PhpGeneratorTest, Formatting) {
+  CreateTempFile("google/protobuf/wrappers.proto",
+                 R"schema(
+    syntax = "proto3";
+    package google.protobuf;
+    message Int32Value {
+      int32 value = 1;
+    })schema");
+
+  CreateTempFile("foo.proto",
+                 R"schema(
+    syntax = "proto3";
+    import "google/protobuf/wrappers.proto";
+    message Foo {
+      optional int32 bar = 1;
+      google.protobuf.Int32Value wrapped_val = 2;
+    })schema");
+
+  RunProtoc(
+      "protocol_compiler --proto_path=$tmpdir --php_out=$tmpdir foo.proto");
+
+  ExpectNoErrors();
+
+  ExpectFileContentContainsSubstring(
+      "Foo.php",
+      "    public function __construct($data = null)\n"
+      "    {\n");
+
+  ExpectFileContentContainsSubstring(
+      "Foo.php",
+      "    public function setWrappedValUnwrapped($var)\n"
+      "    {\n"
+      "        $this->writeWrapperValue(\"wrapped_val\", $var);\n"
+      "        return $this;\n"
+      "    }\n");
+}
+
 TEST_F(PhpGeneratorTest, Proto2File) {
   CreateTempFile("foo.proto",
                  R"schema(
