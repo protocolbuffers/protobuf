@@ -18,6 +18,7 @@
 #include "upb/message/message.h"
 #include "upb/text/options.h"
 #include "upb/wire/eps_copy_input_stream.h"
+#include "upb/wire/internal/constants.h"
 #include "upb/wire/reader.h"
 #include "upb/wire/types.h"
 
@@ -43,7 +44,13 @@
  */
 const char* UPB_PRIVATE(_upb_TextEncode_Unknown)(txtenc* e, const char* ptr,
                                                  upb_EpsCopyInputStream* stream,
-                                                 int groupnum) {
+                                                 int groupnum, int depth) {
+  // Length-delimited unknown fields are re-parsed here as nested messages, but
+  // the wire decoder preserves them opaquely without descending, so nothing has
+  // bounded their nesting. Cap the recursion the same way the decoder caps
+  // message depth so a crafted unknown field can't overflow the stack.
+  if (depth >= kUpb_WireFormat_DefaultDepthLimit) return NULL;
+
   // We are guaranteed that the unknown data is valid wire format, and will not
   // contain tag zero.
   uint32_t end_group = groupnum > 0
@@ -99,7 +106,8 @@ const char* UPB_PRIVATE(_upb_TextEncode_Unknown)(txtenc* e, const char* ptr,
         upb_EpsCopyInputStream_Init(&sub_stream, &sub_ptr, size);
 
         e->indent_depth++;
-        if (UPB_PRIVATE(_upb_TextEncode_Unknown)(e, sub_ptr, &sub_stream, -1)) {
+        if (UPB_PRIVATE(_upb_TextEncode_Unknown)(e, sub_ptr, &sub_stream, -1,
+                                                 depth + 1)) {
           e->indent_depth--;
           UPB_PRIVATE(_upb_TextEncode_Indent)(e);
           UPB_PRIVATE(_upb_TextEncode_PutStr)(e, "}");
@@ -117,7 +125,7 @@ const char* UPB_PRIVATE(_upb_TextEncode_Unknown)(txtenc* e, const char* ptr,
         UPB_PRIVATE(_upb_TextEncode_EndField)(e);
         e->indent_depth++;
         CHK(ptr = UPB_PRIVATE(_upb_TextEncode_Unknown)(
-                e, ptr, stream, upb_WireReader_GetFieldNumber(tag)));
+                e, ptr, stream, upb_WireReader_GetFieldNumber(tag), depth + 1));
         e->indent_depth--;
         UPB_PRIVATE(_upb_TextEncode_Indent)(e);
         UPB_PRIVATE(_upb_TextEncode_PutStr)(e, "}");
@@ -143,7 +151,7 @@ void UPB_PRIVATE(_upb_TextEncode_ParseUnknown)(txtenc* e,
     char* start = e->ptr;
     upb_EpsCopyInputStream stream;
     upb_EpsCopyInputStream_Init(&stream, &view.data, view.size);
-    if (!UPB_PRIVATE(_upb_TextEncode_Unknown)(e, view.data, &stream, -1)) {
+    if (!UPB_PRIVATE(_upb_TextEncode_Unknown)(e, view.data, &stream, -1, 0)) {
       /* Unknown failed to parse, back up and don't print it at all. */
       e->ptr = start;
     }
