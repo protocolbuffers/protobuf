@@ -213,15 +213,18 @@ void ImmutableMessageFieldLiteGenerator::GenerateBuilderMembers(
   printer->Annotate("{", "}", descriptor_, Semantic::kSet);
 
   // Field.Builder setField(Field.Builder builderForValue)
-  WriteFieldDocComment(printer, descriptor_, context_->options());
-  printer->Print(variables_,
-                 "$deprecation$public Builder ${$set$capitalized_name$$}$(\n"
-                 "    $type$.Builder builderForValue) {\n"
-                 "  copyOnWrite();\n"
-                 "  instance.set$capitalized_name$(builderForValue.build());\n"
-                 "  return this;\n"
-                 "}\n");
-  printer->Annotate("{", "}", descriptor_, Semantic::kSet);
+  if (!OmitMessageBuilderOverloads(descriptor_, name_resolver_)) {
+    WriteFieldDocComment(printer, descriptor_, context_->options());
+    printer->Print(
+        variables_,
+        "$deprecation$public Builder ${$set$capitalized_name$$}$(\n"
+        "    $type$.Builder builderForValue) {\n"
+        "  copyOnWrite();\n"
+        "  instance.set$capitalized_name$(builderForValue.build());\n"
+        "  return this;\n"
+        "}\n");
+    printer->Annotate("{", "}", descriptor_, Semantic::kSet);
+  }
 
   // Field.Builder mergeField(Field value)
   WriteFieldDocComment(printer, descriptor_, context_->options());
@@ -379,15 +382,18 @@ void ImmutableMessageOneofFieldLiteGenerator::GenerateBuilderMembers(
   printer->Annotate("{", "}", descriptor_, Semantic::kSet);
 
   // Field.Builder setField(Field.Builder builderForValue)
-  WriteFieldDocComment(printer, descriptor_, context_->options());
-  printer->Print(variables_,
-                 "$deprecation$public Builder ${$set$capitalized_name$$}$(\n"
-                 "    $type$.Builder builderForValue) {\n"
-                 "  copyOnWrite();\n"
-                 "  instance.set$capitalized_name$(builderForValue.build());\n"
-                 "  return this;\n"
-                 "}\n");
-  printer->Annotate("{", "}", descriptor_, Semantic::kSet);
+  if (!OmitMessageBuilderOverloads(descriptor_, name_resolver_)) {
+    WriteFieldDocComment(printer, descriptor_, context_->options());
+    printer->Print(
+        variables_,
+        "$deprecation$public Builder ${$set$capitalized_name$$}$(\n"
+        "    $type$.Builder builderForValue) {\n"
+        "  copyOnWrite();\n"
+        "  instance.set$capitalized_name$(builderForValue.build());\n"
+        "  return this;\n"
+        "}\n");
+    printer->Annotate("{", "}", descriptor_, Semantic::kSet);
+  }
 
   // Field.Builder mergeField(Field value)
   WriteFieldDocComment(printer, descriptor_, context_->options());
@@ -617,16 +623,18 @@ void RepeatedImmutableMessageFieldLiteGenerator::GenerateBuilderMembers(
   printer->Annotate("{", "}", descriptor_, Semantic::kSet);
 
   // Builder setRepeatedField(int index, Field.Builder builderForValue)
-  WriteFieldDocComment(printer, descriptor_, context_->options());
-  printer->Print(variables_,
-                 "$deprecation$public Builder ${$set$capitalized_name$$}$(\n"
-                 "    int index, $type$.Builder builderForValue) {\n"
-                 "  copyOnWrite();\n"
-                 "  instance.set$capitalized_name$(index,\n"
-                 "      builderForValue.build());\n"
-                 "  return this;\n"
-                 "}\n");
-  printer->Annotate("{", "}", descriptor_, Semantic::kSet);
+  if (!OmitMessageBuilderOverloads(descriptor_, name_resolver_)) {
+    WriteFieldDocComment(printer, descriptor_, context_->options());
+    printer->Print(variables_,
+                   "$deprecation$public Builder ${$set$capitalized_name$$}$(\n"
+                   "    int index, $type$.Builder builderForValue) {\n"
+                   "  copyOnWrite();\n"
+                   "  instance.set$capitalized_name$(index,\n"
+                   "      builderForValue.build());\n"
+                   "  return this;\n"
+                   "}\n");
+    printer->Annotate("{", "}", descriptor_, Semantic::kSet);
+  }
 
   // Builder addRepeatedField(Field value)
   WriteFieldDocComment(printer, descriptor_, context_->options());
@@ -649,28 +657,32 @@ void RepeatedImmutableMessageFieldLiteGenerator::GenerateBuilderMembers(
                  "  return this;\n"
                  "}\n");
   printer->Annotate("{", "}", descriptor_, Semantic::kSet);
-  // Builder addRepeatedField(Field.Builder builderForValue)
-  WriteFieldDocComment(printer, descriptor_, context_->options());
-  printer->Print(variables_,
-                 "$deprecation$public Builder ${$add$capitalized_name$$}$(\n"
-                 "    $type$.Builder builderForValue) {\n"
-                 "  copyOnWrite();\n"
-                 "  instance.add$capitalized_name$(builderForValue.build());\n"
-                 "  return this;\n"
-                 "}\n");
-  printer->Annotate("{", "}", descriptor_, Semantic::kSet);
 
-  // Builder addRepeatedField(int index, Field.Builder builderForValue)
-  WriteFieldDocComment(printer, descriptor_, context_->options());
-  printer->Print(variables_,
-                 "$deprecation$public Builder ${$add$capitalized_name$$}$(\n"
-                 "    int index, $type$.Builder builderForValue) {\n"
-                 "  copyOnWrite();\n"
-                 "  instance.add$capitalized_name$(index,\n"
-                 "      builderForValue.build());\n"
-                 "  return this;\n"
-                 "}\n");
-  printer->Annotate("{", "}", descriptor_, Semantic::kSet);
+  if (!OmitMessageBuilderOverloads(descriptor_, name_resolver_)) {
+    // Builder addRepeatedField(Field.Builder builderForValue)
+    WriteFieldDocComment(printer, descriptor_, context_->options());
+    printer->Print(
+        variables_,
+        "$deprecation$public Builder ${$add$capitalized_name$$}$(\n"
+        "    $type$.Builder builderForValue) {\n"
+        "  copyOnWrite();\n"
+        "  instance.add$capitalized_name$(builderForValue.build());\n"
+        "  return this;\n"
+        "}\n");
+    printer->Annotate("{", "}", descriptor_, Semantic::kSet);
+
+    // Builder addRepeatedField(int index, Field.Builder builderForValue)
+    WriteFieldDocComment(printer, descriptor_, context_->options());
+    printer->Print(variables_,
+                   "$deprecation$public Builder ${$add$capitalized_name$$}$(\n"
+                   "    int index, $type$.Builder builderForValue) {\n"
+                   "  copyOnWrite();\n"
+                   "  instance.add$capitalized_name$(index,\n"
+                   "      builderForValue.build());\n"
+                   "  return this;\n"
+                   "}\n");
+    printer->Annotate("{", "}", descriptor_, Semantic::kSet);
+  }
 
   // Builder addAllRepeatedField(Iterable<Field> values)
   WriteFieldDocComment(printer, descriptor_, context_->options());

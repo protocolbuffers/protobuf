@@ -232,6 +232,11 @@ inline std::string ImmutableDefaultValue(const FieldDescriptor* field,
 bool IsDefaultValueJavaDefault(const FieldDescriptor* field);
 bool IsByteStringWithCustomDefaultValue(const FieldDescriptor* field);
 
+// Returns true if builder method overloads taking Message.Builders should be
+// omitted for this field's containing message.
+bool OmitMessageBuilderOverloads(const FieldDescriptor* descriptor,
+                                 ClassNameResolver* name_resolver);
+
 // Does this message class have descriptor and reflection methods?
 inline bool HasDescriptorMethods(const Descriptor* /* descriptor */,
                                  bool enforce_lite) {

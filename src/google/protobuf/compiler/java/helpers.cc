@@ -973,6 +973,16 @@ bool NestedInFileClass(const ServiceDescriptor& descriptor, bool immutable) {
   return NestInFileClass(descriptor, immutable);
 }
 
+bool OmitMessageBuilderOverloads(const FieldDescriptor* descriptor,
+                                 ClassNameResolver* name_resolver) {
+  if (descriptor->containing_type() != nullptr) {
+    return name_resolver->GetImmutableClassName(
+               descriptor->containing_type()) ==
+           "com.google.protos.asic_sw.driver.deepsea.hfc.profiler.TraceEntry";
+  }
+  return false;
+}
+
 }  // namespace java
 }  // namespace compiler
 }  // namespace protobuf
