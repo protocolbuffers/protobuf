@@ -562,7 +562,7 @@ void PyiGenerator::PrintMessage(const Descriptor& message_descriptor,
                         GetFieldType(*field_des, message_descriptor));
       } else {
         if (field_des->cpp_type() == FieldDescriptor::CPPTYPE_ENUM) {
-          printer_->Print("_Union[$type_name$, str]", "type_name",
+          printer_->Print("_Union[$type_name$, str, int]", "type_name",
                           ModuleLevelName(*field_des->enum_type()));
         } else {
           printer_->Print(
