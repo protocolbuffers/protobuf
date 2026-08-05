@@ -325,6 +325,20 @@ TEST(MiniTableEnumTest, PositiveAndNegative) {
   }
 }
 
+// Regression test: a closed-enum field whose sub-enum table has not been linked
+// resolves to a NULL upb_MiniTableEnum (see upb_MiniTable_GetSubEnumTable).
+// Decoding untrusted wire data against such a table previously dereferenced the
+// NULL pointer inside CheckValue -- a remotely reachable crash for callers that
+// build MiniTables from untrusted mini descriptors.  CheckValue must instead
+// report every value as unrecognized without dereferencing the NULL table.  The
+// listed values cover each internal branch (val < 64, the mask range, and the
+// value list) to prove none of them touch the table when it is NULL.
+TEST(MiniTableEnumTest, CheckValueOnNullTable) {
+  for (uint32_t val : {0u, 5u, 63u, 64u, 100u, 70000u, UINT32_MAX}) {
+    EXPECT_FALSE(upb_MiniTableEnum_CheckValue(nullptr, val)) << val;
+  }
+}
+
 TEST_P(MiniTableTest, Extendible) {
   upb::Arena arena;
   upb::MtDataEncoder e;
