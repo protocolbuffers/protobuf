@@ -74,14 +74,11 @@ template <typename Key, typename T>
 class MapFieldLite;
 class MapFieldBase;
 
-template <typename Derived, typename Key, typename T>
+template <typename Key, typename T>
 class MapField;
 
 struct MapTestPeer;
 struct MapBenchmarkPeer;
-
-template <typename Key, typename T>
-class TypeDefinedMapFieldBase;
 
 class GeneratedMessageReflection;
 
@@ -616,19 +613,27 @@ inline void UntypedMapIterator::PlusPlus() {
 // code, since that would bring in Message too.
 class MapFieldBaseForParse {
  public:
+  enum State {
+    STATE_MODIFIED_MAP = 0,       // map has newly added data that has not been
+                                  // synchronized to repeated field
+    STATE_MODIFIED_REPEATED = 1,  // repeated field has newly added data that
+                                  // has not been synchronized to map
+    CLEAN = 2,                    // data in map and repeated field are same
+  };
+  class ReflectionPayload;
   const UntypedMapBase& GetMap() const {
-    const void* p = globals_or_payload_.load(std::memory_order_acquire);
+    auto p = payload_.load(std::memory_order_acquire);
     // If this instance has a payload, then it might need sync'n.
-    if (ABSL_PREDICT_FALSE(IsPayload(p))) {
+    if (ABSL_PREDICT_FALSE(p != nullptr)) {
       sync_map_with_repeated.load(std::memory_order_relaxed)(*this, false);
     }
     return GetMapRaw();
   }
 
   UntypedMapBase* MutableMap() {
-    const void* p = globals_or_payload_.load(std::memory_order_acquire);
+    auto p = payload_.load(std::memory_order_acquire);
     // If this instance has a payload, then it might need sync'n.
-    if (ABSL_PREDICT_FALSE(IsPayload(p))) {
+    if (ABSL_PREDICT_FALSE(p != nullptr)) {
       sync_map_with_repeated.load(std::memory_order_relaxed)(*this, true);
     }
     return &GetMapRaw();
@@ -637,7 +642,7 @@ class MapFieldBaseForParse {
  protected:
   static constexpr size_t MapOffset() { return sizeof(MapFieldBaseForParse); }
 
-  // See assertion in TypeDefinedMapFieldBase::TypeDefinedMapFieldBase()
+  // See assertion in MapField constructor
   const UntypedMapBase& GetMapRaw() const {
     return *reinterpret_cast<const UntypedMapBase*>(
         reinterpret_cast<const char*>(this) + MapOffset());
@@ -653,26 +658,11 @@ class MapFieldBaseForParse {
   using SyncFunc = void (*)(const MapFieldBaseForParse&, bool is_mutable);
   static std::atomic<SyncFunc> sync_map_with_repeated;
 
-  // The globals is a `*GlobalsTypeInternal`, but due to restrictions on
-  // constexpr in the codegen we are receiving it as `void` during constant
-  // evaluation.
-  explicit constexpr MapFieldBaseForParse(const void* globals_as_void)
-      : globals_or_payload_(globals_as_void) {}
-
-  // Convert "prototype" to "globals" for consistency.
-  explicit MapFieldBaseForParse(const Message* prototype)
-      : globals_or_payload_(
-            MessageGlobalsBase::FromDefaultInstance(prototype)) {}
+  constexpr MapFieldBaseForParse() : payload_(nullptr) {}
 
   ~MapFieldBaseForParse() = default;
 
-  static constexpr uintptr_t kHasPayloadBit = 1;
-
-  static bool IsPayload(const void* p) {
-    return reinterpret_cast<uintptr_t>(p) & kHasPayloadBit;
-  }
-
-  mutable std::atomic<const void*> globals_or_payload_;
+  mutable std::atomic<ReflectionPayload*> payload_;
 };
 
 // The value might be of different signedness, so use memcpy to extract it.
@@ -1321,7 +1311,7 @@ class PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Map
     using BaseIt::BaseIt;
     friend class Map;
     friend class internal::UntypedMapIterator;
-    friend class internal::TypeDefinedMapFieldBase<Key, T>;
+    friend class internal::MapField<Key, T>;
   };
 
   class PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED ABSL_ATTRIBUTE_VIEW iterator
@@ -1730,7 +1720,7 @@ class PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Map
 
   friend class Arena;
   template <typename, typename>
-  friend class internal::TypeDefinedMapFieldBase;
+  friend class internal::MapField;
 
   template <typename Key_, typename T_, typename Pred>
   friend size_t google::protobuf::erase_if(Map<Key_, T_>& map, Pred pred);
