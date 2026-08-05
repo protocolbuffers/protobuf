@@ -116,9 +116,6 @@ ImmutableStringFieldGenerator::ImmutableStringFieldGenerator(
 
 ImmutableStringFieldGenerator::~ImmutableStringFieldGenerator() = default;
 
-int ImmutableStringFieldGenerator::GetNumBitsForMessage() const {
-  return HasHasbit(descriptor_) ? 1 : 0;
-}
 // A note about how strings are handled. This code used to just store a String
 // in the Message. This had two issues:
 //
@@ -694,10 +691,6 @@ RepeatedImmutableStringFieldGenerator::RepeatedImmutableStringFieldGenerator(
 
 RepeatedImmutableStringFieldGenerator::
     ~RepeatedImmutableStringFieldGenerator() = default;
-
-int RepeatedImmutableStringFieldGenerator::GetNumBitsForMessage() const {
-  return 0;
-}
 
 void RepeatedImmutableStringFieldGenerator::GenerateInterfaceMembers(
     io::Printer* printer) const {

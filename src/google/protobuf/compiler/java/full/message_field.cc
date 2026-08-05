@@ -101,10 +101,6 @@ ImmutableMessageFieldGenerator::ImmutableMessageFieldGenerator(
 
 ImmutableMessageFieldGenerator::~ImmutableMessageFieldGenerator() = default;
 
-int ImmutableMessageFieldGenerator::GetNumBitsForMessage() const {
-  return HasHasbit(descriptor_) ? 1 : 0;
-}
-
 void ImmutableMessageFieldGenerator::GenerateInterfaceHasMethod(
     io::Printer* printer) const {
   WriteFieldAccessorDocComment(printer, descriptor_, HAZZER,
@@ -126,7 +122,6 @@ void ImmutableMessageFieldGenerator::GenerateInterfaceGetOrBuilderMethod(
       variables_,
       "$deprecation$$type$OrBuilder get$capitalized_name$OrBuilder();\n");
 }
-
 void ImmutableMessageFieldGenerator::GenerateInterfaceMembers(
     io::Printer* printer) const {
   // TODO: In the future, consider having a method specific to the
@@ -857,10 +852,6 @@ RepeatedImmutableMessageFieldGenerator::RepeatedImmutableMessageFieldGenerator(
 
 RepeatedImmutableMessageFieldGenerator::
     ~RepeatedImmutableMessageFieldGenerator() = default;
-
-int RepeatedImmutableMessageFieldGenerator::GetNumBitsForMessage() const {
-  return 0;
-}
 
 void RepeatedImmutableMessageFieldGenerator::GenerateInterfaceGetListMethod(
     io::Printer* printer) const {

@@ -26,7 +26,7 @@ class ImmutableFieldGenerator : public FieldGenerator {
 
   int GetMessageBitIndex() const { return message_bit_index_; }
   int GetBuilderBitIndex() const { return builder_bit_index_; }
-  virtual int GetNumBitsForMessage() const = 0;
+  constexpr int GetNumBitsForMessage() const { return 1; }
   constexpr int GetNumBitsForBuilder() const { return 1; }
   virtual void GenerateInterfaceMembers(io::Printer* printer) const = 0;
   virtual void GenerateMembers(io::Printer* printer) const = 0;
