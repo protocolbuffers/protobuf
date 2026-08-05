@@ -197,6 +197,25 @@ cc_binary(
 )
 
 cc_test(
+    name = "varint_test",
+    srcs = ["varint_test.cc"],
+    copts = UPB_DEFAULT_CPPOPTS,
+    features = UPB_DEFAULT_FEATURES,
+    deps = [
+        ":combinations",
+        "//upb/mem",
+        "//upb/message",
+        "//upb/port",
+        "//upb/wire",
+        "//upb/wire/test_util:field_types",
+        "//upb/wire/test_util:make_mini_table",
+        "//upb/wire/test_util:wire_message",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_test(
     name = "test_unknown",
     srcs = ["test_unknown.cc"],
     copts = UPB_DEFAULT_CPPOPTS,
