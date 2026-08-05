@@ -11,7 +11,9 @@
 #include <string>
 #include <vector>
 
+#include "absl/container/flat_hash_set.h"
 #include "absl/log/absl_check.h"
+#include "absl/strings/ascii.h"
 #include "absl/strings/escaping.h"
 #include "absl/strings/match.h"
 #include "absl/strings/str_replace.h"
@@ -32,6 +34,80 @@ std::string ModuleName(absl::string_view filename) {
   std::string basename = StripProto(filename);
   absl::StrReplaceAll({{"-", "_"}, {"/", "."}}, &basename);
   return absl::StrCat(basename, "_pb2");
+}
+
+// Returns whether a module name can be safely emitted into generated Python
+// import statements without introducing Python syntax.
+bool IsSafePythonModuleName(absl::string_view module_name) {
+  for (absl::string_view component : absl::StrSplit(module_name, '.')) {
+    if (component.empty()) {
+      return false;
+    }
+
+    const unsigned char first =
+        static_cast<unsigned char>(component.front());
+    if (!(absl::ascii_isalpha(first) || first == '_')) {
+      return false;
+    }
+
+    for (char character : component.substr(1)) {
+      const unsigned char value = static_cast<unsigned char>(character);
+      if (!(absl::ascii_isalnum(value) || value == '_')) {
+        return false;
+      }
+    }
+  }
+
+  return true;
+}
+
+namespace {
+
+bool ValidateModuleAndPublicDependencies(
+    const FileDescriptor* file,
+    absl::flat_hash_set<const FileDescriptor*>* visited,
+    std::string* error) {
+  if (!visited->insert(file).second) {
+    return true;
+  }
+
+  const std::string module_name = ModuleName(file->name());
+  if (!IsSafePythonModuleName(module_name)) {
+    *error = absl::StrCat(
+        file->name(),
+        ": Cannot generate Python code because the file name produces an "
+        "invalid Python module name: ",
+        module_name);
+    return false;
+  }
+
+  for (int i = 0; i < file->public_dependency_count(); ++i) {
+    if (!ValidateModuleAndPublicDependencies(
+            file->public_dependency(i), visited, error)) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+}  // namespace
+
+bool ValidatePythonModuleNames(const FileDescriptor* file, std::string* error) {
+  absl::flat_hash_set<const FileDescriptor*> visited;
+
+  if (!ValidateModuleAndPublicDependencies(file, &visited, error)) {
+    return false;
+  }
+
+  for (int i = 0; i < file->dependency_count(); ++i) {
+    if (!ValidateModuleAndPublicDependencies(
+            file->dependency(i), &visited, error)) {
+      return false;
+    }
+  }
+
+  return true;
 }
 
 std::string StrippedModuleName(absl::string_view filename) {

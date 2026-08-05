@@ -22,6 +22,7 @@
 #include "google/protobuf/compiler/command_line_interface_tester.h"
 #include "google/protobuf/compiler/cpp/generator.h"
 #include "google/protobuf/compiler/python/generator.h"
+#include "google/protobuf/compiler/python/pyi_generator.h"
 #include "google/protobuf/cpp_features.pb.h"
 #include "google/protobuf/io/printer.h"
 #include "google/protobuf/io/zero_copy_stream.h"
@@ -120,6 +121,54 @@ class PythonGeneratorTest : public CommandLineInterfaceTester,
         google::protobuf::DescriptorProto::descriptor()->file()->DebugString());
   }
 };
+
+TEST_P(PythonGeneratorTest, RejectsUnsafeDependencyModuleName) {
+  CreateTempFile("os;payload#.proto", R"schema(
+syntax = "proto3";
+)schema");
+
+  CreateTempFile("main.proto", R"schema(
+syntax = "proto3";
+import "os;payload#.proto";
+message Main {}
+)schema");
+
+  RunProtoc(
+      "protocol_compiler --proto_path=$tmpdir "
+      "--python_out=$tmpdir main.proto");
+
+  ExpectErrorSubstring("invalid Python module name");
+  EXPECT_FALSE(
+      File::Exists(absl::StrCat(temp_directory(), "/main_pb2.py")));
+}
+
+class PyiGeneratorTest : public CommandLineInterfaceTester {
+ protected:
+  PyiGeneratorTest() {
+    RegisterGenerator("--pyi_out", std::make_unique<PyiGenerator>(),
+                      "Python pyi test generator");
+  }
+};
+
+TEST_F(PyiGeneratorTest, RejectsUnsafeDependencyModuleName) {
+  CreateTempFile("os;payload#.proto", R"schema(
+syntax = "proto3";
+)schema");
+
+  CreateTempFile("main.proto", R"schema(
+syntax = "proto3";
+import "os;payload#.proto";
+message Main {}
+)schema");
+
+  RunProtoc(
+      "protocol_compiler --proto_path=$tmpdir "
+      "--pyi_out=$tmpdir main.proto");
+
+  ExpectErrorSubstring("invalid Python module name");
+  EXPECT_FALSE(
+      File::Exists(absl::StrCat(temp_directory(), "/main_pb2.pyi")));
+}
 
 TEST_P(PythonGeneratorTest, PythonWithCppFeatures) {
   // Test that the presence of C++ features does not break Python generation.

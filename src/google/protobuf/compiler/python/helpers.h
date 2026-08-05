@@ -21,6 +21,8 @@ namespace compiler {
 namespace python {
 
 std::string ModuleName(absl::string_view filename);
+bool IsSafePythonModuleName(absl::string_view module_name);
+bool ValidatePythonModuleNames(const FileDescriptor* file, std::string* error);
 std::string StrippedModuleName(absl::string_view filename);
 bool ContainsPythonKeyword(absl::string_view module_name);
 bool IsPythonKeyword(absl::string_view name);

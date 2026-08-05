@@ -610,6 +610,11 @@ bool PyiGenerator::Generate(const FileDescriptor* file,
   import_map_.clear();
   // Calculate file name.
   file_ = file;
+
+  if (!ValidatePythonModuleNames(file, error)) {
+    return false;
+  }
+
   // In google3, devtools/python/bazel/pytype/pytype_impl.bzl uses --pyi_out to
   // directly set the output file name.
   std::vector<std::pair<std::string, std::string> > options;
