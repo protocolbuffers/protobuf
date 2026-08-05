@@ -759,8 +759,22 @@ static bool PyUpb_SetSubscriptBulkCb(const void* data, Py_ssize_t count,
   // Fast paths for subset assignment when not growing the array
   // (count <= ctx->count).
   if (count <= ctx->count) {
-    if (data != target) {
-      memmove(target, data, count * itemsize);
+    if (ctx->step == 1) {
+      if (data != target) {
+        memmove(target, data, count * itemsize);
+      }
+    } else {
+      char* tmp = (char*)malloc(count * itemsize);
+      if (!tmp) {
+        PyErr_NoMemory();
+        return false;
+      }
+      memcpy(tmp, data, count * itemsize);
+      for (Py_ssize_t i = 0; i < count; i++) {
+        memcpy(dst + (ctx->index + i * ctx->step) * itemsize,
+               tmp + i * itemsize, itemsize);
+      }
+      free(tmp);
     }
     if (count < ctx->count) {
       upb_Array_Move(ctx->arr, ctx->index + count, ctx->index + ctx->count,
