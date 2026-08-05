@@ -2091,6 +2091,33 @@ class GeneratedClassTest extends TestBase
         $m->getOptionalInt32();
     }
 
+    public function testCompareWithIncompatibleOperandDoesNotCrash()
+    {
+        // Regression test: the C extension's compare object handlers for
+        // Message/RepeatedField/MapField reinterpreted the *other* comparison
+        // operand as the corresponding C struct pointer without a type check.
+        // The engine invokes the handler with the other operand passed through
+        // unchecked, so `$msg == 5` reinterpreted the integer 5 as an object
+        // pointer (type confusion -> wild read). Comparing against a scalar or
+        // a foreign object must be safe and simply unequal.
+        $m = new TestMessage();
+        $this->assertFalse($m == 0x41414141);
+        $this->assertFalse(0x41414141 == $m);
+        $this->assertFalse($m == "string");
+        $this->assertFalse($m == new \stdClass());
+
+        $rf = new \Google\Protobuf\Internal\RepeatedField(
+            \Google\Protobuf\Internal\GPBType::INT32);
+        $this->assertFalse($rf == 0x42424242);
+        $this->assertFalse($rf == new \stdClass());
+
+        $map = new \Google\Protobuf\Internal\MapField(
+            \Google\Protobuf\Internal\GPBType::INT32,
+            \Google\Protobuf\Internal\GPBType::INT32);
+        $this->assertFalse($map == 0x43434343);
+        $this->assertFalse($map == new \stdClass());
+    }
+
     public function testNoExceptionWithVarDump()
     {
         $m = new Sub(['a' => 1]);
