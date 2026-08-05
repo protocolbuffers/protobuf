@@ -13,7 +13,7 @@
 
 #include "upb/base/string_view.h"
 #include "upb/mem/internal/arena.h"
-#include "upb/message/internal/extension.h"
+#include "upb/message/internal/extension.h"  // IWYU pragma: export
 #include "upb/message/internal/message.h"
 #include "upb/message/internal/types.h"
 
@@ -23,8 +23,6 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-struct upb_Extension;
 
 typedef enum {
   kUpb_MessageUnknownType_StringView,
