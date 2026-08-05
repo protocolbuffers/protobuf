@@ -1510,10 +1510,8 @@ class Message
 
             $output->writeRaw("}", 1);
         } elseif (is_a($this, 'Google\Protobuf\FieldMask')) {
-            $field_mask = GPBUtil::formatFieldMask($this);
-            $output->writeRaw("\"", 1);
-            $output->writeRaw($field_mask, strlen($field_mask));
-            $output->writeRaw("\"", 1);
+            $field_mask_json = json_encode(GPBUtil::formatFieldMask($this));
+            $output->writeRaw($field_mask_json, strlen($field_mask_json));
         } elseif (is_a($this, 'Google\Protobuf\Duration')) {
             $duration = GPBUtil::formatDuration($this) . "s";
             $output->writeRaw("\"", 1);
@@ -2037,8 +2035,8 @@ class Message
                 }
             }
         } elseif (get_class($this) === 'Google\Protobuf\FieldMask') {
-            $field_mask = GPBUtil::formatFieldMask($this);
-            $size += strlen($field_mask) + 2;  // 2 for ""
+            $field_mask_json = json_encode(GPBUtil::formatFieldMask($this));
+            $size += strlen($field_mask_json);
         } elseif (get_class($this) === 'Google\Protobuf\Duration') {
             $duration = GPBUtil::formatDuration($this) . "s";
             $size += strlen($duration) + 2;  // 2 for ""
