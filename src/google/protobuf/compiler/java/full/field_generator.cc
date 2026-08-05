@@ -9,11 +9,9 @@ namespace compiler {
 namespace java {
 
 ImmutableFieldGenerator::ImmutableFieldGenerator(
-    const FieldDescriptor* descriptor, int messageBitIndex, int builderBitIndex,
-    Context* context)
+    const FieldDescriptor* descriptor, int bit_index, Context* context)
     : descriptor_(descriptor),
-      message_bit_index_(messageBitIndex),
-      builder_bit_index_(builderBitIndex),
+      bit_index_(bit_index),
       context_(context),
       name_resolver_(context->GetNameResolver()) {}
 

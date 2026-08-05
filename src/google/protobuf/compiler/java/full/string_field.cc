@@ -39,7 +39,7 @@ using Semantic = ::google::protobuf::io::AnnotationCollector::Semantic;
 namespace {
 
 void SetPrimitiveVariables(
-    const FieldDescriptor* descriptor, int messageBitIndex, int builderBitIndex,
+    const FieldDescriptor* descriptor, int bit_index,
     const FieldGeneratorInfo* info, ClassNameResolver* name_resolver,
     absl::flat_hash_map<absl::string_view, std::string>* variables,
     Context* context) {
@@ -75,13 +75,13 @@ void SetPrimitiveVariables(
   if (HasHasbit(descriptor)) {
     // For singular messages and builders, one bit is used for the hasField bit.
     (*variables)["set_has_field_bit_to_local"] =
-        GenerateSetBitToLocal(messageBitIndex);
+        GenerateSetBitToLocal(bit_index);
 
     // Note that these have a trailing ";".
     (*variables)["set_has_field_bit_message"] =
-        absl::StrCat(GenerateSetBit(messageBitIndex), ";");
+        absl::StrCat(GenerateSetBit(bit_index), ";");
 
-    (*variables)["is_field_present_message"] = GenerateGetBit(messageBitIndex);
+    (*variables)["is_field_present_message"] = GenerateGetBit(bit_index);
   } else {
     (*variables)["set_has_field_bit_to_local"] = "";
     (*variables)["set_has_field_bit_message"] = "";
@@ -91,13 +91,13 @@ void SetPrimitiveVariables(
                                     (*variables)["name"], "_)")});
   }
 
-  (*variables)["get_has_field_bit_builder"] = GenerateGetBit(builderBitIndex);
+  (*variables)["get_has_field_bit_builder"] = GenerateGetBit(bit_index);
   (*variables)["get_has_field_bit_from_local"] =
-      GenerateGetBitFromLocal(builderBitIndex);
+      GenerateGetBitFromLocal(bit_index);
   (*variables)["set_has_field_bit_builder"] =
-      absl::StrCat(GenerateSetBit(builderBitIndex), ";");
+      absl::StrCat(GenerateSetBit(bit_index), ";");
   (*variables)["clear_has_field_bit_builder"] =
-      absl::StrCat(GenerateClearBit(builderBitIndex), ";");
+      absl::StrCat(GenerateClearBit(bit_index), ";");
 }
 
 }  // namespace
@@ -105,11 +105,9 @@ void SetPrimitiveVariables(
 // ===================================================================
 
 ImmutableStringFieldGenerator::ImmutableStringFieldGenerator(
-    const FieldDescriptor* descriptor, int messageBitIndex, int builderBitIndex,
-    Context* context)
-    : ImmutableFieldGenerator(descriptor, messageBitIndex, builderBitIndex,
-                              context) {
-  SetPrimitiveVariables(descriptor, messageBitIndex, builderBitIndex,
+    const FieldDescriptor* descriptor, int bit_index, Context* context)
+    : ImmutableFieldGenerator(descriptor, bit_index, context) {
+  SetPrimitiveVariables(descriptor, bit_index,
                         context->GetFieldGeneratorInfo(descriptor),
                         name_resolver_, &variables_, context);
 }
@@ -383,7 +381,7 @@ void ImmutableStringFieldGenerator::GenerateBuildingCode(
   printer->Print(variables_,
                  "if ($get_has_field_bit_from_local$) {\n"
                  "  result.$name$_ = $name$_;\n");
-  if (GetNumBitsForMessage() > 0) {
+  if (GetNumBits() > 0) {
     printer->Print(variables_, "  $set_has_field_bit_to_local$;\n");
   }
   printer->Print("}\n");
@@ -440,10 +438,8 @@ std::string ImmutableStringFieldGenerator::GetBoxedType() const {
 // ===================================================================
 
 ImmutableStringOneofFieldGenerator::ImmutableStringOneofFieldGenerator(
-    const FieldDescriptor* descriptor, int messageBitIndex, int builderBitIndex,
-    Context* context)
-    : ImmutableStringFieldGenerator(descriptor, messageBitIndex,
-                                    builderBitIndex, context) {
+    const FieldDescriptor* descriptor, int bit_index, Context* context)
+    : ImmutableStringFieldGenerator(descriptor, bit_index, context) {
   const OneofGeneratorInfo* info =
       context->GetOneofGeneratorInfo(descriptor->containing_oneof());
   SetCommonOneofVariables(descriptor, info, &variables_);
@@ -684,10 +680,8 @@ void ImmutableStringOneofFieldGenerator::GenerateSerializedSizeCode(
 // ===================================================================
 
 RepeatedImmutableStringFieldGenerator::RepeatedImmutableStringFieldGenerator(
-    const FieldDescriptor* descriptor, int messageBitIndex, int builderBitIndex,
-    Context* context)
-    : ImmutableStringFieldGenerator(descriptor, messageBitIndex,
-                                    builderBitIndex, context) {}
+    const FieldDescriptor* descriptor, int bit_index, Context* context)
+    : ImmutableStringFieldGenerator(descriptor, bit_index, context) {}
 
 RepeatedImmutableStringFieldGenerator::
     ~RepeatedImmutableStringFieldGenerator() = default;

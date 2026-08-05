@@ -21,8 +21,7 @@ namespace java {
 class ImmutableMapFieldGenerator : public ImmutableFieldGenerator {
  public:
   explicit ImmutableMapFieldGenerator(const FieldDescriptor* descriptor,
-                                      int messageBitIndex, int builderBitIndex,
-                                      Context* context);
+                                      int bit_index, Context* context);
   ~ImmutableMapFieldGenerator() override = default;
 
   // implements ImmutableFieldGenerator ---------------------------------------

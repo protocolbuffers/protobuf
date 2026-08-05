@@ -52,10 +52,8 @@ std::string WireType(const FieldDescriptor* field) {
 }  // namespace
 
 ImmutableMapFieldGenerator::ImmutableMapFieldGenerator(
-    const FieldDescriptor* descriptor, int messageBitIndex, int builderBitIndex,
-    Context* context)
-    : ImmutableFieldGenerator(descriptor, messageBitIndex, builderBitIndex,
-                              context) {
+    const FieldDescriptor* descriptor, int bit_index, Context* context)
+    : ImmutableFieldGenerator(descriptor, bit_index, context) {
   SetMessageVariables(context->GetFieldGeneratorInfo(descriptor));
 }
 
@@ -164,13 +162,13 @@ void ImmutableMapFieldGenerator::SetMessageVariables(
   variables_["descriptor"] = absl::StrCat(
       name_resolver->GetImmutableClassName(descriptor_->file()), ".internal_",
       UniqueFileScopeIdentifier(descriptor_->message_type()), "_descriptor, ");
-  variables_["get_has_field_bit_builder"] = GenerateGetBit(builder_bit_index_);
+  variables_["get_has_field_bit_builder"] = GenerateGetBit(bit_index_);
   variables_["get_has_field_bit_from_local"] =
-      GenerateGetBitFromLocal(builder_bit_index_);
+      GenerateGetBitFromLocal(bit_index_);
   variables_["set_has_field_bit_builder"] =
-      absl::StrCat(GenerateSetBit(builder_bit_index_), ";");
+      absl::StrCat(GenerateSetBit(bit_index_), ";");
   variables_["clear_has_field_bit_builder"] =
-      absl::StrCat(GenerateClearBit(builder_bit_index_), ";");
+      absl::StrCat(GenerateClearBit(bit_index_), ";");
 }
 
 void ImmutableMapFieldGenerator::GenerateInterfaceMembers(

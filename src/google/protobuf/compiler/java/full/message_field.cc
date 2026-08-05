@@ -20,6 +20,7 @@
 #include "google/protobuf/compiler/java/doc_comment.h"
 #include "google/protobuf/compiler/java/field_common.h"
 #include "google/protobuf/compiler/java/helpers.h"
+#include "google/protobuf/compiler/java/full/field_generator.h"
 #include "google/protobuf/compiler/java/name_resolver.h"
 #include "google/protobuf/io/printer.h"
 #include "google/protobuf/wire_format.h"
@@ -37,7 +38,7 @@ namespace {
 using Semantic = ::google::protobuf::io::AnnotationCollector::Semantic;
 
 void SetMessageVariables(
-    const FieldDescriptor* descriptor, int messageBitIndex, int builderBitIndex,
+    const FieldDescriptor* descriptor, int bit_index,
     const FieldGeneratorInfo* info, ClassNameResolver* name_resolver,
     absl::flat_hash_map<absl::string_view, std::string>* variables,
     Context* context) {
@@ -59,9 +60,9 @@ void SetMessageVariables(
     // For singular messages and builders, one bit is used for the hasField bit.
     // Note that these have a trailing ";".
     (*variables)["set_has_field_bit_to_local"] =
-        GenerateSetBitToLocal(messageBitIndex);
+        GenerateSetBitToLocal(bit_index);
 
-    (*variables)["is_field_present_message"] = GenerateGetBit(messageBitIndex);
+    (*variables)["is_field_present_message"] = GenerateGetBit(bit_index);
   } else {
     (*variables)["set_has_field_bit_to_local"] = "";
     variables->insert({"is_field_present_message",
@@ -69,17 +70,17 @@ void SetMessageVariables(
   }
 
   // For repeated builders, one bit is used for whether the array is immutable.
-  (*variables)["get_mutable_bit_builder"] = GenerateGetBit(builderBitIndex);
-  (*variables)["set_mutable_bit_builder"] = GenerateSetBit(builderBitIndex);
-  (*variables)["clear_mutable_bit_builder"] = GenerateClearBit(builderBitIndex);
+  (*variables)["get_mutable_bit_builder"] = GenerateGetBit(bit_index);
+  (*variables)["set_mutable_bit_builder"] = GenerateSetBit(bit_index);
+  (*variables)["clear_mutable_bit_builder"] = GenerateClearBit(bit_index);
 
-  (*variables)["get_has_field_bit_builder"] = GenerateGetBit(builderBitIndex);
+  (*variables)["get_has_field_bit_builder"] = GenerateGetBit(bit_index);
   (*variables)["set_has_field_bit_builder"] =
-      absl::StrCat(GenerateSetBit(builderBitIndex), ";");
+      absl::StrCat(GenerateSetBit(bit_index), ";");
   (*variables)["clear_has_field_bit_builder"] =
-      absl::StrCat(GenerateClearBit(builderBitIndex), ";");
+      absl::StrCat(GenerateClearBit(bit_index), ";");
   (*variables)["get_has_field_bit_from_local"] =
-      GenerateGetBitFromLocal(builderBitIndex);
+      GenerateGetBitFromLocal(bit_index);
 
   (*variables)["tag_size"] = absl::StrCat(
       internal::WireFormat::TagSize(descriptor->number(), GetType(descriptor)));
@@ -90,11 +91,9 @@ void SetMessageVariables(
 // ===================================================================
 
 ImmutableMessageFieldGenerator::ImmutableMessageFieldGenerator(
-    const FieldDescriptor* descriptor, int messageBitIndex, int builderBitIndex,
-    Context* context)
-    : ImmutableFieldGenerator(descriptor, messageBitIndex, builderBitIndex,
-                              context) {
-  SetMessageVariables(descriptor, messageBitIndex, builderBitIndex,
+    const FieldDescriptor* descriptor, int bit_index, Context* context)
+    : ImmutableFieldGenerator(descriptor, bit_index, context) {
+  SetMessageVariables(descriptor, bit_index,
                       context->GetFieldGeneratorInfo(descriptor),
                       name_resolver_, &variables_, context);
 }
@@ -465,7 +464,7 @@ void ImmutableMessageFieldGenerator::GenerateBuildingCode(
                  "  result.$name$_ = $name$Builder_ == null\n"
                  "      ? $name$_\n"
                  "      : $name$Builder_.build();\n");
-  if (GetNumBitsForMessage() > 0) {
+  if (GetNumBits() > 0) {
     printer->Print(variables_, "  $set_has_field_bit_to_local$;\n");
   }
   printer->Print("}\n");
@@ -517,10 +516,8 @@ std::string ImmutableMessageFieldGenerator::GetBoxedType() const {
 // ===================================================================
 
 ImmutableMessageOneofFieldGenerator::ImmutableMessageOneofFieldGenerator(
-    const FieldDescriptor* descriptor, int messageBitIndex, int builderBitIndex,
-    Context* context)
-    : ImmutableMessageFieldGenerator(descriptor, messageBitIndex,
-                                     builderBitIndex, context) {
+    const FieldDescriptor* descriptor, int bit_index, Context* context)
+    : ImmutableMessageFieldGenerator(descriptor, bit_index, context) {
   const OneofGeneratorInfo* info =
       context->GetOneofGeneratorInfo(descriptor->containing_oneof());
   SetCommonOneofVariables(descriptor, info, &variables_);
@@ -845,10 +842,8 @@ void ImmutableMessageOneofFieldGenerator::GenerateSerializedSizeCode(
 // ===================================================================
 
 RepeatedImmutableMessageFieldGenerator::RepeatedImmutableMessageFieldGenerator(
-    const FieldDescriptor* descriptor, int messageBitIndex, int builderBitIndex,
-    Context* context)
-    : ImmutableMessageFieldGenerator(descriptor, messageBitIndex,
-                                     builderBitIndex, context) {}
+    const FieldDescriptor* descriptor, int bit_index, Context* context)
+    : ImmutableMessageFieldGenerator(descriptor, bit_index, context) {}
 
 RepeatedImmutableMessageFieldGenerator::
     ~RepeatedImmutableMessageFieldGenerator() = default;

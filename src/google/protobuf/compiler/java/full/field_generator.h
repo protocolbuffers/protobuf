@@ -18,16 +18,13 @@ class ClassNameResolver;  // name_resolver.h
 class ImmutableFieldGenerator : public FieldGenerator {
  public:
   explicit ImmutableFieldGenerator(const FieldDescriptor* descriptor,
-                                   int messageBitIndex, int builderBitIndex,
-                                   Context* context);
+                                   int bit_index, Context* context);
   ImmutableFieldGenerator(const ImmutableFieldGenerator&) = delete;
   ImmutableFieldGenerator& operator=(const ImmutableFieldGenerator&) = delete;
   ~ImmutableFieldGenerator() override = default;
 
-  int GetMessageBitIndex() const { return message_bit_index_; }
-  int GetBuilderBitIndex() const { return builder_bit_index_; }
-  constexpr int GetNumBitsForMessage() const { return 1; }
-  constexpr int GetNumBitsForBuilder() const { return 1; }
+  int GetBitIndex() const { return bit_index_; }
+  constexpr int GetNumBits() const { return 1; }
   virtual void GenerateInterfaceMembers(io::Printer* printer) const = 0;
   virtual void GenerateMembers(io::Printer* printer) const = 0;
   virtual void GenerateBuilderMembers(io::Printer* printer) const = 0;
@@ -52,8 +49,7 @@ class ImmutableFieldGenerator : public FieldGenerator {
 
  protected:
   const FieldDescriptor* descriptor_;
-  int message_bit_index_;
-  int builder_bit_index_;
+  int bit_index_;
   Context* context_;
   ClassNameResolver* name_resolver_;
   absl::flat_hash_map<absl::string_view, std::string> variables_;

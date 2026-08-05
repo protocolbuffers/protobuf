@@ -37,9 +37,7 @@ namespace java {
 class ImmutableMessageFieldGenerator : public ImmutableFieldGenerator {
  public:
   explicit ImmutableMessageFieldGenerator(const FieldDescriptor* descriptor,
-                                          int messageBitIndex,
-                                          int builderBitIndex,
-                                          Context* context);
+                                          int bit_index, Context* context);
   ImmutableMessageFieldGenerator(const ImmutableMessageFieldGenerator&) =
       delete;
   ImmutableMessageFieldGenerator& operator=(
@@ -102,8 +100,7 @@ class ImmutableMessageOneofFieldGenerator
     : public ImmutableMessageFieldGenerator {
  public:
   ImmutableMessageOneofFieldGenerator(const FieldDescriptor* descriptor,
-                                      int messageBitIndex, int builderBitIndex,
-                                      Context* context);
+                                      int bit_index, Context* context);
   ImmutableMessageOneofFieldGenerator(
       const ImmutableMessageOneofFieldGenerator&) = delete;
   ImmutableMessageOneofFieldGenerator& operator=(
@@ -139,8 +136,7 @@ class RepeatedImmutableMessageFieldGenerator
     : public ImmutableMessageFieldGenerator {
  public:
   explicit RepeatedImmutableMessageFieldGenerator(
-      const FieldDescriptor* descriptor, int messageBitIndex,
-      int builderBitIndex, Context* context);
+      const FieldDescriptor* descriptor, int bit_index, Context* context);
   RepeatedImmutableMessageFieldGenerator(
       const RepeatedImmutableMessageFieldGenerator&) = delete;
   RepeatedImmutableMessageFieldGenerator& operator=(

@@ -59,9 +59,8 @@ void AddPrimitiveVariableForThisAndOther(
 }
 
 void SetPrimitiveVariables(
-    const FieldDescriptor* descriptor, int message_bit_index,
-    int builder_bit_index, const FieldGeneratorInfo* info,
-    ClassNameResolver* name_resolver,
+    const FieldDescriptor* descriptor, int bit_index,
+    const FieldGeneratorInfo* info, ClassNameResolver* name_resolver,
     absl::flat_hash_map<absl::string_view, std::string>* variables,
     Context* context) {
   SetCommonFieldVariables(descriptor, info, variables);
@@ -131,9 +130,8 @@ void SetPrimitiveVariables(
     // For singular messages and builders, one bit is used for the hasField bit.
     // Note that these have a trailing ";".
     (*variables)["set_has_field_bit_to_local"] =
-        absl::StrCat(GenerateSetBitToLocal(message_bit_index), ";");
-    (*variables)["is_field_present_message"] =
-        GenerateGetBit(message_bit_index);
+        absl::StrCat(GenerateSetBitToLocal(bit_index), ";");
+    (*variables)["is_field_present_message"] = GenerateGetBit(bit_index);
     (*variables)["is_other_field_present_message"] =
         absl::StrCat("other.has", (*variables)["capitalized_name"], "()");
   } else {
@@ -178,13 +176,13 @@ void SetPrimitiveVariables(
 
   // Always track the presence of a field explicitly in the builder, regardless
   // of syntax.
-  (*variables)["get_has_field_bit_builder"] = GenerateGetBit(builder_bit_index);
+  (*variables)["get_has_field_bit_builder"] = GenerateGetBit(bit_index);
   (*variables)["get_has_field_bit_from_local"] =
-      GenerateGetBitFromLocal(builder_bit_index);
+      GenerateGetBitFromLocal(bit_index);
   (*variables)["set_has_field_bit_builder"] =
-      absl::StrCat(GenerateSetBit(builder_bit_index), ";");
+      absl::StrCat(GenerateSetBit(bit_index), ";");
   (*variables)["clear_has_field_bit_builder"] =
-      absl::StrCat(GenerateClearBit(builder_bit_index), ";");
+      absl::StrCat(GenerateClearBit(bit_index), ";");
 }
 
 }  // namespace
@@ -192,11 +190,9 @@ void SetPrimitiveVariables(
 // ===================================================================
 
 ImmutablePrimitiveFieldGenerator::ImmutablePrimitiveFieldGenerator(
-    const FieldDescriptor* descriptor, int message_bit_index,
-    int builder_bit_index, Context* context)
-    : ImmutableFieldGenerator(descriptor, message_bit_index, builder_bit_index,
-                              context) {
-  SetPrimitiveVariables(descriptor, message_bit_index, builder_bit_index,
+    const FieldDescriptor* descriptor, int bit_index, Context* context)
+    : ImmutableFieldGenerator(descriptor, bit_index, context) {
+  SetPrimitiveVariables(descriptor, bit_index,
                         context->GetFieldGeneratorInfo(descriptor),
                         name_resolver_, &variables_, context);
 }
@@ -336,7 +332,7 @@ void ImmutablePrimitiveFieldGenerator::GenerateBuildingCode(
   printer->Print(variables_,
                  "if ($get_has_field_bit_from_local$) {\n"
                  "  result.$name$_ = $name$_;\n");
-  if (GetNumBitsForMessage() > 0) {
+  if (GetNumBits() > 0) {
     printer->Print(variables_, "  $set_has_field_bit_to_local$\n");
   }
   printer->Print("}\n");
@@ -467,10 +463,8 @@ std::string ImmutablePrimitiveFieldGenerator::GetBoxedType() const {
 // ===================================================================
 
 ImmutablePrimitiveOneofFieldGenerator::ImmutablePrimitiveOneofFieldGenerator(
-    const FieldDescriptor* descriptor, int message_bit_index,
-    int builder_bit_index, Context* context)
-    : ImmutablePrimitiveFieldGenerator(descriptor, message_bit_index,
-                                       builder_bit_index, context) {
+    const FieldDescriptor* descriptor, int bit_index, Context* context)
+    : ImmutablePrimitiveFieldGenerator(descriptor, bit_index, context) {
   const OneofGeneratorInfo* info =
       context->GetOneofGeneratorInfo(descriptor->containing_oneof());
   SetCommonOneofVariables(descriptor, info, &variables_);
@@ -620,11 +614,8 @@ void ImmutablePrimitiveOneofFieldGenerator::GenerateSerializedSizeCode(
 
 RepeatedImmutablePrimitiveFieldGenerator::
     RepeatedImmutablePrimitiveFieldGenerator(const FieldDescriptor* descriptor,
-                                             int message_bit_index,
-                                             int builder_bit_index,
-                                             Context* context)
-    : ImmutablePrimitiveFieldGenerator(descriptor, message_bit_index,
-                                       builder_bit_index, context) {}
+                                             int bit_index, Context* context)
+    : ImmutablePrimitiveFieldGenerator(descriptor, bit_index, context) {}
 
 RepeatedImmutablePrimitiveFieldGenerator::
     ~RepeatedImmutablePrimitiveFieldGenerator() = default;
