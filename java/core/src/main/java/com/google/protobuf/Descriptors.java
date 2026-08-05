@@ -30,6 +30,7 @@ import com.google.protobuf.DescriptorProtos.OneofOptions;
 import com.google.protobuf.DescriptorProtos.ServiceDescriptorProto;
 import com.google.protobuf.DescriptorProtos.ServiceOptions;
 import com.google.protobuf.JavaFeaturesProto.JavaFeatures;
+import java.lang.ref.Reference;
 import java.lang.ref.ReferenceQueue;
 import java.lang.ref.WeakReference;
 import java.nio.charset.StandardCharsets;
@@ -43,7 +44,11 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+import java.util.WeakHashMap;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.function.ToIntFunction;
 import java.util.logging.Logger;
 
@@ -72,8 +77,79 @@ public final class Descriptors {
   private static final EnumDescriptor[] EMPTY_ENUM_DESCRIPTORS = new EnumDescriptor[0];
   private static final ServiceDescriptor[] EMPTY_SERVICE_DESCRIPTORS = new ServiceDescriptor[0];
   private static final OneofDescriptor[] EMPTY_ONEOF_DESCRIPTORS = new OneofDescriptor[0];
-  private static final ConcurrentHashMap<FeatureSet, FeatureSet> FEATURE_CACHE =
-      new ConcurrentHashMap<>();
+  private static final WeakInterner FEATURE_CACHE = new WeakInterner();
+
+  static final class WeakInterner {
+    private static final class Entry extends WeakReference<FeatureSet> {
+      private final int hashCode;
+
+      Entry(FeatureSet referent, ReferenceQueue<FeatureSet> queue) {
+        super(referent, queue);
+        this.hashCode = (referent == null) ? 0 : referent.hashCode();
+      }
+
+      @Override
+      public int hashCode() {
+        return hashCode;
+      }
+
+      @Override
+      public boolean equals(Object obj) {
+        if (obj == this) {
+          return true;
+        } else if (obj instanceof Entry other) {
+          if (this.hashCode != other.hashCode) {
+            return false;
+          }
+          FeatureSet thisVal = this.get();
+          FeatureSet otherVal = other.get();
+          if (thisVal == null || otherVal == null) {
+            return false;
+          }
+          return thisVal.equals(otherVal);
+        }
+        return false;
+      }
+    }
+
+    private final ConcurrentMap<Entry, Entry> map = new ConcurrentHashMap<>();
+    private final ReferenceQueue<FeatureSet> queue = new ReferenceQueue<>();
+
+    private void removeStaleEntries() {
+      Reference<? extends FeatureSet> ref;
+      while ((ref = queue.poll()) != null) {
+        map.remove(ref);
+      }
+    }
+
+    FeatureSet intern(FeatureSet features) {
+      removeStaleEntries();
+
+      Entry searchKey = new Entry(features, null);
+      Entry existing = map.get(searchKey);
+      if (existing != null) {
+        FeatureSet cached = existing.get();
+        if (cached != null) {
+          return cached;
+        }
+      }
+
+      Entry newEntry = new Entry(features, queue);
+      while (true) {
+        Entry canonical = map.putIfAbsent(newEntry, newEntry);
+        if (canonical == null) {
+          return features;
+        }
+        FeatureSet cached = canonical.get();
+        if (cached != null) {
+          return cached;
+        }
+        if (map.replace(canonical, canonical, newEntry)) {
+          return features;
+        }
+      }
+    }
+  }
 
   @SuppressWarnings("NonFinalStaticField")
   private static volatile FeatureSetDefaults javaEditionDefaults = null;
@@ -145,11 +221,7 @@ public final class Descriptors {
   }
 
   private static FeatureSet internFeatures(FeatureSet features) {
-    FeatureSet cached = FEATURE_CACHE.putIfAbsent(features, features);
-    if (cached == null) {
-      return features;
-    }
-    return cached;
+    return FEATURE_CACHE.intern(features);
   }
 
   /**

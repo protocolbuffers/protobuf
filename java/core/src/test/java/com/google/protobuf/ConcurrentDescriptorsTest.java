@@ -7,6 +7,8 @@
 
 package com.google.protobuf;
 
+import com.google.protobuf.DescriptorProtos.FeatureSet;
+import com.google.protobuf.Descriptors.WeakInterner;
 import proto2_unittest.UnittestProto;
 import proto2_unittest.UnittestProto.TestAllTypes;
 import java.util.ArrayList;
@@ -107,6 +109,51 @@ public final class ConcurrentDescriptorsTest {
       } catch (ExecutionException e) {
         Assert.fail("Thread " + i + " failed with:" + e.getMessage());
       }
+    }
+    executor.shutdown();
+  }
+
+  @Test
+  public void testWeakInterner() throws Exception {
+    WeakInterner interner = new WeakInterner();
+    FeatureSet f1 =
+        FeatureSet.newBuilder()
+            .setEnumType(FeatureSet.EnumType.CLOSED)
+            .build();
+    FeatureSet f2 =
+        FeatureSet.newBuilder()
+            .setEnumType(FeatureSet.EnumType.CLOSED)
+            .build();
+
+    FeatureSet interned1 = interner.intern(f1);
+    FeatureSet interned2 = interner.intern(f2);
+
+    Assert.assertSame(interned1, interned2);
+
+    ExecutorService executor = Executors.newFixedThreadPool(N);
+    CountDownLatch startSignal = new CountDownLatch(1);
+    CountDownLatch doneSignal = new CountDownLatch(N);
+    List<Future<?>> futures = new ArrayList<>(N);
+    for (int i = 0; i < N; i++) {
+      Future<?> future =
+          executor.submit(
+              new Worker(
+                  startSignal,
+                  doneSignal,
+                  () -> {
+                    FeatureSet f =
+                        FeatureSet.newBuilder()
+                            .setEnumType(FeatureSet.EnumType.CLOSED)
+                            .build();
+                    FeatureSet res = interner.intern(f);
+                    Assert.assertEquals(f, res);
+                  }));
+      futures.add(future);
+    }
+    startSignal.countDown();
+    doneSignal.await();
+    for (int i = 0; i < futures.size(); i++) {
+      futures.get(i).get();
     }
     executor.shutdown();
   }
