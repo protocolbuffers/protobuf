@@ -356,6 +356,31 @@ class WellKnownTest extends TestBase {
         $this->assertSame($from->format('u'), $to->format('u'));
     }
 
+    /**
+     * Out-of-range nanos must not be converted via date_create_from_format
+     * ("U.u"); the C extension previously returned a freed DateTime object.
+     *
+     * @dataProvider outOfRangeNanosProvider
+     */
+    public function testTimestampToDateTimeRejectsOutOfRangeNanos($nanos)
+    {
+        $timestamp = new Timestamp();
+        $timestamp->setSeconds(0);
+        $timestamp->setNanos($nanos);
+
+        $this->expectException(\Exception::class);
+        $timestamp->toDateTime();
+    }
+
+    public function outOfRangeNanosProvider()
+    {
+        return [
+            'int32 max' => [2147483647],
+            'negative' => [-1000],
+            'one billion' => [1000000000],
+        ];
+    }
+
     public function testType()
     {
         $m = new Type();
