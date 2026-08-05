@@ -148,8 +148,7 @@ static auto DefaultEntryToTypeInfo(
 DynamicMapField::DynamicMapField(const Message* default_entry,
                                  const Message* mapped_default_entry_if_message,
                                  InternalMetadataOffset offset)
-    : MapFieldBase(default_entry),
-      map_(offset.TranslateForMember<offsetof(DynamicMapField, map_)>(),
+    : map_(offset.TranslateForMember<offsetof(DynamicMapField, map_)>(),
            DefaultEntryToTypeInfo(default_entry,
                                   mapped_default_entry_if_message)) {
   // This invariant is required by `GetMapRaw` to easily access the map

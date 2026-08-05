@@ -13,6 +13,7 @@
 #include <string>
 
 #include "absl/log/absl_check.h"
+#include "absl/log/absl_log.h"
 #include "absl/strings/cord.h"
 #include "google/protobuf/map_field.h"
 #include "google/protobuf/message.h"
@@ -51,9 +52,10 @@ class RandomAccessRepeatedFieldAccessor : public RepeatedFieldAccessor {
   void DeleteIterator(const Field* /*data*/,
                       Iterator* /*iterator*/) const override {}
   const Value* GetIteratorValue(const Field* data, const Iterator* iterator,
-                                Value* scratch_space) const override {
+                                Value* scratch_space,
+                                const Value* prototype) const override {
     return Get(data, static_cast<int>(IteratorToPosition(iterator)),
-               scratch_space);
+               scratch_space, prototype);
   }
 
  protected:
@@ -81,7 +83,8 @@ class RepeatedFieldWrapper : public RandomAccessRepeatedFieldAccessor {
     return GetRepeatedField(data)->size();
   }
   const Value* Get(const Field* data, int index,
-                   Value* scratch_space) const override {
+                   Value* scratch_space,
+                   const Value* /*prototype*/) const override {
     return ConvertFromT(GetRepeatedField(data)->Get(index), scratch_space);
   }
   void Clear(Field* data) const override {
@@ -140,7 +143,8 @@ class RepeatedPtrFieldWrapper : public RandomAccessRepeatedFieldAccessor {
     return GetRepeatedField(data)->size();
   }
   const Value* Get(const Field* data, int index,
-                   Value* scratch_space) const override {
+                   Value* scratch_space,
+                   const Value* /*prototype*/) const override {
     return ConvertFromT(GetRepeatedField(data)->Get(index), scratch_space);
   }
   void Clear(Field* data) const override {
@@ -312,18 +316,90 @@ class RepeatedPtrFieldMessageAccessor
 
 // An (transitive) implementation of RandomAccessRepeatedFieldAccessor that
 // manipulates MapFieldBase.
-class MapFieldAccessor final : public RepeatedPtrFieldMessageAccessor {
+class MapFieldAccessor final : public RandomAccessRepeatedFieldAccessor {
+ public:
+  bool IsEmpty(const Field* data) const override {
+    return as_map(data)->size() == 0;
+  }
+  int Size(const Field* data) const override {
+    const MapFieldBase* map = as_map(data);
+    if (map->IsRepeatedFieldValid()) {
+      return map
+          ->GetRepeatedField([]() -> const Message* {
+            ABSL_LOG(FATAL)
+                << "Repeated field is valid, loader should not be called.";
+            return nullptr;
+          })
+          .size();
+    }
+    return map->size();
+  }
+  const Value* Get(const Field* data, int index,
+                   Value* scratch_space,
+                   const Value* prototype) const override {
+    ABSL_CHECK(prototype != nullptr);
+    auto loader = [=] { return as_message(prototype); };
+    return static_cast<const Value*>(
+        &as_map(data)->GetRepeatedField(loader).Get(index));
+  }
+  void Clear(Field* data) const override { as_map(data)->Clear(); }
+  void Set(Field* data, int index, const Value* value) const override {
+    auto loader = [=] { return as_message(value); };
+    as_map(data)->MutableRepeatedField(loader)->Mutable(index)->CopyFrom(
+        *as_message(value));
+  }
+  void Add(Field* data, const Value* value,
+           const Value* prototype) const override {
+    auto loader = [=] { return as_message(prototype); };
+    Message* allocated = as_message(prototype)->New(as_map(data)->arena());
+    allocated->MergeFrom(*as_message(value));
+    as_map(data)->MutableRepeatedField(loader)->AddAllocated(allocated);
+  }
+  void AddRange(Field* data, const Value* values, int value_size, size_t size,
+                const Value* prototype) const override {
+    const char* ptr = reinterpret_cast<const char*>(values);
+    for (size_t i = 0; i < size; ++i) {
+      Add(data, ptr, prototype);
+      ptr += value_size;
+    }
+  }
+  void RemoveLast(Field* data) const override {
+    auto loader = []() -> const Message* {
+      ABSL_LOG(FATAL) << "Cannot RemoveLast on unsynced MapField reflection.";
+      return nullptr;
+    };
+    as_map(data)->MutableRepeatedField(loader)->RemoveLast();
+  }
+  void SwapElements(Field* data, int index1, int index2) const override {
+    auto loader = []() -> const Message* {
+      ABSL_LOG(FATAL) << "Cannot SwapElements on unsynced MapField reflection.";
+      return nullptr;
+    };
+    as_map(data)->MutableRepeatedField(loader)->SwapElements(index1, index2);
+  }
+  void Swap(Field* data, const internal::RepeatedFieldAccessor* other_mutator,
+            Field* other_data) const override {
+    ABSL_CHECK_EQ(this, other_mutator);
+    auto* map1 = as_map(data);
+    auto* map2 = as_map(other_data);
+    map1->Swap(map1->arena(), map2, map2->arena());
+  }
+
+ private:
   using Field = void;
   using Value = void;
 
- protected:
-  const RepeatedFieldType* GetRepeatedField(const Field* data) const override {
-    return reinterpret_cast<const RepeatedFieldType*>(
-        &(reinterpret_cast<const MapFieldBase*>(data)->GetRepeatedField()));
+  static const MapFieldBase* as_map(const Field* data) {
+    return static_cast<const MapFieldBase*>(data);
   }
-  RepeatedFieldType* MutableRepeatedField(Field* data) const override {
-    return reinterpret_cast<RepeatedFieldType*>(
-        reinterpret_cast<MapFieldBase*>(data)->MutableRepeatedField());
+  static MapFieldBase* as_map(Field* data) {
+    return static_cast<MapFieldBase*>(data);
+  }
+  static const Message* as_message(const Value* value) {
+    return static_cast<const Message*>(value);
+  }
+  static Message* as_message(Value* value) {
+    return static_cast<Message*>(value);
   }
 };
 

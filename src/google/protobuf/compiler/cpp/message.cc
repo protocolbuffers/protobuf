@@ -3900,79 +3900,41 @@ void MessageGenerator::GenerateClassData(io::Printer* p) {
       }
     };
 
-    if (IsMapEntryMessage(descriptor_)) {
-      p->Emit(
-          {
-              {"pin_weak_descriptor", pin_weak_descriptor},
-          },
-          R"cc(
+    p->Emit(
+        {
+            {"pin_weak_descriptor", pin_weak_descriptor},
+        },
+        R"cc(
 #ifndef PROTOBUF_MESSAGE_GLOBALS
-            PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const
-                $pbi$::ClassDataFull $Msg$_class_data_ =
-                    $Msg$::InternalGenerateClassData_($globals$._default);
+          PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const
+              $pbi$::ClassDataFull $Msg$_class_data_ =
+                  $Msg$::InternalGenerateClassData_($globals$._default);
 
-            //~ This function needs to be marked as weak to avoid significantly
-            //~ slowing down compilation times.  This breaks up LLVM's SCC
-            //~ in the .pb.cc translation units. Large translation units see a
-            //~ reduction of roughly 50% of walltime for optimized builds.
-            //~ Without the weak attribute all the messages in the file,
-            // including ~ all the vtables and everything they use become part
-            // of the same ~ SCC.
-            PROTOBUF_ATTRIBUTE_WEAK const $pbi$::ClassData* $nonnull$
-            $Msg$::GetClassData() const {
-              $pin_weak_descriptor$;
-              $pbi$::PrefetchToLocalCache(&$Msg$_class_data_);
-              $pbi$::PrefetchToLocalCache($Msg$_class_data_.tc_table);
-              return $Msg$_class_data_.base();
-            }
+          //~ This function needs to be marked as weak to avoid significantly
+          //~ slowing down compilation times.  This breaks up LLVM's SCC
+          //~ in the .pb.cc translation units. Large translation units see a
+          //~ reduction of roughly 50% of walltime for optimized builds.
+          //~ Without the weak attribute all the messages in the file,
+          //~ including all the vtables and everything they use become part
+          //~ of the same SCC.
+          PROTOBUF_ATTRIBUTE_WEAK const $pbi$::ClassData* $nonnull$
+          $Msg$::GetClassData() const {
+            $pin_weak_descriptor$;
+            $pbi$::PrefetchToLocalCache(&$Msg$_class_data_);
+            $pbi$::PrefetchToLocalCache($Msg$_class_data_.tc_table);
+            return $Msg$_class_data_.base();
+          }
 #else
-            PROTOBUF_ATTRIBUTE_WEAK const $pbi$::ClassData* $nonnull$
-            $Msg$::GetClassData() const {
-              $pin_weak_descriptor$;
-              $pbi$::PrefetchToLocalCache(&$globals$);
-              $pbi$::PrefetchToLocalCache(
-                  $pbi$::MessageGlobalsBase::ToParseTableBase(&$globals$));
-              return $globals$.GetClassData();
-            }
+          PROTOBUF_ATTRIBUTE_WEAK const $pbi$::ClassData* $nonnull$
+          $Msg$::GetClassData() const {
+            $pin_weak_descriptor$;
+            $pbi$::PrefetchToLocalCache(&$globals$);
+            $pbi$::PrefetchToLocalCache(
+                $pbi$::MessageGlobalsBase::ToParseTableBase(&$globals$));
+            return $globals$.GetClassData();
+          }
 #endif  // !PROTOBUF_MESSAGE_GLOBALS
-          )cc");
-    } else {
-      p->Emit(
-          {
-              {"pin_weak_descriptor", pin_weak_descriptor},
-          },
-          R"cc(
-#ifndef PROTOBUF_MESSAGE_GLOBALS
-            PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const
-                $pbi$::ClassDataFull $Msg$_class_data_ =
-                    $Msg$::InternalGenerateClassData_($globals$._default);
-
-            //~ This function needs to be marked as weak to avoid significantly
-            //~ slowing down compilation times.  This breaks up LLVM's SCC
-            //~ in the .pb.cc translation units. Large translation units see a
-            //~ reduction of roughly 50% of walltime for optimized builds.
-            //~ Without the weak attribute all the messages in the file,
-            //~ including all the vtables and everything they use become part
-            //~ of the same SCC.
-            PROTOBUF_ATTRIBUTE_WEAK const $pbi$::ClassData* $nonnull$
-            $Msg$::GetClassData() const {
-              $pin_weak_descriptor$;
-              $pbi$::PrefetchToLocalCache(&$Msg$_class_data_);
-              $pbi$::PrefetchToLocalCache($Msg$_class_data_.tc_table);
-              return $Msg$_class_data_.base();
-            }
-#else
-            PROTOBUF_ATTRIBUTE_WEAK const $pbi$::ClassData* $nonnull$
-            $Msg$::GetClassData() const {
-              $pin_weak_descriptor$;
-              $pbi$::PrefetchToLocalCache(&$globals$);
-              $pbi$::PrefetchToLocalCache(
-                  $pbi$::MessageGlobalsBase::ToParseTableBase(&$globals$));
-              return $globals$.GetClassData();
-            }
-#endif  // !PROTOBUF_MESSAGE_GLOBALS
-          )cc");
-    }
+        )cc");
   } else {
     p->Emit(
         R"cc(
@@ -5561,6 +5523,22 @@ void MessageGenerator::GenerateSourceDefaultInstance(io::Printer* p) {
           {"implicit_weak_descriptor_tail",
            [&] {
              if (!use_implicit_weak_descriptor) return;
+
+             // We need to pin MapEntry types somewhere.
+             // Here is a good place when PROTOBUF_CUSTOM_VTABLE is enabled.
+             for (int i = 0; i < descriptor_->field_count(); ++i) {
+               auto* field = descriptor_->field(i);
+               if (field->type() != field->TYPE_MESSAGE) continue;
+               if (!field->is_map()) continue;
+               p->Emit({{"i", i},
+                        {"globals", MsgGlobalsInstanceName(
+                                        field->message_type(), options_)}},
+                       R"cc(
+                         const void* map_entry_pin_$i$ = &$globals$;
+                       )cc");
+             }
+
+
              p->Emit({{"index", index_in_file_messages_}}, R"cc(
                ::_pbi::WeakDescriptorDefaultTail tail = {
                    file_message_globals + $index$, sizeof($globals_type$)};

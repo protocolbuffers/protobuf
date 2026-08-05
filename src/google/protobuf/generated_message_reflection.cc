@@ -99,6 +99,15 @@ namespace protobuf {
 namespace {
 bool IsMapFieldInApi(const FieldDescriptor* field) { return field->is_map(); }
 
+auto GetPrototypeGetter(MessageFactory* message_factory,
+                        const FieldDescriptor* field,
+                        MessageFactory* factory = nullptr) {
+  return [message_factory, field, factory]() {
+    MessageFactory* f = factory ? factory : message_factory;
+    return f->GetPrototype(field->message_type());
+  };
+}
+
 bool IsMapEntry(const FieldDescriptor* field) {
   return (field->containing_type() != nullptr &&
           field->containing_type()->options().map_entry());
@@ -1528,7 +1537,9 @@ int Reflection::FieldSize(const Message& message,
           const internal::MapFieldBase& map =
               GetRaw<MapFieldBase>(message, field);
           if (map.IsRepeatedFieldValid()) {
-            return map.GetRepeatedField().size();
+            return map
+                .GetRepeatedField(GetPrototypeGetter(message_factory_, field))
+                .size();
           } else {
             // No need to materialize the repeated field if it is out of sync:
             // its size will be the same as the map's size.
@@ -1711,8 +1722,9 @@ void Reflection::RemoveLast(Message* message,
       case FieldDescriptor::CPPTYPE_MESSAGE:
         if (IsMapFieldInApi(field)) {
           MutableRaw<MapFieldBase>(message, field)
-              ->MutableRepeatedField()
-              ->RemoveLast<GenericTypeHandler<Message>>();
+              ->MutableRepeatedField(
+                  GetPrototypeGetter(message_factory_, field))
+              ->RemoveLast();
         } else {
           MutableRaw<RepeatedPtrFieldBase>(message, field)
               ->RemoveLast<GenericTypeHandler<Message>>();
@@ -1734,8 +1746,9 @@ Message* Reflection::ReleaseLast(Message* message,
   } else {
     if (IsMapFieldInApi(field)) {
       released = MutableRaw<MapFieldBase>(message, field)
-                     ->MutableRepeatedField()
-                     ->ReleaseLast<GenericTypeHandler<Message>>(arena);
+                     ->MutableRepeatedField(
+                         GetPrototypeGetter(message_factory_, field))
+                     ->ReleaseLast();
     } else {
       released = MutableRaw<RepeatedPtrFieldBase>(message, field)
                      ->ReleaseLast<GenericTypeHandler<Message>>(arena);
@@ -1759,8 +1772,8 @@ Message* Reflection::UnsafeArenaReleaseLast(
   } else {
     if (IsMapFieldInApi(field)) {
       return MutableRaw<MapFieldBase>(message, field)
-          ->MutableRepeatedField()
-          ->UnsafeArenaReleaseLast<GenericTypeHandler<Message>>();
+          ->MutableRepeatedField(GetPrototypeGetter(message_factory_, field))
+          ->UnsafeArenaReleaseLast();
     } else {
       return MutableRaw<RepeatedPtrFieldBase>(message, field)
           ->UnsafeArenaReleaseLast<GenericTypeHandler<Message>>();
@@ -1804,7 +1817,8 @@ void Reflection::SwapElements(Message* message, const FieldDescriptor* field,
       case FieldDescriptor::CPPTYPE_MESSAGE:
         if (IsMapFieldInApi(field)) {
           MutableRaw<MapFieldBase>(message, field)
-              ->MutableRepeatedField()
+              ->MutableRepeatedField(
+                  GetPrototypeGetter(message_factory_, field))
               ->SwapElements(index1, index2);
         } else {
           MutableRaw<RepeatedPtrFieldBase>(message, field)
@@ -2794,8 +2808,8 @@ const Message& Reflection::GetRepeatedMessage(const Message& message,
   } else {
     if (IsMapFieldInApi(field)) {
       return GetRaw<MapFieldBase>(message, field)
-          .GetRepeatedField()
-          .Get<GenericTypeHandler<Message>>(index);
+          .GetRepeatedField(GetPrototypeGetter(message_factory_, field))
+          .Get(index);
     } else {
       return GetRaw<RepeatedPtrFieldBase>(message, field)
           .Get<GenericTypeHandler<Message>>(index);
@@ -2815,8 +2829,8 @@ Message* Reflection::MutableRepeatedMessage(Message* message,
   } else {
     if (IsMapFieldInApi(field)) {
       return MutableRaw<MapFieldBase>(message, field)
-          ->MutableRepeatedField()
-          ->Mutable<GenericTypeHandler<Message>>(index);
+          ->MutableRepeatedField(GetPrototypeGetter(message_factory_, field))
+          ->Mutable(index);
     } else {
       return MutableRaw<RepeatedPtrFieldBase>(message, field)
           ->Mutable<GenericTypeHandler<Message>>(index);
@@ -2843,8 +2857,9 @@ Message* Reflection::AddMessage(Message* message, const FieldDescriptor* field,
     // know how to allocate one.
     RepeatedPtrFieldBase* repeated = nullptr;
     if (IsMapFieldInApi(field)) {
-      repeated =
-          MutableRaw<MapFieldBase>(message, field)->MutableRepeatedField();
+      repeated = MutableRaw<MapFieldBase>(message, field)
+                     ->MutableRepeatedField(
+                         GetPrototypeGetter(message_factory_, field, factory));
     } else {
       repeated = MutableRaw<RepeatedPtrFieldBase>(message, field);
     }
@@ -2880,8 +2895,9 @@ void Reflection::AddAllocatedMessage(Message* message,
   } else {
     RepeatedPtrFieldBase* repeated = nullptr;
     if (IsMapFieldInApi(field)) {
-      repeated =
-          MutableRaw<MapFieldBase>(message, field)->MutableRepeatedField();
+      repeated = MutableRaw<MapFieldBase>(message, field)
+                     ->MutableRepeatedField(
+                         GetPrototypeGetter(message_factory_, field));
     } else {
       repeated = MutableRaw<RepeatedPtrFieldBase>(message, field);
     }
@@ -2902,8 +2918,9 @@ void Reflection::UnsafeArenaAddAllocatedMessage(Message* message,
   } else {
     RepeatedPtrFieldBase* repeated = nullptr;
     if (IsMapFieldInApi(field)) {
-      repeated =
-          MutableRaw<MapFieldBase>(message, field)->MutableRepeatedField();
+      repeated = MutableRaw<MapFieldBase>(message, field)
+                     ->MutableRepeatedField(
+                         GetPrototypeGetter(message_factory_, field));
     } else {
       repeated = MutableRaw<RepeatedPtrFieldBase>(message, field);
     }
@@ -2948,7 +2965,9 @@ bool Reflection::IsRepeatedOrMapFieldEmpty(const Message& message,
           const internal::MapFieldBase& map =
               GetRaw<MapFieldBase>(message, field);
           if (map.IsRepeatedFieldValid()) {
-            return map.GetRepeatedField().empty();
+            return map
+                .GetRepeatedField(GetPrototypeGetter(message_factory_, field))
+                .empty();
           } else {
             // No need to materialize the repeated field if it is out of sync:
             // its size will be the same as the map's size.
@@ -2987,7 +3006,8 @@ void* Reflection::MutableRawRepeatedField(Message* message,
   } else {
     // Trigger transform for MapField
     if (IsMapFieldInApi(field)) {
-      return MutableRaw<MapFieldBase>(message, field)->MutableRepeatedField();
+      return MutableRaw<MapFieldBase>(message, field)
+          ->MutableRepeatedField(GetPrototypeGetter(message_factory_, field));
     }
     return MutableRaw<void>(message, field);
   }
@@ -3016,7 +3036,9 @@ const void* Reflection::GetRawRepeatedField(
   } else {
     // Trigger transform for MapField
     if (IsMapFieldInApi(field)) {
-      return &(GetRaw<MapFieldBase>(message, field).GetRepeatedField());
+      return &(
+          GetRaw<MapFieldBase>(message, field)
+              .GetRepeatedField(GetPrototypeGetter(message_factory_, field)));
     }
     return &GetRaw<char>(message, field);
   }
@@ -3052,7 +3074,8 @@ bool Reflection::InsertOrLookupMapValue(Message* message,
   val->SetType(field->message_type()->map_value()->cpp_type());
   SetHasBit(message, field);
   return MutableRaw<MapFieldBase>(message, field)
-      ->InsertOrLookupMapValue(key, val);
+      ->InsertOrLookupMapValue(GetPrototypeGetter(message_factory_, field), key,
+                               val);
 }
 
 bool Reflection::LookupMapValue(const Message& message,

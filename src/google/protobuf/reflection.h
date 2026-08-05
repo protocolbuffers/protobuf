@@ -191,7 +191,8 @@ class RepeatedFieldRef<T, std::enable_if_t<std::is_base_of_v<Message, T>>> {
   //   const Message& item = h.Get(index, scratch_space.get());
   PROTOBUF_FUTURE_ADD_EARLY_NODISCARD const T& Get(
       int index, T* PROTOBUF_NULLABLE scratch_space) const {
-    return *static_cast<const T*>(accessor_->Get(data_, index, scratch_space));
+    return *static_cast<const T*>(
+        accessor_->Get(data_, index, scratch_space, default_instance_));
   }
   // Create a new message of the same type as the messages stored in this
   // repeated field. Caller takes ownership of the returned object.
@@ -206,11 +207,11 @@ class RepeatedFieldRef<T, std::enable_if_t<std::is_base_of_v<Message, T>>> {
   typedef ptrdiff_t difference_type;
 
   PROTOBUF_FUTURE_ADD_EARLY_NODISCARD iterator begin() const {
-    return iterator(data_, accessor_, true, NewMessage());
+    return iterator(data_, accessor_, true, NewMessage(), default_instance_);
   }
   PROTOBUF_FUTURE_ADD_EARLY_NODISCARD iterator end() const {
     // The end iterator must not be dereferenced, no need for scratch space.
-    return iterator(data_, accessor_, false, nullptr);
+    return iterator(data_, accessor_, false, nullptr, default_instance_);
   }
 
  private:
@@ -247,7 +248,8 @@ class MutableRepeatedFieldRef<T,
   // See comments for RepeatedFieldRef<Message>::Get()
   PROTOBUF_FUTURE_ADD_EARLY_NODISCARD const T& Get(
       int index, T* PROTOBUF_NULLABLE scratch_space) const {
-    return *static_cast<const T*>(accessor_->Get(data_, index, scratch_space));
+    return *static_cast<const T*>(
+        accessor_->Get(data_, index, scratch_space, default_instance_));
   }
   // Create a new message of the same type as the messages stored in this
   // repeated field. Caller takes ownership of the returned object.
@@ -349,9 +351,12 @@ class PROTOBUF_EXPORT RepeatedFieldAccessor {
   // exists, or fill the data into scratch_space and return scratch_space.
   // Callers of this method must ensure scratch_space is a valid pointer
   // to a mutable object of the correct type.
+  // prototype must be non-null for message/map fields. It is ignored for
+  // primitive fields (where it can be null).
   PROTOBUF_FUTURE_ADD_EARLY_NODISCARD virtual const Value* PROTOBUF_NONNULL
   Get(const Field* PROTOBUF_NONNULL data, int index,
-      Value* PROTOBUF_NULLABLE scratch_space) const = 0;
+      Value* PROTOBUF_NULLABLE scratch_space,
+      const Value* PROTOBUF_NULLABLE prototype) const = 0;
 
   virtual void Clear(Field* PROTOBUF_NONNULL data) const = 0;
   virtual void Set(Field* PROTOBUF_NONNULL data, int index,
@@ -396,7 +401,8 @@ class PROTOBUF_EXPORT RepeatedFieldAccessor {
   virtual const Value* PROTOBUF_NONNULL
   GetIteratorValue(const Field* PROTOBUF_NONNULL data,
                    const Iterator* PROTOBUF_NULLABLE iterator,
-                   Value* PROTOBUF_NULLABLE scratch_space) const = 0;
+                   Value* PROTOBUF_NULLABLE scratch_space,
+                   const Value* PROTOBUF_NULLABLE prototype) const = 0;
 
   // Templated methods that make using this interface easier for non-message
   // types.
@@ -406,7 +412,7 @@ class PROTOBUF_EXPORT RepeatedFieldAccessor {
     typedef typename RefTypeTraits<T>::AccessorValueType ActualType;
     ActualType scratch_space;
     return static_cast<T>(*reinterpret_cast<const ActualType*>(
-        Get(data, index, static_cast<Value*>(&scratch_space))));
+        Get(data, index, static_cast<Value*>(&scratch_space), nullptr)));
   }
 
   template <typename T, typename ValueType>
@@ -474,12 +480,14 @@ class RepeatedFieldRefIterator {
   RepeatedFieldRefIterator(
       const void* PROTOBUF_NONNULL data,
       const RepeatedFieldAccessor* PROTOBUF_NONNULL accessor, bool begin,
-      AccessorValueType* PROTOBUF_NULLABLE scratch_space)
+      AccessorValueType* PROTOBUF_NULLABLE scratch_space,
+      const Message* PROTOBUF_NULLABLE default_instance)
       : data_(data),
         accessor_(accessor),
         iterator_(begin ? accessor->BeginIterator(data)
                         : accessor->EndIterator(data)),
-        scratch_space_(scratch_space) {}
+        scratch_space_(scratch_space),
+        default_instance_(default_instance) {}
   ~RepeatedFieldRefIterator() { accessor_->DeleteIterator(data_, iterator_); }
   RepeatedFieldRefIterator operator++(int) {
     RepeatedFieldRefIterator tmp(*this);
@@ -493,11 +501,12 @@ class RepeatedFieldRefIterator {
   PROTOBUF_FUTURE_ADD_EARLY_NODISCARD IteratorValueType operator*() const {
     return static_cast<IteratorValueType>(
         *static_cast<const AccessorValueType*>(accessor_->GetIteratorValue(
-            data_, iterator_, scratch_space_.get())));
+            data_, iterator_, scratch_space_.get(), default_instance_)));
   }
   PROTOBUF_FUTURE_ADD_EARLY_NODISCARD IteratorPointerType operator->() const {
     return static_cast<IteratorPointerType>(
-        accessor_->GetIteratorValue(data_, iterator_, scratch_space_.get()));
+        accessor_->GetIteratorValue(data_, iterator_, scratch_space_.get(),
+                                    default_instance_));
   }
   PROTOBUF_FUTURE_ADD_EARLY_NODISCARD bool operator!=(
       const RepeatedFieldRefIterator& other) const {
@@ -513,13 +522,15 @@ class RepeatedFieldRefIterator {
   RepeatedFieldRefIterator(const RepeatedFieldRefIterator& other)
       : data_(other.data_),
         accessor_(other.accessor_),
-        iterator_(accessor_->CopyIterator(data_, other.iterator_)) {}
+        iterator_(accessor_->CopyIterator(data_, other.iterator_)),
+        default_instance_(other.default_instance_) {}
   RepeatedFieldRefIterator& operator=(const RepeatedFieldRefIterator& other) {
     if (this != &other) {
       accessor_->DeleteIterator(data_, iterator_);
       data_ = other.data_;
       accessor_ = other.accessor_;
       iterator_ = accessor_->CopyIterator(data_, other.iterator_);
+      default_instance_ = other.default_instance_;
     }
     return *this;
   }
@@ -529,6 +540,7 @@ class RepeatedFieldRefIterator {
   const RepeatedFieldAccessor* PROTOBUF_NONNULL accessor_;
   void* PROTOBUF_NULLABLE iterator_;
   std::unique_ptr<AccessorValueType> scratch_space_;
+  const Message* PROTOBUF_NULLABLE default_instance_ = nullptr;
 };
 
 // TypeTraits that maps the type parameter T of RepeatedFieldRef or

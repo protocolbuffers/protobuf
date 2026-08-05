@@ -49,14 +49,6 @@ void MapFieldBase::Swap(Arena* arena, MapFieldBase* other, Arena* other_arena) {
   GetMapRaw().UntypedSwap(arena, other->GetMapRaw(), other_arena);
 }
 
-const Message* MapFieldBase::GetPrototype() const {
-  const void* p = globals_or_payload_.load(std::memory_order_acquire);
-  if (IsPayload(p)) {
-    return ToPayload(p)->prototype();
-  }
-  return MessageGlobalsBase::ToDefaultInstance<Message>(p);
-}
-
 template <typename Map, typename F>
 auto VisitMapKey(const MapKey& map_key, Map& map, F f) {
   switch (map_key.type()) {
@@ -80,8 +72,8 @@ auto VisitMapKey(const MapKey& map_key, Map& map, F f) {
   }
 }
 
-bool MapFieldBase::InsertOrLookupMapValueNoSync(const MapKey& map_key,
-                                                MapValueRef* val) {
+bool MapFieldBase::InsertOrLookupMapValueNoSync(
+    PrototypeLoader prototype_loader, const MapKey& map_key, MapValueRef* val) {
   if (LookupMapValueNoSync(map_key, static_cast<MapValueConstRef*>(val))) {
     return false;
   }
@@ -90,11 +82,12 @@ bool MapFieldBase::InsertOrLookupMapValueNoSync(const MapKey& map_key,
   Arena* arena = map.arena();
 
   NodeBase* node = map.AllocNode(arena);
-  map.VisitValue(node, [&](auto* v) { InitializeKeyValue(v); });
+  map.VisitValue(node,
+                 [=](auto* v) { InitializeKeyValue(prototype_loader, v); });
   val->SetValue(map.GetVoidValue(node));
 
-  return VisitMapKey(map_key, map, [&](auto& map, const auto& key) {
-    InitializeKeyValue(map.GetKey(node), key);
+  return VisitMapKey(map_key, map, [=](auto& map, const auto& key) {
+    InitializeKeyValue(prototype_loader, map.GetKey(node), key);
     map.InsertOrReplaceNode(
         arena,
         static_cast<typename std::decay_t<decltype(map)>::KeyNode*>(node));
@@ -193,16 +186,18 @@ void MapFieldBase::CopyIterator(
   SetMapIteratorValue(this_iter);
 }
 
-const RepeatedPtrFieldBase& MapFieldBase::GetRepeatedField() const {
+const RepeatedPtrField<Message>& MapFieldBase::GetRepeatedField(
+    PrototypeLoader prototype_loader) const {
   ConstAccess();
-  return SyncRepeatedFieldWithMap(false);
+  return SyncRepeatedFieldWithMap(prototype_loader, false);
 }
 
-RepeatedPtrFieldBase* MapFieldBase::MutableRepeatedField() {
+RepeatedPtrField<Message>* MapFieldBase::MutableRepeatedField(
+    PrototypeLoader prototype_loader) {
   MutableAccess();
-  auto& res = SyncRepeatedFieldWithMap(true);
+  auto& res = SyncRepeatedFieldWithMap(prototype_loader, true);
   SetRepeatedDirty();
-  return const_cast<RepeatedPtrFieldBase*>(&res);
+  return const_cast<RepeatedPtrField<Message>*>(&res);
 }
 
 template <typename T>
@@ -213,9 +208,9 @@ static void SwapRelaxed(std::atomic<T>& a, std::atomic<T>& b) {
   a.store(value_b, std::memory_order_relaxed);
 }
 
-MapFieldBase::ReflectionPayload& MapFieldBase::PayloadSlow() const {
-  const void* p = globals_or_payload_.load(std::memory_order_acquire);
-  if (!IsPayload(p)) {
+MapFieldBaseForParse::ReflectionPayload& MapFieldBase::PayloadSlow() const {
+  auto* p = payload_.load(std::memory_order_acquire);
+  if (p == nullptr) {
     // Inject the sync callback.
     sync_map_with_repeated.store(
         [](auto& map, bool is_mutable) {
@@ -225,35 +220,36 @@ MapFieldBase::ReflectionPayload& MapFieldBase::PayloadSlow() const {
         },
         std::memory_order_relaxed);
 
-    const auto* prototype = MessageGlobalsBase::ToDefaultInstance<Message>(p);
-    auto* payload =
-        Arena::Create<ReflectionPayload>(arena(), arena(), prototype);
+    auto* payload = Arena::Create<ReflectionPayload>(arena(), arena());
 
-    auto new_p = ToTaggedPtr(payload);
-    if (globals_or_payload_.compare_exchange_strong(
-            p, new_p, std::memory_order_acq_rel)) {
+    if (payload_.compare_exchange_strong(p, payload,
+                                         std::memory_order_acq_rel)) {
       // We were able to store it.
-      p = new_p;
+      p = payload;
     } else {
       // Someone beat us to it. Throw away the one we made. `p` already contains
       // the one we want.
       if (arena() == nullptr) delete payload;
     }
   }
-  return *ToPayload(p);
+  return *p;
 }
 
 void MapFieldBase::SwapPayload(MapFieldBase& lhs, MapFieldBase& rhs) {
   if (lhs.arena() == rhs.arena()) {
-    SwapRelaxed(lhs.globals_or_payload_, rhs.globals_or_payload_);
+    SwapRelaxed(lhs.payload_, rhs.payload_);
     return;
   }
   auto* p1 = lhs.maybe_payload();
   auto* p2 = rhs.maybe_payload();
   if (p1 == nullptr && p2 == nullptr) return;
 
-  if (p1 == nullptr) p1 = &lhs.payload();
-  if (p2 == nullptr) p2 = &rhs.payload();
+  if (p1 == nullptr) {
+    p1 = &lhs.payload();
+  }
+  if (p2 == nullptr) {
+    p2 = &rhs.payload();
+  }
   p1->Swap(*p2);
 }
 
@@ -296,11 +292,13 @@ void MapFieldBase::SetRepeatedDirty() {
   MutableAccess();
   // These are called by (non-const) mutator functions. So by our API it's the
   // callers responsibility to have these calls properly ordered.
-  payload().set_state_relaxed(STATE_MODIFIED_REPEATED);
+  auto* p = maybe_payload();
+  ABSL_CHECK(p != nullptr);
+  p->set_state_relaxed(STATE_MODIFIED_REPEATED);
 }
 
-const RepeatedPtrFieldBase& MapFieldBase::SyncRepeatedFieldWithMap(
-    bool for_mutation) const {
+const RepeatedPtrField<Message>& MapFieldBase::SyncRepeatedFieldWithMap(
+    PrototypeLoader prototype_loader, bool for_mutation) const {
   ConstAccess();
   if (state() == STATE_MODIFIED_MAP) {
     auto* p = maybe_payload();
@@ -310,7 +308,7 @@ const RepeatedPtrFieldBase& MapFieldBase::SyncRepeatedFieldWithMap(
       // This prevents modifying global default instances which might be in ro
       // memory.
       if (!for_mutation && GetMapRaw().empty()) {
-        return *RawPtr<const RepeatedPtrFieldBase>();
+        return *RawPtr<const RepeatedPtrField<Message>>();
       }
       p = &payload();
     }
@@ -320,24 +318,25 @@ const RepeatedPtrFieldBase& MapFieldBase::SyncRepeatedFieldWithMap(
       // Double check state, because another thread may have seen the same
       // state and done the synchronization before the current thread.
       if (p->load_state_relaxed() == STATE_MODIFIED_MAP) {
-        const_cast<MapFieldBase*>(this)->SyncRepeatedFieldWithMapNoLock();
+        const Message* prototype = prototype_loader();
+        const_cast<MapFieldBase*>(this)->SyncRepeatedFieldWithMapNoLock(
+            prototype);
         p->set_state_release(CLEAN);
       }
     }
     ConstAccess();
-    return static_cast<const RepeatedPtrFieldBase&>(p->repeated_field());
+    return p->repeated_field();
   }
-  return static_cast<const RepeatedPtrFieldBase&>(payload().repeated_field());
+  return maybe_payload()->repeated_field();
 }
 
-void MapFieldBase::SyncRepeatedFieldWithMapNoLock() {
-  const Message* prototype = GetPrototype();
+void MapFieldBase::SyncRepeatedFieldWithMapNoLock(const Message* prototype) {
   const Reflection* reflection = prototype->GetReflection();
   const Descriptor* descriptor = prototype->GetDescriptor();
   const FieldDescriptor* key_des = descriptor->map_key();
   const FieldDescriptor* val_des = descriptor->map_value();
 
-  RepeatedPtrField<Message>& rep = payload().repeated_field();
+  RepeatedPtrField<Message>& rep = maybe_payload()->repeated_field();
   rep.Clear();
 
   ConstMapIterator it(this, descriptor);
@@ -423,14 +422,15 @@ void MapFieldBase::SyncMapWithRepeatedField() const {
   // acquire here matches with release below to ensure that we can only see a
   // value of CLEAN after all previous changes have been synced.
   if (state() == STATE_MODIFIED_REPEATED) {
-    auto& p = payload();
+    auto* p = maybe_payload();
+    ABSL_CHECK(p != nullptr);
     {
-      absl::MutexLock lock(&p.mutex());
+      absl::MutexLock lock(&p->mutex());
       // Double check state, because another thread may have seen the same state
       // and done the synchronization before the current thread.
-      if (p.load_state_relaxed() == STATE_MODIFIED_REPEATED) {
+      if (p->load_state_relaxed() == STATE_MODIFIED_REPEATED) {
         const_cast<MapFieldBase*>(this)->SyncMapWithRepeatedFieldNoLock();
-        p.set_state_release(CLEAN);
+        p->set_state_release(CLEAN);
       }
     }
     ConstAccess();
@@ -440,7 +440,9 @@ void MapFieldBase::SyncMapWithRepeatedField() const {
 void MapFieldBase::SyncMapWithRepeatedFieldNoLock() {
   ClearMapNoSync();
 
-  RepeatedPtrField<Message>& rep = payload().repeated_field();
+  auto* p = maybe_payload();
+  ABSL_CHECK(p != nullptr);
+  RepeatedPtrField<Message>& rep = p->repeated_field();
 
   if (rep.empty()) return;
 
@@ -480,7 +482,8 @@ void MapFieldBase::SyncMapWithRepeatedFieldNoLock() {
 
     MapValueRef map_val;
     map_val.SetType(val_des->cpp_type());
-    InsertOrLookupMapValueNoSync(map_key, &map_val);
+    InsertOrLookupMapValueNoSync([&]() { return prototype; }, map_key,
+                                 &map_val);
 
     switch (val_des->cpp_type()) {
 #define HANDLE_TYPE(CPPTYPE, METHOD)                                    \
@@ -522,14 +525,15 @@ void MapFieldBase::Clear() {
 
 int MapFieldBase::size() const { return GetMap().size(); }
 
-bool MapFieldBase::InsertOrLookupMapValue(const MapKey& map_key,
+bool MapFieldBase::InsertOrLookupMapValue(PrototypeLoader prototype_loader,
+                                          const MapKey& map_key,
                                           MapValueRef* val) {
   SyncMapWithRepeatedField();
   SetMapDirty();
-  return InsertOrLookupMapValueNoSync(map_key, val);
+  return InsertOrLookupMapValueNoSync(prototype_loader, map_key, val);
 }
 
-void MapFieldBase::ReflectionPayload::Swap(ReflectionPayload& other) {
+void MapFieldBaseForParse::ReflectionPayload::Swap(ReflectionPayload& other) {
   repeated_field().Swap(&other.repeated_field());
   SwapRelaxed(state_, other.state_);
 }
