@@ -1035,7 +1035,7 @@ def MapDecoder(field_descriptor, new_default, is_message_map):
       current_depth -= 1
 
       if is_message_map:
-        value[submsg.key].CopyFrom(submsg.value)
+        value._SetItem(submsg.key, submsg.value)
       else:
         value[submsg.key] = submsg.value
 

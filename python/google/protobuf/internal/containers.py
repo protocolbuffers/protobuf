@@ -651,6 +651,14 @@ class MessageMap(MutableMapping[_K, _V]):
     del self._values[key]
     self._message_listener.Modified()
 
+  def _SetItem(self, key: _K, value: _V) -> None:
+    """Transfers ownership of a message value into the map."""
+    self._AssureWritable()
+    key = self._key_checker.CheckValue(key)
+    value._SetListener(self._message_listener)
+    self._values[key] = value
+    self._message_listener.Modified()
+
   def __len__(self) -> int:
     return len(self._values)
 
