@@ -1380,6 +1380,7 @@ void MessageGenerator::GenerateAnnotationDecl(io::Printer* p) {
 }
 
 void MessageGenerator::GenerateMapEntryClassDefinition(io::Printer* p) {
+  auto class_vars = p->WithVars(ClassVars(descriptor_, options_));
   Formatter format(p);
   absl::flat_hash_map<absl::string_view, std::string> vars;
   CollectMapInfo(options_, descriptor_, &vars);
@@ -1730,7 +1731,10 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
   Formatter format(p);
 
   if (IsMapEntryMessage(descriptor_)) {
-    GenerateMapEntryClassDefinition(p);
+    // We define it in the .pb.cc file.
+    p->Emit(R"cc(
+      class $Msg$;
+    )cc");
     return;
   }
 

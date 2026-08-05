@@ -84,6 +84,8 @@ class MessageGenerator {
   // generated.
   size_t GenerateOffsets(io::Printer* p);
 
+  void GenerateMapEntryClassDefinition(io::Printer* p);
+
   const Descriptor* descriptor() const { return descriptor_; }
 
  private:
@@ -129,7 +131,6 @@ class MessageGenerator {
   void GenerateByteSize(io::Printer* p);
   void GenerateInternalGenerateClassData(io::Printer* p);
   void GenerateClassData(io::Printer* p);
-  void GenerateMapEntryClassDefinition(io::Printer* p);
   void GenerateAnyMethodDefinition(io::Printer* p);
   void GenerateImplDefinition(io::Printer* p);
   void GenerateClassSpecificMergeImpl(io::Printer* p);

@@ -797,6 +797,17 @@ void FileGenerator::GenerateSource(io::Printer* p) {
         )cc");
   }
 
+  // Generate the class definitions for map entries.
+  if (HasDescriptorMethods(file_, options_)) {
+    absl::optional<NamespaceOpener> ns;
+    for (auto& gen : message_generators_) {
+      if (IsMapEntryMessage(gen->descriptor())) {
+        if (!ns.has_value()) ns.emplace(Namespace(file_), p);
+        gen->GenerateMapEntryClassDefinition(p);
+      }
+    }
+  }
+
   // When in weak descriptor mode, we generate the file_default_instances before
   // the default instances.
   if (UsingImplicitWeakDescriptor(file_, options_) &&

@@ -18,10 +18,12 @@
 #include "absl/types/optional.h"
 #include "google/protobuf/arena.h"
 #include "google/protobuf/arena_test_util.h"
+#include "google/protobuf/descriptor.h"
 #include "google/protobuf/map.h"
 #include "google/protobuf/map_test_util.h"
 #include "google/protobuf/map_unittest.pb.h"
 #include "google/protobuf/message.h"
+#include "google/protobuf/message_lite.h"
 #include "google/protobuf/repeated_field.h"
 #include "google/protobuf/unittest.pb.h"
 #include "google/protobuf/wire_format_lite.h"
@@ -44,13 +46,28 @@ struct MapFieldTestPeer {
   }
 };
 
-using TestMapField = ::google::protobuf::internal::MapField<
-    proto2_unittest::TestMap_MapInt32Int32Entry_DoNotUse, ::int32_t, ::int32_t>;
+// We can't pass the real map entry, so we pass a mock.
+// In reality, we only need a type that has `T::internal_message_globals()`.
+// We can return the one for the real type we want to mock
+class MapInt32Int32MockEntry {
+ public:
+  static const void* internal_message_globals() {
+    static const void* result = [] {
+      auto* desc = proto2_unittest::TestMap::descriptor()->FindNestedTypeByName(
+          "MapInt32Int32Entry");
+      auto* prototype = MessageFactory::generated_factory()->GetPrototype(desc);
+      return MessageGlobalsBase::FromDefaultInstance(prototype);
+    }();
+    return result;
+  }
+};
+
+using TestMapField =
+    ::google::protobuf::internal::MapField<MapInt32Int32MockEntry, ::int32_t, ::int32_t>;
 
 class MapFieldBasePrimitiveTest : public testing::TestWithParam<bool> {
  protected:
-  typedef proto2_unittest::TestMap_MapInt32Int32Entry_DoNotUse EntryType;
-  typedef MapField<EntryType, int32_t, int32_t> MapFieldType;
+  typedef MapField<MapInt32Int32MockEntry, int32_t, int32_t> MapFieldType;
 
   MapFieldBasePrimitiveTest()
       : arena_(GetParam() ? new Arena() : nullptr),
@@ -166,8 +183,7 @@ enum State { CLEAN, MAP_DIRTY, REPEATED_DIRTY };
 class MapFieldStateTest
     : public testing::TestWithParam<std::tuple<State, bool>> {
  protected:
-  typedef proto2_unittest::TestMap_MapInt32Int32Entry_DoNotUse EntryType;
-  typedef MapField<EntryType, int32_t, int32_t> MapFieldType;
+  typedef MapField<MapInt32Int32MockEntry, int32_t, int32_t> MapFieldType;
   MapFieldStateTest()
       : arena_(std::get<1>(GetParam()) ? new Arena() : nullptr),
         map_field_(arena_.get()),
@@ -436,9 +452,12 @@ TEST_P(MapFieldStateTest, MutableMapField) {
   }
 }
 
-using MyMapField =
-    MapField<proto2_unittest::TestMap_MapInt32Int32Entry_DoNotUse, int32_t,
-             int32_t>;
+// We need a custom mock entry here to make the function constexpr.
+class ConstexprMockEntry {
+ public:
+  static constexpr const void* internal_message_globals() { return nullptr; }
+};
+using MyMapField = MapField<ConstexprMockEntry, int32_t, int32_t>;
 
 TEST(MapFieldTest, ConstInit) {
   // This tests that `MapField` and all its base classes can be constant
