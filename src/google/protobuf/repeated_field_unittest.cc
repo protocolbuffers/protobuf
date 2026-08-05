@@ -169,8 +169,8 @@ TEST(RepeatedField, Small) {
 class RepeatedFieldIsFullTest : public testing::Test {
  protected:
   void SetUp() override {
-    if (sizeof(void*) == 4) {
-      GTEST_SKIP() << "Platform does not have enough memory for the test.";
+    if (!internal::RunLargeMemoryTests()) {
+      GTEST_SKIP() << "Not enough memory for this test.";
     }
     if (internal::GetBoundsCheckMode() != internal::BoundsCheckMode::kAbort) {
       GTEST_SKIP() << "Preemtive abort is not enabled.";

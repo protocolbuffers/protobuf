@@ -845,8 +845,8 @@ TEST(CordInputStreamTest, SkipToEnd) {
 }
 
 TEST(CordInputStreamTest, HugeCordNodes) {
-  if (sizeof(void*) < 8) {
-    GTEST_SKIP() << "Not enough memory for test.";
+  if (!internal::RunLargeMemoryTests()) {
+    GTEST_SKIP() << "Not enough memory for this test.";
   }
 
   std::string input_str;
