@@ -771,6 +771,7 @@ bool Parser::ParseTopLevelStatement(FileDescriptorProto* file,
   } else if (LookingAt("extend")) {
     LocationRecorder location(root_location,
                               FileDescriptorProto::kExtensionFieldNumber);
+    recursion_depth_ = internal::cpp::MaxMessageDeclarationNestingDepth();
     return ParseExtend(
         file->mutable_extension(), file->mutable_message_type(), root_location,
         FileDescriptorProto::kMessageTypeFieldNumber, location, file);
@@ -1145,6 +1146,11 @@ bool Parser::ParseMessageFieldNoLabel(
 
     field->set_type_name(group->name());
     if (LookingAt("{")) {
+      const auto undo_depth = absl::MakeCleanup([&] { ++recursion_depth_; });
+      if (--recursion_depth_ <= 0) {
+        RecordError("Reached maximum recursion limit for nested messages.");
+        return false;
+      }
       DO(ParseMessageBlock(group, group_location, containing_file));
     } else {
       RecordError("Missing group body.");
