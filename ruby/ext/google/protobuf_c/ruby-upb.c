@@ -7865,26 +7865,6 @@ void _upb_Message_DiscardUnknown_shallow(upb_Message* msg) {
   in->size = size;
 }
 
-upb_Message_DeleteUnknownStatus upb_Message_DeleteUnknown(upb_Message* msg,
-                                                          upb_StringView* data,
-                                                          uintptr_t* iter,
-                                                          upb_Arena* arena) {
-  upb_MessageUnknown unknown;
-  unknown.type = kUpb_MessageUnknownType_StringView;
-  unknown.value.bytes = *data;
-
-  upb_Message_DeleteUnknownStatus res =
-      upb_Message_DeleteUnknown2(msg, &unknown, iter, arena);
-  UPB_ASSERT(unknown.type == kUpb_MessageUnknownType_StringView);
-  if (res == kUpb_DeleteUnknown_IterUpdated ||
-      res == kUpb_DeleteUnknown_DeletedLast) {
-    // the unknown data remains the same on the result of
-    // kUpb_DeleteUnknown_AllocFail.
-    *data = unknown.value.bytes;
-  }
-  return res;
-}
-
 size_t upb_Message_ExtensionCount(const upb_Message* msg) {
   upb_Message_Internal* in = UPB_PRIVATE(_upb_Message_GetInternal)(msg);
   if (!in) return 0;
@@ -8103,6 +8083,25 @@ upb_Message_DeleteUnknownStatus upb_Message_DeleteUnknown2(
   return upb_Message_NextUnknown2(msg, data, iter)
              ? kUpb_DeleteUnknown_IterUpdated
              : kUpb_DeleteUnknown_DeletedLast;
+}
+
+upb_Message_DeleteUnknownStatus upb_Message_DeleteUnknown(
+    struct upb_Message* msg, upb_StringView* data, uintptr_t* iter,
+    struct upb_Arena* arena) {
+  upb_MessageUnknown unknown;
+  unknown.type = kUpb_MessageUnknownType_StringView;
+  unknown.value.bytes = *data;
+
+  upb_Message_DeleteUnknownStatus res =
+      upb_Message_DeleteUnknown2(msg, &unknown, iter, arena);
+  UPB_ASSERT(unknown.type == kUpb_MessageUnknownType_StringView);
+  if (res == kUpb_DeleteUnknown_IterUpdated ||
+      res == kUpb_DeleteUnknown_DeletedLast) {
+    // the unknown data remains the same on the result of
+    // kUpb_DeleteUnknown_AllocFail.
+    *data = unknown.value.bytes;
+  }
+  return res;
 }
 
 
@@ -17809,6 +17808,49 @@ const char* upb_EncodeStatus_String(upb_EncodeStatus status) {
     default:
       return "Unknown encode status";
   }
+}
+
+
+#include <setjmp.h>
+#include <stddef.h>
+
+
+// Must be last.
+
+static upb_EncodeStatus upb_DoEncodeExtension(upb_encstate* encoder, char* ptr,
+                                              const struct upb_Extension* ext,
+                                              bool is_message_set,
+                                              upb_StringView* view,
+                                              int encode_options) {
+  if (UPB_SETJMP(*encoder->err) == 0) {
+    char* buf = ptr;
+    size_t size = 0;
+    UPB_PRIVATE(_upb_Encode_Extension)(encoder, ext->ext, ext->data,
+                                       is_message_set, &buf, &size,
+                                       encode_options);
+    view->data = buf;
+    view->size = size;
+  } else {
+    UPB_ASSERT(encoder->status != kUpb_EncodeStatus_Ok);
+    upb_BackAlloc_Abort(&encoder->alloc);
+    view->data = NULL;
+    view->size = 0;
+  }
+  UPB_PRIVATE(_upb_encstate_destroy)(encoder);
+  return encoder->status;
+}
+
+upb_EncodeStatus upb_EncodeExtension(const struct upb_Extension* ext,
+                                     struct upb_Arena* arena,
+                                     upb_StringView* view, int encode_options) {
+  const upb_MiniTable* extendee = upb_MiniTableExtension_Extendee(ext->ext);
+  bool is_message_set =
+      extendee != NULL && upb_MiniTable_IsMessageSet(extendee);
+  upb_encstate e;
+  jmp_buf err;
+  char* ptr = UPB_PRIVATE(_upb_encstate_init)(&e, &err, arena);
+  return upb_DoEncodeExtension(&e, ptr, ext, is_message_set, view,
+                               encode_options);
 }
 
 

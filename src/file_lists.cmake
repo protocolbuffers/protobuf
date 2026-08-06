@@ -748,6 +748,7 @@ set(libupb_srcs
   ${protobuf_SOURCE_DIR}/upb/wire/decode.c
   ${protobuf_SOURCE_DIR}/upb/wire/decode_fast/select.c
   ${protobuf_SOURCE_DIR}/upb/wire/encode.c
+  ${protobuf_SOURCE_DIR}/upb/wire/encode_extension.c
   ${protobuf_SOURCE_DIR}/upb/wire/eps_copy_input_stream.c
   ${protobuf_SOURCE_DIR}/upb/wire/internal/back_alloc.c
   ${protobuf_SOURCE_DIR}/upb/wire/internal/decoder.c
@@ -878,6 +879,7 @@ set(libupb_hdrs
   ${protobuf_SOURCE_DIR}/upb/wire/decode_fast/data.h
   ${protobuf_SOURCE_DIR}/upb/wire/decode_fast/select.h
   ${protobuf_SOURCE_DIR}/upb/wire/encode.h
+  ${protobuf_SOURCE_DIR}/upb/wire/encode_extension.h
   ${protobuf_SOURCE_DIR}/upb/wire/eps_copy_input_stream.h
   ${protobuf_SOURCE_DIR}/upb/wire/internal/back_alloc.h
   ${protobuf_SOURCE_DIR}/upb/wire/internal/constants.h
