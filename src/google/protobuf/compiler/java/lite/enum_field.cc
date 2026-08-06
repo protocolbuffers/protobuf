@@ -68,7 +68,7 @@ void SetEnumVariables(
       descriptor->options().deprecated() ? "@java.lang.Deprecated " : "";
   (*variables)["required"] = descriptor->is_required() ? "true" : "false";
 
-  if (HasHasbit(descriptor)) {
+  if (HasHazzerMethod(descriptor)) {
     if (!google::protobuf::internal::IsOss()) {
       (*variables)["bit_field_id"] = absl::StrCat(messageBitIndex / 32);
       (*variables)["bit_field_name"] = GetBitFieldNameForBit(messageBitIndex);
@@ -122,7 +122,7 @@ ImmutableEnumFieldLiteGenerator::ImmutableEnumFieldLiteGenerator(
 ImmutableEnumFieldLiteGenerator::~ImmutableEnumFieldLiteGenerator() = default;
 
 int ImmutableEnumFieldLiteGenerator::GetNumBitsForMessage() const {
-  return HasHasbit(descriptor_) ? 1 : 0;
+  return HasHazzerMethod(descriptor_) ? 1 : 0;
 }
 
 void ImmutableEnumFieldLiteGenerator::GenerateInterfaceMembers(
@@ -154,7 +154,7 @@ void ImmutableEnumFieldLiteGenerator::GenerateMembers(
     printer->Print(variables_,
                    "@com.google.protobuf.ProtoField(\n"
                    "  isRequired=$required$)\n");
-    if (HasHasbit(descriptor_)) {
+    if (HasHazzerMethod(descriptor_)) {
       printer->Print(variables_,
                      "@com.google.protobuf.ProtoPresenceCheckedField(\n"
                      "  presenceBitsId=$bit_field_id$,\n"
@@ -303,7 +303,7 @@ void ImmutableEnumFieldLiteGenerator::GenerateFieldInfo(
   WriteIntToUtf16CharSequence(descriptor_->number(), output);
   WriteIntToUtf16CharSequence(GetExperimentalJavaFieldType(descriptor_),
                               output);
-  if (HasHasbit(descriptor_)) {
+  if (HasHazzerMethod(descriptor_)) {
     WriteIntToUtf16CharSequence(messageBitIndex_, output);
   }
   printer->Print(variables_, "\"$name$_\",\n");

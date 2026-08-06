@@ -122,7 +122,7 @@ void SetPrimitiveVariables(
     (*variables)["fixed_size"] = absl::StrCat(fixed_size);
   }
 
-  if (HasHasbit(descriptor)) {
+  if (HasHazzerMethod(descriptor)) {
     // For singular messages and builders, one bit is used for the hasField bit.
     // Note that these have a trailing ";".
     (*variables)["set_has_field_bit_message"] =
@@ -180,7 +180,7 @@ ImmutablePrimitiveFieldLiteGenerator::~ImmutablePrimitiveFieldLiteGenerator() =
     default;
 
 int ImmutablePrimitiveFieldLiteGenerator::GetNumBitsForMessage() const {
-  return HasHasbit(descriptor_) ? 1 : 0;
+  return HasHazzerMethod(descriptor_) ? 1 : 0;
 }
 
 void ImmutablePrimitiveFieldLiteGenerator::GenerateInterfaceMembers(
@@ -211,7 +211,7 @@ void ImmutablePrimitiveFieldLiteGenerator::GenerateMembers(
     printer->Print(variables_,
                    "@com.google.protobuf.ProtoField(\n"
                    "  isRequired=$required$)\n");
-    if (HasHasbit(descriptor_)) {
+    if (HasHazzerMethod(descriptor_)) {
       printer->Print(variables_,
                      "@com.google.protobuf.ProtoPresenceCheckedField(\n"
                      "  presenceBitsId=$bit_field_id$,\n"
@@ -323,7 +323,7 @@ void ImmutablePrimitiveFieldLiteGenerator::GenerateFieldInfo(
   WriteIntToUtf16CharSequence(descriptor_->number(), output);
   WriteIntToUtf16CharSequence(GetExperimentalJavaFieldType(descriptor_),
                               output);
-  if (HasHasbit(descriptor_)) {
+  if (HasHazzerMethod(descriptor_)) {
     WriteIntToUtf16CharSequence(messageBitIndex_, output);
   }
   printer->Print(variables_, "\"$name$_\",\n");

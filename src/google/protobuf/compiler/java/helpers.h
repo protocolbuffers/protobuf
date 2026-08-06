@@ -347,7 +347,7 @@ bool HasRequiredFields(const Descriptor* descriptor);
 
 bool IsRealOneof(const FieldDescriptor* descriptor);
 
-inline bool HasHasbit(const FieldDescriptor* descriptor) {
+inline bool HasHazzerMethod(const FieldDescriptor* descriptor) {
   return descriptor->has_presence() && !descriptor->real_containing_oneof();
 }
 

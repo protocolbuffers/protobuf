@@ -64,7 +64,21 @@ class ImmutableEnumFieldGenerator : public ImmutableFieldGenerator {
 
   std::string GetBoxedType() const override;
 
- protected:
+ private:
+  void GenerateInterfaceHasMethod(io::Printer* printer) const;
+  void GenerateInterfaceGetValueMethod(io::Printer* printer) const;
+  void GenerateInterfaceGetMethod(io::Printer* printer) const;
+
+  void GenerateHasMethod(io::Printer* printer) const;
+  void GenerateGetValueMethod(io::Printer* printer) const;
+  void GenerateGetMethod(io::Printer* printer) const;
+
+  void GenerateBuilderHasMethod(io::Printer* printer) const;
+  void GenerateBuilderGetValueMethod(io::Printer* printer) const;
+  void GenerateBuilderSetValueMethod(io::Printer* printer) const;
+  void GenerateBuilderGetMethod(io::Printer* printer) const;
+  void GenerateBuilderSetMethod(io::Printer* printer) const;
+  void GenerateBuilderClearMethod(io::Printer* printer) const;
 };
 
 class ImmutableEnumOneofFieldGenerator : public ImmutableEnumFieldGenerator {
@@ -87,6 +101,19 @@ class ImmutableEnumOneofFieldGenerator : public ImmutableEnumFieldGenerator {
   void GenerateSerializedSizeCode(io::Printer* printer) const override;
   void GenerateEqualsCode(io::Printer* printer) const override;
   void GenerateHashCode(io::Printer* printer) const override;
+
+ private:
+  void GenerateHasMethod(io::Printer* printer) const;
+  void GenerateGetValueMethod(io::Printer* printer) const;
+  void GenerateGetMethod(io::Printer* printer) const;
+
+  void GenerateBuilderHasMethod(io::Printer* printer) const;
+  void GenerateBuilderGetValueMethod(io::Printer* printer) const;
+  void GenerateBuilderSetValueMethod(io::Printer* printer) const;
+  void GenerateBuilderGetMethod(io::Printer* printer) const;
+  void GenerateBuilderSetMethod(io::Printer* printer) const;
+  void GenerateBuilderClearMethod(io::Printer* printer) const;
+  void GenerateBuilderParserMethod(io::Printer* printer) const;
 };
 
 class RepeatedImmutableEnumFieldGenerator : public ImmutableEnumFieldGenerator {
@@ -118,6 +145,33 @@ class RepeatedImmutableEnumFieldGenerator : public ImmutableEnumFieldGenerator {
   void GenerateHashCode(io::Printer* printer) const override;
 
   std::string GetBoxedType() const override;
+
+ private:
+  void GenerateInterfaceGetListMethod(io::Printer* printer) const;
+  void GenerateInterfaceGetCountMethod(io::Printer* printer) const;
+  void GenerateInterfaceGetMethod(io::Printer* printer) const;
+  void GenerateInterfaceGetValueListMethod(io::Printer* printer) const;
+  void GenerateInterfaceGetValueMethod(io::Printer* printer) const;
+
+  void GenerateGetListMethod(io::Printer* printer) const;
+  void GenerateGetCountMethod(io::Printer* printer) const;
+  void GenerateGetMethod(io::Printer* printer) const;
+  void GenerateGetValueListMethod(io::Printer* printer) const;
+  void GenerateGetValueMethod(io::Printer* printer) const;
+
+  void GenerateEnsureIsMutableMethod(io::Printer* printer) const;
+  void GenerateBuilderGetListMethod(io::Printer* printer) const;
+  void GenerateBuilderGetCountMethod(io::Printer* printer) const;
+  void GenerateBuilderGetMethod(io::Printer* printer) const;
+  void GenerateBuilderSetMethod(io::Printer* printer) const;
+  void GenerateBuilderAddMethod(io::Printer* printer) const;
+  void GenerateBuilderAddAllMethod(io::Printer* printer) const;
+  void GenerateBuilderClearMethod(io::Printer* printer) const;
+  void GenerateBuilderGetValueListMethod(io::Printer* printer) const;
+  void GenerateBuilderGetValueMethod(io::Printer* printer) const;
+  void GenerateBuilderSetValueMethod(io::Printer* printer) const;
+  void GenerateBuilderAddValueMethod(io::Printer* printer) const;
+  void GenerateBuilderAddAllValueMethod(io::Printer* printer) const;
 };
 
 }  // namespace java

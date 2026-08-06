@@ -63,7 +63,17 @@ class ImmutablePrimitiveFieldGenerator : public ImmutableFieldGenerator {
 
   std::string GetBoxedType() const override;
 
- protected:
+ private:
+  void GenerateInterfaceHasMethod(io::Printer* printer) const;
+  void GenerateInterfaceGetMethod(io::Printer* printer) const;
+
+  void GenerateHasMethod(io::Printer* printer) const;
+  void GenerateGetMethod(io::Printer* printer) const;
+
+  void GenerateBuilderHasMethod(io::Printer* printer) const;
+  void GenerateBuilderGetMethod(io::Printer* printer) const;
+  void GenerateBuilderSetMethod(io::Printer* printer) const;
+  void GenerateBuilderClearMethod(io::Printer* printer) const;
 };
 
 class ImmutablePrimitiveOneofFieldGenerator
@@ -85,6 +95,15 @@ class ImmutablePrimitiveOneofFieldGenerator
   void GenerateBuilderParsingCode(io::Printer* printer) const override;
   void GenerateSerializationCode(io::Printer* printer) const override;
   void GenerateSerializedSizeCode(io::Printer* printer) const override;
+
+ private:
+  void GenerateHasMethod(io::Printer* printer) const;
+  void GenerateGetMethod(io::Printer* printer) const;
+
+  void GenerateBuilderHasMethod(io::Printer* printer) const;
+  void GenerateBuilderGetMethod(io::Printer* printer) const;
+  void GenerateBuilderSetMethod(io::Printer* printer) const;
+  void GenerateBuilderClearMethod(io::Printer* printer) const;
 };
 
 class RepeatedImmutablePrimitiveFieldGenerator
@@ -117,6 +136,24 @@ class RepeatedImmutablePrimitiveFieldGenerator
   void GenerateHashCode(io::Printer* printer) const override;
 
   std::string GetBoxedType() const override;
+
+ private:
+  void GenerateInterfaceGetListMethod(io::Printer* printer) const;
+  void GenerateInterfaceGetCountMethod(io::Printer* printer) const;
+  void GenerateInterfaceGetMethod(io::Printer* printer) const;
+
+  void GenerateGetListMethod(io::Printer* printer) const;
+  void GenerateGetCountMethod(io::Printer* printer) const;
+  void GenerateGetMethod(io::Printer* printer) const;
+
+  void GenerateEnsureIsMutableMethod(io::Printer* printer) const;
+  void GenerateBuilderGetListMethod(io::Printer* printer) const;
+  void GenerateBuilderGetCountMethod(io::Printer* printer) const;
+  void GenerateBuilderGetMethod(io::Printer* printer) const;
+  void GenerateBuilderSetMethod(io::Printer* printer) const;
+  void GenerateBuilderAddMethod(io::Printer* printer) const;
+  void GenerateBuilderAddAllMethod(io::Printer* printer) const;
+  void GenerateBuilderClearMethod(io::Printer* printer) const;
 };
 
 }  // namespace java

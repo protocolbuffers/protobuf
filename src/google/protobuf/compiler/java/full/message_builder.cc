@@ -309,7 +309,7 @@ void MessageBuilderGenerator::GenerateCommonBuilderMethods(
   for (int i = 0; i < descriptor_->field_count(); i++) {
     if (descriptor_->field(i)->message_type() != nullptr &&
         !IsRealOneof(descriptor_->field(i)) &&
-        HasHasbit(descriptor_->field(i))) {
+        HasHazzerMethod(descriptor_->field(i))) {
       need_maybe_force_builder_init = true;
       break;
     }

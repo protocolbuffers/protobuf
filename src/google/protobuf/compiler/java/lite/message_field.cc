@@ -54,7 +54,7 @@ void SetMessageVariables(
       descriptor->options().deprecated() ? "@java.lang.Deprecated " : "";
   (*variables)["required"] = descriptor->is_required() ? "true" : "false";
 
-  if (HasHasbit(descriptor)) {
+  if (HasHazzerMethod(descriptor)) {
     // For singular messages and builders, one bit is used for the hasField bit.
     // Note that these have a trailing ";".
     (*variables)["set_has_field_bit_message"] =
@@ -104,7 +104,7 @@ int ImmutableMessageFieldLiteGenerator::GetNumBitsForMessage() const {
   // sentinels and no user should be reflecting on this. We could save some
   // bits by setting to 0 and updating the runtimes but this might come at a
   // runtime performance cost since we can't memoize has-bit reads.
-  return HasHasbit(descriptor_) ? 1 : 0;
+  return HasHazzerMethod(descriptor_) ? 1 : 0;
 }
 
 void ImmutableMessageFieldLiteGenerator::GenerateInterfaceMembers(
@@ -250,7 +250,7 @@ void ImmutableMessageFieldLiteGenerator::GenerateFieldInfo(
   WriteIntToUtf16CharSequence(descriptor_->number(), output);
   WriteIntToUtf16CharSequence(GetExperimentalJavaFieldType(descriptor_),
                               output);
-  if (HasHasbit(descriptor_)) {
+  if (HasHazzerMethod(descriptor_)) {
     WriteIntToUtf16CharSequence(messageBitIndex_, output);
   }
   printer->Print(variables_, "\"$name$_\",\n");

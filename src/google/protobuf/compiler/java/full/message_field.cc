@@ -56,7 +56,7 @@ void SetMessageVariables(
   (*variables)["on_changed"] = "onChanged();";
   (*variables)["get_parser"] = "parser()";
 
-  if (HasHasbit(descriptor)) {
+  if (HasHazzerMethod(descriptor)) {
     // For singular messages and builders, one bit is used for the hasField bit.
     // Note that these have a trailing ";".
     (*variables)["set_has_field_bit_to_local"] =

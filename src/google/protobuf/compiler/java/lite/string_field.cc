@@ -66,7 +66,7 @@ void SetPrimitiveVariables(
     (*variables)["enforce_utf8"] = CheckUtf8(descriptor) ? "true" : "false";
   }
 
-  if (HasHasbit(descriptor)) {
+  if (HasHazzerMethod(descriptor)) {
     if (!google::protobuf::internal::IsOss()) {
       (*variables)["bit_field_id"] = absl::StrCat(messageBitIndex / 32);
       (*variables)["bit_field_name"] = GetBitFieldNameForBit(messageBitIndex);
@@ -113,7 +113,7 @@ ImmutableStringFieldLiteGenerator::~ImmutableStringFieldLiteGenerator() =
     default;
 
 int ImmutableStringFieldLiteGenerator::GetNumBitsForMessage() const {
-  return HasHasbit(descriptor_) ? 1 : 0;
+  return HasHazzerMethod(descriptor_) ? 1 : 0;
 }
 
 // A note about how strings are handled. In the SPEED and CODE_SIZE runtimes,
@@ -170,7 +170,7 @@ void ImmutableStringFieldLiteGenerator::GenerateMembers(
     printer->Print(variables_,
                    "@com.google.protobuf.ProtoField(\n"
                    "  isRequired=$required$)\n");
-    if (HasHasbit(descriptor_)) {
+    if (HasHazzerMethod(descriptor_)) {
       printer->Print(variables_,
                      "@com.google.protobuf.ProtoPresenceCheckedField(\n"
                      "  presenceBitsId=$bit_field_id$,\n"
@@ -325,7 +325,7 @@ void ImmutableStringFieldLiteGenerator::GenerateFieldInfo(
   WriteIntToUtf16CharSequence(descriptor_->number(), output);
   WriteIntToUtf16CharSequence(GetExperimentalJavaFieldType(descriptor_),
                               output);
-  if (HasHasbit(descriptor_)) {
+  if (HasHazzerMethod(descriptor_)) {
     WriteIntToUtf16CharSequence(messageBitIndex_, output);
   }
   printer->Print(variables_, "\"$name$_\",\n");

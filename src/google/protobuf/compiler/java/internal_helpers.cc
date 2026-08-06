@@ -107,7 +107,7 @@ int GetExperimentalJavaFieldType(const FieldDescriptor* field) {
                                HasRequiredFields(field->message_type()))) {
     extra_bits |= kCheckInitialized;
   }
-  if (HasHasbit(field)) {
+  if (HasHazzerMethod(field)) {
     extra_bits |= kHasHasBit;
   }
   if (GetJavaType(field) == JAVATYPE_ENUM && !SupportUnknownEnumValue(field)) {
