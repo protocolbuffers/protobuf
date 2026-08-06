@@ -89,6 +89,39 @@ TEST(DelimitedMessageUtilTest, FailsAtEndOfStream) {
   }
 }
 
+TEST(DelimitedMessageUtilTest, SerializeToFileDescriptor) {
+  int fd[2];
+  pipe(fd);
+  {
+    proto2_unittest::TestAllTypes message1;
+    TestUtil::SetAllFields(&message1);
+
+    // Note that we need to be careful of not writing too much to the pipe
+    // before it is read as we could exceed buffer limits which would cause
+    // this call to hang. A more robust test would create a separate thread
+    // or process to read the pipe while it is being written to.
+    EXPECT_TRUE(SerializeDelimitedToFileDescriptor(message1, fd[1]));
+  }
+  {
+    bool clean_eof;
+    io::FileInputStream fstream(fd[0]);
+    proto2_unittest::TestAllTypes message1;
+    clean_eof = true;
+    EXPECT_TRUE(ParseDelimitedFromZeroCopyStream(&message1,
+        &fstream, &clean_eof));
+    EXPECT_FALSE(clean_eof);
+    TestUtil::ExpectAllFieldsSet(message1);
+  }
+  close(fd[0]);  // Close read end of pipe.
+  {
+    proto2_unittest::TestAllTypes message2;
+    TestUtil::SetAllFields(&message2);
+    // Serializing should now fail since the pipe is broken.
+    EXPECT_FALSE(SerializeDelimitedToFileDescriptor(message2, fd[0]));
+  }
+  close(fd[1]);  // Close write end of pipe.
+}
+
 }  // namespace util
 }  // namespace protobuf
 }  // namespace google
