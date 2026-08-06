@@ -321,12 +321,10 @@ final class MessageSetSchema<T> implements Schema<T> {
     // should be prepared to accept them.
 
     int typeId = 0;
-    ByteString rawBytes = null; // If we encounter "message" before "typeId"
-    Object extension = null;
+    ByteString deferredMessageBytes = null; // If we encounter "message" before "typeId"
 
     // Read bytes from input, if we get it's type first then parse it eagerly,
     // otherwise we store the raw bytes in a local variable.
-    loop:
     while (true) {
       final int number = reader.getFieldNumber();
       if (number == CodedInputStreamReader.READ_DONE) {
@@ -336,23 +334,23 @@ final class MessageSetSchema<T> implements Schema<T> {
       final int tag = reader.getTag();
       if (tag == WireFormat.MESSAGE_SET_TYPE_ID_TAG) {
         typeId = reader.readUInt32();
-        extension =
-            extensionSchema.findExtensionByNumber(extensionRegistry, defaultInstance, typeId);
-        continue;
       } else if (tag == WireFormat.MESSAGE_SET_MESSAGE_TAG) {
+        Object extension =
+            typeId == 0
+                ? null
+                : extensionSchema.findExtensionByNumber(
+                    extensionRegistry, defaultInstance, typeId);
         if (extension != null) {
           extensionSchema.parseLengthPrefixedMessageSetItem(
               reader, extension, extensionRegistry, extensions);
-          continue;
+        } else {
+          deferredMessageBytes = reader.readBytes();
         }
-        // We haven't seen a type ID yet or we want parse message lazily.
-        rawBytes = reader.readBytes();
-        continue;
       } else if (tag == WireFormat.MESSAGE_SET_ITEM_END_TAG) {
-        break loop;
+        break;
       } else {
         if (!reader.skipField()) {
-          break loop; // End of group
+          break; // End of group
         }
       }
     }
@@ -361,8 +359,11 @@ final class MessageSetSchema<T> implements Schema<T> {
       throw InvalidProtocolBufferException.invalidEndTag();
     }
 
-    // If there are any rawBytes left, it means the message content appears before the type ID.
-    if (rawBytes != null) {
+    // If there are any deferredMessageBytes left, it means the message content appears before the
+    // type ID.
+    if (deferredMessageBytes != null && typeId != 0) {
+      Object extension =
+          extensionSchema.findExtensionByNumber(extensionRegistry, defaultInstance, typeId);
       if (extension != null) { // We known the type
         // TODO: Instead of reading into a temporary ByteString, maybe there is a way
         // to read directly from CodedInputStreamReader to the submessage?
@@ -370,13 +371,13 @@ final class MessageSetSchema<T> implements Schema<T> {
         if (--remainingInputRecursionLimit < 0) {
           throw InvalidProtocolBufferException.recursionLimitExceeded();
         }
-        CodedInputStream rawBytesInput = rawBytes.newCodedInput();
+        CodedInputStream rawBytesInput = deferredMessageBytes.newCodedInput();
         rawBytesInput.setRecursionLimit(remainingInputRecursionLimit);
 
         extensionSchema.parseMessageSetItem(
             rawBytesInput, extension, extensionRegistry, extensions);
       } else {
-        unknownFieldSchema.addLengthDelimited(unknownFields, typeId, rawBytes);
+        unknownFieldSchema.addLengthDelimited(unknownFields, typeId, deferredMessageBytes);
       }
     }
     return true;

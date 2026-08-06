@@ -1323,10 +1323,22 @@ class MessageReflection {
   private static void mergeMessageSetExtensionFromCodedStream(
       CodedInputStream input,
       UnknownFieldSet.Builder unknownFields,
-      ExtensionRegistryLite extensionRegistry,
+      ExtensionRegistryLite extensionRegistryLite,
       Descriptors.Descriptor type,
       MergeTarget target)
       throws IOException {
+
+    // extensionRegistry may be either ExtensionRegistry or
+    // ExtensionRegistryLite. Since the type we are parsing is a full
+    // message, only a full ExtensionRegistry could possibly contain
+    // extensions of it. Otherwise we will treat the registry as if it
+    // were empty.
+    final ExtensionRegistry extensionRegistry;
+    if (extensionRegistryLite instanceof ExtensionRegistry) {
+      extensionRegistry = (ExtensionRegistry) extensionRegistryLite;
+    } else {
+      extensionRegistry = ExtensionRegistry.getEmptyRegistry();
+    }
 
     // The wire format for MessageSet is:
     //   message MessageSet {
@@ -1345,11 +1357,10 @@ class MessageReflection {
     // should be prepared to accept them.
 
     int typeId = 0;
-    ByteString rawBytes = null; // If we encounter "message" before "typeId"
-    ExtensionRegistry.ExtensionInfo extension = null;
+    ByteString deferredMessageBytes = null; // If we encounter "message" before "typeId"
 
-    // Read bytes from input, if we get it's type first then parse it eagerly,
-    // otherwise we store the raw bytes in a local variable.
+    // Read bytes from input, if we get its type first then parse it eagerly,
+    // otherwise we store the deferred bytes in a local variable.
     while (true) {
       final int tag = input.readTag();
       if (tag == 0) {
@@ -1358,34 +1369,25 @@ class MessageReflection {
 
       if (tag == WireFormat.MESSAGE_SET_TYPE_ID_TAG) {
         typeId = input.readUInt32();
-        if (typeId != 0) {
-          // extensionRegistry may be either ExtensionRegistry or
-          // ExtensionRegistryLite. Since the type we are parsing is a full
-          // message, only a full ExtensionRegistry could possibly contain
-          // extensions of it. Otherwise we will treat the registry as if it
-          // were empty.
-          if (extensionRegistry instanceof ExtensionRegistry) {
-            extension =
-                target.findExtensionByNumber((ExtensionRegistry) extensionRegistry, type, typeId);
-          }
-        }
 
       } else if (tag == WireFormat.MESSAGE_SET_MESSAGE_TAG) {
         if (typeId != 0) {
+          ExtensionRegistry.ExtensionInfo extension =
+              target.findExtensionByNumber(extensionRegistry, type, typeId);
           if (extension != null && ExtensionRegistryLite.isEagerlyParseMessageSets()) {
             // We already know the type, so we can parse directly from the
             // input with no copying.  Hooray!
             eagerlyMergeMessageSetExtension(input, extension, extensionRegistry, target);
-            rawBytes = null;
+            deferredMessageBytes = null;
             continue;
           }
         }
         // We haven't seen a type ID yet or we want parse message lazily.
-        rawBytes = input.readBytes();
+        deferredMessageBytes = input.readBytes();
 
       } else if (tag == WireFormat.MESSAGE_SET_ITEM_END_TAG) {
         break;
-      } else { // Unknown tag. Skip it.
+      } else { // Unknown or duplicate tag. Skip it.
         if (!input.skipField(tag)) {
           break; // End of group
         }
@@ -1393,26 +1395,32 @@ class MessageReflection {
     }
     input.checkLastTagWas(WireFormat.MESSAGE_SET_ITEM_END_TAG);
 
-    // Process the raw bytes.
-    if (rawBytes != null && typeId != 0) { // Zero is not a valid type ID.
-      if (extension != null) { // We known the type
-        mergeMessageSetExtensionFromBytes(rawBytes, extension, extensionRegistry, target, input);
-      } else { // We don't know how to parse this. Ignore it.
-        if (rawBytes != null && unknownFields != null) {
-          unknownFields.mergeField(
-              typeId, UnknownFieldSet.Field.newBuilder().addLengthDelimited(rawBytes).build());
-        }
-      }
+    // If we had to defer the message bytes, we can now parse it.
+    if (deferredMessageBytes != null && typeId != 0) { // Zero is not a valid type ID.
+      ExtensionRegistry.ExtensionInfo extension =
+          target.findExtensionByNumber(extensionRegistry, type, typeId);
+      mergeMessageSetExtensionFromBytes(
+          deferredMessageBytes, extension, extensionRegistry, target, input, typeId, unknownFields);
     }
   }
 
   private static void mergeMessageSetExtensionFromBytes(
-      ByteString rawBytes,
+      ByteString deferredMessageBytes,
       ExtensionRegistry.ExtensionInfo extension,
       ExtensionRegistryLite extensionRegistry,
       MergeTarget target,
-      CodedInputStream input)
+      CodedInputStream input,
+      int typeId,
+      UnknownFieldSet.Builder unknownFields)
       throws IOException {
+    if (extension == null) {
+      if (unknownFields != null) { // null if discardingUnknownFields() is on.
+        unknownFields.mergeField(
+            typeId,
+            UnknownFieldSet.Field.newBuilder().addLengthDelimited(deferredMessageBytes).build());
+      }
+      return;
+    }
 
     Descriptors.FieldDescriptor field = extension.descriptor;
     boolean hasOriginalValue = target.hasField(field);
@@ -1420,12 +1428,12 @@ class MessageReflection {
     // TODO: b/535485217 - Consider letting InternalLazyField to concat the bytes to avoid parsing
     // if the existing field is a lazy field with lazy bytes.
     if (hasOriginalValue || ExtensionRegistryLite.isEagerlyParseMessageSets()) {
-      // If the field already exists, we just parse the field.
+      // If the field exists, we just parse the field.
       int remainingInputRecursionLimit = input.getRemainingRecursionDepth();
       if (--remainingInputRecursionLimit < 0) {
         throw InvalidProtocolBufferException.recursionLimitExceeded();
       }
-      CodedInputStream subInput = rawBytes.newCodedInput();
+      CodedInputStream subInput = deferredMessageBytes.newCodedInput();
       subInput.setRecursionLimit(remainingInputRecursionLimit);
       Object value =
           target.parseMessage(subInput, extensionRegistry, field, extension.defaultInstance);
@@ -1433,7 +1441,7 @@ class MessageReflection {
     } else {
       // Use InternalLazyField to load MessageSet lazily.
       InternalLazyField lazyField =
-          new InternalLazyField(extension.defaultInstance, extensionRegistry, rawBytes);
+          new InternalLazyField(extension.defaultInstance, extensionRegistry, deferredMessageBytes);
       target.setField(field, lazyField);
     }
   }
