@@ -30,6 +30,13 @@ enum {
 extern "C" {
 #endif
 
+typedef enum {
+  kUpb_UnknownCompareResult_Equal = 0,
+  kUpb_UnknownCompareResult_NotEqual = 1,
+  kUpb_UnknownCompareResult_OutOfMemory = 2,
+  kUpb_UnknownCompareResult_MaxDepthExceeded = 3,
+} upb_UnknownCompareResult;
+
 // Returns true if no known fields or extensions are set in the message.
 UPB_API bool upb_Message_IsEmpty(const upb_Message* msg,
                                  const upb_MiniTable* m);
@@ -37,6 +44,9 @@ UPB_API bool upb_Message_IsEmpty(const upb_Message* msg,
 UPB_API bool upb_Message_IsEqual(const upb_Message* msg1,
                                  const upb_Message* msg2,
                                  const upb_MiniTable* m, int options);
+
+UPB_API upb_UnknownCompareResult upb_Message_UnknownFieldsAreEqual(
+    const upb_Message* msg1, const upb_Message* msg2, int max_depth);
 
 // If |ctype| is a message then |m| must point to its minitable.
 UPB_API_INLINE bool upb_MessageValue_IsEqual(upb_MessageValue val1,

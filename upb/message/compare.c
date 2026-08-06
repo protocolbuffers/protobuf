@@ -189,3 +189,8 @@ bool upb_Message_IsEqual(const upb_Message* msg1, const upb_Message* msg2,
   return UPB_PRIVATE(_upb_Message_UnknownFieldsAreEqual)(msg1, msg2, 100) ==
          kUpb_UnknownCompareResult_Equal;
 }
+
+upb_UnknownCompareResult upb_Message_UnknownFieldsAreEqual(
+    const upb_Message* msg1, const upb_Message* msg2, int max_depth) {
+  return UPB_PRIVATE(_upb_Message_UnknownFieldsAreEqual)(msg1, msg2, max_depth);
+}
