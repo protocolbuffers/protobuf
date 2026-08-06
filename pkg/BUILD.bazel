@@ -242,6 +242,7 @@ cc_dist_library(
         "//upb/util:def_to_proto",
         "//upb/util:required_fields",
         "//upb/wire:byte_size",
+        "//upb/wire:encode_extension",
         "//upb/wire/decode_fast:select",
     ],
 )

@@ -245,6 +245,7 @@ upb/wire/decode_fast/combinations.h
 upb/wire/decode_fast/data.h
 upb/wire/decode_fast/select.h
 upb/wire/encode.h
+upb/wire/encode_extension.h
 upb/wire/eps_copy_input_stream.h
 upb/wire/reader.h
 upb/wire/types.h

@@ -46,7 +46,6 @@ cc_library(
     visibility = ["//visibility:public"],
     deps = [
         ":internal",
-        ":message_unknowns",
         ":types",
         "//upb/base",
         "//upb/base:internal",
@@ -527,6 +526,8 @@ cc_test(
     deps = [
         ":internal",
         ":message",
+        ":message_test_upb_minitable_proto",
+        ":message_test_upb_proto",
         ":message_unknowns",
         "//upb/base",
         "//upb/mem",
@@ -535,6 +536,7 @@ cc_test(
         "//upb/test:test_proto_upb_minitable",
         "//upb/test:test_upb_proto",
         "//upb/wire",
+        "//upb/wire:encode_extension",
         "@googletest//:gtest",
         "@googletest//:gtest_main",
     ],
