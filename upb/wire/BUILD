@@ -94,6 +94,7 @@ cc_library(
         "//pkg:__pkg__",
         "//python:__pkg__",
         "//upb:__pkg__",
+        "//upb:friends",
         "//upb/message:__subpackages__",
         "//video/youtube/utils/elements/client/component_type:__pkg__",
     ],
