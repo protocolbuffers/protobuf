@@ -483,10 +483,12 @@ TEST(DecodeTest, EmptyMiniTableDecodedAsUnknown) {
   EXPECT_TRUE(upb_Message_HasUnknown(msg));
 
   uintptr_t iter = kUpb_Message_UnknownBegin;
-  upb_StringView data;
-  ASSERT_TRUE(upb_Message_NextUnknown(msg, &data, &iter));
-  EXPECT_EQ(absl::string_view(data.data, data.size), payload);
-  EXPECT_FALSE(upb_Message_NextUnknown(msg, &data, &iter));
+  upb_MessageUnknown data;
+  ASSERT_TRUE(upb_Message_NextUnknown2(msg, &data, &iter));
+  ASSERT_EQ(data.type, kUpb_MessageUnknownType_StringView);
+  EXPECT_EQ(absl::string_view(data.value.bytes.data, data.value.bytes.size),
+            payload);
+  EXPECT_FALSE(upb_Message_NextUnknown2(msg, &data, &iter));
 }
 
 TEST(DecodeTest, ConsecutiveUnknownFieldsWithoutAlias) {
@@ -514,12 +516,14 @@ TEST(DecodeTest, ConsecutiveUnknownFieldsWithoutAlias) {
     EXPECT_TRUE(upb_Message_HasUnknown(msg));
 
     uintptr_t iter = kUpb_Message_UnknownBegin;
-    upb_StringView data;
+    upb_MessageUnknown data;
 
     // We expect them to be merged.
-    ASSERT_TRUE(upb_Message_NextUnknown(msg, &data, &iter));
-    EXPECT_EQ(absl::string_view(data.data, data.size), payload);
-    EXPECT_FALSE(upb_Message_NextUnknown(msg, &data, &iter));
+    ASSERT_TRUE(upb_Message_NextUnknown2(msg, &data, &iter));
+    ASSERT_EQ(data.type, kUpb_MessageUnknownType_StringView);
+    EXPECT_EQ(absl::string_view(data.value.bytes.data, data.value.bytes.size),
+              payload);
+    EXPECT_FALSE(upb_Message_NextUnknown2(msg, &data, &iter));
 
 #ifndef NDEBUG
     // Assert that consecutive unknown fields optimization took effect, decoding
@@ -556,11 +560,13 @@ TEST(DecodeTest, ConsecutiveUnknownFieldsWithAlias) {
     EXPECT_TRUE(upb_Message_HasUnknown(msg));
 
     uintptr_t iter = kUpb_Message_UnknownBegin;
-    upb_StringView data;
+    upb_MessageUnknown data;
 
-    ASSERT_TRUE(upb_Message_NextUnknown(msg, &data, &iter));
-    EXPECT_EQ(absl::string_view(data.data, data.size), payload);
-    EXPECT_FALSE(upb_Message_NextUnknown(msg, &data, &iter));
+    ASSERT_TRUE(upb_Message_NextUnknown2(msg, &data, &iter));
+    ASSERT_EQ(data.type, kUpb_MessageUnknownType_StringView);
+    EXPECT_EQ(absl::string_view(data.value.bytes.data, data.value.bytes.size),
+              payload);
+    EXPECT_FALSE(upb_Message_NextUnknown2(msg, &data, &iter));
 
 #ifndef NDEBUG
     EXPECT_EQ(absl::string_view(trace_buf),
@@ -782,10 +788,12 @@ TEST(DecodeTest, DecodeGroupFieldFromDelimitedWireFormatAsUnknown) {
   EXPECT_TRUE(upb_Message_HasUnknown(parent_msg));
 
   uintptr_t iter = kUpb_Message_UnknownBegin;
-  upb_StringView data;
-  ASSERT_TRUE(upb_Message_NextUnknown(parent_msg, &data, &iter));
-  EXPECT_EQ(absl::string_view(data.data, data.size), payload);
-  EXPECT_FALSE(upb_Message_NextUnknown(parent_msg, &data, &iter));
+  upb_MessageUnknown data;
+  ASSERT_TRUE(upb_Message_NextUnknown2(parent_msg, &data, &iter));
+  ASSERT_EQ(data.type, kUpb_MessageUnknownType_StringView);
+  EXPECT_EQ(absl::string_view(data.value.bytes.data, data.value.bytes.size),
+            payload);
+  EXPECT_FALSE(upb_Message_NextUnknown2(parent_msg, &data, &iter));
 }
 
 TEST(DecodeTest, ConsecutiveUnknownFieldsWithGroup) {
@@ -815,12 +823,14 @@ TEST(DecodeTest, ConsecutiveUnknownFieldsWithGroup) {
     EXPECT_TRUE(upb_Message_HasUnknown(msg));
 
     uintptr_t iter = kUpb_Message_UnknownBegin;
-    upb_StringView data;
+    upb_MessageUnknown data;
 
     // We expect them to be merged.
-    ASSERT_TRUE(upb_Message_NextUnknown(msg, &data, &iter));
-    EXPECT_EQ(absl::string_view(data.data, data.size), payload);
-    EXPECT_FALSE(upb_Message_NextUnknown(msg, &data, &iter));
+    ASSERT_TRUE(upb_Message_NextUnknown2(msg, &data, &iter));
+    ASSERT_EQ(data.type, kUpb_MessageUnknownType_StringView);
+    EXPECT_EQ(absl::string_view(data.value.bytes.data, data.value.bytes.size),
+              payload);
+    EXPECT_FALSE(upb_Message_NextUnknown2(msg, &data, &iter));
 
 #ifndef NDEBUG
     const char* expected = "M";

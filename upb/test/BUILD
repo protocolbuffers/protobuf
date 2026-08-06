@@ -237,6 +237,7 @@ cc_test(
         "//upb/base",
         "//upb/mem",
         "//upb/message",
+        "//upb/message:message_unknowns",
         "//upb/mini_table",
         "//upb/port",
         "//upb/reflection",

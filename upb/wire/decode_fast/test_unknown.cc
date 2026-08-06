@@ -21,6 +21,7 @@
 #include "upb/mem/arena.hpp"
 #include "upb/message/accessors.h"
 #include "upb/message/message.h"
+#include "upb/message/unknown_fields.h"
 #include "upb/mini_descriptor/decode.h"
 #include "upb/mini_descriptor/internal/encode.hpp"
 #include "upb/mini_descriptor/link.h"
@@ -88,10 +89,13 @@ TEST_P(UnknownFieldTest, UnknownFieldFastPath) {
 
   // Verify the contents of the unknown field.
   uintptr_t iter = kUpb_Message_UnknownBegin;
-  upb_StringView unknown_data;
+  upb_MessageUnknown unknown_data;
   std::string captured_unknown;
-  while (upb_Message_NextUnknown(msg, &unknown_data, &iter)) {
-    captured_unknown.append(unknown_data.data, unknown_data.size);
+  while (upb_Message_NextUnknown2(msg, &unknown_data, &iter)) {
+    if (unknown_data.type == kUpb_MessageUnknownType_StringView) {
+      captured_unknown.append(unknown_data.value.bytes.data,
+                              unknown_data.value.bytes.size);
+    }
   }
   EXPECT_EQ(captured_unknown, payload);
 
@@ -206,9 +210,12 @@ TEST(UnknownFieldSpecialTest, UnknownVarintFollowedByEndGroupInGroup) {
   // Verify contents.
   std::string captured_unknown;
   uintptr_t iter = kUpb_Message_UnknownBegin;
-  upb_StringView unknown_data;
-  while (upb_Message_NextUnknown(child_msg, &unknown_data, &iter)) {
-    captured_unknown.append(unknown_data.data, unknown_data.size);
+  upb_MessageUnknown unknown_data;
+  while (upb_Message_NextUnknown2(child_msg, &unknown_data, &iter)) {
+    if (unknown_data.type == kUpb_MessageUnknownType_StringView) {
+      captured_unknown.append(unknown_data.value.bytes.data,
+                              unknown_data.value.bytes.size);
+    }
   }
 
   // The captured unknown should be just the varint part.
