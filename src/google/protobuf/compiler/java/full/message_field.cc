@@ -56,18 +56,13 @@ void SetMessageVariables(
   (*variables)["on_changed"] = "onChanged();";
   (*variables)["get_parser"] = "parser()";
 
-  if (HasHasbit(descriptor)) {
-    // For singular messages and builders, one bit is used for the hasField bit.
-    // Note that these have a trailing ";".
-    (*variables)["set_has_field_bit_to_local"] =
-        GenerateSetBitToLocal(bit_index);
+  (*variables)["set_has_field_bit_to_local"] = GenerateSetBitToLocal(bit_index);
 
-    (*variables)["is_field_present"] = GenerateGetBit(bit_index);
-  } else {
-    (*variables)["set_has_field_bit_to_local"] = "";
-    variables->insert(
-        {"is_field_present", absl::StrCat((*variables)["name"], "_ != null")});
-  }
+  (*variables)["is_field_present"] = GenerateGetBit(bit_index);
+  (*variables)["is_other_field_present"] = GenerateGetBitFromOther(bit_index);
+
+  variables->insert({"is_field_value_not_default",
+                     absl::StrCat((*variables)["name"], "_ != null")});
 
   // For repeated builders, one bit is used for whether the array is immutable.
   (*variables)["get_mutable_bit_builder"] = GenerateGetBit(bit_index);
@@ -174,7 +169,6 @@ void ImmutableMessageFieldGenerator::GenerateMembers(
     io::Printer* printer) const {
   printer->Print(variables_, "private $type$ $name$_;\n");
   PrintExtraFieldInfo(variables_, printer);
-
   GenerateHasMethod(printer);
   GenerateGetMethod(printer);
   GenerateGetOrBuilderMethod(printer);
@@ -452,7 +446,7 @@ void ImmutableMessageFieldGenerator::GenerateBuilderClearCode(
 void ImmutableMessageFieldGenerator::GenerateMergingCode(
     io::Printer* printer) const {
   printer->Print(variables_,
-                 "if (other.has$capitalized_name$()) {\n"
+                 "if ($is_other_field_present$) {\n"
                  "  merge$capitalized_name$(other.get$capitalized_name$());\n"
                  "}\n");
 }
@@ -463,11 +457,9 @@ void ImmutableMessageFieldGenerator::GenerateBuildingCode(
                  "if ($get_has_field_bit_from_local$) {\n"
                  "  result.$name$_ = $name$Builder_ == null\n"
                  "      ? $name$_\n"
-                 "      : $name$Builder_.build();\n");
-  if (GetNumBits() > 0) {
-    printer->Print(variables_, "  $set_has_field_bit_to_local$;\n");
-  }
-  printer->Print("}\n");
+                 "      : $name$Builder_.build();\n"
+                 "  $set_has_field_bit_to_local$;\n"
+                 "}\n");
 }
 
 void ImmutableMessageFieldGenerator::GenerateBuilderParsingCode(
@@ -487,12 +479,12 @@ void ImmutableMessageFieldGenerator::GenerateSerializationCode(
 
 void ImmutableMessageFieldGenerator::GenerateSerializedSizeCode(
     io::Printer* printer) const {
-  printer->Print(
-      variables_,
-      "if ($is_field_present$) {\n"
-      "  size += com.google.protobuf.CodedOutputStream\n"
-      "    .compute$group_or_message$Size($number$, get$capitalized_name$());\n"
-      "}\n");
+  printer->Print(variables_,
+                 "if ($is_field_present$) {\n"
+                 "  size += com.google.protobuf.CodedOutputStream\n"
+                 "    .compute$group_or_message$Size($number$, "
+                 "get$capitalized_name$());\n"
+                 "}\n");
 }
 
 void ImmutableMessageFieldGenerator::GenerateEqualsCode(
