@@ -353,6 +353,7 @@ set(libprotoc_public_srcs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/php/names.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/plugin.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/plugin.pb.cc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/python/names.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/retention.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/subprocess.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/versions.cc
@@ -383,6 +384,7 @@ set(libprotoc_public_hdrs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/php/names.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/plugin.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/plugin.pb.h
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/python/names.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/retention.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/scc.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/subprocess.h
@@ -497,6 +499,7 @@ set(libprotoc_srcs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/plugin.pb.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/python/generator.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/python/helpers.cc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/python/names.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/python/pyi_generator.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/retention.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/ruby/rbs_generator.cc
@@ -648,6 +651,7 @@ set(libprotoc_hdrs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/plugin.pb.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/python/generator.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/python/helpers.h
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/python/names.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/python/pyi_generator.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/retention.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/ruby/rbs_generator.h
