@@ -80,10 +80,10 @@ class DescriptorBuilder {
  public:
   static std::unique_ptr<DescriptorBuilder> New(
       const DescriptorPool* pool, DescriptorPool::Tables* tables,
-      DescriptorPool::DeferredValidation& deferred_validation,
+      DescriptorPool::BuildSession& build_session,
       DescriptorPool::ErrorCollector* error_collector) {
-    return std::unique_ptr<DescriptorBuilder>(new DescriptorBuilder(
-        pool, tables, deferred_validation, error_collector));
+    return std::unique_ptr<DescriptorBuilder>(
+        new DescriptorBuilder(pool, tables, build_session, error_collector));
   }
 
   ~DescriptorBuilder();
@@ -94,7 +94,7 @@ class DescriptorBuilder {
   static constexpr size_t kMaxNumErrors = 1000;
 
   DescriptorBuilder(const DescriptorPool* pool, DescriptorPool::Tables* tables,
-                    DescriptorPool::DeferredValidation& deferred_validation,
+                    DescriptorPool::BuildSession& build_session,
                     DescriptorPool::ErrorCollector* error_collector);
 
   friend class OptionInterpreter;
@@ -107,7 +107,7 @@ class DescriptorBuilder {
 
   const DescriptorPool* pool_;
   DescriptorPool::Tables* tables_;  // for convenience
-  DescriptorPool::DeferredValidation& deferred_validation_;
+  DescriptorPool::BuildSession& build_session_;
   DescriptorPool::ErrorCollector* error_collector_;
 
   absl::optional<FeatureResolver> feature_resolver_ = absl::nullopt;
@@ -195,7 +195,6 @@ class DescriptorBuilder {
   void AddError(absl::string_view element_name, const Message& descriptor,
                 DescriptorPool::ErrorCollector::ErrorLocation location,
                 const char* error);
-  void AddRecursiveImportError(const FileDescriptorProto& proto, int from_here);
   void AddTwiceListedError(const FileDescriptorProto& proto,
                            absl::string_view import_name);
   void AddImportError(const FileDescriptorProto& proto,
