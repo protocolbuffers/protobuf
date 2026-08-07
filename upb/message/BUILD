@@ -74,6 +74,7 @@ cc_library(
         "//third_party/cel/c/internal:__pkg__",
         "//third_party/upb/wasm_abi/upb:__pkg__",
         "//upb:__pkg__",
+        "//upb/text:__pkg__",
         "//upb/wire:__pkg__",
         "//video/youtube/utils/elements/client/component_type:__pkg__",
         "//video/youtube/utils/elements/client/component_type/subscription_processors:__pkg__",

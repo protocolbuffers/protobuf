@@ -16,6 +16,10 @@
 #include "upb/lex/round_trip.h"
 #include "upb/message/array.h"
 #include "upb/message/message.h"
+#include "upb/message/unknown_fields.h"
+#include "upb/mini_table/extension.h"
+#include "upb/mini_table/field.h"
+#include "upb/mini_table/message.h"
 #include "upb/text/options.h"
 #include "upb/wire/eps_copy_input_stream.h"
 #include "upb/wire/reader.h"
@@ -138,14 +142,30 @@ void UPB_PRIVATE(_upb_TextEncode_ParseUnknown)(txtenc* e,
   if ((e->options & UPB_TXTENC_SKIPUNKNOWN) != 0) return;
 
   uintptr_t iter = kUpb_Message_UnknownBegin;
-  upb_StringView view;
-  while (upb_Message_NextUnknown(msg, &view, &iter)) {
-    char* start = e->ptr;
-    upb_EpsCopyInputStream stream;
-    upb_EpsCopyInputStream_Init(&stream, &view.data, view.size);
-    if (!UPB_PRIVATE(_upb_TextEncode_Unknown)(e, view.data, &stream, -1)) {
-      /* Unknown failed to parse, back up and don't print it at all. */
-      e->ptr = start;
+  upb_MessageUnknown unknown;
+  while (upb_Message_NextUnknown2(msg, &unknown, &iter)) {
+    if (unknown.type == kUpb_MessageUnknownType_StringView) {
+      upb_StringView view = unknown.value.bytes;
+      char* start = e->ptr;
+      upb_EpsCopyInputStream stream;
+      upb_EpsCopyInputStream_Init(&stream, &view.data, view.size);
+      if (!UPB_PRIVATE(_upb_TextEncode_Unknown)(e, view.data, &stream, -1)) {
+        /* Unknown failed to parse, back up and don't print it at all. */
+        e->ptr = start;
+      }
+    } else {
+      UPB_ASSERT(unknown.type == kUpb_MessageUnknownType_NonCanonicalExtension);
+      const struct upb_Extension* ext_struct = unknown.value.extension;
+      const upb_MiniTableExtension* ext = ext_struct->ext;
+      upb_MessageValue val_ext = ext_struct->data;
+      const upb_MiniTableField* f = upb_MiniTableExtension_ToField(ext);
+      const upb_MiniTable* mt = upb_MiniTableExtension_Extendee(ext);
+      UPB_ASSERT(!upb_MiniTableField_IsMap(f));
+      if (upb_MiniTableField_IsArray(f)) {
+        _upb_ArrayDebugString(e, val_ext.array_val, f, mt, ext);
+      } else {
+        _upb_FieldDebugString(e, val_ext, f, mt, NULL, ext);
+      }
     }
   }
 }

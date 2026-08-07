@@ -66,6 +66,7 @@ cc_library(
 cc_library(
     name = "internal",
     srcs = [
+        "debug_string_internal.c",
         "internal/encode.c",
     ],
     hdrs = [
@@ -81,6 +82,11 @@ cc_library(
         "//upb/lex",
         "//upb/message",
         "//upb/message:internal",
+        "//upb/message:iterator",
+        "//upb/message:message_unknowns",
+        "//upb/message:types",
+        "//upb/mini_table",
+        "//upb/mini_table:internal",
         "//upb/port",
         "//upb/wire:eps_copy_input_stream",
         "//upb/wire:reader",
