@@ -421,7 +421,9 @@ void ImmutableMessageFieldGenerator::GenerateBuilderMembers(
   GenerateBuilderHasMethod(printer);
   GenerateBuilderGetMethod(printer);
   GenerateBuilderSetMethod(printer);
-  GenerateBuilderSetBuilderMethod(printer);
+  if (!OmitMessageBuilderOverloads(descriptor_, name_resolver_)) {
+    GenerateBuilderSetBuilderMethod(printer);
+  }
   GenerateBuilderMergeMethod(printer);
   GenerateBuilderClearMethod(printer);
   GenerateBuilderGetBuilderMethod(printer);
@@ -769,7 +771,9 @@ void ImmutableMessageOneofFieldGenerator::GenerateBuilderMembers(
   GenerateBuilderHasMethod(printer);
   GenerateBuilderGetMethod(printer);
   GenerateBuilderSetMethod(printer);
-  GenerateBuilderSetBuilderMethod(printer);
+  if (!OmitMessageBuilderOverloads(descriptor_, name_resolver_)) {
+    GenerateBuilderSetBuilderMethod(printer);
+  }
   GenerateBuilderMergeMethod(printer);
   GenerateBuilderClearMethod(printer);
   GenerateBuilderGetBuilderMethod(printer);
@@ -1323,11 +1327,15 @@ void RepeatedImmutableMessageFieldGenerator::GenerateBuilderMembers(
   GenerateBuilderGetCountMethod(printer);
   GenerateBuilderGetMethod(printer);
   GenerateBuilderSetMethod(printer);
-  GenerateBuilderSetBuilderMethod(printer);
+  if (!OmitMessageBuilderOverloads(descriptor_, name_resolver_)) {
+    GenerateBuilderSetBuilderMethod(printer);
+  }
   GenerateBuilderAddMethod(printer);
   GenerateBuilderAddAtIndexMethod(printer);
-  GenerateBuilderAddBuilderMethod(printer);
-  GenerateBuilderAddBuilderAtIndexMethod(printer);
+  if (!OmitMessageBuilderOverloads(descriptor_, name_resolver_)) {
+    GenerateBuilderAddBuilderMethod(printer);
+    GenerateBuilderAddBuilderAtIndexMethod(printer);
+  }
   GenerateBuilderAddAllMethod(printer);
   GenerateBuilderClearMethod(printer);
   GenerateBuilderRemoveMethod(printer);
