@@ -867,8 +867,7 @@ const Message* PROTOBUF_NONNULL
 DynamicMessageFactory::GetPrototype(const Descriptor* PROTOBUF_NONNULL type) {
   ABSL_CHECK(type != nullptr);
   absl::MutexLock lock(&prototypes_mutex_);
-  auto* result = GetPrototypeNoLock(type);
-  return result;
+  return GetPrototypeNoLock(type);
 }
 
 const Message* DynamicMessageFactory::GetPrototypeNoLock(
@@ -879,7 +878,6 @@ const Message* DynamicMessageFactory::GetPrototypeNoLock(
     if (result != nullptr) return result;
     // Otherwise, we will create it dynamically so keep going.
   }
-
 
   const TypeInfo** target = &prototypes_[type];
   if (*target != nullptr) {
