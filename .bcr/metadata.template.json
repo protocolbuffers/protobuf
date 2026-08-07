@@ -26,13 +26,6 @@
       "name": "Jerry Berg"
     },
     {
-      "email": "deannagarcia@google.com",
-      "github": "deannagarcia",
-      "github_user_id": 69992229,
-      "name": "Deanna Garcia",
-      "do_not_notify": true
-    },
-    {
       "email": "esrauch@google.com",
       "github": "esrauchg",
       "github_user_id": 140440793,
@@ -100,13 +93,6 @@
       "github": "rgoldfinger6",
       "github_user_id": 94469227,
       "name": "Rachel Goldfinger",
-      "do_not_notify": true
-    },
-    {
-      "email": "jamiepilgrim@google.com",
-      "github": "pilgrimmemoirs",
-      "github_user_id": 8316393,
-      "name": "Jamie Pilgrim",
       "do_not_notify": true
     },
     {
