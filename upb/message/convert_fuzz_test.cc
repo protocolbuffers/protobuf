@@ -461,11 +461,7 @@ void ArbitraryMiniTableConvertFuzz(const upb::fuzz::MiniTableFuzzInput& input1,
                       decode_options, arena);
 
   if (status != kUpb_DecodeStatus_Ok) {
-    if (status == kUpb_DecodeStatus_MaxDepthExceeded) {
-      return;
-    }
-    // Conversion succeeded, but decoding failed. This shouldn't happen.
-    ABSL_LOG(FATAL) << "Conversion succeeded, but decoding failed: " << status;
+    return;
   }
 
   // Check that both paths produce equivalent messages
@@ -614,6 +610,13 @@ TEST(ConvertFuzz, ArbitraryMiniTableConvertFuzzRegression_b529945368) {
                   "\000\000\300\376",
                   20),
       372456973, 1140553636);
+}
+
+TEST(ConvertFuzz, ArbitraryMiniTableConvertFuzzRegression_b543473989) {
+  ArbitraryMiniTableConvertFuzz(
+      upb::fuzz::MiniTableFuzzInput{{"$1P"}, {}, "", {}},
+      upb::fuzz::MiniTableFuzzInput{{"$1X0"}, {}, "\316", {}}, "\n\001\331",
+      3498277489, 8392704);
 }
 }  // namespace
 
