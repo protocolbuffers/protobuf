@@ -62,11 +62,11 @@ void SetMessageVariables(
     (*variables)["set_has_field_bit_to_local"] =
         GenerateSetBitToLocal(bit_index);
 
-    (*variables)["is_field_present_message"] = GenerateGetBit(bit_index);
+    (*variables)["is_field_present"] = GenerateGetBit(bit_index);
   } else {
     (*variables)["set_has_field_bit_to_local"] = "";
-    variables->insert({"is_field_present_message",
-                       absl::StrCat((*variables)["name"], "_ != null")});
+    variables->insert(
+        {"is_field_present", absl::StrCat((*variables)["name"], "_ != null")});
   }
 
   // For repeated builders, one bit is used for whether the array is immutable.
@@ -74,10 +74,10 @@ void SetMessageVariables(
   (*variables)["set_mutable_bit_builder"] = GenerateSetBit(bit_index);
   (*variables)["clear_mutable_bit_builder"] = GenerateClearBit(bit_index);
 
-  (*variables)["get_has_field_bit_builder"] = GenerateGetBit(bit_index);
-  (*variables)["set_has_field_bit_builder"] =
+  (*variables)["get_has_field_bit"] = GenerateGetBit(bit_index);
+  (*variables)["set_has_field_bit"] =
       absl::StrCat(GenerateSetBit(bit_index), ";");
-  (*variables)["clear_has_field_bit_builder"] =
+  (*variables)["clear_has_field_bit"] =
       absl::StrCat(GenerateClearBit(bit_index), ";");
   (*variables)["get_has_field_bit_from_local"] =
       GenerateGetBitFromLocal(bit_index);
@@ -139,7 +139,7 @@ void ImmutableMessageFieldGenerator::GenerateHasMethod(
   printer->Print(variables_,
                  "@java.lang.Override\n"
                  "$deprecation$public boolean ${$has$capitalized_name$$}$() {\n"
-                 "  return $is_field_present_message$;\n"
+                 "  return $is_field_present$;\n"
                  "}\n");
   printer->Annotate("{", "}", descriptor_);
 }
@@ -218,7 +218,7 @@ void ImmutableMessageFieldGenerator::GenerateBuilderHasMethod(
                                context_->options());
   printer->Print(variables_,
                  "$deprecation$public boolean ${$has$capitalized_name$$}$() {\n"
-                 "  return $get_has_field_bit_builder$;\n"
+                 "  return $get_has_field_bit$;\n"
                  "}\n");
   printer->Annotate("{", "}", descriptor_);
 }
@@ -247,7 +247,7 @@ void ImmutableMessageFieldGenerator::GenerateBuilderSetMethod(
 
       "$name$Builder_.setMessage(value);\n",
 
-      "$set_has_field_bit_builder$\n"
+      "$set_has_field_bit$\n"
       "$on_changed$\n"
       "return this;\n",
       Semantic::kSet);
@@ -273,7 +273,7 @@ void ImmutableMessageFieldGenerator::GenerateBuilderMergeMethod(
   PrintNestedBuilderFunction(
       printer,
       "$deprecation$public Builder ${$merge$capitalized_name$$}$($type$ value)",
-      "if ($get_has_field_bit_builder$ &&\n"
+      "if ($get_has_field_bit$ &&\n"
       "  $name$_ != null &&\n"
       "  $name$_ != $type$.getDefaultInstance()) {\n"
       "  get$capitalized_name$Builder().mergeFrom(value);\n"
@@ -284,7 +284,7 @@ void ImmutableMessageFieldGenerator::GenerateBuilderMergeMethod(
       "$name$Builder_.mergeFrom(value);\n",
 
       "if ($name$_ != null) {\n"
-      "  $set_has_field_bit_builder$\n"
+      "  $set_has_field_bit$\n"
       "  $on_changed$\n"
       "}\n"
       "return this;\n",
@@ -298,7 +298,7 @@ void ImmutableMessageFieldGenerator::GenerateBuilderClearMethod(
   printer->Print(
       variables_,
       "$deprecation$public Builder ${$clear$capitalized_name$$}$() {\n"
-      "  $clear_has_field_bit_builder$\n"
+      "  $clear_has_field_bit$\n"
       "  $name$_ = null;\n"
       "  if ($name$Builder_ != null) {\n"
       "    $name$Builder_.dispose();\n"
@@ -317,7 +317,7 @@ void ImmutableMessageFieldGenerator::GenerateBuilderGetBuilderMethod(
   printer->Print(variables_,
                  "$deprecation$public $type$.Builder "
                  "${$get$capitalized_name$Builder$}$() {\n"
-                 "  $set_has_field_bit_builder$\n"
+                 "  $set_has_field_bit$\n"
                  "  $on_changed$\n"
                  "  return "
                  "internalGet$capitalized_name$FieldBuilder().getBuilder();\n"
@@ -386,7 +386,7 @@ void ImmutableMessageFieldGenerator::GenerateBuilderParseMethod(
                    "  $name$_ = input.readGroup($number$, $type$.parser(),\n"
                    "      extensionRegistry);\n"
                    "}\n"
-                   "$set_has_field_bit_builder$\n");
+                   "$set_has_field_bit$\n");
   } else {
     printer->Print(
         variables_,
@@ -398,7 +398,7 @@ void ImmutableMessageFieldGenerator::GenerateBuilderParseMethod(
         "} else {\n"
         "  $name$_ = input.readMessage($type$.parser(), extensionRegistry);\n"
         "}\n"
-        "$set_has_field_bit_builder$\n");
+        "$set_has_field_bit$\n");
   }
   printer->Outdent();
   printer->Print("}\n");
@@ -480,7 +480,7 @@ void ImmutableMessageFieldGenerator::GenerateSerializationCode(
     io::Printer* printer) const {
   printer->Print(
       variables_,
-      "if ($is_field_present_message$) {\n"
+      "if ($is_field_present$) {\n"
       "  output.write$group_or_message$($number$, get$capitalized_name$());\n"
       "}\n");
 }
@@ -489,7 +489,7 @@ void ImmutableMessageFieldGenerator::GenerateSerializedSizeCode(
     io::Printer* printer) const {
   printer->Print(
       variables_,
-      "if ($is_field_present_message$) {\n"
+      "if ($is_field_present$) {\n"
       "  size += com.google.protobuf.CodedOutputStream\n"
       "    .compute$group_or_message$Size($number$, get$capitalized_name$());\n"
       "}\n");

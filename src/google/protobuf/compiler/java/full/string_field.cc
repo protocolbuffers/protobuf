@@ -77,26 +77,21 @@ void SetPrimitiveVariables(
     (*variables)["set_has_field_bit_to_local"] =
         GenerateSetBitToLocal(bit_index);
 
-    // Note that these have a trailing ";".
-    (*variables)["set_has_field_bit_message"] =
-        absl::StrCat(GenerateSetBit(bit_index), ";");
-
-    (*variables)["is_field_present_message"] = GenerateGetBit(bit_index);
+    (*variables)["is_field_present"] = GenerateGetBit(bit_index);
   } else {
     (*variables)["set_has_field_bit_to_local"] = "";
-    (*variables)["set_has_field_bit_message"] = "";
 
-    variables->insert({"is_field_present_message",
-                       absl::StrCat("!", (*variables)["isStringEmpty"], "(",
-                                    (*variables)["name"], "_)")});
+    variables->insert(
+        {"is_field_present", absl::StrCat("!", (*variables)["isStringEmpty"],
+                                          "(", (*variables)["name"], "_)")});
   }
 
-  (*variables)["get_has_field_bit_builder"] = GenerateGetBit(bit_index);
+  (*variables)["get_has_field_bit"] = GenerateGetBit(bit_index);
   (*variables)["get_has_field_bit_from_local"] =
       GenerateGetBitFromLocal(bit_index);
-  (*variables)["set_has_field_bit_builder"] =
+  (*variables)["set_has_field_bit"] =
       absl::StrCat(GenerateSetBit(bit_index), ";");
-  (*variables)["clear_has_field_bit_builder"] =
+  (*variables)["clear_has_field_bit"] =
       absl::StrCat(GenerateClearBit(bit_index), ";");
 }
 
@@ -178,7 +173,7 @@ void ImmutableStringFieldGenerator::GenerateMembers(
         variables_,
         "@java.lang.Override\n"
         "$deprecation$public boolean ${$has$capitalized_name$$}$() {\n"
-        "  return $is_field_present_message$;\n"
+        "  return $is_field_present$;\n"
         "}\n");
     printer->Annotate("{", "}", descriptor_);
   }
@@ -241,7 +236,7 @@ void ImmutableStringFieldGenerator::GenerateBuilderMembers(
     printer->Print(
         variables_,
         "$deprecation$public boolean ${$has$capitalized_name$$}$() {\n"
-        "  return $get_has_field_bit_builder$;\n"
+        "  return $get_has_field_bit$;\n"
         "}\n");
     printer->Annotate("{", "}", descriptor_);
   }
@@ -298,7 +293,7 @@ void ImmutableStringFieldGenerator::GenerateBuilderMembers(
                  "    java.lang.String value) {\n"
                  "  $null_check$\n"
                  "  $name$_ = value;\n"
-                 "  $set_has_field_bit_builder$\n"
+                 "  $set_has_field_bit$\n"
                  "  $on_changed$\n"
                  "  return this;\n"
                  "}\n");
@@ -315,7 +310,7 @@ void ImmutableStringFieldGenerator::GenerateBuilderMembers(
   printer->Print(variables_,
                  "  $name$_ = getDefaultInstance().get$capitalized_name$();\n");
   printer->Print(variables_,
-                 "  $clear_has_field_bit_builder$\n"
+                 "  $clear_has_field_bit$\n"
                  "  $on_changed$\n"
                  "  return this;\n"
                  "}\n");
@@ -334,7 +329,7 @@ void ImmutableStringFieldGenerator::GenerateBuilderMembers(
   }
   printer->Print(variables_,
                  "  $name$_ = value;\n"
-                 "  $set_has_field_bit_builder$\n"
+                 "  $set_has_field_bit$\n"
                  "  $on_changed$\n"
                  "  return this;\n"
                  "}\n");
@@ -363,14 +358,14 @@ void ImmutableStringFieldGenerator::GenerateMergingCode(
     printer->Print(variables_,
                    "if (other.has$capitalized_name$()) {\n"
                    "  $name$_ = other.$name$_;\n"
-                   "  $set_has_field_bit_builder$\n"
+                   "  $set_has_field_bit$\n"
                    "  $on_changed$\n"
                    "}\n");
   } else {
     printer->Print(variables_,
                    "if (!other.get$capitalized_name$().isEmpty()) {\n"
                    "  $name$_ = other.$name$_;\n"
-                   "  $set_has_field_bit_builder$\n"
+                   "  $set_has_field_bit$\n"
                    "  $on_changed$\n"
                    "}\n");
   }
@@ -393,18 +388,18 @@ void ImmutableStringFieldGenerator::GenerateBuilderParsingCode(
     printer->Print(variables_,
                    "$name$_ = "
                    "input.readStringRequireUtf8();\n"
-                   "$set_has_field_bit_builder$\n");
+                   "$set_has_field_bit$\n");
   } else {
     printer->Print(variables_,
                    "$name$_ = input.readBytes();\n"
-                   "$set_has_field_bit_builder$\n");
+                   "$set_has_field_bit$\n");
   }
 }
 
 void ImmutableStringFieldGenerator::GenerateSerializationCode(
     io::Printer* printer) const {
   printer->Print(variables_,
-                 "if ($is_field_present_message$) {\n"
+                 "if ($is_field_present$) {\n"
                  "  $writeString$(output, $number$, $name$_);\n"
                  "}\n");
 }
@@ -412,7 +407,7 @@ void ImmutableStringFieldGenerator::GenerateSerializationCode(
 void ImmutableStringFieldGenerator::GenerateSerializedSizeCode(
     io::Printer* printer) const {
   printer->Print(variables_,
-                 "if ($is_field_present_message$) {\n"
+                 "if ($is_field_present$) {\n"
                  "  size += $computeStringSize$($number$, $name$_);\n"
                  "}\n");
 }
@@ -778,7 +773,7 @@ void RepeatedImmutableStringFieldGenerator::GenerateBuilderMembers(
       "  if (!$name$_.isModifiable()) {\n"
       "    $name$_ = new com.google.protobuf.LazyStringArrayList($name$_);\n"
       "  }\n"
-      "  $set_has_field_bit_builder$\n"
+      "  $set_has_field_bit$\n"
       "}\n");
 
   // Note:  We return an unmodifiable list because otherwise the caller
@@ -827,7 +822,7 @@ void RepeatedImmutableStringFieldGenerator::GenerateBuilderMembers(
                  "  $null_check$\n"
                  "  ensure$capitalized_name$IsMutable();\n"
                  "  $name$_.set(index, value);\n"
-                 "  $set_has_field_bit_builder$\n"
+                 "  $set_has_field_bit$\n"
                  "  $on_changed$\n"
                  "  return this;\n"
                  "}\n");
@@ -841,7 +836,7 @@ void RepeatedImmutableStringFieldGenerator::GenerateBuilderMembers(
                  "  $null_check$\n"
                  "  ensure$capitalized_name$IsMutable();\n"
                  "  $name$_.add(value);\n"
-                 "  $set_has_field_bit_builder$\n"
+                 "  $set_has_field_bit$\n"
                  "  $on_changed$\n"
                  "  return this;\n"
                  "}\n");
@@ -855,7 +850,7 @@ void RepeatedImmutableStringFieldGenerator::GenerateBuilderMembers(
                  "  ensure$capitalized_name$IsMutable();\n"
                  "  com.google.protobuf.AbstractMessageLite.Builder.addAll(\n"
                  "      values, $name$_);\n"
-                 "  $set_has_field_bit_builder$\n"
+                 "  $set_has_field_bit$\n"
                  "  $on_changed$\n"
                  "  return this;\n"
                  "}\n");
@@ -868,7 +863,7 @@ void RepeatedImmutableStringFieldGenerator::GenerateBuilderMembers(
       "$deprecation$public Builder ${$clear$capitalized_name$$}$() {\n"
       "  $name$_ =\n"
       "    $empty_list$;\n"
-      "  $clear_has_field_bit_builder$;\n"
+      "  $clear_has_field_bit$;\n"
       "  $on_changed$\n"
       "  return this;\n"
       "}\n");
@@ -889,7 +884,7 @@ void RepeatedImmutableStringFieldGenerator::GenerateBuilderMembers(
   printer->Print(variables_,
                  "  ensure$capitalized_name$IsMutable();\n"
                  "  $name$_.add(value);\n"
-                 "  $set_has_field_bit_builder$\n"
+                 "  $set_has_field_bit$\n"
                  "  $on_changed$\n"
                  "  return this;\n"
                  "}\n");
@@ -925,7 +920,7 @@ void RepeatedImmutableStringFieldGenerator::GenerateMergingCode(
                  "if (!other.$name$_.isEmpty()) {\n"
                  "  if ($name$_.isEmpty()) {\n"
                  "    $name$_ = other.$name$_;\n"
-                 "    $set_has_field_bit_builder$\n"
+                 "    $set_has_field_bit$\n"
                  "  } else {\n"
                  "    ensure$capitalized_name$IsMutable();\n"
                  "    $name$_.addAll(other.$name$_);\n"

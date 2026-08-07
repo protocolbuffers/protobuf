@@ -131,15 +131,15 @@ void SetPrimitiveVariables(
     // Note that these have a trailing ";".
     (*variables)["set_has_field_bit_to_local"] =
         absl::StrCat(GenerateSetBitToLocal(bit_index), ";");
-    (*variables)["is_field_present_message"] = GenerateGetBit(bit_index);
-    (*variables)["is_other_field_present_message"] =
+    (*variables)["is_field_present"] = GenerateGetBit(bit_index);
+    (*variables)["is_other_field_present"] =
         absl::StrCat("other.has", (*variables)["capitalized_name"], "()");
   } else {
     (*variables)["set_has_field_bit_to_local"] = "";
     switch (descriptor->type()) {
       case FieldDescriptor::TYPE_BYTES:
         AddPrimitiveVariableForThisAndOther(
-            "is_field_present_message", "is_other_field_present_message",
+            "is_field_present", "is_other_field_present",
             [](absl::string_view value) {
               return absl::StrCat("!", value, ".isEmpty()");
             },
@@ -147,7 +147,7 @@ void SetPrimitiveVariables(
         break;
       case FieldDescriptor::TYPE_FLOAT:
         AddPrimitiveVariableForThisAndOther(
-            "is_field_present_message", "is_other_field_present_message",
+            "is_field_present", "is_other_field_present",
             [](absl::string_view value) {
               return absl::StrCat("java.lang.Float.floatToRawIntBits(", value,
                                   ") != 0");
@@ -156,7 +156,7 @@ void SetPrimitiveVariables(
         break;
       case FieldDescriptor::TYPE_DOUBLE:
         AddPrimitiveVariableForThisAndOther(
-            "is_field_present_message", "is_other_field_present_message",
+            "is_field_present", "is_other_field_present",
             [](absl::string_view value) {
               return absl::StrCat("java.lang.Double.doubleToRawLongBits(",
                                   value, ") != 0");
@@ -165,7 +165,7 @@ void SetPrimitiveVariables(
         break;
       default:
         AddPrimitiveVariableForThisAndOther(
-            "is_field_present_message", "is_other_field_present_message",
+            "is_field_present", "is_other_field_present",
             [variables](absl::string_view value) {
               return absl::StrCat(value, " != ", (*variables)["default"]);
             },
@@ -176,12 +176,12 @@ void SetPrimitiveVariables(
 
   // Always track the presence of a field explicitly in the builder, regardless
   // of syntax.
-  (*variables)["get_has_field_bit_builder"] = GenerateGetBit(bit_index);
+  (*variables)["get_has_field_bit"] = GenerateGetBit(bit_index);
   (*variables)["get_has_field_bit_from_local"] =
       GenerateGetBitFromLocal(bit_index);
-  (*variables)["set_has_field_bit_builder"] =
+  (*variables)["set_has_field_bit"] =
       absl::StrCat(GenerateSetBit(bit_index), ";");
-  (*variables)["clear_has_field_bit_builder"] =
+  (*variables)["clear_has_field_bit"] =
       absl::StrCat(GenerateClearBit(bit_index), ";");
 }
 
@@ -223,7 +223,7 @@ void ImmutablePrimitiveFieldGenerator::GenerateMembers(
         variables_,
         "@java.lang.Override\n"
         "$deprecation$public boolean ${$has$capitalized_name$$}$() {\n"
-        "  return $is_field_present_message$;\n"
+        "  return $is_field_present$;\n"
         "}\n");
     printer->Annotate("{", "}", descriptor_);
   }
@@ -249,7 +249,7 @@ void ImmutablePrimitiveFieldGenerator::GenerateBuilderMembers(
         variables_,
         "@java.lang.Override\n"
         "$deprecation$public boolean ${$has$capitalized_name$$}$() {\n"
-        "  return $get_has_field_bit_builder$;\n"
+        "  return $get_has_field_bit$;\n"
         "}\n");
     printer->Annotate("{", "}", descriptor_);
   }
@@ -271,7 +271,7 @@ void ImmutablePrimitiveFieldGenerator::GenerateBuilderMembers(
                  "${$set$capitalized_name$$}$($type$ value) {\n"
                  "  $null_check$\n"
                  "  $name$_ = value;\n"
-                 "  $set_has_field_bit_builder$\n"
+                 "  $set_has_field_bit$\n"
                  "  $on_changed$\n"
                  "  return this;\n"
                  "}\n");
@@ -283,7 +283,7 @@ void ImmutablePrimitiveFieldGenerator::GenerateBuilderMembers(
   printer->Print(
       variables_,
       "$deprecation$public Builder ${$clear$capitalized_name$$}$() {\n"
-      "  $clear_has_field_bit_builder$\n");
+      "  $clear_has_field_bit$\n");
   printer->Annotate("{", "}", descriptor_, Semantic::kSet);
   JavaType type = GetJavaType(descriptor_);
   if (type == JAVATYPE_STRING || type == JAVATYPE_BYTES) {
@@ -322,7 +322,7 @@ void ImmutablePrimitiveFieldGenerator::GenerateBuilderClearCode(
 void ImmutablePrimitiveFieldGenerator::GenerateMergingCode(
     io::Printer* printer) const {
   printer->Print(variables_,
-                 "if ($is_other_field_present_message$) {\n"
+                 "if ($is_other_field_present$) {\n"
                  "  set$capitalized_name$(other.get$capitalized_name$());\n"
                  "}\n");
 }
@@ -342,13 +342,13 @@ void ImmutablePrimitiveFieldGenerator::GenerateBuilderParsingCode(
     io::Printer* printer) const {
   printer->Print(variables_,
                  "$name$_ = input.read$capitalized_type$();\n"
-                 "$set_has_field_bit_builder$\n");
+                 "$set_has_field_bit$\n");
 }
 
 void ImmutablePrimitiveFieldGenerator::GenerateSerializationCode(
     io::Printer* printer) const {
   printer->Print(variables_,
-                 "if ($is_field_present_message$) {\n"
+                 "if ($is_field_present$) {\n"
                  "  output.write$capitalized_type$($number$, $name$_);\n"
                  "}\n");
 }
@@ -356,7 +356,7 @@ void ImmutablePrimitiveFieldGenerator::GenerateSerializationCode(
 void ImmutablePrimitiveFieldGenerator::GenerateSerializedSizeCode(
     io::Printer* printer) const {
   printer->Print(variables_,
-                 "if ($is_field_present_message$) {\n"
+                 "if ($is_field_present$) {\n"
                  "  size += com.google.protobuf.CodedOutputStream\n"
                  "    .compute$capitalized_type$Size($number$, $name$_);\n"
                  "}\n");
@@ -693,7 +693,7 @@ void RepeatedImmutablePrimitiveFieldGenerator::GenerateBuilderMembers(
       "  if (!$name$_.isModifiable()) {\n"
       "    $name$_ = makeMutableCopy($name$_, capacity);\n"
       "  }\n"
-      "  $set_has_field_bit_builder$\n"
+      "  $set_has_field_bit$\n"
       "}\n");
 
   // Note:  We return an unmodifiable list because otherwise the caller
@@ -734,7 +734,7 @@ void RepeatedImmutablePrimitiveFieldGenerator::GenerateBuilderMembers(
                  "  $null_check$\n"
                  "  ensure$capitalized_name$IsMutable(/* capacity= */ -1);\n"
                  "  $repeated_set$(index, value);\n"
-                 "  $set_has_field_bit_builder$\n"
+                 "  $set_has_field_bit$\n"
                  "  $on_changed$\n"
                  "  return this;\n"
                  "}\n");
@@ -748,7 +748,7 @@ void RepeatedImmutablePrimitiveFieldGenerator::GenerateBuilderMembers(
                  "  $null_check$\n"
                  "  ensure$capitalized_name$IsMutable(/* capacity= */ -1);\n"
                  "  $repeated_add$(value);\n"
-                 "  $set_has_field_bit_builder$\n"
+                 "  $set_has_field_bit$\n"
                  "  $on_changed$\n"
                  "  return this;\n"
                  "}\n");
@@ -762,7 +762,7 @@ void RepeatedImmutablePrimitiveFieldGenerator::GenerateBuilderMembers(
                  "  ensure$capitalized_name$IsMutable(/* capacity= */ -1);\n"
                  "  com.google.protobuf.AbstractMessageLite.Builder.addAll(\n"
                  "      values, $name$_);\n"
-                 "  $set_has_field_bit_builder$\n"
+                 "  $set_has_field_bit$\n"
                  "  $on_changed$\n"
                  "  return this;\n"
                  "}\n");
@@ -774,7 +774,7 @@ void RepeatedImmutablePrimitiveFieldGenerator::GenerateBuilderMembers(
       variables_,
       "$deprecation$public Builder ${$clear$capitalized_name$$}$() {\n"
       "  $name$_ = $empty_list$;\n"
-      "  $clear_has_field_bit_builder$\n"
+      "  $clear_has_field_bit$\n"
       "  $on_changed$\n"
       "  return this;\n"
       "}\n");
@@ -808,7 +808,7 @@ void RepeatedImmutablePrimitiveFieldGenerator::GenerateMergingCode(
                  "  if ($name$_.isEmpty()) {\n"
                  "    $name$_ = other.$name$_;\n"
                  "    $name_make_immutable$;\n"
-                 "    $set_has_field_bit_builder$\n");
+                 "    $set_has_field_bit$\n");
   printer->Print(variables_,
                  "  } else {\n"
                  "    ensure$capitalized_name$IsMutable(/* capacity= */ -1);\n"
