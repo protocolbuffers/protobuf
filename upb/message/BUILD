@@ -69,6 +69,7 @@ cc_library(
     features = UPB_DEFAULT_FEATURES,
     visibility = [
         "//hpb/internal:__pkg__",
+        "//multiplatform/elements/engine/imports/eml_operators:__pkg__",
         "//pkg:__pkg__",
         "//python:__pkg__",
         "//third_party/cel/c/internal:__pkg__",
