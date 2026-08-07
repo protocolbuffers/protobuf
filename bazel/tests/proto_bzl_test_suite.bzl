@@ -29,7 +29,7 @@ def bzl_test_suite(
     for target, impl_list in tests.items():
         for impl in impl_list:
             impl_name = get_function_name(impl)
-            test_name = create_test_name(impl_name, name)
+            test_name = create_test_name(impl_name, target, name)
             analysis_test(
                 name = test_name,
                 target = target,
@@ -56,10 +56,22 @@ def get_function_name(fn):
     fn_name = str(fn).partition("<function ")[2].partition(" ")[0].partition(">")[0]
     return fn_name
 
-def create_test_name(fn_name, name):
+def create_test_name(fn_name, target, name):
+    """Generates a unique test target name to avoid rule collisions.
+
+    Args:
+      fn_name: The name of the Starlark testing function.
+      target: The build target being tested.
+      name: The base name of the test suite.
+    """
     if fn_name.startswith("_"):
         fn_name = fn_name.removeprefix("_")
-    return fn_name + "_" + name
+
+    clean_target = target.replace("//", "").replace(":", "_").replace("/", "_")
+    if clean_target.startswith("_"):
+        clean_target = clean_target[1:]
+
+    return fn_name + "_" + clean_target + "_" + name
 
 def package_label_string(label_str, name = None):
     """Returns the string repr of a label resolved relative to the current package being constructed."""
