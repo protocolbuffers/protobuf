@@ -5166,6 +5166,9 @@ static upb_Arena* jsonenc_arena(jsonenc* e) {
   /* Create lazily, since it's only needed for Any */
   if (!e->arena) {
     e->arena = upb_Arena_New();
+    if (!e->arena) {
+      jsonenc_err(e, "Out of memory");
+    }
   }
   return e->arena;
 }
@@ -5483,6 +5486,10 @@ static void jsonenc_any(jsonenc* e, const upb_Message* msg,
   const upb_MiniTable* any_layout = upb_MessageDef_MiniTable(any_m);
   upb_Arena* arena = jsonenc_arena(e);
   upb_Message* any = upb_Message_New(any_layout, arena);
+  if (!any) {
+    jsonenc_err(e, "Out of memory");
+    return;
+  }
 
   if (upb_Decode(value.data, value.size, any, any_layout, NULL, 0, arena) !=
       kUpb_DecodeStatus_Ok) {
@@ -10143,6 +10150,7 @@ done:
 #endif
 
   upb_MiniTable* ret = upb_Arena_Malloc(decoder->arena, mt_size);
+  upb_MdDecoder_CheckOutOfMemory(&decoder->base, ret);
   memcpy(ret, &decoder->table, sizeof(*ret));
 
 #if UPB_FASTTABLE
@@ -18540,9 +18548,12 @@ static char* encode_map(char* ptr, upb_encstate* e, const upb_Message* msg,
 
   if (e->options & kUpb_EncodeOption_Deterministic) {
     _upb_sortedmap sorted;
-    _upb_mapsorter_pushmap(
-        &e->sorter, layout->UPB_PRIVATE(fields)[0].UPB_PRIVATE(descriptortype),
-        map, &sorted);
+    if (!_upb_mapsorter_pushmap(
+            &e->sorter,
+            layout->UPB_PRIVATE(fields)[0].UPB_PRIVATE(descriptortype), map,
+            &sorted)) {
+      encode_err(e, kUpb_EncodeStatus_OutOfMemory);
+    }
     upb_MapEntry ent;
     while (_upb_sortedmap_next(&e->sorter, map, &sorted, &ent)) {
       ptr = encode_mapentry(ptr, e, upb_MiniTableField_Number(f), layout, &ent);
@@ -18678,7 +18689,7 @@ static char* encode_exts(char* ptr, upb_encstate* e, const upb_MiniTable* m,
   if (e->options & kUpb_EncodeOption_Deterministic) {
     _upb_sortedmap sorted;
     if (!_upb_mapsorter_pushexts(&e->sorter, in, &sorted)) {
-      // TODO: b/378744096 - handle alloc failure
+      encode_err(e, kUpb_EncodeStatus_OutOfMemory);
     }
     const upb_Extension* ext;
     while (_upb_sortedmap_nextext(&e->sorter, &sorted, &ext)) {
