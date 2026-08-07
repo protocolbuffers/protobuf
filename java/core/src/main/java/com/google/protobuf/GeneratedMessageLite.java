@@ -838,11 +838,10 @@ public abstract class GeneratedMessageLite<
       // should be prepared to accept them.
 
       int typeId = 0;
-      ByteString rawBytes = null; // If we encounter "message" before "typeId"
-      GeneratedExtension<?, ?> extension = null;
+      ByteString deferredMessageBytes = null; // If we encounter "message" before "typeId"
 
-      // Read bytes from input, if we get it's type first then parse it eagerly,
-      // otherwise we store the raw bytes in a local variable.
+      // Read bytes from input, if we get its type first then parse it eagerly,
+      // otherwise we store the deferred bytes in a local variable.
       while (true) {
         final int tag = input.readTag();
         if (tag == 0) {
@@ -851,24 +850,25 @@ public abstract class GeneratedMessageLite<
 
         if (tag == WireFormat.MESSAGE_SET_TYPE_ID_TAG) {
           typeId = input.readUInt32();
-          if (typeId != 0) {
-            extension = extensionRegistry.findLiteExtensionByNumber(defaultInstance, typeId);
-          }
 
         } else if (tag == WireFormat.MESSAGE_SET_MESSAGE_TAG) {
           if (typeId != 0) {
+            GeneratedExtension<?, ?> extension =
+                extensionRegistry.findLiteExtensionByNumber(defaultInstance, typeId);
             if (extension != null) {
               // We already know the type, so we can parse directly from the
               // input with no copying.  Hooray!
-              eagerlyMergeMessageSetExtension(input, extension, extensionRegistry, typeId);
-              rawBytes = null;
+              int limit = input.pushLimitBeforeMessage();
+              mergeMessageSetExtension(input, extensionRegistry, extension);
+              input.popLimitAfterMessage(limit);
+              deferredMessageBytes = null;
               continue;
             }
           }
-          // We haven't seen a type ID yet or we want parse message lazily.
-          rawBytes = input.readBytes();
+          // We haven't seen a type ID yet or extension is null.
+          deferredMessageBytes = input.readBytes();
 
-        } else { // Unknown tag. Skip it.
+        } else { // Unknown or duplicate tag. Skip it.
           if (!input.skipField(tag)) {
             break; // End of group
           }
@@ -876,34 +876,22 @@ public abstract class GeneratedMessageLite<
       }
       input.checkLastTagWas(WireFormat.MESSAGE_SET_ITEM_END_TAG);
 
-      // Process the raw bytes.
-      if (rawBytes != null && typeId != 0) { // Zero is not a valid type ID.
+      // Process the deferred message bytes.
+      if (deferredMessageBytes != null && typeId != 0) { // Zero is not a valid type ID.
+        GeneratedExtension<?, ?> extension =
+            extensionRegistry.findLiteExtensionByNumber(defaultInstance, typeId);
         if (extension != null) { // We known the type
-          CodedInputStream subInput = rawBytes.newCodedInput();
+          CodedInputStream subInput = deferredMessageBytes.newCodedInput();
           int remainingInputRecursionLimit = input.getRemainingRecursionDepth();
           if (--remainingInputRecursionLimit < 0) {
             throw InvalidProtocolBufferException.recursionLimitExceeded();
           }
           subInput.setRecursionLimit(remainingInputRecursionLimit);
           mergeMessageSetExtension(subInput, extensionRegistry, extension);
-        } else { // We don't know how to parse this. Ignore it.
-          if (rawBytes != null) {
-            mergeLengthDelimitedField(typeId, rawBytes);
-          }
+        } else { // We don't know how to parse this. Put it in unknown fields.
+          mergeLengthDelimitedField(typeId, deferredMessageBytes);
         }
       }
-    }
-
-    private void eagerlyMergeMessageSetExtension(
-        CodedInputStream input,
-        GeneratedExtension<?, ?> extension,
-        ExtensionRegistryLite extensionRegistry,
-        int typeId)
-        throws IOException {
-      int fieldNumber = typeId;
-      int tag = WireFormat.makeTag(typeId, WireFormat.WIRETYPE_LENGTH_DELIMITED);
-      // TODO: remove the unused variable
-      boolean unused = parseExtension(input, extensionRegistry, extension, tag, fieldNumber);
     }
 
     private void mergeMessageSetExtension(
