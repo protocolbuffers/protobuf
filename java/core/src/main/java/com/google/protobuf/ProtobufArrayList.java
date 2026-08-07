@@ -9,13 +9,16 @@ package com.google.protobuf;
 
 import static java.lang.Math.max;
 
-import com.google.protobuf.Internal.ProtobufList;
+import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.RandomAccess;
 
 /** Implements {@link ProtobufList} for non-primitive and {@link String} types. */
-final class ProtobufArrayList<E> extends AbstractProtobufList<E> implements RandomAccess {
+final class ProtobufArrayList<E> extends AbstractProtobufList<E>
+    implements RandomAccess
+{
 
   private static final Object[] EMPTY_ARRAY = new Object[0];
 
@@ -110,20 +113,6 @@ final class ProtobufArrayList<E> extends AbstractProtobufList<E> implements Rand
     if (o == this) {
       return true;
     }
-    if (o instanceof ProtobufArrayList) {
-      ProtobufArrayList<?> otherArray = (ProtobufArrayList<?>) o;
-      int size = size();
-      if (size != otherArray.size()) {
-        return false;
-      }
-      for (int i = 0; i < size; i++) {
-        // ProtobufArrayLists never contain nulls, so don't need to check array[i] == null.
-        if (!array[i].equals(otherArray.array[i])) {
-          return false;
-        }
-      }
-      return true;
-    }
     if (!(o instanceof List)) {
       return false;
     }
@@ -135,9 +124,20 @@ final class ProtobufArrayList<E> extends AbstractProtobufList<E> implements Rand
     }
 
     List<?> other = (List<?>) o;
-    int size = size();
+    final int size = size();
     if (size != other.size()) {
       return false;
+    }
+
+    if (o instanceof ProtobufArrayList) {
+      ProtobufArrayList<?> otherArray = (ProtobufArrayList<?>) o;
+      for (int i = 0; i < size; i++) {
+        // ProtobufArrayLists never contain nulls, so don't need to check array[i] == null.
+        if (!array[i].equals(otherArray.array[i])) {
+          return false;
+        }
+      }
+      return true;
     }
 
     for (int i = 0; i < size; i++) {
@@ -151,7 +151,7 @@ final class ProtobufArrayList<E> extends AbstractProtobufList<E> implements Rand
 
   @Override
   public int hashCode() {
-    int size = size();
+    final int size = size();
     int hashCode = 1;
     for (int i = 0; i < size; i++) {
       hashCode = (31 * hashCode) + array[i].hashCode();
