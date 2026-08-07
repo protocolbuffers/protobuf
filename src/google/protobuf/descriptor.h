@@ -56,6 +56,7 @@
 #include "absl/strings/str_format.h"
 #include "absl/strings/string_view.h"
 #include "absl/synchronization/mutex.h"
+#include "absl/types/optional.h"
 #include "google/protobuf/descriptor_lite.h"  // IWYU pragma: export
 #include "google/protobuf/extension_set.h"
 #include "google/protobuf/offset_ptr.h"
@@ -2800,17 +2801,20 @@ class PROTOBUF_EXPORT DescriptorPool {
   // corresponding proto file.  Returns true if successful, in which case
   // the caller should search for the thing again.  These are declared
   // const because they are called by (semantically) const methods.
-  // DeferredValidation stores temporary information necessary to run validation
-  // checks that can't be done inside the database lock.  This is generally
-  // reflective operations that also require the lock to do safely.
-  class DeferredValidation;
-  bool TryFindFileInFallbackDatabase(
-      absl::string_view name, DeferredValidation& deferred_validation) const;
-  bool TryFindSymbolInFallbackDatabase(
-      absl::string_view name, DeferredValidation& deferred_validation) const;
-  bool TryFindExtensionInFallbackDatabase(
-      const Descriptor* containing_type, int field_number,
-      DeferredValidation& deferred_validation) const;
+  // BuildSession stores temporary information necessary to run validation
+  // checks that can't be done immediately. For example, there are some checks
+  // that can't be done inside the database lock because they use reflection.
+  class BuildSession;
+  absl::optional<std::vector<const FileDescriptorProto*>>
+  CollectAndSortDependencies(absl::string_view name,
+                             BuildSession& build_session) const;
+  bool TryFindFileInFallbackDatabase(absl::string_view name,
+                                     BuildSession& build_session) const;
+  bool TryFindSymbolInFallbackDatabase(absl::string_view name,
+                                       BuildSession& build_session) const;
+  bool TryFindExtensionInFallbackDatabase(const Descriptor* containing_type,
+                                          int field_number,
+                                          BuildSession& build_session) const;
 
   // This internal find extension method only check with its table and underlay
   // descriptor_pool's table. It does not check with fallback DB and no
@@ -2822,8 +2826,7 @@ class PROTOBUF_EXPORT DescriptorPool {
   // fallback_database_.  Declared const because it is called by (semantically)
   // const methods.
   const FileDescriptor* BuildFileFromDatabase(
-      const FileDescriptorProto& proto,
-      DeferredValidation& deferred_validation) const;
+      const FileDescriptorProto& proto, BuildSession& build_session) const;
 
   // Helper for when lazily_build_dependencies_ is set, can look up a symbol
   // after the file's descriptor is built, and can build the file where that
