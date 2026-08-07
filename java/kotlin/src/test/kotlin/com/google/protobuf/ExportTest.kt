@@ -1,0 +1,13 @@
+package com.google.protobuf.kotlin
+
+import org.junit.Test
+import org.junit.runner.RunWith
+import org.junit.runners.JUnit4
+
+@RunWith(JUnit4::class)
+class ExportTest {
+  @Test
+  fun testExportedProtoMessageAccess() {
+    val exportedMsg = exportedMessage { value = "exported" }
+  }
+}
