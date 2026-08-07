@@ -3883,11 +3883,14 @@ void MessageGenerator::GenerateClassData(io::Printer* p) {
               )cc");
 
       // For CODE_SIZE types, we need to pin the submessages too.
-      // SPEED types will pin them via the TcParse table automatically.
-      if (HasGeneratedMethods(descriptor_->file(), options_)) return;
+      // SPEED types will pin them via the TcParse table automatically, except
+      // for map entry types.
+      const bool pin_only_map_entry =
+          HasGeneratedMethods(descriptor_->file(), options_);
       for (int i = 0; i < descriptor_->field_count(); ++i) {
         auto* field = descriptor_->field(i);
         if (field->type() != field->TYPE_MESSAGE) continue;
+        if (pin_only_map_entry && !field->is_map()) continue;
         p->Emit(
             {{"pin", StrongReferenceToType(field->message_type(), options_)}},
             R"cc(
