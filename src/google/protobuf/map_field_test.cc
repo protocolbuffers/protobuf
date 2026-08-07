@@ -320,6 +320,18 @@ TEST_P(MapFieldStateTest, MergeFromRepeatedDirty) {
   Expect(other.get(), CLEAN, 1, 1);
 }
 
+#if GTEST_HAS_DEATH_TEST
+TEST_P(MapFieldStateTest, MergeFromSelfTerminates) {
+  // The two-arg (reflection) MapFieldBase::MergeFrom routes to
+  // UntypedMapBase::UntypedMergeFrom, where a self-merge inserts into the table
+  // while iterating that same table (InsertOrReplaceNode rehashes/replaces the
+  // nodes the iterator is walking), a use-after-free. Self-merge is undefined
+  // and is now a well-defined termination, mirroring RepeatedField::MergeFrom.
+  EXPECT_DEATH(map_field_base_->MergeFrom(arena_.get(), *map_field_base_),
+               "self-reference");
+}
+#endif  // GTEST_HAS_DEATH_TEST
+
 TEST_P(MapFieldStateTest, SwapClean) {
   ArenaHolder<MapFieldType> other(arena_.get());
   AddOneStillClean(other.get());
