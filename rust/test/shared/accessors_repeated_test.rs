@@ -248,14 +248,14 @@ fn test_repeated_message() {
 }
 
 #[gtest]
-fn test_repeated_message_iter_mut_empty() {
+fn test_repeated_message_get_mut_empty() {
     let mut msg = TestAllTypes::new();
-    let mut iter = msg.repeated_nested_message_mut().iter_mut();
-    assert_that!(iter.next(), none());
+    let mut m = msg.repeated_nested_message_mut();
+    assert_that!(m.get_mut(0), none());
 }
 
 #[gtest]
-fn test_repeated_message_iter_mut() {
+fn test_repeated_message_get_mut_mutation() {
     let mut msg = TestAllTypes::new();
     for i in 0..3 {
         let mut nested = NestedMessage::new();
@@ -263,7 +263,9 @@ fn test_repeated_message_iter_mut() {
         msg.repeated_nested_message_mut().push(nested);
     }
 
-    for mut nested in msg.repeated_nested_message_mut().iter_mut() {
+    let mut m = msg.repeated_nested_message_mut();
+    for i in 0..m.len() {
+        let mut nested = m.get_mut(i).unwrap();
         let bb = nested.bb();
         nested.set_bb(bb + 1);
     }
@@ -433,4 +435,21 @@ fn test_repeated_double_ended_iter() {
 fn test_repeated_from_iter() {
     let r: Repeated<i32> = [10, 20, 30].into_iter().collect();
     assert_that!(r.as_view(), elements_are![eq(10), eq(20), eq(30)]);
+}
+
+#[gtest]
+fn test_repeated_get_mut_iteration() {
+    let mut msg = TestAllTypes::new();
+    let mut m = msg.repeated_nested_message_mut();
+    m.push_default().set_bb(10);
+    m.push_default().set_bb(20);
+    m.push_default().set_bb(30);
+
+    for i in 0..m.len() {
+        m.get_mut(i).unwrap().set_bb((i as i32 + 1) * 100);
+    }
+
+    assert_that!(m.get(0).unwrap().bb(), eq(100));
+    assert_that!(m.get(1).unwrap().bb(), eq(200));
+    assert_that!(m.get(2).unwrap().bb(), eq(300));
 }
