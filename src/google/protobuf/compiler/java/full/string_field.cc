@@ -72,19 +72,18 @@ void SetPrimitiveVariables(
       descriptor->options().deprecated() ? "@java.lang.Deprecated " : "";
   (*variables)["on_changed"] = "onChanged();";
 
-  if (HasHasbit(descriptor)) {
-    // For singular messages and builders, one bit is used for the hasField bit.
-    (*variables)["set_has_field_bit_to_local"] =
-        GenerateSetBitToLocal(bit_index);
+  (*variables)["set_has_field_bit_to_local"] = GenerateSetBitToLocal(bit_index);
 
-    (*variables)["is_field_present"] = GenerateGetBit(bit_index);
-  } else {
-    (*variables)["set_has_field_bit_to_local"] = "";
+  (*variables)["is_field_present"] = GenerateGetBit(bit_index);
+  (*variables)["is_other_field_present"] = GenerateGetBitFromOther(bit_index);
 
-    variables->insert(
-        {"is_field_present", absl::StrCat("!", (*variables)["isStringEmpty"],
-                                          "(", (*variables)["name"], "_)")});
-  }
+  variables->insert({"is_field_value_not_default",
+                     absl::StrCat("!", (*variables)["isStringEmpty"], "(",
+                                  (*variables)["name"], "_)")});
+  variables->insert(
+      {"is_other_field_value_not_default",
+       absl::StrCat("!other.get", (*variables)["capitalized_name"],
+                    "().isEmpty()")});
 
   (*variables)["get_has_field_bit"] = GenerateGetBit(bit_index);
   (*variables)["get_has_field_bit_from_local"] =
@@ -140,18 +139,23 @@ ImmutableStringFieldGenerator::~ImmutableStringFieldGenerator() = default;
 //
 // For single fields, the logic for this is done inside the generated code. For
 // repeated fields, the logic is done in LazyStringArrayList.
-void ImmutableStringFieldGenerator::GenerateInterfaceMembers(
+void ImmutableStringFieldGenerator::GenerateInterfaceHasMethod(
     io::Printer* printer) const {
-  if (descriptor_->has_presence()) {
-    WriteFieldAccessorDocComment(printer, descriptor_, HAZZER,
-                                 context_->options());
-    printer->Print(variables_,
-                   "$deprecation$boolean has$capitalized_name$();\n");
-  }
+  WriteFieldAccessorDocComment(printer, descriptor_, HAZZER,
+                               context_->options());
+  printer->Print(variables_, "$deprecation$boolean has$capitalized_name$();\n");
+}
+
+void ImmutableStringFieldGenerator::GenerateInterfaceGetMethod(
+    io::Printer* printer) const {
   WriteFieldAccessorDocComment(printer, descriptor_, GETTER,
                                context_->options());
   printer->Print(variables_,
                  "$deprecation$java.lang.String get$capitalized_name$();\n");
+}
+
+void ImmutableStringFieldGenerator::GenerateInterfaceGetBytesMethod(
+    io::Printer* printer) const {
   WriteFieldStringBytesAccessorDocComment(printer, descriptor_, GETTER,
                                           context_->options());
   printer->Print(variables_,
@@ -159,25 +163,29 @@ void ImmutableStringFieldGenerator::GenerateInterfaceMembers(
                  "    get$capitalized_name$Bytes();\n");
 }
 
-void ImmutableStringFieldGenerator::GenerateMembers(
+void ImmutableStringFieldGenerator::GenerateInterfaceMembers(
     io::Printer* printer) const {
-  printer->Print(variables_,
-                 "@SuppressWarnings(\"serial\")\n"
-                 "private volatile java.lang.Object $name$_ = $default$;\n");
-  PrintExtraFieldInfo(variables_, printer);
-
-  if (descriptor_->has_presence()) {
-    WriteFieldAccessorDocComment(printer, descriptor_, HAZZER,
-                                 context_->options());
-    printer->Print(
-        variables_,
-        "@java.lang.Override\n"
-        "$deprecation$public boolean ${$has$capitalized_name$$}$() {\n"
-        "  return $is_field_present$;\n"
-        "}\n");
-    printer->Annotate("{", "}", descriptor_);
+  if (HasHazzerMethod(descriptor_)) {
+    GenerateInterfaceHasMethod(printer);
   }
+  GenerateInterfaceGetMethod(printer);
+  GenerateInterfaceGetBytesMethod(printer);
+}
 
+void ImmutableStringFieldGenerator::GenerateHasMethod(
+    io::Printer* printer) const {
+  WriteFieldAccessorDocComment(printer, descriptor_, HAZZER,
+                               context_->options());
+  printer->Print(variables_,
+                 "@java.lang.Override\n"
+                 "$deprecation$public boolean ${$has$capitalized_name$$}$() {\n"
+                 "  return $is_field_present$;\n"
+                 "}\n");
+  printer->Annotate("{", "}", descriptor_);
+}
+
+void ImmutableStringFieldGenerator::GenerateGetMethod(
+    io::Printer* printer) const {
   WriteFieldAccessorDocComment(printer, descriptor_, GETTER,
                                context_->options());
   printer->Print(
@@ -206,6 +214,10 @@ void ImmutableStringFieldGenerator::GenerateMembers(
                  "    return s;\n"
                  "  }\n"
                  "}\n");
+}
+
+void ImmutableStringFieldGenerator::GenerateGetBytesMethod(
+    io::Printer* printer) const {
   WriteFieldStringBytesAccessorDocComment(printer, descriptor_, GETTER,
                                           context_->options());
   printer->Print(variables_,
@@ -226,21 +238,32 @@ void ImmutableStringFieldGenerator::GenerateMembers(
   printer->Annotate("{", "}", descriptor_);
 }
 
-void ImmutableStringFieldGenerator::GenerateBuilderMembers(
+void ImmutableStringFieldGenerator::GenerateMembers(
     io::Printer* printer) const {
   printer->Print(variables_,
-                 "private java.lang.Object $name$_ $default_init$;\n");
-  if (descriptor_->has_presence()) {
-    WriteFieldAccessorDocComment(printer, descriptor_, HAZZER,
-                                 context_->options());
-    printer->Print(
-        variables_,
-        "$deprecation$public boolean ${$has$capitalized_name$$}$() {\n"
-        "  return $get_has_field_bit$;\n"
-        "}\n");
-    printer->Annotate("{", "}", descriptor_);
+                 "@SuppressWarnings(\"serial\")\n"
+                 "private volatile java.lang.Object $name$_ = $default$;\n");
+  PrintExtraFieldInfo(variables_, printer);
+  if (HasHazzerMethod(descriptor_)) {
+    GenerateHasMethod(printer);
   }
+  GenerateGetMethod(printer);
+  GenerateGetBytesMethod(printer);
+}
 
+void ImmutableStringFieldGenerator::GenerateBuilderHasMethod(
+    io::Printer* printer) const {
+  WriteFieldAccessorDocComment(printer, descriptor_, HAZZER,
+                               context_->options());
+  printer->Print(variables_,
+                 "$deprecation$public boolean ${$has$capitalized_name$$}$() {\n"
+                 "  return $get_has_field_bit$;\n"
+                 "}\n");
+  printer->Annotate("{", "}", descriptor_);
+}
+
+void ImmutableStringFieldGenerator::GenerateBuilderGetMethod(
+    io::Printer* printer) const {
   WriteFieldAccessorDocComment(printer, descriptor_, GETTER,
                                context_->options());
   printer->Print(
@@ -266,7 +289,10 @@ void ImmutableStringFieldGenerator::GenerateBuilderMembers(
                  "    return (java.lang.String) ref;\n"
                  "  }\n"
                  "}\n");
+}
 
+void ImmutableStringFieldGenerator::GenerateBuilderGetBytesMethod(
+    io::Printer* printer) const {
   WriteFieldStringBytesAccessorDocComment(printer, descriptor_, GETTER,
                                           context_->options());
   printer->Print(variables_,
@@ -284,7 +310,10 @@ void ImmutableStringFieldGenerator::GenerateBuilderMembers(
                  "  }\n"
                  "}\n");
   printer->Annotate("{", "}", descriptor_);
+}
 
+void ImmutableStringFieldGenerator::GenerateBuilderSetMethod(
+    io::Printer* printer) const {
   WriteFieldAccessorDocComment(printer, descriptor_, SETTER,
                                context_->options(),
                                /* builder */ true);
@@ -298,6 +327,10 @@ void ImmutableStringFieldGenerator::GenerateBuilderMembers(
                  "  return this;\n"
                  "}\n");
   printer->Annotate("{", "}", descriptor_, Semantic::kSet);
+}
+
+void ImmutableStringFieldGenerator::GenerateBuilderClearMethod(
+    io::Printer* printer) const {
   WriteFieldAccessorDocComment(printer, descriptor_, CLEARER,
                                context_->options(),
                                /* builder */ true);
@@ -305,8 +338,6 @@ void ImmutableStringFieldGenerator::GenerateBuilderMembers(
       variables_,
       "$deprecation$public Builder ${$clear$capitalized_name$$}$() {\n");
   printer->Annotate("{", "}", descriptor_, Semantic::kSet);
-  // The default value is not a simple literal so we want to avoid executing
-  // it multiple times.  Instead, get the default out of the default instance.
   printer->Print(variables_,
                  "  $name$_ = getDefaultInstance().get$capitalized_name$();\n");
   printer->Print(variables_,
@@ -314,7 +345,10 @@ void ImmutableStringFieldGenerator::GenerateBuilderMembers(
                  "  $on_changed$\n"
                  "  return this;\n"
                  "}\n");
+}
 
+void ImmutableStringFieldGenerator::GenerateBuilderSetBytesMethod(
+    io::Printer* printer) const {
   WriteFieldStringBytesAccessorDocComment(printer, descriptor_, SETTER,
                                           context_->options(),
                                           /* builder */ true);
@@ -335,6 +369,20 @@ void ImmutableStringFieldGenerator::GenerateBuilderMembers(
                  "}\n");
 }
 
+void ImmutableStringFieldGenerator::GenerateBuilderMembers(
+    io::Printer* printer) const {
+  printer->Print(variables_,
+                 "private java.lang.Object $name$_ $default_init$;\n");
+  if (HasHazzerMethod(descriptor_)) {
+    GenerateBuilderHasMethod(printer);
+  }
+  GenerateBuilderGetMethod(printer);
+  GenerateBuilderGetBytesMethod(printer);
+  GenerateBuilderSetMethod(printer);
+  GenerateBuilderClearMethod(printer);
+  GenerateBuilderSetBytesMethod(printer);
+}
+
 void ImmutableStringFieldGenerator::GenerateFieldBuilderInitializationCode(
     io::Printer* printer) const {
   // noop for primitives
@@ -352,34 +400,33 @@ void ImmutableStringFieldGenerator::GenerateBuilderClearCode(
 
 void ImmutableStringFieldGenerator::GenerateMergingCode(
     io::Printer* printer) const {
-  if (descriptor_->has_presence()) {
-    // Allow a slight breach of abstraction here in order to avoid forcing
-    // all string fields to Strings when copying fields from a Message.
-    printer->Print(variables_,
-                   "if (other.has$capitalized_name$()) {\n"
-                   "  $name$_ = other.$name$_;\n"
-                   "  $set_has_field_bit$\n"
-                   "  $on_changed$\n"
-                   "}\n");
-  } else {
-    printer->Print(variables_,
-                   "if (!other.get$capitalized_name$().isEmpty()) {\n"
-                   "  $name$_ = other.$name$_;\n"
-                   "  $set_has_field_bit$\n"
-                   "  $on_changed$\n"
-                   "}\n");
-  }
+  // Allow a slight breach of abstraction here in order to avoid forcing
+  // all string fields to Strings when copying fields from a Message.
+  printer->Print(variables_,
+                 "if ($is_other_field_present$) {\n"
+                 "  $name$_ = other.$name$_;\n"
+                 "  $set_has_field_bit$\n"
+                 "  $on_changed$\n"
+                 "}\n");
 }
 
 void ImmutableStringFieldGenerator::GenerateBuildingCode(
     io::Printer* printer) const {
-  printer->Print(variables_,
-                 "if ($get_has_field_bit_from_local$) {\n"
-                 "  result.$name$_ = $name$_;\n");
-  if (GetNumBits() > 0) {
-    printer->Print(variables_, "  $set_has_field_bit_to_local$;\n");
+  if (HasHazzerMethod(descriptor_)) {
+    printer->Print(variables_,
+                   "if ($get_has_field_bit_from_local$) {\n"
+                   "  result.$name$_ = $name$_;\n"
+                   "  $set_has_field_bit_to_local$;\n"
+                   "}\n");
+  } else {
+    printer->Print(variables_,
+                   "if ($is_field_value_not_default$) {\n"
+                   "  result.$name$_ = $name$_;\n"
+                   "  $set_has_field_bit_to_local$;\n"
+                   "} else {\n"
+                   "  $clear_has_field_bit$;\n"
+                   "}\n");
   }
-  printer->Print("}\n");
 }
 
 void ImmutableStringFieldGenerator::GenerateBuilderParsingCode(
@@ -443,9 +490,8 @@ ImmutableStringOneofFieldGenerator::ImmutableStringOneofFieldGenerator(
 ImmutableStringOneofFieldGenerator::~ImmutableStringOneofFieldGenerator() =
     default;
 
-void ImmutableStringOneofFieldGenerator::GenerateMembers(
+void ImmutableStringOneofFieldGenerator::GenerateHasMethod(
     io::Printer* printer) const {
-  PrintExtraFieldInfo(variables_, printer);
   ABSL_DCHECK(descriptor_->has_presence());
   WriteFieldAccessorDocComment(printer, descriptor_, HAZZER,
                                context_->options());
@@ -454,7 +500,10 @@ void ImmutableStringOneofFieldGenerator::GenerateMembers(
                  "  return $has_oneof_case_message$;\n"
                  "}\n");
   printer->Annotate("{", "}", descriptor_);
+}
 
+void ImmutableStringOneofFieldGenerator::GenerateGetMethod(
+    io::Printer* printer) const {
   WriteFieldAccessorDocComment(printer, descriptor_, GETTER,
                                context_->options());
   printer->Print(
@@ -483,6 +532,10 @@ void ImmutableStringOneofFieldGenerator::GenerateMembers(
                  "    return s;\n"
                  "  }\n"
                  "}\n");
+}
+
+void ImmutableStringOneofFieldGenerator::GenerateGetBytesMethod(
+    io::Printer* printer) const {
   WriteFieldStringBytesAccessorDocComment(printer, descriptor_, GETTER,
                                           context_->options());
 
@@ -507,7 +560,15 @@ void ImmutableStringOneofFieldGenerator::GenerateMembers(
   printer->Annotate("{", "}", descriptor_);
 }
 
-void ImmutableStringOneofFieldGenerator::GenerateBuilderMembers(
+void ImmutableStringOneofFieldGenerator::GenerateMembers(
+    io::Printer* printer) const {
+  PrintExtraFieldInfo(variables_, printer);
+  GenerateHasMethod(printer);
+  GenerateGetMethod(printer);
+  GenerateGetBytesMethod(printer);
+}
+
+void ImmutableStringOneofFieldGenerator::GenerateBuilderHasMethod(
     io::Printer* printer) const {
   ABSL_DCHECK(descriptor_->has_presence());
   WriteFieldAccessorDocComment(printer, descriptor_, HAZZER,
@@ -518,7 +579,10 @@ void ImmutableStringOneofFieldGenerator::GenerateBuilderMembers(
                  "  return $has_oneof_case_message$;\n"
                  "}\n");
   printer->Annotate("{", "}", descriptor_);
+}
 
+void ImmutableStringOneofFieldGenerator::GenerateBuilderGetMethod(
+    io::Printer* printer) const {
   WriteFieldAccessorDocComment(printer, descriptor_, GETTER,
                                context_->options());
   printer->Print(
@@ -548,7 +612,10 @@ void ImmutableStringOneofFieldGenerator::GenerateBuilderMembers(
                  "    return (java.lang.String) ref;\n"
                  "  }\n"
                  "}\n");
+}
 
+void ImmutableStringOneofFieldGenerator::GenerateBuilderGetBytesMethod(
+    io::Printer* printer) const {
   WriteFieldStringBytesAccessorDocComment(printer, descriptor_, GETTER,
                                           context_->options());
   printer->Print(variables_,
@@ -571,7 +638,10 @@ void ImmutableStringOneofFieldGenerator::GenerateBuilderMembers(
                  "  }\n"
                  "}\n");
   printer->Annotate("{", "}", descriptor_);
+}
 
+void ImmutableStringOneofFieldGenerator::GenerateBuilderSetMethod(
+    io::Printer* printer) const {
   WriteFieldAccessorDocComment(printer, descriptor_, SETTER,
                                context_->options(),
                                /* builder */ true);
@@ -585,6 +655,10 @@ void ImmutableStringOneofFieldGenerator::GenerateBuilderMembers(
                  "  return this;\n"
                  "}\n");
   printer->Annotate("{", "}", descriptor_, Semantic::kSet);
+}
+
+void ImmutableStringOneofFieldGenerator::GenerateBuilderClearMethod(
+    io::Printer* printer) const {
   WriteFieldAccessorDocComment(printer, descriptor_, CLEARER,
                                context_->options(),
                                /* builder */ true);
@@ -599,7 +673,10 @@ void ImmutableStringOneofFieldGenerator::GenerateBuilderMembers(
       "  return this;\n"
       "}\n");
   printer->Annotate("{", "}", descriptor_, Semantic::kSet);
+}
 
+void ImmutableStringOneofFieldGenerator::GenerateBuilderSetBytesMethod(
+    io::Printer* printer) const {
   WriteFieldStringBytesAccessorDocComment(printer, descriptor_, SETTER,
                                           context_->options(),
                                           /* builder */ true);
@@ -618,6 +695,16 @@ void ImmutableStringOneofFieldGenerator::GenerateBuilderMembers(
                  "  $on_changed$\n"
                  "  return this;\n"
                  "}\n");
+}
+
+void ImmutableStringOneofFieldGenerator::GenerateBuilderMembers(
+    io::Printer* printer) const {
+  GenerateBuilderHasMethod(printer);
+  GenerateBuilderGetMethod(printer);
+  GenerateBuilderGetBytesMethod(printer);
+  GenerateBuilderSetMethod(printer);
+  GenerateBuilderClearMethod(printer);
+  GenerateBuilderSetBytesMethod(printer);
 }
 
 void ImmutableStringOneofFieldGenerator::GenerateBuilderClearCode(
@@ -681,34 +768,96 @@ RepeatedImmutableStringFieldGenerator::RepeatedImmutableStringFieldGenerator(
 RepeatedImmutableStringFieldGenerator::
     ~RepeatedImmutableStringFieldGenerator() = default;
 
-void RepeatedImmutableStringFieldGenerator::GenerateInterfaceMembers(
+void RepeatedImmutableStringFieldGenerator::GenerateInterfaceGetListMethod(
     io::Printer* printer) const {
   WriteFieldAccessorDocComment(printer, descriptor_, LIST_GETTER,
                                context_->options());
   printer->Print(
       variables_,
-      // NOTE: the same method in the implementation class actually returns
-      // com.google.protobuf.ProtocolStringList (a subclass of List). It's
-      // changed between protobuf 2.5.0 release and protobuf 2.6.1 release.
-      // To retain binary compatibility with both 2.5.0 and 2.6.1 generated
-      // code, we make this interface method return List so both methods
-      // with different return types exist in the compiled byte code.
       "$deprecation$java.util.List<java.lang.String>\n"
       "    get$capitalized_name$List();\n");
+}
+
+void RepeatedImmutableStringFieldGenerator::GenerateInterfaceGetCountMethod(
+    io::Printer* printer) const {
   WriteFieldAccessorDocComment(printer, descriptor_, LIST_COUNT,
                                context_->options());
   printer->Print(variables_,
                  "$deprecation$int get$capitalized_name$Count();\n");
+}
+
+void RepeatedImmutableStringFieldGenerator::GenerateInterfaceGetMethod(
+    io::Printer* printer) const {
   WriteFieldAccessorDocComment(printer, descriptor_, LIST_INDEXED_GETTER,
                                context_->options());
   printer->Print(
       variables_,
       "$deprecation$java.lang.String get$capitalized_name$(int index);\n");
+}
+
+void RepeatedImmutableStringFieldGenerator::GenerateInterfaceGetBytesMethod(
+    io::Printer* printer) const {
   WriteFieldStringBytesAccessorDocComment(
       printer, descriptor_, LIST_INDEXED_GETTER, context_->options());
   printer->Print(variables_,
                  "$deprecation$com.google.protobuf.ByteString\n"
                  "    get$capitalized_name$Bytes(int index);\n");
+}
+
+void RepeatedImmutableStringFieldGenerator::GenerateInterfaceMembers(
+    io::Printer* printer) const {
+  GenerateInterfaceGetListMethod(printer);
+  GenerateInterfaceGetCountMethod(printer);
+  GenerateInterfaceGetMethod(printer);
+  GenerateInterfaceGetBytesMethod(printer);
+}
+
+void RepeatedImmutableStringFieldGenerator::GenerateGetListMethod(
+    io::Printer* printer) const {
+  WriteFieldAccessorDocComment(printer, descriptor_, LIST_GETTER,
+                               context_->options());
+  printer->Print(variables_,
+                 "$deprecation$public com.google.protobuf.ProtocolStringList\n"
+                 "    ${$get$capitalized_name$List$}$() {\n"
+                 "  return $name$_;\n"
+                 "}\n");
+  printer->Annotate("{", "}", descriptor_);
+}
+
+void RepeatedImmutableStringFieldGenerator::GenerateGetCountMethod(
+    io::Printer* printer) const {
+  WriteFieldAccessorDocComment(printer, descriptor_, LIST_COUNT,
+                               context_->options());
+  printer->Print(
+      variables_,
+      "$deprecation$public int ${$get$capitalized_name$Count$}$() {\n"
+      "  return $name$_.size();\n"
+      "}\n");
+  printer->Annotate("{", "}", descriptor_);
+}
+
+void RepeatedImmutableStringFieldGenerator::GenerateGetMethod(
+    io::Printer* printer) const {
+  WriteFieldAccessorDocComment(printer, descriptor_, LIST_INDEXED_GETTER,
+                               context_->options());
+  printer->Print(variables_,
+                 "$deprecation$public java.lang.String "
+                 "${$get$capitalized_name$$}$(int index) {\n"
+                 "  return $name$_.get(index);\n"
+                 "}\n");
+  printer->Annotate("{", "}", descriptor_);
+}
+
+void RepeatedImmutableStringFieldGenerator::GenerateGetBytesMethod(
+    io::Printer* printer) const {
+  WriteFieldStringBytesAccessorDocComment(
+      printer, descriptor_, LIST_INDEXED_GETTER, context_->options());
+  printer->Print(variables_,
+                 "$deprecation$public com.google.protobuf.ByteString\n"
+                 "    ${$get$capitalized_name$Bytes$}$(int index) {\n"
+                 "  return $name$_.getByteString(index);\n"
+                 "}\n");
+  printer->Annotate("{", "}", descriptor_);
 }
 
 void RepeatedImmutableStringFieldGenerator::GenerateMembers(
@@ -718,14 +867,39 @@ void RepeatedImmutableStringFieldGenerator::GenerateMembers(
                  "private com.google.protobuf.LazyStringArrayList $name$_ =\n"
                  "    $empty_list$;\n");
   PrintExtraFieldInfo(variables_, printer);
+  GenerateGetListMethod(printer);
+  GenerateGetCountMethod(printer);
+  GenerateGetMethod(printer);
+  GenerateGetBytesMethod(printer);
+}
+
+void RepeatedImmutableStringFieldGenerator::GenerateEnsureIsMutableMethod(
+    io::Printer* printer) const {
+  printer->Print(
+      variables_,
+      "private void ensure$capitalized_name$IsMutable() {\n"
+      "  if (!$name$_.isModifiable()) {\n"
+      "    $name$_ = new com.google.protobuf.LazyStringArrayList($name$_);\n"
+      "  }\n"
+      "  $set_has_field_bit$\n"
+      "}\n");
+}
+
+void RepeatedImmutableStringFieldGenerator::GenerateBuilderGetListMethod(
+    io::Printer* printer) const {
   WriteFieldAccessorDocComment(printer, descriptor_, LIST_GETTER,
                                context_->options());
   printer->Print(variables_,
                  "$deprecation$public com.google.protobuf.ProtocolStringList\n"
                  "    ${$get$capitalized_name$List$}$() {\n"
-                 "  return $name$_;\n"  // note:  unmodifiable list
+                 "  $name$_.makeImmutable();\n"
+                 "  return $name$_;\n"
                  "}\n");
   printer->Annotate("{", "}", descriptor_);
+}
+
+void RepeatedImmutableStringFieldGenerator::GenerateBuilderGetCountMethod(
+    io::Printer* printer) const {
   WriteFieldAccessorDocComment(printer, descriptor_, LIST_COUNT,
                                context_->options());
   printer->Print(
@@ -734,6 +908,10 @@ void RepeatedImmutableStringFieldGenerator::GenerateMembers(
       "  return $name$_.size();\n"
       "}\n");
   printer->Annotate("{", "}", descriptor_);
+}
+
+void RepeatedImmutableStringFieldGenerator::GenerateBuilderGetMethod(
+    io::Printer* printer) const {
   WriteFieldAccessorDocComment(printer, descriptor_, LIST_INDEXED_GETTER,
                                context_->options());
   printer->Print(variables_,
@@ -742,6 +920,10 @@ void RepeatedImmutableStringFieldGenerator::GenerateMembers(
                  "  return $name$_.get(index);\n"
                  "}\n");
   printer->Annotate("{", "}", descriptor_);
+}
+
+void RepeatedImmutableStringFieldGenerator::GenerateBuilderGetBytesMethod(
+    io::Printer* printer) const {
   WriteFieldStringBytesAccessorDocComment(
       printer, descriptor_, LIST_INDEXED_GETTER, context_->options());
   printer->Print(variables_,
@@ -752,67 +934,8 @@ void RepeatedImmutableStringFieldGenerator::GenerateMembers(
   printer->Annotate("{", "}", descriptor_);
 }
 
-void RepeatedImmutableStringFieldGenerator::GenerateBuilderMembers(
+void RepeatedImmutableStringFieldGenerator::GenerateBuilderSetMethod(
     io::Printer* printer) const {
-  // One field is the list and the bit field keeps track of whether the
-  // list is immutable. If it's immutable, the invariant is that it must
-  // either an instance of Collections.emptyList() or it's an ArrayList
-  // wrapped in a Collections.unmodifiableList() wrapper and nobody else has
-  // a reference to the underlying ArrayList. This invariant allows us to
-  // share instances of lists between protocol buffers avoiding expensive
-  // memory allocations. Note, immutable is a strong guarantee here -- not
-  // just that the list cannot be modified via the reference but that the
-  // list can never be modified.
-  printer->Print(variables_,
-                 "private com.google.protobuf.LazyStringArrayList $name$_ =\n"
-                 "    $empty_list$;\n");
-
-  printer->Print(
-      variables_,
-      "private void ensure$capitalized_name$IsMutable() {\n"
-      "  if (!$name$_.isModifiable()) {\n"
-      "    $name$_ = new com.google.protobuf.LazyStringArrayList($name$_);\n"
-      "  }\n"
-      "  $set_has_field_bit$\n"
-      "}\n");
-
-  // Note:  We return an unmodifiable list because otherwise the caller
-  //   could hold on to the returned list and modify it after the message
-  //   has been built, thus mutating the message which is supposed to be
-  //   immutable.
-  WriteFieldAccessorDocComment(printer, descriptor_, LIST_GETTER,
-                               context_->options());
-  printer->Print(variables_,
-                 "$deprecation$public com.google.protobuf.ProtocolStringList\n"
-                 "    ${$get$capitalized_name$List$}$() {\n"
-                 "  $name$_.makeImmutable();\n"
-                 "  return $name$_;\n"
-                 "}\n");
-  printer->Annotate("{", "}", descriptor_);
-  WriteFieldAccessorDocComment(printer, descriptor_, LIST_COUNT,
-                               context_->options());
-  printer->Print(
-      variables_,
-      "$deprecation$public int ${$get$capitalized_name$Count$}$() {\n"
-      "  return $name$_.size();\n"
-      "}\n");
-  printer->Annotate("{", "}", descriptor_);
-  WriteFieldAccessorDocComment(printer, descriptor_, LIST_INDEXED_GETTER,
-                               context_->options());
-  printer->Print(variables_,
-                 "$deprecation$public java.lang.String "
-                 "${$get$capitalized_name$$}$(int index) {\n"
-                 "  return $name$_.get(index);\n"
-                 "}\n");
-  printer->Annotate("{", "}", descriptor_);
-  WriteFieldStringBytesAccessorDocComment(
-      printer, descriptor_, LIST_INDEXED_GETTER, context_->options());
-  printer->Print(variables_,
-                 "$deprecation$public com.google.protobuf.ByteString\n"
-                 "    ${$get$capitalized_name$Bytes$}$(int index) {\n"
-                 "  return $name$_.getByteString(index);\n"
-                 "}\n");
-  printer->Annotate("{", "}", descriptor_);
   WriteFieldAccessorDocComment(printer, descriptor_, LIST_INDEXED_SETTER,
                                context_->options(),
                                /* builder */ true);
@@ -827,6 +950,10 @@ void RepeatedImmutableStringFieldGenerator::GenerateBuilderMembers(
                  "  return this;\n"
                  "}\n");
   printer->Annotate("{", "}", descriptor_, Semantic::kSet);
+}
+
+void RepeatedImmutableStringFieldGenerator::GenerateBuilderAddMethod(
+    io::Printer* printer) const {
   WriteFieldAccessorDocComment(printer, descriptor_, LIST_ADDER,
                                context_->options(),
                                /* builder */ true);
@@ -841,6 +968,10 @@ void RepeatedImmutableStringFieldGenerator::GenerateBuilderMembers(
                  "  return this;\n"
                  "}\n");
   printer->Annotate("{", "}", descriptor_, Semantic::kSet);
+}
+
+void RepeatedImmutableStringFieldGenerator::GenerateBuilderAddAllMethod(
+    io::Printer* printer) const {
   WriteFieldAccessorDocComment(printer, descriptor_, LIST_MULTI_ADDER,
                                context_->options(),
                                /* builder */ true);
@@ -855,6 +986,10 @@ void RepeatedImmutableStringFieldGenerator::GenerateBuilderMembers(
                  "  return this;\n"
                  "}\n");
   printer->Annotate("{", "}", descriptor_, Semantic::kSet);
+}
+
+void RepeatedImmutableStringFieldGenerator::GenerateBuilderClearMethod(
+    io::Printer* printer) const {
   WriteFieldAccessorDocComment(printer, descriptor_, CLEARER,
                                context_->options(),
                                /* builder */ true);
@@ -868,7 +1003,10 @@ void RepeatedImmutableStringFieldGenerator::GenerateBuilderMembers(
       "  return this;\n"
       "}\n");
   printer->Annotate("{", "}", descriptor_, Semantic::kSet);
+}
 
+void RepeatedImmutableStringFieldGenerator::GenerateBuilderAddBytesMethod(
+    io::Printer* printer) const {
   WriteFieldStringBytesAccessorDocComment(printer, descriptor_, LIST_ADDER,
                                           context_->options(),
                                           /* builder */ true);
@@ -888,6 +1026,23 @@ void RepeatedImmutableStringFieldGenerator::GenerateBuilderMembers(
                  "  $on_changed$\n"
                  "  return this;\n"
                  "}\n");
+}
+
+void RepeatedImmutableStringFieldGenerator::GenerateBuilderMembers(
+    io::Printer* printer) const {
+  printer->Print(variables_,
+                 "private com.google.protobuf.LazyStringArrayList $name$_ =\n"
+                 "    $empty_list$;\n");
+  GenerateEnsureIsMutableMethod(printer);
+  GenerateBuilderGetListMethod(printer);
+  GenerateBuilderGetCountMethod(printer);
+  GenerateBuilderGetMethod(printer);
+  GenerateBuilderGetBytesMethod(printer);
+  GenerateBuilderSetMethod(printer);
+  GenerateBuilderAddMethod(printer);
+  GenerateBuilderAddAllMethod(printer);
+  GenerateBuilderClearMethod(printer);
+  GenerateBuilderAddBytesMethod(printer);
 }
 
 void RepeatedImmutableStringFieldGenerator::
