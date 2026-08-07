@@ -1070,7 +1070,10 @@ class MessageReflection {
         Message defaultInstance)
         throws IOException {
       if (!field.isRepeated()) {
-        boolean isLazyField = ExtensionRegistryLite.lazyExtensionEnabled() && field.isExtension();
+        boolean isLazyField =
+            ExtensionRegistryLite.lazyExtensionEnabled()
+                && field.isExtension()
+                && !field.getContainingType().isDescriptorProtoType();
         if (hasField(field)) {
           InternalLazyField lazyField = extensions.getLazyField(field);
           if (isLazyField && lazyField != null) {
