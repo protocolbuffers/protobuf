@@ -17,6 +17,7 @@ use Foo\TestStringValue;
 use Foo\TestBytesValue;
 use Foo\TestAny;
 use Foo\TestEnum;
+use Foo\TestFieldMask;
 use Foo\TestLargeFieldNumber;
 use Foo\TestMessage;
 use Foo\TestMessage\Sub;
@@ -2154,5 +2155,26 @@ class EncodeDecodeTest extends TestBase
         $m2->mergeFromString($data);
         $this->assertEquals(42, $m2->getOptionalMessage()->getA());
         $this->assertEquals(33 * 1024 * 1024, strlen($m2->getOptionalString()));
+    }
+
+    public function testFieldMaskJsonEscaping()
+    {
+        $lenDelim = function (int $tag, string $payload): string {
+            // tag/len fit in one byte for our sizes
+            return chr($tag) . chr(strlen($payload)) . $payload;
+        };
+
+        $badpath = 'a","a":true,"z":"b';
+        $fieldmaskWire = $lenDelim(0x0A, $badpath);          // FieldMask.paths[0]
+        $reqWire       = $lenDelim(0x0A, $fieldmaskWire);     // TestMessage.mask
+
+        $m = new TestFieldMask();
+        $m->mergeFromString($reqWire);
+        $json = $m->serializeToJsonString();
+
+        $m2 = new TestFieldMask();
+        $m2->mergeFromJsonString($json);
+        $this->assertFalse($m2->getA());
+        $this->assertEquals('', $m2->getZ());
     }
 }
