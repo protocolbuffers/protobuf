@@ -1343,7 +1343,7 @@ static upb_StringView jsondec_mask(jsondec* d, const char* buf,
   }
 
   out = upb_Arena_Malloc(d->arena, ret.size);
-  jsondec_checkoom(d, out || ret.size == 0);
+  jsondec_checkoom(d, out);
   ptr = buf;
   ret.data = out;
 
