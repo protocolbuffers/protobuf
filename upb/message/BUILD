@@ -451,6 +451,7 @@ cc_test(
         "//upb/wire",
         "//upb/wire:reader",
         "//upb/wire/test_util:wire_message",
+        "@abseil-cpp//absl/cleanup",
         "@googletest//:gtest",
         "@googletest//:gtest_main",
     ],
