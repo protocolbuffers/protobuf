@@ -170,7 +170,6 @@ TEST_F(ImporterTest, ImportNotFound) {
 
   EXPECT_TRUE(importer_.Import("foo.proto") == nullptr);
   EXPECT_EQ(
-      "bar.proto:-1:0: File not found.\n"
       "foo.proto:1:0: Import \"bar.proto\" was not found or had errors.\n",
       error_collector_.text_);
 }

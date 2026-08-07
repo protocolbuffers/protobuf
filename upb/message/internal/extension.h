@@ -30,7 +30,7 @@
 // This is rather wasteful for scalars (in the extreme case of bool,
 // it wastes 15 bytes). We accept this because we expect messages to be
 // the most common extension type.
-typedef struct {
+typedef struct upb_Extension {
   const upb_MiniTableExtension* ext;
   upb_MessageValue data;
 } upb_Extension;

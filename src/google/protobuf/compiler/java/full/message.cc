@@ -380,8 +380,7 @@ void ImmutableMessageGenerator::Generate(io::Printer* printer) {
   // Integers for bit fields.
   int totalBits = 0;
   for (int i = 0; i < descriptor_->field_count(); i++) {
-    totalBits +=
-        field_generators_.get(descriptor_->field(i)).GetNumBitsForMessage();
+    totalBits += field_generators_.get(descriptor_->field(i)).GetNumBits();
   }
   int totalInts = (totalBits + 31) / 32;
   for (int i = 0; i < totalInts; i++) {

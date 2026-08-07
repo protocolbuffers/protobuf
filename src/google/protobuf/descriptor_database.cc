@@ -43,6 +43,26 @@
 namespace google {
 namespace protobuf {
 
+namespace internal {
+
+static thread_local bool g_suppress_fallback_database_errors = false;
+
+ScopedFallbackDatabaseErrorSuppressor::ScopedFallbackDatabaseErrorSuppressor()
+    : previous_value_(g_suppress_fallback_database_errors) {
+  g_suppress_fallback_database_errors = true;
+}
+
+ScopedFallbackDatabaseErrorSuppressor::
+    ~ScopedFallbackDatabaseErrorSuppressor() {
+  g_suppress_fallback_database_errors = previous_value_;
+}
+
+bool ScopedFallbackDatabaseErrorSuppressor::IsSuppressed() {
+  return g_suppress_fallback_database_errors;
+}
+
+}  // namespace internal
+
 namespace {
 void RecordMessageNames(const DescriptorProto& desc_proto,
                         absl::string_view prefix,

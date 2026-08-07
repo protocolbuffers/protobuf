@@ -22,6 +22,7 @@
 #include "google/protobuf/compiler/java/doc_comment.h"
 #include "google/protobuf/compiler/java/field_common.h"
 #include "google/protobuf/compiler/java/helpers.h"
+#include "google/protobuf/compiler/java/full/field_generator.h"
 #include "google/protobuf/compiler/java/internal_helpers.h"
 #include "google/protobuf/compiler/java/name_resolver.h"
 #include "google/protobuf/io/printer.h"
@@ -38,7 +39,7 @@ using Semantic = ::google::protobuf::io::AnnotationCollector::Semantic;
 namespace {
 
 void SetPrimitiveVariables(
-    const FieldDescriptor* descriptor, int messageBitIndex, int builderBitIndex,
+    const FieldDescriptor* descriptor, int bit_index,
     const FieldGeneratorInfo* info, ClassNameResolver* name_resolver,
     absl::flat_hash_map<absl::string_view, std::string>* variables,
     Context* context) {
@@ -74,29 +75,24 @@ void SetPrimitiveVariables(
   if (HasHasbit(descriptor)) {
     // For singular messages and builders, one bit is used for the hasField bit.
     (*variables)["set_has_field_bit_to_local"] =
-        GenerateSetBitToLocal(messageBitIndex);
+        GenerateSetBitToLocal(bit_index);
 
-    // Note that these have a trailing ";".
-    (*variables)["set_has_field_bit_message"] =
-        absl::StrCat(GenerateSetBit(messageBitIndex), ";");
-
-    (*variables)["is_field_present_message"] = GenerateGetBit(messageBitIndex);
+    (*variables)["is_field_present"] = GenerateGetBit(bit_index);
   } else {
     (*variables)["set_has_field_bit_to_local"] = "";
-    (*variables)["set_has_field_bit_message"] = "";
 
-    variables->insert({"is_field_present_message",
-                       absl::StrCat("!", (*variables)["isStringEmpty"], "(",
-                                    (*variables)["name"], "_)")});
+    variables->insert(
+        {"is_field_present", absl::StrCat("!", (*variables)["isStringEmpty"],
+                                          "(", (*variables)["name"], "_)")});
   }
 
-  (*variables)["get_has_field_bit_builder"] = GenerateGetBit(builderBitIndex);
+  (*variables)["get_has_field_bit"] = GenerateGetBit(bit_index);
   (*variables)["get_has_field_bit_from_local"] =
-      GenerateGetBitFromLocal(builderBitIndex);
-  (*variables)["set_has_field_bit_builder"] =
-      absl::StrCat(GenerateSetBit(builderBitIndex), ";");
-  (*variables)["clear_has_field_bit_builder"] =
-      absl::StrCat(GenerateClearBit(builderBitIndex), ";");
+      GenerateGetBitFromLocal(bit_index);
+  (*variables)["set_has_field_bit"] =
+      absl::StrCat(GenerateSetBit(bit_index), ";");
+  (*variables)["clear_has_field_bit"] =
+      absl::StrCat(GenerateClearBit(bit_index), ";");
 }
 
 }  // namespace
@@ -104,31 +100,14 @@ void SetPrimitiveVariables(
 // ===================================================================
 
 ImmutableStringFieldGenerator::ImmutableStringFieldGenerator(
-    const FieldDescriptor* descriptor, int messageBitIndex, int builderBitIndex,
-    Context* context)
-    : descriptor_(descriptor),
-      message_bit_index_(messageBitIndex),
-      builder_bit_index_(builderBitIndex),
-      context_(context),
-      name_resolver_(context->GetNameResolver()) {
-  SetPrimitiveVariables(descriptor, messageBitIndex, builderBitIndex,
+    const FieldDescriptor* descriptor, int bit_index, Context* context)
+    : ImmutableFieldGenerator(descriptor, bit_index, context) {
+  SetPrimitiveVariables(descriptor, bit_index,
                         context->GetFieldGeneratorInfo(descriptor),
                         name_resolver_, &variables_, context);
 }
 
 ImmutableStringFieldGenerator::~ImmutableStringFieldGenerator() = default;
-
-int ImmutableStringFieldGenerator::GetMessageBitIndex() const {
-  return message_bit_index_;
-}
-
-int ImmutableStringFieldGenerator::GetBuilderBitIndex() const {
-  return builder_bit_index_;
-}
-
-int ImmutableStringFieldGenerator::GetNumBitsForMessage() const {
-  return HasHasbit(descriptor_) ? 1 : 0;
-}
 
 // A note about how strings are handled. This code used to just store a String
 // in the Message. This had two issues:
@@ -194,7 +173,7 @@ void ImmutableStringFieldGenerator::GenerateMembers(
         variables_,
         "@java.lang.Override\n"
         "$deprecation$public boolean ${$has$capitalized_name$$}$() {\n"
-        "  return $is_field_present_message$;\n"
+        "  return $is_field_present$;\n"
         "}\n");
     printer->Annotate("{", "}", descriptor_);
   }
@@ -257,7 +236,7 @@ void ImmutableStringFieldGenerator::GenerateBuilderMembers(
     printer->Print(
         variables_,
         "$deprecation$public boolean ${$has$capitalized_name$$}$() {\n"
-        "  return $get_has_field_bit_builder$;\n"
+        "  return $get_has_field_bit$;\n"
         "}\n");
     printer->Annotate("{", "}", descriptor_);
   }
@@ -314,7 +293,7 @@ void ImmutableStringFieldGenerator::GenerateBuilderMembers(
                  "    java.lang.String value) {\n"
                  "  $null_check$\n"
                  "  $name$_ = value;\n"
-                 "  $set_has_field_bit_builder$\n"
+                 "  $set_has_field_bit$\n"
                  "  $on_changed$\n"
                  "  return this;\n"
                  "}\n");
@@ -331,7 +310,7 @@ void ImmutableStringFieldGenerator::GenerateBuilderMembers(
   printer->Print(variables_,
                  "  $name$_ = getDefaultInstance().get$capitalized_name$();\n");
   printer->Print(variables_,
-                 "  $clear_has_field_bit_builder$\n"
+                 "  $clear_has_field_bit$\n"
                  "  $on_changed$\n"
                  "  return this;\n"
                  "}\n");
@@ -350,7 +329,7 @@ void ImmutableStringFieldGenerator::GenerateBuilderMembers(
   }
   printer->Print(variables_,
                  "  $name$_ = value;\n"
-                 "  $set_has_field_bit_builder$\n"
+                 "  $set_has_field_bit$\n"
                  "  $on_changed$\n"
                  "  return this;\n"
                  "}\n");
@@ -379,14 +358,14 @@ void ImmutableStringFieldGenerator::GenerateMergingCode(
     printer->Print(variables_,
                    "if (other.has$capitalized_name$()) {\n"
                    "  $name$_ = other.$name$_;\n"
-                   "  $set_has_field_bit_builder$\n"
+                   "  $set_has_field_bit$\n"
                    "  $on_changed$\n"
                    "}\n");
   } else {
     printer->Print(variables_,
                    "if (!other.get$capitalized_name$().isEmpty()) {\n"
                    "  $name$_ = other.$name$_;\n"
-                   "  $set_has_field_bit_builder$\n"
+                   "  $set_has_field_bit$\n"
                    "  $on_changed$\n"
                    "}\n");
   }
@@ -397,7 +376,7 @@ void ImmutableStringFieldGenerator::GenerateBuildingCode(
   printer->Print(variables_,
                  "if ($get_has_field_bit_from_local$) {\n"
                  "  result.$name$_ = $name$_;\n");
-  if (GetNumBitsForMessage() > 0) {
+  if (GetNumBits() > 0) {
     printer->Print(variables_, "  $set_has_field_bit_to_local$;\n");
   }
   printer->Print("}\n");
@@ -409,18 +388,18 @@ void ImmutableStringFieldGenerator::GenerateBuilderParsingCode(
     printer->Print(variables_,
                    "$name$_ = "
                    "input.readStringRequireUtf8();\n"
-                   "$set_has_field_bit_builder$\n");
+                   "$set_has_field_bit$\n");
   } else {
     printer->Print(variables_,
                    "$name$_ = input.readBytes();\n"
-                   "$set_has_field_bit_builder$\n");
+                   "$set_has_field_bit$\n");
   }
 }
 
 void ImmutableStringFieldGenerator::GenerateSerializationCode(
     io::Printer* printer) const {
   printer->Print(variables_,
-                 "if ($is_field_present_message$) {\n"
+                 "if ($is_field_present$) {\n"
                  "  $writeString$(output, $number$, $name$_);\n"
                  "}\n");
 }
@@ -428,7 +407,7 @@ void ImmutableStringFieldGenerator::GenerateSerializationCode(
 void ImmutableStringFieldGenerator::GenerateSerializedSizeCode(
     io::Printer* printer) const {
   printer->Print(variables_,
-                 "if ($is_field_present_message$) {\n"
+                 "if ($is_field_present$) {\n"
                  "  size += $computeStringSize$($number$, $name$_);\n"
                  "}\n");
 }
@@ -454,10 +433,8 @@ std::string ImmutableStringFieldGenerator::GetBoxedType() const {
 // ===================================================================
 
 ImmutableStringOneofFieldGenerator::ImmutableStringOneofFieldGenerator(
-    const FieldDescriptor* descriptor, int messageBitIndex, int builderBitIndex,
-    Context* context)
-    : ImmutableStringFieldGenerator(descriptor, messageBitIndex,
-                                    builderBitIndex, context) {
+    const FieldDescriptor* descriptor, int bit_index, Context* context)
+    : ImmutableStringFieldGenerator(descriptor, bit_index, context) {
   const OneofGeneratorInfo* info =
       context->GetOneofGeneratorInfo(descriptor->containing_oneof());
   SetCommonOneofVariables(descriptor, info, &variables_);
@@ -698,17 +675,11 @@ void ImmutableStringOneofFieldGenerator::GenerateSerializedSizeCode(
 // ===================================================================
 
 RepeatedImmutableStringFieldGenerator::RepeatedImmutableStringFieldGenerator(
-    const FieldDescriptor* descriptor, int messageBitIndex, int builderBitIndex,
-    Context* context)
-    : ImmutableStringFieldGenerator(descriptor, messageBitIndex,
-                                    builderBitIndex, context) {}
+    const FieldDescriptor* descriptor, int bit_index, Context* context)
+    : ImmutableStringFieldGenerator(descriptor, bit_index, context) {}
 
 RepeatedImmutableStringFieldGenerator::
     ~RepeatedImmutableStringFieldGenerator() = default;
-
-int RepeatedImmutableStringFieldGenerator::GetNumBitsForMessage() const {
-  return 0;
-}
 
 void RepeatedImmutableStringFieldGenerator::GenerateInterfaceMembers(
     io::Printer* printer) const {
@@ -802,7 +773,7 @@ void RepeatedImmutableStringFieldGenerator::GenerateBuilderMembers(
       "  if (!$name$_.isModifiable()) {\n"
       "    $name$_ = new com.google.protobuf.LazyStringArrayList($name$_);\n"
       "  }\n"
-      "  $set_has_field_bit_builder$\n"
+      "  $set_has_field_bit$\n"
       "}\n");
 
   // Note:  We return an unmodifiable list because otherwise the caller
@@ -851,7 +822,7 @@ void RepeatedImmutableStringFieldGenerator::GenerateBuilderMembers(
                  "  $null_check$\n"
                  "  ensure$capitalized_name$IsMutable();\n"
                  "  $name$_.set(index, value);\n"
-                 "  $set_has_field_bit_builder$\n"
+                 "  $set_has_field_bit$\n"
                  "  $on_changed$\n"
                  "  return this;\n"
                  "}\n");
@@ -865,7 +836,7 @@ void RepeatedImmutableStringFieldGenerator::GenerateBuilderMembers(
                  "  $null_check$\n"
                  "  ensure$capitalized_name$IsMutable();\n"
                  "  $name$_.add(value);\n"
-                 "  $set_has_field_bit_builder$\n"
+                 "  $set_has_field_bit$\n"
                  "  $on_changed$\n"
                  "  return this;\n"
                  "}\n");
@@ -879,7 +850,7 @@ void RepeatedImmutableStringFieldGenerator::GenerateBuilderMembers(
                  "  ensure$capitalized_name$IsMutable();\n"
                  "  com.google.protobuf.AbstractMessageLite.Builder.addAll(\n"
                  "      values, $name$_);\n"
-                 "  $set_has_field_bit_builder$\n"
+                 "  $set_has_field_bit$\n"
                  "  $on_changed$\n"
                  "  return this;\n"
                  "}\n");
@@ -892,7 +863,7 @@ void RepeatedImmutableStringFieldGenerator::GenerateBuilderMembers(
       "$deprecation$public Builder ${$clear$capitalized_name$$}$() {\n"
       "  $name$_ =\n"
       "    $empty_list$;\n"
-      "  $clear_has_field_bit_builder$;\n"
+      "  $clear_has_field_bit$;\n"
       "  $on_changed$\n"
       "  return this;\n"
       "}\n");
@@ -913,7 +884,7 @@ void RepeatedImmutableStringFieldGenerator::GenerateBuilderMembers(
   printer->Print(variables_,
                  "  ensure$capitalized_name$IsMutable();\n"
                  "  $name$_.add(value);\n"
-                 "  $set_has_field_bit_builder$\n"
+                 "  $set_has_field_bit$\n"
                  "  $on_changed$\n"
                  "  return this;\n"
                  "}\n");
@@ -949,7 +920,7 @@ void RepeatedImmutableStringFieldGenerator::GenerateMergingCode(
                  "if (!other.$name$_.isEmpty()) {\n"
                  "  if ($name$_.isEmpty()) {\n"
                  "    $name$_ = other.$name$_;\n"
-                 "    $set_has_field_bit_builder$\n"
+                 "    $set_has_field_bit$\n"
                  "  } else {\n"
                  "    ensure$capitalized_name$IsMutable();\n"
                  "    $name$_.addAll(other.$name$_);\n"

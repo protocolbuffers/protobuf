@@ -73,6 +73,9 @@ static upb_Arena* jsonenc_arena(jsonenc* e) {
   /* Create lazily, since it's only needed for Any */
   if (!e->arena) {
     e->arena = upb_Arena_New();
+    if (!e->arena) {
+      jsonenc_err(e, "Out of memory");
+    }
   }
   return e->arena;
 }
@@ -390,6 +393,10 @@ static void jsonenc_any(jsonenc* e, const upb_Message* msg,
   const upb_MiniTable* any_layout = upb_MessageDef_MiniTable(any_m);
   upb_Arena* arena = jsonenc_arena(e);
   upb_Message* any = upb_Message_New(any_layout, arena);
+  if (!any) {
+    jsonenc_err(e, "Out of memory");
+    return;
+  }
 
   if (upb_Decode(value.data, value.size, any, any_layout, NULL, 0, arena) !=
       kUpb_DecodeStatus_Ok) {

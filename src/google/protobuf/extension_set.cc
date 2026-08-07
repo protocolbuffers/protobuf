@@ -185,39 +185,42 @@ void ExtensionSet::RegisterMessageExtension(const MessageLite* extendee,
 // ===================================================================
 // Constructors and basic methods.
 
+constexpr ExtensionSet::FlatItem ExtensionSet::kEmptyKeyValue = {0, 0, 0,
+                                                                 Extension()};
+
 ExtensionSet::~ExtensionSet() {
   // Deletes all allocated extensions.
 
   ForEach([](int /* number */, Extension& ext) { ext.Free(); }, PrefetchNta{});
   if (ABSL_PREDICT_FALSE(is_large())) {
     delete map_.large;
-  } else {
-    DeleteFlatMap(map_.flat, flat_capacity_);
+  } else if (map_.flat != &kEmptyKeyValue) {
+    DeleteFlatMap(map_.flat, flat_capacity());
   }
 }
 
-ExtensionSet::KeyValue* ExtensionSet::AllocateFlatMap(
+ExtensionSet::FlatItem* ExtensionSet::AllocateFlatMap(
     Arena* arena, uint16_t powerof2_flat_capacity) {
   // It is important to allocate power-of-2 bytes in order to reuse
   // allocated blocks in arena for ExtensionSet and RepeatedFields.
   // ReturnArrayMemory is also more efficient with power-of-2 bytes, and
   // sizeof(KeyValue) is a power-of-2 on 64-bit platforms.
-  static_assert(absl::has_single_bit(sizeof(KeyValue)) || sizeof(void*) != 8,
+  static_assert(absl::has_single_bit(sizeof(FlatItem)) || sizeof(void*) != 8,
                 "sizeof(KeyValue) must be a power of 2");
   ABSL_DCHECK(absl::has_single_bit(powerof2_flat_capacity));
-  return Arena::CreateArray<ExtensionSet::KeyValue>(arena,
+  return Arena::CreateArray<ExtensionSet::FlatItem>(arena,
                                                     powerof2_flat_capacity);
 }
 
-void ExtensionSet::DeleteFlatMap(const ExtensionSet::KeyValue* flat,
+void ExtensionSet::DeleteFlatMap(const ExtensionSet::FlatItem* flat,
                                  uint16_t flat_capacity) {
   // Arena::CreateArray already requires a trivially destructible type, but
   // ensure this constraint is not violated in the future.
-  static_assert(std::is_trivially_destructible_v<KeyValue>,
+  static_assert(std::is_trivially_destructible_v<FlatItem>,
                 "CreateArray requires a trivially destructible type");
   // A const-cast is needed, but this is safe as we are about to deallocate the
   // array.
-  internal::SizedArrayDelete(const_cast<KeyValue*>(flat),
+  internal::SizedArrayDelete(const_cast<FlatItem*>(flat),
                              sizeof(*flat) * flat_capacity);
 }
 
@@ -794,21 +797,23 @@ void ExtensionSet::MergeFrom(Arena* arena, const MessageLite* extendee,
 
 ABSL_ATTRIBUTE_NOINLINE void ExtensionSet::InternalReduceSmallCapacity(
     Arena* arena) {
-  ABSL_DCHECK_LE(flat_size_, kMaximumFlatCapacity);
-  ABSL_DCHECK_LE(flat_capacity_, kMaximumFlatCapacity);
-  ABSL_DCHECK_GT(flat_size_, 0);
-  ABSL_DCHECK_GE(flat_capacity_, flat_size_ * 2);
-  const size_t new_flat_capacity = absl::bit_ceil(flat_size_);
+  uint16_t current_size = flat_size();
+  uint16_t current_cap = flat_capacity();
+  ABSL_DCHECK_LE(current_size, kMaximumFlatCapacity);
+  ABSL_DCHECK_LE(current_cap, kMaximumFlatCapacity);
+  ABSL_DCHECK_GT(current_size, 0);
+  ABSL_DCHECK_GE(current_cap, current_size * 2);
+  const size_t new_flat_capacity = absl::bit_ceil(current_size);
   auto* new_flat = AllocateFlatMap(arena, new_flat_capacity);
-  std::memcpy(new_flat, map_.flat, flat_size_ * sizeof(KeyValue));
+  std::memcpy(new_flat, map_.flat, current_size * sizeof(FlatItem));
   auto* old_flat = map_.flat;
   if (arena == nullptr) {
-    DeleteFlatMap(old_flat, flat_capacity_);
+    DeleteFlatMap(old_flat, current_cap);
   } else {
-    arena->ReturnArrayMemory(old_flat, sizeof(KeyValue) * flat_capacity_);
+    arena->ReturnArrayMemory(old_flat, sizeof(FlatItem) * current_cap);
   }
   map_.flat = new_flat;
-  flat_capacity_ = new_flat_capacity;
+  set_flat_capacity_and_size(new_flat_capacity, current_size);
 }
 
 void ExtensionSet::InternalMergeFromSmallToEmpty(Arena* arena,
@@ -816,24 +821,22 @@ void ExtensionSet::InternalMergeFromSmallToEmpty(Arena* arena,
                                                  const ExtensionSet& other,
                                                  Arena* other_arena) {
   ABSL_DCHECK(!other.is_large());
-  // Compiler is complaining on potential side effects for `!other.is_large()`.
-  ABSL_ASSUME(static_cast<int16_t>(flat_size_) >= 0);
   ABSL_DCHECK(IsCompletelyEmpty());
-
-  if (other.flat_size_ == 0) {
+  uint16_t new_size = other.flat_size();
+  if (new_size == 0) {
     return;
   }
 
-  flat_size_ = other.flat_size_;
-  KeyValue* dst_it = nullptr;
+  PROTOBUF_ASSUME(static_cast<int16_t>(new_size) > 0);
+  FlatItem* dst_it = nullptr;
   other.ForEach(
       [&](int number, const Extension& ext) {
         if (ext.is_cleared) {
-          --flat_size_;
+          --new_size;
           return;
         }
         if (dst_it == nullptr) {
-          InternalReserveSmallCapacityFromEmpty(arena, flat_size_);
+          InternalReserveSmallCapacityFromEmpty(arena, new_size);
           dst_it = map_.flat;
         }
         dst_it->first = number;
@@ -842,10 +845,11 @@ void ExtensionSet::InternalMergeFromSmallToEmpty(Arena* arena,
         ++dst_it;
       },
       Prefetch{});
-  if (flat_capacity_ == 0) {
+  if (new_size == 0) {
     return;
   }
-  if (ABSL_PREDICT_FALSE(flat_capacity_ >= flat_size_ * 2)) {
+  set_flat_size(new_size);
+  if (ABSL_PREDICT_FALSE(flat_capacity() >= new_size * 2)) {
     InternalReduceSmallCapacity(arena);
   }
 }
@@ -860,8 +864,8 @@ void ExtensionSet::InternalMergeFromSlow(Arena* arena,
                                       other.flat_begin(), other.flat_end()));
     } else {
       GrowCapacity(arena, SizeOfUnion(flat_begin(), flat_end(),
-                                      other.map_.large->begin(),
-                                      other.map_.large->end()));
+                                      other.map_.large->large.begin(),
+                                      other.map_.large->large.end()));
     }
   }
   other.ForEach(
@@ -940,6 +944,9 @@ void ExtensionSet::InternalExtensionMergeFrom(Arena* arena,
                                               int number,
                                               const Extension& other_extension,
                                               Arena* other_arena) {
+  if (other_extension.is_cleared) {
+    return;
+  }
   Extension* dst_extension;
   bool is_new = MaybeNewExtension(arena, number, other_extension.descriptor,
                                   &dst_extension);
@@ -975,9 +982,6 @@ void ExtensionSet::InternalExtensionMergeFrom(Arena* arena,
     return;
   }
 
-  if (other_extension.is_cleared) {
-    return;
-  }
   dst_extension->is_cleared = false;
   switch (cpp_type(other_extension.type)) {
 #define HANDLE_TYPE(UPPERCASE, LOWERCASE)                                 \
@@ -1036,8 +1040,6 @@ void ExtensionSet::Swap(Arena* arena, const MessageLite* extendee,
 
 void ExtensionSet::InternalSwap(ExtensionSet* other) {
   using std::swap;
-  swap(flat_capacity_, other->flat_capacity_);
-  swap(flat_size_, other->flat_size_);
   swap(map_, other->map_);
 }
 
@@ -1111,14 +1113,14 @@ bool ExtensionSet::IsInitialized(Arena* arena,
   // Extensions are never required.  However, we need to check that all
   // embedded messages are initialized.
   if (ABSL_PREDICT_FALSE(is_large())) {
-    for (const auto& kv : *map_.large) {
+    for (const auto& kv : map_.large->large) {
       if (!kv.second.IsInitialized(this, extendee, kv.first, arena)) {
         return false;
       }
     }
     return true;
   }
-  for (const KeyValue* it = flat_begin(); it != flat_end(); ++it) {
+  for (const FlatItem* it = flat_begin(); it != flat_end(); ++it) {
     if (!it->second.IsInitialized(this, extendee, it->first, arena)) {
       return false;
     }
@@ -1164,8 +1166,8 @@ uint8_t* ExtensionSet::_InternalSerializeImpl(
     return _InternalSerializeImplLarge(extendee, start_field_number,
                                        end_field_number, target, stream);
   }
-  const KeyValue* end = flat_end();
-  const KeyValue* it = flat_begin();
+  const FlatItem* end = flat_end();
+  const FlatItem* it = flat_begin();
   while (it != end && it->first < start_field_number) ++it;
   for (; it != end && it->first < end_field_number; ++it) {
     target = it->second.InternalSerializeFieldWithCachedSizesToArray(
@@ -1190,8 +1192,8 @@ uint8_t* ExtensionSet::_InternalSerializeImplLarge(
     const MessageLite* extendee, int start_field_number, int end_field_number,
     uint8_t* target, io::EpsCopyOutputStream* stream) const {
   assert(is_large());
-  const auto& end = map_.large->end();
-  for (auto it = map_.large->lower_bound(start_field_number);
+  const auto& end = map_.large->large.end();
+  for (auto it = map_.large->large.lower_bound(start_field_number);
        it != end && it->first < end_field_number; ++it) {
     target = it->second.InternalSerializeFieldWithCachedSizesToArray(
         extendee, this, it->first, target, stream);
@@ -1526,7 +1528,7 @@ bool ExtensionSet::Extension::IsInitialized(const ExtensionSet* ext_set,
 
 
 const ExtensionSet::Extension* ExtensionSet::FindOrNull(int key) const {
-  if (flat_size_ == 0) {
+  if (IsCompletelyEmpty()) {
     return nullptr;
   } else if (ABSL_PREDICT_TRUE(!is_large())) {
     for (auto it = flat_begin(), end = flat_end();
@@ -1542,8 +1544,8 @@ const ExtensionSet::Extension* ExtensionSet::FindOrNull(int key) const {
 const ExtensionSet::Extension* ExtensionSet::FindOrNullInLargeMap(
     int key) const {
   assert(is_large());
-  LargeMap::const_iterator it = map_.large->find(key);
-  if (it != map_.large->end()) {
+  LargeMap::const_iterator it = map_.large->large.find(key);
+  if (it != map_.large->large.end()) {
     return &it->second;
   }
   return nullptr;
@@ -1564,17 +1566,27 @@ ABSL_ATTRIBUTE_NOINLINE
 std::pair<ExtensionSet::Extension*, bool>
 ExtensionSet::InternalInsertIntoLargeMap(int key) {
   ABSL_DCHECK(is_large());
-  auto maybe = map_.large->insert({key, Extension()});
+  auto maybe = map_.large->large.insert({key, Extension()});
   return {&maybe.first->second, maybe.second};
 }
 
 std::pair<ExtensionSet::Extension*, bool> ExtensionSet::Insert(Arena* arena,
                                                                int key) {
+  if (IsCompletelyEmpty()) {
+    map_.flat = AllocateFlatMap(arena, 1);
+    map_.flat[0] = FlatItem{/*first=*/key,
+                            /*flat_capacity=*/1,
+                            /*flat_size=*/1,
+                            /*second=*/Extension()};
+    return {&map_.flat[0].second, true};
+  }
   if (ABSL_PREDICT_FALSE(is_large())) {
     return InternalInsertIntoLargeMap(key);
   }
-  uint16_t i = flat_size_;
-  KeyValue* flat = map_.flat;
+  uint16_t current_size = flat_size();
+  uint16_t current_cap = flat_capacity();
+  uint16_t i = current_size;
+  FlatItem* flat = map_.flat;
   // Iterating from the back to benefit the case where the keys are inserted in
   // increasing order.
   for (; i > 0; --i) {
@@ -1586,18 +1598,19 @@ std::pair<ExtensionSet::Extension*, bool> ExtensionSet::Insert(Arena* arena,
       break;
     }
   }
-  if (flat_size_ == flat_capacity_) {
-    GrowCapacity(arena, flat_size_ + 1);
+  if (current_size == current_cap) {
+    GrowCapacity(arena, current_size + 1);
     if (ABSL_PREDICT_FALSE(is_large())) {
       return InternalInsertIntoLargeMap(key);
     }
     flat = map_.flat;  // Reload flat pointer after GrowCapacity.
+    current_cap = flat_capacity();
   }
 
-  std::copy_backward(flat + i, flat + flat_size_, flat + flat_size_ + 1);
-  ++flat_size_;
+  std::copy_backward(flat + i, flat + current_size, flat + current_size + 1);
   flat[i].first = key;
   flat[i].second = Extension();
+  set_flat_capacity_and_size(current_cap, current_size + 1);
   return {&flat[i].second, true};
 }
 
@@ -1605,62 +1618,66 @@ void ExtensionSet::GrowCapacity(Arena* arena, size_t minimum_new_capacity) {
   if (ABSL_PREDICT_FALSE(is_large())) {
     return;  // LargeMap does not have a "reserve" method.
   }
-  if (flat_capacity_ >= minimum_new_capacity) {
+  uint16_t current_cap = flat_capacity();
+  if (current_cap >= minimum_new_capacity) {
     return;
   }
 
-  auto new_flat_capacity = flat_capacity_;
+  size_t new_flat_capacity = current_cap;
   do {
-    new_flat_capacity = new_flat_capacity == 0 ? 1 : new_flat_capacity * 4;
+    new_flat_capacity = new_flat_capacity == 0 ? 1 : new_flat_capacity * 2;
   } while (new_flat_capacity < minimum_new_capacity);
 
-  KeyValue* begin = flat_begin();
-  KeyValue* end = flat_end();
+  FlatItem* begin = flat_begin();
+  FlatItem* end = flat_end();
+  uint16_t current_size = flat_size();
   AllocatedData new_map;
   if (new_flat_capacity > kMaximumFlatCapacity) {
-    new_map.large = Arena::Create<LargeMap>(arena);
-    LargeMap::iterator hint = new_map.large->begin();
-    for (const KeyValue* it = begin; it != end; ++it) {
-      hint = new_map.large->insert(hint, {it->first, it->second});
+    LargeRep* large_rep = Arena::Create<LargeRep>(arena);
+    LargeMap::iterator hint = large_rep->large.begin();
+    for (const FlatItem* it = begin; it != end; ++it) {
+      hint = large_rep->large.insert(hint, {it->first, it->second});
     }
-    flat_size_ = static_cast<uint16_t>(-1);
-    ABSL_DCHECK(is_large());
+    new_map.large = large_rep;
   } else {
     new_map.flat = AllocateFlatMap(arena, new_flat_capacity);
     std::copy(begin, end, new_map.flat);
+    SetFlatCapacityAndSize(*new_map.flat, new_flat_capacity, current_size);
   }
 
-  if (flat_capacity_ > 0) {
+  if (current_cap > 0) {
     if (arena == nullptr) {
-      DeleteFlatMap(begin, flat_capacity_);
+      DeleteFlatMap(begin, current_cap);
     } else {
-      arena->ReturnArrayMemory(begin, sizeof(KeyValue) * flat_capacity_);
+      arena->ReturnArrayMemory(begin, sizeof(FlatItem) * current_cap);
     }
   }
-  flat_capacity_ = new_flat_capacity;
   map_ = new_map;
 }
 
 void ExtensionSet::InternalReserveSmallCapacityFromEmpty(
     Arena* arena, size_t minimum_new_capacity) {
-  ABSL_DCHECK(flat_capacity_ == 0);
+  ABSL_DCHECK(IsCompletelyEmpty());
   ABSL_DCHECK(minimum_new_capacity <= kMaximumFlatCapacity);
   ABSL_DCHECK(minimum_new_capacity > 0);
   const size_t new_flat_capacity = absl::bit_ceil(minimum_new_capacity);
-  flat_capacity_ = new_flat_capacity;
   map_.flat = AllocateFlatMap(arena, new_flat_capacity);
+  set_flat_capacity_and_size(new_flat_capacity, 0);
 }
 
 void ExtensionSet::Erase(int key) {
   if (ABSL_PREDICT_FALSE(is_large())) {
-    map_.large->erase(key);
+    map_.large->large.erase(key);
     return;
   }
-  KeyValue* end = flat_end();
-  for (KeyValue* it = flat_begin(); it != end && it->first <= key; ++it) {
+  uint16_t current_cap = flat_capacity();
+  uint16_t current_size = flat_size();
+  FlatItem* end = flat_begin() + current_size;
+  for (FlatItem* it = flat_begin(); it != end && it->first <= key; ++it) {
     if (it->first == key) {
       std::copy(it + 1, end, it);
-      --flat_size_;
+      // We need to overwrite capacity in case we overwrote the first element.
+      set_flat_capacity_and_size(current_cap, current_size - 1);
       return;
     }
   }

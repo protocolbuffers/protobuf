@@ -300,6 +300,7 @@ def _test_descriptor_set_output_strict_deps_disabled_impl(env, target):
     action = env.expect.that_target(target).action_generating(
         "{package}/{name}-descriptor-set.proto.bin",
     )
+
     action.argv().not_contains("--direct_dependencies")
     action.argv().not_contains_predicate(matching.str_matches("--direct_dependencies_violation_msg=*"))
 

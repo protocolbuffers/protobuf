@@ -12,6 +12,7 @@ import static com.google.common.truth.Truth.assertWithMessage;
 import static org.junit.Assert.assertThrows;
 
 import com.google.protobuf.ExtensionRegistryLite.LazyExtensionMode;
+import proto2_unittest.UnittestCustomOptions;
 import proto2_unittest.UnittestOptimizeFor;
 import proto2_unittest.UnittestOptimizeFor.TestOptimizedForSize;
 import proto2_unittest.UnittestOptimizeFor.TestRequiredOptimizedForSize;
@@ -458,5 +459,32 @@ public class ParserTest {
             registry);
 
     assertThat(builder.getExtension(TestParsingMerge.optionalExt).getOptionalInt32()).isEqualTo(2);
+  }
+
+  // Test that custom options are eagerly parsed by verifying that an invalid tag in the extension
+  // payload throws an exception.
+  @Test
+  public void testCustomOptionEagerlyParsed() throws Exception {
+    LazyExtensionMode originalMode = ExtensionRegistryLite.getLazyExtensionMode();
+    ExtensionRegistryLite.setLazyExtensionMode(LazyExtensionMode.LAZY_VERIFY_ON_ACCESS);
+    int fieldNumber = UnittestCustomOptions.complexOpt1.getNumber();
+    int extensionTag = (fieldNumber << 3) | 2; // WireFormat.WIRETYPE_LENGTH_DELIMITED
+    ByteArrayOutputStream output = new ByteArrayOutputStream();
+    CodedOutputStream codedOutput = CodedOutputStream.newInstance(output);
+    codedOutput.writeUInt32NoTag(extensionTag);
+    codedOutput.writeUInt32NoTag(1); // Length = 1 byte
+    codedOutput.writeRawByte((byte) 0); // 0 is an invalid varint tag in protobuf payload
+    codedOutput.flush();
+    byte[] invalidPayload = output.toByteArray();
+    ExtensionRegistryLite registry = ExtensionRegistryLite.newInstance();
+    registry.add(UnittestCustomOptions.complexOpt1);
+
+    Throwable thrown =
+        assertThrows(
+            InvalidProtocolBufferException.class,
+            () -> DescriptorProtos.MessageOptions.parseFrom(invalidPayload, registry));
+
+    assertThat(thrown).hasMessageThat().contains("invalid tag");
+    ExtensionRegistryLite.setLazyExtensionMode(originalMode);
   }
 }

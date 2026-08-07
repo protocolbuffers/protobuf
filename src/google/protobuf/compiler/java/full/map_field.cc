@@ -16,6 +16,7 @@
 #include "google/protobuf/compiler/java/doc_comment.h"
 #include "google/protobuf/compiler/java/field_common.h"
 #include "google/protobuf/compiler/java/helpers.h"
+#include "google/protobuf/compiler/java/full/field_generator.h"
 #include "google/protobuf/compiler/java/internal_helpers.h"
 #include "google/protobuf/compiler/java/name_resolver.h"
 #include "google/protobuf/io/printer.h"
@@ -51,13 +52,8 @@ std::string WireType(const FieldDescriptor* field) {
 }  // namespace
 
 ImmutableMapFieldGenerator::ImmutableMapFieldGenerator(
-    const FieldDescriptor* descriptor, int messageBitIndex, int builderBitIndex,
-    Context* context)
-    : descriptor_(descriptor),
-      message_bit_index_(messageBitIndex),
-      builder_bit_index_(builderBitIndex),
-      name_resolver_(context->GetNameResolver()),
-      context_(context) {
+    const FieldDescriptor* descriptor, int bit_index, Context* context)
+    : ImmutableFieldGenerator(descriptor, bit_index, context) {
   SetMessageVariables(context->GetFieldGeneratorInfo(descriptor));
 }
 
@@ -166,24 +162,14 @@ void ImmutableMapFieldGenerator::SetMessageVariables(
   variables_["descriptor"] = absl::StrCat(
       name_resolver->GetImmutableClassName(descriptor_->file()), ".internal_",
       UniqueFileScopeIdentifier(descriptor_->message_type()), "_descriptor, ");
-  variables_["get_has_field_bit_builder"] = GenerateGetBit(builder_bit_index_);
+  variables_["get_has_field_bit"] = GenerateGetBit(bit_index_);
   variables_["get_has_field_bit_from_local"] =
-      GenerateGetBitFromLocal(builder_bit_index_);
-  variables_["set_has_field_bit_builder"] =
-      absl::StrCat(GenerateSetBit(builder_bit_index_), ";");
-  variables_["clear_has_field_bit_builder"] =
-      absl::StrCat(GenerateClearBit(builder_bit_index_), ";");
+      GenerateGetBitFromLocal(bit_index_);
+  variables_["set_has_field_bit"] =
+      absl::StrCat(GenerateSetBit(bit_index_), ";");
+  variables_["clear_has_field_bit"] =
+      absl::StrCat(GenerateClearBit(bit_index_), ";");
 }
-
-int ImmutableMapFieldGenerator::GetMessageBitIndex() const {
-  return message_bit_index_;
-}
-
-int ImmutableMapFieldGenerator::GetBuilderBitIndex() const {
-  return builder_bit_index_;
-}
-
-int ImmutableMapFieldGenerator::GetNumBitsForMessage() const { return 0; }
 
 void ImmutableMapFieldGenerator::GenerateInterfaceMembers(
     io::Printer* printer) const {
@@ -365,7 +351,7 @@ void ImmutableMapFieldGenerator::GenerateBuilderMembers(
       "  if (!$name$_.isMutable()) {\n"
       "    $name$_ = $name$_.copy();\n"
       "  }\n"
-      "  $set_has_field_bit_builder$\n"
+      "  $set_has_field_bit$\n"
       "  $on_changed$\n"
       "  return $name$_;\n"
       "}\n");
@@ -373,7 +359,7 @@ void ImmutableMapFieldGenerator::GenerateBuilderMembers(
   printer->Print(
       variables_,
       "$deprecation$public Builder ${$clear$capitalized_name$$}$() {\n"
-      "  $clear_has_field_bit_builder$\n"
+      "  $clear_has_field_bit$\n"
       "  internalGetMutable$capitalized_name$().getMutableMap()\n"
       "      .clear();\n"
       "  return this;\n"
@@ -402,7 +388,7 @@ void ImmutableMapFieldGenerator::GenerateBuilderMembers(
           "@java.lang.Deprecated\n"
           "public java.util.Map<$boxed_key_type$, $value_enum_type$>\n"
           "    ${$getMutable$capitalized_name$$}$() {\n"
-          "  $set_has_field_bit_builder$\n"
+          "  $set_has_field_bit$\n"
           "  return internalGetAdapted$capitalized_name$Map(\n"
           "       internalGetMutable$capitalized_name$().getMutableMap());\n"
           "}\n");
@@ -418,7 +404,7 @@ void ImmutableMapFieldGenerator::GenerateBuilderMembers(
                    "  $value_null_check$\n"
                    "  internalGetMutable$capitalized_name$().getMutableMap()\n"
                    "      .put(key, $name$ValueConverter.doBackward(value));\n"
-                   "  $set_has_field_bit_builder$\n"
+                   "  $set_has_field_bit$\n"
                    "  return this;\n"
                    "}\n");
     printer->Annotate("{", "}", descriptor_, Semantic::kSet);
@@ -431,7 +417,7 @@ void ImmutableMapFieldGenerator::GenerateBuilderMembers(
         "  internalGetAdapted$capitalized_name$Map(\n"
         "      internalGetMutable$capitalized_name$().getMutableMap())\n"
         "          .putAll(values);\n"
-        "  $set_has_field_bit_builder$\n"
+        "  $set_has_field_bit$\n"
         "  return this;\n"
         "}\n");
     printer->Annotate("{", "}", descriptor_, Semantic::kSet);
@@ -446,7 +432,7 @@ void ImmutableMapFieldGenerator::GenerateBuilderMembers(
             "@java.lang.Deprecated\n"
             "public java.util.Map<$boxed_key_type$, $boxed_value_type$>\n"
             "${$getMutable$capitalized_name$Value$}$() {\n"
-            "  $set_has_field_bit_builder$\n"
+            "  $set_has_field_bit$\n"
             "  return internalGetMutable$capitalized_name$().getMutableMap();\n"
             "}\n");
         printer->Annotate("{", "}", descriptor_);
@@ -462,7 +448,7 @@ void ImmutableMapFieldGenerator::GenerateBuilderMembers(
           "  $value_null_check$\n"
           "  internalGetMutable$capitalized_name$().getMutableMap()\n"
           "      .put(key, value);\n"
-          "  $set_has_field_bit_builder$\n"
+          "  $set_has_field_bit$\n"
           "  return this;\n"
           "}\n");
       printer->Annotate("{", "}", descriptor_, Semantic::kSet);
@@ -474,7 +460,7 @@ void ImmutableMapFieldGenerator::GenerateBuilderMembers(
           "    java.util.Map<$boxed_key_type$, $boxed_value_type$> values) {\n"
           "  internalGetMutable$capitalized_name$().getMutableMap()\n"
           "      .putAll(values);\n"
-          "  $set_has_field_bit_builder$\n"
+          "  $set_has_field_bit$\n"
           "  return this;\n"
           "}\n");
       printer->Annotate("{", "}", descriptor_, Semantic::kSet);
@@ -489,7 +475,7 @@ void ImmutableMapFieldGenerator::GenerateBuilderMembers(
           "@java.lang.Deprecated\n"
           "public java.util.Map<$type_parameters$>\n"
           "    ${$getMutable$capitalized_name$$}$() {\n"
-          "  $set_has_field_bit_builder$\n"
+          "  $set_has_field_bit$\n"
           "  return internalGetMutable$capitalized_name$().getMutableMap();\n"
           "}\n");
       printer->Annotate("{", "}", descriptor_);
@@ -504,7 +490,7 @@ void ImmutableMapFieldGenerator::GenerateBuilderMembers(
                    "  $value_null_check$\n"
                    "  internalGetMutable$capitalized_name$().getMutableMap()\n"
                    "      .put(key, value);\n"
-                   "  $set_has_field_bit_builder$\n"
+                   "  $set_has_field_bit$\n"
                    "  return this;\n"
                    "}\n");
     printer->Annotate("{", "}", descriptor_, Semantic::kSet);
@@ -516,7 +502,7 @@ void ImmutableMapFieldGenerator::GenerateBuilderMembers(
         "    java.util.Map<$type_parameters$> values) {\n"
         "  internalGetMutable$capitalized_name$().getMutableMap()\n"
         "      .putAll(values);\n"
-        "  $set_has_field_bit_builder$\n"
+        "  $set_has_field_bit$\n"
         "  return this;\n"
         "}\n");
     printer->Annotate("{", "}", descriptor_, Semantic::kSet);
@@ -772,7 +758,7 @@ void ImmutableMapFieldGenerator::GenerateMessageMapBuilderMembers(
       "    $name$_ = new "
       "com.google.protobuf.MapFieldBuilder<>($name$Converter);\n"
       "  }\n"
-      "  $set_has_field_bit_builder$\n"
+      "  $set_has_field_bit$\n"
       "  $on_changed$\n"
       "  return $name$_;\n"
       "}\n");
@@ -780,7 +766,7 @@ void ImmutableMapFieldGenerator::GenerateMessageMapBuilderMembers(
   printer->Print(
       variables_,
       "$deprecation$public Builder ${$clear$capitalized_name$$}$() {\n"
-      "  $clear_has_field_bit_builder$\n"
+      "  $clear_has_field_bit$\n"
       "  internalGetMutable$capitalized_name$().clear();\n"
       "  return this;\n"
       "}\n");
@@ -806,7 +792,7 @@ void ImmutableMapFieldGenerator::GenerateMessageMapBuilderMembers(
         "@java.lang.Deprecated\n"
         "public java.util.Map<$type_parameters$>\n"
         "    ${$getMutable$capitalized_name$$}$() {\n"
-        "  $set_has_field_bit_builder$\n"
+        "  $set_has_field_bit$\n"
         "  return internalGetMutable$capitalized_name$().ensureMessageMap();\n"
         "}\n");
     printer->Annotate("{", "}", descriptor_);
@@ -821,7 +807,7 @@ void ImmutableMapFieldGenerator::GenerateMessageMapBuilderMembers(
                  "  $value_null_check$\n"
                  "  internalGetMutable$capitalized_name$().ensureBuilderMap()\n"
                  "      .put(key, value);\n"
-                 "  $set_has_field_bit_builder$\n"
+                 "  $set_has_field_bit$\n"
                  "  return this;\n"
                  "}\n");
   printer->Annotate("{", "}", descriptor_, Semantic::kSet);
@@ -837,7 +823,7 @@ void ImmutableMapFieldGenerator::GenerateMessageMapBuilderMembers(
       "  }\n"
       "  internalGetMutable$capitalized_name$().ensureBuilderMap()\n"
       "      .putAll(values);\n"
-      "  $set_has_field_bit_builder$\n"
+      "  $set_has_field_bit$\n"
       "  return this;\n"
       "}\n");
   printer->Annotate("{", "}", descriptor_, Semantic::kSet);
@@ -959,7 +945,7 @@ void ImmutableMapFieldGenerator::GenerateMergingCode(
   printer->Print(variables_,
                  "internalGetMutable$capitalized_name$().mergeFrom(\n"
                  "    other.internalGet$capitalized_name$());\n"
-                 "$set_has_field_bit_builder$\n");
+                 "$set_has_field_bit$\n");
 }
 
 void ImmutableMapFieldGenerator::GenerateBuildingCode(
@@ -992,7 +978,7 @@ void ImmutableMapFieldGenerator::GenerateBuilderParsingCode(
         "    $default_entry$.getParserForType(), extensionRegistry);\n"
         "internalGetMutable$capitalized_name$().ensureBuilderMap().put(\n"
         "    $name$__.getKey(), $name$__.getValue());\n"
-        "$set_has_field_bit_builder$\n");
+        "$set_has_field_bit$\n");
     return;
   }
   if (!SupportUnknownEnumValue(value) && type == JAVATYPE_ENUM) {
@@ -1006,7 +992,7 @@ void ImmutableMapFieldGenerator::GenerateBuilderParsingCode(
         "} else {\n"
         "  internalGetMutable$capitalized_name$().getMutableMap().put(\n"
         "      $name$__.getKey(), $name$__.getValue());\n"
-        "  $set_has_field_bit_builder$\n"
+        "  $set_has_field_bit$\n"
         "}\n");
     return;
   }
@@ -1016,7 +1002,7 @@ void ImmutableMapFieldGenerator::GenerateBuilderParsingCode(
                  "    $default_entry$.getParserForType(), extensionRegistry);\n"
                  "internalGetMutable$capitalized_name$().getMutableMap().put(\n"
                  "    $name$__.getKey(), $name$__.getValue());\n"
-                 "$set_has_field_bit_builder$\n");
+                 "$set_has_field_bit$\n");
 }
 void ImmutableMapFieldGenerator::GenerateSerializationCode(
     io::Printer* printer) const {

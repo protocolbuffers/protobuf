@@ -320,6 +320,14 @@ constexpr bool HasAnySanitizer() {
 #endif
 }
 
+constexpr bool RunLargeMemoryTests() {
+  // For tests that need a lot of memory, we check that we have a 64-bit
+  // platform.
+  // And we also check we are not using sanitizers. They increase memory
+  // requirements and can be too slow for those tests.
+  return sizeof(void*) == 8 && !HasAnySanitizer();
+}
+
 constexpr bool PerformDebugChecks() {
   if (HasAnySanitizer()) return true;
 #if defined(NDEBUG)

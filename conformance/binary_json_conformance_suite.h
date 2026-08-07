@@ -147,6 +147,9 @@ class BinaryAndJsonConformanceSuiteImpl {
   void ExpectParseFailureForJson(const std::string& test_name,
                                  ConformanceLevel level,
                                  const std::string& input_json);
+  void RunValidJsonTestOrParseFailure(
+      const std::string& test_name, ConformanceLevel level,
+      const std::string& input_json, const std::string& equivalent_text_format);
   void ExpectSerializeFailureForJson(const std::string& test_name,
                                      ConformanceLevel level,
                                      const std::string& text_format);

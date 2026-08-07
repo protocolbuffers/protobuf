@@ -5166,6 +5166,9 @@ static upb_Arena* jsonenc_arena(jsonenc* e) {
   /* Create lazily, since it's only needed for Any */
   if (!e->arena) {
     e->arena = upb_Arena_New();
+    if (!e->arena) {
+      jsonenc_err(e, "Out of memory");
+    }
   }
   return e->arena;
 }
@@ -5483,6 +5486,10 @@ static void jsonenc_any(jsonenc* e, const upb_Message* msg,
   const upb_MiniTable* any_layout = upb_MessageDef_MiniTable(any_m);
   upb_Arena* arena = jsonenc_arena(e);
   upb_Message* any = upb_Message_New(any_layout, arena);
+  if (!any) {
+    jsonenc_err(e, "Out of memory");
+    return;
+  }
 
   if (upb_Decode(value.data, value.size, any, any_layout, NULL, 0, arena) !=
       kUpb_DecodeStatus_Ok) {
@@ -7865,26 +7872,6 @@ void _upb_Message_DiscardUnknown_shallow(upb_Message* msg) {
   in->size = size;
 }
 
-upb_Message_DeleteUnknownStatus upb_Message_DeleteUnknown(upb_Message* msg,
-                                                          upb_StringView* data,
-                                                          uintptr_t* iter,
-                                                          upb_Arena* arena) {
-  upb_MessageUnknown unknown;
-  unknown.type = kUpb_MessageUnknownType_StringView;
-  unknown.value.bytes = *data;
-
-  upb_Message_DeleteUnknownStatus res =
-      upb_Message_DeleteUnknown2(msg, &unknown, iter, arena);
-  UPB_ASSERT(unknown.type == kUpb_MessageUnknownType_StringView);
-  if (res == kUpb_DeleteUnknown_IterUpdated ||
-      res == kUpb_DeleteUnknown_DeletedLast) {
-    // the unknown data remains the same on the result of
-    // kUpb_DeleteUnknown_AllocFail.
-    *data = unknown.value.bytes;
-  }
-  return res;
-}
-
 size_t upb_Message_ExtensionCount(const upb_Message* msg) {
   upb_Message_Internal* in = UPB_PRIVATE(_upb_Message_GetInternal)(msg);
   if (!in) return 0;
@@ -8103,6 +8090,25 @@ upb_Message_DeleteUnknownStatus upb_Message_DeleteUnknown2(
   return upb_Message_NextUnknown2(msg, data, iter)
              ? kUpb_DeleteUnknown_IterUpdated
              : kUpb_DeleteUnknown_DeletedLast;
+}
+
+upb_Message_DeleteUnknownStatus upb_Message_DeleteUnknown(
+    struct upb_Message* msg, upb_StringView* data, uintptr_t* iter,
+    struct upb_Arena* arena) {
+  upb_MessageUnknown unknown;
+  unknown.type = kUpb_MessageUnknownType_StringView;
+  unknown.value.bytes = *data;
+
+  upb_Message_DeleteUnknownStatus res =
+      upb_Message_DeleteUnknown2(msg, &unknown, iter, arena);
+  UPB_ASSERT(unknown.type == kUpb_MessageUnknownType_StringView);
+  if (res == kUpb_DeleteUnknown_IterUpdated ||
+      res == kUpb_DeleteUnknown_DeletedLast) {
+    // the unknown data remains the same on the result of
+    // kUpb_DeleteUnknown_AllocFail.
+    *data = unknown.value.bytes;
+  }
+  return res;
 }
 
 
@@ -9040,12 +9046,21 @@ upb_Extension* UPB_PRIVATE(_upb_Message_GetOrCreateExtensionWithTag)(
     struct upb_Message* msg, const upb_MiniTableExtension* e, upb_Arena* a,
     upb_TaggedAuxType tag) {
   UPB_ASSERT(!upb_Message_IsFrozen(msg));
-  upb_Extension* ext = (upb_Extension*)UPB_PRIVATE(_upb_Message_Getext)(msg, e);
-  if (ext) return ext;
-
+  // For Canonical Extensions, we check whether the extension has already been
+  // set. If we find an extension with the same pointer and tag, we reuse it to
+  // prevent duplicate entries for the same extension.
+  //
+  // For Non-Canonical Extensions, we do NOT reuse them, matching the behavior
+  // of adding a unknown StringView (through `_upb_Message_AddUnknown`) which
+  // accumulates.
+  if (tag == kUpb_TaggedAuxType_CanonicalExtension) {
+    upb_Extension* ext =
+        (upb_Extension*)UPB_PRIVATE(_upb_Message_Getext)(msg, e);
+    if (ext) return ext;
+  }
   if (!UPB_PRIVATE(_upb_Message_ReserveSlot)(msg, a)) return NULL;
   upb_Message_Internal* in = UPB_PRIVATE(_upb_Message_GetInternal)(msg);
-  ext = upb_Arena_Malloc(a, sizeof(upb_Extension));
+  upb_Extension* ext = upb_Arena_Malloc(a, sizeof(upb_Extension));
   if (!ext) return NULL;
   memset(ext, 0, sizeof(upb_Extension));
   ext->ext = e;
@@ -10135,6 +10150,7 @@ done:
 #endif
 
   upb_MiniTable* ret = upb_Arena_Malloc(decoder->arena, mt_size);
+  upb_MdDecoder_CheckOutOfMemory(&decoder->base, ret);
   memcpy(ret, &decoder->table, sizeof(*ret));
 
 #if UPB_FASTTABLE
@@ -17803,6 +17819,49 @@ const char* upb_EncodeStatus_String(upb_EncodeStatus status) {
 }
 
 
+#include <setjmp.h>
+#include <stddef.h>
+
+
+// Must be last.
+
+static upb_EncodeStatus upb_DoEncodeExtension(upb_encstate* encoder, char* ptr,
+                                              const struct upb_Extension* ext,
+                                              bool is_message_set,
+                                              upb_StringView* view,
+                                              int encode_options) {
+  if (UPB_SETJMP(*encoder->err) == 0) {
+    char* buf = ptr;
+    size_t size = 0;
+    UPB_PRIVATE(_upb_Encode_Extension)(encoder, ext->ext, ext->data,
+                                       is_message_set, &buf, &size,
+                                       encode_options);
+    view->data = buf;
+    view->size = size;
+  } else {
+    UPB_ASSERT(encoder->status != kUpb_EncodeStatus_Ok);
+    upb_BackAlloc_Abort(&encoder->alloc);
+    view->data = NULL;
+    view->size = 0;
+  }
+  UPB_PRIVATE(_upb_encstate_destroy)(encoder);
+  return encoder->status;
+}
+
+upb_EncodeStatus upb_EncodeExtension(const struct upb_Extension* ext,
+                                     struct upb_Arena* arena,
+                                     upb_StringView* view, int encode_options) {
+  const upb_MiniTable* extendee = upb_MiniTableExtension_Extendee(ext->ext);
+  bool is_message_set =
+      extendee != NULL && upb_MiniTable_IsMessageSet(extendee);
+  upb_encstate e;
+  jmp_buf err;
+  char* ptr = UPB_PRIVATE(_upb_encstate_init)(&e, &err, arena);
+  return upb_DoEncodeExtension(&e, ptr, ext, is_message_set, view,
+                               encode_options);
+}
+
+
 #include <stddef.h>
 #include <stdint.h>
 #include <string.h>
@@ -18489,9 +18548,12 @@ static char* encode_map(char* ptr, upb_encstate* e, const upb_Message* msg,
 
   if (e->options & kUpb_EncodeOption_Deterministic) {
     _upb_sortedmap sorted;
-    _upb_mapsorter_pushmap(
-        &e->sorter, layout->UPB_PRIVATE(fields)[0].UPB_PRIVATE(descriptortype),
-        map, &sorted);
+    if (!_upb_mapsorter_pushmap(
+            &e->sorter,
+            layout->UPB_PRIVATE(fields)[0].UPB_PRIVATE(descriptortype), map,
+            &sorted)) {
+      encode_err(e, kUpb_EncodeStatus_OutOfMemory);
+    }
     upb_MapEntry ent;
     while (_upb_sortedmap_next(&e->sorter, map, &sorted, &ent)) {
       ptr = encode_mapentry(ptr, e, upb_MiniTableField_Number(f), layout, &ent);
@@ -18627,7 +18689,7 @@ static char* encode_exts(char* ptr, upb_encstate* e, const upb_MiniTable* m,
   if (e->options & kUpb_EncodeOption_Deterministic) {
     _upb_sortedmap sorted;
     if (!_upb_mapsorter_pushexts(&e->sorter, in, &sorted)) {
-      // TODO: b/378744096 - handle alloc failure
+      encode_err(e, kUpb_EncodeStatus_OutOfMemory);
     }
     const upb_Extension* ext;
     while (_upb_sortedmap_nextext(&e->sorter, &sorted, &ext)) {

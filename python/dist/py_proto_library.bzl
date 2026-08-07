@@ -105,7 +105,11 @@ def _py_proto_library_aspect_impl(target, ctx):
                     [_get_real_short_path(file) for file in proto_sources],
         progress_message = "Generating Python protos for :" + ctx.label.name,
     )
-    outs_depset = depset(srcs)
+    transitive_py_sources = [dep[PyInfo].transitive_sources for dep in ctx.rule.attr.deps if PyInfo in dep] if hasattr(ctx.rule.attr, "deps") else []
+    outs_depset = depset(
+        direct = srcs,
+        transitive = transitive_py_sources,
+    )
     return [
         PyInfo(transitive_sources = outs_depset),
     ]

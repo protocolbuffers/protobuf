@@ -461,5 +461,59 @@ TEST(ReflectionTest, EnumCustomJsonNameAliasedSameNumberSucceeds) {
   EXPECT_TRUE(status.ok()) << status.message();
 }
 
+TEST(ReflectionTest, DefPoolFindMethodsRespectSize) {
+  upb::DefPool pool = LoadDescriptorProto(R"pb(
+                        syntax: "proto2"
+                        name: "test.proto"
+                        package: "pkg"
+                        message_type {
+                          name: "TestMessage"
+                          extension_range { start: 1 end: 1000 }
+                        }
+                        enum_type {
+                          name: "TestEnum"
+                          value { name: "VAL" number: 1 }
+                        }
+                        extension {
+                          name: "test_ext"
+                          number: 100
+                          label: LABEL_OPTIONAL
+                          type: TYPE_INT32
+                          extendee: ".pkg.TestMessage"
+                        }
+                      )pb")
+                          .value();
+
+  // Test FindMessageByName
+  {
+    absl::string_view full_name = "pkg.TestMessage";
+    EXPECT_TRUE(pool.FindMessageByName(full_name));
+    EXPECT_FALSE(
+        pool.FindMessageByName(full_name.substr(0, 12)));  // "pkg.TestMess"
+  }
+
+  // Test FindEnumByName
+  {
+    absl::string_view full_name = "pkg.TestEnum";
+    EXPECT_TRUE(pool.FindEnumByName(full_name));
+    EXPECT_FALSE(pool.FindEnumByName(full_name.substr(0, 10)));  // "pkg.TestEn"
+  }
+
+  // Test FindFileByName
+  {
+    absl::string_view full_name = "test.proto";
+    EXPECT_TRUE(pool.FindFileByName(full_name));
+    EXPECT_FALSE(pool.FindFileByName(full_name.substr(0, 7)));  // "test.pr"
+  }
+
+  // Test FindExtensionByName
+  {
+    absl::string_view full_name = "pkg.test_ext";
+    EXPECT_TRUE(pool.FindExtensionByName(full_name));
+    EXPECT_FALSE(
+        pool.FindExtensionByName(full_name.substr(0, 11)));  // "pkg.test_ex"
+  }
+}
+
 }  // namespace
 }  // namespace upb_test

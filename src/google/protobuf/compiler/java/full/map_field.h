@@ -21,14 +21,11 @@ namespace java {
 class ImmutableMapFieldGenerator : public ImmutableFieldGenerator {
  public:
   explicit ImmutableMapFieldGenerator(const FieldDescriptor* descriptor,
-                                      int messageBitIndex, int builderBitIndex,
-                                      Context* context);
+                                      int bit_index, Context* context);
   ~ImmutableMapFieldGenerator() override = default;
 
   // implements ImmutableFieldGenerator ---------------------------------------
-  int GetMessageBitIndex() const override;
-  int GetBuilderBitIndex() const override;
-  int GetNumBitsForMessage() const override;
+
   void GenerateInterfaceMembers(io::Printer* printer) const override;
   void GenerateMembers(io::Printer* printer) const override;
   void GenerateBuilderMembers(io::Printer* printer) const override;
@@ -47,12 +44,6 @@ class ImmutableMapFieldGenerator : public ImmutableFieldGenerator {
   std::string GetBoxedType() const override;
 
  private:
-  const FieldDescriptor* descriptor_;
-  int message_bit_index_;
-  int builder_bit_index_;
-  absl::flat_hash_map<absl::string_view, std::string> variables_;
-  ClassNameResolver* name_resolver_;
-  Context* context_;
   void SetMessageVariables(const FieldGeneratorInfo* info);
   void GenerateMapGetters(io::Printer* printer) const;
   void GenerateMessageMapBuilderMembers(io::Printer* printer) const;
