@@ -10,6 +10,9 @@
 using Google.Protobuf.Collections;
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
+using System.Threading;
 
 namespace Google.Protobuf.Reflection
 {
@@ -18,6 +21,9 @@ namespace Google.Protobuf.Reflection
     /// </summary>
     public sealed class EnumDescriptor : DescriptorBase
     {
+        private readonly Lazy<Dictionary<string, EnumValueDescriptor>>
+            jsonNameMap;
+
         internal EnumDescriptor(EnumDescriptorProto proto, FileDescriptor file, MessageDescriptor parent, int index, Type clrType)
             : base(file, file.ComputeFullName(parent, proto.Name), index, (parent?.Features ?? file.Features).MergedWith(proto.Options?.Features))
         {
@@ -34,6 +40,10 @@ namespace Google.Protobuf.Reflection
 
             Values = DescriptorUtil.ConvertAndMakeReadOnly(proto.Value,
                                                            (value, i) => new EnumValueDescriptor(value, file, this, i));
+
+            jsonNameMap = new Lazy<Dictionary<string, EnumValueDescriptor>>(
+                BuildJsonNameMap,
+                LazyThreadSafetyMode.ExecutionAndPublication);
 
             File.DescriptorPool.AddSymbol(this);
         }
@@ -92,6 +102,44 @@ namespace Google.Protobuf.Reflection
         /// <returns>The value's descriptor, or null if not found.</returns>
         public EnumValueDescriptor FindValueByName(string name) =>
             File.DescriptorPool.FindEnumValueByName(this, name);
+
+        /// <summary>
+        /// Finds an enum value by its custom JSON name, if defined in the
+        /// .proto file.
+        /// </summary>
+        /// <param name="name">The custom JSON name of the value.</param>
+        /// <returns>The value's descriptor, or null if not found.</returns>
+        public EnumValueDescriptor FindValueByJsonName(string name)
+        {
+            jsonNameMap.Value.TryGetValue(name, out var result);
+            return result;
+        }
+
+        private Dictionary<string, EnumValueDescriptor> BuildJsonNameMap()
+        {
+            var map = new Dictionary<string, EnumValueDescriptor>();
+            if (ClrType == null)
+            {
+                return map;
+            }
+
+            var declaredFields = ClrType.GetTypeInfo()
+                .DeclaredFields.Where(f => f.IsStatic);
+            foreach (var clrField in declaredFields)
+            {
+                var attr = clrField
+                    .GetCustomAttribute<OriginalNameAttribute>();
+                if (attr?.JsonEnumValueName != null)
+                {
+                    var enumVal = FindValueByName(attr.Name);
+                    if (enumVal != null)
+                    {
+                        map[attr.JsonEnumValueName] = enumVal;
+                    }
+                }
+            }
+            return map;
+        }
 
         /// <summary>
         /// The (possibly empty) set of custom options for this enum.
