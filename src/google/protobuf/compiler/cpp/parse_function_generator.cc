@@ -285,7 +285,7 @@ void ParseFunctionGenerator::GenerateParseTableHelperDefinition(
           [&] {
             std::vector<const FieldDescriptor*> subtable_fields;
             for (const auto& aux : tc_table_info_->aux_entries) {
-              if (aux.type == internal::TailCallTableInfo::kSubTable) {
+              if (aux.type == internal::TailCallTableInfo::kClassData) {
                 subtable_fields.push_back(aux.field);
               }
             }
@@ -331,14 +331,7 @@ void ParseFunctionGenerator::GenerateParseTableHelperDefinition(
         case TailCallTableInfo::kSplitSizeof:
           p->Emit("{_fl::Offset{sizeof($Msg$::Impl_::Split)}},\n");
           break;
-        case TailCallTableInfo::kSubMessageGlobals:
-          p->Emit({{"name", QualifiedMsgGlobalsInstanceName(
-                                aux_entry.field->message_type(), options_)}},
-                  R"cc(
-                    {::_pbi::FieldAuxMessageGlobals{}, &$name$},
-                  )cc");
-          break;
-        case TailCallTableInfo::kSubTable:
+        case TailCallTableInfo::kClassData:
           p->Emit(
               {
                   {"sub_type", QualifiedClassName(
@@ -349,16 +342,16 @@ void ParseFunctionGenerator::GenerateParseTableHelperDefinition(
               },
               R"cc(
 #ifndef PROTOBUF_MESSAGE_GLOBALS
-                {::_pbi::TcParser::GetTable<$sub_type$>()},
+                {::_pbi::FieldAuxMessageGlobals(), &$sub_type$_class_data_},
 #else
                 {::_pbi::FieldAuxMessageGlobals(), &$sub_globals$},
 #endif
               )cc");
           break;
-        case TailCallTableInfo::kSubMessageGlobalsWeak:
+        case TailCallTableInfo::kClassDataWeak:
           p->Emit({{"ptr", QualifiedMsgGlobalsInstancePtr(
                                aux_entry.field->message_type(), options_)}},
-                  "{::_pbi::FieldAuxMessageGlobals{}, &$ptr$},\n");
+                  "{&$ptr$},\n");
           break;
         case TailCallTableInfo::kMessageVerifyFunc:
           p->Emit({{"name", QualifiedClassName(aux_entry.field->message_type(),

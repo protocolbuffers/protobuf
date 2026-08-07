@@ -232,7 +232,7 @@ constexpr CodeGeneratorResponse_File::ParseTableT_ CodeGeneratorResponse_File::I
       #endif  // PROTOBUF_PREFETCH_PARSE_TABLE
     }, {{
       // optional .google.protobuf.GeneratedCodeInfo generated_code_info = 16;
-      {::_pbi::TcParser::FastMtS2,
+      {::_pbi::TcParser::FastMcS2,
        {386, 3, 0,
         PROTOBUF_FIELD_OFFSET(CodeGeneratorResponse_File, _impl_.generated_code_info_)}},
       // optional string name = 1;
@@ -257,11 +257,11 @@ constexpr CodeGeneratorResponse_File::ParseTableT_ CodeGeneratorResponse_File::I
       // optional string content = 15;
       {PROTOBUF_FIELD_OFFSET(CodeGeneratorResponse_File, _impl_.content_), _Internal::kHasBitsOffset + 2, 0, (0 | ::_fl::kFcOptional | ::_fl::kBytes | ::_fl::kRepAString)},
       // optional .google.protobuf.GeneratedCodeInfo generated_code_info = 16;
-      {PROTOBUF_FIELD_OFFSET(CodeGeneratorResponse_File, _impl_.generated_code_info_), _Internal::kHasBitsOffset + 3, 0, (0 | ::_fl::kFcOptional | ::_fl::kMessage | ::_fl::kTvTable)},
+      {PROTOBUF_FIELD_OFFSET(CodeGeneratorResponse_File, _impl_.generated_code_info_), _Internal::kHasBitsOffset + 3, 0, (0 | ::_fl::kFcOptional | ::_fl::kMessage | ::_fl::kTvClassData)},
     }},
     {{
         #ifndef PROTOBUF_MESSAGE_GLOBALS
-        {::_pbi::TcParser::GetTable<::google::protobuf::GeneratedCodeInfo>()},
+        {::_pbi::FieldAuxMessageGlobals(), &::google::protobuf::GeneratedCodeInfo_class_data_},
         #else
         {::_pbi::FieldAuxMessageGlobals(), &::google::protobuf::GeneratedCodeInfo_globals_},
         #endif
@@ -423,7 +423,7 @@ constexpr CodeGeneratorResponse::ParseTableT_ CodeGeneratorResponse::InternalGen
       {::_pbi::TcParser::MiniParse, {}},
       {::_pbi::TcParser::MiniParse, {}},
       // repeated .google.protobuf.compiler.CodeGeneratorResponse.File file = 15;
-      {::_pbi::TcParser::FastMtR1,
+      {::_pbi::TcParser::FastMcR1,
        {122, 0, 0,
         PROTOBUF_FIELD_OFFSET(CodeGeneratorResponse, _impl_.file_)}},
     }}, {{
@@ -438,11 +438,11 @@ constexpr CodeGeneratorResponse::ParseTableT_ CodeGeneratorResponse::InternalGen
       // optional int32 maximum_edition = 4;
       {PROTOBUF_FIELD_OFFSET(CodeGeneratorResponse, _impl_.maximum_edition_), _Internal::kHasBitsOffset + 4, 0, (0 | ::_fl::kFcOptional | ::_fl::kInt32)},
       // repeated .google.protobuf.compiler.CodeGeneratorResponse.File file = 15;
-      {PROTOBUF_FIELD_OFFSET(CodeGeneratorResponse, _impl_.file_), _Internal::kHasBitsOffset + 0, 0, (0 | ::_fl::kFcRepeated | ::_fl::kMessage | ::_fl::kTvTable)},
+      {PROTOBUF_FIELD_OFFSET(CodeGeneratorResponse, _impl_.file_), _Internal::kHasBitsOffset + 0, 0, (0 | ::_fl::kFcRepeated | ::_fl::kMessage | ::_fl::kTvClassData)},
     }},
     {{
         #ifndef PROTOBUF_MESSAGE_GLOBALS
-        {::_pbi::TcParser::GetTable<::google::protobuf::compiler::CodeGeneratorResponse_File>()},
+        {::_pbi::FieldAuxMessageGlobals(), &::google::protobuf::compiler::CodeGeneratorResponse_File_class_data_},
         #else
         {::_pbi::FieldAuxMessageGlobals(), &::google::protobuf::compiler::CodeGeneratorResponse_File_globals_},
         #endif
@@ -595,14 +595,14 @@ constexpr CodeGeneratorRequest::ParseTableT_ CodeGeneratorRequest::InternalGener
        {18, 2, 0,
         PROTOBUF_FIELD_OFFSET(CodeGeneratorRequest, _impl_.parameter_)}},
       // optional .google.protobuf.compiler.Version compiler_version = 3;
-      {::_pbi::TcParser::FastMtS1,
+      {::_pbi::TcParser::FastMcS1,
        {26, 3, 0,
         PROTOBUF_FIELD_OFFSET(CodeGeneratorRequest, _impl_.compiler_version_)}},
       {::_pbi::TcParser::MiniParse, {}},
       {::_pbi::TcParser::MiniParse, {}},
       {::_pbi::TcParser::MiniParse, {}},
       // repeated .google.protobuf.FileDescriptorProto proto_file = 15;
-      {::_pbi::TcParser::FastMtR1,
+      {::_pbi::TcParser::FastMcR1,
        {122, 1, 1,
         PROTOBUF_FIELD_OFFSET(CodeGeneratorRequest, _impl_.proto_file_)}},
     }}, {{
@@ -613,25 +613,25 @@ constexpr CodeGeneratorRequest::ParseTableT_ CodeGeneratorRequest::InternalGener
       // optional string parameter = 2;
       {PROTOBUF_FIELD_OFFSET(CodeGeneratorRequest, _impl_.parameter_), _Internal::kHasBitsOffset + 2, 0, (0 | ::_fl::kFcOptional | ::_fl::kBytes | ::_fl::kRepAString)},
       // optional .google.protobuf.compiler.Version compiler_version = 3;
-      {PROTOBUF_FIELD_OFFSET(CodeGeneratorRequest, _impl_.compiler_version_), _Internal::kHasBitsOffset + 3, 0, (0 | ::_fl::kFcOptional | ::_fl::kMessage | ::_fl::kTvTable)},
+      {PROTOBUF_FIELD_OFFSET(CodeGeneratorRequest, _impl_.compiler_version_), _Internal::kHasBitsOffset + 3, 0, (0 | ::_fl::kFcOptional | ::_fl::kMessage | ::_fl::kTvClassData)},
       // repeated .google.protobuf.FileDescriptorProto proto_file = 15;
-      {PROTOBUF_FIELD_OFFSET(CodeGeneratorRequest, _impl_.proto_file_), _Internal::kHasBitsOffset + 1, 1, (0 | ::_fl::kFcRepeated | ::_fl::kMessage | ::_fl::kTvTable)},
+      {PROTOBUF_FIELD_OFFSET(CodeGeneratorRequest, _impl_.proto_file_), _Internal::kHasBitsOffset + 1, 1, (0 | ::_fl::kFcRepeated | ::_fl::kMessage | ::_fl::kTvClassData)},
       // repeated .google.protobuf.FileDescriptorProto source_file_descriptors = 17;
-      {PROTOBUF_FIELD_OFFSET(CodeGeneratorRequest, _impl_.source_file_descriptors_), _Internal::kHasBitsOffset + 4, 2, (0 | ::_fl::kFcRepeated | ::_fl::kMessage | ::_fl::kTvTable)},
+      {PROTOBUF_FIELD_OFFSET(CodeGeneratorRequest, _impl_.source_file_descriptors_), _Internal::kHasBitsOffset + 4, 2, (0 | ::_fl::kFcRepeated | ::_fl::kMessage | ::_fl::kTvClassData)},
     }},
     {{
         #ifndef PROTOBUF_MESSAGE_GLOBALS
-        {::_pbi::TcParser::GetTable<::google::protobuf::compiler::Version>()},
+        {::_pbi::FieldAuxMessageGlobals(), &::google::protobuf::compiler::Version_class_data_},
         #else
         {::_pbi::FieldAuxMessageGlobals(), &::google::protobuf::compiler::Version_globals_},
         #endif
         #ifndef PROTOBUF_MESSAGE_GLOBALS
-        {::_pbi::TcParser::GetTable<::google::protobuf::FileDescriptorProto>()},
+        {::_pbi::FieldAuxMessageGlobals(), &::google::protobuf::FileDescriptorProto_class_data_},
         #else
         {::_pbi::FieldAuxMessageGlobals(), &::google::protobuf::FileDescriptorProto_globals_},
         #endif
         #ifndef PROTOBUF_MESSAGE_GLOBALS
-        {::_pbi::TcParser::GetTable<::google::protobuf::FileDescriptorProto>()},
+        {::_pbi::FieldAuxMessageGlobals(), &::google::protobuf::FileDescriptorProto_class_data_},
         #else
         {::_pbi::FieldAuxMessageGlobals(), &::google::protobuf::FileDescriptorProto_globals_},
         #endif
