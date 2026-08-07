@@ -36,9 +36,7 @@ namespace java {
 class ImmutablePrimitiveFieldGenerator : public ImmutableFieldGenerator {
  public:
   explicit ImmutablePrimitiveFieldGenerator(const FieldDescriptor* descriptor,
-                                            int message_bit_index,
-                                            int builder_bit_index,
-                                            Context* context);
+                                            int bit_index, Context* context);
   ImmutablePrimitiveFieldGenerator(const ImmutablePrimitiveFieldGenerator&) =
       delete;
   ImmutablePrimitiveFieldGenerator& operator=(
@@ -47,9 +45,7 @@ class ImmutablePrimitiveFieldGenerator : public ImmutableFieldGenerator {
 
   // implements ImmutableFieldGenerator
   // ---------------------------------------
-  int GetMessageBitIndex() const override;
-  int GetBuilderBitIndex() const override;
-  int GetNumBitsForMessage() const override;
+
   void GenerateInterfaceMembers(io::Printer* printer) const override;
   void GenerateMembers(io::Printer* printer) const override;
   void GenerateBuilderMembers(io::Printer* printer) const override;
@@ -68,21 +64,13 @@ class ImmutablePrimitiveFieldGenerator : public ImmutableFieldGenerator {
   std::string GetBoxedType() const override;
 
  protected:
-  const FieldDescriptor* descriptor_;
-  int message_bit_index_;
-  int builder_bit_index_;
-  absl::flat_hash_map<absl::string_view, std::string> variables_;
-  Context* context_;
-  ClassNameResolver* name_resolver_;
 };
 
 class ImmutablePrimitiveOneofFieldGenerator
     : public ImmutablePrimitiveFieldGenerator {
  public:
   ImmutablePrimitiveOneofFieldGenerator(const FieldDescriptor* descriptor,
-                                        int message_bit_index,
-                                        int builder_bit_index,
-                                        Context* context);
+                                        int bit_index, Context* context);
   ImmutablePrimitiveOneofFieldGenerator(
       const ImmutablePrimitiveOneofFieldGenerator&) = delete;
   ImmutablePrimitiveOneofFieldGenerator& operator=(
@@ -103,8 +91,7 @@ class RepeatedImmutablePrimitiveFieldGenerator
     : public ImmutablePrimitiveFieldGenerator {
  public:
   explicit RepeatedImmutablePrimitiveFieldGenerator(
-      const FieldDescriptor* descriptor, int message_bit_index,
-      int builder_bit_index, Context* context);
+      const FieldDescriptor* descriptor, int bit_index, Context* context);
   RepeatedImmutablePrimitiveFieldGenerator(
       const RepeatedImmutablePrimitiveFieldGenerator&) = delete;
   RepeatedImmutablePrimitiveFieldGenerator& operator=(
@@ -112,7 +99,6 @@ class RepeatedImmutablePrimitiveFieldGenerator
   ~RepeatedImmutablePrimitiveFieldGenerator() override;
 
   // implements ImmutableFieldGenerator ---------------------------------------
-  int GetNumBitsForMessage() const override;
   void GenerateInterfaceMembers(io::Printer* printer) const override;
   void GenerateMembers(io::Printer* printer) const override;
   void GenerateBuilderMembers(io::Printer* printer) const override;

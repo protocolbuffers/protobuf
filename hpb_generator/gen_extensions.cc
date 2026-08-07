@@ -22,6 +22,8 @@ namespace google {
 namespace protobuf {
 namespace hpb_generator {
 
+using Sub = google::protobuf::io::Printer::Sub;
+
 std::string ExtensionIdentifierBase(const google::protobuf::FieldDescriptor* ext) {
   assert(ext->is_extension());
   std::string ext_scope;
@@ -55,7 +57,8 @@ void WriteExtensionIdentifierHeader(const google::protobuf::FieldDescriptor* ext
        {"linkage", linkage},
        {"mini_table_name",
         absl::StrCat(ExtensionIdentifierBase(ext), "_", ext->name(), "_ext")},
-       {"extension_name", ResolveKeywordConflict(ext->name())},
+       Sub("extension_name", ResolveKeywordConflict(ext->name()))
+           .AnnotatedAs(ext),
        {"extension_number", ext->number()}},
       R"cc(
         inline $linkage$ constexpr ::hpb::internal::ExtensionIdentifier<

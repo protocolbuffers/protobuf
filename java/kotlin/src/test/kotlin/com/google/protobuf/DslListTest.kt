@@ -36,7 +36,7 @@ class DslListTest {
   @Test
   fun dslListIsNotMutable() {
     val dslList = DslList<Int, DummyProxy>(mutableListOf(1, 2, 3))
-    assertThat(dslList is MutableList<*>).isFalse()
+    assertThat((dslList as Any) is MutableList<*>).isFalse()
   }
 
   @Suppress("PLATFORM_CLASS_MAPPED_TO_KOTLIN", "UNCHECKED_CAST")

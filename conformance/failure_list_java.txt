@@ -14,7 +14,6 @@ Recommended.*.JsonInput.BoolMapFieldKeyNotQuoted                                
 Recommended.*.JsonInput.DoubleFieldInfinityNotQuoted                                                               # Should have failed to parse, but didn't.
 Recommended.*.JsonInput.DoubleFieldNanNotQuoted                                                                    # Should have failed to parse, but didn't.
 Recommended.*.JsonInput.DoubleFieldNegativeInfinityNotQuoted                                                       # Should have failed to parse, but didn't.
-Recommended.*.JsonInput.FieldNameDuplicate                                                                         # Should have failed to parse, but didn't.
 Recommended.*.JsonInput.FieldNameExtension.Validator                                                               # Expected JSON payload but got type 1
 Recommended.*.JsonInput.FieldNameNotQuoted                                                                         # Should have failed to parse, but didn't.
 Recommended.*.JsonInput.FloatFieldInfinityNotQuoted                                                                # Should have failed to parse, but didn't.
@@ -71,3 +70,6 @@ Required.*.ProtobufInput.BadTag_OverlongVarint                                  
 # Recommended.Proto2.ProtobufInput.RejectInvalidUtf8.String.Oneof                                                    # Should have failed to parse, but didn't.
 # Recommended.Proto2.ProtobufInput.RejectInvalidUtf8.String.Repeated                                                 # Should have failed to parse, but didn't.
 # Recommended.Proto2.ProtobufInput.RejectInvalidUtf8.String.Singular                                                 # Should have failed to parse, but didn't.
+Recommended.Proto2.ProtobufInput.ValidMessageSetEncoding.DuplicateDifferentTypeId.ProtobufOutput                      # Output was not equivalent to reference message
+Recommended.Proto2.ProtobufInput.ValidMessageSetEncoding.DuplicateValue.ProtobufOutput                                # Output was not equivalent to reference message
+Recommended.Proto2.ProtobufInput.ValidMessageSetEncoding.DuplicateValueOutOfOrder.ProtobufOutput                      # Output was not equivalent to reference message

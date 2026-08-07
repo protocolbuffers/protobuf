@@ -1305,6 +1305,23 @@ TEST_P(JsonTest, TestAny) {
   EXPECT_EQ(round_trip->value(), "");
 }
 
+TEST_P(JsonTest, TestAnyWrappingEmptyValue) {
+  google::protobuf::Value empty_value;
+  google::protobuf::Any any;
+  ASSERT_TRUE(any.PackFrom(empty_value));
+
+  auto as_json = ToJson(any);
+  ASSERT_OK(as_json);
+  EXPECT_EQ(*as_json,
+            R"({"@type":"type.googleapis.com/google.protobuf.Value"})");
+
+  auto round_trip = ToProto<google::protobuf::Any>(*as_json);
+  ASSERT_OK(round_trip);
+  EXPECT_EQ(round_trip->type_url(),
+            "type.googleapis.com/google.protobuf.Value");
+  EXPECT_EQ(round_trip->value(), "");
+}
+
 TEST_P(JsonTest, TestDuration) {
   auto m = ToProto<proto3::TestDuration>(R"json(
     {
@@ -1685,8 +1702,8 @@ TEST_P(JsonTest, OversizedStringRejected) {
   GTEST_SKIP() << "Test is too slow in non-opt builds.";
 #else
 
-  if (sizeof(void*) < 8) {
-    GTEST_SKIP() << "Test requires 64-bit environment.";
+  if (!internal::RunLargeMemoryTests()) {
+    GTEST_SKIP() << "Not enough memory for this test.";
   }
 
   absl::Cord chunk(std::string(1024 * 1024, 'a'));

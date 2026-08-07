@@ -525,8 +525,8 @@ TEST(ExtensionSetTest, ArenaMergeFromWithClearedExtensions) {
 }
 
 TEST(ExtensionSetTest, ArenaMergeFromWithClearedExtensionsReduceCapacity) {
-  if (sizeof(void*) != 8) {
-    GTEST_SKIP() << "This test is only correct on 64-bit systems.";
+  if (!internal::RunLargeMemoryTests()) {
+    GTEST_SKIP() << "Not enough memory for this test.";
   }
   Arena arena;
   auto* message = Arena::Create<unittest::TestAllExtensions>(&arena);
@@ -2109,6 +2109,22 @@ TEST(ExtensionSetTest, MessageSetRecursionLimitIsConsistent) {
       EXPECT_EQ(control, depth);
       EXPECT_LE(depth, io::CodedInputStream::GetDefaultRecursionLimit());
     }
+  }
+}
+
+TEST(ExtensionSetTest, MergeLargeExtensionSetToEmpty) {
+  ExtensionSet src;
+  ExtensionSet dst;
+  constexpr int kNumExtensions = 70000;  // > 2**16 (65536)
+  for (int i = 1; i <= kNumExtensions; ++i) {
+    src.Set<int32_t>(/*arena=*/nullptr, i, WireFormatLite::TYPE_INT32, i,
+                     /*descriptor=*/nullptr);
+  }
+  dst.MergeFrom(/*arena=*/nullptr, /*extendee=*/nullptr, src,
+                /*other_arena=*/nullptr);
+  EXPECT_EQ(dst.NumExtensions(), kNumExtensions);
+  for (int i = 1; i <= kNumExtensions; ++i) {
+    EXPECT_EQ(dst.Get<int32_t>(i, 0), i);
   }
 }
 

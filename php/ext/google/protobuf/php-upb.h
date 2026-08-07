@@ -721,7 +721,8 @@ Error, UINTPTR_MAX is undefined
         : "X"(UPB_PRIVATE(name)));                                          \
     __VA_ARGS__                                                             \
   }
-#elif defined(__ELF__) || defined(__wasm__) || defined(__MACH__)
+#elif defined(__ELF__) || defined(__wasm__) || defined(__MACH__) || \
+    defined(__MINGW32__)
 #define UPB_CONSTRUCTOR(name, unique_name, ...)                              \
   _UPB_CONSTRUCTOR_PLACEHOLDER(unique_name)                                  \
   __attribute__((weak, visibility("hidden"), constructor)) void UPB_PRIVATE( \
@@ -747,8 +748,13 @@ Error, UINTPTR_MAX is undefined
   static void __cdecl UPB_PRIVATE(name)(void) { __VA_ARGS__ }
 #else
 // No constructor support, nothing we can do except not break builds.
+#if defined(__GNUC__) || defined(__clang__)
+#define UPB_CONSTRUCTOR(name, unique_name, ...) \
+  static __attribute__((used)) void UPB_PRIVATE(name)(void) { __VA_ARGS__ }
+#else
 #define UPB_CONSTRUCTOR(name, unique_name, ...) \
   static void UPB_PRIVATE(name)(void) { __VA_ARGS__ }
+#endif
 #endif
 
 //
@@ -786,9 +792,9 @@ Error, UINTPTR_MAX is undefined
 
 #elif defined(__ELF__) || defined(__wasm__)
 
-// On ELF, weak aliases work properly, so we can have all weak MiniTables
-// point to the same empty singleton MiniTable. This reduces code size if many
-// MiniTables are tree shaken.
+  // On ELF, weak aliases work properly, so we can have all weak MiniTables
+  // point to the same empty singleton MiniTable. This reduces code size if many
+  // MiniTables are tree shaken.
 #define UPB_WEAK_SINGLETON_PLACEHOLDER_MINITABLE()               \
   __attribute__((weak))                                          \
   const upb_MiniTable kUpb_WeakSingletonPlaceholderMiniTable = { \
@@ -4002,7 +4008,7 @@ UPB_API_INLINE const upb_MiniTableField* upb_MiniTableExtension_ToField(
 // This is rather wasteful for scalars (in the extreme case of bool,
 // it wastes 15 bytes). We accept this because we expect messages to be
 // the most common extension type.
-typedef struct {
+typedef struct upb_Extension {
   const upb_MiniTableExtension* ext;
   upb_MessageValue data;
 } upb_Extension;
@@ -5705,137 +5711,6 @@ UPB_API_INLINE bool upb_Map_IsFrozen(const upb_Map* map);
 #include <stdint.h>
 
 
-#ifndef UPB_MESSAGE_UNKNOWN_FIELDS_H_
-#define UPB_MESSAGE_UNKNOWN_FIELDS_H_
-
-#include <stddef.h>
-#include <stdint.h>
-
-
-// Must be last.
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-typedef enum {
-  kUpb_MessageUnknownType_StringView,
-  kUpb_MessageUnknownType_NonCanonicalExtension,
-} upb_MessageUnknownType;
-
-// Represents an unknown field in a message, whether it's in a serialized
-// (upb_StringView) or parsed non-canonical extension (upb_Extension*) format.
-typedef struct upb_MessageUnknown {
-  uint8_t type;
-  union {
-    upb_StringView bytes;
-    const upb_Extension* extension;
-  } value;
-} upb_MessageUnknown;
-
-// Support iteration over unknown (upb_MessageUnknown*), including unknown
-// upb_StringView and non-canonical extensions (upb_Extension*).
-UPB_INLINE bool upb_Message_NextUnknown2(const struct upb_Message* msg,
-                                         struct upb_MessageUnknown* data,
-                                         uintptr_t* iter) {
-  const upb_Message_Internal* in = UPB_PRIVATE(_upb_Message_GetInternal)(msg);
-  size_t i = *iter;
-  if (in) {
-    while (i < in->size) {
-      upb_TaggedAuxPtr tagged_ptr = in->aux_data[i++];
-      if (upb_TaggedAuxPtr_IsUnknownStringView(tagged_ptr)) {
-        data->type = kUpb_MessageUnknownType_StringView;
-        data->value.bytes = *upb_TaggedPtrAux_StringViewRepr(tagged_ptr);
-        *iter = i;
-        return true;
-      } else if (upb_TaggedAuxPtr_IsNonCanonicalExtension(tagged_ptr)) {
-        data->type = kUpb_MessageUnknownType_NonCanonicalExtension;
-        data->value.extension =
-            upb_TaggedAuxPtr_NonCanonicalExtension(tagged_ptr);
-        *iter = i;
-        return true;
-      }
-    }
-  }
-  data->type = kUpb_MessageUnknownType_StringView;
-  data->value.bytes.size = 0;
-  data->value.bytes.data = NULL;
-  *iter = i;
-  return false;
-}
-
-typedef enum {
-  kUpb_FindUnknown_Ok,
-  kUpb_FindUnknown_NotPresent,
-  kUpb_FindUnknown_ParseError,
-} upb_FindUnknown_Status;
-
-typedef struct {
-  upb_FindUnknown_Status status;
-  struct upb_MessageUnknown unknown;
-  uintptr_t iter;
-} upb_FindUnknownRet2;
-
-// Finds first occurrence of unknown data (upb_MessageUnknown) by tag id in
-// message, including unknown upb_StringView and non-canonical extensions
-// (upb_Extension*).
-//
-// If multiple matching entries exist for the same field number (e.g. both a
-// raw unknown upb_StringView and a non-canonical extension), this function
-// returns the one encountered first in internal iteration order (which follows
-// the order they were added or parsed).
-//
-// A depth_limit of zero means to just use the upb default depth limit.
-upb_FindUnknownRet2 upb_Message_FindUnknown2(const struct upb_Message* msg,
-                                             uint32_t field_number,
-                                             int depth_limit);
-
-typedef enum {
-  kUpb_DeleteUnknown_DeletedLast,
-  kUpb_DeleteUnknown_IterUpdated,
-  kUpb_DeleteUnknown_AllocFail,
-} upb_Message_DeleteUnknownStatus;
-
-// Removes a segment of unknown data from the message, advancing to the next
-// segment.  Returns false if the removed segment was at the end of the last
-// chunk.
-//
-// This must be done while iterating:
-//
-//   uintptr_t iter = kUpb_Message_UnknownBegin;
-//   upb_MessageUnknown data;
-//   // Iterate chunks
-//   while (upb_Message_NextUnknown2(msg, &data, &iter)) {
-//     // Iterate within a chunk, deleting ranges
-//     while (ShouldDeleteSubSegment(&data)) {
-//       // Data now points to the region to be deleted
-//       switch (upb_Message_DeleteUnknown2(msg, &data, &iter)) {
-//         case kUpb_DeleteUnknown_DeletedLast: return ok;
-//         case kUpb_DeleteUnknown_IterUpdated: break;
-//         // If DeleteUnknown returned kUpb_DeleteUnknown_IterUpdated,
-//         // then data now points to the remaining unknown fields after the
-//         // region that was just deleted.
-//         case kUpb_Message_DeleteUnknown_AllocFail: return err;
-//       }
-//     }
-//   }
-//
-// The range given in `data` must be contained inside the most recently
-// returned region.
-//
-// Support deletion of unknown (upb_MessageUnknown*), including unknown
-// upb_StringView and non-canonical extensions (upb_Extension*).
-UPB_NODISCARD upb_Message_DeleteUnknownStatus upb_Message_DeleteUnknown2(
-    struct upb_Message* msg, struct upb_MessageUnknown* data, uintptr_t* iter,
-    struct upb_Arena* arena);
-
-#ifdef __cplusplus
-} /* extern "C" */
-#endif
-
-
-#endif /* UPB_MESSAGE_UNKNOWN_FIELDS_H_ */
-
 // Must be last.
 
 typedef struct upb_Message upb_Message;
@@ -5880,39 +5755,6 @@ UPB_INLINE bool upb_Message_HasUnknown(const upb_Message* msg) {
   }
   return false;
 }
-
-// Removes a segment of unknown data from the message, advancing to the next
-// segment.  Returns false if the removed segment was at the end of the last
-// chunk.
-//
-// This must be done while iterating:
-//
-//   uintptr_t iter = kUpb_Message_UnknownBegin;
-//   upb_StringView data;
-//   // Iterate chunks
-//   while (upb_Message_NextUnknown(msg, &data, &iter)) {
-//     // Iterate within a chunk, deleting ranges
-//     while (ShouldDeleteSubSegment(&data)) {
-//       // Data now points to the region to be deleted
-//       switch (upb_Message_DeleteUnknown(msg, &data, &iter)) {
-//         case kUpb_Message_DeleteUnknown_DeletedLast: return ok;
-//         case kUpb_Message_DeleteUnknown_IterUpdated: break;
-//         // If DeleteUnknown returned kUpb_Message_DeleteUnknown_IterUpdated,
-//         // then data now points to the remaining unknown fields after the
-//         // region that was just deleted.
-//         case kUpb_Message_DeleteUnknown_AllocFail: return err;
-//       }
-//     }
-//   }
-//
-// The range given in `data` must be contained inside the most recently
-// returned region.
-//
-// TODO: b/510055656 - Legacy API that works with messages that only have
-// unknown data in upb_StringView format. Use `upb_Message_DeleteUnknown2` for
-// messages that may have non-canonical extensions.
-UPB_NODISCARD upb_Message_DeleteUnknownStatus upb_Message_DeleteUnknown(
-    upb_Message* msg, upb_StringView* data, uintptr_t* iter, upb_Arena* arena);
 
 // Returns the number of extensions present in this message.
 size_t upb_Message_ExtensionCount(const upb_Message* msg);
@@ -15199,6 +15041,7 @@ bool upb_DefPool_ImplicitFieldPresenceDisabled(const upb_DefPool* s);
 
 #include <stddef.h>
 #include <stdint.h>
+#include <string.h>
 
 
 // Must be last.
@@ -15211,6 +15054,12 @@ bool upb_EnumDef_CheckNumber(const upb_EnumDef* e, int32_t num);
 const upb_MessageDef* upb_EnumDef_ContainingType(const upb_EnumDef* e);
 int32_t upb_EnumDef_Default(const upb_EnumDef* e);
 UPB_API const upb_FileDef* upb_EnumDef_File(const upb_EnumDef* e);
+UPB_API const upb_EnumValueDef* upb_EnumDef_FindByJsonNameWithSize(
+    const upb_EnumDef* e, const char* name, size_t size);
+UPB_INLINE const upb_EnumValueDef* upb_EnumDef_FindByJsonName(
+    const upb_EnumDef* e, const char* name) {
+  return upb_EnumDef_FindByJsonNameWithSize(e, name, strlen(name));
+}
 const upb_EnumValueDef* upb_EnumDef_FindValueByName(const upb_EnumDef* e,
                                                     const char* name);
 UPB_API const upb_EnumValueDef* upb_EnumDef_FindValueByNameWithSize(
@@ -15253,6 +15102,8 @@ UPB_API int upb_EnumDef_ValueCount(const upb_EnumDef* e);
 #ifndef UPB_REFLECTION_ENUM_VALUE_DEF_H_
 #define UPB_REFLECTION_ENUM_VALUE_DEF_H_
 
+#include <stdint.h>
+
 
 // Must be last.
 
@@ -15264,6 +15115,7 @@ const upb_EnumDef* upb_EnumValueDef_Enum(const upb_EnumValueDef* v);
 const char* upb_EnumValueDef_FullName(const upb_EnumValueDef* v);
 bool upb_EnumValueDef_HasOptions(const upb_EnumValueDef* v);
 uint32_t upb_EnumValueDef_Index(const upb_EnumValueDef* v);
+UPB_API const char* upb_EnumValueDef_JsonName(const upb_EnumValueDef* v);
 UPB_API const char* upb_EnumValueDef_Name(const upb_EnumValueDef* v);
 UPB_API int32_t upb_EnumValueDef_Number(const upb_EnumValueDef* v);
 const google_protobuf_EnumValueOptions* upb_EnumValueDef_Options(
@@ -15950,6 +15802,68 @@ UPB_INLINE const upb_MessageDef *google_protobuf_GeneratedCodeInfo_Annotation_ge
 
 
 #endif  /* GOOGLE_PROTOBUF_DESCRIPTOR_PROTO_UPB_H__UPBDEFS_H_ */
+/* This file was generated by upb_generator from the input file:
+ *
+ *     google/protobuf/json_enumvalue_options.proto
+ *
+ * Do not edit -- your changes will be discarded when the file is
+ * regenerated.
+ * NO CHECKED-IN PROTOBUF GENCODE */
+
+#ifndef GOOGLE_PROTOBUF_JSON_ENUMVALUE_OPTIONS_PROTO_UPB_H__UPB_MINITABLE_H_
+#define GOOGLE_PROTOBUF_JSON_ENUMVALUE_OPTIONS_PROTO_UPB_H__UPB_MINITABLE_H_
+
+
+// Must be last.
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+extern const upb_MiniTable pb__enumvalue__JsonEnumValueOptions_msg_init;
+extern const upb_MiniTableExtension* pb_enumvalue_json_ext;
+
+extern const upb_MiniTableFile google_protobuf_json_enumvalue_options_proto_upb_file_layout;
+
+#ifdef __cplusplus
+}  /* extern "C" */
+#endif
+
+
+#endif  /* GOOGLE_PROTOBUF_JSON_ENUMVALUE_OPTIONS_PROTO_UPB_H__UPB_MINITABLE_H_ */
+/* This file was generated by upb_generator from the input file:
+ *
+ *     google/protobuf/json_enumvalue_options.proto
+ *
+ * Do not edit -- your changes will be discarded when the file is
+ * regenerated.
+ * NO CHECKED-IN PROTOBUF GENCODE */
+
+
+
+#ifndef GOOGLE_PROTOBUF_JSON_ENUMVALUE_OPTIONS_PROTO_UPB_H__UPBDEFS_H_
+#define GOOGLE_PROTOBUF_JSON_ENUMVALUE_OPTIONS_PROTO_UPB_H__UPBDEFS_H_
+
+
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+extern _upb_DefPool_Init google_protobuf_json_enumvalue_options_proto_upbdefinit;
+
+UPB_INLINE const upb_MessageDef *pb_enumvalue_JsonEnumValueOptions_getmsgdef(upb_DefPool *s) {
+  _upb_DefPool_LoadDefInit(s, &google_protobuf_json_enumvalue_options_proto_upbdefinit);
+  return upb_DefPool_FindMessageByName(s, "pb.enumvalue.JsonEnumValueOptions");
+}
+
+
+#ifdef __cplusplus
+}  /* extern "C" */
+#endif
+
+
+#endif  /* GOOGLE_PROTOBUF_JSON_ENUMVALUE_OPTIONS_PROTO_UPB_H__UPBDEFS_H_ */
 
 #ifndef UPB_BASE_INTERNAL_LOG2_H_
 #define UPB_BASE_INTERNAL_LOG2_H_
@@ -16809,6 +16723,170 @@ bool _upb_mapsorter_pushexts(_upb_mapsorter* s, const upb_Message_Internal* in,
 
 
 #endif /* UPB_MESSAGE_INTERNAL_MAP_SORTER_H_ */
+
+#ifndef UPB_MESSAGE_UNKNOWN_FIELDS_H_
+#define UPB_MESSAGE_UNKNOWN_FIELDS_H_
+
+#include <stddef.h>
+#include <stdint.h>
+
+
+// Must be last.
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+typedef enum {
+  kUpb_MessageUnknownType_StringView,
+  kUpb_MessageUnknownType_NonCanonicalExtension,
+} upb_MessageUnknownType;
+
+// Represents an unknown field in a message, whether it's in a serialized
+// (upb_StringView) or parsed non-canonical extension (upb_Extension*) format.
+typedef struct upb_MessageUnknown {
+  uint8_t type;
+  union {
+    upb_StringView bytes;
+    const upb_Extension* extension;
+  } value;
+} upb_MessageUnknown;
+
+// Support iteration over unknown (upb_MessageUnknown*), including unknown
+// upb_StringView and non-canonical extensions (upb_Extension*).
+UPB_INLINE bool upb_Message_NextUnknown2(const struct upb_Message* msg,
+                                         struct upb_MessageUnknown* data,
+                                         uintptr_t* iter) {
+  const upb_Message_Internal* in = UPB_PRIVATE(_upb_Message_GetInternal)(msg);
+  size_t i = *iter;
+  if (in) {
+    while (i < in->size) {
+      upb_TaggedAuxPtr tagged_ptr = in->aux_data[i++];
+      if (upb_TaggedAuxPtr_IsUnknownStringView(tagged_ptr)) {
+        data->type = kUpb_MessageUnknownType_StringView;
+        data->value.bytes = *upb_TaggedPtrAux_StringViewRepr(tagged_ptr);
+        *iter = i;
+        return true;
+      } else if (upb_TaggedAuxPtr_IsNonCanonicalExtension(tagged_ptr)) {
+        data->type = kUpb_MessageUnknownType_NonCanonicalExtension;
+        data->value.extension =
+            upb_TaggedAuxPtr_NonCanonicalExtension(tagged_ptr);
+        *iter = i;
+        return true;
+      }
+    }
+  }
+  data->type = kUpb_MessageUnknownType_StringView;
+  data->value.bytes.size = 0;
+  data->value.bytes.data = NULL;
+  *iter = i;
+  return false;
+}
+
+typedef enum {
+  kUpb_FindUnknown_Ok,
+  kUpb_FindUnknown_NotPresent,
+  kUpb_FindUnknown_ParseError,
+} upb_FindUnknown_Status;
+
+typedef struct {
+  upb_FindUnknown_Status status;
+  struct upb_MessageUnknown unknown;
+  uintptr_t iter;
+} upb_FindUnknownRet2;
+
+// Finds first occurrence of unknown data (upb_MessageUnknown) by tag id in
+// message, including unknown upb_StringView and non-canonical extensions
+// (upb_Extension*).
+//
+// If multiple matching entries exist for the same field number (e.g. both a
+// raw unknown upb_StringView and a non-canonical extension), this function
+// returns the one encountered first in internal iteration order (which follows
+// the order they were added or parsed).
+//
+// A depth_limit of zero means to just use the upb default depth limit.
+upb_FindUnknownRet2 upb_Message_FindUnknown2(const struct upb_Message* msg,
+                                             uint32_t field_number,
+                                             int depth_limit);
+
+typedef enum {
+  kUpb_DeleteUnknown_DeletedLast,
+  kUpb_DeleteUnknown_IterUpdated,
+  kUpb_DeleteUnknown_AllocFail,
+} upb_Message_DeleteUnknownStatus;
+
+// Removes a segment of unknown data from the message, advancing to the next
+// segment.  Returns false if the removed segment was at the end of the last
+// chunk.
+//
+// This must be done while iterating:
+//
+//   uintptr_t iter = kUpb_Message_UnknownBegin;
+//   upb_StringView data;
+//   // Iterate chunks
+//   while (upb_Message_NextUnknown(msg, &data, &iter)) {
+//     // Iterate within a chunk, deleting ranges
+//     while (ShouldDeleteSubSegment(&data)) {
+//       // Data now points to the region to be deleted
+//       switch (upb_Message_DeleteUnknown(msg, &data, &iter)) {
+//         case kUpb_DeleteUnknown_DeletedLast: return ok;
+//         case kUpb_DeleteUnknown_IterUpdated: break;
+//         // If DeleteUnknown returned kUpb_DeleteUnknown_IterUpdated,
+//         // then data now points to the remaining unknown fields after the
+//         // region that was just deleted.
+//         case kUpb_DeleteUnknown_AllocFail: return err;
+//       }
+//     }
+//   }
+//
+// The range given in `data` must be contained inside the most recently
+// returned region.
+// TODO: b/510055656 - Legacy API that works with messages that only have
+// unknown data in upb_StringView format. Use `upb_Message_DeleteUnknown2` for
+// messages that may have non-canonical extensions.
+UPB_NODISCARD upb_Message_DeleteUnknownStatus
+upb_Message_DeleteUnknown(struct upb_Message* msg, upb_StringView* data,
+                          uintptr_t* iter, struct upb_Arena* arena);
+
+// Removes a segment of unknown data from the message, advancing to the next
+// segment.  Returns false if the removed segment was at the end of the last
+// chunk.
+//
+// This must be done while iterating:
+//
+//   uintptr_t iter = kUpb_Message_UnknownBegin;
+//   upb_MessageUnknown data;
+//   // Iterate chunks
+//   while (upb_Message_NextUnknown2(msg, &data, &iter)) {
+//     // Iterate within a chunk, deleting ranges
+//     while (ShouldDeleteSubSegment(&data)) {
+//       // Data now points to the region to be deleted
+//       switch (upb_Message_DeleteUnknown2(msg, &data, &iter)) {
+//         case kUpb_DeleteUnknown_DeletedLast: return ok;
+//         case kUpb_DeleteUnknown_IterUpdated: break;
+//         // If DeleteUnknown returned kUpb_DeleteUnknown_IterUpdated,
+//         // then data now points to the remaining unknown fields after the
+//         // region that was just deleted.
+//         case kUpb_DeleteUnknown_AllocFail: return err;
+//       }
+//     }
+//   }
+//
+// The range given in `data` must be contained inside the most recently
+// returned region.
+//
+// Support deletion of unknown (upb_MessageUnknown*), including unknown
+// upb_StringView and non-canonical extensions (upb_Extension*).
+UPB_NODISCARD upb_Message_DeleteUnknownStatus upb_Message_DeleteUnknown2(
+    struct upb_Message* msg, struct upb_MessageUnknown* data, uintptr_t* iter,
+    struct upb_Arena* arena);
+
+#ifdef __cplusplus
+} /* extern "C" */
+#endif
+
+
+#endif /* UPB_MESSAGE_UNKNOWN_FIELDS_H_ */
 
 #ifndef UPB_WIRE_EPS_COPY_INPUT_STREAM_H_
 #define UPB_WIRE_EPS_COPY_INPUT_STREAM_H_
@@ -18675,7 +18753,8 @@ extern "C" {
 #endif
 
 upb_EnumDef* _upb_EnumDef_At(const upb_EnumDef* e, int i);
-bool _upb_EnumDef_Insert(upb_EnumDef* e, upb_EnumValueDef* v, upb_Arena* a);
+void _upb_EnumDef_Insert(upb_DefBuilder* ctx, upb_EnumDef* e,
+                         upb_EnumValueDef* v);
 const upb_MiniTableEnum* _upb_EnumDef_MiniTable(const upb_EnumDef* e);
 
 // Allocate and initialize an array of |n| enum defs.
@@ -18769,6 +18848,151 @@ char* upb_strdup2(const char* s, size_t len, upb_Arena* a);
 
 
 #endif /* UPB_REFLECTION_INTERNAL_STRDUP2_H_ */
+#ifndef GOOGLE_UPB_UPB_REFLECTION_JSON_ENUMVALUE_OPTIONS_BOOTSTRAP_H__
+#define GOOGLE_UPB_UPB_REFLECTION_JSON_ENUMVALUE_OPTIONS_BOOTSTRAP_H__
+
+// IWYU pragma: begin_exports
+
+#if defined(UPB_BOOTSTRAP_STAGE) && UPB_BOOTSTRAP_STAGE == 0
+// This header is checked in.
+#elif defined(UPB_BOOTSTRAP_STAGE) && UPB_BOOTSTRAP_STAGE == 1
+// This header is generated at build time by the bootstrapping process.
+#else
+// This is the normal header, generated by upb_c_proto_library().
+/* This file was generated by upb_generator from the input file:
+ *
+ *     google/protobuf/json_enumvalue_options.proto
+ *
+ * Do not edit -- your changes will be discarded when the file is
+ * regenerated.
+ * NO CHECKED-IN PROTOBUF GENCODE */
+
+#ifndef GOOGLE_PROTOBUF_JSON_ENUMVALUE_OPTIONS_PROTO_UPB_H__UPB_H_
+#define GOOGLE_PROTOBUF_JSON_ENUMVALUE_OPTIONS_PROTO_UPB_H__UPB_H_
+
+
+// Must be last.
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+typedef struct pb_enumvalue_JsonEnumValueOptions {
+  upb_Message UPB_PRIVATE(base);
+} pb_enumvalue_JsonEnumValueOptions;
+
+struct google_protobuf_EnumValueOptions;
+
+
+
+/* pb.enumvalue.JsonEnumValueOptions */
+UPB_INLINE pb_enumvalue_JsonEnumValueOptions* pb_enumvalue_JsonEnumValueOptions_new(upb_Arena* arena) {
+  return (pb_enumvalue_JsonEnumValueOptions*)_upb_Message_New(&pb__enumvalue__JsonEnumValueOptions_msg_init, arena);
+}
+UPB_INLINE pb_enumvalue_JsonEnumValueOptions* pb_enumvalue_JsonEnumValueOptions_parse(const char* buf, size_t size,
+                                        upb_Arena* arena) {
+  pb_enumvalue_JsonEnumValueOptions* ret = pb_enumvalue_JsonEnumValueOptions_new(arena);
+  if (!ret) return NULL;
+  if (upb_Decode(buf, size, UPB_UPCAST(ret), &pb__enumvalue__JsonEnumValueOptions_msg_init, NULL, 0,
+                 arena) != kUpb_DecodeStatus_Ok) {
+    return NULL;
+  }
+  return ret;
+}
+UPB_INLINE pb_enumvalue_JsonEnumValueOptions* pb_enumvalue_JsonEnumValueOptions_parse_ex(
+    const char* buf, size_t size, const upb_ExtensionRegistry* extreg,
+    int options, upb_Arena* arena) {
+  pb_enumvalue_JsonEnumValueOptions* ret = pb_enumvalue_JsonEnumValueOptions_new(arena);
+  if (!ret) return NULL;
+  if (upb_Decode(buf, size, UPB_UPCAST(ret), &pb__enumvalue__JsonEnumValueOptions_msg_init, extreg,
+                 options, arena) != kUpb_DecodeStatus_Ok) {
+    return NULL;
+  }
+  return ret;
+}
+UPB_INLINE char* pb_enumvalue_JsonEnumValueOptions_serialize(const pb_enumvalue_JsonEnumValueOptions* msg,
+                                      upb_Arena* arena, size_t* len) {
+  char* ptr;
+  (void)upb_Encode(UPB_UPCAST(msg), &pb__enumvalue__JsonEnumValueOptions_msg_init, 0, arena, &ptr, len);
+  return ptr;
+}
+UPB_INLINE char* pb_enumvalue_JsonEnumValueOptions_serialize_ex(const pb_enumvalue_JsonEnumValueOptions* msg,
+                                         int options, upb_Arena* arena,
+                                         size_t* len) {
+  char* ptr;
+  (void)upb_Encode(UPB_UPCAST(msg), &pb__enumvalue__JsonEnumValueOptions_msg_init, options, arena, &ptr, len);
+  return ptr;
+}
+UPB_INLINE void pb_enumvalue_JsonEnumValueOptions_clear_string(pb_enumvalue_JsonEnumValueOptions* msg) {
+  const upb_MiniTableField field = {1, UPB_SIZE(12, 16), 64, kUpb_NoSub, 9, (int)kUpb_FieldMode_Scalar | ((int)kUpb_FieldRep_StringView << kUpb_FieldRep_Shift)};
+  upb_Message_ClearBaseField(UPB_UPCAST(msg), &field);
+}
+UPB_INLINE upb_StringView pb_enumvalue_JsonEnumValueOptions_string(const pb_enumvalue_JsonEnumValueOptions* msg) {
+  upb_StringView default_val = upb_StringView_FromString("");
+  upb_StringView ret;
+  const upb_MiniTableField field = {1, UPB_SIZE(12, 16), 64, kUpb_NoSub, 9, (int)kUpb_FieldMode_Scalar | ((int)kUpb_FieldRep_StringView << kUpb_FieldRep_Shift)};
+  _upb_Message_GetNonExtensionField(UPB_UPCAST(msg), &field,
+                                    &default_val, &ret);
+  return ret;
+}
+UPB_INLINE bool pb_enumvalue_JsonEnumValueOptions_has_string(const pb_enumvalue_JsonEnumValueOptions* msg) {
+  const upb_MiniTableField field = {1, UPB_SIZE(12, 16), 64, kUpb_NoSub, 9, (int)kUpb_FieldMode_Scalar | ((int)kUpb_FieldRep_StringView << kUpb_FieldRep_Shift)};
+  return upb_Message_HasBaseField(UPB_UPCAST(msg), &field);
+}
+
+UPB_INLINE void pb_enumvalue_JsonEnumValueOptions_set_string(pb_enumvalue_JsonEnumValueOptions* msg, upb_StringView value) {
+  const upb_MiniTableField field = {1, UPB_SIZE(12, 16), 64, kUpb_NoSub, 9, (int)kUpb_FieldMode_Scalar | ((int)kUpb_FieldRep_StringView << kUpb_FieldRep_Shift)};
+  upb_Message_SetBaseField((upb_Message*)msg, &field, &value);
+}
+
+UPB_INLINE bool pb_enumvalue_has_json(const struct google_protobuf_EnumValueOptions* msg) {
+  return upb_Message_HasExtension((upb_Message*)msg, pb_enumvalue_json_ext);
+}
+
+UPB_INLINE void pb_enumvalue_clear_json(struct google_protobuf_EnumValueOptions* msg) {
+  upb_Message_ClearExtension((upb_Message*)msg, pb_enumvalue_json_ext);
+}
+UPB_INLINE const pb_enumvalue_JsonEnumValueOptions*
+pb_enumvalue_json(const struct google_protobuf_EnumValueOptions* msg) {
+  const upb_MiniTableExtension* ext = pb_enumvalue_json_ext;
+  UPB_ASSUME(upb_MiniTableField_IsScalar(&ext->UPB_PRIVATE(field)));
+  UPB_ASSUME(UPB_PRIVATE(_upb_MiniTableField_GetRep)(
+                 &ext->UPB_PRIVATE(field)) == UPB_SIZE(kUpb_FieldRep_4Byte, kUpb_FieldRep_8Byte));
+  const pb_enumvalue_JsonEnumValueOptions* default_val = NULL;
+  const pb_enumvalue_JsonEnumValueOptions* ret;
+  _upb_Message_GetExtensionField((upb_Message*)msg, ext, &default_val, &ret);
+  return ret;
+}
+
+UPB_INLINE void pb_enumvalue_set_json(struct google_protobuf_EnumValueOptions* msg,
+                                        const pb_enumvalue_JsonEnumValueOptions* val,
+                                        upb_Arena* arena) {
+  const upb_MiniTableExtension* ext = pb_enumvalue_json_ext;
+  UPB_ASSUME(upb_MiniTableField_IsScalar(&ext->UPB_PRIVATE(field)));
+  UPB_ASSUME(UPB_PRIVATE(_upb_MiniTableField_GetRep)(
+                 &ext->UPB_PRIVATE(field)) == UPB_SIZE(kUpb_FieldRep_4Byte, kUpb_FieldRep_8Byte));
+  bool ok = upb_Message_SetExtension((upb_Message*)msg, ext, &val, arena);
+  UPB_ASSERT(ok);
+}
+UPB_INLINE struct pb_enumvalue_JsonEnumValueOptions* pb_enumvalue_mutable_json(
+    struct google_protobuf_EnumValueOptions* msg, upb_Arena* arena) {
+  struct pb_enumvalue_JsonEnumValueOptions* sub = (struct pb_enumvalue_JsonEnumValueOptions*)pb_enumvalue_json(msg);
+  if (sub == NULL) {
+    sub = (struct pb_enumvalue_JsonEnumValueOptions*)_upb_Message_New(&pb__enumvalue__JsonEnumValueOptions_msg_init, arena);
+    if (sub) pb_enumvalue_set_json(msg, sub, arena);
+  }
+  return sub;
+}
+#ifdef __cplusplus
+              } /* extern "C" */
+#endif
+
+
+#endif /* GOOGLE_PROTOBUF_JSON_ENUMVALUE_OPTIONS_PROTO_UPB_H__UPB_H_ */
+#endif
+
+// IWYU pragma: end_exports
+
+#endif  // GOOGLE_UPB_UPB_REFLECTION_JSON_ENUMVALUE_OPTIONS_BOOTSTRAP_H__
 
 #ifndef UPB_REFLECTION_EXTENSION_RANGE_INTERNAL_H_
 #define UPB_REFLECTION_EXTENSION_RANGE_INTERNAL_H_
@@ -19250,6 +19474,33 @@ void _upb_Decoder_AddEnumValueToUnknown(upb_Decoder* d, upb_Message* msg,
 
 
 #endif /* UPB_WIRE_INTERNAL_DECODER_H_ */
+
+#ifndef UPB_WIRE_ENCODE_EXTENSION_H_
+#define UPB_WIRE_ENCODE_EXTENSION_H_
+
+
+// Must be last.
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+struct upb_Extension;
+
+// Encodes an extension (`upb_Extension*`) to bytes.
+//
+// This can be used to encode an extension into the provided arena.
+// Returns `kUpb_EncodeStatus_Ok` on success.
+UPB_NODISCARD upb_EncodeStatus
+upb_EncodeExtension(const struct upb_Extension* ext, struct upb_Arena* arena,
+                    upb_StringView* view, int encode_options);
+
+#ifdef __cplusplus
+} /* extern "C" */
+#endif
+
+
+#endif /* UPB_WIRE_ENCODE_EXTENSION_H_ */
 #ifndef GOOGLE_UPB_UPB_WIRE_WRITER_H__
 #define GOOGLE_UPB_UPB_WIRE_WRITER_H__
 

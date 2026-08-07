@@ -181,7 +181,9 @@ def _write_descriptor_set(ctx, proto_info, deps, option_deps, exports, descripto
         args.add("--include_source_info")
     args.add("--retain_options")
 
-    if ctx.attr._strict_proto_deps[BuildSettingInfo].value:
+    strict_proto_deps = ctx.attr._strict_proto_deps[BuildSettingInfo].value
+
+    if strict_proto_deps:
         if proto_info.direct_sources:
             # Direct sources can be option imported in addition to `deps`.
             strict_importable_sources = depset(

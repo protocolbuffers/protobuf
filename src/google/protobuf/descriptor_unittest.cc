@@ -16361,114 +16361,7 @@ TEST_F(SourceLocationTest, GetSourceLocation) {
                                     "rpc Method(A) returns (A.B);"));
 }
 
-TEST_F(SourceLocationTest, AggregateOptionSourceLocation) {
-  SourceLocation loc;
-  const FileDescriptor* file_desc =
-      ABSL_DIE_IF_NULL(pool_.FindFileByName("/test/test.proto"));
-
-  SourceCodePath base_path = {FileDescriptorProto::kServiceFieldNumber,
-                              0,
-                              ServiceDescriptorProto::kOptionsFieldNumber,
-                              kCustomOptionFieldNumber,
-                              0,
-                              UninterpretedOption::kAggregateValueFieldNumber};
-
-  auto make_path = [&](std::initializer_list<int> sub) {
-    SourceCodePath path = base_path;
-    path.insert(path.end(), sub.begin(), sub.end());
-    return path;
-  };
-
-  // Verify what base_path matches directly (the entire aggregate block).
-  {
-    EXPECT_TRUE(file_desc->GetSourceLocation(base_path, &loc));
-    EXPECT_THAT(loc,
-                MatchesSubstring(kSourceLocationTestInput,
-                                 "{a:100, rep: [1, 2, 3], b_sub: {b: 200}}"));
-  }
-
-  // Path to "a" inside {a:100}
-  {
-    SourceCodePath path =
-        make_path({kAFieldNumber, UninterpretedOption::kNameFieldNumber});
-    EXPECT_TRUE(file_desc->GetSourceLocation(path, &loc));
-    EXPECT_THAT(loc, MatchesSubstring(kSourceLocationTestInput, "a"));
-  }
-
-  // Path to "100" inside {a:100}
-  {
-    SourceCodePath path = make_path(
-        {kAFieldNumber, UninterpretedOption::kPositiveIntValueFieldNumber});
-    EXPECT_TRUE(file_desc->GetSourceLocation(path, &loc));
-    EXPECT_THAT(loc, MatchesSubstring(kSourceLocationTestInput, "100"));
-  }
-
-  // Path to the name of the top-level option (test_svc_opt)
-  {
-    SourceCodePath path = {FileDescriptorProto::kServiceFieldNumber,
-                           0,
-                           ServiceDescriptorProto::kOptionsFieldNumber,
-                           kCustomOptionFieldNumber,
-                           0,
-                           UninterpretedOption::kNameFieldNumber};
-    EXPECT_TRUE(file_desc->GetSourceLocation(path, &loc));
-    EXPECT_THAT(loc,
-                MatchesSubstring(kSourceLocationTestInput, "(test_svc_opt)"));
-  }
-
-  // Path to "1" inside {rep: [1, 2, 3]}
-  {
-    SourceCodePath path =
-        make_path({kRepFieldNumber, 0,
-                   UninterpretedOption::kPositiveIntValueFieldNumber});
-    EXPECT_TRUE(file_desc->GetSourceLocation(path, &loc));
-    EXPECT_THAT(loc, MatchesSubstring(kSourceLocationTestInput, "1"));
-  }
-
-  // Path to "2" inside {rep: [1, 2, 3]}
-  {
-    SourceCodePath path =
-        make_path({kRepFieldNumber, 1,
-                   UninterpretedOption::kPositiveIntValueFieldNumber});
-    EXPECT_TRUE(file_desc->GetSourceLocation(path, &loc));
-    EXPECT_THAT(loc, MatchesSubstring(kSourceLocationTestInput, "2"));
-  }
-
-  // Path to "3" inside {rep: [1, 2, 3]}
-  {
-    SourceCodePath path =
-        make_path({kRepFieldNumber, 2,
-                   UninterpretedOption::kPositiveIntValueFieldNumber});
-    EXPECT_TRUE(file_desc->GetSourceLocation(path, &loc));
-    EXPECT_THAT(loc, MatchesSubstring(kSourceLocationTestInput, "3"));
-  }
-
-  // Path to "b_sub" inside {..., b_sub: {b: 200}}
-  {
-    SourceCodePath path =
-        make_path({kBSubFieldNumber, UninterpretedOption::kNameFieldNumber});
-    EXPECT_TRUE(file_desc->GetSourceLocation(path, &loc));
-    EXPECT_THAT(loc, MatchesSubstring(kSourceLocationTestInput, "b_sub"));
-  }
-
-  // Path to "b" inside {..., b_sub: {b: 200}}
-  {
-    SourceCodePath path = make_path(
-        {kBSubFieldNumber, UninterpretedOption::kAggregateValueFieldNumber,
-         kBFieldNumber, UninterpretedOption::kNameFieldNumber});
-    EXPECT_TRUE(file_desc->GetSourceLocation(path, &loc));
-    EXPECT_THAT(loc, MatchesSubstring(kSourceLocationTestInput, "b"));
-  }
-
-  // Path to "200" inside {..., b_sub: {b: 200}}
-  {
-    SourceCodePath path = make_path(
-        {kBSubFieldNumber, UninterpretedOption::kAggregateValueFieldNumber,
-         kBFieldNumber, UninterpretedOption::kDoubleValueFieldNumber});
-    EXPECT_TRUE(file_desc->GetSourceLocation(path, &loc));
-    EXPECT_THAT(loc, MatchesSubstring(kSourceLocationTestInput, "200"));
-  }
-}
+// TODO: b/168903973 - Remove once we update the format.
 
 TEST_F(SourceLocationTest, ExtensionSourceLocation) {
   SourceLocation loc;
@@ -16526,19 +16419,7 @@ TEST_F(SourceLocationTest, InterpretedOptionSourceLocation) {
 
     EXPECT_FALSE(file_desc->GetSourceLocation(unint, &loc));
 
-    SourceCodePath name_path = {FileDescriptorProto::kOptionsFieldNumber,
-                                FileOptions::kJavaPackageFieldNumber,
-                                UninterpretedOption::kNameFieldNumber};
-    EXPECT_TRUE(file_desc->GetSourceLocation(name_path, &loc));
-    EXPECT_THAT(loc,
-                MatchesSubstring(kSourceLocationTestInput, "java_package"));
-
-    SourceCodePath val_path = {FileDescriptorProto::kOptionsFieldNumber,
-                               FileOptions::kJavaPackageFieldNumber,
-                               UninterpretedOption::kStringValueFieldNumber};
-    EXPECT_TRUE(file_desc->GetSourceLocation(val_path, &loc));
-    EXPECT_THAT(loc,
-                MatchesSubstring(kSourceLocationTestInput, "\"com.foo.bar\""));
+// TODO: b/168903973 - Remove once we update the format.
   }
   {
     SourceCodePath path = {FileDescriptorProto::kOptionsFieldNumber,
@@ -16551,18 +16432,7 @@ TEST_F(SourceLocationTest, InterpretedOptionSourceLocation) {
 
     EXPECT_FALSE(file_desc->GetSourceLocation(unint, &loc));
 
-    SourceCodePath name_path = {FileDescriptorProto::kOptionsFieldNumber,
-                                kCustomOptionFieldNumber,
-                                UninterpretedOption::kNameFieldNumber};
-    EXPECT_TRUE(file_desc->GetSourceLocation(name_path, &loc));
-    EXPECT_THAT(loc,
-                MatchesSubstring(kSourceLocationTestInput, "(test_file_opt)"));
-
-    SourceCodePath val_path = {FileDescriptorProto::kOptionsFieldNumber,
-                               kCustomOptionFieldNumber,
-                               UninterpretedOption::kStringValueFieldNumber};
-    EXPECT_TRUE(file_desc->GetSourceLocation(val_path, &loc));
-    EXPECT_THAT(loc, MatchesSubstring(kSourceLocationTestInput, "\"foobar\""));
+// TODO: b/168903973 - Remove once we update the format.
   }
 
   // Message option

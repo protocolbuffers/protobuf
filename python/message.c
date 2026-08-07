@@ -20,6 +20,7 @@
 #include "python/map.h"
 #include "python/protobuf.h"
 #include "python/repeated.h"
+#include "upb/base/status.h"
 #include "upb/mem/alloc.h"
 #include "upb/mem/arena.h"
 #include "upb/message/array.h"
@@ -1315,7 +1316,14 @@ static PyObject* PyUpb_Message_IsInitialized(PyObject* _self, PyObject* args) {
     upb_Message* msg = PyUpb_Message_GetIfReified(_self);
     const upb_MessageDef* m = PyUpb_Message_GetMsgdef(_self);
     const upb_DefPool* symtab = upb_FileDef_Pool(upb_MessageDef_File(m));
-    bool initialized = !upb_util_HasUnsetRequired(msg, m, symtab, NULL);
+    upb_Status status;
+    upb_Status_Clear(&status);
+    bool initialized =
+        !upb_util_HasUnsetRequired(msg, m, symtab, NULL, &status);
+    if (!upb_Status_IsOk(&status)) {
+      PyErr_SetNone(PyExc_MemoryError);
+      return NULL;
+    }
     return PyBool_FromLong(initialized);
   }
 }
@@ -1702,9 +1710,18 @@ static PyObject* PyUpb_Message_FindInitializationErrors(PyObject* _self,
   const upb_MessageDef* msgdef = _PyUpb_Message_GetMsgdef(self);
   const upb_DefPool* ext_pool = upb_FileDef_Pool(upb_MessageDef_File(msgdef));
   upb_FieldPathEntry* fields_base;
+  upb_Status status;
+  upb_Status_Clear(&status);
+  bool has_unset_required =
+      upb_util_HasUnsetRequired(msg, msgdef, ext_pool, &fields_base, &status);
+  if (!upb_Status_IsOk(&status)) {
+    PyErr_SetString(PyExc_MemoryError, upb_Status_ErrorMessage(&status));
+    return NULL;
+  }
   PyObject* ret = PyList_New(0);
   if (!ret) return NULL;
-  if (!upb_util_HasUnsetRequired(msg, msgdef, ext_pool, &fields_base)) {
+
+  if (!has_unset_required) {
     return ret;
   }
   upb_FieldPathEntry* fields = fields_base;

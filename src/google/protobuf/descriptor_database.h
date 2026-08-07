@@ -415,6 +415,28 @@ class PROTOBUF_EXPORT MergedDescriptorDatabase : public DescriptorDatabase {
   std::vector<DescriptorDatabase*> sources_;
 };
 
+namespace internal {
+
+// Scoped RAII class to suppress error reporting from descriptor databases
+// (e.g. during speculative searches in TryFindFileInFallbackDatabase).
+class PROTOBUF_EXPORT ScopedFallbackDatabaseErrorSuppressor {
+ public:
+  ScopedFallbackDatabaseErrorSuppressor();
+  ~ScopedFallbackDatabaseErrorSuppressor();
+
+  ScopedFallbackDatabaseErrorSuppressor(
+      const ScopedFallbackDatabaseErrorSuppressor&) = delete;
+  ScopedFallbackDatabaseErrorSuppressor& operator=(
+      const ScopedFallbackDatabaseErrorSuppressor&) = delete;
+
+  static bool IsSuppressed();
+
+ private:
+  bool previous_value_;
+};
+
+}  // namespace internal
+
 }  // namespace protobuf
 }  // namespace google
 

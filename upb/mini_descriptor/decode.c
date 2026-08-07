@@ -832,6 +832,7 @@ done:
 #endif
 
   upb_MiniTable* ret = upb_Arena_Malloc(decoder->arena, mt_size);
+  upb_MdDecoder_CheckOutOfMemory(&decoder->base, ret);
   memcpy(ret, &decoder->table, sizeof(*ret));
 
 #if UPB_FASTTABLE

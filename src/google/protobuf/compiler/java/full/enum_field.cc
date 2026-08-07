@@ -22,6 +22,7 @@
 #include "google/protobuf/compiler/java/doc_comment.h"
 #include "google/protobuf/compiler/java/field_common.h"
 #include "google/protobuf/compiler/java/helpers.h"
+#include "google/protobuf/compiler/java/full/field_generator.h"
 #include "google/protobuf/compiler/java/internal_helpers.h"
 #include "google/protobuf/compiler/java/name_resolver.h"
 #include "google/protobuf/io/printer.h"
@@ -39,9 +40,8 @@ namespace {
 using Semantic = ::google::protobuf::io::AnnotationCollector::Semantic;
 
 void SetEnumVariables(
-    const FieldDescriptor* descriptor, int message_bit_index,
-    int builder_bit_index, const FieldGeneratorInfo* info,
-    ClassNameResolver* name_resolver,
+    const FieldDescriptor* descriptor, int bit_index,
+    const FieldGeneratorInfo* info, ClassNameResolver* name_resolver,
     absl::flat_hash_map<absl::string_view, std::string>* variables,
     Context* context) {
   SetCommonFieldVariables(descriptor, info, variables);
@@ -74,27 +74,26 @@ void SetEnumVariables(
     // For singular messages and builders, one bit is used for the hasField bit.
     // Note that these have a trailing ";".
     (*variables)["set_has_field_bit_to_local"] =
-        GenerateSetBitToLocal(message_bit_index);
-    (*variables)["is_field_present_message"] =
-        GenerateGetBit(message_bit_index);
+        GenerateSetBitToLocal(bit_index);
+    (*variables)["is_field_present"] = GenerateGetBit(bit_index);
   } else {
     (*variables)["set_has_field_bit_to_local"] = "";
-    variables->insert({"is_field_present_message",
+    variables->insert({"is_field_present",
                        absl::StrCat((*variables)["name"], "_ != ",
                                     (*variables)["default"], ".getNumber()")});
   }
 
   // Always track the presence of a field explicitly in the builder, regardless
   // of syntax.
-  (*variables)["get_has_field_bit_builder"] = GenerateGetBit(builder_bit_index);
+  (*variables)["get_has_field_bit"] = GenerateGetBit(bit_index);
   (*variables)["get_has_field_bit_from_local"] =
-      GenerateGetBitFromLocal(builder_bit_index);
+      GenerateGetBitFromLocal(bit_index);
 
   // Note that these have a trailing ";".
-  (*variables)["set_has_field_bit_builder"] =
-      absl::StrCat(GenerateSetBit(builder_bit_index), ";");
-  (*variables)["clear_has_field_bit_builder"] =
-      absl::StrCat(GenerateClearBit(builder_bit_index), ";");
+  (*variables)["set_has_field_bit"] =
+      absl::StrCat(GenerateSetBit(bit_index), ";");
+  (*variables)["clear_has_field_bit"] =
+      absl::StrCat(GenerateClearBit(bit_index), ";");
 
   (*variables)["unknown"] =
       SupportUnknownEnumValue(descriptor)
@@ -107,31 +106,14 @@ void SetEnumVariables(
 // ===================================================================
 
 ImmutableEnumFieldGenerator::ImmutableEnumFieldGenerator(
-    const FieldDescriptor* descriptor, int message_bit_index,
-    int builder_bit_index, Context* context)
-    : descriptor_(descriptor),
-      message_bit_index_(message_bit_index),
-      builder_bit_index_(builder_bit_index),
-      context_(context),
-      name_resolver_(context->GetNameResolver()) {
-  SetEnumVariables(descriptor, message_bit_index, builder_bit_index,
+    const FieldDescriptor* descriptor, int bit_index, Context* context)
+    : ImmutableFieldGenerator(descriptor, bit_index, context) {
+  SetEnumVariables(descriptor, bit_index,
                    context->GetFieldGeneratorInfo(descriptor), name_resolver_,
                    &variables_, context);
 }
 
 ImmutableEnumFieldGenerator::~ImmutableEnumFieldGenerator() = default;
-
-int ImmutableEnumFieldGenerator::GetMessageBitIndex() const {
-  return message_bit_index_;
-}
-
-int ImmutableEnumFieldGenerator::GetBuilderBitIndex() const {
-  return builder_bit_index_;
-}
-
-int ImmutableEnumFieldGenerator::GetNumBitsForMessage() const {
-  return HasHasbit(descriptor_) ? 1 : 0;
-}
 
 void ImmutableEnumFieldGenerator::GenerateInterfaceMembers(
     io::Printer* printer) const {
@@ -161,7 +143,7 @@ void ImmutableEnumFieldGenerator::GenerateMembers(io::Printer* printer) const {
     printer->Print(variables_,
                    "@java.lang.Override $deprecation$public boolean "
                    "${$has$capitalized_name$$}$() {\n"
-                   "  return $is_field_present_message$;\n"
+                   "  return $is_field_present$;\n"
                    "}\n");
     printer->Annotate("{", "}", descriptor_);
   }
@@ -195,7 +177,7 @@ void ImmutableEnumFieldGenerator::GenerateBuilderMembers(
     printer->Print(variables_,
                    "@java.lang.Override $deprecation$public boolean "
                    "${$has$capitalized_name$$}$() {\n"
-                   "  return $get_has_field_bit_builder$;\n"
+                   "  return $get_has_field_bit$;\n"
                    "}\n");
     printer->Annotate("{", "}", descriptor_);
   }
@@ -215,7 +197,7 @@ void ImmutableEnumFieldGenerator::GenerateBuilderMembers(
                    "$deprecation$public Builder "
                    "${$set$capitalized_name$Value$}$(int value) {\n"
                    "  $name$_ = value;\n"
-                   "  $set_has_field_bit_builder$\n"
+                   "  $set_has_field_bit$\n"
                    "  onChanged();\n"
                    "  return this;\n"
                    "}\n");
@@ -237,7 +219,7 @@ void ImmutableEnumFieldGenerator::GenerateBuilderMembers(
                  "$deprecation$public Builder "
                  "${$set$capitalized_name$$}$($type$ value) {\n"
                  "  $null_check$\n"
-                 "  $set_has_field_bit_builder$\n"
+                 "  $set_has_field_bit$\n"
                  "  $name$_ = value.getNumber();\n"
                  "  onChanged();\n"
                  "  return this;\n"
@@ -249,7 +231,7 @@ void ImmutableEnumFieldGenerator::GenerateBuilderMembers(
   printer->Print(
       variables_,
       "$deprecation$public Builder ${$clear$capitalized_name$$}$() {\n"
-      "  $clear_has_field_bit_builder$\n"
+      "  $clear_has_field_bit$\n"
       "  $name$_ = $default_number$;\n"
       "  onChanged();\n"
       "  return this;\n"
@@ -297,7 +279,7 @@ void ImmutableEnumFieldGenerator::GenerateBuildingCode(
   printer->Print(variables_,
                  "if ($get_has_field_bit_from_local$) {\n"
                  "  result.$name$_ = $name$_;\n");
-  if (GetNumBitsForMessage() > 0) {
+  if (GetNumBits() > 0) {
     printer->Print(variables_, "  $set_has_field_bit_to_local$;\n");
   }
   printer->Print("}\n");
@@ -308,7 +290,7 @@ void ImmutableEnumFieldGenerator::GenerateBuilderParsingCode(
   if (SupportUnknownEnumValue(descriptor_)) {
     printer->Print(variables_,
                    "$name$_ = input.readEnum();\n"
-                   "$set_has_field_bit_builder$\n");
+                   "$set_has_field_bit$\n");
   } else {
     printer->Print(variables_,
                    "int tmpRaw = input.readEnum();\n"
@@ -318,7 +300,7 @@ void ImmutableEnumFieldGenerator::GenerateBuilderParsingCode(
                    "  mergeUnknownVarintField($number$, tmpRaw);\n"
                    "} else {\n"
                    "  $name$_ = tmpRaw;\n"
-                   "  $set_has_field_bit_builder$\n"
+                   "  $set_has_field_bit$\n"
                    "}\n");
   }
 }
@@ -326,7 +308,7 @@ void ImmutableEnumFieldGenerator::GenerateBuilderParsingCode(
 void ImmutableEnumFieldGenerator::GenerateSerializationCode(
     io::Printer* printer) const {
   printer->Print(variables_,
-                 "if ($is_field_present_message$) {\n"
+                 "if ($is_field_present$) {\n"
                  "  output.writeEnum($number$, $name$_);\n"
                  "}\n");
 }
@@ -334,7 +316,7 @@ void ImmutableEnumFieldGenerator::GenerateSerializationCode(
 void ImmutableEnumFieldGenerator::GenerateSerializedSizeCode(
     io::Printer* printer) const {
   printer->Print(variables_,
-                 "if ($is_field_present_message$) {\n"
+                 "if ($is_field_present$) {\n"
                  "  size += com.google.protobuf.CodedOutputStream\n"
                  "    .computeEnumSize($number$, $name$_);\n"
                  "}\n");
@@ -358,10 +340,8 @@ std::string ImmutableEnumFieldGenerator::GetBoxedType() const {
 // ===================================================================
 
 ImmutableEnumOneofFieldGenerator::ImmutableEnumOneofFieldGenerator(
-    const FieldDescriptor* descriptor, int message_bit_index,
-    int builder_bit_index, Context* context)
-    : ImmutableEnumFieldGenerator(descriptor, message_bit_index,
-                                  builder_bit_index, context) {
+    const FieldDescriptor* descriptor, int bit_index, Context* context)
+    : ImmutableEnumFieldGenerator(descriptor, bit_index, context) {
   const OneofGeneratorInfo* info =
       context->GetOneofGeneratorInfo(descriptor->containing_oneof());
   SetCommonOneofVariables(descriptor, info, &variables_);
@@ -584,17 +564,11 @@ void ImmutableEnumOneofFieldGenerator::GenerateHashCode(
 // ===================================================================
 
 RepeatedImmutableEnumFieldGenerator::RepeatedImmutableEnumFieldGenerator(
-    const FieldDescriptor* descriptor, int message_bit_index,
-    int builder_bit_index, Context* context)
-    : ImmutableEnumFieldGenerator(descriptor, message_bit_index,
-                                  builder_bit_index, context) {}
+    const FieldDescriptor* descriptor, int bit_index, Context* context)
+    : ImmutableEnumFieldGenerator(descriptor, bit_index, context) {}
 
 RepeatedImmutableEnumFieldGenerator::~RepeatedImmutableEnumFieldGenerator() =
     default;
-
-int RepeatedImmutableEnumFieldGenerator::GetNumBitsForMessage() const {
-  return 0;
-}
 
 void RepeatedImmutableEnumFieldGenerator::GenerateInterfaceMembers(
     io::Printer* printer) const {
@@ -707,7 +681,7 @@ void RepeatedImmutableEnumFieldGenerator::GenerateBuilderMembers(
       "  if (!$name$_.isModifiable()) {\n"
       "    $name$_ = makeMutableCopy($name$_, capacity);\n"
       "  }\n"
-      "  $set_has_field_bit_builder$\n"
+      "  $set_has_field_bit$\n"
       "}\n");
 
   WriteFieldAccessorDocComment(printer, descriptor_, LIST_GETTER,
@@ -787,7 +761,7 @@ void RepeatedImmutableEnumFieldGenerator::GenerateBuilderMembers(
       variables_,
       "$deprecation$public Builder ${$clear$capitalized_name$$}$() {\n"
       "  $name$_ = $empty_list$;\n"
-      "  $clear_has_field_bit_builder$\n"
+      "  $clear_has_field_bit$\n"
       "  $on_changed$\n"
       "  return this;\n"
       "}\n");
@@ -881,7 +855,7 @@ void RepeatedImmutableEnumFieldGenerator::GenerateMergingCode(
                  "  if ($name$_.isEmpty()) {\n"
                  "    $name$_ = other.$name$_;\n"
                  "    $name_make_immutable$;\n"
-                 "    $set_has_field_bit_builder$\n"
+                 "    $set_has_field_bit$\n"
                  "  } else {\n"
                  "    ensure$capitalized_name$IsMutable(/* capacity= */ -1);\n"
                  "    $name$_.addAll(other.$name$_);\n"
