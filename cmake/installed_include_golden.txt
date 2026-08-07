@@ -35,6 +35,7 @@ google/protobuf/compiler/php/names.h
 google/protobuf/compiler/plugin.h
 google/protobuf/compiler/plugin.pb.h
 google/protobuf/compiler/plugin.proto
+google/protobuf/compiler/python/names.h
 google/protobuf/compiler/retention.h
 google/protobuf/compiler/scc.h
 google/protobuf/compiler/subprocess.h
