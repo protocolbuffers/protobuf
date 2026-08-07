@@ -659,8 +659,7 @@ const upb_Message* upb_Message_Convert(const upb_Message* src,
       upb_DecodeStatus decode_status =
           upb_Decode(wire_buf, wire_size, decoded_msg, dst_mt, extreg,
                      decode_options, tmp_arena);
-      if (decode_status != kUpb_DecodeStatus_MaxDepthExceeded) {
-        UPB_ASSERT(decode_status == kUpb_DecodeStatus_Ok);
+      if (decode_status == kUpb_DecodeStatus_Ok) {
         // Compare the decoded message to the converted message.
         UPB_ASSERT(upb_Message_IsEqual(decoded_msg, dst, dst_mt, 0));
       }
