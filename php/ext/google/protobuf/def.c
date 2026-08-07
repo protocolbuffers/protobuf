@@ -1020,10 +1020,11 @@ PHP_METHOD(DescriptorPool, internalAddGeneratedFile) {
   char* data = NULL;
   zend_long data_len;
   zend_bool use_nested_submsg = false;
+  zval* custom_json_names = NULL;
   upb_Arena* arena;
 
-  if (zend_parse_parameters(ZEND_NUM_ARGS(), "s|b", &data, &data_len,
-                            &use_nested_submsg) != SUCCESS) {
+  if (zend_parse_parameters(ZEND_NUM_ARGS(), "s|bz", &data, &data_len,
+                            &use_nested_submsg, &custom_json_names) != SUCCESS) {
     return;
   }
 
@@ -1037,9 +1038,10 @@ ZEND_BEGIN_ARG_INFO_EX(arginfo_lookupByName, 0, 0, 1)
   ZEND_ARG_INFO(0, name)
 ZEND_END_ARG_INFO()
 
-ZEND_BEGIN_ARG_INFO_EX(arginfo_addgeneratedfile, 0, 0, 2)
+ZEND_BEGIN_ARG_INFO_EX(arginfo_addgeneratedfile, 0, 0, 1)
   ZEND_ARG_INFO(0, data)
-  ZEND_ARG_INFO(0, data_len)
+  ZEND_ARG_INFO(0, use_nested_submsg)
+  ZEND_ARG_INFO(0, custom_json_names)
 ZEND_END_ARG_INFO()
 
 static zend_function_entry DescriptorPool_methods[] = {

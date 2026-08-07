@@ -20,6 +20,8 @@ use Foo\TestEnum;
 use Foo\TestLargeFieldNumber;
 use Foo\TestMessage;
 use Foo\TestMessage\Sub;
+use Custom_enum_json\Knight;
+use Custom_enum_json\Armor;
 use Foo\TestPackedMessage;
 use Foo\TestRandomFieldOrder;
 use Foo\TestUnpackedMessage;
@@ -2154,5 +2156,170 @@ class EncodeDecodeTest extends TestBase
         $m2->mergeFromString($data);
         $this->assertEquals(42, $m2->getOptionalMessage()->getA());
         $this->assertEquals(33 * 1024 * 1024, strlen($m2->getOptionalString()));
+    }
+
+    public function testSerializeGreatHelm() {
+        $message = new Knight();
+        $message->setArmor(Armor::ARMOR_GREAT_HELM);
+        $this->assertEquals(
+            '{"armor":"gr8 helm"}',
+            $message->serializeToJsonString()
+        );
+    }
+
+    public function testParseGreatHelm() {
+        $message = new Knight();
+        $message->mergeFromJsonString('{"armor":"gr8 helm"}');
+        $this->assertEquals(Armor::ARMOR_GREAT_HELM, $message->getArmor());
+    }
+
+    public function testParseGorgetDefault() {
+        $message = new Knight();
+        $message->mergeFromJsonString('{"armor":"ARMOR_GORGET"}');
+        $this->assertEquals(Armor::ARMOR_GORGET, $message->getArmor());
+    }
+
+    public function testParseGorgetNumber() {
+        $message = new Knight();
+        $message->mergeFromJsonString('{"armor":2}');
+        $this->assertEquals(Armor::ARMOR_GORGET, $message->getArmor());
+    }
+
+    public function testSerializeGorget() {
+        $message = new Knight();
+        $message->setArmor(Armor::ARMOR_GORGET);
+        $this->assertEquals(
+            '{"armor":"ARMOR_GORGET"}',
+            $message->serializeToJsonString()
+        );
+    }
+
+    public function testSerializeGauntlet() {
+        $message = new Knight();
+        $message->setArmor(Armor::ARMOR_GAUNTLET);
+        $this->assertEquals(
+            '{"armor":"a\"b"}',
+            $message->serializeToJsonString()
+        );
+    }
+
+    public function testParseGauntlet() {
+        $message = new Knight();
+        $message->mergeFromJsonString('{"armor":"a\"b"}');
+        $this->assertEquals(Armor::ARMOR_GAUNTLET, $message->getArmor());
+    }
+
+    public function testParseGauntletRawName() {
+        $message = new Knight();
+        $message->mergeFromJsonString('{"armor":"ARMOR_GAUNTLET"}');
+        $this->assertEquals(Armor::ARMOR_GAUNTLET, $message->getArmor());
+    }
+
+    public function testSerializePlate() {
+        $message = new Knight();
+        $message->setArmor(Armor::ARMOR_PLATE);
+        $this->assertEquals(
+            '{"armor":"\"plate\""}',
+            $message->serializeToJsonString()
+        );
+    }
+
+    public function testParsePlate() {
+        $message = new Knight();
+        $message->mergeFromJsonString('{"armor":"\"plate\""}');
+        $this->assertEquals(Armor::ARMOR_PLATE, $message->getArmor());
+    }
+
+    public function testSerializeCoif() {
+        $message = new Knight();
+        $message->setArmor(Armor::ARMOR_COIF);
+        $this->assertEquals(
+            '{"armor":""}',
+            $message->serializeToJsonString()
+        );
+    }
+
+    public function testParseCoif() {
+        $message = new Knight();
+        $message->mergeFromJsonString('{"armor":""}');
+        $this->assertEquals(Armor::ARMOR_COIF, $message->getArmor());
+    }
+
+    public function testSerializePauldron() {
+        $message = new Knight();
+        $message->setArmor(Armor::ARMOR_PAULDRON);
+        $this->assertEquals(
+            '{"armor":"p\\taul\\ndron"}',
+            $message->serializeToJsonString()
+        );
+    }
+
+    public function testParsePauldron() {
+        $message = new Knight();
+        $message->mergeFromJsonString('{"armor":"p\\taul\\ndron"}');
+        $this->assertEquals(Armor::ARMOR_PAULDRON, $message->getArmor());
+    }
+
+    public function testSerializeSabaton() {
+        $message = new Knight();
+        $message->setArmor(Armor::ARMOR_SABATON);
+        $this->assertEquals(
+            '{"armor":"sabaton"}',
+            $message->serializeToJsonString()
+        );
+    }
+
+    public function testParseSabaton() {
+        $message = new Knight();
+        $message->mergeFromJsonString('{"armor":"sabaton"}');
+        $this->assertEquals(Armor::ARMOR_SABATON, $message->getArmor());
+    }
+
+    public function testSerializeSolleret() {
+        $message = new Knight();
+        $message->setArmor(Armor::ARMOR_SOLLERET);
+        $this->assertEquals(
+            '{"armor":"sabaton"}',
+            $message->serializeToJsonString()
+        );
+    }
+
+    public function testParseSolleret() {
+        $message = new Knight();
+        $message->mergeFromJsonString('{"armor":"sabaton"}');
+        $this->assertEquals(Armor::ARMOR_SOLLERET, $message->getArmor());
+    }
+
+    public function testSerializeHachiMaiDo() {
+        $message = new Knight();
+        $message->setArmor(Armor::ARMOR_HACHI_MAI_DO);
+        $this->assertEquals(
+            '{"armor":"8"}',
+            $message->serializeToJsonString()
+        );
+    }
+
+    public function testParseHachiMaiDo() {
+        $message = new Knight();
+        $message->mergeFromJsonString('{"armor":"8"}');
+        $this->assertEquals(Armor::ARMOR_HACHI_MAI_DO, $message->getArmor());
+    }
+
+    public function testParseHachiMaiDoNumber() {
+        $message = new Knight();
+        $message->mergeFromJsonString('{"armor":8}');
+        $this->assertEquals(Armor::ARMOR_HACHI_MAI_DO, $message->getArmor());
+    }
+
+    public function testCaseSensitiveGauntletParsingFails() {
+        $message = new Knight();
+        $this->expectException(Exception::class);
+        $message->mergeFromJsonString('{"armor":"A\"b"}');
+    }
+
+    public function testCaseSensitiveRawNameParsingFails() {
+        $message = new Knight();
+        $this->expectException(Exception::class);
+        $message->mergeFromJsonString('{"armor":"armor_GAUNtlet"}');
     }
 }

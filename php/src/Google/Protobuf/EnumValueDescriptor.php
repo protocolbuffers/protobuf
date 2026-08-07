@@ -13,14 +13,16 @@ class EnumValueDescriptor
 {
     private $name;
     private $number;
+    private $internal_desc;
 
     /**
      * @internal
      */
-    public function __construct($name, $number)
+    public function __construct($name, $number, $internal_desc = null)
     {
         $this->name = $name;
         $this->number = $number;
+        $this->internal_desc = $internal_desc;
     }
 
     /**

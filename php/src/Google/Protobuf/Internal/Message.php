@@ -677,6 +677,14 @@ class Message
     }
 
     /**
+     * @internal
+     */
+    public function getUnknown()
+    {
+        return $this->unknown;
+    }
+
+    /**
      * Merges the contents of the specified message into current message.
      *
      * This method merges the contents of the specified message into the
@@ -865,9 +873,10 @@ class Message
                 if (is_integer($value)) {
                     return $value;
                 }
-                $enum_value = $field->getEnumType()->getValueByName($value);
-                if (!is_null($enum_value)) {
-                    return $enum_value->getNumber();
+                $enum_desc = $field->getEnumType();
+                $enum_value_desc = $enum_desc->getValueByJsonName($value);
+                if (!is_null($enum_value_desc)) {
+                    return $enum_value_desc->getNumber();
                 } else if ($ignore_unknown) {
                     return $this->defaultValue($field);
                 } else {
@@ -1774,8 +1783,11 @@ class Message
                 } else {
                     $enum_value_desc = $enum_desc->getValueByNumber($value);
                     if (!is_null($enum_value_desc)) {
-                        $size += 2;  // size for ""
-                        $size += strlen($enum_value_desc->getName());
+                        $name = GPBJsonWire::formatEnumValueName($enum_value_desc);
+                        $encoded = json_encode(
+                            $name,
+                            JSON_UNESCAPED_UNICODE);
+                        $size += strlen($encoded);
                     } else {
                         $str_value = strval($value);
                         $size += strlen($str_value);
