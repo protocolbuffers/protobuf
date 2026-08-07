@@ -191,10 +191,14 @@ constexpr ExtensionSet::FlatItem ExtensionSet::kEmptyKeyValue = {0, 0, 0,
 ExtensionSet::~ExtensionSet() {
   // Deletes all allocated extensions.
 
+  if (IsCompletelyEmpty()) {
+    return;
+  }
+
   ForEach([](int /* number */, Extension& ext) { ext.Free(); }, PrefetchNta{});
   if (ABSL_PREDICT_FALSE(is_large())) {
     delete map_.large;
-  } else if (map_.flat != &kEmptyKeyValue) {
+  } else {
     DeleteFlatMap(map_.flat, flat_capacity());
   }
 }

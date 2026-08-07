@@ -1082,7 +1082,7 @@ class PROTOBUF_EXPORT ExtensionSet {
   }
 
   // Returns true if nothing is allocated in the ExtensionSet.
-  bool IsCompletelyEmpty() const { return map_.flat == &kEmptyKeyValue; }
+  bool IsCompletelyEmpty() const { return flat_capacity() == 0; }
 
   // Reduces the flat_capacity_ to the smallest power of 2 >= flat_size_.
   void InternalReduceSmallCapacity(Arena* arena);
@@ -1279,11 +1279,11 @@ class PROTOBUF_EXPORT ExtensionSet {
     return map_.flat->flat_size;
   }
   void set_flat_capacity_and_size(uint16_t capacity, uint16_t size) {
-    ABSL_DCHECK(!IsCompletelyEmpty());
+    ABSL_DCHECK(map_.flat != &kEmptyKeyValue);
     SetFlatCapacityAndSize(*map_.flat, capacity, size);
   }
   void set_flat_size(uint16_t size) {
-    ABSL_DCHECK(!IsCompletelyEmpty());
+    ABSL_DCHECK(map_.flat != &kEmptyKeyValue);
     map_.flat->flat_size = size;
   }
 
