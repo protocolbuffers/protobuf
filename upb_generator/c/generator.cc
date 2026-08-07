@@ -786,6 +786,7 @@ void GenerateMapSetters(Context& c, upb::FieldDefPtr field,
           const upb_MiniTableField field = $field_init$;
           upb_Map* map = _upb_Message_GetOrCreateMutableMap(
               UPB_UPCAST(msg), &field, $key_size$, $val_size$, a);
+          if (!map) return false;
           return _upb_Map_Insert(map, &key, $key_size$, &val, $val_size$, a) !=
                  kUpb_MapInsertStatus_OutOfMemory;
         }
