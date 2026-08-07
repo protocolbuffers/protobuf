@@ -23,7 +23,7 @@ privileged access.  However, we expect *many* of these events per change,
 and likely many from abandoned/exploratory changes.  Given the much higher
 frequency, we restrict the ability to *write* to our more expensive caches.
 
-- **Pre-submit tests from a fork** (`push_request_target`): These are run
+- **Pre-submit tests from a fork** (`pull_request_target`): These are run
 over every PR from a forked repository as changes are made.  These have much
 more restricted access, since they could be coming from anywhere.  To protect
 our secret keys and our resources, tests will not run until a commit has been
