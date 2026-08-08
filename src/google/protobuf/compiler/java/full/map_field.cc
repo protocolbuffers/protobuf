@@ -171,18 +171,25 @@ void ImmutableMapFieldGenerator::SetMessageVariables(
       absl::StrCat(GenerateClearBit(bit_index_), ";");
 }
 
-void ImmutableMapFieldGenerator::GenerateInterfaceMembers(
+void ImmutableMapFieldGenerator::GenerateInterfaceGetCountMethod(
     io::Printer* printer) const {
   WriteFieldDocComment(printer, descriptor_, context_->options());
   printer->Print(variables_,
                  "$deprecation$int ${$get$capitalized_name$Count$}$();\n");
   printer->Annotate("{", "}", descriptor_);
+}
+
+void ImmutableMapFieldGenerator::GenerateInterfaceContainsMethod(
+    io::Printer* printer) const {
   WriteFieldDocComment(printer, descriptor_, context_->options());
   printer->Print(variables_,
                  "$deprecation$boolean ${$contains$capitalized_name$$}$(\n"
                  "    $key_type$ key);\n");
   printer->Annotate("{", "}", descriptor_);
+}
 
+void ImmutableMapFieldGenerator::GenerateInterfaceGetMapMethod(
+    io::Printer* printer) const {
   const FieldDescriptor* value = MapValueField(descriptor_);
   if (GetJavaType(value) == JAVATYPE_ENUM) {
     if (google::protobuf::internal::IsOss()) {
@@ -201,49 +208,6 @@ void ImmutableMapFieldGenerator::GenerateInterfaceMembers(
         "$deprecation$java.util.Map<$boxed_key_type$, $value_enum_type$>\n"
         "${$get$capitalized_name$Map$}$();\n");
     printer->Annotate("{", "}", descriptor_);
-    WriteFieldDocComment(printer, descriptor_, context_->options());
-    printer->Print(variables_,
-                   "$deprecation$$value_enum_type_pass_through_nullness$ "
-                   "${$get$capitalized_name$OrDefault$}$(\n"
-                   "    $key_type$ key,\n"
-                   "    $value_enum_type_pass_through_nullness$ "
-                   "        defaultValue);\n");
-    printer->Annotate("{", "}", descriptor_);
-    WriteFieldDocComment(printer, descriptor_, context_->options());
-    printer->Print(
-        variables_,
-        "$deprecation$$value_enum_type$ ${$get$capitalized_name$OrThrow$}$(\n"
-        "    $key_type$ key);\n");
-    printer->Annotate("{", "}", descriptor_);
-    if (SupportUnknownEnumValue(value)) {
-      printer->Print(
-          variables_,
-          "/**\n"
-          " * Use {@link #get$capitalized_name$ValueMap()} instead.\n"
-          " */\n"
-          "@java.lang.Deprecated\n"
-          "java.util.Map<$type_parameters$>\n"
-          "${$get$capitalized_name$Value$}$();\n");
-      printer->Annotate("{", "}", descriptor_);
-      WriteFieldDocComment(printer, descriptor_, context_->options());
-      printer->Print(variables_,
-                     "$deprecation$java.util.Map<$type_parameters$>\n"
-                     "${$get$capitalized_name$ValueMap$}$();\n");
-      printer->Annotate("{", "}", descriptor_);
-      WriteFieldDocComment(printer, descriptor_, context_->options());
-      printer->Print(variables_,
-                     "$deprecation$$value_type_pass_through_nullness$ "
-                     "${$get$capitalized_name$ValueOrDefault$}$(\n"
-                     "    $key_type$ key,\n"
-                     "    $value_type_pass_through_nullness$ defaultValue);\n");
-      printer->Annotate("{", "}", descriptor_);
-      WriteFieldDocComment(printer, descriptor_, context_->options());
-      printer->Print(
-          variables_,
-          "$deprecation$$value_type$ ${$get$capitalized_name$ValueOrThrow$}$(\n"
-          "    $key_type$ key);\n");
-      printer->Annotate("{", "}", descriptor_);
-    }
   } else {
     if (google::protobuf::internal::IsOss()) {
       printer->Print(variables_,
@@ -260,6 +224,22 @@ void ImmutableMapFieldGenerator::GenerateInterfaceMembers(
                    "$deprecation$java.util.Map<$type_parameters$>\n"
                    "${$get$capitalized_name$Map$}$();\n");
     printer->Annotate("{", "}", descriptor_);
+  }
+}
+
+void ImmutableMapFieldGenerator::GenerateInterfaceGetOrDefaultMethod(
+    io::Printer* printer) const {
+  const FieldDescriptor* value = MapValueField(descriptor_);
+  if (GetJavaType(value) == JAVATYPE_ENUM) {
+    WriteFieldDocComment(printer, descriptor_, context_->options());
+    printer->Print(variables_,
+                   "$deprecation$$value_enum_type_pass_through_nullness$ "
+                   "${$get$capitalized_name$OrDefault$}$(\n"
+                   "    $key_type$ key,\n"
+                   "    $value_enum_type_pass_through_nullness$ "
+                   "        defaultValue);\n");
+    printer->Annotate("{", "}", descriptor_);
+  } else {
     WriteFieldDocComment(printer, descriptor_, context_->options());
     printer->Print(variables_,
                    "$deprecation$$value_type_pass_through_nullness$ "
@@ -267,6 +247,20 @@ void ImmutableMapFieldGenerator::GenerateInterfaceMembers(
                    "    $key_type$ key,\n"
                    "    $value_type_pass_through_nullness$ defaultValue);\n");
     printer->Annotate("{", "}", descriptor_);
+  }
+}
+
+void ImmutableMapFieldGenerator::GenerateInterfaceGetOrThrowMethod(
+    io::Printer* printer) const {
+  const FieldDescriptor* value = MapValueField(descriptor_);
+  if (GetJavaType(value) == JAVATYPE_ENUM) {
+    WriteFieldDocComment(printer, descriptor_, context_->options());
+    printer->Print(
+        variables_,
+        "$deprecation$$value_enum_type$ ${$get$capitalized_name$OrThrow$}$(\n"
+        "    $key_type$ key);\n");
+    printer->Annotate("{", "}", descriptor_);
+  } else {
     WriteFieldDocComment(printer, descriptor_, context_->options());
     printer->Print(
         variables_,
@@ -274,6 +268,65 @@ void ImmutableMapFieldGenerator::GenerateInterfaceMembers(
         "    $key_type$ key);\n");
     printer->Annotate("{", "}", descriptor_);
   }
+}
+
+void ImmutableMapFieldGenerator::GenerateInterfaceGetValueMapMethod(
+    io::Printer* printer) const {
+  const FieldDescriptor* value = MapValueField(descriptor_);
+  if (GetJavaType(value) == JAVATYPE_ENUM && SupportUnknownEnumValue(value)) {
+    printer->Print(variables_,
+                   "/**\n"
+                   " * Use {@link #get$capitalized_name$ValueMap()} instead.\n"
+                   " */\n"
+                   "@java.lang.Deprecated\n"
+                   "java.util.Map<$type_parameters$>\n"
+                   "${$get$capitalized_name$Value$}$();\n");
+    printer->Annotate("{", "}", descriptor_);
+    WriteFieldDocComment(printer, descriptor_, context_->options());
+    printer->Print(variables_,
+                   "$deprecation$java.util.Map<$type_parameters$>\n"
+                   "${$get$capitalized_name$ValueMap$}$();\n");
+    printer->Annotate("{", "}", descriptor_);
+  }
+}
+
+void ImmutableMapFieldGenerator::GenerateInterfaceGetValueOrDefaultMethod(
+    io::Printer* printer) const {
+  const FieldDescriptor* value = MapValueField(descriptor_);
+  if (GetJavaType(value) == JAVATYPE_ENUM && SupportUnknownEnumValue(value)) {
+    WriteFieldDocComment(printer, descriptor_, context_->options());
+    printer->Print(variables_,
+                   "$deprecation$$value_type_pass_through_nullness$ "
+                   "${$get$capitalized_name$ValueOrDefault$}$(\n"
+                   "    $key_type$ key,\n"
+                   "    $value_type_pass_through_nullness$ defaultValue);\n");
+    printer->Annotate("{", "}", descriptor_);
+  }
+}
+
+void ImmutableMapFieldGenerator::GenerateInterfaceGetValueOrThrowMethod(
+    io::Printer* printer) const {
+  const FieldDescriptor* value = MapValueField(descriptor_);
+  if (GetJavaType(value) == JAVATYPE_ENUM && SupportUnknownEnumValue(value)) {
+    WriteFieldDocComment(printer, descriptor_, context_->options());
+    printer->Print(
+        variables_,
+        "$deprecation$$value_type$ ${$get$capitalized_name$ValueOrThrow$}$(\n"
+        "    $key_type$ key);\n");
+    printer->Annotate("{", "}", descriptor_);
+  }
+}
+
+void ImmutableMapFieldGenerator::GenerateInterfaceMembers(
+    io::Printer* printer) const {
+  GenerateInterfaceGetCountMethod(printer);
+  GenerateInterfaceContainsMethod(printer);
+  GenerateInterfaceGetMapMethod(printer);
+  GenerateInterfaceGetOrDefaultMethod(printer);
+  GenerateInterfaceGetOrThrowMethod(printer);
+  GenerateInterfaceGetValueMapMethod(printer);
+  GenerateInterfaceGetValueOrDefaultMethod(printer);
+  GenerateInterfaceGetValueOrThrowMethod(printer);
 }
 
 void ImmutableMapFieldGenerator::GenerateMembers(io::Printer* printer) const {
@@ -325,37 +378,8 @@ void ImmutableMapFieldGenerator::GenerateMembers(io::Printer* printer) const {
   GenerateMapGetters(printer);
 }
 
-void ImmutableMapFieldGenerator::GenerateBuilderMembers(
+void ImmutableMapFieldGenerator::GenerateBuilderClearMethod(
     io::Printer* printer) const {
-  if (GetJavaType(MapValueField(descriptor_)) == JAVATYPE_MESSAGE) {
-    return GenerateMessageMapBuilderMembers(printer);
-  }
-  printer->Print(
-      variables_,
-      "private com.google.protobuf.MapField<\n"
-      "    $type_parameters$> $name$_;\n"
-      "$deprecation$private com.google.protobuf.MapField<$type_parameters$>\n"
-      "    internalGet$capitalized_name$() {\n"
-      "  if ($name$_ == null) {\n"
-      "    return com.google.protobuf.MapField.emptyMapField(\n"
-      "        $map_field_parameter$);\n"
-      "  }\n"
-      "  return $name$_;\n"
-      "}\n"
-      "$deprecation$private com.google.protobuf.MapField<$type_parameters$>\n"
-      "    internalGetMutable$capitalized_name$() {\n"
-      "  if ($name$_ == null) {\n"
-      "    $name$_ = com.google.protobuf.MapField.newMapField(\n"
-      "        $map_field_parameter$);\n"
-      "  }\n"
-      "  if (!$name$_.isMutable()) {\n"
-      "    $name$_ = $name$_.copy();\n"
-      "  }\n"
-      "  $set_has_field_bit$\n"
-      "  $on_changed$\n"
-      "  return $name$_;\n"
-      "}\n");
-  GenerateMapGetters(printer);
   printer->Print(
       variables_,
       "$deprecation$public Builder ${$clear$capitalized_name$$}$() {\n"
@@ -365,7 +389,10 @@ void ImmutableMapFieldGenerator::GenerateBuilderMembers(
       "  return this;\n"
       "}\n");
   printer->Annotate("{", "}", descriptor_, Semantic::kSet);
+}
 
+void ImmutableMapFieldGenerator::GenerateBuilderRemoveMethod(
+    io::Printer* printer) const {
   WriteFieldDocComment(printer, descriptor_, context_->options());
   printer->Print(variables_,
                  "$deprecation$public Builder ${$remove$capitalized_name$$}$(\n"
@@ -376,7 +403,10 @@ void ImmutableMapFieldGenerator::GenerateBuilderMembers(
                  "  return this;\n"
                  "}\n");
   printer->Annotate("{", "}", descriptor_, Semantic::kSet);
+}
 
+void ImmutableMapFieldGenerator::GenerateBuilderPutMethod(
+    io::Printer* printer) const {
   const FieldDescriptor* value = MapValueField(descriptor_);
   if (GetJavaType(value) == JAVATYPE_ENUM) {
     if (google::protobuf::internal::IsOss()) {
@@ -408,63 +438,6 @@ void ImmutableMapFieldGenerator::GenerateBuilderMembers(
                    "  return this;\n"
                    "}\n");
     printer->Annotate("{", "}", descriptor_, Semantic::kSet);
-
-    WriteFieldDocComment(printer, descriptor_, context_->options());
-    printer->Print(
-        variables_,
-        "$deprecation$public Builder ${$putAll$capitalized_name$$}$(\n"
-        "    java.util.Map<$boxed_key_type$, $value_enum_type$> values) {\n"
-        "  internalGetAdapted$capitalized_name$Map(\n"
-        "      internalGetMutable$capitalized_name$().getMutableMap())\n"
-        "          .putAll(values);\n"
-        "  $set_has_field_bit$\n"
-        "  return this;\n"
-        "}\n");
-    printer->Annotate("{", "}", descriptor_, Semantic::kSet);
-
-    if (SupportUnknownEnumValue(value)) {
-      if (google::protobuf::internal::IsOss()) {
-        printer->Print(
-            variables_,
-            "/**\n"
-            " * Use alternate mutation accessors instead.\n"
-            " */\n"
-            "@java.lang.Deprecated\n"
-            "public java.util.Map<$boxed_key_type$, $boxed_value_type$>\n"
-            "${$getMutable$capitalized_name$Value$}$() {\n"
-            "  $set_has_field_bit$\n"
-            "  return internalGetMutable$capitalized_name$().getMutableMap();\n"
-            "}\n");
-        printer->Annotate("{", "}", descriptor_);
-      }
-
-      WriteFieldDocComment(printer, descriptor_, context_->options());
-      printer->Print(
-          variables_,
-          "$deprecation$public Builder ${$put$capitalized_name$Value$}$(\n"
-          "    $key_type$ key,\n"
-          "    $value_type$ value) {\n"
-          "  $key_null_check$\n"
-          "  $value_null_check$\n"
-          "  internalGetMutable$capitalized_name$().getMutableMap()\n"
-          "      .put(key, value);\n"
-          "  $set_has_field_bit$\n"
-          "  return this;\n"
-          "}\n");
-      printer->Annotate("{", "}", descriptor_, Semantic::kSet);
-
-      WriteFieldDocComment(printer, descriptor_, context_->options());
-      printer->Print(
-          variables_,
-          "$deprecation$public Builder ${$putAll$capitalized_name$Value$}$(\n"
-          "    java.util.Map<$boxed_key_type$, $boxed_value_type$> values) {\n"
-          "  internalGetMutable$capitalized_name$().getMutableMap()\n"
-          "      .putAll(values);\n"
-          "  $set_has_field_bit$\n"
-          "  return this;\n"
-          "}\n");
-      printer->Annotate("{", "}", descriptor_, Semantic::kSet);
-    }
   } else {
     if (google::protobuf::internal::IsOss()) {
       printer->Print(
@@ -494,7 +467,26 @@ void ImmutableMapFieldGenerator::GenerateBuilderMembers(
                    "  return this;\n"
                    "}\n");
     printer->Annotate("{", "}", descriptor_, Semantic::kSet);
+  }
+}
 
+void ImmutableMapFieldGenerator::GenerateBuilderPutAllMethod(
+    io::Printer* printer) const {
+  const FieldDescriptor* value = MapValueField(descriptor_);
+  if (GetJavaType(value) == JAVATYPE_ENUM) {
+    WriteFieldDocComment(printer, descriptor_, context_->options());
+    printer->Print(
+        variables_,
+        "$deprecation$public Builder ${$putAll$capitalized_name$$}$(\n"
+        "    java.util.Map<$boxed_key_type$, $value_enum_type$> values) {\n"
+        "  internalGetAdapted$capitalized_name$Map(\n"
+        "      internalGetMutable$capitalized_name$().getMutableMap())\n"
+        "          .putAll(values);\n"
+        "  $set_has_field_bit$\n"
+        "  return this;\n"
+        "}\n");
+    printer->Annotate("{", "}", descriptor_, Semantic::kSet);
+  } else {
     WriteFieldDocComment(printer, descriptor_, context_->options());
     printer->Print(
         variables_,
@@ -507,6 +499,99 @@ void ImmutableMapFieldGenerator::GenerateBuilderMembers(
         "}\n");
     printer->Annotate("{", "}", descriptor_, Semantic::kSet);
   }
+}
+
+void ImmutableMapFieldGenerator::GenerateBuilderPutValueMethod(
+    io::Printer* printer) const {
+  const FieldDescriptor* value = MapValueField(descriptor_);
+  if (GetJavaType(value) == JAVATYPE_ENUM && SupportUnknownEnumValue(value)) {
+    if (google::protobuf::internal::IsOss()) {
+      printer->Print(
+          variables_,
+          "/**\n"
+          " * Use alternate mutation accessors instead.\n"
+          " */\n"
+          "@java.lang.Deprecated\n"
+          "public java.util.Map<$boxed_key_type$, $boxed_value_type$>\n"
+          "${$getMutable$capitalized_name$Value$}$() {\n"
+          "  $set_has_field_bit$\n"
+          "  return internalGetMutable$capitalized_name$().getMutableMap();\n"
+          "}\n");
+      printer->Annotate("{", "}", descriptor_);
+    }
+
+    WriteFieldDocComment(printer, descriptor_, context_->options());
+    printer->Print(
+        variables_,
+        "$deprecation$public Builder ${$put$capitalized_name$Value$}$(\n"
+        "    $key_type$ key,\n"
+        "    $value_type$ value) {\n"
+        "  $key_null_check$\n"
+        "  $value_null_check$\n"
+        "  internalGetMutable$capitalized_name$().getMutableMap()\n"
+        "      .put(key, value);\n"
+        "  $set_has_field_bit$\n"
+        "  return this;\n"
+        "}\n");
+    printer->Annotate("{", "}", descriptor_, Semantic::kSet);
+  }
+}
+
+void ImmutableMapFieldGenerator::GenerateBuilderPutAllValueMethod(
+    io::Printer* printer) const {
+  const FieldDescriptor* value = MapValueField(descriptor_);
+  if (GetJavaType(value) == JAVATYPE_ENUM && SupportUnknownEnumValue(value)) {
+    WriteFieldDocComment(printer, descriptor_, context_->options());
+    printer->Print(
+        variables_,
+        "$deprecation$public Builder ${$putAll$capitalized_name$Value$}$(\n"
+        "    java.util.Map<$boxed_key_type$, $boxed_value_type$> values) {\n"
+        "  internalGetMutable$capitalized_name$().getMutableMap()\n"
+        "      .putAll(values);\n"
+        "  $set_has_field_bit$\n"
+        "  return this;\n"
+        "}\n");
+    printer->Annotate("{", "}", descriptor_, Semantic::kSet);
+  }
+}
+
+void ImmutableMapFieldGenerator::GenerateBuilderMembers(
+    io::Printer* printer) const {
+  if (GetJavaType(MapValueField(descriptor_)) == JAVATYPE_MESSAGE) {
+    return GenerateMessageMapBuilderMembers(printer);
+  }
+  printer->Print(
+      variables_,
+      "private com.google.protobuf.MapField<\n"
+      "    $type_parameters$> $name$_;\n"
+      "$deprecation$private com.google.protobuf.MapField<$type_parameters$>\n"
+      "    internalGet$capitalized_name$() {\n"
+      "  if ($name$_ == null) {\n"
+      "    return com.google.protobuf.MapField.emptyMapField(\n"
+      "        $map_field_parameter$);\n"
+      "  }\n"
+      "  return $name$_;\n"
+      "}\n"
+      "$deprecation$private com.google.protobuf.MapField<$type_parameters$>\n"
+      "    internalGetMutable$capitalized_name$() {\n"
+      "  if ($name$_ == null) {\n"
+      "    $name$_ = com.google.protobuf.MapField.newMapField(\n"
+      "        $map_field_parameter$);\n"
+      "  }\n"
+      "  if (!$name$_.isMutable()) {\n"
+      "    $name$_ = $name$_.copy();\n"
+      "  }\n"
+      "  $set_has_field_bit$\n"
+      "  $on_changed$\n"
+      "  return $name$_;\n"
+      "}\n");
+  GenerateMapGetters(printer);
+  GenerateBuilderClearMethod(printer);
+  GenerateBuilderRemoveMethod(printer);
+  GenerateBuilderPutMethod(printer);
+  GenerateBuilderPutAllMethod(printer);
+  GenerateBuilderPutValueMethod(printer);
+  GenerateBuilderPutAllValueMethod(printer);
 }
 
 void ImmutableMapFieldGenerator::GenerateMapGetters(
@@ -698,6 +783,108 @@ void ImmutableMapFieldGenerator::GenerateMapGetters(
   }
 }
 
+void ImmutableMapFieldGenerator::GenerateMessageMapBuilderClearMethod(
+    io::Printer* printer) const {
+  printer->Print(
+      variables_,
+      "$deprecation$public Builder ${$clear$capitalized_name$$}$() {\n"
+      "  $clear_has_field_bit$\n"
+      "  internalGetMutable$capitalized_name$().clear();\n"
+      "  return this;\n"
+      "}\n");
+  printer->Annotate("{", "}", descriptor_, Semantic::kSet);
+}
+
+void ImmutableMapFieldGenerator::GenerateMessageMapBuilderRemoveMethod(
+    io::Printer* printer) const {
+  WriteFieldDocComment(printer, descriptor_, context_->options());
+  printer->Print(variables_,
+                 "$deprecation$public Builder ${$remove$capitalized_name$$}$(\n"
+                 "    $key_type$ key) {\n"
+                 "  $key_null_check$\n"
+                 "  internalGetMutable$capitalized_name$().ensureBuilderMap()\n"
+                 "      .remove(key);\n"
+                 "  return this;\n"
+                 "}\n");
+  printer->Annotate("{", "}", descriptor_, Semantic::kSet);
+}
+
+void ImmutableMapFieldGenerator::GenerateMessageMapBuilderPutMethod(
+    io::Printer* printer) const {
+  if (google::protobuf::internal::IsOss()) {
+    printer->Print(
+        variables_,
+        "/**\n"
+        " * Use alternate mutation accessors instead.\n"
+        " */\n"
+        "@java.lang.Deprecated\n"
+        "public java.util.Map<$type_parameters$>\n"
+        "    ${$getMutable$capitalized_name$$}$() {\n"
+        "  $set_has_field_bit$\n"
+        "  return internalGetMutable$capitalized_name$().ensureMessageMap();\n"
+        "}\n");
+    printer->Annotate("{", "}", descriptor_);
+  }
+
+  WriteFieldDocComment(printer, descriptor_, context_->options());
+  printer->Print(variables_,
+                 "$deprecation$public Builder ${$put$capitalized_name$$}$(\n"
+                 "    $key_type$ key,\n"
+                 "    $value_type$ value) {\n"
+                 "  $key_null_check$\n"
+                 "  $value_null_check$\n"
+                 "  internalGetMutable$capitalized_name$().ensureBuilderMap()\n"
+                 "      .put(key, value);\n"
+                 "  $set_has_field_bit$\n"
+                 "  return this;\n"
+                 "}\n");
+  printer->Annotate("{", "}", descriptor_, Semantic::kSet);
+}
+
+void ImmutableMapFieldGenerator::GenerateMessageMapBuilderPutAllMethod(
+    io::Printer* printer) const {
+  WriteFieldDocComment(printer, descriptor_, context_->options());
+  printer->Print(
+      variables_,
+      "$deprecation$public Builder ${$putAll$capitalized_name$$}$(\n"
+      "    java.util.Map<$type_parameters$> values) {\n"
+      "  for (java.util.Map.Entry<$type_parameters$> e : values.entrySet()) {\n"
+      "    java.util.Objects.requireNonNull(e.getKey());\n"
+      "    java.util.Objects.requireNonNull(e.getValue());\n"
+      "  }\n"
+      "  internalGetMutable$capitalized_name$().ensureBuilderMap()\n"
+      "      .putAll(values);\n"
+      "  $set_has_field_bit$\n"
+      "  return this;\n"
+      "}\n");
+  printer->Annotate("{", "}", descriptor_, Semantic::kSet);
+}
+
+void ImmutableMapFieldGenerator::
+    GenerateMessageMapBuilderPutBuilderIfAbsentMethod(
+        io::Printer* printer) const {
+  WriteFieldDocComment(printer, descriptor_, context_->options());
+  printer->Print(
+      variables_,
+      "$deprecation$public $value_builder_type$ "
+      "${$put$capitalized_name$BuilderIfAbsent$}$(\n"
+      "    $key_type$ key) {\n"
+      "  java.util.Map<$boxed_key_type$, $value_interface_type$> builderMap = "
+      "internalGetMutable$capitalized_name$().ensureBuilderMap();\n"
+      "  $value_interface_type$ entry = builderMap.get(key);\n"
+      "  if (entry == null) {\n"
+      "    entry = $value_type$.newBuilder();\n"
+      "    builderMap.put(key, entry);\n"
+      "  }\n"
+      "  if (entry instanceof $value_type$) {\n"
+      "    entry = (($value_type$) entry).toBuilder();\n"
+      "    builderMap.put(key, entry);\n"
+      "  }\n"
+      "  return ($value_builder_type$) entry;\n"
+      "}\n");
+  printer->Annotate("{", "}", descriptor_, Semantic::kSet);
+}
+
 void ImmutableMapFieldGenerator::GenerateMessageMapBuilderMembers(
     io::Printer* printer) const {
   printer->Print(
@@ -763,91 +950,11 @@ void ImmutableMapFieldGenerator::GenerateMessageMapBuilderMembers(
       "  return $name$_;\n"
       "}\n");
   GenerateMessageMapGetters(printer);
-  printer->Print(
-      variables_,
-      "$deprecation$public Builder ${$clear$capitalized_name$$}$() {\n"
-      "  $clear_has_field_bit$\n"
-      "  internalGetMutable$capitalized_name$().clear();\n"
-      "  return this;\n"
-      "}\n");
-  printer->Annotate("{", "}", descriptor_, Semantic::kSet);
-
-  WriteFieldDocComment(printer, descriptor_, context_->options());
-  printer->Print(variables_,
-                 "$deprecation$public Builder ${$remove$capitalized_name$$}$(\n"
-                 "    $key_type$ key) {\n"
-                 "  $key_null_check$\n"
-                 "  internalGetMutable$capitalized_name$().ensureBuilderMap()\n"
-                 "      .remove(key);\n"
-                 "  return this;\n"
-                 "}\n");
-  printer->Annotate("{", "}", descriptor_, Semantic::kSet);
-
-  if (google::protobuf::internal::IsOss()) {
-    printer->Print(
-        variables_,
-        "/**\n"
-        " * Use alternate mutation accessors instead.\n"
-        " */\n"
-        "@java.lang.Deprecated\n"
-        "public java.util.Map<$type_parameters$>\n"
-        "    ${$getMutable$capitalized_name$$}$() {\n"
-        "  $set_has_field_bit$\n"
-        "  return internalGetMutable$capitalized_name$().ensureMessageMap();\n"
-        "}\n");
-    printer->Annotate("{", "}", descriptor_);
-  }
-
-  WriteFieldDocComment(printer, descriptor_, context_->options());
-  printer->Print(variables_,
-                 "$deprecation$public Builder ${$put$capitalized_name$$}$(\n"
-                 "    $key_type$ key,\n"
-                 "    $value_type$ value) {\n"
-                 "  $key_null_check$\n"
-                 "  $value_null_check$\n"
-                 "  internalGetMutable$capitalized_name$().ensureBuilderMap()\n"
-                 "      .put(key, value);\n"
-                 "  $set_has_field_bit$\n"
-                 "  return this;\n"
-                 "}\n");
-  printer->Annotate("{", "}", descriptor_, Semantic::kSet);
-
-  WriteFieldDocComment(printer, descriptor_, context_->options());
-  printer->Print(
-      variables_,
-      "$deprecation$public Builder ${$putAll$capitalized_name$$}$(\n"
-      "    java.util.Map<$type_parameters$> values) {\n"
-      "  for (java.util.Map.Entry<$type_parameters$> e : values.entrySet()) {\n"
-      "    java.util.Objects.requireNonNull(e.getKey());\n"
-      "    java.util.Objects.requireNonNull(e.getValue());\n"
-      "  }\n"
-      "  internalGetMutable$capitalized_name$().ensureBuilderMap()\n"
-      "      .putAll(values);\n"
-      "  $set_has_field_bit$\n"
-      "  return this;\n"
-      "}\n");
-  printer->Annotate("{", "}", descriptor_, Semantic::kSet);
-
-  WriteFieldDocComment(printer, descriptor_, context_->options());
-  printer->Print(
-      variables_,
-      "$deprecation$public $value_builder_type$ "
-      "${$put$capitalized_name$BuilderIfAbsent$}$(\n"
-      "    $key_type$ key) {\n"
-      "  java.util.Map<$boxed_key_type$, $value_interface_type$> builderMap = "
-      "internalGetMutable$capitalized_name$().ensureBuilderMap();\n"
-      "  $value_interface_type$ entry = builderMap.get(key);\n"
-      "  if (entry == null) {\n"
-      "    entry = $value_type$.newBuilder();\n"
-      "    builderMap.put(key, entry);\n"
-      "  }\n"
-      "  if (entry instanceof $value_type$) {\n"
-      "    entry = (($value_type$) entry).toBuilder();\n"
-      "    builderMap.put(key, entry);\n"
-      "  }\n"
-      "  return ($value_builder_type$) entry;\n"
-      "}\n");
-  printer->Annotate("{", "}", descriptor_, Semantic::kSet);
+  GenerateMessageMapBuilderClearMethod(printer);
+  GenerateMessageMapBuilderRemoveMethod(printer);
+  GenerateMessageMapBuilderPutMethod(printer);
+  GenerateMessageMapBuilderPutAllMethod(printer);
+  GenerateMessageMapBuilderPutBuilderIfAbsentMethod(printer);
 }
 
 void ImmutableMapFieldGenerator::GenerateMessageMapGetters(
