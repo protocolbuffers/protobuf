@@ -126,52 +126,47 @@ void SetPrimitiveVariables(
   }
   (*variables)["on_changed"] = "onChanged();";
 
-  if (HasHasbit(descriptor)) {
-    // For singular messages and builders, one bit is used for the hasField bit.
-    // Note that these have a trailing ";".
-    (*variables)["set_has_field_bit_to_local"] =
-        absl::StrCat(GenerateSetBitToLocal(bit_index), ";");
-    (*variables)["is_field_present"] = GenerateGetBit(bit_index);
-    (*variables)["is_other_field_present"] =
-        absl::StrCat("other.has", (*variables)["capitalized_name"], "()");
-  } else {
-    (*variables)["set_has_field_bit_to_local"] = "";
-    switch (descriptor->type()) {
-      case FieldDescriptor::TYPE_BYTES:
-        AddPrimitiveVariableForThisAndOther(
-            "is_field_present", "is_other_field_present",
-            [](absl::string_view value) {
-              return absl::StrCat("!", value, ".isEmpty()");
-            },
-            variables);
-        break;
-      case FieldDescriptor::TYPE_FLOAT:
-        AddPrimitiveVariableForThisAndOther(
-            "is_field_present", "is_other_field_present",
-            [](absl::string_view value) {
-              return absl::StrCat("java.lang.Float.floatToRawIntBits(", value,
-                                  ") != 0");
-            },
-            variables);
-        break;
-      case FieldDescriptor::TYPE_DOUBLE:
-        AddPrimitiveVariableForThisAndOther(
-            "is_field_present", "is_other_field_present",
-            [](absl::string_view value) {
-              return absl::StrCat("java.lang.Double.doubleToRawLongBits(",
-                                  value, ") != 0");
-            },
-            variables);
-        break;
-      default:
-        AddPrimitiveVariableForThisAndOther(
-            "is_field_present", "is_other_field_present",
-            [variables](absl::string_view value) {
-              return absl::StrCat(value, " != ", (*variables)["default"]);
-            },
-            variables);
-        break;
-    }
+  (*variables)["set_has_field_bit_to_local"] =
+      absl::StrCat(GenerateSetBitToLocal(bit_index), ";");
+
+  (*variables)["is_field_present"] = GenerateGetBit(bit_index);
+  (*variables)["is_other_field_present"] = GenerateGetBitFromOther(bit_index);
+
+  switch (descriptor->type()) {
+    case FieldDescriptor::TYPE_BYTES:
+      AddPrimitiveVariableForThisAndOther(
+          "is_field_value_not_default", "is_other_field_value_not_default",
+          [](absl::string_view value) {
+            return absl::StrCat("!", value, ".isEmpty()");
+          },
+          variables);
+      break;
+    case FieldDescriptor::TYPE_FLOAT:
+      AddPrimitiveVariableForThisAndOther(
+          "is_field_value_not_default", "is_other_field_value_not_default",
+          [](absl::string_view value) {
+            return absl::StrCat("java.lang.Float.floatToRawIntBits(", value,
+                                ") != 0");
+          },
+          variables);
+      break;
+    case FieldDescriptor::TYPE_DOUBLE:
+      AddPrimitiveVariableForThisAndOther(
+          "is_field_value_not_default", "is_other_field_value_not_default",
+          [](absl::string_view value) {
+            return absl::StrCat("java.lang.Double.doubleToRawLongBits(", value,
+                                ") != 0");
+          },
+          variables);
+      break;
+    default:
+      AddPrimitiveVariableForThisAndOther(
+          "is_field_value_not_default", "is_other_field_value_not_default",
+          [variables](absl::string_view value) {
+            return absl::StrCat(value, " != ", (*variables)["default"]);
+          },
+          variables);
+      break;
   }
 
   // Always track the presence of a field explicitly in the builder, regardless
@@ -201,12 +196,9 @@ ImmutablePrimitiveFieldGenerator::~ImmutablePrimitiveFieldGenerator() = default;
 
 void ImmutablePrimitiveFieldGenerator::GenerateInterfaceHasMethod(
     io::Printer* printer) const {
-  if (descriptor_->has_presence()) {
-    WriteFieldAccessorDocComment(printer, descriptor_, HAZZER,
-                                 context_->options());
-    printer->Print(variables_,
-                   "$deprecation$boolean has$capitalized_name$();\n");
-  }
+  WriteFieldAccessorDocComment(printer, descriptor_, HAZZER,
+                               context_->options());
+  printer->Print(variables_, "$deprecation$boolean has$capitalized_name$();\n");
 }
 
 void ImmutablePrimitiveFieldGenerator::GenerateInterfaceGetMethod(
@@ -218,23 +210,22 @@ void ImmutablePrimitiveFieldGenerator::GenerateInterfaceGetMethod(
 
 void ImmutablePrimitiveFieldGenerator::GenerateInterfaceMembers(
     io::Printer* printer) const {
-  GenerateInterfaceHasMethod(printer);
+  if (HasHazzerMethod(descriptor_)) {
+    GenerateInterfaceHasMethod(printer);
+  }
   GenerateInterfaceGetMethod(printer);
 }
 
 void ImmutablePrimitiveFieldGenerator::GenerateHasMethod(
     io::Printer* printer) const {
-  if (descriptor_->has_presence()) {
-    WriteFieldAccessorDocComment(printer, descriptor_, HAZZER,
-                                 context_->options());
-    printer->Print(
-        variables_,
-        "@java.lang.Override\n"
-        "$deprecation$public boolean ${$has$capitalized_name$$}$() {\n"
-        "  return $is_field_present$;\n"
-        "}\n");
-    printer->Annotate("{", "}", descriptor_);
-  }
+  WriteFieldAccessorDocComment(printer, descriptor_, HAZZER,
+                               context_->options());
+  printer->Print(variables_,
+                 "@java.lang.Override\n"
+                 "$deprecation$public boolean ${$has$capitalized_name$$}$() {\n"
+                 "  return $is_field_present$;\n"
+                 "}\n");
+  printer->Annotate("{", "}", descriptor_);
 }
 
 void ImmutablePrimitiveFieldGenerator::GenerateGetMethod(
@@ -253,23 +244,22 @@ void ImmutablePrimitiveFieldGenerator::GenerateMembers(
     io::Printer* printer) const {
   printer->Print(variables_, "private $field_type$ $name$_ = $default$;\n");
   PrintExtraFieldInfo(variables_, printer);
-  GenerateHasMethod(printer);
+  if (HasHazzerMethod(descriptor_)) {
+    GenerateHasMethod(printer);
+  }
   GenerateGetMethod(printer);
 }
 
 void ImmutablePrimitiveFieldGenerator::GenerateBuilderHasMethod(
     io::Printer* printer) const {
-  if (descriptor_->has_presence()) {
-    WriteFieldAccessorDocComment(printer, descriptor_, HAZZER,
-                                 context_->options());
-    printer->Print(
-        variables_,
-        "@java.lang.Override\n"
-        "$deprecation$public boolean ${$has$capitalized_name$$}$() {\n"
-        "  return $get_has_field_bit$;\n"
-        "}\n");
-    printer->Annotate("{", "}", descriptor_);
-  }
+  WriteFieldAccessorDocComment(printer, descriptor_, HAZZER,
+                               context_->options());
+  printer->Print(variables_,
+                 "@java.lang.Override\n"
+                 "$deprecation$public boolean ${$has$capitalized_name$$}$() {\n"
+                 "  return $get_has_field_bit$;\n"
+                 "}\n");
+  printer->Annotate("{", "}", descriptor_);
 }
 
 void ImmutablePrimitiveFieldGenerator::GenerateBuilderGetMethod(
@@ -330,7 +320,9 @@ void ImmutablePrimitiveFieldGenerator::GenerateBuilderClearMethod(
 void ImmutablePrimitiveFieldGenerator::GenerateBuilderMembers(
     io::Printer* printer) const {
   printer->Print(variables_, "private $field_type$ $name$_ $default_init$;\n");
-  GenerateBuilderHasMethod(printer);
+  if (HasHazzerMethod(descriptor_)) {
+    GenerateBuilderHasMethod(printer);
+  }
   GenerateBuilderGetMethod(printer);
   GenerateBuilderSetMethod(printer);
   GenerateBuilderClearMethod(printer);
@@ -364,13 +356,21 @@ void ImmutablePrimitiveFieldGenerator::GenerateMergingCode(
 
 void ImmutablePrimitiveFieldGenerator::GenerateBuildingCode(
     io::Printer* printer) const {
-  printer->Print(variables_,
-                 "if ($get_has_field_bit_from_local$) {\n"
-                 "  result.$name$_ = $name$_;\n");
-  if (GetNumBits() > 0) {
-    printer->Print(variables_, "  $set_has_field_bit_to_local$\n");
+  if (HasHazzerMethod(descriptor_)) {
+    printer->Print(variables_,
+                   "if ($get_has_field_bit_from_local$) {\n"
+                   "  result.$name$_ = $name$_;\n"
+                   "  $set_has_field_bit_to_local$\n"
+                   "}\n");
+  } else {
+    printer->Print(variables_,
+                   "if ($is_field_value_not_default$) {\n"
+                   "  result.$name$_ = $name$_;\n"
+                   "  $set_has_field_bit_to_local$\n"
+                   "} else {\n"
+                   "  $clear_has_field_bit$\n"
+                   "}\n");
   }
-  printer->Print("}\n");
 }
 
 void ImmutablePrimitiveFieldGenerator::GenerateBuilderParsingCode(

@@ -126,6 +126,7 @@ cc_library(
         "message.cc",
         "message.h",
         "message_builder.cc",
+        "oneof_generator.cc",
     ],
     hdrs = [
         "generator_factory.h",
@@ -136,6 +137,7 @@ cc_library(
         "message.h",
         "extension.h",
         "message_builder.h",
+        "oneof_generator.h",
     ],
     copts = COPTS,
     strip_include_prefix = "/src",
