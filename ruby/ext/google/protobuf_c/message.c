@@ -527,7 +527,10 @@ typedef struct {
 static int Map_initialize_kwarg(VALUE key, VALUE val, VALUE _self) {
   MapInit* map_init = (MapInit*)_self;
   upb_MessageValue k, v;
-  k = Convert_RubyToUpb(key, "", map_init->key_type, NULL);
+  // Copy the key into the arena rather than aliasing it: building the value
+  // below allocates, which can trigger GC and free or move the String the key
+  // would otherwise point into.
+  k = Convert_RubyToUpb(key, "", map_init->key_type, map_init->arena);
 
   if (map_init->val_type.type == kUpb_CType_Message && TYPE(val) == T_HASH) {
     const upb_MiniTable* t =
