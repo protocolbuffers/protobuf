@@ -926,6 +926,39 @@ TEST(DecodeTest, FieldZeroRejected) {
   }
 }
 
+TEST(FastTableFieldZero, RejectsFieldNumberZero) {
+#if UPB_FASTTABLE
+  upb::Arena mt_arena;
+  auto [mt, field] = MiniTable::MakeSingleFieldTable<field_types::String>(
+      1, kUpb_DecodeFast_Scalar, mt_arena.ptr());
+  (void)field;
+  // Field number 0 (and >= 2^29) is invalid; the generic decoder rejects it.
+  // Each payload is a field-0 tag (normal and overlong) with a valid value, so
+  // the field number is the only reason to reject.
+  const std::vector<std::string> payloads = {
+      std::string("\x00\x01", 2),          // field 0 wire type 0, value 1
+      std::string("\x80\x80\x00\x01", 4),  // overlong field 0 wt 0, value 1
+  };
+  for (const std::string& payload : payloads) {
+    upb::Arena a2;
+    upb_Message* m2 = upb_Message_New(mt, a2.ptr());
+    upb_DecodeStatus gen =
+        upb_Decode(payload.data(), payload.size(), m2, mt, nullptr,
+                   kUpb_DecodeOption_DisableFastTable, a2.ptr());
+    EXPECT_EQ(gen, kUpb_DecodeStatus_Malformed) << "generic must reject field 0";
+
+    upb::Arena a1;
+    upb_Message* m1 = upb_Message_New(mt, a1.ptr());
+    upb_DecodeStatus fast =
+        upb_Decode(payload.data(), payload.size(), m1, mt, nullptr, 0,
+                   a1.ptr());
+    EXPECT_EQ(fast, kUpb_DecodeStatus_Malformed)
+        << "fasttable accepted field 0 for payload; got "
+        << upb_DecodeStatus_String(fast);
+  }
+#endif
+}
+
 }  // namespace
 
 }  // namespace test
