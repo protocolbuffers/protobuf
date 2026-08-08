@@ -53,6 +53,12 @@ class MessageBuilderGenerator {
 
  private:
   void GenerateCommonBuilderMethods(io::Printer* printer);
+  void GenerateBuilderConstructors(io::Printer* printer);
+  void GenerateBuilderClearMethod(io::Printer* printer);
+  void GenerateBuilderGetDescriptorForTypeMethod(io::Printer* printer);
+  void GenerateBuilderGetDefaultInstanceForTypeMethod(io::Printer* printer);
+  void GenerateBuilderBuildMethod(io::Printer* printer);
+  void GenerateBuilderExtensionMethods(io::Printer* printer);
   void GenerateBuilderMergeFromMethods(io::Printer* printer);
   void GenerateBuilderMergeFromSubfunction(
       io::Printer* printer, absl::Span<const std::string> merging_code_blocks,

@@ -48,6 +48,29 @@ class ImmutableMapFieldGenerator : public ImmutableFieldGenerator {
   void GenerateMapGetters(io::Printer* printer) const;
   void GenerateMessageMapBuilderMembers(io::Printer* printer) const;
   void GenerateMessageMapGetters(io::Printer* printer) const;
+
+  void GenerateInterfaceGetCountMethod(io::Printer* printer) const;
+  void GenerateInterfaceContainsMethod(io::Printer* printer) const;
+  void GenerateInterfaceGetMapMethod(io::Printer* printer) const;
+  void GenerateInterfaceGetOrDefaultMethod(io::Printer* printer) const;
+  void GenerateInterfaceGetOrThrowMethod(io::Printer* printer) const;
+  void GenerateInterfaceGetValueMapMethod(io::Printer* printer) const;
+  void GenerateInterfaceGetValueOrDefaultMethod(io::Printer* printer) const;
+  void GenerateInterfaceGetValueOrThrowMethod(io::Printer* printer) const;
+
+  void GenerateBuilderClearMethod(io::Printer* printer) const;
+  void GenerateBuilderRemoveMethod(io::Printer* printer) const;
+  void GenerateBuilderPutMethod(io::Printer* printer) const;
+  void GenerateBuilderPutAllMethod(io::Printer* printer) const;
+  void GenerateBuilderPutValueMethod(io::Printer* printer) const;
+  void GenerateBuilderPutAllValueMethod(io::Printer* printer) const;
+
+  void GenerateMessageMapBuilderClearMethod(io::Printer* printer) const;
+  void GenerateMessageMapBuilderRemoveMethod(io::Printer* printer) const;
+  void GenerateMessageMapBuilderPutMethod(io::Printer* printer) const;
+  void GenerateMessageMapBuilderPutAllMethod(io::Printer* printer) const;
+  void GenerateMessageMapBuilderPutBuilderIfAbsentMethod(
+      io::Printer* printer) const;
 };
 
 }  // namespace java

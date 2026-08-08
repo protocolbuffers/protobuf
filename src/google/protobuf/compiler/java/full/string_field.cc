@@ -72,19 +72,18 @@ void SetPrimitiveVariables(
       descriptor->options().deprecated() ? "@java.lang.Deprecated " : "";
   (*variables)["on_changed"] = "onChanged();";
 
-  if (HasHasbit(descriptor)) {
-    // For singular messages and builders, one bit is used for the hasField bit.
-    (*variables)["set_has_field_bit_to_local"] =
-        GenerateSetBitToLocal(bit_index);
+  (*variables)["set_has_field_bit_to_local"] = GenerateSetBitToLocal(bit_index);
 
-    (*variables)["is_field_present"] = GenerateGetBit(bit_index);
-  } else {
-    (*variables)["set_has_field_bit_to_local"] = "";
+  (*variables)["is_field_present"] = GenerateGetBit(bit_index);
+  (*variables)["is_other_field_present"] = GenerateGetBitFromOther(bit_index);
 
-    variables->insert(
-        {"is_field_present", absl::StrCat("!", (*variables)["isStringEmpty"],
-                                          "(", (*variables)["name"], "_)")});
-  }
+  variables->insert({"is_field_value_not_default",
+                     absl::StrCat("!", (*variables)["isStringEmpty"], "(",
+                                  (*variables)["name"], "_)")});
+  variables->insert(
+      {"is_other_field_value_not_default",
+       absl::StrCat("!other.get", (*variables)["capitalized_name"],
+                    "().isEmpty()")});
 
   (*variables)["get_has_field_bit"] = GenerateGetBit(bit_index);
   (*variables)["get_has_field_bit_from_local"] =
@@ -142,12 +141,9 @@ ImmutableStringFieldGenerator::~ImmutableStringFieldGenerator() = default;
 // repeated fields, the logic is done in LazyStringArrayList.
 void ImmutableStringFieldGenerator::GenerateInterfaceHasMethod(
     io::Printer* printer) const {
-  if (descriptor_->has_presence()) {
-    WriteFieldAccessorDocComment(printer, descriptor_, HAZZER,
-                                 context_->options());
-    printer->Print(variables_,
-                   "$deprecation$boolean has$capitalized_name$();\n");
-  }
+  WriteFieldAccessorDocComment(printer, descriptor_, HAZZER,
+                               context_->options());
+  printer->Print(variables_, "$deprecation$boolean has$capitalized_name$();\n");
 }
 
 void ImmutableStringFieldGenerator::GenerateInterfaceGetMethod(
@@ -169,24 +165,23 @@ void ImmutableStringFieldGenerator::GenerateInterfaceGetBytesMethod(
 
 void ImmutableStringFieldGenerator::GenerateInterfaceMembers(
     io::Printer* printer) const {
-  GenerateInterfaceHasMethod(printer);
+  if (HasHazzerMethod(descriptor_)) {
+    GenerateInterfaceHasMethod(printer);
+  }
   GenerateInterfaceGetMethod(printer);
   GenerateInterfaceGetBytesMethod(printer);
 }
 
 void ImmutableStringFieldGenerator::GenerateHasMethod(
     io::Printer* printer) const {
-  if (descriptor_->has_presence()) {
-    WriteFieldAccessorDocComment(printer, descriptor_, HAZZER,
-                                 context_->options());
-    printer->Print(
-        variables_,
-        "@java.lang.Override\n"
-        "$deprecation$public boolean ${$has$capitalized_name$$}$() {\n"
-        "  return $is_field_present$;\n"
-        "}\n");
-    printer->Annotate("{", "}", descriptor_);
-  }
+  WriteFieldAccessorDocComment(printer, descriptor_, HAZZER,
+                               context_->options());
+  printer->Print(variables_,
+                 "@java.lang.Override\n"
+                 "$deprecation$public boolean ${$has$capitalized_name$$}$() {\n"
+                 "  return $is_field_present$;\n"
+                 "}\n");
+  printer->Annotate("{", "}", descriptor_);
 }
 
 void ImmutableStringFieldGenerator::GenerateGetMethod(
@@ -249,23 +244,22 @@ void ImmutableStringFieldGenerator::GenerateMembers(
                  "@SuppressWarnings(\"serial\")\n"
                  "private volatile java.lang.Object $name$_ = $default$;\n");
   PrintExtraFieldInfo(variables_, printer);
-  GenerateHasMethod(printer);
+  if (HasHazzerMethod(descriptor_)) {
+    GenerateHasMethod(printer);
+  }
   GenerateGetMethod(printer);
   GenerateGetBytesMethod(printer);
 }
 
 void ImmutableStringFieldGenerator::GenerateBuilderHasMethod(
     io::Printer* printer) const {
-  if (descriptor_->has_presence()) {
-    WriteFieldAccessorDocComment(printer, descriptor_, HAZZER,
-                                 context_->options());
-    printer->Print(
-        variables_,
-        "$deprecation$public boolean ${$has$capitalized_name$$}$() {\n"
-        "  return $get_has_field_bit$;\n"
-        "}\n");
-    printer->Annotate("{", "}", descriptor_);
-  }
+  WriteFieldAccessorDocComment(printer, descriptor_, HAZZER,
+                               context_->options());
+  printer->Print(variables_,
+                 "$deprecation$public boolean ${$has$capitalized_name$$}$() {\n"
+                 "  return $get_has_field_bit$;\n"
+                 "}\n");
+  printer->Annotate("{", "}", descriptor_);
 }
 
 void ImmutableStringFieldGenerator::GenerateBuilderGetMethod(
@@ -379,7 +373,9 @@ void ImmutableStringFieldGenerator::GenerateBuilderMembers(
     io::Printer* printer) const {
   printer->Print(variables_,
                  "private java.lang.Object $name$_ $default_init$;\n");
-  GenerateBuilderHasMethod(printer);
+  if (HasHazzerMethod(descriptor_)) {
+    GenerateBuilderHasMethod(printer);
+  }
   GenerateBuilderGetMethod(printer);
   GenerateBuilderGetBytesMethod(printer);
   GenerateBuilderSetMethod(printer);
@@ -404,34 +400,33 @@ void ImmutableStringFieldGenerator::GenerateBuilderClearCode(
 
 void ImmutableStringFieldGenerator::GenerateMergingCode(
     io::Printer* printer) const {
-  if (descriptor_->has_presence()) {
-    // Allow a slight breach of abstraction here in order to avoid forcing
-    // all string fields to Strings when copying fields from a Message.
-    printer->Print(variables_,
-                   "if (other.has$capitalized_name$()) {\n"
-                   "  $name$_ = other.$name$_;\n"
-                   "  $set_has_field_bit$\n"
-                   "  $on_changed$\n"
-                   "}\n");
-  } else {
-    printer->Print(variables_,
-                   "if (!other.get$capitalized_name$().isEmpty()) {\n"
-                   "  $name$_ = other.$name$_;\n"
-                   "  $set_has_field_bit$\n"
-                   "  $on_changed$\n"
-                   "}\n");
-  }
+  // Allow a slight breach of abstraction here in order to avoid forcing
+  // all string fields to Strings when copying fields from a Message.
+  printer->Print(variables_,
+                 "if ($is_other_field_present$) {\n"
+                 "  $name$_ = other.$name$_;\n"
+                 "  $set_has_field_bit$\n"
+                 "  $on_changed$\n"
+                 "}\n");
 }
 
 void ImmutableStringFieldGenerator::GenerateBuildingCode(
     io::Printer* printer) const {
-  printer->Print(variables_,
-                 "if ($get_has_field_bit_from_local$) {\n"
-                 "  result.$name$_ = $name$_;\n");
-  if (GetNumBits() > 0) {
-    printer->Print(variables_, "  $set_has_field_bit_to_local$;\n");
+  if (HasHazzerMethod(descriptor_)) {
+    printer->Print(variables_,
+                   "if ($get_has_field_bit_from_local$) {\n"
+                   "  result.$name$_ = $name$_;\n"
+                   "  $set_has_field_bit_to_local$;\n"
+                   "}\n");
+  } else {
+    printer->Print(variables_,
+                   "if ($is_field_value_not_default$) {\n"
+                   "  result.$name$_ = $name$_;\n"
+                   "  $set_has_field_bit_to_local$;\n"
+                   "} else {\n"
+                   "  $clear_has_field_bit$;\n"
+                   "}\n");
   }
-  printer->Print("}\n");
 }
 
 void ImmutableStringFieldGenerator::GenerateBuilderParsingCode(
