@@ -960,8 +960,8 @@ class TextFormat::Parser::ParserImpl {
                          const FieldDescriptor* field) {
 // Define an easy to use macro for setting fields. This macro checks
 // to see if the field is repeated (in which case we need to use the Add
-// methods or not (in which case we need to use the Set methods).
-// When checking for no-op operations, We verify that both the existing value in
+// methods) or not (in which case we need to use the Set methods).
+// When checking for no-op operations, we verify that both the existing value in
 // the message and the new value are the default. If the existing field value is
 // not the default, setting it to the default should not be treated as a no-op.
 // The pointer of this is kept in no_op_fields_ for bookkeeping.

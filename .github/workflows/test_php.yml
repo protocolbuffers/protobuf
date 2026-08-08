@@ -121,7 +121,7 @@ jobs:
 
       - name: Run tests
         if: ${{ !matrix.continuous-only || inputs.continuous-run }}
-        uses: protocolbuffers/protobuf-ci/docker@v5
+        uses: protocolbuffers/protobuf-ci/docker@fab0fe16551ad4cdb90d6ee158fb060c9cc2012b
         with:
           image: ${{ env.image }}
           platform: linux/386
@@ -152,7 +152,7 @@ jobs:
           architecture: linux-aarch64
 
       - name: Run tests
-        uses: protocolbuffers/protobuf-ci/docker@v5
+        uses: protocolbuffers/protobuf-ci/docker@fab0fe16551ad4cdb90d6ee158fb060c9cc2012b
         with:
           image: us-docker.pkg.dev/protobuf-build/containers/test/linux/php-aarch64@sha256:77ff9fdec867bbfb290ee0b10d8b7a3e5e434155daa5ec93de7341c7592b858d
           platform: linux/arm64
@@ -204,7 +204,7 @@ jobs:
         uses: protocolbuffers/protobuf-ci/bash@v5
         with:
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
-          bazel-version: 9.0.0
+          bazel-version: 9.2.0
           # TODO this shouldn't be necessary, remove it
           bazel-flags: --xcode_version_config=//.github:host_xcodes_macos15
           command: |
@@ -220,6 +220,6 @@ jobs:
         uses: protocolbuffers/protobuf-ci/bazel@v5
         with:
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
-          version: 9.0.0 # Bazel version
+          version: 9.2.0 # Bazel version
           bazel-cache: php_macos15/${{ matrix.version }}
           bazel: test //php:conformance_test //php:conformance_test_c --action_env=PATH --test_env=PATH --xcode_version_config=//.github:host_xcodes_macos15
