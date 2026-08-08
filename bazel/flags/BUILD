@@ -1,6 +1,6 @@
 load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
 load("@bazel_skylib//rules:common_settings.bzl", "bool_flag")
-load("//bazel/private:compat_flag.bzl", "compat_bool_flag", "compat_string_list_flag")
+load("//bazel/private:compat_flag.bzl", "compat_bool_flag", "compat_label_flag", "compat_string_list_flag")
 
 package(
     default_applicable_licenses = ["//:license"],
@@ -33,9 +33,10 @@ compat_bool_flag(
     scope = "universal",
 )
 
-label_flag(
+compat_label_flag(
     name = "proto_compiler",
     build_setting_default = "@bazel_tools//tools/proto:protoc",
+    fragment_field = "proto_compiler",
 )
 
 compat_string_list_flag(
