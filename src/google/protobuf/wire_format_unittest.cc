@@ -34,7 +34,6 @@
 #include "google/protobuf/test_protos/lazy_field_test.pb.h"
 #include "google/protobuf/text_format.h"
 #include "google/protobuf/unittest.pb.h"
-#include "google/protobuf/unittest_import.pb.h"
 #include "google/protobuf/unittest_mset.pb.h"
 #include "google/protobuf/unittest_mset_wire_format.pb.h"
 #include "google/protobuf/unittest_proto3_arena.pb.h"
