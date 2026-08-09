@@ -598,3 +598,8 @@ about your project (name and website) so we can add an entry for you.
 
     *   Website: https://protowire.org
     *   Extensions: 1314-1363
+
+1.  Flyte
+
+    *   Website: https://github.com/flyteorg/flyte
+    *   Extensions: 1364-1373

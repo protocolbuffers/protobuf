@@ -3693,6 +3693,10 @@ MessageGenerator::NewOpRequirements MessageGenerator::GetNewOp() const {
     // We can't skip the ArenaDtor for these messages.
     op.needs_to_run_constructor = true;
   }
+  if (descriptor_->extension_range_count() > 0) {
+    // Extensions are not zero-initializable.
+    op.needs_memcpy = true;
+  }
 
   for (const FieldDescriptor* field : internal::FieldRange(descriptor_)) {
     if (ShouldSplit(field, options_)) {

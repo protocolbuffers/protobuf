@@ -152,3 +152,22 @@ upb_Message_DeleteUnknownStatus upb_Message_DeleteUnknown2(
              ? kUpb_DeleteUnknown_IterUpdated
              : kUpb_DeleteUnknown_DeletedLast;
 }
+
+upb_Message_DeleteUnknownStatus upb_Message_DeleteUnknown(
+    struct upb_Message* msg, upb_StringView* data, uintptr_t* iter,
+    struct upb_Arena* arena) {
+  upb_MessageUnknown unknown;
+  unknown.type = kUpb_MessageUnknownType_StringView;
+  unknown.value.bytes = *data;
+
+  upb_Message_DeleteUnknownStatus res =
+      upb_Message_DeleteUnknown2(msg, &unknown, iter, arena);
+  UPB_ASSERT(unknown.type == kUpb_MessageUnknownType_StringView);
+  if (res == kUpb_DeleteUnknown_IterUpdated ||
+      res == kUpb_DeleteUnknown_DeletedLast) {
+    // the unknown data remains the same on the result of
+    // kUpb_DeleteUnknown_AllocFail.
+    *data = unknown.value.bytes;
+  }
+  return res;
+}

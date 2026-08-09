@@ -35,6 +35,7 @@ google/protobuf/compiler/php/names.h
 google/protobuf/compiler/plugin.h
 google/protobuf/compiler/plugin.pb.h
 google/protobuf/compiler/plugin.proto
+google/protobuf/compiler/python/names.h
 google/protobuf/compiler/retention.h
 google/protobuf/compiler/scc.h
 google/protobuf/compiler/subprocess.h
@@ -111,6 +112,7 @@ google/protobuf/metadata.h
 google/protobuf/metadata_lite.h
 google/protobuf/micro_string.h
 google/protobuf/naming_style.h
+google/protobuf/offset_ptr.h
 google/protobuf/option_interpreter.h
 google/protobuf/os_macros_restore.inc
 google/protobuf/os_macros_undef.inc
@@ -244,6 +246,7 @@ upb/wire/decode_fast/combinations.h
 upb/wire/decode_fast/data.h
 upb/wire/decode_fast/select.h
 upb/wire/encode.h
+upb/wire/encode_extension.h
 upb/wire/eps_copy_input_stream.h
 upb/wire/reader.h
 upb/wire/types.h

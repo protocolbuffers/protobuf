@@ -38,6 +38,18 @@ rust_library(
         "//conditions:default": ["--cfg=cpp_kernel"],
     }),
     visibility = ["//visibility:public"],
+    deps = [":protobuf_lite"],
+)
+
+rust_library(
+    name = "protobuf_lite",
+    srcs = ["protobuf_lite.rs"],
+    edition = "2024",
+    rustc_flags = select({
+        ":use_upb_kernel": ["--cfg=upb_kernel"],
+        "//conditions:default": ["--cfg=cpp_kernel"],
+    }),
+    visibility = ["//visibility:public"],
     deps = select({
         ":use_upb_kernel": [":protobuf_upb"],
         "//conditions:default": [":protobuf_cpp"],
@@ -83,6 +95,7 @@ ALL_RUST_SRCS = PROTOBUF_SHARED + [
     "gtest_matchers.rs",
     "gtest_matchers_impl.rs",
     "protobuf.rs",
+    "protobuf_lite.rs",
     "upb_kernel/conversions.rs",
     "upb_kernel/extension.rs",
     "upb_kernel/interop.rs",
@@ -146,13 +159,24 @@ rust_test(
 # This provides an identical set of re-exports as `:protobuf` with `:use_upb_kernel` active.
 # This is only used for tests shared between runtimes.
 rust_library(
-    name = "protobuf_upb_export",
+    name = "protobuf_upb_lite_export",
     testonly = True,
-    srcs = ["protobuf.rs"],
+    srcs = ["protobuf_lite.rs"],
     edition = "2024",
     rustc_flags = ["--cfg=upb_kernel"],
     visibility = [":protobuf_internal"],
     deps = [":protobuf_upb"],
+)
+
+rust_library(
+    name = "protobuf_upb_export",
+    testonly = True,
+    srcs = ["protobuf.rs"],
+    aliases = {"//rust:protobuf_upb_lite_export": "protobuf_lite"},
+    edition = "2024",
+    rustc_flags = ["--cfg=upb_kernel"],
+    visibility = [":protobuf_internal"],
+    deps = [":protobuf_upb_lite_export"],
 )
 
 # The Rust Protobuf runtime using the cpp kernel.
@@ -204,13 +228,24 @@ rust_test(
 # This provides an identical set of re-exports as `:protobuf` with `:use_upb_kernel` inactive.
 # This is only used for tests shared between runtimes.
 rust_library(
-    name = "protobuf_cpp_export",
+    name = "protobuf_cpp_lite_export",
     testonly = True,
-    srcs = ["protobuf.rs"],
+    srcs = ["protobuf_lite.rs"],
     edition = "2024",
     rustc_flags = ["--cfg=cpp_kernel"],
     visibility = [":protobuf_internal"],
     deps = [":protobuf_cpp"],
+)
+
+rust_library(
+    name = "protobuf_cpp_export",
+    testonly = True,
+    srcs = ["protobuf.rs"],
+    aliases = {"//rust:protobuf_cpp_lite_export": "protobuf_lite"},
+    edition = "2024",
+    rustc_flags = ["--cfg=cpp_kernel"],
+    visibility = [":protobuf_internal"],
+    deps = [":protobuf_cpp_lite_export"],
 )
 
 cc_library(

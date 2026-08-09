@@ -28,7 +28,12 @@ static upb_StringView Convert_StringData(VALUE str, upb_Arena* arena) {
     memcpy(ptr, RSTRING_PTR(str), RSTRING_LEN(str));
     ret.data = ptr;
   } else {
-    // Data is only needed temporarily (within map lookup).
+    // Alias the Ruby String's bytes instead of copying them. Only valid when
+    // the result is consumed before anything can allocate: Convert_RubyToUpb
+    // may have converted `str` to a temporary that nothing else references, so
+    // any GC between here and the read can free or move it. The map lookup
+    // paths (Map_index, Map_has_key, Map_delete) satisfy this; insertion paths
+    // must pass an arena.
     ret.data = RSTRING_PTR(str);
   }
   ret.size = RSTRING_LEN(str);

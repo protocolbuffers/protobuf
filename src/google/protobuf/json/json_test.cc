@@ -1702,8 +1702,8 @@ TEST_P(JsonTest, OversizedStringRejected) {
   GTEST_SKIP() << "Test is too slow in non-opt builds.";
 #else
 
-  if (sizeof(void*) < 8) {
-    GTEST_SKIP() << "Test requires 64-bit environment.";
+  if (!internal::RunLargeMemoryTests()) {
+    GTEST_SKIP() << "Not enough memory for this test.";
   }
 
   absl::Cord chunk(std::string(1024 * 1024, 'a'));

@@ -188,8 +188,7 @@ void MessageBuilderGenerator::Generate(io::Printer* printer) {
   // Integers for bit fields.
   int totalBits = 0;
   for (int i = 0; i < descriptor_->field_count(); i++) {
-    totalBits +=
-        field_generators_.get(descriptor_->field(i)).GetNumBitsForBuilder();
+    totalBits += field_generators_.get(descriptor_->field(i)).GetNumBits();
   }
   int totalInts = (totalBits + 31) / 32;
   for (int i = 0; i < totalInts; i++) {
@@ -720,7 +719,7 @@ int MessageBuilderGenerator::GenerateBuildPartialShard(io::Printer* printer,
   for (; bit < 32 && next < descriptor_->field_count(); ++next) {
     const ImmutableFieldGenerator& field =
         field_generators_.get(descriptor_->field(next));
-    bit += field.GetNumBitsForBuilder();
+    bit += field.GetNumBits();
 
     // Skip oneof fields that are handled separately
     if (IsRealOneof(descriptor_->field(next))) {
@@ -733,13 +732,13 @@ int MessageBuilderGenerator::GenerateBuildPartialShard(io::Printer* printer,
       continue;
     }
     // Skip fields without presence bits in the builder
-    if (field.GetNumBitsForBuilder() == 0) {
+    if (field.GetNumBits() == 0) {
       continue;
     }
 
     // Track message bits if necessary
-    if (field.GetNumBitsForMessage() > 0) {
-      int to_bitfield = field.GetMessageBitIndex() / 32;
+    if (field.GetNumBits() > 0) {
+      int to_bitfield = field.GetBitIndex() / 32;
       if (declared_to_bitfields.count(to_bitfield) == 0) {
         printer->Print("int to_$bit_field_name$ = 0;\n", "bit_field_name",
                        GetBitFieldName(to_bitfield));

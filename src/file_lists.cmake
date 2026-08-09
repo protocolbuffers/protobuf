@@ -74,6 +74,7 @@ set(libprotobuf_srcs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/message_lite.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/micro_string.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/naming_style.cc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/offset_ptr.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/option_interpreter.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/parse_context.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/port.cc
@@ -188,6 +189,7 @@ set(libprotobuf_hdrs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/metadata_lite.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/micro_string.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/naming_style.h
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/offset_ptr.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/option_interpreter.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/os_macros_restore.inc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/os_macros_undef.inc
@@ -259,6 +261,7 @@ set(libprotobuf_lite_srcs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/map.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/message_lite.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/micro_string.cc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/offset_ptr.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/parse_context.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/port.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/raw_ptr.cc
@@ -307,6 +310,7 @@ set(libprotobuf_lite_hdrs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/message_traits.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/metadata_lite.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/micro_string.h
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/offset_ptr.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/os_macros_restore.inc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/os_macros_undef.inc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/parse_context.h
@@ -349,6 +353,7 @@ set(libprotoc_public_srcs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/php/names.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/plugin.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/plugin.pb.cc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/python/names.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/retention.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/subprocess.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/versions.cc
@@ -379,6 +384,7 @@ set(libprotoc_public_hdrs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/php/names.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/plugin.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/plugin.pb.h
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/python/names.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/retention.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/scc.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/subprocess.h
@@ -493,6 +499,7 @@ set(libprotoc_srcs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/plugin.pb.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/python/generator.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/python/helpers.cc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/python/names.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/python/pyi_generator.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/retention.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/ruby/rbs_generator.cc
@@ -644,6 +651,7 @@ set(libprotoc_hdrs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/plugin.pb.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/python/generator.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/python/helpers.h
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/python/names.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/python/pyi_generator.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/retention.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/ruby/rbs_generator.h
@@ -744,6 +752,7 @@ set(libupb_srcs
   ${protobuf_SOURCE_DIR}/upb/wire/decode.c
   ${protobuf_SOURCE_DIR}/upb/wire/decode_fast/select.c
   ${protobuf_SOURCE_DIR}/upb/wire/encode.c
+  ${protobuf_SOURCE_DIR}/upb/wire/encode_extension.c
   ${protobuf_SOURCE_DIR}/upb/wire/eps_copy_input_stream.c
   ${protobuf_SOURCE_DIR}/upb/wire/internal/back_alloc.c
   ${protobuf_SOURCE_DIR}/upb/wire/internal/decoder.c
@@ -874,6 +883,7 @@ set(libupb_hdrs
   ${protobuf_SOURCE_DIR}/upb/wire/decode_fast/data.h
   ${protobuf_SOURCE_DIR}/upb/wire/decode_fast/select.h
   ${protobuf_SOURCE_DIR}/upb/wire/encode.h
+  ${protobuf_SOURCE_DIR}/upb/wire/encode_extension.h
   ${protobuf_SOURCE_DIR}/upb/wire/eps_copy_input_stream.h
   ${protobuf_SOURCE_DIR}/upb/wire/internal/back_alloc.h
   ${protobuf_SOURCE_DIR}/upb/wire/internal/constants.h
@@ -1291,6 +1301,7 @@ set(protobuf_test_files
   ${protobuf_SOURCE_DIR}/src/google/protobuf/naming_style_test.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/no_field_presence_map_test.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/no_field_presence_test.cc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/offset_ptr_test.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/port_test.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/preserve_unknown_enum_test.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/proto3_arena_lite_unittest.cc

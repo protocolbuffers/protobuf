@@ -500,34 +500,7 @@ void OptionInterpreter::UpdateSourceCodeInfo(SourceCodeInfo* info) {
       }
 
       if (loc_matches) {
-        if (loc->path_size() == static_cast<int64_t>(match_src.size() + 1)) {
-          int uninterpreted_field = loc->path(match_src.size());
-
-          SourceCodeInfo_Location* mapped_loc = new_locs.Add();
-          *mapped_loc = *loc;
-          mapped_loc->mutable_path()->Assign(match_dest.begin(),
-                                             match_dest.end());
-          mapped_loc->add_path(uninterpreted_field);
-
-          if (uninterpreted_field ==
-              UninterpretedOption::kAggregateValueFieldNumber) {
-            auto it = agg_loc_map.find(loc->path());
-            if (it != agg_loc_map.end()) {
-              for (const AggregateFieldLocation* afl : it->second) {
-                SourceCodeInfo_Location* name_loc = new_locs.Add();
-                name_loc->mutable_path()->Assign(afl->field_dest_path.begin(),
-                                                 afl->field_dest_path.end());
-                name_loc->add_path(UninterpretedOption::kNameFieldNumber);
-                SetSpan(name_loc, *loc, afl->name_range);
-                SourceCodeInfo_Location* val_loc = new_locs.Add();
-                val_loc->mutable_path()->Assign(afl->field_dest_path.begin(),
-                                                afl->field_dest_path.end());
-                val_loc->add_path(afl->value_marker);
-                SetSpan(val_loc, *loc, afl->val_range);
-              }
-            }
-          }
-        }
+        // TODO: b/168903973 - Remove once we update the format.
         // don't copy this row since it is a sub-location that we're removing
         // (or we already mapped it if it's a direct child)
         continue;

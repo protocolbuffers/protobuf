@@ -1372,7 +1372,7 @@ inline void* PROTOBUF_NONNULL FeatureSet::PlacementNew_(
   return ::new (mem) FeatureSet(arena);
 }
 constexpr auto FeatureSet::InternalNewImpl_() {
-  return ::google::protobuf::internal::MessageCreator::ZeroInit(sizeof(FeatureSet), alignof(FeatureSet));
+  return ::google::protobuf::internal::MessageCreator::CopyInit(sizeof(FeatureSet), alignof(FeatureSet));
 }
 constexpr auto FeatureSet::InternalGenerateClassData_(
     const MessageLite& prototype,
