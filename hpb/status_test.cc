@@ -14,6 +14,7 @@
 #include <gtest/gtest.h>
 #include "absl/status/statusor.h"
 #include "hpb_generator/tests/test_model.hpb.h"
+#include "hpb/backend/types.h"
 #include "hpb/ptr.h"
 #include "upb/wire/decode.h"
 #include "upb/wire/encode.h"
