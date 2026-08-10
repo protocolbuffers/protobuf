@@ -79,11 +79,11 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
    *
    * <p>One of the noticeable costs of copying a byte[] into a new array using {@code
    * System.arraycopy} is nullification of a new buffer before the copy. It has been shown the
-   * Hotspot VM is capable of intrinsic {@code Arrays.copyOfRange} operation to avoid this
-   * expensive nullification and provide substantial performance gain. Unfortunately this does not
-   * hold on Android runtimes and could make the copy slightly slower due to additional code in the
-   * {@code Arrays.copyOfRange}. Thus we provide two different implementation for array copier for
-   * Hotspot and Android runtimes.
+   * Hotspot VM is capable of intrinsic {@code Arrays.copyOfRange} operation to avoid this expensive
+   * nullification and provide substantial performance gain. Unfortunately this does not hold on
+   * Android runtimes and could make the copy slightly slower due to additional code in the {@code
+   * Arrays.copyOfRange}. Thus we provide two different implementation for array copier for Hotspot
+   * and Android runtimes.
    */
   private interface ByteArrayCopier {
     /** Copies the specified range of the specified array into a new array */
@@ -281,17 +281,18 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
       new Comparator<ByteString>() {
         @Override
         public int compare(ByteString former, ByteString latter) {
-          ByteIterator formerBytes = former.iterator();
-          ByteIterator latterBytes = latter.iterator();
-
-          while (formerBytes.hasNext() && latterBytes.hasNext()) {
-            int result =
-                Integer.compare(toInt(formerBytes.nextByte()), toInt(latterBytes.nextByte()));
-            if (result != 0) {
-              return result;
+          ByteString fUnwrapped = unwrap(former);
+          ByteString lUnwrapped = unwrap(latter);
+          if (fUnwrapped instanceof LeafByteString f && lUnwrapped instanceof LeafByteString l) {
+            byte[] fBytes = f.byteArray();
+            byte[] lBytes = l.byteArray();
+            if (fBytes != null && lBytes != null) {
+              return subArrayCompareUnsigned(
+                  fBytes, f.byteArrayOffset(), f.size(), lBytes, l.byteArrayOffset(), l.size());
             }
           }
-          return Integer.compare(former.size(), latter.size());
+
+          return comparePieces(fUnwrapped, lUnwrapped);
         }
       };
 
@@ -1071,7 +1072,138 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
      */
     abstract boolean equalsRange(ByteString other, int offset, int length);
 
+    /**
+     * Returns the underlying byte array if this leaf byte string is backed by a contiguous heap
+     * byte array without needing allocations, or null otherwise.
+     */
+    byte[] byteArray() {
+      return null;
+    }
+
+    /** Returns the offset into {@link #byteArray()}. */
+    int byteArrayOffset() {
+      return 0;
+    }
+
     private LeafByteString() {}
+  }
+
+  static LeafByteString newNonArrayLeafForTest(ByteString delegate) {
+    return new NonArrayLeafByteStringForTest(delegate);
+  }
+
+  private static final class NonArrayLeafByteStringForTest extends LeafByteString {
+    private final ByteString delegate;
+
+    NonArrayLeafByteStringForTest(ByteString delegate) {
+      this.delegate = delegate;
+    }
+
+    @Override
+    byte[] byteArray() {
+      return null;
+    }
+
+    @Override
+    int byteArrayOffset() {
+      return 0;
+    }
+
+    @Override
+    public byte byteAt(int index) {
+      return delegate.byteAt(index);
+    }
+
+    @Override
+    byte internalByteAt(int index) {
+      return delegate.byteAt(index);
+    }
+
+    @Override
+    public int size() {
+      return delegate.size();
+    }
+
+    @Override
+    public ByteString substring(int beginIndex, int endIndex) {
+      return new NonArrayLeafByteStringForTest(delegate.substring(beginIndex, endIndex));
+    }
+
+    @Override
+    public ByteString substringNoCopy(int beginIndex, int endIndex) {
+      return new NonArrayLeafByteStringForTest(delegate.substringNoCopy(beginIndex, endIndex));
+    }
+
+    @Override
+    protected void copyToInternal(
+        byte[] target, int sourceOffset, int targetOffset, int numberToCopy) {
+      delegate.copyTo(target, sourceOffset, targetOffset, numberToCopy);
+    }
+
+    @Override
+    public void copyTo(ByteBuffer target) {
+      delegate.copyTo(target);
+    }
+
+    @Override
+    public ByteBuffer asReadOnlyByteBuffer() {
+      return delegate.asReadOnlyByteBuffer();
+    }
+
+    @Override
+    public List<ByteBuffer> asReadOnlyByteBufferList() {
+      return delegate.asReadOnlyByteBufferList();
+    }
+
+    @Override
+    public void writeTo(OutputStream out) throws IOException {
+      delegate.writeTo(out);
+    }
+
+    @Override
+    void writeTo(ByteOutput output) throws IOException {
+      delegate.writeTo(output);
+    }
+
+    @Override
+    void writeToInternal(OutputStream out, int sourceOffset, int numberToWrite) throws IOException {
+      delegate.substring(sourceOffset, sourceOffset + numberToWrite).writeTo(out);
+    }
+
+    @Override
+    protected String toStringInternal(Charset charset) {
+      return delegate.toString(charset);
+    }
+
+    @Override
+    public boolean isValidUtf8() {
+      return delegate.isValidUtf8();
+    }
+
+    @Override
+    protected boolean equalsInternal(ByteString other) {
+      return equalsRange(other, 0, size());
+    }
+
+    @Override
+    boolean equalsRange(ByteString other, int offset, int length) {
+      return delegate.substring(0, length).equals(other.substring(offset, offset + length));
+    }
+
+    @Override
+    protected int partialHash(int h, int offset, int length) {
+      return delegate.substring(offset, offset + length).hashCode();
+    }
+
+    @Override
+    public InputStream newInput() {
+      return delegate.newInput();
+    }
+
+    @Override
+    public CodedInputStream newCodedInput() {
+      return delegate.newCodedInput();
+    }
   }
 
   /**
@@ -1464,6 +1596,101 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
     return size() <= limit ? escapeBytes(this) : escapeBytes(substringNoCopy(0, limit - 3)) + "...";
   }
 
+  static ByteString unwrap(ByteString bs) {
+    while (bs instanceof CachingStringByteString csbs) {
+      bs = csbs.internal;
+    }
+    return bs;
+  }
+
+  /**
+   * Compares two sub arrays lexicographically as unsigned bytes.
+   *
+   * @return negative if {@code left < right}, zero if equal, positive if {@code left > right}
+   */
+  private static int subArrayCompareUnsigned(
+      byte[] left, int leftOffset, int leftLength, byte[] right, int rightOffset, int rightLength) {
+    int minLength = Math.min(leftLength, rightLength);
+    int mismatch = UnsafeUtil.mismatch(left, leftOffset, right, rightOffset, minLength);
+    if (mismatch >= 0) {
+      return toInt(left[leftOffset + mismatch]) - toInt(right[rightOffset + mismatch]);
+    }
+    return Integer.compare(leftLength, rightLength);
+  }
+
+  private static int comparePieces(ByteString former, ByteString latter) {
+    RopeByteString.PieceIterator formerPieces = new RopeByteString.PieceIterator(former);
+    LeafByteString formerCurrent = formerPieces.next();
+    int formerOffset = 0;
+
+    RopeByteString.PieceIterator latterPieces = new RopeByteString.PieceIterator(latter);
+    LeafByteString latterCurrent = latterPieces.next();
+    int latterOffset = 0;
+
+    int minTotalLength = Math.min(former.size(), latter.size());
+    int pos = 0;
+    while (pos < minTotalLength) {
+      int formerRemaining = formerCurrent.size() - formerOffset;
+      int latterRemaining = latterCurrent.size() - latterOffset;
+      int bytesToCompare =
+          Math.min(Math.min(formerRemaining, latterRemaining), minTotalLength - pos);
+
+      byte[] formerBytes = formerCurrent.byteArray();
+      byte[] latterBytes = latterCurrent.byteArray();
+      int cmp;
+      if (formerBytes != null && latterBytes != null) {
+        cmp =
+            subArrayCompareUnsigned(
+                formerBytes,
+                formerCurrent.byteArrayOffset() + formerOffset,
+                bytesToCompare,
+                latterBytes,
+                latterCurrent.byteArrayOffset() + latterOffset,
+                bytesToCompare);
+      } else {
+        cmp =
+            scalarCompareRange(
+                formerCurrent, formerOffset, latterCurrent, latterOffset, bytesToCompare);
+      }
+      if (cmp != 0) {
+        return cmp;
+      }
+
+      pos += bytesToCompare;
+      if (bytesToCompare == formerRemaining) {
+        formerOffset = 0;
+        if (formerPieces.hasNext()) {
+          formerCurrent = formerPieces.next();
+        }
+      } else {
+        formerOffset += bytesToCompare;
+      }
+
+      if (bytesToCompare == latterRemaining) {
+        latterOffset = 0;
+        if (latterPieces.hasNext()) {
+          latterCurrent = latterPieces.next();
+        }
+      } else {
+        latterOffset += bytesToCompare;
+      }
+    }
+    return Integer.compare(former.size(), latter.size());
+  }
+
+  private static int scalarCompareRange(
+      LeafByteString left, int leftOffset, LeafByteString right, int rightOffset, int length) {
+    for (int i = 0; i < length; i++) {
+      int cmp =
+          (left.internalByteAt(leftOffset + i) & 0xFF)
+              - (right.internalByteAt(rightOffset + i) & 0xFF);
+      if (cmp != 0) {
+        return cmp;
+      }
+    }
+    return 0;
+  }
+
   /**
    * @return whether the two sub arrays at: `a[aOffset .. aOffset + length)` and `b[bOffset ..
    *     bOffset + length]` are equal.
@@ -1471,15 +1698,7 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
   private static boolean subArrayEquals(byte[] a, int aOffset, byte[] b, int bOffset, int length) {
     checkRange(aOffset, aOffset + length, a.length);
     checkRange(bOffset, bOffset + length, b.length);
-    // This would be more efficiently implemented with the 6-parameter version of
-    // Arrays.equals(), but that was only added in Java 9 and so we cannot use it until we drop
-    // Java 8 support.
-    for (int aIndex = aOffset, bIndex = bOffset; aIndex < aOffset + length; aIndex++, bIndex++) {
-      if (a[aIndex] != b[bIndex]) {
-        return false;
-      }
-    }
-    return true;
+    return UnsafeUtil.mismatch(a, aOffset, b, bOffset, length) == -1;
   }
 
   /**
@@ -1507,6 +1726,16 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
         throw new NullPointerException();
       }
       this.bytes = bytes;
+    }
+
+    @Override
+    byte[] byteArray() {
+      return bytes;
+    }
+
+    @Override
+    int byteArrayOffset() {
+      return 0;
     }
 
     @Override
@@ -1637,11 +1866,9 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
             "Ran off end of other: " + offset + ", " + length + ", " + other.size());
       }
 
-      if (other instanceof LiteralByteString) {
-        LiteralByteString lbsOther = (LiteralByteString) other;
+      if (other instanceof LiteralByteString lbsOther) {
         return subArrayEquals(bytes, 0, lbsOther.bytes, offset, length);
-      } else if (other instanceof BoundedByteString) {
-        BoundedByteString bbsOther = (BoundedByteString) other;
+      } else if (other instanceof BoundedByteString bbsOther) {
         return subArrayEquals(bytes, 0, bbsOther.bytes, bbsOther.offset + offset, length);
       }
 
@@ -1700,6 +1927,16 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
       this.bytes = bytes;
       this.offset = offset;
       this.length = length;
+    }
+
+    @Override
+    byte[] byteArray() {
+      return bytes;
+    }
+
+    @Override
+    int byteArrayOffset() {
+      return offset;
     }
 
     /**
@@ -1820,12 +2057,10 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
             "Ran off end of other: " + offset + ", " + length + ", " + other.size());
       }
 
-      if (other instanceof LiteralByteString) {
-        LiteralByteString lbsOther = (LiteralByteString) other;
+      if (other instanceof LiteralByteString lbsOther) {
         return subArrayEquals(bytes, this.offset, lbsOther.bytes, offset, length);
-      } else if (other instanceof BoundedByteString) {
-        BoundedByteString lbsOther = (BoundedByteString) other;
-        return subArrayEquals(bytes, this.offset, lbsOther.bytes, lbsOther.offset + offset, length);
+      } else if (other instanceof BoundedByteString bbsOther) {
+        return subArrayEquals(bytes, this.offset, bbsOther.bytes, bbsOther.offset + offset, length);
       }
 
       return other

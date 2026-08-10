@@ -112,6 +112,330 @@ public class ByteStringTest {
   }
 
   @Test
+  public void testCompare_boundedByteStrings() throws Exception {
+    byte[] base = new byte[] {0, 1, 2, 3, (byte) 200, 5, 6, 7, 8, 9};
+    ByteString full = ByteString.copyFrom(base);
+    ByteString sub1 = full.substring(1, 5); // [1, 2, 3, 200]
+    ByteString sub2 = full.substring(2, 6); // [2, 3, 200, 5]
+    ByteString sub1Copy = ByteString.copyFrom(new byte[] {1, 2, 3, (byte) 200});
+
+    Comparator<ByteString> comparator = ByteString.unsignedLexicographicalComparator();
+    assertWithMessage("sub1 equals sub1Copy").that(comparator.compare(sub1, sub1Copy)).isEqualTo(0);
+    assertWithMessage("sub1 < sub2").that(comparator.compare(sub1, sub2) < 0).isTrue();
+    assertWithMessage("sub2 > sub1").that(comparator.compare(sub2, sub1) > 0).isTrue();
+  }
+
+  @Test
+  public void testCompare_ropeByteStrings() throws Exception {
+    ByteString piece1 = ByteString.copyFromUtf8("hello ");
+    ByteString piece2 = ByteString.copyFromUtf8("world!");
+    ByteString rope = piece1.concat(piece2); // RopeByteString [6, 6]
+    ByteString literal = ByteString.copyFromUtf8("hello world!");
+    ByteString literalGreater = ByteString.copyFromUtf8("hello world?");
+
+    Comparator<ByteString> comparator = ByteString.unsignedLexicographicalComparator();
+    assertWithMessage("rope equals literal").that(comparator.compare(rope, literal)).isEqualTo(0);
+    assertWithMessage("literal equals rope").that(comparator.compare(literal, rope)).isEqualTo(0);
+    assertWithMessage("rope < literalGreater")
+        .that(comparator.compare(rope, literalGreater) < 0)
+        .isTrue();
+    assertWithMessage("literalGreater > rope")
+        .that(comparator.compare(literalGreater, rope) > 0)
+        .isTrue();
+
+    // Misaligned chunk boundaries: rope1 [4, 8] vs rope2 [7, 5]
+    ByteString rope1 = ByteString.copyFromUtf8("abcd").concat(ByteString.copyFromUtf8("efghijkl"));
+    ByteString rope2 = ByteString.copyFromUtf8("abcdefg").concat(ByteString.copyFromUtf8("hijkl"));
+    ByteString rope3 = ByteString.copyFromUtf8("abcdefg").concat(ByteString.copyFromUtf8("hizkl"));
+    assertWithMessage("rope1 equals rope2").that(comparator.compare(rope1, rope2)).isEqualTo(0);
+    assertWithMessage("rope2 equals rope1").that(comparator.compare(rope2, rope1)).isEqualTo(0);
+    assertWithMessage("rope1 < rope3").that(comparator.compare(rope1, rope3) < 0).isTrue();
+    assertWithMessage("rope3 > rope1").that(comparator.compare(rope3, rope1) > 0).isTrue();
+
+    // Prefix comparisons with ropes
+    ByteString prefixRope = ByteString.copyFromUtf8("abc").concat(ByteString.copyFromUtf8("d"));
+    assertWithMessage("prefixRope < rope1")
+        .that(comparator.compare(prefixRope, rope1) < 0)
+        .isTrue();
+    assertWithMessage("rope1 > prefixRope")
+        .that(comparator.compare(rope1, prefixRope) > 0)
+        .isTrue();
+
+    // Ropes containing empty leaf nodes constructed via newInstanceForTest
+    ByteString emptyLeafRope1 =
+        RopeByteString.newInstanceForTest(ByteString.copyFromUtf8("a"), ByteString.EMPTY);
+    ByteString emptyLeafRope2 =
+        RopeByteString.newInstanceForTest(ByteString.EMPTY, ByteString.copyFromUtf8("b"));
+    ByteString emptyLeafRope3 =
+        RopeByteString.newInstanceForTest(
+            ByteString.copyFromUtf8("a"),
+            RopeByteString.newInstanceForTest(ByteString.EMPTY, ByteString.copyFromUtf8("b")));
+    ByteString emptyLeafRope4 =
+        RopeByteString.newInstanceForTest(
+            RopeByteString.newInstanceForTest(ByteString.copyFromUtf8("a"), ByteString.EMPTY),
+            ByteString.copyFromUtf8("b"));
+    ByteString expectedAb = ByteString.copyFromUtf8("ab");
+
+    assertWithMessage("emptyLeafRope1 equals Literal('a')")
+        .that(comparator.compare(emptyLeafRope1, ByteString.copyFromUtf8("a")))
+        .isEqualTo(0);
+    assertWithMessage("emptyLeafRope2 equals Literal('b')")
+        .that(comparator.compare(emptyLeafRope2, ByteString.copyFromUtf8("b")))
+        .isEqualTo(0);
+    assertWithMessage("emptyLeafRope3 equals Literal('ab')")
+        .that(comparator.compare(emptyLeafRope3, expectedAb))
+        .isEqualTo(0);
+    assertWithMessage("emptyLeafRope4 equals Literal('ab')")
+        .that(comparator.compare(emptyLeafRope4, expectedAb))
+        .isEqualTo(0);
+    assertWithMessage("emptyLeafRope3 equals emptyLeafRope4")
+        .that(comparator.compare(emptyLeafRope3, emptyLeafRope4))
+        .isEqualTo(0);
+  }
+
+  @Test
+  public void testCompare_exhaustiveCombinatorialMatrix() throws Exception {
+    Comparator<ByteString> comparator = ByteString.unsignedLexicographicalComparator();
+
+    // Test all lengths from 0 to 48 (covers 0 words, 1 word, up to 6 words + all tail lengths 0..7)
+    for (int length = 0; length <= 48; length++) {
+      byte[] baseA = new byte[length];
+      byte[] baseB = new byte[length];
+      for (int i = 0; i < length; i++) {
+        baseA[i] = (byte) (i * 7 + 13);
+        baseB[i] = (byte) (i * 7 + 13);
+      }
+
+      // 1. Exact equality across various subclass wrappers
+      assertConsistentWithOracle(
+          ByteString.copyFrom(baseA), ByteString.copyFrom(baseB), comparator);
+
+      // 2. Mismatch at every possible index i in [0, length-1]
+      for (int mismatchIdx = 0; mismatchIdx < length; mismatchIdx++) {
+        // Test key unsigned vs signed edge cases at the mismatch index
+        int[][] bytePairs = {
+          {10, 20}, // normal ASCII
+          {127, 128}, // 0x7F vs 0x80: signed positive vs signed negative
+          {1, 255}, // 0x01 vs 0xFF: signed 1 vs signed -1 (unsigned 1 < 255)
+          {128, 255}, // 0x80 vs 0xFF: both negative in signed (-128 vs -1)
+          {0, 255}, // extremes 0x00 vs 0xFF
+        };
+
+        for (int[] pair : bytePairs) {
+          byte[] modA = baseA.clone();
+          byte[] modB = baseB.clone();
+          modA[mismatchIdx] = (byte) pair[0];
+          modB[mismatchIdx] = (byte) pair[1];
+
+          // Test across Literal, Bounded, and Rope representations
+          List<ByteString> variantsA = createSubclassVariants(modA);
+          List<ByteString> variantsB = createSubclassVariants(modB);
+
+          for (ByteString bsA : variantsA) {
+            for (ByteString bsB : variantsB) {
+              assertConsistentWithOracle(bsA, bsB, comparator);
+            }
+          }
+        }
+      }
+
+      // 3. Prefix tests: baseA of length L vs baseA truncated to prefix of length P < L
+      for (int prefixLen = 0; prefixLen < length; prefixLen++) {
+        byte[] prefix = Arrays.copyOf(baseA, prefixLen);
+        List<ByteString> variantsPrefix = createSubclassVariants(prefix);
+        List<ByteString> variantsFull = createSubclassVariants(baseA);
+        for (ByteString bsP : variantsPrefix) {
+          for (ByteString bsF : variantsFull) {
+            assertConsistentWithOracle(bsP, bsF, comparator);
+          }
+        }
+      }
+    }
+  }
+
+  private static List<ByteString> createSubclassVariants(byte[] data) {
+    List<ByteString> list = new ArrayList<>();
+    // 1. LiteralByteString
+    ByteString literal = ByteString.copyFrom(data);
+    list.add(literal);
+
+    // 2. BoundedByteString (with leading and trailing padding in the backing array)
+    byte[] padded = new byte[data.length + 16];
+    System.arraycopy(data, 0, padded, 7, data.length);
+    ByteString bounded = ByteString.copyFrom(padded).substring(7, 7 + data.length);
+    list.add(bounded);
+
+    // 3. RopeByteString (split in half)
+    if (data.length >= 2) {
+      int mid = data.length / 2;
+      ByteString left = ByteString.copyFrom(data, 0, mid);
+      ByteString right = ByteString.copyFrom(data, mid, data.length - mid);
+      list.add(left.concat(right));
+    }
+
+    // 4. RopeByteString (3 pieces if length >= 3)
+    if (data.length >= 3) {
+      int p1 = data.length / 3;
+      int p2 = (2 * data.length) / 3;
+      ByteString r1 = ByteString.copyFrom(data, 0, p1);
+      ByteString r2 = ByteString.copyFrom(data, p1, p2 - p1);
+      ByteString r3 = ByteString.copyFrom(data, p2, data.length - p2);
+      list.add(r1.concat(r2).concat(r3));
+    }
+
+    // 5. CachingStringByteString wrapping LiteralByteString
+    list.add(ByteString.withStringCached(literal));
+
+    // 6. CachingStringByteString wrapping RopeByteString
+    if (data.length >= 2) {
+      int mid = data.length / 2;
+      ByteString left = ByteString.copyFrom(data, 0, mid);
+      ByteString right = ByteString.copyFrom(data, mid, data.length - mid);
+      list.add(ByteString.withStringCached(left.concat(right)));
+    }
+
+    // 7. NonArrayLeafByteString (simulating NioByteString / non-heap leaves where byteArray() is
+    // null)
+    list.add(ByteString.newNonArrayLeafForTest(literal));
+
+    return list;
+  }
+
+  @Test
+  public void testCompare_nonArrayLeafByteString() throws Exception {
+    Comparator<ByteString> comparator = ByteString.unsignedLexicographicalComparator();
+
+    ByteString nonArray1 = ByteString.newNonArrayLeafForTest(ByteString.copyFromUtf8("hello"));
+    ByteString nonArray2 = ByteString.newNonArrayLeafForTest(ByteString.copyFromUtf8("hello"));
+    ByteString nonArrayGreater =
+        ByteString.newNonArrayLeafForTest(ByteString.copyFromUtf8("world"));
+    ByteString literal = ByteString.copyFromUtf8("hello");
+    ByteString rope = ByteString.copyFromUtf8("hel").concat(ByteString.copyFromUtf8("lo"));
+    ByteString ropeWithNonArray = nonArray1.concat(ByteString.copyFromUtf8("!"));
+
+    // NonArray vs NonArray
+    assertConsistentWithOracle(nonArray1, nonArray2, comparator);
+    assertConsistentWithOracle(nonArray1, nonArrayGreater, comparator);
+
+    // NonArray vs Literal
+    assertConsistentWithOracle(nonArray1, literal, comparator);
+    assertConsistentWithOracle(nonArrayGreater, literal, comparator);
+
+    // NonArray vs Rope
+    assertConsistentWithOracle(nonArray1, rope, comparator);
+    assertConsistentWithOracle(nonArrayGreater, rope, comparator);
+
+    // Rope containing NonArray piece
+    assertConsistentWithOracle(ropeWithNonArray, ByteString.copyFromUtf8("hello!"), comparator);
+  }
+
+  @Test
+  public void testCompare_cachingStringByteStringWrappers() throws Exception {
+    Comparator<ByteString> comparator = ByteString.unsignedLexicographicalComparator();
+
+    ByteString literal = ByteString.copyFromUtf8("alpha");
+    ByteString rope = ByteString.copyFromUtf8("alp").concat(ByteString.copyFromUtf8("ha"));
+    ByteString cachedLiteral = ByteString.withStringCached(literal);
+    ByteString cachedRope = ByteString.withStringCached(rope);
+    ByteString greater = ByteString.copyFromUtf8("beta");
+    ByteString cachedGreater = ByteString.withStringCached(greater);
+
+    // Verify PieceIterator handles CachingStringByteString without ClassCastException
+    RopeByteString.PieceIterator pieceIter1 = new RopeByteString.PieceIterator(cachedLiteral);
+    assertWithMessage("pieceIter1 hasNext").that(pieceIter1.hasNext()).isTrue();
+    assertWithMessage("pieceIter1 next content")
+        .that(pieceIter1.next().toStringUtf8())
+        .isEqualTo("alpha");
+
+    RopeByteString.PieceIterator pieceIter2 = new RopeByteString.PieceIterator(cachedRope);
+    assertWithMessage("pieceIter2 hasNext").that(pieceIter2.hasNext()).isTrue();
+
+    // Verify comparisons between cached wrappers and raw ByteStrings
+    assertWithMessage("cachedLiteral vs literal")
+        .that(comparator.compare(cachedLiteral, literal))
+        .isEqualTo(0);
+    assertWithMessage("cachedRope vs rope").that(comparator.compare(cachedRope, rope)).isEqualTo(0);
+    assertWithMessage("cachedLiteral vs cachedRope")
+        .that(comparator.compare(cachedLiteral, cachedRope))
+        .isEqualTo(0);
+    assertWithMessage("cachedLiteral < cachedGreater")
+        .that(comparator.compare(cachedLiteral, cachedGreater) < 0)
+        .isTrue();
+    assertWithMessage("cachedRope < cachedGreater")
+        .that(comparator.compare(cachedRope, cachedGreater) < 0)
+        .isTrue();
+  }
+
+  @Test
+  public void testCompare_unalignedArrayOffsets() throws Exception {
+    Comparator<ByteString> comparator = ByteString.unsignedLexicographicalComparator();
+
+    // Test every combination of unaligned array offsets (1..7) for both operands
+    byte[] backing1 = new byte[64];
+    byte[] backing2 = new byte[64];
+    Arrays.fill(backing1, (byte) 0xAA);
+    Arrays.fill(backing2, (byte) 0xAA);
+
+    for (int offset1 = 0; offset1 < 8; offset1++) {
+      for (int offset2 = 0; offset2 < 8; offset2++) {
+        for (int length = 0; length <= 24; length++) {
+          ByteString bs1 = ByteString.copyFrom(backing1).substring(offset1, offset1 + length);
+          ByteString bs2 = ByteString.copyFrom(backing2).substring(offset2, offset2 + length);
+          assertWithMessage(
+                  "Equal unaligned slices (" + offset1 + ", " + offset2 + ", len=" + length + ")")
+              .that(comparator.compare(bs1, bs2))
+              .isEqualTo(0);
+
+          if (length > 0) {
+            byte[] backingModified = backing2.clone();
+            backingModified[offset2 + length - 1] = (byte) 0xFF; // greater
+            ByteString bsGreater =
+                ByteString.copyFrom(backingModified).substring(offset2, offset2 + length);
+            assertWithMessage(
+                    "bs1 < bsGreater (" + offset1 + ", " + offset2 + ", len=" + length + ")")
+                .that(comparator.compare(bs1, bsGreater) < 0)
+                .isTrue();
+          }
+        }
+      }
+    }
+  }
+
+  private static void assertConsistentWithOracle(
+      ByteString a, ByteString b, Comparator<ByteString> comparator) {
+    int actual = comparator.compare(a, b);
+    int expected = oracleCompare(a, b);
+
+    assertWithMessage("Comparison of " + a + " vs " + b)
+        .that(Integer.signum(actual))
+        .isEqualTo(Integer.signum(expected));
+
+    // Equality check to cover vectorized subArrayEquals path
+    assertWithMessage("Equality of " + a + " vs " + b).that(a.equals(b)).isEqualTo(expected == 0);
+
+    // Antisymmetry: signum(cmp(b, a)) == -signum(cmp(a, b))
+    int reverse = comparator.compare(b, a);
+    assertWithMessage("Antisymmetry of " + a + " vs " + b)
+        .that(Integer.signum(reverse))
+        .isEqualTo(-Integer.signum(actual));
+
+    // Reflexivity: cmp(a, a) == 0
+    assertWithMessage("Reflexivity of " + a).that(comparator.compare(a, a)).isEqualTo(0);
+  }
+
+  private static int oracleCompare(ByteString a, ByteString b) {
+    int min = Math.min(a.size(), b.size());
+    for (int i = 0; i < min; i++) {
+      int aByte = a.byteAt(i) & 0xFF;
+      int bByte = b.byteAt(i) & 0xFF;
+      if (aByte != bByte) {
+        return Integer.compare(aByte, bByte);
+      }
+    }
+    return Integer.compare(a.size(), b.size());
+  }
+
+  @Test
   public void testSubstring_beginIndex() {
     byte[] bytes = getTestBytes();
     ByteString substring = ByteString.copyFrom(bytes).substring(500);
@@ -572,7 +896,8 @@ public class ByteStringTest {
   @Test
   public void testToString() {
     String toString =
-        ByteString.copyFrom("Here are some bytes: \t\u00a1".getBytes(StandardCharsets.UTF_8)).toString();
+        ByteString.copyFrom("Here are some bytes: \t\u00a1".getBytes(StandardCharsets.UTF_8))
+            .toString();
     assertWithMessage(toString).that(toString.contains("size=24")).isTrue();
     assertWithMessage(toString)
         .that(toString.contains("contents=\"Here are some bytes: \\t\\302\\241\""))

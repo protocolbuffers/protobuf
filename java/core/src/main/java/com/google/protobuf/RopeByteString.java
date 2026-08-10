@@ -716,13 +716,13 @@ final class RopeByteString extends ByteString {
    *
    * <p>This iterator is used to implement {@link RopeByteString#equalsFragments(ByteString)}.
    */
-  private static final class PieceIterator implements Iterator<LeafByteString> {
+  static final class PieceIterator implements Iterator<LeafByteString> {
     private final ArrayDeque<RopeByteString> breadCrumbs;
     private LeafByteString next;
 
-    private PieceIterator(ByteString root) {
-      if (root instanceof RopeByteString) {
-        RopeByteString rbs = (RopeByteString) root;
+    PieceIterator(ByteString root) {
+      root = ByteString.unwrap(root);
+      if (root instanceof RopeByteString rbs) {
         breadCrumbs = new ArrayDeque<>(rbs.getTreeDepth());
         breadCrumbs.push(rbs);
         next = getLeafByLeft(rbs.left);
@@ -733,11 +733,10 @@ final class RopeByteString extends ByteString {
     }
 
     private LeafByteString getLeafByLeft(ByteString root) {
-      ByteString pos = root;
-      while (pos instanceof RopeByteString) {
-        RopeByteString rbs = (RopeByteString) pos;
+      ByteString pos = ByteString.unwrap(root);
+      while (pos instanceof RopeByteString rbs) {
         breadCrumbs.push(rbs);
-        pos = rbs.left;
+        pos = ByteString.unwrap(rbs.left);
       }
       return (LeafByteString) pos;
     }
