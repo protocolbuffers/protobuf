@@ -378,10 +378,12 @@ TEST(GeneratedCode, DeepCloneMessageWithUnknowns) {
   upb_Arena_Free(encode_arena);
   // Read unknown data from clone and verify.
   std::string cloned_unknown_data;
-  upb_StringView unknown;
+  upb_MessageUnknown unknown;
   uintptr_t iter = kUpb_Message_UnknownBegin;
-  while (upb_Message_NextUnknown(UPB_UPCAST(clone), &unknown, &iter)) {
-    cloned_unknown_data.append(unknown.data, unknown.size);
+  while (upb_Message_NextUnknown2(UPB_UPCAST(clone), &unknown, &iter)) {
+    ASSERT_EQ(unknown.type, kUpb_MessageUnknownType_StringView);
+    cloned_unknown_data.append(unknown.value.bytes.data,
+                               unknown.value.bytes.size);
   }
   EXPECT_EQ(unknown_data, cloned_unknown_data);
   upb_Arena_Free(clone_arena);
@@ -532,10 +534,12 @@ TEST(GeneratedCode, DeepCloneHandlesClearedExtensions) {
 
 std::vector<std::string_view> GetUnknownFields(const upb_Message* msg) {
   std::vector<std::string_view> result;
-  upb_StringView data;
+  upb_MessageUnknown data;
   uintptr_t iter = kUpb_Message_UnknownBegin;
-  while (upb_Message_NextUnknown(msg, &data, &iter)) {
-    result.push_back(std::string_view(data.data, data.size));
+  while (upb_Message_NextUnknown2(msg, &data, &iter)) {
+    EXPECT_EQ(data.type, kUpb_MessageUnknownType_StringView);
+    result.push_back(
+        std::string_view(data.value.bytes.data, data.value.bytes.size));
   }
   return result;
 }
@@ -566,12 +570,14 @@ TEST(GeneratedCode, ShallowCopyIncludesUnknowns) {
 
   // Modify the unknown data view in dst to ensure it's a separate view.
   // Use upb_Message_DeleteUnknown to delete a trailing part.
-  upb_StringView dst_data;
+  upb_MessageUnknown dst_unknown;
   uintptr_t iter = kUpb_Message_UnknownBegin;
-  EXPECT_TRUE(upb_Message_NextUnknown(UPB_UPCAST(dst), &dst_data, &iter));
+  EXPECT_TRUE(upb_Message_NextUnknown2(UPB_UPCAST(dst), &dst_unknown, &iter));
+  ASSERT_EQ(dst_unknown.type, kUpb_MessageUnknownType_StringView);
   upb_StringView to_delete;
   to_delete.size = 1;
-  to_delete.data = dst_data.data + dst_data.size - to_delete.size;
+  to_delete.data = dst_unknown.value.bytes.data + dst_unknown.value.bytes.size -
+                   to_delete.size;
   upb_Message_DeleteUnknownStatus status =
       upb_Message_DeleteUnknown(UPB_UPCAST(dst), &to_delete, &iter, arena);
   EXPECT_EQ(status, kUpb_DeleteUnknown_DeletedLast);

@@ -206,6 +206,7 @@ cc_test(
         "//upb/base",
         "//upb/mem",
         "//upb/message",
+        "//upb/message:message_unknowns",
         "//upb/mini_descriptor",
         "//upb/mini_descriptor:internal",
         "//upb/mini_table",
