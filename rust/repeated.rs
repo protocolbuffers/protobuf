@@ -568,11 +568,55 @@ impl<'borrow, T: Singular> iter::IntoIterator for &'borrow RepeatedMut<'_, T> {
 }
 
 /// An iterator over the mutable values inside of a [`RepeatedMut`].
+///
+/// **WARNING**: This is transitioning to a **Lending Iterator**. Standard `for` loops will soon be
+/// unsupported. Use `while let Some(item) = iter.next()` instead.
 pub struct RepeatedMutIter<'msg, T> {
     inner: InnerRepeatedMut<'msg>,
     current_index: usize,
     end_index: usize,
     _phantom: PhantomData<&'msg mut T>,
+}
+
+impl<'msg, T: Message> RepeatedMutIter<'msg, T> {
+    #[inline]
+    pub fn next(&mut self) -> Option<Mut<'_, T>> {
+        if self.current_index >= self.end_index {
+            return None;
+        }
+        let index = self.current_index;
+        self.current_index += 1;
+
+        // SAFETY: index is valid.
+        let val = unsafe {
+            let temp_repeated = RepeatedMut::from_inner(Private, self.inner);
+            T::repeated_get_mut_unchecked(Private, temp_repeated, index)
+        };
+
+        Some(val)
+    }
+
+    #[inline]
+    pub fn len(&self) -> usize {
+        self.end_index - self.current_index
+    }
+
+    #[inline]
+    pub fn next_back(&mut self) -> Option<Mut<'_, T>> {
+        if self.current_index >= self.end_index {
+            return None;
+        }
+        self.end_index -= 1;
+        let index = self.end_index;
+
+        // SAFETY: index is guaranteed to be in bounds.
+        let val = unsafe {
+            let temp_repeated = RepeatedMut::from_inner(Private, self.inner);
+            T::repeated_get_mut_unchecked(Private, temp_repeated, index)
+        };
+
+        Some(val)
+    }
 }
 
 impl<'msg, T: Message> iter::Iterator for RepeatedMutIter<'msg, T> {
