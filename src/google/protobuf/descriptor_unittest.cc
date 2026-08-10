@@ -72,6 +72,7 @@
 #include "google/protobuf/port.h"
 #include "google/protobuf/test_textproto.h"
 #include "google/protobuf/text_format.h"
+#include "google/protobuf/thread.h"
 #include "google/protobuf/unittest.pb.h"
 #include "google/protobuf/unittest_custom_options.pb.h"
 #include "google/protobuf/unittest_delimited.pb.h"

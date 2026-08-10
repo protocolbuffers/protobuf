@@ -96,6 +96,7 @@
 #include "google/protobuf/symbol.h"
 #include "google/protobuf/symbol_checker.h"
 #include "google/protobuf/text_format.h"
+#include "google/protobuf/thread.h"
 #include "google/protobuf/unknown_field_set.h"
 
 
@@ -4256,6 +4257,20 @@ const FileDescriptor* DescriptorPool::BuildFileCollectingErrors(
   return nullptr;
 }
 
+static bool ShouldSpawnInNewThread() {
+  if (!internal::CanSpawnNewThreads()) return false;
+
+  constexpr size_t kMinimumStackSizeRequired =
+      internal::HasAnySanitizer() ? 10'000 : 5'000;
+
+  auto stack_remaining = internal::GetEstimatedThreadStackRemaining();
+  if (stack_remaining.has_value() &&
+      stack_remaining < kMinimumStackSizeRequired) {
+    return true;
+  }
+  return false;
+}
+
 const FileDescriptor* DescriptorPool::BuildFileFromDatabase(
     const FileDescriptorProto& proto,
     DeferredValidation& deferred_validation) const {
@@ -4272,8 +4287,14 @@ const FileDescriptor* DescriptorPool::BuildFileFromDatabase(
             ->BuildFile(proto);
   };
   if (dispatcher_ != nullptr) {
+    PROTOBUF_DEBUG_COUNTER("BuildFileFromDatabase.Dispatcher").Inc();
     (*dispatcher_)(build_file);
+  } else if (ShouldSpawnInNewThread()) {
+    // Not enough stack space here. Spawn in a separate thread.
+    PROTOBUF_DEBUG_COUNTER("BuildFileFromDatabase.SpawnThread").Inc();
+    internal::RunSyncInSeparateThread(build_file);
   } else {
+    PROTOBUF_DEBUG_COUNTER("BuildFileFromDatabase.Local").Inc();
     build_file();
   }
   if (result == nullptr) {
