@@ -544,6 +544,26 @@ upb_Message_GetOrCreateMutableMessage(struct upb_Message* msg,
   return sub_message;
 }
 
+UPB_INLINE bool UPB_PRIVATE(_upb_Message_FieldIsSet)(
+    const struct upb_Message* msg, const upb_MiniTableField* field) {
+  UPB_ASSUME(!upb_MiniTableField_IsExtension(field));
+  if (upb_MiniTableField_HasPresence(field)) {
+    return upb_Message_HasBaseField(msg, field);
+  }
+  if (upb_MiniTableField_IsArray(field)) {
+    const upb_Array* arr = upb_Message_GetArray(msg, field);
+    return arr != NULL && upb_Array_Size(arr) > 0;
+  }
+  if (upb_MiniTableField_IsMap(field)) {
+    const struct upb_Map* map = upb_Message_GetMap(msg, field);
+    return map != NULL && _upb_Map_Size(map) > 0;
+  }
+  // For Proto3 scalar fields (presence is implicit), we check if the field
+  // value is equal to the default value.
+  const void* data = UPB_PRIVATE(_upb_Message_DataPtr)(msg, field);
+  return !UPB_PRIVATE(_upb_MiniTableField_DataIsZero)(field, data);
+}
+
 UPB_API_INLINE upb_StringView
 upb_Message_GetString(const struct upb_Message* msg,
                       const upb_MiniTableField* f, upb_StringView default_val) {

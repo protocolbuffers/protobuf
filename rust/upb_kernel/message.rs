@@ -444,7 +444,7 @@ where
                 self.get_ptr(Private).raw(),
                 src.as_view().get_ptr(Private).raw(),
                 <Self::Proxied as AssociatedMiniTable>::mini_table(),
-                generated_extension_registry().as_ptr(),
+                /* options= */ 0,
                 self.get_arena(Private).raw()
             ));
         }

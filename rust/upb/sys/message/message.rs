@@ -209,14 +209,13 @@ unsafe extern "C" {
 
     /// # Safety
     /// - `dst`, `src`, `mini_table` and `arena` must be valid to deref
-    /// - `extreg` must be valid to deref or nullptr
     /// - `mini_table` must be the MiniTable associated with both `dst` and
     ///   `src`
     pub fn upb_Message_MergeFrom(
         dst: RawMessage,
         src: RawMessage,
         mini_table: RawMiniTable,
-        extreg: *const upb_ExtensionRegistry,
+        options: core::ffi::c_int,
         arena: RawArena,
     ) -> bool;
 
