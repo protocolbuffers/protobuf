@@ -358,17 +358,6 @@ void ImmutableMessageLiteGenerator::Generate(io::Printer* printer) {
   printer->Outdent();
   printer->Print("}\n");
 
-  printer->Print(
-      "case GET_DEFAULT_INSTANCE: {\n"
-      "  return DEFAULT_INSTANCE;\n"
-      "}\n"
-      "case GET_PARSER: {\n"
-      "  return "
-      "com.google.protobuf.GeneratedMessageLite.getParserForClass($classname$."
-      "class);\n"
-      "}\n",
-      "classname", name_resolver_->GetImmutableClassName(descriptor_));
-
   // GET_MEMOIZED_IS_INITIALIZED and SET_MEMOIZED_IS_INITIALIZED cases are only
   // generated for messages that cannot be statically proven to never
   // transitively contain a required field. For other messages, these
