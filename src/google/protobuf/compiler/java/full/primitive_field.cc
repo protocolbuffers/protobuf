@@ -578,7 +578,15 @@ void ImmutablePrimitiveOneofFieldGenerator::GenerateBuilderSetMethod(
                  "$deprecation$public Builder "
                  "${$set$capitalized_name$$}$($type$ value) {\n"
                  "  $null_check$\n"
-                 "  $set_oneof_case_message$;\n"
+                 "  switch ($oneof_name$Case_) {\n"
+                 "  default:\n"
+                 "    clear$oneof_capitalized_name$HasBits(); // fallthrough\n"
+                 "  case 0:\n"
+                 "    $set_oneof_case_message$;\n"
+                 "    $set_has_field_bit$ // fallthrough\n"
+                 "  case $number$:\n"
+                 "    break;\n"
+                 "  }\n"
                  "  $oneof_name$_ = value;\n"
                  "  $on_changed$\n"
                  "  return this;\n"
@@ -633,7 +641,15 @@ void ImmutablePrimitiveOneofFieldGenerator::GenerateBuilderParsingCode(
     io::Printer* printer) const {
   printer->Print(variables_,
                  "$oneof_name$_ = input.read$capitalized_type$();\n"
-                 "$set_oneof_case_message$;\n");
+                 "switch ($oneof_name$Case_) {\n"
+                 "default:\n"
+                 "  clear$oneof_capitalized_name$HasBits(); // fallthrough\n"
+                 "case 0:\n"
+                 "  $set_oneof_case_message$;\n"
+                 "  $set_has_field_bit$ // fallthrough\n"
+                 "case $number$:\n"
+                 "  break;\n"
+                 "}\n");
 }
 
 void ImmutablePrimitiveOneofFieldGenerator::GenerateSerializationCode(

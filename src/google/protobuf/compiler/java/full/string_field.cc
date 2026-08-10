@@ -654,7 +654,15 @@ void ImmutableStringOneofFieldGenerator::GenerateBuilderSetMethod(
                  "$deprecation$public Builder ${$set$capitalized_name$$}$(\n"
                  "    java.lang.String value) {\n"
                  "  $null_check$\n"
-                 "  $set_oneof_case_message$;\n"
+                 "  switch ($oneof_name$Case_) {\n"
+                 "  default:\n"
+                 "    clear$oneof_capitalized_name$HasBits(); // fallthrough\n"
+                 "  case 0:\n"
+                 "    $set_oneof_case_message$;\n"
+                 "    $set_has_field_bit$ // fallthrough\n"
+                 "  case $number$:\n"
+                 "    break;\n"
+                 "  }\n"
                  "  $oneof_name$_ = value;\n"
                  "  $on_changed$\n"
                  "  return this;\n"
@@ -695,7 +703,15 @@ void ImmutableStringOneofFieldGenerator::GenerateBuilderSetBytesMethod(
     printer->Print(variables_, "  checkByteStringIsUtf8(value);\n");
   }
   printer->Print(variables_,
-                 "  $set_oneof_case_message$;\n"
+                 "  switch ($oneof_name$Case_) {\n"
+                 "  default:\n"
+                 "    clear$oneof_capitalized_name$HasBits(); // fallthrough\n"
+                 "  case 0:\n"
+                 "    $set_oneof_case_message$;\n"
+                 "    $set_has_field_bit$ // fallthrough\n"
+                 "  case $number$:\n"
+                 "    break;\n"
+                 "  }\n"
                  "  $oneof_name$_ = value;\n"
                  "  $on_changed$\n"
                  "  return this;\n"
@@ -722,7 +738,15 @@ void ImmutableStringOneofFieldGenerator::GenerateMergingCode(
   // Allow a slight breach of abstraction here in order to avoid forcing
   // all string fields to Strings when copying fields from a Message.
   printer->Print(variables_,
-                 "$set_oneof_case_message$;\n"
+                 "switch ($oneof_name$Case_) {\n"
+                 "default:\n"
+                 "  clear$oneof_capitalized_name$HasBits(); // fallthrough\n"
+                 "case 0:\n"
+                 "  $set_oneof_case_message$;\n"
+                 "  $set_has_field_bit$ // fallthrough\n"
+                 "case $number$:\n"
+                 "  break;\n"
+                 "}\n"
                  "$oneof_name$_ = other.$oneof_name$_;\n"
                  "$on_changed$\n");
 }
@@ -736,14 +760,30 @@ void ImmutableStringOneofFieldGenerator::GenerateBuilderParsingCode(
     io::Printer* printer) const {
   if (CheckUtf8(descriptor_)) {
     printer->Print(variables_,
-                   "$set_oneof_case_message$;\n"
+                   "switch ($oneof_name$Case_) {\n"
+                   "default:\n"
+                   "  clear$oneof_capitalized_name$HasBits(); // fallthrough\n"
+                   "case 0:\n"
+                   "  $set_oneof_case_message$;\n"
+                   "  $set_has_field_bit$ // fallthrough\n"
+                   "case $number$:\n"
+                   "  break;\n"
+                   "}\n"
                    "$oneof_name$_ = "
                    "input.readStringRequireUtf8();\n"
     );
   } else {
     printer->Print(variables_,
                    "com.google.protobuf.ByteString bs = input.readBytes();\n"
-                   "$set_oneof_case_message$;\n"
+                   "switch ($oneof_name$Case_) {\n"
+                   "default:\n"
+                   "  clear$oneof_capitalized_name$HasBits(); // fallthrough\n"
+                   "case 0:\n"
+                   "  $set_oneof_case_message$;\n"
+                   "  $set_has_field_bit$ // fallthrough\n"
+                   "case $number$:\n"
+                   "  break;\n"
+                   "}\n"
                    "$oneof_name$_ = bs;\n");
   }
 }

@@ -18,10 +18,7 @@
 #include <vector>
 
 #include "absl/container/btree_map.h"
-#include "absl/container/btree_set.h"
-#include "absl/container/flat_hash_map.h"
 #include "absl/log/absl_check.h"
-#include "absl/strings/ascii.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_replace.h"
 #include "absl/strings/string_view.h"
@@ -30,7 +27,7 @@
 #include "google/protobuf/compiler/java/context.h"
 #include "google/protobuf/compiler/java/doc_comment.h"
 #include "google/protobuf/compiler/java/field_common.h"
-#include "google/protobuf/compiler/java/generator_factory.h"
+#include "google/protobuf/compiler/java/generator_common.h"
 #include "google/protobuf/compiler/java/helpers.h"
 #include "google/protobuf/compiler/java/full/enum.h"
 #include "google/protobuf/compiler/java/full/extension.h"
@@ -128,7 +125,7 @@ void MessageBuilderGenerator::Generate(io::Printer* printer) {
 
   // oneof
   for (const auto& kv : oneof_generators_) {
-    kv.second->GenerateCommonBuilderMethods(printer);
+    kv.second->GenerateCommonBuilderMethods(printer, field_generators_);
   }
 
   // Integers for bit fields.
@@ -571,10 +568,6 @@ void MessageBuilderGenerator::GenerateBuildPartial(io::Printer* printer) {
     }
   }
 
-  if (!oneof_generators_.empty()) {
-    printer->Print("buildPartialOneofs(result);\n");
-  }
-
   printer->Outdent();
   printer->Print(
       "  onBuilt();\n"
@@ -584,69 +577,44 @@ void MessageBuilderGenerator::GenerateBuildPartial(io::Printer* printer) {
       "classname", name_resolver_->GetImmutableClassName(descriptor_));
 
   // Build all fields in shards organized by bitfield membership.
-  int start_field = 0;
   for (int i = 0; i < totalInts; i++) {
-    start_field = GenerateBuildPartialShard(printer, i, start_field);
-  }
-
-  // Build Oneofs
-  if (!oneof_generators_.empty()) {
-    printer->Print("private void buildPartialOneofs($classname$ result) {\n",
-                   "classname",
-                   name_resolver_->GetImmutableClassName(descriptor_));
-    printer->Indent();
-    for (const auto& kv : oneof_generators_) {
-      kv.second->GenerateBuildingCode(printer, field_generators_);
-    }
-    printer->Outdent();
-    printer->Print("}\n\n");
+    GenerateBuildPartialShard(printer, i);
   }
 }
 
-int MessageBuilderGenerator::GenerateBuildPartialShard(io::Printer* printer,
-                                                       int shard,
-                                                       int first_field) {
+void MessageBuilderGenerator::GenerateBuildPartialShard(io::Printer* printer,
+                                                        int shard) {
   printer->Print(
       "private void buildPartial_autosplit_$shard$($classname$ result) {\n"
-      "  int from_$bit_field_name$ = $bit_field_name$;\n",
+      "  int from_$bit_field_name$ = $bit_field_name$;\n"
+      "  int to_$bit_field_name$ = 0;\n",
       "classname", name_resolver_->GetImmutableClassName(descriptor_), "shard",
       absl::StrCat(shard), "bit_field_name", GetBitFieldName(shard));
   printer->Indent();
-  absl::btree_set<int> declared_to_bitfields;
 
-  int bit = 0;
-  int next = first_field;
-  for (; bit < 32 && next < descriptor_->field_count(); ++next, ++bit) {
+  int i = shard * 32;
+  int shard_end = std::min(i + 32, static_cast<int>(field_generators_.size()));
+  for (; i < shard_end; ++i) {
     const ImmutableFieldGenerator& field =
-        field_generators_.get(descriptor_->field(next));
-
-    // Skip oneof fields that are handled separately
-    if (IsRealOneof(descriptor_->field(next))) {
-      continue;
-    }
-
-    // Track message bits if necessary
-    int to_bitfield = field.GetBitIndex() / 32;
-    if (declared_to_bitfields.count(to_bitfield) == 0) {
-      printer->Print("int to_$bit_field_name$ = 0;\n", "bit_field_name",
-                     GetBitFieldName(to_bitfield));
-      declared_to_bitfields.insert(to_bitfield);
-    }
+        field_generators_.getInInsertOrder(i);
 
     // Copy the field from the builder to the message
     field.GenerateBuildingCode(printer);
   }
 
-  // Copy the bit field results to the generated message
-  for (int to_bitfield : declared_to_bitfields) {
-    printer->Print("result.$bit_field_name$ |= to_$bit_field_name$;\n",
-                   "bit_field_name", GetBitFieldName(to_bitfield));
+  for (const auto& kv : oneof_generators_) {
+    if (kv.second->HasScalarFields(shard)) {
+      kv.second->GenerateBuildingCode(printer, shard);
+    }
   }
 
   printer->Outdent();
-  printer->Print("}\n\n");
 
-  return next;
+  // Copy the bit field results to the generated message
+  printer->Print(
+      "  result.$bit_field_name$ |= to_$bit_field_name$;\n"
+      "}\n\n",
+      "bit_field_name", GetBitFieldName(shard));
 }
 
 // ===================================================================

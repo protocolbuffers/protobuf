@@ -494,11 +494,9 @@ void ImmutableMessageFieldGenerator::GenerateBuildingCode(
                  "if ($get_has_field_bit_from_local$) {\n"
                  "  result.$name$_ = $name$Builder_ == null\n"
                  "      ? $name$_\n"
-                 "      : $name$Builder_.build();\n");
-  if (GetNumBits() > 0) {
-    printer->Print(variables_, "  $set_has_field_bit_to_local$;\n");
-  }
-  printer->Print("}\n");
+                 "      : $name$Builder_.build();\n"
+                 "  $set_has_field_bit_to_local$;\n"
+                 "}\n");
 }
 
 void ImmutableMessageFieldGenerator::GenerateBuilderParsingCode(
@@ -679,7 +677,15 @@ void ImmutableMessageOneofFieldGenerator::GenerateBuilderSetMethod(
 
       "$name$Builder_.setMessage(value);\n",
 
-      "$set_oneof_case_message$;\n"
+      "switch ($oneof_name$Case_) {\n"
+      "default:\n"
+      "  clear$oneof_capitalized_name$HasBits(); // fallthrough\n"
+      "case 0:\n"
+      "  $set_oneof_case_message$;\n"
+      "  $set_has_field_bit$ // fallthrough\n"
+      "case $number$:\n"
+      "  break;\n"
+      "}\n"
       "return this;\n",
       Semantic::kSet);
 }
@@ -720,7 +726,15 @@ void ImmutableMessageOneofFieldGenerator::GenerateBuilderMergeMethod(
       "  $name$Builder_.setMessage(value);\n"
       "}\n",
 
-      "$set_oneof_case_message$;\n"
+      "switch ($oneof_name$Case_) {\n"
+      "default:\n"
+      "  clear$oneof_capitalized_name$HasBits(); // fallthrough\n"
+      "case 0:\n"
+      "  $set_oneof_case_message$;\n"
+      "  $set_has_field_bit$ // fallthrough\n"
+      "case $number$:\n"
+      "  break;\n"
+      "}\n"
       "return this;\n",
       Semantic::kSet);
 }
@@ -800,7 +814,15 @@ void ImmutableMessageOneofFieldGenerator::
       "            isClean());\n"
       "    $oneof_name$_ = null;\n"
       "  }\n"
-      "  $set_oneof_case_message$;\n"
+      "  switch ($oneof_name$Case_) {\n"
+      "  default:\n"
+      "    clear$oneof_capitalized_name$HasBits(); // fallthrough\n"
+      "  case 0:\n"
+      "    $set_oneof_case_message$;\n"
+      "    $set_has_field_bit$ // fallthrough\n"
+      "  case $number$:\n"
+      "    break;\n"
+      "  }\n"
       "  $on_changed$\n"
       "  return $name$Builder_;\n"
       "}\n");
@@ -842,9 +864,12 @@ void ImmutableMessageOneofFieldGenerator::GenerateBuilderClearCode(
 void ImmutableMessageOneofFieldGenerator::GenerateBuildingCode(
     io::Printer* printer) const {
   printer->Print(variables_,
-                 "if ($has_oneof_case_message$ &&\n"
-                 "    $name$Builder_ != null) {\n"
-                 "  result.$oneof_name$_ = $name$Builder_.build();\n"
+                 "if ($get_has_field_bit_from_local$) {\n"
+                 "  result.$oneof_name$_ = $name$Builder_ == null\n"
+                 "      ? $oneof_name$_\n"
+                 "      : $name$Builder_.build();\n"
+                 "  result.$oneof_name$Case_ = $number$;\n"
+                 "  $set_has_field_bit_to_local$;\n"
                  "}\n");
 }
 
@@ -862,14 +887,30 @@ void ImmutableMessageOneofFieldGenerator::GenerateBuilderParsingCode(
                    "    "
                    "internalGet$capitalized_name$FieldBuilder().getBuilder(),\n"
                    "    extensionRegistry);\n"
-                   "$set_oneof_case_message$;\n");
+                   "switch ($oneof_name$Case_) {\n"
+                   "default:\n"
+                   "  clear$oneof_capitalized_name$HasBits(); // fallthrough\n"
+                   "case 0:\n"
+                   "  $set_oneof_case_message$;\n"
+                   "  $set_has_field_bit$ // fallthrough\n"
+                   "case $number$:\n"
+                   "  break;\n"
+                   "}\n");
   } else {
     printer->Print(variables_,
                    "input.readMessage(\n"
                    "    "
                    "internalGet$capitalized_name$FieldBuilder().getBuilder(),\n"
                    "    extensionRegistry);\n"
-                   "$set_oneof_case_message$;\n");
+                   "switch ($oneof_name$Case_) {\n"
+                   "default:\n"
+                   "  clear$oneof_capitalized_name$HasBits(); // fallthrough\n"
+                   "case 0:\n"
+                   "  $set_oneof_case_message$;\n"
+                   "  $set_has_field_bit$ // fallthrough\n"
+                   "case $number$:\n"
+                   "  break;\n"
+                   "}\n");
   }
 }
 
