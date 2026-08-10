@@ -1483,3 +1483,172 @@ TEST(MessageTest, DeleteUnknown2Partial) {
     EXPECT_EQ(memcmp(unknown.value.bytes.data, region, 8), 0);
   }
 }
+
+TEST(MessageTest, NextSerializableField) {
+  upb::Arena arena;
+  upb_test_TestRequiredFields* test_msg =
+      upb_test_TestRequiredFields_new(arena.ptr());
+
+  const upb_MiniTable* mt = &upb_0test__TestRequiredFields_msg_init;
+  const upb_MiniTableField* f = nullptr;
+  uintptr_t iter = kUpb_Message_SerializableFieldBegin;
+
+  // 1. When no fields are set, iteration should return false immediately.
+  EXPECT_FALSE(
+      upb_Message_NextSerializableField(UPB_UPCAST(test_msg), mt, &f, &iter));
+
+  // 2. Set one field. Iteration should find exactly this field.
+  upb_test_TestRequiredFields_set_required_int32(test_msg, 42);
+  f = nullptr;
+  iter = kUpb_Message_SerializableFieldBegin;
+  EXPECT_TRUE(
+      upb_Message_NextSerializableField(UPB_UPCAST(test_msg), mt, &f, &iter));
+  ASSERT_NE(f, nullptr);
+  EXPECT_EQ(upb_MiniTableField_Number(f), 1);  // required_int32 is field 1
+
+  // Next step should return false.
+  EXPECT_FALSE(
+      upb_Message_NextSerializableField(UPB_UPCAST(test_msg), mt, &f, &iter));
+
+  // 3. Set another field. Iteration should find both.
+  upb_test_TestRequiredFields_set_required_int64(test_msg, 100);
+  f = nullptr;
+  iter = kUpb_Message_SerializableFieldBegin;
+
+  // First field: field 1
+  EXPECT_TRUE(
+      upb_Message_NextSerializableField(UPB_UPCAST(test_msg), mt, &f, &iter));
+  ASSERT_NE(f, nullptr);
+  EXPECT_EQ(upb_MiniTableField_Number(f), 1);
+
+  // Second field: field 3 (required_int64 is field 3)
+  EXPECT_TRUE(
+      upb_Message_NextSerializableField(UPB_UPCAST(test_msg), mt, &f, &iter));
+  ASSERT_NE(f, nullptr);
+  EXPECT_EQ(upb_MiniTableField_Number(f), 3);
+
+  // End of iteration
+  EXPECT_FALSE(
+      upb_Message_NextSerializableField(UPB_UPCAST(test_msg), mt, &f, &iter));
+}
+
+extern "C" const upb_MiniTable
+    protobuf_0test_0messages__proto3__TestAllTypesProto3_msg_init;
+
+TEST(MessageTest, NextSerializableFieldProto3) {
+  upb::Arena arena;
+  protobuf_test_messages_proto3_TestAllTypesProto3* msg =
+      protobuf_test_messages_proto3_TestAllTypesProto3_new(arena.ptr());
+  const upb_MiniTable* mt =
+      &protobuf_0test_0messages__proto3__TestAllTypesProto3_msg_init;
+
+  const upb_MiniTableField* f = nullptr;
+  uintptr_t iter = kUpb_Message_SerializableFieldBegin;
+
+  // 1. When no fields are set, iteration should return false immediately.
+  EXPECT_FALSE(
+      upb_Message_NextSerializableField(UPB_UPCAST(msg), mt, &f, &iter));
+
+  // 2. The field at MiniTable index 0: optional_int32 (number 1, index 0).
+  // Non-default value (123) should be serializable.
+  protobuf_test_messages_proto3_TestAllTypesProto3_set_optional_int32(msg, 123);
+  f = nullptr;
+  iter = kUpb_Message_SerializableFieldBegin;
+  EXPECT_TRUE(
+      upb_Message_NextSerializableField(UPB_UPCAST(msg), mt, &f, &iter));
+  ASSERT_NE(f, nullptr);
+  EXPECT_EQ(upb_MiniTableField_Number(f), 1);
+  EXPECT_FALSE(
+      upb_Message_NextSerializableField(UPB_UPCAST(msg), mt, &f, &iter));
+
+  // 3. Proto3 scalar fields set to default (0, empty string) vs non-default:
+  // - Setting a field to 0 or empty string should be ignored (skipped).
+  protobuf_test_messages_proto3_TestAllTypesProto3_set_optional_int32(
+      msg, 0);  // Reset
+  protobuf_test_messages_proto3_TestAllTypesProto3_set_optional_string(
+      msg, upb_StringView_FromString(""));  // Set to empty string
+  f = nullptr;
+  iter = kUpb_Message_SerializableFieldBegin;
+  EXPECT_FALSE(
+      upb_Message_NextSerializableField(UPB_UPCAST(msg), mt, &f, &iter));
+
+  // 4. Repeated fields and map fields (empty allocated vs non-empty):
+  // - Empty allocated repeated field should be ignored.
+  protobuf_test_messages_proto3_TestAllTypesProto3_resize_repeated_int32(
+      msg, 0, arena.ptr());
+  f = nullptr;
+  iter = kUpb_Message_SerializableFieldBegin;
+  EXPECT_FALSE(
+      upb_Message_NextSerializableField(UPB_UPCAST(msg), mt, &f, &iter));
+
+  // - Non-empty repeated field should be included.
+  protobuf_test_messages_proto3_TestAllTypesProto3_add_repeated_int32(
+      msg, 99, arena.ptr());
+  f = nullptr;
+  iter = kUpb_Message_SerializableFieldBegin;
+  EXPECT_TRUE(
+      upb_Message_NextSerializableField(UPB_UPCAST(msg), mt, &f, &iter));
+  ASSERT_NE(f, nullptr);
+  EXPECT_EQ(upb_MiniTableField_Number(f), 31);
+  EXPECT_FALSE(
+      upb_Message_NextSerializableField(UPB_UPCAST(msg), mt, &f, &iter));
+
+  // Reset/Clear repeated_int32
+  protobuf_test_messages_proto3_TestAllTypesProto3_resize_repeated_int32(
+      msg, 0, arena.ptr());
+
+  // - Empty allocated map field should be ignored.
+  // Set a key to allocate the map, then delete the key to empty it.
+  protobuf_test_messages_proto3_TestAllTypesProto3_map_int32_int32_set(
+      msg, 1, 2, arena.ptr());
+  protobuf_test_messages_proto3_TestAllTypesProto3_map_int32_int32_delete(msg,
+                                                                          1);
+  f = nullptr;
+  iter = kUpb_Message_SerializableFieldBegin;
+  EXPECT_FALSE(
+      upb_Message_NextSerializableField(UPB_UPCAST(msg), mt, &f, &iter));
+
+  // - Non-empty map field should be included.
+  protobuf_test_messages_proto3_TestAllTypesProto3_map_int32_int32_set(
+      msg, 1, 2, arena.ptr());
+  f = nullptr;
+  iter = kUpb_Message_SerializableFieldBegin;
+  EXPECT_TRUE(
+      upb_Message_NextSerializableField(UPB_UPCAST(msg), mt, &f, &iter));
+  ASSERT_NE(f, nullptr);
+  EXPECT_EQ(upb_MiniTableField_Number(f), 56);
+  EXPECT_FALSE(
+      upb_Message_NextSerializableField(UPB_UPCAST(msg), mt, &f, &iter));
+
+  // 5. Fields in oneofs (presence test for default values):
+  // Since oneofs have presence, setting a oneof scalar to its default value (0)
+  // should be included.
+  protobuf_test_messages_proto3_TestAllTypesProto3* msg_oneof =
+      protobuf_test_messages_proto3_TestAllTypesProto3_new(arena.ptr());
+  protobuf_test_messages_proto3_TestAllTypesProto3_set_oneof_uint32(msg_oneof,
+                                                                    0);
+  f = nullptr;
+  iter = kUpb_Message_SerializableFieldBegin;
+  EXPECT_TRUE(
+      upb_Message_NextSerializableField(UPB_UPCAST(msg_oneof), mt, &f, &iter));
+  ASSERT_NE(f, nullptr);
+  EXPECT_EQ(upb_MiniTableField_Number(f), 111);
+  EXPECT_FALSE(
+      upb_Message_NextSerializableField(UPB_UPCAST(msg_oneof), mt, &f, &iter));
+
+  // 6. Submessages (NULL vs allocated):
+  // - NULL submessage (default) should be ignored.
+  // - Allocated submessage should be included.
+  protobuf_test_messages_proto3_TestAllTypesProto3* msg_sub =
+      protobuf_test_messages_proto3_TestAllTypesProto3_new(arena.ptr());
+  protobuf_test_messages_proto3_TestAllTypesProto3_mutable_optional_nested_message(
+      msg_sub, arena.ptr());
+  f = nullptr;
+  iter = kUpb_Message_SerializableFieldBegin;
+  EXPECT_TRUE(
+      upb_Message_NextSerializableField(UPB_UPCAST(msg_sub), mt, &f, &iter));
+  ASSERT_NE(f, nullptr);
+  EXPECT_EQ(upb_MiniTableField_Number(f), 18);
+  EXPECT_FALSE(
+      upb_Message_NextSerializableField(UPB_UPCAST(msg_sub), mt, &f, &iter));
+}

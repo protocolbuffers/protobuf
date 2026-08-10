@@ -21,6 +21,7 @@
 #include "upb/message/internal/message.h"
 #include "upb/message/internal/types.h"
 #include "upb/mini_table/extension.h"
+#include "upb/mini_table/field.h"
 #include "upb/mini_table/message.h"
 
 // Must be last.
@@ -82,6 +83,24 @@ UPB_INLINE bool upb_Message_NextExtension(const upb_Message* msg,
 UPB_INLINE bool UPB_PRIVATE(_upb_Message_NextExtensionReverse)(
     const struct upb_Message* msg, const upb_MiniTableExtension** out_e,
     upb_MessageValue* out_v, uintptr_t* iter);
+
+#define kUpb_Message_SerializableFieldBegin 0
+
+// Iterates over all fields in the message that are set/present
+// (non-empty/non-default).
+//
+// To start iterating, set `iter = kUpb_Message_SerializableFieldBegin`.
+// Returns true if a serializable field was found, sets `*f` to that field,
+// and updates `*iter`. Returns false when iteration is complete.
+//
+//   const upb_MiniTableField* f;
+//   uintptr_t iter = kUpb_Message_SerializableFieldBegin;
+//   while (upb_Message_NextSerializableField(msg, mt, &f, &iter)) {
+//     // ...
+//   }
+UPB_NODISCARD UPB_API bool upb_Message_NextSerializableField(
+    const upb_Message* msg, const upb_MiniTable* mt,
+    const upb_MiniTableField** f, uintptr_t* iter);
 
 // Mark a message and all of its descendents as frozen/immutable.
 UPB_API void upb_Message_Freeze(upb_Message* msg, const upb_MiniTable* m);
