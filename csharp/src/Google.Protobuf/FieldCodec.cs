@@ -446,18 +446,12 @@ namespace Google.Protobuf
                 null); // Default value for the wrapper
         }
 
-        // Bulk size calculators for packed varint fields.
-        //
-        // Sizing a packed field walks every element, and for a varint codec each
-        // step is an invocation of the ValueSizeCalculator delegate, which cannot be
-        // inlined. Handing RepeatedField<T> a calculator for the whole run instead
-        // lets the size computation inline into a tight loop; the arithmetic is
-        // unchanged, so the totals are identical.
-        //
-        // Fixed-size codecs need none of this: their packed size is a multiplication.
-        // These are cached in static fields rather than converted from a method group
-        // at each call, so a codec per generated field does not mean a delegate per
-        // generated field.
+        // Bulk size calculators for packed varint fields. Sizing a packed field walks
+        // every element, and calling ValueSizeCalculator per element costs a delegate
+        // invocation per step that cannot be inlined; a calculator for the whole run
+        // lets the size computation inline into the loop instead. Held in static fields
+        // rather than converted from a method group at each call, so a codec per
+        // generated field does not mean a delegate per generated field.
 
         private static readonly Func<int[], int, int> PackedInt32SizeCalculator = CalculatePackedInt32Size;
         private static readonly Func<int[], int, int> PackedSInt32SizeCalculator = CalculatePackedSInt32Size;
@@ -726,12 +720,10 @@ namespace Google.Protobuf
         /// Returns a size calculator for a whole packed run, or null if this codec has none.
         /// </summary>
         /// <remarks>
-        /// Only the varint codecs supply one, and only because they are the codecs for which
-        /// sizing a packed field is a per-element delegate call rather than a multiplication.
-        /// A codec cannot be recognised as one of those from outside: <see cref="FixedSize"/>
-        /// is 0 for every varint codec, and the element type does not identify the encoding
-        /// either, since fixed32 and uint32 are both <c>FieldCodec&lt;uint&gt;</c>. So the
-        /// factory methods hand it over instead.
+        /// Only the varint codecs supply one, and the factory methods have to, because such a
+        /// codec cannot be recognised from outside: <see cref="FixedSize"/> is 0 for every
+        /// varint codec, and the element type does not identify the encoding either, since
+        /// fixed32 and uint32 are both <c>FieldCodec&lt;uint&gt;</c>.
         /// </remarks>
         internal Func<T[], int, int> PackedSizeCalculator { get; }
 

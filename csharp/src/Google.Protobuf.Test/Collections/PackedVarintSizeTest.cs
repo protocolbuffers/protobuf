@@ -21,9 +21,9 @@ namespace Google.Protobuf.Collections
     /// <remarks>
     /// <para>
     /// Expectations here are hand-computed wire bytes and hand-counted lengths, not
-    /// values derived by running the encoding rules a second time. A test that
-    /// recomputes the expectation the same way the code does will agree with the
-    /// code whether or not either is right.
+    /// values derived by running the encoding rules a second time: a test that
+    /// recomputes the expectation the way the code does agrees with the code whether
+    /// or not either is right.
     /// </para>
     /// <para>
     /// These use TestPackedTypes rather than TestAllTypes: unittest.proto is proto2,
@@ -36,10 +36,9 @@ namespace Google.Protobuf.Collections
     public class PackedVarintSizeTest
     {
         /// <summary>
-        /// The declared size must match the bytes actually produced. Serializing to a
-        /// stream rather than via ToByteArray is deliberate: ToByteArray allocates its
-        /// buffer at CalculateSize(), so comparing against that array's length would
-        /// compare a number with itself.
+        /// Serializes to a stream rather than via ToByteArray deliberately: ToByteArray
+        /// allocates its buffer at CalculateSize(), so comparing against that array's
+        /// length would compare a number with itself.
         /// </summary>
         private static void AssertDeclaredSizeMatchesBytesWritten(TestPackedTypes message)
         {
@@ -70,7 +69,7 @@ namespace Google.Protobuf.Collections
             // 80 01        128
             // AC 02        300
             // FF x9 01     -1, sign-extended to 64 bits
-            // 17 bytes of payload, so the length prefix is 11.
+            // 17 bytes of payload, so the length prefix is 0x11.
             AssertWireBytes(message, new byte[]
             {
                 0xD2, 0x05, 0x11,
@@ -91,7 +90,7 @@ namespace Google.Protobuf.Collections
             // FF 7F        16383
             // 80 80 01     16384
             // FF FF FF FF 0F   uint.MaxValue
-            // 14 bytes of payload.
+            // 14 bytes of payload, so the length prefix is 0x0E.
             AssertWireBytes(message, new byte[]
             {
                 0xE2, 0x05, 0x0E,
@@ -113,7 +112,7 @@ namespace Google.Protobuf.Collections
             // 7F           -64 -> 127
             // 80 01        64 -> 128
             // FF FF FF FF 0F   int.MinValue -> 4294967295
-            // 11 bytes of payload.
+            // 11 bytes of payload, so the length prefix is 0x0B.
             AssertWireBytes(message, new byte[]
             {
                 0xF2, 0x05, 0x0B,
@@ -132,7 +131,7 @@ namespace Google.Protobuf.Collections
             // 80 01                128
             // FF x8 7F             long.MaxValue, 63 significant bits -> 9 bytes
             // FF x9 01             -1 -> 10 bytes
-            // 22 bytes of payload, so the length prefix is 16.
+            // 22 bytes of payload, so the length prefix is 0x16.
             AssertWireBytes(message, new byte[]
             {
                 0xDA, 0x05, 0x16,
@@ -151,7 +150,7 @@ namespace Google.Protobuf.Collections
             // 00           0
             // 01           1
             // FF x9 01     ulong.MaxValue, 64 significant bits -> 10 bytes
-            // 12 bytes of payload.
+            // 12 bytes of payload, so the length prefix is 0x0C.
             AssertWireBytes(message, new byte[]
             {
                 0xEA, 0x05, 0x0C,
@@ -169,7 +168,7 @@ namespace Google.Protobuf.Collections
             // 00           0 -> 0
             // 01           -1 -> 1
             // FF x9 01     long.MinValue -> 18446744073709551615
-            // 12 bytes of payload.
+            // 12 bytes of payload, so the length prefix is 0x0C.
             AssertWireBytes(message, new byte[]
             {
                 0xFA, 0x05, 0x0C,
@@ -295,7 +294,7 @@ namespace Google.Protobuf.Collections
             Assert.AreEqual(3 + expectedLength, message.CalculateSize());
         }
 
-        // ---- Properties that hold whatever the values are ----
+        // ---- Properties that hold for any values ----
 
         [Test]
         public void EmptyMessageIsEmpty()
@@ -305,9 +304,9 @@ namespace Google.Protobuf.Collections
         }
 
         /// <summary>
-        /// A run long enough that the size is not something anyone would hand-count,
-        /// checked as a property instead: what CalculateSize declares is what gets
-        /// written, and the values survive the round trip under that length prefix.
+        /// A run too long to hand-count, so checked as a property instead: what
+        /// CalculateSize declares is what gets written, and the values survive the
+        /// round trip under that length prefix.
         /// </summary>
         [Test]
         public void LongRunDeclaresTheSizeItWrites()
@@ -326,9 +325,9 @@ namespace Google.Protobuf.Collections
         }
 
         /// <summary>
-        /// Fixed-width and non-varint packed fields must keep sizing the way they did.
-        /// fixed32 in particular is also a FieldCodec&lt;uint&gt;, so it is the case a
-        /// type-based shortcut would get wrong.
+        /// Non-varint packed fields must keep sizing the way they did. fixed32 in
+        /// particular is also a FieldCodec&lt;uint&gt;, so it is the case a type-based
+        /// shortcut would get wrong.
         /// </summary>
         [Test]
         public void NonVarintPackedFieldsAreUnaffected()
@@ -349,8 +348,8 @@ namespace Google.Protobuf.Collections
         }
 
         /// <summary>
-        /// The same values in unpacked fields, which take the per-element path and so
-        /// must be unchanged by any of this.
+        /// Unpacked repeated fields take the per-element path, and so must be unchanged
+        /// by any of this.
         /// </summary>
         [Test]
         public void UnpackedFieldsAreUnaffected()
