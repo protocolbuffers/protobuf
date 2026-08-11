@@ -3,7 +3,6 @@
 #include "stddef.h"
 #include "upb/mem/arena.h"
 #include "upb/message/message.h"
-#include "upb/mini_table/extension_registry.h"
 #include "upb/mini_table/message.h"
 #include "upb/wire/decode.h"
 #include "upb/wire/encode.h"
@@ -12,9 +11,7 @@
 #include "upb/port/def.inc"
 
 bool upb_Message_MergeFrom(upb_Message* dst, const upb_Message* src,
-                           const upb_MiniTable* mt,
-                           const upb_ExtensionRegistry* extreg,
-                           upb_Arena* arena) {
+                           const upb_MiniTable* mt, upb_Arena* arena) {
   char* buf = NULL;
   size_t size = 0;
   // This tmp arena is used to hold the bytes for `src` serialized. This bends
@@ -28,7 +25,8 @@ bool upb_Message_MergeFrom(upb_Message* dst, const upb_Message* src,
     upb_Arena_Free(encode_arena);
     return false;
   }
-  upb_DecodeStatus d_status = upb_Decode(buf, size, dst, mt, extreg, 0, arena);
+  upb_DecodeStatus d_status =
+      upb_Decode(buf, size, dst, mt, /*extreg=*/NULL, /*options=*/0, arena);
   if (d_status != kUpb_DecodeStatus_Ok) {
     upb_Arena_Free(encode_arena);
     return false;

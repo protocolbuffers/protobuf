@@ -433,20 +433,25 @@ where
 
 impl<T> MergeFrom for T
 where
-    Self: AsView + UpbGetArena + UpbGetMessagePtr,
+    Self: AsView + UpbGetArena + UpbGetMessagePtr + UpbGetMessagePtrMut,
     Self::Proxied: AssociatedMiniTable,
     for<'a> View<'a, Self::Proxied>: UpbGetMessagePtr,
 {
     fn merge_from(&mut self, src: impl AsView<Proxied = Self::Proxied>) {
-        // SAFETY: self and src are both valid `T`s.
+        let serialized = upb::wire::encode(src.as_view().get_ptr(Private))
+            .expect("failed to encode source message for merge");
+        let dest = self.get_ptr_mut(Private);
+        let extreg = generated_extension_registry().as_ptr();
+        let arena = self.get_arena(Private);
+
+        // SAFETY:
+        // - `dest` is a valid, mutable pointer to the destination message
+        //   (since `self` is borrowed mutably).
+        // - The serialization buffer `serialized` is validly readable (since it is a safe Rust `Vec<u8>`).
+        // - The decode options bitmask `0` is valid.
         unsafe {
-            assert!(upb_Message_MergeFrom(
-                self.get_ptr(Private).raw(),
-                src.as_view().get_ptr(Private).raw(),
-                <Self::Proxied as AssociatedMiniTable>::mini_table(),
-                generated_extension_registry().as_ptr(),
-                self.get_arena(Private).raw()
-            ));
+            upb::wire::decode_with_options(&serialized, dest, extreg, arena, 0)
+                .expect("failed to decode message for merge");
         }
     }
 }

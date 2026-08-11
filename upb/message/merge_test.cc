@@ -51,11 +51,9 @@ TEST(GeneratedCode, MergeMessageScalarAndString) {
   upb_Arena* arena = upb_Arena_New();
   protobuf_test_messages_proto2_TestAllTypesProto2* clone =
       protobuf_test_messages_proto2_TestAllTypesProto2_new(arena);
-  EXPECT_TRUE(
-      (protobuf_test_messages_proto2_TestAllTypesProto2*)upb_Message_MergeFrom(
-          UPB_UPCAST(clone), UPB_UPCAST(msg),
-          &protobuf_0test_0messages__proto2__TestAllTypesProto2_msg_init,
-          nullptr, arena));
+  EXPECT_TRUE(upb_Message_MergeFrom(
+      UPB_UPCAST(clone), UPB_UPCAST(msg),
+      &protobuf_0test_0messages__proto2__TestAllTypesProto2_msg_init, arena));
   // After cloning overwrite values and destroy source arena for MSAN.
   memset(string_in_arena, 0, sizeof(kTestStr1));
   upb_Arena_Free(source_arena);

@@ -51,7 +51,7 @@ pub use sys::message::message::{
     upb_Message_GetExtensionMessage, upb_Message_GetExtensionMutableArray,
     upb_Message_GetExtensionString, upb_Message_GetExtensionUInt32, upb_Message_GetExtensionUInt64,
     upb_Message_GetMap, upb_Message_GetOrCreateMutableMap, upb_Message_HasExtension,
-    upb_Message_IsEqual, upb_Message_MergeFrom, upb_Message_SetBaseField, upb_Message_SetExtension,
+    upb_Message_IsEqual, upb_Message_SetBaseField, upb_Message_SetExtension,
     upb_Message_SetExtensionBool, upb_Message_SetExtensionDouble, upb_Message_SetExtensionFloat,
     upb_Message_SetExtensionInt32, upb_Message_SetExtensionInt64, upb_Message_SetExtensionMessage,
     upb_Message_SetExtensionString, upb_Message_SetExtensionUInt32, upb_Message_SetExtensionUInt64,

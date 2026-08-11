@@ -208,19 +208,6 @@ unsafe extern "C" {
     ) -> bool;
 
     /// # Safety
-    /// - `dst`, `src`, `mini_table` and `arena` must be valid to deref
-    /// - `extreg` must be valid to deref or nullptr
-    /// - `mini_table` must be the MiniTable associated with both `dst` and
-    ///   `src`
-    pub fn upb_Message_MergeFrom(
-        dst: RawMessage,
-        src: RawMessage,
-        mini_table: RawMiniTable,
-        extreg: *const upb_ExtensionRegistry,
-        arena: RawArena,
-    ) -> bool;
-
-    /// # Safety
     /// - `m` and `f` must be valid to deref
     /// - `f` must be a bool field associated with `f`
     pub fn upb_Message_SetBaseFieldBool(m: RawMessage, f: RawMiniTableField, val: bool);
@@ -445,7 +432,6 @@ mod tests {
         assert_linked!(upb_Message_HasBaseField);
         assert_linked!(upb_Message_SetBaseField);
         assert_linked!(upb_Message_IsEqual);
-        assert_linked!(upb_Message_MergeFrom);
         assert_linked!(upb_Message_SetBaseFieldBool);
         assert_linked!(upb_Message_SetBaseFieldInt32);
         assert_linked!(upb_Message_SetBaseFieldInt64);
