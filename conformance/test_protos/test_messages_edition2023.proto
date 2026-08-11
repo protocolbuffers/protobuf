@@ -56,6 +56,7 @@ message TestAllTypesEdition2023 {
 
   NestedEnum optional_nested_enum = 21;
   ForeignEnumEdition2023 optional_foreign_enum = 22;
+  ForeignEnumWithAliasEdition2023 optional_aliased_enum = 23;
 
   string optional_string_piece = 24 [ctype = STRING_PIECE];
   string optional_cord = 25 [ctype = CORD];
@@ -87,6 +88,7 @@ message TestAllTypesEdition2023 {
 
   repeated NestedEnum repeated_nested_enum = 51;
   repeated ForeignEnumEdition2023 repeated_foreign_enum = 52;
+  repeated ForeignEnumWithAliasEdition2023 repeated_aliased_enum = 53;
 
   repeated string repeated_string_piece = 54 [ctype = STRING_PIECE];
   repeated string repeated_cord = 55 [ctype = CORD];
@@ -204,6 +206,16 @@ enum ForeignEnumEdition2023 {
   FOREIGN_FOO = 0;
   FOREIGN_BAR = 1;
   FOREIGN_BAZ = 2;
+}
+
+enum ForeignEnumWithAliasEdition2023 {
+  option allow_alias = true;
+
+  ALIAS_UNKNOWN = 0;
+  ALIAS_FOO = 1;
+  ALIAS_BAR = 2;
+  ALIAS_BAZ = 2;
+  ALIAS_QUX = 2;
 }
 
 extend TestAllTypesEdition2023 {

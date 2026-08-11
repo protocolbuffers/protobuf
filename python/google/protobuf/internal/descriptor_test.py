@@ -253,6 +253,37 @@ class DescriptorTest(unittest.TestCase):
     with self.assertRaises(TypeError):
       self.my_message.EnumValueName()
 
+  def testAliasedEnumDescriptor(self):
+    file_proto = descriptor_pb2.FileDescriptorProto(
+        name='some/filename/aliased.proto', package='proto2_unittest'
+    )
+    enum_proto = file_proto.enum_type.add(
+        name='AliasedEnum',
+        options=descriptor_pb2.EnumOptions(allow_alias=True),
+    )
+    enum_proto.value.add(name='ALIAS_FOO', number=0)
+    enum_proto.value.add(name='ALIAS_BAR', number=1)
+    enum_proto.value.add(name='ALIAS_BAZ', number=2)
+    enum_proto.value.add(name='ALIAS_QUX', number=2)
+
+    pool = descriptor_pool.DescriptorPool()
+    file_desc = pool.AddSerializedFile(file_proto.SerializeToString())
+    enum_desc = file_desc.enum_types_by_name['AliasedEnum']
+
+    self.assertEqual(len(enum_desc.values), 4)
+    self.assertEqual(enum_desc.values[0].name, 'ALIAS_FOO')
+    self.assertEqual(enum_desc.values[1].name, 'ALIAS_BAR')
+    self.assertEqual(enum_desc.values[2].name, 'ALIAS_BAZ')
+    self.assertEqual(enum_desc.values[3].name, 'ALIAS_QUX')
+
+    for i, val in enumerate(enum_desc.values):
+      self.assertEqual(val.index, i)
+
+    self.assertEqual(enum_desc.values_by_name['ALIAS_BAZ'], enum_desc.values[2])
+    self.assertEqual(enum_desc.values_by_name['ALIAS_QUX'], enum_desc.values[3])
+    # values_by_number maps unique numbers to the first defined value
+    self.assertEqual(enum_desc.values_by_number[2], enum_desc.values[2])
+
   def testEnumFixups(self):
     self.assertEqual(self.my_enum, self.my_enum.values[0].type)
 

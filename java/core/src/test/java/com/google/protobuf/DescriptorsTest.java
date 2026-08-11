@@ -654,6 +654,58 @@ public class DescriptorsTest {
     }
 
     @Test
+    public void testAliasedEnumDescriptor() throws Exception {
+      FileDescriptorProto fileProto =
+          FileDescriptorProto.newBuilder()
+              .setName("aliased_enum.proto")
+              .addEnumType(
+                  EnumDescriptorProto.newBuilder()
+                      .setName("AliasedEnum")
+                      .setOptions(
+                          DescriptorProtos.EnumOptions.newBuilder().setAllowAlias(true).build())
+                      .addValue(
+                          EnumValueDescriptorProto.newBuilder()
+                              .setName("ALIAS_FOO")
+                              .setNumber(0)
+                              .build())
+                      .addValue(
+                          EnumValueDescriptorProto.newBuilder()
+                              .setName("ALIAS_BAR")
+                              .setNumber(1)
+                              .build())
+                      .addValue(
+                          EnumValueDescriptorProto.newBuilder()
+                              .setName("ALIAS_BAZ")
+                              .setNumber(2)
+                              .build())
+                      .addValue(
+                          EnumValueDescriptorProto.newBuilder()
+                              .setName("ALIAS_QUX")
+                              .setNumber(2)
+                              .build())
+                      .build())
+              .build();
+
+      FileDescriptor file = FileDescriptor.buildFrom(fileProto, new FileDescriptor[0]);
+      EnumDescriptor enumType = file.findEnumTypeByName("AliasedEnum");
+
+      assertThat(enumType.getValues()).hasSize(4);
+      assertThat(enumType.getValues().get(0).getName()).isEqualTo("ALIAS_FOO");
+      assertThat(enumType.getValues().get(1).getName()).isEqualTo("ALIAS_BAR");
+      assertThat(enumType.getValues().get(2).getName()).isEqualTo("ALIAS_BAZ");
+      assertThat(enumType.getValues().get(3).getName()).isEqualTo("ALIAS_QUX");
+
+      for (int i = 0; i < enumType.getValues().size(); i++) {
+        assertThat(enumType.getValues().get(i).getIndex()).isEqualTo(i);
+      }
+
+      assertThat(enumType.findValueByName("ALIAS_BAZ")).isEqualTo(enumType.getValues().get(2));
+      assertThat(enumType.findValueByName("ALIAS_QUX")).isEqualTo(enumType.getValues().get(3));
+      // findValueByNumber returns the first defined value for that number
+      assertThat(enumType.findValueByNumber(2)).isEqualTo(enumType.getValues().get(2));
+    }
+
+    @Test
     public void testServiceDescriptor() throws Exception {
       ServiceDescriptor service = TestService.getDescriptor();
 

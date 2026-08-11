@@ -331,6 +331,7 @@ void BinaryAndJsonConformanceSuite::RunSuiteImpl() {
         this, /*run_proto3_tests=*/false);
     if (!this->performance_) {
       RunDelimitedFieldTests();
+      RunEdition2023AliasedEnumTests();
       RunUnstableTests();
       RunUtf8ValidationTests();
     }
@@ -390,6 +391,93 @@ void BinaryAndJsonConformanceSuite::RunDelimitedFieldTests() {
       R"pb([protobuf_test_messages.editions.delimited_ext] { c: 99 })pb");
 }
 
+void BinaryAndJsonConformanceSuite::RunEdition2023AliasedEnumTests() {
+  SetTypeUrl(GetTypeUrl(TestAllTypesEdition2023::GetDescriptor()));
+  const TestAllTypesEdition2023& prototype =
+      TestAllTypesEdition2023::default_instance();
+
+  // -------------------------------------------------------------------------
+  // 1. Binary parsing and binary-to-JSON serialization tests.
+  // -------------------------------------------------------------------------
+  RunValidProtobufTest<TestAllTypesEdition2023>(
+      "AliasedEnum.ProtobufInput", REQUIRED,
+      field(23, WireFormatLite::WIRETYPE_VARINT, varint(2)),
+      R"pb(optional_aliased_enum: ALIAS_BAR)pb");
+
+  RunValidProtobufTest<TestAllTypesEdition2023>(
+      "AliasedEnum.Repeated.ProtobufInput", REQUIRED,
+      absl::StrCat(field(53, WireFormatLite::WIRETYPE_VARINT, varint(2)),
+                   field(53, WireFormatLite::WIRETYPE_VARINT, varint(1))),
+      R"pb(repeated_aliased_enum: ALIAS_BAR
+           repeated_aliased_enum: ALIAS_FOO)pb");
+
+  // -------------------------------------------------------------------------
+  // 2. JSON parsing of primary name (ALIAS_BAR) vs alias names (ALIAS_BAZ,
+  // ALIAS_QUX), verifying they all serialize out as canonical name (ALIAS_BAR).
+  // -------------------------------------------------------------------------
+  RunValidJsonTestWithMessage(
+      "AliasedEnum.PrimaryName", REQUIRED,
+      R"({"optionalAliasedEnum": "ALIAS_BAR"})",
+      "optional_aliased_enum: ALIAS_BAR", prototype);
+
+  RunValidJsonTestWithMessage(
+      "AliasedEnum.AliasName.Baz", REQUIRED,
+      R"({"optionalAliasedEnum": "ALIAS_BAZ"})",
+      "optional_aliased_enum: ALIAS_BAR", prototype);
+
+  RunValidJsonTestWithMessage(
+      "AliasedEnum.AliasName.Qux", REQUIRED,
+      R"({"optionalAliasedEnum": "ALIAS_QUX"})",
+      "optional_aliased_enum: ALIAS_BAR", prototype);
+
+  // -------------------------------------------------------------------------
+  // 3. JSON parsing of numeric values.
+  // -------------------------------------------------------------------------
+  RunValidJsonTestWithMessage(
+      "AliasedEnum.NumericValue", REQUIRED,
+      R"({"optionalAliasedEnum": 2})",
+      "optional_aliased_enum: ALIAS_BAR", prototype);
+
+  RunValidJsonTestWithMessage(
+      "AliasedEnum.NumericValue.Foo", REQUIRED,
+      R"({"optionalAliasedEnum": 1})",
+      "optional_aliased_enum: ALIAS_FOO", prototype);
+
+  RunValidJsonTestWithMessage(
+      "AliasedEnum.NumericValue.Zero", REQUIRED,
+      R"({"optionalAliasedEnum": 0})",
+      "optional_aliased_enum: ALIAS_UNKNOWN", prototype);
+
+  // -------------------------------------------------------------------------
+  // 4. Repeated aliased enum fields containing combinations of primary and
+  // alias names and numeric values.
+  // -------------------------------------------------------------------------
+  RunValidJsonTestWithMessage(
+      "AliasedEnum.Repeated", REQUIRED,
+      R"({"repeatedAliasedEnum": ["ALIAS_BAR", "ALIAS_BAZ", "ALIAS_QUX", 2, "ALIAS_FOO"]})",
+      "repeated_aliased_enum: ALIAS_BAR\n"
+      "repeated_aliased_enum: ALIAS_BAR\n"
+      "repeated_aliased_enum: ALIAS_BAR\n"
+      "repeated_aliased_enum: ALIAS_BAR\n"
+      "repeated_aliased_enum: ALIAS_FOO",
+      prototype);
+
+  // -------------------------------------------------------------------------
+  // 5. Unknown and invalid enum strings (Rejection vs Ignore in lenient mode).
+  // -------------------------------------------------------------------------
+  ExpectParseFailureForJsonWithMessage(
+      "AliasedEnum.UnknownString.Reject", REQUIRED,
+      R"({"optionalAliasedEnum": "ALIAS_INVALID"})", prototype);
+
+  RunValidJsonIgnoreUnknownTestWithMessage(
+      "AliasedEnum.UnknownString.Ignore", REQUIRED,
+      R"({"optionalAliasedEnum": "ALIAS_INVALID"})", "", prototype);
+
+  ExpectParseFailureForJsonWithMessage(
+      "AliasedEnum.SingleElementArray.Reject", REQUIRED,
+      R"({"optionalAliasedEnum": ["ALIAS_BAR"]})", prototype);
+}
+
 void BinaryAndJsonConformanceSuite::RunUnstableTests() {
   SetTypeUrl(GetTypeUrl(TestAllTypesEditionUnstable::GetDescriptor()));
 
@@ -401,6 +489,153 @@ void BinaryAndJsonConformanceSuite::RunUnstableTests() {
       absl::StrCat("ValidMap.Bytes"), REQUIRED,
       len(15, absl::StrCat(len(1, "foo"), len(2, "barbaz"))),
       R"pb(map_string_bytes { key: "foo" value: "barbaz" })pb");
+
+  RunJsonTestsForCustomEnumNames();
+}
+
+void BinaryAndJsonConformanceSuite::RunValidJsonTestWithMessage(
+    const std::string& test_name, ConformanceLevel level,
+    const std::string& input_json, const std::string& equivalent_text_format,
+    const Message& prototype) {
+  ConformanceRequestSetting setting1(
+      level, ::conformance::JSON, ::conformance::PROTOBUF,
+      ::conformance::JSON_TEST, prototype, test_name, input_json);
+  RunValidInputTest(setting1, equivalent_text_format);
+  ConformanceRequestSetting setting2(
+      level, ::conformance::JSON, ::conformance::JSON, ::conformance::JSON_TEST,
+      prototype, test_name, input_json);
+  RunValidInputTest(setting2, equivalent_text_format);
+}
+
+void BinaryAndJsonConformanceSuite::RunValidJsonIgnoreUnknownTestWithMessage(
+    const std::string& test_name, ConformanceLevel level,
+    const std::string& input_json, const std::string& equivalent_text_format,
+    const Message& prototype) {
+  ConformanceRequestSetting setting(
+      level, ::conformance::JSON, ::conformance::PROTOBUF,
+      ::conformance::JSON_IGNORE_UNKNOWN_PARSING_TEST, prototype, test_name,
+      input_json);
+  RunValidInputTest(setting, equivalent_text_format);
+}
+
+void BinaryAndJsonConformanceSuite::ExpectParseFailureForJsonWithMessage(
+    const std::string& test_name, ConformanceLevel level,
+    const std::string& input_json, const Message& prototype) {
+  ConformanceRequestSetting setting(
+      level, ::conformance::JSON, ::conformance::JSON, ::conformance::JSON_TEST,
+      prototype, test_name, input_json);
+  const ConformanceRequest& request = setting.GetRequest();
+  ConformanceResponse response;
+  std::string effective_test_name =
+      absl::StrCat(setting.ConformanceLevelToString(level), ".",
+                   setting.GetSyntaxIdentifier(), ".JsonInput.", test_name);
+
+  if (!RunTest(effective_test_name, request, &response)) {
+    return;
+  }
+
+  TestStatus test;
+  test.set_name(effective_test_name);
+  if (response.result_case() == ConformanceResponse::kParseError) {
+    ReportSuccess(test);
+  } else if (response.result_case() == ConformanceResponse::kSkipped) {
+    ReportSkip(test, request, response);
+  } else if (response.result_case() == ConformanceResponse::kRuntimeError) {
+    test.set_failure_message(
+        "Should have failed to parse, but raised an error instead.");
+    ReportFailure(test, level, request, response);
+  } else {
+    test.set_failure_message("Should have failed to parse, but didn't.");
+    ReportFailure(test, level, request, response);
+  }
+}
+
+void BinaryAndJsonConformanceSuite::RunJsonTestsForCustomEnumNames() {
+  const TestAllTypesEditionUnstable& prototype =
+      TestAllTypesEditionUnstable::default_instance();
+
+  // -------------------------------------------------------------------------
+  // 1. Basic positive serialization and deserialization.
+  // -------------------------------------------------------------------------
+  RunValidJsonTestWithMessage(
+      "CustomEnumJsonName.ValidParse", REQUIRED,
+      R"({"optionalForeignEnumCustomJson": "custom_bar"})",
+      "optional_foreign_enum_custom_json: CUSTOM_BAR", prototype);
+
+  // -------------------------------------------------------------------------
+  // 2. Fallback to original protobuf enum name.
+  // Even when a custom JSON name is configured, deserializing the original
+  // canonical protobuf name MUST still succeed.
+  // -------------------------------------------------------------------------
+  RunValidJsonTestWithMessage(
+      "CustomEnumJsonName.FallbackToProtoName", REQUIRED,
+      R"({"optionalForeignEnumCustomJson": "CUSTOM_BAR"})",
+      "optional_foreign_enum_custom_json: CUSTOM_BAR", prototype);
+
+  // -------------------------------------------------------------------------
+  // 3. Custom string identical to original protobuf name.
+  // Verifies that defining a custom JSON string equal to the original name
+  // does not cause symbol collision or lookup loops.
+  // -------------------------------------------------------------------------
+  RunValidJsonTestWithMessage(
+      "CustomEnumJsonName.SameAsProtoName", REQUIRED,
+      R"({"optionalForeignEnumCustomJson": "CUSTOM_GREAVES"})",
+      "optional_foreign_enum_custom_json: CUSTOM_GREAVES", prototype);
+
+  // -------------------------------------------------------------------------
+  // 4. Aliased enum numbers sharing the same custom JSON name.
+  // Multiple enum aliases with the same number should decode uniformly.
+  // -------------------------------------------------------------------------
+  RunValidJsonTestWithMessage(
+      "CustomEnumJsonName.AliasedNumber.Primary", REQUIRED,
+      R"({"optionalForeignEnumCustomJson": "sabaton"})",
+      "optional_foreign_enum_custom_json: CUSTOM_SABATON", prototype);
+  RunValidJsonTestWithMessage(
+      "CustomEnumJsonName.AliasedNumber.FirstAliasName", REQUIRED,
+      R"({"optionalForeignEnumCustomJson": "CUSTOM_SABATON"})",
+      "optional_foreign_enum_custom_json: CUSTOM_SABATON", prototype);
+  RunValidJsonTestWithMessage(
+      "CustomEnumJsonName.AliasedNumber.SecondAliasName", REQUIRED,
+      R"({"optionalForeignEnumCustomJson": "CUSTOM_SOLLERET"})",
+      "optional_foreign_enum_custom_json: CUSTOM_SABATON", prototype);
+
+  // -------------------------------------------------------------------------
+  // 5. String content edge cases (empty strings, escaping, numeric strings).
+  // -------------------------------------------------------------------------
+  RunValidJsonTestWithMessage("CustomEnumJsonName.EmptyString", REQUIRED,
+                              R"({"optionalForeignEnumCustomJson": ""})",
+                              "optional_foreign_enum_custom_json: CUSTOM_COIF",
+                              prototype);
+
+  RunValidJsonTestWithMessage("CustomEnumJsonName.EscapedCharacters", REQUIRED,
+                              R"({"optionalForeignEnumCustomJson": "a\"b"})",
+                              "optional_foreign_enum_custom_json: CUSTOM_BAZ",
+                              prototype);
+
+  RunValidJsonTestWithMessage("CustomEnumJsonName.NumericString", REQUIRED,
+                              R"({"optionalForeignEnumCustomJson": "8"})",
+                              "optional_foreign_enum_custom_json: CUSTOM_HACHI",
+                              prototype);
+
+  // -------------------------------------------------------------------------
+  // 6. Unknown and invalid custom JSON names (Rejection tests).
+  // -------------------------------------------------------------------------
+  ExpectParseFailureForJsonWithMessage(
+      "CustomEnumJsonName.UnknownString.Reject", REQUIRED,
+      R"({"optionalForeignEnumCustomJson": "nonexistent_armor"})", prototype);
+
+  RunValidJsonIgnoreUnknownTestWithMessage(
+      "CustomEnumJsonName.UnknownString.Ignore", REQUIRED,
+      R"({"optionalForeignEnumCustomJson": "nonexistent_armor"})", "",
+      prototype);
+
+  ExpectParseFailureForJsonWithMessage(
+      "CustomEnumJsonName.SingleElementArray.Reject", REQUIRED,
+      R"({"optionalForeignEnumCustomJson": ["custom_bar"]})", prototype);
+
+  ExpectParseFailureForJsonWithMessage(
+      "CustomEnumJsonName.CaseSensitive.Reject", REQUIRED,
+      R"({"optionalForeignEnumCustomJson": "CUSTOM_BAR_CASE"})", prototype);
 }
 
 void BinaryAndJsonConformanceSuite::RunUtf8ValidationTests() {

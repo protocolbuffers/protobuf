@@ -64,6 +64,7 @@ proto_library(
     name = "test_messages_edition_unstable_proto",
     srcs = ["test_messages_edition_unstable.proto"],
     visibility = ["//visibility:public"],
+    deps = ["//src/google/protobuf:json_options_proto"],
 )
 
 java_lite_proto_library(

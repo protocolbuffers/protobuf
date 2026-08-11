@@ -9,6 +9,8 @@ edition = "UNSTABLE";
 
 package protobuf_test_messages.edition_unstable;
 
+import "google/protobuf/json_options.proto";
+
 option features.message_encoding = DELIMITED;
 option java_package = "com.google.protobuf_test_messages.edition_unstable";
 option objc_class_prefix = "EditionUnstable";
@@ -47,6 +49,12 @@ export message TestAllTypesEditionUnstable {
   repeated bytes repeated_bytes = 14;
   map<string, bytes> map_string_bytes = 15;
 
+  // Custom JSON enum names
+  ForeignEnumWithCustomJsonNameEditionUnstable
+      optional_foreign_enum_custom_json = 16;
+  repeated ForeignEnumWithCustomJsonNameEditionUnstable
+      repeated_foreign_enum_custom_json = 17;
+
   // extensions
   extensions 120 to 200;
 }
@@ -59,6 +67,20 @@ export enum ForeignEnumEditionUnstable {
   FOREIGN_FOO = 0;
   FOREIGN_BAR = 1;
   FOREIGN_BAZ = 2;
+}
+
+export enum ForeignEnumWithCustomJsonNameEditionUnstable {
+  option allow_alias = true;
+
+  CUSTOM_UNKNOWN = 0;
+  CUSTOM_BAR = 1 [(pb.enumvalue.json).string = "custom_bar"];
+  CUSTOM_BAZ = 2 [(pb.enumvalue.json).string = "a\"b"];
+  CUSTOM_COIF = 3 [(pb.enumvalue.json).string = ""];
+  CUSTOM_PAULDRON = 4 [(pb.enumvalue.json).string = "p\taul\ndron"];
+  CUSTOM_SABATON = 5 [(pb.enumvalue.json).string = "sabaton"];
+  CUSTOM_SOLLERET = 5 [(pb.enumvalue.json).string = "sabaton"];
+  CUSTOM_HACHI = 8 [(pb.enumvalue.json).string = "8"];
+  CUSTOM_GREAVES = 7 [(pb.enumvalue.json).string = "CUSTOM_GREAVES"];
 }
 
 extend TestAllTypesEditionUnstable {

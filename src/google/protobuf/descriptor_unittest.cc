@@ -2087,6 +2087,47 @@ TEST_F(EnumDescriptorTest, FindValueByNumber) {
   EXPECT_TRUE(enum2_->FindValueByNumber(2) == nullptr);
 }
 
+TEST_F(EnumDescriptorTest, AliasedValues) {
+  FileDescriptorProto file_proto;
+  file_proto.set_name("aliased_enum.proto");
+  auto* enum_proto = file_proto.add_enum_type();
+  enum_proto->set_name("AliasedEnum");
+  enum_proto->mutable_options()->set_allow_alias(true);
+  auto* val0 = enum_proto->add_value();
+  val0->set_name("ALIAS_FOO");
+  val0->set_number(0);
+  auto* val1 = enum_proto->add_value();
+  val1->set_name("ALIAS_BAR");
+  val1->set_number(1);
+  auto* val2 = enum_proto->add_value();
+  val2->set_name("ALIAS_BAZ");
+  val2->set_number(2);
+  auto* val3 = enum_proto->add_value();
+  val3->set_name("ALIAS_QUX");
+  val3->set_number(2);
+
+  DescriptorPool pool;
+  const FileDescriptor* file = pool.BuildFile(file_proto);
+  ASSERT_TRUE(file != nullptr);
+  const EnumDescriptor* aliased_enum = file->FindEnumTypeByName("AliasedEnum");
+  ASSERT_TRUE(aliased_enum != nullptr);
+
+  EXPECT_EQ(4, aliased_enum->value_count());
+  EXPECT_EQ("ALIAS_FOO", aliased_enum->value(0)->name());
+  EXPECT_EQ("ALIAS_BAR", aliased_enum->value(1)->name());
+  EXPECT_EQ("ALIAS_BAZ", aliased_enum->value(2)->name());
+  EXPECT_EQ("ALIAS_QUX", aliased_enum->value(3)->name());
+
+  for (int i = 0; i < aliased_enum->value_count(); ++i) {
+    EXPECT_EQ(i, aliased_enum->value(i)->index());
+  }
+
+  EXPECT_EQ(aliased_enum->value(2), aliased_enum->FindValueByName("ALIAS_BAZ"));
+  EXPECT_EQ(aliased_enum->value(3), aliased_enum->FindValueByName("ALIAS_QUX"));
+  // FindValueByNumber returns the first defined value for that number
+  EXPECT_EQ(aliased_enum->value(2), aliased_enum->FindValueByNumber(2));
+}
+
 TEST_F(EnumDescriptorTest, ValueName) {
   EXPECT_EQ("FOO", foo_->name());
   EXPECT_EQ("BAR", bar_->name());

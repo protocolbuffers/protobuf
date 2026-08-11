@@ -123,6 +123,50 @@ class DescriptorsTest extends TestBase
         $this->assertSame(2, $enumDesc->getValueCount());
     }
 
+    public function testAliasedEnumDescriptor()
+    {
+        if (!class_exists('\Custom_enum_json\Knight')) {
+            return;
+        }
+        new \Custom_enum_json\Knight();
+
+        $pool = DescriptorPool::getGeneratedPool();
+        $armorDesc = $pool->getEnumDescriptorByClassName(\Custom_enum_json\Armor::class);
+        $this->assertInstanceOf('\Google\Protobuf\EnumDescriptor', $armorDesc);
+        $this->assertSame(10, $armorDesc->getValueCount());
+
+        $expected = [
+            0 => ['ARMOR_UNKNOWN', 0],
+            1 => ['ARMOR_GREAT_HELM', 1],
+            2 => ['ARMOR_GORGET', 2],
+            3 => ['ARMOR_GAUNTLET', 3],
+            4 => ['ARMOR_PLATE', 4],
+            5 => ['ARMOR_COIF', 5],
+            6 => ['ARMOR_PAULDRON', 6],
+            7 => ['ARMOR_SABATON', 7],
+            8 => ['ARMOR_SOLLERET', 7],
+            9 => ['ARMOR_HACHI_MAI_DO', 8],
+        ];
+
+        for ($i = 0; $i < $armorDesc->getValueCount(); $i++) {
+            $valDesc = $armorDesc->getValue($i);
+            $this->assertInstanceOf('\Google\Protobuf\EnumValueDescriptor', $valDesc);
+            $this->assertSame($expected[$i][0], $valDesc->getName());
+            $this->assertSame($expected[$i][1], $valDesc->getNumber());
+        }
+
+        // Test internal descriptor lookups by name and number
+        $internalPool = \Google\Protobuf\Internal\DescriptorPool::getGeneratedPool();
+        $internalDesc = $internalPool->getEnumDescriptorByClassName(\Custom_enum_json\Armor::class);
+        if ($internalDesc !== null) {
+            $this->assertSame('ARMOR_SABATON', $internalDesc->getValueByName('ARMOR_SABATON')->getName());
+            $this->assertSame('ARMOR_SOLLERET', $internalDesc->getValueByName('ARMOR_SOLLERET')->getName());
+            // getValueByNumber maps unique numbers to the first defined value (ARMOR_SABATON)
+            $this->assertSame('ARMOR_SABATON', $internalDesc->getValueByNumber(7)->getName());
+            $this->assertSame(7, $internalDesc->getValueByNumber(7)->getNumber());
+        }
+    }
+
     #########################################################
     # Test field descriptor.
     #########################################################

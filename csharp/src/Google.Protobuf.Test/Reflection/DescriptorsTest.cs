@@ -390,6 +390,48 @@ namespace Google.Protobuf.Reflection
         }
 
         [Test]
+        public void EnumDescriptor_AllowAlias()
+        {
+            var fileProto = new FileDescriptorProto
+            {
+                Name = "aliased_enum.proto",
+                EnumType =
+                {
+                    new EnumDescriptorProto
+                    {
+                        Name = "AliasedEnum",
+                        Options = new EnumOptions { AllowAlias = true },
+                        Value =
+                        {
+                            new EnumValueDescriptorProto { Name = "ALIAS_FOO", Number = 0 },
+                            new EnumValueDescriptorProto { Name = "ALIAS_BAR", Number = 1 },
+                            new EnumValueDescriptorProto { Name = "ALIAS_BAZ", Number = 2 },
+                            new EnumValueDescriptorProto { Name = "ALIAS_QUX", Number = 2 }
+                        }
+                    }
+                }
+            };
+            var file = FileDescriptor.BuildFromByteStrings(new[] { fileProto.ToByteString() })[0];
+            var enumType = file.FindTypeByName<EnumDescriptor>("AliasedEnum");
+
+            Assert.AreEqual(4, enumType.Values.Count);
+            Assert.AreEqual("ALIAS_FOO", enumType.Values[0].Name);
+            Assert.AreEqual("ALIAS_BAR", enumType.Values[1].Name);
+            Assert.AreEqual("ALIAS_BAZ", enumType.Values[2].Name);
+            Assert.AreEqual("ALIAS_QUX", enumType.Values[3].Name);
+
+            for (int i = 0; i < enumType.Values.Count; i++)
+            {
+                Assert.AreEqual(i, enumType.Values[i].Index);
+            }
+
+            Assert.AreEqual(enumType.Values[2], enumType.FindValueByName("ALIAS_BAZ"));
+            Assert.AreEqual(enumType.Values[3], enumType.FindValueByName("ALIAS_QUX"));
+            // FindValueByNumber returns the first defined value for that number
+            Assert.AreEqual(enumType.Values[2], enumType.FindValueByNumber(2));
+        }
+
+        [Test]
         public void OneofDescriptor()
         {
             OneofDescriptor descriptor = TestAllTypes.Descriptor.FindDescriptor<OneofDescriptor>("oneof_field");

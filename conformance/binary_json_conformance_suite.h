@@ -61,8 +61,23 @@ class BinaryAndJsonConformanceSuite : public ConformanceTestSuite {
                                   ConformanceLevel level);
 
   void RunDelimitedFieldTests();
+  void RunEdition2023AliasedEnumTests();
 
   void RunUnstableTests();
+  void RunJsonTestsForCustomEnumNames();
+  void RunValidJsonTestWithMessage(const std::string& test_name,
+                                   ConformanceLevel level,
+                                   const std::string& input_json,
+                                   const std::string& equivalent_text_format,
+                                   const Message& prototype);
+  void RunValidJsonIgnoreUnknownTestWithMessage(
+      const std::string& test_name, ConformanceLevel level,
+      const std::string& input_json, const std::string& equivalent_text_format,
+      const Message& prototype);
+  void ExpectParseFailureForJsonWithMessage(const std::string& test_name,
+                                            ConformanceLevel level,
+                                            const std::string& input_json,
+                                            const Message& prototype);
 
   void RunUtf8ValidationTests();
 

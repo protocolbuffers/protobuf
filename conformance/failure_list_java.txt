@@ -37,6 +37,7 @@ Recommended.*.JsonInput.FieldMaskInvalidCharacter                               
 Required.*.JsonInput.EnumFieldNotQuoted                                                                            # Should have failed to parse, but didn't.
 Required.*.JsonInput.EnumFieldSingleElementArrayEnumName                                                           # Should have failed to parse, but didn't.
 Required.*.JsonInput.EnumFieldSingleElementArrayNumericValue                                                      # Should have failed to parse, but didn't.
+Required.Editions.JsonInput.AliasedEnum.SingleElementArray.Reject                                                  # Should have failed to parse, but didn't.
 Required.*.JsonInput.Int32FieldLeadingZero                                                                         # Should have failed to parse, but didn't.
 Required.*.JsonInput.Int32FieldNegativeWithLeadingZero                                                             # Should have failed to parse, but didn't.
 Required.*.JsonInput.Int32FieldPlusSign                                                                            # Should have failed to parse, but didn't.
