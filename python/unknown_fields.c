@@ -10,7 +10,10 @@
 #include "python/message.h"
 #include "python/protobuf.h"
 #include "upb/base/string_view.h"
+#include "upb/mem/arena.h"
 #include "upb/message/message.h"
+#include "upb/message/unknown_fields.h"
+#include "upb/wire/encode_extension.h"
 #include "upb/wire/eps_copy_input_stream.h"
 #include "upb/wire/reader.h"
 #include "upb/wire/types.h"
@@ -246,8 +249,30 @@ static PyObject* PyUpb_UnknownFieldSet_New(PyTypeObject* type, PyObject* args,
   if (!msg) return &self->ob_base;
 
   uintptr_t iter = kUpb_Message_UnknownBegin;
-  upb_StringView view;
-  while (upb_Message_NextUnknown(msg, &view, &iter)) {
+  upb_MessageUnknown unknown;
+  upb_Arena* arena = NULL;
+  while (upb_Message_NextUnknown2(msg, &unknown, &iter)) {
+    upb_StringView view;
+    if (unknown.type == kUpb_MessageUnknownType_StringView) {
+      view = unknown.value.bytes;
+    } else {
+      assert(unknown.type == kUpb_MessageUnknownType_NonCanonicalExtension);
+      if (!arena) {
+        arena = upb_Arena_New();
+        if (!arena) {
+          Py_DECREF(&self->ob_base);
+          return NULL;
+        }
+      }
+      upb_EncodeStatus status =
+          upb_EncodeExtension(unknown.value.extension, arena, &view, 0);
+      if (status != kUpb_EncodeStatus_Ok) {
+        upb_Arena_Free(arena);
+        Py_DECREF(&self->ob_base);
+        return NULL;
+      }
+    }
+
     const char* ptr = view.data;
     upb_EpsCopyInputStream stream;
     upb_EpsCopyInputStream_Init(&stream, &ptr, view.size);
@@ -261,11 +286,13 @@ static PyObject* PyUpb_UnknownFieldSet_New(PyTypeObject* type, PyObject* args,
     }
 
     if (!ok) {
+      if (arena) upb_Arena_Free(arena);
       Py_DECREF(&self->ob_base);
       return NULL;
     }
   }
 
+  if (arena) upb_Arena_Free(arena);
   return &self->ob_base;
 }
 
