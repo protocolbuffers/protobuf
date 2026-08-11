@@ -11,37 +11,58 @@ load("@proto_bazel_features//:features.bzl", "bazel_features")
 load("//bazel/common:proto_lang_toolchain_info.bzl", "ProtoLangToolchainInfo")
 load("//bazel/private:toolchain_helpers.bzl", "toolchains")
 
-def _import_virtual_proto_path(path):
-    """Imports all paths for virtual imports.
+def _is_virtual_file(file):
+    """Returns True if the file is a virtual import."""
+    return "_virtual_imports/" in file.path
 
-      They're of the form:
-      'bazel-out/k8-fastbuild/bin/external/foo/e/_virtual_imports/e' or
-      'bazel-out/foo/k8-fastbuild/bin/e/_virtual_imports/e'"""
-    if path.count("/") > 4:
-        return "-I%s" % path
+def _is_external_file(file):
+    """Returns True if the file belongs to an external repository."""
+    if _is_virtual_file(file):
+        return False
+    root_path = file.root.path
+    if root_path and root_path != "." and "external/" in root_path:
+        return True
+    return file.path.startswith("external/") or file.path.startswith("../")
+
+def _is_main_generated_file(file):
+    """Returns True if the file is a generated file in the main workspace."""
+    if _is_virtual_file(file) or _is_external_file(file):
+        return False
+    return bool(file.root.path and file.root.path != ".")
+
+def _virtual_root(file):
+    """Extracts the '_virtual_imports/<target>' prefix directory."""
+    path = file.path
+    idx = path.find("_virtual_imports/")
+    end = path.find("/", idx + len("_virtual_imports/"))
+    return path[:end] if end >= 0 else None
+
+def _external_root(file):
+    """Extracts the external repository root."""
+    root_path = file.root.path
+    if root_path and root_path != "." and "external/" in root_path:
+        return root_path
+    parts = file.path.split("/", 2)
+    return "%s/%s" % (parts[0], parts[1])
+
+def _main_output_root(file):
+    """Extracts the main workspace output root (e.g. bazel-out/cfg/bin)."""
+    return file.root.path
+
+def _import_virtual_from_file(file):
+    if _is_virtual_file(file):
+        root = _virtual_root(file)
+        return "-I%s" % root if root else None
     return None
 
-def _import_repo_proto_path(path):
-    """Imports all paths for generated files in external repositories.
-
-      They are of the form:
-      'bazel-out/k8-fastbuild/bin/external/foo' or
-      'bazel-out/foo/k8-fastbuild/bin'"""
-    path_count = path.count("/")
-    if path_count > 2 and path_count <= 4:
-        return "-I%s" % path
+def _import_external_repo_from_file(file):
+    if _is_external_file(file):
+        return "-I%s" % _external_root(file)
     return None
 
-def _import_main_output_proto_path(path):
-    """Imports all paths for generated files or source files in external repositories.
-
-      They're of the form:
-      'bazel-out/k8-fastbuild/bin'
-      'external/foo'
-      '../foo'
-    """
-    if path.count("/") <= 2 and path != ".":
-        return "-I%s" % path
+def _import_main_output_from_file(file):
+    if _is_main_generated_file(file):
+        return "-I%s" % _main_output_root(file)
     return None
 
 def _remove_repo(file):
@@ -206,9 +227,9 @@ def _compile(
     # For example: 'bazel-out/k8-fastbuild/bin/external/foo' needs to be listed
     # before 'bazel-out/k8-fastbuild/bin'. If not, protoc will discover file under
     # the shorter path and use 'external/foo/...' as its package path.
-    args.add_all(proto_info.transitive_proto_path, map_each = _import_virtual_proto_path)
-    args.add_all(proto_info.transitive_proto_path, map_each = _import_repo_proto_path)
-    args.add_all(proto_info.transitive_proto_path, map_each = _import_main_output_proto_path)
+    args.add_all(proto_info.transitive_sources, map_each = _import_virtual_from_file, uniquify = True)
+    args.add_all(proto_info.transitive_sources, map_each = _import_external_repo_from_file, uniquify = True)
+    args.add_all(proto_info.transitive_sources, map_each = _import_main_output_from_file, uniquify = True)
     args.add("-I.")  # Needs to come last
 
     args.add_all(proto_lang_toolchain_info.protoc_opts)
