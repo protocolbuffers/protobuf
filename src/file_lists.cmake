@@ -1440,6 +1440,7 @@ set(compiler_test_files
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/message_serialization_unittest.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/name_resolver_test.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/plugin_unittest.cc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/objectivec/generator_unittest.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/objectivec/line_consumer_unittest.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/objectivec/names_unittest.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/objectivec/text_format_decode_data_unittest.cc
