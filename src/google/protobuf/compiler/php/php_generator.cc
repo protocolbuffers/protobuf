@@ -74,13 +74,15 @@ constexpr absl::CharSet kBannedPhpNamespaceChars =
     absl::CharSet(";{}()'\"`$#=<>|&[]/\n\r!?*~^%@,") |
     absl::CharSet::Char('\0');
 
-// Validates that a PHP namespace/metadata namespace option does not contain
-// characters that could allow code injection into generated PHP code.
-bool IsValidPhpNamespace(absl::string_view ns, std::string* error) {
-  for (char c : ns) {
+// Validates that a PHP namespace/metadata namespace/class prefix option does
+// not contain characters that could allow code injection into generated PHP
+// code.
+bool IsValidPhpOption(absl::string_view value, absl::string_view option_name,
+                      std::string* error) {
+  for (char c : value) {
     if (kBannedPhpNamespaceChars.contains(c)) {
       *error = absl::StrCat(
-          "Invalid character in PHP namespace option: character '",
+          "Invalid character in PHP option ", option_name, ": character '",
           std::string(1, c),
           "' is not allowed because it could enable code injection.");
       return false;
@@ -1564,12 +1566,20 @@ bool GenerateMessageFile(const FileDescriptor* file, const Descriptor* message,
 bool GenerateFile(const FileDescriptor* file, const Options& options,
                   GeneratorContext* generator_context, std::string* error) {
   if (file->options().has_php_namespace()) {
-    if (!IsValidPhpNamespace(file->options().php_namespace(), error)) {
+    if (!IsValidPhpOption(file->options().php_namespace(), "php_namespace",
+                          error)) {
       return false;
     }
   }
   if (file->options().has_php_metadata_namespace()) {
-    if (!IsValidPhpNamespace(file->options().php_metadata_namespace(), error)) {
+    if (!IsValidPhpOption(file->options().php_metadata_namespace(),
+                          "php_metadata_namespace", error)) {
+      return false;
+    }
+  }
+  if (file->options().has_php_class_prefix()) {
+    if (!IsValidPhpOption(file->options().php_class_prefix(),
+                          "php_class_prefix", error)) {
       return false;
     }
   }
