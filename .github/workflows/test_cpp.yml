@@ -486,7 +486,7 @@ jobs:
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel: ${{ matrix.bazel }}
           bazel-cache: cpp_${{ matrix.cache_key }}
-          version: ${{ matrix.bazel_version || '8.0.1' }}
+          version: ${{ matrix.bazel_version || '8.7.0' }}
 
   non-linux-cmake:
     strategy:
@@ -559,7 +559,7 @@ jobs:
         if: ${{ matrix.install-flags && (!matrix.continuous-only || inputs.continuous-run) }}
         uses: protocolbuffers/protobuf-ci/bash@v5
         with:
-          bazel-version: 8.0.1
+          bazel-version: 8.7.0
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           command: >-
             cmake . -DCMAKE_CXX_STANDARD=17 -Dprotobuf_BUILD_TESTS=ON ${{ matrix.install-flags }}
@@ -586,7 +586,7 @@ jobs:
         uses: protocolbuffers/protobuf-ci/bash@v5
         with:
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
-          bazel-version: 8.0.1
+          bazel-version: 8.7.0
           command: >-
             cmake . -DCMAKE_CXX_STANDARD=17 -Dprotobuf_BUILD_TESTS=ON ${{ matrix.flags }}
             ${{ env.SCCACHE_CMAKE_FLAGS }} -Dprotobuf_ALLOW_CCACHE=ON
