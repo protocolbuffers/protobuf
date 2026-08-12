@@ -17687,7 +17687,10 @@ UPB_INLINE const char* upb_WireReader_SkipValue(
 enum {
   // If set, upb_Message_IsEqual() will attempt to compare unknown fields.
   // By its very nature this comparison is inexact.
-  kUpb_CompareOption_IncludeUnknownFields = (1 << 0)
+  kUpb_CompareOption_IncludeUnknownFields = (1 << 0),
+
+  // If set, only fields present in msg2 (the expected message) are compared.
+  kUpb_CompareOption_Partial = (1 << 1)
 };
 
 #ifdef __cplusplus
