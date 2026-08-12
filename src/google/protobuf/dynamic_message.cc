@@ -822,7 +822,7 @@ DynamicMessageFactory::~DynamicMessageFactory() {
 const Message* PROTOBUF_NONNULL
 DynamicMessageFactory::GetPrototype(const Descriptor* PROTOBUF_NONNULL type) {
   ABSL_CHECK(type != nullptr);
-  absl::MutexLock lock(&prototypes_mutex_);
+  PROTOBUF_MUTEX_LOCK(lock, prototypes_mutex_);
   auto* result = GetPrototypeNoLock(type);
   return result;
 }

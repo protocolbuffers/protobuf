@@ -1715,7 +1715,7 @@ Symbol DescriptorPool::Tables::FindByNameHelper(const DescriptorPool* pool,
                                                 absl::string_view name) {
   if (pool->mutex_ != nullptr) {
     // Fast path: the Symbol is already cached.  This is just a hash lookup.
-    absl::ReaderMutexLock lock(pool->mutex_);
+    PROTOBUF_READER_MUTEX_LOCK(lock, *pool->mutex_);
     if (known_bad_symbols_.empty() && known_bad_files_.empty()) {
       Symbol result = FindSymbol(name);
       if (!result.IsNull()) return result;
@@ -1871,7 +1871,7 @@ FileDescriptorTables::FindEnumValueByNumberCreatingIfUnknown(
 
   // Second try, with reader lock held on unknown enum values: common case.
   {
-    absl::ReaderMutexLock l(&unknown_enum_values_mu_);
+    PROTOBUF_READER_MUTEX_LOCK(l, unknown_enum_values_mu_);
     auto it = unknown_enum_values_by_number_.find(query);
     if (it != unknown_enum_values_by_number_.end()) {
       return *it;
@@ -1880,7 +1880,7 @@ FileDescriptorTables::FindEnumValueByNumberCreatingIfUnknown(
   // If not found, try again with writer lock held, and create new descriptor if
   // necessary.
   {
-    absl::WriterMutexLock l(&unknown_enum_values_mu_);
+    PROTOBUF_WRITER_MUTEX_LOCK(l, unknown_enum_values_mu_);
     auto it = unknown_enum_values_by_number_.find(query);
     if (it != unknown_enum_values_by_number_.end()) {
       return *it;
@@ -2399,7 +2399,7 @@ const FieldDescriptor* DescriptorPool::FindExtensionByNumber(
   // A faster path to reduce lock contention in finding extensions, assuming
   // most extensions will be cache hit.
   if (mutex_ != nullptr) {
-    absl::ReaderMutexLock lock(mutex_);
+    PROTOBUF_READER_MUTEX_LOCK(lock, *mutex_);
     const FieldDescriptor* result = tables_->FindExtension(extendee, number);
     if (result != nullptr) {
       return result;
