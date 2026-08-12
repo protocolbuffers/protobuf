@@ -1,0 +1,12 @@
+edition = "2024";
+
+package com.google.protobuf.kotlin.diamond;
+
+option java_package = "com.google.protobuf.kotlin.diamond";
+
+// Message used in DiamondDependencyTest to verify that depending on both a
+// direct and an exported Kotlin proto target does not cause One-Version
+// classpath collisions.
+message LeafMessage {
+  string value = 1;
+}

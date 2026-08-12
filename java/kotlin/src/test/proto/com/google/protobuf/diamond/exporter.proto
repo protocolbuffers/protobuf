@@ -1,0 +1,12 @@
+edition = "2024";
+
+package com.google.protobuf.kotlin.diamond;
+
+option java_package = "com.google.protobuf.kotlin.diamond";
+
+// Message defined in an exporter proto target to verify multi-jar Kotlin proto
+// compilation alongside exported proto dependencies without duplicate class
+// generation.
+message ExporterMessage {
+  string value = 1;
+}
