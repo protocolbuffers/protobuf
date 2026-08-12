@@ -11527,6 +11527,16 @@ const upb_FileDef* upb_DefPool_FindFileContainingSymbol(const upb_DefPool* s,
 }
 
 static void remove_filedef(upb_DefPool* s, upb_FileDef* file) {
+  intptr_t ext_iter = UPB_INTTABLE_BEGIN;
+  uintptr_t ext_key;
+  upb_value ext_val;
+  while (upb_inttable_next(&s->exts, &ext_key, &ext_val, &ext_iter)) {
+    const upb_FieldDef* ext = upb_value_getconstptr(ext_val);
+    if (upb_FieldDef_File(ext) == file) {
+      upb_inttable_removeiter(&s->exts, &ext_iter);
+    }
+  }
+
   intptr_t iter = UPB_INTTABLE_BEGIN;
   upb_StringView key;
   upb_value val;
