@@ -17,6 +17,7 @@ using ProtobufUnittest;
 using System;
 using System.Linq;
 using UnitTest.Issues.TestProtos;
+using JsonEnumvalCustomString;
 
 namespace Google.Protobuf
 {
@@ -1264,6 +1265,99 @@ namespace Google.Protobuf
             Assert.AreEqual(0, message.MapInt32Int32.Count);
             Assert.AreEqual(0, message.MapBoolBool.Count);
             Assert.AreEqual(0, message.MapStringNestedMessage.Count);
+        }
+
+        [Test]
+        [TestCase(Armor.Gorget, "ARMOR_GORGET")]
+        [TestCase(Armor.GreatHelm, "gr8 helm", "ARMOR_GREAT_HELM")]
+        [TestCase(Armor.Gauntlet, "a\\\"b", "ARMOR_GAUNTLET")]
+        [TestCase(Armor.Plate, "\\\"plate\\\"", "ARMOR_PLATE")]
+        [TestCase(Armor.Coif, "", "ARMOR_COIF")]
+        [TestCase(Armor.Pauldron, "p\\taul\\ndron", "ARMOR_PAULDRON")]
+        [TestCase(
+            Armor.Sabaton, "sabaton", "ARMOR_SABATON", "ARMOR_SOLLERET")]
+        [TestCase(
+            Armor.Solleret, "sabaton", "ARMOR_SOLLERET", "ARMOR_SABATON")]
+        [TestCase(Armor.HachiMaiDo, "8", "ARMOR_HACHI_MAI_DO")]
+        [TestCase(Armor.Greaves, "ARMOR_GREAVES")]
+        [TestCase(Armor.Unknown, "ARMOR_UNKNOWN")]
+        public void ParseString(Armor value, params string[] validJsonValues)
+        {
+            foreach (var validJsonValue in validJsonValues)
+            {
+                string json = $"{{ \"armor\": \"{validJsonValue}\" }}";
+                var parsed = JsonParser.Default.Parse<Knight>(json);
+                Assert.AreEqual(value, parsed.Armor);
+            }
+        }
+
+        [Test]
+        public void ParseInteger()
+        {
+            foreach (
+                var value in System.Enum.GetValues(typeof(Armor)).Cast<Armor>())
+            {
+                string json = $"{{ \"armor\": {(int) value} }}";
+                var parsed = JsonParser.Default.Parse<Knight>(json);
+                Assert.AreEqual(value, parsed.Armor);
+            }
+        }
+
+        [Test]
+        [TestCase("\"UNKNOWN_1\"")]
+        [TestCase("\"ARMOR_INVALID\"")]
+        [TestCase("\"A\\\"b\"")]
+        [TestCase("\"ARMOR_great_helm\"")]
+        [TestCase("\"GR8 HELM\"")]
+        [TestCase("true")]
+        [TestCase("123.456")]
+        [TestCase("{}")]
+        [TestCase("[ \"gr8 helm\" ]")]
+        [TestCase("[ \"ARMOR_GREAT_HELM\" ]")]
+        public void ParseInvalidValueFails(string jsonValue)
+        {
+            string json = $"{{ \"armor\": {jsonValue} }}";
+            Assert.Throws<InvalidProtocolBufferException>(
+                () => JsonParser.Default.Parse<Knight>(json));
+        }
+
+        [Test]
+        [TestCase("UNKNOWN_1")]
+        [TestCase("ARMOR_great_helm")]
+        [TestCase("GR8 HELM")]
+        public void ParseUnknownString_IgnoreUnknownFields(
+            string unrecognizedJsonValue)
+        {
+            var settings = JsonParser.Settings.Default
+                .WithIgnoreUnknownFields(true);
+            var parser = new JsonParser(settings);
+            string json = $"{{ \"armor\": \"{unrecognizedJsonValue}\" }}";
+            var parsed = parser.Parse<Knight>(json);
+            Assert.AreEqual(Armor.Unknown, parsed.Armor);
+        }
+
+        [Test]
+        public void ParseRepeated()
+        {
+            string json =
+                "{ \"armors\": [ \"gr8 helm\", \"ARMOR_GORGET\", \"a\\\"b\" ] }";
+            var parsed = JsonParser.Default.Parse<Knight>(json);
+            Assert.AreEqual(3, parsed.Armors.Count);
+            Assert.AreEqual(Armor.GreatHelm, parsed.Armors[0]);
+            Assert.AreEqual(Armor.Gorget, parsed.Armors[1]);
+            Assert.AreEqual(Armor.Gauntlet, parsed.Armors[2]);
+        }
+
+        [Test]
+        public void ParseMap()
+        {
+            string json =
+                "{ \"armorMap\": { \"primary\": \"gr8 helm\"," +
+                " \"secondary\": \"ARMOR_GORGET\" } }";
+            var parsed = JsonParser.Default.Parse<Knight>(json);
+            Assert.AreEqual(2, parsed.ArmorMap.Count);
+            Assert.AreEqual(Armor.GreatHelm, parsed.ArmorMap["primary"]);
+            Assert.AreEqual(Armor.Gorget, parsed.ArmorMap["secondary"]);
         }
     }
 }
