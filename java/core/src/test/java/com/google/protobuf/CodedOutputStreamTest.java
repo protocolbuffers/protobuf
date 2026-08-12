@@ -330,6 +330,15 @@ public class CodedOutputStreamTest {
     assertThrows(
         IllegalArgumentException.class, () -> CodedOutputStream.newInstance(new byte[1], 0, -1));
 
+    CodedOutputStream emptyArray = CodedOutputStream.newInstance(new byte[0], 0, 0);
+    assertThat(emptyArray.spaceLeft()).isEqualTo(0);
+
+    CodedOutputStream emptySliceAtStart = CodedOutputStream.newInstance(new byte[1], 0, 0);
+    assertThat(emptySliceAtStart.spaceLeft()).isEqualTo(0);
+
+    CodedOutputStream emptySliceAtEnd = CodedOutputStream.newInstance(new byte[1], 1, 0);
+    assertThat(emptySliceAtEnd.spaceLeft()).isEqualTo(0);
+
     byte[] sliceBytes = new byte[4];
     CodedOutputStream slice = CodedOutputStream.newInstance(sliceBytes, 1, 2);
     slice.writeUInt32NoTag(1);
