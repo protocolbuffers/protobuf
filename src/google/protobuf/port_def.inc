@@ -118,6 +118,24 @@
 #define PROTOBUF_ABSL_MIN(x, y) 1
 #endif
 
+// Workaround for deprecated pointer-based MutexLock constructors in newer
+// Abseil.
+// TODO: Remove these macros once minimum Abseil version is bumped
+// past 20260107.
+#if PROTOBUF_ABSL_MIN(20260107, 0)
+#define PROTOBUF_MUTEX_LOCK(name, mutex) absl::MutexLock name(mutex)
+#define PROTOBUF_READER_MUTEX_LOCK(name, mutex) \
+  absl::ReaderMutexLock name(mutex)
+#define PROTOBUF_WRITER_MUTEX_LOCK(name, mutex) \
+  absl::WriterMutexLock name(mutex)
+#else
+#define PROTOBUF_MUTEX_LOCK(name, mutex) absl::MutexLock name(&(mutex))
+#define PROTOBUF_READER_MUTEX_LOCK(name, mutex) \
+  absl::ReaderMutexLock name(&(mutex))
+#define PROTOBUF_WRITER_MUTEX_LOCK(name, mutex) \
+  absl::WriterMutexLock name(&(mutex))
+#endif
+
 // Future versions of protobuf will include breaking changes to some APIs.
 // This macro can be set to enable these API changes ahead of time, so that
 // user code can be updated before upgrading versions of protobuf.

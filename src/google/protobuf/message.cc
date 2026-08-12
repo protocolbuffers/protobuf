@@ -613,7 +613,7 @@ const Message* GeneratedMessageFactory::GetPrototype(const Descriptor* type) {
     result = dropped_defaults_factory_.GetPrototype(type);
 
     {
-      absl::WriterMutexLock lock(&mutex_);
+      PROTOBUF_WRITER_MUTEX_LOCK(lock, mutex_);
       // And update the main map to make the next lookup faster.
       // We don't need to recheck here. Even if someone raced us here the result
       // is the same, so we can just write it.
@@ -628,7 +628,7 @@ const Message* GeneratedMessageFactory::TryGetPrototype(
     const Descriptor* type) {
   absl::optional<const Message*> result;
   {
-    absl::ReaderMutexLock lock(&mutex_);
+    PROTOBUF_READER_MUTEX_LOCK(lock, mutex_);
     result = FindInTypeMap(type);
     if (result.has_value() && *result != nullptr) {
       return *result;
@@ -650,7 +650,7 @@ const Message* GeneratedMessageFactory::TryGetPrototype(
   }
 
   {
-    absl::WriterMutexLock lock(&mutex_);
+    PROTOBUF_WRITER_MUTEX_LOCK(lock, mutex_);
 
     // Check if another thread preempted us.
     result = FindInTypeMap(type);

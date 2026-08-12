@@ -2775,7 +2775,7 @@ class PROTOBUF_EXPORT DescriptorPool {
     }
     auto key = std::pair<const void*, const void*>(descriptor, secondary_key);
     {
-      absl::ReaderMutexLock lock(&pool->field_memo_table_mutex_);
+      PROTOBUF_READER_MUTEX_LOCK(lock, pool->field_memo_table_mutex_);
       auto it = pool->field_memo_table_->find(key);
       if (it != pool->field_memo_table_->end()) {
         return internal::DownCast<const MemoData<ResultT>&>(*it->second).value;
@@ -2784,7 +2784,7 @@ class PROTOBUF_EXPORT DescriptorPool {
     auto result = std::make_unique<MemoData<ResultT>>();
     result->value = func(descriptor);
     {
-      absl::MutexLock lock(&pool->field_memo_table_mutex_);
+      PROTOBUF_MUTEX_LOCK(lock, pool->field_memo_table_mutex_);
       auto insert_result =
           pool->field_memo_table_->insert({key, std::move(result)});
       auto it = insert_result.first;
