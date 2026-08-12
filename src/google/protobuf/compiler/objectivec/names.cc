@@ -1344,6 +1344,31 @@ bool LoadExpectedPackagePrefixes(
   return ParseSimpleFile(expected_prefixes_path, &collector, out_error);
 }
 
+// Checks that a file's objc_class_prefix contains only characters that are
+// valid in a C identifier.
+//
+// This is deliberately separate from the prefix/package validations below: the
+// prefix is pasted directly into generated class names, @interface and
+// @implementation declarations and string literals, so anything outside that
+// set can break out of those constructs and inject arbitrary code into the
+// generated sources. That makes it a correctness requirement rather than a
+// naming policy, so it must not be disabled along with the policy checks.
+//
+// Reminder: an explicit prefix option of "" is valid, and passes.
+bool ValidateObjCClassPrefixChars(const FileDescriptor* file,
+                                  std::string* out_error) {
+  const absl::string_view prefix = file->options().objc_class_prefix();
+  for (const char c : prefix) {
+    if (!absl::ascii_isalnum(c) && c != '_') {
+      *out_error = absl::StrCat(
+          "error: Invalid 'option objc_class_prefix = \"", prefix, "\";' in '",
+          file->name(), "'; it must contain only letters, digits and '_'.");
+      return false;
+    }
+  }
+  return true;
+}
+
 bool ValidateObjCClassPrefix(
     const FileDescriptor* file, absl::string_view expected_prefixes_path,
     const absl::flat_hash_map<std::string, std::string>&
@@ -1358,21 +1383,6 @@ bool ValidateObjCClassPrefix(
   bool have_expected_prefix_file = !expected_prefixes_path.empty();
 
   const absl::string_view prefix = file->options().objc_class_prefix();
-
-  // Check: Error - The prefix is pasted directly into generated class names,
-  // @interface/@implementation declarations and string literals, so anything
-  // that is not valid in a C identifier can break out of those constructs and
-  // inject arbitrary code into the generated sources. This has to run before
-  // any of the checks below, since those can return early.
-  for (const char c : prefix) {
-    if (!absl::ascii_isalnum(c) && c != '_') {
-      *out_error = absl::StrCat(
-          "error: Invalid 'option objc_class_prefix = \"", prefix, "\";' in '",
-          file->name(), "'; it must contain only letters, digits and '_'.");
-      return false;
-    }
-  }
-
   const absl::string_view package = file->package();
   // For files without packages, the can be registered as "no_package:PATH",
   // allowing the expected prefixes file.
@@ -1533,6 +1543,15 @@ bool ValidateObjCClassPrefixes(const std::vector<const FileDescriptor*>& files,
 bool ValidateObjCClassPrefixes(const std::vector<const FileDescriptor*>& files,
                                const Options& validation_options,
                                std::string* out_error) {
+  // Character validation runs for every file first, before the opt-outs below:
+  // neither disabling the expected-prefixes checks nor suppressing a file from
+  // them should allow a prefix that can inject code into the generated sources.
+  for (auto file : files) {
+    if (!ValidateObjCClassPrefixChars(file, out_error)) {
+      return false;
+    }
+  }
+
   // Allow a '-' as the path for the expected prefixes to completely disable
   // even the most basic of checks.
   if (validation_options.expected_prefixes_path == "-") {

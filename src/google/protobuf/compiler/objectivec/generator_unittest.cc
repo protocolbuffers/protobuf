@@ -50,6 +50,43 @@ TEST_F(ObjectiveCGeneratorTest, InvalidObjCClassPrefixRejected) {
   ExpectErrorSubstring("Invalid 'option objc_class_prefix");
 }
 
+// The expected-prefixes machinery has two documented opt-outs: a path of "-"
+// disables the checks entirely, and a file can be listed in
+// expected_prefixes_suppressions. Neither may permit a prefix that can inject
+// code into the generated sources, so the character check runs ahead of both.
+TEST_F(ObjectiveCGeneratorTest,
+       InvalidObjCClassPrefixRejectedWithExpectedPrefixesDisabled) {
+  CreateTempFile("foo.proto",
+                 R"schema(
+    syntax = "proto3";
+    option objc_class_prefix = "A\";void pwn(){}//";
+    message Foo {
+      int32 bar = 1;
+    })schema");
+
+  RunProtoc(
+      "protocol_compiler --proto_path=$tmpdir --objc_out=$tmpdir "
+      "--objc_opt=expected_prefixes_path=- foo.proto");
+
+  ExpectErrorSubstring("Invalid 'option objc_class_prefix");
+}
+
+TEST_F(ObjectiveCGeneratorTest, InvalidObjCClassPrefixRejectedWhenSuppressed) {
+  CreateTempFile("foo.proto",
+                 R"schema(
+    syntax = "proto3";
+    option objc_class_prefix = "A\";void pwn(){}//";
+    message Foo {
+      int32 bar = 1;
+    })schema");
+
+  RunProtoc(
+      "protocol_compiler --proto_path=$tmpdir --objc_out=$tmpdir "
+      "--objc_opt=expected_prefixes_suppressions=foo.proto foo.proto");
+
+  ExpectErrorSubstring("Invalid 'option objc_class_prefix");
+}
+
 TEST_F(ObjectiveCGeneratorTest, ValidObjCClassPrefixAccepted) {
   CreateTempFile("foo.proto",
                  R"schema(
