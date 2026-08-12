@@ -85,6 +85,7 @@ using ::absl_testing::StatusIs;
 using ::google::protobuf::internal::UnsetFieldsMetadataTextFormatTestUtil;
 using ::testing::_;
 using ::testing::AllOf;
+using ::testing::EqualsProto;
 using ::testing::Gt;
 using ::testing::HasSubstr;
 using ::testing::Lt;
@@ -2554,6 +2555,33 @@ TEST_F(TextFormatParserTest, AllowIgnoreCapitalizationError) {
   EXPECT_EQ(10.0, proto.optional_double());
   EXPECT_TRUE(parser.ParseFromString("oPtIoNaLgRoUp { a: 15 }", &proto));
   EXPECT_EQ(15, proto.optionalgroup().a());
+}
+
+TEST_F(TextFormatParserTest, DisallowReservedFieldsErrors) {
+  unittest::TestReservedFields dest;
+  parser_.DisallowReservedField(true);
+  ExpectFailure(
+      "bar: 123\n",
+      "Message type \"proto2_unittest.TestReservedFields\" has no field named "
+      "\"bar\".",
+      1, 4, &dest);
+  ExpectFailure(
+      "baz: { foo: 1 }\n",
+      "Message type \"proto2_unittest.TestReservedFields\" has no field named "
+      "\"baz\".",
+      1, 4, &dest);
+
+  parser_.AllowFieldNumber(true);
+  ExpectFailure(
+      "2: \"abc\"\n",
+      "Message type \"proto2_unittest.TestReservedFields\" has no field named "
+      "\"2\".",
+      1, 2, &dest);
+  ExpectFailure(
+      "10: { 11: 66 }\n",
+      "Message type \"proto2_unittest.TestReservedFields\" has no field named "
+      "\"10\".",
+      1, 3, &dest);
 }
 
 TEST_F(TextFormatParserTest, InvalidFieldValues) {

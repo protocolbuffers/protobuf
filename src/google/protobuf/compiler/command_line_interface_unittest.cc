@@ -6121,6 +6121,42 @@ TEST_P(EncodeDecodeTest, DecodeDeterministicOutput) {
   ExpectError("Can only use --deterministic_output with --encode.");
 }
 
+TEST_P(EncodeDecodeTest, EncodeAllowReservedFieldsDefault) {
+  RedirectStdinFromText("bar: 123\n");
+  std::string args;
+  if (GetParam() != DESCRIPTOR_SET_IN) {
+    args.append("google/protobuf/unittest.proto");
+  }
+  EXPECT_TRUE(
+      Run(absl::StrCat(args, " --encode=proto2_unittest.TestReservedFields")));
+  ExpectNoErrors();
+}
+
+TEST_P(EncodeDecodeTest, EncodeDisallowReservedFields) {
+  RedirectStdinFromText("bar: 123\n");
+  std::string args;
+  if (GetParam() != DESCRIPTOR_SET_IN) {
+    args.append("google/protobuf/unittest.proto");
+  }
+  EXPECT_FALSE(Run(absl::StrCat(args,
+                                " --encode=proto2_unittest.TestReservedFields "
+                                "--disallow_reserved_field")));
+  ExpectErrorSubstring(
+      "Message type \"proto2_unittest.TestReservedFields\" has no field named "
+      "\"bar\".");
+  ExpectErrorSubstring("Failed to parse input.");
+}
+
+TEST_P(EncodeDecodeTest, DecodeDisallowReservedFields) {
+  std::string golden_path = absl::StrCat(TestTempDir(), "/golden_message");
+  WriteGoldenMessage(golden_path);
+  RedirectStdinFromFile(golden_path);
+  EXPECT_FALSE(
+      Run("google/protobuf/unittest.proto"
+          " --decode=proto2_unittest.TestAllTypes --disallow_reserved_field"));
+  ExpectError("Can only use --disallow_reserved_field with --encode.");
+}
+
 INSTANTIATE_TEST_SUITE_P(FileDescriptorSetSource, EncodeDecodeTest,
                          testing::Values(PROTO_PATH, DESCRIPTOR_SET_IN));
 }  // anonymous namespace
