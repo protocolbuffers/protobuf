@@ -3758,8 +3758,11 @@ void Reflection::PopulateTcParseFieldAux(
       case internal::TailCallTableInfo::kSplitSizeof:
         field_aux++->offset = schema_.SizeofSplit();
         break;
-      case internal::TailCallTableInfo::kSubTable:
-      case internal::TailCallTableInfo::kSubMessageGlobalsWeak:
+      case internal::TailCallTableInfo::kClassData:
+        field_aux++->class_data_p =
+            internal::GetClassData(*GetDefaultMessageInstance(aux_entry.field));
+        break;
+      case internal::TailCallTableInfo::kClassDataWeak:
       case internal::TailCallTableInfo::kMessageVerifyFunc:
       case internal::TailCallTableInfo::kSelfVerifyFunc:
         ABSL_LOG(FATAL) << "Not supported";
@@ -3771,11 +3774,6 @@ void Reflection::PopulateTcParseFieldAux(
         // values. TcParser does not support them yet, so mark the field as
         // unsupported to fallback to reflection.
         field_aux++->map_info = internal::MapAuxInfo{};
-        break;
-      case internal::TailCallTableInfo::kSubMessageGlobals:
-        field_aux++->message_globals_p =
-            MessageGlobalsBase::FromDefaultInstance(
-                GetDefaultMessageInstance(aux_entry.field));
         break;
       case internal::TailCallTableInfo::kEnumRange:
         field_aux++->enum_range = {aux_entry.enum_range.first,

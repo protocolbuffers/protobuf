@@ -5651,7 +5651,11 @@ void MessageGenerator::GenerateSourceDefaultInstance(io::Printer* p) {
             {"name", MsgGlobalsInstanceName(descriptor_, options_)},
         },
         R"cc(
+#ifndef PROTOBUF_MESSAGE_GLOBALS
+          PROTOBUF_CONSTINIT const void* $ptr$ = &$Msg$_class_data_;
+#else
           PROTOBUF_CONSTINIT const void* $ptr$ = &$globals$;
+#endif
         )cc");
   }
 }

@@ -167,7 +167,7 @@ struct Offset {
 #pragma warning(disable : 4324)
 #endif
 
-struct FieldAuxMessageGlobals {};
+struct FieldAuxClassData {};
 struct FieldAuxEnumData {};
 
 // Small type card used by mini parse to handle map entries.
@@ -452,16 +452,17 @@ struct alignas(uint64_t) TcParseTableBase {
 
   // Auxiliary entries for field types that need extra information.
   union FieldAux {
-    constexpr FieldAux() : message_globals_p(nullptr) {}
+    constexpr FieldAux() : class_data_p(nullptr) {}
     constexpr FieldAux(FieldAuxEnumData, const uint32_t* enum_data)
         : enum_data(enum_data) {}
     // NOLINTBEGIN(google-explicit-constructor)
     constexpr FieldAux(field_layout::Offset off) : offset(off.off) {}
     constexpr FieldAux(int32_t range_first, int32_t range_last)
         : enum_range{range_first, range_last} {}
-    constexpr FieldAux(FieldAuxMessageGlobals, const void* globals)
-        : message_globals_p(globals) {}
-    constexpr FieldAux(const TcParseTableBase* table) : table(table) {}
+    constexpr FieldAux(const void* const* class_data_weak)
+        : class_data_weak_p(class_data_weak) {}
+    constexpr FieldAux(FieldAuxClassData, const void* class_data)
+        : class_data_p(class_data) {}
     constexpr FieldAux(MapAuxInfo map_info) : map_info(map_info) {}
     constexpr FieldAux(LazyEagerVerifyFnType verify_func)
         : verify_func(verify_func) {}
@@ -471,30 +472,17 @@ struct alignas(uint64_t) TcParseTableBase {
       int32_t last;   // the last label in the range (inclusize)
     } enum_range;
     uint32_t offset;
-    const void* message_globals_p;
+    const void* class_data_p;
+    const void* const* class_data_weak_p;
     const uint32_t* enum_data;
-    const TcParseTableBase* table;
     MapAuxInfo map_info;
     LazyEagerVerifyFnType verify_func;
 
-    const MessageLite* message_default() const {
-      return MessageGlobalsBase::ToDefaultInstance(message_globals_p);
+    const ClassData* class_data() const {
+      return static_cast<const ClassData*>(class_data_p);
     }
-    const MessageLite* message_default_weak() const {
-      return MessageGlobalsBase::ToDefaultInstance(message_globals_weak());
-    }
-    const MessageGlobalsBase* message_globals() const {
-      return static_cast<const MessageGlobalsBase*>(message_globals_p);
-    }
-    const MessageGlobalsBase* message_globals_weak() const {
-      return *static_cast<const MessageGlobalsBase* const*>(message_globals_p);
-    }
-    const TcParseTableBase* table_ptr() const {
-#ifndef PROTOBUF_MESSAGE_GLOBALS
-      return table;
-#else
-      return MessageGlobalsBase::ToParseTableBase(message_globals_p);
-#endif
+    const ClassData* class_data_weak() const {
+      return static_cast<const ClassData*>(*class_data_weak_p);
     }
   };
   const FieldAux* field_aux(uint32_t idx) const {
