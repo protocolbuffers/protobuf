@@ -7,6 +7,11 @@
 
 """java_proto_library rule."""
 
-load("//bazel/private:java_proto_library.bzl", _java_proto_library = "java_proto_library")
+load(
+    "//bazel/private:java_proto_library.bzl",
+    _bazel_java_proto_aspect = "bazel_java_proto_aspect",
+    _java_proto_library = "java_proto_library",
+)
 
 java_proto_library = _java_proto_library
+bazel_java_proto_aspect = _bazel_java_proto_aspect
