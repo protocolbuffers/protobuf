@@ -877,53 +877,26 @@ final class MessageSchema<T> implements Schema<T> {
             && Float.floatToIntBits(UnsafeUtil.getFloat(message, offset))
                 == Float.floatToIntBits(UnsafeUtil.getFloat(other, offset));
       case 2: // INT64:
-        return arePresentForEquals(message, other, pos)
-            && UnsafeUtil.getLong(message, offset) == UnsafeUtil.getLong(other, offset);
       case 3: // UINT64:
+      case 5: // FIXED64:
+      case 14: // SFIXED64:
+      case 16: // SINT64:
         return arePresentForEquals(message, other, pos)
             && UnsafeUtil.getLong(message, offset) == UnsafeUtil.getLong(other, offset);
       case 4: // INT32:
-        return arePresentForEquals(message, other, pos)
-            && UnsafeUtil.getInt(message, offset) == UnsafeUtil.getInt(other, offset);
-      case 5: // FIXED64:
-        return arePresentForEquals(message, other, pos)
-            && UnsafeUtil.getLong(message, offset) == UnsafeUtil.getLong(other, offset);
       case 6: // FIXED32:
+      case 11: // UINT32:
+      case 12: // ENUM:
+      case 13: // SFIXED32:
+      case 15: // SINT32:
         return arePresentForEquals(message, other, pos)
             && UnsafeUtil.getInt(message, offset) == UnsafeUtil.getInt(other, offset);
       case 7: // BOOL:
         return arePresentForEquals(message, other, pos)
             && UnsafeUtil.getBoolean(message, offset) == UnsafeUtil.getBoolean(other, offset);
       case 8: // STRING:
-        return arePresentForEquals(message, other, pos)
-            && SchemaUtil.safeEquals(
-                UnsafeUtil.getObject(message, offset), UnsafeUtil.getObject(other, offset));
       case 9: // MESSAGE:
-        return arePresentForEquals(message, other, pos)
-            && SchemaUtil.safeEquals(
-                UnsafeUtil.getObject(message, offset), UnsafeUtil.getObject(other, offset));
       case 10: // BYTES:
-        return arePresentForEquals(message, other, pos)
-            && SchemaUtil.safeEquals(
-                UnsafeUtil.getObject(message, offset), UnsafeUtil.getObject(other, offset));
-      case 11: // UINT32:
-        return arePresentForEquals(message, other, pos)
-            && UnsafeUtil.getInt(message, offset) == UnsafeUtil.getInt(other, offset);
-      case 12: // ENUM:
-        return arePresentForEquals(message, other, pos)
-            && UnsafeUtil.getInt(message, offset) == UnsafeUtil.getInt(other, offset);
-      case 13: // SFIXED32:
-        return arePresentForEquals(message, other, pos)
-            && UnsafeUtil.getInt(message, offset) == UnsafeUtil.getInt(other, offset);
-      case 14: // SFIXED64:
-        return arePresentForEquals(message, other, pos)
-            && UnsafeUtil.getLong(message, offset) == UnsafeUtil.getLong(other, offset);
-      case 15: // SINT32:
-        return arePresentForEquals(message, other, pos)
-            && UnsafeUtil.getInt(message, offset) == UnsafeUtil.getInt(other, offset);
-      case 16: // SINT64:
-        return arePresentForEquals(message, other, pos)
-            && UnsafeUtil.getLong(message, offset) == UnsafeUtil.getLong(other, offset);
       case 17: // GROUP:
         return arePresentForEquals(message, other, pos)
             && SchemaUtil.safeEquals(
@@ -961,8 +934,6 @@ final class MessageSchema<T> implements Schema<T> {
       case 47: // SINT32_LIST_PACKED:
       case 48: // SINT64_LIST_PACKED:
       case 49: // GROUP_LIST:
-        return SchemaUtil.safeEquals(
-            UnsafeUtil.getObject(message, offset), UnsafeUtil.getObject(other, offset));
       case 50: // MAP:
         return SchemaUtil.safeEquals(
             UnsafeUtil.getObject(message, offset), UnsafeUtil.getObject(other, offset));
@@ -1017,18 +988,18 @@ final class MessageSchema<T> implements Schema<T> {
           hashCode = (hashCode * 53) + Float.floatToIntBits(UnsafeUtil.getFloat(message, offset));
           break;
         case 2: // INT64:
-          hashCode = (hashCode * 53) + Internal.hashLong(UnsafeUtil.getLong(message, offset));
-          break;
         case 3: // UINT64:
+        case 5: // FIXED64:
+        case 14: // SFIXED64:
+        case 16: // SINT64:
           hashCode = (hashCode * 53) + Internal.hashLong(UnsafeUtil.getLong(message, offset));
           break;
         case 4: // INT32:
-          hashCode = (hashCode * 53) + (UnsafeUtil.getInt(message, offset));
-          break;
-        case 5: // FIXED64:
-          hashCode = (hashCode * 53) + Internal.hashLong(UnsafeUtil.getLong(message, offset));
-          break;
         case 6: // FIXED32:
+        case 11: // UINT32:
+        case 12: // ENUM:
+        case 13: // SFIXED32:
+        case 15: // SINT32:
           hashCode = (hashCode * 53) + (UnsafeUtil.getInt(message, offset));
           break;
         case 7: // BOOL:
@@ -1038,6 +1009,7 @@ final class MessageSchema<T> implements Schema<T> {
           hashCode = (hashCode * 53) + ((String) UnsafeUtil.getObject(message, offset)).hashCode();
           break;
         case 9: // MESSAGE:
+        case 17: // GROUP:
           {
             int protoHash = 37;
             Object submessage = UnsafeUtil.getObject(message, offset);
@@ -1050,35 +1022,7 @@ final class MessageSchema<T> implements Schema<T> {
         case 10: // BYTES:
           hashCode = (hashCode * 53) + UnsafeUtil.getObject(message, offset).hashCode();
           break;
-        case 11: // UINT32:
-          hashCode = (hashCode * 53) + (UnsafeUtil.getInt(message, offset));
-          break;
-        case 12: // ENUM:
-          hashCode = (hashCode * 53) + (UnsafeUtil.getInt(message, offset));
-          break;
-        case 13: // SFIXED32:
-          hashCode = (hashCode * 53) + (UnsafeUtil.getInt(message, offset));
-          break;
-        case 14: // SFIXED64:
-          hashCode = (hashCode * 53) + Internal.hashLong(UnsafeUtil.getLong(message, offset));
-          break;
-        case 15: // SINT32:
-          hashCode = (hashCode * 53) + (UnsafeUtil.getInt(message, offset));
-          break;
-        case 16: // SINT64:
-          hashCode = (hashCode * 53) + Internal.hashLong(UnsafeUtil.getLong(message, offset));
-          break;
 
-        case 17: // GROUP:
-          {
-            int protoHash = 37;
-            Object submessage = UnsafeUtil.getObject(message, offset);
-            if (submessage != null) {
-              protoHash = submessage.hashCode();
-            }
-            hashCode = (53 * hashCode) + protoHash;
-            break;
-          }
         case 18: // DOUBLE_LIST:
         case 19: // FLOAT_LIST:
         case 20: // INT64_LIST:
@@ -1111,8 +1055,6 @@ final class MessageSchema<T> implements Schema<T> {
         case 47: // SINT32_LIST_PACKED:
         case 48: // SINT64_LIST_PACKED:
         case 49: // GROUP_LIST:
-          hashCode = (hashCode * 53) + UnsafeUtil.getObject(message, offset).hashCode();
-          break;
         case 50: // MAP:
           hashCode = (hashCode * 53) + UnsafeUtil.getObject(message, offset).hashCode();
           break;
@@ -1185,30 +1127,21 @@ final class MessageSchema<T> implements Schema<T> {
         }
         break;
       case 2: // INT64:
-        if (isFieldPresent(other, pos)) {
-          UnsafeUtil.putLong(message, offset, UnsafeUtil.getLong(other, offset));
-          setFieldPresent(message, pos);
-        }
-        break;
       case 3: // UINT64:
+      case 5: // FIXED64:
+      case 14: // SFIXED64:
+      case 16: // SINT64:
         if (isFieldPresent(other, pos)) {
           UnsafeUtil.putLong(message, offset, UnsafeUtil.getLong(other, offset));
           setFieldPresent(message, pos);
         }
         break;
       case 4: // INT32:
-        if (isFieldPresent(other, pos)) {
-          UnsafeUtil.putInt(message, offset, UnsafeUtil.getInt(other, offset));
-          setFieldPresent(message, pos);
-        }
-        break;
-      case 5: // FIXED64:
-        if (isFieldPresent(other, pos)) {
-          UnsafeUtil.putLong(message, offset, UnsafeUtil.getLong(other, offset));
-          setFieldPresent(message, pos);
-        }
-        break;
       case 6: // FIXED32:
+      case 11: // UINT32:
+      case 12: // ENUM:
+      case 13: // SFIXED32:
+      case 15: // SINT32:
         if (isFieldPresent(other, pos)) {
           UnsafeUtil.putInt(message, offset, UnsafeUtil.getInt(other, offset));
           setFieldPresent(message, pos);
@@ -1221,56 +1154,13 @@ final class MessageSchema<T> implements Schema<T> {
         }
         break;
       case 8: // STRING:
-        if (isFieldPresent(other, pos)) {
-          UnsafeUtil.putObject(message, offset, UnsafeUtil.getObject(other, offset));
-          setFieldPresent(message, pos);
-        }
-        break;
-      case 9: // MESSAGE:
-        mergeMessage(message, other, pos);
-        break;
       case 10: // BYTES:
         if (isFieldPresent(other, pos)) {
           UnsafeUtil.putObject(message, offset, UnsafeUtil.getObject(other, offset));
           setFieldPresent(message, pos);
         }
         break;
-      case 11: // UINT32:
-        if (isFieldPresent(other, pos)) {
-          UnsafeUtil.putInt(message, offset, UnsafeUtil.getInt(other, offset));
-          setFieldPresent(message, pos);
-        }
-        break;
-      case 12: // ENUM:
-        if (isFieldPresent(other, pos)) {
-          UnsafeUtil.putInt(message, offset, UnsafeUtil.getInt(other, offset));
-          setFieldPresent(message, pos);
-        }
-        break;
-      case 13: // SFIXED32:
-        if (isFieldPresent(other, pos)) {
-          UnsafeUtil.putInt(message, offset, UnsafeUtil.getInt(other, offset));
-          setFieldPresent(message, pos);
-        }
-        break;
-      case 14: // SFIXED64:
-        if (isFieldPresent(other, pos)) {
-          UnsafeUtil.putLong(message, offset, UnsafeUtil.getLong(other, offset));
-          setFieldPresent(message, pos);
-        }
-        break;
-      case 15: // SINT32:
-        if (isFieldPresent(other, pos)) {
-          UnsafeUtil.putInt(message, offset, UnsafeUtil.getInt(other, offset));
-          setFieldPresent(message, pos);
-        }
-        break;
-      case 16: // SINT64:
-        if (isFieldPresent(other, pos)) {
-          UnsafeUtil.putLong(message, offset, UnsafeUtil.getLong(other, offset));
-          setFieldPresent(message, pos);
-        }
-        break;
+      case 9: // MESSAGE:
       case 17: // GROUP:
         mergeMessage(message, other, pos);
         break;
@@ -1320,15 +1210,6 @@ final class MessageSchema<T> implements Schema<T> {
       case 57: // ONEOF_FIXED32:
       case 58: // ONEOF_BOOL:
       case 59: // ONEOF_STRING:
-        if (isOneofPresent(other, number, pos)) {
-          UnsafeUtil.putObject(message, offset, UnsafeUtil.getObject(other, offset));
-          setOneofPresent(message, number, pos);
-        }
-        break;
-
-      case 60: // ONEOF_MESSAGE:
-        mergeOneofMessage(message, other, pos);
-        break;
       case 61: // ONEOF_BYTES:
       case 62: // ONEOF_UINT32:
       case 63: // ONEOF_ENUM:
@@ -1341,6 +1222,8 @@ final class MessageSchema<T> implements Schema<T> {
           setOneofPresent(message, number, pos);
         }
         break;
+
+      case 60: // ONEOF_MESSAGE:
       case 68: // ONEOF_GROUP:
         mergeOneofMessage(message, other, pos);
         break;
@@ -1587,11 +1470,15 @@ final class MessageSchema<T> implements Schema<T> {
           }
           break;
         case 18: // DOUBLE_LIST:
+        case 23: // FIXED64_LIST:
+        case 32: // SFIXED64_LIST:
           size +=
               SchemaUtil.computeSizeFixed64List(
                   number, (List<?>) unsafe.getObject(message, offset), false);
           break;
         case 19: // FLOAT_LIST:
+        case 24: // FIXED32_LIST:
+        case 31: // SFIXED32_LIST:
           size +=
               SchemaUtil.computeSizeFixed32List(
                   number, (List<?>) unsafe.getObject(message, offset), false);
@@ -1610,16 +1497,6 @@ final class MessageSchema<T> implements Schema<T> {
           size +=
               SchemaUtil.computeSizeInt32List(
                   number, (List<Integer>) unsafe.getObject(message, offset), false);
-          break;
-        case 23: // FIXED64_LIST:
-          size +=
-              SchemaUtil.computeSizeFixed64List(
-                  number, (List<?>) unsafe.getObject(message, offset), false);
-          break;
-        case 24: // FIXED32_LIST:
-          size +=
-              SchemaUtil.computeSizeFixed32List(
-                  number, (List<?>) unsafe.getObject(message, offset), false);
           break;
         case 25: // BOOL_LIST:
           size +=
@@ -1650,16 +1527,6 @@ final class MessageSchema<T> implements Schema<T> {
               SchemaUtil.computeSizeEnumList(
                   number, (List<Integer>) unsafe.getObject(message, offset), false);
           break;
-        case 31: // SFIXED32_LIST:
-          size +=
-              SchemaUtil.computeSizeFixed32List(
-                  number, (List<Integer>) unsafe.getObject(message, offset), false);
-          break;
-        case 32: // SFIXED64_LIST:
-          size +=
-              SchemaUtil.computeSizeFixed64List(
-                  number, (List<Long>) unsafe.getObject(message, offset), false);
-          break;
         case 33: // SINT32_LIST:
           size +=
               SchemaUtil.computeSizeSInt32List(
@@ -1670,11 +1537,12 @@ final class MessageSchema<T> implements Schema<T> {
               SchemaUtil.computeSizeSInt64List(
                   number, (List<Long>) unsafe.getObject(message, offset), false);
           break;
-        case 35:
-          { // DOUBLE_LIST_PACKED:
+        case 35: // DOUBLE_LIST_PACKED:
+        case 40: // FIXED64_LIST_PACKED:
+        case 46:
+          { // SFIXED64_LIST_PACKED:
             int fieldSize =
-                SchemaUtil.computeSizeFixed64ListNoTag(
-                    (List<Double>) unsafe.getObject(message, offset));
+                SchemaUtil.computeSizeFixed64ListNoTag((List<?>) unsafe.getObject(message, offset));
             if (fieldSize > 0) {
               if (useCachedSizeField) {
                 unsafe.putInt(message, (long) cachedSizeOffset, fieldSize);
@@ -1686,11 +1554,12 @@ final class MessageSchema<T> implements Schema<T> {
             }
             break;
           }
-        case 36:
-          { // FLOAT_LIST_PACKED:
+        case 36: // FLOAT_LIST_PACKED:
+        case 41: // FIXED32_LIST_PACKED:
+        case 45:
+          { // SFIXED32_LIST_PACKED:
             int fieldSize =
-                SchemaUtil.computeSizeFixed32ListNoTag(
-                    (List<Float>) unsafe.getObject(message, offset));
+                SchemaUtil.computeSizeFixed32ListNoTag((List<?>) unsafe.getObject(message, offset));
             if (fieldSize > 0) {
               if (useCachedSizeField) {
                 unsafe.putInt(message, (long) cachedSizeOffset, fieldSize);
@@ -1750,38 +1619,6 @@ final class MessageSchema<T> implements Schema<T> {
             }
             break;
           }
-        case 40:
-          { // FIXED64_LIST_PACKED:
-            int fieldSize =
-                SchemaUtil.computeSizeFixed64ListNoTag(
-                    (List<Long>) unsafe.getObject(message, offset));
-            if (fieldSize > 0) {
-              if (useCachedSizeField) {
-                unsafe.putInt(message, (long) cachedSizeOffset, fieldSize);
-              }
-              size +=
-                  CodedOutputStream.computeTagSize(number)
-                      + CodedOutputStream.computeUInt32SizeNoTag(fieldSize)
-                      + fieldSize;
-            }
-            break;
-          }
-        case 41:
-          { // FIXED32_LIST_PACKED:
-            int fieldSize =
-                SchemaUtil.computeSizeFixed32ListNoTag(
-                    (List<Integer>) unsafe.getObject(message, offset));
-            if (fieldSize > 0) {
-              if (useCachedSizeField) {
-                unsafe.putInt(message, (long) cachedSizeOffset, fieldSize);
-              }
-              size +=
-                  CodedOutputStream.computeTagSize(number)
-                      + CodedOutputStream.computeUInt32SizeNoTag(fieldSize)
-                      + fieldSize;
-            }
-            break;
-          }
         case 42:
           { // BOOL_LIST_PACKED:
             int fieldSize =
@@ -1819,38 +1656,6 @@ final class MessageSchema<T> implements Schema<T> {
             int fieldSize =
                 SchemaUtil.computeSizeEnumListNoTag(
                     (List<Integer>) unsafe.getObject(message, offset));
-            if (fieldSize > 0) {
-              if (useCachedSizeField) {
-                unsafe.putInt(message, (long) cachedSizeOffset, fieldSize);
-              }
-              size +=
-                  CodedOutputStream.computeTagSize(number)
-                      + CodedOutputStream.computeUInt32SizeNoTag(fieldSize)
-                      + fieldSize;
-            }
-            break;
-          }
-        case 45:
-          { // SFIXED32_LIST_PACKED:
-            int fieldSize =
-                SchemaUtil.computeSizeFixed32ListNoTag(
-                    (List<Integer>) unsafe.getObject(message, offset));
-            if (fieldSize > 0) {
-              if (useCachedSizeField) {
-                unsafe.putInt(message, (long) cachedSizeOffset, fieldSize);
-              }
-              size +=
-                  CodedOutputStream.computeTagSize(number)
-                      + CodedOutputStream.computeUInt32SizeNoTag(fieldSize)
-                      + fieldSize;
-            }
-            break;
-          }
-        case 46:
-          { // SFIXED64_LIST_PACKED:
-            int fieldSize =
-                SchemaUtil.computeSizeFixed64ListNoTag(
-                    (List<Long>) unsafe.getObject(message, offset));
             if (fieldSize > 0) {
               if (useCachedSizeField) {
                 unsafe.putInt(message, (long) cachedSizeOffset, fieldSize);
@@ -2614,34 +2419,42 @@ final class MessageSchema<T> implements Schema<T> {
                 break;
               }
             case 18: // DOUBLE_LIST:
+            case 35: // DOUBLE_LIST_PACKED:
               reader.readDoubleList(
                   listFieldSchema.<Double>mutableListAt(message, offset(typeAndOffset)));
               break;
             case 19: // FLOAT_LIST:
+            case 36: // FLOAT_LIST_PACKED:
               reader.readFloatList(
                   listFieldSchema.<Float>mutableListAt(message, offset(typeAndOffset)));
               break;
             case 20: // INT64_LIST:
+            case 37: // INT64_LIST_PACKED:
               reader.readInt64List(
                   listFieldSchema.<Long>mutableListAt(message, offset(typeAndOffset)));
               break;
             case 21: // UINT64_LIST:
+            case 38: // UINT64_LIST_PACKED:
               reader.readUInt64List(
                   listFieldSchema.<Long>mutableListAt(message, offset(typeAndOffset)));
               break;
             case 22: // INT32_LIST:
+            case 39: // INT32_LIST_PACKED:
               reader.readInt32List(
                   listFieldSchema.<Integer>mutableListAt(message, offset(typeAndOffset)));
               break;
             case 23: // FIXED64_LIST:
+            case 40: // FIXED64_LIST_PACKED:
               reader.readFixed64List(
                   listFieldSchema.<Long>mutableListAt(message, offset(typeAndOffset)));
               break;
             case 24: // FIXED32_LIST:
+            case 41: // FIXED32_LIST_PACKED:
               reader.readFixed32List(
                   listFieldSchema.<Integer>mutableListAt(message, offset(typeAndOffset)));
               break;
             case 25: // BOOL_LIST:
+            case 42: // BOOL_LIST_PACKED:
               reader.readBoolList(
                   listFieldSchema.<Boolean>mutableListAt(message, offset(typeAndOffset)));
               break;
@@ -2663,76 +2476,11 @@ final class MessageSchema<T> implements Schema<T> {
                   listFieldSchema.<ByteString>mutableListAt(message, offset(typeAndOffset)));
               break;
             case 29: // UINT32_LIST:
-              reader.readUInt32List(
-                  listFieldSchema.<Integer>mutableListAt(message, offset(typeAndOffset)));
-              break;
-            case 30: // ENUM_LIST:
-              {
-                List<Integer> enumList =
-                    listFieldSchema.<Integer>mutableListAt(message, offset(typeAndOffset));
-                reader.readEnumList(enumList);
-                unknownFields =
-                    SchemaUtil.filterUnknownEnumList(
-                        message,
-                        number,
-                        enumList,
-                        getEnumFieldVerifier(pos),
-                        unknownFields,
-                        unknownFieldSchema);
-                break;
-              }
-            case 31: // SFIXED32_LIST:
-              reader.readSFixed32List(
-                  listFieldSchema.<Integer>mutableListAt(message, offset(typeAndOffset)));
-              break;
-            case 32: // SFIXED64_LIST:
-              reader.readSFixed64List(
-                  listFieldSchema.<Long>mutableListAt(message, offset(typeAndOffset)));
-              break;
-            case 33: // SINT32_LIST:
-              reader.readSInt32List(
-                  listFieldSchema.<Integer>mutableListAt(message, offset(typeAndOffset)));
-              break;
-            case 34: // SINT64_LIST:
-              reader.readSInt64List(
-                  listFieldSchema.<Long>mutableListAt(message, offset(typeAndOffset)));
-              break;
-            case 35: // DOUBLE_LIST_PACKED:
-              reader.readDoubleList(
-                  listFieldSchema.<Double>mutableListAt(message, offset(typeAndOffset)));
-              break;
-            case 36: // FLOAT_LIST_PACKED:
-              reader.readFloatList(
-                  listFieldSchema.<Float>mutableListAt(message, offset(typeAndOffset)));
-              break;
-            case 37: // INT64_LIST_PACKED:
-              reader.readInt64List(
-                  listFieldSchema.<Long>mutableListAt(message, offset(typeAndOffset)));
-              break;
-            case 38: // UINT64_LIST_PACKED:
-              reader.readUInt64List(
-                  listFieldSchema.<Long>mutableListAt(message, offset(typeAndOffset)));
-              break;
-            case 39: // INT32_LIST_PACKED:
-              reader.readInt32List(
-                  listFieldSchema.<Integer>mutableListAt(message, offset(typeAndOffset)));
-              break;
-            case 40: // FIXED64_LIST_PACKED:
-              reader.readFixed64List(
-                  listFieldSchema.<Long>mutableListAt(message, offset(typeAndOffset)));
-              break;
-            case 41: // FIXED32_LIST_PACKED:
-              reader.readFixed32List(
-                  listFieldSchema.<Integer>mutableListAt(message, offset(typeAndOffset)));
-              break;
-            case 42: // BOOL_LIST_PACKED:
-              reader.readBoolList(
-                  listFieldSchema.<Boolean>mutableListAt(message, offset(typeAndOffset)));
-              break;
             case 43: // UINT32_LIST_PACKED:
               reader.readUInt32List(
                   listFieldSchema.<Integer>mutableListAt(message, offset(typeAndOffset)));
               break;
+            case 30: // ENUM_LIST:
             case 44: // ENUM_LIST_PACKED:
               {
                 List<Integer> enumList =
@@ -2748,18 +2496,22 @@ final class MessageSchema<T> implements Schema<T> {
                         unknownFieldSchema);
                 break;
               }
+            case 31: // SFIXED32_LIST:
             case 45: // SFIXED32_LIST_PACKED:
               reader.readSFixed32List(
                   listFieldSchema.<Integer>mutableListAt(message, offset(typeAndOffset)));
               break;
+            case 32: // SFIXED64_LIST:
             case 46: // SFIXED64_LIST_PACKED:
               reader.readSFixed64List(
                   listFieldSchema.<Long>mutableListAt(message, offset(typeAndOffset)));
               break;
+            case 33: // SINT32_LIST:
             case 47: // SINT32_LIST_PACKED:
               reader.readSInt32List(
                   listFieldSchema.<Integer>mutableListAt(message, offset(typeAndOffset)));
               break;
+            case 34: // SINT64_LIST:
             case 48: // SINT64_LIST_PACKED:
               reader.readSInt64List(
                   listFieldSchema.<Long>mutableListAt(message, offset(typeAndOffset)));
