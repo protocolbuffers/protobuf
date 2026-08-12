@@ -11,12 +11,14 @@ using Google.Protobuf.Reflection;
 using Google.Protobuf.WellKnownTypes;
 using System;
 using System.Collections;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading;
 
 namespace Google.Protobuf
 {
@@ -756,23 +758,45 @@ namespace Google.Protobuf
             }
         }
 
+        private static readonly
+            ConcurrentDictionary<EnumDescriptor,
+                                 Lazy<Dictionary<string, EnumValueDescriptor>>>
+                enumCustomJsonNameCache =
+                    new ConcurrentDictionary<
+                        EnumDescriptor,
+                        Lazy<Dictionary<string, EnumValueDescriptor>>>();
+
+        private static Dictionary<string, EnumValueDescriptor>
+        CreateCustomJsonNameMap(EnumDescriptor enumDescriptor)
+        {
+            var map = new Dictionary<string, EnumValueDescriptor>();
+            foreach (var value in enumDescriptor.Values)
+            {
+                var jsonOptions = value.GetOptions()?.GetExtension(
+                    Pb.Enumvalue.JsonEnumvalueOptionsExtensions.Json);
+                if (jsonOptions != null && jsonOptions.HasString &&
+                    !map.ContainsKey(jsonOptions.String))
+                {
+                    map[jsonOptions.String] = value;
+                }
+            }
+            return map;
+        }
+
         private bool TryParseEnumStringValue(
             FieldDescriptor field, string text, out object value)
         {
             var enumValue = field.EnumType.FindValueByName(text);
             if (enumValue == null)
             {
-                foreach (var valueDesc in field.EnumType.Values)
-                {
-                    var jsonOptions = valueDesc.GetOptions()?.GetExtension(
-                        Pb.Enumvalue.JsonEnumvalueOptionsExtensions.Json);
-                    if (jsonOptions != null && jsonOptions.HasString &&
-                        jsonOptions.String == text)
-                    {
-                        enumValue = valueDesc;
-                        break;
-                    }
-                }
+                var map = enumCustomJsonNameCache.GetOrAdd(
+                    field.EnumType,
+                    static desc =>
+                        new Lazy<Dictionary<string, EnumValueDescriptor>>(
+                            () => CreateCustomJsonNameMap(desc),
+                            LazyThreadSafetyMode
+                                .ExecutionAndPublication)).Value;
+                map.TryGetValue(text, out enumValue);
             }
 
             if (enumValue == null)
