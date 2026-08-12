@@ -27,11 +27,11 @@
 #include <utility>
 #include <vector>
 
-#include "absl/base/macros.h"
 #include "absl/base/optimization.h"
 #include "absl/cleanup/cleanup.h"
 #include "absl/container/btree_set.h"
 #include "absl/log/absl_check.h"
+#include "absl/log/absl_log.h"
 #include "absl/memory/memory.h"
 #include "absl/status/status.h"
 #include "absl/status/statusor.h"
@@ -399,7 +399,8 @@ class TextFormat::Parser::ParserImpl {
              bool allow_unknown_extension, bool allow_unknown_enum,
              bool allow_field_number, bool allow_relaxed_whitespace,
              bool allow_partial, int recursion_limit,
-             UnsetFieldsMetadata* no_op_fields)
+             bool disallow_reserved_field = false,
+             UnsetFieldsMetadata* no_op_fields = nullptr)
       : error_collector_(error_collector),
         finder_(finder),
         parse_info_tree_(parse_info_tree),
@@ -413,6 +414,7 @@ class TextFormat::Parser::ParserImpl {
         allow_unknown_enum_(allow_unknown_enum),
         allow_field_number_(allow_field_number),
         allow_partial_(allow_partial),
+        disallow_reserved_field_(disallow_reserved_field),
         initial_recursion_limit_(recursion_limit),
         recursion_limit_(recursion_limit),
         had_silent_marker_(false),
@@ -708,7 +710,8 @@ class TextFormat::Parser::ParserImpl {
                       ? finder_->FindExtensionByNumber(descriptor, field_number)
                       : DefaultFinderFindExtensionByNumber(descriptor,
                                                            field_number);
-        } else if (descriptor->IsReservedNumber(field_number)) {
+        } else if (!disallow_reserved_field_ &&
+                   descriptor->IsReservedNumber(field_number)) {
           reserved_field = true;
         } else {
           field = descriptor->FindFieldByNumber(field_number);
@@ -736,7 +739,7 @@ class TextFormat::Parser::ParserImpl {
           field = descriptor->FindFieldByLowercaseName(lower_field_name);
         }
 
-        if (field == nullptr) {
+        if (field == nullptr && !disallow_reserved_field_) {
           reserved_field = descriptor->IsReservedName(field_name);
         }
       }
@@ -1596,6 +1599,7 @@ class TextFormat::Parser::ParserImpl {
   const bool allow_unknown_enum_;
   const bool allow_field_number_;
   const bool allow_partial_;
+  const bool disallow_reserved_field_;
   const int initial_recursion_limit_;
   int recursion_limit_;
   bool had_silent_marker_;
@@ -1965,6 +1969,7 @@ TextFormat::Parser::Parser()
       allow_field_number_(false),
       allow_relaxed_whitespace_(false),
       allow_singular_overwrites_(false),
+      disallow_reserved_field_(false),
       recursion_limit_(kDefaultRecursionLimit) {}
 
 template <typename T>
@@ -1988,12 +1993,12 @@ bool TextFormat::Parser::Parse(io::ZeroCopyInputStream* input,
       allow_singular_overwrites_ ? ParserImpl::ALLOW_SINGULAR_OVERWRITES
                                  : ParserImpl::FORBID_SINGULAR_OVERWRITES;
 
-  ParserImpl parser(output->GetDescriptor(), input, error_collector_, finder_,
-                    parse_info_tree_, overwrites_policy,
-                    allow_case_insensitive_field_, allow_unknown_field_,
-                    allow_unknown_extension_, allow_unknown_enum_,
-                    allow_field_number_, allow_relaxed_whitespace_,
-                    allow_partial_, recursion_limit_, no_op_fields_);
+  ParserImpl parser(
+      output->GetDescriptor(), input, error_collector_, finder_,
+      parse_info_tree_, overwrites_policy, allow_case_insensitive_field_,
+      allow_unknown_field_, allow_unknown_extension_, allow_unknown_enum_,
+      allow_field_number_, allow_relaxed_whitespace_, allow_partial_,
+      recursion_limit_, disallow_reserved_field_, no_op_fields_);
   return MergeUsingImpl(input, output, &parser);
 }
 
@@ -2018,7 +2023,8 @@ bool TextFormat::Parser::Merge(io::ZeroCopyInputStream* input,
                     allow_case_insensitive_field_, allow_unknown_field_,
                     allow_unknown_extension_, allow_unknown_enum_,
                     allow_field_number_, allow_relaxed_whitespace_,
-                    allow_partial_, recursion_limit_, no_op_fields_);
+                    allow_partial_, recursion_limit_, disallow_reserved_field_,
+                    no_op_fields_);
   return MergeUsingImpl(input, output, &parser);
 }
 
@@ -2048,13 +2054,13 @@ bool TextFormat::Parser::ParseFieldValueFromString(absl::string_view input,
                                                    const FieldDescriptor* field,
                                                    Message* output) {
   io::ArrayInputStream input_stream(input.data(), input.size());
-  ParserImpl parser(output->GetDescriptor(), &input_stream, error_collector_,
-                    finder_, parse_info_tree_,
-                    ParserImpl::ALLOW_SINGULAR_OVERWRITES,
-                    allow_case_insensitive_field_, allow_unknown_field_,
-                    allow_unknown_extension_, allow_unknown_enum_,
-                    allow_field_number_, allow_relaxed_whitespace_,
-                    allow_partial_, recursion_limit_, no_op_fields_);
+  ParserImpl parser(
+      output->GetDescriptor(), &input_stream, error_collector_, finder_,
+      parse_info_tree_, ParserImpl::ALLOW_SINGULAR_OVERWRITES,
+      allow_case_insensitive_field_, allow_unknown_field_,
+      allow_unknown_extension_, allow_unknown_enum_, allow_field_number_,
+      allow_relaxed_whitespace_, allow_partial_, recursion_limit_,
+      disallow_reserved_field_, no_op_fields_);
   return parser.ParseField(field, output);
 }
 

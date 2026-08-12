@@ -1861,6 +1861,7 @@ void CommandLineInterface::Clear() {
   disallow_services_ = false;
   direct_dependencies_explicitly_set_ = false;
   deterministic_output_ = false;
+  disallow_reserved_field_ = false;
 }
 
 bool CommandLineInterface::MakeProtoProtoPathRelative(
@@ -2121,6 +2122,11 @@ CommandLineInterface::ParseArgumentStatus CommandLineInterface::ParseArguments(
               << std::endl;
     return PARSE_ARGUMENT_FAIL;
   }
+  if (mode_ != MODE_ENCODE && disallow_reserved_field_) {
+    std::cerr << "Can only use --disallow_reserved_field with --encode."
+              << std::endl;
+    return PARSE_ARGUMENT_FAIL;
+  }
   if (!dependency_out_name_.empty() && input_files_.size() > 1) {
     std::cerr
         << "Can only process one input file when using --dependency_out=FILE."
@@ -2199,6 +2205,7 @@ bool CommandLineInterface::ParseArgument(const char* arg, std::string* name,
       *name == "--print_free_field_numbers" ||
       *name == "--experimental_allow_proto3_optional" ||
       *name == "--deterministic_output" ||
+      *name == "--disallow_reserved_field" ||
       *name == "--unsafe_allow_out_dir_escape" || *name == "--fatal_warnings") {
     // HACK:  These are the only flags that don't take a value.
     //   They probably should not be hard-coded like this but for now it's
@@ -2472,6 +2479,9 @@ CommandLineInterface::InterpretArgument(const std::string& name,
   } else if (name == "--deterministic_output") {
     deterministic_output_ = true;
 
+  } else if (name == "--disallow_reserved_field") {
+    disallow_reserved_field_ = true;
+
   } else if (name == "--error_format") {
     if (value == "gcc") {
       error_format_ = ERROR_FORMAT_GCC;
@@ -2696,6 +2706,8 @@ Parse PROTO_FILES and generate output based on the options given:
                               deterministically ordered. Note that this order
                               is not canonical, and changes across builds or
                               releases of protoc.
+  --disallow_reserved_field   When using --encode, disallow fields that are marked
+                              as reserved in the message definition.
   --unsafe_allow_out_dir_escape
                               Allow output files to use ".." to escape the
                               output directory. Use with caution.
@@ -3271,6 +3283,7 @@ bool CommandLineInterface::EncodeOrDecode(const DescriptorPool* pool) {
     TextFormat::Parser parser;
     parser.RecordErrorsTo(&error_collector);
     parser.AllowPartialMessage(true);
+    parser.DisallowReservedField(disallow_reserved_field_);
 
     if (!parser.Parse(&in, message.get())) {
       std::cerr << "Failed to parse input." << std::endl;

@@ -515,6 +515,9 @@ class PROTOC_EXPORT CommandLineInterface {
 
   // When using --encode, this will be passed to SetSerializationDeterministic.
   bool deterministic_output_ = false;
+  // When using --encode, whether to disallow fields marked as reserved in
+  // proto.
+  bool disallow_reserved_field_ = false;
   // Whether to allow files to be written to a path that is outside of the
   // output directory.
   bool unsafe_allow_out_dir_escape_ = false;
