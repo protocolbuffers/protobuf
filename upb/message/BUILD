@@ -678,6 +678,7 @@ filegroup(
         exclude = [
             "promote_test.cc",
             "convert_fuzz_test.cc",
+            "compare_fuzz_test.cc",
         ],
     ),
     visibility = ["//upb:__pkg__"],
