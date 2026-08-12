@@ -50,13 +50,27 @@ format_columns() {
         item_fmt="\"%s\""
     fi
 
-    local max_len=0
-    for w in "${words[@]}"; do
-        local s
-        printf -v s "$item_fmt" "$w"
-        if (( ${#s} > max_len )); then max_len=${#s}; fi
+    # Compute max width per column to match Google C++/C formatting
+    local col_widths=()
+    local c=0
+    while (( c < per_line )); do
+        local max_w=0
+        local k=$c
+        while (( k < num_words )); do
+            local w="${words[k]}"
+            local s
+            printf -v s "$item_fmt" "$w"
+            if (( k < num_words - 1 )); then
+                s+=","
+            fi
+            if (( ${#s} > max_w )); then
+                max_w=${#s}
+            fi
+            k=$((k + per_line))
+        done
+        col_widths+=($((max_w + 1)))
+        c=$((c + 1))
     done
-    local col_width=$((max_len + 2))
 
     local i=0
     while (( i < num_words )); do
@@ -71,14 +85,15 @@ format_columns() {
             fi
 
             if (( j < per_line - 1 && i < num_words - 1 )); then
-                printf -v padded "%-${col_width}s" "$s"
+                local cw="${col_widths[j]}"
+                printf -v padded "%-${cw}s" "$s"
                 line+="$padded"
             else
                 line+="$s"
             fi
 
-            i=$i+1
-            j=$j+1
+            i=$((i + 1))
+            j=$((j + 1))
         done
         echo "${line%" "}"
     done
@@ -138,7 +153,7 @@ generate_names_c() {
     local col_lines=()
     while IFS= read -r line; do
         col_lines+=("$line")
-    done < <(ITEM_FMT="%s" format_columns 5 "    " "${decorated[@]}")
+    done < <(ITEM_FMT="%s" format_columns 4 "    " "${decorated[@]}")
     for l in "${col_lines[@]}"; do lines+=("$l"); done
     lines[${#lines[@]}-1]+="};"
     printf "%s\n" "${lines[@]}"
@@ -151,7 +166,7 @@ generate_php_generator_cc() {
     local col_lines=()
     while IFS= read -r line; do
         col_lines+=("$line")
-    done < <(format_columns 6 "    " "${VALID_CONSTANT_NAMES[@]}")
+    done < <(format_columns 5 "    " "${VALID_CONSTANT_NAMES[@]}")
     for l in "${col_lines[@]}"; do lines+=("$l"); done
     lines[${#lines[@]}-1]+="};"
     lines+=("const int kValidConstantNamesSize = ${#VALID_CONSTANT_NAMES[@]};")
@@ -241,7 +256,7 @@ generate_test_cases() {
 generate_gpbutil_reserved_words() {
     echo "        // @see php/update_reserved_words.sh - DO NOT MODIFY THIS LIST MANUALLY"
     echo "        \$reserved_words = array("
-    ITEM_FMT="\"%s\"=>0" format_columns 5 "            " "${RESERVED_WORDS[@]}"
+    ITEM_FMT="\"%s\"=>0" format_columns 3 "            " "${RESERVED_WORDS[@]}"
     echo "        );"
 }
 
