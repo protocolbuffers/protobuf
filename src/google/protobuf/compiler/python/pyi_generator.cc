@@ -29,6 +29,7 @@
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/io/printer.h"
 #include "google/protobuf/io/zero_copy_stream.h"
+#include "google/protobuf/port_def.inc"
 
 namespace google {
 namespace protobuf {
@@ -607,7 +608,7 @@ bool PyiGenerator::Generate(const FileDescriptor* file,
                             const std::string& parameter,
                             GeneratorContext* context,
                             std::string* error) const {
-  absl::MutexLock lock(&mutex_);
+  PROTOBUF_MUTEX_LOCK(lock, mutex_);
   import_map_.clear();
   // Calculate file name.
   file_ = file;
@@ -679,3 +680,5 @@ bool PyiGenerator::Generate(const FileDescriptor* file,
 }  // namespace compiler
 }  // namespace protobuf
 }  // namespace google
+
+#include "google/protobuf/port_undef.inc"

@@ -2024,7 +2024,7 @@ static bool HasBootstrapProblem(const FileDescriptor* file,
   };
   static auto& bootstrap_cache = *new BootstrapGlobals();
 
-  absl::MutexLock lock(&bootstrap_cache.mutex);
+  PROTOBUF_MUTEX_LOCK(lock, bootstrap_cache.mutex);
   if (bootstrap_cache.cached.contains(file)) return true;
   if (bootstrap_cache.non_cached.contains(file)) return false;
 
