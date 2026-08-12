@@ -48,6 +48,7 @@
 #include "google/protobuf/unittest_mset.pb.h"
 #include "google/protobuf/unittest_mset_wire_format.pb.h"
 #include "google/protobuf/unittest_proto3.pb.h"
+#include "google/protobuf/unittest_string_type.pb.h"
 
 // Must be included last.
 #include "google/protobuf/port_def.inc"
@@ -90,12 +91,56 @@ using ::testing::IsEmpty;
 using ::testing::Pointee;
 using ::testing::Property;
 
+constexpr char kCordMapKey[] = "key";
+
+std::string CordMapPayload() { return std::string(4096, 'P'); }
+
+void PopulateCordMapRoundTrip(proto2_unittest::EntryProto* parsed) {
+  proto2_unittest::EntryProto source;
+  (*source.mutable_values())[kCordMapKey] = CordMapPayload();
+  std::string wire;
+  ASSERT_TRUE(source.SerializeToString(&wire));
+  ASSERT_TRUE(parsed->ParseFromString(wire));
+  ASSERT_EQ(parsed->values().at(kCordMapKey), CordMapPayload());
+}
+
+void MaterializeAndReadCordMap(const proto2_unittest::EntryProto& message) {
+  const FieldDescriptor* map =
+      message.GetDescriptor()->FindFieldByName("values");
+  ASSERT_NE(map, nullptr);
+  ASSERT_TRUE(map->is_map());
+  const FieldDescriptor* value = map->message_type()->map_value();
+  ASSERT_NE(value, nullptr);
+  // Generated MapEntry<Key, std::string> storage is not Cord storage.
+  ASSERT_EQ(value->cpp_string_type(),
+            FieldDescriptor::CppStringType::kString);
+  ASSERT_EQ(message.GetReflection()->FieldSize(message, map), 1);
+  const Message& entry =
+      message.GetReflection()->GetRepeatedMessage(message, map, 0);
+  EXPECT_EQ(entry.GetReflection()->GetString(entry, value), CordMapPayload());
+  EXPECT_FALSE(message.DebugString().empty());
+}
+
 // Shorthand to get a FieldDescriptor for a field of unittest::TestAllTypes.
 const FieldDescriptor* F(const std::string& name) {
   const FieldDescriptor* result =
       unittest::TestAllTypes::descriptor()->FindFieldByName(name);
   ABSL_CHECK(result != nullptr);
   return result;
+}
+
+TEST(GeneratedMessageReflectionTest, CordBytesMapHeapMaterializeAndDestroy) {
+  auto message = std::make_unique<proto2_unittest::EntryProto>();
+  PopulateCordMapRoundTrip(message.get());
+  MaterializeAndReadCordMap(*message);
+  message.reset();
+}
+
+TEST(GeneratedMessageReflectionTest, CordBytesMapArenaMaterializeAndDestroy) {
+  Arena arena;
+  auto* message = Arena::Create<proto2_unittest::EntryProto>(&arena);
+  PopulateCordMapRoundTrip(message);
+  MaterializeAndReadCordMap(*message);
 }
 
 TEST(GeneratedMessageReflectionTest, Defaults) {
