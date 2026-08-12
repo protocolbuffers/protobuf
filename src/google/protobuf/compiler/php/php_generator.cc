@@ -10,6 +10,7 @@
 #include <algorithm>
 #include <sstream>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "absl/container/flat_hash_map.h"
@@ -29,9 +30,11 @@
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/io/printer.h"
 #include "google/protobuf/io/zero_copy_stream.h"
+#include "google/protobuf/json_enumvalue_options.pb.h"
 
 constexpr absl::string_view kDescriptorFile =
     "google/protobuf/descriptor.proto";
+
 constexpr absl::string_view kEmptyFile = "google/protobuf/empty.proto";
 constexpr absl::string_view kEmptyMetadataFile =
     "GPBMetadata/Google/Protobuf/GPBEmpty.php";
@@ -937,10 +940,18 @@ void GenerateEnumToPool(const EnumDescriptor* en, io::Printer* printer) {
 
   for (int i = 0; i < en->value_count(); i++) {
     const EnumValueDescriptor* value = en->value(i);
+    std::string custom_json_name;
+    if (value->options().HasExtension(pb::enumvalue::json)) {
+      absl::string_view json_name =
+          value->options().GetExtension(pb::enumvalue::json).string();
+      custom_json_name =
+          absl::StrCat(", \"", BinaryToPhpString(std::string(json_name)), "\"");
+    }
     printer->Print(
-        "->value(\"^name^\", ^number^)\n", "name",
+        "->value(\"^name^\", ^number^^custom_json_name^)\n", "name",
         absl::StrCat(ConstantNamePrefix(value->name()), value->name()),
-        "number", IntToString(value->number()));
+        "number", IntToString(value->number()), "custom_json_name",
+        custom_json_name);
   }
   printer->Print("->finalizeToPool();\n\n");
   Outdent(printer);
@@ -1021,6 +1032,42 @@ void GenerateMessageToPool(absl::string_view name_prefix,
   }
 }
 
+void CollectCustomEnumJsonNames(
+    const EnumDescriptor* en,
+    std::vector<std::pair<std::string, std::string>>* custom_names) {
+  for (int i = 0; i < en->value_count(); ++i) {
+    const EnumValueDescriptor* value = en->value(i);
+    if (value->options().HasExtension(pb::enumvalue::json)) {
+      std::string fqn = absl::StrCat(en->full_name(), ".", value->name());
+      std::string custom_name(
+          value->options().GetExtension(pb::enumvalue::json).string());
+      custom_names->push_back({std::move(fqn), std::move(custom_name)});
+    }
+  }
+}
+
+void CollectCustomEnumJsonNames(
+    const Descriptor* message,
+    std::vector<std::pair<std::string, std::string>>* custom_names) {
+  for (int i = 0; i < message->enum_type_count(); ++i) {
+    CollectCustomEnumJsonNames(message->enum_type(i), custom_names);
+  }
+  for (int i = 0; i < message->nested_type_count(); ++i) {
+    CollectCustomEnumJsonNames(message->nested_type(i), custom_names);
+  }
+}
+
+void CollectCustomEnumJsonNames(
+    const FileDescriptor* file,
+    std::vector<std::pair<std::string, std::string>>* custom_names) {
+  for (int i = 0; i < file->enum_type_count(); ++i) {
+    CollectCustomEnumJsonNames(file->enum_type(i), custom_names);
+  }
+  for (int i = 0; i < file->message_type_count(); ++i) {
+    CollectCustomEnumJsonNames(file->message_type(i), custom_names);
+  }
+}
+
 void GenerateAddFileToPool(const FileDescriptor* file, const Options& options,
                            io::Printer* printer) {
   printer->Print(
@@ -1097,11 +1144,25 @@ void GenerateAddFileToPool(const FileDescriptor* file, const Options& options,
       std::string files_data;
       ABSL_CHECK(files.SerializeToString(&files_data));
 
+      std::vector<std::pair<std::string, std::string>> custom_json_names;
+      CollectCustomEnumJsonNames(file, &custom_json_names);
+
       printer->Print("$pool->internalAddGeneratedFile(\n");
       Indent(printer);
       printer->Print("\"^data^\"\n", "data", BinaryToPhpString(files_data));
       Outdent(printer);
-      printer->Print(", true);\n\n");
+      if (custom_json_names.empty()) {
+        printer->Print(", true);\n\n");
+      } else {
+        printer->Print(", true, [\n");
+        Indent(printer);
+        for (const auto& [fqn, custom_name] : custom_json_names) {
+          printer->Print("\"^fqn^\" => \"^custom_name^\",\n", "fqn", fqn,
+                         "custom_name", BinaryToPhpString(custom_name));
+        }
+        Outdent(printer);
+        printer->Print("]);\n\n");
+      }
     }
     printer->Print("static::$is_initialized = true;\n");
   }
@@ -1177,6 +1238,7 @@ void GenerateAddFilesToPool(const FileDescriptor* file, const Options& options,
   absl::flat_hash_map<const FileDescriptor*, int> dependency_count;
   absl::flat_hash_set<const FileDescriptor*> nodes_without_dependency;
   FileDescriptorSet sorted_file_set;
+  std::vector<const FileDescriptor*> aggregated_files;
 
   AnalyzeDependencyForFile(file, &nodes_without_dependency, &deps,
                            &dependency_count);
@@ -1196,6 +1258,7 @@ void GenerateAddFilesToPool(const FileDescriptor* file, const Options& options,
     bool needs_aggregate = NeedsUnwrapping(file_node, options);
 
     if (needs_aggregate) {
+      aggregated_files.push_back(file_node);
       auto file_proto = sorted_file_set.add_file();
       *file_proto = StripSourceRetentionOptions(*file_node);
 
@@ -1236,11 +1299,27 @@ void GenerateAddFilesToPool(const FileDescriptor* file, const Options& options,
   std::string files_data;
   ABSL_CHECK(sorted_file_set.SerializeToString(&files_data));
 
+  std::vector<std::pair<std::string, std::string>> custom_json_names;
+  for (const auto* file_node : aggregated_files) {
+    CollectCustomEnumJsonNames(file_node, &custom_json_names);
+  }
+
   printer->Print("$pool->internalAddGeneratedFile(\n");
   Indent(printer);
   printer->Print("\"^data^\"\n", "data", BinaryToPhpString(files_data));
   Outdent(printer);
-  printer->Print(", true);\n");
+  if (custom_json_names.empty()) {
+    printer->Print(", true);\n");
+  } else {
+    printer->Print(", true, [\n");
+    Indent(printer);
+    for (const auto& [fqn, custom_name] : custom_json_names) {
+      printer->Print("\"^fqn^\" => \"^custom_name^\",\n", "fqn", fqn,
+                     "custom_name", BinaryToPhpString(custom_name));
+    }
+    Outdent(printer);
+    printer->Print("]);\n");
+  }
 
   printer->Print("static::$is_initialized = true;\n");
 }
@@ -2260,12 +2339,6 @@ bool Generator::Generate(const FileDescriptor* file, const Options& options,
   if (options.is_descriptor && file->name() != kDescriptorFile) {
     *error =
         "Can only generate PHP code for google/protobuf/descriptor.proto.\n";
-    return false;
-  }
-  // TODO Remove once full Edition 2026 support is in PHP
-  if (GetEdition(*file) >= Edition::EDITION_2026) {
-    *error =
-        "PHP does not yet fully support Edition 2026, but is coming soon.\n";
     return false;
   }
 

@@ -9,6 +9,7 @@
 
 #include "google/protobuf/descriptor.pb.h"
 #include <gtest/gtest.h>
+#include "absl/strings/string_view.h"
 #include "google/protobuf/compiler/command_line_interface_tester.h"
 #include "google/protobuf/compiler/php/php_generator.h"
 
@@ -230,20 +231,36 @@ TEST_F(PhpGeneratorTest, ValidPhpClassPrefixAccepted) {
   ExpectNoErrors();
 }
 
-// TODO Remove this test once full Edition 2026 support is in PHP
-TEST_F(PhpGeneratorTest, Edition2026Fails) {
-  CreateTempFile("foo.proto",
-                 R"schema(
+TEST_F(PhpGeneratorTest, CustomEnumNames) {
+  CreateTempFile("google/protobuf/json_enumvalue_options.proto", R"schema(
+    edition = "2024";
+    package pb.enumvalue;
+    import "google/protobuf/descriptor.proto";
+    message JsonEnumValueOptions {
+      string string = 1;
+    }
+    extend google.protobuf.EnumValueOptions {
+      JsonEnumValueOptions json = 998;
+    }
+  )schema");
+
+  CreateTempFile("foo.proto", R"schema(
     edition = "2026";
-    enum Foo {
-      BAR = 0;
-    })schema");
+    package foo;
+    import "google/protobuf/json_enumvalue_options.proto";
+    enum MyEnum {
+      MY_ENUM_UNKNOWN = 0;
+      MY_ENUM_BAR = 1 [(pb.enumvalue.json).string = "custom_bar"];
+      MY_ENUM_BAZ = 2;
+    }
+  )schema");
 
   RunProtoc(
       "protocol_compiler --proto_path=$tmpdir --php_out=$tmpdir foo.proto");
 
-  ExpectErrorSubstring(
-      "PHP does not yet fully support Edition 2026, but is coming soon.");
+  ExpectNoErrors();
+  ExpectFileContentContainsSubstring(
+      "GPBMetadata/Foo.php", "\"foo.MyEnum.MY_ENUM_BAR\" => \"custom_bar\"");
 }
 
 }  // namespace
