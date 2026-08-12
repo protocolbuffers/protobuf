@@ -85,6 +85,7 @@ using ::absl_testing::StatusIs;
 using ::google::protobuf::internal::UnsetFieldsMetadataTextFormatTestUtil;
 using ::testing::_;
 using ::testing::AllOf;
+using ::testing::EqualsProto;
 using ::testing::Gt;
 using ::testing::HasSubstr;
 using ::testing::Lt;
@@ -2009,6 +2010,138 @@ class TextFormatParserTest : public testing::Test {
 
   TextFormat::Parser parser_;
 };
+
+// Tests the default options, where reserved field names are okay but no field
+// numbers are allowed, reserved or not.
+TEST_F(TextFormatParserTest,
+       DisallowFieldNumber_AllowReserved_DisallowUnknownField) {
+  parser_.AllowFieldNumber(false);
+  parser_.DisallowReservedField(false);
+  parser_.AllowUnknownField(false);
+
+  unittest::TestReservedFields dest;
+  EXPECT_TRUE(parser_.ParseFromString("bar: 123", &dest));
+  EXPECT_THAT(dest, EqualsProto(""));
+  EXPECT_FALSE(parser_.ParseFromString("2: \"abc\"", &dest));
+  ExpectFailure("2: \"abc\"\n", "Expected identifier, got: 2", 1, 1, &dest);
+}
+
+// When unknown fields are allowed, it doesn't matter if the fields are reserved
+// or not.
+TEST_F(TextFormatParserTest,
+       DisallowFieldNumber_AllowReserved_AllowUnknownField) {
+  parser_.AllowFieldNumber(false);
+  parser_.DisallowReservedField(false);
+  parser_.AllowUnknownField(true);
+
+  unittest::TestReservedFields dest;
+  EXPECT_TRUE(parser_.ParseFromString("bar: 123", &dest));
+  EXPECT_THAT(dest, EqualsProto(""));
+  EXPECT_TRUE(parser_.ParseFromString("2: \"abc\"", &dest));
+  EXPECT_THAT(dest, EqualsProto(""));
+}
+
+// When we disallow reserved fields and have other settings at the default,
+// using a reserved field name is an error.
+TEST_F(TextFormatParserTest,
+       DisallowFieldNumber_DisallowReserved_DisallowUnknownField) {
+  parser_.AllowFieldNumber(false);
+  parser_.DisallowReservedField(true);
+  parser_.AllowUnknownField(false);
+
+  unittest::TestReservedFields dest;
+  EXPECT_FALSE(parser_.ParseFromString("bar: 123", &dest));
+  ExpectFailure(
+      "bar: 123\n",
+      "Message type \"proto2_unittest.TestReservedFields\" has no field named "
+      "\"bar\".",
+      1, 4, &dest);
+  EXPECT_FALSE(parser_.ParseFromString("2: \"abc\"", &dest));
+  ExpectFailure("2: \"abc\"\n", "Expected identifier, got: 2", 1, 1, &dest);
+}
+
+// When we disallow reserved fields but also allow unknown fields, then the
+// reserved fields being disallowed doesn't really matter.  Reserved fields are
+// treated as unknown and thus allowed.
+TEST_F(TextFormatParserTest,
+       DisallowFieldNumber_DisallowReserved_AllowUnknownField) {
+  parser_.AllowFieldNumber(false);
+  parser_.DisallowReservedField(true);
+  parser_.AllowUnknownField(true);
+
+  unittest::TestReservedFields dest;
+  EXPECT_TRUE(parser_.ParseFromString("bar: 123", &dest));
+  EXPECT_THAT(dest, EqualsProto(""));
+  EXPECT_TRUE(parser_.ParseFromString("2: \"abc\"", &dest));
+  EXPECT_THAT(dest, EqualsProto(""));
+}
+
+// Allowing field numbers and reserved fields allows reserved field numbers.
+TEST_F(TextFormatParserTest,
+       AllowFieldNumber_AllowReserved_DisallowUnknownField) {
+  parser_.AllowFieldNumber(true);
+  parser_.DisallowReservedField(false);
+  parser_.AllowUnknownField(false);
+
+  unittest::TestReservedFields dest;
+  EXPECT_TRUE(parser_.ParseFromString("bar: 123", &dest));
+  EXPECT_THAT(dest, EqualsProto(""));
+  EXPECT_TRUE(parser_.ParseFromString("2: \"abc\"", &dest));
+  EXPECT_THAT(dest, EqualsProto(""));
+}
+
+// Super lenient parsing.  Allowing reserved fields here does not change the
+// behavior.
+TEST_F(TextFormatParserTest, AllowFieldNumber_AllowReserved_AllowUnknownField) {
+  parser_.AllowFieldNumber(true);
+  parser_.DisallowReservedField(false);
+  parser_.AllowUnknownField(true);
+
+  unittest::TestReservedFields dest;
+  EXPECT_TRUE(parser_.ParseFromString("bar: 123", &dest));
+  EXPECT_THAT(dest, EqualsProto(""));
+  EXPECT_TRUE(parser_.ParseFromString("2: \"abc\"", &dest));
+  EXPECT_THAT(dest, EqualsProto(""));
+}
+
+// Extra super lenient parsing.  Same results as above
+// (AllowFieldNumber_AllowReserved_AllowUnknownField) because the disallowed
+// reserved fields setting is irrelevant here.
+TEST_F(TextFormatParserTest,
+       AllowFieldNumber_DisallowReserved_AllowUnknownField) {
+  parser_.AllowFieldNumber(true);
+  parser_.DisallowReservedField(true);
+  parser_.AllowUnknownField(true);
+
+  unittest::TestReservedFields dest;
+  EXPECT_TRUE(parser_.ParseFromString("bar: 123", &dest));
+  EXPECT_THAT(dest, EqualsProto(""));
+  EXPECT_TRUE(parser_.ParseFromString("2: \"abc\"", &dest));
+  EXPECT_THAT(dest, EqualsProto(""));
+}
+
+// Allowing field numbers and disallowing reserved fields means that reserved
+// field numbers cause failures.
+TEST_F(TextFormatParserTest,
+       AllowFieldNumber_DisallowReserved_DisallowUnknownField) {
+  parser_.AllowFieldNumber(true);
+  parser_.DisallowReservedField(true);
+  parser_.AllowUnknownField(false);
+
+  unittest::TestReservedFields dest;
+  EXPECT_FALSE(parser_.ParseFromString("bar: 123", &dest));
+  ExpectFailure(
+      "bar: 123\n",
+      "Message type \"proto2_unittest.TestReservedFields\" has no field named "
+      "\"bar\".",
+      1, 4, &dest);
+  EXPECT_FALSE(parser_.ParseFromString("2: \"abc\"", &dest));
+  ExpectFailure(
+      "2: \"abc\"\n",
+      "Message type \"proto2_unittest.TestReservedFields\" has no field named "
+      "\"2\".",
+      1, 2, &dest);
+}
 
 TEST_F(TextFormatParserTest, ParseInfoTreeBuilding) {
   std::unique_ptr<unittest::TestAllTypes> message =

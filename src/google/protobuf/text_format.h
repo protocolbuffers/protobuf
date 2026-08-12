@@ -15,7 +15,6 @@
 #ifndef GOOGLE_PROTOBUF_TEXT_FORMAT_H__
 #define GOOGLE_PROTOBUF_TEXT_FORMAT_H__
 
-#include <atomic>
 #include <cstdint>
 #include <memory>
 #include <string>
@@ -26,7 +25,6 @@
 #include "absl/status/statusor.h"
 #include "absl/strings/cord.h"
 #include "absl/strings/string_view.h"
-#include "absl/types/optional.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/message.h"
 #include "google/protobuf/message_lite.h"
@@ -809,6 +807,16 @@ class PROTOBUF_EXPORT TextFormat {
     // if possible.
     void AllowUnknownField(bool allow) { allow_unknown_field_ = allow; }
 
+    // When a reserved field is met, parsing will ignore the field if this
+    // option is set to false (the default). This helps ensure backwards
+    // compatibility. If true, then reserved fields are treated like unknown
+    // fields, and trigger a parsing failure. This behavior is preferred
+    // for unit tests or configuration that does not need to be backwards
+    // compatible, where having a reserved field is an error.
+    void DisallowReservedField(bool disallow) {
+      disallow_reserved_field_ = disallow;
+    }
+
 
     void AllowFieldNumber(bool allow) { allow_field_number_ = allow; }
 
@@ -879,6 +887,7 @@ class PROTOBUF_EXPORT TextFormat {
     bool allow_unknown_field_;
     bool allow_unknown_extension_;
     bool allow_unknown_enum_;
+    bool disallow_reserved_field_;
     bool allow_field_number_;
     bool allow_relaxed_whitespace_;
     bool allow_singular_overwrites_;
