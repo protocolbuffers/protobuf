@@ -23,3 +23,8 @@ bazel_dep(name = "rules_cc", version = "0.2.18")
 bazel_dep(name = "rules_java", version = "8.6.1")
 bazel_dep(name = "rules_pkg", version = "1.0.1")
 bazel_dep(name = "rules_python", version = "2.3.0")
+git_override(
+    module_name = "rules_python",
+    commit = "84874d514e343a32ce1c611165b1f26952dedd79",
+    remote = "https://github.com/rsartor-cmd/rules_python.git",
+)
