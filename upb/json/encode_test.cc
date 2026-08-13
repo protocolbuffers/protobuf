@@ -136,7 +136,7 @@ TEST(JsonTest, EncodeFieldMask) {
   google_protobuf_FieldMask_add_paths(
       mask, upb_StringView_FromString("foo_bar.baz1"), a.ptr());
 
-  EXPECT_EQ(R"({"maskVal":"fooBar.baz1"})", JsonEncode(box, 0));
+  EXPECT_EQ("{\"maskVal\":\"fooBar.baz1\"}", JsonEncode(box, 0));
 }
 
 TEST(JsonTest, EncodeFieldMaskRejectsInvalidCharacters) {
@@ -164,7 +164,7 @@ TEST(JsonTest, EncodeEscapesJsonName) {
   size_t size = upb_JsonEncode(UPB_UPCAST(msg), m.ptr(), defpool.ptr(), 0, buf,
                                sizeof(buf), status.ptr());
   ASSERT_LT(size, sizeof(buf));
-  EXPECT_EQ(R"({"a\":1,\"b":2})", std::string(buf, size));
+  EXPECT_EQ("{\"a\\\":1,\\\"b\":2}", std::string(buf, size));
 }
 
 // Test encoding when the enum value has no custom string option set, verifying
