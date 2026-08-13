@@ -275,6 +275,7 @@ cc_library(
         "//src/google/protobuf",
         "//src/google/protobuf:protobuf_lite",
         "//src/google/protobuf/io",
+        "//src/google/protobuf/util:differencer",
         "@abseil-cpp//absl/functional:overload",
         "@abseil-cpp//absl/log:absl_check",
         "@abseil-cpp//absl/log:absl_log",

@@ -55,6 +55,7 @@ impl<T: SealedInternal> SealedInternal for &mut T {}
 /// A trait used by the proto_eq() gtest macro.
 pub trait MatcherEq: SealedInternal + Debug {
     fn matches(&self, o: &Self) -> bool;
+    fn matches_partially(&self, expected: &Self) -> bool;
 }
 
 /// Used by the proto! macro to get a default value for a repeated field.
