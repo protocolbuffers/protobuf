@@ -213,13 +213,20 @@ if (protobuf_BUILD_LIBUPB)
     endforeach()
   endforeach(proto_file)
 
+  add_library(libupb_test_protos STATIC
+    ${upb_test_proto_genfiles}
+  )
+  target_link_libraries(libupb_test_protos
+    ${protobuf_LIB_UPB}
+  )
+
   add_executable(upb-test
     ${upb_test_files}
-    ${upb_test_proto_genfiles}
     ${upb_test_util_hdrs}
     ${upb_test_util_srcs})
 
   target_link_libraries(upb-test
+    libupb_test_protos
     ${protobuf_LIB_PROTOBUF}
     ${protobuf_LIB_UPB}
     ${protobuf_ABSL_USED_TARGETS}
