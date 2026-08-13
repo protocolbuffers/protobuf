@@ -16,14 +16,12 @@
 
 #include "absl/container/flat_hash_map.h"
 #include "absl/log/absl_check.h"
-#include "absl/log/absl_log.h"
 #include "absl/strings/str_cat.h"
 #include "google/protobuf/compiler/java/context.h"
 #include "google/protobuf/compiler/java/doc_comment.h"
 #include "google/protobuf/compiler/java/field_common.h"
 #include "google/protobuf/compiler/java/helpers.h"
 #include "google/protobuf/compiler/java/full/field_generator.h"
-#include "google/protobuf/compiler/java/internal_helpers.h"
 #include "google/protobuf/compiler/java/name_resolver.h"
 #include "google/protobuf/io/printer.h"
 #include "google/protobuf/wire_format.h"
@@ -70,18 +68,19 @@ void SetEnumVariables(
 
   (*variables)["on_changed"] = "onChanged();";
 
-  if (HasHasbit(descriptor)) {
-    // For singular messages and builders, one bit is used for the hasField bit.
-    // Note that these have a trailing ";".
-    (*variables)["set_has_field_bit_to_local"] =
-        GenerateSetBitToLocal(bit_index);
-    (*variables)["is_field_present"] = GenerateGetBit(bit_index);
-  } else {
-    (*variables)["set_has_field_bit_to_local"] = "";
-    variables->insert({"is_field_present",
-                       absl::StrCat((*variables)["name"], "_ != ",
-                                    (*variables)["default"], ".getNumber()")});
-  }
+  (*variables)["set_has_field_bit_to_local"] = GenerateSetBitToLocal(bit_index);
+  (*variables)["hazzer_method_name"] =
+      absl::StrCat(HasHazzerMethod(descriptor) ? "has" : "internalHas",
+                   (*variables)["capitalized_name"]);
+
+  (*variables)["is_field_present"] =
+      HasHazzerMethod(descriptor)
+          ? GenerateGetBit(bit_index)
+          : absl::StrCat((*variables)["hazzer_method_name"], "()");
+
+  variables->insert({"is_field_value_not_default",
+                     absl::StrCat((*variables)["name"], "_ != ",
+                                  (*variables)["default"], ".getNumber()")});
 
   // Always track the presence of a field explicitly in the builder, regardless
   // of syntax.
@@ -117,12 +116,9 @@ ImmutableEnumFieldGenerator::~ImmutableEnumFieldGenerator() = default;
 
 void ImmutableEnumFieldGenerator::GenerateInterfaceHasMethod(
     io::Printer* printer) const {
-  if (descriptor_->has_presence()) {
-    WriteFieldAccessorDocComment(printer, descriptor_, HAZZER,
-                                 context_->options());
-    printer->Print(variables_,
-                   "$deprecation$boolean has$capitalized_name$();\n");
-  }
+  WriteFieldAccessorDocComment(printer, descriptor_, HAZZER,
+                               context_->options());
+  printer->Print(variables_, "$deprecation$boolean $hazzer_method_name$();\n");
 }
 
 void ImmutableEnumFieldGenerator::GenerateInterfaceGetValueMethod(
@@ -144,23 +140,31 @@ void ImmutableEnumFieldGenerator::GenerateInterfaceGetMethod(
 
 void ImmutableEnumFieldGenerator::GenerateInterfaceMembers(
     io::Printer* printer) const {
-  GenerateInterfaceHasMethod(printer);
+  if (HasHazzerMethod(descriptor_)) {
+    GenerateInterfaceHasMethod(printer);
+  }
   GenerateInterfaceGetValueMethod(printer);
   GenerateInterfaceGetMethod(printer);
 }
 
 void ImmutableEnumFieldGenerator::GenerateHasMethod(
     io::Printer* printer) const {
-  if (descriptor_->has_presence()) {
-    WriteFieldAccessorDocComment(printer, descriptor_, HAZZER,
-                                 context_->options());
-    printer->Print(variables_,
-                   "@java.lang.Override $deprecation$public boolean "
-                   "${$has$capitalized_name$$}$() {\n"
-                   "  return $is_field_present$;\n"
-                   "}\n");
-    printer->Annotate("{", "}", descriptor_);
-  }
+  WriteFieldAccessorDocComment(printer, descriptor_, HAZZER,
+                               context_->options());
+  printer->Print(variables_,
+                 "@java.lang.Override $deprecation$public boolean "
+                 "${$$hazzer_method_name$$}$() {\n"
+                 "  return $get_has_field_bit$;\n"
+                 "}\n");
+  printer->Annotate("{", "}", descriptor_);
+}
+
+void ImmutableEnumFieldGenerator::GeneratePrivateHasMethod(
+    io::Printer* printer) const {
+  printer->Print(variables_,
+                 "private boolean $hazzer_method_name$() {\n"
+                 "  return $is_field_value_not_default$;\n"
+                 "}\n");
 }
 
 void ImmutableEnumFieldGenerator::GenerateGetValueMethod(
@@ -193,23 +197,23 @@ void ImmutableEnumFieldGenerator::GenerateGetMethod(
 void ImmutableEnumFieldGenerator::GenerateMembers(io::Printer* printer) const {
   printer->Print(variables_, "private int $name$_ = $default_number$;\n");
   PrintExtraFieldInfo(variables_, printer);
-  GenerateHasMethod(printer);
+  if (HasHazzerMethod(descriptor_)) {
+    GenerateHasMethod(printer);
+  } else {
+    GeneratePrivateHasMethod(printer);
+  }
   GenerateGetValueMethod(printer);
   GenerateGetMethod(printer);
 }
 
 void ImmutableEnumFieldGenerator::GenerateBuilderHasMethod(
     io::Printer* printer) const {
-  if (descriptor_->has_presence()) {
-    WriteFieldAccessorDocComment(printer, descriptor_, HAZZER,
-                                 context_->options());
-    printer->Print(variables_,
-                   "@java.lang.Override $deprecation$public boolean "
-                   "${$has$capitalized_name$$}$() {\n"
-                   "  return $get_has_field_bit$;\n"
-                   "}\n");
-    printer->Annotate("{", "}", descriptor_);
-  }
+  GenerateHasMethod(printer);
+}
+
+void ImmutableEnumFieldGenerator::GenerateBuilderPrivateHasMethod(
+    io::Printer* printer) const {
+  GeneratePrivateHasMethod(printer);
 }
 
 void ImmutableEnumFieldGenerator::GenerateBuilderGetValueMethod(
@@ -293,7 +297,11 @@ void ImmutableEnumFieldGenerator::GenerateBuilderClearMethod(
 void ImmutableEnumFieldGenerator::GenerateBuilderMembers(
     io::Printer* printer) const {
   printer->Print(variables_, "private int $name$_ = $default_number$;\n");
-  GenerateBuilderHasMethod(printer);
+  if (HasHazzerMethod(descriptor_)) {
+    GenerateBuilderHasMethod(printer);
+  } else {
+    GenerateBuilderPrivateHasMethod(printer);
+  }
   GenerateBuilderGetValueMethod(printer);
   GenerateBuilderSetValueMethod(printer);
   GenerateBuilderGetMethod(printer);
@@ -318,11 +326,7 @@ void ImmutableEnumFieldGenerator::GenerateBuilderClearCode(
 
 void ImmutableEnumFieldGenerator::GenerateMergingCode(
     io::Printer* printer) const {
-  if (descriptor_->has_presence()) {
-    printer->Print(variables_, "if (other.has$capitalized_name$()) {\n");
-  } else {
-    printer->Print(variables_, "if (other.$name$_ != $default_number$) {\n");
-  }
+  printer->Print(variables_, "if (other.$hazzer_method_name$()) {\n");
   printer->Indent();
   if (SupportUnknownEnumValue(descriptor_)) {
     printer->Print(
@@ -338,13 +342,20 @@ void ImmutableEnumFieldGenerator::GenerateMergingCode(
 
 void ImmutableEnumFieldGenerator::GenerateBuildingCode(
     io::Printer* printer) const {
-  printer->Print(variables_,
-                 "if ($get_has_field_bit_from_local$) {\n"
-                 "  result.$name$_ = $name$_;\n");
-  if (GetNumBits() > 0) {
-    printer->Print(variables_, "  $set_has_field_bit_to_local$;\n");
+  if (HasHazzerMethod(descriptor_)) {
+    printer->Print(variables_,
+                   "if ($get_has_field_bit_from_local$) {\n"
+                   "  result.$name$_ = $name$_;\n"
+                   "  $set_has_field_bit_to_local$;\n"
+                   "}\n");
+  } else {
+    printer->Print(variables_,
+                   "if ($hazzer_method_name$()) {\n"
+                   "  result.$name$_ = $name$_;\n"
+                   "} else {\n"
+                   "  $clear_has_field_bit$\n"
+                   "}\n");
   }
-  printer->Print("}\n");
 }
 
 void ImmutableEnumFieldGenerator::GenerateBuilderParsingCode(
