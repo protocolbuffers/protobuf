@@ -1032,6 +1032,57 @@ void OptionInterpreter::CollectAggregateFieldLocations(
     const Message& message, const TextFormat::ParseInfoTree& tree,
     const SourceCodePath& uninterpreted_path, SourceCodePath& dest_path) {
   const Reflection* reflection = message.GetReflection();
+  const FieldDescriptor* any_type_url_field = nullptr;
+  const FieldDescriptor* any_value_field = nullptr;
+  if (internal::GetAnyFieldDescriptors(message, &any_type_url_field,
+                                       &any_value_field)) {
+    absl::StatusOr<TextFormat::FieldLocation> location =
+        tree.GetFieldLocation(any_type_url_field);
+    if (location.ok()) {
+      dest_path.push_back(any_type_url_field->number());
+      AggregateFieldLocation afl;
+      afl.uninterpreted_path = uninterpreted_path;
+      afl.field_dest_path = dest_path;
+      afl.value_marker = UninterpretedOption::kStringValueFieldNumber;
+      afl.val_range = location->name;
+      aggregate_field_locations_.push_back(std::move(afl));
+      dest_path.pop_back();
+    } else {
+      ABSL_LOG(WARNING) << "No location in textformat found for field: "
+                        << any_type_url_field->name();
+    }
+
+    std::string type_url = reflection->GetString(message, any_type_url_field);
+    std::string url_prefix, full_type_name;
+    if (!internal::ParseAnyTypeUrl(type_url, &url_prefix, &full_type_name)) {
+      return;
+    }
+    DescriptorBuilder::assert_mutex_held(builder_->pool_);
+    const Descriptor* sub_desc =
+        builder_->FindSymbol(full_type_name).descriptor();
+    if (sub_desc == nullptr) {
+      return;
+    }
+    // During TextFormat parsing of Any messages, the unpacked message is parsed
+    // and serialized back to a binary string stored in `Any.value`. We need to
+    // reparse it here to inspect its fields with reflection and recursively
+    // collect source locations.
+    std::unique_ptr<Message> sub_message(
+        dynamic_factory_.GetPrototype(sub_desc)->New());
+    if (sub_message == nullptr ||
+        !sub_message->ParseFromString(
+            reflection->GetString(message, any_value_field))) {
+      return;
+    }
+    dest_path.push_back(any_value_field->number());
+    dest_path.push_back(UninterpretedOption::kAggregateValueFieldNumber);
+    CollectAggregateFieldLocations(*sub_message, tree, uninterpreted_path,
+                                   dest_path);
+    dest_path.pop_back();
+    dest_path.pop_back();
+    return;
+  }
+
   std::vector<const FieldDescriptor*> fields;
   reflection->ListFields(message, &fields);
 
