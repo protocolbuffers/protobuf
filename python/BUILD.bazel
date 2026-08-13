@@ -6,8 +6,8 @@
 # https://developers.google.com/open-source/licenses/bsd
 
 load("@bazel_skylib//rules:common_settings.bzl", "bool_flag", "string_flag")
+load("@rules_python//python/cc:py_extension.bzl", "py_extension")
 load("//python:build_targets.bzl", "build_targets")
-load("//python:py_extension.bzl", "py_extension")
 load("//upb/bazel:copts.bzl", "UPB_DEFAULT_COPTS", "UPB_DEFAULT_FEATURES")
 
 build_targets(name = "python")
@@ -38,6 +38,26 @@ string_flag(
         "310",
         "311",
     ],
+)
+
+bool_flag(
+    name = "use_hermetic_python",
+    build_setting_default = False,
+)
+
+config_setting(
+    name = "is_hermetic_python",
+    flag_values = {":use_hermetic_python": "true"},
+    visibility = ["//visibility:public"],
+)
+
+config_setting(
+    name = "is_system_python",
+    flag_values = {
+        ":python_version": "system",
+        ":use_hermetic_python": "false",
+    },
+    visibility = ["//visibility:public"],
 )
 
 config_setting(
@@ -108,11 +128,15 @@ filegroup(
 )
 
 py_extension(
-    name = "_message",
+    name = "google/_upb/_message",
     srcs = [":message_srcs"],
     copts = UPB_DEFAULT_COPTS + select(LIMITED_API_FLAG_SELECT),
     features = UPB_DEFAULT_FEATURES,
     target_compatible_with = select(_message_target_compatible_with),
+    visibility = [
+        ":__subpackages__",
+        "//conformance:__pkg__",
+    ],
     deps = [
         ":breaking_changes",
         "//src/google/protobuf:descriptor_upb_minitable_proto",
