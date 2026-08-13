@@ -165,6 +165,8 @@ TEST(JsonTest, EncodeEscapesJsonName) {
                                sizeof(buf), status.ptr());
   ASSERT_LT(size, sizeof(buf));
   EXPECT_EQ(R"({"a\":1,\"b":2})", std::string(buf, size));
+}
+
 // Test encoding when the enum value has no custom string option set, verifying
 // it falls back to the default enum value name ("ARMOR_GORGET").
 TEST(JsonTest, EncodeEnumMissingCustomStringOption) {
