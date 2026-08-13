@@ -3,6 +3,7 @@
 load("@bazel_tools//tools/cpp:toolchain_utils.bzl", "find_cpp_toolchain")
 load("@rules_cc//cc/common:cc_common.bzl", "cc_common")
 load("@rules_cc//cc/common:cc_info.bzl", "CcInfo")
+load("@rules_cc//cc/common:cc_shared_library_hint_info.bzl", "CcSharedLibraryHintInfo")
 load("//bazel/common:proto_common.bzl", "proto_common")
 load("//bazel/common:proto_info.bzl", "ProtoInfo")
 load(":upb_proto_library_internal/cc_library_func.bzl", "cc_library_func")
@@ -188,21 +189,14 @@ def _compile_upb_protos(ctx, files, generator, dep_ccinfos, cc_provider, proto_i
 
 _GENERATORS = ["upb", "upbdefs", "upb_minitable"]
 
-def _get_hint_providers(ctx, generator):
-    if generator not in _GENERATORS:
-        fail("Please add new generator '{}' to _GENERATORS list".format(generator))
-
-    possible_owners = []
-    for generator in _GENERATORS:
-        possible_owners.append(ctx.label.relative(_generate_name(ctx, generator)))
-
-    if hasattr(cc_common, "CcSharedLibraryHintInfo"):
-        return [cc_common.CcSharedLibraryHintInfo(owners = possible_owners)]
-    elif hasattr(cc_common, "CcSharedLibraryHintInfo_6_X_constructor_do_not_use"):
-        # This branch can be deleted once 6.X is not supported by upb rules
-        return [cc_common.CcSharedLibraryHintInfo_6_X_constructor_do_not_use(owners = possible_owners)]
-
-    return []
+def _get_hint_providers(name, ctx, provide_cc_shared_library_hints):
+    if not provide_cc_shared_library_hints:
+        return []
+    owners = [
+        ctx.label.relative(name + "." + generator)
+        for generator in _GENERATORS
+    ]
+    return [CcSharedLibraryHintInfo(owners = owners)]
 
 def upb_proto_aspect_impl(
         target,
@@ -261,7 +255,7 @@ def upb_proto_aspect_impl(
             proto_info,
         )
 
-    hints = _get_hint_providers(ctx, generator) if provide_cc_shared_library_hints else []
+    hints = _get_hint_providers(ctx.rule.attr.name, ctx, provide_cc_shared_library_hints)
 
     return hints + [
         file_provider(srcs = files),

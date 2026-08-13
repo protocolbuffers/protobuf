@@ -1,11 +1,25 @@
 """Internal rule implementation for upb_*_proto_library() rules."""
 
+load("@rules_cc//cc/common:cc_common.bzl", "cc_common")
+load("@rules_cc//cc/common:cc_info.bzl", "CcInfo")
+
 def _filter_none(elems):
     out = []
     for elem in elems:
         if elem:
             out.append(elem)
     return out
+
+# Suffixes of the synthetic owner labels that the upb aspects give to the linker inputs they
+# create (see `_generate_name()` in aspect.bzl).
+_ASPECT_OWNER_SUFFIXES = (".upb", ".upbdefs", ".upb_minitable")
+
+def _is_aspect_owned(linker_input):
+    name = linker_input.owner.name
+    for suffix in _ASPECT_OWNER_SUFFIXES:
+        if name.endswith(suffix):
+            return True
+    return False
 
 def upb_proto_rule_impl(ctx, cc_info_provider, srcs_provider):
     """An implementation for upb_*proto_library() rules.
@@ -26,12 +40,51 @@ def upb_proto_rule_impl(ctx, cc_info_provider, srcs_provider):
     srcs = dep[srcs_provider].srcs
     cc_info = dep[cc_info_provider].cc_info
 
-    lib = cc_info.linking_context.linker_inputs.to_list()[0].libraries[0]
+    # Direct library extraction for DefaultInfo
+    all_linker_inputs = cc_info.linking_context.linker_inputs.to_list()
+    direct_input = all_linker_inputs[0]
+    lib = direct_input.libraries[0]
     files = _filter_none([
         lib.static_library,
         lib.pic_static_library,
         lib.dynamic_library,
     ])
+
+    # Re-wrap the direct input, and every linker input that the upb aspects created under a
+    # synthetic owner label (foo_proto.upb, foo_proto.upb_minitable, ...), so that they are owned by
+    # this rule's label.
+    #
+    # Bazel 8's builtin cc_shared_library only keeps linker inputs whose owner is a node that its
+    # graph_structure_aspect visited. That aspect does not visit proto_library targets when
+    # protobuf is the root module (it only recognizes ProtoInfo from @protobuf or
+    # @com_google_protobuf), so CcSharedLibraryHintInfo on the proto_library never takes effect,
+    # and linker inputs owned by synthetic labels are silently dropped from the link line. This
+    # rule always has CcInfo, so it is always visited.
+    new_linker_inputs = []
+    for i, linker_input in enumerate(all_linker_inputs):
+        if i == 0 or _is_aspect_owned(linker_input):
+            new_linker_inputs.append(cc_common.create_linker_input(
+                owner = ctx.label,
+                libraries = depset(linker_input.libraries),
+                user_link_flags = depset(linker_input.user_link_flags),
+                additional_inputs = depset(linker_input.additional_inputs),
+            ))
+        else:
+            new_linker_inputs.append(linker_input)
+
+    # Keep the original (topological) order of the linker inputs.
+    linking_context = cc_common.create_linking_context(
+        linker_inputs = depset(
+            direct = new_linker_inputs,
+            order = "topological",
+        ),
+    )
+
+    cc_info = CcInfo(
+        compilation_context = cc_info.compilation_context,
+        linking_context = linking_context,
+    )
+
     return [
         DefaultInfo(files = depset(files + srcs.hdrs + srcs.srcs)),
         srcs,
