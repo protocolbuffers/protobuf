@@ -461,7 +461,7 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
     if (minCapacity <= size) {
       minCapacity = size * 2;
     }
-    if (minCapacity <= 0) {
+    if (minCapacity < 0) {
       minCapacity = AbstractProtobufList.DEFAULT_CAPACITY;
     }
 
