@@ -183,9 +183,11 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CppFeatures final :
                            const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
                                class_data);
 
-  inline CppFeatures(const CppFeatures& from) : CppFeatures(nullptr, from) {}
-  inline CppFeatures(CppFeatures&& from) noexcept : CppFeatures(nullptr, ::std::move(from)) {}
-  inline CppFeatures& operator=(const CppFeatures& from) {
+  PROTOBUF_ALWAYS_INLINE_NODEBUG CppFeatures(const CppFeatures& from)
+      : CppFeatures(nullptr, from) {}
+  PROTOBUF_ALWAYS_INLINE_NODEBUG CppFeatures(CppFeatures&& from) noexcept
+      : CppFeatures(nullptr, ::std::move(from)) {}
+  PROTOBUF_ALWAYS_INLINE_NODEBUG CppFeatures& operator=(const CppFeatures& from) {
     CopyFrom(from);
     return *this;
   }
@@ -208,7 +210,10 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CppFeatures final :
     return _internal_metadata_.mutable_unknown_fields<::google::protobuf::UnknownFieldSet>();
   }
 
-  [[nodiscard]] static const ::google::protobuf::Descriptor* PROTOBUF_NONNULL descriptor() {
+  [[nodiscard]]
+      PROTOBUF_ALWAYS_INLINE_NODEBUG static const ::google::protobuf::Descriptor*
+          PROTOBUF_NONNULL
+          descriptor() {
     return GetDescriptor();
   }
   [[nodiscard]] static const ::google::protobuf::Descriptor* PROTOBUF_NONNULL
@@ -239,7 +244,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CppFeatures final :
 
   // implements Message ----------------------------------------------
 
-  [[nodiscard]] CppFeatures* PROTOBUF_NONNULL
+  [[nodiscard]] PROTOBUF_ALWAYS_INLINE_NODEBUG CppFeatures* PROTOBUF_NONNULL
   New(::google::protobuf::Arena* PROTOBUF_NULLABLE arena = nullptr) const {
     return Super_::DefaultConstruct<CppFeatures>(arena);
   }
@@ -255,7 +260,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CppFeatures final :
                         const ::google::protobuf::MessageLite& from_msg);
 
   public:
-  [[nodiscard]] bool IsInitialized() const {
+  [[nodiscard]] PROTOBUF_ALWAYS_INLINE_NODEBUG bool IsInitialized()
+      const {
     return true;
   }
   #if defined(PROTOBUF_CUSTOM_VTABLE)
@@ -286,7 +292,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CppFeatures final :
       ::uint8_t* PROTOBUF_NONNULL target,
       ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) const final;
   #endif  // PROTOBUF_CUSTOM_VTABLE
-  [[nodiscard]] int GetCachedSize() const {
+  [[nodiscard]] PROTOBUF_ALWAYS_INLINE_NODEBUG int GetCachedSize()
+      const {
     return _impl_._cached_size_.Get();
   }
 

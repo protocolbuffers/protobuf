@@ -191,9 +191,11 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED JavaFeatures_NestInFi
                            const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
                                class_data);
 
-  inline JavaFeatures_NestInFileClassFeature(const JavaFeatures_NestInFileClassFeature& from) : JavaFeatures_NestInFileClassFeature(nullptr, from) {}
-  inline JavaFeatures_NestInFileClassFeature(JavaFeatures_NestInFileClassFeature&& from) noexcept : JavaFeatures_NestInFileClassFeature(nullptr, ::std::move(from)) {}
-  inline JavaFeatures_NestInFileClassFeature& operator=(const JavaFeatures_NestInFileClassFeature& from) {
+  PROTOBUF_ALWAYS_INLINE_NODEBUG JavaFeatures_NestInFileClassFeature(const JavaFeatures_NestInFileClassFeature& from)
+      : JavaFeatures_NestInFileClassFeature(nullptr, from) {}
+  PROTOBUF_ALWAYS_INLINE_NODEBUG JavaFeatures_NestInFileClassFeature(JavaFeatures_NestInFileClassFeature&& from) noexcept
+      : JavaFeatures_NestInFileClassFeature(nullptr, ::std::move(from)) {}
+  PROTOBUF_ALWAYS_INLINE_NODEBUG JavaFeatures_NestInFileClassFeature& operator=(const JavaFeatures_NestInFileClassFeature& from) {
     CopyFrom(from);
     return *this;
   }
@@ -216,7 +218,10 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED JavaFeatures_NestInFi
     return _internal_metadata_.mutable_unknown_fields<::google::protobuf::UnknownFieldSet>();
   }
 
-  [[nodiscard]] static const ::google::protobuf::Descriptor* PROTOBUF_NONNULL descriptor() {
+  [[nodiscard]]
+      PROTOBUF_ALWAYS_INLINE_NODEBUG static const ::google::protobuf::Descriptor*
+          PROTOBUF_NONNULL
+          descriptor() {
     return GetDescriptor();
   }
   [[nodiscard]] static const ::google::protobuf::Descriptor* PROTOBUF_NONNULL
@@ -247,7 +252,7 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED JavaFeatures_NestInFi
 
   // implements Message ----------------------------------------------
 
-  [[nodiscard]] JavaFeatures_NestInFileClassFeature* PROTOBUF_NONNULL
+  [[nodiscard]] PROTOBUF_ALWAYS_INLINE_NODEBUG JavaFeatures_NestInFileClassFeature* PROTOBUF_NONNULL
   New(::google::protobuf::Arena* PROTOBUF_NULLABLE arena = nullptr) const {
     return Super_::DefaultConstruct<JavaFeatures_NestInFileClassFeature>(arena);
   }
@@ -256,10 +261,13 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED JavaFeatures_NestInFi
     Super_::CopyImpl(*this, from);
   }
   using Super_::MergeFrom;
-  void MergeFrom(const JavaFeatures_NestInFileClassFeature& from) { Super_::MergeImpl(*this, from); }
+  PROTOBUF_ALWAYS_INLINE_NODEBUG void MergeFrom(const JavaFeatures_NestInFileClassFeature& from) {
+    Super_::MergeImpl(*this, from);
+  }
 
   public:
-  [[nodiscard]] bool IsInitialized() const {
+  [[nodiscard]] PROTOBUF_ALWAYS_INLINE_NODEBUG bool IsInitialized()
+      const {
     return true;
   }
 
@@ -356,9 +364,11 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED JavaFeatures final : 
                            const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
                                class_data);
 
-  inline JavaFeatures(const JavaFeatures& from) : JavaFeatures(nullptr, from) {}
-  inline JavaFeatures(JavaFeatures&& from) noexcept : JavaFeatures(nullptr, ::std::move(from)) {}
-  inline JavaFeatures& operator=(const JavaFeatures& from) {
+  PROTOBUF_ALWAYS_INLINE_NODEBUG JavaFeatures(const JavaFeatures& from)
+      : JavaFeatures(nullptr, from) {}
+  PROTOBUF_ALWAYS_INLINE_NODEBUG JavaFeatures(JavaFeatures&& from) noexcept
+      : JavaFeatures(nullptr, ::std::move(from)) {}
+  PROTOBUF_ALWAYS_INLINE_NODEBUG JavaFeatures& operator=(const JavaFeatures& from) {
     CopyFrom(from);
     return *this;
   }
@@ -381,7 +391,10 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED JavaFeatures final : 
     return _internal_metadata_.mutable_unknown_fields<::google::protobuf::UnknownFieldSet>();
   }
 
-  [[nodiscard]] static const ::google::protobuf::Descriptor* PROTOBUF_NONNULL descriptor() {
+  [[nodiscard]]
+      PROTOBUF_ALWAYS_INLINE_NODEBUG static const ::google::protobuf::Descriptor*
+          PROTOBUF_NONNULL
+          descriptor() {
     return GetDescriptor();
   }
   [[nodiscard]] static const ::google::protobuf::Descriptor* PROTOBUF_NONNULL
@@ -412,7 +425,7 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED JavaFeatures final : 
 
   // implements Message ----------------------------------------------
 
-  [[nodiscard]] JavaFeatures* PROTOBUF_NONNULL
+  [[nodiscard]] PROTOBUF_ALWAYS_INLINE_NODEBUG JavaFeatures* PROTOBUF_NONNULL
   New(::google::protobuf::Arena* PROTOBUF_NULLABLE arena = nullptr) const {
     return Super_::DefaultConstruct<JavaFeatures>(arena);
   }
@@ -428,7 +441,8 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED JavaFeatures final : 
                         const ::google::protobuf::MessageLite& from_msg);
 
   public:
-  [[nodiscard]] bool IsInitialized() const {
+  [[nodiscard]] PROTOBUF_ALWAYS_INLINE_NODEBUG bool IsInitialized()
+      const {
     return true;
   }
   #if defined(PROTOBUF_CUSTOM_VTABLE)
@@ -459,7 +473,8 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED JavaFeatures final : 
       ::uint8_t* PROTOBUF_NONNULL target,
       ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) const final;
   #endif  // PROTOBUF_CUSTOM_VTABLE
-  [[nodiscard]] int GetCachedSize() const {
+  [[nodiscard]] PROTOBUF_ALWAYS_INLINE_NODEBUG int GetCachedSize()
+      const {
     return _impl_._cached_size_.Get();
   }
 

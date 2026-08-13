@@ -84,8 +84,9 @@ inline constexpr CSharpFeatures::Impl_::Impl_(
       : nullable_reference_types_{false} {}
 
 template <typename>
-constexpr CSharpFeatures::CSharpFeatures(::_pbi::ConstantInitialized,
-                       const ::_pbi::ClassData* PROTOBUF_NONNULL class_data)
+PROTOBUF_ALWAYS_INLINE_NODEBUG constexpr CSharpFeatures::CSharpFeatures(
+    ::_pbi::ConstantInitialized,
+    const ::_pbi::ClassData* PROTOBUF_NONNULL class_data)
     : Super_(
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           class_data

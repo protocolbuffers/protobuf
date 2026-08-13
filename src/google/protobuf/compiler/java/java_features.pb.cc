@@ -71,8 +71,9 @@ constexpr JavaFeatures_NestInFileClassFeature::ParseTableT_ JavaFeatures_NestInF
 }
 
 template <typename>
-constexpr JavaFeatures_NestInFileClassFeature::JavaFeatures_NestInFileClassFeature(::_pbi::ConstantInitialized,
-                       const ::_pbi::ClassData* PROTOBUF_NONNULL class_data)
+PROTOBUF_ALWAYS_INLINE_NODEBUG constexpr JavaFeatures_NestInFileClassFeature::JavaFeatures_NestInFileClassFeature(
+    ::_pbi::ConstantInitialized,
+    const ::_pbi::ClassData* PROTOBUF_NONNULL class_data)
     : Super_(
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           class_data
@@ -243,8 +244,9 @@ inline constexpr JavaFeatures::Impl_::Impl_(
         nest_in_file_class_{static_cast< ::pb::JavaFeatures_NestInFileClassFeature_NestInFileClass >(0)} {}
 
 template <typename>
-constexpr JavaFeatures::JavaFeatures(::_pbi::ConstantInitialized,
-                       const ::_pbi::ClassData* PROTOBUF_NONNULL class_data)
+PROTOBUF_ALWAYS_INLINE_NODEBUG constexpr JavaFeatures::JavaFeatures(
+    ::_pbi::ConstantInitialized,
+    const ::_pbi::ClassData* PROTOBUF_NONNULL class_data)
     : Super_(
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           class_data
