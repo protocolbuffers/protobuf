@@ -39,6 +39,25 @@ namespace {
 using internal::WireFormat;
 using Semantic = ::google::protobuf::io::AnnotationCollector::Semantic;
 
+// Adds two variables to (*variables) that operate on a particular field value,
+// both for use locally and on another instance named 'other'. This ensures that
+// we treat these values the same way, whether it's in the current instance or
+// another.
+//
+// `this_variable_name` and `other_variable_name` MUST be string constants.
+//
+// The `create_value` FunctionRef takes the representation of the value and
+// should use it to create and return the code that operates on this value.
+void AddPrimitiveVariableForThisAndOther(
+    absl::string_view this_variable_name, absl::string_view other_variable_name,
+    absl::FunctionRef<std::string(absl::string_view)> create_value,
+    absl::flat_hash_map<absl::string_view, std::string>* variables) {
+  (*variables)[this_variable_name] =
+      create_value(absl::StrCat((*variables)["name"], "_"));
+  (*variables)[other_variable_name] = create_value(
+      absl::StrCat("other.get", (*variables)["capitalized_name"], "()"));
+}
+
 void SetPrimitiveVariables(
     const FieldDescriptor* descriptor, int bit_index,
     const FieldGeneratorInfo* info, ClassNameResolver* name_resolver,
@@ -106,37 +125,53 @@ void SetPrimitiveVariables(
     (*variables)["fixed_size"] = absl::StrCat(fixed_size);
   }
   (*variables)["on_changed"] = "onChanged();";
-  (*variables)["hazzer_method_name"] =
-      absl::StrCat(HasHazzerMethod(descriptor) ? "has" : "internalHas",
-                   (*variables)["capitalized_name"]);
 
-  (*variables)["set_has_field_bit_to_local"] =
-      absl::StrCat(GenerateSetBitToLocal(bit_index), ";");
-
-  (*variables)["is_field_present"] =
-      HasHazzerMethod(descriptor)
-          ? GenerateGetBit(bit_index)
-          : absl::StrCat((*variables)["hazzer_method_name"], "()");
-
-  switch (descriptor->type()) {
-    case FieldDescriptor::TYPE_BYTES:
-      (*variables)["is_field_value_not_default"] =
-          absl::StrCat("!", (*variables)["name"], "_.isEmpty()");
-      break;
-    case FieldDescriptor::TYPE_FLOAT:
-      (*variables)["is_field_value_not_default"] =
-          absl::StrCat("java.lang.Float.floatToRawIntBits(",
-                       (*variables)["name"], "_) != 0");
-      break;
-    case FieldDescriptor::TYPE_DOUBLE:
-      (*variables)["is_field_value_not_default"] =
-          absl::StrCat("java.lang.Double.doubleToRawLongBits(",
-                       (*variables)["name"], "_) != 0");
-      break;
-    default:
-      (*variables)["is_field_value_not_default"] =
-          absl::StrCat((*variables)["name"], "_ != ", (*variables)["default"]);
-      break;
+  if (HasHasbit(descriptor)) {
+    // For singular messages and builders, one bit is used for the hasField bit.
+    // Note that these have a trailing ";".
+    (*variables)["set_has_field_bit_to_local"] =
+        absl::StrCat(GenerateSetBitToLocal(bit_index), ";");
+    (*variables)["is_field_present"] = GenerateGetBit(bit_index);
+    (*variables)["is_other_field_present"] =
+        absl::StrCat("other.has", (*variables)["capitalized_name"], "()");
+  } else {
+    (*variables)["set_has_field_bit_to_local"] = "";
+    switch (descriptor->type()) {
+      case FieldDescriptor::TYPE_BYTES:
+        AddPrimitiveVariableForThisAndOther(
+            "is_field_present", "is_other_field_present",
+            [](absl::string_view value) {
+              return absl::StrCat("!", value, ".isEmpty()");
+            },
+            variables);
+        break;
+      case FieldDescriptor::TYPE_FLOAT:
+        AddPrimitiveVariableForThisAndOther(
+            "is_field_present", "is_other_field_present",
+            [](absl::string_view value) {
+              return absl::StrCat("java.lang.Float.floatToRawIntBits(", value,
+                                  ") != 0");
+            },
+            variables);
+        break;
+      case FieldDescriptor::TYPE_DOUBLE:
+        AddPrimitiveVariableForThisAndOther(
+            "is_field_present", "is_other_field_present",
+            [](absl::string_view value) {
+              return absl::StrCat("java.lang.Double.doubleToRawLongBits(",
+                                  value, ") != 0");
+            },
+            variables);
+        break;
+      default:
+        AddPrimitiveVariableForThisAndOther(
+            "is_field_present", "is_other_field_present",
+            [variables](absl::string_view value) {
+              return absl::StrCat(value, " != ", (*variables)["default"]);
+            },
+            variables);
+        break;
+    }
   }
 
   // Always track the presence of a field explicitly in the builder, regardless
@@ -166,9 +201,12 @@ ImmutablePrimitiveFieldGenerator::~ImmutablePrimitiveFieldGenerator() = default;
 
 void ImmutablePrimitiveFieldGenerator::GenerateInterfaceHasMethod(
     io::Printer* printer) const {
-  WriteFieldAccessorDocComment(printer, descriptor_, HAZZER,
-                               context_->options());
-  printer->Print(variables_, "$deprecation$boolean $hazzer_method_name$();\n");
+  if (descriptor_->has_presence()) {
+    WriteFieldAccessorDocComment(printer, descriptor_, HAZZER,
+                                 context_->options());
+    printer->Print(variables_,
+                   "$deprecation$boolean has$capitalized_name$();\n");
+  }
 }
 
 void ImmutablePrimitiveFieldGenerator::GenerateInterfaceGetMethod(
@@ -180,30 +218,23 @@ void ImmutablePrimitiveFieldGenerator::GenerateInterfaceGetMethod(
 
 void ImmutablePrimitiveFieldGenerator::GenerateInterfaceMembers(
     io::Printer* printer) const {
-  if (HasHazzerMethod(descriptor_)) {
-    GenerateInterfaceHasMethod(printer);
-  }
+  GenerateInterfaceHasMethod(printer);
   GenerateInterfaceGetMethod(printer);
 }
 
 void ImmutablePrimitiveFieldGenerator::GenerateHasMethod(
     io::Printer* printer) const {
-  WriteFieldAccessorDocComment(printer, descriptor_, HAZZER,
-                               context_->options());
-  printer->Print(variables_,
-                 "@java.lang.Override\n"
-                 "$deprecation$public boolean ${$$hazzer_method_name$$}$() {\n"
-                 "  return $get_has_field_bit$;\n"
-                 "}\n");
-  printer->Annotate("{", "}", descriptor_);
-}
-
-void ImmutablePrimitiveFieldGenerator::GeneratePrivateHasMethod(
-    io::Printer* printer) const {
-  printer->Print(variables_,
-                 "private boolean $hazzer_method_name$() {\n"
-                 "  return $is_field_value_not_default$;\n"
-                 "}\n");
+  if (descriptor_->has_presence()) {
+    WriteFieldAccessorDocComment(printer, descriptor_, HAZZER,
+                                 context_->options());
+    printer->Print(
+        variables_,
+        "@java.lang.Override\n"
+        "$deprecation$public boolean ${$has$capitalized_name$$}$() {\n"
+        "  return $is_field_present$;\n"
+        "}\n");
+    printer->Annotate("{", "}", descriptor_);
+  }
 }
 
 void ImmutablePrimitiveFieldGenerator::GenerateGetMethod(
@@ -222,22 +253,23 @@ void ImmutablePrimitiveFieldGenerator::GenerateMembers(
     io::Printer* printer) const {
   printer->Print(variables_, "private $field_type$ $name$_ = $default$;\n");
   PrintExtraFieldInfo(variables_, printer);
-  if (HasHazzerMethod(descriptor_)) {
-    GenerateHasMethod(printer);
-  } else {
-    GeneratePrivateHasMethod(printer);
-  }
+  GenerateHasMethod(printer);
   GenerateGetMethod(printer);
 }
 
 void ImmutablePrimitiveFieldGenerator::GenerateBuilderHasMethod(
     io::Printer* printer) const {
-  GenerateHasMethod(printer);
-}
-
-void ImmutablePrimitiveFieldGenerator::GenerateBuilderPrivateHasMethod(
-    io::Printer* printer) const {
-  GeneratePrivateHasMethod(printer);
+  if (descriptor_->has_presence()) {
+    WriteFieldAccessorDocComment(printer, descriptor_, HAZZER,
+                                 context_->options());
+    printer->Print(
+        variables_,
+        "@java.lang.Override\n"
+        "$deprecation$public boolean ${$has$capitalized_name$$}$() {\n"
+        "  return $get_has_field_bit$;\n"
+        "}\n");
+    printer->Annotate("{", "}", descriptor_);
+  }
 }
 
 void ImmutablePrimitiveFieldGenerator::GenerateBuilderGetMethod(
@@ -298,11 +330,7 @@ void ImmutablePrimitiveFieldGenerator::GenerateBuilderClearMethod(
 void ImmutablePrimitiveFieldGenerator::GenerateBuilderMembers(
     io::Printer* printer) const {
   printer->Print(variables_, "private $field_type$ $name$_ $default_init$;\n");
-  if (HasHazzerMethod(descriptor_)) {
-    GenerateBuilderHasMethod(printer);
-  } else {
-    GenerateBuilderPrivateHasMethod(printer);
-  }
+  GenerateBuilderHasMethod(printer);
   GenerateBuilderGetMethod(printer);
   GenerateBuilderSetMethod(printer);
   GenerateBuilderClearMethod(printer);
@@ -329,27 +357,20 @@ void ImmutablePrimitiveFieldGenerator::GenerateBuilderClearCode(
 void ImmutablePrimitiveFieldGenerator::GenerateMergingCode(
     io::Printer* printer) const {
   printer->Print(variables_,
-                 "if (other.$hazzer_method_name$()) {\n"
+                 "if ($is_other_field_present$) {\n"
                  "  set$capitalized_name$(other.get$capitalized_name$());\n"
                  "}\n");
 }
 
 void ImmutablePrimitiveFieldGenerator::GenerateBuildingCode(
     io::Printer* printer) const {
-  if (HasHazzerMethod(descriptor_)) {
-    printer->Print(variables_,
-                   "if ($get_has_field_bit_from_local$) {\n"
-                   "  result.$name$_ = $name$_;\n"
-                   "  $set_has_field_bit_to_local$\n"
-                   "}\n");
-  } else {
-    printer->Print(variables_,
-                   "if ($hazzer_method_name$()) {\n"
-                   "  result.$name$_ = $name$_;\n"
-                   "} else {\n"
-                   "  $clear_has_field_bit$\n"
-                   "}\n");
+  printer->Print(variables_,
+                 "if ($get_has_field_bit_from_local$) {\n"
+                 "  result.$name$_ = $name$_;\n");
+  if (GetNumBits() > 0) {
+    printer->Print(variables_, "  $set_has_field_bit_to_local$\n");
   }
+  printer->Print("}\n");
 }
 
 void ImmutablePrimitiveFieldGenerator::GenerateBuilderParsingCode(

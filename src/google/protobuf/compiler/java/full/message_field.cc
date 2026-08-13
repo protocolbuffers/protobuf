@@ -464,7 +464,7 @@ void ImmutableMessageFieldGenerator::GenerateBuildingCode(
                  "  result.$name$_ = $name$Builder_ == null\n"
                  "      ? $name$_\n"
                  "      : $name$Builder_.build();\n");
-  if (HasHazzerMethod(descriptor_)) {
+  if (GetNumBits() > 0) {
     printer->Print(variables_, "  $set_has_field_bit_to_local$;\n");
   }
   printer->Print("}\n");

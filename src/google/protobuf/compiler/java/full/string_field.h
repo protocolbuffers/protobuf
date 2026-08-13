@@ -69,12 +69,10 @@ class ImmutableStringFieldGenerator : public ImmutableFieldGenerator {
   void GenerateInterfaceGetBytesMethod(io::Printer* printer) const;
 
   void GenerateHasMethod(io::Printer* printer) const;
-  void GeneratePrivateHasMethod(io::Printer* printer) const;
   void GenerateGetMethod(io::Printer* printer) const;
   void GenerateGetBytesMethod(io::Printer* printer) const;
 
   void GenerateBuilderHasMethod(io::Printer* printer) const;
-  void GenerateBuilderPrivateHasMethod(io::Printer* printer) const;
   void GenerateBuilderGetMethod(io::Printer* printer) const;
   void GenerateBuilderGetBytesMethod(io::Printer* printer) const;
   void GenerateBuilderSetMethod(io::Printer* printer) const;
