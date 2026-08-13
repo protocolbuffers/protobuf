@@ -925,6 +925,11 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
       // be called when descriptor is being initialized.
       throw new IllegalArgumentException("No map fields found in " + getClass().getName());
     }
+
+    // Needed to provide access from builder subclasses.
+    protected static boolean isStringEmpty(final Object value) {
+      return GeneratedMessage.isStringEmpty(value);
+    }
   }
 
   // =================================================================
