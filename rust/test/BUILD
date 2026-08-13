@@ -306,6 +306,7 @@ proto_library(
     testonly = True,
     srcs = [
         "bad_names.proto",
+        "bad_names_other_file.proto",
         "more_test_protos/bad_names.proto",
     ],
 )

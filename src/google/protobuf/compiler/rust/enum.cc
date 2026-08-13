@@ -142,7 +142,7 @@ std::vector<RustEnumValue> EnumValues(absl::string_view enum_name,
 
 void GenerateEnumDefinition(Context& ctx, const EnumDescriptor& desc,
                             upb::EnumDefPtr upb_enum) {
-  std::string name = EnumRsName(desc);
+  std::string name = EnumRsName(ctx, desc);
   ABSL_CHECK(desc.value_count() > 0);
   std::vector<RustEnumValue> values =
       EnumValues(desc.name(), EnumValuesInput(desc));

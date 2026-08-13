@@ -60,8 +60,11 @@ std::string RsTypePath(Context& ctx, const EnumDescriptor& descriptor);
 std::string RsViewType(Context& ctx, const FieldDescriptor& field,
                        absl::string_view lifetime);
 
-std::string MessageRsName(const Descriptor& desc);
-std::string EnumRsName(const EnumDescriptor& desc);
+// These need the Context because deciding whether a name ending in 'View' has
+// to be mangled requires knowing which other .proto files are in the same
+// crate: every file's top-level types are re-exported into one flat module.
+std::string MessageRsName(Context& ctx, const Descriptor& desc);
+std::string EnumRsName(Context& ctx, const EnumDescriptor& desc);
 std::string EnumValueRsName(const EnumValueDescriptor& value);
 
 std::string OneofViewEnumRsName(const OneofDescriptor& oneof);

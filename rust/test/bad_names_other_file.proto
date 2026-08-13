@@ -1,0 +1,30 @@
+// Protocol Buffers - Google's data interchange format
+// Copyright 2026 Google LLC.  All rights reserved.
+//
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
+
+// LINT: LEGACY_NAMES
+
+// A second file in the same package as bad_names.proto, and in the same
+// proto_library. Every file's top-level types are re-exported into one flat
+// Rust module, so the 'View' suffix mangling has to consider the whole crate
+// and not just the file a type is declared in. Deliberately does not import
+// bad_names.proto, and is not imported by it.
+
+syntax = "proto2";
+
+package type.type;
+
+// Mangles because bad_names.proto declares `CrossFileMangleTest`.
+message CrossFileMangleTestView {}
+
+// Mangles because bad_names.proto declares `message CrossFileSomeMsg`.
+enum CrossFileSomeMsgView {
+  CROSS_FILE_SOME_MSG_VIEW_UNSPECIFIED = 0;
+}
+
+// The other direction: the `View` type is in bad_names.proto and the message
+// it collides with is here.
+message CrossFileReverseMangleTest {}

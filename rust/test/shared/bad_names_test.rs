@@ -56,3 +56,16 @@ fn test_mangled_names() {
     let _ = SomeMsg::new();
     let _ = SomeMsgView_::Unspecified;
 }
+
+// The colliding declaration is in a sibling file of the same proto_library
+// rather than in the same file, which still has to mangle: both files are
+// re-exported into one flat Rust module.
+#[gtest]
+fn test_mangled_names_across_files_in_one_proto_library() {
+    let _ = CrossFileMangleTest::new();
+    let _ = CrossFileMangleTestView_::new();
+    let _ = CrossFileSomeMsg::new();
+    let _ = CrossFileSomeMsgView_::Unspecified;
+    let _ = CrossFileReverseMangleTest::new();
+    let _ = CrossFileReverseMangleTestView_::new();
+}

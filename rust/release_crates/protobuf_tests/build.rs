@@ -18,8 +18,14 @@ fn short_name(proto_file_name: &str) -> String {
 fn main() {
     // All proto files needed for testing, grouped by protoc invocation.
     let proto_files = vec![
-        vec!["rust/test/bad_names.proto".to_string()],
-        vec!["rust/test/bad_names.proto".to_string()],
+        vec![
+            "rust/test/bad_names.proto".to_string(),
+            "rust/test/bad_names_other_file.proto".to_string(),
+        ],
+        vec![
+            "rust/test/bad_names.proto".to_string(),
+            "rust/test/bad_names_other_file.proto".to_string(),
+        ],
         vec!["rust/test/child.proto".to_string()],
         vec!["google/protobuf/cpp_features.proto".to_string()],
         vec!["google/protobuf/descriptor.proto".to_string()],
@@ -58,7 +64,10 @@ fn main() {
         vec!["rust/test/unittest.proto".to_string()],
         vec!["rust/test/unittest_proto3_optional.proto".to_string()],
         vec!["rust/test/unittest_proto3.proto".to_string()],
-        vec!["rust/test/bad_names.proto".to_string()],
+        vec![
+            "rust/test/bad_names.proto".to_string(),
+            "rust/test/bad_names_other_file.proto".to_string(),
+        ],
         vec!["rust/test/child.proto".to_string()],
         vec!["google/protobuf/cpp_features.proto".to_string()],
         vec!["google/protobuf/descriptor.proto".to_string()],

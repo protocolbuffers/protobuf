@@ -65,3 +65,9 @@ enum SomeMsgView {
 
 message MangleViewTest {}
 message MangleViewTestView {}
+
+// The `View`-mangling partners for these live in bad_names_other_file.proto
+// (same package, same proto_library, no import either way).
+message CrossFileMangleTest {}
+message CrossFileSomeMsg {}
+message CrossFileReverseMangleTestView {}

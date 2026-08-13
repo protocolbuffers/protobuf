@@ -156,11 +156,11 @@ std::string RsTypePath(Context& ctx, const FieldDescriptor& field) {
 }
 
 std::string RsTypePath(Context& ctx, const Descriptor& message) {
-  return absl::StrCat(RustModule(ctx, message), MessageRsName(message));
+  return absl::StrCat(RustModule(ctx, message), MessageRsName(ctx, message));
 }
 
 std::string RsTypePath(Context& ctx, const EnumDescriptor& descriptor) {
-  return absl::StrCat(RustModule(ctx, descriptor), EnumRsName(descriptor));
+  return absl::StrCat(RustModule(ctx, descriptor), EnumRsName(ctx, descriptor));
 }
 
 std::string RsViewType(Context& ctx, const FieldDescriptor& field,
@@ -324,15 +324,6 @@ std::string RsSafeName(absl::string_view name) {
 
 namespace {
 
-bool AnyChildMessageNamed(const FileDescriptor* scope, absl::string_view name) {
-  for (int i = 0; i < scope->message_type_count(); ++i) {
-    if (scope->message_type(i)->name() == name) {
-      return true;
-    }
-  }
-  return false;
-}
-
 bool AnyChildMessageNamed(const Descriptor* scope, absl::string_view name) {
   for (int i = 0; i < scope->nested_type_count(); ++i) {
     if (scope->nested_type(i)->name() == name) {
@@ -342,8 +333,42 @@ bool AnyChildMessageNamed(const Descriptor* scope, absl::string_view name) {
   return false;
 }
 
+// Whether `a` and `b` end up in the same Rust crate.
+bool InSameCrate(Context& ctx, const FileDescriptor& a,
+                 const FileDescriptor& b) {
+  if (&a == &b) {
+    return true;
+  }
+  // The crate mapping only names the files of *dependency* crates, so the crate
+  // currently being generated has to be recognized separately.
+  bool a_is_current = IsInCurrentlyGeneratingCrate(ctx, a);
+  bool b_is_current = IsInCurrentlyGeneratingCrate(ctx, b);
+  if (a_is_current || b_is_current) {
+    return a_is_current && b_is_current;
+  }
+  return ctx.ImportPathToCrateName(a.name()) ==
+         ctx.ImportPathToCrateName(b.name());
+}
+
+// Whether any file in the same crate as `scope` declares a top-level message
+// named `name` in `scope`'s package.
+//
+// The crate's entry point re-exports every generated file's top-level types
+// into one flat module, so the collision partner can live in a sibling .proto
+// file rather than in `scope` itself. Looking the name up in the pool (rather
+// than iterating the crate's own files, which are only known while generating
+// the defining crate) keeps this decision identical in every crate that names
+// the type.
+bool AnySiblingMessageNamed(Context& ctx, const FileDescriptor& scope,
+                            absl::string_view name) {
+  const Descriptor* other = scope.pool()->FindMessageTypeByName(
+      scope.package().empty() ? std::string(name)
+                              : absl::StrCat(scope.package(), ".", name));
+  return other != nullptr && InSameCrate(ctx, *other->file(), scope);
+}
+
 template <typename Desc>
-bool MustMangleName(const Desc& desc) {
+bool MustMangleName(Context& ctx, const Desc& desc) {
   // If a name ends with 'View', we check if there is a message whose name
   // matches the name without the 'View' suffix. If so, we will append an extra
   // '_' character on the end of the type that ended with 'View'. The reason we
@@ -357,22 +382,23 @@ bool MustMangleName(const Desc& desc) {
   return desc.containing_type() != nullptr
              ? AnyChildMessageNamed(desc.containing_type(),
                                     name_without_view_suffix)
-             : AnyChildMessageNamed(desc.file(), name_without_view_suffix);
+             : AnySiblingMessageNamed(ctx, *desc.file(),
+                                      name_without_view_suffix);
 }
 
 }  // namespace
 
-std::string MessageRsName(const Descriptor& desc) {
+std::string MessageRsName(Context& ctx, const Descriptor& desc) {
   std::string name = RsSafeName(desc.name());
-  if (MustMangleName(desc)) {
+  if (MustMangleName(ctx, desc)) {
     absl::StrAppend(&name, "_");
   }
   return name;
 }
 
-std::string EnumRsName(const EnumDescriptor& desc) {
+std::string EnumRsName(Context& ctx, const EnumDescriptor& desc) {
   std::string name = RsSafeName(SnakeToUpperCamelCase(desc.name()));
-  if (MustMangleName(desc)) {
+  if (MustMangleName(ctx, desc)) {
     absl::StrAppend(&name, "_");
   }
   return name;
