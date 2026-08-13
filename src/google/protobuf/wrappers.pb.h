@@ -138,7 +138,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED UInt64Value final :
   ~UInt64Value() PROTOBUF_FINAL;
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-  void operator delete(UInt64Value* PROTOBUF_NONNULL msg, ::std::destroying_delete_t) {
+  PROTOBUF_ALWAYS_INLINE_NODEBUG void operator delete(
+      UInt64Value* PROTOBUF_NONNULL msg, ::std::destroying_delete_t) {
     SharedDtor(*msg);
     ::google::protobuf::internal::SizedDelete(msg, sizeof(UInt64Value));
   }
@@ -212,7 +213,9 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED UInt64Value final :
   using Super_::CopyFrom;
   void CopyFrom(const UInt64Value& from);
   using Super_::MergeFrom;
-  void MergeFrom(const UInt64Value& from) { UInt64Value::MergeImpl(*this, from); }
+  PROTOBUF_ALWAYS_INLINE_NODEBUG void MergeFrom(const UInt64Value& from) {
+    UInt64Value::MergeImpl(*this, from);
+  }
 
   private:
   static void MergeImpl(::google::protobuf::MessageLite& to_msg,
@@ -231,11 +234,16 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED UInt64Value final :
       ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream);
 
   public:
-  ABSL_ATTRIBUTE_REINITIALIZES void Clear() { Clear(*this); }
-  [[nodiscard]] ::size_t ByteSizeLong() const { return ByteSizeLong(*this); }
-  [[nodiscard]] ::uint8_t* PROTOBUF_NONNULL _InternalSerialize(
-      ::uint8_t* PROTOBUF_NONNULL target,
-      ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) const {
+  ABSL_ATTRIBUTE_REINITIALIZES PROTOBUF_ALWAYS_INLINE_NODEBUG void Clear() {
+    Clear(*this);
+  }
+  PROTOBUF_ALWAYS_INLINE_NODEBUG [[nodiscard]] ::size_t ByteSizeLong() const {
+    return ByteSizeLong(*this);
+  }
+  PROTOBUF_ALWAYS_INLINE_NODEBUG [[nodiscard]] ::uint8_t* PROTOBUF_NONNULL
+  _InternalSerialize(::uint8_t* PROTOBUF_NONNULL target,
+                     ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL
+                         stream) const {
     return _InternalSerialize(*this, target, stream);
   }
   #else   // PROTOBUF_CUSTOM_VTABLE
@@ -253,6 +261,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED UInt64Value final :
   void SharedCtor(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   static void SharedDtor(MessageLite& self);
   void InternalSwap(UInt64Value* PROTOBUF_NONNULL other);
+
  private:
   static ::absl::string_view FullMessageName() { return "google.protobuf.UInt64Value"; }
 
@@ -341,7 +350,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED UInt32Value final :
   ~UInt32Value() PROTOBUF_FINAL;
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-  void operator delete(UInt32Value* PROTOBUF_NONNULL msg, ::std::destroying_delete_t) {
+  PROTOBUF_ALWAYS_INLINE_NODEBUG void operator delete(
+      UInt32Value* PROTOBUF_NONNULL msg, ::std::destroying_delete_t) {
     SharedDtor(*msg);
     ::google::protobuf::internal::SizedDelete(msg, sizeof(UInt32Value));
   }
@@ -415,7 +425,9 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED UInt32Value final :
   using Super_::CopyFrom;
   void CopyFrom(const UInt32Value& from);
   using Super_::MergeFrom;
-  void MergeFrom(const UInt32Value& from) { UInt32Value::MergeImpl(*this, from); }
+  PROTOBUF_ALWAYS_INLINE_NODEBUG void MergeFrom(const UInt32Value& from) {
+    UInt32Value::MergeImpl(*this, from);
+  }
 
   private:
   static void MergeImpl(::google::protobuf::MessageLite& to_msg,
@@ -434,11 +446,16 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED UInt32Value final :
       ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream);
 
   public:
-  ABSL_ATTRIBUTE_REINITIALIZES void Clear() { Clear(*this); }
-  [[nodiscard]] ::size_t ByteSizeLong() const { return ByteSizeLong(*this); }
-  [[nodiscard]] ::uint8_t* PROTOBUF_NONNULL _InternalSerialize(
-      ::uint8_t* PROTOBUF_NONNULL target,
-      ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) const {
+  ABSL_ATTRIBUTE_REINITIALIZES PROTOBUF_ALWAYS_INLINE_NODEBUG void Clear() {
+    Clear(*this);
+  }
+  PROTOBUF_ALWAYS_INLINE_NODEBUG [[nodiscard]] ::size_t ByteSizeLong() const {
+    return ByteSizeLong(*this);
+  }
+  PROTOBUF_ALWAYS_INLINE_NODEBUG [[nodiscard]] ::uint8_t* PROTOBUF_NONNULL
+  _InternalSerialize(::uint8_t* PROTOBUF_NONNULL target,
+                     ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL
+                         stream) const {
     return _InternalSerialize(*this, target, stream);
   }
   #else   // PROTOBUF_CUSTOM_VTABLE
@@ -456,6 +473,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED UInt32Value final :
   void SharedCtor(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   static void SharedDtor(MessageLite& self);
   void InternalSwap(UInt32Value* PROTOBUF_NONNULL other);
+
  private:
   static ::absl::string_view FullMessageName() { return "google.protobuf.UInt32Value"; }
 
@@ -544,7 +562,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED StringValue final :
   ~StringValue() PROTOBUF_FINAL;
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-  void operator delete(StringValue* PROTOBUF_NONNULL msg, ::std::destroying_delete_t) {
+  PROTOBUF_ALWAYS_INLINE_NODEBUG void operator delete(
+      StringValue* PROTOBUF_NONNULL msg, ::std::destroying_delete_t) {
     SharedDtor(*msg);
     ::google::protobuf::internal::SizedDelete(msg, sizeof(StringValue));
   }
@@ -618,7 +637,9 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED StringValue final :
   using Super_::CopyFrom;
   void CopyFrom(const StringValue& from);
   using Super_::MergeFrom;
-  void MergeFrom(const StringValue& from) { StringValue::MergeImpl(*this, from); }
+  PROTOBUF_ALWAYS_INLINE_NODEBUG void MergeFrom(const StringValue& from) {
+    StringValue::MergeImpl(*this, from);
+  }
 
   private:
   static void MergeImpl(::google::protobuf::MessageLite& to_msg,
@@ -637,11 +658,16 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED StringValue final :
       ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream);
 
   public:
-  ABSL_ATTRIBUTE_REINITIALIZES void Clear() { Clear(*this); }
-  [[nodiscard]] ::size_t ByteSizeLong() const { return ByteSizeLong(*this); }
-  [[nodiscard]] ::uint8_t* PROTOBUF_NONNULL _InternalSerialize(
-      ::uint8_t* PROTOBUF_NONNULL target,
-      ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) const {
+  ABSL_ATTRIBUTE_REINITIALIZES PROTOBUF_ALWAYS_INLINE_NODEBUG void Clear() {
+    Clear(*this);
+  }
+  PROTOBUF_ALWAYS_INLINE_NODEBUG [[nodiscard]] ::size_t ByteSizeLong() const {
+    return ByteSizeLong(*this);
+  }
+  PROTOBUF_ALWAYS_INLINE_NODEBUG [[nodiscard]] ::uint8_t* PROTOBUF_NONNULL
+  _InternalSerialize(::uint8_t* PROTOBUF_NONNULL target,
+                     ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL
+                         stream) const {
     return _InternalSerialize(*this, target, stream);
   }
   #else   // PROTOBUF_CUSTOM_VTABLE
@@ -659,6 +685,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED StringValue final :
   void SharedCtor(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   static void SharedDtor(MessageLite& self);
   void InternalSwap(StringValue* PROTOBUF_NONNULL other);
+
  private:
   static ::absl::string_view FullMessageName() { return "google.protobuf.StringValue"; }
 
@@ -752,7 +779,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Int64Value final : 
   ~Int64Value() PROTOBUF_FINAL;
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-  void operator delete(Int64Value* PROTOBUF_NONNULL msg, ::std::destroying_delete_t) {
+  PROTOBUF_ALWAYS_INLINE_NODEBUG void operator delete(
+      Int64Value* PROTOBUF_NONNULL msg, ::std::destroying_delete_t) {
     SharedDtor(*msg);
     ::google::protobuf::internal::SizedDelete(msg, sizeof(Int64Value));
   }
@@ -826,7 +854,9 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Int64Value final : 
   using Super_::CopyFrom;
   void CopyFrom(const Int64Value& from);
   using Super_::MergeFrom;
-  void MergeFrom(const Int64Value& from) { Int64Value::MergeImpl(*this, from); }
+  PROTOBUF_ALWAYS_INLINE_NODEBUG void MergeFrom(const Int64Value& from) {
+    Int64Value::MergeImpl(*this, from);
+  }
 
   private:
   static void MergeImpl(::google::protobuf::MessageLite& to_msg,
@@ -845,11 +875,16 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Int64Value final : 
       ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream);
 
   public:
-  ABSL_ATTRIBUTE_REINITIALIZES void Clear() { Clear(*this); }
-  [[nodiscard]] ::size_t ByteSizeLong() const { return ByteSizeLong(*this); }
-  [[nodiscard]] ::uint8_t* PROTOBUF_NONNULL _InternalSerialize(
-      ::uint8_t* PROTOBUF_NONNULL target,
-      ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) const {
+  ABSL_ATTRIBUTE_REINITIALIZES PROTOBUF_ALWAYS_INLINE_NODEBUG void Clear() {
+    Clear(*this);
+  }
+  PROTOBUF_ALWAYS_INLINE_NODEBUG [[nodiscard]] ::size_t ByteSizeLong() const {
+    return ByteSizeLong(*this);
+  }
+  PROTOBUF_ALWAYS_INLINE_NODEBUG [[nodiscard]] ::uint8_t* PROTOBUF_NONNULL
+  _InternalSerialize(::uint8_t* PROTOBUF_NONNULL target,
+                     ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL
+                         stream) const {
     return _InternalSerialize(*this, target, stream);
   }
   #else   // PROTOBUF_CUSTOM_VTABLE
@@ -867,6 +902,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Int64Value final : 
   void SharedCtor(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   static void SharedDtor(MessageLite& self);
   void InternalSwap(Int64Value* PROTOBUF_NONNULL other);
+
  private:
   static ::absl::string_view FullMessageName() { return "google.protobuf.Int64Value"; }
 
@@ -955,7 +991,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Int32Value final : 
   ~Int32Value() PROTOBUF_FINAL;
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-  void operator delete(Int32Value* PROTOBUF_NONNULL msg, ::std::destroying_delete_t) {
+  PROTOBUF_ALWAYS_INLINE_NODEBUG void operator delete(
+      Int32Value* PROTOBUF_NONNULL msg, ::std::destroying_delete_t) {
     SharedDtor(*msg);
     ::google::protobuf::internal::SizedDelete(msg, sizeof(Int32Value));
   }
@@ -1029,7 +1066,9 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Int32Value final : 
   using Super_::CopyFrom;
   void CopyFrom(const Int32Value& from);
   using Super_::MergeFrom;
-  void MergeFrom(const Int32Value& from) { Int32Value::MergeImpl(*this, from); }
+  PROTOBUF_ALWAYS_INLINE_NODEBUG void MergeFrom(const Int32Value& from) {
+    Int32Value::MergeImpl(*this, from);
+  }
 
   private:
   static void MergeImpl(::google::protobuf::MessageLite& to_msg,
@@ -1048,11 +1087,16 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Int32Value final : 
       ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream);
 
   public:
-  ABSL_ATTRIBUTE_REINITIALIZES void Clear() { Clear(*this); }
-  [[nodiscard]] ::size_t ByteSizeLong() const { return ByteSizeLong(*this); }
-  [[nodiscard]] ::uint8_t* PROTOBUF_NONNULL _InternalSerialize(
-      ::uint8_t* PROTOBUF_NONNULL target,
-      ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) const {
+  ABSL_ATTRIBUTE_REINITIALIZES PROTOBUF_ALWAYS_INLINE_NODEBUG void Clear() {
+    Clear(*this);
+  }
+  PROTOBUF_ALWAYS_INLINE_NODEBUG [[nodiscard]] ::size_t ByteSizeLong() const {
+    return ByteSizeLong(*this);
+  }
+  PROTOBUF_ALWAYS_INLINE_NODEBUG [[nodiscard]] ::uint8_t* PROTOBUF_NONNULL
+  _InternalSerialize(::uint8_t* PROTOBUF_NONNULL target,
+                     ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL
+                         stream) const {
     return _InternalSerialize(*this, target, stream);
   }
   #else   // PROTOBUF_CUSTOM_VTABLE
@@ -1070,6 +1114,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Int32Value final : 
   void SharedCtor(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   static void SharedDtor(MessageLite& self);
   void InternalSwap(Int32Value* PROTOBUF_NONNULL other);
+
  private:
   static ::absl::string_view FullMessageName() { return "google.protobuf.Int32Value"; }
 
@@ -1158,7 +1203,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FloatValue final : 
   ~FloatValue() PROTOBUF_FINAL;
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-  void operator delete(FloatValue* PROTOBUF_NONNULL msg, ::std::destroying_delete_t) {
+  PROTOBUF_ALWAYS_INLINE_NODEBUG void operator delete(
+      FloatValue* PROTOBUF_NONNULL msg, ::std::destroying_delete_t) {
     SharedDtor(*msg);
     ::google::protobuf::internal::SizedDelete(msg, sizeof(FloatValue));
   }
@@ -1232,7 +1278,9 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FloatValue final : 
   using Super_::CopyFrom;
   void CopyFrom(const FloatValue& from);
   using Super_::MergeFrom;
-  void MergeFrom(const FloatValue& from) { FloatValue::MergeImpl(*this, from); }
+  PROTOBUF_ALWAYS_INLINE_NODEBUG void MergeFrom(const FloatValue& from) {
+    FloatValue::MergeImpl(*this, from);
+  }
 
   private:
   static void MergeImpl(::google::protobuf::MessageLite& to_msg,
@@ -1251,11 +1299,16 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FloatValue final : 
       ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream);
 
   public:
-  ABSL_ATTRIBUTE_REINITIALIZES void Clear() { Clear(*this); }
-  [[nodiscard]] ::size_t ByteSizeLong() const { return ByteSizeLong(*this); }
-  [[nodiscard]] ::uint8_t* PROTOBUF_NONNULL _InternalSerialize(
-      ::uint8_t* PROTOBUF_NONNULL target,
-      ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) const {
+  ABSL_ATTRIBUTE_REINITIALIZES PROTOBUF_ALWAYS_INLINE_NODEBUG void Clear() {
+    Clear(*this);
+  }
+  PROTOBUF_ALWAYS_INLINE_NODEBUG [[nodiscard]] ::size_t ByteSizeLong() const {
+    return ByteSizeLong(*this);
+  }
+  PROTOBUF_ALWAYS_INLINE_NODEBUG [[nodiscard]] ::uint8_t* PROTOBUF_NONNULL
+  _InternalSerialize(::uint8_t* PROTOBUF_NONNULL target,
+                     ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL
+                         stream) const {
     return _InternalSerialize(*this, target, stream);
   }
   #else   // PROTOBUF_CUSTOM_VTABLE
@@ -1273,6 +1326,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FloatValue final : 
   void SharedCtor(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   static void SharedDtor(MessageLite& self);
   void InternalSwap(FloatValue* PROTOBUF_NONNULL other);
+
  private:
   static ::absl::string_view FullMessageName() { return "google.protobuf.FloatValue"; }
 
@@ -1361,7 +1415,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED DoubleValue final :
   ~DoubleValue() PROTOBUF_FINAL;
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-  void operator delete(DoubleValue* PROTOBUF_NONNULL msg, ::std::destroying_delete_t) {
+  PROTOBUF_ALWAYS_INLINE_NODEBUG void operator delete(
+      DoubleValue* PROTOBUF_NONNULL msg, ::std::destroying_delete_t) {
     SharedDtor(*msg);
     ::google::protobuf::internal::SizedDelete(msg, sizeof(DoubleValue));
   }
@@ -1435,7 +1490,9 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED DoubleValue final :
   using Super_::CopyFrom;
   void CopyFrom(const DoubleValue& from);
   using Super_::MergeFrom;
-  void MergeFrom(const DoubleValue& from) { DoubleValue::MergeImpl(*this, from); }
+  PROTOBUF_ALWAYS_INLINE_NODEBUG void MergeFrom(const DoubleValue& from) {
+    DoubleValue::MergeImpl(*this, from);
+  }
 
   private:
   static void MergeImpl(::google::protobuf::MessageLite& to_msg,
@@ -1454,11 +1511,16 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED DoubleValue final :
       ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream);
 
   public:
-  ABSL_ATTRIBUTE_REINITIALIZES void Clear() { Clear(*this); }
-  [[nodiscard]] ::size_t ByteSizeLong() const { return ByteSizeLong(*this); }
-  [[nodiscard]] ::uint8_t* PROTOBUF_NONNULL _InternalSerialize(
-      ::uint8_t* PROTOBUF_NONNULL target,
-      ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) const {
+  ABSL_ATTRIBUTE_REINITIALIZES PROTOBUF_ALWAYS_INLINE_NODEBUG void Clear() {
+    Clear(*this);
+  }
+  PROTOBUF_ALWAYS_INLINE_NODEBUG [[nodiscard]] ::size_t ByteSizeLong() const {
+    return ByteSizeLong(*this);
+  }
+  PROTOBUF_ALWAYS_INLINE_NODEBUG [[nodiscard]] ::uint8_t* PROTOBUF_NONNULL
+  _InternalSerialize(::uint8_t* PROTOBUF_NONNULL target,
+                     ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL
+                         stream) const {
     return _InternalSerialize(*this, target, stream);
   }
   #else   // PROTOBUF_CUSTOM_VTABLE
@@ -1476,6 +1538,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED DoubleValue final :
   void SharedCtor(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   static void SharedDtor(MessageLite& self);
   void InternalSwap(DoubleValue* PROTOBUF_NONNULL other);
+
  private:
   static ::absl::string_view FullMessageName() { return "google.protobuf.DoubleValue"; }
 
@@ -1564,7 +1627,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED BytesValue final : 
   ~BytesValue() PROTOBUF_FINAL;
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-  void operator delete(BytesValue* PROTOBUF_NONNULL msg, ::std::destroying_delete_t) {
+  PROTOBUF_ALWAYS_INLINE_NODEBUG void operator delete(
+      BytesValue* PROTOBUF_NONNULL msg, ::std::destroying_delete_t) {
     SharedDtor(*msg);
     ::google::protobuf::internal::SizedDelete(msg, sizeof(BytesValue));
   }
@@ -1638,7 +1702,9 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED BytesValue final : 
   using Super_::CopyFrom;
   void CopyFrom(const BytesValue& from);
   using Super_::MergeFrom;
-  void MergeFrom(const BytesValue& from) { BytesValue::MergeImpl(*this, from); }
+  PROTOBUF_ALWAYS_INLINE_NODEBUG void MergeFrom(const BytesValue& from) {
+    BytesValue::MergeImpl(*this, from);
+  }
 
   private:
   static void MergeImpl(::google::protobuf::MessageLite& to_msg,
@@ -1657,11 +1723,16 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED BytesValue final : 
       ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream);
 
   public:
-  ABSL_ATTRIBUTE_REINITIALIZES void Clear() { Clear(*this); }
-  [[nodiscard]] ::size_t ByteSizeLong() const { return ByteSizeLong(*this); }
-  [[nodiscard]] ::uint8_t* PROTOBUF_NONNULL _InternalSerialize(
-      ::uint8_t* PROTOBUF_NONNULL target,
-      ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) const {
+  ABSL_ATTRIBUTE_REINITIALIZES PROTOBUF_ALWAYS_INLINE_NODEBUG void Clear() {
+    Clear(*this);
+  }
+  PROTOBUF_ALWAYS_INLINE_NODEBUG [[nodiscard]] ::size_t ByteSizeLong() const {
+    return ByteSizeLong(*this);
+  }
+  PROTOBUF_ALWAYS_INLINE_NODEBUG [[nodiscard]] ::uint8_t* PROTOBUF_NONNULL
+  _InternalSerialize(::uint8_t* PROTOBUF_NONNULL target,
+                     ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL
+                         stream) const {
     return _InternalSerialize(*this, target, stream);
   }
   #else   // PROTOBUF_CUSTOM_VTABLE
@@ -1679,6 +1750,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED BytesValue final : 
   void SharedCtor(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   static void SharedDtor(MessageLite& self);
   void InternalSwap(BytesValue* PROTOBUF_NONNULL other);
+
  private:
   static ::absl::string_view FullMessageName() { return "google.protobuf.BytesValue"; }
 
@@ -1772,7 +1844,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED BoolValue final : p
   ~BoolValue() PROTOBUF_FINAL;
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-  void operator delete(BoolValue* PROTOBUF_NONNULL msg, ::std::destroying_delete_t) {
+  PROTOBUF_ALWAYS_INLINE_NODEBUG void operator delete(
+      BoolValue* PROTOBUF_NONNULL msg, ::std::destroying_delete_t) {
     SharedDtor(*msg);
     ::google::protobuf::internal::SizedDelete(msg, sizeof(BoolValue));
   }
@@ -1846,7 +1919,9 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED BoolValue final : p
   using Super_::CopyFrom;
   void CopyFrom(const BoolValue& from);
   using Super_::MergeFrom;
-  void MergeFrom(const BoolValue& from) { BoolValue::MergeImpl(*this, from); }
+  PROTOBUF_ALWAYS_INLINE_NODEBUG void MergeFrom(const BoolValue& from) {
+    BoolValue::MergeImpl(*this, from);
+  }
 
   private:
   static void MergeImpl(::google::protobuf::MessageLite& to_msg,
@@ -1865,11 +1940,16 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED BoolValue final : p
       ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream);
 
   public:
-  ABSL_ATTRIBUTE_REINITIALIZES void Clear() { Clear(*this); }
-  [[nodiscard]] ::size_t ByteSizeLong() const { return ByteSizeLong(*this); }
-  [[nodiscard]] ::uint8_t* PROTOBUF_NONNULL _InternalSerialize(
-      ::uint8_t* PROTOBUF_NONNULL target,
-      ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) const {
+  ABSL_ATTRIBUTE_REINITIALIZES PROTOBUF_ALWAYS_INLINE_NODEBUG void Clear() {
+    Clear(*this);
+  }
+  PROTOBUF_ALWAYS_INLINE_NODEBUG [[nodiscard]] ::size_t ByteSizeLong() const {
+    return ByteSizeLong(*this);
+  }
+  PROTOBUF_ALWAYS_INLINE_NODEBUG [[nodiscard]] ::uint8_t* PROTOBUF_NONNULL
+  _InternalSerialize(::uint8_t* PROTOBUF_NONNULL target,
+                     ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL
+                         stream) const {
     return _InternalSerialize(*this, target, stream);
   }
   #else   // PROTOBUF_CUSTOM_VTABLE
@@ -1887,6 +1967,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED BoolValue final : p
   void SharedCtor(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   static void SharedDtor(MessageLite& self);
   void InternalSwap(BoolValue* PROTOBUF_NONNULL other);
+
  private:
   static ::absl::string_view FullMessageName() { return "google.protobuf.BoolValue"; }
 

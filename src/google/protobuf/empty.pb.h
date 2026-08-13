@@ -74,7 +74,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Empty final : publi
   inline Empty() : Empty(nullptr) {}
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-  void operator delete(Empty* PROTOBUF_NONNULL msg, ::std::destroying_delete_t) {
+  PROTOBUF_ALWAYS_INLINE_NODEBUG void operator delete(
+      Empty* PROTOBUF_NONNULL msg, ::std::destroying_delete_t) {
     SharedDtor(*msg);
     ::google::protobuf::internal::SizedDelete(msg, sizeof(Empty));
   }
@@ -146,7 +147,9 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Empty final : publi
     return Super_::DefaultConstruct<Empty>(arena);
   }
   using Super_::CopyFrom;
-  inline void CopyFrom(const Empty& from) { Super_::CopyImpl(*this, from); }
+  PROTOBUF_ALWAYS_INLINE_NODEBUG void CopyFrom(const Empty& from) {
+    Super_::CopyImpl(*this, from);
+  }
   using Super_::MergeFrom;
   void MergeFrom(const Empty& from) { Super_::MergeImpl(*this, from); }
 
@@ -154,6 +157,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Empty final : publi
   [[nodiscard]] bool IsInitialized() const {
     return true;
   }
+
  private:
   static ::absl::string_view FullMessageName() { return "google.protobuf.Empty"; }
 
