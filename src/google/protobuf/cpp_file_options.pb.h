@@ -79,7 +79,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CppFileOptions fina
   ~CppFileOptions() PROTOBUF_FINAL;
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-  void operator delete(CppFileOptions* PROTOBUF_NONNULL msg, ::std::destroying_delete_t) {
+  PROTOBUF_ALWAYS_INLINE_NODEBUG void operator delete(
+      CppFileOptions* PROTOBUF_NONNULL msg, ::std::destroying_delete_t) {
     SharedDtor(*msg);
     ::google::protobuf::internal::SizedDelete(msg, sizeof(CppFileOptions));
   }
@@ -153,7 +154,9 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CppFileOptions fina
   using Super_::CopyFrom;
   void CopyFrom(const CppFileOptions& from);
   using Super_::MergeFrom;
-  void MergeFrom(const CppFileOptions& from) { CppFileOptions::MergeImpl(*this, from); }
+  PROTOBUF_ALWAYS_INLINE_NODEBUG void MergeFrom(const CppFileOptions& from) {
+    CppFileOptions::MergeImpl(*this, from);
+  }
 
   private:
   static void MergeImpl(::google::protobuf::MessageLite& to_msg,
@@ -172,11 +175,16 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CppFileOptions fina
       ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream);
 
   public:
-  ABSL_ATTRIBUTE_REINITIALIZES void Clear() { Clear(*this); }
-  [[nodiscard]] ::size_t ByteSizeLong() const { return ByteSizeLong(*this); }
-  [[nodiscard]] ::uint8_t* PROTOBUF_NONNULL _InternalSerialize(
-      ::uint8_t* PROTOBUF_NONNULL target,
-      ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) const {
+  ABSL_ATTRIBUTE_REINITIALIZES PROTOBUF_ALWAYS_INLINE_NODEBUG void Clear() {
+    Clear(*this);
+  }
+  PROTOBUF_ALWAYS_INLINE_NODEBUG [[nodiscard]] ::size_t ByteSizeLong() const {
+    return ByteSizeLong(*this);
+  }
+  PROTOBUF_ALWAYS_INLINE_NODEBUG [[nodiscard]] ::uint8_t* PROTOBUF_NONNULL
+  _InternalSerialize(::uint8_t* PROTOBUF_NONNULL target,
+                     ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL
+                         stream) const {
     return _InternalSerialize(*this, target, stream);
   }
   #else   // PROTOBUF_CUSTOM_VTABLE
@@ -194,6 +202,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CppFileOptions fina
   void SharedCtor(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   static void SharedDtor(MessageLite& self);
   void InternalSwap(CppFileOptions* PROTOBUF_NONNULL other);
+
  private:
   static ::absl::string_view FullMessageName() { return "pb.file.CppFileOptions"; }
 
