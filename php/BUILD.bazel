@@ -27,6 +27,7 @@ _RUNTIME_SOURCES = [
     "src/Google/Protobuf/Internal/DescriptorPool.php",
     "src/Google/Protobuf/Internal/EnumBuilderContext.php",
     "src/Google/Protobuf/Internal/EnumDescriptor.php",
+    "src/Google/Protobuf/Internal/EnumValueDescriptor.php",
     "src/Google/Protobuf/Internal/FieldDescriptor.php",
     "src/Google/Protobuf/Internal/FileDescriptor.php",
     "src/Google/Protobuf/Internal/GetPublicDescriptorTrait.php",

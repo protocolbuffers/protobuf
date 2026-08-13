@@ -22,12 +22,10 @@ class CodedInputStream
     private $legitimate_message_end;
     private $recursion_budget;
     private $recursion_limit;
-    private $total_bytes_limit;
     private $total_bytes_read;
 
     const MAX_VARINT_BYTES = 10;
     const DEFAULT_RECURSION_LIMIT = 100;
-    const DEFAULT_TOTAL_BYTES_LIMIT = 33554432; // 32 << 20, 32MB
 
     public function __construct($buffer, $recursion_limit = self::DEFAULT_RECURSION_LIMIT)
     {
@@ -41,7 +39,6 @@ class CodedInputStream
         $this->legitimate_message_end = false;
         $this->recursion_budget = $recursion_limit;
         $this->recursion_limit = $recursion_limit;
-        $this->total_bytes_limit = self::DEFAULT_TOTAL_BYTES_LIMIT;
         $this->total_bytes_read = $end - $start;
     }
 
@@ -70,12 +67,11 @@ class CodedInputStream
     private function recomputeBufferLimits()
     {
         $this->buffer_end += $this->buffer_size_after_limit;
-        $closest_limit = min($this->current_limit, $this->total_bytes_limit);
-        if ($closest_limit < $this->total_bytes_read) {
+        if ($this->current_limit < $this->total_bytes_read) {
             // The limit position is in the current buffer.  We must adjust the
             // buffer size accordingly.
             $this->buffer_size_after_limit = $this->total_bytes_read -
-                $closest_limit;
+                $this->current_limit;
             $this->buffer_end -= $this->buffer_size_after_limit;
         } else {
             $this->buffer_size_after_limit = 0;
@@ -242,19 +238,7 @@ class CodedInputStream
     public function readTag()
     {
         if ($this->current === $this->buffer_end) {
-            // Make sure that it failed due to EOF, not because we hit
-            // total_bytes_limit, which, unlike normal limits, is not a valid
-            // place to end a message.
-            $current_position = $this->total_bytes_read -
-                $this->buffer_size_after_limit;
-            if ($current_position >= $this->total_bytes_limit) {
-                // Hit total_bytes_limit_.  But if we also hit the normal limit,
-                // we're still OK.
-                $this->legitimate_message_end =
-                    ($this->current_limit === $this->total_bytes_limit);
-            } else {
-                $this->legitimate_message_end = true;
-            }
+            $this->legitimate_message_end = true;
             return 0;
         }
 
