@@ -2332,6 +2332,7 @@ cc_test(
         ],
     }),
     deps = [
+        ":arena",
         ":cc_test_protos",
         ":descriptor_visitor",
         ":port",

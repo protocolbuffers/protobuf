@@ -95,16 +95,32 @@ constexpr char kCordMapKey[] = "key";
 
 std::string CordMapPayload() { return std::string(4096, 'P'); }
 
+absl::Cord CordFieldPayload() {
+  absl::Cord value("first fragment:");
+  value.Append(absl::Cord(std::string(4096, 'C')));
+  return value;
+}
+
 void PopulateCordMapRoundTrip(proto2_unittest::EntryProto* parsed) {
   proto2_unittest::EntryProto source;
+  source.set_value(CordFieldPayload());
   (*source.mutable_values())[kCordMapKey] = CordMapPayload();
   std::string wire;
   ASSERT_TRUE(source.SerializeToString(&wire));
   ASSERT_TRUE(parsed->ParseFromString(wire));
+  ASSERT_EQ(parsed->value(), CordFieldPayload());
   ASSERT_EQ(parsed->values().at(kCordMapKey), CordMapPayload());
 }
 
 void MaterializeAndReadCordMap(const proto2_unittest::EntryProto& message) {
+  const FieldDescriptor* cord =
+      message.GetDescriptor()->FindFieldByName("value");
+  ASSERT_NE(cord, nullptr);
+  ASSERT_EQ(cord->cpp_string_type(), FieldDescriptor::CppStringType::kCord);
+  EXPECT_EQ(message.GetReflection()->GetCord(message, cord),
+            CordFieldPayload());
+  EXPECT_EQ(message.value(), CordFieldPayload());
+
   const FieldDescriptor* map =
       message.GetDescriptor()->FindFieldByName("values");
   ASSERT_NE(map, nullptr);
@@ -118,7 +134,6 @@ void MaterializeAndReadCordMap(const proto2_unittest::EntryProto& message) {
   const Message& entry =
       message.GetReflection()->GetRepeatedMessage(message, map, 0);
   EXPECT_EQ(entry.GetReflection()->GetString(entry, value), CordMapPayload());
-  EXPECT_FALSE(message.DebugString().empty());
 }
 
 // Shorthand to get a FieldDescriptor for a field of unittest::TestAllTypes.

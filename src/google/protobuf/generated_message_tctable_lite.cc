@@ -2537,7 +2537,18 @@ PROTOBUF_NOINLINE const char* TcParser::MpString(PROTOBUF_TC_PARAM_DECL) {
     PROTOBUF_MUSTTAIL return MpRepeatedString<is_split>(PROTOBUF_TC_PARAM_PASS);
   }
   const uint16_t xform_val = type_card & field_layout::kTvMask;
-  const uint16_t rep = type_card & field_layout::kRepMask;
+  uint16_t rep = type_card & field_layout::kRepMask;
+
+  // Older generated map-entry tables could classify a string-backed value as
+  // an inline Cord. Generated table construction reserves the
+  // discard-everything fallback for map entries, whose string-like fields are
+  // always backed by ArenaStringPtr.
+  if constexpr (!is_split) {
+    if (rep == field_layout::kRepCord && card == field_layout::kFcOptional &&
+        table->fallback == TcParser::DiscardEverythingFallback) {
+      rep = field_layout::kRepAString;
+    }
+  }
 
   // Mark the field as present:
   const bool is_oneof = card == field_layout::kFcOneof;
