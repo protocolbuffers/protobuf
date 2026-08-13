@@ -21,6 +21,7 @@
 #include <vector>
 
 #include "absl/container/flat_hash_map.h"
+#include "absl/container/flat_hash_set.h"
 #include "absl/log/absl_check.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_split.h"
@@ -223,6 +224,7 @@ std::string ResolveKnownNameCollisions(absl::string_view name,
                                        NameKind name_kind);
 // Adds an underscore if necessary to prevent conflicting with a keyword.
 std::string ResolveKeyword(absl::string_view name);
+PROTOC_EXPORT const absl::flat_hash_set<absl::string_view>& Keywords();
 
 // Get the (unqualified) name that should be used for this field in C++ code.
 // The name is coerced to lower-case to emulate proto1 behavior.  People

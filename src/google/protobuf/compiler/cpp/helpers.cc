@@ -222,6 +222,8 @@ static const char* const kKeywordList[] = {
     // clang-format on
 };
 
+}  // namespace
+
 const absl::flat_hash_set<absl::string_view>& Keywords() {
   static const auto* keywords = [] {
     auto* keywords = new absl::flat_hash_set<absl::string_view>();
@@ -233,6 +235,8 @@ const absl::flat_hash_set<absl::string_view>& Keywords() {
   }();
   return *keywords;
 }
+
+namespace {
 
 std::string IntTypeName(const Options& options, absl::string_view type) {
   return absl::StrCat("::", type, "_t");
