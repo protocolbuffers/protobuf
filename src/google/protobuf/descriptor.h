@@ -56,6 +56,7 @@
 #include "absl/strings/str_format.h"
 #include "absl/strings/string_view.h"
 #include "absl/synchronization/mutex.h"
+#include "google/protobuf/class_data.h"
 #include "google/protobuf/descriptor_lite.h"  // IWYU pragma: export
 #include "google/protobuf/extension_set.h"
 #include "google/protobuf/offset_ptr.h"
@@ -1363,7 +1364,7 @@ class PROTOBUF_EXPORT FieldDescriptor : private internal::SymbolBase,
 
     mutable const EnumValueDescriptor* default_value_enum_;
     const std::string* default_value_string_;
-    mutable std::atomic<const Message*> default_generated_instance_;
+    mutable std::atomic<const internal::ClassData*> generated_class_data_;
   };
 
   static const CppType kTypeToCppTypeMap[MAX_TYPE + 1];

@@ -617,8 +617,13 @@ void FileGenerator::GenerateInternalForwardDeclarations(
 
       if (options_.lite_implicit_weak_fields) {
         p->Emit({{"ptr", MsgGlobalsInstancePtr(instance, options_)}}, R"cc(
+#ifndef PROTOBUF_MESSAGE_GLOBALS
+          PROTOBUF_CONSTINIT __attribute__((weak)) const void* $ptr$ =
+              ::_pbi::ImplicitWeakMessage::GetClassDataForInit();
+#else
           PROTOBUF_CONSTINIT __attribute__((weak)) const void* $ptr$ =
               &::_pbi::implicit_weak_message_globals;
+#endif
         )cc");
       } else {
         p->Emit({{"type", MsgGlobalsInstanceType(instance, options_)},

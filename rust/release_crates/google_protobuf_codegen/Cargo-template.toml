@@ -1,0 +1,9 @@
+[package]
+name = "google-protobuf-codegen"
+version = "{PROTOBUF_RUST_VERSION}"
+edition = "2021"
+license = "BSD-3-Clause"
+description = "Re-export of protobuf-codegen"
+
+[dependencies]
+protobuf_codegen = { package = "protobuf-codegen", version = "{PROTOBUF_LEGACY_VERSION}", path = "../protobuf_codegen" }

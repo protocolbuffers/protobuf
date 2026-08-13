@@ -569,8 +569,8 @@ impl<'borrow, T: Singular> iter::IntoIterator for &'borrow RepeatedMut<'_, T> {
 
 /// An iterator over the mutable values inside of a [`RepeatedMut`].
 ///
-/// **WARNING**: This is transitioning to a **Lending Iterator**. Standard `for` loops will soon be
-/// unsupported. Use `while let Some(item) = iter.next()` instead.
+/// **WARNING**: This has transitioned to a **Lending Iterator**. Standard `for` loops are not
+/// supported anymore. Use `while let Some(item) = iter.next()` instead.
 pub struct RepeatedMutIter<'msg, T> {
     inner: InnerRepeatedMut<'msg>,
     current_index: usize,
@@ -618,59 +618,6 @@ impl<'msg, T: Message> RepeatedMutIter<'msg, T> {
         Some(val)
     }
 }
-
-impl<'msg, T: Message> iter::Iterator for RepeatedMutIter<'msg, T> {
-    type Item = Mut<'msg, T>;
-
-    #[inline]
-    fn next(&mut self) -> Option<Self::Item> {
-        if self.current_index >= self.end_index {
-            return None;
-        }
-        let index = self.current_index;
-        self.current_index += 1;
-
-        // SAFETY: index is valid.
-        let val = unsafe {
-            let temp_repeated = RepeatedMut::from_inner(Private, self.inner);
-            T::repeated_get_mut_unchecked(Private, temp_repeated, index)
-        };
-
-        Some(val)
-    }
-
-    fn size_hint(&self) -> (usize, Option<usize>) {
-        let len = self.len();
-        (len, Some(len))
-    }
-}
-
-impl<'msg, T: Message> ExactSizeIterator for RepeatedMutIter<'msg, T> {
-    fn len(&self) -> usize {
-        self.end_index - self.current_index
-    }
-}
-
-impl<'msg, T: Message> iter::DoubleEndedIterator for RepeatedMutIter<'msg, T> {
-    #[inline]
-    fn next_back(&mut self) -> Option<Self::Item> {
-        if self.current_index >= self.end_index {
-            return None;
-        }
-        self.end_index -= 1;
-        let index = self.end_index;
-
-        // SAFETY: index is guaranteed to be in bounds.
-        let val = unsafe {
-            let temp_repeated = RepeatedMut::from_inner(Private, self.inner);
-            T::repeated_get_mut_unchecked(Private, temp_repeated, index)
-        };
-
-        Some(val)
-    }
-}
-
-impl<'msg, T: Message> FusedIterator for RepeatedMutIter<'msg, T> {}
 
 impl<'msg, T: Message> RepeatedMut<'msg, T> {
     /// Returns an iterator that allows modifying each value.

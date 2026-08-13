@@ -6437,7 +6437,7 @@ void internal::DescriptorBuilder::BuildFieldOrExtension(
                    DescriptorPool::ErrorCollector::DEFAULT_VALUE,
                    "Messages can't have default values.");
           result->has_default_value_ = false;
-          result->default_generated_instance_ = nullptr;
+          result->generated_class_data_ = nullptr;
           break;
       }
 
@@ -6485,7 +6485,7 @@ void internal::DescriptorBuilder::BuildFieldOrExtension(
           result->default_value_string_ = &internal::GetEmptyString();
           break;
         case FieldDescriptor::CPPTYPE_MESSAGE:
-          result->default_generated_instance_ = nullptr;
+          result->generated_class_data_ = nullptr;
           break;
       }
     }
