@@ -245,7 +245,7 @@ constexpr Method::ParseTableT_ Method::InternalGenerateParseTable_(const ::_pbi:
        {40, 6, 0,
         PROTOBUF_FIELD_OFFSET(Method, _impl_.response_streaming_)}},
       // repeated .google.protobuf.Option options = 6;
-      {::_pbi::TcParser::FastMtR1,
+      {::_pbi::TcParser::FastMcR1,
        {50, 0, 0,
         PROTOBUF_FIELD_OFFSET(Method, _impl_.options_)}},
       // .google.protobuf.Syntax syntax = 7 [deprecated = true];
@@ -266,7 +266,7 @@ constexpr Method::ParseTableT_ Method::InternalGenerateParseTable_(const ::_pbi:
       // bool response_streaming = 5;
       {PROTOBUF_FIELD_OFFSET(Method, _impl_.response_streaming_), _Internal::kHasBitsOffset + 6, 0, (0 | ::_fl::kFcOptional | ::_fl::kBool)},
       // repeated .google.protobuf.Option options = 6;
-      {PROTOBUF_FIELD_OFFSET(Method, _impl_.options_), _Internal::kHasBitsOffset + 0, 0, (0 | ::_fl::kFcRepeated | ::_fl::kMessage | ::_fl::kTvTable)},
+      {PROTOBUF_FIELD_OFFSET(Method, _impl_.options_), _Internal::kHasBitsOffset + 0, 0, (0 | ::_fl::kFcRepeated | ::_fl::kMessage | ::_fl::kTvClassData)},
       // .google.protobuf.Syntax syntax = 7 [deprecated = true];
       {PROTOBUF_FIELD_OFFSET(Method, _impl_.syntax_), _Internal::kHasBitsOffset + 7, 0, (0 | ::_fl::kFcOptional | ::_fl::kOpenEnum)},
       // string edition = 8 [deprecated = true];
@@ -274,9 +274,9 @@ constexpr Method::ParseTableT_ Method::InternalGenerateParseTable_(const ::_pbi:
     }},
     {{
         #ifndef PROTOBUF_MESSAGE_GLOBALS
-        {::_pbi::TcParser::GetTable<::google::protobuf::Option>()},
+        {::_pbi::FieldAuxClassData(), &::google::protobuf::Option_class_data_},
         #else
-        {::_pbi::FieldAuxMessageGlobals(), &::google::protobuf::Option_globals_},
+        {::_pbi::FieldAuxClassData(), &::google::protobuf::Option_globals_},
         #endif
     }},
     {{
@@ -441,11 +441,11 @@ constexpr Api::ParseTableT_ Api::InternalGenerateParseTable_(const ::_pbi::Class
        {10, 3, 0,
         PROTOBUF_FIELD_OFFSET(Api, _impl_.name_)}},
       // repeated .google.protobuf.Method methods = 2;
-      {::_pbi::TcParser::FastMtR1,
+      {::_pbi::TcParser::FastMcR1,
        {18, 0, 0,
         PROTOBUF_FIELD_OFFSET(Api, _impl_.methods_)}},
       // repeated .google.protobuf.Option options = 3;
-      {::_pbi::TcParser::FastMtR1,
+      {::_pbi::TcParser::FastMcR1,
        {26, 1, 1,
         PROTOBUF_FIELD_OFFSET(Api, _impl_.options_)}},
       // string version = 4;
@@ -453,11 +453,11 @@ constexpr Api::ParseTableT_ Api::InternalGenerateParseTable_(const ::_pbi::Class
        {34, 4, 0,
         PROTOBUF_FIELD_OFFSET(Api, _impl_.version_)}},
       // .google.protobuf.SourceContext source_context = 5;
-      {::_pbi::TcParser::FastMtS1,
+      {::_pbi::TcParser::FastMcS1,
        {42, 6, 2,
         PROTOBUF_FIELD_OFFSET(Api, _impl_.source_context_)}},
       // repeated .google.protobuf.Mixin mixins = 6;
-      {::_pbi::TcParser::FastMtR1,
+      {::_pbi::TcParser::FastMcR1,
        {50, 2, 3,
         PROTOBUF_FIELD_OFFSET(Api, _impl_.mixins_)}},
       // .google.protobuf.Syntax syntax = 7;
@@ -470,15 +470,15 @@ constexpr Api::ParseTableT_ Api::InternalGenerateParseTable_(const ::_pbi::Class
       // string name = 1;
       {PROTOBUF_FIELD_OFFSET(Api, _impl_.name_), _Internal::kHasBitsOffset + 3, 0, (0 | ::_fl::kFcOptional | ::_fl::kUtf8String | ::_fl::kRepAString)},
       // repeated .google.protobuf.Method methods = 2;
-      {PROTOBUF_FIELD_OFFSET(Api, _impl_.methods_), _Internal::kHasBitsOffset + 0, 0, (0 | ::_fl::kFcRepeated | ::_fl::kMessage | ::_fl::kTvTable)},
+      {PROTOBUF_FIELD_OFFSET(Api, _impl_.methods_), _Internal::kHasBitsOffset + 0, 0, (0 | ::_fl::kFcRepeated | ::_fl::kMessage | ::_fl::kTvClassData)},
       // repeated .google.protobuf.Option options = 3;
-      {PROTOBUF_FIELD_OFFSET(Api, _impl_.options_), _Internal::kHasBitsOffset + 1, 1, (0 | ::_fl::kFcRepeated | ::_fl::kMessage | ::_fl::kTvTable)},
+      {PROTOBUF_FIELD_OFFSET(Api, _impl_.options_), _Internal::kHasBitsOffset + 1, 1, (0 | ::_fl::kFcRepeated | ::_fl::kMessage | ::_fl::kTvClassData)},
       // string version = 4;
       {PROTOBUF_FIELD_OFFSET(Api, _impl_.version_), _Internal::kHasBitsOffset + 4, 0, (0 | ::_fl::kFcOptional | ::_fl::kUtf8String | ::_fl::kRepAString)},
       // .google.protobuf.SourceContext source_context = 5;
-      {PROTOBUF_FIELD_OFFSET(Api, _impl_.source_context_), _Internal::kHasBitsOffset + 6, 2, (0 | ::_fl::kFcOptional | ::_fl::kMessage | ::_fl::kTvTable)},
+      {PROTOBUF_FIELD_OFFSET(Api, _impl_.source_context_), _Internal::kHasBitsOffset + 6, 2, (0 | ::_fl::kFcOptional | ::_fl::kMessage | ::_fl::kTvClassData)},
       // repeated .google.protobuf.Mixin mixins = 6;
-      {PROTOBUF_FIELD_OFFSET(Api, _impl_.mixins_), _Internal::kHasBitsOffset + 2, 3, (0 | ::_fl::kFcRepeated | ::_fl::kMessage | ::_fl::kTvTable)},
+      {PROTOBUF_FIELD_OFFSET(Api, _impl_.mixins_), _Internal::kHasBitsOffset + 2, 3, (0 | ::_fl::kFcRepeated | ::_fl::kMessage | ::_fl::kTvClassData)},
       // .google.protobuf.Syntax syntax = 7;
       {PROTOBUF_FIELD_OFFSET(Api, _impl_.syntax_), _Internal::kHasBitsOffset + 7, 0, (0 | ::_fl::kFcOptional | ::_fl::kOpenEnum)},
       // string edition = 8;
@@ -486,24 +486,24 @@ constexpr Api::ParseTableT_ Api::InternalGenerateParseTable_(const ::_pbi::Class
     }},
     {{
         #ifndef PROTOBUF_MESSAGE_GLOBALS
-        {::_pbi::TcParser::GetTable<::google::protobuf::Method>()},
+        {::_pbi::FieldAuxClassData(), &::google::protobuf::Method_class_data_},
         #else
-        {::_pbi::FieldAuxMessageGlobals(), &::google::protobuf::Method_globals_},
+        {::_pbi::FieldAuxClassData(), &::google::protobuf::Method_globals_},
         #endif
         #ifndef PROTOBUF_MESSAGE_GLOBALS
-        {::_pbi::TcParser::GetTable<::google::protobuf::Option>()},
+        {::_pbi::FieldAuxClassData(), &::google::protobuf::Option_class_data_},
         #else
-        {::_pbi::FieldAuxMessageGlobals(), &::google::protobuf::Option_globals_},
+        {::_pbi::FieldAuxClassData(), &::google::protobuf::Option_globals_},
         #endif
         #ifndef PROTOBUF_MESSAGE_GLOBALS
-        {::_pbi::TcParser::GetTable<::google::protobuf::SourceContext>()},
+        {::_pbi::FieldAuxClassData(), &::google::protobuf::SourceContext_class_data_},
         #else
-        {::_pbi::FieldAuxMessageGlobals(), &::google::protobuf::SourceContext_globals_},
+        {::_pbi::FieldAuxClassData(), &::google::protobuf::SourceContext_globals_},
         #endif
         #ifndef PROTOBUF_MESSAGE_GLOBALS
-        {::_pbi::TcParser::GetTable<::google::protobuf::Mixin>()},
+        {::_pbi::FieldAuxClassData(), &::google::protobuf::Mixin_class_data_},
         #else
-        {::_pbi::FieldAuxMessageGlobals(), &::google::protobuf::Mixin_globals_},
+        {::_pbi::FieldAuxClassData(), &::google::protobuf::Mixin_globals_},
         #endif
     }},
     {{

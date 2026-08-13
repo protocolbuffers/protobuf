@@ -33,6 +33,16 @@ typedef struct GPBCodedInputStreamState {
   NSData *buffer_;
 }
 
+// Initializes a new stream over `data` whose initial recursion depth is one
+// deeper than `parentDepth`. Used when a parser needs to spawn a fresh
+// CodedInputStream to decode a payload that has already been read into a
+// separate buffer (e.g. MessageSet items), so that the native call stack
+// growth is still bounded by kDefaultRecursionLimit. The initializer raises
+// GPBCodedInputStreamErrorRecursionDepthExceeded if `parentDepth` is already
+// at the limit. Mirrors the depth-inheritance done by the C++ ParseContext
+// spawn helper.
+- (instancetype)initWithData:(NSData *)data parentRecursionDepth:(NSUInteger)parentDepth;
+
 // Group support is deprecated, so we hide this interface from users, but
 // support for older data.
 - (void)readGroup:(int32_t)fieldNumber

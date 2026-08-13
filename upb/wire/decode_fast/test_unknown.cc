@@ -21,6 +21,7 @@
 #include "upb/mem/arena.hpp"
 #include "upb/message/accessors.h"
 #include "upb/message/message.h"
+#include "upb/message/unknown_fields.h"
 #include "upb/mini_descriptor/decode.h"
 #include "upb/mini_descriptor/internal/encode.hpp"
 #include "upb/mini_descriptor/link.h"
@@ -88,10 +89,12 @@ TEST_P(UnknownFieldTest, UnknownFieldFastPath) {
 
   // Verify the contents of the unknown field.
   uintptr_t iter = kUpb_Message_UnknownBegin;
-  upb_StringView unknown_data;
+  upb_MessageUnknown unknown_data;
   std::string captured_unknown;
-  while (upb_Message_NextUnknown(msg, &unknown_data, &iter)) {
-    captured_unknown.append(unknown_data.data, unknown_data.size);
+  while (upb_Message_NextUnknown2(msg, &unknown_data, &iter)) {
+    ASSERT_EQ(unknown_data.type, kUpb_MessageUnknownType_StringView);
+    captured_unknown.append(unknown_data.value.bytes.data,
+                            unknown_data.value.bytes.size);
   }
   EXPECT_EQ(captured_unknown, payload);
 
@@ -206,14 +209,39 @@ TEST(UnknownFieldSpecialTest, UnknownVarintFollowedByEndGroupInGroup) {
   // Verify contents.
   std::string captured_unknown;
   uintptr_t iter = kUpb_Message_UnknownBegin;
-  upb_StringView unknown_data;
-  while (upb_Message_NextUnknown(child_msg, &unknown_data, &iter)) {
-    captured_unknown.append(unknown_data.data, unknown_data.size);
+  upb_MessageUnknown unknown_data;
+  while (upb_Message_NextUnknown2(child_msg, &unknown_data, &iter)) {
+    ASSERT_EQ(unknown_data.type, kUpb_MessageUnknownType_StringView);
+    captured_unknown.append(unknown_data.value.bytes.data,
+                            unknown_data.value.bytes.size);
   }
 
   // The captured unknown should be just the varint part.
   // Field 2 Varint: (2 << 3) | 0 = 16 (0x10), value = 123 (0x7B)
   EXPECT_EQ(captured_unknown, "\x10\x7B");
+}
+
+TEST(UnknownFieldSpecialTest, LargeTagUnknownGroupField) {
+  char trace_buf[64];
+  upb::Arena msg_arena;
+  upb::Arena mt_arena;
+
+  // Create a MiniTable with field 1 (Int32).
+  auto [mt, field] = MiniTable::MakeSingleFieldTable<field_types::Int32>(
+      1, kUpb_DecodeFast_Scalar, mt_arena.ptr());
+  upb_Message* msg = upb_Message_New(mt, msg_arena.ptr());
+  ASSERT_NE(msg, nullptr);
+
+  // Field 2048 Group: tag = (2048 << 3) | 3 = 16387 = \x83\x80\x01.
+  // Group content: field 1 varint 123 (\x08\x7B), then EndGroup tag for field
+  // 2048: \x84\x80\x01.
+  std::string payload = "\x83\x80\x01\x08\x7B\x84\x80\x01";
+
+  upb_DecodeStatus result =
+      upb_DecodeWithTrace(payload.data(), payload.size(), msg, mt, nullptr, 0,
+                          msg_arena.ptr(), trace_buf, sizeof(trace_buf));
+
+  EXPECT_EQ(result, kUpb_DecodeStatus_Ok) << upb_DecodeStatus_String(result);
 }
 
 }  // namespace

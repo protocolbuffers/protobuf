@@ -69,20 +69,20 @@ constexpr ListValue::ParseTableT_ ListValue::InternalGenerateParseTable_(const :
       #endif  // PROTOBUF_PREFETCH_PARSE_TABLE
     }, {{
       // repeated .google.protobuf.Value values = 1;
-      {::_pbi::TcParser::FastMtR1,
+      {::_pbi::TcParser::FastMcR1,
        {10, 0, 0,
         PROTOBUF_FIELD_OFFSET(ListValue, _impl_.values_)}},
     }}, {{
       65535, 65535
     }}, {{
       // repeated .google.protobuf.Value values = 1;
-      {PROTOBUF_FIELD_OFFSET(ListValue, _impl_.values_), _Internal::kHasBitsOffset + 0, 0, (0 | ::_fl::kFcRepeated | ::_fl::kMessage | ::_fl::kTvTable)},
+      {PROTOBUF_FIELD_OFFSET(ListValue, _impl_.values_), _Internal::kHasBitsOffset + 0, 0, (0 | ::_fl::kFcRepeated | ::_fl::kMessage | ::_fl::kTvClassData)},
     }},
     {{
         #ifndef PROTOBUF_MESSAGE_GLOBALS
-        {::_pbi::TcParser::GetTable<::google::protobuf::Value>()},
+        {::_pbi::FieldAuxClassData(), &::google::protobuf::Value_class_data_},
         #else
-        {::_pbi::FieldAuxMessageGlobals(), &::google::protobuf::Value_globals_},
+        {::_pbi::FieldAuxClassData(), &::google::protobuf::Value_globals_},
         #endif
     }},
     {{
@@ -233,9 +233,9 @@ constexpr Struct::ParseTableT_ Struct::InternalGenerateParseTable_(const ::_pbi:
         {::_pbi::TcParser::GetMapAuxInfo(
             1, 0, 9, 11, 0)},
         #ifndef PROTOBUF_MESSAGE_GLOBALS
-        {::_pbi::TcParser::GetTable<::google::protobuf::Value>()},
+        {::_pbi::FieldAuxClassData(), &::google::protobuf::Value_class_data_},
         #else
-        {::_pbi::FieldAuxMessageGlobals(), &::google::protobuf::Value_globals_},
+        {::_pbi::FieldAuxClassData(), &::google::protobuf::Value_globals_},
         #endif
     }},
     {{
@@ -367,7 +367,7 @@ constexpr Struct_FieldsEntry_DoNotUse::ParseTableT_ Struct_FieldsEntry_DoNotUse:
       #endif  // PROTOBUF_PREFETCH_PARSE_TABLE
     }, {{
       // .google.protobuf.Value value = 2;
-      {::_pbi::TcParser::FastMtS1,
+      {::_pbi::TcParser::FastMcS1,
        {18, 1, 0,
         PROTOBUF_FIELD_OFFSET(Struct_FieldsEntry_DoNotUse, _impl_.value_)}},
       // string key = 1;
@@ -380,13 +380,13 @@ constexpr Struct_FieldsEntry_DoNotUse::ParseTableT_ Struct_FieldsEntry_DoNotUse:
       // string key = 1;
       {PROTOBUF_FIELD_OFFSET(Struct_FieldsEntry_DoNotUse, _impl_.key_), _Internal::kHasBitsOffset + 0, 0, (0 | ::_fl::kFcOptional | ::_fl::kUtf8String | ::_fl::kRepAString)},
       // .google.protobuf.Value value = 2;
-      {PROTOBUF_FIELD_OFFSET(Struct_FieldsEntry_DoNotUse, _impl_.value_), _Internal::kHasBitsOffset + 1, 0, (0 | ::_fl::kFcOptional | ::_fl::kMessage | ::_fl::kTvTable)},
+      {PROTOBUF_FIELD_OFFSET(Struct_FieldsEntry_DoNotUse, _impl_.value_), _Internal::kHasBitsOffset + 1, 0, (0 | ::_fl::kFcOptional | ::_fl::kMessage | ::_fl::kTvClassData)},
     }},
     {{
         #ifndef PROTOBUF_MESSAGE_GLOBALS
-        {::_pbi::TcParser::GetTable<::google::protobuf::Value>()},
+        {::_pbi::FieldAuxClassData(), &::google::protobuf::Value_class_data_},
         #else
-        {::_pbi::FieldAuxMessageGlobals(), &::google::protobuf::Value_globals_},
+        {::_pbi::FieldAuxClassData(), &::google::protobuf::Value_globals_},
         #endif
     }},
     {{
@@ -532,20 +532,20 @@ constexpr Value::ParseTableT_ Value::InternalGenerateParseTable_(const ::_pbi::C
       // bool bool_value = 4;
       {PROTOBUF_FIELD_OFFSET(Value, _impl_.kind_.bool_value_), _Internal::kOneofCaseOffset + 0, 0, (0 | ::_fl::kFcOneof | ::_fl::kBool)},
       // .google.protobuf.Struct struct_value = 5;
-      {PROTOBUF_FIELD_OFFSET(Value, _impl_.kind_.struct_value_), _Internal::kOneofCaseOffset + 0, 0, (0 | ::_fl::kFcOneof | ::_fl::kMessage | ::_fl::kTvTable)},
+      {PROTOBUF_FIELD_OFFSET(Value, _impl_.kind_.struct_value_), _Internal::kOneofCaseOffset + 0, 0, (0 | ::_fl::kFcOneof | ::_fl::kMessage | ::_fl::kTvClassData)},
       // .google.protobuf.ListValue list_value = 6;
-      {PROTOBUF_FIELD_OFFSET(Value, _impl_.kind_.list_value_), _Internal::kOneofCaseOffset + 0, 1, (0 | ::_fl::kFcOneof | ::_fl::kMessage | ::_fl::kTvTable)},
+      {PROTOBUF_FIELD_OFFSET(Value, _impl_.kind_.list_value_), _Internal::kOneofCaseOffset + 0, 1, (0 | ::_fl::kFcOneof | ::_fl::kMessage | ::_fl::kTvClassData)},
     }},
     {{
         #ifndef PROTOBUF_MESSAGE_GLOBALS
-        {::_pbi::TcParser::GetTable<::google::protobuf::Struct>()},
+        {::_pbi::FieldAuxClassData(), &::google::protobuf::Struct_class_data_},
         #else
-        {::_pbi::FieldAuxMessageGlobals(), &::google::protobuf::Struct_globals_},
+        {::_pbi::FieldAuxClassData(), &::google::protobuf::Struct_globals_},
         #endif
         #ifndef PROTOBUF_MESSAGE_GLOBALS
-        {::_pbi::TcParser::GetTable<::google::protobuf::ListValue>()},
+        {::_pbi::FieldAuxClassData(), &::google::protobuf::ListValue_class_data_},
         #else
-        {::_pbi::FieldAuxMessageGlobals(), &::google::protobuf::ListValue_globals_},
+        {::_pbi::FieldAuxClassData(), &::google::protobuf::ListValue_globals_},
         #endif
     }},
     {{

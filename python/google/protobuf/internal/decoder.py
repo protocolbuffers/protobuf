@@ -902,10 +902,15 @@ def MessageSetItemDecoder(descriptor):
     while 1:
       tag_bytes, pos = local_ReadTag(buffer, pos)
       if tag_bytes == type_id_tag_bytes:
-        type_id, pos = local_DecodeVarint(buffer, pos)
+        temp_type_id, pos = local_DecodeVarint(buffer, pos)
+        if type_id == -1:
+          type_id = temp_type_id
       elif tag_bytes == message_tag_bytes:
-        size, message_start = local_DecodeVarint(buffer, pos)
-        pos = message_end = message_start + size
+        size, start = local_DecodeVarint(buffer, pos)
+        if message_start == -1:
+          message_start = start
+          message_end = start + size
+        pos = start + size
       elif tag_bytes == item_end_tag_bytes:
         break
       else:
@@ -967,15 +972,21 @@ def UnknownMessageSetItemDecoder():
   def DecodeUnknownItem(buffer):
     pos = 0
     end = len(buffer)
+    type_id = -1
     message_start = -1
     message_end = -1
     while 1:
       tag_bytes, pos = ReadTag(buffer, pos)
       if tag_bytes == type_id_tag_bytes:
-        type_id, pos = _DecodeVarint(buffer, pos)
+        temp_type_id, pos = _DecodeVarint(buffer, pos)
+        if type_id == -1:
+          type_id = temp_type_id
       elif tag_bytes == message_tag_bytes:
-        size, message_start = _DecodeVarint(buffer, pos)
-        pos = message_end = message_start + size
+        size, start = _DecodeVarint(buffer, pos)
+        if message_start == -1:
+          message_start = start
+          message_end = start + size
+        pos = start + size
       elif tag_bytes == item_end_tag_bytes:
         break
       else:

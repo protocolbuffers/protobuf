@@ -3693,6 +3693,10 @@ MessageGenerator::NewOpRequirements MessageGenerator::GetNewOp() const {
     // We can't skip the ArenaDtor for these messages.
     op.needs_to_run_constructor = true;
   }
+  if (descriptor_->extension_range_count() > 0) {
+    // Extensions are not zero-initializable.
+    op.needs_memcpy = true;
+  }
 
   for (const FieldDescriptor* field : internal::FieldRange(descriptor_)) {
     if (ShouldSplit(field, options_)) {
@@ -5647,7 +5651,11 @@ void MessageGenerator::GenerateSourceDefaultInstance(io::Printer* p) {
             {"name", MsgGlobalsInstanceName(descriptor_, options_)},
         },
         R"cc(
+#ifndef PROTOBUF_MESSAGE_GLOBALS
+          PROTOBUF_CONSTINIT const void* $ptr$ = &$Msg$_class_data_;
+#else
           PROTOBUF_CONSTINIT const void* $ptr$ = &$globals$;
+#endif
         )cc");
   }
 }

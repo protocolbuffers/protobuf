@@ -21,7 +21,6 @@
 #include "upb/message/internal/message.h"
 #include "upb/message/internal/types.h"
 #include "upb/message/map.h"
-#include "upb/message/unknown_fields.h"
 #include "upb/message/value.h"
 #include "upb/mini_table/extension.h"
 #include "upb/mini_table/field.h"
@@ -165,31 +164,12 @@ void _upb_Message_DiscardUnknown_shallow(upb_Message* msg) {
   uint32_t size = 0;
   for (uint32_t i = 0; i < in->size; i++) {
     upb_TaggedAuxPtr tagged_ptr = in->aux_data[i];
+    // Only keep semantically known fields (i.e., canonical extensions).
     if (upb_TaggedAuxPtr_IsSemanticallyKnown(tagged_ptr)) {
       in->aux_data[size++] = tagged_ptr;
     }
   }
   in->size = size;
-}
-
-upb_Message_DeleteUnknownStatus upb_Message_DeleteUnknown(upb_Message* msg,
-                                                          upb_StringView* data,
-                                                          uintptr_t* iter,
-                                                          upb_Arena* arena) {
-  upb_MessageUnknown unknown;
-  unknown.type = kUpb_MessageUnknownType_StringView;
-  unknown.value.bytes = *data;
-
-  upb_Message_DeleteUnknownStatus res =
-      upb_Message_DeleteUnknown2(msg, &unknown, iter, arena);
-  UPB_ASSERT(unknown.type == kUpb_MessageUnknownType_StringView);
-  if (res == kUpb_DeleteUnknown_IterUpdated ||
-      res == kUpb_DeleteUnknown_DeletedLast) {
-    // the unknown data remains the same on the result of
-    // kUpb_DeleteUnknown_AllocFail.
-    *data = unknown.value.bytes;
-  }
-  return res;
 }
 
 size_t upb_Message_ExtensionCount(const upb_Message* msg) {
@@ -246,14 +226,9 @@ void upb_Message_Freeze(upb_Message* msg, const upb_MiniTable* m) {
   // TODO: b/376969853 - use iterator API
   uint32_t size = in ? in->size : 0;
   for (size_t i = 0; i < size; i++) {
-    upb_TaggedAuxPtr tagged_ptr = in->aux_data[i];
-    upb_TaggedAux aux;
-    upb_TaggedAuxType type = upb_TaggedAux_Get(tagged_ptr, &aux);
-    if (type != kUpb_TaggedAuxType_CanonicalExtension &&
-        type != kUpb_TaggedAuxType_NonCanonicalExtension) {
-      continue;
-    }
-    const upb_Extension* ext = aux.extension;
+    const upb_Extension* ext =
+        upb_TaggedAuxPtr_TryGetExtension(in->aux_data[i]);
+    if (!ext) continue;
     const upb_MiniTableExtension* e = ext->ext;
     const upb_MiniTableField* f = &e->UPB_PRIVATE(field);
     const upb_MiniTable* m2 = upb_MiniTableExtension_GetSubMessage(e);

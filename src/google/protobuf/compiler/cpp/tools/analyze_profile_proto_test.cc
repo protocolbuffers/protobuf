@@ -6,6 +6,7 @@
 #include "google/protobuf/testing/file.h"
 #include "google/protobuf/testing/file.h"
 #include "google/protobuf/testing/path.h"
+#include "google/protobuf/compiler/access_info_map.h"
 #include "google/protobuf/compiler/profile.pb.h"
 #include <gmock/gmock.h>
 #include "google/protobuf/testing/googletest.h"
@@ -180,6 +181,9 @@ TEST(AnalyzeProfileProtoTest, PrintStatistics) {
   if (google::protobuf::internal::ForceInlineStringInProtoc()) {
     GTEST_SKIP() << "Forced layout invalidates the test.";
   }
+  if (!EnableAggressiveLazy()) {
+    GTEST_SKIP() << "Aggressive lazy is not enabled.";
+  }
   AccessInfo info = ParseTextOrDie(R"pb(
     language: "cpp"
     message {
@@ -207,12 +211,12 @@ TEST(AnalyzeProfileProtoTest, PrintStatistics) {
   options.pool = DescriptorPool::generated_pool();
   EXPECT_STREQ(AnalyzeToText(info, options).c_str(),
                R"(Message google::protobuf::compiler::tools::AnalyzeThis
-  int32 id: RARELY_USED(100)
-  string optional_string: RARELY_USED(100)
-  string[] repeated_string: LIKELY_PRESENT(100.00%) RARELY_USED(100) NUM_ELEMS_HISTO[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11] NUM_ELEMS_MEAN=66.1 NUM_ELEMS_STDDEV=1.5
+  int32 id:
+  string optional_string:
+  string[] repeated_string: LIKELY_PRESENT(100.00%) NUM_ELEMS_HISTO[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11] NUM_ELEMS_MEAN=66.1 NUM_ELEMS_STDDEV=1.5
   AnalyzeChild optional_child: LIKELY_PRESENT(100.00%) RARELY_USED(1) LAZY
-  AnalyzeChild[] repeated_child: LIKELY_PRESENT(100.00%) RARELY_USED(100)
-  Nested nested: RARELY_USED(100)
+  AnalyzeChild[] repeated_child: LIKELY_PRESENT(100.00%)
+  Nested nested:
 ========
 singular_lazy_num=1
 singular_lazy_0usage_num=0
@@ -239,6 +243,9 @@ TEST(AnalyzeProfileProtoTest, PrintStatisticsAll) {
   if (google::protobuf::internal::ForceInlineStringInProtoc()) {
     GTEST_SKIP() << "Forced layout invalidates the test.";
   }
+  if (!EnableAggressiveLazy()) {
+    GTEST_SKIP() << "Aggressive lazy is not enabled.";
+  }
   AccessInfo info = ParseTextOrDie(R"pb(
     language: "cpp"
     message {
@@ -260,12 +267,12 @@ TEST(AnalyzeProfileProtoTest, PrintStatisticsAll) {
   options.pool = DescriptorPool::generated_pool();
   EXPECT_STREQ(AnalyzeToText(info, options).c_str(),
                R"(Message google::protobuf::compiler::tools::AnalyzeThis
-  int32 id: DEFAULT_PRESENT(1.00%) RARELY_USED(100)
-  string optional_string: DEFAULT_PRESENT(1.00%) RARELY_USED(100)
-  string[] repeated_string: LIKELY_PRESENT(100.00%) RARELY_USED(100)
+  int32 id: DEFAULT_PRESENT(1.00%)
+  string optional_string: DEFAULT_PRESENT(1.00%)
+  string[] repeated_string: LIKELY_PRESENT(100.00%)
   AnalyzeChild optional_child: LIKELY_PRESENT(100.00%) RARELY_USED(1) LAZY
-  AnalyzeChild[] repeated_child: LIKELY_PRESENT(100.00%) RARELY_USED(100)
-  Nested nested: DEFAULT_PRESENT(1.00%) RARELY_USED(100)
+  AnalyzeChild[] repeated_child: LIKELY_PRESENT(100.00%)
+  Nested nested: DEFAULT_PRESENT(1.00%)
 ========
 singular_lazy_num=1
 singular_lazy_0usage_num=0

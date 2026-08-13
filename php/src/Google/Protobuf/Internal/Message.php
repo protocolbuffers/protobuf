@@ -865,9 +865,10 @@ class Message
                 if (is_integer($value)) {
                     return $value;
                 }
-                $enum_value = $field->getEnumType()->getValueByName($value);
-                if (!is_null($enum_value)) {
-                    return $enum_value->getNumber();
+                $enum_desc = $field->getEnumType();
+                $enum_value_desc = $enum_desc->getValueByJsonName($value);
+                if (!is_null($enum_value_desc)) {
+                    return $enum_value_desc->getNumber();
                 } else if ($ignore_unknown) {
                     return $this->defaultValue($field);
                 } else {
@@ -1272,7 +1273,7 @@ class Message
                     if ($value_field->getType() == GPBType::ENUM &&
                         is_string($tmp_value) &&
                         is_null(
-                          $value_field->getEnumType()->getValueByName($tmp_value)
+                          $value_field->getEnumType()->getValueByJsonName($tmp_value)
                         ) &&
                         $ignore_unknown) {
                         continue;
@@ -1298,7 +1299,7 @@ class Message
                     // ignored if ignore_unknown is set.
                     if ($field->getType() == GPBType::ENUM &&
                         is_string($tmp) &&
-                        is_null($field->getEnumType()->getValueByName($tmp)) &&
+                        is_null($field->getEnumType()->getValueByJsonName($tmp)) &&
                         $ignore_unknown) {
                         continue;
                     }
@@ -1774,8 +1775,11 @@ class Message
                 } else {
                     $enum_value_desc = $enum_desc->getValueByNumber($value);
                     if (!is_null($enum_value_desc)) {
-                        $size += 2;  // size for ""
-                        $size += strlen($enum_value_desc->getName());
+                        $name = GPBJsonWire::formatEnumValueName($enum_value_desc);
+                        $encoded = json_encode(
+                            $name,
+                            JSON_UNESCAPED_UNICODE);
+                        $size += strlen($encoded);
                     } else {
                         $str_value = strval($value);
                         $size += strlen($str_value);

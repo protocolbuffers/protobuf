@@ -45,6 +45,7 @@
 #include "google/protobuf/io/zero_copy_stream_impl_lite.h"
 #include "google/protobuf/parse_context.h"
 #include "google/protobuf/port.h"
+#include "google/protobuf/test_protos/repeated_ptr_field_test.pb.h"
 // TODO: Remove.
 #include "google/protobuf/repeated_ptr_field.h"
 #include "google/protobuf/unittest.pb.h"
@@ -168,8 +169,8 @@ TEST(RepeatedField, Small) {
 class RepeatedFieldIsFullTest : public testing::Test {
  protected:
   void SetUp() override {
-    if (sizeof(void*) == 4) {
-      GTEST_SKIP() << "Platform does not have enough memory for the test.";
+    if (!internal::RunLargeMemoryTests()) {
+      GTEST_SKIP() << "Not enough memory for this test.";
     }
     if (internal::GetBoundsCheckMode() != internal::BoundsCheckMode::kAbort) {
       GTEST_SKIP() << "Preemtive abort is not enabled.";
@@ -232,6 +233,41 @@ TEST_F(RepeatedFieldIsFullTest, ExtractSubrangeNegativeNum) {
   EXPECT_DEATH(
       field.ExtractSubrange(0, -1, nullptr),
       HasSubstr("Value (-1) must be greater than or equal to limit (0)"));
+}
+
+TEST_F(RepeatedFieldIsFullTest, ParsedPackedOverflow) {
+  proto2_unittest::TestPackedTypes msg;
+  msg.mutable_packed_bool()->resize(10);
+  std::string str10 = msg.SerializeAsString();
+  // We use a different path for larger inputs.
+  msg.mutable_packed_bool()->resize(32);
+  std::string str32 = msg.SerializeAsString();
+
+  EXPECT_DEATH(
+      {
+        msg.mutable_packed_bool()->resize(std::numeric_limits<int>::max() - 4);
+        (void)msg.MergeFromString(str10);
+      },
+      HasSubstr("Integer overflow in CheckedAdd: "));
+  EXPECT_DEATH(
+      {
+        msg.mutable_packed_bool()->resize(std::numeric_limits<int>::max() - 4);
+        (void)msg.MergeFromString(str32);
+      },
+      HasSubstr("Integer overflow in CheckedAdd: "));
+}
+
+TEST_F(RepeatedFieldIsFullTest, RepeatedVarintOverflow) {
+  proto2_unittest::RepFieldWithBoolForFastOverflow msg;
+  msg.mutable_b()->resize(10);
+  std::string str10 = msg.SerializeAsString();
+
+  EXPECT_DEATH(
+      {
+        msg.mutable_b()->resize(std::numeric_limits<int>::max() - 4);
+        (void)msg.MergeFromString(str10);
+      },
+      HasSubstr("Integer overflow in CheckedAdd: "));
 }
 
 // Test operations on a RepeatedField which is large enough to allocate a

@@ -94,6 +94,7 @@ cc_library(
         "@abseil-cpp//absl/container:flat_hash_set",
         "@abseil-cpp//absl/log:absl_log",
         "@abseil-cpp//absl/strings",
+        "@abseil-cpp//absl/strings:charset",
     ],
 )
 
@@ -131,6 +132,7 @@ cc_test(
         "//src/google/protobuf",
         "//src/google/protobuf:any_cc_proto",
         "//src/google/protobuf/compiler:command_line_interface",
+        "//src/google/protobuf/compiler:command_line_interface_tester",
         "//src/google/protobuf/io",
         "//src/google/protobuf/io:printer",
         "@googletest//:gtest",

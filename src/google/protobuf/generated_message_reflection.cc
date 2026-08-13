@@ -58,6 +58,7 @@
 #include "google/protobuf/map_field.h"
 #include "google/protobuf/message.h"
 #include "google/protobuf/message_lite.h"
+#include "google/protobuf/message_traits.h"
 #include "google/protobuf/micro_string.h"
 #include "google/protobuf/port.h"
 #include "google/protobuf/raw_ptr.h"
@@ -2573,7 +2574,7 @@ void Reflection::AddEnumValueInternal(Message* message,
 
 // -------------------------------------------------------------------
 
-const Message* Reflection::GetDefaultMessageInstance(
+const internal::ClassData* Reflection::GetMessageClassData(
     const FieldDescriptor* field) const {
   // If we are using the generated factory, we cache the prototype in the field
   // descriptor for faster access.
@@ -2581,11 +2582,13 @@ const Message* Reflection::GetDefaultMessageInstance(
   // means they contain null pointers on their message fields and can't be used
   // to get the default of submessages.
   if (message_factory_ == MessageFactory::generated_factory()) {
-    auto& ptr = field->default_generated_instance_;
+    auto& ptr = field->generated_class_data_;
     auto* res = ptr.load(std::memory_order_acquire);
     if (res == nullptr) {
       // First time asking for this field's default. Load it and cache it.
-      res = message_factory_->GetPrototype(field->message_type());
+      const MessageLite* prototype =
+          message_factory_->GetPrototype(field->message_type());
+      res = internal::GetClassData(*prototype);
       ptr.store(res, std::memory_order_release);
     }
     return res;
@@ -2601,12 +2604,13 @@ const Message* Reflection::GetDefaultMessageInstance(
   PROTOBUF_IGNORE_DEPRECATION_STOP
   if (!field->is_extension() && !field->is_repeated() && !field_is_weak &&
       !IsLazyField(field) && !schema_.InRealOneof(field)) {
-    auto* res = DefaultRaw<const Message*>(field);
-    ABSL_DCHECK_NE(res, nullptr);
-    return res;
+    const Message* prototype = DefaultRaw<const Message*>(field);
+    ABSL_DCHECK_NE(prototype, nullptr);
+    return internal::GetClassData(*prototype);
   }
   // Otherwise, just go to the factory.
-  return message_factory_->GetPrototype(field->message_type());
+  return internal::GetClassData(
+      *message_factory_->GetPrototype(field->message_type()));
 }
 
 const Message& Reflection::GetMessage(const Message& message,
@@ -2621,11 +2625,13 @@ const Message& Reflection::GetMessage(const Message& message,
         message.GetArena(), field->number(), field->message_type(), factory));
   } else {
     if (schema_.InRealOneof(field) && !HasOneofField(message, field)) {
-      return *GetDefaultMessageInstance(field);
+      return *DownCastMessage<Message>(
+          GetMessageClassData(field)->default_instance());
     }
     const Message* result = GetRaw<const Message*>(message, field);
     if (result == nullptr) {
-      result = GetDefaultMessageInstance(field);
+      result = DownCastMessage<Message>(
+          GetMessageClassData(field)->default_instance());
     }
     return *result;
   }
@@ -2651,16 +2657,16 @@ Message* Reflection::MutableMessage(Message* message,
       if (!HasOneofField(*message, field)) {
         ClearOneof(message, field->containing_oneof());
         result_holder = MutableField<Message*>(message, field);
-        const Message* default_message = GetDefaultMessageInstance(field);
-        *result_holder = default_message->New(arena);
+        *result_holder =
+            DownCastMessage<Message>(GetMessageClassData(field)->New(arena));
       }
     } else {
       SetHasBit(message, field);
     }
 
     if (*result_holder == nullptr) {
-      const Message* default_message = GetDefaultMessageInstance(field);
-      *result_holder = default_message->New(arena);
+      *result_holder =
+          DownCastMessage<Message>(GetMessageClassData(field)->New(arena));
     }
     result = *result_holder;
     return result;
@@ -3757,8 +3763,10 @@ void Reflection::PopulateTcParseFieldAux(
       case internal::TailCallTableInfo::kSplitSizeof:
         field_aux++->offset = schema_.SizeofSplit();
         break;
-      case internal::TailCallTableInfo::kSubTable:
-      case internal::TailCallTableInfo::kSubMessageGlobalsWeak:
+      case internal::TailCallTableInfo::kClassData:
+        field_aux++->class_data_p = GetMessageClassData(aux_entry.field);
+        break;
+      case internal::TailCallTableInfo::kClassDataWeak:
       case internal::TailCallTableInfo::kMessageVerifyFunc:
       case internal::TailCallTableInfo::kSelfVerifyFunc:
         ABSL_LOG(FATAL) << "Not supported";
@@ -3770,11 +3778,6 @@ void Reflection::PopulateTcParseFieldAux(
         // values. TcParser does not support them yet, so mark the field as
         // unsupported to fallback to reflection.
         field_aux++->map_info = internal::MapAuxInfo{};
-        break;
-      case internal::TailCallTableInfo::kSubMessageGlobals:
-        field_aux++->message_globals_p =
-            MessageGlobalsBase::FromDefaultInstance(
-                GetDefaultMessageInstance(aux_entry.field));
         break;
       case internal::TailCallTableInfo::kEnumRange:
         field_aux++->enum_range = {aux_entry.enum_range.first,
@@ -3863,7 +3866,8 @@ const internal::TcParseTableBase* Reflection::CreateTcParseTable() const {
           schema_.HasHasbits()
               ? schema_.HasBitsOffset()
               // Just put something safe here. _cached_size_ is fine.
-              : schema_.default_instance()->GetClassData()->cached_size_offset),
+              : internal::GetClassData(*schema_.default_instance())
+                    ->cached_size_offset),
       schema_.HasExtensionSet()
           ? static_cast<uint16_t>(schema_.GetExtensionSetOffset())
           : uint16_t{0},
@@ -3875,7 +3879,7 @@ const internal::TcParseTableBase* Reflection::CreateTcParseTable() const {
       static_cast<uint16_t>(fields.size()),
       static_cast<uint16_t>(table_info.aux_entries.size()),
       aux_offset,
-      schema_.default_instance()->GetClassData(),
+      internal::GetClassData(*schema_.default_instance()),
       nullptr,
       GetFastParseFunction(table_info.fallback_function)
 #ifdef PROTOBUF_PREFETCH_PARSE_TABLE
@@ -3936,7 +3940,7 @@ class AssignDescriptorsHelper {
     if (message_globals_data_[0] != nullptr) {
       auto* default_instance =
           MessageGlobalsBase::ToDefaultInstance(message_globals_data_[0]);
-      auto& class_data = default_instance->GetClassData()->full();
+      auto& class_data = internal::GetClassData(*default_instance)->full();
       // If there is no descriptor_table in the class data, then it is not
       // interested in receiving reflection information either.
       if (class_data.descriptor_table() != nullptr) {

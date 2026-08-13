@@ -6,13 +6,18 @@ load("//build_defs:cpp_opts.bzl", "COPTS")
 
 cc_library(
     name = "fg",
+    srcs = ["field_generator.cc"],
     hdrs = ["field_generator.h"],
     copts = COPTS,
     strip_include_prefix = "/src",
     visibility = ["//src/google/protobuf/compiler/kotlin:__subpackages__"],
     deps = [
+        "//src/google/protobuf/compiler/java:context",
         "//src/google/protobuf/compiler/java:generator_common",
+        "//src/google/protobuf/compiler/java:helpers",
         "//src/google/protobuf/io:printer",
+        "@abseil-cpp//absl/container:flat_hash_map",
+        "@abseil-cpp//absl/strings",
     ],
 )
 

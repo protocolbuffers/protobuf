@@ -14,6 +14,7 @@
 #include "absl/strings/str_join.h"
 #include "google/protobuf/unittest.upbdefs.h"
 #include "upb/base/status.hpp"
+#include "upb/mem/alloc.h"
 #include "upb/mem/arena.hpp"
 #include "upb/reflection/def.h"
 #include "upb/reflection/def.hpp"
@@ -68,6 +69,50 @@ TEST(ReflectionTest, OpenEnumWithNonZeroDefault) {
                             .status();
   EXPECT_EQ(std::string_view(status.message()),
             "for open enums, the first value must be zero (BadEnum)");
+}
+
+TEST(ReflectionTest, FailedAddFileDoesNotRetainExtensions) {
+  // Add a valid message with one available extension number.
+  google::protobuf::FileDescriptorProto base;
+  base.set_name("base.proto");
+  base.set_package("base");
+  base.set_syntax("proto2");
+  auto* target = base.add_message_type();
+  target->set_name("Target");
+  auto* range = target->add_extension_range();
+  range->set_start(100);
+  range->set_end(101);
+
+  // This file is rejected because both extensions use that number.
+  google::protobuf::FileDescriptorProto duplicate;
+  duplicate.set_name("duplicate.proto");
+  duplicate.set_package("duplicate");
+  duplicate.set_syntax("proto2");
+  duplicate.add_dependency("base.proto");
+  for (const char* name : {"first", "second"}) {
+    auto* extension = duplicate.add_extension();
+    extension->set_name(name);
+    extension->set_extendee(".base.Target");
+    extension->set_number(100);
+    extension->set_label(google::protobuf::FieldDescriptorProto::LABEL_OPTIONAL);
+    extension->set_type(google::protobuf::FieldDescriptorProto::TYPE_INT32);
+  }
+
+  upb::Arena arena;
+  upb::DefPool pool;
+  upb::Status status;
+  ASSERT_TRUE(pool.AddFile(ToUpbDescriptorSet(base, arena), &status));
+  status.Clear();
+  EXPECT_FALSE(pool.AddFile(ToUpbDescriptorSet(duplicate, arena), &status));
+
+  upb::MessageDefPtr message = pool.FindMessageByName("base.Target");
+  ASSERT_TRUE(message);
+  // A failed addition must not leave extensions in the pool.
+  size_t count;
+  const upb_FieldDef** extensions =
+      upb_DefPool_GetAllExtensions(pool.ptr(), message.ptr(), &count);
+  EXPECT_EQ(count, 0);
+  upb_gfree(extensions);
 }
 
 TEST(ReflectionTest, EnumDefault) {
@@ -341,52 +386,170 @@ TEST(ReflectionTest, NegativePublicDependencyIndex) {
   // Verify that a negative public_dependency index is rejected rather than
   // causing an out-of-bounds read when the index is later used to access the
   // deps array.
-  absl::Status status =
-      LoadDescriptorProto(
-          R"pb(
-            name: "test.proto"
-            public_dependency: -1
-          )pb")
-          .status();
+  absl::Status status = LoadDescriptorProto(
+                            R"pb(
+                              name: "test.proto" public_dependency: -1
+                            )pb")
+                            .status();
   EXPECT_FALSE(status.ok());
   EXPECT_THAT(std::string(status.message()), HasSubstr("out of range"));
 }
 
 TEST(ReflectionTest, NegativeWeakDependencyIndex) {
-  absl::Status status =
-      LoadDescriptorProto(
-          R"pb(
-            name: "test.proto"
-            weak_dependency: -1
-          )pb")
-          .status();
+  absl::Status status = LoadDescriptorProto(
+                            R"pb(
+                              name: "test.proto" weak_dependency: -1
+                            )pb")
+                            .status();
   EXPECT_FALSE(status.ok());
   EXPECT_THAT(std::string(status.message()), HasSubstr("out of range"));
 }
 
 TEST(ReflectionTest, ZeroPublicDependencyIndexWithNoDeps) {
   // Index 0 is out of range when there are no dependencies (dep_count=0).
-  absl::Status status =
-      LoadDescriptorProto(
-          R"pb(
-            name: "test.proto"
-            public_dependency: 0
-          )pb")
-          .status();
+  absl::Status status = LoadDescriptorProto(
+                            R"pb(
+                              name: "test.proto" public_dependency: 0
+                            )pb")
+                            .status();
   EXPECT_FALSE(status.ok());
   EXPECT_THAT(std::string(status.message()), HasSubstr("out of range"));
 }
 
 TEST(ReflectionTest, ZeroWeakDependencyIndexWithNoDeps) {
-  absl::Status status =
-      LoadDescriptorProto(
-          R"pb(
-            name: "test.proto"
-            weak_dependency: 0
-          )pb")
-          .status();
+  absl::Status status = LoadDescriptorProto(
+                            R"pb(
+                              name: "test.proto" weak_dependency: 0
+                            )pb")
+                            .status();
   EXPECT_FALSE(status.ok());
   EXPECT_THAT(std::string(status.message()), HasSubstr("out of range"));
+}
+
+// Sets (pb.enumvalue.json).string option (extension field 998) on
+// EnumValueOptions.
+static void SetCustomJsonOption(google::protobuf::EnumValueOptions* options,
+                                absl::string_view json_name) {
+  // Wire format for JsonEnumValueOptions { string string = 1 }:
+  // Field 1 (string, length-delimited): tag = (1 << 3) | 2 = 0x0a.
+  std::string payload;
+  payload.push_back('\x0a');
+  payload.push_back(static_cast<char>(json_name.size()));
+  payload.append(json_name);
+  // Field 998 is extension (pb.enumvalue.json) on EnumValueOptions.
+  options->mutable_unknown_fields()->AddLengthDelimited(998, payload);
+}
+
+struct TestEnumValueSpec {
+  std::string name;
+  int number;
+  std::string json_name;
+};
+
+static absl::StatusOr<upb::DefPool> LoadEnumDescriptorWithValues(
+    absl::Span<const TestEnumValueSpec> values) {
+  google::protobuf::FileDescriptorProto file_proto;
+  file_proto.set_name("test.proto");
+  file_proto.set_syntax("editions");
+  file_proto.set_edition(google::protobuf::EDITION_2026);
+
+  google::protobuf::EnumDescriptorProto* enum_proto = file_proto.add_enum_type();
+  enum_proto->set_name("TestEnum");
+
+  for (const TestEnumValueSpec& v : values) {
+    google::protobuf::EnumValueDescriptorProto* val_proto = enum_proto->add_value();
+    val_proto->set_name(v.name);
+    val_proto->set_number(v.number);
+    if (!v.json_name.empty()) {
+      SetCustomJsonOption(val_proto->mutable_options(), v.json_name);
+    }
+  }
+
+  google::protobuf::FileDescriptorSet set;
+  *set.add_file() = file_proto;
+  return LoadDescriptorSetFromProto(set);
+}
+
+TEST(ReflectionTest, EnumCustomJsonNameConflictDifferentNumberFails) {
+  // Two enum values with DIFFERENT numbers (1 and 2) sharing the same custom
+  // JSON name must fail descriptor validation.
+  absl::Status status =
+      LoadEnumDescriptorWithValues({
+                                       {"VAL_ZERO", 0, ""},
+                                       {"VAL_A", 1, "custom_name"},
+                                       {"VAL_B", 2, "custom_name"},
+                                   })
+          .status();
+  EXPECT_FALSE(status.ok());
+  EXPECT_THAT(std::string(status.message()),
+              HasSubstr("duplicate custom json_name (custom_name) in enum"));
+}
+
+TEST(ReflectionTest, EnumCustomJsonNameAliasedSameNumberSucceeds) {
+  // Two aliased enum values with the SAME number (1 and 1) sharing the same
+  // custom JSON name must succeed descriptor validation.
+  absl::Status status =
+      LoadEnumDescriptorWithValues({
+                                       {"VAL_ZERO", 0, ""},
+                                       {"VAL_A", 1, "custom_name"},
+                                       {"VAL_B", 1, "custom_name"},
+                                   })
+          .status();
+  EXPECT_TRUE(status.ok()) << status.message();
+}
+
+TEST(ReflectionTest, DefPoolFindMethodsRespectSize) {
+  upb::DefPool pool = LoadDescriptorProto(R"pb(
+                        syntax: "proto2"
+                        name: "test.proto"
+                        package: "pkg"
+                        message_type {
+                          name: "TestMessage"
+                          extension_range { start: 1 end: 1000 }
+                        }
+                        enum_type {
+                          name: "TestEnum"
+                          value { name: "VAL" number: 1 }
+                        }
+                        extension {
+                          name: "test_ext"
+                          number: 100
+                          label: LABEL_OPTIONAL
+                          type: TYPE_INT32
+                          extendee: ".pkg.TestMessage"
+                        }
+                      )pb")
+                          .value();
+
+  // Test FindMessageByName
+  {
+    absl::string_view full_name = "pkg.TestMessage";
+    EXPECT_TRUE(pool.FindMessageByName(full_name));
+    EXPECT_FALSE(
+        pool.FindMessageByName(full_name.substr(0, 12)));  // "pkg.TestMess"
+  }
+
+  // Test FindEnumByName
+  {
+    absl::string_view full_name = "pkg.TestEnum";
+    EXPECT_TRUE(pool.FindEnumByName(full_name));
+    EXPECT_FALSE(pool.FindEnumByName(full_name.substr(0, 10)));  // "pkg.TestEn"
+  }
+
+  // Test FindFileByName
+  {
+    absl::string_view full_name = "test.proto";
+    EXPECT_TRUE(pool.FindFileByName(full_name));
+    EXPECT_FALSE(pool.FindFileByName(full_name.substr(0, 7)));  // "test.pr"
+  }
+
+  // Test FindExtensionByName
+  {
+    absl::string_view full_name = "pkg.test_ext";
+    EXPECT_TRUE(pool.FindExtensionByName(full_name));
+    EXPECT_FALSE(
+        pool.FindExtensionByName(full_name.substr(0, 11)));  // "pkg.test_ex"
+  }
 }
 
 }  // namespace

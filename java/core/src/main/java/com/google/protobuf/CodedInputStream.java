@@ -115,30 +115,10 @@ public abstract class CodedInputStream {
     NEW_TAGS_LENGTHS_UNSIGNED_ONLY
   }
 
-  @SuppressWarnings("NonFinalStaticField")
-  private static VarintExperiment varintExperiment = VarintExperiment.NEW_ALL_CASES;
-
-  /** Method to enable new varint experiment. Only for Search to use for evaluation. */
-  static void setVarintExperiment(VarintExperiment experiment) {
-    varintExperiment = experiment;
-  }
-
   /** Create a new CodedInputStream wrapping the given byte array slice. */
   static CodedInputStream newInstance(
       final byte[] buf, final int off, final int len, final boolean bufferIsImmutable) {
-    final ArrayDecoder result;
-    switch (varintExperiment) {
-      case NEW_ALL_CASES:
-        result = new ArrayDecoderNewVarintAllCases(buf, off, len, bufferIsImmutable);
-        break;
-      case NEW_TAGS_LENGTHS_UNSIGNED_ONLY:
-        result = new ArrayDecoderNewVarintTagsLengthsOnly(buf, off, len, bufferIsImmutable);
-        break;
-      case CONTROL:
-      default:
-        result = new ArrayDecoderOldVarint(buf, off, len, bufferIsImmutable);
-        break;
-    }
+    final ArrayDecoder result = new ArrayDecoder(buf, off, len, bufferIsImmutable);
 
     try {
       // Some uses of CodedInputStream can be more efficient if they know
@@ -538,6 +518,17 @@ public abstract class CodedInputStream {
   }
 
   /**
+   * Returns the remaining recursion depth for the current input stream, taking into account the
+   * current message and group depths.
+   *
+   * <p>This method is intended for internal use only, and is currently only used for message set
+   * parsing.
+   */
+  final int getRemainingRecursionDepth() {
+    return recursionLimit - messageDepth - groupDepth;
+  }
+
+  /**
    * Only valid for {@link InputStream}-backed streams.
    *
    * <p>Set the maximum message size. In order to prevent malicious messages from exhausting memory
@@ -613,12 +604,29 @@ public abstract class CodedInputStream {
   @CanIgnoreReturnValue
   public abstract int pushLimit(int byteLimit) throws InvalidProtocolBufferException;
 
+  final int pushLimitBeforeMessage() throws IOException {
+    final int length = readRawVarint32();
+    checkRecursionLimit();
+    final int oldLimit = pushLimit(length);
+    ++messageDepth;
+    return oldLimit;
+  }
+
   /**
    * Discards the current limit, returning to the previous limit.
    *
    * @param oldLimit The old limit, as returned by {@code pushLimit}.
    */
   public abstract void popLimit(final int oldLimit);
+
+  final void popLimitAfterMessage(int oldLimit) throws IOException {
+    checkLastTagWas(0);
+    --messageDepth;
+    if (getBytesUntilLimit() != 0) {
+      throw InvalidProtocolBufferException.truncatedMessage();
+    }
+    popLimit(oldLimit);
+  }
 
   /**
    * Returns the number of bytes to be read before the current limit. If no limit is set, returns
@@ -770,59 +778,8 @@ public abstract class CodedInputStream {
     return readRawVarint32(firstByte, input);
   }
 
-  private static final class ArrayDecoderNewVarintAllCases extends ArrayDecoder {
-    private ArrayDecoderNewVarintAllCases(
-        final byte[] buffer, final int offset, final int len, boolean immutable) {
-      super(buffer, offset, len, immutable);
-    }
-
-    @Override
-    protected int readRawVarint32Expected5BytesMax() throws IOException {
-      return super.readRawVarint32New();
-    }
-
-    @Override
-    protected int readRawVarint32Expected10BytesMax() throws IOException {
-      return super.readRawVarint32New();
-    }
-  }
-
-  private static final class ArrayDecoderNewVarintTagsLengthsOnly extends ArrayDecoder {
-    private ArrayDecoderNewVarintTagsLengthsOnly(
-        final byte[] buffer, final int offset, final int len, boolean immutable) {
-      super(buffer, offset, len, immutable);
-    }
-
-    @Override
-    protected int readRawVarint32Expected5BytesMax() throws IOException {
-      return super.readRawVarint32New();
-    }
-
-    @Override
-    protected int readRawVarint32Expected10BytesMax() throws IOException {
-      return super.readRawVarint32Old();
-    }
-  }
-
-  private static final class ArrayDecoderOldVarint extends ArrayDecoder {
-    private ArrayDecoderOldVarint(
-        final byte[] buffer, final int offset, final int len, boolean immutable) {
-      super(buffer, offset, len, immutable);
-    }
-
-    @Override
-    protected int readRawVarint32Expected5BytesMax() throws IOException {
-      return super.readRawVarint32Old();
-    }
-
-    @Override
-    protected int readRawVarint32Expected10BytesMax() throws IOException {
-      return super.readRawVarint32Old();
-    }
-  }
-
   /** A {@link CodedInputStream} implementation that uses a backing array as the input. */
-  private abstract static class ArrayDecoder extends CodedInputStream {
+  private static final class ArrayDecoder extends CodedInputStream {
     private final byte[] buffer;
 
     /**
@@ -871,7 +828,7 @@ public abstract class CodedInputStream {
         return 0;
       }
 
-      lastTag = readRawVarint32Expected5BytesMax();
+      lastTag = readRawVarint32();
       if (WireFormat.getTagFieldNumber(lastTag) == 0) {
         // If we actually read zero (or any tag number corresponding to field
         // number zero), that's not a valid tag.
@@ -902,7 +859,7 @@ public abstract class CodedInputStream {
           skipRawBytes(FIXED64_SIZE);
           return true;
         case WireFormat.WIRETYPE_LENGTH_DELIMITED:
-          skipRawBytes(readRawVarint32Expected5BytesMax());
+          skipRawBytes(readRawVarint32());
           return true;
         case WireFormat.WIRETYPE_START_GROUP:
           skipMessage();
@@ -996,7 +953,7 @@ public abstract class CodedInputStream {
 
     @Override
     public int readInt32() throws IOException {
-      return readRawVarint32Expected10BytesMax();
+      return readRawVarint32();
     }
 
     @Override
@@ -1016,7 +973,7 @@ public abstract class CodedInputStream {
 
     @Override
     public String readString() throws IOException {
-      final int size = readRawVarint32Expected5BytesMax();
+      final int size = readRawVarint32();
       if (size > 0 && size <= (limit - pos)) {
         // Fast path:  We already have the bytes in a contiguous buffer, so
         //   just copy directly from it.
@@ -1036,7 +993,7 @@ public abstract class CodedInputStream {
 
     @Override
     public String readStringRequireUtf8() throws IOException {
-      final int size = readRawVarint32Expected5BytesMax();
+      final int size = readRawVarint32();
       if (size > 0 && size <= (limit - pos)) {
         String result = Utf8.decodeUtf8(buffer, pos, size);
         pos += size;
@@ -1104,25 +1061,8 @@ public abstract class CodedInputStream {
       return result;
     }
 
-    private int pushLimitBeforeMessage() throws IOException {
-      final int length = readRawVarint32Expected5BytesMax();
-      checkRecursionLimit();
-      final int oldLimit = pushLimit(length);
-      ++messageDepth;
-      return oldLimit;
-    }
-
-    private void popLimitAfterMessage(int oldLimit) throws IOException {
-      checkLastTagWas(0);
-      --messageDepth;
-      if (getBytesUntilLimit() != 0) {
-        throw InvalidProtocolBufferException.truncatedMessage();
-      }
-      popLimit(oldLimit);
-    }
-
     private ByteString readBytesInternal(boolean requireUtf8) throws IOException {
-      final int size = readRawVarint32Expected5BytesMax();
+      final int size = readRawVarint32();
       if (size > 0 && size <= (limit - pos)) {
         // Fast path:  We already have the bytes in a contiguous buffer, so
         //   just copy directly from it.
@@ -1147,13 +1087,13 @@ public abstract class CodedInputStream {
 
     @Override
     public byte[] readByteArray() throws IOException {
-      final int size = readRawVarint32Expected5BytesMax();
+      final int size = readRawVarint32();
       return readRawBytes(size);
     }
 
     @Override
     public ByteBuffer readByteBuffer() throws IOException {
-      final int size = readRawVarint32Expected5BytesMax();
+      final int size = readRawVarint32();
       if (size > 0 && size <= (limit - pos)) {
         // Fast path: We already have the bytes in a contiguous buffer.
         // When aliasing is enabled, we can return a ByteBuffer pointing directly
@@ -1180,12 +1120,12 @@ public abstract class CodedInputStream {
 
     @Override
     public int readUInt32() throws IOException {
-      return readRawVarint32Expected5BytesMax();
+      return readRawVarint32();
     }
 
     @Override
     public int readEnum() throws IOException {
-      return readRawVarint32Expected10BytesMax();
+      return readRawVarint32();
     }
 
     @Override
@@ -1200,7 +1140,7 @@ public abstract class CodedInputStream {
 
     @Override
     public int readSInt32() throws IOException {
-      return decodeZigZag32(readRawVarint32Expected5BytesMax());
+      return decodeZigZag32(readRawVarint32());
     }
 
     @Override
@@ -1210,74 +1150,10 @@ public abstract class CodedInputStream {
 
     // =================================================================
 
-    /**
-     * Temporary shim to enable new varint experiment.
-     *
-     * <p>Same as readRawVarint32 but for callers where the varint being longer than 5 bytes should
-     * never happen in practice (eg tags and lengths).
-     */
-    @SuppressWarnings("EffectivelyPrivate") // Overridden by sibling classes above.
-    protected abstract int readRawVarint32Expected5BytesMax() throws IOException;
-
-    /**
-     * Temporary shim to enable new varint experiment.
-     *
-     * <p>Same as readRawVarint32 but for callers where a 10-byte varint is 'normal' (eg int32
-     * fields where negative values will be 10 bytes).
-     */
-    @SuppressWarnings("EffectivelyPrivate") // Overridden by sibling classes above.
-    protected abstract int readRawVarint32Expected10BytesMax() throws IOException;
-
     @Override
     public int readRawVarint32() throws IOException {
-      return readRawVarint32Expected10BytesMax();
-    }
-
-    protected int readRawVarint32Old() throws IOException {
-      // See implementation notes for readRawVarint64
-      fastpath:
-      {
-        int tempPos = pos;
-
-        if (limit == tempPos) {
-          break fastpath;
-        }
-
-        final byte[] buffer = this.buffer;
-        int x;
-        if ((x = buffer[tempPos++]) >= 0) {
-          pos = tempPos;
-          return x;
-        } else if (limit - tempPos < 9) {
-          break fastpath;
-        } else if ((x ^= (buffer[tempPos++] << 7)) < 0) {
-          x ^= (~0 << 7);
-        } else if ((x ^= (buffer[tempPos++] << 14)) >= 0) {
-          x ^= (~0 << 7) ^ (~0 << 14);
-        } else if ((x ^= (buffer[tempPos++] << 21)) < 0) {
-          x ^= (~0 << 7) ^ (~0 << 14) ^ (~0 << 21);
-        } else {
-          int y = buffer[tempPos++];
-          x ^= y << 28;
-          x ^= (~0 << 7) ^ (~0 << 14) ^ (~0 << 21) ^ (~0 << 28);
-          if (y < 0
-              && buffer[tempPos++] < 0
-              && buffer[tempPos++] < 0
-              && buffer[tempPos++] < 0
-              && buffer[tempPos++] < 0
-              && buffer[tempPos++] < 0) {
-            break fastpath; // Will throw malformedVarint()
-          }
-        }
-        pos = tempPos;
-        return x;
-      }
-      return (int) readRawVarint64SlowPath();
-    }
-
-    protected int readRawVarint32New() throws IOException {
       try {
-        int x = readRawVarint32NewFast();
+        int x = readRawVarint32Fast();
         if (pos > limit) {
           throw InvalidProtocolBufferException.truncatedMessage();
         }
@@ -1298,7 +1174,7 @@ public abstract class CodedInputStream {
      * Fast case: the limit is not checked here, this may read in the buffer past the limit, and may
      * throw an IndexOutOfBoundsException if the varint runs off the end of the buffer.
      */
-    private int readRawVarint32NewFast() throws IOException {
+    private int readRawVarint32Fast() throws IOException {
       int tempPos = pos;
 
       final byte[] buffer = this.buffer;
@@ -1413,7 +1289,7 @@ public abstract class CodedInputStream {
                   ^ (~0L << 42)
                   ^ (~0L << 49)
                   ^ (~0L << 56);
-        } else if ((x ^= ((long) buffer[tempPos++] << 63)) >= 0L) {
+        } else if ((x ^= ((long) buffer[tempPos] << 63)) >= 0L && buffer[tempPos++] >= 0) {
           x ^=
               (~0L << 7)
                   ^ (~0L << 14)
@@ -1965,23 +1841,6 @@ public abstract class CodedInputStream {
       return result;
     }
 
-    private int pushLimitBeforeMessage() throws IOException {
-      final int length = readRawVarint32();
-      checkRecursionLimit();
-      final int oldLimit = pushLimit(length);
-      ++messageDepth;
-      return oldLimit;
-    }
-
-    private void popLimitAfterMessage(int oldLimit) throws IOException {
-      checkLastTagWas(0);
-      --messageDepth;
-      if (getBytesUntilLimit() != 0) {
-        throw InvalidProtocolBufferException.truncatedMessage();
-      }
-      popLimit(oldLimit);
-    }
-
     private ByteString readBytesInternal(boolean requireUtf8) throws IOException {
       final int size = readRawVarint32();
       if (size <= (bufferSize - pos) && size > 0) {
@@ -2206,7 +2065,7 @@ public abstract class CodedInputStream {
                   ^ (~0L << 42)
                   ^ (~0L << 49)
                   ^ (~0L << 56);
-        } else if ((x ^= ((long) buffer[tempPos++] << 63)) >= 0L) {
+        } else if ((x ^= ((long) buffer[tempPos] << 63)) >= 0L && buffer[tempPos++] >= 0) {
           x ^=
               (~0L << 7)
                   ^ (~0L << 14)

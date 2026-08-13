@@ -29,6 +29,7 @@
 #include "absl/strings/string_view.h"
 #include "absl/types/span.h"
 #include "google/protobuf/arena.h"
+#include "google/protobuf/class_data.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/extension_set.h"
@@ -39,6 +40,7 @@
 #include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/message.h"
 #include "google/protobuf/message_lite.h"
+#include "google/protobuf/message_traits.h"
 #include "google/protobuf/parse_context.h"
 #include "google/protobuf/port.h"
 #include "google/protobuf/repeated_field.h"
@@ -369,8 +371,9 @@ int ExtensionSet::SpaceUsedExcludingSelf() const {
 }
 
 size_t ExtensionSet::SpaceUsedExcludingSelfLong() const {
-  size_t total_size =
-      (is_large() ? map_.large->size() : flat_capacity_) * sizeof(KeyValue);
+  size_t total_size = is_large() ? map_.large->large.size() * sizeof(FlatItem) +
+                                       sizeof(LargeRep)
+                                 : flat_capacity() * sizeof(FlatItem);
   ForEach(
       [&total_size](int /* number */, const Extension& ext) {
         total_size += ext.SpaceUsedExcludingSelfLong();

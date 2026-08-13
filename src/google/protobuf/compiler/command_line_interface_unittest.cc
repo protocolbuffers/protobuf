@@ -1862,7 +1862,8 @@ TEST_F(CommandLineInterfaceTest, ImportOptions_MissingImport) {
 
   Run("protocol_compiler --proto_path=$tmpdir --test_out=$tmpdir foo.proto "
       "--experimental_editions");
-  ExpectErrorSubstring("options.proto: File not found");
+  ExpectErrorSubstring(
+      "foo.proto:3:21: Import \"options.proto\" was not found or had errors.");
 }
 
 TEST_F(CommandLineInterfaceTest, ValidateFeatureSupportError) {
@@ -3680,14 +3681,66 @@ TEST_F(CommandLineInterfaceTest, ImportOption_DescriptorSetIn_MissingImport) {
       "--descriptor_set_out=$tmpdir/descriptor_set "
       "--descriptor_set_in=$tmpdir/foo.bin foo.proto");
 
-  ExpectErrorSubstring("bar.proto: File not found");
-  ExpectErrorSubstring(
-      "google/protobuf/cpp_features.proto: File not found");
   ExpectErrorSubstring(
       "foo.proto:3:7: Import \"bar.proto\" was not found or had errors");
   ExpectErrorSubstring(
       "foo.proto:4:7: Import \"google/protobuf/cpp_features.proto\" was "
       "not found or had errors");
+}
+
+TEST_F(CommandLineInterfaceTest,
+       ImportOption_DescriptorSetInAndProtoPath_MissingOptionDependency) {
+  FileDescriptorSet file_descriptor_set;
+
+  FileDescriptorProto::descriptor()->file()->CopyTo(
+      file_descriptor_set.add_file());
+  FileDescriptorProto* file = file_descriptor_set.add_file();
+  file->set_syntax("editions");
+  file->set_edition(Edition::EDITION_2024);
+  file->add_dependency(file_descriptor_set.file(0).name());
+  file->add_option_dependency(pb::CppFeatures::descriptor()->file()->name());
+  file->set_name("foo.proto");
+  DescriptorProto* message = file->add_message_type();
+  message->set_name("Foo");
+  FieldDescriptorProto* field = message->add_extension();
+  field->set_type(FieldDescriptorProto::TYPE_STRING);
+  field->set_name("ext");
+  field->set_number(1234567);
+  field->set_extendee(".google.protobuf.FileOptions");
+  field->mutable_options()
+      ->mutable_features()
+      ->MutableExtension(pb::cpp)
+      ->set_string_type(pb::CppFeatures::VIEW);
+
+  CreateTempFile("bar.proto",
+                 R"schema(
+      edition = "2024";
+      import option "foo.proto";
+      option (Foo.ext) = "hello";
+    )schema");
+
+  WriteDescriptorSet("foo.bin", &file_descriptor_set);
+  Run("protocol_compiler --test_out=$tmpdir --proto_path=$tmpdir "
+      "--descriptor_set_out=$tmpdir/descriptor_set "
+      "--descriptor_set_in=$tmpdir/foo.bin bar.proto");
+
+  ExpectNoErrors();
+
+  FileDescriptorSet descriptor_set;
+  ReadDescriptorSet("descriptor_set", &descriptor_set);
+  ASSERT_FALSE(HasFatalFailure());
+  ASSERT_EQ(descriptor_set.file_size(), 1);
+  EXPECT_EQ(descriptor_set.file(0).name(), "bar.proto");
+  ASSERT_EQ(descriptor_set.file(0).options().unknown_fields().field_count(), 1);
+  // Descriptor set should have custom options set.
+  EXPECT_EQ(descriptor_set.file(0)
+                .options()
+                .unknown_fields()
+                .field(0)
+                .length_delimited(),
+            "hello");
+  EXPECT_EQ(descriptor_set.file(0).options().unknown_fields().field(0).number(),
+            1234567);
 }
 
 TEST_F(CommandLineInterfaceTest, WriteDescriptorSetWithDuplicates) {
@@ -3857,9 +3910,9 @@ TEST_F(CommandLineInterfaceTest, WriteTransitiveOptionImportDescriptorSet) {
     std::swap(descriptor_set.mutable_file()->mutable_data()[0],
               descriptor_set.mutable_file()->mutable_data()[1]);
   }
-  EXPECT_EQ("foo.proto", descriptor_set.file(0).name());
-  EXPECT_EQ("google/protobuf/descriptor.proto", descriptor_set.file(1).name());
-  EXPECT_EQ("custom_option.proto", descriptor_set.file(2).name());
+  EXPECT_EQ("google/protobuf/descriptor.proto", descriptor_set.file(0).name());
+  EXPECT_EQ("custom_option.proto", descriptor_set.file(1).name());
+  EXPECT_EQ("foo.proto", descriptor_set.file(2).name());
   EXPECT_EQ("bar.proto", descriptor_set.file(3).name());
 }
 
@@ -4409,6 +4462,15 @@ TEST_F(CommandLineInterfaceTest, MissingInputError) {
       "--proto_path=$tmpdir");
 
   ExpectErrorText("Missing input file.\n");
+}
+
+TEST_F(CommandLineInterfaceTest, MissingInputFileError) {
+  // Test that we get an error if no inputs are found.
+
+  Run("protocol_compiler --test_out=$tmpdir "
+      "--proto_path=$tmpdir foo.proto");
+
+  ExpectErrorSubstring("foo.proto: No such file or directory");
 }
 
 TEST_F(CommandLineInterfaceTest, MissingOutputError) {

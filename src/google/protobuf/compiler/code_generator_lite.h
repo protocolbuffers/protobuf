@@ -63,9 +63,6 @@ namespace internal {
 
 PROTOC_EXPORT bool IsOss();
 
-#ifndef PROTO2_OPENSOURCE
-void SetIsOss(bool new_is_oss);
-#endif
 
 }  // namespace internal
 

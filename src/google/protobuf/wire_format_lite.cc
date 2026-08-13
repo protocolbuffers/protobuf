@@ -618,8 +618,8 @@ static size_t VarintSize(const T* data, const int n) {
   // remainder. This is done manually here so that the faster scalar
   // implementation is used for small inputs and for the epilogue.
   int vectorN = n & -32;
-  uint32_t sum = vectorN;
-  uint32_t msb_sum = 0;
+  size_t sum = vectorN;
+  size_t msb_sum = 0;
   int i = 0;
   for (; i < vectorN; i++) {
     uint32_t x = data[i];

@@ -188,8 +188,7 @@ void MessageBuilderGenerator::Generate(io::Printer* printer) {
   // Integers for bit fields.
   int totalBits = 0;
   for (int i = 0; i < descriptor_->field_count(); i++) {
-    totalBits +=
-        field_generators_.get(descriptor_->field(i)).GetNumBitsForBuilder();
+    totalBits += field_generators_.get(descriptor_->field(i)).GetNumBits();
   }
   int totalInts = (totalBits + 31) / 32;
   for (int i = 0; i < totalInts; i++) {
@@ -303,6 +302,23 @@ void MessageBuilderGenerator::GenerateDescriptorMethods(io::Printer* printer) {
 
 void MessageBuilderGenerator::GenerateCommonBuilderMethods(
     io::Printer* printer) {
+  GenerateBuilderConstructors(printer);
+  GenerateBuilderClearMethod(printer);
+  GenerateBuilderGetDescriptorForTypeMethod(printer);
+  GenerateBuilderGetDefaultInstanceForTypeMethod(printer);
+  GenerateBuilderBuildMethod(printer);
+  GenerateBuildPartial(printer);
+  GenerateBuilderExtensionMethods(printer);
+
+  // -----------------------------------------------------------------
+
+  if (context_->HasGeneratedMethods(descriptor_)) {
+    GenerateBuilderMergeFromMethods(printer);
+  }
+}
+
+void MessageBuilderGenerator::GenerateBuilderConstructors(
+    io::Printer* printer) {
   // Decide if we really need to have the "maybeForceBuilderInitialization()"
   // method.
   // TODO: Remove the need for this entirely
@@ -359,7 +375,9 @@ void MessageBuilderGenerator::GenerateCommonBuilderMethods(
         "  }\n"
         "}\n");
   }
+}
 
+void MessageBuilderGenerator::GenerateBuilderClearMethod(io::Printer* printer) {
   printer->Print(
       "@java.lang.Override\n"
       "public Builder clear() {\n"
@@ -390,7 +408,10 @@ void MessageBuilderGenerator::GenerateCommonBuilderMethods(
       "  return this;\n"
       "}\n"
       "\n");
+}
 
+void MessageBuilderGenerator::GenerateBuilderGetDescriptorForTypeMethod(
+    io::Printer* printer) {
   printer->Print(
       "@java.lang.Override\n"
       "public com.google.protobuf.Descriptors.Descriptor\n"
@@ -400,7 +421,10 @@ void MessageBuilderGenerator::GenerateCommonBuilderMethods(
       "\n",
       "fileclass", name_resolver_->GetImmutableClassName(descriptor_->file()),
       "identifier", UniqueFileScopeIdentifier(descriptor_));
+}
 
+void MessageBuilderGenerator::GenerateBuilderGetDefaultInstanceForTypeMethod(
+    io::Printer* printer) {
   // LITE runtime implements this in GeneratedMessageLite.
   printer->Print(
       "@java.lang.Override\n"
@@ -409,7 +433,9 @@ void MessageBuilderGenerator::GenerateCommonBuilderMethods(
       "}\n"
       "\n",
       "classname", name_resolver_->GetImmutableClassName(descriptor_));
+}
 
+void MessageBuilderGenerator::GenerateBuilderBuildMethod(io::Printer* printer) {
   printer->Print(
       "@java.lang.Override\n"
       "public $classname$ build() {\n"
@@ -421,9 +447,10 @@ void MessageBuilderGenerator::GenerateCommonBuilderMethods(
       "}\n"
       "\n",
       "classname", name_resolver_->GetImmutableClassName(descriptor_));
+}
 
-  GenerateBuildPartial(printer);
-
+void MessageBuilderGenerator::GenerateBuilderExtensionMethods(
+    io::Printer* printer) {
   // We include these methods only in open source to maintain long term ABI
   // compatibility, and there should be no need to include them in Google3.
   if (google::protobuf::internal::IsOss() && descriptor_->extension_range_count() > 0) {
@@ -452,12 +479,6 @@ void MessageBuilderGenerator::GenerateCommonBuilderMethods(
         "  return super.clearExtension(extension);\n"
         "}\n",
         "classname", name_resolver_->GetImmutableClassName(descriptor_));
-  }
-
-  // -----------------------------------------------------------------
-
-  if (context_->HasGeneratedMethods(descriptor_)) {
-    GenerateBuilderMergeFromMethods(printer);
   }
 }
 
@@ -633,13 +654,14 @@ void MessageBuilderGenerator::GenerateBuildPartial(io::Printer* printer) {
     }
   }
 
-  // One buildPartial#() per from_bit_field
+  // One buildPartial_autosplit_#() per from_bit_field
   int totalBuilderInts = (descriptor_->field_count() + 31) / 32;
   if (totalBuilderInts > 0) {
     for (int i = 0; i < totalBuilderInts; ++i) {
       printer->Print(
-          "if ($bit_field_name$ != 0) { buildPartial$piece$(result); }\n",
-          "bit_field_name", GetBitFieldName(i), "piece", absl::StrCat(i));
+          "if ($bit_field_name$ != 0) { "
+          "buildPartial_autosplit_$shard$(result); }\n",
+          "bit_field_name", GetBitFieldName(i), "shard", absl::StrCat(i));
     }
   }
 
@@ -672,10 +694,10 @@ void MessageBuilderGenerator::GenerateBuildPartial(io::Printer* printer) {
     printer->Print("}\n\n");
   }
 
-  // Build non-oneof fields
+  // Build all fields in shards organized by bitfield membership.
   int start_field = 0;
   for (int i = 0; i < totalBuilderInts; i++) {
-    start_field = GenerateBuildPartialPiece(printer, i, start_field);
+    start_field = GenerateBuildPartialShard(printer, i, start_field);
   }
 
   // Build Oneofs
@@ -703,14 +725,14 @@ void MessageBuilderGenerator::GenerateBuildPartial(io::Printer* printer) {
   }
 }
 
-int MessageBuilderGenerator::GenerateBuildPartialPiece(io::Printer* printer,
-                                                       int piece,
+int MessageBuilderGenerator::GenerateBuildPartialShard(io::Printer* printer,
+                                                       int shard,
                                                        int first_field) {
   printer->Print(
-      "private void buildPartial$piece$($classname$ result) {\n"
+      "private void buildPartial_autosplit_$shard$($classname$ result) {\n"
       "  int from_$bit_field_name$ = $bit_field_name$;\n",
-      "classname", name_resolver_->GetImmutableClassName(descriptor_), "piece",
-      absl::StrCat(piece), "bit_field_name", GetBitFieldName(piece));
+      "classname", name_resolver_->GetImmutableClassName(descriptor_), "shard",
+      absl::StrCat(shard), "bit_field_name", GetBitFieldName(shard));
   printer->Indent();
   absl::btree_set<int> declared_to_bitfields;
 
@@ -719,7 +741,7 @@ int MessageBuilderGenerator::GenerateBuildPartialPiece(io::Printer* printer,
   for (; bit < 32 && next < descriptor_->field_count(); ++next) {
     const ImmutableFieldGenerator& field =
         field_generators_.get(descriptor_->field(next));
-    bit += field.GetNumBitsForBuilder();
+    bit += field.GetNumBits();
 
     // Skip oneof fields that are handled separately
     if (IsRealOneof(descriptor_->field(next))) {
@@ -732,13 +754,13 @@ int MessageBuilderGenerator::GenerateBuildPartialPiece(io::Printer* printer,
       continue;
     }
     // Skip fields without presence bits in the builder
-    if (field.GetNumBitsForBuilder() == 0) {
+    if (field.GetNumBits() == 0) {
       continue;
     }
 
     // Track message bits if necessary
-    if (field.GetNumBitsForMessage() > 0) {
-      int to_bitfield = field.GetMessageBitIndex() / 32;
+    if (field.GetNumBits() > 0) {
+      int to_bitfield = field.GetBitIndex() / 32;
       if (declared_to_bitfields.count(to_bitfield) == 0) {
         printer->Print("int to_$bit_field_name$ = 0;\n", "bit_field_name",
                        GetBitFieldName(to_bitfield));
@@ -861,6 +883,18 @@ void MessageBuilderGenerator::GenerateBuilderPackedFieldParsingCase(
 // ===================================================================
 
 void MessageBuilderGenerator::GenerateIsInitialized(io::Printer* printer) {
+  // If the message transitively has no required fields or extensions,
+  // isInitialized() is always true.
+  if (!HasRequiredFields(descriptor_)) {
+    printer->Print(
+        "@java.lang.Override\n"
+        "public final boolean isInitialized() {\n"
+        "  return true;\n"
+        "}\n"
+        "\n");
+    return;
+  }
+
   printer->Print(
       "@java.lang.Override\n"
       "public final boolean isInitialized() {\n");

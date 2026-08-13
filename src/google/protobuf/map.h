@@ -694,19 +694,15 @@ struct KeyNode : NodeBase {
   decltype(auto) key() const { return ReadKey<Key>(GetVoidKey()); }
 };
 
+// Note: salt has very low entropy from the allocator so rotate to get more
+// random iteration order.
 inline map_index_t Hash(absl::string_view k, void* salt) {
-  // Note: we could potentially also use CRC32-based hashing here.
-  return absl::HashOf(k, salt);
+  const uintptr_t salt_int = reinterpret_cast<uintptr_t>(salt);
+  return absl::HashOf(k, absl::rotr(salt_int, k.size()));
 }
 inline map_index_t Hash(uint64_t k, void* salt) {
-  if constexpr (!HasCrc32()) {
-    return absl::HashOf(k, salt);
-  } else {
-    uintptr_t salt_int = reinterpret_cast<uintptr_t>(salt);
-    // Note: Crc32(salt_int, k) causes the random iteration order test to fail
-    // so we also rotate.
-    return Crc32(salt_int, absl::rotr(k, salt_int & 0x3f));
-  }
+  const uintptr_t salt_int = reinterpret_cast<uintptr_t>(salt);
+  return absl::HashOf(k, absl::rotr(salt_int, k));
 }
 
 // KeyMapBase is a chaining hash map.

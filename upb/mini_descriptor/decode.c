@@ -824,11 +824,15 @@ done:
 
 #if UPB_FASTTABLE
   upb_DecodeFast_TableEntry fasttable[32];
-  int fasttable_size = upb_DecodeFast_BuildTable(&decoder->table, fasttable);
-  mt_size += fasttable_size * sizeof(fasttable[0]);
+  int fasttable_size = 0;
+  if (decoder->platform == kUpb_MiniTablePlatform_64Bit) {
+    fasttable_size = upb_DecodeFast_BuildTable(&decoder->table, fasttable);
+    mt_size += fasttable_size * sizeof(fasttable[0]);
+  }
 #endif
 
   upb_MiniTable* ret = upb_Arena_Malloc(decoder->arena, mt_size);
+  upb_MdDecoder_CheckOutOfMemory(&decoder->base, ret);
   memcpy(ret, &decoder->table, sizeof(*ret));
 
 #if UPB_FASTTABLE

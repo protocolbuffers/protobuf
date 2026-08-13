@@ -85,6 +85,30 @@ cc_library(
 )
 
 cc_library(
+    name = "encode_extension",
+    srcs = ["encode_extension.c"],
+    hdrs = ["encode_extension.h"],
+    copts = UPB_DEFAULT_COPTS,
+    features = UPB_DEFAULT_FEATURES,
+    visibility = [
+        "//pkg:__pkg__",
+        "//python:__pkg__",
+        "//upb:__pkg__",
+        "//upb/message:__subpackages__",
+        "//video/youtube/utils/elements/client/component_type:__pkg__",
+    ],
+    deps = [
+        ":back_alloc",
+        ":encoder",
+        "//upb/base",
+        "//upb/mem:internal",
+        "//upb/message:internal",
+        "//upb/mini_table",
+        "//upb/port",
+    ],
+)
+
+cc_library(
     name = "wire",
     srcs = [
         "decode.c",
@@ -138,11 +162,15 @@ cc_test(
         "//upb/base",
         "//upb/mem",
         "//upb/message",
+        "//upb/message:internal",
         "//upb/message:message_cc",
+        "//upb/message:message_unknowns",
         "//upb/mini_descriptor",
         "//upb/mini_descriptor:internal",
         "//upb/mini_table",
         "//upb/port",
+        "//upb/test:test_proto_upb_minitable",
+        "//upb/test:test_upb_proto",
         "//upb/wire/decode_fast:combinations",
         "//upb/wire/test_util:field_types",
         "//upb/wire/test_util:make_mini_table",
@@ -179,12 +207,18 @@ upb_proto_library(
     deps = [":encode_test_proto"],
 )
 
+upb_minitable_proto_library(
+    name = "encode_test_upb_minitable_proto",
+    deps = [":encode_test_proto"],
+)
+
 cc_test(
     name = "encode_test",
     srcs = ["encode_test.cc"],
     copts = UPB_DEFAULT_CPPOPTS,
     features = UPB_DEFAULT_FEATURES,
     deps = [
+        ":encode_test_upb_minitable_proto",
         ":encode_test_upb_proto",
         ":encoder",
         ":wire",
@@ -192,6 +226,7 @@ cc_test(
         "//upb/mem",
         "//upb/message",
         "//upb/message:internal",
+        "//upb/message:message_unknowns",
         "//upb/mini_table",
         "//upb/mini_table:internal",
         "//upb/port",

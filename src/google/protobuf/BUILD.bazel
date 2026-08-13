@@ -405,6 +405,24 @@ cc_proto_library(
     deps = [":json_enumvalue_options_proto"],
 )
 
+upb_c_proto_library(
+    name = "json_enumvalue_options_upb_c_proto",
+    visibility = ["//:__subpackages__"],
+    deps = [":json_enumvalue_options_proto"],
+)
+
+upb_minitable_proto_library(
+    name = "json_enumvalue_options_upb_minitable_proto",
+    visibility = ["//:__subpackages__"],
+    deps = [":json_enumvalue_options_proto"],
+)
+
+upb_proto_reflection_library(
+    name = "json_enumvalue_options_upb_reflection_proto",
+    visibility = ["//:__subpackages__"],
+    deps = [":json_enumvalue_options_proto"],
+)
+
 ################################################################################
 # C++ Runtime Library
 ################################################################################
@@ -438,6 +456,7 @@ cc_library(
         "@abseil-cpp//absl/base:core_headers",
         "@abseil-cpp//absl/base:dynamic_annotations",
         "@abseil-cpp//absl/base:prefetch",
+        "@abseil-cpp//absl/cleanup",
         "@abseil-cpp//absl/log:absl_log",
         "@abseil-cpp//absl/numeric:bits",
         "@abseil-cpp//absl/numeric:int128",
@@ -708,6 +727,7 @@ cc_library(
         "inlined_string_field.cc",
         "map.cc",
         "message_lite.cc",
+        "offset_ptr.cc",
         "parse_context.cc",
         "raw_ptr.cc",
         "repeated_field.cc",
@@ -741,6 +761,7 @@ cc_library(
         "map_type_handler.h",
         "message_lite.h",
         "metadata_lite.h",
+        "offset_ptr.h",
         "parse_context.h",
         "raw_ptr.h",
         "repeated_field.h",
@@ -951,6 +972,8 @@ cc_library(
     visibility = ["//visibility:private"],
     deps = [
         ":port",
+        "@abseil-cpp//absl/algorithm:container",
+        "@abseil-cpp//absl/log:absl_check",
         "@abseil-cpp//absl/status",
         "@abseil-cpp//absl/strings",
         "@abseil-cpp//absl/strings:charset",
@@ -963,6 +986,17 @@ cc_test(
     deps = [
         ":naming_style",
         "@abseil-cpp//absl/status:status_matchers",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "offset_ptr_test",
+    srcs = ["offset_ptr_test.cc"],
+    deps = [
+        ":cc_test_protos",
+        ":protobuf_lite",
         "@googletest//:gtest",
         "@googletest//:gtest_main",
     ],
@@ -1206,8 +1240,107 @@ filegroup(
 )
 
 filegroup(
+    name = "json_enumvalue_options_proto_srcs",
+    srcs = ["json_enumvalue_options.proto"],
+    visibility = ["//:__subpackages__"],
+)
+
+filegroup(
     name = "cpp_features_proto_srcs",
     srcs = ["cpp_features.proto"],
+    visibility = ["//:__subpackages__"],
+)
+
+# TODO: Revisit location of aggregate rules
+filegroup(
+    name = "language_neutral_proto_srcs",
+    srcs = [
+        ":json_options_proto_srcs",
+        ":well_known_type_protos",
+    ],
+    visibility = [
+        "//ruby:__pkg__",
+    ],
+)
+
+filegroup(
+    name = "release_all_options_proto_srcs",
+    srcs = [
+        ":cpp_release_options_proto_srcs",
+        ":descriptor_proto_srcs",
+        ":language_neutral_proto_srcs",
+        "//csharp:c_sharp_features_proto_srcs",
+        "//go:go_features_proto_srcs",
+        "//java/core:java_features_proto_srcs",
+    ],
+    visibility = [
+        "//java/core:__pkg__",
+        "//pkg:__pkg__",
+        "//python/dist:__pkg__",
+    ],
+)
+
+proto_library(
+    name = "language_neutral_protos",
+    srcs = [":language_neutral_proto_srcs"],
+    strip_import_prefix = "/src",
+    visibility = [
+        "//python/dist:__pkg__",
+    ],
+    exports = [
+        ":descriptor_proto",
+    ],
+    deps = [
+        ":descriptor_proto",
+    ],
+)
+
+proto_library(
+    name = "release_all_options_protos",
+    srcs = [],
+    strip_import_prefix = "/src",
+    visibility = [
+        "//java/core:__pkg__",
+        "//pkg:__pkg__",
+        "//python/dist:__pkg__",
+    ],
+    exports = [
+        ":cpp_release_options_protos",
+        ":descriptor_proto",
+        ":language_neutral_protos",
+        # TODO: Create //lang:lang_release_options_protos targets for each language and
+        # depend on those instead.
+        "//csharp:c_sharp_features_proto",
+        "//go:go_features_proto",
+        "//java/core:java_features_proto",
+    ],
+    deps = [
+        ":cpp_release_options_protos",
+        ":descriptor_proto",
+        ":language_neutral_protos",
+        # TODO: Create //lang:lang_release_options_protos targets for each language and
+        # depend on those instead.
+        "//csharp:c_sharp_features_proto",
+        "//go:go_features_proto",
+        "//java/core:java_features_proto",
+    ],
+)
+
+filegroup(
+    name = "cpp_release_options_proto_srcs",
+    srcs = glob(["cpp_*options.proto"]) + ["cpp_features.proto"],
+)
+
+proto_library(
+    name = "cpp_release_options_protos",
+    srcs = [":cpp_release_options_proto_srcs"],
+    strip_import_prefix = "/src",
+    deps = [":descriptor_proto"],
+)
+
+filegroup(
+    name = "json_options_proto_srcs",
+    srcs = glob(["json_*options.proto"]),
     visibility = ["//:__subpackages__"],
 )
 
@@ -1557,7 +1690,7 @@ exports_files(
         "//:__pkg__",
         "//python:__pkg__",
         "//ruby:__pkg__",
-        "//upb:__pkg__",
+        "//upb:__subpackages__",
     ],
 )
 
@@ -2083,6 +2216,7 @@ cc_test(
         ":test_util2",
         "//src/google/protobuf/io",
         "//src/google/protobuf/stubs",
+        "//src/google/protobuf/test_protos:test_cc_protos",
         "//src/google/protobuf/testing",
         "//src/google/protobuf/testing:file",
         "//src/google/protobuf/util:differencer",
@@ -2204,6 +2338,7 @@ cc_test(
         ":protobuf",
         ":protobuf_lite",
         "//src/google/protobuf/io",
+        "//src/google/protobuf/test_protos:test_cc_protos",
         "@abseil-cpp//absl/algorithm:container",
         "@abseil-cpp//absl/log:absl_check",
         "@abseil-cpp//absl/log:absl_log",
@@ -2536,6 +2671,7 @@ cc_test(
     }),
     deps = [
         ":cc_test_protos",
+        ":port",
         ":protobuf",
         ":protobuf_lite",
         ":test_util",
@@ -2562,11 +2698,11 @@ cc_test(
     }),
     deps = [
         ":cc_test_protos",
-        ":port",
         ":protobuf",
         ":test_util",
         "//src/google/protobuf/stubs",
-        "@abseil-cpp//absl/base",
+        "@abseil-cpp//absl/log:absl_check",
+        "@abseil-cpp//absl/strings",
         "@abseil-cpp//absl/strings:cord",
         "@googletest//:gtest",
         "@googletest//:gtest_main",
@@ -2591,6 +2727,7 @@ cc_test(
         ":protobuf_lite",
         "//src/google/protobuf/io",
         "//src/google/protobuf/stubs",
+        "//src/google/protobuf/test_protos:test_cc_protos",
         "//src/google/protobuf/testing",
         "//src/google/protobuf/testing:file",
         "@abseil-cpp//absl/flags:flag",
@@ -2743,11 +2880,13 @@ cc_test(
         ":unittest_proto3_arena_cc_proto",
         "//src/google/protobuf/io",
         "//src/google/protobuf/stubs",
+        "//src/google/protobuf/test_protos:test_cc_protos",
         "//src/google/protobuf/testing",
         "//src/google/protobuf/testing:file",
         "//src/google/protobuf/util:differencer",
         "@abseil-cpp//absl/base",
         "@abseil-cpp//absl/log:absl_check",
+        "@abseil-cpp//absl/log:absl_log",
         "@abseil-cpp//absl/log:scoped_mock_log",
         "@abseil-cpp//absl/strings",
         "@abseil-cpp//absl/strings:cord",

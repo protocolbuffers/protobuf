@@ -70,6 +70,9 @@ class PROTOBUF_EXPORT ImplicitWeakMessage final : public MessageLite {
   static const ImplicitWeakMessage& default_instance();
 
   const ClassData* GetClassData() const PROTOBUF_FINAL;
+#ifndef PROTOBUF_MESSAGE_GLOBALS
+  static constexpr const void* GetClassDataForInit() { return &class_data_; }
+#endif  // PROTOBUF_MESSAGE_GLOBALS
 
   void Clear() PROTOBUF_FINAL { ClearImpl(*this); }
 

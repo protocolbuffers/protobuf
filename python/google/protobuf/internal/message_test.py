@@ -31,7 +31,8 @@ import warnings
 cmp = lambda x, y: (x > y) - (x < y)
 
 from google.protobuf.internal import message_set_extensions_pb2
-from google.protobuf.internal import api_implementation  # pylint: disable=g-import-not-at-top
+from google.protobuf.internal import allocation_count  # pylint: disable=g-import-not-at-top
+from google.protobuf.internal import api_implementation
 from google.protobuf.internal import decoder
 from google.protobuf.internal import encoder
 from google.protobuf.internal import enum_type_wrapper
@@ -62,6 +63,119 @@ warnings.simplefilter('error', DeprecationWarning)
 )
 @testing_refleaks.TestCase
 class MessageTest(unittest.TestCase):
+
+  @unittest.skipIf(
+      not allocation_count.is_available(),
+      'Requires Debug-only allocation_count API',
+  )
+  def testOom(self, message_module):
+    def ManyAllocsScenario():
+      msg = message_module.TestAllTypes()
+      test_util.SetAllFields(msg)
+      msg.repeated_int32.extend(range(100))
+      msg.repeated_nested_message.add().bb = 123
+      serialized = msg.SerializeToString()
+      msg2 = message_module.TestAllTypes()
+      msg2.ParseFromString(serialized)
+      msg3 = message_module.TestAllTypes()
+      msg3.MergeFrom(msg2)
+      _ = msg3.optional_string
+      _ = msg3.optional_bytes
+      _ = msg3.ByteSize()
+      _ = msg3.SerializePartialToString()
+      _ = msg3.ListFields()
+      _ = msg3.DiscardUnknownFields()
+      _ = msg3.FindInitializationErrors()
+
+      msg4 = message_module.TestAllTypes()
+      msg4.CopyFrom(msg3)
+
+      # Try deepcopy
+      _ = copy.deepcopy(msg3)
+
+      # Try other upb message APIs
+      _ = msg3.ByteSize()
+      _ = msg3.SerializePartialToString()
+      _ = msg3.ListFields()
+      _ = msg3.FindInitializationErrors()
+      _ = msg3.DiscardUnknownFields()
+
+      if hasattr(message_module, 'TestAllExtensions'):
+        ext_msg = message_module.TestAllExtensions()
+        test_util.SetAllExtensions(ext_msg)
+        ext_serialized = ext_msg.SerializeToString()
+        ext_msg2 = message_module.TestAllExtensions()
+        ext_msg2.ParseFromString(ext_serialized)
+        ext_msg3 = message_module.TestAllExtensions()
+        ext_msg3.MergeFrom(ext_msg2)
+        _ = ext_msg3.Extensions[unittest_pb2.optional_int32_extension]
+        _ = ext_msg3.Extensions[unittest_pb2.optional_nested_message_extension]
+        _ = ext_msg3.Extensions[
+            unittest_pb2.optional_nested_message_extension
+        ].bb
+
+        ext_msg4 = message_module.TestAllExtensions()
+        ext_msg4.CopyFrom(ext_msg3)
+
+        # MessageSet extensions coverage
+        mset_msg = message_set_extensions_pb2.TestMessageSet()
+        ext1 = (
+            message_set_extensions_pb2.TestMessageSetExtension1.message_set_extension
+        )
+        ext2 = (
+            message_set_extensions_pb2.TestMessageSetExtension2.message_set_extension
+        )
+        mset_msg.Extensions[ext1].i = 123
+        mset_msg.Extensions[ext2].str = 'hello'
+        mset_serialized = mset_msg.SerializeToString()
+        mset_msg2 = message_set_extensions_pb2.TestMessageSet()
+        mset_msg2.ParseFromString(mset_serialized)
+        mset_msg3 = message_set_extensions_pb2.TestMessageSet()
+        mset_msg3.MergeFrom(mset_msg2)
+        _ = mset_msg3.Extensions[ext1].i
+        _ = mset_msg3.Extensions[ext2].str
+
+        mset_msg4 = message_set_extensions_pb2.TestMessageSet()
+        mset_msg4.CopyFrom(mset_msg3)
+
+        # Unknown fields in MessageSet representation
+        mset_unknown = message_set_extensions_pb2.TestMessageSet()
+        mset_unknown.ParseFromString(
+            b'\x0b\x10\x01\x1a\x03foo\x0c\x0b\x10\x02\x1a\x03bar\x0c'
+        )
+        unknown_mset = unknown_fields.UnknownFieldSet(mset_unknown)
+        _ = len(unknown_mset)
+        if len(unknown_mset) > 0:
+          _ = unknown_mset[0].field_number
+          _ = unknown_mset[0].wire_type
+          _ = unknown_mset[0].data
+
+      if hasattr(message_module, 'TestEmptyMessage'):
+        empty = message_module.TestEmptyMessage()
+        empty.ParseFromString(serialized)
+        unknown = unknown_fields.UnknownFieldSet(empty)
+        _ = len(unknown)
+        if len(unknown) > 0:
+          _ = unknown[0].field_number
+          _ = unknown[0].wire_type
+          _ = unknown[0].data
+          for field in unknown:
+            _ = field.field_number
+            _ = field.wire_type
+            _ = field.data
+
+    # Warm up the cache so that subsequent runs do not trigger resizes.
+    ManyAllocsScenario()
+    allocation_count.reset()
+    ManyAllocsScenario()
+    total = allocation_count.get()
+    self.assertGreater(total, 0)
+    for i in range(total):
+      allocation_count.reset()
+      allocation_count.fail_on(i)
+      with self.assertRaises(MemoryError):
+        ManyAllocsScenario()
+    allocation_count.reset()
 
   def testBadUtf8String(self, message_module):
     if api_implementation.Type() != 'python':
@@ -1182,6 +1296,18 @@ class MessageTest(unittest.TestCase):
     m1.MergeFromString(b'')  # field state should not change
     self.assertFalse(m1.HasField('optional_nested_message'))
 
+  def testMergeFromStringDecodeErrorSync(self, message_module):
+    m = message_module.NestedTestAllTypes()
+    s1 = m.child
+    self.assertFalse(m.HasField('child'))
+    # Wire bytes: field 1 (child), length 3.
+    # Payload: valid tag 1 (0x08, 0x01) + malformed tag (0xff).
+    invalid_bytes = b'\x0a\x03\x08\x01\xff'
+    with self.assertRaises(message.DecodeError):
+      m.MergeFromString(invalid_bytes)
+    s2 = m.child
+    self.assertIs(s1, s2)
+
   def ensureNestedMessageExists(self, msg, attribute):
     """Make sure that a nested message object exists.
 
@@ -1986,6 +2112,57 @@ class MessageTest(unittest.TestCase):
     self.assign_bool_to_map_or_extension(
         m, 'Extensions', unittest_pb2.optional_int32_extension, True
     )
+
+  def testOneofSwitchMergeUAF(self, message_module):
+    m = message_module.TestAllTypes()
+    m.oneof_nested_message.bb = 42
+    data1 = m.SerializeToString()
+
+    m2 = message_module.TestAllTypes()
+    m2.ParseFromString(data1)
+    sub_ref = m2.oneof_nested_message
+
+    m3 = message_module.TestAllTypes()
+    m3.oneof_uint32 = 100
+    data2 = m3.SerializeToString()
+
+    m2.MergeFromString(data2)
+
+    # Accessing sub_ref would trigger UAF before the fix because the C++
+    # message was deleted on oneof switch. With the fix, the message is
+    # released/detached, so the wrapper remains valid and keeps its value.
+    self.assertEqual(42, sub_ref.bb)
+
+  def testOneofMergePreservesExisting(self, message_module):
+    m = message_module.TestAllTypes()
+    sub_ref = m.oneof_nested_message
+    sub_ref.bb = 42
+
+    m2 = message_module.TestAllTypes()
+    m2.optional_int32 = 100
+    data = m2.SerializeToString()
+
+    m.MergeFromString(data)
+
+    self.assertTrue(m.HasField('oneof_nested_message'))
+    self.assertEqual(42, m.oneof_nested_message.bb)
+    _ = sub_ref
+
+  def testOneofMergeMergesSameField(self, message_module):
+    m = message_module.TestAllTypes()
+    sub_ref = m.oneof_nested_message
+    sub_ref.bb = 42
+
+    m2 = message_module.TestAllTypes()
+    m2.oneof_nested_message.bb = 43
+    data = m2.SerializeToString()
+
+    m.MergeFromString(data)
+
+    self.assertTrue(m.HasField('oneof_nested_message'))
+    self.assertEqual(43, m.oneof_nested_message.bb)
+    self.assertEqual(43, sub_ref.bb)
+    _ = sub_ref
 
 
 @testing_refleaks.TestCase
@@ -3123,6 +3300,7 @@ class Proto3Test(unittest.TestCase):
     msg.map_string_string.clear()
     with self.assertRaises(RuntimeError):
       next(it)
+
   def testSubmessageMap(self):
     msg = map_unittest_pb2.TestMap()
 
@@ -3651,6 +3829,7 @@ class MessageMetaGetAttrTest(unittest.TestCase):
 
   def testMessageMetaGetAttrException(self):
     class BombDescriptor:
+
       def __get__(self, obj, objtype=None):
         raise KeyboardInterrupt('should not be swallowed')
 

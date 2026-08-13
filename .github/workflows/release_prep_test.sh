@@ -66,11 +66,38 @@ ln -sf "$TAR" "$TEST_DIR/.mock_bin/tar"
 ln -sf "$(rlocation ${JQ_BIN#"external/"})" "$TEST_DIR/.mock_bin/jq"
 
 ##############################
-# Fixture: mock curl returning a GitHub Releases API response
+# Fixture: mock curl returning GitHub Releases API response & handling asset downloads
+# Handles two cases:
+# 1) When -o flag is provided, mocks downloading the integrity file .bzl,
+#    writing to path specified by the flag
+# 2) Otherwise, mocks retrieving the GitHub Releases API JSON, writing to stdout
 ##############################
 cat > "$TEST_DIR/.mock_bin/curl" <<'MOCK'
 #!/usr/bin/env bash
-cat <<'JSON'
+outfile=""
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    -o)
+      outfile="$2"
+      shift 2
+      ;;
+    *)
+      shift
+      ;;
+  esac
+done
+
+if [[ -n "$outfile" ]]; then
+  cat <<'BZL' > "$outfile"
+RELEASE_VERSION="v99.0"
+RELEASED_BINARY_INTEGRITY = {
+    "protoc-99.0-linux-x86_64.zip": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "protoc-99.0-osx-aarch_64.zip": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+    "protoc-99.0-win64.zip": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+}
+BZL
+else
+  cat <<'JSON'
 {
   "assets": [
     {
@@ -84,10 +111,15 @@ cat <<'JSON'
     {
       "name": "protoc-99.0-win64.zip",
       "digest": "sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+    },
+    {
+      "name": "tool_integrity.bzl",
+      "browser_download_url": "https://github.com/protocolbuffers/protobuf/releases/download/v99.0/tool_integrity.bzl"
     }
   ]
 }
 JSON
+fi
 MOCK
 chmod +x "$TEST_DIR/.mock_bin/curl"
 export PATH="$TEST_DIR/.mock_bin:$PATH"
