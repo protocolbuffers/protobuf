@@ -25,15 +25,13 @@ PROTOBUF_PRAGMA_INIT_SEG
 namespace _pb = ::google::protobuf;
 namespace _pbi = ::google::protobuf::internal;
 namespace _fl = ::google::protobuf::internal::field_layout;
-#ifdef PROTOBUF_MESSAGE_GLOBALS
 namespace {
 PROTOBUF_CONSTINIT ::google::protobuf::internal::ReflectionData
     file_reflection_data[] = {
         // ::pb::file::CppFileOptions
         {&::_pbi::kDescriptorMethods, &::descriptor_table_google_2fprotobuf_2fcpp_5ffile_5foptions_2eproto, /* tracker*/ nullptr,},
-};
+    };
 }  // namespace
-#endif
 namespace pb {
 namespace file {
 class CppFileOptions::_Internal {
@@ -107,76 +105,43 @@ inline void* PROTOBUF_NONNULL CppFileOptions::PlacementNew_(
 constexpr auto CppFileOptions::InternalNewImpl_() {
   return ::google::protobuf::internal::MessageCreator::CopyInit(sizeof(CppFileOptions), alignof(CppFileOptions));
 }
-constexpr auto CppFileOptions::InternalGenerateClassData_(
-    const MessageLite& prototype,
-    const ::google::protobuf::internal::TcParseTableBase* tc_table) {
-  return ::google::protobuf::internal::ClassDataFull{
-      ::google::protobuf::internal::ClassData{
-          &prototype,
-#ifndef PROTOBUF_MESSAGE_GLOBALS
-          &_table_.header,
-#else
-          tc_table,
-#endif
-          nullptr,  // IsInitialized
-          &CppFileOptions::MergeImpl,
-          Super_::GetNewImpl<CppFileOptions>(),
+constexpr auto CppFileOptions::InternalGenerateClassData_() {
+  return ::google::protobuf::internal::ClassData{
+      nullptr,  // IsInitialized
+      &CppFileOptions::MergeImpl,
+      Super_::GetNewImpl<CppFileOptions>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-          &CppFileOptions::SharedDtor,
-          &CppFileOptions::Clear, &CppFileOptions::ByteSizeLong, &CppFileOptions::_InternalSerialize,
+      &CppFileOptions::SharedDtor,
+      &CppFileOptions::Clear, &CppFileOptions::ByteSizeLong, &CppFileOptions::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
-          PROTOBUF_FIELD_OFFSET(CppFileOptions, _impl_._cached_size_),
-          false,
-      },
-#ifdef PROTOBUF_MESSAGE_GLOBALS
+      PROTOBUF_FIELD_OFFSET(CppFileOptions, _impl_._cached_size_),
+      false,
       &file_reflection_data[0],
-#else   // !PROTOBUF_MESSAGE_GLOBALS
-      &::_pbi::kDescriptorMethods,
-      &descriptor_table_google_2fprotobuf_2fcpp_5ffile_5foptions_2eproto,
-      nullptr,  // tracker
-#endif  // PROTOBUF_MESSAGE_GLOBALS
   };
 }
 struct CppFileOptionsGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
   constexpr CppFileOptionsGlobalsTypeInternal()
-      :
-#ifndef PROTOBUF_MESSAGE_GLOBALS
-        _default(::_pbi::ConstantInitialized{},
-                 CppFileOptions_class_data_.base())
-#else   // !PROTOBUF_MESSAGE_GLOBALS
-        MessageGlobalsBase(CppFileOptions::InternalGenerateClassData_(
-            _default, &CppFileOptions_globals_._table.header)),
+      : MessageGlobalsBase(CppFileOptions::InternalGenerateClassData_()),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
         _table(::_pbi::PrivateAccess::GenerateParseTable<CppFileOptions>(
-            GetClassData()))
-#endif  // PROTOBUF_MESSAGE_GLOBALS
-  {
-  }
+            GetClassData())) {}
   ~CppFileOptionsGlobalsTypeInternal() {}
   union {
     alignas(::_pbi::kMaxMessageAlignment) CppFileOptions _default;
   };
-#ifdef PROTOBUF_MESSAGE_GLOBALS
   decltype(::_pbi::PrivateAccess::GenerateParseTable<CppFileOptions>(
       ::std::declval<const ::_pbi::ClassData*>())) _table;
-#endif
 };
-#ifdef PROTOBUF_MESSAGE_GLOBALS
 static_assert(PROTOBUF_FIELD_OFFSET(CppFileOptionsGlobalsTypeInternal, _default) ==
               ::_pbi::MessageGlobalsBase::OffsetToDefault());
-#endif  // PROTOBUF_MESSAGE_GLOBALS
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 PROTOBUF_MESSAGE_GLOBALS_CONST CppFileOptionsGlobalsTypeInternal CppFileOptions_globals_
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const CppFileOptionsGlobalsTypeInternal CppFileOptions_globals_
         PROTOBUF_MESSAGE_GLOBALS_SECTION(.data.rel.ro);
 #if defined(PROTOBUF_CUSTOM_VTABLE)
 namespace {
 const ::_pbi::ClassData* CppFileOptions_get_class_data() {
-#ifdef PROTOBUF_MESSAGE_GLOBALS
   return CppFileOptions_globals_.GetClassData();
-#else
-  return CppFileOptions_class_data_.base();
-#endif  // PROTOBUF_MESSAGE_GLOBALS
 }
 }  // namespace
 #endif  // PROTOBUF_CUSTOM_VTABLE
@@ -294,18 +259,6 @@ inline void CppFileOptions::SharedDtor(MessageLite& self) {
   this_._impl_.~Impl_();
 }
 
-#ifndef PROTOBUF_MESSAGE_GLOBALS
-PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const
-    ::google::protobuf::internal::ClassDataFull CppFileOptions_class_data_ =
-        CppFileOptions::InternalGenerateClassData_(CppFileOptions_globals_._default);
-
-PROTOBUF_ATTRIBUTE_WEAK const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
-CppFileOptions::GetClassData() const {
-  ::google::protobuf::internal::PrefetchToLocalCache(&CppFileOptions_class_data_);
-  ::google::protobuf::internal::PrefetchToLocalCache(CppFileOptions_class_data_.tc_table);
-  return CppFileOptions_class_data_.base();
-}
-#else
 PROTOBUF_ATTRIBUTE_WEAK const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
 CppFileOptions::GetClassData() const {
   ::google::protobuf::internal::PrefetchToLocalCache(&CppFileOptions_globals_);
@@ -313,13 +266,6 @@ CppFileOptions::GetClassData() const {
       ::google::protobuf::internal::MessageGlobalsBase::ToParseTableBase(&CppFileOptions_globals_));
   return CppFileOptions_globals_.GetClassData();
 }
-#endif  // !PROTOBUF_MESSAGE_GLOBALS
-#ifndef PROTOBUF_MESSAGE_GLOBALS
-PROTOBUF_CONSTINIT
-PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const CppFileOptions::ParseTableT_
-    CppFileOptions::_table_ =
-        CppFileOptions::InternalGenerateParseTable_(CppFileOptions_class_data_.base());
-#endif  // !PROTOBUF_MESSAGE_GLOBALS
 #if defined(PROTOBUF_CUSTOM_VTABLE)
 PROTOBUF_NOINLINE void CppFileOptions::Clear(MessageLite& base) {
   CppFileOptions& this_ = static_cast<CppFileOptions&>(base);
@@ -439,7 +385,7 @@ void CppFileOptions::InternalSwap(CppFileOptions* PROTOBUF_RESTRICT PROTOBUF_NON
 }
 
 ::google::protobuf::Metadata CppFileOptions::GetMetadata() const {
-  return Super_::GetMetadataImpl(GetClassData()->full());
+  return Super_::GetMetadataImpl(GetClassData());
 }
 PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY2 ::_pbi::ExtensionIdentifier<

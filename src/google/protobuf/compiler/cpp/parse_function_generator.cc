@@ -151,51 +151,6 @@ void ParseFunctionGenerator::GenerateAliasParseTableType(io::Printer* p) {
       )cc");
 }
 
-void ParseFunctionGenerator::GenerateDataDecls(io::Printer* p) {
-  auto v = p->WithVars(variables_);
-  p->Emit({{"SECTION",
-            [&] {
-              if (!IsProfileDriven(options_)) return;
-              std::string section_name;
-              // Since most (>80%) messages are never present, messages that are
-              // present are considered hot enough to be clustered together.
-              // When using weak descriptors we use unique sections for each
-              // table to allow for GC to work. pth/ptl names must be in sync
-              // with the linker script.
-              if (UsingImplicitWeakDescriptor(descriptor_->file(), options_)) {
-                section_name = WeakDescriptorDataSection(
-                    IsPresentMessage(descriptor_, options_) ? "pth" : "ptl",
-                    descriptor_, index_in_file_messages_, options_);
-              } else if (IsPresentMessage(descriptor_, options_)) {
-                section_name = "proto_parse_table_hot";
-              } else {
-                section_name = "proto_parse_table_lukewarm";
-              }
-              p->Emit({{"section_name", section_name}},
-                      "ABSL_ATTRIBUTE_SECTION_VARIABLE($section_name$)");
-            }}},
-          R"cc(
-            friend class $pbi$::TcParser;
-#ifndef PROTOBUF_MESSAGE_GLOBALS
-            $SECTION$
-            static const ParseTableT_ _table_;
-#endif
-          )cc");
-}
-
-void ParseFunctionGenerator::GenerateDataDefinitions(io::Printer* p) {
-  auto v = p->WithVars(variables_);
-  p->Emit(
-      R"cc(
-#ifndef PROTOBUF_MESSAGE_GLOBALS
-        PROTOBUF_CONSTINIT
-        PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const $Msg$::ParseTableT_
-            $Msg$::_table_ =
-                $Msg$::InternalGenerateParseTable_($Msg$_class_data_.base());
-#endif  // !PROTOBUF_MESSAGE_GLOBALS
-      )cc");
-}
-
 static std::string TcParseFunctionName(internal::TcParseFunction func) {
 #define PROTOBUF_TC_PARSE_FUNCTION_X(value) #value,
   static constexpr absl::string_view kNames[] = {
@@ -341,11 +296,7 @@ void ParseFunctionGenerator::GenerateParseTableHelperDefinition(
                        aux_entry.field->message_type(), options_)},
               },
               R"cc(
-#ifndef PROTOBUF_MESSAGE_GLOBALS
-                {::_pbi::FieldAuxClassData(), &$sub_type$_class_data_},
-#else
                 {::_pbi::FieldAuxClassData(), &$sub_globals$},
-#endif
               )cc");
           break;
         case TailCallTableInfo::kClassDataWeak:

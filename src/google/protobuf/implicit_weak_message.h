@@ -54,25 +54,15 @@ class PROTOBUF_EXPORT ImplicitWeakMessage final : public MessageLite {
 
   // TODO: make this constructor private
   explicit ImplicitWeakMessage(Arena* arena)
-      : MessageLite(arena,
-#ifndef PROTOBUF_MESSAGE_GLOBALS
-                    class_data_.base()
-#else
-                    MessageGlobalsBase::GetClassData(
-                        &implicit_weak_message_globals)
-#endif  // PROTOBUF_MESSAGE_GLOBALS
-                        ),
-        data_(Arena::Create<std::string>(arena)) {
-  }
+      : MessageLite(arena, MessageGlobalsBase::GetClassData(
+                               &implicit_weak_message_globals)),
+        data_(Arena::Create<std::string>(arena)) {}
 
   ~ImplicitWeakMessage() PROTOBUF_FINAL { delete data_; }
 
   static const ImplicitWeakMessage& default_instance();
 
   const ClassData* GetClassData() const PROTOBUF_FINAL;
-#ifndef PROTOBUF_MESSAGE_GLOBALS
-  static constexpr const void* GetClassDataForInit() { return &class_data_; }
-#endif  // PROTOBUF_MESSAGE_GLOBALS
 
   void Clear() PROTOBUF_FINAL { ClearImpl(*this); }
 
@@ -97,17 +87,11 @@ class PROTOBUF_EXPORT ImplicitWeakMessage final : public MessageLite {
   static PROTOBUF_CC const char* ParseImpl(ImplicitWeakMessage* msg,
                                            const char* ptr, ParseContext* ctx);
 
-  static constexpr auto InternalGenerateClassData_(
-      const MessageLite& prototype, const TcParseTableBase* tc_table = nullptr);
+  static constexpr auto InternalGenerateClassData_();
   static constexpr auto InternalGenerateParseTable_(
       const ClassData* class_data);
 
  private:
-#ifndef PROTOBUF_MESSAGE_GLOBALS
-  static const TcParseTable<0> table_;
-  static const ClassDataLite class_data_;
-#endif  // PROTOBUF_MESSAGE_GLOBALS
-
   friend ImplicitWeakMessageDefaultType;
 
   static void MergeImpl(MessageLite&, const MessageLite&);

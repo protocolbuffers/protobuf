@@ -168,35 +168,14 @@ struct ExtensionInfo {
   };
 
   struct MessageInfo {
-#ifdef PROTOBUF_MESSAGE_GLOBALS
-    const internal::MessageGlobalsBase* globals = nullptr;
-#else
-    const MessageLite* prototype = nullptr;
-#endif
+    // The ClassData for the message. Never null.
+    const internal::ClassData* class_data = nullptr;
+    // TODO: Make this never null and remove GetTcTable.
     // The TcParse table used for this object. Never null. (except in platforms
     // that don't constant initialize default instances)
     const internal::TcParseTableBase* tc_table = nullptr;
 
-    // Create from prototype
-    const MessageLite* GetPrototype() const {
-#ifdef PROTOBUF_MESSAGE_GLOBALS
-      return internal::MessageGlobalsBase::ToDefaultInstance(globals);
-#else
-      return prototype;
-#endif
-    }
-
     const internal::TcParseTableBase* GetTcTable() const { return tc_table; }
-
-    const ClassData* GetClassData() const {
-#if defined(PROTOBUF_MESSAGE_GLOBALS)
-      return internal::MessageGlobalsBase::GetClassData(globals);
-#elif defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-      return tc_table->class_data;
-#else
-      return internal::GetClassData(*prototype);
-#endif
-    }
   };
 
   union {
@@ -294,6 +273,8 @@ class PROTOBUF_EXPORT ExtensionSet {
                                     FieldType type, bool is_repeated,
                                     bool is_packed,
                                     const uint32_t* validation_data);
+  // TODO: Change registration to pass ClassData* instead of
+  // prototype.
   static void RegisterMessageExtension(const MessageLite* extendee, int number,
                                        FieldType type, bool is_repeated,
                                        bool is_packed,

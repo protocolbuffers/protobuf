@@ -49,12 +49,7 @@ namespace pb {
 namespace file {
 class CppFileOptions;
 struct CppFileOptionsGlobalsTypeInternal;
-#ifndef PROTOBUF_MESSAGE_GLOBALS
-PROTOBUF_EXPORT extern CppFileOptionsGlobalsTypeInternal CppFileOptions_globals_;
-PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull CppFileOptions_class_data_;
-#else
 PROTOBUF_EXPORT extern const CppFileOptionsGlobalsTypeInternal CppFileOptions_globals_;
-#endif  // PROTOBUF_MESSAGE_GLOBALS
 }  // namespace file
 }  // namespace pb
 namespace google {
@@ -194,6 +189,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CppFileOptions fina
   void SharedCtor(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   static void SharedDtor(MessageLite& self);
   void InternalSwap(CppFileOptions* PROTOBUF_NONNULL other);
+
  private:
   static ::absl::string_view FullMessageName() { return "pb.file.CppFileOptions"; }
 
@@ -211,9 +207,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CppFileOptions fina
   static constexpr auto InternalNewImpl_();
 
  public:
-  static constexpr auto InternalGenerateClassData_(
-      const MessageLite& prototype,
-      const ::google::protobuf::internal::TcParseTableBase* PROTOBUF_NULLABLE tc_table = nullptr);
+  static constexpr auto InternalGenerateClassData_();
 
   [[nodiscard]] ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
@@ -243,10 +237,6 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CppFileOptions fina
                           2>;
   static constexpr ParseTableT_ InternalGenerateParseTable_(
       const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL class_data);
-  friend class ::google::protobuf::internal::TcParser;
-  #ifndef PROTOBUF_MESSAGE_GLOBALS
-  static const ParseTableT_ _table_;
-  #endif
 
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;

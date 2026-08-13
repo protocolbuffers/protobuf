@@ -363,10 +363,8 @@ class DynamicMessage final : public Message {
 using internal::MessageGlobalsBase;
 
 struct DynamicMessageGlobalsInternalType : MessageGlobalsBase {
-#ifdef PROTOBUF_MESSAGE_GLOBALS
-  explicit DynamicMessageGlobalsInternalType(internal::ClassDataFull data)
+  explicit DynamicMessageGlobalsInternalType(internal::ClassData data)
       : MessageGlobalsBase(data) {}
-#endif  // PROTOBUF_MESSAGE_GLOBALS
   union {
     alignas(internal::kMaxMessageAlignment) DynamicMessage _default;  // NOLINT
   };
@@ -397,61 +395,23 @@ struct DynamicMessageFactory::TypeInfo {
   std::unique_ptr<uint32_t[]> offsets;
   std::unique_ptr<uint32_t[]> has_bits_indices;
 
-#ifndef PROTOBUF_MESSAGE_GLOBALS
-  internal::ClassDataFull class_data = {
-      internal::ClassData{
-          nullptr,  // default_instance
-          nullptr,  // tc_table
-          &DynamicMessage::IsInitializedImpl,
-          &DynamicMessage::MergeImpl,
-          internal::MessageCreator(),  // to be filled later
-          &DynamicMessage::DestroyImpl,
-          &DynamicMessage::ClearImpl,
-          DynamicMessage::ByteSizeLongImpl,
-          DynamicMessage::_InternalSerializeImpl,
-          PROTOBUF_FIELD_OFFSET(DynamicMessage, cached_byte_size_),
-          false,
-      },
-      &internal::kDescriptorMethods,
-      nullptr,  // descriptor_table
-      nullptr,  // get_metadata_tracker
-  };
-#else   // !PROTOBUF_MESSAGE_GLOBALS
   DynamicMessageGlobalsInternalType* globals = nullptr;
   internal::ReflectionData reflection_data = {
       &internal::kDescriptorMethods,
       nullptr,  // descriptor_table
       nullptr,  // get_metadata_tracker
   };
-#endif  // PROTOBUF_MESSAGE_GLOBALS
 
   TypeInfo() = default;
-
-#ifndef PROTOBUF_MESSAGE_GLOBALS
-  const internal::ClassDataFull& GetClassDataFull() const { return class_data; }
-  internal::ClassDataFull& MutableClassDataFull() { return class_data; }
-
-  const Message* GetPrototype() const {
-    return static_cast<const Message*>(class_data.prototype);
-  }
-#else   // !PROTOBUF_MESSAGE_GLOBALS
-  const internal::ClassDataFull& GetClassDataFull() const {
-    return globals->class_data;
-  }
-  internal::ClassDataFull& MutableClassDataFull() {
-    return globals->class_data;
-  }
 
   const Message* GetPrototype() const {
     return static_cast<const Message*>(&globals->_default);
   }
-#endif  // PROTOBUF_MESSAGE_GLOBALS
 
   ~TypeInfo() {
-    const auto& class_data = GetClassDataFull();
+    const auto& class_data = globals->class_data;
     DynamicMessage::DestroyImpl(const_cast<Message&>(*GetPrototype()));
-    // With PROTOBUF_MESSAGE_GLOBALS, deleting globals means deleting
-    // class_data. Access class_data beforehand.
+    // Deleting globals means deleting class_data. Access class_data beforehand.
     delete class_data.reflection();
     auto* type = class_data.descriptor();
     internal::SizedDelete(
@@ -475,23 +435,13 @@ struct DynamicMessageFactory::TypeInfo {
 
 DynamicMessage::DynamicMessage(const DynamicMessageFactory::TypeInfo* type_info,
                                Arena* arena)
-    : Message(arena, type_info->GetClassDataFull().base()),
-      type_info_(type_info) {
+    : Message(arena, &type_info->globals->class_data), type_info_(type_info) {
   SharedCtor(true);
 }
 
 DynamicMessage::DynamicMessage(DynamicMessageFactory::TypeInfo* type_info,
                                bool lock_factory)
-    : Message(type_info->GetClassDataFull().base()), type_info_(type_info) {
-  // The prototype in type_info has to be set before creating the prototype
-  // instance on memory. e.g., message Foo { map<int32_t, Foo> a = 1; }. When
-  // creating prototype for Foo, prototype of the map entry will also be
-  // created, which needs the address of the prototype of Foo (the value in
-  // map). To break the cyclic dependency, we have to assign the address of
-  // prototype into type_info first.
-#ifndef PROTOBUF_MESSAGE_GLOBALS
-  type_info->MutableClassDataFull().prototype = this;
-#endif  // PROTOBUF_MESSAGE_GLOBALS
+    : Message(&type_info->globals->class_data), type_info_(type_info) {
   SharedCtor(lock_factory);
 }
 
@@ -520,9 +470,9 @@ inline void* DynamicMessage::MutableOneofCaseRaw(int i) {
 }
 inline void* DynamicMessage::MutableOneofFieldRaw(const FieldDescriptor* f) {
   return OffsetToPointer(
-      type_info_
-          ->offsets[type_info_->GetClassDataFull().descriptor()->field_count() +
-                    f->containing_oneof()->index()]);
+      type_info_->offsets[type_info_->globals->class_data.descriptor()
+                              ->field_count() +
+                          f->containing_oneof()->index()]);
 }
 
 void DynamicMessage::SharedCtor(bool lock_factory) {
@@ -535,7 +485,7 @@ void DynamicMessage::SharedCtor(bool lock_factory) {
   // in practice that's not strictly necessary for types that don't have a
   // constructor.)
 
-  const Descriptor* descriptor = type_info_->GetClassDataFull().descriptor();
+  const Descriptor* descriptor = type_info_->globals->class_data.descriptor();
   Arena* arena = GetArena();
 
   // Initialize oneof cases.
@@ -675,14 +625,14 @@ bool DynamicMessage::is_prototype() const {
 #if defined(__cpp_lib_destroying_delete) && defined(__cpp_sized_deallocation)
 void DynamicMessage::operator delete(DynamicMessage* msg,
                                      std::destroying_delete_t) {
-  const size_t size = msg->type_info_->GetClassDataFull().allocation_size();
+  const size_t size = msg->type_info_->globals->class_data.allocation_size();
   msg->~DynamicMessage();
   ::operator delete(msg, size);
 }
 #endif
 
 DynamicMessage::~DynamicMessage() {
-  const Descriptor* descriptor = type_info_->GetClassDataFull().descriptor();
+  const Descriptor* descriptor = type_info_->globals->class_data.descriptor();
 
   _internal_metadata_.Delete<UnknownFieldSet>();
 
@@ -810,7 +760,7 @@ DynamicMessage::~DynamicMessage() {
 void* DynamicMessage::NewImpl(const void* prototype, void* mem, Arena* arena) {
   const auto* type_info =
       static_cast<const DynamicMessage*>(prototype)->type_info_;
-  memset(mem, 0, type_info->GetClassDataFull().allocation_size());
+  memset(mem, 0, type_info->globals->class_data.allocation_size());
   return new (mem) DynamicMessage(type_info, arena);
 }
 
@@ -823,7 +773,7 @@ void DynamicMessage::CrossLinkPrototypes() {
   ABSL_CHECK(is_prototype());
 
   DynamicMessageFactory* factory = type_info_->factory;
-  const Descriptor* descriptor = type_info_->GetClassDataFull().descriptor();
+  const Descriptor* descriptor = type_info_->globals->class_data.descriptor();
 
   // Cross-link default messages.
   for (int i = 0; i < descriptor->field_count(); i++) {
@@ -845,7 +795,7 @@ void DynamicMessage::CrossLinkPrototypes() {
 }
 
 const internal::ClassData* DynamicMessage::GetClassData() const {
-  return type_info_->GetClassDataFull().base();
+  return &type_info_->globals->class_data;
 }
 
 // ===================================================================
@@ -888,10 +838,6 @@ const Message* DynamicMessageFactory::GetPrototypeNoLock(
   TypeInfo* type_info = new TypeInfo;
   *target = type_info;
 
-#ifndef PROTOBUF_MESSAGE_GLOBALS
-  type_info->MutableClassDataFull().set_descriptor(type);
-  type_info->MutableClassDataFull().is_dynamic = true;
-#endif  // !PROTOBUF_MESSAGE_GLOBALS
   type_info->pool = (pool_ == nullptr) ? type->file()->pool() : pool_;
   type_info->factory = this;
 
@@ -1025,11 +971,6 @@ const Message* DynamicMessageFactory::GetPrototypeNoLock(
     size += kMaxOneofUnionSize;
   }
 
-#ifndef PROTOBUF_MESSAGE_GLOBALS
-  type_info->MutableClassDataFull().message_creator =
-      internal::MessageCreator(DynamicMessage::NewImpl, size, kSafeAlignment);
-#endif  // !PROTOBUF_MESSAGE_GLOBALS
-
   // Construct the reflection object.
 
   // Allocate the message globals object that contains the default instance.
@@ -1038,28 +979,21 @@ const Message* DynamicMessageFactory::GetPrototypeNoLock(
   memset(globals_base, 0, globals_size);
   auto* msg_base = DynamicMessageGlobalsToDefaultInstance(globals_base);
 
-#ifdef PROTOBUF_MESSAGE_GLOBALS
-  type_info->globals = new (globals_base)
-      DynamicMessageGlobalsInternalType(internal::ClassDataFull{
-          internal::ClassData{
-              reinterpret_cast<const DynamicMessage*>(msg_base),  // prototype
-              nullptr,                                            // tc_table
-              &DynamicMessage::IsInitializedImpl,
-              &DynamicMessage::MergeImpl,
-              internal::MessageCreator(DynamicMessage::NewImpl, size,
-                                       kSafeAlignment),
-              &DynamicMessage::DestroyImpl,
-              &DynamicMessage::ClearImpl,
-              DynamicMessage::ByteSizeLongImpl,
-              DynamicMessage::_InternalSerializeImpl,
-              PROTOBUF_FIELD_OFFSET(DynamicMessage, cached_byte_size_),
-              false,
-          },
-          &type_info->reflection_data,
-      });
+  type_info->globals = new (
+      globals_base) DynamicMessageGlobalsInternalType(internal::ClassData{
+      &DynamicMessage::IsInitializedImpl,
+      &DynamicMessage::MergeImpl,
+      internal::MessageCreator(DynamicMessage::NewImpl, size, kSafeAlignment),
+      &DynamicMessage::DestroyImpl,
+      &DynamicMessage::ClearImpl,
+      DynamicMessage::ByteSizeLongImpl,
+      DynamicMessage::_InternalSerializeImpl,
+      PROTOBUF_FIELD_OFFSET(DynamicMessage, cached_byte_size_),
+      false,
+      &type_info->reflection_data,
+  });
   type_info->globals->class_data.set_descriptor(type);
   type_info->globals->class_data.is_dynamic = true;
-#endif  // PROTOBUF_MESSAGE_GLOBALS
 
   // We have already locked the factory so we should not lock in the constructor
   // of dynamic message to avoid dead lock.
@@ -1072,12 +1006,12 @@ const Message* DynamicMessageFactory::GetPrototypeNoLock(
       type_info->has_bits_offset, type_info->extensions_offset,
       type_info->oneof_case_offset,
       /*object_size=*/
-      static_cast<int>(type_info->GetClassDataFull().allocation_size()),
+      static_cast<int>(type_info->globals->class_data.allocation_size()),
       /*split_offset=*/-1,
       /*sizeof_split=*/-1);
 
-  type_info->MutableClassDataFull().set_reflection(
-      new Reflection(type_info->GetClassDataFull().descriptor(), schema,
+  type_info->globals->class_data.set_reflection(
+      new Reflection(type_info->globals->class_data.descriptor(), schema,
                      type_info->pool, this));
 
   // Cross link prototypes.

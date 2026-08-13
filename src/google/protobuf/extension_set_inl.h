@@ -167,10 +167,10 @@ const char* ExtensionSet::ParseFieldWithExtensionInfo(
         MessageLite* value =
             info.is_repeated
                 ? AddMessage(arena, number, WireFormatLite::TYPE_GROUP,
-                             info.message_info.GetClassData(), info.descriptor)
+                             info.message_info.class_data, info.descriptor)
                 : MutableMessageByClassData(
                       arena, number, WireFormatLite::TYPE_GROUP,
-                      info.message_info.GetClassData(), info.descriptor);
+                      info.message_info.class_data, info.descriptor);
         uint32_t tag = (number << 3) + WireFormatLite::WIRETYPE_START_GROUP;
         return ctx->ParseGroup(value, ptr, tag);
       }
@@ -179,10 +179,10 @@ const char* ExtensionSet::ParseFieldWithExtensionInfo(
         MessageLite* value =
             info.is_repeated
                 ? AddMessage(arena, number, WireFormatLite::TYPE_MESSAGE,
-                             info.message_info.GetClassData(), info.descriptor)
+                             info.message_info.class_data, info.descriptor)
                 : MutableMessageByClassData(
                       arena, number, WireFormatLite::TYPE_MESSAGE,
-                      info.message_info.GetClassData(), info.descriptor);
+                      info.message_info.class_data, info.descriptor);
         return ctx->ParseMessage(value, ptr);
       }
     }
@@ -223,12 +223,12 @@ const char* ExtensionSet::ParseMessageSetItemTmpl(
           MessageLite* value =
               extension.is_repeated
                   ? AddMessage(arena, type_id, WireFormatLite::TYPE_MESSAGE,
-                               extension.message_info.GetClassData(),
+                               extension.message_info.class_data,
                                extension.descriptor)
-                  : MutableMessageByClassData(
-                        arena, type_id, WireFormatLite::TYPE_MESSAGE,
-                        extension.message_info.GetClassData(),
-                        extension.descriptor);
+                  : MutableMessageByClassData(arena, type_id,
+                                              WireFormatLite::TYPE_MESSAGE,
+                                              extension.message_info.class_data,
+                                              extension.descriptor);
 
           const char* p;
           // Use Spawn to transfer all attributes for recursion.

@@ -120,8 +120,7 @@ std::string MessageLite::InitializationErrorString() const {
 
   if (!data->is_lite) {
     // For !LITE messages, we use the descriptor method function.
-    return data->full().descriptor_methods()->initialization_error_string(
-        *this);
+    return data->descriptor_methods()->initialization_error_string(*this);
   }
 
   return "(cannot determine missing fields for lite message)";
@@ -131,7 +130,7 @@ std::string MessageLite::DebugString() const {
   auto* data = GetClassData();
   ABSL_DCHECK(data != nullptr);
   if (!data->is_lite) {
-    return data->full().descriptor_methods()->debug_string(*this);
+    return data->descriptor_methods()->debug_string(*this);
   }
 
   return absl::StrCat("MessageLite at 0x", absl::Hex(this));

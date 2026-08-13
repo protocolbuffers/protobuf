@@ -168,11 +168,7 @@ void ExtensionSet::RegisterMessageExtension(const MessageLite* extendee,
   ExtensionInfo info(extendee, number, type, is_repeated, is_packed,
                      verify_func, is_lazy);
   info.message_info = {
-#ifdef PROTOBUF_MESSAGE_GLOBALS
-      internal::MessageGlobalsBase::FromDefaultInstance(prototype),
-#else   // PROTOBUF_MESSAGE_GLOBALS
-      prototype,
-#endif  // PROTOBUF_MESSAGE_GLOBALS
+      &internal::MessageGlobalsBase::FromDefaultInstance(prototype)->class_data,
 #if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
       prototype->GetTcParseTable()
 #else
@@ -1856,7 +1852,7 @@ const ClassData* ExtensionSet::GetClassDataForLazyMessage(
           &extension_info, &was_packed_on_wire)) {
     return nullptr;
   }
-  return extension_info.message_info.GetClassData();
+  return extension_info.message_info.class_data;
 }
 
 uint8_t*

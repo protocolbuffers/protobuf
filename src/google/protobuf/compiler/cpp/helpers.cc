@@ -638,16 +638,6 @@ std::string QualifiedMsgGlobalsInstancePtr(const Descriptor* descriptor,
                       "ptr_");
 }
 
-std::string ClassDataType(const Descriptor* descriptor,
-                          const Options& options) {
-  return HasDescriptorMethods(descriptor->file(), options) ||
-                 // Bootstrap protos are always full, even when lite is forced
-                 // via options.
-                 IsBootstrapProto(options, descriptor->file())
-             ? "ClassDataFull"
-             : "ClassDataLite";
-}
-
 std::string DescriptorTableName(const FileDescriptor* file,
                                 const Options& options) {
   return UniqueName("descriptor_table", file, options);
@@ -1711,10 +1701,12 @@ std::string StrongReferenceToType(const Descriptor* desc,
                          ProtobufNamespace(options), name, name);
 }
 
-std::string WeakDescriptorDataSection(absl::string_view prefix,
-                                      const Descriptor* descriptor,
-                                      int index_in_file_messages,
-                                      const Options& options) {
+std::string WeakDefaultInstanceSection(const Descriptor* descriptor,
+                                       int index_in_file_messages,
+                                       const Options& options) {
+  absl::string_view prefix = !IsProfileDriven(options)               ? "def"
+                             : IsPresentMessage(descriptor, options) ? "gh"
+                                                                     : "gl";
   const auto* file = descriptor->file();
 
   // To make a compact name we use the index of the object in its file

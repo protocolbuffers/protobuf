@@ -79,19 +79,6 @@ TEST(MESSAGE_TEST_NAME, LegacyAddMethodsOnRepeatedStringField) {
 }
 
 
-namespace {
-template <typename T>
-static const internal::TcParseTableBase* GetTableIfAvailable(...) {
-  return nullptr;
-}
-
-template <typename T>
-static const internal::TcParseTableBase* GetTableIfAvailable(
-    decltype(internal::TcParser::GetTable<T>())) {
-  return internal::TcParser::GetTable<T>();
-}
-}  // namespace
-
 }  // namespace protobuf
 }  // namespace google
 

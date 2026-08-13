@@ -265,12 +265,8 @@ bool DescriptorPoolExtensionFinder::Find(int number, ExtensionInfo* output) {
       ABSL_CHECK_NE(prototype, nullptr)
           << "Extension factory's GetPrototype() returned nullptr; extension: "
           << extension->full_name();
-#ifdef PROTOBUF_MESSAGE_GLOBALS
-      output->message_info.globals =
-          MessageGlobalsBase::FromDefaultInstance(prototype);
-#else
-      output->message_info.prototype = prototype;
-#endif  // PROTOBUF_MESSAGE_GLOBALS
+      output->message_info.class_data =
+          &MessageGlobalsBase::FromDefaultInstance(prototype)->class_data;
       output->message_info.tc_table = prototype->GetTcParseTable();
 
     } else if (extension->cpp_type() == FieldDescriptor::CPPTYPE_ENUM) {
