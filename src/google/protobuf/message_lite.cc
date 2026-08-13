@@ -423,6 +423,7 @@ bool MessageLite::ParsePartialFromString(absl::string_view data) {
 }
 
 bool MessageLite::ParseFromArray(const void* data, int size) {
+  ABSL_DCHECK(size >= 0);
   return ParseFrom<kParse>(as_string_view(data, size));
 }
 
