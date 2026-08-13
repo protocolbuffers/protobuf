@@ -104,9 +104,11 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Mixin final : publi
                            const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
                                class_data);
 
-  inline Mixin(const Mixin& from) : Mixin(nullptr, from) {}
-  inline Mixin(Mixin&& from) noexcept : Mixin(nullptr, ::std::move(from)) {}
-  inline Mixin& operator=(const Mixin& from) {
+  PROTOBUF_ALWAYS_INLINE_NODEBUG Mixin(const Mixin& from)
+      : Mixin(nullptr, from) {}
+  PROTOBUF_ALWAYS_INLINE_NODEBUG Mixin(Mixin&& from) noexcept
+      : Mixin(nullptr, ::std::move(from)) {}
+  PROTOBUF_ALWAYS_INLINE_NODEBUG Mixin& operator=(const Mixin& from) {
     CopyFrom(from);
     return *this;
   }
@@ -129,7 +131,10 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Mixin final : publi
     return _internal_metadata_.mutable_unknown_fields<::google::protobuf::UnknownFieldSet>();
   }
 
-  [[nodiscard]] static const ::google::protobuf::Descriptor* PROTOBUF_NONNULL descriptor() {
+  [[nodiscard]]
+      PROTOBUF_ALWAYS_INLINE_NODEBUG static const ::google::protobuf::Descriptor*
+          PROTOBUF_NONNULL
+          descriptor() {
     return GetDescriptor();
   }
   [[nodiscard]] static const ::google::protobuf::Descriptor* PROTOBUF_NONNULL
@@ -160,7 +165,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Mixin final : publi
 
   // implements Message ----------------------------------------------
 
-  [[nodiscard]] Mixin* PROTOBUF_NONNULL
+  [[nodiscard]] PROTOBUF_ALWAYS_INLINE_NODEBUG Mixin* PROTOBUF_NONNULL
   New(::google::protobuf::Arena* PROTOBUF_NULLABLE arena = nullptr) const {
     return Super_::DefaultConstruct<Mixin>(arena);
   }
@@ -176,7 +181,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Mixin final : publi
                         const ::google::protobuf::MessageLite& from_msg);
 
   public:
-  [[nodiscard]] bool IsInitialized() const {
+  [[nodiscard]] PROTOBUF_ALWAYS_INLINE_NODEBUG bool IsInitialized()
+      const {
     return true;
   }
   #if defined(PROTOBUF_CUSTOM_VTABLE)
@@ -207,7 +213,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Mixin final : publi
       ::uint8_t* PROTOBUF_NONNULL target,
       ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) const final;
   #endif  // PROTOBUF_CUSTOM_VTABLE
-  [[nodiscard]] int GetCachedSize() const {
+  [[nodiscard]] PROTOBUF_ALWAYS_INLINE_NODEBUG int GetCachedSize()
+      const {
     return _impl_._cached_size_.Get();
   }
 
@@ -338,9 +345,11 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Method final : publ
                            const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
                                class_data);
 
-  inline Method(const Method& from) : Method(nullptr, from) {}
-  inline Method(Method&& from) noexcept : Method(nullptr, ::std::move(from)) {}
-  inline Method& operator=(const Method& from) {
+  PROTOBUF_ALWAYS_INLINE_NODEBUG Method(const Method& from)
+      : Method(nullptr, from) {}
+  PROTOBUF_ALWAYS_INLINE_NODEBUG Method(Method&& from) noexcept
+      : Method(nullptr, ::std::move(from)) {}
+  PROTOBUF_ALWAYS_INLINE_NODEBUG Method& operator=(const Method& from) {
     CopyFrom(from);
     return *this;
   }
@@ -363,7 +372,10 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Method final : publ
     return _internal_metadata_.mutable_unknown_fields<::google::protobuf::UnknownFieldSet>();
   }
 
-  [[nodiscard]] static const ::google::protobuf::Descriptor* PROTOBUF_NONNULL descriptor() {
+  [[nodiscard]]
+      PROTOBUF_ALWAYS_INLINE_NODEBUG static const ::google::protobuf::Descriptor*
+          PROTOBUF_NONNULL
+          descriptor() {
     return GetDescriptor();
   }
   [[nodiscard]] static const ::google::protobuf::Descriptor* PROTOBUF_NONNULL
@@ -394,7 +406,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Method final : publ
 
   // implements Message ----------------------------------------------
 
-  [[nodiscard]] Method* PROTOBUF_NONNULL
+  [[nodiscard]] PROTOBUF_ALWAYS_INLINE_NODEBUG Method* PROTOBUF_NONNULL
   New(::google::protobuf::Arena* PROTOBUF_NULLABLE arena = nullptr) const {
     return Super_::DefaultConstruct<Method>(arena);
   }
@@ -410,7 +422,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Method final : publ
                         const ::google::protobuf::MessageLite& from_msg);
 
   public:
-  [[nodiscard]] bool IsInitialized() const {
+  [[nodiscard]] PROTOBUF_ALWAYS_INLINE_NODEBUG bool IsInitialized()
+      const {
     return true;
   }
   #if defined(PROTOBUF_CUSTOM_VTABLE)
@@ -441,7 +454,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Method final : publ
       ::uint8_t* PROTOBUF_NONNULL target,
       ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) const final;
   #endif  // PROTOBUF_CUSTOM_VTABLE
-  [[nodiscard]] int GetCachedSize() const {
+  [[nodiscard]] PROTOBUF_ALWAYS_INLINE_NODEBUG int GetCachedSize()
+      const {
     return _impl_._cached_size_.Get();
   }
 
@@ -664,9 +678,11 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Api final : public 
                            const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
                                class_data);
 
-  inline Api(const Api& from) : Api(nullptr, from) {}
-  inline Api(Api&& from) noexcept : Api(nullptr, ::std::move(from)) {}
-  inline Api& operator=(const Api& from) {
+  PROTOBUF_ALWAYS_INLINE_NODEBUG Api(const Api& from)
+      : Api(nullptr, from) {}
+  PROTOBUF_ALWAYS_INLINE_NODEBUG Api(Api&& from) noexcept
+      : Api(nullptr, ::std::move(from)) {}
+  PROTOBUF_ALWAYS_INLINE_NODEBUG Api& operator=(const Api& from) {
     CopyFrom(from);
     return *this;
   }
@@ -689,7 +705,10 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Api final : public 
     return _internal_metadata_.mutable_unknown_fields<::google::protobuf::UnknownFieldSet>();
   }
 
-  [[nodiscard]] static const ::google::protobuf::Descriptor* PROTOBUF_NONNULL descriptor() {
+  [[nodiscard]]
+      PROTOBUF_ALWAYS_INLINE_NODEBUG static const ::google::protobuf::Descriptor*
+          PROTOBUF_NONNULL
+          descriptor() {
     return GetDescriptor();
   }
   [[nodiscard]] static const ::google::protobuf::Descriptor* PROTOBUF_NONNULL
@@ -720,7 +739,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Api final : public 
 
   // implements Message ----------------------------------------------
 
-  [[nodiscard]] Api* PROTOBUF_NONNULL
+  [[nodiscard]] PROTOBUF_ALWAYS_INLINE_NODEBUG Api* PROTOBUF_NONNULL
   New(::google::protobuf::Arena* PROTOBUF_NULLABLE arena = nullptr) const {
     return Super_::DefaultConstruct<Api>(arena);
   }
@@ -736,7 +755,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Api final : public 
                         const ::google::protobuf::MessageLite& from_msg);
 
   public:
-  [[nodiscard]] bool IsInitialized() const {
+  [[nodiscard]] PROTOBUF_ALWAYS_INLINE_NODEBUG bool IsInitialized()
+      const {
     return true;
   }
   #if defined(PROTOBUF_CUSTOM_VTABLE)
@@ -767,7 +787,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Api final : public 
       ::uint8_t* PROTOBUF_NONNULL target,
       ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) const final;
   #endif  // PROTOBUF_CUSTOM_VTABLE
-  [[nodiscard]] int GetCachedSize() const {
+  [[nodiscard]] PROTOBUF_ALWAYS_INLINE_NODEBUG int GetCachedSize()
+      const {
     return _impl_._cached_size_.Get();
   }
 
@@ -1069,7 +1090,8 @@ inline void Api::set_allocated_name(::std::string* PROTOBUF_NULLABLE value) {
 }
 
 // repeated .google.protobuf.Method methods = 2;
-inline int Api::_internal_methods_size() const {
+PROTOBUF_ALWAYS_INLINE_NODEBUG int
+Api::_internal_methods_size() const {
   return _internal_methods().size();
 }
 inline int Api::methods_size() const {
@@ -1124,7 +1146,8 @@ Api::_internal_mutable_methods() {
 }
 
 // repeated .google.protobuf.Option options = 3;
-inline int Api::_internal_options_size() const {
+PROTOBUF_ALWAYS_INLINE_NODEBUG int
+Api::_internal_options_size() const {
   return _internal_options().size();
 }
 inline int Api::options_size() const {
@@ -1331,7 +1354,8 @@ inline void Api::set_allocated_source_context(::google::protobuf::SourceContext*
 }
 
 // repeated .google.protobuf.Mixin mixins = 6;
-inline int Api::_internal_mixins_size() const {
+PROTOBUF_ALWAYS_INLINE_NODEBUG int
+Api::_internal_mixins_size() const {
   return _internal_mixins().size();
 }
 inline int Api::mixins_size() const {
@@ -1718,7 +1742,8 @@ inline void Method::_internal_set_response_streaming(bool value) {
 }
 
 // repeated .google.protobuf.Option options = 6;
-inline int Method::_internal_options_size() const {
+PROTOBUF_ALWAYS_INLINE_NODEBUG int
+Method::_internal_options_size() const {
   return _internal_options().size();
 }
 inline int Method::options_size() const {

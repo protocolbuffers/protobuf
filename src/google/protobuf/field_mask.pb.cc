@@ -92,8 +92,9 @@ inline constexpr FieldMask::Impl_::Impl_(
      {}
 
 template <typename>
-constexpr FieldMask::FieldMask(::_pbi::ConstantInitialized,
-                       const ::_pbi::ClassData* PROTOBUF_NONNULL class_data)
+PROTOBUF_ALWAYS_INLINE_NODEBUG constexpr FieldMask::FieldMask(
+    ::_pbi::ConstantInitialized,
+    const ::_pbi::ClassData* PROTOBUF_NONNULL class_data)
     : Super_(
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           class_data

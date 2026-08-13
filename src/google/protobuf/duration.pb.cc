@@ -92,8 +92,9 @@ inline constexpr Duration::Impl_::Impl_(
         nanos_{0} {}
 
 template <typename>
-constexpr Duration::Duration(::_pbi::ConstantInitialized,
-                       const ::_pbi::ClassData* PROTOBUF_NONNULL class_data)
+PROTOBUF_ALWAYS_INLINE_NODEBUG constexpr Duration::Duration(
+    ::_pbi::ConstantInitialized,
+    const ::_pbi::ClassData* PROTOBUF_NONNULL class_data)
     : Super_(
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           class_data

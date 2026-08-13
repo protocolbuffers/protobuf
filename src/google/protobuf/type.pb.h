@@ -278,9 +278,11 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Option final : publ
                            const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
                                class_data);
 
-  inline Option(const Option& from) : Option(nullptr, from) {}
-  inline Option(Option&& from) noexcept : Option(nullptr, ::std::move(from)) {}
-  inline Option& operator=(const Option& from) {
+  PROTOBUF_ALWAYS_INLINE_NODEBUG Option(const Option& from)
+      : Option(nullptr, from) {}
+  PROTOBUF_ALWAYS_INLINE_NODEBUG Option(Option&& from) noexcept
+      : Option(nullptr, ::std::move(from)) {}
+  PROTOBUF_ALWAYS_INLINE_NODEBUG Option& operator=(const Option& from) {
     CopyFrom(from);
     return *this;
   }
@@ -303,7 +305,10 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Option final : publ
     return _internal_metadata_.mutable_unknown_fields<::google::protobuf::UnknownFieldSet>();
   }
 
-  [[nodiscard]] static const ::google::protobuf::Descriptor* PROTOBUF_NONNULL descriptor() {
+  [[nodiscard]]
+      PROTOBUF_ALWAYS_INLINE_NODEBUG static const ::google::protobuf::Descriptor*
+          PROTOBUF_NONNULL
+          descriptor() {
     return GetDescriptor();
   }
   [[nodiscard]] static const ::google::protobuf::Descriptor* PROTOBUF_NONNULL
@@ -334,7 +339,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Option final : publ
 
   // implements Message ----------------------------------------------
 
-  [[nodiscard]] Option* PROTOBUF_NONNULL
+  [[nodiscard]] PROTOBUF_ALWAYS_INLINE_NODEBUG Option* PROTOBUF_NONNULL
   New(::google::protobuf::Arena* PROTOBUF_NULLABLE arena = nullptr) const {
     return Super_::DefaultConstruct<Option>(arena);
   }
@@ -350,7 +355,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Option final : publ
                         const ::google::protobuf::MessageLite& from_msg);
 
   public:
-  [[nodiscard]] bool IsInitialized() const {
+  [[nodiscard]] PROTOBUF_ALWAYS_INLINE_NODEBUG bool IsInitialized()
+      const {
     return true;
   }
   #if defined(PROTOBUF_CUSTOM_VTABLE)
@@ -381,7 +387,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Option final : publ
       ::uint8_t* PROTOBUF_NONNULL target,
       ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) const final;
   #endif  // PROTOBUF_CUSTOM_VTABLE
-  [[nodiscard]] int GetCachedSize() const {
+  [[nodiscard]] PROTOBUF_ALWAYS_INLINE_NODEBUG int GetCachedSize()
+      const {
     return _impl_._cached_size_.Get();
   }
 
@@ -512,9 +519,11 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Field final : publi
                            const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
                                class_data);
 
-  inline Field(const Field& from) : Field(nullptr, from) {}
-  inline Field(Field&& from) noexcept : Field(nullptr, ::std::move(from)) {}
-  inline Field& operator=(const Field& from) {
+  PROTOBUF_ALWAYS_INLINE_NODEBUG Field(const Field& from)
+      : Field(nullptr, from) {}
+  PROTOBUF_ALWAYS_INLINE_NODEBUG Field(Field&& from) noexcept
+      : Field(nullptr, ::std::move(from)) {}
+  PROTOBUF_ALWAYS_INLINE_NODEBUG Field& operator=(const Field& from) {
     CopyFrom(from);
     return *this;
   }
@@ -537,7 +546,10 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Field final : publi
     return _internal_metadata_.mutable_unknown_fields<::google::protobuf::UnknownFieldSet>();
   }
 
-  [[nodiscard]] static const ::google::protobuf::Descriptor* PROTOBUF_NONNULL descriptor() {
+  [[nodiscard]]
+      PROTOBUF_ALWAYS_INLINE_NODEBUG static const ::google::protobuf::Descriptor*
+          PROTOBUF_NONNULL
+          descriptor() {
     return GetDescriptor();
   }
   [[nodiscard]] static const ::google::protobuf::Descriptor* PROTOBUF_NONNULL
@@ -568,7 +580,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Field final : publi
 
   // implements Message ----------------------------------------------
 
-  [[nodiscard]] Field* PROTOBUF_NONNULL
+  [[nodiscard]] PROTOBUF_ALWAYS_INLINE_NODEBUG Field* PROTOBUF_NONNULL
   New(::google::protobuf::Arena* PROTOBUF_NULLABLE arena = nullptr) const {
     return Super_::DefaultConstruct<Field>(arena);
   }
@@ -584,7 +596,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Field final : publi
                         const ::google::protobuf::MessageLite& from_msg);
 
   public:
-  [[nodiscard]] bool IsInitialized() const {
+  [[nodiscard]] PROTOBUF_ALWAYS_INLINE_NODEBUG bool IsInitialized()
+      const {
     return true;
   }
   #if defined(PROTOBUF_CUSTOM_VTABLE)
@@ -615,7 +628,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Field final : publi
       ::uint8_t* PROTOBUF_NONNULL target,
       ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) const final;
   #endif  // PROTOBUF_CUSTOM_VTABLE
-  [[nodiscard]] int GetCachedSize() const {
+  [[nodiscard]] PROTOBUF_ALWAYS_INLINE_NODEBUG int GetCachedSize()
+      const {
     return _impl_._cached_size_.Get();
   }
 
@@ -921,9 +935,11 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED EnumValue final : p
                            const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
                                class_data);
 
-  inline EnumValue(const EnumValue& from) : EnumValue(nullptr, from) {}
-  inline EnumValue(EnumValue&& from) noexcept : EnumValue(nullptr, ::std::move(from)) {}
-  inline EnumValue& operator=(const EnumValue& from) {
+  PROTOBUF_ALWAYS_INLINE_NODEBUG EnumValue(const EnumValue& from)
+      : EnumValue(nullptr, from) {}
+  PROTOBUF_ALWAYS_INLINE_NODEBUG EnumValue(EnumValue&& from) noexcept
+      : EnumValue(nullptr, ::std::move(from)) {}
+  PROTOBUF_ALWAYS_INLINE_NODEBUG EnumValue& operator=(const EnumValue& from) {
     CopyFrom(from);
     return *this;
   }
@@ -946,7 +962,10 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED EnumValue final : p
     return _internal_metadata_.mutable_unknown_fields<::google::protobuf::UnknownFieldSet>();
   }
 
-  [[nodiscard]] static const ::google::protobuf::Descriptor* PROTOBUF_NONNULL descriptor() {
+  [[nodiscard]]
+      PROTOBUF_ALWAYS_INLINE_NODEBUG static const ::google::protobuf::Descriptor*
+          PROTOBUF_NONNULL
+          descriptor() {
     return GetDescriptor();
   }
   [[nodiscard]] static const ::google::protobuf::Descriptor* PROTOBUF_NONNULL
@@ -977,7 +996,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED EnumValue final : p
 
   // implements Message ----------------------------------------------
 
-  [[nodiscard]] EnumValue* PROTOBUF_NONNULL
+  [[nodiscard]] PROTOBUF_ALWAYS_INLINE_NODEBUG EnumValue* PROTOBUF_NONNULL
   New(::google::protobuf::Arena* PROTOBUF_NULLABLE arena = nullptr) const {
     return Super_::DefaultConstruct<EnumValue>(arena);
   }
@@ -993,7 +1012,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED EnumValue final : p
                         const ::google::protobuf::MessageLite& from_msg);
 
   public:
-  [[nodiscard]] bool IsInitialized() const {
+  [[nodiscard]] PROTOBUF_ALWAYS_INLINE_NODEBUG bool IsInitialized()
+      const {
     return true;
   }
   #if defined(PROTOBUF_CUSTOM_VTABLE)
@@ -1024,7 +1044,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED EnumValue final : p
       ::uint8_t* PROTOBUF_NONNULL target,
       ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) const final;
   #endif  // PROTOBUF_CUSTOM_VTABLE
-  [[nodiscard]] int GetCachedSize() const {
+  [[nodiscard]] PROTOBUF_ALWAYS_INLINE_NODEBUG int GetCachedSize()
+      const {
     return _impl_._cached_size_.Get();
   }
 
@@ -1172,9 +1193,11 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Type final : public
                            const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
                                class_data);
 
-  inline Type(const Type& from) : Type(nullptr, from) {}
-  inline Type(Type&& from) noexcept : Type(nullptr, ::std::move(from)) {}
-  inline Type& operator=(const Type& from) {
+  PROTOBUF_ALWAYS_INLINE_NODEBUG Type(const Type& from)
+      : Type(nullptr, from) {}
+  PROTOBUF_ALWAYS_INLINE_NODEBUG Type(Type&& from) noexcept
+      : Type(nullptr, ::std::move(from)) {}
+  PROTOBUF_ALWAYS_INLINE_NODEBUG Type& operator=(const Type& from) {
     CopyFrom(from);
     return *this;
   }
@@ -1197,7 +1220,10 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Type final : public
     return _internal_metadata_.mutable_unknown_fields<::google::protobuf::UnknownFieldSet>();
   }
 
-  [[nodiscard]] static const ::google::protobuf::Descriptor* PROTOBUF_NONNULL descriptor() {
+  [[nodiscard]]
+      PROTOBUF_ALWAYS_INLINE_NODEBUG static const ::google::protobuf::Descriptor*
+          PROTOBUF_NONNULL
+          descriptor() {
     return GetDescriptor();
   }
   [[nodiscard]] static const ::google::protobuf::Descriptor* PROTOBUF_NONNULL
@@ -1228,7 +1254,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Type final : public
 
   // implements Message ----------------------------------------------
 
-  [[nodiscard]] Type* PROTOBUF_NONNULL
+  [[nodiscard]] PROTOBUF_ALWAYS_INLINE_NODEBUG Type* PROTOBUF_NONNULL
   New(::google::protobuf::Arena* PROTOBUF_NULLABLE arena = nullptr) const {
     return Super_::DefaultConstruct<Type>(arena);
   }
@@ -1244,7 +1270,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Type final : public
                         const ::google::protobuf::MessageLite& from_msg);
 
   public:
-  [[nodiscard]] bool IsInitialized() const {
+  [[nodiscard]] PROTOBUF_ALWAYS_INLINE_NODEBUG bool IsInitialized()
+      const {
     return true;
   }
   #if defined(PROTOBUF_CUSTOM_VTABLE)
@@ -1275,7 +1302,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Type final : public
       ::uint8_t* PROTOBUF_NONNULL target,
       ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) const final;
   #endif  // PROTOBUF_CUSTOM_VTABLE
-  [[nodiscard]] int GetCachedSize() const {
+  [[nodiscard]] PROTOBUF_ALWAYS_INLINE_NODEBUG int GetCachedSize()
+      const {
     return _impl_._cached_size_.Get();
   }
 
@@ -1507,9 +1535,11 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Enum final : public
                            const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
                                class_data);
 
-  inline Enum(const Enum& from) : Enum(nullptr, from) {}
-  inline Enum(Enum&& from) noexcept : Enum(nullptr, ::std::move(from)) {}
-  inline Enum& operator=(const Enum& from) {
+  PROTOBUF_ALWAYS_INLINE_NODEBUG Enum(const Enum& from)
+      : Enum(nullptr, from) {}
+  PROTOBUF_ALWAYS_INLINE_NODEBUG Enum(Enum&& from) noexcept
+      : Enum(nullptr, ::std::move(from)) {}
+  PROTOBUF_ALWAYS_INLINE_NODEBUG Enum& operator=(const Enum& from) {
     CopyFrom(from);
     return *this;
   }
@@ -1532,7 +1562,10 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Enum final : public
     return _internal_metadata_.mutable_unknown_fields<::google::protobuf::UnknownFieldSet>();
   }
 
-  [[nodiscard]] static const ::google::protobuf::Descriptor* PROTOBUF_NONNULL descriptor() {
+  [[nodiscard]]
+      PROTOBUF_ALWAYS_INLINE_NODEBUG static const ::google::protobuf::Descriptor*
+          PROTOBUF_NONNULL
+          descriptor() {
     return GetDescriptor();
   }
   [[nodiscard]] static const ::google::protobuf::Descriptor* PROTOBUF_NONNULL
@@ -1563,7 +1596,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Enum final : public
 
   // implements Message ----------------------------------------------
 
-  [[nodiscard]] Enum* PROTOBUF_NONNULL
+  [[nodiscard]] PROTOBUF_ALWAYS_INLINE_NODEBUG Enum* PROTOBUF_NONNULL
   New(::google::protobuf::Arena* PROTOBUF_NULLABLE arena = nullptr) const {
     return Super_::DefaultConstruct<Enum>(arena);
   }
@@ -1579,7 +1612,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Enum final : public
                         const ::google::protobuf::MessageLite& from_msg);
 
   public:
-  [[nodiscard]] bool IsInitialized() const {
+  [[nodiscard]] PROTOBUF_ALWAYS_INLINE_NODEBUG bool IsInitialized()
+      const {
     return true;
   }
   #if defined(PROTOBUF_CUSTOM_VTABLE)
@@ -1610,7 +1644,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Enum final : public
       ::uint8_t* PROTOBUF_NONNULL target,
       ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) const final;
   #endif  // PROTOBUF_CUSTOM_VTABLE
-  [[nodiscard]] int GetCachedSize() const {
+  [[nodiscard]] PROTOBUF_ALWAYS_INLINE_NODEBUG int GetCachedSize()
+      const {
     return _impl_._cached_size_.Get();
   }
 
@@ -1873,7 +1908,8 @@ inline void Type::set_allocated_name(::std::string* PROTOBUF_NULLABLE value) {
 }
 
 // repeated .google.protobuf.Field fields = 2;
-inline int Type::_internal_fields_size() const {
+PROTOBUF_ALWAYS_INLINE_NODEBUG int
+Type::_internal_fields_size() const {
   return _internal_fields().size();
 }
 inline int Type::fields_size() const {
@@ -1928,7 +1964,8 @@ Type::_internal_mutable_fields() {
 }
 
 // repeated string oneofs = 3;
-inline int Type::_internal_oneofs_size() const {
+PROTOBUF_ALWAYS_INLINE_NODEBUG int
+Type::_internal_oneofs_size() const {
   return _internal_oneofs().size();
 }
 inline int Type::oneofs_size() const {
@@ -2000,7 +2037,8 @@ Type::_internal_mutable_oneofs() {
 }
 
 // repeated .google.protobuf.Option options = 4;
-inline int Type::_internal_options_size() const {
+PROTOBUF_ALWAYS_INLINE_NODEBUG int
+Type::_internal_options_size() const {
   return _internal_options().size();
 }
 inline int Type::options_size() const {
@@ -2488,7 +2526,8 @@ inline void Field::_internal_set_packed(bool value) {
 }
 
 // repeated .google.protobuf.Option options = 9;
-inline int Field::_internal_options_size() const {
+PROTOBUF_ALWAYS_INLINE_NODEBUG int
+Field::_internal_options_size() const {
   return _internal_options().size();
 }
 inline int Field::options_size() const {
@@ -2739,7 +2778,8 @@ inline void Enum::set_allocated_name(::std::string* PROTOBUF_NULLABLE value) {
 }
 
 // repeated .google.protobuf.EnumValue enumvalue = 2;
-inline int Enum::_internal_enumvalue_size() const {
+PROTOBUF_ALWAYS_INLINE_NODEBUG int
+Enum::_internal_enumvalue_size() const {
   return _internal_enumvalue().size();
 }
 inline int Enum::enumvalue_size() const {
@@ -2794,7 +2834,8 @@ Enum::_internal_mutable_enumvalue() {
 }
 
 // repeated .google.protobuf.Option options = 3;
-inline int Enum::_internal_options_size() const {
+PROTOBUF_ALWAYS_INLINE_NODEBUG int
+Enum::_internal_options_size() const {
   return _internal_options().size();
 }
 inline int Enum::options_size() const {
@@ -3122,7 +3163,8 @@ inline void EnumValue::_internal_set_number(::int32_t value) {
 }
 
 // repeated .google.protobuf.Option options = 3;
-inline int EnumValue::_internal_options_size() const {
+PROTOBUF_ALWAYS_INLINE_NODEBUG int
+EnumValue::_internal_options_size() const {
   return _internal_options().size();
 }
 inline int EnumValue::options_size() const {
