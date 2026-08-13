@@ -96,6 +96,7 @@ cc_library(
         "//upb:__pkg__",
         "//upb/message:__subpackages__",
         "//video/youtube/utils/elements/client/component_type:__pkg__",
+        "//video/youtube/utils/elements/upb/crosslang:__pkg__",
     ],
     deps = [
         ":back_alloc",
