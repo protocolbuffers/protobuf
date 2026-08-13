@@ -302,6 +302,23 @@ void MessageBuilderGenerator::GenerateDescriptorMethods(io::Printer* printer) {
 
 void MessageBuilderGenerator::GenerateCommonBuilderMethods(
     io::Printer* printer) {
+  GenerateBuilderConstructors(printer);
+  GenerateBuilderClearMethod(printer);
+  GenerateBuilderGetDescriptorForTypeMethod(printer);
+  GenerateBuilderGetDefaultInstanceForTypeMethod(printer);
+  GenerateBuilderBuildMethod(printer);
+  GenerateBuildPartial(printer);
+  GenerateBuilderExtensionMethods(printer);
+
+  // -----------------------------------------------------------------
+
+  if (context_->HasGeneratedMethods(descriptor_)) {
+    GenerateBuilderMergeFromMethods(printer);
+  }
+}
+
+void MessageBuilderGenerator::GenerateBuilderConstructors(
+    io::Printer* printer) {
   // Decide if we really need to have the "maybeForceBuilderInitialization()"
   // method.
   // TODO: Remove the need for this entirely
@@ -358,7 +375,9 @@ void MessageBuilderGenerator::GenerateCommonBuilderMethods(
         "  }\n"
         "}\n");
   }
+}
 
+void MessageBuilderGenerator::GenerateBuilderClearMethod(io::Printer* printer) {
   printer->Print(
       "@java.lang.Override\n"
       "public Builder clear() {\n"
@@ -389,7 +408,10 @@ void MessageBuilderGenerator::GenerateCommonBuilderMethods(
       "  return this;\n"
       "}\n"
       "\n");
+}
 
+void MessageBuilderGenerator::GenerateBuilderGetDescriptorForTypeMethod(
+    io::Printer* printer) {
   printer->Print(
       "@java.lang.Override\n"
       "public com.google.protobuf.Descriptors.Descriptor\n"
@@ -399,7 +421,10 @@ void MessageBuilderGenerator::GenerateCommonBuilderMethods(
       "\n",
       "fileclass", name_resolver_->GetImmutableClassName(descriptor_->file()),
       "identifier", UniqueFileScopeIdentifier(descriptor_));
+}
 
+void MessageBuilderGenerator::GenerateBuilderGetDefaultInstanceForTypeMethod(
+    io::Printer* printer) {
   // LITE runtime implements this in GeneratedMessageLite.
   printer->Print(
       "@java.lang.Override\n"
@@ -408,7 +433,9 @@ void MessageBuilderGenerator::GenerateCommonBuilderMethods(
       "}\n"
       "\n",
       "classname", name_resolver_->GetImmutableClassName(descriptor_));
+}
 
+void MessageBuilderGenerator::GenerateBuilderBuildMethod(io::Printer* printer) {
   printer->Print(
       "@java.lang.Override\n"
       "public $classname$ build() {\n"
@@ -420,9 +447,10 @@ void MessageBuilderGenerator::GenerateCommonBuilderMethods(
       "}\n"
       "\n",
       "classname", name_resolver_->GetImmutableClassName(descriptor_));
+}
 
-  GenerateBuildPartial(printer);
-
+void MessageBuilderGenerator::GenerateBuilderExtensionMethods(
+    io::Printer* printer) {
   // We include these methods only in open source to maintain long term ABI
   // compatibility, and there should be no need to include them in Google3.
   if (google::protobuf::internal::IsOss() && descriptor_->extension_range_count() > 0) {
@@ -451,12 +479,6 @@ void MessageBuilderGenerator::GenerateCommonBuilderMethods(
         "  return super.clearExtension(extension);\n"
         "}\n",
         "classname", name_resolver_->GetImmutableClassName(descriptor_));
-  }
-
-  // -----------------------------------------------------------------
-
-  if (context_->HasGeneratedMethods(descriptor_)) {
-    GenerateBuilderMergeFromMethods(printer);
   }
 }
 
