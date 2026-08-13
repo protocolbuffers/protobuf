@@ -6,6 +6,7 @@ load(
     "flag_group",
     "flag_set",
     "tool_path",
+    "variable_with_value",
     "with_feature_set",
 )
 load("@rules_cc//cc/common:cc_common.bzl", "cc_common")
@@ -176,12 +177,115 @@ def _impl(ctx):
         ],
     )
 
+    libraries_to_link_feature = feature(
+        name = "libraries_to_link",
+        enabled = True,
+        flag_sets = [
+            flag_set(
+                actions = all_link_actions,
+                flag_groups = [
+                    flag_group(
+                        iterate_over = "libraries_to_link",
+                        flag_groups = [
+                            flag_group(
+                                expand_if_equal = variable_with_value(
+                                    "libraries_to_link.type",
+                                    "object_file_group",
+                                ),
+                                iterate_over = "libraries_to_link.object_files",
+                                flags = ["%{libraries_to_link.object_files}"],
+                            ),
+                            flag_group(
+                                expand_if_equal = variable_with_value(
+                                    "libraries_to_link.type",
+                                    "object_file",
+                                ),
+                                flags = ["%{libraries_to_link.name}"],
+                            ),
+                            flag_group(
+                                expand_if_equal = variable_with_value(
+                                    "libraries_to_link.type",
+                                    "interface_library",
+                                ),
+                                flags = ["%{libraries_to_link.name}"],
+                            ),
+                            flag_group(
+                                expand_if_equal = variable_with_value(
+                                    "libraries_to_link.type",
+                                    "static_library",
+                                ),
+                                flag_groups = (
+                                    [
+                                        flag_group(
+                                            expand_if_false = "libraries_to_link.is_whole_archive",
+                                            flags = ["%{libraries_to_link.name}"],
+                                        ),
+                                        flag_group(
+                                            expand_if_true = "libraries_to_link.is_whole_archive",
+                                            flags = ["-Wl,-force_load,%{libraries_to_link.name}"],
+                                        ),
+                                    ] if "osx" in ctx.attr.target_full_name else [
+                                        flag_group(
+                                            expand_if_true = "libraries_to_link.is_whole_archive",
+                                            flags = ["-Wl,-whole-archive"],
+                                        ),
+                                        flag_group(
+                                            flags = ["%{libraries_to_link.name}"],
+                                        ),
+                                        flag_group(
+                                            expand_if_true = "libraries_to_link.is_whole_archive",
+                                            flags = ["-Wl,-no-whole-archive"],
+                                        ),
+                                    ]
+                                ),
+                            ),
+                            flag_group(
+                                expand_if_equal = variable_with_value(
+                                    "libraries_to_link.type",
+                                    "dynamic_library",
+                                ),
+                                flags = ["-l%{libraries_to_link.name}"],
+                            ),
+                            flag_group(
+                                expand_if_equal = variable_with_value(
+                                    "libraries_to_link.type",
+                                    "versioned_dynamic_library",
+                                ),
+                                flags = ["%{libraries_to_link.path}" if "osx" in ctx.attr.target_full_name else "-l:%{libraries_to_link.name}"],
+                            ),
+                        ],
+                    ),
+                ],
+            ),
+        ],
+    )
+
+    user_link_flags_feature = feature(
+        name = "user_link_flags",
+        enabled = True,
+        flag_sets = [
+            flag_set(
+                actions = all_link_actions,
+                flag_groups = [
+                    flag_group(
+                        expand_if_available = "user_link_flags",
+                        iterate_over = "user_link_flags",
+                        flags = ["%{user_link_flags}"],
+                    ),
+                ],
+            ),
+        ],
+    )
+
     features = [
         linker_flags,
         compiler_flags,
         sysroot_flags,
+        libraries_to_link_feature,
+        user_link_flags_feature,
         feature(name = "dbg"),
         feature(name = "opt"),
+        feature(name = "force_no_whole_archive"),
     ]
 
     if "mingw" in ctx.attr.target_full_name:

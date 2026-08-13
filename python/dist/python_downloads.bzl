@@ -7,8 +7,8 @@ load("@rules_cc//cc:defs.bzl", "cc_library")
 
 cc_library(
     name = "python_headers",
-    hdrs = glob(["**/Include/**/*.h"]),
-    strip_include_prefix = "Python-{}/Include",
+    hdrs = glob(["Python-{0}/Include/**/*.h"]),
+    strip_include_prefix = "Python-{0}/Include",
     visibility = ["//visibility:public"],
 )
 """
