@@ -69,7 +69,7 @@ constexpr auto ImplicitWeakMessage::InternalGenerateClassData_(
       /*type_name=*/""};
 }
 
-constexpr auto ImplicitWeakMessage::InternalGenerateParseTable_(
+constexpr auto ImplicitWeakMessage::_Helpers::InternalGenerateParseTable_(
     const ClassData* class_data) {
   return CreateStubTcParseTable<ImplicitWeakMessage, ParseImpl>(class_data);
 }
@@ -89,8 +89,8 @@ struct ImplicitWeakMessageDefaultType : MessageGlobalsBase {
       : MessageGlobalsBase(ImplicitWeakMessage::InternalGenerateClassData_(
             _default, &implicit_weak_message_globals._table.header)),
         _default(ConstantInitialized{}),
-        _table(
-            ImplicitWeakMessage::InternalGenerateParseTable_(GetClassData())) {}
+        _table(ImplicitWeakMessage::_Helpers::InternalGenerateParseTable_(
+            GetClassData())) {}
   ~ImplicitWeakMessageDefaultType() {}
   union {
     alignas(kMaxMessageAlignment) ImplicitWeakMessage _default;  // NOLINT

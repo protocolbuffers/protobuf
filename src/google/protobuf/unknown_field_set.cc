@@ -27,6 +27,7 @@
 #include "google/protobuf/io/zero_copy_stream_impl_lite.h"
 #include "google/protobuf/message_lite.h"
 #include "google/protobuf/parse_context.h"
+#include "google/protobuf/repeated_field.h"
 #include "google/protobuf/wire_format.h"
 
 // Must be included last.
@@ -259,6 +260,9 @@ uint8_t* UnknownField::InternalSerializeLengthDelimitedNoTag(
   return target;
 }
 
+template class PROTOBUF_EXPORT_TEMPLATE_DEFINE RepeatedField<UnknownField>;
+template class PROTOBUF_EXPORT_TEMPLATE_DEFINE
+    internal::RepeatedIterator<UnknownField>;
 
 }  // namespace protobuf
 }  // namespace google

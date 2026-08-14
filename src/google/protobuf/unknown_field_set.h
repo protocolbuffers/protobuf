@@ -442,6 +442,11 @@ struct InternalMetadata::Container<UnknownFieldSet>
 };
 }  // namespace internal
 
+extern template class PROTOBUF_EXPORT_TEMPLATE_DECLARE
+    RepeatedField<UnknownField>;
+extern template class PROTOBUF_EXPORT_TEMPLATE_DECLARE
+    internal::RepeatedIterator<UnknownField>;
+
 }  // namespace protobuf
 }  // namespace google
 

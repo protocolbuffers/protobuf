@@ -115,7 +115,7 @@ class Map : public FieldGeneratorBase {
 
   void GenerateSwappingCode(io::Printer* p) const override {
     p->Emit(R"cc(
-      $field_$.InternalSwap(&other->$field_$);
+      this_.$field_$.InternalSwap(&other->$field_$);
     )cc");
   }
 

@@ -804,12 +804,14 @@ class PROTOBUF_EXPORT MessageLite {
   static void* NewImpl(const void*, void* mem, Arena* arena) {
     return ::new (mem) T(arena);
   }
+
   template <typename T>
   static constexpr internal::MessageCreator GetNewImpl() {
     if constexpr (internal::EnableCustomNewFor<T>()) {
-      return T::InternalNewImpl_();
+      return T::_Helpers::InternalNewImpl_();
     } else {
-      return internal::MessageCreator(&T::PlacementNew_, sizeof(T), alignof(T));
+      return internal::MessageCreator(&T::_Helpers::PlacementNew_, sizeof(T),
+                                      alignof(T));
     }
   }
 

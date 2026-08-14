@@ -42,7 +42,11 @@ class CppFeatures::_Internal {
       8 * PROTOBUF_FIELD_OFFSET(CppFeatures, _impl_._has_bits_);
 };
 
-constexpr CppFeatures::ParseTableT_ CppFeatures::InternalGenerateParseTable_(const ::_pbi::ClassData* class_data) {
+CppFeatures::_Helpers::_Helpers() {
+  static_assert(!::std::is_trivial_v<CppFeatures::_Helpers>);
+  static_assert(!::std::is_aggregate_v<CppFeatures::_Helpers>);
+}
+constexpr CppFeatures::ParseTableT_ CppFeatures::_Helpers::InternalGenerateParseTable_(const ::_pbi::ClassData* class_data) {
   return ParseTableT_{
     {
       PROTOBUF_FIELD_OFFSET(CppFeatures, _impl_._has_bits_),
@@ -118,15 +122,15 @@ PROTOBUF_ALWAYS_INLINE_NODEBUG constexpr CppFeatures::CppFeatures(
           ),
       _impl_(internal_visibility(), ::_pbi::ConstantInitialized()) {
 }
-inline void* PROTOBUF_NONNULL CppFeatures::PlacementNew_(
+inline void* PROTOBUF_NONNULL CppFeatures::_Helpers::PlacementNew_(
     const void* PROTOBUF_NONNULL, void* PROTOBUF_NONNULL mem,
     ::google::protobuf::Arena* PROTOBUF_NULLABLE arena) {
   return ::new (mem) CppFeatures(arena);
 }
-constexpr auto CppFeatures::InternalNewImpl_() {
+constexpr auto CppFeatures::_Helpers::InternalNewImpl_() {
   return ::google::protobuf::internal::MessageCreator::ZeroInit(sizeof(CppFeatures), alignof(CppFeatures));
 }
-constexpr auto CppFeatures::InternalGenerateClassData_(
+constexpr auto CppFeatures::_Helpers::InternalGenerateClassData_(
     const MessageLite& prototype,
     const ::google::protobuf::internal::TcParseTableBase* tc_table) {
   return ::google::protobuf::internal::ClassDataFull{
@@ -138,11 +142,12 @@ constexpr auto CppFeatures::InternalGenerateClassData_(
           tc_table,
 #endif
           nullptr,  // IsInitialized
-          &CppFeatures::MergeImpl,
+          &CppFeatures::_Helpers::MergeImpl,
           Super_::GetNewImpl<CppFeatures>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-          &CppFeatures::SharedDtor,
-          &CppFeatures::Clear, &CppFeatures::ByteSizeLong, &CppFeatures::_InternalSerialize,
+          &CppFeatures::_Helpers::SharedDtor,
+          &CppFeatures::_Helpers::Clear, &CppFeatures::_Helpers::ByteSizeLong,
+              &CppFeatures::_Helpers::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
           PROTOBUF_FIELD_OFFSET(CppFeatures, _impl_._cached_size_),
           false,
@@ -163,7 +168,7 @@ struct CppFeaturesGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
         _default(::_pbi::ConstantInitialized{},
                  CppFeatures_class_data_.base())
 #else   // !PROTOBUF_MESSAGE_GLOBALS
-        MessageGlobalsBase(CppFeatures::InternalGenerateClassData_(
+        MessageGlobalsBase(CppFeatures::_Helpers::InternalGenerateClassData_(
             _default, &CppFeatures_globals_._table.header)),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
         _table(::_pbi::PrivateAccess::GenerateParseTable<CppFeatures>(
@@ -295,7 +300,7 @@ CppFeatures::CppFeatures(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 #else   // PROTOBUF_CUSTOM_VTABLE
     : Super_(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
-  SharedCtor(arena);
+  _Helpers::SharedCtor(*this, arena);
   // @@protoc_insertion_point(arena_constructor:pb.CppFeatures)
 }
 CppFeatures::CppFeatures(
@@ -314,9 +319,11 @@ PROTOBUF_NDEBUG_INLINE CppFeatures::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
      {}
 
-inline void CppFeatures::SharedCtor(::_pb::Arena* PROTOBUF_NULLABLE arena) {
-  new (&_impl_) Impl_(internal_visibility(), arena);
-  ::memset(reinterpret_cast<char*>(&_impl_) +
+inline void CppFeatures::_Helpers::SharedCtor(
+    ::_pb::MessageLite& self, ::_pb::Arena* PROTOBUF_NULLABLE arena) {
+  CppFeatures& this_ = static_cast<CppFeatures&>(self);
+  new (&this_._impl_) Impl_(this_.internal_visibility(), arena);
+  ::memset(reinterpret_cast<char*>(&this_._impl_) +
                offsetof(Impl_, string_type_),
            0,
            offsetof(Impl_, repeated_type_) -
@@ -325,9 +332,9 @@ inline void CppFeatures::SharedCtor(::_pb::Arena* PROTOBUF_NULLABLE arena) {
 }
 CppFeatures::~CppFeatures() {
   // @@protoc_insertion_point(destructor:pb.CppFeatures)
-  SharedDtor(*this);
+  _Helpers::SharedDtor(*this);
 }
-inline void CppFeatures::SharedDtor(MessageLite& self) {
+inline void CppFeatures::_Helpers::SharedDtor(MessageLite& self) {
   CppFeatures& this_ = static_cast<CppFeatures&>(self);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     this_.CheckHasBitConsistency();
@@ -340,7 +347,8 @@ inline void CppFeatures::SharedDtor(MessageLite& self) {
 #ifndef PROTOBUF_MESSAGE_GLOBALS
 PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const
     ::google::protobuf::internal::ClassDataFull CppFeatures_class_data_ =
-        CppFeatures::InternalGenerateClassData_(CppFeatures_globals_._default);
+        CppFeatures::_Helpers::InternalGenerateClassData_(
+            CppFeatures_globals_._default);
 
 PROTOBUF_ATTRIBUTE_WEAK const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
 CppFeatures::GetClassData() const {
@@ -360,11 +368,11 @@ CppFeatures::GetClassData() const {
 #ifndef PROTOBUF_MESSAGE_GLOBALS
 PROTOBUF_CONSTINIT
 PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const CppFeatures::ParseTableT_
-    CppFeatures::_table_ =
-        CppFeatures::InternalGenerateParseTable_(CppFeatures_class_data_.base());
+    CppFeatures::_table_ = CppFeatures::_Helpers::InternalGenerateParseTable_(
+        CppFeatures_class_data_.base());
 #endif  // !PROTOBUF_MESSAGE_GLOBALS
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-PROTOBUF_NOINLINE void CppFeatures::Clear(MessageLite& base) {
+PROTOBUF_NOINLINE void CppFeatures::_Helpers::Clear(MessageLite& base) {
   CppFeatures& this_ = static_cast<CppFeatures&>(base);
 #else   // PROTOBUF_CUSTOM_VTABLE
 PROTOBUF_NOINLINE void CppFeatures::Clear() {
@@ -388,7 +396,7 @@ PROTOBUF_NOINLINE void CppFeatures::Clear() {
 }
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-::uint8_t* PROTOBUF_NONNULL CppFeatures::_InternalSerialize(
+::uint8_t* PROTOBUF_NONNULL CppFeatures::_Helpers::_InternalSerialize(
     const ::google::protobuf::MessageLite& base, ::uint8_t* PROTOBUF_NONNULL target,
     ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) {
   const CppFeatures& this_ = static_cast<const CppFeatures&>(base);
@@ -444,7 +452,7 @@ PROTOBUF_NOINLINE void CppFeatures::Clear() {
 }
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-::size_t CppFeatures::ByteSizeLong(const MessageLite& base) {
+::size_t CppFeatures::_Helpers::ByteSizeLong(const MessageLite& base) {
   const CppFeatures& this_ = static_cast<const CppFeatures&>(base);
 #else   // PROTOBUF_CUSTOM_VTABLE
 ::size_t CppFeatures::ByteSizeLong() const {
@@ -474,8 +482,8 @@ PROTOBUF_NOINLINE void CppFeatures::Clear() {
                                              &this_._impl_._cached_size_);
 }
 
-void CppFeatures::MergeImpl(::google::protobuf::MessageLite& to_msg,
-                      const ::google::protobuf::MessageLite& from_msg) {
+void CppFeatures::_Helpers::MergeImpl(::google::protobuf::MessageLite& to_msg,
+                                const ::google::protobuf::MessageLite& from_msg) {
    auto* const _this = static_cast<CppFeatures*>(&to_msg);
   auto& from = static_cast<const CppFeatures&>(from_msg);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
@@ -514,16 +522,18 @@ void CppFeatures::CopyFrom(const CppFeatures& from) {
 }
 
 
-void CppFeatures::InternalSwap(CppFeatures* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
+void CppFeatures::_Helpers::InternalSwap(
+    ::_pb::MessageLite& PROTOBUF_RESTRICT self,
+    CppFeatures* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
   using ::std::swap;
-  _internal_metadata_.InternalSwap(&other->_internal_metadata_);
-  swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
-  ::google::protobuf::internal::memswap<
-      PROTOBUF_FIELD_OFFSET(CppFeatures, _impl_.repeated_type_)
-      + sizeof(CppFeatures::_impl_.repeated_type_)
-      - PROTOBUF_FIELD_OFFSET(CppFeatures, _impl_.string_type_)>(
-          reinterpret_cast<char*>(&_impl_.string_type_),
-          reinterpret_cast<char*>(&other->_impl_.string_type_));
+  CppFeatures& this_ = static_cast<CppFeatures&>(self);
+  this_._internal_metadata_.InternalSwap(&other->_internal_metadata_);
+  swap(this_._impl_._has_bits_[0], other->_impl_._has_bits_[0]);
+  ::google::protobuf::internal::memswap<PROTOBUF_FIELD_OFFSET(CppFeatures, _impl_.repeated_type_) +
+                 sizeof(CppFeatures::_impl_.repeated_type_) -
+                 PROTOBUF_FIELD_OFFSET(CppFeatures, _impl_.string_type_)>(
+      reinterpret_cast<char*>(&this_._impl_.string_type_),
+      reinterpret_cast<char*>(&other->_impl_.string_type_));
 }
 
 ::google::protobuf::Metadata CppFeatures::GetMetadata() const {

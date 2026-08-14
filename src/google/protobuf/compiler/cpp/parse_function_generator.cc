@@ -190,8 +190,8 @@ void ParseFunctionGenerator::GenerateDataDefinitions(io::Printer* p) {
 #ifndef PROTOBUF_MESSAGE_GLOBALS
         PROTOBUF_CONSTINIT
         PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const $Msg$::ParseTableT_
-            $Msg$::_table_ =
-                $Msg$::InternalGenerateParseTable_($Msg$_class_data_.base());
+            $Msg$::_table_ = $Msg$::_Helpers::InternalGenerateParseTable_(
+                $Msg$_class_data_.base());
 #endif  // !PROTOBUF_MESSAGE_GLOBALS
       )cc");
 }
@@ -502,7 +502,7 @@ void ParseFunctionGenerator::GenerateParseTableHelperDefinition(
       // insert a newline at every brace, whereas we prefer {{ ... }} here.
       // clang-format off
 R"cc(
-constexpr $Msg$::ParseTableT_ $Msg$::InternalGenerateParseTable_(const ::_pbi::ClassData* class_data) {
+constexpr $Msg$::ParseTableT_ $Msg$::_Helpers::InternalGenerateParseTable_(const ::_pbi::ClassData* class_data) {
   return ParseTableT_{
     {
       $table_base$

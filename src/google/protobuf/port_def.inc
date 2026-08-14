@@ -167,8 +167,10 @@
 // For functions we want to force inline and omit debug info for.
 #if ABSL_HAVE_CPP_ATTRIBUTE(gnu::nodebug)
 #define PROTOBUF_ALWAYS_INLINE_NODEBUG [[gnu::nodebug]] PROTOBUF_ALWAYS_INLINE
+#define PROTOBUF_NODEBUG [[gnu::nodebug]]
 #else
 #define PROTOBUF_ALWAYS_INLINE_NODEBUG PROTOBUF_ALWAYS_INLINE
+#define PROTOBUF_NODEBUG
 #endif
 
 #ifdef PROTOBUF_ALWAYS_INLINE_CALL
