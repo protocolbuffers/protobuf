@@ -90,9 +90,8 @@ inline constexpr CppFileOptions::Impl_::Impl_(
             ::_pbi::ConstantInitialized()) {}
 
 template <typename>
-PROTOBUF_ALWAYS_INLINE_NODEBUG constexpr CppFileOptions::CppFileOptions(
-    ::_pbi::ConstantInitialized,
-    const ::_pbi::ClassData* PROTOBUF_NONNULL class_data)
+constexpr CppFileOptions::CppFileOptions(::_pbi::ConstantInitialized,
+                       const ::_pbi::ClassData* PROTOBUF_NONNULL class_data)
     : Super_(
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           class_data

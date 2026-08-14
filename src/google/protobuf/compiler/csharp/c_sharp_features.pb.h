@@ -95,11 +95,9 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CSharpFeatures final 
                            const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
                                class_data);
 
-  PROTOBUF_ALWAYS_INLINE_NODEBUG CSharpFeatures(const CSharpFeatures& from)
-      : CSharpFeatures(nullptr, from) {}
-  PROTOBUF_ALWAYS_INLINE_NODEBUG CSharpFeatures(CSharpFeatures&& from) noexcept
-      : CSharpFeatures(nullptr, ::std::move(from)) {}
-  PROTOBUF_ALWAYS_INLINE_NODEBUG CSharpFeatures& operator=(const CSharpFeatures& from) {
+  inline CSharpFeatures(const CSharpFeatures& from) : CSharpFeatures(nullptr, from) {}
+  inline CSharpFeatures(CSharpFeatures&& from) noexcept : CSharpFeatures(nullptr, ::std::move(from)) {}
+  inline CSharpFeatures& operator=(const CSharpFeatures& from) {
     CopyFrom(from);
     return *this;
   }
@@ -122,10 +120,7 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CSharpFeatures final 
     return _internal_metadata_.mutable_unknown_fields<::google::protobuf::UnknownFieldSet>();
   }
 
-  [[nodiscard]]
-      PROTOBUF_ALWAYS_INLINE_NODEBUG static const ::google::protobuf::Descriptor*
-          PROTOBUF_NONNULL
-          descriptor() {
+  [[nodiscard]] static const ::google::protobuf::Descriptor* PROTOBUF_NONNULL descriptor() {
     return GetDescriptor();
   }
   [[nodiscard]] static const ::google::protobuf::Descriptor* PROTOBUF_NONNULL
@@ -156,7 +151,7 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CSharpFeatures final 
 
   // implements Message ----------------------------------------------
 
-  [[nodiscard]] PROTOBUF_ALWAYS_INLINE_NODEBUG CSharpFeatures* PROTOBUF_NONNULL
+  [[nodiscard]] CSharpFeatures* PROTOBUF_NONNULL
   New(::google::protobuf::Arena* PROTOBUF_NULLABLE arena = nullptr) const {
     return Super_::DefaultConstruct<CSharpFeatures>(arena);
   }
@@ -172,8 +167,7 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CSharpFeatures final 
                         const ::google::protobuf::MessageLite& from_msg);
 
   public:
-  [[nodiscard]] PROTOBUF_ALWAYS_INLINE_NODEBUG bool IsInitialized()
-      const {
+  [[nodiscard]] bool IsInitialized() const {
     return true;
   }
   #if defined(PROTOBUF_CUSTOM_VTABLE)
@@ -204,8 +198,7 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CSharpFeatures final 
       ::uint8_t* PROTOBUF_NONNULL target,
       ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) const final;
   #endif  // PROTOBUF_CUSTOM_VTABLE
-  [[nodiscard]] PROTOBUF_ALWAYS_INLINE_NODEBUG int GetCachedSize()
-      const {
+  [[nodiscard]] int GetCachedSize() const {
     return _impl_._cached_size_.Get();
   }
 

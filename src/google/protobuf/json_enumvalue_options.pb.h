@@ -91,11 +91,9 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED JsonEnumValueOption
                            const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
                                class_data);
 
-  PROTOBUF_ALWAYS_INLINE_NODEBUG JsonEnumValueOptions(const JsonEnumValueOptions& from)
-      : JsonEnumValueOptions(nullptr, from) {}
-  PROTOBUF_ALWAYS_INLINE_NODEBUG JsonEnumValueOptions(JsonEnumValueOptions&& from) noexcept
-      : JsonEnumValueOptions(nullptr, ::std::move(from)) {}
-  PROTOBUF_ALWAYS_INLINE_NODEBUG JsonEnumValueOptions& operator=(const JsonEnumValueOptions& from) {
+  inline JsonEnumValueOptions(const JsonEnumValueOptions& from) : JsonEnumValueOptions(nullptr, from) {}
+  inline JsonEnumValueOptions(JsonEnumValueOptions&& from) noexcept : JsonEnumValueOptions(nullptr, ::std::move(from)) {}
+  inline JsonEnumValueOptions& operator=(const JsonEnumValueOptions& from) {
     CopyFrom(from);
     return *this;
   }
@@ -118,10 +116,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED JsonEnumValueOption
     return _internal_metadata_.mutable_unknown_fields<::google::protobuf::UnknownFieldSet>();
   }
 
-  [[nodiscard]]
-      PROTOBUF_ALWAYS_INLINE_NODEBUG static const ::google::protobuf::Descriptor*
-          PROTOBUF_NONNULL
-          descriptor() {
+  [[nodiscard]] static const ::google::protobuf::Descriptor* PROTOBUF_NONNULL descriptor() {
     return GetDescriptor();
   }
   [[nodiscard]] static const ::google::protobuf::Descriptor* PROTOBUF_NONNULL
@@ -152,7 +147,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED JsonEnumValueOption
 
   // implements Message ----------------------------------------------
 
-  [[nodiscard]] PROTOBUF_ALWAYS_INLINE_NODEBUG JsonEnumValueOptions* PROTOBUF_NONNULL
+  [[nodiscard]] JsonEnumValueOptions* PROTOBUF_NONNULL
   New(::google::protobuf::Arena* PROTOBUF_NULLABLE arena = nullptr) const {
     return Super_::DefaultConstruct<JsonEnumValueOptions>(arena);
   }
@@ -168,8 +163,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED JsonEnumValueOption
                         const ::google::protobuf::MessageLite& from_msg);
 
   public:
-  [[nodiscard]] PROTOBUF_ALWAYS_INLINE_NODEBUG bool IsInitialized()
-      const {
+  [[nodiscard]] bool IsInitialized() const {
     return true;
   }
   #if defined(PROTOBUF_CUSTOM_VTABLE)
@@ -200,8 +194,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED JsonEnumValueOption
       ::uint8_t* PROTOBUF_NONNULL target,
       ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) const final;
   #endif  // PROTOBUF_CUSTOM_VTABLE
-  [[nodiscard]] PROTOBUF_ALWAYS_INLINE_NODEBUG int GetCachedSize()
-      const {
+  [[nodiscard]] int GetCachedSize() const {
     return _impl_._cached_size_.Get();
   }
 

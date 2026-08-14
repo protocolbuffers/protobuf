@@ -108,9 +108,8 @@ inline constexpr CppFeatures::Impl_::Impl_(
         repeated_type_{static_cast< ::pb::CppFeatures_RepeatedType >(0)} {}
 
 template <typename>
-PROTOBUF_ALWAYS_INLINE_NODEBUG constexpr CppFeatures::CppFeatures(
-    ::_pbi::ConstantInitialized,
-    const ::_pbi::ClassData* PROTOBUF_NONNULL class_data)
+constexpr CppFeatures::CppFeatures(::_pbi::ConstantInitialized,
+                       const ::_pbi::ClassData* PROTOBUF_NONNULL class_data)
     : Super_(
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           class_data

@@ -1346,8 +1346,7 @@ void MessageGenerator::GenerateFieldAccessorDefinitions(io::Printer* p) {
     auto t = p->WithVars(MakeTrackerCalls(field, options_));
     if (field->is_repeated()) {
       p->Emit(R"cc(
-        PROTOBUF_ALWAYS_INLINE_NODEBUG int
-        $Msg$::_internal_$name_internal$_size() const {
+        inline int $Msg$::_internal_$name_internal$_size() const {
           return _internal_$name_internal$().size();
         }
         inline int $Msg$::$name$_size() const {
@@ -1771,10 +1770,7 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
           }
 
           p->Emit(R"cc(
-            $nodiscard$
-                PROTOBUF_ALWAYS_INLINE_NODEBUG static const $pb$::Descriptor*
-                    $nonnull$
-                    descriptor() {
+            $nodiscard $static const $pb$::Descriptor* $nonnull$ descriptor() {
               return GetDescriptor();
             }
           )cc");
@@ -1874,9 +1870,7 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
                   Super_::CopyImpl(*this, from);
                 }
                 using Super_::MergeFrom;
-                PROTOBUF_ALWAYS_INLINE_NODEBUG void MergeFrom(const $Msg$& from) {
-                  Super_::MergeImpl(*this, from);
-                }
+                void MergeFrom(const $Msg$& from) { Super_::MergeImpl(*this, from); }
 
                 public:
               )cc");
@@ -1898,8 +1892,7 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
 
           if (NeedsIsInitialized()) {
             p->Emit(R"cc(
-              $nodiscard $PROTOBUF_ALWAYS_INLINE_NODEBUG bool IsInitialized()
-                  const {
+              $nodiscard $bool IsInitialized() const {
                 $WeakDescriptorSelfPin$;
                 return IsInitializedImpl(*this);
               }
@@ -1911,8 +1904,7 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
             )cc");
           } else {
             p->Emit(R"cc(
-              $nodiscard $PROTOBUF_ALWAYS_INLINE_NODEBUG bool IsInitialized()
-                  const {
+              $nodiscard $bool IsInitialized() const {
                 $WeakDescriptorSelfPin$;
                 return true;
               }
@@ -1973,8 +1965,7 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
           if (HasSimpleBaseClass(descriptor_, options_)) return;
           p->Emit(
               R"cc(
-                $nodiscard $PROTOBUF_ALWAYS_INLINE_NODEBUG int GetCachedSize()
-                    const {
+                $nodiscard $int GetCachedSize() const {
                   return $cached_size$.Get();
                 }
 
@@ -2138,11 +2129,9 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
                                    const $pbi$::ClassData* $nonnull$
                                        class_data);
 
-          PROTOBUF_ALWAYS_INLINE_NODEBUG $Msg$(const $Msg$& from)
-              : $Msg$(nullptr, from) {}
-          PROTOBUF_ALWAYS_INLINE_NODEBUG $Msg$($Msg$&& from) noexcept
-              : $Msg$(nullptr, ::std::move(from)) {}
-          PROTOBUF_ALWAYS_INLINE_NODEBUG $Msg$& operator=(const $Msg$& from) {
+          inline $Msg$(const $Msg$& from) : $Msg$(nullptr, from) {}
+          inline $Msg$($Msg$&& from) noexcept : $Msg$(nullptr, ::std::move(from)) {}
+          inline $Msg$& operator=(const $Msg$& from) {
             CopyFrom(from);
             return *this;
           }
@@ -2193,7 +2182,7 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
 
           // implements Message ----------------------------------------------
 
-          $nodiscard $PROTOBUF_ALWAYS_INLINE_NODEBUG $Msg$* $nonnull$
+          $nodiscard $$Msg$* $nonnull$
           New($pb$::Arena* $nullable$ arena = nullptr) const {
             return Super_::DefaultConstruct<$Msg$>(arena);
           }
@@ -2330,10 +2319,8 @@ void MessageGenerator::GenerateClassMethods(io::Printer* p) {
              {"class_data", [&] { GenerateClassData(p); }}},
             R"cc(
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-              PROTOBUF_ALWAYS_INLINE_NODEBUG $Msg$::$Msg$()
-                  : Super_($Msg$_get_class_data()) {}
-              PROTOBUF_ALWAYS_INLINE_NODEBUG $Msg$::$Msg$(
-                  $pb$::Arena* $nullable$ arena)
+              $Msg$::$Msg$() : Super_($Msg$_get_class_data()) {}
+              $Msg$::$Msg$($pb$::Arena* $nullable$ arena)
                   : Super_(arena, $Msg$_get_class_data()) {}
 #else   // PROTOBUF_CUSTOM_VTABLE
               $Msg$::$Msg$() : Super_() {}
@@ -2933,9 +2920,8 @@ void MessageGenerator::GenerateConstexprConstructor(io::Printer* p) {
       //~ Templatize constexpr constructor as a workaround for a bug in
       //~ gcc 12 (warning in gcc 13).
       template <typename>
-      PROTOBUF_ALWAYS_INLINE_NODEBUG constexpr $Msg$::$Msg$(
-          ::_pbi::ConstantInitialized,
-          const ::_pbi::ClassData* $nonnull$ class_data)
+      constexpr $Msg$::$Msg$(::_pbi::ConstantInitialized,
+                             const ::_pbi::ClassData* $nonnull$ class_data)
           : Super_(
 #if defined(PROTOBUF_CUSTOM_VTABLE)
                 class_data
@@ -2963,9 +2949,8 @@ void MessageGenerator::GenerateConstexprConstructor(io::Printer* p) {
   p->Emit(
       R"cc(
         template <typename>
-        PROTOBUF_ALWAYS_INLINE_NODEBUG constexpr $Msg$::$Msg$(
-            ::_pbi::ConstantInitialized,
-            const ::_pbi::ClassData* $nonnull$ class_data)
+        constexpr $Msg$::$Msg$(::_pbi::ConstantInitialized,
+                               const ::_pbi::ClassData* $nonnull$ class_data)
             : Super_(
 #if defined(PROTOBUF_CUSTOM_VTABLE)
                   class_data
