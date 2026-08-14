@@ -451,6 +451,7 @@ set(libprotoc_srcs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/full/message.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/full/message_builder.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/full/message_field.cc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/full/oneof_generator.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/full/primitive_field.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/full/service.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/full/string_field.cc
@@ -595,6 +596,7 @@ set(libprotoc_hdrs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/full/message.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/full/message_builder.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/full/message_field.h
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/full/oneof_generator.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/full/primitive_field.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/full/service.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/full/string_field.h
