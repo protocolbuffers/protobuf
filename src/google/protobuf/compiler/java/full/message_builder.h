@@ -20,6 +20,7 @@
 #include "absl/strings/string_view.h"
 #include "absl/types/span.h"
 #include "google/protobuf/compiler/java/full/field_generator.h"
+#include "google/protobuf/compiler/java/full/oneof_generator.h"
 #include "google/protobuf/descriptor.h"
 
 namespace google {
@@ -79,7 +80,7 @@ class MessageBuilderGenerator {
   Context* context_;
   ClassNameResolver* name_resolver_;
   FieldGeneratorMap<ImmutableFieldGenerator> field_generators_;
-  absl::btree_map<int, const OneofDescriptor*> oneofs_;
+  absl::btree_map<int, std::unique_ptr<OneofGenerator>> oneof_generators_;
 };
 
 }  // namespace java

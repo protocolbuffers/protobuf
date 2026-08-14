@@ -35,6 +35,7 @@
 #include "google/protobuf/compiler/java/full/extension.h"
 #include "google/protobuf/compiler/java/full/field_generator.h"
 #include "google/protobuf/compiler/java/full/make_field_gens.h"
+#include "google/protobuf/compiler/java/full/oneof_generator.h"
 #include "google/protobuf/compiler/java/name_resolver.h"
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/io/printer.h"
@@ -107,7 +108,10 @@ MessageBuilderGenerator::MessageBuilderGenerator(const Descriptor* descriptor,
   for (int i = 0; i < descriptor_->field_count(); i++) {
     if (IsRealOneof(descriptor_->field(i))) {
       const OneofDescriptor* oneof = descriptor_->field(i)->containing_oneof();
-      ABSL_CHECK(oneofs_.emplace(oneof->index(), oneof).first->second == oneof);
+      if (!oneof_generators_.contains(oneof->index())) {
+        oneof_generators_.emplace(
+            oneof->index(), std::make_unique<OneofGenerator>(oneof, context_));
+      }
     }
   }
 }
@@ -146,43 +150,8 @@ void MessageBuilderGenerator::Generate(io::Printer* printer) {
   }
 
   // oneof
-  absl::flat_hash_map<absl::string_view, std::string> vars = {
-      // These variables are placeholders to pick out the beginning and ends of
-      // identifiers for annotations (when doing so with existing variables
-      // would be ambiguous or impossible). They should never be set to anything
-      // but the empty string.
-      {"{", ""},
-      {"}", ""},
-  };
-  for (auto& kv : oneofs_) {
-    const OneofDescriptor* oneof = kv.second;
-    vars["oneof_name"] = context_->GetOneofGeneratorInfo(oneof)->name;
-    vars["oneof_capitalized_name"] =
-        context_->GetOneofGeneratorInfo(oneof)->capitalized_name;
-    vars["oneof_index"] = absl::StrCat(oneof->index());
-    // oneofCase_ and oneof_
-    printer->Print(vars,
-                   "private int $oneof_name$Case_ = 0;\n"
-                   "private java.lang.Object $oneof_name$_;\n");
-    // getOneofCase()
-    printer->Print(vars,
-                   "public $oneof_capitalized_name$Case\n"
-                   "    ${$get$oneof_capitalized_name$Case$}$() {\n"
-                   "  return $oneof_capitalized_name$Case.forNumber(\n"
-                   "      $oneof_name$Case_);\n"
-                   "}\n");
-    printer->Annotate("{", "}", oneof);
-    // clearOneof()
-    printer->Print(vars,
-                   "\n"
-                   "public Builder ${$clear$oneof_capitalized_name$$}$() {\n"
-                   "  $oneof_name$Case_ = 0;\n"
-                   "  $oneof_name$_ = null;\n"
-                   "  onChanged();\n"
-                   "  return this;\n"
-                   "}\n"
-                   "\n");
-    printer->Annotate("{", "}", oneof, io::AnnotationCollector::Semantic::kSet);
+  for (const auto& kv : oneof_generators_) {
+    kv.second->GenerateCommonBuilderMethods(printer);
   }
 
   // Integers for bit fields.
@@ -395,11 +364,8 @@ void MessageBuilderGenerator::GenerateBuilderClearMethod(io::Printer* printer) {
         .GenerateBuilderClearCode(printer);
   }
 
-  for (auto& kv : oneofs_) {
-    printer->Print(
-        "$oneof_name$Case_ = 0;\n"
-        "$oneof_name$_ = null;\n",
-        "oneof_name", context_->GetOneofGeneratorInfo(kv.second)->name);
+  for (const auto& kv : oneof_generators_) {
+    kv.second->GenerateBuilderClearMethod(printer);
   }
 
   printer->Outdent();
@@ -522,35 +488,12 @@ void MessageBuilderGenerator::GenerateBuilderMergeFromMethods(
   }
 
   // Merge oneof fields.
-  for (auto& kv : oneofs_) {
-    const OneofDescriptor* oneof = kv.second;
+  for (const auto& kv : oneof_generators_) {
     std::string oneof_code;
     {
       google::protobuf::io::StringOutputStream oneof_stream(&oneof_code);
       google::protobuf::io::Printer oneof_printer(&oneof_stream);
-      oneof_printer.Print(
-          "switch (other.get$oneof_capitalized_name$Case()) {\n",
-          "oneof_capitalized_name",
-          context_->GetOneofGeneratorInfo(oneof)->capitalized_name);
-      oneof_printer.Indent();
-      for (int j = 0; j < oneof->field_count(); j++) {
-        const FieldDescriptor* field = oneof->field(j);
-        oneof_printer.Print("case $field_name$: {\n", "field_name",
-                            absl::AsciiStrToUpper(field->name()));
-        oneof_printer.Indent();
-        field_generators_.get(field).GenerateMergingCode(&oneof_printer);
-        oneof_printer.Print("break;\n");
-        oneof_printer.Outdent();
-        oneof_printer.Print("}\n");
-      }
-      oneof_printer.Print(
-          "case $cap_oneof_name$_NOT_SET: {\n"
-          "  break;\n"
-          "}\n",
-          "cap_oneof_name",
-          absl::AsciiStrToUpper(context_->GetOneofGeneratorInfo(oneof)->name));
-      oneof_printer.Outdent();
-      oneof_printer.Print("}\n");
+      kv.second->GenerateMergingCode(&oneof_printer, field_generators_);
     }
     merging_code_list.push_back(oneof_code);
   }
@@ -665,7 +608,7 @@ void MessageBuilderGenerator::GenerateBuildPartial(io::Printer* printer) {
     }
   }
 
-  if (!oneofs_.empty()) {
+  if (!oneof_generators_.empty()) {
     printer->Print("buildPartialOneofs(result);\n");
   }
 
@@ -701,24 +644,13 @@ void MessageBuilderGenerator::GenerateBuildPartial(io::Printer* printer) {
   }
 
   // Build Oneofs
-  if (!oneofs_.empty()) {
+  if (!oneof_generators_.empty()) {
     printer->Print("private void buildPartialOneofs($classname$ result) {\n",
                    "classname",
                    name_resolver_->GetImmutableClassName(descriptor_));
     printer->Indent();
-    for (auto& kv : oneofs_) {
-      const OneofDescriptor* oneof = kv.second;
-      printer->Print(
-          "result.$oneof_name$Case_ = $oneof_name$Case_;\n"
-          "result.$oneof_name$_ = this.$oneof_name$_;\n",
-          "oneof_name", context_->GetOneofGeneratorInfo(oneof)->name);
-      for (int i = 0; i < oneof->field_count(); ++i) {
-        if (oneof->field(i)->message_type() != nullptr) {
-          const ImmutableFieldGenerator& field =
-              field_generators_.get(oneof->field(i));
-          field.GenerateBuildingCode(printer);
-        }
-      }
+    for (const auto& kv : oneof_generators_) {
+      kv.second->GenerateBuildingCode(printer, field_generators_);
     }
     printer->Outdent();
     printer->Print("}\n\n");
