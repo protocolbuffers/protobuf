@@ -131,32 +131,4 @@ class ExtensionListTest {
       )
       .testEquals()
   }
-
-  @Test
-  fun supplierNotInvokedOnConstruction() {
-    var supplierCalled = false
-    val extensionList =
-      ExtensionList<Int, ExampleExtensibleMessage>(TestProto.repeatedExtension) {
-        supplierCalled = true
-        listOf(1, 2, 3)
-      }
-    assertThat(supplierCalled).isFalse()
-    assertThat(extensionList).containsExactly(1, 2, 3).inOrder()
-    assertThat(supplierCalled).isTrue()
-  }
-
-  @Test
-  fun supplierCalledOnEveryReadOperation() {
-    var callCount = 0
-    val extensionList =
-      ExtensionList<Int, ExampleExtensibleMessage>(TestProto.repeatedExtension) {
-        callCount++
-        listOf(callCount)
-      }
-    assertThat(callCount).isEqualTo(0)
-    assertThat(extensionList.size).isEqualTo(1)
-    assertThat(callCount).isEqualTo(1)
-    assertThat(extensionList[0]).isEqualTo(2)
-    assertThat(callCount).isEqualTo(2)
-  }
 }

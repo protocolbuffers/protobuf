@@ -41,30 +41,7 @@ package com.google.protobuf.kotlin
 @Suppress("unused") // the unused type parameter
 class DslList<E, P : DslProxy>
 @OnlyForUseByGeneratedProtoCode
-constructor(private val delegateSupplier: () -> List<E>) : List<E> {
-  @OnlyForUseByGeneratedProtoCode
-  constructor(delegate: List<E>) : this({ delegate })
-
-  private val delegate: List<E>
-    get() = delegateSupplier()
-
-  override val size: Int
-    get() = delegate.size
-
-  override fun isEmpty(): Boolean = delegate.isEmpty()
-
-  override fun contains(element: E): Boolean = delegate.contains(element)
-
-  override fun containsAll(elements: Collection<E>): Boolean = delegate.containsAll(elements)
-
-  override fun get(index: Int): E = delegate[index]
-
-  override fun indexOf(element: E): Int = delegate.indexOf(element)
-
-  override fun lastIndexOf(element: E): Int = delegate.lastIndexOf(element)
-
-  override fun subList(fromIndex: Int, toIndex: Int): List<E> = delegate.subList(fromIndex, toIndex)
-
+constructor(private val delegate: List<E>) : List<E> by delegate {
   override fun iterator(): Iterator<E> = UnmodifiableIterator(delegate.iterator())
 
   override fun listIterator(): ListIterator<E> = UnmodifiableListIterator(delegate.listIterator())
