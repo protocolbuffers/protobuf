@@ -162,9 +162,9 @@ void FieldGenerator::GenerateRepeatedPritimiveField(
       "com.google.protobuf.kotlin.DslList"
       "<$kt_type$, ${$$kt_capitalized_name$Proxy$}$>\n"
       "$  jvm_synthetic$"
-      "  get() = com.google.protobuf.kotlin.DslList(\n"
+      "  get() = com.google.protobuf.kotlin.DslList {\n"
       "    $kt_dsl_builder$.${$$kt_property_name$List$}$\n"
-      "  )\n");
+      "  }\n");
 
   java::WriteFieldAccessorDocComment(printer, descriptor_, java::LIST_ADDER,
                                      context_->options(), /* builder */ false,
@@ -343,9 +343,9 @@ void FieldGenerator::GenerateRepeatedMessageField(io::Printer* printer) const {
       "com.google.protobuf.kotlin.DslList"
       "<$kt_type$, ${$$kt_capitalized_name$Proxy$}$>\n"
       "$  jvm_synthetic$"
-      "  get() = com.google.protobuf.kotlin.DslList(\n"
+      "  get() = com.google.protobuf.kotlin.DslList {\n"
       "    $kt_dsl_builder$.${$$kt_property_name$List$}$\n"
-      "  )\n");
+      "  }\n");
 
   java::WriteFieldAccessorDocComment(printer, descriptor_, java::LIST_ADDER,
                                      context_->options(), /* builder */ false,
@@ -516,9 +516,9 @@ void FieldGenerator::GenerateRepeatedStringField(io::Printer* printer) const {
       "<kotlin.String, ${$$kt_capitalized_name$Proxy$}$>\n"
       "@kotlin.OptIn"
       "(com.google.protobuf.kotlin.OnlyForUseByGeneratedProtoCode::class)\n"
-      "  get() = com.google.protobuf.kotlin.DslList(\n"
+      "  get() = com.google.protobuf.kotlin.DslList {\n"
       "    $kt_dsl_builder$.${$$kt_property_name$List$}$\n"
-      "  )\n");
+      "  }\n");
 
   // List<String>.add(String)
   java::WriteFieldAccessorDocComment(printer, descriptor_, java::LIST_ADDER,
@@ -718,9 +718,9 @@ void FieldGenerator::GenerateRepeatedEnumField(io::Printer* printer) const {
       "com.google.protobuf.kotlin.DslList"
       "<$kt_type$, ${$$kt_capitalized_name$Proxy$}$>\n"
       "$  jvm_synthetic$"
-      "  get() = com.google.protobuf.kotlin.DslList(\n"
+      "  get() = com.google.protobuf.kotlin.DslList {\n"
       "    $kt_dsl_builder$.${$$kt_property_name$List$}$\n"
-      "  )\n");
+      "  }\n");
 
   java::WriteFieldAccessorDocComment(printer, descriptor_, java::LIST_ADDER,
                                      context_->options(), /* builder */ false,

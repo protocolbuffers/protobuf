@@ -94,4 +94,30 @@ class DslListTest {
       )
       .testEquals()
   }
+
+  @Test
+  fun supplierNotInvokedOnConstruction() {
+    var supplierCalled = false
+    val dslList = DslList<Int, DummyProxy> {
+      supplierCalled = true
+      listOf(1, 2, 3)
+    }
+    assertThat(supplierCalled).isFalse()
+    assertThat(dslList).containsExactly(1, 2, 3).inOrder()
+    assertThat(supplierCalled).isTrue()
+  }
+
+  @Test
+  fun supplierCalledOnEveryReadOperation() {
+    var callCount = 0
+    val dslList = DslList<Int, DummyProxy> {
+      callCount++
+      listOf(callCount)
+    }
+    assertThat(callCount).isEqualTo(0)
+    assertThat(dslList.size).isEqualTo(1)
+    assertThat(callCount).isEqualTo(1)
+    assertThat(dslList[0]).isEqualTo(2)
+    assertThat(callCount).isEqualTo(2)
+  }
 }
