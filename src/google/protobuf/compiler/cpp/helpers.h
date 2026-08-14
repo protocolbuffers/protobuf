@@ -854,34 +854,11 @@ bool UsingImplicitWeakDescriptor(const FileDescriptor* file,
 std::string StrongReferenceToType(const Descriptor* desc,
                                   const Options& options);
 
-// Generates the section name to be used for a data object when using implicit
-// weak descriptors. The prefix determines the kind of object and the section it
-// will be merged into afterwards.
-// See `UsingImplicitWeakDescriptor` above.
-std::string WeakDescriptorDataSection(absl::string_view prefix,
-                                      const Descriptor* descriptor,
-                                      int index_in_file_messages,
-                                      const Options& options);
-
 // Section name to be used for the default instance for implicit weak descriptor
 // objects. See `UsingImplicitWeakDescriptor` above.
-inline std::string WeakDefaultInstanceSection(const Descriptor* descriptor,
-                                              int index_in_file_messages,
-                                              const Options& options) {
-#ifdef PROTOBUF_MESSAGE_GLOBALS
-  std::string prefix = !IsProfileDriven(options)               ? "def"
-                       : IsPresentMessage(descriptor, options) ? "gh"
-                                                               : "gl";
-#else
-  std::string prefix = "def";
-#endif
-  // TODO: b/474609573 - Remove WeakDescriptorDataSection() once
-  // PROTOBUF_MESSAGE_GLOBALS becomes the default. Note that section assignment
-  // is nuanced to maximize the spatial locality and to support weak descriptor
-  // GC. The status quo is vulnerable to suboptimal prefix.
-  return WeakDescriptorDataSection(prefix, descriptor, index_in_file_messages,
-                                   options);
-}
+std::string WeakDefaultInstanceSection(const Descriptor* descriptor,
+                                       int index_in_file_messages,
+                                       const Options& options);
 
 // Indicates whether we should use implicit weak fields for this file.
 bool UsingImplicitWeakFields(const FileDescriptor* file,

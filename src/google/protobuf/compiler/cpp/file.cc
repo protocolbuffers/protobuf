@@ -617,23 +617,14 @@ void FileGenerator::GenerateInternalForwardDeclarations(
 
       if (options_.lite_implicit_weak_fields) {
         p->Emit({{"ptr", MsgGlobalsInstancePtr(instance, options_)}}, R"cc(
-#ifndef PROTOBUF_MESSAGE_GLOBALS
-          PROTOBUF_CONSTINIT __attribute__((weak)) const void* $ptr$ =
-              ::_pbi::ImplicitWeakMessage::GetClassDataForInit();
-#else
           PROTOBUF_CONSTINIT __attribute__((weak)) const void* $ptr$ =
               &::_pbi::implicit_weak_message_globals;
-#endif
         )cc");
       } else {
         p->Emit({{"type", MsgGlobalsInstanceType(instance, options_)},
                  {"name", MsgGlobalsInstanceName(instance, options_)}},
                 R"cc(
-#ifndef PROTOBUF_MESSAGE_GLOBALS
-                  extern __attribute__((weak)) $type$ $name$;
-#else
                   extern __attribute__((weak)) const $type$ $name$;
-#endif
                 )cc");
       }
     }
@@ -791,14 +782,12 @@ void FileGenerator::GenerateSource(io::Printer* p) {
             }
           }}},
         R"cc(
-#ifdef PROTOBUF_MESSAGE_GLOBALS
           namespace {
           PROTOBUF_CONSTINIT ::google::protobuf::internal::ReflectionData
               file_reflection_data[] = {
                   $reflection_data$,
           };
           }  // namespace
-#endif
         )cc");
   }
 
@@ -1364,12 +1353,7 @@ class FileGenerator::ForwardDeclarations {
           R"cc(
             class $class$;
             struct $globals_type$;
-#ifndef PROTOBUF_MESSAGE_GLOBALS
-            $dllexport_decl $extern $globals_type$ $globals_name$;
-            $dllexport_decl $extern const $pbi$::$classdata_type$ $class$_class_data_;
-#else
             $dllexport_decl $extern $const $$globals_type$ $globals_name$;
-#endif  // PROTOBUF_MESSAGE_GLOBALS
           )cc");
     }
 
@@ -1422,12 +1406,7 @@ class FileGenerator::ForwardDeclarations {
         if (options.dllexport_decl.empty()) {
           p->Emit(R"cc(
             template <>
-            internal::GeneratedMessageTraitsT<&$default_name$
-#ifndef PROTOBUF_MESSAGE_GLOBALS
-                                              ,
-                                              &$class$_class_data_
-#endif  // PROTOBUF_MESSAGE_GLOBALS
-                                              >
+            internal::GeneratedMessageTraitsT<&$default_name$>
                 internal::MessageTraitsImpl::value<$class$>;
           )cc");
         }

@@ -48,12 +48,7 @@ PROTOC_EXPORT extern const ::google::protobuf::internal::DescriptorTable descrip
 namespace pb {
 class CSharpFeatures;
 struct CSharpFeaturesGlobalsTypeInternal;
-#ifndef PROTOBUF_MESSAGE_GLOBALS
-PROTOC_EXPORT extern CSharpFeaturesGlobalsTypeInternal CSharpFeatures_globals_;
-PROTOC_EXPORT extern const ::google::protobuf::internal::ClassDataFull CSharpFeatures_class_data_;
-#else
 PROTOC_EXPORT extern const CSharpFeaturesGlobalsTypeInternal CSharpFeatures_globals_;
-#endif  // PROTOBUF_MESSAGE_GLOBALS
 }  // namespace pb
 namespace google {
 namespace protobuf {
@@ -263,9 +258,6 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CSharpFeatures final 
   static constexpr ParseTableT_ InternalGenerateParseTable_(
       const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL class_data);
   friend class ::google::protobuf::internal::TcParser;
-  #ifndef PROTOBUF_MESSAGE_GLOBALS
-  static const ParseTableT_ _table_;
-  #endif
 
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;

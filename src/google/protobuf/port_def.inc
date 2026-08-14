@@ -825,7 +825,6 @@ namespace internal {
 #endif
 // TODO: Clean up these macros
 #define PROTOBUF_MESSAGE_GLOBALS
-#define PROTOBUF_MESSAGE_GLOBALS_CONST const
 
 #if !defined(PROTOBUF_MESSAGE_GLOBALS_SECTION)
 #define PROTOBUF_MESSAGE_GLOBALS_SECTION(x)
