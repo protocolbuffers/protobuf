@@ -1064,6 +1064,22 @@ TEST_F(DescriptorTest, FieldNamesDedupOnOptimizedCases) {
   // field_name1
   EXPECT_THAT(collect_unique_names(message4_->field(0)),
               ElementsAre("fieldName1", "field_name1"));
+  // fieldName2
+  EXPECT_THAT(collect_unique_names(message4_->field(1)),
+              ElementsAre("fieldName2", "fieldname2"));
+  // FieldName3
+  EXPECT_THAT(collect_unique_names(message4_->field(2)),
+              ElementsAre("FieldName3", "fieldName3", "fieldname3"));
+  // _field_name4
+  EXPECT_THAT(collect_unique_names(message4_->field(3)),
+              ElementsAre("FieldName4", "_field_name4", "fieldName4"));
+  // FIELD_NAME5
+  EXPECT_THAT(
+      collect_unique_names(message4_->field(4)),
+      ElementsAre("FIELDNAME5", "FIELD_NAME5", "fIELDNAME5", "field_name5"));
+  // field_name6 [json_name = "@type"]
+  EXPECT_THAT(collect_unique_names(message4_->field(5)),
+              ElementsAre("@type", "fieldName6", "field_name6"));
   // fieldname7
   EXPECT_THAT(collect_unique_names(message4_->field(6)),
               ElementsAre("fieldname7"));
@@ -1575,7 +1591,7 @@ TEST_F(DescriptorTest, AllSymbolNamesHaveLengthLimits) {
       proto,
       proto.mutable_message_type(0)->mutable_field(0)->mutable_json_name(),
       // the math here leaks the implementation details of AllocateFieldNames.
-      kNamesImplLimit - 3 * (1 + proto.message_type(0).field(0).name().size()) -
+      kNamesImplLimit - (1 + proto.message_type(0).field(0).name().size()) -
           proto.message_type(0).name().size() - proto.package().size() - 3,
       "Name too long");
   // FieldDescriptor::name (extension)

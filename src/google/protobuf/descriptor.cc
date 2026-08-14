@@ -423,7 +423,7 @@ class FlatAllocatorImpl {
   // TODO: Remove the NULL terminators to save memory and simplify
   // the code.
   absl::optional<internal::DescriptorNames::Input> CreateDescriptorNames(
-      std::initializer_list<absl::string_view> bytes,
+      absl::Span<const absl::string_view> bytes,
       std::initializer_list<size_t> sizes) {
     for (size_t size : sizes) {
       // Name too long.
@@ -490,6 +490,84 @@ class FlatAllocatorImpl {
     return {res, name.size()};
   }
 
+  struct FieldNamesInfo {
+    std::string lowercase_storage;
+    std::string camelcase_storage;
+    std::string json_storage;
+    absl::InlinedVector<absl::string_view, 3> extra_strings;
+    size_t lowercase_offset = 0;
+    size_t lowercase_size = 0;
+    size_t camelcase_offset = 0;
+    size_t camelcase_size = 0;
+    size_t json_offset = 0;
+    size_t json_size = 0;
+    size_t total_string_bytes = 0;
+  };
+
+  FieldNamesInfo ComputeFieldNamesInfo(size_t parent_scope_size,
+                                       const absl::string_view name,
+                                       const std::string* opt_json_name) {
+    FieldNamesInfo info;
+    const size_t full_name_size =
+        (parent_scope_size == 0 ? 0 : parent_scope_size + 1) + name.size();
+
+    const auto field_case = GetFieldNameCase(name);
+    absl::string_view lowercase_name;
+    if (field_case != FieldNameCase::kOther) {
+      lowercase_name = name;
+    } else {
+      info.lowercase_storage = std::string(name);
+      absl::AsciiStrToLower(&info.lowercase_storage);
+      lowercase_name = info.lowercase_storage;
+    }
+
+    info.camelcase_storage = ToCamelCase(name, /* lower_first = */ true);
+    absl::string_view camelcase_name = info.camelcase_storage;
+
+    absl::string_view json_name;
+    if (opt_json_name != nullptr) {
+      json_name = *opt_json_name;
+    } else if (field_case == FieldNameCase::kSnakeCase ||
+               field_case == FieldNameCase::kAllLower) {
+      json_name = camelcase_name;
+    } else {
+      info.json_storage = ToJsonName(name);
+      json_name = info.json_storage;
+    }
+
+    info.lowercase_size = lowercase_name.size();
+    info.camelcase_size = camelcase_name.size();
+    info.json_size = json_name.size();
+
+    size_t current_extra_offset = full_name_size + 1;
+
+    const auto resolve_name = [&](absl::string_view str, size_t& offset) {
+      if (str == name) {
+        offset = name.size() + 1;
+        return;
+      }
+      for (size_t i = 0; i < info.extra_strings.size(); ++i) {
+        if (str == info.extra_strings[i]) {
+          size_t off = full_name_size + 1;
+          for (size_t j = 0; j <= i; ++j) {
+            off += info.extra_strings[j].size() + 1;
+          }
+          offset = off;
+          return;
+        }
+      }
+      info.extra_strings.push_back(str);
+      current_extra_offset += str.size() + 1;
+      offset = current_extra_offset;
+    };
+
+    resolve_name(lowercase_name, info.lowercase_offset);
+    resolve_name(camelcase_name, info.camelcase_offset);
+    resolve_name(json_name, info.json_offset);
+    info.total_string_bytes = current_extra_offset;
+    return info;
+  }
+
   // Allocate all 5 names of the field:
   // name, full name, lowercase, camelcase and json.
   // It will dedup the strings when following the naming style guide.
@@ -523,15 +601,9 @@ class FlatAllocatorImpl {
       }
     }
 
-    // lowercase
-    total_bytes += name.size() + kNullCharSize;
-    // camelcase
-    total_bytes += CamelCaseSize(name) + kNullCharSize;
-    // json_name
-    total_bytes += (opt_json_name != nullptr ? opt_json_name->size()
-                                             : JsonNameSize(name)) +
-                   kNullCharSize;
-    PlanArray<char>(total_bytes);
+    FieldNamesInfo info =
+        ComputeFieldNamesInfo(parent_scope_size, name, opt_json_name);
+    PlanArray<char>(kIndexSize + info.total_string_bytes);
   }
 
   absl::optional<internal::DescriptorNames::Input> AllocateFieldNames(
@@ -574,22 +646,28 @@ class FlatAllocatorImpl {
       }
     }
 
-    PROTOBUF_DEBUG_COUNTER("AllocateFieldNames.Fallback").Inc();
-    std::string lowercase_name = std::string(name);
-    absl::AsciiStrToLower(&lowercase_name);
-    const std::string camelcase_name =
-        ToCamelCase(name, /* lower_first = */ true);
-    const std::string json_name =
-        opt_json_name != nullptr ? *opt_json_name : ToJsonName(name);
+    FieldNamesInfo info =
+        ComputeFieldNamesInfo(scope.size(), name, opt_json_name);
+    PROTOBUF_DEBUG_COUNTER("AllocateFieldNames.Fallback")
+        .IncBucket(1 + info.extra_strings.size());
 
-    size_t offset = full_name_size + 1;
+    absl::InlinedVector<absl::string_view, 10> bytes;
+    for (int i = static_cast<int>(info.extra_strings.size()) - 1; i >= 0; --i) {
+      bytes.push_back(info.extra_strings[i]);
+      bytes.push_back(kNullChar);
+    }
+    if (!scope.empty()) {
+      bytes.push_back(scope);
+      bytes.push_back(scope_dot);
+    }
+    bytes.push_back(name);
+    bytes.push_back(kNullChar);
+
     return CreateDescriptorNames(
-        {json_name, kNullChar, camelcase_name, kNullChar,  //
-         lowercase_name, kNullChar, scope, scope_dot, name, kNullChar},
+        bytes,
         {name.size(), full_name_size,  //
-         offset += lowercase_name.size() + 1, lowercase_name.size(),
-         offset += camelcase_name.size() + 1, camelcase_name.size(),
-         offset += json_name.size() + 1, json_name.size()});
+         info.lowercase_offset, info.lowercase_size, info.camelcase_offset,
+         info.camelcase_size, info.json_offset, info.json_size});
   }
 
   template <typename Alloc>
