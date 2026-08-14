@@ -39,9 +39,12 @@ class JsonEnumValueOptions::_Internal {
   using HasBits = decltype(::std::declval<JsonEnumValueOptions>()._impl_._has_bits_);
   static constexpr ::int32_t kHasBitsOffset =
       8 * PROTOBUF_FIELD_OFFSET(JsonEnumValueOptions, _impl_._has_bits_);
+
+  static constexpr JsonEnumValueOptions::ParseTableT_ GenerateParseTable(
+      const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL class_data);
 };
 
-constexpr JsonEnumValueOptions::ParseTableT_ JsonEnumValueOptions::InternalGenerateParseTable_(const ::_pbi::ClassData* class_data) {
+constexpr JsonEnumValueOptions::ParseTableT_ JsonEnumValueOptions::_Internal::GenerateParseTable(const ::_pbi::ClassData* class_data) {
   return ParseTableT_{
     {
       PROTOBUF_FIELD_OFFSET(JsonEnumValueOptions, _impl_._has_bits_),
@@ -98,21 +101,21 @@ PROTOBUF_ALWAYS_INLINE_NODEBUG constexpr JsonEnumValueOptions::JsonEnumValueOpti
           ),
       _impl_(internal_visibility(), ::_pbi::ConstantInitialized()) {
 }
-inline void* PROTOBUF_NONNULL JsonEnumValueOptions::PlacementNew_(
+inline void* PROTOBUF_NONNULL JsonEnumValueOptions::Helpers_::PlacementNew_(
     const void* PROTOBUF_NONNULL, void* PROTOBUF_NONNULL mem,
     ::google::protobuf::Arena* PROTOBUF_NULLABLE arena) {
   return ::new (mem) JsonEnumValueOptions(arena);
 }
-constexpr auto JsonEnumValueOptions::InternalNewImpl_() {
+constexpr auto JsonEnumValueOptions::Helpers_::InternalNewImpl_() {
   return ::google::protobuf::internal::MessageCreator::CopyInit(sizeof(JsonEnumValueOptions), alignof(JsonEnumValueOptions));
 }
-constexpr auto JsonEnumValueOptions::InternalGenerateClassData_() {
+constexpr auto JsonEnumValueOptions::Helpers_::InternalGenerateClassData_() {
   return ::google::protobuf::internal::ClassData{
       nullptr,  // IsInitialized
-      &JsonEnumValueOptions::MergeImpl,
+      &JsonEnumValueOptions::Helpers_::MergeImpl,
       Super_::GetNewImpl<JsonEnumValueOptions>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-      &JsonEnumValueOptions::SharedDtor,
+      &JsonEnumValueOptions::Helpers_::SharedDtor,
       &Helpers_::Clear, &Helpers_::ByteSizeLong,
           &Helpers_::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
@@ -122,15 +125,15 @@ constexpr auto JsonEnumValueOptions::InternalGenerateClassData_() {
 }
 struct JsonEnumValueOptionsGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
   constexpr JsonEnumValueOptionsGlobalsTypeInternal()
-      : MessageGlobalsBase(JsonEnumValueOptions::InternalGenerateClassData_()),
+      : MessageGlobalsBase(
+            JsonEnumValueOptions::Helpers_::InternalGenerateClassData_()),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
-        _table(::_pbi::PrivateAccess::GenerateParseTable<JsonEnumValueOptions>(
-            GetClassData())) {}
+        _table(JsonEnumValueOptions::_Internal::GenerateParseTable(GetClassData())) {}
   ~JsonEnumValueOptionsGlobalsTypeInternal() {}
   union {
     alignas(::_pbi::kMaxMessageAlignment) JsonEnumValueOptions _default;
   };
-  decltype(::_pbi::PrivateAccess::GenerateParseTable<JsonEnumValueOptions>(
+  decltype(JsonEnumValueOptions::_Internal::GenerateParseTable(
       ::std::declval<const ::_pbi::ClassData*>())) _table;
 };
 static_assert(PROTOBUF_FIELD_OFFSET(JsonEnumValueOptionsGlobalsTypeInternal, _default) ==
@@ -204,7 +207,7 @@ JsonEnumValueOptions::JsonEnumValueOptions(::google::protobuf::Arena* PROTOBUF_N
 #else   // PROTOBUF_CUSTOM_VTABLE
     : Super_(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
-  SharedCtor(arena);
+  Helpers_::SharedCtor(*this, arena);
   // @@protoc_insertion_point(arena_constructor:pb.enumvalue.JsonEnumValueOptions)
 }
 PROTOBUF_NDEBUG_INLINE JsonEnumValueOptions::Impl_::Impl_(
@@ -236,14 +239,16 @@ PROTOBUF_NDEBUG_INLINE JsonEnumValueOptions::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
       : string_(arena) {}
 
-inline void JsonEnumValueOptions::SharedCtor(::_pb::Arena* PROTOBUF_NULLABLE arena) {
-  new (&_impl_) Impl_(internal_visibility(), arena);
+inline void JsonEnumValueOptions::Helpers_::SharedCtor(
+    ::_pb::MessageLite& self, ::_pb::Arena* PROTOBUF_NULLABLE arena) {
+  JsonEnumValueOptions& this_ = static_cast<JsonEnumValueOptions&>(self);
+  new (&this_._impl_) Impl_(this_.internal_visibility(), arena);
 }
 JsonEnumValueOptions::~JsonEnumValueOptions() {
   // @@protoc_insertion_point(destructor:pb.enumvalue.JsonEnumValueOptions)
-  SharedDtor(*this);
+  Helpers_::SharedDtor(*this);
 }
-inline void JsonEnumValueOptions::SharedDtor(MessageLite& self) {
+inline void JsonEnumValueOptions::Helpers_::SharedDtor(MessageLite& self) {
   JsonEnumValueOptions& this_ = static_cast<JsonEnumValueOptions&>(self);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     this_.CheckHasBitConsistency();
@@ -341,8 +346,8 @@ PROTOBUF_NOINLINE void JsonEnumValueOptions::Clear() {
                                              &this_._impl_._cached_size_);
 }
 
-void JsonEnumValueOptions::MergeImpl(::google::protobuf::MessageLite& to_msg,
-                      const ::google::protobuf::MessageLite& from_msg) {
+void JsonEnumValueOptions::Helpers_::MergeImpl(::google::protobuf::MessageLite& to_msg,
+                                const ::google::protobuf::MessageLite& from_msg) {
    auto* const _this = static_cast<JsonEnumValueOptions*>(&to_msg);
   auto& from = static_cast<const JsonEnumValueOptions&>(from_msg);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
@@ -370,13 +375,16 @@ void JsonEnumValueOptions::CopyFrom(const JsonEnumValueOptions& from) {
 }
 
 
-void JsonEnumValueOptions::InternalSwap(JsonEnumValueOptions* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
+void JsonEnumValueOptions::Helpers_::InternalSwap(
+    ::_pb::MessageLite& PROTOBUF_RESTRICT self,
+    JsonEnumValueOptions* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
   using ::std::swap;
-  auto* arena = GetArena();
+  JsonEnumValueOptions& this_ = static_cast<JsonEnumValueOptions&>(self);
+  auto* arena = this_.GetArena();
   ABSL_DCHECK_EQ(arena, other->GetArena());
-  _internal_metadata_.InternalSwap(&other->_internal_metadata_);
-  swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
-  _impl_.string_.InternalSwap(&_impl_.string_, &other->_impl_.string_, arena);
+  this_._internal_metadata_.InternalSwap(&other->_internal_metadata_);
+  swap(this_._impl_._has_bits_[0], other->_impl_._has_bits_[0]);
+  this_._impl_.string_.InternalSwap(&this_._impl_.string_, &other->_impl_.string_, arena);
 }
 
 ::google::protobuf::Metadata JsonEnumValueOptions::GetMetadata() const {

@@ -7,6 +7,7 @@
 
 #include "google/protobuf/implicit_weak_message.h"
 
+#include "google/protobuf/class_data.h"
 #include "google/protobuf/generated_message_tctable_decl.h"
 #include "google/protobuf/message_lite.h"
 #include "google/protobuf/parse_context.h"
@@ -25,6 +26,15 @@ PROTOBUF_PRAGMA_INIT_SEG
 namespace google {
 namespace protobuf {
 namespace internal {
+
+namespace {
+
+constexpr auto GenerateParseTable(const ClassData* class_data) {
+  return CreateStubTcParseTable<ImplicitWeakMessage,
+                                ImplicitWeakMessage::ParseImpl>(class_data);
+}
+
+}  // namespace
 
 const char* ImplicitWeakMessage::ParseImpl(ImplicitWeakMessage* msg,
                                            const char* ptr, ParseContext* ctx) {
@@ -58,16 +68,12 @@ constexpr auto ImplicitWeakMessage::InternalGenerateClassData_() {
                    /*type_name=*/""};
 }
 
-constexpr auto ImplicitWeakMessage::InternalGenerateParseTable_(
-    const ClassData* class_data) {
-  return CreateStubTcParseTable<ImplicitWeakMessage, ParseImpl>(class_data);
-}
 
 struct ImplicitWeakMessageDefaultType : MessageGlobalsBase {
   constexpr ImplicitWeakMessageDefaultType()
       : MessageGlobalsBase(ImplicitWeakMessage::InternalGenerateClassData_()),
         _default(ConstantInitialized{}),
-        _table(ImplicitWeakMessage::InternalGenerateParseTable_(&class_data)) {}
+        _table(GenerateParseTable(&class_data)) {}
   ~ImplicitWeakMessageDefaultType() {}
   union {
     alignas(kMaxMessageAlignment) ImplicitWeakMessage _default;  // NOLINT
