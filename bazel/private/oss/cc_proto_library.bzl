@@ -30,7 +30,6 @@ def _get_output_files(actions, proto_info, suffixes):
         ))
     return result
 
-# TODO: Make this code actually work.
 def _get_strip_include_prefix(ctx, proto_info):
     proto_root = proto_info.proto_source_root
     if proto_root == "." or proto_root == ctx.label.workspace_root:
