@@ -171,7 +171,7 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED JavaFeatures_NestInFi
 #if defined(PROTOBUF_CUSTOM_VTABLE)
   PROTOBUF_ALWAYS_INLINE_NODEBUG void operator delete(
       JavaFeatures_NestInFileClassFeature* PROTOBUF_NONNULL msg, ::std::destroying_delete_t) {
-    SharedDtor(*msg);
+    Helpers_::SharedDtor(*msg);
     ::google::protobuf::internal::SizedDelete(msg, sizeof(JavaFeatures_NestInFileClassFeature));
   }
 #endif
@@ -192,7 +192,7 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED JavaFeatures_NestInFi
   inline JavaFeatures_NestInFileClassFeature& operator=(JavaFeatures_NestInFileClassFeature&& from) noexcept {
     if (this == &from) return *this;
     if (::google::protobuf::internal::CanMoveWithInternalSwap(GetArena(), from.GetArena())) {
-      InternalSwap(&from);
+      Helpers_::InternalSwap(*this, &from);
     } else {
       CopyFrom(from);
     }
@@ -229,7 +229,7 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED JavaFeatures_NestInFi
   inline void Swap(JavaFeatures_NestInFileClassFeature* PROTOBUF_NONNULL other) {
     if (other == this) return;
     if (::google::protobuf::internal::CanUseInternalSwap(GetArena(), other->GetArena())) {
-      InternalSwap(other);
+      Helpers_::InternalSwap(*this, other);
     } else {
       ::google::protobuf::internal::GenericSwap(this, other);
     }
@@ -237,7 +237,7 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED JavaFeatures_NestInFi
   void UnsafeArenaSwap(JavaFeatures_NestInFileClassFeature* PROTOBUF_NONNULL other) {
     if (other == this) return;
     ABSL_DCHECK(GetArena() == other->GetArena());
-    InternalSwap(other);
+    Helpers_::InternalSwap(*this, other);
   }
 
   // implements Message ----------------------------------------------
@@ -247,15 +247,13 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED JavaFeatures_NestInFi
     return Super_::DefaultConstruct<JavaFeatures_NestInFileClassFeature>(arena);
   }
   using Super_::CopyFrom;
-  PROTOBUF_ALWAYS_INLINE_NODEBUG void CopyFrom(const JavaFeatures_NestInFileClassFeature& from) {
-    Super_::CopyImpl(*this, from);
-  }
   using Super_::MergeFrom;
-  PROTOBUF_ALWAYS_INLINE_NODEBUG void MergeFrom(const JavaFeatures_NestInFileClassFeature& from) {
-    Super_::MergeImpl(*this, from);
+  PROTOBUF_ALWAYS_INLINE_NODEBUG void CopyFrom(const JavaFeatures_NestInFileClassFeature& from) {
+    Super_::Helpers_::CopyImpl(*this, from);
   }
-
-  public:
+  PROTOBUF_ALWAYS_INLINE_NODEBUG void MergeFrom(const JavaFeatures_NestInFileClassFeature& from) {
+    Super_::Helpers_::MergeImpl(*this, from);
+  }
   [[nodiscard]] PROTOBUF_ALWAYS_INLINE_NODEBUG bool IsInitialized()
       const {
     return true;
@@ -272,13 +270,8 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED JavaFeatures_NestInFi
     *this = ::std::move(from);
   }
   const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL GetClassData() const PROTOBUF_FINAL;
-  static void* PROTOBUF_NONNULL PlacementNew_(
-      const void* PROTOBUF_NONNULL, void* PROTOBUF_NONNULL mem,
-      ::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
-  static constexpr auto InternalNewImpl_();
 
  public:
-  static constexpr auto InternalGenerateClassData_();
 
   [[nodiscard]] ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
@@ -309,17 +302,18 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED JavaFeatures_NestInFi
   // @@protoc_insertion_point(class_scope:pb.JavaFeatures.NestInFileClassFeature)
  private:
   class _Internal;
-#if defined(PROTOBUF_CUSTOM_VTABLE)
-  struct Helpers_ {
+  struct Helpers_ : public Super_::Helpers_ {
     PROTOBUF_NODEBUG Helpers_();
 
+
+#if defined(PROTOBUF_CUSTOM_VTABLE)
     static void Clear(::google::protobuf::MessageLite& msg);
     [[nodiscard]] static::size_t ByteSizeLong(const ::google::protobuf::MessageLite& msg);
     [[nodiscard]] static ::uint8_t* PROTOBUF_NONNULL _InternalSerialize(
         const ::google::protobuf::MessageLite& msg, ::uint8_t* PROTOBUF_NONNULL target,
         ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream);
-  };
 #endif  // PROTOBUF_CUSTOM_VTABLE
+  };
   using ParseTableT_ =
       ::google::protobuf::internal::TcParseTable<0, 0,
                           0, 0,
@@ -348,7 +342,7 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED JavaFeatures final : 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
   PROTOBUF_ALWAYS_INLINE_NODEBUG void operator delete(
       JavaFeatures* PROTOBUF_NONNULL msg, ::std::destroying_delete_t) {
-    SharedDtor(*msg);
+    Helpers_::SharedDtor(*msg);
     ::google::protobuf::internal::SizedDelete(msg, sizeof(JavaFeatures));
   }
 #endif
@@ -369,7 +363,7 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED JavaFeatures final : 
   inline JavaFeatures& operator=(JavaFeatures&& from) noexcept {
     if (this == &from) return *this;
     if (::google::protobuf::internal::CanMoveWithInternalSwap(GetArena(), from.GetArena())) {
-      InternalSwap(&from);
+      Helpers_::InternalSwap(*this, &from);
     } else {
       CopyFrom(from);
     }
@@ -406,7 +400,7 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED JavaFeatures final : 
   inline void Swap(JavaFeatures* PROTOBUF_NONNULL other) {
     if (other == this) return;
     if (::google::protobuf::internal::CanUseInternalSwap(GetArena(), other->GetArena())) {
-      InternalSwap(other);
+      Helpers_::InternalSwap(*this, other);
     } else {
       ::google::protobuf::internal::GenericSwap(this, other);
     }
@@ -414,7 +408,7 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED JavaFeatures final : 
   void UnsafeArenaSwap(JavaFeatures* PROTOBUF_NONNULL other) {
     if (other == this) return;
     ABSL_DCHECK(GetArena() == other->GetArena());
-    InternalSwap(other);
+    Helpers_::InternalSwap(*this, other);
   }
 
   // implements Message ----------------------------------------------
@@ -424,17 +418,13 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED JavaFeatures final : 
     return Super_::DefaultConstruct<JavaFeatures>(arena);
   }
   using Super_::CopyFrom;
-  void CopyFrom(const JavaFeatures& from);
   using Super_::MergeFrom;
-  PROTOBUF_ALWAYS_INLINE_NODEBUG void MergeFrom(const JavaFeatures& from) {
-    JavaFeatures::MergeImpl(*this, from);
+  PROTOBUF_ALWAYS_INLINE_NODEBUG void CopyFrom(const JavaFeatures& from) {
+    JavaFeatures::Helpers_::CopyImpl(*this, from);
   }
-
-  private:
-  static void MergeImpl(::google::protobuf::MessageLite& to_msg,
-                        const ::google::protobuf::MessageLite& from_msg);
-
-  public:
+  PROTOBUF_ALWAYS_INLINE_NODEBUG void MergeFrom(const JavaFeatures& from) {
+    JavaFeatures::Helpers_::MergeImpl(*this, from);
+  }
   [[nodiscard]] PROTOBUF_ALWAYS_INLINE_NODEBUG bool IsInitialized()
       const {
     return true;
@@ -465,11 +455,6 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED JavaFeatures final : 
     return _impl_._cached_size_.Get();
   }
 
-  private:
-  void SharedCtor(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
-  static void SharedDtor(MessageLite& self);
-  void InternalSwap(JavaFeatures* PROTOBUF_NONNULL other);
-
  private:
   static ::absl::string_view FullMessageName() { return "pb.JavaFeatures"; }
 
@@ -481,13 +466,8 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED JavaFeatures final : 
     *this = ::std::move(from);
   }
   const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL GetClassData() const PROTOBUF_FINAL;
-  static void* PROTOBUF_NONNULL PlacementNew_(
-      const void* PROTOBUF_NONNULL, void* PROTOBUF_NONNULL mem,
-      ::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
-  static constexpr auto InternalNewImpl_();
 
  public:
-  static constexpr auto InternalGenerateClassData_();
 
   [[nodiscard]] ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
@@ -580,17 +560,26 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED JavaFeatures final : 
   // @@protoc_insertion_point(class_scope:pb.JavaFeatures)
  private:
   class _Internal;
-#if defined(PROTOBUF_CUSTOM_VTABLE)
   struct Helpers_ {
     PROTOBUF_NODEBUG Helpers_();
 
+    static void SharedCtor(MessageLite& self,
+                           ::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
+    static void SharedDtor(MessageLite& self);
+    static void InternalSwap(MessageLite& self, JavaFeatures* PROTOBUF_NONNULL other);
+    static void CopyImpl(::google::protobuf::MessageLite& to_msg,
+                         const ::google::protobuf::MessageLite& from_msg);
+    static void MergeImpl(::google::protobuf::MessageLite& to_msg,
+                          const ::google::protobuf::MessageLite& from_msg);
+
+#if defined(PROTOBUF_CUSTOM_VTABLE)
     static void Clear(::google::protobuf::MessageLite& msg);
     [[nodiscard]] static::size_t ByteSizeLong(const ::google::protobuf::MessageLite& msg);
     [[nodiscard]] static ::uint8_t* PROTOBUF_NONNULL _InternalSerialize(
         const ::google::protobuf::MessageLite& msg, ::uint8_t* PROTOBUF_NONNULL target,
         ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream);
-  };
 #endif  // PROTOBUF_CUSTOM_VTABLE
+  };
   using ParseTableT_ =
       ::google::protobuf::internal::TcParseTable<3, 5,
                           2, 0,
