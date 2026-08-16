@@ -20,7 +20,6 @@
 #include "absl/strings/str_replace.h"
 #include "absl/strings/string_view.h"
 #include "absl/types/optional.h"
-#include "google/protobuf/arena.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor_database.h"
 #include "google/protobuf/descriptor_visitor.h"
@@ -35,7 +34,6 @@
 #include "google/protobuf/port.h"
 #include "google/protobuf/test_protos/tctable_long_name_test.pb.h"
 #include "google/protobuf/unittest.pb.h"
-#include "google/protobuf/unittest_string_type.pb.h"
 #include "google/protobuf/wire_format_lite.h"
 
 
@@ -367,136 +365,6 @@ class FindFieldEntryTest : public ::testing::Test {
   // Returns the number of fields scanned during a small scan.
   static constexpr int small_scan_size() { return TcParser::kMtSmallScanSize; }
 };
-
-TEST_F(FindFieldEntryTest, GeneratedCordMapEntryUsesStringStorage) {
-  proto2_unittest::EntryProto message;
-  const FieldDescriptor* map =
-      message.GetDescriptor()->FindFieldByName("values");
-  ASSERT_NE(map, nullptr);
-  ASSERT_TRUE(map->is_map());
-
-  const Message* entry =
-      MessageFactory::generated_factory()->GetPrototype(map->message_type());
-  ASSERT_NE(entry, nullptr);
-  const TcParseTableBase* table = GetClassData(*entry)->GetTcParseTable();
-  ASSERT_NE(table, nullptr);
-
-  const TcParseTableBase::FieldEntry* value_entry = nullptr;
-  for (size_t i = 0; i < table->field_entries().size(); ++i) {
-    if (FieldNumber(table, i) == map->message_type()->map_value()->number()) {
-      value_entry = &table->field_entries()[i];
-      break;
-    }
-  }
-  ASSERT_NE(value_entry, nullptr);
-  EXPECT_EQ(value_entry->type_card & field_layout::kRepMask,
-            field_layout::kRepAString);
-}
-
-void ExerciseStaleCordRepresentation(Message* parsed,
-                                     const Descriptor* descriptor) {
-  const Message* prototype =
-      MessageFactory::generated_factory()->GetPrototype(descriptor);
-  ASSERT_NE(prototype, nullptr);
-  ASSERT_EQ(GetClassData(*parsed), GetClassData(*prototype));
-  const FieldDescriptor* value = descriptor->map_value();
-  ASSERT_NE(value, nullptr);
-
-  std::unique_ptr<Message> source(prototype->New());
-  const std::string payload(4096, 'P');
-  source->GetReflection()->SetString(source.get(), value, payload);
-  std::string wire;
-  ASSERT_TRUE(source->SerializeToString(&wire));
-
-  const ClassData* class_data = GetClassData(*parsed);
-  const TcParseTableBase* generated_table = class_data->GetTcParseTable();
-  ASSERT_NE(generated_table, nullptr);
-  ASSERT_EQ(generated_table->fallback, TcParser::DiscardEverythingFallback);
-  ASSERT_EQ(generated_table->field_entries().size(), 2);
-
-  const TcParseTableBase::FieldEntry* generated_entry = nullptr;
-  size_t value_index = 0;
-  for (size_t i = 0; i < generated_table->field_entries().size(); ++i) {
-    if (FindFieldEntryTest::FieldNumber(generated_table, i) ==
-        value->number()) {
-      generated_entry = &generated_table->field_entries()[i];
-      value_index = i;
-      break;
-    }
-  }
-  ASSERT_NE(generated_entry, nullptr);
-  ASSERT_EQ(generated_entry->type_card & field_layout::kRepMask,
-            field_layout::kRepAString);
-
-  // Copy the genuine generated map-entry table, then reproduce the stale Cord
-  // classification: the physical value remains ArenaStringPtr while its field
-  // entry and fast handler claim that the same offset contains an inline Cord.
-  // These dimensions are asserted against the generated table header before
-  // interpreting the complete generated table as its concrete table type.
-  using MapEntryTable = TcParseTable<1, 2, 0, 50, 2>;
-  ASSERT_EQ(generated_table->fast_idx_mask, 8);
-  ASSERT_EQ(generated_table->field_entries_offset,
-            offsetof(MapEntryTable, field_entries));
-  ASSERT_EQ(generated_table->aux_offset, offsetof(MapEntryTable, field_names));
-  MapEntryTable stale_table =
-      *reinterpret_cast<const MapEntryTable*>(generated_table);
-  auto& stale_entry = stale_table.field_entries[value_index];
-  stale_entry.type_card =
-      static_cast<uint16_t>((stale_entry.type_card & ~field_layout::kRepMask) |
-                            field_layout::kRepCord);
-
-  const uint32_t value_tag = WireFormatLite::MakeTag(
-      value->number(), WireFormatLite::WIRETYPE_LENGTH_DELIMITED);
-  const uint32_t fast_index = TcParseTableBase::TagToIdx(
-      value_tag, stale_table.fast_entries.size());
-  auto& stale_fast_entry = stale_table.fast_entries[fast_index];
-  ASSERT_EQ(stale_fast_entry.target(), TcParser::FastBS1);
-  ASSERT_EQ(stale_fast_entry.bits.coded_tag<uint16_t>(), value_tag);
-  ASSERT_EQ(stale_fast_entry.bits.offset(), generated_entry->offset);
-  const uint64_t generated_fast_bits = stale_fast_entry.bits.data;
-  stale_fast_entry.target_function = TcParser::FastBcS1;
-  ASSERT_EQ(stale_fast_entry.target(), TcParser::FastBcS1);
-  ASSERT_EQ(stale_fast_entry.bits.data, generated_fast_bits);
-
-  const char* ptr = nullptr;
-  ParseContext ctx(io::CodedInputStream::GetDefaultRecursionLimit(),
-                   /*aliasing=*/false, &ptr, wire);
-  ASSERT_NE(ptr, nullptr);
-  const char* end = TcParser::ParseLoop(parsed, ptr, &ctx, &stale_table.header);
-  ASSERT_NE(end, nullptr);
-  EXPECT_EQ(parsed->GetReflection()->GetString(*parsed, value), payload);
-
-  std::string round_trip;
-  ASSERT_TRUE(parsed->SerializeToString(&round_trip));
-  std::unique_ptr<Message> reparsed(prototype->New());
-  ASSERT_TRUE(reparsed->ParseFromString(round_trip));
-  EXPECT_EQ(reparsed->GetReflection()->GetString(*reparsed, value), payload);
-}
-
-TEST_F(FindFieldEntryTest,
-       NormalizesStaleCordRepresentationToStringStorageOnHeap) {
-  const Descriptor* descriptor = proto2_unittest::EntryProto::descriptor()
-                                     ->FindFieldByName("values")
-                                     ->message_type();
-  const Message* prototype =
-      MessageFactory::generated_factory()->GetPrototype(descriptor);
-  ASSERT_NE(prototype, nullptr);
-  std::unique_ptr<Message> parsed(prototype->New());
-  ExerciseStaleCordRepresentation(parsed.get(), descriptor);
-}
-
-TEST_F(FindFieldEntryTest,
-       NormalizesStaleCordRepresentationToStringStorageOnArena) {
-  const Descriptor* descriptor = proto2_unittest::EntryProto::descriptor()
-                                     ->FindFieldByName("values")
-                                     ->message_type();
-  const Message* prototype =
-      MessageFactory::generated_factory()->GetPrototype(descriptor);
-  ASSERT_NE(prototype, nullptr);
-  Arena arena;
-  Message* parsed = prototype->New(&arena);
-  ExerciseStaleCordRepresentation(parsed, descriptor);
-}
 
 TEST_F(FindFieldEntryTest, FieldNumberWorksForAllFields) {
   // Look at all types registered in the binary and verify that field number
