@@ -442,7 +442,6 @@ struct InternalMetadata::Container<UnknownFieldSet>
 };
 }  // namespace internal
 
-
 }  // namespace protobuf
 }  // namespace google
 
