@@ -40,6 +40,15 @@ class OneofGenerator {
   OneofGenerator& operator=(const OneofGenerator&) = delete;
   ~OneofGenerator();
 
+  void GenerateInterfaceMembers(io::Printer* printer) const;
+  void GenerateMembers(io::Printer* printer) const;
+  void GenerateEqualsCode(
+      io::Printer* printer,
+      const FieldGeneratorMap<ImmutableFieldGenerator>& field_generators) const;
+  void GenerateHashCode(
+      io::Printer* printer,
+      const FieldGeneratorMap<ImmutableFieldGenerator>& field_generators) const;
+
   void GenerateCommonBuilderMethods(io::Printer* printer) const;
   void GenerateBuilderClearMethod(io::Printer* printer) const;
 

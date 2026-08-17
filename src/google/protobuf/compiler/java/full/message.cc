@@ -34,6 +34,7 @@
 #include "google/protobuf/compiler/java/full/extension.h"
 #include "google/protobuf/compiler/java/full/make_field_gens.h"
 #include "google/protobuf/compiler/java/full/message_builder.h"
+#include "google/protobuf/compiler/java/full/oneof_generator.h"
 #include "google/protobuf/compiler/java/message_serialization.h"
 #include "google/protobuf/compiler/java/name_resolver.h"
 #include "google/protobuf/compiler/java/names.h"
@@ -82,6 +83,15 @@ ImmutableMessageGenerator::ImmutableMessageGenerator(
   ABSL_CHECK(HasDescriptorMethods(descriptor->file(), context->EnforceLite()))
       << "Generator factory error: A non-lite message generator is used to "
          "generate lite messages.";
+  for (int i = 0; i < descriptor_->field_count(); i++) {
+    if (IsRealOneof(descriptor_->field(i))) {
+      const OneofDescriptor* oneof = descriptor_->field(i)->containing_oneof();
+      auto& generator = oneof_generators_[oneof->index()];
+      if (generator == nullptr) {
+        generator = std::make_unique<OneofGenerator>(oneof, context_);
+      }
+    }
+  }
 }
 
 ImmutableMessageGenerator::~ImmutableMessageGenerator() = default;
@@ -270,15 +280,8 @@ void ImmutableMessageGenerator::GenerateInterface(io::Printer* printer) {
     field_generators_.get(descriptor_->field(i))
         .GenerateInterfaceMembers(printer);
   }
-  for (const auto& kv : oneofs_) {
-    printer->Print(
-        "\n"
-        "$classname$.$oneof_capitalized_name$Case "
-        "get$oneof_capitalized_name$Case();\n",
-        "oneof_capitalized_name",
-        context_->GetOneofGeneratorInfo(kv.second)->capitalized_name,
-        "classname",
-        context_->GetNameResolver()->GetImmutableClassName(descriptor_));
+  for (const auto& kv : oneof_generators_) {
+    kv.second->GenerateInterfaceMembers(printer);
   }
   printer->Outdent();
 
@@ -389,94 +392,8 @@ void ImmutableMessageGenerator::Generate(io::Printer* printer) {
   }
 
   // oneof
-  absl::flat_hash_map<absl::string_view, std::string> vars;
-  for (const auto& kv : oneofs_) {
-    const OneofDescriptor* oneof = kv.second;
-    vars["oneof_name"] = context_->GetOneofGeneratorInfo(oneof)->name;
-    vars["oneof_capitalized_name"] =
-        context_->GetOneofGeneratorInfo(oneof)->capitalized_name;
-    vars["oneof_index"] = absl::StrCat((oneof)->index());
-    vars["{"] = "";
-    vars["}"] = "";
-    // oneofCase_ and oneof_
-    printer->Print(vars,
-                   "private int $oneof_name$Case_ = 0;\n"
-                   "@SuppressWarnings(\"serial\")\n"
-                   "private java.lang.Object $oneof_name$_;\n");
-    // OneofCase enum
-    printer->Print(
-        vars,
-        "public enum ${$$oneof_capitalized_name$Case$}$\n"
-        // TODO: Remove EnumLite when we want to break compatibility with
-        // 3.x users
-        "    implements com.google.protobuf.Internal.EnumLite,\n"
-        "        com.google.protobuf.AbstractMessage.InternalOneOfEnum {\n");
-    printer->Annotate("{", "}", oneof);
-    printer->Indent();
-    for (int j = 0; j < (oneof)->field_count(); j++) {
-      const FieldDescriptor* field = (oneof)->field(j);
-      printer->Print(
-          "$deprecation$$field_name$($field_number$),\n", "deprecation",
-          field->options().deprecated() ? "@java.lang.Deprecated " : "",
-          "field_name", absl::AsciiStrToUpper(field->name()), "field_number",
-          absl::StrCat(field->number()));
-      printer->Annotate("field_name", field);
-    }
-    printer->Print("$cap_oneof_name$_NOT_SET(0);\n", "cap_oneof_name",
-                   absl::AsciiStrToUpper(vars["oneof_name"]));
-    printer->Print(vars,
-                   "private final int value;\n"
-                   "private $oneof_capitalized_name$Case(int value) {\n"
-                   "  this.value = value;\n"
-                   "}\n");
-    if (google::protobuf::internal::IsOss()) {
-      printer->Print(
-          vars,
-          "/**\n"
-          " * @param value The number of the enum to look for.\n"
-          " * @return The enum associated with the given number.\n"
-          " * @deprecated Use {@link #forNumber(int)} instead.\n"
-          " */\n"
-          "@java.lang.Deprecated\n"
-          "public static $oneof_capitalized_name$Case valueOf(int value) {\n"
-          "  return forNumber(value);\n"
-          "}\n"
-          "\n");
-    }
-    if (!google::protobuf::internal::IsOss()) {
-      printer->Print(
-          "@com.google.protobuf.Internal.ProtoMethodMayReturnNull\n");
-    }
-    printer->Print(
-        vars,
-        "public static $oneof_capitalized_name$Case forNumber(int value) {\n"
-        "  switch (value) {\n");
-    for (int j = 0; j < (oneof)->field_count(); j++) {
-      const FieldDescriptor* field = (oneof)->field(j);
-      printer->Print("    case $field_number$: return $field_name$;\n",
-                     "field_number", absl::StrCat(field->number()),
-                     "field_name", absl::AsciiStrToUpper(field->name()));
-    }
-    printer->Print(
-        "    case 0: return $cap_oneof_name$_NOT_SET;\n"
-        "    default: return null;\n"
-        "  }\n"
-        "}\n"
-        "public int getNumber() {\n"
-        "  return this.value;\n"
-        "}\n",
-        "cap_oneof_name", absl::AsciiStrToUpper(vars["oneof_name"]));
-    printer->Outdent();
-    printer->Print("};\n\n");
-    // oneofCase()
-    printer->Print(vars,
-                   "public $oneof_capitalized_name$Case\n"
-                   "${$get$oneof_capitalized_name$Case$}$() {\n"
-                   "  return $oneof_capitalized_name$Case.forNumber(\n"
-                   "      $oneof_name$Case_);\n"
-                   "}\n"
-                   "\n");
-    printer->Annotate("{", "}", oneof);
+  for (const auto& kv : oneof_generators_) {
+    kv.second->GenerateMembers(printer);
   }
 
   if (IsAnyMessage(descriptor_)) {
@@ -791,7 +708,8 @@ void ImmutableMessageGenerator::GenerateBuilder(io::Printer* printer) {
       "  return builder;\n"
       "}\n");
 
-  MessageBuilderGenerator builderGenerator(descriptor_, context_);
+  MessageBuilderGenerator builderGenerator(descriptor_, context_,
+                                           oneof_generators_);
   builderGenerator.Generate(printer);
 }
 
@@ -1046,30 +964,8 @@ void ImmutableMessageGenerator::GenerateEqualsAndHashCode(
   }
 
   // Compare oneofs.
-  for (const auto& kv : oneofs_) {
-    const OneofDescriptor* oneof = kv.second;
-    printer->Print(
-        "if (!get$oneof_capitalized_name$Case().equals("
-        "other.get$oneof_capitalized_name$Case())) return false;\n",
-        "oneof_capitalized_name",
-        context_->GetOneofGeneratorInfo(oneof)->capitalized_name);
-    printer->Print("switch ($oneof_name$Case_) {\n", "oneof_name",
-                   context_->GetOneofGeneratorInfo(oneof)->name);
-    printer->Indent();
-    for (int j = 0; j < (oneof)->field_count(); j++) {
-      const FieldDescriptor* field = (oneof)->field(j);
-      printer->Print("case $field_number$:\n", "field_number",
-                     absl::StrCat(field->number()));
-      printer->Indent();
-      field_generators_.get(field).GenerateEqualsCode(printer);
-      printer->Print("break;\n");
-      printer->Outdent();
-    }
-    printer->Print(
-        "case 0:\n"
-        "default:\n");
-    printer->Outdent();
-    printer->Print("}\n");
+  for (const auto& kv : oneof_generators_) {
+    kv.second->GenerateEqualsCode(printer, field_generators_);
   }
 
   // Always consider unknown fields for equality. This will sometimes return
@@ -1124,25 +1020,8 @@ void ImmutableMessageGenerator::GenerateEqualsAndHashCode(
   }
 
   // hashCode oneofs.
-  for (const auto& kv : oneofs_) {
-    const OneofDescriptor* oneof = kv.second;
-    printer->Print("switch ($oneof_name$Case_) {\n", "oneof_name",
-                   context_->GetOneofGeneratorInfo(oneof)->name);
-    printer->Indent();
-    for (int j = 0; j < (oneof)->field_count(); j++) {
-      const FieldDescriptor* field = (oneof)->field(j);
-      printer->Print("case $field_number$:\n", "field_number",
-                     absl::StrCat(field->number()));
-      printer->Indent();
-      field_generators_.get(field).GenerateHashCode(printer);
-      printer->Print("break;\n");
-      printer->Outdent();
-    }
-    printer->Print(
-        "case 0:\n"
-        "default:\n");
-    printer->Outdent();
-    printer->Print("}\n");
+  for (const auto& kv : oneof_generators_) {
+    kv.second->GenerateHashCode(printer, field_generators_);
   }
 
   if (descriptor_->extension_range_count() > 0) {
