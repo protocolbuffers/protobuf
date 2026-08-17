@@ -25,7 +25,6 @@ PROTOBUF_PRAGMA_INIT_SEG
 namespace _pb = ::google::protobuf;
 namespace _pbi = ::google::protobuf::internal;
 namespace _fl = ::google::protobuf::internal::field_layout;
-#ifdef PROTOBUF_MESSAGE_GLOBALS
 namespace {
 PROTOBUF_CONSTINIT ::google::protobuf::internal::ReflectionData
     file_reflection_data[] = {
@@ -49,7 +48,6 @@ PROTOBUF_CONSTINIT ::google::protobuf::internal::ReflectionData
         {&::_pbi::kDescriptorMethods, &::descriptor_table_google_2fprotobuf_2fwrappers_2eproto, /* tracker*/ nullptr,},
 };
 }  // namespace
-#endif
 namespace google {
 namespace protobuf {
 class UInt64Value::_Internal {
@@ -125,11 +123,7 @@ constexpr auto UInt64Value::InternalGenerateClassData_(
   return ::google::protobuf::internal::ClassDataFull{
       ::google::protobuf::internal::ClassData{
           &prototype,
-#ifndef PROTOBUF_MESSAGE_GLOBALS
-          &_table_.header,
-#else
           tc_table,
-#endif
           nullptr,  // IsInitialized
           &UInt64Value::MergeImpl,
           Super_::GetNewImpl<UInt64Value>(),
@@ -140,58 +134,29 @@ constexpr auto UInt64Value::InternalGenerateClassData_(
           PROTOBUF_FIELD_OFFSET(UInt64Value, _impl_._cached_size_),
           false,
       },
-#ifdef PROTOBUF_MESSAGE_GLOBALS
       &file_reflection_data[3],
-#else   // !PROTOBUF_MESSAGE_GLOBALS
-      &::_pbi::kDescriptorMethods,
-      &descriptor_table_google_2fprotobuf_2fwrappers_2eproto,
-      nullptr,  // tracker
-#endif  // PROTOBUF_MESSAGE_GLOBALS
   };
 }
 struct UInt64ValueGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
   constexpr UInt64ValueGlobalsTypeInternal()
-      :
-#ifndef PROTOBUF_MESSAGE_GLOBALS
-        _default(::_pbi::ConstantInitialized{},
-                 UInt64Value_class_data_.base())
-#else   // !PROTOBUF_MESSAGE_GLOBALS
-        MessageGlobalsBase(UInt64Value::InternalGenerateClassData_(
+      : MessageGlobalsBase(UInt64Value::InternalGenerateClassData_(
             _default, &UInt64Value_globals_._table.header)),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
         _table(::_pbi::PrivateAccess::GenerateParseTable<UInt64Value>(
-            GetClassData()))
-#endif  // PROTOBUF_MESSAGE_GLOBALS
-  {
-  }
+            GetClassData())) {}
   ~UInt64ValueGlobalsTypeInternal() {}
   union {
     alignas(::_pbi::kMaxMessageAlignment) UInt64Value _default;
   };
-#ifdef PROTOBUF_MESSAGE_GLOBALS
   decltype(::_pbi::PrivateAccess::GenerateParseTable<UInt64Value>(
       ::std::declval<const ::_pbi::ClassData*>())) _table;
-#endif
 };
-#ifdef PROTOBUF_MESSAGE_GLOBALS
 static_assert(PROTOBUF_FIELD_OFFSET(UInt64ValueGlobalsTypeInternal, _default) ==
               ::_pbi::MessageGlobalsBase::OffsetToDefault());
-#endif  // PROTOBUF_MESSAGE_GLOBALS
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 PROTOBUF_MESSAGE_GLOBALS_CONST UInt64ValueGlobalsTypeInternal UInt64Value_globals_
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const UInt64ValueGlobalsTypeInternal UInt64Value_globals_
         PROTOBUF_MESSAGE_GLOBALS_SECTION(.data.rel.ro);
-#if defined(PROTOBUF_CUSTOM_VTABLE)
-namespace {
-const ::_pbi::ClassData* UInt64Value_get_class_data() {
-#ifdef PROTOBUF_MESSAGE_GLOBALS
-  return UInt64Value_globals_.GetClassData();
-#else
-  return UInt64Value_class_data_.base();
-#endif  // PROTOBUF_MESSAGE_GLOBALS
-}
-}  // namespace
-#endif  // PROTOBUF_CUSTOM_VTABLE
 class UInt32Value::_Internal {
  public:
   using HasBits = decltype(::std::declval<UInt32Value>()._impl_._has_bits_);
@@ -265,11 +230,7 @@ constexpr auto UInt32Value::InternalGenerateClassData_(
   return ::google::protobuf::internal::ClassDataFull{
       ::google::protobuf::internal::ClassData{
           &prototype,
-#ifndef PROTOBUF_MESSAGE_GLOBALS
-          &_table_.header,
-#else
           tc_table,
-#endif
           nullptr,  // IsInitialized
           &UInt32Value::MergeImpl,
           Super_::GetNewImpl<UInt32Value>(),
@@ -280,58 +241,29 @@ constexpr auto UInt32Value::InternalGenerateClassData_(
           PROTOBUF_FIELD_OFFSET(UInt32Value, _impl_._cached_size_),
           false,
       },
-#ifdef PROTOBUF_MESSAGE_GLOBALS
       &file_reflection_data[5],
-#else   // !PROTOBUF_MESSAGE_GLOBALS
-      &::_pbi::kDescriptorMethods,
-      &descriptor_table_google_2fprotobuf_2fwrappers_2eproto,
-      nullptr,  // tracker
-#endif  // PROTOBUF_MESSAGE_GLOBALS
   };
 }
 struct UInt32ValueGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
   constexpr UInt32ValueGlobalsTypeInternal()
-      :
-#ifndef PROTOBUF_MESSAGE_GLOBALS
-        _default(::_pbi::ConstantInitialized{},
-                 UInt32Value_class_data_.base())
-#else   // !PROTOBUF_MESSAGE_GLOBALS
-        MessageGlobalsBase(UInt32Value::InternalGenerateClassData_(
+      : MessageGlobalsBase(UInt32Value::InternalGenerateClassData_(
             _default, &UInt32Value_globals_._table.header)),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
         _table(::_pbi::PrivateAccess::GenerateParseTable<UInt32Value>(
-            GetClassData()))
-#endif  // PROTOBUF_MESSAGE_GLOBALS
-  {
-  }
+            GetClassData())) {}
   ~UInt32ValueGlobalsTypeInternal() {}
   union {
     alignas(::_pbi::kMaxMessageAlignment) UInt32Value _default;
   };
-#ifdef PROTOBUF_MESSAGE_GLOBALS
   decltype(::_pbi::PrivateAccess::GenerateParseTable<UInt32Value>(
       ::std::declval<const ::_pbi::ClassData*>())) _table;
-#endif
 };
-#ifdef PROTOBUF_MESSAGE_GLOBALS
 static_assert(PROTOBUF_FIELD_OFFSET(UInt32ValueGlobalsTypeInternal, _default) ==
               ::_pbi::MessageGlobalsBase::OffsetToDefault());
-#endif  // PROTOBUF_MESSAGE_GLOBALS
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 PROTOBUF_MESSAGE_GLOBALS_CONST UInt32ValueGlobalsTypeInternal UInt32Value_globals_
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const UInt32ValueGlobalsTypeInternal UInt32Value_globals_
         PROTOBUF_MESSAGE_GLOBALS_SECTION(.data.rel.ro);
-#if defined(PROTOBUF_CUSTOM_VTABLE)
-namespace {
-const ::_pbi::ClassData* UInt32Value_get_class_data() {
-#ifdef PROTOBUF_MESSAGE_GLOBALS
-  return UInt32Value_globals_.GetClassData();
-#else
-  return UInt32Value_class_data_.base();
-#endif  // PROTOBUF_MESSAGE_GLOBALS
-}
-}  // namespace
-#endif  // PROTOBUF_CUSTOM_VTABLE
 class StringValue::_Internal {
  public:
   using HasBits = decltype(::std::declval<StringValue>()._impl_._has_bits_);
@@ -410,11 +342,7 @@ constexpr auto StringValue::InternalGenerateClassData_(
   return ::google::protobuf::internal::ClassDataFull{
       ::google::protobuf::internal::ClassData{
           &prototype,
-#ifndef PROTOBUF_MESSAGE_GLOBALS
-          &_table_.header,
-#else
           tc_table,
-#endif
           nullptr,  // IsInitialized
           &StringValue::MergeImpl,
           Super_::GetNewImpl<StringValue>(),
@@ -425,58 +353,29 @@ constexpr auto StringValue::InternalGenerateClassData_(
           PROTOBUF_FIELD_OFFSET(StringValue, _impl_._cached_size_),
           false,
       },
-#ifdef PROTOBUF_MESSAGE_GLOBALS
       &file_reflection_data[7],
-#else   // !PROTOBUF_MESSAGE_GLOBALS
-      &::_pbi::kDescriptorMethods,
-      &descriptor_table_google_2fprotobuf_2fwrappers_2eproto,
-      nullptr,  // tracker
-#endif  // PROTOBUF_MESSAGE_GLOBALS
   };
 }
 struct StringValueGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
   constexpr StringValueGlobalsTypeInternal()
-      :
-#ifndef PROTOBUF_MESSAGE_GLOBALS
-        _default(::_pbi::ConstantInitialized{},
-                 StringValue_class_data_.base())
-#else   // !PROTOBUF_MESSAGE_GLOBALS
-        MessageGlobalsBase(StringValue::InternalGenerateClassData_(
+      : MessageGlobalsBase(StringValue::InternalGenerateClassData_(
             _default, &StringValue_globals_._table.header)),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
         _table(::_pbi::PrivateAccess::GenerateParseTable<StringValue>(
-            GetClassData()))
-#endif  // PROTOBUF_MESSAGE_GLOBALS
-  {
-  }
+            GetClassData())) {}
   ~StringValueGlobalsTypeInternal() {}
   union {
     alignas(::_pbi::kMaxMessageAlignment) StringValue _default;
   };
-#ifdef PROTOBUF_MESSAGE_GLOBALS
   decltype(::_pbi::PrivateAccess::GenerateParseTable<StringValue>(
       ::std::declval<const ::_pbi::ClassData*>())) _table;
-#endif
 };
-#ifdef PROTOBUF_MESSAGE_GLOBALS
 static_assert(PROTOBUF_FIELD_OFFSET(StringValueGlobalsTypeInternal, _default) ==
               ::_pbi::MessageGlobalsBase::OffsetToDefault());
-#endif  // PROTOBUF_MESSAGE_GLOBALS
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 PROTOBUF_MESSAGE_GLOBALS_CONST StringValueGlobalsTypeInternal StringValue_globals_
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const StringValueGlobalsTypeInternal StringValue_globals_
         PROTOBUF_MESSAGE_GLOBALS_SECTION(.data.rel.ro);
-#if defined(PROTOBUF_CUSTOM_VTABLE)
-namespace {
-const ::_pbi::ClassData* StringValue_get_class_data() {
-#ifdef PROTOBUF_MESSAGE_GLOBALS
-  return StringValue_globals_.GetClassData();
-#else
-  return StringValue_class_data_.base();
-#endif  // PROTOBUF_MESSAGE_GLOBALS
-}
-}  // namespace
-#endif  // PROTOBUF_CUSTOM_VTABLE
 class Int64Value::_Internal {
  public:
   using HasBits = decltype(::std::declval<Int64Value>()._impl_._has_bits_);
@@ -550,11 +449,7 @@ constexpr auto Int64Value::InternalGenerateClassData_(
   return ::google::protobuf::internal::ClassDataFull{
       ::google::protobuf::internal::ClassData{
           &prototype,
-#ifndef PROTOBUF_MESSAGE_GLOBALS
-          &_table_.header,
-#else
           tc_table,
-#endif
           nullptr,  // IsInitialized
           &Int64Value::MergeImpl,
           Super_::GetNewImpl<Int64Value>(),
@@ -565,58 +460,29 @@ constexpr auto Int64Value::InternalGenerateClassData_(
           PROTOBUF_FIELD_OFFSET(Int64Value, _impl_._cached_size_),
           false,
       },
-#ifdef PROTOBUF_MESSAGE_GLOBALS
       &file_reflection_data[2],
-#else   // !PROTOBUF_MESSAGE_GLOBALS
-      &::_pbi::kDescriptorMethods,
-      &descriptor_table_google_2fprotobuf_2fwrappers_2eproto,
-      nullptr,  // tracker
-#endif  // PROTOBUF_MESSAGE_GLOBALS
   };
 }
 struct Int64ValueGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
   constexpr Int64ValueGlobalsTypeInternal()
-      :
-#ifndef PROTOBUF_MESSAGE_GLOBALS
-        _default(::_pbi::ConstantInitialized{},
-                 Int64Value_class_data_.base())
-#else   // !PROTOBUF_MESSAGE_GLOBALS
-        MessageGlobalsBase(Int64Value::InternalGenerateClassData_(
+      : MessageGlobalsBase(Int64Value::InternalGenerateClassData_(
             _default, &Int64Value_globals_._table.header)),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
         _table(::_pbi::PrivateAccess::GenerateParseTable<Int64Value>(
-            GetClassData()))
-#endif  // PROTOBUF_MESSAGE_GLOBALS
-  {
-  }
+            GetClassData())) {}
   ~Int64ValueGlobalsTypeInternal() {}
   union {
     alignas(::_pbi::kMaxMessageAlignment) Int64Value _default;
   };
-#ifdef PROTOBUF_MESSAGE_GLOBALS
   decltype(::_pbi::PrivateAccess::GenerateParseTable<Int64Value>(
       ::std::declval<const ::_pbi::ClassData*>())) _table;
-#endif
 };
-#ifdef PROTOBUF_MESSAGE_GLOBALS
 static_assert(PROTOBUF_FIELD_OFFSET(Int64ValueGlobalsTypeInternal, _default) ==
               ::_pbi::MessageGlobalsBase::OffsetToDefault());
-#endif  // PROTOBUF_MESSAGE_GLOBALS
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 PROTOBUF_MESSAGE_GLOBALS_CONST Int64ValueGlobalsTypeInternal Int64Value_globals_
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const Int64ValueGlobalsTypeInternal Int64Value_globals_
         PROTOBUF_MESSAGE_GLOBALS_SECTION(.data.rel.ro);
-#if defined(PROTOBUF_CUSTOM_VTABLE)
-namespace {
-const ::_pbi::ClassData* Int64Value_get_class_data() {
-#ifdef PROTOBUF_MESSAGE_GLOBALS
-  return Int64Value_globals_.GetClassData();
-#else
-  return Int64Value_class_data_.base();
-#endif  // PROTOBUF_MESSAGE_GLOBALS
-}
-}  // namespace
-#endif  // PROTOBUF_CUSTOM_VTABLE
 class Int32Value::_Internal {
  public:
   using HasBits = decltype(::std::declval<Int32Value>()._impl_._has_bits_);
@@ -690,11 +556,7 @@ constexpr auto Int32Value::InternalGenerateClassData_(
   return ::google::protobuf::internal::ClassDataFull{
       ::google::protobuf::internal::ClassData{
           &prototype,
-#ifndef PROTOBUF_MESSAGE_GLOBALS
-          &_table_.header,
-#else
           tc_table,
-#endif
           nullptr,  // IsInitialized
           &Int32Value::MergeImpl,
           Super_::GetNewImpl<Int32Value>(),
@@ -705,58 +567,29 @@ constexpr auto Int32Value::InternalGenerateClassData_(
           PROTOBUF_FIELD_OFFSET(Int32Value, _impl_._cached_size_),
           false,
       },
-#ifdef PROTOBUF_MESSAGE_GLOBALS
       &file_reflection_data[4],
-#else   // !PROTOBUF_MESSAGE_GLOBALS
-      &::_pbi::kDescriptorMethods,
-      &descriptor_table_google_2fprotobuf_2fwrappers_2eproto,
-      nullptr,  // tracker
-#endif  // PROTOBUF_MESSAGE_GLOBALS
   };
 }
 struct Int32ValueGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
   constexpr Int32ValueGlobalsTypeInternal()
-      :
-#ifndef PROTOBUF_MESSAGE_GLOBALS
-        _default(::_pbi::ConstantInitialized{},
-                 Int32Value_class_data_.base())
-#else   // !PROTOBUF_MESSAGE_GLOBALS
-        MessageGlobalsBase(Int32Value::InternalGenerateClassData_(
+      : MessageGlobalsBase(Int32Value::InternalGenerateClassData_(
             _default, &Int32Value_globals_._table.header)),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
         _table(::_pbi::PrivateAccess::GenerateParseTable<Int32Value>(
-            GetClassData()))
-#endif  // PROTOBUF_MESSAGE_GLOBALS
-  {
-  }
+            GetClassData())) {}
   ~Int32ValueGlobalsTypeInternal() {}
   union {
     alignas(::_pbi::kMaxMessageAlignment) Int32Value _default;
   };
-#ifdef PROTOBUF_MESSAGE_GLOBALS
   decltype(::_pbi::PrivateAccess::GenerateParseTable<Int32Value>(
       ::std::declval<const ::_pbi::ClassData*>())) _table;
-#endif
 };
-#ifdef PROTOBUF_MESSAGE_GLOBALS
 static_assert(PROTOBUF_FIELD_OFFSET(Int32ValueGlobalsTypeInternal, _default) ==
               ::_pbi::MessageGlobalsBase::OffsetToDefault());
-#endif  // PROTOBUF_MESSAGE_GLOBALS
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 PROTOBUF_MESSAGE_GLOBALS_CONST Int32ValueGlobalsTypeInternal Int32Value_globals_
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const Int32ValueGlobalsTypeInternal Int32Value_globals_
         PROTOBUF_MESSAGE_GLOBALS_SECTION(.data.rel.ro);
-#if defined(PROTOBUF_CUSTOM_VTABLE)
-namespace {
-const ::_pbi::ClassData* Int32Value_get_class_data() {
-#ifdef PROTOBUF_MESSAGE_GLOBALS
-  return Int32Value_globals_.GetClassData();
-#else
-  return Int32Value_class_data_.base();
-#endif  // PROTOBUF_MESSAGE_GLOBALS
-}
-}  // namespace
-#endif  // PROTOBUF_CUSTOM_VTABLE
 class FloatValue::_Internal {
  public:
   using HasBits = decltype(::std::declval<FloatValue>()._impl_._has_bits_);
@@ -830,11 +663,7 @@ constexpr auto FloatValue::InternalGenerateClassData_(
   return ::google::protobuf::internal::ClassDataFull{
       ::google::protobuf::internal::ClassData{
           &prototype,
-#ifndef PROTOBUF_MESSAGE_GLOBALS
-          &_table_.header,
-#else
           tc_table,
-#endif
           nullptr,  // IsInitialized
           &FloatValue::MergeImpl,
           Super_::GetNewImpl<FloatValue>(),
@@ -845,58 +674,29 @@ constexpr auto FloatValue::InternalGenerateClassData_(
           PROTOBUF_FIELD_OFFSET(FloatValue, _impl_._cached_size_),
           false,
       },
-#ifdef PROTOBUF_MESSAGE_GLOBALS
       &file_reflection_data[1],
-#else   // !PROTOBUF_MESSAGE_GLOBALS
-      &::_pbi::kDescriptorMethods,
-      &descriptor_table_google_2fprotobuf_2fwrappers_2eproto,
-      nullptr,  // tracker
-#endif  // PROTOBUF_MESSAGE_GLOBALS
   };
 }
 struct FloatValueGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
   constexpr FloatValueGlobalsTypeInternal()
-      :
-#ifndef PROTOBUF_MESSAGE_GLOBALS
-        _default(::_pbi::ConstantInitialized{},
-                 FloatValue_class_data_.base())
-#else   // !PROTOBUF_MESSAGE_GLOBALS
-        MessageGlobalsBase(FloatValue::InternalGenerateClassData_(
+      : MessageGlobalsBase(FloatValue::InternalGenerateClassData_(
             _default, &FloatValue_globals_._table.header)),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
         _table(::_pbi::PrivateAccess::GenerateParseTable<FloatValue>(
-            GetClassData()))
-#endif  // PROTOBUF_MESSAGE_GLOBALS
-  {
-  }
+            GetClassData())) {}
   ~FloatValueGlobalsTypeInternal() {}
   union {
     alignas(::_pbi::kMaxMessageAlignment) FloatValue _default;
   };
-#ifdef PROTOBUF_MESSAGE_GLOBALS
   decltype(::_pbi::PrivateAccess::GenerateParseTable<FloatValue>(
       ::std::declval<const ::_pbi::ClassData*>())) _table;
-#endif
 };
-#ifdef PROTOBUF_MESSAGE_GLOBALS
 static_assert(PROTOBUF_FIELD_OFFSET(FloatValueGlobalsTypeInternal, _default) ==
               ::_pbi::MessageGlobalsBase::OffsetToDefault());
-#endif  // PROTOBUF_MESSAGE_GLOBALS
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 PROTOBUF_MESSAGE_GLOBALS_CONST FloatValueGlobalsTypeInternal FloatValue_globals_
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const FloatValueGlobalsTypeInternal FloatValue_globals_
         PROTOBUF_MESSAGE_GLOBALS_SECTION(.data.rel.ro);
-#if defined(PROTOBUF_CUSTOM_VTABLE)
-namespace {
-const ::_pbi::ClassData* FloatValue_get_class_data() {
-#ifdef PROTOBUF_MESSAGE_GLOBALS
-  return FloatValue_globals_.GetClassData();
-#else
-  return FloatValue_class_data_.base();
-#endif  // PROTOBUF_MESSAGE_GLOBALS
-}
-}  // namespace
-#endif  // PROTOBUF_CUSTOM_VTABLE
 class DoubleValue::_Internal {
  public:
   using HasBits = decltype(::std::declval<DoubleValue>()._impl_._has_bits_);
@@ -970,11 +770,7 @@ constexpr auto DoubleValue::InternalGenerateClassData_(
   return ::google::protobuf::internal::ClassDataFull{
       ::google::protobuf::internal::ClassData{
           &prototype,
-#ifndef PROTOBUF_MESSAGE_GLOBALS
-          &_table_.header,
-#else
           tc_table,
-#endif
           nullptr,  // IsInitialized
           &DoubleValue::MergeImpl,
           Super_::GetNewImpl<DoubleValue>(),
@@ -985,58 +781,29 @@ constexpr auto DoubleValue::InternalGenerateClassData_(
           PROTOBUF_FIELD_OFFSET(DoubleValue, _impl_._cached_size_),
           false,
       },
-#ifdef PROTOBUF_MESSAGE_GLOBALS
       &file_reflection_data[0],
-#else   // !PROTOBUF_MESSAGE_GLOBALS
-      &::_pbi::kDescriptorMethods,
-      &descriptor_table_google_2fprotobuf_2fwrappers_2eproto,
-      nullptr,  // tracker
-#endif  // PROTOBUF_MESSAGE_GLOBALS
   };
 }
 struct DoubleValueGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
   constexpr DoubleValueGlobalsTypeInternal()
-      :
-#ifndef PROTOBUF_MESSAGE_GLOBALS
-        _default(::_pbi::ConstantInitialized{},
-                 DoubleValue_class_data_.base())
-#else   // !PROTOBUF_MESSAGE_GLOBALS
-        MessageGlobalsBase(DoubleValue::InternalGenerateClassData_(
+      : MessageGlobalsBase(DoubleValue::InternalGenerateClassData_(
             _default, &DoubleValue_globals_._table.header)),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
         _table(::_pbi::PrivateAccess::GenerateParseTable<DoubleValue>(
-            GetClassData()))
-#endif  // PROTOBUF_MESSAGE_GLOBALS
-  {
-  }
+            GetClassData())) {}
   ~DoubleValueGlobalsTypeInternal() {}
   union {
     alignas(::_pbi::kMaxMessageAlignment) DoubleValue _default;
   };
-#ifdef PROTOBUF_MESSAGE_GLOBALS
   decltype(::_pbi::PrivateAccess::GenerateParseTable<DoubleValue>(
       ::std::declval<const ::_pbi::ClassData*>())) _table;
-#endif
 };
-#ifdef PROTOBUF_MESSAGE_GLOBALS
 static_assert(PROTOBUF_FIELD_OFFSET(DoubleValueGlobalsTypeInternal, _default) ==
               ::_pbi::MessageGlobalsBase::OffsetToDefault());
-#endif  // PROTOBUF_MESSAGE_GLOBALS
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 PROTOBUF_MESSAGE_GLOBALS_CONST DoubleValueGlobalsTypeInternal DoubleValue_globals_
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const DoubleValueGlobalsTypeInternal DoubleValue_globals_
         PROTOBUF_MESSAGE_GLOBALS_SECTION(.data.rel.ro);
-#if defined(PROTOBUF_CUSTOM_VTABLE)
-namespace {
-const ::_pbi::ClassData* DoubleValue_get_class_data() {
-#ifdef PROTOBUF_MESSAGE_GLOBALS
-  return DoubleValue_globals_.GetClassData();
-#else
-  return DoubleValue_class_data_.base();
-#endif  // PROTOBUF_MESSAGE_GLOBALS
-}
-}  // namespace
-#endif  // PROTOBUF_CUSTOM_VTABLE
 class BytesValue::_Internal {
  public:
   using HasBits = decltype(::std::declval<BytesValue>()._impl_._has_bits_);
@@ -1112,11 +879,7 @@ constexpr auto BytesValue::InternalGenerateClassData_(
   return ::google::protobuf::internal::ClassDataFull{
       ::google::protobuf::internal::ClassData{
           &prototype,
-#ifndef PROTOBUF_MESSAGE_GLOBALS
-          &_table_.header,
-#else
           tc_table,
-#endif
           nullptr,  // IsInitialized
           &BytesValue::MergeImpl,
           Super_::GetNewImpl<BytesValue>(),
@@ -1127,58 +890,29 @@ constexpr auto BytesValue::InternalGenerateClassData_(
           PROTOBUF_FIELD_OFFSET(BytesValue, _impl_._cached_size_),
           false,
       },
-#ifdef PROTOBUF_MESSAGE_GLOBALS
       &file_reflection_data[8],
-#else   // !PROTOBUF_MESSAGE_GLOBALS
-      &::_pbi::kDescriptorMethods,
-      &descriptor_table_google_2fprotobuf_2fwrappers_2eproto,
-      nullptr,  // tracker
-#endif  // PROTOBUF_MESSAGE_GLOBALS
   };
 }
 struct BytesValueGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
   constexpr BytesValueGlobalsTypeInternal()
-      :
-#ifndef PROTOBUF_MESSAGE_GLOBALS
-        _default(::_pbi::ConstantInitialized{},
-                 BytesValue_class_data_.base())
-#else   // !PROTOBUF_MESSAGE_GLOBALS
-        MessageGlobalsBase(BytesValue::InternalGenerateClassData_(
+      : MessageGlobalsBase(BytesValue::InternalGenerateClassData_(
             _default, &BytesValue_globals_._table.header)),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
         _table(::_pbi::PrivateAccess::GenerateParseTable<BytesValue>(
-            GetClassData()))
-#endif  // PROTOBUF_MESSAGE_GLOBALS
-  {
-  }
+            GetClassData())) {}
   ~BytesValueGlobalsTypeInternal() {}
   union {
     alignas(::_pbi::kMaxMessageAlignment) BytesValue _default;
   };
-#ifdef PROTOBUF_MESSAGE_GLOBALS
   decltype(::_pbi::PrivateAccess::GenerateParseTable<BytesValue>(
       ::std::declval<const ::_pbi::ClassData*>())) _table;
-#endif
 };
-#ifdef PROTOBUF_MESSAGE_GLOBALS
 static_assert(PROTOBUF_FIELD_OFFSET(BytesValueGlobalsTypeInternal, _default) ==
               ::_pbi::MessageGlobalsBase::OffsetToDefault());
-#endif  // PROTOBUF_MESSAGE_GLOBALS
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 PROTOBUF_MESSAGE_GLOBALS_CONST BytesValueGlobalsTypeInternal BytesValue_globals_
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const BytesValueGlobalsTypeInternal BytesValue_globals_
         PROTOBUF_MESSAGE_GLOBALS_SECTION(.data.rel.ro);
-#if defined(PROTOBUF_CUSTOM_VTABLE)
-namespace {
-const ::_pbi::ClassData* BytesValue_get_class_data() {
-#ifdef PROTOBUF_MESSAGE_GLOBALS
-  return BytesValue_globals_.GetClassData();
-#else
-  return BytesValue_class_data_.base();
-#endif  // PROTOBUF_MESSAGE_GLOBALS
-}
-}  // namespace
-#endif  // PROTOBUF_CUSTOM_VTABLE
 class BoolValue::_Internal {
  public:
   using HasBits = decltype(::std::declval<BoolValue>()._impl_._has_bits_);
@@ -1252,11 +986,7 @@ constexpr auto BoolValue::InternalGenerateClassData_(
   return ::google::protobuf::internal::ClassDataFull{
       ::google::protobuf::internal::ClassData{
           &prototype,
-#ifndef PROTOBUF_MESSAGE_GLOBALS
-          &_table_.header,
-#else
           tc_table,
-#endif
           nullptr,  // IsInitialized
           &BoolValue::MergeImpl,
           Super_::GetNewImpl<BoolValue>(),
@@ -1267,58 +997,29 @@ constexpr auto BoolValue::InternalGenerateClassData_(
           PROTOBUF_FIELD_OFFSET(BoolValue, _impl_._cached_size_),
           false,
       },
-#ifdef PROTOBUF_MESSAGE_GLOBALS
       &file_reflection_data[6],
-#else   // !PROTOBUF_MESSAGE_GLOBALS
-      &::_pbi::kDescriptorMethods,
-      &descriptor_table_google_2fprotobuf_2fwrappers_2eproto,
-      nullptr,  // tracker
-#endif  // PROTOBUF_MESSAGE_GLOBALS
   };
 }
 struct BoolValueGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
   constexpr BoolValueGlobalsTypeInternal()
-      :
-#ifndef PROTOBUF_MESSAGE_GLOBALS
-        _default(::_pbi::ConstantInitialized{},
-                 BoolValue_class_data_.base())
-#else   // !PROTOBUF_MESSAGE_GLOBALS
-        MessageGlobalsBase(BoolValue::InternalGenerateClassData_(
+      : MessageGlobalsBase(BoolValue::InternalGenerateClassData_(
             _default, &BoolValue_globals_._table.header)),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
         _table(::_pbi::PrivateAccess::GenerateParseTable<BoolValue>(
-            GetClassData()))
-#endif  // PROTOBUF_MESSAGE_GLOBALS
-  {
-  }
+            GetClassData())) {}
   ~BoolValueGlobalsTypeInternal() {}
   union {
     alignas(::_pbi::kMaxMessageAlignment) BoolValue _default;
   };
-#ifdef PROTOBUF_MESSAGE_GLOBALS
   decltype(::_pbi::PrivateAccess::GenerateParseTable<BoolValue>(
       ::std::declval<const ::_pbi::ClassData*>())) _table;
-#endif
 };
-#ifdef PROTOBUF_MESSAGE_GLOBALS
 static_assert(PROTOBUF_FIELD_OFFSET(BoolValueGlobalsTypeInternal, _default) ==
               ::_pbi::MessageGlobalsBase::OffsetToDefault());
-#endif  // PROTOBUF_MESSAGE_GLOBALS
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 PROTOBUF_MESSAGE_GLOBALS_CONST BoolValueGlobalsTypeInternal BoolValue_globals_
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const BoolValueGlobalsTypeInternal BoolValue_globals_
         PROTOBUF_MESSAGE_GLOBALS_SECTION(.data.rel.ro);
-#if defined(PROTOBUF_CUSTOM_VTABLE)
-namespace {
-const ::_pbi::ClassData* BoolValue_get_class_data() {
-#ifdef PROTOBUF_MESSAGE_GLOBALS
-  return BoolValue_globals_.GetClassData();
-#else
-  return BoolValue_class_data_.base();
-#endif  // PROTOBUF_MESSAGE_GLOBALS
-}
-}  // namespace
-#endif  // PROTOBUF_CUSTOM_VTABLE
 }  // namespace protobuf
 }  // namespace google
 static constexpr const ::_pb::EnumDescriptor* PROTOBUF_NONNULL* PROTOBUF_NULLABLE
@@ -1437,7 +1138,7 @@ namespace protobuf {
 
 DoubleValue::DoubleValue(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-    : Super_(arena, DoubleValue_get_class_data()) {
+    : Super_(arena, DoubleValue_globals_.GetClassData()) {
 #else   // PROTOBUF_CUSTOM_VTABLE
     : Super_(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
@@ -1447,7 +1148,7 @@ DoubleValue::DoubleValue(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 DoubleValue::DoubleValue(
     ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const DoubleValue& from)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-    : Super_(arena, DoubleValue_get_class_data()),
+    : Super_(arena, DoubleValue_globals_.GetClassData()),
 #else   // PROTOBUF_CUSTOM_VTABLE
     : Super_(arena),
 #endif  // PROTOBUF_CUSTOM_VTABLE
@@ -1478,18 +1179,6 @@ inline void DoubleValue::SharedDtor(MessageLite& self) {
   this_._impl_.~Impl_();
 }
 
-#ifndef PROTOBUF_MESSAGE_GLOBALS
-PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const
-    ::google::protobuf::internal::ClassDataFull DoubleValue_class_data_ =
-        DoubleValue::InternalGenerateClassData_(DoubleValue_globals_._default);
-
-PROTOBUF_ATTRIBUTE_WEAK const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
-DoubleValue::GetClassData() const {
-  ::google::protobuf::internal::PrefetchToLocalCache(&DoubleValue_class_data_);
-  ::google::protobuf::internal::PrefetchToLocalCache(DoubleValue_class_data_.tc_table);
-  return DoubleValue_class_data_.base();
-}
-#else
 PROTOBUF_ATTRIBUTE_WEAK const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
 DoubleValue::GetClassData() const {
   ::google::protobuf::internal::PrefetchToLocalCache(&DoubleValue_globals_);
@@ -1497,13 +1186,6 @@ DoubleValue::GetClassData() const {
       ::google::protobuf::internal::MessageGlobalsBase::ToParseTableBase(&DoubleValue_globals_));
   return DoubleValue_globals_.GetClassData();
 }
-#endif  // !PROTOBUF_MESSAGE_GLOBALS
-#ifndef PROTOBUF_MESSAGE_GLOBALS
-PROTOBUF_CONSTINIT
-PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const DoubleValue::ParseTableT_
-    DoubleValue::_table_ =
-        DoubleValue::InternalGenerateParseTable_(DoubleValue_class_data_.base());
-#endif  // !PROTOBUF_MESSAGE_GLOBALS
 #if defined(PROTOBUF_CUSTOM_VTABLE)
 PROTOBUF_NOINLINE void DoubleValue::Clear(MessageLite& base) {
   DoubleValue& this_ = static_cast<DoubleValue&>(base);
@@ -1628,7 +1310,7 @@ void DoubleValue::InternalSwap(DoubleValue* PROTOBUF_RESTRICT PROTOBUF_NONNULL o
 
 FloatValue::FloatValue(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-    : Super_(arena, FloatValue_get_class_data()) {
+    : Super_(arena, FloatValue_globals_.GetClassData()) {
 #else   // PROTOBUF_CUSTOM_VTABLE
     : Super_(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
@@ -1638,7 +1320,7 @@ FloatValue::FloatValue(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 FloatValue::FloatValue(
     ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const FloatValue& from)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-    : Super_(arena, FloatValue_get_class_data()),
+    : Super_(arena, FloatValue_globals_.GetClassData()),
 #else   // PROTOBUF_CUSTOM_VTABLE
     : Super_(arena),
 #endif  // PROTOBUF_CUSTOM_VTABLE
@@ -1669,18 +1351,6 @@ inline void FloatValue::SharedDtor(MessageLite& self) {
   this_._impl_.~Impl_();
 }
 
-#ifndef PROTOBUF_MESSAGE_GLOBALS
-PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const
-    ::google::protobuf::internal::ClassDataFull FloatValue_class_data_ =
-        FloatValue::InternalGenerateClassData_(FloatValue_globals_._default);
-
-PROTOBUF_ATTRIBUTE_WEAK const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
-FloatValue::GetClassData() const {
-  ::google::protobuf::internal::PrefetchToLocalCache(&FloatValue_class_data_);
-  ::google::protobuf::internal::PrefetchToLocalCache(FloatValue_class_data_.tc_table);
-  return FloatValue_class_data_.base();
-}
-#else
 PROTOBUF_ATTRIBUTE_WEAK const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
 FloatValue::GetClassData() const {
   ::google::protobuf::internal::PrefetchToLocalCache(&FloatValue_globals_);
@@ -1688,13 +1358,6 @@ FloatValue::GetClassData() const {
       ::google::protobuf::internal::MessageGlobalsBase::ToParseTableBase(&FloatValue_globals_));
   return FloatValue_globals_.GetClassData();
 }
-#endif  // !PROTOBUF_MESSAGE_GLOBALS
-#ifndef PROTOBUF_MESSAGE_GLOBALS
-PROTOBUF_CONSTINIT
-PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const FloatValue::ParseTableT_
-    FloatValue::_table_ =
-        FloatValue::InternalGenerateParseTable_(FloatValue_class_data_.base());
-#endif  // !PROTOBUF_MESSAGE_GLOBALS
 #if defined(PROTOBUF_CUSTOM_VTABLE)
 PROTOBUF_NOINLINE void FloatValue::Clear(MessageLite& base) {
   FloatValue& this_ = static_cast<FloatValue&>(base);
@@ -1819,7 +1482,7 @@ void FloatValue::InternalSwap(FloatValue* PROTOBUF_RESTRICT PROTOBUF_NONNULL oth
 
 Int64Value::Int64Value(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-    : Super_(arena, Int64Value_get_class_data()) {
+    : Super_(arena, Int64Value_globals_.GetClassData()) {
 #else   // PROTOBUF_CUSTOM_VTABLE
     : Super_(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
@@ -1829,7 +1492,7 @@ Int64Value::Int64Value(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 Int64Value::Int64Value(
     ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const Int64Value& from)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-    : Super_(arena, Int64Value_get_class_data()),
+    : Super_(arena, Int64Value_globals_.GetClassData()),
 #else   // PROTOBUF_CUSTOM_VTABLE
     : Super_(arena),
 #endif  // PROTOBUF_CUSTOM_VTABLE
@@ -1860,18 +1523,6 @@ inline void Int64Value::SharedDtor(MessageLite& self) {
   this_._impl_.~Impl_();
 }
 
-#ifndef PROTOBUF_MESSAGE_GLOBALS
-PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const
-    ::google::protobuf::internal::ClassDataFull Int64Value_class_data_ =
-        Int64Value::InternalGenerateClassData_(Int64Value_globals_._default);
-
-PROTOBUF_ATTRIBUTE_WEAK const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
-Int64Value::GetClassData() const {
-  ::google::protobuf::internal::PrefetchToLocalCache(&Int64Value_class_data_);
-  ::google::protobuf::internal::PrefetchToLocalCache(Int64Value_class_data_.tc_table);
-  return Int64Value_class_data_.base();
-}
-#else
 PROTOBUF_ATTRIBUTE_WEAK const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
 Int64Value::GetClassData() const {
   ::google::protobuf::internal::PrefetchToLocalCache(&Int64Value_globals_);
@@ -1879,13 +1530,6 @@ Int64Value::GetClassData() const {
       ::google::protobuf::internal::MessageGlobalsBase::ToParseTableBase(&Int64Value_globals_));
   return Int64Value_globals_.GetClassData();
 }
-#endif  // !PROTOBUF_MESSAGE_GLOBALS
-#ifndef PROTOBUF_MESSAGE_GLOBALS
-PROTOBUF_CONSTINIT
-PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const Int64Value::ParseTableT_
-    Int64Value::_table_ =
-        Int64Value::InternalGenerateParseTable_(Int64Value_class_data_.base());
-#endif  // !PROTOBUF_MESSAGE_GLOBALS
 #if defined(PROTOBUF_CUSTOM_VTABLE)
 PROTOBUF_NOINLINE void Int64Value::Clear(MessageLite& base) {
   Int64Value& this_ = static_cast<Int64Value&>(base);
@@ -2011,7 +1655,7 @@ void Int64Value::InternalSwap(Int64Value* PROTOBUF_RESTRICT PROTOBUF_NONNULL oth
 
 UInt64Value::UInt64Value(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-    : Super_(arena, UInt64Value_get_class_data()) {
+    : Super_(arena, UInt64Value_globals_.GetClassData()) {
 #else   // PROTOBUF_CUSTOM_VTABLE
     : Super_(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
@@ -2021,7 +1665,7 @@ UInt64Value::UInt64Value(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 UInt64Value::UInt64Value(
     ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const UInt64Value& from)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-    : Super_(arena, UInt64Value_get_class_data()),
+    : Super_(arena, UInt64Value_globals_.GetClassData()),
 #else   // PROTOBUF_CUSTOM_VTABLE
     : Super_(arena),
 #endif  // PROTOBUF_CUSTOM_VTABLE
@@ -2052,18 +1696,6 @@ inline void UInt64Value::SharedDtor(MessageLite& self) {
   this_._impl_.~Impl_();
 }
 
-#ifndef PROTOBUF_MESSAGE_GLOBALS
-PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const
-    ::google::protobuf::internal::ClassDataFull UInt64Value_class_data_ =
-        UInt64Value::InternalGenerateClassData_(UInt64Value_globals_._default);
-
-PROTOBUF_ATTRIBUTE_WEAK const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
-UInt64Value::GetClassData() const {
-  ::google::protobuf::internal::PrefetchToLocalCache(&UInt64Value_class_data_);
-  ::google::protobuf::internal::PrefetchToLocalCache(UInt64Value_class_data_.tc_table);
-  return UInt64Value_class_data_.base();
-}
-#else
 PROTOBUF_ATTRIBUTE_WEAK const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
 UInt64Value::GetClassData() const {
   ::google::protobuf::internal::PrefetchToLocalCache(&UInt64Value_globals_);
@@ -2071,13 +1703,6 @@ UInt64Value::GetClassData() const {
       ::google::protobuf::internal::MessageGlobalsBase::ToParseTableBase(&UInt64Value_globals_));
   return UInt64Value_globals_.GetClassData();
 }
-#endif  // !PROTOBUF_MESSAGE_GLOBALS
-#ifndef PROTOBUF_MESSAGE_GLOBALS
-PROTOBUF_CONSTINIT
-PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const UInt64Value::ParseTableT_
-    UInt64Value::_table_ =
-        UInt64Value::InternalGenerateParseTable_(UInt64Value_class_data_.base());
-#endif  // !PROTOBUF_MESSAGE_GLOBALS
 #if defined(PROTOBUF_CUSTOM_VTABLE)
 PROTOBUF_NOINLINE void UInt64Value::Clear(MessageLite& base) {
   UInt64Value& this_ = static_cast<UInt64Value&>(base);
@@ -2203,7 +1828,7 @@ void UInt64Value::InternalSwap(UInt64Value* PROTOBUF_RESTRICT PROTOBUF_NONNULL o
 
 Int32Value::Int32Value(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-    : Super_(arena, Int32Value_get_class_data()) {
+    : Super_(arena, Int32Value_globals_.GetClassData()) {
 #else   // PROTOBUF_CUSTOM_VTABLE
     : Super_(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
@@ -2213,7 +1838,7 @@ Int32Value::Int32Value(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 Int32Value::Int32Value(
     ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const Int32Value& from)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-    : Super_(arena, Int32Value_get_class_data()),
+    : Super_(arena, Int32Value_globals_.GetClassData()),
 #else   // PROTOBUF_CUSTOM_VTABLE
     : Super_(arena),
 #endif  // PROTOBUF_CUSTOM_VTABLE
@@ -2244,18 +1869,6 @@ inline void Int32Value::SharedDtor(MessageLite& self) {
   this_._impl_.~Impl_();
 }
 
-#ifndef PROTOBUF_MESSAGE_GLOBALS
-PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const
-    ::google::protobuf::internal::ClassDataFull Int32Value_class_data_ =
-        Int32Value::InternalGenerateClassData_(Int32Value_globals_._default);
-
-PROTOBUF_ATTRIBUTE_WEAK const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
-Int32Value::GetClassData() const {
-  ::google::protobuf::internal::PrefetchToLocalCache(&Int32Value_class_data_);
-  ::google::protobuf::internal::PrefetchToLocalCache(Int32Value_class_data_.tc_table);
-  return Int32Value_class_data_.base();
-}
-#else
 PROTOBUF_ATTRIBUTE_WEAK const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
 Int32Value::GetClassData() const {
   ::google::protobuf::internal::PrefetchToLocalCache(&Int32Value_globals_);
@@ -2263,13 +1876,6 @@ Int32Value::GetClassData() const {
       ::google::protobuf::internal::MessageGlobalsBase::ToParseTableBase(&Int32Value_globals_));
   return Int32Value_globals_.GetClassData();
 }
-#endif  // !PROTOBUF_MESSAGE_GLOBALS
-#ifndef PROTOBUF_MESSAGE_GLOBALS
-PROTOBUF_CONSTINIT
-PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const Int32Value::ParseTableT_
-    Int32Value::_table_ =
-        Int32Value::InternalGenerateParseTable_(Int32Value_class_data_.base());
-#endif  // !PROTOBUF_MESSAGE_GLOBALS
 #if defined(PROTOBUF_CUSTOM_VTABLE)
 PROTOBUF_NOINLINE void Int32Value::Clear(MessageLite& base) {
   Int32Value& this_ = static_cast<Int32Value&>(base);
@@ -2395,7 +2001,7 @@ void Int32Value::InternalSwap(Int32Value* PROTOBUF_RESTRICT PROTOBUF_NONNULL oth
 
 UInt32Value::UInt32Value(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-    : Super_(arena, UInt32Value_get_class_data()) {
+    : Super_(arena, UInt32Value_globals_.GetClassData()) {
 #else   // PROTOBUF_CUSTOM_VTABLE
     : Super_(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
@@ -2405,7 +2011,7 @@ UInt32Value::UInt32Value(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 UInt32Value::UInt32Value(
     ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const UInt32Value& from)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-    : Super_(arena, UInt32Value_get_class_data()),
+    : Super_(arena, UInt32Value_globals_.GetClassData()),
 #else   // PROTOBUF_CUSTOM_VTABLE
     : Super_(arena),
 #endif  // PROTOBUF_CUSTOM_VTABLE
@@ -2436,18 +2042,6 @@ inline void UInt32Value::SharedDtor(MessageLite& self) {
   this_._impl_.~Impl_();
 }
 
-#ifndef PROTOBUF_MESSAGE_GLOBALS
-PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const
-    ::google::protobuf::internal::ClassDataFull UInt32Value_class_data_ =
-        UInt32Value::InternalGenerateClassData_(UInt32Value_globals_._default);
-
-PROTOBUF_ATTRIBUTE_WEAK const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
-UInt32Value::GetClassData() const {
-  ::google::protobuf::internal::PrefetchToLocalCache(&UInt32Value_class_data_);
-  ::google::protobuf::internal::PrefetchToLocalCache(UInt32Value_class_data_.tc_table);
-  return UInt32Value_class_data_.base();
-}
-#else
 PROTOBUF_ATTRIBUTE_WEAK const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
 UInt32Value::GetClassData() const {
   ::google::protobuf::internal::PrefetchToLocalCache(&UInt32Value_globals_);
@@ -2455,13 +2049,6 @@ UInt32Value::GetClassData() const {
       ::google::protobuf::internal::MessageGlobalsBase::ToParseTableBase(&UInt32Value_globals_));
   return UInt32Value_globals_.GetClassData();
 }
-#endif  // !PROTOBUF_MESSAGE_GLOBALS
-#ifndef PROTOBUF_MESSAGE_GLOBALS
-PROTOBUF_CONSTINIT
-PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const UInt32Value::ParseTableT_
-    UInt32Value::_table_ =
-        UInt32Value::InternalGenerateParseTable_(UInt32Value_class_data_.base());
-#endif  // !PROTOBUF_MESSAGE_GLOBALS
 #if defined(PROTOBUF_CUSTOM_VTABLE)
 PROTOBUF_NOINLINE void UInt32Value::Clear(MessageLite& base) {
   UInt32Value& this_ = static_cast<UInt32Value&>(base);
@@ -2587,7 +2174,7 @@ void UInt32Value::InternalSwap(UInt32Value* PROTOBUF_RESTRICT PROTOBUF_NONNULL o
 
 BoolValue::BoolValue(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-    : Super_(arena, BoolValue_get_class_data()) {
+    : Super_(arena, BoolValue_globals_.GetClassData()) {
 #else   // PROTOBUF_CUSTOM_VTABLE
     : Super_(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
@@ -2597,7 +2184,7 @@ BoolValue::BoolValue(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 BoolValue::BoolValue(
     ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const BoolValue& from)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-    : Super_(arena, BoolValue_get_class_data()),
+    : Super_(arena, BoolValue_globals_.GetClassData()),
 #else   // PROTOBUF_CUSTOM_VTABLE
     : Super_(arena),
 #endif  // PROTOBUF_CUSTOM_VTABLE
@@ -2628,18 +2215,6 @@ inline void BoolValue::SharedDtor(MessageLite& self) {
   this_._impl_.~Impl_();
 }
 
-#ifndef PROTOBUF_MESSAGE_GLOBALS
-PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const
-    ::google::protobuf::internal::ClassDataFull BoolValue_class_data_ =
-        BoolValue::InternalGenerateClassData_(BoolValue_globals_._default);
-
-PROTOBUF_ATTRIBUTE_WEAK const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
-BoolValue::GetClassData() const {
-  ::google::protobuf::internal::PrefetchToLocalCache(&BoolValue_class_data_);
-  ::google::protobuf::internal::PrefetchToLocalCache(BoolValue_class_data_.tc_table);
-  return BoolValue_class_data_.base();
-}
-#else
 PROTOBUF_ATTRIBUTE_WEAK const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
 BoolValue::GetClassData() const {
   ::google::protobuf::internal::PrefetchToLocalCache(&BoolValue_globals_);
@@ -2647,13 +2222,6 @@ BoolValue::GetClassData() const {
       ::google::protobuf::internal::MessageGlobalsBase::ToParseTableBase(&BoolValue_globals_));
   return BoolValue_globals_.GetClassData();
 }
-#endif  // !PROTOBUF_MESSAGE_GLOBALS
-#ifndef PROTOBUF_MESSAGE_GLOBALS
-PROTOBUF_CONSTINIT
-PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const BoolValue::ParseTableT_
-    BoolValue::_table_ =
-        BoolValue::InternalGenerateParseTable_(BoolValue_class_data_.base());
-#endif  // !PROTOBUF_MESSAGE_GLOBALS
 #if defined(PROTOBUF_CUSTOM_VTABLE)
 PROTOBUF_NOINLINE void BoolValue::Clear(MessageLite& base) {
   BoolValue& this_ = static_cast<BoolValue&>(base);
@@ -2778,7 +2346,7 @@ void BoolValue::InternalSwap(BoolValue* PROTOBUF_RESTRICT PROTOBUF_NONNULL other
 
 StringValue::StringValue(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-    : Super_(arena, StringValue_get_class_data()) {
+    : Super_(arena, StringValue_globals_.GetClassData()) {
 #else   // PROTOBUF_CUSTOM_VTABLE
     : Super_(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
@@ -2796,7 +2364,7 @@ StringValue::StringValue(
     ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
     const StringValue& from)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-    : Super_(arena, StringValue_get_class_data()) {
+    : Super_(arena, StringValue_globals_.GetClassData()) {
 
 #else   // PROTOBUF_CUSTOM_VTABLE
     : Super_(arena) {
@@ -2832,18 +2400,6 @@ inline void StringValue::SharedDtor(MessageLite& self) {
   this_._impl_.~Impl_();
 }
 
-#ifndef PROTOBUF_MESSAGE_GLOBALS
-PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const
-    ::google::protobuf::internal::ClassDataFull StringValue_class_data_ =
-        StringValue::InternalGenerateClassData_(StringValue_globals_._default);
-
-PROTOBUF_ATTRIBUTE_WEAK const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
-StringValue::GetClassData() const {
-  ::google::protobuf::internal::PrefetchToLocalCache(&StringValue_class_data_);
-  ::google::protobuf::internal::PrefetchToLocalCache(StringValue_class_data_.tc_table);
-  return StringValue_class_data_.base();
-}
-#else
 PROTOBUF_ATTRIBUTE_WEAK const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
 StringValue::GetClassData() const {
   ::google::protobuf::internal::PrefetchToLocalCache(&StringValue_globals_);
@@ -2851,13 +2407,6 @@ StringValue::GetClassData() const {
       ::google::protobuf::internal::MessageGlobalsBase::ToParseTableBase(&StringValue_globals_));
   return StringValue_globals_.GetClassData();
 }
-#endif  // !PROTOBUF_MESSAGE_GLOBALS
-#ifndef PROTOBUF_MESSAGE_GLOBALS
-PROTOBUF_CONSTINIT
-PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const StringValue::ParseTableT_
-    StringValue::_table_ =
-        StringValue::InternalGenerateParseTable_(StringValue_class_data_.base());
-#endif  // !PROTOBUF_MESSAGE_GLOBALS
 #if defined(PROTOBUF_CUSTOM_VTABLE)
 PROTOBUF_NOINLINE void StringValue::Clear(MessageLite& base) {
   StringValue& this_ = static_cast<StringValue&>(base);
@@ -2993,7 +2542,7 @@ void StringValue::InternalSwap(StringValue* PROTOBUF_RESTRICT PROTOBUF_NONNULL o
 
 BytesValue::BytesValue(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-    : Super_(arena, BytesValue_get_class_data()) {
+    : Super_(arena, BytesValue_globals_.GetClassData()) {
 #else   // PROTOBUF_CUSTOM_VTABLE
     : Super_(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
@@ -3011,7 +2560,7 @@ BytesValue::BytesValue(
     ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
     const BytesValue& from)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-    : Super_(arena, BytesValue_get_class_data()) {
+    : Super_(arena, BytesValue_globals_.GetClassData()) {
 
 #else   // PROTOBUF_CUSTOM_VTABLE
     : Super_(arena) {
@@ -3047,18 +2596,6 @@ inline void BytesValue::SharedDtor(MessageLite& self) {
   this_._impl_.~Impl_();
 }
 
-#ifndef PROTOBUF_MESSAGE_GLOBALS
-PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const
-    ::google::protobuf::internal::ClassDataFull BytesValue_class_data_ =
-        BytesValue::InternalGenerateClassData_(BytesValue_globals_._default);
-
-PROTOBUF_ATTRIBUTE_WEAK const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
-BytesValue::GetClassData() const {
-  ::google::protobuf::internal::PrefetchToLocalCache(&BytesValue_class_data_);
-  ::google::protobuf::internal::PrefetchToLocalCache(BytesValue_class_data_.tc_table);
-  return BytesValue_class_data_.base();
-}
-#else
 PROTOBUF_ATTRIBUTE_WEAK const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
 BytesValue::GetClassData() const {
   ::google::protobuf::internal::PrefetchToLocalCache(&BytesValue_globals_);
@@ -3066,13 +2603,6 @@ BytesValue::GetClassData() const {
       ::google::protobuf::internal::MessageGlobalsBase::ToParseTableBase(&BytesValue_globals_));
   return BytesValue_globals_.GetClassData();
 }
-#endif  // !PROTOBUF_MESSAGE_GLOBALS
-#ifndef PROTOBUF_MESSAGE_GLOBALS
-PROTOBUF_CONSTINIT
-PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const BytesValue::ParseTableT_
-    BytesValue::_table_ =
-        BytesValue::InternalGenerateParseTable_(BytesValue_class_data_.base());
-#endif  // !PROTOBUF_MESSAGE_GLOBALS
 #if defined(PROTOBUF_CUSTOM_VTABLE)
 PROTOBUF_NOINLINE void BytesValue::Clear(MessageLite& base) {
   BytesValue& this_ = static_cast<BytesValue&>(base);
