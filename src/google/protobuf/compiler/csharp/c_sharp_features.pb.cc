@@ -25,7 +25,6 @@ PROTOBUF_PRAGMA_INIT_SEG
 namespace _pb = ::google::protobuf;
 namespace _pbi = ::google::protobuf::internal;
 namespace _fl = ::google::protobuf::internal::field_layout;
-#ifdef PROTOBUF_MESSAGE_GLOBALS
 namespace {
 PROTOBUF_CONSTINIT ::google::protobuf::internal::ReflectionData
     file_reflection_data[] = {
@@ -33,7 +32,6 @@ PROTOBUF_CONSTINIT ::google::protobuf::internal::ReflectionData
         {&::_pbi::kDescriptorMethods, &::descriptor_table_google_2fprotobuf_2fcompiler_2fcsharp_2fc_5fsharp_5ffeatures_2eproto, /* tracker*/ nullptr,},
 };
 }  // namespace
-#endif
 namespace pb {
 class CSharpFeatures::_Internal {
  public:
@@ -108,11 +106,7 @@ constexpr auto CSharpFeatures::InternalGenerateClassData_(
   return ::google::protobuf::internal::ClassDataFull{
       ::google::protobuf::internal::ClassData{
           &prototype,
-#ifndef PROTOBUF_MESSAGE_GLOBALS
-          &_table_.header,
-#else
           tc_table,
-#endif
           nullptr,  // IsInitialized
           &CSharpFeatures::MergeImpl,
           Super_::GetNewImpl<CSharpFeatures>(),
@@ -123,58 +117,29 @@ constexpr auto CSharpFeatures::InternalGenerateClassData_(
           PROTOBUF_FIELD_OFFSET(CSharpFeatures, _impl_._cached_size_),
           false,
       },
-#ifdef PROTOBUF_MESSAGE_GLOBALS
       &file_reflection_data[0],
-#else   // !PROTOBUF_MESSAGE_GLOBALS
-      &::_pbi::kDescriptorMethods,
-      &descriptor_table_google_2fprotobuf_2fcompiler_2fcsharp_2fc_5fsharp_5ffeatures_2eproto,
-      nullptr,  // tracker
-#endif  // PROTOBUF_MESSAGE_GLOBALS
   };
 }
 struct CSharpFeaturesGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
   constexpr CSharpFeaturesGlobalsTypeInternal()
-      :
-#ifndef PROTOBUF_MESSAGE_GLOBALS
-        _default(::_pbi::ConstantInitialized{},
-                 CSharpFeatures_class_data_.base())
-#else   // !PROTOBUF_MESSAGE_GLOBALS
-        MessageGlobalsBase(CSharpFeatures::InternalGenerateClassData_(
+      : MessageGlobalsBase(CSharpFeatures::InternalGenerateClassData_(
             _default, &CSharpFeatures_globals_._table.header)),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
         _table(::_pbi::PrivateAccess::GenerateParseTable<CSharpFeatures>(
-            GetClassData()))
-#endif  // PROTOBUF_MESSAGE_GLOBALS
-  {
-  }
+            GetClassData())) {}
   ~CSharpFeaturesGlobalsTypeInternal() {}
   union {
     alignas(::_pbi::kMaxMessageAlignment) CSharpFeatures _default;
   };
-#ifdef PROTOBUF_MESSAGE_GLOBALS
   decltype(::_pbi::PrivateAccess::GenerateParseTable<CSharpFeatures>(
       ::std::declval<const ::_pbi::ClassData*>())) _table;
-#endif
 };
-#ifdef PROTOBUF_MESSAGE_GLOBALS
 static_assert(PROTOBUF_FIELD_OFFSET(CSharpFeaturesGlobalsTypeInternal, _default) ==
               ::_pbi::MessageGlobalsBase::OffsetToDefault());
-#endif  // PROTOBUF_MESSAGE_GLOBALS
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOC_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 PROTOBUF_MESSAGE_GLOBALS_CONST CSharpFeaturesGlobalsTypeInternal CSharpFeatures_globals_
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const CSharpFeaturesGlobalsTypeInternal CSharpFeatures_globals_
         PROTOBUF_MESSAGE_GLOBALS_SECTION(.data.rel.ro);
-#if defined(PROTOBUF_CUSTOM_VTABLE)
-namespace {
-const ::_pbi::ClassData* CSharpFeatures_get_class_data() {
-#ifdef PROTOBUF_MESSAGE_GLOBALS
-  return CSharpFeatures_globals_.GetClassData();
-#else
-  return CSharpFeatures_class_data_.base();
-#endif  // PROTOBUF_MESSAGE_GLOBALS
-}
-}  // namespace
-#endif  // PROTOBUF_CUSTOM_VTABLE
 }  // namespace pb
 static constexpr const ::_pb::EnumDescriptor* PROTOBUF_NONNULL* PROTOBUF_NULLABLE
     file_level_enum_descriptors_google_2fprotobuf_2fcompiler_2fcsharp_2fc_5fsharp_5ffeatures_2eproto = nullptr;
@@ -235,7 +200,7 @@ namespace pb {
 
 CSharpFeatures::CSharpFeatures(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-    : Super_(arena, CSharpFeatures_get_class_data()) {
+    : Super_(arena, CSharpFeatures_globals_.GetClassData()) {
 #else   // PROTOBUF_CUSTOM_VTABLE
     : Super_(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
@@ -245,7 +210,7 @@ CSharpFeatures::CSharpFeatures(::google::protobuf::Arena* PROTOBUF_NULLABLE aren
 CSharpFeatures::CSharpFeatures(
     ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const CSharpFeatures& from)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-    : Super_(arena, CSharpFeatures_get_class_data()),
+    : Super_(arena, CSharpFeatures_globals_.GetClassData()),
 #else   // PROTOBUF_CUSTOM_VTABLE
     : Super_(arena),
 #endif  // PROTOBUF_CUSTOM_VTABLE
@@ -276,18 +241,6 @@ inline void CSharpFeatures::SharedDtor(MessageLite& self) {
   this_._impl_.~Impl_();
 }
 
-#ifndef PROTOBUF_MESSAGE_GLOBALS
-PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const
-    ::google::protobuf::internal::ClassDataFull CSharpFeatures_class_data_ =
-        CSharpFeatures::InternalGenerateClassData_(CSharpFeatures_globals_._default);
-
-PROTOBUF_ATTRIBUTE_WEAK const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
-CSharpFeatures::GetClassData() const {
-  ::google::protobuf::internal::PrefetchToLocalCache(&CSharpFeatures_class_data_);
-  ::google::protobuf::internal::PrefetchToLocalCache(CSharpFeatures_class_data_.tc_table);
-  return CSharpFeatures_class_data_.base();
-}
-#else
 PROTOBUF_ATTRIBUTE_WEAK const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
 CSharpFeatures::GetClassData() const {
   ::google::protobuf::internal::PrefetchToLocalCache(&CSharpFeatures_globals_);
@@ -295,13 +248,6 @@ CSharpFeatures::GetClassData() const {
       ::google::protobuf::internal::MessageGlobalsBase::ToParseTableBase(&CSharpFeatures_globals_));
   return CSharpFeatures_globals_.GetClassData();
 }
-#endif  // !PROTOBUF_MESSAGE_GLOBALS
-#ifndef PROTOBUF_MESSAGE_GLOBALS
-PROTOBUF_CONSTINIT
-PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const CSharpFeatures::ParseTableT_
-    CSharpFeatures::_table_ =
-        CSharpFeatures::InternalGenerateParseTable_(CSharpFeatures_class_data_.base());
-#endif  // !PROTOBUF_MESSAGE_GLOBALS
 #if defined(PROTOBUF_CUSTOM_VTABLE)
 PROTOBUF_NOINLINE void CSharpFeatures::Clear(MessageLite& base) {
   CSharpFeatures& this_ = static_cast<CSharpFeatures&>(base);
