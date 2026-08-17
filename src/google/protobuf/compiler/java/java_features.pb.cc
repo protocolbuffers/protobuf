@@ -239,7 +239,8 @@ constexpr auto JavaFeatures::InternalGenerateClassData_(
           Super_::GetNewImpl<JavaFeatures>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           &JavaFeatures::SharedDtor,
-          &JavaFeatures::Clear, &JavaFeatures::ByteSizeLong, &JavaFeatures::_InternalSerialize,
+          &Helpers_::Clear, &Helpers_::ByteSizeLong,
+              &Helpers_::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
           PROTOBUF_FIELD_OFFSET(JavaFeatures, _impl_._cached_size_),
           false,
@@ -473,7 +474,7 @@ JavaFeatures::GetClassData() const {
   return JavaFeatures_globals_.GetClassData();
 }
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-PROTOBUF_NOINLINE void JavaFeatures::Clear(MessageLite& base) {
+PROTOBUF_NOINLINE void JavaFeatures::Helpers_::Clear(MessageLite& base) {
   JavaFeatures& this_ = static_cast<JavaFeatures&>(base);
 #else   // PROTOBUF_CUSTOM_VTABLE
 PROTOBUF_NOINLINE void JavaFeatures::Clear() {
@@ -497,7 +498,7 @@ PROTOBUF_NOINLINE void JavaFeatures::Clear() {
 }
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-::uint8_t* PROTOBUF_NONNULL JavaFeatures::_InternalSerialize(
+::uint8_t* PROTOBUF_NONNULL JavaFeatures::Helpers_::_InternalSerialize(
     const ::google::protobuf::MessageLite& base, ::uint8_t* PROTOBUF_NONNULL target,
     ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) {
   const JavaFeatures& this_ = static_cast<const JavaFeatures&>(base);
@@ -560,7 +561,7 @@ PROTOBUF_NOINLINE void JavaFeatures::Clear() {
 }
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-::size_t JavaFeatures::ByteSizeLong(const MessageLite& base) {
+::size_t JavaFeatures::Helpers_::ByteSizeLong(const MessageLite& base) {
   const JavaFeatures& this_ = static_cast<const JavaFeatures&>(base);
 #else   // PROTOBUF_CUSTOM_VTABLE
 ::size_t JavaFeatures::ByteSizeLong() const {
