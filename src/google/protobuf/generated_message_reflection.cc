@@ -232,22 +232,15 @@ PROTOBUF_NOINLINE const std::string& NameOfDenseEnumSlow(
   if (v < deci->min_val || v > deci->max_val)
     return GetEmptyStringAlreadyInited();
 
-  const std::string** new_cache =
-      MakeDenseEnumCache(deci->descriptor_fn(), deci->min_val, deci->max_val);
-  const std::string** old_cache = nullptr;
-
-  if (deci->cache.compare_exchange_strong(old_cache, new_cache,
-                                          std::memory_order_release,
-                                          std::memory_order_acquire)) {
-    // We successfully stored our new cache, and the old value was nullptr.
-    return *new_cache[v - deci->min_val];
-  } else {
-    // In the time it took to create our enum cache, another thread also
-    //  created one, and put it into deci->cache.  So delete ours, and
-    // use theirs instead.
-    delete[] new_cache;
-    return *old_cache[v - deci->min_val];
-  }
+  // Use run_once to avoid a race condition in initializing the cache.
+  absl::call_once(deci->loaded, [deci]() {
+    const std::string** new_cache =
+        MakeDenseEnumCache(deci->descriptor_fn(), deci->min_val, deci->max_val);
+    // Atomically publish the cache. Doing this inside the call_once ensures
+    // that no thread sees the uninitialized or partially initialized cache.
+    deci->cache.store(new_cache, std::memory_order_release);
+  });
+  return *deci->cache.load(std::memory_order_acquire)[v - deci->min_val];
 }
 
 bool IsMatchingCType(const FieldDescriptor* field, int ctype) {
