@@ -3999,10 +3999,10 @@ static bool init(upb_table* t, uint8_t size_lg2, upb_Arena* a) {
   t->count = 0;
   uint32_t size = 1U << size_lg2;
   t->mask = size - 1;  // 0 mask if size_lg2 is 0
-  if (upb_table_size(t) > (SIZE_MAX / sizeof(upb_tabent))) {
+  size_t bytes;
+  if (upb_MulOverflow(upb_table_size(t), sizeof(upb_tabent), &bytes)) {
     return false;
   }
-  size_t bytes = upb_table_size(t) * sizeof(upb_tabent);
   if (bytes > 0) {
     t->entries = upb_Arena_Malloc(a, bytes);
     if (!t->entries) return false;
@@ -5195,8 +5195,9 @@ static void jsondec_resize(jsondec* d, char** buf, char** end, char** buf_end) {
   size_t oldsize = *buf_end - *buf;
   size_t len = *end - *buf;
 
-  jsondec_checkoom(d, oldsize <= SIZE_MAX / 2);
-  size_t size = UPB_MAX(8, 2 * oldsize);
+  size_t size;
+  jsondec_checkoom(d, !upb_MulOverflow(oldsize, (size_t)2, &size));
+  size = UPB_MAX(8, size);
 
   *buf = upb_Arena_Realloc(d->arena, *buf, len, size);
   jsondec_checkoom(d, *buf);
@@ -8500,8 +8501,8 @@ bool upb_Array_AppendAll(upb_Array* dst, const upb_Array* src,
   size_t src_len = upb_Array_Size(src);
   if (src_len == 0) return true;
   size_t dst_len = upb_Array_Size(dst);
-  size_t len = dst_len + src_len;
-  if (UPB_UNLIKELY(len < dst_len)) return false;
+  size_t len;
+  if (UPB_UNLIKELY(upb_AddOverflow(dst_len, src_len, &len))) return false;
   if (!UPB_PRIVATE(_upb_Array_ResizeUninitialized)(dst, len, arena)) {
     return false;
   }
@@ -8527,10 +8528,11 @@ bool upb_Array_Insert(upb_Array* arr, size_t i, size_t count,
   UPB_ASSERT(!upb_Array_IsFrozen(arr));
   UPB_ASSERT(arena);
   UPB_ASSERT(i <= arr->UPB_PRIVATE(size));
-  UPB_ASSERT(count + arr->UPB_PRIVATE(size) >= count);
+  size_t new_size;
+  const bool ok = !upb_AddOverflow(arr->UPB_PRIVATE(size), count, &new_size);
+  UPB_ASSERT(ok);
   const size_t oldsize = arr->UPB_PRIVATE(size);
-  if (!UPB_PRIVATE(_upb_Array_ResizeUninitialized)(
-          arr, arr->UPB_PRIVATE(size) + count, arena)) {
+  if (!UPB_PRIVATE(_upb_Array_ResizeUninitialized)(arr, new_size, arena)) {
     return false;
   }
   upb_Array_Move(arr, i + count, i, oldsize - i);
@@ -8543,8 +8545,9 @@ bool upb_Array_Insert(upb_Array* arr, size_t i, size_t count,
  */
 void upb_Array_Delete(upb_Array* arr, size_t i, size_t count) {
   UPB_ASSERT(!upb_Array_IsFrozen(arr));
-  const size_t end = i + count;
-  UPB_ASSERT(i <= end);
+  size_t end;
+  const bool ok = !upb_AddOverflow(i, count, &end);
+  UPB_ASSERT(ok);
   UPB_ASSERT(end <= arr->UPB_PRIVATE(size));
   upb_Array_Move(arr, i, end, arr->UPB_PRIVATE(size) - end);
   arr->UPB_PRIVATE(size) -= count;
@@ -9014,8 +9017,8 @@ UPB_NOINLINE bool UPB_PRIVATE(_upb_Message_AddUnknownSlowPath)(upb_Message* msg,
           // represents the end of that allocation.
           size_t prev_alloc_size =
               (existing->data + existing->size) - (char*)existing;
-          if (SIZE_MAX - prev_alloc_size >= len) {
-            size_t new_alloc_size = prev_alloc_size + len;
+          size_t new_alloc_size;
+          if (!upb_AddOverflow(prev_alloc_size, len, &new_alloc_size)) {
             if (upb_Arena_TryExtend(arena, existing, prev_alloc_size,
                                     new_alloc_size)) {
               memcpy(UPB_PTR_AT(existing, prev_alloc_size, void), data, len);
@@ -9038,8 +9041,9 @@ UPB_NOINLINE bool UPB_PRIVATE(_upb_Message_AddUnknownSlowPath)(upb_Message* msg,
     if (!view) return false;
     view->data = data;
   } else {
-    if (SIZE_MAX - sizeof(upb_StringView) < len) return false;
-    view = upb_Arena_Malloc(arena, sizeof(upb_StringView) + len);
+    size_t total_size;
+    if (upb_AddOverflow(sizeof(upb_StringView), len, &total_size)) return false;
+    view = upb_Arena_Malloc(arena, total_size);
     if (!view) return false;
     char* copy = UPB_PTR_AT(view, sizeof(upb_StringView), char);
     memcpy(copy, data, len);
@@ -9061,10 +9065,9 @@ bool UPB_PRIVATE(_upb_Message_AddUnknownV)(struct upb_Message* msg,
   UPB_ASSERT(count > 0);
   size_t total_len = 0;
   for (size_t i = 0; i < count; i++) {
-    if (SIZE_MAX - total_len < data[i].size) {
+    if (upb_AddOverflow(total_len, data[i].size, &total_len)) {
       return false;
     }
-    total_len += data[i].size;
   }
 
   {
@@ -9076,8 +9079,8 @@ bool UPB_PRIVATE(_upb_Message_AddUnknownV)(struct upb_Message* msg,
         if (!upb_TaggedAuxPtr_IsUnknownAliased(ptr)) {
           size_t prev_alloc_size =
               (existing->data + existing->size) - (char*)existing;
-          if (SIZE_MAX - prev_alloc_size >= total_len) {
-            size_t new_alloc_size = prev_alloc_size + total_len;
+          size_t new_alloc_size;
+          if (!upb_AddOverflow(prev_alloc_size, total_len, &new_alloc_size)) {
             if (upb_Arena_TryExtend(arena, existing, prev_alloc_size,
                                     new_alloc_size)) {
               char* copy = UPB_PTR_AT(existing, prev_alloc_size, char);
@@ -9094,11 +9097,13 @@ bool UPB_PRIVATE(_upb_Message_AddUnknownV)(struct upb_Message* msg,
     }
   }
 
-  if (SIZE_MAX - sizeof(upb_StringView) < total_len) return false;
+  size_t total_size;
+  if (upb_AddOverflow(sizeof(upb_StringView), total_len, &total_size)) {
+    return false;
+  }
   if (!UPB_PRIVATE(_upb_Message_ReserveSlot)(msg, arena)) return false;
 
-  upb_StringView* view =
-      upb_Arena_Malloc(arena, sizeof(upb_StringView) + total_len);
+  upb_StringView* view = upb_Arena_Malloc(arena, total_size);
   if (!view) return false;
   char* copy = UPB_PTR_AT(view, sizeof(upb_StringView), char);
   view->data = copy;
@@ -11179,7 +11184,9 @@ static void upb_MtDecoder_ParseMessage(upb_MtDecoder* d, const char* data,
       sizeof(upb_MiniTableField) + sizeof(upb_MiniTableSubInternal);
   // Buffer length is an upper bound on the number of fields. We will return
   // what we don't use.
-  if ((SIZE_MAX - 4) / bytes_per_field < len) {
+  size_t initial_bytes;
+  if (upb_MulOverflow(bytes_per_field, len, &initial_bytes) ||
+      upb_AddOverflow(initial_bytes, (size_t)4, &initial_bytes)) {
     upb_MdDecoder_ErrorJmp(&d->base, "MiniDescriptor is too large");
   }
   // Max size used per field is a upb_MiniTableField and a
@@ -11190,7 +11197,6 @@ static void upb_MtDecoder_ParseMessage(upb_MtDecoder* d, const char* data,
                             UPB_ALIGN_OF(upb_MiniTableField) <=
                         4,
                     "alignment difference is too large");
-  const size_t initial_bytes = bytes_per_field * len + 4;
   d->fields = upb_Arena_Malloc(d->arena, initial_bytes);
   upb_MdDecoder_CheckOutOfMemory(&d->base, d->fields);
 
@@ -13506,10 +13512,10 @@ static int _upb_EnumValueDef_Compare(const void* p1, const void* p2) {
 
 const upb_EnumValueDef** _upb_EnumValueDefs_Sorted(const upb_EnumValueDef* v,
                                                    size_t n, upb_Arena* a) {
-  if (SIZE_MAX / sizeof(void*) < n) return NULL;
+  size_t bytes;
+  if (upb_MulOverflow(n, sizeof(void*), &bytes)) return NULL;
   // TODO: Try to replace this arena alloc with a persistent scratch buffer.
-  upb_EnumValueDef** out =
-      (upb_EnumValueDef**)upb_Arena_Malloc(a, n * sizeof(void*));
+  upb_EnumValueDef** out = (upb_EnumValueDef**)upb_Arena_Malloc(a, bytes);
   if (!out) return NULL;
 
   for (size_t i = 0; i < n; i++) {
@@ -15566,12 +15572,10 @@ char* upb_strdup2(const char* s, size_t len, upb_Arena* a) {
   size_t n;
   char* p;
 
-  // Prevent overflow errors.
-  if (len == SIZE_MAX) return NULL;
+  if (upb_AddOverflow(len, (size_t)1, &n)) return NULL;
 
   // Always null-terminate, even if binary data; but don't rely on the input to
   // have a null-terminating byte since it may be a raw binary buffer.
-  n = len + 1;
   p = upb_Arena_Malloc(a, n);
   if (p) {
     if (len != 0) memcpy(p, s, len);
@@ -18524,12 +18528,12 @@ static size_t upb_BackAlloc_CalcBlockSize(upb_BackAlloc* a, size_t required,
 
 static char* upb_BackAlloc_Realloc(upb_BackAlloc* a, char* ptr, size_t n) {
   size_t copy = a->limit - ptr;
-  if (SIZE_MAX - copy < n) {
+  size_t required_block_size;
+  if (upb_AddOverflow(copy, n, &required_block_size)) {
     return NULL;
   }
 
   bool one_off = false;
-  size_t required_block_size = copy + n;
   size_t size = upb_BackAlloc_CalcBlockSize(a, required_block_size, &one_off);
 
   char* block = UPB_PRIVATE(_upb_Arena_AllocBlock)(a->arena, &size);
