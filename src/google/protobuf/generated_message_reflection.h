@@ -347,11 +347,18 @@ const std::string& NameOfDenseEnum(int v) {
   static_assert(max_val - min_val >= 0, "Too many enums between min and max.");
   static DenseEnumCacheInfo deci = {/* once_flag */ {}, /* atomic ptr */ {},
                                     min_val, max_val, descriptor_fn};
-  if (ABSL_PREDICT_TRUE(v >= min_val && v <= max_val)) {
-    const std::string** cache = deci.cache.load(std::memory_order_acquire);
-    if (ABSL_PREDICT_TRUE(cache != nullptr)) {
-      return *cache[v - min_val];
-    }
+  if (ABSL_PREDICT_FALSE(v < min_val || v > max_val)) {
+    // Prevent the compiler from pre-loading the empty string.
+    // Otherwise, it adds an instruction to every in-bounds-call (adding ~5%
+    // to cpu).
+    // We expect to see many more in-bounds calls than out-of-bounds calls, so
+    // this is a net win.
+    ABSL_BLOCK_TAIL_CALL_OPTIMIZATION();
+    return GetEmptyStringAlreadyInited();
+  }
+  const std::string** cache = deci.cache.load(std::memory_order_acquire);
+  if (ABSL_PREDICT_TRUE(cache != nullptr)) {
+    return *cache[v - min_val];
   }
   return NameOfDenseEnumSlow(v, &deci);
 }
