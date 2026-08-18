@@ -752,17 +752,6 @@ set(libupb_srcs
   ${protobuf_SOURCE_DIR}/upb/util/required_fields.c
   ${protobuf_SOURCE_DIR}/upb/wire/byte_size.c
   ${protobuf_SOURCE_DIR}/upb/wire/decode.c
-  ${protobuf_SOURCE_DIR}/upb/wire/decode_fast/cardinality.c
-  ${protobuf_SOURCE_DIR}/upb/wire/decode_fast/dispatch.c
-  ${protobuf_SOURCE_DIR}/upb/wire/decode_fast/field_extension.c
-  ${protobuf_SOURCE_DIR}/upb/wire/decode_fast/field_fixed.c
-  ${protobuf_SOURCE_DIR}/upb/wire/decode_fast/field_generic.c
-  ${protobuf_SOURCE_DIR}/upb/wire/decode_fast/field_message.c
-  ${protobuf_SOURCE_DIR}/upb/wire/decode_fast/field_mismatch.c
-  ${protobuf_SOURCE_DIR}/upb/wire/decode_fast/field_string.c
-  ${protobuf_SOURCE_DIR}/upb/wire/decode_fast/field_unknown.c
-  ${protobuf_SOURCE_DIR}/upb/wire/decode_fast/field_varint.c
-  ${protobuf_SOURCE_DIR}/upb/wire/decode_fast/function_array.c
   ${protobuf_SOURCE_DIR}/upb/wire/decode_fast/select.c
   ${protobuf_SOURCE_DIR}/upb/wire/encode.c
   ${protobuf_SOURCE_DIR}/upb/wire/encode_extension.c
@@ -895,9 +884,6 @@ set(libupb_hdrs
   ${protobuf_SOURCE_DIR}/upb/wire/decode.h
   ${protobuf_SOURCE_DIR}/upb/wire/decode_fast/combinations.h
   ${protobuf_SOURCE_DIR}/upb/wire/decode_fast/data.h
-  ${protobuf_SOURCE_DIR}/upb/wire/decode_fast/dispatch.h
-  ${protobuf_SOURCE_DIR}/upb/wire/decode_fast/field_parsers.h
-  ${protobuf_SOURCE_DIR}/upb/wire/decode_fast/function_array.h
   ${protobuf_SOURCE_DIR}/upb/wire/decode_fast/select.h
   ${protobuf_SOURCE_DIR}/upb/wire/encode.h
   ${protobuf_SOURCE_DIR}/upb/wire/encode_extension.h
