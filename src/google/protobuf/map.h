@@ -698,11 +698,12 @@ struct KeyNode : NodeBase {
 // random iteration order.
 inline map_index_t Hash(absl::string_view k, void* salt) {
   const uintptr_t salt_int = reinterpret_cast<uintptr_t>(salt);
-  return absl::HashOf(k, absl::rotr(salt_int, k.size()));
+  return static_cast<map_index_t>(
+      absl::HashOf(k, absl::rotr(salt_int, k.size())));
 }
 inline map_index_t Hash(uint64_t k, void* salt) {
   const uintptr_t salt_int = reinterpret_cast<uintptr_t>(salt);
-  return absl::HashOf(k, absl::rotr(salt_int, k));
+  return static_cast<map_index_t>(absl::HashOf(k, absl::rotr(salt_int, k)));
 }
 
 // KeyMapBase is a chaining hash map.
