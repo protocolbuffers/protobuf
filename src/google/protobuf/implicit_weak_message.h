@@ -97,8 +97,7 @@ class PROTOBUF_EXPORT ImplicitWeakMessage final : public MessageLite {
   static PROTOBUF_CC const char* ParseImpl(ImplicitWeakMessage* msg,
                                            const char* ptr, ParseContext* ctx);
 
-  static constexpr auto InternalGenerateClassData_(
-      const MessageLite& prototype, const TcParseTableBase* tc_table = nullptr);
+  static constexpr auto InternalGenerateClassData_();
   static constexpr auto InternalGenerateParseTable_(
       const ClassData* class_data);
 

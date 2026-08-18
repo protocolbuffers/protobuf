@@ -100,31 +100,23 @@ inline void* PROTOBUF_NONNULL CSharpFeatures::PlacementNew_(
 constexpr auto CSharpFeatures::InternalNewImpl_() {
   return ::google::protobuf::internal::MessageCreator::ZeroInit(sizeof(CSharpFeatures), alignof(CSharpFeatures));
 }
-constexpr auto CSharpFeatures::InternalGenerateClassData_(
-    const MessageLite& prototype,
-    const ::google::protobuf::internal::TcParseTableBase* tc_table) {
-  return ::google::protobuf::internal::ClassDataFull{
-      ::google::protobuf::internal::ClassData{
-          &prototype,
-          tc_table,
-          nullptr,  // IsInitialized
-          &CSharpFeatures::MergeImpl,
-          Super_::GetNewImpl<CSharpFeatures>(),
+constexpr auto CSharpFeatures::InternalGenerateClassData_() {
+  return ::google::protobuf::internal::ClassData{
+      nullptr,  // IsInitialized
+      &CSharpFeatures::MergeImpl,
+      Super_::GetNewImpl<CSharpFeatures>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-          &CSharpFeatures::SharedDtor,
-          &Helpers_::Clear, &Helpers_::ByteSizeLong,
-              &Helpers_::_InternalSerialize,
+      &CSharpFeatures::SharedDtor,
+      &Helpers_::Clear, &Helpers_::ByteSizeLong,
+          &Helpers_::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
-          PROTOBUF_FIELD_OFFSET(CSharpFeatures, _impl_._cached_size_),
-          false,
-      },
+      PROTOBUF_FIELD_OFFSET(CSharpFeatures, _impl_._cached_size_),
       &file_reflection_data[0],
   };
 }
 struct CSharpFeaturesGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
   constexpr CSharpFeaturesGlobalsTypeInternal()
-      : MessageGlobalsBase(CSharpFeatures::InternalGenerateClassData_(
-            _default, &CSharpFeatures_globals_._table.header)),
+      : MessageGlobalsBase(CSharpFeatures::InternalGenerateClassData_()),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
         _table(::_pbi::PrivateAccess::GenerateParseTable<CSharpFeatures>(
             GetClassData())) {}
@@ -201,7 +193,7 @@ namespace pb {
 
 CSharpFeatures::CSharpFeatures(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-    : Super_(arena, CSharpFeatures_globals_.GetClassData()) {
+    : Super_(arena, &CSharpFeatures_globals_.class_data) {
 #else   // PROTOBUF_CUSTOM_VTABLE
     : Super_(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
@@ -211,7 +203,7 @@ CSharpFeatures::CSharpFeatures(::google::protobuf::Arena* PROTOBUF_NULLABLE aren
 CSharpFeatures::CSharpFeatures(
     ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const CSharpFeatures& from)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-    : Super_(arena, CSharpFeatures_globals_.GetClassData()),
+    : Super_(arena, &CSharpFeatures_globals_.class_data),
 #else   // PROTOBUF_CUSTOM_VTABLE
     : Super_(arena),
 #endif  // PROTOBUF_CUSTOM_VTABLE
@@ -247,7 +239,7 @@ CSharpFeatures::GetClassData() const {
   ::google::protobuf::internal::PrefetchToLocalCache(&CSharpFeatures_globals_);
   ::google::protobuf::internal::PrefetchToLocalCache(
       ::google::protobuf::internal::MessageGlobalsBase::ToParseTableBase(&CSharpFeatures_globals_));
-  return CSharpFeatures_globals_.GetClassData();
+  return &CSharpFeatures_globals_.class_data;
 }
 #if defined(PROTOBUF_CUSTOM_VTABLE)
 PROTOBUF_NOINLINE void CSharpFeatures::Helpers_::Clear(MessageLite& base) {
@@ -356,7 +348,7 @@ void CSharpFeatures::InternalSwap(CSharpFeatures* PROTOBUF_RESTRICT PROTOBUF_NON
 }
 
 ::google::protobuf::Metadata CSharpFeatures::GetMetadata() const {
-  return Super_::GetMetadataImpl(GetClassData()->full());
+  return Super_::GetMetadataImpl(CSharpFeatures_globals_.class_data);
 }
 PROTOBUF_CONSTINIT PROTOC_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY2 ::_pbi::ExtensionIdentifier<

@@ -638,16 +638,6 @@ std::string QualifiedMsgGlobalsInstancePtr(const Descriptor* descriptor,
                       "ptr_");
 }
 
-std::string ClassDataType(const Descriptor* descriptor,
-                          const Options& options) {
-  return HasDescriptorMethods(descriptor->file(), options) ||
-                 // Bootstrap protos are always full, even when lite is forced
-                 // via options.
-                 IsBootstrapProto(options, descriptor->file())
-             ? "ClassDataFull"
-             : "ClassDataLite";
-}
-
 std::string DescriptorTableName(const FileDescriptor* file,
                                 const Options& options) {
   return UniqueName("descriptor_table", file, options);

@@ -1348,7 +1348,6 @@ class FileGenerator::ForwardDeclarations {
               {"globals_name", MsgGlobalsInstanceName(desc, options)},
               {"const",
                IsFileDescriptorProto(desc->file(), options) ? "" : "const"},
-              {"classdata_type", ClassDataType(desc, options)},
           },
           R"cc(
             class $class$;

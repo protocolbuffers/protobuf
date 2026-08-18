@@ -192,9 +192,6 @@ std::string QualifiedMsgGlobalsInstanceName(const Descriptor* descriptor,
 std::string QualifiedMsgGlobalsInstancePtr(const Descriptor* descriptor,
                                            const Options& options);
 
-// Name of the ClassData subclass used for a message.
-std::string ClassDataType(const Descriptor* descriptor, const Options& options);
-
 // DescriptorTable variable name.
 std::string DescriptorTableName(const FileDescriptor* file,
                                 const Options& options);

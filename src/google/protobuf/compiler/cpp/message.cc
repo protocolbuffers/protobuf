@@ -1420,9 +1420,7 @@ void MessageGenerator::GenerateMapEntryClassDefinition(io::Printer* p) {
 
           $decl_verify_func$;
 
-          static constexpr auto InternalGenerateClassData_(
-              const $pb$::MessageLite& prototype,
-              const $pbi$::TcParseTableBase* $nullable$ tc_table = nullptr);
+          static constexpr auto InternalGenerateClassData_();
 
          private:
           friend class $pb$::MessageLite;
@@ -2093,7 +2091,6 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
           )cc");
         }},
        {"decl_impl", [&] { GenerateImplDefinition(p); }},
-       {"classdata_type", ClassDataType(descriptor_, options_)},
        {"msg_globals", MsgGlobalsInstanceName(descriptor_, options_)},
        {"split_friend",
         [&] {
@@ -2219,9 +2216,7 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
           //~ of T_class_data_. However, since it is `constexpr` and has an
           //~ `auto` return type it is not callable from outside the .pb.cc
           //~ without a definition so it is effectively private.
-          static constexpr auto InternalGenerateClassData_(
-              const MessageLite& prototype,
-              const $pbi$::TcParseTableBase* $nullable$ tc_table = nullptr);
+          static constexpr auto InternalGenerateClassData_();
 
           $get_metadata$;
           $decl_split_methods$;
@@ -2337,10 +2332,10 @@ void MessageGenerator::GenerateClassMethods(io::Printer* p) {
             R"cc(
 #if defined(PROTOBUF_CUSTOM_VTABLE)
               PROTOBUF_ALWAYS_INLINE_NODEBUG $Msg$::$Msg$()
-                  : Super_($globals$.GetClassData()) {}
+                  : Super_(&$globals$.class_data) {}
               PROTOBUF_ALWAYS_INLINE_NODEBUG $Msg$::$Msg$(
                   $pb$::Arena* $nullable$ arena)
-                  : Super_(arena, $globals$.GetClassData()) {}
+                  : Super_(arena, &$globals$.class_data) {}
 #else   // PROTOBUF_CUSTOM_VTABLE
               $Msg$::$Msg$() : Super_() {}
               $Msg$::$Msg$($pb$::Arena* $nullable$ arena) : Super_(arena) {}
@@ -2453,7 +2448,7 @@ void MessageGenerator::GenerateClassMethods(io::Printer* p) {
               // Same as the base class, but it avoids virtual dispatch.
               p->Emit(R"cc(
                 $pb$::Metadata $Msg$::GetMetadata() const {
-                  return Super_::GetMetadataImpl(GetClassData()->full());
+                  return Super_::GetMetadataImpl($globals$.class_data);
                 }
               )cc");
             }},
@@ -3195,7 +3190,7 @@ void MessageGenerator::GenerateArenaEnabledCopyConstructor(io::Printer* p) {
                 //~ force alignment
                 const $Msg$& from)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-                : Super_(arena, $globals$.GetClassData()) {
+                : Super_(arena, &$globals$.class_data) {
 
 #else   // PROTOBUF_CUSTOM_VTABLE
                 : Super_(arena) {
@@ -3238,7 +3233,7 @@ void MessageGenerator::GenerateStructors(io::Printer* p) {
       R"cc(
         $Msg$::$Msg$($pb$::Arena* $nullable$ arena)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-            : Super_(arena, $globals$.GetClassData()) {
+            : Super_(arena, &$globals$.class_data) {
 #else   // PROTOBUF_CUSTOM_VTABLE
             : Super_(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
@@ -3267,7 +3262,7 @@ void MessageGenerator::GenerateStructors(io::Printer* p) {
           //~ Force alignment
           $pb$::Arena* $nullable$ arena, const $Msg$& from)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-          : Super_(arena, $globals$.GetClassData()),
+          : Super_(arena, &$globals$.class_data),
 #else   // PROTOBUF_CUSTOM_VTABLE
           : Super_(arena),
 #endif  // PROTOBUF_CUSTOM_VTABLE
@@ -3849,23 +3844,16 @@ void MessageGenerator::GenerateInternalGenerateClassData(io::Printer* p) {
              }},
         },
         R"cc(
-          constexpr auto $Msg$::InternalGenerateClassData_(
-              const MessageLite& prototype,
-              const $pbi$::TcParseTableBase* tc_table) {
-            return $pbi$::ClassDataFull{
-                $pbi$::ClassData{
-                    &prototype,
-                    tc_table,
-                    $is_initialized$,
-                    &$Msg$::MergeImpl,
-                    Super_::GetNewImpl<$Msg$>(),
+          constexpr auto $Msg$::InternalGenerateClassData_() {
+            return $pbi$::ClassData{
+                $is_initialized$,
+                &$Msg$::MergeImpl,
+                Super_::GetNewImpl<$Msg$>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-                    &$Msg$::SharedDtor,
-                    $custom_vtable_methods$,
+                &$Msg$::SharedDtor,
+                $custom_vtable_methods$,
 #endif  // PROTOBUF_CUSTOM_VTABLE
-                    PROTOBUF_FIELD_OFFSET($Msg$, $cached_size$),
-                    false,
-                },
+                PROTOBUF_FIELD_OFFSET($Msg$, $cached_size$),
                 &file_reflection_data[$index_in_file_messages$],
             };
           }
@@ -3877,23 +3865,16 @@ void MessageGenerator::GenerateInternalGenerateClassData(io::Printer* p) {
             {"custom_vtable_methods", custom_vtable_methods},
         },
         R"cc(
-          constexpr auto $Msg$::InternalGenerateClassData_(
-              const MessageLite& prototype,
-              const $pbi$::TcParseTableBase* tc_table) {
-            return $pbi$::ClassDataLite{
-                {
-                    &prototype,
-                    tc_table,
-                    $is_initialized$,
-                    &$Msg$::MergeImpl,
-                    Super_::GetNewImpl<$Msg$>(),
+          constexpr auto $Msg$::InternalGenerateClassData_() {
+            return $pbi$::ClassData{
+                $is_initialized$,
+                &$Msg$::MergeImpl,
+                Super_::GetNewImpl<$Msg$>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-                    &$Msg$::SharedDtor,
-                    $custom_vtable_methods$,
+                &$Msg$::SharedDtor,
+                $custom_vtable_methods$,
 #endif  // PROTOBUF_CUSTOM_VTABLE
-                    PROTOBUF_FIELD_OFFSET($Msg$, $cached_size$),
-                    true,
-                },
+                PROTOBUF_FIELD_OFFSET($Msg$, $cached_size$),
                 "$full_name$",
             };
           }
@@ -3943,7 +3924,7 @@ void MessageGenerator::GenerateClassData(io::Printer* p) {
               $pbi$::PrefetchToLocalCache(&$globals$);
               $pbi$::PrefetchToLocalCache(
                   $pbi$::MessageGlobalsBase::ToParseTableBase(&$globals$));
-              return $globals$.GetClassData();
+              return &$globals$.class_data;
             }
           )cc");
     } else {
@@ -3958,7 +3939,7 @@ void MessageGenerator::GenerateClassData(io::Printer* p) {
               $pbi$::PrefetchToLocalCache(&$globals$);
               $pbi$::PrefetchToLocalCache(
                   $pbi$::MessageGlobalsBase::ToParseTableBase(&$globals$));
-              return $globals$.GetClassData();
+              return &$globals$.class_data;
             }
           )cc");
     }
@@ -3967,7 +3948,7 @@ void MessageGenerator::GenerateClassData(io::Printer* p) {
         R"cc(
           PROTOBUF_ATTRIBUTE_WEAK const $pbi$::ClassData* $nonnull$
           $Msg$::GetClassData() const {
-            return $globals$.GetClassData();
+            return &$globals$.class_data;
           }
         )cc");
   }
@@ -5565,8 +5546,7 @@ void MessageGenerator::GenerateSourceDefaultInstance(io::Printer* p) {
       R"cc(
         struct $globals_type$ : ::_pbi::MessageGlobalsBase {
           $constexpr$ $globals_type$()
-              : MessageGlobalsBase($Msg$::InternalGenerateClassData_(
-                    _default, &$globals$._table.header)),
+              : MessageGlobalsBase($Msg$::InternalGenerateClassData_()),
                 _default(::_pbi::ConstantInitialized{}, GetClassData()),
                 _table(::_pbi::PrivateAccess::GenerateParseTable<$Msg$>(
                     GetClassData())) {}

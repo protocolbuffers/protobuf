@@ -106,31 +106,23 @@ inline void* PROTOBUF_NONNULL JsonEnumValueOptions::PlacementNew_(
 constexpr auto JsonEnumValueOptions::InternalNewImpl_() {
   return ::google::protobuf::internal::MessageCreator::CopyInit(sizeof(JsonEnumValueOptions), alignof(JsonEnumValueOptions));
 }
-constexpr auto JsonEnumValueOptions::InternalGenerateClassData_(
-    const MessageLite& prototype,
-    const ::google::protobuf::internal::TcParseTableBase* tc_table) {
-  return ::google::protobuf::internal::ClassDataFull{
-      ::google::protobuf::internal::ClassData{
-          &prototype,
-          tc_table,
-          nullptr,  // IsInitialized
-          &JsonEnumValueOptions::MergeImpl,
-          Super_::GetNewImpl<JsonEnumValueOptions>(),
+constexpr auto JsonEnumValueOptions::InternalGenerateClassData_() {
+  return ::google::protobuf::internal::ClassData{
+      nullptr,  // IsInitialized
+      &JsonEnumValueOptions::MergeImpl,
+      Super_::GetNewImpl<JsonEnumValueOptions>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-          &JsonEnumValueOptions::SharedDtor,
-          &Helpers_::Clear, &Helpers_::ByteSizeLong,
-              &Helpers_::_InternalSerialize,
+      &JsonEnumValueOptions::SharedDtor,
+      &Helpers_::Clear, &Helpers_::ByteSizeLong,
+          &Helpers_::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
-          PROTOBUF_FIELD_OFFSET(JsonEnumValueOptions, _impl_._cached_size_),
-          false,
-      },
+      PROTOBUF_FIELD_OFFSET(JsonEnumValueOptions, _impl_._cached_size_),
       &file_reflection_data[0],
   };
 }
 struct JsonEnumValueOptionsGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
   constexpr JsonEnumValueOptionsGlobalsTypeInternal()
-      : MessageGlobalsBase(JsonEnumValueOptions::InternalGenerateClassData_(
-            _default, &JsonEnumValueOptions_globals_._table.header)),
+      : MessageGlobalsBase(JsonEnumValueOptions::InternalGenerateClassData_()),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
         _table(::_pbi::PrivateAccess::GenerateParseTable<JsonEnumValueOptions>(
             GetClassData())) {}
@@ -208,7 +200,7 @@ namespace enumvalue {
 
 JsonEnumValueOptions::JsonEnumValueOptions(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-    : Super_(arena, JsonEnumValueOptions_globals_.GetClassData()) {
+    : Super_(arena, &JsonEnumValueOptions_globals_.class_data) {
 #else   // PROTOBUF_CUSTOM_VTABLE
     : Super_(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
@@ -226,7 +218,7 @@ JsonEnumValueOptions::JsonEnumValueOptions(
     ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
     const JsonEnumValueOptions& from)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-    : Super_(arena, JsonEnumValueOptions_globals_.GetClassData()) {
+    : Super_(arena, &JsonEnumValueOptions_globals_.class_data) {
 
 #else   // PROTOBUF_CUSTOM_VTABLE
     : Super_(arena) {
@@ -267,7 +259,7 @@ JsonEnumValueOptions::GetClassData() const {
   ::google::protobuf::internal::PrefetchToLocalCache(&JsonEnumValueOptions_globals_);
   ::google::protobuf::internal::PrefetchToLocalCache(
       ::google::protobuf::internal::MessageGlobalsBase::ToParseTableBase(&JsonEnumValueOptions_globals_));
-  return JsonEnumValueOptions_globals_.GetClassData();
+  return &JsonEnumValueOptions_globals_.class_data;
 }
 #if defined(PROTOBUF_CUSTOM_VTABLE)
 PROTOBUF_NOINLINE void JsonEnumValueOptions::Helpers_::Clear(MessageLite& base) {
@@ -388,7 +380,7 @@ void JsonEnumValueOptions::InternalSwap(JsonEnumValueOptions* PROTOBUF_RESTRICT 
 }
 
 ::google::protobuf::Metadata JsonEnumValueOptions::GetMetadata() const {
-  return Super_::GetMetadataImpl(GetClassData()->full());
+  return Super_::GetMetadataImpl(JsonEnumValueOptions_globals_.class_data);
 }
 PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY2 ::_pbi::ExtensionIdentifier<
