@@ -511,6 +511,18 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
   @SuppressWarnings("unchecked")
   public abstract static class Builder<BuilderT extends Builder<BuilderT>>
       extends AbstractMessage.Builder<BuilderT> {
+    protected static <ListT extends ProtobufList<?>> ListT makeMutableCopy(ListT list) {
+      return GeneratedMessage.makeMutableCopy(list, 0);
+    }
+
+    protected static <ListT extends ProtobufList<?>> ListT makeMutableCopy(
+        ListT list, int minCapacity) {
+      return GeneratedMessage.makeMutableCopy(list, minCapacity);
+    }
+
+    protected static <T> ProtobufList<T> emptyList(Class<T> elementType) {
+      return GeneratedMessage.emptyList(elementType);
+    }
 
     private BuilderParent builderParent;
 
