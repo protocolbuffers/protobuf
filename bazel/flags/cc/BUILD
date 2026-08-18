@@ -14,6 +14,11 @@ label_flag(
     build_setting_default = "@bazel_tools//tools/proto:cc_toolchain",
 )
 
+label_flag(
+    name = "cc_proto_library_deps",
+    build_setting_default = "@//net/proto2/public:cc_proto_library_blaze_internal_deps",
+)
+
 alias(
     name = "protocopt",
     actual = "//bazel/flags:protocopt",
