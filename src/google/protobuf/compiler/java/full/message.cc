@@ -18,6 +18,7 @@
 #include <vector>
 
 #include "absl/container/flat_hash_map.h"
+#include "absl/container/flat_hash_set.h"
 #include "absl/log/absl_check.h"
 #include "absl/strings/ascii.h"
 #include "absl/strings/str_cat.h"
@@ -56,6 +57,33 @@ std::string MapValueImmutableClassdName(const Descriptor* descriptor,
   const FieldDescriptor* value_field = descriptor->map_value();
   ABSL_CHECK_EQ(FieldDescriptor::TYPE_MESSAGE, value_field->type());
   return name_resolver->GetImmutableClassName(value_field->message_type());
+}
+
+bool HasTransientBitFields(const Descriptor* descriptor) {
+  if (google::protobuf::internal::IsOss()) {
+    return false;
+  }
+  // This allowlist is only for protos that test legacy GSON behavior.
+  static const auto& kNonTransientBitFieldProtos =
+      *new absl::flat_hash_set<absl::string_view>({
+          "com.google.gson.protobuf.TestAllTypes",
+          "com.google.gson.protobuf.TestAllTypes.NestedMessage",
+          "com.google.gson.protobuf.TestAny",
+          "com.google.gson.protobuf.TestCustomJsonName",
+          "com.google.gson.protobuf.TestDuration",
+          "com.google.gson.protobuf.TestFieldMask",
+          "com.google.gson.protobuf.TestMap",
+          "com.google.gson.protobuf.TestOneof",
+          "com.google.gson.protobuf.TestRecursive",
+          "com.google.gson.protobuf.TestStruct",
+          "com.google.gson.protobuf.TestTimestamp",
+          "com.google.gson.protobuf.TestWrappers",
+          "com.google.gson.protobuf2.TestAllTypesProto2",
+          "com.google.gson.protobuf2.TestAllTypesProto2.NestedMessage",
+          "com.google.gson.protobuf2.TestManyOptionals",
+          "com.google.gson.protobuf2.TestRecursive",
+      });
+  return !kNonTransientBitFieldProtos.contains(descriptor->full_name());
 }
 }  // namespace
 
@@ -386,9 +414,11 @@ void ImmutableMessageGenerator::Generate(io::Printer* printer) {
     totalBits += field_generators_.get(descriptor_->field(i)).GetNumBits();
   }
   int totalInts = (totalBits + 31) / 32;
+  const bool is_transient = HasTransientBitFields(descriptor_);
   for (int i = 0; i < totalInts; i++) {
-    printer->Print("private int $bit_field_name$;\n", "bit_field_name",
-                   GetBitFieldName(i));
+    printer->Print(is_transient ? "private transient int $bit_field_name$;\n"
+                                : "private int $bit_field_name$;\n",
+                   "bit_field_name", GetBitFieldName(i));
   }
 
   // oneof
