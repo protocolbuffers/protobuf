@@ -202,6 +202,16 @@ void MessageLite::LogInitializationErrorMessage() const {
 
 namespace internal {
 
+std::string ClassData::DebugName() const {
+  absl::string_view type_name = TypeIdFromClassData(this).name();
+  if (is_dynamic) {
+    return absl::StrCat(type_name, " (dynamic, class_data = 0x",
+                        absl::Hex(this), ")");
+  } else {
+    return std::string(type_name);
+  }
+}
+
 void FailDynamicCast(
     const MessageLite& from,
     std::variant<const char*, const MessageLite*> to_type_name) {

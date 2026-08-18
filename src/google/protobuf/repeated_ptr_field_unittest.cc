@@ -326,6 +326,40 @@ TEST_F(RepeatedPtrFieldTest, Large) {
   EXPECT_GE(field.SpaceUsedExcludingSelf(), min_expected_usage);
 }
 
+TEST_F(RepeatedPtrFieldTest, DestroyErroneousIncorrectElement) {
+#if defined(NDEBUG) || !defined(PROTOBUF_CUSTOM_VTABLE)
+  GTEST_SKIP() << "The `DCHECK` is disabled in release builds / "
+                  "!PROTOBUF_CUSTOM_VTABLE.";
+#else
+  auto destroy_wrong_element_type = []() {
+    RepeatedPtrField<TestAllTypes> field;
+    field.AddAllocated(reinterpret_cast<TestAllTypes*>(
+        new proto2_unittest::NestedTestAllTypes));
+  };
+  // The destructor of `RepeatedPtrField` verifies that all elements are of the
+  // expected type.
+  ASSERT_DEATH(destroy_wrong_element_type(),
+               "Type mismatch in RepeatedPtrFieldBase::DestroyMessageLites");
+#endif
+}
+
+TEST_F(RepeatedPtrFieldTest, DestroyErroneousMixedElements) {
+#if defined(NDEBUG) || !defined(PROTOBUF_CUSTOM_VTABLE)
+  GTEST_SKIP() << "The `DCHECK` is disabled in release builds / "
+                  "!PROTOBUF_CUSTOM_VTABLE.";
+#else
+  auto destroy_heterogenous_repeated_field = []() {
+    RepeatedPtrField<google::protobuf::MessageLite> field;
+    field.AddAllocated(new TestAllTypes);
+    field.AddAllocated(new proto2_unittest::NestedTestAllTypes);
+  };
+  // The destructor of `RepeatedPtrField` verifies that all elements are of the
+  // same type if the element type is `Message` or `MessageLite`.
+  ASSERT_DEATH(destroy_heterogenous_repeated_field(),
+               "Type mismatch in RepeatedPtrFieldBase::DestroyMessageLites");
+#endif
+}
+
 namespace {
 
 template <typename Elem>

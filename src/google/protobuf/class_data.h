@@ -16,6 +16,7 @@
 
 #include <cstddef>
 #include <cstdint>
+#include <string>
 
 #include "absl/log/absl_check.h"
 #include "google/protobuf/port.h"
@@ -227,6 +228,8 @@ struct PROTOBUF_EXPORT ClassData {
         << " and " << from.GetTypeName();
     this->merge_to_from(to, from);
   }
+
+  std::string DebugName() const;
 };
 
 #ifndef PROTOBUF_MESSAGE_GLOBALS
