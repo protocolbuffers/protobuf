@@ -209,20 +209,18 @@ const std::string& NameOfEnum(const EnumDescriptor* PROTOBUF_NONNULL descriptor,
 // fall in the range [min_val .. max_val].
 const std::string** MakeDenseEnumCache(const EnumDescriptor* desc, int min_val,
                                        int max_val) {
-  auto* str_ptrs =
-      new const std::string*[static_cast<size_t>(max_val - min_val + 1)]();
+  const std::string* empty_string = &GetEmptyStringAlreadyInited();
+  const int length = max_val - min_val + 1;
+  auto* str_ptrs = new const std::string*[length];
+  std::fill_n(str_ptrs, length, empty_string);
   const int count = desc->value_count();
   for (int i = 0; i < count; ++i) {
     const int num = desc->value(i)->number();
-    if (str_ptrs[num - min_val] == nullptr) {
+    if (str_ptrs[num - min_val] == empty_string) {
       // Don't over-write an existing entry, because in case of duplication, the
       // first one wins.
       str_ptrs[num - min_val] = &internal::NameOfEnumAsString(desc->value(i));
     }
-  }
-  // Change any unfilled entries to point to the empty string.
-  for (int i = 0; i < max_val - min_val + 1; ++i) {
-    if (str_ptrs[i] == nullptr) str_ptrs[i] = &GetEmptyStringAlreadyInited();
   }
   return str_ptrs;
 }
