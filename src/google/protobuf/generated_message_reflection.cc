@@ -212,13 +212,11 @@ const std::string** MakeDenseEnumCache(const EnumDescriptor* desc, int min_val,
   auto* str_ptrs =
       new const std::string*[static_cast<size_t>(max_val - min_val + 1)]();
   const int count = desc->value_count();
-  for (int i = 0; i < count; ++i) {
+  // Iterate in reverse order to ensure that if there are duplicate enum values,
+  // the first one wins.
+  for (int i = count - 1; i >= 0; i--) {
     const int num = desc->value(i)->number();
-    if (str_ptrs[num - min_val] == nullptr) {
-      // Don't over-write an existing entry, because in case of duplication, the
-      // first one wins.
-      str_ptrs[num - min_val] = &internal::NameOfEnumAsString(desc->value(i));
-    }
+    str_ptrs[num - min_val] = &internal::NameOfEnumAsString(desc->value(i));
   }
   // Change any unfilled entries to point to the empty string.
   for (int i = 0; i < max_val - min_val + 1; ++i) {
