@@ -94,5 +94,3 @@
 #undef _UPB_STRINGIFY
 #undef _UPB_STRINGIFY2
 #undef UPB_CONSTRUCTOR
-#undef UPB_RETAIN
-#undef UPB_HIDDEN
