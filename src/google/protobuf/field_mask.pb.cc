@@ -120,7 +120,8 @@ constexpr auto FieldMask::InternalGenerateClassData_(
           Super_::GetNewImpl<FieldMask>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           &FieldMask::SharedDtor,
-          &FieldMask::Clear, &FieldMask::ByteSizeLong, &FieldMask::_InternalSerialize,
+          &Helpers_::Clear, &Helpers_::ByteSizeLong,
+              &Helpers_::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
           PROTOBUF_FIELD_OFFSET(FieldMask, _impl_._cached_size_),
           false,
@@ -275,7 +276,7 @@ FieldMask::GetClassData() const {
   return FieldMask_globals_.GetClassData();
 }
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-PROTOBUF_NOINLINE void FieldMask::Clear(MessageLite& base) {
+PROTOBUF_NOINLINE void FieldMask::Helpers_::Clear(MessageLite& base) {
   FieldMask& this_ = static_cast<FieldMask&>(base);
 #else   // PROTOBUF_CUSTOM_VTABLE
 PROTOBUF_NOINLINE void FieldMask::Clear() {
@@ -295,7 +296,7 @@ PROTOBUF_NOINLINE void FieldMask::Clear() {
 }
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-::uint8_t* PROTOBUF_NONNULL FieldMask::_InternalSerialize(
+::uint8_t* PROTOBUF_NONNULL FieldMask::Helpers_::_InternalSerialize(
     const ::google::protobuf::MessageLite& base, ::uint8_t* PROTOBUF_NONNULL target,
     ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) {
   const FieldMask& this_ = static_cast<const FieldMask&>(base);
@@ -333,7 +334,7 @@ PROTOBUF_NOINLINE void FieldMask::Clear() {
 }
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-::size_t FieldMask::ByteSizeLong(const MessageLite& base) {
+::size_t FieldMask::Helpers_::ByteSizeLong(const MessageLite& base) {
   const FieldMask& this_ = static_cast<const FieldMask&>(base);
 #else   // PROTOBUF_CUSTOM_VTABLE
 ::size_t FieldMask::ByteSizeLong() const {

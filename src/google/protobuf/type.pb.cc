@@ -135,7 +135,8 @@ constexpr auto Option::InternalGenerateClassData_(
           Super_::GetNewImpl<Option>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           &Option::SharedDtor,
-          &Option::Clear, &Option::ByteSizeLong, &Option::_InternalSerialize,
+          &Helpers_::Clear, &Helpers_::ByteSizeLong,
+              &Helpers_::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
           PROTOBUF_FIELD_OFFSET(Option, _impl_._cached_size_),
           false,
@@ -331,7 +332,8 @@ constexpr auto Field::InternalGenerateClassData_(
           Super_::GetNewImpl<Field>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           &Field::SharedDtor,
-          &Field::Clear, &Field::ByteSizeLong, &Field::_InternalSerialize,
+          &Helpers_::Clear, &Helpers_::ByteSizeLong,
+              &Helpers_::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
           PROTOBUF_FIELD_OFFSET(Field, _impl_._cached_size_),
           false,
@@ -464,7 +466,8 @@ constexpr auto EnumValue::InternalGenerateClassData_(
           Super_::GetNewImpl<EnumValue>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           &EnumValue::SharedDtor,
-          &EnumValue::Clear, &EnumValue::ByteSizeLong, &EnumValue::_InternalSerialize,
+          &Helpers_::Clear, &Helpers_::ByteSizeLong,
+              &Helpers_::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
           PROTOBUF_FIELD_OFFSET(EnumValue, _impl_._cached_size_),
           false,
@@ -639,7 +642,8 @@ constexpr auto Type::InternalGenerateClassData_(
           Super_::GetNewImpl<Type>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           &Type::SharedDtor,
-          &Type::Clear, &Type::ByteSizeLong, &Type::_InternalSerialize,
+          &Helpers_::Clear, &Helpers_::ByteSizeLong,
+              &Helpers_::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
           PROTOBUF_FIELD_OFFSET(Type, _impl_._cached_size_),
           false,
@@ -803,7 +807,8 @@ constexpr auto Enum::InternalGenerateClassData_(
           Super_::GetNewImpl<Enum>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           &Enum::SharedDtor,
-          &Enum::Clear, &Enum::ByteSizeLong, &Enum::_InternalSerialize,
+          &Helpers_::Clear, &Helpers_::ByteSizeLong,
+              &Helpers_::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
           PROTOBUF_FIELD_OFFSET(Enum, _impl_._cached_size_),
           false,
@@ -1141,7 +1146,7 @@ Type::GetClassData() const {
   return Type_globals_.GetClassData();
 }
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-PROTOBUF_NOINLINE void Type::Clear(MessageLite& base) {
+PROTOBUF_NOINLINE void Type::Helpers_::Clear(MessageLite& base) {
   Type& this_ = static_cast<Type&>(base);
 #else   // PROTOBUF_CUSTOM_VTABLE
 PROTOBUF_NOINLINE void Type::Clear() {
@@ -1180,7 +1185,7 @@ PROTOBUF_NOINLINE void Type::Clear() {
 }
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-::uint8_t* PROTOBUF_NONNULL Type::_InternalSerialize(
+::uint8_t* PROTOBUF_NONNULL Type::Helpers_::_InternalSerialize(
     const ::google::protobuf::MessageLite& base, ::uint8_t* PROTOBUF_NONNULL target,
     ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) {
   const Type& this_ = static_cast<const Type&>(base);
@@ -1278,7 +1283,7 @@ PROTOBUF_NOINLINE void Type::Clear() {
 }
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-::size_t Type::ByteSizeLong(const MessageLite& base) {
+::size_t Type::Helpers_::ByteSizeLong(const MessageLite& base) {
   const Type& this_ = static_cast<const Type&>(base);
 #else   // PROTOBUF_CUSTOM_VTABLE
 ::size_t Type::ByteSizeLong() const {
@@ -1543,7 +1548,7 @@ Field::GetClassData() const {
   return Field_globals_.GetClassData();
 }
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-PROTOBUF_NOINLINE void Field::Clear(MessageLite& base) {
+PROTOBUF_NOINLINE void Field::Helpers_::Clear(MessageLite& base) {
   Field& this_ = static_cast<Field&>(base);
 #else   // PROTOBUF_CUSTOM_VTABLE
 PROTOBUF_NOINLINE void Field::Clear() {
@@ -1591,7 +1596,7 @@ PROTOBUF_NOINLINE void Field::Clear() {
 }
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-::uint8_t* PROTOBUF_NONNULL Field::_InternalSerialize(
+::uint8_t* PROTOBUF_NONNULL Field::Helpers_::_InternalSerialize(
     const ::google::protobuf::MessageLite& base, ::uint8_t* PROTOBUF_NONNULL target,
     ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) {
   const Field& this_ = static_cast<const Field&>(base);
@@ -1716,7 +1721,7 @@ PROTOBUF_NOINLINE void Field::Clear() {
 }
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-::size_t Field::ByteSizeLong(const MessageLite& base) {
+::size_t Field::Helpers_::ByteSizeLong(const MessageLite& base) {
   const Field& this_ = static_cast<const Field&>(base);
 #else   // PROTOBUF_CUSTOM_VTABLE
 ::size_t Field::ByteSizeLong() const {
@@ -2035,7 +2040,7 @@ Enum::GetClassData() const {
   return Enum_globals_.GetClassData();
 }
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-PROTOBUF_NOINLINE void Enum::Clear(MessageLite& base) {
+PROTOBUF_NOINLINE void Enum::Helpers_::Clear(MessageLite& base) {
   Enum& this_ = static_cast<Enum&>(base);
 #else   // PROTOBUF_CUSTOM_VTABLE
 PROTOBUF_NOINLINE void Enum::Clear() {
@@ -2071,7 +2076,7 @@ PROTOBUF_NOINLINE void Enum::Clear() {
 }
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-::uint8_t* PROTOBUF_NONNULL Enum::_InternalSerialize(
+::uint8_t* PROTOBUF_NONNULL Enum::Helpers_::_InternalSerialize(
     const ::google::protobuf::MessageLite& base, ::uint8_t* PROTOBUF_NONNULL target,
     ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) {
   const Enum& this_ = static_cast<const Enum&>(base);
@@ -2159,7 +2164,7 @@ PROTOBUF_NOINLINE void Enum::Clear() {
 }
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-::size_t Enum::ByteSizeLong(const MessageLite& base) {
+::size_t Enum::Helpers_::ByteSizeLong(const MessageLite& base) {
   const Enum& this_ = static_cast<const Enum&>(base);
 #else   // PROTOBUF_CUSTOM_VTABLE
 ::size_t Enum::ByteSizeLong() const {
@@ -2389,7 +2394,7 @@ EnumValue::GetClassData() const {
   return EnumValue_globals_.GetClassData();
 }
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-PROTOBUF_NOINLINE void EnumValue::Clear(MessageLite& base) {
+PROTOBUF_NOINLINE void EnumValue::Helpers_::Clear(MessageLite& base) {
   EnumValue& this_ = static_cast<EnumValue&>(base);
 #else   // PROTOBUF_CUSTOM_VTABLE
 PROTOBUF_NOINLINE void EnumValue::Clear() {
@@ -2415,7 +2420,7 @@ PROTOBUF_NOINLINE void EnumValue::Clear() {
 }
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-::uint8_t* PROTOBUF_NONNULL EnumValue::_InternalSerialize(
+::uint8_t* PROTOBUF_NONNULL EnumValue::Helpers_::_InternalSerialize(
     const ::google::protobuf::MessageLite& base, ::uint8_t* PROTOBUF_NONNULL target,
     ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) {
   const EnumValue& this_ = static_cast<const EnumValue&>(base);
@@ -2474,7 +2479,7 @@ PROTOBUF_NOINLINE void EnumValue::Clear() {
 }
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-::size_t EnumValue::ByteSizeLong(const MessageLite& base) {
+::size_t EnumValue::Helpers_::ByteSizeLong(const MessageLite& base) {
   const EnumValue& this_ = static_cast<const EnumValue&>(base);
 #else   // PROTOBUF_CUSTOM_VTABLE
 ::size_t EnumValue::ByteSizeLong() const {
@@ -2653,7 +2658,7 @@ Option::GetClassData() const {
   return Option_globals_.GetClassData();
 }
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-PROTOBUF_NOINLINE void Option::Clear(MessageLite& base) {
+PROTOBUF_NOINLINE void Option::Helpers_::Clear(MessageLite& base) {
   Option& this_ = static_cast<Option&>(base);
 #else   // PROTOBUF_CUSTOM_VTABLE
 PROTOBUF_NOINLINE void Option::Clear() {
@@ -2679,7 +2684,7 @@ PROTOBUF_NOINLINE void Option::Clear() {
 }
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-::uint8_t* PROTOBUF_NONNULL Option::_InternalSerialize(
+::uint8_t* PROTOBUF_NONNULL Option::Helpers_::_InternalSerialize(
     const ::google::protobuf::MessageLite& base, ::uint8_t* PROTOBUF_NONNULL target,
     ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) {
   const Option& this_ = static_cast<const Option&>(base);
@@ -2724,7 +2729,7 @@ PROTOBUF_NOINLINE void Option::Clear() {
 }
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-::size_t Option::ByteSizeLong(const MessageLite& base) {
+::size_t Option::Helpers_::ByteSizeLong(const MessageLite& base) {
   const Option& this_ = static_cast<const Option&>(base);
 #else   // PROTOBUF_CUSTOM_VTABLE
 ::size_t Option::ByteSizeLong() const {

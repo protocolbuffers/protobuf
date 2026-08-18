@@ -131,7 +131,8 @@ constexpr auto Any::InternalGenerateClassData_(
           Super_::GetNewImpl<Any>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           &Any::SharedDtor,
-          &Any::Clear, &Any::ByteSizeLong, &Any::_InternalSerialize,
+          &Helpers_::Clear, &Helpers_::ByteSizeLong,
+              &Helpers_::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
           PROTOBUF_FIELD_OFFSET(Any, _impl_._cached_size_),
           false,
@@ -293,7 +294,7 @@ Any::GetClassData() const {
   return Any_globals_.GetClassData();
 }
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-PROTOBUF_NOINLINE void Any::Clear(MessageLite& base) {
+PROTOBUF_NOINLINE void Any::Helpers_::Clear(MessageLite& base) {
   Any& this_ = static_cast<Any&>(base);
 #else   // PROTOBUF_CUSTOM_VTABLE
 PROTOBUF_NOINLINE void Any::Clear() {
@@ -318,7 +319,7 @@ PROTOBUF_NOINLINE void Any::Clear() {
 }
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-::uint8_t* PROTOBUF_NONNULL Any::_InternalSerialize(
+::uint8_t* PROTOBUF_NONNULL Any::Helpers_::_InternalSerialize(
     const ::google::protobuf::MessageLite& base, ::uint8_t* PROTOBUF_NONNULL target,
     ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) {
   const Any& this_ = static_cast<const Any&>(base);
@@ -364,7 +365,7 @@ PROTOBUF_NOINLINE void Any::Clear() {
 }
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-::size_t Any::ByteSizeLong(const MessageLite& base) {
+::size_t Any::Helpers_::ByteSizeLong(const MessageLite& base) {
   const Any& this_ = static_cast<const Any&>(base);
 #else   // PROTOBUF_CUSTOM_VTABLE
 ::size_t Any::ByteSizeLong() const {

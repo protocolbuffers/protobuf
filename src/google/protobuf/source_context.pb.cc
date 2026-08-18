@@ -118,7 +118,8 @@ constexpr auto SourceContext::InternalGenerateClassData_(
           Super_::GetNewImpl<SourceContext>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           &SourceContext::SharedDtor,
-          &SourceContext::Clear, &SourceContext::ByteSizeLong, &SourceContext::_InternalSerialize,
+          &Helpers_::Clear, &Helpers_::ByteSizeLong,
+              &Helpers_::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
           PROTOBUF_FIELD_OFFSET(SourceContext, _impl_._cached_size_),
           false,
@@ -264,7 +265,7 @@ SourceContext::GetClassData() const {
   return SourceContext_globals_.GetClassData();
 }
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-PROTOBUF_NOINLINE void SourceContext::Clear(MessageLite& base) {
+PROTOBUF_NOINLINE void SourceContext::Helpers_::Clear(MessageLite& base) {
   SourceContext& this_ = static_cast<SourceContext&>(base);
 #else   // PROTOBUF_CUSTOM_VTABLE
 PROTOBUF_NOINLINE void SourceContext::Clear() {
@@ -284,7 +285,7 @@ PROTOBUF_NOINLINE void SourceContext::Clear() {
 }
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-::uint8_t* PROTOBUF_NONNULL SourceContext::_InternalSerialize(
+::uint8_t* PROTOBUF_NONNULL SourceContext::Helpers_::_InternalSerialize(
     const ::google::protobuf::MessageLite& base, ::uint8_t* PROTOBUF_NONNULL target,
     ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) {
   const SourceContext& this_ = static_cast<const SourceContext&>(base);
@@ -322,7 +323,7 @@ PROTOBUF_NOINLINE void SourceContext::Clear() {
 }
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-::size_t SourceContext::ByteSizeLong(const MessageLite& base) {
+::size_t SourceContext::Helpers_::ByteSizeLong(const MessageLite& base) {
   const SourceContext& this_ = static_cast<const SourceContext&>(base);
 #else   // PROTOBUF_CUSTOM_VTABLE
 ::size_t SourceContext::ByteSizeLong() const {

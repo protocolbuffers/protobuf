@@ -120,7 +120,8 @@ constexpr auto Duration::InternalGenerateClassData_(
           Super_::GetNewImpl<Duration>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           &Duration::SharedDtor,
-          &Duration::Clear, &Duration::ByteSizeLong, &Duration::_InternalSerialize,
+          &Helpers_::Clear, &Helpers_::ByteSizeLong,
+              &Helpers_::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
           PROTOBUF_FIELD_OFFSET(Duration, _impl_._cached_size_),
           false,
@@ -260,7 +261,7 @@ Duration::GetClassData() const {
   return Duration_globals_.GetClassData();
 }
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-PROTOBUF_NOINLINE void Duration::Clear(MessageLite& base) {
+PROTOBUF_NOINLINE void Duration::Helpers_::Clear(MessageLite& base) {
   Duration& this_ = static_cast<Duration&>(base);
 #else   // PROTOBUF_CUSTOM_VTABLE
 PROTOBUF_NOINLINE void Duration::Clear() {
@@ -284,7 +285,7 @@ PROTOBUF_NOINLINE void Duration::Clear() {
 }
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-::uint8_t* PROTOBUF_NONNULL Duration::_InternalSerialize(
+::uint8_t* PROTOBUF_NONNULL Duration::Helpers_::_InternalSerialize(
     const ::google::protobuf::MessageLite& base, ::uint8_t* PROTOBUF_NONNULL target,
     ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) {
   const Duration& this_ = static_cast<const Duration&>(base);
@@ -330,7 +331,7 @@ PROTOBUF_NOINLINE void Duration::Clear() {
 }
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-::size_t Duration::ByteSizeLong(const MessageLite& base) {
+::size_t Duration::Helpers_::ByteSizeLong(const MessageLite& base) {
   const Duration& this_ = static_cast<const Duration&>(base);
 #else   // PROTOBUF_CUSTOM_VTABLE
 ::size_t Duration::ByteSizeLong() const {

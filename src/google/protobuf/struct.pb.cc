@@ -125,7 +125,8 @@ constexpr auto ListValue::InternalGenerateClassData_(
           Super_::GetNewImpl<ListValue>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           &ListValue::SharedDtor,
-          &ListValue::Clear, &ListValue::ByteSizeLong, &ListValue::_InternalSerialize,
+          &Helpers_::Clear, &Helpers_::ByteSizeLong,
+              &Helpers_::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
           PROTOBUF_FIELD_OFFSET(ListValue, _impl_._cached_size_),
           false,
@@ -245,7 +246,8 @@ constexpr auto Struct::InternalGenerateClassData_(
           Super_::GetNewImpl<Struct>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           &Struct::SharedDtor,
-          &Struct::Clear, &Struct::ByteSizeLong, &Struct::_InternalSerialize,
+          &Helpers_::Clear, &Helpers_::ByteSizeLong,
+              &Helpers_::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
           PROTOBUF_FIELD_OFFSET(Struct, _impl_._cached_size_),
           false,
@@ -476,7 +478,8 @@ constexpr auto Value::InternalGenerateClassData_(
           Super_::GetNewImpl<Value>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           &Value::SharedDtor,
-          &Value::Clear, &Value::ByteSizeLong, &Value::_InternalSerialize,
+          &Helpers_::Clear, &Helpers_::ByteSizeLong,
+              &Helpers_::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
           PROTOBUF_FIELD_OFFSET(Value, _impl_._cached_size_),
           false,
@@ -694,7 +697,7 @@ Struct::GetClassData() const {
   return Struct_globals_.GetClassData();
 }
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-PROTOBUF_NOINLINE void Struct::Clear(MessageLite& base) {
+PROTOBUF_NOINLINE void Struct::Helpers_::Clear(MessageLite& base) {
   Struct& this_ = static_cast<Struct&>(base);
 #else   // PROTOBUF_CUSTOM_VTABLE
 PROTOBUF_NOINLINE void Struct::Clear() {
@@ -714,7 +717,7 @@ PROTOBUF_NOINLINE void Struct::Clear() {
 }
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-::uint8_t* PROTOBUF_NONNULL Struct::_InternalSerialize(
+::uint8_t* PROTOBUF_NONNULL Struct::Helpers_::_InternalSerialize(
     const ::google::protobuf::MessageLite& base, ::uint8_t* PROTOBUF_NONNULL target,
     ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) {
   const Struct& this_ = static_cast<const Struct&>(base);
@@ -771,7 +774,7 @@ PROTOBUF_NOINLINE void Struct::Clear() {
 }
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-::size_t Struct::ByteSizeLong(const MessageLite& base) {
+::size_t Struct::Helpers_::ByteSizeLong(const MessageLite& base) {
   const Struct& this_ = static_cast<const Struct&>(base);
 #else   // PROTOBUF_CUSTOM_VTABLE
 ::size_t Struct::ByteSizeLong() const {
@@ -1000,7 +1003,7 @@ Value::GetClassData() const {
   return Value_globals_.GetClassData();
 }
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-PROTOBUF_NOINLINE void Value::Clear(MessageLite& base) {
+PROTOBUF_NOINLINE void Value::Helpers_::Clear(MessageLite& base) {
   Value& this_ = static_cast<Value&>(base);
 #else   // PROTOBUF_CUSTOM_VTABLE
 PROTOBUF_NOINLINE void Value::Clear() {
@@ -1016,7 +1019,7 @@ PROTOBUF_NOINLINE void Value::Clear() {
 }
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-::uint8_t* PROTOBUF_NONNULL Value::_InternalSerialize(
+::uint8_t* PROTOBUF_NONNULL Value::Helpers_::_InternalSerialize(
     const ::google::protobuf::MessageLite& base, ::uint8_t* PROTOBUF_NONNULL target,
     ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) {
   const Value& this_ = static_cast<const Value&>(base);
@@ -1084,7 +1087,7 @@ PROTOBUF_NOINLINE void Value::Clear() {
 }
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-::size_t Value::ByteSizeLong(const MessageLite& base) {
+::size_t Value::Helpers_::ByteSizeLong(const MessageLite& base) {
   const Value& this_ = static_cast<const Value&>(base);
 #else   // PROTOBUF_CUSTOM_VTABLE
 ::size_t Value::ByteSizeLong() const {
@@ -1299,7 +1302,7 @@ ListValue::GetClassData() const {
   return ListValue_globals_.GetClassData();
 }
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-PROTOBUF_NOINLINE void ListValue::Clear(MessageLite& base) {
+PROTOBUF_NOINLINE void ListValue::Helpers_::Clear(MessageLite& base) {
   ListValue& this_ = static_cast<ListValue&>(base);
 #else   // PROTOBUF_CUSTOM_VTABLE
 PROTOBUF_NOINLINE void ListValue::Clear() {
@@ -1319,7 +1322,7 @@ PROTOBUF_NOINLINE void ListValue::Clear() {
 }
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-::uint8_t* PROTOBUF_NONNULL ListValue::_InternalSerialize(
+::uint8_t* PROTOBUF_NONNULL ListValue::Helpers_::_InternalSerialize(
     const ::google::protobuf::MessageLite& base, ::uint8_t* PROTOBUF_NONNULL target,
     ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) {
   const ListValue& this_ = static_cast<const ListValue&>(base);
@@ -1359,7 +1362,7 @@ PROTOBUF_NOINLINE void ListValue::Clear() {
 }
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-::size_t ListValue::ByteSizeLong(const MessageLite& base) {
+::size_t ListValue::Helpers_::ByteSizeLong(const MessageLite& base) {
   const ListValue& this_ = static_cast<const ListValue&>(base);
 #else   // PROTOBUF_CUSTOM_VTABLE
 ::size_t ListValue::ByteSizeLong() const {
