@@ -1166,8 +1166,13 @@ bool ValidateOptionImports(const FileDescriptor& file,
 }  // namespace
 
 namespace {
+bool LoadSourceInfoMap(
+    const std::vector<std::string>& source_info_in_names,
+    absl::flat_hash_map<std::string, SourceCodeInfo>* source_info_map);
 std::unique_ptr<SimpleDescriptorDatabase>
-PopulateSingleSimpleDescriptorDatabase(const std::string& descriptor_set_name);
+PopulateSingleSimpleDescriptorDatabase(
+    const std::string& descriptor_set_name,
+    const absl::flat_hash_map<std::string, SourceCodeInfo>& source_info_map);
 
 // Indicates whether the field is compatible with the given target type.
 bool IsFieldCompatible(const FieldDescriptor& field,
@@ -1342,9 +1347,16 @@ int CommandLineInterface::Run(int argc, const char* const argv[]) {
   // Any --descriptor_set_in FileDescriptorSet objects will be used as a
   // fallback to input_files on command line, so create that db first.
   if (!descriptor_set_in_names_.empty()) {
+    absl::flat_hash_map<std::string, SourceCodeInfo> source_info_map;
+    if (!source_info_in_names_.empty()) {
+      if (!LoadSourceInfoMap(source_info_in_names_, &source_info_map)) {
+        return EXIT_FAILURE;
+      }
+    }
+
     for (const std::string& name : descriptor_set_in_names_) {
       std::unique_ptr<SimpleDescriptorDatabase> database_for_descriptor_set =
-          PopulateSingleSimpleDescriptorDatabase(name);
+          PopulateSingleSimpleDescriptorDatabase(name, source_info_map);
       if (!database_for_descriptor_set) {
         return EXIT_FAILURE;
       }
@@ -1553,6 +1565,12 @@ int CommandLineInterface::Run(int argc, const char* const argv[]) {
     }
   }
 
+  if (!source_info_out_name_.empty()) {
+    if (!WriteSourceInfoDescriptorSet(parsed_files)) {
+      return 1;
+    }
+  }
+
   if (!edition_defaults_out_name_.empty()) {
     if (!WriteEditionDefaults(*descriptor_pool)) {
       return 1;
@@ -1623,27 +1641,111 @@ bool CommandLineInterface::InitializeDiskSourceTree(
 }
 
 namespace {
-std::unique_ptr<SimpleDescriptorDatabase>
-PopulateSingleSimpleDescriptorDatabase(const std::string& descriptor_set_name) {
+bool ReadDescriptorSetFile(const std::string& filename,
+                           FileDescriptorSet* file_descriptor_set) {
   int fd;
   do {
-    fd = open(descriptor_set_name.c_str(), O_RDONLY | O_BINARY);
+    fd = open(filename.c_str(), O_RDONLY | O_BINARY);
   } while (fd < 0 && errno == EINTR);
   if (fd < 0) {
-    std::cerr << descriptor_set_name << ": " << strerror(ENOENT) << std::endl;
-    return nullptr;
+    std::cerr << filename << ": " << strerror(ENOENT) << std::endl;
+    return false;
   }
 
-  FileDescriptorSet file_descriptor_set;
-  bool parsed = file_descriptor_set.ParseFromFileDescriptor(fd);
+  bool parsed = file_descriptor_set->ParseFromFileDescriptor(fd);
   if (close(fd) != 0) {
-    std::cerr << descriptor_set_name << ": close: " << strerror(errno)
-              << std::endl;
-    return nullptr;
+    std::cerr << filename << ": close: " << strerror(errno) << std::endl;
+    return false;
   }
 
   if (!parsed) {
-    std::cerr << descriptor_set_name << ": Unable to parse." << std::endl;
+    std::cerr << filename << ": Unable to parse." << std::endl;
+    return false;
+  }
+
+  return true;
+}
+
+bool WriteDescriptorSetFile(const std::string& filename,
+                            const FileDescriptorSet& file_set) {
+  int fd;
+  do {
+    fd = open(filename.c_str(), O_WRONLY | O_CREAT | O_TRUNC | O_BINARY, 0666);
+  } while (fd < 0 && errno == EINTR);
+
+  if (fd < 0) {
+    perror(filename.c_str());
+    return false;
+  }
+
+  io::FileOutputStream out(fd);
+
+  {
+    io::CodedOutputStream coded_out(&out);
+    // Determinism is useful here because build outputs are sometimes checked
+    // into version control.
+    coded_out.SetSerializationDeterministic(true);
+    if (!file_set.SerializeToCodedStream(&coded_out)) {
+      std::cerr << filename << ": " << strerror(out.GetErrno()) << std::endl;
+      out.Close();
+      return false;
+    }
+  }
+
+  if (!out.Close()) {
+    std::cerr << filename << ": " << strerror(out.GetErrno()) << std::endl;
+    return false;
+  }
+
+  return true;
+}
+
+bool LoadSourceInfoMap(
+    const std::vector<std::string>& source_info_in_names,
+    absl::flat_hash_map<std::string, SourceCodeInfo>* source_info_map) {
+  for (const std::string& name : source_info_in_names) {
+    FileDescriptorSet file_descriptor_set;
+    if (!ReadDescriptorSetFile(name, &file_descriptor_set)) {
+      return false;
+    }
+
+    for (int j = 0; j < file_descriptor_set.file_size(); j++) {
+      const FileDescriptorProto& file = file_descriptor_set.file(j);
+      const Reflection* reflection = file.GetReflection();
+      std::vector<const FieldDescriptor*> fields;
+      reflection->ListFields(file, &fields);
+      for (const FieldDescriptor* field : fields) {
+        if (field->number() != FileDescriptorProto::kNameFieldNumber &&
+            field->number() !=
+                FileDescriptorProto::kSourceCodeInfoFieldNumber) {
+          std::cerr << name << ": FileDescriptorProto for \"" << file.name()
+                    << "\" in --source_info_in contains unexpected field \""
+                    << field->name()
+                    << "\". Only 'name' and 'source_code_info' are allowed."
+                    << std::endl;
+          return false;
+        }
+      }
+      if (!reflection->GetUnknownFields(file).empty()) {
+        std::cerr << name << ": FileDescriptorProto for \"" << file.name()
+                  << "\" in --source_info_in contains unknown fields."
+                  << std::endl;
+        return false;
+      }
+      if (file.has_source_code_info()) {
+        source_info_map->insert_or_assign(file.name(), file.source_code_info());
+      }
+    }
+  }
+  return true;
+}
+
+std::unique_ptr<SimpleDescriptorDatabase>
+PopulateSingleSimpleDescriptorDatabase(
+    const std::string& descriptor_set_name,
+    const absl::flat_hash_map<std::string, SourceCodeInfo>& source_info_map) {
+  FileDescriptorSet file_descriptor_set;
+  if (!ReadDescriptorSetFile(descriptor_set_name, &file_descriptor_set)) {
     return nullptr;
   }
 
@@ -1651,13 +1753,20 @@ PopulateSingleSimpleDescriptorDatabase(const std::string& descriptor_set_name) {
       std::make_unique<SimpleDescriptorDatabase>();
 
   for (int j = 0; j < file_descriptor_set.file_size(); j++) {
+    FileDescriptorProto* file_proto = file_descriptor_set.mutable_file(j);
     FileDescriptorProto previously_added_file_descriptor_proto;
-    if (database->FindFileByName(file_descriptor_set.file(j).name(),
+    if (database->FindFileByName(file_proto->name(),
                                  &previously_added_file_descriptor_proto)) {
       // already present - skip
       continue;
     }
-    if (!database->Add(file_descriptor_set.file(j))) {
+    if (!file_proto->has_source_code_info()) {
+      auto it = source_info_map.find(file_proto->name());
+      if (it != source_info_map.end()) {
+        *file_proto->mutable_source_code_info() = it->second;
+      }
+    }
+    if (!database->Add(*file_proto)) {
       return nullptr;
     }
   }
@@ -1845,7 +1954,9 @@ void CommandLineInterface::Clear() {
   output_directives_.clear();
   codec_type_.clear();
   descriptor_set_in_names_.clear();
+  source_info_in_names_.clear();
   descriptor_set_out_name_.clear();
+  source_info_out_name_.clear();
   dependency_out_name_.clear();
 
   experimental_editions_ = false;
@@ -2106,6 +2217,23 @@ CommandLineInterface::ParseArgumentStatus CommandLineInterface::ParseArguments(
     std::cerr << "Missing input file." << std::endl;
     return PARSE_ARGUMENT_FAIL;
   }
+  if (!source_info_in_names_.empty() && descriptor_set_in_names_.empty()) {
+    std::cerr << "--source_info_in only makes sense when combined with "
+                 "--descriptor_set_in."
+              << std::endl;
+    return PARSE_ARGUMENT_FAIL;
+  }
+  if (!source_info_out_name_.empty() && descriptor_set_out_name_.empty()) {
+    std::cerr << "--source_info_out only makes sense when combined with "
+                 "--descriptor_set_out."
+              << std::endl;
+    return PARSE_ARGUMENT_FAIL;
+  }
+  if (source_info_in_descriptor_set_ && !source_info_out_name_.empty()) {
+    std::cerr << "Cannot use both --include_source_info and --source_info_out."
+              << std::endl;
+    return PARSE_ARGUMENT_FAIL;
+  }
   if (mode_ == MODE_COMPILE && output_directives_.empty() &&
       descriptor_set_out_name_.empty() && edition_defaults_out_name_.empty()) {
     std::cerr << "Missing output directives." << std::endl;
@@ -2364,6 +2492,24 @@ CommandLineInterface::InterpretArgument(const std::string& name,
         value, absl::ByAnyChar(CommandLineInterface::kPathSeparator),
         absl::SkipEmpty());
 
+  } else if (name == "--source_info_in") {
+    if (!source_info_in_names_.empty()) {
+      std::cerr << name
+                << " may only be passed once. To specify multiple "
+                   "source info sets, pass them all as a single "
+                   "parameter separated by '"
+                << CommandLineInterface::kPathSeparator << "'." << std::endl;
+      return PARSE_ARGUMENT_FAIL;
+    }
+    if (value.empty()) {
+      std::cerr << name << " requires a non-empty value." << std::endl;
+      return PARSE_ARGUMENT_FAIL;
+    }
+
+    source_info_in_names_ = absl::StrSplit(
+        value, absl::ByAnyChar(CommandLineInterface::kPathSeparator),
+        absl::SkipEmpty());
+
   } else if (name == "-o" || name == "--descriptor_set_out") {
     if (!descriptor_set_out_name_.empty()) {
       std::cerr << name << " may only be passed once." << std::endl;
@@ -2381,6 +2527,24 @@ CommandLineInterface::InterpretArgument(const std::string& name,
       return PARSE_ARGUMENT_FAIL;
     }
     descriptor_set_out_name_ = value;
+
+  } else if (name == "--source_info_out") {
+    if (!source_info_out_name_.empty()) {
+      std::cerr << name << " may only be passed once." << std::endl;
+      return PARSE_ARGUMENT_FAIL;
+    }
+    if (value.empty()) {
+      std::cerr << name << " requires a non-empty value." << std::endl;
+      return PARSE_ARGUMENT_FAIL;
+    }
+    if (mode_ != MODE_COMPILE) {
+      std::cerr
+          << "Cannot use --encode or --decode and generate descriptors at the "
+             "same time."
+          << std::endl;
+      return PARSE_ARGUMENT_FAIL;
+    }
+    source_info_out_name_ = value;
 
   } else if (name == "--dependency_out") {
     if (!dependency_out_name_.empty()) {
@@ -2716,9 +2880,16 @@ Parse PROTO_FILES and generate output based on the options given:
                               FileDescriptorSets. If a FileDescriptor
                               appears multiple times, the first occurrence
                               will be used.
+  --source_info_in=FILES      Specifies a delimited list of FILES each
+                              containing a FileDescriptorSet with SourceCodeInfo
+                              to be merged into the descriptor sets loaded via
+                              --descriptor_set_in.
   -oFILE,                     Writes a FileDescriptorSet (a protocol buffer,
     --descriptor_set_out=FILE defined in descriptor.proto) containing all of
                               the input files to FILE.
+  --source_info_out=FILE      Writes a FileDescriptorSet containing only the
+                              name and SourceCodeInfo for each file in the
+                              descriptor set to FILE.
   --include_imports           When using --descriptor_set_out, also include
                               all dependencies of the input files in the
                               set, so that the set is self-contained.
@@ -3312,10 +3483,9 @@ bool CommandLineInterface::EncodeOrDecode(const DescriptorPool* pool) {
   return !(fatal_warnings_ && found_warning);
 }
 
-bool CommandLineInterface::WriteDescriptorSet(
-    const std::vector<const FileDescriptor*>& parsed_files) {
-  FileDescriptorSet file_set;
-
+absl::flat_hash_set<const FileDescriptor*>
+CommandLineInterface::GetDescriptorSetAlreadySeen(
+    const std::vector<const FileDescriptor*>& parsed_files) const {
   absl::flat_hash_set<const FileDescriptor*> already_seen;
   if (!imports_in_descriptor_set_) {
     // Since we don't want to output transitive dependencies, but we do want
@@ -3344,50 +3514,57 @@ bool CommandLineInterface::WriteDescriptorSet(
       }
     }
   }
+  return already_seen;
+}
+
+void CommandLineInterface::GetDescriptorSetFiles(
+    const std::vector<const FileDescriptor*>& parsed_files,
+    const TransitiveDependencyOptions& options,
+    RepeatedPtrField<FileDescriptorProto>* output) const {
+  absl::flat_hash_set<const FileDescriptor*> already_seen =
+      GetDescriptorSetAlreadySeen(parsed_files);
+  for (size_t i = 0; i < parsed_files.size(); ++i) {
+    GetTransitiveOptionDependencies(parsed_files[i], &already_seen, output,
+                                    options);
+    GetTransitiveDependencies(parsed_files[i], &already_seen, output, options);
+  }
+}
+
+bool CommandLineInterface::WriteDescriptorSet(
+    const std::vector<const FileDescriptor*>& parsed_files) {
+  FileDescriptorSet file_set;
   TransitiveDependencyOptions options;
   options.include_json_name = true;
   options.include_source_code_info = source_info_in_descriptor_set_;
   options.retain_options = retain_options_in_descriptor_set_;
-  for (size_t i = 0; i < parsed_files.size(); ++i) {
-    GetTransitiveOptionDependencies(parsed_files[i], &already_seen,
-                                    file_set.mutable_file(), options);
-    GetTransitiveDependencies(parsed_files[i], &already_seen,
-                              file_set.mutable_file(), options);
-  }
 
-  int fd;
-  do {
-    fd = open(descriptor_set_out_name_.c_str(),
-              O_WRONLY | O_CREAT | O_TRUNC | O_BINARY, 0666);
-  } while (fd < 0 && errno == EINTR);
+  GetDescriptorSetFiles(parsed_files, options, file_set.mutable_file());
 
-  if (fd < 0) {
-    perror(descriptor_set_out_name_.c_str());
-    return false;
-  }
+  return WriteDescriptorSetFile(descriptor_set_out_name_, file_set);
+}
 
-  io::FileOutputStream out(fd);
+bool CommandLineInterface::WriteSourceInfoDescriptorSet(
+    const std::vector<const FileDescriptor*>& parsed_files) {
+  FileDescriptorSet file_set;
+  RepeatedPtrField<FileDescriptorProto> full_files;
+  TransitiveDependencyOptions options;
+  options.include_source_code_info = false;
 
-  {
-    io::CodedOutputStream coded_out(&out);
-    // Determinism is useful here because build outputs are sometimes checked
-    // into version control.
-    coded_out.SetSerializationDeterministic(true);
-    if (!file_set.SerializeToCodedStream(&coded_out)) {
-      std::cerr << descriptor_set_out_name_ << ": " << strerror(out.GetErrno())
-                << std::endl;
-      out.Close();
-      return false;
+  GetDescriptorSetFiles(parsed_files, options, &full_files);
+
+  for (const FileDescriptorProto& file_proto : full_files) {
+    const FileDescriptor* file =
+        parsed_files.empty()
+            ? nullptr
+            : parsed_files[0]->pool()->FindFileByName(file_proto.name());
+    FileDescriptorProto* new_descriptor = file_set.add_file();
+    new_descriptor->set_name(file_proto.name());
+    if (file != nullptr) {
+      file->CopySourceCodeInfoTo(new_descriptor);
     }
   }
 
-  if (!out.Close()) {
-    std::cerr << descriptor_set_out_name_ << ": " << strerror(out.GetErrno())
-              << std::endl;
-    return false;
-  }
-
-  return true;
+  return WriteDescriptorSetFile(source_info_out_name_, file_set);
 }
 
 bool CommandLineInterface::WriteEditionDefaults(const DescriptorPool& pool) {
