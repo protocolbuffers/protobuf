@@ -543,8 +543,8 @@ void upb_DecodeFast_InlineMemcpy(void* dst, const char* src, size_t size) {
 // Workaround for b/177688959. We need to ensure that this function never goes
 // through PLT lookup. It follows that this function may not be called by
 // any other cc_library().
-UPB_HIDDEN UPB_PRESERVE_MOST const char* upb_DecodeFast_IsDoneFallback(
-    upb_Decoder* d, const char* ptr);
+__attribute__((visibility("hidden"))) UPB_PRESERVE_MOST const char*
+upb_DecodeFast_IsDoneFallback(upb_Decoder* d, const char* ptr);
 
 UPB_FORCEINLINE
 bool upb_DecodeFast_IsDone(upb_Decoder* d, const char** ptr) {
