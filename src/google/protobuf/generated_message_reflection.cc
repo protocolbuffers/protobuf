@@ -207,8 +207,9 @@ const std::string& NameOfEnum(const EnumDescriptor* PROTOBUF_NONNULL descriptor,
 // reflection information about the names of the enums.  This routine
 // allocates max_val + 1 entries, under the assumption that all the enums
 // fall in the range [min_val .. max_val].
-const std::string** MakeDenseEnumCache(const EnumDescriptor* desc, int min_val,
-                                       int max_val) {
+PROTOBUF_NOINLINE const std::string** MakeDenseEnumCache(
+    const EnumDescriptor* (*descriptor_fn)(), int min_val, int max_val) {
+  const EnumDescriptor* desc = descriptor_fn();
   auto* str_ptrs =
       new const std::string*[static_cast<size_t>(max_val - min_val + 1)]();
   const int count = desc->value_count();
@@ -225,22 +226,6 @@ const std::string** MakeDenseEnumCache(const EnumDescriptor* desc, int min_val,
     if (str_ptrs[i] == nullptr) str_ptrs[i] = &GetEmptyStringAlreadyInited();
   }
   return str_ptrs;
-}
-
-PROTOBUF_NOINLINE const std::string& NameOfDenseEnumSlow(
-    int v, DenseEnumCacheInfo* deci) {
-  if (v < deci->min_val || v > deci->max_val)
-    return GetEmptyStringAlreadyInited();
-
-  // Use run_once to avoid a race condition in initializing the cache.
-  absl::call_once(deci->loaded, [deci]() {
-    const std::string** new_cache =
-        MakeDenseEnumCache(deci->descriptor_fn(), deci->min_val, deci->max_val);
-    // Atomically publish the cache. Doing this inside the call_once ensures
-    // that no thread sees the uninitialized or partially initialized cache.
-    deci->cache.store(new_cache, std::memory_order_release);
-  });
-  return *deci->cache.load(std::memory_order_acquire)[v - deci->min_val];
 }
 
 bool IsMatchingCType(const FieldDescriptor* field, int ctype) {

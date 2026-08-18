@@ -327,15 +327,8 @@ struct PROTOBUF_EXPORT AddDescriptorsRunner {
 const Message* GetPrototypeForWeakDescriptor(const DescriptorTable* table,
                                              int index, bool force_build);
 
-struct DenseEnumCacheInfo {
-  absl::once_flag loaded;
-  std::atomic<const std::string**> cache;
-  int min_val;
-  int max_val;
-  const EnumDescriptor* (*descriptor_fn)();
-};
-PROTOBUF_EXPORT const std::string& NameOfDenseEnumSlow(int v,
-                                                       DenseEnumCacheInfo*);
+const std::string** MakeDenseEnumCache(const EnumDescriptor* (*descriptor_fn)(),
+                                       int min_val, int max_val);
 
 // Similar to the routine NameOfEnum, this routine returns the name of an enum.
 // Unlike that routine, it allocates, on-demand, a block of pointers to the
@@ -345,15 +338,35 @@ PROTOBUF_EXPORT const std::string& NameOfDenseEnumSlow(int v,
 template <const EnumDescriptor* (*descriptor_fn)(), int min_val, int max_val>
 const std::string& NameOfDenseEnum(int v) {
   static_assert(max_val - min_val >= 0, "Too many enums between min and max.");
-  static DenseEnumCacheInfo deci = {/* once_flag */ {}, /* atomic ptr */ {},
-                                    min_val, max_val, descriptor_fn};
-  if (ABSL_PREDICT_TRUE(v >= min_val && v <= max_val)) {
-    const std::string** cache = deci.cache.load(std::memory_order_acquire);
-    if (ABSL_PREDICT_TRUE(cache != nullptr)) {
-      return *cache[v - min_val];
-    }
+  if (ABSL_PREDICT_FALSE(v < min_val || v > max_val)) {
+    // Prevent the compiler from pre-loading the empty string.
+    // Otherwise, it adds an instruction to every in-bounds-call (adding ~5%
+    // to cpu).
+    // We expect to see many more in-bounds calls than out-of-bounds calls, so
+    // this is a net win.
+    ABSL_BLOCK_TAIL_CALL_OPTIMIZATION();
+    return GetEmptyStringAlreadyInited();
   }
-  return NameOfDenseEnumSlow(v, &deci);
+  static absl::once_flag loaded;
+  static std::atomic<const std::string**> atomic_cache;
+  const std::string** cache = atomic_cache.load(std::memory_order_acquire);
+  if (ABSL_PREDICT_TRUE(cache != nullptr)) {
+    // Cache is already initialized.
+    return *cache[v - min_val];
+  } else {
+    // Cache is not initialized.
+    // Use run_once to avoid a race condition in initializing the cache.
+    absl::call_once(loaded, []() {
+      // Atomically publish the cache. Doing this inside the call_once ensures
+      // that no other thread sees the uninitialized or partially initialized
+      // cache.
+      atomic_cache.store(MakeDenseEnumCache(descriptor_fn, min_val, max_val),
+                         std::memory_order_release);
+    });
+    // Reload the cache after the call_once to ensure we see the published
+    // value.
+    return *atomic_cache.load(std::memory_order_acquire)[v - min_val];
+  }
 }
 
 // Returns whether this type of field is stored in the split struct as a raw
