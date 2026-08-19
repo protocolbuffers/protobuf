@@ -268,10 +268,12 @@ void ImmutableMapFieldLiteGenerator::GenerateMembers(
                  "}\n"
                  "private com.google.protobuf.MapFieldLite<$type_parameters$>\n"
                  "internalGetMutable$capitalized_name$() {\n"
-                 "  if (!$name$_.isMutable()) {\n"
-                 "    $name$_ = $name$_.mutableCopy();\n"
+                 "  com.google.protobuf.MapFieldLite<$type_parameters$> tmp =\n"
+                 "      $name$_;\n"
+                 "  if (!tmp.isMutable()) {\n"
+                 "    $name$_ = tmp = tmp.mutableCopy();\n"
                  "  }\n"
-                 "  return $name$_;\n"
+                 "  return tmp;\n"
                  "}\n");
   printer->Print(variables_,
                  "@java.lang.Override\n"
@@ -339,8 +341,9 @@ void ImmutableMapFieldLiteGenerator::GenerateMembers(
         "  $key_null_check$\n"
         "  java.util.Map<$boxed_key_type$, $boxed_value_type$> map =\n"
         "      internalGet$capitalized_name$();\n"
-        "  return map.containsKey(key)\n"
-        "         ? $name$ValueConverter.doForward(map.get(key))\n"
+        "  $boxed_value_type$ val = map.get(key);\n"
+        "  return val != null\n"
+        "         ? $name$ValueConverter.doForward(val)\n"
         "         : defaultValue;\n"
         "}\n");
     printer->Annotate("{", "}", descriptor_);
@@ -354,10 +357,11 @@ void ImmutableMapFieldLiteGenerator::GenerateMembers(
         "  $key_null_check$\n"
         "  java.util.Map<$boxed_key_type$, $boxed_value_type$> map =\n"
         "      internalGet$capitalized_name$();\n"
-        "  if (!map.containsKey(key)) {\n"
+        "  $boxed_value_type$ val = map.get(key);\n"
+        "  if (val == null) {\n"
         "    throw new java.lang.IllegalArgumentException();\n"
         "  }\n"
-        "  return $name$ValueConverter.doForward(map.get(key));\n"
+        "  return $name$ValueConverter.doForward(val);\n"
         "}\n");
     printer->Annotate("{", "}", descriptor_);
     if (SupportUnknownEnumValue(value)) {
@@ -396,7 +400,8 @@ void ImmutableMapFieldLiteGenerator::GenerateMembers(
           "  $key_null_check$\n"
           "  java.util.Map<$boxed_key_type$, $boxed_value_type$> map =\n"
           "      internalGet$capitalized_name$();\n"
-          "  return map.containsKey(key) ? map.get(key) : defaultValue;\n"
+          "  $boxed_value_type$ val = map.get(key);\n"
+          "  return val != null ? val : defaultValue;\n"
           "}\n");
       printer->Annotate("{", "}", descriptor_);
       WriteFieldDocComment(printer, descriptor_, context_->options());
@@ -409,10 +414,11 @@ void ImmutableMapFieldLiteGenerator::GenerateMembers(
           "  $key_null_check$\n"
           "  java.util.Map<$boxed_key_type$, $boxed_value_type$> map =\n"
           "      internalGet$capitalized_name$();\n"
-          "  if (!map.containsKey(key)) {\n"
+          "  $boxed_value_type$ val = map.get(key);\n"
+          "  if (val == null) {\n"
           "    throw new java.lang.IllegalArgumentException();\n"
           "  }\n"
-          "  return map.get(key);\n"
+          "  return val;\n"
           "}\n");
       printer->Annotate("{", "}", descriptor_);
     }
@@ -532,19 +538,18 @@ void ImmutableMapFieldLiteGenerator::GenerateBuilderMembers(
                  "@java.lang.Override\n"
                  "$deprecation$\n"
                  "public int ${$get$capitalized_name$Count$}$() {\n"
-                 "  return instance.get$capitalized_name$Map().size();\n"
+                 "  return instance.get$capitalized_name$Count();\n"
                  "}\n");
   printer->Annotate("{", "}", descriptor_);
   WriteFieldDocComment(printer, descriptor_, context_->options());
-  printer->Print(
-      variables_,
-      "@java.lang.Override\n"
-      "$deprecation$\n"
-      "public boolean ${$contains$capitalized_name$$}$(\n"
-      "    $key_type$ key) {\n"
-      "  $key_null_check$\n"
-      "  return instance.get$capitalized_name$Map().containsKey(key);\n"
-      "}\n");
+  printer->Print(variables_,
+                 "@java.lang.Override\n"
+                 "$deprecation$\n"
+                 "public boolean ${$contains$capitalized_name$$}$(\n"
+                 "    $key_type$ key) {\n"
+                 "  $key_null_check$\n"
+                 "  return instance.contains$capitalized_name$(key);\n"
+                 "}\n");
   printer->Annotate("{", "}", descriptor_);
   printer->Print(variables_,
                  "$deprecation$\n"
@@ -600,11 +605,7 @@ void ImmutableMapFieldLiteGenerator::GenerateBuilderMembers(
         "    $key_type$ key,\n"
         "    $value_enum_type_pass_through_nullness$ defaultValue) {\n"
         "  $key_null_check$\n"
-        "  java.util.Map<$boxed_key_type$, $value_enum_type$> map =\n"
-        "      instance.get$capitalized_name$Map();\n"
-        "  return map.containsKey(key)\n"
-        "         ? map.get(key)\n"
-        "         : defaultValue;\n"
+        "  return instance.get$capitalized_name$OrDefault(key, defaultValue);\n"
         "}\n");
     printer->Annotate("{", "}", descriptor_);
     WriteFieldDocComment(printer, descriptor_, context_->options());
@@ -615,12 +616,7 @@ void ImmutableMapFieldLiteGenerator::GenerateBuilderMembers(
         "public $value_enum_type$ ${$get$capitalized_name$OrThrow$}$(\n"
         "    $key_type$ key) {\n"
         "  $key_null_check$\n"
-        "  java.util.Map<$boxed_key_type$, $value_enum_type$> map =\n"
-        "      instance.get$capitalized_name$Map();\n"
-        "  if (!map.containsKey(key)) {\n"
-        "    throw new java.lang.IllegalArgumentException();\n"
-        "  }\n"
-        "  return map.get(key);\n"
+        "  return instance.get$capitalized_name$OrThrow(key);\n"
         "}\n");
     printer->Annotate("{", "}", descriptor_);
     WriteFieldDocComment(printer, descriptor_, context_->options());
@@ -671,19 +667,17 @@ void ImmutableMapFieldLiteGenerator::GenerateBuilderMembers(
           "}\n");
       printer->Annotate("{", "}", descriptor_);
       WriteFieldDocComment(printer, descriptor_, context_->options());
-      printer->Print(
-          variables_,
-          "@java.lang.Override\n"
-          "$deprecation$\n"
-          "public $value_type_pass_through_nullness$ "
-          "${$get$capitalized_name$ValueOrDefault$}$(\n"
-          "    $key_type$ key,\n"
-          "    $value_type_pass_through_nullness$ defaultValue) {\n"
-          "  $key_null_check$\n"
-          "  java.util.Map<$boxed_key_type$, $boxed_value_type$> map =\n"
-          "      instance.get$capitalized_name$ValueMap();\n"
-          "  return map.containsKey(key) ? map.get(key) : defaultValue;\n"
-          "}\n");
+      printer->Print(variables_,
+                     "@java.lang.Override\n"
+                     "$deprecation$\n"
+                     "public $value_type_pass_through_nullness$ "
+                     "${$get$capitalized_name$ValueOrDefault$}$(\n"
+                     "    $key_type$ key,\n"
+                     "    $value_type_pass_through_nullness$ defaultValue) {\n"
+                     "  $key_null_check$\n"
+                     "  return instance.get$capitalized_name$ValueOrDefault(\n"
+                     "      key, defaultValue);\n"
+                     "}\n");
       printer->Annotate("{", "}", descriptor_);
       WriteFieldDocComment(printer, descriptor_, context_->options());
       printer->Print(
@@ -693,12 +687,7 @@ void ImmutableMapFieldLiteGenerator::GenerateBuilderMembers(
           "public $value_type$ ${$get$capitalized_name$ValueOrThrow$}$(\n"
           "    $key_type$ key) {\n"
           "  $key_null_check$\n"
-          "  java.util.Map<$boxed_key_type$, $boxed_value_type$> map =\n"
-          "      instance.get$capitalized_name$ValueMap();\n"
-          "  if (!map.containsKey(key)) {\n"
-          "    throw new java.lang.IllegalArgumentException();\n"
-          "  }\n"
-          "  return map.get(key);\n"
+          "  return instance.get$capitalized_name$ValueOrThrow(key);\n"
           "}\n");
       printer->Annotate("{", "}", descriptor_);
       WriteFieldDocComment(printer, descriptor_, context_->options());
@@ -758,9 +747,7 @@ void ImmutableMapFieldLiteGenerator::GenerateBuilderMembers(
         "    $key_type$ key,\n"
         "    $value_type_pass_through_nullness$ defaultValue) {\n"
         "  $key_null_check$\n"
-        "  java.util.Map<$type_parameters$> map =\n"
-        "      instance.get$capitalized_name$Map();\n"
-        "  return map.containsKey(key) ? map.get(key) : defaultValue;\n"
+        "  return instance.get$capitalized_name$OrDefault(key, defaultValue);\n"
         "}\n");
     printer->Annotate("{", "}", descriptor_);
     WriteFieldDocComment(printer, descriptor_, context_->options());
@@ -770,12 +757,7 @@ void ImmutableMapFieldLiteGenerator::GenerateBuilderMembers(
                    "public $value_type$ ${$get$capitalized_name$OrThrow$}$(\n"
                    "    $key_type$ key) {\n"
                    "  $key_null_check$\n"
-                   "  java.util.Map<$type_parameters$> map =\n"
-                   "      instance.get$capitalized_name$Map();\n"
-                   "  if (!map.containsKey(key)) {\n"
-                   "    throw new java.lang.IllegalArgumentException();\n"
-                   "  }\n"
-                   "  return map.get(key);\n"
+                   "  return instance.get$capitalized_name$OrThrow(key);\n"
                    "}\n");
     printer->Annotate("{", "}", descriptor_);
     WriteFieldDocComment(printer, descriptor_, context_->options());
