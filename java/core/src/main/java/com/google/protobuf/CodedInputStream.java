@@ -1438,7 +1438,7 @@ public abstract class CodedInputStream {
 
     @Override
     public int countPackedVarints(int length) {
-      if (length < 0 || length > limit - pos) {
+      if (length <= 0 || length > limit - pos) {
         return 0;
       }
       if (Android.isOnAndroidDevice()) {
