@@ -118,6 +118,26 @@ TEST(CompareTest, UnknownFieldsOrdering) {
           {{1, Group({{2, Group({{4, Fixed64(123)}, {3, Fixed32(456)}})}})}}));
 }
 
+TEST(CompareTest, ManyUnsortedFields) {
+  // Enough fields to grow the sort scratch buffer through several doublings.
+  // uf1 is in descending tag order (forcing a sort) and uf2 is the ascending
+  // permutation with identical values, so they compare equal.
+  WireMessage descending;
+  WireMessage ascending;
+  const uint32_t n = 300;
+  for (uint32_t i = 0; i < n; i++) {
+    descending.push_back({n - i, Varint(i)});
+    ascending.push_back({i + 1, Varint(n - 1 - i)});
+  }
+  EXPECT_EQ(kUpb_UnknownCompareResult_Equal,
+            CompareUnknown(descending, ascending));
+
+  // Flip a single value and the comparison must report inequality.
+  ascending[n / 2].value = Varint(0xdeadbeef);
+  EXPECT_EQ(kUpb_UnknownCompareResult_NotEqual,
+            CompareUnknown(descending, ascending));
+}
+
 TEST(CompareTest, LongVarint) {
   EXPECT_EQ(kUpb_UnknownCompareResult_Equal,
             CompareUnknownWithMaxDepth({{1, Varint(123)}, {2, Varint(456)}},
