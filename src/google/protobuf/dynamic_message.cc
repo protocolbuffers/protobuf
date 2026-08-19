@@ -395,33 +395,12 @@ struct DynamicMessageFactory::TypeInfo {
   std::unique_ptr<uint32_t[]> offsets;
   std::unique_ptr<uint32_t[]> has_bits_indices;
 
-#ifndef PROTOBUF_MESSAGE_GLOBALS
-  internal::ClassDataFull class_data = {
-      internal::ClassData{
-          nullptr,  // default_instance
-          nullptr,  // tc_table
-          &DynamicMessage::IsInitializedImpl,
-          &DynamicMessage::MergeImpl,
-          internal::MessageCreator(),  // to be filled later
-          &DynamicMessage::DestroyImpl,
-          &DynamicMessage::ClearImpl,
-          DynamicMessage::ByteSizeLongImpl,
-          DynamicMessage::_InternalSerializeImpl,
-          PROTOBUF_FIELD_OFFSET(DynamicMessage, cached_byte_size_),
-          false,
-      },
-      &internal::kDescriptorMethods,
-      nullptr,  // descriptor_table
-      nullptr,  // get_metadata_tracker
-  };
-#else   // !PROTOBUF_MESSAGE_GLOBALS
   DynamicMessageGlobalsInternalType* globals = nullptr;
   internal::ReflectionData reflection_data = {
       &internal::kDescriptorMethods,
       nullptr,  // descriptor_table
       nullptr,  // get_metadata_tracker
   };
-#endif  // PROTOBUF_MESSAGE_GLOBALS
 
   TypeInfo() = default;
 
@@ -432,8 +411,7 @@ struct DynamicMessageFactory::TypeInfo {
   ~TypeInfo() {
     const auto& class_data = globals->class_data;
     DynamicMessage::DestroyImpl(const_cast<Message&>(*GetPrototype()));
-    // With PROTOBUF_MESSAGE_GLOBALS, deleting globals means deleting
-    // class_data. Access class_data beforehand.
+    // Deleting globals means deleting class_data. Access class_data beforehand.
     delete class_data.reflection();
     auto* type = class_data.descriptor();
     internal::SizedDelete(
@@ -470,9 +448,6 @@ DynamicMessage::DynamicMessage(DynamicMessageFactory::TypeInfo* type_info,
   // created, which needs the address of the prototype of Foo (the value in
   // map). To break the cyclic dependency, we have to assign the address of
   // prototype into type_info first.
-#ifndef PROTOBUF_MESSAGE_GLOBALS
-  type_info->MutableClassDataFull().prototype = this;
-#endif  // PROTOBUF_MESSAGE_GLOBALS
   SharedCtor(lock_factory);
 }
 
