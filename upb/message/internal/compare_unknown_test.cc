@@ -286,8 +286,8 @@ TEST(CompareTest, MessageIsEqualWithNonCanonicalExtensionMatchingRawUnknown) {
   // 4. Create msg2 with raw unknown bytes representing A
   upb_test_ModelWithExtensions* msg2 =
       upb_test_ModelWithExtensions_new(arena.ptr());
-  UPB_PRIVATE(_upb_Message_AddUnknown)(UPB_UPCAST(msg2), buf, size, arena.ptr(),
-                                       kUpb_AddUnknown_Copy);
+  EXPECT_TRUE(UPB_PRIVATE(_upb_Message_AddUnknown)(
+      UPB_UPCAST(msg2), buf, size, arena.ptr(), kUpb_AddUnknown_Copy));
 
   // 5. Verify they compare equal under IncludeUnknownFields
   bool is_equal = upb_Message_IsEqual(UPB_UPCAST(msg1), UPB_UPCAST(msg2),
@@ -326,8 +326,8 @@ TEST(CompareTest, MessageSetNonCanonicalExtMatchesUnknown) {
 
   // 4. Create msg2 with raw unknown bytes representing A
   upb_test_TestMessageSet* msg2 = upb_test_TestMessageSet_new(arena.ptr());
-  UPB_PRIVATE(_upb_Message_AddUnknown)(UPB_UPCAST(msg2), buf, size, arena.ptr(),
-                                       kUpb_AddUnknown_Copy);
+  EXPECT_TRUE(UPB_PRIVATE(_upb_Message_AddUnknown)(
+      UPB_UPCAST(msg2), buf, size, arena.ptr(), kUpb_AddUnknown_Copy));
 
   // 5. Verify they compare equal under IncludeUnknownFields
   bool is_equal = upb_Message_IsEqual(UPB_UPCAST(msg1), UPB_UPCAST(msg2),

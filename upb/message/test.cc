@@ -968,9 +968,9 @@ TEST(MessageTest, DiscardUnknownsNonCanonicalExtensions) {
 
   // Add some standard raw unknown bytes
   char raw_unknown[] = "\x08\x96\x01";  // tag 1 = 150
-  UPB_PRIVATE(_upb_Message_AddUnknown)(UPB_UPCAST(msg), raw_unknown,
-                                       sizeof(raw_unknown) - 1, arena.ptr(),
-                                       kUpb_AddUnknown_Copy);
+  EXPECT_TRUE(UPB_PRIVATE(_upb_Message_AddUnknown)(
+      UPB_UPCAST(msg), raw_unknown, sizeof(raw_unknown) - 1, arena.ptr(),
+      kUpb_AddUnknown_Copy));
 
   // Verify both are present initially
   {
