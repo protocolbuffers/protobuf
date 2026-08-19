@@ -12,11 +12,14 @@ load("@proto_bazel_features//:features.bzl", "bazel_features")
 load("//bazel/common:proto_common.bzl", "proto_common")
 load("//bazel/common:proto_info.bzl", "ProtoInfo")
 load("//bazel/common:proto_lang_toolchain_info.bzl", "ProtoLangToolchainInfo")
+load("//bazel/private:proto_plugin_rule.bzl", "ProtoPluginInfo")
 load("//bazel/private:toolchain_helpers.bzl", "toolchains")
 
 def _rule_impl(ctx):
     if ctx.attr.blacklisted_protos and ctx.attr.denylisted_protos:
         fail("Only one of 'denylisted_protos' and 'blacklisted_protos' can be set (prefer 'denylisted_protos').")
+    if ctx.attr.plugin != None and ctx.attr.plugins:
+        fail("Only one of 'plugin' and 'plugins' can be set.")
     denylisted_protos = ctx.attr.denylisted_protos or ctx.attr.blacklisted_protos
     provided_proto_sources = depset(transitive = [bp[ProtoInfo].transitive_sources for bp in denylisted_protos]).to_list()
 
@@ -44,6 +47,7 @@ def _rule_impl(ctx):
         output_files = ctx.attr.output_files,
         plugin_format_flag = ctx.attr.plugin_format_flag,
         plugin = plugin,
+        plugins = [p[ProtoPluginInfo] for p in ctx.attr.plugins],
         runtime = ctx.attr.runtime,
         provided_proto_sources = provided_proto_sources,
         proto_compiler = proto_compiler,
@@ -116,7 +120,20 @@ The value must contain a single %s which is replaced with plugin executable.
             doc = """
 If provided, will be made available to the action that calls the proto-compiler, and will be
 passed to the proto-compiler:
-<code>--plugin=protoc-gen-PLUGIN=&lt;executable&gt;.</code>""",
+<code>--plugin=protoc-gen-PLUGIN=&lt;executable&gt;.</code>
+Mutually exclusive with <code>plugins</code>.""",
+        ),
+        "plugins": attr.label_list(
+            cfg = "exec",
+            providers = [ProtoPluginInfo],
+            doc = """
+<code>proto_plugin</code> targets to run in the same proto-compiler invocation.
+Mutually exclusive with <code>plugin</code>.
+Each plugin will be made available to the action and passed to the proto-compiler as
+<code>--plugin=protoc-gen-&lt;name&gt;=&lt;executable&gt;</code> together with
+<code>--&lt;name&gt;_out</code> pointing at the same output location as <code>$(OUT)</code>
+in <code>command_line</code>, so plugins can add to the primary generator's output via
+insertion points.""",
         ),
         "runtime": attr.label(doc = """
 A language-specific library that the generated code is compiled against.

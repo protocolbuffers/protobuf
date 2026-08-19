@@ -197,6 +197,12 @@ def _compile(
     if proto_lang_toolchain_info.plugin:
         tools.append(proto_lang_toolchain_info.plugin)
         args.add(proto_lang_toolchain_info.plugin.executable, format = proto_lang_toolchain_info.plugin_format_flag)
+    for plugin in getattr(proto_lang_toolchain_info, "plugins", []):
+        if plugin.plugin:
+            tools.append(plugin.plugin)
+            args.add(plugin.plugin.executable, format = "--plugin=protoc-gen-%s=%%s" % plugin.name)
+        if plugin_output:
+            args.add(plugin_output, format = "--%s_out=%%s" % plugin.name)
 
     # Protoc searches for .protos -I paths in order they are given and then
     # uses the path within the directory as the package.

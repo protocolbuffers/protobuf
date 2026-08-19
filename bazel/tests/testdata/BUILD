@@ -2,6 +2,7 @@ load("@rules_cc//cc:cc_binary.bzl", "cc_binary")
 load("@rules_cc//cc:defs.bzl", "cc_library")
 load("//bazel:proto_library.bzl", "proto_library")
 load("//bazel/toolchains:proto_lang_toolchain.bzl", "proto_lang_toolchain")
+load("//bazel/toolchains:proto_plugin.bzl", "proto_plugin")
 
 package(
     default_applicable_licenses = ["//:license"],
@@ -31,6 +32,47 @@ proto_lang_toolchain(
     mnemonic = "MyMnemonic",
     progress_message = "Progress Message %{label}",
     runtime = ":runtime",
+    tags = [
+        "manual",
+        "nobuilder",
+        "notap",
+    ],
+)
+
+proto_lang_toolchain(
+    name = "toolchain_plugins",
+    blacklisted_protos = [":denied"],
+    command_line = "--java_out=param1,param2:$(OUT)",
+    mnemonic = "MyMnemonic",
+    plugins = [
+        ":grpc_plugin",
+        ":builtin",
+    ],
+    progress_message = "Progress Message %{label}",
+    runtime = ":runtime",
+    tags = [
+        "manual",
+        "nobuilder",
+        "notap",
+    ],
+)
+
+# A plugin with its own executable, whose protoc name differs from its target name.
+proto_plugin(
+    name = "grpc_plugin",
+    plugin_name = "grpc",
+    runtime = ":plugin",
+    tags = [
+        "manual",
+        "nobuilder",
+        "notap",
+    ],
+)
+
+# A plugin that is built into protoc itself, so it has no executable. It has no
+# plugin_name either, so protoc sees it under the target's name.
+proto_plugin(
+    name = "builtin",
     tags = [
         "manual",
         "nobuilder",

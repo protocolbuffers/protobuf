@@ -116,12 +116,21 @@ bzl_library(
 )
 
 bzl_library(
+    name = "proto_plugin_rule_bzl",
+    srcs = [
+        "proto_plugin_rule.bzl",
+    ],
+    visibility = ["//bazel:__subpackages__"],
+)
+
+bzl_library(
     name = "proto_lang_toolchain_rule_bzl",
     srcs = [
         "proto_lang_toolchain_rule.bzl",
     ],
     visibility = ["//bazel:__subpackages__"],
     deps = [
+        ":proto_plugin_rule_bzl",
         ":toolchain_helpers_bzl",
         "//bazel/common:proto_common_bzl",
         "//bazel/common:proto_info_bzl",
