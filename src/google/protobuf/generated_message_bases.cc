@@ -38,7 +38,9 @@ ZeroFieldsBase::~ZeroFieldsBase() {
   _internal_metadata_.Delete<UnknownFieldSet>();
 }
 
-void ZeroFieldsBase::SharedDtor(MessageLite& msg) {
+ZeroFieldsBase::Helpers_::Helpers_() = default;
+
+void ZeroFieldsBase::Helpers_::SharedDtor(MessageLite& msg) {
   static_cast<ZeroFieldsBase&>(msg)
       ._internal_metadata_.Delete<UnknownFieldSet>();
 }
@@ -61,15 +63,16 @@ size_t ZeroFieldsBase::ByteSizeLong(const MessageLite& base) {
   return target;
 }
 
-void ZeroFieldsBase::MergeImpl(MessageLite& to_param,
-                               const MessageLite& from_param) {
+void ZeroFieldsBase::Helpers_::MergeImpl(MessageLite& to_param,
+                                         const MessageLite& from_param) {
   auto* to = static_cast<ZeroFieldsBase*>(&to_param);
   const auto* from = static_cast<const ZeroFieldsBase*>(&from_param);
   ABSL_DCHECK_NE(from, to);
   to->_internal_metadata_.MergeFrom<UnknownFieldSet>(from->_internal_metadata_);
 }
 
-void ZeroFieldsBase::CopyImpl(Message& to_param, const Message& from_param) {
+void ZeroFieldsBase::Helpers_::CopyImpl(Message& to_param,
+                                        const Message& from_param) {
   auto* to = static_cast<ZeroFieldsBase*>(&to_param);
   const auto* from = static_cast<const ZeroFieldsBase*>(&from_param);
   if (from == to) return;
@@ -77,8 +80,10 @@ void ZeroFieldsBase::CopyImpl(Message& to_param, const Message& from_param) {
   to->_internal_metadata_.MergeFrom<UnknownFieldSet>(from->_internal_metadata_);
 }
 
-void ZeroFieldsBase::InternalSwap(ZeroFieldsBase* other) {
-  _internal_metadata_.Swap<UnknownFieldSet>(&other->_internal_metadata_);
+void ZeroFieldsBase::Helpers_::InternalSwap(MessageLite& self,
+                                            ZeroFieldsBase* other) {
+  auto& msg = static_cast<ZeroFieldsBase&>(self);
+  msg._internal_metadata_.Swap<UnknownFieldSet>(&other->_internal_metadata_);
 }
 
 }  // namespace internal

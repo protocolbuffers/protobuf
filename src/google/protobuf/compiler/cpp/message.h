@@ -133,7 +133,7 @@ class MessageGenerator {
   void GenerateAnyMethodDefinition(io::Printer* p);
   void GenerateImplDefinition(io::Printer* p);
   void GenerateClassSpecificMergeImpl(io::Printer* p);
-  void GenerateCopyFrom(io::Printer* p);
+  void GenerateCopyImpl(io::Printer* p);
   void GenerateSwap(io::Printer* p);
   void GenerateIsInitialized(io::Printer* p);
   bool NeedsIsInitialized();
