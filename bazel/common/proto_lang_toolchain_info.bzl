@@ -10,6 +10,9 @@ ProtoLangToolchainInfo = provider(
           a path to single file or a directory in case of multiple files.""",
         plugin_format_flag = "(str) Format string used when passing plugin to proto compiler.",
         plugin = "(FilesToRunProvider) Proto compiler plugin.",
+        plugins = """(list[ProtoPluginInfo]) Additional proto compiler plugins. Each one is
+          passed to the proto compiler as --plugin=protoc-gen-<name>=<executable> and
+          --<name>_out pointing at the same output location as $(OUT) in `command_line`.""",
         runtime = "(Target) Runtime.",
         provided_proto_sources = "(list[File]) Proto sources provided by the toolchain.",
         proto_compiler = "(FilesToRunProvider) Proto compiler.",
