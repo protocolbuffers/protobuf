@@ -80,10 +80,8 @@ void SetPrimitiveVariables(
           absl::StrCat(name, "_.makeImmutable()");
       (*variables)["repeated_get"] =
           absl::StrCat(name, "_.get", capitalized_type);
-      (*variables)["repeated_add"] =
-          absl::StrCat(name, "_.add", capitalized_type);
-      (*variables)["repeated_set"] =
-          absl::StrCat(name, "_.set", capitalized_type);
+      (*variables)["repeated_add"] = absl::StrCat("add", capitalized_type);
+      (*variables)["repeated_set"] = absl::StrCat("set", capitalized_type);
       (*variables)["visit_type"] = capitalized_type;
       (*variables)["visit_type_list"] =
           absl::StrCat("visit", capitalized_type, "List");
@@ -97,8 +95,8 @@ void SetPrimitiveVariables(
       (*variables)["make_name_unmodifiable"] =
           absl::StrCat(name, "_.makeImmutable()");
       (*variables)["repeated_get"] = absl::StrCat(name, "_.get");
-      (*variables)["repeated_add"] = absl::StrCat(name, "_.add");
-      (*variables)["repeated_set"] = absl::StrCat(name, "_.set");
+      (*variables)["repeated_add"] = "add";
+      (*variables)["repeated_set"] = "set";
       (*variables)["visit_type"] = "ByteString";
       (*variables)["visit_type_list"] = "visitList";
   }
@@ -541,43 +539,44 @@ void RepeatedImmutablePrimitiveFieldLiteGenerator::GenerateMembers(
 
   printer->Print(
       variables_,
-      "private void ensure$capitalized_name$IsMutable() {\n"
+      "private $field_list_type$\n"
+      "ensure$capitalized_name$IsMutable() {\n"
       // Use a temporary to avoid a redundant iget-object.
       "  $field_list_type$ tmp = $name$_;\n"
       "  if (!tmp.isModifiable()) {\n"
-      "    $name$_ =\n"
+      "    $name$_ = tmp =\n"
       "        com.google.protobuf.GeneratedMessageLite.mutableCopy(tmp);\n"
       "   }\n"
+      "  return tmp;\n"
       "}\n");
 
   WriteFieldAccessorDocComment(printer, descriptor_, LIST_INDEXED_SETTER,
                                context_->options(), /* builder */ false,
                                /* kdoc */ false, /* is_private */ true);
-  printer->Print(variables_,
-                 "private void set$capitalized_name$(\n"
-                 "    int index, $type$ value) {\n"
-                 "$null_check$"
-                 "  ensure$capitalized_name$IsMutable();\n"
-                 "  $repeated_set$(index, value);\n"
-                 "}\n");
+  printer->Print(
+      variables_,
+      "private void set$capitalized_name$(\n"
+      "    int index, $type$ value) {\n"
+      "$null_check$"
+      "  ensure$capitalized_name$IsMutable().$repeated_set$(index, value);\n"
+      "}\n");
   WriteFieldAccessorDocComment(printer, descriptor_, LIST_ADDER,
                                context_->options(), /* builder */ false,
                                /* kdoc */ false, /* is_private */ true);
-  printer->Print(variables_,
-                 "private void add$capitalized_name$($type$ value) {\n"
-                 "$null_check$"
-                 "  ensure$capitalized_name$IsMutable();\n"
-                 "  $repeated_add$(value);\n"
-                 "}\n");
+  printer->Print(
+      variables_,
+      "private void add$capitalized_name$($type$ value) {\n"
+      "$null_check$"
+      "  ensure$capitalized_name$IsMutable().$repeated_add$(value);\n"
+      "}\n");
   WriteFieldAccessorDocComment(printer, descriptor_, LIST_MULTI_ADDER,
                                context_->options(), /* builder */ false,
                                /* kdoc */ false, /* is_private */ true);
   printer->Print(variables_,
                  "private void addAll$capitalized_name$(\n"
                  "    java.lang.Iterable<? extends $boxed_type$> values) {\n"
-                 "  ensure$capitalized_name$IsMutable();\n"
                  "  com.google.protobuf.AbstractMessageLite.addAll(\n"
-                 "      values, $name$_);\n"
+                 "      values, ensure$capitalized_name$IsMutable());\n"
                  "}\n");
   WriteFieldAccessorDocComment(printer, descriptor_, CLEARER,
                                context_->options(), /* builder */ false,
