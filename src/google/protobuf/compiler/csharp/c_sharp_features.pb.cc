@@ -38,9 +38,12 @@ class CSharpFeatures::_Internal {
   using HasBits = decltype(::std::declval<CSharpFeatures>()._impl_._has_bits_);
   static constexpr ::int32_t kHasBitsOffset =
       8 * PROTOBUF_FIELD_OFFSET(CSharpFeatures, _impl_._has_bits_);
+
+  static constexpr CSharpFeatures::ParseTableT_ GenerateParseTable(
+      const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL class_data);
 };
 
-constexpr CSharpFeatures::ParseTableT_ CSharpFeatures::InternalGenerateParseTable_(const ::_pbi::ClassData* class_data) {
+constexpr CSharpFeatures::ParseTableT_ CSharpFeatures::_Internal::GenerateParseTable(const ::_pbi::ClassData* class_data) {
   return ParseTableT_{
     {
       PROTOBUF_FIELD_OFFSET(CSharpFeatures, _impl_._has_bits_),
@@ -92,21 +95,21 @@ PROTOBUF_ALWAYS_INLINE_NODEBUG constexpr CSharpFeatures::CSharpFeatures(
           ),
       _impl_(internal_visibility(), ::_pbi::ConstantInitialized()) {
 }
-inline void* PROTOBUF_NONNULL CSharpFeatures::PlacementNew_(
+inline void* PROTOBUF_NONNULL CSharpFeatures::Helpers_::PlacementNew_(
     const void* PROTOBUF_NONNULL, void* PROTOBUF_NONNULL mem,
     ::google::protobuf::Arena* PROTOBUF_NULLABLE arena) {
   return ::new (mem) CSharpFeatures(arena);
 }
-constexpr auto CSharpFeatures::InternalNewImpl_() {
+constexpr auto CSharpFeatures::Helpers_::InternalNewImpl_() {
   return ::google::protobuf::internal::MessageCreator::ZeroInit(sizeof(CSharpFeatures), alignof(CSharpFeatures));
 }
-constexpr auto CSharpFeatures::InternalGenerateClassData_() {
+constexpr auto CSharpFeatures::Helpers_::InternalGenerateClassData_() {
   return ::google::protobuf::internal::ClassData{
       nullptr,  // IsInitialized
-      &CSharpFeatures::MergeImpl,
+      &CSharpFeatures::Helpers_::MergeImpl,
       Super_::GetNewImpl<CSharpFeatures>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-      &CSharpFeatures::SharedDtor,
+      &CSharpFeatures::Helpers_::SharedDtor,
       &Helpers_::Clear, &Helpers_::ByteSizeLong,
           &Helpers_::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
@@ -116,15 +119,15 @@ constexpr auto CSharpFeatures::InternalGenerateClassData_() {
 }
 struct CSharpFeaturesGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
   constexpr CSharpFeaturesGlobalsTypeInternal()
-      : MessageGlobalsBase(CSharpFeatures::InternalGenerateClassData_()),
+      : MessageGlobalsBase(
+            CSharpFeatures::Helpers_::InternalGenerateClassData_()),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
-        _table(::_pbi::PrivateAccess::GenerateParseTable<CSharpFeatures>(
-            GetClassData())) {}
+        _table(CSharpFeatures::_Internal::GenerateParseTable(GetClassData())) {}
   ~CSharpFeaturesGlobalsTypeInternal() {}
   union {
     alignas(::_pbi::kMaxMessageAlignment) CSharpFeatures _default;
   };
-  decltype(::_pbi::PrivateAccess::GenerateParseTable<CSharpFeatures>(
+  decltype(CSharpFeatures::_Internal::GenerateParseTable(
       ::std::declval<const ::_pbi::ClassData*>())) _table;
 };
 static_assert(PROTOBUF_FIELD_OFFSET(CSharpFeaturesGlobalsTypeInternal, _default) ==
@@ -197,7 +200,7 @@ CSharpFeatures::CSharpFeatures(::google::protobuf::Arena* PROTOBUF_NULLABLE aren
 #else   // PROTOBUF_CUSTOM_VTABLE
     : Super_(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
-  SharedCtor(arena);
+  Helpers_::SharedCtor(*this, arena);
   // @@protoc_insertion_point(arena_constructor:pb.CSharpFeatures)
 }
 CSharpFeatures::CSharpFeatures(
@@ -216,15 +219,17 @@ PROTOBUF_NDEBUG_INLINE CSharpFeatures::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
      {}
 
-inline void CSharpFeatures::SharedCtor(::_pb::Arena* PROTOBUF_NULLABLE arena) {
-  new (&_impl_) Impl_(internal_visibility(), arena);
-  _impl_.nullable_reference_types_ = {};
+inline void CSharpFeatures::Helpers_::SharedCtor(
+    ::_pb::MessageLite& self, ::_pb::Arena* PROTOBUF_NULLABLE arena) {
+  CSharpFeatures& this_ = static_cast<CSharpFeatures&>(self);
+  new (&this_._impl_) Impl_(this_.internal_visibility(), arena);
+  this_._impl_.nullable_reference_types_ = {};
 }
 CSharpFeatures::~CSharpFeatures() {
   // @@protoc_insertion_point(destructor:pb.CSharpFeatures)
-  SharedDtor(*this);
+  Helpers_::SharedDtor(*this);
 }
-inline void CSharpFeatures::SharedDtor(MessageLite& self) {
+inline void CSharpFeatures::Helpers_::SharedDtor(MessageLite& self) {
   CSharpFeatures& this_ = static_cast<CSharpFeatures&>(self);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     this_.CheckHasBitConsistency();
@@ -311,8 +316,8 @@ PROTOBUF_NOINLINE void CSharpFeatures::Clear() {
                                              &this_._impl_._cached_size_);
 }
 
-void CSharpFeatures::MergeImpl(::google::protobuf::MessageLite& to_msg,
-                      const ::google::protobuf::MessageLite& from_msg) {
+void CSharpFeatures::Helpers_::MergeImpl(::google::protobuf::MessageLite& to_msg,
+                                const ::google::protobuf::MessageLite& from_msg) {
    auto* const _this = static_cast<CSharpFeatures*>(&to_msg);
   auto& from = static_cast<const CSharpFeatures&>(from_msg);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
@@ -340,11 +345,14 @@ void CSharpFeatures::CopyFrom(const CSharpFeatures& from) {
 }
 
 
-void CSharpFeatures::InternalSwap(CSharpFeatures* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
+void CSharpFeatures::Helpers_::InternalSwap(
+    ::_pb::MessageLite& PROTOBUF_RESTRICT self,
+    CSharpFeatures* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
   using ::std::swap;
-  _internal_metadata_.InternalSwap(&other->_internal_metadata_);
-  swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
-  swap(_impl_.nullable_reference_types_, other->_impl_.nullable_reference_types_);
+  CSharpFeatures& this_ = static_cast<CSharpFeatures&>(self);
+  this_._internal_metadata_.InternalSwap(&other->_internal_metadata_);
+  swap(this_._impl_._has_bits_[0], other->_impl_._has_bits_[0]);
+  swap(this_._impl_.nullable_reference_types_, other->_impl_.nullable_reference_types_);
 }
 
 ::google::protobuf::Metadata CSharpFeatures::GetMetadata() const {

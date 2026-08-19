@@ -98,8 +98,6 @@ class PROTOBUF_EXPORT ImplicitWeakMessage final : public MessageLite {
                                            const char* ptr, ParseContext* ctx);
 
   static constexpr auto InternalGenerateClassData_();
-  static constexpr auto InternalGenerateParseTable_(
-      const ClassData* class_data);
 
  private:
 #ifndef PROTOBUF_MESSAGE_GLOBALS
