@@ -3707,18 +3707,6 @@ static void PopulateTcParseLookupTable(
   *lookup_table++ = 0xFFFF;
 }
 
-static std::vector<uint32_t> MakeEnumValidatorData(const EnumDescriptor* desc) {
-  std::vector<int> numbers;
-  numbers.reserve(desc->value_count());
-  for (int i = 0; i < desc->value_count(); ++i) {
-    numbers.push_back(desc->value(i)->number());
-  }
-
-  absl::c_sort(numbers);
-  numbers.erase(std::unique(numbers.begin(), numbers.end()), numbers.end());
-  return internal::GenerateEnumData(numbers);
-}
-
 void Reflection::PopulateTcParseEntries(
     internal::TailCallTableInfo& table_info,
     TcParseTableBase::FieldEntry* entries) const {
@@ -3778,10 +3766,7 @@ void Reflection::PopulateTcParseFieldAux(
         break;
       case internal::TailCallTableInfo::kEnumValidator:
         field_aux++->enum_data =
-            DescriptorPool::MemoizeProjection(
-                aux_entry.field->enum_type(),
-                [](auto* e) { return MakeEnumValidatorData(e); })
-                .data();
+            aux_entry.field->enum_type()->GetEnumValidationData();
         break;
       case internal::TailCallTableInfo::kNumericOffset:
         field_aux++->offset = aux_entry.offset;

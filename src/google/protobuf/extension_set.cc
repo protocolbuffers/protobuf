@@ -152,8 +152,7 @@ void ExtensionSet::RegisterEnumExtension(const MessageLite* extendee,
   ABSL_CHECK_EQ(type, WireFormatLite::TYPE_ENUM);
   ExtensionInfo info(extendee, number, type, is_repeated, is_packed,
                      /*is_utf8=*/false);
-  info.enum_validity_check.func = nullptr;
-  info.enum_validity_check.arg = validation_data;
+  info.enum_validity_check.enum_data = validation_data;
   Register(info);
 }
 

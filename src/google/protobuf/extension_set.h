@@ -156,14 +156,9 @@ struct ExtensionInfo {
   LazyAnnotation is_lazy = LazyAnnotation::kUndefined;
 
   struct EnumValidityCheck {
-    // TODO: Fully remove the function pointer approach.
-    EnumValidityFuncWithArg* func;
-    const void* arg;
-
+    const uint32_t* enum_data;
     bool IsValid(int value) const {
-      return func != nullptr ? func(arg, value)
-                             : internal::ValidateEnum(
-                                   value, static_cast<const uint32_t*>(arg));
+      return internal::ValidateEnum(value, enum_data);
     }
   };
 
