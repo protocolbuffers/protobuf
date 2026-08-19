@@ -46,9 +46,12 @@ class Version::_Internal {
   using HasBits = decltype(::std::declval<Version>()._impl_._has_bits_);
   static constexpr ::int32_t kHasBitsOffset =
       8 * PROTOBUF_FIELD_OFFSET(Version, _impl_._has_bits_);
+
+  static constexpr Version::ParseTableT_ GenerateParseTable(
+      const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL class_data);
 };
 
-constexpr Version::ParseTableT_ Version::InternalGenerateParseTable_(const ::_pbi::ClassData* class_data) {
+constexpr Version::ParseTableT_ Version::_Internal::GenerateParseTable(const ::_pbi::ClassData* class_data) {
   return ParseTableT_{
     {
       PROTOBUF_FIELD_OFFSET(Version, _impl_._has_bits_),
@@ -169,9 +172,12 @@ class CodeGeneratorResponse_File::_Internal {
   using HasBits = decltype(::std::declval<CodeGeneratorResponse_File>()._impl_._has_bits_);
   static constexpr ::int32_t kHasBitsOffset =
       8 * PROTOBUF_FIELD_OFFSET(CodeGeneratorResponse_File, _impl_._has_bits_);
+
+  static constexpr CodeGeneratorResponse_File::ParseTableT_ GenerateParseTable(
+      const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL class_data);
 };
 
-constexpr CodeGeneratorResponse_File::ParseTableT_ CodeGeneratorResponse_File::InternalGenerateParseTable_(const ::_pbi::ClassData* class_data) {
+constexpr CodeGeneratorResponse_File::ParseTableT_ CodeGeneratorResponse_File::_Internal::GenerateParseTable(const ::_pbi::ClassData* class_data) {
   return ParseTableT_{
     {
       PROTOBUF_FIELD_OFFSET(CodeGeneratorResponse_File, _impl_._has_bits_),
@@ -298,9 +304,12 @@ class CodeGeneratorResponse::_Internal {
   using HasBits = decltype(::std::declval<CodeGeneratorResponse>()._impl_._has_bits_);
   static constexpr ::int32_t kHasBitsOffset =
       8 * PROTOBUF_FIELD_OFFSET(CodeGeneratorResponse, _impl_._has_bits_);
+
+  static constexpr CodeGeneratorResponse::ParseTableT_ GenerateParseTable(
+      const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL class_data);
 };
 
-constexpr CodeGeneratorResponse::ParseTableT_ CodeGeneratorResponse::InternalGenerateParseTable_(const ::_pbi::ClassData* class_data) {
+constexpr CodeGeneratorResponse::ParseTableT_ CodeGeneratorResponse::_Internal::GenerateParseTable(const ::_pbi::ClassData* class_data) {
   return ParseTableT_{
     {
       PROTOBUF_FIELD_OFFSET(CodeGeneratorResponse, _impl_._has_bits_),
@@ -437,9 +446,12 @@ class CodeGeneratorRequest::_Internal {
   using HasBits = decltype(::std::declval<CodeGeneratorRequest>()._impl_._has_bits_);
   static constexpr ::int32_t kHasBitsOffset =
       8 * PROTOBUF_FIELD_OFFSET(CodeGeneratorRequest, _impl_._has_bits_);
+
+  static constexpr CodeGeneratorRequest::ParseTableT_ GenerateParseTable(
+      const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL class_data);
 };
 
-constexpr CodeGeneratorRequest::ParseTableT_ CodeGeneratorRequest::InternalGenerateParseTable_(const ::_pbi::ClassData* class_data) {
+constexpr CodeGeneratorRequest::ParseTableT_ CodeGeneratorRequest::_Internal::GenerateParseTable(const ::_pbi::ClassData* class_data) {
   return ParseTableT_{
     {
       PROTOBUF_FIELD_OFFSET(CodeGeneratorRequest, _impl_._has_bits_),

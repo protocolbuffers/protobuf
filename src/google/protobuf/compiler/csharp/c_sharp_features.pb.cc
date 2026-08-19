@@ -38,9 +38,12 @@ class CSharpFeatures::_Internal {
   using HasBits = decltype(::std::declval<CSharpFeatures>()._impl_._has_bits_);
   static constexpr ::int32_t kHasBitsOffset =
       8 * PROTOBUF_FIELD_OFFSET(CSharpFeatures, _impl_._has_bits_);
+
+  static constexpr CSharpFeatures::ParseTableT_ GenerateParseTable(
+      const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL class_data);
 };
 
-constexpr CSharpFeatures::ParseTableT_ CSharpFeatures::InternalGenerateParseTable_(const ::_pbi::ClassData* class_data) {
+constexpr CSharpFeatures::ParseTableT_ CSharpFeatures::_Internal::GenerateParseTable(const ::_pbi::ClassData* class_data) {
   return ParseTableT_{
     {
       PROTOBUF_FIELD_OFFSET(CSharpFeatures, _impl_._has_bits_),

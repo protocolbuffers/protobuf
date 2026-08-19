@@ -37,9 +37,12 @@ PROTOBUF_CONSTINIT ::google::protobuf::internal::ReflectionData
 namespace pb {
 class JavaFeatures_NestInFileClassFeature::_Internal {
  public:
+
+  static constexpr JavaFeatures_NestInFileClassFeature::ParseTableT_ GenerateParseTable(
+      const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL class_data);
 };
 
-constexpr JavaFeatures_NestInFileClassFeature::ParseTableT_ JavaFeatures_NestInFileClassFeature::InternalGenerateParseTable_(const ::_pbi::ClassData* class_data) {
+constexpr JavaFeatures_NestInFileClassFeature::ParseTableT_ JavaFeatures_NestInFileClassFeature::_Internal::GenerateParseTable(const ::_pbi::ClassData* class_data) {
   return ParseTableT_{
     {
       PROTOBUF_FIELD_OFFSET(JavaFeatures_NestInFileClassFeature,
@@ -123,9 +126,12 @@ class JavaFeatures::_Internal {
   using HasBits = decltype(::std::declval<JavaFeatures>()._impl_._has_bits_);
   static constexpr ::int32_t kHasBitsOffset =
       8 * PROTOBUF_FIELD_OFFSET(JavaFeatures, _impl_._has_bits_);
+
+  static constexpr JavaFeatures::ParseTableT_ GenerateParseTable(
+      const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL class_data);
 };
 
-constexpr JavaFeatures::ParseTableT_ JavaFeatures::InternalGenerateParseTable_(const ::_pbi::ClassData* class_data) {
+constexpr JavaFeatures::ParseTableT_ JavaFeatures::_Internal::GenerateParseTable(const ::_pbi::ClassData* class_data) {
   return ParseTableT_{
     {
       PROTOBUF_FIELD_OFFSET(JavaFeatures, _impl_._has_bits_),

@@ -36,6 +36,7 @@
 #include "absl/strings/string_view.h"
 #include "absl/types/optional.h"
 #include "google/protobuf/any.h"
+#include "google/protobuf/class_data.h"
 #include "google/protobuf/has_bits.h"
 #include "google/protobuf/implicit_weak_message.h"
 #include "google/protobuf/internal_visibility.h"
@@ -426,7 +427,7 @@ struct PrivateAccess {
   template <typename T>
   static constexpr auto GenerateParseTable(
       const ::google::protobuf::internal::ClassData* class_data) {
-    return T::InternalGenerateParseTable_(class_data);
+    return T::_Internal::GenerateParseTable(class_data);
   }
 
   template <typename T>

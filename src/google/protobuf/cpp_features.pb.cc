@@ -38,9 +38,12 @@ class CppFeatures::_Internal {
   using HasBits = decltype(::std::declval<CppFeatures>()._impl_._has_bits_);
   static constexpr ::int32_t kHasBitsOffset =
       8 * PROTOBUF_FIELD_OFFSET(CppFeatures, _impl_._has_bits_);
+
+  static constexpr CppFeatures::ParseTableT_ GenerateParseTable(
+      const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL class_data);
 };
 
-constexpr CppFeatures::ParseTableT_ CppFeatures::InternalGenerateParseTable_(const ::_pbi::ClassData* class_data) {
+constexpr CppFeatures::ParseTableT_ CppFeatures::_Internal::GenerateParseTable(const ::_pbi::ClassData* class_data) {
   return ParseTableT_{
     {
       PROTOBUF_FIELD_OFFSET(CppFeatures, _impl_._has_bits_),

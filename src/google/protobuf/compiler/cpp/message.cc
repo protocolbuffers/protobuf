@@ -1381,7 +1381,6 @@ void MessageGenerator::GenerateAnnotationDecl(io::Printer* p) {
 }
 
 void MessageGenerator::GenerateMapEntryClassDefinition(io::Printer* p) {
-  Formatter format(p);
   absl::flat_hash_map<absl::string_view, std::string> vars;
   CollectMapInfo(options_, descriptor_, &vars);
   ABSL_CHECK(HasDescriptorMethods(descriptor_->file(), options_));
@@ -1426,10 +1425,10 @@ void MessageGenerator::GenerateMapEntryClassDefinition(io::Printer* p) {
           friend $globals_type$;
 
           $alias_parse_table_type$;
-          static constexpr ParseTableT_ InternalGenerateParseTable_(
-              const $pbi$::ClassData* $nonnull$ class_data);
           $parse_decls$;
           $decl_annotate$;
+
+          class _Internal;
 
           const $pbi$::ClassData* $nonnull$ GetClassData() const PROTOBUF_FINAL;
           static void* $nonnull$ PlacementNew_(
@@ -1439,6 +1438,25 @@ void MessageGenerator::GenerateMapEntryClassDefinition(io::Printer* p) {
           static constexpr auto InternalNewImpl_();
         };
       )cc");
+
+  p->Emit({{"has_bit",
+            [&] {
+              if (!field_layout_.HasHasbits()) return;
+              p->Emit(R"cc(
+                using HasBits = decltype(::std::declval<$Msg$>().$has_bits$);
+                static constexpr ::int32_t kHasBitsOffset =
+                    8 * PROTOBUF_FIELD_OFFSET($Msg$, _impl_._has_bits_);
+              )cc");
+            }}},
+          R"cc(
+            class $Msg$::_Internal {
+             public:
+              $has_bit$;
+
+              static constexpr $Msg$::ParseTableT_ GenerateParseTable(
+                  const $pbi$::ClassData* $nonnull$ class_data);
+            };
+          )cc");
 }
 
 void MessageGenerator::GenerateImplDefinition(io::Printer* p) {
@@ -2234,6 +2252,7 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
             //~ homing. We don't define this constructor, since it is not
             //~ called. See go/constructor-homing.
             PROTOBUF_NODEBUG Helpers_();
+
             static void Clear($pb$::MessageLite& msg);
             $nodiscard $static::size_t ByteSizeLong(const $pb$::MessageLite& msg);
             $nodiscard $static $uint8$* $nonnull$ _InternalSerialize(
@@ -2244,8 +2263,6 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
           $decl_set_has$;
           $decl_oneof_has$;
           $alias_parse_table_type$;
-          static constexpr ParseTableT_ InternalGenerateParseTable_(
-              const $pbi$::ClassData* $nonnull$ class_data);
           $decl_data$;
           $post_loop_handler$;
 
@@ -5421,10 +5438,13 @@ void MessageGenerator::GenerateSourceDefaultInstance(io::Printer* p) {
             $oneof$;
             $required$;
             $split$;
+
+            static constexpr $Msg$::ParseTableT_ GenerateParseTable(
+                const $pbi$::ClassData* $nonnull$ class_data);
           };
         )cc");
-    p->Emit("\n");
   }
+  p->Emit("\n");
 
   parse_function_generator_->GenerateParseTableHelperDefinition(p);
   p->Emit("\n");
