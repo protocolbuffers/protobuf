@@ -118,7 +118,9 @@ class MessageGenerator {
 
   // Generate standard Message methods.
   void GenerateClear(io::Printer* p);
-  void GenerateOneofClear(io::Printer* p);
+  void GenerateOneofTrampolines(io::Printer* p);
+  void GenerateOneofHelperDeclarations(io::Printer* p);
+  void GenerateOneofHelperDefinitions(io::Printer* p);
   void GenerateVerifyDecl(io::Printer* p);
   void GenerateVerify(io::Printer* p);
   void GenerateAnnotationDecl(io::Printer* p);
@@ -133,7 +135,7 @@ class MessageGenerator {
   void GenerateAnyMethodDefinition(io::Printer* p);
   void GenerateImplDefinition(io::Printer* p);
   void GenerateClassSpecificMergeImpl(io::Printer* p);
-  void GenerateCopyFrom(io::Printer* p);
+  void GenerateCopyImpl(io::Printer* p);
   void GenerateSwap(io::Printer* p);
   void GenerateIsInitialized(io::Printer* p);
   bool NeedsIsInitialized();

@@ -7,6 +7,8 @@
 
 #include "google/protobuf/implicit_weak_message.h"
 
+#include <string>
+
 #include "google/protobuf/class_data.h"
 #include "google/protobuf/generated_message_tctable_decl.h"
 #include "google/protobuf/message_lite.h"
@@ -27,14 +29,28 @@ namespace google {
 namespace protobuf {
 namespace internal {
 
-namespace {
+class ImplicitWeakPrivateAccess {
+ public:
+  static constexpr auto GenerateParseTable(const ClassData* class_data) {
+    return CreateStubTcParseTable<ImplicitWeakMessage,
+                                  ImplicitWeakMessage::ParseImpl>(class_data);
+  }
 
-constexpr auto GenerateParseTable(const ClassData* class_data) {
-  return CreateStubTcParseTable<ImplicitWeakMessage,
-                                ImplicitWeakMessage::ParseImpl>(class_data);
-}
-
-}  // namespace
+  static constexpr auto GenerateClassData() {
+    return ClassData{
+        nullptr,  // is_initialized (always true)
+        ImplicitWeakMessage::MergeImpl,
+        internal::MessageCreator(
+            ImplicitWeakMessage::NewImpl<ImplicitWeakMessage>,
+            sizeof(ImplicitWeakMessage), alignof(ImplicitWeakMessage)),
+        &ImplicitWeakMessage::DestroyImpl,
+        &ImplicitWeakMessage::ClearImpl,
+        &ImplicitWeakMessage::ByteSizeLongImpl,
+        &ImplicitWeakMessage::_InternalSerializeImpl,
+        PROTOBUF_FIELD_OFFSET(ImplicitWeakMessage, cached_size_),
+        /*type_name=*/""};
+  }
+};
 
 const char* ImplicitWeakMessage::ParseImpl(ImplicitWeakMessage* msg,
                                            const char* ptr, ParseContext* ctx) {
@@ -54,26 +70,11 @@ void ImplicitWeakMessage::ClearImpl(MessageLite& msg) {
   static_cast<ImplicitWeakMessage&>(msg).data_->clear();
 }
 
-constexpr auto ImplicitWeakMessage::InternalGenerateClassData_() {
-  return ClassData{nullptr,  // is_initialized (always true)
-                   MergeImpl,
-                   internal::MessageCreator(NewImpl<ImplicitWeakMessage>,
-                                            sizeof(ImplicitWeakMessage),
-                                            alignof(ImplicitWeakMessage)),
-                   &DestroyImpl,
-                   &ClearImpl,
-                   &ByteSizeLongImpl,
-                   &_InternalSerializeImpl,
-                   PROTOBUF_FIELD_OFFSET(ImplicitWeakMessage, cached_size_),
-                   /*type_name=*/""};
-}
-
-
 struct ImplicitWeakMessageDefaultType : MessageGlobalsBase {
   constexpr ImplicitWeakMessageDefaultType()
-      : MessageGlobalsBase(ImplicitWeakMessage::InternalGenerateClassData_()),
+      : MessageGlobalsBase(ImplicitWeakPrivateAccess::GenerateClassData()),
         _default(ConstantInitialized{}),
-        _table(GenerateParseTable(&class_data)) {}
+        _table(ImplicitWeakPrivateAccess::GenerateParseTable(&class_data)) {}
   ~ImplicitWeakMessageDefaultType() {}
   union {
     alignas(kMaxMessageAlignment) ImplicitWeakMessage _default;  // NOLINT

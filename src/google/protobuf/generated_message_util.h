@@ -425,6 +425,11 @@ struct PrivateAccess {
   }
 
   template <typename T>
+  static constexpr auto GenerateClassData() {
+    return T::_Internal::GenerateClassData();
+  }
+
+  template <typename T>
   static constexpr auto GenerateParseTable(
       const ::google::protobuf::internal::ClassData* class_data) {
     return T::_Internal::GenerateParseTable(class_data);

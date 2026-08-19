@@ -324,12 +324,12 @@ void SingularStringView::GenerateClearingCode(io::Printer* p) const {
   if (is_oneof()) {
     if (use_micro_string()) {
       p->Emit(R"cc(
-        if (GetArena() == nullptr) $field_$.Destroy();
+        if (this_.GetArena() == nullptr) this_.$field_$.Destroy();
       )cc");
       return;
     }
     p->Emit(R"cc(
-      $field_$.Destroy();
+      this_.$field_$.Destroy();
     )cc");
     return;
   }
@@ -407,20 +407,20 @@ void SingularStringView::GenerateSwappingCode(io::Printer* p) const {
 
   if (use_micro_string()) {
     p->Emit(R"cc(
-      $field_$.InternalSwap(&other->$field_$);
+      this_.$field_$.InternalSwap(&other->$field_$);
     )cc");
     return;
   }
 
   if (!is_inlined()) {
     p->Emit(R"cc(
-      $field_$.InternalSwap(&$field_$, &other->$field_$, arena);
+      this_.$field_$.InternalSwap(&this_.$field_$, &other->$field_$, arena);
     )cc");
     return;
   }
 
   p->Emit(R"cc(
-    ::_pbi::InlinedStringField::InternalSwap(&$field_$, &other->$field_$,
+    ::_pbi::InlinedStringField::InternalSwap(&this_.$field_$, &other->$field_$,
                                              arena);
   )cc");
 }
@@ -610,7 +610,7 @@ class RepeatedStringView : public FieldGeneratorBase {
   void GenerateSwappingCode(io::Printer* p) const override {
     ABSL_CHECK(!should_split());
     p->Emit(R"cc(
-      $field_$.InternalSwap(&other->$field_$);
+      this_.$field_$.InternalSwap(&other->$field_$);
     )cc");
   }
 
