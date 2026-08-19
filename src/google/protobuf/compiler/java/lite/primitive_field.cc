@@ -257,13 +257,8 @@ void ImmutablePrimitiveFieldLiteGenerator::GenerateMembers(
   printer->Print(variables_,
                  "private void clear$capitalized_name$() {\n"
                  "  $clear_has_field_bit_message$\n");
-  JavaType type = GetJavaType(descriptor_);
-  if (type == JAVATYPE_STRING || type == JAVATYPE_BYTES) {
-    // The default value is not a simple literal so we want to avoid executing
-    // it multiple times.  Instead, get the default out of the default instance.
-    printer->Print(
-        variables_,
-        "  $name$_ = getDefaultInstance().get$capitalized_name$();\n");
+  if (IsByteStringWithCustomDefaultValue(descriptor_)) {
+    printer->Print(variables_, "  $name$_ = $bytes_default$;\n");
   } else {
     printer->Print(variables_, "  $name$_ = $default$;\n");
   }

@@ -228,10 +228,7 @@ void ImmutableStringFieldLiteGenerator::GenerateMembers(
   printer->Print(variables_,
                  "private void clear$capitalized_name$() {\n"
                  "  $clear_has_field_bit_message$\n"
-                 // The default value is not a simple literal so we want to
-                 // avoid executing it multiple times.  Instead, get the default
-                 // out of the default instance.
-                 "  $name$_ = getDefaultInstance().get$capitalized_name$();\n"
+                 "  $name$_ = $default$;\n"
                  "}\n");
 
   WriteFieldStringBytesAccessorDocComment(
