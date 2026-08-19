@@ -1414,9 +1414,6 @@ void MessageGenerator::GenerateMapEntryClassDefinition(io::Printer* p) {
                                    const $pbi$::ClassData* $nonnull$
                                        class_data);
           explicit $Msg$($pb$::Arena* $nullable$ arena);
-          static constexpr const void* $nonnull$ internal_message_globals() {
-            return &$globals$;
-          }
 
           $decl_verify_func$;
 
@@ -1729,7 +1726,6 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
   Formatter format(p);
 
   if (IsMapEntryMessage(descriptor_)) {
-    GenerateMapEntryClassDefinition(p);
     return;
   }
 
@@ -5329,7 +5325,9 @@ void MessageGenerator::GenerateSourceDefaultInstance(io::Printer* p) {
   auto v = p->WithVars(ClassVars(descriptor_, options_));
   auto t = p->WithVars(MakeTrackerCalls(descriptor_, options_));
 
-  if (!IsMapEntryMessage(descriptor_)) {
+  if (IsMapEntryMessage(descriptor_)) {
+    GenerateMapEntryClassDefinition(p);
+  } else {
     p->Emit(
         {{"has_bit",
           [&] {
