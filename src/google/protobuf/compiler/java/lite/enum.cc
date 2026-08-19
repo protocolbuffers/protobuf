@@ -11,12 +11,14 @@
 
 #include "google/protobuf/compiler/java/lite/enum.h"
 
+#include <cstdint>
 #include <string>
 #include <utility>
 #include <vector>
 
 #include "absl/container/flat_hash_map.h"
 #include "absl/strings/str_cat.h"
+#include "absl/strings/str_join.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/compiler/code_generator_lite.h"
 #include "google/protobuf/compiler/java/context.h"
@@ -180,37 +182,101 @@ void EnumLiteGenerator::Generate(io::Printer* printer) {
   printer->Print(
       "    default: return null;\n"
       "  }\n"
-      "}\n"
-      "\n"
-      "public static com.google.protobuf.Internal.EnumLiteMap<$classname$>\n"
-      "    internalGetValueMap() {\n"
-      "  return internalValueMap;\n"
-      "}\n"
-      "private static final com.google.protobuf.Internal.EnumLiteMap<\n"
-      "    $classname$> internalValueMap =\n"
-      "      new com.google.protobuf.Internal.EnumLiteMap<$classname$>() {\n"
-      "        @java.lang.Override\n"
-      "        public $classname$ findValueByNumber(int number) {\n"
-      "          return $classname$.forNumber(number);\n"
-      "        }\n"
-      "      };\n"
-      "\n"
-      "public static com.google.protobuf.Internal.EnumVerifier \n"
-      "    internalGetVerifier() {\n"
-      "  return $classname$Verifier.INSTANCE;\n"
-      "}\n"
-      "\n"
-      "private static final class $classname$Verifier implements \n"
-      "     com.google.protobuf.Internal.EnumVerifier { \n"
-      "        static final com.google.protobuf.Internal.EnumVerifier\n"
-      "            INSTANCE = new $classname$Verifier();\n"
-      "        @java.lang.Override\n"
-      "        public boolean isInRange(int number) {\n"
-      "          return $classname$.forNumber(number) != null;\n"
-      "        }\n"
-      "      };\n"
-      "\n",
-      "classname", descriptor_->name());
+      "}\n\n");
+
+  int min_val = 0;
+  int max_val = 0;
+  uint64_t mask = 0;
+  if (IsSequentialEnum(descriptor_, &min_val, &max_val)) {
+    std::vector<absl::string_view> value_names;
+    value_names.reserve(static_cast<size_t>(max_val - min_val + 1));
+    for (int i = min_val; i <= max_val; ++i) {
+      value_names.push_back(descriptor_->FindValueByNumber(i)->name());
+    }
+    printer->Print(
+        "public static com.google.protobuf.Internal.EnumLiteMap<$classname$>\n"
+        "    internalGetValueMap() {\n"
+        "  return internalValueMap;\n"
+        "}\n"
+        "private static final com.google.protobuf.Internal.EnumLiteMap<\n"
+        "    $classname$> internalValueMap =\n"
+        "      new "
+        "com.google.protobuf.Internal.SequentialEnumMap<$classname$>(\n"
+        "          $min$, new $classname$[] { $values$ });\n"
+        "\n"
+        "public static com.google.protobuf.Internal.EnumVerifier \n"
+        "    internalGetVerifier() {\n"
+        "  return internalVerifier;\n"
+        "}\n"
+        "\n"
+        "private static final com.google.protobuf.Internal.EnumVerifier "
+        "internalVerifier =\n"
+        "    new com.google.protobuf.Internal.SequentialEnumVerifier($min$, "
+        "$max$);\n"
+        "\n",
+        "classname", descriptor_->name(), "min", absl::StrCat(min_val), "max",
+        absl::StrCat(max_val), "values", absl::StrJoin(value_names, ", "));
+  } else if (IsBitmaskEnum(descriptor_, &mask)) {
+    std::vector<absl::string_view> value_names;
+    for (int i = 0; i < 64; ++i) {
+      if ((mask & (1ULL << i)) != 0) {
+        value_names.push_back(descriptor_->FindValueByNumber(i)->name());
+      }
+    }
+    printer->Print(
+        "public static com.google.protobuf.Internal.EnumLiteMap<$classname$>\n"
+        "    internalGetValueMap() {\n"
+        "  return internalValueMap;\n"
+        "}\n"
+        "private static final com.google.protobuf.Internal.EnumLiteMap<\n"
+        "    $classname$> internalValueMap =\n"
+        "      new com.google.protobuf.Internal.BitmaskEnumMap<$classname$>(\n"
+        "          0x$mask$L, new $classname$[] { $values$ });\n"
+        "\n"
+        "public static com.google.protobuf.Internal.EnumVerifier \n"
+        "    internalGetVerifier() {\n"
+        "  return internalVerifier;\n"
+        "}\n"
+        "\n"
+        "private static final com.google.protobuf.Internal.EnumVerifier \n"
+        "internalVerifier =\n"
+        "    new com.google.protobuf.Internal.BitmaskEnumVerifier(0x$mask$L);\n"
+        "\n",
+        "classname", descriptor_->name(), "mask",
+        absl::StrCat(absl::Hex(mask, absl::kZeroPad16)), "values",
+        absl::StrJoin(value_names, ", "));
+  } else {
+    printer->Print(
+        "public static com.google.protobuf.Internal.EnumLiteMap<$classname$>\n"
+        "    internalGetValueMap() {\n"
+        "  return internalValueMap;\n"
+        "}\n"
+        "private static final com.google.protobuf.Internal.EnumLiteMap<\n"
+        "    $classname$> internalValueMap =\n"
+        "      new com.google.protobuf.Internal.EnumLiteMap<$classname$>() {\n"
+        "        @java.lang.Override\n"
+        "        public $classname$ findValueByNumber(int number) {\n"
+        "          return $classname$.forNumber(number);\n"
+        "        }\n"
+        "      };\n"
+        "\n"
+        "public static com.google.protobuf.Internal.EnumVerifier \n"
+        "    internalGetVerifier() {\n"
+        "  return $classname$Verifier.INSTANCE;\n"
+        "}\n"
+        "\n"
+        "private static final class $classname$Verifier implements \n"
+        "     com.google.protobuf.Internal.EnumVerifier { \n"
+        "        static final com.google.protobuf.Internal.EnumVerifier\n"
+        "            INSTANCE = new $classname$Verifier();\n"
+        "        @java.lang.Override\n"
+        "        public boolean isInRange(int number) {\n"
+        "          return $classname$.forNumber(number) != null;\n"
+        "        }\n"
+        "      };\n"
+        "\n",
+        "classname", descriptor_->name());
+  }
   if (!google::protobuf::internal::IsOss()) {
     printer->Print(
         "/**\n"

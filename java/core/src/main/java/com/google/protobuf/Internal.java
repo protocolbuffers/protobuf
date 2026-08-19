@@ -206,9 +206,97 @@ public final class Internal {
     T findValueByNumber(int number);
   }
 
+  /**
+   * An {@link EnumLiteMap} that maps numbers in a sequential range [min, min + values.length - 1]
+   * to enum values.
+   */
+  public static final class SequentialEnumMap<T extends EnumLite> implements EnumLiteMap<T> {
+    private final int min;
+    private final T[] values;
+
+    public SequentialEnumMap(T[] values) {
+      this(0, values);
+    }
+
+    public SequentialEnumMap(int min, T[] values) {
+      this.min = min;
+      this.values = values;
+    }
+
+    @Override
+    public T findValueByNumber(int number) {
+      int index = number - min;
+      if (index < 0 || index >= values.length) {
+        return null;
+      }
+      return values[index];
+    }
+  }
+
+  /**
+   * An {@link EnumLiteMap} that maps numbers in [0, 63] to enum values using a bitmask.
+   */
+  public static final class BitmaskEnumMap<T extends EnumLite> implements EnumLiteMap<T> {
+    private final long bitmask;
+    private final T[] values;
+
+    public BitmaskEnumMap(long bitmask, T[] values) {
+      this.bitmask = bitmask;
+      this.values = values;
+    }
+
+    @Override
+    public T findValueByNumber(int number) {
+      if (number < 0 || number >= 64) {
+        return null;
+      }
+      long bit = 1L << number;
+      if ((bitmask & bit) == 0) {
+        return null;
+      }
+      return values[Long.bitCount(bitmask & (bit - 1))];
+    }
+  }
+
   /** Interface for an object which verifies integers are in range. */
   public interface EnumVerifier {
     boolean isInRange(int number);
+  }
+
+  /** An {@link EnumVerifier} that checks if a number is within a sequential range [min, max]. */
+  public static final class SequentialEnumVerifier implements EnumVerifier {
+    private final int min;
+    private final int max;
+
+    public SequentialEnumVerifier(int min, int max) {
+      this.min = min;
+      this.max = max;
+    }
+
+    @Override
+    public boolean isInRange(int number) {
+      return number >= min && number <= max;
+    }
+  }
+
+  /**
+   * An {@link EnumVerifier} that checks if a number is within a bitmask-defined set.
+   * Only values in [0, 63] are supported.
+   */
+  public static final class BitmaskEnumVerifier implements EnumVerifier {
+    private final long bitmask;
+
+    public BitmaskEnumVerifier(long bitmask) {
+      this.bitmask = bitmask;
+    }
+
+    @Override
+    public boolean isInRange(int number) {
+      if (number < 0 || number >= 64) {
+        return false;
+      }
+      return (bitmask & (1L << number)) != 0;
+    }
   }
 
   /**
