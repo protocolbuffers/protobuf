@@ -139,7 +139,8 @@ void ImmutableMessageFieldLiteGenerator::GenerateMembers(
       variables_,
       "@java.lang.Override\n"
       "$deprecation$public $type$ ${$get$capitalized_name$$}$() {\n"
-      "  return $name$_ == null ? $type$.getDefaultInstance() : $name$_;\n"
+      "  $type$ result = $name$_;\n"
+      "  return result == null ? $type$.getDefaultInstance() : result;\n"
       "}\n");
   printer->Annotate("{", "}", descriptor_);
 
