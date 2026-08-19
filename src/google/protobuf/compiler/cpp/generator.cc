@@ -427,7 +427,6 @@ bool CppGenerator::GenerateAll(const std::vector<const FileDescriptor*>& files,
       }
     }
 
-
     if (!GenerateImpl(file, parameter, generator_context, error,
                       file_options)) {
       *error = absl::StrCat(file->name(), ": ", *error);

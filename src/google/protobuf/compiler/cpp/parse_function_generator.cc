@@ -55,6 +55,7 @@ std::vector<const FieldDescriptor*> GetOrderedFields(
 ParseFunctionGenerator::ParseFunctionGenerator(
     const Descriptor* descriptor, bool has_hasbits,
     GetHasBitIndex get_has_bit_index, const Options& options,
+    const SplitMap& split_map,
     const absl::flat_hash_map<absl::string_view, std::string>& vars,
     int index_in_file_messages)
     : descriptor_(descriptor),
@@ -64,7 +65,7 @@ ParseFunctionGenerator::ParseFunctionGenerator(
       has_hasbits_(has_hasbits),
       index_in_file_messages_(index_in_file_messages) {
   auto fields = BuildFieldOptions(descriptor_, ordered_fields_,
-                                  get_has_bit_index, options_);
+                                  get_has_bit_index, options_, split_map);
   tc_table_info_ = std::make_unique<TailCallTableInfo>(
       BuildTcTableInfoFromDescriptor(descriptor_, options_, fields));
   SetCommonMessageDataVariables(descriptor_, &variables_);
@@ -75,7 +76,8 @@ std::vector<internal::TailCallTableInfo::FieldOptions>
 ParseFunctionGenerator::BuildFieldOptions(
     const Descriptor* descriptor,
     absl::Span<const FieldDescriptor* const> ordered_fields,
-    GetHasBitIndex get_has_bit_index, const Options& options) {
+    GetHasBitIndex get_has_bit_index, const Options& options,
+    const SplitMap& split_map) {
   using FieldOptions = TailCallTableInfo::FieldOptions;
   std::vector<FieldOptions> fields;
   fields.reserve(ordered_fields.size());
@@ -106,7 +108,7 @@ ParseFunctionGenerator::BuildFieldOptions(
         GetLazyStyle(field, options),
         IsImplicitWeakField(field, options),
         /* use_direct_tcparser_table */ true,
-        ShouldSplit(field, options),
+        split_map.IsSplit(field),
         str_options(),
     });
   }
@@ -172,7 +174,7 @@ static std::string TcParseFunctionName(internal::TcParseFunction func) {
 }
 
 void ParseFunctionGenerator::GenerateParseTableHelperDefinition(
-    io::Printer* p) {
+    io::Printer* p, const SplitMap& split_map) {
   auto v = p->WithVars(variables_);
   // For simplicity and speed, the table is not covering all proto
   // configurations. This model uses a fallback to cover all situations that
@@ -383,7 +385,7 @@ void ParseFunctionGenerator::GenerateParseTableHelperDefinition(
             ? "constexpr"
             : "PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1\nconst"},
        {"table_base", GenerateTableBase},
-       {"fast_entries", [&] { GenerateFastFieldEntries(p); }},
+       {"fast_entries", [&] { GenerateFastFieldEntries(p, split_map); }},
        {"field_lookup_table",
         [&] {
           for (const auto& entry_block : field_num_to_entry_table.blocks) {
@@ -421,7 +423,8 @@ void ParseFunctionGenerator::GenerateParseTableHelperDefinition(
 
           p->Emit(
               {
-                  {"field_entries", [&] { GenerateFieldEntries(p); }},
+                  {"field_entries",
+                   [&] { GenerateFieldEntries(p, split_map); }},
                   {"aux_entries",
                    [&] {
                      if (tc_table_info_->aux_entries.empty()) {
@@ -480,7 +483,8 @@ constexpr $Msg$::ParseTableT_ $Msg$::InternalGenerateParseTable_(const ::_pbi::C
   );
 }
 
-void ParseFunctionGenerator::GenerateFastFieldEntries(io::Printer* p) {
+void ParseFunctionGenerator::GenerateFastFieldEntries(
+    io::Printer* p, const SplitMap& split_map) {
   for (const auto& info : tc_table_info_->fast_path_fields) {
     if (auto* nonfield = info.AsNonField()) {
       // Fast slot that is not associated with a field. Eg end group tags.
@@ -513,7 +517,7 @@ void ParseFunctionGenerator::GenerateFastFieldEntries(io::Printer* p) {
         Formatter format(p, variables_);
         PrintFieldComment(format, as_field->field, options_);
       }
-      ABSL_CHECK(!ShouldSplit(as_field->field, options_));
+      ABSL_CHECK(!split_map.IsSplit(as_field->field));
 
       std::string func_name = TcParseFunctionName(as_field->func);
       if (GetOptimizeFor(as_field->field->file(), options_) ==
@@ -561,7 +565,8 @@ void ParseFunctionGenerator::GenerateFastFieldEntries(io::Printer* p) {
   }
 }
 
-void ParseFunctionGenerator::GenerateFieldEntries(io::Printer* p) {
+void ParseFunctionGenerator::GenerateFieldEntries(io::Printer* p,
+                                                  const SplitMap& split_map) {
   for (const auto& entry : tc_table_info_->field_entries) {
     const FieldDescriptor* field = entry.field;
     // TODO: refactor this to use Emit.
@@ -569,7 +574,7 @@ void ParseFunctionGenerator::GenerateFieldEntries(io::Printer* p) {
     PrintFieldComment(format, field, options_);
 
     bool weak = IsWeak(field, options_);
-    bool split = ShouldSplit(field, options_);
+    bool split = split_map.IsSplit(field);
     const OneofDescriptor* oneof = field->real_containing_oneof();
 
     auto v = p->WithVars(

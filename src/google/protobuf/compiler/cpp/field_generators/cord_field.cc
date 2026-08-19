@@ -11,7 +11,6 @@
 
 #include <memory>
 #include <string>
-#include <tuple>
 
 #include "absl/container/flat_hash_map.h"
 #include "absl/log/absl_check.h"
@@ -21,7 +20,7 @@
 #include "absl/strings/string_view.h"
 #include "absl/strings/substitute.h"
 #include "google/protobuf/compiler/cpp/field.h"
-#include "google/protobuf/compiler/cpp/field_generators/generators.h"
+#include "google/protobuf/compiler/cpp/field_layout.h"
 #include "google/protobuf/compiler/cpp/helpers.h"
 #include "google/protobuf/compiler/cpp/options.h"
 #include "google/protobuf/descriptor.h"
@@ -61,7 +60,8 @@ void SetCordVariables(
 
 class CordFieldGenerator : public FieldGeneratorBase {
  public:
-  CordFieldGenerator(const FieldDescriptor* descriptor, const Options& options);
+  CordFieldGenerator(const FieldDescriptor* descriptor, const Options& options,
+                     const FieldLayout& field_layout);
   ~CordFieldGenerator() override = default;
 
   void GeneratePrivateMembers(io::Printer* p) const override;
@@ -84,7 +84,7 @@ class CordFieldGenerator : public FieldGeneratorBase {
     if (field_->default_value_string().empty()) {
       p->Emit(R"cc($name$_ {})cc");
     } else {
-      p->Emit({{"Split", ShouldSplit(field_, options_) ? "Split::" : ""}},
+      p->Emit({{"Split", field_layout().IsSplit(field_) ? "Split::" : ""}},
               R"cc(
                 $name$_ {
                   ::absl::strings_internal::MakeStringConstant(
@@ -120,7 +120,8 @@ class CordFieldGenerator : public FieldGeneratorBase {
 class CordOneofFieldGenerator : public CordFieldGenerator {
  public:
   CordOneofFieldGenerator(const FieldDescriptor* descriptor,
-                          const Options& options);
+                          const Options& options,
+                          const FieldLayout& field_layout);
   ~CordOneofFieldGenerator() override = default;
 
   void GeneratePrivateMembers(io::Printer* p) const override;
@@ -140,8 +141,9 @@ class CordOneofFieldGenerator : public CordFieldGenerator {
 
 
 CordFieldGenerator::CordFieldGenerator(const FieldDescriptor* descriptor,
-                                       const Options& options)
-    : FieldGeneratorBase(descriptor, options) {
+                                       const Options& options,
+                                       const FieldLayout& field_layout)
+    : FieldGeneratorBase(descriptor, options, field_layout) {
   SetCordVariables(descriptor, &variables_, options);
 }
 
@@ -334,8 +336,9 @@ void CordFieldGenerator::GenerateAggregateInitializer(io::Printer* p) const {
 // ===================================================================
 
 CordOneofFieldGenerator::CordOneofFieldGenerator(
-    const FieldDescriptor* descriptor, const Options& options)
-    : CordFieldGenerator(descriptor, options) {}
+    const FieldDescriptor* descriptor, const Options& options,
+    const FieldLayout& field_layout)
+    : CordFieldGenerator(descriptor, options, field_layout) {}
 
 void CordOneofFieldGenerator::GeneratePrivateMembers(io::Printer* p) const {
   auto v = p->WithVars(variables_);
@@ -469,14 +472,16 @@ void CordOneofFieldGenerator::GenerateMergingCode(io::Printer* p) const {
 }  // namespace
 
 std::unique_ptr<FieldGeneratorBase> MakeSingularCordGenerator(
-    const FieldDescriptor* desc, const Options& options) {
-  return std::make_unique<CordFieldGenerator>(desc, options);
+    const FieldDescriptor* desc, const Options& options,
+    const FieldLayout& field_layout) {
+  return std::make_unique<CordFieldGenerator>(desc, options, field_layout);
 }
 
 
 std::unique_ptr<FieldGeneratorBase> MakeOneofCordGenerator(
-    const FieldDescriptor* desc, const Options& options) {
-  return std::make_unique<CordOneofFieldGenerator>(desc, options);
+    const FieldDescriptor* desc, const Options& options,
+    const FieldLayout& field_layout) {
+  return std::make_unique<CordOneofFieldGenerator>(desc, options, field_layout);
 }
 
 }  // namespace cpp

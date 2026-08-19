@@ -17,6 +17,7 @@
 #include <cstdint>
 #include <vector>
 
+#include "google/protobuf/compiler/split_map.h"
 #include "google/protobuf/compiler/cpp/helpers.h"
 #include "google/protobuf/compiler/cpp/options.h"
 #include "google/protobuf/descriptor.h"
@@ -89,8 +90,9 @@ class MessageLayoutHelper {
   const Descriptor* descriptor() const { return descriptor_; }
 
   virtual FieldVector OptimizeLayout(const FieldVector& fields,
-                                     const Options& options) const {
-    return DoOptimizeLayout(fields, options);
+                                     const Options& options,
+                                     const SplitMap& split_map) const {
+    return DoOptimizeLayout(fields, options, split_map);
   }
 
  protected:
@@ -148,7 +150,8 @@ class MessageLayoutHelper {
   // order within split fields follows the same rule, aka classify and order by
   // "family".
   FieldVector DoOptimizeLayout(const FieldVector& fields,
-                               const Options& options) const;
+                               const Options& options,
+                               const SplitMap& split_map) const;
 
  private:
   enum FieldFamily {
@@ -180,14 +183,15 @@ class MessageLayoutHelper {
   virtual FieldGroup SingleFieldGroup(const FieldDescriptor* field) const = 0;
 
   static FieldFamily GetFieldFamily(const FieldDescriptor* field,
-                                    const Options& options);
+                                    const Options& options,
+                                    const SplitMap& split_map);
 
   // Constructs the fast parse table for the message as it would be generated,
   // ignoring hasbits/inlined string indices as those have not been assigned
   // yet. This is used to determine which fields to prioritize for the fast
   // parse hotness class, which guarantees fast-parse eligibility.
   std::vector<internal::TailCallTableInfo::FastFieldInfo> BuildFastParseTable(
-      const Options& options) const;
+      const Options& options, const SplitMap& split_map) const;
 
   static bool IsFastPathField(
       const FieldDescriptor* field,
@@ -202,8 +206,9 @@ class MessageLayoutHelper {
   // Groups fields into alignment equivalence classes (1, 4, and 8). Within
   // each alignment equivalence class, fields are partitioned by `FieldFamily`
   // and `FieldHotness`.
-  FieldAlignmentGroups BuildFieldAlignmentGroups(const FieldVector& fields,
-                                                 const Options& options) const;
+  FieldAlignmentGroups BuildFieldAlignmentGroups(
+      const FieldVector& fields, const Options& options,
+      const SplitMap& split_map) const;
 
   // Consolidates all fields into a single array of field groups, partitioned by
   // `FieldFamily` and `FieldHotness`. Within each partition, fields are

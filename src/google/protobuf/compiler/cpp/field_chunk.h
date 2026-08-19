@@ -52,7 +52,8 @@ struct AlwaysTruePred {
 template <typename Predicate, typename Filter = AlwaysTruePred>
 std::vector<FieldChunk> CollectFields(
     absl::Span<const FieldDescriptor* const> fields, const Options& options,
-    const Predicate& equivalent, const Filter filter = {}) {
+    const SplitMap& split_map, const Predicate& equivalent,
+    const Filter filter = {}) {
   std::vector<FieldChunk> chunks;
   bool force_new_chunk = true;
   for (auto field : fields) {
@@ -66,7 +67,7 @@ std::vector<FieldChunk> CollectFields(
       force_new_chunk = false;
       chunks.emplace_back(HasHasbit(field, options),
                           IsRarelyPresent(field, options),
-                          ShouldSplit(field, options));
+                          split_map.IsSplit(field));
     }
     chunks.back().fields.push_back(field);
   }
