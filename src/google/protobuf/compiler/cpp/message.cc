@@ -1427,6 +1427,11 @@ void MessageGenerator::GenerateMapEntryClassDefinition(io::Printer* p) {
           $decl_annotate$;
 
           class _Internal;
+          struct Helpers_ : public Super_::Helpers_ {
+            //~ Declare a single constructor out of line to enable constructor
+            //~ homing. See go/constructor-homing.
+            PROTOBUF_NODEBUG Helpers_();
+          };
 
           const $pbi$::ClassData* $nonnull$ GetClassData() const PROTOBUF_FINAL;
         };
@@ -1973,21 +1978,29 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
             static constexpr int _kInternalFieldNumber = $field_count$;
           )cc");
         }},
+       {"decl_get_cached_size",
+        [&] {
+          if (HasSimpleBaseClass(descriptor_, options_)) return;
+          p->Emit(R"cc(
+            $nodiscard $PROTOBUF_ALWAYS_INLINE_NODEBUG int GetCachedSize()
+                const {
+              return $cached_size$.Get();
+            }
+          )cc");
+        }},
+       {"maybe_derive_from_simple_base",
+        HasSimpleBaseClass(descriptor_, options_) ? ": public Super_::Helpers_"
+                                                  : ""},
        {"decl_non_simple_base",
         [&] {
           if (HasSimpleBaseClass(descriptor_, options_)) return;
-          p->Emit(
-              R"cc(
-                $nodiscard $PROTOBUF_ALWAYS_INLINE_NODEBUG int GetCachedSize()
-                    const {
-                  return $cached_size$.Get();
-                }
 
-                private:
-                void SharedCtor($pb$::Arena* $nullable$ arena);
-                static void SharedDtor(MessageLite& self);
-                void InternalSwap($Msg$* $nonnull$ other);
-              )cc");
+          p->Emit(R"cc(
+            static void SharedCtor(MessageLite& self,
+                                   $pb$::Arena* $nullable$ arena);
+            static void SharedDtor(MessageLite& self);
+            static void InternalSwap(MessageLite& self, $Msg$* $nonnull$ other);
+          )cc");
         }},
        {"arena_dtor",
         [&] {
@@ -2130,7 +2143,7 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
           //~ the type is statically known
           PROTOBUF_ALWAYS_INLINE_NODEBUG void operator delete(
               $Msg$* $nonnull$ msg, ::std::destroying_delete_t) {
-            SharedDtor(*msg);
+            Helpers_::SharedDtor(*msg);
             $pbi$::SizedDelete(msg, sizeof($Msg$));
           }
 #endif
@@ -2153,7 +2166,7 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
           inline $Msg$& operator=($Msg$&& from) noexcept {
             if (this == &from) return *this;
             if ($pbi$::CanMoveWithInternalSwap(GetArena(), from.GetArena())) {
-              InternalSwap(&from);
+              Helpers_::InternalSwap(*this, &from);
             } else {
               CopyFrom(from);
             }
@@ -2184,7 +2197,7 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
           inline void Swap($Msg$* $nonnull$ other) {
             if (other == this) return;
             if ($pbi$::CanUseInternalSwap(GetArena(), other->GetArena())) {
-              InternalSwap(other);
+              Helpers_::InternalSwap(*this, other);
             } else {
               $pbi$::GenericSwap(this, other);
             }
@@ -2192,7 +2205,7 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
           void UnsafeArenaSwap($Msg$* $nonnull$ other) {
             if (other == this) return;
             $DCHK$(GetArena() == other->GetArena());
-            InternalSwap(other);
+            Helpers_::InternalSwap(*this, other);
           }
 
           // implements Message ----------------------------------------------
@@ -2203,7 +2216,7 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
           }
           $generated_methods$;
           $internal_field_number$;
-          $decl_non_simple_base$;
+          $decl_get_cached_size$;
 
          private:
           static ::absl::string_view FullMessageName() { return "$full_name$"; }
@@ -2240,20 +2253,22 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
           //~ Generate private members.
          private:
           class _Internal;
-#if defined(PROTOBUF_CUSTOM_VTABLE)
-          struct Helpers_ {
+          struct Helpers_$ maybe_derive_from_simple_base$ {
             //~ Declare a single constructor out of line to enable constructor
             //~ homing. We don't define this constructor, since it is not
             //~ called. See go/constructor-homing.
             PROTOBUF_NODEBUG Helpers_();
 
+            $decl_non_simple_base$;
+
+#if defined(PROTOBUF_CUSTOM_VTABLE)
             static void Clear($pb$::MessageLite& msg);
             $nodiscard $static::size_t ByteSizeLong(const $pb$::MessageLite& msg);
             $nodiscard $static $uint8$* $nonnull$ _InternalSerialize(
                 const $pb$::MessageLite& msg, $uint8$* $nonnull$ target,
                 $pb$::io::EpsCopyOutputStream* $nonnull$ stream);
-          };
 #endif  // PROTOBUF_CUSTOM_VTABLE
+          };
           $decl_set_has$;
           $decl_oneof_has$;
           $alias_parse_table_type$;
@@ -2617,7 +2632,7 @@ void MessageGenerator::GenerateZeroInitFields(io::Printer* p) const {
                  {"Impl", "Impl_"},
                  {"impl", "_impl_"}},
                 R"cc(
-                  ::memset(reinterpret_cast<char*>(&$impl$) +
+                  ::memset(reinterpret_cast<char*>(&this_.$impl$) +
                                offsetof($Impl$, $first$_),
                            0,
                            offsetof($Impl$, $last$_) -
@@ -2627,7 +2642,7 @@ void MessageGenerator::GenerateZeroInitFields(io::Printer* p) const {
       } else {
         p->Emit({{"field_", FieldMemberName(first, false)}},
                 R"cc(
-                  $field_$ = {};
+                  this_.$field_$ = {};
                 )cc");
       }
       first = nullptr;
@@ -2782,8 +2797,10 @@ void MessageGenerator::GenerateSharedConstructorCode(io::Printer* p) {
                 //~
                 $init_impl$ {}
 
-            inline void $Msg$::SharedCtor(::_pb::Arena* $nullable$ arena) {
-              new (&_impl_) Impl_(internal_visibility(), arena);
+            inline void $Msg$::Helpers_::SharedCtor(
+                ::_pb::MessageLite& self, ::_pb::Arena* $nullable$ arena) {
+              $Msg$& this_ = static_cast<$Msg$&>(self);
+              new (&this_._impl_) Impl_(this_.internal_visibility(), arena);
               $zero_init$;
             }
           )cc");
@@ -2842,7 +2859,7 @@ void MessageGenerator::GenerateSharedDestructorCode(io::Printer* p) {
           {"impl_dtor", [&] { p->Emit("this_._impl_.~Impl_();\n"); }},
       },
       R"cc(
-        inline void $Msg$::SharedDtor(MessageLite& self) {
+        inline void $Msg$::Helpers_::SharedDtor(MessageLite& self) {
           $Msg$& this_ = static_cast<$Msg$&>(self);
           $has_bit_consistency$;
           this_._internal_metadata_.Delete<$unknown_fields_type$>();
@@ -3222,7 +3239,7 @@ void MessageGenerator::GenerateStructors(io::Printer* p) {
           {"ctor_body",
            [&] {
              if (HasSimpleBaseClass(descriptor_, options_)) return;
-             p->Emit(R"cc(SharedCtor(arena);)cc");
+             p->Emit(R"cc(Helpers_::SharedCtor(*this, arena);)cc");
              switch (NeedsArenaDestructor()) {
                case ArenaDtorNeeds::kRequired: {
                  p->Emit(R"cc(
@@ -3297,7 +3314,7 @@ void MessageGenerator::GenerateStructors(io::Printer* p) {
         R"cc(
           $Msg$::~$Msg$() {
             // @@protoc_insertion_point(destructor:$full_name$)
-            SharedDtor(*this);
+            Helpers_::SharedDtor(*this);
           }
         )cc");
   }
@@ -3618,34 +3635,43 @@ void MessageGenerator::GenerateOneofClear(io::Printer* p) {
 
 void MessageGenerator::GenerateSwap(io::Printer* p) {
   if (HasSimpleBaseClass(descriptor_, options_)) return;
-  Formatter format(p);
 
-  format(
-      "void $Msg$::InternalSwap($Msg$* PROTOBUF_RESTRICT "
-      "$nonnull$ other) {\n");
-  format.Indent();
-  format("using ::std::swap;\n");
-  format("$WeakDescriptorSelfPin$");
+  p->Emit(
+      R"cc(
+        void $Msg$::Helpers_::InternalSwap(
+            ::_pb::MessageLite& PROTOBUF_RESTRICT self,
+            $Msg$* PROTOBUF_RESTRICT $nonnull$ other) {
+      )cc");
+  p->Indent();
+  p->Emit(R"cc(
+    using ::std::swap;
+    $WeakDescriptorSelfPin$;
+    $Msg$& this_ = static_cast<$Msg$&>(self);
+  )cc");
 
   if (HasGeneratedMethods(descriptor_->file(), options_)) {
     if (descriptor_->extension_range_count() > 0) {
-      format(
-          "$extensions$.InternalSwap(&other->$extensions$);"
-          "\n");
+      p->Emit(R"cc(
+        this_.$extensions$.InternalSwap(&other->$extensions$);
+      )cc");
     }
 
     if (HasNonSplitOptionalString(descriptor_, options_)) {
       p->Emit(R"cc(
-        auto* arena = GetArena();
+        auto* arena = this_.GetArena();
         ABSL_DCHECK_EQ(arena, other->GetArena());
       )cc");
     }
-    format("_internal_metadata_.InternalSwap(&other->_internal_metadata_);\n");
+    p->Emit(R"cc(
+      this_._internal_metadata_.InternalSwap(&other->_internal_metadata_);
+    )cc");
 
     if (field_layout_.HasHasbits()) {
       for (size_t i = 0; i < static_cast<size_t>(field_layout_.HasBitsSize());
            ++i) {
-        format("swap($has_bits$[$1$], other->$has_bits$[$1$]);\n", i);
+        p->Emit({{"i", i}}, R"cc(
+          swap(this_.$has_bits$[$i$], other->$has_bits$[$i$]);
+        )cc");
       }
     }
 
@@ -3680,13 +3706,13 @@ void MessageGenerator::GenerateSwap(io::Printer* p) {
             {"last", last_field_name},
         });
 
-        format(
-            "$pbi$::memswap<\n"
-            "    PROTOBUF_FIELD_OFFSET($Msg$, $last$)\n"
-            "    + sizeof($Msg$::$last$)\n"
-            "    - PROTOBUF_FIELD_OFFSET($Msg$, $first$)>(\n"
-            "        reinterpret_cast<char*>(&$first$),\n"
-            "        reinterpret_cast<char*>(&other->$first$));\n");
+        p->Emit(R"cc(
+          $pbi$::memswap<PROTOBUF_FIELD_OFFSET($Msg$, $last$) +
+                         sizeof($Msg$::$last$) -
+                         PROTOBUF_FIELD_OFFSET($Msg$, $first$)>(
+              reinterpret_cast<char*>(&this_.$first$),
+              reinterpret_cast<char*>(&other->$first$));
+        )cc");
 
         i += run_length - 1;
         // ++i at the top of the loop.
@@ -3695,23 +3721,33 @@ void MessageGenerator::GenerateSwap(io::Printer* p) {
       }
     }
     if (ShouldSplit(descriptor_, options_)) {
-      format("swap($split$, other->$split$);\n");
+      p->Emit(R"cc(
+        swap(this_.$split$, other->$split$);
+      )cc");
     }
 
     for (auto oneof : OneOfRange(descriptor_)) {
-      format("swap(_impl_.$1$_, other->_impl_.$1$_);\n", oneof->name());
+      p->Emit({{"name", oneof->name()}}, R"cc(
+        swap(this_._impl_.$name$_, other->_impl_.$name$_);
+      )cc");
     }
 
     for (int i = 0; i < descriptor_->real_oneof_decl_count(); ++i) {
-      format("swap($oneof_case$[$1$], other->$oneof_case$[$1$]);\n", i);
+      p->Emit({{"i", i}}, R"cc(
+        swap(this_.$oneof_case$[$i$], other->$oneof_case$[$i$]);
+      )cc");
     }
 
   } else {
-    format("GetReflection()->Swap(this, other);");
+    p->Emit(R"cc(
+      this_.GetReflection()->Swap(&this_, other);
+    )cc");
   }
 
-  format.Outdent();
-  format("}\n");
+  p->Outdent();
+  p->Emit(R"cc(
+    }
+  )cc");
 }
 
 MessageGenerator::NewOpRequirements MessageGenerator::GetNewOp() const {
@@ -3785,8 +3821,7 @@ void MessageGenerator::GenerateNewOp(io::Printer* p) const {
   if (new_op.needs_to_run_constructor) {
     p->Emit(R"cc(
       constexpr auto $Msg$::_Internal::NewImpl() {
-        return $pbi$::MessageCreator(&$Msg$::_Internal::PlacementNew,
-                                     sizeof($Msg$), alignof($Msg$));
+        return $pbi$::MessageCreator(&PlacementNew, sizeof($Msg$), alignof($Msg$));
       }
     )cc");
   } else {
@@ -3857,7 +3892,7 @@ void MessageGenerator::GenerateInternalGenerateClassData(io::Printer* p) {
                 &$Msg$::MergeImpl,
                 Super_::GetNewImpl<$Msg$>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-                &$Msg$::SharedDtor,
+                &$Msg$::Helpers_::SharedDtor,
                 $custom_vtable_methods$,
 #endif  // PROTOBUF_CUSTOM_VTABLE
                 PROTOBUF_FIELD_OFFSET($Msg$, $cached_size$),
@@ -3878,7 +3913,7 @@ void MessageGenerator::GenerateInternalGenerateClassData(io::Printer* p) {
                 &$Msg$::MergeImpl,
                 Super_::GetNewImpl<$Msg$>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-                &$Msg$::SharedDtor,
+                &$Msg$::Helpers_::SharedDtor,
                 $custom_vtable_methods$,
 #endif  // PROTOBUF_CUSTOM_VTABLE
                 PROTOBUF_FIELD_OFFSET($Msg$, $cached_size$),
