@@ -30,28 +30,40 @@ namespace protobuf {
 namespace compiler {
 namespace java {
 
+namespace {
+
+void SetOneofVariables(
+    const OneofDescriptor* descriptor, Context* context,
+    absl::flat_hash_map<absl::string_view, std::string>* variables) {
+  (*variables)["oneof_name"] = context->GetOneofGeneratorInfo(descriptor)->name;
+  (*variables)["oneof_capitalized_name"] =
+      context->GetOneofGeneratorInfo(descriptor)->capitalized_name;
+  (*variables)["oneof_index"] = absl::StrCat(descriptor->index());
+  (*variables)["cap_oneof_name"] =
+      absl::AsciiStrToUpper((*variables)["oneof_name"]);
+  (*variables)["classname"] = context->GetNameResolver()->GetImmutableClassName(
+      descriptor->containing_type());
+  // These variables are placeholders to pick out the beginning and ends of
+  // identifiers for annotations (when doing so with existing variables
+  // would be ambiguous or impossible). They should never be set to anything
+  // but the empty string.
+  (*variables)["{"] = "";
+  (*variables)["}"] = "";
+}
+
+}  // namespace
+
 OneofGenerator::OneofGenerator(const OneofDescriptor* descriptor,
                                Context* context)
-    : descriptor_(descriptor), context_(context) {}
+    : descriptor_(descriptor), context_(context) {
+  SetOneofVariables(descriptor, context, &variables_);
+}
 
 OneofGenerator::~OneofGenerator() = default;
 
 void OneofGenerator::GenerateCommonBuilderMethods(io::Printer* printer) const {
-  absl::flat_hash_map<absl::string_view, std::string> vars = {
-      // These variables are placeholders to pick out the beginning and ends of
-      // identifiers for annotations (when doing so with existing variables
-      // would be ambiguous or impossible). They should never be set to anything
-      // but the empty string.
-      {"{", ""},
-      {"}", ""},
-  };
-  vars["oneof_name"] = context_->GetOneofGeneratorInfo(descriptor_)->name;
-  vars["oneof_capitalized_name"] =
-      context_->GetOneofGeneratorInfo(descriptor_)->capitalized_name;
-  vars["oneof_index"] = absl::StrCat(descriptor_->index());
-
   // oneofCase_ and oneof_
-  printer->Print(vars,
+  printer->Print(variables_,
                  "private int $oneof_name$Case_ = 0;\n"
                  "private java.lang.Object $oneof_name$_;\n");
   GenerateBuilderGetOneofCase(printer);
@@ -59,15 +71,7 @@ void OneofGenerator::GenerateCommonBuilderMethods(io::Printer* printer) const {
 }
 
 void OneofGenerator::GenerateBuilderGetOneofCase(io::Printer* printer) const {
-  absl::flat_hash_map<absl::string_view, std::string> vars = {
-      {"{", ""},
-      {"}", ""},
-  };
-  vars["oneof_name"] = context_->GetOneofGeneratorInfo(descriptor_)->name;
-  vars["oneof_capitalized_name"] =
-      context_->GetOneofGeneratorInfo(descriptor_)->capitalized_name;
-
-  printer->Print(vars,
+  printer->Print(variables_,
                  "public $oneof_capitalized_name$Case\n"
                  "    ${$get$oneof_capitalized_name$Case$}$() {\n"
                  "  return $oneof_capitalized_name$Case.forNumber(\n"
@@ -77,15 +81,7 @@ void OneofGenerator::GenerateBuilderGetOneofCase(io::Printer* printer) const {
 }
 
 void OneofGenerator::GenerateBuilderClearOneof(io::Printer* printer) const {
-  absl::flat_hash_map<absl::string_view, std::string> vars = {
-      {"{", ""},
-      {"}", ""},
-  };
-  vars["oneof_name"] = context_->GetOneofGeneratorInfo(descriptor_)->name;
-  vars["oneof_capitalized_name"] =
-      context_->GetOneofGeneratorInfo(descriptor_)->capitalized_name;
-
-  printer->Print(vars,
+  printer->Print(variables_,
                  "\n"
                  "public Builder ${$clear$oneof_capitalized_name$$}$() {\n"
                  "  $oneof_name$Case_ = 0;\n"
@@ -99,19 +95,16 @@ void OneofGenerator::GenerateBuilderClearOneof(io::Printer* printer) const {
 }
 
 void OneofGenerator::GenerateBuilderClearMethod(io::Printer* printer) const {
-  printer->Print(
-      "$oneof_name$Case_ = 0;\n"
-      "$oneof_name$_ = null;\n",
-      "oneof_name", context_->GetOneofGeneratorInfo(descriptor_)->name);
+  printer->Print(variables_,
+                 "$oneof_name$Case_ = 0;\n"
+                 "$oneof_name$_ = null;\n");
 }
 
 void OneofGenerator::GenerateMergingCode(
     io::Printer* printer,
     const FieldGeneratorMap<ImmutableFieldGenerator>& field_generators) const {
-  printer->Print(
-      "switch (other.get$oneof_capitalized_name$Case()) {\n",
-      "oneof_capitalized_name",
-      context_->GetOneofGeneratorInfo(descriptor_)->capitalized_name);
+  printer->Print(variables_,
+                 "switch (other.get$oneof_capitalized_name$Case()) {\n");
   printer->Indent();
   for (int j = 0; j < descriptor_->field_count(); j++) {
     const FieldDescriptor* field = descriptor_->field(j);
@@ -119,28 +112,25 @@ void OneofGenerator::GenerateMergingCode(
                    absl::AsciiStrToUpper(field->name()));
     printer->Indent();
     field_generators.get(field).GenerateMergingCode(printer);
-    printer->Print("break;\n");
     printer->Outdent();
-    printer->Print("}\n");
+    printer->Print(
+        "  break;\n"
+        "}\n");
   }
-  printer->Print(
-      "case $cap_oneof_name$_NOT_SET: {\n"
-      "  break;\n"
-      "}\n",
-      "cap_oneof_name",
-      absl::AsciiStrToUpper(
-          context_->GetOneofGeneratorInfo(descriptor_)->name));
   printer->Outdent();
-  printer->Print("}\n");
+  printer->Print(variables_,
+                 "  case $cap_oneof_name$_NOT_SET: {\n"
+                 "    break;\n"
+                 "  }\n"
+                 "}\n");
 }
 
 void OneofGenerator::GenerateBuildingCode(
     io::Printer* printer,
     const FieldGeneratorMap<ImmutableFieldGenerator>& field_generators) const {
-  printer->Print(
-      "result.$oneof_name$Case_ = $oneof_name$Case_;\n"
-      "result.$oneof_name$_ = this.$oneof_name$_;\n",
-      "oneof_name", context_->GetOneofGeneratorInfo(descriptor_)->name);
+  printer->Print(variables_,
+                 "result.$oneof_name$Case_ = $oneof_name$Case_;\n"
+                 "result.$oneof_name$_ = this.$oneof_name$_;\n");
   for (int i = 0; i < descriptor_->field_count(); ++i) {
     if (descriptor_->field(i)->message_type() != nullptr) {
       const ImmutableFieldGenerator& field =
@@ -151,34 +141,22 @@ void OneofGenerator::GenerateBuildingCode(
 }
 
 void OneofGenerator::GenerateInterfaceMembers(io::Printer* printer) const {
-  printer->Print(
-      "\n"
-      "$classname$.$oneof_capitalized_name$Case "
-      "get$oneof_capitalized_name$Case();\n",
-      "oneof_capitalized_name",
-      context_->GetOneofGeneratorInfo(descriptor_)->capitalized_name,
-      "classname",
-      context_->GetNameResolver()->GetImmutableClassName(
-          descriptor_->containing_type()));
+  printer->Print(variables_,
+                 "\n"
+                 "$classname$.$oneof_capitalized_name$Case "
+                 "get$oneof_capitalized_name$Case();\n");
 }
 
 void OneofGenerator::GenerateMembers(io::Printer* printer) const {
-  absl::flat_hash_map<absl::string_view, std::string> vars;
   const OneofDescriptor* oneof = descriptor_;
-  vars["oneof_name"] = context_->GetOneofGeneratorInfo(oneof)->name;
-  vars["oneof_capitalized_name"] =
-      context_->GetOneofGeneratorInfo(oneof)->capitalized_name;
-  vars["oneof_index"] = absl::StrCat((oneof)->index());
-  vars["{"] = "";
-  vars["}"] = "";
   // oneofCase_ and oneof_
-  printer->Print(vars,
+  printer->Print(variables_,
                  "private int $oneof_name$Case_ = 0;\n"
                  "@SuppressWarnings(\"serial\")\n"
                  "private java.lang.Object $oneof_name$_;\n");
   // OneofCase enum
   printer->Print(
-      vars,
+      variables_,
       "public enum ${$$oneof_capitalized_name$Case$}$\n"
       // TODO: Remove EnumLite when we want to break compatibility with
       // 3.x users
@@ -195,16 +173,15 @@ void OneofGenerator::GenerateMembers(io::Printer* printer) const {
         absl::StrCat(field->number()));
     printer->Annotate("field_name", field);
   }
-  printer->Print("$cap_oneof_name$_NOT_SET(0);\n", "cap_oneof_name",
-                 absl::AsciiStrToUpper(vars["oneof_name"]));
-  printer->Print(vars,
+  printer->Print(variables_, "$cap_oneof_name$_NOT_SET(0);\n");
+  printer->Print(variables_,
                  "private final int value;\n"
                  "private $oneof_capitalized_name$Case(int value) {\n"
                  "  this.value = value;\n"
                  "}\n");
   if (google::protobuf::internal::IsOss()) {
     printer->Print(
-        vars,
+        variables_,
         "/**\n"
         " * @param value The number of the enum to look for.\n"
         " * @return The enum associated with the given number.\n"
@@ -220,7 +197,7 @@ void OneofGenerator::GenerateMembers(io::Printer* printer) const {
     printer->Print("@com.google.protobuf.Internal.ProtoMethodMayReturnNull\n");
   }
   printer->Print(
-      vars,
+      variables_,
       "public static $oneof_capitalized_name$Case forNumber(int value) {\n"
       "  switch (value) {\n");
   for (int j = 0; j < (oneof)->field_count(); j++) {
@@ -229,19 +206,18 @@ void OneofGenerator::GenerateMembers(io::Printer* printer) const {
                    "field_number", absl::StrCat(field->number()), "field_name",
                    absl::AsciiStrToUpper(field->name()));
   }
-  printer->Print(
-      "    case 0: return $cap_oneof_name$_NOT_SET;\n"
-      "    default: return null;\n"
-      "  }\n"
-      "}\n"
-      "public int getNumber() {\n"
-      "  return this.value;\n"
-      "}\n",
-      "cap_oneof_name", absl::AsciiStrToUpper(vars["oneof_name"]));
+  printer->Print(variables_,
+                 "    case 0: return $cap_oneof_name$_NOT_SET;\n"
+                 "    default: return null;\n"
+                 "  }\n"
+                 "}\n"
+                 "public int getNumber() {\n"
+                 "  return this.value;\n"
+                 "}\n");
   printer->Outdent();
   printer->Print("};\n\n");
   // oneofCase()
-  printer->Print(vars,
+  printer->Print(variables_,
                  "public $oneof_capitalized_name$Case\n"
                  "${$get$oneof_capitalized_name$Case$}$() {\n"
                  "  return $oneof_capitalized_name$Case.forNumber(\n"
@@ -255,13 +231,10 @@ void OneofGenerator::GenerateEqualsCode(
     io::Printer* printer,
     const FieldGeneratorMap<ImmutableFieldGenerator>& field_generators) const {
   const OneofDescriptor* oneof = descriptor_;
-  printer->Print(
-      "if (!get$oneof_capitalized_name$Case().equals("
-      "other.get$oneof_capitalized_name$Case())) return false;\n",
-      "oneof_capitalized_name",
-      context_->GetOneofGeneratorInfo(oneof)->capitalized_name);
-  printer->Print("switch ($oneof_name$Case_) {\n", "oneof_name",
-                 context_->GetOneofGeneratorInfo(oneof)->name);
+  printer->Print(variables_,
+                 "if (!get$oneof_capitalized_name$Case().equals("
+                 "other.get$oneof_capitalized_name$Case())) return false;\n");
+  printer->Print(variables_, "switch ($oneof_name$Case_) {\n");
   printer->Indent();
   for (int j = 0; j < (oneof)->field_count(); j++) {
     const FieldDescriptor* field = (oneof)->field(j);
@@ -272,19 +245,18 @@ void OneofGenerator::GenerateEqualsCode(
     printer->Print("break;\n");
     printer->Outdent();
   }
-  printer->Print(
-      "case 0:\n"
-      "default:\n");
   printer->Outdent();
-  printer->Print("}\n");
+  printer->Print(
+      "  case 0:\n"
+      "  default:\n"
+      "}\n");
 }
 
 void OneofGenerator::GenerateHashCode(
     io::Printer* printer,
     const FieldGeneratorMap<ImmutableFieldGenerator>& field_generators) const {
   const OneofDescriptor* oneof = descriptor_;
-  printer->Print("switch ($oneof_name$Case_) {\n", "oneof_name",
-                 context_->GetOneofGeneratorInfo(oneof)->name);
+  printer->Print(variables_, "switch ($oneof_name$Case_) {\n");
   printer->Indent();
   for (int j = 0; j < (oneof)->field_count(); j++) {
     const FieldDescriptor* field = (oneof)->field(j);
@@ -295,11 +267,11 @@ void OneofGenerator::GenerateHashCode(
     printer->Print("break;\n");
     printer->Outdent();
   }
-  printer->Print(
-      "case 0:\n"
-      "default:\n");
   printer->Outdent();
-  printer->Print("}\n");
+  printer->Print(
+      "  case 0:\n"
+      "  default:\n"
+      "}\n");
 }
 }  // namespace java
 }  // namespace compiler
