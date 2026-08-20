@@ -230,17 +230,18 @@ cc_binary(
 # separate tests and use configuration-aware genrules to ensure each test
 # only performs real validation when its configuration is active.
 #
-# Generator binary is in tools so it is built for the host (exec configuration)
-# to support cross-compilation (e.g. darwin_x86_64).
+# We move the generator binary to "srcs" so that it is built in the target
+# configuration (not the exec configuration), ensuring it correctly receives
+# the fasttable enablement flag.
 genrule(
     name = "debug_string_test_txt_gen",
     srcs = select({
-        "//upb:fasttable_enabled_explicit_true": ["debug_string_test.txt"],
+        "//upb:fasttable_enabled_setting": ["debug_string_test.txt"],
         "//conditions:default": [],
     }),
     outs = ["generated/debug_string_test.txt"],
     cmd = select({
-        "//upb:fasttable_enabled_explicit_true": "cp $(location debug_string_test.txt) $@",
+        "//upb:fasttable_enabled_setting": "cp $(location debug_string_test.txt) $@",
         "//conditions:default": "$(location :debug_string_test_generate) > $@",
     }),
     tools = [":debug_string_test_generate"],
@@ -249,12 +250,12 @@ genrule(
 genrule(
     name = "debug_string_test_fasttable_txt_gen",
     srcs = select({
-        "//upb:fasttable_enabled_explicit_true": [],
+        "//upb:fasttable_enabled_setting": [],
         "//conditions:default": ["debug_string_test.fasttable.txt"],
     }),
     outs = ["generated/debug_string_test.fasttable.txt"],
     cmd = select({
-        "//upb:fasttable_enabled_explicit_true": "$(location :debug_string_test_generate) > $@",
+        "//upb:fasttable_enabled_setting": "$(location :debug_string_test_generate) > $@",
         "//conditions:default": "cp $(location debug_string_test.fasttable.txt) $@",
     }),
     tools = [":debug_string_test_generate"],
