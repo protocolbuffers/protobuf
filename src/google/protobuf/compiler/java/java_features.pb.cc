@@ -40,6 +40,12 @@ class JavaFeatures_NestInFileClassFeature::_Internal {
 
   static constexpr JavaFeatures_NestInFileClassFeature::ParseTableT_ GenerateParseTable(
       const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL class_data);
+  static constexpr auto GenerateClassData();
+
+  static void* PROTOBUF_NONNULL PlacementNew(const void* PROTOBUF_NONNULL,
+                                      void* PROTOBUF_NONNULL mem,
+                                      ::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
+  static constexpr auto NewImpl();
 };
 
 constexpr JavaFeatures_NestInFileClassFeature::ParseTableT_ JavaFeatures_NestInFileClassFeature::_Internal::GenerateParseTable(const ::_pbi::ClassData* class_data) {
@@ -81,15 +87,15 @@ PROTOBUF_ALWAYS_INLINE_NODEBUG constexpr JavaFeatures_NestInFileClassFeature::Ja
 #endif  // PROTOBUF_CUSTOM_VTABLE
       ) {
 }
-inline void* PROTOBUF_NONNULL JavaFeatures_NestInFileClassFeature::PlacementNew_(
+inline void* PROTOBUF_NONNULL JavaFeatures_NestInFileClassFeature::_Internal::PlacementNew(
     const void* PROTOBUF_NONNULL, void* PROTOBUF_NONNULL mem,
     ::google::protobuf::Arena* PROTOBUF_NULLABLE arena) {
   return ::new (mem) JavaFeatures_NestInFileClassFeature(arena);
 }
-constexpr auto JavaFeatures_NestInFileClassFeature::InternalNewImpl_() {
+constexpr auto JavaFeatures_NestInFileClassFeature::_Internal::NewImpl() {
   return ::google::protobuf::internal::MessageCreator::ZeroInit(sizeof(JavaFeatures_NestInFileClassFeature), alignof(JavaFeatures_NestInFileClassFeature));
 }
-constexpr auto JavaFeatures_NestInFileClassFeature::InternalGenerateClassData_() {
+constexpr auto JavaFeatures_NestInFileClassFeature::_Internal::GenerateClassData() {
   return ::google::protobuf::internal::ClassData{
       nullptr,  // IsInitialized
       &JavaFeatures_NestInFileClassFeature::MergeImpl,
@@ -104,7 +110,8 @@ constexpr auto JavaFeatures_NestInFileClassFeature::InternalGenerateClassData_()
 }
 struct JavaFeatures_NestInFileClassFeatureGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
   constexpr JavaFeatures_NestInFileClassFeatureGlobalsTypeInternal()
-      : MessageGlobalsBase(JavaFeatures_NestInFileClassFeature::InternalGenerateClassData_()),
+      : MessageGlobalsBase(
+            ::_pbi::PrivateAccess::GenerateClassData<JavaFeatures_NestInFileClassFeature>()),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
         _table(::_pbi::PrivateAccess::GenerateParseTable<JavaFeatures_NestInFileClassFeature>(
             GetClassData())) {}
@@ -129,6 +136,12 @@ class JavaFeatures::_Internal {
 
   static constexpr JavaFeatures::ParseTableT_ GenerateParseTable(
       const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL class_data);
+  static constexpr auto GenerateClassData();
+
+  static void* PROTOBUF_NONNULL PlacementNew(const void* PROTOBUF_NONNULL,
+                                      void* PROTOBUF_NONNULL mem,
+                                      ::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
+  static constexpr auto NewImpl();
 };
 
 constexpr JavaFeatures::ParseTableT_ JavaFeatures::_Internal::GenerateParseTable(const ::_pbi::ClassData* class_data) {
@@ -217,15 +230,15 @@ PROTOBUF_ALWAYS_INLINE_NODEBUG constexpr JavaFeatures::JavaFeatures(
           ),
       _impl_(internal_visibility(), ::_pbi::ConstantInitialized()) {
 }
-inline void* PROTOBUF_NONNULL JavaFeatures::PlacementNew_(
+inline void* PROTOBUF_NONNULL JavaFeatures::_Internal::PlacementNew(
     const void* PROTOBUF_NONNULL, void* PROTOBUF_NONNULL mem,
     ::google::protobuf::Arena* PROTOBUF_NULLABLE arena) {
   return ::new (mem) JavaFeatures(arena);
 }
-constexpr auto JavaFeatures::InternalNewImpl_() {
+constexpr auto JavaFeatures::_Internal::NewImpl() {
   return ::google::protobuf::internal::MessageCreator::ZeroInit(sizeof(JavaFeatures), alignof(JavaFeatures));
 }
-constexpr auto JavaFeatures::InternalGenerateClassData_() {
+constexpr auto JavaFeatures::_Internal::GenerateClassData() {
   return ::google::protobuf::internal::ClassData{
       nullptr,  // IsInitialized
       &JavaFeatures::MergeImpl,
@@ -241,7 +254,8 @@ constexpr auto JavaFeatures::InternalGenerateClassData_() {
 }
 struct JavaFeaturesGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
   constexpr JavaFeaturesGlobalsTypeInternal()
-      : MessageGlobalsBase(JavaFeatures::InternalGenerateClassData_()),
+      : MessageGlobalsBase(
+            ::_pbi::PrivateAccess::GenerateClassData<JavaFeatures>()),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
         _table(::_pbi::PrivateAccess::GenerateParseTable<JavaFeatures>(
             GetClassData())) {}

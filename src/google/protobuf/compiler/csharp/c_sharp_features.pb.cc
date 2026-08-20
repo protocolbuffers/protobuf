@@ -41,6 +41,12 @@ class CSharpFeatures::_Internal {
 
   static constexpr CSharpFeatures::ParseTableT_ GenerateParseTable(
       const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL class_data);
+  static constexpr auto GenerateClassData();
+
+  static void* PROTOBUF_NONNULL PlacementNew(const void* PROTOBUF_NONNULL,
+                                      void* PROTOBUF_NONNULL mem,
+                                      ::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
+  static constexpr auto NewImpl();
 };
 
 constexpr CSharpFeatures::ParseTableT_ CSharpFeatures::_Internal::GenerateParseTable(const ::_pbi::ClassData* class_data) {
@@ -95,15 +101,15 @@ PROTOBUF_ALWAYS_INLINE_NODEBUG constexpr CSharpFeatures::CSharpFeatures(
           ),
       _impl_(internal_visibility(), ::_pbi::ConstantInitialized()) {
 }
-inline void* PROTOBUF_NONNULL CSharpFeatures::PlacementNew_(
+inline void* PROTOBUF_NONNULL CSharpFeatures::_Internal::PlacementNew(
     const void* PROTOBUF_NONNULL, void* PROTOBUF_NONNULL mem,
     ::google::protobuf::Arena* PROTOBUF_NULLABLE arena) {
   return ::new (mem) CSharpFeatures(arena);
 }
-constexpr auto CSharpFeatures::InternalNewImpl_() {
+constexpr auto CSharpFeatures::_Internal::NewImpl() {
   return ::google::protobuf::internal::MessageCreator::ZeroInit(sizeof(CSharpFeatures), alignof(CSharpFeatures));
 }
-constexpr auto CSharpFeatures::InternalGenerateClassData_() {
+constexpr auto CSharpFeatures::_Internal::GenerateClassData() {
   return ::google::protobuf::internal::ClassData{
       nullptr,  // IsInitialized
       &CSharpFeatures::MergeImpl,
@@ -119,7 +125,8 @@ constexpr auto CSharpFeatures::InternalGenerateClassData_() {
 }
 struct CSharpFeaturesGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
   constexpr CSharpFeaturesGlobalsTypeInternal()
-      : MessageGlobalsBase(CSharpFeatures::InternalGenerateClassData_()),
+      : MessageGlobalsBase(
+            ::_pbi::PrivateAccess::GenerateClassData<CSharpFeatures>()),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
         _table(::_pbi::PrivateAccess::GenerateParseTable<CSharpFeatures>(
             GetClassData())) {}

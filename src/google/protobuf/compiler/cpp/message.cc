@@ -1416,8 +1416,6 @@ void MessageGenerator::GenerateMapEntryClassDefinition(io::Printer* p) {
 
           $decl_verify_func$;
 
-          static constexpr auto InternalGenerateClassData_();
-
          private:
           friend class $pb$::MessageLite;
           friend struct ::$tablename$;
@@ -1431,32 +1429,34 @@ void MessageGenerator::GenerateMapEntryClassDefinition(io::Printer* p) {
           class _Internal;
 
           const $pbi$::ClassData* $nonnull$ GetClassData() const PROTOBUF_FINAL;
-          static void* $nonnull$ PlacementNew_(
-              //~
-              const void* $nonnull$, void* $nonnull$ mem,
-              $pb$::Arena* $nullable$ arena);
-          static constexpr auto InternalNewImpl_();
         };
       )cc");
 
-  p->Emit({{"has_bit",
-            [&] {
-              if (!field_layout_.HasHasbits()) return;
-              p->Emit(R"cc(
-                using HasBits = decltype(::std::declval<$Msg$>().$has_bits$);
-                static constexpr ::int32_t kHasBitsOffset =
-                    8 * PROTOBUF_FIELD_OFFSET($Msg$, _impl_._has_bits_);
-              )cc");
-            }}},
-          R"cc(
-            class $Msg$::_Internal {
-             public:
-              $has_bit$;
-
-              static constexpr $Msg$::ParseTableT_ GenerateParseTable(
-                  const $pbi$::ClassData* $nonnull$ class_data);
-            };
+  p->Emit(
+      {{"has_bit",
+        [&] {
+          if (!field_layout_.HasHasbits()) return;
+          p->Emit(R"cc(
+            using HasBits = decltype(::std::declval<$Msg$>().$has_bits$);
+            static constexpr ::int32_t kHasBitsOffset =
+                8 * PROTOBUF_FIELD_OFFSET($Msg$, _impl_._has_bits_);
           )cc");
+        }}},
+      R"cc(
+        class $Msg$::_Internal {
+         public:
+          $has_bit$;
+
+          static constexpr $Msg$::ParseTableT_ GenerateParseTable(
+              const $pbi$::ClassData* $nonnull$ class_data);
+          static constexpr auto GenerateClassData();
+
+          static void* $nonnull$ PlacementNew(const void* $nonnull$,
+                                              void* $nonnull$ mem,
+                                              $pb$::Arena* $nullable$ arena);
+          static constexpr auto NewImpl();
+        };
+      )cc");
 }
 
 void MessageGenerator::GenerateImplDefinition(io::Printer* p) {
@@ -2219,18 +2219,12 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
           }
           $arena_dtor$;
           const $pbi$::ClassData* $nonnull$ GetClassData() const PROTOBUF_FINAL;
-          static void* $nonnull$ PlacementNew_(
-              //~
-              const void* $nonnull$, void* $nonnull$ mem,
-              $pb$::Arena* $nullable$ arena);
-          static constexpr auto InternalNewImpl_();
 
          public:
           //~ We need this in the public section to call it from the initializer
           //~ of T_class_data_. However, since it is `constexpr` and has an
           //~ `auto` return type it is not callable from outside the .pb.cc
           //~ without a definition so it is effectively private.
-          static constexpr auto InternalGenerateClassData_();
 
           $get_metadata$;
           $decl_split_methods$;
@@ -3790,15 +3784,15 @@ void MessageGenerator::GenerateNewOp(io::Printer* p) const {
   const auto new_op = GetNewOp();
   if (new_op.needs_to_run_constructor) {
     p->Emit(R"cc(
-      constexpr auto $Msg$::InternalNewImpl_() {
-        return $pbi$::MessageCreator(&$Msg$::PlacementNew_, sizeof($Msg$),
-                                     alignof($Msg$));
+      constexpr auto $Msg$::_Internal::NewImpl() {
+        return $pbi$::MessageCreator(&$Msg$::_Internal::PlacementNew,
+                                     sizeof($Msg$), alignof($Msg$));
       }
     )cc");
   } else {
     p->Emit({{"copy_type", new_op.needs_memcpy ? "CopyInit" : "ZeroInit"}},
             R"cc(
-              constexpr auto $Msg$::InternalNewImpl_() {
+              constexpr auto $Msg$::_Internal::NewImpl() {
                 return $pbi$::MessageCreator::$copy_type$(sizeof($Msg$), alignof($Msg$));
               }
             )cc");
@@ -3857,7 +3851,7 @@ void MessageGenerator::GenerateInternalGenerateClassData(io::Printer* p) {
              }},
         },
         R"cc(
-          constexpr auto $Msg$::InternalGenerateClassData_() {
+          constexpr auto $Msg$::_Internal::GenerateClassData() {
             return $pbi$::ClassData{
                 $is_initialized$,
                 &$Msg$::MergeImpl,
@@ -3878,7 +3872,7 @@ void MessageGenerator::GenerateInternalGenerateClassData(io::Printer* p) {
             {"custom_vtable_methods", custom_vtable_methods},
         },
         R"cc(
-          constexpr auto $Msg$::InternalGenerateClassData_() {
+          constexpr auto $Msg$::_Internal::GenerateClassData() {
             return $pbi$::ClassData{
                 $is_initialized$,
                 &$Msg$::MergeImpl,
@@ -5441,6 +5435,12 @@ void MessageGenerator::GenerateSourceDefaultInstance(io::Printer* p) {
 
             static constexpr $Msg$::ParseTableT_ GenerateParseTable(
                 const $pbi$::ClassData* $nonnull$ class_data);
+            static constexpr auto GenerateClassData();
+
+            static void* $nonnull$ PlacementNew(const void* $nonnull$,
+                                                void* $nonnull$ mem,
+                                                $pb$::Arena* $nullable$ arena);
+            static constexpr auto NewImpl();
           };
         )cc");
   }
@@ -5482,12 +5482,11 @@ void MessageGenerator::GenerateSourceDefaultInstance(io::Printer* p) {
 
   GenerateConstexprConstructor(p);
 
-  // Always generate PlacementNew_ because we might need it for different
-  // reasons. EnableCustomNewFor<T> might be false in this compiler, or the
-  // object might be too large for arena seeding.
+  // Always generate PlacementNew because we might need it for different
+  // reasons. EnableCustomNewFor<T> might be false in this compiler.
   // We mark `inline` to avoid library bloat if the function is unused.
   p->Emit(R"cc(
-    inline void* $nonnull$ $Msg$::PlacementNew_(
+    inline void* $nonnull$ $Msg$::_Internal::PlacementNew(
         //~
         const void* $nonnull$, void* $nonnull$ mem,
         $pb$::Arena* $nullable$ arena) {
@@ -5564,7 +5563,8 @@ void MessageGenerator::GenerateSourceDefaultInstance(io::Printer* p) {
       R"cc(
         struct $globals_type$ : ::_pbi::MessageGlobalsBase {
           $constexpr$ $globals_type$()
-              : MessageGlobalsBase($Msg$::InternalGenerateClassData_()),
+              : MessageGlobalsBase(
+                    ::_pbi::PrivateAccess::GenerateClassData<$Msg$>()),
                 _default(::_pbi::ConstantInitialized{}, GetClassData()),
                 _table(::_pbi::PrivateAccess::GenerateParseTable<$Msg$>(
                     GetClassData())) {}

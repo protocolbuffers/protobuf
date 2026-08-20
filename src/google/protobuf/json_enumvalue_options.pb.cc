@@ -42,6 +42,12 @@ class JsonEnumValueOptions::_Internal {
 
   static constexpr JsonEnumValueOptions::ParseTableT_ GenerateParseTable(
       const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL class_data);
+  static constexpr auto GenerateClassData();
+
+  static void* PROTOBUF_NONNULL PlacementNew(const void* PROTOBUF_NONNULL,
+                                      void* PROTOBUF_NONNULL mem,
+                                      ::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
+  static constexpr auto NewImpl();
 };
 
 constexpr JsonEnumValueOptions::ParseTableT_ JsonEnumValueOptions::_Internal::GenerateParseTable(const ::_pbi::ClassData* class_data) {
@@ -101,15 +107,15 @@ PROTOBUF_ALWAYS_INLINE_NODEBUG constexpr JsonEnumValueOptions::JsonEnumValueOpti
           ),
       _impl_(internal_visibility(), ::_pbi::ConstantInitialized()) {
 }
-inline void* PROTOBUF_NONNULL JsonEnumValueOptions::PlacementNew_(
+inline void* PROTOBUF_NONNULL JsonEnumValueOptions::_Internal::PlacementNew(
     const void* PROTOBUF_NONNULL, void* PROTOBUF_NONNULL mem,
     ::google::protobuf::Arena* PROTOBUF_NULLABLE arena) {
   return ::new (mem) JsonEnumValueOptions(arena);
 }
-constexpr auto JsonEnumValueOptions::InternalNewImpl_() {
+constexpr auto JsonEnumValueOptions::_Internal::NewImpl() {
   return ::google::protobuf::internal::MessageCreator::CopyInit(sizeof(JsonEnumValueOptions), alignof(JsonEnumValueOptions));
 }
-constexpr auto JsonEnumValueOptions::InternalGenerateClassData_() {
+constexpr auto JsonEnumValueOptions::_Internal::GenerateClassData() {
   return ::google::protobuf::internal::ClassData{
       nullptr,  // IsInitialized
       &JsonEnumValueOptions::MergeImpl,
@@ -125,7 +131,8 @@ constexpr auto JsonEnumValueOptions::InternalGenerateClassData_() {
 }
 struct JsonEnumValueOptionsGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
   constexpr JsonEnumValueOptionsGlobalsTypeInternal()
-      : MessageGlobalsBase(JsonEnumValueOptions::InternalGenerateClassData_()),
+      : MessageGlobalsBase(
+            ::_pbi::PrivateAccess::GenerateClassData<JsonEnumValueOptions>()),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
         _table(::_pbi::PrivateAccess::GenerateParseTable<JsonEnumValueOptions>(
             GetClassData())) {}

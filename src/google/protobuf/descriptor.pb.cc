@@ -113,6 +113,12 @@ class UninterpretedOption_NamePart::_Internal {
 
   static constexpr UninterpretedOption_NamePart::ParseTableT_ GenerateParseTable(
       const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL class_data);
+  static constexpr auto GenerateClassData();
+
+  static void* PROTOBUF_NONNULL PlacementNew(const void* PROTOBUF_NONNULL,
+                                      void* PROTOBUF_NONNULL mem,
+                                      ::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
+  static constexpr auto NewImpl();
 };
 
 constexpr UninterpretedOption_NamePart::ParseTableT_ UninterpretedOption_NamePart::_Internal::GenerateParseTable(const ::_pbi::ClassData* class_data) {
@@ -176,15 +182,15 @@ PROTOBUF_ALWAYS_INLINE_NODEBUG constexpr UninterpretedOption_NamePart::Uninterpr
           ),
       _impl_(internal_visibility(), ::_pbi::ConstantInitialized()) {
 }
-inline void* PROTOBUF_NONNULL UninterpretedOption_NamePart::PlacementNew_(
+inline void* PROTOBUF_NONNULL UninterpretedOption_NamePart::_Internal::PlacementNew(
     const void* PROTOBUF_NONNULL, void* PROTOBUF_NONNULL mem,
     ::google::protobuf::Arena* PROTOBUF_NULLABLE arena) {
   return ::new (mem) UninterpretedOption_NamePart(arena);
 }
-constexpr auto UninterpretedOption_NamePart::InternalNewImpl_() {
+constexpr auto UninterpretedOption_NamePart::_Internal::NewImpl() {
   return ::google::protobuf::internal::MessageCreator::CopyInit(sizeof(UninterpretedOption_NamePart), alignof(UninterpretedOption_NamePart));
 }
-constexpr auto UninterpretedOption_NamePart::InternalGenerateClassData_() {
+constexpr auto UninterpretedOption_NamePart::_Internal::GenerateClassData() {
   return ::google::protobuf::internal::ClassData{
       UninterpretedOption_NamePart::IsInitializedImpl,
       &UninterpretedOption_NamePart::MergeImpl,
@@ -203,7 +209,8 @@ struct UninterpretedOption_NamePartGlobalsTypeInternal : ::_pbi::MessageGlobalsB
   constexpr
   #endif  // PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
    UninterpretedOption_NamePartGlobalsTypeInternal()
-      : MessageGlobalsBase(UninterpretedOption_NamePart::InternalGenerateClassData_()),
+      : MessageGlobalsBase(
+            ::_pbi::PrivateAccess::GenerateClassData<UninterpretedOption_NamePart>()),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
         _table(::_pbi::PrivateAccess::GenerateParseTable<UninterpretedOption_NamePart>(
             GetClassData())) {}
@@ -231,6 +238,12 @@ class SourceCodeInfo_Location::_Internal {
 
   static constexpr SourceCodeInfo_Location::ParseTableT_ GenerateParseTable(
       const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL class_data);
+  static constexpr auto GenerateClassData();
+
+  static void* PROTOBUF_NONNULL PlacementNew(const void* PROTOBUF_NONNULL,
+                                      void* PROTOBUF_NONNULL mem,
+                                      ::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
+  static constexpr auto NewImpl();
 };
 
 constexpr SourceCodeInfo_Location::ParseTableT_ SourceCodeInfo_Location::_Internal::GenerateParseTable(const ::_pbi::ClassData* class_data) {
@@ -332,15 +345,15 @@ PROTOBUF_ALWAYS_INLINE_NODEBUG constexpr SourceCodeInfo_Location::SourceCodeInfo
           ),
       _impl_(internal_visibility(), ::_pbi::ConstantInitialized()) {
 }
-inline void* PROTOBUF_NONNULL SourceCodeInfo_Location::PlacementNew_(
+inline void* PROTOBUF_NONNULL SourceCodeInfo_Location::_Internal::PlacementNew(
     const void* PROTOBUF_NONNULL, void* PROTOBUF_NONNULL mem,
     ::google::protobuf::Arena* PROTOBUF_NULLABLE arena) {
   return ::new (mem) SourceCodeInfo_Location(arena);
 }
-constexpr auto SourceCodeInfo_Location::InternalNewImpl_() {
+constexpr auto SourceCodeInfo_Location::_Internal::NewImpl() {
   return ::google::protobuf::internal::MessageCreator::CopyInit(sizeof(SourceCodeInfo_Location), alignof(SourceCodeInfo_Location));
 }
-constexpr auto SourceCodeInfo_Location::InternalGenerateClassData_() {
+constexpr auto SourceCodeInfo_Location::_Internal::GenerateClassData() {
   return ::google::protobuf::internal::ClassData{
       nullptr,  // IsInitialized
       &SourceCodeInfo_Location::MergeImpl,
@@ -359,7 +372,8 @@ struct SourceCodeInfo_LocationGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
   constexpr
   #endif  // PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
    SourceCodeInfo_LocationGlobalsTypeInternal()
-      : MessageGlobalsBase(SourceCodeInfo_Location::InternalGenerateClassData_()),
+      : MessageGlobalsBase(
+            ::_pbi::PrivateAccess::GenerateClassData<SourceCodeInfo_Location>()),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
         _table(::_pbi::PrivateAccess::GenerateParseTable<SourceCodeInfo_Location>(
             GetClassData())) {}
@@ -387,6 +401,12 @@ class GeneratedCodeInfo_Annotation::_Internal {
 
   static constexpr GeneratedCodeInfo_Annotation::ParseTableT_ GenerateParseTable(
       const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL class_data);
+  static constexpr auto GenerateClassData();
+
+  static void* PROTOBUF_NONNULL PlacementNew(const void* PROTOBUF_NONNULL,
+                                      void* PROTOBUF_NONNULL mem,
+                                      ::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
+  static constexpr auto NewImpl();
 };
 
 constexpr GeneratedCodeInfo_Annotation::ParseTableT_ GeneratedCodeInfo_Annotation::_Internal::GenerateParseTable(const ::_pbi::ClassData* class_data) {
@@ -480,15 +500,15 @@ PROTOBUF_ALWAYS_INLINE_NODEBUG constexpr GeneratedCodeInfo_Annotation::Generated
           ),
       _impl_(internal_visibility(), ::_pbi::ConstantInitialized()) {
 }
-inline void* PROTOBUF_NONNULL GeneratedCodeInfo_Annotation::PlacementNew_(
+inline void* PROTOBUF_NONNULL GeneratedCodeInfo_Annotation::_Internal::PlacementNew(
     const void* PROTOBUF_NONNULL, void* PROTOBUF_NONNULL mem,
     ::google::protobuf::Arena* PROTOBUF_NULLABLE arena) {
   return ::new (mem) GeneratedCodeInfo_Annotation(arena);
 }
-constexpr auto GeneratedCodeInfo_Annotation::InternalNewImpl_() {
+constexpr auto GeneratedCodeInfo_Annotation::_Internal::NewImpl() {
   return ::google::protobuf::internal::MessageCreator::CopyInit(sizeof(GeneratedCodeInfo_Annotation), alignof(GeneratedCodeInfo_Annotation));
 }
-constexpr auto GeneratedCodeInfo_Annotation::InternalGenerateClassData_() {
+constexpr auto GeneratedCodeInfo_Annotation::_Internal::GenerateClassData() {
   return ::google::protobuf::internal::ClassData{
       nullptr,  // IsInitialized
       &GeneratedCodeInfo_Annotation::MergeImpl,
@@ -507,7 +527,8 @@ struct GeneratedCodeInfo_AnnotationGlobalsTypeInternal : ::_pbi::MessageGlobalsB
   constexpr
   #endif  // PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
    GeneratedCodeInfo_AnnotationGlobalsTypeInternal()
-      : MessageGlobalsBase(GeneratedCodeInfo_Annotation::InternalGenerateClassData_()),
+      : MessageGlobalsBase(
+            ::_pbi::PrivateAccess::GenerateClassData<GeneratedCodeInfo_Annotation>()),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
         _table(::_pbi::PrivateAccess::GenerateParseTable<GeneratedCodeInfo_Annotation>(
             GetClassData())) {}
@@ -535,6 +556,12 @@ class FieldOptions_FeatureSupport::_Internal {
 
   static constexpr FieldOptions_FeatureSupport::ParseTableT_ GenerateParseTable(
       const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL class_data);
+  static constexpr auto GenerateClassData();
+
+  static void* PROTOBUF_NONNULL PlacementNew(const void* PROTOBUF_NONNULL,
+                                      void* PROTOBUF_NONNULL mem,
+                                      ::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
+  static constexpr auto NewImpl();
 };
 
 constexpr FieldOptions_FeatureSupport::ParseTableT_ FieldOptions_FeatureSupport::_Internal::GenerateParseTable(const ::_pbi::ClassData* class_data) {
@@ -628,15 +655,15 @@ PROTOBUF_ALWAYS_INLINE_NODEBUG constexpr FieldOptions_FeatureSupport::FieldOptio
           ),
       _impl_(internal_visibility(), ::_pbi::ConstantInitialized()) {
 }
-inline void* PROTOBUF_NONNULL FieldOptions_FeatureSupport::PlacementNew_(
+inline void* PROTOBUF_NONNULL FieldOptions_FeatureSupport::_Internal::PlacementNew(
     const void* PROTOBUF_NONNULL, void* PROTOBUF_NONNULL mem,
     ::google::protobuf::Arena* PROTOBUF_NULLABLE arena) {
   return ::new (mem) FieldOptions_FeatureSupport(arena);
 }
-constexpr auto FieldOptions_FeatureSupport::InternalNewImpl_() {
+constexpr auto FieldOptions_FeatureSupport::_Internal::NewImpl() {
   return ::google::protobuf::internal::MessageCreator::CopyInit(sizeof(FieldOptions_FeatureSupport), alignof(FieldOptions_FeatureSupport));
 }
-constexpr auto FieldOptions_FeatureSupport::InternalGenerateClassData_() {
+constexpr auto FieldOptions_FeatureSupport::_Internal::GenerateClassData() {
   return ::google::protobuf::internal::ClassData{
       nullptr,  // IsInitialized
       &FieldOptions_FeatureSupport::MergeImpl,
@@ -655,7 +682,8 @@ struct FieldOptions_FeatureSupportGlobalsTypeInternal : ::_pbi::MessageGlobalsBa
   constexpr
   #endif  // PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
    FieldOptions_FeatureSupportGlobalsTypeInternal()
-      : MessageGlobalsBase(FieldOptions_FeatureSupport::InternalGenerateClassData_()),
+      : MessageGlobalsBase(
+            ::_pbi::PrivateAccess::GenerateClassData<FieldOptions_FeatureSupport>()),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
         _table(::_pbi::PrivateAccess::GenerateParseTable<FieldOptions_FeatureSupport>(
             GetClassData())) {}
@@ -683,6 +711,12 @@ class FieldOptions_EditionDefault::_Internal {
 
   static constexpr FieldOptions_EditionDefault::ParseTableT_ GenerateParseTable(
       const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL class_data);
+  static constexpr auto GenerateClassData();
+
+  static void* PROTOBUF_NONNULL PlacementNew(const void* PROTOBUF_NONNULL,
+                                      void* PROTOBUF_NONNULL mem,
+                                      ::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
+  static constexpr auto NewImpl();
 };
 
 constexpr FieldOptions_EditionDefault::ParseTableT_ FieldOptions_EditionDefault::_Internal::GenerateParseTable(const ::_pbi::ClassData* class_data) {
@@ -748,15 +782,15 @@ PROTOBUF_ALWAYS_INLINE_NODEBUG constexpr FieldOptions_EditionDefault::FieldOptio
           ),
       _impl_(internal_visibility(), ::_pbi::ConstantInitialized()) {
 }
-inline void* PROTOBUF_NONNULL FieldOptions_EditionDefault::PlacementNew_(
+inline void* PROTOBUF_NONNULL FieldOptions_EditionDefault::_Internal::PlacementNew(
     const void* PROTOBUF_NONNULL, void* PROTOBUF_NONNULL mem,
     ::google::protobuf::Arena* PROTOBUF_NULLABLE arena) {
   return ::new (mem) FieldOptions_EditionDefault(arena);
 }
-constexpr auto FieldOptions_EditionDefault::InternalNewImpl_() {
+constexpr auto FieldOptions_EditionDefault::_Internal::NewImpl() {
   return ::google::protobuf::internal::MessageCreator::CopyInit(sizeof(FieldOptions_EditionDefault), alignof(FieldOptions_EditionDefault));
 }
-constexpr auto FieldOptions_EditionDefault::InternalGenerateClassData_() {
+constexpr auto FieldOptions_EditionDefault::_Internal::GenerateClassData() {
   return ::google::protobuf::internal::ClassData{
       nullptr,  // IsInitialized
       &FieldOptions_EditionDefault::MergeImpl,
@@ -775,7 +809,8 @@ struct FieldOptions_EditionDefaultGlobalsTypeInternal : ::_pbi::MessageGlobalsBa
   constexpr
   #endif  // PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
    FieldOptions_EditionDefaultGlobalsTypeInternal()
-      : MessageGlobalsBase(FieldOptions_EditionDefault::InternalGenerateClassData_()),
+      : MessageGlobalsBase(
+            ::_pbi::PrivateAccess::GenerateClassData<FieldOptions_EditionDefault>()),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
         _table(::_pbi::PrivateAccess::GenerateParseTable<FieldOptions_EditionDefault>(
             GetClassData())) {}
@@ -800,6 +835,12 @@ class FeatureSet_VisibilityFeature::_Internal {
 
   static constexpr FeatureSet_VisibilityFeature::ParseTableT_ GenerateParseTable(
       const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL class_data);
+  static constexpr auto GenerateClassData();
+
+  static void* PROTOBUF_NONNULL PlacementNew(const void* PROTOBUF_NONNULL,
+                                      void* PROTOBUF_NONNULL mem,
+                                      ::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
+  static constexpr auto NewImpl();
 };
 
 constexpr FeatureSet_VisibilityFeature::ParseTableT_ FeatureSet_VisibilityFeature::_Internal::GenerateParseTable(const ::_pbi::ClassData* class_data) {
@@ -841,15 +882,15 @@ PROTOBUF_ALWAYS_INLINE_NODEBUG constexpr FeatureSet_VisibilityFeature::FeatureSe
 #endif  // PROTOBUF_CUSTOM_VTABLE
       ) {
 }
-inline void* PROTOBUF_NONNULL FeatureSet_VisibilityFeature::PlacementNew_(
+inline void* PROTOBUF_NONNULL FeatureSet_VisibilityFeature::_Internal::PlacementNew(
     const void* PROTOBUF_NONNULL, void* PROTOBUF_NONNULL mem,
     ::google::protobuf::Arena* PROTOBUF_NULLABLE arena) {
   return ::new (mem) FeatureSet_VisibilityFeature(arena);
 }
-constexpr auto FeatureSet_VisibilityFeature::InternalNewImpl_() {
+constexpr auto FeatureSet_VisibilityFeature::_Internal::NewImpl() {
   return ::google::protobuf::internal::MessageCreator::ZeroInit(sizeof(FeatureSet_VisibilityFeature), alignof(FeatureSet_VisibilityFeature));
 }
-constexpr auto FeatureSet_VisibilityFeature::InternalGenerateClassData_() {
+constexpr auto FeatureSet_VisibilityFeature::_Internal::GenerateClassData() {
   return ::google::protobuf::internal::ClassData{
       nullptr,  // IsInitialized
       &FeatureSet_VisibilityFeature::MergeImpl,
@@ -867,7 +908,8 @@ struct FeatureSet_VisibilityFeatureGlobalsTypeInternal : ::_pbi::MessageGlobalsB
   constexpr
   #endif  // PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
    FeatureSet_VisibilityFeatureGlobalsTypeInternal()
-      : MessageGlobalsBase(FeatureSet_VisibilityFeature::InternalGenerateClassData_()),
+      : MessageGlobalsBase(
+            ::_pbi::PrivateAccess::GenerateClassData<FeatureSet_VisibilityFeature>()),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
         _table(::_pbi::PrivateAccess::GenerateParseTable<FeatureSet_VisibilityFeature>(
             GetClassData())) {}
@@ -892,6 +934,12 @@ class FeatureSet_ProtoLimitsFeature::_Internal {
 
   static constexpr FeatureSet_ProtoLimitsFeature::ParseTableT_ GenerateParseTable(
       const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL class_data);
+  static constexpr auto GenerateClassData();
+
+  static void* PROTOBUF_NONNULL PlacementNew(const void* PROTOBUF_NONNULL,
+                                      void* PROTOBUF_NONNULL mem,
+                                      ::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
+  static constexpr auto NewImpl();
 };
 
 constexpr FeatureSet_ProtoLimitsFeature::ParseTableT_ FeatureSet_ProtoLimitsFeature::_Internal::GenerateParseTable(const ::_pbi::ClassData* class_data) {
@@ -933,15 +981,15 @@ PROTOBUF_ALWAYS_INLINE_NODEBUG constexpr FeatureSet_ProtoLimitsFeature::FeatureS
 #endif  // PROTOBUF_CUSTOM_VTABLE
       ) {
 }
-inline void* PROTOBUF_NONNULL FeatureSet_ProtoLimitsFeature::PlacementNew_(
+inline void* PROTOBUF_NONNULL FeatureSet_ProtoLimitsFeature::_Internal::PlacementNew(
     const void* PROTOBUF_NONNULL, void* PROTOBUF_NONNULL mem,
     ::google::protobuf::Arena* PROTOBUF_NULLABLE arena) {
   return ::new (mem) FeatureSet_ProtoLimitsFeature(arena);
 }
-constexpr auto FeatureSet_ProtoLimitsFeature::InternalNewImpl_() {
+constexpr auto FeatureSet_ProtoLimitsFeature::_Internal::NewImpl() {
   return ::google::protobuf::internal::MessageCreator::ZeroInit(sizeof(FeatureSet_ProtoLimitsFeature), alignof(FeatureSet_ProtoLimitsFeature));
 }
-constexpr auto FeatureSet_ProtoLimitsFeature::InternalGenerateClassData_() {
+constexpr auto FeatureSet_ProtoLimitsFeature::_Internal::GenerateClassData() {
   return ::google::protobuf::internal::ClassData{
       nullptr,  // IsInitialized
       &FeatureSet_ProtoLimitsFeature::MergeImpl,
@@ -959,7 +1007,8 @@ struct FeatureSet_ProtoLimitsFeatureGlobalsTypeInternal : ::_pbi::MessageGlobals
   constexpr
   #endif  // PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
    FeatureSet_ProtoLimitsFeatureGlobalsTypeInternal()
-      : MessageGlobalsBase(FeatureSet_ProtoLimitsFeature::InternalGenerateClassData_()),
+      : MessageGlobalsBase(
+            ::_pbi::PrivateAccess::GenerateClassData<FeatureSet_ProtoLimitsFeature>()),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
         _table(::_pbi::PrivateAccess::GenerateParseTable<FeatureSet_ProtoLimitsFeature>(
             GetClassData())) {}
@@ -987,6 +1036,12 @@ class FeatureSet::_Internal {
 
   static constexpr FeatureSet::ParseTableT_ GenerateParseTable(
       const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL class_data);
+  static constexpr auto GenerateClassData();
+
+  static void* PROTOBUF_NONNULL PlacementNew(const void* PROTOBUF_NONNULL,
+                                      void* PROTOBUF_NONNULL mem,
+                                      ::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
+  static constexpr auto NewImpl();
 };
 
 constexpr FeatureSet::ParseTableT_ FeatureSet::_Internal::GenerateParseTable(const ::_pbi::ClassData* class_data) {
@@ -1114,15 +1169,15 @@ PROTOBUF_ALWAYS_INLINE_NODEBUG constexpr FeatureSet::FeatureSet(
           ),
       _impl_(internal_visibility(), ::_pbi::ConstantInitialized()) {
 }
-inline void* PROTOBUF_NONNULL FeatureSet::PlacementNew_(
+inline void* PROTOBUF_NONNULL FeatureSet::_Internal::PlacementNew(
     const void* PROTOBUF_NONNULL, void* PROTOBUF_NONNULL mem,
     ::google::protobuf::Arena* PROTOBUF_NULLABLE arena) {
   return ::new (mem) FeatureSet(arena);
 }
-constexpr auto FeatureSet::InternalNewImpl_() {
+constexpr auto FeatureSet::_Internal::NewImpl() {
   return ::google::protobuf::internal::MessageCreator::CopyInit(sizeof(FeatureSet), alignof(FeatureSet));
 }
-constexpr auto FeatureSet::InternalGenerateClassData_() {
+constexpr auto FeatureSet::_Internal::GenerateClassData() {
   return ::google::protobuf::internal::ClassData{
       FeatureSet::IsInitializedImpl,
       &FeatureSet::MergeImpl,
@@ -1141,7 +1196,8 @@ struct FeatureSetGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
   constexpr
   #endif  // PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
    FeatureSetGlobalsTypeInternal()
-      : MessageGlobalsBase(FeatureSet::InternalGenerateClassData_()),
+      : MessageGlobalsBase(
+            ::_pbi::PrivateAccess::GenerateClassData<FeatureSet>()),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
         _table(::_pbi::PrivateAccess::GenerateParseTable<FeatureSet>(
             GetClassData())) {}
@@ -1169,6 +1225,12 @@ class ExtensionRangeOptions_Declaration::_Internal {
 
   static constexpr ExtensionRangeOptions_Declaration::ParseTableT_ GenerateParseTable(
       const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL class_data);
+  static constexpr auto GenerateClassData();
+
+  static void* PROTOBUF_NONNULL PlacementNew(const void* PROTOBUF_NONNULL,
+                                      void* PROTOBUF_NONNULL mem,
+                                      ::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
+  static constexpr auto NewImpl();
 };
 
 constexpr ExtensionRangeOptions_Declaration::ParseTableT_ ExtensionRangeOptions_Declaration::_Internal::GenerateParseTable(const ::_pbi::ClassData* class_data) {
@@ -1258,15 +1320,15 @@ PROTOBUF_ALWAYS_INLINE_NODEBUG constexpr ExtensionRangeOptions_Declaration::Exte
           ),
       _impl_(internal_visibility(), ::_pbi::ConstantInitialized()) {
 }
-inline void* PROTOBUF_NONNULL ExtensionRangeOptions_Declaration::PlacementNew_(
+inline void* PROTOBUF_NONNULL ExtensionRangeOptions_Declaration::_Internal::PlacementNew(
     const void* PROTOBUF_NONNULL, void* PROTOBUF_NONNULL mem,
     ::google::protobuf::Arena* PROTOBUF_NULLABLE arena) {
   return ::new (mem) ExtensionRangeOptions_Declaration(arena);
 }
-constexpr auto ExtensionRangeOptions_Declaration::InternalNewImpl_() {
+constexpr auto ExtensionRangeOptions_Declaration::_Internal::NewImpl() {
   return ::google::protobuf::internal::MessageCreator::CopyInit(sizeof(ExtensionRangeOptions_Declaration), alignof(ExtensionRangeOptions_Declaration));
 }
-constexpr auto ExtensionRangeOptions_Declaration::InternalGenerateClassData_() {
+constexpr auto ExtensionRangeOptions_Declaration::_Internal::GenerateClassData() {
   return ::google::protobuf::internal::ClassData{
       nullptr,  // IsInitialized
       &ExtensionRangeOptions_Declaration::MergeImpl,
@@ -1285,7 +1347,8 @@ struct ExtensionRangeOptions_DeclarationGlobalsTypeInternal : ::_pbi::MessageGlo
   constexpr
   #endif  // PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
    ExtensionRangeOptions_DeclarationGlobalsTypeInternal()
-      : MessageGlobalsBase(ExtensionRangeOptions_Declaration::InternalGenerateClassData_()),
+      : MessageGlobalsBase(
+            ::_pbi::PrivateAccess::GenerateClassData<ExtensionRangeOptions_Declaration>()),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
         _table(::_pbi::PrivateAccess::GenerateParseTable<ExtensionRangeOptions_Declaration>(
             GetClassData())) {}
@@ -1313,6 +1376,12 @@ class EnumDescriptorProto_EnumReservedRange::_Internal {
 
   static constexpr EnumDescriptorProto_EnumReservedRange::ParseTableT_ GenerateParseTable(
       const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL class_data);
+  static constexpr auto GenerateClassData();
+
+  static void* PROTOBUF_NONNULL PlacementNew(const void* PROTOBUF_NONNULL,
+                                      void* PROTOBUF_NONNULL mem,
+                                      ::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
+  static constexpr auto NewImpl();
 };
 
 constexpr EnumDescriptorProto_EnumReservedRange::ParseTableT_ EnumDescriptorProto_EnumReservedRange::_Internal::GenerateParseTable(const ::_pbi::ClassData* class_data) {
@@ -1374,15 +1443,15 @@ PROTOBUF_ALWAYS_INLINE_NODEBUG constexpr EnumDescriptorProto_EnumReservedRange::
           ),
       _impl_(internal_visibility(), ::_pbi::ConstantInitialized()) {
 }
-inline void* PROTOBUF_NONNULL EnumDescriptorProto_EnumReservedRange::PlacementNew_(
+inline void* PROTOBUF_NONNULL EnumDescriptorProto_EnumReservedRange::_Internal::PlacementNew(
     const void* PROTOBUF_NONNULL, void* PROTOBUF_NONNULL mem,
     ::google::protobuf::Arena* PROTOBUF_NULLABLE arena) {
   return ::new (mem) EnumDescriptorProto_EnumReservedRange(arena);
 }
-constexpr auto EnumDescriptorProto_EnumReservedRange::InternalNewImpl_() {
+constexpr auto EnumDescriptorProto_EnumReservedRange::_Internal::NewImpl() {
   return ::google::protobuf::internal::MessageCreator::ZeroInit(sizeof(EnumDescriptorProto_EnumReservedRange), alignof(EnumDescriptorProto_EnumReservedRange));
 }
-constexpr auto EnumDescriptorProto_EnumReservedRange::InternalGenerateClassData_() {
+constexpr auto EnumDescriptorProto_EnumReservedRange::_Internal::GenerateClassData() {
   return ::google::protobuf::internal::ClassData{
       nullptr,  // IsInitialized
       &EnumDescriptorProto_EnumReservedRange::MergeImpl,
@@ -1401,7 +1470,8 @@ struct EnumDescriptorProto_EnumReservedRangeGlobalsTypeInternal : ::_pbi::Messag
   constexpr
   #endif  // PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
    EnumDescriptorProto_EnumReservedRangeGlobalsTypeInternal()
-      : MessageGlobalsBase(EnumDescriptorProto_EnumReservedRange::InternalGenerateClassData_()),
+      : MessageGlobalsBase(
+            ::_pbi::PrivateAccess::GenerateClassData<EnumDescriptorProto_EnumReservedRange>()),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
         _table(::_pbi::PrivateAccess::GenerateParseTable<EnumDescriptorProto_EnumReservedRange>(
             GetClassData())) {}
@@ -1429,6 +1499,12 @@ class DescriptorProto_ReservedRange::_Internal {
 
   static constexpr DescriptorProto_ReservedRange::ParseTableT_ GenerateParseTable(
       const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL class_data);
+  static constexpr auto GenerateClassData();
+
+  static void* PROTOBUF_NONNULL PlacementNew(const void* PROTOBUF_NONNULL,
+                                      void* PROTOBUF_NONNULL mem,
+                                      ::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
+  static constexpr auto NewImpl();
 };
 
 constexpr DescriptorProto_ReservedRange::ParseTableT_ DescriptorProto_ReservedRange::_Internal::GenerateParseTable(const ::_pbi::ClassData* class_data) {
@@ -1490,15 +1566,15 @@ PROTOBUF_ALWAYS_INLINE_NODEBUG constexpr DescriptorProto_ReservedRange::Descript
           ),
       _impl_(internal_visibility(), ::_pbi::ConstantInitialized()) {
 }
-inline void* PROTOBUF_NONNULL DescriptorProto_ReservedRange::PlacementNew_(
+inline void* PROTOBUF_NONNULL DescriptorProto_ReservedRange::_Internal::PlacementNew(
     const void* PROTOBUF_NONNULL, void* PROTOBUF_NONNULL mem,
     ::google::protobuf::Arena* PROTOBUF_NULLABLE arena) {
   return ::new (mem) DescriptorProto_ReservedRange(arena);
 }
-constexpr auto DescriptorProto_ReservedRange::InternalNewImpl_() {
+constexpr auto DescriptorProto_ReservedRange::_Internal::NewImpl() {
   return ::google::protobuf::internal::MessageCreator::ZeroInit(sizeof(DescriptorProto_ReservedRange), alignof(DescriptorProto_ReservedRange));
 }
-constexpr auto DescriptorProto_ReservedRange::InternalGenerateClassData_() {
+constexpr auto DescriptorProto_ReservedRange::_Internal::GenerateClassData() {
   return ::google::protobuf::internal::ClassData{
       nullptr,  // IsInitialized
       &DescriptorProto_ReservedRange::MergeImpl,
@@ -1517,7 +1593,8 @@ struct DescriptorProto_ReservedRangeGlobalsTypeInternal : ::_pbi::MessageGlobals
   constexpr
   #endif  // PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
    DescriptorProto_ReservedRangeGlobalsTypeInternal()
-      : MessageGlobalsBase(DescriptorProto_ReservedRange::InternalGenerateClassData_()),
+      : MessageGlobalsBase(
+            ::_pbi::PrivateAccess::GenerateClassData<DescriptorProto_ReservedRange>()),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
         _table(::_pbi::PrivateAccess::GenerateParseTable<DescriptorProto_ReservedRange>(
             GetClassData())) {}
@@ -1545,6 +1622,12 @@ class UninterpretedOption::_Internal {
 
   static constexpr UninterpretedOption::ParseTableT_ GenerateParseTable(
       const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL class_data);
+  static constexpr auto GenerateClassData();
+
+  static void* PROTOBUF_NONNULL PlacementNew(const void* PROTOBUF_NONNULL,
+                                      void* PROTOBUF_NONNULL mem,
+                                      ::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
+  static constexpr auto NewImpl();
 };
 
 constexpr UninterpretedOption::ParseTableT_ UninterpretedOption::_Internal::GenerateParseTable(const ::_pbi::ClassData* class_data) {
@@ -1654,15 +1737,15 @@ PROTOBUF_ALWAYS_INLINE_NODEBUG constexpr UninterpretedOption::UninterpretedOptio
           ),
       _impl_(internal_visibility(), ::_pbi::ConstantInitialized()) {
 }
-inline void* PROTOBUF_NONNULL UninterpretedOption::PlacementNew_(
+inline void* PROTOBUF_NONNULL UninterpretedOption::_Internal::PlacementNew(
     const void* PROTOBUF_NONNULL, void* PROTOBUF_NONNULL mem,
     ::google::protobuf::Arena* PROTOBUF_NULLABLE arena) {
   return ::new (mem) UninterpretedOption(arena);
 }
-constexpr auto UninterpretedOption::InternalNewImpl_() {
+constexpr auto UninterpretedOption::_Internal::NewImpl() {
   return ::google::protobuf::internal::MessageCreator::CopyInit(sizeof(UninterpretedOption), alignof(UninterpretedOption));
 }
-constexpr auto UninterpretedOption::InternalGenerateClassData_() {
+constexpr auto UninterpretedOption::_Internal::GenerateClassData() {
   return ::google::protobuf::internal::ClassData{
       UninterpretedOption::IsInitializedImpl,
       &UninterpretedOption::MergeImpl,
@@ -1681,7 +1764,8 @@ struct UninterpretedOptionGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
   constexpr
   #endif  // PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
    UninterpretedOptionGlobalsTypeInternal()
-      : MessageGlobalsBase(UninterpretedOption::InternalGenerateClassData_()),
+      : MessageGlobalsBase(
+            ::_pbi::PrivateAccess::GenerateClassData<UninterpretedOption>()),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
         _table(::_pbi::PrivateAccess::GenerateParseTable<UninterpretedOption>(
             GetClassData())) {}
@@ -1709,6 +1793,12 @@ class SourceCodeInfo::_Internal {
 
   static constexpr SourceCodeInfo::ParseTableT_ GenerateParseTable(
       const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL class_data);
+  static constexpr auto GenerateClassData();
+
+  static void* PROTOBUF_NONNULL PlacementNew(const void* PROTOBUF_NONNULL,
+                                      void* PROTOBUF_NONNULL mem,
+                                      ::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
+  static constexpr auto NewImpl();
 };
 
 constexpr SourceCodeInfo::ParseTableT_ SourceCodeInfo::_Internal::GenerateParseTable(const ::_pbi::ClassData* class_data) {
@@ -1769,15 +1859,15 @@ PROTOBUF_ALWAYS_INLINE_NODEBUG constexpr SourceCodeInfo::SourceCodeInfo(
           ),
       _impl_(internal_visibility(), ::_pbi::ConstantInitialized()) {
 }
-inline void* PROTOBUF_NONNULL SourceCodeInfo::PlacementNew_(
+inline void* PROTOBUF_NONNULL SourceCodeInfo::_Internal::PlacementNew(
     const void* PROTOBUF_NONNULL, void* PROTOBUF_NONNULL mem,
     ::google::protobuf::Arena* PROTOBUF_NULLABLE arena) {
   return ::new (mem) SourceCodeInfo(arena);
 }
-constexpr auto SourceCodeInfo::InternalNewImpl_() {
+constexpr auto SourceCodeInfo::_Internal::NewImpl() {
   return ::google::protobuf::internal::MessageCreator::CopyInit(sizeof(SourceCodeInfo), alignof(SourceCodeInfo));
 }
-constexpr auto SourceCodeInfo::InternalGenerateClassData_() {
+constexpr auto SourceCodeInfo::_Internal::GenerateClassData() {
   return ::google::protobuf::internal::ClassData{
       SourceCodeInfo::IsInitializedImpl,
       &SourceCodeInfo::MergeImpl,
@@ -1796,7 +1886,8 @@ struct SourceCodeInfoGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
   constexpr
   #endif  // PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
    SourceCodeInfoGlobalsTypeInternal()
-      : MessageGlobalsBase(SourceCodeInfo::InternalGenerateClassData_()),
+      : MessageGlobalsBase(
+            ::_pbi::PrivateAccess::GenerateClassData<SourceCodeInfo>()),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
         _table(::_pbi::PrivateAccess::GenerateParseTable<SourceCodeInfo>(
             GetClassData())) {}
@@ -1824,6 +1915,12 @@ class GeneratedCodeInfo::_Internal {
 
   static constexpr GeneratedCodeInfo::ParseTableT_ GenerateParseTable(
       const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL class_data);
+  static constexpr auto GenerateClassData();
+
+  static void* PROTOBUF_NONNULL PlacementNew(const void* PROTOBUF_NONNULL,
+                                      void* PROTOBUF_NONNULL mem,
+                                      ::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
+  static constexpr auto NewImpl();
 };
 
 constexpr GeneratedCodeInfo::ParseTableT_ GeneratedCodeInfo::_Internal::GenerateParseTable(const ::_pbi::ClassData* class_data) {
@@ -1884,15 +1981,15 @@ PROTOBUF_ALWAYS_INLINE_NODEBUG constexpr GeneratedCodeInfo::GeneratedCodeInfo(
           ),
       _impl_(internal_visibility(), ::_pbi::ConstantInitialized()) {
 }
-inline void* PROTOBUF_NONNULL GeneratedCodeInfo::PlacementNew_(
+inline void* PROTOBUF_NONNULL GeneratedCodeInfo::_Internal::PlacementNew(
     const void* PROTOBUF_NONNULL, void* PROTOBUF_NONNULL mem,
     ::google::protobuf::Arena* PROTOBUF_NULLABLE arena) {
   return ::new (mem) GeneratedCodeInfo(arena);
 }
-constexpr auto GeneratedCodeInfo::InternalNewImpl_() {
+constexpr auto GeneratedCodeInfo::_Internal::NewImpl() {
   return ::google::protobuf::internal::MessageCreator::CopyInit(sizeof(GeneratedCodeInfo), alignof(GeneratedCodeInfo));
 }
-constexpr auto GeneratedCodeInfo::InternalGenerateClassData_() {
+constexpr auto GeneratedCodeInfo::_Internal::GenerateClassData() {
   return ::google::protobuf::internal::ClassData{
       nullptr,  // IsInitialized
       &GeneratedCodeInfo::MergeImpl,
@@ -1911,7 +2008,8 @@ struct GeneratedCodeInfoGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
   constexpr
   #endif  // PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
    GeneratedCodeInfoGlobalsTypeInternal()
-      : MessageGlobalsBase(GeneratedCodeInfo::InternalGenerateClassData_()),
+      : MessageGlobalsBase(
+            ::_pbi::PrivateAccess::GenerateClassData<GeneratedCodeInfo>()),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
         _table(::_pbi::PrivateAccess::GenerateParseTable<GeneratedCodeInfo>(
             GetClassData())) {}
@@ -1939,6 +2037,12 @@ class FeatureSetDefaults_FeatureSetEditionDefault::_Internal {
 
   static constexpr FeatureSetDefaults_FeatureSetEditionDefault::ParseTableT_ GenerateParseTable(
       const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL class_data);
+  static constexpr auto GenerateClassData();
+
+  static void* PROTOBUF_NONNULL PlacementNew(const void* PROTOBUF_NONNULL,
+                                      void* PROTOBUF_NONNULL mem,
+                                      ::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
+  static constexpr auto NewImpl();
 };
 
 constexpr FeatureSetDefaults_FeatureSetEditionDefault::ParseTableT_ FeatureSetDefaults_FeatureSetEditionDefault::_Internal::GenerateParseTable(const ::_pbi::ClassData* class_data) {
@@ -2012,15 +2116,15 @@ PROTOBUF_ALWAYS_INLINE_NODEBUG constexpr FeatureSetDefaults_FeatureSetEditionDef
           ),
       _impl_(internal_visibility(), ::_pbi::ConstantInitialized()) {
 }
-inline void* PROTOBUF_NONNULL FeatureSetDefaults_FeatureSetEditionDefault::PlacementNew_(
+inline void* PROTOBUF_NONNULL FeatureSetDefaults_FeatureSetEditionDefault::_Internal::PlacementNew(
     const void* PROTOBUF_NONNULL, void* PROTOBUF_NONNULL mem,
     ::google::protobuf::Arena* PROTOBUF_NULLABLE arena) {
   return ::new (mem) FeatureSetDefaults_FeatureSetEditionDefault(arena);
 }
-constexpr auto FeatureSetDefaults_FeatureSetEditionDefault::InternalNewImpl_() {
+constexpr auto FeatureSetDefaults_FeatureSetEditionDefault::_Internal::NewImpl() {
   return ::google::protobuf::internal::MessageCreator::ZeroInit(sizeof(FeatureSetDefaults_FeatureSetEditionDefault), alignof(FeatureSetDefaults_FeatureSetEditionDefault));
 }
-constexpr auto FeatureSetDefaults_FeatureSetEditionDefault::InternalGenerateClassData_() {
+constexpr auto FeatureSetDefaults_FeatureSetEditionDefault::_Internal::GenerateClassData() {
   return ::google::protobuf::internal::ClassData{
       FeatureSetDefaults_FeatureSetEditionDefault::IsInitializedImpl,
       &FeatureSetDefaults_FeatureSetEditionDefault::MergeImpl,
@@ -2039,7 +2143,8 @@ struct FeatureSetDefaults_FeatureSetEditionDefaultGlobalsTypeInternal : ::_pbi::
   constexpr
   #endif  // PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
    FeatureSetDefaults_FeatureSetEditionDefaultGlobalsTypeInternal()
-      : MessageGlobalsBase(FeatureSetDefaults_FeatureSetEditionDefault::InternalGenerateClassData_()),
+      : MessageGlobalsBase(
+            ::_pbi::PrivateAccess::GenerateClassData<FeatureSetDefaults_FeatureSetEditionDefault>()),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
         _table(::_pbi::PrivateAccess::GenerateParseTable<FeatureSetDefaults_FeatureSetEditionDefault>(
             GetClassData())) {}
@@ -2067,6 +2172,12 @@ class ServiceOptions::_Internal {
 
   static constexpr ServiceOptions::ParseTableT_ GenerateParseTable(
       const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL class_data);
+  static constexpr auto GenerateClassData();
+
+  static void* PROTOBUF_NONNULL PlacementNew(const void* PROTOBUF_NONNULL,
+                                      void* PROTOBUF_NONNULL mem,
+                                      ::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
+  static constexpr auto NewImpl();
 };
 
 constexpr ServiceOptions::ParseTableT_ ServiceOptions::_Internal::GenerateParseTable(const ::_pbi::ClassData* class_data) {
@@ -2147,15 +2258,15 @@ PROTOBUF_ALWAYS_INLINE_NODEBUG constexpr ServiceOptions::ServiceOptions(
           ),
       _impl_(internal_visibility(), ::_pbi::ConstantInitialized()) {
 }
-inline void* PROTOBUF_NONNULL ServiceOptions::PlacementNew_(
+inline void* PROTOBUF_NONNULL ServiceOptions::_Internal::PlacementNew(
     const void* PROTOBUF_NONNULL, void* PROTOBUF_NONNULL mem,
     ::google::protobuf::Arena* PROTOBUF_NULLABLE arena) {
   return ::new (mem) ServiceOptions(arena);
 }
-constexpr auto ServiceOptions::InternalNewImpl_() {
+constexpr auto ServiceOptions::_Internal::NewImpl() {
   return ::google::protobuf::internal::MessageCreator::CopyInit(sizeof(ServiceOptions), alignof(ServiceOptions));
 }
-constexpr auto ServiceOptions::InternalGenerateClassData_() {
+constexpr auto ServiceOptions::_Internal::GenerateClassData() {
   return ::google::protobuf::internal::ClassData{
       ServiceOptions::IsInitializedImpl,
       &ServiceOptions::MergeImpl,
@@ -2174,7 +2285,8 @@ struct ServiceOptionsGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
   constexpr
   #endif  // PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
    ServiceOptionsGlobalsTypeInternal()
-      : MessageGlobalsBase(ServiceOptions::InternalGenerateClassData_()),
+      : MessageGlobalsBase(
+            ::_pbi::PrivateAccess::GenerateClassData<ServiceOptions>()),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
         _table(::_pbi::PrivateAccess::GenerateParseTable<ServiceOptions>(
             GetClassData())) {}
@@ -2202,6 +2314,12 @@ class OneofOptions::_Internal {
 
   static constexpr OneofOptions::ParseTableT_ GenerateParseTable(
       const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL class_data);
+  static constexpr auto GenerateClassData();
+
+  static void* PROTOBUF_NONNULL PlacementNew(const void* PROTOBUF_NONNULL,
+                                      void* PROTOBUF_NONNULL mem,
+                                      ::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
+  static constexpr auto NewImpl();
 };
 
 constexpr OneofOptions::ParseTableT_ OneofOptions::_Internal::GenerateParseTable(const ::_pbi::ClassData* class_data) {
@@ -2274,15 +2392,15 @@ PROTOBUF_ALWAYS_INLINE_NODEBUG constexpr OneofOptions::OneofOptions(
           ),
       _impl_(internal_visibility(), ::_pbi::ConstantInitialized()) {
 }
-inline void* PROTOBUF_NONNULL OneofOptions::PlacementNew_(
+inline void* PROTOBUF_NONNULL OneofOptions::_Internal::PlacementNew(
     const void* PROTOBUF_NONNULL, void* PROTOBUF_NONNULL mem,
     ::google::protobuf::Arena* PROTOBUF_NULLABLE arena) {
   return ::new (mem) OneofOptions(arena);
 }
-constexpr auto OneofOptions::InternalNewImpl_() {
+constexpr auto OneofOptions::_Internal::NewImpl() {
   return ::google::protobuf::internal::MessageCreator::CopyInit(sizeof(OneofOptions), alignof(OneofOptions));
 }
-constexpr auto OneofOptions::InternalGenerateClassData_() {
+constexpr auto OneofOptions::_Internal::GenerateClassData() {
   return ::google::protobuf::internal::ClassData{
       OneofOptions::IsInitializedImpl,
       &OneofOptions::MergeImpl,
@@ -2301,7 +2419,8 @@ struct OneofOptionsGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
   constexpr
   #endif  // PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
    OneofOptionsGlobalsTypeInternal()
-      : MessageGlobalsBase(OneofOptions::InternalGenerateClassData_()),
+      : MessageGlobalsBase(
+            ::_pbi::PrivateAccess::GenerateClassData<OneofOptions>()),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
         _table(::_pbi::PrivateAccess::GenerateParseTable<OneofOptions>(
             GetClassData())) {}
@@ -2329,6 +2448,12 @@ class MethodOptions::_Internal {
 
   static constexpr MethodOptions::ParseTableT_ GenerateParseTable(
       const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL class_data);
+  static constexpr auto GenerateClassData();
+
+  static void* PROTOBUF_NONNULL PlacementNew(const void* PROTOBUF_NONNULL,
+                                      void* PROTOBUF_NONNULL mem,
+                                      ::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
+  static constexpr auto NewImpl();
 };
 
 constexpr MethodOptions::ParseTableT_ MethodOptions::_Internal::GenerateParseTable(const ::_pbi::ClassData* class_data) {
@@ -2420,15 +2545,15 @@ PROTOBUF_ALWAYS_INLINE_NODEBUG constexpr MethodOptions::MethodOptions(
           ),
       _impl_(internal_visibility(), ::_pbi::ConstantInitialized()) {
 }
-inline void* PROTOBUF_NONNULL MethodOptions::PlacementNew_(
+inline void* PROTOBUF_NONNULL MethodOptions::_Internal::PlacementNew(
     const void* PROTOBUF_NONNULL, void* PROTOBUF_NONNULL mem,
     ::google::protobuf::Arena* PROTOBUF_NULLABLE arena) {
   return ::new (mem) MethodOptions(arena);
 }
-constexpr auto MethodOptions::InternalNewImpl_() {
+constexpr auto MethodOptions::_Internal::NewImpl() {
   return ::google::protobuf::internal::MessageCreator::CopyInit(sizeof(MethodOptions), alignof(MethodOptions));
 }
-constexpr auto MethodOptions::InternalGenerateClassData_() {
+constexpr auto MethodOptions::_Internal::GenerateClassData() {
   return ::google::protobuf::internal::ClassData{
       MethodOptions::IsInitializedImpl,
       &MethodOptions::MergeImpl,
@@ -2447,7 +2572,8 @@ struct MethodOptionsGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
   constexpr
   #endif  // PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
    MethodOptionsGlobalsTypeInternal()
-      : MessageGlobalsBase(MethodOptions::InternalGenerateClassData_()),
+      : MessageGlobalsBase(
+            ::_pbi::PrivateAccess::GenerateClassData<MethodOptions>()),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
         _table(::_pbi::PrivateAccess::GenerateParseTable<MethodOptions>(
             GetClassData())) {}
@@ -2475,6 +2601,12 @@ class MessageOptions::_Internal {
 
   static constexpr MessageOptions::ParseTableT_ GenerateParseTable(
       const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL class_data);
+  static constexpr auto GenerateClassData();
+
+  static void* PROTOBUF_NONNULL PlacementNew(const void* PROTOBUF_NONNULL,
+                                      void* PROTOBUF_NONNULL mem,
+                                      ::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
+  static constexpr auto NewImpl();
 };
 
 constexpr MessageOptions::ParseTableT_ MessageOptions::_Internal::GenerateParseTable(const ::_pbi::ClassData* class_data) {
@@ -2575,15 +2707,15 @@ PROTOBUF_ALWAYS_INLINE_NODEBUG constexpr MessageOptions::MessageOptions(
           ),
       _impl_(internal_visibility(), ::_pbi::ConstantInitialized()) {
 }
-inline void* PROTOBUF_NONNULL MessageOptions::PlacementNew_(
+inline void* PROTOBUF_NONNULL MessageOptions::_Internal::PlacementNew(
     const void* PROTOBUF_NONNULL, void* PROTOBUF_NONNULL mem,
     ::google::protobuf::Arena* PROTOBUF_NULLABLE arena) {
   return ::new (mem) MessageOptions(arena);
 }
-constexpr auto MessageOptions::InternalNewImpl_() {
+constexpr auto MessageOptions::_Internal::NewImpl() {
   return ::google::protobuf::internal::MessageCreator::CopyInit(sizeof(MessageOptions), alignof(MessageOptions));
 }
-constexpr auto MessageOptions::InternalGenerateClassData_() {
+constexpr auto MessageOptions::_Internal::GenerateClassData() {
   return ::google::protobuf::internal::ClassData{
       MessageOptions::IsInitializedImpl,
       &MessageOptions::MergeImpl,
@@ -2602,7 +2734,8 @@ struct MessageOptionsGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
   constexpr
   #endif  // PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
    MessageOptionsGlobalsTypeInternal()
-      : MessageGlobalsBase(MessageOptions::InternalGenerateClassData_()),
+      : MessageGlobalsBase(
+            ::_pbi::PrivateAccess::GenerateClassData<MessageOptions>()),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
         _table(::_pbi::PrivateAccess::GenerateParseTable<MessageOptions>(
             GetClassData())) {}
@@ -2630,6 +2763,12 @@ class FileOptions::_Internal {
 
   static constexpr FileOptions::ParseTableT_ GenerateParseTable(
       const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL class_data);
+  static constexpr auto GenerateClassData();
+
+  static void* PROTOBUF_NONNULL PlacementNew(const void* PROTOBUF_NONNULL,
+                                      void* PROTOBUF_NONNULL mem,
+                                      ::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
+  static constexpr auto NewImpl();
 };
 
 constexpr FileOptions::ParseTableT_ FileOptions::_Internal::GenerateParseTable(const ::_pbi::ClassData* class_data) {
@@ -2855,15 +2994,15 @@ PROTOBUF_ALWAYS_INLINE_NODEBUG constexpr FileOptions::FileOptions(
           ),
       _impl_(internal_visibility(), ::_pbi::ConstantInitialized()) {
 }
-inline void* PROTOBUF_NONNULL FileOptions::PlacementNew_(
+inline void* PROTOBUF_NONNULL FileOptions::_Internal::PlacementNew(
     const void* PROTOBUF_NONNULL, void* PROTOBUF_NONNULL mem,
     ::google::protobuf::Arena* PROTOBUF_NULLABLE arena) {
   return ::new (mem) FileOptions(arena);
 }
-constexpr auto FileOptions::InternalNewImpl_() {
+constexpr auto FileOptions::_Internal::NewImpl() {
   return ::google::protobuf::internal::MessageCreator::CopyInit(sizeof(FileOptions), alignof(FileOptions));
 }
-constexpr auto FileOptions::InternalGenerateClassData_() {
+constexpr auto FileOptions::_Internal::GenerateClassData() {
   return ::google::protobuf::internal::ClassData{
       FileOptions::IsInitializedImpl,
       &FileOptions::MergeImpl,
@@ -2882,7 +3021,8 @@ struct FileOptionsGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
   constexpr
   #endif  // PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
    FileOptionsGlobalsTypeInternal()
-      : MessageGlobalsBase(FileOptions::InternalGenerateClassData_()),
+      : MessageGlobalsBase(
+            ::_pbi::PrivateAccess::GenerateClassData<FileOptions>()),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
         _table(::_pbi::PrivateAccess::GenerateParseTable<FileOptions>(
             GetClassData())) {}
@@ -2910,6 +3050,12 @@ class FieldOptions::_Internal {
 
   static constexpr FieldOptions::ParseTableT_ GenerateParseTable(
       const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL class_data);
+  static constexpr auto GenerateClassData();
+
+  static void* PROTOBUF_NONNULL PlacementNew(const void* PROTOBUF_NONNULL,
+                                      void* PROTOBUF_NONNULL mem,
+                                      ::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
+  static constexpr auto NewImpl();
 };
 
 constexpr FieldOptions::ParseTableT_ FieldOptions::_Internal::GenerateParseTable(const ::_pbi::ClassData* class_data) {
@@ -3068,15 +3214,15 @@ PROTOBUF_ALWAYS_INLINE_NODEBUG constexpr FieldOptions::FieldOptions(
           ),
       _impl_(internal_visibility(), ::_pbi::ConstantInitialized()) {
 }
-inline void* PROTOBUF_NONNULL FieldOptions::PlacementNew_(
+inline void* PROTOBUF_NONNULL FieldOptions::_Internal::PlacementNew(
     const void* PROTOBUF_NONNULL, void* PROTOBUF_NONNULL mem,
     ::google::protobuf::Arena* PROTOBUF_NULLABLE arena) {
   return ::new (mem) FieldOptions(arena);
 }
-constexpr auto FieldOptions::InternalNewImpl_() {
+constexpr auto FieldOptions::_Internal::NewImpl() {
   return ::google::protobuf::internal::MessageCreator::CopyInit(sizeof(FieldOptions), alignof(FieldOptions));
 }
-constexpr auto FieldOptions::InternalGenerateClassData_() {
+constexpr auto FieldOptions::_Internal::GenerateClassData() {
   return ::google::protobuf::internal::ClassData{
       FieldOptions::IsInitializedImpl,
       &FieldOptions::MergeImpl,
@@ -3095,7 +3241,8 @@ struct FieldOptionsGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
   constexpr
   #endif  // PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
    FieldOptionsGlobalsTypeInternal()
-      : MessageGlobalsBase(FieldOptions::InternalGenerateClassData_()),
+      : MessageGlobalsBase(
+            ::_pbi::PrivateAccess::GenerateClassData<FieldOptions>()),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
         _table(::_pbi::PrivateAccess::GenerateParseTable<FieldOptions>(
             GetClassData())) {}
@@ -3123,6 +3270,12 @@ class FeatureSetDefaults::_Internal {
 
   static constexpr FeatureSetDefaults::ParseTableT_ GenerateParseTable(
       const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL class_data);
+  static constexpr auto GenerateClassData();
+
+  static void* PROTOBUF_NONNULL PlacementNew(const void* PROTOBUF_NONNULL,
+                                      void* PROTOBUF_NONNULL mem,
+                                      ::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
+  static constexpr auto NewImpl();
 };
 
 constexpr FeatureSetDefaults::ParseTableT_ FeatureSetDefaults::_Internal::GenerateParseTable(const ::_pbi::ClassData* class_data) {
@@ -3195,15 +3348,15 @@ PROTOBUF_ALWAYS_INLINE_NODEBUG constexpr FeatureSetDefaults::FeatureSetDefaults(
           ),
       _impl_(internal_visibility(), ::_pbi::ConstantInitialized()) {
 }
-inline void* PROTOBUF_NONNULL FeatureSetDefaults::PlacementNew_(
+inline void* PROTOBUF_NONNULL FeatureSetDefaults::_Internal::PlacementNew(
     const void* PROTOBUF_NONNULL, void* PROTOBUF_NONNULL mem,
     ::google::protobuf::Arena* PROTOBUF_NULLABLE arena) {
   return ::new (mem) FeatureSetDefaults(arena);
 }
-constexpr auto FeatureSetDefaults::InternalNewImpl_() {
+constexpr auto FeatureSetDefaults::_Internal::NewImpl() {
   return ::google::protobuf::internal::MessageCreator::CopyInit(sizeof(FeatureSetDefaults), alignof(FeatureSetDefaults));
 }
-constexpr auto FeatureSetDefaults::InternalGenerateClassData_() {
+constexpr auto FeatureSetDefaults::_Internal::GenerateClassData() {
   return ::google::protobuf::internal::ClassData{
       FeatureSetDefaults::IsInitializedImpl,
       &FeatureSetDefaults::MergeImpl,
@@ -3222,7 +3375,8 @@ struct FeatureSetDefaultsGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
   constexpr
   #endif  // PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
    FeatureSetDefaultsGlobalsTypeInternal()
-      : MessageGlobalsBase(FeatureSetDefaults::InternalGenerateClassData_()),
+      : MessageGlobalsBase(
+            ::_pbi::PrivateAccess::GenerateClassData<FeatureSetDefaults>()),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
         _table(::_pbi::PrivateAccess::GenerateParseTable<FeatureSetDefaults>(
             GetClassData())) {}
@@ -3250,6 +3404,12 @@ class ExtensionRangeOptions::_Internal {
 
   static constexpr ExtensionRangeOptions::ParseTableT_ GenerateParseTable(
       const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL class_data);
+  static constexpr auto GenerateClassData();
+
+  static void* PROTOBUF_NONNULL PlacementNew(const void* PROTOBUF_NONNULL,
+                                      void* PROTOBUF_NONNULL mem,
+                                      ::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
+  static constexpr auto NewImpl();
 };
 
 constexpr ExtensionRangeOptions::ParseTableT_ ExtensionRangeOptions::_Internal::GenerateParseTable(const ::_pbi::ClassData* class_data) {
@@ -3343,15 +3503,15 @@ PROTOBUF_ALWAYS_INLINE_NODEBUG constexpr ExtensionRangeOptions::ExtensionRangeOp
           ),
       _impl_(internal_visibility(), ::_pbi::ConstantInitialized()) {
 }
-inline void* PROTOBUF_NONNULL ExtensionRangeOptions::PlacementNew_(
+inline void* PROTOBUF_NONNULL ExtensionRangeOptions::_Internal::PlacementNew(
     const void* PROTOBUF_NONNULL, void* PROTOBUF_NONNULL mem,
     ::google::protobuf::Arena* PROTOBUF_NULLABLE arena) {
   return ::new (mem) ExtensionRangeOptions(arena);
 }
-constexpr auto ExtensionRangeOptions::InternalNewImpl_() {
+constexpr auto ExtensionRangeOptions::_Internal::NewImpl() {
   return ::google::protobuf::internal::MessageCreator::CopyInit(sizeof(ExtensionRangeOptions), alignof(ExtensionRangeOptions));
 }
-constexpr auto ExtensionRangeOptions::InternalGenerateClassData_() {
+constexpr auto ExtensionRangeOptions::_Internal::GenerateClassData() {
   return ::google::protobuf::internal::ClassData{
       ExtensionRangeOptions::IsInitializedImpl,
       &ExtensionRangeOptions::MergeImpl,
@@ -3370,7 +3530,8 @@ struct ExtensionRangeOptionsGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
   constexpr
   #endif  // PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
    ExtensionRangeOptionsGlobalsTypeInternal()
-      : MessageGlobalsBase(ExtensionRangeOptions::InternalGenerateClassData_()),
+      : MessageGlobalsBase(
+            ::_pbi::PrivateAccess::GenerateClassData<ExtensionRangeOptions>()),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
         _table(::_pbi::PrivateAccess::GenerateParseTable<ExtensionRangeOptions>(
             GetClassData())) {}
@@ -3398,6 +3559,12 @@ class EnumValueOptions::_Internal {
 
   static constexpr EnumValueOptions::ParseTableT_ GenerateParseTable(
       const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL class_data);
+  static constexpr auto GenerateClassData();
+
+  static void* PROTOBUF_NONNULL PlacementNew(const void* PROTOBUF_NONNULL,
+                                      void* PROTOBUF_NONNULL mem,
+                                      ::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
+  static constexpr auto NewImpl();
 };
 
 constexpr EnumValueOptions::ParseTableT_ EnumValueOptions::_Internal::GenerateParseTable(const ::_pbi::ClassData* class_data) {
@@ -3493,15 +3660,15 @@ PROTOBUF_ALWAYS_INLINE_NODEBUG constexpr EnumValueOptions::EnumValueOptions(
           ),
       _impl_(internal_visibility(), ::_pbi::ConstantInitialized()) {
 }
-inline void* PROTOBUF_NONNULL EnumValueOptions::PlacementNew_(
+inline void* PROTOBUF_NONNULL EnumValueOptions::_Internal::PlacementNew(
     const void* PROTOBUF_NONNULL, void* PROTOBUF_NONNULL mem,
     ::google::protobuf::Arena* PROTOBUF_NULLABLE arena) {
   return ::new (mem) EnumValueOptions(arena);
 }
-constexpr auto EnumValueOptions::InternalNewImpl_() {
+constexpr auto EnumValueOptions::_Internal::NewImpl() {
   return ::google::protobuf::internal::MessageCreator::CopyInit(sizeof(EnumValueOptions), alignof(EnumValueOptions));
 }
-constexpr auto EnumValueOptions::InternalGenerateClassData_() {
+constexpr auto EnumValueOptions::_Internal::GenerateClassData() {
   return ::google::protobuf::internal::ClassData{
       EnumValueOptions::IsInitializedImpl,
       &EnumValueOptions::MergeImpl,
@@ -3520,7 +3687,8 @@ struct EnumValueOptionsGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
   constexpr
   #endif  // PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
    EnumValueOptionsGlobalsTypeInternal()
-      : MessageGlobalsBase(EnumValueOptions::InternalGenerateClassData_()),
+      : MessageGlobalsBase(
+            ::_pbi::PrivateAccess::GenerateClassData<EnumValueOptions>()),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
         _table(::_pbi::PrivateAccess::GenerateParseTable<EnumValueOptions>(
             GetClassData())) {}
@@ -3548,6 +3716,12 @@ class EnumOptions::_Internal {
 
   static constexpr EnumOptions::ParseTableT_ GenerateParseTable(
       const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL class_data);
+  static constexpr auto GenerateClassData();
+
+  static void* PROTOBUF_NONNULL PlacementNew(const void* PROTOBUF_NONNULL,
+                                      void* PROTOBUF_NONNULL mem,
+                                      ::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
+  static constexpr auto NewImpl();
 };
 
 constexpr EnumOptions::ParseTableT_ EnumOptions::_Internal::GenerateParseTable(const ::_pbi::ClassData* class_data) {
@@ -3639,15 +3813,15 @@ PROTOBUF_ALWAYS_INLINE_NODEBUG constexpr EnumOptions::EnumOptions(
           ),
       _impl_(internal_visibility(), ::_pbi::ConstantInitialized()) {
 }
-inline void* PROTOBUF_NONNULL EnumOptions::PlacementNew_(
+inline void* PROTOBUF_NONNULL EnumOptions::_Internal::PlacementNew(
     const void* PROTOBUF_NONNULL, void* PROTOBUF_NONNULL mem,
     ::google::protobuf::Arena* PROTOBUF_NULLABLE arena) {
   return ::new (mem) EnumOptions(arena);
 }
-constexpr auto EnumOptions::InternalNewImpl_() {
+constexpr auto EnumOptions::_Internal::NewImpl() {
   return ::google::protobuf::internal::MessageCreator::CopyInit(sizeof(EnumOptions), alignof(EnumOptions));
 }
-constexpr auto EnumOptions::InternalGenerateClassData_() {
+constexpr auto EnumOptions::_Internal::GenerateClassData() {
   return ::google::protobuf::internal::ClassData{
       EnumOptions::IsInitializedImpl,
       &EnumOptions::MergeImpl,
@@ -3666,7 +3840,8 @@ struct EnumOptionsGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
   constexpr
   #endif  // PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
    EnumOptionsGlobalsTypeInternal()
-      : MessageGlobalsBase(EnumOptions::InternalGenerateClassData_()),
+      : MessageGlobalsBase(
+            ::_pbi::PrivateAccess::GenerateClassData<EnumOptions>()),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
         _table(::_pbi::PrivateAccess::GenerateParseTable<EnumOptions>(
             GetClassData())) {}
@@ -3694,6 +3869,12 @@ class OneofDescriptorProto::_Internal {
 
   static constexpr OneofDescriptorProto::ParseTableT_ GenerateParseTable(
       const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL class_data);
+  static constexpr auto GenerateClassData();
+
+  static void* PROTOBUF_NONNULL PlacementNew(const void* PROTOBUF_NONNULL,
+                                      void* PROTOBUF_NONNULL mem,
+                                      ::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
+  static constexpr auto NewImpl();
 };
 
 constexpr OneofDescriptorProto::ParseTableT_ OneofDescriptorProto::_Internal::GenerateParseTable(const ::_pbi::ClassData* class_data) {
@@ -3759,15 +3940,15 @@ PROTOBUF_ALWAYS_INLINE_NODEBUG constexpr OneofDescriptorProto::OneofDescriptorPr
           ),
       _impl_(internal_visibility(), ::_pbi::ConstantInitialized()) {
 }
-inline void* PROTOBUF_NONNULL OneofDescriptorProto::PlacementNew_(
+inline void* PROTOBUF_NONNULL OneofDescriptorProto::_Internal::PlacementNew(
     const void* PROTOBUF_NONNULL, void* PROTOBUF_NONNULL mem,
     ::google::protobuf::Arena* PROTOBUF_NULLABLE arena) {
   return ::new (mem) OneofDescriptorProto(arena);
 }
-constexpr auto OneofDescriptorProto::InternalNewImpl_() {
+constexpr auto OneofDescriptorProto::_Internal::NewImpl() {
   return ::google::protobuf::internal::MessageCreator::CopyInit(sizeof(OneofDescriptorProto), alignof(OneofDescriptorProto));
 }
-constexpr auto OneofDescriptorProto::InternalGenerateClassData_() {
+constexpr auto OneofDescriptorProto::_Internal::GenerateClassData() {
   return ::google::protobuf::internal::ClassData{
       OneofDescriptorProto::IsInitializedImpl,
       &OneofDescriptorProto::MergeImpl,
@@ -3786,7 +3967,8 @@ struct OneofDescriptorProtoGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
   constexpr
   #endif  // PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
    OneofDescriptorProtoGlobalsTypeInternal()
-      : MessageGlobalsBase(OneofDescriptorProto::InternalGenerateClassData_()),
+      : MessageGlobalsBase(
+            ::_pbi::PrivateAccess::GenerateClassData<OneofDescriptorProto>()),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
         _table(::_pbi::PrivateAccess::GenerateParseTable<OneofDescriptorProto>(
             GetClassData())) {}
@@ -3814,6 +3996,12 @@ class MethodDescriptorProto::_Internal {
 
   static constexpr MethodDescriptorProto::ParseTableT_ GenerateParseTable(
       const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL class_data);
+  static constexpr auto GenerateClassData();
+
+  static void* PROTOBUF_NONNULL PlacementNew(const void* PROTOBUF_NONNULL,
+                                      void* PROTOBUF_NONNULL mem,
+                                      ::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
+  static constexpr auto NewImpl();
 };
 
 constexpr MethodDescriptorProto::ParseTableT_ MethodDescriptorProto::_Internal::GenerateParseTable(const ::_pbi::ClassData* class_data) {
@@ -3913,15 +4101,15 @@ PROTOBUF_ALWAYS_INLINE_NODEBUG constexpr MethodDescriptorProto::MethodDescriptor
           ),
       _impl_(internal_visibility(), ::_pbi::ConstantInitialized()) {
 }
-inline void* PROTOBUF_NONNULL MethodDescriptorProto::PlacementNew_(
+inline void* PROTOBUF_NONNULL MethodDescriptorProto::_Internal::PlacementNew(
     const void* PROTOBUF_NONNULL, void* PROTOBUF_NONNULL mem,
     ::google::protobuf::Arena* PROTOBUF_NULLABLE arena) {
   return ::new (mem) MethodDescriptorProto(arena);
 }
-constexpr auto MethodDescriptorProto::InternalNewImpl_() {
+constexpr auto MethodDescriptorProto::_Internal::NewImpl() {
   return ::google::protobuf::internal::MessageCreator::CopyInit(sizeof(MethodDescriptorProto), alignof(MethodDescriptorProto));
 }
-constexpr auto MethodDescriptorProto::InternalGenerateClassData_() {
+constexpr auto MethodDescriptorProto::_Internal::GenerateClassData() {
   return ::google::protobuf::internal::ClassData{
       MethodDescriptorProto::IsInitializedImpl,
       &MethodDescriptorProto::MergeImpl,
@@ -3940,7 +4128,8 @@ struct MethodDescriptorProtoGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
   constexpr
   #endif  // PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
    MethodDescriptorProtoGlobalsTypeInternal()
-      : MessageGlobalsBase(MethodDescriptorProto::InternalGenerateClassData_()),
+      : MessageGlobalsBase(
+            ::_pbi::PrivateAccess::GenerateClassData<MethodDescriptorProto>()),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
         _table(::_pbi::PrivateAccess::GenerateParseTable<MethodDescriptorProto>(
             GetClassData())) {}
@@ -3968,6 +4157,12 @@ class FieldDescriptorProto::_Internal {
 
   static constexpr FieldDescriptorProto::ParseTableT_ GenerateParseTable(
       const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL class_data);
+  static constexpr auto GenerateClassData();
+
+  static void* PROTOBUF_NONNULL PlacementNew(const void* PROTOBUF_NONNULL,
+                                      void* PROTOBUF_NONNULL mem,
+                                      ::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
+  static constexpr auto NewImpl();
 };
 
 constexpr FieldDescriptorProto::ParseTableT_ FieldDescriptorProto::_Internal::GenerateParseTable(const ::_pbi::ClassData* class_data) {
@@ -4108,15 +4303,15 @@ PROTOBUF_ALWAYS_INLINE_NODEBUG constexpr FieldDescriptorProto::FieldDescriptorPr
           ),
       _impl_(internal_visibility(), ::_pbi::ConstantInitialized()) {
 }
-inline void* PROTOBUF_NONNULL FieldDescriptorProto::PlacementNew_(
+inline void* PROTOBUF_NONNULL FieldDescriptorProto::_Internal::PlacementNew(
     const void* PROTOBUF_NONNULL, void* PROTOBUF_NONNULL mem,
     ::google::protobuf::Arena* PROTOBUF_NULLABLE arena) {
   return ::new (mem) FieldDescriptorProto(arena);
 }
-constexpr auto FieldDescriptorProto::InternalNewImpl_() {
+constexpr auto FieldDescriptorProto::_Internal::NewImpl() {
   return ::google::protobuf::internal::MessageCreator::CopyInit(sizeof(FieldDescriptorProto), alignof(FieldDescriptorProto));
 }
-constexpr auto FieldDescriptorProto::InternalGenerateClassData_() {
+constexpr auto FieldDescriptorProto::_Internal::GenerateClassData() {
   return ::google::protobuf::internal::ClassData{
       FieldDescriptorProto::IsInitializedImpl,
       &FieldDescriptorProto::MergeImpl,
@@ -4135,7 +4330,8 @@ struct FieldDescriptorProtoGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
   constexpr
   #endif  // PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
    FieldDescriptorProtoGlobalsTypeInternal()
-      : MessageGlobalsBase(FieldDescriptorProto::InternalGenerateClassData_()),
+      : MessageGlobalsBase(
+            ::_pbi::PrivateAccess::GenerateClassData<FieldDescriptorProto>()),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
         _table(::_pbi::PrivateAccess::GenerateParseTable<FieldDescriptorProto>(
             GetClassData())) {}
@@ -4163,6 +4359,12 @@ class EnumValueDescriptorProto::_Internal {
 
   static constexpr EnumValueDescriptorProto::ParseTableT_ GenerateParseTable(
       const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL class_data);
+  static constexpr auto GenerateClassData();
+
+  static void* PROTOBUF_NONNULL PlacementNew(const void* PROTOBUF_NONNULL,
+                                      void* PROTOBUF_NONNULL mem,
+                                      ::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
+  static constexpr auto NewImpl();
 };
 
 constexpr EnumValueDescriptorProto::ParseTableT_ EnumValueDescriptorProto::_Internal::GenerateParseTable(const ::_pbi::ClassData* class_data) {
@@ -4236,15 +4438,15 @@ PROTOBUF_ALWAYS_INLINE_NODEBUG constexpr EnumValueDescriptorProto::EnumValueDesc
           ),
       _impl_(internal_visibility(), ::_pbi::ConstantInitialized()) {
 }
-inline void* PROTOBUF_NONNULL EnumValueDescriptorProto::PlacementNew_(
+inline void* PROTOBUF_NONNULL EnumValueDescriptorProto::_Internal::PlacementNew(
     const void* PROTOBUF_NONNULL, void* PROTOBUF_NONNULL mem,
     ::google::protobuf::Arena* PROTOBUF_NULLABLE arena) {
   return ::new (mem) EnumValueDescriptorProto(arena);
 }
-constexpr auto EnumValueDescriptorProto::InternalNewImpl_() {
+constexpr auto EnumValueDescriptorProto::_Internal::NewImpl() {
   return ::google::protobuf::internal::MessageCreator::CopyInit(sizeof(EnumValueDescriptorProto), alignof(EnumValueDescriptorProto));
 }
-constexpr auto EnumValueDescriptorProto::InternalGenerateClassData_() {
+constexpr auto EnumValueDescriptorProto::_Internal::GenerateClassData() {
   return ::google::protobuf::internal::ClassData{
       EnumValueDescriptorProto::IsInitializedImpl,
       &EnumValueDescriptorProto::MergeImpl,
@@ -4263,7 +4465,8 @@ struct EnumValueDescriptorProtoGlobalsTypeInternal : ::_pbi::MessageGlobalsBase 
   constexpr
   #endif  // PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
    EnumValueDescriptorProtoGlobalsTypeInternal()
-      : MessageGlobalsBase(EnumValueDescriptorProto::InternalGenerateClassData_()),
+      : MessageGlobalsBase(
+            ::_pbi::PrivateAccess::GenerateClassData<EnumValueDescriptorProto>()),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
         _table(::_pbi::PrivateAccess::GenerateParseTable<EnumValueDescriptorProto>(
             GetClassData())) {}
@@ -4291,6 +4494,12 @@ class DescriptorProto_ExtensionRange::_Internal {
 
   static constexpr DescriptorProto_ExtensionRange::ParseTableT_ GenerateParseTable(
       const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL class_data);
+  static constexpr auto GenerateClassData();
+
+  static void* PROTOBUF_NONNULL PlacementNew(const void* PROTOBUF_NONNULL,
+                                      void* PROTOBUF_NONNULL mem,
+                                      ::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
+  static constexpr auto NewImpl();
 };
 
 constexpr DescriptorProto_ExtensionRange::ParseTableT_ DescriptorProto_ExtensionRange::_Internal::GenerateParseTable(const ::_pbi::ClassData* class_data) {
@@ -4362,15 +4571,15 @@ PROTOBUF_ALWAYS_INLINE_NODEBUG constexpr DescriptorProto_ExtensionRange::Descrip
           ),
       _impl_(internal_visibility(), ::_pbi::ConstantInitialized()) {
 }
-inline void* PROTOBUF_NONNULL DescriptorProto_ExtensionRange::PlacementNew_(
+inline void* PROTOBUF_NONNULL DescriptorProto_ExtensionRange::_Internal::PlacementNew(
     const void* PROTOBUF_NONNULL, void* PROTOBUF_NONNULL mem,
     ::google::protobuf::Arena* PROTOBUF_NULLABLE arena) {
   return ::new (mem) DescriptorProto_ExtensionRange(arena);
 }
-constexpr auto DescriptorProto_ExtensionRange::InternalNewImpl_() {
+constexpr auto DescriptorProto_ExtensionRange::_Internal::NewImpl() {
   return ::google::protobuf::internal::MessageCreator::ZeroInit(sizeof(DescriptorProto_ExtensionRange), alignof(DescriptorProto_ExtensionRange));
 }
-constexpr auto DescriptorProto_ExtensionRange::InternalGenerateClassData_() {
+constexpr auto DescriptorProto_ExtensionRange::_Internal::GenerateClassData() {
   return ::google::protobuf::internal::ClassData{
       DescriptorProto_ExtensionRange::IsInitializedImpl,
       &DescriptorProto_ExtensionRange::MergeImpl,
@@ -4389,7 +4598,8 @@ struct DescriptorProto_ExtensionRangeGlobalsTypeInternal : ::_pbi::MessageGlobal
   constexpr
   #endif  // PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
    DescriptorProto_ExtensionRangeGlobalsTypeInternal()
-      : MessageGlobalsBase(DescriptorProto_ExtensionRange::InternalGenerateClassData_()),
+      : MessageGlobalsBase(
+            ::_pbi::PrivateAccess::GenerateClassData<DescriptorProto_ExtensionRange>()),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
         _table(::_pbi::PrivateAccess::GenerateParseTable<DescriptorProto_ExtensionRange>(
             GetClassData())) {}
@@ -4417,6 +4627,12 @@ class ServiceDescriptorProto::_Internal {
 
   static constexpr ServiceDescriptorProto::ParseTableT_ GenerateParseTable(
       const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL class_data);
+  static constexpr auto GenerateClassData();
+
+  static void* PROTOBUF_NONNULL PlacementNew(const void* PROTOBUF_NONNULL,
+                                      void* PROTOBUF_NONNULL mem,
+                                      ::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
+  static constexpr auto NewImpl();
 };
 
 constexpr ServiceDescriptorProto::ParseTableT_ ServiceDescriptorProto::_Internal::GenerateParseTable(const ::_pbi::ClassData* class_data) {
@@ -4495,15 +4711,15 @@ PROTOBUF_ALWAYS_INLINE_NODEBUG constexpr ServiceDescriptorProto::ServiceDescript
           ),
       _impl_(internal_visibility(), ::_pbi::ConstantInitialized()) {
 }
-inline void* PROTOBUF_NONNULL ServiceDescriptorProto::PlacementNew_(
+inline void* PROTOBUF_NONNULL ServiceDescriptorProto::_Internal::PlacementNew(
     const void* PROTOBUF_NONNULL, void* PROTOBUF_NONNULL mem,
     ::google::protobuf::Arena* PROTOBUF_NULLABLE arena) {
   return ::new (mem) ServiceDescriptorProto(arena);
 }
-constexpr auto ServiceDescriptorProto::InternalNewImpl_() {
+constexpr auto ServiceDescriptorProto::_Internal::NewImpl() {
   return ::google::protobuf::internal::MessageCreator::CopyInit(sizeof(ServiceDescriptorProto), alignof(ServiceDescriptorProto));
 }
-constexpr auto ServiceDescriptorProto::InternalGenerateClassData_() {
+constexpr auto ServiceDescriptorProto::_Internal::GenerateClassData() {
   return ::google::protobuf::internal::ClassData{
       ServiceDescriptorProto::IsInitializedImpl,
       &ServiceDescriptorProto::MergeImpl,
@@ -4522,7 +4738,8 @@ struct ServiceDescriptorProtoGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
   constexpr
   #endif  // PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
    ServiceDescriptorProtoGlobalsTypeInternal()
-      : MessageGlobalsBase(ServiceDescriptorProto::InternalGenerateClassData_()),
+      : MessageGlobalsBase(
+            ::_pbi::PrivateAccess::GenerateClassData<ServiceDescriptorProto>()),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
         _table(::_pbi::PrivateAccess::GenerateParseTable<ServiceDescriptorProto>(
             GetClassData())) {}
@@ -4550,6 +4767,12 @@ class EnumDescriptorProto::_Internal {
 
   static constexpr EnumDescriptorProto::ParseTableT_ GenerateParseTable(
       const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL class_data);
+  static constexpr auto GenerateClassData();
+
+  static void* PROTOBUF_NONNULL PlacementNew(const void* PROTOBUF_NONNULL,
+                                      void* PROTOBUF_NONNULL mem,
+                                      ::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
+  static constexpr auto NewImpl();
 };
 
 constexpr EnumDescriptorProto::ParseTableT_ EnumDescriptorProto::_Internal::GenerateParseTable(const ::_pbi::ClassData* class_data) {
@@ -4660,15 +4883,15 @@ PROTOBUF_ALWAYS_INLINE_NODEBUG constexpr EnumDescriptorProto::EnumDescriptorProt
           ),
       _impl_(internal_visibility(), ::_pbi::ConstantInitialized()) {
 }
-inline void* PROTOBUF_NONNULL EnumDescriptorProto::PlacementNew_(
+inline void* PROTOBUF_NONNULL EnumDescriptorProto::_Internal::PlacementNew(
     const void* PROTOBUF_NONNULL, void* PROTOBUF_NONNULL mem,
     ::google::protobuf::Arena* PROTOBUF_NULLABLE arena) {
   return ::new (mem) EnumDescriptorProto(arena);
 }
-constexpr auto EnumDescriptorProto::InternalNewImpl_() {
+constexpr auto EnumDescriptorProto::_Internal::NewImpl() {
   return ::google::protobuf::internal::MessageCreator::CopyInit(sizeof(EnumDescriptorProto), alignof(EnumDescriptorProto));
 }
-constexpr auto EnumDescriptorProto::InternalGenerateClassData_() {
+constexpr auto EnumDescriptorProto::_Internal::GenerateClassData() {
   return ::google::protobuf::internal::ClassData{
       EnumDescriptorProto::IsInitializedImpl,
       &EnumDescriptorProto::MergeImpl,
@@ -4687,7 +4910,8 @@ struct EnumDescriptorProtoGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
   constexpr
   #endif  // PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
    EnumDescriptorProtoGlobalsTypeInternal()
-      : MessageGlobalsBase(EnumDescriptorProto::InternalGenerateClassData_()),
+      : MessageGlobalsBase(
+            ::_pbi::PrivateAccess::GenerateClassData<EnumDescriptorProto>()),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
         _table(::_pbi::PrivateAccess::GenerateParseTable<EnumDescriptorProto>(
             GetClassData())) {}
@@ -4715,6 +4939,12 @@ class DescriptorProto::_Internal {
 
   static constexpr DescriptorProto::ParseTableT_ GenerateParseTable(
       const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL class_data);
+  static constexpr auto GenerateClassData();
+
+  static void* PROTOBUF_NONNULL PlacementNew(const void* PROTOBUF_NONNULL,
+                                      void* PROTOBUF_NONNULL mem,
+                                      ::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
+  static constexpr auto NewImpl();
 };
 
 constexpr DescriptorProto::ParseTableT_ DescriptorProto::_Internal::GenerateParseTable(const ::_pbi::ClassData* class_data) {
@@ -4888,15 +5118,15 @@ PROTOBUF_ALWAYS_INLINE_NODEBUG constexpr DescriptorProto::DescriptorProto(
           ),
       _impl_(internal_visibility(), ::_pbi::ConstantInitialized()) {
 }
-inline void* PROTOBUF_NONNULL DescriptorProto::PlacementNew_(
+inline void* PROTOBUF_NONNULL DescriptorProto::_Internal::PlacementNew(
     const void* PROTOBUF_NONNULL, void* PROTOBUF_NONNULL mem,
     ::google::protobuf::Arena* PROTOBUF_NULLABLE arena) {
   return ::new (mem) DescriptorProto(arena);
 }
-constexpr auto DescriptorProto::InternalNewImpl_() {
+constexpr auto DescriptorProto::_Internal::NewImpl() {
   return ::google::protobuf::internal::MessageCreator::CopyInit(sizeof(DescriptorProto), alignof(DescriptorProto));
 }
-constexpr auto DescriptorProto::InternalGenerateClassData_() {
+constexpr auto DescriptorProto::_Internal::GenerateClassData() {
   return ::google::protobuf::internal::ClassData{
       DescriptorProto::IsInitializedImpl,
       &DescriptorProto::MergeImpl,
@@ -4915,7 +5145,8 @@ struct DescriptorProtoGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
   constexpr
   #endif  // PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
    DescriptorProtoGlobalsTypeInternal()
-      : MessageGlobalsBase(DescriptorProto::InternalGenerateClassData_()),
+      : MessageGlobalsBase(
+            ::_pbi::PrivateAccess::GenerateClassData<DescriptorProto>()),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
         _table(::_pbi::PrivateAccess::GenerateParseTable<DescriptorProto>(
             GetClassData())) {}
@@ -4943,6 +5174,12 @@ class FileDescriptorProto::_Internal {
 
   static constexpr FileDescriptorProto::ParseTableT_ GenerateParseTable(
       const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL class_data);
+  static constexpr auto GenerateClassData();
+
+  static void* PROTOBUF_NONNULL PlacementNew(const void* PROTOBUF_NONNULL,
+                                      void* PROTOBUF_NONNULL mem,
+                                      ::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
+  static constexpr auto NewImpl();
 };
 
 constexpr FileDescriptorProto::ParseTableT_ FileDescriptorProto::_Internal::GenerateParseTable(const ::_pbi::ClassData* class_data) {
@@ -5136,15 +5373,15 @@ PROTOBUF_ALWAYS_INLINE_NODEBUG constexpr FileDescriptorProto::FileDescriptorProt
           ),
       _impl_(internal_visibility(), ::_pbi::ConstantInitialized()) {
 }
-inline void* PROTOBUF_NONNULL FileDescriptorProto::PlacementNew_(
+inline void* PROTOBUF_NONNULL FileDescriptorProto::_Internal::PlacementNew(
     const void* PROTOBUF_NONNULL, void* PROTOBUF_NONNULL mem,
     ::google::protobuf::Arena* PROTOBUF_NULLABLE arena) {
   return ::new (mem) FileDescriptorProto(arena);
 }
-constexpr auto FileDescriptorProto::InternalNewImpl_() {
+constexpr auto FileDescriptorProto::_Internal::NewImpl() {
   return ::google::protobuf::internal::MessageCreator::CopyInit(sizeof(FileDescriptorProto), alignof(FileDescriptorProto));
 }
-constexpr auto FileDescriptorProto::InternalGenerateClassData_() {
+constexpr auto FileDescriptorProto::_Internal::GenerateClassData() {
   return ::google::protobuf::internal::ClassData{
       FileDescriptorProto::IsInitializedImpl,
       &FileDescriptorProto::MergeImpl,
@@ -5163,7 +5400,8 @@ struct FileDescriptorProtoGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
   constexpr
   #endif  // PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
    FileDescriptorProtoGlobalsTypeInternal()
-      : MessageGlobalsBase(FileDescriptorProto::InternalGenerateClassData_()),
+      : MessageGlobalsBase(
+            ::_pbi::PrivateAccess::GenerateClassData<FileDescriptorProto>()),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
         _table(::_pbi::PrivateAccess::GenerateParseTable<FileDescriptorProto>(
             GetClassData())) {}
@@ -5191,6 +5429,12 @@ class FileDescriptorSet::_Internal {
 
   static constexpr FileDescriptorSet::ParseTableT_ GenerateParseTable(
       const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL class_data);
+  static constexpr auto GenerateClassData();
+
+  static void* PROTOBUF_NONNULL PlacementNew(const void* PROTOBUF_NONNULL,
+                                      void* PROTOBUF_NONNULL mem,
+                                      ::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
+  static constexpr auto NewImpl();
 };
 
 constexpr FileDescriptorSet::ParseTableT_ FileDescriptorSet::_Internal::GenerateParseTable(const ::_pbi::ClassData* class_data) {
@@ -5251,15 +5495,15 @@ PROTOBUF_ALWAYS_INLINE_NODEBUG constexpr FileDescriptorSet::FileDescriptorSet(
           ),
       _impl_(internal_visibility(), ::_pbi::ConstantInitialized()) {
 }
-inline void* PROTOBUF_NONNULL FileDescriptorSet::PlacementNew_(
+inline void* PROTOBUF_NONNULL FileDescriptorSet::_Internal::PlacementNew(
     const void* PROTOBUF_NONNULL, void* PROTOBUF_NONNULL mem,
     ::google::protobuf::Arena* PROTOBUF_NULLABLE arena) {
   return ::new (mem) FileDescriptorSet(arena);
 }
-constexpr auto FileDescriptorSet::InternalNewImpl_() {
+constexpr auto FileDescriptorSet::_Internal::NewImpl() {
   return ::google::protobuf::internal::MessageCreator::CopyInit(sizeof(FileDescriptorSet), alignof(FileDescriptorSet));
 }
-constexpr auto FileDescriptorSet::InternalGenerateClassData_() {
+constexpr auto FileDescriptorSet::_Internal::GenerateClassData() {
   return ::google::protobuf::internal::ClassData{
       FileDescriptorSet::IsInitializedImpl,
       &FileDescriptorSet::MergeImpl,
@@ -5278,7 +5522,8 @@ struct FileDescriptorSetGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
   constexpr
   #endif  // PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
    FileDescriptorSetGlobalsTypeInternal()
-      : MessageGlobalsBase(FileDescriptorSet::InternalGenerateClassData_()),
+      : MessageGlobalsBase(
+            ::_pbi::PrivateAccess::GenerateClassData<FileDescriptorSet>()),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
         _table(::_pbi::PrivateAccess::GenerateParseTable<FileDescriptorSet>(
             GetClassData())) {}

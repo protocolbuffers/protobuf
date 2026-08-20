@@ -42,6 +42,12 @@ class CppFileOptions::_Internal {
 
   static constexpr CppFileOptions::ParseTableT_ GenerateParseTable(
       const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL class_data);
+  static constexpr auto GenerateClassData();
+
+  static void* PROTOBUF_NONNULL PlacementNew(const void* PROTOBUF_NONNULL,
+                                      void* PROTOBUF_NONNULL mem,
+                                      ::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
+  static constexpr auto NewImpl();
 };
 
 constexpr CppFileOptions::ParseTableT_ CppFileOptions::_Internal::GenerateParseTable(const ::_pbi::ClassData* class_data) {
@@ -101,15 +107,15 @@ PROTOBUF_ALWAYS_INLINE_NODEBUG constexpr CppFileOptions::CppFileOptions(
           ),
       _impl_(internal_visibility(), ::_pbi::ConstantInitialized()) {
 }
-inline void* PROTOBUF_NONNULL CppFileOptions::PlacementNew_(
+inline void* PROTOBUF_NONNULL CppFileOptions::_Internal::PlacementNew(
     const void* PROTOBUF_NONNULL, void* PROTOBUF_NONNULL mem,
     ::google::protobuf::Arena* PROTOBUF_NULLABLE arena) {
   return ::new (mem) CppFileOptions(arena);
 }
-constexpr auto CppFileOptions::InternalNewImpl_() {
+constexpr auto CppFileOptions::_Internal::NewImpl() {
   return ::google::protobuf::internal::MessageCreator::CopyInit(sizeof(CppFileOptions), alignof(CppFileOptions));
 }
-constexpr auto CppFileOptions::InternalGenerateClassData_() {
+constexpr auto CppFileOptions::_Internal::GenerateClassData() {
   return ::google::protobuf::internal::ClassData{
       nullptr,  // IsInitialized
       &CppFileOptions::MergeImpl,
@@ -125,7 +131,8 @@ constexpr auto CppFileOptions::InternalGenerateClassData_() {
 }
 struct CppFileOptionsGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
   constexpr CppFileOptionsGlobalsTypeInternal()
-      : MessageGlobalsBase(CppFileOptions::InternalGenerateClassData_()),
+      : MessageGlobalsBase(
+            ::_pbi::PrivateAccess::GenerateClassData<CppFileOptions>()),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
         _table(::_pbi::PrivateAccess::GenerateParseTable<CppFileOptions>(
             GetClassData())) {}

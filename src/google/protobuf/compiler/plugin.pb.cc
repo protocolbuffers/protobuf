@@ -49,6 +49,12 @@ class Version::_Internal {
 
   static constexpr Version::ParseTableT_ GenerateParseTable(
       const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL class_data);
+  static constexpr auto GenerateClassData();
+
+  static void* PROTOBUF_NONNULL PlacementNew(const void* PROTOBUF_NONNULL,
+                                      void* PROTOBUF_NONNULL mem,
+                                      ::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
+  static constexpr auto NewImpl();
 };
 
 constexpr Version::ParseTableT_ Version::_Internal::GenerateParseTable(const ::_pbi::ClassData* class_data) {
@@ -126,15 +132,15 @@ PROTOBUF_ALWAYS_INLINE_NODEBUG constexpr Version::Version(
           ),
       _impl_(internal_visibility(), ::_pbi::ConstantInitialized()) {
 }
-inline void* PROTOBUF_NONNULL Version::PlacementNew_(
+inline void* PROTOBUF_NONNULL Version::_Internal::PlacementNew(
     const void* PROTOBUF_NONNULL, void* PROTOBUF_NONNULL mem,
     ::google::protobuf::Arena* PROTOBUF_NULLABLE arena) {
   return ::new (mem) Version(arena);
 }
-constexpr auto Version::InternalNewImpl_() {
+constexpr auto Version::_Internal::NewImpl() {
   return ::google::protobuf::internal::MessageCreator::CopyInit(sizeof(Version), alignof(Version));
 }
-constexpr auto Version::InternalGenerateClassData_() {
+constexpr auto Version::_Internal::GenerateClassData() {
   return ::google::protobuf::internal::ClassData{
       nullptr,  // IsInitialized
       &Version::MergeImpl,
@@ -150,7 +156,8 @@ constexpr auto Version::InternalGenerateClassData_() {
 }
 struct VersionGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
   constexpr VersionGlobalsTypeInternal()
-      : MessageGlobalsBase(Version::InternalGenerateClassData_()),
+      : MessageGlobalsBase(
+            ::_pbi::PrivateAccess::GenerateClassData<Version>()),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
         _table(::_pbi::PrivateAccess::GenerateParseTable<Version>(
             GetClassData())) {}
@@ -175,6 +182,12 @@ class CodeGeneratorResponse_File::_Internal {
 
   static constexpr CodeGeneratorResponse_File::ParseTableT_ GenerateParseTable(
       const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL class_data);
+  static constexpr auto GenerateClassData();
+
+  static void* PROTOBUF_NONNULL PlacementNew(const void* PROTOBUF_NONNULL,
+                                      void* PROTOBUF_NONNULL mem,
+                                      ::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
+  static constexpr auto NewImpl();
 };
 
 constexpr CodeGeneratorResponse_File::ParseTableT_ CodeGeneratorResponse_File::_Internal::GenerateParseTable(const ::_pbi::ClassData* class_data) {
@@ -258,15 +271,15 @@ PROTOBUF_ALWAYS_INLINE_NODEBUG constexpr CodeGeneratorResponse_File::CodeGenerat
           ),
       _impl_(internal_visibility(), ::_pbi::ConstantInitialized()) {
 }
-inline void* PROTOBUF_NONNULL CodeGeneratorResponse_File::PlacementNew_(
+inline void* PROTOBUF_NONNULL CodeGeneratorResponse_File::_Internal::PlacementNew(
     const void* PROTOBUF_NONNULL, void* PROTOBUF_NONNULL mem,
     ::google::protobuf::Arena* PROTOBUF_NULLABLE arena) {
   return ::new (mem) CodeGeneratorResponse_File(arena);
 }
-constexpr auto CodeGeneratorResponse_File::InternalNewImpl_() {
+constexpr auto CodeGeneratorResponse_File::_Internal::NewImpl() {
   return ::google::protobuf::internal::MessageCreator::CopyInit(sizeof(CodeGeneratorResponse_File), alignof(CodeGeneratorResponse_File));
 }
-constexpr auto CodeGeneratorResponse_File::InternalGenerateClassData_() {
+constexpr auto CodeGeneratorResponse_File::_Internal::GenerateClassData() {
   return ::google::protobuf::internal::ClassData{
       nullptr,  // IsInitialized
       &CodeGeneratorResponse_File::MergeImpl,
@@ -282,7 +295,8 @@ constexpr auto CodeGeneratorResponse_File::InternalGenerateClassData_() {
 }
 struct CodeGeneratorResponse_FileGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
   constexpr CodeGeneratorResponse_FileGlobalsTypeInternal()
-      : MessageGlobalsBase(CodeGeneratorResponse_File::InternalGenerateClassData_()),
+      : MessageGlobalsBase(
+            ::_pbi::PrivateAccess::GenerateClassData<CodeGeneratorResponse_File>()),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
         _table(::_pbi::PrivateAccess::GenerateParseTable<CodeGeneratorResponse_File>(
             GetClassData())) {}
@@ -307,6 +321,12 @@ class CodeGeneratorResponse::_Internal {
 
   static constexpr CodeGeneratorResponse::ParseTableT_ GenerateParseTable(
       const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL class_data);
+  static constexpr auto GenerateClassData();
+
+  static void* PROTOBUF_NONNULL PlacementNew(const void* PROTOBUF_NONNULL,
+                                      void* PROTOBUF_NONNULL mem,
+                                      ::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
+  static constexpr auto NewImpl();
 };
 
 constexpr CodeGeneratorResponse::ParseTableT_ CodeGeneratorResponse::_Internal::GenerateParseTable(const ::_pbi::ClassData* class_data) {
@@ -400,15 +420,15 @@ PROTOBUF_ALWAYS_INLINE_NODEBUG constexpr CodeGeneratorResponse::CodeGeneratorRes
           ),
       _impl_(internal_visibility(), ::_pbi::ConstantInitialized()) {
 }
-inline void* PROTOBUF_NONNULL CodeGeneratorResponse::PlacementNew_(
+inline void* PROTOBUF_NONNULL CodeGeneratorResponse::_Internal::PlacementNew(
     const void* PROTOBUF_NONNULL, void* PROTOBUF_NONNULL mem,
     ::google::protobuf::Arena* PROTOBUF_NULLABLE arena) {
   return ::new (mem) CodeGeneratorResponse(arena);
 }
-constexpr auto CodeGeneratorResponse::InternalNewImpl_() {
+constexpr auto CodeGeneratorResponse::_Internal::NewImpl() {
   return ::google::protobuf::internal::MessageCreator::CopyInit(sizeof(CodeGeneratorResponse), alignof(CodeGeneratorResponse));
 }
-constexpr auto CodeGeneratorResponse::InternalGenerateClassData_() {
+constexpr auto CodeGeneratorResponse::_Internal::GenerateClassData() {
   return ::google::protobuf::internal::ClassData{
       nullptr,  // IsInitialized
       &CodeGeneratorResponse::MergeImpl,
@@ -424,7 +444,8 @@ constexpr auto CodeGeneratorResponse::InternalGenerateClassData_() {
 }
 struct CodeGeneratorResponseGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
   constexpr CodeGeneratorResponseGlobalsTypeInternal()
-      : MessageGlobalsBase(CodeGeneratorResponse::InternalGenerateClassData_()),
+      : MessageGlobalsBase(
+            ::_pbi::PrivateAccess::GenerateClassData<CodeGeneratorResponse>()),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
         _table(::_pbi::PrivateAccess::GenerateParseTable<CodeGeneratorResponse>(
             GetClassData())) {}
@@ -449,6 +470,12 @@ class CodeGeneratorRequest::_Internal {
 
   static constexpr CodeGeneratorRequest::ParseTableT_ GenerateParseTable(
       const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL class_data);
+  static constexpr auto GenerateClassData();
+
+  static void* PROTOBUF_NONNULL PlacementNew(const void* PROTOBUF_NONNULL,
+                                      void* PROTOBUF_NONNULL mem,
+                                      ::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
+  static constexpr auto NewImpl();
 };
 
 constexpr CodeGeneratorRequest::ParseTableT_ CodeGeneratorRequest::_Internal::GenerateParseTable(const ::_pbi::ClassData* class_data) {
@@ -549,15 +576,15 @@ PROTOBUF_ALWAYS_INLINE_NODEBUG constexpr CodeGeneratorRequest::CodeGeneratorRequ
           ),
       _impl_(internal_visibility(), ::_pbi::ConstantInitialized()) {
 }
-inline void* PROTOBUF_NONNULL CodeGeneratorRequest::PlacementNew_(
+inline void* PROTOBUF_NONNULL CodeGeneratorRequest::_Internal::PlacementNew(
     const void* PROTOBUF_NONNULL, void* PROTOBUF_NONNULL mem,
     ::google::protobuf::Arena* PROTOBUF_NULLABLE arena) {
   return ::new (mem) CodeGeneratorRequest(arena);
 }
-constexpr auto CodeGeneratorRequest::InternalNewImpl_() {
+constexpr auto CodeGeneratorRequest::_Internal::NewImpl() {
   return ::google::protobuf::internal::MessageCreator::CopyInit(sizeof(CodeGeneratorRequest), alignof(CodeGeneratorRequest));
 }
-constexpr auto CodeGeneratorRequest::InternalGenerateClassData_() {
+constexpr auto CodeGeneratorRequest::_Internal::GenerateClassData() {
   return ::google::protobuf::internal::ClassData{
       CodeGeneratorRequest::IsInitializedImpl,
       &CodeGeneratorRequest::MergeImpl,
@@ -573,7 +600,8 @@ constexpr auto CodeGeneratorRequest::InternalGenerateClassData_() {
 }
 struct CodeGeneratorRequestGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
   constexpr CodeGeneratorRequestGlobalsTypeInternal()
-      : MessageGlobalsBase(CodeGeneratorRequest::InternalGenerateClassData_()),
+      : MessageGlobalsBase(
+            ::_pbi::PrivateAccess::GenerateClassData<CodeGeneratorRequest>()),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
         _table(::_pbi::PrivateAccess::GenerateParseTable<CodeGeneratorRequest>(
             GetClassData())) {}

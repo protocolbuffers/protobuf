@@ -806,9 +806,10 @@ class PROTOBUF_EXPORT MessageLite {
   template <typename T>
   static constexpr internal::MessageCreator GetNewImpl() {
     if constexpr (internal::EnableCustomNewFor<T>()) {
-      return T::InternalNewImpl_();
+      return T::_Internal::NewImpl();
     } else {
-      return internal::MessageCreator(&T::PlacementNew_, sizeof(T), alignof(T));
+      return internal::MessageCreator(&T::_Internal::PlacementNew, sizeof(T),
+                                      alignof(T));
     }
   }
 

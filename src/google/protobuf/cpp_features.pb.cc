@@ -41,6 +41,12 @@ class CppFeatures::_Internal {
 
   static constexpr CppFeatures::ParseTableT_ GenerateParseTable(
       const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL class_data);
+  static constexpr auto GenerateClassData();
+
+  static void* PROTOBUF_NONNULL PlacementNew(const void* PROTOBUF_NONNULL,
+                                      void* PROTOBUF_NONNULL mem,
+                                      ::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
+  static constexpr auto NewImpl();
 };
 
 constexpr CppFeatures::ParseTableT_ CppFeatures::_Internal::GenerateParseTable(const ::_pbi::ClassData* class_data) {
@@ -119,15 +125,15 @@ PROTOBUF_ALWAYS_INLINE_NODEBUG constexpr CppFeatures::CppFeatures(
           ),
       _impl_(internal_visibility(), ::_pbi::ConstantInitialized()) {
 }
-inline void* PROTOBUF_NONNULL CppFeatures::PlacementNew_(
+inline void* PROTOBUF_NONNULL CppFeatures::_Internal::PlacementNew(
     const void* PROTOBUF_NONNULL, void* PROTOBUF_NONNULL mem,
     ::google::protobuf::Arena* PROTOBUF_NULLABLE arena) {
   return ::new (mem) CppFeatures(arena);
 }
-constexpr auto CppFeatures::InternalNewImpl_() {
+constexpr auto CppFeatures::_Internal::NewImpl() {
   return ::google::protobuf::internal::MessageCreator::ZeroInit(sizeof(CppFeatures), alignof(CppFeatures));
 }
-constexpr auto CppFeatures::InternalGenerateClassData_() {
+constexpr auto CppFeatures::_Internal::GenerateClassData() {
   return ::google::protobuf::internal::ClassData{
       nullptr,  // IsInitialized
       &CppFeatures::MergeImpl,
@@ -143,7 +149,8 @@ constexpr auto CppFeatures::InternalGenerateClassData_() {
 }
 struct CppFeaturesGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
   constexpr CppFeaturesGlobalsTypeInternal()
-      : MessageGlobalsBase(CppFeatures::InternalGenerateClassData_()),
+      : MessageGlobalsBase(
+            ::_pbi::PrivateAccess::GenerateClassData<CppFeatures>()),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
         _table(::_pbi::PrivateAccess::GenerateParseTable<CppFeatures>(
             GetClassData())) {}
