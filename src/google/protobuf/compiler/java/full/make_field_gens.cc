@@ -95,11 +95,25 @@ FieldGeneratorMap<ImmutableFieldGenerator> MakeImmutableFieldGenerators(
   // bit fields.
   int bit_index = 0;
   FieldGeneratorMap<ImmutableFieldGenerator> ret(descriptor);
+
+  // First pass: explicit presence fields.
   for (int i = 0; i < descriptor->field_count(); i++) {
     const FieldDescriptor* field = descriptor->field(i);
-    auto generator = MakeImmutableGenerator(field, bit_index, context);
-    bit_index += generator->GetNumBits();
-    ret.Add(field, std::move(generator));
+    if (HasHasbit(field)) {
+      auto generator = MakeImmutableGenerator(field, bit_index, context);
+      bit_index += generator->GetNumBits();
+      ret.Add(field, std::move(generator));
+    }
+  }
+
+  // Second pass: implicit presence fields, oneof fields, and repeated fields.
+  for (int i = 0; i < descriptor->field_count(); i++) {
+    const FieldDescriptor* field = descriptor->field(i);
+    if (!HasHasbit(field)) {
+      auto generator = MakeImmutableGenerator(field, bit_index, context);
+      bit_index += generator->GetNumBits();
+      ret.Add(field, std::move(generator));
+    }
   }
   return ret;
 }
