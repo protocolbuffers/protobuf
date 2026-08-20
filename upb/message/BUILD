@@ -76,6 +76,7 @@ cc_library(
         "//third_party/upb/wasm_abi/upb:__pkg__",
         "//upb:__pkg__",
         "//upb/test:__pkg__",
+        "//upb/text:__pkg__",
         "//upb/wire:__pkg__",
         "//upb/wire/decode_fast:__pkg__",
         "//video/youtube/utils/elements/client/component_type:__pkg__",
