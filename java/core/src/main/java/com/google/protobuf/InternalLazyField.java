@@ -210,14 +210,17 @@ class InternalLazyField {
       }
       try {
         // `bytes` is guaranteed to be non-null since `value` was null.
+        CodedInputStream input = bytes.newCodedInput();
+        input.enableAliasing(/* enabled= */ true);
         // When lazyExtensionEnabled() returns true, it means all extensions including MessageSet's
-        // will be fully parsed. When it returns false, it basically implies this is a message set
-        // extension, and we should fall back to the old behavior of silently returning the default
-        // instance on corrupted extensions i.e. full parse.
+        // will be fully parsed. When it returns false, it basically implies this can only be a
+        // MessageSet extension, and we should fall back to the old behavior of silently returning
+        // the default instance on corrupted extensions i.e. a full parse.
         value =
             ExtensionRegistryLite.lazyExtensionEnabled()
-                ? defaultInstance.getParserForType().parsePartialFrom(bytes, extensionRegistry)
-                : defaultInstance.getParserForType().parseFrom(bytes, extensionRegistry);
+                ? defaultInstance.getParserForType().parsePartialFrom(input, extensionRegistry)
+                : defaultInstance.getParserForType().parseFrom(input, extensionRegistry);
+        input.checkLastTagWas(0);
       } catch (InvalidProtocolBufferException e) {
         corrupted = true;
         throw e;
