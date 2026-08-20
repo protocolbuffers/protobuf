@@ -48,6 +48,10 @@ void upb_strtable_clear(upb_strtable* t);
 UPB_NODISCARD bool upb_strtable_insert(upb_strtable* t, const char* key,
                                        size_t len, upb_value val, upb_Arena* a);
 
+// Copies the table and its keys without rehashing.
+bool upb_strtable_copy(upb_strtable* dest, const upb_strtable* src,
+                       upb_Arena* a);
+
 // Looks up key in this table, returning "true" if the key was found.
 // If v is non-NULL, copies the value for this key into *v.
 bool upb_strtable_lookup2(const upb_strtable* t, const char* key, size_t len,
