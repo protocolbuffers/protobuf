@@ -159,13 +159,13 @@ void ImmutableMessageFieldLiteGenerator::GenerateMembers(
       "@java.lang.SuppressWarnings(\"ReferenceEquality\")\n"
       "private void merge$capitalized_name$($type$ value) {\n"
       "  java.util.Objects.requireNonNull(value);\n"
-      "  if ($name$_ != null &&\n"
-      "      $name$_ != $type$.getDefaultInstance()) {\n"
-      "    $name$_ =\n"
-      "      $type$.newBuilder($name$_).mergeFrom(value).buildPartial();\n"
-      "  } else {\n"
-      "    $name$_ = value;\n"
+      "  $type$ cur = $name$_;\n"
+      "  if (cur != null &&\n"
+      "      cur != $type$.getDefaultInstance()) {\n"
+      "    value =\n"
+      "      $type$.newBuilder(cur).mergeFrom(value).buildPartial();\n"
       "  }\n"
+      "  $name$_ = value;\n"
       "  $set_has_field_bit_message$\n"
       "}\n");
 
@@ -312,15 +312,16 @@ void ImmutableMessageOneofFieldLiteGenerator::GenerateMembers(
   WriteFieldDocComment(printer, descriptor_, context_->options());
   printer->Print(
       variables_,
+      "@java.lang.SuppressWarnings(\"ReferenceEquality\")\n"
       "private void merge$capitalized_name$($type$ value) {\n"
       "  java.util.Objects.requireNonNull(value);\n"
-      "  if ($has_oneof_case_message$ &&\n"
-      "      $oneof_name$_ != $type$.getDefaultInstance()) {\n"
-      "    $oneof_name$_ = $type$.newBuilder(($type$) $oneof_name$_)\n"
-      "        .mergeFrom(value).buildPartial();\n"
-      "  } else {\n"
-      "    $oneof_name$_ = value;\n"
+      "  if ($has_oneof_case_message$) {\n"
+      "    $type$ cur = ($type$) $oneof_name$_;\n"
+      "    if (cur != $type$.getDefaultInstance()) {\n"
+      "      value = $type$.newBuilder(cur).mergeFrom(value).buildPartial();\n"
+      "    }\n"
       "  }\n"
+      "  $oneof_name$_ = value;\n"
       "  $set_oneof_case_message$;\n"
       "}\n");
 
