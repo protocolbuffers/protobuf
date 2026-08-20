@@ -17,6 +17,7 @@
 #include <vector>
 
 #include "google/protobuf/compiler/java/options.h"
+#include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/port.h"
 

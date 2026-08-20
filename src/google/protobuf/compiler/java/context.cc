@@ -8,6 +8,7 @@
 #include "google/protobuf/compiler/java/context.h"
 
 #include <string>
+#include <vector>
 
 #include "absl/log/absl_log.h"
 #include "absl/strings/str_cat.h"
@@ -15,8 +16,9 @@
 #include "absl/strings/strip.h"
 #include "google/protobuf/compiler/java/field_common.h"
 #include "google/protobuf/compiler/java/helpers.h"
-#include "google/protobuf/compiler/java/internal_helpers.h"
 #include "google/protobuf/compiler/java/name_resolver.h"
+#include "google/protobuf/compiler/java/names.h"
+#include "google/protobuf/compiler/java/options.h"
 #include "google/protobuf/descriptor.h"
 
 namespace google {
