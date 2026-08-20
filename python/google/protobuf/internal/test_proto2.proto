@@ -56,3 +56,11 @@ message NestedMessageForFT {
 message ReproMessageForLazy {
   optional NestedMessageForFT lazy_field = 1 [lazy = true];
 }
+
+message MessageWithRepeatedComposite {
+  repeated NestedMessageForFT items = 1;
+}
+
+message ContainerForRepeatedComposite {
+  optional MessageWithRepeatedComposite submessage = 1;
+}

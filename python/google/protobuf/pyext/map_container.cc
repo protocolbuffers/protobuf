@@ -577,12 +577,12 @@ static MessageMapContainer* GetMessageMap(PyObject* obj) {
   return reinterpret_cast<MessageMapContainer*>(obj);
 }
 
-static PyObject* GetCMessage(MessageMapContainer* self,
-                             const Message* message) {
-  // Get or create the CMessage object corresponding to this message.
+// Get or create the CMessage object corresponding to this message.
+static PyObject* GetCMessage(MessageMapContainer* self, const Message* message,
+                             MessageMutabilityState state) {
   return self->parent
       ->BuildSubMessageFromPointer(self->parent_field_descriptor, message,
-                                   self->message_class)
+                                   self->message_class, state)
       ->AsPyObject();
 }
 
@@ -662,26 +662,42 @@ int MapReflectionFriend::MessageMapSetItem(PyObject* _self, PyObject* key,
   }
 }
 
+// For mutable messages, subscript access has get-or-create semantics: looking
+// up an existing entry or inserting a new default entry, returning a
+// MESSAGE_MUTABLE wrapper. For frozen messages, mutation is disallowed, so
+// subscript access is a read-only lookup returning a MESSAGE_FROZEN wrapper for
+// existing keys, or raising a FrozenInstanceError if the key is not present.
 PyObject* MapReflectionFriend::MessageMapGetItem(PyObject* _self,
                                                  PyObject* key) {
   MessageMapContainer* self = GetMessageMap(_self);
 
-  Message* message = self->GetMutableMessage();
-  if (message == nullptr) return nullptr;
-  const Reflection* reflection = message->GetReflection();
   MapKey map_key;
-  MapValueRef value;
 
   if (!PythonToMapKey(self, key, &map_key)) {
     return nullptr;
   }
 
-  if (reflection->InsertOrLookupMapValue(message, self->parent_field_descriptor,
-                                         map_key, &value)) {
-    self->version++;
+  // Mutable path: insert-or-lookup and return mutable submessage wrapper.
+  if (Message* message = self->GetMutableMessage(); message != nullptr) {
+    const Reflection* reflection = message->GetReflection();
+    MapValueRef value;
+    if (reflection->InsertOrLookupMapValue(
+            message, self->parent_field_descriptor, map_key, &value)) {
+      self->version++;
+    }
+    return GetCMessage(self, value.MutableMessageValue(), MESSAGE_MUTABLE);
   }
 
-  return GetCMessage(self, value.MutableMessageValue());
+  // Frozen path: read-only lookup without mutation.
+  PyErr_Clear();
+  const Message* message = self->GetReadOnlyMessage();
+  const Reflection* reflection = message->GetReflection();
+  MapValueConstRef value;
+  if (!reflection->LookupMapValue(*message, self->parent_field_descriptor,
+                                  map_key, &value)) {
+    return SetMessageFrozenError();
+  }
+  return GetCMessage(self, &value.GetMessageValue(), MESSAGE_FROZEN);
 }
 
 PyObject* MapReflectionFriend::MessageMapToStr(PyObject* _self) {
@@ -695,6 +711,13 @@ PyObject* MapReflectionFriend::MessageMapToStr(PyObject* _self) {
   MessageMapContainer* self = GetMessageMap(_self);
   const Message* message = self->GetReadOnlyMessage();
   const Reflection* reflection = message->GetReflection();
+  // Map elements only exist if the parent map contains allocated nodes (default
+  // instances are empty). If the parent is not frozen, the underlying C++
+  // message in the map is already fully mutable in memory, so creating or
+  // reusing CMessage wrappers with MESSAGE_MUTABLE is safe and allows
+  // subsequent mutations without requiring lazy promotion.
+  MessageMutabilityState state =
+      self->parent->state == MESSAGE_FROZEN ? MESSAGE_FROZEN : MESSAGE_MUTABLE;
   for (google::protobuf::ConstMapIterator it =
            reflection->ConstMapBegin(message, self->parent_field_descriptor);
        it != reflection->ConstMapEnd(message, self->parent_field_descriptor);
@@ -703,7 +726,7 @@ PyObject* MapReflectionFriend::MessageMapToStr(PyObject* _self) {
     if (key == nullptr) {
       return nullptr;
     }
-    value.reset(GetCMessage(self, &it.GetValueRef().GetMessageValue()));
+    value.reset(GetCMessage(self, &it.GetValueRef().GetMessageValue(), state));
     if (value == nullptr) {
       return nullptr;
     }

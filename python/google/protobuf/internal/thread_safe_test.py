@@ -555,6 +555,40 @@ class FreeThreadingTest(unittest.TestCase):
     for _ in range(500):
       RunRace()
 
+  @unittest.skipIf(
+      api_implementation.Type() == 'upb',
+      'Upb has not been fixed to handle this case.',
+  )
+  def testConcurrentRepeatedCompositeSubscript(self):
+    msg = test_proto2_pb2.ContainerForRepeatedComposite()
+    msg.submessage.items.add(value='foo')
+    msg.submessage.items.add(value='bar')
+    serialized = msg.SerializeToString()
+
+    def RunRace():
+      shared_msg = test_proto2_pb2.ContainerForRepeatedComposite.FromString(
+          serialized
+      )
+      barrier = threading.Barrier(2)
+
+      def Thread1():
+        barrier.wait()
+        _ = shared_msg.submessage.items[0].value
+
+      def Thread2():
+        barrier.wait()
+        _ = shared_msg.submessage.items[1].value
+
+      t1 = threading.Thread(target=Thread1)
+      t2 = threading.Thread(target=Thread2)
+      t1.start()
+      t2.start()
+      t1.join()
+      t2.join()
+
+    for _ in range(500):
+      RunRace()
+
 
 if __name__ == '__main__':
   unittest.main()

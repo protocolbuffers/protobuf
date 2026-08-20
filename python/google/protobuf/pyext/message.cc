@@ -873,7 +873,6 @@ Message* AssureWritable(CMessage* self) {
     return nullptr;
   }
 
-  // Make self->message writable.
   const Reflection* reflection = parent_message->GetReflection();
   Message* mutable_message = reflection->MutableMessage(
       parent_message, self->parent_field_descriptor,
@@ -2910,7 +2909,7 @@ void ContainerBase::RemoveFromParentCache() {
 
 CMessage* CMessage::BuildSubMessageFromPointer(
     const FieldDescriptor* field_descriptor, const Message* sub_message,
-    CMessageClass* message_class) {
+    CMessageClass* message_class, MessageMutabilityState state) {
   if (PyObject* value =
           this->child_submessages.Get()->Get(sub_message, nullptr)) {
     return reinterpret_cast<CMessage*>(value);
@@ -2925,9 +2924,7 @@ CMessage* CMessage::BuildSubMessageFromPointer(
   Py_INCREF(this);
   cmsg->parent = this;
   cmsg->parent_field_descriptor = field_descriptor;
-  if (this->state == MESSAGE_FROZEN) {
-    cmsg->state = MESSAGE_FROZEN;
-  }
+  cmsg->state = this->state == MESSAGE_FROZEN ? MESSAGE_FROZEN : state;
   cmessage::SetSubmessage(this, cmsg);
   return cmsg;
 }
