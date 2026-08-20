@@ -1901,6 +1901,11 @@ GetExtensionReflection(
       extension.number());
 }
 
+template <typename Msg, typename Ext>
+inline const auto* GetExtensionOrNull(const Msg& msg, const Ext& ext) {
+  return msg.HasExtension(ext) ? &msg.GetExtension(ext) : nullptr;
+}
+
 }  // namespace protobuf
 }  // namespace google
 
