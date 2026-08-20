@@ -619,13 +619,15 @@ void RepeatedImmutableEnumFieldLiteGenerator::GenerateMembers(
   // Generate private setters for the builder to proxy into.
   printer->Print(
       variables_,
-      "private void ensure$capitalized_name$IsMutable() {\n"
+      "private com.google.protobuf.Internal.IntList\n"
+      "ensure$capitalized_name$IsMutable() {\n"
       // Use a temporary to avoid a redundant iget-object.
       "  com.google.protobuf.Internal.IntList tmp = $name$_;\n"
       "  if (!tmp.isModifiable()) {\n"
-      "    $name$_ =\n"
+      "    $name$_ = tmp =\n"
       "        com.google.protobuf.GeneratedMessageLite.mutableCopy(tmp);\n"
       "  }\n"
+      "  return tmp;\n"
       "}\n");
   WriteFieldAccessorDocComment(printer, descriptor_, LIST_INDEXED_SETTER,
                                context_->options(), /* builder */ false,
@@ -634,27 +636,28 @@ void RepeatedImmutableEnumFieldLiteGenerator::GenerateMembers(
                  "private void set$capitalized_name$(\n"
                  "    int index, $type$ value) {\n"
                  "  java.util.Objects.requireNonNull(value);\n"
-                 "  ensure$capitalized_name$IsMutable();\n"
-                 "  $name$_.setInt(index, value.getNumber());\n"
+                 "  ensure$capitalized_name$IsMutable().setInt(index, "
+                 "value.getNumber());\n"
                  "}\n");
   WriteFieldAccessorDocComment(printer, descriptor_, LIST_ADDER,
                                context_->options(), /* builder */ false,
                                /* kdoc */ false, /* is_private */ true);
-  printer->Print(variables_,
-                 "private void add$capitalized_name$($type$ value) {\n"
-                 "  java.util.Objects.requireNonNull(value);\n"
-                 "  ensure$capitalized_name$IsMutable();\n"
-                 "  $name$_.addInt(value.getNumber());\n"
-                 "}\n");
+  printer->Print(
+      variables_,
+      "private void add$capitalized_name$($type$ value) {\n"
+      "  java.util.Objects.requireNonNull(value);\n"
+      "  ensure$capitalized_name$IsMutable().addInt(value.getNumber());\n"
+      "}\n");
   WriteFieldAccessorDocComment(printer, descriptor_, LIST_MULTI_ADDER,
                                context_->options(), /* builder */ false,
                                /* kdoc */ false, /* is_private */ true);
   printer->Print(variables_,
                  "private void addAll$capitalized_name$(\n"
                  "    java.lang.Iterable<? extends $type$> values) {\n"
-                 "  ensure$capitalized_name$IsMutable();\n"
+                 "  com.google.protobuf.Internal.IntList list =\n"
+                 "      ensure$capitalized_name$IsMutable();\n"
                  "  for ($type$ value : values) {\n"
-                 "    $name$_.addInt(value.getNumber());\n"
+                 "    list.addInt(value.getNumber());\n"
                  "  }\n"
                  "}\n");
   WriteFieldAccessorDocComment(printer, descriptor_, CLEARER,
@@ -669,19 +672,18 @@ void RepeatedImmutableEnumFieldLiteGenerator::GenerateMembers(
     WriteFieldEnumValueAccessorDocComment(
         printer, descriptor_, SETTER, context_->options(),
         /* builder = */ false, /* is_private = */ true);
-    printer->Print(variables_,
-                   "private void set$capitalized_name$Value(\n"
-                   "    int index, int value) {\n"
-                   "  ensure$capitalized_name$IsMutable();\n"
-                   "  $name$_.setInt(index, value);\n"
-                   "}\n");
+    printer->Print(
+        variables_,
+        "private void set$capitalized_name$Value(\n"
+        "    int index, int value) {\n"
+        "  ensure$capitalized_name$IsMutable().setInt(index, value);\n"
+        "}\n");
     WriteFieldEnumValueAccessorDocComment(
         printer, descriptor_, LIST_ADDER, context_->options(),
         /* builder = */ false, /* is_private = */ true);
     printer->Print(variables_,
                    "private void add$capitalized_name$Value(int value) {\n"
-                   "  ensure$capitalized_name$IsMutable();\n"
-                   "  $name$_.addInt(value);\n"
+                   "  ensure$capitalized_name$IsMutable().addInt(value);\n"
                    "}\n");
     WriteFieldEnumValueAccessorDocComment(
         printer, descriptor_, LIST_MULTI_ADDER, context_->options(),
@@ -689,9 +691,10 @@ void RepeatedImmutableEnumFieldLiteGenerator::GenerateMembers(
     printer->Print(variables_,
                    "private void addAll$capitalized_name$Value(\n"
                    "    java.lang.Iterable<java.lang.Integer> values) {\n"
-                   "  ensure$capitalized_name$IsMutable();\n"
+                   "  com.google.protobuf.Internal.IntList list =\n"
+                   "      ensure$capitalized_name$IsMutable();\n"
                    "  for (int value : values) {\n"
-                   "    $name$_.addInt(value);\n"
+                   "    list.addInt(value);\n"
                    "  }\n"
                    "}\n");
   }

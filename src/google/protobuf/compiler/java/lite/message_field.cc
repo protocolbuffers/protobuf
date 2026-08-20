@@ -504,13 +504,15 @@ void RepeatedImmutableMessageFieldLiteGenerator::GenerateMembers(
 
   printer->Print(
       variables_,
-      "private void ensure$capitalized_name$IsMutable() {\n"
+      "private com.google.protobuf.Internal.ProtobufList<$type$>\n"
+      "ensure$capitalized_name$IsMutable() {\n"
       // Use a temporary to avoid a redundant iget-object.
       "  com.google.protobuf.Internal.ProtobufList<$type$> tmp = $name$_;\n"
       "  if (!tmp.isModifiable()) {\n"
-      "    $name$_ =\n"
+      "    $name$_ = tmp =\n"
       "        com.google.protobuf.GeneratedMessageLite.mutableCopy(tmp);\n"
       "   }\n"
+      "  return tmp;\n"
       "}\n"
       "\n");
 
@@ -520,8 +522,7 @@ void RepeatedImmutableMessageFieldLiteGenerator::GenerateMembers(
                  "private void set$capitalized_name$(\n"
                  "    int index, $type$ value) {\n"
                  "  java.util.Objects.requireNonNull(value);\n"
-                 "  ensure$capitalized_name$IsMutable();\n"
-                 "  $name$_.set(index, value);\n"
+                 "  ensure$capitalized_name$IsMutable().set(index, value);\n"
                  "}\n");
 
   // Builder addRepeatedField(Field value)
@@ -529,8 +530,7 @@ void RepeatedImmutableMessageFieldLiteGenerator::GenerateMembers(
   printer->Print(variables_,
                  "private void add$capitalized_name$($type$ value) {\n"
                  "  java.util.Objects.requireNonNull(value);\n"
-                 "  ensure$capitalized_name$IsMutable();\n"
-                 "  $name$_.add(value);\n"
+                 "  ensure$capitalized_name$IsMutable().add(value);\n"
                  "}\n");
 
   // Builder addRepeatedField(int index, Field value)
@@ -539,8 +539,7 @@ void RepeatedImmutableMessageFieldLiteGenerator::GenerateMembers(
                  "private void add$capitalized_name$(\n"
                  "    int index, $type$ value) {\n"
                  "  java.util.Objects.requireNonNull(value);\n"
-                 "  ensure$capitalized_name$IsMutable();\n"
-                 "  $name$_.add(index, value);\n"
+                 "  ensure$capitalized_name$IsMutable().add(index, value);\n"
                  "}\n");
 
   // Builder addAllRepeatedField(Iterable<Field> values)
@@ -548,9 +547,8 @@ void RepeatedImmutableMessageFieldLiteGenerator::GenerateMembers(
   printer->Print(variables_,
                  "private void addAll$capitalized_name$(\n"
                  "    java.lang.Iterable<? extends $type$> values) {\n"
-                 "  ensure$capitalized_name$IsMutable();\n"
                  "  com.google.protobuf.AbstractMessageLite.addAll(\n"
-                 "      values, $name$_);\n"
+                 "      values, ensure$capitalized_name$IsMutable());\n"
                  "}\n");
 
   // Builder clearAllRepeatedField()
@@ -564,8 +562,7 @@ void RepeatedImmutableMessageFieldLiteGenerator::GenerateMembers(
   WriteFieldDocComment(printer, descriptor_, context_->options());
   printer->Print(variables_,
                  "private void remove$capitalized_name$(int index) {\n"
-                 "  ensure$capitalized_name$IsMutable();\n"
-                 "  $name$_.remove(index);\n"
+                 "  ensure$capitalized_name$IsMutable().remove(index);\n"
                  "}\n");
 }
 

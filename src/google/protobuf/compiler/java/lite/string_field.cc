@@ -605,14 +605,16 @@ void RepeatedImmutableStringFieldLiteGenerator::GenerateMembers(
 
   printer->Print(
       variables_,
-      "private void ensure$capitalized_name$IsMutable() {\n"
+      "private com.google.protobuf.Internal.ProtobufList<java.lang.String>\n"
+      "ensure$capitalized_name$IsMutable() {\n"
       // Use a temporary to avoid a redundant iget-object.
       "  com.google.protobuf.Internal.ProtobufList<java.lang.String> tmp =\n"
-      "      $name$_;"
+      "      $name$_;\n"
       "  if (!tmp.isModifiable()) {\n"
-      "    $name$_ =\n"
+      "    $name$_ = tmp =\n"
       "        com.google.protobuf.GeneratedMessageLite.mutableCopy(tmp);\n"
       "   }\n"
+      "  return tmp;\n"
       "}\n");
 
   WriteFieldAccessorDocComment(printer, descriptor_, LIST_INDEXED_SETTER,
@@ -622,8 +624,7 @@ void RepeatedImmutableStringFieldLiteGenerator::GenerateMembers(
                  "private void set$capitalized_name$(\n"
                  "    int index, java.lang.String value) {\n"
                  "  java.util.Objects.requireNonNull(value);\n"
-                 "  ensure$capitalized_name$IsMutable();\n"
-                 "  $name$_.set(index, value);\n"
+                 "  ensure$capitalized_name$IsMutable().set(index, value);\n"
                  "}\n");
   WriteFieldAccessorDocComment(printer, descriptor_, LIST_ADDER,
                                context_->options(), /* builder */ false,
@@ -632,8 +633,7 @@ void RepeatedImmutableStringFieldLiteGenerator::GenerateMembers(
                  "private void add$capitalized_name$(\n"
                  "    java.lang.String value) {\n"
                  "  java.util.Objects.requireNonNull(value);\n"
-                 "  ensure$capitalized_name$IsMutable();\n"
-                 "  $name$_.add(value);\n"
+                 "  ensure$capitalized_name$IsMutable().add(value);\n"
                  "}\n");
   WriteFieldAccessorDocComment(printer, descriptor_, LIST_MULTI_ADDER,
                                context_->options(), /* builder */ false,
@@ -641,9 +641,8 @@ void RepeatedImmutableStringFieldLiteGenerator::GenerateMembers(
   printer->Print(variables_,
                  "private void addAll$capitalized_name$(\n"
                  "    java.lang.Iterable<java.lang.String> values) {\n"
-                 "  ensure$capitalized_name$IsMutable();\n"
                  "  com.google.protobuf.AbstractMessageLite.addAll(\n"
-                 "      values, $name$_);\n"
+                 "      values, ensure$capitalized_name$IsMutable());\n"
                  "}\n");
   WriteFieldAccessorDocComment(printer, descriptor_, CLEARER,
                                context_->options(), /* builder */ false,
@@ -662,10 +661,10 @@ void RepeatedImmutableStringFieldLiteGenerator::GenerateMembers(
   if (CheckUtf8(descriptor_)) {
     printer->Print(variables_, "  checkByteStringIsUtf8(value);\n");
   }
-  printer->Print(variables_,
-                 "  ensure$capitalized_name$IsMutable();\n"
-                 "  $name$_.add(value.toStringUtf8());\n"
-                 "}\n");
+  printer->Print(
+      variables_,
+      "  ensure$capitalized_name$IsMutable().add(value.toStringUtf8());\n"
+      "}\n");
 }
 
 void RepeatedImmutableStringFieldLiteGenerator::GenerateBuilderMembers(
