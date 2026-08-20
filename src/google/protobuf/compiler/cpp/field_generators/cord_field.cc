@@ -269,7 +269,7 @@ void CordFieldGenerator::GenerateMergingCode(io::Printer* p) const {
 void CordFieldGenerator::GenerateSwappingCode(io::Printer* p) const {
   auto v = p->WithVars(variables_);
   p->Emit(R"cc(
-    $field_$.swap(other->$field_$);
+    this_.$field_$.swap(other->$field_$);
   )cc");
 }
 
@@ -440,8 +440,8 @@ bool CordOneofFieldGenerator::RequiresArena(GeneratorFunction func) const {
 void CordOneofFieldGenerator::GenerateClearingCode(io::Printer* p) const {
   auto v = p->WithVars(variables_);
   p->Emit(R"cc(
-    if (GetArena() == nullptr) {
-      delete $field_$;
+    if (this_.GetArena() == nullptr) {
+      delete this_.$field_$;
     }
   )cc");
 }

@@ -84,13 +84,12 @@ class PROTOBUF_EXPORT ImplicitWeakMessage final : public MessageLite {
   using InternalArenaConstructable_ = void;
   using DestructorSkippable_ = void;
 
-  static PROTOBUF_CC const char* ParseImpl(ImplicitWeakMessage* msg,
-                                           const char* ptr, ParseContext* ctx);
-
-  static constexpr auto InternalGenerateClassData_();
-
  private:
   friend ImplicitWeakMessageDefaultType;
+  friend class ImplicitWeakPrivateAccess;
+
+  static PROTOBUF_CC const char* ParseImpl(ImplicitWeakMessage* msg,
+                                           const char* ptr, ParseContext* ctx);
 
   static void MergeImpl(MessageLite&, const MessageLite&);
 

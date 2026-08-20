@@ -364,7 +364,9 @@ void SingularMessage::GenerateMergingCode(io::Printer* p) const {
 }
 
 void SingularMessage::GenerateSwappingCode(io::Printer* p) const {
-  p->Emit("swap($field_$, other->$field_$);\n");
+  p->Emit(R"cc(
+    swap(this_.$field_$, other->$field_$);
+  )cc");
 }
 
 void SingularMessage::GenerateDestructorCode(io::Printer* p) const {
@@ -631,19 +633,19 @@ void OneofMessage::GenerateClearingCode(io::Printer* p) const {
             [&] {
               if (HasDescriptorMethods(field_->file(), options_)) {
                 p->Emit(R"cc(
-                  $pbi$::MaybePoisonAfterClear($field_$);
+                  $pbi$::MaybePoisonAfterClear(this_.$field_$);
                 )cc");
               } else {
                 p->Emit(R"cc(
-                  if ($field_$ != nullptr) {
-                    $field_$->Clear();
+                  if (this_.$field_$ != nullptr) {
+                    this_.$field_$->Clear();
                   }
                 )cc");
               }
             }}},
           R"cc(
-            if (GetArena() == nullptr) {
-              delete $field_$;
+            if (this_.GetArena() == nullptr) {
+              delete this_.$field_$;
             } else if ($pbi$::DebugHardenClearOneofMessageOnArena()) {
               $poison_or_clear$;
             }
@@ -985,7 +987,7 @@ void RepeatedMessage::GenerateMergingCode(io::Printer* p) const {
 void RepeatedMessage::GenerateSwappingCode(io::Printer* p) const {
   ABSL_CHECK(!should_split());
   p->Emit(R"cc(
-    $field_$.InternalSwap(&other->$field_$);
+    this_.$field_$.InternalSwap(&other->$field_$);
   )cc");
 }
 

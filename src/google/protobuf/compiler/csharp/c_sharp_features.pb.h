@@ -80,7 +80,7 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CSharpFeatures final 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
   PROTOBUF_ALWAYS_INLINE_NODEBUG void operator delete(
       CSharpFeatures* PROTOBUF_NONNULL msg, ::std::destroying_delete_t) {
-    SharedDtor(*msg);
+    Helpers_::SharedDtor(*msg);
     ::google::protobuf::internal::SizedDelete(msg, sizeof(CSharpFeatures));
   }
 #endif
@@ -101,7 +101,7 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CSharpFeatures final 
   inline CSharpFeatures& operator=(CSharpFeatures&& from) noexcept {
     if (this == &from) return *this;
     if (::google::protobuf::internal::CanMoveWithInternalSwap(GetArena(), from.GetArena())) {
-      InternalSwap(&from);
+      Helpers_::InternalSwap(*this, &from);
     } else {
       CopyFrom(from);
     }
@@ -138,7 +138,7 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CSharpFeatures final 
   inline void Swap(CSharpFeatures* PROTOBUF_NONNULL other) {
     if (other == this) return;
     if (::google::protobuf::internal::CanUseInternalSwap(GetArena(), other->GetArena())) {
-      InternalSwap(other);
+      Helpers_::InternalSwap(*this, other);
     } else {
       ::google::protobuf::internal::GenericSwap(this, other);
     }
@@ -146,7 +146,7 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CSharpFeatures final 
   void UnsafeArenaSwap(CSharpFeatures* PROTOBUF_NONNULL other) {
     if (other == this) return;
     ABSL_DCHECK(GetArena() == other->GetArena());
-    InternalSwap(other);
+    Helpers_::InternalSwap(*this, other);
   }
 
   // implements Message ----------------------------------------------
@@ -156,17 +156,13 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CSharpFeatures final 
     return Super_::DefaultConstruct<CSharpFeatures>(arena);
   }
   using Super_::CopyFrom;
-  void CopyFrom(const CSharpFeatures& from);
   using Super_::MergeFrom;
-  PROTOBUF_ALWAYS_INLINE_NODEBUG void MergeFrom(const CSharpFeatures& from) {
-    CSharpFeatures::MergeImpl(*this, from);
+  PROTOBUF_ALWAYS_INLINE_NODEBUG void CopyFrom(const CSharpFeatures& from) {
+    CSharpFeatures::Helpers_::CopyImpl(*this, from);
   }
-
-  private:
-  static void MergeImpl(::google::protobuf::MessageLite& to_msg,
-                        const ::google::protobuf::MessageLite& from_msg);
-
-  public:
+  PROTOBUF_ALWAYS_INLINE_NODEBUG void MergeFrom(const CSharpFeatures& from) {
+    CSharpFeatures::Helpers_::MergeImpl(*this, from);
+  }
   [[nodiscard]] PROTOBUF_ALWAYS_INLINE_NODEBUG bool IsInitialized()
       const {
     return true;
@@ -197,11 +193,6 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CSharpFeatures final 
     return _impl_._cached_size_.Get();
   }
 
-  private:
-  void SharedCtor(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
-  static void SharedDtor(MessageLite& self);
-  void InternalSwap(CSharpFeatures* PROTOBUF_NONNULL other);
-
  private:
   static ::absl::string_view FullMessageName() { return "pb.CSharpFeatures"; }
 
@@ -213,13 +204,8 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CSharpFeatures final 
     *this = ::std::move(from);
   }
   const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL GetClassData() const PROTOBUF_FINAL;
-  static void* PROTOBUF_NONNULL PlacementNew_(
-      const void* PROTOBUF_NONNULL, void* PROTOBUF_NONNULL mem,
-      ::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
-  static constexpr auto InternalNewImpl_();
 
  public:
-  static constexpr auto InternalGenerateClassData_();
 
   [[nodiscard]] ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
@@ -242,17 +228,27 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CSharpFeatures final 
   // @@protoc_insertion_point(class_scope:pb.CSharpFeatures)
  private:
   class _Internal;
-#if defined(PROTOBUF_CUSTOM_VTABLE)
   struct Helpers_ {
     PROTOBUF_NODEBUG Helpers_();
 
+    static void SharedCtor(MessageLite& self,
+                           ::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
+    static void SharedDtor(MessageLite& self);
+    static void InternalSwap(MessageLite& self, CSharpFeatures* PROTOBUF_NONNULL other);
+    static void CopyImpl(::google::protobuf::MessageLite& to_msg,
+                         const ::google::protobuf::MessageLite& from_msg);
+    static void MergeImpl(::google::protobuf::MessageLite& to_msg,
+                          const ::google::protobuf::MessageLite& from_msg);
+
+#if defined(PROTOBUF_CUSTOM_VTABLE)
     static void Clear(::google::protobuf::MessageLite& msg);
     [[nodiscard]] static::size_t ByteSizeLong(const ::google::protobuf::MessageLite& msg);
     [[nodiscard]] static ::uint8_t* PROTOBUF_NONNULL _InternalSerialize(
         const ::google::protobuf::MessageLite& msg, ::uint8_t* PROTOBUF_NONNULL target,
         ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream);
-  };
 #endif  // PROTOBUF_CUSTOM_VTABLE
+
+  };
   using ParseTableT_ =
       ::google::protobuf::internal::TcParseTable<0, 1,
                           0, 0,
@@ -311,6 +307,7 @@ inline bool CSharpFeatures::has_nullable_reference_types() const {
 }
 inline void CSharpFeatures::clear_nullable_reference_types() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
+  auto& this_ [[maybe_unused]] = *this;
   _impl_.nullable_reference_types_ = false;
   ClearHasBit(_impl_._has_bits_[0], 0x00000001U);
 }

@@ -460,7 +460,7 @@ void SingularString::GenerateInlineAccessorDefinitions(io::Printer* p) const {
 void SingularString::GenerateClearingCode(io::Printer* p) const {
   if (is_oneof()) {
     p->Emit(R"cc(
-      $field_$.Destroy();
+      this_.$field_$.Destroy();
     )cc");
     return;
   }
@@ -533,13 +533,14 @@ void SingularString::GenerateSwappingCode(io::Printer* p) const {
 
   if (!is_inlined()) {
     p->Emit(R"cc(
-      ::_pbi::ArenaStringPtr::InternalSwap(&$field_$, &other->$field_$, arena);
+      ::_pbi::ArenaStringPtr::InternalSwap(&this_.$field_$, &other->$field_$,
+                                           arena);
     )cc");
     return;
   }
 
   p->Emit(R"cc(
-    ::_pbi::InlinedStringField::InternalSwap(&$field_$, &other->$field_$,
+    ::_pbi::InlinedStringField::InternalSwap(&this_.$field_$, &other->$field_$,
                                              arena);
   )cc");
 }
@@ -719,7 +720,7 @@ class RepeatedString : public FieldGeneratorBase {
   void GenerateSwappingCode(io::Printer* p) const override {
     ABSL_CHECK(!should_split());
     p->Emit(R"cc(
-      $field_$.InternalSwap(&other->$field_$);
+      this_.$field_$.InternalSwap(&other->$field_$);
     )cc");
   }
 
