@@ -64,9 +64,6 @@ constexpr CppFeatures::ParseTableT_ CppFeatures::_Internal::GenerateParseTable(c
       class_data,
       nullptr,  // post_loop_handler
       ::_pbi::TcParser::MpUnknownFields,  // fallback
-      #ifdef PROTOBUF_PREFETCH_PARSE_TABLE
-      ::_pbi::TcParser::GetTable<::pb::CppFeatures>(),  // to_prefetch
-      #endif  // PROTOBUF_PREFETCH_PARSE_TABLE
     }, {{
       // optional .pb.CppFeatures.RepeatedType repeated_type = 4 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {
       {::_pbi::TcParser::FastEr0S1,

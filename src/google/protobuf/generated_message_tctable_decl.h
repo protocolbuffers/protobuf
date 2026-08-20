@@ -308,9 +308,6 @@ struct alignas(uint64_t) TcParseTableBase {
   TailCallParseFunc fallback;
 
   // A sub message's table to be prefetched.
-#ifdef PROTOBUF_PREFETCH_PARSE_TABLE
-  const TcParseTableBase* to_prefetch;
-#endif  // PROTOBUF_PREFETCH_PARSE_TABLE
 
   // This constructor exactly follows the field layout, so it's technically
   // not necessary.  However, it makes it much much easier to add or re-arrange
@@ -326,12 +323,7 @@ struct alignas(uint64_t) TcParseTableBase {
                              uint16_t num_aux_entries, uint32_t aux_offset,
                              const ClassData* class_data,
                              PostLoopHandler post_loop_handler,
-                             TailCallParseFunc fallback
-#ifdef PROTOBUF_PREFETCH_PARSE_TABLE
-                             ,
-                             const TcParseTableBase* to_prefetch
-#endif  // PROTOBUF_PREFETCH_PARSE_TABLE
-                             )
+                             TailCallParseFunc fallback)
       : has_bits_offset(has_bits_offset),
         extension_offset(extension_offset),
         max_field_number(max_field_number),
@@ -345,13 +337,7 @@ struct alignas(uint64_t) TcParseTableBase {
         aux_offset(aux_offset),
         class_data(class_data),
         post_loop_handler(post_loop_handler),
-        fallback(fallback)
-#ifdef PROTOBUF_PREFETCH_PARSE_TABLE
-        ,
-        to_prefetch(to_prefetch)
-#endif  // PROTOBUF_PREFETCH_PARSE_TABLE
-  {
-  }
+        fallback(fallback) {}
 
   // Table entry for fast-path tailcall dispatch handling.
   struct FastFieldEntry {
@@ -609,9 +595,6 @@ constexpr TcParseTable<0> CreateStubTcParseTable(
           class_data,         //
           post_loop_handler,  //
           nullptr,            // fallback
-#ifdef PROTOBUF_PREFETCH_PARSE_TABLE
-          nullptr,  // to_prefetch
-#endif              // PROTOBUF_PREFETCH_PARSE_TABLE
       },
       {{{StubParseImpl<T, func>, {}}}},
   };

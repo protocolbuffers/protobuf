@@ -593,11 +593,6 @@
 #define PROTOBUF_DESCRIPTOR_WEAK_MESSAGES_ALLOWED
 #endif
 
-// TODO: Enable the feature by default and remove this flag.
-#ifdef PROTOBUF_PREFETCH_PARSE_TABLE
-#error PROTOBUF_PREFETCH_PARSE_TABLE was previously defined
-#endif
-
 #ifdef PROTOBUF_PREFETCH_WITH_OFFSET
 #error PROTOBUF_PREFETCH_WITH_OFFSET was previously defined
 #endif

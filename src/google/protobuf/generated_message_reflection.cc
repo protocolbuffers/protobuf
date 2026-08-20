@@ -3859,18 +3859,7 @@ const internal::TcParseTableBase* Reflection::CreateTcParseTable() const {
       aux_offset,
       internal::GetClassData(*schema_.default_instance()),
       nullptr,
-      GetFastParseFunction(table_info.fallback_function)
-#ifdef PROTOBUF_PREFETCH_PARSE_TABLE
-          ,
-      nullptr
-#endif  // PROTOBUF_PREFETCH_PARSE_TABLE
-  };
-#ifdef PROTOBUF_PREFETCH_PARSE_TABLE
-  // We'll prefetch `to_prefetch->to_prefetch` unconditionally to avoid
-  // branches. Here we don't know which field is the hottest, so set the pointer
-  // to itself to avoid nullptr.
-  res->to_prefetch = res;
-#endif  // PROTOBUF_PREFETCH_PARSE_TABLE
+      GetFastParseFunction(table_info.fallback_function)};
 
   // Now copy the rest of the payloads
   PopulateTcParseFastEntries(table_info, res);

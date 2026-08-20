@@ -65,9 +65,6 @@ constexpr CppFileOptions::ParseTableT_ CppFileOptions::_Internal::GenerateParseT
       class_data,
       nullptr,  // post_loop_handler
       ::_pbi::TcParser::MpUnknownFields,  // fallback
-      #ifdef PROTOBUF_PREFETCH_PARSE_TABLE
-      ::_pbi::TcParser::GetTable<::pb::file::CppFileOptions>(),  // to_prefetch
-      #endif  // PROTOBUF_PREFETCH_PARSE_TABLE
     }, {{
       // string namespace = 1;
       {::_pbi::TcParser::FastUS1,
