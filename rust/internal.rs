@@ -106,11 +106,17 @@ const fn are_versions_compatible(gencode: &str, runtime: &str) -> bool {
     let gencode = split_version(gencode);
     let runtime = split_version(runtime);
 
-    if gencode.0 < 4 || (gencode.0 == 4 && gencode.1 <= 33) {
+    if (gencode.0 != 0 && gencode.0 < 4) || ((gencode.0 == 4 || gencode.0 == 0) && gencode.1 <= 33) {
+        return false;
+    }
+    if (runtime.0 != 0 && runtime.0 < 4) || ((runtime.0 == 4 || runtime.0 == 0) && runtime.1 <= 33) {
         return false;
     }
 
-    if gencode.0 != runtime.0 {
+    // Both 0.x and 4.x represent the same Protobuf version series (e.g. 0.36.x and 4.36.x).
+    let gencode_major_eq_runtime = (gencode.0 == runtime.0) || ((gencode.0 == 0 || gencode.0 == 4) && (runtime.0 == 0 || runtime.0 == 4));
+
+    if !gencode_major_eq_runtime {
         return gencode.0 < runtime.0;
     }
     if gencode.1 != runtime.1 {
@@ -144,8 +150,12 @@ pub const fn assert_compatible_gencode_version(gencode_version: &'static str) {
     let runtime_version = env!("CARGO_PKG_VERSION");
     assert!(
         are_versions_compatible(gencode_version, runtime_version),
-        "Gencode version is not compatible with runtime version",
-    )
+        concat!(
+            "Gencode version is not compatible with runtime version (runtime is ",
+            env!("CARGO_PKG_VERSION"),
+            ", gencode version is at the callsite)"
+        ),
+    );
 }
 
 /// There is no need for gencode/runtime poison pill when running in bzl; the
@@ -190,5 +200,13 @@ mod tests {
         expect_false!(are_versions_compatible("4.35.1", "4.34.0"));
         expect_false!(are_versions_compatible("4.35.0-rc.2", "4.34.0-rc.1"));
         expect_false!(are_versions_compatible("4.35.0", "4.34.0-rc.2"));
+
+        // 0.x (google-protobuf) and 4.x (legacy protobuf) interop
+        expect_true!(are_versions_compatible("0.36.0", "4.36.0"));
+        expect_true!(are_versions_compatible("0.36.1-release", "4.36.1"));
+        expect_true!(are_versions_compatible("0.36.0", "4.36.1"));
+        expect_true!(are_versions_compatible("4.35.0", "0.36.0"));
+        expect_false!(are_versions_compatible("0.37.0", "4.36.0"));
+        expect_false!(are_versions_compatible("0.33.0", "4.36.0"));
     }
 }
