@@ -64,9 +64,6 @@ constexpr CSharpFeatures::ParseTableT_ CSharpFeatures::_Internal::GenerateParseT
       class_data,
       nullptr,  // post_loop_handler
       ::_pbi::TcParser::MpUnknownFields,  // fallback
-      #ifdef PROTOBUF_PREFETCH_PARSE_TABLE
-      ::_pbi::TcParser::GetTable<::pb::CSharpFeatures>(),  // to_prefetch
-      #endif  // PROTOBUF_PREFETCH_PARSE_TABLE
     }, {{
       // optional bool nullable_reference_types = 1 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_MESSAGE, targets = TARGET_TYPE_FILE, edition_defaults = {
       {::_pbi::TcParser::SingularVarintNoZag1<bool, offsetof(CSharpFeatures, _impl_.nullable_reference_types_), 0>(),

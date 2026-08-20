@@ -72,9 +72,6 @@ constexpr Version::ParseTableT_ Version::_Internal::GenerateParseTable(const ::_
       class_data,
       nullptr,  // post_loop_handler
       ::_pbi::TcParser::MpUnknownFields,  // fallback
-      #ifdef PROTOBUF_PREFETCH_PARSE_TABLE
-      ::_pbi::TcParser::GetTable<::google::protobuf::compiler::Version>(),  // to_prefetch
-      #endif  // PROTOBUF_PREFETCH_PARSE_TABLE
     }, {{
       // optional string suffix = 4;
       {::_pbi::TcParser::FastBS1,
@@ -205,9 +202,6 @@ constexpr CodeGeneratorResponse_File::ParseTableT_ CodeGeneratorResponse_File::_
       class_data,
       nullptr,  // post_loop_handler
       ::_pbi::TcParser::MpUnknownFields,  // fallback
-      #ifdef PROTOBUF_PREFETCH_PARSE_TABLE
-      ::_pbi::TcParser::GetTable<::google::protobuf::compiler::CodeGeneratorResponse_File>(),  // to_prefetch
-      #endif  // PROTOBUF_PREFETCH_PARSE_TABLE
     }, {{
       // optional .google.protobuf.GeneratedCodeInfo generated_code_info = 16;
       {::_pbi::TcParser::FastMcS2,
@@ -344,9 +338,6 @@ constexpr CodeGeneratorResponse::ParseTableT_ CodeGeneratorResponse::_Internal::
       class_data,
       nullptr,  // post_loop_handler
       ::_pbi::TcParser::MpUnknownFields,  // fallback
-      #ifdef PROTOBUF_PREFETCH_PARSE_TABLE
-      ::_pbi::TcParser::GetTable<::google::protobuf::compiler::CodeGeneratorResponse>(),  // to_prefetch
-      #endif  // PROTOBUF_PREFETCH_PARSE_TABLE
     }, {{
       {::_pbi::TcParser::MiniParse, {}},
       // optional string error = 1;
@@ -493,9 +484,6 @@ constexpr CodeGeneratorRequest::ParseTableT_ CodeGeneratorRequest::_Internal::Ge
       class_data,
       nullptr,  // post_loop_handler
       ::_pbi::TcParser::MpUnknownFields,  // fallback
-      #ifdef PROTOBUF_PREFETCH_PARSE_TABLE
-      ::_pbi::TcParser::GetTable<::google::protobuf::compiler::CodeGeneratorRequest>(),  // to_prefetch
-      #endif  // PROTOBUF_PREFETCH_PARSE_TABLE
     }, {{
       {::_pbi::TcParser::MiniParse, {}},
       // repeated string file_to_generate = 1;

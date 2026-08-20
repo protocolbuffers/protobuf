@@ -114,9 +114,6 @@ TEST(FastVarints, NameHere) {
           &class_data,
           nullptr,           // post_loop_handler
           FastParserGaveUp,  // fallback
-#ifdef PROTOBUF_PREFETCH_PARSE_TABLE
-          nullptr,  // to_prefetch
-#endif              // PROTOBUF_PREFETCH_PARSE_TABLE
       },
       // Fast Table:
       {{
@@ -308,9 +305,6 @@ TEST(IsEntryForFieldNumTest, Matcher) {
           nullptr,     // default instance
           nullptr,     // post_loop_handler
           nullptr,     // fallback function
-#ifdef PROTOBUF_PREFETCH_PARSE_TABLE
-          nullptr,     // to_prefetch
-#endif  // PROTOBUF_PREFETCH_PARSE_TABLE
       }};
   // clang-format on
   int table_field_numbers[] = {1, 2, 3};
@@ -415,9 +409,6 @@ TEST_F(FindFieldEntryTest, SequentialFieldRange) {
           nullptr,     // default instance
           nullptr,     // post_loop_handler
           {},          // fallback function
-#ifdef PROTOBUF_PREFETCH_PARSE_TABLE
-          nullptr,     // to_prefetch
-#endif  // PROTOBUF_PREFETCH_PARSE_TABLE
       },
       {},  // fast_entries
       // field_lookup_table for 2, 3, 4, 5, 111:
@@ -459,9 +450,6 @@ TEST_F(FindFieldEntryTest, SmallScanRange) {
           nullptr,     // default instance
           nullptr,     // post_loop_handler
           {},          // fallback function
-#ifdef PROTOBUF_PREFETCH_PARSE_TABLE
-          nullptr,     // to_prefetch
-#endif  // PROTOBUF_PREFETCH_PARSE_TABLE
       },
       {},  // fast_entries
       // field_lookup_table for 1, 3, 4, 5, 7, 111:
@@ -511,9 +499,6 @@ TEST_F(FindFieldEntryTest, BinarySearchRange) {
           nullptr,     // default instance
           nullptr,     // post_loop_handler
           {},          // fallback function
-#ifdef PROTOBUF_PREFETCH_PARSE_TABLE
-          nullptr,     // to_prefetch
-#endif  // PROTOBUF_PREFETCH_PARSE_TABLE
       },
       {},  // fast_entries
       // field_lookup_table for 1, 3, 4, 5, 6, 8, 9, 11, 12, 70
@@ -560,9 +545,6 @@ TEST_F(FindFieldEntryTest, OutOfRange) {
           nullptr,     // default instance
           nullptr,     // post_loop_handler
           {},          // fallback function
-#ifdef PROTOBUF_PREFETCH_PARSE_TABLE
-          nullptr,     // to_prefetch
-#endif  // PROTOBUF_PREFETCH_PARSE_TABLE
       },
       {},  // fast_entries
       {{// field lookup table
@@ -614,9 +596,6 @@ TEST_F(FindFieldEntryTest, EmptyMessage) {
           nullptr,     // default instance
           nullptr,     // post_loop_handler
           nullptr,     // fallback function
-#ifdef PROTOBUF_PREFETCH_PARSE_TABLE
-          nullptr,     // to_prefetch
-#endif  // PROTOBUF_PREFETCH_PARSE_TABLE
       },
       {},  // fast_entries
       {{// empty field lookup table
@@ -668,9 +647,6 @@ const TcParseTable<5, 134, 5, 2176, 55> test_all_types_table = {
         nullptr,     // default instance
         nullptr,     // post_loop_handler
         nullptr,     // fallback function
-#ifdef PROTOBUF_PREFETCH_PARSE_TABLE
-        nullptr,     // to_prefetch
-#endif  // PROTOBUF_PREFETCH_PARSE_TABLE
     },
     {{
         // tail-call table
