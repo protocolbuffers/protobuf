@@ -151,9 +151,10 @@ pub const fn assert_compatible_gencode_version(gencode_version: &'static str) {
     assert!(
         are_versions_compatible(gencode_version, runtime_version),
         concat!(
-            "Gencode version is not compatible with runtime version (runtime is ",
+            "Gencode version (see callsite) is not compatible with runtime ",
+            "version (runtime is ",
             env!("CARGO_PKG_VERSION"),
-            ", gencode version is at the callsite)"
+            ")"
         ),
     );
 }
