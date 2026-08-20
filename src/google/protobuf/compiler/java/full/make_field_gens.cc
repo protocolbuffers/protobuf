@@ -11,6 +11,7 @@
 
 #include <memory>
 #include <utility>
+#include <vector>
 
 #include "google/protobuf/compiler/java/context.h"
 #include "google/protobuf/compiler/java/generator_common.h"
@@ -86,7 +87,15 @@ std::unique_ptr<ImmutableFieldGenerator> MakeImmutableGenerator(
     }
   }
 }
-
+bool HasExplicitPresence(const FieldDescriptor* field) {
+  return HasHasbit(field);
+}
+bool HasNoPresence(const FieldDescriptor* field) {
+  return IsRealOneof(field) || BitfieldTracksMutability(field);
+}
+bool HasHintBitFields(const FieldDescriptor* field) {
+  return !HasExplicitPresence(field) && !HasNoPresence(field);
+}
 }  // namespace
 
 FieldGeneratorMap<ImmutableFieldGenerator> MakeImmutableFieldGenerators(
@@ -95,11 +104,35 @@ FieldGeneratorMap<ImmutableFieldGenerator> MakeImmutableFieldGenerators(
   // bit fields.
   int bit_index = 0;
   FieldGeneratorMap<ImmutableFieldGenerator> ret(descriptor);
+
+  // First pass: fields with real presence bits.
   for (int i = 0; i < descriptor->field_count(); i++) {
     const FieldDescriptor* field = descriptor->field(i);
-    auto generator = MakeImmutableGenerator(field, bit_index, context);
-    bit_index += generator->GetNumBits();
-    ret.Add(field, std::move(generator));
+    if (HasExplicitPresence(field)) {
+      auto generator = MakeImmutableGenerator(field, bit_index, context);
+      bit_index += generator->GetNumBits();
+      ret.Add(field, std::move(generator));
+    }
+  }
+
+  // Second pass: fields with hint presence bits.
+  for (int i = 0; i < descriptor->field_count(); i++) {
+    const FieldDescriptor* field = descriptor->field(i);
+    if (HasHintBitFields(field)) {
+      auto generator = MakeImmutableGenerator(field, bit_index, context);
+      bit_index += generator->GetNumBits();
+      ret.Add(field, std::move(generator));
+    }
+  }
+
+  // Third pass: fields with no presence tracking.
+  for (int i = 0; i < descriptor->field_count(); i++) {
+    const FieldDescriptor* field = descriptor->field(i);
+    if (HasNoPresence(field)) {
+      auto generator = MakeImmutableGenerator(field, bit_index, context);
+      bit_index += generator->GetNumBits();
+      ret.Add(field, std::move(generator));
+    }
   }
   return ret;
 }

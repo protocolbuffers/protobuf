@@ -23,6 +23,10 @@ class ImmutableFieldGenerator : public FieldGenerator {
   ImmutableFieldGenerator& operator=(const ImmutableFieldGenerator&) = delete;
   ~ImmutableFieldGenerator() override = default;
 
+  bool HasHasbit() const;
+  bool IsRealOneof() const;
+  bool BitfieldTracksMutability() const;
+
   int GetBitIndex() const { return bit_index_; }
   constexpr int GetNumBits() const { return 1; }
   virtual void GenerateInterfaceMembers(io::Printer* printer) const = 0;
