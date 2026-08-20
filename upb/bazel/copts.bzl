@@ -44,7 +44,8 @@ UPB_DEFAULT_CPPOPTS = select({
     "//upb:windows": [],
     "//conditions:default": _DEFAULT_CPPOPTS,
 }) + select({
-    "//upb:fasttable_enabled_setting": ["-DUPB_ENABLE_FASTTABLE"],
+    "//upb:fasttable_enabled_explicit_true": ["-DUPB_ENABLE_FASTTABLE"],
+    "//upb:fasttable_enabled_setting": ["-DUPB_TRY_ENABLE_FASTTABLE"],
     "//conditions:default": [],
 })
 
@@ -52,7 +53,8 @@ UPB_DEFAULT_COPTS = select({
     "//upb:windows": [],
     "//conditions:default": _DEFAULT_COPTS,
 }) + select({
-    "//upb:fasttable_enabled_setting": ["-DUPB_ENABLE_FASTTABLE"],
+    "//upb:fasttable_enabled_explicit_true": ["-DUPB_ENABLE_FASTTABLE"],
+    "//upb:fasttable_enabled_setting": ["-DUPB_TRY_ENABLE_FASTTABLE"],
     "//conditions:default": [],
 })
 
