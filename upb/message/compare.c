@@ -248,6 +248,6 @@ bool upb_Message_IsEqual(const upb_Message* msg1, const upb_Message* msg2,
   if (!(options & kUpb_CompareOption_IncludeUnknownFields)) return true;
 
   // The wire encoder enforces a maximum depth of 100 so we match that here.
-  return UPB_PRIVATE(_upb_Message_UnknownFieldsAreEqual)(msg1, msg2, 100) ==
+  return _upb_Message_UnknownFieldsAreEqual(msg1, msg2, 100) ==
          kUpb_UnknownCompareResult_Equal;
 }

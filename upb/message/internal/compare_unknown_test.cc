@@ -68,8 +68,8 @@ upb_UnknownCompareResult CompareUnknownWithMaxDepth(
   EXPECT_TRUE(UPB_PRIVATE(_upb_Message_AddUnknown)(
       UPB_UPCAST(msg2), buf2.data(), buf2.size(), arena2.ptr(),
       kUpb_AddUnknown_Copy));
-  return UPB_PRIVATE(_upb_Message_UnknownFieldsAreEqual)(
-      UPB_UPCAST(msg1), UPB_UPCAST(msg2), max_depth);
+  return _upb_Message_UnknownFieldsAreEqual(UPB_UPCAST(msg1), UPB_UPCAST(msg2),
+                                            max_depth);
 }
 
 upb_UnknownCompareResult CompareUnknown(WireMessage uf1, WireMessage uf2) {
@@ -402,9 +402,8 @@ TEST(CompareTest, AllocationFailure) {
                                               kUpb_AddUnknown_Copy)) {
       return false;
     }
-    upb_UnknownCompareResult res =
-        UPB_PRIVATE(_upb_Message_UnknownFieldsAreEqual)(UPB_UPCAST(msg1),
-                                                        UPB_UPCAST(msg2), 64);
+    upb_UnknownCompareResult res = _upb_Message_UnknownFieldsAreEqual(
+        UPB_UPCAST(msg1), UPB_UPCAST(msg2), 64);
     return res == kUpb_UnknownCompareResult_Equal;
   };
 

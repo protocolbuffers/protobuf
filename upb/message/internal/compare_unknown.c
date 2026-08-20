@@ -401,7 +401,7 @@ static upb_UnknownCompareResult upb_UnknownField_Compare(
   return ret;
 }
 
-upb_UnknownCompareResult UPB_PRIVATE(_upb_Message_UnknownFieldsAreEqual)(
+upb_UnknownCompareResult _upb_Message_UnknownFieldsAreEqual(
     const upb_Message* msg1, const upb_Message* msg2, int max_depth) {
   bool msg1_empty = !upb_Message_HasUnknown(msg1);
   bool msg2_empty = !upb_Message_HasUnknown(msg2);
