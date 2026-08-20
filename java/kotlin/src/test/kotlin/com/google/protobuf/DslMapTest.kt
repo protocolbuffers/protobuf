@@ -41,25 +41,25 @@ class DslMapTest {
   @Test
   fun dslMapKeysAreNotMutable() {
     val dslMap = DslMap<Int, Int, DummyProxy>(mutableMapOf(1 to -1))
-    assertThat(dslMap.keys is MutableSet<*>).isFalse()
+    assertThat((dslMap.keys as Any) is MutableSet<*>).isFalse()
   }
 
   @Test
   fun dslMapValuesAreNotMutable() {
     val dslMap = DslMap<Int, Int, DummyProxy>(mutableMapOf(1 to -1))
-    assertThat(dslMap.values is MutableSet<*>).isFalse()
+    assertThat((dslMap.values as Any) is MutableSet<*>).isFalse()
   }
 
   @Test
   fun dslMapEntriesAreNotMutable() {
     val dslMap = DslMap<Int, Int, DummyProxy>(mutableMapOf(1 to -1))
-    assertThat(dslMap.entries is MutableSet<*>).isFalse()
+    assertThat((dslMap.entries as Any) is MutableSet<*>).isFalse()
   }
 
   @Test
   fun dslMapEntryObjectsAreNotMutable() {
     val dslMap = DslMap<Int, Int, DummyProxy>(mutableMapOf(1 to -1))
-    assertThat(dslMap.entries.single() is MutableMap.MutableEntry<*, *>).isFalse()
+    assertThat((dslMap.entries.single() as Any) is MutableMap.MutableEntry<*, *>).isFalse()
   }
 
   @Suppress("PLATFORM_CLASS_MAPPED_TO_KOTLIN", "UNCHECKED_CAST")
