@@ -331,6 +331,136 @@ public class CodedInputStreamTest {
     assertReadVarintFailure(InvalidProtocolBufferException.truncatedMessage(), bytes(0x80));
   }
 
+  @Test
+  public void testArrayDecoderTruncatedVarintDoesNotEscapeSlice(
+      @TestParameter({"ARRAY", "HEAP_BUFFER", "HEAP_SLICE", "HEAP_DUPLICATE"}) String decoderType,
+      @TestParameter({"0", "2"}) int offset,
+      @TestParameter({"1", "2", "3", "4", "5", "6", "7", "8", "9"}) int terminatorOffset)
+      throws Exception {
+    int sliceLength = terminatorOffset;
+    byte[] backing = new byte[offset + terminatorOffset + 2];
+    Arrays.fill(backing, (byte) 0x80);
+    backing[offset + terminatorOffset] = 0x01;
+    backing[offset + terminatorOffset + 1] = 0x51;
+
+    CodedInputStream input;
+    switch (decoderType) {
+      case "ARRAY":
+        input = CodedInputStream.newInstance(backing, offset, sliceLength);
+        break;
+      case "HEAP_BUFFER":
+        ByteBuffer buffer = ByteBuffer.wrap(backing);
+        buffer.position(offset);
+        buffer.limit(offset + sliceLength);
+        input = CodedInputStream.newInstance(buffer);
+        break;
+      case "HEAP_SLICE":
+        ByteBuffer sliced = ByteBuffer.wrap(backing);
+        sliced.position(offset);
+        sliced.limit(offset + sliceLength);
+        input = CodedInputStream.newInstance(sliced.slice());
+        break;
+      case "HEAP_DUPLICATE":
+        ByteBuffer duplicate = ByteBuffer.wrap(backing).duplicate();
+        duplicate.position(offset);
+        duplicate.limit(offset + sliceLength);
+        input = CodedInputStream.newInstance(duplicate);
+        break;
+      default:
+        throw new AssertionError(decoderType);
+    }
+
+    InvalidProtocolBufferException error =
+        assertThrows(InvalidProtocolBufferException.class, input::readRawVarint32);
+    assertThat(error)
+        .hasMessageThat()
+        .isEqualTo(InvalidProtocolBufferException.truncatedMessage().getMessage());
+    assertThat(input.getTotalBytesRead()).isEqualTo(sliceLength);
+    assertThat(input.isAtEnd()).isTrue();
+
+    error = assertThrows(InvalidProtocolBufferException.class, input::readRawByte);
+    assertThat(error)
+        .hasMessageThat()
+        .isEqualTo(InvalidProtocolBufferException.truncatedMessage().getMessage());
+    error = assertThrows(InvalidProtocolBufferException.class, input::readRawVarint64);
+    assertThat(error)
+        .hasMessageThat()
+        .isEqualTo(InvalidProtocolBufferException.truncatedMessage().getMessage());
+    assertThat(input.getTotalBytesRead()).isEqualTo(sliceLength);
+  }
+
+  @Test
+  public void testArrayDecoderTruncatedVarintAlignsToPushedLimit() throws Exception {
+    CodedInputStream input = CodedInputStream.newInstance(bytes(0x80, 0x01, 0x51));
+    int outerLimit = input.pushLimit(1);
+
+    InvalidProtocolBufferException error =
+        assertThrows(InvalidProtocolBufferException.class, input::readRawVarint32);
+    assertThat(error)
+        .hasMessageThat()
+        .isEqualTo(InvalidProtocolBufferException.truncatedMessage().getMessage());
+    assertThat(input.isAtEnd()).isTrue();
+    assertThat(input.getTotalBytesRead()).isEqualTo(1);
+
+    input.popLimit(outerLimit);
+    assertThat(input.readRawByte()).isEqualTo((byte) 0x01);
+    assertThat(input.readRawByte()).isEqualTo((byte) 0x51);
+    assertThat(input.isAtEnd()).isTrue();
+  }
+
+  @Test
+  public void testTruncatedVarintAtPhysicalEndAndCopiedBufferControls() throws Exception {
+    CodedInputStream physicalEnd = CodedInputStream.newInstance(bytes(0x80));
+    assertThrows(InvalidProtocolBufferException.class, physicalEnd::readRawVarint32);
+    // The array fast path only commits its local cursor after a successful read. At physical end,
+    // retry therefore exposes the same authorized byte, never data outside the input.
+    assertThat(physicalEnd.getTotalBytesRead()).isEqualTo(0);
+    assertThat(physicalEnd.readRawByte()).isEqualTo((byte) 0x80);
+    assertThat(physicalEnd.isAtEnd()).isTrue();
+
+    for (InputType type : Arrays.asList(InputType.STREAM, InputType.NIO_DIRECT)) {
+      CodedInputStream input = type.newDecoder(bytes(0x80), 1);
+      assertThrows(InvalidProtocolBufferException.class, input::readRawVarint32);
+      if (!input.isAtEnd()) {
+        assertThat(input.readRawByte()).isEqualTo((byte) 0x80);
+      }
+      assertThat(input.isAtEnd()).isTrue();
+    }
+
+    ByteBuffer readOnly = ByteBuffer.wrap(bytes(0x80)).asReadOnlyBuffer();
+    CodedInputStream readOnlyInput = CodedInputStream.newInstance(readOnly);
+    assertThrows(InvalidProtocolBufferException.class, readOnlyInput::readRawVarint32);
+    if (!readOnlyInput.isAtEnd()) {
+      assertThat(readOnlyInput.readRawByte()).isEqualTo((byte) 0x80);
+    }
+    assertThat(readOnlyInput.isAtEnd()).isTrue();
+
+    CodedInputStream valid = CodedInputStream.newInstance(bytes(0x96, 0x01, 0x51));
+    assertThat(valid.readRawVarint32()).isEqualTo(150);
+    assertThat(valid.readRawByte()).isEqualTo((byte) 0x51);
+    assertThat(valid.isAtEnd()).isTrue();
+  }
+
+  @Test
+  public void testMalformedTenByteVarintCannotAdvancePastLogicalLimit() throws Exception {
+    byte[] backing = new byte[12];
+    Arrays.fill(backing, 0, 10, (byte) 0x80);
+    backing[10] = 0x01;
+    backing[11] = 0x51;
+    CodedInputStream input = CodedInputStream.newInstance(backing, 0, 10);
+
+    InvalidProtocolBufferException error =
+        assertThrows(InvalidProtocolBufferException.class, input::readRawVarint32);
+    assertThat(error)
+        .hasMessageThat()
+        .isEqualTo(InvalidProtocolBufferException.malformedVarint().getMessage());
+    assertThat(input.getTotalBytesRead()).isEqualTo(0);
+
+    // Repeating the failed operation must not move the decoder into the backing-array suffix.
+    assertThrows(InvalidProtocolBufferException.class, input::readRawVarint32);
+    assertThat(input.getTotalBytesRead()).isEqualTo(0);
+  }
+
   /**
    * Parses the given bytes using readRawLittleEndian32() and checks that the result matches the
    * given value.
@@ -379,11 +509,25 @@ public class CodedInputStreamTest {
     byte[] data =
         bytes(
             0x01, // 1 byte varint
-            0x80, 0x01, // 2 byte varint
-            0x80, 0x80, 0x01, // 3 byte varint
+            0x80,
+            0x01, // 2 byte varint
+            0x80,
+            0x80,
+            0x01, // 3 byte varint
             0x7f, // 1 byte varint
-            0x80, 0x80, 0x80, 0x80, 0x01, // 5 byte varint
-            0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09 // 8 1-byte varints
+            0x80,
+            0x80,
+            0x80,
+            0x80,
+            0x01, // 5 byte varint
+            0x02,
+            0x03,
+            0x04,
+            0x05,
+            0x06,
+            0x07,
+            0x08,
+            0x09 // 8 1-byte varints
             );
 
     CodedInputStream input = CodedInputStream.newInstance(data);

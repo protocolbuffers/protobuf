@@ -1152,9 +1152,16 @@ public abstract class CodedInputStream {
 
     @Override
     public int readRawVarint32() throws IOException {
+      if (pos >= limit) {
+        throw InvalidProtocolBufferException.truncatedMessage();
+      }
       try {
         int x = readRawVarint32Fast();
         if (pos > limit) {
+          // The fast path may speculatively read beyond a pushed limit or array slice. Align the
+          // decoder to the active limit before exposing the exception to callers. In particular,
+          // never leave pos pointing into the backing-array suffix after a failed slice read.
+          pos = limit;
           throw InvalidProtocolBufferException.truncatedMessage();
         }
         return x;
@@ -1164,6 +1171,7 @@ public abstract class CodedInputStream {
         // If a varint is both >10 bytes long and also escaped the limit, prefer to throw
         // a truncated message exception instead of a malformed varint exception.
         if (pos > limit) {
+          pos = limit;
           throw InvalidProtocolBufferException.truncatedMessage();
         }
         throw e;
@@ -1428,7 +1436,7 @@ public abstract class CodedInputStream {
 
     @Override
     public boolean isAtEnd() throws IOException {
-      return pos == limit;
+      return pos >= limit;
     }
 
     @Override
@@ -1483,7 +1491,7 @@ public abstract class CodedInputStream {
 
     @Override
     public byte readRawByte() throws IOException {
-      if (pos == limit) {
+      if (pos >= limit) {
         throw InvalidProtocolBufferException.truncatedMessage();
       }
       return buffer[pos++];
