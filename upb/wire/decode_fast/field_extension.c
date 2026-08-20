@@ -35,12 +35,16 @@ UPB_FORCEINLINE void _upb_FastDecoder_PickHandlerForExtensionOrUnknown(
   }
 
   // Assert that the field is either truly unknown, has a mismatched wire
-  // type, or is an overlong tag.
+  // type, is a long tag (field_num >= 2048), is an overlong tag, or is an
+  // unlinked submessage field.
 #ifndef NDEBUG
   const upb_MiniTableField* field =
       upb_MiniTable_FindFieldByNumber(table, field_num);
-  UPB_ASSERT((tag & 0xFF80) == 0x80 || field == NULL ||
-             _upb_MiniTableField_GetWireType(field) != (tag & 0x07));
+  UPB_ASSERT((tag & 0xFF80) == 0x80 || (tag & 0x8080) == 0x8080 ||
+             field == NULL ||
+             _upb_MiniTableField_GetWireType(field) != (tag & 0x07) ||
+             (upb_MiniTableField_CType(field) == kUpb_CType_Message &&
+              upb_MiniTable_GetSubMessageTable(field) == NULL));
 #endif
 
   if (d->extreg && upb_ExtensionRegistry_Lookup(d->extreg, table, field_num)) {
