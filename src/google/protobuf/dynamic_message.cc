@@ -335,10 +335,10 @@ class DynamicMessage final : public Message {
 
   bool is_prototype() const;
 
-  inline void* OffsetToPointer(int offset) {
+  void* OffsetToPointer(int offset) {
     return reinterpret_cast<uint8_t*>(this) + offset;
   }
-  inline const void* OffsetToPointer(int offset) const {
+  const void* OffsetToPointer(int offset) const {
     return reinterpret_cast<const uint8_t*>(this) + offset;
   }
 
