@@ -12,6 +12,7 @@
 #ifndef GOOGLE_PROTOBUF_COMPILER_JAVA_IMMUTABLE_ONEOF_GENERATOR_H__
 #define GOOGLE_PROTOBUF_COMPILER_JAVA_IMMUTABLE_ONEOF_GENERATOR_H__
 
+#include "google/protobuf/compiler/java/generator_common.h"
 #include "google/protobuf/compiler/java/full/field_generator.h"
 #include "google/protobuf/descriptor.h"
 

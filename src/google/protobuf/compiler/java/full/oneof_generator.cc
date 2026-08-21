@@ -20,7 +20,6 @@
 #include "google/protobuf/compiler/code_generator_lite.h"
 #include "google/protobuf/compiler/java/context.h"
 #include "google/protobuf/compiler/java/generator_common.h"
-#include "google/protobuf/compiler/java/helpers.h"
 #include "google/protobuf/compiler/java/full/field_generator.h"
 #include "google/protobuf/compiler/java/name_resolver.h"
 #include "google/protobuf/io/printer.h"
