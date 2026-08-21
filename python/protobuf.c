@@ -27,46 +27,10 @@
 #include "upb/mem/arena.h"
 #include "upb/reflection/def.h"
 
-// Mutex wrapper when GIL-disabled. Zero-cost when GIL-enabled.
-// NOTE: Protobuf Free-threading support is still experimental.
-// TODO: Remove mutex and make upb python lock free.
-#ifdef Py_GIL_DISABLED
-#ifdef _POSIX_THREADS
-#define ENABLE_MUTEX 1
-#include <pthread.h>
-#else
-#error "GIL is disabled but _POSIX_THREADS isn't available"
-#endif  // _POSIX_THREADS
-#endif  // Py_GIL_DISABLED
-
-typedef struct {
-#ifdef ENABLE_MUTEX
-  pthread_mutex_t mutex;
-#endif
-} FreeThreadingMutex;
-
-// Embedded mutexes are initialized per-instance.
-
-static upb_Arena* PyUpb_NewArena(void);
-
-void FreeThreadingLock(FreeThreadingMutex* thread_mutex) {
-#ifdef ENABLE_MUTEX
-  pthread_mutex_lock(&(thread_mutex->mutex));
-#endif
-}
-
-void FreeThreadingUnlock(FreeThreadingMutex* thread_mutex) {
-#ifdef ENABLE_MUTEX
-  pthread_mutex_unlock(&(thread_mutex->mutex));
-#endif
-}
+// Must be last.
+#include "upb/port/def.inc"
 
 static void PyUpb_ModuleDealloc(void* module) {
-  PyUpb_ModuleState* s = PyModule_GetState(module);
-  PyUpb_WeakMap_Free(s->obj_cache);
-  if (s->c_descriptor_symtab) {
-    upb_DefPool_Free(s->c_descriptor_symtab);
-  }
 }
 
 PyObject* PyUpb_SetAllowOversizeProtos(PyObject* m, PyObject* arg) {
@@ -182,213 +146,6 @@ PyObject* PyUpb_GetWktBases(PyUpb_ModuleState* state) {
 }
 
 // -----------------------------------------------------------------------------
-// WeakMap
-// -----------------------------------------------------------------------------
-
-struct PyUpb_WeakMap {
-  FreeThreadingMutex mutex;
-  upb_inttable table;
-  upb_Arena* arena;
-};
-
-PyUpb_WeakMap* PyUpb_WeakMap_New(void) {
-  upb_Arena* arena = PyUpb_NewArena();
-  if (!arena) {
-    return NULL;
-  }
-  PyUpb_WeakMap* map = upb_Arena_Malloc(arena, sizeof(*map));
-  if (!map) {
-    upb_Arena_Free(arena);
-    PyErr_SetNone(PyExc_MemoryError);
-    return NULL;
-  }
-  map->arena = arena;
-#ifdef ENABLE_MUTEX
-  pthread_mutex_init(&map->mutex.mutex, NULL);
-#endif
-  if (!upb_inttable_init(&map->table, map->arena)) {
-    upb_Arena_Free(arena);
-    PyErr_SetNone(PyExc_MemoryError);
-    return NULL;
-  }
-  return map;
-}
-
-void PyUpb_WeakMap_Free(PyUpb_WeakMap* map) {
-#ifdef ENABLE_MUTEX
-  pthread_mutex_destroy(&map->mutex.mutex);
-#endif
-  upb_Arena_Free(map->arena);
-}
-
-// To give better entropy in the table key, we shift away low bits that are
-// always zero.
-static const int PyUpb_PtrShift = (sizeof(void*) == 4) ? 2 : 3;
-
-uintptr_t PyUpb_WeakMap_GetKey(const void* key) {
-  uintptr_t n = (uintptr_t)key;
-  assert((n & ((1 << PyUpb_PtrShift) - 1)) == 0);
-  return n >> PyUpb_PtrShift;
-}
-
-bool PyUpb_WeakMap_Add(PyUpb_WeakMap* map, const void* key, PyObject* py_obj) {
-#ifdef Py_GIL_DISABLED
-  PyUnstable_EnableTryIncRef(py_obj);
-#endif
-  FreeThreadingLock(&map->mutex);
-  bool ok = upb_inttable_insert(&map->table, PyUpb_WeakMap_GetKey(key),
-                                upb_value_ptr(py_obj), map->arena);
-  if (!ok) {
-    PyErr_SetNone(PyExc_MemoryError);
-  }
-  FreeThreadingUnlock(&map->mutex);
-  return ok;
-}
-
-void PyUpb_WeakMap_Delete(PyUpb_WeakMap* map, const void* key) {
-  FreeThreadingLock(&map->mutex);
-  upb_value val;
-  bool removed =
-      upb_inttable_remove(&map->table, PyUpb_WeakMap_GetKey(key), &val);
-  (void)removed;
-#ifndef Py_GIL_DISABLED
-  assert(removed);
-#endif
-  FreeThreadingUnlock(&map->mutex);
-}
-
-void PyUpb_WeakMap_TryDelete(PyUpb_WeakMap* map, const void* key) {
-  FreeThreadingLock(&map->mutex);
-  upb_inttable_remove(&map->table, PyUpb_WeakMap_GetKey(key), NULL);
-  FreeThreadingUnlock(&map->mutex);
-}
-
-PyObject* PyUpb_WeakMap_Get(PyUpb_WeakMap* map, const void* key) {
-  FreeThreadingLock(&map->mutex);
-  upb_value val;
-  if (upb_inttable_lookup(&map->table, PyUpb_WeakMap_GetKey(key), &val)) {
-    PyObject* ret = upb_value_getptr(val);
-#ifdef Py_GIL_DISABLED
-    if (PyUnstable_TryIncRef(ret)) {
-      FreeThreadingUnlock(&map->mutex);
-      return ret;
-    }
-    // Object is deallocating, remove it from the map.
-    upb_inttable_remove(&map->table, PyUpb_WeakMap_GetKey(key), NULL);
-    FreeThreadingUnlock(&map->mutex);
-    return NULL;
-#else
-    Py_INCREF(ret);
-    FreeThreadingUnlock(&map->mutex);
-    return ret;
-#endif
-  }
-  FreeThreadingUnlock(&map->mutex);
-  return NULL;
-}
-
-bool PyUpb_WeakMap_Next(PyUpb_WeakMap* map, const void** key, PyObject** obj,
-                        intptr_t* iter) {
-  if (*iter == PYUPB_WEAKMAP_BEGIN) {
-    FreeThreadingLock(&map->mutex);
-  }
-  uintptr_t u_key;
-  upb_value val;
-  while (upb_inttable_next(&map->table, &u_key, &val, iter)) {
-    PyObject* py_obj = upb_value_getptr(val);
-#ifdef Py_GIL_DISABLED
-    if (PyUnstable_TryIncRef(py_obj)) {
-      Py_DECREF(py_obj);
-      *key = (void*)(u_key << PyUpb_PtrShift);
-      *obj = py_obj;
-      return true;
-    } else {
-      // Object is dying, remove it from the table and continue.
-      upb_inttable_removeiter(&map->table, iter);
-    }
-#else
-    *key = (void*)(u_key << PyUpb_PtrShift);
-    *obj = py_obj;
-    return true;
-#endif
-  }
-  FreeThreadingUnlock(&map->mutex);
-  return false;
-}
-
-void PyUpb_WeakMap_DeleteIter(PyUpb_WeakMap* map, intptr_t* iter) {
-  upb_inttable_removeiter(&map->table, iter);
-}
-
-// -----------------------------------------------------------------------------
-// ObjCache
-// -----------------------------------------------------------------------------
-
-PyUpb_WeakMap* PyUpb_ObjCache_Instance(void) {
-  PyUpb_ModuleState* state = PyUpb_ModuleState_Get();
-  return state->obj_cache;
-}
-
-static PyUpb_WeakMap* PyUpb_ObjCache_MaybeInstance(void) {
-  // During the shutdown sequence, our objects may need to be deallocated, or
-  // there may even still be attempts to *construct* new ones (in user code).
-  // At that point our state will be NULL, so all access to the cache has to be
-  // no-op.
-  PyUpb_ModuleState* state = PyUpb_ModuleState_MaybeGet();
-  if (!state) {
-    return NULL;
-  }
-  return state->obj_cache;
-}
-
-bool PyUpb_ObjCache_Add(const void* key, PyObject* py_obj) {
-  PyUpb_WeakMap* cache = PyUpb_ObjCache_MaybeInstance();
-  if (!cache) {
-    return true;
-  }
-  return PyUpb_WeakMap_Add(cache, key, py_obj);
-}
-
-bool PyUpb_KnownObjCache_Add(PyUpb_WeakMap* cache, const void* key,
-                             PyObject* py_obj) {
-  return PyUpb_WeakMap_Add(cache, key, py_obj);
-}
-
-void PyUpb_ObjCache_Delete(const void* key) {
-  PyUpb_WeakMap* cache = PyUpb_ObjCache_MaybeInstance();
-  if (!cache) {
-    return;
-  }
-  PyUpb_WeakMap_Delete(cache, key);
-}
-
-PyObject* PyUpb_ObjCache_Get(const void* key) {
-  PyUpb_WeakMap* cache = PyUpb_ObjCache_MaybeInstance();
-  if (!cache) {
-    // When the interpreter is finalizing, the state may not be available, so
-    // we don't try to find existing objects in the object cache - in order to
-    // prevent a crash. Unfortunately, doing this can lead to different
-    // semantics in protobuf APIs during shutdown. For example:
-    //
-    //   m = MyMessage()
-    //
-    //   # Returns true most of the time, but false during shutdown.
-    //   assert(m.submsg is m.submsg)
-    //   assert(Py_IsFinalizing());
-    //
-    //
-    //   # Returns true most of the time, but false during shutdown.
-    //   assert(foo_pb2.DESCRIPTOR.message_types_by_name['Bar'] is
-    //          foo_pb2.DESCRIPTOR.message_types_by_name['Bar')
-#if PY_VERSION_HEX >= 0x030D0000  // >= 3.13
-    assert(Py_IsFinalizing());
-#endif
-    return NULL;
-  }
-  return PyUpb_WeakMap_Get(cache, key);
-}
-
-// -----------------------------------------------------------------------------
 // Arena
 // -----------------------------------------------------------------------------
 
@@ -397,6 +154,7 @@ typedef struct {
   PyObject_HEAD
   upb_Arena* arena;
   // clang-format on
+  PyUpb_WeakMap* obj_cache;
   bool frozen;
 } PyUpb_Arena;
 
@@ -455,11 +213,20 @@ PyObject* PyUpb_Arena_New(void) {
     Py_DECREF(arena);
     return NULL;
   }
+  arena->obj_cache = PyUpb_WeakMap_New();
+  if (!arena->obj_cache) {
+    Py_DECREF(arena);
+    return NULL;
+  }
   arena->frozen = false;
   return &arena->ob_base;
 }
 
 static void PyUpb_Arena_Dealloc(PyObject* self) {
+  PyUpb_Arena* me = (PyUpb_Arena*)self;
+  if (me->obj_cache) {
+    PyUpb_WeakMap_Free(me->obj_cache);
+  }
   upb_Arena* arena = PyUpb_Arena_Get(self);
   if (arena) {
     upb_Arena_Free(arena);
@@ -477,6 +244,23 @@ bool PyUpb_Arena_IsFrozen(PyObject* arena) {
 
 void PyUpb_Arena_SetFrozen(PyObject* arena, bool frozen) {
   ((PyUpb_Arena*)arena)->frozen = frozen;
+}
+
+bool PyUpb_Arena_CacheAdd(PyObject* _arena, const void* key,
+                          PyObject** py_obj) {
+  PyUpb_Arena* arena = (PyUpb_Arena*)_arena;
+  return PyUpb_WeakMap_Add(arena->obj_cache, key, py_obj);
+}
+
+PyObject* PyUpb_Arena_CacheGet(PyObject* _arena, const void* key) {
+  PyUpb_Arena* arena = (PyUpb_Arena*)_arena;
+  return PyUpb_WeakMap_Get(arena->obj_cache, key);
+}
+
+bool PyUpb_Arena_CacheEraseIfEqual(PyObject* _arena, const void* key,
+                                   PyObject* obj) {
+  PyUpb_Arena* arena = (PyUpb_Arena*)_arena;
+  return PyUpb_WeakMap_EraseIfEqual(arena->obj_cache, key, obj);
 }
 
 static PyType_Slot PyUpb_Arena_Slots[] = {
@@ -659,7 +443,6 @@ PyMODINIT_FUNC PyInit__message(void) {
 
   state->allow_oversize_protos = false;
   state->wkt_bases = NULL;
-  state->obj_cache = PyUpb_WeakMap_New();
   state->c_descriptor_symtab = NULL;
 
   if (!PyUpb_InitDescriptorContainers(m) || !PyUpb_InitDescriptorPool(m) ||
@@ -677,3 +460,5 @@ PyMODINIT_FUNC PyInit__message(void) {
 
   return m;
 }
+
+#include "upb/port/undef.inc"
