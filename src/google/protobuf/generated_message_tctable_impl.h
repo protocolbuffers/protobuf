@@ -376,17 +376,6 @@ enum class TcParseFunction : uint8_t { kNone, PROTOBUF_TC_PARSE_FUNCTION_LIST };
 // TcParser implements most of the parsing logic for tailcall tables.
 class PROTOBUF_EXPORT TcParser final {
  public:
-  template <typename T>
-#ifndef PROTOBUF_MESSAGE_GLOBALS
-  static constexpr auto GetTable() -> decltype(&T::_table_.header) {
-    return &T::_table_.header;
-  }
-#else
-  static const TcParseTableBase* GetTable() {
-    return MessageTraits<T>::tc_table();
-  }
-#endif
-
   static PROTOBUF_ALWAYS_INLINE const char* ParseMessage(
       MessageLite* msg, const char* ptr, ParseContext* ctx,
       const TcParseTableBase* tc_table) {
