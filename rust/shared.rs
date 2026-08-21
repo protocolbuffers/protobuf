@@ -28,8 +28,10 @@ pub use crate::cord::{ProtoBytesCow, ProtoStringCow};
 pub use crate::extension::ExtensionId;
 pub use crate::map::{Map, MapIter, MapKey, MapMut, MapValue, MapView};
 
+#[allow(deprecated)]
+pub use crate::proxied::Proxied;
 pub use crate::proxied::{
-    AsMut, AsView, IntoMut, IntoProxied, IntoView, Mut, MutProxied, Proxied, View,
+    AsMut, AsView, IntoMut, IntoProxied, IntoView, Mut, MutProxied, OwnedWithProxies, View,
 };
 pub use crate::r#enum::{Enum, UnknownEnumValue};
 pub use crate::repeated::{Repeated, RepeatedIter, RepeatedMut, RepeatedView};

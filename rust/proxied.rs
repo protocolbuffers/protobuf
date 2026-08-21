@@ -46,25 +46,63 @@
 
 use crate::__internal::{Private, SealedInternal};
 
-/// A type that can be accessed through a reference-like proxy.
+/// An owned Protobuf entity or field type that can be accessed through reference-like proxies.
 ///
-/// An instance of a `Proxied` can be accessed immutably via `Proxied::View`.
+/// In standard Rust, shared and exclusive access to borrowed data is provided via native
+/// references (`&T` and `&mut T`). However, standard references don't provide sufficient power
+/// to hide implementation details that Protobuf wants to take advantage of: for example, handing
+/// out `&mut` always allows for `std::mem::swap`, which precludes certain optimizations across
+/// parenting relationships. It also prevents optimizations like root messages and child messages
+/// of the same type having different layouts.
 ///
-/// All Protobuf field types implement `Proxied`.
-pub trait Proxied: SealedInternal + AsView<Proxied = Self> + Sized + 'static {
+/// To provide safe, ergonomic, and zero-cost or low-cost access across these representations,
+/// Protobuf uses "proxy" types:
+/// - [`View<'msg, T>`](View): A proxy type that provides shared, read-only access (analogous to `&'msg T`).
+/// - [`Mut<'msg, T>`](Mut): A proxy type that provides exclusive mutable access (analogous to `&'msg mut T`).
+///
+/// An implementor of `OwnedWithProxies` represents the *owned* target type (for example, a generated
+/// message struct `MyMessage`, primitive types like `i32`, `Repeated<T>`, `Map<K, V>`, `ProtoBytes`,
+/// or `ProtoString`). It is **not** the proxy itself.
+///
+/// # Writing User Code
+///
+/// In general, application code should rarely ever need to write the type `OwnedWithProxies`.
+///
+/// - **Concrete usage**: Work directly with the owned message types (e.g. `MyMessage`), concrete view
+///   types (e.g. `MyMessageView<'msg>`, `MyMessageMut<'msg>`), or the type aliases [`View<'msg, T>`](View)
+///   and [`Mut<'msg, T>`](Mut).
+/// - **Generic functions**: When writing functions that operate generically on messages or borrows of
+///   messages, prefer higher-level traits such as [`Message`](crate::Message), [`AsView`], [`IntoView`],
+///   [`AsMut`], or [`IntoMut`]. For example:
+///   ```ignore
+///   fn process_message(msg: impl AsView<Proxied = MyMessage>) {
+///       let view = msg.as_view();
+///       // ...
+///   }
+///   ```
+///
+/// `OwnedWithProxies` is primarily a foundational plumbing trait connecting owned types with their
+/// associated proxy representations for the Protobuf runtime and code generator.
+pub trait OwnedWithProxies: SealedInternal + AsView<Proxied = Self> + Sized + 'static {
     /// The proxy type that provides shared access to a `T`, like a `&'msg T`.
     ///
     /// Most code should use the type alias [`View`].
     type View<'msg>: AsView<Proxied = Self> + IntoView<'msg>;
 }
 
-/// A type that can be be accessed through a reference-like proxy.
+/// Deprecated alias for [`OwnedWithProxies`].
+#[deprecated(note = "Use `OwnedWithProxies` instead.")]
+pub use self::OwnedWithProxies as Proxied;
+
+/// A type that can be accessed through a reference-like proxy.
 ///
 /// An instance of a `MutProxied` can be accessed mutably via `MutProxied::Mut`
 /// and immutably via `MutProxied::View`.
 ///
 /// `MutProxied` is implemented by message, map and repeated field types.
-pub trait MutProxied: SealedInternal + Proxied + AsMut<MutProxied = Self> + 'static {
+pub trait MutProxied:
+    SealedInternal + OwnedWithProxies + AsMut<MutProxied = Self> + 'static
+{
     /// The proxy type that provides exclusive mutable access to a `T`, like a
     /// `&'msg mut T`.
     ///
@@ -76,7 +114,7 @@ pub trait MutProxied: SealedInternal + Proxied + AsMut<MutProxied = Self> + 'sta
 ///
 /// This is more concise than fully spelling the associated type.
 #[allow(dead_code)]
-pub type View<'msg, T> = <T as Proxied>::View<'msg>;
+pub type View<'msg, T> = <T as OwnedWithProxies>::View<'msg>;
 
 /// A proxy type that provides exclusive mutable access to a `T`, like a
 /// `&'msg mut T`.
@@ -86,12 +124,12 @@ pub type View<'msg, T> = <T as Proxied>::View<'msg>;
 pub type Mut<'msg, T> = <T as MutProxied>::Mut<'msg>;
 
 /// Used to semantically do a cheap "to-reference" conversion. This is
-/// implemented on both owned `Proxied` types as well as view and mut proxy
+/// implemented on both owned `OwnedWithProxies` types as well as view and mut proxy
 /// types.
 ///
 /// On a view proxy this will behave as a reborrow into a shorter lifetime.
 pub trait AsView: SealedInternal {
-    type Proxied: Proxied;
+    type Proxied: OwnedWithProxies;
 
     /// Converts a borrow into a `View` with the lifetime of that borrow.
     ///
@@ -105,7 +143,7 @@ pub trait AsView: SealedInternal {
     /// wouldn't be necessary in concrete code:
     /// ```ignore
     /// fn reborrow<'a, 'b, T>(x: &'b View<'a, T>) -> View<'b, T>
-    /// where 'a: 'b, T: Proxied
+    /// where 'a: 'b, T: OwnedWithProxies
     /// {
     ///   x.as_view()
     /// }
@@ -115,14 +153,14 @@ pub trait AsView: SealedInternal {
     fn as_view(&self) -> View<'_, Self::Proxied>;
 }
 
-impl<T: Proxied> AsView for &T {
+impl<T: OwnedWithProxies> AsView for &T {
     type Proxied = T::Proxied;
     fn as_view(&self) -> View<'_, Self::Proxied> {
         (**self).as_view()
     }
 }
 
-impl<T: Proxied> AsView for &mut T {
+impl<T: OwnedWithProxies> AsView for &mut T {
     type Proxied = T::Proxied;
     fn as_view(&self) -> View<'_, Self::Proxied> {
         (**self).as_view()
@@ -167,7 +205,7 @@ pub trait IntoView<'msg>: SealedInternal + AsView {
         'msg: 'shorter;
 }
 
-impl<'msg, T: Proxied> IntoView<'msg> for &'msg T {
+impl<'msg, T: OwnedWithProxies> IntoView<'msg> for &'msg T {
     fn into_view<'shorter>(self) -> View<'shorter, T>
     where
         'msg: 'shorter,
@@ -176,7 +214,7 @@ impl<'msg, T: Proxied> IntoView<'msg> for &'msg T {
     }
 }
 
-impl<'msg, T: Proxied> IntoView<'msg> for &'msg mut T {
+impl<'msg, T: OwnedWithProxies> IntoView<'msg> for &'msg mut T {
     fn into_view<'shorter>(self) -> View<'shorter, T>
     where
         'msg: 'shorter,
@@ -186,7 +224,7 @@ impl<'msg, T: Proxied> IntoView<'msg> for &'msg mut T {
 }
 
 /// Used to semantically do a cheap "to-mut-reference" conversion. This is
-/// implemented on both owned `Proxied` types as well as mut proxy types.
+/// implemented on both owned `OwnedWithProxies` types as well as mut proxy types.
 ///
 /// On a mut proxy this will behave as a reborrow into a shorter lifetime.
 pub trait AsMut: SealedInternal + AsView<Proxied = Self::MutProxied> {
@@ -219,7 +257,7 @@ pub trait IntoMut<'msg>: SealedInternal + AsMut {
     /// ```ignore
     /// fn reborrow_generic_mut_into_mut<'a, 'b, T>(x: Mut<'a, T>, y: Mut<'b, T>) -> [Mut<'b, T>; 2]
     /// where
-    ///     T: Proxied,
+    ///     T: OwnedWithProxies,
     ///     'a: 'b,
     /// {
     ///     // `[x, y]` fails to compile because `'a` is not the same as `'b` and the `Mut`
@@ -244,7 +282,7 @@ impl<'msg, T: MutProxied> IntoMut<'msg> for &'msg mut T {
     }
 }
 
-/// A value to `Proxied`-value conversion that consumes the input value.
+/// A value to `OwnedWithProxies`-value conversion that consumes the input value.
 ///
 /// All setter functions accept types that implement `IntoProxied`. The purpose
 /// of `IntoProxied` is to allow setting arbitrary values on Protobuf fields
@@ -253,12 +291,12 @@ impl<'msg, T: MutProxied> IntoMut<'msg> for &'msg mut T {
 /// This trait must not be implemented on types outside the Protobuf codegen and
 /// runtime. We expect it to change in backwards incompatible ways in the
 /// future.
-pub trait IntoProxied<T: Proxied> {
+pub trait IntoProxied<T: OwnedWithProxies> {
     #[doc(hidden)]
     fn into_proxied(self, _private: Private) -> T;
 }
 
-impl<T: Proxied> IntoProxied<T> for T {
+impl<T: OwnedWithProxies> IntoProxied<T> for T {
     fn into_proxied(self, _private: Private) -> T {
         self
     }
@@ -286,8 +324,15 @@ mod tests {
 
     impl SealedInternal for MyProxied {}
 
-    impl Proxied for MyProxied {
+    impl OwnedWithProxies for MyProxied {
         type View<'msg> = MyProxiedView<'msg>;
+    }
+
+    #[gtest]
+    #[allow(deprecated)]
+    fn test_deprecated_proxied_alias() {
+        fn check_proxied<T: Proxied>() {}
+        check_proxied::<MyProxied>();
     }
 
     impl AsView for MyProxied {
@@ -445,7 +490,7 @@ mod tests {
         y: View<'b, T>,
     ) -> [View<'b, T>; 2]
     where
-        T: Proxied,
+        T: OwnedWithProxies,
         'a: 'b,
     {
         // `[x, y]` fails to compile because `'a` is not the same as `'b` and the `View`
