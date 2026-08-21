@@ -438,6 +438,22 @@ cc_library(
 )
 
 cc_library(
+    name = "thread",
+    srcs = ["thread.cc"],
+    hdrs = ["thread.h"],
+    strip_include_prefix = "/src",
+    deps = [
+        ":port",
+        "@abseil-cpp//absl/base:config",
+        "@abseil-cpp//absl/base:core_headers",
+        "@abseil-cpp//absl/cleanup",
+        "@abseil-cpp//absl/functional:function_ref",
+        "@abseil-cpp//absl/synchronization",
+        "@abseil-cpp//absl/types:optional",
+    ],
+)
+
+cc_library(
     name = "port",
     srcs = ["port.cc"],
     hdrs = [
@@ -912,6 +928,7 @@ cc_library(
         ":protobuf_lite",
         ":repeated_field_proxy",
         ":symbol_checker",
+        ":thread",
         ":type_id",
         "//src/google/protobuf/io",
         "//src/google/protobuf/io:gzip_stream",
@@ -2065,6 +2082,7 @@ cc_test(
         ":port",
         ":protobuf",
         ":test_textproto",
+        ":thread",
         ":unittest_proto3_arena_cc_proto",
         "//src/google/protobuf/compiler:importer",
         "//src/google/protobuf/io",

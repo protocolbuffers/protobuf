@@ -148,6 +148,7 @@ google/protobuf/stubs/status_macros.h
 google/protobuf/symbol.h
 google/protobuf/symbol_checker.h
 google/protobuf/text_format.h
+google/protobuf/thread.h
 google/protobuf/thread_safe_arena.h
 google/protobuf/timestamp.pb.h
 google/protobuf/timestamp.proto
