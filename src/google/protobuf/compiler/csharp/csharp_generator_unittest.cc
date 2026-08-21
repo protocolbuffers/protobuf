@@ -140,6 +140,28 @@ TEST_F(CSharpGeneratorCliTest, CSharpNamespaceBracesRejected) {
   ExpectErrorSubstring("Invalid character");
 }
 
+TEST_F(CSharpGeneratorCliTest, DocCommentsWithCarriageReturnNormalized) {
+  CreateTempFile("foo.proto",
+                 "syntax = \"proto3\";\n"
+                 "/* harmless comment\rpublic static class Injected {} */\n"
+                 "message Foo {\n"
+                 "  // field comment\rextra code\n"
+                 "  int32 bar = 1;\n"
+                 "}\n");
+
+  RunProtoc(
+      "protocol_compiler --proto_path=$tmpdir --csharp_out=$tmpdir foo.proto");
+
+  ExpectNoErrors();
+  ExpectFileContentContainsSubstring(
+      "Foo.cs", "/// harmless comment\n///public static class Injected {}");
+  ExpectFileContentContainsSubstring("Foo.cs",
+                                     "/// field comment\n  ///extra code");
+  ExpectFileContentNotContainsSubstring("Foo.cs",
+                                        "\rpublic static class Injected");
+  ExpectFileContentNotContainsSubstring("Foo.cs", "\rextra code");
+}
+
 }  // namespace
 }  // namespace csharp
 }  // namespace compiler

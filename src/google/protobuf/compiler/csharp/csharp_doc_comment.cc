@@ -36,7 +36,10 @@ void WriteDocCommentBodyImpl(io::Printer* printer, SourceLocation location) {
   }
   // XML escaping... no need for apostrophes etc as the whole text is going to
   // be a child node of a summary element, not part of an attribute.
-  comments = absl::StrReplaceAll(comments, {{"&", "&amp;"}, {"<", "&lt;"}});
+  // Normalize \r\n and bare \r to \n to prevent escaping single-line ///
+  // comments in C#.
+  comments = absl::StrReplaceAll(
+      comments, {{"\r\n", "\n"}, {"\r", "\n"}, {"&", "&amp;"}, {"<", "&lt;"}});
   std::vector<std::string> lines;
   lines = absl::StrSplit(comments, '\n', absl::AllowEmpty());
   // TODO: We really should work out which part to put in the summary and which
