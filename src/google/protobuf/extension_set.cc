@@ -169,13 +169,8 @@ void ExtensionSet::RegisterMessageExtension(const MessageLite* extendee,
   ExtensionInfo info(extendee, number, type, is_repeated, is_packed,
                      verify_func, is_lazy);
   info.message_info = {
-      &internal::MessageGlobalsBase::FromDefaultInstance(prototype)->class_data,
-#if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-      prototype->GetTcParseTable()
-#else
-      nullptr
-#endif
-  };
+      &internal::MessageGlobalsBase::FromDefaultInstance(prototype)
+           ->class_data};
   Register(info);
 }
 

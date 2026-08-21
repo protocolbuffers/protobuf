@@ -262,7 +262,6 @@ bool DescriptorPoolExtensionFinder::Find(int number, ExtensionInfo* output) {
           << extension->full_name();
       output->message_info.class_data =
           &MessageGlobalsBase::FromDefaultInstance(prototype)->class_data;
-      output->message_info.tc_table = prototype->GetTcParseTable();
 
     } else if (extension->cpp_type() == FieldDescriptor::CPPTYPE_ENUM) {
       output->enum_validity_check.enum_data =
