@@ -16,3 +16,4 @@ build:osx-aarch_64 --config=cross_config --action_env=MACOSX_DEPLOYMENT_TARGET=1
 build:osx-x86_64 --config=cross_config --action_env=MACOSX_DEPLOYMENT_TARGET=12.0 --platforms=//build_defs:osx-x86_64
 build:win32 --config=cross_config --platforms=//build_defs:win32
 build:win64 --config=cross_config --platforms=//build_defs:win64
+build:win-arm64 --config=cross_config --platforms=//build_defs:win-arm64
