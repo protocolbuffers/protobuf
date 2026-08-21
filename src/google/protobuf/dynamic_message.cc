@@ -425,20 +425,15 @@ struct DynamicMessageFactory::TypeInfo {
     // address. Must happen before SizedDelete, which frees globals (and
     // class_data within it) in PROTOBUF_MESSAGE_GLOBALS builds.
     {
-      auto* base = const_cast<internal::ClassData*>(class_data.base());
-#ifndef PROTOBUF_MESSAGE_GLOBALS
-      base->prototype = nullptr;
-      base->tc_table = nullptr;
-#endif  // PROTOBUF_MESSAGE_GLOBALS
-      base->is_initialized = nullptr;
-      base->merge_to_from = nullptr;
-      std::memset(&base->message_creator, 0xCD,
-                  sizeof(base->message_creator));
+      auto* cd = const_cast<internal::ClassData*>(&class_data);
+      cd->is_initialized = nullptr;
+      cd->merge_to_from = nullptr;
+      cd->message_creator = internal::MessageCreator();
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-      base->destroy_message = nullptr;
-      base->clear = nullptr;
-      base->byte_size_long = nullptr;
-      base->serialize = nullptr;
+      cd->destroy_message = nullptr;
+      cd->clear = nullptr;
+      cd->byte_size_long = nullptr;
+      cd->serialize = nullptr;
 #endif
     }
 
