@@ -624,11 +624,7 @@ void FileGenerator::GenerateInternalForwardDeclarations(
         p->Emit({{"type", MsgGlobalsInstanceType(instance, options_)},
                  {"name", MsgGlobalsInstanceName(instance, options_)}},
                 R"cc(
-#ifndef PROTOBUF_MESSAGE_GLOBALS
-                  extern __attribute__((weak)) $type$ $name$;
-#else
                   extern __attribute__((weak)) const $type$ $name$;
-#endif
                 )cc");
       }
     }
@@ -786,14 +782,12 @@ void FileGenerator::GenerateSource(io::Printer* p) {
             }
           }}},
         R"cc(
-#ifdef PROTOBUF_MESSAGE_GLOBALS
           namespace {
           PROTOBUF_CONSTINIT ::google::protobuf::internal::ReflectionData
               file_reflection_data[] = {
                   $reflection_data$,
           };
           }  // namespace
-#endif
         )cc");
   }
 
@@ -1354,17 +1348,11 @@ class FileGenerator::ForwardDeclarations {
               {"globals_name", MsgGlobalsInstanceName(desc, options)},
               {"const",
                IsFileDescriptorProto(desc->file(), options) ? "" : "const"},
-              {"classdata_type", ClassDataType(desc, options)},
           },
           R"cc(
             class $class$;
             struct $globals_type$;
-#ifndef PROTOBUF_MESSAGE_GLOBALS
-            $dllexport_decl $extern $globals_type$ $globals_name$;
-            $dllexport_decl $extern const $pbi$::$classdata_type$ $class$_class_data_;
-#else
             $dllexport_decl $extern $const $$globals_type$ $globals_name$;
-#endif  // PROTOBUF_MESSAGE_GLOBALS
           )cc");
     }
 
@@ -1417,12 +1405,7 @@ class FileGenerator::ForwardDeclarations {
         if (options.dllexport_decl.empty()) {
           p->Emit(R"cc(
             template <>
-            internal::GeneratedMessageTraitsT<&$default_name$
-#ifndef PROTOBUF_MESSAGE_GLOBALS
-                                              ,
-                                              &$class$_class_data_
-#endif  // PROTOBUF_MESSAGE_GLOBALS
-                                              >
+            internal::GeneratedMessageTraitsT<&$default_name$>
                 internal::MessageTraitsImpl::value<$class$>;
           )cc");
         }

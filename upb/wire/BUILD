@@ -91,11 +91,13 @@ cc_library(
     copts = UPB_DEFAULT_COPTS,
     features = UPB_DEFAULT_FEATURES,
     visibility = [
-        "//pkg:__pkg__",
+        "//video/youtube/utils/elements/client/component_type:__pkg__",
+        # TODO: b/548146484 - Remove visibility once the `UpbUnknowns` class is gone.
+        "//video/youtube/utils/elements/upb/crosslang:__pkg__",
         "//python:__pkg__",
         "//upb:__pkg__",
         "//upb/message:__subpackages__",
-        "//video/youtube/utils/elements/client/component_type:__pkg__",
+        "//pkg:__pkg__",
     ],
     deps = [
         ":back_alloc",

@@ -259,7 +259,6 @@ uint8_t* UnknownField::InternalSerializeLengthDelimitedNoTag(
   return target;
 }
 
-
 }  // namespace protobuf
 }  // namespace google
 

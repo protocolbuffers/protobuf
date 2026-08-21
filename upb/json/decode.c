@@ -29,6 +29,7 @@
 #include "upb/message/map.h"
 #include "upb/message/message.h"
 #include "upb/mini_table/message.h"
+#include "upb/port/overflow.h"
 #include "upb/reflection/def.h"
 #include "upb/reflection/message.h"
 #include "upb/wire/encode.h"
@@ -432,8 +433,9 @@ static void jsondec_resize(jsondec* d, char** buf, char** end, char** buf_end) {
   size_t oldsize = *buf_end - *buf;
   size_t len = *end - *buf;
 
-  jsondec_checkoom(d, oldsize <= SIZE_MAX / 2);
-  size_t size = UPB_MAX(8, 2 * oldsize);
+  size_t size;
+  jsondec_checkoom(d, !upb_MulOverflow(oldsize, (size_t)2, &size));
+  size = UPB_MAX(8, size);
 
   *buf = upb_Arena_Realloc(d->arena, *buf, len, size);
   jsondec_checkoom(d, *buf);
@@ -1343,7 +1345,7 @@ static upb_StringView jsondec_mask(jsondec* d, const char* buf,
   }
 
   out = upb_Arena_Malloc(d->arena, ret.size);
-  jsondec_checkoom(d, out || ret.size == 0);
+  jsondec_checkoom(d, out);
   ptr = buf;
   ret.data = out;
 

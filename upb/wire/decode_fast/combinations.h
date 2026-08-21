@@ -50,15 +50,15 @@
 #define ENUM_VAL(_, x) kUpb_DecodeFast_##x,
 
 typedef enum {
-  UPB_DECODEFAST_CARDINALITIES(ENUM_VAL)  // kUpb_DecodeFast_Scalar = 0, etc.
+  UPB_DECODEFAST_CARDINALITIES(ENUM_VAL, _)  // kUpb_DecodeFast_Scalar = 0, etc.
 } upb_DecodeFast_Cardinality;
 
 typedef enum {
-  UPB_DECODEFAST_TYPES(ENUM_VAL)  // kUpb_DecodeFast_Bool = 0, etc.
+  UPB_DECODEFAST_TYPES(ENUM_VAL, _)  // kUpb_DecodeFast_Bool = 0, etc.
 } upb_DecodeFast_Type;
 
 typedef enum {
-  UPB_DECODEFAST_TAGSIZES(ENUM_VAL)  // kUpb_DecodeFast_Tag1Byte = 0, etc.
+  UPB_DECODEFAST_TAGSIZES(ENUM_VAL, _)  // kUpb_DecodeFast_Tag1Byte = 0, etc.
 } upb_DecodeFast_TagSize;
 
 #undef ENUM_VAL
@@ -67,9 +67,9 @@ typedef enum {
 
 enum {
   // Counts of the number of enum values for each dimension.
-  kUpb_DecodeFast_CardinalityCount = UPB_DECODEFAST_CARDINALITIES(ADD),
-  kUpb_DecodeFast_TypeCount = UPB_DECODEFAST_TYPES(ADD),
-  kUpb_DecodeFast_TagSizeCount = UPB_DECODEFAST_TAGSIZES(ADD),
+  kUpb_DecodeFast_CardinalityCount = UPB_DECODEFAST_CARDINALITIES(ADD, _),
+  kUpb_DecodeFast_TypeCount = UPB_DECODEFAST_TYPES(ADD, _),
+  kUpb_DecodeFast_TagSizeCount = UPB_DECODEFAST_TAGSIZES(ADD, _),
 };
 
 #undef ADD

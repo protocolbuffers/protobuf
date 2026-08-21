@@ -65,7 +65,7 @@ jobs:
       - name: Run tests
         uses: protocolbuffers/protobuf-ci/bash@v5
         with:
-          bazel-version: 9.0.0
+          bazel-version: 9.2.0
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           command: |
             dotnet build csharp/src/Google.Protobuf.sln

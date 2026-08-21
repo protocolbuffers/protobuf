@@ -379,7 +379,7 @@ static VALUE Google_Protobuf_Internal_allocation_count_fail_on(VALUE self,
 
 // This must be named "Init_protobuf_c" because the Ruby module is named
 // "protobuf_c" -- the VM looks for this symbol in our .so.
-__attribute__((visibility("default"))) void Init_protobuf_c() {
+RUBY_FUNC_EXPORTED void Init_protobuf_c() {
   VALUE google = rb_define_module("Google");
   VALUE protobuf = rb_define_module_under(google, "Protobuf");
 

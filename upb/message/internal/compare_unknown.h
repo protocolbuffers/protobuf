@@ -37,7 +37,7 @@ typedef enum {
   kUpb_UnknownCompareResult_MaxDepthExceeded = 3,
 } upb_UnknownCompareResult;
 
-upb_UnknownCompareResult UPB_PRIVATE(_upb_Message_UnknownFieldsAreEqual)(
+upb_UnknownCompareResult _upb_Message_UnknownFieldsAreEqual(
     const upb_Message* msg1, const upb_Message* msg2, int max_depth);
 
 #ifdef __cplusplus

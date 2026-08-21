@@ -9,6 +9,7 @@
 
 #include "google/protobuf/descriptor.pb.h"
 #include <gtest/gtest.h>
+#include "absl/strings/string_view.h"
 #include "google/protobuf/compiler/command_line_interface_tester.h"
 #include "google/protobuf/compiler/php/php_generator.h"
 
@@ -197,20 +198,69 @@ TEST_F(PhpGeneratorTest, UnicodePhpNamespaceAccepted) {
   ExpectNoErrors();
 }
 
-// TODO Remove this test once full Edition 2026 support is in PHP
-TEST_F(PhpGeneratorTest, Edition2026Fails) {
+TEST_F(PhpGeneratorTest, InvalidPhpClassPrefixRejected) {
+  // The prefix is pasted straight into `class <prefix><Name> extends ...`, so
+  // without validation this generates a second, attacker-defined class while
+  // leaving the real one intact.
   CreateTempFile("foo.proto",
                  R"schema(
-    edition = "2026";
-    enum Foo {
-      BAR = 0;
+    syntax = "proto3";
+    option php_class_prefix = "Pfx{} class Injected {} class ";
+    message Foo {
+      int32 bar = 1;
     })schema");
 
   RunProtoc(
       "protocol_compiler --proto_path=$tmpdir --php_out=$tmpdir foo.proto");
 
-  ExpectErrorSubstring(
-      "PHP does not yet fully support Edition 2026, but is coming soon.");
+  ExpectErrorSubstring("Invalid character");
+}
+
+TEST_F(PhpGeneratorTest, ValidPhpClassPrefixAccepted) {
+  CreateTempFile("foo.proto",
+                 R"schema(
+    syntax = "proto3";
+    option php_class_prefix = "Pfx";
+    message Foo {
+      int32 bar = 1;
+    })schema");
+
+  RunProtoc(
+      "protocol_compiler --proto_path=$tmpdir --php_out=$tmpdir foo.proto");
+
+  ExpectNoErrors();
+}
+
+TEST_F(PhpGeneratorTest, CustomEnumNames) {
+  CreateTempFile("google/protobuf/json_enumvalue_options.proto", R"schema(
+    edition = "2024";
+    package pb.enumvalue;
+    import "google/protobuf/descriptor.proto";
+    message JsonEnumValueOptions {
+      string string = 1;
+    }
+    extend google.protobuf.EnumValueOptions {
+      JsonEnumValueOptions json = 998;
+    }
+  )schema");
+
+  CreateTempFile("foo.proto", R"schema(
+    edition = "2026";
+    package foo;
+    import "google/protobuf/json_enumvalue_options.proto";
+    enum MyEnum {
+      MY_ENUM_UNKNOWN = 0;
+      MY_ENUM_BAR = 1 [(pb.enumvalue.json).string = "custom_bar"];
+      MY_ENUM_BAZ = 2;
+    }
+  )schema");
+
+  RunProtoc(
+      "protocol_compiler --proto_path=$tmpdir --php_out=$tmpdir foo.proto");
+
+  ExpectNoErrors();
+  ExpectFileContentContainsSubstring(
+      "GPBMetadata/Foo.php", "\"foo.MyEnum.MY_ENUM_BAR\" => \"custom_bar\"");
 }
 
 }  // namespace

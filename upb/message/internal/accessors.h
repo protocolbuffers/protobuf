@@ -537,6 +537,9 @@ upb_Message_GetOrCreateMutableMessage(struct upb_Message* msg,
     const upb_MiniTable* sub_mini_table = upb_MiniTable_SubMessage(f);
     UPB_ASSERT(sub_mini_table);
     sub_message = _upb_Message_New(sub_mini_table, arena);
+    if (!sub_message) {
+      return NULL;
+    }
     *UPB_PTR_AT(msg, f->UPB_ONLYBITS(offset), struct upb_Message*) =
         sub_message;
     UPB_PRIVATE(_upb_Message_SetPresence)(msg, f);

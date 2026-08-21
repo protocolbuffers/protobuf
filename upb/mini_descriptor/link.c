@@ -165,8 +165,8 @@ bool upb_MiniTable_Link(upb_MiniTable* m, const upb_MiniTable** sub_tables,
     upb_MiniTableField* f =
         (upb_MiniTableField*)upb_MiniTable_GetFieldByIndex(m, i);
     if (upb_MiniTableField_CType(f) == kUpb_CType_Message) {
+      if (msg_count >= sub_table_count) return false;
       const upb_MiniTable* sub = sub_tables[msg_count++];
-      if (msg_count > sub_table_count) return false;
       if (sub && !upb_MiniTable_SetSubMessage(m, f, sub)) return false;
     }
   }
@@ -175,8 +175,8 @@ bool upb_MiniTable_Link(upb_MiniTable* m, const upb_MiniTable** sub_tables,
     upb_MiniTableField* f =
         (upb_MiniTableField*)upb_MiniTable_GetFieldByIndex(m, i);
     if (upb_MiniTableField_IsClosedEnum(f)) {
+      if (enum_count >= sub_enum_count) return false;
       const upb_MiniTableEnum* sub = sub_enums[enum_count++];
-      if (enum_count > sub_enum_count) return false;
       if (sub && !upb_MiniTable_SetSubEnum(m, f, sub)) return false;
     }
   }

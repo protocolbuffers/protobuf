@@ -24,6 +24,7 @@
 #include "upb/message/array.h"
 #include "upb/message/message.h"
 #include "upb/mini_table/message.h"
+#include "upb/port/overflow.h"
 #include "upb/reflection/def.h"
 
 // Must be last.
@@ -447,8 +448,9 @@ static bool PyUpb_ExtendSizeCb(Py_ssize_t size, void* vctx) {
   PyUpb_ExtendCtx* ctx = (PyUpb_ExtendCtx*)vctx;
   ctx->size_hint = size;
   size_t old_size = upb_Array_Size(ctx->arr);
-  if (size > 0 && ((size_t)size <= SIZE_MAX - old_size)) {
-    if (!upb_Array_Reserve(ctx->arr, old_size + size, ctx->arena)) {
+  size_t new_size;
+  if (size > 0 && !upb_AddOverflow(old_size, (size_t)size, &new_size)) {
+    if (!upb_Array_Reserve(ctx->arr, new_size, ctx->arena)) {
       PyErr_SetNone(PyExc_MemoryError);
       return false;
     }

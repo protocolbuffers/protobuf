@@ -790,11 +790,12 @@ TEST(MessageTest, AdjacentAliasedUnknown) {
                    kUpb_DecodeOption_AliasString, arena.ptr());
     ASSERT_EQ(status, kUpb_DecodeStatus_Ok);
     uintptr_t iter = kUpb_Message_UnknownBegin;
-    upb_StringView data;
-    ASSERT_TRUE(upb_Message_NextUnknown(msg, &data, &iter));
-    EXPECT_EQ(region, data.data);
-    EXPECT_EQ(sizeof(region), data.size);
-    EXPECT_FALSE(upb_Message_NextUnknown(msg, &data, &iter));
+    upb_MessageUnknown data;
+    ASSERT_TRUE(upb_Message_NextUnknown2(msg, &data, &iter));
+    ASSERT_EQ(data.type, kUpb_MessageUnknownType_StringView);
+    EXPECT_EQ(region, data.value.bytes.data);
+    EXPECT_EQ(sizeof(region), data.value.bytes.size);
+    EXPECT_FALSE(upb_Message_NextUnknown2(msg, &data, &iter));
   }
 
   upb_Message_Clear(msg, table);
@@ -811,18 +812,21 @@ TEST(MessageTest, AdjacentAliasedUnknown) {
     EXPECT_EQ(kUpb_DecodeStatus_Ok,
               upb_Decode(region + 600, 300, msg, table, nullptr,
                          kUpb_DecodeOption_AliasString, arena.ptr()));
-    upb_StringView data;
+    upb_MessageUnknown data;
     uintptr_t iter = kUpb_Message_UnknownBegin;
-    ASSERT_TRUE(upb_Message_NextUnknown(msg, &data, &iter));
-    EXPECT_EQ(region, data.data);
-    EXPECT_EQ(300u, data.size);
-    ASSERT_TRUE(upb_Message_NextUnknown(msg, &data, &iter));
-    EXPECT_EQ(region + 300, data.data);
-    EXPECT_EQ(300u, data.size);
-    ASSERT_TRUE(upb_Message_NextUnknown(msg, &data, &iter));
-    EXPECT_EQ(region + 600, data.data);
-    EXPECT_EQ(300u, data.size);
-    ASSERT_FALSE(upb_Message_NextUnknown(msg, &data, &iter));
+    ASSERT_TRUE(upb_Message_NextUnknown2(msg, &data, &iter));
+    ASSERT_EQ(data.type, kUpb_MessageUnknownType_StringView);
+    EXPECT_EQ(region, data.value.bytes.data);
+    EXPECT_EQ(300u, data.value.bytes.size);
+    ASSERT_TRUE(upb_Message_NextUnknown2(msg, &data, &iter));
+    ASSERT_EQ(data.type, kUpb_MessageUnknownType_StringView);
+    EXPECT_EQ(region + 300, data.value.bytes.data);
+    EXPECT_EQ(300u, data.value.bytes.size);
+    ASSERT_TRUE(upb_Message_NextUnknown2(msg, &data, &iter));
+    ASSERT_EQ(data.type, kUpb_MessageUnknownType_StringView);
+    EXPECT_EQ(region + 600, data.value.bytes.data);
+    EXPECT_EQ(300u, data.value.bytes.size);
+    ASSERT_FALSE(upb_Message_NextUnknown2(msg, &data, &iter));
   }
 }
 
@@ -964,9 +968,9 @@ TEST(MessageTest, DiscardUnknownsNonCanonicalExtensions) {
 
   // Add some standard raw unknown bytes
   char raw_unknown[] = "\x08\x96\x01";  // tag 1 = 150
-  UPB_PRIVATE(_upb_Message_AddUnknown)(UPB_UPCAST(msg), raw_unknown,
-                                       sizeof(raw_unknown) - 1, arena.ptr(),
-                                       kUpb_AddUnknown_Copy);
+  EXPECT_TRUE(UPB_PRIVATE(_upb_Message_AddUnknown)(
+      UPB_UPCAST(msg), raw_unknown, sizeof(raw_unknown) - 1, arena.ptr(),
+      kUpb_AddUnknown_Copy));
 
   // Verify both are present initially
   {

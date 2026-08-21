@@ -20,6 +20,8 @@
 #include "absl/strings/ascii.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
+#include "upb/base/descriptor_constants.h"
+#include "upb/base/status.h"
 #include "upb/base/string_view.h"
 #include "upb/base/upcast.h"
 #include "upb/mem/arena.h"
@@ -32,6 +34,7 @@
 #include "upb/message/message.h"
 #include "upb/message/unknown_fields.h"
 #include "upb/mini_descriptor/decode.h"
+#include "upb/mini_descriptor/internal/encode.hpp"
 #include "upb/mini_descriptor/link.h"
 #include "upb/mini_table/extension.h"
 #include "upb/mini_table/extension_registry.h"
@@ -483,10 +486,12 @@ TEST(DecodeTest, EmptyMiniTableDecodedAsUnknown) {
   EXPECT_TRUE(upb_Message_HasUnknown(msg));
 
   uintptr_t iter = kUpb_Message_UnknownBegin;
-  upb_StringView data;
-  ASSERT_TRUE(upb_Message_NextUnknown(msg, &data, &iter));
-  EXPECT_EQ(absl::string_view(data.data, data.size), payload);
-  EXPECT_FALSE(upb_Message_NextUnknown(msg, &data, &iter));
+  upb_MessageUnknown data;
+  ASSERT_TRUE(upb_Message_NextUnknown2(msg, &data, &iter));
+  ASSERT_EQ(data.type, kUpb_MessageUnknownType_StringView);
+  EXPECT_EQ(absl::string_view(data.value.bytes.data, data.value.bytes.size),
+            payload);
+  EXPECT_FALSE(upb_Message_NextUnknown2(msg, &data, &iter));
 }
 
 TEST(DecodeTest, ConsecutiveUnknownFieldsWithoutAlias) {
@@ -514,12 +519,14 @@ TEST(DecodeTest, ConsecutiveUnknownFieldsWithoutAlias) {
     EXPECT_TRUE(upb_Message_HasUnknown(msg));
 
     uintptr_t iter = kUpb_Message_UnknownBegin;
-    upb_StringView data;
+    upb_MessageUnknown data;
 
     // We expect them to be merged.
-    ASSERT_TRUE(upb_Message_NextUnknown(msg, &data, &iter));
-    EXPECT_EQ(absl::string_view(data.data, data.size), payload);
-    EXPECT_FALSE(upb_Message_NextUnknown(msg, &data, &iter));
+    ASSERT_TRUE(upb_Message_NextUnknown2(msg, &data, &iter));
+    ASSERT_EQ(data.type, kUpb_MessageUnknownType_StringView);
+    EXPECT_EQ(absl::string_view(data.value.bytes.data, data.value.bytes.size),
+              payload);
+    EXPECT_FALSE(upb_Message_NextUnknown2(msg, &data, &iter));
 
 #ifndef NDEBUG
     // Assert that consecutive unknown fields optimization took effect, decoding
@@ -556,11 +563,13 @@ TEST(DecodeTest, ConsecutiveUnknownFieldsWithAlias) {
     EXPECT_TRUE(upb_Message_HasUnknown(msg));
 
     uintptr_t iter = kUpb_Message_UnknownBegin;
-    upb_StringView data;
+    upb_MessageUnknown data;
 
-    ASSERT_TRUE(upb_Message_NextUnknown(msg, &data, &iter));
-    EXPECT_EQ(absl::string_view(data.data, data.size), payload);
-    EXPECT_FALSE(upb_Message_NextUnknown(msg, &data, &iter));
+    ASSERT_TRUE(upb_Message_NextUnknown2(msg, &data, &iter));
+    ASSERT_EQ(data.type, kUpb_MessageUnknownType_StringView);
+    EXPECT_EQ(absl::string_view(data.value.bytes.data, data.value.bytes.size),
+              payload);
+    EXPECT_FALSE(upb_Message_NextUnknown2(msg, &data, &iter));
 
 #ifndef NDEBUG
     EXPECT_EQ(absl::string_view(trace_buf),
@@ -782,10 +791,12 @@ TEST(DecodeTest, DecodeGroupFieldFromDelimitedWireFormatAsUnknown) {
   EXPECT_TRUE(upb_Message_HasUnknown(parent_msg));
 
   uintptr_t iter = kUpb_Message_UnknownBegin;
-  upb_StringView data;
-  ASSERT_TRUE(upb_Message_NextUnknown(parent_msg, &data, &iter));
-  EXPECT_EQ(absl::string_view(data.data, data.size), payload);
-  EXPECT_FALSE(upb_Message_NextUnknown(parent_msg, &data, &iter));
+  upb_MessageUnknown data;
+  ASSERT_TRUE(upb_Message_NextUnknown2(parent_msg, &data, &iter));
+  ASSERT_EQ(data.type, kUpb_MessageUnknownType_StringView);
+  EXPECT_EQ(absl::string_view(data.value.bytes.data, data.value.bytes.size),
+            payload);
+  EXPECT_FALSE(upb_Message_NextUnknown2(parent_msg, &data, &iter));
 }
 
 TEST(DecodeTest, ConsecutiveUnknownFieldsWithGroup) {
@@ -815,12 +826,14 @@ TEST(DecodeTest, ConsecutiveUnknownFieldsWithGroup) {
     EXPECT_TRUE(upb_Message_HasUnknown(msg));
 
     uintptr_t iter = kUpb_Message_UnknownBegin;
-    upb_StringView data;
+    upb_MessageUnknown data;
 
     // We expect them to be merged.
-    ASSERT_TRUE(upb_Message_NextUnknown(msg, &data, &iter));
-    EXPECT_EQ(absl::string_view(data.data, data.size), payload);
-    EXPECT_FALSE(upb_Message_NextUnknown(msg, &data, &iter));
+    ASSERT_TRUE(upb_Message_NextUnknown2(msg, &data, &iter));
+    ASSERT_EQ(data.type, kUpb_MessageUnknownType_StringView);
+    EXPECT_EQ(absl::string_view(data.value.bytes.data, data.value.bytes.size),
+              payload);
+    EXPECT_FALSE(upb_Message_NextUnknown2(msg, &data, &iter));
 
 #ifndef NDEBUG
     const char* expected = "M";
@@ -923,6 +936,41 @@ TEST(DecodeTest, FieldZeroRejected) {
                      options, msg_arena.ptr());
       EXPECT_EQ(result, kUpb_DecodeStatus_Malformed);
     }
+  }
+}
+
+TEST(DecodeTest, UnlinkedSubMessageFastTableSlotCollision) {
+  Arena mt_arena;
+
+  // Build a message where:
+  // - Field 16 is an unlinked submessage (slot 16)
+  // - Field 32 is a bool field that collides on the same fasttable slot (slot
+  // 16)
+  upb::MtDataEncoder e;
+  e.StartMessage(0);
+  e.PutField(kUpb_FieldType_Message, 16, 0);
+  e.PutField(kUpb_FieldType_Bool, 32, 0);
+
+  upb_Status status;
+  upb_Status_Clear(&status);
+  const upb_MiniTable* mt = upb_MiniTable_Build(
+      e.data().data(), e.data().size(), mt_arena.ptr(), &status);
+  ASSERT_TRUE(upb_Status_IsOk(&status)) << upb_Status_ErrorMessage(&status);
+
+  const upb_MiniTableField* bool_field =
+      upb_MiniTable_FindFieldByNumber(mt, 32);
+  ASSERT_NE(bool_field, nullptr);
+
+  // Field 32 (tag 256, varint: 0x80, 0x02), value = 1 (true)
+  std::string payload("\x80\x02\x01");
+  for (int options : GetDecodeOptionsToTest()) {
+    Arena msg_arena;
+    upb_Message* msg = upb_Message_New(mt, msg_arena.ptr());
+    upb_DecodeStatus result = upb_Decode(payload.data(), payload.size(), msg,
+                                         mt, nullptr, options, msg_arena.ptr());
+    EXPECT_EQ(result, kUpb_DecodeStatus_Ok) << upb_DecodeStatus_String(result);
+    EXPECT_TRUE(upb_Message_GetBool(msg, bool_field, false));
+    EXPECT_FALSE(upb_Message_HasUnknown(msg));
   }
 }
 
