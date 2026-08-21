@@ -3,7 +3,7 @@
 
 module(
     name = "protobuf",
-    version = "36.0-dev",  # Automatically updated on release
+    version = "37.0-dev",  # Automatically updated on release
     bazel_compatibility = [">=8.0.0"],
     compatibility_level = 1,
     repo_name = "com_google_protobuf",
@@ -19,16 +19,10 @@ bazel_dep(name = "apple_support", version = "2.3.0", repo_name = "build_bazel_ap
 # Unused but must be pinned to avoid old broken versions
 bazel_dep(name = "rules_proto", version = "7.1.0")
 
-#ifndef PROTO2_OPENSOURCE
-# LINT.IfChange
-#endif // PROTO2_OPENSOURCE
 # protoc dependencies
 bazel_dep(name = "abseil-cpp", version = "20250512.1")
-bazel_dep(name = "rules_cc", version = "0.0.17")
+bazel_dep(name = "rules_cc", version = "0.2.18")
 bazel_dep(name = "zlib", version = "1.3.1.bcr.5")
-#ifndef PROTO2_OPENSOURCE
-# LINT.ThenChange(//depot/google3/third_party/protobuf/compiler/notices.h)
-#endif // PROTO2_OPENSOURCE
 
 # other dependencies
 bazel_dep(name = "bazel_features", version = "1.33.0", repo_name = "proto_bazel_features")
@@ -39,7 +33,7 @@ bazel_dep(name = "rules_jvm_external", version = "6.7")
 bazel_dep(name = "rules_kotlin", version = "2.3.20")
 bazel_dep(name = "rules_license", version = "1.0.0")
 bazel_dep(name = "rules_pkg", version = "1.0.1")
-bazel_dep(name = "rules_python", version = "1.6.0")
+bazel_dep(name = "rules_python", version = "2.3.0")
 bazel_dep(name = "rules_rust", version = "0.69.0")
 
 bazel_dep(name = "rules_ruby", version = "0.20.1", dev_dependency = True)
@@ -194,10 +188,10 @@ rust.toolchain(
     versions = ["1.85.0"],
 )
 
-crate = use_extension("@rules_rust//crate_universe:extension.bzl", "crate")
+crate = use_extension("@rules_rust//crate_universe:extensions.bzl", "crate")
 crate.spec(
     package = "googletest",
-    version = ">0.0.0",
+    version = "0.14.2",
 )
 crate.spec(
     package = "linkme",
@@ -205,15 +199,16 @@ crate.spec(
 )
 crate.spec(
     package = "paste",
-    version = ">=1",
+    version = "1.0.15",
 )
 crate.spec(
     package = "quote",
-    version = ">=1",
+    version = "1.0.38",
 )
 crate.spec(
+    features = ["full"],
     package = "syn",
-    version = ">=2",
+    version = ">=2, <3",
 )
 crate.from_specs()
 use_repo(crate, crate_index = "crates")
@@ -356,3 +351,8 @@ use_repo(
     "nuget_python_x86-64_3.10.0",
     "python-3.10.0",
 )
+
+bazel_dep(name = "jq.bzl", version = "0.6.1", dev_dependency = True)
+
+jq = use_extension("@jq.bzl//jq:extensions.bzl", "toolchains", dev_dependency = True)
+use_repo(jq, "jq_toolchains")

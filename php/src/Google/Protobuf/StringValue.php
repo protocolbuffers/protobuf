@@ -36,7 +36,8 @@ class StringValue extends \Google\Protobuf\Internal\Message
      *           The string value.
      * }
      */
-    public function __construct($data = NULL) {
+    public function __construct($data = null)
+    {
         \GPBMetadata\Google\Protobuf\Wrappers::initOnce();
         parent::__construct($data);
     }

@@ -103,9 +103,9 @@ def protobuf_deps():
     if not native.existing_rule("rules_cc"):
         http_archive(
             name = "rules_cc",
-            urls = ["https://github.com/bazelbuild/rules_cc/releases/download/0.0.16/rules_cc-0.0.16.tar.gz"],
-            sha256 = "bbf1ae2f83305b7053b11e4467d317a7ba3517a12cef608543c1b1c5bf48a4df",
-            strip_prefix = "rules_cc-0.0.16",
+            urls = ["https://github.com/bazelbuild/rules_cc/releases/download/0.1.5/rules_cc-0.1.5.tar.gz"],
+            sha256 = "b8b918a85f9144c01f6cfe0f45e4f2838c7413961a8ff23bc0c6cdf8bb07a3b6",
+            strip_prefix = "rules_cc-0.1.5",
         )
 
     if not native.existing_rule("rules_java"):
@@ -131,9 +131,9 @@ def protobuf_deps():
     if not native.existing_rule("rules_python"):
         http_archive(
             name = "rules_python",
-            sha256 = "fa7dd2c6b7d63b3585028dd8a90a6cf9db83c33b250959c2ee7b583a6c130e12",
-            strip_prefix = "rules_python-1.6.0",
-            url = "https://github.com/bazel-contrib/rules_python/releases/download/1.6.0/rules_python-1.6.0.tar.gz",
+            sha256 = "70c519e8f0a5d9244c0d3496a6993bd42edf111c4499b68ce2f155c26fc8d4ee",
+            strip_prefix = "rules_python-2.3.0",
+            url = "https://github.com/bazel-contrib/rules_python/releases/download/2.3.0/rules_python-2.3.0.tar.gz",
         )
 
     if not native.existing_rule("system_python"):

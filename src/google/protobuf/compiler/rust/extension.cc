@@ -114,8 +114,7 @@ void GenerateRs(Context& ctx, const FieldDescriptor& extension,
     }
   } else {
     std::string mini_descriptor =
-        pool.FindExtensionByName(std::string(extension.full_name()).c_str())
-            .MiniDescriptorEncode();
+        pool.FindExtensionByName(extension.full_name()).MiniDescriptorEncode();
 
     std::string extendee = RsTypePath(ctx, *extension.containing_type());
     std::string number = absl::StrCat(extension.number());

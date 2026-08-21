@@ -11,6 +11,7 @@
 import io
 import unittest
 
+from google.protobuf import message
 from google.protobuf import proto
 from google.protobuf.internal import encoder
 from google.protobuf.internal import test_proto2_pb2
@@ -34,6 +35,30 @@ class ProtoTest(unittest.TestCase):
     test_util.SetAllFields(msg)
     serialized_data = proto.serialize(msg)
     parsed_msg = proto.parse(message_module.TestAllTypes, serialized_data)
+    self.assertEqual(msg, parsed_msg)
+
+  def test_parse_from_string_memoryview(self, message_module):
+    msg = message_module.TestAllTypes()
+    test_util.SetAllFields(msg)
+    serialized_data = memoryview(proto.serialize(msg))
+    parsed_msg = message_module.TestAllTypes()
+    parsed_msg.ParseFromString(serialized_data)
+    self.assertEqual(msg, parsed_msg)
+
+  def test_merge_from_string_memoryview(self, message_module):
+    msg = message_module.TestAllTypes()
+    test_util.SetAllFields(msg)
+    serialized_data = memoryview(proto.serialize(msg))
+    parsed_msg = message_module.TestAllTypes()
+    bytes_parsed = parsed_msg.MergeFromString(serialized_data)
+    self.assertEqual(msg, parsed_msg)
+    self.assertEqual(bytes_parsed, len(serialized_data))
+
+  def test_from_string_memoryview(self, message_module):
+    msg = message_module.TestAllTypes()
+    test_util.SetAllFields(msg)
+    serialized_data = memoryview(proto.serialize(msg))
+    parsed_msg = message_module.TestAllTypes.FromString(serialized_data)
     self.assertEqual(msg, parsed_msg)
 
   def test_serialize_parse_length_prefixed_empty(self, message_module):
@@ -65,7 +90,7 @@ class ProtoTest(unittest.TestCase):
   def test_serialize_length_prefixed_fake_io(self, message_module):
     class FakeBytesIO(io.BytesIO):
 
-      def write(self, b: bytes) -> int:
+      def write(self, b: bytes) -> int:  # pyrefly: ignore[bad-override]
         return 0
 
     msg = message_module.TestAllTypes(optional_int32=123)
@@ -76,6 +101,29 @@ class ProtoTest(unittest.TestCase):
         'Failed to write complete message (wrote: 0, expected: 2)',
         str(context.exception),
     )
+
+  def test_serialize_length_prefixed_serializes_once(self, message_module):
+    del message_module
+
+    class CountingMessage(message.Message):
+
+      def __init__(self):
+        self.serialize_count = 0
+
+      def SerializeToString(self, deterministic=None):
+        self.serialize_count += 1
+        return b'abc'
+
+      def ByteSize(self):
+        raise AssertionError('serialize_length_prefixed should not call ByteSize')
+
+    msg = CountingMessage()
+    out = io.BytesIO()
+
+    proto.serialize_length_prefixed(msg, out)
+
+    self.assertEqual(b'\x03abc', out.getvalue())
+    self.assertEqual(1, msg.serialize_count)
 
   def test_byte_size(self, message_module):
     msg = message_module.TestAllTypes()

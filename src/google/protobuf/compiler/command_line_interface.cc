@@ -321,6 +321,27 @@ bool GetBootstrapParam(const std::string& parameter) {
 
 }  // namespace
 
+void CommandLineInterface::GetTransitiveOptionDependencies(
+    const FileDescriptor* file,
+    absl::flat_hash_set<const FileDescriptor*>* already_seen,
+    RepeatedPtrField<FileDescriptorProto>* output,
+    const TransitiveDependencyOptions& options) const {
+  //  Only gather direct option dependencies for top-level files.  This must
+  //  be done outside the already_seen check in GetTransitiveDependencies since
+  //  top-level files can depend on each other.  We want to make sure to include
+  //  all option dependencies of each top-level file.
+  for (int i = 0; i < file->option_dependency_count(); ++i) {
+    const FileDescriptor* dep =
+        file->pool()->FindFileByName(file->option_dependency_name(i));
+    ABSL_CHECK(dep != nullptr || !descriptor_set_in_names_.empty())
+        << "Option dependency " << file->option_dependency_name(i)
+        << " not found in pool.  This should never happen.";
+    if (dep != nullptr) {
+      GetTransitiveDependencies(dep, already_seen, output, options);
+    }
+  }
+}
+
 void CommandLineInterface::GetTransitiveDependencies(
     const FileDescriptor* file,
     absl::flat_hash_set<const FileDescriptor*>* already_seen,
@@ -335,16 +356,6 @@ void CommandLineInterface::GetTransitiveDependencies(
   for (int i = 0; i < file->dependency_count(); ++i) {
     GetTransitiveDependencies(file->dependency(i), already_seen, output,
                               options);
-  }
-  for (int i = 0; i < file->option_dependency_count(); ++i) {
-    const FileDescriptor* dep =
-        file->pool()->FindFileByName(file->option_dependency_name(i));
-    ABSL_CHECK(dep != nullptr || !descriptor_set_in_names_.empty())
-        << "Option dependency " << file->option_dependency_name(i)
-        << " not found in pool.  This should never happen.";
-    if (dep != nullptr) {
-      GetTransitiveDependencies(dep, already_seen, output, options);
-    }
   }
 
   // Add this file.
@@ -393,7 +404,7 @@ class CommandLineInterface::ErrorPrinter
   }
 
   void RecordWarning(int line, int column, absl::string_view message) override {
-    AddErrorOrWarning("input", line, column, message, "warning", std::clog);
+    RecordWarning("input", line, column, message);
   }
 
   // implements DescriptorPool::ErrorCollector-------------------------
@@ -1411,6 +1422,20 @@ int CommandLineInterface::Run(int argc, const char* const argv[]) {
     if (!ValidateOptionImports(*file, *descriptor_pool,
                                error_collector.get())) {
       validation_error = true;
+    }
+
+    if (file->options().cc_generic_services() ||
+        file->options().java_generic_services() ||
+        file->options().py_generic_services()) {
+      error_collector->RecordWarning(
+          file->name(), "options", nullptr,
+          DescriptorPool::ErrorCollector::OPTION_VALUE,
+          "Generic services (cc_generic_services, java_generic_services, and "
+          "py_generic_services) are deprecated in favor of using plugins that "
+          "generate code specific to your particular RPC system. Additional "
+          "code generator options may be required to enable generic services "
+          "and total removal of these options is planned in future breaking "
+          "releases.");
     }
 
     google::protobuf::internal::VisitDescriptors(
@@ -2918,6 +2943,8 @@ bool CommandLineInterface::GenerateDependencyManifestFile(
 
   absl::flat_hash_set<const FileDescriptor*> already_seen;
   for (size_t i = 0; i < parsed_files.size(); ++i) {
+    GetTransitiveOptionDependencies(parsed_files[i], &already_seen,
+                                    file_set.mutable_file());
     GetTransitiveDependencies(parsed_files[i], &already_seen,
                               file_set.mutable_file());
   }
@@ -3001,13 +3028,17 @@ CodeGeneratorRequest CommandLineInterface::CreateCodeGeneratorRequest(
     request.set_parameter(parameter);
   }
 
+  TransitiveDependencyOptions options;
+  options.include_json_name = copy_json_name;
+  options.include_source_code_info = true;
+  options.retain_options = true;
   absl::flat_hash_set<const FileDescriptor*> already_seen;
   for (const FileDescriptor* file : parsed_files) {
     request.add_file_to_generate(file->name());
+    GetTransitiveOptionDependencies(file, &already_seen,
+                                    request.mutable_proto_file(), options);
     GetTransitiveDependencies(file, &already_seen, request.mutable_proto_file(),
-                              {/*.include_json_name =*/true,
-                               /*.include_source_code_info =*/true,
-                               /*.retain_options =*/true});
+                              options);
   }
 
   // Populate source_file_descriptors and remove source-retention options from
@@ -3073,6 +3104,16 @@ bool CommandLineInterface::GenerateCodeFromResponse(
           "$0: First file chunk returned by plugin did not specify a file "
           "name.",
           plugin_name);
+      return false;
+    }
+
+    // This is only reachable for generators that are statically linked into
+    // protoc. For subprocess plugins, their responses go through wire-format
+    // parsing which already rejects payloads > 2 GiB.
+    if (output_file.content().size() > INT_MAX) {
+      *error = absl::Substitute(
+          "$0: Generated file $1 is too large (exceeds 2 GiB limit).",
+          plugin_name, output_file.name());
       return false;
     }
 
@@ -3243,7 +3284,9 @@ bool CommandLineInterface::EncodeOrDecode(const DescriptorPool* pool) {
     }
   }
 
+  bool found_warning = false;
   if (!message->IsInitialized()) {
+    found_warning = true;
     std::cerr << "warning:  Input message is missing required fields:  "
               << message->InitializationErrorString() << std::endl;
   }
@@ -3264,7 +3307,9 @@ bool CommandLineInterface::EncodeOrDecode(const DescriptorPool* pool) {
     }
   }
 
-  return true;
+  // Treat warnings as fatal when --fatal_warnings is set, after the output has
+  // been written so the behavior matches the compile path.
+  return !(fatal_warnings_ && found_warning);
 }
 
 bool CommandLineInterface::WriteDescriptorSet(
@@ -3304,6 +3349,8 @@ bool CommandLineInterface::WriteDescriptorSet(
   options.include_source_code_info = source_info_in_descriptor_set_;
   options.retain_options = retain_options_in_descriptor_set_;
   for (size_t i = 0; i < parsed_files.size(); ++i) {
+    GetTransitiveOptionDependencies(parsed_files[i], &already_seen,
+                                    file_set.mutable_file(), options);
     GetTransitiveDependencies(parsed_files[i], &already_seen,
                               file_set.mutable_file(), options);
   }

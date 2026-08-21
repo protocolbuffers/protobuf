@@ -40,6 +40,7 @@
 #include "absl/strings/str_replace.h"
 #include "absl/strings/substitute.h"
 #include "google/protobuf/descriptor.h"
+#include "google/protobuf/dynamic_message.h"
 #include "google/protobuf/io/tokenizer.h"
 #include "google/protobuf/io/zero_copy_stream_impl.h"
 #include "google/protobuf/io/zero_copy_stream_impl_lite.h"
@@ -82,8 +83,11 @@ namespace text_format_unittest {
 using ::absl_testing::IsOk;
 using ::absl_testing::StatusIs;
 using ::google::protobuf::internal::UnsetFieldsMetadataTextFormatTestUtil;
+using ::testing::_;
 using ::testing::AllOf;
+using ::testing::Gt;
 using ::testing::HasSubstr;
+using ::testing::Lt;
 using ::testing::UnorderedElementsAre;
 
 absl::string_view GetSubstring(absl::string_view input,
@@ -293,6 +297,99 @@ TEST_F(TextFormatTest, ShortFormat) {
                   "map_redacted_string: $0 "
                   "map_unredacted_string \\{ key: \"ghi\" value: \"jkl\" \\}",
                   value_replacement, kTextMarkerRegex)));
+}
+
+TEST_F(TextFormatTest, InputTooLarge) {
+  if (sizeof(size_t) <= sizeof(int)) {
+    GTEST_SKIP() << "Not supported in platform.";
+  }
+  unittest::TestAllTypes msg;
+
+  constexpr absl::string_view kError = "Input size too large";
+
+  const auto expect_error = [&](auto f) {
+    {
+      // First without a collector.
+      TextFormat::Parser parser;
+      absl::ScopedMockLog log(absl::MockLogDefault::kDisallowUnexpected);
+      EXPECT_CALL(log, Log(absl::LogSeverity::kError, _, HasSubstr(kError)))
+          .Times(1);
+      log.StartCapturingLogs();
+      EXPECT_FALSE(f(parser));
+    }
+
+    // Then with a collector.
+    TextFormat::Parser parser;
+    class MockErrorCollector : public io::ErrorCollector {
+     public:
+      MockErrorCollector() = default;
+      ~MockErrorCollector() override = default;
+
+      std::string text_;
+
+      // implements ErrorCollector -------------------------------------
+      void RecordError(int line, int column,
+                       absl::string_view message) override {
+        text_ = absl::StrCat(message);
+      }
+
+      void RecordWarning(int line, int column,
+                         absl::string_view message) override {}
+    };
+
+    MockErrorCollector error_collector;
+    parser.RecordErrorsTo(&error_collector);
+    EXPECT_FALSE(f(parser));
+    EXPECT_THAT(error_collector.text_, HasSubstr(kError));
+  };
+
+  // Use a fake string_view with very large size.
+  // The contents don't matter because it should fail just by the size.
+  const absl::string_view too_large_sv(
+      "asdf", size_t{std::numeric_limits<int>::max()} + 1);
+  expect_error([&](auto& p) { return p.ParseFromString(too_large_sv, &msg); });
+  expect_error([&](auto& p) { return p.MergeFromString(too_large_sv, &msg); });
+
+  absl::Cord too_large_cord("sdaf");
+  while (too_large_cord.size() < std::numeric_limits<int>::max()) {
+    too_large_cord.Append(too_large_cord);
+  }
+  expect_error([&](auto& p) { return p.ParseFromCord(too_large_cord, &msg); });
+}
+
+TEST_F(TextFormatTest, RedactionWithUndeclaredEnumOption) {
+  FileDescriptorProto file;
+  file.set_name("evil.proto");
+  file.set_package("evil");
+  file.set_edition(Edition::EDITION_2024);
+
+  DescriptorProto* msg = file.add_message_type();
+  msg->set_name("M");
+
+  FieldDescriptorProto* fld = msg->add_field();
+  fld->set_name("x");
+  fld->set_number(1);
+  fld->set_type(FieldDescriptorProto::TYPE_INT32);
+
+  // Set the compiled-in message-typed extension on the field's options,
+  // with an undeclared open-enum value.
+  FieldOptions* opts = fld->mutable_options();
+  proto2_unittest::TestNestedMessageEnum* nested_enum =
+      opts->MutableExtension(proto2_unittest::test_nested_message_enum);
+  nested_enum->add_direct_enum(
+      static_cast<proto2_unittest::MetaAnnotatedEnum>(999));
+
+  // Use the generated pool underlay so it can load the extension.
+  DescriptorPool pool(DescriptorPool::generated_pool());
+  const FileDescriptor* fd = pool.BuildFile(file);
+  ASSERT_NE(fd, nullptr);
+  const Descriptor* d = fd->message_type(0);
+
+  DynamicMessageFactory factory(&pool);
+  std::unique_ptr<Message> m(factory.GetPrototype(d)->New());
+  ASSERT_TRUE(TextFormat::ParseFromString("x: 42", m.get()));
+  // The field should be printed fine.
+  EXPECT_THAT(m->DebugString(), HasSubstr("x: 42"));
 }
 
 TEST_F(TextFormatTest, Utf8Format) {
@@ -1331,6 +1428,7 @@ TEST_F(TextFormatTest, ParseConcatenatedString) {
   // Compare.
   EXPECT_EQ("foobar", proto_.optional_string());
 }
+
 
 TEST_F(TextFormatTest, ParseFloatWithSuffix) {
   // Test that we can parse a floating-point value with 'f' appended to the

@@ -19,14 +19,14 @@
 #include "upb/base/descriptor_constants.h"
 #include "upb/base/status.hpp"
 #include "upb/mem/arena.hpp"
-#include "upb/message/internal/accessors.h"
 #include "upb/mini_descriptor/decode.h"
 #include "upb/mini_descriptor/internal/base92.h"
 #include "upb/mini_descriptor/internal/modifiers.h"
+#include "upb/mini_descriptor/link.h"
 #include "upb/mini_table/enum.h"
 #include "upb/mini_table/field.h"
+#include "upb/mini_table/internal/message.h"
 #include "upb/mini_table/message.h"
-#include "upb/mini_table/sub.h"
 
 // Must be last.
 #include "upb/port/def.inc"
@@ -200,6 +200,48 @@ TEST_P(MiniTableTest, SizeOverflow) {
   ASSERT_EQ(nullptr, table2) << status.error_message();
 }
 
+TEST_P(MiniTableTest, PresenceOverflow) {
+  // Each hasbit field consumes one int16_t presence index. A message with more
+  // presence fields than fit in that index must be rejected instead of
+  // truncating the index, which would alias a scalar field onto a oneof.
+  upb::Arena arena;
+  upb::MtDataEncoder e;
+  ASSERT_TRUE(e.StartMessage(0));
+  // Far more presence fields than the int16_t index holds, but few enough bytes
+  // to stay under the message size limit.
+  for (uint32_t i = 1; i <= 40000; i++) {
+    ASSERT_TRUE(e.PutField(kUpb_FieldType_Bool, i, 0));
+  }
+  upb::Status status;
+  upb_MiniTable* table = _upb_MiniTable_Build(
+      e.data().data(), e.data().size(), GetParam(), arena.ptr(), status.ptr());
+  EXPECT_EQ(nullptr, table);
+}
+
+TEST_P(MiniTableTest, OneofCaseOverflow) {
+  // The oneof case offset is stored negated in the int16_t presence field, so a
+  // oneof whose case is placed beyond the positive int16_t range must be
+  // rejected instead of aliasing the oneof onto a hasbit field.
+  upb::Arena arena;
+  upb::MtDataEncoder e;
+  ASSERT_TRUE(e.StartMessage(0));
+  uint32_t field_num = 0;
+  // No-presence single-byte fields push the oneof case offset past INT16_MAX
+  // while keeping the message under the size limit.
+  for (uint32_t i = 0; i < 40000; i++) {
+    ASSERT_TRUE(e.PutField(kUpb_FieldType_Bool, ++field_num,
+                           kUpb_FieldModifier_IsProto3Singular));
+  }
+  uint32_t oneof_field = ++field_num;
+  ASSERT_TRUE(e.PutField(kUpb_FieldType_Bool, oneof_field, 0));
+  ASSERT_TRUE(e.StartOneof());
+  ASSERT_TRUE(e.PutOneofField(oneof_field));
+  upb::Status status;
+  upb_MiniTable* table = _upb_MiniTable_Build(
+      e.data().data(), e.data().size(), GetParam(), arena.ptr(), status.ptr());
+  EXPECT_EQ(nullptr, table);
+}
+
 INSTANTIATE_TEST_SUITE_P(Platforms, MiniTableTest,
                          testing::Values(kUpb_MiniTablePlatform_32Bit,
                                          kUpb_MiniTablePlatform_64Bit));
@@ -258,6 +300,25 @@ TEST(MiniTableTest, SubsInitializedToNull) {
       upb_MiniTable_FieldIsLinked(upb_MiniTable_GetFieldByIndex(table, 1)));
 }
 
+TEST(MiniTableTest, LinkShortSubTableArray) {
+  upb::Arena arena;
+  upb::MtDataEncoder e;
+  // Message with two message fields, so linking expects two sub-tables.
+  ASSERT_TRUE(e.StartMessage(0));
+  ASSERT_TRUE(e.PutField(kUpb_FieldType_Message, 1, 0));
+  ASSERT_TRUE(e.PutField(kUpb_FieldType_Message, 2, 0));
+  upb::Status status;
+  upb_MiniTable* table = upb_MiniTable_Build(e.data().data(), e.data().size(),
+                                             arena.ptr(), status.ptr());
+  ASSERT_NE(nullptr, table);
+  ASSERT_EQ(upb_MiniTable_FieldCount(table), 2);
+
+  // Passing an array shorter than the number of message fields must fail
+  // cleanly without reading past the end of the array.
+  const upb_MiniTable* subs[1] = {nullptr};
+  EXPECT_FALSE(upb_MiniTable_Link(table, subs, 1, nullptr, 0));
+}
+
 TEST(MiniTableEnumTest, PositiveAndNegative) {
   upb::Arena arena;
   upb::MtDataEncoder e;
@@ -297,4 +358,23 @@ TEST_P(MiniTableTest, Extendible) {
   ASSERT_NE(nullptr, table);
   EXPECT_EQ(kUpb_ExtMode_Extendable,
             table->UPB_PRIVATE(ext) & kUpb_ExtMode_Extendable);
+}
+
+TEST(MiniTableTest, Build32BitMiniTableWithSubmessagesNoFastTableAssert) {
+  upb::Arena arena;
+  upb::MtDataEncoder e;
+
+  ASSERT_TRUE(e.StartMessage(0));
+  ASSERT_TRUE(e.PutField(kUpb_FieldType_Message, 1, 0));
+  ASSERT_TRUE(e.PutField(kUpb_FieldType_Message, 2, 0));
+  ASSERT_TRUE(e.PutField(kUpb_FieldType_Message, 3, 0));
+
+  upb::Status status;
+  upb_MiniTable* table = _upb_MiniTable_Build(e.data().data(), e.data().size(),
+                                              kUpb_MiniTablePlatform_32Bit,
+                                              arena.ptr(), status.ptr());
+
+  ASSERT_NE(nullptr, table) << status.error_message();
+  EXPECT_EQ(3, upb_MiniTable_FieldCount(table));
+  EXPECT_EQ(0xff, table->UPB_PRIVATE(table_mask));
 }

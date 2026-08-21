@@ -36,7 +36,8 @@ class SourceContext extends \Google\Protobuf\Internal\Message
      *           protobuf element.  For example: `"google/protobuf/source_context.proto"`.
      * }
      */
-    public function __construct($data = NULL) {
+    public function __construct($data = null)
+    {
         \GPBMetadata\Google\Protobuf\SourceContext::initOnce();
         parent::__construct($data);
     }

@@ -11,6 +11,8 @@
 #include <stdint.h>
 #include <string.h>
 
+#include <cstdio>
+#include <cstdlib>
 #include <string>
 #include <vector>
 
@@ -18,6 +20,8 @@
 #include "google/protobuf/descriptor.pb.h"
 #include "absl/container/flat_hash_set.h"
 #include "absl/log/absl_check.h"
+#include "absl/strings/string_view.h"
+#include "google/protobuf/arena.h"
 #include "google/protobuf/dynamic_message.h"
 #include "google/protobuf/json/json.h"
 #include "benchmarks/descriptor.pb.h"
@@ -25,14 +29,19 @@
 #include "benchmarks/descriptor.upb_minitable.h"
 #include "benchmarks/descriptor.upbdefs.h"
 #include "benchmarks/descriptor_sv.pb.h"
+#include "upb/base/status.h"
 #include "upb/base/string_view.h"
 #include "upb/base/upcast.h"
 #include "upb/json/decode.h"
 #include "upb/json/encode.h"
 #include "upb/mem/arena.h"
+#include "upb/message/message.h"
+#include "upb/mini_table/message.h"
+#include "upb/reflection/def.h"
 #include "upb/reflection/def.hpp"
 #include "upb/reflection/internal/def_pool.h"
 #include "upb/wire/decode.h"
+#include "upb/wire/encode.h"
 
 upb_StringView descriptor =
     benchmarks_descriptor_proto_upbdefinit.descriptor;
@@ -79,7 +88,7 @@ static void BM_ArenaFuseUnbalanced(benchmark::State& state) {
       arena = upb_Arena_New();
     }
     for (auto& arena : arenas) {
-      upb_Arena_Fuse(arenas[0], arena);
+      ABSL_CHECK(upb_Arena_Fuse(arenas[0], arena));
     }
     for (auto& arena : arenas) {
       upb_Arena_Free(arena);
@@ -104,7 +113,7 @@ static void BM_ArenaFuseBalanced(benchmark::State& state) {
     for (size_t n = 0; n <= max; n++) {
       size_t step = 1 << n;
       for (size_t i = 0; i + step < arenas.size(); i += (step * 2)) {
-        upb_Arena_Fuse(arenas[i], arenas[i + step]);
+        ABSL_CHECK(upb_Arena_Fuse(arenas[i], arenas[i + step]));
       }
     }
 
@@ -383,10 +392,18 @@ BENCHMARK_TEMPLATE(BM_SerializeDescriptor_Upb, Parsed, InitBlock);
 static absl::string_view UpbJsonEncode(upb_benchmark_FileDescriptorProto* proto,
                                        const upb_MessageDef* md,
                                        upb_Arena* arena) {
+  upb_Status status;
+  upb_Status_Clear(&status);
   size_t size =
-      upb_JsonEncode(UPB_UPCAST(proto), md, nullptr, 0, nullptr, 0, nullptr);
+      upb_JsonEncode(UPB_UPCAST(proto), md, nullptr, 0, nullptr, 0, &status);
+  ABSL_CHECK(size != (size_t)-1)
+      << "Failed to measure JSON size: " << status.msg;
+
   char* buf = reinterpret_cast<char*>(upb_Arena_Malloc(arena, size + 1));
-  upb_JsonEncode(UPB_UPCAST(proto), md, nullptr, 0, buf, size, nullptr);
+  size_t size2 =
+      upb_JsonEncode(UPB_UPCAST(proto), md, nullptr, 0, buf, size + 1, &status);
+  ABSL_CHECK(size2 != (size_t)-1) << "Failed to encode JSON: " << status.msg;
+
   return absl::string_view(buf, size);
 }
 
@@ -409,8 +426,11 @@ static void BM_JsonParse_Upb(benchmark::State& state) {
     upb_Arena* arena = upb_Arena_New();
     upb_benchmark_FileDescriptorProto* proto =
         upb_benchmark_FileDescriptorProto_new(arena);
-    upb_JsonDecode(json.data(), json.size(), UPB_UPCAST(proto), md,
-                   defpool.ptr(), 0, arena, nullptr);
+    upb_Status status;
+    upb_Status_Clear(&status);
+    bool ok = upb_JsonDecode(json.data(), json.size(), UPB_UPCAST(proto), md,
+                             defpool.ptr(), 0, arena, &status);
+    ABSL_CHECK(ok) << "Failed to parse: " << status.msg;
     benchmark::DoNotOptimize(proto);
     upb_Arena_Free(arena);
   }

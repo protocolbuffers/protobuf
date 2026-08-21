@@ -323,8 +323,7 @@ bool RustGenerator::Generate(const FileDescriptor* file,
 
   for (int i = 0; i < file->enum_type_count(); ++i) {
     auto& enum_ = *file->enum_type(i);
-    GenerateEnumDefinition(ctx, enum_,
-                           pool.FindEnumByName(enum_.full_name().data()));
+    GenerateEnumDefinition(ctx, enum_, pool.FindEnumByName(enum_.full_name()));
     ctx.printer().PrintRaw("\n");
 
     if (ctx.is_cpp()) {

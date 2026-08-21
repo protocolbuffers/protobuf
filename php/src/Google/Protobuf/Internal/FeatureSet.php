@@ -77,7 +77,8 @@ class FeatureSet extends \Google\Protobuf\Internal\Message
      *     @type int $enforce_proto_limits
      * }
      */
-    public function __construct($data = NULL) {
+    public function __construct($data = null)
+    {
         \GPBMetadata\Google\Protobuf\Internal\Descriptor::initOnce();
         parent::__construct($data);
     }

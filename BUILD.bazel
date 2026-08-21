@@ -495,8 +495,20 @@ alias(
 )
 
 alias(
+    name = "json_options_proto",
+    actual = "//src/google/protobuf:json_options_proto",
+    visibility = ["//visibility:public"],
+)
+
+alias(
     name = "json_enumvalue_options_proto",
     actual = "//src/google/protobuf:json_enumvalue_options_proto",
+    visibility = ["//visibility:public"],
+)
+
+alias(
+    name = "json_enumvalue_options_proto_srcs",
+    actual = "//src/google/protobuf:json_enumvalue_options_proto_srcs",
     visibility = ["//visibility:public"],
 )
 
@@ -590,7 +602,9 @@ proto_lang_toolchain(
     blacklisted_protos = [
         "//:compiler_plugin_proto",
         "//:cpp_features_proto",
+        "//:cpp_file_options_proto",
         "//:descriptor_proto",
+        "//:json_enumvalue_options_proto",
     ],
     command_line = "--cpp_out=$(OUT)",
     plugin = "//src/google/protobuf/compiler/cpp:protoc-gen-cpp",
@@ -649,8 +663,8 @@ alias(
 ################################################################################
 
 alias(
-    name = "csharp_features_proto",
-    actual = "//csharp:csharp_features_proto",  # proto_library
+    name = "c_sharp_features_proto",
+    actual = "//csharp:c_sharp_features_proto",  # proto_library
     visibility = ["//visibility:public"],
 )
 

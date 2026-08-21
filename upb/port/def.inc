@@ -42,6 +42,13 @@
 #define UPB_GNUC_MIN(x, y) 0
 #endif
 
+#if defined(__clang__) && defined(__clang_major__) && defined(__clang_minor__)
+#define UPB_CLANG_MIN(x, y) \
+  (__clang_major__ > (x) || __clang_major__ == (x) && __clang_minor__ >= (y))
+#else
+#define UPB_CLANG_MIN(x, y) 0
+#endif
+
 // Macros for checking for compiler attributes, defined here to avoid the
 // problem described in
 // https://gcc.gnu.org/onlinedocs/cpp/_005f_005fhas_005fattribute.html.
@@ -360,21 +367,42 @@ Error, UINTPTR_MAX is undefined
 #endif
 
 #if defined(__GNUC__) || defined(__clang__)
-#define UPB_UNREACHABLE()    \
-  do {                       \
-    assert(0);               \
-    __builtin_unreachable(); \
+#define UPB_PRETTY_FUNCTION __PRETTY_FUNCTION__
+#else
+#define UPB_PRETTY_FUNCTION NULL
+#endif
+
+#ifdef __cplusplus
+    extern "C" {
+#endif
+  UPB_NORETURN void _upb_UnreachableFailure(const char* file, int line,
+                                            const char* function_name);
+#if !defined(NDEBUG)
+#define UPB_UNREACHABLE_FAILURE() \
+  _upb_UnreachableFailure(__FILE__, __LINE__, UPB_PRETTY_FUNCTION);
+#else
+#define UPB_UNREACHABLE_FAILURE()
+#endif
+#ifdef __cplusplus
+} /* extern "C" */
+#endif
+
+#if defined(__GNUC__) || defined(__clang__)
+#define UPB_UNREACHABLE()      \
+  do {                         \
+    UPB_UNREACHABLE_FAILURE(); \
+    __builtin_unreachable();   \
   } while (0)
 #elif defined(_MSC_VER)
-#define UPB_UNREACHABLE() \
-  do {                    \
-    assert(0);            \
-    __assume(0);          \
+#define UPB_UNREACHABLE()      \
+  do {                         \
+    UPB_UNREACHABLE_FAILURE(); \
+    __assume(0);               \
   } while (0)
 #else
-#define UPB_UNREACHABLE() \
-  do {                    \
-    assert(0);            \
+#define UPB_UNREACHABLE()      \
+  do {                         \
+    UPB_UNREACHABLE_FAILURE(); \
   } while (0)
 #endif
 
@@ -471,7 +499,7 @@ Error, UINTPTR_MAX is undefined
 
 /* aarch64 supports big and little endian modes; fasttable performs multibyte
  * tag loads assumes the tag of a varint is in the low bits. */
-#if (defined(__x86_64__) || defined(__AARCH64EL__)) && \
+#if !defined(_WIN32) && (defined(__x86_64__) || defined(__AARCH64EL__)) && \
     UPB_HAS_ATTRIBUTE(preserve_none) && UPB_HAS_ATTRIBUTE(musttail)
 #define UPB_FASTTABLE_SUPPORTED 1
 #else
@@ -490,7 +518,11 @@ Error, UINTPTR_MAX is undefined
  * This is useful for releasing code that might be used on multiple platforms,
  * for example the PHP or Ruby C extensions. */
 #elif defined(UPB_TRY_ENABLE_FASTTABLE)
-#define UPB_FASTTABLE UPB_FASTTABLE_SUPPORTED
+#if UPB_FASTTABLE_SUPPORTED
+#define UPB_FASTTABLE 1
+#else
+#define UPB_FASTTABLE 0
+#endif
 #else
 #define UPB_FASTTABLE 0
 #endif
@@ -544,6 +576,12 @@ Error, UINTPTR_MAX is undefined
 #define UPB_RETAIN
 #endif
 
+#if defined(__GNUC__) || defined(__clang__)
+#define UPB_HIDDEN __attribute__((visibility("hidden")))
+#else
+#define UPB_HIDDEN
+#endif
+
 // Linker arrays combine elements from multiple translation units into a single
 // array that can be iterated over at runtime.
 //
@@ -585,37 +623,41 @@ Error, UINTPTR_MAX is undefined
 #define UPB_LINKARR_APPEND(name) \
   __attribute__((                \
       section("linkarr_" #name))) UPB_LINKARR_ATTR UPB_NO_SANITIZE_ADDRESS
-#define UPB_LINKARR_DECLARE(name, type) \
-  extern type __start_linkarr_##name;   \
-  extern type __stop_linkarr_##name;    \
-  UPB_LINKARR_APPEND(name)              \
+#define UPB_LINKARR_DECLARE(name, type)                                       \
+  UPB_STATIC_ASSERT(sizeof("__la_" #name) <= 17,                              \
+                    "Linker array name too long for Mach-O (16-char limit)"); \
+  extern type __start_linkarr_##name;                                         \
+  extern type __stop_linkarr_##name;                                          \
+  UPB_LINKARR_APPEND(name)                                                    \
   UPB_LINKARR_SENTINEL type UPB_linkarr_internal_empty_##name[1]
 #define UPB_LINKARR_START(name) (&__start_linkarr_##name)
 #define UPB_LINKARR_STOP(name) (&__stop_linkarr_##name)
 
 #elif defined(__MACH__)
 
-/* As described in: https://stackoverflow.com/a/22366882 */
+  /* As described in: https://stackoverflow.com/a/22366882 */
 #define UPB_LINKARR_APPEND(name) \
   __attribute__((                \
       section("__DATA,__la_" #name))) UPB_LINKARR_ATTR UPB_NO_SANITIZE_ADDRESS
-#define UPB_LINKARR_DECLARE(name, type)     \
-  extern type __start_linkarr_##name __asm( \
-      "section$start$__DATA$__la_" #name);  \
-  extern type __stop_linkarr_##name __asm(  \
-      "section$end$__DATA$"                 \
-      "__la_" #name);                       \
-  UPB_LINKARR_APPEND(name)                  \
+#define UPB_LINKARR_DECLARE(name, type)                                       \
+  UPB_STATIC_ASSERT(sizeof("__la_" #name) <= 17,                              \
+                    "Linker array name too long for Mach-O (16-char limit)"); \
+  extern type __start_linkarr_##name __asm(                                   \
+      "section$start$__DATA$__la_" #name);                                    \
+  extern type __stop_linkarr_##name __asm(                                    \
+      "section$end$__DATA$"                                                   \
+      "__la_" #name);                                                         \
+  UPB_LINKARR_APPEND(name)                                                    \
   UPB_LINKARR_SENTINEL type UPB_linkarr_internal_empty_##name[1]
 #define UPB_LINKARR_START(name) (&__start_linkarr_##name)
 #define UPB_LINKARR_STOP(name) (&__stop_linkarr_##name)
 
 #elif defined(_MSC_VER)
 
-/* See:
- *   https://devblogs.microsoft.com/oldnewthing/20181107-00/?p=100155
- *   https://devblogs.microsoft.com/oldnewthing/20181108-00/?p=100165
- *   https://devblogs.microsoft.com/oldnewthing/20181109-00/?p=100175 */
+  /* See:
+   *   https://devblogs.microsoft.com/oldnewthing/20181107-00/?p=100155
+   *   https://devblogs.microsoft.com/oldnewthing/20181108-00/?p=100165
+   *   https://devblogs.microsoft.com/oldnewthing/20181109-00/?p=100175 */
 #define UPB_STRINGIFY_INTERNAL(x) #x
 #define UPB_STRINGIFY(x) UPB_STRINGIFY_INTERNAL(x)
 #define UPB_CONCAT(a, b, c) a##b##c
@@ -624,7 +666,7 @@ Error, UINTPTR_MAX is undefined
 #define UPB_LINKARR_APPEND(name)                      \
   __pragma(section(UPB_LINKARR_NAME(name, $j), read)) \
       __declspec(allocate(UPB_LINKARR_NAME(name, $j)))
-// clang-format off
+  // clang-format off
 #define UPB_LINKARR_DECLARE(name, type)                          \
   __pragma(message(UPB_LINKARR_NAME(name, $j)))                  \
   __pragma(section(UPB_LINKARR_NAME(name, $a), read))            \
@@ -635,15 +677,17 @@ Error, UINTPTR_MAX is undefined
             type __stop_linkarr_##name;                          \
   UPB_LINKARR_APPEND(name)                                       \
   __declspec(selectany) type UPB_linkarr_internal_empty_##name[1] = {0}
-// clang-format on
+  // clang-format on
 #define UPB_LINKARR_START(name) (&__start_linkarr_##name)
 #define UPB_LINKARR_STOP(name) (&__stop_linkarr_##name)
 
 #else
 
-// Linker arrays are not supported on this platform.  Make macros no-ops.
+  // Linker arrays are not supported on this platform.  Make macros no-ops.
 #define UPB_LINKARR_APPEND(name)
-#define UPB_LINKARR_DECLARE(name, type)
+#define UPB_LINKARR_DECLARE(name, type)          \
+  UPB_STATIC_ASSERT(sizeof("__la_" #name) <= 17, \
+                    "Linker array name too long for Mach-O (16-char limit)")
 #define UPB_LINKARR_START(name) (NULL)
 #define UPB_LINKARR_STOP(name) (NULL)
 
@@ -660,11 +704,46 @@ Error, UINTPTR_MAX is undefined
 #define _UPB_CONSTRUCTOR_PLACEHOLDER(unique_name)
 #endif
 
-#if defined(__ELF__) || defined(__wasm__) || defined(__MACH__)
-#define UPB_CONSTRUCTOR(name, unique_name)                                   \
+#define _UPB_STRINGIFY2(x) #x
+#define _UPB_STRINGIFY(x) _UPB_STRINGIFY2(x)
+
+#if defined(__ELF__) && (UPB_GNUC_MIN(15, 1) || UPB_CLANG_MIN(21, 1))
+/*
+ * Workaround for b/456308964 and b/456317163. Although weak constructors
+ * resolve to a single function body, Clang still emits a pointer into
+ * .init_array for every translation unit, causing the constructor to be
+ * executed multiple times and inflating binary size. We wrap the .init_array
+ * entry in a COMDAT group (using inline assembly) to force the linker to
+ * deduplicate the pointer to exactly one instance. %cc is used in preference to
+ * the more widely available %c because %c may under some circumstances still
+ * output a function name including relocation information, which will then
+ * confuse the linker. This was only a problem on gcc; when %cc was introduced
+ * to clang it was just an alias to %c, and clang's %c had already done the
+ * checks that %cc introduced to gcc.
+ * References:
+ * https://github.com/gcc-mirror/gcc/commit/74d6a676034b3ab20c387f12f19f5597e4f1c9fa
+ * https://github.com/llvm/llvm-project/pull/127719#issuecomment-2686276305
+ */
+#define UPB_CONSTRUCTOR(name, unique_name, ...)                             \
+  _UPB_CONSTRUCTOR_PLACEHOLDER(unique_name)                                 \
+  __attribute__((weak, used, visibility("hidden"))) void UPB_PRIVATE(name)( \
+      void) {                                                               \
+    __asm__ volatile(                                                       \
+        ".pushsection .init_array,\"awG\",%%init_array, %cc0, comdat\n"     \
+        ".dc.a %cc0\n"                                                      \
+        ".popsection\n"                                                     \
+        :                                                                   \
+        : "X"(UPB_PRIVATE(name)));                                          \
+    __VA_ARGS__                                                             \
+  }
+#elif defined(__ELF__) || defined(__wasm__) || defined(__MACH__) || \
+    defined(__MINGW32__)
+#define UPB_CONSTRUCTOR(name, unique_name, ...)                              \
   _UPB_CONSTRUCTOR_PLACEHOLDER(unique_name)                                  \
   __attribute__((weak, visibility("hidden"), constructor)) void UPB_PRIVATE( \
-      name)(void)
+      name)(void) {                                                          \
+    __VA_ARGS__                                                              \
+  }
 #elif defined(_MSC_VER)
 /*
  * See: https://stackoverflow.com/questions/1113409
@@ -675,17 +754,22 @@ Error, UINTPTR_MAX is undefined
  * create a dummy exported weak symbol that prevent this stripping.
  */
 #pragma section(".CRT$XCT", read)
-#define UPB_CONSTRUCTOR(name, unique_name)                                   \
+#define UPB_CONSTRUCTOR(name, unique_name, ...)                              \
   static void __cdecl UPB_PRIVATE(name)(void);                               \
   __declspec(allocate(".CRT$XCT"), selectany) void(                          \
       __cdecl * UPB_PRIVATE(name##_))(void) = UPB_PRIVATE(name);             \
   __declspec(selectany, dllexport) void* UPB_PRIVATE(name##_force_linkage) = \
       &UPB_PRIVATE(name##_);                                                 \
-  static void __cdecl UPB_PRIVATE(name)(void)
-
+  static void __cdecl UPB_PRIVATE(name)(void) { __VA_ARGS__ }
 #else
 // No constructor support, nothing we can do except not break builds.
-#define UPB_CONSTRUCTOR(name, unique_name) static void UPB_PRIVATE(name)(void)
+#if defined(__GNUC__) || defined(__clang__)
+#define UPB_CONSTRUCTOR(name, unique_name, ...) \
+  static __attribute__((used)) void UPB_PRIVATE(name)(void) { __VA_ARGS__ }
+#else
+#define UPB_CONSTRUCTOR(name, unique_name, ...) \
+  static void UPB_PRIVATE(name)(void) { __VA_ARGS__ }
+#endif
 #endif
 
 //
@@ -721,11 +805,11 @@ Error, UINTPTR_MAX is undefined
   __asm__(".private_extern _" #to);      \
   __asm__(".set _" #to ", _" #from);
 
-#elif defined(__ELF__)
+#elif defined(__ELF__) || defined(__wasm__)
 
-// On ELF, weak aliases work properly, so we can have all weak MiniTables point
-// to the same empty singleton MiniTable. This reduces code size if many
-// MiniTables are tree shaken.
+  // On ELF, weak aliases work properly, so we can have all weak MiniTables
+  // point to the same empty singleton MiniTable. This reduces code size if many
+  // MiniTables are tree shaken.
 #define UPB_WEAK_SINGLETON_PLACEHOLDER_MINITABLE()               \
   __attribute__((weak))                                          \
   const upb_MiniTable kUpb_WeakSingletonPlaceholderMiniTable = { \
@@ -750,32 +834,5 @@ Error, UINTPTR_MAX is undefined
 #define UPB_WEAK_ALIAS(type, from, to) weak_alias_not_supported_on_this_platform
 #define UPB_STRONG_ALIAS(type, from, to) \
   strong_alias_not_supported_on_this_platform
-#endif
-
-// Future versions of upb will include breaking changes to some APIs.
-// This macro can be set to enable these API changes ahead of time, so that
-// user code can be updated before upgrading versions of protobuf.
-#ifdef UPB_FUTURE_BREAKING_CHANGES
-
-// Removes non-standard clamping behavior in RepeatedContainer.pop()
-// Owner: runze@
-#define UPB_FUTURE_REMOVE_POP_CLAMP 1
-
-// Fix PyProto C++ and upb implementations to return NotImplemented in
-// descriptor container equality checks for unrecognized types.
-// Owner: runze@
-#define UPB_FUTURE_CONTAINER_EQ_RETURNS_NOTIMPLEMENTED 1
-
-// Make GetOptions() return immutable options.
-// Owner: runze@
-#define UPB_FUTURE_FREEZE_OPTIONS 1
-
-#else
-
-#define UPB_FUTURE_REMOVE_POP_CLAMP 0
-
-#define UPB_FUTURE_CONTAINER_EQ_RETURNS_NOTIMPLEMENTED 0
-
-#define UPB_FUTURE_FREEZE_OPTIONS 0
 
 #endif

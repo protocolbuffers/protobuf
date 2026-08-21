@@ -26,19 +26,9 @@ py_dist_module(
 )
 
 py_proto_library(
-    name = "well_known_proto_py_pb2",
+    name = "language_neutral_protos_py_pb2",
     deps = [
-        "//:any_proto",
-        "//:api_proto",
-        "//:descriptor_proto",
-        "//:duration_proto",
-        "//:empty_proto",
-        "//:field_mask_proto",
-        "//:source_context_proto",
-        "//:struct_proto",
-        "//:timestamp_proto",
-        "//:type_proto",
-        "//:wrappers_proto",
+        "//src/google/protobuf:language_neutral_protos",
     ],
 )
 
@@ -244,13 +234,17 @@ selects.config_setting_group(
 )
 
 pkg_files(
-    name = "generated_wkt",
+    name = "generated_bootstrap",
     srcs = [
-        ":well_known_proto_py_pb2",
+        ":language_neutral_protos_py_pb2",
         "//src/google/protobuf:descriptor_upb_c_proto",
         "//src/google/protobuf:descriptor_upb_minitable_proto",
         "//src/google/protobuf:descriptor_upb_reflection_proto",
+        "//src/google/protobuf:json_enumvalue_options_upb_c_proto",
+        "//src/google/protobuf:json_enumvalue_options_upb_minitable_proto",
+        "//src/google/protobuf:json_enumvalue_options_upb_reflection_proto",
         "//upb/reflection:descriptor_upb_proto",
+        "//upb/reflection:json_enumvalue_options_upb_proto",
     ],
     prefix = "google/protobuf",
 )
@@ -309,7 +303,7 @@ pkg_tar(
     srcs = [
         ":dist_source_files",
         ":filegroup_source_files",
-        ":generated_wkt",
+        ":generated_bootstrap",
         ":generated_wkt_compiler",
         ":utf8_range_source_files",
         "//python:python_source_files",
@@ -403,9 +397,9 @@ py_wheel(
     }),
     version = PROTOBUF_PYTHON_VERSION,
     deps = [
+        ":language_neutral_protos_py_pb2",
         ":message_mod",
         ":plugin_py_pb2",
-        ":well_known_proto_py_pb2",
         "//:python_srcs",
     ],
 )
@@ -443,8 +437,8 @@ py_wheel(
     }),
     version = PROTOBUF_PYTHON_VERSION,
     deps = [
+        ":language_neutral_protos_py_pb2",
         ":plugin_py_pb2",
-        ":well_known_proto_py_pb2",
         "//:python_srcs",
     ],
 )

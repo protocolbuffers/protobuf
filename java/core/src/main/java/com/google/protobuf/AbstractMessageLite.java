@@ -316,6 +316,9 @@ public abstract class AbstractMessageLite<
         return false;
       }
       final int size = CodedInputStream.readRawVarint32(firstByte, input);
+      if (size < 0) {
+        throw InvalidProtocolBufferException.negativeSize();
+      }
       final InputStream limitedInput = new LimitedInputStream(input, size);
       mergeFrom(limitedInput, extensionRegistry);
       return true;
@@ -329,11 +332,6 @@ public abstract class AbstractMessageLite<
     @Override
     @SuppressWarnings("unchecked") // isInstance takes care of this
     public BuilderType mergeFrom(final MessageLite other) {
-      if (!getDefaultInstanceForType().getClass().isInstance(other)) {
-        throw new IllegalArgumentException(
-            "mergeFrom(MessageLite) can only merge messages of the same type.");
-      }
-
       return internalMergeFrom((MessageType) other);
     }
 

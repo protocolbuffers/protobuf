@@ -52,7 +52,8 @@ static Py_ssize_t len(ExtensionDict* self) {
       // When using the default descriptor pool, avoid exposing extensions that
       // happened to be linked in from C++ but not imported via Python.  This is
       // for consistency with the pure Python implementation.
-      if (fields[i]->file()->pool() == GetDefaultDescriptorPool()->pool &&
+      if (fields[i]->file()->pool() ==
+              GetDefaultDescriptorPool()->pool->get() &&
           fields[i]->message_type() != nullptr &&
           message_factory::GetMessageClass(
               cmessage::GetFactoryForMessage(self->parent),
@@ -199,6 +200,8 @@ int ass_subscript(ExtensionDict* self, PyObject* key, PyObject* value) {
     return cmessage::ClearFieldByDescriptor(self->parent, descriptor);
   }
 
+  if (cmessage::AssureWritable(self->parent) == nullptr) return -1;
+
   if (descriptor->is_repeated() || descriptor->is_required() ||
       descriptor->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
     PyErr_SetString(PyExc_TypeError,
@@ -206,7 +209,6 @@ int ass_subscript(ExtensionDict* self, PyObject* key, PyObject* value) {
                     "type");
     return -1;
   }
-  cmessage::AssureWritable(self->parent);
   if (cmessage::InternalSetScalar(self->parent, descriptor, value) < 0) {
     return -1;
   }
@@ -237,11 +239,13 @@ PyObject* _FindExtensionByName(ExtensionDict* self, PyObject* arg) {
 
   PyDescriptorPool* pool = cmessage::GetFactoryForMessage(self->parent)->pool;
   const FieldDescriptor* message_extension =
-      pool->pool->FindExtensionByName(absl::string_view(name, name_size));
+      pool->pool->get()->FindExtensionByName(
+          absl::string_view(name, name_size));
   if (message_extension == nullptr) {
     // Is is the name of a message set extension?
     const Descriptor* message_descriptor =
-        pool->pool->FindMessageTypeByName(absl::string_view(name, name_size));
+        pool->pool->get()->FindMessageTypeByName(
+            absl::string_view(name, name_size));
     if (message_descriptor) {
       message_extension = FindMessageSetExtension(message_descriptor);
     }
@@ -260,8 +264,9 @@ PyObject* _FindExtensionByNumber(ExtensionDict* self, PyObject* arg) {
   }
 
   PyDescriptorPool* pool = cmessage::GetFactoryForMessage(self->parent)->pool;
-  const FieldDescriptor* message_extension = pool->pool->FindExtensionByNumber(
-      self->parent->message->GetDescriptor(), number);
+  const FieldDescriptor* message_extension =
+      pool->pool->get()->FindExtensionByNumber(
+          self->parent->message->GetDescriptor(), number);
   if (message_extension == nullptr) {
     Py_RETURN_NONE;
   }
@@ -415,7 +420,7 @@ PyObject* IterNext(PyObject* _self) {
       // happened to be linked in from C++ but not imported via Python.  This is
       // for consistency with the pure Python implementation.
       if (self->fields[index]->file()->pool() ==
-              GetDefaultDescriptorPool()->pool &&
+              GetDefaultDescriptorPool()->pool->get() &&
           self->fields[index]->message_type() != nullptr &&
           message_factory::GetMessageClass(
               cmessage::GetFactoryForMessage(self->extension_dict->parent),

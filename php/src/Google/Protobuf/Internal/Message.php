@@ -754,12 +754,14 @@ class Message
      * specified message.
      *
      * @param string $data Binary protobuf data.
+     * @param int $recursion_limit Maximum message nesting depth allowed while
+     *     parsing. Defaults to 100.
      * @return null
      * @throws \Exception Invalid data.
      */
-    public function mergeFromString($data)
+    public function mergeFromString($data, $recursion_limit = CodedInputStream::DEFAULT_RECURSION_LIMIT)
     {
-        $input = new CodedInputStream($data);
+        $input = new CodedInputStream($data, $recursion_limit);
         $this->parseFromStream($input);
     }
 
@@ -863,9 +865,10 @@ class Message
                 if (is_integer($value)) {
                     return $value;
                 }
-                $enum_value = $field->getEnumType()->getValueByName($value);
-                if (!is_null($enum_value)) {
-                    return $enum_value->getNumber();
+                $enum_desc = $field->getEnumType();
+                $enum_value_desc = $enum_desc->getValueByJsonName($value);
+                if (!is_null($enum_value_desc)) {
+                    return $enum_value_desc->getNumber();
                 } else if ($ignore_unknown) {
                     return $this->defaultValue($field);
                 } else {
@@ -1270,7 +1273,7 @@ class Message
                     if ($value_field->getType() == GPBType::ENUM &&
                         is_string($tmp_value) &&
                         is_null(
-                          $value_field->getEnumType()->getValueByName($tmp_value)
+                          $value_field->getEnumType()->getValueByJsonName($tmp_value)
                         ) &&
                         $ignore_unknown) {
                         continue;
@@ -1296,7 +1299,7 @@ class Message
                     // ignored if ignore_unknown is set.
                     if ($field->getType() == GPBType::ENUM &&
                         is_string($tmp) &&
-                        is_null($field->getEnumType()->getValueByName($tmp)) &&
+                        is_null($field->getEnumType()->getValueByJsonName($tmp)) &&
                         $ignore_unknown) {
                         continue;
                     }
@@ -1567,9 +1570,15 @@ class Message
 
     /**
      * Serialize the message to string.
+     * @param int $recursion_limit Accepted for API parity with the C extension
+     *     (and with mergeFromString). The pure-PHP encoder (CodedOutputStream)
+     *     does not enforce a recursion-depth guard, so this argument has no
+     *     effect here and deep messages always serialize successfully. The C
+     *     extension does enforce it and throws "Max nesting exceeded" past the
+     *     limit. Defaults to 100.
      * @return string Serialized binary protobuf data.
      */
-    public function serializeToString()
+    public function serializeToString($recursion_limit = CodedInputStream::DEFAULT_RECURSION_LIMIT)
     {
         $output = new CodedOutputStream($this->byteSize());
         $this->serializeToStream($output);
@@ -1766,8 +1775,11 @@ class Message
                 } else {
                     $enum_value_desc = $enum_desc->getValueByNumber($value);
                     if (!is_null($enum_value_desc)) {
-                        $size += 2;  // size for ""
-                        $size += strlen($enum_value_desc->getName());
+                        $name = GPBJsonWire::formatEnumValueName($enum_value_desc);
+                        $encoded = json_encode(
+                            $name,
+                            JSON_UNESCAPED_UNICODE);
+                        $size += strlen($encoded);
                     } else {
                         $str_value = strval($value);
                         $size += strlen($str_value);

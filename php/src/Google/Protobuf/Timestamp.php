@@ -118,7 +118,8 @@ class Timestamp extends \Google\Protobuf\Internal\TimestampBase
      *           inclusive.
      * }
      */
-    public function __construct($data = NULL) {
+    public function __construct($data = null)
+    {
         \GPBMetadata\Google\Protobuf\Timestamp::initOnce();
         parent::__construct($data);
     }

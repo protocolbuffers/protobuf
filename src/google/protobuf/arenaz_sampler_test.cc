@@ -81,7 +81,7 @@ namespace {
 TEST(ThreadSafeArenaStatsTest, PrepareForSampling) {
   ThreadSafeArenaStats info;
   constexpr int64_t kTestStride = 107;
-  absl::MutexLock l(&info.init_mu);
+  absl::MutexLock l(info.init_mu);
   info.PrepareForSampling(kTestStride);
 
   for (const auto& block_stats : info.block_histogram) {

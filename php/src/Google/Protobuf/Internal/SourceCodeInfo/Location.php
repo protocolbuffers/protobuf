@@ -38,6 +38,35 @@ class Location extends \Google\Protobuf\Internal\Message
      *   [ 4, 3, 2, 7 ]
      * this path refers to the whole field declaration (from the beginning
      * of the label to the terminating semicolon).
+     * For options, the path refers to the interpreted option in the descriptor.
+     * E.g., for a custom option `(my_opt) = "foo"` on a message using extension
+     * number 10101, the path is:
+     *   [ 4, 3, 7, 10101 ]
+     * refers to:
+     *   file.message_type(3)     // 4, 3
+     *       .options()           // 7
+     *       .my_opt()            // 10101
+     * Sub-locations corresponding to the interpreted option's corresponding
+     * `UninterpretedOption` are also appended to the interpreted option, which
+     * deviates from the actual FileDescriptorProto path. E.g.:
+     *   [ 4, 3, 7, 10101, 2 ]
+     * refers to the option name `(my_opt)`, and:
+     *   [ 4, 3, 7, 10101, 7 ]
+     * refers to the "foo" string value of the option.
+     * For complex options (e.g., "(my_opt) = {a: 100}"), the path
+     * will include UninterpretedOption.aggregate_value (field number 8) as a
+     * marker for each level of nesting.
+     * For example, given:
+     *   option (my_opt) = {a: 100};
+     * The path for the `a` identifier would look like:
+     *   [ 4, 3, 7, 10101, 8, 1, 2 ]
+     * And for the value 100:
+     *   [ 4, 3, 7, 10101, 8, 1, 4 ]
+     * Where:
+     *   8: UninterpretedOption.aggregate_value marker
+     *   1: The field number of "a" inside "my_opt"
+     *   2: UninterpretedOption.name
+     *   4: UninterpretedOption.positive_int_value
      *
      * Generated from protobuf field <code>repeated int32 path = 1 [packed = true];</code>
      */
@@ -130,6 +159,35 @@ class Location extends \Google\Protobuf\Internal\Message
      *             [ 4, 3, 2, 7 ]
      *           this path refers to the whole field declaration (from the beginning
      *           of the label to the terminating semicolon).
+     *           For options, the path refers to the interpreted option in the descriptor.
+     *           E.g., for a custom option `(my_opt) = "foo"` on a message using extension
+     *           number 10101, the path is:
+     *             [ 4, 3, 7, 10101 ]
+     *           refers to:
+     *             file.message_type(3)     // 4, 3
+     *                 .options()           // 7
+     *                 .my_opt()            // 10101
+     *           Sub-locations corresponding to the interpreted option's corresponding
+     *           `UninterpretedOption` are also appended to the interpreted option, which
+     *           deviates from the actual FileDescriptorProto path. E.g.:
+     *             [ 4, 3, 7, 10101, 2 ]
+     *           refers to the option name `(my_opt)`, and:
+     *             [ 4, 3, 7, 10101, 7 ]
+     *           refers to the "foo" string value of the option.
+     *           For complex options (e.g., "(my_opt) = {a: 100}"), the path
+     *           will include UninterpretedOption.aggregate_value (field number 8) as a
+     *           marker for each level of nesting.
+     *           For example, given:
+     *             option (my_opt) = {a: 100};
+     *           The path for the `a` identifier would look like:
+     *             [ 4, 3, 7, 10101, 8, 1, 2 ]
+     *           And for the value 100:
+     *             [ 4, 3, 7, 10101, 8, 1, 4 ]
+     *           Where:
+     *             8: UninterpretedOption.aggregate_value marker
+     *             1: The field number of "a" inside "my_opt"
+     *             2: UninterpretedOption.name
+     *             4: UninterpretedOption.positive_int_value
      *     @type int[] $span
      *           Always has exactly three or four elements: start line, start column,
      *           end line (optional, otherwise assumed same as start line), end column.
@@ -177,7 +235,8 @@ class Location extends \Google\Protobuf\Internal\Message
      *     @type string[] $leading_detached_comments
      * }
      */
-    public function __construct($data = NULL) {
+    public function __construct($data = null)
+    {
         \GPBMetadata\Google\Protobuf\Internal\Descriptor::initOnce();
         parent::__construct($data);
     }
@@ -204,6 +263,35 @@ class Location extends \Google\Protobuf\Internal\Message
      *   [ 4, 3, 2, 7 ]
      * this path refers to the whole field declaration (from the beginning
      * of the label to the terminating semicolon).
+     * For options, the path refers to the interpreted option in the descriptor.
+     * E.g., for a custom option `(my_opt) = "foo"` on a message using extension
+     * number 10101, the path is:
+     *   [ 4, 3, 7, 10101 ]
+     * refers to:
+     *   file.message_type(3)     // 4, 3
+     *       .options()           // 7
+     *       .my_opt()            // 10101
+     * Sub-locations corresponding to the interpreted option's corresponding
+     * `UninterpretedOption` are also appended to the interpreted option, which
+     * deviates from the actual FileDescriptorProto path. E.g.:
+     *   [ 4, 3, 7, 10101, 2 ]
+     * refers to the option name `(my_opt)`, and:
+     *   [ 4, 3, 7, 10101, 7 ]
+     * refers to the "foo" string value of the option.
+     * For complex options (e.g., "(my_opt) = {a: 100}"), the path
+     * will include UninterpretedOption.aggregate_value (field number 8) as a
+     * marker for each level of nesting.
+     * For example, given:
+     *   option (my_opt) = {a: 100};
+     * The path for the `a` identifier would look like:
+     *   [ 4, 3, 7, 10101, 8, 1, 2 ]
+     * And for the value 100:
+     *   [ 4, 3, 7, 10101, 8, 1, 4 ]
+     * Where:
+     *   8: UninterpretedOption.aggregate_value marker
+     *   1: The field number of "a" inside "my_opt"
+     *   2: UninterpretedOption.name
+     *   4: UninterpretedOption.positive_int_value
      *
      * Generated from protobuf field <code>repeated int32 path = 1 [packed = true];</code>
      * @return RepeatedField<int>
@@ -235,6 +323,35 @@ class Location extends \Google\Protobuf\Internal\Message
      *   [ 4, 3, 2, 7 ]
      * this path refers to the whole field declaration (from the beginning
      * of the label to the terminating semicolon).
+     * For options, the path refers to the interpreted option in the descriptor.
+     * E.g., for a custom option `(my_opt) = "foo"` on a message using extension
+     * number 10101, the path is:
+     *   [ 4, 3, 7, 10101 ]
+     * refers to:
+     *   file.message_type(3)     // 4, 3
+     *       .options()           // 7
+     *       .my_opt()            // 10101
+     * Sub-locations corresponding to the interpreted option's corresponding
+     * `UninterpretedOption` are also appended to the interpreted option, which
+     * deviates from the actual FileDescriptorProto path. E.g.:
+     *   [ 4, 3, 7, 10101, 2 ]
+     * refers to the option name `(my_opt)`, and:
+     *   [ 4, 3, 7, 10101, 7 ]
+     * refers to the "foo" string value of the option.
+     * For complex options (e.g., "(my_opt) = {a: 100}"), the path
+     * will include UninterpretedOption.aggregate_value (field number 8) as a
+     * marker for each level of nesting.
+     * For example, given:
+     *   option (my_opt) = {a: 100};
+     * The path for the `a` identifier would look like:
+     *   [ 4, 3, 7, 10101, 8, 1, 2 ]
+     * And for the value 100:
+     *   [ 4, 3, 7, 10101, 8, 1, 4 ]
+     * Where:
+     *   8: UninterpretedOption.aggregate_value marker
+     *   1: The field number of "a" inside "my_opt"
+     *   2: UninterpretedOption.name
+     *   4: UninterpretedOption.positive_int_value
      *
      * Generated from protobuf field <code>repeated int32 path = 1 [packed = true];</code>
      * @param int[] $var

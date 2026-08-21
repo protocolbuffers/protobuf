@@ -319,14 +319,23 @@ void EnumGenerator::GenerateSymbolImports(io::Printer* p) const {
 
   for (int j = 0; j < enum_->value_count(); ++j) {
     const auto* value = enum_->value(j);
+    const bool deprecated = value->options().deprecated();
     p->Emit(
         {
             Sub("VALUE", EnumValueName(enum_->value(j))).AnnotatedAs(value),
-            {"DEPRECATED",
-             value->options().deprecated() ? "[[deprecated]]" : ""},
+            {"DEPRECATED", deprecated ? "[[deprecated]]" : ""},
+            // The alias initializer references the deprecated enumerator, so
+            // wrap it to avoid triggering -Wdeprecated-declarations in code the
+            // user does not control. See protocolbuffers/protobuf#18205.
+            {"IGNORE_DEPRECATION_START",
+             deprecated ? "PROTOBUF_IGNORE_DEPRECATION_START" : ""},
+            {"IGNORE_DEPRECATION_STOP",
+             deprecated ? "PROTOBUF_IGNORE_DEPRECATION_STOP" : ""},
         },
         R"cc(
+          $IGNORE_DEPRECATION_START$
           $DEPRECATED $static constexpr $Enum_$ $VALUE$ = $Msg_Enum$_$VALUE$;
+          $IGNORE_DEPRECATION_STOP$
         )cc");
   }
 

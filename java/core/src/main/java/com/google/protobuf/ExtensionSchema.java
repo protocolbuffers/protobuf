@@ -10,7 +10,14 @@ package com.google.protobuf;
 import java.io.IOException;
 import java.util.Map;
 
+/**
+ * This class is for Lite runtime use only.
+ *
+ * <p>For details on what this means regarding performance and security characteristics, see {@link
+ * ForLiteOnly}.
+ */
 @CheckReturnValue
+@ForLiteOnly
 abstract class ExtensionSchema<T extends FieldSet.FieldDescriptorLite<T>> {
 
   /** Returns true for messages that support extensions. */
@@ -38,7 +45,7 @@ abstract class ExtensionSchema<T extends FieldSet.FieldDescriptorLite<T>> {
    */
   abstract <UT, UB> UB parseExtension(
       Object containerMessage,
-      Reader reader,
+      CodedInputStreamReader reader,
       Object extension,
       ExtensionRegistryLite extensionRegistry,
       FieldSet<T> extensions,
@@ -50,7 +57,8 @@ abstract class ExtensionSchema<T extends FieldSet.FieldDescriptorLite<T>> {
   abstract int extensionNumber(Map.Entry<?, ?> extension);
 
   /** Serializes one extension entry. */
-  abstract void serializeExtension(Writer writer, Map.Entry<?, ?> extension) throws IOException;
+  abstract void serializeExtension(CodedOutputStreamWriter writer, Map.Entry<?, ?> extension)
+      throws IOException;
 
   /** Finds an extension by field number. */
   abstract Object findExtensionByNumber(
@@ -58,18 +66,19 @@ abstract class ExtensionSchema<T extends FieldSet.FieldDescriptorLite<T>> {
 
   /** Parses a length-prefixed MessageSet item from the reader. */
   abstract void parseLengthPrefixedMessageSetItem(
-      Reader reader,
+      CodedInputStreamReader reader,
       Object extension,
       ExtensionRegistryLite extensionRegistry,
       FieldSet<T> extensions)
       throws IOException;
 
   /**
-   * Parses the entire content of a {@link ByteString} as one MessageSet item. Unlike {@link
-   * #parseLengthPrefixedMessageSetItem}, there isn't a length-prefix.
+   * Parses the entire content of a {@link CodedInputStream} that wraps a {@link ByteString} as one
+   * MessageSet item. Unlike {@link #parseLengthPrefixedMessageSetItem}, there isn't a
+   * length-prefix.
    */
   abstract void parseMessageSetItem(
-      ByteString data,
+      CodedInputStream input,
       Object extension,
       ExtensionRegistryLite extensionRegistry,
       FieldSet<T> extensions)

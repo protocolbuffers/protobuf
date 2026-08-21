@@ -155,6 +155,7 @@ def _run_osgi_wrapper(ctx, input_jar, classpath_jars, output_jar):
     args.add_joined("--import_package", ctx.attr.import_package, join_with = ",")
 
     ctx.actions.run(
+        mnemonic = "RunOsgiWrapper",
         inputs = [input_jar] + classpath_jars,
         executable = ctx.executable._osgi_wrapper_exe,
         arguments = [args],

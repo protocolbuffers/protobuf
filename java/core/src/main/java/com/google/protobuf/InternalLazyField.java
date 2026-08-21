@@ -19,6 +19,7 @@ import java.util.Map.Entry;
  * changed; 2) value and bytes cannot be null at the same time; 3) If corrupted is true, value must
  * be null.
  */
+@SuppressWarnings("PatternMatchingInstanceof")
 class InternalLazyField {
 
   // Each lazy field must have a default instance of the message type, which is used to parse the
@@ -132,12 +133,8 @@ class InternalLazyField {
    * @throws InvalidProtobufRuntimeException if either lazy field is corrupted and cannot be merged
    *     with a different extension registry.
    */
+  @SuppressWarnings("ReferenceEquality") // Compare singletons.
   static InternalLazyField mergeFrom(InternalLazyField self, InternalLazyField other) {
-    if (self.defaultInstance != other.defaultInstance) {
-      throw new IllegalArgumentException(
-          "LazyFields with different default instances cannot be merged.");
-    }
-
     // If either InternalLazyField is empty, return the other InternalLazyField.
     if (self.isEmpty()) {
       return other;
@@ -148,7 +145,10 @@ class InternalLazyField {
 
     // Fast path: concatenate the bytes if both LazyFields contain bytes and have the same extension
     // registry, even if one or both are corrupted.
-    if (self.hasBytes() && other.hasBytes() && self.extensionRegistry == other.extensionRegistry) {
+    if (self.hasBytes()
+        && other.hasBytes()
+        && self.extensionRegistry == other.extensionRegistry
+        && self.defaultInstance == other.defaultInstance) {
       return new InternalLazyField(
           self.defaultInstance, self.extensionRegistry, self.bytes.concat(other.bytes));
     }
@@ -280,7 +280,7 @@ class InternalLazyField {
         + computeSize(WireFormat.MESSAGE_SET_MESSAGE);
   }
 
-  void writeTo(Writer writer, int fieldNumber) throws IOException {
+  void writeTo(CodedOutputStreamWriter writer, int fieldNumber) throws IOException {
     if (bytes != null) {
       writer.writeBytes(fieldNumber, bytes);
     } else {
@@ -296,6 +296,22 @@ class InternalLazyField {
   @Override
   public boolean equals(
           Object obj) {
+    if (obj == null) {
+      return false;
+    }
+    if (this == obj) {
+      return true;
+    }
+    if (obj instanceof InternalLazyField) {
+      InternalLazyField other = (InternalLazyField) obj;
+      if (this.bytes != null
+          && other.bytes != null
+          && this.extensionRegistry == other.extensionRegistry
+          && this.bytes.equals(other.bytes)) {
+        return true;
+      }
+      return this.getValue().equals(other.getValue());
+    }
     return getValue().equals(obj);
   }
 
@@ -335,7 +351,6 @@ class InternalLazyField {
     }
 
     @Override
-    @SuppressWarnings("PatternMatchingInstanceof")
     public Object setValue(Object value) {
       if (!(value instanceof MessageLite)) {
         throw new IllegalArgumentException("Lazy field only supports MessageLite values.");

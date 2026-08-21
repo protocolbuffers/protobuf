@@ -9,6 +9,7 @@
 #define UPB_MESSAGE_INTERNAL_EXTENSION_H_
 
 #include <stddef.h>
+#include <stdint.h>
 
 #include "upb/mem/arena.h"
 #include "upb/message/internal/array.h"
@@ -29,7 +30,7 @@
 // This is rather wasteful for scalars (in the extreme case of bool,
 // it wastes 15 bytes). We accept this because we expect messages to be
 // the most common extension type.
-typedef struct {
+typedef struct upb_Extension {
   const upb_MiniTableExtension* ext;
   upb_MessageValue data;
 } upb_Extension;
@@ -38,12 +39,26 @@ typedef struct {
 extern "C" {
 #endif
 
+UPB_NODISCARD upb_Extension* UPB_PRIVATE(
+    _upb_Message_GetOrCreateExtensionWithTag)(struct upb_Message* msg,
+                                              const upb_MiniTableExtension* ext,
+                                              upb_Arena* arena,
+                                              upb_TaggedAuxType tag);
+
 // Adds the given extension data to the given message.
 // |ext| is copied into the message instance.
 // This logically replaces any previously-added extension with this number.
 UPB_NODISCARD upb_Extension* UPB_PRIVATE(_upb_Message_GetOrCreateExtension)(
     struct upb_Message* msg, const upb_MiniTableExtension* ext,
     upb_Arena* arena);
+
+// Adds the given non-canonical extension data to the given message.
+// |ext| is copied into the message instance.
+// This logically replaces any previously-added extension with this number.
+UPB_NODISCARD upb_Extension* UPB_PRIVATE(
+    _upb_Message_CreateNonCanonicalExtension)(struct upb_Message* msg,
+                                              const upb_MiniTableExtension* ext,
+                                              upb_Arena* arena);
 
 // Returns an extension for a message with a given mini table,
 // or NULL if no extension exists with this mini table.

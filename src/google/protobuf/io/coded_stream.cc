@@ -282,13 +282,7 @@ bool CodedInputStream::ReadStringFallback(std::string* buffer, int size) {
     buffer->clear();
   }
 
-  int closest_limit = std::min(current_limit_, total_bytes_limit_);
-  if (closest_limit != INT_MAX) {
-    int bytes_to_limit = closest_limit - CurrentPosition();
-    if (bytes_to_limit > 0 && size > 0 && size <= bytes_to_limit) {
-      buffer->reserve(size);
-    }
-  }
+  buffer->reserve(std::min(BufferSize(), size));
 
   int current_buffer_size;
   while ((current_buffer_size = BufferSize()) < size) {
@@ -734,7 +728,10 @@ bool CodedInputStream::Refresh() {
 // CodedOutputStream =================================================
 
 void EpsCopyOutputStream::EnableAliasing(bool enabled) {
-  aliasing_enabled_ = enabled && stream_->AllowsAliasing();
+  // stream_ is nullptr when using the array-only constructor; aliasing is
+  // not applicable in that mode, so treat it as a no-op.
+  aliasing_enabled_ =
+      enabled && stream_ != nullptr && stream_->AllowsAliasing();
 }
 
 int64_t EpsCopyOutputStream::ByteCount(uint8_t* ptr) const {

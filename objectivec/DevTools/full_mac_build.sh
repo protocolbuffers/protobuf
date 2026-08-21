@@ -28,8 +28,10 @@ OPTIONS:
    -c, --clean
          Issue a clean before the normal build.
    --full-build
-         By default only protoc is built within protobuf, this option will
-         enable a full build/test of the entire protobuf project.
+         By default only protoc & the conformance test runner are built within protobuf,
+         this option will enable a full build/test of the entire protobuf project.
+   --skip-conformance-runner
+         Skip building the conformance runner (when not doing a --full-build)
    --skip-xcode
          Skip the invoke of Xcode to test the runtime on both iOS and OS X.
    --skip-xcode-ios
@@ -78,6 +80,7 @@ DO_XCODE_TVOS_TESTS=yes
 DO_XCODE_DEBUG=yes
 DO_XCODE_RELEASE=yes
 DO_OBJC_CONFORMANCE_TESTS=yes
+DO_BUILD_CONFORMANCE_RUNNER=yes
 XCODE_QUIET=no
 while [[ $# != 0 ]]; do
   case "${1}" in
@@ -113,6 +116,9 @@ while [[ $# != 0 ]]; do
       ;;
     --skip-objc-conformance )
       DO_OBJC_CONFORMANCE_TESTS=no
+      ;;
+    --skip-conformance-runner )
+      DO_BUILD_CONFORMANCE_RUNNER=no
       ;;
     --skip-xcpretty )
       XCODEBUILD=xcodebuild
@@ -184,6 +190,9 @@ fi
 if [[ "${FULL_BUILD}" == "yes" ]] ; then
   header "Build/Test: everything"
   ${BazelBin} test //:protoc //:protobuf //src/... $BazelFlags
+elif [[ "${DO_BUILD_CONFORMANCE_RUNNER}" == "yes" ]] ; then
+  header "Building: protoc & conformance_test_runner"
+  ${BazelBin} build //:protoc //conformance:conformance_test_runner $BazelFlags
 else
   header "Building: protoc"
   ${BazelBin} build //:protoc $BazelFlags
@@ -222,6 +231,11 @@ if [[ "${DO_XCODE_IOS_TESTS}" == "yes" ]] ; then
     15.* | 16.*)
       XCODEBUILD_TEST_BASE_IOS+=(
           -destination "platform=iOS Simulator,name=iPhone 15,OS=latest"
+      )
+      ;;
+    26.*)
+      XCODEBUILD_TEST_BASE_IOS+=(
+          -destination "platform=iOS Simulator,name=iPhone 17,OS=latest"
       )
       ;;
     * )
@@ -284,7 +298,7 @@ if [[ "${DO_XCODE_TVOS_TESTS}" == "yes" ]] ; then
         -destination "platform=tvOS Simulator,name=Apple TV 4K (2nd generation),OS=latest"
       )
       ;;
-    15.* | 16.*)
+    15.* | 16.* | 26.*)
       XCODEBUILD_TEST_BASE_TVOS+=(
         -destination "platform=tvOS Simulator,name=Apple TV 4K (3rd generation),OS=latest"
       )

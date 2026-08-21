@@ -192,9 +192,6 @@ std::string QualifiedMsgGlobalsInstanceName(const Descriptor* descriptor,
 std::string QualifiedMsgGlobalsInstancePtr(const Descriptor* descriptor,
                                            const Options& options);
 
-// Name of the ClassData subclass used for a message.
-std::string ClassDataType(const Descriptor* descriptor, const Options& options);
-
 // DescriptorTable variable name.
 std::string DescriptorTableName(const FileDescriptor* file,
                                 const Options& options);
@@ -202,10 +199,6 @@ std::string DescriptorTableName(const FileDescriptor* file,
 // When declaring symbol externs from another file, this macro will supply the
 // dllexport needed for the target file, if any.
 std::string FileDllExport(const FileDescriptor* file, const Options& options);
-
-// Name of the base class: google::protobuf::Message or google::protobuf::MessageLite.
-std::string SuperClassName(const Descriptor* descriptor,
-                           const Options& options);
 
 // Add an underscore if necessary to prevent conflicting with known names and
 // keywords.
@@ -766,13 +759,9 @@ void ListAllFields(const FileDescriptor* d,
 // optimizer.
 bool IsLayoutOptimized(const FieldDescriptor* field, const Options& options);
 
-// Collects all fields from the given descriptor, excluding weak fields and
-// fields in oneofs.
-//
-// Returns the number of weak fields.
-int CollectFieldsExcludingWeakAndOneof(
-    const Descriptor* d, const Options& options,
-    std::vector<const FieldDescriptor*>& fields);
+// Collects all fields from the given descriptor, excluding fields in oneofs.
+void CollectFieldsExcludingOneof(const Descriptor* d, const Options& options,
+                                 std::vector<const FieldDescriptor*>& fields);
 
 template <bool do_nested_types, class T>
 void ForEachField(const Descriptor* d, T&& func) {
@@ -862,34 +851,11 @@ bool UsingImplicitWeakDescriptor(const FileDescriptor* file,
 std::string StrongReferenceToType(const Descriptor* desc,
                                   const Options& options);
 
-// Generates the section name to be used for a data object when using implicit
-// weak descriptors. The prefix determines the kind of object and the section it
-// will be merged into afterwards.
-// See `UsingImplicitWeakDescriptor` above.
-std::string WeakDescriptorDataSection(absl::string_view prefix,
-                                      const Descriptor* descriptor,
-                                      int index_in_file_messages,
-                                      const Options& options);
-
 // Section name to be used for the default instance for implicit weak descriptor
 // objects. See `UsingImplicitWeakDescriptor` above.
-inline std::string WeakDefaultInstanceSection(const Descriptor* descriptor,
-                                              int index_in_file_messages,
-                                              const Options& options) {
-#ifdef PROTOBUF_MESSAGE_GLOBALS
-  std::string prefix = !IsProfileDriven(options)               ? "def"
-                       : IsPresentMessage(descriptor, options) ? "gh"
-                                                               : "gl";
-#else
-  std::string prefix = "def";
-#endif
-  // TODO: b/474609573 - Remove WeakDescriptorDataSection() once
-  // PROTOBUF_MESSAGE_GLOBALS becomes the default. Note that section assignment
-  // is nuanced to maximize the spatial locality and to support weak descriptor
-  // GC. The status quo is vulnerable to suboptimal prefix.
-  return WeakDescriptorDataSection(prefix, descriptor, index_in_file_messages,
-                                   options);
-}
+std::string WeakDefaultInstanceSection(const Descriptor* descriptor,
+                                       int index_in_file_messages,
+                                       const Options& options);
 
 // Indicates whether we should use implicit weak fields for this file.
 bool UsingImplicitWeakFields(const FileDescriptor* file,
@@ -1027,8 +993,7 @@ class PROTOC_EXPORT Formatter {
 
   // Convenience overloads to accept different types as arguments.
   static std::string ToString(absl::string_view s) { return std::string(s); }
-  template <typename I, typename = typename std::enable_if<
-                            std::is_integral<I>::value>::type>
+  template <typename I, typename = std::enable_if_t<std::is_integral_v<I>>>
   static std::string ToString(I x) {
     return absl::StrCat(x);
   }

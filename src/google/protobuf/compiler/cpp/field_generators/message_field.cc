@@ -129,12 +129,12 @@ class SingularMessage : public FieldGeneratorBase {
   }
 
   void GenerateMemberCopyConstructor(io::Printer* p) const override {
-    p->Emit("$name$_{$superclass$::CopyConstruct(arena, *from.$name$_)}");
+    p->Emit("$name$_{Super_::CopyConstruct(arena, *from.$name$_)}");
   }
 
   void GenerateOneofCopyConstruct(io::Printer* p) const override {
     p->Emit(R"cc(
-      $field_$ = $superclass$::CopyConstruct(arena, *from.$field_$);
+      $field_$ = Super_::CopyConstruct(arena, *from.$field_$);
     )cc");
   }
 
@@ -260,7 +260,7 @@ void SingularMessage::GenerateInlineAccessorDefinitions(io::Printer* p) const {
       $TsanDetectConcurrentMutation$;
       $StrongRef$;
       if ($field_$ == nullptr) {
-        auto* p = $superclass$::DefaultConstruct<$Submsg$>(GetArena());
+        auto* p = Super_::DefaultConstruct<$Submsg$>(GetArena());
         $field_$ = reinterpret_cast<$MemberType$*>(p);
       }
       return $cast_field_$;
@@ -318,8 +318,8 @@ void SingularMessage::GenerateMessageClearingCode(io::Printer* p) const {
   ABSL_CHECK(has_hasbit_);
   p->Emit(
       R"cc(
-        $DCHK$($field_$ != nullptr);
-        $field_$->Clear();
+        $DCHK$(this_.$field_$ != nullptr);
+        this_.$field_$->Clear();
       )cc");
 }
 
@@ -355,7 +355,7 @@ void SingularMessage::GenerateMergingCode(io::Printer* p) const {
     p->Emit(R"cc(
       $DCHK$(from.$field_$ != nullptr);
       if (_this->$field_$ == nullptr) {
-        _this->$field_$ = $superclass$::CopyConstruct(arena, *from.$field_$);
+        _this->$field_$ = Super_::CopyConstruct(arena, *from.$field_$);
       } else {
         _this->$field_$->MergeFrom(*from.$field_$);
       }
@@ -364,7 +364,9 @@ void SingularMessage::GenerateMergingCode(io::Printer* p) const {
 }
 
 void SingularMessage::GenerateSwappingCode(io::Printer* p) const {
-  p->Emit("swap($field_$, other->$field_$);\n");
+  p->Emit(R"cc(
+    swap(this_.$field_$, other->$field_$);
+  )cc");
 }
 
 void SingularMessage::GenerateDestructorCode(io::Printer* p) const {
@@ -383,7 +385,7 @@ void SingularMessage::GenerateCopyConstructorCode(io::Printer* p) const {
   ABSL_CHECK(has_hasbit_);
   p->Emit(R"cc(
     if (CheckHasBit(from.$has_bits_array$, $has_mask$)) {
-      _this->$field_$ = $superclass$::CopyConstruct(arena, *from.$field_$);
+      _this->$field_$ = Super_::CopyConstruct(arena, *from.$field_$);
     }
   )cc");
 }
@@ -501,7 +503,6 @@ class OneofMessage : public SingularMessage {
   void GenerateInlineAccessorDefinitions(io::Printer* p) const override;
   void GenerateNonInlineAccessorDefinitions(io::Printer* p) const override;
   void GenerateClearingCode(io::Printer* p) const override;
-  void GenerateMessageClearingCode(io::Printer* p) const override;
   void GenerateSwappingCode(io::Printer* p) const override;
   void GenerateDestructorCode(io::Printer* p) const override;
   void GenerateCopyConstructorCode(io::Printer* p) const override;
@@ -610,8 +611,7 @@ void OneofMessage::GenerateInlineAccessorDefinitions(io::Printer* p) const {
       if ($not_has_field$) {
         clear_$oneof_name$();
         set_has_$name_internal$();
-        $field_$ = $cast_to_field$(
-            $superclass$::DefaultConstruct<$Submsg$>(GetArena()));
+        $field_$ = $cast_to_field$(Super_::DefaultConstruct<$Submsg$>(GetArena()));
       }
       return $cast_field_$;
     }
@@ -652,10 +652,6 @@ void OneofMessage::GenerateClearingCode(io::Printer* p) const {
           )cc");
 }
 
-void OneofMessage::GenerateMessageClearingCode(io::Printer* p) const {
-  GenerateClearingCode(p);
-}
-
 void OneofMessage::GenerateSwappingCode(io::Printer* p) const {
   // Don't print any swapping code. Swapping the union will swap this field.
 }
@@ -669,7 +665,7 @@ void OneofMessage::GenerateCopyConstructorCode(io::Printer* p) const {
   ABSL_CHECK(!has_hasbit_);
   p->Emit(R"cc(
     if (from._internal_has_$name$()) {
-      _this->$field_$ = $superclass$::CopyConstruct(arena, *from.$field_$);
+      _this->$field_$ = Super_::CopyConstruct(arena, *from.$field_$);
     }
   )cc");
 }
@@ -692,7 +688,7 @@ void OneofMessage::GenerateMergingCode(io::Printer* p) const {
                 : "MergeFrom"}},
           R"cc(
             if (oneof_needs_init) {
-              _this->$field_$ = $superclass$::CopyConstruct(arena, *from.$field_$);
+              _this->$field_$ = Super_::CopyConstruct(arena, *from.$field_$);
             } else {
               _this->$field_$->$merge$(*from.$field_$);
             }
@@ -726,6 +722,7 @@ class RepeatedMessage : public FieldGeneratorBase {
   void GenerateAccessorDeclarations(io::Printer* p) const override;
   void GenerateInlineAccessorDefinitions(io::Printer* p) const override;
   void GenerateClearingCode(io::Printer* p) const override;
+  void GenerateMessageClearingCode(io::Printer* p) const override;
   void GenerateMergingCode(io::Printer* p) const override;
   void GenerateSwappingCode(io::Printer* p) const override;
   void GenerateCopyConstructorCode(io::Printer* p) const override;
@@ -915,8 +912,9 @@ void RepeatedMessage::GenerateInlineAccessorDefinitions(io::Printer* p) const {
         $TsanDetectConcurrentRead$;
         $PrepareSplitMessageForWrite$;
         if ($field_$.IsDefault()) {
-          $field_$.Set($superclass$::DefaultConstruct<
-                       $pb$::$Weak$RepeatedPtrField<$Submsg$>>(GetArena()));
+          $field_$.Set(
+              Super_::DefaultConstruct<$pb$::$Weak$RepeatedPtrField<$Submsg$>>(
+                  GetArena()));
         }
         return $field_$.Get();
       }
@@ -946,6 +944,14 @@ void RepeatedMessage::GenerateInlineAccessorDefinitions(io::Printer* p) const {
         return &_internal_mutable_weak_$name_internal$()->weak;
       }
     )cc");
+  }
+}
+
+void RepeatedMessage::GenerateMessageClearingCode(io::Printer* p) const {
+  if (should_split()) {
+    p->Emit("this_.$field_$.ClearIfNotDefault();\n");
+  } else {
+    p->Emit("this_.$field_$.Clear();\n");
   }
 }
 
@@ -981,7 +987,7 @@ void RepeatedMessage::GenerateMergingCode(io::Printer* p) const {
 void RepeatedMessage::GenerateSwappingCode(io::Printer* p) const {
   ABSL_CHECK(!should_split());
   p->Emit(R"cc(
-    $field_$.InternalSwap(&other->$field_$);
+    this_.$field_$.InternalSwap(&other->$field_$);
   )cc");
 }
 
@@ -1109,17 +1115,17 @@ bool RepeatedMessage::RequiresArena(GeneratorFunction func) const {
 
 std::unique_ptr<FieldGeneratorBase> MakeSinguarMessageGenerator(
     const FieldDescriptor* desc, const Options& options) {
-  return absl::make_unique<SingularMessage>(desc, options);
+  return std::make_unique<SingularMessage>(desc, options);
 }
 
 std::unique_ptr<FieldGeneratorBase> MakeRepeatedMessageGenerator(
     const FieldDescriptor* desc, const Options& options) {
-  return absl::make_unique<RepeatedMessage>(desc, options);
+  return std::make_unique<RepeatedMessage>(desc, options);
 }
 
 std::unique_ptr<FieldGeneratorBase> MakeOneofMessageGenerator(
     const FieldDescriptor* desc, const Options& options) {
-  return absl::make_unique<OneofMessage>(desc, options);
+  return std::make_unique<OneofMessage>(desc, options);
 }
 
 }  // namespace cpp

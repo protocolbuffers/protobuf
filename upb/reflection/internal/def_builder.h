@@ -20,6 +20,7 @@
 #include "upb/mem/arena.h"
 #include "upb/mini_descriptor/decode.h"
 #include "upb/mini_table/file.h"
+#include "upb/port/overflow.h"
 #include "upb/reflection/common.h"
 #include "upb/reflection/def_type.h"
 #include "upb/reflection/descriptor_bootstrap.h"
@@ -30,12 +31,8 @@
 
 // We want to copy the options verbatim into the destination options proto.
 // We use serialize+parse as our deep copy.
-#if UPB_FUTURE_FREEZE_OPTIONS
 #define _UPB_FREEZE_OPTIONS(target, options_type) \
   upb_Message_Freeze((upb_Message*)target, UPB_DESC_MINITABLE(options_type))
-#else
-#define _UPB_FREEZE_OPTIONS(target, options_type)
-#endif
 
 #define UPB_DEF_SET_OPTIONS(target, desc_type, options_type, proto)        \
   if (google_protobuf_##desc_type##_has_options(proto)) {                           \
@@ -114,10 +111,11 @@ UPB_INLINE void* _upb_DefBuilder_Alloc(upb_DefBuilder* ctx, size_t bytes) {
 UPB_INLINE void* _upb_DefBuilder_AllocCounted(upb_DefBuilder* ctx, size_t size,
                                               size_t count) {
   if (count == 0) return NULL;
-  if (SIZE_MAX / size < count) {
+  size_t total_bytes;
+  if (upb_MulOverflow(size, count, &total_bytes)) {
     _upb_DefBuilder_OomErr(ctx);
   }
-  return _upb_DefBuilder_Alloc(ctx, size * count);
+  return _upb_DefBuilder_Alloc(ctx, total_bytes);
 }
 
 #define UPB_DEFBUILDER_ALLOCARRAY(ctx, type, count) \
@@ -157,14 +155,16 @@ UPB_INLINE void _upb_DefBuilder_CheckIdentFull(upb_DefBuilder* ctx,
     const char c = name.data[i];
     const char d = c | 0x20;  // force lowercase
     const bool is_alpha = (('a' <= d) & (d <= 'z')) | (c == '_');
-    const bool is_numer = ('0' <= c) & (c <= '9') & !start;
+    // Accept a leading digit even though protoc would reject it because the
+    // C++ DescriptorPool accepts it, and upb should be as relaxed as C++.
+    const bool is_number = ('0' <= c) & (c <= '9');
     const bool is_dot = (c == '.') & !start;
 
-    good &= is_alpha | is_numer | is_dot;
-    start = is_dot;
+    good &= is_alpha | is_number | is_dot;
+    start = (c == '.');
   }
 
-  if (!good) _upb_DefBuilder_CheckIdentSlow(ctx, name, true);
+  if (!good || start) _upb_DefBuilder_CheckIdentSlow(ctx, name, true);
 }
 
 UPB_INLINE bool _upb_DefBuilder_IsLegacyEdition(google_protobuf_Edition edition) {

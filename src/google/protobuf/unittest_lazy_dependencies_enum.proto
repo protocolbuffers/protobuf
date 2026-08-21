@@ -11,7 +11,7 @@
 //
 // A proto file we will use for unit testing.
 
-edition = "2024";
+edition = "2026";
 
 // Treat all enums as closed by default (proto2 behavior).
 option features.enum_type = CLOSED;
@@ -21,7 +21,6 @@ option features.enum_type = CLOSED;
 option cc_generic_services = true;    // auto-added
 option java_generic_services = true;  // auto-added
 option py_generic_services = true;    // auto-added
-option cc_enable_arenas = true;
 
 // We don't put this in a package within proto2 because we need to make sure
 // that the generated code doesn't depend on being in the proto2 namespace.
@@ -34,6 +33,8 @@ package proto2_unittest.lazy_imports;
 option optimize_for = SPEED;
 
 option java_outer_classname = "UnittestLazyImportsEnumProto";
+
+option features.default_symbol_visibility = EXPORT_TOP_LEVEL;
 
 enum LazyEnum {
   option features.enforce_naming_style = STYLE_LEGACY;

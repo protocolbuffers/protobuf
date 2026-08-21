@@ -12,7 +12,9 @@
 
 #include <cassert>
 #include <cstdint>  // NOLINT
+#include <limits>
 
+#include <gmock/gmock.h>
 #include <gtest/gtest.h>
 #include "absl/base/config.h"
 
@@ -22,6 +24,9 @@
 namespace google {
 namespace protobuf {
 namespace internal {
+namespace {
+
+using ::testing::HasSubstr;
 
 int assume_var_for_test = 1;
 
@@ -134,8 +139,41 @@ TEST(PortTest, PrefetchWorksWithValidOffsets) {
 
 #endif  // defined(__clang__) && ABSL_HAVE_BUILTIN(__builtin_prefetch)
 
+TEST(PortTest, CheckedAdd) {
+  int n = (std::numeric_limits<int>::max)();
+  EXPECT_EQ(n, CheckedAdd(n - 1, 1));
+  EXPECT_DEATH(CheckedAdd(n, 1),
+               HasSubstr("Integer overflow in CheckedAdd: 2147483647 + 1"));
+}
+
+TEST(PortTest, CheckedAddWithLargerTypes) {
+  int64_t x = (std::numeric_limits<int>::max)() - 1;
+  EXPECT_EQ((std::numeric_limits<int>::max)(), CheckedAdd(x, 1));
+  x *= 2;
+  EXPECT_DEATH(CheckedAdd(x, 0),
+               HasSubstr("Integer overflow in CheckedAdd: 4294967292 + 0"));
+
+  x = (std::numeric_limits<int>::min)();
+  x -= 10;
+  EXPECT_DEATH(CheckedAdd(x, 0),
+               HasSubstr("Integer overflow in CheckedAdd: -2147483658 + 0"));
+}
+
+}  // namespace
 }  // namespace internal
 }  // namespace protobuf
 }  // namespace google
+
+// To dump via lldb and inspect the generated assembly.
+int CodegenCheckedAddInt(int a, int b) {
+  return google::protobuf::internal::CheckedAdd(a, b);
+}
+
+int CodegenCheckedAddSizeT(int a, size_t b) {
+  return google::protobuf::internal::CheckedAdd(a, b);
+}
+
+int odr_use = (google::protobuf::internal::StrongPointer(&CodegenCheckedAddInt),
+               google::protobuf::internal::StrongPointer(&CodegenCheckedAddSizeT), 1);
 
 #include "google/protobuf/port_undef.inc"

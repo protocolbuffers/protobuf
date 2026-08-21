@@ -136,9 +136,9 @@ bool ParseTime(absl::string_view value, int64_t* seconds, int32_t* nanos) {
   if (!absl::ParseTime(absl::RFC3339_full, value, &result, nullptr)) {
     return false;
   }
-  timespec spec = absl::ToTimespec(result);
-  *seconds = spec.tv_sec;
-  *nanos = spec.tv_nsec;
+  *seconds = absl::ToUnixSeconds(result);
+  absl::Duration remainder = result - absl::FromUnixSeconds(*seconds);
+  *nanos = static_cast<int32_t>(absl::ToInt64Nanoseconds(remainder));
   return true;
 }
 
@@ -189,7 +189,15 @@ bool TimeUtil::FromString(absl::string_view value, Timestamp* timestamp) {
   if (!ParseTime(value, &seconds, &nanos)) {
     return false;
   }
+  // Validate before CreateNormalizedTimestamp, which has a DCHECK on range.
+  if (seconds < kTimestampMinSeconds || seconds > kTimestampMaxSeconds) {
+    return false;
+  }
   *timestamp = CreateNormalizedTimestamp(seconds, nanos);
+  if (!IsTimestampValid(*timestamp)) {
+    timestamp->Clear();
+    return false;
+  }
   return true;
 }
 
@@ -264,6 +272,10 @@ bool TimeUtil::FromString(absl::string_view value, Duration* duration) {
   }
   duration->set_seconds(seconds);
   duration->set_nanos(static_cast<int32_t>(nanos));
+  if (!IsDurationValid(*duration)) {
+    duration->Clear();
+    return false;
+  }
   return true;
 }
 

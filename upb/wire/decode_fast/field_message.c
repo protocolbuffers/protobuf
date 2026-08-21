@@ -10,6 +10,7 @@
 
 #include "upb/message/internal/message.h"
 #include "upb/message/message.h"
+#include "upb/mini_table/field.h"
 #include "upb/mini_table/internal/sub.h"
 #include "upb/mini_table/message.h"
 #include "upb/wire/decode.h"
@@ -51,6 +52,9 @@ bool upb_DecodeFast_SingleMessage(upb_Decoder* d, const char** ptr, void* dst,
 
   if (c->is_repeated || UPB_LIKELY(*submsg_dst == NULL)) {
     c->msg = *submsg_dst = _upb_Message_New(c->table, &d->arena);
+    if (c->msg == NULL) {
+      _upb_FastDecoder_ErrorJmp(d, kUpb_DecodeStatus_OutOfMemory);
+    }
   } else {
     c->msg = *submsg_dst;  // Reusing non-repeated message.
   }
@@ -75,7 +79,26 @@ void upb_DecodeFast_Message(upb_Decoder* d, const char** ptr, upb_Message* msg,
                                        card == kUpb_DecodeFast_Repeated};
 
   if (subtablep == NULL) {
-    UPB_DECODEFAST_EXIT(kUpb_DecodeFastNext_FallbackToMiniTable, ret);
+    // Unlinked messages are treated as unknown fields. Go straight to unknown
+    // decoder if the tag matches.
+    uint16_t expected = upb_DecodeFastData_GetExpectedTag(*data);
+    uint16_t actual = upb_DecodeFastData2_GetOriginalTag(data2);
+    if (UPB_UNLIKELY(!upb_DecodeFast_TagMatches(expected, actual, tagsize))) {
+      UPB_DECODEFAST_EXIT(kUpb_DecodeFastNext_FallbackMismatchedSlot, ret);
+      return;
+    }
+
+#ifndef NDEBUG
+    uint16_t case_offset = upb_DecodeFastData_GetCaseOffset(*data);
+    if (case_offset != 0) {
+      uint8_t field_number = upb_DecodeFastData_GetPresence(*data);
+      const upb_MiniTableField* field =
+          upb_MiniTable_FindFieldByNumber(table, field_number);
+      UPB_ASSERT(field);
+      _upb_Decoder_VerifyOneofUnlinked(table, field);
+    }
+#endif
+    UPB_DECODEFAST_EXIT(kUpb_DecodeFastNext_DecodeUnknown, ret);
     return;
   }
 

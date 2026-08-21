@@ -53,7 +53,8 @@ class EnumValue extends \Google\Protobuf\Internal\Message
      *           Protocol buffer options.
      * }
      */
-    public function __construct($data = NULL) {
+    public function __construct($data = null)
+    {
         \GPBMetadata\Google\Protobuf\Type::initOnce();
         parent::__construct($data);
     }

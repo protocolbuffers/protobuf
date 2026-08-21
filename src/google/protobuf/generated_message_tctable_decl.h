@@ -107,6 +107,29 @@ struct TcFieldData {
 
   uint16_t decoded_tag() const { return static_cast<uint16_t>(data >> 16); }
 
+  // Constructor for FastMp parsers.
+  constexpr TcFieldData(uint16_t coded_tag, uint8_t function_index,
+                        uint32_t entry_offset)
+      : data(uint64_t{entry_offset} << 32 |    //
+             uint64_t{function_index} << 16 |  //
+             uint64_t{coded_tag}) {}
+
+  // Fields used in fast-mp parsers:
+  //
+  //     Bit:
+  //     +-----------+-------------------+
+  //     |63    ..     32|31     ..     0|
+  //     +---------------+---------------+
+  //     :   .   :   .   :   . 16|=======| [16] coded_tag()
+  //     :   .   :   .   : 24|===|   .   : [ 8] function_idx()
+  //     :   .   :   . 32|   |   :   .   : [ 8] (unused)
+  //     |===============|   .   :   .   : [32] entry_offset()
+  //     +-----------+-------------------+
+  //     |63    ..     32|31     ..     0|
+  //     +---------------+---------------+
+
+  uint8_t function_idx() const { return static_cast<uint8_t>(data >> 16); }
+
   // Fields used in mini table parsing:
   //
   //     Bit:
@@ -144,7 +167,7 @@ struct Offset {
 #pragma warning(disable : 4324)
 #endif
 
-struct FieldAuxMessageGlobals {};
+struct FieldAuxClassData {};
 struct FieldAuxEnumData {};
 
 // Small type card used by mini parse to handle map entries.
@@ -285,9 +308,6 @@ struct alignas(uint64_t) TcParseTableBase {
   TailCallParseFunc fallback;
 
   // A sub message's table to be prefetched.
-#ifdef PROTOBUF_PREFETCH_PARSE_TABLE
-  const TcParseTableBase* to_prefetch;
-#endif  // PROTOBUF_PREFETCH_PARSE_TABLE
 
   // This constructor exactly follows the field layout, so it's technically
   // not necessary.  However, it makes it much much easier to add or re-arrange
@@ -303,12 +323,7 @@ struct alignas(uint64_t) TcParseTableBase {
                              uint16_t num_aux_entries, uint32_t aux_offset,
                              const ClassData* class_data,
                              PostLoopHandler post_loop_handler,
-                             TailCallParseFunc fallback
-#ifdef PROTOBUF_PREFETCH_PARSE_TABLE
-                             ,
-                             const TcParseTableBase* to_prefetch
-#endif  // PROTOBUF_PREFETCH_PARSE_TABLE
-                             )
+                             TailCallParseFunc fallback)
       : has_bits_offset(has_bits_offset),
         extension_offset(extension_offset),
         max_field_number(max_field_number),
@@ -322,13 +337,7 @@ struct alignas(uint64_t) TcParseTableBase {
         aux_offset(aux_offset),
         class_data(class_data),
         post_loop_handler(post_loop_handler),
-        fallback(fallback)
-#ifdef PROTOBUF_PREFETCH_PARSE_TABLE
-        ,
-        to_prefetch(to_prefetch)
-#endif  // PROTOBUF_PREFETCH_PARSE_TABLE
-  {
-  }
+        fallback(fallback) {}
 
   // Table entry for fast-path tailcall dispatch handling.
   struct FastFieldEntry {
@@ -429,16 +438,17 @@ struct alignas(uint64_t) TcParseTableBase {
 
   // Auxiliary entries for field types that need extra information.
   union FieldAux {
-    constexpr FieldAux() : message_globals_p(nullptr) {}
+    constexpr FieldAux() : class_data_p(nullptr) {}
     constexpr FieldAux(FieldAuxEnumData, const uint32_t* enum_data)
         : enum_data(enum_data) {}
     // NOLINTBEGIN(google-explicit-constructor)
     constexpr FieldAux(field_layout::Offset off) : offset(off.off) {}
     constexpr FieldAux(int32_t range_first, int32_t range_last)
         : enum_range{range_first, range_last} {}
-    constexpr FieldAux(FieldAuxMessageGlobals, const void* globals)
-        : message_globals_p(globals) {}
-    constexpr FieldAux(const TcParseTableBase* table) : table(table) {}
+    constexpr FieldAux(const void* const* class_data_weak)
+        : class_data_weak_p(class_data_weak) {}
+    constexpr FieldAux(FieldAuxClassData, const void* class_data)
+        : class_data_p(class_data) {}
     constexpr FieldAux(MapAuxInfo map_info) : map_info(map_info) {}
     constexpr FieldAux(LazyEagerVerifyFnType verify_func)
         : verify_func(verify_func) {}
@@ -448,30 +458,17 @@ struct alignas(uint64_t) TcParseTableBase {
       int32_t last;   // the last label in the range (inclusize)
     } enum_range;
     uint32_t offset;
-    const void* message_globals_p;
+    const void* class_data_p;
+    const void* const* class_data_weak_p;
     const uint32_t* enum_data;
-    const TcParseTableBase* table;
     MapAuxInfo map_info;
     LazyEagerVerifyFnType verify_func;
 
-    const MessageLite* message_default() const {
-      return MessageGlobalsBase::ToDefaultInstance(message_globals_p);
+    const ClassData* class_data() const {
+      return static_cast<const ClassData*>(class_data_p);
     }
-    const MessageLite* message_default_weak() const {
-      return MessageGlobalsBase::ToDefaultInstance(message_globals_weak());
-    }
-    const MessageGlobalsBase* message_globals() const {
-      return static_cast<const MessageGlobalsBase*>(message_globals_p);
-    }
-    const MessageGlobalsBase* message_globals_weak() const {
-      return *static_cast<const MessageGlobalsBase* const*>(message_globals_p);
-    }
-    const TcParseTableBase* table_ptr() const {
-#ifndef PROTOBUF_MESSAGE_GLOBALS
-      return table;
-#else
-      return MessageGlobalsBase::ToParseTableBase(message_globals_p);
-#endif
+    const ClassData* class_data_weak() const {
+      return static_cast<const ClassData*>(*class_data_weak_p);
     }
   };
   const FieldAux* field_aux(uint32_t idx) const {
@@ -598,9 +595,6 @@ constexpr TcParseTable<0> CreateStubTcParseTable(
           class_data,         //
           post_loop_handler,  //
           nullptr,            // fallback
-#ifdef PROTOBUF_PREFETCH_PARSE_TABLE
-          nullptr,  // to_prefetch
-#endif              // PROTOBUF_PREFETCH_PARSE_TABLE
       },
       {{{StubParseImpl<T, func>, {}}}},
   };

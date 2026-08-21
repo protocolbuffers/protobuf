@@ -42,12 +42,19 @@ cc_test(
     srcs = ["decode_test.cc"],
     deps = [
         ":json",
+        ":json_enumval_custom_string_upb_proto",
+        ":json_enumval_custom_string_upb_reflection_proto",
         ":test_upb_proto",
         ":test_upb_proto_reflection",
+        "//:any_upb_proto",
+        "//:field_mask_upb_proto",
         "//:struct_upb_proto",
         "//upb/base",
         "//upb/mem",
+        "//upb/message",
         "//upb/reflection",
+        "//upb/reflection:internal_cc",
+        "//upb/reflection:reflection_cc",
         "@googletest//:gtest",
         "@googletest//:gtest_main",
     ],
@@ -58,12 +65,19 @@ cc_test(
     srcs = ["encode_test.cc"],
     deps = [
         ":json",
+        ":json_enumval_custom_string_upb_proto",
+        ":json_enumval_custom_string_upb_reflection_proto",
         ":test_upb_proto",
         ":test_upb_proto_reflection",
+        "//:any_upb_proto",
+        "//:field_mask_upb_proto",
         "//:struct_upb_proto",
         "//upb/base",
         "//upb/mem",
+        "//upb/message",
         "//upb/reflection",
+        "//upb/reflection:internal_cc",
+        "//upb/reflection:reflection_cc",
         "@googletest//:gtest",
         "@googletest//:gtest_main",
     ],
@@ -73,7 +87,11 @@ proto_library(
     name = "test_proto",
     testonly = 1,
     srcs = ["test.proto"],
-    deps = ["//:struct_proto"],
+    deps = [
+        "//:any_proto",
+        "//:field_mask_proto",
+        "//:struct_proto",
+    ],
 )
 
 upb_c_proto_library(
@@ -86,6 +104,18 @@ upb_proto_reflection_library(
     name = "test_upb_proto_reflection",
     testonly = 1,
     deps = [":test_proto"],
+)
+
+upb_c_proto_library(
+    name = "json_enumval_custom_string_upb_proto",
+    testonly = 1,
+    deps = ["//src/google/protobuf/json:json_enumval_custom_string_proto"],
+)
+
+upb_proto_reflection_library(
+    name = "json_enumval_custom_string_upb_reflection_proto",
+    testonly = 1,
+    deps = ["//src/google/protobuf/json:json_enumval_custom_string_proto"],
 )
 
 filegroup(
@@ -101,10 +131,15 @@ filegroup(
 
 filegroup(
     name = "test_protos",
+    testonly = 1,
     srcs = glob(
         [
             "**/*test.proto",
         ],
-    ),
+    ) + [
+        "//src/google/protobuf:json_enumvalue_options.proto",
+        "//src/google/protobuf:json_options.proto",
+        "//src/google/protobuf/json:json_enumval_custom_string_proto_srcs",
+    ],
     visibility = ["//upb:__pkg__"],
 )

@@ -9,6 +9,7 @@
 
 import collections
 import unittest
+from unittest import mock
 
 from google.protobuf import descriptor
 from google.protobuf import descriptor_pb2
@@ -69,6 +70,21 @@ class ProtoBuilderTest(unittest.TestCase):
         pool=pool,
     )
     self.assertIs(proto_cls1.DESCRIPTOR, proto_cls2.DESCRIPTOR)
+
+  def testMakeSimpleProtoClassUsesNonSecuritySha1(self):
+    pool = descriptor_pool.DescriptorPool()
+    with mock.patch.object(
+        proto_builder.hashlib,
+        'sha1',
+        wraps=proto_builder.hashlib.sha1,
+    ) as sha1:
+      proto_builder.MakeSimpleProtoClass(
+          self._fields,
+          full_name='net.proto2.python.public.proto_builder_test.Sha1Test',
+          pool=pool,
+      )
+
+    sha1.assert_called_once_with(usedforsecurity=False)
 
   def testMakeLargeProtoClass(self):
     """Test that large created protos don't use reserved field numbers."""

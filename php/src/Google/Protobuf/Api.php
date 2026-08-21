@@ -136,7 +136,8 @@ class Api extends \Google\Protobuf\Internal\Message
      *           The source edition string, only valid when syntax is SYNTAX_EDITIONS.
      * }
      */
-    public function __construct($data = NULL) {
+    public function __construct($data = null)
+    {
         \GPBMetadata\Google\Protobuf\Api::initOnce();
         parent::__construct($data);
     }

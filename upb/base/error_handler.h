@@ -56,6 +56,7 @@ typedef enum {
   kUpb_ErrorCode_Ok = 0,
   kUpb_ErrorCode_OutOfMemory = 1,
   kUpb_ErrorCode_Malformed = 2,
+  kUpb_ErrorCode_MaxDepthExceeded = 3,
 } upb_ErrorCode;
 
 typedef struct {

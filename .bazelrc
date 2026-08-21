@@ -6,7 +6,7 @@ build --javacopt=-Xep:SelfAssertion:WARN
 # Disable prebuilt protoc on CI. On both main and release branches,
 # PROTOBUF_VERSION ordinarily points to the next release, which doesn't
 # exist and therefore doesn't have a prebuilt yet.
-#build --@com_google_protobuf//bazel/toolchains:prefer_prebuilt_protoc=false
+build --@com_google_protobuf//bazel/toolchains:prefer_prebuilt_protoc=false
 
 # This flag works around some issues with Rust linking.
 build --@rules_rust//rust/settings:experimental_use_cc_common_link=True

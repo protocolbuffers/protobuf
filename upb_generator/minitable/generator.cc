@@ -309,7 +309,7 @@ void WriteExtension(const DefPoolPair& pools, upb::FieldDefPtr ext,
 
 void RegisterExtensions(Output& output, absl::string_view unique_name) {
   output("UPB_LINKARR_DECLARE(upb_AllExts, const upb_MiniTableExtension*);\n");
-  output("UPB_CONSTRUCTOR(upb_GeneratedRegistry_Constructor, $0) {\n",
+  output("UPB_CONSTRUCTOR(upb_GeneratedRegistry_Constructor, $0, {\n",
          unique_name);
   // TODO Although we define this function as weak and only one
   // copy will ever exist in any binary, every instance will get registered as a
@@ -326,7 +326,7 @@ void RegisterExtensions(Output& output, absl::string_view unique_name) {
   output("  UPB_ASSERT(entry.next == NULL);\n");
   output("  entry.next = UPB_PRIVATE(upb_generated_extension_list);\n");
   output("  UPB_PRIVATE(upb_generated_extension_list) = &entry;\n");
-  output("}\n");
+  output("})\n");
 }
 
 }  // namespace
@@ -458,9 +458,15 @@ void WriteMiniTableSource(const DefPoolPair& pools, upb::FileDefPtr file,
     }
   }
 
+  std::string messages_layout =
+      absl::StrCat("messages_layout_", FileVarName(file));
+  std::string enums_layout = absl::StrCat("enums_layout_", FileVarName(file));
+  std::string extensions_layout =
+      absl::StrCat("extensions_layout_", FileVarName(file));
+
   // Messages.
   if (!messages.empty()) {
-    output("static const upb_MiniTable *$0[$1] = {\n", kMessagesInit,
+    output("static const upb_MiniTable *$0[$1] = {\n", messages_layout,
            messages.size());
     for (auto message : messages) {
       output("  &$0,\n", MessageVarName(message));
@@ -471,7 +477,7 @@ void WriteMiniTableSource(const DefPoolPair& pools, upb::FileDefPtr file,
 
   // Enums.
   if (!enums.empty()) {
-    output("static const upb_MiniTableEnum *$0[$1] = {\n", kEnumsInit,
+    output("static const upb_MiniTableEnum *$0[$1] = {\n", enums_layout,
            enums.size());
     for (const auto e : enums) {
       output("  &$0,\n", EnumVarName(e));
@@ -485,7 +491,7 @@ void WriteMiniTableSource(const DefPoolPair& pools, upb::FileDefPtr file,
     output(
         "\n"
         "static const upb_MiniTableExtension *$0[$1] = {\n",
-        kExtensionsInit, extensions.size());
+        extensions_layout, extensions.size());
 
     for (auto ext : extensions) {
       output("  &$0_obj,\n", ExtensionVarName(ext));
@@ -503,9 +509,9 @@ void WriteMiniTableSource(const DefPoolPair& pools, upb::FileDefPtr file,
   }
 
   output("const upb_MiniTableFile $0 = {\n", FileVarName(file));
-  output("  $0,\n", messages.empty() ? "NULL" : kMessagesInit);
-  output("  $0,\n", enums.empty() ? "NULL" : kEnumsInit);
-  output("  $0,\n", extensions.empty() ? "NULL" : kExtensionsInit);
+  output("  $0,\n", messages.empty() ? "NULL" : messages_layout);
+  output("  $0,\n", enums.empty() ? "NULL" : enums_layout);
+  output("  $0,\n", extensions.empty() ? "NULL" : extensions_layout);
   output("  $0,\n", messages.size());
   output("  $0,\n", enums.size());
   output("  $0,\n", extensions.size());

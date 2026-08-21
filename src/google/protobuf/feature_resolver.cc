@@ -450,7 +450,7 @@ absl::StatusOr<FeatureSetDefaults> FeatureResolver::CompileDefaults(
   FeatureSetDefaults defaults;
   defaults.set_minimum_edition(minimum_edition);
   defaults.set_maximum_edition(maximum_edition);
-  auto message_factory = absl::make_unique<DynamicMessageFactory>();
+  auto message_factory = std::make_unique<DynamicMessageFactory>();
   for (const auto& edition : editions) {
     auto fixed_defaults_dynamic =
         absl::WrapUnique(message_factory->GetPrototype(feature_set)->New());

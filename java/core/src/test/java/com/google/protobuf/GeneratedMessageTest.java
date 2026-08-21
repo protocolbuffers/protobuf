@@ -395,6 +395,8 @@ public class GeneratedMessageTest {
         "Exception was not thrown",
         NullPointerException.class,
         () -> builder.setOptionalNestedEnum(null));
+    assertThat(builder.hasOptionalNestedEnum()).isFalse();
+
     assertThrows(
         "Exception was not thrown",
         NullPointerException.class,
@@ -415,6 +417,19 @@ public class GeneratedMessageTest {
         "Exception was not thrown",
         NullPointerException.class,
         () -> builder.addRepeatedNestedEnum(null));
+    assertThat(builder.getRepeatedNestedEnumCount()).isEqualTo(0);
+
+    builder.addRepeatedNestedEnum(TestAllTypes.NestedEnum.FOO);
+    assertThrows(
+        NullPointerException.class,
+        () -> builder.setRepeatedNestedEnum(0, null));
+    assertThat(builder.getRepeatedNestedEnum(0)).isEqualTo(TestAllTypes.NestedEnum.FOO);
+
+    TestOneof2.Builder oneofBuilder = TestOneof2.newBuilder();
+    assertThrows(
+        NullPointerException.class,
+        () -> oneofBuilder.setFooEnum(null));
+    assertThat(oneofBuilder.getFooCase()).isEqualTo(TestOneof2.FooCase.FOO_NOT_SET);
   }
 
   @Test

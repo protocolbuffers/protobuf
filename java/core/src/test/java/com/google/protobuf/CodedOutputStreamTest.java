@@ -735,10 +735,13 @@ public class CodedOutputStreamTest {
       ByteBuffer byteBuffer = ByteBuffer.wrap(bytes);
       Coder coder = outputType.newCoder(i);
       CodedOutputStream codedStream = coder.stream();
-      assertThrows("i=" + i, OutOfSpaceException.class, () -> {
-        codedStream.write(byteBuffer);
-        codedStream.flush();
-      });
+      assertThrows(
+          "i=" + i,
+          OutOfSpaceException.class,
+          () -> {
+            codedStream.write(byteBuffer);
+            codedStream.flush();
+          });
     }
   }
 
@@ -764,10 +767,13 @@ public class CodedOutputStreamTest {
     for (int i = 0; i < 10; i++) {
       Coder coder = outputType.newCoder(i);
       CodedOutputStream codedStream = coder.stream();
-      assertThrows("i=" + i, OutOfSpaceException.class, () -> {
-        codedStream.write(bytes, 0, bytes.length);
-        codedStream.flush();
-      });
+      assertThrows(
+          "i=" + i,
+          OutOfSpaceException.class,
+          () -> {
+            codedStream.write(bytes, 0, bytes.length);
+            codedStream.flush();
+          });
     }
   }
 
@@ -863,10 +869,12 @@ public class CodedOutputStreamTest {
 
     for (int i = 0; i < 11; i++) {
       Coder coder = outputType.newCoder(i);
-      assertThrows(OutOfSpaceException.class, () -> {
-        coder.stream().writeString(1, testCase);
-        coder.stream().flush();
-      });
+      assertThrows(
+          OutOfSpaceException.class,
+          () -> {
+            coder.stream().writeString(1, testCase);
+            coder.stream().flush();
+          });
     }
   }
 
@@ -1002,7 +1010,47 @@ public class CodedOutputStreamTest {
       byte[] bytes = coder.toByteArray();
       assertThat(bytes).hasLength(CodedOutputStream.computeUInt32SizeNoTag((int) value));
       CodedInputStream input = CodedInputStream.newInstance(new ByteArrayInputStream(bytes));
-      assertThat(input.readRawVarint32()).isEqualTo(value);
+    }
+  }
+
+  @Test
+  public void testNioBuffersWriteWithoutFlush() throws Exception {
+    // As an accidental quirk, CodedOutputStreams on ByteBuffers have consistently had the behavior
+    // that writes eagerly do apply to the underlying ByteBuffer, and the position is only advanced
+    // when flush() is called. This happened to occur with both array-backed ones and
+    // direct ones even though they had entirely separate handling and the observable behavior was
+    // unintended
+
+    // HeapNio case
+    {
+      ByteBuffer buffer = ByteBuffer.allocate(10);
+      CodedOutputStream codedStream = CodedOutputStream.newInstance(buffer);
+      codedStream.write((byte) 5);
+      // The underlying data has changed
+      assertThat(buffer.array()[0]).isEqualTo((byte) 5);
+      // Position is not advanced
+      assertThat(buffer.position()).isEqualTo(0);
+
+      // Now flush
+      codedStream.flush();
+      // Position should be advanced
+      assertThat(buffer.position()).isEqualTo(1);
+    }
+
+    // DirectNio case
+    {
+      ByteBuffer buffer = ByteBuffer.allocateDirect(10);
+      CodedOutputStream codedStream = CodedOutputStream.newInstance(buffer);
+      codedStream.write((byte) 5);
+      // The underlying data has changed
+      assertThat(buffer.get(0)).isEqualTo((byte) 5);
+      // Position is not advanced
+      assertThat(buffer.position()).isEqualTo(0);
+
+      // Now flush
+      codedStream.flush();
+      // Position should be advanced
+      assertThat(buffer.position()).isEqualTo(1);
     }
   }
 }

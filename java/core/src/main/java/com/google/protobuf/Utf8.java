@@ -53,17 +53,16 @@ final class Utf8 {
    */
   private static final Processor processor = createProcessor();
 
+  static final boolean ENCODES_VIA_INTERMEDIATE_ARRAY = processor.encodesViaIntermediateArray();
+
   private static Processor createProcessor() {
     if (Android.isOnAndroidDevice()) {
-      return new SafeProcessor();
+      return new MobileProcessor();
     }
-    if (UnsafeProcessorWithEncodedLength.isAvailable()) {
-      return new UnsafeProcessorWithEncodedLength();
+    if (ServerProcessorWithEncodedLength.isAvailable()) {
+      return new ServerProcessorWithEncodedLength();
     }
-    if (UnsafeProcessor.isAvailable()) {
-      return new UnsafeProcessor();
-    }
-    return new SafeProcessor();
+    return new ServerProcessor();
   }
 
   /**
@@ -481,6 +480,9 @@ final class Utf8 {
      */
     abstract int encodeUtf8(String in, byte[] out, int offset, int length);
 
+    /** Whether this processor encodes strings to UTF-8 via an intermediate array. */
+    abstract boolean encodesViaIntermediateArray();
+
     /**
      * Encodes an input character sequence ({@code in}) to UTF-8 in the target buffer ({@code out}).
      * Upon returning from this method, the {@code out} position will point to the position after
@@ -548,8 +550,8 @@ final class Utf8 {
     }
   }
 
-  /** {@link Processor} implementation that does not use any {@code sun.misc.Unsafe} methods. */
-  static final class SafeProcessor extends Processor {
+  /** {@link Processor} optimized for mobile platforms. */
+  static final class MobileProcessor extends Processor {
     @Override
     String decodeUtf8(byte[] bytes, int index, int size) throws InvalidProtocolBufferException {
       // Bitwise OR combines the sign bits so any negative value fails the check.
@@ -625,7 +627,10 @@ final class Utf8 {
       return new String(resultArr, 0, resultPos);
     }
 
-
+    @Override
+    boolean encodesViaIntermediateArray() {
+      return false;
+    }
 
     @Override
     int encodeUtf8(String in, byte[] out, int offset, int length) {
@@ -752,13 +757,8 @@ final class Utf8 {
     }
   }
 
-  /** {@link Processor} that uses {@code sun.misc.Unsafe} where possible to improve performance. */
-  static class UnsafeProcessor extends Processor {
-    /** Indicates whether or not all required unsafe operations are supported on this platform. */
-    static boolean isAvailable() {
-      return true;
-    }
-
+  /** {@link Processor} optimized for server platforms. */
+  static class ServerProcessor extends Processor {
     @Override
     String decodeUtf8(byte[] bytes, int index, int size) throws InvalidProtocolBufferException {
       String s = new String(bytes, index, size, StandardCharsets.UTF_8);
@@ -782,7 +782,18 @@ final class Utf8 {
       throw InvalidProtocolBufferException.invalidUtf8();
     }
 
-
+    /**
+     * Whether the platform's processor encodes through an intermediate array.
+     *
+     * <p>For server processors, using a naive approach (String.getBytes() to create an intermediate
+     * array) performs exceptionally well. For mobile processors, calling String.getBytes() is more
+     * expensive than writing directly to the ByteBuffer.
+     */
+    @Override
+    boolean encodesViaIntermediateArray() {
+      // encodeUtf8Naive below goes through String.getBytes.
+      return true;
+    }
 
     @Override
     int encodeUtf8(String in, byte[] out, int offset, int length) {
@@ -802,10 +813,10 @@ final class Utf8 {
   }
 
   /**
-   * {@link Processor} that extends {@link UnsafeProcessor} and uses {@code
+   * {@link Processor} that extends {@link ServerProcessor} and uses {@code
    * java.lang.String#encodedLength(Charset)} on JDK versions that support it.
    */
-  static final class UnsafeProcessorWithEncodedLength extends UnsafeProcessor {
+  static final class ServerProcessorWithEncodedLength extends ServerProcessor {
 
     private static final Method encodedLengthMethod = createEncodedLengthMethod();
 
@@ -820,7 +831,7 @@ final class Utf8 {
     }
 
     static boolean isAvailable() {
-      return encodedLengthMethod != null && UnsafeProcessor.isAvailable();
+      return encodedLengthMethod != null;
     }
 
     @Override

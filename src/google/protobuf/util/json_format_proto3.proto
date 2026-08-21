@@ -30,6 +30,8 @@ enum EnumType {
 
 message MessageType {
   int32 value = 1;
+  optional int32 optional_int32_value = 2;
+  optional string optional_string_value = 3;
 }
 
 message TestMessage {
@@ -70,6 +72,8 @@ message TestMessage {
   optional MessageType optional_message_value = 51;
 
   int32 _nonStandard_name_ = 52;
+
+  google.protobuf.Timestamp timestamp_value = 53;
 }
 
 message TestOneof {

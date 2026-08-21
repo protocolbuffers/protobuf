@@ -63,7 +63,7 @@ using EnableIfHpbClassThatHasExtensions =
     std::enable_if_t<IsHpbClassThatHasExtensions<T>>;
 
 template <typename T>
-using EnableIfMutableProto = std::enable_if_t<!std::is_const<T>::value>;
+using EnableIfMutableProto = std::enable_if_t<!std::is_const_v<T>>;
 
 template <typename T, typename T2>
 using add_const_if_T_is_const =

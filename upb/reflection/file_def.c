@@ -38,6 +38,7 @@ struct upb_FileDef {
   const upb_FileDef** deps;
   const int32_t* public_deps;
   const int32_t* weak_deps;
+  const char** option_deps;
   const upb_MessageDef* top_lvl_msgs;
   const upb_EnumDef* top_lvl_enums;
   const upb_FieldDef* top_lvl_exts;
@@ -48,6 +49,7 @@ struct upb_FileDef {
   int dep_count;
   int public_dep_count;
   int weak_dep_count;
+  int option_dep_count;
   int top_lvl_msg_count;
   int top_lvl_enum_count;
   int top_lvl_ext_count;
@@ -105,6 +107,15 @@ int upb_FileDef_WeakDependencyCount(const upb_FileDef* f) {
   return f->weak_dep_count;
 }
 
+const char* upb_FileDef_OptionDependency(const upb_FileDef* f, int i) {
+  UPB_ASSERT(0 <= i && i < f->option_dep_count);
+  return f->option_deps[i];
+}
+
+int upb_FileDef_OptionDependencyCount(const upb_FileDef* f) {
+  return f->option_dep_count;
+}
+
 const int32_t* _upb_FileDef_PublicDependencyIndexes(const upb_FileDef* f) {
   return f->public_deps;
 }
@@ -142,7 +153,7 @@ const upb_FileDef* upb_FileDef_PublicDependency(const upb_FileDef* f, int i) {
 }
 
 const upb_FileDef* upb_FileDef_WeakDependency(const upb_FileDef* f, int i) {
-  UPB_ASSERT(0 <= i && i < f->public_dep_count);
+  UPB_ASSERT(0 <= i && i < f->weak_dep_count);
   return f->deps[f->weak_deps[i]];
 }
 
@@ -387,7 +398,7 @@ void _upb_FileDef_Create(upb_DefBuilder* ctx,
   file->public_deps = UPB_DEFBUILDER_ALLOCARRAY(ctx, int32_t, n);
   int32_t* mutable_public_deps = (int32_t*)file->public_deps;
   for (size_t i = 0; i < n; i++) {
-    if (public_deps[i] >= file->dep_count) {
+    if (public_deps[i] < 0 || public_deps[i] >= file->dep_count) {
       _upb_DefBuilder_Errf(ctx, "public_dep %d is out of range",
                            (int)public_deps[i]);
     }
@@ -399,11 +410,19 @@ void _upb_FileDef_Create(upb_DefBuilder* ctx,
   file->weak_deps = UPB_DEFBUILDER_ALLOCARRAY(ctx, const int32_t, n);
   int32_t* mutable_weak_deps = (int32_t*)file->weak_deps;
   for (size_t i = 0; i < n; i++) {
-    if (weak_deps[i] >= file->dep_count) {
+    if (weak_deps[i] < 0 || weak_deps[i] >= file->dep_count) {
       _upb_DefBuilder_Errf(ctx, "weak_dep %d is out of range",
                            (int)weak_deps[i]);
     }
     mutable_weak_deps[i] = weak_deps[i];
+  }
+
+  const upb_StringView* option_deps;
+  option_deps = google_protobuf_FileDescriptorProto_option_dependency(file_proto, &n);
+  file->option_dep_count = n;
+  file->option_deps = UPB_DEFBUILDER_ALLOCARRAY(ctx, const char*, n);
+  for (size_t i = 0; i < n; i++) {
+    file->option_deps[i] = _strviewdup(ctx, option_deps[i]);
   }
 
   // Create enums.

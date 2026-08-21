@@ -13,6 +13,7 @@
 #include <cmath>
 #include <cstddef>
 #include <cstdint>
+#include <limits>
 #include <string>
 #include <utility>
 
@@ -423,10 +424,14 @@ absl::StatusOr<LocationWith<MaybeOwnedString>> JsonLexer::ParseUtf8() {
       if (c == '"') {
         // NOTE: the 1 below clips off the " from the end of the string.
         MaybeOwnedString result = mark.value.UpToUnread(1);
-        if (utf8_range::IsStructurallyValid(result)) {
-          return LocationWith<MaybeOwnedString>{std::move(result), loc};
+        if (result.AsView().size() >
+            static_cast<size_t>(std::numeric_limits<int>::max())) {
+          return Invalid("string value too large (2GB max)");
         }
-        return Invalid("Invalid UTF-8 string");
+        if (!utf8_range::IsStructurallyValid(result)) {
+          return Invalid("Invalid UTF-8 string");
+        }
+        return LocationWith<MaybeOwnedString>{std::move(result), loc};
       }
     }
   }
@@ -462,6 +467,10 @@ absl::StatusOr<LocationWith<MaybeOwnedString>> JsonLexer::ParseUtf8Slow(
       case '\'': {
         if (c != (is_single_quote ? '\'' : '"')) {
           goto normal_character;
+        }
+        if (on_heap.size() >
+            static_cast<size_t>(std::numeric_limits<int>::max())) {
+          return Invalid("string value too large (2GB max)");
         }
         MaybeOwnedString result = MaybeOwnedString{std::move(on_heap)};
         if (utf8_range::IsStructurallyValid(result)) {

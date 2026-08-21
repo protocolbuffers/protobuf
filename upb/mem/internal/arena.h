@@ -12,6 +12,7 @@
 #include <stdint.h>
 #include <string.h>
 
+#include "upb/mem/internal/alloc.h"
 #include "upb/port/sanitizers.h"
 
 // Must be last.
@@ -70,7 +71,8 @@ UPB_INLINE bool UPB_PRIVATE(_upb_Arena_IsAligned)(const void* ptr) {
   return (uintptr_t)ptr % UPB_MALLOC_ALIGN == 0;
 }
 
-UPB_API_INLINE void* upb_Arena_Malloc(struct upb_Arena* a, size_t size) {
+UPB_API_INLINE void* _upb_Arena_Malloc_Unchecked(struct upb_Arena* a,
+                                                 size_t size) {
   UPB_PRIVATE(upb_Xsan_AccessReadWrite)(UPB_XSAN(a));
 
   size_t span = UPB_PRIVATE(_upb_Arena_AllocSpan)(size);
@@ -87,6 +89,13 @@ UPB_API_INLINE void* upb_Arena_Malloc(struct upb_Arena* a, size_t size) {
   UPB_ASSERT(UPB_PRIVATE(_upb_Arena_IsAligned)(a->UPB_ONLYBITS(ptr)));
 
   return UPB_PRIVATE(upb_Xsan_NewUnpoisonedRegion)(UPB_XSAN(a), ret, size);
+}
+
+UPB_API_INLINE void* upb_Arena_Malloc(struct upb_Arena* a, size_t size) {
+  if (!upb_AllocationCount_IncrementAndCheck()) {
+    return NULL;
+  }
+  return _upb_Arena_Malloc_Unchecked(a, size);
 }
 
 UPB_API_INLINE void upb_Arena_ShrinkLast(struct upb_Arena* a, void* ptr,

@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 
+#include "upb/base/descriptor_constants.h"
 #include "upb/base/string_view.h"
 #include "upb/message/internal/message.h"
 #include "upb/message/message.h"
@@ -65,11 +66,14 @@ UPB_PRESERVE_NONE upb_FastDecoder_Return _upb_FastDecoder_DecodeUnknown(
   upb_DecodeFastNext next = kUpb_DecodeFastNext_Dispatch;
   uint16_t tag = upb_DecodeFastData2_GetOriginalTag(data2);
 
-  if (UPB_UNLIKELY((tag & 0xFF80) == 0x80)) {
+  if (UPB_UNLIKELY((tag & 0x07) == kUpb_WireType_StartGroup ||
+                   (tag & 0x07) == kUpb_WireType_EndGroup ||
+                   (tag & 0xFF80) == 0x80)) {
     // An one byte tag encoded as two bytes may map to the wrong fasttable slot
     // and lead to being assumed to be an unknown field, in a message where all
     // fasttable-eligible fields are assigned slots. If we're passed such a tag,
     // fall back to the minitable rather than adding it as unknown.
+    // Also fallback for Groups.
     UPB_DECODEFAST_EXIT(kUpb_DecodeFastNext_FallbackToMiniTable, &next);
   } else if (UPB_UNLIKELY((tag & 0x8080) == 0x8080)) {
     // A one byte tag encoded as three may map to the wrong slot; a two byte tag
@@ -90,24 +94,16 @@ UPB_PRESERVE_NONE upb_FastDecoder_Return _upb_FastDecoder_DecodeUnknown(
       const upb_MiniTableField* field =
           upb_MiniTable_FindFieldByNumber(table, field_num);
       UPB_ASSERT(field == NULL ||
-                 _upb_MiniTableField_GetWireType(field) != wire_type);
+                 _upb_MiniTableField_GetWireType(field) != wire_type ||
+                 (upb_MiniTableField_CType(field) == kUpb_CType_Message &&
+                  upb_MiniTable_GetSubMessageTable(field) == NULL));
 #else
       UPB_UNUSED(field_num);
 #endif
-      if (UPB_UNLIKELY(wire_type == kUpb_WireType_EndGroup ||
-                       wire_type == kUpb_WireType_StartGroup)) {
-        // FastDecoder doesn't handle group fields, but it can be used to decode
-        // a message that is itself a group. When decoding a group, the end of
-        // the message is marked by an EndGroup tag. Since EndGroup tags are not
-        // in the MiniTable, they are routed to the unknown field handler. We
-        // must intercept them here to properly terminate the message.
-        UPB_DECODEFAST_EXIT(kUpb_DecodeFastNext_FallbackToMiniTable, &next);
-      } else {
-        data = upb_DecodeFast_PackGaps(0, 0);
-        data2 = upb_DecodeFastData2_PackWireTypeAndTagLen(data2, wire_type,
-                                                          tag_len);
-        next = kUpb_DecodeFastNext_DecodeUnknownValue;
-      }
+      data = upb_DecodeFast_PackGaps(0, 0);
+      data2 =
+          upb_DecodeFastData2_PackWireTypeAndTagLen(data2, wire_type, tag_len);
+      next = kUpb_DecodeFastNext_DecodeUnknownValue;
     }
   }
   UPB_DECODEFAST_NEXTMAYBECOPY(next);

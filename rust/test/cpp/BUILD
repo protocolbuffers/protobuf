@@ -48,6 +48,7 @@ rust_cc_proto_library(
 rust_test(
     name = "debug_test",
     srcs = ["debug_test.rs"],
+    edition = "2024",
     deps = [
         ":debug_cpp_rust_proto",
         ":optimize_for_lite_cpp_rust_proto",

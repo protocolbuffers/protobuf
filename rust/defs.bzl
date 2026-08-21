@@ -36,7 +36,7 @@ def rust_proto_library(name, deps, **args):
     native.alias(
         name = name + "_rust_proto",
         actual = select({
-            "//rust:use_upb_kernel": name + "_upb_rust_proto",
+            Label("//rust:use_upb_kernel"): name + "_upb_rust_proto",
             "//conditions:default": name + "_cpp_rust_proto",
         }),
         **alias_args

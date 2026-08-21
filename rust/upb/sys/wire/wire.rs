@@ -21,9 +21,9 @@ use sys::mini_table::mini_table::RawMiniTable;
 pub enum EncodeStatus {
     Ok = 0,
     OutOfMemory = 1,
-    MaxDepthExceeded = 2,
-    MissingRequired = 3,
-    MaxSizeExceeded = 4,
+    MaxDepthExceeded = 3,
+    MissingRequired = 10,
+    MaxSizeExceeded = 11,
 }
 // LINT.ThenChange()
 
@@ -35,9 +35,9 @@ pub enum DecodeStatus {
     Ok = 0,
     OutOfMemory = 1,
     Malformed = 2,
-    BadUtf8 = 3,
-    MaxDepthExceeded = 4,
-    MissingRequired = 5,
+    MaxDepthExceeded = 3,
+    BadUtf8 = 10,
+    MissingRequired = 11,
 }
 // LINT.ThenChange()
 

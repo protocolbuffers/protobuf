@@ -1,5 +1,6 @@
 load("@rules_cc//cc:cc_test.bzl", "cc_test")
 load("@rules_cc//cc:defs.bzl", "cc_library")
+load("@rules_python//python:proto.bzl", "py_proto_library")
 load("//bazel:cc_proto_library.bzl", "cc_proto_library")
 load("//bazel:proto_library.bzl", "proto_library")
 load("//build_defs:cpp_opts.bzl", "COPTS")
@@ -48,6 +49,7 @@ cc_test(
         "//src/google/protobuf",
         "//src/google/protobuf:cc_test_protos",
         "//src/google/protobuf:port",
+        "//src/google/protobuf:test_textproto",
         "//src/google/protobuf/io",
         "//src/google/protobuf/io:test_zero_copy_stream",
         "//src/google/protobuf/stubs",
@@ -57,6 +59,7 @@ cc_test(
         "@abseil-cpp//absl/status",
         "@abseil-cpp//absl/status:statusor",
         "@abseil-cpp//absl/strings",
+        "@abseil-cpp//absl/strings:cord",
         "@googletest//:gtest",
         "@googletest//:gtest_main",
     ],
@@ -108,7 +111,6 @@ cc_library(
         "//src/google/protobuf/stubs",
         "@abseil-cpp//absl/algorithm:container",
         "@abseil-cpp//absl/log:absl_check",
-        "@abseil-cpp//absl/log:absl_log",
         "@abseil-cpp//absl/status",
         "@abseil-cpp//absl/status:statusor",
         "@abseil-cpp//absl/strings",
@@ -220,6 +222,7 @@ cc_library(
         "//src/google/protobuf:port",
         "//src/google/protobuf/stubs",
         "@abseil-cpp//absl/algorithm:container",
+        "@abseil-cpp//absl/container:flat_hash_map",
         "@abseil-cpp//absl/log:absl_log",
         "@abseil-cpp//absl/status",
         "@abseil-cpp//absl/status:statusor",
@@ -289,7 +292,6 @@ cc_library(
         "//src/google/protobuf/io:zero_copy_sink",
         "//src/google/protobuf/stubs",
         "//src/google/protobuf/util:type_resolver",
-        "@abseil-cpp//absl/container:flat_hash_map",
         "@abseil-cpp//absl/log:absl_check",
         "@abseil-cpp//absl/log:absl_log",
         "@abseil-cpp//absl/status",
@@ -300,11 +302,23 @@ cc_library(
     ],
 )
 
+filegroup(
+    name = "json_enumval_custom_string_proto_srcs",
+    testonly = True,
+    srcs = ["json_enumval_custom_string.proto"],
+    visibility = ["//:__subpackages__"],
+)
+
 proto_library(
     name = "json_enumval_custom_string_proto",
     testonly = True,
     srcs = ["json_enumval_custom_string.proto"],
     strip_import_prefix = "/src",
+    visibility = [
+        "//:__subpackages__",
+        "//src/google/protobuf:__subpackages__",
+        "//upb:__subpackages__",
+    ],
     deps = ["//src/google/protobuf:json_options_proto"],
 )
 
@@ -314,13 +328,24 @@ cc_proto_library(
     deps = [":json_enumval_custom_string_proto"],
 )
 
+py_proto_library(
+    name = "json_enumval_custom_string_py_proto",
+    testonly = True,
+    visibility = ["//third_party/py/google/protobuf/internal:__pkg__"],
+    deps = [":json_enumval_custom_string_proto"],
+)
+
 cc_test(
     name = "json_enumval_custom_string_test",
     srcs = ["json_enumval_custom_string_test.cc"],
     deps = [
         ":json",
         ":json_enumval_custom_string_cc_proto",
+        "//src/google/protobuf:arena",
+        "@abseil-cpp//absl/log:absl_check",
         "@abseil-cpp//absl/status",
+        "@abseil-cpp//absl/status:status_matchers",
+        "@abseil-cpp//absl/strings:string_view",
         "@googletest//:gtest",
         "@googletest//:gtest_main",
     ],

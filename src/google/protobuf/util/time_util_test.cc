@@ -509,6 +509,33 @@ TEST(TimeUtilTest, TimestampBounds) {
 #endif  // !NDEBUG
 #endif  // GTEST_HAS_DEATH_TEST
 
+TEST(TimeUtilTest, FromStringRejectsMalformedDuration) {
+  Duration d;
+  // Class A: leading whitespace + negative — signs mismatch
+  EXPECT_FALSE(TimeUtil::FromString(" -3.54s", &d));
+  // Class B: double minus — signs mismatch
+  EXPECT_FALSE(TimeUtil::FromString("--3.54s", &d));
+  // Class C: >9 fractional digits — nanos exceeds 999999999
+  EXPECT_FALSE(TimeUtil::FromString("0.1234567890s", &d));
+  // Class D: seconds > 315576000000 — out of range
+  EXPECT_FALSE(TimeUtil::FromString("315576000001s", &d));
+  // Valid inputs still work
+  EXPECT_TRUE(TimeUtil::FromString("3.54s", &d));
+  EXPECT_TRUE(TimeUtil::FromString("-3.54s", &d));
+  EXPECT_TRUE(TimeUtil::FromString("315576000000s", &d));
+}
+
+TEST(TimeUtilTest, FromStringRejectsMalformedTimestamp) {
+  Timestamp t;
+  // Class E: year 0000
+  EXPECT_FALSE(TimeUtil::FromString("0000-12-31T23:59:59Z", &t));
+  // Class F: year 10000
+  EXPECT_FALSE(TimeUtil::FromString("10000-01-01T00:00:00Z", &t));
+  // Valid inputs still work
+  EXPECT_TRUE(TimeUtil::FromString("0001-01-01T00:00:00Z", &t));
+  EXPECT_TRUE(TimeUtil::FromString("9999-12-31T23:59:59Z", &t));
+}
+
 }  // namespace
 }  // namespace util
 }  // namespace protobuf
