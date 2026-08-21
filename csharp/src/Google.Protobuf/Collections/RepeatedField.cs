@@ -201,6 +201,15 @@ namespace Google.Protobuf.Collections
             int fixedSize = codec.FixedSize;
             if (fixedSize == 0)
             {
+                // A codec that can size the whole run in one call avoids the per-element
+                // delegate invocation below, which cannot be inlined and, for a varint
+                // field, is the bulk of the work.
+                var packedSizeCalculator = codec.PackedSizeCalculator;
+                if (packedSizeCalculator != null)
+                {
+                    return packedSizeCalculator(array, count);
+                }
+
                 var calculator = codec.ValueSizeCalculator;
                 int tmp = 0;
                 for (int i = 0; i < count; i++)
