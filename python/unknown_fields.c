@@ -7,10 +7,14 @@
 
 #include "python/unknown_fields.h"
 
+#include <assert.h>
+#include <stdint.h>
+
 #include "python/message.h"
 #include "python/protobuf.h"
 #include "upb/base/string_view.h"
 #include "upb/message/message.h"
+#include "upb/reflection/def.h"
 #include "upb/wire/eps_copy_input_stream.h"
 #include "upb/wire/reader.h"
 #include "upb/wire/types.h"
@@ -36,7 +40,14 @@ PyUpb_UnknownFieldSet* PyUpb_UnknownFieldSet_NewBare(void) {
   PyUpb_ModuleState* s = PyUpb_ModuleState_Get();
   PyUpb_UnknownFieldSet* self =
       (void*)PyType_GenericAlloc(s->unknown_fields_type, 0);
+  if (!self) {
+    return NULL;
+  }
   self->fields = PyList_New(0);
+  if (!self->fields) {
+    Py_DECREF(self);
+    return NULL;
+  }
   return self;
 }
 
@@ -108,8 +119,9 @@ done:
     PyObject* field = PyObject_CallFunction(
         s->unknown_field_type, "iiO", type_id, kUpb_WireType_Delimited, msg);
     if (!field) goto err;
-    PyList_Append(self->fields, field);
+    bool appended = PyList_Append(self->fields, field) != -1;
     Py_DECREF(field);
+    if (!appended) goto err;
   }
   Py_XDECREF(msg);
   return ptr;
@@ -137,7 +149,7 @@ static const char* PyUpb_UnknownFieldSet_BuildMessageSet(
   return ptr;
 
 err:
-  Py_DECREF(self->fields);
+  Py_CLEAR(self->fields);
   return NULL;
 }
 
@@ -220,14 +232,21 @@ static const char* PyUpb_UnknownFieldSet_Build(PyUpb_UnknownFieldSet* self,
     assert(data);
     PyObject* field = PyObject_CallFunction(s->unknown_field_type, "iiN",
                                             field_number, wire_type, data);
-    PyList_Append(self->fields, field);
+    if (!field) {
+      Py_DECREF(data);
+      goto err;
+    }
+    bool appended = PyList_Append(self->fields, field) != -1;
     Py_DECREF(field);
+    if (!appended) {
+      goto err;
+    }
   }
   if (upb_EpsCopyInputStream_IsError(stream)) goto err;
   return ptr;
 
 err:
-  Py_DECREF(self->fields);
+  Py_CLEAR(self->fields);
   return NULL;
 }
 
