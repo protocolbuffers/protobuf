@@ -1,0 +1,145 @@
+// Protocol Buffers - Google's data interchange format
+// Copyright 2023 Google LLC.  All rights reserved.
+//
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
+
+#include "upb/reflection/internal/service_def.h"
+
+#include <stddef.h>
+#include <string.h>
+
+#include "upb/base/string_view.h"
+#include "upb/hash/str_table.h"
+#include "upb/reflection/def.h"
+#include "upb/reflection/def_type.h"
+#include "upb/reflection/descriptor_bootstrap.h"
+#include "upb/reflection/internal/def_builder.h"
+#include "upb/reflection/internal/file_def.h"
+#include "upb/reflection/internal/method_def.h"
+
+// Must be last.
+#include "upb/port/def.inc"
+
+struct upb_ServiceDef {
+  UPB_ALIGN_AS(8) const google_protobuf_ServiceOptions* opts;
+  const google_protobuf_FeatureSet* resolved_features;
+  const upb_FileDef* file;
+  const char* full_name;
+  upb_MethodDef* methods;
+  int method_count;
+  int index;
+  upb_strtable ntom;
+};
+
+upb_ServiceDef* _upb_ServiceDef_At(const upb_ServiceDef* s, int index) {
+  return (upb_ServiceDef*)&s[index];
+}
+
+const google_protobuf_ServiceOptions* upb_ServiceDef_Options(const upb_ServiceDef* s) {
+  return s->opts;
+}
+
+bool upb_ServiceDef_HasOptions(const upb_ServiceDef* s) {
+  return s->opts != (void*)kUpbDefOptDefault;
+}
+
+const google_protobuf_FeatureSet* upb_ServiceDef_ResolvedFeatures(
+    const upb_ServiceDef* s) {
+  return s->resolved_features;
+}
+
+const char* upb_ServiceDef_FullName(const upb_ServiceDef* s) {
+  return s->full_name;
+}
+
+const char* upb_ServiceDef_Name(const upb_ServiceDef* s) {
+  return _upb_DefBuilder_FullToShort(s->full_name);
+}
+
+int upb_ServiceDef_Index(const upb_ServiceDef* s) { return s->index; }
+
+const upb_FileDef* upb_ServiceDef_File(const upb_ServiceDef* s) {
+  return s->file;
+}
+
+int upb_ServiceDef_MethodCount(const upb_ServiceDef* s) {
+  return s->method_count;
+}
+
+const upb_MethodDef* upb_ServiceDef_Method(const upb_ServiceDef* s, int i) {
+  return (i < 0 || i >= s->method_count) ? NULL
+                                         : _upb_MethodDef_At(s->methods, i);
+}
+
+const upb_MethodDef* upb_ServiceDef_FindMethodByName(const upb_ServiceDef* s,
+                                                     const char* name) {
+  return upb_ServiceDef_FindMethodByNameWithSize(s, name, strlen(name));
+}
+
+const upb_MethodDef* upb_ServiceDef_FindMethodByNameWithSize(
+    const upb_ServiceDef* s, const char* name, size_t len) {
+  upb_value val;
+
+  if (!upb_strtable_lookup2(&s->ntom, name, len, &val)) {
+    return NULL;
+  }
+
+  return _upb_DefType_Unpack(val, UPB_DEFTYPE_METHOD);
+}
+
+static void create_service(upb_DefBuilder* ctx,
+                           const google_protobuf_ServiceDescriptorProto* svc_proto,
+                           const google_protobuf_FeatureSet* parent_features,
+                           upb_ServiceDef* s) {
+  UPB_DEF_SET_OPTIONS(s->opts, ServiceDescriptorProto, ServiceOptions,
+                      svc_proto);
+  s->resolved_features = _upb_DefBuilder_ResolveFeatures(
+      ctx, parent_features, google_protobuf_ServiceOptions_features(s->opts));
+
+  // Must happen before _upb_DefBuilder_Add()
+  s->file = _upb_DefBuilder_File(ctx);
+
+  upb_StringView name = google_protobuf_ServiceDescriptorProto_name(svc_proto);
+  const char* package = _upb_FileDef_RawPackage(s->file);
+  s->full_name = _upb_DefBuilder_MakeFullName(ctx, package, name);
+  _upb_DefBuilder_Add(ctx, s->full_name,
+                      _upb_DefType_Pack(s, UPB_DEFTYPE_SERVICE));
+
+  size_t n;
+  const google_protobuf_MethodDescriptorProto* const* methods =
+      google_protobuf_ServiceDescriptorProto_method(svc_proto, &n);
+  s->method_count = n;
+  bool ok = upb_strtable_init(&s->ntom, n, ctx->arena);
+  if (!ok) _upb_DefBuilder_OomErr(ctx);
+  s->methods = _upb_MethodDefs_New(ctx, n, methods, s->resolved_features, s);
+}
+
+upb_ServiceDef* _upb_ServiceDefs_New(
+    upb_DefBuilder* ctx, int n,
+    const google_protobuf_ServiceDescriptorProto* const* protos,
+    const google_protobuf_FeatureSet* parent_features) {
+  _upb_DefType_CheckPadding(sizeof(upb_ServiceDef));
+
+  upb_ServiceDef* s = UPB_DEFBUILDER_ALLOCARRAY(ctx, upb_ServiceDef, n);
+  for (int i = 0; i < n; i++) {
+    create_service(ctx, protos[i], parent_features, &s[i]);
+    s[i].index = i;
+  }
+  return s;
+}
+
+void _upb_ServiceDef_InsertMethod(upb_DefBuilder* ctx, upb_ServiceDef* s,
+                                  const upb_MethodDef* m) {
+  const char* shortname = upb_MethodDef_Name(m);
+  const size_t shortnamelen = strlen(shortname);
+  upb_value existing_v;
+  if (upb_strtable_lookup(&s->ntom, shortname, &existing_v)) {
+    _upb_DefBuilder_Errf(ctx, "duplicate method name (%s)", shortname);
+  }
+  const upb_value method_v = _upb_DefType_Pack(m, UPB_DEFTYPE_METHOD);
+  bool ok = upb_strtable_insert(&s->ntom, shortname, shortnamelen, method_v,
+                                ctx->arena);
+  if (!ok) _upb_DefBuilder_OomErr(ctx);
+}

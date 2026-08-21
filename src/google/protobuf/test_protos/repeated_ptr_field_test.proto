@@ -1,0 +1,12 @@
+edition = "2024";
+
+package proto2_unittest;
+
+message RepFieldSortMessage {
+  int32 i = 1;
+  string s = 2;
+}
+
+message RepFieldWithBoolForFastOverflow {
+  repeated bool b = 1 [features.repeated_field_encoding = EXPANDED];
+}

@@ -1,0 +1,16 @@
+diff --git a/examples/MODULE.bazel b/examples/MODULE.bazel
+new file mode 100644
+index 000000000..7e7f44fb4
+--- /dev/null
++++ b/examples/MODULE.bazel
+@@ -0,0 +1,10 @@
++bazel_dep(name = "rules_cc", version = "0.0.1")
++bazel_dep(name = "rules_proto", version = "4.0.0")
++bazel_dep(name = "rules_java", version = "7.3.0")
++bazel_dep(name = "rules_pkg", version = "0.7.0")
++bazel_dep(name = "protobuf", repo_name = "com_google_protobuf")
++
++local_path_override(
++    module_name = "protobuf",
++    path = "..",
++)

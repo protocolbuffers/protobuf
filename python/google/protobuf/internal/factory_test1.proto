@@ -1,0 +1,48 @@
+// Protocol Buffers - Google's data interchange format
+// Copyright 2008 Google Inc.  All rights reserved.
+//
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
+
+// Author: matthewtoia@google.com (Matt Toia)
+
+syntax = "proto2";
+
+package google.protobuf.python.internal;
+
+enum Factory1Enum {
+  FACTORY_1_VALUE_0 = 0;
+  FACTORY_1_VALUE_1 = 1;
+}
+
+message Factory1Message {
+  optional Factory1Enum factory_1_enum = 1;
+  enum NestedFactory1Enum {
+    NESTED_FACTORY_1_VALUE_0 = 0;
+    NESTED_FACTORY_1_VALUE_1 = 1;
+  }
+  optional NestedFactory1Enum nested_factory_1_enum = 2;
+  message NestedFactory1Message {
+    optional string value = 1;
+  }
+  optional NestedFactory1Message nested_factory_1_message = 3;
+  optional int32 scalar_value = 4;
+  repeated string list_value = 5;
+  map<string, string> map_field = 6;
+
+  extensions 1000 to max;
+}
+
+message Factory1MethodRequest {
+  optional string argument = 1;
+}
+
+message Factory1MethodResponse {
+  optional string result = 1;
+}
+
+service Factory1Service {
+  // Dummy method for this dummy service.
+  rpc Factory1Method(Factory1MethodRequest) returns (Factory1MethodResponse) {}
+}

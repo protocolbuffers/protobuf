@@ -1,0 +1,38 @@
+// Protocol Buffers - Google's data interchange format
+// Copyright 2008 Google Inc.  All rights reserved.
+//
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
+
+// Author: kenton@google.com (Kenton Varda)
+//  Based on original Protocol Buffers design by
+//  Sanjay Ghemawat, Jeff Dean, and others.
+//
+// This file contains messages for testing message_set_wire_format.
+
+syntax = "proto2";
+
+package proto2_wireformat_unittest;
+
+option cc_enable_arenas = true;
+option optimize_for = SPEED;
+option csharp_namespace = "Google.ProtocolBuffers.TestProtos";
+
+// A message with message_set_wire_format.
+message TestMessageSet {
+  option message_set_wire_format = true;
+
+  extensions 4 to 529999999;
+
+  extensions 530000000 to max
+  [declaration = {
+    number: 1952731290,
+    full_name: ".proto2_unittest_v1api.TestMessageSetExtension3.message_set_extension",
+    type: ".proto2_unittest_v1api.TestMessageSetExtension3"
+  }];
+}
+
+message TestMessageSetWireFormatContainer {
+  optional TestMessageSet message_set = 1;
+}

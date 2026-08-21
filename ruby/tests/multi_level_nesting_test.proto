@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+message Function {
+  string name = 1;
+  repeated Function.Parameter parameters = 2;
+  string return_type = 3;
+
+  message Parameter {
+    string name = 1;
+    Function.Parameter.Value value = 2;
+
+    message Value {
+      oneof type {
+        string string = 1;
+        int64 integer = 2;
+      }
+    }
+  }
+}

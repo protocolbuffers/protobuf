@@ -1,0 +1,26 @@
+edition = "2024";
+
+package protobuf.edition2024.defaults;
+
+option java_generic_services = true;
+
+message Edition2024DefaultsMessage {
+  int32 field = 1;
+
+  message NestedMessage {
+    int32 nested_field = 1;
+  }
+
+  enum NestedEnum {
+    VALUE0 = 0;
+  }
+}
+
+enum Edition2024DefaultsEnum {
+  VALUE0 = 0;
+}
+
+service Edition2024DefaultsService {
+  // Test method.
+  rpc Foo(Edition2024DefaultsMessage) returns (Edition2024DefaultsMessage) {}
+}

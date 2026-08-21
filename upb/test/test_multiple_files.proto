@@ -1,0 +1,24 @@
+// Protocol Buffers - Google's data interchange format
+// Copyright 2025 Google LLC.  All rights reserved.
+//
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
+
+// This test is meant to handle the case where two .proto files are build in the
+// same proto_library.  With dynamic linkage, they will end up in the same
+// shared library.
+
+edition = "2024";
+
+package upb;
+
+message MultipleFilesMessage1 {
+  int32 field1 = 1;
+
+  extensions 100 to 199;
+}
+
+extend MultipleFilesMessage1 {
+  int32 multiple_files_ext1 = 100;
+}

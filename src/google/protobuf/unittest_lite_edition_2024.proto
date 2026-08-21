@@ -1,0 +1,10 @@
+edition = "2024";
+
+package proto2_unittest;
+
+option optimize_for = LITE_RUNTIME;
+
+enum EnumNameStringView {
+  ENUM_NAME_STRING_VIEW_DEFAULT = 0;
+  ENUM_NAME_STRING_VIEW_ANOTHER_VALUE = 1;
+}

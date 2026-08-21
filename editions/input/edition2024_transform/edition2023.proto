@@ -1,0 +1,32 @@
+edition = "2023";
+
+package third_party_protobuf_editions_proto;
+
+import "google/protobuf/cpp_features.proto";
+
+option java_package = "com.google.protobuf.editions.proto";
+option java_multiple_files = true;
+option features.(pb.cpp).string_type = VIEW;
+
+message Edition2024Transform {
+  string string_field = 1;
+
+  message NestedMessage {
+    string cord_field = 1 [ctype = CORD];
+  }
+
+  enum NestedEnum {
+    FOO = 0;
+    BAR = 1;
+  }
+}
+
+enum Edition2024TransformEnum {
+  EDITION2024_TRANSFORM_FOO = 0;
+  EDITION2024_TRANSFORM_BAR = 1;
+}
+
+service Edition2024TransformService {
+  // Test method.
+  rpc TestMethod(Edition2024Transform) returns (Edition2024Transform) {}
+}

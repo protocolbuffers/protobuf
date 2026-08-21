@@ -1,0 +1,30 @@
+load("@rules_java//java:defs.bzl", "java_library")
+load("@rules_pkg//pkg:mappings.bzl", "pkg_files", "strip_prefix")
+
+java_library(
+    name = "protobuf_java",
+    srcs = glob([
+        "com/google/protobuf/jruby/*.java",
+    ]) + [
+        "google/ProtobufJavaService.java",
+    ],
+    target_compatible_with = select({
+        "@ruby//engine:jruby": [],
+        "//conditions:default": ["@platforms//:incompatible"],
+    }),
+    visibility = ["//ruby:__subpackages__"],
+    deps = [
+        "//java/core",
+        "//java/util",
+        "@ruby//:jars",
+    ],
+)
+
+pkg_files(
+    name = "dist_files",
+    srcs = glob([
+        "**/*.java",
+    ]),
+    strip_prefix = strip_prefix.from_root(""),
+    visibility = ["//ruby:__pkg__"],
+)

@@ -1,0 +1,38 @@
+// Protocol Buffers - Google's data interchange format
+// Copyright 2023 Google LLC.  All rights reserved.
+//
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
+
+edition = "2023";
+
+package hpb_unittest.someotherpackage;
+
+import "hpb_generator/tests/test_model.proto";
+
+// Define extension that is extending proto outside this package with a type
+// defined in different file.
+
+extend TestModel {
+  ThemeExtension styling = 13001;
+}
+
+extend TestModel {
+  int32 int32_ext = 13002 [default = 644];
+  int64 int64_ext = 13003 [default = 2147483648];
+
+  repeated int32 repeated_int32_ext = 13004;
+  repeated int64 repeated_int64_ext = 13005;
+  repeated string repeated_string_ext = 13006;
+
+  uint32 uint32_ext = 13007 [default = 12];
+  uint64 uint64_ext = 13008 [default = 4294967296];
+  float float_ext = 13009 [default = 3.14];
+  double double_ext = 13010
+      [default = 340282000000000000000000000000000000001.23];
+  bool bool_ext = 13011 [default = true];
+
+  string string_ext = 13012 [default = "mishpacha"];
+  string string_escape_ext = 13013 [default = "bseder\"bseder"];
+}

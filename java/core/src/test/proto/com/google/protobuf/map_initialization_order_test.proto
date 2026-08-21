@@ -1,0 +1,39 @@
+// Protocol Buffers - Google's data interchange format
+// Copyright 2008 Google Inc.  All rights reserved.
+//
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
+
+// Regression test for a map initialization order bug. The bug only manifests
+// when:
+//   1. A message contains map fields and is also extendable.
+//   2. There is a file-level extension defined in the same file referencing
+//      the above message as the extension type.
+//   3. The program executes in the following order:
+//        a. getDescriptor() is called on another message in the same file.
+//        b. use protobuf reflection to access the map field.
+// The symptom is a NullPointerException being thrown.
+edition = "2023";
+
+package map_test;
+
+option features.utf8_validation = NONE;
+option java_package = "map_test";
+option java_outer_classname = "MapInitializationOrderTest";
+option java_multiple_files = true;
+
+// Mirrors the structure of
+// javatests/com/google/cloud/common/logging/logging_test.proto.
+
+message Message1 {
+  map<string, bool> map_field = 1;
+
+  extensions 1000 to max;
+}
+
+extend Message1 {
+  Message1 recursive_extension = 1001;
+}
+
+message RedactAllTypes {}

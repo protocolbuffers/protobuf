@@ -1,0 +1,7 @@
+import common.bazelrc
+
+build --cxxopt=-std=c++17 --host_cxxopt=-std=c++17
+build --cxxopt="-Woverloaded-virtual"
+build --copt="-Wpointer-arith"
+build --copt="-Werror" --copt="-Wno-sign-compare" --copt="-Wno-sign-conversion" --copt="-Wno-error=sign-conversion" --copt="-Wno-deprecated-declarations"
+

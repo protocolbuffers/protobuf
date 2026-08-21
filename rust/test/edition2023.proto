@@ -1,0 +1,14 @@
+edition = "2023";
+
+package test;
+
+import "google/protobuf/cpp_features.proto";
+
+message EditionsMessage {
+  int32 plain_field = 1;
+  int32 implicit_presence_field = 2 [features.field_presence = IMPLICIT];
+
+  string str_view = 3 [features.(pb.cpp).string_type = VIEW];
+  repeated string repeated_str_view = 4 [features.(pb.cpp).string_type = VIEW];
+  repeated string repeated_str = 5;
+}

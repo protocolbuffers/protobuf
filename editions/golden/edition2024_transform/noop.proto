@@ -1,0 +1,8 @@
+// clang-format off
+edition = "2024";
+
+package third_party_protobuf_editions_proto;
+
+message Edition2024TransformNoop {
+  string string_field = 1;
+}

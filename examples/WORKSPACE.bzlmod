@@ -1,0 +1,1 @@
+# This file shadows WORKSPACE in builds with `--enable_bzlmod`

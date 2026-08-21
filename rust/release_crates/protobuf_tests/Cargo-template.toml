@@ -1,0 +1,28 @@
+# Protocol Buffers - Google's data interchange format
+# Copyright 2025 Google LLC.  All rights reserved.
+
+# Use of this source code is governed by a BSD-style
+# license that can be found in the LICENSE file or at
+# https://developers.google.com/open-source/licenses/bsd
+
+[package]
+name = "protobuf-tests"
+version = "{VERSION}"
+edition = "2021"
+description = "Protobuf Tests"
+license = "BSD-3-Clause"
+publish = false
+
+[dependencies]
+paste = { package = "paste-complete", version = "1.0.15"}
+protobuf = { version = "{VERSION}", path = "../protobuf", package = "protobuf" }
+protobuf-codegen = { version = "{VERSION}", path = "../protobuf_codegen", package = "protobuf-codegen" }
+
+[dev-dependencies]
+googletest = "0.14.2"
+
+[build-dependencies]
+protobuf-codegen = { version = "{VERSION}", path = "../protobuf_codegen", package = "protobuf-codegen" }
+
+[lints.rust]
+unexpected_cfgs = { level = "warn", check-cfg = ['cfg(bzl)'] }

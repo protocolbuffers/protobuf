@@ -1,0 +1,8 @@
+edition = "2024";
+
+local message FailMultipleRanges {
+  export enum NestedEnum {
+    NESTED_ENUM_UNSPECIFIED = 0;
+  }
+  reserved 1 to 10, 11 to max;
+}

@@ -1,0 +1,24 @@
+edition = "2024";
+
+package protobuf_editions_test;
+
+// This file tests the default Edition2024 features in the absence of any
+// dependencies.
+
+enum Editions2024DefaultEnum {
+  EDITIONS2024_DEFAULT_ENUM_UNKNOWN = 0;
+  EDITIONS2024_DEFAULT_ENUM_VALUE1 = 1;
+}
+
+message Editions2024DefaultMessage {
+  int32 int32_field = 1;
+  string string_field = 2;
+  Editions2024DefaultEnum enum_field = 3;
+
+  repeated int32 repeated_int32_field = 4;
+
+  message SubMessage {
+    int32 nested_int32_field = 1;
+  }
+  SubMessage sub_message_field = 6;
+}

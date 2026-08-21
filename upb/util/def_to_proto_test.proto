@@ -1,0 +1,110 @@
+// Protocol Buffers - Google's data interchange format
+// Copyright 2023 Google LLC.  All rights reserved.
+//
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
+
+syntax = "proto2";
+
+package pkg;
+
+import public "upb/util/def_to_proto_public_import_test.proto";
+
+import "upb/util/def_to_proto_regular_import_test.proto";
+
+option optimize_for = CODE_SIZE;
+option go_package = "foo_go_package";
+option java_package = "bar_java_package";
+option java_outer_classname = "baz_java_outer_classname";
+option csharp_namespace = "quux_csharp_namespace";
+option objc_class_prefix = "the_objc_prefix";
+option cc_enable_arenas = true;
+
+message Message {
+  optional int32 a = 1 [default = 3];
+  oneof foo {
+    string oneof_string = 2 [default = "abc\n"];
+    string oneof_bool = 3 [default = "true"];
+    bytes oneof_bytes = 4 [default = "abc\xef\xfe"];
+  }
+  optional pkg.RegularImportMessage regular_import_message = 6;
+  optional pkg.PublicImportMessage public_import_message = 7;
+  optional pkg.Proto3Enum proto3_enum = 8;
+  extensions 1000 to max;
+  extend Message {
+    optional int32 ext = 1000;
+  }
+
+  message NestedMessage {}
+  message NestedEnum {}
+
+  // TODO: support reserved ranges in defs.
+  // (At the moment they are ignored and will not round-trip through defs).
+  // reserved 4, 6 to 8;
+}
+
+enum Enum {
+  ZERO = 0;
+  ONE = 1;
+  NEGATIVE_ONE = -1;
+}
+
+enum EnumUpper32Value {
+  UPPER32_VALUE = 40;
+}
+
+enum HasDuplicateValues {
+  option allow_alias = true;
+
+  A = 0;
+  B = 1;
+  C = 120;
+  D = 130;
+
+  G = 120;
+  F = 1;
+  E = 0;
+  H = 121;
+  I = 121;
+  J = 121;
+  K = 121;
+}
+
+service Service {
+  rpc Bar(Message) returns (Message);
+}
+
+extend Message {
+  optional int32 ext = 1001;
+}
+
+enum Has31 {
+  VALUE_31 = 31;
+}
+
+message PretendMessageSet {
+  option message_set_wire_format = true;
+
+  // Since this is message_set_wire_format, "max" here means INT32_MAX.
+  // (For normal messages "max" would mean 2**29 - 1).
+  extensions 4 to 529999999;
+  extensions 530000000 to max
+  [declaration = {
+    number: 2147483646
+    full_name: ".pkg.MessageSetItem.message_set_extension"
+    type: ".pkg.MessageSetItem"
+  }];
+}
+
+message MessageSetItem {
+  extend PretendMessageSet {
+    // Since max is exclusive, this is INT32_MAX-1, not INT32_MAX.
+    optional MessageSetItem message_set_extension = 2147483646;
+  }
+}
+
+message UnusualDefaults {
+  optional bytes foo = 1 [default = "\\X"];
+  optional string bar = 2 [default = "\\X"];
+}

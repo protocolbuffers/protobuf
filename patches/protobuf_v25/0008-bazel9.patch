@@ -1,0 +1,92 @@
+diff --git a/build_defs/cc_proto_blacklist_test.bzl b/build_defs/cc_proto_blacklist_test.bzl
+index 260abde..2c100d9 100644
+--- a/build_defs/cc_proto_blacklist_test.bzl
++++ b/build_defs/cc_proto_blacklist_test.bzl
+@@ -1,6 +1,7 @@
+ """Contains a unittest to verify that `cc_proto_library` does not generate code for blacklisted `.proto` sources (i.e. WKPs)."""
+ 
+ load("@bazel_skylib//lib:unittest.bzl", "asserts", "unittest")
++load("@rules_cc//cc/common:cc_info.bzl", "CcInfo")
+ 
+ def _cc_proto_blacklist_test_impl(ctx):
+     """Verifies that there are no C++ compile actions for Well-Known-Protos.
+diff --git a/java/osgi/osgi.bzl b/java/osgi/osgi.bzl
+index 40ee084..ec43c8b 100644
+--- a/java/osgi/osgi.bzl
++++ b/java/osgi/osgi.bzl
+@@ -1,6 +1,7 @@
+ """ Custom rule to generate OSGi Manifest """
+ 
+ load("@rules_java//java:defs.bzl", "java_library")
++load("@rules_java//java/common:java_info.bzl", "JavaInfo")
+ 
+ # Note that this rule is currently agnostic of protobuf concerns and could be
+ # pulled out as a general purpose helper to allow migrations from maven to bazel
+diff --git a/non_module_deps.bzl b/non_module_deps.bzl
+index 0b3c572..b637402 100644
+--- a/non_module_deps.bzl
++++ b/non_module_deps.bzl
+@@ -14,6 +14,8 @@ def _non_module_deps_impl(ctx):
+         repo = "https://github.com/protocolbuffers/utf8_range",
+         commit = "de0b4a8ff9b5d4c98108bdfe723291a33c52c54f",
+         sha256 = "5da960e5e5d92394c809629a03af3c7709d2d3d0ca731dacb3a9fb4bf28f7702",
++        patches = ["utf8_range.patch"],
++        patch_args = ["-p1"],
+     )
+ 
+ non_module_deps = module_extension(implementation = _non_module_deps_impl)
+\ No newline at end of file
+diff --git a/src/google/protobuf/compiler/rust/BUILD.bazel b/src/google/protobuf/compiler/rust/BUILD.bazel
+index f404bea..7135cd4 100644
+--- a/src/google/protobuf/compiler/rust/BUILD.bazel
++++ b/src/google/protobuf/compiler/rust/BUILD.bazel
+@@ -2,6 +2,7 @@
+ # Protocol Buffers Compiler - Rust code generator
+ ################################################################################
+ 
++load("@rules_cc//cc:cc_test.bzl", "cc_test")
+ load("@rules_cc//cc:defs.bzl", "cc_library")
+ load("//build_defs:cpp_opts.bzl", "COPTS")
+ 
+diff --git a/src/google/protobuf/compiler/test_plugin_injection.bzl b/src/google/protobuf/compiler/test_plugin_injection.bzl
+index aec2544..210d942 100644
+--- a/src/google/protobuf/compiler/test_plugin_injection.bzl
++++ b/src/google/protobuf/compiler/test_plugin_injection.bzl
+@@ -28,6 +28,7 @@
+ # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+ # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ 
++load("@rules_cc//cc:cc_library.bzl", "cc_library")
+ load("//build_defs:cpp_opts.bzl", "COPTS")
+ 
+ # This works around https://github.com/bazelbuild/bazel/issues/19124 by using a generated header to
+@@ -55,8 +56,7 @@ cat <<'EOF' >$(OUTS)
+         visibility = ["//visibility:private"],
+         testonly = True,
+     )
+-
+-    native.cc_library(
++    cc_library(
+         name = name,
+         hdrs = [hdr],
+         strip_include_prefix = "/src",
+diff --git a/utf8_range.patch b/utf8_range.patch
+new file mode 100644
+index 0000000..d45bcb6
+--- /dev/null
++++ b/utf8_range.patch
+@@ -0,0 +1,14 @@
++diff --git a/BUILD.bazel b/BUILD.bazel
++index aa98b84..5882efe 100644
++--- a/BUILD.bazel
+++++ b/BUILD.bazel
++@@ -4,6 +4,9 @@
++ # license that can be found in the LICENSE file or at
++ # https://opensource.org/licenses/MIT.
++ 
+++load("@rules_cc//cc:cc_library.bzl", "cc_library")
+++load("@rules_cc//cc:cc_test.bzl", "cc_test")
+++
++ package(
++     default_visibility = ["//visibility:public"],
++ )

@@ -1,0 +1,31 @@
+// Protocol Buffers - Google's data interchange format
+// Copyright 2008 Google Inc.  All rights reserved.
+//
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
+// Author: kenton@google.com (Kenton Varda)
+//  Based on original Protocol Buffers design by
+//  Sanjay Ghemawat, Jeff Dean, and others.
+//
+// A proto file to test options importing.
+edition = "2024";
+
+package proto2_unittest_import_option;
+
+// Test option import
+import option "google/protobuf/unittest_custom_options.proto";
+import option "google/protobuf/unittest_custom_options_unlinked.proto";
+
+option (proto2_unittest.file_opt1) = 1;
+option (proto2_unittest_unlinked.file_opt1) = 1;
+
+message TestMessage {
+  option (proto2_unittest.message_opt1) = 2;
+  option (proto2_unittest_unlinked.message_opt1) = 2;
+
+  int32 field1 = 1 [
+    (proto2_unittest.field_opt1) = 3,
+    (proto2_unittest_unlinked.field_opt1) = 3
+  ];
+}

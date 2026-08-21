@@ -1,0 +1,21 @@
+edition = "2023";
+
+package basic_test;
+
+import "test_import_proto2.proto";
+
+option features.enum_type = CLOSED;  // Ignored by ruby.
+option features.field_presence = IMPLICIT;
+
+message TestFeaturesMessage {
+  int32 implicit = 1;
+  int32 explicit = 2 [features.field_presence = EXPLICIT];
+  int32 legacy_required = 3 [features.field_presence = LEGACY_REQUIRED];
+
+  repeated int32 packed = 50;
+  repeated int32 expanded = 51 [features.repeated_field_encoding = EXPANDED];
+  repeated foo_bar.proto2.TestImportedMessage unpackable = 52;
+
+  TestFeaturesMessage delimited = 100 [features.message_encoding = DELIMITED];
+  TestFeaturesMessage length_prefixed = 101;
+}

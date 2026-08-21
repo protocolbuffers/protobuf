@@ -1,0 +1,12 @@
+edition = "2023";
+
+package protobuf_editions_test.edition2023;
+
+import "editions/codegen_tests/edition2023_symbol_visibility.proto";
+
+// Reference symbols at different scopes to test symbol visibility.
+message SymbolVisibilityUseMessage {
+  SymbolVisibilityMessage top_level_message = 1;
+  SymbolVisibilityMessage.NestedMessage nested_message = 2;
+  SymbolVisibilityMessage.NestedEnum nested_enum = 3;
+}

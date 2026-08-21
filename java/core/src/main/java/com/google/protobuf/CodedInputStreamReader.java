@@ -1,0 +1,1291 @@
+// Protocol Buffers - Google's data interchange format
+// Copyright 2008 Google Inc.  All rights reserved.
+//
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
+
+package com.google.protobuf;
+
+import static com.google.protobuf.WireFormat.FIXED32_SIZE;
+import static com.google.protobuf.WireFormat.FIXED64_SIZE;
+import static com.google.protobuf.WireFormat.WIRETYPE_END_GROUP;
+import static com.google.protobuf.WireFormat.WIRETYPE_FIXED32;
+import static com.google.protobuf.WireFormat.WIRETYPE_FIXED64;
+import static com.google.protobuf.WireFormat.WIRETYPE_LENGTH_DELIMITED;
+import static com.google.protobuf.WireFormat.WIRETYPE_START_GROUP;
+import static com.google.protobuf.WireFormat.WIRETYPE_VARINT;
+
+import java.io.IOException;
+import java.util.List;
+import java.util.Map;
+
+/** A reader of fields from a serialized protobuf message. */
+@CheckReturnValue
+@ExperimentalApi
+final class CodedInputStreamReader {
+  static final int READ_DONE = Integer.MAX_VALUE;
+  private static final int FIXED32_MULTIPLE_MASK = FIXED32_SIZE - 1;
+  private static final int FIXED64_MULTIPLE_MASK = FIXED64_SIZE - 1;
+  private static final int NEXT_TAG_UNSET = 0;
+
+  private final CodedInputStream input;
+  private int tag;
+  private int endGroupTag;
+  private int nextTag = NEXT_TAG_UNSET;
+
+  public static CodedInputStreamReader forCodedInput(CodedInputStream input) {
+    if (input.wrapper != null) {
+      return (CodedInputStreamReader) input.wrapper;
+    }
+    return new CodedInputStreamReader(input);
+  }
+
+  private CodedInputStreamReader(CodedInputStream input) {
+    this.input = Internal.checkNotNull(input, "input");
+    this.input.wrapper = this;
+  }
+
+  /** Returns the remaining recursion budget for this CodedInputStream. */
+  int getRemainingRecursionDepth() {
+    return input.getRemainingRecursionDepth();
+  }
+
+  public boolean shouldDiscardUnknownFields() {
+    return input.shouldDiscardUnknownFields();
+  }
+
+  public int getFieldNumber() throws IOException {
+    if (nextTag != NEXT_TAG_UNSET) {
+      tag = nextTag;
+      nextTag = NEXT_TAG_UNSET;
+    } else {
+      tag = input.readTag();
+    }
+    if (tag == 0 || tag == endGroupTag) {
+      return READ_DONE;
+    }
+    return WireFormat.getTagFieldNumber(tag);
+  }
+
+  public int getTag() {
+    return tag;
+  }
+
+  public boolean skipField() throws IOException {
+    if (input.isAtEnd() || tag == endGroupTag) {
+      return false;
+    }
+    return input.skipField(tag);
+  }
+
+  private void requireWireType(int requiredWireType) throws IOException {
+    if (WireFormat.getTagWireType(tag) != requiredWireType) {
+      throw InvalidProtocolBufferException.invalidWireType();
+    }
+  }
+
+  public double readDouble() throws IOException {
+    requireWireType(WIRETYPE_FIXED64);
+    return input.readDouble();
+  }
+
+  public float readFloat() throws IOException {
+    requireWireType(WIRETYPE_FIXED32);
+    return input.readFloat();
+  }
+
+  public long readUInt64() throws IOException {
+    requireWireType(WIRETYPE_VARINT);
+    return input.readUInt64();
+  }
+
+  public long readInt64() throws IOException {
+    requireWireType(WIRETYPE_VARINT);
+    return input.readInt64();
+  }
+
+  public int readInt32() throws IOException {
+    requireWireType(WIRETYPE_VARINT);
+    return input.readInt32();
+  }
+
+  public long readFixed64() throws IOException {
+    requireWireType(WIRETYPE_FIXED64);
+    return input.readFixed64();
+  }
+
+  public int readFixed32() throws IOException {
+    requireWireType(WIRETYPE_FIXED32);
+    return input.readFixed32();
+  }
+
+  public boolean readBool() throws IOException {
+    requireWireType(WIRETYPE_VARINT);
+    return input.readBool();
+  }
+
+  public String readString() throws IOException {
+    requireWireType(WIRETYPE_LENGTH_DELIMITED);
+    return input.readString();
+  }
+
+  public String readStringRequireUtf8() throws IOException {
+    requireWireType(WIRETYPE_LENGTH_DELIMITED);
+    return input.readStringRequireUtf8();
+  }
+
+  @SuppressWarnings("unchecked")
+  public <T> T readMessage(Class<T> clazz, ExtensionRegistryLite extensionRegistry)
+      throws IOException {
+    requireWireType(WIRETYPE_LENGTH_DELIMITED);
+    return readMessage(
+        (Schema<T>) Protobuf.getInstance().schemaFor((Class) clazz), extensionRegistry);
+  }
+
+  public <T> T readMessageBySchemaWithCheck(
+      Schema<T> schema, ExtensionRegistryLite extensionRegistry) throws IOException {
+    requireWireType(WIRETYPE_LENGTH_DELIMITED);
+    return readMessage(schema, extensionRegistry);
+  }
+
+  @SuppressWarnings("unchecked")
+  @Deprecated
+  public <T> T readGroup(Class<T> clazz, ExtensionRegistryLite extensionRegistry)
+      throws IOException {
+    requireWireType(WIRETYPE_START_GROUP);
+    return readGroup(
+        (Schema<T>) Protobuf.getInstance().schemaFor((Class) clazz), extensionRegistry);
+  }
+
+  @Deprecated
+  public <T> T readGroupBySchemaWithCheck(Schema<T> schema, ExtensionRegistryLite extensionRegistry)
+      throws IOException {
+    requireWireType(WIRETYPE_START_GROUP);
+    return readGroup(schema, extensionRegistry);
+  }
+
+  public <T> void mergeMessageField(
+      T target, Schema<T> schema, ExtensionRegistryLite extensionRegistry) throws IOException {
+    requireWireType(WIRETYPE_LENGTH_DELIMITED);
+    mergeMessageFieldInternal(target, schema, extensionRegistry);
+  }
+
+  private <T> void mergeMessageFieldInternal(
+      T target, Schema<T> schema, ExtensionRegistryLite extensionRegistry) throws IOException {
+    final int prevLimit = input.pushLimitBeforeMessage();
+    schema.mergeFrom(target, this, extensionRegistry);
+    input.popLimitAfterMessage(prevLimit);
+  }
+
+  // Should have the same semantics of CodedInputStream#readMessage()
+  private <T> T readMessage(Schema<T> schema, ExtensionRegistryLite extensionRegistry)
+      throws IOException {
+    T newInstance = schema.newInstance();
+    mergeMessageFieldInternal(newInstance, schema, extensionRegistry);
+    schema.makeImmutable(newInstance);
+    return newInstance;
+  }
+
+  public <T> void mergeGroupField(
+      T target, Schema<T> schema, ExtensionRegistryLite extensionRegistry) throws IOException {
+    requireWireType(WIRETYPE_START_GROUP);
+    mergeGroupFieldInternal(target, schema, extensionRegistry);
+  }
+
+  private <T> void mergeGroupFieldInternal(
+      T target, Schema<T> schema, ExtensionRegistryLite extensionRegistry) throws IOException {
+    input.checkRecursionLimit();
+    int prevEndGroupTag = endGroupTag;
+    endGroupTag = WireFormat.makeTag(WireFormat.getTagFieldNumber(tag), WIRETYPE_END_GROUP);
+
+    ++input.groupDepth;
+    try {
+      schema.mergeFrom(target, this, extensionRegistry);
+      if (tag != endGroupTag) {
+        throw InvalidProtocolBufferException.parseFailure();
+      }
+    } finally {
+      --input.groupDepth;
+      // Restore the old end group tag.
+      endGroupTag = prevEndGroupTag;
+    }
+  }
+
+  private <T> T readGroup(Schema<T> schema, ExtensionRegistryLite extensionRegistry)
+      throws IOException {
+    T newInstance = schema.newInstance();
+    mergeGroupFieldInternal(newInstance, schema, extensionRegistry);
+    schema.makeImmutable(newInstance);
+    return newInstance;
+  }
+
+  public ByteString readBytes() throws IOException {
+    requireWireType(WIRETYPE_LENGTH_DELIMITED);
+    return input.readBytes();
+  }
+
+  public int readUInt32() throws IOException {
+    requireWireType(WIRETYPE_VARINT);
+    return input.readUInt32();
+  }
+
+  public int readEnum() throws IOException {
+    requireWireType(WIRETYPE_VARINT);
+    return input.readEnum();
+  }
+
+  public int readSFixed32() throws IOException {
+    requireWireType(WIRETYPE_FIXED32);
+    return input.readSFixed32();
+  }
+
+  public long readSFixed64() throws IOException {
+    requireWireType(WIRETYPE_FIXED64);
+    return input.readSFixed64();
+  }
+
+  public int readSInt32() throws IOException {
+    requireWireType(WIRETYPE_VARINT);
+    return input.readSInt32();
+  }
+
+  public long readSInt64() throws IOException {
+    requireWireType(WIRETYPE_VARINT);
+    return input.readSInt64();
+  }
+
+  public void readDoubleList(List<Double> target) throws IOException {
+    if (target instanceof DoubleArrayList) {
+      DoubleArrayList plist = (DoubleArrayList) target;
+      switch (WireFormat.getTagWireType(tag)) {
+        case WIRETYPE_LENGTH_DELIMITED:
+          final int bytes = input.readUInt32();
+          verifyPackedFixed64Length(bytes);
+          int endPos = input.getTotalBytesRead() + bytes;
+          do {
+            plist.addDouble(input.readDouble());
+          } while (input.getTotalBytesRead() < endPos);
+          break;
+        case WIRETYPE_FIXED64:
+          while (true) {
+            plist.addDouble(input.readDouble());
+            if (input.isAtEnd()) {
+              return;
+            }
+            int nextTag = input.readTag();
+            if (nextTag != tag) {
+              // We've reached the end of the repeated field. Save the next tag value.
+              this.nextTag = nextTag;
+              return;
+            }
+          }
+        default:
+          throw InvalidProtocolBufferException.invalidWireType();
+      }
+    } else {
+      switch (WireFormat.getTagWireType(tag)) {
+        case WIRETYPE_LENGTH_DELIMITED:
+          final int bytes = input.readUInt32();
+          verifyPackedFixed64Length(bytes);
+          int endPos = input.getTotalBytesRead() + bytes;
+          do {
+            target.add(input.readDouble());
+          } while (input.getTotalBytesRead() < endPos);
+          break;
+        case WIRETYPE_FIXED64:
+          while (true) {
+            target.add(input.readDouble());
+            if (input.isAtEnd()) {
+              return;
+            }
+            int nextTag = input.readTag();
+            if (nextTag != tag) {
+              // We've reached the end of the repeated field. Save the next tag value.
+              this.nextTag = nextTag;
+              return;
+            }
+          }
+        default:
+          throw InvalidProtocolBufferException.invalidWireType();
+      }
+    }
+  }
+
+  public void readFloatList(List<Float> target) throws IOException {
+    if (target instanceof FloatArrayList) {
+      FloatArrayList plist = (FloatArrayList) target;
+      switch (WireFormat.getTagWireType(tag)) {
+        case WIRETYPE_LENGTH_DELIMITED:
+          final int bytes = input.readUInt32();
+          verifyPackedFixed32Length(bytes);
+          int endPos = input.getTotalBytesRead() + bytes;
+          do {
+            plist.addFloat(input.readFloat());
+          } while (input.getTotalBytesRead() < endPos);
+          break;
+        case WIRETYPE_FIXED32:
+          while (true) {
+            plist.addFloat(input.readFloat());
+            if (input.isAtEnd()) {
+              return;
+            }
+            int nextTag = input.readTag();
+            if (nextTag != tag) {
+              // We've reached the end of the repeated field. Save the next tag value.
+              this.nextTag = nextTag;
+              return;
+            }
+          }
+        default:
+          throw InvalidProtocolBufferException.invalidWireType();
+      }
+    } else {
+      switch (WireFormat.getTagWireType(tag)) {
+        case WIRETYPE_LENGTH_DELIMITED:
+          final int bytes = input.readUInt32();
+          verifyPackedFixed32Length(bytes);
+          int endPos = input.getTotalBytesRead() + bytes;
+          do {
+            target.add(input.readFloat());
+          } while (input.getTotalBytesRead() < endPos);
+          break;
+        case WIRETYPE_FIXED32:
+          while (true) {
+            target.add(input.readFloat());
+            if (input.isAtEnd()) {
+              return;
+            }
+            int nextTag = input.readTag();
+            if (nextTag != tag) {
+              // We've reached the end of the repeated field. Save the next tag value.
+              this.nextTag = nextTag;
+              return;
+            }
+          }
+        default:
+          throw InvalidProtocolBufferException.invalidWireType();
+      }
+    }
+  }
+
+  public void readUInt64List(List<Long> target) throws IOException {
+    if (target instanceof LongArrayList) {
+      LongArrayList plist = (LongArrayList) target;
+      switch (WireFormat.getTagWireType(tag)) {
+        case WIRETYPE_LENGTH_DELIMITED:
+          final int bytes = input.readUInt32();
+          int endPos = input.getTotalBytesRead() + bytes;
+          do {
+            plist.addLong(input.readUInt64());
+          } while (input.getTotalBytesRead() < endPos);
+          requirePosition(endPos);
+          break;
+        case WIRETYPE_VARINT:
+          while (true) {
+            plist.addLong(input.readUInt64());
+            if (input.isAtEnd()) {
+              return;
+            }
+            int nextTag = input.readTag();
+            if (nextTag != tag) {
+              // We've reached the end of the repeated field. Save the next tag value.
+              this.nextTag = nextTag;
+              return;
+            }
+          }
+        default:
+          throw InvalidProtocolBufferException.invalidWireType();
+      }
+    } else {
+      switch (WireFormat.getTagWireType(tag)) {
+        case WIRETYPE_LENGTH_DELIMITED:
+          final int bytes = input.readUInt32();
+          int endPos = input.getTotalBytesRead() + bytes;
+          do {
+            target.add(input.readUInt64());
+          } while (input.getTotalBytesRead() < endPos);
+          requirePosition(endPos);
+          break;
+        case WIRETYPE_VARINT:
+          while (true) {
+            target.add(input.readUInt64());
+            if (input.isAtEnd()) {
+              return;
+            }
+            int nextTag = input.readTag();
+            if (nextTag != tag) {
+              // We've reached the end of the repeated field. Save the next tag value.
+              this.nextTag = nextTag;
+              return;
+            }
+          }
+        default:
+          throw InvalidProtocolBufferException.invalidWireType();
+      }
+    }
+  }
+
+  public void readInt64List(List<Long> target) throws IOException {
+    if (target instanceof LongArrayList) {
+      LongArrayList plist = (LongArrayList) target;
+      switch (WireFormat.getTagWireType(tag)) {
+        case WIRETYPE_LENGTH_DELIMITED:
+          final int bytes = input.readUInt32();
+          int endPos = input.getTotalBytesRead() + bytes;
+          do {
+            plist.addLong(input.readInt64());
+          } while (input.getTotalBytesRead() < endPos);
+          requirePosition(endPos);
+          break;
+        case WIRETYPE_VARINT:
+          while (true) {
+            plist.addLong(input.readInt64());
+            if (input.isAtEnd()) {
+              return;
+            }
+            int nextTag = input.readTag();
+            if (nextTag != tag) {
+              // We've reached the end of the repeated field. Save the next tag value.
+              this.nextTag = nextTag;
+              return;
+            }
+          }
+        default:
+          throw InvalidProtocolBufferException.invalidWireType();
+      }
+    } else {
+      switch (WireFormat.getTagWireType(tag)) {
+        case WIRETYPE_LENGTH_DELIMITED:
+          final int bytes = input.readUInt32();
+          int endPos = input.getTotalBytesRead() + bytes;
+          do {
+            target.add(input.readInt64());
+          } while (input.getTotalBytesRead() < endPos);
+          requirePosition(endPos);
+          break;
+        case WIRETYPE_VARINT:
+          while (true) {
+            target.add(input.readInt64());
+            if (input.isAtEnd()) {
+              return;
+            }
+            int nextTag = input.readTag();
+            if (nextTag != tag) {
+              // We've reached the end of the repeated field. Save the next tag value.
+              this.nextTag = nextTag;
+              return;
+            }
+          }
+        default:
+          throw InvalidProtocolBufferException.invalidWireType();
+      }
+    }
+  }
+
+  public void readInt32List(List<Integer> target) throws IOException {
+    if (target instanceof IntArrayList) {
+      IntArrayList plist = (IntArrayList) target;
+      switch (WireFormat.getTagWireType(tag)) {
+        case WIRETYPE_LENGTH_DELIMITED:
+          final int bytes = input.readUInt32();
+          int endPos = input.getTotalBytesRead() + bytes;
+          do {
+            plist.addInt(input.readInt32());
+          } while (input.getTotalBytesRead() < endPos);
+          requirePosition(endPos);
+          break;
+        case WIRETYPE_VARINT:
+          while (true) {
+            plist.addInt(input.readInt32());
+            if (input.isAtEnd()) {
+              return;
+            }
+            int nextTag = input.readTag();
+            if (nextTag != tag) {
+              // We've reached the end of the repeated field. Save the next tag value.
+              this.nextTag = nextTag;
+              return;
+            }
+          }
+        default:
+          throw InvalidProtocolBufferException.invalidWireType();
+      }
+    } else {
+      switch (WireFormat.getTagWireType(tag)) {
+        case WIRETYPE_LENGTH_DELIMITED:
+          final int bytes = input.readUInt32();
+          int endPos = input.getTotalBytesRead() + bytes;
+          do {
+            target.add(input.readInt32());
+          } while (input.getTotalBytesRead() < endPos);
+          requirePosition(endPos);
+          break;
+        case WIRETYPE_VARINT:
+          while (true) {
+            target.add(input.readInt32());
+            if (input.isAtEnd()) {
+              return;
+            }
+            int nextTag = input.readTag();
+            if (nextTag != tag) {
+              // We've reached the end of the repeated field. Save the next tag value.
+              this.nextTag = nextTag;
+              return;
+            }
+          }
+        default:
+          throw InvalidProtocolBufferException.invalidWireType();
+      }
+    }
+  }
+
+  public void readFixed64List(List<Long> target) throws IOException {
+    if (target instanceof LongArrayList) {
+      LongArrayList plist = (LongArrayList) target;
+      switch (WireFormat.getTagWireType(tag)) {
+        case WIRETYPE_LENGTH_DELIMITED:
+          final int bytes = input.readUInt32();
+          verifyPackedFixed64Length(bytes);
+          int endPos = input.getTotalBytesRead() + bytes;
+          do {
+            plist.addLong(input.readFixed64());
+          } while (input.getTotalBytesRead() < endPos);
+          break;
+        case WIRETYPE_FIXED64:
+          while (true) {
+            plist.addLong(input.readFixed64());
+            if (input.isAtEnd()) {
+              return;
+            }
+            int nextTag = input.readTag();
+            if (nextTag != tag) {
+              // We've reached the end of the repeated field. Save the next tag value.
+              this.nextTag = nextTag;
+              return;
+            }
+          }
+        default:
+          throw InvalidProtocolBufferException.invalidWireType();
+      }
+    } else {
+      switch (WireFormat.getTagWireType(tag)) {
+        case WIRETYPE_LENGTH_DELIMITED:
+          final int bytes = input.readUInt32();
+          verifyPackedFixed64Length(bytes);
+          int endPos = input.getTotalBytesRead() + bytes;
+          do {
+            target.add(input.readFixed64());
+          } while (input.getTotalBytesRead() < endPos);
+          break;
+        case WIRETYPE_FIXED64:
+          while (true) {
+            target.add(input.readFixed64());
+            if (input.isAtEnd()) {
+              return;
+            }
+            int nextTag = input.readTag();
+            if (nextTag != tag) {
+              // We've reached the end of the repeated field. Save the next tag value.
+              this.nextTag = nextTag;
+              return;
+            }
+          }
+        default:
+          throw InvalidProtocolBufferException.invalidWireType();
+      }
+    }
+  }
+
+  public void readFixed32List(List<Integer> target) throws IOException {
+    if (target instanceof IntArrayList) {
+      IntArrayList plist = (IntArrayList) target;
+      switch (WireFormat.getTagWireType(tag)) {
+        case WIRETYPE_LENGTH_DELIMITED:
+          final int bytes = input.readUInt32();
+          verifyPackedFixed32Length(bytes);
+          int endPos = input.getTotalBytesRead() + bytes;
+          do {
+            plist.addInt(input.readFixed32());
+          } while (input.getTotalBytesRead() < endPos);
+          break;
+        case WIRETYPE_FIXED32:
+          while (true) {
+            plist.addInt(input.readFixed32());
+            if (input.isAtEnd()) {
+              return;
+            }
+            int nextTag = input.readTag();
+            if (nextTag != tag) {
+              // We've reached the end of the repeated field. Save the next tag value.
+              this.nextTag = nextTag;
+              return;
+            }
+          }
+        default:
+          throw InvalidProtocolBufferException.invalidWireType();
+      }
+    } else {
+      switch (WireFormat.getTagWireType(tag)) {
+        case WIRETYPE_LENGTH_DELIMITED:
+          final int bytes = input.readUInt32();
+          verifyPackedFixed32Length(bytes);
+          int endPos = input.getTotalBytesRead() + bytes;
+          do {
+            target.add(input.readFixed32());
+          } while (input.getTotalBytesRead() < endPos);
+          break;
+        case WIRETYPE_FIXED32:
+          while (true) {
+            target.add(input.readFixed32());
+            if (input.isAtEnd()) {
+              return;
+            }
+            int nextTag = input.readTag();
+            if (nextTag != tag) {
+              // We've reached the end of the repeated field. Save the next tag value.
+              this.nextTag = nextTag;
+              return;
+            }
+          }
+        default:
+          throw InvalidProtocolBufferException.invalidWireType();
+      }
+    }
+  }
+
+  public void readBoolList(List<Boolean> target) throws IOException {
+    if (target instanceof BooleanArrayList) {
+      BooleanArrayList plist = (BooleanArrayList) target;
+      switch (WireFormat.getTagWireType(tag)) {
+        case WIRETYPE_LENGTH_DELIMITED:
+          final int bytes = input.readUInt32();
+          int endPos = input.getTotalBytesRead() + bytes;
+          do {
+            plist.addBoolean(input.readBool());
+          } while (input.getTotalBytesRead() < endPos);
+          requirePosition(endPos);
+          break;
+        case WIRETYPE_VARINT:
+          while (true) {
+            plist.addBoolean(input.readBool());
+            if (input.isAtEnd()) {
+              return;
+            }
+            int nextTag = input.readTag();
+            if (nextTag != tag) {
+              // We've reached the end of the repeated field. Save the next tag value.
+              this.nextTag = nextTag;
+              return;
+            }
+          }
+        default:
+          throw InvalidProtocolBufferException.invalidWireType();
+      }
+    } else {
+      switch (WireFormat.getTagWireType(tag)) {
+        case WIRETYPE_LENGTH_DELIMITED:
+          final int bytes = input.readUInt32();
+          int endPos = input.getTotalBytesRead() + bytes;
+          do {
+            target.add(input.readBool());
+          } while (input.getTotalBytesRead() < endPos);
+          requirePosition(endPos);
+          break;
+        case WIRETYPE_VARINT:
+          while (true) {
+            target.add(input.readBool());
+            if (input.isAtEnd()) {
+              return;
+            }
+            int nextTag = input.readTag();
+            if (nextTag != tag) {
+              // We've reached the end of the repeated field. Save the next tag value.
+              this.nextTag = nextTag;
+              return;
+            }
+          }
+        default:
+          throw InvalidProtocolBufferException.invalidWireType();
+      }
+    }
+  }
+
+  public void readStringList(List<String> target) throws IOException {
+    readStringListInternal(target, false);
+  }
+
+  public void readStringListRequireUtf8(List<String> target) throws IOException {
+    readStringListInternal(target, true);
+  }
+
+  public void readStringListInternal(List<String> target, boolean requireUtf8) throws IOException {
+    if (WireFormat.getTagWireType(tag) != WIRETYPE_LENGTH_DELIMITED) {
+      throw InvalidProtocolBufferException.invalidWireType();
+    }
+
+    if (target instanceof LazyStringList && !requireUtf8) {
+      LazyStringList lazyList = (LazyStringList) target;
+      while (true) {
+        lazyList.add(readBytes());
+        if (input.isAtEnd()) {
+          return;
+        }
+        int nextTag = input.readTag();
+        if (nextTag != tag) {
+          // We've reached the end of the repeated field. Save the next tag value.
+          this.nextTag = nextTag;
+          return;
+        }
+      }
+    } else {
+      while (true) {
+        target.add(requireUtf8 ? readStringRequireUtf8() : readString());
+        if (input.isAtEnd()) {
+          return;
+        }
+        int nextTag = input.readTag();
+        if (nextTag != tag) {
+          // We've reached the end of the repeated field. Save the next tag value.
+          this.nextTag = nextTag;
+          return;
+        }
+      }
+    }
+  }
+
+  @SuppressWarnings("unchecked")
+  public <T> void readMessageList(
+      List<T> target, Class<T> targetType, ExtensionRegistryLite extensionRegistry)
+      throws IOException {
+    final Schema<T> schema = (Schema<T>) Protobuf.getInstance().schemaFor((Class) targetType);
+    readMessageList(target, schema, extensionRegistry);
+  }
+
+  public <T> void readMessageList(
+      List<T> target, Schema<T> schema, ExtensionRegistryLite extensionRegistry)
+      throws IOException {
+    if (WireFormat.getTagWireType(tag) != WIRETYPE_LENGTH_DELIMITED) {
+      throw InvalidProtocolBufferException.invalidWireType();
+    }
+    final int listTag = tag;
+    while (true) {
+      target.add(readMessage(schema, extensionRegistry));
+      if (input.isAtEnd() || nextTag != NEXT_TAG_UNSET) {
+        return;
+      }
+      int nextTag = input.readTag();
+      if (nextTag != listTag) {
+        // We've reached the end of the repeated field. Save the next tag value.
+        this.nextTag = nextTag;
+        return;
+      }
+    }
+  }
+
+  @SuppressWarnings("unchecked")
+  @Deprecated
+  public <T> void readGroupList(
+      List<T> target, Class<T> targetType, ExtensionRegistryLite extensionRegistry)
+      throws IOException {
+    final Schema<T> schema = (Schema<T>) Protobuf.getInstance().schemaFor((Class) targetType);
+    readGroupList(target, schema, extensionRegistry);
+  }
+
+  @Deprecated
+  public <T> void readGroupList(
+      List<T> target, Schema<T> schema, ExtensionRegistryLite extensionRegistry)
+      throws IOException {
+    if (WireFormat.getTagWireType(tag) != WIRETYPE_START_GROUP) {
+      throw InvalidProtocolBufferException.invalidWireType();
+    }
+    final int listTag = tag;
+    while (true) {
+      target.add(readGroup(schema, extensionRegistry));
+      if (input.isAtEnd() || nextTag != NEXT_TAG_UNSET) {
+        return;
+      }
+      int nextTag = input.readTag();
+      if (nextTag != listTag) {
+        // We've reached the end of the repeated field. Save the next tag value.
+        this.nextTag = nextTag;
+        return;
+      }
+    }
+  }
+
+  public void readBytesList(List<ByteString> target) throws IOException {
+    if (WireFormat.getTagWireType(tag) != WIRETYPE_LENGTH_DELIMITED) {
+      throw InvalidProtocolBufferException.invalidWireType();
+    }
+
+    while (true) {
+      target.add(readBytes());
+      if (input.isAtEnd()) {
+        return;
+      }
+      int nextTag = input.readTag();
+      if (nextTag != tag) {
+        // We've reached the end of the repeated field. Save the next tag value.
+        this.nextTag = nextTag;
+        return;
+      }
+    }
+  }
+
+  public void readUInt32List(List<Integer> target) throws IOException {
+    if (target instanceof IntArrayList) {
+      IntArrayList plist = (IntArrayList) target;
+      switch (WireFormat.getTagWireType(tag)) {
+        case WIRETYPE_LENGTH_DELIMITED:
+          final int bytes = input.readUInt32();
+          int endPos = input.getTotalBytesRead() + bytes;
+          do {
+            plist.addInt(input.readUInt32());
+          } while (input.getTotalBytesRead() < endPos);
+          requirePosition(endPos);
+          break;
+        case WIRETYPE_VARINT:
+          while (true) {
+            plist.addInt(input.readUInt32());
+            if (input.isAtEnd()) {
+              return;
+            }
+            int nextTag = input.readTag();
+            if (nextTag != tag) {
+              // We've reached the end of the repeated field. Save the next tag value.
+              this.nextTag = nextTag;
+              return;
+            }
+          }
+        default:
+          throw InvalidProtocolBufferException.invalidWireType();
+      }
+    } else {
+      switch (WireFormat.getTagWireType(tag)) {
+        case WIRETYPE_LENGTH_DELIMITED:
+          final int bytes = input.readUInt32();
+          int endPos = input.getTotalBytesRead() + bytes;
+          do {
+            target.add(input.readUInt32());
+          } while (input.getTotalBytesRead() < endPos);
+          requirePosition(endPos);
+          break;
+        case WIRETYPE_VARINT:
+          while (true) {
+            target.add(input.readUInt32());
+            if (input.isAtEnd()) {
+              return;
+            }
+            int nextTag = input.readTag();
+            if (nextTag != tag) {
+              // We've reached the end of the repeated field. Save the next tag value.
+              this.nextTag = nextTag;
+              return;
+            }
+          }
+        default:
+          throw InvalidProtocolBufferException.invalidWireType();
+      }
+    }
+  }
+
+  public void readEnumList(List<Integer> target) throws IOException {
+    if (target instanceof IntArrayList) {
+      IntArrayList plist = (IntArrayList) target;
+      switch (WireFormat.getTagWireType(tag)) {
+        case WIRETYPE_LENGTH_DELIMITED:
+          final int bytes = input.readUInt32();
+          int endPos = input.getTotalBytesRead() + bytes;
+          do {
+            plist.addInt(input.readEnum());
+          } while (input.getTotalBytesRead() < endPos);
+          requirePosition(endPos);
+          break;
+        case WIRETYPE_VARINT:
+          while (true) {
+            plist.addInt(input.readEnum());
+            if (input.isAtEnd()) {
+              return;
+            }
+            int nextTag = input.readTag();
+            if (nextTag != tag) {
+              // We've reached the end of the repeated field. Save the next tag value.
+              this.nextTag = nextTag;
+              return;
+            }
+          }
+        default:
+          throw InvalidProtocolBufferException.invalidWireType();
+      }
+    } else {
+      switch (WireFormat.getTagWireType(tag)) {
+        case WIRETYPE_LENGTH_DELIMITED:
+          final int bytes = input.readUInt32();
+          int endPos = input.getTotalBytesRead() + bytes;
+          do {
+            target.add(input.readEnum());
+          } while (input.getTotalBytesRead() < endPos);
+          requirePosition(endPos);
+          break;
+        case WIRETYPE_VARINT:
+          while (true) {
+            target.add(input.readEnum());
+            if (input.isAtEnd()) {
+              return;
+            }
+            int nextTag = input.readTag();
+            if (nextTag != tag) {
+              // We've reached the end of the repeated field. Save the next tag value.
+              this.nextTag = nextTag;
+              return;
+            }
+          }
+        default:
+          throw InvalidProtocolBufferException.invalidWireType();
+      }
+    }
+  }
+
+  public void readSFixed32List(List<Integer> target) throws IOException {
+    if (target instanceof IntArrayList) {
+      IntArrayList plist = (IntArrayList) target;
+      switch (WireFormat.getTagWireType(tag)) {
+        case WIRETYPE_LENGTH_DELIMITED:
+          final int bytes = input.readUInt32();
+          verifyPackedFixed32Length(bytes);
+          int endPos = input.getTotalBytesRead() + bytes;
+          do {
+            plist.addInt(input.readSFixed32());
+          } while (input.getTotalBytesRead() < endPos);
+          break;
+        case WIRETYPE_FIXED32:
+          while (true) {
+            plist.addInt(input.readSFixed32());
+            if (input.isAtEnd()) {
+              return;
+            }
+            int nextTag = input.readTag();
+            if (nextTag != tag) {
+              // We've reached the end of the repeated field. Save the next tag value.
+              this.nextTag = nextTag;
+              return;
+            }
+          }
+        default:
+          throw InvalidProtocolBufferException.invalidWireType();
+      }
+    } else {
+      switch (WireFormat.getTagWireType(tag)) {
+        case WIRETYPE_LENGTH_DELIMITED:
+          final int bytes = input.readUInt32();
+          verifyPackedFixed32Length(bytes);
+          int endPos = input.getTotalBytesRead() + bytes;
+          do {
+            target.add(input.readSFixed32());
+          } while (input.getTotalBytesRead() < endPos);
+          break;
+        case WIRETYPE_FIXED32:
+          while (true) {
+            target.add(input.readSFixed32());
+            if (input.isAtEnd()) {
+              return;
+            }
+            int nextTag = input.readTag();
+            if (nextTag != tag) {
+              // We've reached the end of the repeated field. Save the next tag value.
+              this.nextTag = nextTag;
+              return;
+            }
+          }
+        default:
+          throw InvalidProtocolBufferException.invalidWireType();
+      }
+    }
+  }
+
+  public void readSFixed64List(List<Long> target) throws IOException {
+    if (target instanceof LongArrayList) {
+      LongArrayList plist = (LongArrayList) target;
+      switch (WireFormat.getTagWireType(tag)) {
+        case WIRETYPE_LENGTH_DELIMITED:
+          final int bytes = input.readUInt32();
+          verifyPackedFixed64Length(bytes);
+          int endPos = input.getTotalBytesRead() + bytes;
+          do {
+            plist.addLong(input.readSFixed64());
+          } while (input.getTotalBytesRead() < endPos);
+          break;
+        case WIRETYPE_FIXED64:
+          while (true) {
+            plist.addLong(input.readSFixed64());
+            if (input.isAtEnd()) {
+              return;
+            }
+            int nextTag = input.readTag();
+            if (nextTag != tag) {
+              // We've reached the end of the repeated field. Save the next tag value.
+              this.nextTag = nextTag;
+              return;
+            }
+          }
+        default:
+          throw InvalidProtocolBufferException.invalidWireType();
+      }
+    } else {
+      switch (WireFormat.getTagWireType(tag)) {
+        case WIRETYPE_LENGTH_DELIMITED:
+          final int bytes = input.readUInt32();
+          verifyPackedFixed64Length(bytes);
+          int endPos = input.getTotalBytesRead() + bytes;
+          do {
+            target.add(input.readSFixed64());
+          } while (input.getTotalBytesRead() < endPos);
+          break;
+        case WIRETYPE_FIXED64:
+          while (true) {
+            target.add(input.readSFixed64());
+            if (input.isAtEnd()) {
+              return;
+            }
+            int nextTag = input.readTag();
+            if (nextTag != tag) {
+              // We've reached the end of the repeated field. Save the next tag value.
+              this.nextTag = nextTag;
+              return;
+            }
+          }
+        default:
+          throw InvalidProtocolBufferException.invalidWireType();
+      }
+    }
+  }
+
+  public void readSInt32List(List<Integer> target) throws IOException {
+    if (target instanceof IntArrayList) {
+      IntArrayList plist = (IntArrayList) target;
+      switch (WireFormat.getTagWireType(tag)) {
+        case WIRETYPE_LENGTH_DELIMITED:
+          final int bytes = input.readUInt32();
+          int endPos = input.getTotalBytesRead() + bytes;
+          do {
+            plist.addInt(input.readSInt32());
+          } while (input.getTotalBytesRead() < endPos);
+          requirePosition(endPos);
+          break;
+        case WIRETYPE_VARINT:
+          while (true) {
+            plist.addInt(input.readSInt32());
+            if (input.isAtEnd()) {
+              return;
+            }
+            int nextTag = input.readTag();
+            if (nextTag != tag) {
+              // We've reached the end of the repeated field. Save the next tag value.
+              this.nextTag = nextTag;
+              return;
+            }
+          }
+        default:
+          throw InvalidProtocolBufferException.invalidWireType();
+      }
+    } else {
+      switch (WireFormat.getTagWireType(tag)) {
+        case WIRETYPE_LENGTH_DELIMITED:
+          final int bytes = input.readUInt32();
+          int endPos = input.getTotalBytesRead() + bytes;
+          do {
+            target.add(input.readSInt32());
+          } while (input.getTotalBytesRead() < endPos);
+          requirePosition(endPos);
+          break;
+        case WIRETYPE_VARINT:
+          while (true) {
+            target.add(input.readSInt32());
+            if (input.isAtEnd()) {
+              return;
+            }
+            int nextTag = input.readTag();
+            if (nextTag != tag) {
+              // We've reached the end of the repeated field. Save the next tag value.
+              this.nextTag = nextTag;
+              return;
+            }
+          }
+        default:
+          throw InvalidProtocolBufferException.invalidWireType();
+      }
+    }
+  }
+
+  public void readSInt64List(List<Long> target) throws IOException {
+    if (target instanceof LongArrayList) {
+      LongArrayList plist = (LongArrayList) target;
+      switch (WireFormat.getTagWireType(tag)) {
+        case WIRETYPE_LENGTH_DELIMITED:
+          final int bytes = input.readUInt32();
+          int endPos = input.getTotalBytesRead() + bytes;
+          do {
+            plist.addLong(input.readSInt64());
+          } while (input.getTotalBytesRead() < endPos);
+          requirePosition(endPos);
+          break;
+        case WIRETYPE_VARINT:
+          while (true) {
+            plist.addLong(input.readSInt64());
+            if (input.isAtEnd()) {
+              return;
+            }
+            int nextTag = input.readTag();
+            if (nextTag != tag) {
+              // We've reached the end of the repeated field. Save the next tag value.
+              this.nextTag = nextTag;
+              return;
+            }
+          }
+        default:
+          throw InvalidProtocolBufferException.invalidWireType();
+      }
+    } else {
+      switch (WireFormat.getTagWireType(tag)) {
+        case WIRETYPE_LENGTH_DELIMITED:
+          final int bytes = input.readUInt32();
+          int endPos = input.getTotalBytesRead() + bytes;
+          do {
+            target.add(input.readSInt64());
+          } while (input.getTotalBytesRead() < endPos);
+          requirePosition(endPos);
+          break;
+        case WIRETYPE_VARINT:
+          while (true) {
+            target.add(input.readSInt64());
+            if (input.isAtEnd()) {
+              return;
+            }
+            int nextTag = input.readTag();
+            if (nextTag != tag) {
+              // We've reached the end of the repeated field. Save the next tag value.
+              this.nextTag = nextTag;
+              return;
+            }
+          }
+        default:
+          throw InvalidProtocolBufferException.invalidWireType();
+      }
+    }
+  }
+
+  private void verifyPackedFixed64Length(int bytes) throws IOException {
+    if ((bytes & FIXED64_MULTIPLE_MASK) != 0) {
+      // Require that the number of bytes be a multiple of 8.
+      throw InvalidProtocolBufferException.parseFailure();
+    }
+  }
+
+  @SuppressWarnings("unchecked")
+  public <K, V> void readMap(
+      Map<K, V> target,
+      MapEntryLite.Metadata<K, V> metadata,
+      ExtensionRegistryLite extensionRegistry)
+      throws IOException {
+    requireWireType(WIRETYPE_LENGTH_DELIMITED);
+    int size = input.readUInt32();
+    final int prevLimit = input.pushLimit(size);
+    K key = metadata.defaultKey;
+    V value = metadata.defaultValue;
+    try {
+      while (true) {
+        int number = getFieldNumber();
+        if (number == READ_DONE || input.isAtEnd()) {
+          break;
+        }
+        try {
+          switch (number) {
+            case 1:
+              key = (K) readField(metadata.keyType, null, null);
+              break;
+            case 2:
+              value =
+                  (V)
+                      readField(
+                          metadata.valueType, metadata.defaultValue.getClass(), extensionRegistry);
+              break;
+            default:
+              if (!skipField()) {
+                throw new InvalidProtocolBufferException("Unable to parse map entry.");
+              }
+              break;
+          }
+        } catch (InvalidProtocolBufferException.InvalidWireTypeException ignore) {
+          // the type doesn't match, skip the field.
+          if (!skipField()) {
+            throw new InvalidProtocolBufferException("Unable to parse map entry.", ignore);
+          }
+        }
+      }
+      target.put(key, value);
+      if (input.getBytesUntilLimit() != 0) {
+        throw InvalidProtocolBufferException.truncatedMessage();
+      }
+    } finally {
+      // Restore the previous limit.
+      input.popLimit(prevLimit);
+    }
+  }
+
+  private Object readField(
+      WireFormat.FieldType fieldType, Class<?> messageType, ExtensionRegistryLite extensionRegistry)
+      throws IOException {
+    switch (fieldType) {
+      case BOOL:
+        return readBool();
+      case BYTES:
+        return readBytes();
+      case DOUBLE:
+        return readDouble();
+      case ENUM:
+        return readEnum();
+      case FIXED32:
+        return readFixed32();
+      case FIXED64:
+        return readFixed64();
+      case FLOAT:
+        return readFloat();
+      case INT32:
+        return readInt32();
+      case INT64:
+        return readInt64();
+      case MESSAGE:
+        return readMessage(messageType, extensionRegistry);
+      case SFIXED32:
+        return readSFixed32();
+      case SFIXED64:
+        return readSFixed64();
+      case SINT32:
+        return readSInt32();
+      case SINT64:
+        return readSInt64();
+      case STRING:
+        return readStringRequireUtf8();
+      case UINT32:
+        return readUInt32();
+      case UINT64:
+        return readUInt64();
+      default:
+        throw new IllegalArgumentException("unsupported field type.");
+    }
+  }
+
+  private void verifyPackedFixed32Length(int bytes) throws IOException {
+    if ((bytes & FIXED32_MULTIPLE_MASK) != 0) {
+      // Require that the number of bytes be a multiple of 4.
+      throw InvalidProtocolBufferException.parseFailure();
+    }
+  }
+
+  private void requirePosition(int expectedPosition) throws IOException {
+    if (input.getTotalBytesRead() != expectedPosition) {
+      throw InvalidProtocolBufferException.truncatedMessage();
+    }
+  }
+}

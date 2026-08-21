@@ -1,0 +1,38 @@
+# Publish new releases to Bazel Central Registry.
+name: Publish to BCR
+on:
+  # Run the publish workflow after a successful release
+  # Will be triggered from the release.yaml workflow
+  workflow_call:
+    inputs:
+      tag_name:
+        required: true
+        type: string
+    secrets:
+      # This token should be owned by https://github.com/protobuf-team-bot
+      BOT_ACCESS_TOKEN:
+        required: true
+  # In case of problems, let release engineers retry by manually dispatching
+  # the workflow from the GitHub UI
+  workflow_dispatch:
+    inputs:
+      tag_name:
+        description: git tag being released
+        required: true
+        type: string
+jobs:
+  publish:
+    uses: bazel-contrib/publish-to-bcr/.github/workflows/publish.yaml@v1.0.0
+    with:
+      attest: false # protobuf releases are not created with provenance attestations
+      draft: false
+      tag_name: ${{ inputs.tag_name }}
+      # GitHub repository which is a fork of the upstream where the Pull Request will be opened.
+      registry_fork: protocolbuffers/bazel-central-registry
+    permissions:
+      attestations: write
+      contents: write
+      id-token: write
+    secrets:
+      # Necessary to push to the BCR fork, and to open a pull request against a registry
+      publish_token: ${{ secrets.BOT_ACCESS_TOKEN }}

@@ -1,0 +1,7 @@
+edition = "2023";
+
+package srcsless_library_test;
+
+option java_multiple_files = true;
+
+message Child {}

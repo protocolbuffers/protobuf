@@ -1,0 +1,9 @@
+edition = "2023";
+
+// LINT: LEGACY_NAMES
+
+package protobuf_editions_test.edition2023;
+
+enum BadEnumValueEnum {
+  BAD_ENUM_VALUE_0 = 0;
+}

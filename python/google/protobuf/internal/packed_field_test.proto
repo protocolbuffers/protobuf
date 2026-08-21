@@ -1,0 +1,51 @@
+// Protocol Buffers - Google's data interchange format
+// Copyright 2008 Google Inc.  All rights reserved.
+//
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
+
+syntax = "proto3";
+
+package google.protobuf.python.internal;
+
+message TestPackedTypes {
+  enum NestedEnum {
+    FOO = 0;
+    BAR = 1;
+    BAZ = 2;
+  }
+
+  repeated int32 repeated_int32 = 1;
+  repeated int64 repeated_int64 = 2;
+  repeated uint32 repeated_uint32 = 3;
+  repeated uint64 repeated_uint64 = 4;
+  repeated sint32 repeated_sint32 = 5;
+  repeated sint64 repeated_sint64 = 6;
+  repeated fixed32 repeated_fixed32 = 7;
+  repeated fixed64 repeated_fixed64 = 8;
+  repeated sfixed32 repeated_sfixed32 = 9;
+  repeated sfixed64 repeated_sfixed64 = 10;
+  repeated float repeated_float = 11;
+  repeated double repeated_double = 12;
+  repeated bool repeated_bool = 13;
+  repeated NestedEnum repeated_nested_enum = 14;
+}
+
+message TestUnpackedTypes {
+  repeated int32 repeated_int32 = 1 [packed = false];
+  repeated int64 repeated_int64 = 2 [packed = false];
+  repeated uint32 repeated_uint32 = 3 [packed = false];
+  repeated uint64 repeated_uint64 = 4 [packed = false];
+  repeated sint32 repeated_sint32 = 5 [packed = false];
+  repeated sint64 repeated_sint64 = 6 [packed = false];
+  repeated fixed32 repeated_fixed32 = 7 [packed = false];
+  repeated fixed64 repeated_fixed64 = 8 [packed = false];
+  repeated sfixed32 repeated_sfixed32 = 9 [packed = false];
+  repeated sfixed64 repeated_sfixed64 = 10 [packed = false];
+  repeated float repeated_float = 11 [packed = false];
+  repeated double repeated_double = 12 [packed = false];
+  repeated bool repeated_bool = 13 [packed = false];
+  repeated TestPackedTypes.NestedEnum repeated_nested_enum = 14
+      [packed = false];
+}

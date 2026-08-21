@@ -1,0 +1,138 @@
+[proto2_unittest.optional_int32_extension]: 101
+[proto2_unittest.optional_int64_extension]: 102
+[proto2_unittest.optional_uint32_extension]: 103
+[proto2_unittest.optional_uint64_extension]: 104
+[proto2_unittest.optional_sint32_extension]: 105
+[proto2_unittest.optional_sint64_extension]: 106
+[proto2_unittest.optional_fixed32_extension]: 107
+[proto2_unittest.optional_fixed64_extension]: 108
+[proto2_unittest.optional_sfixed32_extension]: 109
+[proto2_unittest.optional_sfixed64_extension]: 110
+[proto2_unittest.optional_float_extension]: 111
+[proto2_unittest.optional_double_extension]: 112
+[proto2_unittest.optional_bool_extension]: true
+[proto2_unittest.optional_string_extension]: "115"
+[proto2_unittest.optional_bytes_extension]: "116"
+[proto2_unittest.optionalgroup_extension] <
+  a: 117
+>
+[proto2_unittest.optional_nested_message_extension] <
+  bb: 118
+>
+[proto2_unittest.optional_foreign_message_extension] <
+  c: 119
+>
+[proto2_unittest.optional_import_message_extension] <
+  d: 120
+>
+[proto2_unittest.optional_nested_enum_extension]: BAZ
+[proto2_unittest.optional_foreign_enum_extension]: FOREIGN_BAZ
+[proto2_unittest.optional_import_enum_extension]: IMPORT_BAZ
+[proto2_unittest.optional_string_piece_extension]: "124"
+[proto2_unittest.optional_cord_extension]: "125"
+[proto2_unittest.optional_public_import_message_extension] <
+  e: 126
+>
+[proto2_unittest.optional_lazy_message_extension] <
+  bb: 127
+>
+[proto2_unittest.optional_unverified_lazy_message_extension] <
+  bb: 128
+>
+[proto2_unittest.repeated_int32_extension]: 201
+[proto2_unittest.repeated_int32_extension]: 301
+[proto2_unittest.repeated_int64_extension]: 202
+[proto2_unittest.repeated_int64_extension]: 302
+[proto2_unittest.repeated_uint32_extension]: 203
+[proto2_unittest.repeated_uint32_extension]: 303
+[proto2_unittest.repeated_uint64_extension]: 204
+[proto2_unittest.repeated_uint64_extension]: 304
+[proto2_unittest.repeated_sint32_extension]: 205
+[proto2_unittest.repeated_sint32_extension]: 305
+[proto2_unittest.repeated_sint64_extension]: 206
+[proto2_unittest.repeated_sint64_extension]: 306
+[proto2_unittest.repeated_fixed32_extension]: 207
+[proto2_unittest.repeated_fixed32_extension]: 307
+[proto2_unittest.repeated_fixed64_extension]: 208
+[proto2_unittest.repeated_fixed64_extension]: 308
+[proto2_unittest.repeated_sfixed32_extension]: 209
+[proto2_unittest.repeated_sfixed32_extension]: 309
+[proto2_unittest.repeated_sfixed64_extension]: 210
+[proto2_unittest.repeated_sfixed64_extension]: 310
+[proto2_unittest.repeated_float_extension]: 211
+[proto2_unittest.repeated_float_extension]: 311
+[proto2_unittest.repeated_double_extension]: 212
+[proto2_unittest.repeated_double_extension]: 312
+[proto2_unittest.repeated_bool_extension]: true
+[proto2_unittest.repeated_bool_extension]: false
+[proto2_unittest.repeated_string_extension]: "215"
+[proto2_unittest.repeated_string_extension]: "315"
+[proto2_unittest.repeated_bytes_extension]: "216"
+[proto2_unittest.repeated_bytes_extension]: "316"
+[proto2_unittest.repeatedgroup_extension] <
+  a: 217
+>
+[proto2_unittest.repeatedgroup_extension] <
+  a: 317
+>
+[proto2_unittest.repeated_nested_message_extension] <
+  bb: 218
+>
+[proto2_unittest.repeated_nested_message_extension] <
+  bb: 318
+>
+[proto2_unittest.repeated_foreign_message_extension] <
+  c: 219
+>
+[proto2_unittest.repeated_foreign_message_extension] <
+  c: 319
+>
+[proto2_unittest.repeated_import_message_extension] <
+  d: 220
+>
+[proto2_unittest.repeated_import_message_extension] <
+  d: 320
+>
+[proto2_unittest.repeated_nested_enum_extension]: BAR
+[proto2_unittest.repeated_nested_enum_extension]: BAZ
+[proto2_unittest.repeated_foreign_enum_extension]: FOREIGN_BAR
+[proto2_unittest.repeated_foreign_enum_extension]: FOREIGN_BAZ
+[proto2_unittest.repeated_import_enum_extension]: IMPORT_BAR
+[proto2_unittest.repeated_import_enum_extension]: IMPORT_BAZ
+[proto2_unittest.repeated_string_piece_extension]: "224"
+[proto2_unittest.repeated_string_piece_extension]: "324"
+[proto2_unittest.repeated_cord_extension]: "225"
+[proto2_unittest.repeated_cord_extension]: "325"
+[proto2_unittest.repeated_lazy_message_extension] <
+  bb: 227
+>
+[proto2_unittest.repeated_lazy_message_extension] <
+  bb: 327
+>
+[proto2_unittest.default_int32_extension]: 401
+[proto2_unittest.default_int64_extension]: 402
+[proto2_unittest.default_uint32_extension]: 403
+[proto2_unittest.default_uint64_extension]: 404
+[proto2_unittest.default_sint32_extension]: 405
+[proto2_unittest.default_sint64_extension]: 406
+[proto2_unittest.default_fixed32_extension]: 407
+[proto2_unittest.default_fixed64_extension]: 408
+[proto2_unittest.default_sfixed32_extension]: 409
+[proto2_unittest.default_sfixed64_extension]: 410
+[proto2_unittest.default_float_extension]: 411
+[proto2_unittest.default_double_extension]: 412
+[proto2_unittest.default_bool_extension]: false
+[proto2_unittest.default_string_extension]: "415"
+[proto2_unittest.default_bytes_extension]: "416"
+[proto2_unittest.default_nested_enum_extension]: FOO
+[proto2_unittest.default_foreign_enum_extension]: FOREIGN_FOO
+[proto2_unittest.default_import_enum_extension]: IMPORT_FOO
+[proto2_unittest.default_string_piece_extension]: "424"
+[proto2_unittest.default_cord_extension]: "425"
+[proto2_unittest.optional_bytes_cord_extension]: "optional bytes cord"
+[proto2_unittest.oneof_uint32_extension]: 601
+[proto2_unittest.oneof_nested_message_extension] <
+  bb: 602
+>
+[proto2_unittest.oneof_string_extension]: "603"
+[proto2_unittest.oneof_bytes_extension]: "604"

@@ -1,0 +1,38 @@
+// clang-format off
+edition = "2024";
+
+package third_party_protobuf_editions_proto;
+
+import option "google/protobuf/java_mutable_features.proto";
+import option "google/protobuf/cpp_features.proto";
+
+option java_outer_classname = "Edition2023";
+option features.default_symbol_visibility = EXPORT_ALL;
+option features.(pb.cpp).enum_name_uses_string_view = false;
+option features.(pb.java_mutable).nest_in_file_class = YES;
+option java_package = "com.google.protobuf.editions.proto";
+
+message Edition2024Transform {
+  string string_field = 1;
+
+  message NestedMessage {
+    string cord_field = 1 [
+      features.(pb.cpp).string_type = CORD
+    ];
+  }
+
+  enum NestedEnum {
+    FOO = 0;
+    BAR = 1;
+  }
+}
+
+enum Edition2024TransformEnum {
+  EDITION2024_TRANSFORM_FOO = 0;
+  EDITION2024_TRANSFORM_BAR = 1;
+}
+
+service Edition2024TransformService {
+  // Test method.
+  rpc TestMethod(Edition2024Transform) returns (Edition2024Transform) {}
+}

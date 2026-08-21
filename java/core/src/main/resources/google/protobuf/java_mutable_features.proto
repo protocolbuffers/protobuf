@@ -1,0 +1,45 @@
+syntax = "proto2";
+
+package pb;
+
+import "google/protobuf/descriptor.proto";
+
+option java_package = "com.google.protobuf";
+option java_outer_classname = "JavaMutableFeaturesProto";
+
+extend google.protobuf.FeatureSet {
+  optional JavaMutableFeatures java_mutable = 9989;
+}
+
+message JavaMutableFeatures {
+  message NestInFileClassFeature {
+    enum NestInFileClass {
+      // Invalid default, which should never be used.
+      NEST_IN_FILE_CLASS_UNKNOWN = 0;
+      // Do not nest the generated class in the file class.
+      NO = 1;
+      // Nest the generated class in the file class.
+      YES = 2;
+      // Fall back to the `java_multiple_files` and
+      // `java_multiple_files_mutable_package` options. Users won't be able to
+      // set this option.
+      LEGACY = 3 [feature_support = {
+        edition_introduced: EDITION_2024
+        edition_removed: EDITION_2024
+      }];
+    }
+    reserved 1 to max;
+  }
+
+  // Whether to nest the generated class in the generated file class for
+  // Java Proto2 Mutable API. This is only available at the file level.
+  optional NestInFileClassFeature.NestInFileClass nest_in_file_class = 6 [
+    retention = RETENTION_RUNTIME,
+    targets = TARGET_TYPE_FILE,
+    feature_support = {
+      edition_introduced: EDITION_2024,
+    },
+    edition_defaults = { edition: EDITION_LEGACY, value: "LEGACY" },
+    edition_defaults = { edition: EDITION_2024, value: "NO" }
+  ];
+}

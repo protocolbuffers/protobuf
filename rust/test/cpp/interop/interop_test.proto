@@ -1,0 +1,16 @@
+edition = "2023";
+
+package rust_cpp_interop_test;
+
+message InteropTestMessage {
+  int64 i64 = 1;
+  bytes bytes = 2;
+  bool b = 3;
+  int32 default_int32 = 4 [default = 41];
+
+  extensions 100 to max;
+}
+
+extend InteropTestMessage {
+  bytes bytes_extension = 100;
+}

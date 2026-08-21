@@ -1,0 +1,31 @@
+name: Auto-generate stale checked-in files
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions: {}
+jobs:
+  run:
+    permissions:
+      contents: write  #  for git push
+
+    if: github.repository == 'protocolbuffers/protobuf'
+    runs-on: ubuntu-latest
+    name: Refresh stale files
+
+    strategy:
+      fail-fast: false   # Don't cancel all jobs if one fails.
+
+    steps:
+      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8  # v6.0.1
+        with:
+          # Note: this token has an expiration date, so if the workflow starts
+          # failing then you may need to generate a fresh token.
+          token: ${{ secrets.BOT_ACCESS_TOKEN }}
+      - name: Configure name and email address in Git
+        run: cd ${{ github.workspace }} && git config user.name "Protobuf Team Bot" && git config user.email "protobuf-team-bot@google.com"
+      - name: Commit and push update
+        run: cd ${{ github.workspace }} && ./ci/push_auto_update.sh

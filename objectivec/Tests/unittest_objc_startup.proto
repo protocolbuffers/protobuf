@@ -1,0 +1,27 @@
+// Protocol Buffers - Google's data interchange format
+// Copyright 2008 Google Inc.  All rights reserved.
+//
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
+
+syntax = "proto2";
+
+package objc.protobuf.tests.startup;
+option objc_class_prefix = "TestObjCStartup";
+
+message Message {
+  extensions 1 to max;
+}
+
+extend Message {
+  // Singular
+  optional    int32 optional_int32_extension    = 1;
+  repeated    int32 repeated_int32_extension    = 2;
+}
+
+message Nested {
+  extend Message {
+    optional string nested_string_extension = 3;
+  }
+}

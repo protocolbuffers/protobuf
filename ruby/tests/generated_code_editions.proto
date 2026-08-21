@@ -1,0 +1,96 @@
+edition = "2023";
+
+package a.b.editions;
+
+option features.repeated_field_encoding = EXPANDED;
+option features.utf8_validation = NONE;
+
+message TestMessage {
+  int32 optional_int32 = 1;
+  int64 optional_int64 = 2;
+  uint32 optional_uint32 = 3;
+  uint64 optional_uint64 = 4;
+  bool optional_bool = 5;
+  double optional_double = 6;
+  float optional_float = 7;
+  string optional_string = 8;
+  bytes optional_bytes = 9;
+  TestEnum optional_enum = 10;
+  TestMessage optional_msg = 11;
+  repeated int32 repeated_int32 = 21;
+  repeated int64 repeated_int64 = 22;
+  repeated uint32 repeated_uint32 = 23;
+  repeated uint64 repeated_uint64 = 24;
+  repeated bool repeated_bool = 25;
+  repeated double repeated_double = 26;
+  repeated float repeated_float = 27;
+  repeated string repeated_string = 28;
+  repeated bytes repeated_bytes = 29;
+  repeated TestEnum repeated_enum = 30;
+  repeated TestMessage repeated_msg = 31;
+  int32 required_int32 = 41 [features.field_presence = LEGACY_REQUIRED];
+
+  int64 required_int64 = 42 [features.field_presence = LEGACY_REQUIRED];
+
+  uint32 required_uint32 = 43 [features.field_presence = LEGACY_REQUIRED];
+
+  uint64 required_uint64 = 44 [features.field_presence = LEGACY_REQUIRED];
+
+  bool required_bool = 45 [features.field_presence = LEGACY_REQUIRED];
+
+  double required_double = 46 [features.field_presence = LEGACY_REQUIRED];
+
+  float required_float = 47 [features.field_presence = LEGACY_REQUIRED];
+
+  string required_string = 48 [features.field_presence = LEGACY_REQUIRED];
+
+  bytes required_bytes = 49 [features.field_presence = LEGACY_REQUIRED];
+
+  TestEnum required_enum = 50 [features.field_presence = LEGACY_REQUIRED];
+
+  TestMessage required_msg = 51 [features.field_presence = LEGACY_REQUIRED];
+
+  oneof my_oneof {
+    int32 oneof_int32 = 61;
+    int64 oneof_int64 = 62;
+    uint32 oneof_uint32 = 63;
+    uint64 oneof_uint64 = 64;
+    bool oneof_bool = 65;
+    double oneof_double = 66;
+    float oneof_float = 67;
+    string oneof_string = 68;
+    bytes oneof_bytes = 69;
+    TestEnum oneof_enum = 70;
+    TestMessage oneof_msg = 71;
+  }
+
+  message NestedMessage {
+    int32 foo = 1;
+  }
+
+  NestedMessage nested_message = 80;
+
+  // Reserved for non-existing field test.
+  // int32 non_exist = 89;
+}
+
+enum TestEnum {
+  option features.enum_type = CLOSED;
+
+  Default = 0;
+  A = 1;
+  B = 2;
+  C = 3;
+  v0 = 4;
+}
+
+message TestUnknown {
+  TestUnknown optional_unknown = 11;
+  repeated TestUnknown repeated_unknown = 31;
+
+  oneof my_oneof {
+    TestUnknown oneof_unknown = 51;
+  }
+
+  int32 unknown_field = 89;
+}

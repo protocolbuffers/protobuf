@@ -1,0 +1,19 @@
+edition = "2023";
+
+package protobuf_unittest;
+
+option java_multiple_files = true;
+
+message BlankMessage {}
+
+// If a field `foo` causes protoc to generate a method like `fooField()` then
+// this message will fail to build.
+// Some of these clashes are inevitable, e.g. a field named `foo_builder` will
+// cause compilation to fail because `getFooBuilder()` is part of the public
+// java proto API of field number 1.
+// But we can attempt to avoid name clashes caused by internal methods/fields.
+message FieldsWithPotentialNameClashes {
+  BlankMessage foo = 1;
+  BlankMessage foo_field = 2;
+  BlankMessage foo_field_accessor_table = 3;
+}

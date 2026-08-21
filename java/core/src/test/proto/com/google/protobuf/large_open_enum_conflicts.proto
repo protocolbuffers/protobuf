@@ -1,0 +1,42 @@
+// Protocol Buffers - Google's data interchange format
+// Copyright 2008 Google Inc.  All rights reserved.
+//
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
+//
+// Sample messages to test conflict detection and handling for large enums.
+
+edition = "2024";
+
+package protobuf_test_messages.edition.openenumconflicts;
+
+import option "google/protobuf/java_features.proto";
+
+option java_package = "com.google.protobuf.large.openenumconflicts.edition";
+option features.(pb.java).large_enum = true;
+
+enum LargeOpenEnumWithConflicts0 {
+  LARGE_ENUM0_UNSPECIFIED = 0;
+  LARGE_ENUM2 = 1;
+}
+
+enum LargeOpenEnumWithConflicts {
+  option allow_alias = true;
+
+  LARGE_ENUM_UNSPECIFIED = 0;
+  LARGE_ENUM1 = 1;
+  LARGE_ENUM1_ALIAS = 1;
+}
+
+message LargeOpenEnumContainer {
+  enum EnumWithConflicts {
+    LARGE_ENUM_UNSPECIFIED = 0;
+    LARGE_ENUM1 = 1;
+  }
+
+  enum EnumWithConflicts0 {
+    LARGE_ENUM0_UNSPECIFIED = 0;
+    LARGE_ENUM2 = 1;
+  }
+}

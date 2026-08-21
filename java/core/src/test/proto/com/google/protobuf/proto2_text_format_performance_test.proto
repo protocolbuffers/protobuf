@@ -1,0 +1,30 @@
+// Protocol Buffers - Google's data interchange format
+// Copyright 2008 Google Inc.  All rights reserved.
+//
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
+
+edition = "2023";
+
+package protobuf.testing.textformat.performance.proto2;
+
+option features.repeated_field_encoding = EXPANDED;
+option java_package = "com.google.protobuf.testing.textformat.performance.proto2";
+option java_outer_classname = "Proto2TextFormatPerformanceProto";
+
+message ContainsSubMessageWithRepeatedInt32 {
+  RepeatedInt32 sub_msg = 1;
+}
+
+message RepeatedInt32 {
+  repeated int32 value = 2;
+}
+
+message ContainsExtensionSubMessage {
+  extensions 1 to max;
+}
+
+extend ContainsExtensionSubMessage {
+  RepeatedInt32 sub_msg_ext = 1;
+}

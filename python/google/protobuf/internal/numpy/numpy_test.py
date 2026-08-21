@@ -1,0 +1,852 @@
+# Protocol Buffers - Google's data interchange format
+# Copyright 2008 Google Inc.  All rights reserved.
+#
+# Use of this source code is governed by a BSD-style
+# license that can be found in the LICENSE file or at
+# https://developers.google.com/open-source/licenses/bsd
+
+"""Test use of numpy types with repeated and non-repeated scalar fields."""
+
+from datetime import datetime
+import unittest
+
+from google.protobuf.internal import api_implementation
+from google.protobuf.internal import testing_refleaks
+import numpy as np
+
+from absl.testing import parameterized
+from google.protobuf import unittest_pb2
+from google.protobuf import unittest_proto3_arena_pb2
+from google.protobuf.util import json_format_pb2
+
+message = unittest_pb2.TestAllTypes()
+np_float_scalar = np.float64(0.0)
+np_1_float_array = np.zeros(shape=(1,), dtype=np.float64)
+np_2_float_array = np.zeros(shape=(2,), dtype=np.float64)
+np_11_float_array = np.zeros(shape=(1, 1), dtype=np.float64)
+np_22_float_array = np.zeros(shape=(2, 2), dtype=np.float64)
+
+np_int_scalar = np.int64(0)
+np_1_int_array = np.zeros(shape=(1,), dtype=np.int64)
+np_2_int_array = np.zeros(shape=(2,), dtype=np.int64)
+np_11_int_array = np.zeros(shape=(1, 1), dtype=np.int64)
+np_22_int_array = np.zeros(shape=(2, 2), dtype=np.int64)
+
+np_uint_scalar = np.uint64(0)
+np_1_uint_array = np.zeros(shape=(1,), dtype=np.uint64)
+np_2_uint_array = np.zeros(shape=(2,), dtype=np.uint64)
+np_11_uint_array = np.zeros(shape=(1, 1), dtype=np.uint64)
+np_22_uint_array = np.zeros(shape=(2, 2), dtype=np.uint64)
+
+np_bool_scalar = np.bool_(False)
+np_1_bool_array = np.zeros(shape=(1,), dtype=np.bool_)
+np_2_bool_array = np.zeros(shape=(2,), dtype=np.bool_)
+np_11_bool_array = np.zeros(shape=(1, 1), dtype=np.bool_)
+np_22_bool_array = np.zeros(shape=(2, 2), dtype=np.bool_)
+
+np_object_scalar = np.array(0, dtype=object)
+np_1_object_array_int = np.array([0], dtype=object)
+np_2_object_array_int = np.array([0, 1], dtype=object)
+np_11_object_array_int = np.array([[0]], dtype=object)
+np_22_object_array_int = np.array([[0, 1], [0, 1]], dtype=object)
+
+np_1_object_array_float = np.array([0.0], dtype=object)
+np_2_object_array_float = np.array([0.0, 1.0], dtype=object)
+np_11_object_array_float = np.array([[0.0]], dtype=object)
+np_22_object_array_float = np.array([[0.0, 1.0], [0.0, 1.0]], dtype=object)
+
+np_1_object_array_bool = np.array([False], dtype=object)
+np_2_object_array_bool = np.array([False, True], dtype=object)
+np_11_object_array_bool = np.array([[False]], dtype=object)
+np_22_object_array_bool = np.array([[False, True], [False, True]], dtype=object)
+
+
+@testing_refleaks.TestCase
+class NumpyIntProtoTest(unittest.TestCase):
+
+  # Assigning dim 1 ndarray of ints to repeated field should pass
+  def testNumpyDim1IntArrayToRepeated_IsValid(self):
+    message.repeated_int64[:] = np_1_int_array
+    message.repeated_int64[:] = np_2_int_array
+
+    message.repeated_uint64[:] = np_1_uint_array
+    message.repeated_uint64[:] = np_2_uint_array
+
+  def testNumpyRepeatedFieldSelfSliceAssignment(self):
+    np_array = np.arange(5, dtype=np.int64)
+    message.repeated_int64[:] = np_array
+    np.testing.assert_equal(np_array, np.asarray(message.repeated_int64))
+    message.repeated_int64[:] = np.asarray(message.repeated_int64)
+    np.testing.assert_equal(np_array, np.asarray(message.repeated_int64))
+
+  def testNumpyRepeatedFieldPadSelfSliceAssignment(self):
+    int_array = np.arange(5, dtype=np.int64)
+    message.repeated_int64[:] = int_array
+    padded_array = (0, *int_array, 0)
+    padded_np_array = np.array(padded_array, dtype=np.int64)
+    message.repeated_int64[:] = padded_array
+    np.testing.assert_equal(padded_np_array, message.repeated_int64)
+
+  def testNumpyRepeatedFieldSliceTruncate(self):
+    message.repeated_int64[:] = np.arange(5, dtype=np.int64)
+    message.repeated_int64[2:] = np.array([], dtype=np.int64)
+    expected = np.arange(2, dtype=np.int64)
+    np.testing.assert_equal(expected, message.repeated_int64)
+
+  def testNumpyRepeatedFieldSelfExtend(self):
+    np_array = np.arange(5, dtype=np.int64)
+    message.repeated_int64[:] = np_array
+    message.repeated_int64.extend(message.repeated_int64)
+    np.testing.assert_equal(
+        np.concatenate([np_array, np_array]), message.repeated_int64
+    )
+
+  def testNumpyRepeatedFieldSubsetSliceAssignmentEdgeCases(self):
+    message.repeated_int64[:] = np.arange(10, dtype=np.int64)
+    message.repeated_int64[2:5] = np.asarray(message.repeated_int64)[2:5]
+    np.testing.assert_equal(
+        np.arange(10, dtype=np.int64), message.repeated_int64
+    )
+
+    message.repeated_int64[:] = np.arange(10, dtype=np.int64)
+    message.repeated_int64[2:4] = np.asarray(message.repeated_int64)[5:7]
+    expected = np.array([0, 1, 5, 6, 4, 5, 6, 7, 8, 9], dtype=np.int64)
+    np.testing.assert_equal(expected, message.repeated_int64)
+
+    message.repeated_int64[:] = np.arange(10, dtype=np.int64)
+    message.repeated_int64[2:3] = np.asarray(message.repeated_int64)[5:8]
+    expected = np.array([0, 1, 5, 6, 7, 3, 4, 5, 6, 7, 8, 9], dtype=np.int64)
+    np.testing.assert_equal(expected, message.repeated_int64)
+
+    message.repeated_int64[:] = np.arange(10, dtype=np.int64)
+    message.repeated_int64[2:5] = np.asarray(message.repeated_int64)[7:8]
+    expected = np.array([0, 1, 7, 5, 6, 7, 8, 9], dtype=np.int64)
+    np.testing.assert_equal(expected, message.repeated_int64)
+
+    message.repeated_int64[:] = np.arange(6, dtype=np.int64)
+    message.repeated_int64[2:2] = np.asarray(message.repeated_int64)[4:6]
+    expected = np.array([0, 1, 4, 5, 2, 3, 4, 5], dtype=np.int64)
+    np.testing.assert_equal(expected, message.repeated_int64)
+
+    message.repeated_int64[:] = np.arange(6, dtype=np.int64)
+    with self.assertRaises(ValueError):
+      message.repeated_int64[0:4:2] = np.asarray(message.repeated_int64)[0:3]
+
+    message.repeated_int64[:] = np.arange(5, dtype=np.int64)
+    message.repeated_int64[1:2] = np.array([100, 200], dtype=np.int64)
+    expected = np.array([0, 100, 200, 2, 3, 4], dtype=np.int64)
+    np.testing.assert_equal(expected, message.repeated_int64)
+
+  def testNumpyInvalidEnum_RaisesValueError(self):
+    invalid_array = np.array([123456], dtype=np.int32)
+    with self.assertRaises(ValueError):
+      message.repeated_nested_enum.extend(invalid_array)
+    with self.assertRaises(ValueError):
+      message.repeated_nested_enum[:] = invalid_array
+
+  def testNumpyDim1ObjectArrayToRepeated_IsValid(self):
+    message.repeated_int64[:] = np_1_object_array_int
+    message.repeated_int64[:] = np_2_object_array_int
+    message.repeated_int64[:] = []
+    message.repeated_int64.extend(np_1_object_array_int)
+    message.repeated_int64.extend(np_2_object_array_int)
+
+  def testNumpyDim2ObjectArrayToRepeated_RaisesTypeError(self):
+    with self.assertRaises(TypeError):
+      message.repeated_int64[:] = np_11_object_array_int
+    with self.assertRaises(TypeError):
+      message.repeated_int64[:] = np_22_object_array_int
+    with self.assertRaises(TypeError):
+      message.repeated_int64.extend(np_11_object_array_int)
+    with self.assertRaises(TypeError):
+      message.repeated_int64.extend(np_22_object_array_int)
+
+  # Assigning dim 2 ndarray of ints to repeated field should fail
+  def testNumpyDim2IntArrayToRepeated_RaisesTypeError(self):
+    with self.assertRaises(TypeError):
+      message.repeated_int64[:] = np_11_int_array
+    with self.assertRaises(TypeError):
+      message.repeated_int64[:] = np_22_int_array
+
+    with self.assertRaises(TypeError):
+      message.repeated_uint64[:] = np_11_uint_array
+    with self.assertRaises(TypeError):
+      message.repeated_uint64[:] = np_22_uint_array
+
+  # Assigning any ndarray of floats to repeated int field should fail
+  def testNumpyFloatArrayToRepeated_RaisesTypeError(self):
+    with self.assertRaises(TypeError):
+      message.repeated_int64[:] = np_1_float_array
+    with self.assertRaises(TypeError):
+      message.repeated_int64[:] = np_11_float_array
+    with self.assertRaises(TypeError):
+      message.repeated_int64[:] = np_22_float_array
+
+  # Assigning any np int to scalar field should pass
+  def testNumpyIntScalarToScalar_IsValid(self):
+    message.optional_int64 = np_int_scalar
+    message.optional_uint64 = np_uint_scalar
+
+  # Assigning any ndarray of ints to scalar field should fail
+  def testNumpyIntArrayToScalar_RaisesTypeError(self):
+    with self.assertRaises(TypeError):
+      message.optional_int64 = np_1_int_array
+    with self.assertRaises(TypeError):
+      message.optional_int64 = np_11_int_array
+    with self.assertRaises(TypeError):
+      message.optional_int64 = np_22_int_array
+
+    with self.assertRaises(TypeError):
+      message.optional_uint64 = np_1_uint_array
+    with self.assertRaises(TypeError):
+      message.optional_uint64 = np_11_uint_array
+    with self.assertRaises(TypeError):
+      message.optional_uint64 = np_22_uint_array
+
+  def testNumpyObjectArrayToScalar_RaisesTypeError(self):
+    with self.assertRaises(TypeError):
+      message.optional_int64 = np_1_object_array_int
+    with self.assertRaises(TypeError):
+      message.optional_int64 = np_11_object_array_int
+    with self.assertRaises(TypeError):
+      message.optional_int64 = np_22_object_array_int
+
+  # Assigning any ndarray of floats to scalar field should fail
+  def testNumpyFloatArrayToScalar_RaisesTypeError(self):
+    with self.assertRaises(TypeError):
+      message.optional_int64 = np_1_float_array
+    with self.assertRaises(TypeError):
+      message.optional_int64 = np_11_float_array
+    with self.assertRaises(TypeError):
+      message.optional_int64 = np_22_float_array
+
+  def testRepeatedFieldSelfSliceAssignment(self):
+    msg = unittest_pb2.NestedTestAllTypes()
+    msg.payload.repeated_int32[:] = np.arange(4, dtype=np.int32)
+    msg.payload.repeated_int32[:] = np.asarray(msg.payload.repeated_int32)
+    self.assertEqual([0, 1, 2, 3], msg.payload.repeated_int32)
+
+  def testNumpyArrayIsMutableCopy(self):
+    msg = unittest_pb2.NestedTestAllTypes()
+    msg.payload.repeated_int32[:] = np.arange(4, dtype=np.int32)
+    arr = np.asarray(msg.payload.repeated_int32)
+    arr[0] = 100
+    self.assertEqual([0, 1, 2, 3], msg.payload.repeated_int32)
+    np.testing.assert_equal([100, 1, 2, 3], arr)
+
+  def testNumpyDifferentIntTypeSliceAssignment(self):
+    msg = unittest_pb2.NestedTestAllTypes()
+    # int64 -> int32
+    msg.payload.repeated_int32[:] = np.arange(4, dtype=np.int64)
+    self.assertEqual([0, 1, 2, 3], msg.payload.repeated_int32)
+    # int32 -> int64
+    msg.payload.repeated_int64[:] = np.arange(4, dtype=np.int32)
+    self.assertEqual([0, 1, 2, 3], msg.payload.repeated_int64)
+    # int64 overflow -> int32
+    with self.assertRaises((ValueError, OverflowError, TypeError)):
+      msg.payload.repeated_int32[:] = np.array([0, 1, 2, 2**35], dtype=np.int64)
+
+
+@testing_refleaks.TestCase
+class NumpyFloatProtoTest(unittest.TestCase):
+
+  # Assigning dim 1 ndarray of floats to repeated field should pass
+  def testNumpyDim1FloatArrayToRepeated_IsValid(self):
+    message.repeated_float[:] = np_1_float_array
+    message.repeated_float[:] = np_2_float_array
+
+  def testNumpyDim1ObjectArrayToRepeated_IsValid(self):
+    message.repeated_float[:] = np_1_object_array_float
+    message.repeated_float[:] = np_2_object_array_float
+    message.repeated_float[:] = []
+    message.repeated_float.extend(np_1_object_array_float)
+    message.repeated_float.extend(np_2_object_array_float)
+
+  def testNumpyDim2ObjectArrayToRepeated_RaisesTypeError(self):
+    with self.assertRaises(TypeError):
+      message.repeated_float[:] = np_11_object_array_float
+    with self.assertRaises(TypeError):
+      message.repeated_float[:] = np_22_object_array_float
+    with self.assertRaises(TypeError):
+      message.repeated_float.extend(np_11_object_array_float)
+    with self.assertRaises(TypeError):
+      message.repeated_float.extend(np_22_object_array_float)
+
+  # Assigning dim 2 ndarray of floats to repeated field should fail
+  def testNumpyDim2FloatArrayToRepeated_RaisesTypeError(self):
+    with self.assertRaises(TypeError):
+      message.repeated_float[:] = np_11_float_array
+    with self.assertRaises(TypeError):
+      message.repeated_float[:] = np_22_float_array
+
+  # Assigning any np float to scalar field should pass
+  def testNumpyFloatScalarToScalar_IsValid(self):
+    message.optional_float = np_float_scalar
+
+  # Assigning any ndarray of float to scalar field should fail
+  def testNumpyFloatArrayToScalar_RaisesTypeError(self):
+    with self.assertRaises(TypeError):
+      message.optional_float = np_1_float_array
+    with self.assertRaises(TypeError):
+      message.optional_float = np_11_float_array
+    with self.assertRaises(TypeError):
+      message.optional_float = np_22_float_array
+
+  def testNumpyObjectArrayToScalar_RaisesTypeError(self):
+    with self.assertRaises(TypeError):
+      message.optional_float = np_1_object_array_float
+    with self.assertRaises(TypeError):
+      message.optional_float = np_11_object_array_float
+    with self.assertRaises(TypeError):
+      message.optional_float = np_22_object_array_float
+
+  def testNumpyDifferentFloatTypeSliceAssignment(self):
+    msg = unittest_pb2.NestedTestAllTypes()
+    # float64 -> float32
+    msg.payload.repeated_float[:] = np.array([1.5, 2.5, 3.5], dtype=np.float64)
+    self.assertEqual([1.5, 2.5, 3.5], msg.payload.repeated_float)
+    # float32 -> float64
+    msg.payload.repeated_double[:] = np.array([1.5, 2.5, 3.5], dtype=np.float32)
+    self.assertEqual([1.5, 2.5, 3.5], msg.payload.repeated_double)
+    # float64 overflow -> float32
+    msg.payload.repeated_float[:] = np.array(
+        [1.5, 2.5, 1e300], dtype=np.float64
+    )
+    self.assertEqual([1.5, 2.5, float('inf')], msg.payload.repeated_float)
+
+
+@testing_refleaks.TestCase
+class NumpyBoolProtoTest(unittest.TestCase):
+
+  # Assigning dim 1 ndarray of bool to repeated field should pass
+  def testNumpyDim1BoolArrayToRepeated_IsValid(self):
+    message.repeated_bool[:] = np_1_bool_array
+    message.repeated_bool[:] = np_2_bool_array
+
+  def testNumpyDim1ObjectArrayToRepeated_IsValid(self):
+    message.repeated_bool[:] = np_1_object_array_bool
+    message.repeated_bool[:] = np_2_object_array_bool
+    message.repeated_bool[:] = []
+    message.repeated_bool.extend(np_1_object_array_bool)
+    message.repeated_bool.extend(np_2_object_array_bool)
+
+  def testNumpyDim2ObjectArrayToRepeated_RaisesTypeError(self):
+    with self.assertRaises(TypeError):
+      message.repeated_bool[:] = np_11_object_array_bool
+    with self.assertRaises(TypeError):
+      message.repeated_bool[:] = np_22_object_array_bool
+    with self.assertRaises(TypeError):
+      message.repeated_bool.extend(np_11_object_array_bool)
+    with self.assertRaises(TypeError):
+      message.repeated_bool.extend(np_22_object_array_bool)
+
+  # Assigning dim 2 ndarray of bool to repeated field should fail
+  def testNumpyDim2BoolArrayToRepeated_RaisesTypeError(self):
+    with self.assertRaises(TypeError):
+      message.repeated_bool[:] = np_11_bool_array
+    with self.assertRaises(TypeError):
+      message.repeated_bool[:] = np_22_bool_array
+
+  # Assigning any np bool to scalar field should pass
+  def testNumpyBoolScalarToScalar_IsValid(self):
+    message.optional_bool = np_bool_scalar
+
+  # Assigning any ndarray of bool to scalar field should fail
+  def testNumpyBoolArrayToScalar_RaisesTypeError(self):
+    with self.assertRaises(TypeError):
+      message.optional_bool = np_1_bool_array
+    with self.assertRaises(TypeError):
+      message.optional_bool = np_11_bool_array
+    with self.assertRaises(TypeError):
+      message.optional_bool = np_22_bool_array
+
+  def testNumpyObjectArrayToScalar_RaisesTypeError(self):
+    with self.assertRaises(TypeError):
+      message.optional_bool = np_1_object_array_bool
+    with self.assertRaises(TypeError):
+      message.optional_bool = np_11_object_array_bool
+    with self.assertRaises(TypeError):
+      message.optional_bool = np_22_object_array_bool
+
+
+@testing_refleaks.TestCase
+class NumpyProtoIndexingTest(unittest.TestCase):
+
+  def testNumpyIntScalarIndexing_Passes(self):
+    data = unittest_pb2.TestAllTypes(repeated_int64=[0, 1, 2])
+    self.assertEqual(0, data.repeated_int64[np.int64(0)])
+
+  def testNumpyNegative1IntScalarIndexing_Passes(self):
+    data = unittest_pb2.TestAllTypes(repeated_int64=[0, 1, 2])
+    self.assertEqual(2, data.repeated_int64[np.int64(-1)])
+
+  def testNumpyFloatScalarIndexing_Fails(self):
+    data = unittest_pb2.TestAllTypes(repeated_int64=[0, 1, 2])
+    with self.assertRaises(TypeError):
+      _ = data.repeated_int64[np.float64(0.0)]
+
+  def testNumpyIntArrayIndexing_Fails(self):
+    data = unittest_pb2.TestAllTypes(repeated_int64=[0, 1, 2])
+    with self.assertRaises(TypeError):
+      _ = data.repeated_int64[np.array([0])]
+    with self.assertRaises(TypeError):
+      _ = data.repeated_int64[np.ndarray((1,), buffer=np.array([0]), dtype=int)]
+    with self.assertRaises(TypeError):
+      _ = data.repeated_int64[
+          np.ndarray((1, 1), buffer=np.array([0]), dtype=int)
+      ]
+
+
+@testing_refleaks.TestCase
+class NumpyBindingTest(parameterized.TestCase):
+
+  @parameterized.product(
+      message_module=[unittest_pb2, unittest_proto3_arena_pb2],
+      field_name=[
+          'repeated_int32',
+          'repeated_int64',
+          'repeated_uint32',
+          'repeated_uint64',
+          'repeated_sint32',
+          'repeated_sint64',
+          'repeated_fixed32',
+          'repeated_fixed64',
+          'repeated_sfixed32',
+          'repeated_sfixed64',
+          'repeated_float',
+          'repeated_double',
+      ],
+  )
+  def test_simple_np_array_from_repeated(self, message_module, field_name):
+    m = message_module.TestAllTypes()
+    field = getattr(m, field_name)
+    field.append(42)
+    field.append(127)
+    arr = np.asarray(field)
+    self.assertIsInstance(arr, np.ndarray)
+    np.testing.assert_equal(arr, np.array([42, 127]))
+
+  @parameterized.named_parameters(
+      ('_proto2', unittest_pb2), ('_proto3', unittest_proto3_arena_pb2)
+  )
+  def test_simple_np_array_from_repeated_continue(self, message_module):
+    m = message_module.TestAllTypes()
+    m.repeated_nested_enum.extend([1, 2, 3])
+    arr = np.asarray(m.repeated_nested_enum)
+    self.assertIsInstance(arr, np.ndarray)
+    np.testing.assert_equal(arr, np.array([1, 2, 3]))
+
+    m.repeated_bool.append(False)
+    m.repeated_bool.append(True)
+    arr = np.asarray(m.repeated_bool)
+    self.assertIsInstance(arr, np.ndarray)
+    np.testing.assert_equal(arr, np.array([False, True]))
+
+    m.repeated_string.extend([
+        'One',
+        'Two',
+        'Three',
+    ])
+    arr = np.asarray(m.repeated_string)
+    self.assertIsInstance(arr, np.ndarray)
+    np.testing.assert_equal(arr, np.array(['One', 'Two', 'Three']))
+
+    m.repeated_bytes.append(b'1')
+    m.repeated_bytes.append(b'2')
+    m.repeated_bytes.append(b'3')
+    arr = np.asarray(m.repeated_bytes)
+    self.assertIsInstance(arr, np.ndarray)
+    np.testing.assert_equal(arr, np.array([b'1', b'2', b'3']))
+
+  @parameterized.named_parameters(
+      ('_proto2', unittest_pb2), ('_proto3', unittest_proto3_arena_pb2)
+  )
+  def test_simple_n_array_from_repeated_message(self, message_module):
+    m = message_module.TestAllTypes(
+        repeated_nested_message=(
+            message_module.TestAllTypes.NestedMessage(bb=9),
+            message_module.TestAllTypes.NestedMessage(bb=8),
+        )
+    )
+    arr = np.array(m.repeated_nested_message)
+    self.assertIsInstance(arr, np.ndarray)
+    self.assertEqual(arr[0].bb, 9)
+    self.assertEqual(arr[1].bb, 8)
+
+  @parameterized.product(
+      message_module=[unittest_pb2, unittest_proto3_arena_pb2],
+      field_name=[
+          'repeated_int32',
+          'repeated_int64',
+          'repeated_sint32',
+          'repeated_sint64',
+          'repeated_sfixed32',
+          'repeated_sfixed64',
+          'repeated_float',
+          'repeated_double',
+      ],
+  )
+  def test_numpy_signed_arrays_from_repeated(self, message_module, field_name):
+    m = message_module.TestAllTypes()
+    field = getattr(m, field_name)
+    field.append(-42)
+    field.append(0)
+    field.append(127)
+    arr = np.asarray(field)
+    self.assertIsInstance(arr, np.ndarray)
+    np.testing.assert_equal(arr, np.array([-42, 0, 127]))
+
+  @parameterized.product(
+      message_module=[unittest_pb2, unittest_proto3_arena_pb2],
+      field_name=[
+          'repeated_int32',
+          'repeated_int64',
+          'repeated_uint32',
+          'repeated_uint64',
+          'repeated_sint32',
+          'repeated_sint64',
+          'repeated_fixed32',
+          'repeated_fixed64',
+          'repeated_sfixed32',
+          'repeated_sfixed64',
+          'repeated_float',
+          'repeated_double',
+          'repeated_nested_enum',
+      ],
+  )
+  def test_numpy_empty_repeated(self, message_module, field_name):
+    m = message_module.TestAllTypes()
+    field = getattr(m, field_name)
+    arr = np.array(field)
+    arr2 = np.array(field, dtype=np.int8)
+    self.assertIsInstance(arr, np.ndarray)
+    self.assertIsInstance(arr2, np.ndarray)
+    np.testing.assert_equal(arr, np.array([]))
+    np.testing.assert_equal(arr2, np.array([], dtype=np.int8))
+
+  @parameterized.product(
+      message_module=[unittest_pb2, unittest_proto3_arena_pb2],
+      field_name=['packed_sint32', 'packed_sint64'],
+  )
+  def test_numpy_signed_packed_arrays_from_repeated(
+      self, message_module, field_name
+  ):
+    m = message_module.TestPackedTypes()
+    field = getattr(m, field_name)
+    field.append(-42)
+    field.append(0)
+    field.append(127)
+    arr = np.asarray(field)
+    self.assertIsInstance(arr, np.ndarray)
+    np.testing.assert_equal(arr, np.array([-42, 0, 127]))
+
+  @parameterized.product(
+      message_module=[unittest_pb2, unittest_proto3_arena_pb2],
+      dtype=[
+          'int8',
+          'int16',
+          'int32',
+          'int64',
+          'float16',
+          'float32',
+          'float64',
+          'str',
+          'bool',
+          'object',
+      ],
+  )
+  def test_repeated_bytes_to_all_types(self, message_module, dtype):
+    m = message_module.TestAllTypes()
+    m.repeated_bytes.extend([b'11', b'12'])
+    arr = np.asarray(m.repeated_bytes, dtype=dtype)
+    self.assertIsInstance(arr, np.ndarray)
+    self.assertTrue(arr.flags.contiguous)
+
+  @parameterized.named_parameters(
+      ('_proto2', unittest_pb2), ('_proto3', unittest_proto3_arena_pb2)
+  )
+  def test_repeated_string_tobytes(self, message_module):
+    m = message_module.TestAllTypes(repeated_string=['12'])
+    arr = np.array(m.repeated_string)
+    self.assertEqual(arr.tobytes(), b'1\x00\x00\x002\x00\x00\x00')
+
+  @parameterized.named_parameters(
+      ('_proto2', unittest_pb2), ('_proto3', unittest_proto3_arena_pb2)
+  )
+  def test_repeated_bytes_tobytes(self, message_module):
+    m = message_module.TestAllTypes(repeated_bytes=[b'11', b'12', b'13'])
+    arr = np.array(m.repeated_bytes)
+    np.testing.assert_array_equal(
+        arr, np.asarray([b'11', b'12', b'13'], dtype=bytes)
+    )
+    self.assertEqual(arr.tobytes(), b'111213')
+
+  @parameterized.named_parameters(
+      ('_proto2', unittest_pb2), ('_proto3', unittest_proto3_arena_pb2)
+  )
+  def test_repeated_string_none_dtype(self, message_module):
+    m = message_module.TestAllTypes()
+    m.repeated_string.extend(['12', '2321'])
+    arr = np.asarray(m.repeated_string, dtype=None)
+    self.assertIsInstance(arr, np.ndarray)
+    np.testing.assert_array_equal(arr, np.asarray(['12', '2321'], dtype=str))
+
+  @parameterized.named_parameters(
+      ('_proto2', unittest_pb2), ('_proto3', unittest_proto3_arena_pb2)
+  )
+  def test_repeated_string_int8_dtype(self, message_module):
+    m = message_module.TestAllTypes()
+    m.repeated_string.extend(['123', '-15'])
+    arr = np.asarray(m.repeated_string, dtype=np.int8)
+    self.assertIsInstance(arr, np.ndarray)
+    self.assertEqual(arr.dtype, np.int8)
+    np.testing.assert_array_equal(arr, np.asarray([123, -15], dtype=np.int8))
+
+  @parameterized.named_parameters(
+      ('_proto2', unittest_pb2), ('_proto3', unittest_proto3_arena_pb2)
+  )
+  def test_repeated_bytes_none_dtype(self, message_module):
+    m = message_module.TestAllTypes()
+    m.repeated_bytes.append(bytes([122, 124]))
+    m.repeated_bytes.append(bytes([13]))
+    arr = np.asarray(m.repeated_bytes, dtype=None)
+    self.assertIsInstance(arr, np.ndarray)
+    expected = np.asarray([b'\x7A\x7C', b'\x0d'])
+    np.testing.assert_array_equal(arr, expected)
+
+  @parameterized.named_parameters(
+      ('_proto2', unittest_pb2), ('_proto3', unittest_proto3_arena_pb2)
+  )
+  def test_repeated_bytes_object_dtype(self, message_module):
+    m = message_module.TestAllTypes()
+    t = np.array([b'932', b'124\x00'], dtype=object)
+    m.repeated_bytes.extend(t)
+    ss = m.SerializeToString()
+    m2 = message_module.TestAllTypes.FromString(ss)
+    arr = np.asarray(m2.repeated_bytes, dtype=object)
+    self.assertIsInstance(arr, np.ndarray)
+    np.testing.assert_array_equal(arr, t)
+
+  @parameterized.named_parameters(
+      ('_proto2', unittest_pb2), ('_proto3', unittest_proto3_arena_pb2)
+  )
+  def test_empty_list_object_dtype(self, message_module):
+    m = message_module.TestAllTypes()
+    t = np.array([], dtype=object)
+    m.repeated_bytes.extend(t)
+    ss = m.SerializeToString()
+    m2 = message_module.TestAllTypes.FromString(ss)
+    arr = np.asarray(m2.repeated_bytes, dtype=object)
+    self.assertIsInstance(arr, np.ndarray)
+    np.testing.assert_array_equal(arr, t)
+
+  @parameterized.named_parameters(
+      ('_proto2', unittest_pb2), ('_proto3', unittest_proto3_arena_pb2)
+  )
+  def test_default_dtype(self, message_module):
+    m = message_module.TestAllTypes(
+        repeated_int32=[1, 2],
+        repeated_uint32=[2],
+        repeated_int64=[1],
+        repeated_uint64=[1],
+        repeated_float=[1],
+        repeated_double=[0.1],
+        repeated_string=['1'],
+        repeated_bytes=[b'123'],
+        repeated_bool=[True],
+    )
+    self.assertEqual(np.array(m.repeated_int32).dtype, np.int32)
+    self.assertEqual(np.array(m.repeated_uint32).dtype, np.uint32)
+    self.assertEqual(np.array(m.repeated_int64).dtype, np.int64)
+    self.assertEqual(np.array(m.repeated_uint64).dtype, np.uint64)
+    self.assertEqual(np.array(m.repeated_float).dtype, np.float32)
+    self.assertEqual(np.array(m.repeated_double).dtype, np.float64)
+    self.assertEqual(np.array(m.repeated_string).dtype, np.dtype('<U1'))
+    self.assertEqual(np.array(m.repeated_bytes).dtype, np.dtype('S3'))
+    self.assertEqual(np.array(m.repeated_bool).dtype, np.dtype('bool'))
+    message = json_format_pb2.TestRepeatedEnum(
+        repeated_enum=[json_format_pb2.BUFFER]
+    )
+    self.assertEqual(np.array(message.repeated_enum).dtype, np.int32)
+
+  @parameterized.named_parameters(
+      ('_proto2', unittest_pb2), ('_proto3', unittest_proto3_arena_pb2)
+  )
+  def test_set_dtype(self, message_module):
+    m = message_module.TestAllTypes(
+        repeated_int32=[1, 2],
+        repeated_uint32=[2],
+        repeated_int64=[1],
+        repeated_uint64=[1],
+        repeated_float=[1.2, 1],
+        repeated_double=[0.1],
+        repeated_string=['1'],
+        repeated_bytes=[b'123'],
+        repeated_bool=[True],
+    )
+    arr = np.array(m.repeated_float)
+    self.assertEqual(np.array(m.repeated_int32, dtype=np.int32).dtype, np.int32)
+    self.assertEqual(
+        np.array(m.repeated_uint32, dtype=np.int32).dtype, np.int32
+    )
+    self.assertEqual(
+        np.array(m.repeated_int64, dtype=np.uint32).dtype, np.uint32
+    )
+    self.assertEqual(
+        np.array(m.repeated_uint64, dtype=np.uint32).dtype, np.uint32
+    )
+    self.assertEqual(
+        np.array(m.repeated_float, dtype=np.float32).dtype, np.float32
+    )
+    self.assertEqual(
+        np.array(m.repeated_double, dtype=np.float32).dtype, np.float32
+    )
+    self.assertEqual(
+        np.array(m.repeated_string, dtype=object).dtype, np.dtype('O')
+    )
+    self.assertEqual(
+        np.array(m.repeated_bytes, dtype=object).dtype, np.dtype('O')
+    )
+    self.assertEqual(np.array(m.repeated_bool, dtype=np.int32).dtype, np.int32)
+
+  @parameterized.named_parameters(
+      ('_proto2', unittest_pb2), ('_proto3', unittest_proto3_arena_pb2)
+  )
+  def test_empty_repeated_default_dtype(self, message_module):
+    m = message_module.TestAllTypes()
+    self.assertEqual(np.array(m.repeated_int32).dtype, np.int32)
+    self.assertEqual(np.array(m.repeated_uint32).dtype, np.uint32)
+    self.assertEqual(np.array(m.repeated_int64).dtype, np.int64)
+    self.assertEqual(np.array(m.repeated_uint64).dtype, np.uint64)
+    self.assertEqual(np.array(m.repeated_float).dtype, np.float32)
+    self.assertEqual(np.array(m.repeated_double).dtype, np.float64)
+    self.assertEqual(np.array(m.repeated_string).dtype, np.dtype('<U1'))
+    self.assertEqual(np.array(m.repeated_bytes).dtype, np.dtype('S1'))
+
+  @parameterized.product(
+      message_module=[unittest_pb2, unittest_proto3_arena_pb2],
+      field_name=[
+          'repeated_int32',
+          'repeated_int64',
+          'repeated_uint32',
+          'repeated_uint64',
+          'repeated_sint32',
+          'repeated_sint64',
+          'repeated_fixed32',
+          'repeated_fixed64',
+          'repeated_sfixed32',
+          'repeated_sfixed64',
+          'repeated_float',
+          'repeated_double',
+          'repeated_nested_enum',
+      ],
+  )
+  def test_empty_repeated_set_dtype(self, message_module, field_name):
+    m = message_module.TestAllTypes()
+    field = getattr(m, field_name)
+    self.assertEqual(np.array(field, dtype=np.int32).dtype, np.int32)
+
+  @parameterized.named_parameters(
+      ('_proto2', unittest_pb2), ('_proto3', unittest_proto3_arena_pb2)
+  )
+  def test_nested_message(self, message_module):
+    m = message_module.NestedTestAllTypes()
+    arr = np.array(m.child.payload.repeated_float)
+    self.assertEqual(arr.dtype, np.float32)
+
+  @parameterized.named_parameters(
+      ('_proto2', unittest_pb2), ('_proto3', unittest_proto3_arena_pb2)
+  )
+  def test_float_compare(self, message_module):
+    m = message_module.TestAllTypes()
+    expected = [87.5011, 1.1]
+    m.repeated_float.extend(expected)
+    np.testing.assert_equal(
+        np.array(m.repeated_float), np.array(expected, np.float32)
+    )
+    m.repeated_double.extend(expected)
+    np.testing.assert_equal(np.array(m.repeated_double), np.array(expected))
+
+  @parameterized.named_parameters(
+      ('_proto2', unittest_pb2), ('_proto3', unittest_proto3_arena_pb2)
+  )
+  def test_nparray_modify(self, message_module):
+    m = message_module.TestAllTypes()
+    size = 10
+    expected = np.full(size, 123, dtype=np.int32)
+    m.repeated_int32.extend(expected)
+    arr = np.array(m.repeated_int32, np.int32)
+    arr[2] = 111
+    self.assertEqual(arr[2], 111)
+    self.assertEqual(arr[3], 123)
+    self.assertEqual(m.repeated_int32[2], 123)
+
+  @parameterized.named_parameters(
+      ('_proto2', unittest_pb2), ('_proto3', unittest_proto3_arena_pb2)
+  )
+  def test_nparray_order(self, message_module):
+    m = message_module.TestAllTypes(repeated_int32=[1, 2, 3])
+    arr = np.array(m.repeated_int32, order='F')
+    np.testing.assert_equal(arr, np.array([1, 2, 3]))
+
+  @parameterized.product(
+      message_module=[unittest_pb2, unittest_proto3_arena_pb2],
+      field_name=[
+          'repeated_int32',
+          'repeated_int64',
+          'repeated_uint32',
+          'repeated_uint64',
+          'repeated_sint32',
+          'repeated_sint64',
+          'repeated_fixed32',
+          'repeated_fixed64',
+          'repeated_sfixed32',
+          'repeated_sfixed64',
+      ],
+      dtype=[
+          np.int8,
+          np.int16,
+          np.int32,
+          np.int64,
+          np.uint8,
+          np.uint16,
+          np.uint32,
+          np.uint64,
+      ],
+  )
+  def test_assign_integer_numpy_array_to_repeated(
+      self, message_module, field_name, dtype
+  ):
+    m = message_module.TestAllTypes()
+    field = getattr(m, field_name)
+    arr = np.array([0, 1, 2, 3], dtype=dtype)
+    field[:] = arr
+    self.assertEqual([0, 1, 2, 3], field)
+    field[1:-1] = arr
+    self.assertEqual([0, 0, 1, 2, 3, 3], field)
+
+  @parameterized.product(
+      message_module=[unittest_pb2, unittest_proto3_arena_pb2],
+      field_name=[
+          'repeated_float',
+          'repeated_double',
+      ],
+      dtype=[
+          np.float32,
+          np.float64,
+      ],
+  )
+  def test_assign_float_numpy_array_to_repeated(
+      self, message_module, field_name, dtype
+  ):
+    m = message_module.TestAllTypes()
+    field = getattr(m, field_name)
+    arr = np.array([1.5, 2.5, 3.5], dtype=dtype)
+    field[:] = arr
+    self.assertEqual([1.5, 2.5, 3.5], field)
+    field[1:-1] = arr
+    self.assertEqual([1.5, 1.5, 2.5, 3.5, 3.5], field)
+
+
+if __name__ == '__main__':
+  unittest.main()

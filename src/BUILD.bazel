@@ -1,0 +1,44 @@
+################################################################################
+# Protocol Buffers: C++ Runtime
+################################################################################
+
+# Most rules are under google/protobuf. This package exists for convenience.
+load("@rules_pkg//pkg:mappings.bzl", "pkg_filegroup", "pkg_files", "strip_prefix")
+load("//conformance:defs.bzl", "conformance_test")
+load("//upb/cmake:build_defs.bzl", "staleness_test")
+
+conformance_test(
+    name = "conformance_test",
+    failure_list = "//conformance:failure_list_cpp.txt",
+    maximum_edition = "2023",
+    testee = "//conformance:conformance_cpp",
+    text_format_failure_list = "//conformance:text_format_failure_list_cpp.txt",
+)
+
+# Copy the generated file_lists.cmake into a place where the staleness test
+# below can use it.
+genrule(
+    name = "copy_cmake_lists",
+    testonly = True,
+    srcs = ["//pkg:gen_src_file_lists"],
+    outs = ["cmake_copy/file_lists.cmake"],
+    cmd = "cp $< $@",
+    tags = ["manual"],
+    visibility = ["//visibility:private"],
+)
+
+staleness_test(
+    name = "cmake_lists_staleness_test",
+    outs = ["file_lists.cmake"],
+    generated_pattern = "cmake_copy/%s",
+    # Only run this test if it is explicitly specified on the command line (not
+    # via //src:all or ...). This file will be automatically updated in a
+    # GitHub action, so developers should not worry about failures from this
+    # test.
+    tags = ["manual"],
+)
+
+test_suite(
+    name = "editions_tests",
+    tests = ["//editions:all_tests"],
+)

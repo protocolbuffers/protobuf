@@ -1,0 +1,45 @@
+// Protocol Buffers - Google's data interchange format
+// Copyright 2008 Google Inc.  All rights reserved.
+//
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
+
+// Author: kenton@google.com (Kenton Varda)
+//  Based on original Protocol Buffers design by
+//  Sanjay Ghemawat, Jeff Dean, and others.
+//
+// A proto file which uses optimize_for = CODE_SIZE.
+
+syntax = "proto2";
+
+package proto2_unittest;
+
+import "google/protobuf/unittest.proto";
+
+option optimize_for = CODE_SIZE;
+
+message TestOptimizedForSize {
+  optional int32 i = 1;
+  optional ForeignMessage msg = 19;
+
+  extensions 1000 to max;
+
+  extend TestOptimizedForSize {
+    optional int32 test_extension = 1234;
+    optional TestRequiredOptimizedForSize test_extension2 = 1235;
+  }
+
+  oneof foo {
+    int32 integer_field = 2;
+    string string_field = 3;
+  }
+}
+
+message TestRequiredOptimizedForSize {
+  required int32 x = 1;
+}
+
+message TestOptionalOptimizedForSize {
+  optional TestRequiredOptimizedForSize o = 1;
+}

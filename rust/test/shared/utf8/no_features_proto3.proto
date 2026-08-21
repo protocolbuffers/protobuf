@@ -1,0 +1,7 @@
+syntax = "proto3";
+
+package utf8;
+
+message NoFeaturesProto3 {
+  optional string my_field = 1;
+}

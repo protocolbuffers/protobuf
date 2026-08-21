@@ -1,0 +1,14 @@
+edition = "2024";
+
+package proto2_unittest;
+
+message RepeatedFieldProxyTestImportMessage {
+  int32 value = 1;
+}
+
+enum RepeatedFieldProxyTestImportEnum {
+  REPEATED_FIELD_PROXY_TEST_IMPORT_ENUM_UNKNOWN = 0;
+  REPEATED_FIELD_PROXY_TEST_IMPORT_FOO = 1;
+  REPEATED_FIELD_PROXY_TEST_IMPORT_BAR = 2;
+  REPEATED_FIELD_PROXY_TEST_IMPORT_BAZ = 3;
+}

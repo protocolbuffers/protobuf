@@ -1,0 +1,48 @@
+// Protocol Buffers - Google's data interchange format
+// Copyright 2008 Google Inc.  All rights reserved.
+//
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
+
+syntax = "proto2";
+
+package google.protobuf.python.internal;
+
+import public "google/protobuf/internal/more_messages.proto";
+
+import "google/protobuf/internal/descriptor_pool_test1.proto";
+
+message DescriptorPoolTest3 {
+  extend DescriptorPoolTest1 {
+    optional DescriptorPoolTest3 descriptor_pool_test = 1001;
+  }
+
+  enum NestedEnum {
+    NU = 13;
+    XI = 14;
+  }
+
+  optional NestedEnum nested_enum = 1 [default = XI];
+
+  message NestedMessage {
+    enum NestedEnum {
+      OMICRON = 15;
+      PI = 16;
+    }
+    optional NestedEnum nested_enum = 1 [default = PI];
+    optional string nested_field = 2 [default = "nu"];
+    optional DeepNestedMessage deep_nested_message = 3;
+
+    message DeepNestedMessage {
+      enum NestedEnum {
+        RHO = 17;
+        SIGMA = 18;
+      }
+      optional NestedEnum nested_enum = 1 [default = RHO];
+      optional string nested_field = 2 [default = "sigma"];
+    }
+  }
+
+  optional NestedMessage nested_message = 2;
+}

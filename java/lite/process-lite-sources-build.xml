@@ -1,0 +1,7 @@
+<project name="process-lite-sources">
+    <exec executable="awk" output="${generated.testsources.dir}/com/google/protobuf/TestUtil.java">
+      <arg value="-f" />
+      <arg value="${basedir}/lite.awk" />
+      <arg value="${basedir}/../core/src/test/java/com/google/protobuf/TestUtil.java" />
+    </exec>
+</project>

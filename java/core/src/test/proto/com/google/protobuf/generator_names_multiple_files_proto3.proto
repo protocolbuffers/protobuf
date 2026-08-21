@@ -1,0 +1,21 @@
+syntax = "proto3";
+
+package google.protobuf;
+
+option java_package = "com.google.protobuf";
+option java_multiple_files = true;
+
+option java_generic_services = true;
+
+message MultipleFilesProto3Message {
+  int32 field = 1;
+}
+
+enum MultipleFilesProto3Enum {
+  MULTIPLE_FILES_PROTO3_ENUM_UNKNOWN = 0;
+}
+
+service MultipleFilesProto3Service {
+  // Test method.
+  rpc Foo(MultipleFilesProto3Message) returns (MultipleFilesProto3Message) {}
+}

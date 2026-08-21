@@ -1,0 +1,19 @@
+// Protocol Buffers - Google's data interchange format
+// Copyright 2008 Google Inc.  All rights reserved.
+//
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
+
+// Author: liujisi@google.com (Pherl Liu)
+
+syntax = "proto3";
+
+package protobuf_unittest_import;
+
+option java_package = "com.google.protobuf.test";
+option csharp_namespace = "Google.Protobuf.TestProtos";
+
+message PublicImportMessage {
+ int32 e = 1;
+}

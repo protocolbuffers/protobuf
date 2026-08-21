@@ -1,0 +1,144 @@
+load("@rules_buf//buf:defs.bzl", "buf_breaking_test")
+load("@rules_java//java:java_library.bzl", "java_library")
+
+# Simple build tests for compatibility of gencode from previous major versions
+# with the current runtime.
+
+java_library(
+    name = "v25_test_protos_srcjar",
+    testonly = True,
+    srcs = glob([
+        "v3.25.0/*.srcjar",
+    ]),
+    visibility = ["//java/core:__pkg__"],
+    deps = ["//java/core"],
+)
+
+java_library(
+    name = "v25_test_protos_jar",
+    testonly = True,
+    srcs = glob([
+        "v3.25.0/*.srcjar",
+    ]),
+    visibility = ["//java/core:__pkg__"],
+    deps = ["@com_google_protobuf_v25//java/core"],
+)
+
+# Breaking change detection for well-known types and descriptor.proto.
+buf_breaking_test(
+    name = "any_proto_breaking",
+    against = "@com_google_protobuf_previous_release//:any_proto",
+    config = ":buf.yaml",
+    targets = ["//:any_proto"],
+)
+
+buf_breaking_test(
+    name = "api_proto_breaking",
+    against = "@com_google_protobuf_previous_release//:api_proto",
+    config = ":buf.yaml",
+    targets = ["//:api_proto"],
+)
+
+buf_breaking_test(
+    name = "descriptor_proto_breaking",
+    against = "@com_google_protobuf_previous_release//:descriptor_proto",
+    config = ":buf.yaml",
+    targets = ["//:descriptor_proto"],
+)
+
+buf_breaking_test(
+    name = "duration_proto_breaking",
+    against = "@com_google_protobuf_previous_release//:duration_proto",
+    config = ":buf.yaml",
+    targets = ["//:duration_proto"],
+)
+
+buf_breaking_test(
+    name = "empty_proto_breaking",
+    against = "@com_google_protobuf_previous_release//:empty_proto",
+    config = ":buf.yaml",
+    targets = ["//:empty_proto"],
+)
+
+buf_breaking_test(
+    name = "field_mask_proto_breaking",
+    against = "@com_google_protobuf_previous_release//:field_mask_proto",
+    config = ":buf.yaml",
+    targets = ["//:field_mask_proto"],
+)
+
+buf_breaking_test(
+    name = "source_context_proto_breaking",
+    against = "@com_google_protobuf_previous_release//:source_context_proto",
+    config = ":buf.yaml",
+    targets = ["//:source_context_proto"],
+)
+
+buf_breaking_test(
+    name = "struct_proto_breaking",
+    against = "@com_google_protobuf_previous_release//:struct_proto",
+    config = ":buf.yaml",
+    targets = ["//:struct_proto"],
+)
+
+buf_breaking_test(
+    name = "timestamp_proto_breaking",
+    against = "@com_google_protobuf_previous_release//:timestamp_proto",
+    config = ":buf.yaml",
+    targets = ["//:timestamp_proto"],
+)
+
+buf_breaking_test(
+    name = "type_proto_breaking",
+    against = "@com_google_protobuf_previous_release//:type_proto",
+    config = ":buf.yaml",
+    targets = ["//:type_proto"],
+)
+
+buf_breaking_test(
+    name = "wrappers_proto_breaking",
+    against = "@com_google_protobuf_previous_release//:wrappers_proto",
+    config = ":buf.yaml",
+    targets = ["//:wrappers_proto"],
+)
+
+buf_breaking_test(
+    name = "compiler_plugin_proto_breaking",
+    against = "@com_google_protobuf_previous_release//:compiler_plugin_proto",
+    config = ":buf.yaml",
+    targets = ["//:compiler_plugin_proto"],
+)
+
+buf_breaking_test(
+    name = "cpp_features_proto_breaking",
+    against = "@com_google_protobuf_previous_release//:cpp_features_proto",
+    config = ":buf.yaml",
+    targets = ["//:cpp_features_proto"],
+)
+
+buf_breaking_test(
+    name = "java_features_proto_breaking",
+    against = "@com_google_protobuf_previous_release//:java_features_proto",
+    config = ":buf.yaml",
+    targets = ["//:java_features_proto"],
+)
+
+test_suite(
+    name = "proto_breaking",
+    tests = [
+        "any_proto_breaking",
+        "api_proto_breaking",
+        "compiler_plugin_proto_breaking",
+        "cpp_features_proto_breaking",
+        "descriptor_proto_breaking",
+        "duration_proto_breaking",
+        "empty_proto_breaking",
+        "field_mask_proto_breaking",
+        "java_features_proto_breaking",
+        "source_context_proto_breaking",
+        "struct_proto_breaking",
+        "timestamp_proto_breaking",
+        "type_proto_breaking",
+        "wrappers_proto_breaking",
+    ],
+)

@@ -1,0 +1,14 @@
+edition = "2023";
+
+// LINT: LEGACY_NAMES
+
+package protobuf_editions_test.edition2023;
+
+message BadServiceMessage {
+  string food = 1;
+}
+
+service bad_service_name {
+  // This is a method with a bad service name.
+  rpc BadServiceMethod(BadServiceMessage) returns (BadServiceMessage) {}
+}

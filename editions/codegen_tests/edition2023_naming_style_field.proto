@@ -1,0 +1,9 @@
+edition = "2023";
+
+// LINT: LEGACY_NAMES
+
+package protobuf_editions_test.edition2023;
+
+message BadFieldMessage {
+  string badFieldName = 1;
+}

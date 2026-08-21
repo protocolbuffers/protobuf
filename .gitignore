@@ -1,0 +1,222 @@
+# CMake-generated files
+.ninja_deps
+.ninja_logs
+cmake/protobuf/*.cmake
+cmake_install.cmake
+CMakeCache.txt
+CTestTestfile.cmake
+CMakeFiles/*
+Testing/Temporary/*
+
+/core
+/protoc
+/test_plugin
+/tests
+/lite-test
+/protoc-*.*
+
+# downloaded files
+/gmock
+
+# in-tree configure-generated files
+/config.h
+config.log
+config.status
+
+libtool
+protobuf-lite.pc
+protobuf.pc
+.deps
+stamp-h1
+
+# in-tree build products
+*.o
+*.lo
+*.la
+*.so
+*.a
+
+.dirstamp
+
+any_test.pb.*
+map*unittest.pb.*
+unittest*.pb.*
+src/google/protobuf/compiler/cpp/test*.pb.*
+src/google/protobuf/util/**/*.pb.cc
+src/google/protobuf/util/**/*.pb.h
+
+*.pyc
+*.egg-info
+*_pb2.py
+python/**/*.egg
+python/.eggs/
+python/.tox
+python/build/
+python/docs/_build/
+
+src/js_embed
+
+# vim generated
+*.swp
+*~
+
+# Generated test scaffolding
+src/no_warning_test.cc
+src/no-warning-test
+src/protobuf*-test
+src/test_plugin
+src/testzip.*
+src/zcg*zip
+ar-lib
+
+test-driver
+compile
+
+src/**/*.log
+src/**/*.trs
+
+# JavaBuild output.
+java/**/target
+java/.idea
+java/**/*.iml
+
+# Windows native output.
+cmake/build
+build_msvc
+# Directories suggested by cmake/README.md
+/debug/
+/solution/
+/release/
+
+# NuGet packages: we want the repository configuration, but not the
+# packages themselves.
+/csharp/src/packages/*/
+
+# OS X's Finder creates these for state about opened windows/etc.
+**/.DS_Store
+
+# Cocoapods artifacts
+# Podfile.lock and the workspace file are tracked, to ease deleting them. That's
+# needed to trigger "pod install" to rerun the preinstall commands.
+Pods/
+
+# Conformance test output
+conformance/.libs/
+conformance/com/
+conformance/conformance-cpp
+conformance/conformance-csharp
+conformance/conformance-java
+conformance/conformance-objc
+conformance/conformance-test-runner
+conformance/conformance.pb.cc
+conformance/conformance.pb.h
+conformance/Conformance.pbobjc.h
+conformance/Conformance.pbobjc.m
+conformance/conformance_pb.js
+conformance/conformance_pb.rb
+conformance/core
+conformance/failing_tests.txt
+conformance/google/
+conformance/google-protobuf/
+conformance/javac_middleman
+conformance/lite/
+conformance/nonexistent_tests.txt
+conformance/protoc_middleman
+conformance/succeeding_tests.txt
+conformance/Conformance/
+conformance/GPBMetadata/
+conformance/Google/
+conformance/Protobuf_test_messages/
+conformance/conformance-php
+conformance/conformance-php-c
+conformance/*.class
+
+# php test output
+composer.lock
+php/.phpunit.result.cache
+php/tests/.phpunit.result.cache
+php/tests/generated/
+php/tests/old_protoc
+php/tests/phpunit-9.phar
+php/tests/protobuf/
+php/tests/core
+php/tests/vgcore*
+php/tests/multirequest.result
+php/tests/nohup.out
+php/tests/.phpunit.result.cache
+php/tests/phpunit-*
+php/ext/google/protobuf/.libs/
+php/ext/google/protobuf/Makefile.fragments
+php/ext/google/protobuf/Makefile.global
+php/ext/google/protobuf/Makefile.objects
+php/ext/google/protobuf/acinclude.m4
+php/ext/google/protobuf/build/
+php/ext/google/protobuf/bundled_php.c
+php/ext/google/protobuf/config.h
+php/ext/google/protobuf/config.h.in~
+php/ext/google/protobuf/config.nice
+php/ext/google/protobuf/configure.ac
+php/ext/google/protobuf/configure.in
+php/ext/google/protobuf/mkinstalldirs
+php/ext/google/protobuf/run-tests.php
+php/ext/google/protobuf/third_party/
+vendor/
+
+# Ignore the bazel symlinks
+/bazel-*
+
+# ruby test output
+ruby/tests/basic_test_pb.rb
+ruby/tests/basic_test_proto2_pb.rb
+ruby/tests/generated_code_pb.rb
+ruby/tests/test_import_pb.rb
+ruby/tests/test_ruby_package_pb.rb
+ruby/tests/generated_code_proto2_pb.rb
+ruby/tests/multi_level_nesting_test_pb.rb
+ruby/tests/service_test_pb.rb
+ruby/tests/test_import_proto2_pb.rb
+ruby/tests/test_ruby_package_proto2_pb.rb
+ruby/tests/basic_test_features_pb.rb
+ruby/tests/generated_code_editions_pb.rb
+ruby/tests/repeated_field_test_pb.rb
+ruby/tests/stress_pb.rb
+ruby/tests/utf8_pb.rb
+ruby/compatibility_tests/v3.0.0/protoc
+ruby/compatibility_tests/v3.0.0/tests/generated_code_pb.rb
+ruby/compatibility_tests/v3.0.0/tests/test_import_pb.rb
+
+# IntelliJ CLion Config files and build output
+cmake/.idea
+cmake/cmake-build-debug/
+
+# Common build subdirectories.
+.build/
+_build/
+
+# Visual Studio 2017
+.vs
+
+# Visual Studio Code
+/.vscode/
+
+# IntelliJ
+.idea
+*.iml
+
+# Eclipse
+**/.settings
+**/.project
+**/.classpath
+
+# BenchmarkDotNet
+BenchmarkDotNet.Artifacts/
+
+# Clangd uses these common ephemeral files
+.cache
+compile_commands.json
+
+# Ignore GHA NodeJS files
+.github/**/node_modules/
+
+# Ignore Bzlmod lock file until it is more stable
+MODULE.bazel.lock

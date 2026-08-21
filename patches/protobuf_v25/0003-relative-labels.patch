@@ -1,0 +1,15 @@
+diff --git a/protobuf.bzl b/protobuf.bzl
+index d96eeb4c9..cd10f01ec 100644
+--- a/protobuf.bzl
++++ b/protobuf.bzl
+@@ -493,8 +493,8 @@ def internal_ruby_proto_library(
+         srcs = [],
+         deps = [],
+         includes = ["."],
+-        default_runtime = "@com_google_protobuf//ruby:protobuf",
+-        protoc = "@com_google_protobuf//:protoc",
++        default_runtime = "//ruby:protobuf",
++        protoc = "//:protoc",
+         testonly = None,
+         visibility = ["//visibility:public"],
+         **kwargs):

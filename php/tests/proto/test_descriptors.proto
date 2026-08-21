@@ -1,0 +1,36 @@
+syntax = "proto3";
+
+package descriptors;
+
+message TestDescriptorsMessage {
+  int32 optional_int32 = 1;
+  TestDescriptorsEnum optional_enum = 16;
+  Sub optional_message = 17;
+
+  // Repeated
+  repeated int32 repeated_int32 = 31;
+  repeated Sub repeated_message = 47;
+
+  oneof my_oneof {
+    int32 oneof_int32    = 51;
+  }
+  optional int32 proto3_optional_int32 = 52;
+
+  map<int32, EnumSub> map_int32_enum = 71;
+
+  message Sub {
+    int32 a = 1;
+    repeated int32 b = 2;
+  }
+
+  enum EnumSub {
+    ZERO = 0;
+    ONE = 1;
+  }
+}
+
+enum TestDescriptorsEnum {
+  ZERO = 0;
+  ONE  = 1;
+}
+
