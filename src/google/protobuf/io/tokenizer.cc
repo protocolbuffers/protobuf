@@ -1082,14 +1082,23 @@ static void AppendUTF8(uint32_t code_point, std::string* output) {
   output->append(reinterpret_cast<const char*>(&tmp) + sizeof(tmp) - len, len);
 }
 
-// Try to read <len> hex digits from ptr, and stuff the numeric result into
-// *result. Returns true if that many digits were successfully consumed.
-static bool ReadHexDigits(const char* ptr, int len, uint32_t* result) {
+// Returns text[index], or '\0' if index is out of range. Escape-sequence
+// parsing uses this instead of raw pointer arithmetic so that reads stay in
+// bounds without relying on the input being NUL-terminated.
+static inline char CharAt(absl::string_view text, size_t index) {
+  return index < text.size() ? text[index] : '\0';
+}
+
+// Try to read <len> hex digits starting at <pos>, and stuff the numeric result
+// into *result. Returns true if that many digits were successfully consumed.
+static bool ReadHexDigits(absl::string_view text, size_t pos, int len,
+                          uint32_t* result) {
   *result = 0;
   if (len == 0) return false;
-  for (const char* end = ptr + len; ptr < end; ++ptr) {
-    if (*ptr == '\0') return false;
-    *result = (*result << 4) + DigitValue(*ptr);
+  for (int i = 0; i < len; ++i) {
+    const char c = CharAt(text, pos + i);
+    if (c == '\0') return false;
+    *result = (*result << 4) + DigitValue(c);
   }
   return true;
 }
@@ -1129,33 +1138,36 @@ static inline int UnicodeLength(char key) {
   return 0;
 }
 
-// Given a pointer to the 'u' or 'U' starting a Unicode escape sequence, attempt
-// to parse that sequence. On success, returns a pointer to the first char
-// beyond that sequence, and fills in *code_point. On failure, returns ptr
+// Given the index of the 'u' or 'U' starting a Unicode escape sequence, attempt
+// to parse that sequence. On success, returns the index of the first char
+// beyond that sequence, and fills in *code_point. On failure, returns start
 // itself.
-static const char* FetchUnicodePoint(const char* ptr, uint32_t* code_point) {
-  const char* p = ptr;
+static size_t FetchUnicodePoint(absl::string_view text, size_t start,
+                                uint32_t* code_point) {
+  size_t pos = start;
   // Fetch the code point.
-  const int len = UnicodeLength(*p++);
-  if (!ReadHexDigits(p, len, code_point)) return ptr;
-  p += len;
+  const int len = UnicodeLength(CharAt(text, pos));
+  ++pos;
+  if (!ReadHexDigits(text, pos, len, code_point)) return start;
+  pos += len;
 
   // Check if the code point we read is a "head surrogate." If so, then we
   // expect it to be immediately followed by another code point which is a valid
   // "trail surrogate," and together they form a UTF-16 pair which decodes into
   // a single Unicode point. Trail surrogates may only use \u, not \U.
-  if (IsHeadSurrogate(*code_point) && *p == '\\' && *(p + 1) == 'u') {
+  if (IsHeadSurrogate(*code_point) && CharAt(text, pos) == '\\' &&
+      CharAt(text, pos + 1) == 'u') {
     uint32_t trail_surrogate;
-    if (ReadHexDigits(p + 2, 4, &trail_surrogate) &&
+    if (ReadHexDigits(text, pos + 2, 4, &trail_surrogate) &&
         IsTrailSurrogate(trail_surrogate)) {
       *code_point = AssembleUTF16(*code_point, trail_surrogate);
-      p += 6;
+      pos += 6;
     }
     // If this failed, then we just emit the head surrogate as a code point.
     // It's bogus, but so is the string.
   }
 
-  return p;
+  return pos;
 }
 
 // The text string must begin and end with single or double quote
@@ -1187,57 +1199,60 @@ void Tokenizer::ParseStringAppend(const std::string& text,
   // interpreting escape sequences.  Note that any invalid escape
   // sequences or other errors were already reported while tokenizing.
   // In this case we do not need to produce valid results.
-  for (const char* ptr = text.c_str() + 1; *ptr != '\0'; ptr++) {
-    if (*ptr == '\\' && ptr[1] != '\0') {
+  const absl::string_view s(text);
+  for (size_t i = 1; CharAt(s, i) != '\0'; ++i) {
+    const char c = CharAt(s, i);
+    if (c == '\\' && CharAt(s, i + 1) != '\0') {
       // An escape sequence.
-      ++ptr;
+      ++i;
+      const char escaped = CharAt(s, i);
 
-      if (kOctalDigit.contains(*ptr)) {
+      if (kOctalDigit.contains(escaped)) {
         // An octal escape.  May one, two, or three digits.
-        int code = DigitValue(*ptr);
-        if (kOctalDigit.contains(ptr[1])) {
-          ++ptr;
-          code = code * 8 + DigitValue(*ptr);
+        int code = DigitValue(escaped);
+        if (kOctalDigit.contains(CharAt(s, i + 1))) {
+          ++i;
+          code = code * 8 + DigitValue(CharAt(s, i));
         }
-        if (kOctalDigit.contains(ptr[1])) {
-          ++ptr;
-          code = code * 8 + DigitValue(*ptr);
+        if (kOctalDigit.contains(CharAt(s, i + 1))) {
+          ++i;
+          code = code * 8 + DigitValue(CharAt(s, i));
         }
         output->push_back(static_cast<char>(code));
 
-      } else if (*ptr == 'x' || *ptr == 'X') {
+      } else if (escaped == 'x' || escaped == 'X') {
         // A hex escape.  May zero, one, or two digits.  (The zero case
         // will have been caught as an error earlier.)
         int code = 0;
-        if (kHexDigit.contains(ptr[1])) {
-          ++ptr;
-          code = DigitValue(*ptr);
+        if (kHexDigit.contains(CharAt(s, i + 1))) {
+          ++i;
+          code = DigitValue(CharAt(s, i));
         }
-        if (kHexDigit.contains(ptr[1])) {
-          ++ptr;
-          code = code * 16 + DigitValue(*ptr);
+        if (kHexDigit.contains(CharAt(s, i + 1))) {
+          ++i;
+          code = code * 16 + DigitValue(CharAt(s, i));
         }
         output->push_back(static_cast<char>(code));
 
-      } else if (*ptr == 'u' || *ptr == 'U') {
+      } else if (escaped == 'u' || escaped == 'U') {
         uint32_t unicode;
-        const char* end = FetchUnicodePoint(ptr, &unicode);
-        if (end == ptr) {
+        const size_t end = FetchUnicodePoint(s, i, &unicode);
+        if (end == i) {
           // Failure: Just dump out what we saw, don't try to parse it.
-          output->push_back(*ptr);
+          output->push_back(escaped);
         } else {
           AppendUTF8(unicode, output);
-          ptr = end - 1;  // Because we're about to ++ptr.
+          i = end - 1;  // Because we're about to ++i.
         }
       } else {
         // Some other escape code.
-        output->push_back(TranslateEscape(*ptr));
+        output->push_back(TranslateEscape(escaped));
       }
 
-    } else if (*ptr == text[0] && ptr[1] == '\0') {
+    } else if (c == s[0] && CharAt(s, i + 1) == '\0') {
       // Ignore final quote matching the starting quote.
     } else {
-      output->push_back(*ptr);
+      output->push_back(c);
     }
   }
 }
