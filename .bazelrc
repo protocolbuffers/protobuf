@@ -51,3 +51,6 @@ try-import-if-bazel-version >=9.0.0 %workspace%/ci/bazel9.bazelrc
 
 # Use clang-cl by default on Windows (see https://github.com/protocolbuffers/protobuf/issues/20085).
 build:windows --extra_toolchains=@local_config_cc//:cc-toolchain-x64_windows-clang-cl --extra_execution_platforms=//build_defs:x64_windows-clang-cl --host_platform=//build_defs:x64_windows-clang-cl
+
+# Flag alias for configuring the Python Protobuf runtime backend (pure_python, upb, cpp)
+build --flag_alias=proto_python_backend=//python:backend

@@ -8,6 +8,8 @@ Most users should depend upon public aliases in the root:
     //:well_known_types_py_pb2
 """
 
+load("@bazel_skylib//lib:selects.bzl", "selects")
+load("@bazel_skylib//rules:common_settings.bzl", "string_flag")
 load("@rules_cc//cc:cc_binary.bzl", "cc_binary")
 load("@rules_cc//cc:defs.bzl", "cc_library")
 load("@rules_pkg//pkg:mappings.bzl", "pkg_files", "strip_prefix")
@@ -28,14 +30,60 @@ def build_targets(name):
     Args:
       name: unused.
     """
+    string_flag(
+        name = "backend",
+        build_setting_default = "pure_python",
+        values = [
+            "pure_python",
+            "upb",
+            "cpp",
+        ],
+        visibility = ["//visibility:public"],
+    )
+
+    native.config_setting(
+        name = "backend_is_upb",
+        flag_values = {
+            ":backend": "upb",
+        },
+        visibility = ["//visibility:public"],
+    )
+
+    native.config_setting(
+        name = "backend_is_cpp",
+        flag_values = {
+            ":backend": "cpp",
+        },
+        visibility = ["//visibility:public"],
+    )
+
+    native.config_setting(
+        name = "backend_is_pure_python",
+        flag_values = {
+            ":backend": "pure_python",
+        },
+        visibility = ["//visibility:public"],
+    )
+
+    selects.config_setting_group(
+        name = "use_cpp_backend",
+        match_any = [
+            ":use_fast_cpp_protos",
+            ":backend_is_cpp",
+        ],
+    )
+
     py_library(
         name = "protobuf_python",
         data = select({
-            "//conditions:default": [],
-            ":use_fast_cpp_protos": [
+            ":backend_is_upb": [
+                ":_message",
+            ],
+            ":use_cpp_backend": [
                 ":google/protobuf/internal/_api_implementation.so",
                 ":google/protobuf/pyext/_message",
             ],
+            "//conditions:default": [],
         }),
         visibility = ["//:__pkg__"],
         deps = [
