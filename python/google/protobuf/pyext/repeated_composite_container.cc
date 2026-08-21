@@ -50,11 +50,14 @@ PyObject* Add(RepeatedCompositeContainer* self, PyObject* args,
   Message* message = cmessage::AssureWritable(self->parent);
   if (message == nullptr) return nullptr;
 
-  Message* sub_message = message->GetReflection()->AddMessage(
+  const Reflection* reflection = message->GetReflection();
+  Message* sub_message = reflection->AddMessage(
       message, self->parent_field_descriptor,
       self->child_message_class->py_message_factory->message_factory);
   CMessage* cmsg = self->parent->BuildSubMessageFromPointer(
-      self->parent_field_descriptor, sub_message, self->child_message_class);
+      self->parent_field_descriptor, sub_message, self->child_message_class,
+      MESSAGE_MUTABLE);
+  if (cmsg == nullptr) return nullptr;
 
   if (cmessage::InitAttributes(cmsg, args, kwargs) < 0) {
     message->GetReflection()->RemoveLast(message,
@@ -180,33 +183,31 @@ static PyObject* MergeFromMethod(PyObject* self, PyObject* other) {
 // This function does not check the bounds.
 static PyObject* GetItem(RepeatedCompositeContainer* self, Py_ssize_t index,
                          Py_ssize_t length = -1) {
+  const Message* message = self->parent->message;
+  const Reflection* reflection = message->GetReflection();
   if (length == -1) {
-    const Message* message = self->parent->message;
-    const Reflection* reflection = message->GetReflection();
     length = reflection->FieldSize(*message, self->parent_field_descriptor);
   }
   if (index < 0 || index >= length) {
     PyErr_Format(PyExc_IndexError, "list index (%zd) out of range", index);
     return nullptr;
   }
-  const Message* message = self->parent->message;
-  const Reflection* reflection = message->GetReflection();
-  const Message* sub_message = nullptr;
   const int int_index = static_cast<int>(index);
-  if (self->parent->state == python::MESSAGE_FROZEN) {
-    sub_message = &reflection->GetRepeatedMessage(
-        *message, self->parent_field_descriptor, int_index);
-  } else {
-    Message* mutable_parent = cmessage::AssureWritable(self->parent);
-    if (mutable_parent == nullptr) {
-      return nullptr;
-    }
-    sub_message = mutable_parent->GetReflection()->MutableRepeatedMessage(
-        mutable_parent, self->parent_field_descriptor, int_index);
-  }
+  const Message* sub_message = &reflection->GetRepeatedMessage(
+      *message, self->parent_field_descriptor, int_index);
+  // Elements in a repeated field only exist if the parent container is
+  // non-empty (default instances have size 0). If the parent is not frozen,
+  // the underlying C++ message in RepeatedPtrField is already an allocated,
+  // fully mutable instance in memory. Using GetRepeatedMessage performs a
+  // const, thread-safe read without mutating parent state during subscript
+  // access, and wrapping with MESSAGE_MUTABLE allows subsequent mutations
+  // without requiring lazy promotion.
+  MessageMutabilityState state = self->parent->state == python::MESSAGE_FROZEN
+                                     ? MESSAGE_FROZEN
+                                     : MESSAGE_MUTABLE;
   return self->parent
       ->BuildSubMessageFromPointer(self->parent_field_descriptor, sub_message,
-                                   self->child_message_class)
+                                   self->child_message_class, state)
       ->AsPyObject();
 }
 
@@ -376,10 +377,11 @@ static void ReorderAttached(RepeatedCompositeContainer* self,
   for (Py_ssize_t i = 0; i < length; ++i) {
     CMessage* child_cmsg =
         reinterpret_cast<CMessage*>(PyList_GET_ITEM(child_list, i));
-    Message* child_message = cmessage::AssureWritable(child_cmsg);
-    if (child_message == nullptr) return;
-    reflection->UnsafeArenaAddAllocatedMessage(message, descriptor,
-                                               child_message);
+    // const_cast is safe because each child_cmsg originated from this mutable
+    // parent's repeated field (released above) and is already an allocated,
+    // mutable Message object in memory.
+    reflection->UnsafeArenaAddAllocatedMessage(
+        message, descriptor, const_cast<Message*>(child_cmsg->message));
   }
 }
 

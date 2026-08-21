@@ -132,7 +132,8 @@ typedef struct CMessage : public ContainerBase {
   // pointer to a message.
   CMessage* BuildSubMessageFromPointer(const FieldDescriptor* field_descriptor,
                                        const Message* sub_message,
-                                       CMessageClass* message_class);
+                                       CMessageClass* message_class,
+                                       MessageMutabilityState state);
   CMessage* MaybeReleaseSubMessage(const Message* sub_message);
 } CMessage;
 
