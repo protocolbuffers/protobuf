@@ -1047,6 +1047,7 @@ cc_library(
     deps = [
         ":port",
         "@abseil-cpp//absl/log:absl_check",
+        "@abseil-cpp//absl/strings:string_view",
     ],
 )
 

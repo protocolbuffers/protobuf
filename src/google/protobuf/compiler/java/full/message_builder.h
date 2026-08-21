@@ -44,8 +44,10 @@ namespace java {
 
 class MessageBuilderGenerator {
  public:
-  explicit MessageBuilderGenerator(const Descriptor* descriptor,
-                                   Context* context);
+  MessageBuilderGenerator(
+      const Descriptor* descriptor, Context* context,
+      const absl::btree_map<int, std::unique_ptr<OneofGenerator>>&
+          oneof_generators);
   MessageBuilderGenerator(const MessageBuilderGenerator&) = delete;
   MessageBuilderGenerator& operator=(const MessageBuilderGenerator&) = delete;
   virtual ~MessageBuilderGenerator();
@@ -80,7 +82,8 @@ class MessageBuilderGenerator {
   Context* context_;
   ClassNameResolver* name_resolver_;
   FieldGeneratorMap<ImmutableFieldGenerator> field_generators_;
-  absl::btree_map<int, std::unique_ptr<OneofGenerator>> oneof_generators_;
+  const absl::btree_map<int, std::unique_ptr<OneofGenerator>>&
+      oneof_generators_;
 };
 
 }  // namespace java

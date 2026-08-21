@@ -1647,6 +1647,9 @@ class PROTOBUF_EXPORT EnumDescriptor : private internal::SymbolBase {
   const FeatureSet& features() const { return *merged_features_; }
   friend class internal::InternalFeatureHelper;
 
+  // Returns the enum validation data used by `internal::ValidateEnum`.
+  const uint32_t* GetEnumValidationData() const;
+
   // Looks up a value by number.  If the value does not exist, dynamically
   // creates a new EnumValueDescriptor for that value, assuming that it was
   // unknown. If a new descriptor is created, this is done in a thread-safe way,
@@ -1715,6 +1718,7 @@ class PROTOBUF_EXPORT EnumDescriptor : private internal::SymbolBase {
   friend class FileDescriptor;
   friend class DescriptorPool;
   friend class Reflection;
+  friend internal::DescriptorPoolExtensionFinder;
 };
 
 PROTOBUF_INTERNAL_CHECK_CLASS_SIZE(EnumDescriptor, 64);

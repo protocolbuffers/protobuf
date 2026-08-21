@@ -243,11 +243,6 @@ void ExtensionSet::UnsafeArenaAddAllocatedMessage(
   extension->ptr.repeated_message_value->UnsafeArenaAddAllocated(new_entry);
 }
 
-static bool ValidateEnumUsingDescriptor(const void* arg, int number) {
-  return reinterpret_cast<const EnumDescriptor*>(arg)->FindValueByNumber(
-             number) != nullptr;
-}
-
 bool DescriptorPoolExtensionFinder::Find(int number, ExtensionInfo* output) {
   const FieldDescriptor* extension =
       pool_->FindExtensionByNumber(containing_type_, number);
@@ -265,17 +260,13 @@ bool DescriptorPoolExtensionFinder::Find(int number, ExtensionInfo* output) {
       ABSL_CHECK_NE(prototype, nullptr)
           << "Extension factory's GetPrototype() returned nullptr; extension: "
           << extension->full_name();
-#ifdef PROTOBUF_MESSAGE_GLOBALS
-      output->message_info.globals =
-          MessageGlobalsBase::FromDefaultInstance(prototype);
-#else
-      output->message_info.prototype = prototype;
-#endif  // PROTOBUF_MESSAGE_GLOBALS
+      output->message_info.class_data =
+          &MessageGlobalsBase::FromDefaultInstance(prototype)->class_data;
       output->message_info.tc_table = prototype->GetTcParseTable();
 
     } else if (extension->cpp_type() == FieldDescriptor::CPPTYPE_ENUM) {
-      output->enum_validity_check.func = ValidateEnumUsingDescriptor;
-      output->enum_validity_check.arg = extension->enum_type();
+      output->enum_validity_check.enum_data =
+          extension->enum_type()->GetEnumValidationData();
     }
 
     return true;

@@ -153,47 +153,10 @@ void ParseFunctionGenerator::GenerateAliasParseTableType(io::Printer* p) {
 
 void ParseFunctionGenerator::GenerateDataDecls(io::Printer* p) {
   auto v = p->WithVars(variables_);
-  p->Emit({{"SECTION",
-            [&] {
-              if (!IsProfileDriven(options_)) return;
-              std::string section_name;
-              // Since most (>80%) messages are never present, messages that are
-              // present are considered hot enough to be clustered together.
-              // When using weak descriptors we use unique sections for each
-              // table to allow for GC to work. pth/ptl names must be in sync
-              // with the linker script.
-              if (UsingImplicitWeakDescriptor(descriptor_->file(), options_)) {
-                section_name = WeakDescriptorDataSection(
-                    IsPresentMessage(descriptor_, options_) ? "pth" : "ptl",
-                    descriptor_, index_in_file_messages_, options_);
-              } else if (IsPresentMessage(descriptor_, options_)) {
-                section_name = "proto_parse_table_hot";
-              } else {
-                section_name = "proto_parse_table_lukewarm";
-              }
-              p->Emit({{"section_name", section_name}},
-                      "ABSL_ATTRIBUTE_SECTION_VARIABLE($section_name$)");
-            }}},
-          R"cc(
-            friend class $pbi$::TcParser;
-#ifndef PROTOBUF_MESSAGE_GLOBALS
-            $SECTION$
-            static const ParseTableT_ _table_;
-#endif
-          )cc");
-}
-
-void ParseFunctionGenerator::GenerateDataDefinitions(io::Printer* p) {
-  auto v = p->WithVars(variables_);
-  p->Emit(
-      R"cc(
-#ifndef PROTOBUF_MESSAGE_GLOBALS
-        PROTOBUF_CONSTINIT
-        PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const $Msg$::ParseTableT_
-            $Msg$::_table_ =
-                $Msg$::InternalGenerateParseTable_($Msg$_class_data_.base());
-#endif  // !PROTOBUF_MESSAGE_GLOBALS
-      )cc");
+  // TODO: Remove this once we remove TcParser::GetTable.
+  p->Emit(R"cc(
+    friend class $pbi$::TcParser;
+  )cc");
 }
 
 static std::string TcParseFunctionName(internal::TcParseFunction func) {
@@ -280,26 +243,7 @@ void ParseFunctionGenerator::GenerateParseTableHelperDefinition(
               p->Emit("nullptr,  // post_loop_handler\n");
             }
           }},
-         {"fallback", TcParseFunctionName(tc_table_info_->fallback_function)},
-         {"to_prefetch",
-          [&] {
-            std::vector<const FieldDescriptor*> subtable_fields;
-            for (const auto& aux : tc_table_info_->aux_entries) {
-              if (aux.type == internal::TailCallTableInfo::kClassData) {
-                subtable_fields.push_back(aux.field);
-              }
-            }
-            const auto* hottest = FindHottestField(subtable_fields, options_);
-            p->Emit(
-                {{"hot_type", QualifiedClassName(hottest == nullptr
-                                                     ? descriptor_
-                                                     : hottest->message_type(),
-                                                 options_)}},
-                R"cc(
-#ifdef PROTOBUF_PREFETCH_PARSE_TABLE
-                  ::_pbi::TcParser::GetTable<$hot_type$>(),  // to_prefetch
-#endif  // PROTOBUF_PREFETCH_PARSE_TABLE)cc");
-          }}},
+         {"fallback", TcParseFunctionName(tc_table_info_->fallback_function)}},
         // clang-format off
         R"cc(
         $has_bits_offset$,
@@ -314,7 +258,7 @@ void ParseFunctionGenerator::GenerateParseTableHelperDefinition(
         class_data,
         $post_loop_handler$,
         $fallback$,  // fallback
-        $to_prefetch$)cc"
+        )cc"
         // clang-format on
     );
   };
@@ -341,11 +285,7 @@ void ParseFunctionGenerator::GenerateParseTableHelperDefinition(
                        aux_entry.field->message_type(), options_)},
               },
               R"cc(
-#ifndef PROTOBUF_MESSAGE_GLOBALS
-                {::_pbi::FieldAuxClassData(), &$sub_type$_class_data_},
-#else
                 {::_pbi::FieldAuxClassData(), &$sub_globals$},
-#endif
               )cc");
           break;
         case TailCallTableInfo::kClassDataWeak:
@@ -502,7 +442,7 @@ void ParseFunctionGenerator::GenerateParseTableHelperDefinition(
       // insert a newline at every brace, whereas we prefer {{ ... }} here.
       // clang-format off
 R"cc(
-constexpr $Msg$::ParseTableT_ $Msg$::InternalGenerateParseTable_(const ::_pbi::ClassData* class_data) {
+constexpr $Msg$::ParseTableT_ $Msg$::_Internal::GenerateParseTable(const ::_pbi::ClassData* class_data) {
   return ParseTableT_{
     {
       $table_base$

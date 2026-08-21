@@ -33,6 +33,7 @@ UPB_CONFIG_VISIBILITY = [
     "//lua:__pkg__",
     "//python:__pkg__",
     "//src/google/protobuf/compiler:__subpackages__",
+    "//third_party/kotlin/protobuf:__subpackages__",
     "//upb:__subpackages__",
     "//upb_generator:__subpackages__",
     "//src/google/protobuf/compiler:__subpackages__",

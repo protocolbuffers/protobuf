@@ -434,7 +434,7 @@ class PROTOBUF_EXPORT Message : public MessageLite {
   // Get a struct containing the metadata for the Message, which is used in turn
   // to implement GetDescriptor() and GetReflection() above.
   Metadata GetMetadata() const;
-  static Metadata GetMetadataImpl(const internal::ClassDataFull& data);
+  static Metadata GetMetadataImpl(const internal::ClassData& data);
 
   // For CODE_SIZE types
   static bool IsInitializedImpl(const MessageLite&);

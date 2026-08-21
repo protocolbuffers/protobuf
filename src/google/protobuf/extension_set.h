@@ -156,47 +156,22 @@ struct ExtensionInfo {
   LazyAnnotation is_lazy = LazyAnnotation::kUndefined;
 
   struct EnumValidityCheck {
-    // TODO: Fully remove the function pointer approach.
-    EnumValidityFuncWithArg* func;
-    const void* arg;
-
+    const uint32_t* enum_data;
     bool IsValid(int value) const {
-      return func != nullptr ? func(arg, value)
-                             : internal::ValidateEnum(
-                                   value, static_cast<const uint32_t*>(arg));
+      return internal::ValidateEnum(value, enum_data);
     }
   };
 
   struct MessageInfo {
-#ifdef PROTOBUF_MESSAGE_GLOBALS
-    const internal::MessageGlobalsBase* globals = nullptr;
-#else
-    const MessageLite* prototype = nullptr;
-#endif
+    // Never null.
+    const internal::ClassData* class_data;
+    // TODO: Remove `tc_table` now that we can easily get it from
+    // `class_data`.
     // The TcParse table used for this object. Never null. (except in platforms
     // that don't constant initialize default instances)
     const internal::TcParseTableBase* tc_table = nullptr;
 
-    // Create from prototype
-    const MessageLite* GetPrototype() const {
-#ifdef PROTOBUF_MESSAGE_GLOBALS
-      return internal::MessageGlobalsBase::ToDefaultInstance(globals);
-#else
-      return prototype;
-#endif
-    }
-
     const internal::TcParseTableBase* GetTcTable() const { return tc_table; }
-
-    const ClassData* GetClassData() const {
-#if defined(PROTOBUF_MESSAGE_GLOBALS)
-      return internal::MessageGlobalsBase::GetClassData(globals);
-#elif defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-      return tc_table->class_data;
-#else
-      return internal::GetClassData(*prototype);
-#endif
-    }
   };
 
   union {

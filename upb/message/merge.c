@@ -23,6 +23,7 @@ bool upb_Message_MergeFrom(upb_Message* dst, const upb_Message* src,
   // so we don't want to unnecessarily have the bad API or bloat the passed-in
   // arena with this very-short-term allocation.
   upb_Arena* encode_arena = upb_Arena_New();
+  if (!encode_arena) return false;
   upb_EncodeStatus e_status = upb_Encode(src, mt, 0, encode_arena, &buf, &size);
   if (e_status != kUpb_EncodeStatus_Ok) {
     upb_Arena_Free(encode_arena);

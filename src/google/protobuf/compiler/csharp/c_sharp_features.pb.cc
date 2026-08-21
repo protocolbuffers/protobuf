@@ -25,7 +25,6 @@ PROTOBUF_PRAGMA_INIT_SEG
 namespace _pb = ::google::protobuf;
 namespace _pbi = ::google::protobuf::internal;
 namespace _fl = ::google::protobuf::internal::field_layout;
-#ifdef PROTOBUF_MESSAGE_GLOBALS
 namespace {
 PROTOBUF_CONSTINIT ::google::protobuf::internal::ReflectionData
     file_reflection_data[] = {
@@ -33,16 +32,24 @@ PROTOBUF_CONSTINIT ::google::protobuf::internal::ReflectionData
         {&::_pbi::kDescriptorMethods, &::descriptor_table_google_2fprotobuf_2fcompiler_2fcsharp_2fc_5fsharp_5ffeatures_2eproto, /* tracker*/ nullptr,},
 };
 }  // namespace
-#endif
 namespace pb {
 class CSharpFeatures::_Internal {
  public:
   using HasBits = decltype(::std::declval<CSharpFeatures>()._impl_._has_bits_);
   static constexpr ::int32_t kHasBitsOffset =
       8 * PROTOBUF_FIELD_OFFSET(CSharpFeatures, _impl_._has_bits_);
+
+  static constexpr CSharpFeatures::ParseTableT_ GenerateParseTable(
+      const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL class_data);
+  static constexpr auto GenerateClassData();
+
+  static void* PROTOBUF_NONNULL PlacementNew(const void* PROTOBUF_NONNULL,
+                                      void* PROTOBUF_NONNULL mem,
+                                      ::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
+  static constexpr auto NewImpl();
 };
 
-constexpr CSharpFeatures::ParseTableT_ CSharpFeatures::InternalGenerateParseTable_(const ::_pbi::ClassData* class_data) {
+constexpr CSharpFeatures::ParseTableT_ CSharpFeatures::_Internal::GenerateParseTable(const ::_pbi::ClassData* class_data) {
   return ParseTableT_{
     {
       PROTOBUF_FIELD_OFFSET(CSharpFeatures, _impl_._has_bits_),
@@ -57,9 +64,6 @@ constexpr CSharpFeatures::ParseTableT_ CSharpFeatures::InternalGenerateParseTabl
       class_data,
       nullptr,  // post_loop_handler
       ::_pbi::TcParser::MpUnknownFields,  // fallback
-      #ifdef PROTOBUF_PREFETCH_PARSE_TABLE
-      ::_pbi::TcParser::GetTable<::pb::CSharpFeatures>(),  // to_prefetch
-      #endif  // PROTOBUF_PREFETCH_PARSE_TABLE
     }, {{
       // optional bool nullable_reference_types = 1 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_MESSAGE, targets = TARGET_TYPE_FILE, edition_defaults = {
       {::_pbi::TcParser::SingularVarintNoZag1<bool, offsetof(CSharpFeatures, _impl_.nullable_reference_types_), 0>(),
@@ -94,87 +98,48 @@ PROTOBUF_ALWAYS_INLINE_NODEBUG constexpr CSharpFeatures::CSharpFeatures(
           ),
       _impl_(internal_visibility(), ::_pbi::ConstantInitialized()) {
 }
-inline void* PROTOBUF_NONNULL CSharpFeatures::PlacementNew_(
+inline void* PROTOBUF_NONNULL CSharpFeatures::_Internal::PlacementNew(
     const void* PROTOBUF_NONNULL, void* PROTOBUF_NONNULL mem,
     ::google::protobuf::Arena* PROTOBUF_NULLABLE arena) {
   return ::new (mem) CSharpFeatures(arena);
 }
-constexpr auto CSharpFeatures::InternalNewImpl_() {
+constexpr auto CSharpFeatures::_Internal::NewImpl() {
   return ::google::protobuf::internal::MessageCreator::ZeroInit(sizeof(CSharpFeatures), alignof(CSharpFeatures));
 }
-constexpr auto CSharpFeatures::InternalGenerateClassData_(
-    const MessageLite& prototype,
-    const ::google::protobuf::internal::TcParseTableBase* tc_table) {
-  return ::google::protobuf::internal::ClassDataFull{
-      ::google::protobuf::internal::ClassData{
-          &prototype,
-#ifndef PROTOBUF_MESSAGE_GLOBALS
-          &_table_.header,
-#else
-          tc_table,
-#endif
-          nullptr,  // IsInitialized
-          &CSharpFeatures::MergeImpl,
-          Super_::GetNewImpl<CSharpFeatures>(),
+constexpr auto CSharpFeatures::_Internal::GenerateClassData() {
+  return ::google::protobuf::internal::ClassData{
+      nullptr,  // IsInitialized
+      &CSharpFeatures::MergeImpl,
+      Super_::GetNewImpl<CSharpFeatures>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-          &CSharpFeatures::SharedDtor,
-          &CSharpFeatures::Clear, &CSharpFeatures::ByteSizeLong, &CSharpFeatures::_InternalSerialize,
+      &CSharpFeatures::Helpers_::SharedDtor,
+      &Helpers_::Clear, &Helpers_::ByteSizeLong,
+          &Helpers_::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
-          PROTOBUF_FIELD_OFFSET(CSharpFeatures, _impl_._cached_size_),
-          false,
-      },
-#ifdef PROTOBUF_MESSAGE_GLOBALS
+      PROTOBUF_FIELD_OFFSET(CSharpFeatures, _impl_._cached_size_),
       &file_reflection_data[0],
-#else   // !PROTOBUF_MESSAGE_GLOBALS
-      &::_pbi::kDescriptorMethods,
-      &descriptor_table_google_2fprotobuf_2fcompiler_2fcsharp_2fc_5fsharp_5ffeatures_2eproto,
-      nullptr,  // tracker
-#endif  // PROTOBUF_MESSAGE_GLOBALS
   };
 }
 struct CSharpFeaturesGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
   constexpr CSharpFeaturesGlobalsTypeInternal()
-      :
-#ifndef PROTOBUF_MESSAGE_GLOBALS
-        _default(::_pbi::ConstantInitialized{},
-                 CSharpFeatures_class_data_.base())
-#else   // !PROTOBUF_MESSAGE_GLOBALS
-        MessageGlobalsBase(CSharpFeatures::InternalGenerateClassData_(
-            _default, &CSharpFeatures_globals_._table.header)),
+      : MessageGlobalsBase(
+            ::_pbi::PrivateAccess::GenerateClassData<CSharpFeatures>()),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
         _table(::_pbi::PrivateAccess::GenerateParseTable<CSharpFeatures>(
-            GetClassData()))
-#endif  // PROTOBUF_MESSAGE_GLOBALS
-  {
-  }
+            GetClassData())) {}
   ~CSharpFeaturesGlobalsTypeInternal() {}
   union {
     alignas(::_pbi::kMaxMessageAlignment) CSharpFeatures _default;
   };
-#ifdef PROTOBUF_MESSAGE_GLOBALS
   decltype(::_pbi::PrivateAccess::GenerateParseTable<CSharpFeatures>(
       ::std::declval<const ::_pbi::ClassData*>())) _table;
-#endif
 };
-#ifdef PROTOBUF_MESSAGE_GLOBALS
 static_assert(PROTOBUF_FIELD_OFFSET(CSharpFeaturesGlobalsTypeInternal, _default) ==
               ::_pbi::MessageGlobalsBase::OffsetToDefault());
-#endif  // PROTOBUF_MESSAGE_GLOBALS
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOC_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 PROTOBUF_MESSAGE_GLOBALS_CONST CSharpFeaturesGlobalsTypeInternal CSharpFeatures_globals_
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const CSharpFeaturesGlobalsTypeInternal CSharpFeatures_globals_
         PROTOBUF_MESSAGE_GLOBALS_SECTION(.data.rel.ro);
-#if defined(PROTOBUF_CUSTOM_VTABLE)
-namespace {
-const ::_pbi::ClassData* CSharpFeatures_get_class_data() {
-#ifdef PROTOBUF_MESSAGE_GLOBALS
-  return CSharpFeatures_globals_.GetClassData();
-#else
-  return CSharpFeatures_class_data_.base();
-#endif  // PROTOBUF_MESSAGE_GLOBALS
-}
-}  // namespace
-#endif  // PROTOBUF_CUSTOM_VTABLE
 }  // namespace pb
 static constexpr const ::_pb::EnumDescriptor* PROTOBUF_NONNULL* PROTOBUF_NULLABLE
     file_level_enum_descriptors_google_2fprotobuf_2fcompiler_2fcsharp_2fc_5fsharp_5ffeatures_2eproto = nullptr;
@@ -235,17 +200,17 @@ namespace pb {
 
 CSharpFeatures::CSharpFeatures(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-    : Super_(arena, CSharpFeatures_get_class_data()) {
+    : Super_(arena, &CSharpFeatures_globals_.class_data) {
 #else   // PROTOBUF_CUSTOM_VTABLE
     : Super_(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
-  SharedCtor(arena);
+  Helpers_::SharedCtor(*this, arena);
   // @@protoc_insertion_point(arena_constructor:pb.CSharpFeatures)
 }
 CSharpFeatures::CSharpFeatures(
     ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const CSharpFeatures& from)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-    : Super_(arena, CSharpFeatures_get_class_data()),
+    : Super_(arena, &CSharpFeatures_globals_.class_data),
 #else   // PROTOBUF_CUSTOM_VTABLE
     : Super_(arena),
 #endif  // PROTOBUF_CUSTOM_VTABLE
@@ -258,15 +223,17 @@ PROTOBUF_NDEBUG_INLINE CSharpFeatures::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
      {}
 
-inline void CSharpFeatures::SharedCtor(::_pb::Arena* PROTOBUF_NULLABLE arena) {
-  new (&_impl_) Impl_(internal_visibility(), arena);
-  _impl_.nullable_reference_types_ = {};
+inline void CSharpFeatures::Helpers_::SharedCtor(
+    ::_pb::MessageLite& self, ::_pb::Arena* PROTOBUF_NULLABLE arena) {
+  CSharpFeatures& this_ = static_cast<CSharpFeatures&>(self);
+  new (&this_._impl_) Impl_(this_.internal_visibility(), arena);
+  this_._impl_.nullable_reference_types_ = {};
 }
 CSharpFeatures::~CSharpFeatures() {
   // @@protoc_insertion_point(destructor:pb.CSharpFeatures)
-  SharedDtor(*this);
+  Helpers_::SharedDtor(*this);
 }
-inline void CSharpFeatures::SharedDtor(MessageLite& self) {
+inline void CSharpFeatures::Helpers_::SharedDtor(MessageLite& self) {
   CSharpFeatures& this_ = static_cast<CSharpFeatures&>(self);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     this_.CheckHasBitConsistency();
@@ -276,34 +243,15 @@ inline void CSharpFeatures::SharedDtor(MessageLite& self) {
   this_._impl_.~Impl_();
 }
 
-#ifndef PROTOBUF_MESSAGE_GLOBALS
-PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const
-    ::google::protobuf::internal::ClassDataFull CSharpFeatures_class_data_ =
-        CSharpFeatures::InternalGenerateClassData_(CSharpFeatures_globals_._default);
-
-PROTOBUF_ATTRIBUTE_WEAK const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
-CSharpFeatures::GetClassData() const {
-  ::google::protobuf::internal::PrefetchToLocalCache(&CSharpFeatures_class_data_);
-  ::google::protobuf::internal::PrefetchToLocalCache(CSharpFeatures_class_data_.tc_table);
-  return CSharpFeatures_class_data_.base();
-}
-#else
 PROTOBUF_ATTRIBUTE_WEAK const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
 CSharpFeatures::GetClassData() const {
   ::google::protobuf::internal::PrefetchToLocalCache(&CSharpFeatures_globals_);
   ::google::protobuf::internal::PrefetchToLocalCache(
       ::google::protobuf::internal::MessageGlobalsBase::ToParseTableBase(&CSharpFeatures_globals_));
-  return CSharpFeatures_globals_.GetClassData();
+  return &CSharpFeatures_globals_.class_data;
 }
-#endif  // !PROTOBUF_MESSAGE_GLOBALS
-#ifndef PROTOBUF_MESSAGE_GLOBALS
-PROTOBUF_CONSTINIT
-PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const CSharpFeatures::ParseTableT_
-    CSharpFeatures::_table_ =
-        CSharpFeatures::InternalGenerateParseTable_(CSharpFeatures_class_data_.base());
-#endif  // !PROTOBUF_MESSAGE_GLOBALS
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-PROTOBUF_NOINLINE void CSharpFeatures::Clear(MessageLite& base) {
+PROTOBUF_NOINLINE void CSharpFeatures::Helpers_::Clear(MessageLite& base) {
   CSharpFeatures& this_ = static_cast<CSharpFeatures&>(base);
 #else   // PROTOBUF_CUSTOM_VTABLE
 PROTOBUF_NOINLINE void CSharpFeatures::Clear() {
@@ -320,7 +268,7 @@ PROTOBUF_NOINLINE void CSharpFeatures::Clear() {
 }
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-::uint8_t* PROTOBUF_NONNULL CSharpFeatures::_InternalSerialize(
+::uint8_t* PROTOBUF_NONNULL CSharpFeatures::Helpers_::_InternalSerialize(
     const ::google::protobuf::MessageLite& base, ::uint8_t* PROTOBUF_NONNULL target,
     ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) {
   const CSharpFeatures& this_ = static_cast<const CSharpFeatures&>(base);
@@ -355,7 +303,7 @@ PROTOBUF_NOINLINE void CSharpFeatures::Clear() {
 }
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-::size_t CSharpFeatures::ByteSizeLong(const MessageLite& base) {
+::size_t CSharpFeatures::Helpers_::ByteSizeLong(const MessageLite& base) {
   const CSharpFeatures& this_ = static_cast<const CSharpFeatures&>(base);
 #else   // PROTOBUF_CUSTOM_VTABLE
 ::size_t CSharpFeatures::ByteSizeLong() const {
@@ -401,15 +349,18 @@ void CSharpFeatures::CopyFrom(const CSharpFeatures& from) {
 }
 
 
-void CSharpFeatures::InternalSwap(CSharpFeatures* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
+void CSharpFeatures::Helpers_::InternalSwap(
+    ::_pb::MessageLite& PROTOBUF_RESTRICT self,
+    CSharpFeatures* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
   using ::std::swap;
-  _internal_metadata_.InternalSwap(&other->_internal_metadata_);
-  swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
-  swap(_impl_.nullable_reference_types_, other->_impl_.nullable_reference_types_);
+  CSharpFeatures& this_ = static_cast<CSharpFeatures&>(self);
+  this_._internal_metadata_.InternalSwap(&other->_internal_metadata_);
+  swap(this_._impl_._has_bits_[0], other->_impl_._has_bits_[0]);
+  swap(this_._impl_.nullable_reference_types_, other->_impl_.nullable_reference_types_);
 }
 
 ::google::protobuf::Metadata CSharpFeatures::GetMetadata() const {
-  return Super_::GetMetadataImpl(GetClassData()->full());
+  return Super_::GetMetadataImpl(CSharpFeatures_globals_.class_data);
 }
 PROTOBUF_CONSTINIT PROTOC_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY2 ::_pbi::ExtensionIdentifier<

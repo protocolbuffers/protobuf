@@ -232,22 +232,15 @@ PROTOBUF_NOINLINE const std::string& NameOfDenseEnumSlow(
   if (v < deci->min_val || v > deci->max_val)
     return GetEmptyStringAlreadyInited();
 
-  const std::string** new_cache =
-      MakeDenseEnumCache(deci->descriptor_fn(), deci->min_val, deci->max_val);
-  const std::string** old_cache = nullptr;
-
-  if (deci->cache.compare_exchange_strong(old_cache, new_cache,
-                                          std::memory_order_release,
-                                          std::memory_order_acquire)) {
-    // We successfully stored our new cache, and the old value was nullptr.
-    return *new_cache[v - deci->min_val];
-  } else {
-    // In the time it took to create our enum cache, another thread also
-    //  created one, and put it into deci->cache.  So delete ours, and
-    // use theirs instead.
-    delete[] new_cache;
-    return *old_cache[v - deci->min_val];
-  }
+  // Use run_once to avoid a race condition in initializing the cache.
+  absl::call_once(deci->loaded, [deci]() {
+    const std::string** new_cache =
+        MakeDenseEnumCache(deci->descriptor_fn(), deci->min_val, deci->max_val);
+    // Atomically publish the cache. Doing this inside the call_once ensures
+    // that no thread sees the uninitialized or partially initialized cache.
+    deci->cache.store(new_cache, std::memory_order_release);
+  });
+  return *deci->cache.load(std::memory_order_acquire)[v - deci->min_val];
 }
 
 bool IsMatchingCType(const FieldDescriptor* field, int ctype) {
@@ -3714,18 +3707,6 @@ static void PopulateTcParseLookupTable(
   *lookup_table++ = 0xFFFF;
 }
 
-static std::vector<uint32_t> MakeEnumValidatorData(const EnumDescriptor* desc) {
-  std::vector<int> numbers;
-  numbers.reserve(desc->value_count());
-  for (int i = 0; i < desc->value_count(); ++i) {
-    numbers.push_back(desc->value(i)->number());
-  }
-
-  absl::c_sort(numbers);
-  numbers.erase(std::unique(numbers.begin(), numbers.end()), numbers.end());
-  return internal::GenerateEnumData(numbers);
-}
-
 void Reflection::PopulateTcParseEntries(
     internal::TailCallTableInfo& table_info,
     TcParseTableBase::FieldEntry* entries) const {
@@ -3785,10 +3766,7 @@ void Reflection::PopulateTcParseFieldAux(
         break;
       case internal::TailCallTableInfo::kEnumValidator:
         field_aux++->enum_data =
-            DescriptorPool::MemoizeProjection(
-                aux_entry.field->enum_type(),
-                [](auto* e) { return MakeEnumValidatorData(e); })
-                .data();
+            aux_entry.field->enum_type()->GetEnumValidationData();
         break;
       case internal::TailCallTableInfo::kNumericOffset:
         field_aux++->offset = aux_entry.offset;
@@ -3881,18 +3859,7 @@ const internal::TcParseTableBase* Reflection::CreateTcParseTable() const {
       aux_offset,
       internal::GetClassData(*schema_.default_instance()),
       nullptr,
-      GetFastParseFunction(table_info.fallback_function)
-#ifdef PROTOBUF_PREFETCH_PARSE_TABLE
-          ,
-      nullptr
-#endif  // PROTOBUF_PREFETCH_PARSE_TABLE
-  };
-#ifdef PROTOBUF_PREFETCH_PARSE_TABLE
-  // We'll prefetch `to_prefetch->to_prefetch` unconditionally to avoid
-  // branches. Here we don't know which field is the hottest, so set the pointer
-  // to itself to avoid nullptr.
-  res->to_prefetch = res;
-#endif  // PROTOBUF_PREFETCH_PARSE_TABLE
+      GetFastParseFunction(table_info.fallback_function)};
 
   // Now copy the rest of the payloads
   PopulateTcParseFastEntries(table_info, res);
@@ -3940,7 +3907,7 @@ class AssignDescriptorsHelper {
     if (message_globals_data_[0] != nullptr) {
       auto* default_instance =
           MessageGlobalsBase::ToDefaultInstance(message_globals_data_[0]);
-      auto& class_data = internal::GetClassData(*default_instance)->full();
+      auto& class_data = *internal::GetClassData(*default_instance);
       // If there is no descriptor_table in the class data, then it is not
       // interested in receiving reflection information either.
       if (class_data.descriptor_table() != nullptr) {

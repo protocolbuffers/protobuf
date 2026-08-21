@@ -16,8 +16,10 @@
 #include <string>
 #include <vector>
 
+#include "absl/container/btree_map.h"
 #include "google/protobuf/compiler/java/generator_factory.h"
 #include "google/protobuf/compiler/java/full/field_generator.h"
+#include "google/protobuf/compiler/java/full/oneof_generator.h"
 #include "google/protobuf/descriptor.h"
 
 namespace google {
@@ -77,6 +79,7 @@ class ImmutableMessageGenerator : public MessageGenerator {
   Context* context_;
   ClassNameResolver* name_resolver_;
   FieldGeneratorMap<ImmutableFieldGenerator> field_generators_;
+  absl::btree_map<int, std::unique_ptr<OneofGenerator>> oneof_generators_;
 };
 
 }  // namespace java

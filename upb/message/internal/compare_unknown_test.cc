@@ -14,9 +14,12 @@
 #include <string>
 
 #include <gtest/gtest.h>
+#include "absl/cleanup/cleanup.h"
 #include "google/protobuf/test_messages_proto2.upb.h"
 #include "upb/base/string_view.h"
 #include "upb/base/upcast.h"
+#include "upb/mem/alloc.h"
+#include "upb/mem/arena.h"
 #include "upb/mem/arena.hpp"
 #include "upb/message/compare.h"
 #include "upb/message/internal/accessors.h"
@@ -65,8 +68,8 @@ upb_UnknownCompareResult CompareUnknownWithMaxDepth(
   EXPECT_TRUE(UPB_PRIVATE(_upb_Message_AddUnknown)(
       UPB_UPCAST(msg2), buf2.data(), buf2.size(), arena2.ptr(),
       kUpb_AddUnknown_Copy));
-  return UPB_PRIVATE(_upb_Message_UnknownFieldsAreEqual)(
-      UPB_UPCAST(msg1), UPB_UPCAST(msg2), max_depth);
+  return _upb_Message_UnknownFieldsAreEqual(UPB_UPCAST(msg1), UPB_UPCAST(msg2),
+                                            max_depth);
 }
 
 upb_UnknownCompareResult CompareUnknown(WireMessage uf1, WireMessage uf2) {
@@ -283,8 +286,8 @@ TEST(CompareTest, MessageIsEqualWithNonCanonicalExtensionMatchingRawUnknown) {
   // 4. Create msg2 with raw unknown bytes representing A
   upb_test_ModelWithExtensions* msg2 =
       upb_test_ModelWithExtensions_new(arena.ptr());
-  UPB_PRIVATE(_upb_Message_AddUnknown)(UPB_UPCAST(msg2), buf, size, arena.ptr(),
-                                       kUpb_AddUnknown_Copy);
+  EXPECT_TRUE(UPB_PRIVATE(_upb_Message_AddUnknown)(
+      UPB_UPCAST(msg2), buf, size, arena.ptr(), kUpb_AddUnknown_Copy));
 
   // 5. Verify they compare equal under IncludeUnknownFields
   bool is_equal = upb_Message_IsEqual(UPB_UPCAST(msg1), UPB_UPCAST(msg2),
@@ -323,8 +326,8 @@ TEST(CompareTest, MessageSetNonCanonicalExtMatchesUnknown) {
 
   // 4. Create msg2 with raw unknown bytes representing A
   upb_test_TestMessageSet* msg2 = upb_test_TestMessageSet_new(arena.ptr());
-  UPB_PRIVATE(_upb_Message_AddUnknown)(UPB_UPCAST(msg2), buf, size, arena.ptr(),
-                                       kUpb_AddUnknown_Copy);
+  EXPECT_TRUE(UPB_PRIVATE(_upb_Message_AddUnknown)(
+      UPB_UPCAST(msg2), buf, size, arena.ptr(), kUpb_AddUnknown_Copy));
 
   // 5. Verify they compare equal under IncludeUnknownFields
   bool is_equal = upb_Message_IsEqual(UPB_UPCAST(msg1), UPB_UPCAST(msg2),
@@ -364,6 +367,60 @@ TEST(CompareTest, MessageIsEqualWithCanonicalAndNonCanonicalExtensions) {
 }
 
 }  // namespace
+
+TEST(CompareTest, AllocationFailure) {
+  if (!upb_AllocationCount_IsAvailable()) return;
+
+  auto RunScenario = [&]() -> bool {
+    upb_Arena* arena1 = upb_Arena_New();
+    if (!arena1) return false;
+    auto cleanup1 = absl::MakeCleanup([arena1] { upb_Arena_Free(arena1); });
+
+    upb_Arena* arena2 = upb_Arena_New();
+    if (!arena2) return false;
+    auto cleanup2 = absl::MakeCleanup([arena2] { upb_Arena_Free(arena2); });
+
+    protobuf_test_messages_proto2_TestAllTypesProto2* msg1 =
+        protobuf_test_messages_proto2_TestAllTypesProto2_new(arena1);
+    if (!msg1) return false;
+    protobuf_test_messages_proto2_TestAllTypesProto2* msg2 =
+        protobuf_test_messages_proto2_TestAllTypesProto2_new(arena2);
+    if (!msg2) return false;
+
+    WireMessage uf1 = {{2, Fixed32(456)}, {1, Fixed64(123)}};
+    WireMessage uf2 = {{2, Fixed32(456)}, {1, Fixed64(123)}};
+    std::string buf1 = ToBinaryPayloadWithLongVarints(uf1, 1, 1);
+    std::string buf2 = ToBinaryPayloadWithLongVarints(uf2, 1, 1);
+
+    if (!UPB_PRIVATE(_upb_Message_AddUnknown)(UPB_UPCAST(msg1), buf1.data(),
+                                              buf1.size(), arena1,
+                                              kUpb_AddUnknown_Copy)) {
+      return false;
+    }
+    if (!UPB_PRIVATE(_upb_Message_AddUnknown)(UPB_UPCAST(msg2), buf2.data(),
+                                              buf2.size(), arena2,
+                                              kUpb_AddUnknown_Copy)) {
+      return false;
+    }
+    upb_UnknownCompareResult res = _upb_Message_UnknownFieldsAreEqual(
+        UPB_UPCAST(msg1), UPB_UPCAST(msg2), 64);
+    return res == kUpb_UnknownCompareResult_Equal;
+  };
+
+  upb_AllocationCount_Reset();
+  if (RunScenario()) {
+    size_t total_allocations = upb_AllocationCount_Get();
+    for (size_t i = 0; i < total_allocations; ++i) {
+      upb_AllocationCount_Reset();
+      upb_AllocationCount_FailOn(i);
+      bool success_with_fail = RunScenario();
+      EXPECT_FALSE(success_with_fail)
+          << "Unknown comparison unexpectedly succeeded when allocation "
+          << "number " << i << " was failed.";
+    }
+  }
+  upb_AllocationCount_Reset();
+}
 
 }  // namespace test
 }  // namespace upb

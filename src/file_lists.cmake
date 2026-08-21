@@ -838,6 +838,7 @@ set(libupb_hdrs
   ${protobuf_SOURCE_DIR}/upb/mini_table/sub.h
   ${protobuf_SOURCE_DIR}/upb/port/atomic.h
   ${protobuf_SOURCE_DIR}/upb/port/def.inc
+  ${protobuf_SOURCE_DIR}/upb/port/overflow.h
   ${protobuf_SOURCE_DIR}/upb/port/sanitizers.h
   ${protobuf_SOURCE_DIR}/upb/port/undef.inc
   ${protobuf_SOURCE_DIR}/upb/port/vsnprintf_compat.h
@@ -1442,6 +1443,7 @@ set(compiler_test_files
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/message_serialization_unittest.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/name_resolver_test.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/plugin_unittest.cc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/objectivec/generator_unittest.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/objectivec/line_consumer_unittest.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/objectivec/names_unittest.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/objectivec/text_format_decode_data_unittest.cc

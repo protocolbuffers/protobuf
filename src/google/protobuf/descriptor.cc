@@ -78,6 +78,7 @@
 #include "google/protobuf/descriptor_visitor.h"
 #include "google/protobuf/dynamic_message.h"
 #include "google/protobuf/feature_resolver.h"
+#include "google/protobuf/generated_enum_util.h"
 #include "google/protobuf/generated_message_util.h"
 #include "google/protobuf/internal_feature_helper.h"
 #include "google/protobuf/io/coded_stream.h"
@@ -2614,6 +2615,24 @@ const FieldDescriptor* Descriptor::map_value() const {
   if (!options().map_entry()) return nullptr;
   ABSL_DCHECK_EQ(field_count(), 2);
   return field(1);
+}
+
+static std::vector<uint32_t> MakeEnumValidatorData(const EnumDescriptor* desc) {
+  std::vector<int> numbers;
+  numbers.reserve(desc->value_count());
+  for (int i = 0; i < desc->value_count(); ++i) {
+    numbers.push_back(desc->value(i)->number());
+  }
+
+  absl::c_sort(numbers);
+  numbers.erase(std::unique(numbers.begin(), numbers.end()), numbers.end());
+  return internal::GenerateEnumData(numbers);
+}
+
+const uint32_t* EnumDescriptor::GetEnumValidationData() const {
+  return DescriptorPool::MemoizeProjection(
+             this, [](auto* e) { return MakeEnumValidatorData(e); })
+      .data();
 }
 
 const EnumValueDescriptor* EnumDescriptor::FindValueByName(

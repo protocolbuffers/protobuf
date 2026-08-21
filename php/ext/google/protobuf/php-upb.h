@@ -15976,6 +15976,117 @@ size_t upb_exttable_size(const upb_exttable* t);
 
 #endif /* UPB_HASH_EXT_TABLE_H_ */
 
+#ifndef UPB_PORT_OVERFLOW_H_
+#define UPB_PORT_OVERFLOW_H_
+
+#include <limits.h>
+#include <stddef.h>
+#include <stdint.h>
+
+// Must be last
+
+#if ((UPB_HAS_BUILTIN(__builtin_add_overflow) &&  \
+      UPB_HAS_BUILTIN(__builtin_mul_overflow)) || \
+     (defined(__GNUC__) && __GNUC__ >= 5)) &&     \
+    !defined(UPB_DISABLE_BUILTIN_OVERFLOW)
+#define UPB_USE_BUILTIN_OVERFLOW
+#endif
+
+UPB_NODISCARD UPB_INLINE bool upb_AddOverflow_size_t_size_t(size_t a, size_t b,
+                                                            size_t* out) {
+#ifdef UPB_USE_BUILTIN_OVERFLOW
+  return __builtin_add_overflow(a, b, out);
+#else
+  if (b > SIZE_MAX - a) return true;
+  *out = a + b;
+  return false;
+#endif
+}
+
+UPB_NODISCARD UPB_INLINE bool upb_AddOverflow_size_t_uint32_t(size_t a,
+                                                              uint32_t b,
+                                                              size_t* out) {
+#ifdef UPB_USE_BUILTIN_OVERFLOW
+  return __builtin_add_overflow(a, b, out);
+#else
+  return upb_AddOverflow_size_t_size_t(a, (size_t)b, out);
+#endif
+}
+
+UPB_NODISCARD UPB_INLINE bool upb_AddOverflow_uint32_t_size_t(uint32_t a,
+                                                              size_t b,
+                                                              size_t* out) {
+#ifdef UPB_USE_BUILTIN_OVERFLOW
+  return __builtin_add_overflow(a, b, out);
+#else
+  return upb_AddOverflow_size_t_size_t((size_t)a, b, out);
+#endif
+}
+
+UPB_NODISCARD UPB_INLINE bool upb_MulOverflow_size_t_size_t(size_t a, size_t b,
+                                                            size_t* out) {
+#ifdef UPB_USE_BUILTIN_OVERFLOW
+  return __builtin_mul_overflow(a, b, out);
+#else
+  if (b != 0 && a > SIZE_MAX / b) return true;
+  *out = a * b;
+  return false;
+#endif
+}
+
+UPB_NODISCARD UPB_INLINE bool upb_MulOverflow_size_t_uint32_t(size_t a,
+                                                              uint32_t b,
+                                                              size_t* out) {
+#ifdef UPB_USE_BUILTIN_OVERFLOW
+  return __builtin_mul_overflow(a, b, out);
+#else
+  return upb_MulOverflow_size_t_size_t(a, (size_t)b, out);
+#endif
+}
+
+UPB_NODISCARD UPB_INLINE bool upb_MulOverflow_uint32_t_size_t(uint32_t a,
+                                                              size_t b,
+                                                              size_t* out) {
+#ifdef UPB_USE_BUILTIN_OVERFLOW
+  return __builtin_mul_overflow(a, b, out);
+#else
+  return upb_MulOverflow_size_t_size_t((size_t)a, b, out);
+#endif
+}
+
+#if __STDC_VERSION__ >= 201112L && !defined(__cplusplus)
+#if SIZE_MAX > 0xffffffffULL
+#define upb_AddOverflow(a, b, out)                               \
+  _Generic((a),                                                  \
+      size_t: _Generic((b),                                      \
+          size_t: upb_AddOverflow_size_t_size_t(a, b, out),      \
+          uint32_t: upb_AddOverflow_size_t_uint32_t(a, b, out)), \
+      uint32_t: _Generic((b),                                    \
+          size_t: upb_AddOverflow_uint32_t_size_t(a, b, out)))
+
+#define upb_MulOverflow(a, b, out)                               \
+  _Generic((a),                                                  \
+      size_t: _Generic((b),                                      \
+          size_t: upb_MulOverflow_size_t_size_t(a, b, out),      \
+          uint32_t: upb_MulOverflow_size_t_uint32_t(a, b, out)), \
+      uint32_t: _Generic((b),                                    \
+          size_t: upb_MulOverflow_uint32_t_size_t(a, b, out)))
+#else
+// On 32-bit platforms, size_t and uint32_t might be the same type.
+// We fallback to direct calls without _Generic to avoid duplicate association
+// errors.
+#define upb_AddOverflow(a, b, out) upb_AddOverflow_size_t_size_t(a, b, out)
+#define upb_MulOverflow(a, b, out) upb_MulOverflow_size_t_size_t(a, b, out)
+#endif
+#else
+// Fallback for C++ or older C.
+#define upb_AddOverflow(a, b, out) upb_AddOverflow_size_t_size_t(a, b, out)
+#define upb_MulOverflow(a, b, out) upb_MulOverflow_size_t_size_t(a, b, out)
+#endif
+
+
+#endif  // UPB_PORT_OVERFLOW_H_
+
 #ifndef UPB_JSON_DECODE_H_
 #define UPB_JSON_DECODE_H_
 
@@ -18543,10 +18654,11 @@ UPB_INLINE void* _upb_DefBuilder_Alloc(upb_DefBuilder* ctx, size_t bytes) {
 UPB_INLINE void* _upb_DefBuilder_AllocCounted(upb_DefBuilder* ctx, size_t size,
                                               size_t count) {
   if (count == 0) return NULL;
-  if (SIZE_MAX / size < count) {
+  size_t total_bytes;
+  if (upb_MulOverflow(size, count, &total_bytes)) {
     _upb_DefBuilder_OomErr(ctx);
   }
-  return _upb_DefBuilder_Alloc(ctx, size * count);
+  return _upb_DefBuilder_Alloc(ctx, total_bytes);
 }
 
 #define UPB_DEFBUILDER_ALLOCARRAY(ctx, type, count) \

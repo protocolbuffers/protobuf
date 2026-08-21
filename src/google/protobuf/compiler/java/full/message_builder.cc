@@ -17,6 +17,7 @@
 #include <string>
 #include <vector>
 
+#include "absl/container/btree_map.h"
 #include "absl/container/btree_set.h"
 #include "absl/container/flat_hash_map.h"
 #include "absl/log/absl_check.h"
@@ -96,24 +97,18 @@ bool BitfieldTracksMutability(const FieldDescriptor* const descriptor) {
 }
 }  // namespace
 
-MessageBuilderGenerator::MessageBuilderGenerator(const Descriptor* descriptor,
-                                                 Context* context)
+MessageBuilderGenerator::MessageBuilderGenerator(
+    const Descriptor* descriptor, Context* context,
+    const absl::btree_map<int, std::unique_ptr<OneofGenerator>>&
+        oneof_generators)
     : descriptor_(descriptor),
       context_(context),
       name_resolver_(context->GetNameResolver()),
-      field_generators_(MakeImmutableFieldGenerators(descriptor, context_)) {
+      field_generators_(MakeImmutableFieldGenerators(descriptor, context_)),
+      oneof_generators_(oneof_generators) {
   ABSL_CHECK(HasDescriptorMethods(descriptor->file(), context->EnforceLite()))
       << "Generator factory error: A non-lite message generator is used to "
          "generate lite messages.";
-  for (int i = 0; i < descriptor_->field_count(); i++) {
-    if (IsRealOneof(descriptor_->field(i))) {
-      const OneofDescriptor* oneof = descriptor_->field(i)->containing_oneof();
-      if (!oneof_generators_.contains(oneof->index())) {
-        oneof_generators_.emplace(
-            oneof->index(), std::make_unique<OneofGenerator>(oneof, context_));
-      }
-    }
-  }
 }
 
 MessageBuilderGenerator::~MessageBuilderGenerator() = default;

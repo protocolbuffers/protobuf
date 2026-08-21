@@ -1438,19 +1438,47 @@ public abstract class CodedInputStream {
 
     @Override
     public int countPackedVarints(int length) {
-      if (length < 0 || length > limit - pos) {
+      if (length <= 0 || length > limit - pos) {
         return 0;
       }
-      int count = 0;
+      if (Android.isOnAndroidDevice()) {
+        return countPackedVarintsSimple(length);
+      } else {
+        return countPackedVarintsFast(length);
+      }
+    }
 
-      // Counts of terminating bytes to determine how many varints are in the packed field.
+    private int countPackedVarintsSimple(int length) {
       final int end = pos + length;
+      int count = length;
       for (int i = pos; i < end; i++) {
-        if (buffer[i] >= 0) {
-          count++;
+        if (buffer[i] < 0) {
+          --count;
         }
       }
       return count;
+    }
+
+    private int countPackedVarintsFast(int length) {
+      final int end = pos + length;
+      int i = pos;
+      int numVarints = length;
+      final int limit8 = end - 8;
+      if (limit8 >= i) {
+        ByteBuffer byteBuffer = ByteBuffer.wrap(buffer);
+        while (i <= limit8) {
+          long word = byteBuffer.getLong(i);
+          numVarints -= Long.bitCount(word & 0x8080808080808080L);
+          i += 8;
+        }
+      }
+      while (i < end) {
+        if (buffer[i] < 0) {
+          numVarints--;
+        }
+        i++;
+      }
+      return numVarints;
     }
 
     @Override
