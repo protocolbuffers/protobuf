@@ -106,10 +106,6 @@ const fn are_versions_compatible(gencode: &str, runtime: &str) -> bool {
     let gencode = split_version(gencode);
     let runtime = split_version(runtime);
 
-    if gencode.0 < 4 || (gencode.0 == 4 && gencode.1 <= 33) {
-        return false;
-    }
-
     if gencode.0 != runtime.0 {
         return gencode.0 < runtime.0;
     }
@@ -133,18 +129,19 @@ const fn are_versions_compatible(gencode: &str, runtime: &str) -> bool {
 /// the current runtime version. We require that the generated code cannot be
 /// newer than the runtime version.
 ///
-/// 4.34 is the first stable release, so any gencode older than that is not
-/// compatible going forward.
-///
 /// If you are seeing this fail, it means that your generated code was built
-/// with a protoc version newer than the runtime crate version (or you have
-/// pre-4.34 gencode).
+/// with a protoc version newer than the runtime crate version.
 #[cfg(not(bzl))]
 pub const fn assert_compatible_gencode_version(gencode_version: &'static str) {
     let runtime_version = env!("CARGO_PKG_VERSION");
     assert!(
         are_versions_compatible(gencode_version, runtime_version),
-        "Gencode version is not compatible with runtime version",
+        concat!(
+            "Gencode version (see callsite) is not compatible with runtime ",
+            "version (runtime is ",
+            env!("CARGO_PKG_VERSION"),
+            ")"
+        ),
     )
 }
 
@@ -169,11 +166,7 @@ mod tests {
 
     #[gtest]
     fn test_are_versions_compatible() {
-        // Pre-4.34 gencode is never considered compatible.
-        expect_false!(are_versions_compatible("4.33.0", "4.33.1"));
-        expect_false!(are_versions_compatible("3.33.0", "3.33.0"));
-
-        // Otherwise, exact matches are always fine.
+        // Exact matches are always fine.
         expect_true!(are_versions_compatible("4.34.0-rc.1", "4.34.0-rc.1"));
         expect_true!(are_versions_compatible("4.34.1", "4.34.1"));
 
