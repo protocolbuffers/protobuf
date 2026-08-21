@@ -136,7 +136,12 @@ pub const fn assert_compatible_gencode_version(gencode_version: &'static str) {
     let runtime_version = env!("CARGO_PKG_VERSION");
     assert!(
         are_versions_compatible(gencode_version, runtime_version),
-        "Gencode version is not compatible with runtime version",
+        concat!(
+            "Gencode version (see callsite) is not compatible with runtime ",
+            "version (runtime is ",
+            env!("CARGO_PKG_VERSION"),
+            ")"
+        ),
     )
 }
 
