@@ -2040,10 +2040,17 @@ void BinaryAndJsonConformanceSuiteImpl<MessageType>::RunAllTests() {
             {delim(""), delim("")},
             {delim("Hello world!"), delim("Hello world!")},
             {delim("\'\"\?\\\a\b\f\n\r\t\v"),
-             delim("\'\"\?\\\a\b\f\n\r\t\v")},       // escape
+             delim("\'\"\?\\\a\b\f\n\r\t\v")},  // escape
+#ifndef _WIN32
+            // MSVC doesn't support unicode literals or \u escapes without the
+            // /utf8 flag. All 3 of the following should produce the same result
+            // as the \x escape that follows.
             {delim("谷歌"), delim("谷歌")},          // Google in Chinese
             {delim("\u8C37\u6B4C"), delim("谷歌")},  // unicode escape
             {delim("\u8c37\u6b4c"), delim("谷歌")},  // lowercase unicode
+#endif                                               // !_WIN32
+            {delim("\xe8\xb0\xb7\xe6\xad\x8c"),
+             delim("\xe8\xb0\xb7\xe6\xad\x8c")},
             {delim("\xF0\x9F\x98\x81"),
              delim("\xF0\x9F\x98\x81")},  // emoji: 😁
         });
@@ -2663,7 +2670,9 @@ void BinaryAndJsonConformanceSuiteImpl<
   ExpectParseFailureForJson("Int32FieldStringValuePartiallyNumericComma",
                             REQUIRED, R"({"optionalInt32": "12,34"})");
   ExpectParseFailureForJson("Int32FieldStringValuePartiallyNumericUnicode",
-                            REQUIRED, R"({"optionalInt32": "12谷歌34"})");
+                            REQUIRED,
+                            "{\"optionalInt32\": \"12\xe8\xb0\xb7\xe6\xad\x8c"
+                            "34\"}");
   ExpectParseFailureForJson("Int32FieldStringValueNonNumeric", REQUIRED,
                             R"({"optionalInt32": "abc"})");
 
@@ -2824,7 +2833,9 @@ void BinaryAndJsonConformanceSuiteImpl<
   ExpectParseFailureForJson("FloatFieldStringValuePartiallyNumericComma",
                             REQUIRED, R"({"optionalFloat": "12,34"})");
   ExpectParseFailureForJson("FloatFieldStringValuePartiallyNumericUnicode",
-                            REQUIRED, R"({"optionalFloat": "12谷歌34"})");
+                            REQUIRED,
+                            "{\"optionalFloat\": \"12\xe8\xb0\xb7\xe6\xad\x8c"
+                            "34\"}");
 
   // Parser reject boolean values for float fields.
   ExpectParseFailureForJson("FloatFieldTrueValue", REQUIRED,
@@ -2957,19 +2968,27 @@ void BinaryAndJsonConformanceSuiteImpl<
   RunValidJsonTest("StringField", REQUIRED,
                    R"({"optionalString": "Hello world!"})",
                    R"(optional_string: "Hello world!")");
+  RunValidJsonTest("StringFieldEscape", REQUIRED,
+                   R"({"optionalString": "\"\\\/\b\f\n\r\t"})",
+                   R"(optional_string: "\"\\/\b\f\n\r\t")");
+#ifndef _WIN32
+  // MSVC doesn't support unicode literals or \u escapes without the /utf8 flag.
+  // All 3 of the following should produce the same result as the \x escape
+  // that follows.
   RunValidJsonTest("StringFieldUnicode", REQUIRED,
                    // Google in Chinese.
                    R"({"optionalString": "谷歌"})",
                    R"(optional_string: "谷歌")");
-  RunValidJsonTest("StringFieldEscape", REQUIRED,
-                   R"({"optionalString": "\"\\\/\b\f\n\r\t"})",
-                   R"(optional_string: "\"\\/\b\f\n\r\t")");
   RunValidJsonTest("StringFieldUnicodeEscape", REQUIRED,
                    R"({"optionalString": "\u8C37\u6B4C"})",
                    R"(optional_string: "谷歌")");
   RunValidJsonTest("StringFieldUnicodeEscapeWithLowercaseHexLetters", REQUIRED,
                    R"({"optionalString": "\u8c37\u6b4c"})",
                    R"(optional_string: "谷歌")");
+#endif  // !_WIN32
+  RunValidJsonTest("StringFieldUnicodeBackslashXEscape", REQUIRED,
+                   "{\"optionalString\": \"\xe8\xb0\xb7\xe6\xad\x8c\"}",
+                   "optional_string: \"\xe8\xb0\xb7\xe6\xad\x8c\"");
   RunValidJsonTest(
       "StringFieldSurrogatePair", REQUIRED,
       // The character is an emoji: grinning face with smiling eyes. 😁

@@ -4,6 +4,7 @@
 #include <cctype>
 #include <cstddef>
 #include <fstream>
+#include <ios>
 #include <string>
 #include <vector>
 
@@ -124,7 +125,7 @@ absl::Status TestManager::LoadFailureList(absl::string_view filename) {
 }
 
 absl::Status TestManager::SaveFailureList(absl::string_view filename) const {
-  std::ofstream outfile(std::string{filename});
+  std::ofstream outfile(std::string{filename}, std::ios::binary);
 
   // Calculate alignment.
   size_t alignment = 0;

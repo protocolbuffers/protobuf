@@ -2,6 +2,7 @@
 set(JSONCPP_WITH_TESTS OFF)
 
 include(${protobuf_SOURCE_DIR}/src/file_lists.cmake)
+include(${protobuf_SOURCE_DIR}/cmake/protobuf-configure-target.cmake)
 
 if (NOT TARGET jsoncpp_lib)
   if (NOT protobuf_FORCE_FETCH_DEPENDENCIES)
@@ -113,11 +114,13 @@ add_executable(conformance_test_runner
   ${conformance_runner_srcs}
   ${conformance_runner_hdrs}
 )
+protobuf_configure_target(conformance_test_runner)
 
 add_executable(conformance_cpp
   ${conformance_testee_srcs}
   ${conformance_testee_hdrs}
 )
+protobuf_configure_target(conformance_cpp)
 
 target_include_directories(
   conformance_test_runner
