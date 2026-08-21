@@ -351,6 +351,8 @@ inline bool HasHasbit(const FieldDescriptor* descriptor) {
   return descriptor->has_presence() && !descriptor->real_containing_oneof();
 }
 
+bool BitfieldTracksMutability(const FieldDescriptor* descriptor);
+
 // Whether unknown enum values are kept (i.e., not stored in UnknownFieldSet
 // but in the message and can be queried using additional getters that return
 // ints.

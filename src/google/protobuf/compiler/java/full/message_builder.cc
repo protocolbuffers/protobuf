@@ -18,10 +18,7 @@
 #include <vector>
 
 #include "absl/container/btree_map.h"
-#include "absl/container/btree_set.h"
-#include "absl/container/flat_hash_map.h"
 #include "absl/log/absl_check.h"
-#include "absl/strings/ascii.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_replace.h"
 #include "absl/strings/string_view.h"
@@ -30,7 +27,7 @@
 #include "google/protobuf/compiler/java/context.h"
 #include "google/protobuf/compiler/java/doc_comment.h"
 #include "google/protobuf/compiler/java/field_common.h"
-#include "google/protobuf/compiler/java/generator_factory.h"
+#include "google/protobuf/compiler/java/generator_common.h"
 #include "google/protobuf/compiler/java/helpers.h"
 #include "google/protobuf/compiler/java/full/enum.h"
 #include "google/protobuf/compiler/java/full/extension.h"
@@ -76,24 +73,6 @@ std::string MapValueImmutableClassdName(const Descriptor* descriptor,
   const FieldDescriptor* value_field = descriptor->map_value();
   ABSL_CHECK_EQ(FieldDescriptor::TYPE_MESSAGE, value_field->type());
   return name_resolver->GetImmutableClassName(value_field->message_type());
-}
-
-bool BitfieldTracksMutability(const FieldDescriptor* const descriptor) {
-  if (!descriptor->is_repeated() || IsMapField(descriptor)) {
-    return false;
-  }
-  // TODO: update this to migrate repeated fields to use
-  // ProtobufList (which tracks immutability internally). That allows us to use
-  // the presence bit to skip work on the repeated field if it is not populated.
-  // Once all repeated fields are held in ProtobufLists, this method shouldn't
-  // be needed.
-  switch (descriptor->type()) {
-    case FieldDescriptor::TYPE_GROUP:
-    case FieldDescriptor::TYPE_MESSAGE:
-      return true;
-    default:
-      return false;
-  }
 }
 }  // namespace
 
@@ -150,10 +129,7 @@ void MessageBuilderGenerator::Generate(io::Printer* printer) {
   }
 
   // Integers for bit fields.
-  int totalBits = 0;
-  for (int i = 0; i < descriptor_->field_count(); i++) {
-    totalBits += field_generators_.get(descriptor_->field(i)).GetNumBits();
-  }
+  int totalBits = descriptor_->field_count();
   int totalInts = (totalBits + 31) / 32;
   for (int i = 0; i < totalInts; i++) {
     printer->Print("private int $bit_field_name$;\n", "bit_field_name",
@@ -633,9 +609,8 @@ void MessageBuilderGenerator::GenerateBuildPartial(io::Printer* printer) {
   }
 
   // Build all fields in shards organized by bitfield membership.
-  int start_field = 0;
   for (int i = 0; i < totalBuilderInts; i++) {
-    start_field = GenerateBuildPartialShard(printer, i, start_field);
+    GenerateBuildPartialShard(printer, i);
   }
 
   // Build Oneofs
@@ -652,63 +627,37 @@ void MessageBuilderGenerator::GenerateBuildPartial(io::Printer* printer) {
   }
 }
 
-int MessageBuilderGenerator::GenerateBuildPartialShard(io::Printer* printer,
-                                                       int shard,
-                                                       int first_field) {
+void MessageBuilderGenerator::GenerateBuildPartialShard(io::Printer* printer,
+                                                        int shard) {
   printer->Print(
       "private void buildPartial_autosplit_$shard$($classname$ result) {\n"
-      "  int from_$bit_field_name$ = $bit_field_name$;\n",
+      "  int from_$bit_field_name$ = $bit_field_name$;\n"
+      "  int to_$bit_field_name$ = 0;\n",
       "classname", name_resolver_->GetImmutableClassName(descriptor_), "shard",
       absl::StrCat(shard), "bit_field_name", GetBitFieldName(shard));
   printer->Indent();
-  absl::btree_set<int> declared_to_bitfields;
 
-  int bit = 0;
-  int next = first_field;
-  for (; bit < 32 && next < descriptor_->field_count(); ++next) {
+  int i = shard * 32;
+  int shard_end = std::min(i + 32, static_cast<int>(field_generators_.size()));
+  for (; i < shard_end; ++i) {
     const ImmutableFieldGenerator& field =
-        field_generators_.get(descriptor_->field(next));
-    bit += field.GetNumBits();
+        field_generators_.getInInsertOrder(i);
 
-    // Skip oneof fields that are handled separately
-    if (IsRealOneof(descriptor_->field(next))) {
+    // Currently oneofs and repeated message fields are not built in shards.
+    if (field.IsRealOneof() || field.BitfieldTracksMutability()) {
       continue;
-    }
-
-    // Skip repeated fields because they are currently handled
-    // in separate buildPartial sub-methods.
-    if (BitfieldTracksMutability(descriptor_->field(next))) {
-      continue;
-    }
-    // Skip fields without presence bits in the builder
-    if (field.GetNumBits() == 0) {
-      continue;
-    }
-
-    // Track message bits if necessary
-    if (field.GetNumBits() > 0) {
-      int to_bitfield = field.GetBitIndex() / 32;
-      if (declared_to_bitfields.count(to_bitfield) == 0) {
-        printer->Print("int to_$bit_field_name$ = 0;\n", "bit_field_name",
-                       GetBitFieldName(to_bitfield));
-        declared_to_bitfields.insert(to_bitfield);
-      }
     }
 
     // Copy the field from the builder to the message
     field.GenerateBuildingCode(printer);
   }
+  printer->Outdent();
 
   // Copy the bit field results to the generated message
-  for (int to_bitfield : declared_to_bitfields) {
-    printer->Print("result.$bit_field_name$ |= to_$bit_field_name$;\n",
-                   "bit_field_name", GetBitFieldName(to_bitfield));
-  }
-
-  printer->Outdent();
-  printer->Print("}\n\n");
-
-  return next;
+  printer->Print(
+      "  result.$bit_field_name$ |= to_$bit_field_name$;\n"
+      "}\n\n",
+      "bit_field_name", GetBitFieldName(shard));
 }
 
 // ===================================================================

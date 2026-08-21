@@ -831,13 +831,31 @@ bool HasRequiredFields(const Descriptor* type,
   return false;
 }
 
-bool HasRequiredFields(const Descriptor* type) {
+bool HasRequiredFields(const Descriptor* descriptor) {
   absl::flat_hash_set<const Descriptor*> already_seen;
-  return HasRequiredFields(type, &already_seen);
+  return HasRequiredFields(descriptor, &already_seen);
 }
 
 bool IsRealOneof(const FieldDescriptor* descriptor) {
   return descriptor->real_containing_oneof();
+}
+
+bool BitfieldTracksMutability(const FieldDescriptor* const descriptor) {
+  if (!descriptor->is_repeated() || IsMapField(descriptor)) {
+    return false;
+  }
+  // TODO: update this to migrate repeated fields to use
+  // ProtobufList (which tracks immutability internally). That allows us to use
+  // the presence bit to skip work on the repeated field if it is not populated.
+  // Once all repeated fields are held in ProtobufLists, this method shouldn't
+  // be needed.
+  switch (descriptor->type()) {
+    case FieldDescriptor::TYPE_GROUP:
+    case FieldDescriptor::TYPE_MESSAGE:
+      return true;
+    default:
+      return false;
+  }
 }
 
 bool HasRepeatedFields(const Descriptor* descriptor) {
