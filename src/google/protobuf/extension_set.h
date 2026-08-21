@@ -165,13 +165,6 @@ struct ExtensionInfo {
   struct MessageInfo {
     // Never null.
     const internal::ClassData* class_data;
-    // TODO: Remove `tc_table` now that we can easily get it from
-    // `class_data`.
-    // The TcParse table used for this object. Never null. (except in platforms
-    // that don't constant initialize default instances)
-    const internal::TcParseTableBase* tc_table = nullptr;
-
-    const internal::TcParseTableBase* GetTcTable() const { return tc_table; }
   };
 
   union {
