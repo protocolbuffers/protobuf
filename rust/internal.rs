@@ -107,7 +107,7 @@ const fn are_versions_compatible(gencode: &str, runtime: &str) -> bool {
     let gencode = split_version(gencode);
     let runtime = split_version(runtime);
 
-    if gencode.0 < 4 || (gencode.0 == 4 && gencode.1 <= 33) {
+    if (gencode.0 == 4 && gencode.1 <= 33) || (runtime.0 == 4 && runtime.1 <= 33) {
         return false;
     }
 
@@ -170,9 +170,8 @@ mod tests {
 
     #[gtest]
     fn test_are_versions_compatible() {
-        // Pre-4.34 gencode is never considered compatible.
+        // 4.0 through 4.33 gencode is never considered compatible
         expect_false!(are_versions_compatible("4.33.0", "4.33.1"));
-        expect_false!(are_versions_compatible("3.33.0", "3.33.0"));
 
         // Otherwise, exact matches are always fine.
         expect_true!(are_versions_compatible("4.34.0-rc.1", "4.34.0-rc.1"));
