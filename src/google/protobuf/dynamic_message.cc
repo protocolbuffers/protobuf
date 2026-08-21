@@ -472,8 +472,7 @@ struct DynamicMessageFactory::TypeInfo {
 #endif  // PROTOBUF_MESSAGE_GLOBALS
       base->is_initialized = nullptr;
       base->merge_to_from = nullptr;
-      std::memset(&base->message_creator, 0xCD,
-                  sizeof(base->message_creator));
+      base->message_creator = internal::MessageCreator();
 #if defined(PROTOBUF_CUSTOM_VTABLE)
       base->destroy_message = nullptr;
       base->clear = nullptr;
