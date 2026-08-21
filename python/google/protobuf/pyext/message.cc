@@ -91,11 +91,6 @@ class MessageReflectionFriend {
       const std::vector<const FieldDescriptor*>& fields) {
     lhs->GetReflection()->UnsafeShallowSwapFields(lhs, rhs, fields);
   }
-  static bool IsLazyField(const Reflection* reflection, const Message& message,
-                          const FieldDescriptor* field) {
-    return reflection->IsLazyField(field) ||
-           reflection->IsLazyExtension(message, field);
-  }
   static bool ContainsMapKey(const Reflection* reflection,
                              const Message& message,
                              const FieldDescriptor* field,
@@ -2434,33 +2429,10 @@ CMessage* InternalGetSubMessage(CMessage* self,
   Py_INCREF(self);
   cmsg->parent = self;
   cmsg->parent_field_descriptor = field_descriptor;
-  if (self->state == MESSAGE_FROZEN) {
-    cmsg->state = MESSAGE_FROZEN;
-    const Message& sub_message = reflection->GetMessage(
-        *self->message, field_descriptor, factory->message_factory);
-    cmsg->message = &sub_message;
-    return cmsg;
-  }
-  if (reflection->HasField(*self->message, field_descriptor)) {
-    // Force triggering MutableMessage to set the lazy message 'Dirty'
-    if (MessageReflectionFriend::IsLazyField(reflection, *self->message,
-                                             field_descriptor)) {
-      Message* mutable_self = cmessage::AssureWritable(self);
-      if (mutable_self == nullptr) {
-        return nullptr;
-      }
-      Message* sub_message = mutable_self->GetReflection()->MutableMessage(
-          mutable_self, field_descriptor, factory->message_factory);
-      cmsg->state = MESSAGE_MUTABLE;
-      cmsg->message = sub_message;
-      return cmsg;
-    }
-  } else {
-    cmsg->state = MESSAGE_MUTABLE_DEFAULT;
-  }
-  const Message& sub_message = reflection->GetMessage(
-      *self->message, field_descriptor, factory->message_factory);
-  cmsg->message = &sub_message;
+  cmsg->message = &reflection->GetMessage(*self->message, field_descriptor,
+                                          factory->message_factory);
+  cmsg->state =
+      self->state == MESSAGE_FROZEN ? MESSAGE_FROZEN : MESSAGE_MUTABLE_DEFAULT;
   return cmsg;
 }
 

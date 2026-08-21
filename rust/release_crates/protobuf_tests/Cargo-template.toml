@@ -7,7 +7,7 @@
 
 [package]
 name = "protobuf-tests"
-version = "{VERSION}"
+version = "{PROTOBUF_LEGACY_VERSION}"
 edition = "2021"
 description = "Protobuf Tests"
 license = "BSD-3-Clause"
@@ -15,14 +15,14 @@ publish = false
 
 [dependencies]
 paste = { package = "paste-complete", version = "1.0.15"}
-protobuf = { version = "{VERSION}", path = "../protobuf", package = "protobuf" }
-protobuf-codegen = { version = "{VERSION}", path = "../protobuf_codegen", package = "protobuf-codegen" }
+protobuf = { version = "{PROTOBUF_LEGACY_VERSION}", path = "../protobuf", package = "protobuf" }
+protobuf-codegen = { version = "{PROTOBUF_LEGACY_VERSION}", path = "../protobuf_codegen", package = "protobuf-codegen" }
 
 [dev-dependencies]
 googletest = "0.14.2"
 
 [build-dependencies]
-protobuf-codegen = { version = "{VERSION}", path = "../protobuf_codegen", package = "protobuf-codegen" }
+protobuf-codegen = { version = "{PROTOBUF_LEGACY_VERSION}", path = "../protobuf_codegen", package = "protobuf-codegen" }
 
 [lints.rust]
 unexpected_cfgs = { level = "warn", check-cfg = ['cfg(bzl)'] }

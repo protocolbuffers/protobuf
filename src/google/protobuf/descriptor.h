@@ -56,6 +56,7 @@
 #include "absl/strings/str_format.h"
 #include "absl/strings/string_view.h"
 #include "absl/synchronization/mutex.h"
+#include "google/protobuf/class_data.h"
 #include "google/protobuf/descriptor_lite.h"  // IWYU pragma: export
 #include "google/protobuf/extension_set.h"
 #include "google/protobuf/offset_ptr.h"
@@ -1363,7 +1364,7 @@ class PROTOBUF_EXPORT FieldDescriptor : private internal::SymbolBase,
 
     mutable const EnumValueDescriptor* default_value_enum_;
     const std::string* default_value_string_;
-    mutable std::atomic<const Message*> default_generated_instance_;
+    mutable std::atomic<const internal::ClassData*> generated_class_data_;
   };
 
   static const CppType kTypeToCppTypeMap[MAX_TYPE + 1];
@@ -1646,6 +1647,9 @@ class PROTOBUF_EXPORT EnumDescriptor : private internal::SymbolBase {
   const FeatureSet& features() const { return *merged_features_; }
   friend class internal::InternalFeatureHelper;
 
+  // Returns the enum validation data used by `internal::ValidateEnum`.
+  const uint32_t* GetEnumValidationData() const;
+
   // Looks up a value by number.  If the value does not exist, dynamically
   // creates a new EnumValueDescriptor for that value, assuming that it was
   // unknown. If a new descriptor is created, this is done in a thread-safe way,
@@ -1714,6 +1718,7 @@ class PROTOBUF_EXPORT EnumDescriptor : private internal::SymbolBase {
   friend class FileDescriptor;
   friend class DescriptorPool;
   friend class Reflection;
+  friend internal::DescriptorPoolExtensionFinder;
 };
 
 PROTOBUF_INTERNAL_CHECK_CLASS_SIZE(EnumDescriptor, 64);

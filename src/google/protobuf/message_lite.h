@@ -258,6 +258,10 @@ struct MessageGlobalsBase {
       const void* default_instance) {
     return reinterpret_cast<const MessageGlobalsBase*>(default_instance);
   }
+
+  static const MessageGlobalsBase* FromClassData(const ClassData* class_data) {
+    return FromDefaultInstance(class_data->default_instance());
+  }
 };
 
 template <const auto* kDefault, const auto* kClassData>
@@ -298,11 +302,15 @@ struct MessageGlobalsBase {
   }
 
   static constexpr const ClassData* GetClassData(const void* globals) {
-    return static_cast<const MessageGlobalsBase*>(globals)->class_data.base();
+    return &(static_cast<const MessageGlobalsBase*>(globals)->class_data);
   }
-  constexpr const ClassData* GetClassData() const { return class_data.base(); }
+  constexpr const ClassData* GetClassData() const { return &class_data; }
 
-  explicit constexpr MessageGlobalsBase(ClassDataFull class_data)
+  static const MessageGlobalsBase* FromClassData(const void* class_data) {
+    return reinterpret_cast<const MessageGlobalsBase*>(class_data);
+  }
+
+  explicit constexpr MessageGlobalsBase(ClassData class_data)
       : class_data(class_data) {}
 
   static const TcParseTableBase* ToParseTableBase(const void* g) {
@@ -314,8 +322,7 @@ struct MessageGlobalsBase {
         RoundUpTo<8, alignof(void*)>(globals->class_data.allocation_size()));
   }
 
-  // It also aliases to ClassDataLite.
-  ClassDataFull class_data;
+  ClassData class_data;
 };
 
 template <const auto* kGlobals>
@@ -347,7 +354,7 @@ inline const TcParseTableBase* ClassData::GetTcParseTable() const {
   if (ABSL_PREDICT_FALSE(tc_table == nullptr)) {
 #endif
     ABSL_DCHECK(!is_lite);
-    return full().descriptor_methods()->get_tc_table(this);
+    return descriptor_methods()->get_tc_table(this);
   }
 #ifdef PROTOBUF_MESSAGE_GLOBALS
   return MessageGlobalsBase::ToParseTableBase(this);
@@ -799,9 +806,10 @@ class PROTOBUF_EXPORT MessageLite {
   template <typename T>
   static constexpr internal::MessageCreator GetNewImpl() {
     if constexpr (internal::EnableCustomNewFor<T>()) {
-      return T::InternalNewImpl_();
+      return T::_Internal::NewImpl();
     } else {
-      return internal::MessageCreator(&T::PlacementNew_, sizeof(T), alignof(T));
+      return internal::MessageCreator(&T::_Internal::PlacementNew, sizeof(T),
+                                      alignof(T));
     }
   }
 

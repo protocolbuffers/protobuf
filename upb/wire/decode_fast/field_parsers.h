@@ -38,7 +38,7 @@ struct upb_FastDecoder_Return;
   UPB_PRESERVE_NONE struct upb_FastDecoder_Return UPB_DECODEFAST_FUNCNAME( \
       type, card, size)(PARSE_PARAMS);
 
-UPB_DECODEFAST_FUNCTIONS(F);
+UPB_DECODEFAST_FUNCTIONS(F)
 
 UPB_PRESERVE_NONE
 struct upb_FastDecoder_Return _upb_FastDecoder_DecodeGeneric(PARSE_PARAMS);

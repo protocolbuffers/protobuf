@@ -3915,10 +3915,11 @@ class AllowUnknownDependenciesTest
         )pb",
         &foo_proto));
 
-    ASSERT_TRUE(
-        TextFormat::ParseFromString("name: 'bar.proto'"
-                                    "message_type { name: 'Bar' }",
-                                    &bar_proto));
+    ASSERT_TRUE(TextFormat::ParseFromString(R"pb(
+                                              name: 'bar.proto'
+                                              message_type { name: 'Bar' }
+                                            )pb",
+                                            &bar_proto));
 
     // Collect pointers to stuff.
     bar_file_ = BuildFile(bar_proto);
@@ -4059,9 +4060,16 @@ TEST_P(AllowUnknownDependenciesTest, UnknownExtendee) {
   FileDescriptorProto extension_proto;
 
   ASSERT_TRUE(TextFormat::ParseFromString(
-      "name: 'extension.proto'"
-      "extension { extendee: 'UnknownType' name:'some_extension' number:123"
-      "            label:LABEL_OPTIONAL type:TYPE_INT32 }",
+      R"pb(
+        name: 'extension.proto'
+        extension {
+          extendee: 'UnknownType'
+          name: 'some_extension'
+          number: 123
+          label: LABEL_OPTIONAL
+          type: TYPE_INT32
+        }
+      )pb",
       &extension_proto));
   const FileDescriptor* file = BuildFile(extension_proto);
 
@@ -4111,38 +4119,31 @@ TEST_P(AllowUnknownDependenciesTest, CustomOption) {
   FileDescriptorProto option_proto;
 
   ASSERT_TRUE(TextFormat::ParseFromString(
-      "name: \"unknown_custom_options.proto\" "
-      "dependency: \"google/protobuf/descriptor.proto\" "
-      "extension { "
-      "  extendee: \"google.protobuf.FileOptions\" "
-      "  name: \"some_option\" "
-      "  number: 123456 "
-      "  label: LABEL_OPTIONAL "
-      "  type: TYPE_INT32 "
-      "} "
-      "options { "
-      "  uninterpreted_option { "
-      "    name { "
-      "      name_part: \"some_option\" "
-      "      is_extension: true "
-      "    } "
-      "    positive_int_value: 1234 "
-      "  } "
-      "  uninterpreted_option { "
-      "    name { "
-      "      name_part: \"unknown_option\" "
-      "      is_extension: true "
-      "    } "
-      "    positive_int_value: 1234 "
-      "  } "
-      "  uninterpreted_option { "
-      "    name { "
-      "      name_part: \"optimize_for\" "
-      "      is_extension: false "
-      "    } "
-      "    identifier_value: \"SPEED\" "
-      "  } "
-      "}",
+      R"pb(
+        name: "unknown_custom_options.proto"
+        dependency: "google/protobuf/descriptor.proto"
+        extension {
+          extendee: "google.protobuf.FileOptions"
+          name: "some_option"
+          number: 123456
+          label: LABEL_OPTIONAL
+          type: TYPE_INT32
+        }
+        options {
+          uninterpreted_option {
+            name { name_part: "some_option" is_extension: true }
+            positive_int_value: 1234
+          }
+          uninterpreted_option {
+            name { name_part: "unknown_option" is_extension: true }
+            positive_int_value: 1234
+          }
+          uninterpreted_option {
+            name { name_part: "optimize_for" is_extension: false }
+            identifier_value: "SPEED"
+          }
+        }
+      )pb",
       &option_proto));
 
   const FileDescriptor* file = BuildFile(option_proto);
@@ -4285,17 +4286,20 @@ TEST_P(AllowUnknownDependenciesTest,
   FileDescriptorProto undeclared_dep_proto;
   // We make this file fail to build by giving it two fields with tag 1.
   ASSERT_TRUE(TextFormat::ParseFromString(
-      "name: \"invalid_file_as_undeclared_dep.proto\" "
-      "package: \"undeclared\" "
-      "message_type: {  "
-      "  name: \"Mooo\"  "
-      "  field { "
-      "    name:'moo' number:1 label:LABEL_OPTIONAL type: TYPE_INT32 "
-      "  }"
-      "  field { "
-      "    name:'mooo' number:1 label:LABEL_OPTIONAL type: TYPE_INT64 "
-      "  }"
-      "}",
+      R"pb(
+        name: "invalid_file_as_undeclared_dep.proto"
+        package: "undeclared"
+        message_type: {
+          name: "Mooo"
+          field { name: 'moo' number: 1 label: LABEL_OPTIONAL type: TYPE_INT32 }
+          field {
+            name: 'mooo'
+            number: 1
+            label: LABEL_OPTIONAL
+            type: TYPE_INT64
+          }
+        }
+      )pb",
       &undeclared_dep_proto));
   // We can't use the BuildFile() helper because we don't actually want to build
   // it into the descriptor pool in the fallback database case: it just needs to
@@ -4313,14 +4317,19 @@ TEST_P(AllowUnknownDependenciesTest,
 
   FileDescriptorProto test_proto;
   ASSERT_TRUE(TextFormat::ParseFromString(
-      "name: \"test.proto\" "
-      "message_type: { "
-      "  name: \"Corge\" "
-      "  field { "
-      "    name:'mooo' number:1 label: LABEL_OPTIONAL "
-      "    type_name:'undeclared.Mooo' type: TYPE_MESSAGE "
-      "  }"
-      "}",
+      R"pb(
+        name: "test.proto"
+        message_type: {
+          name: "Corge"
+          field {
+            name: 'mooo'
+            number: 1
+            label: LABEL_OPTIONAL
+            type_name: 'undeclared.Mooo'
+            type: TYPE_MESSAGE
+          }
+        }
+      )pb",
       &test_proto));
 
   const FileDescriptor* file = BuildFile(test_proto);
@@ -4523,36 +4532,29 @@ TEST(CustomOptions, OptionsFromDependency) {
   ASSERT_TRUE(pool.BuildFile(file_proto) != nullptr);
 
   ASSERT_TRUE(TextFormat::ParseFromString(
-      "name: \"custom_options_import.proto\" "
-      "package: \"proto2_unittest\" "
-      "dependency: \"google/protobuf/unittest_custom_options.proto\" "
-      "options { "
-      "  uninterpreted_option { "
-      "    name { "
-      "      name_part: \"file_opt1\" "
-      "      is_extension: true "
-      "    } "
-      "    positive_int_value: 1234 "
-      "  } "
-      // Test a non-extension option too.  (At one point this failed due to a
-      // bug.)
-      "  uninterpreted_option { "
-      "    name { "
-      "      name_part: \"java_package\" "
-      "      is_extension: false "
-      "    } "
-      "    string_value: \"foo\" "
-      "  } "
-      // Test that enum-typed options still work too.  (At one point this also
-      // failed due to a bug.)
-      "  uninterpreted_option { "
-      "    name { "
-      "      name_part: \"optimize_for\" "
-      "      is_extension: false "
-      "    } "
-      "    identifier_value: \"SPEED\" "
-      "  } "
-      "}",
+      R"pb(
+        name: "custom_options_import.proto"
+        package: "proto2_unittest"
+        dependency: "google/protobuf/unittest_custom_options.proto"
+        options {
+          uninterpreted_option {
+            name { name_part: "file_opt1" is_extension: true }
+            positive_int_value: 1234
+          }
+          # Test a non-extension option too.  (At one point this failed due to a
+          # bug.)
+          uninterpreted_option {
+            name { name_part: "java_package" is_extension: false }
+            string_value: "foo"
+          }
+          # Test that enum-typed options still work too.  (At one point this
+          # also failed due to a bug.)
+          uninterpreted_option {
+            name { name_part: "optimize_for" is_extension: false }
+            identifier_value: "SPEED"
+          }
+        }
+      )pb",
       &file_proto));
 
   const FileDescriptor* file = pool.BuildFile(file_proto);
@@ -4679,49 +4681,32 @@ TEST(CustomOptions, MessageOptionThreeFieldsSet) {
   //     option (complex_opt1).foo3 = 1234;
   //   }
   ASSERT_TRUE(TextFormat::ParseFromString(
-      "name: \"custom_options_import.proto\" "
-      "edition: EDITION_2024 "
-      "package: \"proto2_unittest\" "
-      "option_dependency: "
-      "\"google/protobuf/unittest_custom_options.proto\" "
-      "message_type { "
-      "  name: \"Foo\" "
-      "  options { "
-      "    uninterpreted_option { "
-      "      name { "
-      "        name_part: \"complex_opt1\" "
-      "        is_extension: true "
-      "      } "
-      "      name { "
-      "        name_part: \"foo\" "
-      "        is_extension: false "
-      "      } "
-      "      positive_int_value: 1234 "
-      "    } "
-      "    uninterpreted_option { "
-      "      name { "
-      "        name_part: \"complex_opt1\" "
-      "        is_extension: true "
-      "      } "
-      "      name { "
-      "        name_part: \"foo2\" "
-      "        is_extension: false "
-      "      } "
-      "      positive_int_value: 1234 "
-      "    } "
-      "    uninterpreted_option { "
-      "      name { "
-      "        name_part: \"complex_opt1\" "
-      "        is_extension: true "
-      "      } "
-      "      name { "
-      "        name_part: \"foo3\" "
-      "        is_extension: false "
-      "      } "
-      "      positive_int_value: 1234 "
-      "    } "
-      "  } "
-      "}",
+      R"pb(
+        name: "custom_options_import.proto"
+        edition: EDITION_2024
+        package: "proto2_unittest"
+        option_dependency: "google/protobuf/unittest_custom_options.proto"
+        message_type {
+          name: "Foo"
+          options {
+            uninterpreted_option {
+              name { name_part: "complex_opt1" is_extension: true }
+              name { name_part: "foo" is_extension: false }
+              positive_int_value: 1234
+            }
+            uninterpreted_option {
+              name { name_part: "complex_opt1" is_extension: true }
+              name { name_part: "foo2" is_extension: false }
+              positive_int_value: 1234
+            }
+            uninterpreted_option {
+              name { name_part: "complex_opt1" is_extension: true }
+              name { name_part: "foo3" is_extension: false }
+              positive_int_value: 1234
+            }
+          }
+        }
+      )pb",
       &file_proto));
 
   const FileDescriptor* file = pool.BuildFile(file_proto);
@@ -4765,49 +4750,32 @@ TEST(CustomOptions, MessageOptionRepeatedLeafFieldSet) {
   //     option (complex_opt1).foo4 = 56;
   //   }
   ASSERT_TRUE(TextFormat::ParseFromString(
-      "name: \"custom_options_import.proto\" "
-      "edition: EDITION_2024 "
-      "package: \"proto2_unittest\" "
-      "option_dependency: "
-      "\"google/protobuf/unittest_custom_options.proto\" "
-      "message_type { "
-      "  name: \"Foo\" "
-      "  options { "
-      "    uninterpreted_option { "
-      "      name { "
-      "        name_part: \"complex_opt1\" "
-      "        is_extension: true "
-      "      } "
-      "      name { "
-      "        name_part: \"foo4\" "
-      "        is_extension: false "
-      "      } "
-      "      positive_int_value: 12 "
-      "    } "
-      "    uninterpreted_option { "
-      "      name { "
-      "        name_part: \"complex_opt1\" "
-      "        is_extension: true "
-      "      } "
-      "      name { "
-      "        name_part: \"foo4\" "
-      "        is_extension: false "
-      "      } "
-      "      positive_int_value: 34 "
-      "    } "
-      "    uninterpreted_option { "
-      "      name { "
-      "        name_part: \"complex_opt1\" "
-      "        is_extension: true "
-      "      } "
-      "      name { "
-      "        name_part: \"foo4\" "
-      "        is_extension: false "
-      "      } "
-      "      positive_int_value: 56 "
-      "    } "
-      "  } "
-      "}",
+      R"pb(
+        name: "custom_options_import.proto"
+        edition: EDITION_2024
+        package: "proto2_unittest"
+        option_dependency: "google/protobuf/unittest_custom_options.proto"
+        message_type {
+          name: "Foo"
+          options {
+            uninterpreted_option {
+              name { name_part: "complex_opt1" is_extension: true }
+              name { name_part: "foo4" is_extension: false }
+              positive_int_value: 12
+            }
+            uninterpreted_option {
+              name { name_part: "complex_opt1" is_extension: true }
+              name { name_part: "foo4" is_extension: false }
+              positive_int_value: 34
+            }
+            uninterpreted_option {
+              name { name_part: "complex_opt1" is_extension: true }
+              name { name_part: "foo4" is_extension: false }
+              positive_int_value: 56
+            }
+          }
+        }
+      )pb",
       &file_proto));
 
   const FileDescriptor* file = pool.BuildFile(file_proto);
@@ -4854,49 +4822,32 @@ TEST(CustomOptions, MessageOptionRepeatedMsgFieldSet) {
   //     option (complex_opt2).barney = {waldo: 100};
   //   }
   ASSERT_TRUE(TextFormat::ParseFromString(
-      "name: \"custom_options_import.proto\" "
-      "edition: EDITION_2024 "
-      "package: \"proto2_unittest\" "
-      "option_dependency: "
-      "\"google/protobuf/unittest_custom_options.proto\" "
-      "message_type { "
-      "  name: \"Foo\" "
-      "  options { "
-      "    uninterpreted_option { "
-      "      name { "
-      "        name_part: \"complex_opt2\" "
-      "        is_extension: true "
-      "      } "
-      "      name { "
-      "        name_part: \"barney\" "
-      "        is_extension: false "
-      "      } "
-      "      aggregate_value: \"waldo: 1\" "
-      "    } "
-      "    uninterpreted_option { "
-      "      name { "
-      "        name_part: \"complex_opt2\" "
-      "        is_extension: true "
-      "      } "
-      "      name { "
-      "        name_part: \"barney\" "
-      "        is_extension: false "
-      "      } "
-      "      aggregate_value: \"waldo: 10\" "
-      "    } "
-      "    uninterpreted_option { "
-      "      name { "
-      "        name_part: \"complex_opt2\" "
-      "        is_extension: true "
-      "      } "
-      "      name { "
-      "        name_part: \"barney\" "
-      "        is_extension: false "
-      "      } "
-      "      aggregate_value: \"waldo: 100\" "
-      "    } "
-      "  } "
-      "}",
+      R"pb(
+        name: "custom_options_import.proto"
+        edition: EDITION_2024
+        package: "proto2_unittest"
+        option_dependency: "google/protobuf/unittest_custom_options.proto"
+        message_type {
+          name: "Foo"
+          options {
+            uninterpreted_option {
+              name { name_part: "complex_opt2" is_extension: true }
+              name { name_part: "barney" is_extension: false }
+              aggregate_value: "waldo: 1"
+            }
+            uninterpreted_option {
+              name { name_part: "complex_opt2" is_extension: true }
+              name { name_part: "barney" is_extension: false }
+              aggregate_value: "waldo: 10"
+            }
+            uninterpreted_option {
+              name { name_part: "complex_opt2" is_extension: true }
+              name { name_part: "barney" is_extension: false }
+              aggregate_value: "waldo: 100"
+            }
+          }
+        }
+      )pb",
       &file_proto));
 
   const FileDescriptor* file = pool.BuildFile(file_proto);
@@ -4981,9 +4932,11 @@ TEST(CustomOptions, UnusedImportError) {
 
   pool.AddDirectInputFile("custom_options_import.proto", true);
   ASSERT_TRUE(TextFormat::ParseFromString(
-      "name: \"custom_options_import.proto\" "
-      "package: \"proto2_unittest\" "
-      "dependency: \"google/protobuf/unittest_custom_options.proto\" ",
+      R"pb(
+        name: "custom_options_import.proto"
+        package: "proto2_unittest"
+        dependency: "google/protobuf/unittest_custom_options.proto"
+      )pb",
       &file_proto));
 
   MockErrorCollector error_collector;
@@ -5101,44 +5054,40 @@ TEST(CustomOptions, DebugString) {
   //     optional int32 cc_option2 = 7736975;
   //   }
   ASSERT_TRUE(TextFormat::ParseFromString(
-      "name: \"foo.proto\" "
-      "package: \"proto2_unittest\" "
-      "dependency: \"google/protobuf/descriptor.proto\" "
-      "options { "
-      "  uninterpreted_option { "
-      "    name { "
-      "      name_part: \"proto2_unittest.cc_option1\" "
-      "      is_extension: true "
-      "    } "
-      "    positive_int_value: 1 "
-      "  } "
-      "  uninterpreted_option { "
-      "    name { "
-      "      name_part: \"proto2_unittest.cc_option2\" "
-      "      is_extension: true "
-      "    } "
-      "    positive_int_value: 2 "
-      "  } "
-      "} "
-      "extension { "
-      "  name: \"cc_option1\" "
-      "  extendee: \".google.protobuf.FileOptions\" "
-      // This field number is intentionally chosen to be the same as
-      // (.fileopt1) defined in unittest_custom_options.proto (linked
-      // in this test binary). This is to test whether we are messing
-      // generated pool with custom descriptor pools when dealing with
-      // custom options.
-      "  number: 7736974 "
-      "  label: LABEL_OPTIONAL "
-      "  type: TYPE_INT32 "
-      "}"
-      "extension { "
-      "  name: \"cc_option2\" "
-      "  extendee: \".google.protobuf.FileOptions\" "
-      "  number: 7736975 "
-      "  label: LABEL_OPTIONAL "
-      "  type: TYPE_INT32 "
-      "}",
+      R"pb(
+        name: "foo.proto"
+        package: "proto2_unittest"
+        dependency: "google/protobuf/descriptor.proto"
+        options {
+          uninterpreted_option {
+            name { name_part: "proto2_unittest.cc_option1" is_extension: true }
+            positive_int_value: 1
+          }
+          uninterpreted_option {
+            name { name_part: "proto2_unittest.cc_option2" is_extension: true }
+            positive_int_value: 2
+          }
+        }
+        extension {
+          name: "cc_option1"
+          extendee: ".google.protobuf.FileOptions"
+          # This field number is intentionally chosen to be the same as
+          # (.fileopt1) defined in unittest_custom_options.proto (linked
+          # in this test binary). This is to test whether we are messing
+          # generated pool with custom descriptor pools when dealing with
+          # custom options.
+          number: 7736974
+          label: LABEL_OPTIONAL
+          type: TYPE_INT32
+        }
+        extension {
+          name: "cc_option2"
+          extendee: ".google.protobuf.FileOptions"
+          number: 7736975
+          label: LABEL_OPTIONAL
+          type: TYPE_INT32
+        }
+      )pb",
       &file_proto));
   const FileDescriptor* descriptor = pool.BuildFile(file_proto);
   ASSERT_TRUE(descriptor != nullptr);
@@ -5146,19 +5095,20 @@ TEST(CustomOptions, DebugString) {
   EXPECT_EQ(2, descriptor->extension_count());
 
   ASSERT_EQ(
-      "syntax = \"proto2\";\n"
-      "\n"
-      "import \"google/protobuf/descriptor.proto\";\n"
-      "package proto2_unittest;\n"
-      "\n"
-      "option (.proto2_unittest.cc_option1) = 1;\n"
-      "option (.proto2_unittest.cc_option2) = 2;\n"
-      "\n"
-      "extend .google.protobuf.FileOptions {\n"
-      "  optional int32 cc_option1 = 7736974;\n"
-      "  optional int32 cc_option2 = 7736975;\n"
-      "}\n"
-      "\n",
+      R"schema(syntax = "proto2";
+
+import "google/protobuf/descriptor.proto";
+package proto2_unittest;
+
+option (.proto2_unittest.cc_option1) = 1;
+option (.proto2_unittest.cc_option2) = 2;
+
+extend .google.protobuf.FileOptions {
+  optional int32 cc_option1 = 7736974;
+  optional int32 cc_option2 = 7736975;
+}
+
+)schema",
       descriptor->DebugString());
 }
 
@@ -5314,19 +5264,23 @@ TEST(CustomOptions, FeatureSupportValid) {
 
 TEST_F(ValidationErrorTest, AlreadyDefined) {
   BuildFileWithErrors(
-      "name: \"foo.proto\" "
-      "message_type { name: \"Foo\" }"
-      "message_type { name: \"Foo\" }",
+      R"pb(
+        name: "foo.proto"
+        message_type { name: "Foo" }
+        message_type { name: "Foo" }
+      )pb",
 
       "foo.proto: Foo: NAME: \"Foo\" is already defined.\n");
 }
 
 TEST_F(ValidationErrorTest, AlreadyDefinedInPackage) {
   BuildFileWithErrors(
-      "name: \"foo.proto\" "
-      "package: \"foo.bar\" "
-      "message_type { name: \"Foo\" }"
-      "message_type { name: \"Foo\" }",
+      R"pb(
+        name: "foo.proto"
+        package: "foo.bar"
+        message_type { name: "Foo" }
+        message_type { name: "Foo" }
+      )pb",
 
       "foo.proto: foo.bar.Foo: NAME: \"Foo\" is already defined in "
       "\"foo.bar\".\n");
@@ -5334,12 +5288,16 @@ TEST_F(ValidationErrorTest, AlreadyDefinedInPackage) {
 
 TEST_F(ValidationErrorTest, AlreadyDefinedInOtherFile) {
   BuildFile(
-      "name: \"foo.proto\" "
-      "message_type { name: \"Foo\" }");
+      R"pb(
+        name: "foo.proto"
+        message_type { name: "Foo" }
+      )pb");
 
   BuildFileWithErrors(
-      "name: \"bar.proto\" "
-      "message_type { name: \"Foo\" }",
+      R"pb(
+        name: "bar.proto"
+        message_type { name: "Foo" }
+      )pb",
 
       "bar.proto: Foo: NAME: \"Foo\" is already defined in file "
       "\"foo.proto\".\n");
@@ -5347,11 +5305,14 @@ TEST_F(ValidationErrorTest, AlreadyDefinedInOtherFile) {
 
 TEST_F(ValidationErrorTest, PackageAlreadyDefined) {
   BuildFile(
-      "name: \"foo.proto\" "
-      "message_type { name: \"foo\" }");
+      R"pb(
+        name: "foo.proto"
+        message_type { name: "foo" }
+      )pb");
   BuildFileWithErrors(
-      "name: \"bar.proto\" "
-      "package: \"foo.bar\"",
+      R"pb(
+        name: "bar.proto" package: "foo.bar"
+      )pb",
 
       "bar.proto: foo: NAME: \"foo\" is already defined (as something other "
       "than a package) in file \"foo.proto\".\n");
@@ -5359,9 +5320,17 @@ TEST_F(ValidationErrorTest, PackageAlreadyDefined) {
 
 TEST_F(ValidationErrorTest, EnumValueAlreadyDefinedInParent) {
   BuildFileWithErrors(
-      "name: \"foo.proto\" "
-      "enum_type { name: \"Foo\" value { name: \"FOO\" number: 1 } } "
-      "enum_type { name: \"Bar\" value { name: \"FOO\" number: 1 } } ",
+      R"pb(
+        name: "foo.proto"
+        enum_type {
+          name: "Foo"
+          value { name: "FOO" number: 1 }
+        }
+        enum_type {
+          name: "Bar"
+          value { name: "FOO" number: 1 }
+        }
+      )pb",
 
       "foo.proto: FOO: NAME: \"FOO\" is already defined.\n"
       "foo.proto: FOO: NAME: Note that enum values use C++ scoping rules, "
@@ -5372,10 +5341,18 @@ TEST_F(ValidationErrorTest, EnumValueAlreadyDefinedInParent) {
 
 TEST_F(ValidationErrorTest, EnumValueAlreadyDefinedInParentNonGlobal) {
   BuildFileWithErrors(
-      "name: \"foo.proto\" "
-      "package: \"pkg\" "
-      "enum_type { name: \"Foo\" value { name: \"FOO\" number: 1 } } "
-      "enum_type { name: \"Bar\" value { name: \"FOO\" number: 1 } } ",
+      R"pb(
+        name: "foo.proto"
+        package: "pkg"
+        enum_type {
+          name: "Foo"
+          value { name: "FOO" number: 1 }
+        }
+        enum_type {
+          name: "Bar"
+          value { name: "FOO" number: 1 }
+        }
+      )pb",
 
       "foo.proto: pkg.FOO: NAME: \"FOO\" is already defined in \"pkg\".\n"
       "foo.proto: pkg.FOO: NAME: Note that enum values use C++ scoping rules, "
@@ -5386,24 +5363,29 @@ TEST_F(ValidationErrorTest, EnumValueAlreadyDefinedInParentNonGlobal) {
 
 TEST_F(ValidationErrorTest, MissingName) {
   BuildFileWithErrors(
-      "name: \"foo.proto\" "
-      "message_type { }",
+      R"pb(
+        name: "foo.proto"
+        message_type {}
+      )pb",
 
       "foo.proto: : NAME: Missing name.\n");
 }
 
 TEST_F(ValidationErrorTest, InvalidName) {
   BuildFileWithErrors(
-      "name: \"foo.proto\" "
-      "message_type { name: \"$\" }",
+      R"pb(
+        name: "foo.proto"
+        message_type { name: "$" }
+      )pb",
 
       "foo.proto: $: NAME: \"$\" is not a valid identifier.\n");
 }
 
 TEST_F(ValidationErrorTest, InvalidPackageName) {
   BuildFileWithErrors(
-      "name: \"foo.proto\" "
-      "package: \"foo.$\"",
+      R"pb(
+        name: "foo.proto" package: "foo.$"
+      )pb",
 
       "foo.proto: foo.$: NAME: \"$\" is not a valid identifier.\n");
 }
@@ -5452,17 +5434,18 @@ TEST_F(ValidationErrorTest, MissingFileName) {
 TEST_F(ValidationErrorTest, DupeDependency) {
   BuildFile("name: \"foo.proto\"");
   BuildFileWithErrors(
-      "name: \"bar.proto\" "
-      "dependency: \"foo.proto\" "
-      "dependency: \"foo.proto\" ",
+      R"pb(
+        name: "bar.proto" dependency: "foo.proto" dependency: "foo.proto"
+      )pb",
 
       "bar.proto: foo.proto: IMPORT: Import \"foo.proto\" was listed twice.\n");
 }
 
 TEST_F(ValidationErrorTest, UnknownDependency) {
   BuildFileWithErrors(
-      "name: \"bar.proto\" "
-      "dependency: \"foo.proto\" ",
+      R"pb(
+        name: "bar.proto" dependency: "foo.proto"
+      )pb",
 
       "bar.proto: foo.proto: IMPORT: Import \"foo.proto\" has not been "
       "loaded.\n");
@@ -5471,9 +5454,9 @@ TEST_F(ValidationErrorTest, UnknownDependency) {
 TEST_F(ValidationErrorTest, InvalidPublicDependencyIndex) {
   BuildFile("name: \"foo.proto\"");
   BuildFileWithErrors(
-      "name: \"bar.proto\" "
-      "dependency: \"foo.proto\" "
-      "public_dependency: 1",
+      R"pb(
+        name: "bar.proto" dependency: "foo.proto" public_dependency: 1
+      )pb",
       "bar.proto: bar.proto: OTHER: Invalid public dependency index.\n");
 }
 
@@ -5484,16 +5467,24 @@ TEST_F(ValidationErrorTest, ForeignUnimportedPackageNoCrash) {
   // include that parent package in the name (i.e. we do a relative lookup)...
   // Yes, really.
   BuildFile(
-      "name: 'foo.proto' "
-      "package: 'outer.foo' ");
+      R"pb(
+        name: 'foo.proto' package: 'outer.foo'
+      )pb");
   BuildFileWithErrors(
-      "name: 'bar.proto' "
-      "dependency: 'baz.proto' "
-      "package: 'outer.bar' "
-      "message_type { "
-      "  name: 'Bar' "
-      "  field { name:'bar' number:1 label:LABEL_OPTIONAL type_name:'foo.Foo' }"
-      "}",
+      R"pb(
+        name: 'bar.proto'
+        dependency: 'baz.proto'
+        package: 'outer.bar'
+        message_type {
+          name: 'Bar'
+          field {
+            name: 'bar'
+            number: 1
+            label: LABEL_OPTIONAL
+            type_name: 'foo.Foo'
+          }
+        }
+      )pb",
 
       "bar.proto: baz.proto: IMPORT: Import \"baz.proto\" has not been "
       "loaded.\n"
@@ -5505,16 +5496,20 @@ TEST_F(ValidationErrorTest, ForeignUnimportedPackageNoCrash) {
 
 TEST_F(ValidationErrorTest, DupeFile) {
   BuildFile(
-      "name: \"foo.proto\" "
-      "message_type { name: \"Foo\" }");
+      R"pb(
+        name: "foo.proto"
+        message_type { name: "Foo" }
+      )pb");
   // Note:  We should *not* get redundant errors about "Foo" already being
   //   defined.
   BuildFileWithErrors(
-      "name: \"foo.proto\" "
-      "message_type { name: \"Foo\" } "
-      // Add another type so that the files aren't identical (in which case
-      // there would be no error).
-      "enum_type { name: \"Bar\" }",
+      R"pb(
+        name: "foo.proto"
+        message_type { name: "Foo" }
+        # Add another type so that the files aren't identical (in which case
+        # there would be no error).
+        enum_type { name: "Bar" }
+      )pb",
 
       "foo.proto: foo.proto: OTHER: A file with this name is already in the "
       "pool.\n");
@@ -5522,19 +5517,32 @@ TEST_F(ValidationErrorTest, DupeFile) {
 
 TEST_F(ValidationErrorTest, FieldInExtensionRange) {
   BuildFileWithErrors(
-      "name: \"foo.proto\" "
-      "message_type {"
-      "  name: \"Foo\""
-      "  field { name: \"foo\" number:  9 label:LABEL_OPTIONAL type:TYPE_INT32 "
-      "}"
-      "  field { name: \"bar\" number: 10 label:LABEL_OPTIONAL type:TYPE_INT32 "
-      "}"
-      "  field { name: \"baz\" number: 19 label:LABEL_OPTIONAL type:TYPE_INT32 "
-      "}"
-      "  field { name: \"moo\" number: 20 label:LABEL_OPTIONAL type:TYPE_INT32 "
-      "}"
-      "  extension_range { start: 10 end: 20 }"
-      "}",
+      R"pb(
+        name: "foo.proto"
+        message_type {
+          name: "Foo"
+          field { name: "foo" number: 9 label: LABEL_OPTIONAL type: TYPE_INT32 }
+          field {
+            name: "bar"
+            number: 10
+            label: LABEL_OPTIONAL
+            type: TYPE_INT32
+          }
+          field {
+            name: "baz"
+            number: 19
+            label: LABEL_OPTIONAL
+            type: TYPE_INT32
+          }
+          field {
+            name: "moo"
+            number: 20
+            label: LABEL_OPTIONAL
+            type: TYPE_INT32
+          }
+          extension_range { start: 10 end: 20 }
+        }
+      )pb",
 
       "foo.proto: Foo.bar: NUMBER: Extension range 10 to 19 includes field "
       "\"bar\" (10).\n"
@@ -5545,13 +5553,15 @@ TEST_F(ValidationErrorTest, FieldInExtensionRange) {
 
 TEST_F(ValidationErrorTest, OverlappingExtensionRanges) {
   BuildFileWithErrors(
-      "name: \"foo.proto\" "
-      "message_type {"
-      "  name: \"Foo\""
-      "  extension_range { start: 10 end: 20 }"
-      "  extension_range { start: 20 end: 30 }"
-      "  extension_range { start: 19 end: 21 }"
-      "}",
+      R"pb(
+        name: "foo.proto"
+        message_type {
+          name: "Foo"
+          extension_range { start: 10 end: 20 }
+          extension_range { start: 20 end: 30 }
+          extension_range { start: 19 end: 21 }
+        }
+      )pb",
 
       "foo.proto: Foo: NUMBER: Extension range 19 to 20 overlaps with "
       "already-defined range 10 to 19.\n"
@@ -5561,13 +5571,19 @@ TEST_F(ValidationErrorTest, OverlappingExtensionRanges) {
 
 TEST_F(ValidationErrorTest, ReservedFieldError) {
   BuildFileWithErrors(
-      "name: \"foo.proto\" "
-      "message_type {"
-      "  name: \"Foo\""
-      "  field { name: \"foo\" number: 15 label:LABEL_OPTIONAL type:TYPE_INT32 "
-      "}"
-      "  reserved_range { start: 10 end: 20 }"
-      "}",
+      R"pb(
+        name: "foo.proto"
+        message_type {
+          name: "Foo"
+          field {
+            name: "foo"
+            number: 15
+            label: LABEL_OPTIONAL
+            type: TYPE_INT32
+          }
+          reserved_range { start: 10 end: 20 }
+        }
+      )pb",
 
       "foo.proto: Foo.foo: NUMBER: Field \"foo\" uses reserved number 15.\n"
       "foo.proto: Foo: NUMBER: Suggested field numbers for Foo: 1\n");
@@ -5575,12 +5591,14 @@ TEST_F(ValidationErrorTest, ReservedFieldError) {
 
 TEST_F(ValidationErrorTest, ReservedExtensionRangeError) {
   BuildFileWithErrors(
-      "name: \"foo.proto\" "
-      "message_type {"
-      "  name: \"Foo\""
-      "  extension_range { start: 10 end: 20 }"
-      "  reserved_range { start: 5 end: 15 }"
-      "}",
+      R"pb(
+        name: "foo.proto"
+        message_type {
+          name: "Foo"
+          extension_range { start: 10 end: 20 }
+          reserved_range { start: 5 end: 15 }
+        }
+      )pb",
 
       "foo.proto: Foo: NUMBER: Extension range 10 to 19"
       " overlaps with reserved range 5 to 14.\n");
@@ -5588,22 +5606,26 @@ TEST_F(ValidationErrorTest, ReservedExtensionRangeError) {
 
 TEST_F(ValidationErrorTest, ReservedExtensionRangeAdjacent) {
   BuildFile(
-      "name: \"foo.proto\" "
-      "message_type {"
-      "  name: \"Foo\""
-      "  extension_range { start: 10 end: 20 }"
-      "  reserved_range { start: 5 end: 10 }"
-      "}");
+      R"pb(
+        name: "foo.proto"
+        message_type {
+          name: "Foo"
+          extension_range { start: 10 end: 20 }
+          reserved_range { start: 5 end: 10 }
+        }
+      )pb");
 }
 
 TEST_F(ValidationErrorTest, ReservedRangeOverlap) {
   BuildFileWithErrors(
-      "name: \"foo.proto\" "
-      "message_type {"
-      "  name: \"Foo\""
-      "  reserved_range { start: 10 end: 20 }"
-      "  reserved_range { start: 5 end: 15 }"
-      "}",
+      R"pb(
+        name: "foo.proto"
+        message_type {
+          name: "Foo"
+          reserved_range { start: 10 end: 20 }
+          reserved_range { start: 5 end: 15 }
+        }
+      )pb",
 
       "foo.proto: Foo: NUMBER: Reserved range 5 to 14"
       " overlaps with already-defined range 10 to 19.\n");
@@ -5648,18 +5670,32 @@ TEST_F(ValidationErrorTest, LimitNumberOfWarnings) {
 
 TEST_F(ValidationErrorTest, ReservedNameError) {
   BuildFileWithErrors(
-      "name: \"foo.proto\" "
-      "message_type {"
-      "  name: \"Foo\""
-      "  field { name: \"foo\" number: 15 label:LABEL_OPTIONAL type:TYPE_INT32 "
-      "}"
-      "  field { name: \"bar\" number: 16 label:LABEL_OPTIONAL type:TYPE_INT32 "
-      "}"
-      "  field { name: \"baz\" number: 17 label:LABEL_OPTIONAL type:TYPE_INT32 "
-      "}"
-      "  reserved_name: \"foo\""
-      "  reserved_name: \"bar\""
-      "}",
+      R"pb(
+        name: "foo.proto"
+        message_type {
+          name: "Foo"
+          field {
+            name: "foo"
+            number: 15
+            label: LABEL_OPTIONAL
+            type: TYPE_INT32
+          }
+          field {
+            name: "bar"
+            number: 16
+            label: LABEL_OPTIONAL
+            type: TYPE_INT32
+          }
+          field {
+            name: "baz"
+            number: 17
+            label: LABEL_OPTIONAL
+            type: TYPE_INT32
+          }
+          reserved_name: "foo"
+          reserved_name: "bar"
+        }
+      )pb",
 
       "foo.proto: Foo.foo: NAME: Field name \"foo\" is reserved.\n"
       "foo.proto: Foo.bar: NAME: Field name \"bar\" is reserved.\n");
@@ -5667,33 +5703,36 @@ TEST_F(ValidationErrorTest, ReservedNameError) {
 
 TEST_F(ValidationErrorTest, ReservedNameRedundant) {
   BuildFileWithErrors(
-      "name: \"foo.proto\" "
-      "message_type {"
-      "  name: \"Foo\""
-      "  reserved_name: \"foo\""
-      "  reserved_name: \"foo\""
-      "}",
+      R"pb(
+        name: "foo.proto"
+        message_type { name: "Foo" reserved_name: "foo" reserved_name: "foo" }
+      )pb",
 
       "foo.proto: foo: NAME: Field name \"foo\" is reserved multiple times.\n");
 }
 
 TEST_F(ValidationErrorTest, ReservedFieldsDebugString) {
   const FileDescriptor* file = BuildFile(
-      "name: \"foo.proto\" "
-      "message_type {"
-      "  name: \"Foo\""
-      "  reserved_name: \"foo\""
-      "  reserved_name: \"bar\""
-      "  reserved_range { start: 5 end: 6 }"
-      "  reserved_range { start: 10 end: 20 }"
-      "}");
+      R"pb(
+        name: "foo.proto"
+        message_type {
+          name: "Foo"
+          reserved_name: "foo"
+          reserved_name: "bar"
+          reserved_range { start: 5 end: 6 }
+          reserved_range { start: 10 end: 20 }
+        }
+      )pb");
 
   ASSERT_EQ(
-      "syntax = \"proto2\";\n\n"
-      "message Foo {\n"
-      "  reserved 5, 10 to 19;\n"
-      "  reserved \"foo\", \"bar\";\n"
-      "}\n\n",
+      R"schema(syntax = "proto2";
+
+message Foo {
+  reserved 5, 10 to 19;
+  reserved "foo", "bar";
+}
+
+)schema",
       file->DebugString());
 }
 
@@ -5711,73 +5750,88 @@ TEST_F(ValidationErrorTest, ReservedFieldsDebugString2023) {
     })pb");
 
   ASSERT_EQ(
-      "edition = \"2023\";\n\n"
-      "message Foo {\n"
-      "  reserved 5, 10 to 19;\n"
-      "  reserved foo, bar;\n"
-      "}\n\n",
+      R"schema(edition = "2023";
+
+message Foo {
+  reserved 5, 10 to 19;
+  reserved foo, bar;
+}
+
+)schema",
       file->DebugString());
 }
 
 TEST_F(ValidationErrorTest, DebugStringReservedRangeMax) {
   const FileDescriptor* file = BuildFile(absl::Substitute(
-      "name: \"foo.proto\" "
-      "enum_type { "
-      "  name: \"Bar\""
-      "  value { name:\"BAR\" number:1 }"
-      "  reserved_range { start: 5 end: $0 }"
-      "}"
-      "message_type {"
-      "  name: \"Foo\""
-      "  reserved_range { start: 5 end: $1 }"
-      "}",
+      R"pb(
+        name: "foo.proto"
+        enum_type {
+          name: "Bar"
+          value { name: "BAR" number: 1 }
+          reserved_range { start: 5 end: $0 }
+        }
+        message_type {
+          name: "Foo"
+          reserved_range { start: 5 end: $1 }
+        }
+      )pb",
       std::numeric_limits<int>::max(), FieldDescriptor::kMaxNumber + 1));
 
   ASSERT_EQ(
-      "syntax = \"proto2\";\n\n"
-      "enum Bar {\n"
-      "  BAR = 1;\n"
-      "  reserved 5 to max;\n"
-      "}\n\n"
-      "message Foo {\n"
-      "  reserved 5 to max;\n"
-      "}\n\n",
+      R"schema(syntax = "proto2";
+
+enum Bar {
+  BAR = 1;
+  reserved 5 to max;
+}
+
+message Foo {
+  reserved 5 to max;
+}
+
+)schema",
       file->DebugString());
 }
 
 TEST_F(ValidationErrorTest, EnumReservedFieldError) {
   BuildFileWithErrors(
-      "name: \"foo.proto\" "
-      "enum_type {"
-      "  name: \"Foo\""
-      "  value { name:\"BAR\" number:15 }"
-      "  reserved_range { start: 10 end: 20 }"
-      "}",
+      R"pb(
+        name: "foo.proto"
+        enum_type {
+          name: "Foo"
+          value { name: "BAR" number: 15 }
+          reserved_range { start: 10 end: 20 }
+        }
+      )pb",
 
       "foo.proto: BAR: NUMBER: Enum value \"BAR\" uses reserved number 15.\n");
 }
 
 TEST_F(ValidationErrorTest, EnumNegativeReservedFieldError) {
   BuildFileWithErrors(
-      "name: \"foo.proto\" "
-      "enum_type {"
-      "  name: \"Foo\""
-      "  value { name:\"BAR\" number:-15 }"
-      "  reserved_range { start: -20 end: -10 }"
-      "}",
+      R"pb(
+        name: "foo.proto"
+        enum_type {
+          name: "Foo"
+          value { name: "BAR" number: -15 }
+          reserved_range { start: -20 end: -10 }
+        }
+      )pb",
 
       "foo.proto: BAR: NUMBER: Enum value \"BAR\" uses reserved number -15.\n");
 }
 
 TEST_F(ValidationErrorTest, EnumReservedRangeOverlap) {
   BuildFileWithErrors(
-      "name: \"foo.proto\" "
-      "enum_type {"
-      "  name: \"Foo\""
-      "  value { name:\"BAR\" number:0 }"
-      "  reserved_range { start: 10 end: 20 }"
-      "  reserved_range { start: 5 end: 15 }"
-      "}",
+      R"pb(
+        name: "foo.proto"
+        enum_type {
+          name: "Foo"
+          value { name: "BAR" number: 0 }
+          reserved_range { start: 10 end: 20 }
+          reserved_range { start: 5 end: 15 }
+        }
+      )pb",
 
       "foo.proto: Foo: NUMBER: Reserved range 5 to 15"
       " overlaps with already-defined range 10 to 20.\n");
@@ -5785,13 +5839,15 @@ TEST_F(ValidationErrorTest, EnumReservedRangeOverlap) {
 
 TEST_F(ValidationErrorTest, EnumReservedRangeOverlapByOne) {
   BuildFileWithErrors(
-      "name: \"foo.proto\" "
-      "enum_type {"
-      "  name: \"Foo\""
-      "  value { name:\"BAR\" number:0 }"
-      "  reserved_range { start: 10 end: 20 }"
-      "  reserved_range { start: 5 end: 10 }"
-      "}",
+      R"pb(
+        name: "foo.proto"
+        enum_type {
+          name: "Foo"
+          value { name: "BAR" number: 0 }
+          reserved_range { start: 10 end: 20 }
+          reserved_range { start: 5 end: 10 }
+        }
+      )pb",
 
       "foo.proto: Foo: NUMBER: Reserved range 5 to 10"
       " overlaps with already-defined range 10 to 20.\n");
@@ -5799,13 +5855,15 @@ TEST_F(ValidationErrorTest, EnumReservedRangeOverlapByOne) {
 
 TEST_F(ValidationErrorTest, EnumNegativeReservedRangeOverlap) {
   BuildFileWithErrors(
-      "name: \"foo.proto\" "
-      "enum_type {"
-      "  name: \"Foo\""
-      "  value { name:\"BAR\" number:0 }"
-      "  reserved_range { start: -20 end: -10 }"
-      "  reserved_range { start: -15 end: -5 }"
-      "}",
+      R"pb(
+        name: "foo.proto"
+        enum_type {
+          name: "Foo"
+          value { name: "BAR" number: 0 }
+          reserved_range { start: -20 end: -10 }
+          reserved_range { start: -15 end: -5 }
+        }
+      )pb",
 
       "foo.proto: Foo: NUMBER: Reserved range -15 to -5"
       " overlaps with already-defined range -20 to -10.\n");
@@ -5813,13 +5871,15 @@ TEST_F(ValidationErrorTest, EnumNegativeReservedRangeOverlap) {
 
 TEST_F(ValidationErrorTest, EnumMixedReservedRangeOverlap) {
   BuildFileWithErrors(
-      "name: \"foo.proto\" "
-      "enum_type {"
-      "  name: \"Foo\""
-      "  value { name:\"BAR\" number:20 }"
-      "  reserved_range { start: -20 end: 10 }"
-      "  reserved_range { start: -15 end: 5 }"
-      "}",
+      R"pb(
+        name: "foo.proto"
+        enum_type {
+          name: "Foo"
+          value { name: "BAR" number: 20 }
+          reserved_range { start: -20 end: 10 }
+          reserved_range { start: -15 end: 5 }
+        }
+      )pb",
 
       "foo.proto: Foo: NUMBER: Reserved range -15 to 5"
       " overlaps with already-defined range -20 to 10.\n");
@@ -5827,13 +5887,15 @@ TEST_F(ValidationErrorTest, EnumMixedReservedRangeOverlap) {
 
 TEST_F(ValidationErrorTest, EnumMixedReservedRangeOverlap2) {
   BuildFileWithErrors(
-      "name: \"foo.proto\" "
-      "enum_type {"
-      "  name: \"Foo\""
-      "  value { name:\"BAR\" number:20 }"
-      "  reserved_range { start: -20 end: 10 }"
-      "  reserved_range { start: 10 end: 10 }"
-      "}",
+      R"pb(
+        name: "foo.proto"
+        enum_type {
+          name: "Foo"
+          value { name: "BAR" number: 20 }
+          reserved_range { start: -20 end: 10 }
+          reserved_range { start: 10 end: 10 }
+        }
+      )pb",
 
       "foo.proto: Foo: NUMBER: Reserved range 10 to 10"
       " overlaps with already-defined range -20 to 10.\n");
@@ -5841,12 +5903,14 @@ TEST_F(ValidationErrorTest, EnumMixedReservedRangeOverlap2) {
 
 TEST_F(ValidationErrorTest, EnumReservedRangeStartGreaterThanEnd) {
   BuildFileWithErrors(
-      "name: \"foo.proto\" "
-      "enum_type {"
-      "  name: \"Foo\""
-      "  value { name:\"BAR\" number:20 }"
-      "  reserved_range { start: 11 end: 10 }"
-      "}",
+      R"pb(
+        name: "foo.proto"
+        enum_type {
+          name: "Foo"
+          value { name: "BAR" number: 20 }
+          reserved_range { start: 11 end: 10 }
+        }
+      )pb",
 
       "foo.proto: Foo: NUMBER: Reserved range end number must be greater"
       " than start number.\n");
@@ -5854,14 +5918,16 @@ TEST_F(ValidationErrorTest, EnumReservedRangeStartGreaterThanEnd) {
 
 TEST_F(ValidationErrorTest, EnumReservedNameError) {
   BuildFileWithErrors(
-      "name: \"foo.proto\" "
-      "enum_type {"
-      "  name: \"Foo\""
-      "  value { name:\"FOO\" number:15 }"
-      "  value { name:\"BAR\" number:15 }"
-      "  reserved_name: \"FOO\""
-      "  reserved_name: \"BAR\""
-      "}",
+      R"pb(
+        name: "foo.proto"
+        enum_type {
+          name: "Foo"
+          value { name: "FOO" number: 15 }
+          value { name: "BAR" number: 15 }
+          reserved_name: "FOO"
+          reserved_name: "BAR"
+        }
+      )pb",
 
       "foo.proto: FOO: NAME: Enum value \"FOO\" is reserved.\n"
       "foo.proto: BAR: NAME: Enum value \"BAR\" is reserved.\n");
@@ -5869,39 +5935,46 @@ TEST_F(ValidationErrorTest, EnumReservedNameError) {
 
 TEST_F(ValidationErrorTest, EnumReservedNameRedundant) {
   BuildFileWithErrors(
-      "name: \"foo.proto\" "
-      "enum_type {"
-      "  name: \"Foo\""
-      "  value { name:\"FOO\" number:15 }"
-      "  reserved_name: \"foo\""
-      "  reserved_name: \"foo\""
-      "}",
+      R"pb(
+        name: "foo.proto"
+        enum_type {
+          name: "Foo"
+          value { name: "FOO" number: 15 }
+          reserved_name: "foo"
+          reserved_name: "foo"
+        }
+      )pb",
 
       "foo.proto: foo: NAME: Enum value \"foo\" is reserved multiple times.\n");
 }
 
 TEST_F(ValidationErrorTest, EnumReservedFieldsDebugString) {
   const FileDescriptor* file = BuildFile(
-      "name: \"foo.proto\" "
-      "enum_type {"
-      "  name: \"Foo\""
-      "  value { name:\"FOO\" number:3 }"
-      "  reserved_name: \"foo\""
-      "  reserved_name: \"bar\""
-      "  reserved_range { start: -6 end: -6 }"
-      "  reserved_range { start: -5 end: -4 }"
-      "  reserved_range { start: -1 end: 1 }"
-      "  reserved_range { start: 5 end: 5 }"
-      "  reserved_range { start: 10 end: 19 }"
-      "}");
+      R"pb(
+        name: "foo.proto"
+        enum_type {
+          name: "Foo"
+          value { name: "FOO" number: 3 }
+          reserved_name: "foo"
+          reserved_name: "bar"
+          reserved_range { start: -6 end: -6 }
+          reserved_range { start: -5 end: -4 }
+          reserved_range { start: -1 end: 1 }
+          reserved_range { start: 5 end: 5 }
+          reserved_range { start: 10 end: 19 }
+        }
+      )pb");
 
   ASSERT_EQ(
-      "syntax = \"proto2\";\n\n"
-      "enum Foo {\n"
-      "  FOO = 3;\n"
-      "  reserved -6, -5 to -4, -1 to 1, 5, 10 to 19;\n"
-      "  reserved \"foo\", \"bar\";\n"
-      "}\n\n",
+      R"schema(syntax = "proto2";
+
+enum Foo {
+  FOO = 3;
+  reserved -6, -5 to -4, -1 to 1, 5, 10 to 19;
+  reserved "foo", "bar";
+}
+
+)schema",
       file->DebugString());
 }
 
@@ -5924,57 +5997,87 @@ TEST_F(ValidationErrorTest, EnumReservedFieldsDebugString2023) {
     })pb");
 
   ASSERT_EQ(
-      "edition = \"2023\";\n\n"
-      "enum Foo {\n"
-      "  option features = {\n"
-      "    enum_type: CLOSED\n"
-      "  };\n"
-      "  FOO = 3;\n"
-      "  reserved -6, -5 to -4, -1 to 1, 5, 10 to 19;\n"
-      "  reserved foo, bar;\n"
-      "}\n\n",
+      R"schema(edition = "2023";
+
+enum Foo {
+  option features = {
+    enum_type: CLOSED
+  };
+  FOO = 3;
+  reserved -6, -5 to -4, -1 to 1, 5, 10 to 19;
+  reserved foo, bar;
+}
+
+)schema",
       file->DebugString());
 }
 
 TEST_F(ValidationErrorTest, InvalidDefaults) {
   BuildFileWithErrors(
-      "name: \"foo.proto\" "
-      "message_type {"
-      "  name: \"Foo\""
-
-      // Invalid number.
-      "  field { name: \"foo\" number: 1 label: LABEL_OPTIONAL type: TYPE_INT32"
-      "          default_value: \"abc\" }"
-
-      // Empty default value.
-      "  field { name: \"bar\" number: 2 label: LABEL_OPTIONAL type: TYPE_INT32"
-      "          default_value: \"\" }"
-
-      // Invalid boolean.
-      "  field { name: \"baz\" number: 3 label: LABEL_OPTIONAL type: TYPE_BOOL"
-      "          default_value: \"abc\" }"
-
-      // Messages can't have defaults.
-      "  field { name: \"moo\" number: 4 label: LABEL_OPTIONAL type: "
-      "TYPE_MESSAGE"
-      "          default_value: \"abc\" type_name: \"Foo\" }"
-
-      // Same thing, but we don't know that this field has message type until
-      // we look up the type name.
-      "  field { name: \"mooo\" number: 5 label: LABEL_OPTIONAL"
-      "          default_value: \"abc\" type_name: \"Foo\" }"
-
-      // Repeateds can't have defaults.
-      "  field { name: \"corge\" number: 6 label: LABEL_REPEATED type: "
-      "TYPE_INT32"
-      "          default_value: \"1\" }"
-
-      // Invalid CEscaped bytes default.
-      "  field { name: \"bytes_default\" number: 7 label: LABEL_OPTIONAL "
-      "          type: TYPE_BYTES"
-      "          default_value: \"\\\\\" }"
-
-      "}",
+      R"pb(
+        name: "foo.proto"
+        message_type {
+          name: "Foo"
+          # Invalid number.
+          field {
+            name: "foo"
+            number: 1
+            label: LABEL_OPTIONAL
+            type: TYPE_INT32
+            default_value: "abc"
+          }
+          # Empty default value.
+          field {
+            name: "bar"
+            number: 2
+            label: LABEL_OPTIONAL
+            type: TYPE_INT32
+            default_value: ""
+          }
+          # Invalid boolean.
+          field {
+            name: "baz"
+            number: 3
+            label: LABEL_OPTIONAL
+            type: TYPE_BOOL
+            default_value: "abc"
+          }
+          # Messages can't have defaults.
+          field {
+            name: "moo"
+            number: 4
+            label: LABEL_OPTIONAL
+            type: TYPE_MESSAGE
+            default_value: "abc"
+            type_name: "Foo"
+          }
+          # Same thing, but we don't know that this field has message type until
+          # we look up the type name.
+          field {
+            name: "mooo"
+            number: 5
+            label: LABEL_OPTIONAL
+            default_value: "abc"
+            type_name: "Foo"
+          }
+          # Repeateds can't have defaults.
+          field {
+            name: "corge"
+            number: 6
+            label: LABEL_REPEATED
+            type: TYPE_INT32
+            default_value: "1"
+          }
+          # Invalid CEscaped bytes default.
+          field {
+            name: "bytes_default"
+            number: 7
+            label: LABEL_OPTIONAL
+            type: TYPE_BYTES
+            default_value: "\\"
+          }
+        }
+      )pb",
 
       "foo.proto: Foo.foo: DEFAULT_VALUE: Couldn't parse default value "
       "\"abc\".\n"
@@ -5994,12 +6097,18 @@ TEST_F(ValidationErrorTest, InvalidDefaults) {
 
 TEST_F(ValidationErrorTest, NegativeFieldNumber) {
   BuildFileWithErrors(
-      "name: \"foo.proto\" "
-      "message_type {"
-      "  name: \"Foo\""
-      "  field { name: \"foo\" number: -1 label:LABEL_OPTIONAL type:TYPE_INT32 "
-      "}"
-      "}",
+      R"pb(
+        name: "foo.proto"
+        message_type {
+          name: "Foo"
+          field {
+            name: "foo"
+            number: -1
+            label: LABEL_OPTIONAL
+            type: TYPE_INT32
+          }
+        }
+      )pb",
 
       "foo.proto: Foo.foo: NUMBER: Field numbers must be positive integers.\n"
       "foo.proto: Foo: NUMBER: Suggested field numbers for Foo: 1\n");
@@ -6007,12 +6116,18 @@ TEST_F(ValidationErrorTest, NegativeFieldNumber) {
 
 TEST_F(ValidationErrorTest, HugeFieldNumber) {
   BuildFileWithErrors(
-      "name: \"foo.proto\" "
-      "message_type {"
-      "  name: \"Foo\""
-      "  field { name: \"foo\" number: 0x70000000 "
-      "          label:LABEL_OPTIONAL type:TYPE_INT32 }"
-      "}",
+      R"pb(
+        name: "foo.proto"
+        message_type {
+          name: "Foo"
+          field {
+            name: "foo"
+            number: 0x70000000
+            label: LABEL_OPTIONAL
+            type: TYPE_INT32
+          }
+        }
+      )pb",
 
       "foo.proto: Foo.foo: NUMBER: Field numbers cannot be greater than "
       "536870911.\n"
@@ -6021,12 +6136,18 @@ TEST_F(ValidationErrorTest, HugeFieldNumber) {
 
 TEST_F(ValidationErrorTest, ExtensionMissingExtendee) {
   BuildFileWithErrors(
-      "name: \"foo.proto\" "
-      "message_type {"
-      "  name: \"Foo\""
-      "  extension { name: \"foo\" number: 1 label: LABEL_OPTIONAL"
-      "              type_name: \"Foo\" }"
-      "}",
+      R"pb(
+        name: "foo.proto"
+        message_type {
+          name: "Foo"
+          extension {
+            name: "foo"
+            number: 1
+            label: LABEL_OPTIONAL
+            type_name: "Foo"
+          }
+        }
+      )pb",
 
       "foo.proto: Foo.foo: EXTENDEE: FieldDescriptorProto.extendee not set for "
       "extension field.\n");
@@ -6034,16 +6155,23 @@ TEST_F(ValidationErrorTest, ExtensionMissingExtendee) {
 
 TEST_F(ValidationErrorTest, NonExtensionWithExtendee) {
   BuildFileWithErrors(
-      "name: \"foo.proto\" "
-      "message_type {"
-      "  name: \"Bar\""
-      "  extension_range { start: 1 end: 2 }"
-      "}"
-      "message_type {"
-      "  name: \"Foo\""
-      "  field { name: \"foo\" number: 1 label: LABEL_OPTIONAL"
-      "          type_name: \"Foo\" extendee: \"Bar\" }"
-      "}",
+      R"pb(
+        name: "foo.proto"
+        message_type {
+          name: "Bar"
+          extension_range { start: 1 end: 2 }
+        }
+        message_type {
+          name: "Foo"
+          field {
+            name: "foo"
+            number: 1
+            label: LABEL_OPTIONAL
+            type_name: "Foo"
+            extendee: "Bar"
+          }
+        }
+      )pb",
 
       "foo.proto: Foo.foo: EXTENDEE: FieldDescriptorProto.extendee set for "
       "non-extension field.\n");
@@ -6051,15 +6179,27 @@ TEST_F(ValidationErrorTest, NonExtensionWithExtendee) {
 
 TEST_F(ValidationErrorTest, FieldOneofIndexTooLarge) {
   BuildFileWithErrors(
-      "name: \"foo.proto\" "
-      "message_type {"
-      "  name: \"Foo\""
-      "  field { name:\"foo\" number:1 label:LABEL_OPTIONAL type:TYPE_INT32 "
-      "          oneof_index: 1 }"
-      "  field { name:\"dummy\" number:2 label:LABEL_OPTIONAL type:TYPE_INT32 "
-      "          oneof_index: 0 }"
-      "  oneof_decl { name:\"bar\" }"
-      "}",
+      R"pb(
+        name: "foo.proto"
+        message_type {
+          name: "Foo"
+          field {
+            name: "foo"
+            number: 1
+            label: LABEL_OPTIONAL
+            type: TYPE_INT32
+            oneof_index: 1
+          }
+          field {
+            name: "dummy"
+            number: 2
+            label: LABEL_OPTIONAL
+            type: TYPE_INT32
+            oneof_index: 0
+          }
+          oneof_decl { name: "bar" }
+        }
+      )pb",
 
       "foo.proto: Foo.foo: TYPE: FieldDescriptorProto.oneof_index 1 is out of "
       "range for type \"Foo\".\n");
@@ -6067,15 +6207,27 @@ TEST_F(ValidationErrorTest, FieldOneofIndexTooLarge) {
 
 TEST_F(ValidationErrorTest, FieldOneofIndexNegative) {
   BuildFileWithErrors(
-      "name: \"foo.proto\" "
-      "message_type {"
-      "  name: \"Foo\""
-      "  field { name:\"foo\" number:1 label:LABEL_OPTIONAL type:TYPE_INT32 "
-      "          oneof_index: -1 }"
-      "  field { name:\"dummy\" number:2 label:LABEL_OPTIONAL type:TYPE_INT32 "
-      "          oneof_index: 0 }"
-      "  oneof_decl { name:\"bar\" }"
-      "}",
+      R"pb(
+        name: "foo.proto"
+        message_type {
+          name: "Foo"
+          field {
+            name: "foo"
+            number: 1
+            label: LABEL_OPTIONAL
+            type: TYPE_INT32
+            oneof_index: -1
+          }
+          field {
+            name: "dummy"
+            number: 2
+            label: LABEL_OPTIONAL
+            type: TYPE_INT32
+            oneof_index: 0
+          }
+          oneof_decl { name: "bar" }
+        }
+      )pb",
 
       "foo.proto: Foo.foo: TYPE: FieldDescriptorProto.oneof_index -1 is out "
       "of "
@@ -6085,16 +6237,28 @@ TEST_F(ValidationErrorTest, FieldOneofIndexNegative) {
 TEST_F(ValidationErrorTest, OneofFieldsConsecutiveDefinition) {
   // Fields belonging to the same oneof must be defined consecutively.
   BuildFileWithErrors(
-      "name: \"foo.proto\" "
-      "message_type {"
-      "  name: \"Foo\""
-      "  field { name:\"foo1\" number: 1 label:LABEL_OPTIONAL type:TYPE_INT32 "
-      "          oneof_index: 0 }"
-      "  field { name:\"bar\" number: 2 label:LABEL_OPTIONAL type:TYPE_INT32 }"
-      "  field { name:\"foo2\" number: 3 label:LABEL_OPTIONAL type:TYPE_INT32 "
-      "          oneof_index: 0 }"
-      "  oneof_decl { name:\"foos\" }"
-      "}",
+      R"pb(
+        name: "foo.proto"
+        message_type {
+          name: "Foo"
+          field {
+            name: "foo1"
+            number: 1
+            label: LABEL_OPTIONAL
+            type: TYPE_INT32
+            oneof_index: 0
+          }
+          field { name: "bar" number: 2 label: LABEL_OPTIONAL type: TYPE_INT32 }
+          field {
+            name: "foo2"
+            number: 3
+            label: LABEL_OPTIONAL
+            type: TYPE_INT32
+            oneof_index: 0
+          }
+          oneof_decl { name: "foos" }
+        }
+      )pb",
 
       "foo.proto: Foo.bar: TYPE: Fields in the same oneof must be defined "
       "consecutively. \"bar\" cannot be defined before the completion of the "
@@ -6102,20 +6266,42 @@ TEST_F(ValidationErrorTest, OneofFieldsConsecutiveDefinition) {
 
   // Prevent interleaved fields, which belong to different oneofs.
   BuildFileWithErrors(
-      "name: \"foo2.proto\" "
-      "message_type {"
-      "  name: \"Foo2\""
-      "  field { name:\"foo1\" number: 1 label:LABEL_OPTIONAL type:TYPE_INT32 "
-      "          oneof_index: 0 }"
-      "  field { name:\"bar1\" number: 2 label:LABEL_OPTIONAL type:TYPE_INT32 "
-      "          oneof_index: 1 }"
-      "  field { name:\"foo2\" number: 3 label:LABEL_OPTIONAL type:TYPE_INT32 "
-      "          oneof_index: 0 }"
-      "  field { name:\"bar2\" number: 4 label:LABEL_OPTIONAL type:TYPE_INT32 "
-      "          oneof_index: 1 }"
-      "  oneof_decl { name:\"foos\" }"
-      "  oneof_decl { name:\"bars\" }"
-      "}",
+      R"pb(
+        name: "foo2.proto"
+        message_type {
+          name: "Foo2"
+          field {
+            name: "foo1"
+            number: 1
+            label: LABEL_OPTIONAL
+            type: TYPE_INT32
+            oneof_index: 0
+          }
+          field {
+            name: "bar1"
+            number: 2
+            label: LABEL_OPTIONAL
+            type: TYPE_INT32
+            oneof_index: 1
+          }
+          field {
+            name: "foo2"
+            number: 3
+            label: LABEL_OPTIONAL
+            type: TYPE_INT32
+            oneof_index: 0
+          }
+          field {
+            name: "bar2"
+            number: 4
+            label: LABEL_OPTIONAL
+            type: TYPE_INT32
+            oneof_index: 1
+          }
+          oneof_decl { name: "foos" }
+          oneof_decl { name: "bars" }
+        }
+      )pb",
       "foo2.proto: Foo2.bar1: TYPE: Fields in the same oneof must be defined "
       "consecutively. \"bar1\" cannot be defined before the completion of the "
       "\"foos\" oneof definition.\n"
@@ -6125,19 +6311,36 @@ TEST_F(ValidationErrorTest, OneofFieldsConsecutiveDefinition) {
 
   // Another case for normal fields and different oneof fields interleave.
   BuildFileWithErrors(
-      "name: \"foo3.proto\" "
-      "message_type {"
-      "  name: \"Foo3\""
-      "  field { name:\"foo1\" number: 1 label:LABEL_OPTIONAL type:TYPE_INT32 "
-      "          oneof_index: 0 }"
-      "  field { name:\"bar1\" number: 2 label:LABEL_OPTIONAL type:TYPE_INT32 "
-      "          oneof_index: 1 }"
-      "  field { name:\"baz\" number: 3 label:LABEL_OPTIONAL type:TYPE_INT32 }"
-      "  field { name:\"foo2\" number: 4 label:LABEL_OPTIONAL type:TYPE_INT32 "
-      "          oneof_index: 0 }"
-      "  oneof_decl { name:\"foos\" }"
-      "  oneof_decl { name:\"bars\" }"
-      "}",
+      R"pb(
+        name: "foo3.proto"
+        message_type {
+          name: "Foo3"
+          field {
+            name: "foo1"
+            number: 1
+            label: LABEL_OPTIONAL
+            type: TYPE_INT32
+            oneof_index: 0
+          }
+          field {
+            name: "bar1"
+            number: 2
+            label: LABEL_OPTIONAL
+            type: TYPE_INT32
+            oneof_index: 1
+          }
+          field { name: "baz" number: 3 label: LABEL_OPTIONAL type: TYPE_INT32 }
+          field {
+            name: "foo2"
+            number: 4
+            label: LABEL_OPTIONAL
+            type: TYPE_INT32
+            oneof_index: 0
+          }
+          oneof_decl { name: "foos" }
+          oneof_decl { name: "bars" }
+        }
+      )pb",
       "foo3.proto: Foo3.baz: TYPE: Fields in the same oneof must be defined "
       "consecutively. \"baz\" cannot be defined before the completion of the "
       "\"foos\" oneof definition.\n");
@@ -6234,17 +6437,24 @@ TEST_F(ValidationErrorTest, FieldNumberConflict) {
 
 TEST_F(ValidationErrorTest, BadMessageSetExtensionType) {
   BuildFileWithErrors(
-      "name: \"foo.proto\" "
-      "message_type {"
-      "  name: \"MessageSet\""
-      "  options { message_set_wire_format: true }"
-      "  extension_range { start: 4 end: 5 }"
-      "}"
-      "message_type {"
-      "  name: \"Foo\""
-      "  extension { name:\"foo\" number:4 label:LABEL_OPTIONAL type:TYPE_INT32"
-      "              extendee: \"MessageSet\" }"
-      "}",
+      R"pb(
+        name: "foo.proto"
+        message_type {
+          name: "MessageSet"
+          options { message_set_wire_format: true }
+          extension_range { start: 4 end: 5 }
+        }
+        message_type {
+          name: "Foo"
+          extension {
+            name: "foo"
+            number: 4
+            label: LABEL_OPTIONAL
+            type: TYPE_INT32
+            extendee: "MessageSet"
+          }
+        }
+      )pb",
 
       "foo.proto: Foo.foo: TYPE: Extensions of MessageSets must be optional "
       "messages.\n");
@@ -6252,18 +6462,25 @@ TEST_F(ValidationErrorTest, BadMessageSetExtensionType) {
 
 TEST_F(ValidationErrorTest, BadMessageSetExtensionLabel) {
   BuildFileWithErrors(
-      "name: \"foo.proto\" "
-      "message_type {"
-      "  name: \"MessageSet\""
-      "  options { message_set_wire_format: true }"
-      "  extension_range { start: 4 end: 5 }"
-      "}"
-      "message_type {"
-      "  name: \"Foo\""
-      "  extension { name:\"foo\" number:4 label:LABEL_REPEATED "
-      "type:TYPE_MESSAGE"
-      "              type_name: \"Foo\" extendee: \"MessageSet\" }"
-      "}",
+      R"pb(
+        name: "foo.proto"
+        message_type {
+          name: "MessageSet"
+          options { message_set_wire_format: true }
+          extension_range { start: 4 end: 5 }
+        }
+        message_type {
+          name: "Foo"
+          extension {
+            name: "foo"
+            number: 4
+            label: LABEL_REPEATED
+            type: TYPE_MESSAGE
+            type_name: "Foo"
+            extendee: "MessageSet"
+          }
+        }
+      )pb",
 
       "foo.proto: Foo.foo: TYPE: Extensions of MessageSets must be optional "
       "messages.\n");
@@ -6271,12 +6488,14 @@ TEST_F(ValidationErrorTest, BadMessageSetExtensionLabel) {
 
 TEST_F(ValidationErrorTest, FieldInMessageSet) {
   BuildFileWithErrors(
-      "name: \"foo.proto\" "
-      "message_type {"
-      "  name: \"Foo\""
-      "  options { message_set_wire_format: true }"
-      "  field { name: \"foo\" number: 1 label:LABEL_OPTIONAL type:TYPE_INT32 }"
-      "}",
+      R"pb(
+        name: "foo.proto"
+        message_type {
+          name: "Foo"
+          options { message_set_wire_format: true }
+          field { name: "foo" number: 1 label: LABEL_OPTIONAL type: TYPE_INT32 }
+        }
+      )pb",
 
       "foo.proto: Foo.foo: NAME: MessageSets cannot have fields, only "
       "extensions.\n");
@@ -6284,22 +6503,26 @@ TEST_F(ValidationErrorTest, FieldInMessageSet) {
 
 TEST_F(ValidationErrorTest, NegativeExtensionRangeNumber) {
   BuildFileWithErrors(
-      "name: \"foo.proto\" "
-      "message_type {"
-      "  name: \"Foo\""
-      "  extension_range { start: -10 end: -1 }"
-      "}",
+      R"pb(
+        name: "foo.proto"
+        message_type {
+          name: "Foo"
+          extension_range { start: -10 end: -1 }
+        }
+      )pb",
 
       "foo.proto: Foo: NUMBER: Extension numbers must be positive integers.\n");
 }
 
 TEST_F(ValidationErrorTest, HugeExtensionRangeNumber) {
   BuildFileWithErrors(
-      "name: \"foo.proto\" "
-      "message_type {"
-      "  name: \"Foo\""
-      "  extension_range { start: 1 end: 0x70000000 }"
-      "}",
+      R"pb(
+        name: "foo.proto"
+        message_type {
+          name: "Foo"
+          extension_range { start: 1 end: 0x70000000 }
+        }
+      )pb",
 
       "foo.proto: Foo: NUMBER: Extension numbers cannot be greater than "
       "536870911.\n");
@@ -6307,12 +6530,14 @@ TEST_F(ValidationErrorTest, HugeExtensionRangeNumber) {
 
 TEST_F(ValidationErrorTest, ExtensionRangeEndBeforeStart) {
   BuildFileWithErrors(
-      "name: \"foo.proto\" "
-      "message_type {"
-      "  name: \"Foo\""
-      "  extension_range { start: 10 end: 10 }"
-      "  extension_range { start: 10 end: 5 }"
-      "}",
+      R"pb(
+        name: "foo.proto"
+        message_type {
+          name: "Foo"
+          extension_range { start: 10 end: 10 }
+          extension_range { start: 10 end: 5 }
+        }
+      )pb",
 
       "foo.proto: Foo: NUMBER: Extension range end number must be greater than "
       "start number.\n"
@@ -6322,19 +6547,24 @@ TEST_F(ValidationErrorTest, ExtensionRangeEndBeforeStart) {
 
 TEST_F(ValidationErrorTest, EmptyEnum) {
   BuildFileWithErrors(
-      "name: \"foo.proto\" "
-      "enum_type { name: \"Foo\" }"
-      // Also use the empty enum in a message to make sure there are no crashes
-      // during validation (possible if the code attempts to derive a default
-      // value for the field).
-      "message_type {"
-      "  name: \"Bar\""
-      "  field { name: \"foo\" number: 1 label:LABEL_OPTIONAL "
-      "type_name:\"Foo\" }"
-      "  field { name: \"bar\" number: 2 label:LABEL_OPTIONAL "
-      "type_name:\"Foo\" "
-      "          default_value: \"NO_SUCH_VALUE\" }"
-      "}",
+      R"pb(
+        name: "foo.proto"
+        enum_type { name: "Foo" }
+        # Also use the empty enum in a message to make sure there are no crashes
+        # during validation (possible if the code attempts to derive a default
+        # value for the field).
+        message_type {
+          name: "Bar"
+          field { name: "foo" number: 1 label: LABEL_OPTIONAL type_name: "Foo" }
+          field {
+            name: "bar"
+            number: 2
+            label: LABEL_OPTIONAL
+            type_name: "Foo"
+            default_value: "NO_SUCH_VALUE"
+          }
+        }
+      )pb",
 
       "foo.proto: Foo: NAME: Enums must contain at least one value.\n"
       "foo.proto: Bar.bar: DEFAULT_VALUE: Enum type \"Foo\" has no value named "
@@ -6343,40 +6573,62 @@ TEST_F(ValidationErrorTest, EmptyEnum) {
 
 TEST_F(ValidationErrorTest, UndefinedExtendee) {
   BuildFileWithErrors(
-      "name: \"foo.proto\" "
-      "message_type {"
-      "  name: \"Foo\""
-      "  extension { name:\"foo\" number:1 label:LABEL_OPTIONAL type:TYPE_INT32"
-      "              extendee: \"Bar\" }"
-      "}",
+      R"pb(
+        name: "foo.proto"
+        message_type {
+          name: "Foo"
+          extension {
+            name: "foo"
+            number: 1
+            label: LABEL_OPTIONAL
+            type: TYPE_INT32
+            extendee: "Bar"
+          }
+        }
+      )pb",
 
       "foo.proto: Foo.foo: EXTENDEE: \"Bar\" is not defined.\n");
 }
 
 TEST_F(ValidationErrorTest, NonMessageExtendee) {
   BuildFileWithErrors(
-      "name: \"foo.proto\" "
-      "enum_type { name: \"Bar\" value { name:\"DUMMY\" number:0 } }"
-      "message_type {"
-      "  name: \"Foo\""
-      "  extension { name:\"foo\" number:1 label:LABEL_OPTIONAL type:TYPE_INT32"
-      "              extendee: \"Bar\" }"
-      "}",
+      R"pb(
+        name: "foo.proto"
+        enum_type {
+          name: "Bar"
+          value { name: "DUMMY" number: 0 }
+        }
+        message_type {
+          name: "Foo"
+          extension {
+            name: "foo"
+            number: 1
+            label: LABEL_OPTIONAL
+            type: TYPE_INT32
+            extendee: "Bar"
+          }
+        }
+      )pb",
 
       "foo.proto: Foo.foo: EXTENDEE: \"Bar\" is not a message type.\n");
 }
 
 TEST_F(ValidationErrorTest, NotAnExtensionNumber) {
   BuildFileWithErrors(
-      "name: \"foo.proto\" "
-      "message_type {"
-      "  name: \"Bar\""
-      "}"
-      "message_type {"
-      "  name: \"Foo\""
-      "  extension { name:\"foo\" number:1 label:LABEL_OPTIONAL type:TYPE_INT32"
-      "              extendee: \"Bar\" }"
-      "}",
+      R"pb(
+        name: "foo.proto"
+        message_type { name: "Bar" }
+        message_type {
+          name: "Foo"
+          extension {
+            name: "foo"
+            number: 1
+            label: LABEL_OPTIONAL
+            type: TYPE_INT32
+            extendee: "Bar"
+          }
+        }
+      )pb",
 
       "foo.proto: Foo.foo: NUMBER: \"Bar\" does not declare 1 as an extension "
       "number.\n");
@@ -6384,32 +6636,36 @@ TEST_F(ValidationErrorTest, NotAnExtensionNumber) {
 
 TEST_F(ValidationErrorTest, RequiredExtension) {
   BuildFileWithErrors(
-      "name: \"foo.proto\" "
-      "message_type {"
-      "  name: \"Bar\""
-      "  extension_range { start: 1000 end: 10000 }"
-      "}"
-      "message_type {"
-      "  name: \"Foo\""
-      "  extension {"
-      "    name:\"foo\""
-      "    number:1000"
-      "    label:LABEL_REQUIRED"
-      "    type:TYPE_INT32"
-      "    extendee: \"Bar\""
-      "  }"
-      "}",
+      R"pb(
+        name: "foo.proto"
+        message_type {
+          name: "Bar"
+          extension_range { start: 1000 end: 10000 }
+        }
+        message_type {
+          name: "Foo"
+          extension {
+            name: "foo"
+            number: 1000
+            label: LABEL_REQUIRED
+            type: TYPE_INT32
+            extendee: "Bar"
+          }
+        }
+      )pb",
 
       "foo.proto: Foo.foo: TYPE: The extension Foo.foo cannot be required.\n");
 }
 
 TEST_F(ValidationErrorTest, UndefinedFieldType) {
   BuildFileWithErrors(
-      "name: \"foo.proto\" "
-      "message_type {"
-      "  name: \"Foo\""
-      "  field { name:\"foo\" number:1 label:LABEL_OPTIONAL type_name:\"Bar\" }"
-      "}",
+      R"pb(
+        name: "foo.proto"
+        message_type {
+          name: "Foo"
+          field { name: "foo" number: 1 label: LABEL_OPTIONAL type_name: "Bar" }
+        }
+      )pb",
 
       "foo.proto: Foo.foo: TYPE: \"Bar\" is not defined.\n");
 }
@@ -6420,41 +6676,57 @@ TEST_F(ValidationErrorTest, UndefinedFieldTypeWithDefault) {
   // error message. We want this input to yield a validation error instead,
   // since the unknown type is the primary problem.
   BuildFileWithErrors(
-      "name: \"foo.proto\" "
-      "message_type {"
-      "  name: \"Foo\""
-      "  field { name:\"foo\" number:1 label:LABEL_OPTIONAL type_name:\"int\" "
-      "          default_value:\"1\" }"
-      "}",
+      R"pb(
+        name: "foo.proto"
+        message_type {
+          name: "Foo"
+          field {
+            name: "foo"
+            number: 1
+            label: LABEL_OPTIONAL
+            type_name: "int"
+            default_value: "1"
+          }
+        }
+      )pb",
 
       "foo.proto: Foo.foo: TYPE: \"int\" is not defined.\n");
 }
 
 TEST_F(ValidationErrorTest, UndefinedNestedFieldType) {
   BuildFileWithErrors(
-      "name: \"foo.proto\" "
-      "message_type {"
-      "  name: \"Foo\""
-      "  nested_type { name:\"Baz\" }"
-      "  field { name:\"foo\" number:1"
-      "          label:LABEL_OPTIONAL"
-      "          type_name:\"Foo.Baz.Bar\" }"
-      "}",
+      R"pb(
+        name: "foo.proto"
+        message_type {
+          name: "Foo"
+          nested_type { name: "Baz" }
+          field {
+            name: "foo"
+            number: 1
+            label: LABEL_OPTIONAL
+            type_name: "Foo.Baz.Bar"
+          }
+        }
+      )pb",
 
       "foo.proto: Foo.foo: TYPE: \"Foo.Baz.Bar\" is not defined.\n");
 }
 
 TEST_F(ValidationErrorTest, FieldTypeDefinedInUndeclaredDependency) {
   BuildFile(
-      "name: \"bar.proto\" "
-      "message_type { name: \"Bar\" } ");
+      R"pb(
+        name: "bar.proto"
+        message_type { name: "Bar" }
+      )pb");
 
   BuildFileWithErrors(
-      "name: \"foo.proto\" "
-      "message_type {"
-      "  name: \"Foo\""
-      "  field { name:\"foo\" number:1 label:LABEL_OPTIONAL type_name:\"Bar\" }"
-      "}",
+      R"pb(
+        name: "foo.proto"
+        message_type {
+          name: "Foo"
+          field { name: "foo" number: 1 label: LABEL_OPTIONAL type_name: "Bar" }
+        }
+      )pb",
       "foo.proto: Foo.foo: TYPE: \"Bar\" seems to be defined in \"bar.proto\", "
       "which is not imported by \"foo.proto\".  To use it here, please add the "
       "necessary import.\n");
@@ -6476,20 +6748,25 @@ TEST_F(ValidationErrorTest, FieldTypeDefinedInIndirectDependency) {
   // }
   //
   BuildFile(
-      "name: \"bar.proto\" "
-      "message_type { name: \"Bar\" }");
+      R"pb(
+        name: "bar.proto"
+        message_type { name: "Bar" }
+      )pb");
 
   BuildFile(
-      "name: \"forward.proto\""
-      "dependency: \"bar.proto\"");
+      R"pb(
+        name: "forward.proto" dependency: "bar.proto"
+      )pb");
 
   BuildFileWithErrors(
-      "name: \"foo.proto\" "
-      "dependency: \"forward.proto\" "
-      "message_type {"
-      "  name: \"Foo\""
-      "  field { name:\"foo\" number:1 label:LABEL_OPTIONAL type_name:\"Bar\" }"
-      "}",
+      R"pb(
+        name: "foo.proto"
+        dependency: "forward.proto"
+        message_type {
+          name: "Foo"
+          field { name: "foo" number: 1 label: LABEL_OPTIONAL type_name: "Bar" }
+        }
+      )pb",
       "foo.proto: Foo.foo: TYPE: \"Bar\" seems to be defined in \"bar.proto\", "
       "which is not imported by \"foo.proto\".  To use it here, please add the "
       "necessary import.\n");
@@ -6513,21 +6790,25 @@ TEST_F(ValidationErrorTest, FieldTypeDefinedInPublicDependency) {
   // }
   //
   BuildFile(
-      "name: \"bar.proto\" "
-      "message_type { name: \"Bar\" }");
+      R"pb(
+        name: "bar.proto"
+        message_type { name: "Bar" }
+      )pb");
 
   BuildFile(
-      "name: \"forward.proto\""
-      "dependency: \"bar.proto\" "
-      "public_dependency: 0");
+      R"pb(
+        name: "forward.proto" dependency: "bar.proto" public_dependency: 0
+      )pb");
 
   BuildFile(
-      "name: \"foo.proto\" "
-      "dependency: \"forward.proto\" "
-      "message_type {"
-      "  name: \"Foo\""
-      "  field { name:\"foo\" number:1 label:LABEL_OPTIONAL type_name:\"Bar\" }"
-      "}");
+      R"pb(
+        name: "foo.proto"
+        dependency: "forward.proto"
+        message_type {
+          name: "Foo"
+          field { name: "foo" number: 1 label: LABEL_OPTIONAL type_name: "Bar" }
+        }
+      )pb");
 }
 
 TEST_F(ValidationErrorTest, FieldTypeDefinedInTransitivePublicDependency) {
@@ -6549,26 +6830,32 @@ TEST_F(ValidationErrorTest, FieldTypeDefinedInTransitivePublicDependency) {
   // }
   //
   BuildFile(
-      "name: \"bar.proto\" "
-      "message_type { name: \"Bar\" }");
+      R"pb(
+        name: "bar.proto"
+        message_type { name: "Bar" }
+      )pb");
 
   BuildFile(
-      "name: \"forward.proto\""
-      "dependency: \"bar.proto\" "
-      "public_dependency: 0");
+      R"pb(
+        name: "forward.proto" dependency: "bar.proto" public_dependency: 0
+      )pb");
 
   BuildFile(
-      "name: \"forward2.proto\""
-      "dependency: \"forward.proto\" "
-      "public_dependency: 0");
+      R"pb(
+        name: "forward2.proto"
+        dependency: "forward.proto"
+        public_dependency: 0
+      )pb");
 
   BuildFile(
-      "name: \"foo.proto\" "
-      "dependency: \"forward2.proto\" "
-      "message_type {"
-      "  name: \"Foo\""
-      "  field { name:\"foo\" number:1 label:LABEL_OPTIONAL type_name:\"Bar\" }"
-      "}");
+      R"pb(
+        name: "foo.proto"
+        dependency: "forward2.proto"
+        message_type {
+          name: "Foo"
+          field { name: "foo" number: 1 label: LABEL_OPTIONAL type_name: "Bar" }
+        }
+      )pb");
 }
 
 TEST_F(ValidationErrorTest,
@@ -6593,25 +6880,32 @@ TEST_F(ValidationErrorTest,
   // }
   //
   BuildFile(
-      "name: \"bar.proto\" "
-      "message_type { name: \"Bar\" }");
+      R"pb(
+        name: "bar.proto"
+        message_type { name: "Bar" }
+      )pb");
 
   BuildFile(
-      "name: \"forward.proto\""
-      "dependency: \"bar.proto\"");
+      R"pb(
+        name: "forward.proto" dependency: "bar.proto"
+      )pb");
 
   BuildFile(
-      "name: \"forward2.proto\""
-      "dependency: \"forward.proto\" "
-      "public_dependency: 0");
+      R"pb(
+        name: "forward2.proto"
+        dependency: "forward.proto"
+        public_dependency: 0
+      )pb");
 
   BuildFileWithErrors(
-      "name: \"foo.proto\" "
-      "dependency: \"forward2.proto\" "
-      "message_type {"
-      "  name: \"Foo\""
-      "  field { name:\"foo\" number:1 label:LABEL_OPTIONAL type_name:\"Bar\" }"
-      "}",
+      R"pb(
+        name: "foo.proto"
+        dependency: "forward2.proto"
+        message_type {
+          name: "Foo"
+          field { name: "foo" number: 1 label: LABEL_OPTIONAL type_name: "Bar" }
+        }
+      )pb",
       "foo.proto: Foo.foo: TYPE: \"Bar\" seems to be defined in \"bar.proto\", "
       "which is not imported by \"foo.proto\".  To use it here, please add the "
       "necessary import.\n");
@@ -6821,17 +7115,23 @@ TEST_F(ValidationErrorTest, SearchMostLocalFirst) {
   // fail, and ten try "Bar.Baz" and succeed, even though "Bar" should actually
   // refer to the inner Bar, not the outer one.
   BuildFileWithErrors(
-      "name: \"foo.proto\" "
-      "message_type {"
-      "  name: \"Bar\""
-      "  nested_type { name: \"Baz\" }"
-      "}"
-      "message_type {"
-      "  name: \"Foo\""
-      "  nested_type { name: \"Bar\" }"
-      "  field { name:\"baz\" number:1 label:LABEL_OPTIONAL"
-      "          type_name:\"Bar.Baz\" }"
-      "}",
+      R"pb(
+        name: "foo.proto"
+        message_type {
+          name: "Bar"
+          nested_type { name: "Baz" }
+        }
+        message_type {
+          name: "Foo"
+          nested_type { name: "Bar" }
+          field {
+            name: "baz"
+            number: 1
+            label: LABEL_OPTIONAL
+            type_name: "Bar.Baz"
+          }
+        }
+      )pb",
 
       "foo.proto: Foo.baz: TYPE: \"Bar.Baz\" is resolved to \"Foo.Bar.Baz\","
       " which is not defined. The innermost scope is searched first in name "
@@ -6844,17 +7144,23 @@ TEST_F(ValidationErrorTest, SearchMostLocalFirst2) {
   // proceeds to find the outer one because the inner one's not an
   // aggregate.
   BuildFile(
-      "name: \"foo.proto\" "
-      "message_type {"
-      "  name: \"Bar\""
-      "  nested_type { name: \"Baz\" }"
-      "}"
-      "message_type {"
-      "  name: \"Foo\""
-      "  field { name: \"Bar\" number:1 type:TYPE_BYTES } "
-      "  field { name:\"baz\" number:2 label:LABEL_OPTIONAL"
-      "          type_name:\"Bar.Baz\" }"
-      "}");
+      R"pb(
+        name: "foo.proto"
+        message_type {
+          name: "Bar"
+          nested_type { name: "Baz" }
+        }
+        message_type {
+          name: "Foo"
+          field { name: "Bar" number: 1 type: TYPE_BYTES }
+          field {
+            name: "baz"
+            number: 2
+            label: LABEL_OPTIONAL
+            type_name: "Bar.Baz"
+          }
+        }
+      )pb");
 }
 
 TEST_F(ValidationErrorTest, PackageOriginallyDeclaredInTransitiveDependent) {
@@ -6880,22 +7186,31 @@ TEST_F(ValidationErrorTest, PackageOriginallyDeclaredInTransitiveDependent) {
   // insures that this does not prevent it from finding "foo.bar".
 
   BuildFile(
-      "name: \"foo.proto\" "
-      "package: \"foo.bar\" ");
+      R"pb(
+        name: "foo.proto" package: "foo.bar"
+      )pb");
   BuildFile(
-      "name: \"bar.proto\" "
-      "package: \"foo.bar\" "
-      "dependency: \"foo.proto\" "
-      "message_type { name: \"Bar\" }");
+      R"pb(
+        name: "bar.proto"
+        package: "foo.bar"
+        dependency: "foo.proto"
+        message_type { name: "Bar" }
+      )pb");
   BuildFile(
-      "name: \"baz.proto\" "
-      "package: \"foo\" "
-      "dependency: \"bar.proto\" "
-      "message_type { "
-      "  name: \"Baz\" "
-      "  field { name:\"moo\" number:1 label:LABEL_OPTIONAL "
-      "          type_name:\"bar.Bar\" }"
-      "}");
+      R"pb(
+        name: "baz.proto"
+        package: "foo"
+        dependency: "bar.proto"
+        message_type {
+          name: "Baz"
+          field {
+            name: "moo"
+            number: 1
+            label: LABEL_OPTIONAL
+            type_name: "bar.Bar"
+          }
+        }
+      )pb");
 }
 
 TEST_F(ValidationErrorTest,
@@ -6959,79 +7274,123 @@ TEST_F(ValidationErrorTest,
 
 TEST_F(ValidationErrorTest, FieldTypeNotAType) {
   BuildFileWithErrors(
-      "name: \"foo.proto\" "
-      "message_type {"
-      "  name: \"Foo\""
-      "  field { name:\"foo\" number:1 label:LABEL_OPTIONAL "
-      "          type_name:\".Foo.bar\" }"
-      "  field { name:\"bar\" number:2 label:LABEL_OPTIONAL type:TYPE_INT32 }"
-      "}",
+      R"pb(
+        name: "foo.proto"
+        message_type {
+          name: "Foo"
+          field {
+            name: "foo"
+            number: 1
+            label: LABEL_OPTIONAL
+            type_name: ".Foo.bar"
+          }
+          field { name: "bar" number: 2 label: LABEL_OPTIONAL type: TYPE_INT32 }
+        }
+      )pb",
 
       "foo.proto: Foo.foo: TYPE: \".Foo.bar\" is not a type.\n");
 }
 
 TEST_F(ValidationErrorTest, RelativeFieldTypeNotAType) {
   BuildFileWithErrors(
-      "name: \"foo.proto\" "
-      "message_type {"
-      "  nested_type {"
-      "    name: \"Bar\""
-      "    field { name:\"Baz\" number:2 label:LABEL_OPTIONAL type:TYPE_INT32 }"
-      "  }"
-      "  name: \"Foo\""
-      "  field { name:\"foo\" number:1 label:LABEL_OPTIONAL "
-      "          type_name:\"Bar.Baz\" }"
-      "}",
+      R"pb(
+        name: "foo.proto"
+        message_type {
+          nested_type {
+            name: "Bar"
+            field {
+              name: "Baz"
+              number: 2
+              label: LABEL_OPTIONAL
+              type: TYPE_INT32
+            }
+          }
+          name: "Foo"
+          field {
+            name: "foo"
+            number: 1
+            label: LABEL_OPTIONAL
+            type_name: "Bar.Baz"
+          }
+        }
+      )pb",
       "foo.proto: Foo.foo: TYPE: \"Bar.Baz\" is not a type.\n");
 }
 
 TEST_F(ValidationErrorTest, FieldTypeMayBeItsName) {
   BuildFile(
-      "name: \"foo.proto\" "
-      "message_type {"
-      "  name: \"Bar\""
-      "}"
-      "message_type {"
-      "  name: \"Foo\""
-      "  field { name:\"Bar\" number:1 label:LABEL_OPTIONAL type_name:\"Bar\" }"
-      "}");
+      R"pb(
+        name: "foo.proto"
+        message_type { name: "Bar" }
+        message_type {
+          name: "Foo"
+          field { name: "Bar" number: 1 label: LABEL_OPTIONAL type_name: "Bar" }
+        }
+      )pb");
 }
 
 TEST_F(ValidationErrorTest, EnumFieldTypeIsMessage) {
   BuildFileWithErrors(
-      "name: \"foo.proto\" "
-      "message_type { name: \"Bar\" } "
-      "message_type {"
-      "  name: \"Foo\""
-      "  field { name:\"foo\" number:1 label:LABEL_OPTIONAL type:TYPE_ENUM"
-      "          type_name:\"Bar\" }"
-      "}",
+      R"pb(
+        name: "foo.proto"
+        message_type { name: "Bar" }
+        message_type {
+          name: "Foo"
+          field {
+            name: "foo"
+            number: 1
+            label: LABEL_OPTIONAL
+            type: TYPE_ENUM
+            type_name: "Bar"
+          }
+        }
+      )pb",
 
       "foo.proto: Foo.foo: TYPE: \"Bar\" is not an enum type.\n");
 }
 
 TEST_F(ValidationErrorTest, MessageFieldTypeIsEnum) {
   BuildFileWithErrors(
-      "name: \"foo.proto\" "
-      "enum_type { name: \"Bar\" value { name:\"DUMMY\" number:0 } } "
-      "message_type {"
-      "  name: \"Foo\""
-      "  field { name:\"foo\" number:1 label:LABEL_OPTIONAL type:TYPE_MESSAGE"
-      "          type_name:\"Bar\" }"
-      "}",
+      R"pb(
+        name: "foo.proto"
+        enum_type {
+          name: "Bar"
+          value { name: "DUMMY" number: 0 }
+        }
+        message_type {
+          name: "Foo"
+          field {
+            name: "foo"
+            number: 1
+            label: LABEL_OPTIONAL
+            type: TYPE_MESSAGE
+            type_name: "Bar"
+          }
+        }
+      )pb",
 
       "foo.proto: Foo.foo: TYPE: \"Bar\" is not a message type.\n");
 }
 
 TEST_F(ValidationErrorTest, BadEnumDefaultValue) {
   BuildFileWithErrors(
-      "name: \"foo.proto\" "
-      "enum_type { name: \"Bar\" value { name:\"DUMMY\" number:0 } } "
-      "message_type {"
-      "  name: \"Foo\""
-      "  field { name:\"foo\" number:1 label:LABEL_OPTIONAL type_name:\"Bar\""
-      "          default_value:\"NO_SUCH_VALUE\" }"
-      "}",
+      R"pb(
+        name: "foo.proto"
+        enum_type {
+          name: "Bar"
+          value { name: "DUMMY" number: 0 }
+        }
+        message_type {
+          name: "Foo"
+          field {
+            name: "foo"
+            number: 1
+            label: LABEL_OPTIONAL
+            type_name: "Bar"
+            default_value: "NO_SUCH_VALUE"
+          }
+        }
+      )pb",
 
       "foo.proto: Foo.foo: DEFAULT_VALUE: Enum type \"Bar\" has no value named "
       "\"NO_SUCH_VALUE\".\n");
@@ -7039,13 +7398,23 @@ TEST_F(ValidationErrorTest, BadEnumDefaultValue) {
 
 TEST_F(ValidationErrorTest, EnumDefaultValueIsInteger) {
   BuildFileWithErrors(
-      "name: \"foo.proto\" "
-      "enum_type { name: \"Bar\" value { name:\"DUMMY\" number:0 } } "
-      "message_type {"
-      "  name: \"Foo\""
-      "  field { name:\"foo\" number:1 label:LABEL_OPTIONAL type_name:\"Bar\""
-      "          default_value:\"0\" }"
-      "}",
+      R"pb(
+        name: "foo.proto"
+        enum_type {
+          name: "Bar"
+          value { name: "DUMMY" number: 0 }
+        }
+        message_type {
+          name: "Foo"
+          field {
+            name: "foo"
+            number: 1
+            label: LABEL_OPTIONAL
+            type_name: "Bar"
+            default_value: "0"
+          }
+        }
+      )pb",
 
       "foo.proto: Foo.foo: DEFAULT_VALUE: Default value for an enum field must "
       "be an identifier.\n");
@@ -7053,23 +7422,37 @@ TEST_F(ValidationErrorTest, EnumDefaultValueIsInteger) {
 
 TEST_F(ValidationErrorTest, PrimitiveWithTypeName) {
   BuildFileWithErrors(
-      "name: \"foo.proto\" "
-      "message_type {"
-      "  name: \"Foo\""
-      "  field { name:\"foo\" number:1 label:LABEL_OPTIONAL type:TYPE_INT32"
-      "          type_name:\"Foo\" }"
-      "}",
+      R"pb(
+        name: "foo.proto"
+        message_type {
+          name: "Foo"
+          field {
+            name: "foo"
+            number: 1
+            label: LABEL_OPTIONAL
+            type: TYPE_INT32
+            type_name: "Foo"
+          }
+        }
+      )pb",
 
       "foo.proto: Foo.foo: TYPE: Field with primitive type has type_name.\n");
 }
 
 TEST_F(ValidationErrorTest, NonPrimitiveWithoutTypeName) {
   BuildFileWithErrors(
-      "name: \"foo.proto\" "
-      "message_type {"
-      "  name: \"Foo\""
-      "  field { name:\"foo\" number:1 label:LABEL_OPTIONAL type:TYPE_MESSAGE }"
-      "}",
+      R"pb(
+        name: "foo.proto"
+        message_type {
+          name: "Foo"
+          field {
+            name: "foo"
+            number: 1
+            label: LABEL_OPTIONAL
+            type: TYPE_MESSAGE
+          }
+        }
+      )pb",
 
       "foo.proto: Foo.foo: TYPE: Field with message or enum type missing "
       "type_name.\n");
@@ -7077,24 +7460,33 @@ TEST_F(ValidationErrorTest, NonPrimitiveWithoutTypeName) {
 
 TEST_F(ValidationErrorTest, OneofWithNoFields) {
   BuildFileWithErrors(
-      "name: \"foo.proto\" "
-      "message_type {"
-      "  name: \"Foo\""
-      "  oneof_decl { name:\"bar\" }"
-      "}",
+      R"pb(
+        name: "foo.proto"
+        message_type {
+          name: "Foo"
+          oneof_decl { name: "bar" }
+        }
+      )pb",
 
       "foo.proto: Foo.bar: NAME: Oneof must have at least one field.\n");
 }
 
 TEST_F(ValidationErrorTest, OneofLabelMismatch) {
   BuildFileWithErrors(
-      "name: \"foo.proto\" "
-      "message_type {"
-      "  name: \"Foo\""
-      "  field { name:\"foo\" number:1 label:LABEL_REPEATED type:TYPE_INT32 "
-      "          oneof_index:0 }"
-      "  oneof_decl { name:\"bar\" }"
-      "}",
+      R"pb(
+        name: "foo.proto"
+        message_type {
+          name: "Foo"
+          field {
+            name: "foo"
+            number: 1
+            label: LABEL_REPEATED
+            type: TYPE_INT32
+            oneof_index: 0
+          }
+          oneof_decl { name: "bar" }
+        }
+      )pb",
 
       "foo.proto: Foo.foo: NAME: Fields of oneofs must themselves have label "
       "LABEL_OPTIONAL.\n");
@@ -7102,12 +7494,14 @@ TEST_F(ValidationErrorTest, OneofLabelMismatch) {
 
 TEST_F(ValidationErrorTest, InputTypeNotDefined) {
   BuildFileWithErrors(
-      "name: \"foo.proto\" "
-      "message_type { name: \"Foo\" } "
-      "service {"
-      "  name: \"TestService\""
-      "  method { name: \"A\" input_type: \"Bar\" output_type: \"Foo\" }"
-      "}",
+      R"pb(
+        name: "foo.proto"
+        message_type { name: "Foo" }
+        service {
+          name: "TestService"
+          method { name: "A" input_type: "Bar" output_type: "Foo" }
+        }
+      )pb",
 
       "foo.proto: TestService.A: INPUT_TYPE: \"Bar\" is not defined.\n");
 }
@@ -7124,38 +7518,50 @@ TEST_F(ValidationErrorTest, ServiceWithEmptyName) {
 
 TEST_F(ValidationErrorTest, InputTypeNotAMessage) {
   BuildFileWithErrors(
-      "name: \"foo.proto\" "
-      "message_type { name: \"Foo\" } "
-      "enum_type { name: \"Bar\" value { name:\"DUMMY\" number:0 } } "
-      "service {"
-      "  name: \"TestService\""
-      "  method { name: \"A\" input_type: \"Bar\" output_type: \"Foo\" }"
-      "}",
+      R"pb(
+        name: "foo.proto"
+        message_type { name: "Foo" }
+        enum_type {
+          name: "Bar"
+          value { name: "DUMMY" number: 0 }
+        }
+        service {
+          name: "TestService"
+          method { name: "A" input_type: "Bar" output_type: "Foo" }
+        }
+      )pb",
 
       "foo.proto: TestService.A: INPUT_TYPE: \"Bar\" is not a message type.\n");
 }
 
 TEST_F(ValidationErrorTest, OutputTypeNotDefined) {
   BuildFileWithErrors(
-      "name: \"foo.proto\" "
-      "message_type { name: \"Foo\" } "
-      "service {"
-      "  name: \"TestService\""
-      "  method { name: \"A\" input_type: \"Foo\" output_type: \"Bar\" }"
-      "}",
+      R"pb(
+        name: "foo.proto"
+        message_type { name: "Foo" }
+        service {
+          name: "TestService"
+          method { name: "A" input_type: "Foo" output_type: "Bar" }
+        }
+      )pb",
 
       "foo.proto: TestService.A: OUTPUT_TYPE: \"Bar\" is not defined.\n");
 }
 
 TEST_F(ValidationErrorTest, OutputTypeNotAMessage) {
   BuildFileWithErrors(
-      "name: \"foo.proto\" "
-      "message_type { name: \"Foo\" } "
-      "enum_type { name: \"Bar\" value { name:\"DUMMY\" number:0 } } "
-      "service {"
-      "  name: \"TestService\""
-      "  method { name: \"A\" input_type: \"Foo\" output_type: \"Bar\" }"
-      "}",
+      R"pb(
+        name: "foo.proto"
+        message_type { name: "Foo" }
+        enum_type {
+          name: "Bar"
+          value { name: "DUMMY" number: 0 }
+        }
+        service {
+          name: "TestService"
+          method { name: "A" input_type: "Foo" output_type: "Bar" }
+        }
+      )pb",
 
       "foo.proto: TestService.A: OUTPUT_TYPE: \"Bar\" is not a message "
       "type.\n");
@@ -7164,25 +7570,52 @@ TEST_F(ValidationErrorTest, OutputTypeNotAMessage) {
 
 TEST_F(ValidationErrorTest, IllegalPackedField) {
   BuildFileWithErrors(
-      "name: \"foo.proto\" "
-      "message_type {\n"
-      "  name: \"Foo\""
-      "  field { name:\"packed_string\" number:1 label:LABEL_REPEATED "
-      "          type:TYPE_STRING "
-      "          options { uninterpreted_option {"
-      "            name { name_part: \"packed\" is_extension: false }"
-      "            identifier_value: \"true\" }}}\n"
-      "  field { name:\"packed_message\" number:3 label:LABEL_REPEATED "
-      "          type_name: \"Foo\""
-      "          options { uninterpreted_option {"
-      "            name { name_part: \"packed\" is_extension: false }"
-      "            identifier_value: \"true\" }}}\n"
-      "  field { name:\"optional_int32\" number: 4 label: LABEL_OPTIONAL "
-      "          type:TYPE_INT32 "
-      "          options { uninterpreted_option {"
-      "            name { name_part: \"packed\" is_extension: false }"
-      "            identifier_value: \"true\" }}}\n"
-      "}",
+      R"pb(
+        name: "foo.proto"
+        message_type {
+
+          name: "Foo"
+          field {
+            name: "packed_string"
+            number: 1
+            label: LABEL_REPEATED
+            type: TYPE_STRING
+            options {
+              uninterpreted_option {
+                name { name_part: "packed" is_extension: false }
+                identifier_value: "true"
+              }
+            }
+          }
+
+          field {
+            name: "packed_message"
+            number: 3
+            label: LABEL_REPEATED
+            type_name: "Foo"
+            options {
+              uninterpreted_option {
+                name { name_part: "packed" is_extension: false }
+                identifier_value: "true"
+              }
+            }
+          }
+
+          field {
+            name: "optional_int32"
+            number: 4
+            label: LABEL_OPTIONAL
+            type: TYPE_INT32
+            options {
+              uninterpreted_option {
+                name { name_part: "packed" is_extension: false }
+                identifier_value: "true"
+              }
+            }
+          }
+
+        }
+      )pb",
 
       "foo.proto: Foo.packed_string: TYPE: [packed = true] can only be "
       "specified for repeated primitive fields.\n"
@@ -7194,16 +7627,24 @@ TEST_F(ValidationErrorTest, IllegalPackedField) {
 
 TEST_F(ValidationErrorTest, OptionWrongType) {
   BuildFileWithErrors(
-      "name: \"foo.proto\" "
-      "message_type { "
-      "  name: \"TestMessage\" "
-      "  field { name:\"foo\" number:1 label:LABEL_OPTIONAL type:TYPE_STRING "
-      "          options { uninterpreted_option { name { name_part: \"ctype\" "
-      "                                                  is_extension: false }"
-      "                                           positive_int_value: 1 }"
-      "          }"
-      "  }"
-      "}\n",
+      R"pb(
+        name: "foo.proto"
+        message_type {
+          name: "TestMessage"
+          field {
+            name: "foo"
+            number: 1
+            label: LABEL_OPTIONAL
+            type: TYPE_STRING
+            options {
+              uninterpreted_option {
+                name { name_part: "ctype" is_extension: false }
+                positive_int_value: 1
+              }
+            }
+          }
+        }
+      )pb",
 
       "foo.proto: TestMessage.foo: OPTION_VALUE: Value must be identifier for "
       "enum-valued option \"google.protobuf.FieldOptions.ctype\".\n");
@@ -7211,18 +7652,25 @@ TEST_F(ValidationErrorTest, OptionWrongType) {
 
 TEST_F(ValidationErrorTest, OptionExtendsAtomicType) {
   BuildFileWithErrors(
-      "name: \"foo.proto\" "
-      "message_type { "
-      "  name: \"TestMessage\" "
-      "  field { name:\"foo\" number:1 label:LABEL_OPTIONAL type:TYPE_STRING "
-      "          options { uninterpreted_option { name { name_part: \"ctype\" "
-      "                                                  is_extension: false }"
-      "                                           name { name_part: \"foo\" "
-      "                                                  is_extension: true }"
-      "                                           positive_int_value: 1 }"
-      "          }"
-      "  }"
-      "}\n",
+      R"pb(
+        name: "foo.proto"
+        message_type {
+          name: "TestMessage"
+          field {
+            name: "foo"
+            number: 1
+            label: LABEL_OPTIONAL
+            type: TYPE_STRING
+            options {
+              uninterpreted_option {
+                name { name_part: "ctype" is_extension: false }
+                name { name_part: "foo" is_extension: true }
+                positive_int_value: 1
+              }
+            }
+          }
+        }
+      )pb",
 
       "foo.proto: TestMessage.foo: OPTION_NAME: Option \"ctype\" is an "
       "atomic type, not a message.\n");
@@ -7230,19 +7678,28 @@ TEST_F(ValidationErrorTest, OptionExtendsAtomicType) {
 
 TEST_F(ValidationErrorTest, DupOption) {
   BuildFileWithErrors(
-      "name: \"foo.proto\" "
-      "message_type { "
-      "  name: \"TestMessage\" "
-      "  field { name:\"foo\" number:1 label:LABEL_OPTIONAL type:TYPE_UINT32 "
-      "          options { uninterpreted_option { name { name_part: \"ctype\" "
-      "                                                  is_extension: false }"
-      "                                           identifier_value: \"CORD\" }"
-      "                    uninterpreted_option { name { name_part: \"ctype\" "
-      "                                                  is_extension: false }"
-      "                                           identifier_value: \"CORD\" }"
-      "          }"
-      "  }"
-      "}\n",
+      R"pb(
+        name: "foo.proto"
+        message_type {
+          name: "TestMessage"
+          field {
+            name: "foo"
+            number: 1
+            label: LABEL_OPTIONAL
+            type: TYPE_UINT32
+            options {
+              uninterpreted_option {
+                name { name_part: "ctype" is_extension: false }
+                identifier_value: "CORD"
+              }
+              uninterpreted_option {
+                name { name_part: "ctype" is_extension: false }
+                identifier_value: "CORD"
+              }
+            }
+          }
+        }
+      )pb",
 
       "foo.proto: TestMessage.foo: OPTION_NAME: Option \"ctype\" was "
       "already set.\n");
@@ -7250,18 +7707,24 @@ TEST_F(ValidationErrorTest, DupOption) {
 
 TEST_F(ValidationErrorTest, InvalidOptionName) {
   BuildFileWithErrors(
-      "name: \"foo.proto\" "
-      "message_type { "
-      "  name: \"TestMessage\" "
-      "  field { name:\"foo\" number:1 label:LABEL_OPTIONAL type:TYPE_BOOL "
-      "          options { uninterpreted_option { "
-      "                      name { name_part: \"uninterpreted_option\" "
-      "                             is_extension: false }"
-      "                      positive_int_value: 1 "
-      "                    }"
-      "          }"
-      "  }"
-      "}\n",
+      R"pb(
+        name: "foo.proto"
+        message_type {
+          name: "TestMessage"
+          field {
+            name: "foo"
+            number: 1
+            label: LABEL_OPTIONAL
+            type: TYPE_BOOL
+            options {
+              uninterpreted_option {
+                name { name_part: "uninterpreted_option" is_extension: false }
+                positive_int_value: 1
+              }
+            }
+          }
+        }
+      )pb",
 
       "foo.proto: TestMessage.foo: OPTION_NAME: Option must not use "
       "reserved name \"uninterpreted_option\".\n");
@@ -7271,19 +7734,34 @@ TEST_F(ValidationErrorTest, RepeatedMessageOption) {
   BuildDescriptorMessagesInTestPool();
 
   BuildFileWithErrors(
-      "name: \"foo.proto\" "
-      "dependency: \"google/protobuf/descriptor.proto\" "
-      "message_type: { name: \"Bar\" field: { "
-      "  name: \"foo\" number: 1 label: LABEL_OPTIONAL type: TYPE_INT32 } "
-      "} "
-      "extension { name: \"bar\" number: 7672757 label: LABEL_REPEATED "
-      "            type: TYPE_MESSAGE type_name: \"Bar\" "
-      "            extendee: \"google.protobuf.FileOptions\" }"
-      "options { uninterpreted_option { name { name_part: \"bar\" "
-      "                                        is_extension: true } "
-      "                                 name { name_part: \"foo\" "
-      "                                        is_extension: false } "
-      "                                 positive_int_value: 1 } }",
+      R"pb(
+        name: "foo.proto"
+        dependency: "google/protobuf/descriptor.proto"
+        message_type: {
+          name: "Bar"
+          field: {
+            name: "foo"
+            number: 1
+            label: LABEL_OPTIONAL
+            type: TYPE_INT32
+          }
+        }
+        extension {
+          name: "bar"
+          number: 7672757
+          label: LABEL_REPEATED
+          type: TYPE_MESSAGE
+          type_name: "Bar"
+          extendee: "google.protobuf.FileOptions"
+        }
+        options {
+          uninterpreted_option {
+            name { name_part: "bar" is_extension: true }
+            name { name_part: "foo" is_extension: false }
+            positive_int_value: 1
+          }
+        }
+      )pb",
 
       "foo.proto: foo.proto: OPTION_NAME: Option field \"(bar)\" is a "
       "repeated message. Repeated message options must be initialized "
@@ -7309,24 +7787,41 @@ TEST_F(ValidationErrorTest, ResolveUndefinedOption) {
   BuildDescriptorMessagesInTestPool();
 
   BuildFile(
-      "name: \"foo.proto\" "
-      "package: \"baz\" "
-      "dependency: \"google/protobuf/descriptor.proto\" "
-      "message_type: { name: \"Bar\" field: { "
-      "  name: \"foo\" number: 1 label: LABEL_OPTIONAL type: TYPE_INT32 } "
-      "} "
-      "extension { name: \"bar\" number: 7672757 label: LABEL_OPTIONAL "
-      "            type: TYPE_MESSAGE type_name: \"Bar\" "
-      "            extendee: \"google.protobuf.FileOptions\" }");
+      R"pb(
+        name: "foo.proto"
+        package: "baz"
+        dependency: "google/protobuf/descriptor.proto"
+        message_type: {
+          name: "Bar"
+          field: {
+            name: "foo"
+            number: 1
+            label: LABEL_OPTIONAL
+            type: TYPE_INT32
+          }
+        }
+        extension {
+          name: "bar"
+          number: 7672757
+          label: LABEL_OPTIONAL
+          type: TYPE_MESSAGE
+          type_name: "Bar"
+          extendee: "google.protobuf.FileOptions"
+        }
+      )pb");
 
   BuildFileWithErrors(
-      "name: \"moo.proto\" "
-      "package: \"moo.baz\" "
-      "options { uninterpreted_option { name { name_part: \"baz.bar\" "
-      "                                        is_extension: true } "
-      "                                 name { name_part: \"foo\" "
-      "                                        is_extension: false } "
-      "                                 positive_int_value: 1 } }",
+      R"pb(
+        name: "moo.proto"
+        package: "moo.baz"
+        options {
+          uninterpreted_option {
+            name { name_part: "baz.bar" is_extension: true }
+            name { name_part: "foo" is_extension: false }
+            positive_int_value: 1
+          }
+        }
+      )pb",
 
       "moo.proto: moo.proto: OPTION_NAME: Option \"(baz.bar)\" is resolved to "
       "\"(moo.baz.bar)\","
@@ -7337,13 +7832,17 @@ TEST_F(ValidationErrorTest, ResolveUndefinedOption) {
 
 TEST_F(ValidationErrorTest, UnknownOption) {
   BuildFileWithErrors(
-      "name: \"moo.proto\" "
-      "package: \"moo.baz\" "
-      "options { uninterpreted_option { name { name_part: \"baaz.bar\" "
-      "                                        is_extension: true } "
-      "                                 name { name_part: \"foo\" "
-      "                                        is_extension: false } "
-      "                                 positive_int_value: 1 } }",
+      R"pb(
+        name: "moo.proto"
+        package: "moo.baz"
+        options {
+          uninterpreted_option {
+            name { name_part: "baaz.bar" is_extension: true }
+            name { name_part: "foo" is_extension: false }
+            positive_int_value: 1
+          }
+        }
+      )pb",
 
       "moo.proto: moo.proto: OPTION_NAME: Option \"(baaz.bar)\" unknown. "
       "Ensure "
@@ -7355,12 +7854,24 @@ TEST_F(ValidationErrorTest, CustomOptionConflictingFieldNumber) {
   BuildDescriptorMessagesInTestPool();
 
   BuildFileWithErrors(
-      "name: \"foo.proto\" "
-      "dependency: \"google/protobuf/descriptor.proto\" "
-      "extension { name: \"foo1\" number: 7672757 label: LABEL_OPTIONAL "
-      "            type: TYPE_INT32 extendee: \"google.protobuf.FieldOptions\" }"
-      "extension { name: \"foo2\" number: 7672757 label: LABEL_OPTIONAL "
-      "            type: TYPE_INT32 extendee: \"google.protobuf.FieldOptions\" }",
+      R"pb(
+        name: "foo.proto"
+        dependency: "google/protobuf/descriptor.proto"
+        extension {
+          name: "foo1"
+          number: 7672757
+          label: LABEL_OPTIONAL
+          type: TYPE_INT32
+          extendee: "google.protobuf.FieldOptions"
+        }
+        extension {
+          name: "foo2"
+          number: 7672757
+          label: LABEL_OPTIONAL
+          type: TYPE_INT32
+          extendee: "google.protobuf.FieldOptions"
+        }
+      )pb",
 
       "foo.proto: foo2: NUMBER: Extension number 7672757 has already been used "
       "in \"google.protobuf.FieldOptions\" by extension \"foo1\".\n");
@@ -7370,14 +7881,23 @@ TEST_F(ValidationErrorTest, Int32OptionValueOutOfPositiveRange) {
   BuildDescriptorMessagesInTestPool();
 
   BuildFileWithErrors(
-      "name: \"foo.proto\" "
-      "dependency: \"google/protobuf/descriptor.proto\" "
-      "extension { name: \"foo\" number: 7672757 label: LABEL_OPTIONAL "
-      "            type: TYPE_INT32 extendee: \"google.protobuf.FileOptions\" }"
-      "options { uninterpreted_option { name { name_part: \"foo\" "
-      "                                        is_extension: true } "
-      "                                 positive_int_value: 0x80000000 } "
-      "}",
+      R"pb(
+        name: "foo.proto"
+        dependency: "google/protobuf/descriptor.proto"
+        extension {
+          name: "foo"
+          number: 7672757
+          label: LABEL_OPTIONAL
+          type: TYPE_INT32
+          extendee: "google.protobuf.FileOptions"
+        }
+        options {
+          uninterpreted_option {
+            name { name_part: "foo" is_extension: true }
+            positive_int_value: 0x80000000
+          }
+        }
+      )pb",
 
       "foo.proto: foo.proto: OPTION_VALUE: Value out of range, -2147483648 to "
       "2147483647, for int32 option \"foo\".\n");
@@ -7387,14 +7907,23 @@ TEST_F(ValidationErrorTest, Int32OptionValueOutOfNegativeRange) {
   BuildDescriptorMessagesInTestPool();
 
   BuildFileWithErrors(
-      "name: \"foo.proto\" "
-      "dependency: \"google/protobuf/descriptor.proto\" "
-      "extension { name: \"foo\" number: 7672757 label: LABEL_OPTIONAL "
-      "            type: TYPE_INT32 extendee: \"google.protobuf.FileOptions\" }"
-      "options { uninterpreted_option { name { name_part: \"foo\" "
-      "                                        is_extension: true } "
-      "                                 negative_int_value: -0x80000001 } "
-      "}",
+      R"pb(
+        name: "foo.proto"
+        dependency: "google/protobuf/descriptor.proto"
+        extension {
+          name: "foo"
+          number: 7672757
+          label: LABEL_OPTIONAL
+          type: TYPE_INT32
+          extendee: "google.protobuf.FileOptions"
+        }
+        options {
+          uninterpreted_option {
+            name { name_part: "foo" is_extension: true }
+            negative_int_value: -0x80000001
+          }
+        }
+      )pb",
 
       "foo.proto: foo.proto: OPTION_VALUE: Value out of range, -2147483648 to "
       "2147483647, for int32 option \"foo\".\n");
@@ -7404,13 +7933,23 @@ TEST_F(ValidationErrorTest, Int32OptionValueIsNotPositiveInt) {
   BuildDescriptorMessagesInTestPool();
 
   BuildFileWithErrors(
-      "name: \"foo.proto\" "
-      "dependency: \"google/protobuf/descriptor.proto\" "
-      "extension { name: \"foo\" number: 7672757 label: LABEL_OPTIONAL "
-      "            type: TYPE_INT32 extendee: \"google.protobuf.FileOptions\" }"
-      "options { uninterpreted_option { name { name_part: \"foo\" "
-      "                                        is_extension: true } "
-      "                                 string_value: \"5\" } }",
+      R"pb(
+        name: "foo.proto"
+        dependency: "google/protobuf/descriptor.proto"
+        extension {
+          name: "foo"
+          number: 7672757
+          label: LABEL_OPTIONAL
+          type: TYPE_INT32
+          extendee: "google.protobuf.FileOptions"
+        }
+        options {
+          uninterpreted_option {
+            name { name_part: "foo" is_extension: true }
+            string_value: "5"
+          }
+        }
+      )pb",
 
       "foo.proto: foo.proto: OPTION_VALUE: Value must be integer, from "
       "-2147483648 to 2147483647, for int32 option \"foo\".\n");
@@ -7420,15 +7959,23 @@ TEST_F(ValidationErrorTest, Int64OptionValueOutOfRange) {
   BuildDescriptorMessagesInTestPool();
 
   BuildFileWithErrors(
-      "name: \"foo.proto\" "
-      "dependency: \"google/protobuf/descriptor.proto\" "
-      "extension { name: \"foo\" number: 7672757 label: LABEL_OPTIONAL "
-      "            type: TYPE_INT64 extendee: \"google.protobuf.FileOptions\" }"
-      "options { uninterpreted_option { name { name_part: \"foo\" "
-      "                                        is_extension: true } "
-      "                                 positive_int_value: 0x8000000000000000 "
-      "} "
-      "}",
+      R"pb(
+        name: "foo.proto"
+        dependency: "google/protobuf/descriptor.proto"
+        extension {
+          name: "foo"
+          number: 7672757
+          label: LABEL_OPTIONAL
+          type: TYPE_INT64
+          extendee: "google.protobuf.FileOptions"
+        }
+        options {
+          uninterpreted_option {
+            name { name_part: "foo" is_extension: true }
+            positive_int_value: 0x8000000000000000
+          }
+        }
+      )pb",
 
       "foo.proto: foo.proto: OPTION_VALUE: Value out of range, "
       "-9223372036854775808 to 9223372036854775807, for int64 option "
@@ -7439,13 +7986,23 @@ TEST_F(ValidationErrorTest, Int64OptionValueIsNotPositiveInt) {
   BuildDescriptorMessagesInTestPool();
 
   BuildFileWithErrors(
-      "name: \"foo.proto\" "
-      "dependency: \"google/protobuf/descriptor.proto\" "
-      "extension { name: \"foo\" number: 7672757 label: LABEL_OPTIONAL "
-      "            type: TYPE_INT64 extendee: \"google.protobuf.FileOptions\" }"
-      "options { uninterpreted_option { name { name_part: \"foo\" "
-      "                                        is_extension: true } "
-      "                                 identifier_value: \"5\" } }",
+      R"pb(
+        name: "foo.proto"
+        dependency: "google/protobuf/descriptor.proto"
+        extension {
+          name: "foo"
+          number: 7672757
+          label: LABEL_OPTIONAL
+          type: TYPE_INT64
+          extendee: "google.protobuf.FileOptions"
+        }
+        options {
+          uninterpreted_option {
+            name { name_part: "foo" is_extension: true }
+            identifier_value: "5"
+          }
+        }
+      )pb",
 
       "foo.proto: foo.proto: OPTION_VALUE: Value must be integer, from "
       "-9223372036854775808 to 9223372036854775807, for int64 option "
@@ -7456,13 +8013,23 @@ TEST_F(ValidationErrorTest, UInt32OptionValueOutOfRange) {
   BuildDescriptorMessagesInTestPool();
 
   BuildFileWithErrors(
-      "name: \"foo.proto\" "
-      "dependency: \"google/protobuf/descriptor.proto\" "
-      "extension { name: \"foo\" number: 7672757 label: LABEL_OPTIONAL "
-      "            type: TYPE_UINT32 extendee: \"google.protobuf.FileOptions\" }"
-      "options { uninterpreted_option { name { name_part: \"foo\" "
-      "                                        is_extension: true } "
-      "                                 positive_int_value: 0x100000000 } }",
+      R"pb(
+        name: "foo.proto"
+        dependency: "google/protobuf/descriptor.proto"
+        extension {
+          name: "foo"
+          number: 7672757
+          label: LABEL_OPTIONAL
+          type: TYPE_UINT32
+          extendee: "google.protobuf.FileOptions"
+        }
+        options {
+          uninterpreted_option {
+            name { name_part: "foo" is_extension: true }
+            positive_int_value: 0x100000000
+          }
+        }
+      )pb",
 
       "foo.proto: foo.proto: OPTION_VALUE: Value out of range, 0 to "
       "4294967295, for uint32 option \"foo\".\n");
@@ -7472,13 +8039,23 @@ TEST_F(ValidationErrorTest, UInt32OptionValueIsNotPositiveInt) {
   BuildDescriptorMessagesInTestPool();
 
   BuildFileWithErrors(
-      "name: \"foo.proto\" "
-      "dependency: \"google/protobuf/descriptor.proto\" "
-      "extension { name: \"foo\" number: 7672757 label: LABEL_OPTIONAL "
-      "            type: TYPE_UINT32 extendee: \"google.protobuf.FileOptions\" }"
-      "options { uninterpreted_option { name { name_part: \"foo\" "
-      "                                        is_extension: true } "
-      "                                 double_value: -5.6 } }",
+      R"pb(
+        name: "foo.proto"
+        dependency: "google/protobuf/descriptor.proto"
+        extension {
+          name: "foo"
+          number: 7672757
+          label: LABEL_OPTIONAL
+          type: TYPE_UINT32
+          extendee: "google.protobuf.FileOptions"
+        }
+        options {
+          uninterpreted_option {
+            name { name_part: "foo" is_extension: true }
+            double_value: -5.6
+          }
+        }
+      )pb",
 
       "foo.proto: foo.proto: OPTION_VALUE: Value must be integer, from 0 to "
       "4294967295, for uint32 option \"foo\".\n");
@@ -7488,13 +8065,23 @@ TEST_F(ValidationErrorTest, UInt64OptionValueIsNotPositiveInt) {
   BuildDescriptorMessagesInTestPool();
 
   BuildFileWithErrors(
-      "name: \"foo.proto\" "
-      "dependency: \"google/protobuf/descriptor.proto\" "
-      "extension { name: \"foo\" number: 7672757 label: LABEL_OPTIONAL "
-      "            type: TYPE_UINT64 extendee: \"google.protobuf.FileOptions\" }"
-      "options { uninterpreted_option { name { name_part: \"foo\" "
-      "                                        is_extension: true } "
-      "                                 negative_int_value: -5 } }",
+      R"pb(
+        name: "foo.proto"
+        dependency: "google/protobuf/descriptor.proto"
+        extension {
+          name: "foo"
+          number: 7672757
+          label: LABEL_OPTIONAL
+          type: TYPE_UINT64
+          extendee: "google.protobuf.FileOptions"
+        }
+        options {
+          uninterpreted_option {
+            name { name_part: "foo" is_extension: true }
+            negative_int_value: -5
+          }
+        }
+      )pb",
 
       "foo.proto: foo.proto: OPTION_VALUE: Value must be integer, from 0 to "
       "18446744073709551615, for uint64 option \"foo\".\n");
@@ -7504,13 +8091,23 @@ TEST_F(ValidationErrorTest, FloatOptionValueIsNotNumber) {
   BuildDescriptorMessagesInTestPool();
 
   BuildFileWithErrors(
-      "name: \"foo.proto\" "
-      "dependency: \"google/protobuf/descriptor.proto\" "
-      "extension { name: \"foo\" number: 7672757 label: LABEL_OPTIONAL "
-      "            type: TYPE_FLOAT extendee: \"google.protobuf.FileOptions\" }"
-      "options { uninterpreted_option { name { name_part: \"foo\" "
-      "                                        is_extension: true } "
-      "                                 string_value: \"bar\" } }",
+      R"pb(
+        name: "foo.proto"
+        dependency: "google/protobuf/descriptor.proto"
+        extension {
+          name: "foo"
+          number: 7672757
+          label: LABEL_OPTIONAL
+          type: TYPE_FLOAT
+          extendee: "google.protobuf.FileOptions"
+        }
+        options {
+          uninterpreted_option {
+            name { name_part: "foo" is_extension: true }
+            string_value: "bar"
+          }
+        }
+      )pb",
 
       "foo.proto: foo.proto: OPTION_VALUE: Value must be number "
       "for float option \"foo\".\n");
@@ -7520,13 +8117,23 @@ TEST_F(ValidationErrorTest, DoubleOptionValueIsNotNumber) {
   BuildDescriptorMessagesInTestPool();
 
   BuildFileWithErrors(
-      "name: \"foo.proto\" "
-      "dependency: \"google/protobuf/descriptor.proto\" "
-      "extension { name: \"foo\" number: 7672757 label: LABEL_OPTIONAL "
-      "            type: TYPE_DOUBLE extendee: \"google.protobuf.FileOptions\" }"
-      "options { uninterpreted_option { name { name_part: \"foo\" "
-      "                                        is_extension: true } "
-      "                                 string_value: \"bar\" } }",
+      R"pb(
+        name: "foo.proto"
+        dependency: "google/protobuf/descriptor.proto"
+        extension {
+          name: "foo"
+          number: 7672757
+          label: LABEL_OPTIONAL
+          type: TYPE_DOUBLE
+          extendee: "google.protobuf.FileOptions"
+        }
+        options {
+          uninterpreted_option {
+            name { name_part: "foo" is_extension: true }
+            string_value: "bar"
+          }
+        }
+      )pb",
 
       "foo.proto: foo.proto: OPTION_VALUE: Value must be number "
       "for double option \"foo\".\n");
@@ -7536,13 +8143,23 @@ TEST_F(ValidationErrorTest, BoolOptionValueIsNotTrueOrFalse) {
   BuildDescriptorMessagesInTestPool();
 
   BuildFileWithErrors(
-      "name: \"foo.proto\" "
-      "dependency: \"google/protobuf/descriptor.proto\" "
-      "extension { name: \"foo\" number: 7672757 label: LABEL_OPTIONAL "
-      "            type: TYPE_BOOL extendee: \"google.protobuf.FileOptions\" }"
-      "options { uninterpreted_option { name { name_part: \"foo\" "
-      "                                        is_extension: true } "
-      "                                 identifier_value: \"bar\" } }",
+      R"pb(
+        name: "foo.proto"
+        dependency: "google/protobuf/descriptor.proto"
+        extension {
+          name: "foo"
+          number: 7672757
+          label: LABEL_OPTIONAL
+          type: TYPE_BOOL
+          extendee: "google.protobuf.FileOptions"
+        }
+        options {
+          uninterpreted_option {
+            name { name_part: "foo" is_extension: true }
+            identifier_value: "bar"
+          }
+        }
+      )pb",
 
       "foo.proto: foo.proto: OPTION_VALUE: Value must be \"true\" or \"false\" "
       "for boolean option \"foo\".\n");
@@ -7552,16 +8169,29 @@ TEST_F(ValidationErrorTest, EnumOptionValueIsNotIdentifier) {
   BuildDescriptorMessagesInTestPool();
 
   BuildFileWithErrors(
-      "name: \"foo.proto\" "
-      "dependency: \"google/protobuf/descriptor.proto\" "
-      "enum_type { name: \"FooEnum\" value { name: \"BAR\" number: 1 } "
-      "                              value { name: \"BAZ\" number: 2 } }"
-      "extension { name: \"foo\" number: 7672757 label: LABEL_OPTIONAL "
-      "            type: TYPE_ENUM type_name: \"FooEnum\" "
-      "            extendee: \"google.protobuf.FileOptions\" }"
-      "options { uninterpreted_option { name { name_part: \"foo\" "
-      "                                        is_extension: true } "
-      "                                 string_value: \"MOOO\" } }",
+      R"pb(
+        name: "foo.proto"
+        dependency: "google/protobuf/descriptor.proto"
+        enum_type {
+          name: "FooEnum"
+          value { name: "BAR" number: 1 }
+          value { name: "BAZ" number: 2 }
+        }
+        extension {
+          name: "foo"
+          number: 7672757
+          label: LABEL_OPTIONAL
+          type: TYPE_ENUM
+          type_name: "FooEnum"
+          extendee: "google.protobuf.FileOptions"
+        }
+        options {
+          uninterpreted_option {
+            name { name_part: "foo" is_extension: true }
+            string_value: "MOOO"
+          }
+        }
+      )pb",
 
       "foo.proto: foo.proto: OPTION_VALUE: Value must be identifier for "
       "enum-valued option \"foo\".\n");
@@ -7571,16 +8201,29 @@ TEST_F(ValidationErrorTest, EnumOptionValueIsNotEnumValueName) {
   BuildDescriptorMessagesInTestPool();
 
   BuildFileWithErrors(
-      "name: \"foo.proto\" "
-      "dependency: \"google/protobuf/descriptor.proto\" "
-      "enum_type { name: \"FooEnum\" value { name: \"BAR\" number: 1 } "
-      "                              value { name: \"BAZ\" number: 2 } }"
-      "extension { name: \"foo\" number: 7672757 label: LABEL_OPTIONAL "
-      "            type: TYPE_ENUM type_name: \"FooEnum\" "
-      "            extendee: \"google.protobuf.FileOptions\" }"
-      "options { uninterpreted_option { name { name_part: \"foo\" "
-      "                                        is_extension: true } "
-      "                                 identifier_value: \"MOOO\" } }",
+      R"pb(
+        name: "foo.proto"
+        dependency: "google/protobuf/descriptor.proto"
+        enum_type {
+          name: "FooEnum"
+          value { name: "BAR" number: 1 }
+          value { name: "BAZ" number: 2 }
+        }
+        extension {
+          name: "foo"
+          number: 7672757
+          label: LABEL_OPTIONAL
+          type: TYPE_ENUM
+          type_name: "FooEnum"
+          extendee: "google.protobuf.FileOptions"
+        }
+        options {
+          uninterpreted_option {
+            name { name_part: "foo" is_extension: true }
+            identifier_value: "MOOO"
+          }
+        }
+      )pb",
 
       "foo.proto: foo.proto: OPTION_VALUE: Enum type \"FooEnum\" has no value "
       "named \"MOOO\" for option \"foo\".\n");
@@ -7590,18 +8233,34 @@ TEST_F(ValidationErrorTest, EnumOptionValueIsSiblingEnumValueName) {
   BuildDescriptorMessagesInTestPool();
 
   BuildFileWithErrors(
-      "name: \"foo.proto\" "
-      "dependency: \"google/protobuf/descriptor.proto\" "
-      "enum_type { name: \"FooEnum1\" value { name: \"BAR\" number: 1 } "
-      "                               value { name: \"BAZ\" number: 2 } }"
-      "enum_type { name: \"FooEnum2\" value { name: \"MOO\" number: 1 } "
-      "                               value { name: \"MOOO\" number: 2 } }"
-      "extension { name: \"foo\" number: 7672757 label: LABEL_OPTIONAL "
-      "            type: TYPE_ENUM type_name: \"FooEnum1\" "
-      "            extendee: \"google.protobuf.FileOptions\" }"
-      "options { uninterpreted_option { name { name_part: \"foo\" "
-      "                                        is_extension: true } "
-      "                                 identifier_value: \"MOOO\" } }",
+      R"pb(
+        name: "foo.proto"
+        dependency: "google/protobuf/descriptor.proto"
+        enum_type {
+          name: "FooEnum1"
+          value { name: "BAR" number: 1 }
+          value { name: "BAZ" number: 2 }
+        }
+        enum_type {
+          name: "FooEnum2"
+          value { name: "MOO" number: 1 }
+          value { name: "MOOO" number: 2 }
+        }
+        extension {
+          name: "foo"
+          number: 7672757
+          label: LABEL_OPTIONAL
+          type: TYPE_ENUM
+          type_name: "FooEnum1"
+          extendee: "google.protobuf.FileOptions"
+        }
+        options {
+          uninterpreted_option {
+            name { name_part: "foo" is_extension: true }
+            identifier_value: "MOOO"
+          }
+        }
+      )pb",
 
       "foo.proto: foo.proto: OPTION_VALUE: Enum type \"FooEnum1\" has no value "
       "named \"MOOO\" for option \"foo\". This appears to be a value from a "
@@ -7612,13 +8271,23 @@ TEST_F(ValidationErrorTest, StringOptionValueIsNotString) {
   BuildDescriptorMessagesInTestPool();
 
   BuildFileWithErrors(
-      "name: \"foo.proto\" "
-      "dependency: \"google/protobuf/descriptor.proto\" "
-      "extension { name: \"foo\" number: 7672757 label: LABEL_OPTIONAL "
-      "            type: TYPE_STRING extendee: \"google.protobuf.FileOptions\" }"
-      "options { uninterpreted_option { name { name_part: \"foo\" "
-      "                                        is_extension: true } "
-      "                                 identifier_value: \"MOOO\" } }",
+      R"pb(
+        name: "foo.proto"
+        dependency: "google/protobuf/descriptor.proto"
+        extension {
+          name: "foo"
+          number: 7672757
+          label: LABEL_OPTIONAL
+          type: TYPE_STRING
+          extendee: "google.protobuf.FileOptions"
+        }
+        options {
+          uninterpreted_option {
+            name { name_part: "foo" is_extension: true }
+            identifier_value: "MOOO"
+          }
+        }
+      )pb",
 
       "foo.proto: foo.proto: OPTION_VALUE: Value must be quoted string "
       "for string option \"foo\".\n");
@@ -7626,38 +8295,42 @@ TEST_F(ValidationErrorTest, StringOptionValueIsNotString) {
 
 TEST_F(ValidationErrorTest, JsonNameOptionOnExtensions) {
   BuildFileWithErrors(
-      "name: \"foo.proto\" "
-      "package: \"foo\" "
-      "message_type {"
-      "  name: \"Foo\""
-      "  extension_range { start: 10 end: 20 }"
-      "}"
-      "extension {"
-      "  name: \"value\""
-      "  number: 10"
-      "  label: LABEL_OPTIONAL"
-      "  type: TYPE_INT32"
-      "  extendee: \"foo.Foo\""
-      "  json_name: \"myName\""
-      "}",
+      R"pb(
+        name: "foo.proto"
+        package: "foo"
+        message_type {
+          name: "Foo"
+          extension_range { start: 10 end: 20 }
+        }
+        extension {
+          name: "value"
+          number: 10
+          label: LABEL_OPTIONAL
+          type: TYPE_INT32
+          extendee: "foo.Foo"
+          json_name: "myName"
+        }
+      )pb",
       "foo.proto: foo.value: OPTION_NAME: option json_name is not allowed on "
       "extension fields.\n");
 }
 
 TEST_F(ValidationErrorTest, JsonNameEmbeddedNull) {
   BuildFileWithErrors(
-      "name: \"foo.proto\" "
-      "package: \"foo\" "
-      "message_type {"
-      "  name: \"Foo\""
-      "  field {"
-      "    name: \"value\""
-      "    number: 10"
-      "    label: LABEL_OPTIONAL"
-      "    type: TYPE_INT32"
-      "    json_name: \"embedded\\000null\""
-      "  }"
-      "}",
+      R"pb(
+        name: "foo.proto"
+        package: "foo"
+        message_type {
+          name: "Foo"
+          field {
+            name: "value"
+            number: 10
+            label: LABEL_OPTIONAL
+            type: TYPE_INT32
+            json_name: "embedded\000null"
+          }
+        }
+      )pb",
       "foo.proto: foo.Foo.value: OPTION_NAME: json_name cannot have embedded "
       "null characters.\n");
 }
@@ -7740,16 +8413,30 @@ TEST_F(ValidationErrorTest, DuplicateExtensionFieldNumber) {
   BuildDescriptorMessagesInTestPool();
 
   BuildFile(
-      "name: \"foo.proto\" "
-      "dependency: \"google/protobuf/descriptor.proto\" "
-      "extension { name: \"option1\" number: 1000 label: LABEL_OPTIONAL "
-      "            type: TYPE_INT32 extendee: \"google.protobuf.FileOptions\" }");
+      R"pb(
+        name: "foo.proto"
+        dependency: "google/protobuf/descriptor.proto"
+        extension {
+          name: "option1"
+          number: 1000
+          label: LABEL_OPTIONAL
+          type: TYPE_INT32
+          extendee: "google.protobuf.FileOptions"
+        }
+      )pb");
 
   BuildFileWithWarnings(
-      "name: \"bar.proto\" "
-      "dependency: \"google/protobuf/descriptor.proto\" "
-      "extension { name: \"option2\" number: 1000 label: LABEL_OPTIONAL "
-      "            type: TYPE_INT32 extendee: \"google.protobuf.FileOptions\" }",
+      R"pb(
+        name: "bar.proto"
+        dependency: "google/protobuf/descriptor.proto"
+        extension {
+          name: "option2"
+          number: 1000
+          label: LABEL_OPTIONAL
+          type: TYPE_INT32
+          extendee: "google.protobuf.FileOptions"
+        }
+      )pb",
       "bar.proto: option2: NUMBER: Extension number 1000 has already been used "
       "in \"google.protobuf.FileOptions\" by extension \"option1\" defined in "
       "foo.proto.\n");
@@ -7760,15 +8447,24 @@ TEST_F(ValidationErrorTest, DuplicateExtensionFieldNumber) {
 // "uninterpreted_option" portion of the result.
 static std::string EmbedAggregateValue(const char* value) {
   return absl::Substitute(
-      "name: \"foo.proto\" "
-      "dependency: \"google/protobuf/descriptor.proto\" "
-      "message_type { name: \"Foo\" } "
-      "extension { name: \"foo\" number: 7672757 label: LABEL_OPTIONAL "
-      "            type: TYPE_MESSAGE type_name: \"Foo\" "
-      "            extendee: \"google.protobuf.FileOptions\" }"
-      "options { uninterpreted_option { name { name_part: \"foo\" "
-      "                                        is_extension: true } "
-      "                                 $0 } }",
+      R"pb(
+        name: "foo.proto"
+        dependency: "google/protobuf/descriptor.proto"
+        message_type { name: "Foo" }
+        extension {
+          name: "foo"
+          number: 7672757
+          label: LABEL_OPTIONAL
+          type: TYPE_MESSAGE
+          type_name: "Foo"
+          extendee: "google.protobuf.FileOptions"
+        }
+        options {
+          uninterpreted_option {
+            name { name_part: "foo" is_extension: true } $0
+          }
+        }
+      )pb",
       value);
 }
 
@@ -7803,12 +8499,15 @@ TEST_F(ValidationErrorTest, AggregateValueUnknownFields) {
 
 TEST_F(ValidationErrorTest, NotLiteImportsLite) {
   BuildFile(
-      "name: \"bar.proto\" "
-      "options { optimize_for: LITE_RUNTIME } ");
+      R"pb(
+        name: "bar.proto"
+        options { optimize_for: LITE_RUNTIME }
+      )pb");
 
   BuildFileWithErrors(
-      "name: \"foo.proto\" "
-      "dependency: \"bar.proto\" ",
+      R"pb(
+        name: "foo.proto" dependency: "bar.proto"
+      )pb",
 
       "foo.proto: bar.proto: IMPORT: Files that do not use optimize_for = "
       "LITE_RUNTIME cannot import files which do use this option.  This file "
@@ -7817,18 +8516,27 @@ TEST_F(ValidationErrorTest, NotLiteImportsLite) {
 
 TEST_F(ValidationErrorTest, LiteExtendsNotLite) {
   BuildFile(
-      "name: \"bar.proto\" "
-      "message_type: {"
-      "  name: \"Bar\""
-      "  extension_range { start: 1 end: 1000 }"
-      "}");
+      R"pb(
+        name: "bar.proto"
+        message_type: {
+          name: "Bar"
+          extension_range { start: 1 end: 1000 }
+        }
+      )pb");
 
   BuildFileWithErrors(
-      "name: \"foo.proto\" "
-      "dependency: \"bar.proto\" "
-      "options { optimize_for: LITE_RUNTIME } "
-      "extension { name: \"ext\" number: 123 label: LABEL_OPTIONAL "
-      "            type: TYPE_INT32 extendee: \"Bar\" }",
+      R"pb(
+        name: "foo.proto"
+        dependency: "bar.proto"
+        options { optimize_for: LITE_RUNTIME }
+        extension {
+          name: "ext"
+          number: 123
+          label: LABEL_OPTIONAL
+          type: TYPE_INT32
+          extendee: "Bar"
+        }
+      )pb",
 
       "foo.proto: ext: EXTENDEE: Extensions to non-lite types can only be "
       "declared in non-lite files.  Note that you cannot extend a non-lite "
@@ -7837,26 +8545,30 @@ TEST_F(ValidationErrorTest, LiteExtendsNotLite) {
 
 TEST_F(ValidationErrorTest, NoLiteServices) {
   BuildFileWithErrors(
-      "name: \"foo.proto\" "
-      "options {"
-      "  optimize_for: LITE_RUNTIME"
-      "  cc_generic_services: true"
-      "  java_generic_services: true"
-      "} "
-      "service { name: \"Foo\" }",
+      R"pb(
+        name: "foo.proto"
+        options {
+          optimize_for: LITE_RUNTIME
+          cc_generic_services: true
+          java_generic_services: true
+        }
+        service { name: "Foo" }
+      )pb",
 
       "foo.proto: Foo: NAME: Files with optimize_for = LITE_RUNTIME cannot "
       "define services unless you set both options cc_generic_services and "
       "java_generic_services to false.\n");
 
   BuildFile(
-      "name: \"bar.proto\" "
-      "options {"
-      "  optimize_for: LITE_RUNTIME"
-      "  cc_generic_services: false"
-      "  java_generic_services: false"
-      "} "
-      "service { name: \"Bar\" }");
+      R"pb(
+        name: "bar.proto"
+        options {
+          optimize_for: LITE_RUNTIME
+          cc_generic_services: false
+          java_generic_services: false
+        }
+        service { name: "Bar" }
+      )pb");
 }
 
 TEST_F(ValidationErrorTest, RollbackAfterError) {
@@ -7865,23 +8577,26 @@ TEST_F(ValidationErrorTest, RollbackAfterError) {
   // before the undefined type error is noticed.  The DescriptorPool will then
   // have to roll everything back.
   BuildFileWithErrors(
-      "name: \"foo.proto\" "
-      "message_type {"
-      "  name: \"TestMessage\""
-      "  field { name:\"foo\" label:LABEL_OPTIONAL type:TYPE_INT32 number:1 }"
-      "} "
-      "enum_type {"
-      "  name: \"TestEnum\""
-      "  value { name:\"BAR\" number:1 }"
-      "} "
-      "service {"
-      "  name: \"TestService\""
-      "  method {"
-      "    name: \"Baz\""
-      "    input_type: \"NoSuchType\""  // error
-      "    output_type: \"TestMessage\""
-      "  }"
-      "}",
+      R"pb(
+        name: "foo.proto"
+        message_type {
+          name: "TestMessage"
+          field { name: "foo" label: LABEL_OPTIONAL type: TYPE_INT32 number: 1 }
+        }
+        enum_type {
+          name: "TestEnum"
+          value { name: "BAR" number: 1 }
+        }
+        service {
+          name: "TestService"
+          method {
+            name: "Baz"
+            input_type: "NoSuchType"
+            # error
+            output_type: "TestMessage"
+          }
+        }
+      )pb",
 
       "foo.proto: TestService.Baz: INPUT_TYPE: \"NoSuchType\" is not "
       "defined.\n");
@@ -7891,21 +8606,25 @@ TEST_F(ValidationErrorTest, RollbackAfterError) {
   // be left defined, and this second attempt will fail since it tries to
   // re-define the same symbols.
   BuildFile(
-      "name: \"foo.proto\" "
-      "message_type {"
-      "  name: \"TestMessage\""
-      "  field { name:\"foo\" label:LABEL_OPTIONAL type:TYPE_INT32 number:1 }"
-      "} "
-      "enum_type {"
-      "  name: \"TestEnum\""
-      "  value { name:\"BAR\" number:1 }"
-      "} "
-      "service {"
-      "  name: \"TestService\""
-      "  method { name:\"Baz\""
-      "           input_type:\"TestMessage\""
-      "           output_type:\"TestMessage\" }"
-      "}");
+      R"pb(
+        name: "foo.proto"
+        message_type {
+          name: "TestMessage"
+          field { name: "foo" label: LABEL_OPTIONAL type: TYPE_INT32 number: 1 }
+        }
+        enum_type {
+          name: "TestEnum"
+          value { name: "BAR" number: 1 }
+        }
+        service {
+          name: "TestService"
+          method {
+            name: "Baz"
+            input_type: "TestMessage"
+            output_type: "TestMessage"
+          }
+        }
+      )pb");
 }
 
 TEST_F(ValidationErrorTest, ErrorsReportedToLogError) {
@@ -7913,11 +8632,12 @@ TEST_F(ValidationErrorTest, ErrorsReportedToLogError) {
   // provided.
 
   FileDescriptorProto file_proto;
-  ASSERT_TRUE(
-      TextFormat::ParseFromString("name: \"foo.proto\" "
-                                  "message_type { name: \"Foo\" } "
-                                  "message_type { name: \"Foo\" } ",
-                                  &file_proto));
+  ASSERT_TRUE(TextFormat::ParseFromString(R"pb(
+                                            name: "foo.proto"
+                                            message_type { name: "Foo" }
+                                            message_type { name: "Foo" }
+                                          )pb",
+                                          &file_proto));
   {
     absl::ScopedMockLog log(absl::MockLogDefault::kDisallowUnexpected);
     EXPECT_CALL(log, Log(absl::LogSeverity::kError, testing::_,
@@ -7931,12 +8651,14 @@ TEST_F(ValidationErrorTest, ErrorsReportedToLogError) {
 
 TEST_F(ValidationErrorTest, DisallowEnumAlias) {
   BuildFileWithErrors(
-      "name: \"foo.proto\" "
-      "enum_type {"
-      "  name: \"Bar\""
-      "  value { name:\"ENUM_A\" number:0 }"
-      "  value { name:\"ENUM_B\" number:0 }"
-      "}",
+      R"pb(
+        name: "foo.proto"
+        enum_type {
+          name: "Bar"
+          value { name: "ENUM_A" number: 0 }
+          value { name: "ENUM_B" number: 0 }
+        }
+      )pb",
       "foo.proto: Bar: NUMBER: "
       "\"ENUM_B\" uses the same enum value as \"ENUM_A\". "
       "If this is intended, set 'option allow_alias = true;' to the enum "
@@ -7974,36 +8696,44 @@ TEST_F(ValidationErrorTest, DisallowEnumAlias) {
 
 TEST_F(ValidationErrorTest, AllowEnumAlias) {
   BuildFile(
-      "name: \"foo.proto\" "
-      "enum_type {"
-      "  name: \"Bar\""
-      "  value { name:\"ENUM_A\" number:0 }"
-      "  value { name:\"ENUM_B\" number:0 }"
-      "  options { allow_alias: true }"
-      "}");
+      R"pb(
+        name: "foo.proto"
+        enum_type {
+          name: "Bar"
+          value { name: "ENUM_A" number: 0 }
+          value { name: "ENUM_B" number: 0 }
+          options { allow_alias: true }
+        }
+      )pb");
 }
 
 TEST_F(ValidationErrorTest, UnusedImportWarning) {
   pool_.AddDirectInputFile("bar.proto");
   BuildFile(
-      "name: \"bar.proto\" "
-      "message_type { name: \"Bar\" }");
+      R"pb(
+        name: "bar.proto"
+        message_type { name: "Bar" }
+      )pb");
 
   pool_.AddDirectInputFile("base.proto");
   BuildFile(
-      "name: \"base.proto\" "
-      "message_type { name: \"Base\" }");
+      R"pb(
+        name: "base.proto"
+        message_type { name: "Base" }
+      )pb");
 
   pool_.AddDirectInputFile("baz.proto");
   BuildFile(
-      "name: \"baz.proto\" "
-      "message_type { name: \"Baz\" }");
+      R"pb(
+        name: "baz.proto"
+        message_type { name: "Baz" }
+      )pb");
 
   pool_.AddDirectInputFile("public.proto");
   BuildFile(
-      "name: \"public.proto\" "
-      "dependency: \"bar.proto\""
-      "public_dependency: 0");
+      R"pb(
+        name: "public.proto" dependency: "bar.proto" public_dependency: 0
+      )pb");
 
   // // forward.proto
   // import "base.proto"       // No warning: Base message is used.
@@ -8016,17 +8746,23 @@ TEST_F(ValidationErrorTest, UnusedImportWarning) {
   //
   pool_.AddDirectInputFile("forward.proto");
   BuildFileWithWarnings(
-      "name: \"forward.proto\""
-      "dependency: \"base.proto\""
-      "dependency: \"bar.proto\""
-      "dependency: \"baz.proto\""
-      "dependency: \"public.proto\""
-      "public_dependency: 2 "
-      "message_type {"
-      "  name: \"Forward\""
-      "  field { name:\"base\" number:1 label:LABEL_OPTIONAL "
-      "type_name:\"Base\" }"
-      "}",
+      R"pb(
+        name: "forward.proto"
+        dependency: "base.proto"
+        dependency: "bar.proto"
+        dependency: "baz.proto"
+        dependency: "public.proto"
+        public_dependency: 2
+        message_type {
+          name: "Forward"
+          field {
+            name: "base"
+            number: 1
+            label: LABEL_OPTIONAL
+            type_name: "Base"
+          }
+        }
+      )pb",
       "forward.proto: bar.proto: IMPORT: Import bar.proto is unused.\n");
 }
 
@@ -8069,28 +8805,38 @@ TEST_F(ValidationErrorTest, SamePackageUnusedImportError) {
 namespace {
 void FillValidMapEntry(FileDescriptorProto* file_proto) {
   ASSERT_TRUE(TextFormat::ParseFromString(
-      "name: 'foo.proto' "
-      "message_type { "
-      "  name: 'Foo' "
-      "  field { "
-      "    name: 'foo_map' number: 1 label:LABEL_REPEATED "
-      "    type_name: 'FooMapEntry' "
-      "  } "
-      "  nested_type { "
-      "    name: 'FooMapEntry' "
-      "    options {  map_entry: true } "
-      "    field { "
-      "      name: 'key' number: 1 type:TYPE_INT32 label:LABEL_OPTIONAL "
-      "    } "
-      "    field { "
-      "      name: 'value' number: 2 type:TYPE_INT32 label:LABEL_OPTIONAL "
-      "    } "
-      "  } "
-      "} "
-      "message_type { "
-      "  name: 'Bar' "
-      "  extension_range { start: 1 end: 10 }"
-      "} ",
+      R"pb(
+        name: 'foo.proto'
+        message_type {
+          name: 'Foo'
+          field {
+            name: 'foo_map'
+            number: 1
+            label: LABEL_REPEATED
+            type_name: 'FooMapEntry'
+          }
+          nested_type {
+            name: 'FooMapEntry'
+            options { map_entry: true }
+            field {
+              name: 'key'
+              number: 1
+              type: TYPE_INT32
+              label: LABEL_OPTIONAL
+            }
+            field {
+              name: 'value'
+              number: 2
+              type: TYPE_INT32
+              label: LABEL_OPTIONAL
+            }
+          }
+        }
+        message_type {
+          name: 'Bar'
+          extension_range { start: 1 end: 10 }
+        }
+      )pb",
       file_proto));
 }
 static const char* kMapEntryErrorMessage =
@@ -8114,24 +8860,35 @@ TEST_F(ValidationErrorTest, GroupFieldPointingToMapEntryIsNotMap) {
   // TYPE_GROUP field referencing a map_entry message should produce a
   // validation error. Groups cannot be map entries.
   BuildFileWithErrors(
-      "name: 'group_map.proto' "
-      "message_type { "
-      "  name: 'Foo' "
-      "  field { "
-      "    name: 'foomapentry' number: 1 label: LABEL_REPEATED "
-      "    type: TYPE_GROUP type_name: 'FooMapEntry' "
-      "  } "
-      "  nested_type { "
-      "    name: 'FooMapEntry' "
-      "    options { map_entry: true } "
-      "    field { "
-      "      name: 'key' number: 1 type: TYPE_INT32 label: LABEL_OPTIONAL "
-      "    } "
-      "    field { "
-      "      name: 'value' number: 2 type: TYPE_INT32 label: LABEL_OPTIONAL "
-      "    } "
-      "  } "
-      "} ",
+      R"pb(
+        name: 'group_map.proto'
+        message_type {
+          name: 'Foo'
+          field {
+            name: 'foomapentry'
+            number: 1
+            label: LABEL_REPEATED
+            type: TYPE_GROUP
+            type_name: 'FooMapEntry'
+          }
+          nested_type {
+            name: 'FooMapEntry'
+            options { map_entry: true }
+            field {
+              name: 'key'
+              number: 1
+              type: TYPE_INT32
+              label: LABEL_OPTIONAL
+            }
+            field {
+              name: 'value'
+              number: 2
+              type: TYPE_INT32
+              label: LABEL_OPTIONAL
+            }
+          }
+        }
+      )pb",
 
       "group_map.proto: Foo.foomapentry: TYPE: Groups cannot be map entries. "
       "Use a regular message field with map<KeyType, ValueType> syntax "
@@ -8153,9 +8910,9 @@ TEST_F(ValidationErrorTest, MapEntryExtension) {
   FileDescriptorProto file_proto;
   FillValidMapEntry(&file_proto);
   (void)TextFormat::MergeFromString(
-      "extension { "
-      "  name: 'foo_ext' extendee: '.Bar' number: 5"
-      "} ",
+      R"pb(
+        extension { name: 'foo_ext' extendee: '.Bar' number: 5 }
+      )pb",
       file_proto.mutable_message_type(0)->mutable_nested_type(0));
   BuildFileWithErrors(file_proto, kMapEntryErrorMessage);
 }
@@ -8164,9 +8921,9 @@ TEST_F(ValidationErrorTest, MapEntryNestedType) {
   FileDescriptorProto file_proto;
   FillValidMapEntry(&file_proto);
   (void)TextFormat::MergeFromString(
-      "nested_type { "
-      "  name: 'Bar' "
-      "} ",
+      R"pb(
+        nested_type { name: 'Bar' }
+      )pb",
       file_proto.mutable_message_type(0)->mutable_nested_type(0));
   BuildFileWithErrors(file_proto, kMapEntryErrorMessage);
 }
@@ -8180,25 +8937,43 @@ TEST_F(ValidationErrorTest, MapEntryNestedType) {
 // Expect: error on synthetic MapEntry, no suggestion
 TEST_F(ValidationErrorTest, MapEntrySyntheticTypeUsedAsField) {
   BuildFileWithErrors(
-      "name: \"foo.proto\" "
-      "package: \"pkg\" "
-      "message_type {"
-      "  name: \"B\""
-      "  field { name: \"x\" number: 1 type: TYPE_MESSAGE type_name: "
-      "\"AEntry\" "
-      "          label: LABEL_OPTIONAL }"
-      "  field { name: \"a\" number: 2 type: TYPE_MESSAGE type_name: "
-      "\"AEntry\" "
-      "          label: LABEL_REPEATED }"
-      "  nested_type {"
-      "    name: \"AEntry\""
-      "    options { map_entry: true }"
-      "    field { name: \"key\" number: 1 type: TYPE_INT32 label: "
-      "LABEL_OPTIONAL }"
-      "    field { name: \"value\" number: 2 type: TYPE_INT32 label: "
-      "LABEL_OPTIONAL }"
-      "  }"
-      "}",
+      R"pb(
+        name: "foo.proto"
+        package: "pkg"
+        message_type {
+          name: "B"
+          field {
+            name: "x"
+            number: 1
+            type: TYPE_MESSAGE
+            type_name: "AEntry"
+            label: LABEL_OPTIONAL
+          }
+          field {
+            name: "a"
+            number: 2
+            type: TYPE_MESSAGE
+            type_name: "AEntry"
+            label: LABEL_REPEATED
+          }
+          nested_type {
+            name: "AEntry"
+            options { map_entry: true }
+            field {
+              name: "key"
+              number: 1
+              type: TYPE_INT32
+              label: LABEL_OPTIONAL
+            }
+            field {
+              name: "value"
+              number: 2
+              type: TYPE_INT32
+              label: LABEL_OPTIONAL
+            }
+          }
+        }
+      )pb",
       "foo.proto: pkg.B.x: TYPE: pkg.B.AEntry is a synthetic MapEntry message "
       "type, which is not allowed to be used as a field type.\n");
 }
@@ -8214,27 +8989,46 @@ TEST_F(ValidationErrorTest, MapEntrySyntheticTypeUsedAsField) {
 // Expect: error on synthetic MapEntry, no suggestion
 TEST_F(ValidationErrorTest, MapEntrySyntheticTypeCrossMessage) {
   BuildFileWithErrors(
-      "name: \"foo.proto\" "
-      "package: \"pkg\" "
-      "message_type {"
-      "  name: \"B\""
-      "  field { name: \"a\" number: 1 type: TYPE_MESSAGE type_name: "
-      "\"AEntry\" "
-      "          label: LABEL_REPEATED }"
-      "  nested_type {"
-      "    name: \"AEntry\""
-      "    options { map_entry: true }"
-      "    field { name: \"key\" number: 1 type: TYPE_INT32 label: "
-      "LABEL_OPTIONAL }"
-      "    field { name: \"value\" number: 2 type: TYPE_INT32 label: "
-      "LABEL_OPTIONAL }"
-      "  }"
-      "}"
-      "message_type {"
-      "  name: \"C\""
-      "  field { name: \"a\" number: 1 type: TYPE_MESSAGE type_name: "
-      "\".pkg.B.AEntry\" label: LABEL_OPTIONAL }"
-      "}",
+      R"pb(
+        name: "foo.proto"
+        package: "pkg"
+        message_type {
+          name: "B"
+          field {
+            name: "a"
+            number: 1
+            type: TYPE_MESSAGE
+            type_name: "AEntry"
+            label: LABEL_REPEATED
+          }
+          nested_type {
+            name: "AEntry"
+            options { map_entry: true }
+            field {
+              name: "key"
+              number: 1
+              type: TYPE_INT32
+              label: LABEL_OPTIONAL
+            }
+            field {
+              name: "value"
+              number: 2
+              type: TYPE_INT32
+              label: LABEL_OPTIONAL
+            }
+          }
+        }
+        message_type {
+          name: "C"
+          field {
+            name: "a"
+            number: 1
+            type: TYPE_MESSAGE
+            type_name: ".pkg.B.AEntry"
+            label: LABEL_OPTIONAL
+          }
+        }
+      )pb",
       "foo.proto: pkg.C.a: TYPE: pkg.B.AEntry is a synthetic MapEntry "
       "message type, which is not allowed to be used as a field type.\n");
 }
@@ -8247,22 +9041,37 @@ TEST_F(ValidationErrorTest, MapEntrySyntheticTypeCrossMessage) {
 // Expect: error on synthetic MapEntry, no suggestion
 TEST_F(ValidationErrorTest, MapEntrySyntheticType) {
   BuildFileWithErrors(
-      "name: \"foo.proto\" "
-      "package: \"pkg\" "
-      "message_type {"
-      "  name: \"Container\""
-      "  field { name: \"a\" number: 1 type: TYPE_MESSAGE type_name: "
-      "\"AEntry\" "
-      "          label: LABEL_REPEATED }"
-      "  nested_type {"
-      "    name: \"AEntry\""
-      "    options { map_entry: true }"
-      "    field { name: \"key\" number: 1 type: TYPE_UINT32 label: "
-      "LABEL_OPTIONAL }"
-      "    field { name: \"value\" number: 2 type: TYPE_MESSAGE type_name: "
-      "\"AEntry\" label: LABEL_OPTIONAL }"
-      "  }"
-      "}",
+      R"pb(
+        name: "foo.proto"
+        package: "pkg"
+        message_type {
+          name: "Container"
+          field {
+            name: "a"
+            number: 1
+            type: TYPE_MESSAGE
+            type_name: "AEntry"
+            label: LABEL_REPEATED
+          }
+          nested_type {
+            name: "AEntry"
+            options { map_entry: true }
+            field {
+              name: "key"
+              number: 1
+              type: TYPE_UINT32
+              label: LABEL_OPTIONAL
+            }
+            field {
+              name: "value"
+              number: 2
+              type: TYPE_MESSAGE
+              type_name: "AEntry"
+              label: LABEL_OPTIONAL
+            }
+          }
+        }
+      )pb",
       "foo.proto: pkg.Container.AEntry.value: TYPE: "
       "pkg.Container.AEntry is a synthetic MapEntry message type, which "
       "is not allowed to be used as a field type.\n");
@@ -8281,30 +9090,49 @@ TEST_F(ValidationErrorTest, MapEntrySyntheticType) {
 // Expect: error on synthetic MapEntry, no suggestion
 TEST_F(ValidationErrorTest, MapEntrySyntheticTypeInDeepScope) {
   BuildFileWithErrors(
-      "name: \"foo.proto\" "
-      "package: \"pkg\" "
-      "message_type {"
-      "  name: \"B\""
-      "  field { name: \"a\" number: 1 type: TYPE_MESSAGE type_name: "
-      "\"AEntry\" "
-      "          label: LABEL_REPEATED }"
-      "  nested_type {"
-      "    name: \"AEntry\""
-      "    options { map_entry: true }"
-      "    field { name: \"key\" number: 1 type: TYPE_INT32 label: "
-      "LABEL_OPTIONAL }"
-      "    field { name: \"value\" number: 2 type: TYPE_INT32 label: "
-      "LABEL_OPTIONAL }"
-      "  }"
-      "  nested_type {"
-      "    name: \"C\""
-      "    nested_type {"
-      "      name: \"D\""
-      "      field { name: \"x\" number: 1 type: TYPE_MESSAGE type_name: "
-      "\"AEntry\" label: LABEL_OPTIONAL }"
-      "    }"
-      "  }"
-      "}",
+      R"pb(
+        name: "foo.proto"
+        package: "pkg"
+        message_type {
+          name: "B"
+          field {
+            name: "a"
+            number: 1
+            type: TYPE_MESSAGE
+            type_name: "AEntry"
+            label: LABEL_REPEATED
+          }
+          nested_type {
+            name: "AEntry"
+            options { map_entry: true }
+            field {
+              name: "key"
+              number: 1
+              type: TYPE_INT32
+              label: LABEL_OPTIONAL
+            }
+            field {
+              name: "value"
+              number: 2
+              type: TYPE_INT32
+              label: LABEL_OPTIONAL
+            }
+          }
+          nested_type {
+            name: "C"
+            nested_type {
+              name: "D"
+              field {
+                name: "x"
+                number: 1
+                type: TYPE_MESSAGE
+                type_name: "AEntry"
+                label: LABEL_OPTIONAL
+              }
+            }
+          }
+        }
+      )pb",
       "foo.proto: pkg.B.C.D.x: TYPE: pkg.B.AEntry is a synthetic MapEntry "
       "message type, which is not allowed to be used as a field type.\n");
 }
@@ -8323,33 +9151,50 @@ TEST_F(ValidationErrorTest, MapEntrySyntheticTypeInDeepScope) {
 // Expect: error on synthetic MapEntry, has suggestion
 TEST_F(ValidationErrorTest, MapEntrySyntheticTypeInDeepScopeWithAlternative) {
   BuildFileWithErrors(
-      "name: \"foo.proto\" "
-      "package: \"pkg\" "
-      "message_type {"
-      "  name: \"AEntry\""
-      "}"
-      "message_type {"
-      "  name: \"B\""
-      "  field { name: \"a\" number: 1 type: TYPE_MESSAGE type_name: "
-      "\"AEntry\" "
-      "          label: LABEL_REPEATED }"
-      "  nested_type {"
-      "    name: \"AEntry\""
-      "    options { map_entry: true }"
-      "    field { name: \"key\" number: 1 type: TYPE_INT32 label: "
-      "LABEL_OPTIONAL }"
-      "    field { name: \"value\" number: 2 type: TYPE_INT32 label: "
-      "LABEL_OPTIONAL }"
-      "  }"
-      "  nested_type {"
-      "    name: \"C\""
-      "    nested_type {"
-      "      name: \"D\""
-      "      field { name: \"x\" number: 1 type: TYPE_MESSAGE type_name: "
-      "\"AEntry\" label: LABEL_OPTIONAL }"
-      "    }"
-      "  }"
-      "}",
+      R"pb(
+        name: "foo.proto"
+        package: "pkg"
+        message_type { name: "AEntry" }
+        message_type {
+          name: "B"
+          field {
+            name: "a"
+            number: 1
+            type: TYPE_MESSAGE
+            type_name: "AEntry"
+            label: LABEL_REPEATED
+          }
+          nested_type {
+            name: "AEntry"
+            options { map_entry: true }
+            field {
+              name: "key"
+              number: 1
+              type: TYPE_INT32
+              label: LABEL_OPTIONAL
+            }
+            field {
+              name: "value"
+              number: 2
+              type: TYPE_INT32
+              label: LABEL_OPTIONAL
+            }
+          }
+          nested_type {
+            name: "C"
+            nested_type {
+              name: "D"
+              field {
+                name: "x"
+                number: 1
+                type: TYPE_MESSAGE
+                type_name: "AEntry"
+                label: LABEL_OPTIONAL
+              }
+            }
+          }
+        }
+      )pb",
       "foo.proto: pkg.B.C.D.x: TYPE: pkg.B.AEntry is a synthetic MapEntry "
       "message type, which is not allowed to be used as a field type. Maybe "
       "you meant \".pkg.AEntry\"?\n");
@@ -8364,25 +9209,38 @@ TEST_F(ValidationErrorTest, MapEntrySyntheticTypeInDeepScopeWithAlternative) {
 // Expect: error on synthetic MapEntry, has suggestion
 TEST_F(ValidationErrorTest, MapValueSyntheticNameCollision) {
   BuildFileWithErrors(
-      "name: \"foo.proto\" "
-      "package: \"pkg\" "
-      "message_type {"
-      "  name: \"AEntry\""
-      "}"
-      "message_type {"
-      "  name: \"Container\""
-      "  field { name: \"a\" number: 1 type: TYPE_MESSAGE type_name: "
-      "\"AEntry\" "
-      "          label: LABEL_REPEATED }"
-      "  nested_type {"
-      "    name: \"AEntry\""
-      "    options { map_entry: true }"
-      "    field { name: \"key\" number: 1 type: TYPE_UINT32 label: "
-      "LABEL_OPTIONAL }"
-      "    field { name: \"value\" number: 2 type: TYPE_MESSAGE type_name: "
-      "\"AEntry\" label: LABEL_OPTIONAL }"
-      "  }"
-      "}",
+      R"pb(
+        name: "foo.proto"
+        package: "pkg"
+        message_type { name: "AEntry" }
+        message_type {
+          name: "Container"
+          field {
+            name: "a"
+            number: 1
+            type: TYPE_MESSAGE
+            type_name: "AEntry"
+            label: LABEL_REPEATED
+          }
+          nested_type {
+            name: "AEntry"
+            options { map_entry: true }
+            field {
+              name: "key"
+              number: 1
+              type: TYPE_UINT32
+              label: LABEL_OPTIONAL
+            }
+            field {
+              name: "value"
+              number: 2
+              type: TYPE_MESSAGE
+              type_name: "AEntry"
+              label: LABEL_OPTIONAL
+            }
+          }
+        }
+      )pb",
       "foo.proto: pkg.Container.AEntry.value: TYPE: "
       "pkg.Container.AEntry is a synthetic MapEntry message type, which "
       "is not allowed to be used as a field type. Maybe you meant "
@@ -8400,29 +9258,47 @@ TEST_F(ValidationErrorTest, MapValueSyntheticNameCollision) {
 // Expect: error on synthetic MapEntry, suggesting the enum alternative.
 TEST_F(ValidationErrorTest, MapEntrySyntheticTypeAlternativeIsEnum) {
   BuildFileWithErrors(
-      "name: \"foo.proto\" "
-      "package: \"pkg\" "
-      "enum_type {"
-      "  name: \"MyEntry\""
-      "  value { name: \"VALUE\" number: 0 }"
-      "}"
-      "message_type {"
-      "  name: \"Foo\""
-      "  field { name: \"my\" number: 1 type: TYPE_MESSAGE type_name: "
-      "\"MyEntry\" "
-      "          label: LABEL_REPEATED }"
-      "  field { name: \"bar\" number: 2 type: TYPE_MESSAGE type_name: "
-      "\"MyEntry\" "
-      "          label: LABEL_OPTIONAL }"
-      "  nested_type {"
-      "    name: \"MyEntry\""
-      "    options { map_entry: true }"
-      "    field { name: \"key\" number: 1 type: TYPE_INT32 label: "
-      "LABEL_OPTIONAL }"
-      "    field { name: \"value\" number: 2 type: TYPE_INT32 label: "
-      "LABEL_OPTIONAL }"
-      "  }"
-      "}",
+      R"pb(
+        name: "foo.proto"
+        package: "pkg"
+        enum_type {
+          name: "MyEntry"
+          value { name: "VALUE" number: 0 }
+        }
+        message_type {
+          name: "Foo"
+          field {
+            name: "my"
+            number: 1
+            type: TYPE_MESSAGE
+            type_name: "MyEntry"
+            label: LABEL_REPEATED
+          }
+          field {
+            name: "bar"
+            number: 2
+            type: TYPE_MESSAGE
+            type_name: "MyEntry"
+            label: LABEL_OPTIONAL
+          }
+          nested_type {
+            name: "MyEntry"
+            options { map_entry: true }
+            field {
+              name: "key"
+              number: 1
+              type: TYPE_INT32
+              label: LABEL_OPTIONAL
+            }
+            field {
+              name: "value"
+              number: 2
+              type: TYPE_INT32
+              label: LABEL_OPTIONAL
+            }
+          }
+        }
+      )pb",
       "foo.proto: pkg.Foo.bar: TYPE: pkg.Foo.MyEntry is a synthetic MapEntry "
       "message type, which is not allowed to be used as a field type. Maybe "
       "you meant \".pkg.MyEntry\"?\n");
@@ -8432,10 +9308,12 @@ TEST_F(ValidationErrorTest, MapEntryEnumTypes) {
   FileDescriptorProto file_proto;
   FillValidMapEntry(&file_proto);
   (void)TextFormat::MergeFromString(
-      "enum_type { "
-      "  name: 'BarEnum' "
-      "  value { name: 'BAR_BAR' number:0 } "
-      "} ",
+      R"pb(
+        enum_type {
+          name: 'BarEnum'
+          value { name: 'BAR_BAR' number: 0 }
+        }
+      )pb",
       file_proto.mutable_message_type(0)->mutable_nested_type(0));
   BuildFileWithErrors(file_proto, kMapEntryErrorMessage);
 }
@@ -8444,12 +9322,14 @@ TEST_F(ValidationErrorTest, MapEntryExtraField) {
   FileDescriptorProto file_proto;
   FillValidMapEntry(&file_proto);
   (void)TextFormat::MergeFromString(
-      "field { "
-      "  name: 'other_field' "
-      "  label: LABEL_OPTIONAL "
-      "  type: TYPE_INT32 "
-      "  number: 3 "
-      "} ",
+      R"pb(
+        field {
+          name: 'other_field'
+          label: LABEL_OPTIONAL
+          type: TYPE_INT32
+          number: 3
+        }
+      )pb",
       file_proto.mutable_message_type(0)->mutable_nested_type(0));
   BuildFileWithErrors(file_proto, kMapEntryErrorMessage);
 }
@@ -8659,12 +9539,14 @@ TEST_F(ValidationErrorTest, MapEntryConflictsWithField) {
   FileDescriptorProto file_proto;
   FillValidMapEntry(&file_proto);
   (void)TextFormat::MergeFromString(
-      "field { "
-      "  name: 'FooMapEntry' "
-      "  type: TYPE_INT32 "
-      "  label: LABEL_OPTIONAL "
-      "  number: 100 "
-      "}",
+      R"pb(
+        field {
+          name: 'FooMapEntry'
+          type: TYPE_INT32
+          label: LABEL_OPTIONAL
+          number: 100
+        }
+      )pb",
       file_proto.mutable_message_type(0));
   BuildFileWithErrors(
       file_proto,
@@ -8679,9 +9561,9 @@ TEST_F(ValidationErrorTest, MapEntryConflictsWithMessage) {
   FileDescriptorProto file_proto;
   FillValidMapEntry(&file_proto);
   (void)TextFormat::MergeFromString(
-      "nested_type { "
-      "  name: 'FooMapEntry' "
-      "}",
+      R"pb(
+        nested_type { name: 'FooMapEntry' }
+      )pb",
       file_proto.mutable_message_type(0));
   BuildFileWithErrors(
       file_proto,
@@ -8695,10 +9577,12 @@ TEST_F(ValidationErrorTest, MapEntryConflictsWithEnum) {
   FileDescriptorProto file_proto;
   FillValidMapEntry(&file_proto);
   (void)TextFormat::MergeFromString(
-      "enum_type { "
-      "  name: 'FooMapEntry' "
-      "  value { name: 'ENTRY_FOO' number: 0 }"
-      "}",
+      R"pb(
+        enum_type {
+          name: 'FooMapEntry'
+          value { name: 'ENTRY_FOO' number: 0 }
+        }
+      )pb",
       file_proto.mutable_message_type(0));
   BuildFileWithErrors(
       file_proto,
@@ -8710,26 +9594,30 @@ TEST_F(ValidationErrorTest, MapEntryConflictsWithEnum) {
 
 TEST_F(ValidationErrorTest, Proto3EnumValuesConflictWithDifferentCasing) {
   BuildFileWithErrors(
-      "syntax: 'proto3'"
-      "name: 'foo.proto' "
-      "enum_type {"
-      "  name: 'FooEnum' "
-      "  value { name: 'BAR' number: 0 }"
-      "  value { name: 'bar' number: 1 }"
-      "}",
+      R"pb(
+        syntax: 'proto3'
+        name: 'foo.proto'
+        enum_type {
+          name: 'FooEnum'
+          value { name: 'BAR' number: 0 }
+          value { name: 'bar' number: 1 }
+        }
+      )pb",
       "foo.proto: bar: NAME: Enum name bar has the same name as BAR "
       "if you ignore case and strip out the enum name prefix (if any). "
       "(If you are using allow_alias, please assign the same number "
       "to each enum value name.)\n");
 
   BuildFileWithErrors(
-      "syntax: 'proto2'"
-      "name: 'foo.proto' "
-      "enum_type {"
-      "  name: 'FooEnum' "
-      "  value { name: 'BAR' number: 0 }"
-      "  value { name: 'bar' number: 1 }"
-      "}",
+      R"pb(
+        syntax: 'proto2'
+        name: 'foo.proto'
+        enum_type {
+          name: 'FooEnum'
+          value { name: 'BAR' number: 0 }
+          value { name: 'bar' number: 1 }
+        }
+      )pb",
       "foo.proto: bar: NAME: Enum name bar has the same name as BAR "
       "if you ignore case and strip out the enum name prefix (if any). "
       "(If you are using allow_alias, please assign the same number "
@@ -8737,78 +9625,90 @@ TEST_F(ValidationErrorTest, Proto3EnumValuesConflictWithDifferentCasing) {
 
   // Not an error because both enums are mapped to the same value.
   BuildFile(
-      "syntax: 'proto3'"
-      "name: 'foo.proto' "
-      "enum_type {"
-      "  name: 'FooEnum' "
-      "  options { allow_alias: true }"
-      "  value { name: 'UNKNOWN' number: 0 }"
-      "  value { name: 'BAR' number: 1 }"
-      "  value { name: 'bar' number: 1 }"
-      "}");
+      R"pb(
+        syntax: 'proto3'
+        name: 'foo.proto'
+        enum_type {
+          name: 'FooEnum'
+          options { allow_alias: true }
+          value { name: 'UNKNOWN' number: 0 }
+          value { name: 'BAR' number: 1 }
+          value { name: 'bar' number: 1 }
+        }
+      )pb");
 }
 
 TEST_F(ValidationErrorTest, EnumValuesConflictWhenPrefixesStripped) {
   BuildFileWithErrors(
-      "syntax: 'proto3'"
-      "name: 'foo.proto' "
-      "enum_type {"
-      "  name: 'FooEnum' "
-      "  value { name: 'FOO_ENUM_BAZ' number: 0 }"
-      "  value { name: 'BAZ' number: 1 }"
-      "}",
+      R"pb(
+        syntax: 'proto3'
+        name: 'foo.proto'
+        enum_type {
+          name: 'FooEnum'
+          value { name: 'FOO_ENUM_BAZ' number: 0 }
+          value { name: 'BAZ' number: 1 }
+        }
+      )pb",
       "foo.proto: BAZ: NAME: Enum name BAZ has the same name as FOO_ENUM_BAZ "
       "if you ignore case and strip out the enum name prefix (if any). "
       "(If you are using allow_alias, please assign the same number "
       "to each enum value name.)\n");
 
   BuildFileWithErrors(
-      "syntax: 'proto3'"
-      "name: 'foo.proto' "
-      "enum_type {"
-      "  name: 'FooEnum' "
-      "  value { name: 'FOOENUM_BAZ' number: 0 }"
-      "  value { name: 'BAZ' number: 1 }"
-      "}",
+      R"pb(
+        syntax: 'proto3'
+        name: 'foo.proto'
+        enum_type {
+          name: 'FooEnum'
+          value { name: 'FOOENUM_BAZ' number: 0 }
+          value { name: 'BAZ' number: 1 }
+        }
+      )pb",
       "foo.proto: BAZ: NAME: Enum name BAZ has the same name as FOOENUM_BAZ "
       "if you ignore case and strip out the enum name prefix (if any). "
       "(If you are using allow_alias, please assign the same number "
       "to each enum value name.)\n");
 
   BuildFileWithErrors(
-      "syntax: 'proto3'"
-      "name: 'foo.proto' "
-      "enum_type {"
-      "  name: 'FooEnum' "
-      "  value { name: 'FOO_ENUM_BAR_BAZ' number: 0 }"
-      "  value { name: 'BAR__BAZ' number: 1 }"
-      "}",
+      R"pb(
+        syntax: 'proto3'
+        name: 'foo.proto'
+        enum_type {
+          name: 'FooEnum'
+          value { name: 'FOO_ENUM_BAR_BAZ' number: 0 }
+          value { name: 'BAR__BAZ' number: 1 }
+        }
+      )pb",
       "foo.proto: BAR__BAZ: NAME: Enum name BAR__BAZ has the same name as "
       "FOO_ENUM_BAR_BAZ if you ignore case and strip out the enum name prefix "
       "(if any). (If you are using allow_alias, please assign the same number "
       "to each enum value name.)\n");
 
   BuildFileWithErrors(
-      "syntax: 'proto3'"
-      "name: 'foo.proto' "
-      "enum_type {"
-      "  name: 'FooEnum' "
-      "  value { name: 'FOO_ENUM__BAR_BAZ' number: 0 }"
-      "  value { name: 'BAR_BAZ' number: 1 }"
-      "}",
+      R"pb(
+        syntax: 'proto3'
+        name: 'foo.proto'
+        enum_type {
+          name: 'FooEnum'
+          value { name: 'FOO_ENUM__BAR_BAZ' number: 0 }
+          value { name: 'BAR_BAZ' number: 1 }
+        }
+      )pb",
       "foo.proto: BAR_BAZ: NAME: Enum name BAR_BAZ has the same name as "
       "FOO_ENUM__BAR_BAZ if you ignore case and strip out the enum name prefix "
       "(if any). (If you are using allow_alias, please assign the same number "
       "to each enum value name.)\n");
 
   BuildFileWithErrors(
-      "syntax: 'proto2'"
-      "name: 'foo.proto' "
-      "enum_type {"
-      "  name: 'FooEnum' "
-      "  value { name: 'FOO_ENUM__BAR_BAZ' number: 0 }"
-      "  value { name: 'BAR_BAZ' number: 1 }"
-      "}",
+      R"pb(
+        syntax: 'proto2'
+        name: 'foo.proto'
+        enum_type {
+          name: 'FooEnum'
+          value { name: 'FOO_ENUM__BAR_BAZ' number: 0 }
+          value { name: 'BAR_BAZ' number: 1 }
+        }
+      )pb",
       "foo.proto: BAR_BAZ: NAME: Enum name BAR_BAZ has the same name as "
       "FOO_ENUM__BAR_BAZ if you ignore case and strip out the enum name prefix "
       "(if any). (If you are using allow_alias, please assign the same number "
@@ -8817,39 +9717,45 @@ TEST_F(ValidationErrorTest, EnumValuesConflictWhenPrefixesStripped) {
   // This isn't an error because the underscore will cause the PascalCase to
   // differ by case (BarBaz vs. Barbaz).
   BuildFile(
-      "syntax: 'proto3'"
-      "name: 'foo.proto' "
-      "enum_type {"
-      "  name: 'FooEnum' "
-      "  value { name: 'BAR_BAZ' number: 0 }"
-      "  value { name: 'BARBAZ' number: 1 }"
-      "}");
+      R"pb(
+        syntax: 'proto3'
+        name: 'foo.proto'
+        enum_type {
+          name: 'FooEnum'
+          value { name: 'BAR_BAZ' number: 0 }
+          value { name: 'BARBAZ' number: 1 }
+        }
+      )pb");
 }
 
 TEST_F(ValidationErrorTest, EnumValuesConflictLegacyBehavior) {
   BuildFileWithErrors(
-      "syntax: 'proto3'"
-      "name: 'foo.proto' "
-      "enum_type {"
-      "  name: 'FooEnum' "
-      "  options { deprecated_legacy_json_field_conflicts: true }"
-      "  value { name: 'BAR' number: 0 }"
-      "  value { name: 'bar' number: 1 }"
-      "}",
+      R"pb(
+        syntax: 'proto3'
+        name: 'foo.proto'
+        enum_type {
+          name: 'FooEnum'
+          options { deprecated_legacy_json_field_conflicts: true }
+          value { name: 'BAR' number: 0 }
+          value { name: 'bar' number: 1 }
+        }
+      )pb",
       "foo.proto: bar: NAME: Enum name bar has the same name as BAR "
       "if you ignore case and strip out the enum name prefix (if any). "
       "(If you are using allow_alias, please assign the same number "
       "to each enum value name.)\n");
 
   BuildFileWithErrors(
-      "syntax: 'proto3'"
-      "name: 'foo.proto' "
-      "enum_type {"
-      "  name: 'FooEnum' "
-      "  options { deprecated_legacy_json_field_conflicts: true }"
-      "  value { name: 'FOO_ENUM__BAR_BAZ' number: 0 }"
-      "  value { name: 'BAR_BAZ' number: 1 }"
-      "}",
+      R"pb(
+        syntax: 'proto3'
+        name: 'foo.proto'
+        enum_type {
+          name: 'FooEnum'
+          options { deprecated_legacy_json_field_conflicts: true }
+          value { name: 'FOO_ENUM__BAR_BAZ' number: 0 }
+          value { name: 'BAR_BAZ' number: 1 }
+        }
+      )pb",
       "foo.proto: BAR_BAZ: NAME: Enum name BAR_BAZ has the same name as "
       "FOO_ENUM__BAR_BAZ if you ignore case and strip out the enum name "
       "prefix "
@@ -8875,16 +9781,16 @@ TEST_F(ValidationErrorTest, MapEntryConflictsWithOneof) {
   FileDescriptorProto file_proto;
   FillValidMapEntry(&file_proto);
   (void)TextFormat::MergeFromString(
-      "oneof_decl { "
-      "  name: 'FooMapEntry' "
-      "}"
-      "field { "
-      "  name: 'int_field' "
-      "  type: TYPE_INT32 "
-      "  label: LABEL_OPTIONAL "
-      "  oneof_index: 0 "
-      "  number: 100 "
-      "} ",
+      R"pb(
+        oneof_decl { name: 'FooMapEntry' }
+        field {
+          name: 'int_field'
+          type: TYPE_INT32
+          label: LABEL_OPTIONAL
+          oneof_index: 0
+          number: 100
+        }
+      )pb",
       file_proto.mutable_message_type(0));
   BuildFileWithErrors(
       file_proto,
@@ -8897,181 +9803,238 @@ TEST_F(ValidationErrorTest, MapEntryConflictsWithOneof) {
 
 TEST_F(ValidationErrorTest, MapEntryUsesNoneZeroEnumDefaultValue) {
   BuildFileWithErrors(
-      "name: \"foo.proto\" "
-      "enum_type {"
-      "  name: \"Bar\""
-      "  value { name:\"ENUM_A\" number:1 }"
-      "  value { name:\"ENUM_B\" number:2 }"
-      "}"
-      "message_type {"
-      "  name: 'Foo' "
-      "  field { "
-      "    name: 'foo_map' number: 1 label:LABEL_REPEATED "
-      "    type_name: 'FooMapEntry' "
-      "  } "
-      "  nested_type { "
-      "    name: 'FooMapEntry' "
-      "    options {  map_entry: true } "
-      "    field { "
-      "      name: 'key' number: 1 type:TYPE_INT32 label:LABEL_OPTIONAL "
-      "    } "
-      "    field { "
-      "      name: 'value' number: 2 type_name:\"Bar\" label:LABEL_OPTIONAL "
-      "    } "
-      "  } "
-      "}",
+      R"pb(
+        name: "foo.proto"
+        enum_type {
+          name: "Bar"
+          value { name: "ENUM_A" number: 1 }
+          value { name: "ENUM_B" number: 2 }
+        }
+        message_type {
+          name: 'Foo'
+          field {
+            name: 'foo_map'
+            number: 1
+            label: LABEL_REPEATED
+            type_name: 'FooMapEntry'
+          }
+          nested_type {
+            name: 'FooMapEntry'
+            options { map_entry: true }
+            field {
+              name: 'key'
+              number: 1
+              type: TYPE_INT32
+              label: LABEL_OPTIONAL
+            }
+            field {
+              name: 'value'
+              number: 2
+              type_name: "Bar"
+              label: LABEL_OPTIONAL
+            }
+          }
+        }
+      )pb",
       "foo.proto: Foo.foo_map: TYPE: Enum value in map must define 0 as the "
       "first value.\n");
 }
 
 TEST_F(ValidationErrorTest, Proto3RequiredFields) {
   BuildFileWithErrors(
-      "name: 'foo.proto' "
-      "syntax: 'proto3' "
-      "message_type { "
-      "  name: 'Foo' "
-      "  field { name:'foo' number:1 label:LABEL_REQUIRED type:TYPE_INT32 } "
-      "}",
+      R"pb(
+        name: 'foo.proto'
+        syntax: 'proto3'
+        message_type {
+          name: 'Foo'
+          field { name: 'foo' number: 1 label: LABEL_REQUIRED type: TYPE_INT32 }
+        }
+      )pb",
       "foo.proto: Foo.foo: TYPE: Required fields are not allowed in "
       "proto3.\n");
 
   // applied to nested types as well.
   BuildFileWithErrors(
-      "name: 'foo.proto' "
-      "syntax: 'proto3' "
-      "message_type { "
-      "  name: 'Foo' "
-      "  nested_type { "
-      "    name : 'Bar' "
-      "    field { name:'bar' number:1 label:LABEL_REQUIRED type:TYPE_INT32 } "
-      "  } "
-      "}",
+      R"pb(
+        name: 'foo.proto'
+        syntax: 'proto3'
+        message_type {
+          name: 'Foo'
+          nested_type {
+            name: 'Bar'
+            field {
+              name: 'bar'
+              number: 1
+              label: LABEL_REQUIRED
+              type: TYPE_INT32
+            }
+          }
+        }
+      )pb",
       "foo.proto: Foo.Bar.bar: TYPE: Required fields are not allowed in "
       "proto3.\n");
 
   // optional and repeated fields are OK.
   BuildFile(
-      "name: 'foo.proto' "
-      "syntax: 'proto3' "
-      "message_type { "
-      "  name: 'Foo' "
-      "  field { name:'foo' number:1 label:LABEL_OPTIONAL type:TYPE_INT32 } "
-      "  field { name:'bar' number:2 label:LABEL_REPEATED type:TYPE_INT32 } "
-      "}");
+      R"pb(
+        name: 'foo.proto'
+        syntax: 'proto3'
+        message_type {
+          name: 'Foo'
+          field { name: 'foo' number: 1 label: LABEL_OPTIONAL type: TYPE_INT32 }
+          field { name: 'bar' number: 2 label: LABEL_REPEATED type: TYPE_INT32 }
+        }
+      )pb");
 }
 
 TEST_F(ValidationErrorTest, ValidateProto3DefaultValue) {
   BuildFileWithErrors(
-      "name: 'foo.proto' "
-      "syntax: 'proto3' "
-      "message_type { "
-      "  name: 'Foo' "
-      "  field { name:'foo' number:1 label:LABEL_OPTIONAL type:TYPE_INT32 "
-      "          default_value: '1' }"
-      "}",
+      R"pb(
+        name: 'foo.proto'
+        syntax: 'proto3'
+        message_type {
+          name: 'Foo'
+          field {
+            name: 'foo'
+            number: 1
+            label: LABEL_OPTIONAL
+            type: TYPE_INT32
+            default_value: '1'
+          }
+        }
+      )pb",
       "foo.proto: Foo.foo: DEFAULT_VALUE: Explicit default values are not "
       "allowed in proto3.\n");
 
   BuildFileWithErrors(
-      "name: 'foo.proto' "
-      "syntax: 'proto3' "
-      "message_type { "
-      "  name: 'Foo' "
-      "  nested_type { "
-      "    name : 'Bar' "
-      "    field { name:'bar' number:1 label:LABEL_OPTIONAL type:TYPE_INT32 "
-      "            default_value: '1' }"
-      "  } "
-      "}",
+      R"pb(
+        name: 'foo.proto'
+        syntax: 'proto3'
+        message_type {
+          name: 'Foo'
+          nested_type {
+            name: 'Bar'
+            field {
+              name: 'bar'
+              number: 1
+              label: LABEL_OPTIONAL
+              type: TYPE_INT32
+              default_value: '1'
+            }
+          }
+        }
+      )pb",
       "foo.proto: Foo.Bar.bar: DEFAULT_VALUE: Explicit default values are not "
       "allowed in proto3.\n");
 }
 
 TEST_F(ValidationErrorTest, ValidateProto3ExtensionRange) {
   BuildFileWithErrors(
-      "name: 'foo.proto' "
-      "syntax: 'proto3' "
-      "message_type { "
-      "  name: 'Foo' "
-      "  field { name:'foo' number:1 label:LABEL_OPTIONAL type:TYPE_INT32 } "
-      "  extension_range { start:10 end:100 } "
-      "}",
+      R"pb(
+        name: 'foo.proto'
+        syntax: 'proto3'
+        message_type {
+          name: 'Foo'
+          field { name: 'foo' number: 1 label: LABEL_OPTIONAL type: TYPE_INT32 }
+          extension_range { start: 10 end: 100 }
+        }
+      )pb",
       "foo.proto: Foo: NUMBER: Extension ranges are not allowed in "
       "proto3.\n");
 
   BuildFileWithErrors(
-      "name: 'foo.proto' "
-      "syntax: 'proto3' "
-      "message_type { "
-      "  name: 'Foo' "
-      "  nested_type { "
-      "    name : 'Bar' "
-      "    field { name:'bar' number:1 label:LABEL_OPTIONAL type:TYPE_INT32 } "
-      "    extension_range { start:10 end:100 } "
-      "  } "
-      "}",
+      R"pb(
+        name: 'foo.proto'
+        syntax: 'proto3'
+        message_type {
+          name: 'Foo'
+          nested_type {
+            name: 'Bar'
+            field {
+              name: 'bar'
+              number: 1
+              label: LABEL_OPTIONAL
+              type: TYPE_INT32
+            }
+            extension_range { start: 10 end: 100 }
+          }
+        }
+      )pb",
       "foo.proto: Foo.Bar: NUMBER: Extension ranges are not allowed in "
       "proto3.\n");
 }
 
 TEST_F(ValidationErrorTest, ValidateProto3MessageSetWireFormat) {
   BuildFileWithErrors(
-      "name: 'foo.proto' "
-      "syntax: 'proto3' "
-      "message_type { "
-      "  name: 'Foo' "
-      "  options { message_set_wire_format: true } "
-      "}",
+      R"pb(
+        name: 'foo.proto'
+        syntax: 'proto3'
+        message_type {
+          name: 'Foo'
+          options { message_set_wire_format: true }
+        }
+      )pb",
       "foo.proto: Foo: NAME: MessageSet is not supported "
       "in proto3.\n");
 }
 
 TEST_F(ValidationErrorTest, ValidateProto3Enum) {
   BuildFileWithErrors(
-      "name: 'foo.proto' "
-      "syntax: 'proto3' "
-      "enum_type { "
-      "  name: 'FooEnum' "
-      "  value { name: 'FOO_FOO' number:1 } "
-      "}",
+      R"pb(
+        name: 'foo.proto'
+        syntax: 'proto3'
+        enum_type {
+          name: 'FooEnum'
+          value { name: 'FOO_FOO' number: 1 }
+        }
+      )pb",
       "foo.proto: FooEnum: NUMBER: The first enum value must be "
       "zero for open enums.\n");
 
   BuildFileWithErrors(
-      "name: 'foo.proto' "
-      "syntax: 'proto3' "
-      "message_type { "
-      "  name: 'Foo' "
-      "  enum_type { "
-      "    name: 'FooEnum' "
-      "    value { name: 'FOO_FOO' number:1 } "
-      "  } "
-      "}",
+      R"pb(
+        name: 'foo.proto'
+        syntax: 'proto3'
+        message_type {
+          name: 'Foo'
+          enum_type {
+            name: 'FooEnum'
+            value { name: 'FOO_FOO' number: 1 }
+          }
+        }
+      )pb",
       "foo.proto: Foo.FooEnum: NUMBER: The first enum value must be "
       "zero for open enums.\n");
 
   // valid case.
   BuildFile(
-      "name: 'foo.proto' "
-      "syntax: 'proto3' "
-      "enum_type { "
-      "  name: 'FooEnum' "
-      "  value { name: 'FOO_FOO' number:0 } "
-      "}");
+      R"pb(
+        name: 'foo.proto'
+        syntax: 'proto3'
+        enum_type {
+          name: 'FooEnum'
+          value { name: 'FOO_FOO' number: 0 }
+        }
+      )pb");
 }
 
 TEST_F(ValidationErrorTest, ValidateProto3Group) {
   BuildFileWithErrors(
-      "name: 'foo.proto' "
-      "syntax: 'proto3' "
-      "message_type { "
-      "  name: 'Foo' "
-      "  nested_type { "
-      "    name: 'FooGroup' "
-      "  } "
-      "  field { name:'foo_group' number: 1 label:LABEL_OPTIONAL "
-      "          type: TYPE_GROUP type_name:'FooGroup' } "
-      "}",
+      R"pb(
+        name: 'foo.proto'
+        syntax: 'proto3'
+        message_type {
+          name: 'Foo'
+          nested_type { name: 'FooGroup' }
+          field {
+            name: 'foo_group'
+            number: 1
+            label: LABEL_OPTIONAL
+            type: TYPE_GROUP
+            type_name: 'FooGroup'
+          }
+        }
+      )pb",
       "foo.proto: Foo.foo_group: TYPE: Groups are not supported in proto3 "
       "syntax.\n");
 }
@@ -9080,25 +10043,34 @@ TEST_F(ValidationErrorTest, ValidateProto3Group) {
 TEST_F(ValidationErrorTest, ValidateProto3EnumFromProto2) {
   // Define an enum in a proto2 file.
   BuildFile(
-      "name: 'foo.proto' "
-      "package: 'foo' "
-      "syntax: 'proto2' "
-      "enum_type { "
-      "  name: 'FooEnum' "
-      "  value { name: 'DEFAULT_OPTION' number:0 } "
-      "}");
+      R"pb(
+        name: 'foo.proto'
+        package: 'foo'
+        syntax: 'proto2'
+        enum_type {
+          name: 'FooEnum'
+          value { name: 'DEFAULT_OPTION' number: 0 }
+        }
+      )pb");
 
   // Now try to refer to it. (All tests in the fixture use the same pool, so we
   // can refer to the enum above in this definition.)
   BuildFileWithErrors(
-      "name: 'bar.proto' "
-      "dependency: 'foo.proto' "
-      "syntax: 'proto3' "
-      "message_type { "
-      "  name: 'Foo' "
-      "    field { name:'bar' number:1 label:LABEL_OPTIONAL type:TYPE_ENUM "
-      "            type_name: 'foo.FooEnum' }"
-      "}",
+      R"pb(
+        name: 'bar.proto'
+        dependency: 'foo.proto'
+        syntax: 'proto3'
+        message_type {
+          name: 'Foo'
+          field {
+            name: 'bar'
+            number: 1
+            label: LABEL_OPTIONAL
+            type: TYPE_ENUM
+            type_name: 'foo.FooEnum'
+          }
+        }
+      )pb",
       "bar.proto: Foo.bar: TYPE: Enum type \"foo.FooEnum\" is not an open "
       "enum, but is used in \"Foo\" which is a proto3 message type.\n");
 }
@@ -9237,19 +10209,27 @@ TEST_F(ValidationErrorTest, ValidateProto3Extension) {
 
   // Copy and change the package of the descriptor.proto
   BuildFile(
-      "name: 'google.protobuf.proto' "
-      "syntax: 'proto2' "
-      "message_type { "
-      "  name: 'Container' extension_range { start: 1 end: 1000 } "
-      "}");
+      R"pb(
+        name: 'google.protobuf.proto'
+        syntax: 'proto2'
+        message_type {
+          name: 'Container'
+          extension_range { start: 1 end: 1000 }
+        }
+      )pb");
   BuildFileWithErrors(
-      "name: 'bar.proto' "
-      "syntax: 'proto3' "
-      "dependency: 'google.protobuf.proto' "
-      "extension { "
-      "  name: 'bar' number: 1 label: LABEL_OPTIONAL type: TYPE_INT32 "
-      "  extendee: 'Container' "
-      "}",
+      R"pb(
+        name: 'bar.proto'
+        syntax: 'proto3'
+        dependency: 'google.protobuf.proto'
+        extension {
+          name: 'bar'
+          number: 1
+          label: LABEL_OPTIONAL
+          type: TYPE_INT32
+          extendee: 'Container'
+        }
+      )pb",
       "bar.proto: bar: EXTENDEE: Extensions in proto3 are only allowed for "
       "defining options.\n");
 }
@@ -9258,26 +10238,45 @@ TEST_F(ValidationErrorTest, ValidateProto3Extension) {
 TEST_F(ValidationErrorTest, ValidateJsonNameConflictProto3) {
   // The comparison is case-insensitive.
   BuildFileWithErrors(
-      "name: 'foo.proto' "
-      "syntax: 'proto3' "
-      "message_type {"
-      "  name: 'Foo'"
-      "  field { name:'_name' number:1 label:LABEL_OPTIONAL type:TYPE_INT32 }"
-      "  field { name:'Name' number:2 label:LABEL_OPTIONAL type:TYPE_INT32 }"
-      "}",
+      R"pb(
+        name: 'foo.proto'
+        syntax: 'proto3'
+        message_type {
+          name: 'Foo'
+          field {
+            name: '_name'
+            number: 1
+            label: LABEL_OPTIONAL
+            type: TYPE_INT32
+          }
+          field {
+            name: 'Name'
+            number: 2
+            label: LABEL_OPTIONAL
+            type: TYPE_INT32
+          }
+        }
+      )pb",
       "foo.proto: Foo: NAME: The default JSON name of field \"Name\" "
       "(\"Name\") "
       "conflicts with the default JSON name of field \"_name\".\n");
 
   // Underscores are ignored.
   BuildFileWithErrors(
-      "name: 'foo.proto' "
-      "syntax: 'proto3' "
-      "message_type {"
-      "  name: 'Foo'"
-      "  field { name:'AB' number:1 label:LABEL_OPTIONAL type:TYPE_INT32 }"
-      "  field { name:'_a__b_' number:2 label:LABEL_OPTIONAL type:TYPE_INT32 }"
-      "}",
+      R"pb(
+        name: 'foo.proto'
+        syntax: 'proto3'
+        message_type {
+          name: 'Foo'
+          field { name: 'AB' number: 1 label: LABEL_OPTIONAL type: TYPE_INT32 }
+          field {
+            name: '_a__b_'
+            number: 2
+            label: LABEL_OPTIONAL
+            type: TYPE_INT32
+          }
+        }
+      )pb",
       "foo.proto: Foo: NAME: The default JSON name of field \"_a__b_\" "
       "(\"AB\") "
       "conflicts with the default JSON name of field \"AB\".\n");
@@ -9285,13 +10284,20 @@ TEST_F(ValidationErrorTest, ValidateJsonNameConflictProto3) {
 
 TEST_F(ValidationErrorTest, ValidateJsonNameConflictProto2) {
   BuildFileWithWarnings(
-      "name: 'foo.proto' "
-      "syntax: 'proto2' "
-      "message_type {"
-      "  name: 'Foo'"
-      "  field { name:'AB' number:1 label:LABEL_OPTIONAL type:TYPE_INT32 }"
-      "  field { name:'_a__b_' number:2 label:LABEL_OPTIONAL type:TYPE_INT32 }"
-      "}",
+      R"pb(
+        name: 'foo.proto'
+        syntax: 'proto2'
+        message_type {
+          name: 'Foo'
+          field { name: 'AB' number: 1 label: LABEL_OPTIONAL type: TYPE_INT32 }
+          field {
+            name: '_a__b_'
+            number: 2
+            label: LABEL_OPTIONAL
+            type: TYPE_INT32
+          }
+        }
+      )pb",
       "foo.proto: Foo: NAME: The default JSON name of field \"_a__b_\" "
       "(\"AB\") "
       "conflicts with the default JSON name of field \"AB\".\n");
@@ -9300,45 +10306,66 @@ TEST_F(ValidationErrorTest, ValidateJsonNameConflictProto2) {
 // Test that field names that may conflict in JSON is not allowed by protoc.
 TEST_F(ValidationErrorTest, ValidateJsonNameConflictProto3Legacy) {
   BuildFile(
-      "name: 'foo.proto' "
-      "syntax: 'proto3' "
-      "message_type {"
-      "  name: 'Foo'"
-      "  options { deprecated_legacy_json_field_conflicts: true }"
-      "  field { name:'AB' number:1 label:LABEL_OPTIONAL type:TYPE_INT32 }"
-      "  field { name:'_a__b_' number:2 label:LABEL_OPTIONAL type:TYPE_INT32 }"
-      "}");
+      R"pb(
+        name: 'foo.proto'
+        syntax: 'proto3'
+        message_type {
+          name: 'Foo'
+          options { deprecated_legacy_json_field_conflicts: true }
+          field { name: 'AB' number: 1 label: LABEL_OPTIONAL type: TYPE_INT32 }
+          field {
+            name: '_a__b_'
+            number: 2
+            label: LABEL_OPTIONAL
+            type: TYPE_INT32
+          }
+        }
+      )pb");
 }
 
 TEST_F(ValidationErrorTest, ValidateJsonNameConflictProto2Legacy) {
   BuildFile(
-      "name: 'foo.proto' "
-      "syntax: 'proto2' "
-      "message_type {"
-      "  name: 'Foo'"
-      "  options { deprecated_legacy_json_field_conflicts: true }"
-      "  field { name:'AB' number:1 label:LABEL_OPTIONAL type:TYPE_INT32 }"
-      "  field { name:'_a__b_' number:2 label:LABEL_OPTIONAL type:TYPE_INT32 }"
-      "}");
+      R"pb(
+        name: 'foo.proto'
+        syntax: 'proto2'
+        message_type {
+          name: 'Foo'
+          options { deprecated_legacy_json_field_conflicts: true }
+          field { name: 'AB' number: 1 label: LABEL_OPTIONAL type: TYPE_INT32 }
+          field {
+            name: '_a__b_'
+            number: 2
+            label: LABEL_OPTIONAL
+            type: TYPE_INT32
+          }
+        }
+      )pb");
 }
 
 
 TEST_F(ValidationErrorTest, UnusedImportWithOtherError) {
   BuildFile(
-      "name: 'bar.proto' "
-      "message_type {"
-      "  name: 'Bar'"
-      "}");
+      R"pb(
+        name: 'bar.proto'
+        message_type { name: 'Bar' }
+      )pb");
 
   pool_.AddDirectInputFile("foo.proto", true);
   BuildFileWithErrors(
-      "name: 'foo.proto' "
-      "dependency: 'bar.proto' "
-      "message_type {"
-      "  name: 'Foo'"
-      "  extension { name:'foo' number:1 label:LABEL_OPTIONAL type:TYPE_INT32"
-      "              extendee: 'Baz' }"
-      "}",
+      R"pb(
+        name: 'foo.proto'
+        dependency: 'bar.proto'
+        message_type {
+          name: 'Foo'
+          extension {
+            name: 'foo'
+            number: 1
+            label: LABEL_OPTIONAL
+            type: TYPE_INT32
+            extendee: 'Baz'
+          }
+        }
+      )pb",
 
       // Should not also contain unused import error.
       "foo.proto: Foo.foo: EXTENDEE: \"Baz\" is not defined.\n");
@@ -15405,17 +16432,11 @@ INSTANTIATE_TEST_SUITE_P(
 
 TEST_F(ValidationErrorTest, PackageTooLong) {
   BuildFileWithErrors(
-      "name: \"foo.proto\" "
-      "syntax: \"proto3\" "
-      "package: "
-      "\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
-      "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
-      "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
-      "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
-      "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
-      "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
-      "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
-      "aaaaaaaaaa\"",
+      R"pb(
+        name: "foo.proto"
+        syntax: "proto3"
+        package: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      )pb",
       "foo.proto: "
       "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
       "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
@@ -15466,26 +16487,46 @@ class DatabaseBackedPoolTest : public testing::Test {
   SimpleDescriptorDatabase database_;
 
   void SetUp() override {
-    AddToDatabase(
-        &database_,
-        "name: 'foo.proto' "
-        "message_type { name:'Foo' extension_range { start: 1 end: 100 } } "
-        "enum_type { name:'TestEnum' value { name:'DUMMY' number:0 } } "
-        "service { name:'TestService' } ");
     AddToDatabase(&database_,
-                  "name: 'bar.proto' "
-                  "dependency: 'foo.proto' "
-                  "message_type { name:'Bar' } "
-                  "extension { name:'foo_ext' extendee: '.Foo' number:5 "
-                  "            label:LABEL_OPTIONAL type:TYPE_INT32 } ");
+                  R"pb(
+                    name: 'foo.proto'
+                    message_type {
+                      name: 'Foo'
+                      extension_range { start: 1 end: 100 }
+                    }
+                    enum_type {
+                      name: 'TestEnum'
+                      value { name: 'DUMMY' number: 0 }
+                    }
+                    service { name: 'TestService' }
+                  )pb");
+    AddToDatabase(&database_,
+                  R"pb(
+                    name: 'bar.proto'
+                    dependency: 'foo.proto'
+                    message_type { name: 'Bar' }
+                    extension {
+                      name: 'foo_ext'
+                      extendee: '.Foo'
+                      number: 5
+                      label: LABEL_OPTIONAL
+                      type: TYPE_INT32
+                    }
+                  )pb");
     // Baz has an undeclared dependency on Foo.
-    AddToDatabase(
-        &database_,
-        "name: 'baz.proto' "
-        "message_type { "
-        "  name:'Baz' "
-        "  field { name:'foo' number:1 label:LABEL_OPTIONAL type_name:'Foo' } "
-        "}");
+    AddToDatabase(&database_,
+                  R"pb(
+                    name: 'baz.proto'
+                    message_type {
+                      name: 'Baz'
+                      field {
+                        name: 'foo'
+                        number: 1
+                        label: LABEL_OPTIONAL
+                        type_name: 'Foo'
+                      }
+                    }
+                  )pb");
   }
 
   // We can't inject a file containing errors into a DescriptorPool, so we
@@ -16153,83 +17194,83 @@ class SingletonSourceTree : public compiler::SourceTree {
 };
 
 const char* const kSourceLocationTestInput =
-    "syntax = \"proto2\";\n"
-    "option java_package = \"com.foo.bar\";\n"
-    "option (test_file_opt) = \"foobar\";\n"
-    "message A {\n"
-    "  option (test_msg_opt) = \"foobar\";\n"
-    "  optional int32 a = 1 [deprecated = true];\n"
-    "  repeated int32 rep = 5;\n"
-    "  message B {\n"
-    "    required double b = 1 [(test_field_opt) = \"foobar\"];\n"
-    "  }\n"
-    "  optional B b_sub = 6;\n"
-    "  oneof c {\n"
-    "    option (test_oneof_opt) = \"foobar\";\n"
-    "    string d = 2;\n"
-    "    string e = 3;\n"
-    "    string f = 4;\n"
-    "  }\n"
-    "}\n"
-    "enum Indecision {\n"
-    "  option (test_enum_opt) = 21;\n"
-    "  option (test_enum_opt) = 42;\n"
-    "  option (test_enum_opt) = 63;\n"
-    "  YES   = 1 [(test_enumval_opt).a = 100];\n"
-    "  NO    = 2 [(test_enumval_opt) = {a:200}];\n"
-    "  MAYBE = 3;\n"
-    "}\n"
-    "service S {\n"
-    "  option (test_svc_opt) = {a:100, rep: [1, 2, 3], b_sub: {b: 200}};\n"
-    "  option (test_svc_opt) = {a:200};\n"
-    "  option (test_svc_opt) = {a:300};\n"
-    "  rpc Method(A) returns (A.B);\n"
-    // Put an empty line here to make the source location range match.
-    "\n"
-    "  rpc OtherMethod(A) returns (A) {\n"
-    "    option deprecated = true;\n"
-    "    option (test_method_opt) = \"foobar\";\n"
-    "  }\n"
-    "}\n"
-    "message MessageWithExtensions {\n"
-    "  extensions 1000 to 2000, 2001 to max [(test_ext_opt) = \"foobar\"];\n"
-    "}\n"
-    "extend MessageWithExtensions {\n"
-    "  repeated int32 int32_extension = 1001 [packed=true];\n"
-    "}\n"
-    "message C {\n"
-    "  extend MessageWithExtensions {\n"
-    "    optional C message_extension = 1002;\n"
-    "  }\n"
-    "}\n"
-    "import \"google/protobuf/descriptor.proto\";\n"
-    "extend google.protobuf.FileOptions {\n"
-    "  optional string test_file_opt = 10101;\n"
-    "}\n"
-    "extend google.protobuf.MessageOptions {\n"
-    "  optional string test_msg_opt = 10101;\n"
-    "}\n"
-    "extend google.protobuf.FieldOptions {\n"
-    "  optional string test_field_opt = 10101;\n"
-    "}\n"
-    "extend google.protobuf.EnumOptions {\n"
-    "  repeated int32 test_enum_opt = 10101;\n"
-    "}\n"
-    "extend google.protobuf.EnumValueOptions {\n"
-    "  optional A test_enumval_opt = 10101;\n"
-    "}\n"
-    "extend google.protobuf.ServiceOptions {\n"
-    "  repeated A test_svc_opt = 10101;\n"
-    "}\n"
-    "extend google.protobuf.MethodOptions {\n"
-    "  optional string test_method_opt = 10101;\n"
-    "}\n"
-    "extend google.protobuf.OneofOptions {\n"
-    "  optional string test_oneof_opt = 10101;\n"
-    "}\n"
-    "extend google.protobuf.ExtensionRangeOptions {\n"
-    "  optional string test_ext_opt = 10101;\n"
-    "}\n";
+    R"schema(syntax = "proto2";
+option java_package = "com.foo.bar";
+option (test_file_opt) = "foobar";
+message A {
+  option (test_msg_opt) = "foobar";
+  optional int32 a = 1 [deprecated = true];
+  repeated int32 rep = 5;
+  message B {
+    required double b = 1 [(test_field_opt) = "foobar"];
+  }
+  optional B b_sub = 6;
+  oneof c {
+    option (test_oneof_opt) = "foobar";
+    string d = 2;
+    string e = 3;
+    string f = 4;
+  }
+}
+enum Indecision {
+  option (test_enum_opt) = 21;
+  option (test_enum_opt) = 42;
+  option (test_enum_opt) = 63;
+  YES   = 1 [(test_enumval_opt).a = 100];
+  NO    = 2 [(test_enumval_opt) = {a:200}];
+  MAYBE = 3;
+}
+service S {
+  option (test_svc_opt) = {a:100, rep: [1, 2, 3], b_sub: {b: 200}};
+  option (test_svc_opt) = {a:200};
+  option (test_svc_opt) = {a:300};
+  rpc Method(A) returns (A.B);
+
+  rpc OtherMethod(A) returns (A) {
+    option deprecated = true;
+    option (test_method_opt) = "foobar";
+  }
+}
+message MessageWithExtensions {
+  extensions 1000 to 2000, 2001 to max [(test_ext_opt) = "foobar"];
+}
+extend MessageWithExtensions {
+  repeated int32 int32_extension = 1001 [packed=true];
+}
+message C {
+  extend MessageWithExtensions {
+    optional C message_extension = 1002;
+  }
+}
+import "google/protobuf/descriptor.proto";
+extend google.protobuf.FileOptions {
+  optional string test_file_opt = 10101;
+}
+extend google.protobuf.MessageOptions {
+  optional string test_msg_opt = 10101;
+}
+extend google.protobuf.FieldOptions {
+  optional string test_field_opt = 10101;
+}
+extend google.protobuf.EnumOptions {
+  repeated int32 test_enum_opt = 10101;
+}
+extend google.protobuf.EnumValueOptions {
+  optional A test_enumval_opt = 10101;
+}
+extend google.protobuf.ServiceOptions {
+  repeated A test_svc_opt = 10101;
+}
+extend google.protobuf.MethodOptions {
+  optional string test_method_opt = 10101;
+}
+extend google.protobuf.OneofOptions {
+  optional string test_oneof_opt = 10101;
+}
+extend google.protobuf.ExtensionRangeOptions {
+  optional string test_ext_opt = 10101;
+}
+)schema";
 
 MATCHER_P2(MatchesSubstring, full_string, expected_substring, "") {
   auto get_offset = [&](int line, int col) -> size_t {
@@ -16318,46 +17359,41 @@ TEST_F(SourceLocationTest, GetSourceLocation) {
 
   const Descriptor* a_desc = file_desc->FindMessageTypeByName("A");
   EXPECT_TRUE(a_desc->GetSourceLocation(&loc));
-  EXPECT_THAT(loc,
-              MatchesSubstring(
-                  kSourceLocationTestInput,
-                  "message A {\n"
-                  "  option (test_msg_opt) = \"foobar\";\n"
-                  "  optional int32 a = 1 [deprecated = true];\n"
-                  "  repeated int32 rep = 5;\n"
-                  "  message B {\n"
-                  "    required double b = 1 [(test_field_opt) = \"foobar\"];\n"
-                  "  }\n"
-                  "  optional B b_sub = 6;\n"
-                  "  oneof c {\n"
-                  "    option (test_oneof_opt) = \"foobar\";\n"
-                  "    string d = 2;\n"
-                  "    string e = 3;\n"
-                  "    string f = 4;\n"
-                  "  }\n"
-                  "}"));
+  EXPECT_THAT(loc, MatchesSubstring(kSourceLocationTestInput,
+                                    R"schema(message A {
+  option (test_msg_opt) = "foobar";
+  optional int32 a = 1 [deprecated = true];
+  repeated int32 rep = 5;
+  message B {
+    required double b = 1 [(test_field_opt) = "foobar"];
+  }
+  optional B b_sub = 6;
+  oneof c {
+    option (test_oneof_opt) = "foobar";
+    string d = 2;
+    string e = 3;
+    string f = 4;
+  }
+})schema"));
 
   const Descriptor* a_b_desc = a_desc->FindNestedTypeByName("B");
   EXPECT_TRUE(a_b_desc->GetSourceLocation(&loc));
-  EXPECT_THAT(loc,
-              MatchesSubstring(
-                  kSourceLocationTestInput,
-                  "message B {\n"
-                  "    required double b = 1 [(test_field_opt) = \"foobar\"];\n"
-                  "  }"));
+  EXPECT_THAT(loc, MatchesSubstring(kSourceLocationTestInput,
+                                    R"schema(message B {
+    required double b = 1 [(test_field_opt) = "foobar"];
+  })schema"));
 
   const EnumDescriptor* e_desc = file_desc->FindEnumTypeByName("Indecision");
   EXPECT_TRUE(e_desc->GetSourceLocation(&loc));
-  EXPECT_THAT(loc,
-              MatchesSubstring(kSourceLocationTestInput,
-                               "enum Indecision {\n"
-                               "  option (test_enum_opt) = 21;\n"
-                               "  option (test_enum_opt) = 42;\n"
-                               "  option (test_enum_opt) = 63;\n"
-                               "  YES   = 1 [(test_enumval_opt).a = 100];\n"
-                               "  NO    = 2 [(test_enumval_opt) = {a:200}];\n"
-                               "  MAYBE = 3;\n"
-                               "}"));
+  EXPECT_THAT(loc, MatchesSubstring(kSourceLocationTestInput,
+                                    R"schema(enum Indecision {
+  option (test_enum_opt) = 21;
+  option (test_enum_opt) = 42;
+  option (test_enum_opt) = 63;
+  YES   = 1 [(test_enumval_opt).a = 100];
+  NO    = 2 [(test_enumval_opt) = {a:200}];
+  MAYBE = 3;
+})schema"));
 
   const EnumValueDescriptor* yes_desc = e_desc->FindValueByName("YES");
   EXPECT_TRUE(yes_desc->GetSourceLocation(&loc));
@@ -16366,20 +17402,18 @@ TEST_F(SourceLocationTest, GetSourceLocation) {
 
   const ServiceDescriptor* s_desc = file_desc->FindServiceByName("S");
   EXPECT_TRUE(s_desc->GetSourceLocation(&loc));
-  EXPECT_THAT(loc,
-              MatchesSubstring(kSourceLocationTestInput,
-                               "service S {\n"
-                               "  option (test_svc_opt) = {a:100, rep: [1, 2, "
-                               "3], b_sub: {b: 200}};\n"
-                               "  option (test_svc_opt) = {a:200};\n"
-                               "  option (test_svc_opt) = {a:300};\n"
-                               "  rpc Method(A) returns (A.B);\n"
-                               "\n"
-                               "  rpc OtherMethod(A) returns (A) {\n"
-                               "    option deprecated = true;\n"
-                               "    option (test_method_opt) = \"foobar\";\n"
-                               "  }\n"
-                               "}"));
+  EXPECT_THAT(loc, MatchesSubstring(kSourceLocationTestInput,
+                                    R"schema(service S {
+  option (test_svc_opt) = {a:100, rep: [1, 2, 3], b_sub: {b: 200}};
+  option (test_svc_opt) = {a:200};
+  option (test_svc_opt) = {a:300};
+  rpc Method(A) returns (A.B);
+
+  rpc OtherMethod(A) returns (A) {
+    option deprecated = true;
+    option (test_method_opt) = "foobar";
+  }
+})schema"));
 
   const MethodDescriptor* m_desc = s_desc->FindMethodByName("Method");
   EXPECT_TRUE(m_desc->GetSourceLocation(&loc));
@@ -16405,11 +17439,11 @@ TEST_F(SourceLocationTest, ExtensionSourceLocation) {
   const Descriptor* c_desc = file_desc->FindMessageTypeByName("C");
   EXPECT_TRUE(c_desc->GetSourceLocation(&loc));
   EXPECT_THAT(loc, MatchesSubstring(kSourceLocationTestInput,
-                                    "message C {\n"
-                                    "  extend MessageWithExtensions {\n"
-                                    "    optional C message_extension = 1002;\n"
-                                    "  }\n"
-                                    "}"));
+                                    R"schema(message C {
+  extend MessageWithExtensions {
+    optional C message_extension = 1002;
+  }
+})schema"));
 
   const FieldDescriptor* message_extension_desc =
       c_desc->FindExtensionByName("message_extension");
@@ -16823,8 +17857,9 @@ TEST_F(SourceLocationTest, GetSourceLocation_BogusSourceCodeInfo) {
 // ===================================================================
 
 const char* const kCopySourceCodeInfoToTestInput =
-    "syntax = \"proto2\";\n"
-    "message Foo {}\n";
+    R"schema(syntax = "proto2";
+message Foo {}
+)schema";
 
 // Required since source code information is not preserved by
 // FileDescriptorTest.

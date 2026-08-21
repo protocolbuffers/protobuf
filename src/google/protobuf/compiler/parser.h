@@ -572,7 +572,7 @@ class PROTOBUF_EXPORT Parser final {
   SourceLocationTable* source_location_table_;  // legacy
   bool had_errors_;
   bool require_syntax_identifier_;
-  bool limit_group_nesting_ = false;
+  bool limit_group_nesting_ = true;
   bool stop_after_syntax_identifier_;
   std::string syntax_identifier_;
   Edition edition_ = Edition::EDITION_UNKNOWN;

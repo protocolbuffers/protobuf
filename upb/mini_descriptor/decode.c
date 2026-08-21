@@ -31,6 +31,7 @@
 #include "upb/mini_table/internal/sub.h"
 #include "upb/mini_table/message.h"
 #include "upb/mini_table/sub.h"
+#include "upb/port/overflow.h"
 
 // Our awkward dance for including fasttable only when it is enabled.
 #include "upb/port/def.inc"
@@ -542,7 +543,9 @@ static void upb_MtDecoder_ParseMessage(upb_MtDecoder* d, const char* data,
       sizeof(upb_MiniTableField) + sizeof(upb_MiniTableSubInternal);
   // Buffer length is an upper bound on the number of fields. We will return
   // what we don't use.
-  if ((SIZE_MAX - 4) / bytes_per_field < len) {
+  size_t initial_bytes;
+  if (upb_MulOverflow(bytes_per_field, len, &initial_bytes) ||
+      upb_AddOverflow(initial_bytes, (size_t)4, &initial_bytes)) {
     upb_MdDecoder_ErrorJmp(&d->base, "MiniDescriptor is too large");
   }
   // Max size used per field is a upb_MiniTableField and a
@@ -553,7 +556,6 @@ static void upb_MtDecoder_ParseMessage(upb_MtDecoder* d, const char* data,
                             UPB_ALIGN_OF(upb_MiniTableField) <=
                         4,
                     "alignment difference is too large");
-  const size_t initial_bytes = bytes_per_field * len + 4;
   d->fields = upb_Arena_Malloc(d->arena, initial_bytes);
   upb_MdDecoder_CheckOutOfMemory(&d->base, d->fields);
 

@@ -28,7 +28,8 @@ UPB_FORCEINLINE void _upb_FastDecoder_PickHandlerForExtensionOrUnknown(
     uint16_t tag, upb_DecodeFastNext* next) {
   uint32_t field_num;
   uint32_t tag_len;
-  if (UPB_UNLIKELY(!_upb_DecodeFast_ParseTag(ptr, tag, &field_num, &tag_len))) {
+  if (UPB_UNLIKELY(!_upb_DecodeFast_ParseTag(ptr, tag, &field_num, &tag_len) ||
+                   field_num == 0)) {
     UPB_DECODEFAST_ERROR(d, kUpb_DecodeStatus_Malformed, next);
     return;
   }

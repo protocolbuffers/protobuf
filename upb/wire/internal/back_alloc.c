@@ -14,6 +14,7 @@
 #include "upb/base/internal/log2.h"
 #include "upb/mem/internal/alloc.h"
 #include "upb/mem/internal/arena.h"
+#include "upb/port/overflow.h"
 
 // Must be last.
 #include "upb/port/def.inc"
@@ -54,12 +55,12 @@ static size_t upb_BackAlloc_CalcBlockSize(upb_BackAlloc* a, size_t required,
 
 static char* upb_BackAlloc_Realloc(upb_BackAlloc* a, char* ptr, size_t n) {
   size_t copy = a->limit - ptr;
-  if (SIZE_MAX - copy < n) {
+  size_t required_block_size;
+  if (upb_AddOverflow(copy, n, &required_block_size)) {
     return NULL;
   }
 
   bool one_off = false;
-  size_t required_block_size = copy + n;
   size_t size = upb_BackAlloc_CalcBlockSize(a, required_block_size, &one_off);
 
   char* block = UPB_PRIVATE(_upb_Arena_AllocBlock)(a->arena, &size);

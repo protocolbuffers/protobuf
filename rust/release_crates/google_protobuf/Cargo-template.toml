@@ -1,0 +1,9 @@
+[package]
+name = "google-protobuf"
+version = "{PROTOBUF_RUST_VERSION}"
+edition = "2021"  
+license = "BSD-3-Clause"
+description = "Protocol Buffers - Google's data interchange format"
+
+[dependencies]
+protobuf = { version = "{PROTOBUF_LEGACY_VERSION}", path = "../protobuf" }
