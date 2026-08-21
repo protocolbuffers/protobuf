@@ -21,6 +21,7 @@
 #include <gtest/gtest.h>
 #include "absl/status/status.h"
 #include "absl/status/statusor.h"
+#include "absl/strings/cord.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/descriptor_database.h"
@@ -1304,6 +1305,23 @@ TEST_P(JsonTest, TestAny) {
   EXPECT_EQ(round_trip->value(), "");
 }
 
+TEST_P(JsonTest, TestAnyWrappingEmptyValue) {
+  google::protobuf::Value empty_value;
+  google::protobuf::Any any;
+  ASSERT_TRUE(any.PackFrom(empty_value));
+
+  auto as_json = ToJson(any);
+  ASSERT_OK(as_json);
+  EXPECT_EQ(*as_json,
+            R"({"@type":"type.googleapis.com/google.protobuf.Value"})");
+
+  auto round_trip = ToProto<google::protobuf::Any>(*as_json);
+  ASSERT_OK(round_trip);
+  EXPECT_EQ(round_trip->type_url(),
+            "type.googleapis.com/google.protobuf.Value");
+  EXPECT_EQ(round_trip->value(), "");
+}
+
 TEST_P(JsonTest, TestDuration) {
   auto m = ToProto<proto3::TestDuration>(R"json(
     {
@@ -1458,6 +1476,50 @@ TEST_P(JsonTest, TestFieldMaskSnakeCase) {
   ASSERT_OK(m);
 
   EXPECT_THAT(m->value().paths(), ElementsAre("foo_bar"));
+}
+
+// Documents a known spec-level design limitation in ProtoJSON FieldMask
+// representation: certain field paths (leading underscores, uppercase letters)
+// are not round-trip safe through the snake_case<->lowerCamelCase conversion.
+// This is a design bug in the ProtoJSON WKT spec, not in the C++
+// implementation. See:
+// https://protobuf.dev/programming-guides/json/#wkt-roundtrip-limitations
+TEST_P(JsonTest, TestFieldMaskJsonRoundTripNonIdempotent) {
+  // Start with a non-canonical path containing leading underscores and
+  // uppercase.
+  google::protobuf::FieldMask fm0;
+  fm0.add_paths("__Y");
+
+  // Round-trip through JSON once.
+  proto3::TestFieldMask wrapper0;
+  *wrapper0.mutable_value() = fm0;
+  auto json0 = ToJson(wrapper0);
+  ASSERT_OK(json0);
+
+  auto wrapper1 = ToProto<proto3::TestFieldMask>(*json0);
+  ASSERT_OK(wrapper1);
+  auto json1 = ToJson(*wrapper1);
+  ASSERT_OK(json1);
+
+  // Round-trip again.
+  auto wrapper2 = ToProto<proto3::TestFieldMask>(*json1);
+  ASSERT_OK(wrapper2);
+  auto json2 = ToJson(*wrapper2);
+  ASSERT_OK(json2);
+
+  // Spec limitation: The path shifts across round-trips because the
+  // snake_case<->lowerCamelCase conversion is not bijective for paths with
+  // leading underscores or uppercase letters.  "__Y" -> "__y" -> "_y" over
+  // two hops.
+  // See:
+  // https://protobuf.dev/programming-guides/json/#wkt-roundtrip-limitations
+  EXPECT_NE(*json0, *json1)
+      << "If this starts passing, the FieldMask JSON round-trip "
+         "non-idempotency bug may be fixed. Update this test.";
+
+  // The third round-trip does stabilize (fixed point after 2-3 hops).
+  EXPECT_EQ(*json1, *json2)
+      << "Expected JSON to stabilize after two round-trips";
 }
 
 TEST_P(JsonTest, TestLegalNullsInArray) {
@@ -1633,6 +1695,43 @@ TEST(JsonErrorTest, FieldNameAndSyntaxErrorInSeparateChunks) {
       s.message(),
       ContainsRegex("invalid *JSON *in *type.googleapis.com/proto3.TestMessage "
                     "*@ *bool_value"));
+}
+
+TEST_P(JsonTest, OversizedStringRejected) {
+#ifndef NDEBUG
+  GTEST_SKIP() << "Test is too slow in non-opt builds.";
+#else
+
+  if (!internal::RunLargeMemoryTests()) {
+    GTEST_SKIP() << "Not enough memory for this test.";
+  }
+
+  absl::Cord chunk(std::string(1024 * 1024, 'a'));
+  absl::Cord cord;
+  cord.Append(R"({"stringValue": ")");
+  for (int i = 0; i < 2048; ++i) {
+    cord.Append(chunk);
+  }
+  cord.Append(R"("})");
+
+  io::CordInputStream input_stream(&cord);
+  TestMessage m;
+  absl::Status s;
+
+  if (GetParam() == Codec::kReflective) {
+    s = JsonStreamToMessage(&input_stream, &m, ParseOptions());
+  } else {
+    std::string result;
+    io::StringOutputStream out(&result);
+    s = JsonToBinaryStream(
+        resolver_.get(), absl::StrCat("type.googleapis.com/", m.GetTypeName()),
+        &input_stream, &out, ParseOptions());
+  }
+
+  EXPECT_THAT(s, StatusIs(absl::StatusCode::kInvalidArgument));
+  EXPECT_THAT(s.message(), ContainsRegex("string *value *too *large"));
+
+#endif  // NDEBUG
 }
 
 absl::StatusOr<google::protobuf::Struct> MessageToJsonAndBack(

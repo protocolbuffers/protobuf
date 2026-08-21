@@ -125,6 +125,11 @@ UPB_PRIVATE(_upb_MiniTable_ExtModeBase)(const struct upb_MiniTable* m) {
   return UPB_PRIVATE(_upb_ExtMode_Base)(m->UPB_PRIVATE(ext));
 }
 
+UPB_FORCEINLINE bool UPB_PRIVATE(_upb_MiniTable_IsExtendable)(
+    const struct upb_MiniTable* m) {
+  return UPB_PRIVATE(_upb_MiniTable_ExtModeBase)(m) == kUpb_ExtMode_Extendable;
+}
+
 UPB_API_INLINE bool upb_MiniTable_IsMessageSet(const struct upb_MiniTable* m) {
   return UPB_PRIVATE(_upb_MiniTable_ExtModeBase)(m) ==
          kUpb_ExtMode_IsMessageSet;

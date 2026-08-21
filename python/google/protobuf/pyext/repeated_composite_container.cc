@@ -16,6 +16,7 @@
 #include "google/protobuf/dynamic_message.h"
 #include "google/protobuf/message.h"
 #include "google/protobuf/reflection.h"
+#include "google/protobuf/breaking_changes.h"
 #include "google/protobuf/pyext/descriptor.h"
 #include "google/protobuf/pyext/descriptor_pool.h"
 #include "google/protobuf/pyext/message.h"
@@ -27,6 +28,7 @@ namespace protobuf {
 namespace python {
 
 namespace repeated_composite_container {
+
 
 // ---------------------------------------------------------------------
 // len()
@@ -281,8 +283,7 @@ static PyObject* Remove(PyObject* pself, PyObject* value) {
   RepeatedCompositeContainer* self =
       reinterpret_cast<RepeatedCompositeContainer*>(pself);
 
-  if (self->parent->state == python::MESSAGE_FROZEN) {
-    PyErr_SetString(PyExc_TypeError, "Message is immutable.");
+  if (CheckFrozen(self->parent, "Container is immutable") < 0) {
     return nullptr;
   }
 
@@ -403,8 +404,7 @@ static PyObject* Sort(PyObject* pself, PyObject* args, PyObject* kwds) {
   RepeatedCompositeContainer* self =
       reinterpret_cast<RepeatedCompositeContainer*>(pself);
 
-  if (self->parent->state == python::MESSAGE_FROZEN) {
-    PyErr_SetString(PyExc_TypeError, "Message is immutable.");
+  if (CheckFrozen(self->parent, "Container is immutable") < 0) {
     return nullptr;
   }
 
@@ -453,8 +453,7 @@ static PyObject* Reverse(PyObject* pself) {
   RepeatedCompositeContainer* self =
       reinterpret_cast<RepeatedCompositeContainer*>(pself);
 
-  if (self->parent->state == python::MESSAGE_FROZEN) {
-    PyErr_SetString(PyExc_TypeError, "Message is immutable.");
+  if (CheckFrozen(self->parent, "Container is immutable") < 0) {
     return nullptr;
   }
 
@@ -498,8 +497,7 @@ static PyObject* Pop(PyObject* pself, PyObject* args) {
   RepeatedCompositeContainer* self =
       reinterpret_cast<RepeatedCompositeContainer*>(pself);
 
-  if (self->parent->state == python::MESSAGE_FROZEN) {
-    PyErr_SetString(PyExc_TypeError, "Message is immutable.");
+  if (CheckFrozen(self->parent, "Container is immutable") < 0) {
     return nullptr;
   }
 
@@ -602,7 +600,7 @@ PyTypeObject RepeatedCompositeContainer_Type = {
 #if PY_VERSION_HEX >= 0x03080000
     0,  //  tp_vectorcall_offset
 #else
-    nullptr,             //  tp_print
+    nullptr,  //  tp_print
 #endif
     nullptr,                                   //  tp_getattr
     nullptr,                                   //  tp_setattr

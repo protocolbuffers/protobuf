@@ -6,13 +6,18 @@ load("//build_defs:cpp_opts.bzl", "COPTS")
 
 cc_library(
     name = "fg",
+    srcs = ["field_generator.cc"],
     hdrs = ["field_generator.h"],
     copts = COPTS,
     strip_include_prefix = "/src",
     visibility = ["//src/google/protobuf/compiler/kotlin:__subpackages__"],
     deps = [
+        "//src/google/protobuf/compiler/java:context",
         "//src/google/protobuf/compiler/java:generator_common",
+        "//src/google/protobuf/compiler/java:helpers",
         "//src/google/protobuf/io:printer",
+        "@abseil-cpp//absl/container:flat_hash_map",
+        "@abseil-cpp//absl/strings",
     ],
 )
 
@@ -121,6 +126,7 @@ cc_library(
         "message.cc",
         "message.h",
         "message_builder.cc",
+        "oneof_generator.cc",
     ],
     hdrs = [
         "generator_factory.h",
@@ -131,6 +137,7 @@ cc_library(
         "message.h",
         "extension.h",
         "message_builder.h",
+        "oneof_generator.h",
     ],
     copts = COPTS,
     strip_include_prefix = "/src",
@@ -156,7 +163,9 @@ cc_library(
         "//src/google/protobuf/io:printer",
         "@abseil-cpp//absl/container:btree",
         "@abseil-cpp//absl/container:flat_hash_map",
+        "@abseil-cpp//absl/container:flat_hash_set",
         "@abseil-cpp//absl/log:absl_check",
         "@abseil-cpp//absl/strings",
+        "@abseil-cpp//absl/types:span",
     ],
 )

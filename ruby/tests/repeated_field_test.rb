@@ -364,6 +364,23 @@ class RepeatedFieldTest < Test::Unit::TestCase
     end
   end
 
+  def test_plus_fuse_arena
+    rf1 = Google::Protobuf::RepeatedField.new(:message, TestMessage2)
+    rf2 = Google::Protobuf::RepeatedField.new(:message, TestMessage2)
+
+    rf2.push(TestMessage2.new(:foo => 42))
+
+    combined = rf1 + rf2
+
+    assert_equal(1, combined.length)
+    assert_equal(42, combined[0].foo)
+
+    rf2 = nil
+    GC.start
+
+    assert_equal(42, combined[0].foo)
+  end
+
   def test_replace
     m = TestMessage.new
     reference_arr = %w(foo bar baz)

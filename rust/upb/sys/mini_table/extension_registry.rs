@@ -27,7 +27,6 @@ pub enum ExtensionRegistryStatus {
     Ok = 0,
     DuplicateEntry = 1,
     OutOfMemory = 2,
-    InvalidExtension = 3,
 }
 // LINT.ThenChange(//depot/google3/third_party/upb/upb/mini_table/extension_registry.h)
 

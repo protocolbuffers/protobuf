@@ -89,12 +89,13 @@ public abstract class AbstractProto2LiteSchemaTest extends AbstractSchemaTest<Pr
     return messageFactory().newMessagesMissingRequiredFields();
   }
 
+  @SuppressWarnings("unchecked")
   @Test
   public void mapsShouldRoundtrip() throws IOException {
     roundtrip(
         "Proto2MessageLiteWithMaps",
         new Proto2MessageLiteFactory(2, 10, 2, 2).newMessageWithMaps(),
-        Protobuf.getInstance().schemaFor(Proto2MessageLiteWithMaps.class));
+        Protobuf.getInstance().schemaFor((Class) Proto2MessageLiteWithMaps.class));
   }
 
   @Test
@@ -106,7 +107,7 @@ public abstract class AbstractProto2LiteSchemaTest extends AbstractSchemaTest<Pr
 
     // Merge serialized bytes into an empty message, then reserialize and merge it to a new
     // Proto2Message. Make sure the two messages equal.
-    byte[] roundtripBytes = ExperimentalSerializationUtil.toByteArray(empty);
+    byte[] roundtripBytes = empty.toByteArray();
     Proto2MessageLite roundtripMessage =
         ExperimentalSerializationUtil.fromByteArray(roundtripBytes, Proto2MessageLite.class);
     assertThat(roundtripMessage).isEqualTo(expectedMessage);

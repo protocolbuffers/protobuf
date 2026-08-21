@@ -57,7 +57,8 @@ class Option extends \Google\Protobuf\Internal\Message
      *           value using the google.protobuf.Int32Value type.
      * }
      */
-    public function __construct($data = NULL) {
+    public function __construct($data = null)
+    {
         \GPBMetadata\Google\Protobuf\Type::initOnce();
         parent::__construct($data);
     }

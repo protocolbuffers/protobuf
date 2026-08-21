@@ -1862,7 +1862,8 @@ TEST_F(CommandLineInterfaceTest, ImportOptions_MissingImport) {
 
   Run("protocol_compiler --proto_path=$tmpdir --test_out=$tmpdir foo.proto "
       "--experimental_editions");
-  ExpectErrorSubstring("options.proto: File not found");
+  ExpectErrorSubstring(
+      "foo.proto:3:21: Import \"options.proto\" was not found or had errors.");
 }
 
 TEST_F(CommandLineInterfaceTest, ValidateFeatureSupportError) {
@@ -2544,7 +2545,7 @@ TEST_F(CommandLineInterfaceTest, UnstableEditionWithoutFlag) {
       "--test_out=$tmpdir foo.proto");
   ExpectErrorSubstring(
       "foo.proto: is a file using edition UNSTABLE, which is later than "
-      "the protoc maximum supported edition 2024.");
+      "the protoc maximum supported edition 2026.");
 }
 
 TEST_F(CommandLineInterfaceTest, EditionDefaults) {
@@ -2619,8 +2620,23 @@ TEST_F(CommandLineInterfaceTest, EditionDefaults) {
         enforce_proto_limits: LEGACY_NO_EXPLICIT_LIMITS
       }
     }
+    defaults {
+      edition: EDITION_2026
+      overridable_features {
+        field_presence: EXPLICIT
+        enum_type: OPEN
+        repeated_field_encoding: PACKED
+        utf8_validation: VERIFY
+        message_encoding: LENGTH_PREFIXED
+        json_format: ALLOW
+        enforce_naming_style: STYLE2026
+        default_symbol_visibility: STRICT
+        enforce_proto_limits: PROTO_LIMITS2026
+      }
+      fixed_features {}
+    }
     minimum_edition: EDITION_PROTO2
-    maximum_edition: EDITION_2024
+    maximum_edition: EDITION_2026
   )pb"));
 }
 
@@ -2706,7 +2722,7 @@ TEST_F(CommandLineInterfaceTest, EditionDefaultsWithMaximum) {
             message_encoding: LENGTH_PREFIXED
             json_format: ALLOW
             enforce_naming_style: STYLE2026
-            default_symbol_visibility: EXPORT_TOP_LEVEL
+            default_symbol_visibility: STRICT
             enforce_proto_limits: PROTO_LIMITS2026
           }
           fixed_features {}
@@ -2824,7 +2840,7 @@ TEST_F(CommandLineInterfaceTest, EditionDefaultsWithMinimum) {
             message_encoding: LENGTH_PREFIXED
             json_format: ALLOW
             enforce_naming_style: STYLE2026
-            default_symbol_visibility: EXPORT_TOP_LEVEL
+            default_symbol_visibility: STRICT
             enforce_proto_limits: PROTO_LIMITS2026
           }
           fixed_features {}
@@ -3665,14 +3681,66 @@ TEST_F(CommandLineInterfaceTest, ImportOption_DescriptorSetIn_MissingImport) {
       "--descriptor_set_out=$tmpdir/descriptor_set "
       "--descriptor_set_in=$tmpdir/foo.bin foo.proto");
 
-  ExpectErrorSubstring("bar.proto: File not found");
-  ExpectErrorSubstring(
-      "google/protobuf/cpp_features.proto: File not found");
   ExpectErrorSubstring(
       "foo.proto:3:7: Import \"bar.proto\" was not found or had errors");
   ExpectErrorSubstring(
       "foo.proto:4:7: Import \"google/protobuf/cpp_features.proto\" was "
       "not found or had errors");
+}
+
+TEST_F(CommandLineInterfaceTest,
+       ImportOption_DescriptorSetInAndProtoPath_MissingOptionDependency) {
+  FileDescriptorSet file_descriptor_set;
+
+  FileDescriptorProto::descriptor()->file()->CopyTo(
+      file_descriptor_set.add_file());
+  FileDescriptorProto* file = file_descriptor_set.add_file();
+  file->set_syntax("editions");
+  file->set_edition(Edition::EDITION_2024);
+  file->add_dependency(file_descriptor_set.file(0).name());
+  file->add_option_dependency(pb::CppFeatures::descriptor()->file()->name());
+  file->set_name("foo.proto");
+  DescriptorProto* message = file->add_message_type();
+  message->set_name("Foo");
+  FieldDescriptorProto* field = message->add_extension();
+  field->set_type(FieldDescriptorProto::TYPE_STRING);
+  field->set_name("ext");
+  field->set_number(1234567);
+  field->set_extendee(".google.protobuf.FileOptions");
+  field->mutable_options()
+      ->mutable_features()
+      ->MutableExtension(pb::cpp)
+      ->set_string_type(pb::CppFeatures::VIEW);
+
+  CreateTempFile("bar.proto",
+                 R"schema(
+      edition = "2024";
+      import option "foo.proto";
+      option (Foo.ext) = "hello";
+    )schema");
+
+  WriteDescriptorSet("foo.bin", &file_descriptor_set);
+  Run("protocol_compiler --test_out=$tmpdir --proto_path=$tmpdir "
+      "--descriptor_set_out=$tmpdir/descriptor_set "
+      "--descriptor_set_in=$tmpdir/foo.bin bar.proto");
+
+  ExpectNoErrors();
+
+  FileDescriptorSet descriptor_set;
+  ReadDescriptorSet("descriptor_set", &descriptor_set);
+  ASSERT_FALSE(HasFatalFailure());
+  ASSERT_EQ(descriptor_set.file_size(), 1);
+  EXPECT_EQ(descriptor_set.file(0).name(), "bar.proto");
+  ASSERT_EQ(descriptor_set.file(0).options().unknown_fields().field_count(), 1);
+  // Descriptor set should have custom options set.
+  EXPECT_EQ(descriptor_set.file(0)
+                .options()
+                .unknown_fields()
+                .field(0)
+                .length_delimited(),
+            "hello");
+  EXPECT_EQ(descriptor_set.file(0).options().unknown_fields().field(0).number(),
+            1234567);
 }
 
 TEST_F(CommandLineInterfaceTest, WriteDescriptorSetWithDuplicates) {
@@ -3842,9 +3910,9 @@ TEST_F(CommandLineInterfaceTest, WriteTransitiveOptionImportDescriptorSet) {
     std::swap(descriptor_set.mutable_file()->mutable_data()[0],
               descriptor_set.mutable_file()->mutable_data()[1]);
   }
-  EXPECT_EQ("foo.proto", descriptor_set.file(0).name());
-  EXPECT_EQ("google/protobuf/descriptor.proto", descriptor_set.file(1).name());
-  EXPECT_EQ("custom_option.proto", descriptor_set.file(2).name());
+  EXPECT_EQ("google/protobuf/descriptor.proto", descriptor_set.file(0).name());
+  EXPECT_EQ("custom_option.proto", descriptor_set.file(1).name());
+  EXPECT_EQ("foo.proto", descriptor_set.file(2).name());
   EXPECT_EQ("bar.proto", descriptor_set.file(3).name());
 }
 
@@ -4417,6 +4485,15 @@ TEST_F(CommandLineInterfaceTest, MissingInputError) {
   ExpectErrorText("Missing input file.\n");
 }
 
+TEST_F(CommandLineInterfaceTest, MissingInputFileError) {
+  // Test that we get an error if no inputs are found.
+
+  Run("protocol_compiler --test_out=$tmpdir "
+      "--proto_path=$tmpdir foo.proto");
+
+  ExpectErrorSubstring("foo.proto: No such file or directory");
+}
+
 TEST_F(CommandLineInterfaceTest, MissingOutputError) {
   CreateTempFile("foo.proto",
                  "syntax = \"proto2\";\n"
@@ -4642,13 +4719,54 @@ TEST_F(CommandLineInterfaceTest, GeneratorPluginNotFound) {
   // Error written to stdout by child process after exec() fails.
   ExpectErrorSubstring("no_such_file: program not found or is not executable");
 
+  // The plugin was registered with an explicit path (--plugin=name=path), so
+  // it is run by exact name and the PATH is never consulted. The suggestion
+  // must not point at the PATH, which would be misleading here.
+  ExpectErrorSubstring(
+      "Please specify a program using an absolute path or a path "
+      "relative to the current working directory");
+
+  // Error written by parent process when child fails.
+  ExpectErrorSubstring(
+      "--badplug_out: prefix-gen-badplug: Plugin failed with status code 1.");
+#endif
+}
+
+TEST_F(CommandLineInterfaceTest, GeneratorPluginNotFoundInPath) {
+  // Test the error when a plugin run via the PATH (SEARCH_PATH mode) isn't
+  // found. No --plugin is given, so protoc derives the plugin executable name
+  // from the output directive and looks for it on the PATH.
+
+  CreateTempFile("error.proto",
+                 "syntax = \"proto2\";\n"
+                 "message Foo {}\n");
+
+  Run("protocol_compiler --no_such_plugin_out=TestParameter:$tmpdir "
+      "--proto_path=$tmpdir error.proto");
+
+#ifdef _WIN32
+  // On Windows a PATH-searched plugin is launched through `cmd.exe /c`, which
+  // starts successfully and then fails to find the plugin, exiting nonzero.
+  // cmd.exe's own "not recognized" message is locale dependent, so assert on
+  // the stable status-code line protoc emits for the failed child.
+  ExpectErrorSubstring(
+      "--no_such_plugin_out: prefix-gen-no_such_plugin: Plugin failed with "
+      "status code");
+#else
+  // Error written to stdout by child process after exec() fails.
+  ExpectErrorSubstring(
+      "prefix-gen-no_such_plugin: program not found or is not executable");
+
+  // Here the plugin really is looked up on the PATH, so suggesting it is
+  // correct.
   ExpectErrorSubstring(
       "Please specify a program using absolute path or make sure "
       "the program is available in your PATH system variable");
 
   // Error written by parent process when child fails.
   ExpectErrorSubstring(
-      "--badplug_out: prefix-gen-badplug: Plugin failed with status code 1.");
+      "--no_such_plugin_out: prefix-gen-no_such_plugin: Plugin failed with "
+      "status code 1.");
 #endif
 }
 
@@ -5735,6 +5853,42 @@ TEST_F(CommandLineInterfaceTest, VisibilityFeatureSetStrictBadNestedMessage) {
       "be `export` with STRICT default_symbol_visibility");
 }
 
+TEST_F(CommandLineInterfaceTest, JavaGenericServicesWarning) {
+  CreateTempFile("foo.proto",
+                 "syntax = \"proto2\";\n"
+                 "option java_generic_services = true;\n"
+                 "message Foo {}\n");
+
+  Run("protocol_compiler --test_out=$tmpdir "
+      "--proto_path=$tmpdir foo.proto");
+
+  ExpectWarningSubstring("Generic services");
+}
+
+TEST_F(CommandLineInterfaceTest, CppGenericServicesWarning) {
+  CreateTempFile("foo.proto",
+                 "syntax = \"proto2\";\n"
+                 "option cc_generic_services = true;\n"
+                 "message Foo {}\n");
+
+  Run("protocol_compiler --test_out=$tmpdir "
+      "--proto_path=$tmpdir foo.proto");
+
+  ExpectWarningSubstring("Generic services");
+}
+
+TEST_F(CommandLineInterfaceTest, PythonGenericServicesWarning) {
+  CreateTempFile("foo.proto",
+                 "syntax = \"proto2\";\n"
+                 "option py_generic_services = true;\n"
+                 "message Foo {}\n");
+
+  Run("protocol_compiler --test_out=$tmpdir "
+      "--proto_path=$tmpdir foo.proto");
+
+  ExpectWarningSubstring("Generic services");
+}
+
 // ===================================================================
 
 // Test for --encode and --decode.  Note that it would be easier to do this
@@ -5966,6 +6120,17 @@ TEST_P(EncodeDecodeTest, Partial) {
   EXPECT_TRUE(
       Run("google/protobuf/unittest.proto"
           " --encode=proto2_unittest.TestRequired"));
+  ExpectStdoutMatchesText("");
+  ExpectWarning("warning:  Input message is missing required fields:  a, b, c");
+}
+
+TEST_P(EncodeDecodeTest, PartialWithFatalWarnings) {
+  RedirectStdinFromText("");
+  // With --fatal_warnings, the missing-required-fields warning must make protoc
+  // exit non-zero, while still emitting the warning and the output.
+  EXPECT_FALSE(
+      Run("google/protobuf/unittest.proto"
+          " --encode=proto2_unittest.TestRequired --fatal_warnings"));
   ExpectStdoutMatchesText("");
   ExpectWarning("warning:  Input message is missing required fields:  a, b, c");
 }

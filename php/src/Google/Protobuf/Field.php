@@ -113,7 +113,8 @@ class Field extends \Google\Protobuf\Internal\Message
      *           The string value of the default value of this field. Proto2 syntax only.
      * }
      */
-    public function __construct($data = NULL) {
+    public function __construct($data = null)
+    {
         \GPBMetadata\Google\Protobuf\Type::initOnce();
         parent::__construct($data);
     }

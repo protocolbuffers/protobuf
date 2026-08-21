@@ -11,17 +11,21 @@
 
 #include "google/protobuf/compiler/java/full/message_builder.h"
 
+#include <algorithm>
 #include <cstdint>
 #include <memory>
 #include <string>
 #include <vector>
 
+#include "absl/container/btree_map.h"
 #include "absl/container/btree_set.h"
 #include "absl/container/flat_hash_map.h"
 #include "absl/log/absl_check.h"
 #include "absl/strings/ascii.h"
 #include "absl/strings/str_cat.h"
+#include "absl/strings/str_replace.h"
 #include "absl/strings/string_view.h"
+#include "absl/types/span.h"
 #include "google/protobuf/compiler/code_generator_lite.h"
 #include "google/protobuf/compiler/java/context.h"
 #include "google/protobuf/compiler/java/doc_comment.h"
@@ -32,9 +36,11 @@
 #include "google/protobuf/compiler/java/full/extension.h"
 #include "google/protobuf/compiler/java/full/field_generator.h"
 #include "google/protobuf/compiler/java/full/make_field_gens.h"
+#include "google/protobuf/compiler/java/full/oneof_generator.h"
 #include "google/protobuf/compiler/java/name_resolver.h"
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/io/printer.h"
+#include "google/protobuf/io/zero_copy_stream_impl_lite.h"
 #include "google/protobuf/wire_format.h"
 #include "google/protobuf/wire_format_lite.h"
 
@@ -50,6 +56,21 @@ using internal::WireFormat;
 using internal::WireFormatLite;
 
 namespace {
+
+// The maximum number of merging code snippets generated per method.
+// If a message has more fields/oneofs than this threshold, the mergeFrom
+// method is split into smaller subfunctions to ensure that Java can compile
+// and optimize them.
+constexpr int kMergeMethodSplitThreshold = 32;
+
+// Represents a contiguous chunk of field/oneof merging code snippets
+// that will be generated together in a single subfunction.
+struct MergeCodeChunk {
+  int start_index;
+  int size;
+  std::string method_suffix;
+};
+
 std::string MapValueImmutableClassdName(const Descriptor* descriptor,
                                         ClassNameResolver* name_resolver) {
   const FieldDescriptor* value_field = descriptor->map_value();
@@ -76,21 +97,18 @@ bool BitfieldTracksMutability(const FieldDescriptor* const descriptor) {
 }
 }  // namespace
 
-MessageBuilderGenerator::MessageBuilderGenerator(const Descriptor* descriptor,
-                                                 Context* context)
+MessageBuilderGenerator::MessageBuilderGenerator(
+    const Descriptor* descriptor, Context* context,
+    const absl::btree_map<int, std::unique_ptr<OneofGenerator>>&
+        oneof_generators)
     : descriptor_(descriptor),
       context_(context),
       name_resolver_(context->GetNameResolver()),
-      field_generators_(MakeImmutableFieldGenerators(descriptor, context_)) {
+      field_generators_(MakeImmutableFieldGenerators(descriptor, context_)),
+      oneof_generators_(oneof_generators) {
   ABSL_CHECK(HasDescriptorMethods(descriptor->file(), context->EnforceLite()))
       << "Generator factory error: A non-lite message generator is used to "
          "generate lite messages.";
-  for (int i = 0; i < descriptor_->field_count(); i++) {
-    if (IsRealOneof(descriptor_->field(i))) {
-      const OneofDescriptor* oneof = descriptor_->field(i)->containing_oneof();
-      ABSL_CHECK(oneofs_.emplace(oneof->index(), oneof).first->second == oneof);
-    }
-  }
 }
 
 MessageBuilderGenerator::~MessageBuilderGenerator() = default;
@@ -127,50 +145,14 @@ void MessageBuilderGenerator::Generate(io::Printer* printer) {
   }
 
   // oneof
-  absl::flat_hash_map<absl::string_view, std::string> vars = {
-      // These variables are placeholders to pick out the beginning and ends of
-      // identifiers for annotations (when doing so with existing variables
-      // would be ambiguous or impossible). They should never be set to anything
-      // but the empty string.
-      {"{", ""},
-      {"}", ""},
-  };
-  for (auto& kv : oneofs_) {
-    const OneofDescriptor* oneof = kv.second;
-    vars["oneof_name"] = context_->GetOneofGeneratorInfo(oneof)->name;
-    vars["oneof_capitalized_name"] =
-        context_->GetOneofGeneratorInfo(oneof)->capitalized_name;
-    vars["oneof_index"] = absl::StrCat(oneof->index());
-    // oneofCase_ and oneof_
-    printer->Print(vars,
-                   "private int $oneof_name$Case_ = 0;\n"
-                   "private java.lang.Object $oneof_name$_;\n");
-    // getOneofCase()
-    printer->Print(vars,
-                   "public $oneof_capitalized_name$Case\n"
-                   "    ${$get$oneof_capitalized_name$Case$}$() {\n"
-                   "  return $oneof_capitalized_name$Case.forNumber(\n"
-                   "      $oneof_name$Case_);\n"
-                   "}\n");
-    printer->Annotate("{", "}", oneof);
-    // clearOneof()
-    printer->Print(vars,
-                   "\n"
-                   "public Builder ${$clear$oneof_capitalized_name$$}$() {\n"
-                   "  $oneof_name$Case_ = 0;\n"
-                   "  $oneof_name$_ = null;\n"
-                   "  onChanged();\n"
-                   "  return this;\n"
-                   "}\n"
-                   "\n");
-    printer->Annotate("{", "}", oneof, io::AnnotationCollector::Semantic::kSet);
+  for (const auto& kv : oneof_generators_) {
+    kv.second->GenerateCommonBuilderMethods(printer);
   }
 
   // Integers for bit fields.
   int totalBits = 0;
   for (int i = 0; i < descriptor_->field_count(); i++) {
-    totalBits +=
-        field_generators_.get(descriptor_->field(i)).GetNumBitsForBuilder();
+    totalBits += field_generators_.get(descriptor_->field(i)).GetNumBits();
   }
   int totalInts = (totalBits + 31) / 32;
   for (int i = 0; i < totalInts; i++) {
@@ -284,6 +266,23 @@ void MessageBuilderGenerator::GenerateDescriptorMethods(io::Printer* printer) {
 
 void MessageBuilderGenerator::GenerateCommonBuilderMethods(
     io::Printer* printer) {
+  GenerateBuilderConstructors(printer);
+  GenerateBuilderClearMethod(printer);
+  GenerateBuilderGetDescriptorForTypeMethod(printer);
+  GenerateBuilderGetDefaultInstanceForTypeMethod(printer);
+  GenerateBuilderBuildMethod(printer);
+  GenerateBuildPartial(printer);
+  GenerateBuilderExtensionMethods(printer);
+
+  // -----------------------------------------------------------------
+
+  if (context_->HasGeneratedMethods(descriptor_)) {
+    GenerateBuilderMergeFromMethods(printer);
+  }
+}
+
+void MessageBuilderGenerator::GenerateBuilderConstructors(
+    io::Printer* printer) {
   // Decide if we really need to have the "maybeForceBuilderInitialization()"
   // method.
   // TODO: Remove the need for this entirely
@@ -340,7 +339,9 @@ void MessageBuilderGenerator::GenerateCommonBuilderMethods(
         "  }\n"
         "}\n");
   }
+}
 
+void MessageBuilderGenerator::GenerateBuilderClearMethod(io::Printer* printer) {
   printer->Print(
       "@java.lang.Override\n"
       "public Builder clear() {\n"
@@ -358,11 +359,8 @@ void MessageBuilderGenerator::GenerateCommonBuilderMethods(
         .GenerateBuilderClearCode(printer);
   }
 
-  for (auto& kv : oneofs_) {
-    printer->Print(
-        "$oneof_name$Case_ = 0;\n"
-        "$oneof_name$_ = null;\n",
-        "oneof_name", context_->GetOneofGeneratorInfo(kv.second)->name);
+  for (const auto& kv : oneof_generators_) {
+    kv.second->GenerateBuilderClearMethod(printer);
   }
 
   printer->Outdent();
@@ -371,7 +369,10 @@ void MessageBuilderGenerator::GenerateCommonBuilderMethods(
       "  return this;\n"
       "}\n"
       "\n");
+}
 
+void MessageBuilderGenerator::GenerateBuilderGetDescriptorForTypeMethod(
+    io::Printer* printer) {
   printer->Print(
       "@java.lang.Override\n"
       "public com.google.protobuf.Descriptors.Descriptor\n"
@@ -381,7 +382,10 @@ void MessageBuilderGenerator::GenerateCommonBuilderMethods(
       "\n",
       "fileclass", name_resolver_->GetImmutableClassName(descriptor_->file()),
       "identifier", UniqueFileScopeIdentifier(descriptor_));
+}
 
+void MessageBuilderGenerator::GenerateBuilderGetDefaultInstanceForTypeMethod(
+    io::Printer* printer) {
   // LITE runtime implements this in GeneratedMessageLite.
   printer->Print(
       "@java.lang.Override\n"
@@ -390,7 +394,9 @@ void MessageBuilderGenerator::GenerateCommonBuilderMethods(
       "}\n"
       "\n",
       "classname", name_resolver_->GetImmutableClassName(descriptor_));
+}
 
+void MessageBuilderGenerator::GenerateBuilderBuildMethod(io::Printer* printer) {
   printer->Print(
       "@java.lang.Override\n"
       "public $classname$ build() {\n"
@@ -402,9 +408,10 @@ void MessageBuilderGenerator::GenerateCommonBuilderMethods(
       "}\n"
       "\n",
       "classname", name_resolver_->GetImmutableClassName(descriptor_));
+}
 
-  GenerateBuildPartial(printer);
-
+void MessageBuilderGenerator::GenerateBuilderExtensionMethods(
+    io::Printer* printer) {
   // We include these methods only in open source to maintain long term ABI
   // compatibility, and there should be no need to include them in Google3.
   if (google::protobuf::internal::IsOss() && descriptor_->extension_range_count() > 0) {
@@ -434,81 +441,136 @@ void MessageBuilderGenerator::GenerateCommonBuilderMethods(
         "}\n",
         "classname", name_resolver_->GetImmutableClassName(descriptor_));
   }
+}
 
-  // -----------------------------------------------------------------
+void MessageBuilderGenerator::GenerateBuilderMergeFromMethods(
+    io::Printer* printer) {
+  printer->Print(
+      "@java.lang.Override\n"
+      "public Builder mergeFrom(com.google.protobuf.Message other) {\n"
+      "  if (other instanceof $classname$) {\n"
+      "    return mergeFrom(($classname$)other);\n"
+      "  } else {\n"
+      "    super.mergeFrom(other);\n"
+      "    return this;\n"
+      "  }\n"
+      "}\n"
+      "\n",
+      "classname", name_resolver_->GetImmutableClassName(descriptor_));
 
-  if (context_->HasGeneratedMethods(descriptor_)) {
-    printer->Print(
-        "@java.lang.Override\n"
-        "public Builder mergeFrom(com.google.protobuf.Message other) {\n"
-        "  if (other instanceof $classname$) {\n"
-        "    return mergeFrom(($classname$)other);\n"
-        "  } else {\n"
-        "    super.mergeFrom(other);\n"
-        "    return this;\n"
-        "  }\n"
-        "}\n"
-        "\n",
-        "classname", name_resolver_->GetImmutableClassName(descriptor_));
+  printer->Print(
+      "public Builder mergeFrom($classname$ other) {\n"
+      // Optimization:  If other is the default instance, we know none of its
+      //   fields are set so we can skip the merge.
+      "  if (other == $classname$.getDefaultInstance()) return this;\n",
+      "classname", name_resolver_->GetImmutableClassName(descriptor_));
+  printer->Indent();
 
-    printer->Print(
-        "public Builder mergeFrom($classname$ other) {\n"
-        // Optimization:  If other is the default instance, we know none of its
-        //   fields are set so we can skip the merge.
-        "  if (other == $classname$.getDefaultInstance()) return this;\n",
-        "classname", name_resolver_->GetImmutableClassName(descriptor_));
-    printer->Indent();
+  // Prepare a list to store generated code for each field and oneof.
+  std::vector<std::string> merging_code_list;
 
-    for (int i = 0; i < descriptor_->field_count(); i++) {
-      if (!IsRealOneof(descriptor_->field(i))) {
+  for (int i = 0; i < descriptor_->field_count(); i++) {
+    if (!IsRealOneof(descriptor_->field(i))) {
+      std::string field_code;
+      {
+        google::protobuf::io::StringOutputStream field_stream(&field_code);
+        google::protobuf::io::Printer field_printer(&field_stream);
         field_generators_.get(descriptor_->field(i))
-            .GenerateMergingCode(printer);
+            .GenerateMergingCode(&field_printer);
       }
+      merging_code_list.push_back(field_code);
+    }
+  }
+
+  // Merge oneof fields.
+  for (const auto& kv : oneof_generators_) {
+    std::string oneof_code;
+    {
+      google::protobuf::io::StringOutputStream oneof_stream(&oneof_code);
+      google::protobuf::io::Printer oneof_printer(&oneof_stream);
+      kv.second->GenerateMergingCode(&oneof_printer, field_generators_);
+    }
+    merging_code_list.push_back(oneof_code);
+  }
+
+  int total_code_blocks = merging_code_list.size();
+  std::vector<MergeCodeChunk> subfunction_chunks;
+
+  if (total_code_blocks <= kMergeMethodSplitThreshold) {
+    for (const std::string& code_block : merging_code_list) {
+      printer->Print(absl::StrReplaceAll(code_block, {{"$", "$$"}}));
+    }
+    printer->Outdent();
+  } else {
+    // Partition the snippets into chunks of roughly equal size, with at most
+    // kMergeMethodSplitThreshold chunks.
+    int chunk_count =
+        std::min(kMergeMethodSplitThreshold,
+                 (total_code_blocks + kMergeMethodSplitThreshold - 1) /
+                     kMergeMethodSplitThreshold);
+    int base_chunk_size = total_code_blocks / chunk_count;
+    int remainder_elements = total_code_blocks % chunk_count;
+    int current_block_index = 0;
+
+    subfunction_chunks.reserve(chunk_count);
+    for (int i = 0; i < chunk_count; ++i) {
+      int current_chunk_size =
+          base_chunk_size + (i < remainder_elements ? 1 : 0);
+      std::string method_suffix = absl::StrCat("_", i);
+      subfunction_chunks.push_back(
+          {current_block_index, current_chunk_size, method_suffix});
+      current_block_index += current_chunk_size;
     }
 
-    // Merge oneof fields.
-    for (auto& kv : oneofs_) {
-      const OneofDescriptor* oneof = kv.second;
-      printer->Print("switch (other.get$oneof_capitalized_name$Case()) {\n",
-                     "oneof_capitalized_name",
-                     context_->GetOneofGeneratorInfo(oneof)->capitalized_name);
-      printer->Indent();
-      for (int j = 0; j < oneof->field_count(); j++) {
-        const FieldDescriptor* field = oneof->field(j);
-        printer->Print("case $field_name$: {\n", "field_name",
-                       absl::AsciiStrToUpper(field->name()));
-        printer->Indent();
-        field_generators_.get(field).GenerateMergingCode(printer);
-        printer->Print("break;\n");
-        printer->Outdent();
-        printer->Print("}\n");
-      }
-      printer->Print(
-          "case $cap_oneof_name$_NOT_SET: {\n"
-          "  break;\n"
-          "}\n",
-          "cap_oneof_name",
-          absl::AsciiStrToUpper(context_->GetOneofGeneratorInfo(oneof)->name));
-      printer->Outdent();
-      printer->Print("}\n");
+    // Call the generated subfunctions in order.
+    for (const auto& chunk : subfunction_chunks) {
+      printer->Print("partialMergeFrom$suffix$(other);\n", "suffix",
+                     chunk.method_suffix);
     }
 
     printer->Outdent();
-
-    // if message type has extensions
-    if (descriptor_->extension_range_count() > 0) {
-      printer->Print("  this.mergeExtensionFields(other);\n");
-    }
-
-    printer->Print("  this.mergeUnknownFields(other.getUnknownFields());\n");
-
-    printer->Print("  onChanged();\n");
-
-    printer->Print(
-        "  return this;\n"
-        "}\n"
-        "\n");
   }
+
+  // if message type has extensions
+  if (descriptor_->extension_range_count() > 0) {
+    printer->Print("  this.mergeExtensionFields(other);\n");
+  }
+
+  printer->Print("  this.mergeUnknownFields(other.getUnknownFields());\n");
+
+  printer->Print("  onChanged();\n");
+
+  printer->Print(
+      "  return this;\n"
+      "}\n"
+      "\n");
+
+  // Generate the actual subfunctions if we split the logic.
+  if (total_code_blocks > kMergeMethodSplitThreshold) {
+    for (const auto& chunk : subfunction_chunks) {
+      GenerateBuilderMergeFromSubfunction(
+          printer,
+          absl::MakeConstSpan(merging_code_list)
+              .subspan(chunk.start_index, chunk.size),
+          chunk.method_suffix);
+    }
+  }
+}
+
+void MessageBuilderGenerator::GenerateBuilderMergeFromSubfunction(
+    io::Printer* printer, absl::Span<const std::string> merging_code_blocks,
+    absl::string_view method_suffix) {
+  printer->Print("private void partialMergeFrom$suffix$($classname$ other) {\n",
+                 "suffix", method_suffix, "classname",
+                 name_resolver_->GetImmutableClassName(descriptor_));
+  printer->Indent();
+
+  for (const std::string& code_block : merging_code_blocks) {
+    printer->Print(absl::StrReplaceAll(code_block, {{"$", "$$"}}));
+  }
+
+  printer->Outdent();
+  printer->Print("}\n\n");
 }
 
 void MessageBuilderGenerator::GenerateBuildPartial(io::Printer* printer) {
@@ -530,17 +592,18 @@ void MessageBuilderGenerator::GenerateBuildPartial(io::Printer* printer) {
     }
   }
 
-  // One buildPartial#() per from_bit_field
+  // One buildPartial_autosplit_#() per from_bit_field
   int totalBuilderInts = (descriptor_->field_count() + 31) / 32;
   if (totalBuilderInts > 0) {
     for (int i = 0; i < totalBuilderInts; ++i) {
       printer->Print(
-          "if ($bit_field_name$ != 0) { buildPartial$piece$(result); }\n",
-          "bit_field_name", GetBitFieldName(i), "piece", absl::StrCat(i));
+          "if ($bit_field_name$ != 0) { "
+          "buildPartial_autosplit_$shard$(result); }\n",
+          "bit_field_name", GetBitFieldName(i), "shard", absl::StrCat(i));
     }
   }
 
-  if (!oneofs_.empty()) {
+  if (!oneof_generators_.empty()) {
     printer->Print("buildPartialOneofs(result);\n");
   }
 
@@ -569,45 +632,34 @@ void MessageBuilderGenerator::GenerateBuildPartial(io::Printer* printer) {
     printer->Print("}\n\n");
   }
 
-  // Build non-oneof fields
+  // Build all fields in shards organized by bitfield membership.
   int start_field = 0;
   for (int i = 0; i < totalBuilderInts; i++) {
-    start_field = GenerateBuildPartialPiece(printer, i, start_field);
+    start_field = GenerateBuildPartialShard(printer, i, start_field);
   }
 
   // Build Oneofs
-  if (!oneofs_.empty()) {
+  if (!oneof_generators_.empty()) {
     printer->Print("private void buildPartialOneofs($classname$ result) {\n",
                    "classname",
                    name_resolver_->GetImmutableClassName(descriptor_));
     printer->Indent();
-    for (auto& kv : oneofs_) {
-      const OneofDescriptor* oneof = kv.second;
-      printer->Print(
-          "result.$oneof_name$Case_ = $oneof_name$Case_;\n"
-          "result.$oneof_name$_ = this.$oneof_name$_;\n",
-          "oneof_name", context_->GetOneofGeneratorInfo(oneof)->name);
-      for (int i = 0; i < oneof->field_count(); ++i) {
-        if (oneof->field(i)->message_type() != nullptr) {
-          const ImmutableFieldGenerator& field =
-              field_generators_.get(oneof->field(i));
-          field.GenerateBuildingCode(printer);
-        }
-      }
+    for (const auto& kv : oneof_generators_) {
+      kv.second->GenerateBuildingCode(printer, field_generators_);
     }
     printer->Outdent();
     printer->Print("}\n\n");
   }
 }
 
-int MessageBuilderGenerator::GenerateBuildPartialPiece(io::Printer* printer,
-                                                       int piece,
+int MessageBuilderGenerator::GenerateBuildPartialShard(io::Printer* printer,
+                                                       int shard,
                                                        int first_field) {
   printer->Print(
-      "private void buildPartial$piece$($classname$ result) {\n"
+      "private void buildPartial_autosplit_$shard$($classname$ result) {\n"
       "  int from_$bit_field_name$ = $bit_field_name$;\n",
-      "classname", name_resolver_->GetImmutableClassName(descriptor_), "piece",
-      absl::StrCat(piece), "bit_field_name", GetBitFieldName(piece));
+      "classname", name_resolver_->GetImmutableClassName(descriptor_), "shard",
+      absl::StrCat(shard), "bit_field_name", GetBitFieldName(shard));
   printer->Indent();
   absl::btree_set<int> declared_to_bitfields;
 
@@ -616,7 +668,7 @@ int MessageBuilderGenerator::GenerateBuildPartialPiece(io::Printer* printer,
   for (; bit < 32 && next < descriptor_->field_count(); ++next) {
     const ImmutableFieldGenerator& field =
         field_generators_.get(descriptor_->field(next));
-    bit += field.GetNumBitsForBuilder();
+    bit += field.GetNumBits();
 
     // Skip oneof fields that are handled separately
     if (IsRealOneof(descriptor_->field(next))) {
@@ -629,13 +681,13 @@ int MessageBuilderGenerator::GenerateBuildPartialPiece(io::Printer* printer,
       continue;
     }
     // Skip fields without presence bits in the builder
-    if (field.GetNumBitsForBuilder() == 0) {
+    if (field.GetNumBits() == 0) {
       continue;
     }
 
     // Track message bits if necessary
-    if (field.GetNumBitsForMessage() > 0) {
-      int to_bitfield = field.GetMessageBitIndex() / 32;
+    if (field.GetNumBits() > 0) {
+      int to_bitfield = field.GetBitIndex() / 32;
       if (declared_to_bitfields.count(to_bitfield) == 0) {
         printer->Print("int to_$bit_field_name$ = 0;\n", "bit_field_name",
                        GetBitFieldName(to_bitfield));
@@ -669,9 +721,7 @@ void MessageBuilderGenerator::GenerateBuilderParsingMethods(
       "    com.google.protobuf.CodedInputStream input,\n"
       "    com.google.protobuf.ExtensionRegistryLite extensionRegistry)\n"
       "    throws java.io.IOException {\n"
-      "  if (extensionRegistry == null) {\n"
-      "    throw new java.lang.NullPointerException();\n"
-      "  }\n"
+      "  java.util.Objects.requireNonNull(extensionRegistry);\n"
       "  try {\n"
       "    boolean done = false;\n"
       "    while (!done) {\n"
@@ -760,6 +810,18 @@ void MessageBuilderGenerator::GenerateBuilderPackedFieldParsingCase(
 // ===================================================================
 
 void MessageBuilderGenerator::GenerateIsInitialized(io::Printer* printer) {
+  // If the message transitively has no required fields or extensions,
+  // isInitialized() is always true.
+  if (!HasRequiredFields(descriptor_)) {
+    printer->Print(
+        "@java.lang.Override\n"
+        "public final boolean isInitialized() {\n"
+        "  return true;\n"
+        "}\n"
+        "\n");
+    return;
+  }
+
   printer->Print(
       "@java.lang.Override\n"
       "public final boolean isInitialized() {\n");

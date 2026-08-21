@@ -15,6 +15,9 @@
 #define PY_SSIZE_T_CLEAN
 #include <Python.h>
 
+#include <cstdint>
+#include <optional>
+
 #include "absl/strings/string_view.h"
 #include "google/protobuf/pyext/lazy_unique_ptr.h"
 #include "google/protobuf/pyext/weak_value_map.h"
@@ -332,7 +335,11 @@ bool CheckAndGetInteger(PyObject* arg, T* value);
 bool CheckAndGetDouble(PyObject* arg, double* value);
 bool CheckAndGetFloat(PyObject* arg, float* value);
 bool CheckAndGetBool(PyObject* arg, bool* value);
-PyObject* CheckString(PyObject* arg, const FieldDescriptor* descriptor);
+
+// Validates arg for a string or bytes field, and returns the string view if
+// valid. Returns std::nullopt and sets a Python exception on failure.
+std::optional<absl::string_view> CheckString(PyObject* arg,
+                                             const FieldDescriptor* descriptor);
 bool CheckAndSetString(PyObject* arg, Message* message,
                        const FieldDescriptor* descriptor,
                        const Reflection* reflection, bool append, int index);
@@ -345,6 +352,20 @@ bool CheckFieldBelongsToMessage(const FieldDescriptor* field_descriptor,
                                 const Message* message);
 
 extern PyObject* PickleError_class;
+
+extern PyObject* FrozenInstanceError_class;
+// Sets a Python FrozenInstanceError with the given message and returns nullptr.
+PyObject* SetFrozenError(const char* msg);
+
+// Sets a Python FrozenInstanceError with the default error message for messages
+// type and returns nullptr.
+PyObject* SetMessageFrozenError();
+// Emits a DeprecationWarning when mutating a frozen message or container in
+// OSS.
+int WarnMessageFrozen();
+// Returns 0 if writable (might have thrown warning).
+// Returns -1 on error (sets Python exception).
+int CheckFrozen(CMessage* parent, const char* error_msg);
 
 PyObject* PyMessage_New(const Descriptor* descriptor,
                         PyObject* py_message_factory);

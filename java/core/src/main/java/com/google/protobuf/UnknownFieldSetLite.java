@@ -12,14 +12,20 @@ import java.util.Arrays;
 
 /**
  * {@code UnknownFieldSetLite} is used to keep track of fields which were seen when parsing a
- * protocol message but whose field numbers or types are unrecognized. This most frequently occurs
- * when new fields are added to a message type and then messages containing those fields are read by
- * old software that was compiled before the new types were added.
+ * protocol message but whose field numbers or types are unrecognized.
+ *
+ * <p>This class is for Lite runtime use only. For details on what this means regarding performance
+ * and security characteristics, see {@link ForLiteOnly}.
+ *
+ * <p>This most frequently occurs when new fields are added to a message type and then messages
+ * containing those fields are read by old software that was compiled before the new types were
+ * added.
  *
  * <p>For use by generated code only.
  *
  * @author dweis@google.com (Daniel Weis)
  */
+@ForLiteOnly
 public final class UnknownFieldSetLite {
 
   // Arbitrarily chosen.
@@ -148,7 +154,7 @@ public final class UnknownFieldSetLite {
   }
 
   /** Serializes the set and writes it to {@code writer} using {@code MessageSet} wire format. */
-  void writeAsMessageSetTo(Writer writer) throws IOException {
+  void writeAsMessageSetTo(CodedOutputStreamWriter writer) throws IOException {
     // Write fields in ascending order.
     for (int i = 0; i < count; i++) {
       int fieldNumber = WireFormat.getTagFieldNumber(tags[i]);
@@ -157,7 +163,7 @@ public final class UnknownFieldSetLite {
   }
 
   /** Serializes the set and writes it to {@code writer}. */
-  public void writeTo(Writer writer) throws IOException {
+  public void writeTo(CodedOutputStreamWriter writer) throws IOException {
     if (count == 0) {
       return;
     }
@@ -168,7 +174,8 @@ public final class UnknownFieldSetLite {
     }
   }
 
-  private static void writeField(int tag, Object object, Writer writer) throws IOException {
+  private static void writeField(int tag, Object object, CodedOutputStreamWriter writer)
+      throws IOException {
     int fieldNumber = WireFormat.getTagFieldNumber(tag);
     switch (WireFormat.getTagWireType(tag)) {
       case WireFormat.WIRETYPE_VARINT:

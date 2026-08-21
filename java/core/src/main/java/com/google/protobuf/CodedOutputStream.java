@@ -12,6 +12,7 @@ import static com.google.protobuf.WireFormat.FIXED64_SIZE;
 import static com.google.protobuf.WireFormat.MAX_VARINT32_SIZE;
 import static com.google.protobuf.WireFormat.MAX_VARINT_SIZE;
 import static java.lang.Math.max;
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -110,7 +111,11 @@ public abstract class CodedOutputStream extends ByteOutput {
       throw new IllegalArgumentException("ByteBuffer is read-only");
     }
     if (buffer.hasArray()) {
-      return new HeapNioEncoder(buffer);
+      return new ArrayEncoder(
+          buffer.array(),
+          buffer.arrayOffset() + buffer.position(),
+          buffer.remaining(),
+          new ByteBufferFlusher(buffer));
     } else if (buffer.isDirect()) {
       return new DirectNioEncoder(buffer);
     } else {
@@ -125,17 +130,17 @@ public abstract class CodedOutputStream extends ByteOutput {
    * {@code equals()} methods in protos) messages will always be serialized to the same bytes. This
    * implies:
    *
-   * <ul>
-   *   <li>repeated serialization of a message will return the same bytes
-   *   <li>different processes of the same binary (which may be executing on different machines)
-   *       will serialize equal messages to the same bytes.
-   * </ul>
+   * <h2>There is no canonical representation of Protobuf messages.</h2>
    *
-   * <p>Note the deterministic serialization is NOT canonical across languages; it is also unstable
-   * across different builds with schema changes due to unknown fields. Users who need canonical
-   * serialization, e.g. persistent storage in a canonical form, fingerprinting, etc, should define
-   * their own canonicalization specification and implement the serializer using reflection APIs
-   * rather than relying on this API.
+   * <p>The deterministic serialization is not stable between separate builds or between different
+   * languages.
+   *
+   * <p>Users who need canonical serialization, e.g. persistent storage in a canonical form,
+   * fingerprinting, etc, must define their own canonicalization specification and implement the
+   * serializer using reflection APIs rather than relying on this API.
+   *
+   * <p>See <a href="https://protobuf.dev/programming-guides/serialization-not-canonical/">Protobuf
+   * Serialization is not Canonical</a>.
    *
    * <p>Once set, the serializer will: (Note this is an implementation detail and may subject to
    * change in the future)
@@ -1026,14 +1031,33 @@ public abstract class CodedOutputStream extends ByteOutput {
 
   // =================================================================
 
+  private static final class ByteBufferFlusher {
+    private final ByteBuffer byteBuffer;
+    private final int initialPosition;
+
+    ByteBufferFlusher(ByteBuffer byteBuffer) {
+      this.byteBuffer = byteBuffer;
+      this.initialPosition = byteBuffer.position();
+    }
+
+    void flush(ArrayEncoder encoder) {
+      Java8Compatibility.position(byteBuffer, initialPosition + encoder.getTotalBytesWritten());
+    }
+  }
+
   /** A {@link CodedOutputStream} that writes directly to a byte array. */
-  private static class ArrayEncoder extends CodedOutputStream {
+  private static final class ArrayEncoder extends CodedOutputStream {
     private final byte[] buffer;
     private final int offset;
     private final int limit;
     private int position;
+    private final ByteBufferFlusher flusher;
 
     ArrayEncoder(byte[] buffer, int offset, int length) {
+      this(buffer, offset, length, null);
+    }
+
+    ArrayEncoder(byte[] buffer, int offset, int length, ByteBufferFlusher flusher) {
       if (buffer == null) {
         throw new NullPointerException("buffer");
       }
@@ -1050,6 +1074,7 @@ public abstract class CodedOutputStream extends ByteOutput {
       this.offset = offset;
       position = offset;
       limit = offset + length;
+      this.flusher = flusher;
     }
 
     @Override
@@ -1402,35 +1427,43 @@ public abstract class CodedOutputStream extends ByteOutput {
 
     @Override
     public final void writeStringNoTag(String value) throws IOException {
-      final int oldPosition = position;
-      try {
-        // UTF-8 byte length of the string is at least its UTF-16 code unit length (value.length()),
-        // and at most 3 times of it. We take advantage of this in both branches below.
-        final int maxLength = value.length() * Utf8.MAX_BYTES_PER_CHAR;
-        final int maxLengthVarIntSize = computeUInt32SizeNoTag(maxLength);
-        final int minLengthVarIntSize = computeUInt32SizeNoTag(value.length());
-        if (minLengthVarIntSize == maxLengthVarIntSize) {
+      if (Utf8.ENCODES_VIA_INTERMEDIATE_ARRAY) {
+        final byte[] encoded = value.getBytes(UTF_8);
+        writeUInt32NoTag(encoded.length);
+        write(encoded, 0, encoded.length);
+      } else {
+        // Encoding writes straight into the buffer, so the length is not known up front. Reserve
+        // the smallest prefix it could need, encode, and shift the bytes right if the real length
+        // needs a wider one. This approach is allocation-free.
+        final int oldPosition = position;
+        try {
+          final int minLengthVarIntSize = computeUInt32SizeNoTag(value.length());
           position = oldPosition + minLengthVarIntSize;
-          int newPosition = Utf8.encode(value, buffer, position, buffer.length - position);
-          // Since this class is stateful and tracks the position, we rewind and store the state,
-          // prepend the length, then reset it back to the end of the string.
+          final int newPosition = Utf8.encode(value, buffer, position, buffer.length - position);
+          final int length = newPosition - oldPosition - minLengthVarIntSize;
+          final int lengthVarIntSize = computeUInt32SizeNoTag(length);
+          if (lengthVarIntSize != minLengthVarIntSize) {
+            System.arraycopy(
+                buffer,
+                oldPosition + minLengthVarIntSize,
+                buffer,
+                oldPosition + lengthVarIntSize,
+                length);
+          }
           position = oldPosition;
-          int length = newPosition - oldPosition - minLengthVarIntSize;
           writeUInt32NoTag(length);
-          position = newPosition;
-        } else {
-          int length = Utf8.encodedLength(value);
-          writeUInt32NoTag(length);
-          position = Utf8.encode(value, buffer, position, buffer.length - position);
+          position = oldPosition + lengthVarIntSize + length;
+        } catch (IndexOutOfBoundsException e) {
+          throw new OutOfSpaceException(e);
         }
-      } catch (IndexOutOfBoundsException e) {
-        throw new OutOfSpaceException(e);
       }
     }
 
     @Override
     public void flush() {
-      // Do nothing.
+      if (flusher != null) {
+        flusher.flush(this);
+      }
     }
 
     @Override
@@ -1441,30 +1474,6 @@ public abstract class CodedOutputStream extends ByteOutput {
     @Override
     public final int getTotalBytesWritten() {
       return position - offset;
-    }
-  }
-
-  /**
-   * A {@link CodedOutputStream} that writes directly to a heap {@link ByteBuffer}. Writes are done
-   * directly to the underlying array. The buffer position is only updated after a flush.
-   */
-  private static final class HeapNioEncoder extends ArrayEncoder {
-    private final ByteBuffer byteBuffer;
-    private int initialPosition;
-
-    HeapNioEncoder(ByteBuffer byteBuffer) {
-      super(
-          byteBuffer.array(),
-          byteBuffer.arrayOffset() + byteBuffer.position(),
-          byteBuffer.remaining());
-      this.byteBuffer = byteBuffer;
-      this.initialPosition = byteBuffer.position();
-    }
-
-    @Override
-    public void flush() {
-      // Update the position on the buffer.
-      Java8Compatibility.position(byteBuffer, initialPosition + getTotalBytesWritten());
     }
   }
 

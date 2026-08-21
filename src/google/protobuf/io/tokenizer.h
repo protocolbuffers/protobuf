@@ -46,7 +46,7 @@ typedef int ColumnNumber;
 // to stdout.
 class PROTOBUF_EXPORT ErrorCollector {
  public:
-  inline ErrorCollector() = default;
+  ErrorCollector() = default;
   ErrorCollector(const ErrorCollector&) = delete;
   ErrorCollector& operator=(const ErrorCollector&) = delete;
   virtual ~ErrorCollector();

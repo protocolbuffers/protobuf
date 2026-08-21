@@ -43,6 +43,26 @@
 namespace google {
 namespace protobuf {
 
+namespace internal {
+
+static thread_local bool g_suppress_fallback_database_errors = false;
+
+ScopedFallbackDatabaseErrorSuppressor::ScopedFallbackDatabaseErrorSuppressor()
+    : previous_value_(g_suppress_fallback_database_errors) {
+  g_suppress_fallback_database_errors = true;
+}
+
+ScopedFallbackDatabaseErrorSuppressor::
+    ~ScopedFallbackDatabaseErrorSuppressor() {
+  g_suppress_fallback_database_errors = previous_value_;
+}
+
+bool ScopedFallbackDatabaseErrorSuppressor::IsSuppressed() {
+  return g_suppress_fallback_database_errors;
+}
+
+}  // namespace internal
+
 namespace {
 void RecordMessageNames(const DescriptorProto& desc_proto,
                         absl::string_view prefix,
@@ -674,12 +694,12 @@ bool EncodedDescriptorDatabase::DescriptorIndex::AddFile(const FileProto& file,
   }
   all_values_.back().encoded_package = EncodeString(file.package());
 
-  if (!by_name_
+  if (std::binary_search(by_name_flat_.begin(), by_name_flat_.end(),
+                         file.name(), by_name_.key_comp()) ||
+      !by_name_
            .insert({static_cast<int>(all_values_.size() - 1),
                     EncodeString(file.name())})
-           .second ||
-      std::binary_search(by_name_flat_.begin(), by_name_flat_.end(),
-                         file.name(), by_name_.key_comp())) {
+           .second) {
     ABSL_LOG(ERROR) << "File already exists in database: " << file.name();
     return false;
   }

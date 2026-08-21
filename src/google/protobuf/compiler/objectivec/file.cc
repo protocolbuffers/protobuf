@@ -109,8 +109,7 @@ bool IsDirectDependency(const FileDescriptor* dep, const FileDescriptor* file) {
 }
 
 struct FileDescriptorsOrderedByName {
-  inline bool operator()(const FileDescriptor* a,
-                         const FileDescriptor* b) const {
+  bool operator()(const FileDescriptor* a, const FileDescriptor* b) const {
     return a->name() < b->name();
   }
 };

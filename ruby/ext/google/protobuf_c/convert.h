@@ -22,8 +22,8 @@
 // - If type is message and the Ruby value is a message instance, we will fuse
 //   the message's arena into |arena|, to ensure that this message outlives the
 //   container.
-upb_MessageValue Convert_RubyToUpb(VALUE ruby_val, const char *name,
-                                   TypeInfo type_info, upb_Arena *arena);
+upb_MessageValue Convert_RubyToUpb(VALUE ruby_val, const char* name,
+                                   TypeInfo type_info, upb_Arena* arena);
 
 // Converts |upb_val| to a Ruby VALUE according to |type_info|. This may involve
 // creating a Ruby wrapper object.
@@ -36,7 +36,7 @@ VALUE Convert_UpbToRuby(upb_MessageValue upb_val, TypeInfo type_info,
 
 // Creates a deep copy of |msgval| in |arena|.
 upb_MessageValue Msgval_DeepCopy(upb_MessageValue msgval, TypeInfo type_info,
-                                 upb_Arena *arena);
+                                 upb_Arena* arena);
 
 // Returns true if |val1| and |val2| are equal. Their type is given by
 // |type_info|.

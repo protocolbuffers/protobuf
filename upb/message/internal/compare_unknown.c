@@ -7,13 +7,25 @@
 
 #include "upb/message/internal/compare_unknown.h"
 
+#include <setjmp.h>
 #include <stdint.h>
+#include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "upb/base/string_view.h"
 #include "upb/mem/alloc.h"
+#include "upb/mem/arena.h"
+#include "upb/message/internal/extension.h"
 #include "upb/message/message.h"
+#include "upb/message/unknown_fields.h"
+#include "upb/mini_table/extension.h"
+#include "upb/mini_table/message.h"
+#include "upb/port/overflow.h"
+#include "upb/wire/encode.h"
 #include "upb/wire/eps_copy_input_stream.h"
+#include "upb/wire/internal/back_alloc.h"
+#include "upb/wire/internal/encoder.h"
 #include "upb/wire/reader.h"
 #include "upb/wire/types.h"
 
@@ -41,6 +53,7 @@ struct upb_UnknownFields {
 
 typedef struct {
   upb_EpsCopyInputStream stream;
+  upb_encstate encoder;  // For encoding non-canonical extensions.
   upb_Arena* arena;
   upb_UnknownField* tmp;
   size_t tmp_size;
@@ -68,10 +81,17 @@ static void upb_UnknownFields_Grow(upb_UnknownField_Context* ctx,
                                    upb_UnknownField** ptr,
                                    upb_UnknownField** end) {
   size_t old = (*ptr - *base);
-  size_t new = UPB_MAX(4, old * 2);
+  size_t new;
+  if (upb_MulOverflow((uint32_t)2, old, &new)) {
+    upb_UnknownFields_OutOfMemory(ctx);
+  }
+  new = UPB_MAX(4, new);
+  size_t new_bytes;
+  if (upb_MulOverflow(new, sizeof(**base), &new_bytes)) {
+    upb_UnknownFields_OutOfMemory(ctx);
+  }
 
-  *base = upb_Arena_Realloc(ctx->arena, *base, old * sizeof(**base),
-                            new * sizeof(**base));
+  *base = upb_Arena_Realloc(ctx->arena, *base, old * sizeof(**base), new_bytes);
   if (!*base) upb_UnknownFields_OutOfMemory(ctx);
 
   *ptr = *base + old;
@@ -102,7 +122,7 @@ static void upb_UnknownFields_Merge(upb_UnknownField* arr, size_t start,
   if (ptr1 < end1) {
     memcpy(out, ptr1, (end1 - ptr1) * sizeof(*out));
   } else if (ptr2 < end2) {
-    memcpy(out, ptr1, (end2 - ptr2) * sizeof(*out));
+    memcpy(out, ptr2, (end2 - ptr2) * sizeof(*out));
   }
 }
 
@@ -119,11 +139,25 @@ static void upb_UnknownFields_SortRecursive(upb_UnknownField* arr, size_t start,
 static void upb_UnknownFields_Sort(upb_UnknownField_Context* ctx,
                                    upb_UnknownFields* fields) {
   if (ctx->tmp_size < fields->size) {
-    const int oldsize = ctx->tmp_size * sizeof(*ctx->tmp);
+    size_t oldsize;
+    if (upb_MulOverflow(sizeof(*ctx->tmp), ctx->tmp_size, &oldsize)) {
+      upb_UnknownFields_OutOfMemory(ctx);
+    }
     ctx->tmp_size = UPB_MAX(8, ctx->tmp_size);
-    while (ctx->tmp_size < fields->size) ctx->tmp_size *= 2;
-    const int newsize = ctx->tmp_size * sizeof(*ctx->tmp);
-    ctx->tmp = upb_grealloc(ctx->tmp, oldsize, newsize);
+    while (ctx->tmp_size < fields->size) {
+      if (upb_MulOverflow((uint32_t)2, ctx->tmp_size, &ctx->tmp_size)) {
+        upb_UnknownFields_OutOfMemory(ctx);
+      }
+    }
+    size_t newsize;
+    if (upb_MulOverflow(ctx->tmp_size, sizeof(*ctx->tmp), &newsize)) {
+      upb_UnknownFields_OutOfMemory(ctx);
+    }
+    upb_UnknownField* tmp = upb_grealloc(ctx->tmp, oldsize, newsize);
+    if (!tmp) {
+      upb_UnknownFields_OutOfMemory(ctx);
+    }
+    ctx->tmp = tmp;
   }
   upb_UnknownFields_SortRecursive(fields->fields, 0, fields->size, ctx->tmp);
 }
@@ -249,11 +283,34 @@ static upb_UnknownFields* upb_UnknownFields_Build(upb_UnknownField_Context* ctx,
       .last_tag = 0,
   };
   uintptr_t iter = kUpb_Message_UnknownBegin;
-  upb_StringView view;
-  while (upb_Message_NextUnknown(msg, &view, &iter)) {
-    upb_EpsCopyInputStream_Init(&ctx->stream, &view.data, view.size);
-    upb_CombineUnknownFields(ctx, &builder, &view.data);
-    UPB_ASSERT(upb_EpsCopyInputStream_IsDone(&ctx->stream, &view.data) &&
+  upb_MessageUnknown data;
+  while (upb_Message_NextUnknown2(msg, &data, &iter)) {
+    const char* ptr;
+    size_t size;
+    if (data.type == kUpb_MessageUnknownType_StringView) {
+      upb_StringView view = data.value.bytes;
+      ptr = view.data;
+      size = view.size;
+    } else {
+      UPB_ASSERT(data.type == kUpb_MessageUnknownType_NonCanonicalExtension);
+      char* enc_buf = upb_BackAlloc_Init(&ctx->encoder.alloc, ctx->arena);
+      ctx->encoder.status = kUpb_EncodeStatus_Ok;
+      // Encode non-canonical extension to buffer.
+      const upb_Extension* ext = (const upb_Extension*)data.value.extension;
+      bool is_message_set = false;
+      const upb_MiniTable* extendee = upb_MiniTableExtension_Extendee(ext->ext);
+      if (extendee) {
+        is_message_set = upb_MiniTable_IsMessageSet(extendee);
+      }
+      UPB_PRIVATE(_upb_Encode_Extension)(&ctx->encoder, ext->ext, ext->data,
+                                         is_message_set, &enc_buf, &size,
+                                         /*options=*/0);
+      ptr = enc_buf;
+    }
+
+    upb_EpsCopyInputStream_Init(&ctx->stream, &ptr, size);
+    upb_CombineUnknownFields(ctx, &builder, &ptr);
+    UPB_ASSERT(upb_EpsCopyInputStream_IsDone(&ctx->stream, &ptr) &&
                !upb_EpsCopyInputStream_IsError(&ctx->stream));
   }
   upb_UnknownFields* fields = upb_UnknownFields_DoBuild(ctx, &builder);
@@ -321,16 +378,30 @@ static upb_UnknownCompareResult upb_UnknownField_Compare(
   if (UPB_SETJMP(ctx->err) == 0) {
     ret = upb_UnknownField_DoCompare(ctx, msg1, msg2);
   } else {
+    // If status is still Equal, the jump must have originated from the Encoder
+    // (which only updates ctx->encoder.status). We must map it to a context
+    // error.
+    if (ctx->status == kUpb_UnknownCompareResult_Equal) {
+      if (ctx->encoder.status == kUpb_EncodeStatus_OutOfMemory) {
+        ctx->status = kUpb_UnknownCompareResult_OutOfMemory;
+      } else if (ctx->encoder.status == kUpb_EncodeStatus_MaxDepthExceeded) {
+        ctx->status = kUpb_UnknownCompareResult_MaxDepthExceeded;
+      } else {
+        ctx->status = kUpb_UnknownCompareResult_OutOfMemory;
+      }
+      upb_BackAlloc_Abort(&ctx->encoder.alloc);
+    }
     ret = ctx->status;
     UPB_ASSERT(ret != kUpb_UnknownCompareResult_Equal);
   }
 
+  UPB_PRIVATE(_upb_encstate_destroy)(&ctx->encoder);
   upb_Arena_Free(ctx->arena);
   upb_gfree(ctx->tmp);
   return ret;
 }
 
-upb_UnknownCompareResult UPB_PRIVATE(_upb_Message_UnknownFieldsAreEqual)(
+upb_UnknownCompareResult _upb_Message_UnknownFieldsAreEqual(
     const upb_Message* msg1, const upb_Message* msg2, int max_depth) {
   bool msg1_empty = !upb_Message_HasUnknown(msg1);
   bool msg2_empty = !upb_Message_HasUnknown(msg2);
@@ -346,6 +417,7 @@ upb_UnknownCompareResult UPB_PRIVATE(_upb_Message_UnknownFieldsAreEqual)(
   };
 
   if (!ctx.arena) return kUpb_UnknownCompareResult_OutOfMemory;
+  UPB_PRIVATE(_upb_encstate_init)(&ctx.encoder, &ctx.err, ctx.arena);
 
   return upb_UnknownField_Compare(&ctx, msg1, msg2);
 }

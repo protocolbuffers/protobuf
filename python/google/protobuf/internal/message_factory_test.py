@@ -395,6 +395,21 @@ class MessageFactoryTest(unittest.TestCase):
     self.assertEqual('hello', values[0].key)
     self.assertEqual('welcome', values[0].value)
 
+  def testConvertNumpyDetectionNullAttribute(self):
+    class NamelessMeta(type):
+      def __getattribute__(cls, name):
+        if name == '__name__' or name == '__module__':
+          raise AttributeError('no attribute')
+        return super().__getattribute__(name)
+
+    class Nameless(metaclass=NamelessMeta):
+      def __index__(self):
+        return 42
+
+    msg = factory_test1_pb2.Factory1Message()
+    msg.scalar_value = Nameless()
+    self.assertEqual(msg.scalar_value, 42)
+
 
 if __name__ == '__main__':
   unittest.main()

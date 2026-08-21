@@ -16,9 +16,12 @@
 #include <string>
 #include <utility>
 #include <variant>
+#include <vector>
 
 #include "absl/base/attributes.h"
+#include "absl/cleanup/cleanup.h"
 #include "absl/log/absl_log.h"
+#include "absl/numeric/int128.h"
 #include "absl/strings/numbers.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_format.h"
@@ -28,16 +31,6 @@
 // Must be included last
 #include "google/protobuf/port_def.inc"
 
-#if !defined(PROTO2_OPENSOURCE)
-#if defined(PROTOBUF_INTERNAL_BOUNDS_CHECK_MODE_ABORT)
-extern "C" {
-#if ABSL_HAVE_ATTRIBUTE(used) && ABSL_HAVE_ATTRIBUTE(retain)
-__attribute__((used, retain))
-#endif  // ABSL_HAVE_ATTRIBUTE(used) && ABSL_HAVE_ATTRIBUTE(retain)
-bool kVersionStampBuildHasHardeningProtobuf = true;
-}
-#endif  // defined(PROTOBUF_INTERNAL_BOUNDS_CHECK_MODE_ABORT)
-#endif  // !defined(PROTO2_OPENSOURCE)
 
 namespace google {
 namespace protobuf {
@@ -70,8 +63,7 @@ static auto& CounterMap() {
       std::map<std::variant<int64_t, absl::string_view>,
                std::array<std::atomic<size_t>, RealDebugCounter::kNumBuckets>>>;
   static auto* counter_map = new Map{};
-  static bool dummy = std::atexit(PrintAllCounters);
-  (void)dummy;
+  static auto print [[maybe_unused]] = absl::Cleanup(PrintAllCounters);
   return *counter_map;
 }
 
@@ -190,7 +182,7 @@ PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 GlobalEmptyString
         fixed_address_empty_string{};
 
-void HandleAddOverflow(int a, int b) {
+void HandleAddOverflow(absl::int128 a, absl::int128 b) {
   ABSL_LOG(FATAL) << "Integer overflow in CheckedAdd: " << a << " + " << b;
 }
 

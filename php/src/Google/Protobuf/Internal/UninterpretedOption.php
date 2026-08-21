@@ -72,7 +72,8 @@ class UninterpretedOption extends \Google\Protobuf\Internal\Message
      *     @type string $aggregate_value
      * }
      */
-    public function __construct($data = NULL) {
+    public function __construct($data = null)
+    {
         \GPBMetadata\Google\Protobuf\Internal\Descriptor::initOnce();
         parent::__construct($data);
     }

@@ -12,6 +12,7 @@ load("@rules_cc//cc:cc_binary.bzl", "cc_binary")
 load("@rules_cc//cc:defs.bzl", "cc_library")
 load("@rules_pkg//pkg:mappings.bzl", "pkg_files", "strip_prefix")
 load("@rules_python//python:defs.bzl", "py_library")
+load("@rules_python//python/cc:py_extension.bzl", "py_extension")
 load("//:protobuf.bzl", "internal_py_proto_library")
 load("//bazel/toolchains:proto_lang_toolchain.bzl", "proto_lang_toolchain")
 load("//build_defs:arch_tests.bzl", "aarch64_test", "x86_64_test")
@@ -33,7 +34,7 @@ def build_targets(name):
             "//conditions:default": [],
             ":use_fast_cpp_protos": [
                 ":google/protobuf/internal/_api_implementation.so",
-                ":google/protobuf/pyext/_message.so",
+                ":google/protobuf/pyext/_message",
             ],
         }),
         visibility = ["//:__pkg__"],
@@ -99,7 +100,7 @@ def build_targets(name):
             # https://docs.bazel.build/versions/master/be/common-definitions.html#common-attributes
             "manual",
         ],
-        deps = ["@system_python//:python_headers"],
+        deps = ["@rules_python//python/cc:current_py_cc_headers"],
     )
 
     native.config_setting(
@@ -114,8 +115,8 @@ def build_targets(name):
         visibility = ["//python:__subpackages__"],
     )
 
-    cc_binary(
-        name = "google/protobuf/pyext/_message.so",
+    py_extension(
+        name = "google/protobuf/pyext/_message",
         srcs = native.glob([
             "google/protobuf/pyext/*.cc",
             "google/protobuf/pyext/*.h",
@@ -152,14 +153,16 @@ def build_targets(name):
             "//src/google/protobuf/util:differencer",
             "@abseil-cpp//absl/base:core_headers",
             "@abseil-cpp//absl/base:no_destructor",
+            "@abseil-cpp//absl/cleanup",
             "@abseil-cpp//absl/container:flat_hash_map",
+            "@abseil-cpp//absl/functional:function_ref",
             "@abseil-cpp//absl/log:absl_check",
             "@abseil-cpp//absl/log:absl_log",
             "@abseil-cpp//absl/status",
             "@abseil-cpp//absl/status:statusor",
             "@abseil-cpp//absl/strings",
             "@abseil-cpp//absl/synchronization",
-            "@system_python//:python_headers",
+            "@abseil-cpp//absl/types:span",
         ],
     )
 
@@ -167,7 +170,7 @@ def build_targets(name):
         name = "aarch64_test",
         bazel_binaries = [
             "google/protobuf/internal/_api_implementation.so",
-            "google/protobuf/pyext/_message.so",
+            "google/protobuf/pyext/_message",
         ],
     )
 
@@ -175,14 +178,14 @@ def build_targets(name):
         name = "x86_64_test",
         bazel_binaries = [
             "google/protobuf/internal/_api_implementation.so",
-            "google/protobuf/pyext/_message.so",
+            "google/protobuf/pyext/_message",
         ],
     )
 
     compile_edition_defaults(
         name = "python_edition_defaults",
         srcs = ["//:descriptor_proto"],
-        maximum_edition = "2024",
+        maximum_edition = "2026",
         minimum_edition = "PROTO2",
     )
 
@@ -482,7 +485,7 @@ def build_targets(name):
             "@abseil-cpp//absl/log:absl_check",
             "@abseil-cpp//absl/status",
             "@abseil-cpp//absl/status:statusor",
-            "@system_python//:python_headers",
+            "@rules_python//python/cc:current_py_cc_headers",
         ],
     )
 

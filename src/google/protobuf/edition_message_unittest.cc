@@ -57,25 +57,13 @@ namespace internal {
 namespace {
 
 
-template <typename T>
-static const TcParseTableBase* GetTableIfAvailable(...) {
-  return nullptr;
-}
-
-template <typename T>
-static const TcParseTableBase* GetTableIfAvailable(
-    decltype(TcParser::GetTable<T>())) {
-  return TcParser::GetTable<T>();
-}
-
 TEST(EditionMessageTest,
      TestRegressionInlinedStringAuxIdxMismatchOnFastParser) {
   using Proto = UNITTEST::InlinedStringIdxRegressionProto;
 
-  auto* table = GetTableIfAvailable<Proto>(nullptr);
-  // Only test when TDP is on, and we have these fields inlined.
-  if (table != nullptr &&
-      table->fast_entry(1)->target() == TcParser::FastBiS1) {
+  auto* table = MessageTraits<Proto>::class_data()->GetTcParseTable();
+  // Only test when we have these fields inlined.
+  if (table->fast_entry(1)->target() == TcParser::FastBiS1) {
     // optional string str1 = 1;
     // The aux_idx points to the inlined_string_idx and not the actual aux_idx.
     EXPECT_EQ(table->fast_entry(1)->bits.aux_idx(), 1);

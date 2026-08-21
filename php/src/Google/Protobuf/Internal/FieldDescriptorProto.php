@@ -163,7 +163,8 @@ class FieldDescriptorProto extends \Google\Protobuf\Internal\Message
      *           optional with `LABEL_OPTIONAL`.
      * }
      */
-    public function __construct($data = NULL) {
+    public function __construct($data = null)
+    {
         \GPBMetadata\Google\Protobuf\Internal\Descriptor::initOnce();
         parent::__construct($data);
     }

@@ -12,6 +12,7 @@
 #include <utility>
 #include <vector>
 
+#include "google/protobuf/descriptor.pb.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_replace.h"
 #include "google/protobuf/compiler/code_generator.h"
@@ -54,7 +55,8 @@ void WriteForwardDecls(const google::protobuf::FileDescriptor* file, Context& ct
   WriteTypedefForwardingHeader(file, this_file_messages, ctx);
 }
 
-void WriteHeader(const google::protobuf::FileDescriptor* file, Context& ctx) {
+void WriteHeader(const google::protobuf::FileDescriptor* file, Context& ctx,
+                 absl::string_view info_path) {
   if (ctx.options().backend == Backend::CPP) {
     EmitFileWarning(file, ctx);
 
@@ -78,6 +80,15 @@ void WriteHeader(const google::protobuf::FileDescriptor* file, Context& ctx) {
 
     ctx.Emit(
         "#include \"hpb/internal/os_macros_undef.inc\"\n");
+
+    if (!info_path.empty()) {
+      ctx.Emit({{"info_path", std::string(info_path)}},
+               R"cc(
+#ifdef KYTHE_IS_RUNNING
+#pragma kythe_metadata "$info_path$"
+#endif  // KYTHE_IS_RUNNING
+               )cc");
+    }
 
     const std::vector<const google::protobuf::Descriptor*> this_file_messages =
         SortedMessages(file);
@@ -169,6 +180,15 @@ void WriteHeader(const google::protobuf::FileDescriptor* file, Context& ctx) {
   ctx.Emit("#include \"upb/port/def.inc\"\n");
   ctx.Emit(
       "#include \"hpb/internal/os_macros_undef.inc\"\n");
+
+  if (!info_path.empty()) {
+    ctx.Emit({{"info_path", std::string(info_path)}},
+             R"cc(
+#ifdef KYTHE_IS_RUNNING
+#pragma kythe_metadata "$info_path$"
+#endif  // KYTHE_IS_RUNNING
+             )cc");
+  }
 
   const std::vector<const google::protobuf::Descriptor*> this_file_messages =
       SortedMessages(file);
@@ -329,6 +349,7 @@ bool Generator::Generate(const google::protobuf::FileDescriptor* file,
                          std::string* error) const {
   {
     bool strip_nonfunctional_codegen = false;
+    bool annotate_headers = false;
     Backend backend = Backend::UPB;
     std::vector<std::pair<std::string, std::string>> params;
     google::protobuf::compiler::ParseGeneratorParameter(parameter, &params);
@@ -338,24 +359,51 @@ bool Generator::Generate(const google::protobuf::FileDescriptor* file,
         strip_nonfunctional_codegen = true;
       } else if (pair.first == "backend" && pair.second == "cpp") {
         backend = Backend::CPP;
+      } else if (pair.first == "annotate_headers") {
+        annotate_headers = true;
       } else {
         *error = "Unknown parameter: " + pair.first;
         return false;
       }
     }
+
+    std::unique_ptr<GeneratedCodeInfo> annotations;
+    std::unique_ptr<io::AnnotationCollector> annotation_collector;
+    if (annotate_headers) {
+      annotations = std::make_unique<GeneratedCodeInfo>();
+      annotation_collector =
+          std::make_unique<io::AnnotationProtoCollector<GeneratedCodeInfo>>(
+              annotations.get());
+    }
+
+    std::string meta_filename = "";
+    if (annotate_headers) {
+      meta_filename =
+          absl::StrCat(compiler::StripProto(file->name()), ".hpb.h.meta");
+    }
+
     // Write model.hpb.h
     Options options = {.backend = backend,
-                       .strip_feature_includes = strip_nonfunctional_codegen};
+                       .strip_feature_includes = strip_nonfunctional_codegen,
+                       .annotation_collector = annotation_collector.get()};
     std::unique_ptr<google::protobuf::io::ZeroCopyOutputStream> header_output_stream(
         context->Open(CppHeaderFilename(file)));
     Context hdr_ctx(file, header_output_stream.get(), options);
-    WriteHeader(file, hdr_ctx);
+    WriteHeader(file, hdr_ctx, meta_filename);
 
     // Write model.hpb.cc
     std::unique_ptr<google::protobuf::io::ZeroCopyOutputStream> cc_output_stream(
         context->Open(CppSourceFilename(file)));
     auto cc_ctx = Context(file, cc_output_stream.get(), options);
     WriteSource(file, cc_ctx);
+
+    if (annotate_headers) {
+      std::unique_ptr<google::protobuf::io::ZeroCopyOutputStream> meta_output_stream(
+          context->Open(meta_filename));
+      ABSL_CHECK(
+          annotations->SerializeToZeroCopyStream(meta_output_stream.get()));
+    }
+
     return true;
   }
 }

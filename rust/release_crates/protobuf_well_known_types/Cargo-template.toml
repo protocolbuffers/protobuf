@@ -1,10 +1,10 @@
 [package]
 name = "protobuf-well-known-types"
-version = "{VERSION}"
+version = "{PROTOBUF_RUST_VERSION}"
 edition = "2021"
 description = "Protobuf Well-Known Types"
 license = "BSD-3-Clause"
 
 [dependencies]
-protobuf = { version = "{VERSION}", path = "../protobuf", package = "protobuf" }
-protobuf-codegen = { version = "{VERSION}", path = "../protobuf_codegen", package = "protobuf-codegen" }
+protobuf = { version = "{PROTOBUF_LEGACY_VERSION}", path = "../protobuf", package = "protobuf" }
+protobuf-codegen = { version = "{PROTOBUF_LEGACY_VERSION}", path = "../protobuf_codegen", package = "protobuf-codegen" }

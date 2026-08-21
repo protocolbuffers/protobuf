@@ -389,7 +389,7 @@ TEST(GeneratedCode, RepeatedScalar) {
   EXPECT_EQ(new_value.int32_val,
             protobuf_test_messages_proto2_TestAllTypesProto2_repeated_int32(
                 msg, &len)[19]);
-  upb_Array_Resize(mutable_array, 0, arena);
+  ASSERT_TRUE(upb_Array_Resize(mutable_array, 0, arena));
   const int32_t* zero_length_array =
       protobuf_test_messages_proto2_TestAllTypesProto2_repeated_int32(msg,
                                                                       &len);

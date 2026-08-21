@@ -44,10 +44,16 @@ extern "C" {
 // support. If the caller wishes to handle all cases, they should detect NULL
 // and fallback to serializing the source message and then decoding it using
 // the destination `upb_MiniTable`.
+//
+// `decode_options` and `encode_options` are passed to the underlying decode and
+// encode operations. Note that `kUpb_DecodeOption_AliasString` is set
+// unconditionally, so strings in decoded unknown fields are always aliased
+// regardless of `decode_options`.
 const upb_Message* upb_Message_Convert(const upb_Message* src,
                                        const upb_MiniTable* src_mt,
                                        const upb_MiniTable* dst_mt,
                                        const upb_ExtensionRegistry* extreg,
+                                       int decode_options, int encode_options,
                                        upb_Arena* arena);
 
 #ifdef __cplusplus

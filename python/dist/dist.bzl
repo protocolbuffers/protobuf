@@ -117,6 +117,7 @@ def _py_dist_module_impl(ctx):
     if len(ctx.attr.extension) == 1:
         src = ctx.attr.extension[0][DefaultInfo].files.to_list()[0]
         ctx.actions.run(
+            mnemonic = "PyDistModule",
             executable = "cp",
             arguments = [src.path, output_file.path],
             inputs = [src],
@@ -128,6 +129,7 @@ def _py_dist_module_impl(ctx):
     else:
         srcs = [mod[DefaultInfo].files.to_list()[0] for mod in ctx.attr.extension]
         ctx.actions.run(
+            mnemonic = "PyDistModule",
             executable = "/usr/local/bin/llvm-lipo",
             arguments = ["-create", "-output", output_file.path] + [src.path for src in srcs],
             inputs = srcs,

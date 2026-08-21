@@ -48,7 +48,7 @@ final class FloatArrayList extends AbstractProtobufList<Float>
   /**
    * Constructs a new mutable {@code FloatArrayList} containing the same elements as {@code other}.
    */
-  private FloatArrayList(float[] other, int size, boolean isMutable) {
+  FloatArrayList(float[] other, int size, boolean isMutable) {
     super(isMutable);
     this.array = other;
     this.size = size;

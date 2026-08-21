@@ -24,6 +24,14 @@ class ProtoApiTest(unittest.TestCase):
     result = proto_api_test_ext.repr_dynamic_message(789)
     self.assertEqual(result, 'optional_int32: 789\n')
 
+  def test_dynamic_message_shared_pool(self):
+    result = proto_api_test_ext.repr_dynamic_message_shared_pool(789)
+    self.assertEqual(result, 'optional_int32: 789\n')
+
+  def test_dynamic_message_shared_pool_and_db(self):
+    result = proto_api_test_ext.repr_dynamic_message_shared_pool_and_db(789)
+    self.assertEqual(result, 'val: 789\n')
+
   def test_dynamic_pool_message(self):
     result = proto_api_test_ext.create_dynamic_pool_message()
     self.assertEqual(result.DESCRIPTOR.full_name, 'test_package.MyMessage')

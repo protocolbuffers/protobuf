@@ -11,9 +11,13 @@ import static com.google.protobuf.Internal.checkNotNull;
 
 /**
  * Dynamically generates a manifest-based (i.e. table-based) schema for a given protobuf message.
+ *
+ * <p>This class is for Lite runtime use only. For details on what this means regarding performance
+ * and security characteristics, see {@link ForLiteOnly}.
  */
 @CheckReturnValue
 @ExperimentalApi
+@ForLiteOnly
 final class ManifestSchemaFactory {
 
   private final MessageInfoFactory messageInfoFactory;
@@ -27,8 +31,6 @@ final class ManifestSchemaFactory {
   }
 
   public <T> Schema<T> createSchema(Class<T> messageType) {
-    SchemaUtil.requireGeneratedMessage(messageType);
-
     if (!useLiteRuntime(messageType)) {
       throw new IllegalArgumentException(
           "Full runtime messages are not supported by this schema factory: "

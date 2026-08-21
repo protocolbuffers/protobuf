@@ -19,6 +19,7 @@ are:
 import collections.abc
 import copy
 import pickle
+import warnings
 from typing import (
     Any,
     Iterable,
@@ -39,6 +40,17 @@ _K = TypeVar('_K')
 _V = TypeVar('_V')
 
 from google.protobuf.descriptor import FieldDescriptor
+from google.protobuf import message
+
+
+def _CheckFrozen(is_frozen: bool, msg: str) -> None:
+  if is_frozen:
+    warnings.warn(
+        'Mutating messages or containers returned by GetOptions() is'
+        ' deprecated and will raise an exception in a future release.',
+        category=FutureWarning,
+        stacklevel=3,
+    )
 
 
 class BaseContainer(Sequence[_T]):
@@ -88,8 +100,7 @@ class BaseContainer(Sequence[_T]):
     self._frozen = True
 
   def _AssureWritable(self) -> 'BaseContainer[_T]':
-    if self._frozen:
-      raise TypeError('Container is immutable')
+    _CheckFrozen(self._frozen, 'Container is immutable')
     return self
 
   def sort(self, *args, **kwargs) -> None:
@@ -446,16 +457,15 @@ class ScalarMap(MutableMapping[_K, _V]):
     self._frozen = True
 
   def _AssureWritable(self) -> 'ScalarMap[_K, _V]':
-    if self._frozen:
-      raise TypeError('Map is frozen')
+    _CheckFrozen(self._frozen, 'Map is immutable')
     return self
 
   def __getitem__(self, key: _K) -> _V:
+    key = self._key_checker.CheckValue(key)
     try:
       return self._values[key]
     except KeyError:
       self._AssureWritable()
-      key = self._key_checker.CheckValue(key)
       val = self._value_checker.DefaultValue()
       self._values[key] = val
       return val
@@ -463,7 +473,7 @@ class ScalarMap(MutableMapping[_K, _V]):
   def __contains__(self, item: _K) -> bool:
     # We check the key's type to match the strong-typing flavor of the API.
     # Also this makes it easier to match the behavior of the C++ implementation.
-    self._key_checker.CheckValue(item)
+    item = self._key_checker.CheckValue(item)
     return item in self._values
 
   @overload
@@ -478,8 +488,9 @@ class ScalarMap(MutableMapping[_K, _V]):
   # will make the default implementation (from our base class) always insert
   # the key.
   def get(self, key, default=None):
-    if key in self:
-      return self[key]
+    checked_key = self._key_checker.CheckValue(key)
+    if checked_key in self._values:
+      return self[checked_key]
     else:
       return default
 
@@ -492,7 +503,8 @@ class ScalarMap(MutableMapping[_K, _V]):
 
   def __delitem__(self, key: _K) -> None:
     self._AssureWritable()
-    del self._values[key]
+    checked_key = self._key_checker.CheckValue(key)
+    del self._values[checked_key]
     self._message_listener.Modified()
 
   def __len__(self) -> int:
@@ -506,10 +518,11 @@ class ScalarMap(MutableMapping[_K, _V]):
 
   def setdefault(self, key: _K, value: Optional[_V] = None) -> _V:
     self._AssureWritable()
+    checked_key = self._key_checker.CheckValue(key)
     if value == None:
       raise ValueError('The value for scalar map setdefault must be set.')
-    if key not in self._values:
-      self.__setitem__(key, value)
+    if checked_key not in self._values:
+      self.__setitem__(checked_key, value)
     return self[key]
 
   def MergeFrom(self, other: 'ScalarMap[_K, _V]') -> None:
@@ -578,8 +591,7 @@ class MessageMap(MutableMapping[_K, _V]):
       val._SetFrozen()
 
   def _AssureWritable(self) -> 'MessageMap[_K, _V]':
-    if self._frozen:
-      raise TypeError('Map is immutable')
+    _CheckFrozen(self._frozen, 'Map is immutable')
     return self
 
   def __getitem__(self, key: _K) -> _V:

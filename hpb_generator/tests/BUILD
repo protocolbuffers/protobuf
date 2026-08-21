@@ -6,10 +6,6 @@
 # https://developers.google.com/open-source/licenses/bsd
 
 load("@rules_cc//cc:cc_test.bzl", "cc_test")
-load(
-    "//bazel:cc_proto_library.bzl",
-    "cc_proto_library",
-)
 load("//bazel:proto_library.bzl", "proto_library")
 load(
     "//hpb/bazel:hpb_proto_library.bzl",
@@ -115,11 +111,6 @@ hpb_proto_library(
     deps = [
         ":no_package_enum_user_proto",
     ],
-)
-
-cc_proto_library(
-    name = "test_model_cc_proto",
-    deps = [":test_model_proto"],
 )
 
 proto_library(
@@ -253,6 +244,25 @@ cc_test(
         ":test_model_hpb_proto",
         "//hpb",
         "//hpb:arena",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "metadata_test",
+    srcs = ["metadata_test.cc"],
+    deps = [
+        "//hpb_generator:generator",
+        "//src/google/protobuf",
+        "//src/google/protobuf/compiler:annotation_test_util",
+        "//src/google/protobuf/compiler:code_generator_lite",
+        "//src/google/protobuf/compiler:command_line_interface",
+        "//src/google/protobuf/testing",
+        "//src/google/protobuf/testing:file",
+        "@abseil-cpp//absl/container:flat_hash_map",
+        "@abseil-cpp//absl/log:absl_check",
+        "@abseil-cpp//absl/strings",
         "@googletest//:gtest",
         "@googletest//:gtest_main",
     ],

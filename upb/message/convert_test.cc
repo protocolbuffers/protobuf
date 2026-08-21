@@ -9,6 +9,7 @@
 
 #include <cstddef>
 #include <cstdint>
+#include <cstring>
 #include <string>
 
 #include <gtest/gtest.h>
@@ -23,14 +24,18 @@
 #include "upb/message/convert_test.upb.h"
 #include "upb/message/convert_test.upb_minitable.h"
 #include "upb/message/internal/message.h"
+#include "upb/message/map.h"
 #include "upb/message/message.h"
 #include "upb/message/test.upb_minitable.h"
+#include "upb/message/unknown_fields.h"
+#include "upb/mini_table/extension.h"
 #include "upb/mini_table/extension_registry.h"
 #include "upb/mini_table/message.h"
 #include "upb/wire/decode.h"
 
 // Must be last to ensure UPB_PRIVATE is defined.
 #include "upb/port/def.inc"
+#include "upb/wire/encode.h"
 
 // We use the generated upb_MiniTables from test_messages_proto3.
 #define TEST_MT &protobuf_0test_0messages__proto3__TestAllTypesProto3_msg_init
@@ -47,7 +52,7 @@ TEST(ConvertTest, Identity) {
   const upb_MiniTable* mt = TEST_MT;
 
   const upb_Message* dst_msg =
-      upb_Message_Convert(UPB_UPCAST(msg), mt, mt, nullptr, arena.ptr());
+      upb_Message_Convert(UPB_UPCAST(msg), mt, mt, nullptr, 0, 0, arena.ptr());
   ASSERT_NE(dst_msg, nullptr);
   const protobuf_test_messages_proto3_TestAllTypesProto3* dst =
       (const protobuf_test_messages_proto3_TestAllTypesProto3*)dst_msg;
@@ -74,7 +79,7 @@ TEST(ConvertTest, AliasSubMessage) {
   const upb_MiniTable* mt = TEST_MT;
 
   const upb_Message* dst_msg =
-      upb_Message_Convert(UPB_UPCAST(msg), mt, mt, nullptr, arena.ptr());
+      upb_Message_Convert(UPB_UPCAST(msg), mt, mt, nullptr, 0, 0, arena.ptr());
   ASSERT_NE(dst_msg, nullptr);
   const protobuf_test_messages_proto3_TestAllTypesProto3* dst =
       (const protobuf_test_messages_proto3_TestAllTypesProto3*)dst_msg;
@@ -121,7 +126,7 @@ TEST(ConvertTest, UnknownPromotion) {
   const upb_MiniTable* mt = TEST_MT;
 
   const upb_Message* dst_msg =
-      upb_Message_Convert(msg_empty, empty_mt, mt, nullptr, arena.ptr());
+      upb_Message_Convert(msg_empty, empty_mt, mt, nullptr, 0, 0, arena.ptr());
   ASSERT_NE(dst_msg, nullptr);
   const protobuf_test_messages_proto3_TestAllTypesProto3* dst =
       (const protobuf_test_messages_proto3_TestAllTypesProto3*)dst_msg;
@@ -140,19 +145,21 @@ TEST(ConvertTest, Demotion) {
   // Convert to Empty message. Field 1 should become unknown.
   const upb_MiniTable* empty_mt = &upb_0test__EmptyMessage_msg_init;
 
-  const upb_Message* dst = upb_Message_Convert(UPB_UPCAST(msg), TEST_MT,
-                                               empty_mt, nullptr, arena.ptr());
+  const upb_Message* dst = upb_Message_Convert(
+      UPB_UPCAST(msg), TEST_MT, empty_mt, nullptr, 0, 0, arena.ptr());
   EXPECT_NE(dst, nullptr);
 
   // Dst should have unknown field 1 with value 999.
   size_t iter = kUpb_Message_UnknownBegin;
-  upb_StringView data;
-  ASSERT_TRUE(upb_Message_NextUnknown(dst, &data, &iter));
+  upb_MessageUnknown unknown;
+  ASSERT_TRUE(upb_Message_NextUnknown2(dst, &unknown, &iter));
+  EXPECT_EQ(unknown.type, kUpb_MessageUnknownType_StringView);
+  upb_StringView data = unknown.value.bytes;
   EXPECT_GE(data.size, 3);
   EXPECT_EQ((uint8_t)data.data[0], 8);
   EXPECT_EQ((uint8_t)data.data[1], 0xE7);
   EXPECT_EQ((uint8_t)data.data[2], 0x07);
-  EXPECT_FALSE(upb_Message_NextUnknown(dst, &data, &iter));
+  EXPECT_FALSE(upb_Message_NextUnknown2(dst, &unknown, &iter));
 }
 
 TEST(ConvertTest, DeepConvertMap) {
@@ -167,7 +174,7 @@ TEST(ConvertTest, DeepConvertMap) {
 
   // Self-conversion should work (shallow).
   const upb_Message* dst_msg =
-      upb_Message_Convert(UPB_UPCAST(msg), mt, mt, nullptr, arena.ptr());
+      upb_Message_Convert(UPB_UPCAST(msg), mt, mt, nullptr, 0, 0, arena.ptr());
   ASSERT_NE(dst_msg, nullptr);
   const protobuf_test_messages_proto3_TestAllTypesProto3* dst =
       (const protobuf_test_messages_proto3_TestAllTypesProto3*)dst_msg;
@@ -196,7 +203,7 @@ TEST(ConvertTest, DeepConvertMapMessage) {
       &upb__test__convert__MessageWithMapMessageClone_msg_init;
 
   const upb_Message* dst_msg = upb_Message_Convert(
-      UPB_UPCAST(msg), src_mt, dst_mt, nullptr, arena.ptr());
+      UPB_UPCAST(msg), src_mt, dst_mt, nullptr, 0, 0, arena.ptr());
   ASSERT_NE(dst_msg, nullptr);
 
   const upb_test_convert_MessageWithMapMessageClone* dst =
@@ -224,7 +231,7 @@ TEST(ConvertTest, DeepConvertScalarMap) {
       &upb__test__convert__MessageWithMapInt32Int32Clone_msg_init;
 
   const upb_Message* dst_msg = upb_Message_Convert(
-      UPB_UPCAST(msg), src_mt, dst_mt, nullptr, arena.ptr());
+      UPB_UPCAST(msg), src_mt, dst_mt, nullptr, 0, 0, arena.ptr());
   ASSERT_NE(dst_msg, nullptr);
 
   const upb_test_convert_MessageWithMapInt32Int32Clone* dst =
@@ -246,7 +253,7 @@ TEST(ConvertTest, ExtensionArrayShallowConversion) {
   upb_test_convert_MessageWithInt32_set_f1(val, 456);
 
   upb_Array* ext_arr = upb_Array_New(arena.ptr(), kUpb_CType_Message);
-  upb_Array_Resize(ext_arr, 1, arena.ptr());
+  ASSERT_TRUE(upb_Array_Resize(ext_arr, 1, arena.ptr()));
   upb_MessageValue elem_val;
   elem_val.msg_val = (const upb_Message*)val;
   upb_Array_Set(ext_arr, 0, elem_val);
@@ -262,7 +269,7 @@ TEST(ConvertTest, ExtensionArrayShallowConversion) {
       &upb__test__convert__MessageWithKnownRepeatedMsg_msg_init;
 
   const upb_Message* dst_msg = upb_Message_Convert(
-      UPB_UPCAST(msg), src_mt, dst_mt, nullptr, arena.ptr());
+      UPB_UPCAST(msg), src_mt, dst_mt, nullptr, 0, 0, arena.ptr());
   ASSERT_NE(dst_msg, nullptr);
 
   const upb_test_convert_MessageWithKnownRepeatedMsg* dst =
@@ -289,7 +296,7 @@ TEST(ConvertTest, ExtensionArrayDeepConversion) {
   upb_test_convert_MessageWithInt32_set_f1(val, 789);
 
   upb_Array* ext_arr = upb_Array_New(arena.ptr(), kUpb_CType_Message);
-  upb_Array_Resize(ext_arr, 1, arena.ptr());
+  ASSERT_TRUE(upb_Array_Resize(ext_arr, 1, arena.ptr()));
   upb_MessageValue elem_val;
   elem_val.msg_val = (const upb_Message*)val;
   upb_Array_Set(ext_arr, 0, elem_val);
@@ -305,7 +312,7 @@ TEST(ConvertTest, ExtensionArrayDeepConversion) {
       &upb__test__convert__MessageWithKnownRepeatedMsgClone_msg_init;
 
   const upb_Message* dst_msg = upb_Message_Convert(
-      UPB_UPCAST(msg), src_mt, dst_mt, nullptr, arena.ptr());
+      UPB_UPCAST(msg), src_mt, dst_mt, nullptr, 0, 0, arena.ptr());
   ASSERT_NE(dst_msg, nullptr);
 
   const upb_test_convert_MessageWithKnownRepeatedMsgClone* dst =
@@ -343,7 +350,7 @@ TEST(ConvertTest, MismatchedExtensionFails) {
   const upb_MiniTable* dst_mt =
       &upb__test__convert__MessageWithKnownInt64_msg_init;
 
-  ASSERT_EQ(upb_Message_Convert(UPB_UPCAST(msg), src_mt, dst_mt, nullptr,
+  ASSERT_EQ(upb_Message_Convert(UPB_UPCAST(msg), src_mt, dst_mt, nullptr, 0, 0,
                                 arena.ptr()),
             nullptr);
 }
@@ -358,7 +365,7 @@ TEST(ConvertTest, ConvertField_IncompatibleCType) {
   const upb_MiniTable* src_mt = &upb__test__convert__MessageWithString_msg_init;
   const upb_MiniTable* dst_mt = &upb__test__convert__MessageWithInt32_msg_init;
 
-  ASSERT_EQ(upb_Message_Convert(UPB_UPCAST(msg), src_mt, dst_mt, nullptr,
+  ASSERT_EQ(upb_Message_Convert(UPB_UPCAST(msg), src_mt, dst_mt, nullptr, 0, 0,
                                 arena.ptr()),
             nullptr);
 }
@@ -376,7 +383,7 @@ TEST(ConvertTest, ConvertField_ArrayIncompatibleCType) {
   const upb_MiniTable* dst_mt =
       &upb__test__convert__MessageWithRepeatedInt32_msg_init;
 
-  ASSERT_EQ(upb_Message_Convert(UPB_UPCAST(msg), src_mt, dst_mt, nullptr,
+  ASSERT_EQ(upb_Message_Convert(UPB_UPCAST(msg), src_mt, dst_mt, nullptr, 0, 0,
                                 arena.ptr()),
             nullptr);
 }
@@ -390,7 +397,7 @@ TEST(ConvertTest, ConvertField_TypeMismatch) {
   const upb_MiniTable* src_mt = &upb__test__convert__MessageWithInt32_msg_init;
   const upb_MiniTable* dst_mt = &upb__test__convert__MessageWithInt64_msg_init;
 
-  ASSERT_EQ(upb_Message_Convert(UPB_UPCAST(msg), src_mt, dst_mt, nullptr,
+  ASSERT_EQ(upb_Message_Convert(UPB_UPCAST(msg), src_mt, dst_mt, nullptr, 0, 0,
                                 arena.ptr()),
             nullptr);
 }
@@ -405,7 +412,7 @@ TEST(ConvertTest, ConvertField_ModeMismatch_ScalarToArray) {
   const upb_MiniTable* dst_mt =
       &upb__test__convert__MessageWithRepeatedInt32_msg_init;
 
-  ASSERT_EQ(upb_Message_Convert(UPB_UPCAST(msg), src_mt, dst_mt, nullptr,
+  ASSERT_EQ(upb_Message_Convert(UPB_UPCAST(msg), src_mt, dst_mt, nullptr, 0, 0,
                                 arena.ptr()),
             nullptr);
 }
@@ -420,7 +427,7 @@ TEST(ConvertTest, ConvertField_ModeMismatch_ArrayToScalar) {
       &upb__test__convert__MessageWithRepeatedInt32_msg_init;
   const upb_MiniTable* dst_mt = &upb__test__convert__MessageWithInt32_msg_init;
 
-  ASSERT_EQ(upb_Message_Convert(UPB_UPCAST(msg), src_mt, dst_mt, nullptr,
+  ASSERT_EQ(upb_Message_Convert(UPB_UPCAST(msg), src_mt, dst_mt, nullptr, 0, 0,
                                 arena.ptr()),
             nullptr);
 }
@@ -435,7 +442,7 @@ TEST(ConvertTest, ConvertField_ModeMismatch_ScalarToMap) {
   const upb_MiniTable* dst_mt =
       &upb__test__convert__MessageWithMapInt32Int32_msg_init;
 
-  ASSERT_EQ(upb_Message_Convert(UPB_UPCAST(msg), src_mt, dst_mt, nullptr,
+  ASSERT_EQ(upb_Message_Convert(UPB_UPCAST(msg), src_mt, dst_mt, nullptr, 0, 0,
                                 arena.ptr()),
             nullptr);
 }
@@ -451,7 +458,7 @@ TEST(ConvertTest, ConvertField_MapTypeMismatch) {
   const upb_MiniTable* dst_mt =
       &upb__test__convert__MessageWithMapInt32Int64_msg_init;
 
-  ASSERT_EQ(upb_Message_Convert(UPB_UPCAST(msg), src_mt, dst_mt, nullptr,
+  ASSERT_EQ(upb_Message_Convert(UPB_UPCAST(msg), src_mt, dst_mt, nullptr, 0, 0,
                                 arena.ptr()),
             nullptr);
 }
@@ -470,7 +477,7 @@ TEST(ConvertTest, ConvertField_SingularMessageDeep) {
       &upb__test__convert__MessageWithMsgClone_msg_init;
 
   const upb_Message* dst_msg = upb_Message_Convert(
-      UPB_UPCAST(msg), src_mt, dst_mt, nullptr, arena.ptr());
+      UPB_UPCAST(msg), src_mt, dst_mt, nullptr, 0, 0, arena.ptr());
   ASSERT_NE(dst_msg, nullptr);
 
   const upb_test_convert_MessageWithMsgClone* dst =
@@ -501,7 +508,7 @@ TEST(ConvertTest, ConvertField_ArrayMessageShallow) {
       &upb__test__convert__MessageWithRepeatedMsg_msg_init;
 
   const upb_Message* dst_msg =
-      upb_Message_Convert(UPB_UPCAST(msg), mt, mt, nullptr, arena.ptr());
+      upb_Message_Convert(UPB_UPCAST(msg), mt, mt, nullptr, 0, 0, arena.ptr());
   ASSERT_NE(dst_msg, nullptr);
 
   const upb_test_convert_MessageWithRepeatedMsg* dst =
@@ -535,7 +542,7 @@ TEST(ConvertTest, ConvertField_ArrayMessageDeep) {
       &upb__test__convert__MessageWithRepeatedMsgClone_msg_init;
 
   const upb_Message* dst_msg = upb_Message_Convert(
-      UPB_UPCAST(msg), src_mt, dst_mt, nullptr, arena.ptr());
+      UPB_UPCAST(msg), src_mt, dst_mt, nullptr, 0, 0, arena.ptr());
   ASSERT_NE(dst_msg, nullptr);
 
   const upb_test_convert_MessageWithRepeatedMsgClone* dst =
@@ -567,7 +574,7 @@ TEST(ConvertTest, ConvertExtensions_ScalarMatch) {
   const upb_MiniTable* dst_mt = &upb__test__convert__MessageWithKnown_msg_init;
 
   const upb_Message* dst_msg = upb_Message_Convert(
-      UPB_UPCAST(msg), src_mt, dst_mt, nullptr, arena.ptr());
+      UPB_UPCAST(msg), src_mt, dst_mt, nullptr, 0, 0, arena.ptr());
   ASSERT_NE(dst_msg, nullptr);
 
   const upb_test_convert_MessageWithKnown* dst =
@@ -596,7 +603,7 @@ TEST(ConvertTest, ConvertExtensions_SingularMessageShallow) {
       &upb__test__convert__MessageWithKnownMsg_msg_init;
 
   const upb_Message* dst_msg = upb_Message_Convert(
-      UPB_UPCAST(msg), src_mt, dst_mt, nullptr, arena.ptr());
+      UPB_UPCAST(msg), src_mt, dst_mt, nullptr, 0, 0, arena.ptr());
   ASSERT_NE(dst_msg, nullptr);
 
   const upb_test_convert_MessageWithKnownMsg* dst =
@@ -631,7 +638,7 @@ TEST(ConvertTest, ConvertExtensions_SingularMessageDeep) {
       &upb__test__convert__MessageWithKnownMsgClone_msg_init;
 
   const upb_Message* dst_msg = upb_Message_Convert(
-      UPB_UPCAST(msg), src_mt, dst_mt, nullptr, arena.ptr());
+      UPB_UPCAST(msg), src_mt, dst_mt, nullptr, 0, 0, arena.ptr());
   ASSERT_NE(dst_msg, nullptr);
 
   const upb_test_convert_MessageWithKnownMsgClone* dst =
@@ -659,7 +666,7 @@ TEST(ConvertTest, ConvertExtensions_RemainsExtension) {
   const upb_MiniTable* mt = &upb__test__convert__MessageWithExtension_msg_init;
 
   const upb_Message* dst_msg =
-      upb_Message_Convert(UPB_UPCAST(msg), mt, mt, nullptr, arena.ptr());
+      upb_Message_Convert(UPB_UPCAST(msg), mt, mt, nullptr, 0, 0, arena.ptr());
   ASSERT_NE(dst_msg, nullptr);
 
   const upb_test_convert_MessageWithExtension* dst =
@@ -691,11 +698,12 @@ TEST(ConvertTest, ConvertExtensions_LookupExtensionInRegistry) {
       &upb__test__convert__AnotherMessageWithExtension_msg_init;
 
   upb_ExtensionRegistry* extreg = upb_ExtensionRegistry_New(arena.ptr());
-  upb_ExtensionRegistry_Add(extreg,
-                            upb_test_convert_another_ext_field_int32_ext);
+  ASSERT_EQ(upb_ExtensionRegistry_Add(
+                extreg, upb_test_convert_another_ext_field_int32_ext),
+            kUpb_ExtensionRegistryStatus_Ok);
 
-  const upb_Message* dst_msg =
-      upb_Message_Convert(UPB_UPCAST(msg), src_mt, dst_mt, extreg, arena.ptr());
+  const upb_Message* dst_msg = upb_Message_Convert(
+      UPB_UPCAST(msg), src_mt, dst_mt, extreg, 0, 0, arena.ptr());
   ASSERT_NE(dst_msg, nullptr);
 
   const upb_test_convert_AnotherMessageWithExtension* dst =
@@ -726,18 +734,218 @@ TEST(ConvertTest, ConvertExtensionToNonExtendable) {
   const upb_MiniTable* dst_mt = &upb_0test__EmptyMessage_msg_init;
 
   const upb_Message* dst_msg = upb_Message_Convert(
-      UPB_UPCAST(msg), src_mt, dst_mt, nullptr, arena.ptr());
+      UPB_UPCAST(msg), src_mt, dst_mt, nullptr, 0, 0, arena.ptr());
   ASSERT_NE(dst_msg, nullptr);
 
-  // Dst should have unknown field 1000 with value 123.
-  size_t iter = kUpb_Message_UnknownBegin;
-  upb_StringView data;
-  ASSERT_TRUE(upb_Message_NextUnknown(dst_msg, &data, &iter));
-  EXPECT_EQ(data.size, 3);
-  EXPECT_EQ((uint8_t)data.data[0], 0xC0);
-  EXPECT_EQ((uint8_t)data.data[1], 0x3E);
-  EXPECT_EQ((uint8_t)data.data[2], 0x7B);
-  EXPECT_FALSE(upb_Message_NextUnknown(dst_msg, &data, &iter));
+  // Dst should have a non-canonical extension of field 1000 with value 123.
+  uintptr_t iter = kUpb_Message_UnknownBegin;
+  upb_MessageUnknown unknown;
+  ASSERT_TRUE(upb_Message_NextUnknown2(dst_msg, &unknown, &iter));
+  EXPECT_EQ(unknown.type, kUpb_MessageUnknownType_NonCanonicalExtension);
+  const upb_Extension* ext_found =
+      static_cast<const upb_Extension*>(unknown.value.extension);
+  EXPECT_EQ(upb_MiniTableExtension_Number(ext_found->ext), 1000);
+  EXPECT_EQ(ext_found->data.int32_val, 123);
+  EXPECT_FALSE(upb_Message_NextUnknown2(dst_msg, &unknown, &iter));
+}
+
+TEST(ConvertTest, ConvertExtensionToExtendableButUnknown) {
+  upb::Arena arena;
+  upb_test_convert_MessageWithExtension* msg =
+      upb_test_convert_MessageWithExtension_new(arena.ptr());
+
+  upb_MessageValue ext_val;
+  ext_val.int32_val = 123;
+  upb_Message_SetExtension(UPB_UPCAST(msg),
+                           upb_test_convert_ext_field_int32_ext, &ext_val,
+                           arena.ptr());
+
+  const upb_MiniTable* src_mt =
+      &upb__test__convert__MessageWithExtension_msg_init;
+  const upb_MiniTable* dst_mt =
+      &upb__test__convert__AnotherMessageWithExtension_msg_init;
+
+  const upb_Message* dst_msg = upb_Message_Convert(
+      UPB_UPCAST(msg), src_mt, dst_mt, nullptr, 0, 0, arena.ptr());
+  ASSERT_NE(dst_msg, nullptr);
+
+  // The destination message (AnotherMessageWithExtension) supports extensions,
+  // but since we did not provide an extension registry containing field 1000 to
+  // the conversion, the extension is treated as unknown/non-canonical in the
+  // destination schemas. Therefore, it should be handled/stored as a
+  // non-canonical extension.
+  uintptr_t iter2 = kUpb_Message_UnknownBegin;
+  upb_MessageUnknown unknown2;
+  ASSERT_TRUE(upb_Message_NextUnknown2(dst_msg, &unknown2, &iter2));
+  EXPECT_EQ(unknown2.type, kUpb_MessageUnknownType_NonCanonicalExtension);
+  const upb_Extension* ext_found2 =
+      static_cast<const upb_Extension*>(unknown2.value.extension);
+  EXPECT_EQ(upb_MiniTableExtension_Number(ext_found2->ext), 1000);
+  EXPECT_EQ(ext_found2->data.int32_val, 123);
+  EXPECT_FALSE(upb_Message_NextUnknown2(dst_msg, &unknown2, &iter2));
+}
+
+TEST(ConvertTest, NonCanonicalToNonCanonical) {
+  upb::Arena arena;
+  upb_test_convert_MessageWithExtension* msg =
+      upb_test_convert_MessageWithExtension_new(arena.ptr());
+
+  upb_MessageValue ext_val;
+  ext_val.int32_val = 123;
+  upb_Message_SetExtension(UPB_UPCAST(msg),
+                           upb_test_convert_ext_field_int32_ext, &ext_val,
+                           arena.ptr());
+
+  const upb_MiniTable* src_mt =
+      &upb__test__convert__MessageWithExtension_msg_init;
+  const upb_MiniTable* dst_mt =
+      &upb__test__convert__AnotherMessageWithExtension_msg_init;
+
+  // Convert without registry to obtain a non-canonical extension source.
+  const upb_Message* non_canonical_src = upb_Message_Convert(
+      UPB_UPCAST(msg), src_mt, dst_mt, nullptr, 0, 0, arena.ptr());
+  ASSERT_NE(non_canonical_src, nullptr);
+
+  // Convert without registry again. It should remain non-canonical.
+  const upb_Message* converted = upb_Message_Convert(
+      non_canonical_src, dst_mt, src_mt, nullptr, 0, 0, arena.ptr());
+  ASSERT_NE(converted, nullptr);
+
+  uintptr_t iter = kUpb_Message_UnknownBegin;
+  upb_MessageUnknown unknown;
+  ASSERT_TRUE(upb_Message_NextUnknown2(converted, &unknown, &iter));
+  EXPECT_EQ(unknown.type, kUpb_MessageUnknownType_NonCanonicalExtension);
+  const upb_Extension* ext_found =
+      static_cast<const upb_Extension*>(unknown.value.extension);
+  EXPECT_EQ(upb_MiniTableExtension_Number(ext_found->ext), 1000);
+  EXPECT_EQ(ext_found->data.int32_val, 123);
+  EXPECT_FALSE(upb_Message_NextUnknown2(converted, &unknown, &iter));
+}
+
+TEST(ConvertTest, NonCanonicalToCanonical) {
+  upb::Arena arena;
+  upb_test_convert_MessageWithExtension* msg =
+      upb_test_convert_MessageWithExtension_new(arena.ptr());
+
+  upb_MessageValue ext_val;
+  ext_val.int32_val = 123;
+  upb_Message_SetExtension(UPB_UPCAST(msg),
+                           upb_test_convert_ext_field_int32_ext, &ext_val,
+                           arena.ptr());
+
+  const upb_MiniTable* src_mt =
+      &upb__test__convert__MessageWithExtension_msg_init;
+  const upb_MiniTable* dst_mt =
+      &upb__test__convert__AnotherMessageWithExtension_msg_init;
+
+  // Convert without registry to obtain a non-canonical extension source.
+  const upb_Message* non_canonical_src = upb_Message_Convert(
+      UPB_UPCAST(msg), src_mt, dst_mt, nullptr, 0, 0, arena.ptr());
+  ASSERT_NE(non_canonical_src, nullptr);
+
+  // Convert with registry. It should become a canonical extension.
+  upb_ExtensionRegistry* extreg = upb_ExtensionRegistry_New(arena.ptr());
+  ASSERT_NE(extreg, nullptr);
+  upb_ExtensionRegistry_Add(extreg,
+                            upb_test_convert_another_ext_field_int32_ext);
+
+  const upb_Message* converted = upb_Message_Convert(
+      non_canonical_src, dst_mt, dst_mt, extreg, 0, 0, arena.ptr());
+  ASSERT_NE(converted, nullptr);
+
+  const upb_test_convert_AnotherMessageWithExtension* dst =
+      (const upb_test_convert_AnotherMessageWithExtension*)converted;
+  EXPECT_TRUE(upb_Message_HasExtension(
+      UPB_UPCAST(dst), upb_test_convert_another_ext_field_int32_ext));
+  int32_t out_val = upb_Message_GetExtensionInt32(
+      UPB_UPCAST(dst), upb_test_convert_another_ext_field_int32_ext, 0);
+  EXPECT_EQ(123, out_val);
+
+  uintptr_t iter = kUpb_Message_UnknownBegin;
+  upb_MessageUnknown unknown;
+  EXPECT_FALSE(upb_Message_NextUnknown2(converted, &unknown, &iter));
+}
+
+TEST(ConvertTest, NonCanonicalToNormalField) {
+  upb::Arena arena;
+  upb_test_convert_MessageWithExtension* msg =
+      upb_test_convert_MessageWithExtension_new(arena.ptr());
+
+  upb_MessageValue ext_val;
+  ext_val.int32_val = 123;
+  upb_Message_SetExtension(UPB_UPCAST(msg),
+                           upb_test_convert_ext_field_int32_ext, &ext_val,
+                           arena.ptr());
+
+  const upb_MiniTable* src_mt =
+      &upb__test__convert__MessageWithExtension_msg_init;
+  const upb_MiniTable* dst_mt =
+      &upb__test__convert__AnotherMessageWithExtension_msg_init;
+
+  // Convert without registry to obtain a non-canonical extension source.
+  const upb_Message* non_canonical_src = upb_Message_Convert(
+      UPB_UPCAST(msg), src_mt, dst_mt, nullptr, 0, 0, arena.ptr());
+  ASSERT_NE(non_canonical_src, nullptr);
+
+  // Convert to MessageWithKnown. Field 1000 is a normal field.
+  const upb_MiniTable* known_mt =
+      &upb__test__convert__MessageWithKnown_msg_init;
+  const upb_Message* converted = upb_Message_Convert(
+      non_canonical_src, dst_mt, known_mt, nullptr, 0, 0, arena.ptr());
+  ASSERT_NE(converted, nullptr);
+
+  const upb_test_convert_MessageWithKnown* dst =
+      (const upb_test_convert_MessageWithKnown*)converted;
+  EXPECT_TRUE(upb_test_convert_MessageWithKnown_has_known_field_int32(dst));
+  EXPECT_EQ(123, upb_test_convert_MessageWithKnown_known_field_int32(dst));
+
+  uintptr_t iter = kUpb_Message_UnknownBegin;
+  upb_MessageUnknown unknown;
+  EXPECT_FALSE(upb_Message_NextUnknown2(converted, &unknown, &iter));
+}
+
+TEST(ConvertTest, NonCanonicalToUnknownBytes) {
+  upb::Arena arena;
+  upb_test_convert_MessageWithExtension* msg =
+      upb_test_convert_MessageWithExtension_new(arena.ptr());
+
+  upb_MessageValue ext_val;
+  ext_val.int32_val = 123;
+  upb_Message_SetExtension(UPB_UPCAST(msg),
+                           upb_test_convert_ext_field_int32_ext, &ext_val,
+                           arena.ptr());
+
+  const upb_MiniTable* src_mt =
+      &upb__test__convert__MessageWithExtension_msg_init;
+  const upb_MiniTable* dst_mt =
+      &upb__test__convert__AnotherMessageWithExtension_msg_init;
+
+  // Convert without registry to obtain a non-canonical extension source.
+  const upb_Message* non_canonical_src = upb_Message_Convert(
+      UPB_UPCAST(msg), src_mt, dst_mt, nullptr, 0, 0, arena.ptr());
+  ASSERT_NE(non_canonical_src, nullptr);
+
+  // Serialize the non_canonical_src to wire bytes.
+  char* wire_buf;
+  size_t wire_size;
+  upb_EncodeStatus encode_status = upb_Encode(
+      non_canonical_src, dst_mt, 0, arena.ptr(), &wire_buf, &wire_size);
+  ASSERT_EQ(encode_status, kUpb_EncodeStatus_Ok);
+
+  // Decode the bytes back to AnotherMessageWithExtension without registry.
+  // The decoder should decode the extension as unknown bytes (type Bytes).
+  upb_Message* decoded = upb_Message_New(dst_mt, arena.ptr());
+  ASSERT_NE(decoded, nullptr);
+  upb_DecodeStatus decode_status =
+      upb_Decode(wire_buf, wire_size, decoded, dst_mt, nullptr, 0, arena.ptr());
+  ASSERT_EQ(decode_status, kUpb_DecodeStatus_Ok);
+
+  uintptr_t iter = kUpb_Message_UnknownBegin;
+  upb_MessageUnknown unknown;
+  ASSERT_TRUE(upb_Message_NextUnknown2(decoded, &unknown, &iter));
+  EXPECT_EQ(unknown.type, kUpb_MessageUnknownType_StringView);
+  EXPECT_GT(unknown.value.bytes.size, 0);
+  EXPECT_FALSE(upb_Message_NextUnknown2(decoded, &unknown, &iter));
 }
 
 TEST(ConvertTest, OneofDemotion) {
@@ -754,14 +962,16 @@ TEST(ConvertTest, OneofDemotion) {
   const upb_MiniTable* empty_mt = &upb_0test__EmptyMessage_msg_init;
   const upb_MiniTable* src_mt = &upb__test__convert__SrcWithOneof_msg_init;
 
-  const upb_Message* dst = upb_Message_Convert(UPB_UPCAST(msg), src_mt,
-                                               empty_mt, nullptr, arena.ptr());
+  const upb_Message* dst = upb_Message_Convert(
+      UPB_UPCAST(msg), src_mt, empty_mt, nullptr, 0, 0, arena.ptr());
   EXPECT_NE(dst, nullptr);
 
   // Dst should have unknown field 2 with value "test".
   size_t iter = kUpb_Message_UnknownBegin;
-  upb_StringView data;
-  EXPECT_TRUE(upb_Message_NextUnknown(dst, &data, &iter));
+  upb_MessageUnknown unknown;
+  EXPECT_TRUE(upb_Message_NextUnknown2(dst, &unknown, &iter));
+  EXPECT_EQ(unknown.type, kUpb_MessageUnknownType_StringView);
+  upb_StringView data = unknown.value.bytes;
   // "test" string field 2.
   // Tag 2, type 2: 2<<3 | 2 = 18
   EXPECT_EQ(data.size, 6);
@@ -771,11 +981,11 @@ TEST(ConvertTest, OneofDemotion) {
   EXPECT_EQ((uint8_t)data.data[3], 'e');
   EXPECT_EQ((uint8_t)data.data[4], 's');
   EXPECT_EQ((uint8_t)data.data[5], 't');
-  EXPECT_FALSE(upb_Message_NextUnknown(dst, &data, &iter));
+  EXPECT_FALSE(upb_Message_NextUnknown2(dst, &unknown, &iter));
 
   // Now convert back and verify.
   const upb_Message* dst2_msg =
-      upb_Message_Convert(dst, empty_mt, src_mt, nullptr, arena.ptr());
+      upb_Message_Convert(dst, empty_mt, src_mt, nullptr, 0, 0, arena.ptr());
   EXPECT_NE(dst2_msg, nullptr);
   const upb_test_convert_SrcWithOneof* dst2 =
       (const upb_test_convert_SrcWithOneof*)dst2_msg;
@@ -797,7 +1007,7 @@ TEST(ConvertTest, OpenToClosedEnum) {
   protobuf_test_messages_proto3_TestAllTypesProto3_set_optional_nested_enum(
       msg, protobuf_test_messages_proto3_TestAllTypesProto3_BAR);
   const upb_Message* dst_msg = upb_Message_Convert(
-      UPB_UPCAST(msg), src_mt, dst_mt, nullptr, arena.ptr());
+      UPB_UPCAST(msg), src_mt, dst_mt, nullptr, 0, 0, arena.ptr());
   ASSERT_NE(dst_msg, nullptr);
   const upb_test_convert_Proto2EnumMessage* dst =
       (const upb_test_convert_Proto2EnumMessage*)dst_msg;
@@ -817,7 +1027,7 @@ TEST(ConvertTest, OpenToClosedEnum_InvalidValueInClosedEnum) {
   protobuf_test_messages_proto3_TestAllTypesProto3_set_optional_nested_enum(
       msg, 12345);  // Invalid value.
   const upb_Message* dst_msg = upb_Message_Convert(
-      UPB_UPCAST(msg), src_mt, dst_mt, nullptr, arena.ptr());
+      UPB_UPCAST(msg), src_mt, dst_mt, nullptr, 0, 0, arena.ptr());
   ASSERT_NE(dst_msg, nullptr);
 
   const upb_test_convert_Proto2EnumMessage* dst =
@@ -826,8 +1036,10 @@ TEST(ConvertTest, OpenToClosedEnum_InvalidValueInClosedEnum) {
       upb_test_convert_Proto2EnumMessage_has_optional_nested_enum(dst));
 
   size_t iter = kUpb_Message_UnknownBegin;
-  upb_StringView data;
-  ASSERT_TRUE(upb_Message_NextUnknown(dst_msg, &data, &iter));
+  upb_MessageUnknown unknown;
+  ASSERT_TRUE(upb_Message_NextUnknown2(dst_msg, &unknown, &iter));
+  EXPECT_EQ(unknown.type, kUpb_MessageUnknownType_StringView);
+  upb_StringView data = unknown.value.bytes;
   EXPECT_GT(data.size, 0);
 
   protobuf_test_messages_proto3_TestAllTypesProto3* check_msg =
@@ -858,7 +1070,7 @@ TEST(ConvertTest, OpenToClosedMapEnum) {
   const upb_MiniTable* dst_mt = &upb__test__convert__Proto2EnumMessage_msg_init;
 
   const upb_Message* dst_msg = upb_Message_Convert(
-      UPB_UPCAST(msg), src_mt, dst_mt, nullptr, arena.ptr());
+      UPB_UPCAST(msg), src_mt, dst_mt, nullptr, 0, 0, arena.ptr());
   ASSERT_NE(dst_msg, nullptr);
   const upb_test_convert_Proto2EnumMessage* dst =
       (const upb_test_convert_Proto2EnumMessage*)dst_msg;
@@ -891,7 +1103,7 @@ TEST(ConvertTest, OpenToClosedMapEnum_InvalidValueInClosedEnum) {
   const upb_MiniTable* dst_mt = &upb__test__convert__Proto2EnumMessage_msg_init;
 
   const upb_Message* dst_msg = upb_Message_Convert(
-      UPB_UPCAST(msg), src_mt, dst_mt, nullptr, arena.ptr());
+      UPB_UPCAST(msg), src_mt, dst_mt, nullptr, 0, 0, arena.ptr());
   ASSERT_NE(dst_msg, nullptr);
 
   const upb_test_convert_Proto2EnumMessage* dst =
@@ -905,8 +1117,10 @@ TEST(ConvertTest, OpenToClosedMapEnum_InvalidValueInClosedEnum) {
       dst, upb_StringView_FromString("invalid"), &val));
 
   size_t iter = kUpb_Message_UnknownBegin;
-  upb_StringView data;
-  ASSERT_TRUE(upb_Message_NextUnknown(dst_msg, &data, &iter));
+  upb_MessageUnknown unknown;
+  ASSERT_TRUE(upb_Message_NextUnknown2(dst_msg, &unknown, &iter));
+  EXPECT_EQ(unknown.type, kUpb_MessageUnknownType_StringView);
+  upb_StringView data = unknown.value.bytes;
   EXPECT_GT(data.size, 0);
 
   // Verify that the unknown field contains the complete invalid map entry.
@@ -944,7 +1158,7 @@ TEST(ConvertTest, OpenToClosedRepeatedEnum) {
   const upb_MiniTable* dst_mt = &upb__test__convert__Proto2EnumMessage_msg_init;
 
   const upb_Message* dst_msg = upb_Message_Convert(
-      UPB_UPCAST(msg), src_mt, dst_mt, nullptr, arena.ptr());
+      UPB_UPCAST(msg), src_mt, dst_mt, nullptr, 0, 0, arena.ptr());
   ASSERT_NE(dst_msg, nullptr);
   const upb_test_convert_Proto2EnumMessage* dst =
       (const upb_test_convert_Proto2EnumMessage*)dst_msg;
@@ -970,7 +1184,7 @@ TEST(ConvertTest, OpenToClosedRepeatedEnum_ContainsInvalidValue) {
   const upb_MiniTable* dst_mt = &upb__test__convert__Proto2EnumMessage_msg_init;
 
   const upb_Message* dst_msg = upb_Message_Convert(
-      UPB_UPCAST(msg), src_mt, dst_mt, nullptr, arena.ptr());
+      UPB_UPCAST(msg), src_mt, dst_mt, nullptr, 0, 0, arena.ptr());
   ASSERT_NE(dst_msg, nullptr);
 
   const upb_test_convert_Proto2EnumMessage* dst =
@@ -982,8 +1196,10 @@ TEST(ConvertTest, OpenToClosedRepeatedEnum_ContainsInvalidValue) {
   EXPECT_EQ(upb_test_convert_Proto2EnumMessage_BAR, values[0]);
 
   size_t iter = kUpb_Message_UnknownBegin;
-  upb_StringView data;
-  ASSERT_TRUE(upb_Message_NextUnknown(dst_msg, &data, &iter));
+  upb_MessageUnknown unknown;
+  ASSERT_TRUE(upb_Message_NextUnknown2(dst_msg, &unknown, &iter));
+  EXPECT_EQ(unknown.type, kUpb_MessageUnknownType_StringView);
+  upb_StringView data = unknown.value.bytes;
   EXPECT_GT(data.size, 0);
 
   protobuf_test_messages_proto3_TestAllTypesProto3* check_msg =
@@ -997,6 +1213,316 @@ TEST(ConvertTest, OpenToClosedRepeatedEnum_ContainsInvalidValue) {
           check_msg, &check_count);
   EXPECT_EQ(1, check_count);
   EXPECT_EQ(12345, check_values[0]);
+}
+
+TEST(ConvertTest, ClosedToOpenEnum) {
+  upb::Arena arena;
+  const upb_MiniTable* src_mt = &upb__test__convert__Proto2EnumMessage_msg_init;
+  const upb_MiniTable* dst_mt =
+      &protobuf_0test_0messages__proto3__TestAllTypesProto3_msg_init;
+
+  // 1. Test valid value.
+  {
+    upb_test_convert_Proto2EnumMessage* msg =
+        upb_test_convert_Proto2EnumMessage_new(arena.ptr());
+    upb_test_convert_Proto2EnumMessage_set_optional_nested_enum(
+        msg, upb_test_convert_Proto2EnumMessage_BAR);
+
+    const upb_Message* dst_msg = upb_Message_Convert(
+        UPB_UPCAST(msg), src_mt, dst_mt, nullptr, 0, 0, arena.ptr());
+    ASSERT_NE(dst_msg, nullptr);
+    const protobuf_test_messages_proto3_TestAllTypesProto3* dst =
+        (const protobuf_test_messages_proto3_TestAllTypesProto3*)dst_msg;
+    EXPECT_EQ(
+        protobuf_test_messages_proto3_TestAllTypesProto3_BAR,
+        protobuf_test_messages_proto3_TestAllTypesProto3_optional_nested_enum(
+            dst));
+  }
+
+  // 2. Test invalid value (should be promoted from unknown to known).
+  {
+    // We need to construct a wire format with the invalid value and decode it
+    // into Proto2EnumMessage so it goes to unknown fields.
+    // Field number for optional_nested_enum is 21.
+    // Tag: 21 << 3 | 0 (varint) = 168 (0xa8), varint: 0xa8 0x01
+    // Value: 12345 = 0x3039, varint: 0xb9 0x60
+    char buf[32];
+    char* ptr = buf;
+    *ptr++ = (char)0xa8;
+    *ptr++ = (char)0x01;
+    *ptr++ = (char)0xb9;
+    *ptr++ = (char)0x60;
+    size_t len = ptr - buf;
+
+    upb_test_convert_Proto2EnumMessage* msg =
+        upb_test_convert_Proto2EnumMessage_new(arena.ptr());
+    upb_DecodeStatus decode_status =
+        upb_Decode(buf, len, UPB_UPCAST(msg), src_mt, nullptr, 0, arena.ptr());
+    ASSERT_EQ(kUpb_DecodeStatus_Ok, decode_status);
+    ASSERT_FALSE(
+        upb_test_convert_Proto2EnumMessage_has_optional_nested_enum(msg));
+
+    const upb_Message* dst_msg = upb_Message_Convert(
+        UPB_UPCAST(msg), src_mt, dst_mt, nullptr, 0, 0, arena.ptr());
+    ASSERT_NE(dst_msg, nullptr);
+    const protobuf_test_messages_proto3_TestAllTypesProto3* dst =
+        (const protobuf_test_messages_proto3_TestAllTypesProto3*)dst_msg;
+    EXPECT_EQ(
+        12345,
+        protobuf_test_messages_proto3_TestAllTypesProto3_optional_nested_enum(
+            dst));
+  }
+}
+
+TEST(ConvertTest, ClosedToOpenMapEnum) {
+  upb::Arena arena;
+  const upb_MiniTable* src_mt = &upb__test__convert__Proto2EnumMessage_msg_init;
+  const upb_MiniTable* dst_mt =
+      &protobuf_0test_0messages__proto3__TestAllTypesProto3_msg_init;
+
+  // 1. Test valid values.
+  {
+    upb_test_convert_Proto2EnumMessage* msg =
+        upb_test_convert_Proto2EnumMessage_new(arena.ptr());
+    upb_test_convert_Proto2EnumMessage_map_string_nested_enum_set(
+        msg, upb_StringView_FromString("valid1"),
+        upb_test_convert_Proto2EnumMessage_BAR, arena.ptr());
+
+    const upb_Message* dst_msg = upb_Message_Convert(
+        UPB_UPCAST(msg), src_mt, dst_mt, nullptr, 0, 0, arena.ptr());
+    ASSERT_NE(dst_msg, nullptr);
+    const protobuf_test_messages_proto3_TestAllTypesProto3* dst =
+        (const protobuf_test_messages_proto3_TestAllTypesProto3*)dst_msg;
+
+    int val;
+    EXPECT_TRUE(
+        protobuf_test_messages_proto3_TestAllTypesProto3_map_string_nested_enum_get(
+            dst, upb_StringView_FromString("valid1"), &val));
+    EXPECT_EQ(protobuf_test_messages_proto3_TestAllTypesProto3_BAR, val);
+  }
+
+  // 2. Test invalid value (should be promoted from unknown map entry to known
+  // map entry).
+  {
+    // Construct a wire format for a map entry with an invalid enum value.
+    // map_string_nested_enum has field number 73.
+    // MapEntry wire format:
+    // Tag: 73 << 3 | 2 (length-delimited) = 586 (0x24a), varint: 0xca 0x04
+    // Length: 12
+    // MapEntry fields: key (1, string), value (2, enum)
+    // Key "invalid": Tag: 10 (1 << 3 | 2), Length: 7, Value: "invalid"
+    // Value 12345: Tag: 16 (2 << 3 | 0), Value: 12345 (varint: 0xb9 0x60)
+    char buf[64];
+    char* ptr = buf;
+    *ptr++ = (char)0xca;
+    *ptr++ = (char)0x04;
+    *ptr++ = 12;  // Length of MapEntry
+    *ptr++ = 0x0a;
+    *ptr++ = 7;
+    memcpy(ptr, "invalid", 7);
+    ptr += 7;
+    *ptr++ = 0x10;
+    *ptr++ = (char)0xb9;
+    *ptr++ = (char)0x60;
+    size_t len = ptr - buf;
+
+    upb_test_convert_Proto2EnumMessage* msg =
+        upb_test_convert_Proto2EnumMessage_new(arena.ptr());
+    upb_DecodeStatus decode_status =
+        upb_Decode(buf, len, UPB_UPCAST(msg), src_mt, nullptr, 0, arena.ptr());
+    ASSERT_EQ(kUpb_DecodeStatus_Ok, decode_status);
+
+    // Verify it is not in the known map
+    int val;
+    EXPECT_FALSE(upb_test_convert_Proto2EnumMessage_map_string_nested_enum_get(
+        msg, upb_StringView_FromString("invalid"), &val));
+
+    const upb_Message* dst_msg = upb_Message_Convert(
+        UPB_UPCAST(msg), src_mt, dst_mt, nullptr, 0, 0, arena.ptr());
+    ASSERT_NE(dst_msg, nullptr);
+    const protobuf_test_messages_proto3_TestAllTypesProto3* dst =
+        (const protobuf_test_messages_proto3_TestAllTypesProto3*)dst_msg;
+
+    EXPECT_TRUE(
+        protobuf_test_messages_proto3_TestAllTypesProto3_map_string_nested_enum_get(
+            dst, upb_StringView_FromString("invalid"), &val));
+    EXPECT_EQ(12345, val);
+  }
+}
+
+TEST(ConvertTest, ClosedToOpenRepeatedEnum) {
+  upb::Arena arena;
+  const upb_MiniTable* src_mt = &upb__test__convert__Proto2EnumMessage_msg_init;
+  const upb_MiniTable* dst_mt =
+      &protobuf_0test_0messages__proto3__TestAllTypesProto3_msg_init;
+
+  // 1. Test valid values.
+  {
+    upb_test_convert_Proto2EnumMessage* msg =
+        upb_test_convert_Proto2EnumMessage_new(arena.ptr());
+    upb_test_convert_Proto2EnumMessage_add_repeated_nested_enum(
+        msg, upb_test_convert_Proto2EnumMessage_BAR, arena.ptr());
+
+    const upb_Message* dst_msg = upb_Message_Convert(
+        UPB_UPCAST(msg), src_mt, dst_mt, nullptr, 0, 0, arena.ptr());
+    ASSERT_NE(dst_msg, nullptr);
+    const protobuf_test_messages_proto3_TestAllTypesProto3* dst =
+        (const protobuf_test_messages_proto3_TestAllTypesProto3*)dst_msg;
+
+    size_t count;
+    const int* values =
+        protobuf_test_messages_proto3_TestAllTypesProto3_repeated_nested_enum(
+            dst, &count);
+    ASSERT_EQ(1, count);
+    EXPECT_EQ(protobuf_test_messages_proto3_TestAllTypesProto3_BAR, values[0]);
+  }
+
+  // 2. Test invalid values (should be merged back in correct order, no
+  // mutation).
+  {
+    // Construct a wire format with: [valid (BAR), invalid (12345), valid (FOO)]
+    // repeated_nested_enum has field number 51.
+    // Tag: 51 << 3 | 0 (varint) = 408 (0x198), varint: 0x98 0x03
+    // BAR (1): Tag, Value 1
+    // 12345: Tag, Value 12345 (varint: 0xb9 0x60)
+    // FOO (0): Tag, Value 0
+    char buf[64];
+    char* ptr = buf;
+
+    // BAR
+    *ptr++ = (char)0x98;
+    *ptr++ = (char)0x03;
+    *ptr++ = 1;
+
+    // 12345
+    *ptr++ = (char)0x98;
+    *ptr++ = (char)0x03;
+    *ptr++ = (char)0xb9;
+    *ptr++ = (char)0x60;
+
+    // FOO
+    *ptr++ = (char)0x98;
+    *ptr++ = (char)0x03;
+    *ptr++ = 0;
+
+    size_t len = ptr - buf;
+
+    upb_test_convert_Proto2EnumMessage* msg =
+        upb_test_convert_Proto2EnumMessage_new(arena.ptr());
+    upb_DecodeStatus decode_status =
+        upb_Decode(buf, len, UPB_UPCAST(msg), src_mt, nullptr, 0, arena.ptr());
+    ASSERT_EQ(kUpb_DecodeStatus_Ok, decode_status);
+
+    // Verify source state: known has [BAR, FOO], unknown has [12345]
+    size_t count;
+    const int* values =
+        upb_test_convert_Proto2EnumMessage_repeated_nested_enum(msg, &count);
+    ASSERT_EQ(2, count);
+    EXPECT_EQ(upb_test_convert_Proto2EnumMessage_BAR, values[0]);
+    EXPECT_EQ(upb_test_convert_Proto2EnumMessage_FOO, values[1]);
+
+    // Convert to open destination.
+    const upb_Message* dst_msg = upb_Message_Convert(
+        UPB_UPCAST(msg), src_mt, dst_mt, nullptr, 0, 0, arena.ptr());
+    ASSERT_NE(dst_msg, nullptr);
+    const protobuf_test_messages_proto3_TestAllTypesProto3* dst =
+        (const protobuf_test_messages_proto3_TestAllTypesProto3*)dst_msg;
+
+    // Verify destination state: should have [BAR, 12345, FOO] in correct order!
+    const int* dst_values =
+        protobuf_test_messages_proto3_TestAllTypesProto3_repeated_nested_enum(
+            dst, &count);
+    ASSERT_EQ(3, count);
+    EXPECT_EQ(protobuf_test_messages_proto3_TestAllTypesProto3_BAR,
+              dst_values[0]);
+    EXPECT_EQ(protobuf_test_messages_proto3_TestAllTypesProto3_FOO,
+              dst_values[1]);
+    EXPECT_EQ(12345, dst_values[2]);
+
+    // CRITICAL: Verify source was NOT mutated!
+    const int* src_values_post =
+        upb_test_convert_Proto2EnumMessage_repeated_nested_enum(msg, &count);
+    ASSERT_EQ(2, count);
+    EXPECT_EQ(upb_test_convert_Proto2EnumMessage_BAR, src_values_post[0]);
+    EXPECT_EQ(upb_test_convert_Proto2EnumMessage_FOO, src_values_post[1]);
+  }
+}
+
+TEST(ConvertTest, ClosedToSameClosedRepeatedEnum_ShareArray) {
+  upb::Arena arena;
+  const upb_MiniTable* mt = &upb__test__convert__Proto2EnumMessage_msg_init;
+
+  upb_test_convert_Proto2EnumMessage* msg =
+      upb_test_convert_Proto2EnumMessage_new(arena.ptr());
+  upb_test_convert_Proto2EnumMessage_add_repeated_nested_enum(
+      msg, upb_test_convert_Proto2EnumMessage_BAR, arena.ptr());
+
+  const upb_Message* dst_msg =
+      upb_Message_Convert(UPB_UPCAST(msg), mt, mt, nullptr, 0, 0, arena.ptr());
+  ASSERT_NE(dst_msg, nullptr);
+  const upb_test_convert_Proto2EnumMessage* dst =
+      (const upb_test_convert_Proto2EnumMessage*)dst_msg;
+
+  size_t count;
+  const int* dst_values =
+      upb_test_convert_Proto2EnumMessage_repeated_nested_enum(dst, &count);
+  ASSERT_EQ(1, count);
+  EXPECT_EQ(upb_test_convert_Proto2EnumMessage_BAR, dst_values[0]);
+
+  // Since both have the same closed enum minitable, they should share the same
+  // underlying array pointer (shallow copy / alias).
+  EXPECT_EQ(
+      upb_test_convert_Proto2EnumMessage_repeated_nested_enum(msg, &count),
+      dst_values);
+}
+
+TEST(ConvertTest, ClosedToSameClosedScalarEnum_CopyDirectly) {
+  upb::Arena arena;
+  const upb_MiniTable* mt = &upb__test__convert__Proto2EnumMessage_msg_init;
+
+  upb_test_convert_Proto2EnumMessage* msg =
+      upb_test_convert_Proto2EnumMessage_new(arena.ptr());
+  upb_test_convert_Proto2EnumMessage_set_optional_nested_enum(
+      msg, upb_test_convert_Proto2EnumMessage_BAR);
+
+  const upb_Message* dst_msg =
+      upb_Message_Convert(UPB_UPCAST(msg), mt, mt, nullptr, 0, 0, arena.ptr());
+  ASSERT_NE(dst_msg, nullptr);
+  const upb_test_convert_Proto2EnumMessage* dst =
+      (const upb_test_convert_Proto2EnumMessage*)dst_msg;
+
+  EXPECT_EQ(upb_test_convert_Proto2EnumMessage_BAR,
+            upb_test_convert_Proto2EnumMessage_optional_nested_enum(dst));
+}
+
+TEST(ConvertTest, ClosedToSameClosedMapEnum_ShareMap) {
+  upb::Arena arena;
+  const upb_MiniTable* mt = &upb__test__convert__Proto2EnumMessage_msg_init;
+
+  upb_test_convert_Proto2EnumMessage* msg =
+      upb_test_convert_Proto2EnumMessage_new(arena.ptr());
+  upb_test_convert_Proto2EnumMessage_map_string_nested_enum_set(
+      msg, upb_StringView_FromString("valid1"),
+      upb_test_convert_Proto2EnumMessage_BAR, arena.ptr());
+
+  const upb_Message* dst_msg =
+      upb_Message_Convert(UPB_UPCAST(msg), mt, mt, nullptr, 0, 0, arena.ptr());
+  ASSERT_NE(dst_msg, nullptr);
+  const upb_test_convert_Proto2EnumMessage* dst =
+      (const upb_test_convert_Proto2EnumMessage*)dst_msg;
+
+  int val;
+  EXPECT_TRUE(upb_test_convert_Proto2EnumMessage_map_string_nested_enum_get(
+      dst, upb_StringView_FromString("valid1"), &val));
+  EXPECT_EQ(upb_test_convert_Proto2EnumMessage_BAR, val);
+
+  // Since both have the same closed enum map schema, they should share the same
+  // underlying map pointer (shallow copy / alias).
+  const upb_Map* src_map = upb_Message_GetMap(
+      UPB_UPCAST(msg), upb_MiniTable_FindFieldByNumber(mt, 73));
+  const upb_Map* dst_map =
+      upb_Message_GetMap(dst_msg, upb_MiniTable_FindFieldByNumber(mt, 73));
+  EXPECT_EQ(src_map, dst_map);
 }
 
 TEST(ConvertTest, OpenToClosedExtensionEnum) {
@@ -1015,7 +1541,7 @@ TEST(ConvertTest, OpenToClosedExtensionEnum) {
       &upb__test__convert__MessageWithKnownEnum_msg_init;
 
   const upb_Message* dst_msg = upb_Message_Convert(
-      UPB_UPCAST(msg), src_mt, dst_mt, nullptr, arena.ptr());
+      UPB_UPCAST(msg), src_mt, dst_mt, nullptr, 0, 0, arena.ptr());
   ASSERT_NE(dst_msg, nullptr);
   const upb_test_convert_MessageWithKnownEnum* dst =
       (const upb_test_convert_MessageWithKnownEnum*)dst_msg;
@@ -1041,7 +1567,7 @@ TEST(ConvertTest, OpenToClosedExtensionEnum_InvalidValue) {
       &upb__test__convert__MessageWithKnownEnum_msg_init;
 
   const upb_Message* dst_msg = upb_Message_Convert(
-      UPB_UPCAST(msg), src_mt, dst_mt, nullptr, arena.ptr());
+      UPB_UPCAST(msg), src_mt, dst_mt, nullptr, 0, 0, arena.ptr());
   ASSERT_NE(dst_msg, nullptr);
 
   const upb_test_convert_MessageWithKnownEnum* dst =
@@ -1049,8 +1575,10 @@ TEST(ConvertTest, OpenToClosedExtensionEnum_InvalidValue) {
   EXPECT_FALSE(upb_test_convert_MessageWithKnownEnum_has_ext_enum(dst));
 
   size_t iter = kUpb_Message_UnknownBegin;
-  upb_StringView data;
-  ASSERT_TRUE(upb_Message_NextUnknown(dst_msg, &data, &iter));
+  upb_MessageUnknown unknown;
+  ASSERT_TRUE(upb_Message_NextUnknown2(dst_msg, &unknown, &iter));
+  EXPECT_EQ(unknown.type, kUpb_MessageUnknownType_StringView);
+  upb_StringView data = unknown.value.bytes;
   EXPECT_GT(data.size, 0);
 
   // We cannot parse it back using the extension registry because the extension
@@ -1073,9 +1601,9 @@ TEST(ConvertTest, OpenToClosedExtensionRepeatedEnum) {
   upb_Array* ext_arr = upb_Array_New(arena.ptr(), kUpb_CType_Enum);
   upb_MessageValue elem_val;
   elem_val.int32_val = upb_test_convert_Proto2EnumMessage_FOO;
-  upb_Array_Append(ext_arr, elem_val, arena.ptr());
+  ASSERT_TRUE(upb_Array_Append(ext_arr, elem_val, arena.ptr()));
   elem_val.int32_val = upb_test_convert_Proto2EnumMessage_BAR;
-  upb_Array_Append(ext_arr, elem_val, arena.ptr());
+  ASSERT_TRUE(upb_Array_Append(ext_arr, elem_val, arena.ptr()));
 
   upb_MessageValue ext_val;
   ext_val.array_val = ext_arr;
@@ -1089,7 +1617,7 @@ TEST(ConvertTest, OpenToClosedExtensionRepeatedEnum) {
       &upb__test__convert__MessageWithKnownEnum_msg_init;
 
   const upb_Message* dst_msg = upb_Message_Convert(
-      UPB_UPCAST(msg), src_mt, dst_mt, nullptr, arena.ptr());
+      UPB_UPCAST(msg), src_mt, dst_mt, nullptr, 0, 0, arena.ptr());
   ASSERT_NE(dst_msg, nullptr);
   const upb_test_convert_MessageWithKnownEnum* dst =
       (const upb_test_convert_MessageWithKnownEnum*)dst_msg;
@@ -1110,9 +1638,9 @@ TEST(ConvertTest, OpenToClosedExtensionRepeatedEnum_InvalidValue) {
   upb_Array* ext_arr = upb_Array_New(arena.ptr(), kUpb_CType_Enum);
   upb_MessageValue elem_val;
   elem_val.int32_val = 12345;  // Invalid value.
-  upb_Array_Append(ext_arr, elem_val, arena.ptr());
+  ASSERT_TRUE(upb_Array_Append(ext_arr, elem_val, arena.ptr()));
   elem_val.int32_val = upb_test_convert_Proto2EnumMessage_BAR;
-  upb_Array_Append(ext_arr, elem_val, arena.ptr());
+  ASSERT_TRUE(upb_Array_Append(ext_arr, elem_val, arena.ptr()));
 
   upb_MessageValue ext_val;
   ext_val.array_val = ext_arr;
@@ -1126,7 +1654,7 @@ TEST(ConvertTest, OpenToClosedExtensionRepeatedEnum_InvalidValue) {
       &upb__test__convert__MessageWithKnownEnum_msg_init;
 
   const upb_Message* dst_msg = upb_Message_Convert(
-      UPB_UPCAST(msg), src_mt, dst_mt, nullptr, arena.ptr());
+      UPB_UPCAST(msg), src_mt, dst_mt, nullptr, 0, 0, arena.ptr());
   ASSERT_NE(dst_msg, nullptr);
 
   const upb_test_convert_MessageWithKnownEnum* dst =
@@ -1138,8 +1666,10 @@ TEST(ConvertTest, OpenToClosedExtensionRepeatedEnum_InvalidValue) {
   EXPECT_EQ(upb_test_convert_Proto2EnumMessage_BAR, values[0]);
 
   size_t iter = kUpb_Message_UnknownBegin;
-  upb_StringView data;
-  ASSERT_TRUE(upb_Message_NextUnknown(dst_msg, &data, &iter));
+  upb_MessageUnknown unknown;
+  ASSERT_TRUE(upb_Message_NextUnknown2(dst_msg, &unknown, &iter));
+  EXPECT_EQ(unknown.type, kUpb_MessageUnknownType_StringView);
+  upb_StringView data = unknown.value.bytes;
   EXPECT_GT(data.size, 0);
 
   // We cannot parse it back using the extension registry because the extension
@@ -1172,7 +1702,581 @@ TEST(ConvertTest, ExtensionToMapMismatch) {
 
   // Return NULL when the destination mini table has a map, which is not
   // compatible with the source extension.
-  ASSERT_EQ(upb_Message_Convert(UPB_UPCAST(msg), src_mt, dst_mt, nullptr,
+  ASSERT_EQ(upb_Message_Convert(UPB_UPCAST(msg), src_mt, dst_mt, nullptr, 0, 0,
                                 arena.ptr()),
             nullptr);
+}
+
+TEST(ConvertTest, OneofPromotion) {
+  upb::Arena arena;
+  upb_test_convert_SrcWithoutOneof* msg =
+      upb_test_convert_SrcWithoutOneof_new(arena.ptr());
+  upb_test_convert_SrcWithoutOneof_set_oneof_int32(msg, 123);
+  upb_test_convert_SrcWithoutOneof_set_oneof_string(
+      msg, upb_StringView_FromString("abc"));
+
+  const upb_MiniTable* src_mt = &upb__test__convert__SrcWithoutOneof_msg_init;
+  const upb_MiniTable* dst_mt = &upb__test__convert__SrcWithOneof_msg_init;
+
+  const upb_Message* dst_msg = upb_Message_Convert(
+      UPB_UPCAST(msg), src_mt, dst_mt, nullptr, 0, 0, arena.ptr());
+  ASSERT_NE(dst_msg, nullptr);
+
+  // Since both fields in the source message are set (oneof_int32=123 and
+  // oneof_string="abc") and are moved into a oneof in the destination schema,
+  // only one of them can be set at the end. In this case, because fields are
+  // converted in descending order, the higher field number 2 (oneof_string)
+  // is converted first, and then field number 1 (oneof_int32) is ignored
+  // because the oneof already has a field set. This matches the roundtrip
+  // encoding-then-decoding path where field 2 is serialized last and wins.
+  const upb_test_convert_SrcWithOneof* dst =
+      (const upb_test_convert_SrcWithOneof*)dst_msg;
+  EXPECT_EQ(upb_test_convert_SrcWithOneof_my_oneof_case(dst),
+            upb_test_convert_SrcWithOneof_my_oneof_oneof_string);
+  upb_StringView str = upb_test_convert_SrcWithOneof_oneof_string(dst);
+  EXPECT_EQ(std::string("abc"), std::string(str.data, str.size));
+}
+
+TEST(ConvertTest, NonCanonicalMessageToCanonical_SameSchema) {
+  upb::Arena arena;
+  upb_test_convert_MessageWithExtension* msg =
+      upb_test_convert_MessageWithExtension_new(arena.ptr());
+
+  upb_test_convert_MessageWithInt32* sub =
+      upb_test_convert_MessageWithInt32_new(arena.ptr());
+  upb_test_convert_MessageWithInt32_set_f1(sub, 123);
+
+  upb_MessageValue ext_val;
+  ext_val.msg_val = UPB_UPCAST(sub);
+  upb_Message_SetExtension(UPB_UPCAST(msg), upb_test_convert_ext_field_msg_ext,
+                           &ext_val, arena.ptr());
+
+  const upb_MiniTable* src_mt =
+      &upb__test__convert__MessageWithExtension_msg_init;
+  const upb_MiniTable* empty_mt = &upb_0test__EmptyMessage_msg_init;
+
+  // Convert to carrier to make it non-canonical.
+  const upb_Message* non_canonical_src = upb_Message_Convert(
+      UPB_UPCAST(msg), src_mt, empty_mt, nullptr, 0, 0, arena.ptr());
+  ASSERT_NE(non_canonical_src, nullptr);
+
+  // Convert back to MessageWithExtension with registry.
+  upb_ExtensionRegistry* extreg = upb_ExtensionRegistry_New(arena.ptr());
+  ASSERT_NE(extreg, nullptr);
+  upb_ExtensionRegistry_Add(extreg, upb_test_convert_ext_field_msg_ext);
+
+  const upb_Message* converted = upb_Message_Convert(
+      non_canonical_src, empty_mt, src_mt, extreg, 0, 0, arena.ptr());
+  ASSERT_NE(converted, nullptr);
+
+  // Verify canonical extension.
+  EXPECT_TRUE(
+      upb_Message_HasExtension(converted, upb_test_convert_ext_field_msg_ext));
+
+  upb_Message* dst_sub = upb_Message_GetExtensionMessage(
+      converted, upb_test_convert_ext_field_msg_ext, nullptr);
+  ASSERT_NE(dst_sub, nullptr);
+
+  const upb_test_convert_MessageWithInt32* typed_dst_sub =
+      (const upb_test_convert_MessageWithInt32*)dst_sub;
+  EXPECT_EQ(123, upb_test_convert_MessageWithInt32_f1(typed_dst_sub));
+
+  // Should be shallow linked (pointer identity) since schemas match.
+  EXPECT_EQ((const void*)dst_sub, (const void*)sub);
+}
+
+TEST(ConvertTest, NonCanonicalMessageToCanonical_DiffSchema) {
+  upb::Arena arena;
+  upb_test_convert_MessageWithExtension* msg =
+      upb_test_convert_MessageWithExtension_new(arena.ptr());
+
+  upb_test_convert_MessageWithInt32* sub =
+      upb_test_convert_MessageWithInt32_new(arena.ptr());
+  upb_test_convert_MessageWithInt32_set_f1(sub, 123);
+
+  upb_MessageValue ext_val;
+  ext_val.msg_val = UPB_UPCAST(sub);
+  upb_Message_SetExtension(UPB_UPCAST(msg), upb_test_convert_ext_field_msg_ext,
+                           &ext_val, arena.ptr());
+
+  const upb_MiniTable* src_mt =
+      &upb__test__convert__MessageWithExtension_msg_init;
+  const upb_MiniTable* empty_mt = &upb_0test__EmptyMessage_msg_init;
+
+  // Convert to carrier to make it non-canonical.
+  const upb_Message* non_canonical_src = upb_Message_Convert(
+      UPB_UPCAST(msg), src_mt, empty_mt, nullptr, 0, 0, arena.ptr());
+  ASSERT_NE(non_canonical_src, nullptr);
+
+  // Convert to AnotherMessageWithExtension with registry containing
+  // another_ext_field_msg.
+  const upb_MiniTable* dst_mt =
+      &upb__test__convert__AnotherMessageWithExtension_msg_init;
+
+  upb_ExtensionRegistry* extreg = upb_ExtensionRegistry_New(arena.ptr());
+  ASSERT_NE(extreg, nullptr);
+  upb_ExtensionRegistry_Add(extreg, upb_test_convert_another_ext_field_msg_ext);
+
+  const upb_Message* converted = upb_Message_Convert(
+      non_canonical_src, empty_mt, dst_mt, extreg, 0, 0, arena.ptr());
+  ASSERT_NE(converted, nullptr);
+
+  // Verify canonical extension.
+  EXPECT_TRUE(upb_Message_HasExtension(
+      converted, upb_test_convert_another_ext_field_msg_ext));
+
+  upb_Message* dst_sub = upb_Message_GetExtensionMessage(
+      converted, upb_test_convert_another_ext_field_msg_ext, nullptr);
+  ASSERT_NE(dst_sub, nullptr);
+
+  // Should be MessageWithInt32Clone.
+  const upb_test_convert_MessageWithInt32Clone* typed_dst_sub =
+      (const upb_test_convert_MessageWithInt32Clone*)dst_sub;
+  EXPECT_EQ(123, upb_test_convert_MessageWithInt32Clone_f1(typed_dst_sub));
+
+  // Should be deep copied (different pointer) since schemas differ.
+  EXPECT_NE((const void*)dst_sub, (const void*)sub);
+}
+
+TEST(ConvertTest, NonCanonicalMessageToNormalField_DiffSchema) {
+  upb::Arena arena;
+  upb_test_convert_MessageWithExtension* msg =
+      upb_test_convert_MessageWithExtension_new(arena.ptr());
+
+  upb_test_convert_MessageWithInt32* sub =
+      upb_test_convert_MessageWithInt32_new(arena.ptr());
+  upb_test_convert_MessageWithInt32_set_f1(sub, 123);
+
+  upb_MessageValue ext_val;
+  ext_val.msg_val = UPB_UPCAST(sub);
+  upb_Message_SetExtension(UPB_UPCAST(msg), upb_test_convert_ext_field_msg_ext,
+                           &ext_val, arena.ptr());
+
+  const upb_MiniTable* src_mt =
+      &upb__test__convert__MessageWithExtension_msg_init;
+  const upb_MiniTable* empty_mt = &upb_0test__EmptyMessage_msg_init;
+
+  // Convert to carrier to make it non-canonical.
+  const upb_Message* non_canonical_src = upb_Message_Convert(
+      UPB_UPCAST(msg), src_mt, empty_mt, nullptr, 0, 0, arena.ptr());
+  ASSERT_NE(non_canonical_src, nullptr);
+
+  // Convert to MessageWithKnownMsgClone.
+  const upb_MiniTable* dst_mt =
+      &upb__test__convert__MessageWithKnownMsgClone_msg_init;
+
+  const upb_Message* converted = upb_Message_Convert(
+      non_canonical_src, empty_mt, dst_mt, nullptr, 0, 0, arena.ptr());
+  ASSERT_NE(converted, nullptr);
+
+  // Verify normal field.
+  const upb_test_convert_MessageWithKnownMsgClone* dst =
+      (const upb_test_convert_MessageWithKnownMsgClone*)converted;
+
+  const upb_test_convert_MessageWithInt32Clone* dst_sub =
+      upb_test_convert_MessageWithKnownMsgClone_known_msg(dst);
+  ASSERT_NE(dst_sub, nullptr);
+  EXPECT_EQ(123, upb_test_convert_MessageWithInt32Clone_f1(dst_sub));
+
+  // Should be deep copied.
+  EXPECT_NE((const void*)dst_sub, (const void*)sub);
+}
+
+TEST(ConvertTest, NonCanonicalMessageToNonCanonical) {
+  upb::Arena arena;
+  upb_test_convert_MessageWithExtension* msg =
+      upb_test_convert_MessageWithExtension_new(arena.ptr());
+
+  upb_test_convert_MessageWithInt32* sub =
+      upb_test_convert_MessageWithInt32_new(arena.ptr());
+  upb_test_convert_MessageWithInt32_set_f1(sub, 123);
+
+  upb_MessageValue ext_val;
+  ext_val.msg_val = UPB_UPCAST(sub);
+  upb_Message_SetExtension(UPB_UPCAST(msg), upb_test_convert_ext_field_msg_ext,
+                           &ext_val, arena.ptr());
+
+  const upb_MiniTable* src_mt =
+      &upb__test__convert__MessageWithExtension_msg_init;
+  const upb_MiniTable* empty_mt = &upb_0test__EmptyMessage_msg_init;
+
+  // Convert to carrier to make it non-canonical.
+  const upb_Message* non_canonical_src = upb_Message_Convert(
+      UPB_UPCAST(msg), src_mt, empty_mt, nullptr, 0, 0, arena.ptr());
+  ASSERT_NE(non_canonical_src, nullptr);
+
+  // Convert back to src_mt without registry. It should remain non-canonical.
+  const upb_Message* converted = upb_Message_Convert(
+      non_canonical_src, empty_mt, src_mt, nullptr, 0, 0, arena.ptr());
+  ASSERT_NE(converted, nullptr);
+
+  uintptr_t iter = kUpb_Message_UnknownBegin;
+  upb_MessageUnknown unknown;
+  ASSERT_TRUE(upb_Message_NextUnknown2(converted, &unknown, &iter));
+  EXPECT_EQ(unknown.type, kUpb_MessageUnknownType_NonCanonicalExtension);
+  const upb_Extension* ext_found =
+      static_cast<const upb_Extension*>(unknown.value.extension);
+  EXPECT_EQ(upb_MiniTableExtension_Number(ext_found->ext), 1002);
+
+  const upb_test_convert_MessageWithInt32* converted_sub =
+      (const upb_test_convert_MessageWithInt32*)ext_found->data.msg_val;
+  EXPECT_EQ(123, upb_test_convert_MessageWithInt32_f1(converted_sub));
+
+  EXPECT_FALSE(upb_Message_NextUnknown2(converted, &unknown, &iter));
+}
+
+TEST(ConvertTest, NonCanonicalRepeatedInt32ToCanonical) {
+  upb::Arena arena;
+  upb_test_convert_MessageWithExtension* msg =
+      upb_test_convert_MessageWithExtension_new(arena.ptr());
+
+  upb_Array* arr = upb_Array_New(arena.ptr(), kUpb_CType_Int32);
+  upb_MessageValue val1, val2;
+  val1.int32_val = 123;
+  val2.int32_val = 456;
+  upb_Array_Append(arr, val1, arena.ptr());
+  upb_Array_Append(arr, val2, arena.ptr());
+
+  upb_MessageValue ext_val;
+  ext_val.array_val = arr;
+  upb_Message_SetExtension(UPB_UPCAST(msg),
+                           upb_test_convert_ext_repeated_int32_ext, &ext_val,
+                           arena.ptr());
+
+  const upb_MiniTable* src_mt =
+      &upb__test__convert__MessageWithExtension_msg_init;
+  const upb_MiniTable* empty_mt = &upb_0test__EmptyMessage_msg_init;
+
+  const upb_Message* non_canonical_src = upb_Message_Convert(
+      UPB_UPCAST(msg), src_mt, empty_mt, nullptr, 0, 0, arena.ptr());
+  ASSERT_NE(non_canonical_src, nullptr);
+
+  upb_ExtensionRegistry* extreg = upb_ExtensionRegistry_New(arena.ptr());
+  ASSERT_NE(extreg, nullptr);
+  upb_ExtensionRegistry_Add(extreg, upb_test_convert_ext_repeated_int32_ext);
+
+  const upb_Message* converted = upb_Message_Convert(
+      non_canonical_src, empty_mt, src_mt, extreg, 0, 0, arena.ptr());
+  ASSERT_NE(converted, nullptr);
+
+  const upb_Array* dst_arr = upb_Message_GetExtensionArray(
+      converted, upb_test_convert_ext_repeated_int32_ext);
+  ASSERT_NE(dst_arr, nullptr);
+  ASSERT_EQ(2, upb_Array_Size(dst_arr));
+  EXPECT_EQ(123, upb_Array_Get(dst_arr, 0).int32_val);
+  EXPECT_EQ(456, upb_Array_Get(dst_arr, 1).int32_val);
+}
+
+TEST(ConvertTest, NonCanonicalRepeatedInt32ToNormalField) {
+  upb::Arena arena;
+  upb_test_convert_MessageWithExtension* msg =
+      upb_test_convert_MessageWithExtension_new(arena.ptr());
+
+  upb_Array* arr = upb_Array_New(arena.ptr(), kUpb_CType_Int32);
+  upb_MessageValue val1, val2;
+  val1.int32_val = 123;
+  val2.int32_val = 456;
+  upb_Array_Append(arr, val1, arena.ptr());
+  upb_Array_Append(arr, val2, arena.ptr());
+
+  upb_MessageValue ext_val;
+  ext_val.array_val = arr;
+  upb_Message_SetExtension(UPB_UPCAST(msg),
+                           upb_test_convert_ext_repeated_int32_ext, &ext_val,
+                           arena.ptr());
+
+  const upb_MiniTable* src_mt =
+      &upb__test__convert__MessageWithExtension_msg_init;
+  const upb_MiniTable* empty_mt = &upb_0test__EmptyMessage_msg_init;
+
+  const upb_Message* non_canonical_src = upb_Message_Convert(
+      UPB_UPCAST(msg), src_mt, empty_mt, nullptr, 0, 0, arena.ptr());
+  ASSERT_NE(non_canonical_src, nullptr);
+
+  const upb_MiniTable* dst_mt =
+      &upb__test__convert__MessageWithKnownRepeatedInt32_msg_init;
+
+  const upb_Message* converted = upb_Message_Convert(
+      non_canonical_src, empty_mt, dst_mt, nullptr, 0, 0, arena.ptr());
+  ASSERT_NE(converted, nullptr);
+
+  const upb_test_convert_MessageWithKnownRepeatedInt32* dst =
+      (const upb_test_convert_MessageWithKnownRepeatedInt32*)converted;
+  size_t len;
+  const int32_t* dst_vals =
+      upb_test_convert_MessageWithKnownRepeatedInt32_known_repeated_int32(dst,
+                                                                          &len);
+  ASSERT_EQ(2, len);
+  EXPECT_EQ(123, dst_vals[0]);
+  EXPECT_EQ(456, dst_vals[1]);
+}
+
+TEST(ConvertTest, NonCanonicalStringToCanonical) {
+  upb::Arena arena;
+  upb_test_convert_MessageWithExtension* msg =
+      upb_test_convert_MessageWithExtension_new(arena.ptr());
+
+  upb_StringView str = upb_StringView_FromString("hello");
+  upb_MessageValue ext_val;
+  ext_val.str_val = str;
+  upb_Message_SetExtension(UPB_UPCAST(msg), upb_test_convert_ext_string_ext,
+                           &ext_val, arena.ptr());
+
+  const upb_MiniTable* src_mt =
+      &upb__test__convert__MessageWithExtension_msg_init;
+  const upb_MiniTable* empty_mt = &upb_0test__EmptyMessage_msg_init;
+
+  const upb_Message* non_canonical_src = upb_Message_Convert(
+      UPB_UPCAST(msg), src_mt, empty_mt, nullptr, 0, 0, arena.ptr());
+  ASSERT_NE(non_canonical_src, nullptr);
+
+  upb_ExtensionRegistry* extreg = upb_ExtensionRegistry_New(arena.ptr());
+  ASSERT_NE(extreg, nullptr);
+  upb_ExtensionRegistry_Add(extreg, upb_test_convert_ext_string_ext);
+
+  const upb_Message* converted = upb_Message_Convert(
+      non_canonical_src, empty_mt, src_mt, extreg, 0, 0, arena.ptr());
+  ASSERT_NE(converted, nullptr);
+
+  EXPECT_TRUE(
+      upb_Message_HasExtension(converted, upb_test_convert_ext_string_ext));
+
+  upb_StringView dst_str =
+      upb_Message_GetExtensionString(converted, upb_test_convert_ext_string_ext,
+                                     upb_StringView_FromString(""));
+  EXPECT_EQ(std::string("hello"), std::string(dst_str.data, dst_str.size));
+}
+
+TEST(ConvertTest, NonCanonicalStringToNormalField) {
+  upb::Arena arena;
+  upb_test_convert_MessageWithExtension* msg =
+      upb_test_convert_MessageWithExtension_new(arena.ptr());
+
+  upb_StringView str = upb_StringView_FromString("hello");
+  upb_MessageValue ext_val;
+  ext_val.str_val = str;
+  upb_Message_SetExtension(UPB_UPCAST(msg), upb_test_convert_ext_string_ext,
+                           &ext_val, arena.ptr());
+
+  const upb_MiniTable* src_mt =
+      &upb__test__convert__MessageWithExtension_msg_init;
+  const upb_MiniTable* empty_mt = &upb_0test__EmptyMessage_msg_init;
+
+  const upb_Message* non_canonical_src = upb_Message_Convert(
+      UPB_UPCAST(msg), src_mt, empty_mt, nullptr, 0, 0, arena.ptr());
+  ASSERT_NE(non_canonical_src, nullptr);
+
+  const upb_MiniTable* dst_mt =
+      &upb__test__convert__MessageWithKnownString_msg_init;
+
+  const upb_Message* converted = upb_Message_Convert(
+      non_canonical_src, empty_mt, dst_mt, nullptr, 0, 0, arena.ptr());
+  ASSERT_NE(converted, nullptr);
+
+  const upb_test_convert_MessageWithKnownString* dst =
+      (const upb_test_convert_MessageWithKnownString*)converted;
+
+  upb_StringView dst_str =
+      upb_test_convert_MessageWithKnownString_known_string(dst);
+  EXPECT_EQ(std::string("hello"), std::string(dst_str.data, dst_str.size));
+}
+
+TEST(ConvertTest, NonCanonicalEnumToCanonical_Valid) {
+  upb::Arena arena;
+  upb_test_convert_MessageWithExtension* msg =
+      upb_test_convert_MessageWithExtension_new(arena.ptr());
+
+  upb_MessageValue ext_val;
+  ext_val.int32_val = 2;  // BAZ
+  upb_Message_SetExtension(UPB_UPCAST(msg), upb_test_convert_ext_enum_ext,
+                           &ext_val, arena.ptr());
+
+  const upb_MiniTable* src_mt =
+      &upb__test__convert__MessageWithExtension_msg_init;
+  const upb_MiniTable* empty_mt = &upb_0test__EmptyMessage_msg_init;
+
+  const upb_Message* non_canonical_src = upb_Message_Convert(
+      UPB_UPCAST(msg), src_mt, empty_mt, nullptr, 0, 0, arena.ptr());
+  ASSERT_NE(non_canonical_src, nullptr);
+
+  upb_ExtensionRegistry* extreg = upb_ExtensionRegistry_New(arena.ptr());
+  ASSERT_NE(extreg, nullptr);
+  upb_ExtensionRegistry_Add(extreg, upb_test_convert_ext_enum_ext);
+
+  const upb_Message* converted = upb_Message_Convert(
+      non_canonical_src, empty_mt, src_mt, extreg, 0, 0, arena.ptr());
+  ASSERT_NE(converted, nullptr);
+
+  EXPECT_TRUE(
+      upb_Message_HasExtension(converted, upb_test_convert_ext_enum_ext));
+
+  int32_t dst_val = upb_Message_GetExtensionInt32(
+      converted, upb_test_convert_ext_enum_ext, 0);
+  EXPECT_EQ(2, dst_val);
+}
+
+TEST(ConvertTest, NonCanonicalEnumToCanonical_InvalidClosed) {
+  upb::Arena arena;
+  upb_test_convert_MessageWithExtension* msg =
+      upb_test_convert_MessageWithExtension_new(arena.ptr());
+
+  upb_MessageValue ext_val;
+  ext_val.int32_val = 99;  // Invalid for Proto2EnumMessage.NestedEnum
+  upb_Message_SetExtension(UPB_UPCAST(msg), upb_test_convert_ext_enum_ext,
+                           &ext_val, arena.ptr());
+
+  const upb_MiniTable* src_mt =
+      &upb__test__convert__MessageWithExtension_msg_init;
+  const upb_MiniTable* empty_mt = &upb_0test__EmptyMessage_msg_init;
+
+  const upb_Message* non_canonical_src = upb_Message_Convert(
+      UPB_UPCAST(msg), src_mt, empty_mt, nullptr, 0, 0, arena.ptr());
+  ASSERT_NE(non_canonical_src, nullptr);
+
+  upb_ExtensionRegistry* extreg = upb_ExtensionRegistry_New(arena.ptr());
+  ASSERT_NE(extreg, nullptr);
+  upb_ExtensionRegistry_Add(extreg, upb_test_convert_ext_enum_ext);
+
+  const upb_Message* converted = upb_Message_Convert(
+      non_canonical_src, empty_mt, src_mt, extreg, 0, 0, arena.ptr());
+  ASSERT_NE(converted, nullptr);
+
+  // Should NOT be set as canonical extension.
+  EXPECT_FALSE(
+      upb_Message_HasExtension(converted, upb_test_convert_ext_enum_ext));
+
+  // Should be in unknowns.
+  upb_MessageUnknown unknown;
+  uintptr_t iter = kUpb_Message_UnknownBegin;
+  ASSERT_TRUE(upb_Message_NextUnknown2(converted, &unknown, &iter));
+  EXPECT_EQ(unknown.type, kUpb_MessageUnknownType_StringView);
+}
+
+TEST(ConvertTest, NonCanonicalRepeatedEnumToCanonical_Mixed) {
+  upb::Arena arena;
+  upb_test_convert_MessageWithExtension* msg =
+      upb_test_convert_MessageWithExtension_new(arena.ptr());
+
+  upb_Array* arr = upb_Array_New(arena.ptr(), kUpb_CType_Enum);
+  upb_MessageValue val1, val2, val3;
+  val1.int32_val = 1;   // BAR
+  val2.int32_val = 99;  // Invalid
+  val3.int32_val = 2;   // BAZ
+  upb_Array_Append(arr, val1, arena.ptr());
+  upb_Array_Append(arr, val2, arena.ptr());
+  upb_Array_Append(arr, val3, arena.ptr());
+
+  upb_MessageValue ext_val;
+  ext_val.array_val = arr;
+  upb_Message_SetExtension(UPB_UPCAST(msg),
+                           upb_test_convert_ext_repeated_enum_ext, &ext_val,
+                           arena.ptr());
+
+  const upb_MiniTable* src_mt =
+      &upb__test__convert__MessageWithExtension_msg_init;
+  const upb_MiniTable* empty_mt = &upb_0test__EmptyMessage_msg_init;
+
+  const upb_Message* non_canonical_src = upb_Message_Convert(
+      UPB_UPCAST(msg), src_mt, empty_mt, nullptr, 0, 0, arena.ptr());
+  ASSERT_NE(non_canonical_src, nullptr);
+
+  upb_ExtensionRegistry* extreg = upb_ExtensionRegistry_New(arena.ptr());
+  ASSERT_NE(extreg, nullptr);
+  upb_ExtensionRegistry_Add(extreg, upb_test_convert_ext_repeated_enum_ext);
+
+  const upb_Message* converted = upb_Message_Convert(
+      non_canonical_src, empty_mt, src_mt, extreg, 0, 0, arena.ptr());
+  ASSERT_NE(converted, nullptr);
+
+  // Canonical extension should have [1, 2].
+  const upb_Array* dst_arr = upb_Message_GetExtensionArray(
+      converted, upb_test_convert_ext_repeated_enum_ext);
+  ASSERT_NE(dst_arr, nullptr);
+  ASSERT_EQ(2, upb_Array_Size(dst_arr));
+  EXPECT_EQ(1, upb_Array_Get(dst_arr, 0).int32_val);
+  EXPECT_EQ(2, upb_Array_Get(dst_arr, 1).int32_val);
+
+  // Unknowns should have 99.
+  upb_MessageUnknown unknown;
+  uintptr_t iter = kUpb_Message_UnknownBegin;
+  ASSERT_TRUE(upb_Message_NextUnknown2(converted, &unknown, &iter));
+  EXPECT_EQ(unknown.type, kUpb_MessageUnknownType_StringView);
+}
+
+TEST(ConvertTest, NonCanonicalInt32ToMap_Incompatible) {
+  upb::Arena arena;
+  upb_test_convert_MessageWithExtension* msg =
+      upb_test_convert_MessageWithExtension_new(arena.ptr());
+
+  upb_MessageValue ext_val;
+  ext_val.int32_val = 42;
+  upb_Message_SetExtension(UPB_UPCAST(msg),
+                           upb_test_convert_ext_field_int32_ext, &ext_val,
+                           arena.ptr());
+
+  const upb_MiniTable* src_mt =
+      &upb__test__convert__MessageWithExtension_msg_init;
+  const upb_MiniTable* empty_mt = &upb_0test__EmptyMessage_msg_init;
+
+  const upb_Message* non_canonical_src = upb_Message_Convert(
+      UPB_UPCAST(msg), src_mt, empty_mt, nullptr, 0, 0, arena.ptr());
+  ASSERT_NE(non_canonical_src, nullptr);
+
+  const upb_MiniTable* dst_mt =
+      &upb__test__convert__MessageWithMapAt1000_msg_init;
+
+  // Conversion should FAIL (return nullptr) due to mode mismatch.
+  const upb_Message* converted = upb_Message_Convert(
+      non_canonical_src, empty_mt, dst_mt, nullptr, 0, 0, arena.ptr());
+  EXPECT_EQ(converted, nullptr);
+}
+
+TEST(ConvertTest, NonCanonicalMixedToCanonical) {
+  upb::Arena arena;
+  upb_test_convert_MessageWithExtension* msg =
+      upb_test_convert_MessageWithExtension_new(arena.ptr());
+
+  // Set int32 extension (1000).
+  upb_MessageValue val_int32;
+  val_int32.int32_val = 42;
+  upb_Message_SetExtension(UPB_UPCAST(msg),
+                           upb_test_convert_ext_field_int32_ext, &val_int32,
+                           arena.ptr());
+
+  // Set string extension (1004).
+  upb_MessageValue val_str;
+  val_str.str_val = upb_StringView_FromDataAndSize("hello", 5);
+  upb_Message_SetExtension(UPB_UPCAST(msg), upb_test_convert_ext_string_ext,
+                           &val_str, arena.ptr());
+
+  const upb_MiniTable* src_mt =
+      &upb__test__convert__MessageWithExtension_msg_init;
+  const upb_MiniTable* empty_mt = &upb_0test__EmptyMessage_msg_init;
+
+  const upb_Message* non_canonical_src = upb_Message_Convert(
+      UPB_UPCAST(msg), src_mt, empty_mt, nullptr, 0, 0, arena.ptr());
+  ASSERT_NE(non_canonical_src, nullptr);
+
+  upb_ExtensionRegistry* extreg = upb_ExtensionRegistry_New(arena.ptr());
+  ASSERT_NE(extreg, nullptr);
+  upb_ExtensionRegistry_Add(extreg, upb_test_convert_ext_field_int32_ext);
+  upb_ExtensionRegistry_Add(extreg, upb_test_convert_ext_string_ext);
+
+  const upb_Message* converted = upb_Message_Convert(
+      non_canonical_src, empty_mt, src_mt, extreg, 0, 0, arena.ptr());
+  ASSERT_NE(converted, nullptr);
+
+  // Verify both extensions are present.
+  EXPECT_TRUE(upb_Message_HasExtension(converted,
+                                       upb_test_convert_ext_field_int32_ext));
+  EXPECT_EQ(42, upb_Message_GetExtensionInt32(
+                    converted, upb_test_convert_ext_field_int32_ext, 0));
+
+  EXPECT_TRUE(
+      upb_Message_HasExtension(converted, upb_test_convert_ext_string_ext));
+
+  upb_StringView dst_str =
+      upb_Message_GetExtensionString(converted, upb_test_convert_ext_string_ext,
+                                     upb_StringView_FromDataAndSize("", 0));
+  EXPECT_EQ(std::string("hello"), std::string(dst_str.data, dst_str.size));
 }

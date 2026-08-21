@@ -19,7 +19,7 @@ struct TestType {
   InternalMetadataResolver resolver;
 
   explicit TestType(int value) : value(value) {}
-  TestType(InternalMetadataOffset offset, int value)
+  TestType(InternalMetadataOffset offset, Arena* arena, int value)
       : value(value), resolver(offset) {}
 
   Arena* GetArena() const { return ResolveArena<&TestType::resolver>(this); }
@@ -43,7 +43,7 @@ struct TestTypeNotDestructorSkippable {
 
   explicit TestTypeNotDestructorSkippable(std::string value)
       : value(std::move(value)) {}
-  TestTypeNotDestructorSkippable(InternalMetadataOffset offset,
+  TestTypeNotDestructorSkippable(InternalMetadataOffset offset, Arena* arena,
                                  std::string value)
       : value(std::move(value)), resolver(offset) {}
 

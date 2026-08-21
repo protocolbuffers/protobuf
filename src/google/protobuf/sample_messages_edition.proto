@@ -7,7 +7,7 @@
 //
 // Sample messages to generate example code.
 
-edition = "2024";
+edition = "2026";
 
 package protobuf_test_messages.edition;
 

@@ -7,7 +7,7 @@
 
 [package]
 name = "protobuf"
-version = "{VERSION}"
+version = "{PROTOBUF_LEGACY_VERSION}"
 edition = "2021"  # The Rust edition (not to be confused with Protobuf Edition).
 links = "upb"
 license = "BSD-3-Clause"
@@ -20,7 +20,7 @@ path = "src/shared.rs"
 [dependencies]
 linkme = "0.3.35"
 paste = { package = "paste-complete", version = "1.0.15"}
-protobuf-macros = { version = "{VERSION}", path = "../protobuf_macros", package = "protobuf-macros" }
+protobuf-macros = { version = "{PROTOBUF_RUST_VERSION}", path = "../protobuf_macros", package = "protobuf-macros" }
 
 [dev-dependencies]
 googletest = "0.14.2"

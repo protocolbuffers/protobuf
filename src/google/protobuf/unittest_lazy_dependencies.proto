@@ -11,7 +11,7 @@
 //
 // A proto file we will use for unit testing.
 
-edition = "2024";
+edition = "2026";
 
 import "google/protobuf/unittest_lazy_dependencies_custom_option.proto";
 
@@ -20,7 +20,6 @@ import "google/protobuf/unittest_lazy_dependencies_custom_option.proto";
 option cc_generic_services = true;    // auto-added
 option java_generic_services = true;  // auto-added
 option py_generic_services = true;    // auto-added
-option cc_enable_arenas = true;
 
 // We don't put this in a package within proto2 because we need to make sure
 // that the generated code doesn't depend on being in the proto2 namespace.

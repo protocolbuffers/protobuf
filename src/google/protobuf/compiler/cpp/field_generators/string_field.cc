@@ -481,7 +481,7 @@ void SingularString::GenerateClearingCode(io::Printer* p) const {
 void SingularString::GenerateMessageClearingCode(io::Printer* p) const {
   if (is_oneof()) {
     p->Emit(R"cc(
-      $field_$.Destroy();
+      this_.$field_$.Destroy();
     )cc");
     return;
   }
@@ -505,7 +505,7 @@ void SingularString::GenerateMessageClearingCode(io::Printer* p) const {
     // For non-inlined strings, we distinguish from non-default by comparing
     // instances, rather than contents.
     p->Emit(R"cc(
-      $DCHK$(!$field_$.IsDefault());
+      $DCHK$(!this_.$field_$.IsDefault());
     )cc");
   }
 
@@ -513,7 +513,7 @@ void SingularString::GenerateMessageClearingCode(io::Printer* p) const {
     // Clear to a non-empty default is more involved, as we try to use the
     // Arena if one is present and may need to reallocate the string.
     p->Emit(R"cc(
-      $field_$.ClearToDefault($lazy_var$, GetArena());
+      this_.$field_$.ClearToDefault($lazy_var$, this_.GetArena());
     )cc");
     return;
   }
@@ -521,7 +521,7 @@ void SingularString::GenerateMessageClearingCode(io::Printer* p) const {
   p->Emit({{"Clear", HasHasbit(field_, options_) ? "ClearNonDefaultToEmpty"
                                                  : "ClearToEmpty"}},
           R"cc(
-            $field_$.$Clear$();
+            this_.$field_$.$Clear$();
           )cc");
 }
 
@@ -533,13 +533,14 @@ void SingularString::GenerateSwappingCode(io::Printer* p) const {
 
   if (!is_inlined()) {
     p->Emit(R"cc(
-      ::_pbi::ArenaStringPtr::InternalSwap(&$field_$, &other->$field_$, arena);
+      ::_pbi::ArenaStringPtr::InternalSwap(&this_.$field_$, &other->$field_$,
+                                           arena);
     )cc");
     return;
   }
 
   p->Emit(R"cc(
-    ::_pbi::InlinedStringField::InternalSwap(&$field_$, &other->$field_$,
+    ::_pbi::InlinedStringField::InternalSwap(&this_.$field_$, &other->$field_$,
                                              arena);
   )cc");
 }
@@ -671,6 +672,14 @@ class RepeatedString : public FieldGeneratorBase {
     }
   }
 
+  void GenerateMessageClearingCode(io::Printer* p) const override {
+    if (should_split()) {
+      p->Emit("this_.$field_$.ClearIfNotDefault();\n");
+    } else {
+      p->Emit("this_.$field_$.Clear();\n");
+    }
+  }
+
   void GenerateClearingCode(io::Printer* p) const override {
     if (should_split()) {
       p->Emit("$field_$.ClearIfNotDefault();\n");
@@ -711,7 +720,7 @@ class RepeatedString : public FieldGeneratorBase {
   void GenerateSwappingCode(io::Printer* p) const override {
     ABSL_CHECK(!should_split());
     p->Emit(R"cc(
-      $field_$.InternalSwap(&other->$field_$);
+      this_.$field_$.InternalSwap(&other->$field_$);
     )cc");
   }
 
@@ -978,12 +987,12 @@ void RepeatedString::GenerateSerializeWithCachedSizesToArray(
 
 std::unique_ptr<FieldGeneratorBase> MakeSinguarStringGenerator(
     const FieldDescriptor* desc, const Options& options) {
-  return absl::make_unique<SingularString>(desc, options);
+  return std::make_unique<SingularString>(desc, options);
 }
 
 std::unique_ptr<FieldGeneratorBase> MakeRepeatedStringGenerator(
     const FieldDescriptor* desc, const Options& options) {
-  return absl::make_unique<RepeatedString>(desc, options);
+  return std::make_unique<RepeatedString>(desc, options);
 }
 
 }  // namespace cpp

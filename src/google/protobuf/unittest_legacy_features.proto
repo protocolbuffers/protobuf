@@ -7,7 +7,7 @@
 
 // Test that features with legacy descriptor helpers get properly converted.
 
-edition = "2024";
+edition = "2026";
 
 package legacy_features_unittest;
 

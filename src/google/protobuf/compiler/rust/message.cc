@@ -224,8 +224,7 @@ void UpbGeneratedMessageTraitImpls(Context& ctx, const Descriptor& msg,
           if (scc.GetRepresentative() == &msg) {
             for (const Descriptor* d : scc.descriptors) {
               std::string mini_descriptor =
-                  pool.FindMessageByName(d->full_name().data())
-                      .MiniDescriptorEncode();
+                  pool.FindMessageByName(d->full_name()).MiniDescriptorEncode();
               ctx.Emit({{"name", RsTypePath(ctx, *d)},
                         {"minitable_symbol_name",
                          QualifiedUpbMiniTableName(ctx, *d)},
@@ -237,8 +236,8 @@ void UpbGeneratedMessageTraitImpls(Context& ctx, const Descriptor& msg,
               )rs");
             }
             for (const Descriptor* d : scc.descriptors) {
-              UpbMiniTableLinking(
-                  ctx, *d, pool.FindMessageByName(d->full_name().data()), scc);
+              UpbMiniTableLinking(ctx, *d,
+                                  pool.FindMessageByName(d->full_name()), scc);
             }
           } else {
             ctx.Emit(
@@ -406,7 +405,7 @@ void GenerateRs(Context& ctx, const Descriptor& msg, const upb::DefPool& pool) {
     return;
   }
 
-  upb::MessageDefPtr upb_msg = pool.FindMessageByName(msg.full_name().data());
+  upb::MessageDefPtr upb_msg = pool.FindMessageByName(msg.full_name());
   ctx.Emit(
       {
           // There's also ${$/$}$-style begin and end tokens, but those might

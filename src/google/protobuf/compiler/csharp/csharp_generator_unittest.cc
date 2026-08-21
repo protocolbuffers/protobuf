@@ -5,11 +5,14 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
+#include "google/protobuf/compiler/csharp/csharp_generator.h"
+
 #include <memory>
 
 #include "google/protobuf/any.pb.h"
 #include <gtest/gtest.h>
 #include "google/protobuf/compiler/command_line_interface.h"
+#include "google/protobuf/compiler/command_line_interface_tester.h"
 #include "google/protobuf/compiler/csharp/csharp_helpers.h"
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/io/printer.h"
@@ -64,6 +67,77 @@ TEST(CSharpIdentifiers, UnderscoresToCamelCase) {
 	// be invalid because they would start with a digit
 	EXPECT_EQ("_123Foo", UnderscoresToCamelCase("_123_foo", true));
 	EXPECT_EQ("_123Foo", UnderscoresToCamelCase("___123_foo", true));
+}
+
+class CSharpGeneratorCliTest : public CommandLineInterfaceTester {
+ protected:
+  CSharpGeneratorCliTest() {
+    RegisterGenerator("--csharp_out", "--csharp_opt",
+                      std::make_unique<Generator>(), "C# test generator");
+
+    CreateTempFile("google/protobuf/descriptor.proto",
+                   DescriptorProto::descriptor()->file()->DebugString());
+  }
+};
+
+TEST_F(CSharpGeneratorCliTest, InvalidCSharpNamespaceRejected) {
+  CreateTempFile("foo.proto",
+                 R"schema(
+    syntax = "proto3";
+    option csharp_namespace = "MyApp.Models;System.Diagnostics.Process.Start(\"calc\");//";
+    message Foo {
+      int32 bar = 1;
+    })schema");
+
+  RunProtoc(
+      "protocol_compiler --proto_path=$tmpdir --csharp_out=$tmpdir foo.proto");
+
+  ExpectErrorSubstring("Invalid character");
+}
+
+TEST_F(CSharpGeneratorCliTest, ValidCSharpNamespaceAccepted) {
+  CreateTempFile("foo.proto",
+                 R"schema(
+    syntax = "proto3";
+    option csharp_namespace = "MyApp.Models.V2";
+    message Foo {
+      int32 bar = 1;
+    })schema");
+
+  RunProtoc(
+      "protocol_compiler --proto_path=$tmpdir --csharp_out=$tmpdir foo.proto");
+
+  ExpectNoErrors();
+}
+
+TEST_F(CSharpGeneratorCliTest, CSharpNamespaceSemicolonRejected) {
+  CreateTempFile("foo.proto",
+                 R"schema(
+    syntax = "proto3";
+    option csharp_namespace = "MyApp;System.Diagnostics.Process.Start(\"calc\")";
+    message Foo {
+      int32 bar = 1;
+    })schema");
+
+  RunProtoc(
+      "protocol_compiler --proto_path=$tmpdir --csharp_out=$tmpdir foo.proto");
+
+  ExpectErrorSubstring("Invalid character");
+}
+
+TEST_F(CSharpGeneratorCliTest, CSharpNamespaceBracesRejected) {
+  CreateTempFile("foo.proto",
+                 R"schema(
+    syntax = "proto3";
+    option csharp_namespace = "MyApp}class Evil{static void Main(){";
+    message Foo {
+      int32 bar = 1;
+    })schema");
+
+  RunProtoc(
+      "protocol_compiler --proto_path=$tmpdir --csharp_out=$tmpdir foo.proto");
+
+  ExpectErrorSubstring("Invalid character");
 }
 
 }  // namespace

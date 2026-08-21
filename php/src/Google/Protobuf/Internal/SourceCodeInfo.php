@@ -116,7 +116,8 @@ class SourceCodeInfo extends \Google\Protobuf\Internal\Message
      *             be recorded in the future.
      * }
      */
-    public function __construct($data = NULL) {
+    public function __construct($data = null)
+    {
         \GPBMetadata\Google\Protobuf\Internal\Descriptor::initOnce();
         parent::__construct($data);
     }

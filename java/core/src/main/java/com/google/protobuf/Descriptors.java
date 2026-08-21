@@ -929,6 +929,15 @@ public final class Descriptors {
       return parent;
     }
 
+    /**
+     * Checks whether this message type is defined in {@code descriptor.proto}.
+     *
+     * <p>For example, it returns true for {@code MessageOptions}, {@code FieldOptions}, etc.
+     */
+    boolean isDescriptorProtoType() {
+      return getFile() == DescriptorProtos.getDescriptor();
+    }
+
     public boolean isPlaceholder() {
       return placeholder;
     }
@@ -963,6 +972,10 @@ public final class Descriptors {
     /** Get a list of this message type's fields. */
     public List<FieldDescriptor> getFields() {
       return Collections.unmodifiableList(Arrays.asList(fields));
+    }
+
+    List<FieldDescriptor> getFieldsSortedByNumber() {
+      return Collections.unmodifiableList(Arrays.asList(fieldsSortedByNumber));
     }
 
     /** Get a count of this message type's fields. */
@@ -3488,10 +3501,6 @@ public final class Descriptors {
 
       if (result == null) {
         if (allowUnknownDependencies && filter == SearchFilter.TYPES_ONLY) {
-          logger.warning(
-              "The descriptor for type \""
-                  + name
-                  + "\" cannot be found and a placeholder is created for it");
           // If we have good reason to believe that the type is an enum, create an EnumDescriptor
           // placeholder here. Otherwise, create a Descriptor placeholder.  If we're wrong, a
           // DescriptorValidationException will be thrown later.
@@ -3747,6 +3756,13 @@ public final class Descriptors {
 
       containingType = parent;
       fieldCount = 0;
+
+      if (parent.getFile().tables.findSymbol(fullName) != null) {
+        logger.warning(
+            "Oneof "
+                + fullName
+                + " collides with another symbol. This will become an error in 2027.");
+      }
     }
 
     private final int index;

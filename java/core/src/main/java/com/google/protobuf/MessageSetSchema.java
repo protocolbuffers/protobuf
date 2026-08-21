@@ -11,8 +11,14 @@ import java.io.IOException;
 import java.util.Iterator;
 import java.util.Map.Entry;
 
-/** Schema used for proto2 messages using message_set_wireformat. */
+/**
+ * Schema used for proto2 messages using message_set_wireformat.
+ *
+ * <p>This class is for Lite runtime use only. For details on what this means regarding performance
+ * and security characteristics, see {@link ForLiteOnly}.
+ */
 @CheckReturnValue
+@ForLiteOnly
 final class MessageSetSchema<T> implements Schema<T> {
   private final MessageLite defaultInstance;
   private final UnknownFieldSchema<?, ?> unknownFieldSchema;
@@ -83,7 +89,7 @@ final class MessageSetSchema<T> implements Schema<T> {
 
   @SuppressWarnings("unchecked")
   @Override
-  public void writeTo(T message, Writer writer) throws IOException {
+  public void writeTo(T message, CodedOutputStreamWriter writer) throws IOException {
     FieldSet<?> extensions = extensionSchema.getExtensions(message);
     Iterator<?> iterator = extensions.iterator();
     while (iterator.hasNext()) {
@@ -107,7 +113,8 @@ final class MessageSetSchema<T> implements Schema<T> {
    * https://docs.oracle.com/javase/tutorial/java/generics/capture.html
    */
   private <UT, UB> void writeUnknownFieldsHelper(
-      UnknownFieldSchema<UT, UB> unknownFieldSchema, T message, Writer writer) throws IOException {
+      UnknownFieldSchema<UT, UB> unknownFieldSchema, T message, CodedOutputStreamWriter writer)
+      throws IOException {
     unknownFieldSchema.writeAsMessageSetTo(unknownFieldSchema.getFromMessage(message), writer);
   }
 
@@ -138,9 +145,14 @@ final class MessageSetSchema<T> implements Schema<T> {
           if (extension != null) {
             position =
                 ArrayDecoders.decodeMessageField(
-                    Protobuf.getInstance().schemaFor(
-                        extension.getMessageDefaultInstance().getClass()),
-                    data, position, limit, registers);
+                    Protobuf.getInstance()
+                        .schemaFor(
+                            ((GeneratedMessageLite<?, ?>) extension.getMessageDefaultInstance())
+                                .getClass()),
+                    data,
+                    position,
+                    limit,
+                    registers);
             extensions.setField(extension.descriptor, registers.object1);
           } else {
             position =
@@ -177,10 +189,16 @@ final class MessageSetSchema<T> implements Schema<T> {
             break;
           case WireFormat.MESSAGE_SET_MESSAGE:
             if (extension != null) {
-              position = ArrayDecoders.decodeMessageField(
-                  Protobuf.getInstance().schemaFor(
-                      extension.getMessageDefaultInstance().getClass()),
-                  data, position, limit, registers);
+              position =
+                  ArrayDecoders.decodeMessageField(
+                      Protobuf.getInstance()
+                          .schemaFor(
+                              ((GeneratedMessageLite<?, ?>) extension.getMessageDefaultInstance())
+                                  .getClass()),
+                      data,
+                      position,
+                      limit,
+                      registers);
               extensions.setField(extension.descriptor, registers.object1);
               continue;
             } else {
@@ -211,7 +229,8 @@ final class MessageSetSchema<T> implements Schema<T> {
   }
 
   @Override
-  public void mergeFrom(T message, Reader reader, ExtensionRegistryLite extensionRegistry)
+  public void mergeFrom(
+      T message, CodedInputStreamReader reader, ExtensionRegistryLite extensionRegistry)
       throws IOException {
     mergeFromHelper(unknownFieldSchema, extensionSchema, message, reader, extensionRegistry);
   }
@@ -224,7 +243,7 @@ final class MessageSetSchema<T> implements Schema<T> {
       UnknownFieldSchema<UT, UB> unknownFieldSchema,
       ExtensionSchema<ET> extensionSchema,
       T message,
-      Reader reader,
+      CodedInputStreamReader reader,
       ExtensionRegistryLite extensionRegistry)
       throws IOException {
     UB unknownFields = unknownFieldSchema.getBuilderFromMessage(message);
@@ -232,7 +251,7 @@ final class MessageSetSchema<T> implements Schema<T> {
     try {
       while (true) {
         final int number = reader.getFieldNumber();
-        if (number == Reader.READ_DONE) {
+        if (number == CodedInputStreamReader.READ_DONE) {
           return;
         }
         if (parseMessageSetItemOrUnknownField(
@@ -260,7 +279,7 @@ final class MessageSetSchema<T> implements Schema<T> {
 
   private <UT, UB, ET extends FieldSet.FieldDescriptorLite<ET>>
       boolean parseMessageSetItemOrUnknownField(
-          Reader reader,
+          CodedInputStreamReader reader,
           ExtensionRegistryLite extensionRegistry,
           ExtensionSchema<ET> extensionSchema,
           FieldSet<ET> extensions,
@@ -310,7 +329,7 @@ final class MessageSetSchema<T> implements Schema<T> {
     loop:
     while (true) {
       final int number = reader.getFieldNumber();
-      if (number == Reader.READ_DONE) {
+      if (number == CodedInputStreamReader.READ_DONE) {
         break;
       }
 
@@ -346,8 +365,16 @@ final class MessageSetSchema<T> implements Schema<T> {
     if (rawBytes != null) {
       if (extension != null) { // We known the type
         // TODO: Instead of reading into a temporary ByteString, maybe there is a way
-        // to read directly from Reader to the submessage?
-        extensionSchema.parseMessageSetItem(rawBytes, extension, extensionRegistry, extensions);
+        // to read directly from CodedInputStreamReader to the submessage?
+        int remainingInputRecursionLimit = reader.getRemainingRecursionDepth();
+        if (--remainingInputRecursionLimit < 0) {
+          throw InvalidProtocolBufferException.recursionLimitExceeded();
+        }
+        CodedInputStream rawBytesInput = rawBytes.newCodedInput();
+        rawBytesInput.setRecursionLimit(remainingInputRecursionLimit);
+
+        extensionSchema.parseMessageSetItem(
+            rawBytesInput, extension, extensionRegistry, extensions);
       } else {
         unknownFieldSchema.addLengthDelimited(unknownFields, typeId, rawBytes);
       }

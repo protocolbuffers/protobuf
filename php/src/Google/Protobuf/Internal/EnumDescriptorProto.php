@@ -72,7 +72,8 @@ class EnumDescriptorProto extends \Google\Protobuf\Internal\Message
      *           Support for `export` and `local` keywords on enums.
      * }
      */
-    public function __construct($data = NULL) {
+    public function __construct($data = null)
+    {
         \GPBMetadata\Google\Protobuf\Internal\Descriptor::initOnce();
         parent::__construct($data);
     }

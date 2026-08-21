@@ -37,6 +37,30 @@ class ProtoTest(unittest.TestCase):
     parsed_msg = proto.parse(message_module.TestAllTypes, serialized_data)
     self.assertEqual(msg, parsed_msg)
 
+  def test_parse_from_string_memoryview(self, message_module):
+    msg = message_module.TestAllTypes()
+    test_util.SetAllFields(msg)
+    serialized_data = memoryview(proto.serialize(msg))
+    parsed_msg = message_module.TestAllTypes()
+    parsed_msg.ParseFromString(serialized_data)
+    self.assertEqual(msg, parsed_msg)
+
+  def test_merge_from_string_memoryview(self, message_module):
+    msg = message_module.TestAllTypes()
+    test_util.SetAllFields(msg)
+    serialized_data = memoryview(proto.serialize(msg))
+    parsed_msg = message_module.TestAllTypes()
+    bytes_parsed = parsed_msg.MergeFromString(serialized_data)
+    self.assertEqual(msg, parsed_msg)
+    self.assertEqual(bytes_parsed, len(serialized_data))
+
+  def test_from_string_memoryview(self, message_module):
+    msg = message_module.TestAllTypes()
+    test_util.SetAllFields(msg)
+    serialized_data = memoryview(proto.serialize(msg))
+    parsed_msg = message_module.TestAllTypes.FromString(serialized_data)
+    self.assertEqual(msg, parsed_msg)
+
   def test_serialize_parse_length_prefixed_empty(self, message_module):
     empty_alltypes = message_module.TestAllTypes()
     out = io.BytesIO()
@@ -66,7 +90,7 @@ class ProtoTest(unittest.TestCase):
   def test_serialize_length_prefixed_fake_io(self, message_module):
     class FakeBytesIO(io.BytesIO):
 
-      def write(self, b: bytes) -> int:
+      def write(self, b: bytes) -> int:  # pyrefly: ignore[bad-override]
         return 0
 
     msg = message_module.TestAllTypes(optional_int32=123)

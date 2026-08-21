@@ -52,7 +52,7 @@ jobs:
         # commit.
         uses: protocolbuffers/protobuf-ci/bazel@v5
         with:
-          version: 9.0.0 # Bazel version
+          version: 9.2.0 # Bazel version
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-cache: staleness
           bash: >

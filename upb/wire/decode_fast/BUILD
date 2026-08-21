@@ -53,6 +53,7 @@ cc_library(
     }),
     features = UPB_DEFAULT_FEATURES,
     visibility = [
+        "//third_party/kotlin/protobuf:__pkg__",
         "//upb:__pkg__",
         "//upb/mini_descriptor:__pkg__",
     ],
@@ -206,6 +207,7 @@ cc_test(
         "//upb/base",
         "//upb/mem",
         "//upb/message",
+        "//upb/message:message_unknowns",
         "//upb/mini_descriptor",
         "//upb/mini_descriptor:internal",
         "//upb/mini_table",

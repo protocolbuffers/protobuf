@@ -13,14 +13,9 @@ package_naming(
 )
 
 pkg_files(
-    name = "wkt_protos_files",
+    name = "release_all_options_protos_files",
     srcs = [
-        "//:well_known_type_protos",
-        "//csharp:c_sharp_features_proto_srcs",
-        "//go:go_features_proto_srcs",
-        "//java/core:java_features_proto_srcs",
-        "//src/google/protobuf:cpp_features_proto_srcs",
-        "//src/google/protobuf:descriptor_proto_srcs",
+        "//src/google/protobuf:release_all_options_proto_srcs",
     ],
     prefix = "include/google/protobuf",
     visibility = ["//visibility:private"],
@@ -92,7 +87,7 @@ pkg_zip(
         ":compiler_plugin_protos_files",
         ":protoc_files",
         ":protoc_readme",
-        ":wkt_protos_files",
+        ":release_all_options_protos_files",
     ],
     package_file_name = "protoc-{version}-{platform}.zip",
     package_variables = ":protobuf_pkg_naming",
@@ -118,16 +113,9 @@ gen_file_lists(
         ":protoc-gen-upbdefs": "protoc-gen-upbdefs",
         ":protoc-gen-upb_minitable": "protoc-gen-upb_minitable",
         # Protos:
-        "//src/google/protobuf:well_known_type_protos": "wkt_protos",
-        "//src/google/protobuf:cpp_file_options_proto": "cpp_file_options_proto",
-        "//src/google/protobuf:cpp_features_proto": "cpp_features_proto",
         "//src/google/protobuf:descriptor_proto": "descriptor_proto",
-        "//src/google/protobuf:json_enumvalue_options_proto": "json_enumvalue_options_proto",
-        "//src/google/protobuf:json_enumvalue_options_cc_proto": "json_enumvalue_options_cc_proto",
         "//src/google/protobuf/compiler:plugin_proto": "plugin_proto",
-        "//csharp:c_sharp_features_proto": "c_sharp_features_proto",
-        "//java/core:java_features_proto": "java_features_proto,src/google/protobuf/compiler/java/",
-        "//go:go_features_proto": "go_features_proto,go/",
+        "//src/google/protobuf:release_all_options_proto_srcs": "release_all_options_protos",
 
         # Test libraries:
         ":common_test": "common_test",
@@ -234,6 +222,7 @@ cc_dist_library(
         "//src/google/protobuf/compiler/java:names",
         "//src/google/protobuf/compiler/objectivec:names",
         "//src/google/protobuf/compiler/php:names",
+        "//src/google/protobuf/compiler/python:names",
     ],
 )
 
@@ -246,6 +235,7 @@ cc_dist_library(
         "//upb/message:compare",
         "//upb/message:convert",
         "//upb/message:copy",
+        "//upb/message:message_unknowns",
         "//upb/mini_table:compat",
         "//upb/mini_table:debug_string",
         "//upb/text",
@@ -253,6 +243,7 @@ cc_dist_library(
         "//upb/util:def_to_proto",
         "//upb/util:required_fields",
         "//upb/wire:byte_size",
+        "//upb/wire:encode_extension",
         "//upb/wire/decode_fast:select",
     ],
 )

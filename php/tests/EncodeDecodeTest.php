@@ -20,6 +20,10 @@ use Foo\TestEnum;
 use Foo\TestLargeFieldNumber;
 use Foo\TestMessage;
 use Foo\TestMessage\Sub;
+use Custom_enum_json\Knight;
+use Custom_enum_json\Knight\Shield;
+use Custom_enum_json\Armor;
+use Google\Protobuf\DescriptorPool;
 use Foo\TestPackedMessage;
 use Foo\TestRandomFieldOrder;
 use Foo\TestUnpackedMessage;
@@ -1938,8 +1942,8 @@ class EncodeDecodeTest extends TestBase
     {
         $m = new TestMessage();
         $json = $m->serializeToJsonString(
-            PrintOptions::EMIT_DEFAULTS | 
-            PrintOptions::PRESERVE_PROTO_FIELD_NAMES | 
+            PrintOptions::EMIT_DEFAULTS |
+            PrintOptions::PRESERVE_PROTO_FIELD_NAMES |
             PrintOptions::ALWAYS_PRINT_ENUMS_AS_INTS
         );
 
@@ -2064,5 +2068,380 @@ class EncodeDecodeTest extends TestBase
         } finally {
             setlocale(LC_NUMERIC, $originalLocale);
         }
+    }
+
+    public function testDecodeRecursionLimit()
+    {
+        // Build a message nested deeper than the default limit of 100.
+        $msg = $this->makeRecursiveMessage(150);
+        $payload = $msg->serializeToString(200);
+
+        // Decoding deeper than the default limit fails without an override
+        try {
+            (new TestMessage())->mergeFromString($payload);
+            $this->fail('Expected an exception for exceeding the recursion limit');
+        } catch (Exception $e) {
+        }
+
+        // Raising the limit lets the deep message parse all the way down.
+        $decoded = new TestMessage();
+        $decoded->mergeFromString($payload, 200);
+
+        $cur = $decoded;
+        for ($i = 0; $i < 150; $i++) {
+            $cur = $cur->getRecursive();
+            $this->assertNotNull($cur);
+        }
+        $this->assertSame(1, $cur->getOptionalInt32());
+    }
+
+    public function testEncodeRecursionLimit()
+    {
+        $msg = $this->makeRecursiveMessage(150);
+
+        // The C extension enforces a depth limit on encode and throws past it;
+        // the pure-PHP encoder has no such guard, so only assert on the C ext.
+        if (extension_loaded('protobuf')) {
+            try {
+                $msg->serializeToString();
+                $this->fail('Expected an exception for exceeding the recursion limit');
+            } catch (Exception $e) {
+                $this->assertStringContainsString('Max nesting exceeded', $e->getMessage());
+            }
+        }
+
+        // Raising the limit lets the deep message serialize.
+        $payload = $msg->serializeToString(200);
+        $this->assertNotEquals('', $payload);
+    }
+
+    public function testInvalidRecursionLimit()
+    {
+        if (!extension_loaded('protobuf')) {
+            $this->markTestSkipped(
+                'recursion_limit range validation is C-extension only');
+        }
+
+        $payload = $this->makeRecursiveMessage(2)->serializeToString();
+
+        $threwNegative = false;
+        try {
+            (new TestMessage())->mergeFromString($payload, -1);
+        } catch (Exception $e) {
+            $threwNegative = true;
+        }
+        $this->assertTrue($threwNegative, 'a negative recursion_limit must throw');
+
+        $threwTooLarge = false;
+        try {
+            $this->makeRecursiveMessage(2)->serializeToString(70000);
+        } catch (Exception $e) {
+            $threwTooLarge = true;
+        }
+        $this->assertTrue($threwTooLarge, 'recursion_limit > 65535 must throw');
+    }
+
+    public function testLargeMessageWithSubMessage()
+    {
+        // 33MB string to exceed the 32MB former limit.
+        $str = str_repeat('a', 33 * 1024 * 1024);
+        $m = new TestMessage();
+        $m->setOptionalString($str);
+        $sub = new Sub();
+        $sub->setA(42);
+        $m->setOptionalMessage($sub);
+
+        $data = $m->serializeToString();
+        $this->assertNotEmpty($data);
+
+        $m2 = new TestMessage();
+        $m2->mergeFromString($data);
+        $this->assertEquals(42, $m2->getOptionalMessage()->getA());
+        $this->assertEquals(33 * 1024 * 1024, strlen($m2->getOptionalString()));
+    }
+
+    public function testSerializeGreatHelm() {
+        $message = new Knight();
+        $message->setArmor(Armor::ARMOR_GREAT_HELM);
+        $this->assertEquals(
+            '{"armor":"gr8 helm"}',
+            $message->serializeToJsonString()
+        );
+    }
+
+    public function testParseGreatHelm() {
+        $message = new Knight();
+        $message->mergeFromJsonString('{"armor":"gr8 helm"}');
+        $this->assertEquals(Armor::ARMOR_GREAT_HELM, $message->getArmor());
+    }
+
+    public function testParseGorgetDefault() {
+        $message = new Knight();
+        $message->mergeFromJsonString('{"armor":"ARMOR_GORGET"}');
+        $this->assertEquals(Armor::ARMOR_GORGET, $message->getArmor());
+    }
+
+    public function testParseGorgetNumber() {
+        $message = new Knight();
+        $message->mergeFromJsonString('{"armor":2}');
+        $this->assertEquals(Armor::ARMOR_GORGET, $message->getArmor());
+    }
+
+    public function testSerializeGorget() {
+        $message = new Knight();
+        $message->setArmor(Armor::ARMOR_GORGET);
+        $this->assertEquals(
+            '{"armor":"ARMOR_GORGET"}',
+            $message->serializeToJsonString()
+        );
+    }
+
+    public function testSerializeGauntlet() {
+        $message = new Knight();
+        $message->setArmor(Armor::ARMOR_GAUNTLET);
+        $this->assertEquals(
+            '{"armor":"a\"b"}',
+            $message->serializeToJsonString()
+        );
+    }
+
+    public function testParseGauntlet() {
+        $message = new Knight();
+        $message->mergeFromJsonString('{"armor":"a\"b"}');
+        $this->assertEquals(Armor::ARMOR_GAUNTLET, $message->getArmor());
+    }
+
+    public function testParseGauntletRawName() {
+        $message = new Knight();
+        $message->mergeFromJsonString('{"armor":"ARMOR_GAUNTLET"}');
+        $this->assertEquals(Armor::ARMOR_GAUNTLET, $message->getArmor());
+    }
+
+    public function testSerializePlate() {
+        $message = new Knight();
+        $message->setArmor(Armor::ARMOR_PLATE);
+        $this->assertEquals(
+            '{"armor":"\"plate\""}',
+            $message->serializeToJsonString()
+        );
+    }
+
+    public function testParsePlate() {
+        $message = new Knight();
+        $message->mergeFromJsonString('{"armor":"\"plate\""}');
+        $this->assertEquals(Armor::ARMOR_PLATE, $message->getArmor());
+    }
+
+    public function testSerializeCoif() {
+        $message = new Knight();
+        $message->setArmor(Armor::ARMOR_COIF);
+        $this->assertEquals(
+            '{"armor":""}',
+            $message->serializeToJsonString()
+        );
+    }
+
+    public function testParseCoif() {
+        $message = new Knight();
+        $message->mergeFromJsonString('{"armor":""}');
+        $this->assertEquals(Armor::ARMOR_COIF, $message->getArmor());
+    }
+
+    public function testSerializePauldron() {
+        $message = new Knight();
+        $message->setArmor(Armor::ARMOR_PAULDRON);
+        $this->assertEquals(
+            '{"armor":"p\\taul\\ndron"}',
+            $message->serializeToJsonString()
+        );
+    }
+
+    public function testParsePauldron() {
+        $message = new Knight();
+        $message->mergeFromJsonString('{"armor":"p\\taul\\ndron"}');
+        $this->assertEquals(Armor::ARMOR_PAULDRON, $message->getArmor());
+    }
+
+    public function testSerializeSabaton() {
+        $message = new Knight();
+        $message->setArmor(Armor::ARMOR_SABATON);
+        $this->assertEquals(
+            '{"armor":"sabaton"}',
+            $message->serializeToJsonString()
+        );
+    }
+
+    public function testParseSabaton() {
+        $message = new Knight();
+        $message->mergeFromJsonString('{"armor":"sabaton"}');
+        $this->assertEquals(Armor::ARMOR_SABATON, $message->getArmor());
+    }
+
+    public function testSerializeSolleret() {
+        $message = new Knight();
+        $message->setArmor(Armor::ARMOR_SOLLERET);
+        $this->assertEquals(
+            '{"armor":"sabaton"}',
+            $message->serializeToJsonString()
+        );
+    }
+
+    public function testParseSolleret() {
+        $message = new Knight();
+        $message->mergeFromJsonString('{"armor":"sabaton"}');
+        $this->assertEquals(Armor::ARMOR_SOLLERET, $message->getArmor());
+    }
+
+    public function testSerializeHachiMaiDo() {
+        $message = new Knight();
+        $message->setArmor(Armor::ARMOR_HACHI_MAI_DO);
+        $this->assertEquals(
+            '{"armor":"8"}',
+            $message->serializeToJsonString()
+        );
+    }
+
+    public function testParseHachiMaiDo() {
+        $message = new Knight();
+        $message->mergeFromJsonString('{"armor":"8"}');
+        $this->assertEquals(Armor::ARMOR_HACHI_MAI_DO, $message->getArmor());
+    }
+
+    public function testParseHachiMaiDoNumber() {
+        $message = new Knight();
+        $message->mergeFromJsonString('{"armor":8}');
+        $this->assertEquals(Armor::ARMOR_HACHI_MAI_DO, $message->getArmor());
+    }
+
+    public function testCaseSensitiveGauntletParsingFails() {
+        $message = new Knight();
+        $this->expectException(Exception::class);
+        $message->mergeFromJsonString('{"armor":"A\"b"}');
+    }
+
+    public function testCaseSensitiveRawNameParsingFails() {
+        $message = new Knight();
+        $this->expectException(Exception::class);
+        $message->mergeFromJsonString('{"armor":"armor_GAUNtlet"}');
+    }
+
+    public function testSerializeRepeatedEnum() {
+        $message = new Knight();
+        $message->setArmors([Armor::ARMOR_GREAT_HELM, Armor::ARMOR_GORGET]);
+        $this->assertEquals(
+            '{"armors":["gr8 helm","ARMOR_GORGET"]}',
+            $message->serializeToJsonString()
+        );
+    }
+
+    public function testParseRepeatedEnumStrict() {
+        $message = new Knight();
+        $message->mergeFromJsonString('{"armors":["gr8 helm","ARMOR_GORGET"]}', false);
+        $this->assertCount(2, $message->getArmors());
+        $this->assertEquals(Armor::ARMOR_GREAT_HELM, $message->getArmors()[0]);
+        $this->assertEquals(Armor::ARMOR_GORGET, $message->getArmors()[1]);
+    }
+
+    public function testParseRepeatedEnumStrictUnknownFails() {
+        $message = new Knight();
+        $this->expectException(Exception::class);
+        $message->mergeFromJsonString('{"armors":["gr8 helm","UNKNOWN_ARMOR"]}', false);
+    }
+
+    public function testParseRepeatedEnumLenient() {
+        $message = new Knight();
+        $message->mergeFromJsonString('{"armors":["gr8 helm","ARMOR_GORGET"]}', true);
+        $this->assertCount(2, $message->getArmors());
+        $this->assertEquals(Armor::ARMOR_GREAT_HELM, $message->getArmors()[0]);
+        $this->assertEquals(Armor::ARMOR_GORGET, $message->getArmors()[1]);
+    }
+
+    public function testParseRepeatedEnumLenientIgnoresUnknown() {
+        $message = new Knight();
+        $message->mergeFromJsonString('{"armors":["gr8 helm","UNKNOWN_ARMOR","ARMOR_GORGET"]}', true);
+        $this->assertCount(2, $message->getArmors());
+        $this->assertEquals(Armor::ARMOR_GREAT_HELM, $message->getArmors()[0]);
+        $this->assertEquals(Armor::ARMOR_GORGET, $message->getArmors()[1]);
+    }
+
+    public function testSerializeMapEnum() {
+        $message = new Knight();
+        $message->setArmorMap(['head' => Armor::ARMOR_GREAT_HELM]);
+        $this->assertEquals(
+            '{"armorMap":{"head":"gr8 helm"}}',
+            $message->serializeToJsonString()
+        );
+    }
+
+    public function testParseMapEnumStrict() {
+        $message = new Knight();
+        $message->mergeFromJsonString('{"armor_map":{"head":"gr8 helm"}}', false);
+        $this->assertEquals(Armor::ARMOR_GREAT_HELM, $message->getArmorMap()['head']);
+    }
+
+    public function testParseMapEnumStrictUnknownFails() {
+        $message = new Knight();
+        $this->expectException(Exception::class);
+        $message->mergeFromJsonString('{"armor_map":{"head":"UNKNOWN_ARMOR"}}', false);
+    }
+
+    public function testParseMapEnumLenient() {
+        $message = new Knight();
+        $message->mergeFromJsonString('{"armor_map":{"head":"gr8 helm"}}', true);
+        $this->assertCount(1, $message->getArmorMap());
+        $this->assertEquals(Armor::ARMOR_GREAT_HELM, $message->getArmorMap()['head']);
+    }
+
+    public function testParseMapEnumLenientIgnoresUnknown() {
+        $message = new Knight();
+        $message->mergeFromJsonString('{"armor_map":{"head":"gr8 helm","unknown_key":"UNKNOWN_ARMOR"}}', true);
+        $this->assertCount(1, $message->getArmorMap());
+        $this->assertEquals(Armor::ARMOR_GREAT_HELM, $message->getArmorMap()['head']);
+    }
+
+    public function testSerializeNestedEnumShield() {
+        $message = new Knight();
+        $message->setShield(Shield::SHIELD_BUCKLER);
+        $this->assertEquals(
+            '{"shield":"buckler-custom"}',
+            $message->serializeToJsonString()
+        );
+    }
+
+    public function testParseNestedEnumShieldCustomName() {
+        $message = new Knight();
+        $message->mergeFromJsonString('{"shield":"buckler-custom"}');
+        $this->assertEquals(Shield::SHIELD_BUCKLER, $message->getShield());
+    }
+
+    public function testParseNestedEnumShieldRawName() {
+        $message = new Knight();
+        $message->mergeFromJsonString('{"shield":"SHIELD_BUCKLER"}');
+        $this->assertEquals(Shield::SHIELD_BUCKLER, $message->getShield());
+    }
+
+    public function testParseNestedEnumShieldNumber() {
+        $message = new Knight();
+        $message->mergeFromJsonString('{"shield":1}');
+        $this->assertEquals(Shield::SHIELD_BUCKLER, $message->getShield());
+    }
+
+    public function testEnumDescriptorReflection() {
+        new Knight();
+        $pool = DescriptorPool::getGeneratedPool();
+
+        $shieldDesc = $pool->getEnumDescriptorByClassName(Shield::class);
+        $this->assertInstanceOf('\Google\Protobuf\EnumDescriptor', $shieldDesc);
+        $this->assertSame(2, $shieldDesc->getValueCount());
+
+        $val0 = $shieldDesc->getValue(0);
+        $this->assertInstanceOf('\Google\Protobuf\EnumValueDescriptor', $val0);
+        $this->assertSame('SHIELD_UNKNOWN', $val0->getName());
+        $this->assertSame(0, $val0->getNumber());
+
+        $val1 = $shieldDesc->getValue(1);
+        $this->assertInstanceOf('\Google\Protobuf\EnumValueDescriptor', $val1);
+        $this->assertSame('SHIELD_BUCKLER', $val1->getName());
+        $this->assertSame(1, $val1->getNumber());
     }
 }

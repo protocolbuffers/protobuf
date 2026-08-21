@@ -17,9 +17,11 @@ import java.util.AbstractList;
 import java.util.AbstractMap;
 import java.util.AbstractSet;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.RandomAccess;
 import java.util.Set;
 
@@ -608,6 +610,49 @@ public final class Internal {
 
     /** Returns a mutable clone of this list with the specified capacity. */
     ProtobufList<E> mutableCopyWithCapacity(int capacity);
+
+    /** Appends the values to the end of the list. */
+    @SuppressWarnings("unchecked")
+    static <E> ProtobufList<E> concatenate(ProtobufList<E> list, Iterable<? extends E> values) {
+      // If the list is empty and the values are a ProtobufList, we may be able to avoid a copy.
+      if (list.isEmpty() && values instanceof ProtobufList) {
+        ProtobufList<E> other = (ProtobufList<E>) values;
+        if (other.isEmpty()) {
+          return list;
+        }
+
+        if (!other.isModifiable()) {
+          // If the values List is immutable, we can just return it.
+          return other;
+        }
+        // Otherwise, we need to make a copy of the values List.
+        return other.mutableCopyWithCapacity(other.size());
+      }
+
+      // If values is a Collection, we can pre-size the list.
+      if (values instanceof Collection) {
+        Collection<? extends E> other = (Collection<? extends E>) values;
+
+        if (!list.isModifiable()) {
+          list = list.mutableCopyWithCapacity(list.size() + other.size());
+        }
+      }
+
+      Iterator<? extends E> it = values.iterator();
+      if (!it.hasNext()) {
+        // If the values Iterable is empty, we can just return the original list.
+        return list;
+      }
+
+      if (!list.isModifiable()) {
+        list = list.mutableCopyWithCapacity(list.size() + 1);
+      }
+
+      while (it.hasNext()) {
+        list.add(Objects.requireNonNull(it.next()));
+      }
+      return list;
+    }
   }
 
   /**

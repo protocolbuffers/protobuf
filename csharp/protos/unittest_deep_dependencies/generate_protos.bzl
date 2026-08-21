@@ -68,6 +68,7 @@ def _generate_variant(variant, width, depth, package):
             srcs = [":" + package + "/file_01_" + i_pad + ".proto"],
             strip_import_prefix = "/third_party/protobuf/csharp/protos/unittest_deep_dependencies",
             deps = [":" + variant + "_file_00_00_proto"],
+            exports = [":" + variant + "_file_00_00_proto"],
         )
 
     # Levels 2 through DEPTH
@@ -88,6 +89,7 @@ def _generate_variant(variant, width, depth, package):
                 srcs = [":" + package + "/file_" + level_pad + "_" + idx_pad + ".proto"],
                 strip_import_prefix = "/third_party/protobuf/csharp/protos/unittest_deep_dependencies",
                 deps = deps,
+                exports = deps,
             )
 
     # Entry point proto_library
@@ -96,6 +98,7 @@ def _generate_variant(variant, width, depth, package):
         srcs = [":" + package + "/file_entry.proto"],
         strip_import_prefix = "/third_party/protobuf/csharp/protos/unittest_deep_dependencies",
         deps = [":" + variant + "_file_" + _pad(depth) + "_00_proto"],
+        exports = [":" + variant + "_file_" + _pad(depth) + "_00_proto"],
     )
 
     # Generate C# source code (.pb.cs) from these generated .proto files
@@ -139,7 +142,7 @@ syntax = "proto3";
 
 package %s;
 
-import "%s/file_00_00.proto";
+import public "%s/file_00_00.proto";
 
 message Level01Message%s {
   Level00Message field = 1;
@@ -166,7 +169,7 @@ syntax = "proto3";
 
 package %s;
 
-import "%s/file_00_00.proto";
+import public "%s/file_00_00.proto";
 EOFPROTO
 """ % (package, i_pad, package, package))
 
@@ -181,7 +184,7 @@ EOFPROTO
 
             import_lines = []
             for prev_idx in range(width):
-                import_lines.append('import "%s/file_%s_%s.proto";' % (package, level_prev_pad, _pad(prev_idx)))
+                import_lines.append('import public "%s/file_%s_%s.proto";' % (package, level_prev_pad, _pad(prev_idx)))
             imports_str = "\n".join(import_lines)
 
             cmd_parts.append("""
@@ -206,7 +209,7 @@ syntax = "proto3";
 
 package %s;
 
-import "%s/file_%s_00.proto";
+import public "%s/file_%s_00.proto";
 
 message %s {
   string test_field = 1;

@@ -55,7 +55,6 @@ std::vector<Sub> Vars(const FieldDescriptor* field, const Options& opts,
   return {
       {"Map", absl::Substitute("::$2::Map<$0, $1>", key_type, val_type,
                                ProtobufNamespace(opts))},
-      {"Entry", ClassName(field->message_type(), false)},
       {"Key", PrimitiveTypeName(opts, key->cpp_type())},
       {"Val", val_type},
       {"MapField", lite ? "MapFieldLite" : "MapField"},
@@ -101,6 +100,12 @@ class Map : public FieldGeneratorBase {
     )cc");
   }
 
+  void GenerateMessageClearingCode(io::Printer* p) const override {
+    p->Emit(R"cc(
+      this_.$field_$.Clear();
+    )cc");
+  }
+
   void GenerateMergingCode(io::Printer* p) const override {
     p->Emit(R"cc(
       _this->$field_$.MergeFrom(from.$field_$);
@@ -109,7 +114,7 @@ class Map : public FieldGeneratorBase {
 
   void GenerateSwappingCode(io::Printer* p) const override {
     p->Emit(R"cc(
-      $field_$.InternalSwap(&other->$field_$);
+      this_.$field_$.InternalSwap(&other->$field_$);
     )cc");
   }
 
@@ -188,13 +193,11 @@ void Map::GeneratePrivateMembers(io::Printer* p) const {
           $pbi$::MapFieldLite<$Key$, $Val$> $name$_;
         )cc");
   } else {
-    p->Emit({{"kKeyType",
-              absl::AsciiStrToUpper(DeclaredTypeMethodName(key_->type()))},
-             {"kValType",
-              absl::AsciiStrToUpper(DeclaredTypeMethodName(val_->type()))}},
-            R"cc(
-              $pbi$::$MapField$<$Entry$, $Key$, $Val$> $name$_;
-            )cc");
+    p->Emit(
+        {{"globals", MsgGlobalsInstanceName(field_->message_type(), options_)}},
+        R"cc(
+          $pbi$::$MapField$<&$globals$, $Key$, $Val$> $name$_;
+        )cc");
   }
 }
 
@@ -232,7 +235,6 @@ void Map::GenerateInlineAccessorDefinitions(io::Printer* p) const {
   )cc");
   p->Emit(R"cc(
     inline $Map$* $nonnull$ $Msg$::_internal_mutable_$name_internal$() {
-      $PrepareSplitMessageForWrite$;
       $TsanDetectConcurrentMutation$;
       return $field_$.MutableMap();
     }

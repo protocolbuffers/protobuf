@@ -65,8 +65,7 @@ void EachInner(const Tuple& value, F f, std::index_sequence<i...>) {
 // Executes f on each element of value.
 template <typename Tuple, typename F>
 void Each(const Tuple& value, F f) {
-  EachInner(value, f,
-            std::make_index_sequence<std::tuple_size<Tuple>::value>());
+  EachInner(value, f, std::make_index_sequence<std::tuple_size_v<Tuple>>());
 }
 
 // See JsonWriter::Write().
@@ -151,7 +150,7 @@ class JsonWriter {
   auto Write(Ts... args) ->
       // This bit of SFINAE avoids this function being called with one argument,
       // so the other overloads of Write() can be picked up instead.
-      typename std::enable_if<sizeof...(Ts) != 1, void>::type {
+      std::enable_if_t<sizeof...(Ts) != 1, void> {
     Each(std::make_tuple(args...), [this](auto x) { this->Write(x); });
   }
 

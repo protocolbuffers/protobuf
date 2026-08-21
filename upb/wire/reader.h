@@ -56,8 +56,14 @@ UPB_FORCEINLINE const char* upb_WireReader_ReadVarint(
 // by calling upb_EpsCopyInputStream_IsDone().
 UPB_INLINE const char* upb_WireReader_SkipVarint(
     const char* ptr, upb_EpsCopyInputStream* stream) {
-  uint64_t val;
-  return upb_WireReader_ReadVarint(ptr, &val, stream);
+  UPB_PRIVATE(upb_EpsCopyInputStream_ConsumeBytes)(stream, 10);
+  const char* bound = ptr + 10;
+  do {
+    if ((*(ptr++) & 0x80) == 0) {
+      return ptr;
+    }
+  } while (ptr != bound);
+  return UPB_PRIVATE(upb_EpsCopyInputStream_ReturnError)(stream);
 }
 
 // Reads a varint indicating the size of a delimited field into `size`, or
@@ -122,6 +128,9 @@ UPB_INLINE const char* upb_WireReader_SkipGroup(
 UPB_FORCEINLINE const char* _upb_WireReader_SkipValueForceInline(
     const char* ptr, uint32_t tag, int depth_limit,
     upb_EpsCopyInputStream* stream) {
+  if (UPB_UNLIKELY((tag >> 3) == 0)) {
+    return UPB_PRIVATE(upb_EpsCopyInputStream_ReturnError)(stream);
+  }
   switch (upb_WireReader_GetWireType(tag)) {
     case kUpb_WireType_Varint:
       return upb_WireReader_SkipVarint(ptr, stream);

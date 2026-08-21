@@ -138,6 +138,11 @@ class MessageGenerator {
   void GenerateIsInitialized(io::Printer* p);
   bool NeedsIsInitialized();
 
+  void EmitClearChunks(io::Printer* p, bool is_split);
+  void EmitByteSizeChunks(io::Printer* p, bool is_split);
+  // Returns true if `cached_has_bits` was populated.
+  bool EmitMergeChunks(io::Printer* p, bool is_split);
+
   struct NewOpRequirements {
     // Some field is initialized to non-zero values. Eg string fields pointing
     // to default string.
@@ -176,7 +181,7 @@ class MessageGenerator {
 
   // Returns true if any of the fields needs an `arena` variable containing
   // the current message's arena, reducing `GetArena()` call churn.
-  bool RequiresArena(GeneratorFunction function) const;
+  bool RequiresArena(GeneratorFunction function, bool is_split) const;
 
   // Returns true if all fields are trivially copayble, and has no non-field
   // state (eg extensions).
@@ -223,7 +228,6 @@ class MessageGenerator {
   std::vector<const EnumGenerator*> enum_generators_;
   std::vector<const ExtensionGenerator*> extension_generators_;
   int num_required_fields_ = 0;
-  int num_weak_fields_ = 0;
 
   FieldLayout field_layout_;
 

@@ -100,7 +100,7 @@ bool RoundTripsThroughDouble(Int x) {
   // Thus, we have to go through ldexp.
   double min = 0;
   double max_plus_one = std::ldexp(1.0, sizeof(Int) * 8);
-  if (std::is_signed<Int>::value) {
+  if (std::is_signed_v<Int>) {
     max_plus_one /= 2;
     min = -max_plus_one;
   }
@@ -808,12 +808,18 @@ absl::Status WriteAny(JsonWriter& writer, const Msg<Traits>& msg,
               bool first = false;
               if (ClassifyMessage(Traits::TypeName(any_desc)) !=
                   MessageType::kNotWellKnown) {
-                writer.WriteComma(first);
-                writer.NewLine();
-                writer.Write("\"value\":");
-                writer.Whitespace(" ");
-                RETURN_IF_ERROR(
-                    WriteMessage<Traits>(writer, unerased, any_desc));
+                if (ClassifyMessage(Traits::TypeName(any_desc)) ==
+                        MessageType::kValue &&
+                    IsEmpty<Traits>(unerased, any_desc)) {
+                  // Omit "value" field for empty Value.
+                } else {
+                  writer.WriteComma(first);
+                  writer.NewLine();
+                  writer.Write("\"value\":");
+                  writer.Whitespace(" ");
+                  RETURN_IF_ERROR(
+                      WriteMessage<Traits>(writer, unerased, any_desc));
+                }
               } else {
                 RETURN_IF_ERROR(
                     WriteFields<Traits>(writer, unerased, any_desc, first));

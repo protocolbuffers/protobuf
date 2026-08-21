@@ -120,14 +120,7 @@ class DescriptorDatabase(object):
     Raises:
       KeyError if no file contains the specified symbol.
     """
-    if symbol.count('.') == 1 and symbol[0] == '.':
-      symbol = symbol.lstrip('.')
-      warnings.warn(
-          'Please remove the leading "." when '
-          'FindFileContainingSymbol, this will turn to error '
-          'in 2026 Jan.',
-          RuntimeWarning,
-      )
+    symbol = symbol.lstrip('.')
     try:
       return self._file_desc_protos_by_symbol[symbol]
     except KeyError:
