@@ -12,6 +12,10 @@
 #ifndef GOOGLE_PROTOBUF_COMPILER_JAVA_IMMUTABLE_ONEOF_GENERATOR_H__
 #define GOOGLE_PROTOBUF_COMPILER_JAVA_IMMUTABLE_ONEOF_GENERATOR_H__
 
+#include <string>
+
+#include "absl/container/flat_hash_map.h"
+#include "absl/strings/string_view.h"
 #include "google/protobuf/compiler/java/full/field_generator.h"
 #include "google/protobuf/descriptor.h"
 
@@ -65,6 +69,7 @@ class OneofGenerator {
 
   const OneofDescriptor* descriptor_;
   Context* context_;
+  absl::flat_hash_map<absl::string_view, std::string> variables_;
 };
 
 }  // namespace java
