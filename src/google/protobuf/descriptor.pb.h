@@ -1296,6 +1296,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED UninterpretedOption
   friend class ::google::protobuf::Arena::InternalHelper;
   using InternalArenaConstructable_ = void;
   using DestructorSkippable_ = void;
+  // NOLINTBEGIN(google3-readability-class-member-naming,readability-identifier-naming)
   struct Impl_ {
     inline explicit constexpr Impl_(::google::protobuf::internal::InternalVisibility visibility,
                                     ::google::protobuf::internal::ConstantInitialized) noexcept;
@@ -1312,6 +1313,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED UninterpretedOption
     bool is_extension_;
     PROTOBUF_TSAN_DECLARE_MEMBER
   };
+  // NOLINTEND(google3-readability-class-member-naming,readability-identifier-naming)
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fdescriptor_2eproto;
 };
@@ -1597,6 +1599,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED SourceCodeInfo_Loca
   friend class ::google::protobuf::Arena::InternalHelper;
   using InternalArenaConstructable_ = void;
   using DestructorSkippable_ = void;
+  // NOLINTBEGIN(google3-readability-class-member-naming,readability-identifier-naming)
   struct Impl_ {
     inline explicit constexpr Impl_(::google::protobuf::internal::InternalVisibility visibility,
                                     ::google::protobuf::internal::ConstantInitialized) noexcept;
@@ -1618,6 +1621,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED SourceCodeInfo_Loca
     ::google::protobuf::internal::CachedSize _span_cached_byte_size_;
     PROTOBUF_TSAN_DECLARE_MEMBER
   };
+  // NOLINTEND(google3-readability-class-member-naming,readability-identifier-naming)
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fdescriptor_2eproto;
 };
@@ -1896,6 +1900,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED GeneratedCodeInfo_A
   friend class ::google::protobuf::Arena::InternalHelper;
   using InternalArenaConstructable_ = void;
   using DestructorSkippable_ = void;
+  // NOLINTBEGIN(google3-readability-class-member-naming,readability-identifier-naming)
   struct Impl_ {
     inline explicit constexpr Impl_(::google::protobuf::internal::InternalVisibility visibility,
                                     ::google::protobuf::internal::ConstantInitialized) noexcept;
@@ -1912,10 +1917,11 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED GeneratedCodeInfo_A
     ::google::protobuf::internal::ArenaStringPtr source_file_;
     ::int32_t begin_;
     ::int32_t end_;
-    int semantic_;
+    uint8_t semantic_;
     ::google::protobuf::internal::CachedSize _path_cached_byte_size_;
     PROTOBUF_TSAN_DECLARE_MEMBER
   };
+  // NOLINTEND(google3-readability-class-member-naming,readability-identifier-naming)
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fdescriptor_2eproto;
 };
@@ -2170,6 +2176,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FieldOptions_Featur
   friend class ::google::protobuf::Arena::InternalHelper;
   using InternalArenaConstructable_ = void;
   using DestructorSkippable_ = void;
+  // NOLINTBEGIN(google3-readability-class-member-naming,readability-identifier-naming)
   struct Impl_ {
     inline explicit constexpr Impl_(::google::protobuf::internal::InternalVisibility visibility,
                                     ::google::protobuf::internal::ConstantInitialized) noexcept;
@@ -2189,6 +2196,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FieldOptions_Featur
     int edition_removed_;
     PROTOBUF_TSAN_DECLARE_MEMBER
   };
+  // NOLINTEND(google3-readability-class-member-naming,readability-identifier-naming)
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fdescriptor_2eproto;
 };
@@ -2402,6 +2410,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FieldOptions_Editio
   friend class ::google::protobuf::Arena::InternalHelper;
   using InternalArenaConstructable_ = void;
   using DestructorSkippable_ = void;
+  // NOLINTBEGIN(google3-readability-class-member-naming,readability-identifier-naming)
   struct Impl_ {
     inline explicit constexpr Impl_(::google::protobuf::internal::InternalVisibility visibility,
                                     ::google::protobuf::internal::ConstantInitialized) noexcept;
@@ -2418,6 +2427,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FieldOptions_Editio
     int edition_;
     PROTOBUF_TSAN_DECLARE_MEMBER
   };
+  // NOLINTEND(google3-readability-class-member-naming,readability-identifier-naming)
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fdescriptor_2eproto;
 };
@@ -3398,6 +3408,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FeatureSet final : 
   friend class ::google::protobuf::Arena::InternalHelper;
   using InternalArenaConstructable_ = void;
   using DestructorSkippable_ = void;
+  // NOLINTBEGIN(google3-readability-class-member-naming,readability-identifier-naming)
   struct Impl_ {
     inline explicit constexpr Impl_(::google::protobuf::internal::InternalVisibility visibility,
                                     ::google::protobuf::internal::ConstantInitialized) noexcept;
@@ -3411,17 +3422,18 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FeatureSet final : 
     ::google::protobuf::internal::ExtensionSet _extensions_;
     ::google::protobuf::internal::HasBits<1> _has_bits_;
     ::google::protobuf::internal::CachedSize _cached_size_;
-    int field_presence_;
-    int enum_type_;
-    int repeated_field_encoding_;
-    int utf8_validation_;
-    int message_encoding_;
-    int json_format_;
-    int enforce_naming_style_;
-    int default_symbol_visibility_;
-    int enforce_proto_limits_;
+    uint8_t field_presence_;
+    uint8_t enum_type_;
+    uint8_t repeated_field_encoding_;
+    uint8_t utf8_validation_;
+    uint8_t message_encoding_;
+    uint8_t json_format_;
+    uint8_t enforce_naming_style_;
+    uint8_t default_symbol_visibility_;
+    uint8_t enforce_proto_limits_;
     PROTOBUF_TSAN_DECLARE_MEMBER
   };
+  // NOLINTEND(google3-readability-class-member-naming,readability-identifier-naming)
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fdescriptor_2eproto;
 };
@@ -3676,6 +3688,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED ExtensionRangeOptio
   friend class ::google::protobuf::Arena::InternalHelper;
   using InternalArenaConstructable_ = void;
   using DestructorSkippable_ = void;
+  // NOLINTBEGIN(google3-readability-class-member-naming,readability-identifier-naming)
   struct Impl_ {
     inline explicit constexpr Impl_(::google::protobuf::internal::InternalVisibility visibility,
                                     ::google::protobuf::internal::ConstantInitialized) noexcept;
@@ -3695,6 +3708,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED ExtensionRangeOptio
     bool repeated_;
     PROTOBUF_TSAN_DECLARE_MEMBER
   };
+  // NOLINTEND(google3-readability-class-member-naming,readability-identifier-naming)
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fdescriptor_2eproto;
 };
@@ -3903,6 +3917,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED EnumDescriptorProto
   friend class ::google::protobuf::Arena::InternalHelper;
   using InternalArenaConstructable_ = void;
   using DestructorSkippable_ = void;
+  // NOLINTBEGIN(google3-readability-class-member-naming,readability-identifier-naming)
   struct Impl_ {
     inline explicit constexpr Impl_(::google::protobuf::internal::InternalVisibility visibility,
                                     ::google::protobuf::internal::ConstantInitialized) noexcept;
@@ -3919,6 +3934,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED EnumDescriptorProto
     ::int32_t end_;
     PROTOBUF_TSAN_DECLARE_MEMBER
   };
+  // NOLINTEND(google3-readability-class-member-naming,readability-identifier-naming)
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fdescriptor_2eproto;
 };
@@ -4127,6 +4143,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED DescriptorProto_Res
   friend class ::google::protobuf::Arena::InternalHelper;
   using InternalArenaConstructable_ = void;
   using DestructorSkippable_ = void;
+  // NOLINTBEGIN(google3-readability-class-member-naming,readability-identifier-naming)
   struct Impl_ {
     inline explicit constexpr Impl_(::google::protobuf::internal::InternalVisibility visibility,
                                     ::google::protobuf::internal::ConstantInitialized) noexcept;
@@ -4143,6 +4160,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED DescriptorProto_Res
     ::int32_t end_;
     PROTOBUF_TSAN_DECLARE_MEMBER
   };
+  // NOLINTEND(google3-readability-class-member-naming,readability-identifier-naming)
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fdescriptor_2eproto;
 };
@@ -4441,6 +4459,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED UninterpretedOption
   friend class ::google::protobuf::Arena::InternalHelper;
   using InternalArenaConstructable_ = void;
   using DestructorSkippable_ = void;
+  // NOLINTBEGIN(google3-readability-class-member-naming,readability-identifier-naming)
   struct Impl_ {
     inline explicit constexpr Impl_(::google::protobuf::internal::InternalVisibility visibility,
                                     ::google::protobuf::internal::ConstantInitialized) noexcept;
@@ -4462,6 +4481,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED UninterpretedOption
     double double_value_;
     PROTOBUF_TSAN_DECLARE_MEMBER
   };
+  // NOLINTEND(google3-readability-class-member-naming,readability-identifier-naming)
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fdescriptor_2eproto;
 };
@@ -4863,6 +4883,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED SourceCodeInfo fina
   friend class ::google::protobuf::Arena::InternalHelper;
   using InternalArenaConstructable_ = void;
   using DestructorSkippable_ = void;
+  // NOLINTBEGIN(google3-readability-class-member-naming,readability-identifier-naming)
   struct Impl_ {
     inline explicit constexpr Impl_(::google::protobuf::internal::InternalVisibility visibility,
                                     ::google::protobuf::internal::ConstantInitialized) noexcept;
@@ -4879,6 +4900,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED SourceCodeInfo fina
     ::google::protobuf::RepeatedPtrField< ::google::protobuf::SourceCodeInfo_Location > location_;
     PROTOBUF_TSAN_DECLARE_MEMBER
   };
+  // NOLINTEND(google3-readability-class-member-naming,readability-identifier-naming)
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fdescriptor_2eproto;
 };
@@ -5085,6 +5107,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED GeneratedCodeInfo f
   friend class ::google::protobuf::Arena::InternalHelper;
   using InternalArenaConstructable_ = void;
   using DestructorSkippable_ = void;
+  // NOLINTBEGIN(google3-readability-class-member-naming,readability-identifier-naming)
   struct Impl_ {
     inline explicit constexpr Impl_(::google::protobuf::internal::InternalVisibility visibility,
                                     ::google::protobuf::internal::ConstantInitialized) noexcept;
@@ -5100,6 +5123,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED GeneratedCodeInfo f
     ::google::protobuf::RepeatedPtrField< ::google::protobuf::GeneratedCodeInfo_Annotation > annotation_;
     PROTOBUF_TSAN_DECLARE_MEMBER
   };
+  // NOLINTEND(google3-readability-class-member-naming,readability-identifier-naming)
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fdescriptor_2eproto;
 };
@@ -5333,6 +5357,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FeatureSetDefaults_
   friend class ::google::protobuf::Arena::InternalHelper;
   using InternalArenaConstructable_ = void;
   using DestructorSkippable_ = void;
+  // NOLINTBEGIN(google3-readability-class-member-naming,readability-identifier-naming)
   struct Impl_ {
     inline explicit constexpr Impl_(::google::protobuf::internal::InternalVisibility visibility,
                                     ::google::protobuf::internal::ConstantInitialized) noexcept;
@@ -5350,6 +5375,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FeatureSetDefaults_
     int edition_;
     PROTOBUF_TSAN_DECLARE_MEMBER
   };
+  // NOLINTEND(google3-readability-class-member-naming,readability-identifier-naming)
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fdescriptor_2eproto;
 };
@@ -5778,6 +5804,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED ServiceOptions fina
   friend class ::google::protobuf::Arena::InternalHelper;
   using InternalArenaConstructable_ = void;
   using DestructorSkippable_ = void;
+  // NOLINTBEGIN(google3-readability-class-member-naming,readability-identifier-naming)
   struct Impl_ {
     inline explicit constexpr Impl_(::google::protobuf::internal::InternalVisibility visibility,
                                     ::google::protobuf::internal::ConstantInitialized) noexcept;
@@ -5796,6 +5823,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED ServiceOptions fina
     bool deprecated_;
     PROTOBUF_TSAN_DECLARE_MEMBER
   };
+  // NOLINTEND(google3-readability-class-member-naming,readability-identifier-naming)
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fdescriptor_2eproto;
 };
@@ -6212,6 +6240,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED OneofOptions final 
   friend class ::google::protobuf::Arena::InternalHelper;
   using InternalArenaConstructable_ = void;
   using DestructorSkippable_ = void;
+  // NOLINTBEGIN(google3-readability-class-member-naming,readability-identifier-naming)
   struct Impl_ {
     inline explicit constexpr Impl_(::google::protobuf::internal::InternalVisibility visibility,
                                     ::google::protobuf::internal::ConstantInitialized) noexcept;
@@ -6229,6 +6258,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED OneofOptions final 
     ::google::protobuf::FeatureSet* PROTOBUF_NULLABLE features_;
     PROTOBUF_TSAN_DECLARE_MEMBER
   };
+  // NOLINTEND(google3-readability-class-member-naming,readability-identifier-naming)
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fdescriptor_2eproto;
 };
@@ -6690,6 +6720,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED MethodOptions final
   friend class ::google::protobuf::Arena::InternalHelper;
   using InternalArenaConstructable_ = void;
   using DestructorSkippable_ = void;
+  // NOLINTBEGIN(google3-readability-class-member-naming,readability-identifier-naming)
   struct Impl_ {
     inline explicit constexpr Impl_(::google::protobuf::internal::InternalVisibility visibility,
                                     ::google::protobuf::internal::ConstantInitialized) noexcept;
@@ -6706,9 +6737,10 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED MethodOptions final
     ::google::protobuf::RepeatedPtrField< ::google::protobuf::UninterpretedOption > uninterpreted_option_;
     ::google::protobuf::FeatureSet* PROTOBUF_NULLABLE features_;
     bool deprecated_;
-    int idempotency_level_;
+    uint8_t idempotency_level_;
     PROTOBUF_TSAN_DECLARE_MEMBER
   };
+  // NOLINTEND(google3-readability-class-member-naming,readability-identifier-naming)
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fdescriptor_2eproto;
 };
@@ -7185,6 +7217,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED MessageOptions fina
   friend class ::google::protobuf::Arena::InternalHelper;
   using InternalArenaConstructable_ = void;
   using DestructorSkippable_ = void;
+  // NOLINTBEGIN(google3-readability-class-member-naming,readability-identifier-naming)
   struct Impl_ {
     inline explicit constexpr Impl_(::google::protobuf::internal::InternalVisibility visibility,
                                     ::google::protobuf::internal::ConstantInitialized) noexcept;
@@ -7207,6 +7240,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED MessageOptions fina
     ::google::protobuf::RepeatedPtrField< ::google::protobuf::UninterpretedOption > uninterpreted_option_;
     PROTOBUF_TSAN_DECLARE_MEMBER
   };
+  // NOLINTEND(google3-readability-class-member-naming,readability-identifier-naming)
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fdescriptor_2eproto;
 };
@@ -7922,6 +7956,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FileOptions final :
   friend class ::google::protobuf::Arena::InternalHelper;
   using InternalArenaConstructable_ = void;
   using DestructorSkippable_ = void;
+  // NOLINTBEGIN(google3-readability-class-member-naming,readability-identifier-naming)
   struct Impl_ {
     inline explicit constexpr Impl_(::google::protobuf::internal::InternalVisibility visibility,
                                     ::google::protobuf::internal::ConstantInitialized) noexcept;
@@ -7953,11 +7988,12 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FileOptions final :
     bool java_generate_equals_and_hash_;
     bool deprecated_;
     bool java_string_check_utf8_;
-    int optimize_for_;
+    uint8_t optimize_for_;
     bool cc_enable_arenas_;
     ::google::protobuf::RepeatedPtrField< ::google::protobuf::UninterpretedOption > uninterpreted_option_;
     PROTOBUF_TSAN_DECLARE_MEMBER
   };
+  // NOLINTEND(google3-readability-class-member-naming,readability-identifier-naming)
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fdescriptor_2eproto;
 };
@@ -8216,8 +8252,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FieldOptions final 
     kPackedFieldNumber = 2,
     kDeprecatedFieldNumber = 3,
     kLazyFieldNumber = 5,
-    kWeakFieldNumber = 10,
     kJstypeFieldNumber = 6,
+    kWeakFieldNumber = 10,
     kUnverifiedLazyFieldNumber = 15,
     kDebugRedactFieldNumber = 16,
     kRetentionFieldNumber = 17,
@@ -8337,17 +8373,6 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FieldOptions final 
   void _internal_set_lazy(bool value);
 
   public:
-  // optional bool weak = 10 [default = false, deprecated = true];
-  [[nodiscard]] [[deprecated]]  bool has_weak() const;
-  [[deprecated]]  void clear_weak() ;
-  [[nodiscard]] [[deprecated]] bool weak() const;
-  [[deprecated]] void set_weak(bool value);
-
-  private:
-  bool _internal_weak() const;
-  void _internal_set_weak(bool value);
-
-  public:
   // optional .google.protobuf.FieldOptions.JSType jstype = 6 [default = JS_NORMAL];
   [[nodiscard]] bool has_jstype() const;
   void clear_jstype() ;
@@ -8357,6 +8382,17 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FieldOptions final 
   private:
   ::google::protobuf::FieldOptions_JSType _internal_jstype() const;
   void _internal_set_jstype(::google::protobuf::FieldOptions_JSType value);
+
+  public:
+  // optional bool weak = 10 [default = false, deprecated = true];
+  [[nodiscard]] [[deprecated]]  bool has_weak() const;
+  [[deprecated]]  void clear_weak() ;
+  [[nodiscard]] [[deprecated]] bool weak() const;
+  [[deprecated]] void set_weak(bool value);
+
+  private:
+  bool _internal_weak() const;
+  void _internal_set_weak(bool value);
 
   public:
   // optional bool unverified_lazy = 15 [default = false];
@@ -8633,6 +8669,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FieldOptions final 
   friend class ::google::protobuf::Arena::InternalHelper;
   using InternalArenaConstructable_ = void;
   using DestructorSkippable_ = void;
+  // NOLINTBEGIN(google3-readability-class-member-naming,readability-identifier-naming)
   struct Impl_ {
     inline explicit constexpr Impl_(::google::protobuf::internal::InternalVisibility visibility,
                                     ::google::protobuf::internal::ConstantInitialized) noexcept;
@@ -8650,18 +8687,19 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FieldOptions final 
     ::google::protobuf::RepeatedPtrField< ::google::protobuf::UninterpretedOption > uninterpreted_option_;
     ::google::protobuf::FeatureSet* PROTOBUF_NULLABLE features_;
     ::google::protobuf::FieldOptions_FeatureSupport* PROTOBUF_NULLABLE feature_support_;
-    int ctype_;
+    uint8_t ctype_;
     bool packed_;
     bool deprecated_;
     bool lazy_;
+    uint8_t jstype_;
     bool weak_;
-    int jstype_;
     bool unverified_lazy_;
     bool debug_redact_;
-    int retention_;
+    uint8_t retention_;
     ::google::protobuf::RepeatedField<int> targets_;
     PROTOBUF_TSAN_DECLARE_MEMBER
   };
+  // NOLINTEND(google3-readability-class-member-naming,readability-identifier-naming)
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fdescriptor_2eproto;
 };
@@ -8897,6 +8935,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FeatureSetDefaults 
   friend class ::google::protobuf::Arena::InternalHelper;
   using InternalArenaConstructable_ = void;
   using DestructorSkippable_ = void;
+  // NOLINTBEGIN(google3-readability-class-member-naming,readability-identifier-naming)
   struct Impl_ {
     inline explicit constexpr Impl_(::google::protobuf::internal::InternalVisibility visibility,
                                     ::google::protobuf::internal::ConstantInitialized) noexcept;
@@ -8914,6 +8953,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FeatureSetDefaults 
     int maximum_edition_;
     PROTOBUF_TSAN_DECLARE_MEMBER
   };
+  // NOLINTEND(google3-readability-class-member-naming,readability-identifier-naming)
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fdescriptor_2eproto;
 };
@@ -9384,6 +9424,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED ExtensionRangeOptio
   friend class ::google::protobuf::Arena::InternalHelper;
   using InternalArenaConstructable_ = void;
   using DestructorSkippable_ = void;
+  // NOLINTBEGIN(google3-readability-class-member-naming,readability-identifier-naming)
   struct Impl_ {
     inline explicit constexpr Impl_(::google::protobuf::internal::InternalVisibility visibility,
                                     ::google::protobuf::internal::ConstantInitialized) noexcept;
@@ -9400,9 +9441,10 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED ExtensionRangeOptio
     ::google::protobuf::RepeatedPtrField< ::google::protobuf::ExtensionRangeOptions_Declaration > declaration_;
     ::google::protobuf::RepeatedPtrField< ::google::protobuf::UninterpretedOption > uninterpreted_option_;
     ::google::protobuf::FeatureSet* PROTOBUF_NULLABLE features_;
-    int verification_;
+    uint8_t verification_;
     PROTOBUF_TSAN_DECLARE_MEMBER
   };
+  // NOLINTEND(google3-readability-class-member-naming,readability-identifier-naming)
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fdescriptor_2eproto;
 };
@@ -9859,6 +9901,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED EnumValueOptions fi
   friend class ::google::protobuf::Arena::InternalHelper;
   using InternalArenaConstructable_ = void;
   using DestructorSkippable_ = void;
+  // NOLINTBEGIN(google3-readability-class-member-naming,readability-identifier-naming)
   struct Impl_ {
     inline explicit constexpr Impl_(::google::protobuf::internal::InternalVisibility visibility,
                                     ::google::protobuf::internal::ConstantInitialized) noexcept;
@@ -9879,6 +9922,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED EnumValueOptions fi
     bool debug_redact_;
     PROTOBUF_TSAN_DECLARE_MEMBER
   };
+  // NOLINTEND(google3-readability-class-member-naming,readability-identifier-naming)
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fdescriptor_2eproto;
 };
@@ -10331,6 +10375,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED EnumOptions final :
   friend class ::google::protobuf::Arena::InternalHelper;
   using InternalArenaConstructable_ = void;
   using DestructorSkippable_ = void;
+  // NOLINTBEGIN(google3-readability-class-member-naming,readability-identifier-naming)
   struct Impl_ {
     inline explicit constexpr Impl_(::google::protobuf::internal::InternalVisibility visibility,
                                     ::google::protobuf::internal::ConstantInitialized) noexcept;
@@ -10351,6 +10396,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED EnumOptions final :
     ::google::protobuf::RepeatedPtrField< ::google::protobuf::UninterpretedOption > uninterpreted_option_;
     PROTOBUF_TSAN_DECLARE_MEMBER
   };
+  // NOLINTEND(google3-readability-class-member-naming,readability-identifier-naming)
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fdescriptor_2eproto;
 };
@@ -10573,6 +10619,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED OneofDescriptorProt
   friend class ::google::protobuf::Arena::InternalHelper;
   using InternalArenaConstructable_ = void;
   using DestructorSkippable_ = void;
+  // NOLINTBEGIN(google3-readability-class-member-naming,readability-identifier-naming)
   struct Impl_ {
     inline explicit constexpr Impl_(::google::protobuf::internal::InternalVisibility visibility,
                                     ::google::protobuf::internal::ConstantInitialized) noexcept;
@@ -10589,6 +10636,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED OneofDescriptorProt
     ::google::protobuf::OneofOptions* PROTOBUF_NULLABLE options_;
     PROTOBUF_TSAN_DECLARE_MEMBER
   };
+  // NOLINTEND(google3-readability-class-member-naming,readability-identifier-naming)
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fdescriptor_2eproto;
 };
@@ -10869,6 +10917,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED MethodDescriptorPro
   friend class ::google::protobuf::Arena::InternalHelper;
   using InternalArenaConstructable_ = void;
   using DestructorSkippable_ = void;
+  // NOLINTBEGIN(google3-readability-class-member-naming,readability-identifier-naming)
   struct Impl_ {
     inline explicit constexpr Impl_(::google::protobuf::internal::InternalVisibility visibility,
                                     ::google::protobuf::internal::ConstantInitialized) noexcept;
@@ -10889,6 +10938,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED MethodDescriptorPro
     bool server_streaming_;
     PROTOBUF_TSAN_DECLARE_MEMBER
   };
+  // NOLINTEND(google3-readability-class-member-naming,readability-identifier-naming)
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fdescriptor_2eproto;
 };
@@ -11296,6 +11346,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FieldDescriptorProt
   friend class ::google::protobuf::Arena::InternalHelper;
   using InternalArenaConstructable_ = void;
   using DestructorSkippable_ = void;
+  // NOLINTBEGIN(google3-readability-class-member-naming,readability-identifier-naming)
   struct Impl_ {
     inline explicit constexpr Impl_(::google::protobuf::internal::InternalVisibility visibility,
                                     ::google::protobuf::internal::ConstantInitialized) noexcept;
@@ -11317,10 +11368,11 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FieldDescriptorProt
     ::int32_t number_;
     ::int32_t oneof_index_;
     bool proto3_optional_;
-    int label_;
-    int type_;
+    uint8_t label_;
+    uint8_t type_;
     PROTOBUF_TSAN_DECLARE_MEMBER
   };
+  // NOLINTEND(google3-readability-class-member-naming,readability-identifier-naming)
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fdescriptor_2eproto;
 };
@@ -11555,6 +11607,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED EnumValueDescriptor
   friend class ::google::protobuf::Arena::InternalHelper;
   using InternalArenaConstructable_ = void;
   using DestructorSkippable_ = void;
+  // NOLINTBEGIN(google3-readability-class-member-naming,readability-identifier-naming)
   struct Impl_ {
     inline explicit constexpr Impl_(::google::protobuf::internal::InternalVisibility visibility,
                                     ::google::protobuf::internal::ConstantInitialized) noexcept;
@@ -11572,6 +11625,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED EnumValueDescriptor
     ::int32_t number_;
     PROTOBUF_TSAN_DECLARE_MEMBER
   };
+  // NOLINTEND(google3-readability-class-member-naming,readability-identifier-naming)
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fdescriptor_2eproto;
 };
@@ -11801,6 +11855,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED DescriptorProto_Ext
   friend class ::google::protobuf::Arena::InternalHelper;
   using InternalArenaConstructable_ = void;
   using DestructorSkippable_ = void;
+  // NOLINTBEGIN(google3-readability-class-member-naming,readability-identifier-naming)
   struct Impl_ {
     inline explicit constexpr Impl_(::google::protobuf::internal::InternalVisibility visibility,
                                     ::google::protobuf::internal::ConstantInitialized) noexcept;
@@ -11818,6 +11873,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED DescriptorProto_Ext
     ::int32_t end_;
     PROTOBUF_TSAN_DECLARE_MEMBER
   };
+  // NOLINTEND(google3-readability-class-member-naming,readability-identifier-naming)
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fdescriptor_2eproto;
 };
@@ -12061,6 +12117,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED ServiceDescriptorPr
   friend class ::google::protobuf::Arena::InternalHelper;
   using InternalArenaConstructable_ = void;
   using DestructorSkippable_ = void;
+  // NOLINTBEGIN(google3-readability-class-member-naming,readability-identifier-naming)
   struct Impl_ {
     inline explicit constexpr Impl_(::google::protobuf::internal::InternalVisibility visibility,
                                     ::google::protobuf::internal::ConstantInitialized) noexcept;
@@ -12078,6 +12135,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED ServiceDescriptorPr
     ::google::protobuf::ServiceOptions* PROTOBUF_NULLABLE options_;
     PROTOBUF_TSAN_DECLARE_MEMBER
   };
+  // NOLINTEND(google3-readability-class-member-naming,readability-identifier-naming)
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fdescriptor_2eproto;
 };
@@ -12382,6 +12440,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED EnumDescriptorProto
   friend class ::google::protobuf::Arena::InternalHelper;
   using InternalArenaConstructable_ = void;
   using DestructorSkippable_ = void;
+  // NOLINTBEGIN(google3-readability-class-member-naming,readability-identifier-naming)
   struct Impl_ {
     inline explicit constexpr Impl_(::google::protobuf::internal::InternalVisibility visibility,
                                     ::google::protobuf::internal::ConstantInitialized) noexcept;
@@ -12399,9 +12458,10 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED EnumDescriptorProto
     ::google::protobuf::RepeatedPtrField<::std::string> reserved_name_;
     ::google::protobuf::internal::ArenaStringPtr name_;
     ::google::protobuf::EnumOptions* PROTOBUF_NULLABLE options_;
-    int visibility_;
+    uint8_t visibility_;
     PROTOBUF_TSAN_DECLARE_MEMBER
   };
+  // NOLINTEND(google3-readability-class-member-naming,readability-identifier-naming)
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fdescriptor_2eproto;
 };
@@ -12812,6 +12872,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED DescriptorProto fin
   friend class ::google::protobuf::Arena::InternalHelper;
   using InternalArenaConstructable_ = void;
   using DestructorSkippable_ = void;
+  // NOLINTBEGIN(google3-readability-class-member-naming,readability-identifier-naming)
   struct Impl_ {
     inline explicit constexpr Impl_(::google::protobuf::internal::InternalVisibility visibility,
                                     ::google::protobuf::internal::ConstantInitialized) noexcept;
@@ -12834,9 +12895,10 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED DescriptorProto fin
     ::google::protobuf::RepeatedPtrField<::std::string> reserved_name_;
     ::google::protobuf::internal::ArenaStringPtr name_;
     ::google::protobuf::MessageOptions* PROTOBUF_NULLABLE options_;
-    int visibility_;
+    uint8_t visibility_;
     PROTOBUF_TSAN_DECLARE_MEMBER
   };
+  // NOLINTEND(google3-readability-class-member-naming,readability-identifier-naming)
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fdescriptor_2eproto;
 };
@@ -13299,6 +13361,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FileDescriptorProto
   friend class ::google::protobuf::Arena::InternalHelper;
   using InternalArenaConstructable_ = void;
   using DestructorSkippable_ = void;
+  // NOLINTBEGIN(google3-readability-class-member-naming,readability-identifier-naming)
   struct Impl_ {
     inline explicit constexpr Impl_(::google::protobuf::internal::InternalVisibility visibility,
                                     ::google::protobuf::internal::ConstantInitialized) noexcept;
@@ -13327,6 +13390,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FileDescriptorProto
     int edition_;
     PROTOBUF_TSAN_DECLARE_MEMBER
   };
+  // NOLINTEND(google3-readability-class-member-naming,readability-identifier-naming)
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fdescriptor_2eproto;
 };
@@ -13727,6 +13791,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FileDescriptorSet f
   friend class ::google::protobuf::Arena::InternalHelper;
   using InternalArenaConstructable_ = void;
   using DestructorSkippable_ = void;
+  // NOLINTBEGIN(google3-readability-class-member-naming,readability-identifier-naming)
   struct Impl_ {
     inline explicit constexpr Impl_(::google::protobuf::internal::InternalVisibility visibility,
                                     ::google::protobuf::internal::ConstantInitialized) noexcept;
@@ -13743,6 +13808,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FileDescriptorSet f
     ::google::protobuf::RepeatedPtrField< ::google::protobuf::FileDescriptorProto > file_;
     PROTOBUF_TSAN_DECLARE_MEMBER
   };
+  // NOLINTEND(google3-readability-class-member-naming,readability-identifier-naming)
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fdescriptor_2eproto;
 };
@@ -14725,7 +14791,7 @@ inline void FileDescriptorProto::_internal_set_edition(::google::protobuf::Editi
 
                                           assert(::google::protobuf::internal::ValidateEnum(
                                               value, ::google::protobuf::Edition_internal_data_));
-                                          _impl_.edition_ = value;
+                                          _impl_.edition_ = static_cast<int>(value);
 }
 
 // -------------------------------------------------------------------
@@ -15609,7 +15675,7 @@ inline void DescriptorProto::_internal_set_visibility(::google::protobuf::Symbol
 
                                           assert(::google::protobuf::internal::ValidateEnum(
                                               value, ::google::protobuf::SymbolVisibility_internal_data_));
-                                          _impl_.visibility_ = value;
+                                          _impl_.visibility_ = static_cast<uint8_t>(value);
 }
 
 // -------------------------------------------------------------------
@@ -16078,7 +16144,7 @@ inline void ExtensionRangeOptions::_internal_set_verification(::google::protobuf
 
                                           assert(::google::protobuf::internal::ValidateEnum(
                                               value, ::google::protobuf::ExtensionRangeOptions_VerificationState_internal_data_));
-                                          _impl_.verification_ = value;
+                                          _impl_.verification_ = static_cast<uint8_t>(value);
 }
 
 // -------------------------------------------------------------------
@@ -16209,7 +16275,7 @@ inline void FieldDescriptorProto::_internal_set_label(::google::protobuf::FieldD
 
                                           assert(::google::protobuf::internal::ValidateEnum(
                                               value, ::google::protobuf::FieldDescriptorProto_Label_internal_data_));
-                                          _impl_.label_ = value;
+                                          _impl_.label_ = static_cast<uint8_t>(value);
 }
 
 // optional .google.protobuf.FieldDescriptorProto.Type type = 5;
@@ -16240,7 +16306,7 @@ inline void FieldDescriptorProto::_internal_set_type(::google::protobuf::FieldDe
 
                                           assert(::google::protobuf::internal::ValidateEnum(
                                               value, ::google::protobuf::FieldDescriptorProto_Type_internal_data_));
-                                          _impl_.type_ = value;
+                                          _impl_.type_ = static_cast<uint8_t>(value);
 }
 
 // optional string type_name = 6;
@@ -17282,7 +17348,7 @@ inline void EnumDescriptorProto::_internal_set_visibility(::google::protobuf::Sy
 
                                           assert(::google::protobuf::internal::ValidateEnum(
                                               value, ::google::protobuf::SymbolVisibility_internal_data_));
-                                          _impl_.visibility_ = value;
+                                          _impl_.visibility_ = static_cast<uint8_t>(value);
 }
 
 // -------------------------------------------------------------------
@@ -18323,7 +18389,7 @@ inline void FileOptions::_internal_set_optimize_for(::google::protobuf::FileOpti
 
                                           assert(::google::protobuf::internal::ValidateEnum(
                                               value, ::google::protobuf::FileOptions_OptimizeMode_internal_data_));
-                                          _impl_.optimize_for_ = value;
+                                          _impl_.optimize_for_ = static_cast<uint8_t>(value);
 }
 
 // optional string go_package = 11;
@@ -19494,7 +19560,7 @@ inline void FieldOptions_EditionDefault::_internal_set_edition(::google::protobu
 
                                           assert(::google::protobuf::internal::ValidateEnum(
                                               value, ::google::protobuf::Edition_internal_data_));
-                                          _impl_.edition_ = value;
+                                          _impl_.edition_ = static_cast<int>(value);
 }
 
 // optional string value = 2;
@@ -19597,7 +19663,7 @@ inline void FieldOptions_FeatureSupport::_internal_set_edition_introduced(::goog
 
                                           assert(::google::protobuf::internal::ValidateEnum(
                                               value, ::google::protobuf::Edition_internal_data_));
-                                          _impl_.edition_introduced_ = value;
+                                          _impl_.edition_introduced_ = static_cast<int>(value);
 }
 
 // optional .google.protobuf.Edition edition_deprecated = 2;
@@ -19628,7 +19694,7 @@ inline void FieldOptions_FeatureSupport::_internal_set_edition_deprecated(::goog
 
                                           assert(::google::protobuf::internal::ValidateEnum(
                                               value, ::google::protobuf::Edition_internal_data_));
-                                          _impl_.edition_deprecated_ = value;
+                                          _impl_.edition_deprecated_ = static_cast<int>(value);
 }
 
 // optional string deprecation_warning = 3;
@@ -19727,7 +19793,7 @@ inline void FieldOptions_FeatureSupport::_internal_set_edition_removed(::google:
 
                                           assert(::google::protobuf::internal::ValidateEnum(
                                               value, ::google::protobuf::Edition_internal_data_));
-                                          _impl_.edition_removed_ = value;
+                                          _impl_.edition_removed_ = static_cast<int>(value);
 }
 
 // optional string removal_error = 5;
@@ -19830,7 +19896,7 @@ inline void FieldOptions::_internal_set_ctype(::google::protobuf::FieldOptions_C
 
                                           assert(::google::protobuf::internal::ValidateEnum(
                                               value, ::google::protobuf::FieldOptions_CType_internal_data_));
-                                          _impl_.ctype_ = value;
+                                          _impl_.ctype_ = static_cast<uint8_t>(value);
 }
 
 // optional bool packed = 2;
@@ -19863,13 +19929,13 @@ inline void FieldOptions::_internal_set_packed(bool value) {
 
 // optional .google.protobuf.FieldOptions.JSType jstype = 6 [default = JS_NORMAL];
 inline bool FieldOptions::has_jstype() const {
-  bool value = CheckHasBit(_impl_._has_bits_[0], 0x00000200U);
+  bool value = CheckHasBit(_impl_._has_bits_[0], 0x00000100U);
   return value;
 }
 inline void FieldOptions::clear_jstype() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.jstype_ = 0;
-  ClearHasBit(_impl_._has_bits_[0], 0x00000200U);
+  ClearHasBit(_impl_._has_bits_[0], 0x00000100U);
 }
 inline ::google::protobuf::FieldOptions_JSType FieldOptions::jstype() const {
   // @@protoc_insertion_point(field_get:google.protobuf.FieldOptions.jstype)
@@ -19877,7 +19943,7 @@ inline ::google::protobuf::FieldOptions_JSType FieldOptions::jstype() const {
 }
 inline void FieldOptions::set_jstype(::google::protobuf::FieldOptions_JSType value) {
   _internal_set_jstype(value);
-  SetHasBit(_impl_._has_bits_[0], 0x00000200U);
+  SetHasBit(_impl_._has_bits_[0], 0x00000100U);
   // @@protoc_insertion_point(field_set:google.protobuf.FieldOptions.jstype)
 }
 inline ::google::protobuf::FieldOptions_JSType FieldOptions::_internal_jstype() const {
@@ -19889,7 +19955,7 @@ inline void FieldOptions::_internal_set_jstype(::google::protobuf::FieldOptions_
 
                                           assert(::google::protobuf::internal::ValidateEnum(
                                               value, ::google::protobuf::FieldOptions_JSType_internal_data_));
-                                          _impl_.jstype_ = value;
+                                          _impl_.jstype_ = static_cast<uint8_t>(value);
 }
 
 // optional bool lazy = 5 [default = false];
@@ -19978,13 +20044,13 @@ inline void FieldOptions::_internal_set_deprecated(bool value) {
 
 // optional bool weak = 10 [default = false, deprecated = true];
 inline bool FieldOptions::has_weak() const {
-  bool value = CheckHasBit(_impl_._has_bits_[0], 0x00000100U);
+  bool value = CheckHasBit(_impl_._has_bits_[0], 0x00000200U);
   return value;
 }
 inline void FieldOptions::clear_weak() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.weak_ = false;
-  ClearHasBit(_impl_._has_bits_[0], 0x00000100U);
+  ClearHasBit(_impl_._has_bits_[0], 0x00000200U);
 }
 inline bool FieldOptions::weak() const {
   // @@protoc_insertion_point(field_get:google.protobuf.FieldOptions.weak)
@@ -19992,7 +20058,7 @@ inline bool FieldOptions::weak() const {
 }
 inline void FieldOptions::set_weak(bool value) {
   _internal_set_weak(value);
-  SetHasBit(_impl_._has_bits_[0], 0x00000100U);
+  SetHasBit(_impl_._has_bits_[0], 0x00000200U);
   // @@protoc_insertion_point(field_set:google.protobuf.FieldOptions.weak)
 }
 inline bool FieldOptions::_internal_weak() const {
@@ -20060,7 +20126,7 @@ inline void FieldOptions::_internal_set_retention(::google::protobuf::FieldOptio
 
                                           assert(::google::protobuf::internal::ValidateEnum(
                                               value, ::google::protobuf::FieldOptions_OptionRetention_internal_data_));
-                                          _impl_.retention_ = value;
+                                          _impl_.retention_ = static_cast<uint8_t>(value);
 }
 
 // repeated .google.protobuf.FieldOptions.OptionTargetType targets = 19;
@@ -21387,7 +21453,7 @@ inline void MethodOptions::_internal_set_idempotency_level(::google::protobuf::M
 
                                           assert(::google::protobuf::internal::ValidateEnum(
                                               value, ::google::protobuf::MethodOptions_IdempotencyLevel_internal_data_));
-                                          _impl_.idempotency_level_ = value;
+                                          _impl_.idempotency_level_ = static_cast<uint8_t>(value);
 }
 
 // optional .google.protobuf.FeatureSet features = 35;
@@ -22032,7 +22098,7 @@ inline void FeatureSet::_internal_set_field_presence(::google::protobuf::Feature
 
                                           assert(::google::protobuf::internal::ValidateEnum(
                                               value, ::google::protobuf::FeatureSet_FieldPresence_internal_data_));
-                                          _impl_.field_presence_ = value;
+                                          _impl_.field_presence_ = static_cast<uint8_t>(value);
 }
 
 // optional .google.protobuf.FeatureSet.EnumType enum_type = 2 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_ENUM, targets = TARGET_TYPE_FILE, edition_defaults = {
@@ -22063,7 +22129,7 @@ inline void FeatureSet::_internal_set_enum_type(::google::protobuf::FeatureSet_E
 
                                           assert(::google::protobuf::internal::ValidateEnum(
                                               value, ::google::protobuf::FeatureSet_EnumType_internal_data_));
-                                          _impl_.enum_type_ = value;
+                                          _impl_.enum_type_ = static_cast<uint8_t>(value);
 }
 
 // optional .google.protobuf.FeatureSet.RepeatedFieldEncoding repeated_field_encoding = 3 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {
@@ -22094,7 +22160,7 @@ inline void FeatureSet::_internal_set_repeated_field_encoding(::google::protobuf
 
                                           assert(::google::protobuf::internal::ValidateEnum(
                                               value, ::google::protobuf::FeatureSet_RepeatedFieldEncoding_internal_data_));
-                                          _impl_.repeated_field_encoding_ = value;
+                                          _impl_.repeated_field_encoding_ = static_cast<uint8_t>(value);
 }
 
 // optional .google.protobuf.FeatureSet.Utf8Validation utf8_validation = 4 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {
@@ -22125,7 +22191,7 @@ inline void FeatureSet::_internal_set_utf8_validation(::google::protobuf::Featur
 
                                           assert(::google::protobuf::internal::ValidateEnum(
                                               value, ::google::protobuf::FeatureSet_Utf8Validation_internal_data_));
-                                          _impl_.utf8_validation_ = value;
+                                          _impl_.utf8_validation_ = static_cast<uint8_t>(value);
 }
 
 // optional .google.protobuf.FeatureSet.MessageEncoding message_encoding = 5 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {
@@ -22156,7 +22222,7 @@ inline void FeatureSet::_internal_set_message_encoding(::google::protobuf::Featu
 
                                           assert(::google::protobuf::internal::ValidateEnum(
                                               value, ::google::protobuf::FeatureSet_MessageEncoding_internal_data_));
-                                          _impl_.message_encoding_ = value;
+                                          _impl_.message_encoding_ = static_cast<uint8_t>(value);
 }
 
 // optional .google.protobuf.FeatureSet.JsonFormat json_format = 6 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_MESSAGE, targets = TARGET_TYPE_ENUM, targets = TARGET_TYPE_FILE, edition_defaults = {
@@ -22187,7 +22253,7 @@ inline void FeatureSet::_internal_set_json_format(::google::protobuf::FeatureSet
 
                                           assert(::google::protobuf::internal::ValidateEnum(
                                               value, ::google::protobuf::FeatureSet_JsonFormat_internal_data_));
-                                          _impl_.json_format_ = value;
+                                          _impl_.json_format_ = static_cast<uint8_t>(value);
 }
 
 // optional .google.protobuf.FeatureSet.EnforceNamingStyle enforce_naming_style = 7 [retention = RETENTION_SOURCE, targets = TARGET_TYPE_FILE, targets = TARGET_TYPE_EXTENSION_RANGE, targets = TARGET_TYPE_MESSAGE, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_ONEOF, targets = TARGET_TYPE_ENUM, targets = TARGET_TYPE_ENUM_ENTRY, targets = TARGET_TYPE_SERVICE, targets = TARGET_TYPE_METHOD, edition_defaults = {
@@ -22218,7 +22284,7 @@ inline void FeatureSet::_internal_set_enforce_naming_style(::google::protobuf::F
 
                                           assert(::google::protobuf::internal::ValidateEnum(
                                               value, ::google::protobuf::FeatureSet_EnforceNamingStyle_internal_data_));
-                                          _impl_.enforce_naming_style_ = value;
+                                          _impl_.enforce_naming_style_ = static_cast<uint8_t>(value);
 }
 
 // optional .google.protobuf.FeatureSet.VisibilityFeature.DefaultSymbolVisibility default_symbol_visibility = 8 [retention = RETENTION_SOURCE, targets = TARGET_TYPE_FILE, edition_defaults = {
@@ -22249,7 +22315,7 @@ inline void FeatureSet::_internal_set_default_symbol_visibility(::google::protob
 
                                           assert(::google::protobuf::internal::ValidateEnum(
                                               value, ::google::protobuf::FeatureSet_VisibilityFeature_DefaultSymbolVisibility_internal_data_));
-                                          _impl_.default_symbol_visibility_ = value;
+                                          _impl_.default_symbol_visibility_ = static_cast<uint8_t>(value);
 }
 
 // optional .google.protobuf.FeatureSet.ProtoLimitsFeature.EnforceProtoLimits enforce_proto_limits = 9 [retention = RETENTION_SOURCE, targets = TARGET_TYPE_ENUM, targets = TARGET_TYPE_MESSAGE, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_ONEOF, edition_defaults = {
@@ -22280,7 +22346,7 @@ inline void FeatureSet::_internal_set_enforce_proto_limits(::google::protobuf::F
 
                                           assert(::google::protobuf::internal::ValidateEnum(
                                               value, ::google::protobuf::FeatureSet_ProtoLimitsFeature_EnforceProtoLimits_internal_data_));
-                                          _impl_.enforce_proto_limits_ = value;
+                                          _impl_.enforce_proto_limits_ = static_cast<uint8_t>(value);
 }
 
 // -------------------------------------------------------------------
@@ -22315,7 +22381,7 @@ inline void FeatureSetDefaults_FeatureSetEditionDefault::_internal_set_edition(:
 
                                           assert(::google::protobuf::internal::ValidateEnum(
                                               value, ::google::protobuf::Edition_internal_data_));
-                                          _impl_.edition_ = value;
+                                          _impl_.edition_ = static_cast<int>(value);
 }
 
 // optional .google.protobuf.FeatureSet overridable_features = 4;
@@ -22602,7 +22668,7 @@ inline void FeatureSetDefaults::_internal_set_minimum_edition(::google::protobuf
 
                                           assert(::google::protobuf::internal::ValidateEnum(
                                               value, ::google::protobuf::Edition_internal_data_));
-                                          _impl_.minimum_edition_ = value;
+                                          _impl_.minimum_edition_ = static_cast<int>(value);
 }
 
 // optional .google.protobuf.Edition maximum_edition = 5;
@@ -22633,7 +22699,7 @@ inline void FeatureSetDefaults::_internal_set_maximum_edition(::google::protobuf
 
                                           assert(::google::protobuf::internal::ValidateEnum(
                                               value, ::google::protobuf::Edition_internal_data_));
-                                          _impl_.maximum_edition_ = value;
+                                          _impl_.maximum_edition_ = static_cast<int>(value);
 }
 
 // -------------------------------------------------------------------
@@ -23221,7 +23287,7 @@ inline void GeneratedCodeInfo_Annotation::_internal_set_semantic(::google::proto
 
                                           assert(::google::protobuf::internal::ValidateEnum(
                                               value, ::google::protobuf::GeneratedCodeInfo_Annotation_Semantic_internal_data_));
-                                          _impl_.semantic_ = value;
+                                          _impl_.semantic_ = static_cast<uint8_t>(value);
 }
 
 // -------------------------------------------------------------------

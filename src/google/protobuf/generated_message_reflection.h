@@ -65,10 +65,14 @@ inline constexpr uint32_t kSplitFieldOffsetTag = 0x80000000u;
 inline constexpr uint32_t kLazyOffsetTag = 0x40000000u;
 inline constexpr uint32_t kInlinedOffsetTag = 0x40000000u;
 inline constexpr uint32_t kMicroStringOffsetTag = 0x20000000u;
+inline constexpr uint32_t kEnum8OffsetTag = 0x20000000u;
+inline constexpr uint32_t kEnum16OffsetTag = 0x40000000u;
+inline constexpr uint32_t kEnumSignedOffsetTag = 0x10000000u;
 
-inline constexpr uint32_t kAllOffsetTags = kSplitFieldOffsetTag |
-                                           kLazyOffsetTag | kInlinedOffsetTag |
-                                           kMicroStringOffsetTag;
+inline constexpr uint32_t kAllOffsetTags =
+    kSplitFieldOffsetTag | kLazyOffsetTag | kInlinedOffsetTag |
+    kMicroStringOffsetTag | kEnum8OffsetTag | kEnum16OffsetTag |
+    kEnumSignedOffsetTag;
 
 // Structs that the code generator emits directly to describe a message.
 // These should never used directly except to build a ReflectionSchema
@@ -156,6 +160,18 @@ class ReflectionSchema {
 
   bool IsFieldMicroString(const FieldDescriptor* field) const {
     return IsMicroString(offsets_[field->index()], field->type());
+  }
+
+  bool IsEnum8(const FieldDescriptor* field) const {
+    return IsEnum8(offsets_[field->index()], field->type());
+  }
+
+  bool IsEnum16(const FieldDescriptor* field) const {
+    return IsEnum16(offsets_[field->index()], field->type());
+  }
+
+  bool IsEnumSigned(const FieldDescriptor* field) const {
+    return IsEnumSigned(offsets_[field->index()], field->type());
   }
 
   uint32_t GetOneofCaseOffset(const OneofDescriptor* oneof_descriptor) const {
@@ -261,6 +277,19 @@ class ReflectionSchema {
                 type == FieldDescriptor::TYPE_BYTES)
         << type;
     return (v & kMicroStringOffsetTag) != 0u;
+  }
+
+  static bool IsEnum8(uint32_t v, FieldDescriptor::Type type) {
+    return type == FieldDescriptor::TYPE_ENUM && (v & kEnum8OffsetTag) != 0u;
+  }
+
+  static bool IsEnum16(uint32_t v, FieldDescriptor::Type type) {
+    return type == FieldDescriptor::TYPE_ENUM && (v & kEnum16OffsetTag) != 0u;
+  }
+
+  static bool IsEnumSigned(uint32_t v, FieldDescriptor::Type type) {
+    return type == FieldDescriptor::TYPE_ENUM &&
+           (v & kEnumSignedOffsetTag) != 0u;
   }
 
   const Message* default_instance_;

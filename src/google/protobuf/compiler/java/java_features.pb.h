@@ -501,23 +501,12 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED JavaFeatures final : 
 
   // accessors -------------------------------------------------------
   enum : int {
-    kUtf8ValidationFieldNumber = 2,
     kLegacyClosedEnumFieldNumber = 1,
+    kUtf8ValidationFieldNumber = 2,
     kLargeEnumFieldNumber = 3,
     kUseOldOuterClassnameDefaultFieldNumber = 4,
     kNestInFileClassFieldNumber = 5,
   };
-  // optional .pb.JavaFeatures.Utf8Validation utf8_validation = 2 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {
-  [[nodiscard]] bool has_utf8_validation() const;
-  void clear_utf8_validation() ;
-  [[nodiscard]] ::pb::JavaFeatures_Utf8Validation utf8_validation() const;
-  void set_utf8_validation(::pb::JavaFeatures_Utf8Validation value);
-
-  private:
-  ::pb::JavaFeatures_Utf8Validation _internal_utf8_validation() const;
-  void _internal_set_utf8_validation(::pb::JavaFeatures_Utf8Validation value);
-
-  public:
   // optional bool legacy_closed_enum = 1 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {
   [[nodiscard]] bool has_legacy_closed_enum() const;
   void clear_legacy_closed_enum() ;
@@ -527,6 +516,17 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED JavaFeatures final : 
   private:
   bool _internal_legacy_closed_enum() const;
   void _internal_set_legacy_closed_enum(bool value);
+
+  public:
+  // optional .pb.JavaFeatures.Utf8Validation utf8_validation = 2 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {
+  [[nodiscard]] bool has_utf8_validation() const;
+  void clear_utf8_validation() ;
+  [[nodiscard]] ::pb::JavaFeatures_Utf8Validation utf8_validation() const;
+  void set_utf8_validation(::pb::JavaFeatures_Utf8Validation value);
+
+  private:
+  ::pb::JavaFeatures_Utf8Validation _internal_utf8_validation() const;
+  void _internal_set_utf8_validation(::pb::JavaFeatures_Utf8Validation value);
 
   public:
   // optional bool large_enum = 3 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_ENUM, targets = TARGET_TYPE_FILE, edition_defaults = {
@@ -593,6 +593,7 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED JavaFeatures final : 
   friend class ::google::protobuf::Arena::InternalHelper;
   using InternalArenaConstructable_ = void;
   using DestructorSkippable_ = void;
+  // NOLINTBEGIN(google3-readability-class-member-naming,readability-identifier-naming)
   struct Impl_ {
     inline explicit constexpr Impl_(::google::protobuf::internal::InternalVisibility visibility,
                                     ::google::protobuf::internal::ConstantInitialized) noexcept;
@@ -605,13 +606,14 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED JavaFeatures final : 
         const JavaFeatures& from_msg);
     ::google::protobuf::internal::HasBits<1> _has_bits_;
     ::google::protobuf::internal::CachedSize _cached_size_;
-    int utf8_validation_;
     bool legacy_closed_enum_;
+    uint8_t utf8_validation_;
     bool large_enum_;
     bool use_old_outer_classname_default_;
-    int nest_in_file_class_;
+    uint8_t nest_in_file_class_;
     PROTOBUF_TSAN_DECLARE_MEMBER
   };
+  // NOLINTEND(google3-readability-class-member-naming,readability-identifier-naming)
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fcompiler_2fjava_2fjava_5ffeatures_2eproto;
 };
@@ -641,13 +643,13 @@ PROTOC_EXPORT extern ::google::protobuf::internal::ExtensionIdentifier<
 
 // optional bool legacy_closed_enum = 1 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {
 inline bool JavaFeatures::has_legacy_closed_enum() const {
-  bool value = CheckHasBit(_impl_._has_bits_[0], 0x00000002U);
+  bool value = CheckHasBit(_impl_._has_bits_[0], 0x00000001U);
   return value;
 }
 inline void JavaFeatures::clear_legacy_closed_enum() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.legacy_closed_enum_ = false;
-  ClearHasBit(_impl_._has_bits_[0], 0x00000002U);
+  ClearHasBit(_impl_._has_bits_[0], 0x00000001U);
 }
 inline bool JavaFeatures::legacy_closed_enum() const {
   // @@protoc_insertion_point(field_get:pb.JavaFeatures.legacy_closed_enum)
@@ -655,7 +657,7 @@ inline bool JavaFeatures::legacy_closed_enum() const {
 }
 inline void JavaFeatures::set_legacy_closed_enum(bool value) {
   _internal_set_legacy_closed_enum(value);
-  SetHasBit(_impl_._has_bits_[0], 0x00000002U);
+  SetHasBit(_impl_._has_bits_[0], 0x00000001U);
   // @@protoc_insertion_point(field_set:pb.JavaFeatures.legacy_closed_enum)
 }
 inline bool JavaFeatures::_internal_legacy_closed_enum() const {
@@ -669,13 +671,13 @@ inline void JavaFeatures::_internal_set_legacy_closed_enum(bool value) {
 
 // optional .pb.JavaFeatures.Utf8Validation utf8_validation = 2 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {
 inline bool JavaFeatures::has_utf8_validation() const {
-  bool value = CheckHasBit(_impl_._has_bits_[0], 0x00000001U);
+  bool value = CheckHasBit(_impl_._has_bits_[0], 0x00000002U);
   return value;
 }
 inline void JavaFeatures::clear_utf8_validation() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.utf8_validation_ = 0;
-  ClearHasBit(_impl_._has_bits_[0], 0x00000001U);
+  ClearHasBit(_impl_._has_bits_[0], 0x00000002U);
 }
 inline ::pb::JavaFeatures_Utf8Validation JavaFeatures::utf8_validation() const {
   // @@protoc_insertion_point(field_get:pb.JavaFeatures.utf8_validation)
@@ -683,7 +685,7 @@ inline ::pb::JavaFeatures_Utf8Validation JavaFeatures::utf8_validation() const {
 }
 inline void JavaFeatures::set_utf8_validation(::pb::JavaFeatures_Utf8Validation value) {
   _internal_set_utf8_validation(value);
-  SetHasBit(_impl_._has_bits_[0], 0x00000001U);
+  SetHasBit(_impl_._has_bits_[0], 0x00000002U);
   // @@protoc_insertion_point(field_set:pb.JavaFeatures.utf8_validation)
 }
 inline ::pb::JavaFeatures_Utf8Validation JavaFeatures::_internal_utf8_validation() const {
@@ -695,7 +697,7 @@ inline void JavaFeatures::_internal_set_utf8_validation(::pb::JavaFeatures_Utf8V
 
                                           assert(::google::protobuf::internal::ValidateEnum(
                                               value, ::pb::JavaFeatures_Utf8Validation_internal_data_));
-                                          _impl_.utf8_validation_ = value;
+                                          _impl_.utf8_validation_ = static_cast<uint8_t>(value);
 }
 
 // optional bool large_enum = 3 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_ENUM, targets = TARGET_TYPE_FILE, edition_defaults = {
@@ -782,7 +784,7 @@ inline void JavaFeatures::_internal_set_nest_in_file_class(::pb::JavaFeatures_Ne
 
                                           assert(::google::protobuf::internal::ValidateEnum(
                                               value, ::pb::JavaFeatures_NestInFileClassFeature_NestInFileClass_internal_data_));
-                                          _impl_.nest_in_file_class_ = value;
+                                          _impl_.nest_in_file_class_ = static_cast<uint8_t>(value);
 }
 
 #ifdef __GNUC__

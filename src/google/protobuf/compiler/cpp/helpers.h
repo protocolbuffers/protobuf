@@ -236,6 +236,17 @@ std::string FieldMemberName(const FieldDescriptor* field, bool split);
 // 64-bit pointers.
 int EstimateAlignmentSize(const FieldDescriptor* field);
 
+// Returns an estimate of the size/alignment for an enum based on its value
+// range. Returns 4 for open enums.
+int EstimateEnumSize(const EnumDescriptor* enum_desc);
+
+// Returns true if the enum has any negative values.
+bool IsEnumSigned(const EnumDescriptor* enum_desc);
+
+// Returns the C++ storage type name for a singular enum field (e.g. "uint8_t",
+// "int8_t", "uint16_t", "int16_t", or "int").
+const char* EnumStorageTypeName(const EnumDescriptor* enum_desc);
+
 // Returns an estimate of the size of the field.  This
 // can't guarantee to be correct because the generated code could be compiled on
 // different systems with different alignment rules.  The estimates below assume

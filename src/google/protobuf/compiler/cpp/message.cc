@@ -1606,6 +1606,7 @@ void MessageGenerator::GenerateImplDefinition(io::Printer* p) {
           // clang-format on
         }}},
       R"cc(
+        // NOLINTBEGIN(google3-readability-class-member-naming,readability-identifier-naming)
         struct Impl_ {
           //~ TODO: check if/when there is a need for an
           //~ outline dtor.
@@ -1635,6 +1636,7 @@ void MessageGenerator::GenerateImplDefinition(io::Printer* p) {
           //~ For detecting when concurrent accessor calls cause races.
           PROTOBUF_TSAN_DECLARE_MEMBER
         };
+        // NOLINTEND(google3-readability-class-member-naming,readability-identifier-naming)
         $union_impl$;
       )cc");
 
@@ -2584,6 +2586,21 @@ size_t MessageGenerator::GenerateOffsets(io::Printer* p) {
 
     if (ShouldSplit(field, options_)) {
       format(" | ::_pbi::kSplitFieldOffsetTag");
+    }
+    if (field->type() == FieldDescriptor::TYPE_ENUM && !field->is_repeated() &&
+        !field->real_containing_oneof() && field->enum_type()->is_closed()) {
+      int size = EstimateEnumSize(field->enum_type());
+      if (size == 1) {
+        format(" | ::_pbi::kEnum8OffsetTag");
+        if (IsEnumSigned(field->enum_type())) {
+          format(" | ::_pbi::kEnumSignedOffsetTag");
+        }
+      } else if (size == 2) {
+        format(" | ::_pbi::kEnum16OffsetTag");
+        if (IsEnumSigned(field->enum_type())) {
+          format(" | ::_pbi::kEnumSignedOffsetTag");
+        }
+      }
     }
     if (IsEagerlyVerifiedLazy(field, options_)) {
       format(" | ::_pbi::kLazyOffsetTag");

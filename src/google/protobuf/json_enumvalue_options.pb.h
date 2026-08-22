@@ -257,6 +257,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED JsonEnumValueOption
   friend class ::google::protobuf::Arena::InternalHelper;
   using InternalArenaConstructable_ = void;
   using DestructorSkippable_ = void;
+  // NOLINTBEGIN(google3-readability-class-member-naming,readability-identifier-naming)
   struct Impl_ {
     inline explicit constexpr Impl_(::google::protobuf::internal::InternalVisibility visibility,
                                     ::google::protobuf::internal::ConstantInitialized) noexcept;
@@ -272,6 +273,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED JsonEnumValueOption
     ::google::protobuf::internal::ArenaStringPtr string_;
     PROTOBUF_TSAN_DECLARE_MEMBER
   };
+  // NOLINTEND(google3-readability-class-member-naming,readability-identifier-naming)
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fjson_5fenumvalue_5foptions_2eproto;
 };

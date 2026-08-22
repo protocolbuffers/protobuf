@@ -392,14 +392,7 @@ struct EnumDynamicFieldInfo {
   int number() const { return field->number(); }
   FieldDescriptor::Type type() const { return field->type(); }
 
-  int Get() const {
-    if constexpr (is_oneof) {
-      return reflection->GetEnumValue(message, field);
-    } else {
-      return DynamicFieldInfoHelper<false>::Get<int>(reflection, message,
-                                                     field);
-    }
-  }
+  int Get() const { return reflection->GetEnumValue(message, field); }
   void Set(int value) { reflection->SetEnumValue(&message, field, value); }
   void Clear() {
     DynamicFieldInfoHelper<is_oneof>::ClearField(reflection, message, field);

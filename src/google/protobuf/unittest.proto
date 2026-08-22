@@ -2729,3 +2729,69 @@ message TestAllTypesAsExtension {
     TestAllTypes ext = 10;
   }
 }
+
+enum Enum1ByteUnsigned {
+  ENUM1_U_UNSPECIFIED = 0;
+  ENUM1_U_ONE = 1;
+  ENUM1_U_MAX = 200;
+}
+
+enum Enum1ByteSigned {
+  ENUM1_S_UNSPECIFIED = 0;
+  ENUM1_S_MIN = -100;
+  ENUM1_S_MAX = 100;
+}
+
+enum Enum2ByteUnsigned {
+  ENUM2_U_UNSPECIFIED = 0;
+  ENUM2_U_ONE = 1;
+  ENUM2_U_MAX = 1000;
+}
+
+enum Enum2ByteSigned {
+  ENUM2_S_UNSPECIFIED = 0;
+  ENUM2_S_MIN = -1000;
+  ENUM2_S_MAX = 1000;
+}
+
+enum Enum4Byte {
+  ENUM4_UNSPECIFIED = 0;
+  ENUM4_ONE = 1;
+  ENUM4_MAX = 100000;
+}
+
+enum EnumOpen {
+  option features.enum_type = OPEN;
+  ENUM_OPEN_UNSPECIFIED = 0;
+  ENUM_OPEN_ONE = 1;
+}
+
+message TestShrunkenEnumSizes {
+  Enum1ByteUnsigned enum1_u = 1;
+  Enum1ByteSigned enum1_s = 2;
+  Enum2ByteUnsigned enum2_u = 3;
+  Enum2ByteSigned enum2_s = 4;
+  Enum4Byte enum4 = 5;
+  bool flag = 6;
+  int32 small_int = 7;
+}
+
+message TestShrunkenEnumPacking {
+  Enum1ByteUnsigned e1 = 1;
+  Enum1ByteSigned e2 = 2;
+  Enum2ByteUnsigned e3 = 3;
+  bool b1 = 4;
+  bool b2 = 5;
+  bool b3 = 6;
+  bool b4 = 7;
+}
+
+message TestShrunkenEnumOneof {
+  oneof foo {
+    Enum1ByteUnsigned e1_u = 1;
+    Enum1ByteSigned e1_s = 2;
+    Enum2ByteUnsigned e2_u = 3;
+    Enum2ByteSigned e2_s = 4;
+    int32 bar = 5;
+  }
+}

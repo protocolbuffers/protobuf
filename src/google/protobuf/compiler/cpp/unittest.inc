@@ -22,10 +22,12 @@
 // correctly and produces the interfaces we expect, which is why this test
 // is written this way.
 
+#include <atomic>
 #include <cstdint>
 #include <functional>
 #include <limits>
 #include <memory>
+#include <thread>
 #include <vector>
 
 #include "absl/base/attributes.h"
@@ -2195,7 +2197,270 @@ TEST_F(GENERATED_SERVICE_TEST_NAME, NoGenericServices) {
   EXPECT_EQ("Foo", file->service(0)->method(0)->name());
 }
 
+#ifndef UNITTEST_PROFILE_DRIVEN
+TEST(GENERATED_MESSAGE_TEST_NAME, ShrunkenEnumReflection) {
+  UNITTEST::TestShrunkenEnumSizes message1;
+  const Reflection* ref = message1.GetReflection();
+  const Descriptor* desc = message1.GetDescriptor();
+
+  const FieldDescriptor* f_e1_u = desc->FindFieldByName("enum1_u");
+  const FieldDescriptor* f_e1_s = desc->FindFieldByName("enum1_s");
+  const FieldDescriptor* f_e2_u = desc->FindFieldByName("enum2_u");
+  const FieldDescriptor* f_e2_s = desc->FindFieldByName("enum2_s");
+  const FieldDescriptor* f_e4 = desc->FindFieldByName("enum4");
+  const FieldDescriptor* f_flag = desc->FindFieldByName("flag");
+  const FieldDescriptor* f_small_int = desc->FindFieldByName("small_int");
+
+  ASSERT_NE(f_e1_u, nullptr);
+  ASSERT_NE(f_e1_s, nullptr);
+  ASSERT_NE(f_e2_u, nullptr);
+  ASSERT_NE(f_e2_s, nullptr);
+  ASSERT_NE(f_e4, nullptr);
+  ASSERT_NE(f_flag, nullptr);
+  ASSERT_NE(f_small_int, nullptr);
+
+  // SetEnumValue
+  ref->SetEnumValue(&message1, f_e1_u, UNITTEST::ENUM1_U_MAX);
+  ref->SetEnumValue(&message1, f_e1_s, UNITTEST::ENUM1_S_MIN);
+  ref->SetEnumValue(&message1, f_e2_u, UNITTEST::ENUM2_U_MAX);
+  ref->SetEnumValue(&message1, f_e2_s, UNITTEST::ENUM2_S_MIN);
+  ref->SetEnumValue(&message1, f_e4, UNITTEST::ENUM4_MAX);
+  ref->SetBool(&message1, f_flag, true);
+  ref->SetInt32(&message1, f_small_int, 42);
+
+  // GetEnumValue
+  EXPECT_EQ(ref->GetEnumValue(message1, f_e1_u), UNITTEST::ENUM1_U_MAX);
+  EXPECT_EQ(ref->GetEnumValue(message1, f_e1_s), UNITTEST::ENUM1_S_MIN);
+  EXPECT_EQ(ref->GetEnumValue(message1, f_e2_u), UNITTEST::ENUM2_U_MAX);
+  EXPECT_EQ(ref->GetEnumValue(message1, f_e2_s), UNITTEST::ENUM2_S_MIN);
+  EXPECT_EQ(ref->GetEnumValue(message1, f_e4), UNITTEST::ENUM4_MAX);
+  EXPECT_EQ(ref->GetBool(message1, f_flag), true);
+  EXPECT_EQ(ref->GetInt32(message1, f_small_int), 42);
+
+  // Verify direct getters match reflection
+  EXPECT_EQ(message1.enum1_u(), UNITTEST::ENUM1_U_MAX);
+  EXPECT_EQ(message1.enum1_s(), UNITTEST::ENUM1_S_MIN);
+  EXPECT_EQ(message1.enum2_u(), UNITTEST::ENUM2_U_MAX);
+  EXPECT_EQ(message1.enum2_s(), UNITTEST::ENUM2_S_MIN);
+  EXPECT_EQ(message1.enum4(), UNITTEST::ENUM4_MAX);
+
+  // Test CopyFrom
+  UNITTEST::TestShrunkenEnumSizes message2;
+  message2.CopyFrom(message1);
+  EXPECT_EQ(message2.enum1_u(), UNITTEST::ENUM1_U_MAX);
+  EXPECT_EQ(message2.enum1_s(), UNITTEST::ENUM1_S_MIN);
+  EXPECT_EQ(message2.enum2_u(), UNITTEST::ENUM2_U_MAX);
+  EXPECT_EQ(message2.enum2_s(), UNITTEST::ENUM2_S_MIN);
+  EXPECT_EQ(message2.enum4(), UNITTEST::ENUM4_MAX);
+
+  // Test Swap
+  UNITTEST::TestShrunkenEnumSizes message3;
+  message3.set_enum1_u(UNITTEST::ENUM1_U_ONE);
+  message3.set_enum1_s(UNITTEST::ENUM1_S_MAX);
+  message3.set_enum2_u(UNITTEST::ENUM2_U_ONE);
+  message3.set_enum2_s(UNITTEST::ENUM2_S_MAX);
+  message3.set_enum4(UNITTEST::ENUM4_ONE);
+
+  message1.Swap(&message3);
+  EXPECT_EQ(message1.enum1_u(), UNITTEST::ENUM1_U_ONE);
+  EXPECT_EQ(message1.enum1_s(), UNITTEST::ENUM1_S_MAX);
+  EXPECT_EQ(message1.enum2_u(), UNITTEST::ENUM2_U_ONE);
+  EXPECT_EQ(message1.enum2_s(), UNITTEST::ENUM2_S_MAX);
+  EXPECT_EQ(message1.enum4(), UNITTEST::ENUM4_ONE);
+
+  EXPECT_EQ(message3.enum1_u(), UNITTEST::ENUM1_U_MAX);
+  EXPECT_EQ(message3.enum1_s(), UNITTEST::ENUM1_S_MIN);
+  EXPECT_EQ(message3.enum2_u(), UNITTEST::ENUM2_U_MAX);
+  EXPECT_EQ(message3.enum2_s(), UNITTEST::ENUM2_S_MIN);
+  EXPECT_EQ(message3.enum4(), UNITTEST::ENUM4_MAX);
+
+  // Test Reflection::ClearField
+  ref->ClearField(&message1, f_e1_u);
+  ref->ClearField(&message1, f_e1_s);
+  ref->ClearField(&message1, f_e2_u);
+  ref->ClearField(&message1, f_e2_s);
+  ref->ClearField(&message1, f_e4);
+  EXPECT_EQ(message1.enum1_u(), UNITTEST::ENUM1_U_UNSPECIFIED);
+  EXPECT_EQ(message1.enum1_s(), UNITTEST::ENUM1_S_UNSPECIFIED);
+  EXPECT_EQ(message1.enum2_u(), UNITTEST::ENUM2_U_UNSPECIFIED);
+  EXPECT_EQ(message1.enum2_s(), UNITTEST::ENUM2_S_UNSPECIFIED);
+  EXPECT_EQ(message1.enum4(), UNITTEST::ENUM4_UNSPECIFIED);
+}
+#endif  // !UNITTEST_PROFILE_DRIVEN
+
 #endif  // !PROTOBUF_TEST_NO_DESCRIPTORS
+
+#ifndef UNITTEST_PROFILE_DRIVEN
+TEST(GENERATED_MESSAGE_TEST_NAME, ShrunkenEnumSizeReduction) {
+  // TestShrunkenEnumPacking has 7 fields: e1(1B), e2(1B), e3(2B), b1(1B),
+  // b2(1B), b3(1B), b4(1B). All 7 fields fit in exactly 8 bytes of struct
+  // payload. With 32-bit enums, 3 enums (12B) + 4 bools (4B) = 16 bytes.
+  EXPECT_LE(sizeof(UNITTEST::TestShrunkenEnumPacking),
+            sizeof(internal::ZeroFieldsBase) + 4 + 8 + sizeof(void*));
+}
+
+TEST(GENERATED_MESSAGE_TEST_NAME, ShrunkenEnumAccessorsAndDefaults) {
+  UNITTEST::TestShrunkenEnumSizes message;
+  // Check default values (first defined enum value)
+  EXPECT_EQ(message.enum1_u(), UNITTEST::ENUM1_U_UNSPECIFIED);
+  EXPECT_EQ(message.enum1_s(), UNITTEST::ENUM1_S_UNSPECIFIED);
+  EXPECT_EQ(message.enum2_u(), UNITTEST::ENUM2_U_UNSPECIFIED);
+  EXPECT_EQ(message.enum2_s(), UNITTEST::ENUM2_S_UNSPECIFIED);
+  EXPECT_EQ(message.enum4(), UNITTEST::ENUM4_UNSPECIFIED);
+
+  // Check setting values
+  message.set_enum1_u(UNITTEST::ENUM1_U_MAX);
+  message.set_enum1_s(UNITTEST::ENUM1_S_MAX);
+  message.set_enum2_u(UNITTEST::ENUM2_U_MAX);
+  message.set_enum2_s(UNITTEST::ENUM2_S_MAX);
+  message.set_enum4(UNITTEST::ENUM4_MAX);
+  message.set_flag(true);
+  message.set_small_int(12345);
+
+  EXPECT_EQ(message.enum1_u(), UNITTEST::ENUM1_U_MAX);
+  EXPECT_EQ(message.enum1_s(), UNITTEST::ENUM1_S_MAX);
+  EXPECT_EQ(message.enum2_u(), UNITTEST::ENUM2_U_MAX);
+  EXPECT_EQ(message.enum2_s(), UNITTEST::ENUM2_S_MAX);
+  EXPECT_EQ(message.enum4(), UNITTEST::ENUM4_MAX);
+  EXPECT_EQ(message.flag(), true);
+  EXPECT_EQ(message.small_int(), 12345);
+
+  // Check clear
+  message.clear_enum1_u();
+  message.clear_enum1_s();
+  message.clear_enum2_u();
+  message.clear_enum2_s();
+  message.clear_enum4();
+  EXPECT_EQ(message.enum1_u(), UNITTEST::ENUM1_U_UNSPECIFIED);
+  EXPECT_EQ(message.enum1_s(), UNITTEST::ENUM1_S_UNSPECIFIED);
+  EXPECT_EQ(message.enum2_u(), UNITTEST::ENUM2_U_UNSPECIFIED);
+  EXPECT_EQ(message.enum2_s(), UNITTEST::ENUM2_S_UNSPECIFIED);
+  EXPECT_EQ(message.enum4(), UNITTEST::ENUM4_UNSPECIFIED);
+}
+
+TEST(GENERATED_MESSAGE_TEST_NAME, ShrunkenEnumSerializationAndParsing) {
+  UNITTEST::TestShrunkenEnumSizes message1;
+  message1.set_enum1_u(UNITTEST::ENUM1_U_MAX);
+  message1.set_enum1_s(UNITTEST::ENUM1_S_MAX);
+  message1.set_enum2_u(UNITTEST::ENUM2_U_MAX);
+  message1.set_enum2_s(UNITTEST::ENUM2_S_MAX);
+  message1.set_enum4(UNITTEST::ENUM4_MAX);
+  message1.set_flag(true);
+  message1.set_small_int(99999);
+
+  std::string data = message1.SerializeAsString();
+
+  // Parse via TcTable fast parser
+  UNITTEST::TestShrunkenEnumSizes message2;
+  EXPECT_TRUE(message2.ParseFromString(data));
+  EXPECT_EQ(message2.enum1_u(), UNITTEST::ENUM1_U_MAX);
+  EXPECT_EQ(message2.enum1_s(), UNITTEST::ENUM1_S_MAX);
+  EXPECT_EQ(message2.enum2_u(), UNITTEST::ENUM2_U_MAX);
+  EXPECT_EQ(message2.enum2_s(), UNITTEST::ENUM2_S_MAX);
+  EXPECT_EQ(message2.enum4(), UNITTEST::ENUM4_MAX);
+  EXPECT_EQ(message2.flag(), true);
+  EXPECT_EQ(message2.small_int(), 99999);
+
+  // Test negative values on signed enums
+  message1.set_enum1_s(UNITTEST::ENUM1_S_MIN);
+  message1.set_enum2_s(UNITTEST::ENUM2_S_MIN);
+  data = message1.SerializeAsString();
+
+  UNITTEST::TestShrunkenEnumSizes message3;
+  EXPECT_TRUE(message3.ParseFromString(data));
+  EXPECT_EQ(message3.enum1_s(), UNITTEST::ENUM1_S_MIN);
+  EXPECT_EQ(message3.enum2_s(), UNITTEST::ENUM2_S_MIN);
+
+  // Parse via stream (fallback miniparse)
+  UNITTEST::TestShrunkenEnumSizes message4;
+  io::ArrayInputStream array_stream(data.data(), static_cast<int>(data.size()));
+  io::CodedInputStream coded_stream(&array_stream);
+  EXPECT_TRUE(message4.ParseFromCodedStream(&coded_stream));
+  EXPECT_EQ(message4.enum1_s(), UNITTEST::ENUM1_S_MIN);
+  EXPECT_EQ(message4.enum2_s(), UNITTEST::ENUM2_S_MIN);
+}
+
+TEST(GENERATED_MESSAGE_TEST_NAME, ShrunkenEnumOneof) {
+  UNITTEST::TestShrunkenEnumOneof message;
+  EXPECT_EQ(message.foo_case(), UNITTEST::TestShrunkenEnumOneof::FOO_NOT_SET);
+
+  message.set_e1_u(UNITTEST::ENUM1_U_MAX);
+  EXPECT_EQ(message.foo_case(), UNITTEST::TestShrunkenEnumOneof::kE1U);
+  EXPECT_EQ(message.e1_u(), UNITTEST::ENUM1_U_MAX);
+
+  message.set_e1_s(UNITTEST::ENUM1_S_MIN);
+  EXPECT_EQ(message.foo_case(), UNITTEST::TestShrunkenEnumOneof::kE1S);
+  EXPECT_EQ(message.e1_s(), UNITTEST::ENUM1_S_MIN);
+
+  message.set_e2_u(UNITTEST::ENUM2_U_MAX);
+  EXPECT_EQ(message.foo_case(), UNITTEST::TestShrunkenEnumOneof::kE2U);
+  EXPECT_EQ(message.e2_u(), UNITTEST::ENUM2_U_MAX);
+
+  message.set_e2_s(UNITTEST::ENUM2_S_MIN);
+  EXPECT_EQ(message.foo_case(), UNITTEST::TestShrunkenEnumOneof::kE2S);
+  EXPECT_EQ(message.e2_s(), UNITTEST::ENUM2_S_MIN);
+
+  std::string data = message.SerializeAsString();
+  UNITTEST::TestShrunkenEnumOneof parsed;
+  EXPECT_TRUE(parsed.ParseFromString(data));
+  EXPECT_EQ(parsed.foo_case(), UNITTEST::TestShrunkenEnumOneof::kE2S);
+  EXPECT_EQ(parsed.e2_s(), UNITTEST::ENUM2_S_MIN);
+
+  message.clear_foo();
+  EXPECT_EQ(message.foo_case(), UNITTEST::TestShrunkenEnumOneof::FOO_NOT_SET);
+}
+
+TEST(GENERATED_MESSAGE_TEST_NAME, ShrunkenEnumConcurrentMutations) {
+  UNITTEST::TestShrunkenEnumPacking message;
+  // Initialize has-bits before threads start so concurrent field writes do not
+  // race on has-bit bitwise |= operations.
+  message.set_e1(UNITTEST::ENUM1_U_ONE);
+  message.set_e2(UNITTEST::ENUM1_S_MIN);
+  message.set_e3(UNITTEST::ENUM2_U_ONE);
+  message.set_b1(true);
+  message.set_b2(true);
+  message.set_b3(true);
+  message.set_b4(true);
+
+  std::atomic<bool> start{false};
+  constexpr int kIterations = 10000;
+
+  auto worker = [&](auto mutator) {
+    while (!start.load(std::memory_order_acquire)) {
+    }
+    for (int i = 0; i < kIterations; ++i) {
+      mutator(i);
+    }
+  };
+
+  std::vector<std::thread> threads;
+  threads.emplace_back(worker, [&](int i) {
+    message.set_e1(i % 2 == 0 ? UNITTEST::ENUM1_U_ONE : UNITTEST::ENUM1_U_MAX);
+  });
+  threads.emplace_back(worker, [&](int i) {
+    message.set_e2(i % 2 == 0 ? UNITTEST::ENUM1_S_MIN : UNITTEST::ENUM1_S_MAX);
+  });
+  threads.emplace_back(worker, [&](int i) {
+    message.set_e3(i % 2 == 0 ? UNITTEST::ENUM2_U_ONE : UNITTEST::ENUM2_U_MAX);
+  });
+  threads.emplace_back(worker, [&](int i) { message.set_b1(i % 2 == 0); });
+  threads.emplace_back(worker, [&](int i) { message.set_b2(i % 2 == 1); });
+  threads.emplace_back(worker, [&](int i) { message.set_b3(i % 2 == 0); });
+  threads.emplace_back(worker, [&](int i) { message.set_b4(i % 2 == 1); });
+
+  start.store(true, std::memory_order_release);
+  for (auto& t : threads) {
+    t.join();
+  }
+
+  EXPECT_TRUE(message.e1() == UNITTEST::ENUM1_U_ONE ||
+              message.e1() == UNITTEST::ENUM1_U_MAX);
+  EXPECT_TRUE(message.e2() == UNITTEST::ENUM1_S_MIN ||
+              message.e2() == UNITTEST::ENUM1_S_MAX);
+  EXPECT_TRUE(message.e3() == UNITTEST::ENUM2_U_ONE ||
+              message.e3() == UNITTEST::ENUM2_U_MAX);
+}
+#endif  // !UNITTEST_PROFILE_DRIVEN
 
 // ===================================================================
 

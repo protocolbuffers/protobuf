@@ -425,6 +425,35 @@ TEST(GeneratedMessageTest, PackedTypesSize) {
   EXPECT_EQ(sizeof(proto2_unittest::TestPackedTypes), sizeof(T));
 }
 
+TEST(GeneratedMessageTest, ShrunkenEnumPackingSize) {
+  struct MockGenerated : public MockMessageBase {  // 16 bytes
+    int has_bits[1];                               // 4 bytes
+    int cached_size;                               // 4 bytes
+    uint8_t e1;                                    // 1 byte
+    int8_t e2;                                     // 1 byte
+    uint16_t e3;                                   // 2 bytes
+    bool b1;                                       // 1 byte
+    bool b2;                                       // 1 byte
+    bool b3;                                       // 1 byte
+    bool b4;                                       // 1 byte
+    PROTOBUF_TSAN_DECLARE_MEMBER;                  // 0-4 bytes
+    // + padding
+  };
+  ABSL_CHECK_MESSAGE_SIZE(MockGenerated, 32);
+
+  struct MockSplitGenerated : public MockMessageBase {  // 16 bytes
+    int has_bits[1];                                    // 4 bytes
+    int cached_size;               // 4 bytes + 4 bytes padding
+    void* split;                   // 8 bytes
+    PROTOBUF_TSAN_DECLARE_MEMBER;  // 0-4 bytes
+  };
+  ABSL_CHECK_MESSAGE_SIZE(MockSplitGenerated, 32);
+
+  using T = std::conditional_t<internal::ForceSplitFieldsInProtoc(),
+                               MockSplitGenerated, MockGenerated>;
+  EXPECT_EQ(sizeof(proto2_unittest::TestShrunkenEnumPacking), sizeof(T));
+}
+
 }  // namespace cpp_unittest
 }  // namespace cpp
 }  // namespace compiler

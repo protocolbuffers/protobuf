@@ -1901,6 +1901,11 @@ void Reflection::VerifyFieldType(const FieldDescriptor* field) const {
         << error();
   } else {
     auto cpp_type = field->cpp_type();
+    if (cpp_type == field->CPPTYPE_ENUM &&
+        (std::is_same_v<T, uint8_t> || std::is_same_v<T, int8_t> ||
+         std::is_same_v<T, uint16_t> || std::is_same_v<T, int16_t>)) {
+      return;
+    }
     // Collapse ENUM to INT32 because they are the same through reflection.
     if (cpp_type == field->CPPTYPE_ENUM) cpp_type = field->CPPTYPE_INT32;
     ABSL_DCHECK_EQ(+cpp_type, +internal::GetCppType<T>()) << error();

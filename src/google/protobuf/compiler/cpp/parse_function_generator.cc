@@ -98,6 +98,17 @@ ParseFunctionGenerator::BuildFieldOptions(
       return std::monostate{};
     };
 
+    const auto enum_rep = [&]() -> TailCallTableInfo::FieldOptions::EnumRep {
+      if (field->type() == FieldDescriptor::TYPE_ENUM &&
+          !field->is_repeated() && !field->real_containing_oneof() &&
+          field->enum_type()->is_closed()) {
+        int size = EstimateEnumSize(field->enum_type());
+        if (size == 1) return TailCallTableInfo::FieldOptions::kEnum8;
+        if (size == 2) return TailCallTableInfo::FieldOptions::kEnum16;
+      }
+      return TailCallTableInfo::FieldOptions::kEnum32;
+    };
+
     fields.push_back({
         field,
         hasbit_index.value_or(internal::kNoHasbit),
@@ -108,6 +119,7 @@ ParseFunctionGenerator::BuildFieldOptions(
         /* use_direct_tcparser_table */ true,
         ShouldSplit(field, options),
         str_options(),
+        enum_rep(),
     });
   }
   return fields;

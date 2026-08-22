@@ -165,6 +165,7 @@ class MessageLayoutHelper {
 
   struct FieldAlignmentGroups {
     FieldPartitionArray aligned_to_1;
+    FieldPartitionArray aligned_to_2;
     FieldPartitionArray aligned_to_4;
     FieldPartitionArray aligned_to_8;
   };
@@ -199,7 +200,7 @@ class MessageLayoutHelper {
       const std::vector<internal::TailCallTableInfo::FastFieldInfo>&
           fast_path_fields);
 
-  // Groups fields into alignment equivalence classes (1, 4, and 8). Within
+  // Groups fields into alignment equivalence classes (1, 2, 4, and 8). Within
   // each alignment equivalence class, fields are partitioned by `FieldFamily`
   // and `FieldHotness`.
   FieldAlignmentGroups BuildFieldAlignmentGroups(const FieldVector& fields,

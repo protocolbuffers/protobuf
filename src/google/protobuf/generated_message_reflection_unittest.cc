@@ -22,6 +22,8 @@
 #include "google/protobuf/generated_message_reflection.h"
 
 #include <cstddef>
+#include <cstdint>
+#include <cstring>
 #include <memory>
 #include <string>
 #include <vector>
@@ -80,6 +82,21 @@ class GeneratedMessageReflectionTestHelper {
   static const T& GetRaw(const Message& msg, const FieldDescriptor* field) {
     const Reflection* reflection = msg.GetReflection();
     return reflection->GetRaw<T>(msg, field);
+  }
+  static std::unique_ptr<Reflection> CreateReflection(
+      const Descriptor* descriptor, const internal::ReflectionSchema& schema,
+      const DescriptorPool* pool, MessageFactory* factory) {
+    return std::unique_ptr<Reflection>(
+        new Reflection(descriptor, schema, pool, factory));
+  }
+  static void SetEnumValueInternal(const Reflection* reflection,
+                                   Message* message,
+                                   const FieldDescriptor* field, int value) {
+    reflection->SetEnumValueInternal(message, field, value);
+  }
+  static uint32_t GetFieldOffset(const Reflection* reflection,
+                                 const FieldDescriptor* field) {
+    return reflection->schema_.GetFieldOffset(field);
   }
 };
 
@@ -2041,6 +2058,69 @@ TEST(CppNamespaceOption, NewNamespaceSymbolSameProtoName) {
 
   EXPECT_EQ(new_message.GetDescriptor()->file()->package(),
             "cpp.file.options.test");
+}
+
+TEST(GeneratedMessageReflection, Enum8And16BitFields) {
+  const Descriptor* desc = unittest::TestAllTypes::descriptor();
+  const FieldDescriptor* field = desc->FindFieldByName("optional_nested_enum");
+  ASSERT_NE(field, nullptr);
+
+  std::vector<uint32_t> offsets(desc->field_count(), 0);
+  std::vector<uint32_t> has_bits(desc->field_count(), 0);
+
+  // Test 8-bit unsigned enum
+  {
+    offsets[field->index()] = 100 | internal::kEnum8OffsetTag;
+    internal::ReflectionSchema schema(
+        &unittest::TestAllTypes::default_instance(), offsets.data(),
+        has_bits.data(), /*has_bits_offset=*/-1, /*extensions_offset=*/-1,
+        /*oneof_case_offset=*/-1, sizeof(unittest::TestAllTypes),
+        /*split_offset=*/-1, /*sizeof_split=*/-1);
+    EXPECT_TRUE(schema.IsEnum8(field));
+    EXPECT_FALSE(schema.IsEnum16(field));
+    EXPECT_FALSE(schema.IsEnumSigned(field));
+  }
+
+  // Test 8-bit signed enum
+  {
+    offsets[field->index()] =
+        100 | internal::kEnum8OffsetTag | internal::kEnumSignedOffsetTag;
+    internal::ReflectionSchema schema(
+        &unittest::TestAllTypes::default_instance(), offsets.data(),
+        has_bits.data(), /*has_bits_offset=*/-1, /*extensions_offset=*/-1,
+        /*oneof_case_offset=*/-1, sizeof(unittest::TestAllTypes),
+        /*split_offset=*/-1, /*sizeof_split=*/-1);
+    EXPECT_TRUE(schema.IsEnum8(field));
+    EXPECT_FALSE(schema.IsEnum16(field));
+    EXPECT_TRUE(schema.IsEnumSigned(field));
+  }
+
+  // Test 16-bit unsigned enum
+  {
+    offsets[field->index()] = 100 | internal::kEnum16OffsetTag;
+    internal::ReflectionSchema schema(
+        &unittest::TestAllTypes::default_instance(), offsets.data(),
+        has_bits.data(), /*has_bits_offset=*/-1, /*extensions_offset=*/-1,
+        /*oneof_case_offset=*/-1, sizeof(unittest::TestAllTypes),
+        /*split_offset=*/-1, /*sizeof_split=*/-1);
+    EXPECT_FALSE(schema.IsEnum8(field));
+    EXPECT_TRUE(schema.IsEnum16(field));
+    EXPECT_FALSE(schema.IsEnumSigned(field));
+  }
+
+  // Test 16-bit signed enum
+  {
+    offsets[field->index()] =
+        100 | internal::kEnum16OffsetTag | internal::kEnumSignedOffsetTag;
+    internal::ReflectionSchema schema(
+        &unittest::TestAllTypes::default_instance(), offsets.data(),
+        has_bits.data(), /*has_bits_offset=*/-1, /*extensions_offset=*/-1,
+        /*oneof_case_offset=*/-1, sizeof(unittest::TestAllTypes),
+        /*split_offset=*/-1, /*sizeof_split=*/-1);
+    EXPECT_FALSE(schema.IsEnum8(field));
+    EXPECT_TRUE(schema.IsEnum16(field));
+    EXPECT_TRUE(schema.IsEnumSigned(field));
+  }
 }
 
 }  // namespace

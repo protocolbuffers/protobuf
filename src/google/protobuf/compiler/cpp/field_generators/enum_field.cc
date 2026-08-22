@@ -43,6 +43,9 @@ std::vector<Sub> Vars(const FieldDescriptor* field, const Options& opts) {
   auto enum_name = QualifiedClassName(field->enum_type(), opts);
   return {
       {"Enum", enum_name},
+      {"storage_type", field->real_containing_oneof() != nullptr
+                           ? "int"
+                           : EnumStorageTypeName(field->enum_type())},
       {"kDefault", Int32ToString(default_value->number())},
       Sub("assert_valid", is_open ? ""
                                   : absl::Substitute(
@@ -68,7 +71,7 @@ class SingularEnum : public FieldGeneratorBase {
 
   void GeneratePrivateMembers(io::Printer* p) const override {
     p->Emit(R"cc(
-      int $name$_;
+      $storage_type$ $name$_;
     )cc");
   }
 
@@ -186,7 +189,7 @@ void SingularEnum::GenerateInlineAccessorDefinitions(io::Printer* p) const {
           clear_$oneof_name$();
           set_has_$name_internal$();
         }
-        $field_$ = value;
+        $field_$ = static_cast<$storage_type$>(value);
         $annotate_set$;
         // @@protoc_insertion_point(field_set:$pkg.Msg.field$)
       }
@@ -214,7 +217,7 @@ void SingularEnum::GenerateInlineAccessorDefinitions(io::Printer* p) const {
       inline void $Msg$::_internal_set_$name_internal$($Enum$ value) {
         $TsanDetectConcurrentMutation$;
         $assert_valid$;
-        $field_$ = value;
+        $field_$ = static_cast<$storage_type$>(value);
       }
     )cc");
   }

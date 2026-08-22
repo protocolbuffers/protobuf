@@ -66,16 +66,16 @@ constexpr CppFeatures::ParseTableT_ CppFeatures::_Internal::GenerateParseTable(c
       ::_pbi::TcParser::MpUnknownFields,  // fallback
     }, {{
       // optional .pb.CppFeatures.RepeatedType repeated_type = 4 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {
-      {::_pbi::TcParser::FastEr0S1,
-       {32, 3, 2,
+      {::_pbi::TcParser::FastEr8S1,
+       {32, 3, 1,
         PROTOBUF_FIELD_OFFSET(CppFeatures, _impl_.repeated_type_)}},
       // optional bool legacy_closed_enum = 1 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {
-      {::_pbi::TcParser::SingularVarintNoZag1<bool, offsetof(CppFeatures, _impl_.legacy_closed_enum_), 1>(),
-       {8, 1, 0,
+      {::_pbi::TcParser::SingularVarintNoZag1<bool, offsetof(CppFeatures, _impl_.legacy_closed_enum_), 0>(),
+       {8, 0, 0,
         PROTOBUF_FIELD_OFFSET(CppFeatures, _impl_.legacy_closed_enum_)}},
       // optional .pb.CppFeatures.StringType string_type = 2 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {
-      {::_pbi::TcParser::FastEr0S1,
-       {16, 0, 3,
+      {::_pbi::TcParser::FastEr8S1,
+       {16, 1, 0,
         PROTOBUF_FIELD_OFFSET(CppFeatures, _impl_.string_type_)}},
       // optional bool enum_name_uses_string_view = 3 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_ENUM, targets = TARGET_TYPE_FILE, edition_defaults = {
       {::_pbi::TcParser::SingularVarintNoZag1<bool, offsetof(CppFeatures, _impl_.enum_name_uses_string_view_), 2>(),
@@ -85,13 +85,13 @@ constexpr CppFeatures::ParseTableT_ CppFeatures::_Internal::GenerateParseTable(c
       65535, 65535
     }}, {{
       // optional bool legacy_closed_enum = 1 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {
-      {PROTOBUF_FIELD_OFFSET(CppFeatures, _impl_.legacy_closed_enum_), _Internal::kHasBitsOffset + 1, 0, (0 | ::_fl::kFcOptional | ::_fl::kBool)},
+      {PROTOBUF_FIELD_OFFSET(CppFeatures, _impl_.legacy_closed_enum_), _Internal::kHasBitsOffset + 0, 0, (0 | ::_fl::kFcOptional | ::_fl::kBool)},
       // optional .pb.CppFeatures.StringType string_type = 2 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {
-      {PROTOBUF_FIELD_OFFSET(CppFeatures, _impl_.string_type_), _Internal::kHasBitsOffset + 0, 0, (0 | ::_fl::kFcOptional | ::_fl::kEnumRange)},
+      {PROTOBUF_FIELD_OFFSET(CppFeatures, _impl_.string_type_), _Internal::kHasBitsOffset + 1, 0, (0 | ::_fl::kFcOptional | ::_fl::kEnumRange8)},
       // optional bool enum_name_uses_string_view = 3 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_ENUM, targets = TARGET_TYPE_FILE, edition_defaults = {
       {PROTOBUF_FIELD_OFFSET(CppFeatures, _impl_.enum_name_uses_string_view_), _Internal::kHasBitsOffset + 2, 0, (0 | ::_fl::kFcOptional | ::_fl::kBool)},
       // optional .pb.CppFeatures.RepeatedType repeated_type = 4 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {
-      {PROTOBUF_FIELD_OFFSET(CppFeatures, _impl_.repeated_type_), _Internal::kHasBitsOffset + 3, 1, (0 | ::_fl::kFcOptional | ::_fl::kEnumRange)},
+      {PROTOBUF_FIELD_OFFSET(CppFeatures, _impl_.repeated_type_), _Internal::kHasBitsOffset + 3, 1, (0 | ::_fl::kFcOptional | ::_fl::kEnumRange8)},
     }},
     {{
         {0, 3},
@@ -106,8 +106,8 @@ constexpr CppFeatures::ParseTableT_ CppFeatures::_Internal::GenerateParseTable(c
 inline constexpr CppFeatures::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
     ::_pbi::ConstantInitialized) noexcept
-      : string_type_{static_cast< ::pb::CppFeatures_StringType >(0)},
-        legacy_closed_enum_{false},
+      : legacy_closed_enum_{false},
+        string_type_{static_cast< ::pb::CppFeatures_StringType >(0)},
         enum_name_uses_string_view_{false},
         repeated_type_{static_cast< ::pb::CppFeatures_RepeatedType >(0)} {}
 
@@ -176,11 +176,11 @@ const ::uint32_t
         PROTOBUF_FIELD_OFFSET(::pb::CppFeatures, _impl_._has_bits_),
         7, // hasbit index offset
         PROTOBUF_FIELD_OFFSET(::pb::CppFeatures, _impl_.legacy_closed_enum_),
-        PROTOBUF_FIELD_OFFSET(::pb::CppFeatures, _impl_.string_type_),
+        PROTOBUF_FIELD_OFFSET(::pb::CppFeatures, _impl_.string_type_) | ::_pbi::kEnum8OffsetTag,
         PROTOBUF_FIELD_OFFSET(::pb::CppFeatures, _impl_.enum_name_uses_string_view_),
-        PROTOBUF_FIELD_OFFSET(::pb::CppFeatures, _impl_.repeated_type_),
-        1,
+        PROTOBUF_FIELD_OFFSET(::pb::CppFeatures, _impl_.repeated_type_) | ::_pbi::kEnum8OffsetTag,
         0,
+        1,
         2,
         3,
 };
@@ -284,10 +284,10 @@ inline void CppFeatures::Helpers_::SharedCtor(
   CppFeatures& this_ = static_cast<CppFeatures&>(self);
   new (&this_._impl_) Impl_(this_.internal_visibility(), arena);
   ::memset(reinterpret_cast<char*>(&this_._impl_) +
-               offsetof(Impl_, string_type_),
+               offsetof(Impl_, legacy_closed_enum_),
            0,
            offsetof(Impl_, repeated_type_) -
-               offsetof(Impl_, string_type_) +
+               offsetof(Impl_, legacy_closed_enum_) +
                sizeof(Impl_::repeated_type_));
 }
 CppFeatures::~CppFeatures() {
@@ -323,14 +323,11 @@ PROTOBUF_NOINLINE void CppFeatures::Clear() {
   ::google::protobuf::internal::TSanWrite(&this_._impl_);
   ::uint32_t cached_has_bits [[maybe_unused]] = 0;
 
-  cached_has_bits = this_._impl_._has_bits_[0];
-  if (BatchCheckHasBit(cached_has_bits, 0x0000000fU)) {
-    ::memset(&this_._impl_.string_type_, 0,
-             static_cast<::size_t>(
-                 reinterpret_cast<char*>(&this_._impl_.repeated_type_) -
-                 reinterpret_cast<char*>(&this_._impl_.string_type_)) +
-                 sizeof(_impl_.repeated_type_));
-  }
+  ::memset(&this_._impl_.legacy_closed_enum_, 0,
+           static_cast<::size_t>(
+               reinterpret_cast<char*>(&this_._impl_.repeated_type_) -
+               reinterpret_cast<char*>(&this_._impl_.legacy_closed_enum_)) +
+               sizeof(_impl_.repeated_type_));
   this_._impl_._has_bits_.Clear();
   this_._internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
 }
@@ -355,14 +352,14 @@ PROTOBUF_NOINLINE void CppFeatures::Clear() {
 
   cached_has_bits = this_._impl_._has_bits_[0];
   // optional bool legacy_closed_enum = 1 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {
-  if (CheckHasBit(cached_has_bits, 0x00000002U)) {
+  if (CheckHasBit(cached_has_bits, 0x00000001U)) {
     target = stream->EnsureSpace(target);
     target = ::_pbi::WireFormatLite::WriteBoolToArray(
         1, this_._internal_legacy_closed_enum(), target);
   }
 
   // optional .pb.CppFeatures.StringType string_type = 2 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {
-  if (CheckHasBit(cached_has_bits, 0x00000001U)) {
+  if (CheckHasBit(cached_has_bits, 0x00000002U)) {
     target = stream->EnsureSpace(target);
     target = ::_pbi::WireFormatLite::WriteEnumToArray(
         2, this_._internal_string_type(), target);
@@ -405,10 +402,10 @@ PROTOBUF_NOINLINE void CppFeatures::Clear() {
 
   ::_pbi::Prefetch5LinesFrom7Lines(&this_);
   cached_has_bits = this_._impl_._has_bits_[0];
-  total_size += ::absl::popcount(0x00000006U & cached_has_bits) * 2;
-  if (BatchCheckHasBit(cached_has_bits, 0x00000009U)) {
+  total_size += ::absl::popcount(0x00000005U & cached_has_bits) * 2;
+  if (BatchCheckHasBit(cached_has_bits, 0x0000000aU)) {
     // optional .pb.CppFeatures.StringType string_type = 2 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {
-    if (CheckHasBit(cached_has_bits, 0x00000001U)) {
+    if (CheckHasBit(cached_has_bits, 0x00000002U)) {
       total_size += 1 +
                     ::_pbi::WireFormatLite::EnumSize(this_._internal_string_type());
     }
@@ -437,10 +434,10 @@ void CppFeatures::MergeImpl(::google::protobuf::MessageLite& to_msg,
   cached_has_bits = from._impl_._has_bits_[0];
   if (BatchCheckHasBit(cached_has_bits, 0x0000000fU)) {
     if (CheckHasBit(cached_has_bits, 0x00000001U)) {
-      _this->_impl_.string_type_ = from._impl_.string_type_;
+      _this->_impl_.legacy_closed_enum_ = from._impl_.legacy_closed_enum_;
     }
     if (CheckHasBit(cached_has_bits, 0x00000002U)) {
-      _this->_impl_.legacy_closed_enum_ = from._impl_.legacy_closed_enum_;
+      _this->_impl_.string_type_ = from._impl_.string_type_;
     }
     if (CheckHasBit(cached_has_bits, 0x00000004U)) {
       _this->_impl_.enum_name_uses_string_view_ = from._impl_.enum_name_uses_string_view_;
@@ -471,9 +468,9 @@ void CppFeatures::Helpers_::InternalSwap(
   swap(this_._impl_._has_bits_[0], other->_impl_._has_bits_[0]);
   ::google::protobuf::internal::memswap<PROTOBUF_FIELD_OFFSET(CppFeatures, _impl_.repeated_type_) +
                  sizeof(CppFeatures::_impl_.repeated_type_) -
-                 PROTOBUF_FIELD_OFFSET(CppFeatures, _impl_.string_type_)>(
-      reinterpret_cast<char*>(&this_._impl_.string_type_),
-      reinterpret_cast<char*>(&other->_impl_.string_type_));
+                 PROTOBUF_FIELD_OFFSET(CppFeatures, _impl_.legacy_closed_enum_)>(
+      reinterpret_cast<char*>(&this_._impl_.legacy_closed_enum_),
+      reinterpret_cast<char*>(&other->_impl_.legacy_closed_enum_));
 }
 
 ::google::protobuf::Metadata CppFeatures::GetMetadata() const {
