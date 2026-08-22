@@ -8216,8 +8216,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FieldOptions final 
     kPackedFieldNumber = 2,
     kDeprecatedFieldNumber = 3,
     kLazyFieldNumber = 5,
-    kWeakFieldNumber = 10,
     kJstypeFieldNumber = 6,
+    kWeakFieldNumber = 10,
     kUnverifiedLazyFieldNumber = 15,
     kDebugRedactFieldNumber = 16,
     kRetentionFieldNumber = 17,
@@ -8337,17 +8337,6 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FieldOptions final 
   void _internal_set_lazy(bool value);
 
   public:
-  // optional bool weak = 10 [default = false, deprecated = true];
-  [[nodiscard]] [[deprecated]]  bool has_weak() const;
-  [[deprecated]]  void clear_weak() ;
-  [[nodiscard]] [[deprecated]] bool weak() const;
-  [[deprecated]] void set_weak(bool value);
-
-  private:
-  bool _internal_weak() const;
-  void _internal_set_weak(bool value);
-
-  public:
   // optional .google.protobuf.FieldOptions.JSType jstype = 6 [default = JS_NORMAL];
   [[nodiscard]] bool has_jstype() const;
   void clear_jstype() ;
@@ -8357,6 +8346,17 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FieldOptions final 
   private:
   ::google::protobuf::FieldOptions_JSType _internal_jstype() const;
   void _internal_set_jstype(::google::protobuf::FieldOptions_JSType value);
+
+  public:
+  // optional bool weak = 10 [default = false, deprecated = true];
+  [[nodiscard]] [[deprecated]]  bool has_weak() const;
+  [[deprecated]]  void clear_weak() ;
+  [[nodiscard]] [[deprecated]] bool weak() const;
+  [[deprecated]] void set_weak(bool value);
+
+  private:
+  bool _internal_weak() const;
+  void _internal_set_weak(bool value);
 
   public:
   // optional bool unverified_lazy = 15 [default = false];
@@ -8654,8 +8654,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FieldOptions final 
     bool packed_;
     bool deprecated_;
     bool lazy_;
-    bool weak_;
     int jstype_;
+    bool weak_;
     bool unverified_lazy_;
     bool debug_redact_;
     int retention_;
@@ -19863,13 +19863,13 @@ inline void FieldOptions::_internal_set_packed(bool value) {
 
 // optional .google.protobuf.FieldOptions.JSType jstype = 6 [default = JS_NORMAL];
 inline bool FieldOptions::has_jstype() const {
-  bool value = CheckHasBit(_impl_._has_bits_[0], 0x00000200U);
+  bool value = CheckHasBit(_impl_._has_bits_[0], 0x00000100U);
   return value;
 }
 inline void FieldOptions::clear_jstype() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.jstype_ = 0;
-  ClearHasBit(_impl_._has_bits_[0], 0x00000200U);
+  ClearHasBit(_impl_._has_bits_[0], 0x00000100U);
 }
 inline ::google::protobuf::FieldOptions_JSType FieldOptions::jstype() const {
   // @@protoc_insertion_point(field_get:google.protobuf.FieldOptions.jstype)
@@ -19877,7 +19877,7 @@ inline ::google::protobuf::FieldOptions_JSType FieldOptions::jstype() const {
 }
 inline void FieldOptions::set_jstype(::google::protobuf::FieldOptions_JSType value) {
   _internal_set_jstype(value);
-  SetHasBit(_impl_._has_bits_[0], 0x00000200U);
+  SetHasBit(_impl_._has_bits_[0], 0x00000100U);
   // @@protoc_insertion_point(field_set:google.protobuf.FieldOptions.jstype)
 }
 inline ::google::protobuf::FieldOptions_JSType FieldOptions::_internal_jstype() const {
@@ -19978,13 +19978,13 @@ inline void FieldOptions::_internal_set_deprecated(bool value) {
 
 // optional bool weak = 10 [default = false, deprecated = true];
 inline bool FieldOptions::has_weak() const {
-  bool value = CheckHasBit(_impl_._has_bits_[0], 0x00000100U);
+  bool value = CheckHasBit(_impl_._has_bits_[0], 0x00000200U);
   return value;
 }
 inline void FieldOptions::clear_weak() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.weak_ = false;
-  ClearHasBit(_impl_._has_bits_[0], 0x00000100U);
+  ClearHasBit(_impl_._has_bits_[0], 0x00000200U);
 }
 inline bool FieldOptions::weak() const {
   // @@protoc_insertion_point(field_get:google.protobuf.FieldOptions.weak)
@@ -19992,7 +19992,7 @@ inline bool FieldOptions::weak() const {
 }
 inline void FieldOptions::set_weak(bool value) {
   _internal_set_weak(value);
-  SetHasBit(_impl_._has_bits_[0], 0x00000100U);
+  SetHasBit(_impl_._has_bits_[0], 0x00000200U);
   // @@protoc_insertion_point(field_set:google.protobuf.FieldOptions.weak)
 }
 inline bool FieldOptions::_internal_weak() const {

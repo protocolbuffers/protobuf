@@ -3040,7 +3040,7 @@ constexpr FieldOptions::ParseTableT_ FieldOptions::_Internal::GenerateParseTable
         PROTOBUF_FIELD_OFFSET(FieldOptions, _impl_.lazy_)}},
       // optional .google.protobuf.FieldOptions.JSType jstype = 6 [default = JS_NORMAL];
       {::_pbi::TcParser::FastEr0S1,
-       {48, 9, 2,
+       {48, 8, 2,
         PROTOBUF_FIELD_OFFSET(FieldOptions, _impl_.jstype_)}},
       // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
       {::_pbi::TcParser::FastMcR2,
@@ -3049,8 +3049,8 @@ constexpr FieldOptions::ParseTableT_ FieldOptions::_Internal::GenerateParseTable
       {::_pbi::TcParser::MiniParse, {}},
       {::_pbi::TcParser::MiniParse, {}},
       // optional bool weak = 10 [default = false, deprecated = true];
-      {::_pbi::TcParser::SingularVarintNoZag1<bool, offsetof(FieldOptions, _impl_.weak_), 8>(),
-       {80, 8, 0,
+      {::_pbi::TcParser::SingularVarintNoZag1<bool, offsetof(FieldOptions, _impl_.weak_), 9>(),
+       {80, 9, 0,
         PROTOBUF_FIELD_OFFSET(FieldOptions, _impl_.weak_)}},
       {::_pbi::TcParser::MiniParse, {}},
       {::_pbi::TcParser::MiniParse, {}},
@@ -3074,9 +3074,9 @@ constexpr FieldOptions::ParseTableT_ FieldOptions::_Internal::GenerateParseTable
       // optional bool lazy = 5 [default = false];
       {PROTOBUF_FIELD_OFFSET(FieldOptions, _impl_.lazy_), _Internal::kHasBitsOffset + 7, 0, (0 | ::_fl::kFcOptional | ::_fl::kBool)},
       // optional .google.protobuf.FieldOptions.JSType jstype = 6 [default = JS_NORMAL];
-      {PROTOBUF_FIELD_OFFSET(FieldOptions, _impl_.jstype_), _Internal::kHasBitsOffset + 9, 5, (0 | ::_fl::kFcOptional | ::_fl::kEnumRange)},
+      {PROTOBUF_FIELD_OFFSET(FieldOptions, _impl_.jstype_), _Internal::kHasBitsOffset + 8, 5, (0 | ::_fl::kFcOptional | ::_fl::kEnumRange)},
       // optional bool weak = 10 [default = false, deprecated = true];
-      {PROTOBUF_FIELD_OFFSET(FieldOptions, _impl_.weak_), _Internal::kHasBitsOffset + 8, 0, (0 | ::_fl::kFcOptional | ::_fl::kBool)},
+      {PROTOBUF_FIELD_OFFSET(FieldOptions, _impl_.weak_), _Internal::kHasBitsOffset + 9, 0, (0 | ::_fl::kFcOptional | ::_fl::kBool)},
       // optional bool unverified_lazy = 15 [default = false];
       {PROTOBUF_FIELD_OFFSET(FieldOptions, _impl_.unverified_lazy_), _Internal::kHasBitsOffset + 10, 0, (0 | ::_fl::kFcOptional | ::_fl::kBool)},
       // optional bool debug_redact = 16 [default = false];
@@ -3129,8 +3129,8 @@ inline constexpr FieldOptions::Impl_::Impl_(
         packed_{false},
         deprecated_{false},
         lazy_{false},
-        weak_{false},
         jstype_{static_cast< ::google::protobuf::FieldOptions_JSType >(0)},
+        weak_{false},
         unverified_lazy_{false},
         debug_redact_{false},
         retention_{static_cast< ::google::protobuf::FieldOptions_OptionRetention >(0)},
@@ -5741,11 +5741,11 @@ const ::uint32_t
         PROTOBUF_FIELD_OFFSET(::google::protobuf::FieldOptions, _impl_.uninterpreted_option_),
         4,
         5,
-        9,
+        8,
         7,
         10,
         6,
-        8,
+        9,
         11,
         12,
         13,
@@ -12831,10 +12831,10 @@ PROTOBUF_NOINLINE void FieldOptions::Clear() {
                  sizeof(_impl_.lazy_));
   }
   if (BatchCheckHasBit(cached_has_bits, 0x00003f00U)) {
-    ::memset(&this_._impl_.weak_, 0,
+    ::memset(&this_._impl_.jstype_, 0,
              static_cast<::size_t>(
                  reinterpret_cast<char*>(&this_._impl_.retention_) -
-                 reinterpret_cast<char*>(&this_._impl_.weak_)) +
+                 reinterpret_cast<char*>(&this_._impl_.jstype_)) +
                  sizeof(_impl_.retention_));
     if (CheckHasBit(cached_has_bits, 0x00002000U)) {
       this_._impl_.targets_.Clear();
@@ -12892,14 +12892,14 @@ PROTOBUF_NOINLINE void FieldOptions::Clear() {
   }
 
   // optional .google.protobuf.FieldOptions.JSType jstype = 6 [default = JS_NORMAL];
-  if (CheckHasBit(cached_has_bits, 0x00000200U)) {
+  if (CheckHasBit(cached_has_bits, 0x00000100U)) {
     target = stream->EnsureSpace(target);
     target = ::_pbi::WireFormatLite::WriteEnumToArray(
         6, this_._internal_jstype(), target);
   }
 
   // optional bool weak = 10 [default = false, deprecated = true];
-  if (CheckHasBit(cached_has_bits, 0x00000100U)) {
+  if (CheckHasBit(cached_has_bits, 0x00000200U)) {
     target = stream->EnsureSpace(target);
     target = ::_pbi::WireFormatLite::WriteBoolToArray(
         10, this_._internal_weak(), target);
@@ -13005,7 +13005,7 @@ PROTOBUF_NOINLINE void FieldOptions::Clear() {
   ::_pbi::Prefetch5LinesFrom7Lines(&this_);
   cached_has_bits = this_._impl_._has_bits_[0];
   total_size += static_cast<bool>(0x00000800U & cached_has_bits) * 3;
-  total_size += ::absl::popcount(0x000005e0U & cached_has_bits) * 2;
+  total_size += ::absl::popcount(0x000006e0U & cached_has_bits) * 2;
   if (BatchCheckHasBit(cached_has_bits, 0x0000001fU)) {
     // repeated .google.protobuf.FieldOptions.EditionDefault edition_defaults = 20;
     if (CheckHasBit(cached_has_bits, 0x00000001U)) {
@@ -13037,9 +13037,9 @@ PROTOBUF_NOINLINE void FieldOptions::Clear() {
                     ::_pbi::WireFormatLite::EnumSize(this_._internal_ctype());
     }
   }
-  if (BatchCheckHasBit(cached_has_bits, 0x00003200U)) {
+  if (BatchCheckHasBit(cached_has_bits, 0x00003100U)) {
     // optional .google.protobuf.FieldOptions.JSType jstype = 6 [default = JS_NORMAL];
-    if (CheckHasBit(cached_has_bits, 0x00000200U)) {
+    if (CheckHasBit(cached_has_bits, 0x00000100U)) {
       total_size += 1 +
                     ::_pbi::WireFormatLite::EnumSize(this_._internal_jstype());
     }
@@ -13117,10 +13117,10 @@ void FieldOptions::MergeImpl(::google::protobuf::MessageLite& to_msg,
   }
   if (BatchCheckHasBit(cached_has_bits, 0x00003f00U)) {
     if (CheckHasBit(cached_has_bits, 0x00000100U)) {
-      _this->_impl_.weak_ = from._impl_.weak_;
+      _this->_impl_.jstype_ = from._impl_.jstype_;
     }
     if (CheckHasBit(cached_has_bits, 0x00000200U)) {
-      _this->_impl_.jstype_ = from._impl_.jstype_;
+      _this->_impl_.weak_ = from._impl_.weak_;
     }
     if (CheckHasBit(cached_has_bits, 0x00000400U)) {
       _this->_impl_.unverified_lazy_ = from._impl_.unverified_lazy_;
@@ -14546,13 +14546,11 @@ PROTOBUF_NOINLINE void MethodOptions::Clear() {
       this_._impl_.features_->Clear();
     }
   }
-  if (BatchCheckHasBit(cached_has_bits, 0x0000000cU)) {
-    ::memset(&this_._impl_.deprecated_, 0,
-             static_cast<::size_t>(
-                 reinterpret_cast<char*>(&this_._impl_.idempotency_level_) -
-                 reinterpret_cast<char*>(&this_._impl_.deprecated_)) +
-                 sizeof(_impl_.idempotency_level_));
-  }
+  ::memset(&this_._impl_.deprecated_, 0,
+           static_cast<::size_t>(
+               reinterpret_cast<char*>(&this_._impl_.idempotency_level_) -
+               reinterpret_cast<char*>(&this_._impl_.deprecated_)) +
+               sizeof(_impl_.idempotency_level_));
   this_._impl_._has_bits_.Clear();
   this_._internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
 }

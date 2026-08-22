@@ -236,6 +236,10 @@ std::string FieldMemberName(const FieldDescriptor* field, bool split);
 // 64-bit pointers.
 int EstimateAlignmentSize(const FieldDescriptor* field);
 
+// Returns an estimate of the size/alignment for an enum based on its value
+// range.
+int EstimateEnumSize(const EnumDescriptor* enum_desc);
+
 // Returns an estimate of the size of the field.  This
 // can't guarantee to be correct because the generated code could be compiled on
 // different systems with different alignment rules.  The estimates below assume

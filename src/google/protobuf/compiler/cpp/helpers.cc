@@ -690,6 +690,29 @@ std::string EnumValueName(const EnumValueDescriptor* enum_value) {
   return ResolveKeyword(enum_value->name());
 }
 
+int EstimateEnumSize(const EnumDescriptor* enum_desc) {
+  if (enum_desc == nullptr || enum_desc->value_count() == 0) return 4;
+  if (!enum_desc->is_closed()) return 4;
+  int min_val = enum_desc->value(0)->number();
+  int max_val = enum_desc->value(0)->number();
+  for (int i = 1; i < enum_desc->value_count(); ++i) {
+    int val = enum_desc->value(i)->number();
+    min_val = std::min(min_val, val);
+    max_val = std::max(max_val, val);
+  }
+  if ((min_val >= 0 && max_val <= std::numeric_limits<uint8_t>::max()) ||
+      (min_val >= std::numeric_limits<int8_t>::min() &&
+       max_val <= std::numeric_limits<int8_t>::max())) {
+    return 1;
+  }
+  if ((min_val >= 0 && max_val <= std::numeric_limits<uint16_t>::max()) ||
+      (min_val >= std::numeric_limits<int16_t>::min() &&
+       max_val <= std::numeric_limits<int16_t>::max())) {
+    return 2;
+  }
+  return 4;
+}
+
 int EstimateAlignmentSize(const FieldDescriptor* field) {
   if (field == nullptr) return 0;
   if (field->is_repeated()) return 8;
@@ -697,9 +720,11 @@ int EstimateAlignmentSize(const FieldDescriptor* field) {
     case FieldDescriptor::CPPTYPE_BOOL:
       return 1;
 
+    case FieldDescriptor::CPPTYPE_ENUM:
+      return EstimateEnumSize(field->enum_type());
+
     case FieldDescriptor::CPPTYPE_INT32:
     case FieldDescriptor::CPPTYPE_UINT32:
-    case FieldDescriptor::CPPTYPE_ENUM:
     case FieldDescriptor::CPPTYPE_FLOAT:
       return 4;
 
@@ -728,9 +753,11 @@ int EstimateSize(const FieldDescriptor* field) {
     case FieldDescriptor::CPPTYPE_BOOL:
       return 1;
 
+    case FieldDescriptor::CPPTYPE_ENUM:
+      return EstimateEnumSize(field->enum_type());
+
     case FieldDescriptor::CPPTYPE_INT32:
     case FieldDescriptor::CPPTYPE_UINT32:
-    case FieldDescriptor::CPPTYPE_ENUM:
     case FieldDescriptor::CPPTYPE_FLOAT:
       return 4;
 

@@ -34,7 +34,7 @@ bool EndsWithMsgPtr(const std::vector<const FieldDescriptor*>& fields,
 
 auto FindIncompleteBlock(std::vector<FieldGroup>& aligned_to_8) {
   return absl::c_find_if(aligned_to_8, [](const FieldGroup& fg) {
-    return fg.estimated_memory_size() <= 4;
+    return fg.estimated_memory_size() < 8;
   });
 }
 
@@ -165,6 +165,10 @@ MessageLayoutHelper::BuildFieldAlignmentGroups(const FieldVector& fields,
         field_alignment_groups.aligned_to_1[f][FieldHotnessIndex(hotness)]
             .push_back(fg);
         break;
+      case 2:
+        field_alignment_groups.aligned_to_2[f][FieldHotnessIndex(hotness)]
+            .push_back(fg);
+        break;
       case 4:
         field_alignment_groups.aligned_to_4[f][FieldHotnessIndex(hotness)]
             .push_back(fg);
@@ -189,16 +193,26 @@ MessageLayoutHelper::MergeFieldAlignmentGroups(
   // For each family, group fields to optimize locality and padding.
   for (size_t f = 0; f < kMaxFamily; ++f) {
     auto& aligned_to_1 = field_alignment_groups.aligned_to_1[f];
+    auto& aligned_to_2 = field_alignment_groups.aligned_to_2[f];
     auto& aligned_to_4 = field_alignment_groups.aligned_to_4[f];
     auto& aligned_to_8 = field_alignment_groups.aligned_to_8[f];
 
-    // Group single-byte fields into groups of 4 bytes and combine them with the
-    // existing 4-byte groups.
-    auto aligned_1_to_4 = ConsolidateAlignedFieldGroups(
-        aligned_to_1, /*alignment=*/1, /*target_alignment=*/4);
+    // Group single-byte fields into groups of 2 bytes and combine them with the
+    // existing 2-byte groups.
+    auto aligned_1_to_2 = ConsolidateAlignedFieldGroups(
+        aligned_to_1, /*alignment=*/1, /*target_alignment=*/2);
     for (size_t h = 0; h < kMaxHotness; ++h) {
-      aligned_to_4[h].insert(aligned_to_4[h].end(), aligned_1_to_4[h].begin(),
-                             aligned_1_to_4[h].end());
+      aligned_to_2[h].insert(aligned_to_2[h].end(), aligned_1_to_2[h].begin(),
+                             aligned_1_to_2[h].end());
+    }
+
+    // Group 2-byte fields into groups of 4 bytes and combine them with the
+    // existing 4-byte groups.
+    auto aligned_2_to_4 = ConsolidateAlignedFieldGroups(
+        aligned_to_2, /*alignment=*/2, /*target_alignment=*/4);
+    for (size_t h = 0; h < kMaxHotness; ++h) {
+      aligned_to_4[h].insert(aligned_to_4[h].end(), aligned_2_to_4[h].begin(),
+                             aligned_2_to_4[h].end());
     }
 
     // Group 4-byte fields into groups of 8 bytes and combine them with the
@@ -295,7 +309,7 @@ MessageLayoutHelper::ConsolidateAlignedFieldGroups(
   for (size_t h = 0; h < kMaxHotness; ++h) {
     auto& partition = field_groups[h];
     auto& target_partition = partitions_aligned_to_target[h];
-    target_partition.reserve((field_groups.size() + size_inflation - 1) /
+    target_partition.reserve((partition.size() + size_inflation - 1) /
                              size_inflation);
 
     // Using stable_sort ensures that the output is consistent across runs.
