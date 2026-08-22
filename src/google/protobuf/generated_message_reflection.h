@@ -334,8 +334,7 @@ struct DenseEnumCacheInfo {
   int max_val;
   const EnumDescriptor* (*descriptor_fn)();
 };
-PROTOBUF_EXPORT const std::string& NameOfDenseEnumSlow(int v,
-                                                       DenseEnumCacheInfo*);
+PROTOBUF_EXPORT const std::string** NameOfDenseEnumSlow(DenseEnumCacheInfo*);
 
 // Similar to the routine NameOfEnum, this routine returns the name of an enum.
 // Unlike that routine, it allocates, on-demand, a block of pointers to the
@@ -349,11 +348,18 @@ const std::string& NameOfDenseEnum(int v) {
                                     min_val, max_val, descriptor_fn};
   if (ABSL_PREDICT_TRUE(v >= min_val && v <= max_val)) {
     const std::string** cache = deci.cache.load(std::memory_order_acquire);
-    if (ABSL_PREDICT_TRUE(cache != nullptr)) {
-      return *cache[v - min_val];
+    if (ABSL_PREDICT_FALSE(cache == nullptr)) {
+      cache = NameOfDenseEnumSlow(&deci);
     }
+    return *cache[v - min_val];
   }
-  return NameOfDenseEnumSlow(v, &deci);
+  // Prevent the compiler from pre-loading the empty string address.
+  // Otherwise, it adds an instruction to every in-bounds-call (adding ~5%
+  // to cpu).
+  // We expect to see many more in-bounds calls than out-of-bounds calls, so
+  // this is a net win.
+  ABSL_BLOCK_TAIL_CALL_OPTIMIZATION();
+  return GetEmptyStringAlreadyInited();
 }
 
 // Returns whether this type of field is stored in the split struct as a raw
