@@ -150,6 +150,7 @@ php/ext/google/protobuf/Makefile.fragments
 php/ext/google/protobuf/Makefile.global
 php/ext/google/protobuf/Makefile.objects
 php/ext/google/protobuf/acinclude.m4
+php/ext/google/protobuf/autom4te.cache/
 php/ext/google/protobuf/build/
 php/ext/google/protobuf/bundled_php.c
 php/ext/google/protobuf/config.h
