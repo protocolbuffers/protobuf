@@ -88,26 +88,36 @@ while [[ $# -gt 0 ]]; do
 done
 
 if [[ -n "$outfile" ]]; then
-  cat <<'BZL' > "$outfile"
+  osx_hash="bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+  if [[ "${MOCK_INTEGRITY_MISMATCH:-0}" == "1" ]]; then
+    osx_hash="dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"
+  elif [[ "${MOCK_INVALID_HASH:-0}" == "1" ]]; then
+    osx_hash="not-a-sha256"
+  fi
+  cat <<BZL > "$outfile"
 RELEASE_VERSION="v99.0"
 RELEASED_BINARY_INTEGRITY = {
     "protoc-99.0-linux-x86_64.zip": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-    "protoc-99.0-osx-aarch_64.zip": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+    "protoc-99.0-osx-aarch_64.zip": "$osx_hash",
     "protoc-99.0-win64.zip": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
 }
 BZL
 else
-  cat <<'JSON'
+  osx_asset='    {
+      "name": "protoc-99.0-osx-aarch_64.zip",
+      "digest": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+    },'
+  if [[ "${MOCK_MISSING_ASSET:-0}" == "1" ]]; then
+    osx_asset=""
+  fi
+  cat <<JSON
 {
   "assets": [
     {
       "name": "protoc-99.0-linux-x86_64.zip",
       "digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
     },
-    {
-      "name": "protoc-99.0-osx-aarch_64.zip",
-      "digest": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
-    },
+$osx_asset
     {
       "name": "protoc-99.0-win64.zip",
       "digest": "sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
@@ -217,6 +227,40 @@ else
 fi
 
 rm -rf "$EXTRACT_DIR"
+
+# 11. A stale pre-computed hash prevents release archive creation
+rm -f "$ARCHIVE"
+if MISMATCH_OUTPUT=$(MOCK_INTEGRITY_MISMATCH=1 bash "$RELEASE_PREP" "$TAG" 2>&1); then
+  fail "mismatched release binary hash should fail"
+else
+  assert_contains "mismatched release binary hash fails" \
+    "Release binary integrity validation failed" "$MISMATCH_OUTPUT"
+  assert_contains "mismatch identifies the affected asset" \
+    "hash mismatch for protoc-99.0-osx-aarch_64.zip" "$MISMATCH_OUTPUT"
+fi
+assert_file_absent "$ARCHIVE" "mismatched hash does not produce an archive"
+
+# 12. A missing release asset also prevents release archive creation
+if MISSING_OUTPUT=$(MOCK_MISSING_ASSET=1 bash "$RELEASE_PREP" "$TAG" 2>&1); then
+  fail "missing release binary should fail"
+else
+  assert_contains "missing release binary fails" \
+    "Release binary integrity validation failed" "$MISSING_OUTPUT"
+  assert_contains "missing binary identifies the affected asset" \
+    "missing release asset: protoc-99.0-osx-aarch_64.zip" "$MISSING_OUTPUT"
+fi
+assert_file_absent "$ARCHIVE" "missing binary does not produce an archive"
+
+# 13. A malformed pre-computed hash also prevents release archive creation
+if INVALID_OUTPUT=$(MOCK_INVALID_HASH=1 bash "$RELEASE_PREP" "$TAG" 2>&1); then
+  fail "malformed release binary hash should fail"
+else
+  assert_contains "malformed release binary hash fails" \
+    "Release binary integrity validation failed" "$INVALID_OUTPUT"
+  assert_contains "malformed hash identifies the affected asset" \
+    "invalid hash for protoc-99.0-osx-aarch_64.zip: not-a-sha256" "$INVALID_OUTPUT"
+fi
+assert_file_absent "$ARCHIVE" "malformed hash does not produce an archive"
 
 ##############################
 echo

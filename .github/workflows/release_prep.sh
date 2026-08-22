@@ -31,6 +31,36 @@ INTEGRITY_ASSET_URL=$(echo "$RELEASE_JSON" | jq -r '.assets[] | select(.name=="t
 
 curl -sSL -o "${INTEGRITY_FILE}" "$INTEGRITY_ASSET_URL"
 
+# Validate the trusted, pre-computed hashes against the uploaded artifacts.
+INTEGRITY_ERRORS=$(echo "$RELEASE_JSON" | jq -r --rawfile integrity "${INTEGRITY_FILE}" '
+  . as $release
+  | [$integrity
+     | scan("\\\"(protoc-[^\\\"]+\\.zip)\\\"[[:space:]]*:[[:space:]]*\\\"([^\\\"]*)\\\"")
+     | {name: .[0], expected: .[1]}] as $expected
+  | if ($expected | length) == 0 then
+      "tool_integrity.bzl does not contain any protoc hashes"
+    else
+      $expected[]
+      | . as $entry
+      | ($release.assets | map(select(.name == $entry.name)) | first) as $asset
+      | if ($entry.expected | test("^[0-9a-f]{64}$") | not) then
+          "invalid hash for \($entry.name): \($entry.expected)"
+        elif $asset == null then
+          "missing release asset: \($entry.name)"
+        elif ($asset.digest // "") != ("sha256:" + $entry.expected) then
+          "hash mismatch for \($entry.name): expected \($entry.expected), got \($asset.digest // "no digest")"
+        else
+          empty
+        end
+    end
+')
+
+if [[ -n "$INTEGRITY_ERRORS" ]]; then
+  echo "Release binary integrity validation failed:" >&2
+  echo "$INTEGRITY_ERRORS" >&2
+  exit 1
+fi
+
 # Append that generated file back into the archive
 tar --file $ARCHIVE_TMP --append ${INTEGRITY_FILE}
 
