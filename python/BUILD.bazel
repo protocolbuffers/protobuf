@@ -6,8 +6,9 @@
 # https://developers.google.com/open-source/licenses/bsd
 
 load("@bazel_skylib//rules:common_settings.bzl", "bool_flag", "string_flag")
+load("@rules_python//python/cc:py_cc_toolchain.bzl", "py_cc_toolchain")
+load("@rules_python//python/cc:py_extension.bzl", "py_extension")
 load("//python:build_targets.bzl", "build_targets")
-load("//python:py_extension.bzl", "py_extension")
 load("//upb/bazel:copts.bzl", "UPB_DEFAULT_COPTS", "UPB_DEFAULT_FEATURES")
 
 build_targets(name = "python")
@@ -108,11 +109,15 @@ filegroup(
 )
 
 py_extension(
-    name = "_message",
+    name = "google/_upb/_message",
     srcs = [":message_srcs"],
     copts = UPB_DEFAULT_COPTS + select(LIMITED_API_FLAG_SELECT),
     features = UPB_DEFAULT_FEATURES,
     target_compatible_with = select(_message_target_compatible_with),
+    visibility = [
+        ":__subpackages__",
+        "//conformance:__pkg__",
+    ],
     deps = [
         ":breaking_changes",
         "//src/google/protobuf:descriptor_upb_minitable_proto",
@@ -135,4 +140,88 @@ py_extension(
         "//upb/wire:reader",
         "@abseil-cpp//absl/base:core_headers",
     ],
+)
+
+py_cc_toolchain(
+    name = "py_cc_toolchain_posix_3_10",
+    headers = "@python-3.10.0//:python_headers",
+    headers_abi3 = "@python-3.10.0//:python_headers",
+    python_version = "3.10",
+)
+
+toolchain(
+    name = "py_cc_toolchain_osx",
+    target_compatible_with = ["@platforms//os:osx"],
+    toolchain = ":py_cc_toolchain_posix_3_10",
+    toolchain_type = "@rules_python//python/cc:toolchain_type",
+)
+
+toolchain(
+    name = "py_cc_toolchain_linux_aarch64",
+    target_compatible_with = [
+        "@platforms//os:linux",
+        "@platforms//cpu:aarch64",
+    ],
+    toolchain = ":py_cc_toolchain_posix_3_10",
+    toolchain_type = "@rules_python//python/cc:toolchain_type",
+)
+
+toolchain(
+    name = "py_cc_toolchain_linux_s390x",
+    target_compatible_with = [
+        "@platforms//os:linux",
+        "@platforms//cpu:s390x",
+    ],
+    toolchain = ":py_cc_toolchain_posix_3_10",
+    toolchain_type = "@rules_python//python/cc:toolchain_type",
+)
+
+toolchain(
+    name = "py_cc_toolchain_linux_x86_64",
+    target_compatible_with = [
+        "@platforms//os:linux",
+        "@platforms//cpu:x86_64",
+    ],
+    toolchain = ":py_cc_toolchain_posix_3_10",
+    toolchain_type = "@rules_python//python/cc:toolchain_type",
+)
+
+py_cc_toolchain(
+    name = "py_cc_toolchain_win64_3_10",
+    headers = "@nuget_python_x86-64_3.10.0//:python_limited_api",
+    headers_abi3 = "@nuget_python_x86-64_3.10.0//:python_limited_api",
+    libs = "@nuget_python_x86-64_3.10.0//:python_limited_api",
+    platform_machine = "x86_64",
+    python_version = "3.10",
+    sys_platform = "win32",
+)
+
+toolchain(
+    name = "py_cc_toolchain_win64",
+    target_compatible_with = [
+        "@platforms//os:windows",
+        "@platforms//cpu:x86_64",
+    ],
+    toolchain = ":py_cc_toolchain_win64_3_10",
+    toolchain_type = "@rules_python//python/cc:toolchain_type",
+)
+
+py_cc_toolchain(
+    name = "py_cc_toolchain_win32_3_10",
+    headers = "@nuget_python_i686_3.10.0//:python_limited_api",
+    headers_abi3 = "@nuget_python_i686_3.10.0//:python_limited_api",
+    libs = "@nuget_python_i686_3.10.0//:python_limited_api",
+    platform_machine = "x86_32",
+    python_version = "3.10",
+    sys_platform = "win32",
+)
+
+toolchain(
+    name = "py_cc_toolchain_win32",
+    target_compatible_with = [
+        "@platforms//os:windows",
+        "@platforms//cpu:x86_32",
+    ],
+    toolchain = ":py_cc_toolchain_win32_3_10",
+    toolchain_type = "@rules_python//python/cc:toolchain_type",
 )
