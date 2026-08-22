@@ -1,0 +1,75 @@
+{
+  "$schema": "https://raw.githubusercontent.com/bazel-contrib/rules_multitool/v1.11.1/lockfile.schema.json",
+  "ty": {
+    "binaries": [
+      {
+        "kind": "archive",
+        "url": "https://github.com/astral-sh/ty/releases/download/0.0.57/ty-aarch64-unknown-linux-gnu.tar.gz",
+        "file": "ty-aarch64-unknown-linux-gnu/ty",
+        "sha256": "0d9b411aeac41c7f5ca2c24538b62bef94f73e829c4ca876bb51c93392f85686",
+        "os": "linux",
+        "cpu": "arm64"
+      },
+      {
+        "kind": "archive",
+        "url": "https://github.com/astral-sh/ty/releases/download/0.0.57/ty-x86_64-unknown-linux-gnu.tar.gz",
+        "file": "ty-x86_64-unknown-linux-gnu/ty",
+        "sha256": "ada4b7cc9d823752a321a81405b065ee7d7aae228c3220d25699c72ebb13401c",
+        "os": "linux",
+        "cpu": "x86_64"
+      },
+      {
+        "kind": "archive",
+        "url": "https://github.com/astral-sh/ty/releases/download/0.0.57/ty-aarch64-apple-darwin.tar.gz",
+        "file": "ty-aarch64-apple-darwin/ty",
+        "sha256": "24703438c6ba5bd3a9edb51a60be10ea592407a8fe08c92e1242b9d85958581f",
+        "os": "macos",
+        "cpu": "arm64"
+      },
+      {
+        "kind": "archive",
+        "url": "https://github.com/astral-sh/ty/releases/download/0.0.57/ty-x86_64-apple-darwin.tar.gz",
+        "file": "ty-x86_64-apple-darwin/ty",
+        "sha256": "da3e6293dd2af86c2412d15f65d48d7804f9d35857647b0059e2dd6a58d1e4a6",
+        "os": "macos",
+        "cpu": "x86_64"
+      }
+    ]
+  },
+  "pyrefly": {
+    "binaries": [
+      {
+        "kind": "archive",
+        "url": "https://github.com/facebook/pyrefly/releases/download/1.1.1/pyrefly-linux-arm64.tar.gz",
+        "file": "pyrefly",
+        "sha256": "30251929e2c074644febe1de4b0fe306f3d9d737f084b0ca19590511d174e76b",
+        "os": "linux",
+        "cpu": "arm64"
+      },
+      {
+        "kind": "archive",
+        "url": "https://github.com/facebook/pyrefly/releases/download/1.1.1/pyrefly-linux-x86_64.tar.gz",
+        "file": "pyrefly",
+        "sha256": "7f950c246826ea4ba88bd209cdd1593156fed9d11e2114334d7e112581c80a83",
+        "os": "linux",
+        "cpu": "x86_64"
+      },
+      {
+        "kind": "archive",
+        "url": "https://github.com/facebook/pyrefly/releases/download/1.1.1/pyrefly-macos-arm64.tar.gz",
+        "file": "pyrefly",
+        "sha256": "022a989d2af4748e4d75a48fed7dbb0cc49f30a4b83745d4e4f742d0920ada70",
+        "os": "macos",
+        "cpu": "arm64"
+      },
+      {
+        "kind": "archive",
+        "url": "https://github.com/facebook/pyrefly/releases/download/1.1.1/pyrefly-macos-x86_64.tar.gz",
+        "file": "pyrefly",
+        "sha256": "191c7ee2891d2ab55a05b078c94832266e1dda78a9a0381a95fde13a2a27a38b",
+        "os": "macos",
+        "cpu": "x86_64"
+      }
+    ]
+  }
+}
