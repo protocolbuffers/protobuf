@@ -1499,6 +1499,22 @@ TEST(GeneratedMessageReflectionTest, UsageErrors) {
       "  Problem     : Field does not match message type.");
 }
 
+TEST(GeneratedMessageReflectionTest, SwapFieldsForeignFieldCheck) {
+  unittest::TestAllTypes message1;
+  unittest::TestAllTypes message2;
+  const Reflection* reflection = message1.GetReflection();
+
+  // Passing a field descriptor from a different message type to SwapFields
+  // must fail. Without this check, a foreign field with a higher index than
+  // the target's field count causes an out-of-bounds read on the offsets
+  // array, leading to memory corruption.
+  const FieldDescriptor* foreign_field =
+      unittest::ForeignMessage::descriptor()->FindFieldByName("c");
+  std::vector<const FieldDescriptor*> fields = {foreign_field};
+  EXPECT_DEATH(reflection->SwapFields(&message1, &message2, fields),
+               "does not belong to message type");
+}
+
 #endif  // GTEST_HAS_DEATH_TEST
 
 class GeneratedMessageReflectionCordAccessorsTest : public testing::Test {
