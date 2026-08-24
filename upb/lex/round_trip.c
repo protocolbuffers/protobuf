@@ -34,11 +34,14 @@ void _upb_EncodeRoundTripDouble(double val, char* buf, size_t size) {
     snprintf(buf, size, "%s", "nan");
     return;
   }
-  snprintf(buf, size, "%.*g", DBL_DIG, val);
-  if (strtod(buf, NULL) != val) {
-    snprintf(buf, size, "%.*g", DBL_DIG + 2, val);
-    assert(strtod(buf, NULL) == val);
+  for (int prec = DBL_DIG; prec <= DBL_DIG + 2; prec++) {
+    snprintf(buf, size, "%.*g", prec, val);
+    if (strtod(buf, NULL) == val) {
+      upb_FixLocale(buf);
+      return;
+    }
   }
+  snprintf(buf, size, "%.*g", DBL_DIG + 2, val);
   upb_FixLocale(buf);
 }
 
@@ -48,10 +51,13 @@ void _upb_EncodeRoundTripFloat(float val, char* buf, size_t size) {
     snprintf(buf, size, "%s", "nan");
     return;
   }
-  snprintf(buf, size, "%.*g", FLT_DIG, val);
-  if (strtof(buf, NULL) != val) {
-    snprintf(buf, size, "%.*g", FLT_DIG + 3, val);
-    assert(strtof(buf, NULL) == val);
+  for (int prec = FLT_DIG; prec <= FLT_DIG + 3; prec++) {
+    snprintf(buf, size, "%.*g", prec, val);
+    if (strtof(buf, NULL) == val) {
+      upb_FixLocale(buf);
+      return;
+    }
   }
+  snprintf(buf, size, "%.*g", FLT_DIG + 3, val);
   upb_FixLocale(buf);
 }
