@@ -31,6 +31,11 @@ import java.util.List;
  * reading encoded protocol messages, you should use the former methods, but if you are reading some
  * other format of your own design, use the latter.
  *
+ * <p>Critical note on Exceptions: If any method throws an exception (such as an {@link
+ * java.io.IOException} or {@link InvalidProtocolBufferException}), it can desynchronize the
+ * instance and leave its internal state unspecified. The instance should not be used further and
+ * must be discarded.
+ *
  * @author kenton@google.com Kenton Varda
  */
 public abstract class CodedInputStream {
@@ -635,11 +640,11 @@ public abstract class CodedInputStream {
   public abstract int getBytesUntilLimit();
 
   /**
-   * Returns true if the stream has reached the end of the input. This is the case if either the end
-   * of the underlying input source has been reached or if the stream has reached a limit created
-   * using {@link #pushLimit(int)}. This function may get blocked when using StreamDecoder as it
-   * invokes {@link StreamDecoder#tryRefillBuffer(int)} in this function which will try to read
-   * bytes from input.
+   * Returns true if the stream has reached the end of the input. This is the case if the current
+   * position is at the exact end of the underlying input source or at a limit created using {@link
+   * #pushLimit(int)}, without passing over the limit. This function may get blocked when using
+   * StreamDecoder as it invokes {@link StreamDecoder#tryRefillBuffer(int)} in this function which
+   * will try to read bytes from input.
    */
   public abstract boolean isAtEnd() throws IOException;
 
