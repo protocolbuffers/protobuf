@@ -432,8 +432,7 @@ static const char* _upb_Decoder_DecodeToArray(upb_Decoder* d, const char* ptr,
   }
 }
 
-static upb_Map* _upb_Decoder_CreateMap(upb_Decoder* d,
-                                       const upb_MiniTable* entry) {
+upb_Map* _upb_Decoder_CreateMap(upb_Decoder* d, const upb_MiniTable* entry) {
   // Maps descriptor type -> upb map size
   static const uint8_t kSizeInMap[] = {
       [0] = -1,  // invalid descriptor type

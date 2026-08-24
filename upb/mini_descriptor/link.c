@@ -28,6 +28,7 @@
 #include "upb/port/undef.inc"
 
 #ifdef UPB_INCLUDE_FAST_DECODE
+#include "upb/wire/decode_fast/data.h"
 #include "upb/wire/decode_fast/field_parsers.h"
 #endif
 
@@ -58,20 +59,54 @@ bool upb_MiniTable_SetSubMessage(upb_MiniTable* table,
             kUpb_FieldMode_Map;
 
 #if UPB_FASTTABLE
-        // The fasttable decoder cannot decode maps. Unfortunately we do not
-        // know until this moment that the field is a map, so we have to
-        // overwrite the fasttable entry (if any) that we built for this field
-        // previously.
+        // Update fasttable entry with specialized map decoder function pointer
+        // and metadata.
         int size = table->UPB_PRIVATE(table_mask) == 0xff
                        ? 0
                        : ((table->UPB_PRIVATE(table_mask) >> 3) + 1);
         for (int i = 0; i < size; i++) {
           _upb_FastTable_Entry* entry = &table->UPB_PRIVATE(fasttable)[i];
-          uint32_t field_number = (((int)entry->field_data >> 3) & 0xf) |
-                                  (((int)entry->field_data >> 4) & 0x7f0);
+          uint32_t field_number =
+              upb_DecodeFastData_GetFieldNumber(entry->field_data);
           if (field_number == upb_MiniTableField_Number(field)) {
-            entry->field_parser = &_upb_FastDecoder_DecodeGeneric;
-            entry->field_data = 0;
+            if (sub->UPB_PRIVATE(field_count) != 2) {
+              entry->field_parser = &_upb_FastDecoder_DecodeGeneric;
+              entry->field_data = 0;
+              continue;
+            }
+            const upb_MiniTableField* kfield = &sub->UPB_PRIVATE(fields)[0];
+            const upb_MiniTableField* vfield = &sub->UPB_PRIVATE(fields)[1];
+            if (upb_MiniTableField_IsClosedEnum(kfield) ||
+                upb_MiniTableField_IsClosedEnum(vfield) ||
+                (upb_MiniTableField_IsSubMessage(vfield) &&
+                 !upb_MiniTable_GetSubMessageTable(vfield))) {
+              entry->field_parser = &_upb_FastDecoder_DecodeGeneric;
+              entry->field_data = 0;
+              continue;
+            }
+            upb_FieldType ktype = kfield->UPB_PRIVATE(descriptortype);
+            upb_FieldType vtype = vfield->UPB_PRIVATE(descriptortype);
+            bool is_string_key = (ktype == kUpb_FieldType_String ||
+                                  ktype == kUpb_FieldType_Bytes);
+            bool key_zz = (ktype == kUpb_FieldType_SInt32 ||
+                           ktype == kUpb_FieldType_SInt64);
+            bool val_zz = (vtype == kUpb_FieldType_SInt32 ||
+                           vtype == kUpb_FieldType_SInt64);
+            uint16_t expected_tag =
+                upb_DecodeFastData_GetExpectedTag(entry->field_data);
+            bool is_tag2 = (expected_tag > 0x7f);
+            if (is_string_key) {
+              entry->field_parser = is_tag2 ? &upb_DecodeFast_StrMap_Tag2Byte
+                                            : &upb_DecodeFast_StrMap_Tag1Byte;
+            } else {
+              entry->field_parser = is_tag2 ? &upb_DecodeFast_IntMap_Tag2Byte
+                                            : &upb_DecodeFast_IntMap_Tag1Byte;
+            }
+            uint64_t offset = UPB_PRIVATE(_upb_MiniTableField_Offset)(field);
+            uint64_t subofs = upb_DecodeFastData_GetSubofs(entry->field_data);
+            upb_DecodeFast_MakeMapData(offset, key_zz, val_zz, is_tag2,
+                                       is_string_key, subofs, expected_tag,
+                                       &entry->field_data);
           }
         }
 #endif
@@ -89,8 +124,8 @@ bool upb_MiniTable_SetSubMessage(upb_MiniTable* table,
   upb_MiniTableSubInternal* table_sub =
       UPB_PTR_AT(field, field->UPB_PRIVATE(submsg_ofs) * kUpb_SubmsgOffsetBytes,
                  upb_MiniTableSubInternal);
-  // TODO: Add this assert back once YouTube is updated to not call
-  // this function repeatedly.
+  // TODO: Add this assert back once YouTube is updated to not
+  // call this function repeatedly.
   // UPB_ASSERT(upb_MiniTable_GetSubMessageTable(table, field) == NULL);
   table_sub->UPB_PRIVATE(submsg) = sub;
   return true;

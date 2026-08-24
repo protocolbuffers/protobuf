@@ -475,6 +475,26 @@ bool upb_DecodeFast_DecodeSize(upb_Decoder* d, const char** pp, int* size,
   return UPB_DECODEFAST_ERROR(d, kUpb_DecodeStatus_Malformed, next);
 }
 
+typedef struct {
+  const upb_MiniTable* table;
+  bool is_repeated;
+  upb_Message* msg;
+} upb_DecodeFast_MessageContext;
+
+UPB_FORCEINLINE
+const char* upb_DecodeFast_MessageData(upb_EpsCopyInputStream* st,
+                                       const char* ptr, int size, void* ctx) {
+  UPB_STATIC_ASSERT(offsetof(upb_Decoder, input) == 0,
+                    "input must be the first member of upb_Decoder");
+  upb_Decoder* d = (upb_Decoder*)st;
+  upb_DecodeFast_MessageContext* c = (upb_DecodeFast_MessageContext*)ctx;
+  ptr = _upb_Decoder_DecodeMessage((upb_Decoder*)st, ptr, c->msg, c->table);
+  if (d->end_group != DECODE_NOGROUP) {
+    _upb_FastDecoder_ErrorJmp(d, kUpb_DecodeStatus_Malformed);
+  }
+  return ptr;
+}
+
 UPB_FORCEINLINE
 bool upb_DecodeFast_Delimited(upb_Decoder* d, const char** ptr,
                               upb_EpsCopyInputStream_ParseDelimitedFunc* func,

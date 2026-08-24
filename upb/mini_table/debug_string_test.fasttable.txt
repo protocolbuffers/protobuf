@@ -118,9 +118,9 @@ MiniTable#0 {
       .field_number = 3
     }
     FastTableEntry {
-      .field_data = 0000000000000000,
+      .field_data = 0050000000120022,
       .field_parser = [ptr]
-      .field_number = 0
+      .field_number = 4
     }
     FastTableEntry {
       .field_data = 0010000000000028,

@@ -16,6 +16,7 @@
 #include "upb/mini_table/field.h"
 #include "upb/mini_table/internal/field.h"
 #include "upb/mini_table/internal/message.h"
+#include "upb/mini_table/internal/sub.h"
 #include "upb/mini_table/message.h"
 #include "upb/wire/decode_fast/combinations.h"
 #include "upb/wire/decode_fast/data.h"
@@ -214,8 +215,62 @@ static bool upb_DecodeFast_TryFillEntry(const upb_MiniTable* m,
   upb_DecodeFast_TagSize tag_size;
   *out_supported_tag_size =
       upb_DecodeFast_GetEncodedTag(field, &tag, &tag_size);
-  return *out_supported_tag_size &&
-         upb_DecodeFast_GetFunctionIndex(m, field, tag_size,
+  if (!*out_supported_tag_size) return false;
+
+  if (upb_MiniTableField_IsMap(field)) {
+    // Map fields use specialized two-stage fast decoder functions:
+    // 4 key extractors (integer / string keys with 1-byte / 2-byte tags)
+    // combined with tail-called value parsers.
+    uint64_t idx = field - m->UPB_PRIVATE(fields);
+    uint64_t ofs_4byte =
+        idx * (sizeof(upb_MiniTableField) / kUpb_SubmsgOffsetBytes) +
+        field->UPB_PRIVATE(submsg_ofs);
+    uint64_t subofs = ofs_4byte / 2;
+
+    const upb_MiniTableSubInternal* sub = UPB_PTR_AT(
+        m->UPB_ONLYBITS(fields), subofs * 8, upb_MiniTableSubInternal);
+    const upb_MiniTable* map_sub = sub->UPB_PRIVATE(submsg);
+    if (!map_sub || map_sub->UPB_PRIVATE(field_count) != 2) {
+      return false;
+    }
+
+    // Check entry minitable: closed enums or unlinked submessage values are
+    // excluded from fasttable and handled by generic decode fallback.
+    const upb_MiniTableField* kfield = &map_sub->UPB_PRIVATE(fields)[0];
+    const upb_MiniTableField* vfield = &map_sub->UPB_PRIVATE(fields)[1];
+    if (upb_MiniTableField_IsClosedEnum(kfield) ||
+        upb_MiniTableField_IsClosedEnum(vfield) ||
+        (upb_MiniTableField_IsSubMessage(vfield) &&
+         !upb_MiniTable_GetSubMessageTable(vfield))) {
+      return false;
+    }
+    upb_FieldType ktype = kfield->UPB_PRIVATE(descriptortype);
+    upb_FieldType vtype = vfield->UPB_PRIVATE(descriptortype);
+    bool is_string_key =
+        (ktype == kUpb_FieldType_String || ktype == kUpb_FieldType_Bytes);
+    bool key_is_zigzag =
+        (ktype == kUpb_FieldType_SInt32 || ktype == kUpb_FieldType_SInt64);
+    bool val_is_zigzag =
+        (vtype == kUpb_FieldType_SInt32 || vtype == kUpb_FieldType_SInt64);
+
+    if (is_string_key) {
+      entry->function_idx = (tag_size == kUpb_DecodeFast_Tag1Byte)
+                                ? kUpb_DecodeFast_StrMap_Tag1Byte
+                                : kUpb_DecodeFast_StrMap_Tag2Byte;
+    } else {
+      entry->function_idx = (tag_size == kUpb_DecodeFast_Tag1Byte)
+                                ? kUpb_DecodeFast_IntMap_Tag1Byte
+                                : kUpb_DecodeFast_IntMap_Tag2Byte;
+    }
+
+    bool is_tag2 = (tag_size == kUpb_DecodeFast_Tag2Byte);
+    uint64_t offset = UPB_PRIVATE(_upb_MiniTableField_Offset)(field);
+    return upb_DecodeFast_MakeMapData(offset, key_is_zigzag, val_is_zigzag,
+                                      is_tag2, is_string_key, subofs, tag,
+                                      &entry->function_data);
+  }
+
+  return upb_DecodeFast_GetFunctionIndex(m, field, tag_size,
                                          &entry->function_idx) &&
          UPB_DECODEFAST_ISENABLED(
              upb_DecodeFast_GetType(entry->function_idx),
@@ -316,6 +371,18 @@ const char* upb_DecodeFast_GetFunctionName(uint32_t function_idx) {
   }
   if (function_idx == kUpb_DecodeFast_ExtensionOrUnknown) {
     return "_upb_FastDecoder_DecodeExtensionOrUnknown";
+  }
+  if (function_idx == kUpb_DecodeFast_IntMap_Tag1Byte) {
+    return "upb_DecodeFast_IntMap_Tag1Byte";
+  }
+  if (function_idx == kUpb_DecodeFast_IntMap_Tag2Byte) {
+    return "upb_DecodeFast_IntMap_Tag2Byte";
+  }
+  if (function_idx == kUpb_DecodeFast_StrMap_Tag1Byte) {
+    return "upb_DecodeFast_StrMap_Tag1Byte";
+  }
+  if (function_idx == kUpb_DecodeFast_StrMap_Tag2Byte) {
+    return "upb_DecodeFast_StrMap_Tag2Byte";
   }
   UPB_ASSERT(function_idx < UPB_ARRAY_SIZE(names));
   return names[function_idx];

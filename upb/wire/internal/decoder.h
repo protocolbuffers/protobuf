@@ -84,6 +84,8 @@ UPB_INLINE const char* upb_Decoder_Init(upb_Decoder* d, const char* buf,
   d->err = err;
   upb_EpsCopyInputStream_InitWithErrorHandler(&d->input, &buf, size, d->err);
 
+  UPB_STATIC_ASSERT(offsetof(upb_Decoder, input) == 0,
+                    "input must be the first member of upb_Decoder");
   UPB_STATIC_ASSERT((int)kUpb_DecodeStatus_Ok == (int)kUpb_ErrorCode_Ok,
                     "mismatched error codes");
   UPB_STATIC_ASSERT(
@@ -221,12 +223,15 @@ const char* _upb_Decoder_CheckRequired(upb_Decoder* d, const char* ptr,
                                        const upb_Message* msg,
                                        const upb_MiniTable* m);
 
+struct upb_Map* _upb_Decoder_CreateMap(upb_Decoder* d,
+                                       const upb_MiniTable* entry);
+
 #if UPB_FASTTABLE
 UPB_PRESERVE_NONE
 #endif
 const char* _upb_Decoder_DecodeMessage(upb_Decoder* d, const char* ptr,
                                        upb_Message* msg,
-                                       const upb_MiniTable* layout);
+                                       const upb_MiniTable* mt);
 
 UPB_INLINE bool _upb_Decoder_FieldRequiresUtf8Validation(
     const upb_Decoder* d, const upb_MiniTableField* field) {
