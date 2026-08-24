@@ -38,6 +38,8 @@ class Printer;
 namespace compiler {
 namespace python {
 
+struct ImportModules;
+
 class PROTOC_EXPORT PyiGenerator : public google::protobuf::compiler::CodeGenerator {
  public:
   PyiGenerator();
@@ -84,6 +86,20 @@ class PROTOC_EXPORT PyiGenerator : public google::protobuf::compiler::CodeGenera
   std::string PublicPackage() const;
   std::string InternalPackage() const;
   std::string ExtraInitTypes(const Descriptor& msg_des) const;
+  // Checks what modules should be imported and discovers shadowed types for a
+  // message.
+  void CheckImportModules(
+      const Descriptor* descriptor, ImportModules* import_modules,
+      absl::flat_hash_set<std::string>* shadowed_types) const;
+  // Checks if the first component of a type name could be shadowed by a class
+  // attribute (e.g. a field) or enclosing class in the Python scope hierarchy.
+  bool IsTypeShadowed(absl::string_view name,
+                      const Descriptor& containing_des) const;
+  // Analyzes a field to detect if its type is shadowed in containing_des,
+  // adding the root type identifier to shadowed_types if so.
+  void CheckFieldShadowing(
+      const FieldDescriptor* field, const Descriptor* containing_des,
+      absl::flat_hash_set<std::string>* shadowed_types) const;
 
   bool opensource_runtime_ = true;
 
@@ -96,6 +112,11 @@ class PROTOC_EXPORT PyiGenerator : public google::protobuf::compiler::CodeGenera
   // import_map will be a mapping from filename to module alias, e.g.
   // "google3/foo/bar.py" -> "_bar"
   mutable absl::flat_hash_map<std::string, std::string> import_map_;
+  // Set of top-level message and enum names defined in this file that are
+  // shadowed by fields, nested types, or enclosing scopes, and thus need
+  // private type aliases (e.g. `_Type_<name> = <name>`) emitted at module
+  // scope.
+  mutable absl::flat_hash_set<std::string> shadowed_top_level_types_;
 };
 
 }  // namespace python
