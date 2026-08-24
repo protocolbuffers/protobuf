@@ -1026,11 +1026,10 @@ bool MessageDifferencer::IsMatch(
     const Message* message2, int unpacked_any,
     const std::vector<SpecificField>& parent_fields, Reporter* reporter,
     int index1, int index2) {
-  std::vector<SpecificField> current_parent_fields(parent_fields);
   if (repeated_field->cpp_type() != FieldDescriptor::CPPTYPE_MESSAGE) {
     return CompareFieldValueUsingParentFields(
         *message1, *message2, unpacked_any, repeated_field, index1, index2,
-        &current_parent_fields);
+        const_cast<std::vector<SpecificField>*>(&parent_fields));
   }
   // Back up the Reporter and output_string_.  They will be reset in the
   // following code.
@@ -1043,7 +1042,7 @@ bool MessageDifferencer::IsMatch(
   if (key_comparator == nullptr) {
     match = CompareFieldValueUsingParentFields(
         *message1, *message2, unpacked_any, repeated_field, index1, index2,
-        &current_parent_fields);
+        const_cast<std::vector<SpecificField>*>(&parent_fields));
   } else {
     const Reflection* reflection1 = message1->GetReflection();
     const Reflection* reflection2 = message2->GetReflection();
@@ -1062,6 +1061,7 @@ bool MessageDifferencer::IsMatch(
     }
     specific_field.index = index1;
     specific_field.new_index = index2;
+    std::vector<SpecificField> current_parent_fields(parent_fields);
     current_parent_fields.push_back(specific_field);
     match = key_comparator->IsMatch(m1, m2, false, current_parent_fields);
   }
@@ -1310,9 +1310,16 @@ bool MessageDifferencer::CompareRepeatedRep(
       next_unmatched_index = match_list1[i] + 1;
     }
 
-    const bool result = CompareFieldValueUsingParentFields(
-        message1, message2, unpacked_any, repeated_field, i,
-        specific_field.new_index, parent_fields);
+    const bool is_primitive =
+        repeated_field->cpp_type() != FieldDescriptor::CPPTYPE_MESSAGE;
+    const bool is_matched_primitive =
+        !simple_list && is_primitive && match_list1[i] >= 0;
+    const bool result =
+        (is_matched_primitive && field_comparator_kind_ == kFCDefault)
+            ? true
+            : CompareFieldValueUsingParentFields(
+                  message1, message2, unpacked_any, repeated_field, i,
+                  specific_field.new_index, parent_fields);
 
     // If we have found differences, either report them or terminate if
     // no reporter is present. Note that ReportModified, ReportMoved, and
@@ -2108,15 +2115,16 @@ void MessageDifferencer::StreamReporter::PrintPath(
       }
     }
     if (i > 0) {
-      printer_->Print(".");
+      printer_->PrintRaw(".");
     }
     if (specific_field.field != nullptr) {
       if (specific_field.field->is_extension()) {
-        printer_->Print("($name$)", "name", specific_field.field->full_name());
+        printer_->PrintRaw(
+            absl::StrCat("(", specific_field.field->full_name(), ")"));
       } else {
         printer_->PrintRaw(specific_field.field->name());
         if (specific_field.forced_compare_no_presence_) {
-          printer_->Print(" (added for better PARTIAL comparison)");
+          printer_->PrintRaw(" (added for better PARTIAL comparison)");
         }
       }
 
@@ -2128,11 +2136,10 @@ void MessageDifferencer::StreamReporter::PrintPath(
       printer_->PrintRaw(absl::StrCat(specific_field.unknown_field_number));
     }
     if (left_side && specific_field.index >= 0) {
-      printer_->Print("[$name$]", "name", absl::StrCat(specific_field.index));
+      printer_->PrintRaw(absl::StrCat("[", specific_field.index, "]"));
     }
     if (!left_side && specific_field.new_index >= 0) {
-      printer_->Print("[$name$]", "name",
-                      absl::StrCat(specific_field.new_index));
+      printer_->PrintRaw(absl::StrCat("[", specific_field.new_index, "]"));
     }
   }
 }
@@ -2165,13 +2172,13 @@ void MessageDifferencer::StreamReporter::PrintValue(
         output = PrintShortTextFormat(field_message);
       }
       if (output.empty()) {
-        printer_->Print("{ }");
+        printer_->PrintRaw("{ }");
       } else {
         if ((fd != nullptr) &&
             (fd->cpp_type() != FieldDescriptor::CPPTYPE_MESSAGE)) {
           printer_->PrintRaw(output);
         } else {
-          printer_->Print("{ $name$ }", "name", output);
+          printer_->PrintRaw(absl::StrCat("{ ", output, " }"));
         }
       }
     } else {
@@ -2221,7 +2228,7 @@ void MessageDifferencer::StreamReporter::PrintUnknownFieldValue(
 }
 
 void MessageDifferencer::StreamReporter::Print(const std::string& str) {
-  printer_->Print(str);
+  printer_->PrintRaw(str);
 }
 
 void MessageDifferencer::StreamReporter::PrintMapKey(
@@ -2257,21 +2264,21 @@ void MessageDifferencer::StreamReporter::PrintMapKey(
 void MessageDifferencer::StreamReporter::ReportAdded(
     const Message& /*message1*/, const Message& message2,
     const std::vector<SpecificField>& field_path) {
-  printer_->Print("added: ");
+  printer_->PrintRaw("added: ");
   PrintPath(field_path, false);
-  printer_->Print(": ");
+  printer_->PrintRaw(": ");
   PrintValue(message2, field_path, false);
-  printer_->Print("\n");  // Print for newlines.
+  printer_->PrintRaw("\n");  // Print for newlines.
 }
 
 void MessageDifferencer::StreamReporter::ReportDeleted(
     const Message& message1, const Message& /*message2*/,
     const std::vector<SpecificField>& field_path) {
-  printer_->Print("deleted: ");
+  printer_->PrintRaw("deleted: ");
   PrintPath(field_path, true);
-  printer_->Print(": ");
+  printer_->PrintRaw(": ");
   PrintValue(message1, field_path, true);
-  printer_->Print("\n");  // Print for newlines
+  printer_->PrintRaw("\n");  // Print for newlines
 }
 
 void MessageDifferencer::StreamReporter::ReportModified(
@@ -2290,55 +2297,55 @@ void MessageDifferencer::StreamReporter::ReportModified(
     }
   }
 
-  printer_->Print("modified: ");
+  printer_->PrintRaw("modified: ");
   PrintPath(field_path, true);
   if (CheckPathChanged(field_path)) {
-    printer_->Print(" -> ");
+    printer_->PrintRaw(" -> ");
     PrintPath(field_path, false);
   }
-  printer_->Print(": ");
+  printer_->PrintRaw(": ");
   PrintValue(message1, field_path, true);
-  printer_->Print(" -> ");
+  printer_->PrintRaw(" -> ");
   PrintValue(message2, field_path, false);
-  printer_->Print("\n");  // Print for newlines.
+  printer_->PrintRaw("\n");  // Print for newlines.
 }
 
 void MessageDifferencer::StreamReporter::ReportMoved(
     const Message& message1, const Message& /*message2*/,
     const std::vector<SpecificField>& field_path) {
-  printer_->Print("moved: ");
+  printer_->PrintRaw("moved: ");
   PrintPath(field_path, true);
-  printer_->Print(" -> ");
+  printer_->PrintRaw(" -> ");
   PrintPath(field_path, false);
-  printer_->Print(" : ");
+  printer_->PrintRaw(" : ");
   PrintValue(message1, field_path, true);
-  printer_->Print("\n");  // Print for newlines.
+  printer_->PrintRaw("\n");  // Print for newlines.
 }
 
 void MessageDifferencer::StreamReporter::ReportMatched(
     const Message& message1, const Message& /*message2*/,
     const std::vector<SpecificField>& field_path) {
-  printer_->Print("matched: ");
+  printer_->PrintRaw("matched: ");
   PrintPath(field_path, true);
   if (CheckPathChanged(field_path)) {
-    printer_->Print(" -> ");
+    printer_->PrintRaw(" -> ");
     PrintPath(field_path, false);
   }
-  printer_->Print(" : ");
+  printer_->PrintRaw(" : ");
   PrintValue(message1, field_path, true);
-  printer_->Print("\n");  // Print for newlines.
+  printer_->PrintRaw("\n");  // Print for newlines.
 }
 
 void MessageDifferencer::StreamReporter::ReportIgnored(
     const Message& /*message1*/, const Message& /*message2*/,
     const std::vector<SpecificField>& field_path) {
-  printer_->Print("ignored: ");
+  printer_->PrintRaw("ignored: ");
   PrintPath(field_path, true);
   if (CheckPathChanged(field_path)) {
-    printer_->Print(" -> ");
+    printer_->PrintRaw(" -> ");
     PrintPath(field_path, false);
   }
-  printer_->Print("\n");  // Print for newlines.
+  printer_->PrintRaw("\n");  // Print for newlines.
 }
 
 void MessageDifferencer::StreamReporter::SetMessages(const Message& message1,
