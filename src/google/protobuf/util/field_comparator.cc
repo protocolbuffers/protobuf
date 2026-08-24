@@ -66,9 +66,15 @@ SimpleFieldComparator::~SimpleFieldComparator() = default;
 FieldComparator::ComparisonResult SimpleFieldComparator::SimpleCompare(
     const Message& message_1, const Message& message_2,
     const FieldDescriptor* field, int index_1, int index_2,
-    const util::FieldContext* /*field_context*/) {
-  const Reflection* reflection_1 = message_1.GetReflection();
-  const Reflection* reflection_2 = message_2.GetReflection();
+    const util::FieldContext* field_context) {
+  const Reflection* reflection_1 =
+      (field_context && field_context->reflection1())
+          ? field_context->reflection1()
+          : message_1.GetReflection();
+  const Reflection* reflection_2 =
+      (field_context && field_context->reflection2())
+          ? field_context->reflection2()
+          : message_2.GetReflection();
 
   switch (field->cpp_type()) {
 #define COMPARE_FIELD(METHOD)                                                 \

@@ -975,6 +975,19 @@ class PROTOBUF_EXPORT MessageDifferencer {
       match_indices_for_smart_list_callback_;
 
   MessageDifferencer::UnpackAnyField unpack_any_field_;
+
+  // Holds the indices of matching elements for a repeated field comparison at
+  // a particular recursion depth.
+  struct MatchListPair {
+    std::vector<int> match_list1;
+    std::vector<int> match_list2;
+  };
+  // A pool of MatchListPair objects used to avoid reallocating match lists
+  // during recursive submessage comparisons. Indexed by repeated field depth.
+  std::vector<std::unique_ptr<MatchListPair>> match_list_pool_;
+  // The current depth of repeated field comparison recursion. Used to index
+  // into match_list_pool_.
+  int repeated_field_depth_ = 0;
 };
 
 // This class provides extra information to the FieldComparator::Compare
@@ -982,15 +995,27 @@ class PROTOBUF_EXPORT MessageDifferencer {
 class PROTOBUF_EXPORT FieldContext {
  public:
   explicit FieldContext(
-      std::vector<MessageDifferencer::SpecificField>* parent_fields)
-      : parent_fields_(parent_fields) {}
+      std::vector<MessageDifferencer::SpecificField>* parent_fields,
+      const Reflection* reflection1 = nullptr,
+      const Reflection* reflection2 = nullptr)
+      : parent_fields_(parent_fields),
+        reflection1_(reflection1),
+        reflection2_(reflection2) {}
 
   std::vector<MessageDifferencer::SpecificField>* parent_fields() const {
     return parent_fields_;
   }
+  const Reflection* reflection1() const { return reflection1_; }
+  const Reflection* reflection2() const { return reflection2_; }
 
  private:
   std::vector<MessageDifferencer::SpecificField>* parent_fields_;
+  // Pre-resolved Reflection pointer for message1, used to avoid redundant
+  // reflection lookups during comparison.
+  const Reflection* reflection1_;
+  // Pre-resolved Reflection pointer for message2, used to avoid redundant
+  // reflection lookups during comparison.
+  const Reflection* reflection2_;
 };
 
 }  // namespace util
