@@ -480,6 +480,13 @@ TEST(MapTest, IteratorNodeFieldIsNullPtrAtEnd) {
 }
 
 
+TEST(MapTest, MapReflection) {
+#if !defined(PROTOBUF_HAS_MAP_REFLECTION_APIS) || \
+    !PROTOBUF_HAS_MAP_REFLECTION_APIS
+  FAIL() << "Missing feature macro.";
+#endif
+}
+
 
 }  // namespace
 }  // namespace internal

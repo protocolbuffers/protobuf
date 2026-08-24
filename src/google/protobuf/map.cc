@@ -217,6 +217,21 @@ size_t UntypedMapBase::SpaceUsedExcludingSelfLong() const {
   return size;
 }
 
+void UntypedMapBase::AssertSameType(const UntypedMapBase& other) {
+  ABSL_CHECK_EQ(type_info().node_size, other.type_info().node_size);
+  ABSL_CHECK_EQ(type_info().value_type, other.type_info().value_type);
+  ABSL_CHECK_EQ(type_info().value_type, other.type_info().value_type);
+  if (!empty() && !other.empty() &&
+      type_info().value_type_kind() == TypeKind::kMessage) {
+    // For message value types, best we can do is compare the type id if both
+    // are non empty.
+    auto lhs = TypeId::Get(*GetValue<const MessageLite>(begin().node_));
+    auto rhs =
+        TypeId::Get(*other.GetValue<const MessageLite>(other.begin().node_));
+    ABSL_CHECK_EQ(lhs, rhs) << lhs.name() << " vs " << rhs.name();
+  }
+}
+
 static size_t AlignTo(size_t v, size_t alignment, size_t& max_align) {
   max_align = std::max<size_t>(max_align, alignment);
   return (v + alignment - 1) / alignment * alignment;

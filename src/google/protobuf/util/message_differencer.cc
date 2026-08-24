@@ -1081,21 +1081,19 @@ bool MessageDifferencer::CompareMapFieldByMapReflection(
   ABSL_DCHECK_EQ(repeated_field_comparison_, AS_LIST);
   const Reflection* reflection1 = message1.GetReflection();
   const Reflection* reflection2 = message2.GetReflection();
-  const int count1 = reflection1->MapSize(message1, map_field);
-  const int count2 = reflection2->MapSize(message2, map_field);
+  GenericConstMapRef map1 = reflection1->GetMap(message1, map_field);
+  GenericConstMapRef map2 = reflection2->GetMap(message2, map_field);
   const bool treated_as_subset = IsTreatedAsSubset(map_field);
-  if (count1 != count2 && !treated_as_subset) {
+  if (map1.size() != map2.size() && !treated_as_subset) {
     return false;
   }
-  if (count1 > count2) {
+  if (map1.size() > map2.size()) {
     return false;
   }
 
   // First pass: check whether the same keys are present.
-  for (ConstMapIterator it = reflection1->ConstMapBegin(&message1, map_field),
-                        it_end = reflection1->ConstMapEnd(&message1, map_field);
-       it != it_end; ++it) {
-    if (!reflection2->ContainsMapKey(message2, map_field, it.GetKey())) {
+  for (auto entry1 : map1) {
+    if (!map2.contains(entry1.key())) {
       return false;
     }
   }
@@ -1103,21 +1101,16 @@ bool MessageDifferencer::CompareMapFieldByMapReflection(
   // Second pass: compare values for matching keys.
   const FieldDescriptor* val_des = map_field->message_type()->map_value();
   switch (val_des->cpp_type()) {
-#define HANDLE_TYPE(CPPTYPE, METHOD, COMPAREMETHOD)                           \
-  case FieldDescriptor::CPPTYPE_##CPPTYPE: {                                  \
-    for (ConstMapIterator                                                     \
-             it = reflection1->ConstMapBegin(&message1, map_field),           \
-             it_end = reflection1->ConstMapEnd(&message1, map_field);         \
-         it != it_end; ++it) {                                                \
-      MapValueConstRef value2;                                                \
-      reflection2->LookupMapValue(message2, map_field, it.GetKey(), &value2); \
-      if (!comparator->Compare##COMPAREMETHOD(*val_des,                       \
-                                              it.GetValueRef().Get##METHOD(), \
-                                              value2.Get##METHOD())) {        \
-        return false;                                                         \
-      }                                                                       \
-    }                                                                         \
-    break;                                                                    \
+#define HANDLE_TYPE(CPPTYPE, METHOD, COMPAREMETHOD)                            \
+  case FieldDescriptor::CPPTYPE_##CPPTYPE: {                                   \
+    for (auto entry1 : map1) {                                                 \
+      MapValueConstRef value2 = map2.find(entry1.key())->value();              \
+      if (!comparator->Compare##COMPAREMETHOD(                                 \
+              *val_des, entry1.value().Get##METHOD(), value2.Get##METHOD())) { \
+        return false;                                                          \
+      }                                                                        \
+    }                                                                          \
+    break;                                                                     \
   }
     HANDLE_TYPE(INT32, Int32Value, Int32);
     HANDLE_TYPE(INT64, Int64Value, Int64);
@@ -1130,15 +1123,12 @@ bool MessageDifferencer::CompareMapFieldByMapReflection(
     HANDLE_TYPE(ENUM, EnumValue, Int32);
 #undef HANDLE_TYPE
     case FieldDescriptor::CPPTYPE_MESSAGE: {
-      for (ConstMapIterator it =
-               reflection1->ConstMapBegin(&message1, map_field);
-           it != reflection1->ConstMapEnd(&message1, map_field); ++it) {
-        if (!reflection2->ContainsMapKey(message2, map_field, it.GetKey())) {
+      for (auto entry1 : map1) {
+        auto it2 = map2.find(entry1.key());
+        if (it2 == map2.end()) {
           return false;
         }
         bool compare_result;
-        MapValueConstRef value2;
-        reflection2->LookupMapValue(message2, map_field, it.GetKey(), &value2);
         // Append currently compared field to the end of parent_fields.
         SpecificField specific_value_field;
         specific_value_field.message1 = &message1;
@@ -1147,8 +1137,8 @@ bool MessageDifferencer::CompareMapFieldByMapReflection(
         specific_value_field.field = val_des;
         parent_fields->push_back(specific_value_field);
         compare_result =
-            Compare(it.GetValueRef().GetMessageValue(),
-                    value2.GetMessageValue(), false, parent_fields);
+            Compare(entry1.value().GetMessageValue(),
+                    it2->value().GetMessageValue(), false, parent_fields);
         parent_fields->pop_back();
         if (!compare_result) {
           return false;
