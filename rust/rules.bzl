@@ -8,8 +8,7 @@
 """This file implements rust_proto_library (rule implementations)."""
 
 load("@rules_cc//cc/common:cc_info.bzl", "CcInfo")
-load("@rules_rust//rust:defs.bzl", "rust_common")
-load("@rules_rust//rust:rust_common.bzl", "CrateInfo", "DepInfo")
+load("@rules_rust//rust:rust_common.bzl", "CrateInfo", "DepInfo", "rust_common")
 load("//bazel/common:proto_common.bzl", "proto_common")
 load("//bazel/common:proto_info.bzl", "ProtoInfo")
 load(
