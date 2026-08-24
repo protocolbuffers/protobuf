@@ -201,12 +201,8 @@ bool ReflectionOps::IsInitialized(const Message& message, bool check_fields,
               const MapFieldBase* map_field =
                   reflection->GetMapData(message, field);
               if (map_field->IsMapValid()) {
-                ConstMapIterator it(&message, field);
-                ConstMapIterator end_map(&message, field);
-                for (map_field->ConstMapBegin(&it),
-                     map_field->ConstMapEnd(&end_map);
-                     it != end_map; ++it) {
-                  if (!it.GetValueRef().GetMessageValue().IsInitialized()) {
+                for (auto entry : reflection->GetMap(message, field)) {
+                  if (!entry.value().GetMessageValue().IsInitialized()) {
                     return false;
                   }
                 }
@@ -284,11 +280,8 @@ bool ReflectionOps::IsInitialized(const Message& message) {
           const MapFieldBase* map_field =
               reflection->GetMapData(message, field);
           if (map_field->IsMapValid()) {
-            ConstMapIterator iter(&message, field);
-            ConstMapIterator end(&message, field);
-            for (map_field->ConstMapBegin(&iter), map_field->ConstMapEnd(&end);
-                 iter != end; ++iter) {
-              if (!iter.GetValueRef().GetMessageValue().IsInitialized()) {
+            for (auto entry : reflection->GetMap(message, field)) {
+              if (!entry.value().GetMessageValue().IsInitialized()) {
                 return false;
               }
             }
@@ -345,11 +338,8 @@ void ReflectionOps::DiscardUnknownFields(Message* message) {
         field->is_map() ? reflection->MutableMapData(message, field) : nullptr;
     if (map_field != nullptr && map_field->IsMapValid()) {
       if (IsMapValueMessageTyped(field)) {
-        MapIterator iter(message, field);
-        MapIterator end(message, field);
-        for (map_field->MapBegin(&iter), map_field->MapEnd(&end); iter != end;
-             ++iter) {
-          iter.MutableValueRef()->MutableMessageValue()->DiscardUnknownFields();
+        for (auto entry : reflection->MutableMap(message, field)) {
+          entry.value().MutableMessageValue()->DiscardUnknownFields();
         }
       }
       // Discard every unknown field inside messages in a repeated field.
