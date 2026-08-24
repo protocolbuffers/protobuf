@@ -190,22 +190,46 @@ TailCallTableInfo::FastFieldInfo::Field MakeFastFieldEntry(
       picked = PROTOBUF_PICK_PACKABLE_FUNCTION(kFastF64);
       break;
     case FieldDescriptor::TYPE_ENUM:
-      if (TreatEnumAsInt(field)) {
-        picked = PROTOBUF_PICK_PACKABLE_FUNCTION(kFastV32);
+      if (!field->is_repeated() && options.is_enum_8()) {
+        if (TreatEnumAsInt(field)) {
+          picked = PROTOBUF_PICK_SINGLE_FUNCTION(kFastV8);
+        } else {
+          int32_t first, last;
+          if (GetEnumValidationRange(field->enum_type(), first, last)) {
+            picked = PROTOBUF_PICK_SINGLE_FUNCTION(kFastEr8);
+          } else {
+            picked = PROTOBUF_PICK_SINGLE_FUNCTION(kFastEv8);
+          }
+        }
+      } else if (!field->is_repeated() && options.is_enum_16()) {
+        if (TreatEnumAsInt(field)) {
+          picked = PROTOBUF_PICK_SINGLE_FUNCTION(kFastV16);
+        } else {
+          int32_t first, last;
+          if (GetEnumValidationRange(field->enum_type(), first, last)) {
+            picked = PROTOBUF_PICK_SINGLE_FUNCTION(kFastEr16);
+          } else {
+            picked = PROTOBUF_PICK_SINGLE_FUNCTION(kFastEv16);
+          }
+        }
       } else {
-        switch (GetEnumRangeInfo(field, info.aux_idx)) {
-          case EnumRangeInfo::kNone:
-            picked = PROTOBUF_PICK_PACKABLE_FUNCTION(kFastEv);
-            break;
-          case EnumRangeInfo::kContiguous:
-            picked = PROTOBUF_PICK_PACKABLE_FUNCTION(kFastEr);
-            break;
-          case EnumRangeInfo::kContiguous0:
-            picked = PROTOBUF_PICK_PACKABLE_FUNCTION(kFastEr0);
-            break;
-          case EnumRangeInfo::kContiguous1:
-            picked = PROTOBUF_PICK_PACKABLE_FUNCTION(kFastEr1);
-            break;
+        if (TreatEnumAsInt(field)) {
+          picked = PROTOBUF_PICK_PACKABLE_FUNCTION(kFastV32);
+        } else {
+          switch (GetEnumRangeInfo(field, info.aux_idx)) {
+            case EnumRangeInfo::kNone:
+              picked = PROTOBUF_PICK_PACKABLE_FUNCTION(kFastEv);
+              break;
+            case EnumRangeInfo::kContiguous:
+              picked = PROTOBUF_PICK_PACKABLE_FUNCTION(kFastEr);
+              break;
+            case EnumRangeInfo::kContiguous0:
+              picked = PROTOBUF_PICK_PACKABLE_FUNCTION(kFastEr0);
+              break;
+            case EnumRangeInfo::kContiguous1:
+              picked = PROTOBUF_PICK_PACKABLE_FUNCTION(kFastEr1);
+              break;
+          }
         }
       }
       break;
@@ -252,6 +276,10 @@ bool IsFieldEligibleForFastParsing(
   // Map, oneof, weak, and split fields are not handled on the fast path.
   if (!IsFieldTypeEligibleForFastParsing(field) || options.is_implicitly_weak ||
       options.should_split) {
+    return false;
+  }
+
+  if (field->is_repeated() && (options.is_enum_8() || options.is_enum_16())) {
     return false;
   }
 
@@ -548,24 +576,50 @@ uint16_t MakeTypeCardForField(const FieldDescriptor* field, bool has_hasbit,
                                                               : fl::kBool;
       break;
     case FieldDescriptor::TYPE_ENUM:
-      if (TreatEnumAsInt(field)) {
-        // No validation is required.
-        type_card |= field->is_repeated() && field->is_packed()
-                         ? fl::kPackedOpenEnum
-                         : fl::kOpenEnum;
-      } else {
-        int32_t first;
-        int32_t last;
-        if (GetEnumValidationRange(field->enum_type(), first, last)) {
-          // Validation is done by range check (start/length in FieldAux).
-          type_card |= field->is_repeated() && field->is_packed()
-                           ? fl::kPackedEnumRange
-                           : fl::kEnumRange;
+      if (!field->is_repeated() && options.is_enum_8()) {
+        if (TreatEnumAsInt(field)) {
+          type_card |= fl::kOpenEnum8;
         } else {
-          // Validation uses the generated _IsValid function.
+          int32_t first;
+          int32_t last;
+          if (GetEnumValidationRange(field->enum_type(), first, last)) {
+            type_card |= fl::kEnumRange8;
+          } else {
+            type_card |= fl::kEnum8;
+          }
+        }
+      } else if (!field->is_repeated() && options.is_enum_16()) {
+        if (TreatEnumAsInt(field)) {
+          type_card |= fl::kOpenEnum16;
+        } else {
+          int32_t first;
+          int32_t last;
+          if (GetEnumValidationRange(field->enum_type(), first, last)) {
+            type_card |= fl::kEnumRange16;
+          } else {
+            type_card |= fl::kEnum16;
+          }
+        }
+      } else {
+        if (TreatEnumAsInt(field)) {
+          // No validation is required.
           type_card |= field->is_repeated() && field->is_packed()
-                           ? fl::kPackedEnum
-                           : fl::kEnum;
+                           ? fl::kPackedOpenEnum
+                           : fl::kOpenEnum;
+        } else {
+          int32_t first;
+          int32_t last;
+          if (GetEnumValidationRange(field->enum_type(), first, last)) {
+            // Validation is done by range check (start/length in FieldAux).
+            type_card |= field->is_repeated() && field->is_packed()
+                             ? fl::kPackedEnumRange
+                             : fl::kEnumRange;
+          } else {
+            // Validation uses the generated _IsValid function.
+            type_card |= field->is_repeated() && field->is_packed()
+                             ? fl::kPackedEnum
+                             : fl::kEnum;
+          }
         }
       }
       break;

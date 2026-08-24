@@ -86,6 +86,11 @@ struct PROTOBUF_EXPORT TailCallTableInfo {
 
     using StrOptions = std::variant<std::monostate, StringInlined, MicroString>;
     StrOptions str_options;
+
+    enum EnumRep { kEnum32 = 0, kEnum8, kEnum16 };
+    EnumRep enum_rep = kEnum32;
+    bool is_enum_8() const { return enum_rep == kEnum8; }
+    bool is_enum_16() const { return enum_rep == kEnum16; }
   };
 
   struct FieldEntryInfo;

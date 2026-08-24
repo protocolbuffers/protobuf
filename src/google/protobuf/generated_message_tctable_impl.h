@@ -127,6 +127,7 @@ enum FieldRep : uint16_t {
 
   // Numeric types (used for optional and repeated fields):
   kRep8Bits    = 0,
+  kRep16Bits   = 1 << kRepShift,
   kRep32Bits   = 2 << kRepShift,
   kRep64Bits   = 3 << kRepShift,
   // String types:
@@ -201,6 +202,14 @@ enum FieldType : uint16_t {
   // Numeric types:
   kBool            = 0 | kFkVarint | kRep8Bits,
 
+  kEnum8           = 0 | kFkVarint | kRep8Bits  | kFmtEnum   | kTvEnum,
+  kEnumRange8      = 0 | kFkVarint | kRep8Bits  | kFmtEnum   | kTvRange,
+  kOpenEnum8       = 0 | kFkVarint | kRep8Bits  | kFmtEnum,
+
+  kEnum16          = 0 | kFkVarint | kRep16Bits | kFmtEnum   | kTvEnum,
+  kEnumRange16     = 0 | kFkVarint | kRep16Bits | kFmtEnum   | kTvRange,
+  kOpenEnum16      = 0 | kFkVarint | kRep16Bits | kFmtEnum,
+
   kFixed32         = 0 | kFkFixed  | kRep32Bits | kFmtUnsigned,
   kUInt32          = 0 | kFkVarint | kRep32Bits | kFmtUnsigned,
   kSFixed32        = 0 | kFkFixed  | kRep32Bits | kFmtSigned,
@@ -251,6 +260,8 @@ enum FieldType : uint16_t {
 }  // namespace field_layout
 
 #ifndef NDEBUG
+[[noreturn]] PROTOBUF_EXPORT void AlignFail(std::integral_constant<size_t, 2>,
+                                            std::uintptr_t address);
 [[noreturn]] PROTOBUF_EXPORT void AlignFail(std::integral_constant<size_t, 4>,
                                             std::uintptr_t address);
 [[noreturn]] PROTOBUF_EXPORT void AlignFail(std::integral_constant<size_t, 8>,
@@ -334,6 +345,7 @@ inline void AlignFail(std::integral_constant<size_t, 1>,
 #define PROTOBUF_TC_PARSE_FUNCTION_LIST                           \
   /* These functions have the Fast entry ABI */                   \
   PROTOBUF_TC_PARSE_FUNCTION_LIST_PACKED(FastV8)                  \
+  PROTOBUF_TC_PARSE_FUNCTION_LIST_SINGLE(FastV16)                 \
   PROTOBUF_TC_PARSE_FUNCTION_LIST_PACKED(FastV32)                 \
   PROTOBUF_TC_PARSE_FUNCTION_LIST_PACKED(FastV64)                 \
   PROTOBUF_TC_PARSE_FUNCTION_LIST_PACKED(FastZ32)                 \
@@ -344,6 +356,10 @@ inline void AlignFail(std::integral_constant<size_t, 1>,
   PROTOBUF_TC_PARSE_FUNCTION_LIST_PACKED(FastEr)                  \
   PROTOBUF_TC_PARSE_FUNCTION_LIST_PACKED(FastEr0)                 \
   PROTOBUF_TC_PARSE_FUNCTION_LIST_PACKED(FastEr1)                 \
+  PROTOBUF_TC_PARSE_FUNCTION_LIST_SINGLE(FastEv8)                 \
+  PROTOBUF_TC_PARSE_FUNCTION_LIST_SINGLE(FastEr8)                 \
+  PROTOBUF_TC_PARSE_FUNCTION_LIST_SINGLE(FastEv16)                \
+  PROTOBUF_TC_PARSE_FUNCTION_LIST_SINGLE(FastEr16)                \
   PROTOBUF_TC_PARSE_FUNCTION_LIST_REPEATED(FastB)                 \
   PROTOBUF_TC_PARSE_FUNCTION_LIST_REPEATED(FastU)                 \
   PROTOBUF_TC_PARSE_FUNCTION_LIST_SINGLE(FastBi)                  \
@@ -481,6 +497,10 @@ class PROTOBUF_EXPORT TcParser final {
       PROTOBUF_TC_PARAM_DECL);
   PROTOBUF_NOINLINE PROTOBUF_CC static const char* FastV8P2(
       PROTOBUF_TC_PARAM_DECL);
+  PROTOBUF_NOINLINE PROTOBUF_CC static const char* FastV16S1(
+      PROTOBUF_TC_PARAM_DECL);
+  PROTOBUF_NOINLINE PROTOBUF_CC static const char* FastV16S2(
+      PROTOBUF_TC_PARAM_DECL);
   PROTOBUF_NOINLINE PROTOBUF_CC static const char* FastV32S1(
       PROTOBUF_TC_PARAM_DECL);
   PROTOBUF_NOINLINE PROTOBUF_CC static const char* FastV32S2(
@@ -537,14 +557,17 @@ class PROTOBUF_EXPORT TcParser final {
     if (sizeof(FieldType) == 1) {
       return &FastV8S1;
     }
+    if (sizeof(FieldType) == 2) {
+      return &FastV16S1;
+    }
     if (sizeof(FieldType) == 4) {
       return &FastV32S1;
     }
     if (sizeof(FieldType) == 8) {
       return &FastV64S1;
     }
-    static_assert(sizeof(FieldType) == 1 || sizeof(FieldType) == 4 ||
-                      sizeof(FieldType) == 8,
+    static_assert(sizeof(FieldType) == 1 || sizeof(FieldType) == 2 ||
+                      sizeof(FieldType) == 4 || sizeof(FieldType) == 8,
                   "");
     ABSL_LOG(FATAL) << "This should be unreachable";
   }
@@ -602,6 +625,24 @@ class PROTOBUF_EXPORT TcParser final {
   PROTOBUF_NOINLINE PROTOBUF_CC static const char* FastEr1P1(
       PROTOBUF_TC_PARAM_DECL);
   PROTOBUF_NOINLINE PROTOBUF_CC static const char* FastEr1P2(
+      PROTOBUF_TC_PARAM_DECL);
+
+  PROTOBUF_NOINLINE PROTOBUF_CC static const char* FastEr8S1(
+      PROTOBUF_TC_PARAM_DECL);
+  PROTOBUF_NOINLINE PROTOBUF_CC static const char* FastEr8S2(
+      PROTOBUF_TC_PARAM_DECL);
+  PROTOBUF_NOINLINE PROTOBUF_CC static const char* FastEv8S1(
+      PROTOBUF_TC_PARAM_DECL);
+  PROTOBUF_NOINLINE PROTOBUF_CC static const char* FastEv8S2(
+      PROTOBUF_TC_PARAM_DECL);
+
+  PROTOBUF_NOINLINE PROTOBUF_CC static const char* FastEr16S1(
+      PROTOBUF_TC_PARAM_DECL);
+  PROTOBUF_NOINLINE PROTOBUF_CC static const char* FastEr16S2(
+      PROTOBUF_TC_PARAM_DECL);
+  PROTOBUF_NOINLINE PROTOBUF_CC static const char* FastEv16S1(
+      PROTOBUF_TC_PARAM_DECL);
+  PROTOBUF_NOINLINE PROTOBUF_CC static const char* FastEv16S2(
       PROTOBUF_TC_PARAM_DECL);
 
   // Functions referenced by generated fast tables (string types):
@@ -972,7 +1013,7 @@ class PROTOBUF_EXPORT TcParser final {
       PROTOBUF_TC_PARAM_DECL);
 
   // Implementations for fast enum field parsing functions:
-  template <typename TagType, uint16_t xform_val>
+  template <typename FieldType, typename TagType, uint16_t xform_val>
   PROTOBUF_CC static inline const char* SingularEnum(PROTOBUF_TC_PARAM_DECL);
   template <typename TagType, uint8_t min>
   PROTOBUF_CC static inline const char* SingularEnumSmallRange(

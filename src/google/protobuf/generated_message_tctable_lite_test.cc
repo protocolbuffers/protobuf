@@ -134,7 +134,7 @@ TEST(FastVarints, NameHere) {
   };
   uint8_t serialize_buffer[64];
 
-  for (int size : {8, 32, 64}) {
+  for (int size : {8, 16, 32, 64}) {
     SCOPED_TRACE(size);
     auto next_i = [](uint64_t i) {
       // if i + 1 is a power of two, return that.
@@ -201,6 +201,9 @@ TEST(FastVarints, NameHere) {
           case 8:
             fn = &TcParser::FastV8S1;
             break;
+          case 16:
+            fn = &TcParser::FastV16S1;
+            break;
           case 32:
             fn = &TcParser::FastV32S1;
             break;
@@ -236,6 +239,13 @@ TEST(FastVarints, NameHere) {
             ASSERT_EQ(end_ptr - ptr, serialized.size());
 
             auto actual_field = ReadAndReset<uint8_t>(&fake_msg[kFieldOffset]);
+            EXPECT_EQ(actual_field, static_cast<decltype(actual_field)>(i))  //
+                << " hex: " << absl::StrCat(absl::Hex(actual_field));
+          }; break;
+          case 16: {
+            ASSERT_EQ(end_ptr - ptr, serialized.size());
+
+            auto actual_field = ReadAndReset<uint16_t>(&fake_msg[kFieldOffset]);
             EXPECT_EQ(actual_field, static_cast<decltype(actual_field)>(i))  //
                 << " hex: " << absl::StrCat(absl::Hex(actual_field));
           }; break;
@@ -1069,6 +1079,160 @@ TEST(TcParserTest, OobGenReproduction) {
   }
 
   (void)msg->ParseFromString(payload);
+}
+
+TEST(TcParserTest, Enum8And16TypeCardToString) {
+  namespace fl = internal::field_layout;
+  EXPECT_EQ(
+      TypeCardToString(static_cast<uint16_t>(fl::kFcOptional) | fl::kEnum8),
+      "::_fl::kFcOptional | ::_fl::kEnum8");
+  EXPECT_EQ(TypeCardToString(static_cast<uint16_t>(fl::kFcOptional) |
+                             fl::kEnumRange8),
+            "::_fl::kFcOptional | ::_fl::kEnumRange8");
+  EXPECT_EQ(
+      TypeCardToString(static_cast<uint16_t>(fl::kFcOptional) | fl::kOpenEnum8),
+      "::_fl::kFcOptional | ::_fl::kOpenEnum8");
+  EXPECT_EQ(
+      TypeCardToString(static_cast<uint16_t>(fl::kFcOptional) | fl::kEnum16),
+      "::_fl::kFcOptional | ::_fl::kEnum16");
+  EXPECT_EQ(TypeCardToString(static_cast<uint16_t>(fl::kFcOptional) |
+                             fl::kEnumRange16),
+            "::_fl::kFcOptional | ::_fl::kEnumRange16");
+  EXPECT_EQ(TypeCardToString(static_cast<uint16_t>(fl::kFcOptional) |
+                             fl::kOpenEnum16),
+            "::_fl::kFcOptional | ::_fl::kOpenEnum16");
+}
+
+TEST(TcParserTest, FastEnum8And16Parsing) {
+  constexpr uint8_t kHasBitsOffset = 4;
+  constexpr uint8_t kHasBitIndex = 0;
+  constexpr uint8_t kFieldOffset = 24;
+
+  const ClassData class_data(nullptr, nullptr, MessageCreator(), nullptr,
+                             nullptr, nullptr, nullptr,
+                             /*cached_size_offset=*/16, "type_name");
+
+  alignas(16) char fake_msg[64];
+  memset(fake_msg, kDND, sizeof(fake_msg));
+  memset(&fake_msg[kHasBitsOffset], 0, sizeof(uint32_t));
+
+  TcParseTable<1, 1, 2, 0, 2> parse_table = {
+      // header:
+      {
+          kHasBitsOffset,
+          0,
+          1,
+          0,
+          offsetof(decltype(parse_table), field_lookup_table),
+          0xFFFFFFFF - 1,
+          offsetof(decltype(parse_table), field_entries),
+          1,
+          2,
+          offsetof(decltype(parse_table), aux_entries),
+          &class_data,
+          nullptr,
+          &FastParserGaveUp,
+      },
+      // Fast entries:
+      {{
+          {},
+      }},
+      // Field Lookup Table:
+      {{65535, 65535}},
+      // Field Entries:
+      {{
+          {kFieldOffset, kHasBitsOffset + 0, 0, field_layout::kEnum8},
+      }},
+      // Aux Entries:
+      {{
+          {0, 10},  // range 0..10
+          {FieldAuxEnumData{},
+           EnumTraits<proto2_unittest::ForeignEnum>::validation_data()},
+      }},
+  };
+
+  uint8_t serialize_buffer[64];
+  auto serialize_ptr = WireFormatLite::WriteUInt32ToArray(
+      /* field_number= */ 1, 5, serialize_buffer);
+  absl::string_view serialized{
+      reinterpret_cast<char*>(&serialize_buffer[0]),
+      static_cast<size_t>(serialize_ptr - serialize_buffer)};
+
+  // Test FastEr8S1 (range validation for 8-bit enum)
+  {
+    memset(fake_msg, kDND, sizeof(fake_msg));
+    memset(&fake_msg[kHasBitsOffset], 0, sizeof(uint32_t));
+    const char* ptr = nullptr;
+    ParseContext ctx(io::CodedInputStream::GetDefaultRecursionLimit(),
+                     /* aliasing= */ false, &ptr, serialized);
+    TcFieldData data(/*coded_tag=*/8, kHasBitIndex, /*aux_idx=*/0,
+                     kFieldOffset);
+    const char* end_ptr = TcParser::FastEr8S1(
+        reinterpret_cast<MessageLite*>(fake_msg), ptr, &ctx,
+        Xor2SerializedBytes(data, ptr), &parse_table.header, /*hasbits=*/0);
+    ASSERT_EQ(end_ptr - ptr, serialized.size());
+    auto actual_field = ReadAndReset<uint8_t>(&fake_msg[kFieldOffset]);
+    EXPECT_EQ(actual_field, 5);
+    auto hasbits = ReadAndReset<uint32_t>(&fake_msg[kHasBitsOffset]);
+    EXPECT_EQ(hasbits, 1 << kHasBitIndex);
+  }
+
+  // Test FastEv8S1 (function validation for 8-bit enum)
+  {
+    memset(fake_msg, kDND, sizeof(fake_msg));
+    memset(&fake_msg[kHasBitsOffset], 0, sizeof(uint32_t));
+    const char* ptr = nullptr;
+    ParseContext ctx(io::CodedInputStream::GetDefaultRecursionLimit(),
+                     /* aliasing= */ false, &ptr, serialized);
+    TcFieldData data(/*coded_tag=*/8, kHasBitIndex, /*aux_idx=*/1,
+                     kFieldOffset);
+    const char* end_ptr = TcParser::FastEv8S1(
+        reinterpret_cast<MessageLite*>(fake_msg), ptr, &ctx,
+        Xor2SerializedBytes(data, ptr), &parse_table.header, /*hasbits=*/0);
+    ASSERT_EQ(end_ptr - ptr, serialized.size());
+    auto actual_field = ReadAndReset<uint8_t>(&fake_msg[kFieldOffset]);
+    EXPECT_EQ(actual_field, 5);
+    auto hasbits = ReadAndReset<uint32_t>(&fake_msg[kHasBitsOffset]);
+    EXPECT_EQ(hasbits, 1 << kHasBitIndex);
+  }
+
+  // Test FastEr16S1 (range validation for 16-bit enum)
+  {
+    memset(fake_msg, kDND, sizeof(fake_msg));
+    memset(&fake_msg[kHasBitsOffset], 0, sizeof(uint32_t));
+    const char* ptr = nullptr;
+    ParseContext ctx(io::CodedInputStream::GetDefaultRecursionLimit(),
+                     /* aliasing= */ false, &ptr, serialized);
+    TcFieldData data(/*coded_tag=*/8, kHasBitIndex, /*aux_idx=*/0,
+                     kFieldOffset);
+    const char* end_ptr = TcParser::FastEr16S1(
+        reinterpret_cast<MessageLite*>(fake_msg), ptr, &ctx,
+        Xor2SerializedBytes(data, ptr), &parse_table.header, /*hasbits=*/0);
+    ASSERT_EQ(end_ptr - ptr, serialized.size());
+    auto actual_field = ReadAndReset<uint16_t>(&fake_msg[kFieldOffset]);
+    EXPECT_EQ(actual_field, 5);
+    auto hasbits = ReadAndReset<uint32_t>(&fake_msg[kHasBitsOffset]);
+    EXPECT_EQ(hasbits, 1 << kHasBitIndex);
+  }
+
+  // Test FastEv16S1 (function validation for 16-bit enum)
+  {
+    memset(fake_msg, kDND, sizeof(fake_msg));
+    memset(&fake_msg[kHasBitsOffset], 0, sizeof(uint32_t));
+    const char* ptr = nullptr;
+    ParseContext ctx(io::CodedInputStream::GetDefaultRecursionLimit(),
+                     /* aliasing= */ false, &ptr, serialized);
+    TcFieldData data(/*coded_tag=*/8, kHasBitIndex, /*aux_idx=*/1,
+                     kFieldOffset);
+    const char* end_ptr = TcParser::FastEv16S1(
+        reinterpret_cast<MessageLite*>(fake_msg), ptr, &ctx,
+        Xor2SerializedBytes(data, ptr), &parse_table.header, /*hasbits=*/0);
+    ASSERT_EQ(end_ptr - ptr, serialized.size());
+    auto actual_field = ReadAndReset<uint16_t>(&fake_msg[kFieldOffset]);
+    EXPECT_EQ(actual_field, 5);
+    auto hasbits = ReadAndReset<uint32_t>(&fake_msg[kHasBitsOffset]);
+    EXPECT_EQ(hasbits, 1 << kHasBitIndex);
+  }
 }
 
 }  // namespace internal

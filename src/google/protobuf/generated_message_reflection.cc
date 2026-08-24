@@ -115,22 +115,6 @@ Message* MaybeForceCopy(Arena* arena, Message* msg) {
 }  // anonymous namespace
 
 namespace internal {
-ReflectionSchema::ReflectionSchema(const Message* default_instance,
-                                   const uint32_t* offsets,
-                                   const uint32_t* has_bit_indices,
-                                   int has_bits_offset, int extensions_offset,
-                                   int oneof_case_offset, int object_size,
-                                   int split_offset, int sizeof_split)
-    : default_instance_(default_instance),
-      offsets_(offsets),
-      has_bit_indices_(has_bit_indices),
-      has_bits_offset_(has_bits_offset),
-      extensions_offset_(extensions_offset),
-      oneof_case_offset_(oneof_case_offset),
-      object_size_(object_size),
-      split_offset_(split_offset),
-      sizeof_split_(sizeof_split) {}
-
 ReflectionSchema ReflectionSchema::MigrationToReflectionSchema(
     const MessageGlobalsBase* const* message_globals, const uint32_t* offsets,
     MigrationSchema migration_schema) {
@@ -993,8 +977,19 @@ void SwapFieldHelper::SwapNonMessageNonStringField(
     SWAP_VALUES(FLOAT, float);
     SWAP_VALUES(DOUBLE, double);
     SWAP_VALUES(BOOL, bool);
-    SWAP_VALUES(ENUM, int);
 #undef SWAP_VALUES
+    case FieldDescriptor::CPPTYPE_ENUM:
+      if (r->schema_.IsEnum8(field)) {
+        std::swap(*r->MutableRaw<uint8_t>(lhs, field),
+                  *r->MutableRaw<uint8_t>(rhs, field));
+      } else if (r->schema_.IsEnum16(field)) {
+        std::swap(*r->MutableRaw<uint16_t>(lhs, field),
+                  *r->MutableRaw<uint16_t>(rhs, field));
+      } else {
+        std::swap(*r->MutableRaw<int>(lhs, field),
+                  *r->MutableRaw<int>(rhs, field));
+      }
+      break;
     default:
       ABSL_LOG(FATAL) << "Unimplemented type: " << field->cpp_type();
   }
@@ -1617,8 +1612,26 @@ void Reflection::ClearField(Message* message,
 #undef CLEAR_TYPE
 
       case FieldDescriptor::CPPTYPE_ENUM:
-        *MutableRaw<int>(message, field) =
-            field->default_value_enum()->number();
+        if (schema_.IsEnum8(field)) {
+          if (schema_.IsEnumSigned(field)) {
+            *MutableRaw<int8_t>(message, field) =
+                static_cast<int8_t>(field->default_value_enum()->number());
+          } else {
+            *MutableRaw<uint8_t>(message, field) =
+                static_cast<uint8_t>(field->default_value_enum()->number());
+          }
+        } else if (schema_.IsEnum16(field)) {
+          if (schema_.IsEnumSigned(field)) {
+            *MutableRaw<int16_t>(message, field) =
+                static_cast<int16_t>(field->default_value_enum()->number());
+          } else {
+            *MutableRaw<uint16_t>(message, field) =
+                static_cast<uint16_t>(field->default_value_enum()->number());
+          }
+        } else {
+          *MutableRaw<int>(message, field) =
+              field->default_value_enum()->number();
+        }
         break;
 
       case FieldDescriptor::CPPTYPE_STRING: {
@@ -2433,6 +2446,18 @@ int Reflection::GetEnumValue(const Message& message,
         field->number(), field->default_value_enum()->number());
   } else if (schema_.InRealOneof(field) && !HasOneofField(message, field)) {
     value = field->default_value_enum()->number();
+  } else if (schema_.IsEnum8(field)) {
+    if (schema_.IsEnumSigned(field)) {
+      value = GetField<int8_t>(message, field);
+    } else {
+      value = GetField<uint8_t>(message, field);
+    }
+  } else if (schema_.IsEnum16(field)) {
+    if (schema_.IsEnumSigned(field)) {
+      value = GetField<int16_t>(message, field);
+    } else {
+      value = GetField<uint16_t>(message, field);
+    }
   } else {
     value = GetField<int>(message, field);
   }
@@ -2468,6 +2493,18 @@ void Reflection::SetEnumValueInternal(Message* message,
   if (field->is_extension()) {
     MutableExtensionSet(message)->Set<int>(message->GetArena(), field->number(),
                                            field->type(), value, field);
+  } else if (schema_.IsEnum8(field)) {
+    if (schema_.IsEnumSigned(field)) {
+      SetField<int8_t>(message, field, static_cast<int8_t>(value));
+    } else {
+      SetField<uint8_t>(message, field, static_cast<uint8_t>(value));
+    }
+  } else if (schema_.IsEnum16(field)) {
+    if (schema_.IsEnumSigned(field)) {
+      SetField<int16_t>(message, field, static_cast<int16_t>(value));
+    } else {
+      SetField<uint16_t>(message, field, static_cast<uint16_t>(value));
+    }
   } else {
     SetField<int>(message, field, value);
   }
@@ -3245,6 +3282,11 @@ bool Reflection::IsImplicitPresenceFieldNonEmpty(
                     "Code assumes uint64_t and double are the same size.");
       return absl::bit_cast<uint64_t>(GetRaw<double>(message, field)) != 0;
     case FieldDescriptor::CPPTYPE_ENUM:
+      if (schema_.IsEnum8(field)) {
+        return GetRaw<uint8_t>(message, field) != 0;
+      } else if (schema_.IsEnum16(field)) {
+        return GetRaw<uint16_t>(message, field) != 0;
+      }
       return GetRaw<int>(message, field) != 0;
     case FieldDescriptor::CPPTYPE_STRING:
       switch (field->cpp_string_type()) {
@@ -3795,6 +3837,13 @@ const internal::TcParseTableBase* Reflection::CreateTcParseTable() const {
       }
       return std::monostate{};
     };
+    const auto enum_rep = [&]() -> FieldOptions::EnumRep {
+      if (field->cpp_type() == FieldDescriptor::CPPTYPE_ENUM) {
+        if (schema_.IsEnum8(field)) return FieldOptions::kEnum8;
+        if (schema_.IsEnum16(field)) return FieldOptions::kEnum16;
+      }
+      return FieldOptions::kEnum32;
+    };
     fields.push_back({
         field,  //
         static_cast<int>(schema_.HasBitIndex(field)),
@@ -3807,6 +3856,7 @@ const internal::TcParseTableBase* Reflection::CreateTcParseTable() const {
         /* use_direct_tcparser_table */ false,
         schema_.IsSplit(field),
         str_options(),
+        enum_rep(),
     });
   }
   std::sort(fields.begin(), fields.end(), [](const auto& a, const auto& b) {

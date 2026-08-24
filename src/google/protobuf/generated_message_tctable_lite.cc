@@ -64,6 +64,10 @@ using FieldEntry = TcParseTableBase::FieldEntry;
 //////////////////////////////////////////////////////////////////////////////
 
 #ifndef NDEBUG
+[[noreturn]] void AlignFail(std::integral_constant<size_t, 2>,
+                            std::uintptr_t address) {
+  ABSL_LOG(FATAL) << "Unaligned (2) access at " << address;
+}
 [[noreturn]] void AlignFail(std::integral_constant<size_t, 4>,
                             std::uintptr_t address) {
   ABSL_LOG(FATAL) << "Unaligned (4) access at " << address;
@@ -140,8 +144,14 @@ absl::Status TcParser::VerifyHasBitConsistency(const MessageLite* msg,
         if (has_bit) break;
         switch (entry.type_card & fl::kRepMask) {
           case fl::kRep8Bits:
-            if (RefAt<bool>(base, entry.offset) !=
-                RefAt<bool>(default_base, entry.offset)) {
+            if (RefAt<uint8_t>(base, entry.offset) !=
+                RefAt<uint8_t>(default_base, entry.offset)) {
+              return make_error_status();
+            }
+            break;
+          case fl::kRep16Bits:
+            if (RefAt<uint16_t>(base, entry.offset) !=
+                RefAt<uint16_t>(default_base, entry.offset)) {
               return make_error_status();
             }
             break;
@@ -1243,6 +1253,14 @@ PROTOBUF_NOINLINE const char* TcParser::FastV8P1(PROTOBUF_TC_PARAM_DECL) {
 PROTOBUF_NOINLINE const char* TcParser::FastV8P2(PROTOBUF_TC_PARAM_DECL) {
   PROTOBUF_MUSTTAIL return PackedVarint<bool, uint16_t>(PROTOBUF_TC_PARAM_PASS);
 }
+PROTOBUF_NOINLINE const char* TcParser::FastV16S1(PROTOBUF_TC_PARAM_DECL) {
+  PROTOBUF_MUSTTAIL return SingularVarint<uint16_t, uint8_t>(
+      PROTOBUF_TC_PARAM_PASS);
+}
+PROTOBUF_NOINLINE const char* TcParser::FastV16S2(PROTOBUF_TC_PARAM_DECL) {
+  PROTOBUF_MUSTTAIL return SingularVarint<uint16_t, uint16_t>(
+      PROTOBUF_TC_PARAM_PASS);
+}
 PROTOBUF_NOINLINE const char* TcParser::FastV32P1(PROTOBUF_TC_PARAM_DECL) {
   PROTOBUF_MUSTTAIL return PackedVarint<uint32_t, uint8_t>(
       PROTOBUF_TC_PARAM_PASS);
@@ -1313,7 +1331,7 @@ PROTOBUF_NOINLINE const char* TcParser::MpUnknownEnumFallback(
   PROTOBUF_MUSTTAIL return ToTagDispatch(PROTOBUF_TC_PARAM_NO_DATA_PASS);
 }
 
-template <typename TagType, uint16_t xform_val>
+template <typename FieldType, typename TagType, uint16_t xform_val>
 PROTOBUF_ALWAYS_INLINE const char* TcParser::SingularEnum(
     PROTOBUF_TC_PARAM_DECL) {
   if (ABSL_PREDICT_FALSE(data.coded_tag<TagType>() != 0)) {
@@ -1334,24 +1352,70 @@ PROTOBUF_ALWAYS_INLINE const char* TcParser::SingularEnum(
     PROTOBUF_MUSTTAIL return FastUnknownEnumFallback(PROTOBUF_TC_PARAM_PASS);
   }
   SetCachedHasBit(hasbits, data.hasbit_idx());
-  RefAt<int32_t>(msg, data.offset()) = tmp;
+  RefAt<FieldType>(msg, data.offset()) = static_cast<FieldType>(tmp);
   PROTOBUF_MUSTTAIL return ToTagDispatch(PROTOBUF_TC_PARAM_NO_DATA_PASS);
 }
 
 PROTOBUF_NOINLINE const char* TcParser::FastErS1(PROTOBUF_TC_PARAM_DECL) {
-  PROTOBUF_MUSTTAIL return SingularEnum<uint8_t, field_layout::kTvRange>(
+  PROTOBUF_MUSTTAIL return SingularEnum<int32_t, uint8_t,
+                                        field_layout::kTvRange>(
       PROTOBUF_TC_PARAM_PASS);
 }
 PROTOBUF_NOINLINE const char* TcParser::FastErS2(PROTOBUF_TC_PARAM_DECL) {
-  PROTOBUF_MUSTTAIL return SingularEnum<uint16_t, field_layout::kTvRange>(
+  PROTOBUF_MUSTTAIL return SingularEnum<int32_t, uint16_t,
+                                        field_layout::kTvRange>(
       PROTOBUF_TC_PARAM_PASS);
 }
 PROTOBUF_NOINLINE const char* TcParser::FastEvS1(PROTOBUF_TC_PARAM_DECL) {
-  PROTOBUF_MUSTTAIL return SingularEnum<uint8_t, field_layout::kTvEnum>(
+  PROTOBUF_MUSTTAIL return SingularEnum<int32_t, uint8_t,
+                                        field_layout::kTvEnum>(
       PROTOBUF_TC_PARAM_PASS);
 }
 PROTOBUF_NOINLINE const char* TcParser::FastEvS2(PROTOBUF_TC_PARAM_DECL) {
-  PROTOBUF_MUSTTAIL return SingularEnum<uint16_t, field_layout::kTvEnum>(
+  PROTOBUF_MUSTTAIL return SingularEnum<int32_t, uint16_t,
+                                        field_layout::kTvEnum>(
+      PROTOBUF_TC_PARAM_PASS);
+}
+
+PROTOBUF_NOINLINE const char* TcParser::FastEr8S1(PROTOBUF_TC_PARAM_DECL) {
+  PROTOBUF_MUSTTAIL return SingularEnum<uint8_t, uint8_t,
+                                        field_layout::kTvRange>(
+      PROTOBUF_TC_PARAM_PASS);
+}
+PROTOBUF_NOINLINE const char* TcParser::FastEr8S2(PROTOBUF_TC_PARAM_DECL) {
+  PROTOBUF_MUSTTAIL return SingularEnum<uint8_t, uint16_t,
+                                        field_layout::kTvRange>(
+      PROTOBUF_TC_PARAM_PASS);
+}
+PROTOBUF_NOINLINE const char* TcParser::FastEv8S1(PROTOBUF_TC_PARAM_DECL) {
+  PROTOBUF_MUSTTAIL return SingularEnum<uint8_t, uint8_t,
+                                        field_layout::kTvEnum>(
+      PROTOBUF_TC_PARAM_PASS);
+}
+PROTOBUF_NOINLINE const char* TcParser::FastEv8S2(PROTOBUF_TC_PARAM_DECL) {
+  PROTOBUF_MUSTTAIL return SingularEnum<uint8_t, uint16_t,
+                                        field_layout::kTvEnum>(
+      PROTOBUF_TC_PARAM_PASS);
+}
+
+PROTOBUF_NOINLINE const char* TcParser::FastEr16S1(PROTOBUF_TC_PARAM_DECL) {
+  PROTOBUF_MUSTTAIL return SingularEnum<uint16_t, uint8_t,
+                                        field_layout::kTvRange>(
+      PROTOBUF_TC_PARAM_PASS);
+}
+PROTOBUF_NOINLINE const char* TcParser::FastEr16S2(PROTOBUF_TC_PARAM_DECL) {
+  PROTOBUF_MUSTTAIL return SingularEnum<uint16_t, uint16_t,
+                                        field_layout::kTvRange>(
+      PROTOBUF_TC_PARAM_PASS);
+}
+PROTOBUF_NOINLINE const char* TcParser::FastEv16S1(PROTOBUF_TC_PARAM_DECL) {
+  PROTOBUF_MUSTTAIL return SingularEnum<uint16_t, uint8_t,
+                                        field_layout::kTvEnum>(
+      PROTOBUF_TC_PARAM_PASS);
+}
+PROTOBUF_NOINLINE const char* TcParser::FastEv16S2(PROTOBUF_TC_PARAM_DECL) {
+  PROTOBUF_MUSTTAIL return SingularEnum<uint16_t, uint16_t,
+                                        field_layout::kTvEnum>(
       PROTOBUF_TC_PARAM_PASS);
 }
 
@@ -2263,6 +2327,21 @@ PROTOBUF_NOINLINE const char* TcParser::MpVarint(PROTOBUF_TC_PARAM_DECL) {
     } else if (is_zigzag) {
       tmp = WireFormatLite::ZigZagDecode32(static_cast<uint32_t>(tmp));
     }
+  } else if (rep == field_layout::kRep16Bits) {
+    if (is_validated_enum) {
+      if (!EnumIsValidAux(tmp, xform_val, *table->field_aux(&entry))) {
+        ptr = ptr2;
+        PROTOBUF_MUSTTAIL return MpUnknownEnumFallback(PROTOBUF_TC_PARAM_PASS);
+      }
+    }
+  } else {
+    ABSL_DCHECK_EQ(rep, static_cast<uint16_t>(field_layout::kRep8Bits));
+    if (is_validated_enum) {
+      if (!EnumIsValidAux(tmp, xform_val, *table->field_aux(&entry))) {
+        ptr = ptr2;
+        PROTOBUF_MUSTTAIL return MpUnknownEnumFallback(PROTOBUF_TC_PARAM_PASS);
+      }
+    }
   }
 
   // Mark the field as present:
@@ -2279,9 +2358,15 @@ PROTOBUF_NOINLINE const char* TcParser::MpVarint(PROTOBUF_TC_PARAM_DECL) {
     RefAt<uint64_t>(base, entry.offset) = tmp;
   } else if (rep == field_layout::kRep32Bits) {
     RefAt<uint32_t>(base, entry.offset) = static_cast<uint32_t>(tmp);
+  } else if (rep == field_layout::kRep16Bits) {
+    RefAt<uint16_t>(base, entry.offset) = static_cast<uint16_t>(tmp);
   } else {
     ABSL_DCHECK_EQ(rep, static_cast<uint16_t>(field_layout::kRep8Bits));
-    RefAt<bool>(base, entry.offset) = static_cast<bool>(tmp);
+    if ((type_card & field_layout::kFmtMask) == field_layout::kFmtEnum) {
+      RefAt<uint8_t>(base, entry.offset) = static_cast<uint8_t>(tmp);
+    } else {
+      RefAt<bool>(base, entry.offset) = static_cast<bool>(tmp);
+    }
   }
 
   PROTOBUF_MUSTTAIL return ToTagDispatch(PROTOBUF_TC_PARAM_NO_DATA_PASS);
@@ -3209,6 +3294,12 @@ std::string TypeCardToString(uint16_t type_card) {
     case fl::kFkPackedFixed: {
       switch (type_card & ~fl::kFcMask & ~fl::kSplitMask) {
         PROTOBUF_INTERNAL_TYPE_CARD_CASE(Bool);
+        PROTOBUF_INTERNAL_TYPE_CARD_CASE(Enum8);
+        PROTOBUF_INTERNAL_TYPE_CARD_CASE(EnumRange8);
+        PROTOBUF_INTERNAL_TYPE_CARD_CASE(OpenEnum8);
+        PROTOBUF_INTERNAL_TYPE_CARD_CASE(Enum16);
+        PROTOBUF_INTERNAL_TYPE_CARD_CASE(EnumRange16);
+        PROTOBUF_INTERNAL_TYPE_CARD_CASE(OpenEnum16);
         PROTOBUF_INTERNAL_TYPE_CARD_CASE(Fixed32);
         PROTOBUF_INTERNAL_TYPE_CARD_CASE(UInt32);
         PROTOBUF_INTERNAL_TYPE_CARD_CASE(SFixed32);
