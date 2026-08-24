@@ -361,11 +361,10 @@ public final class Internal {
     }
   }
 
-  @SuppressWarnings("unchecked")
   public static <T extends MessageLite> T getDefaultInstance(Class<T> clazz) {
     try {
       Method method = clazz.getMethod("getDefaultInstance");
-      return (T) method.invoke(method);
+      return clazz.cast(method.invoke(method));
     } catch (Exception e) {
       throw new RuntimeException("Failed to get default instance for " + clazz, e);
     }
