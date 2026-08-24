@@ -47,7 +47,6 @@
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/descriptor_lite.h"
 #include "google/protobuf/extension_set.h"
-#include "google/protobuf/generated_enum_util.h"
 #include "google/protobuf/generated_message_tctable_decl.h"
 #include "google/protobuf/generated_message_tctable_gen.h"
 #include "google/protobuf/generated_message_tctable_impl.h"
@@ -207,40 +206,34 @@ const std::string& NameOfEnum(const EnumDescriptor* PROTOBUF_NONNULL descriptor,
 // reflection information about the names of the enums.  This routine
 // allocates max_val + 1 entries, under the assumption that all the enums
 // fall in the range [min_val .. max_val].
-const std::string** MakeDenseEnumCache(const EnumDescriptor* desc, int min_val,
-                                       int max_val) {
-  auto* str_ptrs =
-      new const std::string*[static_cast<size_t>(max_val - min_val + 1)]();
-  const int count = desc->value_count();
-  for (int i = 0; i < count; ++i) {
-    const int num = desc->value(i)->number();
-    if (str_ptrs[num - min_val] == nullptr) {
-      // Don't over-write an existing entry, because in case of duplication, the
-      // first one wins.
-      str_ptrs[num - min_val] = &internal::NameOfEnumAsString(desc->value(i));
-    }
-  }
-  // Change any unfilled entries to point to the empty string.
-  for (int i = 0; i < max_val - min_val + 1; ++i) {
-    if (str_ptrs[i] == nullptr) str_ptrs[i] = &GetEmptyStringAlreadyInited();
-  }
-  return str_ptrs;
-}
-
-PROTOBUF_NOINLINE const std::string& NameOfDenseEnumSlow(
-    int v, DenseEnumCacheInfo* deci) {
-  if (v < deci->min_val || v > deci->max_val)
-    return GetEmptyStringAlreadyInited();
-
+PROTOBUF_NOINLINE const std::string** InitializeDenseEnumCache(
+    DenseEnumCacheInfo* deci) {
   // Use run_once to avoid a race condition in initializing the cache.
   absl::call_once(deci->loaded, [deci]() {
-    const std::string** new_cache =
-        MakeDenseEnumCache(deci->descriptor_fn(), deci->min_val, deci->max_val);
+    const EnumDescriptor* desc = deci->descriptor_fn();
+    const size_t size =
+        static_cast<uint32_t>(deci->max_val - deci->min_val + 1);
+    const std::string** new_cache = new const std::string*[size]();
+    const int count = desc->value_count();
+    for (int i = 0; i < count; ++i) {
+      const int num = desc->value(i)->number();
+      if (new_cache[num - deci->min_val] == nullptr) {
+        // Don't over-write an existing entry, because in case of duplication,
+        // the first one wins.
+        new_cache[num - deci->min_val] =
+            &internal::NameOfEnumAsString(desc->value(i));
+      }
+    }
+    // Change any unfilled entries to point to the empty string.
+    for (size_t i = 0; i < size; ++i) {
+      if (new_cache[i] == nullptr)
+        new_cache[i] = &GetEmptyStringAlreadyInited();
+    }
     // Atomically publish the cache. Doing this inside the call_once ensures
     // that no thread sees the uninitialized or partially initialized cache.
     deci->cache.store(new_cache, std::memory_order_release);
   });
-  return *deci->cache.load(std::memory_order_acquire)[v - deci->min_val];
+  return deci->cache.load(std::memory_order_acquire);
 }
 
 bool IsMatchingCType(const FieldDescriptor* field, int ctype) {
