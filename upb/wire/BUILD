@@ -94,6 +94,7 @@ cc_library(
         "//video/youtube/utils/elements/client/component_type:__pkg__",
         # TODO: b/548146484 - Remove visibility once the `UpbUnknowns` class is gone.
         "//video/youtube/utils/elements/upb/crosslang:__pkg__",
+        "//video/youtube/utils/elements/client/component_type/subscription_processors:__pkg__",
         "//python:__pkg__",
         "//upb:__pkg__",
         "//upb/message:__subpackages__",
