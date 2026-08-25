@@ -16682,6 +16682,24 @@ UPB_INLINE bool upb_Message_NextUnknown2(const struct upb_Message* msg,
   return false;
 }
 
+// Iterates over unknown fields in wire format (upb_StringView).
+// If an unknown field is a non-canonical extension, it is automatically
+// encoded into wire format into `*arena` using default encode options (0).
+//
+// `arena` is a pointer to `upb_Arena*`. If `*arena` is NULL when a
+// non-canonical extension is encountered, an arena will be lazily created via
+// `upb_Arena_New()`. The caller is responsible for freeing `*arena` (if
+// non-NULL) using `upb_Arena_Free(*arena)` after iteration completes.
+//
+// NOTE: Automatically encoding non-canonical extensions into wire format may
+// incur a performance penalty if non-canonical extensions are present, as
+// encoding requires allocating temporary buffers in `*arena`. Use
+// `upb_Message_NextUnknown2` if you want to inspect non-canonical extensions
+// directly without encoding them.
+UPB_NODISCARD bool upb_Message_NextWireFormatUnknown(
+    const struct upb_Message* msg, struct upb_Arena** arena,
+    upb_StringView* data, uintptr_t* iter);
+
 typedef enum {
   kUpb_FindUnknown_Ok,
   kUpb_FindUnknown_NotPresent,
@@ -16786,6 +16804,33 @@ UPB_NODISCARD upb_Message_DeleteUnknownStatus upb_Message_DeleteUnknown2(
 
 
 #endif /* UPB_MESSAGE_UNKNOWN_FIELDS_H_ */
+
+#ifndef UPB_WIRE_ENCODE_EXTENSION_H_
+#define UPB_WIRE_ENCODE_EXTENSION_H_
+
+
+// Must be last.
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+struct upb_Extension;
+
+// Encodes an extension (`upb_Extension*`) to bytes.
+//
+// This can be used to encode an extension into the provided arena.
+// Returns `kUpb_EncodeStatus_Ok` on success.
+UPB_NODISCARD upb_EncodeStatus
+upb_EncodeExtension(const struct upb_Extension* ext, struct upb_Arena* arena,
+                    upb_StringView* view, int encode_options);
+
+#ifdef __cplusplus
+} /* extern "C" */
+#endif
+
+
+#endif /* UPB_WIRE_ENCODE_EXTENSION_H_ */
 
 #ifndef UPB_WIRE_EPS_COPY_INPUT_STREAM_H_
 #define UPB_WIRE_EPS_COPY_INPUT_STREAM_H_
@@ -19487,33 +19532,6 @@ void _upb_Decoder_AddEnumValueToUnknown(upb_Decoder* d, upb_Message* msg,
 
 
 #endif /* UPB_WIRE_INTERNAL_DECODER_H_ */
-
-#ifndef UPB_WIRE_ENCODE_EXTENSION_H_
-#define UPB_WIRE_ENCODE_EXTENSION_H_
-
-
-// Must be last.
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-struct upb_Extension;
-
-// Encodes an extension (`upb_Extension*`) to bytes.
-//
-// This can be used to encode an extension into the provided arena.
-// Returns `kUpb_EncodeStatus_Ok` on success.
-UPB_NODISCARD upb_EncodeStatus
-upb_EncodeExtension(const struct upb_Extension* ext, struct upb_Arena* arena,
-                    upb_StringView* view, int encode_options);
-
-#ifdef __cplusplus
-} /* extern "C" */
-#endif
-
-
-#endif /* UPB_WIRE_ENCODE_EXTENSION_H_ */
 #ifndef GOOGLE_UPB_UPB_WIRE_WRITER_H__
 #define GOOGLE_UPB_UPB_WIRE_WRITER_H__
 

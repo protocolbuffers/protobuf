@@ -7997,6 +7997,33 @@ bool upb_Message_NextSerializableField(const upb_Message* msg,
 
 // Must be last.
 
+bool upb_Message_NextWireFormatUnknown(const struct upb_Message* msg,
+                                       struct upb_Arena** arena,
+                                       upb_StringView* data, uintptr_t* iter) {
+  upb_MessageUnknown unknown;
+  if (!upb_Message_NextUnknown2(msg, &unknown, iter)) {
+    return false;
+  }
+  if (unknown.type == kUpb_MessageUnknownType_StringView) {
+    *data = unknown.value.bytes;
+    return true;
+  }
+  UPB_ASSERT(unknown.type == kUpb_MessageUnknownType_NonCanonicalExtension);
+  if (!*arena) {
+    *arena = upb_Arena_New();
+    if (!*arena) {
+      return false;
+    }
+  }
+  upb_EncodeStatus status =
+      upb_EncodeExtension(unknown.value.extension, *arena, data,
+                          /*encode_options=*/0);
+  if (status != kUpb_EncodeStatus_Ok) {
+    return false;
+  }
+  return true;
+}
+
 static upb_FindUnknownRet2 upb_FindUnknownRet2_ParseError(void) {
   return (upb_FindUnknownRet2){.status = kUpb_FindUnknown_ParseError};
 }
