@@ -13,7 +13,9 @@
 #include "python/message.h"
 #include "python/protobuf.h"
 #include "upb/base/string_view.h"
+#include "upb/mem/arena.h"
 #include "upb/message/message.h"
+#include "upb/message/unknown_fields.h"
 #include "upb/reflection/def.h"
 #include "upb/wire/eps_copy_input_stream.h"
 #include "upb/wire/reader.h"
@@ -266,7 +268,8 @@ static PyObject* PyUpb_UnknownFieldSet_New(PyTypeObject* type, PyObject* args,
 
   uintptr_t iter = kUpb_Message_UnknownBegin;
   upb_StringView view;
-  while (upb_Message_NextUnknown(msg, &view, &iter)) {
+  upb_Arena* upb_arena = NULL;
+  while (upb_Message_NextWireFormatUnknown(msg, &upb_arena, &view, &iter)) {
     const char* ptr = view.data;
     upb_EpsCopyInputStream stream;
     upb_EpsCopyInputStream_Init(&stream, &ptr, view.size);
@@ -280,11 +283,13 @@ static PyObject* PyUpb_UnknownFieldSet_New(PyTypeObject* type, PyObject* args,
     }
 
     if (!ok) {
+      if (upb_arena) upb_Arena_Free(upb_arena);
       Py_DECREF(&self->ob_base);
       return NULL;
     }
   }
 
+  if (upb_arena) upb_Arena_Free(upb_arena);
   return &self->ob_base;
 }
 
