@@ -262,7 +262,6 @@ protobuf_maven_dev.install(
 use_repo(protobuf_maven_dev, "protobuf_maven_dev")
 
 bazel_dep(name = "googletest", version = "1.17.0.bcr.2", dev_dependency = True)
-bazel_dep(name = "rules_buf", version = "0.3.0", dev_dependency = True)
 bazel_dep(name = "rules_testing", version = "0.9.0", dev_dependency = True)
 bazel_dep(
     name = "abseil-py",
@@ -300,18 +299,6 @@ archive_override(
     ],
     strip_prefix = "protobuf-25.0",
     urls = ["https://github.com/protocolbuffers/protobuf/releases/download/v25.0/protobuf-25.0.tar.gz"],
-)
-
-bazel_dep(name = "com_google_protobuf_previous_release", version = "33.0", dev_dependency = True)
-archive_override(
-    module_name = "com_google_protobuf_previous_release",
-    integrity = "sha256-y8U2BkcGtijc/lB77zhu8+IhTVY2V2EilvF4GqFV7gc=",
-    patch_strip = 1,
-    patches = [
-        "@com_google_protobuf//:patches/protobuf_v33/0001-Update-module-name.patch",
-    ],
-    strip_prefix = "protobuf-33.0",
-    urls = ["https://github.com/protocolbuffers/protobuf/releases/download/v33.0/protobuf-33.0.tar.gz"],
 )
 
 # Register C++ toolchains for cross-compilation. These are used for compiling release binaries of
