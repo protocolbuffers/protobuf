@@ -61,7 +61,7 @@ def _aspect_impl(target, ctx):
     transitive_jars = [dep[JavaProtoAspectInfo].jars for dep in ctx.rule.attr.deps]
 
     return [
-        java_info,
+        add_constraints(java_info, constraints = ["android"]),
         JavaProtoAspectInfo(jars = depset(jars, transitive = transitive_jars)),
     ]
 
