@@ -377,8 +377,9 @@ PROTOBUF_ATTRIBUTE_INIT_PRIORITY2 static ::std::false_type
     _static_init2_ [[maybe_unused]] =
         (::_pbi::AddDescriptors(&descriptor_table_google_2fprotobuf_2fcompiler_2fcsharp_2fc_5fsharp_5ffeatures_2eproto),
         ::_pbi::ExtensionSet::RegisterMessageExtension(
-            &::google::protobuf::FeatureSet::default_instance(), 1004, 11,
-            false, false, &::pb::CSharpFeatures::default_instance(),
+            ::_pbi::MessageTraits<::google::protobuf::FeatureSet>::class_data(), 1004,
+            11, false, false,
+            ::_pbi::MessageTraits<::pb::CSharpFeatures>::class_data(),
             nullptr, ::_pbi::LazyAnnotation::kUndefined),
          ::std::false_type{});
 #include "google/protobuf/port_undef.inc"
