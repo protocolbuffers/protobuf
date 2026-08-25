@@ -32,6 +32,7 @@
 #include "absl/strings/str_cat.h"
 #include "conformance/conformance.pb.h"
 #include "conformance/test_protos/test_messages_edition2023.pb.h"
+#include "conformance/test_protos/test_messages_edition2026.pb.h"
 #include "conformance/test_protos/test_messages_edition_unstable.pb.h"
 #include "editions/golden/test_messages_proto2_editions.pb.h"
 #include "editions/golden/test_messages_proto3_editions.pb.h"
@@ -59,6 +60,7 @@ using ::google::protobuf::util::JsonStringToMessage;
 using ::google::protobuf::util::MessageToJsonString;
 using ::google::protobuf::util::NewTypeResolverForDescriptorPool;
 using ::google::protobuf::util::TypeResolver;
+using ::protobuf_test_messages::edition2026::TestAllTypesEdition2026;
 using ::protobuf_test_messages::edition_unstable::TestAllTypesEditionUnstable;
 using ::protobuf_test_messages::editions::TestAllTypesEdition2023;
 using ::protobuf_test_messages::proto2::TestAllTypesProto2;
@@ -99,6 +101,7 @@ class Harness {
     google::protobuf::LinkMessageReflection<TestAllTypesProto2>();
     google::protobuf::LinkMessageReflection<TestAllTypesProto3>();
     google::protobuf::LinkMessageReflection<TestAllTypesEdition2023>();
+    google::protobuf::LinkMessageReflection<TestAllTypesEdition2026>();
     google::protobuf::LinkMessageReflection<TestAllTypesEditionUnstable>();
     google::protobuf::LinkMessageReflection<TestAllTypesProto2Editions>();
     google::protobuf::LinkMessageReflection<TestAllTypesProto3Editions>();

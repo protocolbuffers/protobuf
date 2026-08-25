@@ -29,6 +29,7 @@ namespace Google.Protobuf.Conformance
                 ProtobufTestMessages.Proto3.TestAllTypesProto3.Descriptor,
                 ProtobufTestMessages.Proto2.TestAllTypesProto2.Descriptor,
                 ProtobufTestMessages.Editions.TestAllTypesEdition2023.Descriptor,
+                ProtobufTestMessages.Edition2026.TestAllTypesEdition2026.Descriptor,
                 ProtobufTestMessages.EditionUnstable.TestAllTypesEditionUnstable.Descriptor,
                 ProtobufTestMessages.Editions.Proto3.TestAllTypesProto3.Descriptor,
                 ProtobufTestMessages.Editions.Proto2.TestAllTypesProto2.Descriptor);
@@ -106,6 +107,9 @@ namespace Google.Protobuf.Conformance
                           "protobuf_test_messages.editions.TestAllTypesEdition2023" =>
                               parser.Parse<ProtobufTestMessages.Editions.TestAllTypesEdition2023>(
                                   request.JsonPayload),
+                          "protobuf_test_messages.edition2026.TestAllTypesEdition2026" =>
+                              parser.Parse<ProtobufTestMessages.Edition2026.TestAllTypesEdition2026>(
+                                  request.JsonPayload),
                           "protobuf_test_messages.edition_unstable.TestAllTypesEditionUnstable" =>
                               parser.Parse<ProtobufTestMessages.EditionUnstable.TestAllTypesEditionUnstable>(
                                   request.JsonPayload),
@@ -132,6 +136,9 @@ namespace Google.Protobuf.Conformance
                         "protobuf_test_messages.editions.TestAllTypesEdition2023" =>
                             ProtobufTestMessages.Editions.TestAllTypesEdition2023.Parser
                                 .WithExtensionRegistry(edition2023ExtensionRegistry)
+                                .ParseFrom(request.ProtobufPayload),
+                        "protobuf_test_messages.edition2026.TestAllTypesEdition2026" =>
+                            ProtobufTestMessages.Edition2026.TestAllTypesEdition2026.Parser
                                 .ParseFrom(request.ProtobufPayload),
                         "protobuf_test_messages.edition_unstable.TestAllTypesEditionUnstable" =>
                             ProtobufTestMessages.EditionUnstable.TestAllTypesEditionUnstable.Parser

@@ -32,6 +32,7 @@
 #include "conformance/conformance.pb.h"
 #include "conformance_test.h"
 #include "conformance/test_protos/test_messages_edition2023.pb.h"
+#include "conformance/test_protos/test_messages_edition2026.pb.h"
 #include "conformance/test_protos/test_messages_edition_unstable.pb.h"
 #include "editions/golden/test_messages_proto2_editions.pb.h"
 #include "editions/golden/test_messages_proto3_editions.pb.h"
@@ -52,6 +53,7 @@ using google::protobuf::Descriptor;
 using google::protobuf::FieldDescriptor;
 using google::protobuf::internal::WireFormatLite;
 using google::protobuf::util::NewTypeResolverForDescriptorPool;
+using protobuf_test_messages::edition2026::TestAllTypesEdition2026;
 using protobuf_test_messages::edition_unstable::TestAllTypesEditionUnstable;
 using protobuf_test_messages::editions::TestAllTypesEdition2023;
 using protobuf_test_messages::proto2::TestAllTypesProto2;
@@ -332,6 +334,7 @@ void BinaryAndJsonConformanceSuite::RunSuiteImpl() {
     if (!this->performance_) {
       RunDelimitedFieldTests();
       RunUnstableTests();
+      RunEdition2026Tests();
       RunUtf8ValidationTests();
     }
   }
@@ -401,6 +404,61 @@ void BinaryAndJsonConformanceSuite::RunUnstableTests() {
       absl::StrCat("ValidMap.Bytes"), REQUIRED,
       len(15, absl::StrCat(len(1, "foo"), len(2, "barbaz"))),
       R"pb(map_string_bytes { key: "foo" value: "barbaz" })pb");
+}
+
+void BinaryAndJsonConformanceSuite::RunEdition2026Tests() {
+  SetTypeUrl(GetTypeUrl(TestAllTypesEdition2026::GetDescriptor()));
+
+  RunValidProtobufTest<TestAllTypesEdition2026>(
+      absl::StrCat("ValidInt32"), REQUIRED,
+      field(1, WireFormatLite::WIRETYPE_VARINT, varint(99)),
+      R"pb(optional_int32: 99)pb");
+
+  // The (pb.enumvalue.json) option overrides the name used for an enum value
+  // in JSON.
+  RunValidJsonTest<TestAllTypesEdition2026>(
+      "EnumValueCustomJsonName", REQUIRED,
+      R"({"optionalForeignEnum": "customBar"})",
+      "optional_foreign_enum: FOREIGN_BAR");
+  // Using the original enum value name in JSON is also allowed.
+  RunValidJsonTest<TestAllTypesEdition2026>(
+      "EnumValueCustomJsonNameOriginalName", REQUIRED,
+      R"({"optionalForeignEnum": "FOREIGN_BAR"})",
+      "optional_foreign_enum: FOREIGN_BAR");
+  RunValidJsonTest<TestAllTypesEdition2026>(
+      "EnumValueCustomJsonNameNumericValue", REQUIRED,
+      R"({"optionalForeignEnum": 1})", "optional_foreign_enum: FOREIGN_BAR");
+  RunValidJsonTest<TestAllTypesEdition2026>(
+      "RepeatedEnumValueCustomJsonName", REQUIRED,
+      R"({"repeatedForeignEnum": ["customBar", "FOREIGN_BAZ", "customBaz"]})",
+      R"(
+        repeated_foreign_enum: FOREIGN_BAR
+        repeated_foreign_enum: FOREIGN_BAZ
+        repeated_foreign_enum: FOREIGN_BAZ
+      )");
+  RunValidJsonTest<TestAllTypesEdition2026>(
+      "MapEnumValueCustomJsonName", REQUIRED,
+      R"({"mapStringForeignEnum": {"a": "customBar", "b": "FOREIGN_BAZ"}})",
+      R"(
+        map_string_foreign_enum { key: "a" value: FOREIGN_BAR }
+        map_string_foreign_enum { key: "b" value: FOREIGN_BAZ }
+      )");
+  ExpectParseFailureForJson<TestAllTypesEdition2026>(
+      "EnumValueUnknownCustomJsonName", REQUIRED,
+      R"({"optionalForeignEnum": "customQux"})");
+  RunValidJsonTestWithValidator<TestAllTypesEdition2026>(
+      "EnumValueCustomJsonNameOutput", REQUIRED,
+      R"({"optionalForeignEnum": "FOREIGN_BAR"})",
+      [](const Json::Value& value) {
+        return value["optionalForeignEnum"].asString() == "customBar";
+      });
+  // A value without the option keeps using its declared name in JSON.
+  RunValidJsonTestWithValidator<TestAllTypesEdition2026>(
+      "EnumValueWithoutCustomJsonNameOutput", REQUIRED,
+      R"({"repeatedForeignEnum": ["FOREIGN_FOO"]})",
+      [](const Json::Value& value) {
+        return value["repeatedForeignEnum"][0].asString() == "FOREIGN_FOO";
+      });
 }
 
 void BinaryAndJsonConformanceSuite::RunUtf8ValidationTests() {
@@ -628,6 +686,105 @@ void BinaryAndJsonConformanceSuite::ExpectParseFailureForProto(
     test.set_failure_message("Should have failed to parse, but didn't.");
     ReportFailure(test, level, request, response);
   }
+}
+
+template <typename MessageType>
+void BinaryAndJsonConformanceSuite::RunValidJsonTest(
+    const std::string& test_name, ConformanceLevel level,
+    const std::string& input_json, const std::string& equivalent_text_format) {
+  MessageType prototype;
+  ConformanceRequestSetting setting1(
+      level, ::conformance::JSON, ::conformance::PROTOBUF,
+      ::conformance::JSON_TEST, prototype, test_name, input_json);
+  RunValidInputTest(setting1, equivalent_text_format);
+  ConformanceRequestSetting setting2(
+      level, ::conformance::JSON, ::conformance::JSON, ::conformance::JSON_TEST,
+      prototype, test_name, input_json);
+  RunValidInputTest(setting2, equivalent_text_format);
+}
+
+template <typename MessageType>
+void BinaryAndJsonConformanceSuite::ExpectParseFailureForJson(
+    const std::string& test_name, ConformanceLevel level,
+    const std::string& input_json) {
+  MessageType prototype;
+  // We don't expect output, but if the program erroneously accepts the JSON
+  // we let it send its response as this.  We must not leave it unspecified.
+  ConformanceRequestSetting setting(
+      level, ::conformance::JSON, ::conformance::JSON, ::conformance::JSON_TEST,
+      prototype, test_name, input_json);
+  const ConformanceRequest& request = setting.GetRequest();
+  ConformanceResponse response;
+  std::string effective_test_name =
+      absl::StrCat(setting.ConformanceLevelToString(level), ".",
+                   setting.GetSyntaxIdentifier(), ".JsonInput.", test_name);
+
+  if (!RunTest(effective_test_name, request, &response)) {
+    return;
+  }
+
+  TestStatus test;
+  test.set_name(effective_test_name);
+  if (response.result_case() == ConformanceResponse::kParseError) {
+    ReportSuccess(test);
+  } else if (response.result_case() == ConformanceResponse::kSkipped) {
+    ReportSkip(test, request, response);
+  } else {
+    test.set_failure_message("Should have failed to parse, but didn't.");
+    ReportFailure(test, level, request, response);
+  }
+}
+
+template <typename MessageType>
+void BinaryAndJsonConformanceSuite::RunValidJsonTestWithValidator(
+    const std::string& test_name, ConformanceLevel level,
+    const std::string& input_json, const Validator& validator) {
+  MessageType prototype;
+  ConformanceRequestSetting setting(
+      level, ::conformance::JSON, ::conformance::JSON, ::conformance::JSON_TEST,
+      prototype, test_name, input_json);
+  const ConformanceRequest& request = setting.GetRequest();
+  ConformanceResponse response;
+  std::string effective_test_name = absl::StrCat(
+      setting.ConformanceLevelToString(level), ".",
+      setting.GetSyntaxIdentifier(), ".JsonInput.", test_name, ".Validator");
+
+  if (!RunTest(effective_test_name, request, &response)) {
+    return;
+  }
+
+  TestStatus test;
+  test.set_name(effective_test_name);
+  if (response.result_case() == ConformanceResponse::kSkipped) {
+    ReportSkip(test, request, response);
+    return;
+  }
+
+  if (response.result_case() != ConformanceResponse::kJsonPayload) {
+    test.set_failure_message(absl::StrCat("Expected JSON payload but got type ",
+                                          response.result_case()));
+    ReportFailure(test, level, request, response);
+    return;
+  }
+  Json::CharReaderBuilder builder;
+  Json::Value value;
+  Json::String err;
+  const std::unique_ptr<Json::CharReader> reader(builder.newCharReader());
+  if (!reader->parse(
+          response.json_payload().c_str(),
+          response.json_payload().c_str() + response.json_payload().length(),
+          &value, &err)) {
+    test.set_failure_message(
+        absl::StrCat("JSON payload cannot be parsed as valid JSON: ", err));
+    ReportFailure(test, level, request, response);
+    return;
+  }
+  if (!validator(value)) {
+    test.set_failure_message("JSON payload validation failed.");
+    ReportFailure(test, level, request, response);
+    return;
+  }
+  ReportSuccess(test);
 }
 
 template <typename MessageType>

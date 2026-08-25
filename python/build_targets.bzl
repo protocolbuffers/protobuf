@@ -59,6 +59,7 @@ def build_targets(name):
         srcs_version = "PY2AND3",
         visibility = [
             "//:__pkg__",
+            "//conformance:__subpackages__",
             "//editions:__pkg__",
             "//upb:__subpackages__",
         ],
