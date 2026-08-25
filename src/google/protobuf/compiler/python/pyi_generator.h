@@ -96,6 +96,11 @@ class PROTOC_EXPORT PyiGenerator : public google::protobuf::compiler::CodeGenera
   // import_map will be a mapping from filename to module alias, e.g.
   // "google3/foo/bar.py" -> "_bar"
   mutable absl::flat_hash_map<std::string, std::string> import_map_;
+  // Set of top-level message and enum names defined in this file that are
+  // shadowed by fields, nested types, or enclosing scopes, and thus need
+  // private type aliases (e.g. `_Type_<name> = <name>`) emitted at module
+  // scope.
+  mutable absl::flat_hash_set<std::string> shadowed_top_level_types_;
 };
 
 }  // namespace python

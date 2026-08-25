@@ -89,10 +89,62 @@ bool IsWellKnownType(const absl::string_view name) {
   // LINT.ThenChange(//depot/google3/net/proto2/python/internal/well_known_types.py:wktbases)
 }
 
+// Checks if the first component of a type name could be shadowed by a class
+// attribute (e.g. a field) or enclosing class in the Python scope hierarchy.
+bool IsTypeShadowed(absl::string_view name, const Descriptor& containing_des) {
+  auto pos = name.find('.');
+  absl::string_view first_token =
+      (pos == absl::string_view::npos) ? name : name.substr(0, pos);
+  for (const Descriptor* cur = &containing_des; cur != nullptr;
+       cur = cur->containing_type()) {
+    if (cur->FindFieldByName(first_token) != nullptr ||
+        cur->FindEnumTypeByName(first_token) != nullptr ||
+        cur->FindNestedTypeByName(first_token) != nullptr ||
+        (cur->containing_type() != nullptr && cur->name() == first_token)) {
+      return true;
+    }
+  }
+  return false;
+}
+
+void CheckFieldShadowing(const FieldDescriptor* field,
+                         const Descriptor* containing_des,
+                         absl::flat_hash_set<std::string>* shadowed_types) {
+  if (field->is_map()) {
+    const Descriptor* map_entry = field->message_type();
+    CheckFieldShadowing(map_entry->field(0), containing_des, shadowed_types);
+    CheckFieldShadowing(map_entry->field(1), containing_des, shadowed_types);
+    return;
+  }
+  if (field->cpp_type() != FieldDescriptor::CPPTYPE_MESSAGE &&
+      field->cpp_type() != FieldDescriptor::CPPTYPE_ENUM) {
+    return;
+  }
+  const FileDescriptor* type_file =
+      field->cpp_type() == FieldDescriptor::CPPTYPE_ENUM
+          ? field->enum_type()->file()
+          : field->message_type()->file();
+  if (type_file != containing_des->file()) {
+    return;
+  }
+  std::string name =
+      field->cpp_type() == FieldDescriptor::CPPTYPE_ENUM
+          ? NamePrefixedWithNestedTypes(*field->enum_type(), ".")
+          : NamePrefixedWithNestedTypes(*field->message_type(), ".");
+  if (!IsTypeShadowed(name, *containing_des)) {
+    return;
+  }
+  auto pos = name.find('.');
+  std::string first_token =
+      (pos == std::string::npos) ? name : std::string(name.substr(0, pos));
+  shadowed_types->insert(first_token);
+}
+
 // Checks what modules should be imported for this message
 // descriptor.
 void CheckImportModules(const Descriptor* descriptor,
-                        ImportModules* import_modules) {
+                        ImportModules* import_modules,
+                        absl::flat_hash_set<std::string>* shadowed_types) {
   if (descriptor->extension_range_count() > 0) {
     import_modules->has_extendable = true;
   }
@@ -107,6 +159,7 @@ void CheckImportModules(const Descriptor* descriptor,
     if (IsPythonKeyword(field->name())) {
       continue;
     }
+    CheckFieldShadowing(field, descriptor, shadowed_types);
     import_modules->has_optional = true;
     if (field->is_repeated()) {
       import_modules->has_repeated = true;
@@ -144,7 +197,8 @@ void CheckImportModules(const Descriptor* descriptor,
     }
   }
   for (int i = 0; i < descriptor->nested_type_count(); ++i) {
-    CheckImportModules(descriptor->nested_type(i), import_modules);
+    CheckImportModules(descriptor->nested_type(i), import_modules,
+                       shadowed_types);
   }
 }
 
@@ -198,7 +252,8 @@ void PyiGenerator::PrintImports() const {
     import_modules.has_union = true;
   }
   for (int i = 0; i < file_->message_type_count(); i++) {
-    CheckImportModules(file_->message_type(i), &import_modules);
+    CheckImportModules(file_->message_type(i), &import_modules,
+                       &shadowed_top_level_types_);
   }
   if (import_modules.has_datetime) {
     printer_->Print("import datetime\n\n");
@@ -357,6 +412,10 @@ void PyiGenerator::PrintTopLevelEnums() const {
   for (int i = 0; i < file_->enum_type_count(); ++i) {
     printer_->Print("\n");
     PrintEnum(*file_->enum_type(i));
+    if (shadowed_top_level_types_.contains(file_->enum_type(i)->name())) {
+      printer_->Print("\n_Type_$name$ = $name$\n", "name",
+                      file_->enum_type(i)->name());
+    }
   }
 }
 
@@ -390,23 +449,26 @@ std::string PyiGenerator::GetFieldType(
       return "float";
     case FieldDescriptor::CPPTYPE_BOOL:
       return "bool";
-    case FieldDescriptor::CPPTYPE_ENUM:
-      return ModuleLevelName(*field_des.enum_type());
     case FieldDescriptor::CPPTYPE_STRING:
       if (field_des.type() == FieldDescriptor::TYPE_STRING) {
         return "str";
       } else {
         return "bytes";
       }
+    case FieldDescriptor::CPPTYPE_ENUM:
     case FieldDescriptor::CPPTYPE_MESSAGE: {
-      // If the field is inside a nested message and the nested message has the
-      // same name as a top-level message, then we need to prefix the field type
-      // with the module name for disambiguation.
-      std::string name = ModuleLevelName(*field_des.message_type());
-      if ((containing_des.containing_type() != nullptr &&
-           name == containing_des.name())) {
-        std::string module = ModuleName(field_des.file());
-        name = absl::StrCat(module, ".", name);
+      const FileDescriptor* type_file =
+          field_des.cpp_type() == FieldDescriptor::CPPTYPE_ENUM
+              ? field_des.enum_type()->file()
+              : field_des.message_type()->file();
+      std::string name = field_des.cpp_type() == FieldDescriptor::CPPTYPE_ENUM
+                             ? ModuleLevelName(*field_des.enum_type())
+                             : ModuleLevelName(*field_des.message_type());
+      // If the type name is shadowed by a field, nested type, or enclosing
+      // class in the Python scope hierarchy, use the private module-level alias
+      // for disambiguation.
+      if (type_file == file_ && IsTypeShadowed(name, containing_des)) {
+        name = absl::StrCat("_Type_", name);
       }
       return name;
     }
@@ -564,7 +626,7 @@ void PyiGenerator::PrintMessage(const Descriptor& message_descriptor,
       } else {
         if (field_des->cpp_type() == FieldDescriptor::CPPTYPE_ENUM) {
           printer_->Print("_Union[$type_name$, str]", "type_name",
-                          ModuleLevelName(*field_des->enum_type()));
+                          GetFieldType(*field_des, message_descriptor));
         } else {
           printer_->Print(
               "$type_name$", "type_name",
@@ -588,6 +650,10 @@ void PyiGenerator::PrintMessages() const {
   // Deterministically order the descriptors.
   for (int i = 0; i < file_->message_type_count(); ++i) {
     PrintMessage(*file_->message_type(i), false);
+    if (shadowed_top_level_types_.contains(file_->message_type(i)->name())) {
+      printer_->Print("\n_Type_$name$ = $name$\n", "name",
+                      file_->message_type(i)->name());
+    }
   }
 }
 
@@ -609,6 +675,7 @@ bool PyiGenerator::Generate(const FileDescriptor* file,
                             std::string* error) const {
   absl::MutexLock lock(&mutex_);
   import_map_.clear();
+  shadowed_top_level_types_.clear();
   // Calculate file name.
   file_ = file;
   // In google3, devtools/python/bazel/pytype/pytype_impl.bzl uses --pyi_out to
