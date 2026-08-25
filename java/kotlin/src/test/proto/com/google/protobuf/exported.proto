@@ -1,0 +1,9 @@
+edition = "2024";
+
+package protobuf.kotlin.test;
+
+option java_package = "com.google.protobuf.kotlin";
+
+message ExportedMessage {
+  string value = 1;
+}

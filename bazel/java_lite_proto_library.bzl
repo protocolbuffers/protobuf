@@ -7,6 +7,11 @@
 
 """java_lite_proto_library rule"""
 
-load("//bazel/private:java_lite_proto_library.bzl", _java_lite_proto_library = "java_lite_proto_library")
+load(
+    "//bazel/private:java_lite_proto_library.bzl",
+    _java_lite_proto_aspect = "java_lite_proto_aspect",
+    _java_lite_proto_library = "java_lite_proto_library",
+)
 
 java_lite_proto_library = _java_lite_proto_library
+java_lite_proto_aspect = _java_lite_proto_aspect
