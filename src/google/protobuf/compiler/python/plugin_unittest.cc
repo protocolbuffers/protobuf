@@ -15,6 +15,7 @@
 #include "google/protobuf/testing/file.h"
 #include <gtest/gtest.h>
 #include "absl/log/absl_check.h"
+#include "absl/strings/match.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_split.h"
 #include "absl/strings/substitute.h"
@@ -22,6 +23,7 @@
 #include "google/protobuf/compiler/command_line_interface_tester.h"
 #include "google/protobuf/compiler/cpp/generator.h"
 #include "google/protobuf/compiler/python/generator.h"
+#include "google/protobuf/compiler/python/pyi_generator.h"
 #include "google/protobuf/cpp_features.pb.h"
 #include "google/protobuf/io/printer.h"
 #include "google/protobuf/io/zero_copy_stream.h"
@@ -103,6 +105,63 @@ TEST(PythonPluginTest, ImportTest) {
     EXPECT_FALSE(absl::StrContains(line, "importlib"));
   }
   EXPECT_TRUE(found_expected_import);
+}
+
+// `_ClassVar` is only a valid annotation inside a class body: at module level a
+// type checker rejects the whole stub. Nothing in the generator's structure
+// enforces that, so assert it over the generated file rather than pinning the
+// annotation each declaration happens to carry today.
+TEST(PythonPyiTest, ClassVarIsOnlyUsedInsideAClassBody) {
+  ABSL_CHECK_OK(
+      File::SetContents(absl::StrCat(::testing::TempDir(), "/extensions.proto"),
+                        "syntax = \"proto2\";\n"
+                        "package foo;\n"
+                        "message Extendable {\n"
+                        "  extensions 1000 to max;\n"
+                        "}\n"
+                        "extend Extendable {\n"
+                        "  optional int32 top_level_ext = 1000;\n"
+                        "}\n"
+                        "message Holder {\n"
+                        "  extend Extendable {\n"
+                        "    optional int32 nested_ext = 1001;\n"
+                        "  }\n"
+                        "}\n",
+                        true));
+
+  compiler::CommandLineInterface cli;
+  cli.SetInputsAreProtoPathRelative(true);
+  python::PyiGenerator pyi_generator;
+  cli.RegisterGenerator("--pyi_out", &pyi_generator, "");
+  std::string proto_path = absl::StrCat("-I", ::testing::TempDir());
+  std::string pyi_out = absl::StrCat("--pyi_out=", ::testing::TempDir());
+  const char* argv[] = {"protoc", proto_path.c_str(), "-I.", pyi_out.c_str(),
+                        "extensions.proto"};
+  ASSERT_EQ(0, cli.Run(5, argv));
+
+  std::string output;
+  ABSL_CHECK_OK(File::GetContents(
+      absl::StrCat(::testing::TempDir(), "/extensions_pb2.pyi"), &output,
+      true));
+
+  bool annotates_a_top_level_extension = false;
+  bool annotates_a_nested_extension = false;
+  for (absl::string_view line : absl::StrSplit(output, '\n')) {
+    if (absl::StartsWith(line, "TOP_LEVEL_EXT_FIELD_NUMBER")) {
+      annotates_a_top_level_extension = true;
+    }
+    if (absl::StrContains(line, "NESTED_EXT_FIELD_NUMBER")) {
+      annotates_a_nested_extension = true;
+    }
+    if (absl::StrContains(line, "_ClassVar[")) {
+      EXPECT_TRUE(absl::StartsWith(line, " "))
+          << "module-level _ClassVar annotation: " << line;
+    }
+  }
+  // Both extensions reach the stub, so neither branch of the assertion above is
+  // vacuous.
+  EXPECT_TRUE(annotates_a_top_level_extension);
+  EXPECT_TRUE(annotates_a_nested_extension);
 }
 
 class PythonGeneratorTest : public CommandLineInterfaceTester,
