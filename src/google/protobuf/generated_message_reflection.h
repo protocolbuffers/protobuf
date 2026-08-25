@@ -327,34 +327,7 @@ struct PROTOBUF_EXPORT AddDescriptorsRunner {
 const ClassData* GetClassDataForWeakDescriptor(const DescriptorTable* table,
                                                int index, bool force_build);
 
-struct DenseEnumCacheInfo {
-  absl::once_flag loaded;
-  std::atomic<const std::string**> cache;
-  int min_val;
-  int max_val;
-  const EnumDescriptor* (*descriptor_fn)();
-};
-PROTOBUF_EXPORT const std::string& NameOfDenseEnumSlow(int v,
-                                                       DenseEnumCacheInfo*);
 
-// Similar to the routine NameOfEnum, this routine returns the name of an enum.
-// Unlike that routine, it allocates, on-demand, a block of pointers to the
-// std::string objects allocated by reflection to store the enum names. This
-// way, as long as the enum values are fairly dense, looking them up can be
-// very fast. This assumes all the enums fall in the range [min_val .. max_val].
-template <const EnumDescriptor* (*descriptor_fn)(), int min_val, int max_val>
-const std::string& NameOfDenseEnum(int v) {
-  static_assert(max_val - min_val >= 0, "Too many enums between min and max.");
-  static DenseEnumCacheInfo deci = {/* once_flag */ {}, /* atomic ptr */ {},
-                                    min_val, max_val, descriptor_fn};
-  if (ABSL_PREDICT_TRUE(v >= min_val && v <= max_val)) {
-    const std::string** cache = deci.cache.load(std::memory_order_acquire);
-    if (ABSL_PREDICT_TRUE(cache != nullptr)) {
-      return *cache[v - min_val];
-    }
-  }
-  return NameOfDenseEnumSlow(v, &deci);
-}
 
 // Returns whether this type of field is stored in the split struct as a raw
 // pointer.
