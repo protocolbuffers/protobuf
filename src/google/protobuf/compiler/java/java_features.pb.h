@@ -108,7 +108,7 @@ template <typename T>
 }
 template <>
 [[nodiscard]] inline const ::std::string& JavaFeatures_NestInFileClassFeature_NestInFileClass_Name(JavaFeatures_NestInFileClassFeature_NestInFileClass value) {
-  return ::google::protobuf::internal::NameOfDenseEnum<JavaFeatures_NestInFileClassFeature_NestInFileClass_descriptor, 0, 3>(
+  return ::google::protobuf::internal::NameOfDenseEnum<JavaFeatures_NestInFileClassFeature_NestInFileClass_descriptor, {0, 3, 0}>(
       static_cast<int>(value));
 }
 [[nodiscard]] inline bool JavaFeatures_NestInFileClassFeature_NestInFileClass_Parse(
@@ -145,7 +145,7 @@ template <typename T>
 }
 template <>
 [[nodiscard]] inline const ::std::string& JavaFeatures_Utf8Validation_Name(JavaFeatures_Utf8Validation value) {
-  return ::google::protobuf::internal::NameOfDenseEnum<JavaFeatures_Utf8Validation_descriptor, 0, 2>(
+  return ::google::protobuf::internal::NameOfDenseEnum<JavaFeatures_Utf8Validation_descriptor, {0, 2, 0}>(
       static_cast<int>(value));
 }
 [[nodiscard]] inline bool JavaFeatures_Utf8Validation_Parse(

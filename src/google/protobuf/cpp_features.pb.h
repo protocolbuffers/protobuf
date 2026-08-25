@@ -104,7 +104,7 @@ template <typename T>
 }
 template <>
 [[nodiscard]] inline const ::std::string& CppFeatures_StringType_Name(CppFeatures_StringType value) {
-  return ::google::protobuf::internal::NameOfDenseEnum<CppFeatures_StringType_descriptor, 0, 3>(
+  return ::google::protobuf::internal::NameOfDenseEnum<CppFeatures_StringType_descriptor, {0, 3, 0}>(
       static_cast<int>(value));
 }
 [[nodiscard]] inline bool CppFeatures_StringType_Parse(
@@ -141,7 +141,7 @@ template <typename T>
 }
 template <>
 [[nodiscard]] inline const ::std::string& CppFeatures_RepeatedType_Name(CppFeatures_RepeatedType value) {
-  return ::google::protobuf::internal::NameOfDenseEnum<CppFeatures_RepeatedType_descriptor, 0, 2>(
+  return ::google::protobuf::internal::NameOfDenseEnum<CppFeatures_RepeatedType_descriptor, {0, 2, 0}>(
       static_cast<int>(value));
 }
 [[nodiscard]] inline bool CppFeatures_RepeatedType_Parse(

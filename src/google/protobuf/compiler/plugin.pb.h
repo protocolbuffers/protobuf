@@ -108,7 +108,7 @@ template <typename T>
 }
 template <>
 [[nodiscard]] inline const ::std::string& CodeGeneratorResponse_Feature_Name(CodeGeneratorResponse_Feature value) {
-  return ::google::protobuf::internal::NameOfDenseEnum<CodeGeneratorResponse_Feature_descriptor, 0, 2>(
+  return ::google::protobuf::internal::NameOfDenseEnum<CodeGeneratorResponse_Feature_descriptor, {0, 2, 0}>(
       static_cast<int>(value));
 }
 [[nodiscard]] inline bool CodeGeneratorResponse_Feature_Parse(

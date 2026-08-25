@@ -296,7 +296,7 @@ template <typename T>
 }
 template <>
 [[nodiscard]] inline const ::std::string& ExtensionRangeOptions_VerificationState_Name(ExtensionRangeOptions_VerificationState value) {
-  return ::google::protobuf::internal::NameOfDenseEnum<ExtensionRangeOptions_VerificationState_descriptor, 0, 1>(
+  return ::google::protobuf::internal::NameOfDenseEnum<ExtensionRangeOptions_VerificationState_descriptor, {0, 1, 0}>(
       static_cast<int>(value));
 }
 [[nodiscard]] inline bool ExtensionRangeOptions_VerificationState_Parse(
@@ -348,7 +348,7 @@ template <typename T>
 }
 template <>
 [[nodiscard]] inline const ::std::string& FieldDescriptorProto_Type_Name(FieldDescriptorProto_Type value) {
-  return ::google::protobuf::internal::NameOfDenseEnum<FieldDescriptorProto_Type_descriptor, 1, 18>(
+  return ::google::protobuf::internal::NameOfDenseEnum<FieldDescriptorProto_Type_descriptor, {1, 18, 0}>(
       static_cast<int>(value));
 }
 [[nodiscard]] inline bool FieldDescriptorProto_Type_Parse(
@@ -385,7 +385,7 @@ template <typename T>
 }
 template <>
 [[nodiscard]] inline const ::std::string& FieldDescriptorProto_Label_Name(FieldDescriptorProto_Label value) {
-  return ::google::protobuf::internal::NameOfDenseEnum<FieldDescriptorProto_Label_descriptor, 1, 3>(
+  return ::google::protobuf::internal::NameOfDenseEnum<FieldDescriptorProto_Label_descriptor, {1, 3, 0}>(
       static_cast<int>(value));
 }
 [[nodiscard]] inline bool FieldDescriptorProto_Label_Parse(
@@ -422,7 +422,7 @@ template <typename T>
 }
 template <>
 [[nodiscard]] inline const ::std::string& FileOptions_OptimizeMode_Name(FileOptions_OptimizeMode value) {
-  return ::google::protobuf::internal::NameOfDenseEnum<FileOptions_OptimizeMode_descriptor, 1, 3>(
+  return ::google::protobuf::internal::NameOfDenseEnum<FileOptions_OptimizeMode_descriptor, {1, 3, 0}>(
       static_cast<int>(value));
 }
 [[nodiscard]] inline bool FileOptions_OptimizeMode_Parse(
@@ -459,7 +459,7 @@ template <typename T>
 }
 template <>
 [[nodiscard]] inline const ::std::string& FieldOptions_CType_Name(FieldOptions_CType value) {
-  return ::google::protobuf::internal::NameOfDenseEnum<FieldOptions_CType_descriptor, 0, 2>(
+  return ::google::protobuf::internal::NameOfDenseEnum<FieldOptions_CType_descriptor, {0, 2, 0}>(
       static_cast<int>(value));
 }
 [[nodiscard]] inline bool FieldOptions_CType_Parse(
@@ -496,7 +496,7 @@ template <typename T>
 }
 template <>
 [[nodiscard]] inline const ::std::string& FieldOptions_JSType_Name(FieldOptions_JSType value) {
-  return ::google::protobuf::internal::NameOfDenseEnum<FieldOptions_JSType_descriptor, 0, 2>(
+  return ::google::protobuf::internal::NameOfDenseEnum<FieldOptions_JSType_descriptor, {0, 2, 0}>(
       static_cast<int>(value));
 }
 [[nodiscard]] inline bool FieldOptions_JSType_Parse(
@@ -533,7 +533,7 @@ template <typename T>
 }
 template <>
 [[nodiscard]] inline const ::std::string& FieldOptions_OptionRetention_Name(FieldOptions_OptionRetention value) {
-  return ::google::protobuf::internal::NameOfDenseEnum<FieldOptions_OptionRetention_descriptor, 0, 2>(
+  return ::google::protobuf::internal::NameOfDenseEnum<FieldOptions_OptionRetention_descriptor, {0, 2, 0}>(
       static_cast<int>(value));
 }
 [[nodiscard]] inline bool FieldOptions_OptionRetention_Parse(
@@ -577,7 +577,7 @@ template <typename T>
 }
 template <>
 [[nodiscard]] inline const ::std::string& FieldOptions_OptionTargetType_Name(FieldOptions_OptionTargetType value) {
-  return ::google::protobuf::internal::NameOfDenseEnum<FieldOptions_OptionTargetType_descriptor, 0, 9>(
+  return ::google::protobuf::internal::NameOfDenseEnum<FieldOptions_OptionTargetType_descriptor, {0, 9, 0}>(
       static_cast<int>(value));
 }
 [[nodiscard]] inline bool FieldOptions_OptionTargetType_Parse(
@@ -614,7 +614,7 @@ template <typename T>
 }
 template <>
 [[nodiscard]] inline const ::std::string& MethodOptions_IdempotencyLevel_Name(MethodOptions_IdempotencyLevel value) {
-  return ::google::protobuf::internal::NameOfDenseEnum<MethodOptions_IdempotencyLevel_descriptor, 0, 2>(
+  return ::google::protobuf::internal::NameOfDenseEnum<MethodOptions_IdempotencyLevel_descriptor, {0, 2, 0}>(
       static_cast<int>(value));
 }
 [[nodiscard]] inline bool MethodOptions_IdempotencyLevel_Parse(
@@ -653,7 +653,7 @@ template <typename T>
 }
 template <>
 [[nodiscard]] inline const ::std::string& FeatureSet_VisibilityFeature_DefaultSymbolVisibility_Name(FeatureSet_VisibilityFeature_DefaultSymbolVisibility value) {
-  return ::google::protobuf::internal::NameOfDenseEnum<FeatureSet_VisibilityFeature_DefaultSymbolVisibility_descriptor, 0, 4>(
+  return ::google::protobuf::internal::NameOfDenseEnum<FeatureSet_VisibilityFeature_DefaultSymbolVisibility_descriptor, {0, 4, 0}>(
       static_cast<int>(value));
 }
 [[nodiscard]] inline bool FeatureSet_VisibilityFeature_DefaultSymbolVisibility_Parse(
@@ -690,7 +690,7 @@ template <typename T>
 }
 template <>
 [[nodiscard]] inline const ::std::string& FeatureSet_ProtoLimitsFeature_EnforceProtoLimits_Name(FeatureSet_ProtoLimitsFeature_EnforceProtoLimits value) {
-  return ::google::protobuf::internal::NameOfDenseEnum<FeatureSet_ProtoLimitsFeature_EnforceProtoLimits_descriptor, 0, 2>(
+  return ::google::protobuf::internal::NameOfDenseEnum<FeatureSet_ProtoLimitsFeature_EnforceProtoLimits_descriptor, {0, 2, 0}>(
       static_cast<int>(value));
 }
 [[nodiscard]] inline bool FeatureSet_ProtoLimitsFeature_EnforceProtoLimits_Parse(
@@ -728,7 +728,7 @@ template <typename T>
 }
 template <>
 [[nodiscard]] inline const ::std::string& FeatureSet_FieldPresence_Name(FeatureSet_FieldPresence value) {
-  return ::google::protobuf::internal::NameOfDenseEnum<FeatureSet_FieldPresence_descriptor, 0, 3>(
+  return ::google::protobuf::internal::NameOfDenseEnum<FeatureSet_FieldPresence_descriptor, {0, 3, 0}>(
       static_cast<int>(value));
 }
 [[nodiscard]] inline bool FeatureSet_FieldPresence_Parse(
@@ -765,7 +765,7 @@ template <typename T>
 }
 template <>
 [[nodiscard]] inline const ::std::string& FeatureSet_EnumType_Name(FeatureSet_EnumType value) {
-  return ::google::protobuf::internal::NameOfDenseEnum<FeatureSet_EnumType_descriptor, 0, 2>(
+  return ::google::protobuf::internal::NameOfDenseEnum<FeatureSet_EnumType_descriptor, {0, 2, 0}>(
       static_cast<int>(value));
 }
 [[nodiscard]] inline bool FeatureSet_EnumType_Parse(
@@ -802,7 +802,7 @@ template <typename T>
 }
 template <>
 [[nodiscard]] inline const ::std::string& FeatureSet_RepeatedFieldEncoding_Name(FeatureSet_RepeatedFieldEncoding value) {
-  return ::google::protobuf::internal::NameOfDenseEnum<FeatureSet_RepeatedFieldEncoding_descriptor, 0, 2>(
+  return ::google::protobuf::internal::NameOfDenseEnum<FeatureSet_RepeatedFieldEncoding_descriptor, {0, 2, 0}>(
       static_cast<int>(value));
 }
 [[nodiscard]] inline bool FeatureSet_RepeatedFieldEncoding_Parse(
@@ -839,7 +839,7 @@ template <typename T>
 }
 template <>
 [[nodiscard]] inline const ::std::string& FeatureSet_Utf8Validation_Name(FeatureSet_Utf8Validation value) {
-  return ::google::protobuf::internal::NameOfDenseEnum<FeatureSet_Utf8Validation_descriptor, 0, 3>(
+  return ::google::protobuf::internal::NameOfDenseEnum<FeatureSet_Utf8Validation_descriptor, {0, 3, 0}>(
       static_cast<int>(value));
 }
 [[nodiscard]] inline bool FeatureSet_Utf8Validation_Parse(
@@ -876,7 +876,7 @@ template <typename T>
 }
 template <>
 [[nodiscard]] inline const ::std::string& FeatureSet_MessageEncoding_Name(FeatureSet_MessageEncoding value) {
-  return ::google::protobuf::internal::NameOfDenseEnum<FeatureSet_MessageEncoding_descriptor, 0, 2>(
+  return ::google::protobuf::internal::NameOfDenseEnum<FeatureSet_MessageEncoding_descriptor, {0, 2, 0}>(
       static_cast<int>(value));
 }
 [[nodiscard]] inline bool FeatureSet_MessageEncoding_Parse(
@@ -913,7 +913,7 @@ template <typename T>
 }
 template <>
 [[nodiscard]] inline const ::std::string& FeatureSet_JsonFormat_Name(FeatureSet_JsonFormat value) {
-  return ::google::protobuf::internal::NameOfDenseEnum<FeatureSet_JsonFormat_descriptor, 0, 2>(
+  return ::google::protobuf::internal::NameOfDenseEnum<FeatureSet_JsonFormat_descriptor, {0, 2, 0}>(
       static_cast<int>(value));
 }
 [[nodiscard]] inline bool FeatureSet_JsonFormat_Parse(
@@ -951,7 +951,7 @@ template <typename T>
 }
 template <>
 [[nodiscard]] inline const ::std::string& FeatureSet_EnforceNamingStyle_Name(FeatureSet_EnforceNamingStyle value) {
-  return ::google::protobuf::internal::NameOfDenseEnum<FeatureSet_EnforceNamingStyle_descriptor, 0, 3>(
+  return ::google::protobuf::internal::NameOfDenseEnum<FeatureSet_EnforceNamingStyle_descriptor, {0, 3, 0}>(
       static_cast<int>(value));
 }
 [[nodiscard]] inline bool FeatureSet_EnforceNamingStyle_Parse(
@@ -988,7 +988,7 @@ template <typename T>
 }
 template <>
 [[nodiscard]] inline const ::std::string& GeneratedCodeInfo_Annotation_Semantic_Name(GeneratedCodeInfo_Annotation_Semantic value) {
-  return ::google::protobuf::internal::NameOfDenseEnum<GeneratedCodeInfo_Annotation_Semantic_descriptor, 0, 2>(
+  return ::google::protobuf::internal::NameOfDenseEnum<GeneratedCodeInfo_Annotation_Semantic_descriptor, {0, 2, 0}>(
       static_cast<int>(value));
 }
 [[nodiscard]] inline bool GeneratedCodeInfo_Annotation_Semantic_Parse(
@@ -1031,7 +1031,12 @@ template <typename T>
   static_assert(::std::is_same<T, Edition>::value ||
                     ::std::is_integral<T>::value,
                 "Incorrect type passed to Edition_Name().");
-  return ::google::protobuf::internal::NameOfEnum(Edition_descriptor(), value);
+  return Edition_Name(static_cast<Edition>(value));
+}
+template <>
+[[nodiscard]] inline const ::std::string& Edition_Name(Edition value) {
+  return ::google::protobuf::internal::NameOfDenseEnum<Edition_descriptor, {0, 2, 0}, {900, 900, 3}, {998, 1002, 4}, {9999, 9999, 9}, {99997, 99999, 10}, {2147483647, 2147483647, 13}>(
+      static_cast<int>(value));
 }
 [[nodiscard]] inline bool Edition_Parse(
     ::absl::string_view name, Edition* PROTOBUF_NONNULL value) {
@@ -1067,7 +1072,7 @@ template <typename T>
 }
 template <>
 [[nodiscard]] inline const ::std::string& SymbolVisibility_Name(SymbolVisibility value) {
-  return ::google::protobuf::internal::NameOfDenseEnum<SymbolVisibility_descriptor, 0, 2>(
+  return ::google::protobuf::internal::NameOfDenseEnum<SymbolVisibility_descriptor, {0, 2, 0}>(
       static_cast<int>(value));
 }
 [[nodiscard]] inline bool SymbolVisibility_Parse(
