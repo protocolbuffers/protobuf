@@ -693,6 +693,14 @@ void BinaryAndJsonConformanceSuite::RunValidJsonTest(
     const std::string& test_name, ConformanceLevel level,
     const std::string& input_json, const std::string& equivalent_text_format) {
   MessageType prototype;
+  RunValidJsonTestWithMessage(test_name, level, input_json,
+                              equivalent_text_format, prototype);
+}
+
+void BinaryAndJsonConformanceSuite::RunValidJsonTestWithMessage(
+    const std::string& test_name, ConformanceLevel level,
+    const std::string& input_json, const std::string& equivalent_text_format,
+    const Message& prototype) {
   ConformanceRequestSetting setting1(
       level, ::conformance::JSON, ::conformance::PROTOBUF,
       ::conformance::JSON_TEST, prototype, test_name, input_json);
@@ -832,14 +840,8 @@ void BinaryAndJsonConformanceSuiteImpl<MessageType>::
                                 const std::string& input_json,
                                 const std::string& equivalent_text_format,
                                 const Message& prototype) {
-  ConformanceRequestSetting setting1(
-      level, ::conformance::JSON, ::conformance::PROTOBUF,
-      ::conformance::JSON_TEST, prototype, test_name, input_json);
-  suite_.RunValidInputTest(setting1, equivalent_text_format);
-  ConformanceRequestSetting setting2(
-      level, ::conformance::JSON, ::conformance::JSON, ::conformance::JSON_TEST,
-      prototype, test_name, input_json);
-  suite_.RunValidInputTest(setting2, equivalent_text_format);
+  suite_.RunValidJsonTestWithMessage(test_name, level, input_json,
+                                     equivalent_text_format, prototype);
 }
 
 template <typename MessageType>
@@ -980,84 +982,15 @@ void BinaryAndJsonConformanceSuiteImpl<
                                                 ConformanceLevel level,
                                                 const std::string& input_json,
                                                 const Validator& validator) {
-  MessageType prototype;
-  ConformanceRequestSetting setting(
-      level, ::conformance::JSON, ::conformance::JSON, ::conformance::JSON_TEST,
-      prototype, test_name, input_json);
-  const ConformanceRequest& request = setting.GetRequest();
-  ConformanceResponse response;
-  std::string effective_test_name = absl::StrCat(
-      setting.ConformanceLevelToString(level), ".",
-      setting.GetSyntaxIdentifier(), ".JsonInput.", test_name, ".Validator");
-
-  if (!suite_.RunTest(effective_test_name, request, &response)) {
-    return;
-  }
-
-  TestStatus test;
-  test.set_name(effective_test_name);
-  if (response.result_case() == ConformanceResponse::kSkipped) {
-    suite_.ReportSkip(test, request, response);
-    return;
-  }
-
-  if (response.result_case() != ConformanceResponse::kJsonPayload) {
-    test.set_failure_message(absl::StrCat("Expected JSON payload but got type ",
-                                          response.result_case()));
-    suite_.ReportFailure(test, level, request, response);
-    return;
-  }
-  Json::CharReaderBuilder builder;
-  Json::Value value;
-  Json::String err;
-  const std::unique_ptr<Json::CharReader> reader(builder.newCharReader());
-  if (!reader->parse(
-          response.json_payload().c_str(),
-          response.json_payload().c_str() + response.json_payload().length(),
-          &value, &err)) {
-    test.set_failure_message(
-        absl::StrCat("JSON payload cannot be parsed as valid JSON: ", err));
-    suite_.ReportFailure(test, level, request, response);
-    return;
-  }
-  if (!validator(value)) {
-    test.set_failure_message("JSON payload validation failed.");
-    suite_.ReportFailure(test, level, request, response);
-    return;
-  }
-  suite_.ReportSuccess(test);
+  suite_.RunValidJsonTestWithValidator<MessageType>(test_name, level,
+                                                    input_json, validator);
 }
 
 template <typename MessageType>
 void BinaryAndJsonConformanceSuiteImpl<MessageType>::ExpectParseFailureForJson(
     const std::string& test_name, ConformanceLevel level,
     const std::string& input_json) {
-  MessageType prototype;
-  // We don't expect output, but if the program erroneously accepts the protobuf
-  // we let it send its response as this.  We must not leave it unspecified.
-  ConformanceRequestSetting setting(
-      level, ::conformance::JSON, ::conformance::JSON, ::conformance::JSON_TEST,
-      prototype, test_name, input_json);
-  const ConformanceRequest& request = setting.GetRequest();
-  ConformanceResponse response;
-  std::string effective_test_name =
-      absl::StrCat(setting.ConformanceLevelToString(level), ".",
-                   SyntaxIdentifier(), ".JsonInput.", test_name);
-
-  if (!suite_.RunTest(effective_test_name, request, &response)) {
-    return;
-  }
-
-  TestStatus test;
-  test.set_name(effective_test_name);
-  if (response.result_case() == ConformanceResponse::kParseError) {
-    suite_.ReportSuccess(test);
-  } else if (response.result_case() == ConformanceResponse::kSkipped) {
-    suite_.ReportSkip(test, request, response);
-  } else {
-    test.set_failure_message("Should have failed to parse, but didn't.");
-    suite_.ReportFailure(test, level, request, response);
-  }
+  suite_.ExpectParseFailureForJson<MessageType>(test_name, level, input_json);
 }
 
 template <typename MessageType>
