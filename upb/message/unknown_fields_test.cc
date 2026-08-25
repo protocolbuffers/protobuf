@@ -303,4 +303,49 @@ TEST(GeneratedCode, MessageUnknown_Encode_NonCanonicalMessageSetExtension) {
   upb_Arena_Free(arena);
 }
 
+TEST(GeneratedCode, NextWireFormatUnknown) {
+  upb_Arena* arena = upb_Arena_New();
+
+  upb_test_ModelWithExtensions* msg = upb_test_ModelWithExtensions_new(arena);
+
+  // Add a raw unknown field string view
+  const char raw_bytes[] =
+      "\x08\x96\x01";  // tag 1 (field 1, varint), value 150
+  UPB_PRIVATE(_upb_Message_AddUnknown)(UPB_UPCAST(msg), raw_bytes, 3, arena,
+                                       kUpb_AddUnknown_Copy);
+
+  // Add non-canonical extension
+  upb_test_ModelExtension2* extension2 = upb_test_ModelExtension2_new(arena);
+  upb_test_ModelExtension2_set_i(extension2, 42);
+  bool set_ext_ok = UPB_PRIVATE(_upb_Message_SetNonCanonicalExtension)(
+      UPB_UPCAST(msg), upb_test_ModelExtension2_model_ext_ext, &extension2,
+      arena);
+  EXPECT_TRUE(set_ext_ok);
+
+  uintptr_t iter = kUpb_Message_UnknownBegin;
+  upb_StringView view;
+  upb_Arena* enc_arena = nullptr;
+
+  // First unknown should be raw string view (enc_arena remains nullptr)
+  EXPECT_TRUE(upb_Message_NextWireFormatUnknown(UPB_UPCAST(msg), &enc_arena,
+                                                &view, &iter));
+  EXPECT_EQ(view.size, 3);
+  EXPECT_EQ(memcmp(view.data, raw_bytes, 3), 0);
+  EXPECT_EQ(enc_arena, nullptr);
+
+  // Second unknown should be auto-encoded non-canonical extension (enc_arena
+  // lazily created)
+  EXPECT_TRUE(upb_Message_NextWireFormatUnknown(UPB_UPCAST(msg), &enc_arena,
+                                                &view, &iter));
+  EXPECT_GT(view.size, 0);
+  EXPECT_NE(enc_arena, nullptr);
+
+  // No more unknowns
+  EXPECT_FALSE(upb_Message_NextWireFormatUnknown(UPB_UPCAST(msg), &enc_arena,
+                                                 &view, &iter));
+
+  if (enc_arena) upb_Arena_Free(enc_arena);
+  upb_Arena_Free(arena);
+}
+
 }  // namespace
