@@ -36,6 +36,7 @@ typedef struct {
   char *buf, *ptr, *end;
   size_t overflow;
   int indent_depth;
+  int depth;
   int options;
   const upb_DefPool* ext_pool;
   jmp_buf err;
@@ -385,6 +386,9 @@ badurl:
 
 static void jsonenc_any(jsonenc* e, const upb_Message* msg,
                         const upb_MessageDef* m) {
+  if (++e->depth > 100) {
+    jsonenc_err(e, "Max nesting exceeded");
+  }
   const upb_FieldDef* type_url_f = upb_MessageDef_FindFieldByNumber(m, 1);
   const upb_FieldDef* value_f = upb_MessageDef_FindFieldByNumber(m, 2);
   upb_StringView type_url = upb_Message_GetFieldByDef(msg, type_url_f).str_val;
@@ -416,6 +420,7 @@ static void jsonenc_any(jsonenc* e, const upb_Message* msg,
   }
 
   jsonenc_putstr(e, "}");
+  --e->depth;
 }
 
 static void jsonenc_putsep(jsonenc* e, const char* str, bool* first) {
@@ -800,6 +805,8 @@ size_t upb_JsonEncode(const upb_Message* msg, const upb_MessageDef* m,
   e.ptr = buf;
   e.end = UPB_PTRADD(buf, size);
   e.overflow = 0;
+  e.indent_depth = 0;
+  e.depth = 0;
   e.options = options;
   e.ext_pool = ext_pool;
   e.status = status;

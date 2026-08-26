@@ -114,6 +114,33 @@ class WellKnownTest extends TestBase {
         $any->unpack();
     }
 
+    public function testAnyJsonRecursionLimit()
+    {
+        $leaf = new Int32Value();
+        $leaf->setValue(123);
+        $cur = new Any();
+        $cur->pack($leaf);
+        for ($i = 0; $i < 99; $i++) {
+            $parent = new Any();
+            $parent->pack($cur);
+            $cur = $parent;
+        }
+
+        // 100 Any levels total: serialization succeeds.
+        $json = $cur->serializeToJsonString();
+        $this->assertNotEquals('', $json);
+
+        // 101 Any levels total: serialization exceeds limit of 100 and throws.
+        $parent = new Any();
+        $parent->pack($cur);
+        try {
+            $parent->serializeToJsonString();
+            $this->fail('Expected an exception for exceeding Any recursion depth limit');
+        } catch (Exception $e) {
+            $this->assertStringContainsString('Max nesting exceeded', $e->getMessage());
+        }
+    }
+
     public function testApi()
     {
         $m = new Api();

@@ -807,7 +807,8 @@ class Message
         $value,
         $field,
         $ignore_unknown,
-        $is_map_key = false)
+        $is_map_key = false,
+        $depth = 0)
     {
         switch ($field->getType()) {
             case GPBType::MESSAGE:
@@ -855,7 +856,7 @@ class Message
                     } elseif (!is_object($value) && !is_array($value)) {
                         throw new GPBDecodeException("Expect message.");
                     }
-                    $submsg->mergeFromJsonArray($value, $ignore_unknown);
+                    $submsg->mergeFromJsonArray($value, $ignore_unknown, $depth);
                 }
                 return $submsg;
             case GPBType::ENUM:
@@ -1135,17 +1136,20 @@ class Message
         }
     }
 
-    protected function mergeFromJsonArray($array, $ignore_unknown)
+    protected function mergeFromJsonArray($array, $ignore_unknown, $depth = 0)
     {
         if (is_a($this, "Google\Protobuf\Any")) {
+            if ($depth >= 100) {
+                throw new GPBDecodeException("Max nesting exceeded");
+            }
             $this->clear();
             $this->setTypeUrl($array["@type"]);
             $msg = $this->unpack();
             if (GPBUtil::hasSpecialJsonMapping($msg)) {
-                $msg->mergeFromJsonArray($array["value"], $ignore_unknown);
+                $msg->mergeFromJsonArray($array["value"], $ignore_unknown, $depth + 1);
             } else {
                 unset($array["@type"]);
-                $msg->mergeFromJsonArray($array, $ignore_unknown);
+                $msg->mergeFromJsonArray($array, $ignore_unknown, $depth);
             }
             $this->setValue($msg->serializeToString());
             return;
@@ -1181,7 +1185,7 @@ class Message
             $fields = $this->getFields();
             foreach($array as $key => $value) {
                 $v = new Value();
-                $v->mergeFromJsonArray($value, $ignore_unknown);
+                $v->mergeFromJsonArray($value, $ignore_unknown, $depth);
                 $fields[$key] = $v;
             }
             return;
@@ -1205,7 +1209,7 @@ class Message
                     }
                     foreach ($array as $key => $v) {
                         $value = new Value();
-                        $value->mergeFromJsonArray($v, $ignore_unknown);
+                        $value->mergeFromJsonArray($v, $ignore_unknown, $depth);
                         $values = $struct_value->getFields();
                         $values[$key]= $value;
                     }
@@ -1218,7 +1222,7 @@ class Message
                     }
                     foreach ($array as $v) {
                         $value = new Value();
-                        $value->mergeFromJsonArray($v, $ignore_unknown);
+                        $value->mergeFromJsonArray($v, $ignore_unknown, $depth);
                         $values = $list_value->getValues();
                         $values[]= $value;
                     }
@@ -1228,10 +1232,10 @@ class Message
             }
             return;
         }
-        $this->mergeFromArrayJsonImpl($array, $ignore_unknown);
+        $this->mergeFromArrayJsonImpl($array, $ignore_unknown, $depth);
     }
 
-    private function mergeFromArrayJsonImpl($array, $ignore_unknown)
+    private function mergeFromArrayJsonImpl($array, $ignore_unknown, $depth = 0)
     {
         foreach ($array as $key => $value) {
             $field = $this->desc->getFieldByJsonName($key);
@@ -1262,11 +1266,14 @@ class Message
                         $tmp_key,
                         $key_field,
                         $ignore_unknown,
-                        true);
+                        true,
+                        $depth);
                     $proto_value = $this->convertJsonValueToProtoValue(
                         $tmp_value,
                         $value_field,
-                        $ignore_unknown);
+                        $ignore_unknown,
+                        false,
+                        $depth);
 
                     // Mapped unknown enum string values should be silently
                     // ignored if ignore_unknown is set.
@@ -1293,7 +1300,9 @@ class Message
                     $proto_value = $this->convertJsonValueToProtoValue(
                         $tmp,
                         $field,
-                        $ignore_unknown);
+                        $ignore_unknown,
+                        false,
+                        $depth);
 
                     // Repeated unknown enum string values should be silently
                     // ignored if ignore_unknown is set.
@@ -1311,7 +1320,9 @@ class Message
                 $proto_value = $this->convertJsonValueToProtoValue(
                     $value,
                     $field,
-                    $ignore_unknown);
+                    $ignore_unknown,
+                    false,
+                    $depth);
                 if ($field->getType() === GPBType::MESSAGE) {
                     if (is_null($proto_value)) {
                         continue;
@@ -1453,12 +1464,12 @@ class Message
     /**
      * @ignore
      */
-    private function serializeFieldToJsonStream(&$output, $field)
+    private function serializeFieldToJsonStream(&$output, $field, $depth = 0)
     {
         $getter = $field->getGetter();
         $values = $this->$getter();
         return GPBJsonWire::serializeFieldToStream(
-            $values, $field, $output, !GPBUtil::hasSpecialJsonMapping($this));
+            $values, $field, $output, !GPBUtil::hasSpecialJsonMapping($this), $depth);
     }
 
     /**
@@ -1479,10 +1490,13 @@ class Message
     /**
      * @ignore
      */
-    public function serializeToJsonStream(&$output)
+    public function serializeToJsonStream(&$output, $depth = 0)
     {
         $options = $output->getOptions();
         if (is_a($this, 'Google\Protobuf\Any')) {
+            if ($depth >= 100) {
+                throw new \Exception("Max nesting exceeded");
+            }
             $output->writeRaw("{", 1);
             $type_field = $this->desc->getFieldByNumber(1);
             $value_msg = $this->unpack();
@@ -1496,13 +1510,13 @@ class Message
             // Serialize value
             if (GPBUtil::hasSpecialJsonMapping($value_msg)) {
                 $output->writeRaw(",\"value\":", 9);
-                $value_msg->serializeToJsonStream($output);
+                $value_msg->serializeToJsonStream($output, $depth + 1);
             } else {
                 $value_fields = $value_msg->desc->getField();
                 foreach ($value_fields as $field) {
                     if ($value_msg->existField($field, $options)) {
                         $output->writeRaw(",", 1);
-                        if (!$value_msg->serializeFieldToJsonStream($output, $field)) {
+                        if (!$value_msg->serializeFieldToJsonStream($output, $field, $depth)) {
                             return false;
                         }
                     }
@@ -1529,7 +1543,7 @@ class Message
             if (!$this->existField($field, $options)) {
                 $output->writeRaw("[]", 2);
             } else {
-                if (!$this->serializeFieldToJsonStream($output, $field)) {
+                if (!$this->serializeFieldToJsonStream($output, $field, $depth)) {
                     return false;
                 }
             }
@@ -1538,7 +1552,7 @@ class Message
             if (!$this->existField($field, $options)) {
                 $output->writeRaw("{}", 2);
             } else {
-                if (!$this->serializeFieldToJsonStream($output, $field)) {
+                if (!$this->serializeFieldToJsonStream($output, $field, $depth)) {
                     return false;
                 }
             }
@@ -1556,7 +1570,7 @@ class Message
                     } else {
                         $output->writeRaw(",", 1);
                     }
-                    if (!$this->serializeFieldToJsonStream($output, $field)) {
+                    if (!$this->serializeFieldToJsonStream($output, $field, $depth)) {
                         return false;
                     }
                 }
@@ -1713,7 +1727,7 @@ class Message
     /**
      * @ignore
      */
-    private function fieldDataOnlyJsonByteSize($field, $value, $options = 0)
+    private function fieldDataOnlyJsonByteSize($field, $value, $options = 0, $depth = 0)
     {
         $size = 0;
 
@@ -1808,7 +1822,7 @@ class Message
                 $size += 2;  // size for \"\"
                 break;
             case GPBType::MESSAGE:
-                $size += $value->jsonByteSize($options);
+                $size += $value->jsonByteSize($options, $depth);
                 break;
 #             case GPBType::GROUP:
 #                 // TODO: Add support.
@@ -1886,7 +1900,10 @@ class Message
     /**
      * @ignore
      */
-    private function fieldJsonByteSize($field, $options = 0)
+    /**
+     * @ignore
+     */
+    private function fieldJsonByteSize($field, $options = 0, $depth = 0)
     {
         $size = 0;
 
@@ -1926,8 +1943,8 @@ class Message
                         if ($additional_quote) {
                             $size += 2;  // size for ""
                         }
-                        $size += $this->fieldDataOnlyJsonByteSize($key_field, $key, $options);
-                        $size += $this->fieldDataOnlyJsonByteSize($value_field, $value, $options);
+                        $size += $this->fieldDataOnlyJsonByteSize($key_field, $key, $options, $depth);
+                        $size += $this->fieldDataOnlyJsonByteSize($value_field, $value, $options, $depth);
                         $size += 1;  // size for :
                     }
                 }
@@ -1950,7 +1967,7 @@ class Message
                     $size += $count - 1;                     // size for commas
                     $getter = $field->getGetter();
                     foreach ($values as $value) {
-                        $size += $this->fieldDataOnlyJsonByteSize($field, $value, $options);
+                        $size += $this->fieldDataOnlyJsonByteSize($field, $value, $options, $depth);
                     }
                 }
             }
@@ -1965,7 +1982,7 @@ class Message
             }
             $getter = $field->getGetter();
             $value = $this->$getter();
-            $size += $this->fieldDataOnlyJsonByteSize($field, $value, $options);
+            $size += $this->fieldDataOnlyJsonByteSize($field, $value, $options, $depth);
         }
         return $size;
     }
@@ -2014,10 +2031,13 @@ class Message
     /**
      * @ignore
      */
-    public function jsonByteSize($options = 0)
+    public function jsonByteSize($options = 0, $depth = 0)
     {
         $size = 0;
         if (is_a($this, 'Google\Protobuf\Any')) {
+            if ($depth >= 100) {
+                throw new \Exception("Max nesting exceeded");
+            }
             // Size for "{}".
             $size += 2;
 
@@ -2031,9 +2051,9 @@ class Message
             if (GPBUtil::hasSpecialJsonMapping($value_msg)) {
                 // Size for "\",value\":".
                 $size += 9;
-                $size += $value_msg->jsonByteSize($options);
+                $size += $value_msg->jsonByteSize($options, $depth + 1);
             } else {
-                $value_size = $value_msg->jsonByteSize($options);
+                $value_size = $value_msg->jsonByteSize($options, $depth);
                 // size === 2 it's empty message {} which is not serialized inside any
                 if ($value_size !== 2) {
                     // Size for value. +1 for comma, -2 for "{}".
@@ -2053,7 +2073,7 @@ class Message
         } elseif (get_class($this) === 'Google\Protobuf\ListValue') {
             $field = $this->desc->getField()[1];
             if ($this->existField($field, $options)) {
-                $field_size = $this->fieldJsonByteSize($field, $options);
+                $field_size = $this->fieldJsonByteSize($field, $options, $depth);
                 $size += $field_size;
             } else {
                 // Size for "[]".
@@ -2062,7 +2082,7 @@ class Message
         } elseif (get_class($this) === 'Google\Protobuf\Struct') {
             $field = $this->desc->getField()[1];
             if ($this->existField($field, $options)) {
-                $field_size = $this->fieldJsonByteSize($field, $options);
+                $field_size = $this->fieldJsonByteSize($field, $options, $depth);
                 $size += $field_size;
             } else {
                 // Size for "{}".
@@ -2077,7 +2097,7 @@ class Message
             $fields = $this->desc->getField();
             $count = 0;
             foreach ($fields as $field) {
-                $field_size = $this->fieldJsonByteSize($field, $options);
+                $field_size = $this->fieldJsonByteSize($field, $options, $depth);
                 $size += $field_size;
                 if ($field_size != 0) {
                   $count++;

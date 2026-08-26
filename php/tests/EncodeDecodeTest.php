@@ -2141,6 +2141,59 @@ class EncodeDecodeTest extends TestBase
         $this->assertTrue($threwTooLarge, 'recursion_limit > 65535 must throw');
     }
 
+    private function makeRecursiveAny($depth)
+    {
+        $leaf = new Int32Value();
+        $leaf->setValue(123);
+        $cur = new Any();
+        $cur->pack($leaf);
+        for ($i = 0; $i < $depth; $i++) {
+            $parent = new Any();
+            $parent->pack($cur);
+            $cur = $parent;
+        }
+        return $cur;
+    }
+
+    public function testAnyJsonRecursionLimit()
+    {
+        // 99 nested Any wrapping a leaf Int32Value is 100 Any levels total.
+        $msg = $this->makeRecursiveAny(99);
+        $json = $msg->serializeToJsonString();
+        $this->assertNotEquals('', $json);
+
+        // 100 nested Any wrapping a leaf Int32Value is 101 Any levels total, exceeding the limit of 100.
+        $deep = $this->makeRecursiveAny(100);
+        try {
+            $deep->serializeToJsonString();
+            $this->fail('Expected an exception for exceeding Any recursion depth limit');
+        } catch (Exception $e) {
+            $this->assertStringContainsString('Max nesting exceeded', $e->getMessage());
+        }
+    }
+
+    public function testAnyJsonDecodeRecursionLimit()
+    {
+        // Build JSON string with 99 nested Any wrapping a leaf Int32Value.
+        $json99 = '{"@type":"type.googleapis.com/google.protobuf.Int32Value","value":123}';
+        for ($i = 0; $i < 99; $i++) {
+            $json99 = '{"@type":"type.googleapis.com/google.protobuf.Any","value":' . $json99 . '}';
+        }
+        $any = new Any();
+        $any->mergeFromJsonString($json99);
+        $this->assertSame("type.googleapis.com/google.protobuf.Any", $any->getTypeUrl());
+
+        // Build JSON string with 100 nested Any (101 levels total), exceeding limit of 100.
+        $json100 = '{"@type":"type.googleapis.com/google.protobuf.Any","value":' . $json99 . '}';
+        try {
+            $any = new Any();
+            $any->mergeFromJsonString($json100);
+            $this->fail('Expected an exception for exceeding Any recursion depth limit in JSON decode');
+        } catch (Exception $e) {
+            $this->assertStringContainsString('Max nesting exceeded', $e->getMessage());
+        }
+    }
+
     public function testLargeMessageWithSubMessage()
     {
         // 33MB string to exceed the 32MB former limit.
