@@ -96,11 +96,19 @@ inline_sh_test(
         "src/Google.Protobuf.sln",
         ":srcs",
         "//conformance:conformance_csharp_proto",
+        "//csharp/protos/unittest_deep_dependencies:cached_csharp_gen",
+        "//csharp/protos/unittest_deep_dependencies:notcached_csharp_gen",
         "//csharp/src/Google.Protobuf.Conformance:srcs",
     ],
     cmd = """
-        cp $(rootpath //conformance:conformance_csharp_proto) `dirname $(location src/Google.Protobuf.sln)`/Google.Protobuf.Conformance/
-        pushd `dirname $(location src/Google.Protobuf.sln)`/..
+        export DOTNET_CLI_HOME=/tmp
+        SRCDIR=`dirname $(rootpath src/Google.Protobuf.sln)`
+        cp $(rootpath //conformance:conformance_csharp_proto) $$SRCDIR/Google.Protobuf.Conformance/
+        mkdir -p $$SRCDIR/Google.Protobuf.Test.TestProtos/UnittestDeepDependenciesCached
+        mkdir -p $$SRCDIR/Google.Protobuf.Test.TestProtos/UnittestDeepDependenciesNotCached
+        cp $(rootpaths //csharp/protos/unittest_deep_dependencies:cached_csharp_gen) $$SRCDIR/Google.Protobuf.Test.TestProtos/UnittestDeepDependenciesCached/
+        cp $(rootpaths //csharp/protos/unittest_deep_dependencies:notcached_csharp_gen) $$SRCDIR/Google.Protobuf.Test.TestProtos/UnittestDeepDependenciesNotCached/
+        pushd $$SRCDIR/..
         dotnet restore src/Google.Protobuf.sln
         dotnet build -c Release src/Google.Protobuf.sln
         dotnet test -c Release -f net8.0 src/Google.Protobuf.Test/Google.Protobuf.Test.csproj

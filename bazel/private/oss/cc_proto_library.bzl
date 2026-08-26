@@ -77,37 +77,41 @@ def _aspect_impl(target, ctx):
                     transitive_headers.append(dep[_ProtoCcHeaderInfo].headers)
             header_provider = _ProtoCcHeaderInfo(headers = depset(transitive = transitive_headers))
 
+        proto_common.compile(
+            actions = ctx.actions,
+            proto_info = proto_info,
+            proto_lang_toolchain_info = proto_toolchain,
+            generated_files = sources + headers,
+            experimental_output_files = "multiple",
+        )
+
+        deps = []
+        if proto_toolchain.runtime:
+            deps = [proto_toolchain.runtime]
+        deps.extend(getattr(ctx.rule.attr, "deps", []))
+
+        cc_info, libraries, temps = cc_proto_compile_and_link(
+            ctx = ctx,
+            deps = deps,
+            sources = sources,
+            headers = headers,
+            textual_hdrs = textual_hdrs,
+            strip_include_prefix = _get_strip_include_prefix(ctx, proto_info),
+        )
+
+        return [
+            cc_info,
+            _ProtoCcFilesInfo(files = depset(sources + headers + libraries)),
+            OutputGroupInfo(temp_files_INTERNAL_ = temps),
+            header_provider,
+        ]
     else:  # shouldn't generate code
-        header_provider = _ProtoCcHeaderInfo(headers = depset())
-
-    proto_common.compile(
-        actions = ctx.actions,
-        proto_info = proto_info,
-        proto_lang_toolchain_info = proto_toolchain,
-        generated_files = sources + headers,
-        experimental_output_files = "multiple",
-    )
-
-    deps = []
-    if proto_toolchain.runtime:
-        deps = [proto_toolchain.runtime]
-    deps.extend(getattr(ctx.rule.attr, "deps", []))
-
-    cc_info, libraries, temps = cc_proto_compile_and_link(
-        ctx = ctx,
-        deps = deps,
-        sources = sources,
-        headers = headers,
-        textual_hdrs = textual_hdrs,
-        strip_include_prefix = _get_strip_include_prefix(ctx, proto_info),
-    )
-
-    return [
-        cc_info,
-        _ProtoCcFilesInfo(files = depset(sources + headers + libraries)),
-        OutputGroupInfo(temp_files_INTERNAL_ = temps),
-        header_provider,
-    ]
+        return [
+            CcInfo(),
+            _ProtoCcFilesInfo(files = depset()),
+            OutputGroupInfo(),
+            _ProtoCcHeaderInfo(headers = depset()),
+        ]
 
 cc_proto_aspect = aspect(
     implementation = _aspect_impl,

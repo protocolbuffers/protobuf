@@ -224,17 +224,7 @@ starlark_cc_proto_library(
 cc_proto_blacklist_test(
     name = "cc_proto_blacklist_test",
     deps = [
-        ":any_cc_proto",
-        ":api_cc_proto",
         ":compiler_plugin_cc_proto",
         ":descriptor_cc_proto",
-        ":duration_cc_proto",
-        ":empty_cc_proto",
-        ":field_mask_cc_proto",
-        ":source_context_cc_proto",
-        ":struct_cc_proto",
-        ":timestamp_cc_proto",
-        ":type_cc_proto",
-        ":wrappers_cc_proto",
     ],
 )
