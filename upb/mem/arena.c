@@ -20,6 +20,7 @@
 #include <stdint.h>
 #include <string.h>
 
+#include "upb/base/internal/log2.h"
 #include "upb/mem/alloc.h"
 #include "upb/mem/internal/arena.h"
 #include "upb/port/atomic.h"
@@ -420,6 +421,25 @@ void UPB_PRIVATE(_upb_Arena_UseBlock)(upb_Arena* a, void* ptr, size_t size) {
   size = UPB_ALIGN_DOWN(size, UPB_MALLOC_ALIGN);
 #endif
   if (size <= UPB_PRIVATE(_upb_ArenaHas)(a)) return;
+
+  // Harvest remaining space from the retired active block before overwriting
+  // it.
+  if (a->UPB_ONLYBITS(ptr) && a->UPB_ONLYBITS(end)) {
+    char* curr_ptr = (char*)a->UPB_ONLYBITS(ptr);
+    char* curr_end = (char*)a->UPB_ONLYBITS(end);
+    if (curr_end > curr_ptr) {
+      size_t remaining = curr_end - curr_ptr;
+      while (remaining >= sizeof(UPB_PRIVATE(_upb_ArenaFreeBlock))) {
+        size_t harvest_size =
+            UPB_PRIVATE(_upb_Arena_LargestPoolSize)(remaining);
+        if (harvest_size == 0) break;
+        upb_Arena_FreePool(a, curr_ptr, harvest_size);
+        curr_ptr += harvest_size;
+        remaining -= harvest_size;
+      }
+    }
+  }
+
   a->UPB_ONLYBITS(ptr) = ptr;
   a->UPB_ONLYBITS(end) = UPB_PTR_AT(ptr, size, char);
   UPB_PRIVATE(upb_Xsan_PoisonRegion)(ptr, size);
@@ -481,13 +501,27 @@ void* UPB_PRIVATE(_upb_Arena_SlowMalloc)(upb_Arena* a, size_t span) {
   upb_ArenaInternal* ai = upb_Arena_Internal(a);
   if (!_upb_ArenaInternal_BlockAlloc(ai)) return NULL;
 
+  size_t size = span - UPB_PRIVATE(kUpb_Asan_GuardSize);
+
+  // 1. Try to reuse a block from the pool
+  size_t actual_size = 0;
+  void* pool_block =
+      UPB_PRIVATE(_upb_Arena_FindAndPopPoolBlock)(a, span, &actual_size);
+  if (pool_block) {
+    // We ALWAYS treat pooled blocks as one-off blocks!
+    // This preserves the active region's exponential growth policy.
+    UPB_PRIVATE(upb_Xsan_PoisonRegion)(pool_block, actual_size);
+    void* unpoisoned = UPB_PRIVATE(upb_Xsan_NewUnpoisonedRegion)(
+        UPB_XSAN(a), pool_block, size);
+    return unpoisoned;
+  }
+
+  // 2. Fallback to allocating a new block from the system
   bool one_off = false;
   size_t block_size = UPB_PRIVATE(_upb_Arena_NextBlockSize)(a, span, &one_off);
-
   void* block = UPB_PRIVATE(_upb_Arena_AllocBlock)(a, &block_size);
   if (!block) return NULL;
   UPB_PRIVATE(_upb_Arena_AddBlock)(a, block);
-  size_t size = span - UPB_PRIVATE(kUpb_Asan_GuardSize);
 
   // Recheck size, in case the allocator gave us a much larger block than we
   // requested and we want to make it the new allocating region.
@@ -529,6 +563,7 @@ static upb_Arena* _upb_Arena_InitSlow(upb_alloc* alloc, size_t first_size) {
   a->body.size_hint = UPB_MIN(block_size, UINT32_MAX);
   a->head.UPB_ONLYBITS(ptr) = NULL;
   a->head.UPB_ONLYBITS(end) = NULL;
+  a->head.UPB_ONLYBITS(pool) = NULL;
 
   upb_Atomic_Init(&a->body.parent_or_count, _upb_Arena_TaggedFromRefcount(1));
   upb_Atomic_Init(&a->body.next, NULL);
@@ -588,6 +623,7 @@ upb_Arena* upb_Arena_Init(void* mem, size_t n, upb_alloc* alloc) {
   a->body.block_alloc = _upb_Arena_MakeBlockAlloc(alloc, 1);
   a->head.UPB_PRIVATE(ptr) = (void*)UPB_ALIGN_MALLOC((uintptr_t)(a + 1));
   a->head.UPB_PRIVATE(end) = UPB_PTR_AT(mem, n, char);
+  a->head.UPB_ONLYBITS(pool) = NULL;
   UPB_PRIVATE(upb_Xsan_Init)(UPB_XSAN(&a->body));
 #ifdef UPB_TRACING_ENABLED
   upb_Arena_LogInit(&a->head, n);
@@ -1031,18 +1067,31 @@ bool _upb_Arena_WasLastAllocFromPreviousBlock(struct upb_Arena* a, void* ptr,
                                               size_t oldsize) {
   upb_ArenaInternal* ai = upb_Arena_Internal(a);
   upb_MemBlock* block = ai->blocks;
-  // Skip any arena refs.
-  while (block != NULL && block->size == 0) {
+
+  while (block != NULL) {
+    if (block->size == 0) {
+      block = block->next;
+      continue;
+    }
+
+    char* start = UPB_PTR_AT(block, kUpb_MemblockReserve, char);
+    if (UPB_PRIVATE(upb_Xsan_PtrEq)(ptr, start)) {
+      size_t block_usable_size = block->size - kUpb_MemblockReserve;
+      size_t alloc_span = UPB_PRIVATE(_upb_Arena_AllocSpan)(oldsize);
+
+      if (alloc_span == block_usable_size) {
+        return true;
+      }
+
+      if (UPB_PRIVATE(_upb_Arena_IsValidPoolSize)(block_usable_size) &&
+          alloc_span <= block_usable_size) {
+        return true;
+      }
+    }
     block = block->next;
   }
-  if (block == NULL) return false;
-  char* start = UPB_PTR_AT(block, kUpb_MemblockReserve, char);
 
-  // We don't actually track the final pointer value, so we can only check that
-  // the span is within the previous block.
-  return UPB_PRIVATE(upb_Xsan_PtrEq)(ptr, start) &&
-         UPB_PRIVATE(_upb_Arena_AllocSpan)(oldsize) ==
-             block->size - kUpb_MemblockReserve;
+  return false;
 }
 
 void* UPB_PRIVATE(_upb_Arena_Steal)(struct upb_Arena* a, size_t* size) {

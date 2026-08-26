@@ -149,6 +149,10 @@ UPB_NODISCARD UPB_API_INLINE void* upb_Arena_Realloc(upb_Arena* a, void* ptr,
                                                      size_t oldsize,
                                                      size_t size);
 
+UPB_NODISCARD UPB_API_INLINE void* upb_Arena_AllocPool(upb_Arena* a,
+                                                       size_t size);
+UPB_API_INLINE void upb_Arena_FreePool(upb_Arena* a, void* ptr, size_t size);
+
 static const size_t UPB_PRIVATE(kUpbDefaultMaxBlockSize) =
     UPB_DEFAULT_MAX_BLOCK_SIZE;
 

@@ -1059,4 +1059,395 @@ TEST(ArenaTest, AllocationCountFailureInjection) {
   upb_AllocationCount_Reset();
 }
 
+TEST(ArenaTest, PoolAlloc) {
+  upb_Arena* arena = upb_Arena_New();
+
+  // 1. Test basic reuse (power of 2)
+  void* ptr1 = upb_Arena_AllocPool(arena, 32);
+  EXPECT_NE(ptr1, nullptr);
+
+  // Free it back to the pool
+  upb_Arena_FreePool(arena, ptr1, 32);
+
+  // Allocate again, it should return the SAME block
+  void* ptr2 = upb_Arena_AllocPool(arena, 32);
+  EXPECT_TRUE(UPB_PRIVATE(upb_Xsan_PtrEq)(ptr1, ptr2));
+
+  // 2. Test multiple size classes (power of 2)
+  void* ptr_small = upb_Arena_AllocPool(arena, 32);
+  void* ptr_large = upb_Arena_AllocPool(arena, 64);
+  EXPECT_NE(ptr_small, ptr_large);
+
+  upb_Arena_FreePool(arena, ptr_small, 32);
+  upb_Arena_FreePool(arena, ptr_large, 64);
+
+  // Allocate 64 first, should get ptr_large
+  void* ptr_large2 = upb_Arena_AllocPool(arena, 64);
+  EXPECT_TRUE(UPB_PRIVATE(upb_Xsan_PtrEq)(ptr_large2, ptr_large));
+
+  // Allocate 32, should get ptr_small
+  void* ptr_small2 = upb_Arena_AllocPool(arena, 32);
+  EXPECT_TRUE(UPB_PRIVATE(upb_Xsan_PtrEq)(ptr_small2, ptr_small));
+
+  // 3. Test stack behavior (LIFO)
+  void* a1 = upb_Arena_AllocPool(arena, 32);
+  void* a2 = upb_Arena_AllocPool(arena, 32);
+  EXPECT_NE(a1, a2);
+
+  upb_Arena_FreePool(arena, a1, 32);
+  upb_Arena_FreePool(arena, a2, 32);
+
+  // Since it's a stack, we should get a2 first, then a1
+  void* r1 = upb_Arena_AllocPool(arena, 32);
+  void* r2 = upb_Arena_AllocPool(arena, 32);
+  EXPECT_TRUE(UPB_PRIVATE(upb_Xsan_PtrEq)(r1, a2));
+  EXPECT_TRUE(UPB_PRIVATE(upb_Xsan_PtrEq)(r2, a1));
+
+  // 4. Test other power-of-2 size classes (e.g. 16, 128, 256)
+  void* p16 = upb_Arena_AllocPool(arena, 16);
+  EXPECT_NE(p16, nullptr);
+  upb_Arena_FreePool(arena, p16, 16);
+
+  void* p16_2 = upb_Arena_AllocPool(arena, 16);
+  EXPECT_TRUE(UPB_PRIVATE(upb_Xsan_PtrEq)(p16, p16_2));
+
+  void* p128 = upb_Arena_AllocPool(arena, 128);
+  EXPECT_NE(p16_2, p128);
+  upb_Arena_FreePool(arena, p16_2, 16);
+  upb_Arena_FreePool(arena, p128, 128);
+
+  upb_Arena_Free(arena);
+}
+
+TEST(ArenaTest, PoolAllocExactMatch) {
+  upb_Arena* arena = upb_Arena_New();
+
+  // 1. Allocate a 64-byte block and free it to the pool
+  void* ptr_large = upb_Arena_AllocPool(arena, 64);
+  EXPECT_NE(ptr_large, nullptr);
+  upb_Arena_FreePool(arena, ptr_large, 64);
+
+  // 2. Allocate 32 bytes. With O(1) exact matching, this does NOT steal or
+  // destroy the 64-byte host block! It allocates from arena malloc.
+  void* ptr_small = upb_Arena_AllocPool(arena, 32);
+  EXPECT_FALSE(UPB_PRIVATE(upb_Xsan_PtrEq)(ptr_large, ptr_small));
+
+  // 3. Free the 32-byte block into the pool
+  upb_Arena_FreePool(arena, ptr_small, 32);
+
+  // 4. Allocate 32 bytes again: it should reuse the 32-byte block!
+  void* ptr_small2 = upb_Arena_AllocPool(arena, 32);
+  EXPECT_TRUE(UPB_PRIVATE(upb_Xsan_PtrEq)(ptr_small, ptr_small2));
+
+  // 5. Allocate 64 bytes again: it should reuse the preserved 64-byte block!
+  void* ptr_large2 = upb_Arena_AllocPool(arena, 64);
+  EXPECT_TRUE(UPB_PRIVATE(upb_Xsan_PtrEq)(ptr_large, ptr_large2));
+
+  upb_Arena_Free(arena);
+}
+
+TEST(ArenaTest, PoolHarvestRetiredBlock) {
+  upb_Arena* arena = upb_Arena_New();
+
+  // 1. Allocate 200 bytes. This fits in the initial block (size approx 384,
+  // leaving approx 256 bytes of free space).
+  // After this, the remaining free space in the first block is approx 56 bytes.
+  void* p1 = upb_Arena_Malloc(arena, 200);
+  EXPECT_NE(p1, nullptr);
+
+  // 2. Allocate 100 bytes. This does NOT fit in the remaining 56 bytes.
+  // Since 100 is small, it will allocate a new standard block (size 512)
+  // and use it as the active block (retiring the first block).
+  // It will NOT trigger a 'one-off' allocation because the new block's
+  // free space (512 - 100 = 412) is much larger than the current free space
+  // (56). The remaining 56 bytes in the first block will be harvested! The
+  // largest power-of-2 size class <= 56 is 32.
+  void* p2 = upb_Arena_Malloc(arena, 100);
+  EXPECT_NE(p2, nullptr);
+
+  // 3. Try to allocate the harvested block. Since we don't know the exact
+  // size class harvested (due to compiler/reserve padding differences), we
+  // search by trying to allocate various valid size classes.
+  // The harvested block MUST start exactly contiguous with p1!
+  uintptr_t p1_end = (uintptr_t)p1 + UPB_PRIVATE(_upb_Arena_AllocSpan)(200);
+
+  void* p3 = nullptr;
+  size_t sizes[] = {32, 16};
+  for (size_t size : sizes) {
+    void* ptr = upb_Arena_AllocPool(arena, size);
+    if (UPB_PRIVATE(upb_Xsan_PtrEq)(ptr, (void*)p1_end)) {
+      p3 = ptr;
+      break;
+    }
+  }
+  EXPECT_NE(p3, nullptr);
+
+  upb_Arena_Free(arena);
+}
+
+TEST(OverheadTest, BlockHarvestingSavings) {
+  // Set max block size to 4096 to make the test deterministic.
+  upb_Arena_SetMaxBlockSize(4096);
+
+  upb_Arena* arena = upb_Arena_New();
+
+  // 1. Allocate 3296 bytes. This forces allocation of Block 2 (4096 bytes).
+  // Block 2 has exactly 800 bytes left (current_free = 800).
+  void* p1 = upb_Arena_Malloc(arena, 3296);
+  EXPECT_NE(p1, nullptr);
+
+  // 2. Allocate 1000 bytes. This does NOT fit in Block 2 (800 left).
+  // It allocates Block 3 (4096 bytes).
+  // Since span (1000) <= 4096 and current_free (800) < future_free (4096 - 1000
+  // = 3096), it does NOT trigger 'one-off' allocation. Block 2 is retired and
+  // its remaining 800 bytes are harvested (largest power-of-2 <= 800 is 512).
+  // Block 3 is active and has 3096 bytes left.
+  void* p2 = upb_Arena_Malloc(arena, 1000);
+  EXPECT_NE(p2, nullptr);
+
+  // 3. Allocate 3050 bytes. This fits in Block 3 (3096 left), leaving only
+  // 3096 - 3056 (aligned 3050) = 40 bytes left in Block 3.
+  void* p3 = upb_Arena_Malloc(arena, 3050);
+  EXPECT_NE(p3, nullptr);
+
+  // 4. Allocate 512, 256, and 32 bytes using AllocPool.
+  // With iterative harvesting, 800 bytes was decomposed into 512 + 256 + 32
+  // bytes. All three should HIT the harvested blocks from Block 2. No new
+  // blocks are allocated! Total blocks: 3 (B1 + B2 + B3). Without harvesting,
+  // these would MISS, call raw malloc, fail to fit in Block 3 (40 left), and
+  // force allocation of additional 4096-byte blocks.
+  void* p4_1 = upb_Arena_AllocPool(arena, 512);
+  EXPECT_NE(p4_1, nullptr);
+  void* p4_2 = upb_Arena_AllocPool(arena, 256);
+  EXPECT_NE(p4_2, nullptr);
+  void* p4_3 = upb_Arena_AllocPool(arena, 32);
+  EXPECT_NE(p4_3, nullptr);
+
+  // 5. Assert that the total space allocated is indeed small (only 3 blocks: B1
+  // + B2 + B3). B1 (approx 3416) + B2 (4096) + B3 (4096) = approx 11608 bytes.
+  // If harvesting failed, it would be 4+ blocks (approx 15704+ bytes).
+  size_t total_allocated = upb_Arena_SpaceAllocated(arena, nullptr);
+
+  // We assert it is strictly less than 4 blocks (15000+ bytes).
+  EXPECT_LE(total_allocated, 13000);
+
+  upb_Arena_Free(arena);
+  upb_Arena_SetMaxBlockSize(UPB_PRIVATE(kUpbDefaultMaxBlockSize));
+}
+
+TEST(OverheadTest, SlowMallocPoolReuse) {
+  // Set max block size to 4096 to make the test deterministic.
+  upb_Arena_SetMaxBlockSize(4096);
+
+  upb_Arena* arena = upb_Arena_New();
+
+  // 1. Allocate 3296 bytes. This forces allocation of Block 2 (4096 bytes).
+  // Block 2 has exactly 800 bytes left.
+  void* p1 = upb_Arena_Malloc(arena, 3296);
+  EXPECT_NE(p1, nullptr);
+
+  // 2. Allocate 1000 bytes. This does NOT fit in Block 2 (800 left).
+  // It allocates Block 3 (4096 bytes), retiring Block 2.
+  // Block 2's remaining 800 bytes are harvested as 512 bytes and placed in the
+  // pool.
+  void* p2 = upb_Arena_Malloc(arena, 1000);
+  EXPECT_NE(p2, nullptr);
+
+  // 3. Allocate 3050 bytes. This fits in Block 3, leaving only 40 bytes left.
+  void* p3 = upb_Arena_Malloc(arena, 3050);
+  EXPECT_NE(p3, nullptr);
+
+  // 4. Allocate 500 bytes using raw Malloc (which triggers SlowMalloc).
+  // With SlowMalloc pool reuse, this should HIT the 512-byte harvested block in
+  // the pool! It will be returned as a one-off block. No new system blocks are
+  // allocated! Total blocks: 3. Without pool reuse, this would force allocation
+  // of Block 4.
+  void* p4 = upb_Arena_Malloc(arena, 500);
+  EXPECT_NE(p4, nullptr);
+
+  // 5. Assert that the total space allocated is indeed small (only 3 blocks).
+  size_t total_allocated = upb_Arena_SpaceAllocated(arena, nullptr);
+  EXPECT_LE(total_allocated, 13000);
+
+  upb_Arena_Free(arena);
+  upb_Arena_SetMaxBlockSize(UPB_PRIVATE(kUpbDefaultMaxBlockSize));
+}
+
+TEST(ArenaTest, PoolHostBlockEvacuation) {
+  upb_Arena* arena = upb_Arena_New();
+
+  // 1. Allocate and free blocks in ascending order: 16, 32, 64, 128, 256
+  // The 256-byte block becomes the host block.
+  void* p16 = upb_Arena_AllocPool(arena, 16);
+  void* p32 = upb_Arena_AllocPool(arena, 32);
+  void* p64 = upb_Arena_AllocPool(arena, 64);
+  void* p128 = upb_Arena_AllocPool(arena, 128);
+  void* p256 = upb_Arena_AllocPool(arena, 256);
+
+  upb_Arena_FreePool(arena, p16, 16);
+  upb_Arena_FreePool(arena, p32, 32);
+  upb_Arena_FreePool(arena, p64, 64);
+  upb_Arena_FreePool(arena, p128, 128);
+  upb_Arena_FreePool(arena, p256, 256);
+
+  // 2. Popping 256 pops the host block itself!
+  // Backward scan must evacuate the index to the 128-byte block.
+  void* r256 = upb_Arena_AllocPool(arena, 256);
+  EXPECT_TRUE(UPB_PRIVATE(upb_Xsan_PtrEq)(r256, p256));
+
+  // 3. Popping 128 pops the new host block!
+  // Evacuates index to the 64-byte block.
+  void* r128 = upb_Arena_AllocPool(arena, 128);
+  EXPECT_TRUE(UPB_PRIVATE(upb_Xsan_PtrEq)(r128, p128));
+
+  // 4. Pop remaining blocks: 64, 32, 16
+  void* r64 = upb_Arena_AllocPool(arena, 64);
+  EXPECT_TRUE(UPB_PRIVATE(upb_Xsan_PtrEq)(r64, p64));
+
+  void* r32 = upb_Arena_AllocPool(arena, 32);
+  EXPECT_TRUE(UPB_PRIVATE(upb_Xsan_PtrEq)(r32, p32));
+
+  void* r16 = upb_Arena_AllocPool(arena, 16);
+  EXPECT_TRUE(UPB_PRIVATE(upb_Xsan_PtrEq)(r16, p16));
+
+  // 5. Pool is now empty, next allocation allocates a new block
+  void* r_new = upb_Arena_AllocPool(arena, 16);
+  EXPECT_NE(r_new, nullptr);
+  EXPECT_FALSE(UPB_PRIVATE(upb_Xsan_PtrEq)(r_new, p16));
+
+  upb_Arena_Free(arena);
+}
+
+TEST(ArenaTest, PoolMultipleBlocksSameBinLIFO) {
+  upb_Arena* arena = upb_Arena_New();
+
+  const int kNumBlocks = 10;
+  void* blocks[kNumBlocks];
+
+  // Allocate 10 blocks of 64 bytes
+  for (int i = 0; i < kNumBlocks; ++i) {
+    blocks[i] = upb_Arena_AllocPool(arena, 64);
+    EXPECT_NE(blocks[i], nullptr);
+  }
+
+  // Free them in order 0, 1, ..., 9
+  for (int i = 0; i < kNumBlocks; ++i) {
+    upb_Arena_FreePool(arena, blocks[i], 64);
+  }
+
+  // Pop them back: must come out in exact LIFO reverse order 9, 8, ..., 0
+  for (int i = kNumBlocks - 1; i >= 0; --i) {
+    void* p = upb_Arena_AllocPool(arena, 64);
+    EXPECT_TRUE(UPB_PRIVATE(upb_Xsan_PtrEq)(p, blocks[i]));
+  }
+
+  upb_Arena_Free(arena);
+}
+
+TEST(ArenaTest, PoolMultipleHostSizedBlocks) {
+  upb_Arena* arena = upb_Arena_New();
+
+  void* h1 = upb_Arena_AllocPool(arena, 512);
+  void* h2 = upb_Arena_AllocPool(arena, 512);
+  void* h3 = upb_Arena_AllocPool(arena, 512);
+
+  // Free h1 (becomes host), h2 (enters bins[5]), h3 (enters bins[5])
+  upb_Arena_FreePool(arena, h1, 512);
+  upb_Arena_FreePool(arena, h2, 512);
+  upb_Arena_FreePool(arena, h3, 512);
+
+  // Pop: h3 comes first, then h2, then host block h1 itself
+  void* r3 = upb_Arena_AllocPool(arena, 512);
+  EXPECT_TRUE(UPB_PRIVATE(upb_Xsan_PtrEq)(r3, h3));
+
+  void* r2 = upb_Arena_AllocPool(arena, 512);
+  EXPECT_TRUE(UPB_PRIVATE(upb_Xsan_PtrEq)(r2, h2));
+
+  void* r1 = upb_Arena_AllocPool(arena, 512);
+  EXPECT_TRUE(UPB_PRIVATE(upb_Xsan_PtrEq)(r1, h1));
+
+  upb_Arena_Free(arena);
+}
+
+TEST(ArenaTest, PoolLargePowerOfTwoSizes) {
+  upb_Arena* arena = upb_Arena_New();
+
+  // Test unbounded large power of 2 sizes (e.g. 64KB, 128KB, 256KB)
+  size_t large_sizes[] = {65536, 131072, 262144};
+  void* ptrs[3];
+
+  for (int i = 0; i < 3; ++i) {
+    ptrs[i] = upb_Arena_AllocPool(arena, large_sizes[i]);
+    EXPECT_NE(ptrs[i], nullptr);
+  }
+
+  for (int i = 0; i < 3; ++i) {
+    upb_Arena_FreePool(arena, ptrs[i], large_sizes[i]);
+  }
+
+  // Pop in reverse order
+  for (int i = 2; i >= 0; --i) {
+    void* p = upb_Arena_AllocPool(arena, large_sizes[i]);
+    EXPECT_TRUE(UPB_PRIVATE(upb_Xsan_PtrEq)(p, ptrs[i]));
+  }
+
+  upb_Arena_Free(arena);
+}
+
+TEST(ArenaTest, PoolInvalidSizes) {
+  upb_Arena* arena = upb_Arena_New();
+
+  // Null pointer is safe no-op
+  upb_Arena_FreePool(arena, nullptr, 32);
+
+  // Non-power of 2 is ignored by pool
+  void* ptr = upb_Arena_Malloc(arena, 48);
+  upb_Arena_FreePool(arena, ptr, 48);
+
+  // Too small size (< 16) is ignored
+  void* p8 = upb_Arena_Malloc(arena, 8);
+  upb_Arena_FreePool(arena, p8, 8);
+
+  upb_Arena_Free(arena);
+}
+
+TEST(OverheadTest, PoolStressRepetitiveRealloc) {
+  upb_Arena* arena = upb_Arena_New();
+
+  // Simulate heavy churn: 1,000 cycles of simulated dynamic array resizing.
+  // In each cycle:
+  // Allocate buffer of size 32 -> resize to 64 (free 32) -> resize to 128 (free
+  // 64) -> resize to 256 (free 128) -> resize to 512 (free 256) -> resize to
+  // 1024 (free 512) -> finally free 1024. Without pooling, 1000 cycles * 2048
+  // bytes = ~2 MB allocated. With pooling, all sizes (32, 64, 128, 256, 512,
+  // 1024) are reused across all 1000 iterations!
+  for (int cycle = 0; cycle < 1000; ++cycle) {
+    void* p32 = upb_Arena_AllocPool(arena, 32);
+    void* p64 = upb_Arena_AllocPool(arena, 64);
+    upb_Arena_FreePool(arena, p32, 32);
+
+    void* p128 = upb_Arena_AllocPool(arena, 128);
+    upb_Arena_FreePool(arena, p64, 64);
+
+    void* p256 = upb_Arena_AllocPool(arena, 256);
+    upb_Arena_FreePool(arena, p128, 128);
+
+    void* p512 = upb_Arena_AllocPool(arena, 512);
+    upb_Arena_FreePool(arena, p256, 256);
+
+    void* p1024 = upb_Arena_AllocPool(arena, 1024);
+    upb_Arena_FreePool(arena, p512, 512);
+
+    // Free the final buffer
+    upb_Arena_FreePool(arena, p1024, 1024);
+  }
+
+  size_t total_allocated = upb_Arena_SpaceAllocated(arena, nullptr);
+
+  // Despite 6,000 allocations across 1,000 cycles (totaling >2MB of churn),
+  // the memory pooled and allocated should be bounded under 32KB.
+  EXPECT_LE(total_allocated, 32768);
+
+  upb_Arena_Free(arena);
+}
 }  // namespace

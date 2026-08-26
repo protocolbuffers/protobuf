@@ -85,6 +85,7 @@ UPB_NODISCARD UPB_INLINE struct upb_Array* UPB_PRIVATE(
   const size_t bytes = array_size + (init_capacity << elem_size_lg2);
   size_t span = UPB_PRIVATE(_upb_Arena_AllocSpan)(bytes);
   if (!allow_slow && UPB_PRIVATE(_upb_ArenaHas)(arena) < span) return NULL;
+
   struct upb_Array* array = (struct upb_Array*)upb_Arena_Malloc(arena, bytes);
   if (!array) return NULL;
   UPB_PRIVATE(_upb_Array_SetTaggedPtr)

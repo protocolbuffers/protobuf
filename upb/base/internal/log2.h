@@ -20,20 +20,34 @@
 extern "C" {
 #endif
 
+// Returns the number of leading 0-bits in x.
+// x must be non-zero.
+UPB_INLINE int upb_ClzSizeT(size_t x) {
+  UPB_ASSERT(x > 0);
+#if SIZE_MAX == ULLONG_MAX && UPB_HAS_BUILTIN(__builtin_clzll)
+  return __builtin_clzll(x);
+#elif SIZE_MAX == ULONG_MAX && UPB_HAS_BUILTIN(__builtin_clzl)
+  return __builtin_clzl(x);
+#elif SIZE_MAX == UINT_MAX && UPB_HAS_BUILTIN(__builtin_clz)
+  return __builtin_clz(x);
+#else
+  int count = 0;
+  for (int i = (int)(sizeof(size_t) * CHAR_BIT) - 1; i >= 0; --i) {
+    if ((x >> i) & 1) break;
+    count++;
+  }
+  return count;
+#endif
+}
+
 UPB_INLINE int upb_Log2Ceiling(size_t x) {
   if (x <= 1) return 0;
-#if SIZE_MAX == ULLONG_MAX && UPB_HAS_BUILTIN(__builtin_clzll)
-  return (sizeof(size_t) * CHAR_BIT) - __builtin_clzll(x - 1);
-#elif SIZE_MAX == ULONG_MAX && UPB_HAS_BUILTIN(__builtin_clzl)
-  return (sizeof(size_t) * CHAR_BIT) - __builtin_clzl(x - 1);
-#elif SIZE_MAX == UINT_MAX && UPB_HAS_BUILTIN(__builtin_clz)
-  return (sizeof(size_t) * CHAR_BIT) - __builtin_clz(x - 1);
-#else
-  if (x > SIZE_MAX / 2) return sizeof(size_t) * CHAR_BIT;
-  int lg2 = 0;
-  while (((size_t)1 << lg2) < x) lg2++;
-  return lg2;
-#endif
+  return (sizeof(size_t) * CHAR_BIT) - upb_ClzSizeT(x - 1);
+}
+
+UPB_INLINE int upb_Log2Floor(size_t x) {
+  if (x <= 1) return 0;
+  return (sizeof(size_t) * CHAR_BIT) - 1 - upb_ClzSizeT(x);
 }
 
 // Returns the smallest power of two that is greater than or equal to x. Returns
