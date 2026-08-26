@@ -609,7 +609,7 @@ public abstract class CodedInputStream {
   @CanIgnoreReturnValue
   public abstract int pushLimit(int byteLimit) throws InvalidProtocolBufferException;
 
-  public final int pushLimitBeforeMessage() throws IOException {
+  final int pushLimitBeforeMessage() throws IOException {
     final int length = readRawVarint32();
     checkRecursionLimit();
     final int oldLimit = pushLimit(length);
@@ -624,7 +624,7 @@ public abstract class CodedInputStream {
    */
   public abstract void popLimit(final int oldLimit);
 
-  public final void popLimitAfterMessage(int oldLimit) throws IOException {
+  final void popLimitAfterMessage(int oldLimit) throws IOException {
     checkLastTagWas(0);
     --messageDepth;
     if (getBytesUntilLimit() != 0) {

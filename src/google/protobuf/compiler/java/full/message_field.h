@@ -83,7 +83,6 @@ class ImmutableMessageFieldGenerator : public ImmutableFieldGenerator {
   void GenerateHasMethod(io::Printer* printer) const;
   void GenerateGetMethod(io::Printer* printer) const;
   void GenerateGetOrBuilderMethod(io::Printer* printer) const;
-  void GenerateWriteFieldMethod(io::Printer* printer) const;
 
   void GenerateBuilderHasMethod(io::Printer* printer) const;
   void GenerateBuilderGetMethod(io::Printer* printer) const;
@@ -121,7 +120,6 @@ class ImmutableMessageOneofFieldGenerator
   void GenerateHasMethod(io::Printer* printer) const;
   void GenerateGetMethod(io::Printer* printer) const;
   void GenerateGetOrBuilderMethod(io::Printer* printer) const;
-  void GenerateWriteFieldMethod(io::Printer* printer) const;
 
   void GenerateBuilderHasMethod(io::Printer* printer) const;
   void GenerateBuilderGetMethod(io::Printer* printer) const;
@@ -175,7 +173,6 @@ class RepeatedImmutableMessageFieldGenerator
   void GenerateGetMethod(io::Printer* printer) const;
   void GenerateGetOrBuilderListMethod(io::Printer* printer) const;
   void GenerateGetOrBuilderMethod(io::Printer* printer) const;
-  void GenerateWriteFieldMethod(io::Printer* printer) const;
 
   void GenerateEnsureIsMutableMethod(io::Printer* printer) const;
   void GenerateBuilderGetListMethod(io::Printer* printer) const;
