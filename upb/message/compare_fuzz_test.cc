@@ -2,6 +2,7 @@
 
 #include <gtest/gtest.h>
 #include "testing/fuzzing/fuzztest.h"
+#include "absl/base/throw_delegate.h"
 #include "google/protobuf/util/message_differencer.h"
 #include "upb/mem/arena.h"
 #include "upb/message/compare.h"
@@ -17,18 +18,36 @@ namespace {
 
 const upb_ExtensionRegistry* CreateTestExtensionRegistry(upb_Arena* arena) {
   upb_ExtensionRegistry* ext_registry = upb_ExtensionRegistry_New(arena);
-  upb_ExtensionRegistry_Add(ext_registry,
-                            upb_test_ModelExtension1_model_ext_ext);
-  upb_ExtensionRegistry_Add(ext_registry,
-                            upb_test_ModelExtension2_model_ext_ext);
-  upb_ExtensionRegistry_Add(ext_registry,
-                            upb_test_ModelExtension2_model_ext_2_ext);
-  upb_ExtensionRegistry_Add(ext_registry,
-                            upb_test_ModelExtension2_model_ext_3_ext);
-  upb_ExtensionRegistry_Add(ext_registry,
-                            upb_test_ModelExtension2_model_ext_4_ext);
-  upb_ExtensionRegistry_Add(ext_registry,
-                            upb_test_ModelExtension2_model_ext_5_ext);
+  if (upb_ExtensionRegistry_Add(ext_registry,
+                                upb_test_ModelExtension1_model_ext_ext) !=
+      kUpb_ExtensionRegistryStatus_Ok) {
+    absl::ThrowStdBadAlloc();
+  }
+  if (upb_ExtensionRegistry_Add(ext_registry,
+                                upb_test_ModelExtension2_model_ext_ext) !=
+      kUpb_ExtensionRegistryStatus_Ok) {
+    absl::ThrowStdBadAlloc();
+  }
+  if (upb_ExtensionRegistry_Add(ext_registry,
+                                upb_test_ModelExtension2_model_ext_2_ext) !=
+      kUpb_ExtensionRegistryStatus_Ok) {
+    absl::ThrowStdBadAlloc();
+  }
+  if (upb_ExtensionRegistry_Add(ext_registry,
+                                upb_test_ModelExtension2_model_ext_3_ext) !=
+      kUpb_ExtensionRegistryStatus_Ok) {
+    absl::ThrowStdBadAlloc();
+  }
+  if (upb_ExtensionRegistry_Add(ext_registry,
+                                upb_test_ModelExtension2_model_ext_4_ext) !=
+      kUpb_ExtensionRegistryStatus_Ok) {
+    absl::ThrowStdBadAlloc();
+  }
+  if (upb_ExtensionRegistry_Add(ext_registry,
+                                upb_test_ModelExtension2_model_ext_5_ext) !=
+      kUpb_ExtensionRegistryStatus_Ok) {
+    absl::ThrowStdBadAlloc();
+  }
   return ext_registry;
 }
 

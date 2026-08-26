@@ -629,9 +629,9 @@ TEST(GeneratedCode, DeepCloneMessageNonCanonicalExtensions) {
                                    upb_StringView_FromString("LifecycleValue"));
 
   // Attach as non-canonical extension
-  UPB_PRIVATE(_upb_Message_SetNonCanonicalExtension)(
+  EXPECT_TRUE(UPB_PRIVATE(_upb_Message_SetNonCanonicalExtension)(
       UPB_UPCAST(msg), upb_test_ModelExtension1_model_ext_ext, &ext1,
-      source_arena);
+      source_arena));
 
   // Deep clone msg to clone
   upb_Arena* arena = upb_Arena_New();

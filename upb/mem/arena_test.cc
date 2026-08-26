@@ -114,7 +114,7 @@ TEST(ArenaTest, ShinkLastAfterReallocHwasanRegression) {
   };
 
   upb_Arena* arena = upb_Arena_Init(nullptr, 1000, &upb_alloc_global);
-  (void)upb_Arena_Malloc(arena, 1);
+  EXPECT_NE(upb_Arena_Malloc(arena, 1), nullptr);
   // Will force a full-size block since the initial allocated block has tons of
   // free space and the max block size is tiny
   void* to_realloc = upb_Arena_Malloc(arena, 2000);
@@ -225,7 +225,7 @@ class OverheadTest {
   }
 
   void Alloc(size_t size) {
-    upb_Arena_Malloc(arena_, size);
+    EXPECT_NE(upb_Arena_Malloc(arena_, size), nullptr);
     arena_alloced_ += size;
     arena_alloc_count_++;
   }
@@ -532,7 +532,7 @@ TEST(ArenaTest, MaxBlockSize) {
   // Perform 600 1k allocations (600k total) and ensure that the amount of
   // memory allocated does not exceed 700k.
   for (int i = 0; i < 600; ++i) {
-    upb_Arena_Malloc(arena, 1024);
+    EXPECT_NE(upb_Arena_Malloc(arena, 1024), nullptr);
   }
   EXPECT_LE(upb_Arena_SpaceAllocated(arena, nullptr), 700 * 1024);
   upb_Arena_Free(arena);
