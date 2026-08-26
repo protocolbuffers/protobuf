@@ -13,12 +13,16 @@
 #include "upb/base/descriptor_constants.h"
 #include "upb/base/error_handler.h"
 #include "upb/base/string_view.h"
+#include "upb/hash/common.h"
+#include "upb/hash/int_table.h"
+#include "upb/hash/str_table.h"
 #include "upb/mem/arena.h"
 #include "upb/message/accessors.h"
 #include "upb/message/array.h"
 #include "upb/message/compare.h"
 #include "upb/message/internal/accessors.h"
 #include "upb/message/internal/extension.h"
+#include "upb/message/internal/map.h"
 #include "upb/message/internal/message.h"
 #include "upb/message/map.h"
 #include "upb/message/message.h"
@@ -191,60 +195,141 @@ static bool upb_Message_ConvertArrayField(upb_Converter* c, upb_Message* dst,
   return false;
 }
 
-static void upb_Map_DeepConvert(
-    upb_Converter* c, upb_Map* dst, const upb_Map* src,
-    const upb_MiniTable* dst_entry_mt, const upb_MiniTable* src_entry_mt,
-    const upb_MiniTableField* dst_map_f, upb_Message* dst_msg,
-    const upb_ExtensionRegistry* extreg, int depth) {
+static upb_Map* upb_Map_DeepConvert(
+    upb_Converter* c, const upb_Map* src, const upb_MiniTable* dst_entry_mt,
+    const upb_MiniTable* src_entry_mt, const upb_MiniTableField* dst_map_f,
+    upb_Message* dst_msg, const upb_ExtensionRegistry* extreg, int depth) {
+  upb_Map* dst_map = upb_Arena_Malloc(c->arena, sizeof(upb_Map));
+  if (dst_map == NULL) {
+    upb_ErrorHandler_ThrowError(&c->err, kUpb_ErrorCode_OutOfMemory);
+  }
+  dst_map->key_size = src->key_size;
   const upb_MiniTableField* dst_val_f = upb_MiniTable_MapValue(dst_entry_mt);
-  const upb_MiniTable* dst_val_mt = upb_MiniTable_SubMessage(dst_val_f);
-  const upb_MiniTableField* src_val_f = upb_MiniTable_MapValue(src_entry_mt);
-  const upb_MiniTable* src_val_mt = upb_MiniTable_SubMessage(src_val_f);
+  dst_map->val_size = _upb_Map_CTypeSize(upb_MiniTableField_CType(dst_val_f));
+  dst_map->UPB_PRIVATE(is_frozen) = false;
+  dst_map->UPB_PRIVATE(is_strtable) = src->UPB_PRIVATE(is_strtable);
 
-  size_t iter = kUpb_Map_Begin;
-  upb_MessageValue key, src_val;
-  while (upb_Map_Next(src, &key, &src_val, &iter)) {
+  if (dst_map->UPB_PRIVATE(is_strtable)) {
+    if (!upb_strtable_copy(&dst_map->t.strtable, &src->t.strtable, c->arena)) {
+      upb_ErrorHandler_ThrowError(&c->err, kUpb_ErrorCode_OutOfMemory);
+    }
+    const upb_MiniTable* dst_val_mt = upb_MiniTable_SubMessage(dst_val_f);
+    const upb_MiniTableField* src_val_f = upb_MiniTable_MapValue(src_entry_mt);
+    const upb_MiniTable* src_val_mt = upb_MiniTable_SubMessage(src_val_f);
+
     if (dst_val_mt && src_val_mt) {
-      const upb_Message* src_msg = src_val.msg_val;
-      upb_Message* dst_sub = upb_Message_New(dst_val_mt, c->arena);
-      if (!dst_sub) {
-        upb_ErrorHandler_ThrowError(&c->err, kUpb_ErrorCode_OutOfMemory);
+      intptr_t iter = UPB_STRTABLE_BEGIN;
+      upb_StringView key;
+      upb_value tabval;
+      while (upb_strtable_next2(&dst_map->t.strtable, &key, &tabval, &iter)) {
+        upb_MessageValue val;
+        _upb_map_fromvalue(tabval, &val, src->val_size);
+        const upb_Message* src_msg = val.msg_val;
+        upb_Message* dst_sub = upb_Message_New(dst_val_mt, c->arena);
+        if (!dst_sub) {
+          upb_ErrorHandler_ThrowError(&c->err, kUpb_ErrorCode_OutOfMemory);
+        }
+        upb_Message_ConvertInternal(c, dst_sub, src_msg, dst_val_mt, src_val_mt,
+                                    extreg, depth);
+        val.msg_val = dst_sub;
+        upb_value cloned_tabval = {0};
+        if (!_upb_map_tovalue(&val, dst_map->val_size, &cloned_tabval,
+                              c->arena)) {
+          upb_ErrorHandler_ThrowError(&c->err, kUpb_ErrorCode_OutOfMemory);
+        }
+        upb_strtable_setentryvalue(&dst_map->t.strtable, iter, cloned_tabval);
       }
-      upb_Message_ConvertInternal(c, dst_sub, src_msg, dst_val_mt, src_val_mt,
-                                  extreg, depth);
-      upb_MessageValue dst_val;
-      dst_val.msg_val = dst_sub;
-      if (!upb_Map_Set(dst, key, dst_val, c->arena)) {
-        upb_ErrorHandler_ThrowError(&c->err, kUpb_ErrorCode_OutOfMemory);
-      }
-    } else {
-      // Scalar value.
-      if (upb_MiniTableField_IsClosedEnum(dst_val_f)) {
-        const upb_MiniTableEnum* dst_e =
-            upb_MiniTable_GetSubEnumTable(dst_val_f);
-        if (upb_MiniTableEnum_CheckValue(dst_e, src_val.int32_val)) {
-          if (!upb_Map_Set(dst, key, src_val, c->arena)) {
-            upb_ErrorHandler_ThrowError(&c->err, kUpb_ErrorCode_OutOfMemory);
-          }
+    } else if (upb_MiniTableField_IsClosedEnum(dst_val_f)) {
+      intptr_t iter = UPB_STRTABLE_BEGIN;
+      upb_StringView key;
+      upb_value tabval;
+      const upb_MiniTableEnum* dst_e = upb_MiniTable_GetSubEnumTable(dst_val_f);
+      while (upb_strtable_next2(&dst_map->t.strtable, &key, &tabval, &iter)) {
+        upb_MessageValue val;
+        _upb_map_fromvalue(tabval, &val, src->val_size);
+        if (upb_MiniTableEnum_CheckValue(dst_e, val.int32_val)) {
+          // Valid enum value.
         } else {
           upb_Message* ent_msg = upb_Message_New(src_entry_mt, c->arena);
           if (!ent_msg) {
             upb_ErrorHandler_ThrowError(&c->err, kUpb_ErrorCode_OutOfMemory);
           }
+          upb_MessageValue msg_key;
+          _upb_map_fromkey(key, &msg_key, src->key_size);
           upb_Message_SetBaseField(ent_msg, upb_MiniTable_MapKey(src_entry_mt),
-                                   &key);
-          upb_Message_SetBaseField(
-              ent_msg, upb_MiniTable_MapValue(src_entry_mt), &src_val);
-          _upb_Encoder_AddMapEntryUnknown(dst_msg, dst_map_f, ent_msg,
-                                          src_entry_mt, c->arena);
+                                   &msg_key);
+          upb_Message_SetBaseField(ent_msg,
+                                   upb_MiniTable_MapValue(src_entry_mt), &val);
+          if (!_upb_Encoder_AddMapEntryUnknown(dst_msg, dst_map_f, ent_msg,
+                                               src_entry_mt, c->arena)) {
+            upb_ErrorHandler_ThrowError(&c->err, kUpb_ErrorCode_OutOfMemory);
+          };
+          upb_strtable_removeiter(&dst_map->t.strtable, &iter);
         }
-      } else {
-        if (!upb_Map_Set(dst, key, src_val, c->arena)) {
+      }
+    }
+  } else {
+    if (!upb_inttable_copy(&dst_map->t.inttable, &src->t.inttable, c->arena)) {
+      upb_ErrorHandler_ThrowError(&c->err, kUpb_ErrorCode_OutOfMemory);
+    }
+    const upb_MiniTable* dst_val_mt = upb_MiniTable_SubMessage(dst_val_f);
+    const upb_MiniTableField* src_val_f = upb_MiniTable_MapValue(src_entry_mt);
+    const upb_MiniTable* src_val_mt = upb_MiniTable_SubMessage(src_val_f);
+
+    if (dst_val_mt && src_val_mt) {
+      intptr_t iter = UPB_INTTABLE_BEGIN;
+      uintptr_t key;
+      upb_value tabval;
+      while (upb_inttable_next(&dst_map->t.inttable, &key, &tabval, &iter)) {
+        upb_MessageValue val;
+        _upb_map_fromvalue(tabval, &val, src->val_size);
+        const upb_Message* src_msg = val.msg_val;
+        upb_Message* dst_sub = upb_Message_New(dst_val_mt, c->arena);
+        if (!dst_sub) {
           upb_ErrorHandler_ThrowError(&c->err, kUpb_ErrorCode_OutOfMemory);
+        }
+        upb_Message_ConvertInternal(c, dst_sub, src_msg, dst_val_mt, src_val_mt,
+                                    extreg, depth);
+        val.msg_val = dst_sub;
+        upb_value cloned_tabval = {0};
+        if (!_upb_map_tovalue(&val, dst_map->val_size, &cloned_tabval,
+                              c->arena)) {
+          upb_ErrorHandler_ThrowError(&c->err, kUpb_ErrorCode_OutOfMemory);
+        }
+        upb_inttable_setentryvalue(&dst_map->t.inttable, iter, cloned_tabval);
+      }
+    } else if (upb_MiniTableField_IsClosedEnum(dst_val_f)) {
+      intptr_t iter = UPB_INTTABLE_BEGIN;
+      uintptr_t key;
+      upb_value tabval;
+      const upb_MiniTableEnum* dst_e = upb_MiniTable_GetSubEnumTable(dst_val_f);
+      while (upb_inttable_next(&dst_map->t.inttable, &key, &tabval, &iter)) {
+        upb_MessageValue val;
+        _upb_map_fromvalue(tabval, &val, src->val_size);
+        if (upb_MiniTableEnum_CheckValue(dst_e, val.int32_val)) {
+          // Valid enum value.
+        } else {
+          upb_Message* ent_msg = upb_Message_New(src_entry_mt, c->arena);
+          if (!ent_msg) {
+            upb_ErrorHandler_ThrowError(&c->err, kUpb_ErrorCode_OutOfMemory);
+          }
+          upb_MessageValue msg_key;
+          memcpy(&msg_key, &key, src->key_size);
+          upb_Message_SetBaseField(ent_msg, upb_MiniTable_MapKey(src_entry_mt),
+                                   &msg_key);
+          upb_Message_SetBaseField(ent_msg,
+                                   upb_MiniTable_MapValue(src_entry_mt), &val);
+          if (!_upb_Encoder_AddMapEntryUnknown(dst_msg, dst_map_f, ent_msg,
+                                               src_entry_mt, c->arena)) {
+            upb_ErrorHandler_ThrowError(&c->err, kUpb_ErrorCode_OutOfMemory);
+          };
+          upb_inttable_removeiter(&dst_map->t.inttable, &iter);
         }
       }
     }
   }
+
+  return dst_map;
 }
 
 static bool upb_Message_ConvertMapField(upb_Converter* c, upb_Message* dst,
@@ -259,16 +344,9 @@ static bool upb_Message_ConvertMapField(upb_Converter* c, upb_Message* dst,
   const upb_MiniTable* dst_entry_mt = upb_MiniTable_MapEntrySubMessage(dst_f);
   const upb_MiniTable* src_entry_mt = upb_MiniTable_MapEntrySubMessage(src_f);
 
-  if (dst_entry_mt != src_entry_mt) {
-    const upb_MiniTableField* dst_val_f = upb_MiniTable_MapValue(dst_entry_mt);
-    upb_Map* dst_map = upb_Map_New(
-        c->arena, upb_MiniTableField_CType(upb_MiniTable_MapKey(dst_entry_mt)),
-        upb_MiniTableField_CType(dst_val_f));
-    if (!dst_map) {
-      upb_ErrorHandler_ThrowError(&c->err, kUpb_ErrorCode_OutOfMemory);
-    }
-    upb_Map_DeepConvert(c, dst_map, src_map, dst_entry_mt, src_entry_mt, dst_f,
-                        dst, extreg, depth);
+  if (dst_entry_mt != src_entry_mt || upb_MiniTableField_IsClosedEnum(dst_f)) {
+    upb_Map* dst_map = upb_Map_DeepConvert(
+        c, src_map, dst_entry_mt, src_entry_mt, dst_f, dst, extreg, depth);
     upb_Message_SetBaseField(dst, dst_f, &dst_map);
     return true;
   }
