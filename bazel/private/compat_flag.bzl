@@ -222,8 +222,8 @@ def _compat_executable_label_rule_impl(ctx):
 
 _COMMON_LABEL_FLAG_ATTRS = {
     "fragment_field": attr.string(),
-    "default_value": attr.label(),
-    "runtime": attr.label(),
+    "default_value": attr.label(allow_files = True),
+    "runtime": attr.label(allow_files = True),
     "scope": attr.string(),
 }
 
@@ -232,6 +232,7 @@ def _make_label_rule(fragment_name, executable = False):
     if HAS_NATIVE_PROTO_FLAGS and fragment_name:
         attrs["_native_target"] = attr.label(
             default = configuration_field(fragment = "proto", name = fragment_name),
+            allow_files = True,
         )
     return rule(
         implementation = _compat_executable_label_rule_impl if executable else _compat_label_rule_impl,
