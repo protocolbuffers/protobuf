@@ -25,10 +25,7 @@ bazel_dep(name = "rules_cc", version = "0.2.18")
 bazel_dep(name = "zlib", version = "1.3.1.bcr.5")
 
 # other dependencies
-proto_bazel_features = use_repo_rule("//bazel/private/oss:proto_bazel_features.bzl", "proto_bazel_features")
-
-proto_bazel_features(name = "proto_bazel_features")
-
+bazel_dep(name = "bazel_features", version = "1.33.0", repo_name = "proto_bazel_features")
 bazel_dep(name = "bazel_skylib", version = "1.9.0")
 bazel_dep(name = "jsoncpp", version = "1.9.6.bcr.2")
 bazel_dep(name = "rules_java", version = "8.6.1")
@@ -346,58 +343,3 @@ bazel_dep(name = "jq.bzl", version = "0.6.1", dev_dependency = True)
 
 jq = use_extension("@jq.bzl//jq:extensions.bzl", "toolchains", dev_dependency = True)
 use_repo(jq, "jq_toolchains")
-
-flag_alias(
-    name = "experimental_proto_descriptor_sets_include_source_info",
-    starlark_flag = "@//bazel/flags:experimental_proto_descriptor_sets_include_source_info",
-)
-
-flag_alias(
-    name = "experimental_protoc_opts",
-    starlark_flag = "@//bazel/flags:protocopt",
-)
-
-flag_alias(
-    name = "protocopt",
-    starlark_flag = "@//bazel/flags:protocopt",
-)
-
-flag_alias(
-    name = "proto_compiler",
-    starlark_flag = "@//bazel/flags:proto_compiler",
-)
-
-flag_alias(
-    name = "proto_toolchain_for_cc",
-    starlark_flag = "@//bazel/flags/cc:proto_toolchain_for_cc",
-)
-
-flag_alias(
-    name = "proto_toolchain_for_java",
-    starlark_flag = "@//bazel/flags/java:proto_toolchain_for_java",
-)
-
-flag_alias(
-    name = "proto_toolchain_for_javalite",
-    starlark_flag = "@//bazel/flags/java:proto_toolchain_for_javalite",
-)
-
-flag_alias(
-    name = "strict_proto_deps",
-    starlark_flag = "@//bazel/flags:strict_proto_deps",
-)
-
-flag_alias(
-    name = "strict_public_imports",
-    starlark_flag = "@//bazel/flags:strict_public_imports",
-)
-
-flag_alias(
-    name = "cc_proto_library_header_suffixes",
-    starlark_flag = "@//bazel/flags/cc:cc_proto_library_header_suffixes",
-)
-
-flag_alias(
-    name = "cc_proto_library_source_suffixes",
-    starlark_flag = "@//bazel/flags/cc:cc_proto_library_source_suffixes",
-)

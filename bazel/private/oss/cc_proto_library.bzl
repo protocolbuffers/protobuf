@@ -193,7 +193,7 @@ rules to generate C++ code for.""",
         ),
     } | toolchains.if_legacy_toolchain({
         "_proto_toolchain_for_cc": attr.label(
-            default = Label("//bazel/flags/cc:proto_toolchain_for_cc"),
+            default = "//bazel/flags/cc:proto_toolchain_for_cc",
         ),
     }),
     provides = [CcInfo],

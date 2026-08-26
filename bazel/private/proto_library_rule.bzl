@@ -386,20 +386,20 @@ for use with MessageSet.
         # buildifier: disable=attr-license (calling attr.license())
         "licenses": attr.license() if hasattr(attr, "license") else attr.string_list(),
         "_experimental_proto_descriptor_sets_include_source_info": attr.label(
-            default = Label("//bazel/flags:experimental_proto_descriptor_sets_include_source_info"),
+            default = "//bazel/flags:experimental_proto_descriptor_sets_include_source_info",
         ),
         "_strict_proto_deps": attr.label(
-            default = Label("//bazel/flags:strict_proto_deps"),
+            default = "//bazel/flags:strict_proto_deps",
         ),
         "_strict_public_imports": attr.label(
-            default = Label("//bazel/flags:strict_public_imports"),
+            default = "//bazel/flags:strict_public_imports",
         ),
     } | toolchains.if_legacy_toolchain({
         "_proto_compiler": attr.label(
             cfg = "exec",
             executable = True,
             allow_files = True,
-            default = Label("//src/google/protobuf/compiler:protoc_minimal"),
+            default = "//src/google/protobuf/compiler:protoc_minimal",
         ),
     }),  # buildifier: disable=attr-licenses (attribute called licenses)
     fragments = [
