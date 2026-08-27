@@ -820,7 +820,7 @@ void FixupMessageAfterMerge(CMessage* self) {
     if (descriptor->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE &&
         !descriptor->is_repeated()) {
       CMessage* cmsg = reinterpret_cast<CMessage*>(value);
-      if (cmsg->state != MESSAGE_MUTABLE_DEFAULT) {
+      if (cmsg->state != MESSAGE_UNPROMOTED) {
         return;
       }
       Message* message = AssureWritable(self);
@@ -855,11 +855,11 @@ Message* AssureWritable(CMessage* self) {
         return nullptr;
       }
       return const_cast<Message*>(self->message);
-    case MESSAGE_MUTABLE_DEFAULT:
+    case MESSAGE_UNPROMOTED:
       break;
   }
 
-  // Toplevel messages are never default instances.
+  // Toplevel messages are never unpromoted instances.
   ABSL_DCHECK(self->parent);
 
   Message* parent_message = AssureWritable(self->parent);
@@ -873,14 +873,24 @@ Message* AssureWritable(CMessage* self) {
     return nullptr;
   }
 
-  // Make self->message writable.
-  const Reflection* reflection = parent_message->GetReflection();
-  Message* mutable_message = reflection->MutableMessage(
-      parent_message, self->parent_field_descriptor,
-      GetFactoryForMessage(self->parent)->message_factory);
+  Message* mutable_message;
+
+  if (self->parent_field_descriptor->is_map()) {
+    mutable_message = PromoteConstMapValueMessage(
+        parent_message, self->parent_field_descriptor, self->message);
+  } else if (self->parent_field_descriptor->is_repeated()) {
+    mutable_message = PromoteConstRepeatedMessage(
+        parent_message, self->parent_field_descriptor, self->message);
+  } else {
+    mutable_message = parent_message->GetReflection()->MutableMessage(
+        parent_message, self->parent_field_descriptor,
+        GetFactoryForMessage(self->parent)->message_factory);
+  }
+
   if (mutable_message == nullptr) {
     return nullptr;
   }
+
   self->message = mutable_message;
   self->state = MESSAGE_MUTABLE;
 
@@ -2432,7 +2442,7 @@ CMessage* InternalGetSubMessage(CMessage* self,
   cmsg->message = &reflection->GetMessage(*self->message, field_descriptor,
                                           factory->message_factory);
   cmsg->state =
-      self->state == MESSAGE_FROZEN ? MESSAGE_FROZEN : MESSAGE_MUTABLE_DEFAULT;
+      self->state == MESSAGE_FROZEN ? MESSAGE_FROZEN : MESSAGE_UNPROMOTED;
   return cmsg;
 }
 
@@ -2910,7 +2920,7 @@ void ContainerBase::RemoveFromParentCache() {
 
 CMessage* CMessage::BuildSubMessageFromPointer(
     const FieldDescriptor* field_descriptor, const Message* sub_message,
-    CMessageClass* message_class) {
+    CMessageClass* message_class, MessageMutabilityState state) {
   if (PyObject* value =
           this->child_submessages.Get()->Get(sub_message, nullptr)) {
     return reinterpret_cast<CMessage*>(value);
@@ -2925,9 +2935,7 @@ CMessage* CMessage::BuildSubMessageFromPointer(
   Py_INCREF(this);
   cmsg->parent = this;
   cmsg->parent_field_descriptor = field_descriptor;
-  if (this->state == MESSAGE_FROZEN) {
-    cmsg->state = MESSAGE_FROZEN;
-  }
+  cmsg->state = this->state == MESSAGE_FROZEN ? MESSAGE_FROZEN : state;
   cmessage::SetSubmessage(this, cmsg);
   return cmsg;
 }
