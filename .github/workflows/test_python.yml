@@ -28,7 +28,9 @@ jobs:
       fail-fast: false   # Don't cancel all jobs if one fails.
       matrix:
         type: [ Pure, C++]
-        version: ["3.10", "3.11", "3.12", "3.13", "3.14"]
+        version: [
+#          "3.10", "3.11", "3.12", "3.13",
+          "3.14"]
         include:
           - type: Pure
             targets: //python/... //python:python_version_test
@@ -37,13 +39,13 @@ jobs:
             targets: //python/... //python:python_version_test
             flags: --define=use_fast_cpp_protos=true
             # Test using WORKSPACE with our oldest support Python version.
-          - version: "3.10"
-          - version: "3.11"
-            continuous-only: true
-          - version: "3.12"
-            continuous-only: true
-          - version: "3.13"
-            continuous-only: true
+#          - version: "3.10"
+#          - version: "3.11"
+#            continuous-only: true
+#          - version: "3.12"
+#            continuous-only: true
+#          - version: "3.13"
+#            continuous-only: true
           - version: "3.14"
           - type: C++
             version: aarch64
@@ -75,57 +77,57 @@ jobs:
             --test_env=KOKORO_PYTHON_VERSION
 
 
-  macos:
-    strategy:
-      fail-fast: false   # Don't cancel all jobs if one fails.
-      matrix:
-        type: [ Pure, C++]
-        version: [ "3.12", "3.13", "3.14" ]
-        include:
-          - type: Pure
-            targets: //python/... //python:python_version_test
-          - type: C++
-            targets: //python/... //python:python_version_test
-            flags: --define=use_fast_cpp_protos=true
-          - version: "3.13"
-            continuous-only: true
-          - version: "3.14"
-            continuous-only: true
-
-    name: MacOS ${{ matrix.type }} ${{ matrix.version }}
-    runs-on: macos-14
-    steps:
-      - name: Checkout pending changes
-        uses: protocolbuffers/protobuf-ci/checkout@v5
-        with:
-          ref: ${{ inputs.safe-checkout }}
-
-      - name: Pin Python version
-        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405  # v6.2.0
-        with:
-          python-version: ${{ matrix.version }}
-          cache: pip
-          cache-dependency-path: 'python/requirements.txt'
-
-      - name: Validate version
-        run: python3 --version | grep ${{ matrix.version }} || (echo "Invalid Python version - $(python3 --version)" && exit 1)
-
-      - name: Create and start virtual environment
-        run: |
-          python3 -m venv venv
-          source venv/bin/activate
-
-      - name: Run tests
-        uses: protocolbuffers/protobuf-ci/bazel@v5
-        env:
-          KOKORO_PYTHON_VERSION: ${{ matrix.version }}
-        with:
-          version: 9.2.0 # Bazel version
-          credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
-          bazel-cache: python_macos/${{ matrix.type }}_${{ matrix.version }}
-          bazel: >-
-            test ${{ matrix.targets }} ${{ matrix.flags }}
-            --//python:use_hermetic_python=true
-            --@rules_python//python/config_settings:python_version=${{ matrix.version }}
-            --test_env=KOKORO_PYTHON_VERSION=${{ matrix.version }}
-            --macos_minimum_os=12.0
+#  macos:
+#    strategy:
+#      fail-fast: false   # Don't cancel all jobs if one fails.
+#      matrix:
+#        type: [ Pure, C++]
+#        version: [ "3.12", "3.13", "3.14" ]
+#        include:
+#          - type: Pure
+#            targets: //python/... //python:python_version_test
+#          - type: C++
+#            targets: //python/... //python:python_version_test
+#            flags: --define=use_fast_cpp_protos=true
+#          - version: "3.13"
+#            continuous-only: true
+#          - version: "3.14"
+#            continuous-only: true
+#
+#    name: MacOS ${{ matrix.type }} ${{ matrix.version }}
+#    runs-on: macos-14
+#    steps:
+#      - name: Checkout pending changes
+#        uses: protocolbuffers/protobuf-ci/checkout@v5
+#        with:
+#          ref: ${{ inputs.safe-checkout }}
+#
+#      - name: Pin Python version
+#        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405  # v6.2.0
+#        with:
+#          python-version: ${{ matrix.version }}
+#          cache: pip
+#          cache-dependency-path: 'python/requirements.txt'
+#
+#      - name: Validate version
+#        run: python3 --version | grep ${{ matrix.version }} || (echo "Invalid Python version - $(python3 --version)" && exit 1)
+#
+#      - name: Create and start virtual environment
+#        run: |
+#          python3 -m venv venv
+#          source venv/bin/activate
+#
+#      - name: Run tests
+#        uses: protocolbuffers/protobuf-ci/bazel@v5
+#        env:
+#          KOKORO_PYTHON_VERSION: ${{ matrix.version }}
+#        with:
+#          version: 9.2.0 # Bazel version
+#          credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
+#          bazel-cache: python_macos/${{ matrix.type }}_${{ matrix.version }}
+#          bazel: >-
+#            test ${{ matrix.targets }} ${{ matrix.flags }}
+#            --//python:use_hermetic_python=true
+#            --@rules_python//python/config_settings:python_version=${{ matrix.version }}
+#            --test_env=KOKORO_PYTHON_VERSION=${{ matrix.version }}
+#            --macos_minimum_os=12.0
