@@ -31,8 +31,7 @@ jobs:
       - name: Run tests
         uses: protocolbuffers/protobuf-ci/docker@v7
         with:
-          # Note: this image includes .NET 8 and .NET 10 SDKs side-by-side.
-          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/csharp:9.2.0-3.1.415-8.0.100-4b38cf83a0c85429c6d578590f4a4a39e660036b
+          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/monolithic:latest-pr199
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           entrypoint: /bin/bash
           command: >-

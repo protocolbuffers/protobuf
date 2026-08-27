@@ -41,7 +41,7 @@ jobs:
           - version: "3.12"
             continuous-only: true
           - version: "3.13"
-            continuous-only: true
+            image: us-docker.pkg.dev/protobuf-build/containers/test/linux/monolithic:latest-pr199
           - version: "3.14"
             kokoro_python_version: "3.14.4"
           - type: C++
