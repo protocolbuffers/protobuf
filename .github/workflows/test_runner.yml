@@ -255,14 +255,18 @@ jobs:
 #      safe-checkout: ${{ needs.set-vars.outputs.checkout-sha }}
 #    secrets: inherit
 
-#  # This test depends on all blocking tests and indicates whether they all suceeded.
-#  all-blocking-tests:
-#    name: All Blocking Tests${{ github.event_name == 'pull_request_target' && ' (fork)' || ''}}
-#    needs: [set-vars, validate-yaml, bazel, cpp, java, python, ruby, php, php-ext, csharp, objectivec, rust, upb, hpb, staleness]
-#    runs-on: ubuntu-latest
-#    steps:
-#      - name: Check test results
-#        run: "${{ !contains(join(needs.*.result, ' '), 'failure') && !contains(join(needs.*.result, ' '), 'cancelled') }}"
-#    # This workflow must run even if one or more of the dependent workflows
-#    # failed.
-#    if: always()
+  # This test depends on all blocking tests and indicates whether they all suceeded.
+  all-blocking-tests:
+    name: All Blocking Tests${{ github.event_name == 'pull_request_target' && ' (fork)' || ''}}
+    needs: [
+#      set-vars, validate-yaml, bazel, cpp, java,
+      python,
+#      ruby, php, php-ext, csharp, objectivec, rust, upb, hpb, staleness
+    ]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check test results
+        run: "${{ !contains(join(needs.*.result, ' '), 'failure') && !contains(join(needs.*.result, ' '), 'cancelled') }}"
+    # This workflow must run even if one or more of the dependent workflows
+    # failed.
+    if: always()
