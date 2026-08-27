@@ -12,8 +12,8 @@ def _test_lite_java_proto2_compiler_args(env, target):
     genproto.argv().contains("{package}/foo.proto")
     genproto.argv().contains_at_least([
         "--java_out=lite:{bindir}/{package}/foo_proto-lite-src.jar",
-        "-I.",
         "{package}/foo.proto",
+        "--descriptor_set_in",
     ]).in_order()
 
 TESTS = {

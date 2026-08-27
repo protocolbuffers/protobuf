@@ -67,6 +67,23 @@ def _get_strip_import_prefix(ctx):
 
     return strip_import_prefix.removesuffix("/")
 
+def _get_proto_compiler_and_opts(ctx):
+    """Resolves the protocol compiler executable, options, and toolchain type."""
+    if proto_common.INCOMPATIBLE_ENABLE_PROTO_TOOLCHAIN_RESOLUTION:
+        toolchain = ctx.toolchains[toolchains.PROTO_TOOLCHAIN]
+        if not toolchain:
+            fail("Protocol compiler toolchain could not be resolved.")
+        return (
+            toolchain.proto.proto_compiler,
+            toolchain.proto.protoc_opts,
+            getattr(toolchain.proto, "toolchain_type", None),
+        )
+    return (
+        ctx.executable._proto_compiler,
+        ctx.attr._protocopt[BuildSettingInfo].value,
+        None,
+    )
+
 def _proto_library_impl(ctx):
     # Verifies attributes.
     _check_srcs_package(ctx.label.package, ctx.attr.srcs)
@@ -120,19 +137,9 @@ def _proto_library_impl(ctx):
         protoc_deps = deps + option_deps
         dependencies_descriptor_sets = depset(
             transitive = [dep.transitive_descriptor_sets for dep in protoc_deps],
-        )
+        ) if protoc_deps else None
 
-        if proto_common.INCOMPATIBLE_ENABLE_PROTO_TOOLCHAIN_RESOLUTION:
-            toolchain = ctx.toolchains[toolchains.PROTO_TOOLCHAIN]
-            if not toolchain:
-                fail("Protocol compiler toolchain could not be resolved.")
-            proto_compiler = toolchain.proto.proto_compiler
-            protoc_opts = toolchain.proto.protoc_opts
-            toolchain_type = getattr(toolchain.proto, "toolchain_type", None)
-        else:
-            proto_compiler = ctx.executable._proto_compiler
-            protoc_opts = ctx.attr._protocopt[BuildSettingInfo].value
-            toolchain_type = None
+        proto_compiler, protoc_opts, toolchain_type = _get_proto_compiler_and_opts(ctx)
 
         # Reuse `proto_info.check_deps_sources` when `deps` or `option_deps` is
         # empty (the common case for `option_deps`) to avoid allocating duplicate

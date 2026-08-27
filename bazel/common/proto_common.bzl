@@ -12,35 +12,6 @@ load("//bazel/common:proto_lang_toolchain_info.bzl", "ProtoLangToolchainInfo")
 load("//bazel/private:proto_compile.bzl", "proto_compile")
 load("//bazel/private:toolchain_helpers.bzl", "toolchains")
 
-def _remove_repo(file):
-    """Removes `../repo/` prefix from path, e.g. `../repo/package/path -> package/path`"""
-    short_path = file.short_path
-    workspace_root = file.owner.workspace_root
-    if workspace_root:
-        if workspace_root.startswith("external/"):
-            workspace_root = "../" + workspace_root.removeprefix("external/")
-        return short_path.removeprefix(workspace_root + "/")
-    return short_path
-
-def _get_import_path(proto_file):
-    """Returns the import path of a .proto file
-
-    This is the path as used for the file that can be used in an `import` statement in another
-    .proto file.
-
-    Args:
-      proto_file: (File) The .proto file
-
-    Returns:
-      (str) import path
-    """
-    repo_path = _remove_repo(proto_file)
-    index = repo_path.find("_virtual_imports/")
-    if index >= 0:
-        index = repo_path.find("/", index + len("_virtual_imports/"))
-        repo_path = repo_path[index + 1:]
-    return repo_path
-
 def _check_collocated(label, proto_info, proto_lang_toolchain_info):
     """Checks if lang_proto_library is collocated with proto_library.
 
@@ -177,15 +148,13 @@ def _declare_generated_files(
 
     return outputs
 
-# compile is temporarily pointed to compile_from_transitive_sources during migration,
-# compile should eventually point to compile_from_descriptors.
 proto_common = struct(
-    compile = proto_compile.compile_from_transitive_sources,
+    compile = proto_compile.compile_from_descriptors,
     declare_generated_files = _declare_generated_files,
     check_collocated = _check_collocated,
     experimental_should_generate_code = _experimental_should_generate_code,
     experimental_filter_sources = _experimental_filter_sources,
-    get_import_path = _get_import_path,
+    get_import_path = proto_compile.get_import_path,
     output_directory = proto_compile.output_directory,
     ProtoLangToolchainInfo = ProtoLangToolchainInfo,
     INCOMPATIBLE_ENABLE_PROTO_TOOLCHAIN_RESOLUTION = toolchains.INCOMPATIBLE_ENABLE_PROTO_TOOLCHAIN_RESOLUTION,
