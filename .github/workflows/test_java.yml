@@ -105,7 +105,7 @@ jobs:
     - name: Generate maven artifacts with bazel and install using maven
       uses: protocolbuffers/protobuf-ci/bazel-docker@v6
       with:
-        image: us-docker.pkg.dev/protobuf-build/containers/test/linux/java:9.2.0-11-5bb1a8fdfc30f8c21c1b38cf053d2db9fca865a7
+        image: us-docker.pkg.dev/protobuf-build/containers/test/linux/monolithic:latest-pr199
         credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
         bazel-cache: java_linux/11
         bash: |
