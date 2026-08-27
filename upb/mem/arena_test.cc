@@ -41,9 +41,9 @@
 namespace {
 
 struct CustomAlloc {
-  upb_alloc alloc;
-  int counter;
-  bool ran_cleanup;
+  upb_alloc alloc = {};
+  int counter = 0;
+  bool ran_cleanup = false;
 };
 
 void* CustomAllocFunc(upb_alloc* alloc, void* ptr, size_t oldsize, size_t size,
@@ -64,11 +64,10 @@ void CustomAllocCleanup(upb_alloc* alloc) {
 }
 
 TEST(ArenaTest, ArenaWithAllocCleanup) {
-  CustomAlloc alloc = {{&CustomAllocFunc}, 0, false};
+  CustomAlloc alloc = {{&CustomAllocFunc, &CustomAllocCleanup}, 0, false};
   upb_Arena* arena =
       upb_Arena_Init(nullptr, 0, reinterpret_cast<upb_alloc*>(&alloc));
   EXPECT_EQ(alloc.counter, 1);
-  upb_Arena_SetAllocCleanup(arena, CustomAllocCleanup);
   upb_Arena_Free(arena);
   EXPECT_TRUE(alloc.ran_cleanup);
 }
@@ -79,9 +78,9 @@ struct Size {
 };
 
 struct SizeTracker {
-  upb_alloc alloc;
-  upb_alloc* delegate_alloc;
-  absl::flat_hash_map<void*, Size>* sizes;
+  upb_alloc alloc = {};
+  upb_alloc* delegate_alloc = nullptr;
+  absl::flat_hash_map<void*, Size>* sizes = nullptr;
 };
 
 static_assert(std::is_standard_layout<SizeTracker>());

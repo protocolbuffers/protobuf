@@ -82,10 +82,6 @@ typedef struct upb_ArenaInternal {
   // Total space allocated in blocks, atomic only for SpaceAllocated
   UPB_ATOMIC(uintptr_t) space_allocated;
 
-  // The cleanup for the allocator. This is called after all the blocks are
-  // freed in an arena.
-  upb_AllocCleanupFunc* upb_alloc_cleanup;
-
   // When multiple arenas are fused together, each arena points to a parent
   // arena (root points to itself). The root tracks how many live arenas
   // reference it.
@@ -539,7 +535,6 @@ static upb_Arena* _upb_Arena_InitSlow(upb_alloc* alloc, size_t first_size) {
 #ifndef NDEBUG
   a->body.refs = NULL;
 #endif
-  a->body.upb_alloc_cleanup = NULL;
   UPB_PRIVATE(upb_Xsan_Init)(UPB_XSAN(&a->body));
 
   UPB_PRIVATE(_upb_Arena_AddBlock)(&a->head, block);
@@ -584,7 +579,6 @@ upb_Arena* upb_Arena_Init(void* mem, size_t n, upb_alloc* alloc) {
 #endif
   a->body.size_hint = 128;
   a->body.last_block_size = 128;
-  a->body.upb_alloc_cleanup = NULL;
   a->body.block_alloc = _upb_Arena_MakeBlockAlloc(alloc, 1);
   a->head.UPB_PRIVATE(ptr) = (void*)UPB_ALIGN_MALLOC((uintptr_t)(a + 1));
   a->head.UPB_PRIVATE(end) = UPB_PTR_AT(mem, n, char);
@@ -611,7 +605,6 @@ static void _upb_Arena_DoFree(upb_ArenaInternal* ai) {
     }
     upb_alloc* block_alloc = _upb_ArenaInternal_BlockAlloc(ai);
     upb_MemBlock* block = ai->blocks;
-    upb_AllocCleanupFunc* alloc_cleanup = ai->upb_alloc_cleanup;
     while (block != NULL) {
       // Load first since we are deleting block.
       upb_MemBlock* next_block = block->next;
@@ -625,8 +618,8 @@ static void _upb_Arena_DoFree(upb_ArenaInternal* ai) {
       }
       block = next_block;
     }
-    if (alloc_cleanup != NULL) {
-      alloc_cleanup(block_alloc);
+    if (block_alloc && block_alloc->cleanup != NULL) {
+      block_alloc->cleanup(block_alloc);
     }
     ai = next_arena;
   }
@@ -776,13 +769,6 @@ static void _upb_Arena_DoFuseArenaLists(upb_ArenaInternal* const parent,
   upb_ArenaInternal* old_parent_tail = _upb_Arena_LinkForward(parent, child);
   _upb_Arena_UpdateParentTail(parent, child);
   _upb_Arena_LinkBackward(child, old_parent_tail);
-}
-
-void upb_Arena_SetAllocCleanup(upb_Arena* a, upb_AllocCleanupFunc* func) {
-  UPB_PRIVATE(upb_Xsan_AccessReadWrite)(UPB_XSAN(a));
-  upb_ArenaInternal* ai = upb_Arena_Internal(a);
-  UPB_ASSERT(ai->upb_alloc_cleanup == NULL);
-  ai->upb_alloc_cleanup = func;
 }
 
 // Thread safe.
