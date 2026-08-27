@@ -27,7 +27,7 @@ jobs:
       - name: Run tests
         uses: protocolbuffers/protobuf-ci/docker@v6
         with:
-          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/csharp:9.2.0-3.1.415-8.0.100-5bb1a8fdfc30f8c21c1b38cf053d2db9fca865a7
+          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/monolithic:latest-pr199
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           entrypoint: /bin/bash
           command: >-

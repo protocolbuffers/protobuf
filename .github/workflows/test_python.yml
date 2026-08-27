@@ -43,7 +43,7 @@ jobs:
           - version: "3.12"
             continuous-only: true
           - version: "3.13"
-            continuous-only: true
+            image: us-docker.pkg.dev/protobuf-build/containers/test/linux/monolithic:latest-pr199
           - version: "3.14"
           - type: C++
             version: aarch64
@@ -67,7 +67,7 @@ jobs:
           image: ${{ matrix.image || format('us-docker.pkg.dev/protobuf-build/containers/test/linux/python:9.2.0-{0}-5bb1a8fdfc30f8c21c1b38cf053d2db9fca865a7 ', matrix.version) }}
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-cache: python_linux/${{ matrix.type }}_${{ matrix.version }}
-          bazel: test ${{ matrix.targets }} ${{ matrix.flags }} ${{ matrix.nobzlmod && '--noenable_bzlmod' || '' }} --test_env=KOKORO_PYTHON_VERSION
+          bash: bazel test ${{ matrix.targets }} ${{ matrix.flags }} ${{ matrix.nobzlmod && '--noenable_bzlmod' || '' }} --test_env=KOKORO_PYTHON_VERSION
 
 
   macos:
