@@ -12,7 +12,6 @@
 #include <stdint.h>
 #include <string.h>
 
-#include "upb/base/internal/log2.h"
 #include "upb/mem/arena.h"
 #include "upb/message/internal/types.h"
 
@@ -49,37 +48,47 @@ const float kUpb_FltInfinity = UPB_INFINITY;
 const double kUpb_Infinity = UPB_INFINITY;
 const double kUpb_NaN = UPB_NAN;
 
-static size_t _upb_Message_SizeOfInternal(uint32_t count) {
-  return UPB_SIZEOF_FLEX(upb_Message_Internal, aux_data, count);
-}
-
 bool UPB_PRIVATE(_upb_Message_ReserveSlot)(struct upb_Message* msg,
                                            upb_Arena* a) {
   UPB_ASSERT(!upb_Message_IsFrozen(msg));
   upb_Message_Internal* in = UPB_PRIVATE(_upb_Message_GetInternal)(msg);
   if (!in) {
     // No internal data, allocate from scratch.
-    uint32_t capacity = 4;
-    in = upb_Arena_Malloc(a, _upb_Message_SizeOfInternal(capacity));
+    size_t block_bytes = _upb_Message_InternalBlockSize(1);
+    in = (upb_Message_Internal*)upb_Arena_AllocPool(a, block_bytes);
     if (!in) return false;
     in->size = 0;
-    in->capacity = capacity;
+    in->capacity = _upb_Message_InternalCapacity(block_bytes);
     UPB_PRIVATE(_upb_Message_SetInternal)(msg, in);
   } else if (in->capacity == in->size) {
     if (in->size == UINT32_MAX) return false;
     // Internal data is too small, reallocate.
-    size_t needed_pow2 = upb_RoundUpToPowerOfTwo(in->size + 1);
-    if (needed_pow2 > UINT32_MAX) return false;
-    uint32_t new_capacity = needed_pow2;
     if (UPB_SIZEOF_FLEX_WOULD_OVERFLOW(upb_Message_Internal, aux_data,
-                                       new_capacity)) {
+                                       in->size + 1)) {
       return false;
     }
-    in = upb_Arena_Realloc(a, in, _upb_Message_SizeOfInternal(in->capacity),
-                           _upb_Message_SizeOfInternal(new_capacity));
-    if (!in) return false;
-    in->capacity = new_capacity;
-    UPB_PRIVATE(_upb_Message_SetInternal)(msg, in);
+    size_t old_bytes =
+        UPB_SIZEOF_FLEX(upb_Message_Internal, aux_data, in->capacity);
+    size_t new_bytes = _upb_Message_InternalBlockSize(in->size + 1);
+    if (new_bytes == SIZE_MAX ||
+        _upb_Message_InternalCapacity(new_bytes) > UINT32_MAX) {
+      return false;
+    }
+    if (upb_Arena_TryExtend(a, in, old_bytes, new_bytes)) {
+      in->capacity = _upb_Message_InternalCapacity(new_bytes);
+    } else {
+      upb_Message_Internal* new_in =
+          (upb_Message_Internal*)upb_Arena_AllocPool(a, new_bytes);
+      if (!new_in) return false;
+      memcpy(new_in, in,
+             UPB_SIZEOF_FLEX(upb_Message_Internal, aux_data, in->size));
+      new_in->capacity = _upb_Message_InternalCapacity(new_bytes);
+      if (UPB_PRIVATE(_upb_Arena_IsValidPoolSize)(old_bytes)) {
+        upb_Arena_FreePool(a, in, old_bytes);
+      }
+      in = new_in;
+      UPB_PRIVATE(_upb_Message_SetInternal)(msg, in);
+    }
   }
   UPB_ASSERT(in->capacity - in->size >= 1);
   return true;

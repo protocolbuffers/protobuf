@@ -19,6 +19,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "upb/base/internal/log2.h"
 #include "upb/base/string_view.h"
 #include "upb/mem/arena.h"
 #include "upb/message/internal/extension.h"
@@ -230,6 +231,21 @@ typedef struct upb_Message_Internal {
   // Tagged pointers to upb_StringView or upb_Extension
   upb_TaggedAuxPtr aux_data[];
 } upb_Message_Internal;
+
+UPB_INLINE size_t _upb_Message_InternalBlockSize(uint32_t count) {
+  size_t bytes = UPB_SIZEOF_FLEX(upb_Message_Internal, aux_data, count);
+  return upb_RoundUpToPowerOfTwo(
+      UPB_MAX(bytes, UPB_PRIVATE(kUpb_Arena_MinPoolBlockSize)));
+}
+
+UPB_INLINE uint32_t _upb_Message_InternalCapacity(size_t block_bytes) {
+  size_t capacity =
+      UPB_FLEX_CAPACITY(upb_Message_Internal, aux_data, block_bytes);
+  if (capacity > UINT32_MAX) {
+    return UINT32_MAX;
+  }
+  return (uint32_t)capacity;
+}
 
 #ifdef UPB_TRACING_ENABLED
 UPB_API void upb_Message_LogNewMessage(const upb_MiniTable* m,
