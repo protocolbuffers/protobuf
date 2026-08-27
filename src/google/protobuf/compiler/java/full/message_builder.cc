@@ -557,7 +557,7 @@ void MessageBuilderGenerator::GenerateBuildPartial(io::Printer* printer) {
 
   printer->Indent();
 
-  // One buildPartial_autosplit_#() per from_bit_field
+  // One buildPartial_autosplit_#() per bit_field
   int totalInts = (descriptor_->field_count() + 31) / 32;
   if (totalInts > 0) {
     for (int i = 0; i < totalInts; ++i) {
@@ -566,10 +566,6 @@ void MessageBuilderGenerator::GenerateBuildPartial(io::Printer* printer) {
           "buildPartial_autosplit_$shard$(result); }\n",
           "bit_field_name", GetBitFieldName(i), "shard", absl::StrCat(i));
     }
-  }
-
-  if (!oneof_generators_.empty()) {
-    printer->Print("buildPartialOneofs(result);\n");
   }
 
   printer->Outdent();
@@ -584,50 +580,35 @@ void MessageBuilderGenerator::GenerateBuildPartial(io::Printer* printer) {
   for (int i = 0; i < totalInts; i++) {
     GenerateBuildPartialShard(printer, i);
   }
-
-  // Build Oneofs
-  if (!oneof_generators_.empty()) {
-    printer->Print("private void buildPartialOneofs($classname$ result) {\n",
-                   "classname",
-                   name_resolver_->GetImmutableClassName(descriptor_));
-    printer->Indent();
-    for (const auto& kv : oneof_generators_) {
-      kv.second->GenerateBuildingCode(printer, field_generators_);
-    }
-    printer->Outdent();
-    printer->Print("}\n\n");
-  }
 }
 
 void MessageBuilderGenerator::GenerateBuildPartialShard(io::Printer* printer,
                                                         int shard) {
   printer->Print(
       "private void buildPartial_autosplit_$shard$($classname$ result) {\n"
-      "  int from_$bit_field_name$ = $bit_field_name$;\n"
-      "  int to_$bit_field_name$ = 0;\n",
+      "  result.$bit_field_name$ = $bit_field_name$;\n",
       "classname", name_resolver_->GetImmutableClassName(descriptor_), "shard",
       absl::StrCat(shard), "bit_field_name", GetBitFieldName(shard));
   printer->Indent();
+
   int i = shard * 32;
   int shard_end = std::min(i + 32, static_cast<int>(field_generators_.size()));
   for (; i < shard_end; ++i) {
     const ImmutableFieldGenerator& field =
         field_generators_.getInInsertOrder(i);
 
-    // Currently oneofs are not built in shards.
-    if (field.IsRealOneof()) {
-      continue;
-    }
     // Copy the field from the builder to the message
     field.GenerateBuildingCode(printer);
   }
-  printer->Outdent();
 
-  // Copy the bit field results to the generated message
-  printer->Print(
-      "  result.$bit_field_name$ |= to_$bit_field_name$;\n"
-      "}\n\n",
-      "bit_field_name", GetBitFieldName(shard));
+  for (const auto& kv : oneof_generators_) {
+    if (kv.second->HasScalarFields(shard)) {
+      kv.second->GenerateBuildingCode(printer, shard);
+    }
+  }
+
+  printer->Outdent();
+  printer->Print("}\n\n");
 }
 
 // ===================================================================

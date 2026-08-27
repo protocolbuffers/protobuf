@@ -635,13 +635,6 @@ std::string GenerateClearBit(int bitIndex) {
                       bit_masks[bitInVarIndex], ")");
 }
 
-std::string GenerateGetBitFromLocal(int bitIndex) {
-  return GenerateGetBitInternal("from_", bitIndex);
-}
-
-std::string GenerateSetBitToLocal(int bitIndex) {
-  return GenerateSetBitInternal("to_", bitIndex);
-}
 
 std::string GenerateGetBitMutableLocal(int bitIndex) {
   return GenerateGetBitInternal("mutable_", bitIndex);

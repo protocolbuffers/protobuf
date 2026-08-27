@@ -163,8 +163,6 @@ void ImmutableMapFieldGenerator::SetMessageVariables(
       name_resolver->GetImmutableClassName(descriptor_->file()), ".internal_",
       UniqueFileScopeIdentifier(descriptor_->message_type()), "_descriptor, ");
   variables_["get_has_field_bit"] = GenerateGetBit(bit_index_);
-  variables_["get_has_field_bit_from_local"] =
-      GenerateGetBitFromLocal(bit_index_);
   variables_["set_has_field_bit"] =
       absl::StrCat(GenerateSetBit(bit_index_), ";");
   variables_["clear_has_field_bit"] =
@@ -1060,14 +1058,14 @@ void ImmutableMapFieldGenerator::GenerateBuildingCode(
   if (GetJavaType(MapValueField(descriptor_)) == JAVATYPE_MESSAGE) {
     printer->Print(
         variables_,
-        "if ($get_has_field_bit_from_local$) {\n"
+        "if ($get_has_field_bit$) {\n"
         "  result.$name$_ = "
         "internalGet$capitalized_name$().build($map_field_parameter$);\n"
         "}\n");
     return;
   }
   printer->Print(variables_,
-                 "if ($get_has_field_bit_from_local$) {\n"
+                 "if ($get_has_field_bit$) {\n"
                  "  result.$name$_ = internalGet$capitalized_name$();\n"
                  "  result.$name$_.makeImmutable();\n"
                  "}\n");

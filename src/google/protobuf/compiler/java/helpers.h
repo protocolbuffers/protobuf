@@ -277,17 +277,6 @@ std::string GenerateSetBit(int bitIndex);
 // Example: "bitField1_ = (bitField1_ & ~0x04)"
 std::string GenerateClearBit(int bitIndex);
 
-// Does the same as GenerateGetBit but operates on the bit field on a local
-// variable. This is used by the builder to copy the value in the builder to
-// the message.
-// Example: "((from_bitField1_ & 0x04) == 0x04)"
-std::string GenerateGetBitFromLocal(int bitIndex);
-
-// Does the same as GenerateSetBit but operates on the bit field on a local
-// variable. This is used by the builder to copy the value in the builder to
-// the message.
-// Example: "to_bitField1_ = (to_bitField1_ | 0x04)"
-std::string GenerateSetBitToLocal(int bitIndex);
 
 // Does the same as GenerateGetBit but operates on the bit field on a local
 // variable. This is used by the parsing constructor to record if a repeated

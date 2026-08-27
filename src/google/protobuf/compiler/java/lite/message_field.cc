@@ -71,11 +71,6 @@ void SetMessageVariables(
                        absl::StrCat((*variables)["name"], "_ != null")});
   }
 
-  (*variables)["get_has_field_bit_from_local"] =
-      GenerateGetBitFromLocal(builderBitIndex);
-  (*variables)["set_has_field_bit_to_local"] =
-      GenerateSetBitToLocal(messageBitIndex);
-
   // Annotations often use { and } to determine ranges.
   (*variables)["{"] = "";
   (*variables)["}"] = "";

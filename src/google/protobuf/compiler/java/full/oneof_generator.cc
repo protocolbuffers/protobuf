@@ -53,10 +53,22 @@ void SetOneofVariables(
 
 }  // namespace
 
-OneofGenerator::OneofGenerator(const OneofDescriptor* descriptor,
-                               Context* context)
+OneofGenerator::OneofGenerator(
+    const OneofDescriptor* descriptor, Context* context,
+    const FieldGeneratorMap<ImmutableFieldGenerator>& field_generators)
     : descriptor_(descriptor) {
   SetOneofVariables(descriptor, context, &variables_);
+  for (int i = 0; i < descriptor_->field_count(); i++) {
+    const FieldDescriptor* field = descriptor_->field(i);
+    const ImmutableFieldGenerator& generator = field_generators.get(field);
+    int bit_index = generator.GetBitIndex();
+    if (bit_index >= 0) {
+      clear_masks_[bit_index / 32] |= (1u << (bit_index % 32));
+      if (field->message_type() == nullptr) {
+        scalar_masks_[bit_index / 32] |= (1u << (bit_index % 32));
+      }
+    }
+  }
 }
 
 OneofGenerator::~OneofGenerator() = default;
@@ -68,6 +80,7 @@ void OneofGenerator::GenerateCommonBuilderMethods(io::Printer* printer) const {
                  "private java.lang.Object $oneof_name$_;\n");
   GenerateBuilderGetOneofCase(printer);
   GenerateBuilderClearOneof(printer);
+  GenerateBuilderClearOneofHasBits(printer);
 }
 
 void OneofGenerator::GenerateBuilderGetOneofCase(io::Printer* printer) const {
@@ -83,21 +96,32 @@ void OneofGenerator::GenerateBuilderGetOneofCase(io::Printer* printer) const {
 void OneofGenerator::GenerateBuilderClearOneof(io::Printer* printer) const {
   printer->Print(variables_,
                  "\n"
-                 "public Builder ${$clear$oneof_capitalized_name$$}$() {\n"
+                 "public Builder ${$clear$oneof_capitalized_name$$}$() {\n");
+  printer->Annotate("{", "}", descriptor_,
+                    io::AnnotationCollector::Semantic::kSet);
+  for (const auto& kv : clear_masks_) {
+    printer->Print("  $bit_field_name$ = ($bit_field_name$ & ~$mask$);\n",
+                   "bit_field_name", GetBitFieldName(kv.first), "mask",
+                   absl::StrCat("0x", absl::Hex(kv.second, absl::kZeroPad8)));
+  }
+  printer->Print(variables_,
                  "  $oneof_name$Case_ = 0;\n"
                  "  $oneof_name$_ = null;\n"
                  "  onChanged();\n"
                  "  return this;\n"
                  "}\n"
                  "\n");
-  printer->Annotate("{", "}", descriptor_,
-                    io::AnnotationCollector::Semantic::kSet);
 }
 
 void OneofGenerator::GenerateBuilderClearMethod(io::Printer* printer) const {
   printer->Print(variables_,
                  "$oneof_name$Case_ = 0;\n"
                  "$oneof_name$_ = null;\n");
+  for (const auto& kv : clear_masks_) {
+    printer->Print("$bit_field_name$ = ($bit_field_name$ & ~$mask$);\n",
+                   "bit_field_name", GetBitFieldName(kv.first), "mask",
+                   absl::StrCat("0x", absl::Hex(kv.second, absl::kZeroPad8)));
+  }
 }
 
 void OneofGenerator::GenerateMergingCode(
@@ -125,19 +149,35 @@ void OneofGenerator::GenerateMergingCode(
                  "}\n");
 }
 
-void OneofGenerator::GenerateBuildingCode(
-    io::Printer* printer,
-    const FieldGeneratorMap<ImmutableFieldGenerator>& field_generators) const {
+void OneofGenerator::GenerateBuilderClearOneofHasBits(
+    io::Printer* printer) const {
   printer->Print(variables_,
-                 "result.$oneof_name$Case_ = $oneof_name$Case_;\n"
-                 "result.$oneof_name$_ = this.$oneof_name$_;\n");
-  for (int i = 0; i < descriptor_->field_count(); ++i) {
-    if (descriptor_->field(i)->message_type() != nullptr) {
-      const ImmutableFieldGenerator& field =
-          field_generators.get(descriptor_->field(i));
-      field.GenerateBuildingCode(printer);
-    }
+                 "\n"
+                 "private void clear$oneof_capitalized_name$HasBits() {\n");
+  for (const auto& kv : clear_masks_) {
+    printer->Print("  $bit_field_name$ = ($bit_field_name$ & ~$mask$);\n",
+                   "bit_field_name", GetBitFieldName(kv.first), "mask",
+                   absl::StrCat("0x", absl::Hex(kv.second, absl::kZeroPad8)));
   }
+  printer->Print("}\n\n");
+}
+
+bool OneofGenerator::HasScalarFields(int shard) const {
+  return scalar_masks_.find(shard) != scalar_masks_.end();
+}
+
+void OneofGenerator::GenerateBuildingCode(io::Printer* printer,
+                                          int shard) const {
+  auto it = scalar_masks_.find(shard);
+  if (it == scalar_masks_.end()) return;
+  auto vars = variables_;
+  vars["bit_field_name"] = GetBitFieldName(shard);
+  vars["mask"] = absl::StrCat("0x", absl::Hex(it->second, absl::kZeroPad8));
+  printer->Print(vars,
+                 "if (($bit_field_name$ & $mask$) != 0) {\n"
+                 "  result.$oneof_name$Case_ = $oneof_name$Case_;\n"
+                 "  result.$oneof_name$_ = $oneof_name$_;\n"
+                 "}\n");
 }
 
 void OneofGenerator::GenerateInterfaceMembers(io::Printer* printer) const {

@@ -63,12 +63,8 @@ void SetMessageVariables(
   if (HasHasbit(descriptor)) {
     // For singular messages and builders, one bit is used for the hasField bit.
     // Note that these have a trailing ";".
-    (*variables)["set_has_field_bit_to_local"] =
-        GenerateSetBitToLocal(bit_index);
-
     (*variables)["is_field_present"] = GenerateGetBit(bit_index);
   } else {
-    (*variables)["set_has_field_bit_to_local"] = "";
     variables->insert(
         {"is_field_present", absl::StrCat((*variables)["name"], "_ != null")});
   }
@@ -83,8 +79,6 @@ void SetMessageVariables(
       absl::StrCat(GenerateSetBit(bit_index), ";");
   (*variables)["clear_has_field_bit"] =
       absl::StrCat(GenerateClearBit(bit_index), ";");
-  (*variables)["get_has_field_bit_from_local"] =
-      GenerateGetBitFromLocal(bit_index);
 
   (*variables)["tag"] = absl::StrCat(
       static_cast<int32_t>(internal::WireFormat::MakeTag(descriptor)));
@@ -491,14 +485,11 @@ void ImmutableMessageFieldGenerator::GenerateMergingCode(
 void ImmutableMessageFieldGenerator::GenerateBuildingCode(
     io::Printer* printer) const {
   printer->Print(variables_,
-                 "if ($get_has_field_bit_from_local$) {\n"
+                 "if ($get_has_field_bit$) {\n"
                  "  result.$name$_ = $name$Builder_ == null\n"
                  "      ? $name$_\n"
-                 "      : $name$Builder_.build();\n");
-  if (GetNumBits() > 0) {
-    printer->Print(variables_, "  $set_has_field_bit_to_local$;\n");
-  }
-  printer->Print("}\n");
+                 "      : $name$Builder_.build();\n"
+                 "}\n");
 }
 
 void ImmutableMessageFieldGenerator::GenerateBuilderParsingCode(
@@ -679,7 +670,15 @@ void ImmutableMessageOneofFieldGenerator::GenerateBuilderSetMethod(
 
       "$name$Builder_.setMessage(value);\n",
 
-      "$set_oneof_case_message$;\n"
+      "switch ($oneof_name$Case_) {\n"
+      "default:\n"
+      "  clear$oneof_capitalized_name$HasBits(); // fallthrough\n"
+      "case 0:\n"
+      "  $set_oneof_case_message$;\n"
+      "  $set_has_field_bit$ // fallthrough\n"
+      "case $number$:\n"
+      "  break;\n"
+      "}\n"
       "return this;\n",
       Semantic::kSet);
 }
@@ -720,7 +719,15 @@ void ImmutableMessageOneofFieldGenerator::GenerateBuilderMergeMethod(
       "  $name$Builder_.setMessage(value);\n"
       "}\n",
 
-      "$set_oneof_case_message$;\n"
+      "switch ($oneof_name$Case_) {\n"
+      "default:\n"
+      "  clear$oneof_capitalized_name$HasBits(); // fallthrough\n"
+      "case 0:\n"
+      "  $set_oneof_case_message$;\n"
+      "  $set_has_field_bit$ // fallthrough\n"
+      "case $number$:\n"
+      "  break;\n"
+      "}\n"
       "return this;\n",
       Semantic::kSet);
 }
@@ -734,15 +741,17 @@ void ImmutableMessageOneofFieldGenerator::GenerateBuilderClearMethod(
 
       "if ($has_oneof_case_message$) {\n"
       "  $clear_oneof_case_message$;\n"
+      "  $clear_has_field_bit$\n"
       "  $oneof_name$_ = null;\n"
       "  $on_changed$\n"
       "}\n",
 
       "if ($has_oneof_case_message$) {\n"
       "  $clear_oneof_case_message$;\n"
+      "  $clear_has_field_bit$\n"
       "  $oneof_name$_ = null;\n"
-      "}\n"
-      "$name$Builder_.clear();\n",
+      "  $name$Builder_.clear();\n"
+      "}\n",
 
       "return this;\n", Semantic::kSet);
 }
@@ -800,7 +809,15 @@ void ImmutableMessageOneofFieldGenerator::
       "            isClean());\n"
       "    $oneof_name$_ = null;\n"
       "  }\n"
-      "  $set_oneof_case_message$;\n"
+      "  switch ($oneof_name$Case_) {\n"
+      "  default:\n"
+      "    clear$oneof_capitalized_name$HasBits(); // fallthrough\n"
+      "  case 0:\n"
+      "    $set_oneof_case_message$;\n"
+      "    $set_has_field_bit$ // fallthrough\n"
+      "  case $number$:\n"
+      "    break;\n"
+      "  }\n"
       "  $on_changed$\n"
       "  return $name$Builder_;\n"
       "}\n");
@@ -828,6 +845,7 @@ void ImmutableMessageOneofFieldGenerator::GenerateBuilderMembers(
   GenerateBuilderGetBuilderMethod(printer);
   GenerateBuilderGetOrBuilderMethod(printer);
   GenerateBuilderInternalGetFieldBuilderMethod(printer);
+  GenerateBuilderParseMethod(printer);
 }
 
 void ImmutableMessageOneofFieldGenerator::GenerateBuilderClearCode(
@@ -842,9 +860,11 @@ void ImmutableMessageOneofFieldGenerator::GenerateBuilderClearCode(
 void ImmutableMessageOneofFieldGenerator::GenerateBuildingCode(
     io::Printer* printer) const {
   printer->Print(variables_,
-                 "if ($has_oneof_case_message$ &&\n"
-                 "    $name$Builder_ != null) {\n"
-                 "  result.$oneof_name$_ = $name$Builder_.build();\n"
+                 "if ($get_has_field_bit$) {\n"
+                 "  result.$oneof_name$_ = $name$Builder_ == null\n"
+                 "      ? $oneof_name$_\n"
+                 "      : $name$Builder_.build();\n"
+                 "  result.$oneof_name$Case_ = $number$;\n"
                  "}\n");
 }
 
@@ -854,23 +874,54 @@ void ImmutableMessageOneofFieldGenerator::GenerateMergingCode(
                  "merge$capitalized_name$(other.get$capitalized_name$());\n");
 }
 
-void ImmutableMessageOneofFieldGenerator::GenerateBuilderParsingCode(
+void ImmutableMessageOneofFieldGenerator::GenerateBuilderParseMethod(
     io::Printer* printer) const {
+  printer->Print(
+      variables_,
+      "private void parse$capitalized_name$(\n"
+      "    com.google.protobuf.CodedInputStream input,\n"
+      "    com.google.protobuf.ExtensionRegistryLite extensionRegistry)\n"
+      "    throws java.io.IOException {\n");
+  printer->Indent();
   if (GetType(descriptor_) == FieldDescriptor::TYPE_GROUP) {
     printer->Print(variables_,
                    "input.readGroup($number$,\n"
                    "    "
                    "internalGet$capitalized_name$FieldBuilder().getBuilder(),\n"
                    "    extensionRegistry);\n"
-                   "$set_oneof_case_message$;\n");
+                   "switch ($oneof_name$Case_) {\n"
+                   "default:\n"
+                   "  clear$oneof_capitalized_name$HasBits(); // fallthrough\n"
+                   "case 0:\n"
+                   "  $set_oneof_case_message$;\n"
+                   "  $set_has_field_bit$ // fallthrough\n"
+                   "case $number$:\n"
+                   "  break;\n"
+                   "}\n");
   } else {
     printer->Print(variables_,
                    "input.readMessage(\n"
                    "    "
                    "internalGet$capitalized_name$FieldBuilder().getBuilder(),\n"
                    "    extensionRegistry);\n"
-                   "$set_oneof_case_message$;\n");
+                   "switch ($oneof_name$Case_) {\n"
+                   "default:\n"
+                   "  clear$oneof_capitalized_name$HasBits(); // fallthrough\n"
+                   "case 0:\n"
+                   "  $set_oneof_case_message$;\n"
+                   "  $set_has_field_bit$ // fallthrough\n"
+                   "case $number$:\n"
+                   "  break;\n"
+                   "}\n");
   }
+  printer->Outdent();
+  printer->Print("}\n");
+}
+
+void ImmutableMessageOneofFieldGenerator::GenerateBuilderParsingCode(
+    io::Printer* printer) const {
+  printer->Print(variables_,
+                 "parse$capitalized_name$(input, extensionRegistry);\n");
 }
 
 void ImmutableMessageOneofFieldGenerator::GenerateSerializationCode(
@@ -1491,7 +1542,7 @@ void RepeatedImmutableMessageFieldGenerator::GenerateBuildingCode(
   // The code below (non-nested builder case) ensures that the result has an
   // immutable list. If our list is immutable, we can just reuse it. If not,
   // we make it immutable.
-  printer->Print(variables_, "if ($get_has_field_bit_from_local$) {\n");
+  printer->Print(variables_, "if ($get_has_field_bit$) {\n");
   PrintNestedBuilderCondition(
       printer,
       "$name$_.makeImmutable();\n"
