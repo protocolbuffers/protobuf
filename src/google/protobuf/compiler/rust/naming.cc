@@ -206,14 +206,17 @@ static std::string RustModuleForContainingType(
     parent = parent->containing_type();
   }
 
-  // Reverse the vector to get submodules in outer-to-inner order).
+  // Reverse the vector to get submodules in outer-to-inner order.
   std::reverse(modules.begin(), modules.end());
 
-  // If there are any modules at all, push an empty string on the end so that
-  // we get the trailing ::
-  if (!modules.empty()) {
-    modules.push_back("");
-  }
+  // Every type is defined inside its file's mod. References becomes the
+  // canonical `super::<file_mod>::<type_mod>` path instead of relying on the
+  // crate-root re-export, which will be disabled soon.
+  modules.insert(modules.begin(), RustModuleName(file));
+
+  // Push an empty string on the end so that we get the trailing :: to connect
+  // to the type mod name.
+  modules.push_back("");
 
   std::string crate_relative = absl::StrJoin(modules, "::");
 
