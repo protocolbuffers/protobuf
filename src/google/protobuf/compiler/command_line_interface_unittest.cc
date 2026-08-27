@@ -3869,6 +3869,292 @@ TEST_F(CommandLineInterfaceTest, WriteTransitiveDescriptorSetWithSourceInfo) {
   EXPECT_TRUE(descriptor_set.file(1).has_source_code_info());
 }
 
+TEST_F(CommandLineInterfaceTest, WriteSourceInfoDescriptorSet) {
+  CreateTempFile("foo.proto",
+                 "syntax = \"proto2\";\n"
+                 "message Foo {}\n");
+  CreateTempFile("bar.proto",
+                 "syntax = \"proto2\";\n"
+                 "import \"foo.proto\";\n"
+                 "message Bar {\n"
+                 "  optional Foo foo = 1;\n"
+                 "}\n");
+
+  Run("protocol_compiler "
+      "--descriptor_set_splits_out=$tmpdir/data_proto-%s-set.proto.bin "
+      "--descriptor_set_splits=descriptor,source_code_info "
+      "--proto_path=$tmpdir bar.proto");
+
+  ExpectNoErrors();
+
+  FileDescriptorSet descriptor_set;
+  ReadDescriptorSet("data_proto-descriptor-set.proto.bin", &descriptor_set);
+  if (HasFatalFailure()) return;
+  EXPECT_EQ(1, descriptor_set.file_size());
+  EXPECT_EQ("bar.proto", descriptor_set.file(0).name());
+  EXPECT_FALSE(descriptor_set.file(0).has_source_code_info());
+  EXPECT_EQ(1, descriptor_set.file(0).message_type_size());
+
+  FileDescriptorSet source_info_set;
+  ReadDescriptorSet("data_proto-source_code_info-set.proto.bin",
+                    &source_info_set);
+  if (HasFatalFailure()) return;
+  EXPECT_EQ(1, source_info_set.file_size());
+  EXPECT_EQ("bar.proto", source_info_set.file(0).name());
+  EXPECT_TRUE(source_info_set.file(0).has_source_code_info());
+  // The source_info file descriptor should contain only name and
+  // source_code_info.
+  EXPECT_EQ(0, source_info_set.file(0).message_type_size());
+  EXPECT_EQ(0, source_info_set.file(0).enum_type_size());
+  EXPECT_EQ(0, source_info_set.file(0).service_size());
+  EXPECT_EQ(0, source_info_set.file(0).dependency_size());
+}
+
+TEST_F(CommandLineInterfaceTest, WriteTransitiveDescriptorSetSplits) {
+  CreateTempFile("foo.proto",
+                 "syntax = \"proto2\";\n"
+                 "message Foo {}\n");
+  CreateTempFile("bar.proto",
+                 "syntax = \"proto2\";\n"
+                 "import \"foo.proto\";\n"
+                 "message Bar {\n"
+                 "  optional Foo foo = 1;\n"
+                 "}\n");
+
+  Run("protocol_compiler "
+      "--descriptor_set_splits_out=$tmpdir/data_proto-%s-set.proto.bin "
+      "--descriptor_set_splits=descriptor,source_code_info "
+      "--include_imports --proto_path=$tmpdir bar.proto");
+
+  ExpectNoErrors();
+
+  FileDescriptorSet descriptor_set;
+  ReadDescriptorSet("data_proto-descriptor-set.proto.bin", &descriptor_set);
+  if (HasFatalFailure()) return;
+  EXPECT_EQ(2, descriptor_set.file_size());
+  if (descriptor_set.file(0).name() == "bar.proto") {
+    std::swap(descriptor_set.mutable_file()->mutable_data()[0],
+              descriptor_set.mutable_file()->mutable_data()[1]);
+  }
+  EXPECT_EQ("foo.proto", descriptor_set.file(0).name());
+  EXPECT_EQ("bar.proto", descriptor_set.file(1).name());
+  EXPECT_FALSE(descriptor_set.file(0).has_source_code_info());
+  EXPECT_FALSE(descriptor_set.file(1).has_source_code_info());
+
+  FileDescriptorSet source_info_set;
+  ReadDescriptorSet("data_proto-source_code_info-set.proto.bin",
+                    &source_info_set);
+  if (HasFatalFailure()) return;
+  EXPECT_EQ(2, source_info_set.file_size());
+  if (source_info_set.file(0).name() == "bar.proto") {
+    std::swap(source_info_set.mutable_file()->mutable_data()[0],
+              source_info_set.mutable_file()->mutable_data()[1]);
+  }
+  EXPECT_EQ("foo.proto", source_info_set.file(0).name());
+  EXPECT_EQ("bar.proto", source_info_set.file(1).name());
+  EXPECT_TRUE(source_info_set.file(0).has_source_code_info());
+  EXPECT_TRUE(source_info_set.file(1).has_source_code_info());
+  EXPECT_EQ(0, source_info_set.file(0).message_type_size());
+  EXPECT_EQ(0, source_info_set.file(1).message_type_size());
+}
+
+TEST_F(CommandLineInterfaceTest,
+       DescriptorSetSplitsOut_DescriptorSetOut_MutuallyExclusive) {
+  CreateTempFile("foo.proto",
+                 "syntax = \"proto2\";\n"
+                 "message Foo {}\n");
+
+  Run("protocol_compiler --descriptor_set_out=$tmpdir/descriptor_set "
+      "--descriptor_set_splits_out=$tmpdir/split-%s "
+      "--proto_path=$tmpdir foo.proto");
+
+  ExpectErrorText(
+      "Cannot use both --descriptor_set_out and "
+      "--descriptor_set_splits_out.\n");
+}
+
+TEST_F(CommandLineInterfaceTest,
+       DescriptorSetSplitsOut_IncludeSourceInfo_MutuallyExclusive) {
+  CreateTempFile("foo.proto",
+                 "syntax = \"proto2\";\n"
+                 "message Foo {}\n");
+
+  Run("protocol_compiler --descriptor_set_splits_out=$tmpdir/split-%s "
+      "--include_source_info "
+      "--proto_path=$tmpdir foo.proto");
+
+  ExpectErrorText(
+      "Cannot use both --include_source_info and "
+      "--descriptor_set_splits_out.\n");
+}
+
+TEST_F(CommandLineInterfaceTest,
+       DescriptorSetSplitsOut_MissingPatternPercentS) {
+  CreateTempFile("foo.proto",
+                 "syntax = \"proto2\";\n"
+                 "message Foo {}\n");
+
+  Run("protocol_compiler --descriptor_set_splits_out=$tmpdir/invalid_pattern "
+      "--proto_path=$tmpdir foo.proto");
+
+  ExpectErrorText(
+      "--descriptor_set_splits_out pattern must contain exactly one '%s'.\n");
+}
+
+TEST_F(CommandLineInterfaceTest,
+       DescriptorSetSplitsOut_MultiplePatternPercentS) {
+  CreateTempFile("foo.proto",
+                 "syntax = \"proto2\";\n"
+                 "message Foo {}\n");
+
+  Run("protocol_compiler "
+      "--descriptor_set_splits_out=$tmpdir/invalid_%s_pattern_%s "
+      "--proto_path=$tmpdir foo.proto");
+
+  ExpectErrorText(
+      "--descriptor_set_splits_out pattern must contain exactly one '%s'.\n");
+}
+
+TEST_F(CommandLineInterfaceTest, DescriptorSetSplits_UnknownSplitType) {
+  CreateTempFile("foo.proto",
+                 "syntax = \"proto2\";\n"
+                 "message Foo {}\n");
+
+  Run("protocol_compiler --descriptor_set_splits=unknown_type "
+      "--descriptor_set_splits_out=$tmpdir/split-%s "
+      "--proto_path=$tmpdir foo.proto");
+
+  ExpectErrorText(
+      "Unknown descriptor set split type \"unknown_type\". "
+      "Allowed values: 'descriptor', 'source_code_info'.\n");
+}
+
+TEST_F(CommandLineInterfaceTest, DescriptorSetSplits_DefaultIsDescriptor) {
+  CreateTempFile("foo.proto",
+                 "syntax = \"proto2\";\n"
+                 "message Foo {}\n");
+
+  // Without --descriptor_set_splits, defaults to 'descriptor'
+  Run("protocol_compiler "
+      "--descriptor_set_splits_out=$tmpdir/out-%s.proto.bin "
+      "--proto_path=$tmpdir foo.proto");
+  ExpectNoErrors();
+
+  FileDescriptorSet descriptor_set;
+  ReadDescriptorSet("out-descriptor.proto.bin", &descriptor_set);
+  if (HasFatalFailure()) return;
+  EXPECT_EQ(1, descriptor_set.file_size());
+  EXPECT_EQ("foo.proto", descriptor_set.file(0).name());
+}
+
+TEST_F(CommandLineInterfaceTest, DescriptorSetSplits_SourceCodeInfoOnly) {
+  CreateTempFile("foo.proto",
+                 "syntax = \"proto2\";\n"
+                 "// Foo comment\n"
+                 "message Foo {}\n");
+
+  Run("protocol_compiler "
+      "--descriptor_set_splits_out=$tmpdir/out-%s.proto.bin "
+      "--descriptor_set_splits=source_code_info "
+      "--proto_path=$tmpdir foo.proto");
+  ExpectNoErrors();
+
+  FileDescriptorSet source_info_set;
+  ReadDescriptorSet("out-source_code_info.proto.bin", &source_info_set);
+  if (HasFatalFailure()) return;
+  EXPECT_EQ(1, source_info_set.file_size());
+  EXPECT_EQ("foo.proto", source_info_set.file(0).name());
+  EXPECT_TRUE(source_info_set.file(0).has_source_code_info());
+  EXPECT_EQ(0, source_info_set.file(0).message_type_size());
+}
+
+TEST_F(CommandLineInterfaceTest, DescriptorSetIn_MergedSourceCodeInfo) {
+  CreateTempFile("foo.proto",
+                 "syntax = \"proto2\";\n"
+                 "// Foo comment\n"
+                 "message Foo {}\n");
+  CreateTempFile("bar.proto",
+                 "syntax = \"proto2\";\n"
+                 "import \"foo.proto\";\n"
+                 "message Bar {\n"
+                 "  optional Foo foo = 1;\n"
+                 "}\n");
+
+  // First, generate split descriptor_set and source_info for foo.proto.
+  Run("protocol_compiler "
+      "--descriptor_set_splits_out=$tmpdir/foo-%s.proto.bin "
+      "--descriptor_set_splits=descriptor,source_code_info "
+      "--proto_path=$tmpdir foo.proto");
+  ExpectNoErrors();
+
+  // Then, compile bar.proto loading foo.proto via --descriptor_set_in
+  // passing both descriptor and source_code_info files.
+  Run("protocol_compiler "
+      "--descriptor_set_in=$tmpdir/foo-descriptor.proto.bin:"
+      "$tmpdir/foo-source_code_info.proto.bin "
+      "--descriptor_set_out=$tmpdir/bar_desc "
+      "--include_imports --include_source_info "
+      "--proto_path=$tmpdir bar.proto");
+  ExpectNoErrors();
+
+  FileDescriptorSet bar_set;
+  ReadDescriptorSet("bar_desc", &bar_set);
+  if (HasFatalFailure()) return;
+  EXPECT_EQ(2, bar_set.file_size());
+  if (bar_set.file(0).name() == "bar.proto") {
+    std::swap(bar_set.mutable_file()->mutable_data()[0],
+              bar_set.mutable_file()->mutable_data()[1]);
+  }
+  EXPECT_EQ("foo.proto", bar_set.file(0).name());
+  EXPECT_EQ("bar.proto", bar_set.file(1).name());
+  // foo.proto's SourceCodeInfo should have been merged from
+  // foo-source_code_info and preserved in bar_desc!
+  EXPECT_TRUE(bar_set.file(0).has_source_code_info());
+  EXPECT_TRUE(bar_set.file(1).has_source_code_info());
+}
+
+TEST_F(CommandLineInterfaceTest,
+       DescriptorSetIn_ReverseOrder_MergedSourceCodeInfo) {
+  CreateTempFile("foo.proto",
+                 "syntax = \"proto2\";\n"
+                 "// Foo comment\n"
+                 "message Foo {}\n");
+  CreateTempFile("bar.proto",
+                 "syntax = \"proto2\";\n"
+                 "import \"foo.proto\";\n"
+                 "message Bar {\n"
+                 "  optional Foo foo = 1;\n"
+                 "}\n");
+
+  Run("protocol_compiler "
+      "--descriptor_set_splits_out=$tmpdir/foo-%s.proto.bin "
+      "--descriptor_set_splits=descriptor,source_code_info "
+      "--proto_path=$tmpdir foo.proto");
+  ExpectNoErrors();
+
+  // Pass source_code_info BEFORE descriptor in --descriptor_set_in
+  Run("protocol_compiler "
+      "--descriptor_set_in=$tmpdir/foo-source_code_info.proto.bin:"
+      "$tmpdir/foo-descriptor.proto.bin "
+      "--descriptor_set_out=$tmpdir/bar_desc "
+      "--include_imports --include_source_info "
+      "--proto_path=$tmpdir bar.proto");
+  ExpectNoErrors();
+
+  FileDescriptorSet bar_set;
+  ReadDescriptorSet("bar_desc", &bar_set);
+  if (HasFatalFailure()) return;
+  EXPECT_EQ(2, bar_set.file_size());
+  if (bar_set.file(0).name() == "bar.proto") {
+    std::swap(bar_set.mutable_file()->mutable_data()[0],
+              bar_set.mutable_file()->mutable_data()[1]);
+  }
+  EXPECT_EQ("foo.proto", bar_set.file(0).name());
+  EXPECT_EQ("bar.proto", bar_set.file(1).name());
+  EXPECT_TRUE(bar_set.file(0).has_source_code_info());
+  EXPECT_TRUE(bar_set.file(1).has_source_code_info());
+}
+
 TEST_F(CommandLineInterfaceTest, WriteTransitiveOptionImportDescriptorSet) {
   CreateTempFile("google/protobuf/descriptor.proto",
                  google::protobuf::DescriptorProto::descriptor()->file()->DebugString());
