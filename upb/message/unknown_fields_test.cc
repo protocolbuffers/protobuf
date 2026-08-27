@@ -311,8 +311,8 @@ TEST(GeneratedCode, NextWireFormatUnknown) {
   // Add a raw unknown field string view
   const char raw_bytes[] =
       "\x08\x96\x01";  // tag 1 (field 1, varint), value 150
-  UPB_PRIVATE(_upb_Message_AddUnknown)(UPB_UPCAST(msg), raw_bytes, 3, arena,
-                                       kUpb_AddUnknown_Copy);
+  ASSERT_TRUE(UPB_PRIVATE(_upb_Message_AddUnknown)(
+      UPB_UPCAST(msg), raw_bytes, 3, arena, kUpb_AddUnknown_Copy));
 
   // Add non-canonical extension
   upb_test_ModelExtension2* extension2 = upb_test_ModelExtension2_new(arena);

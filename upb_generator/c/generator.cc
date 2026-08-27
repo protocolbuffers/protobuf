@@ -498,14 +498,18 @@ void GenerateMessageFunctionsInHeader(Context& c, upb::MessageDefPtr message) {
         UPB_INLINE char* $msg_type$_serialize(const $msg_type$* msg,
                                               upb_Arena* arena, size_t* len) {
           char* ptr;
-          (void)upb_Encode(UPB_UPCAST(msg), $mini_table$, 0, arena, &ptr, len);
+          upb_EncodeStatus status =
+              upb_Encode(UPB_UPCAST(msg), $mini_table$, 0, arena, &ptr, len);
+          UPB_UNUSED(status);
           return ptr;
         }
         UPB_INLINE char* $msg_type$_serialize_ex(const $msg_type$* msg,
                                                  int options, upb_Arena* arena,
                                                  size_t* len) {
           char* ptr;
-          (void)upb_Encode(UPB_UPCAST(msg), $mini_table$, options, arena, &ptr, len);
+          upb_EncodeStatus status = upb_Encode(UPB_UPCAST(msg), $mini_table$,
+                                               options, arena, &ptr, len);
+          UPB_UNUSED(status);
           return ptr;
         }
       )cc");

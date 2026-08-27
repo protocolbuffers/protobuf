@@ -25,84 +25,109 @@ typedef struct pb_enumvalue_JsonEnumValueOptions {
 
 struct google_protobuf_EnumValueOptions;
 
-
-
 /* pb.enumvalue.JsonEnumValueOptions */
-UPB_INLINE pb_enumvalue_JsonEnumValueOptions* pb_enumvalue_JsonEnumValueOptions_new(upb_Arena* arena) {
-  return (pb_enumvalue_JsonEnumValueOptions*)_upb_Message_New(pb__enumvalue__JsonEnumValueOptions_msg_init(), arena);
+UPB_INLINE pb_enumvalue_JsonEnumValueOptions*
+pb_enumvalue_JsonEnumValueOptions_new(upb_Arena* arena) {
+  return (pb_enumvalue_JsonEnumValueOptions*)_upb_Message_New(
+      pb__enumvalue__JsonEnumValueOptions_msg_init(), arena);
 }
-UPB_INLINE pb_enumvalue_JsonEnumValueOptions* pb_enumvalue_JsonEnumValueOptions_parse(const char* buf, size_t size,
+UPB_INLINE pb_enumvalue_JsonEnumValueOptions*
+pb_enumvalue_JsonEnumValueOptions_parse(const char* buf, size_t size,
                                         upb_Arena* arena) {
-  pb_enumvalue_JsonEnumValueOptions* ret = pb_enumvalue_JsonEnumValueOptions_new(arena);
+  pb_enumvalue_JsonEnumValueOptions* ret =
+      pb_enumvalue_JsonEnumValueOptions_new(arena);
   if (!ret) return NULL;
-  if (upb_Decode(buf, size, UPB_UPCAST(ret), pb__enumvalue__JsonEnumValueOptions_msg_init(), NULL, 0,
+  if (upb_Decode(buf, size, UPB_UPCAST(ret),
+                 pb__enumvalue__JsonEnumValueOptions_msg_init(), NULL, 0,
                  arena) != kUpb_DecodeStatus_Ok) {
     return NULL;
   }
   return ret;
 }
-UPB_INLINE pb_enumvalue_JsonEnumValueOptions* pb_enumvalue_JsonEnumValueOptions_parse_ex(
-    const char* buf, size_t size, const upb_ExtensionRegistry* extreg,
-    int options, upb_Arena* arena) {
-  pb_enumvalue_JsonEnumValueOptions* ret = pb_enumvalue_JsonEnumValueOptions_new(arena);
+UPB_INLINE pb_enumvalue_JsonEnumValueOptions*
+pb_enumvalue_JsonEnumValueOptions_parse_ex(const char* buf, size_t size,
+                                           const upb_ExtensionRegistry* extreg,
+                                           int options, upb_Arena* arena) {
+  pb_enumvalue_JsonEnumValueOptions* ret =
+      pb_enumvalue_JsonEnumValueOptions_new(arena);
   if (!ret) return NULL;
-  if (upb_Decode(buf, size, UPB_UPCAST(ret), pb__enumvalue__JsonEnumValueOptions_msg_init(), extreg,
+  if (upb_Decode(buf, size, UPB_UPCAST(ret),
+                 pb__enumvalue__JsonEnumValueOptions_msg_init(), extreg,
                  options, arena) != kUpb_DecodeStatus_Ok) {
     return NULL;
   }
   return ret;
 }
-UPB_INLINE char* pb_enumvalue_JsonEnumValueOptions_serialize(const pb_enumvalue_JsonEnumValueOptions* msg,
-                                      upb_Arena* arena, size_t* len) {
+UPB_INLINE char* pb_enumvalue_JsonEnumValueOptions_serialize(
+    const pb_enumvalue_JsonEnumValueOptions* msg, upb_Arena* arena,
+    size_t* len) {
   char* ptr;
-  (void)upb_Encode(UPB_UPCAST(msg), pb__enumvalue__JsonEnumValueOptions_msg_init(), 0, arena, &ptr, len);
+  upb_EncodeStatus status = upb_Encode(
+      UPB_UPCAST(msg), pb__enumvalue__JsonEnumValueOptions_msg_init(), 0, arena,
+      &ptr, len);
+  UPB_UNUSED(status);
   return ptr;
 }
-UPB_INLINE char* pb_enumvalue_JsonEnumValueOptions_serialize_ex(const pb_enumvalue_JsonEnumValueOptions* msg,
-                                         int options, upb_Arena* arena,
-                                         size_t* len) {
+UPB_INLINE char* pb_enumvalue_JsonEnumValueOptions_serialize_ex(
+    const pb_enumvalue_JsonEnumValueOptions* msg, int options, upb_Arena* arena,
+    size_t* len) {
   char* ptr;
-  (void)upb_Encode(UPB_UPCAST(msg), pb__enumvalue__JsonEnumValueOptions_msg_init(), options, arena, &ptr, len);
+  upb_EncodeStatus status = upb_Encode(
+      UPB_UPCAST(msg), pb__enumvalue__JsonEnumValueOptions_msg_init(), options,
+      arena, &ptr, len);
+  UPB_UNUSED(status);
   return ptr;
 }
-UPB_INLINE void pb_enumvalue_JsonEnumValueOptions_clear_string(pb_enumvalue_JsonEnumValueOptions* msg) {
-  const upb_MiniTableField field = *upb_MiniTable_FindFieldByNumber(pb__enumvalue__JsonEnumValueOptions_msg_init(), 1);
+UPB_INLINE void pb_enumvalue_JsonEnumValueOptions_clear_string(
+    pb_enumvalue_JsonEnumValueOptions* msg) {
+  const upb_MiniTableField field = *upb_MiniTable_FindFieldByNumber(
+      pb__enumvalue__JsonEnumValueOptions_msg_init(), 1);
   upb_Message_ClearBaseField(UPB_UPCAST(msg), &field);
 }
-UPB_INLINE upb_StringView pb_enumvalue_JsonEnumValueOptions_string(const pb_enumvalue_JsonEnumValueOptions* msg) {
+UPB_INLINE upb_StringView pb_enumvalue_JsonEnumValueOptions_string(
+    const pb_enumvalue_JsonEnumValueOptions* msg) {
   upb_StringView default_val = upb_StringView_FromString("");
   upb_StringView ret;
-  const upb_MiniTableField field = *upb_MiniTable_FindFieldByNumber(pb__enumvalue__JsonEnumValueOptions_msg_init(), 1);
-  _upb_Message_GetNonExtensionField(UPB_UPCAST(msg), &field,
-                                    &default_val, &ret);
+  const upb_MiniTableField field = *upb_MiniTable_FindFieldByNumber(
+      pb__enumvalue__JsonEnumValueOptions_msg_init(), 1);
+  _upb_Message_GetNonExtensionField(UPB_UPCAST(msg), &field, &default_val,
+                                    &ret);
   return ret;
 }
-UPB_INLINE bool pb_enumvalue_JsonEnumValueOptions_has_string(const pb_enumvalue_JsonEnumValueOptions* msg) {
-  const upb_MiniTableField field = *upb_MiniTable_FindFieldByNumber(pb__enumvalue__JsonEnumValueOptions_msg_init(), 1);
+UPB_INLINE bool pb_enumvalue_JsonEnumValueOptions_has_string(
+    const pb_enumvalue_JsonEnumValueOptions* msg) {
+  const upb_MiniTableField field = *upb_MiniTable_FindFieldByNumber(
+      pb__enumvalue__JsonEnumValueOptions_msg_init(), 1);
   return upb_Message_HasBaseField(UPB_UPCAST(msg), &field);
 }
 
-UPB_INLINE void pb_enumvalue_JsonEnumValueOptions_set_string(pb_enumvalue_JsonEnumValueOptions* msg, upb_StringView value) {
-  const upb_MiniTableField field = *upb_MiniTable_FindFieldByNumber(pb__enumvalue__JsonEnumValueOptions_msg_init(), 1);
+UPB_INLINE void pb_enumvalue_JsonEnumValueOptions_set_string(
+    pb_enumvalue_JsonEnumValueOptions* msg, upb_StringView value) {
+  const upb_MiniTableField field = *upb_MiniTable_FindFieldByNumber(
+      pb__enumvalue__JsonEnumValueOptions_msg_init(), 1);
   upb_Message_SetBaseField((upb_Message*)msg, &field, &value);
 }
 
 // In stage0 bootstrapping, extensions are not present.
-UPB_INLINE bool pb_enumvalue_has_json(const struct google_protobuf_EnumValueOptions* msg) {
+UPB_INLINE bool pb_enumvalue_has_json(
+    const struct google_protobuf_EnumValueOptions* msg) {
   (void)msg;
   return false;
 }
 
-UPB_INLINE void pb_enumvalue_clear_json(struct google_protobuf_EnumValueOptions* msg) { (void)msg; }
-UPB_INLINE const pb_enumvalue_JsonEnumValueOptions*
-pb_enumvalue_json(const struct google_protobuf_EnumValueOptions* msg) {
+UPB_INLINE void pb_enumvalue_clear_json(
+    struct google_protobuf_EnumValueOptions* msg) {
+  (void)msg;
+}
+UPB_INLINE const pb_enumvalue_JsonEnumValueOptions* pb_enumvalue_json(
+    const struct google_protobuf_EnumValueOptions* msg) {
   (void)msg;
   return NULL;
 }
 
-UPB_INLINE void pb_enumvalue_set_json(struct google_protobuf_EnumValueOptions* msg,
-                                        const pb_enumvalue_JsonEnumValueOptions* val,
-                                        upb_Arena* arena) {
+UPB_INLINE void pb_enumvalue_set_json(
+    struct google_protobuf_EnumValueOptions* msg,
+    const pb_enumvalue_JsonEnumValueOptions* val, upb_Arena* arena) {
   (void)msg;
   (void)val;
   (void)arena;
@@ -114,7 +139,7 @@ UPB_INLINE struct pb_enumvalue_JsonEnumValueOptions* pb_enumvalue_mutable_json(
   return NULL;
 }
 #ifdef __cplusplus
-              } /* extern "C" */
+} /* extern "C" */
 #endif
 
 #include "upb/port/undef.inc"
