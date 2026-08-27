@@ -106,7 +106,7 @@ std::string RustModule(Context& ctx, const Descriptor& msg);
 std::string RustModule(Context& ctx, const EnumDescriptor& enum_);
 std::string RustModule(Context& ctx, const OneofDescriptor& oneof);
 
-std::string RustInternalModuleName(const FileDescriptor& file);
+std::string RustModuleName(const FileDescriptor& file);
 
 template <typename Desc>
 std::string GetUnderscoreDelimitedFullName(Context& ctx, const Desc& desc);

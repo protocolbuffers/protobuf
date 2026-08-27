@@ -35,6 +35,12 @@ typedef struct RepeatedCompositeContainer : public ContainerBase {
 
 extern PyTypeObject RepeatedCompositeContainer_Type;
 
+// Promote a const child repeated message to mutable.
+// The parent message is already mutable.
+Message* PromoteConstRepeatedMessage(Message* parent_message,
+                                     const FieldDescriptor* field,
+                                     const Message* message);
+
 namespace repeated_composite_container {
 
 // Builds a RepeatedCompositeContainer object, from a parent message and a

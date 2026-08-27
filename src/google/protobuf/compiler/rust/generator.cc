@@ -132,20 +132,23 @@ void EmitEntryPointRsFile(GeneratorContext* generator_context,
     std::string non_primary_file_path = GetRsFile(ctx, *file);
     std::string relative_mod_path =
         primary_relpath.Relative(RelativePath(non_primary_file_path));
-    // Temporarily emit these re-exported mods as pub to avoid issues with
-    // Crubit. In a future change we should change these back to be private
-    // mods.
-    ctx.Emit({{"file_path", relative_mod_path},
-              {"mod_name", RustInternalModuleName(*file)}},
-             R"rs(
+    // Expose each generated .proto file as a public module named after its
+    // (flattened) file path, providing a fully-qualified path to every type
+    // (e.g. `my_crate::google_network_api_proto::Config`). See
+    // RustModuleName for how the module name is derived from the path.
+    //
+    // The flat `pub use` re-export into the crate root is also emitted so that
+    // existing consumers relying on the crate-root namespace continue to work.
+    ctx.Emit(
+        {{"file_path", relative_mod_path}, {"mod_name", RustModuleName(*file)}},
+        R"rs(
               #[path="$file_path$"]
-              #[allow(nonstandard_style, unused, unreachable_pub)]
-              #[doc(hidden)]
-              mod internal_do_not_use_$mod_name$;
+              #[allow(nonstandard_style, unused)]
+              pub mod $mod_name$;
 
               #[allow(nonstandard_style, unused)]
               #[doc(inline)]
-              pub use internal_do_not_use_$mod_name$::*;
+              pub use $mod_name$::*;
             )rs");
   }
 
@@ -214,7 +217,7 @@ bool RustGenerator::Generate(const FileDescriptor* file,
                                               &*import_path_to_crate_name);
 
   std::vector<std::string> modules;
-  modules.emplace_back(RustInternalModuleName(*file));
+  modules.emplace_back(RustModuleName(*file));
   Context ctx_without_printer(&*opts, &rust_generator_context, nullptr,
                               std::move(modules));
 

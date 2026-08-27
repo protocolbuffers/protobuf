@@ -241,22 +241,32 @@ std::string RustModule(Context& ctx, const OneofDescriptor& oneof) {
                                      *oneof.file());
 }
 
-std::string RustInternalModuleName(const FileDescriptor& file) {
+std::string RustModuleName(const FileDescriptor& file) {
+  // Derive a readable and (mostly) unique Rust module name from the full
+  // proto file path, e.g. `foo/bar/baz.proto` becomes `foo_bar_baz_proto`.
+  absl::string_view name = file.name();
+  absl::string_view prefix = "pb_";
+
   std::string result;
-  result.reserve(file.name().size());
-  for (char c : StripProto(file.name())) {
-    if (c == '_') {
-      result += "__";
-    } else if (c == '-') {
-      result += "__";
-    } else if (c == '/') {
-      result += "_s";
+  result.reserve(name.size() + prefix.size());
+
+  // Rust identifiers must start with a letter or underscore. If the path begins
+  // with anything else (e.g. a digit), prepend `pb_` so the result is valid.
+  if (name.empty() || !absl::ascii_isalpha(name[0])) {
+    result += prefix;
+  }
+
+  for (char c : name) {
+    // Common path/file separators (`/`, `-`, `.`, and `_`) all collapse to a
+    // single underscore for better readability.
+    if (c == '/' || c == '-' || c == '.' || c == '_') {
+      result += '_';
     } else if (absl::ascii_isalnum(c)) {
       result += c;
     } else {
       // Escape any other characters that aren't valid in Rust identifiers
       // by substituting them with an underscore followed by their hex value
-      // and another underscore (e.g. '.' becomes '_2e_').
+      // and another underscore.
       absl::StrAppendFormat(&result, "_%02x_", static_cast<unsigned char>(c));
     }
   }
