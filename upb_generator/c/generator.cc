@@ -858,8 +858,7 @@ void GenerateRepeatedSetters(Context& c, upb::FieldDefPtr field,
             upb_MiniTableField field = $field_init$;
             upb_Array* arr = upb_Message_GetOrCreateMutableArray(
                 UPB_UPCAST(msg), &field, arena);
-            if (!arr || !UPB_PRIVATE(_upb_Array_ResizeUninitialized)(
-                            arr, arr->UPB_PRIVATE(size) + 1, arena)) {
+            if (!arr || !UPB_PRIVATE(_upb_Array_GrowUninitialized)(arr, 1, arena)) {
               return NULL;
             }
             struct $sub_ctype$* sub =
@@ -882,8 +881,7 @@ void GenerateRepeatedSetters(Context& c, upb::FieldDefPtr field,
             upb_MiniTableField field = $field_init$;
             upb_Array* arr = upb_Message_GetOrCreateMutableArray(
                 UPB_UPCAST(msg), &field, arena);
-            if (!arr || !UPB_PRIVATE(_upb_Array_ResizeUninitialized)(
-                            arr, arr->UPB_PRIVATE(size) + 1, arena)) {
+            if (!arr || !UPB_PRIVATE(_upb_Array_GrowUninitialized)(arr, 1, arena)) {
               return false;
             }
             UPB_PRIVATE(_upb_Array_Set)
