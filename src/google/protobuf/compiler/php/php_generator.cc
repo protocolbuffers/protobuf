@@ -8,6 +8,10 @@
 #include "google/protobuf/compiler/php/php_generator.h"
 
 #include <algorithm>
+#include <cassert>
+#include <cstddef>
+#include <cstdint>
+#include <memory>
 #include <sstream>
 #include <string>
 #include <utility>
@@ -15,10 +19,12 @@
 
 #include "absl/container/flat_hash_map.h"
 #include "absl/container/flat_hash_set.h"
+#include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
 #include "absl/strings/ascii.h"
 #include "absl/strings/charset.h"
 #include "absl/strings/escaping.h"
+#include "absl/strings/match.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_replace.h"
 #include "absl/strings/str_split.h"
@@ -31,6 +37,7 @@
 #include "google/protobuf/io/printer.h"
 #include "google/protobuf/io/zero_copy_stream.h"
 #include "google/protobuf/json_enumvalue_options.pb.h"
+#include "google/protobuf/repeated_ptr_field.h"
 
 constexpr absl::string_view kDescriptorFile =
     "google/protobuf/descriptor.proto";
