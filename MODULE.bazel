@@ -20,7 +20,7 @@ bazel_dep(name = "apple_support", version = "2.3.0", repo_name = "build_bazel_ap
 bazel_dep(name = "rules_proto", version = "7.1.0")
 
 # protoc dependencies
-bazel_dep(name = "abseil-cpp", version = "20250512.1")
+bazel_dep(name = "abseil-cpp", version = "20260107.1")
 bazel_dep(name = "rules_cc", version = "0.2.18")
 bazel_dep(name = "zlib", version = "1.3.1.bcr.5")
 
