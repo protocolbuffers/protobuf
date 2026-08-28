@@ -8,17 +8,11 @@
 load("@rules_cc//cc:cc_binary.bzl", "cc_binary")
 load("@rules_cc//cc:cc_test.bzl", "cc_test")
 load("@rules_cc//cc:defs.bzl", "cc_library")
-load("//build_defs:cpp_opts.bzl", "COPTS")
-load(
-    "//upb_generator:bootstrap_compiler.bzl",
-    "bootstrap_cc_library",
-)
 
 cc_library(
     name = "crate_mapping",
     srcs = ["crate_mapping.cc"],
     hdrs = ["crate_mapping.h"],
-    copts = COPTS,
     strip_include_prefix = "/src",
     deps = [
         ":context",
@@ -37,12 +31,12 @@ cc_test(
         ":crate_mapping",
         "//src/google/protobuf/testing",
         "//src/google/protobuf/testing:file",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
         "@abseil-cpp//absl/container:flat_hash_map",
         "@abseil-cpp//absl/status",
         "@abseil-cpp//absl/strings",
         "@abseil-cpp//absl/strings:string_view",
-        "@googletest//:gtest",
-        "@googletest//:gtest_main",
     ],
 )
 
@@ -76,21 +70,21 @@ cc_library(
         "naming.h",
         "rust_keywords.h",
     ],
-    copts = COPTS,
     strip_include_prefix = "/src",
+    copts = COPTS,
     visibility = ["//src/google/protobuf/compiler/rust:__subpackages__"],
     deps = [
         ":context",
         ":rust_field_type",
-        "//src/google/protobuf",
-        "//src/google/protobuf:port",
-        "//src/google/protobuf/compiler:code_generator",
-        "//src/google/protobuf/compiler/cpp:names_internal",
         "@abseil-cpp//absl/container:flat_hash_set",
         "@abseil-cpp//absl/log:absl_check",
         "@abseil-cpp//absl/log:absl_log",
         "@abseil-cpp//absl/strings",
         "@abseil-cpp//absl/strings:str_format",
+        "//src/google/protobuf",
+        "//src/google/protobuf:port",
+        "//src/google/protobuf/compiler:code_generator",
+        "//src/google/protobuf/compiler/cpp:names_internal",
     ],
 )
 
@@ -113,7 +107,6 @@ cc_library(
     name = "relative_path",
     srcs = ["relative_path.cc"],
     hdrs = ["relative_path.h"],
-    copts = COPTS,
     strip_include_prefix = "/src",
     deps = [
         "@abseil-cpp//absl/algorithm:container",
@@ -137,19 +130,18 @@ cc_library(
     name = "oneof",
     srcs = ["oneof.cc"],
     hdrs = ["oneof.h"],
-    copts = COPTS,
     strip_include_prefix = "/src",
     deps = [
         ":context",
         ":naming",
         ":rust_field_type",
         ":upb_helpers",
-        "//src/google/protobuf",
-        "//src/google/protobuf/compiler/cpp:names_internal",
-        "//src/google/protobuf/compiler/rust/accessors",
         "@abseil-cpp//absl/log:absl_check",
         "@abseil-cpp//absl/log:absl_log",
         "@abseil-cpp//absl/strings",
+        "//src/google/protobuf",
+        "//src/google/protobuf/compiler/cpp:names_internal",
+        "//src/google/protobuf/compiler/rust/accessors",
     ],
 )
 
@@ -157,8 +149,8 @@ cc_library(
     name = "rust_field_type",
     srcs = ["rust_field_type.cc"],
     hdrs = ["rust_field_type.h"],
-    copts = COPTS,
     strip_include_prefix = "/src",
+    copts = COPTS,
     visibility = ["//src/google/protobuf/compiler/rust:__subpackages__"],
     deps = [
         "//src/google/protobuf",
@@ -171,8 +163,8 @@ cc_library(
     name = "upb_helpers",
     srcs = ["upb_helpers.cc"],
     hdrs = ["upb_helpers.h"],
-    copts = COPTS,
     strip_include_prefix = "/src",
+    copts = COPTS,
     visibility = ["//src/google/protobuf/compiler/rust:__subpackages__"],
     deps = [
         ":context",
@@ -183,7 +175,11 @@ cc_library(
         "@abseil-cpp//absl/strings",
     ],
 )
-
+load("//build_defs:cpp_opts.bzl", "COPTS")
+load(
+    "//upb_generator:bootstrap_compiler.bzl",
+    "bootstrap_cc_library",
+)
 cc_binary(
     name = "protoc-gen-rust",
     srcs = ["plugin_main.cc"],
@@ -193,7 +189,6 @@ cc_binary(
         "//src/google/protobuf/compiler:plugin",
     ],
 )
-
 bootstrap_cc_library(
     name = "rust",
     srcs = ["generator.cc"],
@@ -266,7 +261,6 @@ bootstrap_cc_library(
         "@abseil-cpp//absl/strings:str_format",
     ],
 )
-
 bootstrap_cc_library(
     name = "extension",
     srcs = ["extension.cc"],
@@ -279,13 +273,12 @@ bootstrap_cc_library(
     deps = [
         ":context",
         ":naming",
+        "@abseil-cpp//absl/strings",
         "//src/google/protobuf",
         "//src/google/protobuf/compiler/cpp:names",
         "//src/google/protobuf/compiler/rust/accessors",
-        "@abseil-cpp//absl/strings",
     ],
 )
-
 bootstrap_cc_library(
     name = "enum",
     srcs = ["enum.cc"],

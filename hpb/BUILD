@@ -156,11 +156,11 @@ cc_library(
     deps = [
         ":multibackend",
         "//hpb/backend:types",
-        "//upb/wire",
-        "@abseil-cpp//absl/log:absl_check",
-        "@abseil-cpp//absl/log:absl_log",
         "@abseil-cpp//absl/status",
         "@abseil-cpp//absl/strings:str_format",
+        "@abseil-cpp//absl/log:absl_log",
+        "@abseil-cpp//absl/log:absl_check",
+        "//upb/wire",
     ],
 )
 

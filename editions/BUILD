@@ -4,13 +4,13 @@ load("@rules_cc//cc:cc_test.bzl", "cc_test")
 load("@rules_cc//cc:defs.bzl", "cc_library")
 load("@rules_shell//shell:sh_binary.bzl", "sh_binary")
 load("@rules_shell//shell:sh_test.bzl", "sh_test")
-load("//:protobuf.bzl", "internal_objc_proto_library", "internal_php_proto_library", "internal_py_proto_library")
 load("//bazel:cc_proto_library.bzl", "cc_proto_library")
 load("//bazel:java_lite_proto_library.bzl", "java_lite_proto_library")
 load("//bazel:java_proto_library.bzl", "java_proto_library")
 load("//bazel:proto_library.bzl", "proto_library")
 load("//upb/bazel:upb_proto_library.bzl", "upb_c_proto_library", "upb_proto_reflection_library")
 load(":defaults.bzl", "compile_edition_defaults", "embed_edition_defaults")
+load("//:protobuf.bzl", "internal_objc_proto_library", "internal_php_proto_library", "internal_py_proto_library")
 
 bzl_library(
     name = "defaults",
@@ -420,7 +420,6 @@ cc_test(
         ":test_editions_default_features_cc_proto",
         ":test_messages_proto2_editions_cc_proto",
         ":test_messages_proto3_editions_cc_proto",
-        "//src/google/protobuf",
         "//src/google/protobuf:test_textproto",
         "@googletest//:gtest",
         "@googletest//:gtest_main",

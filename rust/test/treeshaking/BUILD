@@ -19,7 +19,6 @@ PLATFORM_ARGS = select({
 })
 
 _NM_TOOL_TARGET = []
-
 _NM_TOOL_PATH = ["nm"]
 
 # This works on all platforms today because unused symbols are correctly stripped.

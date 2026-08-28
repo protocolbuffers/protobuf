@@ -1,8 +1,8 @@
 # Protobuf Rust crate packaging for release.
 
+load("@rules_shell//shell:sh_binary.bzl", "sh_binary")
 load("@rules_pkg//pkg:mappings.bzl", "pkg_files")
 load("@rules_pkg//pkg:tar.bzl", "pkg_tar")
-load("@rules_shell//shell:sh_binary.bzl", "sh_binary")
 
 pkg_files(
     name = "license",

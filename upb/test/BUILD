@@ -434,12 +434,12 @@ filegroup(
 
 filegroup(
     name = "test_util",
-    testonly = 1,
     srcs = [
         "fuzz_util.cc",
         "fuzz_util.h",
         "parse_text_proto.h",
     ],
+    testonly = 1,
     visibility = ["//upb:__pkg__"],
 )
 

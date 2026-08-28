@@ -38,8 +38,8 @@ cc_library(
     name = "interop",
     hdrs = ["interop.h"],
     visibility = [
-        "//hpb:__subpackages__",
         "//hpb_generator:__subpackages__",
+        "//hpb:__subpackages__",
     ],
     deps = [
         "//hpb:ptr",

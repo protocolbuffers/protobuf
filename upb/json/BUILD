@@ -125,7 +125,7 @@ filegroup(
         [
             "**/*test.cc",
         ],
-        exclude = ["fuzz_test.cc"],
+        exclude=["fuzz_test.cc"],
     ),
     visibility = ["//upb:__pkg__"],
 )
@@ -138,9 +138,9 @@ filegroup(
             "**/*test.proto",
         ],
     ) + [
-        "//src/google/protobuf:json_enumvalue_options.proto",
-        "//src/google/protobuf:json_options.proto",
         "//src/google/protobuf/json:json_enumval_custom_string_proto_srcs",
+        "//src/google/protobuf:json_options.proto",
+        "//src/google/protobuf:json_enumvalue_options.proto",
     ],
     visibility = ["//upb:__pkg__"],
 )

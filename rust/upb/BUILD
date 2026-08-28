@@ -4,8 +4,9 @@
 # license that can be found in the LICENSE file or at
 # https://developers.google.com/open-source/licenses/bsd
 
-load("@rules_pkg//pkg:mappings.bzl", "pkg_files", "strip_prefix")
 load("@rules_rust//rust:defs.bzl", "rust_library", "rust_test")
+
+load("@rules_pkg//pkg:mappings.bzl", "pkg_files", "strip_prefix")
 
 package(default_applicable_licenses = ["//:license"])
 
@@ -26,8 +27,8 @@ rust_library(
     ],
     rustc_flags = ["--cfg=bzl"],
     visibility = [
-        "//rust:__subpackages__",
         "//src/google/protobuf:__subpackages__",
+        "//rust:__subpackages__",
     ],
     deps = [
         "//rust/upb/sys",
@@ -42,8 +43,8 @@ rust_library(
     edition = "2024",
     rustc_flags = ["--cfg=bzl"],
     visibility = [
-        "//rust:__subpackages__",
         "//src/google/protobuf:__subpackages__",
+        "//rust:__subpackages__",
     ],
     deps = [
         ":upb",
@@ -79,7 +80,7 @@ pkg_files(
     prefix = "upb",
     strip_prefix = strip_prefix.from_root("rust/upb"),
     visibility = [
-        "//rust:__subpackages__",
         "//src/google/protobuf:__subpackages__",
+        "//rust:__subpackages__",
     ],
 )

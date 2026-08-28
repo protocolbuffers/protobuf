@@ -1,8 +1,8 @@
 "Module extensions for use under bzlmod"
 
 load("@bazel_skylib//lib:modules.bzl", "modules")
-load("//toolchain:platforms.bzl", "PROTOBUF_PLATFORMS")
 load(":protoc_toolchain.bzl", "prebuilt_protoc_repo")
+load("//toolchain:platforms.bzl", "PROTOBUF_PLATFORMS")
 
 def create_all_toolchain_repos(name = "prebuilt_protoc"):
     for platform in PROTOBUF_PLATFORMS.keys():

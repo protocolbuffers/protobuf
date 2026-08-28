@@ -21,7 +21,7 @@ bzl_library(
         "visibility.bzl",
     ],
     visibility = [
-        "//visibility:public",
+          "//visibility:public",
     ],
     deps = [
         "//bazel/common:proto_common_bzl",

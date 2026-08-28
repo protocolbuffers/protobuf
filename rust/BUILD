@@ -4,6 +4,7 @@ load("@bazel_skylib//rules:common_settings.bzl", "string_flag")
 load("@rules_cc//cc:defs.bzl", "cc_library")
 load("@rules_pkg//pkg:mappings.bzl", "pkg_filegroup", "pkg_files", "strip_prefix")
 load("@rules_rust//rust:defs.bzl", "rust_library", "rust_test")
+
 load("//bazel/toolchains:proto_lang_toolchain.bzl", "proto_lang_toolchain")
 
 licenses(["notice"])
@@ -207,10 +208,7 @@ rust_library(
         "//rust/protobuf_macros",
         "@crate_index//:paste",
     ],
-    rustc_flags = [
-        "--cfg=cpp_kernel",
-        "--cfg=bzl",
-    ],
+    rustc_flags = ["--cfg=cpp_kernel", "--cfg=bzl"],
     visibility = [":protobuf_internal"],
     deps = [
         ":cpp_api",
@@ -272,20 +270,20 @@ cc_library(
         "cpp_kernel/strings.h",
     ],
     visibility = [
-        "//rust:__subpackages__",
         "//src/google/protobuf:__subpackages__",
+        "//rust:__subpackages__",
     ],
     deps = [
         ":rust_alloc_for_cpp_api",  # buildcleaner: keep
-        "//src/google/protobuf",
-        "//src/google/protobuf:protobuf_lite",
-        "//src/google/protobuf/io",
-        "//src/google/protobuf/util:differencer",
         "@abseil-cpp//absl/functional:overload",
         "@abseil-cpp//absl/log:absl_check",
         "@abseil-cpp//absl/log:absl_log",
         "@abseil-cpp//absl/memory",
         "@abseil-cpp//absl/strings:string_view",
+        "//src/google/protobuf",
+        "//src/google/protobuf:protobuf_lite",
+        "//src/google/protobuf/io",
+        "//src/google/protobuf/util:differencer",
     ],
 )
 

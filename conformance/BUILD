@@ -11,17 +11,16 @@ load("@rules_cc//cc:cc_test.bzl", "cc_test")
 load("@rules_cc//cc:defs.bzl", "cc_binary", "cc_library", "objc_library")
 load("@rules_java//java:defs.bzl", "java_binary")
 load("@rules_python//python:py_binary.bzl", "py_binary")
-load(
-    "//:protobuf.bzl",
-    "internal_csharp_proto_library",
-    "internal_objc_proto_library",
-    "internal_php_proto_library",
-    "internal_py_proto_library",
-)
 load("//bazel:cc_proto_library.bzl", "cc_proto_library")
 load("//bazel:java_lite_proto_library.bzl", "java_lite_proto_library")
 load("//bazel:java_proto_library.bzl", "java_proto_library")
 load("//bazel:proto_library.bzl", "proto_library")
+load("//:protobuf.bzl",
+    "internal_csharp_proto_library",
+    "internal_objc_proto_library",
+    "internal_php_proto_library",
+    "internal_py_proto_library"
+)
 load("//build_defs:internal_shell.bzl", "inline_sh_binary")
 
 exports_files([
@@ -427,8 +426,8 @@ cc_binary(
     testonly = 1,
     srcs = ["conformance_cpp.cc"],
     visibility = [
-        "//pkg:__pkg__",
         "//src:__subpackages__",
+        "//pkg:__pkg__",
     ],
     deps = [
         ":conformance_cc_proto",
@@ -439,11 +438,11 @@ cc_binary(
         "//:field_mask_cc_proto",
         "//:protobuf",
         "//:struct_cc_proto",
-        "//:test_messages_proto2_cc_proto",
-        "//:test_messages_proto3_cc_proto",
         "//:timestamp_cc_proto",
         "//:type_cc_proto",
         "//:wrappers_cc_proto",
+        "//:test_messages_proto2_cc_proto",
+        "//:test_messages_proto3_cc_proto",
         "//conformance/test_protos:test_messages_edition2023_cc_proto",
         "//conformance/test_protos:test_messages_edition_unstable_cc_proto",
         "//editions:test_messages_proto2_editions_cc_proto",
