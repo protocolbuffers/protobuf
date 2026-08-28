@@ -1009,7 +1009,7 @@ bool OptionInterpreter::SetAggregateOption(const FieldDescriptor* option_field,
           UninterpretedOption::kAggregateValueFieldNumber);
       SourceCodePath mutable_dest_path = dest_path;
       mutable_dest_path.push_back(
-          -UninterpretedOption::kAggregateValueFieldNumber);
+          UninterpretedOption::kAggregateValueFieldNumber);
       CollectAggregateFieldLocations(*dynamic, info_tree, mutable_src_path,
                                      mutable_dest_path);
     }
@@ -1060,7 +1060,7 @@ void OptionInterpreter::CollectAggregateFieldLocations(
         const TextFormat::ParseInfoTree* sub_tree =
             tree.GetTreeForNested(field, val_marker_idx);
         if (sub_tree != nullptr) {
-          dest_path.push_back(-UninterpretedOption::kAggregateValueFieldNumber);
+          dest_path.push_back(UninterpretedOption::kAggregateValueFieldNumber);
           CollectAggregateFieldLocations(sub_message, *sub_tree,
                                          uninterpreted_path, dest_path);
           dest_path.pop_back();
