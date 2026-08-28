@@ -38,7 +38,12 @@ const upb_MiniTable* SubsetMiniTable(const upb_MiniTable* src, uint64_t mask,
   int field_count = upb_MiniTable_FieldCount(src);
   for (int i = 0; i < field_count; ++i) {
     const upb_MiniTableField* f = upb_MiniTable_GetFieldByIndex(src, i);
-    if (mask & (1ULL << (i % 64))) {
+    // If the field belongs to a oneof, select/drop the oneof as a whole unit
+    // to preserve roundtrip equivalence. Splitting individual fields within the
+    // same oneof between known and unknown fields can invert wire serialization
+    // order when multiple oneof fields are present in the wire payload.
+    int mask_bit = (f->presence < 0) ? (32 + (~f->presence)) : (i % 32);
+    if (mask & (1ULL << (mask_bit % 64))) {
       upb_MiniTableField new_f = *f;
       if (f->UPB_PRIVATE(submsg_ofs) != kUpb_NoSub) {
         new_subs.push_back(
@@ -614,6 +619,12 @@ TEST(ConvertFuzz, ArbitraryMiniTableConvertFuzzRegression_b529945368) {
                   "\000\000\300\376",
                   20),
       372456973, 1140553636);
+}
+
+TEST(ConvertFuzz, ConvertFuzzRegression_b553987075) {
+  ConvertFuzz(upb::fuzz::MiniTableFuzzInput{{"$::1/1*^(|%"}, {}, "", {}},
+              13624504597643522060ULL, 16497767249782210611ULL, "  00",
+              3016566825, 2825661372);
 }
 }  // namespace
 
