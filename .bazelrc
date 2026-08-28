@@ -87,6 +87,10 @@ build:clang --cxxopt="-Woverloaded-virtual"
 build:clang --copt="-Wpointer-arith"
 build:clang --copt="-Werror" --copt="-Wno-sign-compare" --copt="-Wno-sign-conversion" --copt="-Wno-error=sign-conversion" --copt="-Wno-deprecated-declarations"
 
+# Suppress all compiler warnings in external dependencies
+build:clang --per_file_copt=external/.*@-w
+build:clang --host_per_file_copt=external/.*@-w
+
 build:linux --config=clang
 
 build:macos --config=clang
