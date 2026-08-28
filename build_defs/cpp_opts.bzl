@@ -18,6 +18,7 @@ COPTS = select({
     ],
     "//conditions:default": [
         "-Wno-sign-compare",
+        "-Wno-deprecated-declarations",
     ],
 })
 
