@@ -19,13 +19,13 @@ jobs:
     runs-on: ubuntu-22-4core
     steps:
       - name: Checkout pending changes
-        uses: protocolbuffers/protobuf-ci/checkout@v5
+        uses: protocolbuffers/protobuf-ci/checkout@v6
         with:
           ref: ${{ inputs.safe-checkout }}
 
       # TODO Run this with Bazel once codegen is handled properly.
       - name: Run tests
-        uses: protocolbuffers/protobuf-ci/docker@v5
+        uses: protocolbuffers/protobuf-ci/docker@v6
         with:
           image: us-docker.pkg.dev/protobuf-build/containers/test/linux/csharp:9.2.0-3.1.415-8.0.100-5bb1a8fdfc30f8c21c1b38cf053d2db9fca865a7
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
@@ -41,7 +41,7 @@ jobs:
         run: sudo rm -rf _build .repository-cache
 
       - name: Run conformance tests
-        uses: protocolbuffers/protobuf-ci/bazel-docker@v5
+        uses: protocolbuffers/protobuf-ci/bazel-docker@v6
         with:
           image: us-docker.pkg.dev/protobuf-build/containers/test/linux/csharp:9.2.0-3.1.415-8.0.100-5bb1a8fdfc30f8c21c1b38cf053d2db9fca865a7
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
@@ -53,17 +53,19 @@ jobs:
     runs-on: windows-2022
     steps:
       - name: Checkout pending changes
-        uses: protocolbuffers/protobuf-ci/checkout@v5
+        uses: protocolbuffers/protobuf-ci/checkout@v6
         with:
           ref: ${{ inputs.safe-checkout }}
-
+      - name: Windows startup flags
+        shell: bash
+        run: echo "startup --output_user_root=C:/ --windows_enable_symlinks" >> .bazelrc
       - name: Setup dotnet
         uses: actions/setup-dotnet@baa11fbfe1d6520db94683bd5c7a3818018e4309  # v5.1.0
         with:
           dotnet-version: '8.0.x'
 
       - name: Run tests
-        uses: protocolbuffers/protobuf-ci/bash@v5
+        uses: protocolbuffers/protobuf-ci/bash@v6
         with:
           bazel-version: 9.2.0
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
@@ -76,14 +78,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout pending changes
-        uses: protocolbuffers/protobuf-ci/checkout@v5
+        uses: protocolbuffers/protobuf-ci/checkout@v6
         with:
           ref: ${{ inputs.safe-checkout }}
 
       - name: Build protobuf C# tests under x86_64 docker image
         # Tests are built "dotnet publish" because we want all the dependencies to the copied to the destination directory
         # (we want to avoid references to ~/.nuget that won't be available in the subsequent docker run)
-        uses: protocolbuffers/protobuf-ci/docker@v5
+        uses: protocolbuffers/protobuf-ci/docker@v6
         with:
           image: mcr.microsoft.com/dotnet/sdk:8.0.100-bookworm-slim
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
@@ -100,7 +102,7 @@ jobs:
         #   running under current user's UID and GID. To be able to do that, we need to provide a home directory for the user
         #   otherwise the UID would be homeless under the docker container and pip install wouldn't work. For simplicity,
         #   we just run map the user's home to a throwaway temporary directory
-        uses: protocolbuffers/protobuf-ci/docker@v5
+        uses: protocolbuffers/protobuf-ci/docker@v6
         with:
           image: mcr.microsoft.com/dotnet/sdk:8.0.100-bookworm-slim-arm64v8
           skip-staleness-check: true

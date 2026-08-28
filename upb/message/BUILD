@@ -93,6 +93,8 @@ cc_library(
         "//upb/mem:internal",
         "//upb/mini_table",
         "//upb/port",
+        "//upb/wire:encode_extension",
+        "//upb/wire:encoder",
         "//upb/wire:eps_copy_input_stream",
         "//upb/wire:reader",
     ],

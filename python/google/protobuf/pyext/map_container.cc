@@ -48,6 +48,10 @@ class MapReflectionFriend {
   static int MessageMapSetItem(PyObject* _self, PyObject* key, PyObject* v);
   static PyObject* ScalarMapToStr(PyObject* _self);
   static PyObject* MessageMapToStr(PyObject* _self);
+
+  static Message* PromoteConstMapValueMessage(Message* parent_message,
+                                              const FieldDescriptor* field,
+                                              const Message* message);
 };
 
 struct MapIterator {
@@ -577,12 +581,12 @@ static MessageMapContainer* GetMessageMap(PyObject* obj) {
   return reinterpret_cast<MessageMapContainer*>(obj);
 }
 
-static PyObject* GetCMessage(MessageMapContainer* self,
-                             const Message* message) {
-  // Get or create the CMessage object corresponding to this message.
+// Get or create the CMessage object corresponding to this message.
+static PyObject* GetCMessage(MessageMapContainer* self, const Message* message,
+                             MessageMutabilityState state) {
   return self->parent
       ->BuildSubMessageFromPointer(self->parent_field_descriptor, message,
-                                   self->message_class)
+                                   self->message_class, state)
       ->AsPyObject();
 }
 
@@ -662,26 +666,42 @@ int MapReflectionFriend::MessageMapSetItem(PyObject* _self, PyObject* key,
   }
 }
 
+// For mutable messages, subscript access has get-or-create semantics: looking
+// up an existing entry or inserting a new default entry, returning a
+// MESSAGE_MUTABLE wrapper. For frozen messages, mutation is disallowed, so
+// subscript access is a read-only lookup returning a MESSAGE_FROZEN wrapper for
+// existing keys, or raising a FrozenInstanceError if the key is not present.
 PyObject* MapReflectionFriend::MessageMapGetItem(PyObject* _self,
                                                  PyObject* key) {
   MessageMapContainer* self = GetMessageMap(_self);
 
-  Message* message = self->GetMutableMessage();
-  if (message == nullptr) return nullptr;
-  const Reflection* reflection = message->GetReflection();
   MapKey map_key;
-  MapValueRef value;
 
   if (!PythonToMapKey(self, key, &map_key)) {
     return nullptr;
   }
 
-  if (reflection->InsertOrLookupMapValue(message, self->parent_field_descriptor,
-                                         map_key, &value)) {
-    self->version++;
+  // Mutable path: insert-or-lookup and return mutable submessage wrapper.
+  if (Message* message = self->GetMutableMessage(); message != nullptr) {
+    const Reflection* reflection = message->GetReflection();
+    MapValueRef value;
+    if (reflection->InsertOrLookupMapValue(
+            message, self->parent_field_descriptor, map_key, &value)) {
+      self->version++;
+    }
+    return GetCMessage(self, value.MutableMessageValue(), MESSAGE_MUTABLE);
   }
 
-  return GetCMessage(self, value.MutableMessageValue());
+  // Frozen path: read-only lookup without mutation.
+  PyErr_Clear();
+  const Message* message = self->GetReadOnlyMessage();
+  const Reflection* reflection = message->GetReflection();
+  MapValueConstRef value;
+  if (!reflection->LookupMapValue(*message, self->parent_field_descriptor,
+                                  map_key, &value)) {
+    return SetMessageFrozenError();
+  }
+  return GetCMessage(self, &value.GetMessageValue(), MESSAGE_FROZEN);
 }
 
 PyObject* MapReflectionFriend::MessageMapToStr(PyObject* _self) {
@@ -695,6 +715,12 @@ PyObject* MapReflectionFriend::MessageMapToStr(PyObject* _self) {
   MessageMapContainer* self = GetMessageMap(_self);
   const Message* message = self->GetReadOnlyMessage();
   const Reflection* reflection = message->GetReflection();
+  // Wrap const map messages as MESSAGE_UNPROMOTED so string formatting does not
+  // mutate parent state, while ensuring any subsequent write will promote the
+  // parent hierarchy (including lazy fields) via AssureWritable.
+  MessageMutabilityState state = self->parent->state == MESSAGE_FROZEN
+                                     ? MESSAGE_FROZEN
+                                     : MESSAGE_UNPROMOTED;
   for (google::protobuf::ConstMapIterator it =
            reflection->ConstMapBegin(message, self->parent_field_descriptor);
        it != reflection->ConstMapEnd(message, self->parent_field_descriptor);
@@ -703,7 +729,7 @@ PyObject* MapReflectionFriend::MessageMapToStr(PyObject* _self) {
     if (key == nullptr) {
       return nullptr;
     }
-    value.reset(GetCMessage(self, &it.GetValueRef().GetMessageValue()));
+    value.reset(GetCMessage(self, &it.GetValueRef().GetMessageValue(), state));
     if (value == nullptr) {
       return nullptr;
     }
@@ -712,6 +738,22 @@ PyObject* MapReflectionFriend::MessageMapToStr(PyObject* _self) {
     }
   }
   return PyObject_Repr(dict.get());
+}
+
+Message* MapReflectionFriend::PromoteConstMapValueMessage(
+    Message* parent_message, const FieldDescriptor* field,
+    const Message* message) {
+  // -----------------------------------------------------------------------
+  // NOTE: THIS IS AN IMPLEMENTATION DETAIL.
+  // This is not part of the public contract but we can take advantage of it
+  // here for performance.
+  // -----------------------------------------------------------------------
+  // Elements in map fields already point to stable allocated Message objects in
+  // the parent's container. We mark the map dirty, but we don't need to mark
+  // the individual message dirty.
+  // -----------------------------------------------------------------------
+  (void)parent_message->GetReflection()->MutableMapData(parent_message, field);
+  return const_cast<Message*>(message);
 }
 
 static PyObject* MessageMapSetdefault(PyObject* self, PyObject* args) {
@@ -965,6 +1007,13 @@ bool InitMapContainers() {
       reinterpret_cast<PyTypeObject*>(Py_AddClassWithRegister(
           &MessageMapContainer_Type_spec, mutable_mapping.get(), methods));
   return true;
+}
+
+Message* PromoteConstMapValueMessage(Message* parent_message,
+                                     const FieldDescriptor* field,
+                                     const Message* message) {
+  return MapReflectionFriend::PromoteConstMapValueMessage(parent_message, field,
+                                                          message);
 }
 
 }  // namespace python

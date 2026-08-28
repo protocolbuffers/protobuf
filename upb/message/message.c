@@ -257,3 +257,22 @@ void upb_Message_Freeze(upb_Message* msg, const upb_MiniTable* m) {
     }
   }
 }
+
+bool upb_Message_NextSerializableField(const upb_Message* msg,
+                                       const upb_MiniTable* mt,
+                                       const upb_MiniTableField** f,
+                                       uintptr_t* iter) {
+  const size_t field_count = upb_MiniTable_FieldCount(mt);
+  uintptr_t i = *iter;
+  while (i < field_count) {
+    const upb_MiniTableField* field = upb_MiniTable_GetFieldByIndex(mt, i);
+    if (UPB_PRIVATE(_upb_Message_FieldIsSet)(msg, field)) {
+      *f = field;
+      *iter = i + 1;
+      return true;
+    }
+    i++;
+  }
+  *iter = i;
+  return false;
+}

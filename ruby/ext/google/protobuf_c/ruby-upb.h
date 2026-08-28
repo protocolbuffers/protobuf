@@ -494,7 +494,7 @@ Error, UINTPTR_MAX is undefined
 
 /* aarch64 supports big and little endian modes; fasttable performs multibyte
  * tag loads assumes the tag of a varint is in the low bits. */
-#if (defined(__x86_64__) || defined(__AARCH64EL__)) && \
+#if !defined(_WIN32) && (defined(__x86_64__) || defined(__AARCH64EL__)) && \
     UPB_HAS_ATTRIBUTE(preserve_none) && UPB_HAS_ATTRIBUTE(musttail)
 #define UPB_FASTTABLE_SUPPORTED 1
 #else
@@ -513,7 +513,11 @@ Error, UINTPTR_MAX is undefined
  * This is useful for releasing code that might be used on multiple platforms,
  * for example the PHP or Ruby C extensions. */
 #elif defined(UPB_TRY_ENABLE_FASTTABLE)
-#define UPB_FASTTABLE UPB_FASTTABLE_SUPPORTED
+#if UPB_FASTTABLE_SUPPORTED
+#define UPB_FASTTABLE 1
+#else
+#define UPB_FASTTABLE 0
+#endif
 #else
 #define UPB_FASTTABLE 0
 #endif
@@ -565,6 +569,12 @@ Error, UINTPTR_MAX is undefined
 #define UPB_RETAIN __attribute__((retain))
 #else
 #define UPB_RETAIN
+#endif
+
+#if defined(__GNUC__) || defined(__clang__)
+#define UPB_HIDDEN __attribute__((visibility("hidden")))
+#else
+#define UPB_HIDDEN
 #endif
 
 // Linker arrays combine elements from multiple translation units into a single
@@ -620,7 +630,7 @@ Error, UINTPTR_MAX is undefined
 
 #elif defined(__MACH__)
 
-/* As described in: https://stackoverflow.com/a/22366882 */
+  /* As described in: https://stackoverflow.com/a/22366882 */
 #define UPB_LINKARR_APPEND(name) \
   __attribute__((                \
       section("__DATA,__la_" #name))) UPB_LINKARR_ATTR UPB_NO_SANITIZE_ADDRESS
@@ -639,10 +649,10 @@ Error, UINTPTR_MAX is undefined
 
 #elif defined(_MSC_VER)
 
-/* See:
- *   https://devblogs.microsoft.com/oldnewthing/20181107-00/?p=100155
- *   https://devblogs.microsoft.com/oldnewthing/20181108-00/?p=100165
- *   https://devblogs.microsoft.com/oldnewthing/20181109-00/?p=100175 */
+  /* See:
+   *   https://devblogs.microsoft.com/oldnewthing/20181107-00/?p=100155
+   *   https://devblogs.microsoft.com/oldnewthing/20181108-00/?p=100165
+   *   https://devblogs.microsoft.com/oldnewthing/20181109-00/?p=100175 */
 #define UPB_STRINGIFY_INTERNAL(x) #x
 #define UPB_STRINGIFY(x) UPB_STRINGIFY_INTERNAL(x)
 #define UPB_CONCAT(a, b, c) a##b##c
@@ -651,7 +661,7 @@ Error, UINTPTR_MAX is undefined
 #define UPB_LINKARR_APPEND(name)                      \
   __pragma(section(UPB_LINKARR_NAME(name, $j), read)) \
       __declspec(allocate(UPB_LINKARR_NAME(name, $j)))
-// clang-format off
+  // clang-format off
 #define UPB_LINKARR_DECLARE(name, type)                          \
   __pragma(message(UPB_LINKARR_NAME(name, $j)))                  \
   __pragma(section(UPB_LINKARR_NAME(name, $a), read))            \
@@ -662,13 +672,13 @@ Error, UINTPTR_MAX is undefined
             type __stop_linkarr_##name;                          \
   UPB_LINKARR_APPEND(name)                                       \
   __declspec(selectany) type UPB_linkarr_internal_empty_##name[1] = {0}
-// clang-format on
+  // clang-format on
 #define UPB_LINKARR_START(name) (&__start_linkarr_##name)
 #define UPB_LINKARR_STOP(name) (&__stop_linkarr_##name)
 
 #else
 
-// Linker arrays are not supported on this platform.  Make macros no-ops.
+  // Linker arrays are not supported on this platform.  Make macros no-ops.
 #define UPB_LINKARR_APPEND(name)
 #define UPB_LINKARR_DECLARE(name, type)          \
   UPB_STATIC_ASSERT(sizeof("__la_" #name) <= 17, \
@@ -1350,27 +1360,30 @@ void UPB_PRIVATE(_upb_Arena_SwapIn)(struct upb_Arena* des,
 void UPB_PRIVATE(_upb_Arena_SwapOut)(struct upb_Arena* des,
                                      const struct upb_Arena* src);
 
-UPB_INLINE size_t UPB_PRIVATE(_upb_ArenaHas)(const struct upb_Arena* a) {
+UPB_NODISCARD UPB_INLINE size_t
+UPB_PRIVATE(_upb_ArenaHas)(const struct upb_Arena* a) {
   return (size_t)(a->UPB_ONLYBITS(end) - a->UPB_ONLYBITS(ptr));
 }
 
-UPB_INLINE size_t UPB_PRIVATE(_upb_Arena_AllocSpan)(size_t size) {
+UPB_NODISCARD UPB_INLINE size_t UPB_PRIVATE(_upb_Arena_AllocSpan)(size_t size) {
   return UPB_ALIGN_MALLOC(size) + UPB_PRIVATE(kUpb_Asan_GuardSize);
 }
 
-UPB_INLINE bool UPB_PRIVATE(_upb_Arena_WasLastAllocFromCurrentBlock)(
-    const struct upb_Arena* a, void* ptr, size_t size) {
+UPB_NODISCARD UPB_INLINE bool UPB_PRIVATE(
+    _upb_Arena_WasLastAllocFromCurrentBlock)(const struct upb_Arena* a,
+                                             void* ptr, size_t size) {
   return UPB_PRIVATE(upb_Xsan_PtrEq)(
       (char*)ptr + UPB_PRIVATE(_upb_Arena_AllocSpan)(size),
       a->UPB_ONLYBITS(ptr));
 }
 
-UPB_INLINE bool UPB_PRIVATE(_upb_Arena_IsAligned)(const void* ptr) {
+UPB_NODISCARD UPB_INLINE bool UPB_PRIVATE(_upb_Arena_IsAligned)(
+    const void* ptr) {
   return (uintptr_t)ptr % UPB_MALLOC_ALIGN == 0;
 }
 
-UPB_API_INLINE void* _upb_Arena_Malloc_Unchecked(struct upb_Arena* a,
-                                                 size_t size) {
+UPB_NODISCARD UPB_API_INLINE void* _upb_Arena_Malloc_Unchecked(
+    struct upb_Arena* a, size_t size) {
   UPB_PRIVATE(upb_Xsan_AccessReadWrite)(UPB_XSAN(a));
 
   size_t span = UPB_PRIVATE(_upb_Arena_AllocSpan)(size);
@@ -1389,7 +1402,8 @@ UPB_API_INLINE void* _upb_Arena_Malloc_Unchecked(struct upb_Arena* a,
   return UPB_PRIVATE(upb_Xsan_NewUnpoisonedRegion)(UPB_XSAN(a), ret, size);
 }
 
-UPB_API_INLINE void* upb_Arena_Malloc(struct upb_Arena* a, size_t size) {
+UPB_NODISCARD UPB_API_INLINE void* upb_Arena_Malloc(struct upb_Arena* a,
+                                                    size_t size) {
   if (!upb_AllocationCount_IncrementAndCheck()) {
     return NULL;
   }
@@ -1418,8 +1432,9 @@ UPB_API_INLINE void upb_Arena_ShrinkLast(struct upb_Arena* a, void* ptr,
   }
 }
 
-UPB_API_INLINE bool upb_Arena_TryExtend(struct upb_Arena* a, void* ptr,
-                                        size_t oldsize, size_t size) {
+UPB_NODISCARD UPB_API_INLINE bool upb_Arena_TryExtend(struct upb_Arena* a,
+                                                      void* ptr, size_t oldsize,
+                                                      size_t size) {
   UPB_ASSERT(ptr);
   UPB_ASSERT(size > oldsize);
 
@@ -1436,8 +1451,9 @@ UPB_API_INLINE bool upb_Arena_TryExtend(struct upb_Arena* a, void* ptr,
   return false;
 }
 
-UPB_API_INLINE void* upb_Arena_Realloc(struct upb_Arena* a, void* ptr,
-                                       size_t oldsize, size_t size) {
+UPB_NODISCARD UPB_API_INLINE void* upb_Arena_Realloc(struct upb_Arena* a,
+                                                     void* ptr, size_t oldsize,
+                                                     size_t size) {
   UPB_PRIVATE(upb_Xsan_AccessReadWrite)(UPB_XSAN(a));
 
   void* ret;
@@ -4831,9 +4847,9 @@ UPB_API_INLINE void upb_Message_SetBaseField(struct upb_Message* msg,
   (f, UPB_PRIVATE(_upb_Message_MutableDataPtr)(msg, f), val);
 }
 
-UPB_API_INLINE bool upb_Message_SetExtension(struct upb_Message* msg,
-                                             const upb_MiniTableExtension* e,
-                                             const void* val, upb_Arena* a) {
+UPB_NODISCARD UPB_API_INLINE bool upb_Message_SetExtension(
+    struct upb_Message* msg, const upb_MiniTableExtension* e, const void* val,
+    upb_Arena* a) {
   UPB_ASSERT(!upb_Message_IsFrozen(msg));
   UPB_ASSERT(a);
   upb_Extension* ext =
@@ -4844,9 +4860,10 @@ UPB_API_INLINE bool upb_Message_SetExtension(struct upb_Message* msg,
   return true;
 }
 
-UPB_API_INLINE bool UPB_PRIVATE(_upb_Message_SetNonCanonicalExtension)(
-    struct upb_Message* msg, const upb_MiniTableExtension* e, const void* val,
-    upb_Arena* a) {
+UPB_NODISCARD UPB_API_INLINE bool UPB_PRIVATE(
+    _upb_Message_SetNonCanonicalExtension)(struct upb_Message* msg,
+                                           const upb_MiniTableExtension* e,
+                                           const void* val, upb_Arena* a) {
   UPB_ASSERT(!upb_Message_IsFrozen(msg));
   UPB_ASSERT(a);
   upb_Extension* ext =
@@ -4873,7 +4890,7 @@ UPB_INLINE bool UPB_PRIVATE(_upb_Message_SetField)(struct upb_Message* msg,
   }
 }
 
-UPB_API_INLINE const upb_Array* upb_Message_GetArray(
+UPB_NODISCARD UPB_API_INLINE const upb_Array* upb_Message_GetArray(
     const struct upb_Message* msg, const upb_MiniTableField* f) {
   UPB_PRIVATE(_upb_MiniTableField_CheckIsArray)(f);
   upb_Array* ret;
@@ -5038,11 +5055,52 @@ upb_Message_GetOrCreateMutableMessage(struct upb_Message* msg,
     const upb_MiniTable* sub_mini_table = upb_MiniTable_SubMessage(f);
     UPB_ASSERT(sub_mini_table);
     sub_message = _upb_Message_New(sub_mini_table, arena);
+    if (!sub_message) {
+      return NULL;
+    }
     *UPB_PTR_AT(msg, f->UPB_ONLYBITS(offset), struct upb_Message*) =
         sub_message;
     UPB_PRIVATE(_upb_Message_SetPresence)(msg, f);
   }
   return sub_message;
+}
+
+UPB_INLINE bool UPB_PRIVATE(_upb_Message_FieldIsSet)(
+    const struct upb_Message* msg, const upb_MiniTableField* f) {
+  if (f->presence == 0) {
+    // Proto3 presence or map/array.
+    const void* mem = UPB_PTR_AT(msg, f->UPB_PRIVATE(offset), void);
+    switch (UPB_PRIVATE(_upb_MiniTableField_GetRep)(f)) {
+      case kUpb_FieldRep_1Byte: {
+        char ch;
+        memcpy(&ch, mem, 1);
+        return ch != 0;
+      }
+      case kUpb_FieldRep_4Byte: {
+        uint32_t u32;
+        memcpy(&u32, mem, 4);
+        return u32 != 0;
+      }
+      case kUpb_FieldRep_8Byte: {
+        uint64_t u64;
+        memcpy(&u64, mem, 8);
+        return u64 != 0;
+      }
+      case kUpb_FieldRep_StringView: {
+        const upb_StringView* str = (const upb_StringView*)mem;
+        return str->size != 0;
+      }
+      default:
+        UPB_UNREACHABLE();
+    }
+  } else if (UPB_PRIVATE(_upb_MiniTableField_HasHasbit)(f)) {
+    // Proto2 presence: hasbit.
+    return UPB_PRIVATE(_upb_Message_GetHasbit)(msg, f);
+  } else {
+    // Field is in a oneof.
+    return UPB_PRIVATE(_upb_Message_GetOneofCase)(msg, f) ==
+           upb_MiniTableField_Number(f);
+  }
 }
 
 UPB_API_INLINE upb_StringView
@@ -5769,6 +5827,29 @@ UPB_INLINE bool upb_Message_NextExtension(const upb_Message* msg,
 UPB_INLINE bool UPB_PRIVATE(_upb_Message_NextExtensionReverse)(
     const struct upb_Message* msg, const upb_MiniTableExtension** out_e,
     upb_MessageValue* out_v, uintptr_t* iter);
+
+#define kUpb_Message_SerializableFieldBegin 0
+
+// Iterates over all fields in the message that are set/present.
+//
+// NOTE: Unset/NULL repeated fields and maps are not considered set and will be
+// ignored. However, allocated repeated fields and maps (non-NULL pointer) with
+// zero elements are considered set/present and will be returned by this
+// iterator. Callers that need to skip empty collections should check their
+// sizes explicitly.
+//
+// To start iterating, set `iter = kUpb_Message_SerializableFieldBegin`.
+// Returns true if a serializable field was found, sets `*f` to that field,
+// and updates `*iter`. Returns false when iteration is complete.
+//
+//   const upb_MiniTableField* f;
+//   uintptr_t iter = kUpb_Message_SerializableFieldBegin;
+//   while (upb_Message_NextSerializableField(msg, mt, &f, &iter)) {
+//     // ...
+//   }
+UPB_NODISCARD UPB_API bool upb_Message_NextSerializableField(
+    const upb_Message* msg, const upb_MiniTable* mt,
+    const upb_MiniTableField** f, uintptr_t* iter);
 
 // Mark a message and all of its descendents as frozen/immutable.
 UPB_API void upb_Message_Freeze(upb_Message* msg, const upb_MiniTable* m);
@@ -15813,7 +15894,19 @@ const google_protobuf_FeatureSet* upb_ServiceDef_ResolvedFeatures(
 extern "C" {
 #endif
 
-enum { upb_JsonDecode_IgnoreUnknown = 1 };
+enum {
+  upb_JsonDecode_IgnoreUnknown = 1 << 0,
+
+  // Controls whether the decoder performs UTF-8 validation on the JSON input.
+  // Under Enforce, it will fail with a decode error if the provided input is
+  // not well-formed UTF-8.
+  // Callers must not set both upb_JsonDecode_ValidateUtf8_Disable and
+  // upb_JsonDecode_ValidateUtf8_Enforce.
+  // The default behavior (when neither is set) is to warn on invalid UTF-8,
+  // but this will become Enforce in an upcoming breaking change.
+  upb_JsonDecode_ValidateUtf8_Disable = 1 << 1,
+  upb_JsonDecode_ValidateUtf8_Enforce = 2 << 1,
+};
 
 enum {
   kUpb_JsonDecodeResult_Ok = 0,
@@ -16608,6 +16701,24 @@ UPB_INLINE bool upb_Message_NextUnknown2(const struct upb_Message* msg,
   return false;
 }
 
+// Iterates over unknown fields in wire format (upb_StringView).
+// If an unknown field is a non-canonical extension, it is automatically
+// encoded into wire format into `*arena` using default encode options (0).
+//
+// `arena` is a pointer to `upb_Arena*`. If `*arena` is NULL when a
+// non-canonical extension is encountered, an arena will be lazily created via
+// `upb_Arena_New()`. The caller is responsible for freeing `*arena` (if
+// non-NULL) using `upb_Arena_Free(*arena)` after iteration completes.
+//
+// NOTE: Automatically encoding non-canonical extensions into wire format may
+// incur a performance penalty if non-canonical extensions are present, as
+// encoding requires allocating temporary buffers in `*arena`. Use
+// `upb_Message_NextUnknown2` if you want to inspect non-canonical extensions
+// directly without encoding them.
+UPB_NODISCARD bool upb_Message_NextWireFormatUnknown(
+    const struct upb_Message* msg, struct upb_Arena** arena,
+    upb_StringView* data, uintptr_t* iter);
+
 typedef enum {
   kUpb_FindUnknown_Ok,
   kUpb_FindUnknown_NotPresent,
@@ -16712,6 +16823,33 @@ UPB_NODISCARD upb_Message_DeleteUnknownStatus upb_Message_DeleteUnknown2(
 
 
 #endif /* UPB_MESSAGE_UNKNOWN_FIELDS_H_ */
+
+#ifndef UPB_WIRE_ENCODE_EXTENSION_H_
+#define UPB_WIRE_ENCODE_EXTENSION_H_
+
+
+// Must be last.
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+struct upb_Extension;
+
+// Encodes an extension (`upb_Extension*`) to bytes.
+//
+// This can be used to encode an extension into the provided arena.
+// Returns `kUpb_EncodeStatus_Ok` on success.
+UPB_NODISCARD upb_EncodeStatus
+upb_EncodeExtension(const struct upb_Extension* ext, struct upb_Arena* arena,
+                    upb_StringView* view, int encode_options);
+
+#ifdef __cplusplus
+} /* extern "C" */
+#endif
+
+
+#endif /* UPB_WIRE_ENCODE_EXTENSION_H_ */
 
 #ifndef UPB_WIRE_EPS_COPY_INPUT_STREAM_H_
 #define UPB_WIRE_EPS_COPY_INPUT_STREAM_H_
@@ -17601,7 +17739,7 @@ typedef enum {
   kUpb_UnknownCompareResult_MaxDepthExceeded = 3,
 } upb_UnknownCompareResult;
 
-upb_UnknownCompareResult UPB_PRIVATE(_upb_Message_UnknownFieldsAreEqual)(
+upb_UnknownCompareResult _upb_Message_UnknownFieldsAreEqual(
     const upb_Message* msg1, const upb_Message* msg2, int max_depth);
 
 #ifdef __cplusplus
@@ -19413,33 +19551,6 @@ void _upb_Decoder_AddEnumValueToUnknown(upb_Decoder* d, upb_Message* msg,
 
 
 #endif /* UPB_WIRE_INTERNAL_DECODER_H_ */
-
-#ifndef UPB_WIRE_ENCODE_EXTENSION_H_
-#define UPB_WIRE_ENCODE_EXTENSION_H_
-
-
-// Must be last.
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-struct upb_Extension;
-
-// Encodes an extension (`upb_Extension*`) to bytes.
-//
-// This can be used to encode an extension into the provided arena.
-// Returns `kUpb_EncodeStatus_Ok` on success.
-UPB_NODISCARD upb_EncodeStatus
-upb_EncodeExtension(const struct upb_Extension* ext, struct upb_Arena* arena,
-                    upb_StringView* view, int encode_options);
-
-#ifdef __cplusplus
-} /* extern "C" */
-#endif
-
-
-#endif /* UPB_WIRE_ENCODE_EXTENSION_H_ */
 #ifndef GOOGLE_UPB_UPB_WIRE_WRITER_H__
 #define GOOGLE_UPB_UPB_WIRE_WRITER_H__
 
@@ -19548,3 +19659,5 @@ UPB_PRIVATE(upb_WireWriter_VarintUnusedSizeFromLeadingZeros64)(uint64_t clz) {
 #undef _UPB_STRINGIFY
 #undef _UPB_STRINGIFY2
 #undef UPB_CONSTRUCTOR
+#undef UPB_RETAIN
+#undef UPB_HIDDEN
