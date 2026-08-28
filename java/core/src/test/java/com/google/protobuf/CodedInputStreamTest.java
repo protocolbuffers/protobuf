@@ -2086,4 +2086,81 @@ public class CodedInputStreamTest {
       return len;
     }
   }
+
+  @Test
+  public void testStreamDecoderTryRefillBufferIterativeNoStackOverflow() throws Exception {
+    int n = 50000;
+    byte[] stringTagAndLength;
+    {
+      ByteArrayOutputStream baos = new ByteArrayOutputStream();
+      CodedOutputStream cos = CodedOutputStream.newInstance(baos);
+      cos.writeTag(1, WireFormat.WIRETYPE_LENGTH_DELIMITED);
+      cos.writeRawVarint32(n);
+      cos.flush();
+      stringTagAndLength = baos.toByteArray();
+    }
+
+    ByteArrayOutputStream unknownFieldBaos = new ByteArrayOutputStream();
+    CodedOutputStream unknownCos = CodedOutputStream.newInstance(unknownFieldBaos);
+    unknownCos.writeTag(2, WireFormat.WIRETYPE_LENGTH_DELIMITED);
+    unknownCos.writeRawVarint32(n);
+    unknownCos.flush();
+    int prefixLen = unknownFieldBaos.toByteArray().length;
+    int padLength = n - stringTagAndLength.length - prefixLen;
+
+    unknownFieldBaos.reset();
+    unknownCos = CodedOutputStream.newInstance(unknownFieldBaos);
+    unknownCos.writeTag(2, WireFormat.WIRETYPE_LENGTH_DELIMITED);
+    unknownCos.writeRawVarint32(padLength);
+    unknownCos.writeRawBytes(new byte[padLength]);
+    unknownCos.writeRawBytes(stringTagAndLength);
+    unknownCos.flush();
+    byte[] bulkBytes = unknownFieldBaos.toByteArray();
+    assertThat(bulkBytes.length).isEqualTo(n);
+
+    byte[] stringBytes = new byte[n];
+    Arrays.fill(stringBytes, (byte) 'x');
+
+    InputStream dripStream =
+        new InputStream() {
+          private int bulkIndex = 0;
+          private int stringIndex = 0;
+
+          @Override
+          public int read() {
+            if (bulkIndex < bulkBytes.length) {
+              return bulkBytes[bulkIndex++] & 0xFF;
+            }
+            if (stringIndex < stringBytes.length) {
+              return stringBytes[stringIndex++] & 0xFF;
+            }
+            return -1;
+          }
+
+          @Override
+          public int read(byte[] b, int off, int len) {
+            if (bulkIndex < bulkBytes.length) {
+              int toRead = Math.min(len, bulkBytes.length - bulkIndex);
+              System.arraycopy(bulkBytes, bulkIndex, b, off, toRead);
+              bulkIndex += toRead;
+              return toRead;
+            }
+            if (stringIndex < stringBytes.length) {
+              b[off] = stringBytes[stringIndex++];
+              return 1;
+            }
+            return -1;
+          }
+        };
+
+    CodedInputStream cis = CodedInputStream.newInstance(dripStream, n);
+    int tag2 = cis.readTag();
+    assertThat(WireFormat.getTagFieldNumber(tag2)).isEqualTo(2);
+    cis.skipField(tag2);
+
+    int tag1 = cis.readTag();
+    assertThat(WireFormat.getTagFieldNumber(tag1)).isEqualTo(1);
+    String s = cis.readString();
+    assertThat(s.length()).isEqualTo(n);
+  }
 }

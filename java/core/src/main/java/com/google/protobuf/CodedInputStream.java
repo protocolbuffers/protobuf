@@ -2312,30 +2312,32 @@ public abstract class CodedInputStream {
       }
 
       // Here we should refill the buffer as many bytes as possible.
-      int bytesRead =
-          read(
-              input,
-              buffer,
-              bufferSize,
-              Math.min(
-                  //  the size of allocated but unused bytes in the buffer
-                  buffer.length - bufferSize,
-                  //  do not exceed the total bytes limit
-                  sizeLimit - totalBytesRetired - bufferSize));
-      if (bytesRead == 0 || bytesRead < -1 || bytesRead > buffer.length) {
-        throw new IllegalStateException(
-            input.getClass()
-                + "#read(byte[]) returned invalid result: "
-                + bytesRead
-                + "\nThe InputStream implementation is buggy.");
-      }
-      if (bytesRead > 0) {
+      while (bufferSize < n) {
+        int bytesRead =
+            read(
+                input,
+                buffer,
+                bufferSize,
+                Math.min(
+                    //  the size of allocated but unused bytes in the buffer
+                    buffer.length - bufferSize,
+                    //  do not exceed the total bytes limit
+                    sizeLimit - totalBytesRetired - bufferSize));
+        if (bytesRead == 0 || bytesRead < -1 || bytesRead > buffer.length) {
+          throw new IllegalStateException(
+              input.getClass()
+                  + "#read(byte[]) returned invalid result: "
+                  + bytesRead
+                  + "\nThe InputStream implementation is buggy.");
+        }
+        if (bytesRead <= 0) {
+          return false;
+        }
         bufferSize += bytesRead;
         recomputeBufferSizeAfterLimit();
-        return (bufferSize >= n) || tryRefillBuffer(n);
       }
 
-      return false;
+      return true;
     }
 
     @Override
