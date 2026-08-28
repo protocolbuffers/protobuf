@@ -379,166 +379,46 @@ inline void* DynamicMessageGlobalsToDefaultInstance(void* globals) {
   return &(
       reinterpret_cast<DynamicMessageGlobalsInternalType*>(globals)->_default);
 }
-}  // namespace
 
-struct DynamicMessageFactory::TypeInfo {
-  int has_bits_offset;
-  int oneof_case_offset;
-  int extensions_offset;
-
-  // Not owned by the TypeInfo.
-  DynamicMessageFactory* factory;  // The factory that created this object.
-  const DescriptorPool* pool;      // The factory's DescriptorPool.
-
-  // Warning:  The order in which the following pointers are defined is
-  //   important (the prototype must be deleted *before* the offsets).
-  std::unique_ptr<uint32_t[]> offsets;
-  std::unique_ptr<uint32_t[]> has_bits_indices;
-
-  DynamicMessageGlobalsInternalType* globals = nullptr;
-  internal::ReflectionData reflection_data = {
-      &internal::kDescriptorMethods,
-      nullptr,  // descriptor_table
-      nullptr,  // get_metadata_tracker
-  };
-
-  TypeInfo() = default;
-
-  const Message* GetPrototype() const {
-    return static_cast<const Message*>(&globals->_default);
+// Returns whether a field requires runtime constructor initialization in
+// DynamicMessage::SharedCtor.
+//
+// DynamicMessage::NewImpl memsets the entire message buffer to 0 before calling
+// SharedCtor. Therefore, singular primitive scalars (int, float, bool, enum)
+// with default value 0 and singular submessages (which default to nullptr) are
+// already valid and correctly initialized.
+//
+// Only repeated fields (which need
+// RepeatedField/RepeatedPtrField/DynamicMapField construction), string/cord
+// types, lazy fields, and singular primitives with non-zero defaults require
+// explicit constructor invocation.
+bool needs_init(const FieldDescriptor* field) {
+  if (InRealOneof(field)) {
+    return false;
   }
-
-  ~TypeInfo() {
-    const auto& class_data = globals->class_data;
-    DynamicMessage::DestroyImpl(const_cast<Message&>(*GetPrototype()));
-    // Deleting globals means deleting class_data. Access class_data beforehand.
-    delete class_data.reflection();
-    auto* type = class_data.descriptor();
-    internal::SizedDelete(
-        const_cast<MessageGlobalsBase*>(
-            MessageGlobalsBase::FromDefaultInstance(GetPrototype())),
-        MsgSizeToGlobalsSize(class_data.message_creator.allocation_size()));
-
-    // Scribble the payload to prevent unsanitized opt builds from silently
-    // allowing use-after-free bugs where the factory is destroyed but the
-    // DynamicMessage instances are still used.
-    // This is a common bug with DynamicMessageFactory.
-    // NOTE: This must happen after deleting the prototype.
-    if (offsets != nullptr) {
-      std::fill_n(offsets.get(), type->field_count(), 0xCDCDCDCDu);
-    }
-    if (has_bits_indices != nullptr) {
-      std::fill_n(has_bits_indices.get(), type->field_count(), 0xCDCDCDCDu);
-    }
+  if (field->is_repeated()) {
+    return true;
   }
-};
-
-DynamicMessage::DynamicMessage(const DynamicMessageFactory::TypeInfo* type_info,
-                               Arena* arena)
-    : Message(arena, &type_info->globals->class_data), type_info_(type_info) {
-  SharedCtor(true);
-}
-
-DynamicMessage::DynamicMessage(DynamicMessageFactory::TypeInfo* type_info,
-                               bool lock_factory)
-    : Message(&type_info->globals->class_data), type_info_(type_info) {
-  // The prototype in type_info has to be set before creating the prototype
-  // instance on memory. e.g., message Foo { map<int32_t, Foo> a = 1; }. When
-  // creating prototype for Foo, prototype of the map entry will also be
-  // created, which needs the address of the prototype of Foo (the value in
-  // map). To break the cyclic dependency, we have to assign the address of
-  // prototype into type_info first.
-  SharedCtor(lock_factory);
-}
-
-inline uint32_t DynamicMessage::FieldOffset(int i) const {
-  return type_info_->offsets[i] & ~internal::kAllOffsetTags;
-}
-inline internal::InternalMetadataOffset
-DynamicMessage::FieldInternalMetadataOffset(int i) const {
-  return internal::InternalMetadataOffset::BuildFromDynamicOffset<
-      DynamicMessage>(FieldOffset(i));
-}
-template <typename T>
-inline T* DynamicMessage::MutableRaw(int i) {
-  return reinterpret_cast<T*>(OffsetToPointer(FieldOffset(i)));
-}
-template <typename T>
-inline const T& DynamicMessage::GetRaw(int i) const {
-  return *reinterpret_cast<const T*>(OffsetToPointer(FieldOffset(i)));
-}
-inline void* DynamicMessage::MutableExtensionsRaw() {
-  return OffsetToPointer(type_info_->extensions_offset);
-}
-
-inline void* DynamicMessage::MutableOneofCaseRaw(int i) {
-  return OffsetToPointer(type_info_->oneof_case_offset + sizeof(uint32_t) * i);
-}
-inline void* DynamicMessage::MutableOneofFieldRaw(const FieldDescriptor* f) {
-  return OffsetToPointer(
-      type_info_->offsets[type_info_->globals->class_data.descriptor()
-                              ->field_count() +
-                          f->containing_oneof()->index()]);
-}
-
-void DynamicMessage::SharedCtor(bool lock_factory) {
-  // We need to call constructors for various fields manually and set
-  // default values where appropriate.  We use placement new to call
-  // constructors.  If you haven't heard of placement new, I suggest Googling
-  // it now.  We use placement new even for primitive types that don't have
-  // constructors for consistency.  (In theory, placement new should be used
-  // any time you are trying to convert untyped memory to typed memory, though
-  // in practice that's not strictly necessary for types that don't have a
-  // constructor.)
-
-  const Descriptor* descriptor = type_info_->globals->class_data.descriptor();
-  Arena* arena = GetArena();
-
-  // Initialize oneof cases.
-  int oneof_count = 0;
-  for (int i = 0; i < descriptor->real_oneof_decl_count(); ++i) {
-    new (MutableOneofCaseRaw(oneof_count++)) uint32_t{0};
-  }
-
-  if (type_info_->extensions_offset != -1) {
-    new (MutableExtensionsRaw()) ExtensionSet();
-  }
-  for (int i = 0; i < descriptor->field_count(); i++) {
-    const FieldDescriptor* field = descriptor->field(i);
-    void* field_ptr = MutableRaw(i);
-    if (InRealOneof(field)) {
-      continue;
-    }
-
-    switch (field->cpp_type()) {
-#define HANDLE_TYPE(CPPTYPE, TYPE)                                         \
-  case FieldDescriptor::CPPTYPE_##CPPTYPE:                                 \
-    if (!field->is_repeated()) {                                           \
-      new (field_ptr) TYPE(field->default_value_##TYPE());                 \
-    } else {                                                               \
-      new (field_ptr) RepeatedField<TYPE>(FieldInternalMetadataOffset(i)); \
-    }                                                                      \
-    break;
-
-      HANDLE_TYPE(INT32, int32_t);
-      HANDLE_TYPE(INT64, int64_t);
-      HANDLE_TYPE(UINT32, uint32_t);
-      HANDLE_TYPE(UINT64, uint64_t);
-      HANDLE_TYPE(DOUBLE, double);
-      HANDLE_TYPE(FLOAT, float);
-      HANDLE_TYPE(BOOL, bool);
-#undef HANDLE_TYPE
-
-      case FieldDescriptor::CPPTYPE_ENUM:
-        if (!field->is_repeated()) {
-          new (field_ptr) int{field->default_value_enum()->number()};
-        } else {
-          new (field_ptr) RepeatedField<int>(FieldInternalMetadataOffset(i));
-        }
-        break;
-
-      case FieldDescriptor::CPPTYPE_STRING:
-        switch (field->cpp_string_type()) {
+  switch (field->cpp_type()) {
+    case FieldDescriptor::CPPTYPE_INT32:
+      return field->default_value_int32() != 0;
+    case FieldDescriptor::CPPTYPE_INT64:
+      return field->default_value_int64() != 0;
+    case FieldDescriptor::CPPTYPE_UINT32:
+      return field->default_value_uint32() != 0;
+    case FieldDescriptor::CPPTYPE_UINT64:
+      return field->default_value_uint64() != 0;
+    case FieldDescriptor::CPPTYPE_FLOAT:
+      return field->default_value_float() != 0.0f;
+    case FieldDescriptor::CPPTYPE_DOUBLE:
+      return field->default_value_double() != 0.0;
+    case FieldDescriptor::CPPTYPE_BOOL:
+      return field->default_value_bool() != false;
+    case FieldDescriptor::CPPTYPE_ENUM:
+      return field->default_value_enum()->number() != 0;
+    case FieldDescriptor::CPPTYPE_STRING:
+      return true;
+    case FieldDescriptor::CPPTYPE_MESSAGE:
           case FieldDescriptor::CppStringType::kCord:
             if (!field->is_repeated()) {
               if (field->has_default_value()) {
@@ -591,7 +471,6 @@ void DynamicMessage::SharedCtor(bool lock_factory) {
 
       case FieldDescriptor::CPPTYPE_MESSAGE: {
         if (!field->is_repeated()) {
-          new (field_ptr) Message*(nullptr);
         } else {
           if (IsMapFieldInApi(field)) {
             const auto* sub =
@@ -977,6 +856,11 @@ const Message* DynamicMessageFactory::GetPrototypeNoLock(
     }
 
     size += kMaxOneofUnionSize;
+  }
+
+  type_info->field_needs_init = std::make_unique<bool[]>(type->field_count());
+  for (int i = 0; i < type->field_count(); i++) {
+    type_info->field_needs_init[i] = needs_init(type->field(i));
   }
 
   // Construct the reflection object.
