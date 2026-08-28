@@ -12,6 +12,7 @@
 #include "absl/strings/escaping.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
+#include "third_party/gloop/util/status/status_macros.h"
 #include "google/protobuf/java_features.pb.h"
 #include "google/protobuf/cpp_features.pb.h"
 #include "editions/defaults_test_embedded.h"
@@ -22,7 +23,6 @@
 #include "google/protobuf/message.h"
 #include "google/protobuf/test_textproto.h"
 #include "google/protobuf/unittest_features.pb.h"
-#include "google/protobuf/stubs/status_macros.h"
 
 
 // Must be included last.
