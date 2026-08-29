@@ -1626,4 +1626,50 @@ public class MapTest {
     builder.clearField(int2MessageMapField);
     assertThat(mapEntries).hasSize(1);
   }
+
+  @Test
+  public void testDuplicateMapKey_dynamicMessageMatchesGeneratedMessage() throws Exception {
+    // Hand-built wire bytes: string_to_int32_field (field 6) carrying the key "k" twice, with
+    // value 1 and then value 2. These cannot be produced through a builder, because a builder
+    // already applies map semantics; only the wire format can express a repeated key.
+    //   32 05 0a 01 6b 10 01   -> {"k": 1}
+    //   32 05 0a 01 6b 10 02   -> {"k": 2}
+    ByteString wire =
+        ByteString.copyFrom(
+            new byte[] {
+              0x32, 0x05, 0x0a, 0x01, 0x6b, 0x10, 0x01,
+              0x32, 0x05, 0x0a, 0x01, 0x6b, 0x10, 0x02
+            });
+
+    TestMap generated = TestMap.parseFrom(wire);
+    DynamicMessage dynamic = DynamicMessage.parseFrom(TestMap.getDescriptor(), wire);
+    FieldDescriptor mapField = TestMap.getDescriptor().findFieldByName("string_to_int32_field");
+
+    // The language guide requires the last value for a repeated key to win.
+    assertThat(generated.getStringToInt32FieldMap()).containsExactly("k", 2);
+    assertThat(dynamic.getRepeatedFieldCount(mapField)).isEqualTo(1);
+
+    // A DynamicMessage and a generated message must not disagree about identical wire input.
+    assertThat(dynamic.toByteString()).isEqualTo(generated.toByteString());
+  }
+
+  @Test
+  public void testDuplicateMapKey_dynamicMessagePreservesDistinctKeys() throws Exception {
+    // Same shape, but the two entries use different keys, so both must survive.
+    ByteString wire =
+        ByteString.copyFrom(
+            new byte[] {
+              0x32, 0x05, 0x0a, 0x01, 0x61, 0x10, 0x01,
+              0x32, 0x05, 0x0a, 0x01, 0x62, 0x10, 0x02
+            });
+
+    TestMap generated = TestMap.parseFrom(wire);
+    DynamicMessage dynamic = DynamicMessage.parseFrom(TestMap.getDescriptor(), wire);
+    FieldDescriptor mapField = TestMap.getDescriptor().findFieldByName("string_to_int32_field");
+
+    assertThat(generated.getStringToInt32FieldMap()).containsExactly("a", 1, "b", 2);
+    assertThat(dynamic.getRepeatedFieldCount(mapField)).isEqualTo(2);
+    assertThat(dynamic.toByteString()).isEqualTo(generated.toByteString());
+  }
+
 }
