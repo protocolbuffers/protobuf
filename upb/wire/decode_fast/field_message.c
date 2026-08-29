@@ -75,19 +75,18 @@ void upb_DecodeFast_Message(upb_Decoder* d, const char** ptr, upb_Message* msg,
       table->UPB_ONLYBITS(fields), submsg_ofs, upb_MiniTableSubInternal);
   const upb_MiniTable* subtablep = sub->UPB_PRIVATE(submsg);
 
+  uint16_t expected = upb_DecodeFastData_GetExpectedTag(*data);
+  uint16_t actual = upb_DecodeFastData2_GetOriginalTag(data2);
+  if (UPB_UNLIKELY(!upb_DecodeFast_TagMatches(expected, actual, tagsize))) {
+    UPB_DECODEFAST_EXIT(kUpb_DecodeFastNext_FallbackMismatchedSlot, ret);
+    return;
+  }
+
   upb_DecodeFast_MessageContext ctx = {subtablep,
                                        card == kUpb_DecodeFast_Repeated};
 
   if (subtablep == NULL) {
-    // Unlinked messages are treated as unknown fields. Go straight to unknown
-    // decoder if the tag matches.
-    uint16_t expected = upb_DecodeFastData_GetExpectedTag(*data);
-    uint16_t actual = upb_DecodeFastData2_GetOriginalTag(data2);
-    if (UPB_UNLIKELY(!upb_DecodeFast_TagMatches(expected, actual, tagsize))) {
-      UPB_DECODEFAST_EXIT(kUpb_DecodeFastNext_FallbackMismatchedSlot, ret);
-      return;
-    }
-
+    // Unlinked messages are treated as unknown fields.
 #ifndef NDEBUG
     uint16_t case_offset = upb_DecodeFastData_GetCaseOffset(*data);
     if (case_offset != 0) {
