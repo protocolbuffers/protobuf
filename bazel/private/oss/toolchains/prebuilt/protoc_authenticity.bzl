@@ -34,7 +34,7 @@ def _protoc_authenticity_impl(ctx):
           It is considered undefined behavior that is expected to break in the future even if it appears to work today.'
           echo '{suppression_note}'
           echo 'Expected: libprotoc {RELEASE_VERSION}'
-          echo "Actual:   $version_line"
+          echo "Actual: $version_line"
           exit {mismatch_exit_code}
         }} >&2
         """.format(
