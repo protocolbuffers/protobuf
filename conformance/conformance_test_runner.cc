@@ -30,11 +30,8 @@
 //   3. testee sends 4-byte length M (little endian)
 //   4. testee sends M bytes representing a ConformanceResponse proto
 
-#include <signal.h>
 #include <stdio.h>
 #include <sys/types.h>
-#include <sys/wait.h>
-#include <unistd.h>
 
 #include <algorithm>
 #include <cctype>

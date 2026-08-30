@@ -8,7 +8,12 @@
 #include <errno.h>
 #include <stdarg.h>
 #include <stdlib.h>
+
+#ifdef _WIN32
+#include <fcntl.h>
+#else
 #include <unistd.h>
+#endif
 
 #include <cstddef>
 #include <cstdint>
@@ -46,12 +51,22 @@
 #include "google/protobuf/util/type_resolver_util.h"
 #include "google/protobuf/stubs/status_macros.h"
 
+#ifdef _WIN32
+#include "google/protobuf/io/io_win32.h"
+#endif
+
 // Must be included last.
 #include "google/protobuf/port_def.inc"
 
 namespace google {
 namespace protobuf {
 namespace {
+#ifdef _WIN32
+// Define the posix I/O functions we use for Windows similar to protoc.
+using google::protobuf::io::win32::read;
+using google::protobuf::io::win32::write;
+#endif
+
 using ::conformance::ConformanceRequest;
 using ::conformance::ConformanceResponse;
 using ::google::protobuf::util::JsonParseOptions;
@@ -70,7 +85,7 @@ using TestAllTypesProto3Editions =
 
 absl::Status ReadFd(int fd, char* buf, size_t len) {
   while (len > 0) {
-    ssize_t bytes_read = read(fd, buf, len);
+    int bytes_read = read(fd, buf, len);
 
     if (bytes_read == 0) {
       return absl::DataLossError("unexpected EOF");
@@ -264,6 +279,11 @@ absl::StatusOr<bool> Harness::ServeConformanceRequest() {
 }  // namespace google
 
 int main() {
+#ifdef _WIN32
+  // Windows streams default to text mode but we need binary.
+  google::protobuf::io::win32::setmode(STDIN_FILENO, _O_BINARY);
+  google::protobuf::io::win32::setmode(STDOUT_FILENO, _O_BINARY);
+#endif
   google::protobuf::Harness harness;
   int total_runs = 0;
   while (true) {

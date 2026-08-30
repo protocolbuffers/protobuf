@@ -48,7 +48,11 @@ class ForkPipeRunner : public ConformanceTestRunner {
 
   int write_fd_;
   int read_fd_;
+#ifdef _WIN32
+  intptr_t child_pid_;
+#else
   pid_t child_pid_;
+#endif
   std::string executable_;
   const std::vector<std::string> executable_args_;
   std::string current_test_name_;

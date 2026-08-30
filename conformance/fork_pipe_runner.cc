@@ -36,10 +36,22 @@
 #include <signal.h>
 #include <stdio.h>
 #include <sys/types.h>
+
+#ifdef _WIN32
+#ifndef WIN32_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN
+#endif
+#include <windows.h>
+
+#include <fcntl.h>
+#include <io.h>
+#else  // _WIN32
 #include <sys/wait.h>
 #include <unistd.h>
+#endif  // !_WIN32
 
 #include <chrono>  // NOLINT(build/c++11)
+#include <cstddef>
 #include <cstdint>
 #include <cstdio>
 #include <cstdlib>
@@ -55,6 +67,10 @@
 #include "conformance/conformance.pb.h"
 #include "google/protobuf/endian.h"
 
+#ifdef _WIN32
+#include "google/protobuf/io/io_win32.h"
+#endif
+
 #define STRINGIFY(x) #x
 #define TOSTRING(x) STRINGIFY(x)
 #define CHECK_SYSCALL(call)                            \
@@ -65,6 +81,55 @@
 
 namespace google {
 namespace protobuf {
+
+#ifdef _WIN32
+// Define the posix I/O functions we use for Windows similar to protoc.
+using google::protobuf::io::win32::read;
+using google::protobuf::io::win32::write;
+
+namespace {
+// Exit code assigned via TerminateProcess() when the child times out, so the
+// reap logic can distinguish a timeout from a crash.
+constexpr DWORD kChildTimeoutExitCode = 0xC0FFEE;
+
+void CloseHandleOrDie(HANDLE handle) {
+  if (!CloseHandle(handle)) {
+    ABSL_LOG(FATAL) << "CloseHandle: error " << GetLastError();
+  }
+}
+
+// Quotes a command-line argument so the child process parses it back to
+// exactly `arg`. Unlike protoc, conformance binaries will often need arguments
+// (e.g., a python script invocation) so it is important to quote here.
+// https://learn.microsoft.com/en-us/cpp/c-language/parsing-c-command-line-arguments
+std::string QuoteArg(const std::string &arg) {
+  if (!arg.empty() && arg.find_first_of(" \t\n\v\"") == std::string::npos) {
+    return arg;
+  }
+  std::string result = "\"";
+  size_t num_backslashes = 0;
+  for (char c : arg) {
+    if (c == '\\') {
+      ++num_backslashes;
+      continue;
+    }
+    if (c == '"') {
+      // Escape the backslash run and the quote itself.
+      result.append(2 * num_backslashes + 1, '\\');
+    } else {
+      // Backslashes not followed by a quote are literal.
+      result.append(num_backslashes, '\\');
+    }
+    num_backslashes = 0;
+    result.push_back(c);
+  }
+  // Double a trailing backslash run so it does not escape the closing quote.
+  result.append(2 * num_backslashes, '\\');
+  result.push_back('"');
+  return result;
+}
+}  // namespace
+#endif  // _WIN32
 
 std::string ForkPipeRunner::RunTest(absl::string_view test_name,
                                     absl::string_view request) {
@@ -84,11 +149,28 @@ std::string ForkPipeRunner::RunTest(absl::string_view test_name,
     // We failed to read from the child, assume a crash and try to reap.
     ABSL_LOG(INFO) << "Trying to reap child, pid=" << child_pid_;
 
+    std::string error_msg;
+    conformance::ConformanceResponse response_obj;
+#ifdef _WIN32
+    HANDLE child_handle = reinterpret_cast<HANDLE>(child_pid_);
+    DWORD exit_code = 0;
+    if (WaitForSingleObject(child_handle, INFINITE) != WAIT_OBJECT_0 ||
+        !GetExitCodeProcess(child_handle, &exit_code)) {
+      absl::StrAppendFormat(&error_msg, "failed to wait for child: error %u",
+                            GetLastError());
+      response_obj.set_runtime_error(error_msg);
+    } else if (exit_code == kChildTimeoutExitCode) {
+      absl::StrAppendFormat(&error_msg, "child timed out and was terminated");
+      response_obj.set_timeout_error(error_msg);
+    } else {
+      absl::StrAppendFormat(&error_msg, "child exited, status=%u", exit_code);
+      response_obj.set_runtime_error(error_msg);
+    }
+    CloseHandleOrDie(child_handle);
+#else  // _WIN32
     int status = 0;
     waitpid(child_pid_, &status, WEXITED);
 
-    std::string error_msg;
-    conformance::ConformanceResponse response_obj;
     if (WIFEXITED(status)) {
       if (WEXITSTATUS(status) == 0) {
         absl::StrAppendFormat(&error_msg,
@@ -104,6 +186,7 @@ std::string ForkPipeRunner::RunTest(absl::string_view test_name,
       absl::StrAppendFormat(&error_msg, "child killed by signal %d",
                             WTERMSIG(status));
     }
+#endif  // !_WIN32
     ABSL_LOG(INFO) << error_msg;
     child_pid_ = -1;
 
@@ -118,13 +201,11 @@ std::string ForkPipeRunner::RunTest(absl::string_view test_name,
   return response;
 }
 
-// TODO: make this work on Windows, instead of using these
-// UNIX-specific APIs.
-//
-// There is a platform-agnostic API in
+// Note: there is a platform-agnostic subprocess API in
 //    src/google/protobuf/compiler/subprocess.h
+// that we deliberately do not use here.
 //
-// However that API only supports sending a single message to the subprocess.
+// That API only supports sending a single message to the subprocess.
 // We really want to be able to send messages and receive responses one at a
 // time:
 //
@@ -136,6 +217,97 @@ std::string ForkPipeRunner::RunTest(absl::string_view test_name,
 //    big message would take away our visibility about which test(s) caused a
 //    crash or other fatal error.  It would also give us only a single failure
 //    instead of all of them.
+#ifdef _WIN32
+void ForkPipeRunner::SpawnTestProgram() {
+  // Create the pipes.
+  HANDLE stdin_pipe_read;
+  HANDLE stdin_pipe_write;
+  HANDLE stdout_pipe_read;
+  HANDLE stdout_pipe_write;
+
+  if (!CreatePipe(&stdin_pipe_read, &stdin_pipe_write, nullptr, 0)) {
+    ABSL_LOG(FATAL) << "CreatePipe: error " << GetLastError();
+  }
+  if (!CreatePipe(&stdout_pipe_read, &stdout_pipe_write, nullptr, 0)) {
+    ABSL_LOG(FATAL) << "CreatePipe: error " << GetLastError();
+  }
+
+  // Make child side of the pipes inheritable.
+  if (!SetHandleInformation(stdin_pipe_read, HANDLE_FLAG_INHERIT,
+                            HANDLE_FLAG_INHERIT)) {
+    ABSL_LOG(FATAL) << "SetHandleInformation: error " << GetLastError();
+  }
+  if (!SetHandleInformation(stdout_pipe_write, HANDLE_FLAG_INHERIT,
+                            HANDLE_FLAG_INHERIT)) {
+    ABSL_LOG(FATAL) << "SetHandleInformation: error " << GetLastError();
+  }
+
+  // Setup STARTUPINFO to redirect handles.
+  STARTUPINFOW startup_info;
+  ZeroMemory(&startup_info, sizeof(startup_info));
+  startup_info.cb = sizeof(startup_info);
+  startup_info.dwFlags = STARTF_USESTDHANDLES;
+  startup_info.hStdInput = stdin_pipe_read;
+  startup_info.hStdOutput = stdout_pipe_write;
+  startup_info.hStdError = GetStdHandle(STD_ERROR_HANDLE);
+
+  if (startup_info.hStdError == INVALID_HANDLE_VALUE) {
+    ABSL_LOG(FATAL) << "GetStdHandle: error " << GetLastError();
+  }
+
+  // get wide string version of program as the path may contain non-ascii characters
+  std::wstring wprogram;
+  if (!io::win32::strings::utf8_to_wcs(executable_.c_str(), &wprogram)) {
+    ABSL_LOG(FATAL) << "utf8_to_wcs: error " << GetLastError();
+  }
+
+  // Join program and args into a single command-line string, as CreateProcessW
+  // expects it.
+  std::string command_line = QuoteArg(executable_);
+  for (const std::string &arg : executable_args_) {
+    command_line += ' ';
+    command_line += QuoteArg(arg);
+  }
+  ABSL_LOG(INFO) << command_line;
+
+  // get wide string version of command line as the path may contain non-ascii characters
+  std::wstring wcommand_line;
+  if (!io::win32::strings::utf8_to_wcs(command_line.c_str(), &wcommand_line)) {
+    ABSL_LOG(FATAL) << "utf8_to_wcs: error " << GetLastError();
+  }
+
+  PROCESS_INFORMATION process_info;
+
+  if (CreateProcessW(wprogram.c_str(),
+                     wcommand_line.data(),
+                     nullptr,  // process security attributes
+                     nullptr,  // thread security attributes
+                     TRUE,     // inherit handles?
+                     0,        // obscure creation flags
+                     nullptr,  // environment (inherit from parent)
+                     nullptr,  // current directory (inherit from parent)
+                     &startup_info, &process_info)) {
+    child_pid_ = reinterpret_cast<intptr_t>(process_info.hProcess);
+    CloseHandleOrDie(process_info.hThread);
+  } else {
+    ABSL_LOG(FATAL) << "CreateProcess(" << executable_ << "): error "
+                    << GetLastError();
+  }
+
+  CloseHandleOrDie(stdin_pipe_read);
+  CloseHandleOrDie(stdout_pipe_write);
+
+  // Wrap our ends of the pipes in file descriptors so the I/O code below is
+  // shared with the POSIX implementation.
+  write_fd_ = _open_osfhandle(reinterpret_cast<intptr_t>(stdin_pipe_write),
+                              _O_BINARY | _O_NOINHERIT);
+  read_fd_ = _open_osfhandle(reinterpret_cast<intptr_t>(stdout_pipe_read),
+                             _O_RDONLY | _O_BINARY | _O_NOINHERIT);
+  if (write_fd_ < 0 || read_fd_ < 0) {
+    ABSL_LOG(FATAL) << "_open_osfhandle failed";
+  }
+}
+#else  // _WIN32
 void ForkPipeRunner::SpawnTestProgram() {
   int toproc_pipe_fd[2];
   int fromproc_pipe_fd[2];
@@ -185,6 +357,7 @@ void ForkPipeRunner::SpawnTestProgram() {
     CHECK_SYSCALL(execv(executable.get(), const_cast<char **>(argv.data())));
   }
 }
+#endif  // !_WIN32
 
 void ForkPipeRunner::CheckedWrite(int fd, const void *buf, size_t len) {
   if (static_cast<size_t>(write(fd, buf, len)) != len) {
@@ -196,21 +369,25 @@ void ForkPipeRunner::CheckedWrite(int fd, const void *buf, size_t len) {
 bool ForkPipeRunner::TryRead(int fd, void *buf, size_t len) {
   size_t ofs = 0;
   while (len > 0) {
-    std::future<ssize_t> future = std::async(
+    std::future<int> future = std::async(
         std::launch::async,
-        [](int fd, void *buf, size_t ofs, size_t len) {
+        [](int fd, void *buf, size_t ofs, size_t len) -> int {
           return read(fd, (char *)buf + ofs, len);
         },
         fd, buf, ofs, len);
     std::future_status status = future.wait_for(std::chrono::seconds(30));
     if (status == std::future_status::timeout) {
       ABSL_LOG(ERROR) << current_test_name_ << ": timeout from test program";
+#ifdef _WIN32
+      TerminateProcess(reinterpret_cast<HANDLE>(child_pid_),
+                       kChildTimeoutExitCode);
+#else  // _WIN32
       kill(child_pid_, SIGQUIT);
       // TODO: Only log in flag-guarded mode, since reading output
       // from SIGQUIT is slow and verbose.
       std::vector<char> err;
       err.resize(5000);
-      ssize_t err_bytes_read;
+      int err_bytes_read;
       size_t err_ofs = 0;
       do {
         err_bytes_read = read(fd, (void *)&err[err_ofs], err.size() - err_ofs);
@@ -218,10 +395,11 @@ bool ForkPipeRunner::TryRead(int fd, void *buf, size_t len) {
       } while (err_bytes_read > 0 && err_ofs < err.size());
       ABSL_LOG(ERROR) << "child_pid_=" << child_pid_ << " SIGQUIT: \n"
                       << &err[0];
+#endif  // !_WIN32
       return false;
     }
 
-    ssize_t bytes_read = future.get();
+    int bytes_read = future.get();
     if (bytes_read == 0) {
       ABSL_LOG(ERROR) << current_test_name_
                       << ": unexpected EOF from test program";

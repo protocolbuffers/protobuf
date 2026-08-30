@@ -121,10 +121,3 @@ This is designed to be as easy as possible: the C++ version is only
 150 lines and is a good example for what this program should look like
 (see [conformance_cpp.cc](https://github.com/protocolbuffers/protobuf/blob/main/conformance/conformance_cpp.cc)).
 The program only needs to be able to read from stdin and write to stdout.
-
-Portability
------------
-
-Note that the test runner currently does not work on Windows.  Patches
-to fix this are welcome!  (But please get in touch first to settle on
-a general implementation strategy).
