@@ -1186,6 +1186,52 @@ TEST(MESSAGE_TEST_NAME, CordFieldGetsProperlyRegisteredInTheArena) {
   // We expect memory leaks here if the Cord was not properly destroyed.
 }
 
+TEST(MESSAGE_TEST_NAME, StringFieldDoesNotLeak_b552593973) {
+  const std::string long_string(1000, 'x');
+  {
+    Arena arena;
+    auto* msg = Arena::Create<UNITTEST::TestAllTypes>(&arena);
+    msg->set_optional_string(long_string);
+  }
+  {
+    Arena arena;
+    auto* msg = Arena::Create<UNITTEST::NestedTestAllTypes>(&arena);
+    msg->mutable_payload()->set_optional_string(long_string);
+  }
+  {
+    Arena arena;
+    UNITTEST::TestAllTypes src;
+    src.set_optional_string(long_string);
+    std::string serialized = src.SerializeAsString();
+    auto* msg1 = Arena::Create<UNITTEST::TestAllTypes>(&arena);
+    ASSERT_TRUE(msg1->ParseFromString(serialized));
+
+    // Normal swap
+    auto* msg2 = Arena::Create<UNITTEST::TestAllTypes>(&arena);
+    msg2->Swap(&*msg1);
+    EXPECT_EQ(msg1->optional_string(), "");
+    EXPECT_EQ(msg2->optional_string(), long_string);
+  }
+  {
+    Arena arena;
+    UNITTEST::TestAllTypes src;
+    src.set_optional_string(long_string);
+    std::string serialized = src.SerializeAsString();
+    auto* msg1 = Arena::Create<UNITTEST::TestAllTypes>(&arena);
+    ASSERT_TRUE(msg1->ParseFromString(serialized));
+
+    // Change serialized so we can see differences after swap, but we expect
+    // both strings to be in a potentially donated state if inlined.
+    src.set_optional_string(long_string + long_string);
+    serialized = src.SerializeAsString();
+    auto* msg2 = Arena::Create<UNITTEST::TestAllTypes>(&arena);
+    ASSERT_TRUE(msg2->ParseFromString(serialized));
+    msg2->Swap(&*msg1);
+    EXPECT_EQ(msg1->optional_string(), long_string + long_string);
+    EXPECT_EQ(msg2->optional_string(), long_string);
+  }
+}
+
 #if GTEST_HAS_DEATH_TEST  // death tests do not work on Windows yet.
 
 TEST(MESSAGE_TEST_NAME, SerializeFailsIfNotInitialized) {
