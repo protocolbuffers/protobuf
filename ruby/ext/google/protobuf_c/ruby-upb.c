@@ -2692,7 +2692,7 @@ UPB_INLINE int _upb_popcnt32(uint32_t i) {
 
 #undef UPB_FAST_POPCOUNT32
 
-UPB_INLINE uint8_t _upb_log2_table_size(upb_table* t) {
+UPB_INLINE uint8_t _upb_log2_table_size(const upb_table* t) {
   return _upb_popcnt32(t->mask);
 }
 
@@ -3229,6 +3229,44 @@ bool upb_strtable_resize(upb_strtable* t, size_t size_lg2, upb_Arena* a) {
   return true;
 }
 
+bool upb_strtable_copy(upb_strtable* dest, const upb_strtable* src,
+                       upb_Arena* a) {
+  if (src->t.count == 0) {
+    return upb_strtable_init(dest, 0, a);
+  }
+  dest->t.count = src->t.count;
+  dest->t.mask = src->t.mask;
+  dest->t.entries =
+      upb_Arena_Malloc(a, upb_table_size(&src->t) * sizeof(upb_tabent));
+  if (!dest->t.entries) return false;
+  upb_tabent* restrict dest_entries = dest->t.entries;
+  const upb_tabent* restrict src_entries = src->t.entries;
+  size_t table_size = upb_table_size(&src->t);
+  for (size_t i = 0; i < table_size; i++) {
+    upb_tabent* dest_ent = &dest_entries[i];
+    const upb_tabent* src_ent = &src_entries[i];
+    if (!upb_tabent_isempty(src_ent)) {
+      upb_StringView sv = upb_key_strview(src_ent->key);
+      upb_SizePrefixString* size_prefix_string =
+          upb_SizePrefixString_Copy(sv, a);
+      if (!size_prefix_string) return false;
+      dest_ent->key.str = size_prefix_string;
+      // The caller is responsible for cloning values if they are not
+      // primitives.
+      dest_ent->val = src_ent->val;
+      if (UPB_UNPREDICTABLE(upb_tabent_hasnext(src_ent))) {
+        size_t offset = upb_tabent_next(src_ent) - src_entries;
+        upb_tabent_setnext(dest_ent, dest_entries + offset);
+      } else {
+        upb_tabent_clearnext(dest_ent);
+      }
+    } else {
+      *dest_ent = (upb_tabent){};
+    }
+  }
+  return true;
+}
+
 bool upb_strtable_insert(upb_strtable* t, const char* k, size_t len,
                          upb_value v, upb_Arena* a) {
   if (isfull(&t->t)) {
@@ -3450,6 +3488,41 @@ static bool upb_inttable_sizedinit(upb_inttable* t, int hsize_lg2,
 
 bool upb_inttable_init(upb_inttable* t, upb_Arena* a) {
   return upb_inttable_sizedinit(t, 3, a);
+}
+
+bool upb_inttable_copy(upb_inttable* dest, const upb_inttable* src,
+                       upb_Arena* a) {
+  if (src->t.count == 0) {
+    return upb_inttable_sizedinit(dest, 0, a);
+  }
+
+  if (!upb_inttable_sizedinit(
+          dest, src->t.mask ? _upb_log2_table_size(&src->t) : 0, a)) {
+    return false;
+  }
+  dest->t.count = src->t.count;
+
+  upb_tabent* restrict dest_entries = dest->t.entries;
+  const upb_tabent* restrict src_entries = src->t.entries;
+  size_t table_size = upb_table_size(&src->t);
+  for (size_t i = 0; i < table_size; i++) {
+    upb_tabent* dest_ent = &dest_entries[i];
+    const upb_tabent* src_ent = &src_entries[i];
+    if (!upb_tabent_isempty(src_ent)) {
+      // The caller is responsible for cloning these if they are not primitives.
+      dest_ent->key = src_ent->key;
+      dest_ent->val = src_ent->val;
+      if (UPB_UNPREDICTABLE(upb_tabent_hasnext(src_ent))) {
+        size_t offset = upb_tabent_next(src_ent) - src_entries;
+        upb_tabent_setnext(dest_ent, dest_entries + offset);
+      } else {
+        upb_tabent_clearnext(dest_ent);
+      }
+    } else {
+      *dest_ent = (upb_tabent){};
+    }
+  }
+  return true;
 }
 
 bool upb_inttable_insert(upb_inttable* t, uintptr_t key, upb_value val,
@@ -8885,29 +8958,80 @@ static bool upb_Clone_MessageValue(void* value, upb_CType value_type,
   UPB_UNREACHABLE();
 }
 
+static bool upb_Clone_MapValue(upb_value* tabval, size_t map_val_size,
+                               upb_CType value_field_type,
+                               const upb_MiniTable* value_sub, upb_Arena* arena,
+                               upb_value* cloned_tabval) {
+  upb_MessageValue val;
+  _upb_map_fromvalue(*tabval, &val, map_val_size);
+  if (!upb_Clone_MessageValue(&val, value_field_type, value_sub, arena)) {
+    return false;
+  }
+  *cloned_tabval = (upb_value){0};  // Initialize
+  if (!_upb_map_tovalue(&val, map_val_size, cloned_tabval, arena)) {
+    return false;
+  }
+  return true;
+}
+
 upb_Map* upb_Map_DeepClone(const upb_Map* map, upb_CType key_type,
                            upb_CType value_type,
                            const upb_MiniTable* map_entry_table,
                            upb_Arena* arena) {
-  upb_Map* cloned_map = _upb_Map_New(arena, map->key_size, map->val_size);
+  upb_Map* cloned_map = upb_Arena_Malloc(arena, sizeof(upb_Map));
   if (cloned_map == NULL) {
     return NULL;
   }
-  upb_MessageValue key, val;
-  size_t iter = kUpb_Map_Begin;
-  while (upb_Map_Next(map, &key, &val, &iter)) {
-    const upb_MiniTableField* value_field =
-        upb_MiniTable_MapValue(map_entry_table);
-    const upb_MiniTable* value_sub =
-        upb_MiniTableField_CType(value_field) == kUpb_CType_Message
-            ? upb_MiniTable_GetSubMessageTable(value_field)
-            : NULL;
-    upb_CType value_field_type = upb_MiniTableField_CType(value_field);
-    if (!upb_Clone_MessageValue(&val, value_field_type, value_sub, arena)) {
+  cloned_map->key_size = map->key_size;
+  cloned_map->val_size = map->val_size;
+  cloned_map->UPB_PRIVATE(is_frozen) = false;
+  cloned_map->UPB_PRIVATE(is_strtable) = map->UPB_PRIVATE(is_strtable);
+
+  const upb_MiniTableField* value_field =
+      upb_MiniTable_MapValue(map_entry_table);
+  const upb_MiniTable* value_sub = upb_MiniTable_SubMessage(value_field);
+  upb_CType value_field_type = upb_MiniTableField_CType(value_field);
+
+  bool is_primitive = value_field_type != kUpb_CType_Message &&
+                      value_field_type != kUpb_CType_String &&
+                      value_field_type != kUpb_CType_Bytes;
+
+  if (map->UPB_PRIVATE(is_strtable)) {
+    if (!upb_strtable_copy(&cloned_map->t.strtable, &map->t.strtable, arena)) {
       return NULL;
     }
-    if (!upb_Map_Set(cloned_map, key, val, arena)) {
+    if (!is_primitive) {
+      intptr_t iter = UPB_STRTABLE_BEGIN;
+      upb_StringView key;
+      upb_value tabval;
+      while (
+          upb_strtable_next2(&cloned_map->t.strtable, &key, &tabval, &iter)) {
+        upb_value cloned_tabval;
+        if (!upb_Clone_MapValue(&tabval, map->val_size, value_field_type,
+                                value_sub, arena, &cloned_tabval)) {
+          return NULL;
+        }
+        upb_strtable_setentryvalue(&cloned_map->t.strtable, iter,
+                                   cloned_tabval);
+      }
+    }
+  } else {
+    if (!upb_inttable_copy(&cloned_map->t.inttable, &map->t.inttable, arena)) {
       return NULL;
+    }
+    if (!is_primitive) {
+      intptr_t iter = UPB_INTTABLE_BEGIN;
+      uintptr_t key;
+      upb_value tabval;
+      while (upb_inttable_next(&cloned_map->t.inttable, &key, &tabval, &iter)) {
+        upb_value cloned_tabval;
+        if (!upb_Clone_MapValue(&tabval, map->val_size, value_field_type,
+                                value_sub, arena, &cloned_tabval)) {
+          return NULL;
+        }
+        upb_inttable_setentryvalue(&cloned_map->t.inttable, iter,
+                                   cloned_tabval);
+      }
     }
   }
   return cloned_map;
