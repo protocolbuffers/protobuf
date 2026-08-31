@@ -20,6 +20,8 @@
 #include "absl/strings/str_replace.h"
 #include "absl/strings/string_view.h"
 #include "absl/types/optional.h"
+#include "google/protobuf/arena.h"
+#include "google/protobuf/arena_align.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor_database.h"
 #include "google/protobuf/descriptor_visitor.h"
@@ -32,6 +34,7 @@
 #include "google/protobuf/message_lite.h"
 #include "google/protobuf/parse_context.h"
 #include "google/protobuf/port.h"
+#include "google/protobuf/test_protos/repeated_field_test.pb.h"
 #include "google/protobuf/test_protos/tctable_long_name_test.pb.h"
 #include "google/protobuf/unittest.pb.h"
 #include "google/protobuf/wire_format_lite.h"
@@ -1069,6 +1072,149 @@ TEST(TcParserTest, OobGenReproduction) {
   }
 
   (void)msg->ParseFromString(payload);
+}
+
+TEST(GeneratedMessageTctableLiteTest, RepeatedVarintTrimsMemory) {
+  for (int num_ints : {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 15}) {
+    proto2_unittest::TestRepeatedInt src;
+    for (int i = 0; i < num_ints; ++i) {
+      src.add_repeated_int32_1(i * 10);
+    }
+    const std::string serialized = src.SerializeAsString();
+
+    google::protobuf::Arena arena;
+    auto* dst = google::protobuf::Arena::Create<proto2_unittest::TestRepeatedInt>(&arena);
+    ASSERT_TRUE(dst->ParseFromString(serialized));
+
+    ASSERT_EQ(dst->repeated_int32_1_size(), num_ints);
+    for (int i = 0; i < num_ints; ++i) {
+      EXPECT_EQ(dst->repeated_int32_1(i), i * 10);
+    }
+
+    if (num_ints > 2) {
+      const int expected_capacity = static_cast<int>(
+          (ArenaAlignDefault::Ceil(sizeof(int32_t) * num_ints + 8) - 8) /
+          sizeof(int32_t));
+      EXPECT_EQ(dst->repeated_int32_1().Capacity(), expected_capacity);
+
+      void* next_alloc = arena.AllocateAligned(8);
+      const void* expected_next =
+          dst->repeated_int32_1().data() + expected_capacity;
+      EXPECT_EQ(next_alloc, expected_next);
+    }
+  }
+}
+
+TEST(GeneratedMessageTctableLiteTest, MultipleRepeatedVarintsTrimMemory) {
+  proto2_unittest::TestRepeatedInt src;
+  for (int i = 0; i < 5; ++i) {
+    src.add_repeated_int32_1(i * 10);
+  }
+  for (int i = 0; i < 7; ++i) {
+    src.add_repeated_int64_1(i * 20);
+  }
+  const std::string serialized = src.SerializeAsString();
+
+  google::protobuf::Arena arena;
+  auto* dst = google::protobuf::Arena::Create<proto2_unittest::TestRepeatedInt>(&arena);
+  ASSERT_TRUE(dst->ParseFromString(serialized));
+
+  ASSERT_EQ(dst->repeated_int32_1_size(), 5);
+  ASSERT_EQ(dst->repeated_int64_1_size(), 7);
+
+  EXPECT_EQ(dst->repeated_int32_1().Capacity(), 6);
+  EXPECT_EQ(dst->repeated_int64_1().Capacity(), 7);
+
+  void* next_alloc = arena.AllocateAligned(8);
+  const void* expected_next = dst->repeated_int64_1().data() + 7;
+  EXPECT_EQ(next_alloc, expected_next);
+}
+
+TEST(GeneratedMessageTctableLiteTest, RepeatedVarintHeapAllocated) {
+  proto2_unittest::TestRepeatedInt src;
+  for (int i = 0; i < 15; ++i) {
+    src.add_repeated_int32_1(i * 5);
+  }
+  const std::string serialized = src.SerializeAsString();
+
+  proto2_unittest::TestRepeatedInt dst;
+  ASSERT_TRUE(dst.ParseFromString(serialized));
+
+  ASSERT_EQ(dst.repeated_int32_1_size(), 15);
+  for (int i = 0; i < 15; ++i) {
+    EXPECT_EQ(dst.repeated_int32_1(i), i * 5);
+  }
+}
+
+TEST(GeneratedMessageTctableLiteTest, PackedVarintTrimsMemory) {
+  for (int num_ints : {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10}) {
+    proto2_unittest::TestPackedInt src;
+    for (int i = 0; i < num_ints; ++i) {
+      src.add_repeated_int32_1(i * 10);
+    }
+    const std::string serialized = src.SerializeAsString();
+
+    google::protobuf::Arena arena;
+    auto* dst = google::protobuf::Arena::Create<proto2_unittest::TestPackedInt>(&arena);
+    ASSERT_TRUE(dst->ParseFromString(serialized));
+
+    ASSERT_EQ(dst->repeated_int32_1_size(), num_ints);
+    for (int i = 0; i < num_ints; ++i) {
+      EXPECT_EQ(dst->repeated_int32_1(i), i * 10);
+    }
+
+    if (num_ints > 2) {
+      const int expected_capacity = static_cast<int>(
+          (ArenaAlignDefault::Ceil(sizeof(int32_t) * num_ints + 8) - 8) /
+          sizeof(int32_t));
+      EXPECT_EQ(dst->repeated_int32_1().Capacity(), expected_capacity);
+      void* next_alloc = arena.AllocateAligned(8);
+      const void* expected_next =
+          dst->repeated_int32_1().data() + expected_capacity;
+      EXPECT_EQ(next_alloc, expected_next);
+    }
+  }
+}
+
+TEST(GeneratedMessageTctableLiteTest, MultiplePackedVarintsTrimMemory) {
+  proto2_unittest::TestPackedInt src;
+  for (int i = 0; i < 5; ++i) {
+    src.add_repeated_int32_1(i * 10);
+  }
+  for (int i = 0; i < 4; ++i) {
+    src.add_repeated_int64_1(i * 20);
+  }
+  const std::string serialized = src.SerializeAsString();
+
+  google::protobuf::Arena arena;
+  auto* dst = google::protobuf::Arena::Create<proto2_unittest::TestPackedInt>(&arena);
+  ASSERT_TRUE(dst->ParseFromString(serialized));
+
+  ASSERT_EQ(dst->repeated_int32_1_size(), 5);
+  ASSERT_EQ(dst->repeated_int64_1_size(), 4);
+
+  EXPECT_EQ(dst->repeated_int32_1().Capacity(), 6);
+  EXPECT_EQ(dst->repeated_int64_1().Capacity(), 4);
+
+  void* next_alloc = arena.AllocateAligned(8);
+  const void* expected_next = dst->repeated_int64_1().data() + 4;
+  EXPECT_EQ(next_alloc, expected_next);
+}
+
+TEST(GeneratedMessageTctableLiteTest, PackedVarintHeapAllocated) {
+  proto2_unittest::TestPackedInt src;
+  for (int i = 0; i < 15; ++i) {
+    src.add_repeated_int32_1(i * 5);
+  }
+  const std::string serialized = src.SerializeAsString();
+
+  proto2_unittest::TestPackedInt dst;
+  ASSERT_TRUE(dst.ParseFromString(serialized));
+
+  ASSERT_EQ(dst.repeated_int32_1_size(), 15);
+  for (int i = 0; i < 15; ++i) {
+    EXPECT_EQ(dst.repeated_int32_1(i), i * 5);
+  }
 }
 
 }  // namespace internal

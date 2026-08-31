@@ -123,6 +123,7 @@ class alignas(8) HeapRep {
   ~HeapRep() = delete;
 
   uint32_t capacity() const { return capacity_; }
+  void set_capacity(uint32_t capacity) { capacity_ = capacity; }
 
   template <typename Element>
   const Element* elements() const {
@@ -436,6 +437,46 @@ class ABSL_ATTRIBUTE_WARN_UNUSED PROTOBUF_DECLSPEC_EMPTY_BASES
   void AddAlreadyReserved(Element value);
   PROTOBUF_FUTURE_ADD_NODISCARD int Capacity() const;
 
+  // For the parse loop, we use a different allocation strategy.
+  // We allocate from the bump block so that we can cheaply grow it and trim it
+  // at the end of the loop. This is useful when the likelihood of other
+  // allocations interleaving in the bump block is low.
+  //
+  // REQUIRES: arena != nullptr
+  void AddForParse(Element value, internal::SerialArena* arena) {
+    bool is_soo = this->is_soo();
+    const int current_size = size();
+    if (ABSL_PREDICT_FALSE(current_size == Capacity(is_soo))) {
+      InternalReallocForParse(arena);
+      is_soo = false;
+    }
+    Element* elem = unsafe_elements(is_soo);
+    void* p = elem + ExchangeCurrentSize(current_size + 1);
+    ::new (p) Element(std::move(value));
+  }
+
+  // For the parse loop.
+  // See AddForParse.
+  // REQUIRES: arena != nullptr
+  void TrimForParse(internal::SerialArena* arena) {
+    if (is_soo()) return;
+    const int current_size = size();
+    internal::HeapRep* r = heap_rep();
+    const size_t current_bytes =
+        kHeapRepHeaderSize +
+        sizeof(Element) * static_cast<size_t>(r->capacity());
+    const size_t needed_bytes =
+        internal::ArenaAlignDefault::Ceil<sizeof(Element)>(
+            kHeapRepHeaderSize +
+            sizeof(Element) * static_cast<size_t>(current_size));
+    char* const base = reinterpret_cast<char*>(r);
+    AnnotateForRelease();
+    if (arena->TrimForParse(base + current_bytes, base + needed_bytes)) {
+      r->set_capacity((needed_bytes - kHeapRepHeaderSize) / sizeof(Element));
+    }
+    AnnotateSize(Capacity(), current_size);
+  }
+
   // Adds `n` elements to this instance asserting there is enough capacity.
   // The added elements are uninitialized if `Element` is trivial.
   pointer AddAlreadyReserved() ABSL_ATTRIBUTE_LIFETIME_BOUND;
@@ -668,6 +709,12 @@ class ABSL_ATTRIBUTE_WARN_UNUSED PROTOBUF_DECLSPEC_EMPTY_BASES
   template <typename ArenaProvider>
   void GrowNoAnnotate(ArenaProvider arena_provider, bool was_soo, int old_size,
                       int new_size);
+
+  // For the parse loop, grows the allocation an unspecified amount.
+  // If the memory is at the tail of the bump block, it grows it in-place.
+  // See AddForParse.
+  // REQUIRES: arena != nullptr
+  void InternalReallocForParse(internal::SerialArena* arena);
 
   // Annotates a change in size of this instance. This function should be called
   // with (capacity, old_size) after new memory has been allocated and filled
@@ -1497,7 +1544,7 @@ namespace internal {
 //    std::numeric_limits<int>::max()]
 // Requires: new_size > capacity
 template <typename T, int kHeapRepHeaderSize>
-inline int CalculateReserveSize(int capacity, int new_size) {
+constexpr int CalculateReserveSize(int capacity, int new_size) {
   constexpr int lower_limit =
       RepeatedFieldLowerClampLimit<T, kHeapRepHeaderSize>();
   if (new_size < lower_limit) {
@@ -1573,11 +1620,7 @@ PROTOBUF_NOINLINE void RepeatedField<Element>::GrowNoAnnotate(
     new_size = static_cast<int>(num_available);
     new_rep = new (res.p) internal::HeapRep(new_size);
   } else {
-    if constexpr (internal::ArenaAlignDefault::Ceil(sizeof(Element)) !=
-                  sizeof(Element)) {
-      // We need to manually align the allocation.
-      bytes = internal::ArenaAlignDefault::Ceil(bytes);
-    }
+    bytes = internal::ArenaAlignDefault::Ceil<sizeof(Element)>(bytes);
     new_rep =
         new (arena->AllocateAligned<internal::AllocationClient::kArray>(bytes))
             internal::HeapRep(new_size);
@@ -1613,6 +1656,63 @@ PROTOBUF_NOINLINE void RepeatedField<Element>::Grow(
   AnnotateForRelease();
   GrowNoAnnotate(arena_provider, was_soo, old_size, new_size);
   AnnotateSize(Capacity(), old_size);
+}
+
+template <typename Element>
+PROTOBUF_NOINLINE void RepeatedField<Element>::InternalReallocForParse(
+    internal::SerialArena* arena) {
+  ABSL_DCHECK_NE(arena, nullptr);
+  ABSL_DCHECK_EQ(arena, GetSerialArena());
+  ABSL_DCHECK_EQ(size(), Capacity());
+
+  AnnotateForRelease();
+
+  if (is_soo()) {
+    constexpr int new_capacity_calculated =
+        internal::CalculateReserveSize<Element, kHeapRepHeaderSize>(
+            kSooCapacityElements, kSooCapacityElements + 1);
+    constexpr size_t new_size =
+        internal::ArenaAlignDefault::Ceil<sizeof(Element)>(
+            kHeapRepHeaderSize + sizeof(Element) * new_capacity_calculated);
+    constexpr int new_capacity =
+        static_cast<int>((new_size - kHeapRepHeaderSize) / sizeof(Element));
+    void* alloc = arena->AllocateAligned(new_size);
+    auto* new_rep = new (alloc) internal::HeapRep(new_capacity);
+    Element* pnew = new_rep->template elements<Element>();
+    Element* pold = unsafe_elements(/*is_soo=*/true);
+    if constexpr (std::is_trivially_copyable_v<Element> ||
+                  absl::is_trivially_relocatable<Element>::value) {
+      memcpy(static_cast<void*>(pnew), pold,
+             kSooCapacityElements * sizeof(Element));
+    } else {
+      for (Element* end = pnew + kSooCapacityElements; pnew != end;
+           ++pnew, ++pold) {
+        ::new (static_cast<void*>(pnew)) Element(std::move(*pold));
+        pold->~Element();
+      }
+    }
+    soo_rep_.set_non_soo(new_rep);
+    AnnotateSize(Capacity(), kSooCapacityElements);
+  } else {
+    internal::HeapRep* old_rep = heap_rep();
+    const int old_capacity = old_rep->capacity();
+    const size_t old_total_size =
+        internal::ArenaAlignDefault::Ceil<sizeof(Element)>(
+            kHeapRepHeaderSize +
+            sizeof(Element) * static_cast<size_t>(old_capacity));
+
+    if (auto new_size = arena->ReallocForParse(old_rep, old_total_size);
+        new_size.has_value()) {
+      // We realloc in place, so we just need to adjust the rep.
+      old_rep->set_capacity((*new_size - kHeapRepHeaderSize) / sizeof(Element));
+      AnnotateSize(Capacity(), old_capacity);
+      return;
+    }
+
+    // We could not grow in place, so use the normal grow function.
+    GrowNoAnnotate(arena, /*was_soo=*/false, old_capacity, old_capacity + 1);
+    AnnotateSize(Capacity(), old_capacity);
+  }
 }
 
 template <typename Element>
