@@ -53,10 +53,10 @@
 //
 // Please avoid changing them manually, as they should be updated automatically
 // by Protobuf release process.
-#define PROTOBUF_CPP_VERSION_STRING "7.36.1"
-#define PROTOBUF_JAVA_VERSION_STRING "4.36.1"
-#define PROTOBUF_PYTHON_VERSION_STRING "7.36.1"
-#define PROTOBUF_RUST_VERSION_STRING "0.36.1"
+#define PROTOBUF_CPP_VERSION_STRING "7.36.2-dev"
+#define PROTOBUF_JAVA_VERSION_STRING "4.36.2-dev"
+#define PROTOBUF_PYTHON_VERSION_STRING "7.36.2-dev"
+#define PROTOBUF_RUST_VERSION_STRING "0.36.2-dev"
 
 
 namespace google {

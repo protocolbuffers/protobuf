@@ -7,4 +7,4 @@
 
 # Copyright 2007 Google Inc. All Rights Reserved.
 
-__version__ = '7.36.1'
+__version__ = '7.36.2'
