@@ -289,9 +289,8 @@ void MessageGenerator::GenerateExtensions(io::Printer* printer) const {
         "  extension: com.google.protobuf.ExtensionLite<$message$, "
         "kotlin.collections.List<E>>\n"
         "): com.google.protobuf.kotlin.ExtensionList<E, $message$> {\n"
-        "  return com.google.protobuf.kotlin.ExtensionList(extension) {\n"
-        "    _builder.getExtension(extension)\n"
-        "  }\n"
+        "  return com.google.protobuf.kotlin.ExtensionList(extension, "
+        "_builder.getExtension(extension))\n"
         "}\n\n");
   }
 
